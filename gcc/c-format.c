@@ -2362,8 +2362,8 @@ check_format_types (status, types)
 	continue;
       /* Now we have a type mismatch.  */
       {
-	register const char *this;
-	register const char *that;
+	const char *this;
+	const char *that;
 
 	this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
 	that = 0;

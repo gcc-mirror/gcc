@@ -146,10 +146,10 @@ match_rtx (x, path, fail_label)
      struct link *path;
      int fail_label;
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register const char *fmt;
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
   struct link link;
 
   if (x == 0)
@@ -364,7 +364,7 @@ static void
 print_code (code)
      RTX_CODE code;
 {
-  register const char *p1;
+  const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
     putchar (TOUPPER(*p1));
 }

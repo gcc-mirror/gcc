@@ -302,7 +302,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
     = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
-  register rtx op0 = str_rtx;
+  rtx op0 = str_rtx;
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
 
@@ -693,12 +693,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
 static void
 store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
-     register rtx op0;
+     rtx op0;
      unsigned HOST_WIDE_INT offset, bitsize, bitpos;
-     register rtx value;
+     rtx value;
      unsigned int struct_align;
 {
-  register enum machine_mode mode;
+  enum machine_mode mode;
   unsigned int total_bits = BITS_PER_WORD;
   rtx subtarget, temp;
   int all_zero = 0;
@@ -794,7 +794,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
 
   if (GET_CODE (value) == CONST_INT)
     {
-      register HOST_WIDE_INT v = INTVAL (value);
+      HOST_WIDE_INT v = INTVAL (value);
 
       if (bitsize < HOST_BITS_PER_WIDE_INT)
 	v &= ((HOST_WIDE_INT) 1 << bitsize) - 1;
@@ -1033,7 +1033,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
   unsigned HOST_WIDE_INT offset = bitnum / unit;
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
-  register rtx op0 = str_rtx;
+  rtx op0 = str_rtx;
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
   enum machine_mode int_mode;
@@ -1577,7 +1577,7 @@ static rtx
 extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 			 target, unsignedp, align)
      enum machine_mode tmode;
-     register rtx op0, target;
+     rtx op0, target;
      unsigned HOST_WIDE_INT offset, bitsize, bitpos;
      int unsignedp;
      unsigned int align;
@@ -1931,15 +1931,15 @@ expand_dec (target, dec)
 rtx
 expand_shift (code, mode, shifted, amount, target, unsignedp)
      enum tree_code code;
-     register enum machine_mode mode;
+     enum machine_mode mode;
      rtx shifted;
      tree amount;
-     register rtx target;
+     rtx target;
      int unsignedp;
 {
-  register rtx op1, temp = 0;
-  register int left = (code == LSHIFT_EXPR || code == LROTATE_EXPR);
-  register int rotate = (code == LROTATE_EXPR || code == RROTATE_EXPR);
+  rtx op1, temp = 0;
+  int left = (code == LSHIFT_EXPR || code == LROTATE_EXPR);
+  int rotate = (code == LROTATE_EXPR || code == RROTATE_EXPR);
   int try;
 
   /* Previously detected shift-counts computed by NEGATE_EXPR
@@ -2371,7 +2371,7 @@ synth_mult (alg_out, t, cost_limit)
 rtx
 expand_mult (mode, op0, op1, target, unsignedp)
      enum machine_mode mode;
-     register rtx op0, op1, target;
+     rtx op0, op1, target;
      int unsignedp;
 {
   rtx const_op1 = op1;
@@ -2757,7 +2757,7 @@ invert_mod2n (x, n)
 rtx
 expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
      enum machine_mode mode;
-     register rtx adj_operand, op0, op1, target;
+     rtx adj_operand, op0, op1, target;
      int unsignedp;
 {
   rtx tem;
@@ -2794,7 +2794,7 @@ expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
 rtx
 expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
      enum machine_mode mode;
-     register rtx op0, target;
+     rtx op0, target;
      unsigned HOST_WIDE_INT cnst1;
      int unsignedp;
      int max_cost;
@@ -2976,11 +2976,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      int rem_flag;
      enum tree_code code;
      enum machine_mode mode;
-     register rtx op0, op1, target;
+     rtx op0, op1, target;
      int unsignedp;
 {
   enum machine_mode compute_mode;
-  register rtx tquotient;
+  rtx tquotient;
   rtx quotient = 0, remainder = 0;
   rtx last;
   int size;

@@ -437,9 +437,9 @@ validate_replace_rtx_1 (loc, from, to, object)
      rtx *loc;
      rtx from, to, object;
 {
-  register int i, j;
-  register const char *fmt;
-  register rtx x = *loc;
+  int i, j;
+  const char *fmt;
+  rtx x = *loc;
   enum rtx_code code;
   enum machine_mode op0_mode = VOIDmode;
   int prev_changes = num_changes;
@@ -687,7 +687,7 @@ int
 next_insn_tests_no_inequality (insn)
      rtx insn;
 {
-  register rtx next = next_cc0_user (insn);
+  rtx next = next_cc0_user (insn);
 
   /* If there is no next insn, we have to take the conservative choice.  */
   if (next == 0)
@@ -707,7 +707,7 @@ int
 next_insns_test_no_inequality (insn)
      rtx insn;
 {
-  register rtx next = NEXT_INSN (insn);
+  rtx next = NEXT_INSN (insn);
 
   for (; next != 0; next = NEXT_INSN (next))
     {
@@ -913,10 +913,10 @@ find_single_use (dest, insn, ploc)
 
 int
 general_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
-  register enum rtx_code code = GET_CODE (op);
+  enum rtx_code code = GET_CODE (op);
 
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -976,7 +976,7 @@ general_operand (op, mode)
 
   if (code == MEM)
     {
-      register rtx y = XEXP (op, 0);
+      rtx y = XEXP (op, 0);
 
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
@@ -1008,7 +1008,7 @@ general_operand (op, mode)
 
 int
 address_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return memory_address_p (mode, op);
@@ -1030,7 +1030,7 @@ address_operand (op, mode)
 
 int
 register_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
@@ -1089,7 +1089,7 @@ pmode_register_operand (op, mode)
 
 int
 scratch_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
@@ -1107,7 +1107,7 @@ scratch_operand (op, mode)
 
 int
 immediate_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   /* Don't accept CONST_INT or anything similar
@@ -1140,7 +1140,7 @@ immediate_operand (op, mode)
 
 int
 const_int_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (GET_CODE (op) != CONST_INT)
@@ -1158,7 +1158,7 @@ const_int_operand (op, mode)
 
 int
 const_double_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   /* Don't accept CONST_INT or anything similar
@@ -1177,7 +1177,7 @@ const_double_operand (op, mode)
 
 int
 nonimmediate_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   return (general_operand (op, mode) && ! CONSTANT_P (op));
@@ -1187,7 +1187,7 @@ nonimmediate_operand (op, mode)
 
 int
 nonmemory_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   if (CONSTANT_P (op))
@@ -1312,7 +1312,7 @@ pop_operand (op, mode)
 int
 memory_address_p (mode, addr)
      enum machine_mode mode ATTRIBUTE_UNUSED;
-     register rtx addr;
+     rtx addr;
 {
   if (GET_CODE (addr) == ADDRESSOF)
     return 1;
@@ -1332,7 +1332,7 @@ memory_address_p (mode, addr)
 
 int
 memory_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   rtx inner;
@@ -1357,14 +1357,14 @@ memory_operand (op, mode)
 
 int
 indirect_operand (op, mode)
-     register rtx op;
+     rtx op;
      enum machine_mode mode;
 {
   /* Before reload, a SUBREG isn't in memory (see memory_operand, above).  */
   if (! reload_completed
       && GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == MEM)
     {
-      register int offset = SUBREG_BYTE (op);
+      int offset = SUBREG_BYTE (op);
       rtx inner = SUBREG_REG (op);
 
       if (mode != VOIDmode && GET_MODE (op) != mode)
@@ -1392,7 +1392,7 @@ indirect_operand (op, mode)
 
 int
 comparison_operator (op, mode)
-    register rtx op;
+    rtx op;
     enum machine_mode mode;
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
@@ -1496,7 +1496,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
      const char **constraints;
      enum machine_mode *modes;
 {
-  register int i;
+  int i;
   int noperands;
   const char *template = 0;
 
@@ -1828,8 +1828,8 @@ rtx *
 find_constant_term_loc (p)
      rtx *p;
 {
-  register rtx *tem;
-  register enum rtx_code code = GET_CODE (*p);
+  rtx *tem;
+  enum rtx_code code = GET_CODE (*p);
 
   /* If *P IS such a constant term, P is its location.  */
 
@@ -1911,10 +1911,10 @@ int
 offsettable_address_p (strictp, mode, y)
      int strictp;
      enum machine_mode mode;
-     register rtx y;
+     rtx y;
 {
-  register enum rtx_code ycode = GET_CODE (y);
-  register rtx z;
+  enum rtx_code ycode = GET_CODE (y);
+  rtx z;
   rtx y1 = y;
   rtx *y2;
   int (*addressp) PARAMS ((enum machine_mode, rtx)) =
@@ -2291,7 +2291,7 @@ constrain_operands (strict)
   const char *constraints[MAX_RECOG_OPERANDS];
   int matching_operands[MAX_RECOG_OPERANDS];
   int earlyclobber[MAX_RECOG_OPERANDS];
-  register int c;
+  int c;
 
   struct funny_match funny_match[MAX_RECOG_OPERANDS];
   int funny_match_index;
@@ -2308,15 +2308,15 @@ constrain_operands (strict)
 
   do
     {
-      register int opno;
+      int opno;
       int lose = 0;
       funny_match_index = 0;
 
       for (opno = 0; opno < recog_data.n_operands; opno++)
 	{
-	  register rtx op = recog_data.operand[opno];
+	  rtx op = recog_data.operand[opno];
 	  enum machine_mode mode = GET_MODE (op);
-	  register const char *p = constraints[opno];
+	  const char *p = constraints[opno];
 	  int offset = 0;
 	  int win = 0;
 	  int val;
@@ -2631,16 +2631,16 @@ constrain_operands (strict)
 int
 reg_fits_class_p (operand, class, offset, mode)
      rtx operand;
-     register enum reg_class class;
+     enum reg_class class;
      int offset;
      enum machine_mode mode;
 {
-  register int regno = REGNO (operand);
+  int regno = REGNO (operand);
   if (regno < FIRST_PSEUDO_REGISTER
       && TEST_HARD_REG_BIT (reg_class_contents[(int) class],
 			    regno + offset))
     {
-      register int sr;
+      int sr;
       regno += offset;
       for (sr = HARD_REGNO_NREGS (regno, mode) - 1;
 	   sr > 0; sr--)

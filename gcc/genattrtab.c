@@ -503,7 +503,7 @@ attr_hash_add_rtx (hashcode, rtl)
      int hashcode;
      rtx rtl;
 {
-  register struct attr_hash *h;
+  struct attr_hash *h;
 
   h = (struct attr_hash *) obstack_alloc (hash_obstack,
 					  sizeof (struct attr_hash));
@@ -520,7 +520,7 @@ attr_hash_add_string (hashcode, str)
      int hashcode;
      char *str;
 {
-  register struct attr_hash *h;
+  struct attr_hash *h;
 
   h = (struct attr_hash *) obstack_alloc (hash_obstack,
 					  sizeof (struct attr_hash));
@@ -547,11 +547,11 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
   enum rtx_code code;
 #endif
   va_list p;
-  register int i;		/* Array indices...			*/
-  register const char *fmt;	/* Current rtx's format...		*/
-  register rtx rt_val = NULL_RTX;/* RTX to return to caller...		*/
+  int i;		/* Array indices...			*/
+  const char *fmt;	/* Current rtx's format...		*/
+  rtx rt_val = NULL_RTX;/* RTX to return to caller...		*/
   int hashcode;
-  register struct attr_hash *h;
+  struct attr_hash *h;
   struct obstack *old_obstack = rtl_obstack;
 
   VA_START (p, code);
@@ -743,7 +743,7 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
 static char *
-attr_printf VPARAMS ((register unsigned int len, const char *fmt, ...))
+attr_printf VPARAMS ((unsigned int len, const char *fmt, ...))
 {
   char str[256];
 
@@ -783,10 +783,10 @@ attr_string (str, len)
      const char *str;
      int len;
 {
-  register struct attr_hash *h;
+  struct attr_hash *h;
   int hashcode;
   int i;
-  register char *new_str;
+  char *new_str;
 
   /* Compute the hash code.  */
   hashcode = (len + 1) * 613 + (unsigned) str[0];
@@ -828,12 +828,12 @@ attr_equal_p (x, y)
 
 static rtx
 attr_copy_rtx (orig)
-     register rtx orig;
+     rtx orig;
 {
-  register rtx copy;
-  register int i, j;
-  register RTX_CODE code;
-  register const char *format_ptr;
+  rtx copy;
+  int i, j;
+  RTX_CODE code;
+  const char *format_ptr;
 
   /* No need to copy a permanent object.  */
   if (RTX_INTEGRATED_P (orig))
@@ -2260,10 +2260,10 @@ static rtx
 encode_units_mask (x)
      rtx x;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
 
   code = GET_CODE (x);
 
@@ -4024,7 +4024,7 @@ static rtx
 simplify_with_current_value_aux (exp)
      rtx exp;
 {
-  register int i;
+  int i;
   rtx cond;
 
   switch (GET_CODE (exp))
@@ -4103,10 +4103,10 @@ static void
 clear_struct_flag (x)
      rtx x;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
 
   MEM_IN_STRUCT_P (x) = 0;
   if (RTX_UNCHANGING_P (x))
@@ -4161,10 +4161,10 @@ count_sub_rtxs (x, max)
      rtx x;
      int max;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
   int total = 0;
 
   code = GET_CODE (x);
@@ -4907,8 +4907,8 @@ static void
 walk_attr_value (exp)
      rtx exp;
 {
-  register int i, j;
-  register const char *fmt;
+  int i, j;
+  const char *fmt;
   RTX_CODE code;
 
   if (exp == NULL)
@@ -5276,11 +5276,11 @@ write_expr_attr_cache (p, attr)
 	return 0;
 
       if (!attr->is_numeric)
-	printf ("  register enum attr_%s ", attr->name);
+	printf ("  enum attr_%s ", attr->name);
       else if (attr->unsigned_p)
-	printf ("  register unsigned int ");
+	printf ("  unsigned int ");
       else
-	printf ("  register int ");
+	printf ("  int ");
 
       printf ("attr_%s = get_attr_%s (insn);\n", attr->name, attr->name);
       return 1;
@@ -5325,7 +5325,7 @@ write_toplevel_expr (p)
       if (!attr->is_const)
 	write_expr_attr_cache (p, attr);
 
-  printf ("  register unsigned long accum = 0;\n\n");
+  printf ("  unsigned long accum = 0;\n\n");
 
   while (GET_CODE (p) == IOR)
     {
@@ -5983,11 +5983,11 @@ extend_range (range, min, max)
 
 static rtx
 copy_rtx_unchanging (orig)
-     register rtx orig;
+     rtx orig;
 {
 #if 0
-  register rtx copy;
-  register RTX_CODE code;
+  rtx copy;
+  RTX_CODE code;
 #endif
 
   if (RTX_UNCHANGING_P (orig) || MEM_IN_STRUCT_P (orig))

@@ -863,7 +863,7 @@ reg_is_remote_constant_p (reg, insn, first)
      rtx insn;
      rtx first;
 {
-  register rtx p;
+  rtx p;
 
   if (REG_N_SETS (REGNO (reg)) != 1)
     return 0;

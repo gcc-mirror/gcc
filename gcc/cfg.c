@@ -410,7 +410,7 @@ void
 dump_flow_info (file)
      FILE *file;
 {
-  register int i;
+  int i;
   static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
   fprintf (file, "%d registers.\n", max_regno);
@@ -456,8 +456,8 @@ dump_flow_info (file)
   fprintf (file, "\n%d basic blocks, %d edges.\n", n_basic_blocks, n_edges);
   for (i = 0; i < n_basic_blocks; i++)
     {
-      register basic_block bb = BASIC_BLOCK (i);
-      register edge e;
+      basic_block bb = BASIC_BLOCK (i);
+      edge e;
 
       fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d, count ",
 	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth);

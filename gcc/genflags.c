@@ -54,10 +54,10 @@ static void
 max_operand_1 (x)
      rtx x;
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register const char *fmt;
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
 
   if (x == 0)
     return;
@@ -87,8 +87,8 @@ static int
 num_operands (insn)
      rtx insn;
 {
-  register int len = XVECLEN (insn, 1);
-  register int i;
+  int len = XVECLEN (insn, 1);
+  int i;
 
   max_opno = -1;
 

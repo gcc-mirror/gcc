@@ -1393,7 +1393,7 @@ struct gcc_debug_hooks dwarf_debug_hooks =
 
 static inline int
 is_pseudo_reg (rtl)
-     register rtx rtl;
+     rtx rtl;
 {
   return (((GET_CODE (rtl) == REG) && (REGNO (rtl) >= FIRST_PSEUDO_REGISTER))
           || ((GET_CODE (rtl) == SUBREG)
@@ -1402,7 +1402,7 @@ is_pseudo_reg (rtl)
 
 static inline tree
 type_main_variant (type)
-     register tree type;
+     tree type;
 {
   type = TYPE_MAIN_VARIANT (type);
 
@@ -1424,9 +1424,9 @@ type_main_variant (type)
 
 static inline int
 is_tagged_type (type)
-     register tree type;
+     tree type;
 {
-  register enum tree_code code = TREE_CODE (type);
+  enum tree_code code = TREE_CODE (type);
 
   return (code == RECORD_TYPE || code == UNION_TYPE
 	  || code == QUAL_UNION_TYPE || code == ENUMERAL_TYPE);
@@ -1434,7 +1434,7 @@ is_tagged_type (type)
 
 static const char *
 dwarf_tag_name (tag)
-     register unsigned tag;
+     unsigned tag;
 {
   switch (tag)
     {
@@ -1484,7 +1484,7 @@ dwarf_tag_name (tag)
 
 static const char *
 dwarf_attr_name (attr)
-     register unsigned attr;
+     unsigned attr;
 {
   switch (attr)
     {
@@ -1562,7 +1562,7 @@ dwarf_attr_name (attr)
 
 static const char *
 dwarf_stack_op_name (op)
-     register unsigned op;
+     unsigned op;
 {
   switch (op)
     {
@@ -1579,7 +1579,7 @@ dwarf_stack_op_name (op)
 
 static const char *
 dwarf_typemod_name (mod)
-     register unsigned mod;
+     unsigned mod;
 {
   switch (mod)
     {
@@ -1593,7 +1593,7 @@ dwarf_typemod_name (mod)
 
 static const char *
 dwarf_fmt_byte_name (fmt)
-     register unsigned fmt;
+     unsigned fmt;
 {
   switch (fmt)
     {
@@ -1612,7 +1612,7 @@ dwarf_fmt_byte_name (fmt)
 
 static const char *
 dwarf_fund_type_name (ft)
-     register unsigned ft;
+     unsigned ft;
 {
   switch (ft)
     {
@@ -1678,7 +1678,7 @@ dwarf_fund_type_name (ft)
 
 static tree
 decl_ultimate_origin (decl)
-     register tree decl;
+     tree decl;
 {
 #ifdef ENABLE_CHECKING 
   if (DECL_FROM_INLINE (DECL_ORIGIN (decl)))
@@ -1698,16 +1698,16 @@ decl_ultimate_origin (decl)
 
 static tree
 block_ultimate_origin (block)
-     register tree block;
+     tree block;
 {
-  register tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
+  tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
 
   if (immediate_origin == NULL)
     return NULL;
   else
     {
-      register tree ret_val;
-      register tree lookahead = immediate_origin;
+      tree ret_val;
+      tree lookahead = immediate_origin;
 
       do
 	{
@@ -1745,13 +1745,13 @@ decl_class_context (decl)
 #if 0
 static void
 output_unsigned_leb128 (value)
-     register unsigned long value;
+     unsigned long value;
 {
-  register unsigned long orig_value = value;
+  unsigned long orig_value = value;
 
   do
     {
-      register unsigned byte = (value & 0x7f);
+      unsigned byte = (value & 0x7f);
 
       value >>= 7;
       if (value != 0)	/* more bytes to follow */
@@ -1767,15 +1767,15 @@ output_unsigned_leb128 (value)
 
 static void
 output_signed_leb128 (value)
-     register long value;
+     long value;
 {
-  register long orig_value = value;
-  register int negative = (value < 0);
-  register int more;
+  long orig_value = value;
+  int negative = (value < 0);
+  int more;
 
   do
     {
-      register unsigned byte = (value & 0x7f);
+      unsigned byte = (value & 0x7f);
 
       value >>= 7;
       if (negative)
@@ -1826,7 +1826,7 @@ output_signed_leb128 (value)
 
 static int
 fundamental_type_code (type)
-     register tree type;
+     tree type;
 {
   if (TREE_CODE (type) == ERROR_MARK)
     return 0;
@@ -1968,8 +1968,8 @@ fundamental_type_code (type)
 
 static tree
 root_type_1 (type, count)
-     register tree type;
-     register int count;
+     tree type;
+     int count;
 {
   /* Give up after searching 1000 levels, in case this is a recursive
      pointer type.  Such types are possible in Ada, but it is not possible
@@ -1993,7 +1993,7 @@ root_type_1 (type, count)
 
 static tree
 root_type (type)
-     register tree type;
+     tree type;
 {
   type = root_type_1 (type, 0);
   if (type != error_mark_node)
@@ -2006,10 +2006,10 @@ root_type (type)
 
 static void
 write_modifier_bytes_1 (type, decl_const, decl_volatile, count)
-     register tree type;
-     register int decl_const;
-     register int decl_volatile;
-     register int count;
+     tree type;
+     int decl_const;
+     int decl_volatile;
+     int count;
 {
   if (TREE_CODE (type) == ERROR_MARK)
     return;
@@ -2044,9 +2044,9 @@ write_modifier_bytes_1 (type, decl_const, decl_volatile, count)
 
 static void
 write_modifier_bytes (type, decl_const, decl_volatile)
-     register tree type;
-     register int decl_const;
-     register int decl_volatile;
+     tree type;
+     int decl_const;
+     int decl_volatile;
 {
   write_modifier_bytes_1 (type, decl_const, decl_volatile, 0);
 }
@@ -2056,7 +2056,7 @@ write_modifier_bytes (type, decl_const, decl_volatile)
 
 static inline int
 type_is_fundamental (type)
-     register tree type;
+     tree type;
 {
   switch (TREE_CODE (type))
     {
@@ -2106,7 +2106,7 @@ type_is_fundamental (type)
 
 static void
 equate_decl_number_to_die_number (decl)
-     register tree decl;
+     tree decl;
 {
   /* In the case where we are generating a DIE for some ..._DECL node
      which represents either some inline function declaration or some
@@ -2138,7 +2138,7 @@ equate_decl_number_to_die_number (decl)
 
 static inline void
 equate_type_number_to_die_number (type)
-     register tree type;
+     tree type;
 {
   char type_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char die_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -2157,9 +2157,9 @@ equate_type_number_to_die_number (type)
 
 static void
 output_reg_number (rtl)
-     register rtx rtl;
+     rtx rtl;
 {
-  register unsigned regno = REGNO (rtl);
+  unsigned regno = REGNO (rtl);
 
   if (regno >= DWARF_FRAME_REGISTERS)
     {
@@ -2189,7 +2189,7 @@ output_reg_number (rtl)
 
 static void
 output_mem_loc_descriptor (rtl)
-      register rtx rtl;
+     rtx rtl;
 {
   /* Note that for a dynamically sized array, the location we will
      generate a description of here will be the lowest numbered location
@@ -2282,7 +2282,7 @@ output_mem_loc_descriptor (rtl)
 
 static void
 output_loc_descriptor (rtl)
-     register rtx rtl;
+     rtx rtl;
 {
   switch (GET_CODE (rtl))
     {
@@ -2316,9 +2316,9 @@ output_loc_descriptor (rtl)
 
 static void
 output_bound_representation (bound, dim_num, u_or_l)
-     register tree bound;
-     register unsigned dim_num; /* For multi-dimensional arrays.  */
-     register char u_or_l;	/* Designates upper or lower bound.  */
+     tree bound;
+     unsigned dim_num; /* For multi-dimensional arrays.  */
+     char u_or_l;	/* Designates upper or lower bound.  */
 {
   switch (TREE_CODE (bound))
     {
@@ -2399,7 +2399,7 @@ output_bound_representation (bound, dim_num, u_or_l)
 
 static void
 output_enumeral_list (link)
-     register tree link;
+     tree link;
 {
   if (link)
     {
@@ -2419,8 +2419,8 @@ output_enumeral_list (link)
 
 static inline HOST_WIDE_INT
 ceiling (value, boundary)
-     register HOST_WIDE_INT value;
-     register unsigned int boundary;
+     HOST_WIDE_INT value;
+     unsigned int boundary;
 {
   return (((value + boundary - 1) / boundary) * boundary);
 }
@@ -2431,9 +2431,9 @@ ceiling (value, boundary)
 
 static inline tree
 field_type (decl)
-     register tree decl;
+     tree decl;
 {
-  register tree type;
+  tree type;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return integer_type_node;
@@ -2450,7 +2450,7 @@ field_type (decl)
 
 static inline unsigned int
 simple_type_align_in_bits (type)
-     register tree type;
+     tree type;
 {
   return (TREE_CODE (type) != ERROR_MARK) ? TYPE_ALIGN (type) : BITS_PER_WORD;
 }
@@ -2463,7 +2463,7 @@ simple_type_align_in_bits (type)
 
 static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
-     register tree type;
+     tree type;
 {
   tree type_size_tree;
 
@@ -2487,7 +2487,7 @@ simple_type_size_in_bits (type)
 
 static HOST_WIDE_INT
 field_byte_offset (decl)
-     register tree decl;
+     tree decl;
 {
   unsigned int type_align_in_bytes;
   unsigned int type_align_in_bits;
@@ -2647,7 +2647,7 @@ sibling_attribute ()
 
 static void
 location_attribute (rtl)
-     register rtx rtl;
+     rtx rtl;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -2710,9 +2710,9 @@ location_attribute (rtl)
 
 static void
 data_member_location_attribute (t)
-     register tree t;
+     tree t;
 {
-  register unsigned object_offset_in_bytes;
+  unsigned object_offset_in_bytes;
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -2740,7 +2740,7 @@ data_member_location_attribute (t)
 
 static void
 const_value_attribute (rtl)
-     register rtx rtl;
+     rtx rtl;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -2825,9 +2825,9 @@ const_value_attribute (rtl)
 
 static void
 location_or_const_value_attribute (decl)
-     register tree decl;
+     tree decl;
 {
-  register rtx rtl;
+  rtx rtl;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
@@ -2919,8 +2919,8 @@ location_or_const_value_attribute (decl)
     if (rtl == NULL_RTX || is_pseudo_reg (rtl))
       {
 	/* This decl represents a formal parameter which was optimized out.  */
-        register tree declared_type = type_main_variant (TREE_TYPE (decl));
-        register tree passed_type = type_main_variant (DECL_ARG_TYPE (decl));
+        tree declared_type = type_main_variant (TREE_TYPE (decl));
+        tree passed_type = type_main_variant (DECL_ARG_TYPE (decl));
 
 	/* Note that DECL_INCOMING_RTL may be NULL in here, but we handle
 	   *all* cases where (rtl == NULL_RTX) just below.  */
@@ -2985,7 +2985,7 @@ location_or_const_value_attribute (decl)
 
 static inline void
 name_attribute (name_string)
-     register const char *name_string;
+     const char *name_string;
 {
   if (name_string && *name_string)
     {
@@ -2996,7 +2996,7 @@ name_attribute (name_string)
 
 static inline void
 fund_type_attribute (ft_code)
-     register unsigned ft_code;
+     unsigned ft_code;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_fund_type);
   ASM_OUTPUT_DWARF_FUND_TYPE (asm_out_file, ft_code);
@@ -3004,9 +3004,9 @@ fund_type_attribute (ft_code)
 
 static void
 mod_fund_type_attribute (type, decl_const, decl_volatile)
-     register tree type;
-     register int decl_const;
-     register int decl_volatile;
+     tree type;
+     int decl_const;
+     int decl_volatile;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -3024,7 +3024,7 @@ mod_fund_type_attribute (type, decl_const, decl_volatile)
 
 static inline void
 user_def_type_attribute (type)
-     register tree type;
+     tree type;
 {
   char ud_type_name[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3035,9 +3035,9 @@ user_def_type_attribute (type)
 
 static void
 mod_u_d_type_attribute (type, decl_const, decl_volatile)
-     register tree type;
-     register int decl_const;
-     register int decl_volatile;
+     tree type;
+     int decl_const;
+     int decl_volatile;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -3057,7 +3057,7 @@ mod_u_d_type_attribute (type, decl_const, decl_volatile)
 #ifdef USE_ORDERING_ATTRIBUTE
 static inline void
 ordering_attribute (ordering)
-     register unsigned ordering;
+     unsigned ordering;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_ordering);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, ordering);
@@ -3069,9 +3069,9 @@ ordering_attribute (ordering)
 
 static void
 subscript_data_attribute (type)
-     register tree type;
+     tree type;
 {
-  register unsigned dimension_number;
+  unsigned dimension_number;
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3094,7 +3094,7 @@ subscript_data_attribute (type)
 	TREE_CODE (type) == ARRAY_TYPE;
 	type = TREE_TYPE (type), dimension_number++)
     {
-      register tree domain = TYPE_DOMAIN (type);
+      tree domain = TYPE_DOMAIN (type);
 
       /* Arrays come in three flavors.	Unspecified bounds, fixed
 	 bounds, and (in GNU C only) variable bounds.  Handle all
@@ -3104,8 +3104,8 @@ subscript_data_attribute (type)
 	{
 	  /* We have an array type with specified bounds.  */
 
-	  register tree lower = TYPE_MIN_VALUE (domain);
-	  register tree upper = TYPE_MAX_VALUE (domain);
+	  tree lower = TYPE_MIN_VALUE (domain);
+	  tree upper = TYPE_MAX_VALUE (domain);
 
 	  /* Handle only fundamental types as index types for now.  */
 	  if (! type_is_fundamental (domain))
@@ -3168,9 +3168,9 @@ subscript_data_attribute (type)
 
 static void
 byte_size_attribute (tree_node)
-     register tree tree_node;
+     tree tree_node;
 {
-  register unsigned size;
+  unsigned size;
 
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_byte_size);
   switch (TREE_CODE (tree_node))
@@ -3228,7 +3228,7 @@ byte_size_attribute (tree_node)
 
 static inline void
 bit_offset_attribute (decl)
-    register tree decl;
+     tree decl;
 {
   HOST_WIDE_INT object_offset_in_bytes = field_byte_offset (decl);
   tree type = DECL_BIT_FIELD_TYPE (decl);
@@ -3281,7 +3281,7 @@ bit_offset_attribute (decl)
 
 static inline void
 bit_size_attribute (decl)
-    register tree decl;
+    tree decl;
 {
   /* Must be a field and a bit field.  */
   if (TREE_CODE (decl) != FIELD_DECL
@@ -3303,7 +3303,7 @@ bit_size_attribute (decl)
 
 static inline void
 element_list_attribute (element)
-     register tree element;
+     tree element;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -3329,7 +3329,7 @@ element_list_attribute (element)
 
 static inline void
 stmt_list_attribute (label)
-    register const char *label;
+    const char *label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_stmt_list);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -3341,7 +3341,7 @@ stmt_list_attribute (label)
 
 static inline void
 low_pc_attribute (asm_low_label)
-     register const char *asm_low_label;
+     const char *asm_low_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_low_pc);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_low_label);
@@ -3352,7 +3352,7 @@ low_pc_attribute (asm_low_label)
 
 static inline void
 high_pc_attribute (asm_high_label)
-    register const char *asm_high_label;
+     const char *asm_high_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_high_pc);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_high_label);
@@ -3362,7 +3362,7 @@ high_pc_attribute (asm_high_label)
 
 static inline void
 body_begin_attribute (asm_begin_label)
-     register const char *asm_begin_label;
+     const char *asm_begin_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_begin);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_begin_label);
@@ -3372,7 +3372,7 @@ body_begin_attribute (asm_begin_label)
 
 static inline void
 body_end_attribute (asm_end_label)
-     register const char *asm_end_label;
+     const char *asm_end_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_body_end);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, asm_end_label);
@@ -3383,7 +3383,7 @@ body_end_attribute (asm_end_label)
 
 static inline void
 language_attribute (language_code)
-     register unsigned language_code;
+     unsigned language_code;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_language);
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, language_code);
@@ -3391,7 +3391,7 @@ language_attribute (language_code)
 
 static inline void
 member_attribute (context)
-    register tree context;
+     tree context;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3408,7 +3408,7 @@ member_attribute (context)
 #if 0
 static inline void
 string_length_attribute (upper_bound)
-     register tree upper_bound;
+     tree upper_bound;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -3425,7 +3425,7 @@ string_length_attribute (upper_bound)
 
 static inline void
 comp_dir_attribute (dirname)
-     register const char *dirname;
+     const char *dirname;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_comp_dir);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, dirname);
@@ -3433,7 +3433,7 @@ comp_dir_attribute (dirname)
 
 static inline void
 sf_names_attribute (sf_names_start_label)
-     register const char *sf_names_start_label;
+     const char *sf_names_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_sf_names);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -3442,7 +3442,7 @@ sf_names_attribute (sf_names_start_label)
 
 static inline void
 src_info_attribute (src_info_start_label)
-     register const char *src_info_start_label;
+     const char *src_info_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_src_info);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -3451,7 +3451,7 @@ src_info_attribute (src_info_start_label)
 
 static inline void
 mac_info_attribute (mac_info_start_label)
-     register const char *mac_info_start_label;
+     const char *mac_info_start_label;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_mac_info);
   /* Don't use ASM_OUTPUT_DWARF_DATA4 here.  */
@@ -3460,7 +3460,7 @@ mac_info_attribute (mac_info_start_label)
 
 static inline void
 prototyped_attribute (func_type)
-     register tree func_type;
+     tree func_type;
 {
   if ((strcmp (language_string, "GNU C") == 0)
       && (TYPE_ARG_TYPES (func_type) != NULL))
@@ -3472,7 +3472,7 @@ prototyped_attribute (func_type)
 
 static inline void
 producer_attribute (producer)
-     register const char *producer;
+     const char *producer;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_producer);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, producer);
@@ -3480,7 +3480,7 @@ producer_attribute (producer)
 
 static inline void
 inline_attribute (decl)
-     register tree decl;
+     tree decl;
 {
   if (DECL_INLINE (decl))
     {
@@ -3491,7 +3491,7 @@ inline_attribute (decl)
 
 static inline void
 containing_type_attribute (containing_type)
-     register tree containing_type;
+     tree containing_type;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3502,7 +3502,7 @@ containing_type_attribute (containing_type)
 
 static inline void
 abstract_origin_attribute (origin)
-     register tree origin;
+     tree origin;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -3527,8 +3527,8 @@ abstract_origin_attribute (origin)
 #ifdef DWARF_DECL_COORDINATES
 static inline void
 src_coords_attribute (src_fileno, src_lineno)
-     register unsigned src_fileno;
-     register unsigned src_lineno;
+     unsigned src_fileno;
+     unsigned src_lineno;
 {
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_src_coords);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, src_fileno);
@@ -3538,7 +3538,7 @@ src_coords_attribute (src_fileno, src_lineno)
 
 static inline void
 pure_or_virtual_attribute (func_decl)
-     register tree func_decl;
+     tree func_decl;
 {
   if (DECL_VIRTUAL_P (func_decl))
     {
@@ -3561,9 +3561,9 @@ pure_or_virtual_attribute (func_decl)
 
 static void
 name_and_src_coords_attributes (decl)
-    register tree decl;
+    tree decl;
 {
-  register tree decl_name = DECL_NAME (decl);
+  tree decl_name = DECL_NAME (decl);
 
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
@@ -3597,12 +3597,12 @@ name_and_src_coords_attributes (decl)
 
 static void
 type_attribute (type, decl_const, decl_volatile)
-     register tree type;
-     register int decl_const;
-     register int decl_volatile;
+     tree type;
+     int decl_const;
+     int decl_volatile;
 {
-  register enum tree_code code = TREE_CODE (type);
-  register int root_type_modified;
+  enum tree_code code = TREE_CODE (type);
+  int root_type_modified;
 
   if (code == ERROR_MARK)
     return;
@@ -3655,13 +3655,13 @@ type_attribute (type, decl_const, decl_volatile)
 
 static const char *
 type_tag (type)
-     register tree type;
+     tree type;
 {
-  register const char *name = 0;
+  const char *name = 0;
 
   if (TYPE_NAME (type) != 0)
     {
-      register tree t = 0;
+      tree t = 0;
 
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
@@ -3711,7 +3711,7 @@ dienum_pop ()
 
 static inline tree
 member_declared_type (member)
-     register tree member;
+     tree member;
 {
   return (DECL_BIT_FIELD_TYPE (member))
 	   ? DECL_BIT_FIELD_TYPE (member)
@@ -3724,7 +3724,7 @@ member_declared_type (member)
 
 static const char *
 function_start_label (decl)
-    register tree decl;
+    tree decl;
 {
   rtx x;
   const char *fnname;
@@ -3748,9 +3748,9 @@ function_start_label (decl)
 
 static void
 output_array_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_array_type);
   sibling_attribute ();
@@ -3775,9 +3775,9 @@ output_array_type_die (arg)
 
 static void
 output_set_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_set_type);
   sibling_attribute ();
@@ -3791,10 +3791,10 @@ output_set_type_die (arg)
 
 static void
 output_entry_point_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_entry_point);
   sibling_attribute ();
@@ -3818,9 +3818,9 @@ output_entry_point_die (arg)
 
 static void
 output_inlined_enumeration_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_enumeration_type);
   sibling_attribute ();
@@ -3833,9 +3833,9 @@ output_inlined_enumeration_type_die (arg)
 
 static void
 output_inlined_structure_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_structure_type);
   sibling_attribute ();
@@ -3848,9 +3848,9 @@ output_inlined_structure_type_die (arg)
 
 static void
 output_inlined_union_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_union_type);
   sibling_attribute ();
@@ -3865,9 +3865,9 @@ output_inlined_union_type_die (arg)
 
 static void
 output_enumeration_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_enumeration_type);
   sibling_attribute ();
@@ -3901,9 +3901,9 @@ output_enumeration_type_die (arg)
 
 static void
 output_formal_parameter_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree node = arg;
+  tree node = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_formal_parameter);
   sibling_attribute ();
@@ -3943,10 +3943,10 @@ output_formal_parameter_die (arg)
 
 static void
 output_global_subroutine_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_global_subroutine);
   sibling_attribute ();
@@ -3955,7 +3955,7 @@ output_global_subroutine_die (arg)
     abstract_origin_attribute (origin);
   else
     {
-      register tree type = TREE_TYPE (decl);
+      tree type = TREE_TYPE (decl);
 
       name_and_src_coords_attributes (decl);
       inline_attribute (decl);
@@ -3992,10 +3992,10 @@ output_global_subroutine_die (arg)
 
 static void
 output_global_variable_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_global_variable);
   sibling_attribute ();
@@ -4020,10 +4020,10 @@ output_global_variable_die (arg)
 
 static void
 output_label_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_label);
   sibling_attribute ();
@@ -4035,7 +4035,7 @@ output_label_die (arg)
     equate_decl_number_to_die_number (decl);
   else
     {
-      register rtx insn = DECL_RTL (decl);
+      rtx insn = DECL_RTL (decl);
 
       /* Deleted labels are programmer specified labels which have been
 	 eliminated because of various optimisations.  We still emit them
@@ -4063,9 +4063,9 @@ output_label_die (arg)
 
 static void
 output_lexical_block_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree stmt = arg;
+  tree stmt = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_lexical_block);
   sibling_attribute ();
@@ -4084,9 +4084,9 @@ output_lexical_block_die (arg)
 
 static void
 output_inlined_subroutine_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree stmt = arg;
+  tree stmt = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_inlined_subroutine);
   sibling_attribute ();
@@ -4109,10 +4109,10 @@ output_inlined_subroutine_die (arg)
 
 static void
 output_local_variable_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_local_variable);
   sibling_attribute ();
@@ -4133,9 +4133,9 @@ output_local_variable_die (arg)
 
 static void
 output_member_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
+  tree decl = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_member);
   sibling_attribute ();
@@ -4162,9 +4162,9 @@ output_member_die (arg)
 
 static void
 output_pointer_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_pointer_type);
   sibling_attribute ();
@@ -4175,9 +4175,9 @@ output_pointer_type_die (arg)
 
 static void
 output_reference_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_reference_type);
   sibling_attribute ();
@@ -4189,9 +4189,9 @@ output_reference_type_die (arg)
 
 static void
 output_ptr_to_mbr_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_ptr_to_member_type);
   sibling_attribute ();
@@ -4203,9 +4203,9 @@ output_ptr_to_mbr_type_die (arg)
 
 static void
 output_compile_unit_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register const char *main_input_filename = arg;
+  const char *main_input_filename = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_compile_unit);
   sibling_attribute ();
@@ -4256,9 +4256,9 @@ output_compile_unit_die (arg)
 
 static void
 output_string_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_string_type);
   sibling_attribute ();
@@ -4270,9 +4270,9 @@ output_string_type_die (arg)
 
 static void
 output_inheritance_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree binfo = arg;
+  tree binfo = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_inheritance);
   sibling_attribute ();
@@ -4297,9 +4297,9 @@ output_inheritance_die (arg)
 
 static void
 output_structure_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_structure_type);
   sibling_attribute ();
@@ -4325,10 +4325,10 @@ output_structure_type_die (arg)
 
 static void
 output_local_subroutine_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_subroutine);
   sibling_attribute ();
@@ -4337,7 +4337,7 @@ output_local_subroutine_die (arg)
     abstract_origin_attribute (origin);
   else
     {
-      register tree type = TREE_TYPE (decl);
+      tree type = TREE_TYPE (decl);
 
       name_and_src_coords_attributes (decl);
       inline_attribute (decl);
@@ -4372,10 +4372,10 @@ output_local_subroutine_die (arg)
 
 static void
 output_subroutine_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
-  register tree return_type = TREE_TYPE (type);
+  tree type = arg;
+  tree return_type = TREE_TYPE (type);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_subroutine_type);
   sibling_attribute ();
@@ -4388,10 +4388,10 @@ output_subroutine_type_die (arg)
 
 static void
 output_typedef_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl = arg;
-  register tree origin = decl_ultimate_origin (decl);
+  tree decl = arg;
+  tree origin = decl_ultimate_origin (decl);
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_typedef);
   sibling_attribute ();
@@ -4410,9 +4410,9 @@ output_typedef_die (arg)
 
 static void
 output_union_type_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree type = arg;
+  tree type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_union_type);
   sibling_attribute ();
@@ -4438,9 +4438,9 @@ output_union_type_die (arg)
 
 static void
 output_unspecified_parameters_die (arg)
-     register void *arg;
+     void *arg;
 {
-  register tree decl_or_type = arg;
+  tree decl_or_type = arg;
 
   ASM_OUTPUT_DWARF_TAG (asm_out_file, TAG_unspecified_parameters);
   sibling_attribute ();
@@ -4464,7 +4464,7 @@ output_unspecified_parameters_die (arg)
 
 static void
 output_padded_null_die (arg)
-     register void *arg ATTRIBUTE_UNUSED;
+     void *arg ATTRIBUTE_UNUSED;
 {
   ASM_OUTPUT_ALIGN (asm_out_file, 2);	/* 2**2 == 4 */
 }
@@ -4479,8 +4479,8 @@ output_padded_null_die (arg)
 
 static void
 output_die (die_specific_output_function, param)
-     register void (*die_specific_output_function) PARAMS ((void *));
-     register void *param;
+     void (*die_specific_output_function) PARAMS ((void *));
+     void *param;
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -4543,11 +4543,11 @@ end_sibling_chain ()
 
 static void
 output_formal_types (function_or_method_type)
-     register tree function_or_method_type;
+     tree function_or_method_type;
 {
-  register tree link;
-  register tree formal_type = NULL;
-  register tree first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
+  tree link;
+  tree formal_type = NULL;
+  tree first_parm_type = TYPE_ARG_TYPES (function_or_method_type);
 
   /* Set TREE_ASM_WRITTEN while processing the parameters, lest we
      get bogus recursion when outputting tagged types local to a
@@ -4608,7 +4608,7 @@ output_formal_types (function_or_method_type)
 
 static void
 pend_type (type)
-     register tree type;
+     tree type;
 {
   if (pending_types == pending_types_allocated)
     {
@@ -4664,8 +4664,8 @@ pend_type (type)
 
 static inline int
 type_ok_for_scope (type, scope)
-    register tree type;
-    register tree scope;
+    tree type;
+    tree scope;
 {
   /* Tagged types (i.e. struct, union, and enum types) must always be
      output only in the scopes where they actually belong (or else the
@@ -4701,18 +4701,18 @@ type_ok_for_scope (type, scope)
 
 static void
 output_pending_types_for_scope (containing_scope)
-     register tree containing_scope;
+     tree containing_scope;
 {
-  register unsigned i;
+  unsigned i;
 
   for (i = 0; i < pending_types; )
     {
-      register tree type = pending_types_list[i];
+      tree type = pending_types_list[i];
 
       if (type_ok_for_scope (type, containing_scope))
 	{
-	  register tree *mover;
-	  register tree *limit;
+	  tree *mover;
+	  tree *limit;
 
 	  pending_types--;
 	  limit = &pending_types_list[pending_types];
@@ -4758,7 +4758,7 @@ add_incomplete_type (type)
 static void
 retry_incomplete_types ()
 {
-  register tree type;
+  tree type;
 
   finalizing = 1;
   while (incomplete_types)
@@ -4771,8 +4771,8 @@ retry_incomplete_types ()
 
 static void
 output_type (type, containing_scope)
-     register tree type;
-     register tree containing_scope;
+     tree type;
+     tree containing_scope;
 {
   if (type == 0 || type == error_mark_node)
     return;
@@ -4787,7 +4787,7 @@ output_type (type, containing_scope)
     {
       if (finalizing && AGGREGATE_TYPE_P (type))
 	{
-	  register tree member;
+	  tree member;
 
 	  /* Some of our nested types might not have been defined when we
 	     were written out before; force them out now.  */
@@ -4885,7 +4885,7 @@ output_type (type, containing_scope)
 	  }
 	else
 	  {
-	    register tree element_type;
+	    tree element_type;
 
 	    element_type = TREE_TYPE (type);
 	    while (TREE_CODE (element_type) == ARRAY_TYPE)
@@ -5006,7 +5006,7 @@ output_type (type, containing_scope)
 	    ++in_class;
 
 	    {
-	      register tree normal_member;
+	      tree normal_member;
 
 	      /* Now output info about the data members and type members.  */
 
@@ -5017,7 +5017,7 @@ output_type (type, containing_scope)
 	    }
 
 	    {
-	      register tree func_member;
+	      tree func_member;
 
 	      /* Now output info about the function members (if any).  */
 
@@ -5066,7 +5066,7 @@ output_type (type, containing_scope)
 
 static void
 output_tagged_type_instantiation (type)
-     register tree type;
+     tree type;
 {
   if (type == 0 || type == error_mark_node)
     return;
@@ -5110,12 +5110,12 @@ output_tagged_type_instantiation (type)
 
 static void
 output_block (stmt, depth)
-    register tree stmt;
+    tree stmt;
     int depth;
 {
-  register int must_output_die = 0;
-  register tree origin;
-  register enum tree_code origin_code;
+  int must_output_die = 0;
+  tree origin;
+  enum tree_code origin_code;
 
   /* Ignore blocks never really used to make RTL.  */
 
@@ -5161,7 +5161,7 @@ output_block (stmt, depth)
 	    must_output_die = (BLOCK_VARS (stmt) != NULL);
 	  else
 	    {
-	      register tree decl;
+	      tree decl;
 
 	      /* We are in terse mode, so only local (nested) function
 	         definitions count as "significant" local declarations.  */
@@ -5204,7 +5204,7 @@ output_block (stmt, depth)
 
 static void
 output_decls_for_scope (stmt, depth)
-     register tree stmt;
+     tree stmt;
      int depth;
 {
   /* Ignore blocks never really used to make RTL.  */
@@ -5217,7 +5217,7 @@ output_decls_for_scope (stmt, depth)
      but not within any nested sub-blocks.  */
 
   {
-    register tree decl;
+    tree decl;
 
     for (decl = BLOCK_VARS (stmt); decl; decl = TREE_CHAIN (decl))
       output_decl (decl, stmt);
@@ -5229,7 +5229,7 @@ output_decls_for_scope (stmt, depth)
      therein) of this block.	 */
 
   {
-    register tree subblocks;
+    tree subblocks;
 
     for (subblocks = BLOCK_SUBBLOCKS (stmt);
          subblocks;
@@ -5242,7 +5242,7 @@ output_decls_for_scope (stmt, depth)
 
 static inline int
 is_redundant_typedef (decl)
-     register tree decl;
+     tree decl;
 {
   if (TYPE_DECL_IS_STUB (decl))
     return 1;
@@ -5260,8 +5260,8 @@ is_redundant_typedef (decl)
 
 static void
 output_decl (decl, containing_scope)
-     register tree decl;
-     register tree containing_scope;
+     tree decl;
+     tree containing_scope;
 {
   /* Make a note of the decl node we are going to be working on.  We may
      need to give the user the source coordinates of where it appeared in
@@ -5368,8 +5368,8 @@ output_decl (decl, containing_scope)
 	{
 	  /* Generate DIEs to represent all known formal parameters */
 
-	  register tree arg_decls = DECL_ARGUMENTS (decl);
-	  register tree parm;
+	  tree arg_decls = DECL_ARGUMENTS (decl);
+	  tree parm;
 
 	  /* WARNING!  Kludge zone ahead!  Here we have a special
 	     hack for svr4 SDB compatibility.  Instead of passing the
@@ -5437,7 +5437,7 @@ output_decl (decl, containing_scope)
 	  */
 
 	  {
-	    register tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	    tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
 	    if (fn_arg_types)
 	      {
@@ -5457,7 +5457,7 @@ output_decl (decl, containing_scope)
 	     function (if it has one - it may be just a declaration).  */
 
 	  {
-	    register tree outer_scope = DECL_INITIAL (decl);
+	    tree outer_scope = DECL_INITIAL (decl);
 
 	    if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
 	      {
@@ -5584,7 +5584,7 @@ output_decl (decl, containing_scope)
 	 function.  */
 
       {
-        register void (*func) PARAMS ((void *));
+        void (*func) PARAMS ((void *));
 	register tree origin = decl_ultimate_origin (decl);
 
 	if (origin != NULL && TREE_CODE (origin) == PARM_DECL)
@@ -5685,8 +5685,8 @@ dwarfout_deferred_inline_function (decl)
 
 static void
 dwarfout_file_scope_decl (decl, set_finalizing)
-     register tree decl;
-     register int set_finalizing;
+     tree decl;
+     int set_finalizing;
 {
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
@@ -5978,11 +5978,11 @@ dwarfout_end_epilogue ()
 
 static void
 shuffle_filename_entry (new_zeroth)
-     register filename_entry *new_zeroth;
+     filename_entry *new_zeroth;
 {
   filename_entry temp_entry;
-  register filename_entry *limit_p;
-  register filename_entry *move_p;
+  filename_entry *limit_p;
+  filename_entry *move_p;
 
   if (new_zeroth == &filename_table[0])
     return;
@@ -6053,8 +6053,8 @@ static unsigned
 lookup_filename (file_name)
      const char *file_name;
 {
-  register filename_entry *search_p;
-  register filename_entry *limit_p = &filename_table[ft_entries];
+  filename_entry *search_p;
+  filename_entry *limit_p = &filename_table[ft_entries];
 
   for (search_p = filename_table; search_p < limit_p; search_p++)
     if (!strcmp (file_name, search_p->name))
@@ -6129,7 +6129,7 @@ dwarfout_source_line (line, filename)
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
       static unsigned last_line_entry_num = 0;
       static unsigned prev_file_entry_num = (unsigned) -1;
-      register unsigned this_file_entry_num;
+      unsigned this_file_entry_num;
 
       function_section (current_function_decl);
       sprintf (label, LINE_CODE_LABEL_FMT, ++last_line_entry_num);
@@ -6152,7 +6152,7 @@ dwarfout_source_line (line, filename)
         }
 
       {
-        register const char *tail = strrchr (filename, '/');
+        const char *tail = strrchr (filename, '/');
 
         if (tail != NULL)
           filename = tail;
@@ -6175,8 +6175,8 @@ dwarfout_source_line (line, filename)
 
 static void
 generate_macinfo_entry (type_and_offset, string)
-     register const char *type_and_offset;
-     register const char *string;
+     const char *type_and_offset;
+     const char *string;
 {
   if (! use_gnu_debug_info_extensions)
     return;
@@ -6192,7 +6192,7 @@ generate_macinfo_entry (type_and_offset, string)
 static void
 dwarfout_start_source_file_check (line, filename)
      unsigned int line;
-     register const char *filename;
+     const char *filename;
 {
   if (debug_info_level == DINFO_LEVEL_VERBOSE)
     dwarfout_start_source_file (line, filename);
@@ -6201,7 +6201,7 @@ dwarfout_start_source_file_check (line, filename)
 static void
 dwarfout_start_source_file (line, filename)
      unsigned int line ATTRIBUTE_UNUSED;
-     register const char *filename;
+     const char *filename;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*3];
@@ -6218,7 +6218,7 @@ dwarfout_start_source_file (line, filename)
 /* Wrapper for toplev.c callback to check debug info level.  */
 static void
 dwarfout_end_source_file_check (lineno)
-     register unsigned lineno;
+     unsigned lineno;
 {
   if (debug_info_level == DINFO_LEVEL_VERBOSE)
     dwarfout_end_source_file (lineno);
@@ -6226,7 +6226,7 @@ dwarfout_end_source_file_check (lineno)
 
 static void
 dwarfout_end_source_file (lineno)
-     register unsigned lineno;
+     unsigned lineno;
 {
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
 
@@ -6242,8 +6242,8 @@ dwarfout_end_source_file (lineno)
 
 static void
 dwarfout_define (lineno, buffer)
-     register unsigned lineno;
-     register const char *buffer;
+     unsigned lineno;
+     const char *buffer;
 {
   static int initialized = 0;
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
@@ -6265,8 +6265,8 @@ dwarfout_define (lineno, buffer)
 
 static void
 dwarfout_undef (lineno, buffer)
-     register unsigned lineno;
-     register const char *buffer;
+     unsigned lineno;
+     const char *buffer;
 {
   char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
 
@@ -6279,7 +6279,7 @@ dwarfout_undef (lineno, buffer)
 
 static void
 dwarfout_init (main_input_filename)
-     register const char *main_input_filename;
+     const char *main_input_filename;
 {
   /* Remember the name of the primary input file.  */
 
@@ -6372,8 +6372,8 @@ dwarfout_init (main_input_filename)
 	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SFNAMES_SECTION);
 	  ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
 	  {
-	    register const char *pwd = getpwd ();
-	    register char *dirname;
+	    const char *pwd = getpwd ();
+	    char *dirname;
 
 	    if (!pwd)
 	      fatal_io_error ("can't get current directory");
@@ -6468,7 +6468,7 @@ dwarfout_init (main_input_filename)
 
 static void
 dwarfout_finish (main_input_filename)
-     register const char *main_input_filename ATTRIBUTE_UNUSED;
+     const char *main_input_filename ATTRIBUTE_UNUSED;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 

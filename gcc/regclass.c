@@ -276,7 +276,7 @@ static int no_global_reg_vars = 0;
 void
 init_reg_sets ()
 {
-  register int i, j;
+  int i, j;
 
   /* First copy the register information from the initial int form into
      the regsets.  */
@@ -311,8 +311,8 @@ init_reg_sets ()
 static void
 init_reg_sets_1 ()
 {
-  register unsigned int i, j;
-  register unsigned int /* enum machine_mode */ m;
+  unsigned int i, j;
+  unsigned int /* enum machine_mode */ m;
   char allocatable_regs_of_mode [MAX_MACHINE_MODE];
 
   /* This macro allows the fixed or call-used registers
@@ -342,7 +342,7 @@ init_reg_sets_1 ()
 	  register		/* Declare it register if it's a scalar.  */
 #endif
 	    HARD_REG_SET c;
-	  register int k;
+	  int k;
 
 	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
 	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
@@ -376,7 +376,7 @@ init_reg_sets_1 ()
 	  register		/* Declare it register if it's a scalar.  */
 #endif
 	    HARD_REG_SET c;
-	  register int k;
+	  int k;
 
 	  COPY_HARD_REG_SET (c, reg_class_contents[i]);
 	  IOR_HARD_REG_SET (c, reg_class_contents[j]);
@@ -578,7 +578,7 @@ init_reg_sets_1 ()
 static void
 init_reg_modes ()
 {
-  register int i;
+  int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
@@ -1163,8 +1163,8 @@ regclass (f, nregs, dump)
      int nregs;
      FILE *dump;
 {
-  register rtx insn;
-  register int i;
+  rtx insn;
+  int i;
   int pass;
 
   init_recog ();
@@ -1188,7 +1188,7 @@ regclass (f, nregs, dump)
     {
       rtx r = gen_rtx_REG (VOIDmode, 0);
       enum machine_mode m;
-      register int j;
+      int j;
 
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
@@ -1289,12 +1289,12 @@ regclass (f, nregs, dump)
 	}
       for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
 	{
-	  register int best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
+	  int best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
 	  enum reg_class best = ALL_REGS, alt = NO_REGS;
 	  /* This is an enum reg_class, but we call it an int
 	     to save lots of casts.  */
-	  register int class;
-	  register struct costs *p = &costs[i];
+	  int class;
+	  struct costs *p = &costs[i];
 
 	  /* In non-optimizing compilation REG_N_REFS is not initialized
 	     yet.  */
@@ -1948,7 +1948,7 @@ record_address_regs (x, class, scale)
      enum reg_class class;
      int scale;
 {
-  register enum rtx_code code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -1976,8 +1976,8 @@ record_address_regs (x, class, scale)
       {
 	rtx arg0 = XEXP (x, 0);
 	rtx arg1 = XEXP (x, 1);
-	register enum rtx_code code0 = GET_CODE (arg0);
-	register enum rtx_code code1 = GET_CODE (arg1);
+	enum rtx_code code0 = GET_CODE (arg0);
+	enum rtx_code code1 = GET_CODE (arg1);
 
 	/* Look inside subregs.  */
 	if (code0 == SUBREG)
@@ -2097,8 +2097,8 @@ record_address_regs (x, class, scale)
 
     case REG:
       {
-	register struct costs *pp = &costs[REGNO (x)];
-	register int i;
+	struct costs *pp = &costs[REGNO (x)];
+	int i;
 
 	pp->mem_cost += (MEMORY_MOVE_COST (Pmode, class, 1) * scale) / 2;
 
@@ -2109,8 +2109,8 @@ record_address_regs (x, class, scale)
 
     default:
       {
-	register const char *fmt = GET_RTX_FORMAT (code);
-	register int i;
+	const char *fmt = GET_RTX_FORMAT (code);
+	int i;
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  if (fmt[i] == 'e')
 	    record_address_regs (XEXP (x, i), class, scale);
@@ -2318,7 +2318,7 @@ reg_scan (f, nregs, repeat)
      unsigned int nregs;
      int repeat ATTRIBUTE_UNUSED;
 {
-  register rtx insn;
+  rtx insn;
 
   allocate_reg_info (nregs, TRUE, FALSE);
   max_parallel = 3;
@@ -2352,7 +2352,7 @@ reg_scan_update (first, last, old_max_regno)
      rtx last;
      unsigned int old_max_regno;
 {
-  register rtx insn;
+  rtx insn;
 
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
@@ -2383,9 +2383,9 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
      int note_flag;
      unsigned int min_regno;
 {
-  register enum rtx_code code;
-  register rtx dest;
-  register rtx note;
+  enum rtx_code code;
+  rtx dest;
+  rtx note;
 
   code = GET_CODE (x);
   switch (code)
@@ -2500,15 +2500,15 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
     default:
       {
-	register const char *fmt = GET_RTX_FORMAT (code);
-	register int i;
+	const char *fmt = GET_RTX_FORMAT (code);
+	int i;
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {
 	    if (fmt[i] == 'e')
 	      reg_scan_mark_refs (XEXP (x, i), insn, note_flag, min_regno);
 	    else if (fmt[i] == 'E' && XVEC (x, i) != 0)
 	      {
-		register int j;
+		int j;
 		for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 		  reg_scan_mark_refs (XVECEXP (x, i, j), insn, note_flag, min_regno);
 	      }
@@ -2522,8 +2522,8 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
 int
 reg_class_subset_p (c1, c2)
-     register enum reg_class c1;
-     register enum reg_class c2;
+     enum reg_class c1;
+     enum reg_class c2;
 {
   if (c1 == c2) return 1;
 
@@ -2540,8 +2540,8 @@ reg_class_subset_p (c1, c2)
 
 int
 reg_classes_intersect_p (c1, c2)
-     register enum reg_class c1;
-     register enum reg_class c2;
+     enum reg_class c1;
+     enum reg_class c2;
 {
 #ifdef HARD_REG_SET
   register

@@ -77,9 +77,9 @@ main (argc, argv)
    we link against libiberty.a. (ghazi@caip.rutgers.edu 6/3/98) */
 PTR
 xmalloc (nbytes)
-  size_t nbytes;
+     size_t nbytes;
 {
-  register PTR tmp = (PTR) really_call_malloc (nbytes);
+  PTR tmp = (PTR) really_call_malloc (nbytes);
 
   if (!tmp)
     {

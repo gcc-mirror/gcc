@@ -164,9 +164,9 @@ function_attribute_inlinable_p (fndecl)
 
 const char *
 function_cannot_inline_p (fndecl)
-     register tree fndecl;
+     tree fndecl;
 {
-  register rtx insn;
+  rtx insn;
   tree last = tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
 
   /* For functions marked as inline increase the maximum size to
@@ -178,8 +178,8 @@ function_cannot_inline_p (fndecl)
 		      + 8 * list_length (DECL_ARGUMENTS (fndecl)))
 		   : INTEGRATE_THRESHOLD (fndecl);
 
-  register int ninsns = 0;
-  register tree parms;
+  int ninsns = 0;
+  tree parms;
 
   if (DECL_UNINLINABLE (fndecl))
     return N_("function cannot be inline");
@@ -655,7 +655,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   tree *arg_trees;
   rtx *arg_vals;
   int max_regno;
-  register int i;
+  int i;
   int min_labelno = inl_f->emit->x_first_label_num;
   int max_labelno = inl_f->inl_max_label_num;
   int nargs;
@@ -1315,7 +1315,7 @@ copy_insn_list (insns, map, static_chain_value)
      struct inline_remap *map;
      rtx static_chain_value;
 {
-  register int i;
+  int i;
   rtx insn;
   rtx temp;
 #ifdef HAVE_cc0
@@ -1717,8 +1717,8 @@ integrate_parm_decls (args, map, arg_vector)
      struct inline_remap *map;
      rtvec arg_vector;
 {
-  register tree tail;
-  register int i;
+  tree tail;
+  int i;
 
   for (tail = args, i = 0; tail; tail = TREE_CHAIN (tail), i++)
     {
@@ -1819,15 +1819,15 @@ integrate_decl_tree (let, map)
 
 rtx
 copy_rtx_and_substitute (orig, map, for_lhs)
-     register rtx orig;
+     rtx orig;
      struct inline_remap *map;
      int for_lhs;
 {
-  register rtx copy, temp;
-  register int i, j;
-  register RTX_CODE code;
-  register enum machine_mode mode;
-  register const char *format_ptr;
+  rtx copy, temp;
+  int i, j;
+  RTX_CODE code;
+  enum machine_mode mode;
+  const char *format_ptr;
   int regno;
 
   if (orig == 0)
@@ -2409,9 +2409,9 @@ subst_constants (loc, insn, map, memonly)
      int memonly;
 {
   rtx x = *loc;
-  register int i, j;
-  register enum rtx_code code;
-  register const char *format_ptr;
+  int i, j;
+  enum rtx_code code;
+  const char *format_ptr;
   int num_changes = num_validated_changes ();
   rtx new = 0;
   enum machine_mode op0_mode = MAX_MACHINE_MODE;
@@ -2793,14 +2793,14 @@ mark_stores (dest, x, data)
 
 static void
 set_block_origin_self (stmt)
-     register tree stmt;
+     tree stmt;
 {
   if (BLOCK_ABSTRACT_ORIGIN (stmt) == NULL_TREE)
     {
       BLOCK_ABSTRACT_ORIGIN (stmt) = stmt;
 
       {
-	register tree local_decl;
+	tree local_decl;
 
 	for (local_decl = BLOCK_VARS (stmt);
 	     local_decl != NULL_TREE;
@@ -2809,7 +2809,7 @@ set_block_origin_self (stmt)
       }
 
       {
-	register tree subblock;
+	tree subblock;
 
 	for (subblock = BLOCK_SUBBLOCKS (stmt);
 	     subblock != NULL_TREE;
@@ -2832,14 +2832,14 @@ set_block_origin_self (stmt)
 
 void
 set_decl_origin_self (decl)
-     register tree decl;
+     tree decl;
 {
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL_TREE)
     {
       DECL_ABSTRACT_ORIGIN (decl) = decl;
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
-	  register tree arg;
+	  tree arg;
 
 	  for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	    DECL_ABSTRACT_ORIGIN (arg) = arg;
@@ -2857,11 +2857,11 @@ set_decl_origin_self (decl)
 
 static void
 set_block_abstract_flags (stmt, setting)
-     register tree stmt;
-     register int setting;
+     tree stmt;
+     int setting;
 {
-  register tree local_decl;
-  register tree subblock;
+  tree local_decl;
+  tree subblock;
 
   BLOCK_ABSTRACT (stmt) = setting;
 
@@ -2884,13 +2884,13 @@ set_block_abstract_flags (stmt, setting)
 
 void
 set_decl_abstract_flags (decl, setting)
-     register tree decl;
-     register int setting;
+     tree decl;
+     int setting;
 {
   DECL_ABSTRACT (decl) = setting;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      register tree arg;
+      tree arg;
 
       for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	DECL_ABSTRACT (arg) = setting;

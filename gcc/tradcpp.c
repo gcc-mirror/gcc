@@ -1075,8 +1075,8 @@ static void
 newline_fix (bp)
      U_CHAR *bp;
 {
-  register U_CHAR *p = bp;
-  register int count = 0;
+  U_CHAR *p = bp;
+  int count = 0;
 
   /* First count the backslash-newline pairs here.  */
 
@@ -1110,8 +1110,8 @@ static void
 name_newline_fix (bp)
      U_CHAR *bp;
 {
-  register U_CHAR *p = bp;
-  register int count = 0;
+  U_CHAR *p = bp;
+  int count = 0;
 
   /* First count the backslash-newline pairs here.  */
 
@@ -1181,25 +1181,25 @@ rescan (op, output_marks)
      int output_marks;
 {
   /* Character being scanned in main loop.  */
-  register U_CHAR c;
+  U_CHAR c;
 
   /* Length of pending accumulated identifier.  */
-  register int ident_length = 0;
+  int ident_length = 0;
 
   /* Hash code of pending accumulated identifier.  */
-  register int hash = 0;
+  int hash = 0;
 
   /* Current input level (&instack[indepth]).  */
   FILE_BUF *ip;
 
   /* Pointer for scanning input.  */
-  register U_CHAR *ibp;
+  U_CHAR *ibp;
 
   /* Pointer to end of input.  End of scan is controlled by LIMIT.  */
-  register U_CHAR *limit;
+  U_CHAR *limit;
 
   /* Pointer for storing output.  */
-  register U_CHAR *obp;
+  U_CHAR *obp;
 
   /* REDO_CHAR is nonzero if we are processing an identifier
      after backing up over the terminating character.
@@ -1629,7 +1629,7 @@ specialchar:
 randomchar:
 
       if (ident_length > 0) {
-	register HASHNODE *hp;
+	HASHNODE *hp;
 
 	/* We have just seen an identifier end.  If it's a macro, expand it.
 
@@ -1654,9 +1654,9 @@ randomchar:
 	    /* obufp_before_macroname is used only in this block,
                but it has to be global because of RECACHE.  */
 	    int op_lineno_before_macroname;
-	    register int i = ident_length;
-	    register U_CHAR *p = hp->name;
-	    register U_CHAR *q = obp - i;
+	    int i = ident_length;
+	    U_CHAR *p = hp->name;
+	    U_CHAR *q = obp - i;
 
 	    if (! redo_char)
 	      q--;
@@ -1821,7 +1821,7 @@ expand_to_temp_buffer (buf, limit, output_marks)
      const U_CHAR *buf, *limit;
      int output_marks;
 {
-  register FILE_BUF *ip;
+  FILE_BUF *ip;
   FILE_BUF obuf;
   int length = limit - buf;
   U_CHAR *buf1;
@@ -1834,8 +1834,8 @@ expand_to_temp_buffer (buf, limit, output_marks)
 
   buf1 = (U_CHAR *) alloca (length + 1);
   {
-    register const U_CHAR *p1 = buf;
-    register U_CHAR *p2 = buf1;
+    const U_CHAR *p1 = buf;
+    U_CHAR *p2 = buf1;
 
     while (p1 != limit)
       *p2++ = *p1++;
@@ -1898,9 +1898,9 @@ static int
 handle_directive (ip, op)
      FILE_BUF *ip, *op;
 {
-  register U_CHAR *bp, *cp;
-  register struct directive *kt;
-  register int ident_length;
+  U_CHAR *bp, *cp;
+  struct directive *kt;
+  int ident_length;
   U_CHAR *resume_p;
 
   /* Nonzero means we must copy the entire command
@@ -1957,8 +1957,8 @@ handle_directive (ip, op)
   for (kt = directive_table; kt->length > 0; kt++) {
     if (kt->length == ident_length
 	&& !strncmp (kt->name, (const char *)ident, ident_length)) {
-      register U_CHAR *buf;
-      register U_CHAR *limit = ip->buf + ip->length;
+      U_CHAR *buf;
+      U_CHAR *limit = ip->buf + ip->length;
       int unterminated = 0;
 
       /* Nonzero means do not delete comments within the directive.
@@ -1972,7 +1972,7 @@ handle_directive (ip, op)
 
       buf = bp = after_ident;
       while (bp < limit) {
-	register U_CHAR c = *bp++;
+	U_CHAR c = *bp++;
 	switch (c) {
 	case '\\':
 	  if (bp < limit) {
@@ -2036,7 +2036,7 @@ handle_directive (ip, op)
 	 A comment may come between.  */
 
       if (copy_command) {
-	register U_CHAR *xp = buf;
+	U_CHAR *xp = buf;
 	/* Need to copy entire command into temp buffer before dispatching */
 
 	cp = (U_CHAR *) alloca (bp - buf + 5); /* room for cmd plus
@@ -2047,7 +2047,7 @@ handle_directive (ip, op)
 	   and backslash-newlines (and whitespace surrounding the latter).  */
 
 	while (xp < bp) {
-	  register U_CHAR c = *xp++;
+	  U_CHAR c = *xp++;
 	  *cp++ = c;
 
 	  switch (c) {
@@ -2087,7 +2087,7 @@ handle_directive (ip, op)
 	  case '\'':
 	  case '\"':
 	    {
-	      register const U_CHAR *bp1
+	      const U_CHAR *bp1
 		= skip_quoted_string (xp - 1, limit, ip->lineno, 0, 0, 0);
 	      while (xp != bp1)
 		*cp++ = *xp++;
@@ -2825,9 +2825,9 @@ static int
 compare_defs (d1, d2)
      DEFINITION *d1, *d2;
 {
-  register struct reflist *a1, *a2;
-  register U_CHAR *p1 = d1->expansion;
-  register U_CHAR *p2 = d2->expansion;
+  struct reflist *a1, *a2;
+  U_CHAR *p1 = d1->expansion;
+  U_CHAR *p2 = d2->expansion;
   int first = 1;
 
   if (d1->nargs != d2->nargs)
@@ -2871,8 +2871,8 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
      int len1, len2;
      int last;
 {
-  register const U_CHAR *end1 = beg1 + len1;
-  register const U_CHAR *end2 = beg2 + len2;
+  const U_CHAR *end1 = beg1 + len1;
+  const U_CHAR *end2 = beg2 + len2;
   if (first) {
     while (beg1 != end1 && is_space (*beg1)) beg1++;
     while (beg2 != end2 && is_space (*beg2)) beg2++;
@@ -2920,7 +2920,7 @@ collect_expansion (buf, end, nargs, arglist)
      struct arglist *arglist;
 {
   DEFINITION *defn;
-  register U_CHAR *p, *limit, *lastp, *exp_p;
+  U_CHAR *p, *limit, *lastp, *exp_p;
   struct reflist *endpat = NULL;
   /* Pointer to first nonspace after last ## seen.  */
   U_CHAR *concat = 0;
@@ -2969,7 +2969,7 @@ collect_expansion (buf, end, nargs, arglist)
   /* Process the main body of the definition.  */
   while (p < limit) {
     int skipped_arg = 0;
-    register U_CHAR c = *p++;
+    U_CHAR c = *p++;
 
     *exp_p++ = c;
 
@@ -3020,7 +3020,7 @@ collect_expansion (buf, end, nargs, arglist)
       id_len = p - id_beg;
 
       if (is_idstart (c)) {
-	register struct arglist *arg;
+	struct arglist *arg;
 
 	for (arg = arglist; arg != NULL; arg = arg->next) {
 	  struct reflist *tpat;
@@ -3046,7 +3046,7 @@ collect_expansion (buf, end, nargs, arglist)
 	    tpat->argno = arg->argno;
 	    tpat->nchars = exp_p - lastp;
 	    {
-	      register U_CHAR *p1 = p;
+	      U_CHAR *p1 = p;
 	      SKIP_WHITE_SPACE (p1);
 	      if (p1 + 2 <= limit && p1[0] == '#' && p1[1] == '#')
 		tpat->raw_after = 1;
@@ -3060,7 +3060,7 @@ collect_expansion (buf, end, nargs, arglist)
 
       /* If this was not a macro arg, copy it into the expansion.  */
       if (! skipped_arg) {
-	register U_CHAR *lim1 = p;
+	U_CHAR *lim1 = p;
 	p = id_beg;
 	while (p != lim1)
 	  *exp_p++ = *p++;
@@ -3098,7 +3098,7 @@ do_line (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
 {
-  register U_CHAR *bp;
+  U_CHAR *bp;
   FILE_BUF *ip = &instack[indepth];
   FILE_BUF tem;
   int new_lineno;
@@ -3677,8 +3677,8 @@ skip_if_group (ip, any)
      FILE_BUF *ip;
      int any;
 {
-  register U_CHAR *bp = ip->bufp, *cp;
-  register U_CHAR *endb = ip->buf + ip->length;
+  U_CHAR *bp = ip->bufp, *cp;
+  U_CHAR *endb = ip->buf + ip->length;
   struct directive *kt;
   IF_STACK_FRAME *save_if_stack = if_stack; /* don't pop past here */
   U_CHAR *beg_of_line = bp;
@@ -3897,11 +3897,11 @@ do_endif (buf, limit, op)
  */
 static U_CHAR *
 skip_to_end_of_comment (ip, line_counter)
-     register FILE_BUF *ip;
+     FILE_BUF *ip;
      int *line_counter;		/* place to remember newlines, or NULL */
 {
-  register U_CHAR *limit = ip->buf + ip->length;
-  register U_CHAR *bp = ip->bufp;
+  U_CHAR *limit = ip->buf + ip->length;
+  U_CHAR *bp = ip->bufp;
   FILE_BUF *op = &outbuf;	/* JF */
   int output = put_out_comments && !line_counter;
 
@@ -3960,14 +3960,14 @@ skip_to_end_of_comment (ip, line_counter)
  */
 static U_CHAR *
 skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p, eofp)
-     register const U_CHAR *bp;
-     register const U_CHAR *limit;
+     const U_CHAR *bp;
+     const U_CHAR *limit;
      int start_line;
      int *count_newlines;
      int *backslash_newlines_p;
      int *eofp;
 {
-  register U_CHAR c, match;
+  U_CHAR c, match;
 
   match = *bp++;
   while (1) {
@@ -4076,7 +4076,7 @@ macroexpand (hp, op)
 {
   int nargs;
   DEFINITION *defn = hp->value.defn;
-  register U_CHAR *xbuf;
+  U_CHAR *xbuf;
   int xbuf_len;
   int start_line = instack[indepth].lineno;
 
@@ -4091,7 +4091,7 @@ macroexpand (hp, op)
   nargs = defn->nargs;
 
   if (nargs >= 0) {
-    register int i;
+    int i;
     struct argdata *args;
     const char *parse_error = 0;
 
@@ -4123,8 +4123,8 @@ macroexpand (hp, op)
 
     /* If we got one arg but it was just whitespace, call that 0 args.  */
     if (i == 1) {
-      register const U_CHAR *bp = args[0].raw;
-      register const U_CHAR *lim = bp + args[0].raw_length;
+      const U_CHAR *bp = args[0].raw;
+      const U_CHAR *lim = bp + args[0].raw_length;
       while (bp != lim && is_space (*bp)) bp++;
       if (bp == lim)
 	i = 0;
@@ -4154,12 +4154,12 @@ macroexpand (hp, op)
       xbuf = defn->expansion;
       xbuf_len = defn->length;
     } else {
-      register U_CHAR *exp = defn->expansion;
-      register int offset;	/* offset in expansion,
+      U_CHAR *exp = defn->expansion;
+      int offset;	/* offset in expansion,
 				   copied a piece at a time */
-      register int totlen;	/* total amount of exp buffer filled so far */
+      int totlen;	/* total amount of exp buffer filled so far */
 
-      register struct reflist *ap;
+      struct reflist *ap;
 
       /* Macro really takes args.  Compute the expansion of this call.  */
 
@@ -4181,7 +4181,7 @@ macroexpand (hp, op)
 	 of where we are copying from.  */
       offset = totlen = 0;
       for (ap = defn->pattern; ap != NULL; ap = ap->next) {
-	register struct argdata *arg = &args[ap->argno];
+	struct argdata *arg = &args[ap->argno];
 
 	for (i = 0; i < ap->nchars; i++)
 	  xbuf[totlen++] = exp[offset++];
@@ -4312,7 +4312,7 @@ macroexpand (hp, op)
   /* Now put the expansion on the input stack
      so our caller will commence reading from it.  */
   {
-    register FILE_BUF *ip2;
+    FILE_BUF *ip2;
 
     ip2 = &instack[++indepth];
 
@@ -4334,7 +4334,7 @@ macroexpand (hp, op)
 
 static const char *
 macarg (argptr)
-     register struct argdata *argptr;
+     struct argdata *argptr;
 {
   FILE_BUF *ip = &instack[indepth];
   int paren = 0;
@@ -4420,8 +4420,8 @@ macarg (argptr)
 
   if (argptr != 0) {
     FILE_BUF obuf;
-    register const U_CHAR *buf, *lim;
-    register int totlen;
+    const U_CHAR *buf, *lim;
+    int totlen;
 
     obuf = expand_to_temp_buffer (argptr->raw,
 				  argptr->raw + argptr->raw_length,
@@ -4436,7 +4436,7 @@ macarg (argptr)
 
     totlen = 0;
     while (buf != lim) {
-      register U_CHAR c = *buf++;
+      U_CHAR c = *buf++;
       totlen++;
       /* Internal sequences of whitespace are replaced by one space
 	 in most cases, but not always.  So count all the whitespace
@@ -4466,10 +4466,10 @@ macarg (argptr)
 static U_CHAR *
 macarg1 (start, limit, depthptr, newlines, comments)
      U_CHAR *start;
-     register const U_CHAR *limit;
+     const U_CHAR *limit;
      int *depthptr, *newlines, *comments;
 {
-  register U_CHAR *bp = start;
+  U_CHAR *bp = start;
 
   while (bp < limit) {
     switch (*bp) {
@@ -4557,10 +4557,10 @@ discard_comments (start, length, newlines)
      int length;
      int newlines;
 {
-  register U_CHAR *ibp;
-  register U_CHAR *obp;
-  register const U_CHAR *limit;
-  register int c;
+  U_CHAR *ibp;
+  U_CHAR *obp;
+  const U_CHAR *limit;
+  int c;
 
   /* If we have newlines to duplicate, copy everything
      that many characters up.  Then, in the second part,
@@ -4797,10 +4797,10 @@ line_for_error (line)
 
 static void
 grow_outbuf (obuf, needed)
-     register FILE_BUF *obuf;
-     register int needed;
+     FILE_BUF *obuf;
+     int needed;
 {
-  register U_CHAR *p;
+  U_CHAR *p;
   int minsize;
 
   if (obuf->length - (obuf->bufp - obuf->buf) > needed)
@@ -4844,9 +4844,9 @@ install (name, len, type, hash)
      int hash;
         /* watch out here if sizeof (U_CHAR *) != sizeof (int) */
 {
-  register HASHNODE *hp;
-  register int bucket;
-  register const U_CHAR *p;
+  HASHNODE *hp;
+  int bucket;
+  const U_CHAR *p;
   U_CHAR *q;
 
   if (len < 0) {
@@ -4891,8 +4891,8 @@ lookup (name, len, hash)
      int len;
      int hash;
 {
-  register const U_CHAR *bp;
-  register HASHNODE *bucket;
+  const U_CHAR *bp;
+  HASHNODE *bucket;
 
   if (len < 0) {
     for (bp = name; is_idchar (*bp); bp++) ;
@@ -4949,11 +4949,11 @@ delete_macro (hp)
  */
 static int
 hashf (name, len, hashsize)
-     register const U_CHAR *name;
-     register int len;
+     const U_CHAR *name;
+     int len;
      int hashsize;
 {
-  register int r = 0;
+  int r = 0;
 
   while (len--)
     r = HASHSTEP (r, *name++);
@@ -4969,11 +4969,11 @@ dump_all_macros ()
   int bucket;
 
   for (bucket = 0; bucket < HASHSIZE; bucket++) {
-    register HASHNODE *hp;
+    HASHNODE *hp;
 
     for (hp = hashtab[bucket]; hp; hp= hp->next) {
       if (hp->type == T_MACRO) {
-	register DEFINITION *defn = hp->value.defn;
+	DEFINITION *defn = hp->value.defn;
 	struct reflist *ap;
 	int offset;
 	int concat;
@@ -5055,7 +5055,7 @@ dump_arg_n (defn, argnum)
      DEFINITION *defn;
      int argnum;
 {
-  register const U_CHAR *p = defn->argnames;
+  const U_CHAR *p = defn->argnames;
   while (argnum + 1 < defn->nargs) {
     p = (const U_CHAR *) strchr ((const char *)p, ' ') + 1;
     argnum++;

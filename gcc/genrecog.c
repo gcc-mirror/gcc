@@ -319,7 +319,7 @@ new_decision (position, last)
      const char *position;
      struct decision_head *last;
 {
-  register struct decision *new
+  struct decision *new
     = (struct decision *) xmalloc (sizeof (struct decision));
 
   memset (new, 0, sizeof (*new));
@@ -777,8 +777,8 @@ add_to_sequence (pattern, last, position, insn_type, top)
   struct decision_test *test;
   struct decision_test **place;
   char *subpos;
-  register size_t i;
-  register const char *fmt;
+  size_t i;
+  const char *fmt;
   int depth = strlen (position);
   int len;
   enum machine_mode mode;
@@ -1009,7 +1009,7 @@ add_to_sequence (pattern, last, position, insn_type, top)
 
 	case 'E':
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (pattern, i); j++)
 	      {
 		subpos[depth] = 'a' + j;
@@ -1772,7 +1772,7 @@ static void
 print_code (code)
      enum rtx_code code;
 {
-  register const char *p;
+  const char *p;
   for (p = GET_RTX_NAME (code); *p; p++)
     putchar (TOUPPER (*p));
 }
@@ -2271,7 +2271,7 @@ write_tree (head, prevpos, type, initial)
      enum routine_type type;
      int initial;
 {
-  register struct decision *p = head->first;
+  struct decision *p = head->first;
 
   putchar ('\n');
   if (p->need_label)
@@ -2349,7 +2349,7 @@ write_subroutine (head, type)
       printf ("%sint recog%s PARAMS ((rtx, rtx, int *));\n", s_or_e, extension);
       printf ("%sint\n\
 recog%s (x0, insn, pnum_clobbers)\n\
-     register rtx x0;\n\
+     rtx x0;\n\
      rtx insn ATTRIBUTE_UNUSED;\n\
      int *pnum_clobbers ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
@@ -2357,7 +2357,7 @@ recog%s (x0, insn, pnum_clobbers)\n\
       printf ("%srtx split%s PARAMS ((rtx, rtx));\n", s_or_e, extension);
       printf ("%srtx\n\
 split%s (x0, insn)\n\
-     register rtx x0;\n\
+     rtx x0;\n\
      rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     case PEEPHOLE2:
@@ -2365,15 +2365,15 @@ split%s (x0, insn)\n\
 	      s_or_e, extension);
       printf ("%srtx\n\
 peephole2%s (x0, insn, _pmatch_len)\n\
-     register rtx x0;\n\
+     rtx x0;\n\
      rtx insn ATTRIBUTE_UNUSED;\n\
      int *_pmatch_len ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     }
 
-  printf ("{\n  register rtx * const operands ATTRIBUTE_UNUSED = &recog_data.operand[0];\n");
+  printf ("{\n  rtx * const operands ATTRIBUTE_UNUSED = &recog_data.operand[0];\n");
   for (i = 1; i <= max_depth; i++)
-    printf ("  register rtx x%d ATTRIBUTE_UNUSED;\n", i);
+    printf ("  rtx x%d ATTRIBUTE_UNUSED;\n", i);
 
   printf ("  %s tem ATTRIBUTE_UNUSED;\n", IS_SPLIT (type) ? "rtx" : "int");
 

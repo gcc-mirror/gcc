@@ -74,7 +74,7 @@ monstartup(lowpc, highpc)
 {
     int			monsize;
     char		*buffer;
-    register int	o;
+    int			o;
 
 	/*
 	 *	round lowpc and highpc to multiples of the density we're using

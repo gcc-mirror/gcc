@@ -898,7 +898,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
 			       &initial_value, &final_value, &increment,
 			       &mode))
 	{
-	  register rtx diff;
+	  rtx diff;
 	  rtx *labels;
 	  int abs_inc, neg_inc;
 
@@ -4043,9 +4043,9 @@ remap_split_bivs (loop, x)
      rtx x;
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
-  register enum rtx_code code;
-  register int i;
-  register const char *fmt;
+  enum rtx_code code;
+  int i;
+  const char *fmt;
 
   if (x == 0)
     return x;
@@ -4084,7 +4084,7 @@ remap_split_bivs (loop, x)
 	XEXP (x, i) = remap_split_bivs (loop, XEXP (x, i));
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j) = remap_split_bivs (loop, XVECEXP (x, i, j));
 	}

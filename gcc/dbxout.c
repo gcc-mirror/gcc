@@ -855,15 +855,15 @@ dbxout_type_method_1 (decl, debug_name)
 
 static void
 dbxout_type_methods (type)
-     register tree type;
+     tree type;
 {
   /* C++: put out the method names and their parameter lists */
   tree methods = TYPE_METHODS (type);
   tree type_encoding;
-  register tree fndecl;
-  register tree last;
+  tree fndecl;
+  tree last;
   char formatted_type_identifier_length[16];
-  register int type_identifier_length;
+  int type_identifier_length;
 
   if (methods == NULL_TREE)
     return;
@@ -1032,7 +1032,7 @@ dbxout_type (type, full)
      tree type;
      int full;
 {
-  register tree tem;
+  tree tem;
   static int anonymous_type_number = 0;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -1759,7 +1759,7 @@ print_wide_int (c)
 
 static void
 dbxout_type_name (type)
-     register tree type;
+     tree type;
 {
   tree t;
   if (TYPE_NAME (type) == 0)
@@ -2712,7 +2712,7 @@ dbxout_args (args)
 
 static void
 dbxout_block (block, depth, args)
-     register tree block;
+     tree block;
      int depth;
      tree args;
 {

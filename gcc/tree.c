@@ -326,11 +326,11 @@ tree
 make_node (code)
      enum tree_code code;
 {
-  register tree t;
-  register int type = TREE_CODE_CLASS (code);
-  register size_t length;
+  tree t;
+  int type = TREE_CODE_CLASS (code);
+  size_t length;
 #ifdef GATHER_STATISTICS
-  register tree_node_kind kind;
+  tree_node_kind kind;
 #endif
   struct tree_common ttmp;
   
@@ -485,9 +485,9 @@ tree
 copy_node (node)
      tree node;
 {
-  register tree t;
-  register enum tree_code code = TREE_CODE (node);
-  register size_t length;
+  tree t;
+  enum tree_code code = TREE_CODE (node);
+  size_t length;
 
   length = tree_size (node);
   t = ggc_alloc_tree (length);
@@ -521,7 +521,7 @@ copy_list (list)
      tree list;
 {
   tree head;
-  register tree prev, next;
+  tree prev, next;
 
   if (list == 0)
     return 0;
@@ -549,7 +549,7 @@ build_int_2_wide (low, hi)
      unsigned HOST_WIDE_INT low;
      HOST_WIDE_INT hi;
 {
-  register tree t = make_node (INTEGER_CST);
+  tree t = make_node (INTEGER_CST);
 
   TREE_INT_CST_LOW (t) = low;
   TREE_INT_CST_HIGH (t) = hi;
@@ -713,7 +713,7 @@ build_string (len, str)
      int len;
      const char *str;
 {
-  register tree s = make_node (STRING_CST);
+  tree s = make_node (STRING_CST);
 
   TREE_STRING_LENGTH (s) = len;
   TREE_STRING_POINTER (s) = ggc_alloc_string (str, len);
@@ -731,7 +731,7 @@ build_complex (type, real, imag)
      tree type;
      tree real, imag;
 {
-  register tree t = make_node (COMPLEX_CST);
+  tree t = make_node (COMPLEX_CST);
 
   TREE_REALPART (t) = real;
   TREE_IMAGPART (t) = imag;
@@ -748,8 +748,8 @@ tree
 make_tree_vec (len)
      int len;
 {
-  register tree t;
-  register int length = (len-1) * sizeof (tree) + sizeof (struct tree_vec);
+  tree t;
+  int length = (len-1) * sizeof (tree) + sizeof (struct tree_vec);
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)vec_kind]++;
@@ -808,8 +808,8 @@ int
 integer_all_onesp (expr)
      tree expr;
 {
-  register int prec;
-  register int uns;
+  int prec;
+  int uns;
 
   STRIP_NOPS (expr);
 
@@ -1148,8 +1148,8 @@ int
 list_length (t)
      tree t;
 {
-  register tree tail;
-  register int len = 0;
+  tree tail;
+  int len = 0;
 
   for (tail = t; tail; tail = TREE_CHAIN (tail))
     len++;
@@ -1184,9 +1184,9 @@ chainon (op1, op2)
 
   if (op1)
     {
-      register tree t1;
+      tree t1;
 #ifdef ENABLE_TREE_CHECKING
-      register tree t2;
+      tree t2;
 #endif
 
       for (t1 = op1; TREE_CHAIN (t1); t1 = TREE_CHAIN (t1))
@@ -1207,9 +1207,9 @@ chainon (op1, op2)
 
 tree
 tree_last (chain)
-     register tree chain;
+     tree chain;
 {
-  register tree next;
+  tree next;
   if (chain)
     while ((next = TREE_CHAIN (chain)))
       chain = next;
@@ -1223,7 +1223,7 @@ tree
 nreverse (t)
      tree t;
 {
-  register tree prev = 0, decl, next;
+  tree prev = 0, decl, next;
   for (decl = t; decl; decl = next)
     {
       next = TREE_CHAIN (decl);
@@ -1265,7 +1265,7 @@ tree
 build_tree_list (parm, value)
      tree parm, value;
 {
-  register tree t = make_node (TREE_LIST);
+  tree t = make_node (TREE_LIST);
   TREE_PURPOSE (t) = parm;
   TREE_VALUE (t) = value;
   return t;
@@ -1279,7 +1279,7 @@ tree
 tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
-  register tree node;
+  tree node;
 
   node = ggc_alloc_tree (sizeof (struct tree_list));
 
@@ -1548,7 +1548,7 @@ tree
 save_expr (expr)
      tree expr;
 {
-  register tree t = fold (expr);
+  tree t = fold (expr);
 
   /* We don't care about whether this can be used as an lvalue in this
      context.  */
@@ -1833,7 +1833,7 @@ int
 contains_placeholder_p (exp)
      tree exp;
 {
-  register enum tree_code code;
+  enum tree_code code;
   int result;
 
   if (!exp)
@@ -2158,8 +2158,8 @@ tree
 stabilize_reference (ref)
      tree ref;
 {
-  register tree result;
-  register enum tree_code code = TREE_CODE (ref);
+  tree result;
+  enum tree_code code = TREE_CODE (ref);
 
   switch (code)
     {
@@ -2256,8 +2256,8 @@ tree
 stabilize_reference_1 (e)
      tree e;
 {
-  register tree result;
-  register enum tree_code code = TREE_CODE (e);
+  tree result;
+  enum tree_code code = TREE_CODE (e);
 
   /* We cannot ignore const expressions because it might be a reference
      to a const array but whose index contains side-effects.  But we can
@@ -2331,9 +2331,9 @@ stabilize_reference_1 (e)
 tree
 build VPARAMS ((enum tree_code code, tree tt, ...))
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
   int fro;
   int constant;
 
@@ -2361,8 +2361,8 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
   if (length == 2)
     {
       /* This is equivalent to the loop below, but faster.  */
-      register tree arg0 = va_arg (p, tree);
-      register tree arg1 = va_arg (p, tree);
+      tree arg0 = va_arg (p, tree);
+      tree arg1 = va_arg (p, tree);
 
       TREE_OPERAND (t, 0) = arg0;
       TREE_OPERAND (t, 1) = arg1;
@@ -2389,7 +2389,7 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
     }
   else if (length == 1)
     {
-      register tree arg0 = va_arg (p, tree);
+      tree arg0 = va_arg (p, tree);
 
       /* The only one-operand cases we handle here are those with side-effects.
 	 Others are handled with build1.  So don't bother checked if the
@@ -2404,7 +2404,7 @@ build VPARAMS ((enum tree_code code, tree tt, ...))
     {
       for (i = 0; i < length; i++)
 	{
-	  register tree operand = va_arg (p, tree);
+	  tree operand = va_arg (p, tree);
 
 	  TREE_OPERAND (t, i) = operand;
 	  if (operand && fro > i)
@@ -2432,11 +2432,11 @@ build1 (code, type, node)
      tree type;
      tree node;
 {
-  register int length;
+  int length;
 #ifdef GATHER_STATISTICS
-  register tree_node_kind kind;
+  tree_node_kind kind;
 #endif
-  register tree t;
+  tree t;
 
 #ifdef GATHER_STATISTICS
   if (TREE_CODE_CLASS (code) == 'r')
@@ -2507,9 +2507,9 @@ build1 (code, type, node)
 tree
 build_nt VPARAMS ((enum tree_code code, ...))
 {
-  register tree t;
-  register int length;
-  register int i;
+  tree t;
+  int length;
+  int i;
 
   VA_OPEN (p, code);
   VA_FIXEDARG (p, enum tree_code, code);
@@ -2535,7 +2535,7 @@ build_decl (code, name, type)
      enum tree_code code;
      tree name, type;
 {
-  register tree t;
+  tree t;
 
   t = make_node (code);
 
@@ -2563,7 +2563,7 @@ tree
 build_block (vars, tags, subblocks, supercontext, chain)
      tree vars, tags ATTRIBUTE_UNUSED, subblocks, supercontext, chain;
 {
-  register tree block = make_node (BLOCK);
+  tree block = make_node (BLOCK);
 
   BLOCK_VARS (block) = vars;
   BLOCK_SUBBLOCKS (block) = subblocks;
@@ -2585,7 +2585,7 @@ build_expr_wfl (node, file, line, col)
 {
   static const char *last_file = 0;
   static tree last_filenode = NULL_TREE;
-  register tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
+  tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
 
   EXPR_WFL_NODE (wfl) = node;
   EXPR_WFL_SET_LINECOL (wfl, line, col);
@@ -2790,7 +2790,7 @@ lookup_attribute (attr_name, list)
 
 tree
 merge_attributes (a1, a2)
-     register tree a1, a2;
+     tree a1, a2;
 {
   tree attributes;
 
@@ -2979,7 +2979,7 @@ tree
 build_type_copy (type)
      tree type;
 {
-  register tree t, m = TYPE_MAIN_VARIANT (type);
+  tree t, m = TYPE_MAIN_VARIANT (type);
 
   t = copy_node (type);
 
@@ -3005,7 +3005,7 @@ type_hash_list (list)
      tree list;
 {
   unsigned int hashcode;
-  register tree tail;
+  tree tail;
 
   for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
     hashcode += TYPE_HASH (TREE_VALUE (tail));
@@ -3207,7 +3207,7 @@ attribute_hash_list (list)
      tree list;
 {
   unsigned int hashcode;
-  register tree tail;
+  tree tail;
 
   for (hashcode = 0, tail = list; tail; tail = TREE_CHAIN (tail))
     /* ??? Do we want to add in TREE_VALUE too? */
@@ -3238,7 +3238,7 @@ int
 attribute_list_contained (l1, l2)
      tree l1, l2;
 {
-  register tree t1, t2;
+  tree t1, t2;
 
   /* First check the obvious, maybe the lists are identical.  */
   if (l1 == l2)
@@ -3286,7 +3286,7 @@ int
 type_list_equal (l1, l2)
      tree l1, l2;
 {
-  register tree t1, t2;
+  tree t1, t2;
 
   for (t1 = l1, t2 = l2; t1 && t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
     if (TREE_VALUE (t1) != TREE_VALUE (t2)
@@ -3413,7 +3413,7 @@ int
 tree_int_cst_msb (t)
      tree t;
 {
-  register int prec;
+  int prec;
   HOST_WIDE_INT h;
   unsigned HOST_WIDE_INT l;
 
@@ -3472,7 +3472,7 @@ int
 simple_cst_equal (t1, t2)
      tree t1, t2;
 {
-  register enum tree_code code1, code2;
+  enum tree_code code1, code2;
   int cmp;
   int i;
 
@@ -3635,7 +3635,7 @@ tree
 build_pointer_type (to_type)
      tree to_type;
 {
-  register tree t = TYPE_POINTER_TO (to_type);
+  tree t = TYPE_POINTER_TO (to_type);
 
   /* First, if we already have a type for pointers to TO_TYPE, use it.  */
 
@@ -3664,7 +3664,7 @@ tree
 build_reference_type (to_type)
      tree to_type;
 {
-  register tree t = TYPE_REFERENCE_TO (to_type);
+  tree t = TYPE_REFERENCE_TO (to_type);
 
   /* First, if we already have a type for pointers to TO_TYPE, use it.  */
 
@@ -3717,7 +3717,7 @@ tree
 build_index_type (maxval)
      tree maxval;
 {
-  register tree itype = make_node (INTEGER_TYPE);
+  tree itype = make_node (INTEGER_TYPE);
 
   TREE_TYPE (itype) = sizetype;
   TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
@@ -3744,7 +3744,7 @@ tree
 build_range_type (type, lowval, highval)
      tree type, lowval, highval;
 {
-  register tree itype = make_node (INTEGER_TYPE);
+  tree itype = make_node (INTEGER_TYPE);
 
   TREE_TYPE (itype) = type;
   if (type == NULL_TREE)
@@ -3816,7 +3816,7 @@ tree
 build_array_type (elt_type, index_type)
      tree elt_type, index_type;
 {
-  register tree t;
+  tree t;
   unsigned int hashcode;
 
   if (TREE_CODE (elt_type) == FUNCTION_TYPE)
@@ -3873,7 +3873,7 @@ tree
 build_function_type (value_type, arg_types)
      tree value_type, arg_types;
 {
-  register tree t;
+  tree t;
   unsigned int hashcode;
 
   if (TREE_CODE (value_type) == FUNCTION_TYPE)
@@ -3905,7 +3905,7 @@ tree
 build_method_type (basetype, type)
      tree basetype, type;
 {
-  register tree t;
+  tree t;
   unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
@@ -3942,7 +3942,7 @@ tree
 build_offset_type (basetype, type)
      tree basetype, type;
 {
-  register tree t;
+  tree t;
   unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
@@ -3967,7 +3967,7 @@ tree
 build_complex_type (component_type)
      tree component_type;
 {
-  register tree t;
+  tree t;
   unsigned int hashcode;
 
   /* Make a node of the sort we want.  */
@@ -4045,22 +4045,22 @@ build_complex_type (component_type)
 
 tree
 get_unwidened (op, for_type)
-     register tree op;
+     tree op;
      tree for_type;
 {
   /* Set UNS initially if converting OP to FOR_TYPE is a zero-extension.  */
-  register tree type = TREE_TYPE (op);
-  register unsigned final_prec
+  tree type = TREE_TYPE (op);
+  unsigned final_prec
     = TYPE_PRECISION (for_type != 0 ? for_type : type);
-  register int uns
+  int uns
     = (for_type != 0 && for_type != type
        && final_prec > TYPE_PRECISION (type)
        && TREE_UNSIGNED (type));
-  register tree win = op;
+  tree win = op;
 
   while (TREE_CODE (op) == NOP_EXPR)
     {
-      register int bitschange
+      int bitschange
 	= TYPE_PRECISION (TREE_TYPE (op))
 	  - TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op, 0)));
 
@@ -4138,16 +4138,16 @@ get_unwidened (op, for_type)
 
 tree
 get_narrower (op, unsignedp_ptr)
-     register tree op;
+     tree op;
      int *unsignedp_ptr;
 {
-  register int uns = 0;
+  int uns = 0;
   int first = 1;
-  register tree win = op;
+  tree win = op;
 
   while (TREE_CODE (op) == NOP_EXPR)
     {
-      register int bitschange
+      int bitschange
 	= (TYPE_PRECISION (TREE_TYPE (op))
 	   - TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op, 0))));
 

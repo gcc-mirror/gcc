@@ -365,10 +365,10 @@ enqueue_insn (var, body)
 
 rtx
 protect_from_queue (x, modify)
-     register rtx x;
+     rtx x;
      int modify;
 {
-  register RTX_CODE code = GET_CODE (x);
+  RTX_CODE code = GET_CODE (x);
 
 #if 0  /* A QUEUED can hang around after the queue is forced out.  */
   /* Shortcut for most common case.  */
@@ -453,7 +453,7 @@ int
 queued_subexp_p (x)
      rtx x;
 {
-  register enum rtx_code code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
   switch (code)
     {
     case QUEUED:
@@ -475,7 +475,7 @@ queued_subexp_p (x)
 void
 emit_queue ()
 {
-  register rtx p;
+  rtx p;
   while ((p = pending_chain))
     {
       rtx body = QUEUED_BODY (p);
@@ -498,7 +498,7 @@ emit_queue ()
 
 void
 convert_move (to, from, unsignedp)
-     register rtx to, from;
+     rtx to, from;
      int unsignedp;
 {
   enum machine_mode to_mode = GET_MODE (to);
@@ -1294,7 +1294,7 @@ convert_modes (mode, oldmode, x, unsignedp)
      rtx x;
      int unsignedp;
 {
-  register rtx temp;
+  rtx temp;
 
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
@@ -3082,7 +3082,7 @@ push_block (size, extra, below)
      rtx size;
      int extra, below;
 {
-  register rtx temp;
+  rtx temp;
 
   size = convert_modes (Pmode, ptr_mode, size, 1);
   if (CONSTANT_P (size))
@@ -3132,7 +3132,7 @@ static rtx
 get_push_address (size)
      int size;
 {
-  register rtx temp;
+  rtx temp;
 
   if (STACK_PUSH_CODE == POST_DEC)
     temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (size));
@@ -3237,7 +3237,7 @@ void
 emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		args_addr, args_so_far, reg_parm_stack_space,
                 alignment_pad)
-     register rtx x;
+     rtx x;
      enum machine_mode mode;
      tree type;
      rtx size;
@@ -3275,7 +3275,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
     {
       /* Copy a block into the stack, entirely or partially.  */
 
-      register rtx temp;
+      rtx temp;
       int used = partial * UNITS_PER_WORD;
       int offset = used % (PARM_BOUNDARY / BITS_PER_UNIT);
       int skip;
@@ -3683,7 +3683,7 @@ expand_assignment (to, from, want_value, suggest_reg)
      int want_value;
      int suggest_reg ATTRIBUTE_UNUSED;
 {
-  register rtx to_rtx = 0;
+  rtx to_rtx = 0;
   rtx result;
 
   /* Don't crash if the lhs of the assignment was erroneous.  */
@@ -4023,11 +4023,11 @@ expand_assignment (to, from, want_value, suggest_reg)
 
 rtx
 store_expr (exp, target, want_value)
-     register tree exp;
-     register rtx target;
+     tree exp;
+     rtx target;
      int want_value;
 {
-  register rtx temp;
+  rtx temp;
   int dont_return_target = 0;
   int dont_store_target = 0;
 
@@ -4542,7 +4542,7 @@ store_constructor (exp, target, align, cleared, size)
   if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
       || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
-      register tree elt;
+      tree elt;
 
       /* Inform later passes that the whole union value is dead.  */
       if ((TREE_CODE (type) == UNION_TYPE
@@ -4595,11 +4595,11 @@ store_constructor (exp, target, align, cleared, size)
 
       for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
 	{
-	  register tree field = TREE_PURPOSE (elt);
+	  tree field = TREE_PURPOSE (elt);
 #ifdef WORD_REGISTER_OPERATIONS
 	  tree value = TREE_VALUE (elt);
 #endif
-	  register enum machine_mode mode;
+	  enum machine_mode mode;
 	  HOST_WIDE_INT bitsize;
 	  HOST_WIDE_INT bitpos = 0;
 	  int unsignedp;
@@ -4709,8 +4709,8 @@ store_constructor (exp, target, align, cleared, size)
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      register tree elt;
-      register int i;
+      tree elt;
+      int i;
       int need_to_clear;
       tree domain = TYPE_DOMAIN (type);
       tree elttype = TREE_TYPE (type);
@@ -4795,7 +4795,7 @@ store_constructor (exp, target, align, cleared, size)
 	   elt;
 	   elt = TREE_CHAIN (elt), i++)
 	{
-	  register enum machine_mode mode;
+	  enum machine_mode mode;
 	  HOST_WIDE_INT bitsize;
 	  HOST_WIDE_INT bitpos;
 	  int unsignedp;
@@ -5582,13 +5582,13 @@ rtx
 force_operand (value, target)
      rtx value, target;
 {
-  register optab binoptab = 0;
+  optab binoptab = 0;
   /* Use a temporary to force order of execution of calls to
      `force_operand'.  */
   rtx tmp;
-  register rtx op2;
+  rtx op2;
   /* Use subtarget as the target for operand 0 of a binary operation.  */
-  register rtx subtarget = get_subtarget (target);
+  rtx subtarget = get_subtarget (target);
 
   /* Check for a PIC address load.  */
   if (flag_pic
@@ -6059,16 +6059,16 @@ find_placeholder (exp, plist)
 
 rtx
 expand_expr (exp, target, tmode, modifier)
-     register tree exp;
+     tree exp;
      rtx target;
      enum machine_mode tmode;
      enum expand_modifier modifier;
 {
-  register rtx op0, op1, temp;
+  rtx op0, op1, temp;
   tree type = TREE_TYPE (exp);
   int unsignedp = TREE_UNSIGNED (type);
-  register enum machine_mode mode;
-  register enum tree_code code = TREE_CODE (exp);
+  enum machine_mode mode;
+  enum tree_code code = TREE_CODE (exp);
   optab this_optab;
   rtx subtarget, original_target;
   int ignore;
@@ -7658,7 +7658,7 @@ expand_expr (exp, target, tmode, modifier)
 	 check the second operand.  */
       if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST)
 	{
-	  register tree t1 = TREE_OPERAND (exp, 0);
+	  tree t1 = TREE_OPERAND (exp, 0);
 	  TREE_OPERAND (exp, 0) = TREE_OPERAND (exp, 1);
 	  TREE_OPERAND (exp, 1) = t1;
 	}
@@ -8811,12 +8811,12 @@ expand_expr (exp, target, tmode, modifier)
 
 static rtx
 expand_expr_unaligned (exp, palign)
-     register tree exp;
+     tree exp;
      unsigned int *palign;
 {
-  register rtx op0;
+  rtx op0;
   tree type = TREE_TYPE (exp);
-  register enum machine_mode mode = TYPE_MODE (type);
+  enum machine_mode mode = TYPE_MODE (type);
 
   /* Default the alignment we return to that of the type.  */
   *palign = TYPE_ALIGN (type);
@@ -9163,12 +9163,12 @@ string_constant (arg, ptr_offset)
 
 static rtx
 expand_increment (exp, post, ignore)
-     register tree exp;
+     tree exp;
      int post, ignore;
 {
-  register rtx op0, op1;
-  register rtx temp, value;
-  register tree incremented = TREE_OPERAND (exp, 0);
+  rtx op0, op1;
+  rtx temp, value;
+  tree incremented = TREE_OPERAND (exp, 0);
   optab this_optab = add_optab;
   int icode;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
@@ -9448,7 +9448,7 @@ do_jump (exp, if_false_label, if_true_label)
      tree exp;
      rtx if_false_label, if_true_label;
 {
-  register enum tree_code code = TREE_CODE (exp);
+  enum tree_code code = TREE_CODE (exp);
   /* Some cases need to create a label to jump to
      in order to properly fall through.
      These cases set DROP_THROUGH_LABEL nonzero.  */
@@ -9634,7 +9634,7 @@ do_jump (exp, if_false_label, if_true_label)
 
       else
 	{
-	  register rtx label1 = gen_label_rtx ();
+	  rtx label1 = gen_label_rtx ();
 	  drop_through_label = gen_label_rtx ();
 
 	  do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
@@ -10095,7 +10095,7 @@ do_jump_by_parts_equality_rtx (op0, if_false_label, if_true_label)
 
 rtx
 compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
-     register rtx op0, op1;
+     rtx op0, op1;
      enum rtx_code code;
      int unsignedp;
      enum machine_mode mode;
@@ -10166,7 +10166,7 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 void
 do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size, align,
 			 if_false_label, if_true_label)
-     register rtx op0, op1;
+     rtx op0, op1;
      enum rtx_code code;
      int unsignedp;
      enum machine_mode mode;
@@ -10271,14 +10271,14 @@ do_compare_rtx_and_jump (op0, op1, code, unsignedp, mode, size, align,
 static void
 do_compare_and_jump (exp, signed_code, unsigned_code, if_false_label,
 		     if_true_label)
-     register tree exp;
+     tree exp;
      enum rtx_code signed_code, unsigned_code;
      rtx if_false_label, if_true_label;
 {
   unsigned int align0, align1;
-  register rtx op0, op1;
-  register tree type;
-  register enum machine_mode mode;
+  rtx op0, op1;
+  tree type;
+  enum machine_mode mode;
   int unsignedp;
   enum rtx_code code;
 
@@ -10754,7 +10754,7 @@ do_tablejump (index, mode, range, table_label, default_label)
      rtx index, range, table_label, default_label;
      enum machine_mode mode;
 {
-  register rtx temp, vector;
+  rtx temp, vector;
 
   /* Do an unsigned comparison (in the proper mode) between the index
      expression and the value which represents the length of the range.

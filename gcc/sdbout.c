@@ -429,7 +429,7 @@ static int
 template_name_p (name)
      tree name;
 {
-  register const char *ptr = IDENTIFIER_POINTER (name);
+  const char *ptr = IDENTIFIER_POINTER (name);
   while (*ptr && *ptr != '<')
     ptr++;
 
@@ -661,7 +661,7 @@ static int do_block = 0;
 
 static void
 sdbout_block (block)
-     register tree block;
+     tree block;
 {
   while (block)
     {
@@ -999,7 +999,7 @@ sdbout_queue_anonymous_type (type)
 static void
 sdbout_dequeue_anonymous_types ()
 {
-  register tree types, link;
+  tree types, link;
 
   while (anonymous_types)
     {
@@ -1008,7 +1008,7 @@ sdbout_dequeue_anonymous_types ()
 
       for (link = types; link; link = TREE_CHAIN (link))
 	{
-	  register tree type = TREE_VALUE (link);
+	  tree type = TREE_VALUE (link);
 
 	  if (type && ! TREE_ASM_WRITTEN (type))
 	    sdbout_one_type (type);
@@ -1023,9 +1023,9 @@ sdbout_dequeue_anonymous_types ()
 
 void
 sdbout_types (types)
-     register tree types;
+     tree types;
 {
-  register tree link;
+  tree link;
 
   for (link = types; link; link = TREE_CHAIN (link))
     sdbout_one_type (link);
@@ -1697,7 +1697,7 @@ sdbout_end_epilogue ()
 
 static void
 sdbout_label (insn)
-     register rtx insn;
+     rtx insn;
 {
   PUT_SDB_DEF (LABEL_NAME (insn));
   PUT_SDB_VAL (insn);

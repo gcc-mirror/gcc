@@ -356,8 +356,8 @@ loop_optimize (f, dumpfile, flags)
      FILE *dumpfile;
      int flags;
 {
-  register rtx insn;
-  register int i;
+  rtx insn;
+  int i;
   struct loops loops_data;
   struct loops *loops = &loops_data;
   struct loop_info *loops_info;
@@ -522,7 +522,7 @@ scan_loop (loop, flags)
 {
   struct loop_info *loop_info = LOOP_INFO (loop);
   struct loop_regs *regs = LOOP_REGS (loop);
-  register int i;
+  int i;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
   rtx p;
@@ -761,8 +761,8 @@ scan_loop (loop, flags)
 		   && ! ((maybe_never || call_passed)
 			 && may_trap_p (src)))
 	    {
-	      register struct movable *m;
-	      register int regno = REGNO (SET_DEST (set));
+	      struct movable *m;
+	      int regno = REGNO (SET_DEST (set));
 
 	      /* A potential lossage is where we have a case where two insns
 		 can be combined as long as they are both in the loop, but
@@ -892,10 +892,10 @@ scan_loop (loop, flags)
 		       == SET_DEST (set))
 		   && !reg_mentioned_p (SET_DEST (set), SET_SRC (set1)))
 	    {
-	      register int regno = REGNO (SET_DEST (set));
+	      int regno = REGNO (SET_DEST (set));
 	      if (regs->array[regno].set_in_loop == 2)
 		{
-		  register struct movable *m;
+		  struct movable *m;
 		  m = (struct movable *) xmalloc (sizeof (struct movable));
 		  m->next = 0;
 		  m->insn = p;
@@ -1252,7 +1252,7 @@ static void
 ignore_some_movables (movables)
      struct loop_movables *movables;
 {
-  register struct movable *m, *m1;
+  struct movable *m, *m1;
 
   for (m = movables->head; m; m = m->next)
     {
@@ -1284,7 +1284,8 @@ static void
 force_movables (movables)
      struct loop_movables *movables;
 {
-  register struct movable *m, *m1;
+  struct movable *m, *m1;
+
   for (m1 = movables->head; m1; m1 = m1->next)
     /* Omit this if moving just the (SET (REG) 0) of a zero-extend.  */
     if (!m1->partial && !m1->done)
@@ -1324,7 +1325,7 @@ combine_movables (movables, regs)
      struct loop_movables *movables;
      struct loop_regs *regs;
 {
-  register struct movable *m;
+  struct movable *m;
   char *matched_regs = (char *) xmalloc (regs->num);
   enum machine_mode mode;
 
@@ -1336,7 +1337,7 @@ combine_movables (movables, regs)
     if (m->match == 0 && regs->array[m->regno].n_times_set == 1
 	&& !m->partial)
       {
-	register struct movable *m1;
+	struct movable *m1;
 	int regno = m->regno;
 
 	memset (matched_regs, 0, regs->num);
@@ -1389,7 +1390,7 @@ combine_movables (movables, regs)
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      register struct movable *m0 = 0;
+      struct movable *m0 = 0;
 
       /* Combine all the registers for extension from mode MODE.
 	 Don't combine any that are used outside this loop.  */
@@ -1397,7 +1398,8 @@ combine_movables (movables, regs)
 	if (m->partial && ! m->global
 	    && mode == GET_MODE (SET_SRC (PATTERN (NEXT_INSN (m->insn)))))
 	  {
-	    register struct movable *m1;
+	    struct movable *m1;
+
 	    int first = REGNO_FIRST_LUID (m->regno);
 	    int last = REGNO_LAST_LUID (m->regno);
 
@@ -1491,11 +1493,11 @@ rtx_equal_for_loop_p (x, y, movables, regs)
      struct loop_movables *movables;
      struct loop_regs *regs;
 {
-  register int i;
-  register int j;
-  register struct movable *m;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  struct movable *m;
+  enum rtx_code code;
+  const char *fmt;
 
   if (x == y)
     return 1;
@@ -1656,8 +1658,8 @@ move_movables (loop, movables, threshold, insn_count)
   struct loop_regs *regs = LOOP_REGS (loop);
   int nregs = regs->num;
   rtx new_start = 0;
-  register struct movable *m;
-  register rtx p;
+  struct movable *m;
+  rtx p;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
   /* Map of pseudo-register replacements to handle combining
@@ -1708,8 +1710,8 @@ move_movables (loop, movables, threshold, insn_count)
 						       m->insn))))
 	  && (! m->forces || m->forces->done))
 	{
-	  register int regno;
-	  register rtx p;
+	  int regno;
+	  rtx p;
 	  int savings = m->savings;
 
 	  /* We have an insn that is safe to move.
@@ -1745,7 +1747,7 @@ move_movables (loop, movables, threshold, insn_count)
 		  && regs->array[m->forces->regno].n_times_set == 1))
 	    {
 	      int count;
-	      register struct movable *m1;
+	      struct movable *m1;
 	      rtx first = NULL_RTX;
 
 	      /* Now move the insns that set the reg.  */
@@ -2185,9 +2187,9 @@ static void
 replace_call_address (x, reg, addr)
      rtx x, reg, addr;
 {
-  register enum rtx_code code;
-  register int i;
-  register const char *fmt;
+  enum rtx_code code;
+  int i;
+  const char *fmt;
 
   if (x == 0)
     return;
@@ -2233,7 +2235,7 @@ replace_call_address (x, reg, addr)
 	replace_call_address (XEXP (x, i), reg, addr);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    replace_call_address (XVECEXP (x, i, j), reg, addr);
 	}
@@ -2249,9 +2251,9 @@ count_nonfixed_reads (loop, x)
      const struct loop *loop;
      rtx x;
 {
-  register enum rtx_code code;
-  register int i;
-  register const char *fmt;
+  enum rtx_code code;
+  int i;
+  const char *fmt;
   int value;
 
   if (x == 0)
@@ -2286,7 +2288,7 @@ count_nonfixed_reads (loop, x)
 	value += count_nonfixed_reads (loop, XEXP (x, i));
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    value += count_nonfixed_reads (loop, XVECEXP (x, i, j));
 	}
@@ -2304,7 +2306,7 @@ static void
 prescan_loop (loop)
      struct loop *loop;
 {
-  register int level = 1;
+  int level = 1;
   rtx insn;
   struct loop_info *loop_info = LOOP_INFO (loop);
   rtx start = loop->start;
@@ -3058,13 +3060,13 @@ note_set_pseudo_multiple_uses (x, y, data)
 int
 loop_invariant_p (loop, x)
      const struct loop *loop;
-     register rtx x;
+     rtx x;
 {
   struct loop_info *loop_info = LOOP_INFO (loop);
   struct loop_regs *regs = LOOP_REGS (loop);
-  register int i;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  enum rtx_code code;
+  const char *fmt;
   int conditional = 0;
   rtx mem_list_entry;
 
@@ -3162,7 +3164,7 @@ loop_invariant_p (loop, x)
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
 	      int tem = loop_invariant_p (loop, XVECEXP (x, i, j));
@@ -3212,7 +3214,7 @@ consec_sets_invariant_p (loop, reg, n_sets, insn)
 
   while (count > 0)
     {
-      register enum rtx_code code;
+      enum rtx_code code;
       rtx set;
 
       p = NEXT_INSN (p);
@@ -3269,12 +3271,12 @@ all_sets_invariant_p (reg, insn, table)
      rtx reg, insn;
      short *table;
 {
-  register rtx p = insn;
-  register int regno = REGNO (reg);
+  rtx p = insn;
+  int regno = REGNO (reg);
 
   while (1)
     {
-      register enum rtx_code code;
+      enum rtx_code code;
       p = NEXT_INSN (p);
       code = GET_CODE (p);
       if (code == CODE_LABEL || code == JUMP_INSN)
@@ -3356,7 +3358,7 @@ count_one_set (regs, insn, x, last_set)
 	dest = XEXP (dest, 0);
       if (GET_CODE (dest) == REG)
 	{
-	  register int regno = REGNO (dest);
+	  int regno = REGNO (dest);
 	  /* If this is the first setting of this reg
 	     in current basic block, and it was set before,
 	     it must be set in two basic blocks, so it cannot
@@ -4722,9 +4724,9 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
      rtx insn;
      int not_every_iteration, maybe_multiple;
 {
-  register int i, j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i, j;
+  enum rtx_code code;
+  const char *fmt;
 
   if (x == 0)
     return;
@@ -5396,7 +5398,7 @@ update_giv_derive (loop, p)
 static int
 basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
      const struct loop *loop;
-     register rtx x;
+     rtx x;
      enum machine_mode mode;
      rtx dest_reg;
      rtx p;
@@ -5404,7 +5406,7 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
      rtx *mult_val;
      rtx **location;
 {
-  register enum rtx_code code;
+  enum rtx_code code;
   rtx *argp, arg;
   rtx insn, set = 0;
 
@@ -8311,8 +8313,8 @@ update_reg_last_use (x, insn)
     }
   else
     {
-      register int i, j;
-      register const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
+      int i, j;
+      const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
       for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
 	{
 	  if (fmt[i] == 'e')
@@ -8808,7 +8810,7 @@ loop_regs_scan (loop, extra_size)
 	    count_one_set (regs, insn, PATTERN (insn), last_set);
 	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	    {
-	      register int i;
+	      int i;
 	      for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
 		count_one_set (regs, insn, XVECEXP (PATTERN (insn), 0, i),
 			       last_set);

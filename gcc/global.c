@@ -335,7 +335,7 @@ global_alloc (file)
 #endif
        || FRAME_POINTER_REQUIRED);
 
-  register size_t i;
+  size_t i;
   rtx x;
 
   max_allocno = 0;
@@ -614,11 +614,11 @@ allocno_compare (v1p, v2p)
      times a register can occur in one insn (surely less than 100)
      weighted by the frequency (maximally REG_FREQ_MAX).
      Multiplying this by 10000/REG_FREQ_MAX can't overflow.  */
-  register int pri1
+  int pri1
     = (((double) (floor_log2 (allocno[v1].n_refs) * allocno[v1].freq)
 	/ allocno[v1].live_length)
        * (10000 / REG_FREQ_MAX) * allocno[v1].size);
-  register int pri2
+  int pri2
     = (((double) (floor_log2 (allocno[v2].n_refs) * allocno[v2].freq)
 	/ allocno[v2].live_length)
        * (10000 / REG_FREQ_MAX) * allocno[v2].size);
@@ -636,8 +636,8 @@ allocno_compare (v1p, v2p)
 static void
 global_conflicts ()
 {
-  register int b, i;
-  register rtx insn;
+  int b, i;
+  rtx insn;
   int *block_start_allocnos;
 
   /* Make a vector that mark_reg_{store,clobber} will store in.  */
@@ -664,13 +664,13 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	register regset old = BASIC_BLOCK (b)->global_live_at_start;
+	regset old = BASIC_BLOCK (b)->global_live_at_start;
 	int ax = 0;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
 	EXECUTE_IF_SET_IN_REG_SET (old, FIRST_PSEUDO_REGISTER, i,
 				   {
-				     register int a = reg_allocno[i];
+				     int a = reg_allocno[i];
 				     if (a >= 0)
 				       {
 					 SET_ALLOCNO_LIVE (a);
@@ -731,8 +731,8 @@ global_conflicts ()
 
       while (1)
 	{
-	  register RTX_CODE code = GET_CODE (insn);
-	  register rtx link;
+	  RTX_CODE code = GET_CODE (insn);
+	  rtx link;
 
 	  /* Make regs_set an empty set.  */
 
@@ -984,7 +984,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
      int accept_call_clobbered;
      int retrying;
 {
-  register int i, best_reg, pass;
+  int i, best_reg, pass;
 #ifdef HARD_REG_SET
   register		/* Declare it register if it's a scalar.  */
 #endif
@@ -1048,8 +1048,8 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		  || accept_call_clobbered
 		  || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	    {
-	      register int j;
-	      register int lim = regno + HARD_REGNO_NREGS (regno, mode);
+	      int j;
+	      int lim = regno + HARD_REGNO_NREGS (regno, mode);
 	      for (j = regno + 1;
 		   (j < lim
 		    && ! TEST_HARD_REG_BIT (used, j));
@@ -1092,8 +1092,8 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		|| reg_class_subset_p (REGNO_REG_CLASS (best_reg),
 				       REGNO_REG_CLASS (i))))
 	    {
-	      register int j;
-	      register int lim = i + HARD_REGNO_NREGS (i, mode);
+	      int j;
+	      int lim = i + HARD_REGNO_NREGS (i, mode);
 	      for (j = i + 1;
 		   (j < lim
 		    && ! TEST_HARD_REG_BIT (used, j)
@@ -1128,8 +1128,8 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 		|| reg_class_subset_p (REGNO_REG_CLASS (best_reg),
 				       REGNO_REG_CLASS (i))))
 	    {
-	      register int j;
-	      register int lim = i + HARD_REGNO_NREGS (i, mode);
+	      int j;
+	      int lim = i + HARD_REGNO_NREGS (i, mode);
 	      for (j = i + 1;
 		   (j < lim
 		    && ! TEST_HARD_REG_BIT (used, j)
@@ -1246,7 +1246,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 
   if (best_reg >= 0)
     {
-      register int lim, j;
+      int lim, j;
       HARD_REG_SET this_reg;
 
       /* Yes.  Record it as the hard register of this pseudo-reg.  */
@@ -1322,7 +1322,7 @@ static void
 record_one_conflict (regno)
      int regno;
 {
-  register int j;
+  int j;
 
   if (regno < FIRST_PSEUDO_REGISTER)
     /* When a hard register becomes live,
@@ -1336,8 +1336,9 @@ record_one_conflict (regno)
        record conflicts first with hard regs,
        then with other pseudo regs.  */
     {
-      register int ialloc = reg_allocno[regno];
-      register int ialloc_prod = ialloc * allocno_row_words;
+      int ialloc = reg_allocno[regno];
+      int ialloc_prod = ialloc * allocno_row_words;
+
       IOR_HARD_REG_SET (allocno[ialloc].hard_reg_conflicts, hard_regs_live);
       for (j = allocno_row_words - 1; j >= 0; j--)
 	{
@@ -1363,11 +1364,11 @@ record_one_conflict (regno)
 
 static void
 record_conflicts (allocno_vec, len)
-     register int *allocno_vec;
-     register int len;
+     int *allocno_vec;
+     int len;
 {
-  register int num;
-  register int ialloc_prod;
+  int num;
+  int ialloc_prod;
 
   while (--len >= 0)
     {
@@ -1381,7 +1382,7 @@ record_conflicts (allocno_vec, len)
 static void
 mirror_conflicts ()
 {
-  register int i, j;
+  int i, j;
   int rw = allocno_row_words;
   int rwb = rw * INT_BITS;
   INT_TYPE *p = conflicts;
@@ -1431,7 +1432,7 @@ mark_reg_store (reg, setter, data)
      rtx reg, setter;
      void *data ATTRIBUTE_UNUSED;
 {
-  register int regno;
+  int regno;
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
@@ -1463,7 +1464,7 @@ mark_reg_store (reg, setter, data)
   /* Handle hardware regs (and pseudos allocated to hard regs).  */
   if (regno < FIRST_PSEUDO_REGISTER && ! fixed_regs[regno])
     {
-      register int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
       while (regno < last)
 	{
 	  record_one_conflict (regno);
@@ -1491,7 +1492,7 @@ static void
 mark_reg_conflicts (reg)
      rtx reg;
 {
-  register int regno;
+  int regno;
 
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
@@ -1515,7 +1516,7 @@ mark_reg_conflicts (reg)
   /* Handle hardware regs (and pseudos allocated to hard regs).  */
   if (regno < FIRST_PSEUDO_REGISTER && ! fixed_regs[regno])
     {
-      register int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
       while (regno < last)
 	{
 	  record_one_conflict (regno);
@@ -1531,7 +1532,7 @@ static void
 mark_reg_death (reg)
      rtx reg;
 {
-  register int regno = REGNO (reg);
+  int regno = REGNO (reg);
 
   /* Either this is one of the max_allocno pseudo regs not allocated,
      or it is a hardware reg.  First handle the pseudo-regs.  */
@@ -1550,7 +1551,7 @@ mark_reg_death (reg)
     {
       /* Pseudo regs already assigned hardware regs are treated
 	 almost the same as explicit hardware regs.  */
-      register int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      int last = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
       while (regno < last)
 	{
 	  CLEAR_HARD_REG_BIT (hard_regs_live, regno);
@@ -1566,10 +1567,10 @@ mark_reg_death (reg)
 
 static void
 mark_reg_live_nc (regno, mode)
-     register int regno;
+     int regno;
      enum machine_mode mode;
 {
-  register int last = regno + HARD_REGNO_NREGS (regno, mode);
+  int last = regno + HARD_REGNO_NREGS (regno, mode);
   while (regno < last)
     {
       SET_HARD_REG_BIT (hard_regs_live, regno);
@@ -1702,7 +1703,7 @@ mark_elimination (from, to)
 
   for (i = 0; i < n_basic_blocks; i++)
     {
-      register regset r = BASIC_BLOCK (i)->global_live_at_start; 
+      regset r = BASIC_BLOCK (i)->global_live_at_start; 
       if (REGNO_REG_SET_P (r, from))
 	{
 	  CLEAR_REGNO_REG_SET (r, from);
@@ -1888,9 +1889,9 @@ static void
 dump_conflicts (file)
      FILE *file;
 {
-  register int i;
-  register int has_preferences;
-  register int nregs;
+  int i;
+  int has_preferences;
+  int nregs;
   nregs = 0;
   for (i = 0; i < max_allocno; i++)
     {
@@ -1916,7 +1917,7 @@ dump_conflicts (file)
 
   for (i = 0; i < max_allocno; i++)
     {
-      register int j;
+      int j;
       fprintf (file, ";; %d conflicts:", allocno[i].reg);
       for (j = 0; j < max_allocno; j++)
 	if (CONFLICTP (j, i))
@@ -1946,7 +1947,7 @@ void
 dump_global_regs (file)
      FILE *file;
 {
-  register int i, j;
+  int i, j;
   
   fprintf (file, ";; Register dispositions:\n");
   for (i = FIRST_PSEUDO_REGISTER, j = 0; i < max_regno; i++)

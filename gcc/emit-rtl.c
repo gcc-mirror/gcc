@@ -487,9 +487,9 @@ gen_lowpart_SUBREG (mode, reg)
 rtx
 gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 {
-  register int i;		/* Array indices...			*/
-  register const char *fmt;	/* Current rtx's format...		*/
-  register rtx rt_val;		/* RTX to return to caller...		*/
+  int i;		/* Array indices...			*/
+  const char *fmt;	/* Current rtx's format...		*/
+  rtx rt_val;		/* RTX to return to caller...		*/
 
   VA_OPEN (p, mode);
   VA_FIXEDARG (p, enum rtx_code, code);
@@ -606,8 +606,8 @@ gen_rtvec_v (n, argp)
      int n;
      rtx *argp;
 {
-  register int i;
-  register rtvec rt_val;
+  int i;
+  rtvec rt_val;
 
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
@@ -628,7 +628,7 @@ gen_reg_rtx (mode)
      enum machine_mode mode;
 {
   struct function *f = cfun;
-  register rtx val;
+  rtx val;
 
   /* Don't let anything called after initial flow analysis create new
      registers.  */
@@ -749,7 +749,7 @@ get_first_label_num ()
    register.  */
 int
 subreg_hard_regno (x, check_mode)
-     register rtx x;
+     rtx x;
      int check_mode;
 {
   enum machine_mode mode = GET_MODE (x);
@@ -791,7 +791,7 @@ subreg_hard_regno (x, check_mode)
 rtx
 gen_lowpart_common (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
   int msize = GET_MODE_SIZE (mode);
   int xsize = GET_MODE_SIZE (GET_MODE (x));
@@ -1075,7 +1075,7 @@ gen_lowpart_common (mode, x)
 rtx
 gen_realpart (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
   if (WORDS_BIG_ENDIAN
       && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
@@ -1095,7 +1095,7 @@ gen_realpart (mode, x)
 rtx
 gen_imagpart (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
   if (WORDS_BIG_ENDIAN)
     return gen_lowpart (mode, x);
@@ -1135,7 +1135,7 @@ subreg_realpart_p (x)
 rtx
 gen_lowpart (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
   rtx result = gen_lowpart_common (mode, x);
 
@@ -1152,7 +1152,7 @@ gen_lowpart (mode, x)
   else if (GET_CODE (x) == MEM)
     {
       /* The only additional case we can do is MEM.  */
-      register int offset = 0;
+      int offset = 0;
       if (WORDS_BIG_ENDIAN)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
 		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
@@ -1177,7 +1177,7 @@ gen_lowpart (mode, x)
 rtx
 gen_highpart (mode, x)
      enum machine_mode mode;
-     register rtx x;
+     rtx x;
 {
   unsigned int msize = GET_MODE_SIZE (mode);
   rtx result;
@@ -1855,7 +1855,7 @@ replace_equiv_address_nv (memref, addr)
 rtx
 gen_label_rtx ()
 {
-  register rtx label;
+  rtx label;
 
   label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
 			      NULL_RTX, label_num++, NULL, NULL);
@@ -2055,10 +2055,10 @@ rtx
 copy_rtx_if_shared (orig)
      rtx orig;
 {
-  register rtx x = orig;
-  register int i;
-  register enum rtx_code code;
-  register const char *format_ptr;
+  rtx x = orig;
+  int i;
+  enum rtx_code code;
+  const char *format_ptr;
   int copied = 0;
 
   if (x == 0)
@@ -2122,7 +2122,7 @@ copy_rtx_if_shared (orig)
 
   if (x->used)
     {
-      register rtx copy;
+      rtx copy;
 
       copy = rtx_alloc (code);
       memcpy (copy, x,
@@ -2151,7 +2151,7 @@ copy_rtx_if_shared (orig)
 	case 'E':
 	  if (XVEC (x, i) != NULL)
 	    {
-	      register int j;
+	      int j;
 	      int len = XVECLEN (x, i);
 
 	      if (copied && len > 0)
@@ -2172,9 +2172,9 @@ void
 reset_used_flags (x)
      rtx x;
 {
-  register int i, j;
-  register enum rtx_code code;
-  register const char *format_ptr;
+  int i, j;
+  enum rtx_code code;
+  const char *format_ptr;
 
   if (x == 0)
     return;
@@ -2604,9 +2604,9 @@ static void
 mark_label_nuses(x)
     rtx x;
 {
-  register enum rtx_code code;
-  register int i, j;
-  register const char *fmt;
+  enum rtx_code code;
+  int i, j;
+  const char *fmt;
 
   code = GET_CODE (x);
   if (code == LABEL_REF)
@@ -2810,7 +2810,7 @@ rtx
 make_insn_raw (pattern)
      rtx pattern;
 {
-  register rtx insn;
+  rtx insn;
 
   insn = rtx_alloc (INSN);
 
@@ -2841,7 +2841,7 @@ static rtx
 make_jump_insn_raw (pattern)
      rtx pattern;
 {
-  register rtx insn;
+  rtx insn;
 
   insn = rtx_alloc (JUMP_INSN);
   INSN_UID (insn) = cur_insn_uid++;
@@ -2861,7 +2861,7 @@ static rtx
 make_call_insn_raw (pattern)
      rtx pattern;
 {
-  register rtx insn;
+  rtx insn;
 
   insn = rtx_alloc (CALL_INSN);
   INSN_UID (insn) = cur_insn_uid++;
@@ -2880,7 +2880,7 @@ make_call_insn_raw (pattern)
 
 void
 add_insn (insn)
-     register rtx insn;
+     rtx insn;
 {
   PREV_INSN (insn) = last_insn;
   NEXT_INSN (insn) = 0;
@@ -3341,13 +3341,13 @@ remove_unnecessary_notes ()
 
 rtx
 emit_insn_before (pattern, before)
-     register rtx pattern, before;
+     rtx pattern, before;
 {
-  register rtx insn = before;
+  rtx insn = before;
 
   if (GET_CODE (pattern) == SEQUENCE)
     {
-      register int i;
+      int i;
 
       for (i = 0; i < XVECLEN (pattern, 0); i++)
 	{
@@ -3369,9 +3369,9 @@ emit_insn_before (pattern, before)
 
 rtx
 emit_jump_insn_before (pattern, before)
-     register rtx pattern, before;
+     rtx pattern, before;
 {
-  register rtx insn;
+  rtx insn;
 
   if (GET_CODE (pattern) == SEQUENCE)
     insn = emit_insn_before (pattern, before);
@@ -3389,9 +3389,9 @@ emit_jump_insn_before (pattern, before)
 
 rtx
 emit_call_insn_before (pattern, before)
-     register rtx pattern, before;
+     rtx pattern, before;
 {
-  register rtx insn;
+  rtx insn;
 
   if (GET_CODE (pattern) == SEQUENCE)
     insn = emit_insn_before (pattern, before);
@@ -3410,9 +3410,9 @@ emit_call_insn_before (pattern, before)
 
 rtx
 emit_barrier_before (before)
-     register rtx before;
+     rtx before;
 {
-  register rtx insn = rtx_alloc (BARRIER);
+  rtx insn = rtx_alloc (BARRIER);
 
   INSN_UID (insn) = cur_insn_uid++;
 
@@ -3444,7 +3444,7 @@ emit_note_before (subtype, before)
      int subtype;
      rtx before;
 {
-  register rtx note = rtx_alloc (NOTE);
+  rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = 0;
   NOTE_LINE_NUMBER (note) = subtype;
@@ -3458,13 +3458,13 @@ emit_note_before (subtype, before)
 
 rtx
 emit_insn_after (pattern, after)
-     register rtx pattern, after;
+     rtx pattern, after;
 {
-  register rtx insn = after;
+  rtx insn = after;
 
   if (GET_CODE (pattern) == SEQUENCE)
     {
-      register int i;
+      int i;
 
       for (i = 0; i < XVECLEN (pattern, 0); i++)
 	{
@@ -3509,9 +3509,9 @@ emit_insn_after_with_line_notes (pattern, after, from)
 
 rtx
 emit_jump_insn_after (pattern, after)
-     register rtx pattern, after;
+     rtx pattern, after;
 {
-  register rtx insn;
+  rtx insn;
 
   if (GET_CODE (pattern) == SEQUENCE)
     insn = emit_insn_after (pattern, after);
@@ -3529,9 +3529,9 @@ emit_jump_insn_after (pattern, after)
 
 rtx
 emit_barrier_after (after)
-     register rtx after;
+     rtx after;
 {
-  register rtx insn = rtx_alloc (BARRIER);
+  rtx insn = rtx_alloc (BARRIER);
 
   INSN_UID (insn) = cur_insn_uid++;
 
@@ -3564,7 +3564,7 @@ emit_note_after (subtype, after)
      int subtype;
      rtx after;
 {
-  register rtx note = rtx_alloc (NOTE);
+  rtx note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
   NOTE_SOURCE_FILE (note) = 0;
   NOTE_LINE_NUMBER (note) = subtype;
@@ -3580,7 +3580,7 @@ emit_line_note_after (file, line, after)
      int line;
      rtx after;
 {
-  register rtx note;
+  rtx note;
 
   if (no_line_numbers && line > 0)
     {
@@ -3611,7 +3611,7 @@ emit_insn (pattern)
 
   if (GET_CODE (pattern) == SEQUENCE)
     {
-      register int i;
+      int i;
 
       for (i = 0; i < XVECLEN (pattern, 0); i++)
 	{
@@ -3674,11 +3674,11 @@ emit_insns_before (insn, before)
 
 rtx
 emit_insns_after (first, after)
-     register rtx first;
-     register rtx after;
+     rtx first;
+     rtx after;
 {
-  register rtx last;
-  register rtx after_after;
+  rtx last;
+  rtx after_after;
   basic_block bb;
 
   if (!after)
@@ -3725,7 +3725,7 @@ emit_jump_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_jump_insn_raw (pattern);
+      rtx insn = make_jump_insn_raw (pattern);
       add_insn (insn);
       return insn;
     }
@@ -3742,7 +3742,7 @@ emit_call_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_call_insn_raw (pattern);
+      rtx insn = make_call_insn_raw (pattern);
       add_insn (insn);
       PUT_CODE (insn, CALL_INSN);
       return insn;
@@ -3772,7 +3772,7 @@ emit_label (label)
 rtx
 emit_barrier ()
 {
-  register rtx barrier = rtx_alloc (BARRIER);
+  rtx barrier = rtx_alloc (BARRIER);
   INSN_UID (barrier) = cur_insn_uid++;
   add_insn (barrier);
   return barrier;
@@ -3808,7 +3808,7 @@ emit_note (file, line)
      const char *file;
      int line;
 {
-  register rtx note;
+  rtx note;
 
   if (line > 0)
     {
@@ -3895,7 +3895,7 @@ classify_insn (x)
     }
   if (GET_CODE (x) == PARALLEL)
     {
-      register int j;
+      int j;
       for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
 	if (GET_CODE (XVECEXP (x, 0, j)) == CALL)
 	  return CALL_INSN;
@@ -3924,7 +3924,7 @@ emit (x)
     return emit_insn (x);
   else if (code == JUMP_INSN)
     {
-      register rtx insn = emit_jump_insn (x);
+      rtx insn = emit_jump_insn (x);
       if (any_uncondjump_p (insn) || GET_CODE (x) == RETURN)
 	return emit_barrier ();
       return insn;
@@ -4181,12 +4181,12 @@ static rtvec copy_asm_constraints_vector;
 
 rtx
 copy_insn_1 (orig)
-     register rtx orig;
+     rtx orig;
 {
-  register rtx copy;
-  register int i, j;
-  register RTX_CODE code;
-  register const char *format_ptr;
+  rtx copy;
+  int i, j;
+  RTX_CODE code;
+  const char *format_ptr;
 
   code = GET_CODE (orig);
 

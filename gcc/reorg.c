@@ -301,8 +301,8 @@ resource_conflicts_p (res1, res2)
 
 static int
 insn_references_resource_p (insn, res, include_delayed_effects)
-     register rtx insn;
-     register struct resources *res;
+     rtx insn;
+     struct resources *res;
      int include_delayed_effects;
 {
   struct resources insn_res;
@@ -319,8 +319,8 @@ insn_references_resource_p (insn, res, include_delayed_effects)
 
 static int
 insn_sets_resource_p (insn, res, include_delayed_effects)
-     register rtx insn;
-     register struct resources *res;
+     rtx insn;
+     struct resources *res;
      int include_delayed_effects;
 {
   struct resources insn_sets;
@@ -436,8 +436,8 @@ emit_delay_sequence (insn, list, length)
      rtx list;
      int length;
 {
-  register int i = 1;
-  register rtx li;
+  int i = 1;
+  rtx li;
   int had_barrier = 0;
 
   /* Allocate the rtvec to hold the insns and the SEQUENCE.  */
@@ -719,9 +719,9 @@ note_delay_statistics (slots_filled, index)
 
 static rtx
 optimize_skip (insn)
-     register rtx insn;
+     rtx insn;
 {
-  register rtx trial = next_nonnote_insn (insn);
+  rtx trial = next_nonnote_insn (insn);
   rtx next_trial = next_active_insn (trial);
   rtx delay_list = 0;
   rtx target_label;
@@ -2034,8 +2034,8 @@ static void
 fill_simple_delay_slots (non_jumps_p)
      int non_jumps_p;
 {
-  register rtx insn, pat, trial, next_trial;
-  register int i;
+  rtx insn, pat, trial, next_trial;
+  int i;
   int num_unfilled_slots = unfilled_slots_next - unfilled_slots_base;
   struct resources needed, set;
   int slots_to_fill, slots_filled;
@@ -2943,8 +2943,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 static void
 fill_eager_delay_slots ()
 {
-  register rtx insn;
-  register int i;
+  rtx insn;
+  int i;
   int num_unfilled_slots = unfilled_slots_next - unfilled_slots_base;
 
   for (i = 0; i < num_unfilled_slots; i++)
@@ -3072,8 +3072,8 @@ static void
 relax_delay_slots (first)
      rtx first;
 {
-  register rtx insn, next, pat;
-  register rtx trial, delay_insn, target_label;
+  rtx insn, next, pat;
+  rtx trial, delay_insn, target_label;
 
   /* Look at every JUMP_INSN and see if we can improve it.  */
   for (insn = first; insn; insn = next)
@@ -3662,7 +3662,7 @@ dbr_schedule (first, file)
 
   if (file)
     {
-      register int i, j, need_comma;
+      int i, j, need_comma;
       int total_delay_slots[MAX_DELAY_HISTOGRAM + 1];
       int total_annul_slots[MAX_DELAY_HISTOGRAM + 1];
 

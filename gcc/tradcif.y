@@ -218,11 +218,11 @@ static int
 parse_number (olen)
      int olen;
 {
-  register const char *p = lexptr;
-  register long n = 0;
-  register int c;
-  register int base = 10;
-  register int len = olen;
+  const char *p = lexptr;
+  long n = 0;
+  int c;
+  int base = 10;
+  int len = olen;
 
   for (c = 0; c < len; c++)
     if (p[c] == '.') {
@@ -310,10 +310,10 @@ static const struct token tokentab2[] = {
 static int
 yylex ()
 {
-  register int c;
-  register int namelen;
-  register const char *tokstart;
-  register const struct token *toktab;
+  int c;
+  int namelen;
+  const char *tokstart;
+  const struct token *toktab;
 
  retry:
 
@@ -440,7 +440,7 @@ static int
 parse_escape (string_ptr)
      const char **string_ptr;
 {
-  register int c = *(*string_ptr)++;
+  int c = *(*string_ptr)++;
   switch (c)
     {
     case 'a':
@@ -481,8 +481,8 @@ parse_escape (string_ptr)
     case '6':
     case '7':
       {
-	register int i = c - '0';
-	register int count = 0;
+	int i = c - '0';
+	int count = 0;
 	while (++count < 3)
 	  {
 	    c = *(*string_ptr)++;
@@ -503,7 +503,7 @@ parse_escape (string_ptr)
       }
     case 'x':
       {
-	register int i = 0;
+	int i = 0;
 	for (;;)
 	  {
 	    c = *(*string_ptr)++;

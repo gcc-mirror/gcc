@@ -102,9 +102,9 @@ static void
 gen_insn (insn)
      rtx insn;
 {
-  register int i;
-  register struct extraction *p;
-  register struct code_ptr *link;
+  int i;
+  struct extraction *p;
+  struct code_ptr *link;
 
   op_count = 0;
   dup_count = 0;
@@ -183,10 +183,10 @@ walk_rtx (x, path)
      rtx x;
      const char *path;
 {
-  register RTX_CODE code;
-  register int i;
-  register int len;
-  register const char *fmt;
+  RTX_CODE code;
+  int i;
+  int len;
+  const char *fmt;
   int depth = strlen (path);
   char *newpath;
 
@@ -307,8 +307,8 @@ static void
 print_path (path)
      const char *path;
 {
-  register int len = strlen (path);
-  register int i;
+  int len = strlen (path);
+  int i;
 
   if (len == 0)
     {
@@ -387,8 +387,8 @@ from the machine description file `md'.  */\n\n");
   printf ("void\ninsn_extract (insn)\n");
   printf ("     rtx insn;\n");
   printf ("{\n");
-  printf ("  register rtx *ro = recog_data.operand;\n");
-  printf ("  register rtx **ro_loc = recog_data.operand_loc;\n");
+  printf ("  rtx *ro = recog_data.operand;\n");
+  printf ("  rtx **ro_loc = recog_data.operand_loc;\n");
   printf ("  rtx pat = PATTERN (insn);\n");
   printf ("  int i ATTRIBUTE_UNUSED;\n\n");
   printf ("  memset (ro, 0, sizeof (*ro) * MAX_RECOG_OPERANDS);\n");

@@ -560,9 +560,9 @@ is_ctor_dtor (s)
   struct names { const char *const name; const int len; const int ret;
     const int two_underscores; };
 
-  register struct names *p;
-  register int ch;
-  register const char *orig_s = s;
+  struct names *p;
+  int ch;
+  const char *orig_s = s;
 
   static struct names special[] = {
     { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },

@@ -488,7 +488,7 @@ add_insn_mem_dependence (deps, insn_list, mem_list, insn, mem)
      struct deps *deps;
      rtx *insn_list, *mem_list, insn, mem;
 {
-  register rtx link;
+  rtx link;
 
   link = alloc_INSN_LIST (insn, *insn_list);
   *insn_list = link;
@@ -564,8 +564,8 @@ sched_analyze_1 (deps, x, insn)
      rtx x;
      rtx insn;
 {
-  register int regno;
-  register rtx dest = XEXP (x, 0);
+  int regno;
+  rtx dest = XEXP (x, 0);
   enum rtx_code code = GET_CODE (x);
 
   if (dest == 0)
@@ -573,7 +573,7 @@ sched_analyze_1 (deps, x, insn)
 
   if (GET_CODE (dest) == PARALLEL)
     {
-      register int i;
+      int i;
 
       for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
 	if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
@@ -601,7 +601,7 @@ sched_analyze_1 (deps, x, insn)
 
   if (GET_CODE (dest) == REG)
     {
-      register int i;
+      int i;
 
       regno = REGNO (dest);
 
@@ -759,10 +759,10 @@ sched_analyze_2 (deps, x, insn)
      rtx x;
      rtx insn;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
 
   if (x == 0)
     return;
@@ -1007,7 +1007,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
      rtx x, insn;
      rtx loop_notes;
 {
-  register RTX_CODE code = GET_CODE (x);
+  RTX_CODE code = GET_CODE (x);
   int schedule_barrier_found = 0;
   rtx link;
   int i;
@@ -1025,7 +1025,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
     sched_analyze_1 (deps, x, insn);
   else if (code == PARALLEL)
     {
-      register int i;
+      int i;
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	{
 	  rtx sub = XVECEXP (x, 0, i);
@@ -1264,8 +1264,8 @@ sched_analyze (deps, head, tail)
      struct deps *deps;
      rtx head, tail;
 {
-  register rtx insn;
-  register rtx u;
+  rtx insn;
+  rtx u;
   rtx loop_notes = 0;
 
   if (current_sched_info->use_cselib)
@@ -1298,7 +1298,7 @@ sched_analyze (deps, head, tail)
       else if (GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx x;
-	  register int i;
+	  int i;
 
 	  /* Clear out stale SCHED_GROUP_P.  */
 	  SCHED_GROUP_P (insn) = 0;

@@ -47,9 +47,9 @@ int
 rtx_unstable_p (x)
      rtx x;
 {
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register const char *fmt;
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
 
   switch (code)
     {
@@ -123,9 +123,9 @@ rtx_varies_p (x, for_alias)
      rtx x;
      int for_alias;
 {
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register const char *fmt;
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
 
   switch (code)
     {
@@ -202,9 +202,9 @@ rtx_varies_p (x, for_alias)
 
 int
 rtx_addr_can_trap_p (x)
-     register rtx x;
+     rtx x;
 {
-  register enum rtx_code code = GET_CODE (x);
+  enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -269,9 +269,9 @@ rtx_addr_varies_p (x, for_alias)
      rtx x;
      int for_alias;
 {
-  register enum rtx_code code;
-  register int i;
-  register const char *fmt;
+  enum rtx_code code;
+  int i;
+  const char *fmt;
 
   if (x == 0)
     return 0;
@@ -407,11 +407,11 @@ count_occurrences (x, find, count_dest)
 
 int
 reg_mentioned_p (reg, in)
-     register rtx reg, in;
+     rtx reg, in;
 {
-  register const char *fmt;
-  register int i;
-  register enum rtx_code code;
+  const char *fmt;
+  int i;
+  enum rtx_code code;
 
   if (in == 0)
     return 0;
@@ -457,7 +457,7 @@ reg_mentioned_p (reg, in)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (in, i) - 1; j >= 0; j--)
 	    if (reg_mentioned_p (reg, XVECEXP (in, i, j)))
 	      return 1;
@@ -476,7 +476,7 @@ int
 no_labels_between_p (beg, end)
      rtx beg, end;
 {
-  register rtx p;
+  rtx p;
   if (beg == end)
     return 0;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
@@ -492,7 +492,7 @@ int
 no_jumps_between_p (beg, end)
      rtx beg, end;
 {
-  register rtx p;
+  rtx p;
   for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
     if (GET_CODE (p) == JUMP_INSN)
       return 0;
@@ -506,7 +506,7 @@ int
 reg_used_between_p (reg, from_insn, to_insn)
      rtx reg, from_insn, to_insn;
 {
-  register rtx insn;
+  rtx insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -605,7 +605,7 @@ int
 reg_referenced_between_p (reg, from_insn, to_insn)
      rtx reg, from_insn, to_insn;
 {
-  register rtx insn;
+  rtx insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -626,7 +626,7 @@ int
 reg_set_between_p (reg, from_insn, to_insn)
      rtx reg, from_insn, to_insn;
 {
-  register rtx insn;
+  rtx insn;
 
   if (from_insn == to_insn)
     return 0;
@@ -1218,7 +1218,7 @@ refers_to_regno_p (regno, endregno, x, loc)
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >=0; j--)
 	    if (loc != &XVECEXP (x, i, j)
 		&& refers_to_regno_p (regno, endregno, XVECEXP (x, i, j), loc))
@@ -1364,7 +1364,7 @@ reg_set_last (x, insn)
      
 void
 note_stores (x, fun, data)
-     register rtx x;
+     rtx x;
      void (*fun) PARAMS ((rtx, rtx, void *));
      void *data;
 {
@@ -1375,7 +1375,7 @@ note_stores (x, fun, data)
 
   if (GET_CODE (x) == SET || GET_CODE (x) == CLOBBER)
     {
-      register rtx dest = SET_DEST (x);
+      rtx dest = SET_DEST (x);
 
       while ((GET_CODE (dest) == SUBREG
 	      && (GET_CODE (SUBREG_REG (dest)) != REG
@@ -1582,7 +1582,7 @@ dead_or_set_regno_p (insn, test_regno)
     }
   else if (GET_CODE (pattern) == PARALLEL)
     {
-      register int i;
+      int i;
 
       for (i = XVECLEN (pattern, 0) - 1; i >= 0; i--)
 	{
@@ -1627,7 +1627,7 @@ find_reg_note (insn, kind, datum)
      enum reg_note kind;
      rtx datum;
 {
-  register rtx link;
+  rtx link;
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
   if (! INSN_P (insn))
@@ -1651,7 +1651,7 @@ find_regno_note (insn, kind, regno)
      enum reg_note kind;
      unsigned int regno;
 {
-  register rtx link;
+  rtx link;
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
   if (! INSN_P (insn))
@@ -1708,7 +1708,7 @@ find_reg_fusage (insn, code, datum)
 
   if (GET_CODE (datum) != REG)
     {
-      register rtx link;
+      rtx link;
 
       for (link = CALL_INSN_FUNCTION_USAGE (insn);
            link;
@@ -1748,7 +1748,7 @@ find_regno_fusage (insn, code, regno)
      enum rtx_code code;
      unsigned int regno;
 {
-  register rtx link;
+  rtx link;
 
   /* CALL_INSN_FUNCTION_USAGE information cannot contain references
      to pseudo registers, so don't bother checking.  */
@@ -1776,10 +1776,10 @@ find_regno_fusage (insn, code, regno)
 
 void
 remove_note (insn, note)
-     register rtx insn;
-     register rtx note;
+     rtx insn;
+     rtx note;
 {
-  register rtx link;
+  rtx link;
 
   if (note == NULL_RTX)
     return;
@@ -1840,7 +1840,7 @@ int
 volatile_insn_p (x)
      rtx x;
 {
-  register RTX_CODE code;
+  RTX_CODE code;
 
   code = GET_CODE (x);
   switch (code)
@@ -1877,8 +1877,8 @@ volatile_insn_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
-    register int i;
+    const char *fmt = GET_RTX_FORMAT (code);
+    int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -1889,7 +1889,7 @@ volatile_insn_p (x)
 	  }
 	else if (fmt[i] == 'E')
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      if (volatile_insn_p (XVECEXP (x, i, j)))
 		return 1;
@@ -1906,7 +1906,7 @@ int
 volatile_refs_p (x)
      rtx x;
 {
-  register RTX_CODE code;
+  RTX_CODE code;
 
   code = GET_CODE (x);
   switch (code)
@@ -1943,8 +1943,8 @@ volatile_refs_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
-    register int i;
+    const char *fmt = GET_RTX_FORMAT (code);
+    int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -1955,7 +1955,7 @@ volatile_refs_p (x)
 	  }
 	else if (fmt[i] == 'E')
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      if (volatile_refs_p (XVECEXP (x, i, j)))
 		return 1;
@@ -1972,7 +1972,7 @@ int
 side_effects_p (x)
      rtx x;
 {
-  register RTX_CODE code;
+  RTX_CODE code;
 
   code = GET_CODE (x);
   switch (code)
@@ -2020,8 +2020,8 @@ side_effects_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
-    register int i;
+    const char *fmt = GET_RTX_FORMAT (code);
+    int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -2032,7 +2032,7 @@ side_effects_p (x)
 	  }
 	else if (fmt[i] == 'E')
 	  {
-	    register int j;
+	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      if (side_effects_p (XVECEXP (x, i, j)))
 		return 1;
@@ -2140,7 +2140,7 @@ may_trap_p (x)
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (may_trap_p (XVECEXP (x, i, j)))
 	      return 1;
@@ -2156,9 +2156,9 @@ int
 inequality_comparisons_p (x)
      rtx x;
 {
-  register const char *fmt;
-  register int len, i;
-  register enum rtx_code code = GET_CODE (x);
+  const char *fmt;
+  int len, i;
+  enum rtx_code code = GET_CODE (x);
 
   switch (code)
     {
@@ -2199,7 +2199,7 @@ inequality_comparisons_p (x)
 	}
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	    if (inequality_comparisons_p (XVECEXP (x, i, j)))
 	      return 1;
@@ -2219,8 +2219,8 @@ rtx
 replace_rtx (x, from, to)
      rtx x, from, to;
 {
-  register int i, j;
-  register const char *fmt;
+  int i, j;
+  const char *fmt;
 
   /* The following prevents loops occurrence when we change MEM in
      CONST_DOUBLE onto the same CONST_DOUBLE.  */
@@ -2266,9 +2266,9 @@ replace_regs (x, reg_map, nregs, replace_dest)
      unsigned int nregs;
      int replace_dest;
 {
-  register enum rtx_code code;
-  register int i;
-  register const char *fmt;
+  enum rtx_code code;
+  int i;
+  const char *fmt;
 
   if (x == 0)
     return x;
@@ -2341,7 +2341,7 @@ replace_regs (x, reg_map, nregs, replace_dest)
 	XEXP (x, i) = replace_regs (XEXP (x, i), reg_map, nregs, replace_dest);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j) = replace_regs (XVECEXP (x, i, j), reg_map,
 					      nregs, replace_dest);
@@ -2527,7 +2527,7 @@ regno_use_in (regno, x)
      unsigned int regno;
      rtx x;
 {
-  register const char *fmt;
+  const char *fmt;
   int i, j;
   rtx tem;
 

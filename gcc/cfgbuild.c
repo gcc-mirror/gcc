@@ -62,9 +62,9 @@ static int
 count_basic_blocks (f)
      rtx f;
 {
-  register rtx insn;
-  register RTX_CODE prev_code;
-  register int count = 0;
+  rtx insn;
+  RTX_CODE prev_code;
+  int count = 0;
   int saw_abnormal_edge = 0;
 
   prev_code = JUMP_INSN;
@@ -407,7 +407,7 @@ static void
 find_basic_blocks_1 (f)
      rtx f;
 {
-  register rtx insn, next;
+  rtx insn, next;
   int i = 0;
   rtx bb_note = NULL_RTX;
   rtx lvl = NULL_RTX;

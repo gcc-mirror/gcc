@@ -523,7 +523,7 @@ assign_stack_local_1 (mode, size, align, function)
      int align;
      struct function *function;
 {
-  register rtx x, addr;
+  rtx x, addr;
   int bigend_correction = 0;
   int alignment;
 
@@ -1303,7 +1303,7 @@ void
 put_var_into_stack (decl)
      tree decl;
 {
-  register rtx reg;
+  rtx reg;
   enum machine_mode promoted_mode, decl_mode;
   struct function *function = 0;
   tree context;
@@ -1879,17 +1879,17 @@ fixup_var_refs_insn (insn, var, promoted_mode, unsignedp, toplevel)
 
 static void
 fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
-     register rtx var;
+     rtx var;
      enum machine_mode promoted_mode;
-     register rtx *loc;
+     rtx *loc;
      rtx insn;
      struct fixup_replacement **replacements;
 {
-  register int i;
-  register rtx x = *loc;
+  int i;
+  rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
-  register const char *fmt;
-  register rtx tem, tem1;
+  const char *fmt;
+  rtx tem, tem1;
   struct fixup_replacement *replacement;
 
   switch (code)
@@ -2458,7 +2458,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	fixup_var_refs_1 (var, promoted_mode, &XEXP (x, i), insn, replacements);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    fixup_var_refs_1 (var, promoted_mode, &XVECEXP (x, i, j),
 			      insn, replacements);
@@ -2512,13 +2512,13 @@ fixup_memory_subreg (x, insn, uncritical)
 
 static rtx
 walk_fixup_memory_subreg (x, insn, uncritical)
-     register rtx x;
+     rtx x;
      rtx insn;
      int uncritical;
 {
-  register enum rtx_code code;
-  register const char *fmt;
-  register int i;
+  enum rtx_code code;
+  const char *fmt;
+  int i;
 
   if (x == 0)
     return 0;
@@ -2537,7 +2537,7 @@ walk_fixup_memory_subreg (x, insn, uncritical)
 	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn, uncritical);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j)
 	      = walk_fixup_memory_subreg (XVECEXP (x, i, j), insn, uncritical);
@@ -2557,13 +2557,13 @@ fixup_stack_1 (x, insn)
      rtx x;
      rtx insn;
 {
-  register int i;
-  register RTX_CODE code = GET_CODE (x);
-  register const char *fmt;
+  int i;
+  RTX_CODE code = GET_CODE (x);
+  const char *fmt;
 
   if (code == MEM)
     {
-      register rtx ad = XEXP (x, 0);
+      rtx ad = XEXP (x, 0);
       /* If we have address of a stack slot but it's not valid
 	 (displacement is too large), compute the sum in a register.  */
       if (GET_CODE (ad) == PLUS
@@ -2600,7 +2600,7 @@ fixup_stack_1 (x, insn)
 	XEXP (x, i) = fixup_stack_1 (XEXP (x, i), insn);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j) = fixup_stack_1 (XVECEXP (x, i, j), insn);
 	}
@@ -2625,7 +2625,7 @@ optimize_bit_field (body, insn, equiv_mem)
      rtx insn;
      rtx *equiv_mem;
 {
-  register rtx bitfield;
+  rtx bitfield;
   int destflag;
   rtx seq = 0;
   enum machine_mode mode;
@@ -2645,7 +2645,7 @@ optimize_bit_field (body, insn, equiv_mem)
 	  != BLKmode)
       && INTVAL (XEXP (bitfield, 2)) % INTVAL (XEXP (bitfield, 1)) == 0)
     {
-      register rtx memref = 0;
+      rtx memref = 0;
 
       /* Now check that the containing word is memory, not a register,
 	 and that it is safe to change the machine mode.  */
@@ -4150,8 +4150,8 @@ get_first_nonparm_insn ()
 rtx
 get_first_block_beg ()
 {
-  register rtx searcher;
-  register rtx insn = get_first_nonparm_insn ();
+  rtx searcher;
+  rtx insn = get_first_nonparm_insn ();
 
   for (searcher = insn; searcher; searcher = NEXT_INSN (searcher))
     if (GET_CODE (searcher) == NOTE
@@ -4211,9 +4211,9 @@ void
 assign_parms (fndecl)
      tree fndecl;
 {
-  register tree parm;
-  register rtx entry_parm = 0;
-  register rtx stack_parm = 0;
+  tree parm;
+  rtx entry_parm = 0;
+  rtx stack_parm = 0;
   CUMULATIVE_ARGS args_so_far;
   enum machine_mode promoted_mode, passed_mode;
   enum machine_mode nominal_mode, promoted_nominal_mode;
@@ -4660,7 +4660,7 @@ assign_parms (fndecl)
 	  /* Store the parm in a pseudoregister during the function, but we
 	     may need to do it in a wider mode.  */
 
-	  register rtx parmreg;
+	  rtx parmreg;
 	  unsigned int regno, regnoi = 0, regnor = 0;
 
 	  unsignedp = TREE_UNSIGNED (TREE_TYPE (parm));
@@ -5354,7 +5354,7 @@ void
 uninitialized_vars_warning (block)
      tree block;
 {
-  register tree decl, sub;
+  tree decl, sub;
   for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
     {
       if (warn_uninitialized
@@ -5395,7 +5395,7 @@ uninitialized_vars_warning (block)
 void
 setjmp_args_warning ()
 {
-  register tree decl;
+  tree decl;
   for (decl = DECL_ARGUMENTS (current_function_decl);
        decl; decl = TREE_CHAIN (decl))
     if (DECL_RTL (decl) != 0
@@ -5412,7 +5412,7 @@ void
 setjmp_protect (block)
      tree block;
 {
-  register tree decl, sub;
+  tree decl, sub;
   for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
     if ((TREE_CODE (decl) == VAR_DECL
 	 || TREE_CODE (decl) == PARM_DECL)
@@ -5444,7 +5444,7 @@ setjmp_protect (block)
 void
 setjmp_protect_args ()
 {
-  register tree decl;
+  tree decl;
   for (decl = DECL_ARGUMENTS (current_function_decl);
        decl; decl = TREE_CHAIN (decl))
     if ((TREE_CODE (decl) == VAR_DECL
@@ -5969,7 +5969,7 @@ static tree
 blocks_nreverse (t)
      tree t;
 {
-  register tree prev = 0, decl, next;
+  tree prev = 0, decl, next;
   for (decl = t; decl; decl = next)
     {
       next = BLOCK_CHAIN (decl);
@@ -6403,7 +6403,7 @@ expand_function_start (subr, parms_have_cleanups)
   if (aggregate_value_p (DECL_RESULT (subr)))
     {
       /* Returning something that won't go in a register.  */
-      register rtx value_address = 0;
+      rtx value_address = 0;
 
 #ifdef PCC_STATIC_STRUCT_RETURN
       if (current_function_returns_pcc_struct)
@@ -7046,7 +7046,7 @@ contains (insn, vec)
      rtx insn;
      varray_type vec;
 {
-  register int i, j;
+  int i, j;
 
   if (GET_CODE (insn) == INSN
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -7487,7 +7487,7 @@ reposition_prologue_and_epilogue_notes (f)
 
   if ((len = VARRAY_SIZE (prologue)) > 0)
     {
-      register rtx insn, note = 0;
+      rtx insn, note = 0;
 
       /* Scan from the beginning until we reach the last prologue insn.
 	 We apparently can't depend on basic_block_{head,end} after
@@ -7530,7 +7530,7 @@ reposition_prologue_and_epilogue_notes (f)
 
   if ((len = VARRAY_SIZE (epilogue)) > 0)
     {
-      register rtx insn, note = 0;
+      rtx insn, note = 0;
 
       /* Scan from the end until we reach the first epilogue insn.
 	 We apparently can't depend on basic_block_{head,end} after

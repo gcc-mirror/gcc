@@ -360,7 +360,7 @@ HAIFA_INLINE int
 insn_unit (insn)
      rtx insn;
 {
-  register int unit = INSN_UNIT (insn);
+  int unit = INSN_UNIT (insn);
 
   if (unit == 0)
     {
@@ -646,7 +646,7 @@ HAIFA_INLINE int
 insn_cost (insn, link, used)
      rtx insn, link, used;
 {
-  register int cost = INSN_COST (insn);
+  int cost = INSN_COST (insn);
 
   if (cost == 0)
     {
@@ -1462,7 +1462,7 @@ queue_to_ready (ready)
      of the pending insns at that point to the ready list.  */
   if (ready->n_ready == 0)
     {
-      register int stalls;
+      int stalls;
 
       for (stalls = 1; stalls < INSN_QUEUE_SIZE; stalls++)
 	{

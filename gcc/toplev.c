@@ -1638,9 +1638,9 @@ botch (s)
 
 int
 exact_log2_wide (x)
-     register unsigned HOST_WIDE_INT x;
+     unsigned HOST_WIDE_INT x;
 {
-  register int log = 0;
+  int log = 0;
   /* Test for 0 or a power of 2.  */
   if (x == 0 || x != (x & -x))
     return -1;
@@ -1656,9 +1656,9 @@ exact_log2_wide (x)
 
 int
 floor_log2_wide (x)
-     register unsigned HOST_WIDE_INT x;
+     unsigned HOST_WIDE_INT x;
 {
-  register int log = -1;
+  int log = -1;
   while (x != 0)
     log++,
     x >>= 1;
@@ -2613,7 +2613,7 @@ void
 rest_of_compilation (decl)
      tree decl;
 {
-  register rtx insns;
+  rtx insns;
   int tem;
   int failure = 0;
   int rebuild_label_notes_after_reload;
@@ -4612,7 +4612,7 @@ toplev_main (argc, argv)
      int argc;
      char **argv;
 {
-  register int i;
+  int i;
   char *p;
 
   /* save in case md file wants to emit args as a comment.  */
@@ -4986,7 +4986,7 @@ static void
 set_target_switch (name)
      const char *name;
 {
-  register size_t j;
+  size_t j;
   int valid_target_option = 0;
 
   for (j = 0; j < ARRAY_SIZE (target_switches); j++)

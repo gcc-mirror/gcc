@@ -112,8 +112,8 @@ static void
 remove_constraints (part)
      rtx part;
 {
-  register int i, j;
-  register const char *format_ptr;
+  int i, j;
+  const char *format_ptr;
 
   if (part == 0)
     return;
@@ -847,8 +847,8 @@ char *
 xstrdup (input)
   const char *input;
 {
-  register size_t len = strlen (input) + 1;
-  register char *output = xmalloc (len);
+  size_t len = strlen (input) + 1;
+  char *output = xmalloc (len);
   memcpy (output, input, len);
   return output;
 }
@@ -873,7 +873,7 @@ xrealloc (old, size)
   PTR old;
   size_t size;
 {
-  register PTR ptr;
+  PTR ptr;
   if (old)
     ptr = (PTR) really_call_realloc (old, size);
   else
@@ -887,7 +887,7 @@ PTR
 xmalloc (size)
   size_t size;
 {
-  register PTR val = (PTR) really_call_malloc (size);
+  PTR val = (PTR) really_call_malloc (size);
 
   if (val == 0)
     fatal ("virtual memory exhausted");

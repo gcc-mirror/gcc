@@ -1477,7 +1477,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      int at_end ATTRIBUTE_UNUSED;
      int dont_output_data;
 {
-  register const char *name;
+  const char *name;
   unsigned int align;
   int reloc = 0;
   rtx decl_rtl;
@@ -2170,7 +2170,7 @@ immed_double_const (i0, i1, mode)
      HOST_WIDE_INT i0, i1;
      enum machine_mode mode;
 {
-  register rtx r;
+  rtx r;
 
   if (GET_MODE_CLASS (mode) == MODE_INT
       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
@@ -2262,7 +2262,7 @@ immed_real_const_1 (d, mode)
      enum machine_mode mode;
 {
   union real_extract u;
-  register rtx r;
+  rtx r;
 
   /* Get the desired `double' value as a sequence of ints
      since that is how they are stored in a CONST_DOUBLE.  */
@@ -2343,7 +2343,7 @@ immed_real_const (exp)
 void
 clear_const_double_mem ()
 {
-  register rtx r, next;
+  rtx r, next;
   enum machine_mode mode;
   int i;
 
@@ -2381,9 +2381,9 @@ decode_addr_const (exp, value)
      tree exp;
      struct addr_const *value;
 {
-  register tree target = TREE_OPERAND (exp, 0);
-  register int offset = 0;
-  register rtx x;
+  tree target = TREE_OPERAND (exp, 0);
+  int offset = 0;
+  rtx x;
 
   while (1)
     {
@@ -2564,9 +2564,9 @@ static int
 const_hash (exp)
      tree exp;
 {
-  register const char *p;
-  register int len, hi, i;
-  register enum tree_code code = TREE_CODE (exp);
+  const char *p;
+  int len, hi, i;
+  enum tree_code code = TREE_CODE (exp);
 
   /* Either set P and LEN to the address and len of something to hash and
      exit the switch or return a value.  */
@@ -2605,7 +2605,7 @@ const_hash (exp)
 	}
       else
 	{
-	  register tree link;
+	  tree link;
 
 	  /* For record type, include the type in the hashing.
 	     We do not do so for array types
@@ -2702,9 +2702,9 @@ compare_constant_1 (exp, p)
      tree exp;
      const unsigned char *p;
 {
-  register const unsigned char *strp;
-  register int len;
-  register enum tree_code code = TREE_CODE (exp);
+  const unsigned char *strp;
+  int len;
+  enum tree_code code = TREE_CODE (exp);
 
   if (code != (enum tree_code) *p++)
     return 0;
@@ -2771,7 +2771,7 @@ compare_constant_1 (exp, p)
 	}
       else
 	{
-	  register tree link;
+	  tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
 	  tree type;
 	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
@@ -2957,9 +2957,9 @@ static void
 record_constant_1 (exp)
      tree exp;
 {
-  register const unsigned char *strp;
-  register int len;
-  register enum tree_code code = TREE_CODE (exp);
+  const unsigned char *strp;
+  int len;
+  enum tree_code code = TREE_CODE (exp);
 
   obstack_1grow (&permanent_obstack, (unsigned int) code);
 
@@ -3006,7 +3006,7 @@ record_constant_1 (exp)
 	}
       else
 	{
-	  register tree link;
+	  tree link;
 	  int length = list_length (CONSTRUCTOR_ELTS (exp));
 	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
 	  tree type;
@@ -3276,8 +3276,8 @@ output_constant_def (exp, defer)
      tree exp;
      int defer;
 {
-  register int hash;
-  register struct constant_descriptor *desc;
+  int hash;
+  struct constant_descriptor *desc;
   struct deferred_string **defstr;
   char label[256];
   int reloc;
@@ -3705,8 +3705,8 @@ const_hash_rtx (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register int hi;
-  register size_t i;
+  int hi;
+  size_t i;
 
   struct rtx_const value;
   decode_rtx_const (mode, x, &value);
@@ -3730,9 +3730,9 @@ compare_constant_rtx (mode, x, desc)
      rtx x;
      struct constant_descriptor *desc;
 {
-  register int *p = (int *) desc->u.contents;
-  register int *strp;
-  register int len;
+  int *p = (int *) desc->u.contents;
+  int *strp;
+  int len;
   struct rtx_const value;
 
   decode_rtx_const (mode, x, &value);
@@ -3773,8 +3773,8 @@ force_const_mem (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register int hash;
-  register struct constant_descriptor *desc;
+  int hash;
+  struct constant_descriptor *desc;
   char label[256];
   const char *found = 0;
   rtx def;
@@ -3807,7 +3807,7 @@ force_const_mem (mode, x)
 
   if (found == 0)
     {
-      register struct pool_constant *pool;
+      struct pool_constant *pool;
       int align;
 
       /* No constant equal to X is known to have been output.
@@ -4081,7 +4081,7 @@ output_constant_pool (fnname, fndecl)
 static void
 mark_constant_pool ()
 {
-  register rtx insn;
+  rtx insn;
   struct pool_constant *pool;
 
   if (first_pool == 0 && htab_elements (const_str_htab) == 0)
@@ -4110,8 +4110,8 @@ static void
 mark_constants (x)
      rtx x;
 {
-  register int i;
-  register const char *format_ptr;
+  int i;
+  const char *format_ptr;
 
   if (x == 0)
     return;
@@ -4148,7 +4148,7 @@ mark_constants (x)
 	case 'E':
 	  if (XVEC (x, i) != 0)
 	    {
-	      register int j;
+	      int j;
 
 	      for (j = 0; j < XVECLEN (x, i); j++)
 		mark_constants (XVECEXP (x, i, j));
@@ -4238,7 +4238,7 @@ output_addressed_constants (exp)
     {
     case ADDR_EXPR:
       {
-	register tree constant = TREE_OPERAND (exp, 0);
+	tree constant = TREE_OPERAND (exp, 0);
 
 	while (TREE_CODE (constant) == COMPONENT_REF)
 	  {
@@ -4268,7 +4268,7 @@ output_addressed_constants (exp)
 
     case CONSTRUCTOR:
       {
-	register tree link;
+	tree link;
 	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
 	  if (TREE_VALUE (link) != 0)
 	    reloc |= output_addressed_constants (TREE_VALUE (link));
@@ -4476,7 +4476,7 @@ output_constant (exp, size, align)
      int size;
      unsigned int align;
 {
-  register enum tree_code code = TREE_CODE (TREE_TYPE (exp));
+  enum tree_code code = TREE_CODE (TREE_TYPE (exp));
 
   /* Some front-ends use constants other than the standard
      language-indepdent varieties, but which may still be output
@@ -4672,14 +4672,14 @@ output_constructor (exp, size, align)
      unsigned int align;
 {
   tree type = TREE_TYPE (exp);
-  register tree link, field = 0;
+  tree link, field = 0;
   tree min_index = 0;
   /* Number of bytes output or skipped so far.
      In other words, current position within the constructor.  */
   HOST_WIDE_INT total_bytes = 0;
   /* Non-zero means BYTE contains part of a byte, to be output.  */
   int byte_buffer_in_use = 0;
-  register int byte = 0;
+  int byte = 0;
 
   if (HOST_BITS_PER_WIDE_INT < BITS_PER_UNIT)
     abort ();

@@ -482,7 +482,7 @@ mark_set_regs (reg, setter, data)
      rtx setter ATTRIBUTE_UNUSED;
      void *data ATTRIBUTE_UNUSED;
 {
-  register int regno, endregno, i;
+  int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
 
   if (GET_CODE (reg) == SUBREG)
@@ -515,7 +515,7 @@ add_stored_regs (reg, setter, data)
      rtx setter;
      void *data;
 {
-  register int regno, endregno, i;
+  int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);
   int offset = 0;
 

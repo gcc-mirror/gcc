@@ -100,9 +100,9 @@ union float_long
 float
 __addsf3 (float a1, float a2)
 {
-  register long mant1, mant2;
-  register union float_long fl1, fl2;
-  register int exp1, exp2;
+  long mant1, mant2;
+  union float_long fl1, fl2;
+  int exp1, exp2;
   int sign = 0;
 
   fl1.f = a1;
@@ -196,7 +196,7 @@ test_done:
 float
 __subsf3 (float a1, float a2)
 {
-  register union float_long fl1, fl2;
+  union float_long fl1, fl2;
 
   fl1.f = a1;
   fl2.f = a2;
@@ -216,7 +216,7 @@ __subsf3 (float a1, float a2)
 long
 __cmpsf2 (float a1, float a2)
 {
-  register union float_long fl1, fl2;
+  union float_long fl1, fl2;
 
   fl1.f = a1;
   fl2.f = a2;
@@ -237,9 +237,9 @@ __cmpsf2 (float a1, float a2)
 float
 __mulsf3 (float a1, float a2)
 {
-  register union float_long fl1, fl2;
-  register unsigned long result;
-  register int exp;
+  union float_long fl1, fl2;
+  unsigned long result;
+  int exp;
   int sign;
 
   fl1.f = a1;
@@ -294,10 +294,10 @@ test_done:
 float
 __divsf3 (float a1, float a2)
 {
-  register union float_long fl1, fl2;
-  register int result;
-  register int mask;
-  register int exp, sign;
+  union float_long fl1, fl2;
+  int result;
+  int mask;
+  int exp, sign;
 
   fl1.f = a1;
   fl2.f = a2;
@@ -358,9 +358,9 @@ __divsf3 (float a1, float a2)
 
 /* convert int to double */
 double
-__floatsidf (register long a1)
+__floatsidf (long a1)
 {
-  register int sign = 0, exp = 31 + EXCESSD;
+  int sign = 0, exp = 31 + EXCESSD;
   union double_long dl;
 
   if (!a1)
@@ -397,9 +397,9 @@ __floatsidf (register long a1)
 }
 
 double
-__floatdidf (register long long a1)
+__floatdidf (long long a1)
 {
-    register int exp = 63 + EXCESSD;
+    int exp = 63 + EXCESSD;
     union double_long dl;
 
     dl.l.upper = dl.l.lower = 0;
@@ -428,13 +428,13 @@ __floatdidf (register long long a1)
 }
 
 float
-__floatsisf (register long a1)
+__floatsisf (long a1)
 {
     (float)__floatsidf(a1);
 }
 
 float
-__floatdisf (register long long a1)
+__floatdisf (long long a1)
 {
     (float)__floatdidf(a1);
 }
@@ -443,7 +443,7 @@ __floatdisf (register long long a1)
 float
 __negsf2 (float a1)
 {
-  register union float_long fl1;
+  union float_long fl1;
 
   fl1.f = a1;
   if (!fl1.l)
@@ -457,7 +457,7 @@ __negsf2 (float a1)
 double
 __negdf2 (double a1)
 {
-  register union double_long dl1;
+  union double_long dl1;
 
   dl1.d = a1;
 
@@ -472,9 +472,9 @@ __negdf2 (double a1)
 double
 __extendsfdf2 (float a1)
 {
-  register union float_long fl1;
-  register union double_long dl;
-  register int exp;
+  union float_long fl1;
+  union double_long dl;
+  int exp;
 
   fl1.f = a1;
 
@@ -497,10 +497,10 @@ __extendsfdf2 (float a1)
 float
 __truncdfsf2 (double a1)
 {
-  register int exp;
-  register long mant;
-  register union float_long fl;
-  register union double_long dl1;
+  int exp;
+  long mant;
+  union float_long fl;
+  union double_long dl1;
 
   dl1.d = a1;
 
@@ -534,7 +534,7 @@ __truncdfsf2 (double a1)
 long
 __cmpdf2 (double a1, double a2)
 {
-  register union double_long dl1, dl2;
+  union double_long dl1, dl2;
 
   dl1.d = a1;
   dl2.d = a2;
@@ -559,9 +559,9 @@ __cmpdf2 (double a1, double a2)
 long
 __fixdfsi (double a1)
 {
-  register union double_long dl1;
-  register int exp;
-  register long l;
+  union double_long dl1;
+  int exp;
+  long l;
 
   dl1.d = a1;
 
@@ -587,9 +587,9 @@ __fixdfsi (double a1)
 long long
 __fixdfdi (double a1)
 {
-    register union double_long dl1;
-    register int exp;
-    register long long l;
+    union double_long dl1;
+    int exp;
+    long long l;
 
     dl1.d = a1;
 
@@ -619,9 +619,9 @@ __fixdfdi (double a1)
 unsigned long
 __fixunsdfsi (double a1)
 {
-  register union double_long dl1;
-  register int exp;
-  register unsigned long l;
+  union double_long dl1;
+  int exp;
+  unsigned long l;
 
   dl1.d = a1;
 
@@ -647,9 +647,9 @@ __fixunsdfsi (double a1)
 unsigned long long
 __fixunsdfdi (double a1)
 {
-    register union double_long dl1;
-    register int exp;
-    register unsigned long long l;
+    union double_long dl1;
+    int exp;
+    unsigned long long l;
 
     dl1.d = a1;
 
@@ -676,9 +676,9 @@ __fixunsdfdi (double a1)
 double
 __adddf3 (double a1, double a2)
 {
-    register long long mant1, mant2;
-    register union double_long fl1, fl2;
-    register int exp1, exp2;
+    long long mant1, mant2;
+    union double_long fl1, fl2;
+    int exp1, exp2;
     int sign = 0;
 
     fl1.d = a1;
@@ -765,7 +765,7 @@ test_done:
 double
 __subdf3 (double a1, double a2)
 {
-    register union double_long fl1, fl2;
+    union double_long fl1, fl2;
 
     fl1.d = a1;
     fl2.d = a2;
@@ -784,9 +784,9 @@ __subdf3 (double a1, double a2)
 double
 __muldf3 (double a1, double a2)
 {
-    register union double_long fl1, fl2;
-    register unsigned long long result;
-    register int exp;
+    union double_long fl1, fl2;
+    unsigned long long result;
+    int exp;
     int sign;
 
     fl1.d = a1;
@@ -838,9 +838,9 @@ test_done:
 double
 __divdf3 (double a1, double a2)
 {
-    register union double_long fl1, fl2;
-    register long long mask,result;
-    register int exp, sign;
+    union double_long fl1, fl2;
+    long long mask,result;
+    int exp, sign;
 
     fl1.d = a1;
     fl2.d = a2;

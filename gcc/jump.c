@@ -78,7 +78,7 @@ void
 rebuild_jump_labels (f)
      rtx f;
 {
-  register rtx insn;
+  rtx insn;
   int max_uid = 0;
 
   max_uid = init_label_info (f) + 1;
@@ -131,7 +131,7 @@ void
 copy_loop_headers (f)
      rtx f;
 {
-  register rtx insn, next;
+  rtx insn, next;
   /* Now iterate optimizing jumps until nothing changes over one pass.  */
   for (insn = f; insn; insn = next)
     {
@@ -1094,7 +1094,7 @@ int
 condjump_p (insn)
      rtx insn;
 {
-  register rtx x = PATTERN (insn);
+  rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != SET
       || GET_CODE (SET_DEST (x)) != PC)
@@ -1125,7 +1125,7 @@ int
 condjump_in_parallel_p (insn)
      rtx insn;
 {
-  register rtx x = PATTERN (insn);
+  rtx x = PATTERN (insn);
 
   if (GET_CODE (x) != PARALLEL)
     return 0;
@@ -1347,10 +1347,10 @@ rtx
 follow_jumps (label)
      rtx label;
 {
-  register rtx insn;
-  register rtx next;
-  register rtx value = label;
-  register int depth;
+  rtx insn;
+  rtx next;
+  rtx value = label;
+  int depth;
 
   for (depth = 0;
        (depth < 10
@@ -1409,13 +1409,13 @@ follow_jumps (label)
 
 void
 mark_jump_label (x, insn, in_mem)
-     register rtx x;
+     rtx x;
      rtx insn;
      int in_mem;
 {
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register const char *fmt;
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
 
   switch (code)
     {
@@ -1505,7 +1505,7 @@ mark_jump_label (x, insn, in_mem)
 	mark_jump_label (XEXP (x, i), insn, in_mem);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    mark_jump_label (XVECEXP (x, i, j), insn, in_mem);
 	}
@@ -1520,7 +1520,7 @@ void
 delete_jump (insn)
      rtx insn;
 {
-  register rtx set = single_set (insn);
+  rtx set = single_set (insn);
 
   if (set && GET_CODE (SET_DEST (set)) == PC)
     delete_computation (insn);
@@ -1723,9 +1723,9 @@ delete_computation (insn)
 
 rtx
 delete_related_insns (insn)
-     register rtx insn;
+     rtx insn;
 {
-  register int was_code_label = (GET_CODE (insn) == CODE_LABEL);
+  int was_code_label = (GET_CODE (insn) == CODE_LABEL);
   rtx note;
   rtx next = NEXT_INSN (insn), prev = PREV_INSN (insn);
 
@@ -1824,7 +1824,7 @@ delete_related_insns (insn)
 
   if (was_code_label && prev && GET_CODE (prev) == BARRIER)
     {
-      register RTX_CODE code;
+      RTX_CODE code;
       while (next != 0
 	     && (GET_RTX_CLASS (code = GET_CODE (next)) == 'i'
 		 || code == NOTE || code == BARRIER
@@ -1867,14 +1867,14 @@ next_nondeleted_insn (insn)
 
 void
 delete_for_peephole (from, to)
-     register rtx from, to;
+     rtx from, to;
 {
-  register rtx insn = from;
+  rtx insn = from;
 
   while (1)
     {
-      register rtx next = NEXT_INSN (insn);
-      register rtx prev = PREV_INSN (insn);
+      rtx next = NEXT_INSN (insn);
+      rtx prev = PREV_INSN (insn);
 
       if (GET_CODE (insn) != NOTE)
 	{
@@ -1956,10 +1956,10 @@ redirect_exp_1 (loc, olabel, nlabel, insn)
      rtx olabel, nlabel;
      rtx insn;
 {
-  register rtx x = *loc;
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register const char *fmt;
+  rtx x = *loc;
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
 
   if (code == LABEL_REF)
     {
@@ -1999,7 +1999,7 @@ redirect_exp_1 (loc, olabel, nlabel, insn)
 	redirect_exp_1 (&XEXP (x, i), olabel, nlabel, insn);
       else if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    redirect_exp_1 (&XVECEXP (x, i, j), olabel, nlabel, insn);
 	}
@@ -2062,7 +2062,7 @@ redirect_jump (jump, nlabel, delete_unused)
      rtx jump, nlabel;
      int delete_unused;
 {
-  register rtx olabel = JUMP_LABEL (jump);
+  rtx olabel = JUMP_LABEL (jump);
 
   if (nlabel == olabel)
     return 1;
@@ -2095,7 +2095,7 @@ static void
 invert_exp_1 (insn)
      rtx insn;
 {
-  register RTX_CODE code;
+  RTX_CODE code;
   rtx x = pc_set (insn);
 
   if (!x)
@@ -2106,8 +2106,8 @@ invert_exp_1 (insn)
 
   if (code == IF_THEN_ELSE)
     {
-      register rtx comp = XEXP (x, 0);
-      register rtx tem;
+      rtx comp = XEXP (x, 0);
+      rtx tem;
       enum rtx_code reversed_code;
 
       /* We can do this in two ways:  The preferable way, which can only
@@ -2218,9 +2218,9 @@ int
 rtx_renumbered_equal_p (x, y)
      rtx x, y;
 {
-  register int i;
-  register RTX_CODE code = GET_CODE (x);
-  register const char *fmt;
+  int i;
+  RTX_CODE code = GET_CODE (x);
+  const char *fmt;
 
   if (x == y)
     return 1;
@@ -2349,7 +2349,7 @@ rtx_renumbered_equal_p (x, y)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
-      register int j;
+      int j;
       switch (fmt[i])
 	{
 	case 'w':
@@ -2716,10 +2716,10 @@ rtx_equal_for_thread_p (x, y, yinsn)
      rtx x, y;
      rtx yinsn;
 {
-  register int i;
-  register int j;
-  register enum rtx_code code;
-  register const char *fmt;
+  int i;
+  int j;
+  enum rtx_code code;
+  const char *fmt;
 
   code = GET_CODE (x);
   /* Rtx's of different codes cannot be equal.  */

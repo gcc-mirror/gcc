@@ -312,7 +312,7 @@ alloc_qty (regno, mode, size, birth)
      enum machine_mode mode;
      int size, birth;
 {
-  register int qtyno = next_qty++;
+  int qtyno = next_qty++;
 
   reg_qty[regno] = qtyno;
   reg_offset[regno] = 0;
@@ -335,7 +335,7 @@ alloc_qty (regno, mode, size, birth)
 int
 local_alloc ()
 {
-  register int b, i;
+  int b, i;
   int max_qty;
 
   /* We need to keep track of whether or not we recorded a LABEL_REF so
@@ -523,9 +523,9 @@ static int
 equiv_init_varies_p (x)
      rtx x;
 {
-  register RTX_CODE code = GET_CODE (x);
-  register int i;
-  register const char *fmt;
+  RTX_CODE code = GET_CODE (x);
+  int i;
+  const char *fmt;
 
   switch (code)
     {
@@ -1215,8 +1215,8 @@ static void
 block_alloc (b)
      int b;
 {
-  register int i, q;
-  register rtx insn;
+  int i, q;
+  rtx insn;
   rtx note;
   int insn_number = 0;
   int insn_count = 0;
@@ -1258,9 +1258,9 @@ block_alloc (b)
 
       if (INSN_P (insn))
 	{
-	  register rtx link, set;
-	  register int win = 0;
-	  register rtx r0, r1 = NULL_RTX;
+	  rtx link, set;
+	  int win = 0;
+	  rtx r0, r1 = NULL_RTX;
 	  int combined_regno = -1;
 	  int i;
 
@@ -1690,8 +1690,8 @@ qty_compare_1 (q1p, q2p)
      const PTR q1p;
      const PTR q2p;
 {
-  register int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
-  register int tem = QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
+  int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
+  int tem = QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
 
   if (tem != 0)
     return tem;
@@ -1717,7 +1717,7 @@ static int
 qty_sugg_compare (q1, q2)
      int q1, q2;
 {
-  register int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
+  int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
 
   if (tem != 0)
     return tem;
@@ -1730,8 +1730,8 @@ qty_sugg_compare_1 (q1p, q2p)
      const PTR q1p;
      const PTR q2p;
 {
-  register int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
-  register int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
+  int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
+  int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
 
   if (tem != 0)
     return tem;
@@ -1778,10 +1778,10 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
      rtx insn;
      int already_dead;
 {
-  register int ureg, sreg;
-  register int offset = 0;
+  int ureg, sreg;
+  int offset = 0;
   int usize, ssize;
-  register int sqty;
+  int sqty;
 
   /* Determine the numbers and sizes of registers being used.  If a subreg
      is present that does not change the entire register, don't consider
@@ -1947,7 +1947,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
       qty[sqty].freq += REG_FREQ (sreg);
       if (usize < ssize)
 	{
-	  register int i;
+	  int i;
 
 	  for (i = qty[sqty].first_reg; i >= 0; i = reg_next_in_qty[i])
 	    reg_offset[i] -= offset;
@@ -1971,7 +1971,7 @@ reg_meets_class_p (reg, class)
      int reg;
      enum reg_class class;
 {
-  register enum reg_class rclass = reg_preferred_class (reg);
+  enum reg_class rclass = reg_preferred_class (reg);
   return (reg_class_subset_p (rclass, class)
 	  || reg_class_subset_p (class, rclass));
 }
@@ -2032,7 +2032,7 @@ reg_is_born (reg, birth)
      rtx reg;
      int birth;
 {
-  register int regno;
+  int regno;
 
   if (GET_CODE (reg) == SUBREG)
     {
@@ -2070,10 +2070,10 @@ reg_is_born (reg, birth)
 
 static void
 wipe_dead_reg (reg, output_p)
-     register rtx reg;
+     rtx reg;
      int output_p;
 {
-  register int regno = REGNO (reg);
+  int regno = REGNO (reg);
 
   /* If this insn has multiple results,
      and the dead reg is used in one of the results,
@@ -2145,7 +2145,7 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
      int just_try_suggested;
      int born_index, dead_index;
 {
-  register int i, ins;
+  int i, ins;
 #ifdef HARD_REG_SET
   /* Declare it register if it's a scalar.  */
   register
@@ -2238,8 +2238,8 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
 	      || accept_call_clobbered
 	      || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
 	{
-	  register int j;
-	  register int size1 = HARD_REGNO_NREGS (regno, mode);
+	  int j;
+	  int size1 = HARD_REGNO_NREGS (regno, mode);
 	  for (j = 1; j < size1 && ! TEST_HARD_REG_BIT (used, regno + j); j++);
 	  if (j == size1)
 	    {
@@ -2296,11 +2296,11 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
 
 static void
 mark_life (regno, mode, life)
-     register int regno;
+     int regno;
      enum machine_mode mode;
      int life;
 {
-  register int j = HARD_REGNO_NREGS (regno, mode);
+  int j = HARD_REGNO_NREGS (regno, mode);
   if (life)
     while (--j >= 0)
       SET_HARD_REG_BIT (regs_live, regno + j);
@@ -2319,7 +2319,7 @@ post_mark_life (regno, mode, life, birth, death)
      enum machine_mode mode;
      int life, birth, death;
 {
-  register int j = HARD_REGNO_NREGS (regno, mode);
+  int j = HARD_REGNO_NREGS (regno, mode);
 #ifdef HARD_REG_SET
   /* Declare it register if it's a scalar.  */
   register
@@ -2451,7 +2451,7 @@ void
 dump_local_alloc (file)
      FILE *file;
 {
-  register int i;
+  int i;
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     if (reg_renumber[i] != -1)
       fprintf (file, ";; Register %d in %d.\n", i, reg_renumber[i]);

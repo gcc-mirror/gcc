@@ -76,12 +76,12 @@ static int debug_call_placeholder_verbose;
 
 static void
 print_rtx (in_rtx)
-     register rtx in_rtx;
+     rtx in_rtx;
 {
-  register int i = 0;
-  register int j;
-  register const char *format_ptr;
-  register int is_insn;
+  int i = 0;
+  int j;
+  const char *format_ptr;
+  int is_insn;
   rtx tem;
 
   if (sawclose)
@@ -335,7 +335,7 @@ print_rtx (in_rtx)
 	  }
 	else
 	  {
-	    register int value = XINT (in_rtx, i);
+	    int value = XINT (in_rtx, i);
 	    const char *name;
 
 	    if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
@@ -639,7 +639,7 @@ print_rtl (outf, rtx_first)
      FILE *outf;
      rtx rtx_first;
 {
-  register rtx tmp_rtx;
+  rtx tmp_rtx;
 
   outfile = outf;
   sawclose = 0;

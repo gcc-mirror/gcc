@@ -1606,9 +1606,9 @@ extern int rndprc;
 
 static void
 eclear (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
-  register int i;
+  int i;
 
   for (i = 0; i < NE; i++)
     *x++ = 0;
@@ -1618,9 +1618,9 @@ eclear (x)
 
 static void
 emov (a, b)
-     register UEMUSHORT *a, *b;
+     UEMUSHORT *a, *b;
 {
-  register int i;
+  int i;
 
   for (i = 0; i < NE; i++)
     *b++ = *a++;
@@ -1708,9 +1708,9 @@ eisnan (x)
 
 static void
 einfin (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
-  register int i;
+  int i;
 
 #ifdef INFINITY
   for (i = 0; i < NE - 1; i++)
@@ -1752,10 +1752,10 @@ einfin (x)
 #ifdef NANS
 static void
 enan (x, sign)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
      int sign;
 {
-  register int i;
+  int i;
 
   for (i = 0; i < NE - 2; i++)
     *x++ = 0;
@@ -1770,7 +1770,7 @@ static void
 emovi (a, b)
      UEMUSHORT *a, *b;
 {
-  register UEMUSHORT *p, *q;
+  UEMUSHORT *p, *q;
   int i;
 
   q = b;
@@ -1817,7 +1817,7 @@ static void
 emovo (a, b)
      UEMUSHORT *a, *b;
 {
-  register UEMUSHORT *p, *q;
+  UEMUSHORT *p, *q;
   UEMUSHORT i;
   int j;
 
@@ -1854,9 +1854,9 @@ emovo (a, b)
 
 static void
 ecleaz (xi)
-     register UEMUSHORT *xi;
+     UEMUSHORT *xi;
 {
-  register int i;
+  int i;
 
   for (i = 0; i < NI; i++)
     *xi++ = 0;
@@ -1866,9 +1866,9 @@ ecleaz (xi)
 
 static void
 ecleazs (xi)
-     register UEMUSHORT *xi;
+     UEMUSHORT *xi;
 {
-  register int i;
+  int i;
 
   ++xi;
   for (i = 0; i < NI - 1; i++)
@@ -1879,9 +1879,9 @@ ecleazs (xi)
 
 static void
 emovz (a, b)
-     register UEMUSHORT *a, *b;
+     UEMUSHORT *a, *b;
 {
-  register int i;
+  int i;
 
   for (i = 0; i < NI - 1; i++)
     *b++ = *a++;
@@ -1979,7 +1979,7 @@ eiisinf (x)
 
 static int
 ecmpm (a, b)
-     register UEMUSHORT *a, *b;
+     UEMUSHORT *a, *b;
 {
   int i;
 
@@ -2003,9 +2003,9 @@ ecmpm (a, b)
 
 static void
 eshdn1 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
-  register UEMUSHORT bits;
+  UEMUSHORT bits;
   int i;
 
   x += M;			/* point to significand area */
@@ -2027,9 +2027,9 @@ eshdn1 (x)
 
 static void
 eshup1 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
-  register UEMUSHORT bits;
+  UEMUSHORT bits;
   int i;
 
   x += NI - 1;
@@ -2052,9 +2052,9 @@ eshup1 (x)
 
 static void
 eshdn8 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
-  register UEMUSHORT newbyt, oldbyt;
+  UEMUSHORT newbyt, oldbyt;
   int i;
 
   x += M;
@@ -2073,10 +2073,10 @@ eshdn8 (x)
 
 static void
 eshup8 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
   int i;
-  register UEMUSHORT newbyt, oldbyt;
+  UEMUSHORT newbyt, oldbyt;
 
   x += NI - 1;
   oldbyt = 0;
@@ -2095,10 +2095,10 @@ eshup8 (x)
 
 static void
 eshup6 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
   int i;
-  register UEMUSHORT *p;
+  UEMUSHORT *p;
 
   p = x + M;
   x += M + 1;
@@ -2113,10 +2113,10 @@ eshup6 (x)
 
 static void
 eshdn6 (x)
-     register UEMUSHORT *x;
+     UEMUSHORT *x;
 {
   int i;
-  register UEMUSHORT *p;
+  UEMUSHORT *p;
 
   x += NI - 1;
   p = x + 1;
@@ -2133,7 +2133,7 @@ static void
 eaddm (x, y)
      UEMUSHORT *x, *y;
 {
-  register unsigned EMULONG a;
+  unsigned EMULONG a;
   int i;
   unsigned int carry;
 
@@ -2194,7 +2194,7 @@ edivm (den, num)
      UEMUSHORT den[], num[];
 {
   int i;
-  register UEMUSHORT *p, *q;
+  UEMUSHORT *p, *q;
   UEMUSHORT j;
 
   p = &equot[0];
@@ -2344,8 +2344,8 @@ m16m (a, b, c)
      unsigned int a;
      UEMUSHORT b[], c[];
 {
-  register UEMUSHORT *pp;
-  register unsigned EMULONG carry;
+  UEMUSHORT *pp;
+  unsigned EMULONG carry;
   UEMUSHORT *ps;
   UEMUSHORT p[NI];
   unsigned EMULONG aa, m;
@@ -2388,7 +2388,7 @@ edivm (den, num)
      UEMUSHORT den[], num[];
 {
   int i;
-  register UEMUSHORT *p;
+  UEMUSHORT *p;
   unsigned EMULONG tnum;
   UEMUSHORT j, tdenm, tquot;
   UEMUSHORT tprod[NI+1];
@@ -3135,8 +3135,8 @@ e53toe (pe, y)
   c4xtoe (pe, y, HFmode);
 
 #else
-  register UEMUSHORT r;
-  register UEMUSHORT *e, *p;
+  UEMUSHORT r;
+  UEMUSHORT *e, *p;
   UEMUSHORT yy[NI];
   int denorm, k;
 
@@ -3352,7 +3352,7 @@ static void
 e113toe (pe, y)
      UEMUSHORT *pe, *y;
 {
-  register UEMUSHORT r;
+  UEMUSHORT r;
   UEMUSHORT *e, *p;
   UEMUSHORT yy[NI];
   int denorm, i;
@@ -3450,8 +3450,8 @@ e24toe (pe, y)
 
 #else
 
-  register UEMUSHORT r;
-  register UEMUSHORT *e, *p;
+  UEMUSHORT r;
+  UEMUSHORT *e, *p;
   UEMUSHORT yy[NI];
   int denorm, k;
 
@@ -3576,7 +3576,7 @@ static void
 toe113 (a, b)
      UEMUSHORT *a, *b;
 {
-  register UEMUSHORT *p, *q;
+  UEMUSHORT *p, *q;
   UEMUSHORT i;
 
 #ifdef NANS
@@ -3670,7 +3670,7 @@ static void
 toe64 (a, b)
      UEMUSHORT *a, *b;
 {
-  register UEMUSHORT *p, *q;
+  UEMUSHORT *p, *q;
   UEMUSHORT i;
 
 #ifdef NANS
@@ -4161,8 +4161,8 @@ ecmp (a, b)
      UEMUSHORT *a, *b;
 {
   UEMUSHORT ai[NI], bi[NI];
-  register UEMUSHORT *p, *q;
-  register int i;
+  UEMUSHORT *p, *q;
+  int i;
   int msign;
 
 #ifdef NANS
@@ -4534,7 +4534,7 @@ static int
 enormlz (x)
      UEMUSHORT x[];
 {
-  register UEMUSHORT *p;
+  UEMUSHORT *p;
   int sc;
 
   sc = 0;
@@ -5561,7 +5561,7 @@ static void
 efloor (x, y)
      UEMUSHORT x[], y[];
 {
-  register UEMUSHORT *p;
+  UEMUSHORT *p;
   int e, expon, i;
   UEMUSHORT f[NE];
 
@@ -5795,7 +5795,7 @@ dectoe (d, e)
      UEMUSHORT *e;
 {
   UEMUSHORT y[NI];
-  register UEMUSHORT r, *p;
+  UEMUSHORT r, *p;
 
   ecleaz (y);			/* start with a zero */
   p = y;			/* point to our number */
@@ -5904,7 +5904,7 @@ ibmtoe (d, e, mode)
      enum machine_mode mode;
 {
   UEMUSHORT y[NI];
-  register UEMUSHORT r, *p;
+  UEMUSHORT r, *p;
 
   ecleaz (y);			/* start with a zero */
   p = y;			/* point to our number */

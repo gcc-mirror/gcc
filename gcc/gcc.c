@@ -1737,7 +1737,7 @@ read_specs (filename, main_p)
      int main_p;
 {
   char *buffer;
-  register char *p;
+  char *p;
 
   buffer = load_specs (filename);
 
@@ -2003,11 +2003,11 @@ record_temp_file (filename, always_delete, fail_delete)
      int always_delete;
      int fail_delete;
 {
-  register char *const name = xstrdup (filename);
+  char *const name = xstrdup (filename);
 
   if (always_delete)
     {
-      register struct temp_file *temp;
+      struct temp_file *temp;
       for (temp = always_delete_queue; temp; temp = temp->next)
 	if (! strcmp (name, temp->name))
 	  goto already1;
@@ -2022,7 +2022,7 @@ record_temp_file (filename, always_delete, fail_delete)
 
   if (fail_delete)
     {
-      register struct temp_file *temp;
+      struct temp_file *temp;
       for (temp = failure_delete_queue; temp; temp = temp->next)
 	if (! strcmp (name, temp->name))
 	  goto already2;
@@ -2064,7 +2064,7 @@ delete_if_ordinary (name)
 static void
 delete_temp_files ()
 {
-  register struct temp_file *temp;
+  struct temp_file *temp;
 
   for (temp = always_delete_queue; temp; temp = temp->next)
     delete_if_ordinary (temp->name);
@@ -2076,7 +2076,7 @@ delete_temp_files ()
 static void
 delete_failure_queue ()
 {
-  register struct temp_file *temp;
+  struct temp_file *temp;
 
   for (temp = failure_delete_queue; temp; temp = temp->next)
     delete_if_ordinary (temp->name);
@@ -3065,7 +3065,7 @@ process_command (argc, argv)
      int argc;
      const char *const *argv;
 {
-  register int i;
+  int i;
   const char *temp;
   char *temp1;
   const char *spec_lang = 0;
@@ -3413,8 +3413,8 @@ process_command (argc, argv)
 	report_times = 1;
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
-	  register const char *p = &argv[i][1];
-	  register int c = *p;
+	  const char *p = &argv[i][1];
+	  int c = *p;
 
 	  switch (c)
 	    {
@@ -4060,8 +4060,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
      int inswitch;
      const char *soft_matched_part;
 {
-  register const char *p = spec;
-  register int c;
+  const char *p = spec;
+  int c;
   int i;
   const char *string;
   int value;
@@ -5004,7 +5004,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 static const char *
 handle_braces (p)
-     register const char *p;
+     const char *p;
 {
   const char *filter, *body = NULL, *endbody = NULL;
   int pipe_p = 0;
@@ -5076,8 +5076,8 @@ next_member:
     {
       if (*p != '}' && *p != '&')
 	{
-	  register int count = 1;
-	  register const char *q = p;
+	  int count = 1;
+	  const char *q = p;
 
 	  while (*q++ != ':')
 	    continue;
@@ -5115,7 +5115,7 @@ next_member:
   else if (p[-1] == '*' && (p[0] == '}' || p[0] == '&'))
     {
       /* Substitute all matching switches as separate args.  */
-      register int i;
+      int i;
 
       for (i = 0; i < n_switches; i++)
 	if (!strncmp (switches[i].part1, filter, p - 1 - filter)
@@ -5133,7 +5133,7 @@ next_member:
   else
     {
       /* Test for presence of the specified switch.  */
-      register int i;
+      int i;
       int present = 0;
 
       /* If name specified ends in *, as in {x*:...},
@@ -5487,7 +5487,7 @@ static void
 set_input (filename)
      const char *filename;
 {
-  register const char *p;
+  const char *p;
 
   input_filename = filename;
   input_filename_length = strlen (input_filename);
@@ -6138,7 +6138,7 @@ save_string (s, len)
      const char *s;
      int len;
 {
-  register char *result = xmalloc (len + 1);
+  char *result = xmalloc (len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;
@@ -6232,8 +6232,8 @@ static void
 validate_all_switches ()
 {
   struct compiler *comp;
-  register const char *p;
-  register char c;
+  const char *p;
+  char c;
   struct spec_list *spec;
 
   for (comp = compilers; comp->spec; comp++)
@@ -6269,9 +6269,9 @@ static void
 validate_switches (start)
      const char *start;
 {
-  register const char *p = start;
+  const char *p = start;
   const char *filter;
-  register int i;
+  int i;
   int suffix;
 
   if (*p == '|')

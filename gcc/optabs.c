@@ -645,7 +645,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
        ? OPTAB_WIDEN : methods);
   enum mode_class class;
   enum machine_mode wider_mode;
-  register rtx temp;
+  rtx temp;
   int commutative_op = 0;
   int shift_op = (binoptab->code ==  ASHIFT
 		  || binoptab->code == ASHIFTRT
@@ -738,7 +738,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  if (GET_MODE (op0) != mode0 && GET_MODE (op1) != mode1
 	      && GET_MODE (op0) == mode1 && GET_MODE (op1) == mode0)
 	    {
-	      register rtx tmp;
+	      rtx tmp;
 
 	      tmp = op0; op0 = op1; op1 = tmp;
 	      tmp = xop0; xop0 = xop1; xop1 = tmp;
@@ -1862,7 +1862,7 @@ sign_expand_binop (mode, uoptab, soptab, op0, op1, target, unsignedp, methods)
     int unsignedp;
     enum optab_methods methods;
 {
-  register rtx temp;
+  rtx temp;
   optab direct_optab = unsignedp ? uoptab : soptab;
   struct optab wide_soptab;
 
@@ -2011,8 +2011,8 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 	  if (binoptab->handlers[(int) wider_mode].insn_code
 	      != CODE_FOR_nothing)
 	    {
-	      register rtx t0 = gen_reg_rtx (wider_mode);
-	      register rtx t1 = gen_reg_rtx (wider_mode);
+	      rtx t0 = gen_reg_rtx (wider_mode);
+	      rtx t1 = gen_reg_rtx (wider_mode);
 	      rtx cop0 = convert_modes (wider_mode, mode, op0, unsignedp);
 	      rtx cop1 = convert_modes (wider_mode, mode, op1, unsignedp);
 
@@ -2072,7 +2072,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 {
   enum mode_class class;
   enum machine_mode wider_mode;
-  register rtx temp;
+  rtx temp;
   rtx last = get_last_insn ();
   rtx pat;
 
@@ -2448,7 +2448,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
 {
   enum mode_class class = GET_MODE_CLASS (mode);
   enum machine_mode wider_mode;
-  register rtx temp;
+  rtx temp;
   rtx entry_last = get_last_insn ();
   rtx last;
   rtx pat;
@@ -2649,7 +2649,7 @@ emit_unop_insn (icode, target, op0, code)
      rtx op0;
      enum rtx_code code;
 {
-  register rtx temp;
+  rtx temp;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   rtx pat;
 
@@ -3923,7 +3923,7 @@ rtx
 gen_move_insn (x, y)
      rtx x, y;
 {
-  register enum machine_mode mode = GET_MODE (x);
+  enum machine_mode mode = GET_MODE (x);
   enum insn_code insn_code;
   rtx seq;
 
@@ -4070,7 +4070,7 @@ expand_float (to, from, unsignedp)
      int unsignedp;
 {
   enum insn_code icode;
-  register rtx target = to;
+  rtx target = to;
   enum machine_mode fmode, imode;
 
   /* Crash now, because we won't be able to decide which mode to use.  */
@@ -4337,11 +4337,11 @@ ftruncify (x)
 
 void
 expand_fix (to, from, unsignedp)
-     register rtx to, from;
+     rtx to, from;
      int unsignedp;
 {
   enum insn_code icode;
-  register rtx target = to;
+  rtx target = to;
   enum machine_mode fmode, imode;
   int must_trunc = 0;
   rtx libfcn = 0;
@@ -4625,23 +4625,23 @@ init_optabv (code)
 
 static void
 init_libfuncs (optable, first_mode, last_mode, opname, suffix)
-    register optab optable;
-    register int first_mode;
-    register int last_mode;
-    register const char *opname;
-    register int suffix;
+    optab optable;
+    int first_mode;
+    int last_mode;
+    const char *opname;
+    int suffix;
 {
-  register int mode;
-  register unsigned opname_len = strlen (opname);
+  int mode;
+  unsigned opname_len = strlen (opname);
 
   for (mode = first_mode; (int) mode <= (int) last_mode;
        mode = (enum machine_mode) ((int) mode + 1))
     {
-      register const char *mname = GET_MODE_NAME(mode);
-      register unsigned mname_len = strlen (mname);
-      register char *libfunc_name = alloca (2 + opname_len + mname_len + 1 + 1);
-      register char *p;
-      register const char *q;
+      const char *mname = GET_MODE_NAME(mode);
+      unsigned mname_len = strlen (mname);
+      char *libfunc_name = alloca (2 + opname_len + mname_len + 1 + 1);
+      char *p;
+      const char *q;
 
       p = libfunc_name;
       *p++ = '_';
@@ -4666,9 +4666,9 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
 
 static void
 init_integral_libfuncs (optable, opname, suffix)
-    register optab optable;
-    register const char *opname;
-    register int suffix;
+    optab optable;
+    const char *opname;
+    int suffix;
 {
   init_libfuncs (optable, SImode, TImode, opname, suffix);
 }
@@ -4680,16 +4680,16 @@ init_integral_libfuncs (optable, opname, suffix)
 
 static void
 init_floating_libfuncs (optable, opname, suffix)
-    register optab optable;
-    register const char *opname;
-    register int suffix;
+    optab optable;
+    const char *opname;
+    int suffix;
 {
   init_libfuncs (optable, SFmode, TFmode, opname, suffix);
 }
 
 rtx
 init_one_libfunc (name)
-     register const char *name;
+     const char *name;
 {
   /* Create a FUNCTION_DECL that can be passed to ENCODE_SECTION_INFO.  */
   /* ??? We don't have any type information except for this is

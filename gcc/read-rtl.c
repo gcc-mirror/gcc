@@ -105,7 +105,8 @@ int
 read_skip_spaces (infile)
      FILE *infile;
 {
-  register int c;
+  int c;
+
   while (1)
     {
       c = getc (infile);
@@ -127,7 +128,7 @@ read_skip_spaces (infile)
 
 	case '/':
 	  {
-	    register int prevc;
+	    int prevc;
 	    c = getc (infile);
 	    if (c != '*')
 	      fatal_expected_char (infile, '*', c);
@@ -158,10 +159,10 @@ read_name (str, infile)
      char *str;
      FILE *infile;
 {
-  register char *p;
-  register int c;
+  char *p;
+  int c;
 
-  c = read_skip_spaces(infile);
+  c = read_skip_spaces (infile);
 
   p = str;
   while (1)
@@ -212,6 +213,7 @@ read_escape (ob, infile)
      FILE *infile;
 {
   int c = getc (infile);
+
   switch (c)
     {
       /* Backslash-newline is replaced by nothing, as in C.  */
@@ -266,6 +268,7 @@ read_quoted_string (ob, infile)
      FILE *infile;
 {
   int c;
+
   while (1)
     {
       c = getc (infile); /* Read the string  */
@@ -500,15 +503,15 @@ rtx
 read_rtx (infile)
      FILE *infile;
 {
-  register int i, j;
+  int i, j;
   RTX_CODE tmp_code;
-  register const char *format_ptr;
+  const char *format_ptr;
   /* tmp_char is a buffer used for reading decimal integers
      and names of rtx types and machine modes.
      Therefore, 256 must be enough.  */
   char tmp_char[256];
   rtx return_rtx;
-  register int c;
+  int c;
   int tmp_int;
   HOST_WIDE_INT tmp_wide;
 

@@ -486,29 +486,29 @@ new_edge (source, target)
 
 /* Compute bitwise union of two bitsets.  */
 #define BITSET_UNION(set1, set2, len)                                \
-do { register bitset tp = set1, sp = set2;                           \
-     register int i;                                                 \
+do { bitset tp = set1, sp = set2;                                    \
+     int i;                                                          \
      for (i = 0; i < len; i++)                                       \
        *(tp++) |= *(sp++); } while (0)
 
 /* Compute bitwise intersection of two bitsets.  */
 #define BITSET_INTER(set1, set2, len)                                \
-do { register bitset tp = set1, sp = set2;                           \
-     register int i;                                                 \
+do { bitset tp = set1, sp = set2;                                    \
+     int i;                                                          \
      for (i = 0; i < len; i++)                                       \
        *(tp++) &= *(sp++); } while (0)
 
 /* Compute bitwise difference of two bitsets.  */
 #define BITSET_DIFFER(set1, set2, len)                               \
-do { register bitset tp = set1, sp = set2;                           \
-     register int i;                                                 \
+do { bitset tp = set1, sp = set2;                                    \
+     int i;                                                          \
      for (i = 0; i < len; i++)                                       \
        *(tp++) &= ~*(sp++); } while (0)
 
 /* Inverts every bit of bitset 'set'.  */
 #define BITSET_INVERT(set, len)                                      \
-do { register bitset tmpset = set;                                   \
-     register int i;                                                 \
+do { bitset tmpset = set;                                            \
+     int i;                                                          \
      for (i = 0; i < len; i++, tmpset++)                             \
        *tmpset = ~*tmpset; } while (0)
 
@@ -1229,7 +1229,7 @@ static void
 compute_trg_info (trg)
      int trg;
 {
-  register candidate *sp;
+  candidate *sp;
   edgelst el;
   int check_block, update_idx;
   int i, j, k, fst_edge, nxt_edge;
@@ -1384,9 +1384,9 @@ check_live_1 (src, x)
      int src;
      rtx x;
 {
-  register int i;
-  register int regno;
-  register rtx reg = SET_DEST (x);
+  int i;
+  int regno;
+  rtx reg = SET_DEST (x);
 
   if (reg == 0)
     return 1;
@@ -1398,7 +1398,7 @@ check_live_1 (src, x)
 
   if (GET_CODE (reg) == PARALLEL)
     {
-      register int i;
+      int i;
 
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
 	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
@@ -1464,9 +1464,9 @@ update_live_1 (src, x)
      int src;
      rtx x;
 {
-  register int i;
-  register int regno;
-  register rtx reg = SET_DEST (x);
+  int i;
+  int regno;
+  rtx reg = SET_DEST (x);
 
   if (reg == 0)
     return;
@@ -1478,7 +1478,7 @@ update_live_1 (src, x)
 
   if (GET_CODE (reg) == PARALLEL)
     {
-      register int i;
+      int i;
 
       for (i = XVECLEN (reg, 0) - 1; i >= 0; i--)
 	if (XEXP (XVECEXP (reg, 0, i), 0) != 0)
@@ -1770,7 +1770,7 @@ is_pfree (load_insn, bb_src, bb_trg)
      int bb_src, bb_trg;
 {
   rtx back_link;
-  register candidate *candp = candidate_table + bb_src;
+  candidate *candp = candidate_table + bb_src;
 
   if (candp->split_bbs.nr_members != 1)
     /* Must have exactly one escape block.  */

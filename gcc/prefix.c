@@ -115,7 +115,7 @@ save_string (s, len)
   const char *s;
   int len;
 {
-  register char *result = xmalloc (len + 1);
+  char *result = xmalloc (len + 1);
 
   memcpy (result, s, len);
   result[len] = 0;
