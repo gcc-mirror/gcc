@@ -1,3 +1,8 @@
+2003-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8316, c++/9315, c++/10136
+	* call.c (joust): Improve wording.
+
 2003-03-18  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/10031
