@@ -3197,20 +3197,9 @@ output_a_shift (operands)
 
   if (GET_CODE (operands[2]) != CONST_INT)
     {
-      /* Indexing by reg, so have to loop and test at top.  */
-      output_asm_insn ("mov.b	%X2,%X4", operands);
-      fprintf (asm_out_file, "\tble	.Lle%d\n", loopend_lab);
-
-      /* Get the assembler code to do one shift.  */
-      get_shift_alg (shift_type, shift_mode, 1, &info);
-
-      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-      output_asm_insn (info.shift1, operands);
-      output_asm_insn ("add	#0xff,%X4", operands);
-      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-      fprintf (asm_out_file, ".Lle%d:\n", loopend_lab);
-
-      return "";
+      /* This case must be taken care of by one of the two splitters
+	 that convert a variable shift into a loop.  */
+      abort ();
     }
   else
     {

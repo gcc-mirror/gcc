@@ -1,3 +1,9 @@
+2003-01-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (output_a_shift): Do not output a
+	variable shift.
+	* config/h8300/h8300.md (two splitters): New.
+
 2003-01-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Disable the movstrsi define_split.
