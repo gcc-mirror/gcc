@@ -1,5 +1,11 @@
 2001-09-24  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* som.h (ASM_OUTPUT_EXTERNAL): Improve formatting.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Only generate a .IMPORT statement for
+	the libcall if there isn't a referenced identifier for the symbol.
+
+2001-09-24  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa.h (TRAMPOLINE_TEMPLATE): Add two words to the template for
 	non 64-bit machines.  Use these as a plabel for the trampoline.
 	(TRAMPOLINE_SIZE): Adjust size for new words.
