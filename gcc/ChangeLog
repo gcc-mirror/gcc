@@ -1,3 +1,7 @@
+Sun Feb  1 13:01:15 1998  Klaus Kaempf  <kkaempf@progis.de>
+
+	* cccp.c (main): Predefine __VMS_VER on VMS.
+
 Sun Feb  1 12:39:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (get_inner_reference): Use sbitsizetype for type sizes.
