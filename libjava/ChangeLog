@@ -1,3 +1,15 @@
+2002-01-25  Per Bothner  <per@bothner.com>
+
+	* verify.cc (verify_fail):  Change from being a top-level function
+	to e method of _Jv_BytecodeVerifier.  Emit current method name.
+	Pass the current verifier to type: and state: methods as needed,
+	for better error messages, and for resolve.
+	(resolve):  Pass current class's loader for Class.forName and
+	_Jv_FindClassFromSignature, rather than using the default loader.
+	(various type: and state: methods):  Take _Jv_BytecodeVerifier* arg.
+	(get_type_val_for_signature):  Make non-static.
+	(various methods):  Pass start_PC implicitly, not explicitly.
+
 2002-01-25  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/FlowLayout.java (layoutContainer): Correctly compute
