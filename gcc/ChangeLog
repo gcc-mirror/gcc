@@ -1,5 +1,12 @@
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 
+	* config/m68k/m68k.md: Replace all general_operand with
+	nonimmediate_operand for all destinations.
+	* config/m68k/m68k.c: Include expr.h and reload.h.
+	(not_sp_operand): Check nonimmediate_operand.
+
+2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
+
 	* config/m68k/m68k.h (TARGET_SWITCHES/TARGET_OPTIONS):
 	Add missing doc strings.
 	* config/m68k/linux-aout.h (SUBTARGET_SWITCHES): Likewise.

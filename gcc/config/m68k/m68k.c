@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "toplev.h"
+#include "expr.h"
+#include "reload.h"
 #include "tm_p.h"
 
 /* Needed for use_return_insn.  */
@@ -877,7 +879,7 @@ not_sp_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return op != stack_pointer_rtx && general_operand (op, mode);
+  return op != stack_pointer_rtx && nonimmediate_operand (op, mode);
 }
 
 /* Return TRUE if X is a valid comparison operator for the dbcc 
