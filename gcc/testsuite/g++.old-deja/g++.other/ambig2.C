@@ -1,5 +1,5 @@
 // Build don't link:
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 Aug 1999 <nathan@acm.org>
 
 // We should spot all ambiguities
@@ -14,7 +14,7 @@ struct D3 : B, C { int m; };
 
 void fn(D0 *d0, D1 *d1, D2 *d2, D3 *d3)
 {
-  A *a0 = d0;   // ERROR - A is an ambiguous base XFAIL
+  A *a0 = d0;   // ERROR - A is an ambiguous base
   A *a1 = d1;   // ERROR - A is an ambiguous base
   A *a2 = d2;   // ERROR - A is an ambiguous base
   A *a3 = d3;   // ERROR - A is an ambiguous base

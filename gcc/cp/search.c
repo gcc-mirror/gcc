@@ -3046,7 +3046,8 @@ dfs_get_vbase_types (binfo, data)
 
   if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
-      tree new_vbase = make_binfo (integer_zero_node, binfo,
+      tree new_vbase = make_binfo (integer_zero_node, 
+				   BINFO_TYPE (binfo),
 				   BINFO_VTABLE (binfo),
 				   BINFO_VIRTUALS (binfo));
       unshare_base_binfos (new_vbase);

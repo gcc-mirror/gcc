@@ -1,5 +1,17 @@
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
+	* class.c (build_vbase_path): Simplify.
+	(dfs_propagate_binfo_offsets): New function.
+	(propagate_binfo_offsets): Use it.
+	(remove_base_field): Simplify.
+	(dfs_set_offset_for_vbases): Remove.
+	(dfs_set_offset_for_shared_vbases): New function.
+	(dfs_set_offset_for_unshared_vbases): Likewise.
+	(layout_virtual_bases): Use them.
+	(layout_basetypes): Don't call propagate_binfo_offsets.
+	* search.c (dfs_get_vbase_types): Clone completely fresh binfos
+	for the vbases.
+	
 	* class.c (build_base_field): New function, split out from ...
 	(build_base_fields): ... here.  Use it.  Allocate primary bases
 	first, under the new ABI.
