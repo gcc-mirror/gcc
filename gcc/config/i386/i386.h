@@ -1109,8 +1109,8 @@ while (0)
   case UMOD:						\
     return COSTS_N_INSNS (40);				\
   case PLUS:						\
-    if (GET_CODE (XEXP (RTX, 0)) == REG			\
-        && GET_CODE (XEXP (RTX, 1)) == CONST_INT)	\
+    if (GET_CODE (XEXP (X, 0)) == REG			\
+        && GET_CODE (XEXP (X, 1)) == CONST_INT)		\
       return 1;
 
 
