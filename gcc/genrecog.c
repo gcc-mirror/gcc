@@ -1521,7 +1521,10 @@ write_tree (tree, prevpos, afterward, initial, type)
 	{
 	  printf ("  tem = %s_%d (x0, insn%s);\n",
 		  name_prefix, tree->subroutine_number, call_suffix);
-	  printf ("  if (tem >= 0) return tem;\n");
+	  if (type == SPLIT)
+	    printf ("  if (tem != 0) return tem;\n");
+	  else
+	    printf ("  if (tem >= 0) return tem;\n");
 	  change_state (tree->position, afterward->position, 2);
 	  printf ("  goto L%d;\n", afterward->number);
 	}
