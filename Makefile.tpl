@@ -983,7 +983,7 @@ ENDIF raw_cxx +]
 	      .) topdir="../$(srcdir)" ;; \
 	      *) topdir="../../$(srcdir)" ;; \
 	    esac ;; \
-	esac; \
+	esac; \[+ IF stage +]
 	if [ "$(srcdir)" = "." ] ; then \
 	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
 	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
@@ -1004,10 +1004,10 @@ ENDIF raw_cxx +]
 	  fi; \
 	  srcdiroption="--srcdir=."; \
 	  libsrcdir="."; \
-	else \
+	else \[+ ENDIF stage +]
 	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	  libsrcdir="$$s/[+module+]"; \
-	fi; \
+	  libsrcdir="$$s/[+module+]"; \[+ IF stage +]
+	fi; \[+ ENDIF stage +]
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \

@@ -1,3 +1,9 @@
+2004-01-14  Loren J. Rittle <ljrittle@acm.org>
+
+	* Makefile.def (target_modules) [libtermcap, libiberty, zlib]: Stage.
+	* Makefile.tpl (configure-target-[+module+]): Support stage.
+	* Makefile.in: Rebuilt.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* MAINTAINERS: Add myself as a libiberty MAINTAINER.
