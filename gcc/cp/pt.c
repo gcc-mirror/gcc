@@ -308,7 +308,7 @@ add_to_template_args (args, extra_args)
     {
       int i;
 
-      new_args = make_tree_vec (TREE_VEC_LENGTH (args) - 1);
+      new_args = make_tree_vec (TREE_VEC_LENGTH (args) + 1);
 
       for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
 	TREE_VEC_ELT (new_args, i) = TREE_VEC_ELT (args, i);
@@ -2480,6 +2480,7 @@ lookup_template_class (d1, arglist, in_decl, context)
 	    }
 	}
 
+      /* FIXME avoid duplication.  */
       mangled_name = mangle_class_name_for_template (IDENTIFIER_POINTER (d1),
 						     parmlist,
 						     arglist,
@@ -2996,9 +2997,6 @@ instantiate_class_template (type)
     args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t),
 			       args, outer_args);
 
-  if (outer_args)
-    args = add_to_template_args (outer_args, args);
-
   if (pedantic && uses_template_parms (args))
     /* If there are still template parameters amongst the args, then
        we can't instantiate the type; there's no telling whether or not one
@@ -3013,6 +3011,9 @@ instantiate_class_template (type)
 
   maybe_push_to_top_level (uses_template_parms (type));
   pushclass (type, 0);
+
+  if (outer_args)
+    args = add_to_template_args (outer_args, args);
 
   if (flag_external_templates)
     {
