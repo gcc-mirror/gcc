@@ -1334,13 +1334,13 @@ expand_builtin_strlen (exp, target, mode)
 
       /* Make sure the operands are acceptable to the predicates.  */
 
-      if (! (*insn_operand_predicate[(int)icode][0]) (result, insn_mode))
+      if (! (*insn_data[(int)icode].operand[0].predicate) (result, insn_mode))
 	result = gen_reg_rtx (insn_mode);
       src_rtx = memory_address (BLKmode,
 				expand_expr (src, NULL_RTX, ptr_mode,
 					     EXPAND_NORMAL));
 
-      if (! (*insn_operand_predicate[(int)icode][1]) (src_rtx, Pmode))
+      if (! (*insn_data[(int)icode].operand[1].predicate) (src_rtx, Pmode))
 	src_rtx = copy_to_mode_reg (Pmode, src_rtx);
 
       /* Check the string is readable and has an end.  */
@@ -1351,8 +1351,8 @@ expand_builtin_strlen (exp, target, mode)
 			   TYPE_MODE (integer_type_node));
 
       char_rtx = const0_rtx;
-      char_mode = insn_operand_mode[(int)icode][2];
-      if (! (*insn_operand_predicate[(int)icode][2]) (char_rtx, char_mode))
+      char_mode = insn_data[(int)icode].operand[2].mode;
+      if (! (*insn_data[(int)icode].operand[2].predicate) (char_rtx, char_mode))
 	char_rtx = copy_to_mode_reg (char_mode, char_rtx);
 
       emit_insn (GEN_FCN (icode) (result,
@@ -1572,7 +1572,7 @@ expand_builtin_memcmp (exp, arglist, target)
     int arg2_align
       = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
     enum machine_mode insn_mode
-      = insn_operand_mode[(int) CODE_FOR_cmpstrsi][0];
+      = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
 
     /* If we don't have POINTER_TYPE, call the function.  */
     if (arg1_align == 0 || arg2_align == 0)

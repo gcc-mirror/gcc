@@ -52,9 +52,9 @@ static int sawclose = 0;
 
 static int indent;
 
-/* Names for patterns.  Non-zero only when linked with insn-output.c.  */
+/* Names for patterns.  */
 
-extern char **insn_name_ptr;
+extern const char *get_insn_name PROTO ((int));
 
 static void print_rtx		PROTO ((rtx));
 
@@ -246,6 +246,7 @@ print_rtx (in_rtx)
       case 'i':
 	{
 	  register int value = XINT (in_rtx, i);
+	  const char *name;
 
 	  if (GET_CODE (in_rtx) == REG && value < FIRST_PSEUDO_REGISTER)
 	    {
@@ -273,12 +274,13 @@ print_rtx (in_rtx)
 	    fputc ('#', outfile);
 	  else
 	    fprintf (outfile, " %d", value);
+
+	  if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
+	      && XINT (in_rtx, i) >= 0
+	      && (name = get_insn_name (XINT (in_rtx, i))) != NULL)
+	    fprintf (outfile, " {%s}", name);
+	  sawclose = 0;
 	}
-	if (is_insn && &INSN_CODE (in_rtx) == &XINT (in_rtx, i)
-	    && insn_name_ptr
-	    && XINT (in_rtx, i) >= 0)
-	  fprintf (outfile, " {%s}", insn_name_ptr[XINT (in_rtx, i)]);
-	sawclose = 0;
 	break;
 
       /* Print NOTE_INSN names rather than integer codes.  */

@@ -1,3 +1,87 @@
+Sun Sep 12 05:00:24 1999  Richard Henderson  <rth@cygnus.com>
+
+	* recog.h (insn_template, insn_outfun, insn_n_operands, insn_n_dups,
+	insn_n_alternatives, insn_operand_constraint, insn_operand_address_p,
+	insn_operand_mode, insn_operand_strict_low, insn_operand_predicate,
+	insn_name): Delete and consolidate into new structures.
+	(insn_operand_predicate_fn): New.
+	(insn_output_fn): New.
+	(insn_gen_fn): New.
+	(struct insn_operand_data): New.
+	(struct insn_data): New.
+	(insn_data): New.
+	(OUT_FCN): Update for insn_data change.
+	* builtins.c (expand_builtin_strlen): Likewise.
+	(expand_builtin_memcmp): Likewise.
+	* combine.c (make_extraction, simplify_comparison): Likewise.
+	* cse.c (canon_reg, cse_insn): Likewise.
+	* explow.c (allocate_dynamic_stack_space, probe_stack_range): Likewise.
+	* expmed.c (store_bit_field, extract_bit_field): Likewise.
+	(emit_store_flag): Likewise.
+	* expr.c (convert_move, emit_block_move): Likewise.
+	(clear_storage, emit_push_insn, expand_increment): Likewise.
+	(do_store_flag): Likewise.
+	* expr.h (GEN_FCN): Likewise.
+	(insn_gen_function): Die.
+	* final.c (final_scan_insn): Update for insn_data change.
+	(output_asm_name): Likewise.
+	* function.c (fixup_var_refs_1): Likewise.
+	* loop.c (check_dbra_loop): Likewise.
+	* optabs.c (expand_binop, expand_twoval_binop): Likewise.
+	(expand_unop, expand_complex_abs, emit_unop_insn): Likewise.
+	(prepare_cmp_insn, prepare_operand, emit_indirect_jump): Likewise.
+	(emit_conditional_move, gen_add2_insn, gen_sub2_insn): Likewise.
+	* recog.c (validate_replace_rtx_1, extract_insn): Likewise.
+	* regmove.c (gen_add3_insn): Likewise.
+	* reload.c (push_secondary_reload, combine_reloads): Likewise.
+	(find_reloads, find_reloads_address_1): Likewise.
+	(debug_reload_to_stream): Likewise.
+	* reload1.c (emit_reload_insns, gen_reload): Likewise.
+	* stmt.c (expand_end_case): Likewise.
+	* toplev.c (compile_file): Likewise.
+
+	* c4x/c4x.c (c4x_process_after_reload): Likewise.
+	* i860/i860.c (output_delayed_branch, output_delay_insn): Likewise.
+
+	* print-rtl.c (insn_name_ptr): Remove declaration.
+	(get_insn_name): Declare.
+	(print_rtx): Use it.
+	* genoutput.c (insn_name_ptr): Remove.
+	(next_operand_number): New.
+	(struct operand_data): New.
+	(null_operand, odata, odata_end): New.
+	(struct data): Use struct operand_data.
+	(idata, idata_end): Renamed from insn_data and end_of_insn_data.
+	(get_insn_name): Renamed from name_for_index.
+	(output_prologue): Define NO_MD_PROTOTYPES.
+	(output_predicate_decls): Break out from output_epilogue.
+	Iterate over the operands list.
+	(output_operand_data): Break out from output_epilogue.  Emit
+	just the operands list.
+	(output_insn_data): Break out from output_epilogue.  Emit just
+	the insn data.
+	(output_epilogue): Remove.
+	(output_get_insn_name): New.
+	(constraints, op_n_alternatives, predicates, address_p): Die.
+	(modes, strict_low, seen): Die.
+	(scan_operands): Take new param `d' instead of writing to 
+	seven global variables.
+	(compare_operands): New.
+	(place_operands): New.
+	(validate_insn_alternatives): Update for struct data change.
+	(gen_insn): Don't zero or copy 7 global arrays.  Update for
+	scan_operands; call place_operands.
+	(gen_peephole, gen_expand, gen_split): Likewise.
+	(main): Update for new output routines.
+
+	* genattr.c (insn_name_ptr): Remove.
+	(get_insn_name): New function.
+	* genattrtab.c, gencodes.c, genconfig.c, genemit.c: Likewise.
+	* genextract.c, genflags.c, genopinit.c, genpeep.c: Likewise.
+	* genrecog.c: Likewise.
+
+	* alpha.md (adddi3): Make `pattern' array static.
+
 Sun Sep 12 22:05:21 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (c4x_rpts_cycles_string,

@@ -6816,7 +6816,7 @@ emit_reload_insns (chain)
 		  /* Make sure we can access insn_operand_constraint.  */
 		  && asm_noperands (PATTERN (temp)) < 0
 		  /* This is unsafe if prev insn rejects our reload reg.  */
-		  && constraint_accepts_reg_p (insn_operand_constraint[recog_memoized (temp)][0],
+		  && constraint_accepts_reg_p (insn_data[recog_memoized (temp)].operand[0].constraint,
 					       reloadreg)
 		  /* This is unsafe if operand occurs more than once in current
 		     insn.  Perhaps some occurrences aren't reloaded.  */
@@ -6945,18 +6945,18 @@ emit_reload_insns (chain)
 			    {
 			      new_icode = reload_in_optab[(int) mode];
 			      if (new_icode != CODE_FOR_nothing
-				  && ((insn_operand_predicate[(int) new_icode][0]
-				       && ! ((*insn_operand_predicate[(int) new_icode][0])
+				  && ((insn_data[(int) new_icode].operand[0].predicate
+				       && ! ((*insn_data[(int) new_icode].operand[0].predicate)
 					     (reloadreg, mode)))
-				      || (insn_operand_predicate[(int) new_icode][1]
-					  && ! ((*insn_operand_predicate[(int) new_icode][1])
+				      || (insn_data[(int) new_icode].operand[1].predicate
+					  && ! ((*insn_data[(int) new_icode].operand[1].predicate)
 						(real_oldequiv, mode)))))
 				new_icode = CODE_FOR_nothing;
 
 			      if (new_icode == CODE_FOR_nothing)
 				new_mode = mode;
 			      else
-				new_mode = insn_operand_mode[(int) new_icode][2];
+				new_mode = insn_data[(int) new_icode].operand[2].mode;
 
 			      if (GET_MODE (second_reload_reg) != new_mode)
 				{
@@ -7840,7 +7840,8 @@ gen_reload (out, in, opnum, type)
 	  || (GET_CODE (op1) == REG
 	      && REGNO (op1) >= FIRST_PSEUDO_REGISTER)
 	  || (code != CODE_FOR_nothing
-	      && ! (*insn_operand_predicate[code][2]) (op1, insn_operand_mode[code][2])))
+	      && ! ((*insn_data[code].operand[2].predicate)
+		    (op1, insn_data[code].operand[2].mode))))
 	tem = op0, op0 = op1, op1 = tem;
 
       gen_reload (out, op0, opnum, type);

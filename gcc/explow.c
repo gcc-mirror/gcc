@@ -1305,10 +1305,10 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (HAVE_allocate_stack)
     {
       enum machine_mode mode = STACK_SIZE_MODE;
+      insn_operand_predicate_fn pred;
 
-      if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][0]
-	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][0])
-		(target, Pmode)))
+      pred = insn_data[(int) CODE_FOR_allocate_stack].operand[0].predicate;
+      if (pred && ! ((*pred) (target, Pmode)))
 #ifdef POINTERS_EXTEND_UNSIGNED
 	target = convert_memory_address (Pmode, target);
 #else
@@ -1319,9 +1319,8 @@ allocate_dynamic_stack_space (size, target, known_align)
 	mode = Pmode;
 
       size = convert_modes (mode, ptr_mode, size, 1);
-      if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][1]
-	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][1])
-		(size, mode)))
+      pred = insn_data[(int) CODE_FOR_allocate_stack].operand[1].predicate;
+      if (pred && ! ((*pred) (size, mode)))
 	size = copy_to_mode_reg (mode, size);
 
       emit_insn (gen_allocate_stack (target, size));
@@ -1416,15 +1415,15 @@ probe_stack_range (first, size)
 #ifdef HAVE_check_stack
   if (HAVE_check_stack)
     {
+      insn_operand_predicate_fn pred;
       rtx last_addr
 	= force_operand (gen_rtx_STACK_GROW_OP (Pmode,
 						stack_pointer_rtx,
 						plus_constant (size, first)),
 			 NULL_RTX);
 
-      if (insn_operand_predicate[(int) CODE_FOR_check_stack][0]
-	  && ! ((*insn_operand_predicate[(int) CODE_FOR_check_stack][0])
-		(last_addr, Pmode)))
+      pred = insn_data[(int) CODE_FOR_check_stack].operand[0].predicate;
+      if (pred && ! ((*pred) (last_addr, Pmode)))
 	last_addr = copy_to_mode_reg (Pmode, last_addr);
 
       emit_insn (gen_check_stack (last_addr));

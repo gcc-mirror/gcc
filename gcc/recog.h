@@ -181,40 +181,47 @@ extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALT
 
 /* Access the output function for CODE.  */
 
-#define OUT_FCN(CODE) (*insn_outfun[(int) (CODE)])
+#define OUT_FCN(CODE) (*insn_data[(int) (CODE)].outfun)
 
-/* Tables defined in insn-output.c that give information about
+/* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
-/* These are vectors indexed by insn-code.  Details in genoutput.c.  */
-
-extern const char *const insn_template[];
-
-extern const char *(*const insn_outfun[]) PROTO ((rtx *, rtx));
-
-extern const int insn_n_operands[];
-
-extern const int insn_n_dups[];
-
-/* Indexed by insn code number, gives # of constraint alternatives.  */
-
-extern const int insn_n_alternatives[];
-
-/* These are two-dimensional arrays indexed first by the insn-code
-   and second by the operand number.  Details in genoutput.c.  */
-
-#ifdef REGISTER_CONSTRAINTS  /* Avoid undef sym in certain broken linkers.  */
-extern const char *const insn_operand_constraint[][MAX_RECOG_OPERANDS];
+typedef int (*insn_operand_predicate_fn) PROTO ((rtx, enum machine_mode));
+typedef const char * (*insn_output_fn) PROTO ((rtx *, rtx));
+#ifndef NO_MD_PROTOTYPES
+typedef rtx (*insn_gen_fn) PROTO ((rtx, ...));
+#else
+typedef rtx (*insn_gen_fn) ();
 #endif
 
-#ifndef REGISTER_CONSTRAINTS  /* Avoid undef sym in certain broken linkers.  */
-extern const char insn_operand_address_p[][MAX_RECOG_OPERANDS];
+struct insn_operand_data
+{
+  insn_operand_predicate_fn predicate;
+
+#ifdef REGISTER_CONSTRAINTS
+  const char *constraint;
 #endif
 
-extern const enum machine_mode insn_operand_mode[][MAX_RECOG_OPERANDS];
+  enum machine_mode mode;
 
-extern const char insn_operand_strict_low[][MAX_RECOG_OPERANDS];
+#ifndef REGISTER_CONSTRAINTS
+  char address_p;
+#endif
 
-extern int (*const insn_operand_predicate[][MAX_RECOG_OPERANDS]) PROTO ((rtx, enum machine_mode));
+  char strict_low;
+};
 
-extern const char * insn_name[];
+struct insn_data
+{
+  const char *name;
+  const char *template;
+  insn_output_fn outfun;
+  insn_gen_fn genfun;
+  const struct insn_operand_data *operand;
+
+  unsigned char n_operands;
+  unsigned char n_dups;
+  unsigned char n_alternatives;
+};
+
+extern const struct insn_data insn_data[];

@@ -89,9 +89,12 @@ gen_add3_insn (r0, r1, c)
   int icode = (int) add_optab->handlers[(int) GET_MODE (r0)].insn_code;
 
     if (icode == CODE_FOR_nothing
-      || ! (*insn_operand_predicate[icode][0]) (r0, insn_operand_mode[icode][0])
-      || ! (*insn_operand_predicate[icode][1]) (r1, insn_operand_mode[icode][1])
-      || ! (*insn_operand_predicate[icode][2]) (c, insn_operand_mode[icode][2]))
+      || ! ((*insn_data[icode].operand[0].predicate)
+	    (r0, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (r1, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (c, insn_data[icode].operand[2].mode)))
     return NULL_RTX;
 
   return (GEN_FCN (icode) (r0, r1, c));

@@ -1446,7 +1446,7 @@ output_delayed_branch (template, operands, insn)
       if (insn_code_number == -1)
 	abort ();
 
-      for (i = 0; i < insn_n_operands[insn_code_number]; i++)
+      for (i = 0; i < insn_data[insn_code_number].n_operands; i++)
 	{
 	  if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	    recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
@@ -1456,9 +1456,9 @@ output_delayed_branch (template, operands, insn)
       if (! constrain_operands (1))
 	fatal_insn_not_found (delay_insn);
 
-      template = insn_template[insn_code_number];
+      template = insn_data[insn_code_number].template;
       if (template == 0)
-	template = ((*insn_outfun[insn_code_number])
+	template = ((*insn_data[insn_code_number].outfun)
 		    (recog_data.operand, delay_insn));
       output_asm_insn (template, recog_data.operand);
     }
@@ -1490,7 +1490,7 @@ output_delay_insn (delay_insn)
      yet.  If this insn's operands don't appear in the peephole's
      actual operands, then they won't be fixed up by final, so we
      make sure they get fixed up here.  -- This is a kludge.  */
-  for (i = 0; i < insn_n_operands[insn_code_number]; i++)
+  for (i = 0; i < insn_data[insn_code_number].n_operands; i++)
     {
       if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
@@ -1513,9 +1513,9 @@ output_delay_insn (delay_insn)
   /* Now get the template for what this insn would
      have been, without the branch.  */
 
-  template = insn_template[insn_code_number];
+  template = insn_data[insn_code_number].template;
   if (template == 0)
-    template = ((*insn_outfun[insn_code_number])
+    template = ((*insn_data[insn_code_number].outfun)
 		(recog_data.operand, delay_insn));
   output_asm_insn (template, recog_data.operand);
   return "";

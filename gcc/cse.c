@@ -2783,7 +2783,7 @@ canon_reg (x, insn)
 	      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
 		   != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER))
 		  || (insn_code = recog_memoized (insn)) < 0
-		  || insn_n_dups[insn_code] > 0))
+		  || insn_data[insn_code].n_dups > 0))
 	    validate_change (insn, &XEXP (x, i), new, 1);
 	  else
 	    XEXP (x, i) = new;
@@ -6568,7 +6568,7 @@ cse_insn (insn, libcall_insn)
 	   && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
 	       != (REGNO (src) < FIRST_PSEUDO_REGISTER)))
 	  || (insn_code = recog_memoized (insn)) < 0
-	  || insn_n_dups[insn_code] > 0)
+	  || insn_data[insn_code].n_dups > 0)
 	validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
       else
 	SET_SRC (sets[i].rtl) = new;

@@ -543,7 +543,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 #ifdef HAVE_extzv
 	  if (code == ZERO_EXTRACT)
 	    {
-	      wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+	      wanted_mode = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }
@@ -551,7 +551,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 #ifdef HAVE_extv
 	  if (code == SIGN_EXTRACT)
 	    {
-	      wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+	      wanted_mode = insn_data[(int) CODE_FOR_extv].operand[1].mode;
 	      if (wanted_mode == VOIDmode)
 		wanted_mode = word_mode;
 	    }
@@ -2027,20 +2027,21 @@ extract_insn (insn)
       if (icode < 0)
 	fatal_insn_not_found (insn);
 
-      recog_data.n_operands = noperands = insn_n_operands[icode];
-      recog_data.n_alternatives = insn_n_alternatives[icode];
-      recog_data.n_dups = insn_n_dups[icode];
+      recog_data.n_operands = noperands = insn_data[icode].n_operands;
+      recog_data.n_alternatives = insn_data[icode].n_alternatives;
+      recog_data.n_dups = insn_data[icode].n_dups;
 
       insn_extract (insn);
 
       for (i = 0; i < noperands; i++)
 	{
 #ifdef REGISTER_CONSTRAINTS
-	  recog_data.constraints[i] = insn_operand_constraint[icode][i];
+	  recog_data.constraints[i] = insn_data[icode].operand[i].constraint;
 #else
-	  recog_data.operand_address_p[i] = insn_operand_address_p[icode][i];
+	  recog_data.operand_address_p[i]
+	    = insn_data[icode].operand[i].address_p;
 #endif
-	  recog_data.operand_mode[i] = insn_operand_mode[icode][i];
+	  recog_data.operand_mode[i] = insn_data[icode].operand[i].mode;
 	}
     }
   for (i = 0; i < noperands; i++)

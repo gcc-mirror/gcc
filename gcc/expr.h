@@ -286,12 +286,10 @@ typedef struct optab
    So produce the pointer-to-function directly.
    Luckily, these compilers seem to work properly when you
    call the pointer-to-function.  */
-#define GEN_FCN(CODE) (insn_gen_function[(int) (CODE)])
+#define GEN_FCN(CODE) (insn_data[(int) (CODE)].genfun)
 #else
-#define GEN_FCN(CODE) (*insn_gen_function[(int) (CODE)])
+#define GEN_FCN(CODE) (*insn_data[(int) (CODE)].genfun)
 #endif
-
-extern rtx (*const insn_gen_function[]) PROTO ((rtx, ...));
 
 /* Enumeration of valid indexes into optab_table.  */
 enum optab_index

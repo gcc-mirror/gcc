@@ -62,8 +62,8 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 /* Holds an array of names indexed by insn_code_number.  */
-char **insn_name_ptr = 0;
-int insn_name_ptr_size = 0;
+static char **insn_name_ptr = 0;
+static int insn_name_ptr_size = 0;
 
 /* Data structure for a listhead of decision trees.  The alternatives
    to a node are kept in a doublely-linked list so we can easily add nodes
@@ -1990,4 +1990,15 @@ from the machine description file `md'.  */\n\n");
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
   /* NOTREACHED */
   return 0;
+}
+
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+const char *
+get_insn_name (code)
+     int code;
+{
+  if (code < insn_name_ptr_size)
+    return insn_name_ptr[code];
+  else
+    return NULL;
 }

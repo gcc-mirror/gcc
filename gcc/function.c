@@ -1831,7 +1831,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 #ifdef HAVE_extzv
 	      if (GET_CODE (x) == ZERO_EXTRACT)
 		{
-		  wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+		  wanted_mode
+		    = insn_data[(int) CODE_FOR_extzv].operand[1].mode;
 		  if (wanted_mode == VOIDmode)
 		    wanted_mode = word_mode;
 		}
@@ -1839,7 +1840,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 #ifdef HAVE_extv
 	      if (GET_CODE (x) == SIGN_EXTRACT)
 		{
-		  wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+		  wanted_mode = insn_data[(int) CODE_FOR_extv].operand[1].mode;
 		  if (wanted_mode == VOIDmode)
 		    wanted_mode = word_mode;
 		}
@@ -2034,7 +2035,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		enum machine_mode is_mode = GET_MODE (tem);
 		HOST_WIDE_INT pos = INTVAL (XEXP (outerdest, 2));
 
-		wanted_mode = insn_operand_mode[(int) CODE_FOR_insv][0];
+		wanted_mode = insn_data[(int) CODE_FOR_insv].operand[0].mode;
 		if (wanted_mode == VOIDmode)
 		  wanted_mode = word_mode;
 

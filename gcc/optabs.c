@@ -677,8 +677,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       && binoptab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       int icode = (int) binoptab->handlers[(int) mode].insn_code;
-      enum machine_mode mode0 = insn_operand_mode[icode][1];
-      enum machine_mode mode1 = insn_operand_mode[icode][2];
+      enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+      enum machine_mode mode1 = insn_data[icode].operand[2].mode;
       rtx pat;
       rtx xop0 = op0, xop1 = op1;
 
@@ -717,15 +717,15 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       /* Now, if insn's predicates don't allow our operands, put them into
 	 pseudo regs.  */
 
-      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0)
+      if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0)
 	  && mode0 != VOIDmode)
 	xop0 = copy_to_mode_reg (mode0, xop0);
 
-      if (! (*insn_operand_predicate[icode][2]) (xop1, mode1)
+      if (! (*insn_data[icode].operand[2].predicate) (xop1, mode1)
 	  && mode1 != VOIDmode)
 	xop1 = copy_to_mode_reg (mode1, xop1);
 
-      if (! (*insn_operand_predicate[icode][0]) (temp, mode))
+      if (! (*insn_data[icode].operand[0].predicate) (temp, mode))
 	temp = gen_reg_rtx (mode);
 
       pat = GEN_FCN (icode) (temp, xop0, xop1);
@@ -1899,8 +1899,8 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
   if (binoptab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       int icode = (int) binoptab->handlers[(int) mode].insn_code;
-      enum machine_mode mode0 = insn_operand_mode[icode][1];
-      enum machine_mode mode1 = insn_operand_mode[icode][2];
+      enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+      enum machine_mode mode1 = insn_data[icode].operand[2].mode;
       rtx pat;
       rtx xop0 = op0, xop1 = op1;
 
@@ -1913,16 +1913,16 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 	xop1 = convert_to_mode (mode1, xop1, unsignedp);
 
       /* Now, if insn doesn't accept these operands, put them into pseudos.  */
-      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0))
+      if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0))
 	xop0 = copy_to_mode_reg (mode0, xop0);
 
-      if (! (*insn_operand_predicate[icode][2]) (xop1, mode1))
+      if (! (*insn_data[icode].operand[2].predicate) (xop1, mode1))
 	xop1 = copy_to_mode_reg (mode1, xop1);
 
       /* We could handle this, but we should always be called with a pseudo
 	 for our targets and all insns should take them as outputs.  */
-      if (! (*insn_operand_predicate[icode][0]) (targ0, mode)
-	  || ! (*insn_operand_predicate[icode][3]) (targ1, mode))
+      if (! (*insn_data[icode].operand[0].predicate) (targ0, mode)
+	  || ! (*insn_data[icode].operand[3].predicate) (targ1, mode))
 	abort ();
 	
       pat = GEN_FCN (icode) (targ0, xop0, xop1, targ1);
@@ -2009,7 +2009,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
   if (unoptab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       int icode = (int) unoptab->handlers[(int) mode].insn_code;
-      enum machine_mode mode0 = insn_operand_mode[icode][1];
+      enum machine_mode mode0 = insn_data[icode].operand[1].mode;
       rtx xop0 = op0;
 
       if (target)
@@ -2023,10 +2023,10 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 
       /* Now, if insn doesn't accept our operand, put it into a pseudo.  */
 
-      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0))
+      if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0))
 	xop0 = copy_to_mode_reg (mode0, xop0);
 
-      if (! (*insn_operand_predicate[icode][0]) (temp, mode))
+      if (! (*insn_data[icode].operand[0].predicate) (temp, mode))
 	temp = gen_reg_rtx (mode);
 
       pat = GEN_FCN (icode) (temp, xop0);
@@ -2370,7 +2370,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
   if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       int icode = (int) abs_optab->handlers[(int) mode].insn_code;
-      enum machine_mode mode0 = insn_operand_mode[icode][1];
+      enum machine_mode mode0 = insn_data[icode].operand[1].mode;
       rtx xop0 = op0;
 
       if (target)
@@ -2384,10 +2384,10 @@ expand_complex_abs (mode, op0, target, unsignedp)
 
       /* Now, if insn doesn't accept our operand, put it into a pseudo.  */
 
-      if (! (*insn_operand_predicate[icode][1]) (xop0, mode0))
+      if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0))
 	xop0 = copy_to_mode_reg (mode0, xop0);
 
-      if (! (*insn_operand_predicate[icode][0]) (temp, submode))
+      if (! (*insn_data[icode].operand[0].predicate) (temp, submode))
 	temp = gen_reg_rtx (submode);
 
       pat = GEN_FCN (icode) (temp, xop0);
@@ -2534,7 +2534,7 @@ emit_unop_insn (icode, target, op0, code)
      enum rtx_code code;
 {
   register rtx temp;
-  enum machine_mode mode0 = insn_operand_mode[icode][1];
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   rtx pat;
 
   temp = target = protect_from_queue (target, 1);
@@ -2549,10 +2549,10 @@ emit_unop_insn (icode, target, op0, code)
 
   /* Now, if insn does not accept our operands, put them into pseudos.  */
 
-  if (! (*insn_operand_predicate[icode][1]) (op0, mode0))
+  if (! (*insn_data[icode].operand[1].predicate) (op0, mode0))
     op0 = copy_to_mode_reg (mode0, op0);
 
-  if (! (*insn_operand_predicate[icode][0]) (temp, GET_MODE (temp))
+  if (! (*insn_data[icode].operand[0].predicate) (temp, GET_MODE (temp))
       || (flag_force_mem && GET_CODE (temp) == MEM))
     temp = gen_reg_rtx (GET_MODE (temp));
 
@@ -2924,7 +2924,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
 	  && GET_CODE (size) == CONST_INT
 	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
 	{
-	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrqi][0];
+	  result_mode = insn_data[(int) CODE_FOR_cmpstrqi].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
 	  emit_insn (gen_cmpstrqi (result, x, y, size, GEN_INT (align)));
 	}
@@ -2935,7 +2935,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
 	  && GET_CODE (size) == CONST_INT
 	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
 	{
-	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrhi][0];
+	  result_mode = insn_data[(int) CODE_FOR_cmpstrhi].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
 	  emit_insn (gen_cmpstrhi (result, x, y, size, GEN_INT (align)));
 	}
@@ -2944,7 +2944,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
 #ifdef HAVE_cmpstrsi
       if (HAVE_cmpstrsi)
 	{
-	  result_mode = insn_operand_mode[(int) CODE_FOR_cmpstrsi][0];
+	  result_mode = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
 	  size = protect_from_queue (size, 0);
 	  emit_insn (gen_cmpstrsi (result, x, y,
@@ -3044,9 +3044,9 @@ prepare_operand (icode, x, opnum, mode, wider_mode, unsignedp)
   if (mode != wider_mode)
     x = convert_modes (wider_mode, mode, x, unsignedp);
 
-  if (! (*insn_operand_predicate[icode][opnum])
-      (x, insn_operand_mode[icode][opnum]))
-    x = copy_to_mode_reg (insn_operand_mode[icode][opnum], x);
+  if (! (*insn_data[icode].operand[opnum].predicate)
+      (x, insn_data[icode].operand[opnum].mode))
+    x = copy_to_mode_reg (insn_data[icode].operand[opnum].mode, x);
   return x;
 }
 
@@ -3413,7 +3413,7 @@ void
 emit_indirect_jump (loc)
      rtx loc;
 {
-  if (! ((*insn_operand_predicate[(int)CODE_FOR_indirect_jump][0])
+  if (! ((*insn_data[(int)CODE_FOR_indirect_jump].operand[0].predicate)
 	 (loc, Pmode)))
     loc = copy_to_mode_reg (Pmode, loc);
 
@@ -3513,17 +3513,17 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
 
   /* If the insn doesn't accept these operands, put them in pseudos.  */
 
-  if (! (*insn_operand_predicate[icode][0])
-      (subtarget, insn_operand_mode[icode][0]))
-    subtarget = gen_reg_rtx (insn_operand_mode[icode][0]);
+  if (! (*insn_data[icode].operand[0].predicate)
+      (subtarget, insn_data[icode].operand[0].mode))
+    subtarget = gen_reg_rtx (insn_data[icode].operand[0].mode);
 
-  if (! (*insn_operand_predicate[icode][2])
-      (op2, insn_operand_mode[icode][2]))
-    op2 = copy_to_mode_reg (insn_operand_mode[icode][2], op2);
+  if (! (*insn_data[icode].operand[2].predicate)
+      (op2, insn_data[icode].operand[2].mode))
+    op2 = copy_to_mode_reg (insn_data[icode].operand[2].mode, op2);
 
-  if (! (*insn_operand_predicate[icode][3])
-      (op3, insn_operand_mode[icode][3]))
-    op3 = copy_to_mode_reg (insn_operand_mode[icode][3], op3);
+  if (! (*insn_data[icode].operand[3].predicate)
+      (op3, insn_data[icode].operand[3].mode))
+    op3 = copy_to_mode_reg (insn_data[icode].operand[3].mode, op3);
 
   /* Everything should now be in the suitable form, so emit the compare insn
      and then the conditional move.  */
@@ -3585,9 +3585,12 @@ gen_add2_insn (x, y)
 {
   int icode = (int) add_optab->handlers[(int) GET_MODE (x)].insn_code; 
 
-  if (! (*insn_operand_predicate[icode][0]) (x, insn_operand_mode[icode][0])
-      || ! (*insn_operand_predicate[icode][1]) (x, insn_operand_mode[icode][1])
-      || ! (*insn_operand_predicate[icode][2]) (y, insn_operand_mode[icode][2]))
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
     abort ();
 
   return (GEN_FCN (icode) (x, x, y));
@@ -3608,9 +3611,12 @@ gen_sub2_insn (x, y)
 {
   int icode = (int) sub_optab->handlers[(int) GET_MODE (x)].insn_code; 
 
-  if (! (*insn_operand_predicate[icode][0]) (x, insn_operand_mode[icode][0])
-      || ! (*insn_operand_predicate[icode][1]) (x, insn_operand_mode[icode][1])
-      || ! (*insn_operand_predicate[icode][2]) (y, insn_operand_mode[icode][2]))
+  if (! ((*insn_data[icode].operand[0].predicate)
+	 (x, insn_data[icode].operand[0].mode))
+      || ! ((*insn_data[icode].operand[1].predicate)
+	    (x, insn_data[icode].operand[1].mode))
+      || ! ((*insn_data[icode].operand[2].predicate)
+	    (y, insn_data[icode].operand[2].mode)))
     abort ();
 
   return (GEN_FCN (icode) (x, x, y));
