@@ -17,6 +17,12 @@
 	always use move_by_pieces to avoid infinite recursion.
 	(restore_fixed_argument_area): Likewise.
 
+	* combine.c (check_promoted_subreg, record_promoted_value): New
+	functions.
+	(combine_instructions): Use them to retain nonzero and sign bit
+	information after SUBREGs are eliminated by optimizations in
+	this pass if PROMOTE_FUNCTION_RETURN.
+
 Mon Dec  6 12:24:52 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (optimize_bit_field_compare): Only use one mode

@@ -403,6 +403,9 @@ static enum rtx_code simplify_comparison  PROTO((enum rtx_code, rtx *, rtx *));
 static int reversible_comparison_p  PROTO((rtx));
 static void update_table_tick	PROTO((rtx));
 static void record_value_for_reg  PROTO((rtx, rtx, rtx));
+#ifdef PROMOTE_FUNCTION_RETURN
+static void check_promoted_subreg PROTO((rtx, rtx));
+#endif
 static void record_dead_and_set_regs_1  PROTO((rtx, rtx, void *));
 static void record_dead_and_set_regs  PROTO((rtx));
 static int get_last_value_validate  PROTO((rtx *, rtx, int, int));
@@ -608,6 +611,12 @@ combine_instructions (f, nregs)
 
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
+#ifdef PROMOTE_FUNCTION_RETURN
+	  /* See if we know about function return values before this
+	     insn based upon SUBREG flags.  */
+	  check_promoted_subreg (insn, PATTERN (insn));
+#endif
+
 	  /* Try this insn with each insn it links back to.  */
 
 	  for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
@@ -11048,6 +11057,90 @@ record_dead_and_set_regs (insn)
 
   note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
 }
+
+#ifdef PROMOTE_FUNCTION_RETURN
+/* If a SUBREG has the promoted bit set, it is in fact a property of the
+   register present in the SUBREG, so for each such SUBREG go back and
+   adjust nonzero and sign bit information of the registers that are
+   known to have some zero/sign bits set.
+
+   This is needed because when combine blows the SUBREGs away, the
+   information on zero/sign bits is lost and further combines can be
+   missed because of that.  */
+
+static void
+record_promoted_value (insn, subreg)
+    rtx insn;
+    rtx subreg;
+{
+  rtx links, links2, set;
+  int regno = REGNO (SUBREG_REG (subreg));
+  enum machine_mode mode = GET_MODE (subreg);
+
+  if (GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT)
+    return;
+
+  for (links = LOG_LINKS (insn); links; )
+    {
+      insn = XEXP (links, 0);
+      set = single_set (insn);
+
+      if (! set || GET_CODE (SET_DEST (set)) != REG
+	  || REGNO (SET_DEST (set)) != regno
+	  || GET_MODE (SET_DEST (set)) != GET_MODE (SUBREG_REG (subreg)))
+	{
+	  links = XEXP (links, 1);
+	  continue;
+	}
+
+      if (reg_last_set [regno] == insn)
+        {
+	  if (SUBREG_PROMOTED_UNSIGNED_P (subreg))
+	    reg_last_set_nonzero_bits [regno] &= GET_MODE_MASK (mode);
+        }
+
+      if (GET_CODE (SET_SRC (set)) == REG)
+	{
+	  regno = REGNO (SET_SRC (set));
+	  links = LOG_LINKS (insn);
+	}
+      else
+	break;
+    }
+}
+
+/* Scan X for promoted SUBREGs.  For each one found,
+   note what it implies to the registers used in it.  */
+
+static void
+check_promoted_subreg (insn, x)
+    rtx insn;
+    rtx x;
+{
+  if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
+      && GET_CODE (SUBREG_REG (x)) == REG)
+    record_promoted_value (insn, x);
+  else
+    {
+      const char *format = GET_RTX_FORMAT (GET_CODE (x));
+      int i, j;
+
+      for (i = 0; i < GET_RTX_LENGTH (GET_CODE (x)); i++)
+	switch (format [i])
+	  {
+	  case 'e':
+	    check_promoted_subreg (insn, XEXP (x, i));
+	    break;
+	  case 'V':
+	  case 'E':
+	    if (XVEC (x, i) != 0)
+	      for (j = 0; j < XVECLEN (x, i); j++)
+		check_promoted_subreg (insn, XVECEXP (x, i, j));
+	    break;
+	  }
+    }
+}
+#endif
 
 /* Utility routine for the following function.  Verify that all the registers
    mentioned in *LOC are valid when *LOC was part of a value set when
