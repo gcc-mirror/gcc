@@ -1217,10 +1217,15 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       /* Where parameter is located in the function.  */
       rtx copy;
 
-      rtx note = emit_note (DECL_SOURCE_FILE (formal),
-			    DECL_SOURCE_LINE (formal));
-      if (note)
-	RTX_INTEGRATED_P (note) = 1;
+      /* Make sure this formal has some correspondence in the users code
+       * before emitting any line notes for it.  */
+      if (DECL_SOURCE_LINE (formal))
+	{
+	  rtx note = emit_note (DECL_SOURCE_FILE (formal),
+				DECL_SOURCE_LINE (formal));
+	  if (note)
+	    RTX_INTEGRATED_P (note) = 1;
+	}
 
       arg_trees[i] = arg;
       loc = RTVEC_ELT (arg_vector, i);
