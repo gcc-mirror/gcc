@@ -662,12 +662,8 @@ dequeue_and_dump (di)
 
     case DECL_STMT:
       dump_stmt (di, t);
-#if 0
-      /* We do not yet have DECL_STMT_DECL; there are declarators and
-	 such hanging about in DECL_STMTs.  */
       if (dump_children_p)
 	dump_child ("decl", DECL_STMT_DECL (t));
-#endif
       break;
       
     case DO_STMT:

@@ -1,3 +1,78 @@
+1999-08-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (DECL_STMT): Make it smaller.
+	* cp-tree.h (lang_decl_flags): Move saved_tree to ...
+	(lang_decl): ... here.  Add next.
+	(DECL_SAVED_TREE): Adjust accordingly.
+	(DECL_IMPLICIT_TYPEDEF_P): New macro.
+	(SET_DECL_IMPLICIT_TYPEDEF_P): Likewise.
+	(DECL_STMT_DECL): Likewise.
+	(create_implicit_typedef): New function.
+	(maybe_push_decl): Likewise.
+	(tsubst_default_argument): New function.
+	(at_function_scope_p): Likewise.
+	(add_decl_stmt): Likewise.
+	(push_permanent_obstack): Likewise.
+	* call.c (convert_default_arg): Use tsubst_default_argument.
+	* class.c (add_method): Use push_permanent_obstack.
+	(build_self_reference): Create a TEMPLATE_DECL for the
+	self-reference, if necessary.
+	* decl.c (pseudo_global_level_p): Only look at the current binding
+	level.
+	(push_binding): Use push_permanent_obstack.
+	(create_implicit_typedef): New function.
+	(pushtag): Use it.
+	(duplicate_decls): Use push_permanent_obstack.
+	(maybe_push_decl): New function.
+	(start_decl): Use it.  Remove dead code.  Use add_decl_stmt.
+	(start_decl_1): Remove dead code.
+	(cp_finish_decl): Remove DECL_STMT handling here.  Don't use
+	pseudo_global_level_p.
+	(grokvardecl): Create DECL_LANG_SPECIFIC for a VAR_DECL in a
+	template.
+	(grokdeclarator): Likewise, for TYPE_DECLs.  Don't use
+	pseudo_global_level_p.
+	* decl2.c (grokfield): Call push_template_decl for a TYPE_DECL in
+	a template.
+	(get_sentry): Use push_permanent_obstack.
+	* dump.c (dequeue_and_dump): Enable DECL_STMT.
+	* except.c (call_eh_info): Use push_permanent_obstack.
+	(build_eh_type_ref): Likewise.
+	(do_pop_exception): Likewise.
+	(expand_eh_spec): Likewise.
+	(alloc_eh_object): Likewise.
+	(expand_throw): Likewise.
+	* init.c (build_java_class_ref): Likewise.
+	* lex.c (get_time_identifier): Likewise.
+	(free_lang_decl_chain): Correct type.
+	(retrofit_lang_decl): Adjust accordingly.
+	(build_lang_field_decl): Likewise.
+	* lex.h (free_lang_decl_chain): Likewise.
+	* parse.y (lang_extdef): Don't use pseudo_global_level_p.
+	* parse.c: Regenerated.
+	* pt.c (tsubst_default_arguments): New function.
+	(retrieve_local_specialization): Likewise.
+	(register_local_specialization): Likewise.
+	(push_template_decl_real): Use DECL_IMPLICIT_TYPEDEF_P.  Just use
+	pseudo_global_level_p to determine whether or not a template is
+	primary.
+	(lookup_template_class): Likewise.  Use create_implicit_typedef.
+	(instantiate_class_template): Call tsubst_default_arguments for
+	member functions, if appropriate.
+	(tsubst_default_argument): New function.
+	(tsubst_decl): Use it.  Change TYPE_DECL handling to match VAR_DECLs.
+	* search.c (at_function_scope_p): New function.
+	* semantics.c (finish_asm_stmt): Use push_permanent_obstack.
+	(finish_label_stmt): Likewise.
+	(add_decl_stmt): New function.
+	(begin_class_definition): Likewise.
+	(finish_typeof): Likewise.
+	* tree.c (copy_template_template_parm): Likewise.
+	(copy_to_permanent): Likewise.
+	(push_permanent_obstack): Define.
+	(mark_addressable): Use it.
+	* typeck.c (mark_addressable): Likewise.
+	
 1999-08-13  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	cp-tree.h (init_cplus_unsave): New.

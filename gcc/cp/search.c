@@ -622,6 +622,17 @@ current_scope ()
   return current_class_type;
 }
 
+/* Returns non-zero if we are currently in a function scope.  Note
+   that this function returns zero if we are within a local class, but
+   not within a member function body of the local class.  */
+
+int
+at_function_scope_p ()
+{
+  tree cs = current_scope ();
+  return cs && TREE_CODE (cs) == FUNCTION_DECL;
+}
+
 /* Return the scope of DECL, as appropriate when doing name-lookup.  */
 
 static tree
@@ -1212,9 +1223,9 @@ lookup_field_queue_p (binfo, data)
     return binfo;
 }
 
-/* Within the scope of a template class, you can refer to the
-   particular to the current specialization with the name of the
-   template itself.  For example:
+/* Within the scope of a template class, you can refer to the to the
+   current specialization with the name of the template itself.  For
+   example:
    
      template <typename T> struct S { S* sp; }
 

@@ -780,12 +780,9 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   if (TREE_CHAIN (string))
     {
       if (processing_template_decl)
-	{
-	  /* We need to build the combined string on the permanent
-	     obstack so that we can use it during instantiations.  */
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
-	}
+	/* We need to build the combined string on the permanent
+	   obstack so that we can use it during instantiations.  */
+	push_permanent_obstack ();
 
       string = combine_strings (string);
 
@@ -842,8 +839,7 @@ finish_label_stmt (name)
 
   if (processing_template_decl)
     {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       decl = build_decl (LABEL_DECL, name, void_type_node);
       pop_obstacks ();
       DECL_SOURCE_LINE (decl) = lineno;
@@ -856,6 +852,21 @@ finish_label_stmt (name)
       if (decl)
 	expand_label (decl);
     }
+}
+
+/* Create a declaration statement for the declaration given by the
+   DECL.  */
+
+void
+add_decl_stmt (decl)
+     tree decl;
+{
+  tree decl_stmt;
+
+  /* We need the type to last until instantiation time.  */
+  TREE_TYPE (decl) = copy_to_permanent (TREE_TYPE (decl));
+  decl_stmt = build_min_nt (DECL_STMT, decl);
+  add_tree (decl_stmt);
 }
 
 /* Finish a parenthesized expression EXPR.  */
@@ -1302,9 +1313,8 @@ tree
 begin_class_definition (t)
      tree t;
 {
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
-  
+  push_permanent_obstack ();
+
   if (t == error_mark_node
       || ! IS_AGGR_TYPE (t))
     {
@@ -1726,12 +1736,9 @@ finish_typeof (expr)
     {
       tree t;
 
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
-
+      push_permanent_obstack ();
       t = make_lang_type (TYPEOF_TYPE);
       TYPE_FIELDS (t) = expr;
-
       pop_obstacks ();
 
       return t;

@@ -330,8 +330,7 @@ get_time_identifier (name)
   time_identifier = get_identifier (buf);
   if (TIME_IDENTIFIER_TIME (time_identifier) == NULL_TREE)
     {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       TIME_IDENTIFIER_TIME (time_identifier) = build_int_2 (0, 0);
       TIME_IDENTIFIER_FILEINFO (time_identifier) 
 	= build_int_2 (0, 1);
@@ -4716,8 +4715,8 @@ extern int tree_node_sizes[];
 #endif
 
 /* Place to save freed lang_decls which were allocated on the
-   permanent_obstack.  @@ Not currently used.  */
-tree free_lang_decl_chain;
+   permanent_obstack.  */
+struct lang_decl *free_lang_decl_chain;
 
 tree
 build_lang_decl (code, name, type)
@@ -4738,8 +4737,7 @@ retrofit_lang_decl (t)
      tree t;
 {
   struct obstack *obstack = current_obstack;
-  register int i = sizeof (struct lang_decl) / sizeof (int);
-  register int *pi;
+  struct lang_decl *ld;
 
   if (! TREE_PERMANENT (t))
     obstack = saveable_obstack;
@@ -4749,20 +4747,18 @@ retrofit_lang_decl (t)
 
   if (free_lang_decl_chain && obstack == &permanent_obstack)
     {
-      pi = (int *)free_lang_decl_chain;
-      free_lang_decl_chain = TREE_CHAIN (free_lang_decl_chain);
+      ld = free_lang_decl_chain;
+      free_lang_decl_chain = free_lang_decl_chain->u.next;
     }
   else
-    pi = (int *) obstack_alloc (obstack, sizeof (struct lang_decl));
+    ld = ((struct lang_decl *) 
+	  obstack_alloc (obstack, sizeof (struct lang_decl)));
 
-  while (i > 0)
-    pi[--i] = 0;
+  bzero (ld, sizeof (struct lang_decl));
 
-  DECL_LANG_SPECIFIC (t) = (struct lang_decl *) pi;
-  LANG_DECL_PERMANENT ((struct lang_decl *) pi)
-    = obstack == &permanent_obstack;
-  my_friendly_assert (LANG_DECL_PERMANENT ((struct lang_decl *) pi)
-	  == TREE_PERMANENT  (t), 234);
+  DECL_LANG_SPECIFIC (t) = ld;
+  LANG_DECL_PERMANENT (ld) = obstack == &permanent_obstack;
+  my_friendly_assert (LANG_DECL_PERMANENT (ld) == TREE_PERMANENT  (t), 234);
   DECL_MAIN_VARIANT (t) = t;
   if (current_lang_name == lang_name_cplusplus)
     DECL_LANGUAGE (t) = lang_cplusplus;
@@ -4772,20 +4768,14 @@ retrofit_lang_decl (t)
     DECL_LANGUAGE (t) = lang_java;
   else my_friendly_abort (64);
 
-#if 0 /* not yet, should get fixed properly later */
-  if (code == TYPE_DECL)
-    {
-      tree id;
-      id = get_identifier (build_overload_name (type, 1, 1));
-      DECL_ASSEMBLER_NAME (t) = id;
-    }
-
-#endif
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
   tree_node_sizes[(int)lang_decl] += sizeof (struct lang_decl);
 #endif
 }
+
+/* Like build_decl, except that a new lang_decl_flags structure is
+   placed in DECL_LANG_SPECIFIC.  */
 
 tree
 build_lang_field_decl (code, name, type)
@@ -4796,28 +4786,16 @@ build_lang_field_decl (code, name, type)
   extern struct obstack *current_obstack, *saveable_obstack;
   register tree t = build_decl (code, name, type);
   struct obstack *obstack = current_obstack;
-  register int i = sizeof (struct lang_decl_flags) / sizeof (int);
-  register int *pi;
-#if 0 /* not yet, should get fixed properly later */
-
-  if (code == TYPE_DECL)
-    {
-      tree id;
-      id = get_identifier (build_overload_name (type, 1, 1));
-      DECL_ASSEMBLER_NAME (t) = id;
-    }
-#endif
 
   if (! TREE_PERMANENT (t))
     obstack = saveable_obstack;
   else
     my_friendly_assert (obstack == &permanent_obstack, 235);
 
-  pi = (int *) obstack_alloc (obstack, sizeof (struct lang_decl_flags));
-  while (i > 0)
-    pi[--i] = 0;
-
-  DECL_LANG_SPECIFIC (t) = (struct lang_decl *) pi;
+  DECL_LANG_SPECIFIC (t) 
+    = ((struct lang_decl *) 
+       obstack_alloc (obstack, sizeof (struct lang_decl_flags)));
+  bzero (DECL_LANG_SPECIFIC (t), sizeof (struct lang_decl_flags));
   return t;
 }
 

@@ -1644,6 +1644,9 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	DECL_ASSEMBLER_NAME (value) =
 	  get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
 
+      if (processing_template_decl)
+	value = push_template_decl (value);
+
       return value;
     }
 
@@ -2823,8 +2826,7 @@ get_sentry (base)
   tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! sentry)
     {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       sentry = build_decl (VAR_DECL, sname, integer_type_node);
       TREE_PUBLIC (sentry) = 1;
       DECL_ARTIFICIAL (sentry) = 1;

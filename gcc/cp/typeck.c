@@ -5090,8 +5090,7 @@ mark_addressable (exp)
 	  {
 	    /* We thought this would make a good constant variable,
 	       but we were wrong.  */
-	    push_obstacks_nochange ();
-	    end_temporary_allocation ();
+	    push_permanent_obstack ();
 
 	    TREE_ASM_WRITTEN (x) = 0;
 	    DECL_RTL (x) = 0;

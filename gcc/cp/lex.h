@@ -131,3 +131,5 @@ extern tree got_object;
 extern int pending_lang_change;
 
 extern int yylex PROTO((void));
+
+extern struct lang_decl *free_lang_decl_chain;
