@@ -29,6 +29,10 @@
 #endif
 #endif
 
+#ifdef emacs
+#include "blockinput.h"
+#endif
+
 /* If compiling with GCC 2, this file's not needed.  */
 #if !defined (__GNUC__) || __GNUC__ < 2
 
@@ -176,6 +180,10 @@ alloca (size)
   {
     register header *hp;	/* Traverses linked list.  */
 
+#ifdef emacs
+    BLOCK_INPUT;
+#endif
+
     for (hp = last_alloca_header; hp != NULL;)
       if ((STACK_DIR > 0 && hp->h.deep > depth)
 	  || (STACK_DIR < 0 && hp->h.deep < depth))
@@ -190,6 +198,10 @@ alloca (size)
 	break;			/* Rest are not deeper.  */
 
     last_alloca_header = hp;	/* -> last valid storage.  */
+
+#ifdef emacs
+    UNBLOCK_INPUT;
+#endif
   }
 
   if (size == 0)
