@@ -95,7 +95,7 @@ DEFUN (main, (argc, argv),
 
   /* No flags? Do nothing */
   if (!flag_find_main && !flag_dump_class)
-    exit (0);
+    return 0;
 
   /* Check on bad usage */
   if (flag_find_main && flag_dump_class)
@@ -134,7 +134,7 @@ DEFUN (main, (argc, argv),
   if (!output_file)
     fclose (out);
 
-  exit (0);
+  return 0;
 }
 
 /* Error report, memory, obstack initialization and other utility

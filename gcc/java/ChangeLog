@@ -1,3 +1,30 @@
+1999-09-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (finish_class): Remove unused parameter, all callers
+	changed.
+
+	* expr.c (build_java_athrow): Change return type to void.
+	(java_lang_expand_expr): Make sure each case in switch returns a
+	value.
+
+	* java-tree.h (finish_class): Fix prototype to take void args.
+
+	* jcf-dump.c (usage): Mark with ATTRIBUTE_NORETURN.
+	(main): Issue return from main, not exit.
+
+	* jcf-parse.c (parse_class_file): Fix call to `finish_class'.
+
+	* jcf.h (jcf_unexpected_eof): Mark with ATTRIBUTE_NORETURN.
+
+	* jv-scan.c (main): Issue return from main, not exit.
+
+	* parse.y (check_abstract_method_definitions,
+	java_check_abstract_method_definitions): Add static prototypes.
+	(java_complete_expand_methods): Fix call to `finish_class'.
+
+	* verify.c (verify_jvm_instructions): Initialize variables `oldpc'
+	and `prevpc'.
+
 1999-08-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lang.c (language_string): Constify.

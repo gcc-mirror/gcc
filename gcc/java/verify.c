@@ -354,8 +354,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
   int wide = 0;
   int op_code;
   int PC;
-  int oldpc; /* PC of start of instruction. */
-  int prevpc;  /* If >= 0, PC of previous instruction. */
+  int oldpc = 0; /* PC of start of instruction. */
+  int prevpc = 0;  /* If >= 0, PC of previous instruction. */
   const char *message;
   int i;
   register unsigned char *p;

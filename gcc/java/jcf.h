@@ -227,7 +227,7 @@ extern const char *find_class PROTO ((const char *, int, JCF*, int));
 extern const char *find_classfile PROTO ((char *, JCF*, const char *));
 extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
 extern void jcf_out_of_synch PROTO((JCF *));
-extern int jcf_unexpected_eof PROTO ((JCF*, int));
+extern int jcf_unexpected_eof PROTO ((JCF*, int)) ATTRIBUTE_NORETURN;
 
 /* Extract a character from a Java-style Utf8 string.
  * PTR points to the current character.

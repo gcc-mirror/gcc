@@ -586,7 +586,7 @@ extern void parse_error_context PVPROTO ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 extern tree build_primtype_type_ref PROTO ((const char *));
 extern tree java_get_real_method_name PROTO ((tree));
-extern void finish_class PROTO ((tree));
+extern void finish_class PROTO ((void));
 extern void java_layout_seen_class_methods PROTO ((void));
 extern void check_for_initialization PROTO ((tree));
 

@@ -733,7 +733,7 @@ parse_class_file ()
   if (flag_emit_class_files)
     write_classfile (current_class);
 
-  finish_class (current_class);
+  finish_class ();
 
   debug_end_source_file (save_lineno);
   input_filename = save_input_filename;
