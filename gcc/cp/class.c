@@ -1946,7 +1946,8 @@ field_decl_cmp (x, y)
      const tree *x, *y;
 {
   if (DECL_NAME (*x) == DECL_NAME (*y))
-    return 0;
+    /* A nontype is "greater" than a type.  */
+    return DECL_DECLARES_TYPE_P (*y) - DECL_DECLARES_TYPE_P (*x);
   if (DECL_NAME (*x) == NULL_TREE)
     return -1;
   if (DECL_NAME (*y) == NULL_TREE)
