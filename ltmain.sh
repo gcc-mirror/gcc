@@ -1041,6 +1041,11 @@ EOF
                   if test -z "$pic_object" || test "$pic_object" = none ; then
                     arg="$non_pic_object"
                   fi
+		else
+		  # If the PIC object exists, use it instead.
+		  # $xdir was prepended to $pic_object above.
+		  non_pic_object="$pic_object"
+		  non_pic_objects="$non_pic_objects $non_pic_object"
                 fi
               else
                 # Only an error if not doing a dry-run.
@@ -1466,6 +1471,11 @@ EOF
             if test -z "$pic_object" || test "$pic_object" = none ; then
               arg="$non_pic_object"
             fi
+	  else
+	    # If the PIC object exists, use it instead.
+	    # $xdir was prepended to $pic_object above.
+	    non_pic_object="$pic_object"
+	    non_pic_objects="$non_pic_objects $non_pic_object"
           fi
         else
           # Only an error if not doing a dry-run.
