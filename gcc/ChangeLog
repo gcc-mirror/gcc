@@ -1,3 +1,16 @@
+2005-03-21  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_lrint and OTI_llrint.
+	(lrint_optab, llrint_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize lrint_optab and llrint_optab.
+	* genopinit.c (optabs): Implement lrint_optab using lrintsi2
+	pattern and llrint_optab using llrintdi2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_LRINT{,F,L}
+	using lrint_optab and BUILT_IN_LLRINT{,F,L} using llrint_optab.
+	(expand_builtin): Expand BUILT_IN_LRINT{,F,L} and
+	BUILT_IN_LLRINT{,F,L} using expand_builtin_mathfn if
+	flag_unsafe_math_optimizations is set.
+
 2005-03-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (combine_simplify_rtx, simplify_if_then_else,
