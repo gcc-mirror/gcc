@@ -1,3 +1,8 @@
+2002-04-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Correct
+	style and formatting of previous patch.
+
 2002-04-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Always clear
