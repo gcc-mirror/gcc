@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.7.2 08/31/92 13:26:22";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.7.3 09/02/92 09:45:23";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1466,9 +1466,9 @@ output_ascii (file, opcode, max, p, size)
 	{
 	  switch (c)
 	    {
+	      /* Some assemblers can't handle \a, \v, or \?.  */
 	    case '\t': c = 't'; goto escape;
 	    case '\f': c = 'f'; goto escape;
-	    case '\v': c = 'v'; goto escape;
 	    case '\b': c = 'b'; goto escape;
 	    case '\r': c = 'r'; goto escape;
 	    case '\n': c = 'n'; goto escape;
