@@ -1208,6 +1208,9 @@ extern char *a29k_function_name;
    the rest of the bigs in the register.  */
 #define BYTE_LOADS_ZERO_EXTEND
 
+/* Define if the object format being used is COFF or a superset.  */
+#define OBJECT_FORMAT_COFF
+
 /* This uses COFF, so it wants SDB format.  */
 #define SDB_DEBUGGING_INFO
 
