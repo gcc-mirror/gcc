@@ -5,6 +5,8 @@
 const bool FALSE = 0;
 const bool TRUE = 1;
 class ListDProto {
+protected:
+    class link;
 public:
     ListDProto();
     ListDProto(const ListDProto&);
@@ -15,7 +17,6 @@ public:
     void clear();
     void remove_head();
     void remove_tail();
-    class link;
     class Vix {
     public:
 	Vix();
