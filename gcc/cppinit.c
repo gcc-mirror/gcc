@@ -358,9 +358,9 @@ cpp_init_builtins (pfile, hosted)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
 
   if (hosted)
-    _cpp_define_builtin (pfile, "__STDC_HOSTED__=1");
+    _cpp_define_builtin (pfile, "__STDC_HOSTED__ 1");
   else
-    _cpp_define_builtin (pfile, "__STDC_HOSTED__=0");
+    _cpp_define_builtin (pfile, "__STDC_HOSTED__ 0");
 
   if (CPP_OPTION (pfile, objc))
     _cpp_define_builtin (pfile, "__OBJC__ 1");
