@@ -53,6 +53,13 @@ static void pp_c_inclusive_or_expression PARAMS ((c_pretty_print_info *,
 static void pp_c_logical_and_expression PARAMS ((c_pretty_print_info *, tree));
 static void pp_c_conditional_expression PARAMS ((c_pretty_print_info *, tree));
 static void pp_c_assignment_expression PARAMS ((c_pretty_print_info *, tree));
+
+/* declarations.  */
+static void pp_c_specifier_qualifier_list PARAMS ((c_pretty_print_info *, tree));
+static void pp_c_type_specifier PARAMS ((c_pretty_print_info *, tree));
+static void pp_c_abstract_declarator PARAMS ((c_pretty_print_info *, tree));
+static void pp_c_type_id PARAMS ((c_pretty_print_info *, tree));
+
 
 /* Declarations.  */
 
@@ -68,6 +75,110 @@ pp_c_cv_qualifier (ppi, cv)
     pp_c_identifier (ppi, "volatile");
   if (cv & TYPE_QUAL_RESTRICT)
     pp_c_identifier (ppi, flag_isoc99 ? "restrict" : "__restrict__");
+}
+
+static void
+pp_c_type_specifier (ppi, t)
+     c_pretty_print_info *ppi;
+     tree t;
+{
+  const enum tree_code code = TREE_CODE (t);
+  switch (code)
+    {
+    case ERROR_MARK:
+      pp_c_identifier (ppi, "<erroneous-type>");
+      break;
+
+#if 0
+    case UNKNOWN_TYPE:
+      pp_c_identifier (ppi, "<unkown-type>");
+      break;
+#endif
+
+    case IDENTIFIER_NODE:
+      pp_c_tree_identifier (ppi, t);
+      break;
+
+#if 0
+    case INTEGER_TYPE:
+      if (TREE_UNSIGNED (t))
+	pp_c_identifier (ppi, "unsigned");
+      /* fall through.  */
+    case VOID_TYPE:
+    case BOOLEAN_TYPE:
+    case REAL_TYPE:
+      if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
+	pp_c_tree_identifier (t, TYPE_IDENTIFIER (t));
+      else
+	pp_c_identifier (ppi, "<anonymous-type>");
+      break;
+#endif
+      
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+      pp_c_type_specifier (ppi, TREE_TYPE (t));
+      if (code == COMPLEX_TYPE)
+	pp_c_identifier (ppi, flag_isoc99 ? "_Complex" : "__complex__");
+      else if (code == VECTOR_TYPE)
+	pp_c_identifier (ppi, "__vector__");
+      break;
+
+    case TYPE_DECL:
+      pp_c_tree_identifier (ppi, DECL_NAME (t));
+      break;
+
+    case UNION_TYPE:
+    case RECORD_TYPE:
+    case ENUMERAL_TYPE:
+      if (code == UNION_TYPE)
+	pp_c_identifier (ppi, "union");
+      else if (code == RECORD_TYPE)
+	pp_c_identifier (ppi, "struct");
+      else if (code == ENUMERAL_TYPE)
+	pp_c_identifier (ppi, "enum");
+      
+      if (TYPE_NAME (t))
+	pp_c_tree_identifier (ppi, TYPE_NAME (t));
+      else
+	pp_c_identifier (ppi, "<anonymous>");
+      break;
+
+    case POINTER_TYPE:
+    case ARRAY_TYPE:
+      {
+      }
+      break;
+      
+    default:
+      pp_unsupported_tree (ppi, t);
+    }
+}
+
+static inline void
+pp_c_specifier_qualifier_list (ppi, t)
+     c_pretty_print_info *ppi;
+     tree t;
+{
+  pp_c_type_specifier (ppi, t);
+  pp_c_cv_qualifier (ppi, TYPE_QUALS (t));
+}
+
+static void
+pp_c_abstract_declarator (ppi, t)
+     c_pretty_print_info *ppi;
+     tree t;
+{
+  pp_unsupported_tree (ppi, t);
+}
+
+
+static inline void
+pp_c_type_id (ppi, t)
+     c_pretty_print_info *ppi;
+     tree t;
+{
+  pp_c_specifier_qualifier_list (ppi, t);
+  pp_c_abstract_declarator (ppi, t);
 }
 
 
@@ -115,7 +226,7 @@ pp_c_char (ppi, c)
       if (ISPRINT (c))
 	pp_character (ppi, c);
       else
-	pp_format_integer (ppi, "\\%03o", (unsigned) c);
+	pp_format_scalar (ppi, "\\%03o", (unsigned) c);
       break;
     }
 }
