@@ -1,3 +1,8 @@
+2000-11-15  Graham Stott  <grahams@redhat.com>
+
+	* regrename.c (scan_rtx_rtx): Skip to the next chain on
+	encountering a terminated chain.
+
 2000-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Move check for V3 above check for C++ header-file
