@@ -2250,7 +2250,9 @@ rest_of_compilation (decl)
 	TIMEVAR (integration_time,
 		 {
 		   lose = function_cannot_inline_p (decl);
-		   if (lose)
+		   /* If not optimzing, then make sure the DECL_INLINE
+		      bit is off.  */
+		   if (lose || ! optimize)
 		     {
 		       if (warn_inline && specd)
 			 warning_with_decl (decl, lose);
