@@ -2791,6 +2791,11 @@ safe_from_p (x, exp)
 	  exp_rtl = SAVE_EXPR_RTL (exp);
 	  break;
 
+	case BIND_EXPR:
+	  /* The only operand we look at is operand 1.  The rest aren't
+	     part of the expression.  */
+	  return safe_from_p (x, TREE_OPERAND (exp, 1));
+
 	case METHOD_CALL_EXPR:
 	  /* This takes a rtx argument, but shouldn't appear here. */
 	  abort ();
@@ -3503,7 +3508,7 @@ expand_expr (exp, target, tmode, modifier)
 	 just return the result we got.  */
       if (CALL_EXPR_RTL (exp) != 0)
 	return CALL_EXPR_RTL (exp);
-      return expand_call (exp, target, ignore, modifier);
+      return expand_call (exp, target, ignore);
 
     case NON_LVALUE_EXPR:
     case NOP_EXPR:
@@ -4799,7 +4804,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
           /* The argument was not in the domain; do this via library call.
 	     Pop the arguments right away in case the call gets deleted. */
 	  NO_DEFER_POP;
-          expand_call (exp, target, 0, 0);
+          expand_call (exp, target, 0);
 	  OK_DEFER_POP;
 
           /* Branch around open coded version */
@@ -5536,7 +5541,7 @@ preexpand_calls (exp)
       if (TREE_CODE (TREE_OPERAND (exp, 0)) != ADDR_EXPR
 	  || TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != FUNCTION_DECL
 	  || ! DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)))
-	CALL_EXPR_RTL (exp) = expand_call (exp, 0, 0, 0);
+	CALL_EXPR_RTL (exp) = expand_call (exp, 0, 0);
       return;
 
     case COMPOUND_EXPR:

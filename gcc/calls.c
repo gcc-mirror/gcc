@@ -358,11 +358,10 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
    If IGNORE is nonzero, then we ignore the value of the function call.  */
 
 rtx
-expand_call (exp, target, ignore, modifier)
+expand_call (exp, target, ignore)
      tree exp;
      rtx target;
      int ignore;
-     enum expand_modifier modifier;
 {
   /* List of actual parameters.  */
   tree actparms = TREE_OPERAND (exp, 1);
