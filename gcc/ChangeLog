@@ -1,3 +1,10 @@
+2003-07-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* dbxout.c (pending_bincls): Replace DBX_USE_BINCLS with
+	DBX_USE_BINCL.
+	(emit_bincl_stab): Same.
+	(emit_pending_bincls): Same.
+
 2003-07-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (compute_mov_length): Fix the length of
