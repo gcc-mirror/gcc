@@ -22,6 +22,7 @@ VERSION = 2.8.0
 _G_CONFIG_H=_G_config.h
 tooldir = $(exec_prefix)/$(target)
 INSTALLDIR = $(libdir)
+gxx_include_dir=${includedir}/g++
 
 IO_OBJECTS = filedoalloc.o floatconv.o genops.o fileops.o \
   iovfprintf.o \

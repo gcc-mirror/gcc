@@ -1080,10 +1080,40 @@ if [ x${with_newlib} != xno ] && echo " ${target_configdirs} " | grep " newlib "
   targargs="--with-newlib ${targargs}"
 fi
 
+# provide a proper gxx_include_dir.
+# Note, if you change the default, make sure to fix both here and in
+# the gcc, libio, libstdc++ and libg++ subdirectories.
+# Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
+gxx_include_dir=
+if test -n "${with_gxx_include_dir}"; then
+  case "${with_gxx_include_dir}" in
+    yes )
+      echo "configure.in: error: bad value ${withval} given for g++ include directory" 1>&2
+      exit 1
+      ;;
+    no )
+      ;;
+    * )
+      gxx_include_dir=${with_gxx_include_dir}
+      ;;
+  esac
+fi
+if test x${gxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gxx_include_dir='${libsubdir}/include/g++'
+  else
+    . ${topsrcdir}/config.if
+    gxx_include_dir='${prefix}/include/g++'-${libstdcxx_interface}
+  fi
+else
+  gxx_include_dir=${gxx_include_dir}
+fi
+
 targargs="--host=${target_alias} --build=${build_alias} ${targargs}"
 sed -e "s:^TARGET_CONFIGDIRS[ 	]*=.*$:TARGET_CONFIGDIRS = ${target_configdirs}:" \
     -e "s%^CONFIG_ARGUMENTS[ 	]*=.*$%CONFIG_ARGUMENTS = ${targargs}%" \
     -e "s%^TARGET_SUBDIR[ 	]*=.*$%TARGET_SUBDIR = ${target_subdir}%" \
+    -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
        Makefile > Makefile.tem
 rm -f Makefile
 mv -f Makefile.tem Makefile

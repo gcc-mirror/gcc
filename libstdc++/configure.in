@@ -177,3 +177,31 @@ if [ -n "${with_cross_host}" ] ; then
 fi
 
 . ${topsrcdir}/config-ml.in
+
+gxx_include_dir=
+# Specify the g++ header file directory
+# Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
+if test "${with_gxx_include_dir+set}" = set; then
+  withval="$with_gxx_include_dir"
+  case "${withval}" in
+    yes)
+      echo "configure.in: error: bad value ${withval} given for g++ include directory" 1>&2
+      exit 1
+      ;;
+    no)	;;
+    *)	gxx_include_dir=$with_gxx_include_dir ;;
+  esac
+fi
+
+if test x${gxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gxx_include_dir='${libsubdir}/include/g++'
+  else
+    gxx_include_dir='${prefix}/include/g++'-${libstdcxx_interface}
+  fi
+fi
+
+rm -f Makefile.tem
+sed -e "s%^gxx_include_dir[ 	]*=.*$%gxx_include_dir=${gxx_include_dir}%" \
+       Makefile >Makefile.tem
+mv -f Makefile.tem Makefile

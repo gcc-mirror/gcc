@@ -1,3 +1,8 @@
+Fri Apr  2 15:12:14 1999  H.J. Lu  (hjl@gnu.org)
+
+	* libstdc++/configure.in (gxx_include_dir): Handle it.
+	* libstdc++/Makefile.in: Likewise.
+
 Wed Mar 24 22:36:45 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (EXEEXT): Define.
