@@ -213,14 +213,18 @@ expand_prologue ()
 {
   unsigned int size = get_frame_size ();
 
-  /* For simplicity, we just movm all the callee saved registers to
-     the stack with one instruction, then set up the frame pointer
-     (if needed), and finally allocate the new stack.  */
-  emit_insn (gen_store_movm ());
+  /* And now store all the registers onto the stack with a
+     single two byte instruction.  */
+  if (regs_ever_live[2] || regs_ever_live[3]
+      || regs_ever_live[6] || regs_ever_live[7]
+      || frame_pointer_needed)
+    emit_insn (gen_store_movm ());
 
+  /* Now put the frame pointer into the frame pointer register.  */
   if (frame_pointer_needed)
     emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 
+  /* Allocate stack for this frame.  */
   if (size)
     emit_insn (gen_addsi3 (stack_pointer_rtx,
 			   stack_pointer_rtx,
@@ -246,8 +250,23 @@ expand_epilogue ()
       size = 0;
     }
 
-  /* Deallocate remaining stack, restore registers and return.  And return.  */
-  emit_jump_insn (gen_return_internal (GEN_INT (size)));
+  /* For simplicity, we just movm all the callee saved registers to
+     the stack with one instruction.
+
+     ?!? Only save registers which are actually used.  Reduces
+     stack requireents and is faster.  */
+  if (regs_ever_live[2] || regs_ever_live[3]
+      || regs_ever_live[6] || regs_ever_live[7]
+      || frame_pointer_needed)
+    emit_jump_insn (gen_return_internal_regs (GEN_INT (size)));
+  else
+    {
+      if (size)
+	emit_insn (gen_addsi3 (stack_pointer_rtx,
+			       stack_pointer_rtx,
+			       GEN_INT (size)));
+      emit_jump_insn (gen_return_internal ());
+    }
 }
 
 /* Update the condition code from the insn.  */
@@ -275,14 +294,13 @@ notice_update_cc (body, insn)
 	 V is always set to 0.  C may or may not be set to 0 but that's ok
 	 because alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_OVERFLOW;
+      cc_status.flags |= CC_NO_OVERFLOW | CC_OVERFLOW_UNUSABLE;
       cc_status.value1 = recog_operand[0];
       break;
 
-    case CC_SET:
+    case CC_TST:
       /* The insn sets all the condition codes, except v is bogus.  */
       CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_UNUSABLE;
       cc_status.value1 = recog_operand[0];
       break;
 
@@ -334,27 +352,45 @@ secondary_reload_class (class, mode, in)
 
   /* We can't directly load sp + const_int into a data register;
      we must use an address register as an intermediate.  */
-  if (class == DATA_REGS
+  if (class != SP_REGS
+      && class != ADDRESS_REGS
+      && class != SP_OR_ADDRESS_REGS
       && (in == stack_pointer_rtx
 	  || (GET_CODE (in) == PLUS
- 	      && XEXP (in, 0) == stack_pointer_rtx)))
-    return ADDRESS_REGS;
-
-  /* Get the true register.  */
-  if (GET_CODE (in) == REG)
-    {
-      regno = REGNO (in);
-      if (regno >= FIRST_PSEUDO_REGISTER)
-        regno = true_regnum (in);
-    }
-
-  /* We can't copy directly from a data register into the stack
-     pointer.  */
-  if (class == SP_REGS
-      && GET_CODE (in) == REG
-      && regno < 4)
+	      && (XEXP (in, 0) == stack_pointer_rtx
+		  || XEXP (in, 1) == stack_pointer_rtx))))
     return ADDRESS_REGS;
 
   /* Otherwise assume no secondary reloads are needed.  */
   return NO_REGS;
+}
+
+int
+initial_offset (from, to)
+     int from, to;
+{
+  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    {
+      if (regs_ever_live[2] || regs_ever_live[3]
+	  || regs_ever_live[6] || regs_ever_live[7]
+	  || frame_pointer_needed)
+	return 20;
+      else
+	return 4;
+    }
+
+  if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    {
+      if (regs_ever_live[2] || regs_ever_live[3]
+	  || regs_ever_live[6] || regs_ever_live[7]
+	  || frame_pointer_needed)
+	return get_frame_size () + 20;
+      else
+	return get_frame_size () + 4;
+    }
+
+  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return get_frame_size ();
+
+  abort ();
 }

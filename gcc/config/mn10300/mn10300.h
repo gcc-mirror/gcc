@@ -131,13 +131,13 @@ extern int target_flags;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 9
+#define FIRST_PSEUDO_REGISTER 10
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 1}
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1}
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -148,10 +148,10 @@ extern int target_flags;
    like.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 0, 0, 1, 1, 0, 0, 1}
+  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1}
 
 #define REG_ALLOC_ORDER \
-  { 0, 1, 4, 5, 2, 3, 6, 7, 8}
+  { 0, 1, 4, 5, 2, 3, 6, 7, 8, 9}
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -202,7 +202,7 @@ extern int target_flags;
    class that represents their union.  */
    
 enum reg_class {
-  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS, DATA_OR_ADDRESS_REGS, DATA_OR_SP_REGS, SP_OR_ADDRESS_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, DATA_REGS, ADDRESS_REGS, SP_REGS, DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -211,8 +211,8 @@ enum reg_class {
 
 #define REG_CLASS_NAMES \
 { "NO_REGS", "DATA_REGS", "ADDRESS_REGS", \
-  "SP_REGS", "DATA_OR_ADDRESS_REGS", "DATA_OR_SP_REGS", \
-  "SP_OR_ADDRESS_REGS",	"GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
+  "SP_REGS", "DATA_OR_ADDRESS_REGS", "SP_OR_ADDRESS_REGS", \
+  "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -221,13 +221,12 @@ enum reg_class {
 #define REG_CLASS_CONTENTS  			\
 {      0,		/* No regs      */	\
    0x00f,		/* DATA_REGS */		\
-   0x0f0,		/* ADDRESS_REGS */	\
-   0x100,		/* SP_REGS */		\
-   0x0ff,		/* DATA_OR_ADDRESS_REGS */\
-   0x00f,		/* DATA_OR_SP_REGS */	\
-   0x0f0,		/* SP_OR_ADDRESS_REGS */\
-   0x0ff,		/* GENERAL_REGS */    	\
-   0x0ff,		/* ALL_REGS 	*/	\
+   0x1f0,		/* ADDRESS_REGS */	\
+   0x200,		/* SP_REGS */		\
+   0x1ff,		/* DATA_OR_ADDRESS_REGS */\
+   0x1f0,		/* SP_OR_ADDRESS_REGS */\
+   0x1ff,		/* GENERAL_REGS */    	\
+   0x3ff,		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -237,8 +236,8 @@ enum reg_class {
 
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) < 4 ? DATA_REGS : \
-   (REGNO) < 8 ? ADDRESS_REGS : \
-    (REGNO) == 8 ? SP_REGS: 0)
+   (REGNO) < 9 ? ADDRESS_REGS : \
+    (REGNO) == 9 ? SP_REGS: 0)
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -277,6 +276,9 @@ enum reg_class {
 #define PREFERRED_RELOAD_CLASS(X,CLASS) \
   (X == stack_pointer_rtx && CLASS != SP_REGS ? ADDRESS_REGS : CLASS)
 
+#define PREFERRED_OUTPUT_RELOAD_CLASS(X,CLASS) \
+  (X == stack_pointer_rtx && CLASS != SP_REGS ? ADDRESS_REGS : CLASS)
+
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
   ((MODE == QImode || MODE == HImode) ? DATA_REGS : CLASS)
 
@@ -302,12 +304,14 @@ enum reg_class {
 #define CONST_OK_FOR_J(VALUE) ((VALUE) == 1)
 #define CONST_OK_FOR_K(VALUE) ((VALUE) == 2)
 #define CONST_OK_FOR_L(VALUE) ((VALUE) == 4)
+#define CONST_OK_FOR_M(VALUE) ((VALUE) == 3)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
   ((C) == 'I' ? CONST_OK_FOR_I (VALUE) : \
    (C) == 'J' ? CONST_OK_FOR_J (VALUE) : \
    (C) == 'K' ? CONST_OK_FOR_K (VALUE) : \
-   (C) == 'L' ? CONST_OK_FOR_L (VALUE) : 0)
+   (C) == 'L' ? CONST_OK_FOR_L (VALUE) : \
+   (C) == 'M' ? CONST_OK_FOR_M (VALUE) : 0)
 
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -343,19 +347,21 @@ enum reg_class {
 /* Is equal to the size of the saved fp + pc, even if an fp isn't
    saved since the value is used before we know.  */
 
-#define FIRST_PARM_OFFSET(FNDECL) (-4 + 20)
+#define FIRST_PARM_OFFSET(FNDECL) -4
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 8
+#define STACK_POINTER_REGNUM 9
 
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 7
 
-/* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 7
+/* Base register for access to arguments of the function.  This
+   is a fake register and will be eliminated into either the frame
+   pointer or stack pointer.  */
+#define ARG_POINTER_REGNUM 8
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 5
@@ -363,18 +369,40 @@ enum reg_class {
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c. 
+   This is computed in `reload', in reload1.c.
 
-   Currently we always need a frame pointer.  In the future we'd like
-   to be able to eliminate it.  */
-#define FRAME_POINTER_REQUIRED 1
+   We allow frame pointers to be eliminated when not having one will
+   not interfere with debugging.
 
-/* Store in the variable DEPTH the initial difference between the
-   frame pointer reg contents and the stack pointer reg contents,
-   as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.  */
+     * If this is a leaf function, then we can keep the stack pointer
+     constant throughout the function, and therefore gdb can easily
+     find the base of the current frame.
 
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) (DEPTH) = 20
+     * If this function never allocates stack space for outgoing
+     args (ie calls functions with either no args, or args only
+     in registers), then the stack pointer will be constant and
+     gdb can easily find the base of the current frame.
+
+     We'd really like to define ACCUMULATE_OUTGOING_ARGS and eliminate
+     all frame pointer, but currently we can't.
+
+     We probably also want a -m option to eliminate frame pointer, even
+     if the resulting executable can not be debugged.  */
+
+#define ELIMINABLE_REGS				\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+
+#define CAN_ELIMINATE(FROM, TO) 1
+
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  OFFSET = initial_offset (FROM, TO)
+
+#define FRAME_POINTER_REQUIRED \
+  !(leaf_function_p () || current_function_outgoing_args_size == 0)
+
+#define CAN_DEBUG_WITHOUT_FP
 
 /* A guess for the MN10300.  */
 #define PROMOTE_PROTOTYPES 1
@@ -565,7 +593,7 @@ enum reg_class {
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  ((REGNO (X) >= 4 && REGNO(X) <= 8) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  ((REGNO (X) >= 4 && REGNO(X) <= 9) || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 #else
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
@@ -609,7 +637,7 @@ enum reg_class {
 	{						\
 	  if (GET_CODE (index) == CONST_INT)		\
 	    goto ADDR;					\
-	  if (GET_CODE (index) == REG			\
+	  if (REG_P (index)				\
 	      && REG_OK_FOR_INDEX_P (index))		\
 	    goto ADDR;					\
 	}						\
@@ -666,7 +694,7 @@ enum reg_class {
   default: { int _zxy= const_costs(RTX, CODE);	\
 	     if(_zxy) return _zxy; break;}
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)  3
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)  (CLASS1 != CLASS2 ? 4 : 0)
 
 /* A crude cut at RTX_COSTS for the MN10300.  */
 
@@ -808,7 +836,7 @@ do { char dstr[30];					\
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
 #define REGISTER_NAMES \
-{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "sp" }
+{ "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp" }
 
 /* Print an instruction operand X on file FILE.
    look in mn10300.c for details */
@@ -913,3 +941,4 @@ extern void expand_epilogue ();
 extern void notice_update_cc ();
 extern int call_address_operand ();
 extern enum reg_class secondary_reload_class ();
+extern int initial_offset ();
