@@ -1,5 +1,17 @@
 2004-12-16  Uros Bizjak  <uros@kss-loka.si>
 
+	* config/i386/i386.md (sqrt{s,d}f2_1, sqrt{s,d}f2_1_sse_only,
+	sqrt{s,d}f2_i387): Unify enable constraint with respect to 
+	TARGET_SSE, TARGET_SSE2, TARGET_USE_FANCY_MATH_387,
+	TARGET_SSE_MATH and TARGET_MIX_SSE_I387.
+	(sqrt{s,d}f2_1): Rename to *sqrt{s,d}f2_mixed.
+	(sqrt{s,d}f2_1_sse_only): Rename to *sqrt{s,d}f2_sse.
+	(sqrt{s,d}f2_i387): Rename to *sqrt{s,d}f2_i387.
+	(*sqrtextendsfdf2): Also enable for TARGET_MIX_SSE_I387.
+	(*sqrtextend?f?f2): Rename to *sqrtextendsfdf2_i387.
+
+2004-12-16  Uros Bizjak  <uros@kss-loka.si>
+
 	* config/i386/i386.md (*fop_?f_comm_{,sse,nosse},
 	*fop_?f_1_{,sse,nosse}, *fop_{d,x}f_{2,3,4,5,6}): Unify enable
 	constraint with respect to TARGET_80387, TARGET_SSE, TARGET_SSE2,
