@@ -1,5 +1,10 @@
 Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.h (GO_IF_LEGITIMATE_ADDRESS): Do not allow indexed
+	addresses.
+	* mn10200.md (neghi2): Provide an alternative which works if
+	the input and output register are the same.
+
 	* mn10300.c (print_operand): Handle 'S'.
 	* mn10300.md (ashlsi3, lshrsi3, ashrsi3): Use %S for
 	shift amount in last alternative
