@@ -1,5 +1,7 @@
 2005-03-22  Mike Stump  <mrs@apple.com>
 
+	* stacktrace.cc: Delete unused _Jv_FindCallingClassState.
+
 	* include/posix.h: .dylib is used on all Apple MACH platforms.
 	* java/lang/ieeefp.h: ppc64 is also __IEEE_BIG_ENDIAN.
 

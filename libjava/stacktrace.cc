@@ -35,11 +35,6 @@ using namespace java::lang::reflect;
 using namespace java::util;
 using namespace gnu::gcj::runtime;
 
-struct _Jv_FindCallingClassState: _Jv_UnwindState
-{
-  jclass result;
-};
-
 // Maps ncode values to their containing native class.
 // NOTE: Currently this Map contradicts class GC for native classes. This map
 // (and the "new class stack") will need to use WeakReferences in order to 
