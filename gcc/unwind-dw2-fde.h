@@ -32,6 +32,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_UNWIND_DW2_FDE_H
 #define GCC_UNWIND_DW2_FDE_H
 
+#pragma GCC visibility push(default)
+
 struct fde_vector
 {
   const void *orig_data;
@@ -176,5 +178,7 @@ last_fde (struct object *obj __attribute__ ((__unused__)), const fde *f)
   return f->length == 0;
 #endif
 }
+
+#pragma GCC visibility pop
 
 #endif /* unwind-dw2-fde.h */

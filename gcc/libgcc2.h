@@ -30,6 +30,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_LIBGCC2_H
 #define GCC_LIBGCC2_H
 
+#pragma GCC visibility push(default)
+
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
 extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
@@ -306,5 +308,22 @@ typedef union
 } DWunion;
 
 #include "longlong.h"
+
+#undef int
+extern int __clzDI2 (UDWtype);
+extern int __clzSI2 (UWtype);
+extern int __ctzSI2 (UWtype);
+extern int __ffsSI2 (UWtype);
+extern int __ffsDI2 (DWtype);
+extern int __ctzDI2 (UDWtype);
+extern int __popcountSI2 (UWtype);
+extern int __popcountDI2 (UDWtype);
+extern int __paritySI2 (UWtype);
+extern int __parityDI2 (UDWtype);
+#define int bogus_type
+
+extern void __enable_execute_stack (void *);
+
+#pragma GCC visibility pop
 
 #endif /* ! GCC_LIBGCC2_H */

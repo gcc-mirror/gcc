@@ -29,6 +29,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_GTHR_H
 #define GCC_GTHR_H
 
+#pragma GCC visibility push(default)
+
 /* If this file is compiled with threads support, it must
        #define __GTHREADS 1
    to indicate that threads support is present.  Also it has define
@@ -99,5 +101,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #else
 #include "gthr-single.h"
 #endif
+
+#pragma GCC visibility pop(default)
 
 #endif /* ! GCC_GTHR_H */
