@@ -3944,7 +3944,7 @@ legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
 
   /* We can get better code on a C30 if we force constant shift counts
      into a register.  This way they can get hoisted out of loops,
-     tying up a register, but saving an instruction.  The downside is
+     tying up a register but saving an instruction.  The downside is
      that they may get allocated to an address or index register, and
      thus we will get a pipeline conflict if there is a nearby
      indirect address using an address register. 
@@ -3978,6 +3978,17 @@ legitimize_operands (enum rtx_code code, rtx *operands, enum machine_mode mode)
       && (GET_CODE (operands[2]) != CONST_INT))
     operands[2] = gen_rtx_NEG (mode, negate_rtx (mode, operands[2]));
   
+
+  /* When the shift count is greater than 32 then the result 
+     can be implementation dependent.  We truncate the result to
+     fit in 5 bits so that we do not emit invalid code when
+     optimising---such as trying to generate lhu2 with 20021124-1.c.  */
+  if (((code == ASHIFTRT || code == LSHIFTRT || code == ASHIFT)
+      && (GET_CODE (operands[2]) == CONST_INT))
+      && INTVAL (operands[2]) > (GET_MODE_BITSIZE (mode) - 1))
+      operands[2]
+	  = GEN_INT (INTVAL (operands[2]) & (GET_MODE_BITSIZE (mode) - 1));
+
   return 1;
 }
 

@@ -1,5 +1,9 @@
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.c (legitimize_operands): Truncate invalid shift counts.
+	
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.c (c4x_valid_operands): More aggressively reject
 	invalid operand combinations.
 
