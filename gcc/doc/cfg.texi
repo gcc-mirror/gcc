@@ -479,7 +479,7 @@ This function takes a @code{block_stmt_iterator} and makes it point to
 its successor.
 
 @item bsi_prev
-@item bsi_prev
+@findex bsi_prev
 This function takes a @code{block_stmt_iterator} and makes it point to
 its predecessor.
 
