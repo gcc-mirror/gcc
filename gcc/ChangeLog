@@ -1,3 +1,13 @@
+2004-09-08  Jie Zhang  <zhangjie@magima.com.cn>
+
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): If type
+	memory tag is call clobbered, so are its aliases.
+	(group_aliases): When two memory tags being grouped, if one is
+	call clobbered, so are the other and its aliases.
+	(add_may_alias): Remove call-clobbering stuff.
+	(replace_may_alias): Likewise.
+	(merge_pointed_to_info): Merge pt_global_mem
+
 2004-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Free DECL_INITIAL field of node.
