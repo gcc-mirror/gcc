@@ -1,5 +1,9 @@
 2004-09-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* libgcc-std.ver (GCC_3.4.2): Export also __trampoline_setup.
+
+2004-09-01  Jakub Jelinek  <jakub@redhat.com>
+
 	* fold-const.c (operand_equal_p): Require equal sign also for
 	FIX_{CEIL,TRUNC,FLOOR,ROUND}_EXPR.
 
