@@ -1,5 +1,9 @@
 2001-02-13  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/awt/j2d/AbstractGraphicsState.java (clone): Made public.
+
+2001-02-13  Tom Tromey  <tromey@redhat.com>
+
 	Fix for PR libgcj/1351:
 	* posix.cc (_Jv_select): Throw InterruptedIOException if thread is
 	interrupted.
