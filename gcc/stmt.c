@@ -1265,6 +1265,9 @@ warn_if_unused_value (exp)
     case COMPOUND_EXPR:
       if (warn_if_unused_value (TREE_OPERAND (exp, 0)))
 	return 1;
+      /* Let people do `(foo (), 0)' without a warning.  */
+      if (TREE_CONSTANT (TREE_OPERAND (exp, 1)))
+	return 0;
       return warn_if_unused_value (TREE_OPERAND (exp, 1));
 
     case NOP_EXPR:
