@@ -3284,7 +3284,9 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      if (TREE_CODE (exp) == INTEGER_CST)
+      /* Take care not to invoke ENCODE_SECTION_INFO for constants
+	 which don't have a TREE_CST_RTL.  */
+      if (TREE_CODE (exp) != INTEGER_CST)
 	ENCODE_SECTION_INFO (exp, true);
 
       desc->rtl = rtl;

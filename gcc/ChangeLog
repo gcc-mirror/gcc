@@ -1,3 +1,8 @@
+2002-04-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* varasm.c (output_constant_def): Correct test for not calling
+	ENCODE_SECTION_INFO for INTEGER_CST.
+
 2002-04-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppexp.c (lex): Move some code to _cpp_parse_expr, but
