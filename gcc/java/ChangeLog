@@ -1,3 +1,8 @@
+2001-08-01  Jeff Sturm  <jsturm@one-point.com>
+
+        * java-tree.h (BUILD_FILENAME_IDENTIFIER_NODE):
+        Use ggc_add_tree_root to register roots.
+	
 2001-07-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* check-init.c (check_init): WITH_CLEANUP_EXPR node to use its
