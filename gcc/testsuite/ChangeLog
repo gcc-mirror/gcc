@@ -1,3 +1,8 @@
+2003-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9459
+	* g++.dg/ext/typeof4.C: New test.
+
 Wed Feb 12 17:18:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-mmx-3.c: Change -march=k8 to -march=athlon.
