@@ -3675,14 +3675,15 @@ simplify_subreg (enum machine_mode outermode, rtx op,
       && subreg_offset_representable_p (REGNO (op), innermode,
 					byte, outermode))
     {
-      rtx tem = gen_rtx_SUBREG (outermode, op, byte);
-      int final_regno = subreg_hard_regno (tem, 0);
+      unsigned int regno = REGNO (op);
+      unsigned int final_regno
+	= regno + subreg_regno_offset (regno, innermode, byte, outermode);
 
       /* ??? We do allow it if the current REG is not valid for
 	 its mode.  This is a kludge to work around how float/complex
 	 arguments are passed on 32-bit SPARC and should be fixed.  */
       if (HARD_REGNO_MODE_OK (final_regno, outermode)
-	  || ! HARD_REGNO_MODE_OK (REGNO (op), innermode))
+	  || ! HARD_REGNO_MODE_OK (regno, innermode))
 	{
 	  rtx x = gen_rtx_REG_offset (op, outermode, final_regno, byte);
 
