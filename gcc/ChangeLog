@@ -1,3 +1,9 @@
+2003-05-06  Richard Henderson  <rth@redhat.com>
+
+	* unwind-dw2.c (uw_update_context_1): Only set cfa as sp if 
+	previous frame didn't save sp.  Clear sp for next frame.
+	(uw_install_context_1): Honor saved sp from frame.
+
 2003-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_subword, mips_output_move): Declare.
