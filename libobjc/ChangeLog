@@ -1,4 +1,4 @@
-2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
+2002-04-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR objc/6107
 	* objc/objc-api.h (struct objc_protocol_list): Change type of
