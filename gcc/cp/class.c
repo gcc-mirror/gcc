@@ -5690,12 +5690,10 @@ push_lang_context (name)
 
   if (name == lang_name_cplusplus)
     {
-      strict_prototype = strict_prototypes_lang_cplusplus;
       current_lang_name = name;
     }
   else if (name == lang_name_java)
     {
-      strict_prototype = strict_prototypes_lang_cplusplus;
       current_lang_name = name;
       /* DECL_IGNORED_P is initially set for these types, to avoid clutter.
 	 (See record_builtin_java_type in decl.c.)  However, that causes
@@ -5712,7 +5710,6 @@ push_lang_context (name)
     }
   else if (name == lang_name_c)
     {
-      strict_prototype = strict_prototypes_lang_c;
       current_lang_name = name;
     }
   else
@@ -5728,11 +5725,6 @@ pop_lang_context ()
      to it.  */
   *current_lang_stack = NULL_TREE;
   current_lang_name = *--current_lang_stack;
-  if (current_lang_name == lang_name_cplusplus
-      || current_lang_name == lang_name_java)
-    strict_prototype = strict_prototypes_lang_cplusplus;
-  else if (current_lang_name == lang_name_c)
-    strict_prototype = strict_prototypes_lang_c;
 }
 
 /* Type instantiation routines.  */

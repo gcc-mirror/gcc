@@ -1181,10 +1181,6 @@ extern int flag_use_repository;
    required.  */
 extern int flag_optional_diags;
 
-/* Nonzero means do not consider empty argument prototype to mean function
-   takes no arguments.  */
-extern int flag_strict_prototype;
-
 /* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
 extern int flag_vtable_gc;
 
@@ -3211,11 +3207,6 @@ typedef enum special_function_kind {
 			      destroyed.  */
   sfk_conversion           /* A conversion operator.  */
 } special_function_kind;
-
-/* Zero means prototype weakly, as in ANSI C (no args means nothing).
-   Each language context defines how this variable should be set.  */
-extern int strict_prototype;
-extern int strict_prototypes_lang_c, strict_prototypes_lang_cplusplus;
 
 /* Non-zero means that if a label exists, and no other identifier
    applies, use the value of the label.  */

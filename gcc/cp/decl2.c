@@ -360,13 +360,6 @@ int warn_deprecated = 1;
 #endif
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
 
-/* Nonzero for -fno-strict-prototype switch: do not consider empty
-   argument prototype to mean function takes no arguments.  */
-
-int flag_strict_prototype = 2;
-int strict_prototype = 1;
-int strict_prototypes_lang_c, strict_prototypes_lang_cplusplus = 1;
-
 /* Nonzero means that labels can be used as first-class objects */
 
 int flag_labels_ok;
@@ -554,7 +547,6 @@ lang_f_options[] =
   {"rtti", &flag_rtti, 1},
   {"squangle", &flag_do_squangling, 1},
   {"stats", &flag_detailed_statistics, 1},
-  {"strict-prototype", &flag_strict_prototype, 1},
   {"use-cxa-atexit", &flag_use_cxa_atexit, 1},
   {"vtable-gc", &flag_vtable_gc, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -571,6 +563,7 @@ static const char * const unsupported_options[] = {
   "guiding-decls",
   "nonnull-objects",
   "this-is-variable",
+  "strict-prototype",
 };
 
 /* Compare two option strings, pointed two by P1 and P2, for use with
