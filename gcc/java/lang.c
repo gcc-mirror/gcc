@@ -126,6 +126,27 @@ lang_decode_option (argc, argv)
      char **argv;
 {
   char *p = argv[0];
+
+#define CLARG "-fclasspath="
+  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_classpath_arg (p + sizeof (CLARG) - 1);
+      return 1;
+    }
+#undef CLARG
+#define CLARG "-fCLASSPATH="
+  else if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
+    {
+      jcf_path_CLASSPATH_arg (p + sizeof (CLARG) - 1);
+      return 1;
+    }
+#undef CLARG
+  else if (strncmp (p, "-I", 2) == 0)
+    {
+      jcf_path_include_arg (p + 2);
+      return 1;
+    }
+
   if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
@@ -180,26 +201,6 @@ lang_decode_option (argc, argv)
     {
       jcf_dependency_init (0);
       dependency_tracking |= DEPEND_ENABLE;
-      return 1;
-    }
-
-#define CLARG "-fclasspath="
-  if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_classpath_arg (p + sizeof (CLARG));
-      return 1;
-    }
-#undef CLARG
-#define CLARG "-fCLASSPATH="
-  else if (strncmp (p, CLARG, sizeof (CLARG) - 1) == 0)
-    {
-      jcf_path_CLASSPATH_arg (p + sizeof (CLARG));
-      return 1;
-    }
-#undef CLARG
-  else if (strncmp (p, "-I", 2) == 0)
-    {
-      jcf_path_include_arg (p + 2);
       return 1;
     }
 

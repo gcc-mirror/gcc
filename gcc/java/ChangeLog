@@ -1,5 +1,13 @@
 1998-10-22  Tom Tromey  <tromey@cygnus.com>
 
+	* jcf-path.c (add_entry): Don't add trailing separator if entry is
+	a .zip file.
+	(add_path): Don't add trailing separator to non-empty path
+	elements.
+
+	* lang.c (lang_decode_option): Check for -fclasspath and
+	-fCLASSPATH before examining other `-f' options.
+
 	* java-tree.h (finalize_identifier_node): Don't declare.
 	* class.c (make_class_data): Don't push "final" field.
 	* decl.c (init_decl_processing): Don't push "final" field.

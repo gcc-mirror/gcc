@@ -152,7 +152,9 @@ add_entry (entp, filename, is_system)
 	n->flags |= FLAG_SYSTEM;
     }
 
-  if (filename[len - 1] != '/' && filename[len - 1] != DIR_SEPARATOR)
+  if (! (n->flags & FLAG_ZIP)
+      && filename[len - 1] != '/'
+      && filename[len - 1] != DIR_SEPARATOR)
     {
       char *f2 = (char *) alloca (len + 1);
       strcpy (f2, filename);
@@ -186,20 +188,17 @@ add_path (entp, cp, is_system)
 	{
 	  if (! *endp || *endp == PATH_SEPARATOR)
 	    {
-	      strncpy (buf, startp, endp - startp);
 	      if (endp == startp)
 		{
 		  buf[0] = '.';
 		  buf[1] = DIR_SEPARATOR;
 		  buf[2] = '\0';
 		}
-	      else if (endp[-1] != '/' && endp[1] != DIR_SEPARATOR)
-		{
-		  buf[endp - startp] = DIR_SEPARATOR;
-		  buf[endp - startp + 1] = '\0';
-		}
 	      else
-		buf[endp - startp] = '\0';
+		{
+		  strncpy (buf, startp, endp - startp);
+		  buf[endp - startp] = '\0';
+		}
 	      add_entry (entp, buf, is_system);
 	      if (! *endp)
 		break;
