@@ -504,6 +504,23 @@ alpha_comparison_operator (op, mode)
 	  || (mode == DImode && (code == LEU || code == LTU)));
 }
 
+/* Return 1 if OP is a valid Alpha swapped comparison operator.  */
+
+int
+alpha_swapped_comparison_operator (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  enum rtx_code code = GET_CODE (op);
+
+  if (mode != GET_MODE (op) || GET_RTX_CLASS (code) != '<')
+    return 0;
+
+  code = swap_condition (code);
+  return (code == EQ || code == LE || code == LT
+	  || (mode == DImode && (code == LEU || code == LTU)));
+}
+
 /* Return 1 if OP is a signed comparison operation.  */
 
 int
