@@ -31,3 +31,53 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    it knows what it is doing. */
 
 #define FORCE_INIT_SECTION_ALIGN do { asm (ALIGN_ASM_OP ## " 16"); } while (0)
+
+#undef CPP_SPEC
+#define CPP_SPEC "\
+   %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude}"
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
+   %{!shared:%{!symbolic:-lc}} \
+   crtend.o%s \
+   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"
+
+/* This should be the same as in svr4.h, except with -R added.  */
+#undef LINK_SPEC
+#define LINK_SPEC \
+  "%{h*} %{V} %{v:%{!V:-V}} \
+   %{b} %{Wl,*:%*} \
+   %{static:-dn -Bstatic} \
+   %{shared:-G -dy} \
+   %{symbolic:-Bsymbolic -G -dy} \
+   %{G:-G} \
+   %{YP,*} \
+   %{R*} \
+   %{compat-bsd: \
+     %{!YP,*:%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
+     -R /usr/ucblib} \
+   %{!compat-bsd: \
+     %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+       %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+   %{Qy:} %{!Qn:-Qy}"
+
+/* This defines which switch letters take arguments.
+   It is as in svr4.h but with -R added.  */
+
+#undef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) \
+  (   (CHAR) == 'D' \
+   || (CHAR) == 'U' \
+   || (CHAR) == 'o' \
+   || (CHAR) == 'e' \
+   || (CHAR) == 'u' \
+   || (CHAR) == 'I' \
+   || (CHAR) == 'm' \
+   || (CHAR) == 'L' \
+   || (CHAR) == 'R' \
+   || (CHAR) == 'A' \
+   || (CHAR) == 'h' \
+   || (CHAR) == 'z')
+
