@@ -131,6 +131,10 @@ proc g++_init { args } {
 	lappend ALWAYS_CXXFLAGS "additional_flags=$TOOL_OPTIONS";
     }
 
+    # Make sure that lines are not wrapped.  That can confuse the
+    # error-message parsing machinery.
+    lappend ALWAYS_CXXFLAGS "additional_flags={-fmessage-length=0}"
+
     verbose -log "ALWAYS_CXXFLAGS set to $ALWAYS_CXXFLAGS"
 
     verbose "g++ is initialized" 3
