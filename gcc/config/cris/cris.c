@@ -100,7 +100,6 @@ static void cris_target_asm_function_prologue
 static void cris_target_asm_function_epilogue
   PARAMS ((FILE *, HOST_WIDE_INT));
 
-static void cris_encode_section_info PARAMS ((tree, int));
 static void cris_operand_lossage PARAMS ((const char *, rtx));
 
 static void cris_asm_output_mi_thunk
@@ -157,9 +156,6 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE cris_target_asm_function_epilogue
-
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO cris_encode_section_info
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
@@ -2506,6 +2502,11 @@ int
 cris_gotless_symbol (x)
      rtx x;
 {
+#ifdef ENABLE_CHECKING
+  if (!flag_pic)
+    abort ();
+#endif
+
   switch (GET_CODE (x))
     {
     case UNSPEC:
@@ -2513,9 +2514,9 @@ cris_gotless_symbol (x)
       return 1;
 
     case SYMBOL_REF:
-      if (flag_pic && cfun != NULL)
+      if (cfun != NULL)
 	current_function_uses_pic_offset_table = 1;
-      return SYMBOL_REF_FLAG (x);
+      return SYMBOL_REF_LOCAL_P (x);
 
     case LABEL_REF:
       /* We don't set current_function_uses_pic_offset_table for
@@ -2562,6 +2563,11 @@ int
 cris_got_symbol (x)
      rtx x;
 {
+#ifdef ENABLE_CHECKING
+  if (!flag_pic)
+    abort ();
+#endif
+
   switch (GET_CODE (x))
     {
     case UNSPEC:
@@ -2569,9 +2575,9 @@ cris_got_symbol (x)
       return 0;
 
     case SYMBOL_REF:
-      if (flag_pic && cfun != NULL)
+      if (cfun != NULL)
 	current_function_uses_pic_offset_table = 1;
-      return ! SYMBOL_REF_FLAG (x);
+      return ! SYMBOL_REF_LOCAL_P (x);
 
     case CONST:
       return cris_got_symbol (XEXP (x, 0));
@@ -3184,24 +3190,6 @@ restart:
 
     default:
       LOSE_AND_RETURN ("unexpected address expression", x);
-    }
-}
-
-/* Code-in whether we can get away without a GOT entry (needed for
-   externally visible objects but not for functions) into
-   SYMBOL_REF_FLAG and add the PLT suffix for global functions.  */
-
-static void
-cris_encode_section_info (exp, first)
-     tree exp;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (flag_pic)
-    {
-      rtx rtl = DECL_P (exp) ? DECL_RTL (exp) : TREE_CST_RTL (exp);
-
-      if (GET_CODE (rtl) == MEM && GET_CODE (XEXP (rtl, 0)) == SYMBOL_REF)
-	SYMBOL_REF_FLAG (XEXP (rtl, 0)) = (*targetm.binds_local_p) (exp);
     }
 }
 
