@@ -57,7 +57,7 @@
    When the -shared link option is used a final link is not being
    done.  */
 
-/* If ELF is the default format, we should not use /lib/elf. */
+/* If ELF is the default format, we should not use /lib/elf.  */
 
 #undef	LINK_SPEC
 #if TARGET_LITTLE_ENDIAN

@@ -2491,7 +2491,7 @@
         /* Ideally we shouldn't fail here if we could know that operands[1] 
            ends up already living in an iwmmxt register. Otherwise it's
            cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back. */
+           values to iwmmxt regs and back.  */
         FAIL;
     }
   else if (!TARGET_REALLY_IWMMXT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK))
@@ -2550,7 +2550,7 @@
         /* Ideally we shouldn't fail here if we could know that operands[1] 
            ends up already living in an iwmmxt register. Otherwise it's
            cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back. */
+           values to iwmmxt regs and back.  */
         FAIL;
     }
   else if (!TARGET_REALLY_IWMMXT)
@@ -2606,7 +2606,7 @@
         /* Ideally we shouldn't fail here if we could know that operands[1] 
            ends up already living in an iwmmxt register. Otherwise it's
            cheaper to have the alternate code being generated than moving
-           values to iwmmxt regs and back. */
+           values to iwmmxt regs and back.  */
         FAIL;
     }
   else if (!TARGET_REALLY_IWMMXT)

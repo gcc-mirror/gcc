@@ -862,7 +862,7 @@ extern int ip2k_reorg_merge_qimode;
 
 #define DBX_REGISTER_NUMBER(REGNO)	(REGNO)
 
-/* Miscellaneous macros to describe machine specifics. */
+/* Miscellaneous macros to describe machine specifics.  */
 
 #define IS_PSEUDO_P(R)	(REGNO (R) >= FIRST_PSEUDO_REGISTER)
 

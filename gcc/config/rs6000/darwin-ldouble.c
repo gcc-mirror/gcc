@@ -95,7 +95,7 @@ _xlqadd (double a, double b, double c, double d)
       d = tau;
     }
 
-  /* b <- second largest magnitude double. */
+  /* b <- second largest magnitude double.  */
   if (fabs (c) > fabs (b))
     {
       t = b;
@@ -104,7 +104,7 @@ _xlqadd (double a, double b, double c, double d)
     }
 
   /* Thanks to commutativity, sum is invariant w.r.t. the next
-     conditional exchange. */
+     conditional exchange.  */
   tau = d + c;
 
   /* Order the smallest magnitude doubles.  */
@@ -183,7 +183,7 @@ _xlqdiv (double a, double b, double c, double d)
 
   /* Finite nonzero result requires corrections to the highest order term.  */
 
-  s = c * t;                    /* (s,sigma) = c*t exactly. */
+  s = c * t;                    /* (s,sigma) = c*t exactly.  */
   w = -(-b + d * t);	/* Written to get fnmsub for speed, but not
 			   numerically necessary.  */
   
@@ -191,10 +191,10 @@ _xlqdiv (double a, double b, double c, double d)
   asm ("fmsub %0,%1,%2,%3" : "=f"(sigma) : "f"(c), "f"(t), "f"(s));
   v = a - s;
   
-  tau = ((v-sigma)+w)/c;   /* Correction to t. */
+  tau = ((v-sigma)+w)/c;   /* Correction to t.  */
   u = t + tau;
 
-  /* Construct long double result. */
+  /* Construct long double result.  */
   z.dval[0] = u;
   z.dval[1] = (t - u) + tau;
   return z.ldval;

@@ -876,7 +876,7 @@ extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 #define SLOW_BYTE_ACCESS 1
 
 /* The maximum number of bytes that a single instruction can move quickly
-   between memory and registers or between two memory locations. */
+   between memory and registers or between two memory locations.  */
 #define MOVE_MAX (TARGET_64BIT ? 16 : 8)
 #define MAX_MOVE_MAX 16
 

@@ -7937,7 +7937,7 @@ sparc_init_libfuncs (void)
       /* Use the subroutines that Sun's library provides for integer
 	 multiply and divide.  The `*' prevents an underscore from
 	 being prepended by the compiler. .umul is a little faster
-	 than .mul. */
+	 than .mul.  */
       set_optab_libfunc (smul_optab, SImode, "*.umul");
       set_optab_libfunc (sdiv_optab, SImode, "*.div");
       set_optab_libfunc (udiv_optab, SImode, "*.udiv");
@@ -8348,7 +8348,7 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
       return true;
 
     case IF_THEN_ELSE:
-      /* Conditional moves. */
+      /* Conditional moves.  */
       switch (sparc_cpu)
 	{
 	case PROCESSOR_ULTRASPARC:

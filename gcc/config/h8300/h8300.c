@@ -4419,7 +4419,7 @@ h8300_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
 int
 h8300_eightbit_constant_address_p (rtx x)
 {
-  /* The ranges of the 8-bit area. */
+  /* The ranges of the 8-bit area.  */
   const unsigned HOST_WIDE_INT n1 = trunc_int_for_mode (0xff00, HImode);
   const unsigned HOST_WIDE_INT n2 = trunc_int_for_mode (0xffff, HImode);
   const unsigned HOST_WIDE_INT h1 = trunc_int_for_mode (0x00ffff00, SImode);

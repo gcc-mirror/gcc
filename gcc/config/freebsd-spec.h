@@ -70,7 +70,7 @@ Boston, MA 02111-1307, USA.  */
     }									\
   while (0)
 
-/* Define the default FreeBSD-specific per-CPU hook code. */
+/* Define the default FreeBSD-specific per-CPU hook code.  */
 #define FBSD_TARGET_CPU_CPP_BUILTINS() do {} while (0)
 
 /* Provide a CPP_SPEC appropriate for FreeBSD.  We just deal with the GCC 

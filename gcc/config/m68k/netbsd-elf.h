@@ -316,7 +316,7 @@ while (0)
    function.  VALTYPE is the data type of the value (as a tree).  If
    the precise function being called is known, FUNC is its
    FUNCTION_DECL; otherwise, FUNC is 0.  For m68k/SVR4 generate the
-   result in d0, a0, or fp0 as appropriate. */
+   result in d0, a0, or fp0 as appropriate.  */
 
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)					\
@@ -359,14 +359,14 @@ while (0)
 
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.
-   The m68k/SVR4 convention is to keep the stack pointer longword aligned. */
+   The m68k/SVR4 convention is to keep the stack pointer longword aligned.  */
 
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY 32
 
 
 /* Alignment of field after `int : 0' in a structure.
-   For m68k/SVR4, this is the next longword boundary. */
+   For m68k/SVR4, this is the next longword boundary.  */
 
 #undef EMPTY_FIELD_BOUNDARY
 #define EMPTY_FIELD_BOUNDARY 32
@@ -381,7 +381,7 @@ while (0)
 
 
 /* For m68k SVR4, structures are returned using the reentrant
-   technique. */
+   technique.  */
 
 #undef PCC_STATIC_STRUCT_RETURN
 

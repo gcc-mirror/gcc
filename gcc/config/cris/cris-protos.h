@@ -52,7 +52,7 @@ extern rtx cris_expand_builtin_va_arg (tree, tree);
 
 extern void cris_pragma_expand_mul (struct cpp_reader *);
 
-/* Need one that returns an int; usable in expressions. */
+/* Need one that returns an int; usable in expressions.  */
 extern int cris_fatal (char *);
 
 extern void cris_override_options (void);

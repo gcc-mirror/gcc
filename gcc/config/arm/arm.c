@@ -3318,7 +3318,7 @@ thumb_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
     case AND:
     case XOR:
     case IOR: 
-      /* XXX guess. */
+      /* XXX guess.  */
       return 8;
 
     case ADDRESSOF:
@@ -3331,7 +3331,7 @@ thumb_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 		 ? 4 : 0));
 
     case IF_THEN_ELSE:
-      /* XXX a guess. */
+      /* XXX a guess.  */
       if (GET_CODE (XEXP (x, 1)) == PC || GET_CODE (XEXP (x, 2)) == PC)
 	return 14;
       return 2;
@@ -3759,11 +3759,11 @@ arm_xscale_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  unsigned HOST_WIDE_INT masked_const;
 
 	  /* The cost will be related to two insns.
-	     First a load of the constant (MOV or LDR), then a multiply. */
+	     First a load of the constant (MOV or LDR), then a multiply.  */
 	  cost = 2;
 	  if (! const_ok)
 	    cost += 1;      /* LDR is probably more expensive because
-			       of longer result latency. */
+			       of longer result latency.  */
 	  masked_const = i & 0xffff8000;
 	  if (masked_const != 0 && masked_const != 0xffff8000)
 	    {

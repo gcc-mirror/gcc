@@ -103,16 +103,16 @@ struct rtx_def * fr30_compare_op1;
    save masks, and offsets for the current function.  */
 struct fr30_frame_info
 {
-  unsigned int total_size;	/* # Bytes that the entire frame takes up. */
-  unsigned int pretend_size;	/* # Bytes we push and pretend caller did. */
-  unsigned int args_size;	/* # Bytes that outgoing arguments take up. */
-  unsigned int reg_size;	/* # Bytes needed to store regs. */
-  unsigned int var_size;	/* # Bytes that variables take up. */
+  unsigned int total_size;	/* # Bytes that the entire frame takes up.  */
+  unsigned int pretend_size;	/* # Bytes we push and pretend caller did.  */
+  unsigned int args_size;	/* # Bytes that outgoing arguments take up.  */
+  unsigned int reg_size;	/* # Bytes needed to store regs.  */
+  unsigned int var_size;	/* # Bytes that variables take up.  */
   unsigned int frame_size;      /* # Bytes in current frame.  */
-  unsigned int gmask;		/* Mask of saved registers. */
-  unsigned int save_fp;		/* Nonzero if frame pointer must be saved. */
-  unsigned int save_rp;		/* Nonzero if return pointer must be saved. */
-  int          initialised;	/* Nonzero if frame size already calculated. */
+  unsigned int gmask;		/* Mask of saved registers.  */
+  unsigned int save_fp;		/* Nonzero if frame pointer must be saved.  */
+  unsigned int save_rp;		/* Nonzero if return pointer must be saved.  */
+  int          initialised;	/* Nonzero if frame size already calculated.  */
 };
 
 /* Current frame information calculated by fr30_compute_frame_size().  */
@@ -425,7 +425,7 @@ fr30_setup_incoming_varargs (CUMULATIVE_ARGS arg_regs_used_so_far,
      statement is probably unnecessary.  */
   if (targetm.calls.strict_argument_naming (&arg_regs_used_so_far))
     /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
-       arg must not be treated as an anonymous arg. */
+       arg must not be treated as an anonymous arg.  */
     arg_regs_used_so_far += fr30_num_arg_regs (int_mode, type);
   
   size = FR30_NUM_ARG_REGS - arg_regs_used_so_far;

@@ -2909,13 +2909,13 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
   if (mode == VOIDmode)
     mode = GET_MODE (cmp1);
 
-  /* Eliminate simple branches */
+  /* Eliminate simple branches.  */
   branch_p = (result == 0);
   if (branch_p)
     {
       if (GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
 	{
-	  /* Comparisons against zero are simple branches */
+	  /* Comparisons against zero are simple branches.  */
 	  if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0
 	      && (! TARGET_MIPS16 || eqne_p))
 	    return 0;

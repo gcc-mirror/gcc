@@ -1919,7 +1919,7 @@ typedef struct ix86_args {
    been eliminated by then.  */
 
 
-/* Non strict versions, pseudos are ok */
+/* Non strict versions, pseudos are ok.  */
 #define REG_OK_FOR_INDEX_NONSTRICT_P(X)					\
   (REGNO (X) < STACK_POINTER_REGNUM					\
    || (REGNO (X) >= FIRST_REX_INT_REG					\

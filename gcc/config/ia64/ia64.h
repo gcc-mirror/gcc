@@ -90,7 +90,7 @@ extern int target_flags;
 
 #define MASK_INLINE_SQRT_LAT      0x00008000 /* inline sqrt, min latency.  */
 
-#define MASK_INLINE_SQRT_THR      0x00010000 /* inline sqrt, max throughput. */
+#define MASK_INLINE_SQRT_THR      0x00010000 /* inline sqrt, max throughput.  */
 
 #define MASK_DWARF2_ASM 0x00020000	/* test dwarf2 line info via gas.  */
 
@@ -251,7 +251,7 @@ extern const char *ia64_tls_size_string;
 
 enum processor_type
 {
-  PROCESSOR_ITANIUM,			/* Original Itanium. */
+  PROCESSOR_ITANIUM,			/* Original Itanium.  */
   PROCESSOR_ITANIUM2,
   PROCESSOR_max
 };

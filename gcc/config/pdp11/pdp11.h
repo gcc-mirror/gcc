@@ -170,7 +170,7 @@ extern int target_flags;
 /* Define this if most significant word of a multiword number is first.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* Define that floats are in VAX order, not high word first as for ints. */
+/* Define that floats are in VAX order, not high word first as for ints.  */
 #define FLOAT_WORDS_BIG_ENDIAN 0
 
 /* Width of a word, in units (bytes). 
@@ -883,7 +883,7 @@ extern int may_call_alloca;
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
@@ -908,7 +908,7 @@ extern int may_call_alloca;
 
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
-   should be used. */
+   should be used.  */
 
 #define SELECT_CC_MODE(OP,X,Y)	\
 (GET_MODE_CLASS(GET_MODE(X)) == MODE_FLOAT? CCFPmode : CCmode)
@@ -1013,7 +1013,7 @@ extern struct rtx_def *cc0_reg_rtx;
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX "_"
 
@@ -1034,7 +1034,7 @@ extern struct rtx_def *cc0_reg_rtx;
   fprintf (FILE, "\t%sL_%d\n", TARGET_UNIX_ASM ? "" : ".word ", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.
-   Don't define this if it is not supported. */
+   Don't define this if it is not supported.  */
 
 /* #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) */
 
