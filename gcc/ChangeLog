@@ -31,7 +31,8 @@
 	(CRIS_MOF_REGNUM): New define_constants.
 	("*movsi_internal", "movhi", "movqi", "movsf"): Add alternatives for
 	special registers.
-	("reload_inhi", "reload_outhi", "reload_inqi", 
+	("reload_inhi", "reload_outhi", "reload_inqi", "reload_outqi"):
+	New patterns.
 	("umulhisi3", "umulqihi3", "mulsi3", "mulqihi3", "mulhisi3")
 	("mulsidi3", "umulsidi3", "smulsi3_highpart", "umulsi3_highpart"):
 	Adjust for MOF being properly described as a register.
