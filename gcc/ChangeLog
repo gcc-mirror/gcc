@@ -1,3 +1,10 @@
+Tue Dec  1 15:20:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload): Do not set reload_completed or split insns
+	here.  Instead...
+	* toplev.c (rest_of_compilation): Set reload_completed after
+	reload returns.  Split insns after reload_cse has run.
+
 Tue Dec  1 11:55:04 1998  Richard Henderson  <rth@cygnus.com>
 
 	* final.c (final_scan_insn): Abort if block_depth falls below 0.

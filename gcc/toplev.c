@@ -3968,9 +3968,39 @@ rest_of_compilation (decl)
   if (failure)
     goto exit_rest_of_compilation;
 
+  reload_completed = 1;
+
   /* Do a very simple CSE pass over just the hard registers.  */
   if (optimize > 0)
     reload_cse_regs (insns);
+
+  /* If optimizing and we are performing instruction scheduling after
+     reload, then go ahead and split insns now since we are about to
+     recompute flow information anyway.
+
+     reload_cse_regs may expose more splitting opportunities, expecially
+     for double-word operations.  */
+  if (optimize > 0 && flag_schedule_insns_after_reload)
+    {
+      rtx insn;
+
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx last;
+
+	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	    continue;
+
+	  last = try_split (PATTERN (insn), insn, 1);
+
+	  if (last != insn)
+	    {
+	      PUT_CODE (insn, NOTE);
+	      NOTE_SOURCE_FILE (insn) = 0;
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	    }
+	}
+    }
 
   /* Re-create the death notes which were deleted during reload.  */
   if (optimize)
