@@ -29,8 +29,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 					%{ZSYSV:  -I/sysv/usr/include}}	\
 			 %{.S:	-D__LANGUAGE_ASSEMBLY__			\
 				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi: -DLANGUAGE_ASSEMBLY}}		\
-			 %{!.S:	-D__LANGUAGE_C__			\
+				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
+			 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS__		\
+				-D_LANGUAGE_C_PLUS_PLUS			\
+				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
+			 %{.cxx:-D__LANGUAGE_C_PLUS_PLUS__		\
+				-D_LANGUAGE_C_PLUS_PLUS			\
+				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
+			 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__		\
+				-D_LANGUAGE_C_PLUS_PLUS			\
+				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
+			 %{.m:	-D__LANGUAGE_OBJECTIVE_C__		\
+				-D_LANGUAGE_OBJECTIVE_C			\
+				%{!ansi:-DLANGUAGE_OBJECTIVE_C}}	\
+			 %{!.S: -D__LANGUAGE_C__			\
 				-D_LANGUAGE_C				\
 				%{!ansi:-DLANGUAGE_C}}"
 
