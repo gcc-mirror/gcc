@@ -1,3 +1,8 @@
+2002-12-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa/fptr.c (__canonicalize_funcptr_for_compare): Don't canonicalize
+	function pointers in page 0.
+
 2002-12-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/hpux.h (TARGET_STRUCT_ARG_REG_LITTLE_ENDIAN): Remove

@@ -64,11 +64,11 @@ __canonicalize_funcptr_for_compare (fptr)
   static fixup_t fixup;
   unsigned int *plabel, *got;
 
-  /* -1 is special.  It is used in crtend to mark the end of a list of
-     function pointers.  Also return immediately if the plabel bit is
-     not set in the function pointer.  In this case, the function pointer
-     points directly to the function.  */
-  if ((int) fptr == -1 || !((int) fptr & 2))
+  /* -1 and page 0 are special.  -1 is used in crtend to mark the end of
+     a list of function pointers.  Also return immediately if the plabel
+     bit is not set in the function pointer.  In this case, the function
+     pointer points directly to the function.  */
+  if ((int) fptr == -1 || (unsigned int) fptr < 4096 || !((int) fptr & 2))
     return (unsigned int) fptr;
 
   /* The function pointer points to a function descriptor (plabel).  If
