@@ -1,4 +1,4 @@
-/* Copyright (C) 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -574,7 +574,7 @@ _mm_set1_pi16 (short __w)
   return _mm_set1_pi32 (__i);
 }
 
-/* Creates a vector of four 16-bit values, all elements containing B.  */
+/* Creates a vector of eight 8-bit values, all elements containing B.  */
 static __inline __m64
 _mm_set1_pi8 (char __b)
 {
