@@ -96,13 +96,10 @@ struct varasm_status
 
   /* Current offset in constant pool (does not include any machine-specific
      header).  */
-  int x_pool_offset;
+  HOST_WIDE_INT x_pool_offset;
 
   /* Chain of all CONST_DOUBLE rtx's constructed for the current function.
-     They are chained through the CONST_DOUBLE_CHAIN.
-     A CONST_DOUBLE rtx has CONST_DOUBLE_MEM != cc0_rtx iff it is on this chain.
-     In that case, CONST_DOUBLE_MEM is either a MEM,
-     or const0_rtx if no MEM has been made for this CONST_DOUBLE yet.  */
+     They are chained through the CONST_DOUBLE_CHAIN.  */
   rtx x_const_double_chain;
 };
 
@@ -134,6 +131,15 @@ int size_directive_output;
    this holds 0.  */
 
 tree last_assemble_variable_decl;
+
+/* RTX_UNCHANGING_P in a MEM can mean it is stored into, for initialization.
+   So giving constant the alias set for the type will allow such
+   initializations to appear to conflict with the load of the constant.  We
+   avoid this by giving all constants an alias set for just constants.
+   Since there will be no stores to that a alias set, nothing will ever
+   conflict with them.  */
+
+static HOST_WIDE_INT const_alias_set;
 
 static const char *strip_reg_name	PARAMS ((const char *));
 static int contains_pointers_p		PARAMS ((tree));
@@ -2249,7 +2255,7 @@ immed_double_const (i0, i1, mode)
 	return r;
 
   /* No; make a new one and add it to the chain.  */
-  r = gen_rtx_CONST_DOUBLE (mode, const0_rtx, i0, i1);
+  r = gen_rtx_CONST_DOUBLE (mode, i0, i1);
 
   /* Don't touch const_double_chain if not inside any function.  */
   if (current_function_decl != 0)
@@ -2277,16 +2283,16 @@ immed_real_const_1 (d, mode)
 
   u.d = d;
 
-  /* Detect special cases.  */
-  if (REAL_VALUES_IDENTICAL (dconst0, d))
+  /* Detect special cases.  Check for NaN first, because some ports
+     (specifically the i386) do not emit correct ieee-fp code by default, and
+     thus will generate a core dump here if we pass a NaN to REAL_VALUES_EQUAL
+     and if REAL_VALUES_EQUAL does a floating point comparison.  */
+  if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_IDENTICAL (dconst0, d))
     return CONST0_RTX (mode);
-
-  /* Check for NaN first, because some ports (specifically the i386) do not
-     emit correct ieee-fp code by default, and thus will generate a core
-     dump here if we pass a NaN to REAL_VALUES_EQUAL and if REAL_VALUES_EQUAL
-     does a floating point comparison.  */
   else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);
+  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst2, d))
+    return CONST2_RTX (mode);
 
   if (sizeof u == sizeof (HOST_WIDE_INT))
     return immed_double_const (u.i[0], 0, mode);
@@ -2325,12 +2331,6 @@ immed_real_const_1 (d, mode)
   else
     CONST_DOUBLE_CHAIN (r) = NULL_RTX;
 
-  /* Store const0_rtx in CONST_DOUBLE_MEM since this CONST_DOUBLE is on the
-     chain, but has not been allocated memory.  Actual use of CONST_DOUBLE_MEM
-     is only through force_const_mem.  */
-
-  CONST_DOUBLE_MEM (r) = const0_rtx;
-
   return r;
 }
 
@@ -2352,25 +2352,13 @@ void
 clear_const_double_mem ()
 {
   rtx r, next;
-  enum machine_mode mode;
-  int i;
 
   for (r = const_double_chain; r; r = next)
     {
       next = CONST_DOUBLE_CHAIN (r);
       CONST_DOUBLE_CHAIN (r) = 0;
-      CONST_DOUBLE_MEM (r) = cc0_rtx;
     }
   const_double_chain = 0;
-
-  for (i = 0; i <= 2; i++)
-    for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-         mode = GET_MODE_WIDER_MODE (mode))
-      {
-	r = const_tiny_rtx[i][(int) mode];
-	CONST_DOUBLE_CHAIN (r) = 0;
-	CONST_DOUBLE_MEM (r) = cc0_rtx;
-      }
 }
 
 /* Given an expression EXP with a constant value,
@@ -3292,8 +3280,9 @@ output_constant_def (exp, defer)
   int found = 1;
   int after_function = 0;
   int labelno = -1;
+  rtx rtl;
 
-  if (TREE_CST_RTL (exp))
+  if (TREE_CODE (exp) != INTEGER_CST && TREE_CST_RTL (exp))
     return TREE_CST_RTL (exp);
 
   /* Make sure any other constants whose addresses appear in EXP
@@ -3328,16 +3317,21 @@ output_constant_def (exp, defer)
       const_hash_table[hash] = desc;
 
       /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
-      desc->rtl
+      rtl = desc->rtl
 	= gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)),
 		       gen_rtx_SYMBOL_REF (Pmode, desc->label));
 
-      set_mem_attributes (desc->rtl, exp, 1);
+      set_mem_attributes (rtl, exp, 1);
+      set_mem_alias_set (rtl, 0);
+      set_mem_alias_set (rtl, const_alias_set);
 
       found = 0;
     }
+  else
+    rtl = desc->rtl;
 
-  TREE_CST_RTL (exp) = desc->rtl;
+  if (TREE_CODE (exp) != INTEGER_CST)
+    TREE_CST_RTL (exp) = rtl;
 
   /* Optionally set flags or add text to the name to record information
      such as that it is a function name.  If the name is changed, the macro
@@ -3348,7 +3342,7 @@ output_constant_def (exp, defer)
   if (! found)
     {
       ENCODE_SECTION_INFO (exp);
-      desc->rtl = TREE_CST_RTL (exp);
+      desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }
 #endif
@@ -3360,7 +3354,7 @@ output_constant_def (exp, defer)
 #endif
 
   if (found
-      && STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0))
+      && STRING_POOL_ADDRESS_P (XEXP (rtl, 0))
       && (!defer || defer_addressed_constants_flag || after_function))
     {
       defstr = (struct deferred_string **)
@@ -3372,7 +3366,7 @@ output_constant_def (exp, defer)
 	     remove it from deferred string hash table.  */
 	  found = 0;
 	  labelno = (*defstr)->labelno;
-	  STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 0;
+	  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 0;
 	  htab_clear_slot (const_str_htab, (void **) defstr);
 	}
     }
@@ -3383,8 +3377,9 @@ output_constant_def (exp, defer)
     {
       if (defer_addressed_constants_flag || after_function)
 	{
-	  struct deferred_constant *p;
-	  p = (struct deferred_constant *) xmalloc (sizeof (struct deferred_constant));
+	  struct deferred_constant *p
+	    = (struct deferred_constant *)
+	      xmalloc (sizeof (struct deferred_constant));
 
 	  p->exp = copy_constant (exp);
 	  p->reloc = reloc;
@@ -3425,13 +3420,13 @@ output_constant_def (exp, defer)
 		  p->label = desc->label;
 		  p->labelno = labelno;
 		  *defstr = p;
-		  STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 1;
+		  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
 		}
 	    }
 	}
     }
 
-  return TREE_CST_RTL (exp);
+  return rtl;
 }
 
 /* Now output assembler code to define the label for EXP,
@@ -3494,12 +3489,11 @@ struct pool_constant
 {
   struct constant_descriptor *desc;
   struct pool_constant *next, *next_sym;
-  const char *label;
   rtx constant;
   enum machine_mode mode;
   int labelno;
-  int align;
-  int offset;
+  unsigned int align;
+  HOST_WIDE_INT offset;
   int mark;
 };
 
@@ -3530,23 +3524,6 @@ init_varasm_status (f)
   p->x_const_double_chain = 0;
 }
 
-/* Nested functions diddle with our const_double_chain via
-   clear_const_double_mem and const_tiny_rtx.  Remove these
-   entries from our const_double_chain.  */
-
-void
-restore_varasm_status (f)
-     struct function *f;
-{
-  rtx *p = &f->varasm->x_const_double_chain;
-
-  while (*p)
-    if (CONST_DOUBLE_MEM (*p) == cc0_rtx)
-      *p = CONST_DOUBLE_CHAIN (*p);
-    else
-      p = &CONST_DOUBLE_CHAIN (*p);
-}
-
 /* Mark PC for GC.  */
 
 static void
@@ -3557,6 +3534,7 @@ mark_pool_constant (pc)
     {
       ggc_mark (pc);
       ggc_mark_rtx (pc->constant);
+      ggc_mark_rtx (pc->desc->rtl);
       pc = pc->next;
     }
 }
@@ -3590,19 +3568,22 @@ free_varasm_status (f)
   /* Clear out the hash tables.  */
   for (i = 0; i < MAX_RTX_HASH_TABLE; ++i)
     {
-      struct constant_descriptor* cd;
+      struct constant_descriptor *cd;
 
       cd = p->x_const_rtx_hash_table[i];
-      while (cd) {
-	struct constant_descriptor* next = cd->next;
-	free (cd);
-	cd = next;
-      }
+      while (cd)
+	{
+	  struct constant_descriptor *next = cd->next;
+
+	  free (cd);
+	  cd = next;
+	}
     }
 
   free (p->x_const_rtx_hash_table);
   free (p->x_const_rtx_sym_hash_table);
   free (p);
+
   f->varasm = NULL;
 }
 
@@ -3786,115 +3767,76 @@ force_const_mem (mode, x)
   int hash;
   struct constant_descriptor *desc;
   char label[256];
-  const char *found = 0;
   rtx def;
-
-  /* If we want this CONST_DOUBLE in the same mode as it is in memory
-     (this will always be true for floating CONST_DOUBLEs that have been
-     placed in memory, but not for VOIDmode (integer) CONST_DOUBLEs),
-     use the previous copy.  Otherwise, make a new one.  Note that in
-     the unlikely event that this same CONST_DOUBLE is used in two different
-     modes in an alternating fashion, we will allocate a lot of different
-     memory locations, but this should be extremely rare.  */
-
-  if (GET_CODE (x) == CONST_DOUBLE
-      && GET_CODE (CONST_DOUBLE_MEM (x)) == MEM
-      && GET_MODE (CONST_DOUBLE_MEM (x)) == mode)
-    return CONST_DOUBLE_MEM (x);
+  struct pool_constant *pool;
+  unsigned int align;
 
   /* Compute hash code of X.  Search the descriptors for that hash code
-     to see if any of them describes X.  If yes, the descriptor records
-     the label number already assigned.  */
-
+     to see if any of them describes X.  If yes, we have an rtx to use.  */
   hash = const_hash_rtx (mode, x);
-
   for (desc = const_rtx_hash_table[hash]; desc; desc = desc->next)
     if (compare_constant_rtx (mode, x, desc))
-      {
-	found = desc->label;
-	break;
-      }
+      return desc->rtl;
 
-  if (found == 0)
-    {
-      struct pool_constant *pool;
-      int align;
-
-      /* No constant equal to X is known to have been output.
-	 Make a constant descriptor to enter X in the hash table.
-	 Assign the label number and record it in the descriptor for
-	 future calls to this function to find.  */
-
-      desc = record_constant_rtx (mode, x);
-      desc->next = const_rtx_hash_table[hash];
-      const_rtx_hash_table[hash] = desc;
-
-      /* Align the location counter as required by EXP's data type.  */
-      align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
+  /* No constant equal to X is known to have been output.
+     Make a constant descriptor to enter X in the hash table
+     and make a MEM for it.  */
+  desc = record_constant_rtx (mode, x);
+  desc->next = const_rtx_hash_table[hash];
+  const_rtx_hash_table[hash] = desc;
+  
+  /* Align the location counter as required by EXP's data type.  */
+  align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
 #ifdef CONSTANT_ALIGNMENT
-      align = CONSTANT_ALIGNMENT (make_tree (type_for_mode (mode, 0), x),
-				  align);
+  align = CONSTANT_ALIGNMENT (make_tree (type_for_mode (mode, 0), x), align);
 #endif
 
-      pool_offset += (align / BITS_PER_UNIT) - 1;
-      pool_offset &= ~ ((align / BITS_PER_UNIT) - 1);
+  pool_offset += (align / BITS_PER_UNIT) - 1;
+  pool_offset &= ~ ((align / BITS_PER_UNIT) - 1);
 
-      if (GET_CODE (x) == LABEL_REF)
-	LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
+  if (GET_CODE (x) == LABEL_REF)
+    LABEL_PRESERVE_P (XEXP (x, 0)) = 1;
 
-      /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
+  /* Allocate a pool constant descriptor, fill it in, and chain it in.  */
+  pool = (struct pool_constant *) ggc_alloc (sizeof (struct pool_constant));
+  pool->desc = desc;
+  pool->constant = x;
+  pool->mode = mode;
+  pool->labelno = const_labelno;
+  pool->align = align;
+  pool->offset = pool_offset;
+  pool->mark = 1;
+  pool->next = 0;
 
-      pool = (struct pool_constant *) ggc_alloc (sizeof (struct pool_constant));
-      pool->desc = desc;
-      pool->constant = x;
-      pool->mode = mode;
-      pool->labelno = const_labelno;
-      pool->align = align;
-      pool->offset = pool_offset;
-      pool->mark = 1;
-      pool->next = 0;
+  if (last_pool == 0)
+    first_pool = pool;
+  else
+    last_pool->next = pool;
+  
+  last_pool = pool;
+  pool_offset += GET_MODE_SIZE (mode);
 
-      if (last_pool == 0)
-	first_pool = pool;
-      else
-	last_pool->next = pool;
+  /* Create a string containing the label name, in LABEL.  */
+  ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
 
-      last_pool = pool;
-      pool_offset += GET_MODE_SIZE (mode);
+  ++const_labelno;
 
-      /* Create a string containing the label name, in LABEL.  */
-      ASM_GENERATE_INTERNAL_LABEL (label, "LC", const_labelno);
+  /* Construct the SYMBOL_REF and the MEM.  */
 
-      ++const_labelno;
-
-      desc->label = found = ggc_strdup (label);
-
-      /* Add label to symbol hash table.  */
-      hash = SYMHASH (found);
-      pool->label = found;
-      pool->next_sym = const_rtx_sym_hash_table[hash];
-      const_rtx_sym_hash_table[hash] = pool;
-    }
-
-  /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
-
-  def = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, found));
+  pool->desc->rtl = def
+    = gen_rtx_MEM (mode, gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label)));
+  set_mem_alias_set (def, const_alias_set);
   set_mem_attributes (def, type_for_mode (mode, 0), 1);
   RTX_UNCHANGING_P (def) = 1;
+
+  /* Add label to symbol hash table.  */
+  hash = SYMHASH (XSTR (XEXP (def, 0), 0));
+  pool->next_sym = const_rtx_sym_hash_table[hash];
+  const_rtx_sym_hash_table[hash] = pool;
 
   /* Mark the symbol_ref as belonging to this constants pool.  */
   CONSTANT_POOL_ADDRESS_P (XEXP (def, 0)) = 1;
   current_function_uses_const_pool = 1;
-
-  if (GET_CODE (x) == CONST_DOUBLE)
-    {
-      if (CONST_DOUBLE_MEM (x) == cc0_rtx)
-	{
-	  CONST_DOUBLE_CHAIN (x) = const_double_chain;
-	  const_double_chain = x;
-	}
-      CONST_DOUBLE_MEM (x) = def;
-    }
 
   return def;
 }
@@ -3912,7 +3854,7 @@ find_pool_constant (f, addr)
 
   for (pool = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; pool;
        pool = pool->next_sym)
-    if (pool->label == label)
+    if (XSTR (XEXP (pool->desc->rtl, 0), 0) == label)
       return pool;
 
   abort ();
@@ -4131,10 +4073,6 @@ mark_constants (x)
       mark_constant (&x, NULL);
       return;
     }
-  /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
-     a MEM, but does not constitute a use of that MEM.  */
-  else if (GET_CODE (x) == CONST_DOUBLE)
-    return;
 
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
@@ -4182,7 +4120,7 @@ mark_constants (x)
 
 /* Given a SYMBOL_REF CURRENT_RTX, mark it and all constants it refers
    to as used.  Emit referenced deferred strings.  This function can
-   be used with for_each_rtx () to mark all SYMBOL_REFs in an rtx.  */
+   be used with for_each_rtx to mark all SYMBOL_REFs in an rtx.  */
 
 static int
 mark_constant (current_rtx, data)
@@ -4193,10 +4131,7 @@ mark_constant (current_rtx, data)
 
   if (x == NULL_RTX)
     return 0;
-  else if (GET_CODE(x) == CONST_DOUBLE)
-    /* Never search inside a CONST_DOUBLE because CONST_DOUBLE_MEM may
-       be a MEM but does not constitute a use of that MEM.  */
-    return -1;
+
   else if (GET_CODE (x) == SYMBOL_REF)
     {
       if (CONSTANT_POOL_ADDRESS_P (x))
@@ -5185,6 +5120,8 @@ init_varasm_once ()
 		mark_const_hash_entry);
   ggc_add_root (&const_str_htab, 1, sizeof const_str_htab,
 		mark_const_str_htab);
+
+  const_alias_set = new_alias_set ();
 }
 
 /* Select a set of attributes for section NAME based on the properties

@@ -597,7 +597,6 @@ extern void free_after_parsing		PARAMS ((struct function *));
 extern void free_after_compilation	PARAMS ((struct function *));
 
 extern void init_varasm_status		PARAMS ((struct function *));
-extern void restore_varasm_status	PARAMS ((struct function *));
 extern void free_varasm_status		PARAMS ((struct function *));
 extern void free_emit_status		PARAMS ((struct function *));
 extern void free_stmt_status            PARAMS ((struct function *));

@@ -793,8 +793,6 @@ cselib_subst_to_values (x)
 	}
       return e->u.val_rtx;
 
-      /* CONST_DOUBLEs must be special-cased here so that we won't try to
-	 look up the CONST_DOUBLE_MEM inside.  */
     case CONST_DOUBLE:
     case CONST_INT:
       return x;

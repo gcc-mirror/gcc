@@ -804,15 +804,11 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    For a float, the number of ints varies,
     and CONST_DOUBLE_LOW is the one that should come first *in memory*.
     So use &CONST_DOUBLE_LOW(r) as the address of an array of ints.  */
-#define CONST_DOUBLE_LOW(r) XCWINT (r, 2, CONST_DOUBLE)
-#define CONST_DOUBLE_HIGH(r) XCWINT (r, 3, CONST_DOUBLE)
+#define CONST_DOUBLE_LOW(r) XCWINT (r, 1, CONST_DOUBLE)
+#define CONST_DOUBLE_HIGH(r) XCWINT (r, 2, CONST_DOUBLE)
 
 /* Link for chain of all CONST_DOUBLEs in use in current function.  */
-#define CONST_DOUBLE_CHAIN(r) XCEXP (r, 1, CONST_DOUBLE)
-/* The MEM which represents this CONST_DOUBLE's value in memory,
-   or const0_rtx if no MEM has been made for it yet,
-   or cc0_rtx if it is not on the chain.  */
-#define CONST_DOUBLE_MEM(r) XCEXP (r, 0, CONST_DOUBLE)
+#define CONST_DOUBLE_CHAIN(r) XCEXP (r, 0, CONST_DOUBLE)
 
 /* For a SUBREG rtx, SUBREG_REG extracts the value we want a subreg of.
    SUBREG_BYTE extracts the byte-number.  */
@@ -1619,7 +1615,7 @@ extern rtx return_address_pointer_rtx;
    add to this list, modify special_rtx in gengenrtl.c as well.  You
    should also modify gen_rtx to use the special function.  */
 
-extern rtx gen_rtx_CONST_DOUBLE PARAMS ((enum machine_mode, rtx,
+extern rtx gen_rtx_CONST_DOUBLE PARAMS ((enum machine_mode,
 				       HOST_WIDE_INT, HOST_WIDE_INT));
 extern rtx gen_rtx_CONST_INT PARAMS ((enum machine_mode, HOST_WIDE_INT));
 extern rtx gen_raw_REG PARAMS ((enum machine_mode, int));
