@@ -1,3 +1,7 @@
+2001-01-17  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* testsuite/27_io/istream_sentry.cc (test02): Fix.
+
 2001-01-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/1605
