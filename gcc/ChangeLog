@@ -1,3 +1,8 @@
+Tue Sep  7 23:36:59 1999  Linas Vepstas  <linas@linas.org>
+
+	* configure.in: add i370-*-openedition, i370-*-mvs and
+	i370-*-linux targets
+
 Tue Sep  7 23:31:53 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* dsp16xxx.c: Include ggc.h
