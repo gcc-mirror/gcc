@@ -1,3 +1,5 @@
+/* { dg-options "-w" } */
+
 #include "compat-common.h"
 #include "vector-defs.h"
 #include "vector-check.h"

@@ -1,3 +1,10 @@
+2003-08-25  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/vector-1_x.c: Compile with -w.
+	* gcc.dg/compat/vector-1_y.c: Ditto.
+	* gcc.dg/compat/vector-2_x.c: Ditto.
+	* gcc.dg/compat/vector-2_y.c: Ditto.
+
 2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20030702-1.c: New test.
