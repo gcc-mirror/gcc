@@ -1,3 +1,7 @@
+2002-03-22  Andrew MacLeod  <amacleod@redhat.com>
+
+	* expr.c (expand_expr): A RESULT_DECL is part of a call.
+
 Fri Mar 22 16:30:42 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (flag_loop_optimize, flag_crossjumping):
