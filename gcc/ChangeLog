@@ -1,5 +1,10 @@
 2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arm/arm.c (arm_compute_initial_elimination_offset):
+	Fix a comment typo.
+
+2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* toplev.c (do_abort): Fix a comment typo.
 
 2002-09-12  Kazu Hirata  <kazu@cs.umass.edu>
