@@ -1,4 +1,8 @@
 2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
+ 
+	* loop.c (for_each_insn_in_loop): Fix formatting and comments.
+
+2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/6677
 	* convert.c (convert_to_integer) [LSHIFT_EXPR]: Don't pass

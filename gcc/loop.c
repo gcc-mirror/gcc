@@ -4247,8 +4247,8 @@ static rtx addr_placeholder;
    LOOP and INSN parameters pass MAYBE_MULTIPLE and NOT_EVERY_ITERATION to the
    callback.
 
-   NOT_EVERY_ITERATION if current insn is not executed at least once for every
-   loop iteration except for the last one.
+   NOT_EVERY_ITERATION is 1 if current insn is not known to be executed at
+   least once for every loop iteration except for the last one.
 
    MAYBE_MULTIPLE is 1 if current insn may be executed more than once for every
    loop iteration.
@@ -4258,8 +4258,6 @@ for_each_insn_in_loop (loop, fncall)
      struct loop *loop;
      loop_insn_callback fncall;
 {
-  /* This is 1 if current insn is not executed at least once for every loop
-     iteration.  */
   int not_every_iteration = 0;
   int maybe_multiple = 0;
   int past_loop_latch = 0;
@@ -4271,8 +4269,7 @@ for_each_insn_in_loop (loop, fncall)
   if (prev_nonnote_insn (loop->scan_start) != prev_nonnote_insn (loop->start))
     maybe_multiple = back_branch_in_range_p (loop, loop->scan_start);
 
-  /* Scan through loop to find all possible bivs.  */
-
+  /* Scan through loop and update NOT_EVERY_ITERATION and MAYBE_MULTIPLE. */
   for (p = next_insn_in_loop (loop, loop->scan_start);
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
@@ -4329,9 +4326,9 @@ for_each_insn_in_loop (loop, fncall)
          This can be any kind of jump, since we want to know if insns
          will be executed if the loop is executed.  */
 	  && !(JUMP_LABEL (p) == loop->top
-	     && ((NEXT_INSN (NEXT_INSN (p)) == loop->end
-		  && any_uncondjump_p (p))
-		 || (NEXT_INSN (p) == loop->end && any_condjump_p (p)))))
+	       && ((NEXT_INSN (NEXT_INSN (p)) == loop->end
+		    && any_uncondjump_p (p))
+		   || (NEXT_INSN (p) == loop->end && any_condjump_p (p)))))
 	{
 	  rtx label = 0;
 
