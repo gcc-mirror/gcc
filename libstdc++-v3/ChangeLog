@@ -1,3 +1,14 @@
+2003-11-15  Roger Sayle  <roger@eyesopen.com>
+
+	* include/c_std/std_cmath.h: Don't import C99's float transcendentals
+	into the __gnu_cxx::__c99_binding namespace.
+	(acos, asin, atan, atan2, ceil, cosh, exp, floor, fmod, frexp,
+	ldexp, log, log10, modf, pow, sinh, tan, tanh): Implement using
+	GCC's math builtins, i.e. __builtin_foo.
+	* libmath/stubs.c (acosf, acosl, asinf, asinl, atanf, atanl,
+	ceilf, ceill, floorf, floorl, fmodf, fmodl, frexpf, frexpl,
+	ldexpf, ldexpl, modff, modfl): Provide stub implementations.
+
 2003-11-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/22_locale/locale/cons/12352.cc: Use
