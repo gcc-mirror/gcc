@@ -1,5 +1,9 @@
 2000-07-07  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/20000707-1.c: New test.
+
+2000-07-07  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.c-torture/execute/20000706-1.c: New test.
 	* gcc.c-torture/execute/20000706-2.c: New test.
 	* gcc.c-torture/execute/20000706-3.c: New test.
