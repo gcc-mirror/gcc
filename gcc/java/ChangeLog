@@ -1,3 +1,9 @@
+2004-12-03  Andrew Haley  <aph@redhat.com>
+
+	PR java/18697 
+	* class.c (layout_class_method): Don't fail to override a method
+	simply because it has DECL_ARTIFICIAL set.
+
 2004-12-02  Tom Tromey  <tromey@redhat.com>
 
 	PR java/16675:
