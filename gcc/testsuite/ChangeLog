@@ -1,3 +1,9 @@
+2002-05-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/poison.c: Update.
+	* gcc.dg/cpp/20000625-2.c: Remove.
+	* gcc.dg/cpp/direct2s.c: Remove final test.
+
 2002-05-08  Tom Rix  <trix@redhat.com>
 
 	* gcc.c-torture/execute/20020508-1.c: New test.

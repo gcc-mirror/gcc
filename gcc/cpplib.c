@@ -1049,7 +1049,6 @@ _cpp_init_internal_pragmas (pfile)
      cpp_reader *pfile;
 {
   /* Pragmas in the global namespace.  */
-  cpp_register_pragma (pfile, 0, "poison", do_pragma_poison);
   cpp_register_pragma (pfile, 0, "once", do_pragma_once);
 
   /* New GCC-specific pragmas should be put in the GCC namespace.  */
@@ -1122,8 +1121,8 @@ do_pragma_once (pfile)
   check_eol (pfile);
 }
 
-/* Handle #pragma poison, to poison one or more identifiers so that
-   the lexer produces a hard error for each subsequent usage.  */
+/* Handle #pragma GCC poison, to poison one or more identifiers so
+   that the lexer produces a hard error for each subsequent usage.  */
 static void
 do_pragma_poison (pfile)
      cpp_reader *pfile;

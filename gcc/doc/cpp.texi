@@ -176,7 +176,6 @@ Obsolete Features
 
 * Assertions::
 * Obsolete once-only headers::
-* Miscellaneous obsolete features::
 
 @end detailmenu
 @end menu
@@ -3625,7 +3624,6 @@ In some cases, we plan to remove the feature in a future version of GCC@.
 @menu
 * Assertions::
 * Obsolete once-only headers::
-* Miscellaneous obsolete features::
 @end menu
 
 @node Assertions
@@ -3747,41 +3745,6 @@ matter what.
 @samp{#pragma once} does not have the problems that @samp{#import} does,
 but it is not recognized by all preprocessors, so you cannot rely on it
 in a portable program.
-
-@node Miscellaneous obsolete features
-@subsection Miscellaneous obsolete features
-
-Here are a few more obsolete features.
-
-@itemize @bullet
-@cindex invalid token paste
-@item Attempting to paste two tokens which together do not form a valid
-preprocessing token.
-
-The preprocessor currently warns about this and outputs the two tokens
-adjacently, which is probably the behavior the programmer intends.  It
-may not work in future, though.
-
-Most of the time, when you get this warning, you will find that @samp{##}
-is being used superstitiously, to guard against whitespace appearing
-between two tokens.  It is almost always safe to delete the @samp{##}.
-
-@cindex pragma poison
-@item @code{#pragma poison}
-
-This is the same as @code{#pragma GCC poison}.  The version without the
-@code{GCC} prefix is deprecated.  @xref{Pragmas}.
-
-@cindex multi-line string constants
-@item Multi-line string constants
-
-Older versions of GCC allowed string constants to extend across
-multiple logical lines of the source file.  This ill-considered
-extension has now been removed.  Instead, make use of ISO C
-concatenation of adjacent string literals, or use @samp{\n} followed
-by a backslash-newline.
-
-@end itemize
 
 @node Differences from previous versions
 @section Differences from previous versions

@@ -435,9 +435,9 @@ paste_all_tokens (pfile, lhs)
 	{
 	  _cpp_backup_tokens (pfile, 1);
 
-	  /* Mandatory warning for all apart from assembler.  */
+	  /* Mandatory error for all apart from assembler.  */
 	  if (CPP_OPTION (pfile, lang) != CLK_ASM)
-	    cpp_error (pfile, DL_WARNING,
+	    cpp_error (pfile, DL_ERROR,
 	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
 		       cpp_token_as_text (pfile, lhs),
 		       cpp_token_as_text (pfile, rhs));
