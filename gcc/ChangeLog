@@ -1,3 +1,11 @@
+2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/19854
+	* fold-const.c (try_move_mult_to_index): Remove redundant
+	type argument.  Create ADDR_EXPR with correct type.
+	(fold): Update callers of try_move_mult_to_index.  Convert
+	result to the appropriate type.
+
 2005-02-09  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/19597
