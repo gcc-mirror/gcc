@@ -1,3 +1,9 @@
+2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5116, c++/764
+	* call.c (build_new_op): Make sure template class operands are
+	instantiated.
+
 2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR C++/7964
