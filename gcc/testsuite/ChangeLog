@@ -1,3 +1,19 @@
+2001-11-22  Geoffrey Keating  <geoffk@redhat.com>
+
+	* lib/old-dejagnu.exp (old-dejagnu): Copy extra source files
+	to the host if it is remote.  Let tests specify extra headers
+	they use.
+	* g++.old-deja/g++.abi/vtable3a.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3b.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3c.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3d.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3e.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3f.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3g.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3h.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3i.C: This uses 'vtable3.h'.
+	* g++.old-deja/g++.abi/vtable3j.C: This uses 'vtable3.h'.
+
 2001-11-22  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* gcc.c-torture/execute/ieee/20000320-1.c: Fix patterns to work
