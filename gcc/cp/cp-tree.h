@@ -1066,7 +1066,7 @@ extern int flag_const_strings;
 /* If non-NULL, dump the tree structure for the entire translation
    unit to this file.  */
 
-extern char *flag_dump_translation_unit;
+extern const char *flag_dump_translation_unit;
 
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
@@ -1177,9 +1177,6 @@ extern int flag_default_inline;
 /* The name-mangling scheme to use.  Versions of gcc before 2.8 use
    version 0.  */
 extern int name_mangling_version;
-
-/* Nonzero means that guiding declarations are allowed.  */
-extern int flag_guiding_decls;
 
 /* Nonzero if wchar_t should be `unsigned short' instead of whatever it
    would normally be, for use with WINE.  */

@@ -63,19 +63,12 @@ is_friend (type, supplicant)
 		  if (supplicant == TREE_VALUE (friends))
 		    return 1;
 
-		  /* With -fguiding-decls we are more lenient about
-		     friendship.  This is bogus in general since two
-		     specializations of a template with non-type
-		     template parameters may have the same type, but
-		     be different.  
-
-		     Temporarily, we are also more lenient to deal
-		     with nested friend functions, for which there can
-		     be more than one FUNCTION_DECL, despite being the
-		     same function.  When that's fixed, the
-		     FUNCTION_MEMBER_P bit can go.  */
-		  if ((flag_guiding_decls 
-		       || DECL_FUNCTION_MEMBER_P (supplicant))
+		  /* Temporarily, we are more lenient to deal with
+		     nested friend functions, for which there can be
+		     more than one FUNCTION_DECL, despite being the
+		     same function.  When that's fixed, this bit can
+		     go.  */
+		  if (DECL_FUNCTION_MEMBER_P (supplicant)
 		      && same_type_p (TREE_TYPE (supplicant),
 				      TREE_TYPE (TREE_VALUE (friends))))
 		    return 1;
@@ -402,7 +395,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	    decl = push_template_decl_real (decl, /*is_friend=*/1); 
 
 	  if (warn_nontemplate_friend
-	      && ! funcdef_flag && ! flag_guiding_decls && ! is_friend_template
+	      && ! funcdef_flag && ! is_friend_template
 	      && current_template_parms && uses_template_parms (decl))
 	    {
 	      static int explained;

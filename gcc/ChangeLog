@@ -1,3 +1,7 @@
+2000-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi: Remove documentation for -fguiding-decls.
+
 2000-05-31  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Fix typo last change.

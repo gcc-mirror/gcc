@@ -9,6 +9,23 @@ Wed May 31 14:09:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-05-31  Mark Mitchell  <mark@codesourcery.com>
 
+	Remove guiding declaration support.
+	* cp/cp-tree.h (flag_dump_translation_unit): Make it const.
+	(flag_guiding_decls): Remove.
+	* call.c (build_user_type_conversion_1): Remove support for
+	guiding decls.
+	(build_new_function_call): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+	* decl.c (start_function): Likewise.
+	* friend.c (is_friend): Likewise.
+	(do_friend): Likewise.
+	* decl2.c ((flag_dump_translation_unit): Make it const.
+	(flag_guiding_decls): Remove.
+	(unsupported_options): New variable
+	(compare_options): New function.
+	(lang_decode_option): Use them.
+	
 	* decl.c (build_cp_library_fn): Set DECL_CONTEXT.
 
 	* method.c (mangle_expression): Adjust test for legal expression
