@@ -1,3 +1,9 @@
+2000-01-22  Zack Weinberg  <zack@wolery.cumb.org>
+
+ 	* fixinc/fixincl.c: Move declarations of 'pz_fname' and
+	'pz_scan' into scope of entire function.  Only affects
+	compiles with -DDEBUG.
+
 2000-01-22  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
 
         * config/elfos.h (UNIQUE_SECTION): Restore uninitialised data
