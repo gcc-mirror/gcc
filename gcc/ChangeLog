@@ -1,5 +1,6 @@
 2004-09-22  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
+	PR target/15583
 	* config/rs6000/rtems.h (TARGET_OS_CPP_BUILTINS): Add
 	builtin_define ("__USE_INIT_FINI__").
 
