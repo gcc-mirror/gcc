@@ -1,3 +1,8 @@
+2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR java/15769
+	* libjava.compile/PR15769.java: New test.
+
 2004-01-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* lib/libjava.exp: Add LD_LIBRARY_PATH_32/64 to get proper
