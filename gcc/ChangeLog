@@ -1,3 +1,8 @@
+2002-10-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_eightbit_constant_address_p):
+	Truncate the addresses for H8/300 using HImode.
+
 2002-10-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* toplev.c (rest_of_type_compilation): Return early in case of
