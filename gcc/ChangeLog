@@ -1,3 +1,9 @@
+2004-12-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c++/17972
+	* tree-inline.c (expand_call_inline): Set TREE_SIDE_EFFECTS
+	on the STMT_EXPR wrapping up the inlined body.
+
 2004-12-15  Vladimir Makarov  <vmakarov@redhat.com>
             Steven Bosscher  <stevenb@suse.de>
 	PR middle end/17340
