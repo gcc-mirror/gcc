@@ -1,3 +1,9 @@
+2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (multiosdir): Set to nothing if compiler is not GCC
+	or if it doesn't support -print-multi-os-directory.
+	* configure: Rebuilt.
+
 2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.am (all-multi): Fix multilib parallel build.
