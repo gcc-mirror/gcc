@@ -1,6 +1,6 @@
-// -*- C++ -*- forwarding header.
+// -*- C++ -*- compatibility header.
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,58 +27,59 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 27.8.2  C Library files
-//
+#ifndef _CPP_STDIO_H_
+#define _CPP_STDIO_H_ 1
 
-#ifndef _CPP_CSTDIO
-#define _CPP_CSTDIO 1
+#include <cstdio>
 
-#pragma GCC system_header
+using std::FILE;
+using std::fpos_t; 
 
-#include_next <stdio.h>
-
-// Get rid of those macros defined in <stdio.h> in lieu of real functions.
-#undef clearerr
-#undef fclose
-#undef feof
-#undef ferror
-#undef fflush
-#undef fgetc
-#undef fgetpos
-#undef fgets
-#undef fopen
-#undef fprintf
-#undef fputc
-#undef fputs
-#undef fread
-#undef freopen
-#undef fscanf
-#undef fseek
-#undef fsetpos
-#undef ftell
-#undef fwrite
-#undef getc
-#undef getchar
-#undef gets
-#undef perror
-#undef printf
-#undef putc
-#undef putchar
-#undef puts
-#undef remove
-#undef rename
-#undef rewind
-#undef scanf
-#undef setbuf
-#undef setvbuf
-#undef sprintf
-#undef sscanf
-#undef tmpfile
-#undef tmpnam
-#undef ungetc
-#undef vfprintf
-#undef vprintf
-#undef vsprintf
+using std::remove;
+using std::rename;
+using std::tmpfile;
+using std::tmpnam;
+using std::fclose;
+using std::fflush;
+using std::fopen;
+using std::freopen;
+using std::setbuf;
+using std::setvbuf;
+using std::fprintf;
+using std::fscanf;
+using std::printf;
+using std::scanf;
+using std::snprintf;
+using std::sprintf;
+using std::sscanf;
+using std::vfprintf;
+using std::vfscanf;
+using std::vprintf;
+using std::vscanf;
+using std::vsnprintf;
+using std::vsprintf;
+using std::vsscanf;
+using std::fgetc;
+using std::fgets;
+using std::fputc;
+using std::fputs;
+using std::getc;
+using std::getchar;
+using std::gets;
+using std::putc;
+using std::putchar;
+using std::puts;
+using std::ungetc;
+using std::fread;
+using std::fwrite;
+using std::fgetpos;
+using std::fseek;
+using std::fsetpos;
+using std::ftell;
+using std::rewind;
+using std::clearerr;
+using std::feof;
+using std::ferror;
+using std::perror;
 
 #endif

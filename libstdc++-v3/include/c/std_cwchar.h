@@ -37,6 +37,8 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <cstddef>
+#include <ctime>
 
 #if _GLIBCPP_HAVE_WCHAR_H
 #include_next <wchar.h>

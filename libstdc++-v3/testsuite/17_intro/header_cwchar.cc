@@ -22,7 +22,6 @@
 
 #include <cwchar>
 
-
 int main(void)
 {
   // Make sure size_t is in namespace std
