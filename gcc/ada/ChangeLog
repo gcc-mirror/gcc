@@ -1,3 +1,74 @@
+2004-03-25  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* memtrack.adb: Log realloc calls, which are treated as free followed
+	by alloc.
+
+2004-03-25  Vincent Celier  <celier@gnat.com>
+
+	* prj-makr.adb (Process_Directories): Detect when a file contains
+	several units. Do not include such files in the config pragmas or
+	in the naming scheme.
+
+	* prj-nmsc.adb (Record_Source): New parameter Trusted_Mode.
+	Resolve links only when not in Trusted_Mode.
+	(Find_Sources, Recursive_Find_Dirs, Find_Source_Dirs, Locate_Directory):
+	Do not resolve links for the display names.
+
+	* prj-part.adb (Parse_Single_Project, Project_Path_Name_Of): Do not
+	resolve links when computing the display names.
+
+2004-03-25  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_attr.adb (Check_Dereference): When the prefix of a 'Tag
+	attribute reference does not denote a subtype, it can be any
+	expression that has a classwide type, potentially after an implicit
+	dereference.  In particular, the prefix can be a view conversion for
+	a classwide type (for which Is_Object_Reference holds), but it can
+	also be a value conversion for an access-to-classwide type. In the
+	latter case, there is an implicit dereference, and the original node
+	for the prefix does not verify Is_Object_Reference.
+
+	* sem_util.adb (Is_Dependent_Component_Of_Mutable_Object): A view
+	conversion of a discriminant-dependent component of a mutable object
+	is one itself.
+
+2004-03-25  Ed Schonberg  <schonberg@gnat.com>
+
+	* freeze.adb (Freeze_Entity): When an inherited subprogram is
+	inherited, has convention C, and has unconstrained array parameters,
+	place the corresponding warning on the derived type declaration rather
+	than the original subprogram.
+
+	* sem_ch12.adb (Instantiate_Formal_Subprogram): Set From_Default
+	indication on renaming declaration, if formal has a box and actual
+	is absent.
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Use From_Default flag to
+	determine whether to generate an implicit or explicit reference to
+	the renamed entity.
+
+	* sinfo.ads, sinfo.adb: New flag From_Default, to indicate that a
+	subprogram renaming comes from a defaulted formal subprogram in an
+	instance.
+
+2004-03-25  Gary Dismukes  <dismukes@gnat.com>
+
+	* sem_elab.adb (Check_Elab_Call): Refine loop that checks for default
+	value expressions to ensure that calls within a component definition
+	will be checked (since those are evaluated during the record type's
+	elaboration).
+
+2004-03-25  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* s-tpobop.adb: Code clean up:
+	(Requeue_Call): Extract from PO_Service_Entries to remove duplicated
+	code.
+	(PO_Do_Or_Queue): Remove duplicated code and use Requeue_Call.
+
+2004-03-25  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* Makefile.in: Clean up in the ravenscar run time.
+
 2004-03-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (gnat_to_gnu_entity, case E_Access_Type): Pass value

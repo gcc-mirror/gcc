@@ -968,6 +968,13 @@ package Sinfo is
    --    and the representation clause is considered to be type specific
    --    instead of subtype specific.
 
+   --  From_Default (Flag6-Sem)
+   --    This flag is set on the subprogram renaming declaration created in
+   --    an instance for a formal subprogram, when the formal is declared
+   --    with a box, and there is no explicit actual. If the flag is present,
+   --    the declaration is treated as an implicit reference to the formal in
+   --    the ali file.
+
    --  Generic_Parent (Node5-Sem)
    --    Generic_parent is defined on declaration nodes that are instances.
    --    The value of Generic_Parent is the generic entity from which the
@@ -4341,6 +4348,7 @@ package Sinfo is
       --  Name (Node2)
       --  Parent_Spec (Node4-Sem)
       --  Corresponding_Spec (Node5-Sem)
+      --  From_Default (Flag6-Sem)
 
       -----------------------------------------
       -- 8.5.5  Generic Renaming Declaration --
@@ -6356,20 +6364,19 @@ package Sinfo is
       --  The front end also deals with specific cases that are not allowed
       --  e.g. involving unconstrained array types.
 
-      --  However, some checks, e.g. the check for suspicious aliasing
-      --  when converting to a pointer type, can more conveniently be
-      --  performed in the back end where alias sets are known.
+      --  For the case of the standard gigi backend, this means that all
+      --  checks are done in the front-end.
 
-      --  In addition, for specialized back ends, notably the JVM-based
-      --  back end for JGNAT, additional requirements and restrictions apply
+      --  However, in the case of specialized back-ends, notably the JVM
+      --  backend for JGNAT, additional requirements and restrictions apply
       --  to unchecked conversion, and these are most conveniently performed
       --  in the specialized back-end.
 
-      --  To accommodate this requirement, the following special node is
-      --  generated recording an unchecked conversion that needs to be
-      --  validated. The back end should post an appropriate error message
-      --  error message if the unchecked conversion is invalid or a warning
-      --  message if a special warning is warranted.
+      --  To accommodate this requirement, for such back ends, the following
+      --  special node is generated recording an unchecked conversion that
+      --  needs to be validated. The back end should post an appropriate
+      --  error message if the unchecked conversion is invalid or warrants
+      --  a special warning message.
 
       --  Source_Type and Target_Type point to the entities for the two
       --  types involved in the unchecked conversion instantiation that
@@ -7230,6 +7237,9 @@ package Sinfo is
    function From_At_Mod
      (N : Node_Id) return Boolean;    -- Flag4
 
+   function From_Default
+     (N : Node_Id) return Boolean;    -- Flag6
+
    function Generic_Associations
      (N : Node_Id) return List_Id;    -- List3
 
@@ -8013,6 +8023,9 @@ package Sinfo is
    procedure Set_From_At_Mod
      (N : Node_Id; Val : Boolean := True);    -- Flag4
 
+   procedure Set_From_Default
+     (N : Node_Id; Val : Boolean := True);    -- Flag6
+
    procedure Set_Generic_Associations
      (N : Node_Id; Val : List_Id);            -- List3
 
@@ -8579,6 +8592,7 @@ package Sinfo is
    pragma Inline (Formal_Type_Definition);
    pragma Inline (Forwards_OK);
    pragma Inline (From_At_Mod);
+   pragma Inline (From_Default);
    pragma Inline (Generic_Associations);
    pragma Inline (Generic_Formal_Declarations);
    pragma Inline (Generic_Parent);
@@ -8837,6 +8851,7 @@ package Sinfo is
    pragma Inline (Set_Formal_Type_Definition);
    pragma Inline (Set_Forwards_OK);
    pragma Inline (Set_From_At_Mod);
+   pragma Inline (Set_From_Default);
    pragma Inline (Set_Generic_Associations);
    pragma Inline (Set_Generic_Formal_Declarations);
    pragma Inline (Set_Generic_Parent);

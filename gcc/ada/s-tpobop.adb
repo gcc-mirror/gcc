@@ -119,6 +119,15 @@ package body System.Tasking.Protected_Objects.Operations is
    --  Call this only while holding the PO's lock.
    --  It returns with the PO's lock still held.
 
+   procedure Requeue_Call
+     (Self_Id    : Task_ID;
+      Object     : Protection_Entries_Access;
+      Entry_Call : Entry_Call_Link;
+      With_Abort : Boolean);
+   --  Handle requeue of Entry_Call.
+   --  In particular, queue the call if needed, or service it immediately
+   --  if possible.
+
    ---------------------------------
    -- Cancel_Protected_Entry_Call --
    ---------------------------------
@@ -288,11 +297,9 @@ package body System.Tasking.Protected_Objects.Operations is
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean)
    is
-      E : Protected_Entry_Index := Protected_Entry_Index (Entry_Call.E);
-      New_Object        : Protection_Entries_Access;
-      Ceiling_Violation : Boolean;
-      Barrier_Value     : Boolean;
-      Result            : Boolean;
+      E             : constant Protected_Entry_Index :=
+                        Protected_Entry_Index (Entry_Call.E);
+      Barrier_Value : Boolean;
 
    begin
       --  When the Action procedure for an entry body returns, it is either
@@ -339,75 +346,7 @@ package body System.Tasking.Protected_Objects.Operations is
             end if;
 
          else
-            --  Body of current entry requeued the call
-            New_Object := To_Protection (Entry_Call.Called_PO);
-
-            if New_Object = null then
-
-               --  Call was requeued to a task
-
-               if Single_Lock then
-                  STPO.Lock_RTS;
-               end if;
-
-               Result := Rendezvous.Task_Do_Or_Queue
-                 (Self_ID, Entry_Call,
-                  With_Abort => Entry_Call.Requeue_With_Abort);
-
-               if not Result then
-                  Queuing.Broadcast_Program_Error
-                   (Self_ID, Object, Entry_Call, RTS_Locked => True);
-               end if;
-
-               if Single_Lock then
-                  STPO.Unlock_RTS;
-               end if;
-
-               return;
-            end if;
-
-            if Object /= New_Object then
-               --  Requeue is on a different object
-
-               Lock_Entries (New_Object, Ceiling_Violation);
-
-               if Ceiling_Violation then
-                  Object.Call_In_Progress := null;
-                  Queuing.Broadcast_Program_Error
-                   (Self_ID, Object, Entry_Call);
-
-               else
-                  PO_Do_Or_Queue (Self_ID, New_Object, Entry_Call, With_Abort);
-                  PO_Service_Entries (Self_ID, New_Object);
-               end if;
-
-            else
-               --  Requeue is on same protected object
-
-               if Entry_Call.Requeue_With_Abort
-                 and then Entry_Call.Cancellation_Attempted
-               then
-                  --  If this is a requeue with abort and someone tried
-                  --  to cancel this call, cancel it at this point.
-
-                  Entry_Call.State := Cancelled;
-                  return;
-               end if;
-
-               if not With_Abort or else
-                 Entry_Call.Mode /= Conditional_Call
-               then
-                  E := Protected_Entry_Index (Entry_Call.E);
-                  Queuing.Enqueue
-                    (New_Object.Entry_Queues (E), Entry_Call);
-                  Update_For_Queue_To_PO (Entry_Call, With_Abort);
-
-               else
-                  --  Can we convert this recursion to a loop???
-
-                  PO_Do_Or_Queue (Self_ID, New_Object, Entry_Call, With_Abort);
-               end if;
-            end if;
+            Requeue_Call (Self_ID, Object, Entry_Call, With_Abort);
          end if;
 
       elsif Entry_Call.Mode /= Conditional_Call
@@ -447,105 +386,9 @@ package body System.Tasking.Protected_Objects.Operations is
       Object        : Entries.Protection_Entries_Access;
       Unlock_Object : Boolean := True)
    is
-      procedure Requeue_Call
-        (Entry_Call      : Entry_Call_Link;
-         Call_Cancelled  : out Boolean);
-      --  Handle requeue of Entry_Call.
-      --  Call_Cancelled is set to True of call was cancelled.
-
-      ------------------
-      -- Requeue_Call --
-      ------------------
-
-      procedure Requeue_Call
-        (Entry_Call      : Entry_Call_Link;
-         Call_Cancelled  : out Boolean)
-      is
-         New_Object        : Protection_Entries_Access;
-         Ceiling_Violation : Boolean;
-         Result            : Boolean;
-         E                 : Protected_Entry_Index;
-
-      begin
-         Call_Cancelled := False;
-         New_Object := To_Protection (Entry_Call.Called_PO);
-
-         if New_Object = null then
-
-            --  Call is to be requeued to a task entry
-
-            if Single_Lock then
-               STPO.Lock_RTS;
-            end if;
-
-            Result := Rendezvous.Task_Do_Or_Queue
-              (Self_ID, Entry_Call,
-               With_Abort => Entry_Call.Requeue_With_Abort);
-
-            if not Result then
-               Queuing.Broadcast_Program_Error
-                 (Self_ID, Object, Entry_Call, RTS_Locked => True);
-            end if;
-
-            if Single_Lock then
-               STPO.Unlock_RTS;
-            end if;
-
-         else
-            --  Call should be requeued to a PO
-
-            if Object /= New_Object then
-
-               --  Requeue is to different PO
-
-               Lock_Entries (New_Object, Ceiling_Violation);
-
-               if Ceiling_Violation then
-                  Object.Call_In_Progress := null;
-                  Queuing.Broadcast_Program_Error
-                    (Self_ID, Object, Entry_Call);
-
-               else
-                  PO_Do_Or_Queue (Self_ID, New_Object, Entry_Call,
-                    Entry_Call.Requeue_With_Abort);
-                  PO_Service_Entries (Self_ID, New_Object);
-               end if;
-
-            else
-               --  Requeue is to same protected object
-
-               if Entry_Call.Requeue_With_Abort
-                 and then Entry_Call.Cancellation_Attempted
-               then
-                  --  If this is a requeue with abort and someone tried
-                  --  to cancel this call, cancel it at this point.
-
-                  Entry_Call.State := Cancelled;
-                  Call_Cancelled := True;
-                  return;
-               end if;
-
-               if not Entry_Call.Requeue_With_Abort or else
-                 Entry_Call.Mode /= Conditional_Call
-               then
-                  E := Protected_Entry_Index (Entry_Call.E);
-                  Queuing.Enqueue
-                    (New_Object.Entry_Queues (E), Entry_Call);
-                  Update_For_Queue_To_PO (Entry_Call,
-                    Entry_Call.Requeue_With_Abort);
-
-               else
-                  PO_Do_Or_Queue (Self_ID, New_Object, Entry_Call,
-                    Entry_Call.Requeue_With_Abort);
-               end if;
-            end if;
-         end if;
-      end Requeue_Call;
-
       E          : Protected_Entry_Index;
       Caller     : Task_ID;
       Entry_Call : Entry_Call_Link;
-      Cancelled  : Boolean;
 
    begin
       loop
@@ -581,8 +424,9 @@ package body System.Tasking.Protected_Objects.Operations is
          end;
 
          if Object.Call_In_Progress = null then
-            Requeue_Call (Entry_Call, Cancelled);
-            exit when Cancelled;
+            Requeue_Call
+              (Self_ID, Object, Entry_Call, Entry_Call.Requeue_With_Abort);
+            exit when Entry_Call.State = Cancelled;
 
          else
             Object.Call_In_Progress := null;
@@ -803,6 +647,92 @@ package body System.Tasking.Protected_Objects.Operations is
       Initialization.Undefer_Abort (Self_ID);
       Entry_Calls.Check_Exception (Self_ID, Entry_Call);
    end Protected_Entry_Call;
+
+   ------------------
+   -- Requeue_Call --
+   ------------------
+
+   procedure Requeue_Call
+     (Self_Id    : Task_ID;
+      Object     : Protection_Entries_Access;
+      Entry_Call : Entry_Call_Link;
+      With_Abort : Boolean)
+   is
+      New_Object        : Protection_Entries_Access;
+      Ceiling_Violation : Boolean;
+      Result            : Boolean;
+      E                 : Protected_Entry_Index;
+
+   begin
+      New_Object := To_Protection (Entry_Call.Called_PO);
+
+      if New_Object = null then
+
+         --  Call is to be requeued to a task entry
+
+         if Single_Lock then
+            STPO.Lock_RTS;
+         end if;
+
+         Result := Rendezvous.Task_Do_Or_Queue
+           (Self_Id, Entry_Call,
+            With_Abort => Entry_Call.Requeue_With_Abort);
+
+         if not Result then
+            Queuing.Broadcast_Program_Error
+              (Self_Id, Object, Entry_Call, RTS_Locked => True);
+         end if;
+
+         if Single_Lock then
+            STPO.Unlock_RTS;
+         end if;
+
+      else
+         --  Call should be requeued to a PO
+
+         if Object /= New_Object then
+
+            --  Requeue is to different PO
+
+            Lock_Entries (New_Object, Ceiling_Violation);
+
+            if Ceiling_Violation then
+               Object.Call_In_Progress := null;
+               Queuing.Broadcast_Program_Error
+                 (Self_Id, Object, Entry_Call);
+
+            else
+               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call, With_Abort);
+               PO_Service_Entries (Self_Id, New_Object);
+            end if;
+
+         else
+            --  Requeue is to same protected object
+
+            if Entry_Call.Requeue_With_Abort
+              and then Entry_Call.Cancellation_Attempted
+            then
+               --  If this is a requeue with abort and someone tried
+               --  to cancel this call, cancel it at this point.
+
+               Entry_Call.State := Cancelled;
+               return;
+            end if;
+
+            if not With_Abort
+              or else Entry_Call.Mode /= Conditional_Call
+            then
+               E := Protected_Entry_Index (Entry_Call.E);
+               Queuing.Enqueue
+                 (New_Object.Entry_Queues (E), Entry_Call);
+               Update_For_Queue_To_PO (Entry_Call, With_Abort);
+
+            else
+               PO_Do_Or_Queue (Self_Id, New_Object, Entry_Call, With_Abort);
+            end if;
+         end if;
+      end if;
+   end Requeue_Call;
 
    ----------------------------
    -- Protected_Entry_Caller --

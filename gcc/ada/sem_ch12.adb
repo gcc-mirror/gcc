@@ -6672,6 +6672,10 @@ package body Sem_Ch12 is
           Specification => New_Spec,
           Name => Nam);
 
+      if No (Actual) and then Box_Present (Formal) then
+         Set_From_Default (Decl_Node);
+      end if;
+
       --  Gather possible interpretations for the actual before analyzing the
       --  instance. If overloaded, it will be resolved when analyzing the
       --  renaming declaration.

@@ -43,6 +43,8 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Regexp;               use GNAT.Regexp;
 
+with System.Case_Util;          use System.Case_Util;
+
 package body Prj.Makr is
 
    function Dup (Fd : File_Descriptor) return File_Descriptor;
@@ -134,8 +136,8 @@ package body Prj.Makr is
       Args : Argument_List  (1 .. Preproc_Switches'Length + 6);
 
       type SFN_Pragma is record
-         Unit : String_Access;
-         File : String_Access;
+         Unit : Name_Id;
+         File : Name_Id;
          Spec : Boolean;
       end record;
 
@@ -165,8 +167,14 @@ package body Prj.Makr is
 
          Temp_File_Name : String_Access := null;
 
+         Save_Last_Pragma_Index : Natural := 0;
+
+         File_Name_Id : Name_Id := No_Name;
+
+         SFN_Prag : SFN_Pragma;
+
       begin
-         --  Avoid processing several times the same directory.
+         --  Avoid processing the same directory more than once
 
          for Index in 1 .. Processed_Directories.Last loop
             if Processed_Directories.Table (Index).all = Dir_Name then
@@ -199,14 +207,18 @@ package body Prj.Makr is
 
             --  Process each regular file in the directory
 
-            loop
+            File_Loop : loop
                Read (Dir, Str, Last);
-               exit when Last = 0;
+               exit File_Loop when Last = 0;
 
                if Is_Regular_File
                  (Dir_Name & Directory_Separator & Str (1 .. Last))
                then
                   Matched := True;
+
+                  Name_Len := Last;
+                  Name_Buffer (1 .. Name_Len) := Str (1 .. Last);
+                  File_Name_Id := Name_Find;
 
                   --  First, check if the file name matches at least one of
                   --  the excluded expressions;
@@ -256,7 +268,7 @@ package body Prj.Makr is
                         Saved_Error  : File_Descriptor;
 
                      begin
-                        --  If we don't have yet the path of the compiler,
+                        --  If we don't have the path of the compiler yet,
                         --  get it now.
 
                         if Gcc_Path = null then
@@ -302,8 +314,7 @@ package body Prj.Makr is
                         Saved_Output := Dup (Standout);
                         Saved_Error  := Dup (Standerr);
 
-                        --  Set the standard output and error to the temporary
-                        --  file.
+                        --  Set standard output and error to the temporary file
 
                         Dup2 (FD, Standout);
                         Dup2 (FD, Standerr);
@@ -313,6 +324,7 @@ package body Prj.Makr is
                         Spawn (Gcc_Path.all, Args, Success);
 
                         --  Restore the standard output and error
+
                         Dup2 (Saved_Output, Standout);
                         Dup2 (Saved_Error, Standerr);
 
@@ -329,11 +341,11 @@ package body Prj.Makr is
                         --  Now that standard output is restored, check if
                         --  the compiler ran correctly.
 
-                        --  Read the first line of the temporary file:
-                        --  it should contain the kind and name of the unit.
+                        --  Read the lines of the temporary file:
+                        --  they should contain the kind and name of the unit.
 
                         declare
-                           File : Text_File;
+                           File      : Text_File;
                            Text_Line : String (1 .. 1_000);
                            Text_Last : Natural;
 
@@ -345,173 +357,180 @@ package body Prj.Makr is
                                 ("could not read temporary file");
                            end if;
 
+                           Save_Last_Pragma_Index := SFN_Pragmas.Last;
+
                            if End_Of_File (File) then
                               if Opt.Verbose_Mode then
                                  if not Success then
                                     Output.Write_Str ("(process died) ");
                                  end if;
+                              end if;
+                           else
+                              Line_Loop : while not End_Of_File (File) loop
+                                 Get_Line (File, Text_Line, Text_Last);
 
+                                 --  Find the first closing parenthesis
+
+                                 Char_Loop : for J in 1 .. Text_Last loop
+                                    if Text_Line (J) = ')' then
+                                       if J >= 13 and then
+                                         Text_Line (1 .. 4) = "Unit"
+                                       then
+                                          --  Add an entry in the SFN_Pragmas
+                                          --  table.
+
+                                          Name_Len := J - 12;
+                                          Name_Buffer (1 .. Name_Len) :=
+                                            Text_Line (6 .. J - 7);
+                                          SFN_Prag :=
+                                            (Unit => Name_Find,
+                                             File => File_Name_Id,
+                                             Spec => Text_Line (J - 5 .. J) =
+                                                       "(spec)");
+
+                                          SFN_Pragmas.Increment_Last;
+                                          SFN_Pragmas.Table
+                                            (SFN_Pragmas.Last) := SFN_Prag;
+                                       end if;
+                                       exit Char_Loop;
+                                    end if;
+                                 end loop Char_Loop;
+                              end loop Line_Loop;
+                           end if;
+
+                           if Save_Last_Pragma_Index = SFN_Pragmas.Last then
+                              if Opt.Verbose_Mode then
                                  Output.Write_Line ("not a unit");
                               end if;
 
+                           elsif SFN_Pragmas.Last >
+                             Save_Last_Pragma_Index + 1
+                           then
+                              SFN_Pragmas.Set_Last (Save_Last_Pragma_Index);
+
+                              if Opt.Verbose_Mode then
+                                 Output.Write_Line
+                                   ("file contains multiple units");
+                              end if;
+
                            else
-                              Get_Line (File, Text_Line, Text_Last);
-                              Close (File);
+                              SFN_Prag := SFN_Pragmas.Table
+                                (SFN_Pragmas.Last);
 
-                              --  Now that we have read the line, delete the
-                              --  temporary file, it is not needed anymore.
-                              --  On VMS, this avoids several version of the
-                              --  file, if it were only delete after all
-                              --  sources were parsed.
-
-                              Delete_File (Temp_File_Name.all, Success);
-
-                              --  Find the first closing parenthesis
-
-                              for J in 1 .. Text_Last loop
-                                 if Text_Line (J) = ')' then
-                                    Text_Last := J;
-                                    exit;
-                                 end if;
-                              end loop;
-
-                              declare
-                                 S : constant String :=
-                                       Text_Line (1 .. Text_Last);
-
-                              begin
-                                 if S'Length >= 13
-                                   and then S (S'First .. S'First + 3) = "Unit"
-                                 then
-                                    if Opt.Verbose_Mode then
-                                       Output.Write_Str
-                                         (S (S'Last - 4 .. S'Last - 1));
-                                       Output.Write_Str (" of ");
-                                       Output.Write_Line
-                                         (S (S'First + 5 .. S'Last - 7));
-                                    end if;
-
-                                    if Project_File then
-
-                                       --  Add the corresponding attribute in
-                                       --  the Naming package of the naming
-                                       --  project.
-
-                                       declare
-                                          Decl_Item : constant Project_Node_Id
-                                            := Default_Project_Node
-                                              (Of_Kind =>
-                                                   N_Declarative_Item);
-
-                                          Attribute : constant Project_Node_Id
-                                            := Default_Project_Node
-                                              (Of_Kind =>
-                                                   N_Attribute_Declaration);
-
-                                          Expression : constant Project_Node_Id
-                                            := Default_Project_Node
-                                              (Of_Kind => N_Expression,
-                                               And_Expr_Kind => Single);
-
-                                          Term : constant Project_Node_Id :=
-                                                   Default_Project_Node
-                                                     (Of_Kind => N_Term,
-                                                      And_Expr_Kind => Single);
-
-                                          Value : constant Project_Node_Id :=
-                                                    Default_Project_Node
-                                                      (Of_Kind =>
-                                                         N_Literal_String,
-                                                       And_Expr_Kind =>
-                                                         Single);
-
-                                       begin
-                                          Set_Next_Declarative_Item
-                                            (Decl_Item,
-                                             To => First_Declarative_Item_Of
-                                               (Naming_Package));
-                                          Set_First_Declarative_Item_Of
-                                            (Naming_Package, To => Decl_Item);
-                                          Set_Current_Item_Node
-                                            (Decl_Item, To => Attribute);
-
-                                          --  Is it a spec or a body?
-
-                                          if S (S'Last - 5 .. S'Last) =
-                                            "(spec)"
-                                          then
-                                             Set_Name_Of
-                                               (Attribute, To => Name_Spec);
-                                          else
-                                             Set_Name_Of
-                                               (Attribute,
-                                                To => Name_Body);
-                                          end if;
-
-                                          --  Get the name of the unit
-
-                                          Name_Len := S'Last - S'First - 11;
-                                          Name_Buffer (1 .. Name_Len) :=
-                                            (To_Lower
-                                               (S (S'First + 5 ..
-                                                     S'Last - 7)));
-                                          Set_Associative_Array_Index_Of
-                                            (Attribute, To => Name_Find);
-
-                                          Set_Expression_Of
-                                            (Attribute, To => Expression);
-                                          Set_First_Term
-                                            (Expression, To => Term);
-                                          Set_Current_Term (Term, To => Value);
-
-                                          --  And set the name of the file
-
-                                          Name_Len := Last;
-                                          Name_Buffer (1 .. Name_Len) :=
-                                            Str (1 .. Last);
-                                          Set_String_Value_Of
-                                            (Value, To => Name_Find);
-                                       end;
-
-                                       --  Add source file name to source list
-                                       --  file.
-
-                                       Last := Last + 1;
-                                       Str (Last) := ASCII.LF;
-
-                                       if Write (Source_List_FD,
-                                                 Str (1)'Address,
-                                                 Last) /= Last
-                                       then
-                                          Prj.Com.Fail ("disk full");
-                                       end if;
-                                    else
-                                       --  Add an entry in the SFN_Pragmas
-                                       --  table.
-
-                                       SFN_Pragmas.Increment_Last;
-                                       SFN_Pragmas.Table (SFN_Pragmas.Last) :=
-                                         (Unit => new String'
-                                            (S (S'First + 5 .. S'Last - 7)),
-                                          File => new String'(Str (1 .. Last)),
-                                          Spec => S (S'Last - 5 .. S'Last)
-                                          = "(spec)");
-                                    end if;
+                              if Opt.Verbose_Mode then
+                                 if SFN_Prag.Spec then
+                                    Output.Write_Str ("spec of ");
 
                                  else
-                                    if Opt.Verbose_Mode then
-                                       Output.Write_Line ("not a unit");
-                                    end if;
+                                    Output.Write_Str ("body of ");
                                  end if;
-                              end;
+
+                                 Output.Write_Line
+                                   (Get_Name_String (SFN_Prag.Unit));
+                              end if;
+
+                              if Project_File then
+
+                                 --  Add the corresponding attribute in
+                                 --  the Naming package of the naming
+                                 --  project.
+
+                                 declare
+                                    Decl_Item : constant Project_Node_Id
+                                      := Default_Project_Node
+                                        (Of_Kind =>
+                                             N_Declarative_Item);
+
+                                    Attribute : constant Project_Node_Id
+                                      := Default_Project_Node
+                                        (Of_Kind =>
+                                             N_Attribute_Declaration);
+
+                                    Expression : constant Project_Node_Id
+                                      := Default_Project_Node
+                                        (Of_Kind => N_Expression,
+                                         And_Expr_Kind => Single);
+
+                                    Term : constant Project_Node_Id :=
+                                             Default_Project_Node
+                                               (Of_Kind => N_Term,
+                                                And_Expr_Kind => Single);
+
+                                    Value : constant Project_Node_Id :=
+                                              Default_Project_Node
+                                                (Of_Kind =>
+                                                             N_Literal_String,
+                                                 And_Expr_Kind =>
+                                                   Single);
+
+                                 begin
+                                    Set_Next_Declarative_Item
+                                      (Decl_Item,
+                                       To => First_Declarative_Item_Of
+                                         (Naming_Package));
+                                    Set_First_Declarative_Item_Of
+                                      (Naming_Package, To => Decl_Item);
+                                    Set_Current_Item_Node
+                                      (Decl_Item, To => Attribute);
+
+                                    --  Is it a spec or a body?
+
+                                    if SFN_Prag.Spec then
+                                       Set_Name_Of
+                                         (Attribute, To => Name_Spec);
+                                    else
+                                       Set_Name_Of
+                                         (Attribute,
+                                          To => Name_Body);
+                                    end if;
+
+                                    --  Get the name of the unit
+
+                                    Get_Name_String (SFN_Prag.Unit);
+                                    To_Lower (Name_Buffer (1 .. Name_Len));
+                                    Set_Associative_Array_Index_Of
+                                      (Attribute, To => Name_Find);
+
+                                    Set_Expression_Of
+                                      (Attribute, To => Expression);
+                                    Set_First_Term
+                                      (Expression, To => Term);
+                                    Set_Current_Term (Term, To => Value);
+
+                                    --  And set the name of the file
+
+                                    Set_String_Value_Of
+                                      (Value, To => File_Name_Id);
+                                 end;
+
+                                 --  Add source file name to source list
+                                 --  file.
+
+                                 Last := Last + 1;
+                                 Str (Last) := ASCII.LF;
+
+                                 if Write (Source_List_FD,
+                                           Str (1)'Address,
+                                           Last) /= Last
+                                 then
+                                    Prj.Com.Fail ("disk full");
+                                 end if;
+                              end if;
                            end if;
+
+                           Close (File);
+
+                           Delete_File (Temp_File_Name.all, Success);
                         end;
                      end;
 
-                  else
-                     if Matched = False then
-                        --  Look if this is a foreign source
+                  --  File name matches none of the regular expressions
 
+                  else
+                     --  If the file is not excluded, look if this is a foreign
+                     --  source.
+
+                     if Matched /= Excluded then
                         for Index in Foreign_Expressions'Range loop
                            if Match (Str (1 .. Last),
                                      Foreign_Expressions (Index))
@@ -551,7 +570,7 @@ package body Prj.Makr is
                      end if;
                   end if;
                end if;
-            end loop;
+            end loop File_Loop;
 
             Close (Dir);
          end if;
@@ -718,7 +737,6 @@ package body Prj.Makr is
 
          declare
             Discard : Boolean;
-
          begin
             Delete_File
               (Source_List_Path (1 .. Source_List_Last),
@@ -753,7 +771,6 @@ package body Prj.Makr is
          begin
             Excluded_Expressions (Index) :=
               Compile (Pattern => Excluded_Patterns (Index).all, Glob => True);
-
          exception
             when Error_In_Regexp =>
                Prj.Com.Fail
@@ -773,7 +790,6 @@ package body Prj.Makr is
          begin
             Foreign_Expressions (Index) :=
               Compile (Pattern => Foreign_Patterns (Index).all, Glob => True);
-
          exception
             when Error_In_Regexp =>
                Prj.Com.Fail
@@ -823,8 +839,8 @@ package body Prj.Makr is
             end if;
 
             Part.Parse
-              (Project           => Project_Node,
-               Project_File_Name => Output_Name (1 .. Output_Name_Last),
+              (Project                => Project_Node,
+               Project_File_Name      => Output_Name (1 .. Output_Name_Last),
                Always_Errout_Finalize => False);
 
             --  If parsing was successful, remove the components that are
@@ -837,7 +853,7 @@ package body Prj.Makr is
 
                declare
                   With_Clause : Project_Node_Id :=
-                    First_With_Clause_Of (Project_Node);
+                                  First_With_Clause_Of (Project_Node);
                   Previous    : Project_Node_Id := Empty_Node;
 
                begin
@@ -1248,7 +1264,8 @@ package body Prj.Makr is
                Write_A_String ("pragma Source_File_Name");
                Write_Eol;
                Write_A_String ("  (");
-               Write_A_String (SFN_Pragmas.Table (Index).Unit.all);
+               Write_A_String
+                 (Get_Name_String (SFN_Pragmas.Table (Index).Unit));
                Write_A_String (",");
                Write_Eol;
 
@@ -1259,7 +1276,8 @@ package body Prj.Makr is
                   Write_A_String ("   Body_File_Name => """);
                end if;
 
-               Write_A_String (SFN_Pragmas.Table (Index).File.all);
+               Write_A_String
+                 (Get_Name_String (SFN_Pragmas.Table (Index).File));
                Write_A_String (""");");
                Write_Eol;
             end loop;

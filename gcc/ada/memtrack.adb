@@ -297,15 +297,68 @@ package body System.Memory is
    function Realloc
      (Ptr : System.Address; Size : size_t) return System.Address
    is
-      Result : System.Address;
+      Addr : aliased constant System.Address := Ptr;
+      Result : aliased System.Address;
 
    begin
+      --  For the purposes of allocations logging, we treat realloc as a free
+      --  followed by malloc. This is not exactly accurate, but is a good way
+      --  to fit it into malloc/free-centered reports.
+
       if Size = size_t'Last then
          Raise_Exception (Storage_Error'Identity, "object too large");
       end if;
 
       Abort_Defer.all;
-      Result := c_realloc (Ptr, Size);
+      Lock_Task.all;
+
+      if First_Call then
+
+         First_Call := False;
+
+         --  We first log deallocation call
+
+         Gmem_Initialize;
+         Call_Chain (Tracebk'Address, Max_Call_Stack, Num_Calls,
+                     Skip_Frames => 2);
+         fputc (Character'Pos ('D'), Gmemfile);
+         fwrite (Addr'Address, Address_Size, 1, Gmemfile);
+         fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
+
+         for J in Tracebk'First .. Tracebk'First + Num_Calls - 1 loop
+            declare
+               Ptr : System.Address := PC_For (Tracebk (J));
+            begin
+               fwrite (Ptr'Address, Address_Size, 1, Gmemfile);
+            end;
+         end loop;
+
+         --  Now perform actual realloc
+
+         Result := c_realloc (Ptr, Size);
+
+         --   Log allocation call using the same backtrace
+
+         fputc (Character'Pos ('A'), Gmemfile);
+         fwrite (Result'Address, Address_Size, 1, Gmemfile);
+         fwrite (Size'Address, size_t'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
+         fwrite (Num_Calls'Address, Integer'Max_Size_In_Storage_Elements, 1,
+                 Gmemfile);
+
+         for J in Tracebk'First .. Tracebk'First + Num_Calls - 1 loop
+            declare
+               Ptr : System.Address := PC_For (Tracebk (J));
+            begin
+               fwrite (Ptr'Address, Address_Size, 1, Gmemfile);
+            end;
+         end loop;
+
+         First_Call := True;
+      end if;
+
+      Unlock_Task.all;
       Abort_Undefer.all;
 
       if Result = System.Null_Address then
