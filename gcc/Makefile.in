@@ -2677,7 +2677,7 @@ check-g++: testsuite/site.exp
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=$${srcdir}/../tcl/library ; \
+	   TCL_LIBRARY=`cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool g++ $(RUNTESTFLAGS)
 
@@ -2687,7 +2687,7 @@ check-gcc: testsuite/site.exp
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=$${srcdir}/../tcl/library ; \
+	   TCL_LIBRARY=`cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool gcc $(RUNTESTFLAGS)
 
@@ -2697,7 +2697,7 @@ check-g77: testsuite/site.exp
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=$${srcdir}/../tcl/library ; \
+	   TCL_LIBRARY=`cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool g77 $(RUNTESTFLAGS)
 
@@ -2707,7 +2707,7 @@ check-objc: testsuite/site.exp
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
-	   TCL_LIBRARY=$${srcdir}/../tcl/library ; \
+	   TCL_LIBRARY=`cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool objc $(RUNTESTFLAGS)
 
