@@ -605,6 +605,11 @@ cross-test.o: cross-test.c native gcc-cross
 # This is used only if the user explicitly asks for it.
 compilations: ${OBJS}
 
+# Create a list of the language-independent object files so the language
+# subdirectories needn't mention their names explicitly.
+stamp-objlist: Makefile
+	echo " $(OBJS) $(BC_OBJS)" | sed -e 's, \([a-z]\), ../\1,g' >stamp-objlist
+
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
