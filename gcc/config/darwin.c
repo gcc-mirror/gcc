@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002
+   Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -1016,7 +1016,9 @@ update_non_lazy_ptrs (name)
 	  name2 = darwin_strip_name_encoding (sym_name);
 	  if (strcmp (name1, name2) == 0)
 	    {
-	      IDENTIFIER_POINTER (TREE_VALUE (temp)) = name;
+	      /* FIXME: This breaks the identifier hash table.  */
+	      IDENTIFIER_NODE_CHECK (TREE_VALUE (temp))->identifier.id.str 
+		= (unsigned char *) name;
 	      break;
 	    }
 	}
@@ -1080,7 +1082,9 @@ update_stubs (name)
 	  name2 = darwin_strip_name_encoding (sym_name);
 	  if (strcmp (name1, name2) == 0)
 	    {
-	      IDENTIFIER_POINTER (TREE_VALUE (temp)) = name;
+	      /* FIXME: This breaks the identifier hash table.  */
+	      IDENTIFIER_NODE_CHECK (TREE_VALUE (temp))->identifier.id.str 
+		= (unsigned char *) name;
 	      break;
 	    }
 	}
@@ -1097,7 +1101,7 @@ machopic_select_section (exp, reloc, align)
     {
       if (flag_writable_strings)
 	data_section ();
-      else if (TREE_STRING_LENGTH (exp) !=
+      else if ((size_t) TREE_STRING_LENGTH (exp) !=
 	       strlen (TREE_STRING_POINTER (exp)) + 1)
 	readonly_data_section ();
       else
