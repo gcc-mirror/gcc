@@ -1,3 +1,7 @@
+2001-04-23  Phil Edwards  <pme@sources.redhat.com>
+
+	* cp/decl2.c (flag_honor_std):  Always initialize to 1.
+
 2001-04-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xref.c (GNU_xref_file): Use concat in lieu of xmalloc/sprintf.
