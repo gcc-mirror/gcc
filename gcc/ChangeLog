@@ -1,3 +1,9 @@
+Wed Aug 25 17:31:56 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/v850.md: Fix compile time warning messages.
+	* config/v850/v850.c: Fix compile time warning messages.
+	* config/v850/v850.h: Fix compile time warning messages.
+
 Wed Aug 25 09:44:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genattr.c (gen_attr): Add prototype arguments for get_attr_*().

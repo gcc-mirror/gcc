@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "function.h"
 
 #ifndef streq
 #define streq(a,b) (strcmp (a, b) == 0)
