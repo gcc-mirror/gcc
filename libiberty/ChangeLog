@@ -1,3 +1,14 @@
+2003-04-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (funcs, AC_CHECK_FUNCS): Add snprintf and
+	vsnprintf.
+	* snprintf.c, vsnprintf.c: New files.
+	* Makefile.in (CFILES): Add snprintf.c and vsnprintf.c.
+	(CONFIGURED_OFILES): Add snprintf.o and vsnprintf.o.
+	Regenerate dependencies.
+
+	* functions.texi, configure, config.in: Regenerated.
+
 2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mempcpy.c, stpcpy.c, stpncpy.c: New files.
