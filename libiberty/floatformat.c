@@ -1,5 +1,5 @@
 /* IEEE floating point support routines, for GDB, the GNU Debugger.
-   Copyright (C) 1991, 1994, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GDB.
 
@@ -149,7 +149,7 @@ static unsigned long get_field PARAMS ((unsigned char *,
 					unsigned int,
 					unsigned int));
 
-/* Extract a field which starts at START and is LEN bytes long.  DATA and
+/* Extract a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static unsigned long
 get_field (data, order, total_len, start, len)
@@ -273,7 +273,7 @@ static void put_field PARAMS ((unsigned char *, enum floatformat_byteorders,
 			       unsigned int,
 			       unsigned long));
 
-/* Set a field which starts at START and is LEN bytes long.  DATA and
+/* Set a field which starts at START and is LEN bits long.  DATA and
    TOTAL_LEN are the thing we are extracting it from, in byteorder ORDER.  */
 static void
 put_field (data, order, total_len, start, len, stuff_to_put)
@@ -402,6 +402,39 @@ floatformat_from_double (fmt, from, to)
       mant_off += mant_bits;
       mant_bits_left -= mant_bits;
     }
+}
+
+/* Return non-zero iff the data at FROM is a valid number in format FMT.  */
+
+int
+floatformat_is_valid (fmt, from)
+     const struct floatformat *fmt;
+     char *from;
+{
+  if (fmt == &floatformat_i387_ext)
+    {
+      /* In the i387 double-extended format, if the exponent is all
+	 ones, then the integer bit must be set.  If the exponent
+	 is neither 0 nor ~0, the intbit must also be set.  Only
+	 if the exponent is zero can it be zero, and then it must
+	 be zero.  */
+      unsigned long exponent, int_bit;
+      unsigned char *ufrom = (unsigned char *) from;
+
+      exponent = get_field (ufrom, fmt->byteorder, fmt->totalsize,
+			    fmt->exp_start, fmt->exp_len);
+      int_bit = get_field (ufrom, fmt->byteorder, fmt->totalsize,
+			   fmt->man_start, 1);
+
+      if ((exponent == 0) != (int_bit == 0))
+	return 0;
+      else
+	return 1;
+    }
+
+  /* Other formats with invalid representations should be added
+     here.  */
+  return 1;
 }
 
 
