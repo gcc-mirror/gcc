@@ -1,3 +1,7 @@
+2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tree.c (walk_tree): Set lineno.
+
 2000-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* exception.cc: Update license notice.
@@ -123,9 +127,9 @@
 2000-04-24  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* call.c (standard_conversion): Accept conversion between
-	COMPLEX_TYPEs 
+	COMPLEX_TYPEs.
 
-	* cvt.c (ocp_convert): Handle conversion to COMPLEX_TYPE
+	* cvt.c (ocp_convert): Handle conversion to COMPLEX_TYPE.
 
 2000-04-24  Zack Weinberg  <zack@wolery.cumb.org>
 
