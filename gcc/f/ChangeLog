@@ -1,3 +1,7 @@
+Sun Nov 26 19:25:56 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lang_specific_driver): Update copyright year to 2000.
+
 Thu Nov 23 02:18:57 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* Make-lang.in (g77spec.o): Depend on $(CONFIG_H).
