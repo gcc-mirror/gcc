@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -535,7 +535,7 @@ namespace std
     {
       bool __ret = true;
       for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
-	__ret &= (std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0);
+	__ret = std::strcmp(_M_names[__i], _M_names[__i + 1]) == 0;
       return __ret;
     }
 
