@@ -1,3 +1,8 @@
+Fri Sep 26 09:00:13 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* integrate.c (expand_inline_function): Make sure there is at
+	least one insn that can be used as an insertion point.
+
 Wed Sep 24 21:34:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c: s/flag_verbose_asm/flag_debug_asm/
