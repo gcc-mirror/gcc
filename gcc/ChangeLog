@@ -1,3 +1,7 @@
+Fri Feb  7 22:22:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movdi_rex64_1): Fix mmx<->int move opcode.
+
 2003-02-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	* cfg.c (dump_flow_info): Add back accidently deleted line.
