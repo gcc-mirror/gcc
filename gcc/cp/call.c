@@ -2734,10 +2734,9 @@ conditional_conversion (e1, e2)
 }
 
 /* Implement [expr.cond].  ARG1, ARG2, and ARG3 are the three
-   arguments to the conditional expression.  As an extension, g++
-   allows users to overload the ?: operator.  By the time this
-   function is called, any suitable candidate functions are included
-   in CANDIDATES.  */
+   arguments to the conditional expression.  By the time this function
+   is called, any suitable candidate functions are included in
+   CANDIDATES.  */
 
 tree
 build_conditional_expr (arg1, arg2, arg3)
@@ -2780,6 +2779,11 @@ build_conditional_expr (arg1, arg2, arg3)
      _conv_).  */
   arg1 = cp_convert (boolean_type_node, arg1);
 
+  /* Convert from reference types to ordinary types; no expressions
+     really have reference type in C++.  */
+  arg2 = convert_from_reference (arg2);
+  arg3 = convert_from_reference (arg3);
+     
   /* [expr.cond]
 
      If either the second or the third operand has type (possibly
@@ -2867,6 +2871,7 @@ build_conditional_expr (arg1, arg2, arg3)
       else if (conv2 && !ICS_BAD_FLAG (conv2))
 	{
 	  arg2 = convert_like (conv2, arg2);
+	  arg2 = convert_from_reference (arg2);
 	  /* That may not quite have done the trick.  If the two types
 	     are cv-qualified variants of one another, we will have
 	     just used an IDENTITY_CONV.  (There's no conversion from
@@ -2881,8 +2886,9 @@ build_conditional_expr (arg1, arg2, arg3)
       else if (conv3 && !ICS_BAD_FLAG (conv3))
 	{
 	  arg3 = convert_like (conv3, arg3);
+	  arg3 = convert_from_reference (arg3);
 	  if (!same_type_p (TREE_TYPE (arg3), arg2_type))
-	    arg2 = build1 (NOP_EXPR, arg2_type, arg3);
+	    arg3 = build1 (NOP_EXPR, arg2_type, arg3);
 	  arg3_type = TREE_TYPE (arg3);
 	}
     }
@@ -2891,8 +2897,6 @@ build_conditional_expr (arg1, arg2, arg3)
 
      If the second and third operands are lvalues and have the same
      type, the result is of that type and is an lvalue.  */
-  arg2_type = non_reference (arg2_type);
-  arg3_type = non_reference (arg3_type);
   if (real_lvalue_p (arg2) && real_lvalue_p (arg3) && 
       same_type_p (arg2_type, arg3_type))
     {
