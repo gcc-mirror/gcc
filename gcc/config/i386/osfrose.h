@@ -239,7 +239,7 @@ do									\
 	    fprintf (FILE, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);	\
 	    fprintf (FILE, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n", \
 		     lprefix, call_no++);				\
-	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%eax),%%edx\n",	\
+	    fprintf (FILE, "\tleal %sP%d@GOTOFF(%%eax),%%edx\n",	\
 		     lprefix, labelno);					\
 	    fprintf (FILE, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",	\
 		     prefix);						\
@@ -310,9 +310,9 @@ do									\
 	  {								\
 	    fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
 	    fprintf (FILE, "\tpushl %%ecx\n");				\
-	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%ebx),%%edx\n",	\
+	    fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",	\
 		     lprefix, labelno);					\
-	    fprintf (FILE, "\tmovl _mcount_ptr@GOT(%%eax),%%eax\n");	\
+	    fprintf (FILE, "\tmovl _mcount_ptr@GOT(%%ebx),%%eax\n");	\
 	    fprintf (FILE, "\tcall *(%%eax)\n");			\
 	    fprintf (FILE, "\tpopl %%eax\n");				\
 	  }								\
