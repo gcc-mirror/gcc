@@ -6093,11 +6093,18 @@ compute_block_forward_dependences (bb)
 	  if (x != XEXP (link, 0))
 	    continue;
 
-	  /* Ignore dependences upon deleted insn.  */
-	  if (GET_CODE (x) == NOTE || INSN_DELETED_P (x))
-	    continue;
-	  if (find_insn_list (insn, INSN_DEPEND (x)))
-	    continue;
+#ifdef ENABLE_CHECKING
+	  /* If add_dependence is working properly there should never
+	     be notes, deleted insns or duplicates in the backward
+	     links.  Thus we need not check for them here.
+
+	     However, if we have enabled checking we might as well go
+	     ahead and verify that add_dependence worked properly.  */
+	  if (GET_CODE (x) == NOTE
+	      || INSN_DELETED_P (x)
+	      || find_insn_list (insn, INSN_DEPEND (x)))
+	    abort ();
+#endif
 
 	  new_link = alloc_INSN_LIST (insn, INSN_DEPEND (x));
 

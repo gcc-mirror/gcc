@@ -1,3 +1,8 @@
+Sat Oct 16 02:48:22 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (compute_block_forward_dependencies): Only check
+	for notes, deleted insns and duplicates if ENABLE_CHECKING is defined.
+
 Sat Oct 16 00:07:01 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcse.c (hash_expr_1): Add in MEM_ALIAS_SET.
