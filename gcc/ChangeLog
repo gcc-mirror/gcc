@@ -1,3 +1,8 @@
+Fri Sep 19 18:53:50 1997 J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sched.c (update_flow_info): Don't pass SCRATCH to dead_or_set_p.
+	* haifa-sched.c (update_flow_info): Likewise.
+
 Thu Sep 18 21:13:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (BOOT_CFLAGS): Use -O2.
