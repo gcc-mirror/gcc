@@ -1,52 +1,82 @@
-$! Set the def dir to proper place for use in batch. Works for interactive too.
-$flnm = f$enviroment("PROCEDURE")     ! get current procedure name
-$set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
+$v='f$verify(0)	!make-cc1.com
 $!
-$ v=f$verify(0)
+$!	Build the GNU C compiler on VMS.
 $!
-$! CAUTION: If you want to link gcc-cc1 to the sharable image library
-$! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
+$!	Usage:
+$!	  $ @make-cc1.com [host-compiler] [various]
 $!
-$!	Build the GNU "C" compiler on VMS
+$!	where [host-compiler] is one of "GNUC", "VAXC", "DECC";
+$!	default when none specified is "GNUC",
+$!	and where [various] is one or more of "CC1", "CC1PLUS",
+$!	"CC1OBJ", "OBJCLIB", "INDEPENDENT", "BC", "ALL", "LINK", "DEBUG".
+$!	"CC1" (C compiler) is the default; of the others, only
+$!	"CC1PLUS" (C++ compiler), "CC1OBJ" (Objective-C compiler),
+$!	and "OBJCLIB" (Objective-C run-time library) are of interest
+$!	for normal installation.
+$!	If both [host-compiler] and other option(s) are specified,
+$!	the host compiler argument must come first.
 $!
-$!  Note:  to build with DEC's VAX C compiler, uncomment the 2nd CC, CFLAGS,
-$!	   and LIBS alternatives, and also execute the following command:
-$!	DEFINE SYS SYS$LIBRARY:
-$!	   After a successful build, restore those items and rebuild with gcc.
+$ if f$type(gcc_debug).eqs."INTEGER" then  if gcc_debug.and.1 then  set verify
 $
-$!	C compiler
+$ p1 = f$edit(p1,"UPCASE,TRIM")
+$ if p1.eqs."" then  p1 = "GNUC"
 $!
-$ CC	=	"gcc"
-$! CC	=	"cc"	!uncomment for VAXC
-$ BISON	=	"bison"
-$ BISON_FLAGS=	"/Define/Verbose"
-$ RENAME=	"rename/New_Version"
-$ LINK	=	"link"
-$ EDIT	=	"edit"
-$ SEARCH=	"search"
-$ ABORT	=	"exit %x002C"
-$ echo	=	"write sys$output"
+$!	Compiler-specific setup (assume GNU C, then override as necessary):
 $!
-$!	Compiler options
+$ CC	 = "gcc"
+$ CFLAGS = "/Debug/noVerbos/CC1=""-mpcc-alignment"""
+$ LIBS	 = "gnu_cc:[000000]gcclib.olb/Libr,sys$library:vaxcrtl.olb/Libr"
+$ if p1.eqs."GNUC"
+$ then
+$   p1 = ""
+$ else
+$   CC	   = "cc"
+$   CFLAGS = "/noOpt"	!disable optimizer when bootstrapping with native cc
+$   if p2.eqs."DEBUG" .or. p3.eqs."DEBUG" then  CFLAGS = CFLAGS + "/Debug"
+$   if p1.eqs."VAXC"
+$   then
+$     p1 = ""
+$     if f$trnlnm("DECC$CC_DEFAULT").nes."" then  CC = "cc/VAXC"
+$     LIBS = "alloca.obj,sys$library:vaxcrtl.olb/Libr"
+$     define/noLog SYS SYS$LIBRARY:
+$   else
+$     if p1.eqs."DECC"
+$     then
+$	p1 = ""
+$	if f$trnlnm("DECC$CC_DEFAULT").nes."" then  CC = "cc/DECC"
+$	CC = CC + "/Prefix=All/Warn=Disabl=(ImplicitFunc)"
+$	LIBS = "alloca.obj"	!DECC$SHR will be found implicitly by linker
+$	define/noLog SYS DECC$LIBRARY_INCLUDE:
+$     endif !DECC
+$   endif !VAXC
+$ endif !GNUC
+$
 $!
-$ CFLAGS =	"/Debug/noVerbos/CC1=""-mpcc-alignment"""
-$! CFLAGS =	"/noOpt"		!uncomment for VAXC
+$!	Other setup:
+$!
+$ LDFLAGS =	"/noMap"
+$ PARSER  =	"bison"
+$ PARSER_FLAGS=	"/Define/Verbose"
+$ RENAME  =	"rename/New_Version"
+$ LINK	  =	"link"
+$ EDIT	  =	"edit"
+$ SEARCH  =	"search"
+$ ABORT	  =	"exit %x002C"
+$ echo	  =	"write sys$output"
+$!
+$!	Stage[123] options
+$!
 $ CINCL1 =	"/Incl=[]"			!stage 1 -I flags
 $ CINCL2 =	"/Incl=([],[.ginclude])"	!stage 2,3,... flags
 $ CINCL_SUB =	"/Incl=([],[-],[-.ginclude])"	![.cp] flags
-$!
-$!	Link options
-$!
-$ LDFLAGS =	"/noMap"
-$!
-$!	Link libraries
-$!
-$ LIBS = "gnu_cc:[000000]gcclib.olb/Libr,sys$library:vaxcrtl.olb/Libr"
-$! LIBS = "alloca.obj,sys$library:vaxcrtl.olb/Libr"	!uncomment for VAXC
 $
 $!!!!!!!
 $!	Nothing beyond this point should need any local configuration changes.
 $!!!!!!!
+$
+$! Set the default directory to the same place as this command procedure.
+$ flnm = f$enviroment("PROCEDURE")	!get current procedure name
+$ set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $
 $!
 $!  First we figure out what needs to be done.  This is sort of like a limited
@@ -70,6 +100,9 @@ $!
 $!	BC:
 $!		Compile byte compiler source modules. (On by default).
 $!
+$!	OBJCLIB:
+$!		Compile Objective-C run-time library.
+$!
 $!	DEBUG:	Link images with /debug.
 $!
 $! If you want to list more than one option, you should use a spaces to
@@ -84,7 +117,7 @@ $! If you do not specify which compiler you want to build, it is assumed that
 $! you want to build GNU-C ("CC1").
 $!
 $! Now figure out what we have been requested to do.
-$p1 = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7 
+$p1 = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
 $p1 = f$edit(p1,"COMPRESS,TRIM")
 $i=0
 $DO_ALL = 0
@@ -207,12 +240,12 @@ $ if f$search("alloca.obj").nes."" then -  !does .obj exist? is it up to date?
     if f$cvtime(f$file_attributes("alloca.obj","RDT")).gts.-
        f$cvtime(f$file_attributes("alloca.c","RDT")) then  goto skip_alloca
 $set verify
-$ 'CC''CFLAGS'/Define="STACK_DIRECTION=(-1)" alloca.c
+$ 'CC''CFLAGS'/Defi=("HAVE_CONFIG_H","STACK_DIRECTION=(-1)") alloca.c
 $!'f$verify(0)
 $skip_alloca:
 $!
-$if DO_BC.eq.1 
-$	THEN 
+$if DO_BC.eq.1
+$	then
 $	call compile bi_all.opt ""
 $	if f$trnlnm("ifile$").nes."" then  close/noLog ifile$
 $	open ifile$ bc_all.list
@@ -229,8 +262,8 @@ $bc_done:
 $	endif
 $!
 $!
-$if DO_INDEPENDENT.eq.1 
-$	THEN 
+$if DO_INDEPENDENT.eq.1
+$	then
 $!
 $! First build a couple of header files from the machine description
 $! These are used by many of the source modules, so we build them now.
@@ -415,27 +448,26 @@ $	save_cflags = CFLAGS
 $	CFLAGS = CFLAGS - CINCL1 - CINCL2 + CINCL_SUB
 $ endif
 $!
-$if f$locate("parse",flnm).nes.f$length(flnm)
-$	then
-$	if (f$search("''flnm'.C") .eqs. "") then goto yes_bison
-$	if (f$cvtime(f$file_attributes("''flnm'.Y","RDT")).les. -
- 	    f$cvtime(f$file_attributes("''flnm'.C","RDT")))  -
-		then goto no_bison
-$yes_bison:
-$set verify
-$	 'BISON''BISON_FLAGS' 'flnm'.y
-$	 'RENAME' 'flnm'_tab.c 'flnm'.c
-$	 'RENAME' 'flnm'_tab.h 'flnm'.h
+$ if f$locate("parse",flnm).nes.f$length(flnm)
+$ then
+$   if f$search("''flnm'.c").nes."" then -
+      if f$cvtime(f$file_attributes("''flnm'.c","RDT")).ges. -
+	 f$cvtime(f$file_attributes("''flnm'.y","RDT")) then  goto skip_yacc
+$ set verify
+$	'PARSER' 'PARSER_FLAGS' 'flnm'.y
+$	'RENAME' 'flnm'_tab.c 'flnm'.c
+$	'RENAME' 'flnm'_tab.h 'flnm'.h
 $!'f$verify(0)
 $	if flnm.eqs."cp-parse" .or. (prfx.eqs."cp" .and. flnm.eqs."parse")
 $	then		! fgrep '#define YYEMPTY' cp-parse.c >>cp-parse.h
+$		if f$trnlnm("JFILE$").nes."" then  close/noLog jfile$
 $		open/Append jfile$ 'flnm'.h
 $		'SEARCH'/Exact/Output=jfile$ 'flnm'.c "#define YYEMPTY"
 $		close jfile$
 $	endif
-$no_bison:
+$skip_yacc:
 $	 echo " (Ignore any warning about not finding file ""bison.simple"".)"
-$	endif
+$ endif
 $!
 $if f$extract(0,5,flnm).eqs."insn-" then call generate 'flnm'.c
 $!
@@ -461,7 +493,7 @@ $close ifile$
 $endsubroutine
 $!
 $! This subroutine generates the insn-* files.  The first argument is the
-$! name of the insn-* file to generate.  The second argument contains a 
+$! name of the insn-* file to generate.  The second argument contains a
 $! list of any other object modules which must be linked to the gen*.c
 $! program.
 $!
@@ -475,7 +507,7 @@ $	endif
 $root1=f$parse(f$extract(5,255,p1),,,"NAME")
 $	set verify
 $ 'CC''CFLAGS' GEN'root1'.C
-$ 'LINK''LDFLAGS' GEN'root1'.OBJ,rtl.obj,obstack.obj,'p2' -
+$ 'LINK''f$string(LDFLAGS - "/Debug")' GEN'root1'.OBJ,rtl.obj,obstack.obj,'p2' -
 	  'LIBS'
 $!	'f$verify(0)
 $!
@@ -486,7 +518,7 @@ $!'f$verify(0)
 $endsubroutine
 $!
 $! This subroutine generates the bc-* files.  The first argument is the
-$! name of the bc-* file to generate.  The second argument contains a 
+$! name of the bc-* file to generate.  The second argument contains a
 $! list of any other object modules which must be linked to the bi*.c
 $! program.
 $!
@@ -500,7 +532,7 @@ $	endif
 $root1=f$parse(f$extract(3,255,p1),,,"NAME")
 $	set verify
 $ 'CC''CFLAGS' BI-'root1'.C
-$ 'LINK''LDFLAGS' BI-'root1'.OBJ,'p2' -
+$ 'LINK''f$string(LDFLAGS - "/Debug")' BI-'root1'.OBJ,'p2' -
 	  'LIBS'
 $!	'f$verify(0)
 $!
