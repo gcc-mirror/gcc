@@ -105,8 +105,12 @@ esac
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
 case "${target}" in
-   *-*-aix4.[3456789]* | *-*-aix[56789]*)
-     ATOMICITYH=$os_include_dir
+   *-*-aix[456789]*)
+     # We set os_include_dir to config/os/aix only on AIX 4.3 and
+     # newer, but config/os/aix/bits/atomicity.h works on earlier
+     # versions of AIX 4.*, so we explicitly duplicate the directory
+     # here, because os_include_dir.
+     ATOMICITYH=config/os/aix
      ;;
    *-*-aix*)
      ATOMICITYH=config/cpu/generic
