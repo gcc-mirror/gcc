@@ -1,3 +1,11 @@
+2001-03-25  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (umodqi3): Output a tab instead of a
+	space.
+	(modqi3): Likewise.
+	(umodhi3): Likewise.
+	(modhi3): Likewise.
+
 2001-03-23  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/iris4.h (ASM_OUTPUT_ASCII): Rename local variables
