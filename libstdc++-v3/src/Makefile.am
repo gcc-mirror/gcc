@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.75 2001/02/28 03:20:36 bkoz Exp $
+## $Id: Makefile.am,v 1.76 2001/03/01 00:37:18 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -32,7 +32,6 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
-EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -169,10 +168,9 @@ sources = \
         globals.cc \
 	basic_file.cc ios.cc complex_io.cc strstream.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc \
+	string-inst.cc wstring-inst.cc 
 
-wstring_sources = \
-	wstring-inst.cc
 
 VPATH += $(top_srcdir) $(top_srcdir)/src
 VPATH += $(GLIBCPP_INCLUDE_DIR) 
@@ -180,12 +178,9 @@ VPATH += $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
 
 libstdc___la_SOURCES = $(sources)
 
-libinst_wstring_la_SOURCES = $(wstring_sources)
-
 libstdc___la_LIBADD = \
 	../libmath/libmath.la @libio_la@ \
-	../libsupc++/libsupc++convenience.la \
-	@libinst_wstring_la@
+	../libsupc++/libsupc++convenience.la
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 
@@ -198,13 +193,6 @@ strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
 strstream.o: strstream.cc
 	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
-
-# Make wstring-inst.cc from string-inst.cc
-wstring-inst.o: string-inst.cc
-	$(CXXCOMPILE) -c -DC=wchar_t $< -o $@
-wstring-inst.lo: string-inst.cc
-	$(LTCXXCOMPILE) -c -DC=wchar_t $< -o $@
-
 
 # Make sure cshadow headers are built first.
 if GLIBCPP_USE_CSHADOW

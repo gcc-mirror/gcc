@@ -852,15 +852,11 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     AC_MSG_CHECKING([for enabled wchar_t specializations])
     if test x"$ac_isoC99_wchar_t" = xyes \
        && test x"$ac_XPG2_wchar_t" = xyes; then
-      libinst_wstring_la="libinst-wstring.la"
       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
       AC_MSG_RESULT("yes")
     else
-      libinst_wstring_la=""
       AC_MSG_RESULT("no")
     fi
-    AC_SUBST(libinst_wstring_la)
-  
   else
     dnl Wide characters disabled by the user. 
     AC_MSG_WARN([wchar_t support disabled.])

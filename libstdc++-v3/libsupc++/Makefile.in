@@ -101,7 +101,6 @@ glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
-libinst_wstring_la = @libinst_wstring_la@
 libio_la = @libio_la@
 toplevel_srcdir = @toplevel_srcdir@
 
