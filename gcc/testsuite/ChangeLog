@@ -1,3 +1,7 @@
+2001-10-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20011008-3.c: New.
+
 2001-10-08  DJ Delorie  <dj@redhat.com>
 
 	* gcc.dg/20011008-1.c: New.
