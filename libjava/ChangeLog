@@ -2,6 +2,9 @@
 
 	* java/io/PushbackReader.java: Reformat.
 
+	* java/io/FileInputStream.java (skip): Call fd.getFilePointer() and
+	calculate correct number of bytes skipped.
+
 2002-03-24  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/TextComponent.java (TextComponent): Editable by
