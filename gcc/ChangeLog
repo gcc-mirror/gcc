@@ -1,3 +1,7 @@
+2002-09-10  Theodore A. Roth  <troth@verinet.com>
+
+	* gcc/config/avr/avr.h: Set default options for C++ for avr.
+
 2002-09-13  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (toplev.o): Depend on real.h.

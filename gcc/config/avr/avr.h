@@ -2523,6 +2523,12 @@ extern int avr_case_values_threshold;
 
    Do not define this macro if it does not need to do anything.  */
 
+#define CC1PLUS_SPEC "%{!frtti:-fno-rtti} \
+    %{!fenforce-eh-specs:-fno-enforce-eh-specs} \
+    %{!fexceptions:-fno-exceptions}"
+/* A C string constant that tells the GNU CC drvier program options to
+   pass to `cc1plus'.  */
+
 #define ASM_SPEC "%{mmcu=*:-mmcu=%*}"
 /* A C string constant that tells the GNU CC driver program options to
    pass to the assembler.  It can also specify how to translate
