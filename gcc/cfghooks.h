@@ -100,6 +100,14 @@ struct cfg_hooks
      The goal is to expose cases in which entering a basic block does not imply
      that all subsequent instructions must be executed.  */
   int (*flow_call_edges_add) (sbitmap);
+
+  /* This function is called immediately after edge E is added to the
+     edge vector E->dest->preds.  */
+  void (*execute_on_growing_pred) (edge);
+
+  /* This function is called immediately before edge E is removed from
+     the edge vector E->dest->preds.  */
+  void (*execute_on_shrinking_pred) (edge);
 };
 
 extern void verify_flow_info (void);
@@ -126,6 +134,8 @@ extern basic_block duplicate_block (basic_block, edge);
 extern bool block_ends_with_call_p (basic_block bb);
 extern bool block_ends_with_condjump_p (basic_block bb);
 extern int flow_call_edges_add (sbitmap);
+extern void execute_on_growing_pred (edge);
+extern void execute_on_shrinking_pred (edge);
 
 /* Hooks containers.  */
 extern struct cfg_hooks tree_cfg_hooks;

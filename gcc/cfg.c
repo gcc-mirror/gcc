@@ -277,6 +277,8 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   e->flags = flags;
   e->dest_idx = EDGE_COUNT (dst->preds) - 1;
 
+  execute_on_growing_pred (e);
+
   return e;
 }
 
@@ -358,6 +360,8 @@ remove_edge (edge e)
   bool found = false;
   edge_iterator ei;
 
+  execute_on_shrinking_pred (e);
+
   src = e->src;
   dest = e->dest;
   dest_idx = e->dest_idx;
@@ -394,6 +398,8 @@ redirect_edge_succ (edge e, basic_block new_succ)
   basic_block dest = e->dest;
   unsigned int dest_idx = e->dest_idx;
 
+  execute_on_shrinking_pred (e);
+
   VEC_unordered_remove (edge, dest->preds, dest_idx);
 
   /* If we removed an edge in the middle of the edge vector, we need
@@ -405,6 +411,7 @@ redirect_edge_succ (edge e, basic_block new_succ)
   VEC_safe_push (edge, new_succ->preds, e);
   e->dest = new_succ;
   e->dest_idx = EDGE_COUNT (new_succ->preds) - 1;
+  execute_on_growing_pred (e);
 }
 
 /* Like previous but avoid possible duplicate edge.  */
