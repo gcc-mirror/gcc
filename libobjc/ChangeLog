@@ -1,3 +1,7 @@
+2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in: Add -DIN_TARGET_LIBS to ALL_CFLAGS.
+
 Thu Sep 23 07:19:12 1999   Chris Ball <cball@fmco.com>
 
 	* thr-posix.c (__objc_mutex_deallocate): made deallocate work.

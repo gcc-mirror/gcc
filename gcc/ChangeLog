@@ -1,3 +1,8 @@
+2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* config/i386/i386.h: If IN_TARGET_LIBS is defined, make
+	BIGGEST_FIELD_ALIGNMENT a constant.
+
 2000-02-21  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (output_line_info): Put the marker for the end of

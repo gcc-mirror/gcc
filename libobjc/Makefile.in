@@ -60,7 +60,8 @@ RANLIB = @RANLIB@
 
 CC = @CC@
 CFLAGS = @CFLAGS@
-ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) -DIN_GCC
+ALL_CFLAGS = -I. -I$(srcdir) $(CPPFLAGS) $(DEFS) $(CFLAGS) \
+	-DIN_GCC -DIN_TARGET_LIBS
 
 #
 # Define the cc1obj in terms of the CC that is passed on from higher

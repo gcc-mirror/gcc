@@ -469,10 +469,15 @@ extern int ix86_arch;
 #define BIGGEST_ALIGNMENT 128
 
 /* The published ABIs say that doubles should be aligned on word
-   boundaries, so lower the aligmnet for structure fields unless
-   -malign_double is set.  */
-
+   boundaries, so lower the aligment for structure fields unless
+   -malign-double is set.  */
+/* BIGGEST_FIELD_ALIGNMENT is also used in libobjc, where it must be
+   constant.  Use the smaller value in that context.  */
+#ifndef IN_TARGET_LIBS
 #define BIGGEST_FIELD_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
+#else
+#define BIGGEST_FIELD_ALIGNMENT 32
+#endif
 
 /* If defined, a C expression to compute the alignment given to a
    constant that is being placed in memory.  CONSTANT is the constant
