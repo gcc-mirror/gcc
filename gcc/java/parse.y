@@ -11608,6 +11608,14 @@ java_complete_lhs (node)
 	  nn = java_complete_tree (build_cast (EXPR_WFL_LINECOL (wfl_op2), 
 					       TREE_TYPE (lvalue), nn));
 
+	  /* If the assignment is compound and has reference type,
+	     then ensure the LHS has type String and nothing else.  */
+	  if (JREFERENCE_TYPE_P (TREE_TYPE (lvalue))
+	      && ! JSTRING_TYPE_P (TREE_TYPE (lvalue)))
+	    parse_error_context (wfl_op2,
+				 "Incompatible type for `+='. Can't convert `%s' to `java.lang.String'",
+				 lang_printable_name (TREE_TYPE (lvalue), 0));
+
 	  /* 15.25.2.b: Left hand is an array access. FIXME */
 	}
 

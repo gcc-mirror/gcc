@@ -1,3 +1,9 @@
+2000-11-20  Tom Tromey  <tromey@cygnus.com>
+            Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_complete_lhs): Only allow compound assignment of
+	reference type if type is String.
+
 2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* Make-lang.in (java/jcf-path.o:): libgcj.jar replaces libgcj.zip.
