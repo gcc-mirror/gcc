@@ -3930,37 +3930,41 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
 
-  if (code == ARRAY_TYPE)
+  if (code == ARRAY_TYPE && inside_init
+      && TREE_CODE (inside_init) == STRING_CST)
     {
       tree typ1 = TYPE_MAIN_VARIANT (TREE_TYPE (type));
-      if ((typ1 == char_type_node
-	   || typ1 == signed_char_type_node
-	   || typ1 == unsigned_char_type_node
-	   || typ1 == unsigned_wchar_type_node
-	   || typ1 == signed_wchar_type_node)
-	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)))
+      /* Note that an array could be both an array of character type
+	 and an array of wchar_t if wchar_t is signed char or unsigned
+	 char.  */
+      bool char_array = (typ1 == char_type_node
+			 || typ1 == signed_char_type_node
+			 || typ1 == unsigned_char_type_node);
+      bool wchar_array = !!comptypes (typ1, wchar_type_node);
+      if (char_array || wchar_array)
 	{
 	  struct c_expr expr;
+	  bool char_string;
 	  expr.value = inside_init;
 	  expr.original_code = (strict_string ? STRING_CST : ERROR_MARK);
 	  maybe_warn_string_init (type, expr);
+
+	  char_string
+	    = (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
+	       == char_type_node);
 
 	  if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
 			 TYPE_MAIN_VARIANT (type)))
 	    return inside_init;
 
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
-	       != char_type_node)
-	      && TYPE_PRECISION (typ1) == TYPE_PRECISION (char_type_node))
+	  if (!wchar_array && !char_string)
 	    {
 	      error_init ("char-array initialized from wide string");
 	      return error_mark_node;
 	    }
-	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
-	       == char_type_node)
-	      && TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node))
+	  if (char_string && !char_array)
 	    {
-	      error_init ("int-array initialized from non-wide string");
+	      error_init ("wchar_t-array initialized from non-wide string");
 	      return error_mark_node;
 	    }
 
@@ -3981,6 +3985,12 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	    pedwarn_init ("initializer-string for array of chars is too long");
 
 	  return inside_init;
+	}
+      else if (INTEGRAL_TYPE_P (typ1))
+	{
+	  error_init ("array of inappropriate type initialized "
+		      "from string constant");
+	  return error_mark_node;
 	}
     }
 
@@ -5476,7 +5486,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
       || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  && !(TREE_CODE (value) == STRING_CST
 	       && TREE_CODE (type) == ARRAY_TYPE
-	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (type)))
 	  && !comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (value)),
 			 TYPE_MAIN_VARIANT (type))))
     value = default_conversion (value);
@@ -5776,7 +5786,7 @@ process_init_element (struct c_expr value)
   if (string_flag
       && constructor_type
       && TREE_CODE (constructor_type) == ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (constructor_type)) == INTEGER_TYPE
+      && INTEGRAL_TYPE_P (TREE_TYPE (constructor_type))
       && integer_zerop (constructor_unfilled_index))
     {
       if (constructor_stack->replacement_value.value)
@@ -5855,7 +5865,7 @@ process_init_element (struct c_expr value)
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
 	      && fieldcode == ARRAY_TYPE
-	      && TREE_CODE (TREE_TYPE (fieldtype)) == INTEGER_TYPE
+	      && INTEGRAL_TYPE_P (TREE_TYPE (fieldtype))
 	      && string_flag)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
@@ -5943,7 +5953,7 @@ process_init_element (struct c_expr value)
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
 	      && fieldcode == ARRAY_TYPE
-	      && TREE_CODE (TREE_TYPE (fieldtype)) == INTEGER_TYPE
+	      && INTEGRAL_TYPE_P (TREE_TYPE (fieldtype))
 	      && string_flag)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
@@ -5983,7 +5993,7 @@ process_init_element (struct c_expr value)
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != 0
 	      && eltcode == ARRAY_TYPE
-	      && TREE_CODE (TREE_TYPE (elttype)) == INTEGER_TYPE
+	      && INTEGRAL_TYPE_P (TREE_TYPE (elttype))
 	      && string_flag)
 	    value.value = orig_value;
 	  /* Otherwise, if we have come to a subaggregate,
