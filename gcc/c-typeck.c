@@ -3756,6 +3756,12 @@ build_c_cast (type, expr)
   else
     {
       tree otype;
+
+      /* If casting to void, avoid the error that would come
+	 from default_conversion in the case of a non-lvalue array.  */
+      if (type == void_type_node)
+	return build1 (CONVERT_EXPR, type, value);
+
       /* Convert functions and arrays to pointers,
 	 but don't convert any other types.  */
       if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
