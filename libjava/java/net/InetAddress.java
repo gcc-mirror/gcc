@@ -313,7 +313,7 @@ public class InetAddress implements Serializable
       {
         try
 	  {
-            sm.checkConnect (hostName, -1);
+            sm.checkConnect(hostName, -1);
 	  }
 	catch (SecurityException e)
 	  {
@@ -322,7 +322,8 @@ public class InetAddress implements Serializable
       }
 
     // Try to find the FDQN now
-    InetAddress address = new InetAddress (getAddress(), null);
+    // FIXME: This does not work with IPv6.
+    InetAddress address = new Inet4Address(getAddress(), null);
     return address.getHostName();
   }
 
@@ -487,14 +488,8 @@ public class InetAddress implements Serializable
    */
   public String toString()
   {
-    String host;
     String address = getHostAddress();
-
-    if (hostName != null)
-      host = hostName;
-    else
-      host = address;
-
+    String host = (hostName != null) ? hostName : address;
     return host + "/" + address;
   }
 
