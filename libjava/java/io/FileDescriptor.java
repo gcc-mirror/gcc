@@ -39,26 +39,51 @@ exception statement from your version. */
 
 package java.io;
 
+import gnu.classpath.Configuration;
+
 /**
  * This class represents an opaque file handle as a Java class.  It should
  * be used only to pass to other methods that expect an object of this
  * type.  No system specific information can be obtained from this object.
  *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey (tromey@cygnus.com)
  * @date September 24, 1998 
  */
 public final class FileDescriptor
 {
-
+  /**
+   * A <code>FileDescriptor</code> representing the system standard input
+   * stream.  This will usually be accessed through the
+   * <code>System.in</code>variable.
+   */
   public static final FileDescriptor in = null;
+
+  /**
+   * A <code>FileDescriptor</code> representing the system standard output
+   * stream.  This will usually be accessed through the
+   * <code>System.out</code>variable.
+   */
   public static final FileDescriptor out = null;
+
+  /**
+   * A <code>FileDescriptor</code> representing the system standard error
+   * stream.  This will usually be accessed through the
+   * <code>System.err</code>variable.
+   */
   public static final FileDescriptor err = null;
 
   private static native void init();
+
   static
-  {
-    init();
-  }
+    {
+      if (Configuration.INIT_LOAD_LIBRARY)
+        {
+          System.loadLibrary("javaio");
+        }
+
+      init();
+    }
 
   public native void sync () throws SyncFailedException;
   public native boolean valid ();
@@ -77,9 +102,22 @@ public final class FileDescriptor
   static final int SYNC   = 16;
   static final int DSYNC  = 32;
 
+  /**
+   * This is the actual native file descriptor value
+   */
+  // System's notion of file descriptor.  It might seem redundant to
+  // initialize this given that it is reassigned in the constructors.
+  // However, this is necessary because if open() throws an exception
+  // we want to make sure this has the value -1.  This is the most
+  // efficient way to accomplish that.
+  private int fd = -1;
 
-  // This constructor is specified to create an invalid descriptor.
-  public FileDescriptor ()
+  private long position = 0;
+
+  /**
+   * This method is used to initialize an invalid FileDescriptor object.
+   */
+  public FileDescriptor()
   {
   }
 
@@ -124,12 +162,5 @@ public final class FileDescriptor
     fd = desc;
   }
 
-  // System's notion of file descriptor.  It might seem redundant to
-  // initialize this given that it is reassigned in the constructors.
-  // However, this is necessary because if open() throws an exception
-  // we want to make sure this has the value -1.  This is the most
-  // efficient way to accomplish that.
-  private int fd = -1;
 
-  private long position = 0;
 }
