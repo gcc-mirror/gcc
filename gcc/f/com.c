@@ -8927,6 +8927,7 @@ ffecom_transform_equiv_ (ffestorag eqst)
   else
     TREE_STATIC (eqt) = 0;
   TREE_PUBLIC (eqt) = 0;
+  TREE_ADDRESSABLE (eqt) = 1;  /* Ensure non-register allocation */
   DECL_CONTEXT (eqt) = current_function_decl;
   if (init)
     DECL_INITIAL (eqt) = error_mark_node;
@@ -8961,11 +8962,9 @@ ffecom_transform_equiv_ (ffestorag eqst)
 
   ffestorag_set_hook (eqst, eqt);
 
-#ifdef SOMEONE_GETS_DEBUG_SUPPORT_WORKING
   ffestorag_drive (ffestorag_list_equivs (eqst),
 		   &ffecom_member_phase2_,
 		   eqst);
-#endif
 
   resume_momentary (yes);
 }
