@@ -11958,7 +11958,7 @@ force_type_die (tree type)
 {
   dw_die_ref type_die;
 
-  type_die = lookup_type_die (root_type (type));
+  type_die = lookup_type_die (type);
   if (!type_die)
     {
       dw_die_ref context_die;
@@ -11971,7 +11971,7 @@ force_type_die (tree type)
 	context_die = comp_unit_die;
 
       gen_type_die (type, context_die);
-      type_die = lookup_type_die (root_type (type));
+      type_die = lookup_type_die (type);
       if (!type_die)
 	abort();
     }
