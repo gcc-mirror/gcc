@@ -1,5 +1,6 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,7 +46,6 @@ Boston, MA 02111-1307, USA.  */
    `varasm.c' when defining this macro.  */
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
 do {								\
-  (*targetm.asm_out.globalize_label) (FILE, NAME);		\
   if (SIZE > 0 && SIZE <= mips_section_threshold)		\
     sbss_section ();						\
   else								\
