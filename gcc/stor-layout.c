@@ -1577,7 +1577,7 @@ layout_type (tree type)
 	TYPE_SIZE (type) = int_const_binop (MULT_EXPR, TYPE_SIZE (innertype),
 					    nunits_tree, 0);
 
-	/* Always natually align vectors.  This prevents ABI changes
+	/* Always naturally align vectors.  This prevents ABI changes
 	   depending on whether or not native vector modes are supported.  */
 	TYPE_ALIGN (type) = tree_low_cst (TYPE_SIZE (type), 0);
         break;
