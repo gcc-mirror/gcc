@@ -2604,7 +2604,7 @@ m88k_function_arg (args_so_far, mode, type, named)
 struct rtx_def *
 m88k_builtin_saveregs ()
 {
-  rtx addr, dest;
+  rtx addr;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
 		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
@@ -2627,21 +2627,10 @@ m88k_builtin_saveregs ()
 
   /* Now store the incoming registers.  */
   if (fixed < 8)
-    {
-      dest = adjust_address (addr, Pmode, fixed * UNITS_PER_WORD);
-      move_block_from_reg (2 + fixed, dest, 8 - fixed,
-			   UNITS_PER_WORD * (8 - fixed));
-
-      if (current_function_check_memory_usage)
-	{
-	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			     dest, ptr_mode,
-			     GEN_INT (UNITS_PER_WORD * (8 - fixed)),
-			     TYPE_MODE (sizetype),
-			     GEN_INT (MEMORY_USE_RW),
-			     TYPE_MODE (integer_type_node));
-	}
-    }
+    move_block_from_reg (2 + fixed,
+			 adjust_address (addr, Pmode, fixed * UNITS_PER_WORD),
+			 8 - fixed,
+			 UNITS_PER_WORD * (8 - fixed));
 
   /* Return the address of the save area, but don't put it in a
      register.  This fails when not optimizing and produces worse code

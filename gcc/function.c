@@ -5045,7 +5045,7 @@ assign_parms (fndecl)
     = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
        : expand_expr (size_diffop (stack_args_size.var,
 				   size_int (-stack_args_size.constant)),
-		      NULL_RTX, VOIDmode, 0);
+		      NULL_RTX, VOIDmode, 0));
 #else
   current_function_arg_offset_rtx = ARGS_SIZE_RTX (stack_args_size);
 #endif
