@@ -1,3 +1,7 @@
+2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/20040625-1.c: New test.
+
 2004-06-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.fortran-torture/execute/der_init_3.f90: Fix syntax error.
