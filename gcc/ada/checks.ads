@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.55 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -82,6 +82,13 @@ package Checks is
    --  accessibility check (if necessary), checking that the level of
    --  the object denoted by the access parameter is not deeper than the
    --  level of the type Typ. Program_Error is raised if the check fails.
+
+   procedure Apply_Alignment_Check (E : Entity_Id; N : Node_Id);
+   --  E is the entity for an object. If there is an address clause for
+   --  this entity, and checks are enabled, then this procedure generates
+   --  a check that the specified address has an alignment consistent with
+   --  the alignment of the object, raising PE if this is not the case. The
+   --  resulting check (if one is generated) is inserted before node N.
 
    procedure Apply_Array_Size_Check (N : Node_Id; Typ : Entity_Id);
    --  N is the node for an object declaration that declares an object of

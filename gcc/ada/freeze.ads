@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2000, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -204,6 +204,11 @@ package Freeze is
    --  not really expressions, but they can appear within expressions and
    --  so need to be similarly treated. Freeze_Expression takes care of
    --  determining the proper insertion point for generated freeze actions.
+
+   procedure Freeze_Fixed_Point_Type (Typ : Entity_Id);
+   --  Freeze fixed point type. For fixed-point types, we have to defer
+   --  setting the size and bounds till the freeze point, since they are
+   --  potentially affected by the presence of size and small clauses.
 
    procedure Freeze_Itype (T : Entity_Id; N : Node_Id);
    --  This routine is called when an Itype is created and must be frozen

@@ -371,17 +371,18 @@ package body GNAT.Directory_Operations is
                E := E + 1;
 
                Var_Name : loop
-                  exit Var_Name when E = Path'Last;
+                  exit Var_Name when E > Path'Last;
 
                   if Characters.Handling.Is_Letter (Path (E))
                     or else Characters.Handling.Is_Digit (Path (E))
                   then
                      E := E + 1;
                   else
-                     E := E - 1;
                      exit Var_Name;
                   end if;
                end loop Var_Name;
+
+               E := E - 1;
 
                declare
                   Env : OS_Lib.String_Access := OS_Lib.Getenv (Path (K .. E));

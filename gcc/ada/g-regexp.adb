@@ -32,7 +32,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.IO;
 with Unchecked_Deallocation;
 with Ada.Exceptions;
 with GNAT.Case_Util;
@@ -72,10 +71,6 @@ package body GNAT.Regexp is
       Case_Sensitive : Boolean;
    end record;
    --  Deterministic finite-state machine
-
-   Debug : constant Boolean := False;
-   --  When True, the primary and secondary tables will be printed.
-   --  Gnat does not generate any code if this variable is False;
 
    -----------------------
    -- Local Subprograms --
@@ -187,12 +182,6 @@ package body GNAT.Regexp is
          Index : Integer);
       pragma No_Return (Raise_Exception);
       --  Raise an exception, indicating an error at character Index in S.
-
-      procedure Print_Table
-        (Table      : Regexp_Array;
-         Num_States : State_Index;
-         Is_Primary : Boolean := True);
-      --  Print a table for debugging purposes
 
       --------------------
       -- Create_Mapping --
@@ -1225,84 +1214,9 @@ package body GNAT.Regexp is
                end loop;
             end loop;
 
-            if Debug then
-               System.IO.New_Line;
-               System.IO.Put_Line ("Secondary table : ");
-               Print_Table (R.States, Nb_State, False);
-            end if;
-
             return (Ada.Finalization.Controlled with R => R);
          end;
       end Create_Secondary_Table;
-
-      -----------------
-      -- Print_Table --
-      -----------------
-
-      procedure Print_Table
-        (Table      : Regexp_Array;
-         Num_States : State_Index;
-         Is_Primary : Boolean := True)
-      is
-         function Reverse_Mapping (N : Column_Index) return Character;
-         --  Return the character corresponding to a column in the mapping
-
-         ---------------------
-         -- Reverse_Mapping --
-         ---------------------
-
-         function Reverse_Mapping (N : Column_Index) return Character is
-         begin
-            for Column in Map'Range loop
-               if Map (Column) = N then
-                  return Column;
-               end if;
-            end loop;
-
-            return ' ';
-         end Reverse_Mapping;
-
-      --  Start of processing for Print_Table
-
-      begin
-         --  Print the header line
-
-         System.IO.Put ("   [*]  ");
-
-         for Column in 1 .. Alphabet_Size  loop
-            System.IO.Put
-              (String'(1 .. 1 => Reverse_Mapping (Column)) & "   ");
-         end loop;
-
-         if Is_Primary then
-            System.IO.Put ("closure....");
-         end if;
-
-         System.IO.New_Line;
-
-         --  Print every line
-
-         for State in 1 .. Num_States loop
-            System.IO.Put (State'Img);
-
-            for K in 1 .. 3 - State'Img'Length loop
-               System.IO.Put (" ");
-            end loop;
-
-            for K in 0 .. Alphabet_Size loop
-               System.IO.Put (Table (State, K)'Img & "  ");
-            end loop;
-
-            for K in Alphabet_Size + 1 .. Table'Last (2) loop
-               if Table (State, K) /= 0 then
-                  System.IO.Put (Table (State, K)'Img & ",");
-               end if;
-            end loop;
-
-            System.IO.New_Line;
-         end loop;
-
-      end Print_Table;
 
       ---------------------
       -- Raise_Exception --
@@ -1343,12 +1257,6 @@ package body GNAT.Regexp is
          else
             Create_Primary_Table_Glob
               (Table, Num_States, Start_State, End_State);
-         end if;
-
-         if Debug then
-            Print_Table (Table.all, Num_States);
-            System.IO.Put_Line ("Start_State : " & Start_State'Img);
-            System.IO.Put_Line ("End_State   : " & End_State'Img);
          end if;
 
          --  Creates the secondary table
@@ -1451,17 +1359,6 @@ package body GNAT.Regexp is
          New_Table := new Regexp_Array (Table'First (1) .. New_Lines,
                                         Table'First (2) .. New_Columns);
          New_Table.all := (others => (others => 0));
-
-         if Debug then
-            System.IO.Put_Line ("Reallocating table: Lines from "
-                                & State_Index'Image (Table'Last (1))
-                                & " to "
-                                & State_Index'Image (New_Lines));
-            System.IO.Put_Line ("   and columns from "
-                                & Column_Index'Image (Table'Last (2))
-                                & " to "
-                                & Column_Index'Image (New_Columns));
-         end if;
 
          for J in Table'Range (1) loop
             for K in Table'Range (2) loop

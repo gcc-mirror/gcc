@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision$
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -37,6 +37,10 @@
 --  This package provides routines for manipulating directories. A directory
 --  can be treated as a file, using open and close routines, and a scanning
 --  routine is provided for iterating through the entries in a directory.
+
+--  See also child package GNAT.Directory_Operations.Iteration
+
+with Ada.Strings.Maps;
 
 package GNAT.Directory_Operations is
 
@@ -187,62 +191,6 @@ package GNAT.Directory_Operations is
    --  returned in target-OS form. Raises Directory_Error if Dir has not
    --  be opened (Dir = Null_Dir).
 
-   generic
-      with procedure Action
-        (Item  :        String;
-         Index :        Positive;
-         Quit  : in out Boolean);
-   procedure Wildcard_Iterator (Path : Path_Name);
-   --  Calls Action for each path matching Path. Path can include wildcards '*'
-   --  and '?' and [...]. The rules are:
-   --
-   --     *       can be replaced by any sequence of characters
-   --     ?       can be replaced by a single character
-   --     [a-z]   match one character in the range 'a' through 'z'
-   --     [abc]   match either character 'a', 'b' or 'c'
-   --
-   --  Item is the filename that has been matched. Index is set to one for the
-   --  first call and is incremented by one at each call. The iterator's
-   --  termination can be controlled by setting Quit to True. It is by default
-   --  set to False.
-   --
-   --  For example, if we have the following directory structure:
-   --     /boo/
-   --        foo.ads
-   --     /sed/
-   --        foo.ads
-   --        file/
-   --          foo.ads
-   --     /sid/
-   --        foo.ads
-   --        file/
-   --          foo.ads
-   --     /life/
-   --
-   --  A call with expression "/s*/file/*" will call Action for the following
-   --  items:
-   --     /sed/file/foo.ads
-   --     /sid/file/foo.ads
-
-   generic
-      with procedure Action
-        (Item  :        String;
-         Index :        Positive;
-         Quit  : in out Boolean);
-   procedure Find
-     (Root_Directory : Dir_Name_Str;
-      File_Pattern   : String);
-   --  Recursively searches the directory structure rooted at Root_Directory.
-   --  This provides functionality similar to the UNIX 'find' command.
-   --  Action will be called for every item matching the regular expression
-   --  File_Pattern (see GNAT.Regexp). Item is the full pathname to the file
-   --  starting with Root_Directory that has been matched. Index is set to one
-   --  for the first call and is incremented by one at each call. The iterator
-   --  will pass in the value False on each call to Action. The iterator will
-   --  terminate after passing the last matched path to Action or after
-   --  returning from a call to Action which sets Quit to True.
-   --  Raises GNAT.Regexp.Error_In_Regexp if File_Pattern is ill formed.
-
    function Read_Is_Thread_Safe return Boolean;
    --  Indicates if procedure Read is thread safe. On systems where the
    --  target system supports this functionality, Read is thread safe,
@@ -259,5 +207,9 @@ private
    Null_Dir : constant Dir_Type := null;
 
    pragma Import (C, Dir_Separator, "__gnat_dir_separator");
+
+   Dir_Seps : constant Ada.Strings.Maps.Character_Set :=
+                Ada.Strings.Maps.To_Set ("/\");
+   --  UNIX and DOS style directory separators.
 
 end GNAT.Directory_Operations;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.9 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -89,9 +89,12 @@ pragma Pure (Fat_Gen);
 
    function Unbiased_Rounding (X : T)                       return T;
 
-   function Valid             (X : access T)                return Boolean;
-   --  The argument must be passed by reference here, as T may be
-   --  an abnormal value that can be passed in a floating point register.
+   function Valid (X : access T) return Boolean;
+   --  This function checks if the object of type T referenced by X
+   --  is valid, and returns True/False accordingly. The parameter is
+   --  passed by reference (access) here, as the object of type T may
+   --  be an abnormal value that cannot be passed in a floating-point
+   --  register, and the whole point of 'Valid is to prevent exceptions.
 
 private
    pragma Inline (Machine);

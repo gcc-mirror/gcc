@@ -59,7 +59,8 @@ package body Exp_Ch8 is
    --  of the renamed object. The cases in which this is not true are when
    --  this address is not computable, since it involves extraction of a
    --  packed array element, or of a record component to which a component
-   --  clause applies (that can specify an arbitrary bit boundary).
+   --  clause applies (that can specify an arbitrary bit boundary), or where
+   --  the enclosing record itself has a non-standard representation.
 
    --  In these two cases, we pre-evaluate the renaming expression, by
    --  extracting and freezing the values of any subscripts, and then we
@@ -211,18 +212,25 @@ package body Exp_Ch8 is
             end if;
 
          elsif Nkind (Nam) = N_Selected_Component then
-            if Present (Component_Clause (Entity (Selector_Name (Nam)))) then
-               return True;
+            declare
+               Rec_Type : Entity_Id := Etype (Prefix (Nam));
 
-            elsif Ekind (Entity (Selector_Name (Nam))) = E_Discriminant
-              and then Is_Record_Type (Etype (Prefix (Nam)))
-              and then not Is_Concurrent_Record_Type (Etype (Prefix (Nam)))
-            then
-               return True;
+            begin
+               if Present (Component_Clause (Entity (Selector_Name (Nam))))
+                 or else Has_Non_Standard_Rep (Rec_Type)
+               then
+                  return True;
 
-            else
-               return Evaluation_Required (Prefix (Nam));
-            end if;
+               elsif Ekind (Entity (Selector_Name (Nam))) = E_Discriminant
+                 and then Is_Record_Type (Rec_Type)
+                 and then not Is_Concurrent_Record_Type (Rec_Type)
+               then
+                  return True;
+
+               else
+                  return Evaluation_Required (Prefix (Nam));
+               end if;
+            end;
 
          else
             return False;
