@@ -76,7 +76,7 @@ target_libs="target-libiberty \
 # list belongs in this list.  those programs are also very likely
 # candidates for the "native_only" list which follows
 #
-target_tools="target-examples target-groff target-gperf"
+target_tools="target-examples target-groff target-gperf target-rda"
 
 ################################################################################
 

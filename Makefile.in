@@ -760,7 +760,8 @@ ALL_TARGET_MODULES = \
 	all-target-libjava \
 	all-target-zlib \
 	all-target-boehm-gc \
-	all-target-qthreads 
+	all-target-qthreads \
+	all-target-rda 
 
 # This is a list of the configure targets for all of the modules which
 # are compiled using the target tools.
@@ -779,7 +780,8 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-libjava \
 	configure-target-zlib \
 	configure-target-boehm-gc \
-	configure-target-qthreads 
+	configure-target-qthreads \
+	configure-target-rda 
 
 # This is a list of the check targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -795,7 +797,8 @@ CHECK_TARGET_MODULES = \
 	check-target-libjava \
 	check-target-zlib \
 	check-target-boehm-gc \
-	check-target-qthreads 
+	check-target-qthreads \
+	check-target-rda 
 
 # This is a list of the install targets for all of the modules which are
 # compiled using $(TARGET_FLAGS_TO_PASS).
@@ -812,7 +815,8 @@ INSTALL_TARGET_MODULES = \
 	install-target-libjava \
 	install-target-zlib \
 	install-target-boehm-gc \
-	install-target-qthreads 
+	install-target-qthreads \
+	install-target-rda 
 
 # This is a list of the targets for which we can do a clean-{target}.
 CLEAN_MODULES = \
@@ -892,7 +896,8 @@ CLEAN_TARGET_MODULES = \
 	clean-target-libjava \
 	clean-target-zlib \
 	clean-target-boehm-gc \
-	clean-target-qthreads 
+	clean-target-qthreads \
+	clean-target-rda 
 
 # All of the x11 modules that can be cleaned
 CLEAN_X11_MODULES = \
@@ -1762,6 +1767,7 @@ all-target-libjava: configure-target-libjava
 all-target-zlib: configure-target-zlib
 all-target-boehm-gc: configure-target-boehm-gc
 all-target-qthreads: configure-target-qthreads
+all-target-rda: configure-target-rda
 
 
 ### other supporting targets

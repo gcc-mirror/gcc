@@ -1,3 +1,9 @@
+2002-11-04  Kevin Buettner  <kevinb@redhat.com>
+
+	* Makefile.def (host_modules): Add rda.
+	* Makefile.in: Regenerate.
+	* configure.in (target_tool): Add target-rda to list.
+
 2002-10-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Remove "co-maintainer" note for web pages.
