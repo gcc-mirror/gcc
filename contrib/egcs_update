@@ -88,5 +88,7 @@ for f in gcc/c-parse.y \
 	 gcc/fixinc/inclhack.sh \
 	 gcc/fixinc/fixincl.sh
 do
-	touch $f
+	if [ -f $f ]; then
+		touch $f
+	fi
 done
