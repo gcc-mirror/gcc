@@ -1,3 +1,7 @@
+2001-01-10  Richard Henderson  <rth@redhat.com>
+
+	* hwint.h: Revert yesterday's change.
+
 2001-01-10  Nick Clifton  <nickc@redhat.com>
 
 	* function.h (save_machine_status): Delete.
