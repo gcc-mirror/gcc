@@ -1,5 +1,7 @@
 2005-03-24  Geoffrey Keating  <geoffk@apple.com>
 
+	* c.opt (fvisibility-inlines-hidden): Allow for ObjC++.
+
         * config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Add
         MASK_128BIT_LONG_DOUBLE, MASK_ALIGN_DOUBLE.
 
