@@ -1,3 +1,16 @@
+Tue Sep  2 12:09:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (unify): float doesn't match double.
+
+	* pt.c (do_type_instantiation): Handle getting a _TYPE or a
+ 	TYPE_DECL.  Handle getting non-template types.
+	* parse.y (explicit_instantiation): Use typespec instead of
+	aggr template_type.
+
+Tue Sep  2 10:27:08 1997  Richard Henderson  <rth@cygnus.com>
+
+	* typeck.c (build_ptrmemfunc1): Clean up ptr->int cast warnings.
+
 Mon Sep  1 13:19:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_new_op): Strip leading REF_BIND from first operand

@@ -6261,14 +6261,14 @@ build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
   if (pfn)
     {
       allconstant = TREE_CONSTANT (pfn);
-      allsimple = (int) initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
+      allsimple = !! initializer_constant_valid_p (pfn, TREE_TYPE (pfn));
       u = tree_cons (pfn_field, pfn, NULL_TREE);
     }
   else
     {
       delta2 = convert_and_check (delta_type_node, delta2);
       allconstant = TREE_CONSTANT (delta2);
-      allsimple = (int) initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
+      allsimple = !! initializer_constant_valid_p (delta2, TREE_TYPE (delta2));
       u = tree_cons (delta2_field, delta2, NULL_TREE);
     }
 
