@@ -43,6 +43,21 @@ extern PTR malloc ();
 int global_total_width;
 #endif
 
+/*
+
+@deftypefn Extension int vasprintf (char **@var{resptr}, char *@var{format}, va_list @var{args})
+
+Like @code{vsprintf}, but instead of passing a pointer to a buffer,
+you pass a pointer to a pointer.  This function will compute the size
+of the buffer needed, allocate memory with @code{malloc}, and store a
+pointer to the allocated memory in @code{*@var{resptr}}.  The value
+returned is the same as @code{vsprintf} would return.  If memory could
+not be allocated, zero is returned and @code{NULL} is stored in
+@code{*@var{resptr}}.
+
+@end deftypefn
+
+*/
 
 static int int_vasprintf PARAMS ((char **, const char *, va_list *));
 

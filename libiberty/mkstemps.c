@@ -49,18 +49,27 @@ typedef unsigned long gcc_uint64_t;
 #define TMP_MAX 16384
 #endif
 
-/* Generate a unique temporary file name from TEMPLATE.
+/*
 
-   TEMPLATE has the form:
+@deftypefn Replacement int mkstemps (char *@var{template}, int @var{suffix_len})
 
+Generate a unique temporary file name from @var{template}.
+@var{template} has the form:
+
+@example
    <path>/ccXXXXXX<suffix>
+@end example
 
-   SUFFIX_LEN tells us how long <suffix> is (it can be zero length).
+@var{suffix_len} tells us how long <suffix> is (it can be zero
+length).  The last six characters of @var{template} before <suffix>
+must be @code{XXXXXX}; they are replaced with a string that makes the
+filename unique.  Returns a file descriptor open on the file for
+reading and writing.
 
-   The last six characters of TEMPLATE before <suffix> must be "XXXXXX";
-   they are replaced with a string that makes the filename unique.
+@end deftypefn
 
-   Returns a file descriptor open on the file for reading and writing.  */
+*/
+
 int
 mkstemps (template, suffix_len)
      char *template;

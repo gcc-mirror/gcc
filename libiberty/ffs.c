@@ -1,14 +1,12 @@
 /* ffs -- Find the first bit set in the parameter
 
-NAME
-	ffs -- Find the first bit set in the parameter
+@deftypefn Supplemental int ffs (int @var{valu})
 
-SYNOPSIS
-	int ffs (int valu)
+Find the first (least significant) bit set in @var{valu}. Bits are
+numbered from right to left, starting with bit 1 (corresponding to the
+value 1).  If @var{valu} is zero, zero is returned.
 
-DESCRIPTION
-	Find the first bit set in the parameter. Bits are numbered from
-	right to left, starting with bit 1.
+@end deftypefn
 
 */
 

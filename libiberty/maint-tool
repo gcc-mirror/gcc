@@ -35,8 +35,16 @@ if ($mode eq "-s") {
 }
 
 &missing() if $mode eq "missing";
+&undoc() if $mode eq "undoc";
 
 exit 0;
+
+format STDOUT =
+^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<~
+$out
+        ^<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<~~
+$out
+.
 
 ######################################################################
 
@@ -71,5 +79,102 @@ sub missing {
 		print "O $f\n";
 	    }
 	}
+    }
+}
+
+######################################################################
+
+sub undoc {
+
+    opendir(S, $srcdir);
+    while ($file = readdir S) {
+	if ($file =~ /\.texi$/) {
+	    open(T, "$srcdir/$file");
+	    while (<T>) {
+		if (/^\@deftype[^\(]* ([^\s\(]+) *\(/) {
+		    $documented{$1} = 1;
+		}
+	    }
+	    close(T);
+	}
+	if ($file =~ /\.c$/) {
+	    open(C, "$srcdir/$file");
+	    while (<C>) {
+		if (/\@undocumented (\S+)/) {
+		    $documented{$1} = 1;
+		}
+		if (/^static /) {
+		    if (! /[\(;]/) {
+			s/[\r\n]+$/ /;
+			$_ .= <C>;
+		    }
+		    while ($_ =~ /\([^\)]*$/) {
+			s/[\r\n]+$/ /;
+			$_ .= <C>;
+		    }
+		}
+		s/ VPARAMS([ \(])/$1/;
+		s/PREFIX\(([^\)]*)\)/byte_$1/;
+		if (/^static [^\(]* ([^\s\(]+) *\(.*\)$/) {
+		    $documented{$1} = 1;
+		}
+	    }
+	}
+    }
+    closedir(D);
+
+    # $out = join(' ', sort keys %documented);
+    # write;
+    # print "\n";
+
+    system "etags $srcdir/*.c $srcdir/../include/*.h";
+    open(TAGS, "TAGS");
+    while (<TAGS>) {
+	s/[\r\n]+$//;
+	if (/^\014$/) {
+	    $filename = <TAGS>;
+	    $filename =~ s/[\r\n]+$//;
+	    $filename =~ s/,\d+$//;
+	    $filename =~ s@.*[/\\]@@;
+	    next;
+	}
+	if ($filename =~ /\.c$/ ) {
+	    next unless /^[_a-zA-Z]/;
+	} else {
+	    next unless /^\# *define/;
+	    s/\# *define *//;
+	}
+	next if $filename =~ /mpw\.c/;
+
+	s/ VPARAMS//;
+	s/ *\177.*//;
+	s/,$//;
+	s/DEFUN\(//;
+	s/\(//;
+
+	next if /^static /;
+	next if /\s/;
+	next if /^_/;
+	next if $documented{$_};
+	next if /_H_?$/;
+
+	if ($seen_in{$_} ne $filename) {
+	    $saw{$_} ++;
+	}
+	$seen_in{$_} = $filename;
+    }
+
+    for $k (keys %saw) {
+	delete $saw{$k} if $saw{$k} > 1;
+    }
+
+    for $k (sort keys %saw) {
+	$fromfile{$seen_in{$k}} .= " " if $fromfile{$seen_in{$k}};
+	$fromfile{$seen_in{$k}} .= $k;
+    }
+
+    for $f (sort keys %fromfile) {
+	$out = "$f: $fromfile{$f}";
+	write;
     }
 }

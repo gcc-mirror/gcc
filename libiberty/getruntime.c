@@ -73,6 +73,18 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
+/*
+
+@deftypefn Replacement long get_run_time ()
+
+Returns the time used so far, in microseconds.  If possible, this is
+the time used by this process, else it is the elapsed time since the
+process started.
+
+@end deftypefn
+
+*/
+
 long
 get_run_time ()
 {

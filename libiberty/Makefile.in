@@ -172,8 +172,9 @@ TEXISRC = \
 	$(srcdir)/functions.texi
 
 # Additional files that have texi snippets that need to be collected
-# and sorted.
-TEXIFILES = 
+# and sorted.  Some are here because the sources are imported from
+# elsewhere.  Others represent headers in ../include.
+TEXIFILES = fnmatch.txh
 
 libiberty.info : $(srcdir)/libiberty.texi $(TEXISRC)
 	$(MAKEINFO) -I$(srcdir) $(srcdir)/libiberty.texi
@@ -256,6 +257,9 @@ maint-missing :
 
 maint-buildall : $(REQUIRED_OFILES) $(CONFIGURED_OFILES)
 	@true
+
+maint-undoc : $(srcdir)/functions.texi
+	@$(PERL) $(srcdir)/maint-tool -s $(srcdir) undoc
 
 # Need to deal with profiled libraries, too.
 
