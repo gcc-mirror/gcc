@@ -118,7 +118,7 @@ namespace __gnu_cxx
       allocate(size_type __n, const void* = 0)
       {
 	static size_type __used;
-	if (__builtin_expect(__used + __n > array_type::_S_index, false))
+	if (_M_array == 0 || __used + __n > _M_array->size())
 	  std::__throw_bad_alloc();
 	pointer __ret = _M_array->begin() + __used;
 	__used += __n;
