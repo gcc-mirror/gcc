@@ -1,5 +1,11 @@
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
+	* dependence.c (INDEX_LIMIT_CHECK): Uppercase macro parameter.
+	(abs): Uppercase and paranthesize macro parameter.
+	(MEM_DEPENDENCY): Add whitespace.
+
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
 	* config/mips/mips.c (mips_legitimate_address_p): Fix enable checking
 	failure check for CONST_INT
 
