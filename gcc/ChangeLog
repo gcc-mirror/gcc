@@ -1,5 +1,9 @@
 2000-11-21  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* loop.c (consec_sets_giv): If the reg we're examining is anything
+	but UNKNOWN_INDUCT, do nothing.
+	Reset the reg's type to UNKNOWN_INDUCT before returning.
+
 	Mostly from Vladimir Makarov (vmakarov@redhat.com)
 	* ia64.md (attr itanium_class): Define insn types as described in
 	Itanium docs.
