@@ -1,5 +1,5 @@
 /* Control and data flow functions for trees.
-   Copyright 2001 Free Software Foundation, Inc.
+   Copyright 2001, 2002 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GNU CC.
@@ -624,7 +624,9 @@ declare_return_variable (id, use_stmt)
     *use_stmt = build_stmt (EXPR_STMT,
 			    build1 (NOP_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 				    var));
-      
+
+  TREE_ADDRESSABLE (*use_stmt) = 1;
+
   /* Build the declaration statement if FN does not return an
      aggregate.  */
   if (need_return_decl)

@@ -1,6 +1,6 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001 Free Software Foundation, Inc.
+   2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -6453,7 +6453,7 @@ expand_expr (exp, target, tmode, modifier)
 
     case LABELED_BLOCK_EXPR:
       if (LABELED_BLOCK_BODY (exp))
-	expand_expr_stmt (LABELED_BLOCK_BODY (exp));
+	expand_expr_stmt_value (LABELED_BLOCK_BODY (exp), 0);
       /* Should perhaps use expand_label, but this is simpler and safer.  */
       do_pending_stack_adjust ();
       emit_label (label_rtx (LABELED_BLOCK_LABEL (exp)));
@@ -6468,7 +6468,7 @@ expand_expr (exp, target, tmode, modifier)
     case LOOP_EXPR:
       push_temp_slots ();
       expand_start_loop (1);
-      expand_expr_stmt (TREE_OPERAND (exp, 0));
+      expand_expr_stmt_value (TREE_OPERAND (exp, 0), 0);
       expand_end_loop ();
       pop_temp_slots ();
 
