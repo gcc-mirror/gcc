@@ -857,7 +857,7 @@ create_coverage ()
   current_function_decl = ctor;
   DECL_INITIAL (ctor) = error_mark_node;
   make_decl_rtl (ctor, NULL);
-  init_function_start (ctor, input_filename, input_line);
+  init_function_start (ctor);
   (*lang_hooks.decls.pushlevel) (0);
   expand_function_start (ctor, 0);
 

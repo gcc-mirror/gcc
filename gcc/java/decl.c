@@ -1670,7 +1670,7 @@ complete_start_java_method (tree fndecl)
   if (! flag_emit_class_files)
     {
       /* Initialize the RTL code for the function.  */
-      init_function_start (fndecl, input_filename, input_line);
+      init_function_start (fndecl);
 
       /* Set up parameters and prepare for return, for the function.  */
       expand_function_start (fndecl, 0);

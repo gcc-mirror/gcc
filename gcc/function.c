@@ -6522,10 +6522,8 @@ init_dummy_function_start ()
    of the function.  */
 
 void
-init_function_start (subr, filename, line)
+init_function_start (subr)
      tree subr;
-     const char *filename;
-     int line;
 {
   prepare_function_start ();
 
@@ -6541,11 +6539,12 @@ init_function_start (subr, filename, line)
   /* Within function body, compute a type's size as soon it is laid out.  */
   immediate_size_expand++;
 
-  /* Prevent ever trying to delete the first instruction of a function.
-     Also tell final how to output a linenum before the function prologue.
-     Note linenums could be missing, e.g. when compiling a Java .class file.  */
-  if (line > 0)
-    emit_line_note (filename, line);
+  /* Prevent ever trying to delete the first instruction of a
+     function.  Also tell final how to output a linenum before the
+     function prologue.  Note linenums could be missing, e.g. when
+     compiling a Java .class file.  */
+  if (DECL_SOURCE_LINE (subr))
+    emit_line_note (DECL_SOURCE_FILE (subr), DECL_SOURCE_LINE (subr));
 
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.

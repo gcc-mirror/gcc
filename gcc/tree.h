@@ -2829,7 +2829,7 @@ extern void expand_main_function	PARAMS ((void));
 extern void init_dummy_function_start	PARAMS ((void));
 extern void expand_dummy_function_end	PARAMS ((void));
 extern void init_function_for_compilation	PARAMS ((void));
-extern void init_function_start		PARAMS ((tree, const char *, int));
+extern void init_function_start		PARAMS ((tree));
 extern void assign_parms		PARAMS ((tree));
 extern void put_var_into_stack		PARAMS ((tree, int));
 extern void flush_addressof		PARAMS ((tree));

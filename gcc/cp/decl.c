@@ -13471,7 +13471,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
      CFUN set up, and our per-function variables initialized.
      FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
-  init_function_start (decl1, input_filename, input_line);
+  init_function_start (decl1);
   current_binding_level = bl;
 
   /* Even though we're inside a function body, we still don't want to
