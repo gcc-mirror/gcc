@@ -1088,7 +1088,7 @@ void
 expand_fixups (first_insn)
      rtx first_insn;
 {
-  fixup_gotos (NULL_PTR, NULL_RTX, NULL_TREE, first_insn, 0);
+  fixup_gotos (NULL, NULL_RTX, NULL_TREE, first_insn, 0);
 }
 
 /* When exiting a binding contour, process all pending gotos requiring fixups.
@@ -5349,8 +5349,7 @@ expand_end_case (orig_index)
 	      use_cost_table
 		= (TREE_CODE (TREE_TYPE (orig_index)) != ENUMERAL_TYPE
 		   && estimate_case_costs (thiscase->data.case_stmt.case_list));
-	      balance_case_nodes (&thiscase->data.case_stmt.case_list,
-				  NULL_PTR);
+	      balance_case_nodes (&thiscase->data.case_stmt.case_list, NULL);
 	      emit_case_nodes (index, thiscase->data.case_stmt.case_list,
 			       default_label, index_type);
 	      emit_jump_if_reachable (default_label);

@@ -678,7 +678,7 @@ reload (first, global)
 
   /* The two pointers used to track the true location of the memory used
      for label offsets.  */
-  char *real_known_ptr = NULL_PTR;
+  char *real_known_ptr = NULL;
   int (*real_at_ptr)[NUM_ELIMINABLE_REGS];
 
   /* Make sure even insns with volatile mem refs are recognizable.  */
@@ -5617,7 +5617,7 @@ choose_reload_regs (chain)
 	    {
 	      register rtx equiv
 		= find_equiv_reg (search_equiv, insn, rld[r].class,
-				  -1, NULL_PTR, 0, rld[r].mode);
+				  -1, NULL, 0, rld[r].mode);
 	      int regno = 0;
 
 	      if (equiv != 0)
@@ -6164,7 +6164,7 @@ emit_input_reload_insns (chain, rl, old, j)
     oldequiv
       = find_equiv_reg (old, insn,
 			rld[rl->secondary_in_reload].class,
-			-1, NULL_PTR, 0, mode);
+			-1, NULL, 0, mode);
 #endif
 
   /* If reloading from memory, see if there is a register
@@ -6180,8 +6180,7 @@ emit_input_reload_insns (chain, rl, old, j)
 	  || (GET_CODE (old) == REG
 	      && REGNO (old) >= FIRST_PSEUDO_REGISTER
 	      && reg_renumber[REGNO (old)] < 0)))
-    oldequiv = find_equiv_reg (old, insn, ALL_REGS,
-			       -1, NULL_PTR, 0, mode);
+    oldequiv = find_equiv_reg (old, insn, ALL_REGS, -1, NULL, 0, mode);
 
   if (oldequiv)
     {
