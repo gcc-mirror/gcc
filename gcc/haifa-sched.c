@@ -7996,7 +7996,7 @@ update_flow_info (notes, first, last, orig_insn)
 		    break;
 		  /* Likewise for multi-word memory references.  */
 		  if (GET_CODE (orig_dest) == MEM
-		      && SIZE_FOR_MODE (orig_dest) > MOVE_MAX)
+		      && SIZE_FOR_MODE (orig_dest) > UNITS_PER_WORD)
 		    break;
 		  abort ();
 		}
