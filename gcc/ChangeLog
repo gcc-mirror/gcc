@@ -1,5 +1,7 @@
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gimplify.c: Remove unneeded forward declarations.
+
 	* gimplify.c (append_to_compound_expr): Deleted.
 	* tree-gimple.h (append_to_compound_expr): Deleted.
 

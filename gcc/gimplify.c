@@ -72,71 +72,11 @@ typedef struct gimple_temp_hash_elt
 } elt_t;
 
 /* Forward declarations.  */
-static hashval_t gimple_tree_hash (const void *);
-static int gimple_tree_eq (const void *, const void *);
-static bool gimple_conditional_context (void);
-static void gimple_push_condition (void);
-static void gimple_pop_condition (tree *);
-static void append_to_statement_list_1 (tree, tree *, bool);
-static inline void remove_suffix (char *, int);
-static inline tree create_tmp_from_val (tree);
-static tree lookup_tmp_var (tree, bool);
-static tree internal_get_tmp_var (tree, tree *, tree *, bool);
-static bool should_carry_locus_p (tree);
-static tree mostly_copy_tree_r (tree *, int *, void *);
-static tree mark_decls_volatile_r (tree *, int *, void *);
-static tree copy_if_shared_r (tree *, int *, void *);
-static tree unmark_visited_r (tree *, int *, void *);
-static void unshare_body (tree *, tree);
-static void unvisit_body (tree *, tree);
-static void build_stack_save_restore (tree *, tree *);
-static enum gimplify_status gimplify_bind_expr (tree *, tree, tree *);
-static enum gimplify_status gimplify_return_expr (tree, tree *);
-static enum gimplify_status gimplify_loop_expr (tree *, tree *);
-static int compare_case_labels (const void *, const void *);
-static enum gimplify_status gimplify_switch_expr (tree *, tree *);
-static enum gimplify_status gimplify_case_label_expr (tree *);
-static enum gimplify_status gimplify_labeled_block_expr (tree *);
-static enum gimplify_status gimplify_exit_block_expr (tree *);
-static enum gimplify_status gimplify_exit_expr (tree *);
-static enum gimplify_status gimplify_init_constructor (tree *, tree *, tree *,
-						       bool);
-static void canonicalize_component_ref (tree *);
-static void canonicalize_addr_expr (tree *);
-static enum gimplify_status gimplify_conversion (tree *);
-static enum gimplify_status gimplify_minimax_expr (tree *, tree *, tree *);
-static enum gimplify_status gimplify_array_ref_to_plus (tree *, tree *,
-							tree *);
-static tree build_addr_expr_with_type (tree, tree);
-static tree build_addr_expr (tree);
-static enum gimplify_status gimplify_compound_lval (tree *, tree *, tree *,
-						    bool);
-static enum gimplify_status gimplify_self_mod_expr (tree *, tree *, tree *,
-						    bool);
-static enum gimplify_status gimplify_call_expr (tree *, tree *,
-						bool (*) (tree));
-static tree shortcut_cond_r (tree, tree *, tree *);
-static tree shortcut_cond_expr (tree);
-static tree gimple_boolify (tree);
-static enum gimplify_status gimplify_cond_expr (tree *, tree *, tree);
-static enum gimplify_status gimplify_modify_expr (tree *, tree *, tree *,
-						  bool);
 static enum gimplify_status gimplify_modify_expr_rhs (tree *, tree *, tree *,
 						      tree *, tree *, bool);
-static enum gimplify_status gimplify_variable_sized_compare (tree *);
-static enum gimplify_status gimplify_boolean_expr (tree *);
 static enum gimplify_status gimplify_compound_expr (tree *, tree *, bool);
-static enum gimplify_status gimplify_statement_list (tree *);
-static enum gimplify_status gimplify_save_expr (tree *, tree *, tree *);
-static enum gimplify_status gimplify_addr_expr (tree *, tree *, tree *);
-static enum gimplify_status gimplify_asm_expr (tree *, tree *, tree *);
-static enum gimplify_status gimplify_cleanup_point_expr (tree *, tree *);
-static void gimple_push_cleanup (tree, tree, tree *);
-static enum gimplify_status gimplify_target_expr (tree *, tree *, tree *);
-#ifdef ENABLE_CHECKING
-static bool cpt_same_type (tree, tree);
-static tree check_pointer_types_r (tree *, int *, void *);
-#endif
+
+
 
 /* Return a hash value for a formal temporary table entry.  */
 
