@@ -1,3 +1,8 @@
+2004-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Offset zero does not
+	cause extra costs.  Generate canonical RTL.
+
 2004-11-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (lambda_compute_auxillary_space): Update comments.

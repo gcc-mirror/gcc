@@ -2485,7 +2485,8 @@ get_address_cost (bool symbol_present, bool var_present,
   s_offset = offset;
 
   cost = 0;
-  offset_p = (min_offset <= s_offset && s_offset <= max_offset);
+  offset_p = (s_offset != 0
+	      && min_offset <= s_offset && s_offset <= max_offset);
   ratio_p = (ratio != 1
 	     && -MAX_RATIO <= ratio && ratio <= MAX_RATIO
 	     && TEST_BIT (valid_mult, ratio + MAX_RATIO));
@@ -2509,6 +2510,9 @@ get_address_cost (bool symbol_present, bool var_present,
       if (ratio_p)
 	addr = gen_rtx_fmt_ee (MULT, Pmode, addr, GEN_INT (rat));
 
+      if (var_present)
+	addr = gen_rtx_fmt_ee (PLUS, Pmode, reg1, addr);
+
       if (symbol_present)
 	{
 	  base = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (""));
@@ -2517,15 +2521,6 @@ get_address_cost (bool symbol_present, bool var_present,
 				  gen_rtx_fmt_ee (PLUS, Pmode,
 						  base,
 						  GEN_INT (off)));
-	  if (var_present)
-	    base = gen_rtx_fmt_ee (PLUS, Pmode, reg1, base);
-	}
-
-      else if (var_present)
-	{
-	  base = reg1;
-	  if (offset_p)
-	    base = gen_rtx_fmt_ee (PLUS, Pmode, base, GEN_INT (off));
 	}
       else if (offset_p)
 	base = GEN_INT (off);
