@@ -102,14 +102,20 @@ union Word {
          | (BCODE[PC-2] << 8) | (BCODE[PC-1]))))
 #endif
 
-static inline jfloat
+#ifdef __GNUC__
+__inline
+#endif
+static jfloat
 WORD_TO_FLOAT(jword w)
 { union Word wu;
   wu.i = w;
   return wu.f;
 } 
 
-static inline jlong
+#ifdef __GNUC__
+__inline
+#endif
+static jlong
 WORDS_TO_LONG(jword hi, jword lo)
 {
   return ((jlong) hi << 32) | ((jlong)lo & (((jlong)1 << 32) -1));
@@ -121,7 +127,10 @@ union DWord {
   jword w[2];
 };
 
-static inline jdouble
+#ifdef __GNUC__
+__inline
+#endif
+static jdouble
 WORDS_TO_DOUBLE(jword hi, jword lo)
 { union DWord wu;
   wu.l = WORDS_TO_LONG(hi, lo);
