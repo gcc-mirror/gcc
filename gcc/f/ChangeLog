@@ -1,3 +1,8 @@
+2002-06-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Mention 2 Gbyte limit on 32-bit targets
+	for arrays explicitly in news on g77-3.1.
+
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
