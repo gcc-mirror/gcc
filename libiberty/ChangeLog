@@ -1,3 +1,9 @@
+2000-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hashtab.c (hash_pointer, eq_pointer): Make definition static to
+	match prototype.
+	(htab_expand): Cast the return value of xcalloc.
+
 2000-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* hashtab.c (hash_pointer): New function.
