@@ -1,3 +1,8 @@
+2000-05-24  Ulrich Drepper  <drepper@redhat.com>
+
+	* iostream.cc (endl): Fix bug in last change.
+	(ends): Make same change as for endl.
+
 Tue May 23 22:56:56 2000  Jerry Quinn
 
 	* iostream.cc (endl): Verify stream can accept characters
@@ -80,7 +85,7 @@ Thu Sep 30 01:08:04 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* editbuf.cc, parsestream.cc, pfstream.cc: Include string.h.
 
-Mon Sep 13 06:30:14 1999  Mark Klein <mklein@dis.com> 
+Mon Sep 13 06:30:14 1999  Mark Klein <mklein@dis.com>
 
 	* config/mpeix.mt: New for MPEiX port.
 
@@ -90,7 +95,7 @@ Sat Sep  4 18:00:00 PDT 1999 Mark Klein (mklein@dis.com)
 
 1999-08-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* streambuf.h (ios::streamsize): Declare as _IO_ssize_t, as in the 
+	* streambuf.h (ios::streamsize): Declare as _IO_ssize_t, as in the
 	global scope.
 
 1999-08-07  Andreas Schwab  <schwab@suse.de>
@@ -185,7 +190,7 @@ Sun Feb 28 22:39:17 1999  Geoffrey Noer  <noer@cygnus.com>
 
 Wed Feb 10 09:25:48 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
-	* gen-params (VTABLE_LABEL_PREFIX): Handle windows32. 
+	* gen-params (VTABLE_LABEL_PREFIX): Handle windows32.
 
 Wed Feb  3 22:05:41 1999  H.J. Lu  (hjl@gnu.org)
 			  Jeffrey A Law  (law@cygnus.com)
@@ -207,7 +212,7 @@ Wed Feb  3 22:05:41 1999  H.J. Lu  (hjl@gnu.org)
 	* config.shared (depend.new): Delete libc-lock.h from
 	dependencies, and fix _G_config.h -> $(_G_CONFIG_H) rule.
 	* depend: Rebuilt.
-	
+
 Sun Oct 11 01:51:42 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config.shared (depend.new): Fix typo.
