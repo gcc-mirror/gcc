@@ -733,7 +733,15 @@ maybe_process_partial_specialization (tree type)
 	{
 	  tree tpl_ns = decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type));
 	  if (is_associated_namespace (current_namespace, tpl_ns))
-	    /* Same or super-using namespace.  */;
+	    /* Same or super-using namespace.  */
+	    {
+	      if (DECL_NAMESPACE_SCOPE_P (CLASSTYPE_TI_TEMPLATE (type)))
+		/* If this is a specialization of a namespace-scope class
+		   template, remember the context of the
+		   specialization.  */
+		TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_NAME (type))
+		  = FROB_CONTEXT (current_namespace);
+	    }
 	  else
 	    {
 	      pedwarn ("specializing `%#T' in different namespace", type);
