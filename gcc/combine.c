@@ -10745,7 +10745,10 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			 modified the register.  */
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
-			  && rtx_equal_p (XEXP (note, 0), SET_DEST (set)))
+			  && (rtx_equal_p (XEXP (note, 0), SET_DEST (set))
+			      || (GET_CODE (SET_DEST (set)) == SUBREG
+				  && rtx_equal_p (XEXP (note, 0),
+						  XEXP (SET_DEST (set), 0)))))
 			{
 			  /* Move the notes and links of TEM elsewhere.
 			     This might delete other dead insns recursively. 
