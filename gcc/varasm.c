@@ -1280,7 +1280,8 @@ immed_double_const (i0, i1, mode)
   register rtx r;
   int in_current_obstack;
 
-  if (GET_MODE_CLASS (mode) == MODE_INT)
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
     {
       /* We clear out all bits that don't belong in MODE, unless they and our
 	 sign bit are all one.  So we get either a reasonable negative value
@@ -2569,6 +2570,7 @@ output_constant_pool (fnname, fndecl)
 	  break;
 
 	case MODE_INT:
+	case MODE_PARTIAL_INT:
 	  assemble_integer (x, GET_MODE_SIZE (pool->mode), 1);
 	  break;
 
