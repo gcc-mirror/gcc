@@ -406,18 +406,6 @@ gnat_init_gcc_eh ()
 #endif
 }
 
-
-/* If DECL has a cleanup, build and return that cleanup here.
-   This is a callback called by expand_expr.  */
-
-tree
-maybe_build_cleanup (decl)
-     tree decl ATTRIBUTE_UNUSED;
-{
-  /* There are no cleanups in C.  */
-  return NULL_TREE;
-}
-
 /* Hooks for print-tree.c:  */
 
 static void

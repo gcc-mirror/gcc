@@ -1,3 +1,7 @@
+2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (maybe_build_cleanup): Remove.
+
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gigi.h (yyparse): Remove.

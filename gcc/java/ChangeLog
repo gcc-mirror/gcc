@@ -1,3 +1,7 @@
+2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (maybe_build_cleanup): Remove.
+
 2002-03-22  Tom Tromey  <tromey@redhat.com>
 
 	Andrew Haley  <aph@cambridge.redhat.com>

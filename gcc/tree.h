@@ -2641,12 +2641,6 @@ extern tree unsigned_type		PARAMS ((tree));
 
 extern tree signed_type			PARAMS ((tree));
 
-/* This function must be defined in the language-specific files.
-   expand_expr calls it to build the cleanup-expression for a TARGET_EXPR.
-   This is defined in a language-specific file.  */
-
-extern tree maybe_build_cleanup		PARAMS ((tree));
-
 /* Given an expression EXP that may be a COMPONENT_REF or an ARRAY_REF,
    look for nested component-refs or array-refs at constant positions
    and find the ultimate containing object, which is returned.  */

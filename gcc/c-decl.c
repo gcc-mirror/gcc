@@ -3657,17 +3657,6 @@ finish_decl (decl, init, asmspec_tree)
     get_pending_sizes ();
 }
 
-/* If DECL has a cleanup, build and return that cleanup here.
-   This is a callback called by expand_expr.  */
-
-tree
-maybe_build_cleanup (decl)
-     tree decl ATTRIBUTE_UNUSED;
-{
-  /* There are no cleanups in C.  */
-  return NULL_TREE;
-}
-
 /* Given a parsed parameter declaration,
    decode it into a PARM_DECL and push that on the current binding level.
    Also, for the sake of forward parm decls,

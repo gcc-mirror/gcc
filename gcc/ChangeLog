@@ -1,3 +1,15 @@
+2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (maybe_build_cleanup): Remove.
+	* expr.c (expand_expr): Use langhook.
+	* langhooks-def.h (lhd_return_null_tree,
+	LANG_HOOKS_MAYBE_BUILD_CLEANUP): New.
+	(LANGHOOKS_INITIALIZER): Update.
+	* langhooks.c (lhd_return_null_tree): New.
+	* langhooks.h (struct lang_hooks): New hook.
+	* tree-inline.c (initialize_inlined_parameters): Use langhook.
+	* tree.h (maybe_build_cleanup): Remove.
+
 2002-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* regrename.c (build_def_use): Move recog_memoized

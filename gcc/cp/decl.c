@@ -8034,7 +8034,7 @@ destroy_local_var (decl)
     return;
 
   /* Compute the cleanup.  */
-  cleanup = maybe_build_cleanup (decl);
+  cleanup = cxx_maybe_build_cleanup (decl);
 
   /* Record the cleanup required for this declaration.  */
   if (DECL_SIZE (decl) && cleanup)
@@ -14451,7 +14451,7 @@ hack_incomplete_structures (type)
 		{
 		  tree cleanup;
 		  expand_decl (decl);
-		  cleanup = maybe_build_cleanup (decl);
+		  cleanup = cxx_maybe_build_cleanup (decl);
 		  expand_decl_init (decl);
 		  if (! expand_decl_cleanup (decl, cleanup))
 		    error ("parser lost in parsing declaration of `%D'",
@@ -14479,7 +14479,7 @@ hack_incomplete_structures (type)
    here.  */
 
 tree
-maybe_build_cleanup (decl)
+cxx_maybe_build_cleanup (decl)
      tree decl;
 {
   tree type = TREE_TYPE (decl);

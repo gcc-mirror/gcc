@@ -180,6 +180,10 @@ struct lang_hooks
      things are cleared out.  */
   tree (*unsave_expr_now) PARAMS ((tree));
 
+  /* Called by expand_expr to build and return the cleanup-expression
+     for the passed TARGET_EXPR.  Return NULL if there is none.  */
+  tree (*maybe_build_cleanup) PARAMS ((tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

@@ -56,6 +56,15 @@ lhd_return_tree (t)
   return t;
 }
 
+/* Do nothing (return NULL_TREE).  */
+
+tree
+lhd_return_null_tree (t)
+     tree t ATTRIBUTE_UNUSED;
+{
+  return NULL_TREE;
+}
+
 /* Do nothing; the default hook to decode an option.  */
 
 int
