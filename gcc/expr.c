@@ -1671,34 +1671,31 @@ void
 use_reg (call_fusage, reg)
      rtx *call_fusage, reg;
 {
-  if (GET_CODE (reg) == REG
-      && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+  if (GET_CODE (reg) != REG
+      || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
     abort();
 
   *call_fusage
     = gen_rtx (EXPR_LIST, VOIDmode,
-               gen_rtx (USE, reg_raw_mode[REGNO (reg)], reg), *call_fusage);
-
+	       gen_rtx (USE, VOIDmode, reg), *call_fusage);
 }
 
 /* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
    for the CALL_INSN.  */
 
 void
-use_regs (call_fusage, reg, regno, nregs)
-     rtx *call_fusage, reg;
+use_regs (call_fusage, regno, nregs)
+     rtx *call_fusage;
      int regno;
      int nregs;
 {
-  if (nregs <= 1 && reg)
-    use_reg (call_fusage, reg);
-  else
-   {
-     int i;
+  int i;
 
-     for (i = 0; i < nregs; i++)
-        use_reg (call_fusage, gen_rtx (REG, word_mode, regno + i));
-   }
+  if (regno + nregs > FIRST_PSEUDO_REGISTER)
+    abort ();
+
+  for (i = 0; i < nregs; i++)
+    use_reg (call_fusage, gen_rtx (REG, reg_raw_mode[regno + i], regno + i));
 }
 
 /* Write zeros through the storage of OBJECT.

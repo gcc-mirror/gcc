@@ -600,7 +600,7 @@ extern void move_block_from_reg PROTO((int, rtx, int, int));
 extern void use_reg PROTO((rtx*, rtx));
 /* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
    for the next CALL_INSN.  */
-extern void use_regs PROTO((rtx*, rtx, int, int));
+extern void use_regs PROTO((rtx*, int, int));
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
