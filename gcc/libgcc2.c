@@ -115,8 +115,12 @@ typedef union
 
 extern DItype __fixunssfdi (SFtype a);
 extern DItype __fixunsdfdi (DFtype a);
+#if LONG_DOUBLE_TYPE_SIZE == 96
 extern DItype __fixunsxfdi (XFtype a);
+#endif
+#if LONG_DOUBLE_TYPE_SIZE == 128
 extern DItype __fixunstfdi (TFtype a);
+#endif
 
 #if defined (L_negdi2) || defined (L_divdi3) || defined (L_moddi3)
 #if defined (L_divdi3) || defined (L_moddi3)
