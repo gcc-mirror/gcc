@@ -145,7 +145,7 @@ machname.h: ../specs
 	    sed -n 's/^.*-D\([a-zA-Z_][a-zA-Z0-9_]*\).*$$/\1/p' | sort -u | \
 	    grep -v '^_[_A-Z]' > mn.T
 	@echo "Forbidden identifiers: `tr '\012' ' ' <mn.T`"
-	@sed 's/^/\\\\</; s/$$/\\\\>/' <mn.T | tr '\012' '|' | \
-	     sed 's/^/#define MN_NAME_PAT "/; s/|$$/"/' > machname.h
-	@echo >> machname.h
-	@-rm -f mn.T
+	@sed 's/^/\\\\</; s/$$/\\\\>/' <mn.T | tr '\012' '|' > mn.T2
+	@echo '' >>mn.T2
+	@sed 's/^/#define MN_NAME_PAT "/; s/|$$/"/' < mn.T2 > machname.h
+	@-rm -f mn.T mn.T2

@@ -307,7 +307,7 @@ TEST_FOR_FIX_PROC_HEAD( machine_name_test )
 	return SKIP_FIX;  /* No match in file - no fix needed */
 
       /* Match; is it on the line?  */
-      if (match[0].rm_eo < limit - base)
+      if (match[0].rm_eo <= limit - base)
 	return APPLY_FIX;  /* Yup */
 
       /* Otherwise, keep looking... */
