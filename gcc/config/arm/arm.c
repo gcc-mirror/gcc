@@ -1967,7 +1967,7 @@ legitimize_pic_address (orig, mode, reg)
 	{
 	  /* The base register doesn't really matter, we only want to
 	     test the index for the appropriate mode.  */
-	  GO_IF_LEGITIMATE_INDEX (mode, 0, offset, win);
+	  ARM_GO_IF_LEGITIMATE_INDEX (mode, 0, offset, win);
 
 	  if (!no_new_pseudos)
 	    offset = force_reg (Pmode, offset);
