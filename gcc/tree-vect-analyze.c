@@ -1654,10 +1654,11 @@ vect_object_analysis (tree memref, tree stmt, bool is_read,
 		fprintf (vect_dump, "not vectorized: ptr is loop invariant.");	
 	      return NULL_TREE;
 	    }
-	  /* Since there exists DR for MEMREF, we are analyzing the base of
-	     handled component, which not necessary has evolution in the 
-	     loop.  */
-	  address_to_analyze = TREE_OPERAND (base, 0);
+          /* Since there exists DR for MEMREF, we are analyzing the init of
+             the access function, which not necessary has evolution in the
+             loop.  */
+          address_to_analyze = initial_condition_in_loop_num (access_fn,
+                                                              loop->num);
 	}
       
       /* 3.3 set data-reference structure for MEMREF.  */

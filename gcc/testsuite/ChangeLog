@@ -1,3 +1,7 @@
+2005-03-08  Ira Rosen  <irar@il.ibm.com>
+
+        * gcc.dg/vect/pr20122.c: New test.
+
 2005-03-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/warn/weak1.C: Skip test on hppa*-*-hpux*.

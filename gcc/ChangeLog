@@ -1,3 +1,9 @@
+2005-03-08  Ira Rosen  <irar@il.ibm.com>
+
+        PR tree-optimization/20122
+        * tree-vect-analyze.c (vect_object_analysis): Analyze initial
+        condition of access function instead of base.
+
 2005-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000-protos.h: Rename output_e500_flip_eq_bit to
