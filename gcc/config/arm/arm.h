@@ -59,7 +59,7 @@ typedef enum arm_cond_code
 arm_cc;
 
 extern arm_cc arm_current_cc;
-extern char * arm_condition_codes[];
+extern const char * arm_condition_codes[];
 
 #define ARM_INVERSE_CONDITION_CODE(X)  ((arm_cc) (((int)X) ^ 1))
 

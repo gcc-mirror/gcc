@@ -27,7 +27,7 @@ extern int    arm_process_pragma	PARAMS ((int (*)(void), void (*) (int),
 						char *));
 extern void   arm_finalize_pic		PARAMS ((void));
 extern int    arm_volatile_func		PARAMS ((void));
-extern char * arm_output_epilogue	PARAMS ((int));
+extern const char * arm_output_epilogue	PARAMS ((int));
 extern void   output_func_epilogue	PARAMS ((int));
 extern void   arm_expand_prologue	PARAMS ((void));
 /* Used in arm.md, but defined in output.c.  */
@@ -40,7 +40,7 @@ extern int    arm_valid_machine_decl_attribute	PARAMS ((tree, tree, tree));
 extern int    arm_comp_type_attributes	PARAMS ((tree, tree));
 extern int    arm_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 extern void   arm_set_default_type_attributes	PARAMS ((tree));
-extern void   arm_encode_call_attribute	PARAMS ((tree, char));
+extern void   arm_encode_call_attribute	PARAMS ((tree, int));
 #endif
 #ifdef RTX_CODE
 extern int    const_ok_for_arm		PARAMS ((HOST_WIDE_INT));
@@ -93,10 +93,10 @@ extern RTX_CODE minmax_code		PARAMS ((rtx));
 extern int    adjacent_mem_locations	PARAMS ((rtx, rtx));
 extern int    load_multiple_sequence	PARAMS ((rtx *, int, int *, int *,
 						HOST_WIDE_INT *));
-extern char * emit_ldm_seq		PARAMS ((rtx *, int));
+extern const char * emit_ldm_seq	PARAMS ((rtx *, int));
 extern int    store_multiple_sequence	PARAMS ((rtx *, int, int *, int *,
 						HOST_WIDE_INT *));
-extern char * emit_stm_seq		PARAMS ((rtx *, int));
+extern const char * emit_stm_seq	PARAMS ((rtx *, int));
 extern rtx    arm_gen_load_multiple	PARAMS ((int, int, rtx, int, int, int,
 						int, int));
 extern rtx    arm_gen_store_multiple	PARAMS ((int, int, rtx, int, int, int,
@@ -108,20 +108,20 @@ extern rtx    arm_gen_compare_reg	PARAMS ((RTX_CODE, rtx, rtx));
 extern void   arm_reload_in_hi		PARAMS ((rtx *));
 extern void   arm_reload_out_hi		PARAMS ((rtx *));
 extern void   arm_reorg			PARAMS ((rtx));
-extern char * fp_immediate_constant	PARAMS ((rtx));
-extern char * output_call		PARAMS ((rtx *));
-extern char * output_call_mem		PARAMS ((rtx *));
-extern char * output_mov_long_double_fpu_from_arm PARAMS ((rtx *));
-extern char * output_mov_long_double_arm_from_fpu PARAMS ((rtx *));
-extern char * output_mov_long_double_arm_from_arm PARAMS ((rtx *));
-extern char * output_mov_double_fpu_from_arm      PARAMS ((rtx *));
-extern char * output_mov_double_arm_from_fpu      PARAMS ((rtx *));
-extern char * output_move_double	PARAMS ((rtx *));
-extern char * output_mov_immediate	PARAMS ((rtx *));
-extern char * output_add_immediate	PARAMS ((rtx *));
-extern char * arithmetic_instr		PARAMS ((rtx, int));
+extern const char * fp_immediate_constant PARAMS ((rtx));
+extern const char * output_call		PARAMS ((rtx *));
+extern const char * output_call_mem	PARAMS ((rtx *));
+extern const char * output_mov_long_double_fpu_from_arm PARAMS ((rtx *));
+extern const char * output_mov_long_double_arm_from_fpu PARAMS ((rtx *));
+extern const char * output_mov_long_double_arm_from_arm PARAMS ((rtx *));
+extern const char * output_mov_double_fpu_from_arm      PARAMS ((rtx *));
+extern const char * output_mov_double_arm_from_fpu      PARAMS ((rtx *));
+extern const char * output_move_double	PARAMS ((rtx *));
+extern const char * output_mov_immediate PARAMS ((rtx *));
+extern const char * output_add_immediate PARAMS ((rtx *));
+extern const char * arithmetic_instr	PARAMS ((rtx, int));
 extern void   output_ascii_pseudo_op	PARAMS ((FILE *, const unsigned char *, int));
-extern char * output_return_instruction	PARAMS ((rtx, int, int));
+extern const char * output_return_instruction PARAMS ((rtx, int, int));
 extern void   arm_poke_function_name	PARAMS ((FILE *, char *));
 extern void   output_arm_prologue	PARAMS ((FILE *, int));
 extern void   arm_print_operand		PARAMS ((FILE *, rtx, int));
@@ -152,19 +152,19 @@ extern void   aof_dump_imports		PARAMS ((FILE *));
 /* Thumb functions.  */
 extern void   arm_init_expanders	PARAMS ((void));
 extern int    thumb_far_jump_used_p	PARAMS ((int));
-extern char * thumb_unexpanded_epilogue	PARAMS ((void));
+extern const char * thumb_unexpanded_epilogue	PARAMS ((void));
 extern void   thumb_expand_prologue	PARAMS ((void));
 extern void   thumb_expand_epilogue	PARAMS ((void));
 #ifdef TREE_CODE
 extern int    is_called_in_ARM_mode	PARAMS ((tree));
 #endif
-#ifdef RTX_CODE
 extern int    thumb_shiftable_const	PARAMS ((unsigned HOST_WIDE_INT));
-extern void   thumb_final_prescan_insn	PARAMS ((rtx));
-extern char * thumb_load_double_from_address
-					PARAMS ((rtx *));
 extern void   output_thumb_prologue	PARAMS ((FILE *));
-extern char * thumb_output_move_mem_multiple
+#ifdef RTX_CODE
+extern void   thumb_final_prescan_insn	PARAMS ((rtx));
+extern const char * thumb_load_double_from_address
+					PARAMS ((rtx *));
+extern const char * thumb_output_move_mem_multiple
 					PARAMS ((int, rtx *));
 extern void   thumb_expand_movstrqi	PARAMS ((rtx *));
 extern int    thumb_cmp_operand		PARAMS ((rtx, enum machine_mode));
