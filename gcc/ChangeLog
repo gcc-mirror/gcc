@@ -1,3 +1,8 @@
+Thu Apr 27 11:45:16 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.md (movqi): Simplify.  Prefer data
+	registers.
+
 Thu Apr 27 16:11:00 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (store_expr): Use clear_storage instead of direct memset
