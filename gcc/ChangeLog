@@ -1,5 +1,54 @@
 2002-05-23  Richard Henderson  <rth@redhat.com>
 
+	* configure.in (HAVE_AS_TLS): New test.
+	* config.in, configure: Rebuild.
+	* config/i386/i386.c (TARGET_HAVE_TLS): Set if HAVE_AS_TLS.
+	(ix86_tls_dialect_string, ix86_tls_dialect): New.
+	(override_options): Set it.
+	(tls_model_chars, tls_symbolic_operand): New.
+	(tls_symbolic_operand_1, global_dynamic_symbolic_operand): New.
+	(local_dynamic_symbolic_operand, initial_exec_symbolic_operand): New.
+	(local_exec_symbolic_operand): New.
+	(get_pic_label_name): Merge into output_set_got.
+	(ix86_asm_file_end): Emit pic_label_name if defined.
+	(legitimate_constant_p, constant_address_p): New.
+	(legitimate_pic_operand_p): New.
+	(legitimate_pic_address_disp_p): Handle GOTTPOFF, NTPOFF, DTPOFF.
+	(legitimate_address_p): Likewise.
+	(ix86_encode_section_info): Rename from i386_; handle tls decls.
+	(ix86_strip_name_encoding): New.
+	(get_thread_pointer): New.
+	(legitimize_address): Handle tls symbols.
+	(output_pic_addr_const): Handle GOTTPOFF, TPOFF, NTPOFF, DTPOFF.
+	Remove UNSPEC_PLT.
+	(struct machine_function): Add some_ld_name.
+	(get_some_local_dynamic_name, get_some_local_dynamic_name_1): Set it.
+	(print_operand) [&]: Use it.  Handle UNSPEC_TP.
+	(output_addr_const_extra): New.
+	(maybe_get_pool_constant): New.
+	(ix86_split_to_parts): Use it.
+	(ix86_expand_move): Handle tls symbols.
+	(ix86_tls_get_addr): New.
+	* config/i386/i386.h (TARGET_GNU_TLS, TARGET_SUN_TLS): New.
+	(TARGET_OPTIONS): Add tls-dialect.
+	(CONSTANT_ADDRESS_P): Use new out-of-line function.
+	(LEGITIMATE_CONSTANT_P): Likewise.
+	(LEGITIMATE_PIC_OPERAND_P): Likewise.
+	(TARGET_STRIP_NAME_ENCODING): New.
+	(ASM_OUTPUT_LABELREF): New.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add '&'.
+	(OUTPUT_ADDR_CONST_EXTRA): New.
+	(PREDICATE_CODES): Update.
+	(ix86_tls_dialect, ix86_tls_dialect_string): New.
+	* config/i386/i386.md: Regroup and renumber unspec constants.
+	(tls_global_dynamic_gnu, tls_global_dynamic_sun): New.
+	(tls_local_dynamic_base_gnu, tls_local_dynamic_base_sun): New.
+	(tls_global_dynamic, tls_local_dynamic_base): New.
+	(tls_local_dynamic_once): New.
+	* config/i386/i386-protos.h: Update.
+
+2002-05-23  Richard Henderson  <rth@redhat.com>
+
 	* genemit.c (gen_insn): Print file:lineno comment before function.
 	(main): likewise.
 	* gensupport.c (struct queue_elem): Add filename member.

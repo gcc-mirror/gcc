@@ -50,6 +50,11 @@ extern int x86_64_immediate_operand PARAMS ((rtx, enum machine_mode));
 extern int x86_64_zext_immediate_operand PARAMS ((rtx, enum machine_mode));
 extern int const_int_1_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int tls_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int global_dynamic_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int local_dynamic_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int initial_exec_symbolic_operand PARAMS ((rtx, enum machine_mode));
+extern int local_exec_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int pic_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int call_insn_operand PARAMS ((rtx, enum machine_mode));
 extern int constant_call_address_operand PARAMS ((rtx, enum machine_mode));
@@ -83,6 +88,9 @@ extern int ix86_expand_movstr PARAMS ((rtx, rtx, rtx, rtx));
 extern int ix86_expand_clrstr PARAMS ((rtx, rtx, rtx));
 extern int ix86_expand_strlen PARAMS ((rtx, rtx, rtx, rtx));
 
+extern bool legitimate_constant_p PARAMS ((rtx));
+extern bool constant_address_p PARAMS ((rtx));
+extern bool legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_pic_address_disp_p PARAMS ((rtx));
 extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
 extern rtx legitimize_pic_address PARAMS ((rtx, rtx));
@@ -91,6 +99,7 @@ extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern void print_reg PARAMS ((rtx, int, FILE*));
 extern void print_operand PARAMS ((FILE*, rtx, int));
 extern void print_operand_address PARAMS ((FILE*, rtx));
+extern bool output_addr_const_extra PARAMS ((FILE*, rtx));
 
 extern void split_di PARAMS ((rtx[], int, rtx[], rtx[]));
 extern void split_ti PARAMS ((rtx[], int, rtx[], rtx[]));
@@ -197,6 +206,8 @@ extern unsigned int i386_pe_section_type_flags PARAMS ((tree, const char *,
 extern void i386_pe_asm_named_section PARAMS ((const char *, unsigned int));
 extern void x86_output_mi_thunk PARAMS ((FILE *, int, tree));
 #endif
+
+extern rtx ix86_tls_get_addr PARAMS ((void));
 
 /* In winnt.c  */
 extern void i386_pe_encode_section_info PARAMS ((tree, int));
