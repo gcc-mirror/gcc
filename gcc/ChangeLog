@@ -1,3 +1,10 @@
+2001-08-06  Richard Henderson  <rth@redhat.com>
+
+	* except.c (convert_from_eh_region_ranges_1): Never mark
+	USE or CLOBBER insns as throwing.
+
+	* expr.c (store_constructor): Don't clobber memory targets.
+
 2001-08-06  Andreas Jaeger  <aj@suse.de>
 
 	* profile.c (branch_prob): Remove unused variable insn.

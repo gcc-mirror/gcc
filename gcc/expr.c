@@ -4777,7 +4777,7 @@ store_constructor (exp, target, align, cleared, size)
 	    clear_storage (target, GEN_INT (size), align);
 	  cleared = 1;
 	}
-      else
+      else if (REG_P (target))
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
