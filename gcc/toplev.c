@@ -725,8 +725,6 @@ int flag_argument_noalias = 0;
    if alias analysis (in general) is enabled.  */
 int flag_strict_aliasing = 0;
 
-extern int flag_dump_unnumbered;
-
 /* Instrument functions with calls at entry and exit, for profiling.  */
 int flag_instrument_function_entry_exit = 0;
 

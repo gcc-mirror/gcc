@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "bitmap.h"
 #include "real.h"
+#include "flags.h"
 
 
 /* How to print out a register name.
@@ -54,7 +55,11 @@ static int indent;
 
 extern char **insn_name_ptr;
 
+/* Nonzero means suppress output of instruction numbers and line number
+   notes in debugging dumps.
+   This must be defined here so that programs like gencodes can be linked.  */
 int flag_dump_unnumbered = 0;
+
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
 static void
@@ -409,8 +414,9 @@ print_rtl (outf, rtx_first)
 }
 
 /* Like print_rtx, except specify a file.  */
+/* Return nonzero if we actually printed anything.  */
 
-void
+int
 print_rtl_single (outf, x)
      FILE *outf;
      rtx x;
@@ -422,5 +428,7 @@ print_rtl_single (outf, x)
     {
       print_rtx (x);
       putc ('\n', outf);
+      return 1;
     }
+  return 0;
 }
