@@ -2439,7 +2439,7 @@ sparc-*-linux*libc1*)	# SPARC's running GNU/Linux, libc5
 	;;
 sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
+	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux sparc/t-crtfm"
 	;;
 sparc-*-lynxos*)
 	if test x$gas = xyes
