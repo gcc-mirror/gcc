@@ -1,3 +1,9 @@
+2004-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sol2-bi.h (PREFERRED_DEBUGGING_TYPE): Set
+	to DWARF2_DEBUG unconditionally.
+	(ASM_DEBUG_SPEC): Set the default to --gdwarf2 unconditionally.
+
 2004-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14804
