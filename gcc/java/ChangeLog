@@ -1,3 +1,21 @@
+Fri Feb 19 15:35:01 1999  Per Bothner  <bothner@cygnus.com>
+
+	Force left-to-right evaluation of binary operations etc.
+	* expr.c (force_evaluation_order), java-tree.h:  New function.
+	* parse.y (java_complete_lhs):  Pass binary operations, procedure
+	calls, and ARRAY_REFs to force_evaluation_order.
+	(various):  Set TREE_SIDE_EFFECTS more carefully.
+
+	Tolerate random (non-UTF8) encoding in comments without complaining.
+	* lex.c (java_read_char):  Return 0xFFFE if bad UTF8 encoding.
+	(java_is_eol):  Handle '\r' followed by '\n' instead of vice versa.
+
+	* parse.y (resolve_qualified_expression_name):  Handle error_mark.
+	(java_complete_node case EXPR_WITH_FILE_LOCATION):  Likewise.
+
+	* parse.y (java_complete_lhs):  Ignore an empty statement in a
+	COMPOUND_EXPR.  Don't complain about empty statement after return.
+	
 Fri Feb 19 13:00:56 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (obtain_incomplete_type):  Don't wrap unknown types
