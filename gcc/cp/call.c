@@ -5875,8 +5875,7 @@ tweak:
 	      print_z_candidate ("ISO C++ says that ", w, pedwarn);
 	      print_z_candidate ("              and ", l, pedwarn);
 	      pedwarn ("are ambiguous even though the worst conversion \
-for the former is better than the worst conversion for the latter",
-		       w->fn, l->fn);
+for the former is better than the worst conversion for the latter");
 	    }
 	  else
 	    add_warning (w, l);
