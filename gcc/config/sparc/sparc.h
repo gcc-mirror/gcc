@@ -1626,7 +1626,8 @@ do {									\
 #define TARGET_CR 015
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR) == '@' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^')
+  ((CHAR) == '@' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' \
+   || (CHAR) == '(')
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
