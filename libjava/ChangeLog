@@ -1,3 +1,13 @@
+2000-01-04  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/Class.h (getSignature): Updated.
+	* java/lang/Class.java (getSignature): Updated.
+	* java/lang/natClass.cc (getSignature): Added `is_constructor'
+	argument.
+	(getConstructor): Ensure constructor is public.
+	(_getConstructors): Check for public-ness of constructor when
+	`declared' is false, not when it is true.
+
 2000-01-04  Warren Levy  <warrenl@cygnus.com>
 
 	* java/net/natPlainDatagramSocketImpl.cc (peek): Removed unnecesary

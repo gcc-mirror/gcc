@@ -103,7 +103,7 @@ public:
   JArray<jclass> *getInterfaces (void);
 
   void getSignature (java::lang::StringBuffer *buffer);
-  static jstring getSignature (JArray<jclass> *);
+  static jstring getSignature (JArray<jclass> *, jboolean is_constructor);
   java::lang::reflect::Method *getMethod (jstring, JArray<jclass> *);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
