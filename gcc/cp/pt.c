@@ -5137,6 +5137,10 @@ instantiate_class_template (tree type)
       SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
     }
 
+  /* Set the input location to the template definition. This is needed
+     if tsubsting causes an error.  */
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (pattern));
+
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
   TYPE_HAS_DESTRUCTOR (type) = TYPE_HAS_DESTRUCTOR (pattern);
   TYPE_HAS_NEW_OPERATOR (type) = TYPE_HAS_NEW_OPERATOR (pattern);

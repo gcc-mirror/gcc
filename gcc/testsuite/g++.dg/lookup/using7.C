@@ -4,7 +4,7 @@ template <typename T, bool=T::X> struct A
 };
 
 template <typename T> struct B : A<T>
-{
+{ // { dg-error "" }
   using A<T>::i; // { dg-error "" } 
 };
 
