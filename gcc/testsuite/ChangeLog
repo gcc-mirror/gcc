@@ -1,3 +1,7 @@
+1999-08-05  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/local3.C: Removed XFAIL.
+
 Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/970312-1.c: Delete duplicate test.
