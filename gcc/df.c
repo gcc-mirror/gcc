@@ -3750,11 +3750,11 @@ dataflow_set_a_op_b (enum set_representation repr,
       switch (op)
 	{
 	case DF_UNION:
-	  bitmap_a_or_b (rslt, op1, op2);
+	  bitmap_ior (rslt, op1, op2);
 	  break;
 
 	case DF_INTERSECTION:
-	  bitmap_a_and_b (rslt, op1, op2);
+	  bitmap_and (rslt, op1, op2);
 	  break;
 
     	default:

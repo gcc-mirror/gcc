@@ -3473,8 +3473,8 @@ find_best_candidate (struct ivopts_data *data,
     {
       asol = BITMAP_XMALLOC ();
 
-      bitmap_a_or_b (asol, data->important_candidates, use->related_cands);
-      bitmap_a_and_b (asol, asol, sol);
+      bitmap_ior (asol, data->important_candidates, use->related_cands);
+      bitmap_and_into (asol, sol);
     }
 
   EXECUTE_IF_SET_IN_BITMAP (asol, 0, c, bi)
@@ -3500,7 +3500,7 @@ find_best_candidate (struct ivopts_data *data,
 	      goto next_cand;
 	    }
 	  if (used_inv)
-	    bitmap_a_or_b (used_inv, used_inv, depends_on);
+	    bitmap_ior_into (used_inv, depends_on);
 	}
 
       cnd = acnd;
@@ -3623,7 +3623,7 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
       bitmap_copy (act_ivs, ivs);
       bitmap_set_bit (act_ivs, cand->id);
       if (depends_on)
-	bitmap_a_or_b (act_inv, inv, depends_on);
+	bitmap_ior (act_inv, inv, depends_on);
       else
 	bitmap_copy (act_inv, inv);
       act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);
@@ -3651,7 +3651,7 @@ try_add_cand_for (struct ivopts_data *data, bitmap ivs, bitmap inv,
 	  bitmap_copy (act_ivs, ivs);
 	  bitmap_set_bit (act_ivs, cp->cand->id);
 	  if (cp->depends_on)
-	    bitmap_a_or_b (act_inv, inv, cp->depends_on);
+	    bitmap_ior (act_inv, inv, cp->depends_on);
 	  else
 	    bitmap_copy (act_inv, inv);
 	  act_cost = set_cost_up_to (data, act_ivs, act_inv, use->id + 1);

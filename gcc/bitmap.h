@@ -141,8 +141,6 @@ extern void bitmap_release_memory (void);
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
-#define bitmap_a_or_b(a,b,c) bitmap_operation (a, b, c, BITMAP_IOR)
-#define bitmap_a_and_b(a,b,c) bitmap_operation (a, b, c, BITMAP_AND)
 extern int bitmap_first_set_bit (bitmap);
 extern int bitmap_last_set_bit (bitmap);
 
