@@ -1,3 +1,8 @@
+2003-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/ia64/unwind-ia64.c (uw_update_reg_address): Handle
+	.save XX, r0.
+
 2003-05-15  Roger Sayle  <roger@eyesopen.com>
 
 	* config/alpha/alpha.h (ASM_OUTPUT_SKIP): Fix typo.
