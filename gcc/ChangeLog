@@ -1,3 +1,10 @@
+Tue Jan 13 22:43:35 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* svr4.h (LINK_SPEC): Never specify -h.
+	* ptx4.h (LINK_SPEC): Likewise.
+	* rs6000/sysv4.h (LINK_SPEC): Likewise.
+	* sparc/sol2.h (LINK_SPEC): Likewise.
+
 Tue Jan 13 22:39:40 1998  Richard Henderson  (rth@cygnus.com)
 
 	* c-typeck.c (comptypes): Exit early on NULL input.
