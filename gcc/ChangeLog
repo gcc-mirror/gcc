@@ -1,3 +1,8 @@
+2002-10-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* extend.texi (Vector Extensions): Remove comment about single
+	element vectors.
+
 2002-10-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (size_htab_hash): Use htab_hash_pointer.
