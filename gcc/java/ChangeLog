@@ -1,3 +1,22 @@
+2001-10-24  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* mangle.c (static tree compression_table): Fixed leading comment.
+	* parse.h (struct parser_ctxt): Fixed field comment.
+	* parse.y (check_pkg_class_access): New prototype, fixed leading
+	comment, new parameter used to emit error only if passed as true.
+	(parse_check_super): Pass extra argument to check_pkg_class_access.
+	(do_resolve_class): Likewise.
+	(process_imports): Likewise.
+	(read_import_dir): Fixed indentation.
+	(find_in_imports_on_demand): New local class_type_name. Local
+	node_to_use deleted. while loop changed into for loop. Report
+	multiple definition only for accessible classes. Improved error
+	message.
+	(start_complete_expand_method): Local `ptr' removed. DECL_ARGUMENTS
+	assigned to parameter list, fixed indentation. while loop changed
+	into for loop, restore TREE_CHAIN on local `tem' before the next
+	iteration.
+
 Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* lang.c (lang_get_alias_set): Deleted.

@@ -108,7 +108,7 @@ static void reset_final_variable_local_assignment_flag PARAMS ((tree));
 static int  check_final_variable_indirect_assignment PARAMS ((tree));
 static void check_final_variable_global_assignment_flag PARAMS ((tree));
 static void check_inner_class_access PARAMS ((tree, tree, tree));
-static int check_pkg_class_access PARAMS ((tree, tree));
+static int check_pkg_class_access PARAMS ((tree, tree, bool));
 static void register_package PARAMS ((tree));
 static tree resolve_package PARAMS ((tree, tree *));
 static tree lookup_package_type PARAMS ((const char *, int));
@@ -5079,7 +5079,8 @@ parser_check_super_interface (super_decl, this_decl, this_wfl)
   /* Check top-level interface access. Inner classes are subject to member 
      access rules (6.6.1). */
   if (! INNER_CLASS_P (super_type)
-      && check_pkg_class_access (DECL_NAME (super_decl), lookup_cl (this_decl)))
+      && check_pkg_class_access (DECL_NAME (super_decl),
+				 lookup_cl (this_decl), true))
     return 1;
 
   SOURCE_FRONTEND_DEBUG (("Completing interface %s with %s",
@@ -5118,7 +5119,7 @@ parser_check_super (super_decl, this_decl, wfl)
   /* Check top-level class scope. Inner classes are subject to member access
      rules (6.6.1). */
   if (! INNER_CLASS_P (super_type)
-      && (check_pkg_class_access (DECL_NAME (super_decl), wfl)))
+      && (check_pkg_class_access (DECL_NAME (super_decl), wfl, true)))
     return 1;
   
   SOURCE_FRONTEND_DEBUG (("Completing class %s with %s",
@@ -5834,7 +5835,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
      by the caller. */
   if (cl)
     {
-      if (check_pkg_class_access (TYPE_NAME (class_type), cl))
+      if (check_pkg_class_access (TYPE_NAME (class_type), cl, true))
         return NULL_TREE;
     }
   
@@ -6676,7 +6677,7 @@ process_imports ()
 	  QUALIFIED_P (to_be_found) = 1;
 	  load_class (to_be_found, 0);
 	  error_found =
-	    check_pkg_class_access (to_be_found, TREE_PURPOSE (import));
+	    check_pkg_class_access (to_be_found, TREE_PURPOSE (import), true);
 	  
 	  /* We found it, we can bail out */
 	  if (IDENTIFIER_CLASS_VALUE (to_be_found))
@@ -6764,7 +6765,6 @@ read_import_dir (wfl)
   int k;
   void *entry;
   struct buffer filename[1];
-
 
   if (IS_AN_IMPORT_ON_DEMAND_P (package_id))
     return;
@@ -6878,71 +6878,95 @@ find_in_imports_on_demand (enclosing_type, class_type)
      tree enclosing_type;
      tree class_type;
 {
+  tree class_type_name = TYPE_NAME (class_type);
   tree import = (enclosing_type ? TYPE_IMPORT_DEMAND_LIST (enclosing_type) :
 		  ctxp->import_demand_list);
-  tree node_to_use = NULL_TREE, cl = NULL_TREE;
+  tree cl = NULL_TREE;
+  int seen_once = -1;	/* -1 when not set, 1 if seen once, >1 otherwise. */
+  int to_return = -1;	/* -1 when not set, 0 or 1 otherwise */
   tree node;
-  int seen_once = -1;
 
-  while (import)
+  for (; import; import = TREE_CHAIN (import))
     {
+      int saved_lineno = lineno;
+      int access_check;
       const char *id_name;
+      tree decl, type_name_copy;
+
       obstack_grow (&temporary_obstack, 
 		    IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))),
 		    IDENTIFIER_LENGTH (EXPR_WFL_NODE (TREE_PURPOSE (import))));
       obstack_1grow (&temporary_obstack, '.');
       obstack_grow0 (&temporary_obstack, 
-		     IDENTIFIER_POINTER (TYPE_NAME (class_type)),
-		     IDENTIFIER_LENGTH (TYPE_NAME (class_type)));
+		     IDENTIFIER_POINTER (class_type_name),
+		     IDENTIFIER_LENGTH (class_type_name));
       id_name = obstack_finish (&temporary_obstack);
 	      
-      node = maybe_get_identifier (id_name);
-      if (node && IS_A_CLASSFILE_NAME (node))
+      if (! (node = maybe_get_identifier (id_name)))
+	continue;
+
+      /* Setup lineno so that it refers to the line of the import (in
+	 case we parse a class file and encounter errors */
+      lineno = EXPR_WFL_LINENO (TREE_PURPOSE (import));
+
+      type_name_copy = TYPE_NAME (class_type);
+      TYPE_NAME (class_type) = node;
+      QUALIFIED_P (node) = 1;
+      decl = IDENTIFIER_CLASS_VALUE (node);
+      access_check = -1;
+      /* If there is no DECL set for the class or if the class isn't
+	 loaded and not seen in source yet, then load */
+      if (!decl || (!CLASS_LOADED_P (TREE_TYPE (decl))
+		    && !CLASS_FROM_SOURCE_P (TREE_TYPE (decl))))
+	{
+	  load_class (node, 0);
+	  decl = IDENTIFIER_CLASS_VALUE (node);
+	}
+      if (decl && ! INNER_CLASS_P (TREE_TYPE (decl)))
+	access_check = check_pkg_class_access (node, TREE_PURPOSE (import),
+					       false);
+      else
+	/* 6.6.1: Inner classes are subject to member access rules. */
+	access_check = 0;
+
+      lineno = saved_lineno;
+
+      /* If the loaded class is not accessible or couldn't be loaded,
+	 we restore the original TYPE_NAME and process the next
+	 import. */
+      if (access_check || !decl)
+	{
+	  TYPE_NAME (class_type) = type_name_copy;
+	  continue;
+	}
+      
+      /* If the loaded class is accessible, we keep a tab on it to
+	 detect and report multiple inclusions. */
+      if (IS_A_CLASSFILE_NAME (node))
 	{
 	  if (seen_once < 0)
 	    {
 	      cl = TREE_PURPOSE (import);
 	      seen_once = 1;
-	      node_to_use = node;
 	    }
-	  else
+	  else if (seen_once >= 0)
 	    {
+	      tree location = (cl ? cl : TREE_PURPOSE (import));
+	      tree package = (cl ? EXPR_WFL_NODE (cl) : 
+			      EXPR_WFL_NODE (TREE_PURPOSE (import)));
 	      seen_once++;
 	      parse_error_context 
-		(TREE_PURPOSE (import), 
+		(location,
 		 "Type `%s' also potentially defined in package `%s'",
-		 IDENTIFIER_POINTER (TYPE_NAME (class_type)),
-		 IDENTIFIER_POINTER (EXPR_WFL_NODE (TREE_PURPOSE (import))));
+		 IDENTIFIER_POINTER (TYPE_NAME (class_type)), 
+		 IDENTIFIER_POINTER (package));
 	    }
 	}
-      import = TREE_CHAIN (import);
+      to_return = access_check;
     }
 
   if (seen_once == 1)
-    {
-      /* Setup lineno so that it refers to the line of the import (in
-	 case we parse a class file and encounter errors */
-      tree decl;
-      int saved_lineno = lineno;
-      lineno = EXPR_WFL_LINENO (cl);
-      TYPE_NAME (class_type) = node_to_use;
-      QUALIFIED_P (TYPE_NAME (class_type)) = 1;
-      decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
-      /* If there is no DECL set for the class or if the class isn't
-	 loaded and not seen in source yet, the load */
-      if (!decl || (!CLASS_LOADED_P (TREE_TYPE (decl))
-		    && !CLASS_FROM_SOURCE_P (TREE_TYPE (decl))))
-	{
-	  load_class (node_to_use, 0);
-	  decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
-	}
-      lineno = saved_lineno;
-      if (! INNER_CLASS_P (TREE_TYPE (decl)))
-	return check_pkg_class_access (TYPE_NAME (class_type), cl);
-      else
-        /* 6.6.1: Inner classes are subject to member access rules. */
-        return 0;
-    }
+    return to_return;
   else
     return (seen_once < 0 ? 0 : seen_once); /* It's ok not to have found */
 }
@@ -7118,14 +7142,16 @@ check_inner_class_access (decl, enclosing_decl, cl)
 		       lang_printable_name (decl, 0), access);
 }
 
-/* Accessibility check for top-level classes. If CLASS_NAME is in a foreign 
-   package, it must be PUBLIC. Return 0 if no access violations were found, 
-   1 otherwise.  */
+/* Accessibility check for top-level classes. If CLASS_NAME is in a
+   foreign package, it must be PUBLIC. Return 0 if no access
+   violations were found, 1 otherwise. If VERBOSE is true and an error
+   was found, it is reported and accounted for.  */
 
 static int
-check_pkg_class_access (class_name, cl)
+check_pkg_class_access (class_name, cl, verbose)
      tree class_name;
      tree cl;
+     bool verbose;
 {
   tree type;
 
@@ -7148,10 +7174,11 @@ check_pkg_class_access (class_name, cl)
 	/* Both in the same package. */
 	return 0;
 
-      parse_error_context 
-	(cl, "Can't access %s `%s'. Only public classes and interfaces in other packages can be accessed",
-	 (CLASS_INTERFACE (TYPE_NAME (type)) ? "interface" : "class"),
-	 IDENTIFIER_POINTER (class_name));
+      if (verbose)
+	parse_error_context 
+	  (cl, "Can't access %s `%s'. Only public classes and interfaces in other packages can be accessed",
+	   (CLASS_INTERFACE (TYPE_NAME (type)) ? "interface" : "class"),
+	   IDENTIFIER_POINTER (class_name));
       return 1;
     }
   return 0;
@@ -7926,14 +7953,15 @@ static void
 start_complete_expand_method (mdecl)
      tree mdecl;
 {
-  tree tem, *ptr;
+  tree tem;
 
   pushlevel (1);		/* Prepare for a parameter push */
-  ptr = &DECL_ARGUMENTS (mdecl);
-  tem  = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
+  tem = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
+  DECL_ARGUMENTS (mdecl) = tem;
 
-  while (tem)
+  for (; tem; tem = TREE_CHAIN (tem))
     {
+      /* TREE_CHAIN (tem) will change after pushdecl. */ 
       tree next = TREE_CHAIN (tem);
       tree type = TREE_TYPE (tem);
       if (PROMOTE_PROTOTYPES
@@ -7943,11 +7971,10 @@ start_complete_expand_method (mdecl)
       DECL_ARG_TYPE (tem) = type;
       layout_decl (tem, 0);
       pushdecl (tem);
-      *ptr = tem;
-      ptr = &TREE_CHAIN (tem);
-      tem = next;
+      /* Re-install the next so that the list is kept and the loop
+	 advances. */
+      TREE_CHAIN (tem) = next;
     }
-  *ptr = NULL_TREE;
   pushdecl_force_head (DECL_ARGUMENTS (mdecl));
   lineno = DECL_SOURCE_LINE_FIRST (mdecl);
   build_result_decl (mdecl);

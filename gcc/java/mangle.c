@@ -255,7 +255,7 @@ mangle_type (type)
 
 /* The compression table is a vector that keeps track of things we've
    already seen, so they can be reused. For example, java.lang.Object
-   Would generate three entries: two package names and a type. If
+   would generate three entries: two package names and a type. If
    java.lang.String is presented next, the java.lang will be matched
    against the first two entries (and kept for compression as S_0), and
    type String would be added to the table. See mangle_record_type.

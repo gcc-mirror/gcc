@@ -785,7 +785,7 @@ struct parser_ctxt {
 
   tree non_static_initialized;	    /* List of non static initialized fields */
   tree static_initialized;	    /* List of static non final initialized */
-  tree instance_initializers;	    /* List of instancei initializers stmts */
+  tree instance_initializers;	    /* List of instance initializers stmts */
 
   tree import_list;		    /* List of import */
   tree import_demand_list;	    /* List of import on demand */
