@@ -1,3 +1,8 @@
+2001-07-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Use CCmode
+	instead of COMPARE for the EQUIV expression.
+
 2001-07-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (reg_or_{add,sub}_cint64_operand): New predicates.

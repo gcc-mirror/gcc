@@ -2336,10 +2336,10 @@ alpha_emit_xfloating_compare (code, op0, op1)
   operands[1] = op1;
   out = gen_reg_rtx (DImode);
 
-  /* ??? Strange equiv cause what's actually returned is -1,0,1, not a
-     proper boolean value.  */
-  alpha_emit_xfloating_libcall (func, out, operands, 2, 
-				gen_rtx_COMPARE (TFmode, op0, op1));
+  /* ??? Strange mode for equiv because what's actually returned
+     is -1,0,1, not a proper boolean value.  */
+  alpha_emit_xfloating_libcall (func, out, operands, 2,
+				gen_rtx_fmt_ee (code, CCmode, op0, op1));
 
   return out;
 }
