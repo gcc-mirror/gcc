@@ -1,5 +1,5 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -682,7 +682,7 @@ end ifobjc
 			      if (IDENTIFIER_GLOBAL_VALUE ($1) != error_mark_node
 				  || IDENTIFIER_ERROR_LOCUS ($1) != current_function_decl)
 				{
-				  error ("`%s' undeclared (first use this function)",
+				  error ("`%s' undeclared (first use this in function)",
 					 IDENTIFIER_POINTER ($1));
 
 				  if (! undeclared_variable_notice)
