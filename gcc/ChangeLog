@@ -1,5 +1,9 @@
 2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Remove constraints from expanders.
+
+2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: (stm_h8300s_2): Change the name to
 	stm_h8300s_2_advanced.
 	(stm_h8300s_2_normal): New.
