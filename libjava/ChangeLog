@@ -1,3 +1,32 @@
+2003-01-28  Ranjit Mathew  <rmathew@hotmail.com>
+
+	Fixes PR java/9254:
+	* include/win32-threads.h (_Jv_Mutex_t): Convert to a struct
+	additionally containing id of the owner thread as well as
+	the number of nested times the thread has acquired the mutex.
+	(_Jv_MutexInit): Initialise owner thread id and refcount to 0.
+	(_Jv_MutexDestroy): Reset owner thread id and refcount to 0.
+	(_Jv_MutexUnlock): Check if really the owner thread, reset
+	owner thread id to 0 before leaving, if leaving for the last
+	time.
+	(_Jv_MutexLock): Set owner thread id in the mutex and increment
+	refcount.
+	(_Jv_ThreadYield): Yield using a call to Sleep(0).
+	* win32-threads.cc (_Jv_CondWait): Check if really owner of
+	the passed mutex.
+	Pass handle of the broadcast event, instead of a pointer to it
+	in Win32 ResetEvent( ) call.
+	Remove incorrect return values.
+	(_Jv_CondDestroy): Close both event handles and delete
+	critical section.
+	(_Jv_CondNotify): Check if really the owner thread.
+	(_Jv_CondNotifyAll): Check if really the owner thread.
+	(_Jv_InitThreads): Change daemon_cond to a manual-reset event.
+	(really_start): Use SetEvent( ) to signal daemon_cond.
+	(_Jv_ThreadWait): Remove SignalObjectAndWait( ) and use
+	WaitForSingleObject( ) instead to wait for daemon_cond to be
+	signalled.
+
 2003-01-27  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* configure.in: Specifically define HAVE_BACKTRACE if building
