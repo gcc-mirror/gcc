@@ -1,3 +1,13 @@
+Mon May 15 21:07:20 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c: Re-install both patches reverted by last patch.
+	(struct arg_data): New field tail_call_reg.
+	(initialize_argument_information): Initialize tail_call_reg
+	(load_register_parameters): New argument flags, use
+	tail_call_reg when emiting tail call sequence.
+	(expand_call): Update call of load_register_parameters;
+	copy unadjusted_args_size to adjusted_args_size.
+
 Mon May 15 19:01:42 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (scan_loop, strength_reduce, loop_optimize): Change unroll_p
