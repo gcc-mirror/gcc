@@ -212,6 +212,10 @@ static int print_single_switch PROTO((FILE *, int, int, char *, char *, char *,
 				      char *, char *));
 static void print_switch_values PROTO((FILE *, int, int, char *, char *,
 				       char *));
+
+void print_rtl_graph_with_bb PROTO ((const char *, const char *, rtx));
+void clean_graph_dump_file PROTO ((const char *, const char *));
+void finish_graph_dump_file PROTO ((const char *, const char *));
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
 
@@ -288,6 +292,7 @@ int stack_reg_dump = 0;
 #ifdef MACHINE_DEPENDENT_REORG
 int mach_dep_reorg_dump = 0;
 #endif
+enum graph_dump_types graph_dump_format;
 
 /* Name for output file of assembly code, specified with -o.  */
 
@@ -2606,50 +2611,122 @@ compile_file (name)
 	pfatal_with_name (aux_info_file_name);
     }
 
-  /* Clear the dump files file.  */
+  /* Clear the dump files.  */
   if (rtl_dump)
     clean_dump_file (".rtl");
   if (jump_opt_dump)
-    clean_dump_file (".jump");
+    {
+      clean_dump_file (".jump");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".jump");
+    }
   if (addressof_dump)
-    clean_dump_file (".addressof");
+    {
+      clean_dump_file (".addressof");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".addressof");
+    }
   if (cse_dump)
-    clean_dump_file (".cse");
+    {
+      clean_dump_file (".cse");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".cse");
+    }
   if (loop_dump)
-    clean_dump_file (".loop");
+    {
+      clean_dump_file (".loop");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".loop");
+    }
   if (cse2_dump)
-    clean_dump_file (".cse2");
+    {
+      clean_dump_file (".cse2");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".cse2");
+    }
   if (branch_prob_dump)
-    clean_dump_file (".bp");
+    {
+      clean_dump_file (".bp");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".bp");
+    }
   if (flow_dump)
-    clean_dump_file (".flow");
+    {
+      clean_dump_file (".flow");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".flow");
+    }
   if (combine_dump)
-    clean_dump_file (".combine");
+    {
+      clean_dump_file (".combine");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".combine");
+    }
   if (regmove_dump)
-    clean_dump_file (".regmove");
+    {
+      clean_dump_file (".regmove");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".regmove");
+    }
   if (sched_dump)
-    clean_dump_file (".sched");
+    {
+      clean_dump_file (".sched");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".sched");
+    }
   if (local_reg_dump)
-    clean_dump_file (".lreg");
+    {
+      clean_dump_file (".lreg");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".lreg");
+    }
   if (global_reg_dump)
-    clean_dump_file (".greg");
+    {
+      clean_dump_file (".greg");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".greg");
+    }
   if (sched2_dump)
-    clean_dump_file (".sched2");
+    {
+      clean_dump_file (".sched2");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".sched2");
+    }
   if (jump2_opt_dump)
-    clean_dump_file (".jump2");
+    {
+      clean_dump_file (".jump2");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".jump2");
+    }
 #ifdef DELAY_SLOTS
   if (dbr_sched_dump)
-    clean_dump_file (".dbr");
+    {
+      clean_dump_file (".dbr");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".dbr");
+    }
 #endif
   if (gcse_dump)
-    clean_dump_file (".gcse");
+    {
+      clean_dump_file (".gcse");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".gcse");
+    }
 #ifdef STACK_REGS
   if (stack_reg_dump)
-    clean_dump_file (".stack");
+    {
+      clean_dump_file (".stack");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".stack");
+    }
 #endif
 #ifdef MACHINE_DEPENDENT_REORG
   if (mach_dep_reorg_dump)
-    clean_dump_file (".mach");
+    {
+      clean_dump_file (".mach");
+      if (graph_dump_format != no_graph)
+	clean_graph_dump_file (dump_base_name, ".mach");
+    }
 #endif
 
   /* Open assembler code output file.  */
@@ -3119,6 +3196,53 @@ compile_file (name)
       && (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0))
     fatal_io_error (asm_file_name);
 
+  /* Do whatever is necessary to finish printing the graphs.  */
+  if (graph_dump_format != no_graph)
+    {
+      if (jump_opt_dump)
+	finish_graph_dump_file (dump_base_name, ".jump");
+      if (addressof_dump)
+	finish_graph_dump_file (dump_base_name, ".addressof");
+      if (cse_dump)
+	finish_graph_dump_file (dump_base_name, ".cse");
+      if (loop_dump)
+	finish_graph_dump_file (dump_base_name, ".loop");
+      if (cse2_dump)
+	finish_graph_dump_file (dump_base_name, ".cse2");
+      if (branch_prob_dump)
+	finish_graph_dump_file (dump_base_name, ".bp");
+      if (flow_dump)
+	finish_graph_dump_file (dump_base_name, ".flow");
+      if (combine_dump)
+	finish_graph_dump_file (dump_base_name, ".combine");
+      if (regmove_dump)
+	finish_graph_dump_file (dump_base_name, ".regmove");
+      if (sched_dump)
+	finish_graph_dump_file (dump_base_name, ".sched");
+      if (local_reg_dump)
+	finish_graph_dump_file (dump_base_name, ".lreg");
+      if (global_reg_dump)
+	finish_graph_dump_file (dump_base_name, ".greg");
+      if (sched2_dump)
+	finish_graph_dump_file (dump_base_name, ".sched2");
+      if (jump2_opt_dump)
+	finish_graph_dump_file (dump_base_name, ".jump2");
+#ifdef DELAY_SLOTS
+      if (dbr_sched_dump)
+	finish_graph_dump_file (dump_base_name, ".dbr");
+#endif
+      if (gcse_dump)
+	finish_graph_dump_file (dump_base_name, ".gcse");
+#ifdef STACK_REGS
+      if (stack_reg_dump)
+	finish_graph_dump_file (dump_base_name, ".stack");
+#endif
+#ifdef MACHINE_DEPENDENT_REORG
+      if (mach_dep_reorg_dump)
+	finish_graph_dump_file (dump_base_name, ".mach");
+#endif
+    }
+
   /* Free up memory for the benefit of leak detectors.  */
   free_reg_info ();
 
@@ -3544,28 +3668,40 @@ rest_of_compilation (decl)
 					   !JUMP_AFTER_REGSCAN));
 
       /* Dump rtl code after cse, if we are doing that.  */
-      
+
       if (cse_dump)
-	close_dump_file (print_rtl, insns);
+	{
+	  close_dump_file (print_rtl, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".cse", insns);
+	}
     }
 
   purge_addressof (insns);
   reg_scan (insns, max_reg_num (), 1);
 
   if (addressof_dump)
-    dump_rtl (".addressof", decl, print_rtl, insns);
-  
+    {
+      dump_rtl (".addressof", decl, print_rtl, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".addressof", insns);
+    }
+
   /* Perform global cse.  */
 
   if (optimize > 0 && flag_gcse)
     {
       if (gcse_dump)
 	open_dump_file (".gcse", IDENTIFIER_POINTER (DECL_NAME (decl)));
-      
+
       TIMEVAR (gcse_time, gcse_main (insns, rtl_dump_file));
 
       if (gcse_dump)
-	close_dump_file (print_rtl, insns);
+	{
+	  close_dump_file (print_rtl, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".gcse", insns);
+	}
     }
   /* Move constant computations out of loops.  */
 
@@ -3596,18 +3732,22 @@ rest_of_compilation (decl)
 	     }
 	   loop_optimize (insns, rtl_dump_file, flag_unroll_loops, 1);
 	 });
-      
+
       /* Dump rtl code after loop opt, if we are doing that.  */
-      
+
       if (loop_dump)
-	close_dump_file (print_rtl, insns);
+	{
+	  close_dump_file (print_rtl, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".loop", insns);
+	}
     }
 
   if (optimize > 0)
     {
       if (cse2_dump)
 	open_dump_file (".cse2", decl_printable_name (decl, 2));
-      
+
       if (flag_rerun_cse_after_loop)
 	{
 	  /* Running another jump optimization pass before the second
@@ -3636,28 +3776,36 @@ rest_of_compilation (decl)
 	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
 	  TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
 	}
-      
+
       /* Dump rtl code after cse, if we are doing that.  */
-      
+
       if (cse2_dump)
-	close_dump_file (print_rtl, insns);
+	{
+	  close_dump_file (print_rtl, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".cse2", insns);
+	}
     }
-  
+
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
       if (branch_prob_dump)
 	open_dump_file (".bp", decl_printable_name (decl, 2));
-    
+
       TIMEVAR
 	(branch_prob_time,
 	 {
 	   branch_prob (insns, rtl_dump_file);
 	 });
-      
+
       if (branch_prob_dump)
-	close_dump_file (print_rtl, insns);
+	{
+	  close_dump_file (print_rtl, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".bp", insns);
+	}
     }
-  
+
   /* We are no longer anticipating cse in this function, at least.  */
 
   cse_not_expected = 1;
@@ -3708,18 +3856,26 @@ rest_of_compilation (decl)
   /* Dump rtl after flow analysis.  */
 
   if (flow_dump)
-    close_dump_file (print_rtl_with_bb, insns);
-  
+    {
+      close_dump_file (print_rtl_with_bb, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".flow", insns);
+    }
+
   /* If -opt, try combining insns through substitution.  */
 
   if (optimize > 0)
     {
       TIMEVAR (combine_time, combine_instructions (insns, max_reg_num ()));
-      
+
       /* Dump rtl code after insn combination.  */
-      
+
       if (combine_dump)
-	dump_rtl (".combine", decl, print_rtl_with_bb, insns);
+	{
+	  dump_rtl (".combine", decl, print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".combine", insns);
+	}
     }
 
   /* Register allocation pre-pass, to reduce number of moves
@@ -3728,12 +3884,16 @@ rest_of_compilation (decl)
     {
       if (regmove_dump)
 	open_dump_file (".regmove", decl_printable_name (decl, 2));
-      
+
       TIMEVAR (regmove_time, regmove_optimize (insns, max_reg_num (),
 					       rtl_dump_file));
-      
+
       if (regmove_dump)
-	close_dump_file (print_rtl_with_bb, insns);
+	{
+	  close_dump_file (print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".regmove", insns);
+	}
     }
 
   /* Print function header into sched dump now
@@ -3743,16 +3903,20 @@ rest_of_compilation (decl)
     {
       if (sched_dump)
 	open_dump_file (".sched", decl_printable_name (decl, 2));
-      
+
       /* Do control and data sched analysis,
 	 and write some of the results to dump file.  */
 
       TIMEVAR (sched_time, schedule_insns (rtl_dump_file));
-      
+
       /* Dump rtl after instruction scheduling.  */
-      
+
       if (sched_dump)
-	close_dump_file (print_rtl_with_bb, insns);
+	{
+	  close_dump_file (print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".sched", insns);
+	}
     }
 
   /* Unless we did stupid register allocation,
@@ -3771,11 +3935,13 @@ rest_of_compilation (decl)
   if (local_reg_dump)
     {
       open_dump_file (".lreg", decl_printable_name (decl, 2));
-      
+
       TIMEVAR (dump_time, dump_flow_info (rtl_dump_file));
       TIMEVAR (dump_time, dump_local_alloc (rtl_dump_file));
-      
+
       close_dump_file (print_rtl_with_bb, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".lreg", insns);
     }
 
   if (global_reg_dump)
@@ -3823,6 +3989,8 @@ rest_of_compilation (decl)
     {
       TIMEVAR (dump_time, dump_global_regs (rtl_dump_file));
       close_dump_file (print_rtl_with_bb, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".greg", insns);
     }
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
@@ -3837,7 +4005,11 @@ rest_of_compilation (decl)
       /* Dump rtl after post-reorder instruction scheduling.  */
 
       if (sched2_dump)
-	close_dump_file (print_rtl_with_bb, insns);
+	{
+	  close_dump_file (print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".sched2", insns);
+	}
     }
 
 #ifdef LEAF_REGISTERS
@@ -3856,11 +4028,15 @@ rest_of_compilation (decl)
       TIMEVAR (jump_time, jump_optimize (insns, JUMP_CROSS_JUMP,
 					 JUMP_NOOP_MOVES,
 					 !JUMP_AFTER_REGSCAN));
-      
+
       /* Dump rtl code after jump, if we are doing that.  */
 
       if (jump2_opt_dump)
-	dump_rtl (".jump2", decl, print_rtl_with_bb, insns);
+	{
+	  dump_rtl (".jump2", decl, print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".jump2", insns);
+	}
     }
 
   /* If a machine dependent reorganization is needed, call it.  */
@@ -3868,7 +4044,11 @@ rest_of_compilation (decl)
    MACHINE_DEPENDENT_REORG (insns);
 
    if (mach_dep_reorg_dump)
-     dump_rtl (".mach", decl, print_rtl_with_bb, insns);
+     {
+       dump_rtl (".mach", decl, print_rtl_with_bb, insns);
+       if (graph_dump_format != no_graph)
+	 print_rtl_graph_with_bb (dump_base_name, ".mach", insns);
+     }
 #endif
 
   /* If a scheduling pass for delayed branches is to be done,
@@ -3878,9 +4058,13 @@ rest_of_compilation (decl)
   if (optimize > 0 && flag_delayed_branch)
     {
       TIMEVAR (dbr_sched_time, dbr_schedule (insns, rtl_dump_file));
-      
+
       if (dbr_sched_dump)
-	dump_rtl (".dbr", decl, print_rtl_with_bb, insns);
+	{
+	  dump_rtl (".dbr", decl, print_rtl_with_bb, insns);
+	  if (graph_dump_format != no_graph)
+	    print_rtl_graph_with_bb (dump_base_name, ".dbr", insns);
+	}
     }
 #endif
 
@@ -3897,7 +4081,11 @@ rest_of_compilation (decl)
   TIMEVAR (stack_reg_time, reg_to_stack (insns, rtl_dump_file));
 
   if (stack_reg_dump)
-    dump_rtl (".stack", decl, print_rtl_with_bb, insns);
+    {
+      dump_rtl (".stack", decl, print_rtl_with_bb, insns);
+      if (graph_dump_format != no_graph)
+	print_rtl_graph_with_bb (dump_base_name, ".stack", insns);
+    }
 #endif
 
   /* Now turn the rtl into assembler code.  */
@@ -4015,6 +4203,9 @@ rest_of_compilation (decl)
      *except* what is spent in this function.  */
 
   parse_time -= get_run_time () - start_time;
+
+  /* Reset global variables.  */
+  free_basic_block_vars (0);
 }
 
 static void
@@ -4547,6 +4738,9 @@ main (argc, argv)
 		    break;
 		  case 'N':
 		    regmove_dump = 1;
+		    break;
+		  case 'v':
+		    graph_dump_format = vcg;
 		    break;
 		  case 'y':
 		    set_yydebug (1);
