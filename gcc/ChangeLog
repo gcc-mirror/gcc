@@ -1,3 +1,16 @@
+2004-07-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Rewrite.
+	(function_arg): Use rs6000_arg_size rather than CLASS_MAX_NREGS in
+	calculating gpr size for altivec.  Simplify and correct
+	rs6000_mixed_function_arg calls.  Call rs6000_mixed_function_arg
+	for ABI_V4 gpr case too.  Fix off-by-one error in long double
+	reg test.  Generate the correct PARALLEL to handle long double
+	for ABI_AIX 32-bit.  Use this for -m32 -mpowerpc64 fpr case too.
+	(function_arg_partial_nregs): Align before calculating regs left.
+	Don't return info on partial fprs when we need info on gprs.
+	Correct long double fpr off-by-one error.
+
 2004-06-30  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-protos.h (prefetch_operand): Add prototype.
