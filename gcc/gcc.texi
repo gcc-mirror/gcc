@@ -4116,8 +4116,8 @@ into @file{libgcc.a}.
 To have GCC include software floating point libraries in @file{libgcc.a}
 define @code{FPBIT} and @code{DPBIT} along with a few rules as follows:
 @smallexample
-# We want fine grained libraries, so use the new code to build the
-# floating point emulation libraries.
+# We want fine grained libraries, so use the new code
+# to build the floating point emulation libraries.
 FPBIT = fp-bit.c
 DPBIT = dp-bit.c
 
@@ -4744,7 +4744,8 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
 @end smallexample
 
 Also add information on how to contact you by electronic and paper mail.

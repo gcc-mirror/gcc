@@ -1,3 +1,11 @@
+2001-05-31  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* extend.texi: Fix formating of examples, eliminate some
+	'overfull hboxes'.
+	* gcc.texi: Eliminate some 'overfull hboxes'.
+	* invoke.texi: Use two spaces between command options, eliminate
+	some 'overfull hboxes'.
+
 2001-05-30  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_finish): Don't emit DW_AT_stmt_list at -g1.
