@@ -498,6 +498,9 @@ case $os in
 	-solaris1 | -solaris1.*)
 		os=`echo $os | sed -e 's|solaris1|sunos4|'`
 		;;
+	-solaris)
+		os=-solaris2
+		;;
 	# First accept the basic system types.
 	# The portable systems comes first.
 	# Each alternative must end in a *, to match a version number.
