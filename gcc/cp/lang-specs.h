@@ -21,14 +21,14 @@ Boston, MA 02111-1307, USA.  */
 /* This is the contribution to the `default_compilers' array in gcc.c for
    g++.  */
 
-  {".cc", "@c++"},
-  {".cp", "@c++"},
-  {".cxx", "@c++"},
-  {".cpp", "@c++"},
-  {".c++", "@c++"},
-  {".C", "@c++"},
+  {".cc", {"@c++"}},
+  {".cp", {"@c++"}},
+  {".cxx", {"@c++"}},
+  {".cpp", {"@c++"}},
+  {".c++", {"@c++"}},
+  {".C", {"@c++"}},
   {"@c++",
-   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
 	-undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus -D__GNUC_MINOR__=%v2\
@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
+    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
 			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			    %{v:-version} %{pg:-p} %{p}\
@@ -46,10 +46,10 @@ Boston, MA 02111-1307, USA.  */
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
               %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"},
-  {".ii", "@c++-cpp-output"},
+                      %{!pipe:%g.s} %A\n }}}}"}},
+  {".ii", {"@c++-cpp-output"}},
   {"@c++-cpp-output",
-   "%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
+   {"%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
 			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			    %{v:-version} %{pg:-p} %{p}\
 			    %{f*} %{+e*} %{aux-info*}\
@@ -57,4 +57,4 @@ Boston, MA 02111-1307, USA.  */
 			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	            %{!S:as %a %Y\
 			    %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %{!pipe:%g.s} %A\n }}}}"},
+			    %{!pipe:%g.s} %A\n }}}}"}},
