@@ -300,11 +300,11 @@ decl_attributes (node, attributes, prefix_attributes)
 	if (attrtab[i].name == name)
 	  break;
 
-      if (i == attrtab_idx
-	  && ! valid_machine_attribute (name, args, decl, type))
+      if (i == attrtab_idx)
 	{
-	  warning ("`%s' attribute directive ignored",
-		   IDENTIFIER_POINTER (name));
+	  if (! valid_machine_attribute (name, args, decl, type))
+	    warning ("`%s' attribute directive ignored",
+		     IDENTIFIER_POINTER (name));
 	  continue;
 	}
       else if (attrtab[i].decl_req && decl == 0)
