@@ -1,5 +1,20 @@
 2003-08-07  J"orn Rennecke <joern.rennecke@superh.com>
 
+	* sh.c (calc_live_regs): If the return address pointer is live,
+	force pr live.
+	(sh5_schedule_saves): Exclude PR_MEDIA_REG from being a temp register
+	for saves / restores.
+	(sh_expand_epilogue): If sh_media_register_for_return returns a
+	register number, flag the instructions that restores PR_MEDIA_REG
+	as possibly dead.
+	Remove dead update of offset.
+	(sh_get_pr_initial_val): Use UNSPEC_RA if we don't know yet if
+	we can use the result of get_hard_reg_initial_val.
+	* sh.md (UNSPEC_RA): New constant.
+	(movsi_i_lowpart+1): Changed into a define_insn_and_split, named:
+	(load_ra).  Handle UNSPEC_RA.
+	(sibcall_media): Use PR_MEDIA_REG.
+
 	* sh.h (CALL_USED_REGISTERS): Include PR_REG and PR_MEDIA_REG.
 	* sh.c (calc_live_regs): Use sh_pr_n_sets to determine if pr
 	needs saving on SHmedia.
