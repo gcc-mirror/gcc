@@ -1,3 +1,7 @@
+2004-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/cpp/ident-1.c: Add dg-options "".
+
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/float-range-1.c, gcc.dg/float-range-2.c: New tests.
