@@ -3989,6 +3989,8 @@ store_expr (exp, target, want_value)
        and then convert to the wider mode.  Our value is the computed
        expression.  */
     {
+      rtx inner_target = 0;
+
       /* If we don't want a value, we can do the conversion inside EXP,
 	 which will often result in some optimizations.  Do the conversion
 	 in two steps: first change the signedness, if needed, then
@@ -4009,9 +4011,11 @@ store_expr (exp, target, want_value)
 	  exp = convert (type_for_mode (GET_MODE (SUBREG_REG (target)),
 					SUBREG_PROMOTED_UNSIGNED_P (target)),
 			 exp);
+
+	  inner_target = SUBREG_REG (target);
 	}
 
-      temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
+      temp = expand_expr (exp, inner_target, VOIDmode, 0);
 
       /* If TEMP is a volatile MEM and we want a result value, make
 	 the access now so it gets done only once.  Likewise if

@@ -518,31 +518,14 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 	(sign_extend:DI (match_dup 1)))]
   "")
 
-;; Do addsi3 the way expand_binop would do if we didn't have one.  This
-;; generates better code.  We have the anonymous addsi3 pattern below in
-;; case combine wants to make it.
+;; Don't say we have addsi3 if optimizing.  This generates better code.  We
+;; have the anonymous addsi3 pattern below in case combine wants to make it.
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
 		 (match_operand:SI 2 "add_operand" "")))]
-  ""
-{
-  if (optimize)
-    {
-      rtx op1 = gen_lowpart (DImode, operands[1]);
-      rtx op2 = gen_lowpart (DImode, operands[2]);
-
-      if (! cse_not_expected)
-        {
-          rtx tmp = gen_reg_rtx (DImode);
-          emit_insn (gen_adddi3 (tmp, op1, op2));
-          emit_move_insn (gen_lowpart (DImode, operands[0]), tmp);
-        }
-      else
-        emit_insn (gen_adddi3 (gen_lowpart (DImode, operands[0]), op1, op2));
-      DONE;
-    }
-})
+  "! optimize"
+  "")
 
 (define_insn "*addsi_internal"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
@@ -844,24 +827,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:SI 0 "register_operand" "")
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "")
 		  (match_operand:SI 2 "reg_or_8bit_operand" "")))]
-  ""
-{
-  if (optimize)
-    {
-      rtx op1 = gen_lowpart (DImode, operands[1]);
-      rtx op2 = gen_lowpart (DImode, operands[2]);
-
-      if (! cse_not_expected)
-        {
-          rtx tmp = gen_reg_rtx (DImode);
-          emit_insn (gen_subdi3 (tmp, op1, op2));
-          emit_move_insn (gen_lowpart (DImode, operands[0]), tmp);
-        }
-      else
-        emit_insn (gen_subdi3 (gen_lowpart (DImode, operands[0]), op1, op2));
-      DONE;
-    }
-})
+  "! optimize"
+  "")
 
 (define_insn "*subsi_internal"
   [(set (match_operand:SI 0 "register_operand" "=r")
