@@ -1,0 +1,30 @@
+// GROUPS passed operators
+// opr-del file
+// From: rollins@bart.ee.queensu.ca (Mark Rollins)
+// Date:     Thu, 3 Sep 1992 22:01:03 -0400 Fri, 4 Sep 1992 02:00:25 GMT
+// Subject:  delete [size] pointer; Problem
+// Message-ID: <92Sep3.220137edt.30@jarvis.csri.toronto.edu>
+
+#include <Complex.h>
+#include <stdio.h>
+
+class Vector {
+  int           size;
+  Complex       *v;
+ public:
+  Vector(int s=1) { size = s; v = new Complex[size];};
+  ~Vector() { delete [size] v;}// ERROR -  warning
+};
+
+void foo(int s)
+{
+  Vector junk(s);
+}
+
+main()
+{
+  Vector* test;
+  for (int i=0;i<40;i++) // was 100000
+        foo(1000);
+  printf ("PASS\n");
+}

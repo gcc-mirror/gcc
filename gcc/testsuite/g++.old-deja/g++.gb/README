@@ -1,0 +1,20 @@
+These are my C++ signature and class-scoping tests.
+
+In changing my signature tests to DejaGnu style, I reduced the number
+of tests from 40 to 25.  They should still test the same features,
+though.  All of these tests are run.  I don't have any tests yet to
+check correct reporting of errors/warnings.
+
+The class scoping tests were in part derived from Vince Russo's
+Renaissance operating system and in part written by myself in helping
+Niklas Hallqvist test his rewrite of the scoping code.  I had shared
+some of these tests with Niklas, others were included in bug reports I
+had sent to {g++,gcc}@cygnus.com.  It is, therefore, possible that
+these tests duplicate tests in other directories.
+
+All files in this directory, including this file, are Copyright FSF 1995
+and fall under the GPL version 2.0 or later.
+
+Gerald Baumgartner
+gb@cs.purdue.edu
+March 1, 1995

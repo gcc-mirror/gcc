@@ -1,0 +1,262 @@
+# Copyright (C) 1988, 90, 91, 92, 95, 96, 1997 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+# This file was derived from mike-g++.exp written by Mike Stump <mrs@cygnus.com>
+
+# Please email any bugs, comments, and/or additions to this file to:
+# bug-gcc@prep.ai.mit.edu
+
+#
+# mike_cleanup -- remove any files that are created by the testcase
+#
+proc mike_cleanup { src_code output_file assembly_file } {
+    remote_file build delete $output_file $assembly_file;
+}
+
+#
+# prebase -- sets up a Mike Stump (mrs@cygnus.com) style gcc test
+#
+proc prebase { } {
+    global compiler_output
+    global not_compiler_output
+    global compiler_result
+    global not_compiler_result
+    global program_output
+    global groups
+    global run 
+    global actions
+    global target_regexp
+
+    set compiler_output "^$"
+    set not_compiler_output ".*Internal compiler error.*"
+    set compiler_result ""
+    set not_compiler_result ""
+    set program_output ".*PASS.*"
+    set groups {}
+    set run no
+    set actions assemble
+    set target_regexp ".*"
+}
+
+#
+# run the test
+#
+proc postbase  { src_code run groups args } {
+    global verbose
+    global srcdir
+    global subdir
+    global not_compiler_output
+    global compiler_output
+    global compiler_result
+    global not_compiler_result
+    global program_output
+    global actions
+    global target_regexp
+    global host_triplet
+    global target_triplet
+    global tool
+    global tmpdir
+    global GCC_UNDER_TEST
+    global GROUP
+
+    if ![info exists GCC_UNDER_TEST] {
+	error "No compiler specified for testing."
+    }
+
+    if ![regexp $target_regexp $target_triplet] {
+	unsupported $subdir/$src_code
+	return
+    }
+
+    if { [llength $args] > 0 } {
+	set comp_options [lindex $args 0];
+    } else {
+	set comp_options ""
+    }
+
+    set fail_message $subdir/$src_code
+    set pass_message $subdir/$src_code
+
+    if [info exists GROUP] {
+	if {[lsearch $groups $GROUP] == -1} {
+	    return
+	}
+    }
+
+    if [string match $run yes] {
+	set actions run
+    }
+
+    set output_file "$tmpdir/[file tail [file rootname $src_code]]"
+    set assembly_file "$output_file"
+    append assembly_file ".S"
+
+    set compile_type "none"
+
+    case $actions {
+	compile
+	{
+	    set compile_type "assembly";
+	    set output_file $assembly_file;
+	}
+	assemble
+	{
+	    set compile_type "object";
+	    append output_file ".o";
+	}
+	link
+	{
+	    set compile_type "executable";
+	    set output_file "$tmpdir/a.out";
+	}
+	run
+	{
+	    set compile_type "executable";
+	    set output_file "$tmpdir/a.out";
+	    set run yes;
+	}
+	default
+	{
+	    set output_file "";
+	    set compile_type "none";
+	}
+    }
+
+    set src_file "$srcdir/$subdir/$src_code"
+    set options ""
+    lappend options "compiler=$GCC_UNDER_TEST"
+
+    if { $comp_options != "" } {
+	lappend options "additional_flags=$comp_options"
+    }
+
+    set comp_output [gcc_target_compile $src_file $output_file $compile_type $options];
+
+    set pass no
+
+    # Delete things like "ld.so warning" messages.
+    set comp_output [prune_warnings $comp_output]
+
+    if [regexp -- $not_compiler_output $comp_output] {
+	if { $verbose > 1 } {
+	    send_user "\nChecking:\n$not_compiler_output\nto make sure it does not match:\n$comp_output\nbut it does.\n\n"
+	} else {
+	    send_log "\nCompiler output:\n$comp_output\n\n"
+	}
+	fail $fail_message
+	# The framework doesn't like to see any error remnants,
+	# so remove them.
+	uplevel {
+	    if [info exists errorInfo] {
+		unset errorInfo
+	    }
+	}
+	mike_cleanup $src_code $output_file $assembly_file
+	return
+    }
+
+    # remove any leftover CRs.
+    regsub -all -- "\r" $comp_output "" comp_output
+
+    regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $comp_output "" comp_output
+    regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $comp_output "" comp_output
+
+    set unsupported_message [${tool}_check_unsupported_p $comp_output]
+    if { $unsupported_message != "" } {
+	unsupported "$subdir/$src_code: $unsupported_message"
+	mike_cleanup $src_code $output_file $assembly_file
+	return
+    }
+
+    if { $verbose > 1 } {
+	send_user "\nChecking:\n$compiler_output\nto see if it matches:\n$comp_output\n"
+    } else {
+	send_log "\nCompiler output:\n$comp_output\n\n"
+    }
+    if [regexp -- $compiler_output $comp_output] {
+	if { $verbose > 1 } {
+	    send_user "Yes, it matches.\n\n"
+	}
+	set pass yes
+	if [file exists [file rootname [file tail $src_code]].s] {
+	    set fd [open [file rootname [file tail $src_code]].s r]
+	    set dot_s [read $fd]
+	    close $fd
+	    if { $compiler_result != "" } {
+		verbose "Checking .s file for $compiler_result" 2
+		if [regexp -- $compiler_result $dot_s] {
+		    verbose "Yes, it matches." 2
+		} else {
+		    verbose "Nope, doesn't match." 2
+		    verbose $dot_s 4
+		    set pass no
+		}
+	    }
+	    if { $not_compiler_result != "" } {
+		verbose "Checking .s file for not $not_compiler_result" 2
+		if ![regexp -- $not_compiler_result $dot_s] {
+		    verbose "Nope, not found (that's good)." 2
+		} else {
+		    verbose "Uh oh, it was found." 2
+		    verbose $dot_s 4
+		    set pass no
+		}
+	    }
+	}
+	if [string match $run yes] {
+	    set result [gcc_load $output_file]
+	    set status [lindex $result 0];
+	    set output [lindex $result 1];
+	    if { $status == -1 } {
+		mike_cleanup $src_code $output_file $assembly_file;
+		return;
+	    }
+	    if { $verbose > 1 } {
+		send_user "Checking:\n$program_output\nto see if it matches:\n$output\n\n"
+	    }
+	    if ![regexp -- $program_output $output] {
+		set pass no
+		if { $verbose > 1 } {
+		    send_user "Nope, does not match.\n\n"
+		}
+	    } else {
+		if { $verbose > 1 } {
+		    send_user "Yes, it matches.\n\n"
+		}
+	    }
+	}
+    } else {
+	if { $verbose > 1 } {
+	    send_user "Nope, does not match.\n\n"
+	}
+    }
+
+    if [string match $pass "yes"] {
+	pass $pass_message
+    } else {
+	fail $fail_message
+    }
+
+    # The framework doesn't like to see any error remnants,
+    # so remove them.
+    uplevel {
+	if [info exists errorInfo] {
+	    unset errorInfo
+	}
+    }
+
+    mike_cleanup $src_code $output_file $assembly_file
+}

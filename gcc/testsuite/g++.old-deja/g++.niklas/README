@@ -1,0 +1,18 @@
+Date: Fri, 22 Jan 93 15:20:55 +0100
+From: niklas@della.appli.se (Niklas Hallqvist)
+Message-Id: <9301221420.AA18489@della.appli.se>
+Subject: g++.niklas DejaGnu sharfile
+
+These are my test-cases in DejaGnu format.
+
+The tests which have "passed" in the groups variable do actually pass
+on my local G++ so if there is a specific "passed" test you'd like to
+see working in your version of G++ but it doesn't pass, contact me and
+I'll dig up the specific patches you'll need.
+
+I have about a hundred or so unsorted test-cases which are not
+included in this archive, due to lack of time and boredom stemming
+from writing .exp-files.  But they will show up eventually.
+
+All these files, and this file are Copyright FSF 1993, and fall under
+the GPL version 2.0 or later.

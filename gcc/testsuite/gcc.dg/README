@@ -1,0 +1,16 @@
+Notes for testsuite/gcc.dg.
+
+1) There should be only one driver, dg.exp.
+
+2) Try to organize the tests by topic using file name prefixes.
+
+   Eg: All bitfield tests are named "bf-*.c".
+
+   This lets the person running the tests choose particular sets of tests to
+   run easily (using wildcards).
+
+   Eg: make check RUNTESTFLAGS='dg.exp=bf-*.c'
+
+3) Remember DOS file name restrictions (8.3).  Sigh.
+
+4) Send bugs, comments, etc. to dje@cygnus.com.

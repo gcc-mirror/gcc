@@ -1,0 +1,95 @@
+#   Copyright (C) 1997 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Please email any bugs, comments, and/or additions to this file to:
+# bug-gcc@prep.ai.mit.edu
+
+# Gcov test driver.
+
+# Load support procs.
+load_lib gcc-dg.exp
+
+global GCC_UNDER_TEST
+
+# For now find gcov in the same directory as $GCC_UNDER_TEST.
+if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
+    set GCOV [file dirname [lindex $GCC_UNDER_TEST 0]]/gcov
+} else {
+    set GCOV gcov
+}
+
+# Proc to delete the working files created by the compiler for gcov.
+
+proc clean-gcov { testcase } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    remote_file host delete $base.bb $base.bbg $base.da $basename.gcov
+}
+
+# Called by dg-final to run gcov and analyze the results.
+
+proc run-gcov { testcase } {
+    global GCOV
+
+    verbose "Running $GCOV $testcase" 2
+    set testcase [remote_download host $testcase];
+    set result [remote_exec host $GCOV $testcase];
+    if { [lindex $result 0] != 0 } {
+	fail "gcov failed: [lindex $result 1]"
+	clean-gcov $testcase
+	return
+    }
+
+    remote_upload host $testcase.gcov $testcase.gcov;
+    set output [grep $testcase.gcov ".*count\\(\[0-9\]+\\)" line]
+    #send_user "output:$output\n"
+    set failed 0
+    foreach line $output {
+	verbose "Processing count line: $line" 3
+	#send_user "line:$line\n"
+	if [regexp "(\[0-9\]+) *(\[0-9\]+).*count\\((\[0-9\]+)\\)" "$line" all n is shouldbe] {
+	    #send_user "n $n:is $is:shouldbe $shouldbe\n"
+	    if { $is == "" } {
+		fail "$testcase:$n:no data available for this line"
+		incr failed
+	    } elseif { $is != $shouldbe } {
+		fail "$testcase:$n:is $is:should be $shouldbe"
+		incr failed
+	    }
+	} else {
+	    fail "$testcase: can't parse $line (in wrong place?)"
+	    incr failed
+	}
+    }
+    clean-gcov $testcase
+    if !$failed {
+	pass "gcov $testcase"
+    }
+}
+
+# Initialize harness.
+dg-init
+
+# Delete old .da files.
+set files [glob -nocomplain gcov-*.da];
+if { $files != "" } {
+    eval "remote_file build delete $files";
+}
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/gcov-*.c]] "" ""
+
+dg-finish
