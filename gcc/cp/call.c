@@ -263,7 +263,7 @@ build_scoped_method_call (tree exp, tree basetype, tree name, tree parms)
 	    error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		      exp, basetype, type);
 
-	  return cp_convert (void_type_node, exp);
+	  return convert_to_void (exp, /*implicit=*/NULL);
 	}
     }
 
@@ -290,7 +290,7 @@ build_scoped_method_call (tree exp, tree basetype, tree name, tree parms)
       if (TREE_CODE (name) == BIT_NOT_EXPR)
 	{
 	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
-	    return cp_convert (void_type_node, exp);
+	    return convert_to_void (exp, /*implicit=*/NULL);
 	  
 	  return build_delete (TREE_TYPE (decl), decl, 
 			       sfk_complete_destructor,
@@ -496,7 +496,7 @@ build_method_call (tree instance, tree name, tree parms,
 	   TREE_OPERAND (name, 0), object_type);
 
       if (! TYPE_HAS_DESTRUCTOR (complete_type (object_type)))
-	return cp_convert (void_type_node, instance);
+	return convert_to_void (instance, /*implicit=*/NULL);
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
       return build_delete (build_pointer_type (object_type),

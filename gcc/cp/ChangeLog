@@ -1,3 +1,17 @@
+2003-07-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_scoped_method_call): Use convert_to_void.
+	(build_method_call): Likewise.
+	* class.c (check_field_decls): Remove dead code.
+	* cvt.c (convert_from_reference): Remove OFFSET_TYPE handling.
+	* decl2.c (grok_array_decl): Remove dead code.
+	(arg_assoc_type): Avoid relying on POINTER_TYPE over OFFSET_TYPE
+	as pointer-to-member representation.
+	* init.c (build_offset_ref): Tidy.
+	(build_vec_delete_1): Use convert_to_void.
+	* mangle.c (write_type): Avoid relying on POINTER_TYPE over OFFSET_TYPE
+	as pointer-to-member representation.
+	
 2003-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9162
