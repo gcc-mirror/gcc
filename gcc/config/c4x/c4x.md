@@ -474,31 +474,17 @@
   ])
 
 ;
-; C4x FUNCTIONAL UNITS
-;
-; Define functional units for instruction scheduling to minimize
-; pipeline conflicts.
+; C4x PIPELINE MODEL
 ;
 ; With the C3x, an external memory write (with no wait states) takes
 ; two cycles and an external memory read (with no wait states) takes
 ; one cycle.  However, an external read following an external write
 ; takes two cycles.  With internal memory, reads and writes take
 ; half a cycle.
-;
 ; When a C4x address register is loaded it will not be available for
 ; an extra machine cycle.  Calculating with a C4x address register
-; makes it unavailable for 2 machine cycles.  To notify GCC of these
-; pipeline delays, each of the auxiliary and index registers are declared
-; as separate functional units.
+; makes it unavailable for 2 machine cycles.
 ;
-; (define_function_unit NAME MULTIPLICITY SIMULTANEITY
-;			TEST READY-DELAY ISSUE-DELAY [CONFLICT-LIST])
-;
-; MULTIPLICITY 1 (C4x has no independent identical function units)
-; SIMULTANEITY 0 (C4x is pipelined)
-; READY_DELAY  1 (Results usually ready after every cyle)
-; ISSUE_DELAY  1 (Can issue insns every cycle)
-
 ; Just some dummy definitions. The real work is done in c4x_adjust_cost.
 ; These are needed so the min/max READY_DELAY is known.
 

@@ -1,4 +1,8 @@
-2004-0630  Akos Kiss  <akiss@inf.u-szeged.hu>
+2004-06-30  Steven Bosscher  <stevenb@suse.de>
+
+	* config/c4x/c4x.md: Fix comment.
+
+2004-06-30  Akos Kiss  <akiss@inf.u-szeged.hu>
 
 	* arm.md (cond_return_inverted): Add "length" attribute.
 
@@ -4861,7 +4865,7 @@
 
 2004-05-22  Zack Weinberg  <zack@codesourcery.com>
 
-       * tree.h (struct tree_decl): Add possibly_inlined bit.
+	* tree.h (struct tree_decl): Add possibly_inlined bit.
 	(DECL_POSSIBLY_INLINED): New accessor macro.
 	* cgraph.h: Remove declaration of cgraph_inline_hash.
 	* cgraph.c: Remove definition of cgraph_inline_hash.
