@@ -1,3 +1,13 @@
+2001-08-14  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Makefile.in (OBJS): Add rtl-error.o
+	(rtl-error.o): New rule.
+	(diagnostic.o): Adjust dependency.
+	diagnostic.c (file_and_line_for_asm, diagnostic_for_asm,
+	error_for_asm, _fatal_insn, _fatal_insn_not_found,
+	warning_for_asm): Move to...
+	rtl-error.c: ...here.  New file.
+
 2001-08-14  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (dwarf2out_frame_finish): Never emit .eh_frame

@@ -27,14 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
-
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "input.h"
-#include "insn-attr.h"
-#include "insn-config.h"
 #include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
@@ -73,8 +69,6 @@ static char *build_message_string PARAMS ((const char *, ...))
 static void output_do_printf PARAMS ((output_buffer *, const char *))
      ATTRIBUTE_PRINTF (2, 0);
 static void format_with_decl PARAMS ((output_buffer *, tree));
-static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
-static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *, int));
 static void diagnostic_for_decl PARAMS ((tree, const char *, va_list *, int));
 static void set_real_maximum_length PARAMS ((output_buffer *));
 
@@ -904,61 +898,6 @@ format_with_decl (buffer, decl)
     }
 }
 
-/* Figure file and line of the given INSN.  */
-
-static void
-file_and_line_for_asm (insn, pfile, pline)
-     rtx insn;
-     const char **pfile;
-     int *pline;
-{
-  rtx body = PATTERN (insn);
-  rtx asmop;
-
-  /* Find the (or one of the) ASM_OPERANDS in the insn.  */
-  if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
-    asmop = SET_SRC (body);
-  else if (GET_CODE (body) == ASM_OPERANDS)
-    asmop = body;
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == SET)
-    asmop = SET_SRC (XVECEXP (body, 0, 0));
-  else if (GET_CODE (body) == PARALLEL
-	   && GET_CODE (XVECEXP (body, 0, 0)) == ASM_OPERANDS)
-    asmop = XVECEXP (body, 0, 0);
-  else
-    asmop = NULL;
-
-  if (asmop)
-    {
-      *pfile = ASM_OPERANDS_SOURCE_FILE (asmop);
-      *pline = ASM_OPERANDS_SOURCE_LINE (asmop);
-    }
-  else
-    {
-      *pfile = input_filename;
-      *pline = lineno;
-    }
-}
-
-/* Report a diagnostic MESSAGE (an errror or a WARNING) at the line number
-   of the insn INSN.  This is used only when INSN is an `asm' with operands,
-   and each ASM_OPERANDS records its own source file and line.  */
-
-static void
-diagnostic_for_asm (insn, msg, args_ptr, warn)
-     rtx insn;
-     const char *msg;
-     va_list *args_ptr;
-     int warn;
-{
-  diagnostic_context dc;
-
-  set_diagnostic_context (&dc, msg, args_ptr, NULL, 0, warn);
-  file_and_line_for_asm (insn, &diagnostic_file_location (&dc),
-                         &diagnostic_line_location (&dc));
-  report_diagnostic (&dc);
-}
 
 /* Report a diagnostic MESSAGE at the declaration DECL.
    MSG is a format string which uses %s to substitute the declaration
@@ -1295,25 +1234,6 @@ error_with_decl VPARAMS ((tree decl, const char *msgid, ...))
   va_end (ap);
 }
 
-void
-error_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  rtx insn;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  insn = va_arg (ap, rtx);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 0);
-  va_end (ap);
-}
 
 /* Report an error message.  The arguments are like that of printf.  */
 
@@ -1417,38 +1337,6 @@ See %s for instructions.\n", GCCBUGURL);
 }
 
 void
-_fatal_insn (msgid, insn, file, line, function)
-     const char *msgid;
-     rtx insn;
-     const char *file;
-     int line;
-     const char *function;
-{
-  error ("%s", _(msgid));
-
-  /* The above incremented error_count, but isn't an error that we want to
-     count, so reset it here.  */
-  errorcount--;
-
-  debug_rtx (insn);
-  fancy_abort (file, line, function);
-}
-
-void
-_fatal_insn_not_found (insn, file, line, function)
-     rtx insn;
-     const char *file;
-     int line;
-     const char *function;
-{
-  if (INSN_CODE (insn) < 0)
-    _fatal_insn ("Unrecognizable insn:", insn, file, line, function);
-  else
-    _fatal_insn ("Insn does not satisfy its constraints:",
-		insn, file, line, function);
-}
-
-void
 warning_with_file_and_line VPARAMS ((const char *file, int line,
 				     const char *msgid, ...))
 {
@@ -1490,26 +1378,6 @@ warning_with_decl VPARAMS ((tree decl, const char *msgid, ...))
 #endif
 
   diagnostic_for_decl (decl, msgid, &ap, /* warn = */ 1);
-  va_end (ap);
-}
-
-void
-warning_for_asm VPARAMS ((rtx insn, const char *msgid, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  rtx insn;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  insn = va_arg (ap, rtx);
-  msgid = va_arg (ap, const char *);
-#endif
-
-  diagnostic_for_asm (insn, msgid, &ap, /* warn = */ 1);
   va_end (ap);
 }
 

@@ -743,10 +743,10 @@ OBJS =									\
  local-alloc.o loop.o mbchar.o optabs.o params.o predict.o print-rtl.o	\
  print-tree.o profile.o real.o recog.o reg-stack.o regclass.o regmove.o	\
  regrename.o reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o	\
- sbitmap.o sched-deps.o	sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	\
- sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o	\
- stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o unroll.o	\
- varasm.o varray.o version.o xcoffout.o					\
+ rtl-error.o sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o \
+ sdbout.o sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o         \
+ ssa-dce.o stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o  \
+ unroll.o varasm.o varray.o version.o xcoffout.o                        \
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
@@ -1347,9 +1347,9 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h \
    function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H) $(TM_P_H)
 fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h toplev.h \
    $(EXPR_H) $(RTL_H) $(GGC_H) $(TM_P_H)
-diagnostic.o : diagnostic.c diagnostic.h diagnostic.def \
-   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) $(TM_P_H) flags.h \
-   $(GGC_H) input.h $(INSN_ATTR_H) insn-config.h toplev.h intl.h
+diagnostic.o : diagnostic.c diagnostic.h real.h diagnostic.def \
+   $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_P_H) flags.h $(GGC_H) \
+   input.h toplev.h intl.h
 toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h diagnostic.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
@@ -1360,6 +1360,9 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
 main.o : main.c toplev.h
+
+rtl-error.o: rtl-error.c system.h $(RTL_H) $(INSN_ATTR_H) insn-config.h \
+   input.h toplev.h intl.h diagnostic.h
 
 rtl.o : rtl.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) real.h $(GGC_H) errors.h
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
