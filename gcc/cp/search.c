@@ -2042,15 +2042,15 @@ reinit_search_statistics (void)
 }
 
 /* Helper for lookup_conversions_r.  TO_TYPE is the type converted to
-   by a conversion op in base BINFO.  VIRTUAL_DEPTH is non-zero if
-   BINFO is morally virtual, and VIRTUALNESS is non-zero if virtual
+   by a conversion op in base BINFO.  VIRTUAL_DEPTH is nonzero if
+   BINFO is morally virtual, and VIRTUALNESS is nonzero if virtual
    bases have been encountered already in the tree walk.  PARENT_CONVS
    is the list of lists of conversion functions that could hide CONV
    and OTHER_CONVS is the list of lists of conversion functions that
    could hide or be hidden by CONV, should virtualness be involved in
    the hierarchy.  Merely checking the conversion op's name is not
    enough because two conversion operators to the same type can have
-   different names.  Return non-zero if we are visible.  */
+   different names.  Return nonzero if we are visible.  */
 
 static int
 check_hidden_convs (tree binfo, int virtual_depth, int virtualness,
@@ -2154,13 +2154,13 @@ split_conversions (tree my_convs, tree parent_convs,
 }
 
 /* Worker for lookup_conversions.  Lookup conversion functions in
-   BINFO and its children.  VIRTUAL_DEPTH is non-zero, if BINFO is in
-   a morally virtual base, and VIRTUALNESS is non-zero, if we've
+   BINFO and its children.  VIRTUAL_DEPTH is nonzero, if BINFO is in
+   a morally virtual base, and VIRTUALNESS is nonzero, if we've
    encountered virtual bases already in the tree walk.  PARENT_CONVS &
    PARENT_TPL_CONVS are lists of list of conversions within parent
    binfos.  OTHER_CONVS and OTHER_TPL_CONVS are conversions found
    elsewhere in the tree.  Return the conversions found within this
-   portion of the graph in CONVS and TPL_CONVS.  Return non-zero is we
+   portion of the graph in CONVS and TPL_CONVS.  Return nonzero is we
    encountered virtualness.  We keep template and non-template
    conversions separate, to avoid unnecessary type comparisons.
 

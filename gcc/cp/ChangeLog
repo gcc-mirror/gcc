@@ -1,3 +1,7 @@
+2004-09-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* search.c: Follow spelling conventions.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_COMDAT_GROUP): Define.
