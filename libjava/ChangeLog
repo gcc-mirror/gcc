@@ -1,5 +1,8 @@
 2000-12-21  Tom Tromey  <tromey@redhat.com>
 
+	* java/beans/PropertyChangeListener.java: Extends EventListener.
+	* java/beans/VetoableChangeListener.java: Extends EventListener.
+
 	* java/util/zip/Deflater.java (update, init): Now private.
 
 2000-12-21  Bryce McKinlay  <bryce@albatross.co.nz>
