@@ -1,3 +1,9 @@
+Thu Mar  5 23:06:26 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* jump.c (jump_optimize): Call mark_jump_label also for deleted
+	insns.
+	(mark_jump_label): Don't increment ref counts for deleted insns.
+
 Thu Mar  5 09:55:15 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * mips/iris6.h (TARGET_DEFAULT): Parenthesize macro definition.
