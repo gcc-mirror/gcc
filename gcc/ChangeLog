@@ -1,3 +1,12 @@
+2003-02-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpphash.h (struct lexer_state): Add directive_wants_padding.
+	* cpplib.c (_cpp_handle_directive): Set directive_wants_padding
+	for directives of type INCL.
+	(glue_header_name, parse_include): Use get_token_no_padding.
+	* cppmacro.c (replace_args): If directive_wants_padding,
+	provide padding tokens.
+
 2003-02-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): New.
@@ -227,8 +236,8 @@ Thu Feb 20 21:41:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-20  David Edelsohn  <edelsohn@gnu.org>
 
-        * config/rs6000/sysv4.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
-        * config/rs6000/power4.md (power4-store,power4-vecstore): New
+	* config/rs6000/sysv4.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
+	* config/rs6000/power4.md (power4-store,power4-vecstore): New
 	insn reservations.
 	(power4-fpstore): Compact.
 
@@ -309,7 +318,7 @@ Wed Feb 19 19:00:24 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* fixinc/inclhack.def (irix_wcsftime): Use XPG5 variant for C99.
 	* fixinc/tests/base/internal/wchar_core.h: New file.
-	
+
 	* fixinc/inclhack.def (irix_socklen_t): Fix broken IRIX 6.5.1[78]
 	socklen_t definition.
 	* fixinc/fixincl.x: Regenerate.
@@ -366,7 +375,7 @@ Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-18  Matt Austern <austern@apple.com>
 
 	* toplev.c, langhooks.c, langhooks-def.h: Move
-	write_global_declarations from toplev.c to langhooks.c. 
+	write_global_declarations from toplev.c to langhooks.c.
 
 2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -381,34 +390,34 @@ Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
-        * config/sh/sh.c (unspec_caller_rtx_p): New.
+	* config/sh/sh.c (unspec_caller_rtx_p): New.
 	(sh_cannot_copy_insn_p): New.
-        (TARGET_CANNOT_COPY_INSN_P): New.
+	(TARGET_CANNOT_COPY_INSN_P): New.
 
 2003-02-18  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c (handle_used_attribute): Accept static data too.
 
 2003-02-18  Nick Clifton  <nickc@redhat.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * testsuite/gcc.dg/20030218-1.c: New.
+	* testsuite/gcc.dg/20030218-1.c: New.
 
-        * doc/tm.texi: Document TARGET_VECTOR_TYPES_COMPATIBLE.
+	* doc/tm.texi: Document TARGET_VECTOR_TYPES_COMPATIBLE.
 
-        * target-def.h (TARGET_INITIALIZER): Add
-        TARGET_VECTOR_TYPES_COMPATIBLE.
-        (TARGET_VECTOR_TYPES_COMPATIBLE): New macro.
+	* target-def.h (TARGET_INITIALIZER): Add
+	TARGET_VECTOR_TYPES_COMPATIBLE.
+	(TARGET_VECTOR_TYPES_COMPATIBLE): New macro.
 
-        * target.h (struct gcc_target): Add field vector_types_compatible.
+	* target.h (struct gcc_target): Add field vector_types_compatible.
 
-        * c-typeck.c (comptypes): Take into account
-        TARGET_VECTOR_TYPES_COMPATIBLE.
-        (convert_for_assignment): Same.
+	* c-typeck.c (comptypes): Take into account
+	TARGET_VECTOR_TYPES_COMPATIBLE.
+	(convert_for_assignment): Same.
 
-        * config/rs6000/rs6000.c (is_ev64_opaque_type): New.
-        (rs6000_spe_vector_types_compatible): New.
-        (TARGET_VECTOR_TYPES_COMPATIBLE): Define.
+	* config/rs6000/rs6000.c (is_ev64_opaque_type): New.
+	(rs6000_spe_vector_types_compatible): New.
+	(TARGET_VECTOR_TYPES_COMPATIBLE): Define.
 
 2003-02-19  Andreas Schwab  <schwab@suse.de>
 
@@ -462,15 +471,15 @@ Tue Feb 18 20:15:54 2003  J"orn Rennecke <joern.rennecke@superh.com>
 	(*extendhisi2_h8300): Likewise.
 
 2003-02-18  Matt Austern <austern@apple.com>
-	
+
 	* langhooks.h, langhooks-def.h: introduce new langhook,
 	final_write_globals, with write_global_declarations as default.
 	* toplev.c: Move invocation of wrapup_global_declarations from
 	compile_file to new function, write_global_declarations.  Change
 	compile_file to use final_write_globals hook.  Change
 	wrapup_global_declarations so writing to DECL_DEFER_OUTPUT is
-	conditional. 
-	
+	conditional.
+
 2003-02-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.md: Correct and enhance comment.
@@ -488,9 +497,9 @@ Tue Feb 18 20:15:54 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 2003-02-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h (__ev_stdd): Cast 2nd arg.
-        (__ev_stdw): Same.
-        (__ev_stdh): Same.
+	* config/rs6000/spe.h (__ev_stdd): Cast 2nd arg.
+	(__ev_stdw): Same.
+	(__ev_stdh): Same.
 
 Mon Feb 17 16:16:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 
@@ -626,7 +635,7 @@ Sun Feb 16 23:07:52 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* function.h (struct function): Add computed_goto_common_label,
 	computed_goto_common_reg.
 	* function.c (free_after_compilation): Zap them.
-	* stmt.c (expand_computed_goto): Use them to produce one 
+	* stmt.c (expand_computed_goto): Use them to produce one
 	indirect branch per function.
 
 2003-02-15  Richard Henderson  <rth@redhat.com>
@@ -640,8 +649,8 @@ Sun Feb 16 23:07:52 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
-        * recog.c (split_all_insns): Include new blocks in life update;
-        do a global life update.
+	* recog.c (split_all_insns): Include new blocks in life update;
+	do a global life update.
 
 2003-02-15  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -680,7 +689,7 @@ Sun Feb 16 23:07:52 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-13  Adam Nemet  <anemet@lnxw.com>
 
-	PR opt/2391 
+	PR opt/2391
 	* combine.c: Fix spelling in comment.
 	(cached_nonzero_bits): New function.
 	(cached_num_sign_bit_copies): New function.

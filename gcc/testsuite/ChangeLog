@@ -1,3 +1,8 @@
+2003-02-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/cpp/include3.c: New test.
+	* gcc.dg/cpp/inc/foo.h: New file.
+
 2003-02-21  Glen Nakamura  <glen@imodulo.com>
 
 	* gcc.c-torture/execute/20030221-1.c: New test.
@@ -25,7 +30,7 @@ Tue Feb 18 23:28:53 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-18  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/20030218-1.c: New.
+	* gcc.dg/20030218-1.c: New.
 
 2003-02-18  Richard Henderson  <rth@redhat.com>
 
@@ -36,7 +41,7 @@ Tue Feb 18 23:28:53 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/9704
 	* g++.dg/init/copy5.C: New test.
-	
+
 2003-02-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/pch.exp: Delete $bname.h before copying into it.
@@ -84,10 +89,10 @@ Sun Feb 16 23:08:19 CET 2003  Jan HUbicka  <jh@suse.cz>
 
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/ppc-spe.c: Fix formatting.
-        Enable tests that were previously unsupported by gas.
-        Delete tests for instructions that no longer exist.
-        Switch arguments on evsubifw builtin.
+	* gcc.dg/ppc-spe.c: Fix formatting.
+	Enable tests that were previously unsupported by gas.
+	Delete tests for instructions that no longer exist.
+	Switch arguments on evsubifw builtin.
 
 2003-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
@@ -95,7 +100,7 @@ Sun Feb 16 23:08:19 CET 2003  Jan HUbicka  <jh@suse.cz>
 	STACK_SIZE is too small.
 
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+	    Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* gcc.dg/decl-2.c: New test.
 
@@ -263,8 +268,8 @@ Tue Jan 28 12:19:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-28  D.Venkatasubramanian   <dvenkat@noida.hcltech.com>
 
-        * gcc.c-torture/execute/20010925-1.c: Changed the
-        memcpy declaration.
+	* gcc.c-torture/execute/20010925-1.c: Changed the
+	memcpy declaration.
 
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -318,13 +323,13 @@ Sat Jan 25 21:06:49 CET 2003  Jan Hubicka  <jh@suse.cz>
 	PR c++/9403
 	* g++.dg/parse/template3.C: New test.
 	* g++.old-deja/g++.pt/memclass5.C: Add needed template keyword.
-	
+
 	PR c++/795
 	* g++.dg/parse/template4.C: New test.
-	
+
 	PR c++/9415
 	* g++.dg/template/qual2.C: New test.
-	
+
 	PR c++/8545
 	* g++.old-deja/g++.brendan/parse3.C: Remove XFAIL.
 
@@ -461,7 +466,7 @@ Tue Jan 21 18:01:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/9294:
 	* g++.dg/parse/qualified1.C: New test.
-	
+
 	* g++.dg/parse/typename3.C: New test.
 
 2003-01-16  Richard Henderson  <rth@redhat.com>
@@ -511,7 +516,7 @@ Tue Jan 21 18:01:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc/testsuite/g++.old-deja/g++.pt/typename19.C: Remove warning.
 	* gcc/testsuite/g++.old-deja/g++.robertl/eb112.C: Fix typo.
 	* gcc/testsuite/g++.old-deja/g++.robertl/eb24.C: Use this->.
-	
+
 2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/ambig2.C: New test.
@@ -618,7 +623,7 @@ Tue Jan 14 00:45:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* gcc.dg/pch/pch.exp: Compare .s files with/without PCH,
 	rather than trying to build and run a program using PCH.
 	* gcc.dg/pch: Remove dg-do commands from test files.
-	
+
 	2002-11-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/pch/macro-3.c: New.
@@ -740,7 +745,7 @@ Tue Jan 14 00:45:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* g++.old-deja/g++.mike/p9706.C: Likewise
 	* g++.old-deja/g++.mike/p10416.C: Likewise
 	* g++.old-deja/g++.mike/p11667.C: Likewise
-	* g77.f-torture/compile/20010519-1.f: Remove reference to Convex. 
+	* g77.f-torture/compile/20010519-1.f: Remove reference to Convex.
 	Remove redundant reference to Iris.
 	* gcc.dg/20020312-2.c: Remove references to AMD A29K, Clipper, Convex,
 	Elxsi, i860, Pico Java, and WE32K.
@@ -868,7 +873,7 @@ Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/namespace1.C: New test.
-	
+
 2003-01-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* g++.dg/parse/parse4.C: New test.
@@ -1142,7 +1147,7 @@ Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* g++.old-deja/g++.pt/memtemp87.C: Add missing access specifier.
 	* g++.old-deja/g++.pt/overload13.C: Correct error messages.
 	* g++.old-deja/g++.pt/parms2.C: Add missing typename keyword.
-	* g++.old-deja/g++.pt/ptrmem1.C: Remove invalid use of template	
+	* g++.old-deja/g++.pt/ptrmem1.C: Remove invalid use of template
 	keyword.
 	* g++.old-deja/g++.pt/spec10.C: Likewise.
 	* g++.old-deja/g++.pt/spec28.C: Reorder declarations.
@@ -1166,7 +1171,7 @@ Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* g++.old-deja/g++.robertl/eb79.C: Correct for new name lookup rules.
 	* g++.old-deja/g++.robertl/eb82.C: Remove stray semicolons.
 	* g++.old-deja/g++.robertl/eb86.C: Add missing forward declaration.
-	
+
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/warn/inline1.C: New test.
@@ -1179,9 +1184,9 @@ Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* g++.dg/template/conv5.C: New test.
 
 2002-12-24  Nathan Sidwell  <nathan@codesourcery.com>
-	
+
 	* g++.dg/lookup/scoped3.C: New test.
-	
+
 	* g++.dg/lookup/decl1.C: New test.
 	* g++.dg/lookup/decl2.C: New test.
 
@@ -1200,9 +1205,9 @@ Wed Jan  8 11:41:47 CET 2003  Jan Hubicka  <jh@suse.cz>
 2002-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/i386-bitfield3.c: New test.
-	
+
 	* gcc.dg/i386-bitfield2.c: New test.
-	
+
 2002-12-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/conv_op1.C: New test.
