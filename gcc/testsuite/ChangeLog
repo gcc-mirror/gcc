@@ -5,6 +5,8 @@
 
 Wed Jul  1 00:52:51 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/compile/980701-1.c: New test.
+
 	* gcc.c-torture/execute/980701-1.c: New test.
 
 Tue Jun 30 11:51:42 1998  Klaus-Georg Adams  <Klaus-Georg.Adams@chemie.uni-ka
