@@ -311,7 +311,7 @@ process_option_with_no (p, table, table_size)
 
 /*
  * process java-specific compiler command-line options
- * return 0, but do not complain if the option is not recognised.
+ * return 0, but do not complain if the option is not recognized.
  */
 static int
 java_decode_option (argc, argv)
