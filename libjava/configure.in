@@ -232,6 +232,9 @@ AC_ARG_WITH(ecos,
 TARGET_ECOS="$with_ecos"
 )
 
+EXTRA_CC_FILES=
+AC_SUBST(EXTRA_CC_FILES)
+
 PLATFORMOBJS=
 case "$TARGET_ECOS" in
    no) case "$host" in
@@ -600,6 +603,13 @@ else
        ia64-*-linux*)
 	 # Has broken backtrace()
 	 ;;
+       mips*-*-linux*)
+         # Has broken backtrace(), but we supply our own.
+         if test -d sysdep; then true; else mkdir -p sysdep; fi
+         EXTRA_CC_FILES="${EXTRA_CC_FILES} sysdep/dwarf2-backtrace.cc"
+         AC_DEFINE(HAVE_BACKTRACE, 1,
+           [Define if your platform has a working backtrace() function.])
+         ;;
        *)
          AC_DEFINE(HAVE_BACKTRACE, 1,
            [Define if your platform has a working backtrace() function.])
@@ -616,7 +626,13 @@ else
    ])
 
    AC_CHECK_LIB(dl, dladdr, [
-     AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])])
+     if test "x${disable_dladdr}" = "xyes"; then
+       #Broken dladdr().
+       true
+     else
+       AC_DEFINE(HAVE_DLADDR, 1, [Define if you have dladdr()])
+     fi
+   ])
    if test x"$build" = x"$host"; then
      AC_CHECK_FILES(/proc/self/exe, [
        AC_DEFINE(HAVE_PROC_SELF_EXE, 1, [Define if you have /proc/self/exe])])
@@ -1106,6 +1122,9 @@ case "${host}" in
     ;;
  *mingw*)
     SIGNAL_HANDLER=include/win32-signal.h
+    ;;
+ mips*-*-linux*)
+    SIGNAL_HANDLER=include/mips-signal.h
     ;;
  *)
     SIGNAL_HANDLER=include/default-signal.h

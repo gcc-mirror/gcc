@@ -138,6 +138,7 @@ nat_files = $(nat_source_files:.cc=.lo)
 x_nat_files = $(x_nat_source_files:.cc=.lo)
 ## Objects from C sources in subdirs.
 c_files = $(c_source_files:.c=.lo)
+extra_cc_files = $(extra_cc_source_files:.cc=.lo)
 ## Objects from gtk-related C sources in subdirs.
 gtk_c_files = $(gtk_c_source_files:.c=.lo)
 ## Objects from Java sources in subdirs.
@@ -149,13 +150,13 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	win32-threads.cc posix.cc win32.cc \
-	$(c_source_files) $(java_source_files) $(built_java_source_files)
+	win32-threads.cc posix.cc win32.cc $(c_source_files) \
+	$(extra_cc_source_files) $(java_source_files) $(built_java_source_files)
 libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(javao_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS) $(PLATFORMOBJS) $(LIBLTDL) \
-	$(LIBFFI) $(ZLIBS) $(GCLIBS)
+	$(c_files) $(extra_cc_files) $(GCOBJS) $(THREADOBJS) \
+       $(PLATFORMOBJS) $(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS)
 
-libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(extra_cc_files) $(GCOBJS) \
 	$(THREADOBJS) $(PLATFORMOBJS)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
@@ -417,6 +418,9 @@ $(nat_files) $(x_nat_files): %.lo: %.cc
 ## FIXME: see above
 $(c_files): %.lo: %.c
 	$(LTCOMPILE) -c -o $@ $<
+
+$(extra_cc_files): %.lo: %.cc
+	$(LTCXXCOMPILE) -c -o $@ $<
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
@@ -2631,6 +2635,8 @@ c_source_files = \
   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
   java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
+
+extra_cc_source_files = $(EXTRA_CC_FILES)
 
 #java/awt/natToolkit.cc
 

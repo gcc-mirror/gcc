@@ -1,3 +1,29 @@
+2003-10-22  David Daney  <ddaney@avtrex.com)
+
+	* include/mips-signal.h: New file.
+	* sysdep/dwarf2-backtrace.cc: New file.
+	* sysdep/mips: New directory.
+	* sysdep/mips/locks.h: New file.
+	* Makefile.am(extra_cc_files): New, to allow extra c++ files to be
+	added to libgcj.
+	(extra_cc_source_files): Ditto.
+	* configure.host(disable_dladdr):  New shell variable passed to
+	configure.
+	(mips*-*-linux*): sysdeps_dir=mips,
+	can_unwind_signal=yes, disable_dladdr=yes, use -mxgot.
+	(mipsel*-linux* | mipsisa32el*-linux*): Enable hash synchronization.
+	* configure.in:(mips*-*-linux*): Use sysdep/dwarf2-backtrace.cc to
+	generate backtrace, and include/mips-signal.h as SIGNAL_HANDLER
+	(HAVE_DLADDR): Make it depend on setting of disable_dladdr.
+	(EXTRA_CC_FILES): New, to support conditional addition of
+	sysdep/dwarf2-backtrace.cc.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+	* include/config.h.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+	
 2003-10-22  Sascha Brawer  <brawer@dandelis.ch>
 
 	* java/awt/geom/QuadCurve2D.java (subdivide): Added documentation.
