@@ -128,7 +128,8 @@ ggc_mark_roots ()
      they are not already marked.  */
   for (ct = gt_ggc_cache_rtab; *ct; ct++)
     for (cti = *ct; cti->base != NULL; cti++)
-      htab_traverse (*cti->base, ggc_htab_delete, (PTR) cti);
+      if (*cti->base)
+	htab_traverse (*cti->base, ggc_htab_delete, (PTR) cti);
 }
 
 /* R had not been previously marked, but has now been marked via
