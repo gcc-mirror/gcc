@@ -1,5 +1,18 @@
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("decrement_and_branch_until_zero"): New
+	pattern for dbcc/ibcc generation for 68HC12.
+	("doloop_end"): New pattern.
+	("m68hc12_dbcc_dec_hi"): New pattern for dbeq/dbne.
+	("m68hc12_dbcc_inc_hi"): New pattern for ibeq/ibne.
+	("m68hc12_dbcc_dec_qi"): New pattern.
+	("m68hc12_dbcc_inc_qi"): New pattern.
+	(split): Add split for the above when we can't use dbcc/ibcc due to
+	reloading.
+	(peephole2): Add peephole2 to generate the above when possible.
+
+2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md ("bitcmpqi" split): No need to test the
 	mode of operand 0.
 	(peephole2 optimize const load): Likewise for operand 2.
