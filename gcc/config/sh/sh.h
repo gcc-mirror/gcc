@@ -537,10 +537,15 @@ do {									\
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
+   for any hard reg, then this must be 0 for correct output.
+   That's the case for xd registers: we don't hold SFmode values in
+   them, so we can't tie an SFmode pseudos with one in another
+   floating-point mode.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((MODE1) == (MODE2) || GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
+  ((MODE1) == (MODE2) \
+   || (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2) \
+       && (MODE1) != SFmode && (MODE2) != SFmode))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
