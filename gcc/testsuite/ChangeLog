@@ -1,3 +1,8 @@
+2004-12-29  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/20040813-1.c: Disable for alpha and ia64.
+	* objc.dg/stabs-1.m: Disable for ia64.
+
 2004-12-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19190
