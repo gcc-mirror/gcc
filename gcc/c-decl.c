@@ -4107,11 +4107,15 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	/* An uninitialized decl with `extern' is a reference.  */
 	TREE_EXTERNAL (decl)
 	  = !initialized && (specbits & (1 << (int) RID_EXTERN));
-	/* At top level, either `static' or no s.c. makes a definition
-	   (perhaps tentative), and absence of `static' makes it public.  */
+	/* At top level, the presence of a `static' or `register' storage
+	   class specifier, or the absence of all storage class specifiers
+	   makes this declaration a definition (perhaps tentative).  Also,
+	   the absence of both `static' and `register' makes it public.  */
 	if (current_binding_level == global_binding_level)
 	  {
-	    TREE_PUBLIC (decl) = !(specbits & (1 << (int) RID_STATIC));
+	    TREE_PUBLIC (decl)
+	      = !(specbits
+		  & ((1 << (int) RID_STATIC) | (1 << (int) RID_REGISTER)));
 	    TREE_STATIC (decl) = ! TREE_EXTERNAL (decl);
 	  }
 	/* Not at top level, only `static' makes a static definition.  */
