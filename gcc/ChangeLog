@@ -34,6 +34,10 @@ Tue Mar 23 07:50:20 1999  Mark Mitchell  <mark@codesourcery.com>
 	
 Tue Mar 23 00:39:14 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* i386/openbsd.h (TARGET_DEFAULT): Use symbolic names instead of
+	numbers.
+	* i386/netbsd.h, i386/freebsd.h: Likewise.
+
 	* crtstuff.c: Use ANSI function definitions.  Fix minor whitespace
 	problems.
 
