@@ -1,3 +1,7 @@
+2002-10-07  Anthony Green  <green@redhat.com> 
+
+        * parse.y (merge_string_cste): Fix bug in string concatenation. 
+
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
 	* gcj.texi (Standard properties):
