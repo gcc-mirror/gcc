@@ -1819,7 +1819,7 @@ dump_expr (t, flags)
       break;
 
     case CONVERT_EXPR:
-      if (VOID_TYPE_P (TREE_TYPE (t)))
+      if (TREE_TYPE (t) && VOID_TYPE_P (TREE_TYPE (t)))
 	{
 	  print_left_paren (scratch_buffer);
 	  dump_type (TREE_TYPE (t), flags);
