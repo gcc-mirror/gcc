@@ -4803,6 +4803,7 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (gen_rtx (REG, SImode, 64), scratch);
 	  emit_move_insn (scratch, loword);
 	  emit_move_insn (gen_rtx (REG, SImode, 65), scratch);
+          emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
 	}
       else
 	{
@@ -4811,6 +4812,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
 	  emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
 	  emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
+          emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
 	}
       DONE;
     }
@@ -4822,6 +4824,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
       emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
       emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
+      emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
       DONE;
     }
   /* This handles moves between a float register and HI/LO.  */
@@ -4851,6 +4854,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
       emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
       emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
+      emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
       DONE;
     }
   if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == HILO_REGNUM)
@@ -4879,6 +4883,7 @@ move\\t%0,%z4\\n\\
 	  emit_move_insn (hiword, scratch);
 	  emit_move_insn (scratch, gen_rtx (REG, SImode, 65));
 	  emit_move_insn (loword, scratch);
+	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
 	}
       else if (TARGET_MIPS16 && ! M16_REG_P (REGNO (operands[0])))
 	{
@@ -4893,6 +4898,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_ashldi3 (scratch2, scratch2, GEN_INT (32)));
 	  emit_insn (gen_iordi3 (scratch, scratch, scratch2));
 	  emit_insn (gen_movdi (operands[0], scratch));
+	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
 	}
       else
 	{
@@ -4902,6 +4908,7 @@ move\\t%0,%z4\\n\\
 	  emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
 	  emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
 	  emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
+	  emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
 	}
       DONE;
     }
@@ -5225,6 +5232,7 @@ move\\t%0,%z4\\n\\
       emit_insn (gen_movsi (gen_rtx (REG, SImode, 65), operands[1]));
       emit_insn (gen_ashrsi3 (operands[2], operands[1], GEN_INT (31)));
       emit_insn (gen_movsi (gen_rtx (REG, SImode, 64), operands[2]));
+      emit_insn (gen_rtx_USE (VOIDmode, operands[0]));
       DONE;
     }
   /* Use a mult to reload LO on mips16.  ??? This is hideous.  */
