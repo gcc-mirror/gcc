@@ -1,3 +1,8 @@
+2002-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/dwarf2-1.C: Move...
+	* g++.dg/debug/debug5.C: ...here.  Convert for dg framework.
+
 2002-03-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* g++.old-deja/g++.eh/ia64-1.C: Use [ijkl]_[0-9] as variable names. 
