@@ -1,3 +1,15 @@
+2001-02-14  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/TreeMap.java: New file.
+	* java/util/TreeSet.java: New file.
+	* Makefile.am: Add TreeMap and TreeSet. Enable WeakHashMap.
+	* Makefile.in: Rebuilt.
+	* java/util/HashSet.java (clone): Use constructor instead of calling
+	clone on itself.
+	* java/util/SortedSet.java: Sync with classpath.
+	* java/util/HashMap.java (hash): Use if statement instead of ternary,
+	for clarity.
+
 2001-02-13  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/PipedReader.java (ready): Throw IOException if pipe

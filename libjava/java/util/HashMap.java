@@ -60,8 +60,8 @@ import java.io.ObjectOutputStream;
  * @author         Jon Zeppieri
  * @author         Jochen Hoenicke
  * @author	   Bryce McKinlay
- * @version        $Revision: 1.3 $
- * @modified       $Id: HashMap.java,v 1.3 2000/12/17 09:15:51 bryce Exp $
+ * @version        $Revision: 1.4 $
+ * @modified       $Id: HashMap.java,v 1.4 2000/12/21 02:00:15 bryce Exp $
  */
 public class HashMap extends AbstractMap
   implements Map, Cloneable, Serializable
@@ -500,7 +500,10 @@ public class HashMap extends AbstractMap
   /** Return an index in the buckets array for `key' based on its hashCode() */
   private int hash(Object key)
   {
-    return (key == null ? 0 : Math.abs(key.hashCode() % buckets.length));
+    if (key == null)
+      return 0;
+    else
+      return Math.abs(key.hashCode() % buckets.length);
   }
 
   /** Return an Entry who's key and value equal the supplied Map.Entry. 
@@ -611,15 +614,13 @@ public class HashMap extends AbstractMap
   }
 
   /**
-   * a class which implements the Iterator interface and is used for
-   * iterating over HashMaps;
-   * this implementation is parameterized to give a sequential view of
-   * keys, values, or entries; it also allows the removal of elements, 
-   * as per the Javasoft spec.
+   * Iterate over HashMap's entries.
+   * This implementation is parameterized to give a sequential view of
+   * keys, values, or entries.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.3 $
-   * @modified     $Id: HashMap.java,v 1.3 2000/12/17 09:15:51 bryce Exp $
+   * @version      $Revision: 1.4 $
+   * @modified     $Id: HashMap.java,v 1.4 2000/12/21 02:00:15 bryce Exp $
    */
   class HashIterator implements Iterator
   {

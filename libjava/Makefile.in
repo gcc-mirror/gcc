@@ -724,10 +724,12 @@ java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
 java/util/Timer.java \
 java/util/TimerTask.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
-java/util/Vector.java
+java/util/Vector.java \
+java/util/WeakHashMap.java
 
-#java/util/WeakHashMap.java \
 
 ordinary_java_source_files = $(core_java_source_files) \
 gnu/gcj/RawData.java \
@@ -1702,10 +1704,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/SortedSet.P .deps/java/util/Stack.P \
 .deps/java/util/StringTokenizer.P .deps/java/util/TimeZone.P \
 .deps/java/util/Timer.P .deps/java/util/TimerTask.P \
-.deps/java/util/TooManyListenersException.P .deps/java/util/Vector.P \
-.deps/java/util/jar/Attributes.P .deps/java/util/jar/JarEntry.P \
-.deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
-.deps/java/util/jar/JarInputStream.P \
+.deps/java/util/TooManyListenersException.P .deps/java/util/TreeMap.P \
+.deps/java/util/TreeSet.P .deps/java/util/Vector.P \
+.deps/java/util/WeakHashMap.P .deps/java/util/jar/Attributes.P \
+.deps/java/util/jar/JarEntry.P .deps/java/util/jar/JarException.P \
+.deps/java/util/jar/JarFile.P .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
 .deps/java/util/natGregorianCalendar.P .deps/java/util/zip/Adler32.P \
 .deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \

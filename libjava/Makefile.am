@@ -980,9 +980,11 @@ java/util/StringTokenizer.java \
 java/util/TimeZone.java	\
 java/util/Timer.java \
 java/util/TimerTask.java \
+java/util/TreeMap.java \
+java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
-java/util/Vector.java
-#java/util/WeakHashMap.java \
+java/util/Vector.java \
+java/util/WeakHashMap.java
 
 
 ## List of all .java files to be compiled.  Please keep this list
