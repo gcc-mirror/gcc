@@ -1215,7 +1215,7 @@ collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
 	-c $(srcdir)/collect2.c
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h collect2.h intl.h
-hash.o: hash.c hash.h system.h toplev.h $(CONFIG_H)
+hash.o: hash.c hash.h system.h toplev.h $(GCONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(GCONFIG_H) system.h

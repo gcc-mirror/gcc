@@ -1,3 +1,7 @@
+2001-03-19  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in (hash.o): Depend on $(GCONFIG_H), not $(CONFIG_H).
+
 2001-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* crtstuff.c (init_dummy): Use CRT_END_INIT_DUMMY if defined.
