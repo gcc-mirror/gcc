@@ -647,13 +647,6 @@ find_basic_blocks (f, nregs, file)
 
   find_basic_blocks_1 (f);
 
-  /* Record the block to which an insn belongs.  */
-  /* ??? This should be done another way, by which (perhaps) a label is
-     tagged directly with the basic block that it starts.  It is used for
-     more than that currently, but IMO that is the only valid use.  */
-
-  compute_bb_for_insn ();
-
   /* Discover the edges of our cfg.  */
   make_edges (label_value_list, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
 

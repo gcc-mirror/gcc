@@ -508,8 +508,6 @@ ssa_eliminate_dead_code ()
 
   /* Prepare for use of BLOCK_NUM ().  */
   connect_infinite_loops_to_exit ();
-   /* Be careful not to clear the added edges.  */
-  compute_bb_for_insn ();
 
   /* Compute control dependence.  */
   pdom = (int *) xmalloc (last_basic_block * sizeof (int));

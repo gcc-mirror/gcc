@@ -1,3 +1,19 @@
+Wed Jun 12 16:45:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (shift patterns): Use (TARGET_SHIFT1 || optimize_size) to
+	decide whether emit the short opcode.
+	* i386.h (x86_shift1): Declare.
+	(TARGET_SHIFT1): New macro.
+	* i386.c (x86_shift1): New global variable.
+
+	* toplev.c (rest_of_compilation): Call find_basic_block pre-loop unconditionally;
+	make loop to rebuild CFG; kill unnecesary find_basic_block calls;
+	kill compute_bb_for_insn call.
+	* cfgbuild.c (find_basic_blocks): Kill compute_bb_for_insn call.
+	* haifa-sched.c (sched_init): Likewise.
+	* ssa-ccp.c (ssa_const_prop): Likewise.
+	* ssa-dce.c (ssa_eliminate_dead_code): Likewise.
+
 2002-06-11  David S. Miller  <davem@redhat.com>
 
 	* emit-rtl.c (emit_*_scope): Only access INSN_SCOPE if
