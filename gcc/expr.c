@@ -7008,7 +7008,7 @@ expand_expr (exp, target, tmode, modifier)
 	  {
 	    rtx offset_rtx = expand_expr (offset, NULL_RTX, VOIDmode, 0);
 
-	    /* If this object is in memory, put it into a register.
+	    /* If this object is in a register, put it into memory.
 	       This case can't occur in C, but can in Ada if we have
 	       unchecked conversion of an expression from a scalar type to
 	       an array or record type.  */
