@@ -3266,6 +3266,19 @@ simplify_unary_operation (code, mode, op, op_mode)
 	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
 	val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
+      /* If this would be an entire word for the target, but is not for
+	 the host, then sign-extend on the host so that the number will look
+	 the same way on the host that it would on the target.
+
+	 For example, when building a 64 bit alpha hosted 32 bit sparc
+	 targeted compiler, then we want the 32 bit unsigned value -1 to be
+	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+	 The later confuses the sparc backend.  */
+
+      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+	  && (val & ((HOST_WIDE_INT) 1 << (width - 1))))
+	val |= ((HOST_WIDE_INT) (-1) << width);
+
       return GEN_INT (val);
     }
 #endif
@@ -4125,6 +4138,19 @@ simplify_binary_operation (code, mode, op0, op1)
       && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
 	  != ((HOST_WIDE_INT) (-1) << (width - 1))))
     val &= ((HOST_WIDE_INT) 1 << width) - 1;
+
+  /* If this would be an entire word for the target, but is not for
+     the host, then sign-extend on the host so that the number will look
+     the same way on the host that it would on the target.
+
+     For example, when building a 64 bit alpha hosted 32 bit sparc
+     targeted compiler, then we want the 32 bit unsigned value -1 to be
+     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+     The later confuses the sparc backend.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT && BITS_PER_WORD == width
+      && (val & ((HOST_WIDE_INT) 1 << (width - 1))))
+    val |= ((HOST_WIDE_INT) (-1) << width);
 
   return GEN_INT (val);
 }
