@@ -1,3 +1,7 @@
+Sun Feb 28 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Feb 28 02:00:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* invoke.texi: Update information for PA scheduling.
