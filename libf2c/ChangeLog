@@ -1,3 +1,7 @@
+2001-06-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/inquire.c: Include "config.h".
+
 2001-05-21  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libI77/Makefile.in (stamp-h): Create in $(objdir) instead
