@@ -1,3 +1,17 @@
+2000-06-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (c-common.o): Don't depend on c-tree.h or c-lex.h.
+	* c-common.c (ridpointers): Declare.
+	* c-common.h (enum rid): Declare.
+	(NORID): Likewise.
+	(ridpointers): Likewise.
+	* c-lex.c (ridpointers): Don't declare.
+	(init_lex): Initialize ridpointers.
+	* c-lex.h (enum rid): Don't declare.
+	(NORID): Likewise.
+	(RID_FIRST_MODIFIER): Likewise.
+	(ridpointers): Likewise.
+	
 2000-06-30  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/som.h (ASM_WEAKEN_LABEL): Export weak data symbols so that they

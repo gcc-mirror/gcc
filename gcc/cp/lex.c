@@ -30,8 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "input.h"
 #include "tree.h"
-#include "lex.h"
 #include "cp-tree.h"
+#include "lex.h"
 #include "parse.h"
 #include "flags.h"
 #include "obstack.h"
@@ -161,11 +161,6 @@ YYLTYPE yylloc;			/*  location data for the lookahead	*/
    so it is left around in case the identifier is not a typedef but is
    used in a context which makes it a reference to a variable.  */
 tree lastiddecl;
-
-/* The elements of `ridpointers' are identifier nodes
-   for the reserved type names and storage classes.
-   It is indexed by a RID_... value.  */
-tree ridpointers[(int) RID_MAX];
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -610,6 +605,8 @@ init_parse (filename)
   maxtoken = 40;
   token_buffer = (char *) xmalloc (maxtoken + 2);
 
+  my_friendly_assert ((int) CP_RID_MAX < 64, 20000630);
+  ridpointers = (tree *) xcalloc ((int) CP_RID_MAX, sizeof (tree));
   ridpointers[(int) RID_INT] = get_identifier ("int");
   ridpointers[(int) RID_BOOL] = get_identifier ("bool");
   ridpointers[(int) RID_CHAR] = get_identifier ("char");
@@ -708,7 +705,7 @@ init_parse (filename)
   interface_unknown = 1;
 
   ggc_add_string_root (&internal_filename, 1);
-  ggc_add_tree_root (ridpointers, RID_MAX);
+  ggc_add_tree_root (ridpointers, CP_RID_MAX);
   ggc_add_tree_root (&defarg_fns, 1);
   ggc_add_tree_root (&defarg_parm, 1);
   ggc_add_tree_root (&this_filename_time, 1);

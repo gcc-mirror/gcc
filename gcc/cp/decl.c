@@ -6123,7 +6123,7 @@ signal_catch (sig)
 }
 
 /* Push the declarations of builtin types into the namespace.
-   RID_INDEX, if < RID_MAX is the index of the builtin type
+   RID_INDEX, if < CP_RID_MAX is the index of the builtin type
    in the array RID_POINTERS.  NAME is the name used when looking
    up the builtin type.  TYPE is the _TYPE node for the builtin type.  */
 
@@ -6136,7 +6136,7 @@ record_builtin_type (rid_index, name, type)
   tree rname = NULL_TREE, tname = NULL_TREE;
   tree tdecl = NULL_TREE;
 
-  if ((int) rid_index < (int) RID_MAX)
+  if ((int) rid_index < (int) CP_RID_MAX)
     rname = ridpointers[(int) rid_index];
   if (name)
     tname = get_identifier (name);
@@ -6147,7 +6147,7 @@ record_builtin_type (rid_index, name, type)
     {
       tdecl = pushdecl (build_decl (TYPE_DECL, tname, type));
       set_identifier_type_value (tname, NULL_TREE);
-      if ((int) rid_index < (int) RID_MAX)
+      if ((int) rid_index < (int) CP_RID_MAX)
 	/* Built-in types live in the global namespace. */
 	SET_IDENTIFIER_GLOBAL_VALUE (tname, tdecl);
     }
@@ -6190,7 +6190,7 @@ record_builtin_java_type (name, size)
       TYPE_PRECISION (type) = - size;
       layout_type (type);
     }
-  record_builtin_type (RID_MAX, name, type);
+  record_builtin_type (CP_RID_MAX, name, type);
   decl = TYPE_NAME (type);
 
   /* Suppress generate debug symbol entries for these types,
@@ -6372,23 +6372,27 @@ init_decl_processing ()
   record_builtin_type (RID_SIGNED, NULL_PTR, integer_type_node);
   record_builtin_type (RID_LONG, "long int", long_integer_type_node);
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
-  record_builtin_type (RID_MAX, "long unsigned int", long_unsigned_type_node);
-  record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
-  record_builtin_type (RID_MAX, "long long int", long_long_integer_type_node);
-  record_builtin_type (RID_MAX, "long long unsigned int",
+  record_builtin_type (CP_RID_MAX, "long unsigned int",
+		       long_unsigned_type_node);
+  record_builtin_type (CP_RID_MAX, "unsigned long", long_unsigned_type_node);
+  record_builtin_type (CP_RID_MAX, "long long int",
+		       long_long_integer_type_node);
+  record_builtin_type (CP_RID_MAX, "long long unsigned int",
 		       long_long_unsigned_type_node);
-  record_builtin_type (RID_MAX, "long long unsigned",
+  record_builtin_type (CP_RID_MAX, "long long unsigned",
 		       long_long_unsigned_type_node);
   record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
-  record_builtin_type (RID_MAX, "short unsigned int", short_unsigned_type_node);
-  record_builtin_type (RID_MAX, "unsigned short", short_unsigned_type_node);
+  record_builtin_type (CP_RID_MAX, "short unsigned int",
+		       short_unsigned_type_node); 
+  record_builtin_type (CP_RID_MAX, "unsigned short",
+		       short_unsigned_type_node);
 
   ptrdiff_type_node
     = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
 
   /* Define both `signed char' and `unsigned char'.  */
-  record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
-  record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
+  record_builtin_type (CP_RID_MAX, "signed char", signed_char_type_node);
+  record_builtin_type (CP_RID_MAX, "unsigned char", unsigned_char_type_node);
 
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
@@ -6451,7 +6455,7 @@ init_decl_processing ()
   signed_size_zero_node = build_int_2 (0, 0);
   record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
   record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
-  record_builtin_type (RID_MAX, "long double", long_double_type_node);
+  record_builtin_type (CP_RID_MAX, "long double", long_double_type_node);
 
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
 			complex_integer_type_node));
@@ -6478,7 +6482,7 @@ init_decl_processing ()
 						TYPE_QUAL_CONST));
   empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
 #if 0
-  record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
+  record_builtin_type (CP_RID_MAX, NULL_PTR, string_type_node);
 #endif
 
   /* Make a type to be the domain of a few array types
@@ -6595,16 +6599,16 @@ init_decl_processing ()
       vtable_entry_type = build_qualified_type (vtable_entry_type,
 						TYPE_QUAL_CONST);
     }
-  record_builtin_type (RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
+  record_builtin_type (CP_RID_MAX, VTBL_PTR_TYPE, vtable_entry_type);
 
   vtbl_type_node
     = build_cplus_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
   vtbl_type_node = build_qualified_type (vtbl_type_node, TYPE_QUAL_CONST);
-  record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
+  record_builtin_type (CP_RID_MAX, NULL_PTR, vtbl_type_node);
   vtbl_ptr_type_node = build_pointer_type (vtable_entry_type);
   layout_type (vtbl_ptr_type_node);
-  record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
+  record_builtin_type (CP_RID_MAX, NULL_PTR, vtbl_ptr_type_node);
 
   std_node = build_decl (NAMESPACE_DECL,
 			 flag_honor_std 

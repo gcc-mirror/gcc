@@ -1034,8 +1034,6 @@ struct language_function
 extern tree current_function_return_value;
 extern tree global_namespace;
 
-extern tree ridpointers[];
-
 #define ansi_opname(CODE) \
   (operator_name_info[(int) (CODE)].identifier)
 #define ansi_assopname(CODE) \

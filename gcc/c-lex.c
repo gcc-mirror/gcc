@@ -62,11 +62,6 @@ FILE *finput;
 
 extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
 
-/* The elements of `ridpointers' are identifier nodes
-   for the reserved type names and storage classes.
-   It is indexed by a RID_... value.  */
-tree ridpointers[(int) RID_MAX];
-
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
@@ -284,6 +279,7 @@ init_lex ()
   maxtoken = 40;
   token_buffer = (char *) xmalloc (maxtoken + 2);
 
+  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
   ridpointers[(int) RID_INT] = get_identifier ("int");
   ridpointers[(int) RID_CHAR] = get_identifier ("char");
   ridpointers[(int) RID_VOID] = get_identifier ("void");
