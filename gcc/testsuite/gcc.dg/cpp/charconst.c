@@ -21,13 +21,16 @@
 
 void foo ()
 {
-  int c = '';		/* { dg-warning "empty" "empty charconst" } */
-  c = L'';		/* { dg-warning "empty" "empty wide charconst" } */
+  int c;
+  __WCHAR_TYPE__ w;
+
+  c = '';		/* { dg-warning "empty" "empty charconst" } */
+  w = L'';		/* { dg-warning "empty" "empty wide charconst" } */
 
   c = 'very long';	/* { dg-warning "too long" "long charconst" } */
-  c = L'very long';	/* { dg-warning "too long" "long wide charconst" } */
+  w = L'very long';	/* { dg-warning "too long" "long wide charconst" } */
 
-  /* Don't do this test for L'ab'; it depends upon sizeof (wchar_t).  */
-  c = 'ab';		/* { dg-warning "multi-char" "multi-character" } */
- 
+  c = 'ab';		/* { dg-warning "multi-char" "multi-char" } */
+  /* Wide charconsts cannot contain more than one wide character.  */
+  w = L'ab';		/* { dg-warning "too long" "multi-char wide" } */
 }

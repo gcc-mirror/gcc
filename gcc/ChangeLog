@@ -1,3 +1,14 @@
+2002-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_common_init): Set up CPP arithmetic.
+	* cppinit.c (cpp_create_reader): Default CPP arithmetic to
+	something reasonable for the host.
+	(sanity_checks): Add checks.
+	(cpp_read_main_file): Call sanity_checks() from here...
+	(cpp_post_options): ... not here.
+	* cpplex.c (cpp_interpret_charconst): Get max_chars right.
+	* cpplib.h (struct cpp_options): New member int_precision.
+
 2002-05-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* doc/install.texi (powerpc-*-linux-gnu*): Update build requirements.

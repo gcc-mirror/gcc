@@ -4299,6 +4299,14 @@ const char *
 c_common_init (filename)
      const char *filename;
 {
+  cpp_options *options = cpp_get_options (parse_in);
+
+  /* Set up preprocessor arithmetic.  Must be done after call to
+     c_common_nodes_and_builtins for wchar_type_node to be good.  */
+  options->char_precision = TYPE_PRECISION (char_type_node);
+  options->int_precision = TYPE_PRECISION (integer_type_node);
+  options->wchar_precision = TYPE_PRECISION (wchar_type_node);
+
   /* NULL is passed up to toplev.c and we exit quickly.  */
   if (flag_preprocess_only)
     {
