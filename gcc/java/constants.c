@@ -442,8 +442,8 @@ build_constants_constructor (void)
   
       data_decl = TREE_OPERAND (build_constant_data_ref (), 0);
       TREE_TYPE (data_decl) = build_array_type (ptr_type_node, index_type), 
-      DECL_INITIAL (data_decl) = build (CONSTRUCTOR, TREE_TYPE (data_decl),
-					NULL_TREE, data_list);
+      DECL_INITIAL (data_decl) = build_constructor (TREE_TYPE (data_decl),
+						    data_list);
       DECL_SIZE (data_decl) = TYPE_SIZE (TREE_TYPE (data_decl));
       DECL_SIZE_UNIT (data_decl) = TYPE_SIZE_UNIT (TREE_TYPE (data_decl));
       rest_of_decl_compilation (data_decl, (char *) 0, 1, 0);
@@ -454,8 +454,7 @@ build_constants_constructor (void)
 							   current_class),
 			      tags_type);
       TREE_STATIC (tags_decl) = 1;
-      DECL_INITIAL (tags_decl) = build (CONSTRUCTOR, tags_type,
-					NULL_TREE, tags_list);
+      DECL_INITIAL (tags_decl) = build_constructor (tags_type, tags_list);
       rest_of_decl_compilation (tags_decl, (char*) 0, 1, 0);
       tags_value = build_address_of (tags_decl);
     }

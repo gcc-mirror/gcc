@@ -7534,10 +7534,9 @@ tsubst_copy (t, args, complain, in_decl)
 
     case CONSTRUCTOR:
       {
-	r = build
-	  (CONSTRUCTOR, tsubst (TREE_TYPE (t), args, complain, in_decl), 
-	   NULL_TREE, tsubst_copy (CONSTRUCTOR_ELTS (t), args,
-				   complain, in_decl));
+	r = build_constructor
+	  (tsubst (TREE_TYPE (t), args, complain, in_decl), 
+	   tsubst_copy (CONSTRUCTOR_ELTS (t), args, complain, in_decl));
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 	return r;
       }
@@ -8348,7 +8347,7 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 	    r = tree_cons (purpose, value, r);
 	  }
 	
-	r = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (r));
+	r = build_constructor (NULL_TREE, nreverse (r));
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 
 	if (type)

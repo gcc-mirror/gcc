@@ -1649,12 +1649,11 @@ build_function_info_value (function)
 	      build_counter_section_value (function->counter_sections[i].tag,
 					   function->counter_sections[i].n_counters);
       set_purpose (counter_section_value, counter_section_fields);
-      counter_sections_value = tree_cons (NULL_TREE,
-					  build (CONSTRUCTOR,
-						 counter_section_type,
-						 NULL_TREE,
-						 nreverse (counter_section_value)),
-					  counter_sections_value);
+      counter_sections_value =
+	tree_cons (NULL_TREE,
+		   build_constructor (counter_section_type,
+				      nreverse (counter_section_value)),
+		   counter_sections_value);
     }
   finish_builtin_struct (counter_section_type, "__counter_section",
 			 counter_section_fields, NULL_TREE);
@@ -1662,10 +1661,8 @@ build_function_info_value (function)
   if (function->n_counter_sections)
     {
       counter_sections_value = 
-	      build (CONSTRUCTOR,
- 		     counter_sections_array_type,
-		     NULL_TREE,
-		     nreverse (counter_sections_value)),
+	      build_constructor (counter_sections_array_type,
+				 nreverse (counter_sections_value)),
       counter_sections_value = build1 (ADDR_EXPR,
 				       counter_sections_ptr_type,
 				       counter_sections_value);
@@ -1832,10 +1829,8 @@ build_gcov_info_value ()
       tree function_info_value = build_function_info_value (item);
       set_purpose (function_info_value, function_info_fields);
       functions = tree_cons (NULL_TREE,
-    			     build (CONSTRUCTOR,
-			    	    function_info_type,
-				    NULL_TREE,
-				    nreverse (function_info_value)),
+    			     build_constructor (function_info_type,
+						nreverse (function_info_value)),
 			     functions);
     }
   finish_builtin_struct (function_info_type, "__function_info",
@@ -1849,10 +1844,7 @@ build_gcov_info_value ()
       array_type = build_array_type (
 			function_info_type,
    			build_index_type (build_int_2 (n_functions - 1, 0)));
-      functions = build (CONSTRUCTOR,
-      			 array_type,
-			 NULL_TREE,
-			 nreverse (functions));
+      functions = build_constructor (array_type, nreverse (functions));
       functions = build1 (ADDR_EXPR,
 			  function_info_ptr_type,
 			  functions);
@@ -1879,12 +1871,11 @@ build_gcov_info_value ()
 		profile_info.section_info[i].tag,
 		profile_info.section_info[i].n_counters);
       set_purpose (counter_sections_value, counter_section_data_fields);
-      counter_sections = tree_cons (NULL_TREE,
-		       		    build (CONSTRUCTOR,
-		       			   counter_section_data_type,
-		       			   NULL_TREE,
-		       			   nreverse (counter_sections_value)),
-		       		    counter_sections);
+      counter_sections =
+	tree_cons (NULL_TREE,
+		   build_constructor (counter_section_data_type,
+				      nreverse (counter_sections_value)),
+		   counter_sections);
     }
   finish_builtin_struct (counter_section_data_type, "__counter_section_data",
 			 counter_section_data_fields, NULL_TREE);
@@ -1895,13 +1886,11 @@ build_gcov_info_value ()
 
   if (profile_info.n_sections)
     {
-      counter_sections =
-    	      build (CONSTRUCTOR,
-    		     build_array_type (
-	       			       counter_section_data_type,
-		       		       build_index_type (build_int_2 (profile_info.n_sections - 1, 0))),
-		     NULL_TREE,
-		     nreverse (counter_sections));
+      tree cst_type = build_index_type (build_int_2 (profile_info.n_sections-1,
+						     0));
+      cst_type = build_array_type (counter_section_data_type, cst_type);
+      counter_sections = build_constructor (cst_type,
+					    nreverse (counter_sections));
       counter_sections = build1 (ADDR_EXPR,
 				 counter_section_data_ptr_type,
 				 counter_sections);
@@ -1943,8 +1932,7 @@ create_profiler ()
 
   gcov_info = build (VAR_DECL, gcov_info_type, NULL_TREE, NULL_TREE);
   DECL_INITIAL (gcov_info) =
-	  build (CONSTRUCTOR, gcov_info_type, NULL_TREE,
-		 nreverse (gcov_info_value));
+    build_constructor (gcov_info_type, nreverse (gcov_info_value));
 
   TREE_STATIC (gcov_info) = 1;
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);

@@ -1,3 +1,12 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c (ffecom_build_complex_constant_, ffecom_expr_)
+	(ffecom_init_zero_, ffecom_transform_namelist_, ffecom_vardesc_)
+	(ffecom_vardesc_array_, ffecom_vardesc_dims_, ffecom_2)
+	* ste.c (ffeste_io_ialist_, ffeste_io_cilist_, ffeste_io_cllist_)
+	(ffeste_io_icilist_, ffeste_io_inlist_, ffeste_io_olist_):
+	Use build_constructor.
+
 2003-04-11  Bud Davis <bdavis9659@comcast.net>
 
 	PR Fortran/9263

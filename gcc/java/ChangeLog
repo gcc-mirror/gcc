@@ -1,3 +1,12 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* class.c (make_field_value, make_method_value, get_dispatch_table)
+	(make_class_data, emit_offset_symbol_table)
+	* constants.c (build_constants_constructor)
+	* java-tree.h (START_RECORD_CONSTRUCTOR)
+	* parse.y (maybe_build_array_element_wfl):
+	Use build_constructor.
+
 2003-04-10  Eric Blake  <ebb9@email.byu.edu>
 
 	PR java/10253:

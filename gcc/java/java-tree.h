@@ -1650,7 +1650,7 @@ extern tree *type_map;
 
 /* Start building a RECORD_TYPE constructor with a given TYPE in CONS. */
 #define START_RECORD_CONSTRUCTOR(CONS, CTYPE) { \
-  CONS = build (CONSTRUCTOR, CTYPE, NULL_TREE, NULL_TREE);\
+  CONS = build_constructor (CTYPE, NULL_TREE);\
   TREE_CHAIN(CONS) = TYPE_FIELDS (CTYPE); }
 
 /* Append a field initializer to CONS for the dummy field for the inherited

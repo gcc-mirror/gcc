@@ -929,7 +929,7 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
 	 just compare the data pointer.  */
       else if (TYPE_FAT_POINTER_P (left_base_type)
 	       && TREE_CODE (right_operand) == CONSTRUCTOR
-	       && integer_zerop (TREE_VALUE (TREE_OPERAND (right_operand, 1))))
+	       && integer_zerop (TREE_VALUE (CONSTRUCTOR_ELTS (right_operand))))
 	{
 	  right_operand = build_component_ref (left_operand, NULL_TREE,
 					       TYPE_FIELDS (left_base_type));
@@ -1514,7 +1514,7 @@ build_call_raise (msg)
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
 
 tree
-build_constructor (type, list)
+gnat_build_constructor (type, list)
      tree type;
      tree list;
 {
@@ -1566,7 +1566,7 @@ build_constructor (type, list)
 	}
     }
 
-  result = build (CONSTRUCTOR, type, NULL_TREE, list);
+  result = build_constructor (type, list);
   TREE_CONSTANT (result) = allconstant;
   TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
@@ -1896,7 +1896,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
 		    (MODIFY_EXPR, storage_type,
 		     build_unary_op (INDIRECT_REF, NULL_TREE,
 				     convert (storage_ptr_type, storage)),
-		     build_constructor (storage_type, template_cons)),
+		     gnat_build_constructor (storage_type, template_cons)),
 		    convert (storage_ptr_type, storage)));
 	}
       else
@@ -2008,7 +2008,7 @@ fill_vms_descriptor (expr, gnat_formal)
 			      const_list);
     }
 
-  return build_constructor (record_type, nreverse (const_list));
+  return gnat_build_constructor (record_type, nreverse (const_list));
 }
 
 /* Indicate that we need to make the address of EXPR_NODE and it therefore

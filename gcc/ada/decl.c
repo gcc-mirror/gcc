@@ -812,7 +812,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		 && TYPE_CONTAINS_TEMPLATE_P (gnu_type)
 		 && gnu_expr == 0)
 	  gnu_expr
-	    = build_constructor
+	    = gnat_build_constructor
 	      (gnu_type,
 	       tree_cons
 	       (TYPE_FIELDS (gnu_type),
@@ -957,7 +957,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 
 	    if (gnu_expr != 0)
 	      gnu_expr
-		= build_constructor (gnu_new_type,
+		= gnat_build_constructor (gnu_new_type,
 				     tree_cons (TYPE_FIELDS (gnu_new_type),
 						gnu_expr, NULL_TREE));
 	    set_lineno (gnat_entity, 1);

@@ -5781,7 +5781,7 @@ build_ptrmemfunc1 (type, delta, pfn)
   /* Finish creating the initializer.  */
   u = tree_cons (pfn_field, pfn,
 		 build_tree_list (delta_field, delta));
-  u = build (CONSTRUCTOR, type, NULL_TREE, u);
+  u = build_constructor (type, u);
   TREE_CONSTANT (u) = TREE_CONSTANT (pfn) && TREE_CONSTANT (delta);
   TREE_STATIC (u) = (TREE_CONSTANT (u)
 		     && (initializer_constant_valid_p (pfn, TREE_TYPE (pfn))

@@ -811,7 +811,7 @@ tinfo_base_init (tree desc, tree target)
   
   init = tree_cons (NULL_TREE, decay_conversion (name_decl), init);
   
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse (init));
+  init = build_constructor (NULL_TREE, nreverse (init));
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   init = tree_cons (NULL_TREE, init, NULL_TREE);
   
@@ -827,7 +827,7 @@ generic_initializer (tree desc, tree target)
 {
   tree init = tinfo_base_init (desc, target);
   
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, init);
+  init = build_constructor (NULL_TREE, init);
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   return init;
 }
@@ -854,7 +854,7 @@ ptr_initializer (tree desc, tree target, bool *non_public_ptr)
                     get_tinfo_ptr (TYPE_MAIN_VARIANT (to)),
                     init);
   
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse (init));
+  init = build_constructor (NULL_TREE, nreverse (init));
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   return init;
 }
@@ -891,7 +891,7 @@ ptm_initializer (tree desc, tree target, bool *non_public_ptr)
 		    get_tinfo_ptr (klass),
 		    init);  
   
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, nreverse (init));
+  init = build_constructor (NULL_TREE, nreverse (init));
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   return init;  
 }
@@ -959,7 +959,7 @@ class_initializer (tree desc, tree target, tree trail)
   tree init = tinfo_base_init (desc, target);
   
   TREE_CHAIN (init) = trail;
-  init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, init);
+  init = build_constructor (NULL_TREE, init);
   TREE_HAS_CONSTRUCTOR (init) = TREE_CONSTANT (init) = TREE_STATIC (init) = 1;
   return init;  
 }
@@ -1078,12 +1078,11 @@ get_pseudo_ti_init (tree type, tree var_desc, bool *non_public_p)
 					   build_int_2 (flags, 0));
               base_init = tree_cons (NULL_TREE, offset, base_init);
               base_init = tree_cons (NULL_TREE, tinfo, base_init);
-              base_init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, base_init);
+              base_init = build_constructor (NULL_TREE, base_init);
 	      TREE_HAS_CONSTRUCTOR (base_init) = 1;
               base_inits = tree_cons (NULL_TREE, base_init, base_inits);
             }
-	  base_inits = build (CONSTRUCTOR,
-			      NULL_TREE, NULL_TREE, base_inits);
+	  base_inits = build_constructor (NULL_TREE, base_inits);
 	  TREE_HAS_CONSTRUCTOR (base_inits) = 1;
 	  base_inits = tree_cons (NULL_TREE, base_inits, NULL_TREE);
 	  /* Prepend the number of bases.  */

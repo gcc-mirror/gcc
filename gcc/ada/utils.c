@@ -2206,7 +2206,7 @@ build_template (template_type, array_type, expr)
 				 tree_cons (field, min, template_elts));
     }
 
-  return build_constructor (template_type, nreverse (template_elts));
+  return gnat_build_constructor (template_type, nreverse (template_elts));
 }
 
 /* Build a VMS descriptor from a Mechanism_Type, which must specify
@@ -2681,7 +2681,7 @@ convert_to_fat_pointer (type, expr)
      pointer to the template and array.  */
   if (integer_zerop (expr))
     return
-      build_constructor
+      gnat_build_constructor
 	(type,
 	 tree_cons (TYPE_FIELDS (type),
 		    convert (TREE_TYPE (TYPE_FIELDS (type)), expr),
@@ -2715,7 +2715,7 @@ convert_to_fat_pointer (type, expr)
 
   /* The result is a CONSTRUCTOR for the fat pointer.  */
   return
-    build_constructor (type,
+    gnat_build_constructor (type,
 		       tree_cons (TYPE_FIELDS (type), expr,
 				  tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
 					     template_addr, NULL_TREE)));
@@ -2818,7 +2818,7 @@ convert (type, expr)
 
       else
 	return
-	  build_constructor (type,
+	  gnat_build_constructor (type,
 			     tree_cons (TYPE_FIELDS (type),
 					convert (TREE_TYPE
 						 (TYPE_FIELDS (type)),
@@ -2849,7 +2849,7 @@ convert (type, expr)
       tree obj_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (type)));
 
       return
-	build_constructor
+	gnat_build_constructor
 	  (type,
 	   tree_cons (TYPE_FIELDS (type),
 		      build_template (TREE_TYPE (TYPE_FIELDS (type)),
@@ -3017,7 +3017,7 @@ convert (type, expr)
     case RECORD_TYPE:
       if (TYPE_LEFT_JUSTIFIED_MODULAR_P (type) && ! AGGREGATE_TYPE_P (etype))
 	return
-	  build_constructor
+	  gnat_build_constructor
 	    (type, tree_cons (TYPE_FIELDS (type),
 			      convert (TREE_TYPE (TYPE_FIELDS (type)), expr),
 			      NULL_TREE));
@@ -3263,7 +3263,7 @@ unchecked_convert (type, expr)
       TYPE_FIELDS (rec_type) = field;
       layout_type (rec_type);
 
-      expr = build_constructor (rec_type, build_tree_list (field, expr));
+      expr = gnat_build_constructor (rec_type, build_tree_list (field, expr));
       expr = unchecked_convert (type, expr);
     }
 

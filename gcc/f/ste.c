@@ -1231,7 +1231,7 @@ ffeste_io_ialist_ (bool have_err,
   initn = inits;
   ffeste_f2c_init_next_ (unitinit);
 
-  inits = build (CONSTRUCTOR, f2c_alist_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_alist_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
@@ -1434,7 +1434,7 @@ ffeste_io_cilist_ (bool have_err,
   ffeste_f2c_init_next_ (formatinit);
   ffeste_f2c_init_next_ (recinit);
 
-  inits = build (CONSTRUCTOR, f2c_cilist_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_cilist_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
@@ -1561,7 +1561,7 @@ ffeste_io_cllist_ (bool have_err,
   ffeste_f2c_init_next_ (unitinit);
   ffeste_f2c_init_next_ (statinit);
 
-  inits = build (CONSTRUCTOR, f2c_close_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_close_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
@@ -1766,7 +1766,7 @@ ffeste_io_icilist_ (bool have_err,
   ffeste_f2c_init_next_ (unitleninit);
   ffeste_f2c_init_next_ (unitnuminit);
 
-  inits = build (CONSTRUCTOR, f2c_icilist_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_icilist_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
@@ -2013,7 +2013,7 @@ ffeste_io_inlist_ (bool have_err,
   ffeste_f2c_init_next_ (blankinit);
   ffeste_f2c_init_next_ (blankleninit);
 
-  inits = build (CONSTRUCTOR, f2c_inquire_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_inquire_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 
@@ -2189,7 +2189,7 @@ ffeste_io_olist_ (bool have_err,
   ffeste_f2c_init_next_ (reclinit);
   ffeste_f2c_init_next_ (blankinit);
 
-  inits = build (CONSTRUCTOR, f2c_open_struct, NULL_TREE, inits);
+  inits = build_constructor (f2c_open_struct, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
   TREE_STATIC (inits) = 1;
 

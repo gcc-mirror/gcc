@@ -336,7 +336,7 @@ store_init_value (decl, init)
       if (TREE_CODE (init) == TREE_LIST)
 	{
 	  error ("constructor syntax used, but no constructor declared for type `%T'", type);
-	  init = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (init));
+	  init = build_constructor (NULL_TREE, nreverse (init));
 	}
     }
   else if (TREE_CODE (init) == TREE_LIST
@@ -704,7 +704,7 @@ process_init_constructor (type, init, elts)
 	      if (IS_AGGR_TYPE (TREE_TYPE (type)))
 		next1 = build_functional_cast (TREE_TYPE (type), NULL_TREE);
 	      else
-		next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, NULL_TREE);
+		next1 = build_constructor (NULL_TREE, NULL_TREE);
 	      next1 = digest_init (TREE_TYPE (type), next1, 0);
 	    }
 	  else if (! zero_init_p (TREE_TYPE (type)))
@@ -797,8 +797,7 @@ process_init_constructor (type, init, elts)
 					       NULL_TREE);
 	      else
 	        {
-		  next1 = build (CONSTRUCTOR, NULL_TREE, NULL_TREE,
-			         NULL_TREE);
+		  next1 = build_constructor (NULL_TREE, NULL_TREE);
                   if (init)
                     TREE_HAS_CONSTRUCTOR (next1)
                        = TREE_HAS_CONSTRUCTOR (init);
@@ -926,7 +925,7 @@ process_init_constructor (type, init, elts)
   if (erroneous)
     return error_mark_node;
 
-  result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (members));
+  result = build_constructor (type, nreverse (members));
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
     complete_array_type (type, result, /*do_default=*/0);
   if (init)
@@ -1232,7 +1231,7 @@ build_functional_cast (exp, parms)
   if (parms == NULL_TREE && !TYPE_NEEDS_CONSTRUCTING (type)
       && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
     {
-      exp = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      exp = build_constructor (type, NULL_TREE);
       return get_target_expr (exp);
     }
 

@@ -3212,11 +3212,6 @@ expand_builtin_args_info (exp)
   tree arglist = TREE_OPERAND (exp, 1);
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
   int *word_ptr = (int *) &current_function_args_info;
-#if 0
-  /* These are used by the code below that is if 0'ed away */
-  int i;
-  tree type, elts, result;
-#endif
 
   if (sizeof (CUMULATIVE_ARGS) % sizeof (int) != 0)
     abort ();
@@ -3239,20 +3234,6 @@ expand_builtin_args_info (exp)
     error ("missing argument in `__builtin_args_info'");
 
   return const0_rtx;
-
-#if 0
-  for (i = 0; i < nwords; i++)
-    elts = tree_cons (NULL_TREE, build_int_2 (word_ptr[i], 0));
-
-  type = build_array_type (integer_type_node,
-			   build_index_type (build_int_2 (nwords, 0)));
-  result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (elts));
-  TREE_CONSTANT (result) = 1;
-  TREE_STATIC (result) = 1;
-  result = build1 (INDIRECT_REF, build_pointer_type (type), result);
-  TREE_CONSTANT (result) = 1;
-  return expand_expr (result, NULL_RTX, VOIDmode, 0);
-#endif
 }
 
 /* Expand ARGLIST, from a call to __builtin_next_arg.  */
