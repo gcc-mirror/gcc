@@ -75,6 +75,9 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     sun4*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
+    i86pc:SunOS:5.*:*)
+	echo i386-unknown-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+	exit 0 ;;
     sun4*:SunOS:6*:*)
 	# According to config.sub, this is the proper way to canonicalize
 	# SunOS6.  Hard to guess exactly what SunOS6 will be like, but
@@ -281,16 +284,13 @@ EOF
     C4*:ConvexOS:*:* | convex:ConvexOS:C4*:*)
 	echo c4-convex-bsd
         exit 0 ;;
-    CRAY*X-MP:UNICOS:*:*)
+    CRAY*X-MP:*:*:*)
 	echo xmp-cray-unicos
-        exit 0 ;;
-    CRAY*Y-MP:UNICOS:*:*)
-	echo ymp-cray-unicos
         exit 0 ;;
     CRAY*Y-MP:*:*:*)
       echo ymp-cray-unicos${UNAME_RELEASE}
       exit 0 ;;
-    CRAY-2:UNICOS:*:*)
+    CRAY-2:*:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
     hp3[0-9][05]:NetBSD:*:*)
