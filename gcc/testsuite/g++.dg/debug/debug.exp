@@ -23,7 +23,7 @@ load_lib g++-dg.exp
 dg-init
 
 # Main loop.
-gcc-dg-debug-runtest g++_target_compile trivial.C \
+gcc-dg-debug-runtest g++_target_compile trivial.C [list -O2 -O3] \
     [lsort [glob -nocomplain $srcdir/$subdir/*.C]]
 
 # All done.

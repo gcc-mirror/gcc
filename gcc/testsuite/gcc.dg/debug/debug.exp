@@ -24,7 +24,7 @@ dg-init
 
 # Main loop.
 
-gcc-dg-debug-runtest gcc_target_compile trivial.c \
+gcc-dg-debug-runtest gcc_target_compile trivial.c [list -O -O3] \
     [lsort [glob -nocomplain $srcdir/$subdir/*.\[cS\]]]
 
 # All done.
