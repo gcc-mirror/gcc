@@ -3190,24 +3190,30 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = expand_expr (exp1, 0, VOIDmode, EXPAND_SUM);
 	    op0 = memory_address (mode, op0);
 	  }
-      }
-      temp = gen_rtx (MEM, mode, op0);
-      /* If address was computed by addition,
-	 mark this as an element of an aggregate.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR
-	  || (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR
-	      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == PLUS_EXPR)
-	  || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE)
-	MEM_IN_STRUCT_P (temp) = 1;
-      MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) || flag_volatile;
+
+	temp = gen_rtx (MEM, mode, op0);
+	/* If address was computed by addition,
+	   mark this as an element of an aggregate.  */
+	if (TREE_CODE (TREE_OPERAND (exp, 0)) == PLUS_EXPR
+	    || (TREE_CODE (TREE_OPERAND (exp, 0)) == SAVE_EXPR
+		&& TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == PLUS_EXPR)
+	    || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+	    || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+	    || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	    || (TREE_CODE (exp1) == ADDR_EXPR
+		&& (exp2 = TREE_OPERAND (exp1, 0))
+		&& (TREE_CODE (TREE_TYPE (exp2)) == ARRAY_TYPE
+		    || TREE_CODE (TREE_TYPE (exp2)) == RECORD_TYPE
+		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE)))
+	  MEM_IN_STRUCT_P (temp) = 1;
+	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) || flag_volatile;
 #if 0 /* It is incorrectto set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
-      RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
+	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
 #endif
-      return temp;
+	return temp;
+      }
 
     case ARRAY_REF:
       if (TREE_CODE (TREE_OPERAND (exp, 1)) != INTEGER_CST
@@ -3293,15 +3299,29 @@ expand_expr (exp, target, tmode, modifier)
 	  && TREE_CODE (DECL_INITIAL (TREE_OPERAND (exp, 0))) != ERROR_MARK)
 	{
 	  tree index = fold (TREE_OPERAND (exp, 1));
-	  if (TREE_CODE (index) == INTEGER_CST)
+	  if (TREE_CODE (index) == INTEGER_CST
+	      && TREE_INT_CST_HIGH (index) == 0)
 	    {
 	      int i = TREE_INT_CST_LOW (index);
-	      tree init = CONSTRUCTOR_ELTS (DECL_INITIAL (TREE_OPERAND (exp, 0)));
+	      tree init = DECL_INITIAL (TREE_OPERAND (exp, 0));
 
-	      while (init && i--)
-		init = TREE_CHAIN (init);
-	      if (init)
-		return expand_expr (fold (TREE_VALUE (init)), target, tmode, modifier);
+	      if (TREE_CODE (init) == CONSTRUCTOR)
+		{
+		  tree elem = CONSTRUCTOR_ELTS (init);
+
+		  while (elem && i--)
+		    elem = TREE_CHAIN (elem);
+		  if (elem)
+		    return expand_expr (fold (TREE_VALUE (elem)), target,
+					tmode, modifier);
+		}
+	      else if (TREE_CODE (init) == STRING_CST
+		       && i < TREE_STRING_LENGTH (init))
+		{
+		  temp = gen_rtx (CONST_INT, VOIDmode,
+				  TREE_STRING_POINTER (init)[i]);
+		  return convert_to_mode (mode, temp, 0);
+		}
 	    }
 	}
       /* Treat array-ref with constant index as a component-ref.  */
@@ -3320,6 +3340,17 @@ expand_expr (exp, target, tmode, modifier)
 	   So get it as a sum, if possible.  If we will be using it
 	   directly in an insn, we validate it.  */
 	op0 = expand_expr (tem, 0, VOIDmode, EXPAND_SUM);
+
+	/* If this is a constant, put it into a register if it is a
+	   legimate constant and memory if it isn't.  */
+	if (CONSTANT_P (op0))
+	  {
+	    enum machine_mode mode = TYPE_MODE (TREE_TYPE (tem));
+	    if (LEGITIMATE_CONSTANT_P (op0))
+	      op0 = force_reg (mode, op0);
+	    else
+	      op0 = validize_mem (force_const_mem (mode, op0));
+	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
 	if (GET_CODE (op0) == MEM && volatilep && ! MEM_VOLATILE_P (op0))
@@ -4683,7 +4714,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_FSQRT:
       /* If not optimizing, call the library function.  */
-      if (!optimize)
+      if (! optimize)
 	break;
 
       if (arglist == 0
@@ -4700,21 +4731,21 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Test the argument to make sure it is in the proper domain for
 	 the sqrt function.  If it is not in the domain, branch to a 
 	 library call.  */
-      start_sequence();
-      lab1 = gen_label_rtx();
-      lab2 = gen_label_rtx();
+      start_sequence ();
+      lab1 = gen_label_rtx ();
+      lab2 = gen_label_rtx ();
 
       /* By default check the arguments.  If flag_fast_math is turned on,
 	 then assume sqrt will always be called with valid arguments.  */
       if (! flag_fast_math) 
 	{
-
-	  /* By checking op >= 1 we are able to catch all of the
+	  /* By checking op > 0 we are able to catch all of the
              IEEE special cases with a single if conditional.  */
-          emit_cmp_insn (op0, CONST0_RTX (op0->mode), GT, 0, op0->mode, 0, 0);
+          emit_cmp_insn (op0, CONST0_RTX (GET_MODE (op0)), GT, 0,
+			 GET_MODE (op0), 0, 0);
           emit_jump_insn (gen_bgt (lab1));
 
-          /* The arguemnt was not in the domain; do this via library call.  */
+          /* The argument was not in the domain; do this via library call.  */
           expand_call (exp, target, 0, 0);
 
           /* Branch around open coded version */
@@ -4725,23 +4756,23 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* Arg is in the domain, compute sqrt, into TARGET. 
 	 Set TARGET to wherever the result comes back.  */
       target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
-			    sqrt_optab, op0, target, 1);
+			    sqrt_optab, op0, target, 0);
 
       /* If we were unable to expand via the builtin, stop the
 	 sequence (without outputting the insns) and break, causing
 	 a call the the library function.  */
       if (target == 0)
 	{
-	  end_sequence();
+	  end_sequence ();
 	  break;
         }
       emit_label (lab2);
 
 
       /* Output the entire sequence. */
-      insns = get_insns();
-      end_sequence();
-      emit_insns();
+      insns = get_insns ();
+      end_sequence ();
+      emit_insns (insns);
  
       return target;
 
@@ -4986,7 +5017,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       op0 = expand_expr (TREE_VALUE (arglist), 0, VOIDmode, 0);
 
       /* Allocate the desired space.  */
-      target = allocate_dynamic_stack_space (op0, target);
+      target = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
 
       /* Record the new stack level for nonlocal gotos.  */
       if (nonlocal_goto_stack_level != 0)
