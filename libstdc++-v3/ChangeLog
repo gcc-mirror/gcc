@@ -1,3 +1,20 @@
+2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* include/bits/std_limits.h: New file.
+	* include/Makefile.am (bits_headers): Add std_limits.h
+	(all-local): std_limits.h is no longer built.
+	(${target_builddir}/std_limits.h): Remove.
+	* include/Makefile.in: Regenerate.
+	* src/limits.cc: New file.
+	* src/Makefile.am (sources): Add limits.cc in replacement of
+	limitsMEMBERS.cc.
+	* src/Makefile.in: Regenerate.
+
+
+2001-08-09  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* src/gen-num-limits.cc (digits10): Fix thinko.
+
 2001-08-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* po/Makefile.am (check-no): Add.

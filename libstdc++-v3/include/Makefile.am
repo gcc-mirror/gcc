@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.1 2001/07/13 16:47:55 pme Exp $
+## $Id: Makefile.am,v 1.2 2001/08/08 02:48:59 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -78,6 +78,7 @@ bits_headers = \
 	${bits_srcdir}/std_iostream.h \
 	${bits_srcdir}/std_istream.h \
 	${bits_srcdir}/std_iterator.h \
+	${bits_srcdir}/std_limits.h \
 	${bits_srcdir}/std_list.h \
 	${bits_srcdir}/std_locale.h \
 	${bits_srcdir}/std_map.h \
@@ -305,7 +306,6 @@ CLEANFILES = ${allstamps}
 # Here are the rules for building the headers
 all-local: \
 	${target_builddir}/c++config.h \
-	${target_builddir}/std_limits.h \
 	${allstamps}
 
 stamp-std: ${std_headers}
@@ -401,15 +401,6 @@ ${target_builddir}/c++config.h: ${glibcpp_builddir}/config.h \
 	    -e 's/WORDS_/_GLIBCPP_WORDS_/g' \
 	    < ${glibcpp_builddir}/config.h >> $@ ;\
 	echo "#endif // _CPP_CPPCONFIG_" >>$@
-
-# This tool leaves the header in the wrong place, but rather than fix the
-# tool, the destination get massaged here.
-${target_builddir}/std_limits.h: ${target_builddir}/c++config.h \
-				 stamp-target ${target_builddir}
-	CC="$(CC) -I${glibcpp_builddir} -I${target_builddir}/.." \
-	${glibcpp_srcdir}/mknumeric_limits \
-	${glibcpp_builddir} ${glibcpp_srcdir} @GLIBCPP_IS_CROSS_COMPILING@ ;\
-	mv ${glibcpp_builddir}/include/bits/std_limits.h ${target_builddir}
 
 glibcpp_thread_h = @glibcpp_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
