@@ -4899,7 +4899,15 @@ store_constructor (exp, target, cleared, size)
 		   || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))
 		       == size)))
 	{
-	  clear_storage (target, GEN_INT (size));
+	  rtx xtarget = target;
+
+	  if (readonly_fields_p (type))
+	    {
+	      xtarget = copy_rtx (xtarget);
+	      RTX_UNCHANGING_P (xtarget) = 1;
+	    }
+
+	  clear_storage (xtarget, GEN_INT (size));
 	  cleared = 1;
 	}
 
