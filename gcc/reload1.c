@@ -2879,6 +2879,7 @@ eliminate_regs (x, mem_mode, insn, storing)
 	     address in case it is shared.  */
 	  new = eliminate_regs (reg_equiv_memory_loc[regno],
 				mem_mode, insn, 0);
+
 	  if (new != reg_equiv_memory_loc[regno])
 	    {
 	      cannot_omit_stores[regno] = 1;
@@ -2888,11 +2889,12 @@ eliminate_regs (x, mem_mode, insn, storing)
       return x;
 
     case PLUS:
+    case MINUS:
       /* If this is the sum of an eliminable register and a constant, rework
 	 the sum.   */
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
-	  && CONSTANT_P (XEXP (x, 1)))
+	  && code == PLUS && CONSTANT_P (XEXP (x, 1)))
 	{
 	  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
 	       ep++)
@@ -2961,12 +2963,12 @@ eliminate_regs (x, mem_mode, insn, storing)
 		     && reg_equiv_constant[REGNO (new0)] != 0)
 	      new0 = reg_equiv_constant[REGNO (new0)];
 
-	    new = form_sum (new0, new1);
+	    new = form_sum (new0, new1, code == MINUS);
 
 	    /* As above, if we are not inside a MEM we do not want to
 	       turn a PLUS into something else.  We might try to do so here
 	       for an addition of 0 if we aren't optimizing.  */
-	    if (! mem_mode && GET_CODE (new) != PLUS)
+	    if (! mem_mode && GET_CODE (new) != PLUS && GET_CODE (new) != code)
 	      return gen_rtx (PLUS, GET_MODE (x), new, const0_rtx);
 	    else
 	      return new;
@@ -3002,7 +3004,6 @@ eliminate_regs (x, mem_mode, insn, storing)
 
     case CALL:
     case COMPARE:
-    case MINUS:
     case DIV:      case UDIV:
     case MOD:      case UMOD:
     case AND:      case IOR:      case XOR:
@@ -3476,7 +3477,7 @@ eliminate_regs_in_insn (insn, replace)
 	 in the insn is the negative of the offset in FROM.  Substitute
 	 (set (reg) (reg to)) for the insn and change its code.
 
-	 We have to do this here, rather than in eliminate_regs, do that we can
+	 We have to do this here, rather than in eliminate_regs, so that we can
 	 change the insn code.  */
 
       if (GET_CODE (SET_SRC (old_set)) == PLUS
@@ -3548,7 +3549,8 @@ eliminate_regs_in_insn (insn, replace)
 		      || (GET_CODE (SET_DEST (old_set)) == MEM
 			  && SET_DEST (old_set) != recog_operand[0])))
 	      /* If this was an add insn before, rerecognize.  */
-	      || GET_CODE (SET_SRC (old_set)) == PLUS))
+	      || GET_CODE (SET_SRC (old_set)) == PLUS
+	      || GET_CODE (SET_SRC (old_set)) == MINUS))
 	{
 	  if (! validate_change (insn, &PATTERN (insn), new_body, 0))
 	    /* If recognition fails, store the new body anyway.
