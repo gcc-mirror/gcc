@@ -719,56 +719,6 @@ regclass (f, nregs)
 		      continue;
 		    }
 
-		  /* If this is setting a pseudo from another pseudo or the
-		     sum of a pseudo and a constant integer and the other
-		     pseudo is known to be a pointer, set the destination to
-		     be a pointer as well.
-
-		     Likewise if it is setting the destination from an address
-		     or from a value equivalent to an address or to the sum of
-		     an address and something else.
-		     
-		     But don't do any of this if the pseudo corresponds to
-		     a user variable since it should have already been set
-		     as a pointer based on the type.
-
-		     There is no point in doing this during our second
-		     pass since not enough should have changed.  */
-
-		  if (pass == 0 && set != 0 && GET_CODE (SET_DEST (set)) == REG
-		      && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
-		      && ! REG_USERVAR_P (SET_DEST (set))
-		      && ! REGNO_POINTER_FLAG (REGNO (SET_DEST (set)))
-		      && ((GET_CODE (SET_SRC (set)) == REG
-			   && REGNO_POINTER_FLAG (REGNO (SET_SRC (set))))
-			  || ((GET_CODE (SET_SRC (set)) == PLUS
-			       || GET_CODE (SET_SRC (set)) == LO_SUM)
-			      && (GET_CODE (XEXP (SET_SRC (set), 1))
-				  == CONST_INT)
-			      && GET_CODE (XEXP (SET_SRC (set), 0)) == REG
-			      && REGNO_POINTER_FLAG (REGNO (XEXP (SET_SRC (set), 0))))
-			  || GET_CODE (SET_SRC (set)) == CONST
-			  || GET_CODE (SET_SRC (set)) == SYMBOL_REF
-			  || GET_CODE (SET_SRC (set)) == LABEL_REF
-			  || (GET_CODE (SET_SRC (set)) == HIGH
-			      && (GET_CODE (XEXP (SET_SRC (set), 0)) == CONST
-				  || (GET_CODE (XEXP (SET_SRC (set), 0))
-				      == SYMBOL_REF)
-				  || (GET_CODE (XEXP (SET_SRC (set), 0))
-				      == LABEL_REF)))
-			  || ((GET_CODE (SET_SRC (set)) == PLUS
-			       || GET_CODE (SET_SRC (set)) == LO_SUM)
-			      && (GET_CODE (XEXP (SET_SRC (set), 1)) == CONST
-				  || (GET_CODE (XEXP (SET_SRC (set), 1))
-				      == SYMBOL_REF)
-				  || (GET_CODE (XEXP (SET_SRC (set), 1))
-				      == LABEL_REF)))
-			  || ((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
-			      && (GET_CODE (XEXP (note, 0)) == CONST
-				  || GET_CODE (XEXP (note, 0)) == SYMBOL_REF
-				  || GET_CODE (XEXP (note, 0)) == LABEL_REF))))
-		    REGNO_POINTER_FLAG (REGNO (SET_DEST (set))) = 1;
-
 		  for (i = 0; i < noperands; i++)
 		    {
 		      constraints[i]
@@ -1572,17 +1522,18 @@ reg_scan (f, nregs, repeat)
 	if (GET_CODE (PATTERN (insn)) == PARALLEL
 	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
 	  max_parallel = XVECLEN (PATTERN (insn), 0);
-	reg_scan_mark_refs (PATTERN (insn), INSN_UID (insn));
+	reg_scan_mark_refs (PATTERN (insn), insn);
       }
 }
 
 void
-reg_scan_mark_refs (x, uid)
+reg_scan_mark_refs (x, insn)
      rtx x;
-     int uid;
+     rtx insn;
 {
   register enum rtx_code code = GET_CODE (x);
   register rtx dest;
+  register rtx note;
 
   switch (code)
     {
@@ -1601,9 +1552,9 @@ reg_scan_mark_refs (x, uid)
       {
 	register int regno = REGNO (x);
 
-	regno_last_uid[regno] = uid;
+	regno_last_uid[regno] = INSN_UID (insn);
 	if (regno_first_uid[regno] == 0)
-	  regno_first_uid[regno] = uid;
+	  regno_first_uid[regno] = INSN_UID (insn);
       }
       break;
 
@@ -1618,6 +1569,47 @@ reg_scan_mark_refs (x, uid)
       if (GET_CODE (dest) == REG)
 	reg_n_sets[REGNO (dest)]++;
 
+      /* If this is setting a pseudo from another pseudo or the sum of a
+	 pseudo and a constant integer and the other pseudo is known to be
+	 a pointer, set the destination to be a pointer as well.
+
+	 Likewise if it is setting the destination from an address or from a
+	 value equivalent to an address or to the sum of an address and
+	 something else.
+		     
+	 But don't do any of this if the pseudo corresponds to a user
+	 variable since it should have already been set as a pointer based
+	 on the type.  */
+
+      if (GET_CODE (SET_DEST (x)) == REG
+	  && REGNO (SET_DEST (x)) >= FIRST_PSEUDO_REGISTER
+	  && ! REG_USERVAR_P (SET_DEST (x))
+	  && ! REGNO_POINTER_FLAG (REGNO (SET_DEST (x)))
+	  && ((GET_CODE (SET_SRC (x)) == REG
+	       && REGNO_POINTER_FLAG (REGNO (SET_SRC (x))))
+	      || ((GET_CODE (SET_SRC (x)) == PLUS
+		   || GET_CODE (SET_SRC (x)) == LO_SUM)
+		  && GET_CODE (XEXP (SET_SRC (x), 1)) == CONST_INT
+		  && GET_CODE (XEXP (SET_SRC (x), 0)) == REG
+		  && REGNO_POINTER_FLAG (REGNO (XEXP (SET_SRC (x), 0))))
+	      || GET_CODE (SET_SRC (x)) == CONST
+	      || GET_CODE (SET_SRC (x)) == SYMBOL_REF
+	      || GET_CODE (SET_SRC (x)) == LABEL_REF
+	      || (GET_CODE (SET_SRC (x)) == HIGH
+		  && (GET_CODE (XEXP (SET_SRC (x), 0)) == CONST
+		      || GET_CODE (XEXP (SET_SRC (x), 0)) == SYMBOL_REF
+		      || GET_CODE (XEXP (SET_SRC (x), 0)) == LABEL_REF))
+	      || ((GET_CODE (SET_SRC (x)) == PLUS
+		   || GET_CODE (SET_SRC (x)) == LO_SUM)
+		  && (GET_CODE (XEXP (SET_SRC (x), 1)) == CONST
+		      || GET_CODE (XEXP (SET_SRC (x), 1)) == SYMBOL_REF
+		      || GET_CODE (XEXP (SET_SRC (x), 1)) == LABEL_REF))
+	      || ((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
+		  && (GET_CODE (XEXP (note, 0)) == CONST
+		      || GET_CODE (XEXP (note, 0)) == SYMBOL_REF
+		      || GET_CODE (XEXP (note, 0)) == LABEL_REF))))
+	REGNO_POINTER_FLAG (REGNO (SET_DEST (x))) = 1;
+
       /* ... fall through ... */
 
     default:
@@ -1627,12 +1619,12 @@ reg_scan_mark_refs (x, uid)
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {
 	    if (fmt[i] == 'e')
-	      reg_scan_mark_refs (XEXP (x, i), uid);
+	      reg_scan_mark_refs (XEXP (x, i), insn);
 	    else if (fmt[i] == 'E' && XVEC (x, i) != 0)
 	      {
 		register int j;
 		for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-		  reg_scan_mark_refs (XVECEXP (x, i, j), uid);		  
+		  reg_scan_mark_refs (XVECEXP (x, i, j), insn);
 	      }
 	  }
       }
