@@ -1,3 +1,8 @@
+Fri Mar 12 15:43:48 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (make_range, case NOP_EXPR): If converting
+	to unsigned, don't do anything special if signed type is wider.
+
 Thu Mar 11 20:01:27 1999  David S. Miller  <davem@tanya.rutgers.edu>
 
 	* rtl.c (atoll): New function.
