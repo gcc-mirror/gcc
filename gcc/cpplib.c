@@ -2936,6 +2936,19 @@ do_unassert (pfile, keyword)
   return 1;
 }
 
+/* Process STR as if it appeared as the body of an #unassert. */
+void
+cpp_unassert (pfile, str)
+     cpp_reader *pfile;
+     unsigned char *str;
+{
+  if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
+    {
+      do_assert (pfile, NULL);
+      cpp_pop_buffer (pfile);
+    }
+}  
+
 int
 cpp_read_check_assertion (pfile)
      cpp_reader *pfile;

@@ -145,7 +145,6 @@ struct cpp_buffer
   char has_escapes;
 };
 
-struct cpp_pending;  /* Forward declaration - for C++. */
 struct file_name_map_list;
 
 /* Maximum nesting of cpp_buffers.  We use a static limit, partly for
@@ -297,6 +296,24 @@ struct cpp_reader
 /* The bottom of the buffer stack. */
 #define CPP_NULL_BUFFER(PFILE) NULL
 
+/* The `pending' structure accumulates all the options that are not
+   actually processed until we hit cpp_start_read.  It consists of
+   several lists, one for each type of option.  We keep both head and
+   tail pointers for quick insertion. */
+struct cpp_pending
+{
+  struct pending_option *define_head, *define_tail;
+  struct pending_option *assert_head, *assert_tail;
+
+  struct file_name_list *quote_head, *quote_tail;
+  struct file_name_list *brack_head, *brack_tail;
+  struct file_name_list *systm_head, *systm_tail;
+  struct file_name_list *after_head, *after_tail;
+
+  struct pending_option *imacros_head, *imacros_tail;
+  struct pending_option *include_head, *include_tail;
+};
+
 /* Pointed to by cpp_reader.opts. */
 struct cpp_options {
   char *in_fname;
@@ -435,16 +452,14 @@ struct cpp_options {
 
   char done_initializing;
 
-  /* Search paths for include files.  system_include, after_include are
-     only used during option parsing. */
+  /* Search paths for include files.  */
   struct file_name_list *quote_include;	 /* First dir to search for "file" */
   struct file_name_list *bracket_include;/* First dir to search for <file> */
-  struct file_name_list *system_include; /* First dir with system headers  */
-  struct file_name_list *after_include;  /* Headers to search after system */
 
-  /* Directory prefix that should replace `/usr' in the standard
-     include file directories.  */
+  /* Directory prefix that should replace `/usr/lib/gcc-lib/TARGET/VERSION'
+     in the standard include file directories.  */
   char *include_prefix;
+  int include_prefix_len;
 
   char inhibit_predefs;
   char no_standard_includes;
@@ -472,7 +487,7 @@ struct cpp_options {
      even if they are ifdefed out.  */
   int dump_includes;
 
-  /* Pending -D, -U and -A options, in reverse order. */
+  /* Pending options - -D, -U, -A, -I, -ixxx. */
   struct cpp_pending *pending;
 
   /* File name which deps are being written to.
@@ -671,6 +686,7 @@ extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
 extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));
+extern void cpp_unassert PARAMS ((cpp_reader *, unsigned char *));
 
 extern void cpp_error PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
@@ -728,9 +744,7 @@ extern void cpp_print_containing_files PROTO ((cpp_reader *));
 extern void cpp_notice PVPROTO ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
 
 /* In cppfiles.c */
-extern void append_include_chain	PROTO ((cpp_reader *,
-						struct file_name_list **,
-						const char *, int));
+extern void simplify_pathname		PROTO ((char *));
 extern void merge_include_chains	PROTO ((struct cpp_options *));
 extern int find_include_file		PROTO ((cpp_reader *, char *,
 						struct file_name_list *,
