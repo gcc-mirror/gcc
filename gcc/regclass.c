@@ -1306,18 +1306,24 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 		  for (class = 0; class < N_REG_CLASSES; class++)
 		    pp->cost[class]
-		      = (recog_data.operand_type[i] == OP_IN
-			 ? may_move_in_cost[class][(int) classes[i]]
-			 : may_move_out_cost[(int) classes[i]][class]);
+		      = ((recog_data.operand_type[i] != OP_OUT
+			  ? may_move_in_cost[class][(int) classes[i]]
+			  : 0)
+			 + (recog_data.operand_type[i] != OP_IN
+			    ? may_move_out_cost[(int) classes[i]][class]
+			    : 0));
 		  
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
 
 		  pp->mem_cost
-		    = (MEMORY_MOVE_COST (mode, classes[i], 
-					 recog_data.operand_type[i] == OP_IN)
-		       - allows_mem[i]);
+		    = ((recog_data.operand_type[i] != OP_IN
+		        ? MEMORY_MOVE_COST (mode, classes[i], 0)
+			: 0)
+		       + (recog_data.operand_type[i] != OP_OUT
+			  ? MEMORY_MOVE_COST (mode, classes[i], 1)
+			  : 0) - allows_mem[i]);
 
 		  /* If we have assigned a class to this register in our
 		     first pass, add a cost to this alternative corresponding
@@ -1527,18 +1533,24 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 		  for (class = 0; class < N_REG_CLASSES; class++)
 		    pp->cost[class]
-		      = (recog_data.operand_type[i] == OP_IN
-			 ? may_move_in_cost[class][(int) classes[i]]
-			 : may_move_out_cost[(int) classes[i]][class]);
+		      = ((recog_data.operand_type[i] != OP_OUT
+			  ? may_move_in_cost[class][(int) classes[i]]
+			  : 0)
+			 + (recog_data.operand_type[i] != OP_IN
+			    ? may_move_out_cost[(int) classes[i]][class]
+			    : 0));
 
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
 
 		  pp->mem_cost
-		    = (MEMORY_MOVE_COST (mode, classes[i], 
-					 recog_data.operand_type[i] == OP_IN)
-		       - allows_mem[i]);
+		    = ((recog_data.operand_type[i] != OP_IN
+		        ? MEMORY_MOVE_COST (mode, classes[i], 0)
+			: 0)
+		       + (recog_data.operand_type[i] != OP_OUT
+			  ? MEMORY_MOVE_COST (mode, classes[i], 1)
+			  : 0) - allows_mem[i]);
 
 		  /* If we have assigned a class to this register in our
 		     first pass, add a cost to this alternative corresponding
