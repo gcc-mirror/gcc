@@ -1,5 +1,7 @@
 Sun Aug 16 01:29:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/compile/980816-1.c: New test.
+
 	* gcc.dg/980816-1.c: New test.
 
 1998-08-01  Dave Love  <d.love@dl.ac.uk>
