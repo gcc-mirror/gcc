@@ -1,3 +1,11 @@
+2000-01-26  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_split_tfmode_pair): New.
+	* alpha-protos.h: Declare it.
+	* alpha.md (abstf2, negtf2): New.
+	(movtf insn): Add input G constraint.
+	(movtf splitter): Use alpha_split_tfmode_pair.
+
 2000-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i386/cygwin.h: PROTO -> PARAMS.

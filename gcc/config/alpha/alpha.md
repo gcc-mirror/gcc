@@ -1771,6 +1771,58 @@
   "cpys $f31,%R1,%0"
   [(set_attr "type" "fcpys")])
 
+(define_expand "abstf2"
+  [(parallel [(set (match_operand:TF 0 "register_operand" "")
+		   (neg:TF (match_operand:TF 1 "reg_or_fp0_operand" "")))
+	      (use (match_dup 2))])]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "
+{
+#if HOST_BITS_PER_WIDE_INT >= 64
+  operands[2] = force_reg (DImode, GEN_INT (0x8000000000000000));
+#else
+  operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
+#endif
+}")
+
+(define_insn ""
+  [(set (match_operand:TF 0 "register_operand" "=r")
+	(abs:TF (match_operand:TF 1 "reg_or_fp0_operand" "rG")))
+   (use (match_operand:DI 2 "register_operand" "=r"))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "#")
+
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "")
+	(abs:TF (match_operand:TF 1 "reg_or_fp0_operand" "")))
+   (use (match_operand:DI 4 "register_operand" ""))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  int move;
+  rtx tmp;
+
+  alpha_split_tfmode_pair (operands);
+
+  move = 1;
+  if (rtx_equal_p (operands[0], operands[2]))
+    move = 0;
+  else if (rtx_equal_p (operands[0], operands[3]))
+    move = -1;
+
+  if (move < 0)
+    emit_move_insn (operands[1], operands[3]);
+
+  tmp = gen_rtx_NOT (DImode, operands[4]);
+  tmp = gen_rtx_AND (DImode, tmp, operands[2]);
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0], tmp));
+	
+  if (move > 0)
+    emit_move_insn (operands[1], operands[3]);
+  DONE;
+}")
+
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
@@ -1784,6 +1836,55 @@
   "TARGET_FP"
   "cpysn %R1,%R1,%0"
   [(set_attr "type" "fadd")])
+
+(define_expand "negtf2"
+  [(parallel [(set (match_operand:TF 0 "register_operand" "")
+		   (neg:TF (match_operand:TF 1 "reg_or_fp0_operand" "")))
+	      (use (match_dup 2))])]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "
+{
+#if HOST_BITS_PER_WIDE_INT >= 64
+  operands[2] = force_reg (DImode, GEN_INT (0x8000000000000000));
+#else
+  operands[2] = force_reg (DImode, immed_double_const (0, 0x80000000, DImode));
+#endif
+}")
+
+(define_insn ""
+  [(set (match_operand:TF 0 "register_operand" "=r")
+	(neg:TF (match_operand:TF 1 "reg_or_fp0_operand" "rG")))
+   (use (match_operand:DI 2 "register_operand" "=r"))]
+  "TARGET_HAS_XFLOATING_LIBS"
+  "#")
+
+(define_split
+  [(set (match_operand:TF 0 "register_operand" "")
+	(neg:TF (match_operand:TF 1 "reg_or_fp0_operand" "")))
+   (use (match_operand:DI 4 "register_operand" ""))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  int move;
+
+  alpha_split_tfmode_pair (operands);
+
+  move = 1;
+  if (rtx_equal_p (operands[0], operands[2]))
+    move = 0;
+  else if (rtx_equal_p (operands[0], operands[3]))
+    move = -1;
+
+  if (move < 0)
+    emit_move_insn (operands[1], operands[3]);
+
+  emit_insn (gen_xordi3 (operands[0], operands[2], operands[4]));
+	
+  if (move > 0)
+    emit_move_insn (operands[1], operands[3]);
+  DONE;
+}")
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
@@ -4096,7 +4197,7 @@
 ;; data between general registers until after reload.
 (define_insn ""
   [(set (match_operand:TF 0 "nonimmediate_operand" "=r,o")
-	(match_operand:TF 1 "input_operand" "ro,r"))]
+	(match_operand:TF 1 "input_operand" "roG,r"))]
   "register_operand (operands[0], TFmode)
    || reg_or_fp0_operand (operands[1], TFmode)"
   "#")
@@ -4109,30 +4210,7 @@
    (set (match_dup 1) (match_dup 3))]
   "
 {
-  if (GET_CODE (operands[1]) == REG)
-    {
-      operands[3] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
-      operands[2] = gen_rtx_REG (DImode, REGNO (operands[1]));
-    }
-  else if (GET_CODE (operands[1]) == MEM)
-    {
-      operands[3] = change_address (operands[1], DImode,
-				    plus_constant (XEXP (operands[1], 0), 8));
-      operands[2] = change_address (operands[1], DImode, NULL_RTX);
-    }
-
-  if (GET_CODE (operands[0]) == REG)
-    {
-      operands[1] = gen_rtx_REG (DImode, REGNO (operands[0]) + 1);
-      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
-    }
-  else if (GET_CODE (operands[0]) == MEM)
-    {
-      operands[1] = change_address (operands[0], DImode,
-				    plus_constant (XEXP (operands[0], 0), 8));
-      operands[0] = change_address (operands[0], DImode, NULL_RTX);
-    }
-
+  alpha_split_tfmode_pair (operands);
   if (rtx_equal_p (operands[0], operands[3]))
     {
       rtx tmp;
@@ -4140,8 +4218,6 @@
       tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
     }
 }")
-
-
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")

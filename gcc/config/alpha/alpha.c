@@ -2008,6 +2008,41 @@ alpha_emit_xfloating_cvt (code, operands)
 				gen_rtx_fmt_e (code, GET_MODE (operands[0]),
 					       operands[1]));
 }
+
+void
+alpha_split_tfmode_pair (operands)
+     rtx operands[4];
+{
+  if (GET_CODE (operands[1]) == REG)
+    {
+      operands[3] = gen_rtx_REG (DImode, REGNO (operands[1]) + 1);
+      operands[2] = gen_rtx_REG (DImode, REGNO (operands[1]));
+    }
+  else if (GET_CODE (operands[1]) == MEM)
+    {
+      operands[3] = change_address (operands[1], DImode,
+				    plus_constant (XEXP (operands[1], 0), 8));
+      operands[2] = change_address (operands[1], DImode, NULL_RTX);
+    }
+  else if (operands[1] == CONST0_RTX (TFmode))
+    operands[2] = operands[3] = const0_rtx;
+  else
+    abort ();
+
+  if (GET_CODE (operands[0]) == REG)
+    {
+      operands[1] = gen_rtx_REG (DImode, REGNO (operands[0]) + 1);
+      operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+    }
+  else if (GET_CODE (operands[0]) == MEM)
+    {
+      operands[1] = change_address (operands[0], DImode,
+				    plus_constant (XEXP (operands[0], 0), 8));
+      operands[0] = change_address (operands[0], DImode, NULL_RTX);
+    }
+  else
+    abort ();
+}
 
 /* Use ext[wlq][lh] as the Architecture Handbook describes for extracting
    unaligned data:
