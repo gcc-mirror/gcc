@@ -565,8 +565,9 @@ gen_lowpart_common (mode, x)
      value.  If the machine-parameters allow it, simulate that union here
      and return the result.  */
 
-  else if (HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	   && HOST_BITS_PER_INT == BITS_PER_WORD
+  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && GET_MODE (x) == VOIDmode
@@ -590,12 +591,26 @@ gen_lowpart_common (mode, x)
     }
 
   /* Similarly, if this is converting a floating-point value into a
+     single-word integer.  Only do this is the host and target parameters are
+     compatible.  */
+
+  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	    || flag_pretend_float)
+	   && GET_MODE_CLASS (mode) == MODE_INT
+	   && GET_CODE (x) == CONST_DOUBLE
+	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+	   && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
+    return operand_subword (x, 0, 0, GET_MODE (x));
+
+  /* Similarly, if this is converting a floating-point value into a
      two-word integer, we can do this one word at a time and make an
      integer.  Only do this is the host and target parameters are
      compatible.  */
 
-  else if (HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	   && HOST_BITS_PER_INT == BITS_PER_WORD
+  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
+	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
