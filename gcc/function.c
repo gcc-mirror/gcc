@@ -856,11 +856,21 @@ assign_stack_temp (mode, size, keep)
   /* If we still didn't find one, make a new temporary.  */
   if (p == 0)
     {
+      int frame_offset_old = frame_offset;
       p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
-      p->size = size;
       /* If the temp slot mode doesn't indicate the alignment,
 	 use the largest possible, so no one will be disappointed.  */
       p->slot = assign_stack_local (mode, size, mode == BLKmode ? -1 : 0);
+      /* The following slot size computation is necessary because we don't
+	 know the actual size of the temporary slot until assign_stack_local
+	 has performed all the frame alignment and size rounding for the
+	 requested temporary.  Otherwise combine_temp_slots won't think that
+	 adjacent slots really are adjacent.  */
+#ifdef FRAME_GROWS_DOWNWARD
+      p->size = frame_offset_old - frame_offset;
+#else
+      p->size = frame_offset - frame_offset_old;
+#endif
       p->address = 0;
       p->next = temp_slots;
       temp_slots = p;
