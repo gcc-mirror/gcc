@@ -1,3 +1,12 @@
+2003-07-31  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* include/gc.h (GC_CreateThread): Declare with WINAPI
+	attribute. 
+	* win32_threads.c (GC_CreateThread): Make definitions consistent
+	with declaration.  Cast &thread_table[i].handle to PHANDLE
+	in call to DuplicateHandle
+	(thread_start): Declare as static.
+
 2003-07-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* dyn_load.c: Define __private_extern__ to match Apple's system 

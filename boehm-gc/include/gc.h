@@ -895,7 +895,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
    * and does then use DllMain to keep track of thread creations.  But new code
    * should be built to call GC_CreateThread.
    */
-  GC_API HANDLE GC_CreateThread(
+   GC_API HANDLE WINAPI GC_CreateThread(
       LPSECURITY_ATTRIBUTES lpThreadAttributes,
       DWORD dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress,
       LPVOID lpParameter, DWORD dwCreationFlags, LPDWORD lpThreadId );
