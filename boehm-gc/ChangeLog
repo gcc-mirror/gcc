@@ -1,3 +1,9 @@
+1999-04-14  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Added support for alpha.
+	From David Pettersson <dapet@mai.liu.se>.
+
 1999-04-13  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.

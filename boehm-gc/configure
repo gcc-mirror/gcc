@@ -1744,6 +1744,9 @@ esac
 
 machdep=
 case "$host" in
+ alpha-*-*)
+    machdep="alpha_mach_dep.o"
+    ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.o"
     cat >> confdefs.h <<\EOF
