@@ -1,3 +1,8 @@
+Fri Apr 24 20:55:47 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cse.c (cse_set_around_loop): Don't do optimization when
+	new pseudos are created.
+
 Fri Apr 24 11:00:18 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* dbxout.c (dbxout_type_fields): Use HOST_WIDE_INT_PRINT_DEC
