@@ -1,3 +1,8 @@
+2004-09-22  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
+
+	* config/rs6000/rtems.h (TARGET_OS_CPP_BUILTINS): Add
+	builtin_define ("__USE_INIT_FINI__").
+
 2004-09-22  P.J. Darcy  <darcypj@us.ibm.com>
 
 	* config/s390/s390-protos.h (s390_emit_tpf_eh_return): Add prototype.
