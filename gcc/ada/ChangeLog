@@ -1,3 +1,11 @@
+2001-10-30  Ed Schonberg <schonber@gnat.com>
+
+	* a-reatim.ads: Makes Seconds_Count into a 64-bit integer, 
+	to accommodate all its possible values. 
+
+	* a-reatim.adb (Split): Special-case handling of Time_Span_First 
+	and of small absolute values of T.
+
 2001-10-30  Richard Kenner <kenner@gnat.com>
 
 	* misc.c (gnat_expand_expr, case NULL_EXPR): Remove call to 
