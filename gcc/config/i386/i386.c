@@ -4346,7 +4346,7 @@ ix86_expand_setcc (code, unordered, dest)
   if (GET_MODE (dest) == QImode)
     type = 2;
   else if (reg_overlap_mentioned_p (dest, ix86_compare_op0)
-	   || reg_overlap_mentioned_p (dest, ix86_compare_op0))
+	   || reg_overlap_mentioned_p (dest, ix86_compare_op1))
     type = 1;
 
   if (type == 0)
@@ -4446,7 +4446,7 @@ ix86_expand_int_movcc (operands)
 	  diff = ct - cf;
 
 	  if (reg_overlap_mentioned_p (out, ix86_compare_op0)
-	      || reg_overlap_mentioned_p (out, ix86_compare_op0))
+	      || reg_overlap_mentioned_p (out, ix86_compare_op1))
 	    tmp = gen_reg_rtx (SImode);
 
 	  emit_insn (compare_seq);
