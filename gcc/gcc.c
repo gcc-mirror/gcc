@@ -588,7 +588,8 @@ static struct compiler default_compilers[] =
      and be given a more meaningful error than "file not used since
      linking is not done".  */
   {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".c++", "#C++"},
-  {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
+  {".C", "#C++"},
+  {".ads", "#Ada"}, {".adb", "#Ada"},
   {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
   {".fpp", "#Fortran"},
   {".p", "#Pascal"}, {".pas", "#Pascal"},
