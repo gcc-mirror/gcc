@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -7994,13 +7994,15 @@ num_sign_bit_copies (x, mode)
 	 is known to be positive, the number of sign bit copies is the
 	 same as that of the input.  Finally, if the input has just one bit
 	 that might be nonzero, all the bits are copies of the sign bit.  */
+      num0 = num_sign_bit_copies (XEXP (x, 0), mode);
+      if (bitwidth > HOST_BITS_PER_WIDE_INT)
+	return num0 > 1 ? num0 - 1 : 1;
+
       nonzero = nonzero_bits (XEXP (x, 0), mode);
       if (nonzero == 1)
 	return bitwidth;
 
-      num0 = num_sign_bit_copies (XEXP (x, 0), mode);
       if (num0 > 1
-	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && (((HOST_WIDE_INT) 1 << (bitwidth - 1)) & nonzero))
 	num0--;
 
@@ -8044,19 +8046,27 @@ num_sign_bit_copies (x, mode)
 
       result = bitwidth - (bitwidth - num0) - (bitwidth - num1);
       if (result > 0
-	  && bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && ((nonzero_bits (XEXP (x, 0), mode)
-	       & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
-	  && ((nonzero_bits (XEXP (x, 1), mode)
-	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
+	  && (bitwidth > HOST_BITS_PER_WIDE_INT
+	      || (((nonzero_bits (XEXP (x, 0), mode)
+		    & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+		  && ((nonzero_bits (XEXP (x, 1), mode)
+		       & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))))
 	result--;
 
       return MAX (1, result);
 
     case UDIV:
-      /* The result must be <= the first operand.  */
-      return num_sign_bit_copies (XEXP (x, 0), mode);
-
+      /* The result must be <= the first operand.  If the first operand
+         has the high bit set, we know nothing about the number of sign
+         bit copies.  */
+      if (bitwidth > HOST_BITS_PER_WIDE_INT)
+	return 1;
+      else if ((nonzero_bits (XEXP (x, 0), mode)
+		& ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
+	return 1;
+      else
+	return num_sign_bit_copies (XEXP (x, 0), mode);
+				    
     case UMOD:
       /* The result must be <= the scond operand.  */
       return num_sign_bit_copies (XEXP (x, 1), mode);
@@ -8067,20 +8077,20 @@ num_sign_bit_copies (x, mode)
 	 to add 1.  */
       result = num_sign_bit_copies (XEXP (x, 0), mode);
       if (result > 1
-	  && bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero_bits (XEXP (x, 1), mode)
-	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
-	result --;
+	  && (bitwidth > HOST_BITS_PER_WIDE_INT
+	      || (nonzero_bits (XEXP (x, 1), mode)
+		  & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
+	result--;
 
       return result;
 
     case MOD:
       result = num_sign_bit_copies (XEXP (x, 1), mode);
       if (result > 1
-	  && bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero_bits (XEXP (x, 1), mode)
-	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
-	result --;
+	  && (bitwidth > HOST_BITS_PER_WIDE_INT
+	      || (nonzero_bits (XEXP (x, 1), mode)
+		  & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0))
+	result--;
 
       return result;
 
