@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.33 $"
+version="$Revision: 1.34 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -914,7 +914,7 @@ if [ "${build}" != "${host}" ]; then
   # are not the same, we set reasonable default values for the tools.
 
   tools="AR AR_FOR_TARGET AS AS_FOR_TARGET BISON CC_FOR_BUILD"
-  tools="${tools} CC_FOR_TARGET CXX_FOR_TARGET"
+  tools="${tools} CC_FOR_TARGET CXX_FOR_TARGET GCJ_FOR_TARGET"
   tools="${tools} DLLTOOL DLLTOOL_FOR_TARGET GCC_FOR_TARGET HOST_PREFIX"
   tools="${tools} HOST_PREFIX_1 LD LD_FOR_TARGET LEX MAKEINFO NM"
   tools="${tools} NM_FOR_TARGET RANLIB RANLIB_FOR_TARGET"
@@ -949,6 +949,7 @@ t loop
   CC_FOR_BUILD=${CC_FOR_BUILD-gcc}
   CC_FOR_TARGET=${CC_FOR_TARGET-${target_alias}-gcc}
   CXX_FOR_TARGET=${CXX_FOR_TARGET-${target_alias}-c++}
+  GCJ_FOR_TARGET=${GCJ_FOR_TARGET-${target_alias}-gcj}
   DLLTOOL=${DLLTOOL-${host_alias}-dlltool}
   DLLTOOL_FOR_TARGET=${DLLTOOL_FOR_TARGET-${target_alias}-dlltool}
   GCC_FOR_TARGET=${GCC_FOR_TARGET-${CC_FOR_TARGET-${target_alias}-gcc}}
