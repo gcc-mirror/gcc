@@ -3056,7 +3056,7 @@ ior_reg_cond (rtx old, rtx x, int add)
 
   if (COMPARISON_P (old))
     {
-      if (COMPARISON_P (x))
+      if (COMPARISON_P (x)
 	  && REVERSE_CONDEXEC_PREDICATES_P (GET_CODE (x), GET_CODE (old))
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const1_rtx;
@@ -3168,7 +3168,7 @@ and_reg_cond (rtx old, rtx x, int add)
 
   if (COMPARISON_P (old))
     {
-      if (COMPARISON_P (x))
+      if (COMPARISON_P (x)
 	  && GET_CODE (x) == reverse_condition (GET_CODE (old))
 	  && REGNO (XEXP (x, 0)) == REGNO (XEXP (old, 0)))
 	return const0_rtx;
