@@ -1,5 +1,9 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* getopt1.c (getopt_long_only): Fix thinko.
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert libiberty to use ISO C prototype style 4/n.
 	* hashtab.c (higher_prime_index, hash_pointer, eq_pointer, 
 	htab_size, htab_elements, htab_mod_1, htab_mod, htab_mod_m2, 
