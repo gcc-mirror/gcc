@@ -1,3 +1,11 @@
+2001-10-22  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* gnu/gcj/convert/JIS0208_to_Unicode.cc: Declare java_exceptions pragma.
+	* gnu/gcj/convert/JIS0212_to_Unicode.cc: Likewise.
+	* gnu/gcj/convert/Unicode_to_JIS.cc: Likewise.
+	* gnu/gcj/convert/gen-from-JIS.c: Put java_exceptions pragma in output
+	file.
+
 2001-10-19  Mark Wielaard  <mark@klomp.org>
 
 	* java/lang/Double.java: More Classpath merging
