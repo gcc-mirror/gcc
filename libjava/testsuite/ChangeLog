@@ -1,5 +1,9 @@
 2002-11-01  Tom Tromey  <tromey@redhat.com>
 
+	For PR java/8415:
+	* libjava.lang/pr8415.java: New file.
+	* libjava.lang/pr8415.out: New file.
+
 	* libjava.mauve/mauve.exp (find_mauve_sources): New proc.
 	(test_mauve): Use it.
 	(test_mauve_sim): Likewise.
