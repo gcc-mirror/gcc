@@ -945,7 +945,7 @@ remove_dependence (insn, elem)
 #ifndef INSN_SCHEDULING
 void
 schedule_insns (dump_file)
-     FILE *dump_file;
+     FILE *dump_file ATTRIBUTE_UNUSED;
 {
 }
 #else

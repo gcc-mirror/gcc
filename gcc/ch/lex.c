@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "parse.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"

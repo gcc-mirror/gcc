@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "intl.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after

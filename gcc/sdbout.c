@@ -111,8 +111,10 @@ static void sdbout_record_type_name	PROTO((tree));
 static int plain_type_1			PROTO((tree, int));
 static void sdbout_block		PROTO((tree));
 static void sdbout_syms			PROTO((tree));
+#ifdef SDB_ALLOW_FORWARD_REFERENCES
 static void sdbout_queue_anonymous_type	PROTO((tree));
 static void sdbout_dequeue_anonymous_types PROTO((void));
+#endif
 static void sdbout_type			PROTO((tree));
 static void sdbout_field_types		PROTO((tree));
 static void sdbout_one_type		PROTO((tree));
@@ -337,7 +339,7 @@ static struct sdb_file *current_file;
 void
 sdbout_init (asm_file, input_file_name, syms)
      FILE *asm_file ATTRIBUTE_UNUSED;
-     char *input_file_name;
+     char *input_file_name ATTRIBUTE_UNUSED;
      tree syms ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
@@ -1650,7 +1652,7 @@ sdbout_label (insn)
 
 void
 sdbout_start_new_source_file (filename)
-     char *filename;
+     char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
   struct sdb_file *n = (struct sdb_file *) xmalloc (sizeof *n);

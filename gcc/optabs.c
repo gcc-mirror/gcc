@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "reload.h"
 #include "ggc.h"
+#include "real.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation

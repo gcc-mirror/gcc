@@ -1514,7 +1514,7 @@ explow.o : explow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-codes.h toplev.h function.h
 optabs.o : optabs.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h $(EXPR_H) $(RECOG_H) reload.h \
-   toplev.h ggc.h
+   toplev.h ggc.h real.h
 dbxout.o : dbxout.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h $(REGS_H) \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h dbxout.h \
    toplev.h gcc.h
@@ -1552,7 +1552,8 @@ gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
    function.h output.h toplev.h
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
-   $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h
+   $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h \
+   insn-attr.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \

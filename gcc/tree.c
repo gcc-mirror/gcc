@@ -1420,7 +1420,7 @@ build_real (type, d)
 
 REAL_VALUE_TYPE
 real_value_from_int_cst (type, i)
-     tree type, i;
+     tree type ATTRIBUTE_UNUSED, i;
 {
   REAL_VALUE_TYPE d;
 

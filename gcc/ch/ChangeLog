@@ -1,3 +1,7 @@
+2000-01-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lex.c: Include tm_p.h.
+
 2000-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (update_else_range_for_int_const): Initialize

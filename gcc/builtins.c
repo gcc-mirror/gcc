@@ -58,7 +58,9 @@ static tree c_strlen			PROTO((tree));
 static rtx get_memory_rtx		PROTO((tree));
 static int apply_args_size		PROTO((void));
 static int apply_result_size		PROTO((void));
+#if defined (HAVE_untyped_call) || defined (HAVE_untyped_return)
 static rtx result_vector		PROTO((int, rtx));
+#endif
 static rtx expand_builtin_apply_args	PROTO((void));
 static rtx expand_builtin_apply_args_1	PROTO((void));
 static rtx expand_builtin_apply		PROTO((rtx, rtx, rtx));
