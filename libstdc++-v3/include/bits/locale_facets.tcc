@@ -303,8 +303,8 @@ namespace std
 	__max_digits = __max;
       else if (__base == 16)
 	__max_digits = static_cast<int>(ceil(__max * _S_scale_hex));
-      else if (__base == 8)
-      __max_digits = static_cast<int>(ceil(__max * _S_scale_oct));
+      else /* if (__base == 8) */
+	__max_digits = static_cast<int>(ceil(__max * _S_scale_oct));
 
       // Add in what's already been extracted.
       __max_digits += __pos;
