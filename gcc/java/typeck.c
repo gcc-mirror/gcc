@@ -875,7 +875,7 @@ lookup_java_constructor (clas, method_signature)
 
 /* Return a type which is the Binary Numeric Promotion of the pair T1,
    T2 and convert EXP1 and/or EXP2. See 5.6.2 Binary Numeric
-   Promotion. It assumes that both T1 and T2 are elligible to BNP. */
+   Promotion. It assumes that both T1 and T2 are eligible to BNP. */
 
 tree
 binary_numeric_promotion (t1, t2, exp1, exp2)

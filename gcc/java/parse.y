@@ -9710,13 +9710,13 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
       
       if (JPRIMITIVE_TYPE_P (type))
         {
-        parse_error_context
-          (identifier_wfl,
-          "Can't invoke a method on primitive type `%s'",
-          IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
-        PATCH_METHOD_RETURN_ERROR ();         
-      }      
-      
+	  parse_error_context
+	    (identifier_wfl,
+	     "Can't invoke a method on primitive type `%s'",
+	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+	  PATCH_METHOD_RETURN_ERROR ();         
+	}
+
       list = lookup_method_invoke (0, identifier_wfl, type, identifier, args);
       args = nreverse (args);
 
@@ -12242,8 +12242,17 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
   tree new_rhs = NULL_TREE;
   tree rhs_type = TREE_TYPE (rhs);
 
+  /* Handle boolean specially.  */
+  if (TREE_CODE (rhs_type) == BOOLEAN_TYPE
+      || TREE_CODE (lhs_type) == BOOLEAN_TYPE)
+    {
+      if (TREE_CODE (rhs_type) == BOOLEAN_TYPE
+	  && TREE_CODE (lhs_type) == BOOLEAN_TYPE)
+	new_rhs = rhs;
+    }
+
   /* Zero accepted everywhere */
-  if (TREE_CODE (rhs) == INTEGER_CST 
+  else if (TREE_CODE (rhs) == INTEGER_CST 
       && TREE_INT_CST_HIGH (rhs) == 0 && TREE_INT_CST_LOW (rhs) == 0
       && JPRIMITIVE_TYPE_P (rhs_type))
     new_rhs = convert (lhs_type, rhs);
@@ -12266,7 +12275,7 @@ try_builtin_assignconv (wfl_op1, lhs_type, rhs)
         new_rhs = convert (lhs_type, rhs);
       else if (wfl_op1)		/* Might be called with a NULL */
 	parse_warning_context 
-	  (wfl_op1, "Constant expression `%s' to wide for narrowing primitive conversion to `%s'", 
+	  (wfl_op1, "Constant expression `%s' too wide for narrowing primitive conversion to `%s'", 
 	   print_int_node (rhs), lang_printable_name (lhs_type, 0));
       /* Reported a warning that will turn into an error further
 	 down, so we don't return */
@@ -12288,8 +12297,8 @@ valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
   if (lhs_type == rhs_type)
     return 1;
 
-  /* Reject non primitive types */
-  if (!JPRIMITIVE_TYPE_P (lhs_type) || !JPRIMITIVE_TYPE_P (rhs_type))
+  /* Reject non primitive types and boolean conversions.  */
+  if (!JNUMERIC_TYPE_P (lhs_type) || !JNUMERIC_TYPE_P (rhs_type))
     return 0;
 
   /* 5.1.2: widening primitive conversion. byte, even if it's smaller
@@ -12458,20 +12467,20 @@ valid_cast_to_p (source, dest)
   else if (JNUMERIC_TYPE_P (source) && JNUMERIC_TYPE_P (dest))
     return 1;
 
+  else if (TREE_CODE (source) == BOOLEAN_TYPE
+	   && TREE_CODE (dest) == BOOLEAN_TYPE)
+    return 1;
+
   return 0;
 }
-
-/* Method invocation conversion test. Return 1 if type SOURCE can be
-   converted to type DEST through the methond invocation conversion
-   process (5.3) */
 
 static tree
 do_unary_numeric_promotion (arg)
      tree arg;
 {
   tree type = TREE_TYPE (arg);
-  if (TREE_CODE (type) == INTEGER_TYPE ? TYPE_PRECISION (type) < 32
-      : TREE_CODE (type) == CHAR_TYPE)
+  if ((TREE_CODE (type) == INTEGER_TYPE && TYPE_PRECISION (type) < 32)
+      || TREE_CODE (type) == CHAR_TYPE)
     arg = convert (int_type_node, arg);
   return arg;
 }
@@ -12666,11 +12675,11 @@ patch_binop (node, wfl_op1, wfl_op2)
     case RDIV_EXPR:		/* 15.16.2 Division Operator / */
     case TRUNC_DIV_EXPR:	/* 15.16.2 Integral type Division Operator / */
     case TRUNC_MOD_EXPR:	/* 15.16.3 Remainder operator % */
-      if (!JPRIMITIVE_TYPE_P (op1_type) || !JPRIMITIVE_TYPE_P (op2_type))
+      if (!JNUMERIC_TYPE_P (op1_type) || !JNUMERIC_TYPE_P (op2_type))
 	{
-	  if (!JPRIMITIVE_TYPE_P (op1_type))
+	  if (!JNUMERIC_TYPE_P (op1_type))
 	    ERROR_CANT_CONVERT_TO_NUMERIC (wfl_operator, node, op1_type);
-	  if (!JPRIMITIVE_TYPE_P (op2_type) && (op1_type != op2_type))
+	  if (!JNUMERIC_TYPE_P (op2_type) && (op1_type != op2_type))
 	    ERROR_CANT_CONVERT_TO_NUMERIC (wfl_operator, node, op2_type);
 	  TREE_TYPE (node) = error_mark_node;
 	  error_found = 1;
@@ -12718,11 +12727,11 @@ patch_binop (node, wfl_op1, wfl_op2)
 
     case MINUS_EXPR:		/* 15.17.2 Additive Operators (+ and -) for
 				   Numeric Types */
-      if (!JPRIMITIVE_TYPE_P (op1_type) || !JPRIMITIVE_TYPE_P (op2_type))
+      if (!JNUMERIC_TYPE_P (op1_type) || !JNUMERIC_TYPE_P (op2_type))
 	{
-	  if (!JPRIMITIVE_TYPE_P (op1_type))
+	  if (!JNUMERIC_TYPE_P (op1_type))
 	    ERROR_CANT_CONVERT_TO_NUMERIC (wfl_operator, node, op1_type);
-	  if (!JPRIMITIVE_TYPE_P (op2_type) && (op1_type != op2_type))
+	  if (!JNUMERIC_TYPE_P (op2_type) && (op1_type != op2_type))
 	    ERROR_CANT_CONVERT_TO_NUMERIC (wfl_operator, node, op2_type);
 	  TREE_TYPE (node) = error_mark_node;
 	  error_found = 1;
@@ -12741,7 +12750,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	    ERROR_CAST_NEEDED_TO_INTEGRAL (wfl_operator, node, op1_type);
 	  else
 	    {
-	      if (JPRIMITIVE_TYPE_P (op2_type))
+	      if (JNUMERIC_TYPE_P (op2_type))
 		parse_error_context (wfl_operator,
 				     "Incompatible type for `%s'. Explicit cast needed to convert shift distance from `%s' to integral",
 				     operator_string (node),
