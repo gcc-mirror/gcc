@@ -1,3 +1,8 @@
+2001-10-10  Janis Johnson  <janis187@us.ibm.com>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* langhooks.c: Include rtl.h, insn-config.h and integrate.h.
+	* Makefile.in (langhooks.o): Add dependencies.
+
 Wed Oct 10 00:41:29 EDT 2001  John Wehle  (john@feith.com)
 
 	* rs6000.c (rs6000_emit_load_toc_table): Don't
