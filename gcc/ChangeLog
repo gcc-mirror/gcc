@@ -11,7 +11,7 @@
 2004-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * simplify-rtx.c (simplify_ternary_operation): Use
-        trunc_int_for_mode.
+        gen_int_mode.
 
 2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
