@@ -5520,7 +5520,22 @@
 
 
 
-;; Comapre & branch insns
+;; Compare & branch insns
+;; The range calcualations are based as follows:
+;; For forward branches, the address calculation returns the address of
+;; the next instruction.  This is 2 beyond the branch instruction.
+;; For backward branches, the address calculation returns the address of
+;; the first instruction in this pattern (cmp).  This is 2 before the branch
+;; instruction for the shortest sequence, and 4 before the branch instruction
+;; if we have to jump around an unconditional branch.
+;; To the basic branch range the PC offset must be added (this is +4).
+;; So for forward branches we have 
+;;   (pos_range - pos_base_offs + pc_offs) = (pos_range - 2 + 4).
+;; And for backward branches we have 
+;;   (neg_range - neg_base_offs + pc_offs) = (neg_range - (-2 or -4) + 4).
+;;
+;; For a 'b'       pos_range = 2046, neg_range = -2048 giving (-2040->2048).
+;; For a 'b<cond>' pos_range = 254,  neg_range = -256  giving (-250 ->256).
 
 (define_insn "cbranchsi4"
   [(set (pc)
@@ -5552,7 +5567,7 @@
 	    (const_int 4)
 	    (if_then_else
 	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
-		     (le (minus (match_dup 3) (pc)) (const_int 2054)))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
 		(const_int 6)
 		(const_int 8))))]
 )
@@ -5583,11 +5598,11 @@
    (set (attr "length") 
         (if_then_else
 	    (and (ge (minus (match_dup 3) (pc)) (const_int -250))
-	         (le (minus (match_dup 3) (pc)) (const_int 254)))
+	         (le (minus (match_dup 3) (pc)) (const_int 256)))
 	    (const_int 4)
 	    (if_then_else
-	        (and (ge (minus (match_dup 3) (pc)) (const_int -2044))
-		     (le (minus (match_dup 3) (pc)) (const_int 2044)))
+	        (and (ge (minus (match_dup 3) (pc)) (const_int -2040))
+		     (le (minus (match_dup 3) (pc)) (const_int 2048)))
 		(const_int 6)
 		(const_int 8))))]
 )

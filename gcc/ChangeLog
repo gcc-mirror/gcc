@@ -1,5 +1,10 @@
 2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.md (cbranchsi4): Correct calculation of branch ranges.
+	(negated_cbranchsi4): Likewise.
+
+2001-01-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	* config/arm/semi.h (SUBTARGET_EXTRA_SPECS): Define.
 	(SUBTARGET_EXTRA_ASM_SPEC): Define to empty string.
 	(ASM_SPEC): Call subtarget_extra_asm_spec.  Don't
