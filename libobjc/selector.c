@@ -24,7 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include "runtime.h"
-#include "objc/sarray.h"
+#include "sarray.h"
 #include "encoding.h"
 
 /* Initial selector hash table size. Value doesn't matter much */

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "assert.h"
 
-#include "objc/hash.h"
+#include "hash.h"
 
 #include "runtime.h"		/* for DEBUG_PRINTF */
 
