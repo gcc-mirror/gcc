@@ -1,3 +1,10 @@
+2004-01-28  Stefan Olsson  <stefan@snon.net>
+
+ 	* include/ext/mt_allocator.h: Replaced all malloc() calls with
+	operator new(). Added support for the env variable
+	GLIBCXX_FORCE_NEW (this required the _S_init call to be the first
+	one in allocate() as well). Fix typos.
+
 2004-01-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (_S_create(size_t,
