@@ -1,4 +1,8 @@
-2004-11-03  Ben Elliston  <bje@au.ibm.com>
+2004-11-04  Ben Elliston  <bje@au.ibm.com>
+
+	* g++.dg/rtti/tinfo1.C: Remove xfails.
+
+2004-11-04  Ben Elliston  <bje@au.ibm.com>
 
 	* g++.old-deja/g++.other/enum5.C (enum conditions): Move the
 	packed attribute to the definition to satisfy the new C++ parser.
