@@ -565,13 +565,15 @@ public:
   void insert(iterator pos, long n, bool x) { insert(pos, (size_type)n, x); }
 
   void pop_back() { --finish; }
-  void erase(iterator position) {
+  iterator erase(iterator position) {
     if (position + 1 != end())
       copy(position + 1, end(), position);
     --finish;
+    return position;
   }
-  void erase(iterator first, iterator last) {
+  iterator erase(iterator first, iterator last) {
     finish = copy(last, end(), first);
+    return first;
   }
   void resize(size_type new_size, bool x = bool()) {
     if (new_size < size()) 
