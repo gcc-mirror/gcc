@@ -15274,14 +15274,6 @@ c_parse_file (void)
   the_parser = NULL;
 }
 
-/* Clean up after parsing the entire translation unit.  */
-
-void
-free_parser_stacks (void)
-{
-  /* Nothing to do.  */
-}
-
 /* This variable must be provided by every front end.  */
 
 int yydebug;
