@@ -8716,7 +8716,7 @@ load_mems (loop)
   int i;
   rtx p;
   rtx label = NULL_RTX;
-  rtx end_label = NULL_RTX;
+  rtx end_label;
   /* Nonzero if the next instruction may never be executed.  */
   int next_maybe_never = 0;
   int last_max_reg = max_reg_num ();
@@ -8724,21 +8724,14 @@ load_mems (loop)
   if (loop_info->mems_idx == 0)
     return;
 
-  /* Find start of the extended basic block that enters the loop.  */
-  for (p = loop->start;
-       PREV_INSN (p) && GET_CODE (p) != CODE_LABEL;
-       p = PREV_INSN (p))
-    ;
+  /* We cannot use next_label here because it skips over normal insns.  */
+  end_label = next_nonnote_insn (loop->end);
+  if (end_label && GET_CODE (end_label) != CODE_LABEL)
+    end_label = NULL_RTX;
 
-  cselib_init ();
-
-  /* Build table of mems that get set to constant values before the
-     loop.  */
-  for (; p != loop->start; p = NEXT_INSN (p))
-    cselib_process_insn (p);
-
-  /* Check to see if it's possible that some instructions in the
-     loop are never executed.  */
+  /* Check to see if it's possible that some instructions in the loop are
+     never executed.  Also check if there is a goto out of the loop other
+     than right after the end of the loop.  */
   for (p = next_insn_in_loop (loop, loop->scan_start);
        p != NULL_RTX && ! maybe_never;
        p = next_insn_in_loop (loop, p))
@@ -8757,6 +8750,15 @@ load_mems (loop)
 		     && NEXT_INSN (NEXT_INSN (p)) == loop->end
 		     && any_uncondjump_p (p)))
 	{
+	  /* If this is a jump outside of the loop but not right
+	     after the end of the loop, we would have to emit new fixup
+	     sequences for each such label.  */
+	  if (JUMP_LABEL (p) != end_label
+	      && (INSN_UID (JUMP_LABEL (p)) >= max_uid_for_loop
+		  || INSN_LUID (JUMP_LABEL (p)) < INSN_LUID (loop->start)
+		  || INSN_LUID (JUMP_LABEL (p)) > INSN_LUID (loop->end)))
+	    return;
+
 	  if (!any_condjump_p (p))
 	    /* Something complicated.  */
 	    maybe_never = 1;
@@ -8768,6 +8770,19 @@ load_mems (loop)
       else if (next_maybe_never)
 	maybe_never = 1;
     }
+
+  /* Find start of the extended basic block that enters the loop.  */
+  for (p = loop->start;
+       PREV_INSN (p) && GET_CODE (p) != CODE_LABEL;
+       p = PREV_INSN (p))
+    ;
+
+  cselib_init ();
+
+  /* Build table of mems that get set to constant values before the
+     loop.  */
+  for (; p != loop->start; p = NEXT_INSN (p))
+    cselib_process_insn (p);
 
   /* Actually move the MEMs.  */
   for (i = 0; i < loop_info->mems_idx; ++i)
@@ -8960,10 +8975,6 @@ load_mems (loop)
 	    {
 	      if (label == NULL_RTX)
 		{
-		  /* We must compute the former
-		     right-after-the-end label before we insert
-		     the new one.  */
-		  end_label = next_label (loop->end);
 		  label = gen_label_rtx ();
 		  emit_label_after (label, loop->end);
 		}
@@ -9001,7 +9012,7 @@ load_mems (loop)
 	}
     }
 
-  if (label != NULL_RTX)
+  if (label != NULL_RTX && end_label != NULL_RTX)
     {
       /* Now, we need to replace all references to the previous exit
 	 label with the new one.  */
