@@ -9503,9 +9503,17 @@ instantiate_decl (d)
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
       tree t = DECL_SAVED_TREE (code_pattern);
+      tree try_block = NULL_TREE;
 
       start_function (NULL_TREE, d, NULL_TREE, 1);
       store_parm_decls ();
+
+      if (t && TREE_CODE (t) == TRY_BLOCK)
+	{
+	  try_block = t;
+	  begin_function_try_block ();
+	  t = TRY_STMTS (try_block);
+	}
 
       if (t && TREE_CODE (t) == RETURN_INIT)
 	{
@@ -9532,6 +9540,17 @@ instantiate_decl (d)
 
       my_friendly_assert (TREE_CODE (t) == COMPOUND_STMT, 42);
       tsubst_expr (t, args, /*complain=*/1, tmpl);
+
+      if (try_block)
+	{
+	  finish_function_try_block (NULL_TREE);
+	  {
+	    tree handler = TRY_HANDLERS (try_block);
+	    for (; handler; handler = TREE_CHAIN (handler))
+	      tsubst_expr (handler, args, /*complain=*/1, tmpl);
+	  }
+	  finish_function_handler_sequence (NULL_TREE);
+	}
 
       finish_function (lineno, 0, nested);
     }

@@ -3384,18 +3384,12 @@ simple_stmt:
 
 function_try_block:
 	  TRY
-		{
-		  if (! current_function_parms_stored)
-		    store_parm_decls ();
-		  expand_start_early_try_stmts ();
-		}
+		{ $<ttype>$ = begin_function_try_block (); }
 	  ctor_initializer_opt compstmt
-		{ 
-                  expand_start_all_catch (); 
-                }
+		{ finish_function_try_block ($<ttype>2); }
 	  handler_seq
 		{
-		  expand_end_all_catch ();
+		  finish_function_handler_sequence ($<ttype>2);
 		  $$ = $3;
 		}
 	;

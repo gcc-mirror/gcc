@@ -698,6 +698,13 @@ expand_end_catch_block ()
   if (! doing_eh (1))
     return;
 
+  /* The exception being handled is rethrown if control reaches the end of
+     a handler of the function-try-block of a constructor or destructor.  */
+  if (in_function_try_handler
+      && (DECL_CONSTRUCTOR_P (current_function_decl)
+	  || DECL_DESTRUCTOR_P (current_function_decl)))
+    expand_throw (NULL_TREE);
+
   /* Cleanup the EH parameter.  */
   expand_end_bindings (getdecls (), kept_level_p (), 0);
   poplevel (kept_level_p (), 1, 0);

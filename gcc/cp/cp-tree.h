@@ -2290,6 +2290,8 @@ extern tree tag_identifier;
 extern tree vt_off_identifier;
 extern tree empty_except_spec;
 
+extern int in_function_try_handler;
+
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
 
@@ -3381,6 +3383,9 @@ extern void finish_goto_stmt                    PROTO((tree));
 extern tree begin_try_block                     PROTO((void));
 extern void finish_try_block                    PROTO((tree));
 extern void finish_handler_sequence             PROTO((tree));
+extern tree begin_function_try_block            PROTO((void));
+extern void finish_function_try_block           PROTO((tree));
+extern void finish_function_handler_sequence    PROTO((tree));
 extern tree begin_handler                       PROTO((void));
 extern void finish_handler_parms                PROTO((tree));
 extern void finish_handler                      PROTO((tree));
