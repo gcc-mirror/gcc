@@ -641,6 +641,10 @@ char *lang_options[] =
   /* these are for obj c */
   "-lang-objc",
   "-gen-decls",
+  "-fgnu-runtime",
+  "-fno-gnu-runtime",
+  "-fnext-runtime",
+  "-fno-next-runtime",
   "-Wselector",
   "-Wno-selector",
   0
