@@ -5899,8 +5899,11 @@ simplify_and_const_int (x, mode, varop, constop)
   if (GET_CODE (varop) == CONST_INT)
     return GEN_INT (constop & INTVAL (varop));
 
-  /* See what bits may be nonzero in VAROP.  */
-  nonzero = nonzero_bits (varop, mode);
+  /* See what bits may be nonzero in VAROP.  Unlike the general case of
+     a call to nonzero_bits, here we don't care about bits outside
+     MODE.  */
+
+  nonzero = nonzero_bits (varop, mode) & GET_MODE_MASK (mode);
 
   /* Turn off all bits in the constant that are known to already be zero.
      Thus, if the AND isn't needed at all, we will have CONSTOP == NONZERO_BITS
