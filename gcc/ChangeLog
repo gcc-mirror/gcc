@@ -1,3 +1,7 @@
+2004-11-16  Steven Bosscher  <stevenb@suse.de>
+
+	* config/i386/i386.c (x86_schedule): Fix typo, m_K6 intead of m_K8.
+
 2004-11-15  Dale Johannesen  <dalej@apple.com>
 
 	* tree-flow.h (add_referenced_temp_var):  Remove name from prototype.

@@ -578,7 +578,7 @@ const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_NOCONA | m_PPR
 /* Some CPU cores are not able to predict more than 4 branch instructions in
    the 16 byte window.  */
 const int x86_four_jump_limit = m_PPRO | m_ATHLON_K8 | m_PENT4 | m_NOCONA;
-const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K8 | m_PENT;
+const int x86_schedule = m_PPRO | m_ATHLON_K8 | m_K6 | m_PENT;
 
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
