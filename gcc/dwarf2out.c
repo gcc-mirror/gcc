@@ -312,31 +312,43 @@ extern char *language_string;
 #define PTR_SIZE (POINTER_SIZE / 8)
 #endif
 
+/* The size in bytes of a DWARF field indicating an offset or length
+   relative to a debug info section, specified to be 4 bytes in the DWARF-2
+   specification.  The SGI/MIPS ABI defines it to be the same as PTR_SIZE.  */
+#ifndef DWARF_OFFSET_SIZE
+#define DWARF_OFFSET_SIZE 4
+#endif
+
 /* Fixed size portion of the DWARF compilation unit header.  */
-#define DWARF_COMPILE_UNIT_HEADER_SIZE 11
+#define DWARF_COMPILE_UNIT_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 3)
 
 /* Fixed size portion of debugging line information prolog.  */
 #define DWARF_LINE_PROLOG_HEADER_SIZE 5
 
 /* Fixed size portion of public names info.  */
-#define DWARF_PUBNAMES_HEADER_SIZE 10
+#define DWARF_PUBNAMES_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2)
+
+/* Round SIZE up to the nearest BOUNDARY.  */
+#define DWARF_ROUND(SIZE,BOUNDARY) \
+  (((SIZE) + (BOUNDARY) - 1) & ~((BOUNDARY) - 1))
 
 /* Fixed size portion of the address range info.  */
-#define DWARF_ARANGES_HEADER_SIZE 12
+#define DWARF_ARANGES_HEADER_SIZE \
+  (DWARF_ROUND (2 * DWARF_OFFSET_SIZE + 4, PTR_SIZE * 2) - DWARF_OFFSET_SIZE)
 
 /* Fixed size portion of the Common Information Entry (including
    the length field).  */
-#define DWARF_CIE_HEADER_SIZE 16
+#define DWARF_CIE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 8)
 
 /* Fixed size of the Common Information Entry in the call frame
-   information (.debug_frame) section rounded up to an 8 byte boundary.  */
-#define DWARF_CIE_SIZE ((DWARF_CIE_HEADER_SIZE + 7) & ~7)
+   information (.debug_frame) section rounded up to a word boundary.  */
+#define DWARF_CIE_SIZE DWARF_ROUND (DWARF_CIE_HEADER_SIZE, PTR_SIZE)
 
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #define DWARF_CIE_DATA_ALIGNMENT -4
 
 /* Fixed size portion of the FDE.  */
-#define DWARF_FDE_HEADER_SIZE (4 + 4 + (2 * PTR_SIZE))
+#define DWARF_FDE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2 * PTR_SIZE)
 
 /* Define the architecture-dependent minimum instruction length (in bytes).
    In this implementation of DWARF, this field is used for information
@@ -556,6 +568,10 @@ static unsigned current_funcdef_fde;
    attribute can be set properly in gen_subprogram_die.  */
 static long int current_funcdef_frame_size = 0;
 
+/* Record whether the function being analyzed contains inlined functions.  */
+static int current_function_has_inlines;
+static int comp_unit_has_inlines;
+
 /* DWARF requires that the compiler's primary datatypes
    are mapped into a reference to a DIE that defines that
    primary (base) type.  The base_type_info structure is used
@@ -620,7 +636,7 @@ static void add_type_attribute ();
 static void decls_for_scope ();
 static void gen_decl_die ();
 static unsigned lookup_filename ();
-
+static int constant_size PROTO((long unsigned));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -632,9 +648,26 @@ static unsigned lookup_filename ();
 #ifndef UNALIGNED_INT_ASM_OP
 #define UNALIGNED_INT_ASM_OP	".4byte"
 #endif
+#ifndef UNALIGNED_DOUBLE_INT_ASM_OP
+#define UNALIGNED_DOUBLE_INT_ASM_OP	".8byte"
+#endif
 #ifndef ASM_BYTE_OP
 #define ASM_BYTE_OP		".byte"
 #endif
+
+#ifndef UNALIGNED_OFFSET_ASM_OP
+#define UNALIGNED_OFFSET_ASM_OP \
+  (DWARF_OFFSET_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
+#endif
+
+#ifndef UNALIGNED_WORD_ASM_OP
+#define UNALIGNED_WORD_ASM_OP \
+  (PTR_SIZE == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP : UNALIGNED_INT_ASM_OP)
+#endif
+
+/* Data and reference forms for relocatable data.  */
+#define DW_FORM_data (DWARF_OFFSET_SIZE == 8 ? DW_FORM_data8 : DW_FORM_data4)
+#define DW_FORM_ref (DWARF_OFFSET_SIZE == 8 ? DW_FORM_ref8 : DW_FORM_ref4)
 
 /* Pseudo-op for defining a new section.  */
 #ifndef SECTION_ASM_OP
@@ -798,16 +831,41 @@ static unsigned lookup_filename ();
   } while (0)
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_DELTA
+#define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2)			\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, "-");						\
+	assemble_name (FILE, LABEL2);					\
+  } while (0)
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_ADDR_DELTA
+#define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);		\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, "-");						\
+	assemble_name (FILE, LABEL2);					\
+  } while (0)
+#endif
+
 #ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_WORD_ASM_OP);		\
 	assemble_name (FILE, LABEL);					\
   } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,ADDR)				\
-    fprintf ((FILE), "\t%s\t%s", UNALIGNED_INT_ASM_OP, (ADDR))
+  fprintf ((FILE), "\t%s\t%s", UNALIGNED_WORD_ASM_OP, (ADDR))
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_OFFSET
+#define ASM_OUTPUT_DWARF_OFFSET(FILE,LABEL)				\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_OFFSET_ASM_OP);		\
+	assemble_name (FILE, LABEL);					\
+  } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA1
@@ -823,6 +881,18 @@ static unsigned lookup_filename ();
 #ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   fprintf ((FILE), "\t%s\t0x%x", UNALIGNED_INT_ASM_OP, (unsigned) VALUE)
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_DATA
+#define ASM_OUTPUT_DWARF_DATA(FILE,VALUE) \
+  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_OFFSET_ASM_OP, \
+	   (unsigned long) VALUE)
+#endif
+
+#ifndef ASM_OUTPUT_DWARF_ADDR_DATA
+#define ASM_OUTPUT_DWARF_ADDR_DATA(FILE,VALUE) \
+  fprintf ((FILE), "\t%s\t0x%lx", UNALIGNED_WORD_ASM_OP, \
+	   (unsigned long) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA8
@@ -1363,7 +1433,6 @@ dwarf_attr_name (attr)
     case DW_AT_vtable_elem_location:
       return "DW_AT_vtable_elem_location";
 
-#ifdef MIPS_DEBUGGING_INFO
     case DW_AT_MIPS_fde:
       return "DW_AT_MIPS_fde";
     case DW_AT_MIPS_loop_begin:
@@ -1378,7 +1447,14 @@ dwarf_attr_name (attr)
       return "DW_AT_MIPS_software_pipeline_depth";
     case DW_AT_MIPS_linkage_name:
       return "DW_AT_MIPS_linkage_name";
-#endif
+    case DW_AT_MIPS_stride:
+      return "DW_AT_MIPS_stride";
+    case DW_AT_MIPS_abstract_name:
+      return "DW_AT_MIPS_abstract_name";
+    case DW_AT_MIPS_clone_origin:
+      return "DW_AT_MIPS_clone_origin";
+    case DW_AT_MIPS_has_inlines:
+      return "DW_AT_MIPS_has_inlines";
 
     case DW_AT_sf_names:
       return "DW_AT_sf_names";
@@ -2169,7 +2245,7 @@ get_AT (die, attr_kind)
      register enum dwarf_attribute attr_kind;
 {
   register dw_attr_ref a;
-  register dw_die_ref spec;
+  register dw_die_ref spec = NULL;
   
   if (die != NULL)
     {
@@ -2700,7 +2776,13 @@ build_abbrev_table (die)
 		{
 		  if ((a_attr->dw_attr != d_attr->dw_attr)
 		      || (a_attr->dw_attr_val.val_class
-			  != d_attr->dw_attr_val.val_class))
+			  != d_attr->dw_attr_val.val_class)
+		      || (a_attr->dw_attr_val.val_class
+			  == dw_val_class_unsigned_const
+			  && (constant_size (a_attr->dw_attr_val
+					     .v.val_unsigned)
+			      != constant_size (d_attr->dw_attr_val
+						.v.val_unsigned))))
 		    {
 		      break;
 		    }
@@ -2897,6 +2979,24 @@ size_of_loc_descr (loc)
   return size;
 }
 
+/* Return the power-of-two number of bytes necessary to represent VALUE.  */
+static int
+constant_size (value)
+     long unsigned value;
+{
+  int log;
+
+  if (value == 0)
+    log = 0;
+  else
+    log = floor_log2 (value);
+
+  log = log / 8;
+  log = 1 << (floor_log2 (log) + 1);
+
+  return log;
+}
+
 /* Return the size of a DIE, as it is represented in the
    .debug_info section.  */
 static unsigned long
@@ -2912,7 +3012,7 @@ size_of_die (die)
       switch (a->dw_attr_val.val_class)
 	{
 	case dw_val_class_addr:
-	  size += 4;
+	  size += PTR_SIZE;
 	  break;
 	case dw_val_class_loc:
 	  /* Block length.  */
@@ -2927,7 +3027,7 @@ size_of_die (die)
 	  size += 4;
 	  break;
 	case dw_val_class_unsigned_const:
-	  size += 4;
+	  size += constant_size (a->dw_attr_val.v.val_unsigned);
 	  break;
 	case dw_val_class_double_const:
 	  size += 8;
@@ -2936,16 +3036,16 @@ size_of_die (die)
 	  size += 1;
 	  break;
 	case dw_val_class_die_ref:
-	  size += 4;
+	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_fde_ref:
-	  size += 4;
+	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_lbl_id:
-	  size += 4;
+	  size += PTR_SIZE;
 	  break;
 	case dw_val_class_section_offset:
-	  size += 4;
+	  size += DWARF_OFFSET_SIZE;
 	  break;
 	case dw_val_class_str:
 	  size += size_of_string (a->dw_attr_val.v.val_str);
@@ -3028,7 +3128,7 @@ size_of_line_info ()
   /* Version number.  */
   size = 2;
   /* Prolog length specifier.  */
-  size += 4;
+  size += DWARF_OFFSET_SIZE;
   /* Prolog.  */
   size += size_of_line_prolog ();
   /* Set address register instruction.  */
@@ -3147,9 +3247,9 @@ size_of_pubnames ()
   for (i = 0; i < pubname_table_in_use; ++i)
     {
       register pubname_ref p = &pubname_table[i];
-      size += 4 + size_of_string (p->name);
+      size += DWARF_OFFSET_SIZE + size_of_string (p->name);
     }
-  size += 4;
+  size += DWARF_OFFSET_SIZE;
   return size;
 }
 
@@ -3160,10 +3260,10 @@ size_of_aranges ()
   register unsigned long size;
   size = DWARF_ARANGES_HEADER_SIZE;
   /* Count the address/length pair for this compilation unit.  */
-  size += 8;
-  size += 8 * arange_table_in_use;
+  size += 2 * PTR_SIZE;
+  size += 2 * PTR_SIZE * arange_table_in_use;
   /* Count the two zero words used to terminated the address range table.  */
-  size += 8;
+  size += 2 * PTR_SIZE;
   return size;
 }
 
@@ -3239,7 +3339,20 @@ output_value_format (v)
       form = DW_FORM_data4;
       break;
     case dw_val_class_unsigned_const:
-      form = DW_FORM_data4;
+      switch (constant_size (v->v.val_unsigned))
+	{
+	case 1:
+	  form = DW_FORM_data1;
+	  break;
+	case 2:
+	  form = DW_FORM_data2;
+	  break;
+	case 4:
+	  form = DW_FORM_data4;
+	  break;
+	default:
+	  abort ();
+	}
       break;
     case dw_val_class_double_const:
       form = DW_FORM_data8;
@@ -3248,16 +3361,16 @@ output_value_format (v)
       form = DW_FORM_flag;
       break;
     case dw_val_class_die_ref:
-      form = DW_FORM_ref4;
+      form = DW_FORM_ref;
       break;
     case dw_val_class_fde_ref:
-      form = DW_FORM_data4;
+      form = DW_FORM_data;
       break;
     case dw_val_class_lbl_id:
       form = DW_FORM_addr;
       break;
     case dw_val_class_section_offset:
-      form = DW_FORM_data4;
+      form = DW_FORM_data;
       break;
     case dw_val_class_str:
       form = DW_FORM_string;
@@ -3525,7 +3638,23 @@ output_die (die)
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, a->dw_attr_val.v.val_int);
 	  break;
 	case dw_val_class_unsigned_const:
-	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, a->dw_attr_val.v.val_unsigned);
+	  switch (constant_size (a->dw_attr_val.v.val_unsigned))
+	    {
+	    case 1:
+	      ASM_OUTPUT_DWARF_DATA1
+		(asm_out_file, a->dw_attr_val.v.val_unsigned);
+	      break;
+	    case 2:
+	      ASM_OUTPUT_DWARF_DATA2
+		(asm_out_file, a->dw_attr_val.v.val_unsigned);
+	      break;
+	    case 4:
+	      ASM_OUTPUT_DWARF_DATA4
+		(asm_out_file, a->dw_attr_val.v.val_unsigned);
+	      break;
+	    default:
+	      abort ();
+	    }
 	  break;
 	case dw_val_class_double_const:
 	  ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
@@ -3548,19 +3677,19 @@ output_die (die)
 	    {
 	      abort ();
 	    }
-	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, ref_offset);
+	  ASM_OUTPUT_DWARF_DATA (asm_out_file, ref_offset);
 	  break;
 	case dw_val_class_fde_ref:
 	  ref_offset = fde_table[a->dw_attr_val.v.val_fde_index].dw_fde_offset;
-	  fprintf (asm_out_file, "\t%s\t%s+0x%x", UNALIGNED_INT_ASM_OP,
+	  fprintf (asm_out_file, "\t%s\t%s+0x%x", UNALIGNED_OFFSET_ASM_OP,
 		   stripattributes (FRAME_SECTION), ref_offset);
 	  break;
 	case dw_val_class_lbl_id:
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, a->dw_attr_val.v.val_lbl_id);
 	  break;
 	case dw_val_class_section_offset:
-	  ASM_OUTPUT_DWARF_ADDR (asm_out_file,
-				 stripattributes (a->dw_attr_val.v.val_section));
+	  ASM_OUTPUT_DWARF_OFFSET
+	    (asm_out_file, stripattributes (a->dw_attr_val.v.val_section));
 	  break;
 	case dw_val_class_str:
 	  ASM_OUTPUT_DWARF_STRING (asm_out_file, a->dw_attr_val.v.val_str);
@@ -3595,32 +3724,28 @@ output_die (die)
 static void
 output_compilation_unit_header ()
 {
-  /* ??? The dwarf standard says this must be a 4 byte integer, but the
-     SGI dwarf reader assumes this is the same size as a pointer.  */
-  fprintf (asm_out_file, "\t%s\t0x%x",
-	   UNALIGNED_INT_ASM_OP, next_die_offset - 4);
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, next_die_offset - DWARF_OFFSET_SIZE);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Compilation Unit Info.",
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t0x%x", UNALIGNED_SHORT_ASM_OP, DWARF_VERSION);
+  ASM_OUTPUT_DWARF_DATA2 (asm_out_file, DWARF_VERSION);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s DWARF version number",
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t%s", UNALIGNED_INT_ASM_OP,
-	   stripattributes (ABBREV_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (ABBREV_SECTION));
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Offset Into Abbrev. Section",
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  fprintf (asm_out_file, "\t%s\t0x%x", ASM_BYTE_OP, PTR_SIZE);
+  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, PTR_SIZE);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Pointer Size (in bytes)",
@@ -3699,8 +3824,8 @@ size_of_fde (fde, npad)
     {
 	size += size_of_cfi(cfi);
     }
-  /* Round the size up to an 8 byte boundary.  */
-  aligned_size = (size + 7) & ~7;
+  /* Round the size up to a word boundary.  */
+  aligned_size = DWARF_ROUND (size, PTR_SIZE);
   *npad = aligned_size - size;
   return aligned_size;
 }
@@ -3850,7 +3975,7 @@ output_call_frame_info ()
   unsigned long fde_pad;
 
   /* Output the CIE. */
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DWARF_CIE_SIZE - 4);
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, DWARF_CIE_SIZE - DWARF_OFFSET_SIZE);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Common Information Entry",
@@ -3864,6 +3989,11 @@ output_call_frame_info ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
+  if (DWARF_OFFSET_SIZE == 8)
+    {
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
+      fputc ('\n', asm_out_file);
+    }
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_CIE_VERSION);
   if (flag_verbose_asm)
     {
@@ -3932,14 +4062,14 @@ output_call_frame_info ()
     {
       fde = &fde_table[i];
       fde_size = size_of_fde (fde, &fde_pad);
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, fde_size - 4);
+      ASM_OUTPUT_DWARF_DATA (asm_out_file, fde_size - DWARF_OFFSET_SIZE);
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s FDE Length",
 		   ASM_COMMENT_START);
 	}
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (FRAME_SECTION));
+      ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (FRAME_SECTION));
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s FDE CIE offset",
@@ -3953,8 +4083,8 @@ output_call_frame_info ()
 		   ASM_COMMENT_START);
 	}
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
-			       fde->dw_fde_end, fde->dw_fde_begin);
+      ASM_OUTPUT_DWARF_ADDR_DELTA
+	(asm_out_file, fde->dw_fde_end, fde->dw_fde_begin);
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s FDE address range",
@@ -4014,7 +4144,7 @@ output_pubnames ()
   register unsigned i;
   {
     register unsigned long pubnames_length = size_of_pubnames ();
-    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, pubnames_length);
+    ASM_OUTPUT_DWARF_DATA (asm_out_file, pubnames_length);
   }
   if (flag_verbose_asm)
     {
@@ -4029,14 +4159,14 @@ output_pubnames ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (DEBUG_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_SECTION));
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, next_die_offset);
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, next_die_offset);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Compilation Unit Length",
@@ -4046,7 +4176,7 @@ output_pubnames ()
   for (i = 0; i < pubname_table_in_use; ++i)
     {
       register pubname_ref pub = &pubname_table[i];
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, pub->die->die_offset);
+      ASM_OUTPUT_DWARF_DATA (asm_out_file, pub->die->die_offset);
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s DIE offset",
@@ -4062,7 +4192,7 @@ output_pubnames ()
 	}
       fputc ('\n', asm_out_file);
     }
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, 0);
   fputc ('\n', asm_out_file);
 }
 
@@ -4093,7 +4223,7 @@ output_aranges ()
   register unsigned i;
   {
     register unsigned long aranges_length = size_of_aranges ();
-    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, aranges_length);
+    ASM_OUTPUT_DWARF_DATA (asm_out_file, aranges_length);
   }
   if (flag_verbose_asm)
     {
@@ -4108,7 +4238,7 @@ output_aranges ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_ADDR (asm_out_file, stripattributes (DEBUG_SECTION));
+  ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (DEBUG_SECTION));
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Offset of Compilation Unit Info.",
@@ -4130,10 +4260,12 @@ output_aranges ()
     }
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 4);
+  if (PTR_SIZE == 8)
+    fprintf (asm_out_file, ",0,0");
   if (flag_verbose_asm)
     {
-      fprintf (asm_out_file, "\t%s Pad to 8 byte boundary",
-	       ASM_COMMENT_START);
+      fprintf (asm_out_file, "\t%s Pad to %d byte boundary",
+	       ASM_COMMENT_START, 2 * PTR_SIZE);
     }
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_SECTION);
@@ -4142,7 +4274,7 @@ output_aranges ()
       fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_SECTION);
+  ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, TEXT_END_LABEL, TEXT_SECTION);
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
@@ -4161,11 +4293,11 @@ output_aranges ()
 	}
       fputc ('\n', asm_out_file);
       if (a->die_tag == DW_TAG_subprogram)
-	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, get_AT_hi_pc (a),
-				 get_AT_low_pc (a));
+	ASM_OUTPUT_DWARF_ADDR_DELTA (asm_out_file, get_AT_hi_pc (a),
+				     get_AT_low_pc (a));
       else
-	ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-				get_AT_unsigned (a, DW_AT_byte_size));
+	ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file,
+				    get_AT_unsigned (a, DW_AT_byte_size));
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
@@ -4173,9 +4305,9 @@ output_aranges ()
       fputc ('\n', asm_out_file);
     }
   /* Output the terminator words.  */
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file, 0);
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file, 0);
   fputc ('\n', asm_out_file);
 }
 
@@ -4195,7 +4327,7 @@ output_line_info ()
   register long line_delta;
   register unsigned long current_file;
   register unsigned long function;
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, size_of_line_info ());
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, size_of_line_info ());
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Source Line Info.",
@@ -4209,7 +4341,7 @@ output_line_info ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, size_of_line_prolog ());
+  ASM_OUTPUT_DWARF_DATA (asm_out_file, size_of_line_prolog ());
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Prolog Length",
@@ -6604,7 +6736,21 @@ gen_subprogram_die (decl, context_die)
      any blocks used for the base and member initializers of a C++
      constructor function.  */
   if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
-    decls_for_scope (outer_scope, subr_die, 0);
+    {
+      current_function_has_inlines = 0;
+      decls_for_scope (outer_scope, subr_die, 0);
+#ifdef MIPS_DEBUGGING_INFO
+      if (current_function_has_inlines)
+	{
+	  add_AT_flag (subr_die, DW_AT_MIPS_has_inlines, 1);
+	  if (! comp_unit_has_inlines)
+	    {
+	      add_AT_flag (comp_unit_die, DW_AT_MIPS_has_inlines, 1);
+	      comp_unit_has_inlines = 1;
+	    }
+	}
+#endif
+    }
 }
 
 /* Generate a DIE to represent a declared data object.  */
@@ -6655,7 +6801,8 @@ gen_variable_die (decl, context_die)
     }
   else if (!DECL_EXTERNAL (decl))
     {
-      equate_decl_number_to_die (decl, var_die);
+      if (TREE_STATIC (decl))
+	equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
       add_pubname (decl, var_die);
     }
@@ -6738,7 +6885,7 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
   if (!BLOCK_ABSTRACT (stmt))
     {
       register dw_die_ref subr_die = new_die (DW_TAG_inlined_subroutine,
-					  context_die);
+					      context_die);
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
       add_abstract_origin_attribute (subr_die, block_ultimate_origin (stmt));
       sprintf (label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
@@ -6746,6 +6893,7 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
       sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
       decls_for_scope (stmt, subr_die, depth);
+      current_function_has_inlines = 1;
     }
 }
 
