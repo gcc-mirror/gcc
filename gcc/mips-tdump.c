@@ -24,8 +24,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/file.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <a.out.h>
 #include "config.h"
+
+#ifndef CROSS_COMPILE
+#include <a.out.h>
+#else
+#include "symconst.h"
+#define LANGUAGE_C
+#include "sym.h"
+#include "filehdr.h"
+#define ST_RFDESCAPE    0xfff
+#endif
 
 #ifdef __STDC__
 typedef void *PTR_T;
