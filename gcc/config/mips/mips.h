@@ -82,7 +82,8 @@ enum processor_type {
 enum mips_abi_type {
   ABI_32,
   ABI_N32,
-  ABI_64
+  ABI_64,
+  ABI_EABI
 };
 
 #ifndef MIPS_ABI_DEFAULT
@@ -166,6 +167,7 @@ extern void		final_prescan_insn ();
 extern struct rtx_def *	function_arg ();
 extern void		function_arg_advance ();
 extern int		function_arg_partial_nregs ();
+extern int		function_arg_pass_by_reference ();
 extern void		function_epilogue ();
 extern void		function_prologue ();
 extern void		gen_conditional_branch ();
@@ -803,6 +805,8 @@ while (0)
 %{mgp32:-U__mips64} %{mgp64:-D__mips64} \
 %{msingle-float:%{!msoft-float:-D__mips_single_float}} \
 %{m4650:%{!msoft-float:-D__mips_single_float}} \
+%{msoft-float:-D__mips_soft_float} \
+%{mabi=eabi:-D__mips_eabi} \
 %{EB:-UMIPSEL -U_MIPSEL -U__MIPSEL -U__MIPSEL__ -D_MIPSEB -D__MIPSEB -D__MIPSEB__ %{!ansi:-DMIPSEB}} \
 %{EL:-UMIPSEB -U_MIPSEB -U__MIPSEB -U__MIPSEB__ -D_MIPSEL -D__MIPSEL -D__MIPSEL__ %{!ansi:-DMIPSEL}} \
 %(subtarget_cpp_spec) "
@@ -1914,7 +1918,7 @@ extern struct mips_frame_info current_frame_info;
 	    && ((TO) == FRAME_POINTER_REGNUM				 \
 		|| (TO) == STACK_POINTER_REGNUM))			 \
     (OFFSET) = (current_frame_info.total_size				 \
-		- (mips_abi != ABI_32					 \
+		- ((mips_abi != ABI_32 && mips_abi != ABI_EABI)		 \
 		   ? current_function_pretend_args_size			 \
 		   : 0));						 \
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM			 \
@@ -2112,6 +2116,8 @@ typedef struct mips_args {
   int gp_reg_found;		/* whether a gp register was found yet */
   int arg_number;		/* argument number */
   int arg_words;		/* # total words the arguments take */
+  int fp_arg_words;		/* # words for FP args (MIPS_EABI only) */
+  int last_arg_fp;		/* nonzero if last arg was FP (EABI only) */
   int num_adjusts;		/* number of adjustments made */
 				/* Adjustments made to args pass in regs.  */
 				/* ??? The size is doubled to work around a 
@@ -2507,7 +2513,7 @@ typedef struct mips_args {
           /* ??? Reject combining an address with a register for the MIPS  \
 	     64 bit ABI, because the SGI assembler can not handle this.  */ \
 	  if (!TARGET_DEBUG_A_MODE					\
-	      && mips_abi == ABI_32					\
+	      && (mips_abi == ABI_32 || mips_abi == ABI_EABI)		\
 	      && CONSTANT_ADDRESS_P (xplus1)				\
 	      && ! mips_split_addresses					\
 	      && (!TARGET_EMBEDDED_PIC					\
@@ -2537,7 +2543,7 @@ typedef struct mips_args {
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& mips_abi == ABI_32))						\
+	&& (mips_abi == ABI_32 || mips_abi == ABI_EABI)))		\
    && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
 /* Define this, so that when PIC, reload won't try to reload invalid
@@ -2556,7 +2562,8 @@ typedef struct mips_args {
 #define LEGITIMATE_CONSTANT_P(X)					\
   ((GET_CODE (X) != CONST_DOUBLE					\
     || mips_const_double_ok (X, GET_MODE (X)))				\
-   && ! (GET_CODE (X) == CONST && mips_abi != ABI_32))
+   && ! (GET_CODE (X) == CONST						\
+	 && mips_abi != ABI_32 && mips_abi != ABI_EABI))
 
 /* A C compound statement that attempts to replace X with a valid
    memory address for an operand of mode MODE.  WIN will be a C
@@ -2618,7 +2625,7 @@ typedef struct mips_args {
   if (GET_CODE (xinsn) == CONST						\
       && ((flag_pic && pic_address_needs_scratch (xinsn))		\
 	  /* ??? SGI's Irix 6 assembler can't handle CONST.  */		\
-	  || mips_abi != ABI_32))					\
+	  || (mips_abi != ABI_32 && mips_abi != ABI_EABI)))		\
     {									\
       rtx ptr_reg = gen_reg_rtx (Pmode);				\
       rtx constant = XEXP (XEXP (xinsn, 0), 1);				\

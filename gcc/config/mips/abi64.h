@@ -26,11 +26,14 @@ Boston, MA 02111-1307, USA.  */
   { "abi=", &mips_abi_string	},
 
 #undef STACK_BOUNDARY
-#define STACK_BOUNDARY (mips_abi == ABI_32 ? 64 : 128)
+#define STACK_BOUNDARY \
+  ((mips_abi == ABI_32 || mips_abi == ABI_EABI) ? 64 : 128)
 
 #undef MIPS_STACK_ALIGN
-#define MIPS_STACK_ALIGN(LOC) \
-  (mips_abi == ABI_32 ? ((LOC)+7) & ~7 : ((LOC)+15) & ~15)
+#define MIPS_STACK_ALIGN(LOC)					\
+  ((mips_abi == ABI_32 || mips_abi == ABI_EABI)			\
+   ? ((LOC) + 7) & ~7						\
+   : ((LOC) + 15) & ~15)
 
 #undef GP_ARG_LAST
 #define GP_ARG_LAST  (mips_abi == ABI_32 ? GP_REG_FIRST + 7 : GP_REG_FIRST + 11)
@@ -78,13 +81,16 @@ Boston, MA 02111-1307, USA.  */
        ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
 	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))\
        : (GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY			\
-	  && (mips_abi == ABI_32 || GET_MODE_CLASS (MODE) == MODE_INT)))\
+	  && (mips_abi == ABI_32 || mips_abi == ABI_EABI		\
+	      || GET_MODE_CLASS (MODE) == MODE_INT)))			\
       ? downward : upward))
 
 #undef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE)	\
+#define RETURN_IN_MEMORY(TYPE)						\
   (mips_abi == ABI_32							\
-   ? TYPE_MODE (TYPE) == BLKmode : int_size_in_bytes (TYPE) > 16)
+   ? TYPE_MODE (TYPE) == BLKmode					\
+   : (int_size_in_bytes (TYPE)						\
+      > (mips_abi == ABI_EABI ? 2 * UNITS_PER_WORD : 16)))
 
 extern struct rtx_def *mips_function_value ();
 #undef FUNCTION_VALUE
@@ -95,35 +101,110 @@ extern struct rtx_def *mips_function_value ();
    For stdarg, we do not need to save the current argument, because it
    is a real argument.  */
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ if (mips_abi != ABI_32						\
-      && ((CUM).arg_words						\
-	  < (MAX_ARGS_IN_REGISTERS - ! current_function_varargs)))	\
+{ int mips_off = (! current_function_varargs) && (! (CUM).last_arg_fp);	\
+  int mips_fp_off = (! current_function_varargs) && ((CUM).last_arg_fp); \
+  if ((mips_abi != ABI_32						\
+       && (CUM).arg_words < MAX_ARGS_IN_REGISTERS - mips_off)		\
+      || (mips_abi == ABI_EABI						\
+	  && ! TARGET_SOFT_FLOAT					\
+	  && (CUM).fp_arg_words < MAX_ARGS_IN_REGISTERS - mips_fp_off))	\
     {									\
-      PRETEND_SIZE							\
-	= (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
-	   - ! current_function_varargs) * UNITS_PER_WORD;		\
+      int mips_save_gp_regs =						\
+        MAX_ARGS_IN_REGISTERS - (CUM).arg_words - mips_off;		\
+      int mips_save_fp_regs =						\
+        (mips_abi != ABI_EABI ? 0					\
+	 : MAX_ARGS_IN_REGISTERS - (CUM).fp_arg_words - mips_fp_off);	\
+									\
+      if (mips_save_gp_regs < 0)					\
+	mips_save_gp_regs = 0;						\
+      if (mips_save_fp_regs < 0)					\
+	mips_save_fp_regs = 0;						\
+      PRETEND_SIZE = ((mips_save_gp_regs * UNITS_PER_WORD)		\
+		      + (mips_save_fp_regs * UNITS_PER_FPREG));		\
 									\
       if (! (NO_RTL))							\
 	{								\
-	  rtx mem = gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx);	\
-	  /* va_arg is an array access in this case, which causes it to \
-	     get MEM_IN_STRUCT_P set.  We must set it here so that the	\
-	     insn scheduler won't assume that these stores can't 	\
-	     possibly overlap with the va_arg loads.  */		\
-	  if (BYTES_BIG_ENDIAN)						\
-	    MEM_IN_STRUCT_P (mem) = 1;					\
-	  move_block_from_reg						\
-	    ((CUM).arg_words + GP_ARG_FIRST + ! current_function_varargs, \
-	     mem,							\
-	     (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
-	      - ! current_function_varargs),				\
-	     PRETEND_SIZE);						\
+	  if ((CUM).arg_words < MAX_ARGS_IN_REGISTERS - mips_off)	\
+	    {								\
+	      rtx ptr, mem;						\
+	      if (mips_abi != ABI_EABI)					\
+		ptr = virtual_incoming_args_rtx;			\
+	      else							\
+		ptr = plus_constant (virtual_incoming_args_rtx,		\
+				     - (mips_save_gp_regs		\
+					* UNITS_PER_WORD));		\
+	      mem = gen_rtx (MEM, BLKmode, ptr);			\
+	      /* va_arg is an array access in this case, which causes	\
+		 it to get MEM_IN_STRUCT_P set.  We must set it here	\
+		 so that the insn scheduler won't assume that these	\
+		 stores can't possibly overlap with the va_arg loads.  */ \
+	      if (mips_abi != ABI_EABI && BYTES_BIG_ENDIAN)		\
+	        MEM_IN_STRUCT_P (mem) = 1;				\
+	      move_block_from_reg					\
+		((CUM).arg_words + GP_ARG_FIRST + mips_off,		\
+		 mem,							\
+		 mips_save_gp_regs,					\
+		 mips_save_gp_regs * UNITS_PER_WORD);			\
+	    }								\
+	  if (mips_abi == ABI_EABI					\
+	      && ! TARGET_SOFT_FLOAT					\
+	      && (CUM).fp_arg_words < MAX_ARGS_IN_REGISTERS - mips_fp_off) \
+	    {								\
+	      int off;							\
+	      int i;							\
+	      /* We can't use move_block_from_reg, because it will use	\
+                 the wrong mode.  */					\
+	      off = (- (mips_save_gp_regs * UNITS_PER_WORD)		\
+		     - (mips_save_fp_regs * UNITS_PER_FPREG));		\
+	      for (i = 0; i < mips_save_fp_regs; i++)			\
+		{							\
+		  rtx tem =						\
+		    gen_rtx (MEM, DFmode,				\
+			     plus_constant (virtual_incoming_args_rtx,	\
+					    (off			\
+					     + i * GET_MODE_SIZE (DFmode)))); \
+		  emit_move_insn (tem,					\
+				  gen_rtx (REG, DFmode,			\
+					   ((CUM).fp_arg_words		\
+					    + FP_ARG_FIRST		\
+					    + i				\
+					    + mips_fp_off)));		\
+		  if (! TARGET_FLOAT64)					\
+		    ++i;						\
+		}							\
+	    }								\
 	}								\
     }									\
 }
 
 /* ??? Should disable for mips_abi == ABI32.  */
 #define STRICT_ARGUMENT_NAMING
+
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of the
+   argument itself.  The pointer is passed in whatever way is appropriate
+   for passing a pointer to that type.  */
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
+  (mips_abi == ABI_EABI							\
+   && function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED))
+
+/* A C expression that indicates when it is the called function's
+   responsibility to make a copy of arguments passed by invisible
+   reference.  Normally, the caller makes a copy and passes the
+   address of the copy to the routine being called.  When
+   FUNCTION_ARG_CALLEE_COPIES is defined and is nonzero, the caller
+   does not make a copy.  Instead, it passes a pointer to the "live"
+   value.  The called function must not modify this value.  If it can
+   be determined that the value won't be modified, it need not make a
+   copy; otherwise a copy must be made.
+
+   ??? The MIPS EABI says that the caller should copy in ``K&R mode.''
+   I don't know how to detect that here, since flag_traditional is not
+   a back end flag.  */
+#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
+  (mips_abi == ABI_EABI && (NAMED)					\
+   && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
 
 /* ??? Unimplemented stuff follows.  */
 

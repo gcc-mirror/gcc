@@ -201,7 +201,7 @@ enum mips_abi_type mips_abi;
 /* Strings to hold which cpu and instruction set architecture to use.  */
 char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3,4} */
-char *mips_abi_string;		/* for -mabi={o32,32,n32,n64,64} */
+char *mips_abi_string;		/* for -mabi={o32,32,n32,n64,64,eabi} */
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
@@ -500,7 +500,7 @@ mips_const_double_ok (op, mode)
     return TRUE;
 
   /* ??? li.s does not work right with SGI's Irix 6 assembler.  */
-  if (mips_abi != ABI_32)
+  if (mips_abi != ABI_32 && mips_abi != ABI_EABI)
     return FALSE;
 
   REAL_VALUE_FROM_CONST_DOUBLE (d, op);
@@ -3031,11 +3031,17 @@ function_arg_advance (cum, mode, type, named)
       break;
 
     case SFmode:
-      cum->arg_words++;
+      if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT)
+	cum->fp_arg_words++;
+      else
+	cum->arg_words++;
       break;
 
     case DFmode:
-      cum->arg_words += (TARGET_64BIT ? 1 : 2);
+      if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT && ! TARGET_SINGLE_FLOAT)
+	cum->fp_arg_words += (TARGET_64BIT ? 1 : 2);
+      else
+	cum->arg_words += (TARGET_64BIT ? 1 : 2);
       break;
 
     case DImode:
@@ -3065,6 +3071,7 @@ function_arg (cum, mode, type, named)
   rtx ret;
   int regbase = -1;
   int bias = 0;
+  int *arg_words = &cum->arg_words;
   int struct_p = ((type != (tree)0)
 		  && (TREE_CODE (type) == RECORD_TYPE
 		      || TREE_CODE (type) == UNION_TYPE));
@@ -3075,6 +3082,7 @@ function_arg (cum, mode, type, named)
 	     cum->gp_reg_found, cum->arg_number, cum->arg_words, GET_MODE_NAME (mode),
 	     type, named);
 
+  cum->last_arg_fp = 0;
   switch (mode)
     {
     case SFmode:
@@ -3091,13 +3099,28 @@ function_arg (cum, mode, type, named)
 		bias = 1;
 	    }
 	}
+      else if (mips_abi == ABI_EABI && ! TARGET_SOFT_FLOAT)
+	{
+	  if (! TARGET_64BIT)
+	    cum->fp_arg_words += cum->fp_arg_words & 1;
+	  cum->last_arg_fp = 1;
+	  arg_words = &cum->fp_arg_words;
+	  regbase = FP_ARG_FIRST;
+	}
       else
 	regbase = (TARGET_SOFT_FLOAT || ! named ? GP_ARG_FIRST : FP_ARG_FIRST);
       break;
 
     case DFmode:
       if (! TARGET_64BIT)
-	cum->arg_words += (cum->arg_words & 1);
+	{
+	  if (mips_abi == ABI_EABI
+	      && ! TARGET_SOFT_FLOAT
+	      && ! TARGET_SINGLE_FLOAT)
+	    cum->fp_arg_words += cum->fp_arg_words & 1;
+	  else
+	    cum->arg_words += cum->arg_words & 1;
+	}
       if (mips_abi == ABI_32)
 	regbase = ((cum->gp_reg_found
 		    || TARGET_SOFT_FLOAT
@@ -3105,6 +3128,14 @@ function_arg (cum, mode, type, named)
 		    || cum->arg_number >= 2)
 		   ? GP_ARG_FIRST
 		   : FP_ARG_FIRST);
+      else if (mips_abi == ABI_EABI
+	       && ! TARGET_SOFT_FLOAT
+	       && ! TARGET_SINGLE_FLOAT)
+	{
+	  cum->last_arg_fp = 1;
+	  arg_words = &cum->fp_arg_words;
+	  regbase = FP_ARG_FIRST;
+	}
       else
 	regbase = (TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT || ! named
 		   ? GP_ARG_FIRST : FP_ARG_FIRST);
@@ -3118,9 +3149,8 @@ function_arg (cum, mode, type, named)
       /* Drops through.  */
     case BLKmode:
       if (type != (tree)0 && TYPE_ALIGN (type) > BITS_PER_WORD
-	  && ! TARGET_64BIT)
+	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
 	cum->arg_words += (cum->arg_words & 1);
-
       regbase = GP_ARG_FIRST;
       break;
 
@@ -3137,7 +3167,7 @@ function_arg (cum, mode, type, named)
       regbase = GP_ARG_FIRST;
     }
 
-  if (cum->arg_words >= MAX_ARGS_IN_REGISTERS)
+  if (*arg_words >= MAX_ARGS_IN_REGISTERS)
     {
       if (TARGET_DEBUG_E_MODE)
 	fprintf (stderr, "<stack>%s\n", struct_p ? ", [struct]" : "");
@@ -3150,8 +3180,8 @@ function_arg (cum, mode, type, named)
 	abort ();
 
       if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
-	  || ! named)
-	ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+	  || mips_abi == ABI_EABI || ! named)
+	ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
       else
 	{
 	  /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
@@ -3169,7 +3199,7 @@ function_arg (cum, mode, type, named)
 	      break;
 
 	  if (! field)
-	    ret = gen_rtx (REG, mode, regbase + cum->arg_words + bias);
+	    ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
 	  else
 	    {
 	      /* Now handle the special case by returning a PARALLEL
@@ -3188,15 +3218,15 @@ function_arg (cum, mode, type, named)
 		 backend to allow DImode values in fp registers.  */
 
 	      chunks = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_WORD;
-	      if (chunks + cum->arg_words + bias > MAX_ARGS_IN_REGISTERS)
-		chunks = MAX_ARGS_IN_REGISTERS - cum->arg_words - bias;
+	      if (chunks + *arg_words + bias > MAX_ARGS_IN_REGISTERS)
+		chunks = MAX_ARGS_IN_REGISTERS - *arg_words - bias;
 
 	      /* assign_parms checks the mode of ENTRY_PARM, so we must
 		 use the actual mode here.  */
 	      ret = gen_rtx (PARALLEL, mode, rtvec_alloc (chunks));
 
 	      bitpos = 0;
-	      regno = regbase + cum->arg_words + bias;
+	      regno = regbase + *arg_words + bias;
 	      field = TYPE_FIELDS (type);
 	      for (i = 0; i < chunks; i++)
 		{
@@ -3227,7 +3257,7 @@ function_arg (cum, mode, type, named)
 	}
 
       if (TARGET_DEBUG_E_MODE)
-	fprintf (stderr, "%s%s\n", reg_names[regbase + cum->arg_words + bias],
+	fprintf (stderr, "%s%s\n", reg_names[regbase + *arg_words + bias],
 		 struct_p ? ", [struct]" : "");
 
       /* The following is a hack in order to pass 1 byte structures
@@ -3250,11 +3280,11 @@ function_arg (cum, mode, type, named)
 	 calling convention for now.  */
 
       if (struct_p && int_size_in_bytes (type) < UNITS_PER_WORD
-	  && ! TARGET_64BIT)
+	  && ! TARGET_64BIT && mips_abi != ABI_EABI)
 	{
 	  rtx amount = GEN_INT (BITS_PER_WORD
 				- int_size_in_bytes (type) * BITS_PER_UNIT);
-	  rtx reg = gen_rtx (REG, word_mode, regbase + cum->arg_words + bias);
+	  rtx reg = gen_rtx (REG, word_mode, regbase + *arg_words + bias);
 	  if (TARGET_64BIT)
 	    cum->adjust[ cum->num_adjusts++ ] = gen_ashldi3 (reg, reg, amount);
 	  else
@@ -3279,7 +3309,8 @@ function_arg_partial_nregs (cum, mode, type, named)
   if ((mode == BLKmode
        || GET_MODE_CLASS (mode) != MODE_COMPLEX_INT
        || GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
-      && cum->arg_words < MAX_ARGS_IN_REGISTERS)
+      && cum->arg_words < MAX_ARGS_IN_REGISTERS
+      && mips_abi != ABI_EABI)
     {
       int words;
       if (mode == BLKmode)
@@ -3299,7 +3330,8 @@ function_arg_partial_nregs (cum, mode, type, named)
     }
 
   else if (mode == DImode && cum->arg_words == MAX_ARGS_IN_REGISTERS-1
-	   && ! TARGET_64BIT)
+	   && ! TARGET_64BIT
+	   && mips_abi != ABI_EABI)
     {
       if (TARGET_DEBUG_E_MODE)
 	fprintf (stderr, "function_arg_partial_nregs = 1\n");
@@ -3402,11 +3434,13 @@ override_options ()
   else if (! strcmp (mips_abi_string, "64")
 	   || ! strcmp (mips_abi_string, "n64"))
     mips_abi = ABI_64;
+  else if (! strcmp (mips_abi_string, "eabi"))
+    mips_abi = ABI_EABI;
   else
     error ("bad value (%s) for -mabi= switch", mips_abi_string);
 
   /* A specified ISA defaults the ABI if it was not specified.  */
-  if (mips_abi_string == 0 && mips_isa_string)
+  if (mips_abi_string == 0 && mips_isa_string && mips_abi != ABI_EABI)
     {
       if (mips_isa <= 2)
 	mips_abi = ABI_32;
@@ -3414,7 +3448,7 @@ override_options ()
 	mips_abi = ABI_64;
     }
   /* A specified ABI defaults the ISA if it was not specified.  */
-  else if (mips_isa_string == 0 && mips_abi_string)
+  else if (mips_isa_string == 0 && mips_abi_string && mips_abi != ABI_EABI)
     {
       if (mips_abi == ABI_32)
 	mips_isa = 1;
@@ -4506,7 +4540,7 @@ mips_asm_file_start (stream)
 
   /* Start a section, so that the first .popsection directive is guaranteed
      to have a previously defined section to pop back to.  */
-  if (mips_abi != ABI_32)
+  if (mips_abi != ABI_32 && mips_abi != ABI_EABI)
     fprintf (stream, "\t.section\t.text\n");
 
   /* This code exists so that we can put all externs before all symbol
@@ -4853,7 +4887,7 @@ compute_frame_size (size)
      for leaf routines (total_size == extra_size) to save the gp reg.
      The gp reg is callee saved in the 64 bit ABI, so all routines must
      save the gp reg.  */
-  if (total_size == extra_size && mips_abi == ABI_32)
+  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI))
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
     {
@@ -5857,7 +5891,8 @@ mips_function_value (valtype, func)
   /* ??? How should we return complex float?  */
   if (mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
     reg = FP_RETURN;
-  else if (TREE_CODE (valtype) == RECORD_TYPE && mips_abi != ABI_32)
+  else if (TREE_CODE (valtype) == RECORD_TYPE
+	   && mips_abi != ABI_32 && mips_abi != ABI_EABI)
     {
       /* A struct with only one or two floating point fields is returned in
 	 the floating point registers.  */
@@ -5916,6 +5951,30 @@ mips_function_value (valtype, func)
 
   return gen_rtx (REG, mode, reg);
 }
+
+/* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
+   nonzero when an argument must be passed by reference.  */
+
+int
+function_arg_pass_by_reference (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  int size;
+
+  if (mips_abi != ABI_EABI)
+    return 0;
+
+  /* ??? How should SCmode be handled?  */
+  if (type == NULL_TREE || mode == DImode || mode == DFmode)
+    return 0;
+
+  size = int_size_in_bytes (type);
+  return size == -1 || size > UNITS_PER_WORD;
+}
+
 #endif
 
 /* This function returns the register class required for a secondary
