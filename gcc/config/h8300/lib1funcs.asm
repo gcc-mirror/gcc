@@ -807,31 +807,3 @@ L_skip2:
 
 #endif
 #endif /* L_mulsi3 */
-#ifdef L_fixunssfsi_asm
-/* For the h8300 we use asm to save some bytes, to
-   allow more programs to fit into the tiny address
-   space.  For the H8/300H and H8S, the C version is good enough.  */
-#ifdef __H8300__
-/* We still treat NANs different than libgcc2.c, but then, the
-   behavior is undefined anyways.  */
-	.global	___fixunssfsi
-___fixunssfsi:
-	cmp.b #0x47,r0h
-	bge Large_num
-	jmp     @___fixsfsi
-Large_num:
-	bhi L_huge_num
-	xor.b #0x80,A0L
-	bmi L_shift8
-L_huge_num:
-	mov.w #65535,A0
-	mov.w A0,A1
-	rts
-L_shift8:
-	mov.b A0L,A0H
-	mov.b A1H,A0L
-	mov.b A1L,A1H
-	mov.b #0,A1L
-	rts
-#endif
-#endif /* L_fixunssfsi_asm */
