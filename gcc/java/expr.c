@@ -2055,7 +2055,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
   if (is_compiled_class (self_type))
     {
       /* With indirect dispatch we have to use indirect calls for all
-	 publically visible methods or gcc will use PLT indirections
+	 publicly visible methods or gcc will use PLT indirections
 	 to reach them.  We also have to use indirect dispatch for all
 	 external methods.  */
       if (! flag_indirect_dispatch 
