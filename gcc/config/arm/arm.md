@@ -4956,7 +4956,7 @@
 		   (match_operand:SI 2 "const_int_operand" "n")))
      (set (match_operand:SI 3 "s_register_operand" "=r")
 	  (mem:SI (match_dup 1)))])]
-  "TARGET_ARM && (INTVAL (operands[2])  == 4 * (XVECLEN (operands[0], 0) - 2))"
+  "TARGET_ARM && (INTVAL (operands[2])  == 4 * (XVECLEN (operands[0], 0) - 1))"
   "*
 {
   rtx ops[3];
@@ -4964,7 +4964,7 @@
 
   ops[0] = XEXP (SET_SRC (XVECEXP (operands[0], 0, 0)), 0);
   ops[1] = SET_DEST (XVECEXP (operands[0], 0, 1));
-  ops[2] = SET_DEST (XVECEXP (operands[0], 0, count - 2));
+  ops[2] = SET_DEST (XVECEXP (operands[0], 0, count - 1));
 
   output_asm_insn (\"ldm%?ia\\t%0!, {%1-%2}\\t%@ load multiple\", ops);
   return \"\";
@@ -5027,7 +5027,7 @@
 		   (match_operand:SI 2 "const_int_operand" "n")))
      (set (mem:SI (match_dup 1))
 	  (match_operand:SI 3 "s_register_operand" "r"))])]
-  "TARGET_ARM && (INTVAL (operands[2]) == 4 * (XVECLEN (operands[0], 0) - 2))"
+  "TARGET_ARM && (INTVAL (operands[2]) == 4 * (XVECLEN (operands[0], 0) - 1))"
   "*
   {
     rtx ops[3];
@@ -5035,16 +5035,16 @@
 
     ops[0] = XEXP (SET_SRC (XVECEXP (operands[0], 0, 0)), 0);
     ops[1] = SET_SRC (XVECEXP (operands[0], 0, 1));
-    ops[2] = SET_SRC (XVECEXP (operands[0], 0, count - 2));
+    ops[2] = SET_SRC (XVECEXP (operands[0], 0, count - 1));
 
     output_asm_insn (\"stm%?ia\\t%0!, {%1-%2}\\t%@ str multiple\", ops);
     return \"\";
   }
   "
   [(set (attr "type")
-        (cond [(eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 4))
+        (cond [(eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 3))
 	  	   (const_string "store2")
-	       (eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 5))
+	       (eq (symbol_ref "XVECLEN (operands[0],0)") (const_int 4))
 		   (const_string "store3")]
 	       (const_string "store4")))]
 )
@@ -6006,7 +6006,7 @@
 (define_insn "*call_value_symbol"
   [(set (match_operand 0 "s_register_operand" "=rf")
 	(call (mem:SI (match_operand:SI 1 "" "X"))
-	(match_operand:SI 2 "general_operand" "g")))
+	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
   "TARGET_ARM
@@ -6445,7 +6445,7 @@
 
 (define_insn "*and_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(and:SI (match_operator 1 "comparison_operator"
+	(and:SI (match_operator:SI 1 "comparison_operator"
 		 [(match_operand 3 "cc_register" "") (const_int 0)])
 		(match_operand:SI 2 "s_register_operand" "r")))]
   "TARGET_ARM"
@@ -6455,7 +6455,7 @@
 
 (define_insn "*ior_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(ior:SI (match_operator 2 "comparison_operator"
+	(ior:SI (match_operator:SI 2 "comparison_operator"
 		 [(match_operand 3 "cc_register" "") (const_int 0)])
 		(match_operand:SI 1 "s_register_operand" "0,?r")))]
   "TARGET_ARM"
