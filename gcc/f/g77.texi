@@ -250,7 +250,7 @@ many people have helped create and improve GNU Fortran.
 @itemize @bullet
 @item
 The packaging and compiler portions of GNU Fortran are based largely
-on the GNU CC compiler.
+on the GCC compiler.
 @xref{Contributors,,Contributors to GCC,gcc,Using the GNU Compiler
 Collection (GCC)},
 for more information.
@@ -800,7 +800,7 @@ but apply to other languages as well.
 @xref{G++ and GCC,,Compile C; C++; Objective-C; Ada; Fortran;
 or Java,gcc,Using the GNU Compiler Collection (GCC)},
 for information on the way different languages are handled
-by the GNU CC compiler (@command{gcc}).
+by the GCC compiler (@command{gcc}).
 
 @cindex @command{g77}, command
 @cindex commands, @command{g77}
@@ -10987,7 +10987,7 @@ ways to find it:
 @item
 Look in the service directory for someone who might help you for a fee.
 The service directory is found in the file named @file{SERVICE} in the
-GNU CC distribution.
+GCC distribution.
 
 @item
 Send a message to @email{@value{email-help}}.

@@ -35,8 +35,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     f771 %|.f %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {".r", "@ratfor", 0},
   {"@ratfor",
-   "%{C:%{!E:%eGNU C does not support -C without using -E}}\
-    %{CC:%{!E:%eGNU C does not support -CC without using -E}}\
+   "%{C:%{!E:%eGCC does not support -C without using -E}}\
+    %{CC:%{!E:%eGCC does not support -CC without using -E}}\
     ratfor %{C} %{CC} %{v} %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} %i |\n\
     f771 %m.f %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}", 0},
   {".f",   "@f77", 0},
