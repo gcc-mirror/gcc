@@ -1,5 +1,7 @@
 2005-02-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* parser.c (cp_parser_unqualified_id): Initialize type_decl.
+
 	PR c++/19787
 	* call.c (initialize_reference): Robustify.
 
