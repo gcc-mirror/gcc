@@ -216,10 +216,13 @@ merge_type_state (label)
   int cur_length = stack_pointer + nlocals;
   tree vec = LABEL_TYPE_STATE (label);
   tree return_map;
-  if (vec == NULL_TREE)
+  if (vec == NULL_TREE || !LABEL_VERIFIED (label))
     {
-      vec = make_tree_vec (cur_length);
-      LABEL_TYPE_STATE (label) = vec;
+      if (!vec)
+	{
+	  vec = make_tree_vec (cur_length);
+	  LABEL_TYPE_STATE (label) = vec;
+	}
       while (--cur_length >= 0)
 	TREE_VEC_ELT (vec, cur_length) = type_map [cur_length];
       return 1;
@@ -1153,9 +1156,10 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    tree target = lookup_label (oldpc + IMMEDIATE_s2);
 	    tree return_label = lookup_label (PC);
 	    push_type (return_address_type_node);
-	    if (! LABEL_VERIFIED (target))
+	    /* The return label chain will be null if this is the first
+	       time we've seen this jsr target.  */
+            if (LABEL_RETURN_LABEL (target) == NULL_TREE)
 	      {
-		/* first time seen */
 		tree return_type_map;
 		int nlocals = DECL_MAX_LOCALS (current_function_decl);
 		index = nlocals + DECL_MAX_STACK (current_function_decl);

@@ -3,6 +3,12 @@ Wed Dec  1 04:25:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
         * except.c (expand_end_java_handler): Call
         expand_resume_after_catch and end_catch_handler.
 
+Tue Nov 30 12:36:15 1999  Anthony Green  <green@cygnus.com>
+
+        * verify.c (verify_jvm_instructions): Create new return label
+        chain if non existant (don't rely on the verified state of the jsr
+        target.)
+
 Tue Nov 30 12:28:34 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * jcf-write.c (generate_byecode_insns): Fixed indentation for
@@ -22,6 +28,11 @@ Wed Nov 24 17:33:26 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 1999-11-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (emit_handlers): Zero catch_clauses after emitting them.
+
+Tue Nov 23 17:29:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * verify.c (merge_type_state): Non verified subroutines being
+        considered more than once to trigger passive type merge.
 
 Tue Nov 23 10:55:18 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
