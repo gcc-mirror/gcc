@@ -19,9 +19,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #include <stdio.h>
-#include <varargs.h>
-#include <string.h>
 #include "config.h"
+#include "gvarargs.h"
 #include "machmode.h"
 #include "rtl.h"
 #include "real.h"
@@ -35,8 +34,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "bc-typecd.h"
 #include "bi-run.h"
 
-extern char *xmalloc(), *xrealloc();
-extern void free();
+extern char *xmalloc (), *xrealloc ();
+extern void free ();
 
 extern struct obstack *rtl_obstack;
 
@@ -111,7 +110,7 @@ sym_lookup (name)
   int i;
   struct bc_sym *s;
 
-  i = hash(name);
+  i = hash (name);
   for (s = hashtab[i]; s; s = s->next)
     if (!strcmp (s->name, name))
       return s;
@@ -168,9 +167,9 @@ seg_create ()
 {
   struct bc_seg *result;
 
-  result = (struct bc_seg *) xmalloc(sizeof (struct bc_seg));
+  result = (struct bc_seg *) xmalloc (sizeof (struct bc_seg));
   result->alloc = 256;
-  result->data = xmalloc(result->alloc);
+  result->data = xmalloc (result->alloc);
   result->size = 0;
   result->syms = 0;
   result->relocs = 0;
@@ -191,9 +190,9 @@ seg_align (seg, log)
     {
       while (seg->size > seg->alloc)
 	seg->alloc *= 2;
-      seg->data = xrealloc(seg->data, seg->alloc);
+      seg->data = xrealloc (seg->data, seg->alloc);
     }
-  memset(seg->data + oldsize, 0, seg->size - oldsize);
+  bzero (seg->data + oldsize, seg->size - oldsize);
 }
 
 
@@ -245,13 +244,13 @@ seg_defsym (seg, name)
   struct bc_sym *sym;
   struct bc_segsym *segsym;
 
-  sym = sym_lookup(name);
+  sym = sym_lookup (name);
   if (sym->defined)
     return 0;
 
   sym->defined = 1;
   sym->val = seg->size;
-  segsym = (struct bc_segsym *) xmalloc(sizeof (struct bc_segsym));
+  segsym = (struct bc_segsym *) xmalloc (sizeof (struct bc_segsym));
   segsym->sym = sym;
   segsym->next = seg->syms;
   seg->syms = segsym;
@@ -270,8 +269,8 @@ seg_refsym (seg, name, offset)
   struct bc_sym *sym;
   struct bc_segreloc *segreloc;
 
-  sym = sym_lookup(name);
-  segreloc = (struct bc_segreloc *) xmalloc(sizeof (struct bc_segreloc));
+  sym = sym_lookup (name);
+  segreloc = (struct bc_segreloc *) xmalloc (sizeof (struct bc_segreloc));
   segreloc->offset = seg->size;
   segreloc->sym = sym;
   segreloc->next = seg->relocs;
@@ -289,10 +288,10 @@ seg_concat (result, seg)
   struct bc_segsym *segsym;
   struct bc_segreloc *segreloc;
 
-  seg_align(result, MACHINE_SEG_ALIGN);
+  seg_align (result, MACHINE_SEG_ALIGN);
   fix = result->size;
-  seg_data(result, seg->data, seg->size);
-  free(seg->data);
+  seg_data (result, seg->data, seg->size);
+  free (seg->data);
 
   /* Go through the symbols and relocs of SEG, adjusting their offsets
      for their new location in RESULT. */
@@ -315,7 +314,7 @@ seg_concat (result, seg)
       result->relocs = seg->relocs;
     }
 
-  free((char *) seg);
+  free ((char *) seg);
 }
 
 /* Write a segment to a file.  */
@@ -352,7 +351,7 @@ bc_seg_write (seg, file)
       while (segsym && segsym->sym->val == i)
 	{
 	  if (i % 8 != 0)
-	    putc('\n', file);
+	    putc ('\n', file);
 
 	  BC_WRITE_SEGSYM (segsym, file);
 	  segsym = segsym->next;
@@ -690,7 +689,7 @@ bc_align_data (align)
 
 /* Emit data. */
 void
-bc_emit_data(data, size)
+bc_emit_data (data, size)
      char *data;
      unsigned int size;
 {
@@ -702,37 +701,37 @@ void
 bc_emit_data_skip (size)
      unsigned int size;
 {
-  seg_skip(bc_data_seg, size);
+  seg_skip (bc_data_seg, size);
 }
 
 /* Emit label definition in data. */
 int
-bc_emit_data_labeldef(name)
+bc_emit_data_labeldef (name)
      char *name;
 {
-  return seg_defsym(bc_data_seg, name);
+  return seg_defsym (bc_data_seg, name);
 }
 
 /* Emit label reference in data. */
 void
-bc_emit_data_labelref(name, offset)
+bc_emit_data_labelref (name, offset)
      char *name;
      int offset;
 {
-  seg_refsym(bc_data_seg, name, offset);
+  seg_refsym (bc_data_seg, name, offset);
 }
 
 /* Emit a common block of the given name and size.  Note that
    when the .o file is actually written non-global "common"
    blocks will have to be turned into space in the data section.  */
 int
-bc_emit_common(name, size)
+bc_emit_common (name, size)
      char *name;
      unsigned int size;
 {
   struct bc_sym *sym;
 
-  sym = sym_lookup(name);
+  sym = sym_lookup (name);
   if (sym->defined)
     return 0;
 
@@ -744,12 +743,12 @@ bc_emit_common(name, size)
 
 /* Globalize the given label. */
 void
-bc_globalize_label(name)
+bc_globalize_label (name)
      char *name;
 {
   struct bc_sym *sym;
 
-  sym = sym_lookup(name);
+  sym = sym_lookup (name);
   sym->global = 1;
 }
 
