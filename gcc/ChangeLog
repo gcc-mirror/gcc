@@ -1,3 +1,10 @@
+2003-04-23  James A Morrison  <ja2morri@uwaterloo.ca>
+        
+	* invoke.texi: Eliminate extra white-space caused by @gccoptlist{
+	on its own line.
+	Ensure there are two spaces between each pair of options and add
+        @gol where appropriate.
+
 2003-04-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_cmpstr): Disable CLC loop.
