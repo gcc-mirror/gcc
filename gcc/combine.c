@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -444,7 +444,7 @@ do_SUBST (into, newval)
 	  || (GET_CODE (oldval) == ZERO_EXTEND
 	      && GET_CODE (XEXP (oldval, 0)) == CONST_INT))
 	abort ();
-     }
+    }
 
   if (undobuf.frees)
     buf = undobuf.frees, undobuf.frees = buf->next;
@@ -4286,7 +4286,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 "a = (b & 8) == 0;"  */
       if (XEXP (x, 1) == constm1_rtx
 	  && GET_CODE (XEXP (x, 0)) != REG
-	  && ! (GET_CODE (XEXP (x,0)) == SUBREG
+	  && ! (GET_CODE (XEXP (x, 0)) == SUBREG
 		&& GET_CODE (SUBREG_REG (XEXP (x, 0))) == REG)
 	  && nonzero_bits (XEXP (x, 0), mode) == 1)
 	return simplify_shift_const (NULL_RTX, ASHIFTRT, mode,
@@ -4349,8 +4349,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 			     XEXP (x, 0));
 	}
 
-       /* Canonicalize (minus (neg A) (mult B C)) to 
-	  (minus (mult (neg B) C) A).  */
+      /* Canonicalize (minus (neg A) (mult B C)) to 
+	 (minus (mult (neg B) C) A).  */
       if (GET_CODE (XEXP (x, 1)) == MULT 
 	  && GET_CODE (XEXP (x, 0)) == NEG)
 	{
@@ -4550,7 +4550,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	      && ((STORE_FLAG_VALUE & GET_MODE_MASK (mode))
-		  == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE(mode)-1))
+		  == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
 	      && op1 == const0_rtx
 	      && mode == GET_MODE (op0)
 	      && (i = exact_log2 (nonzero_bits (op0, mode))) >= 0)
@@ -5325,16 +5325,16 @@ simplify_set (x)
 
       if (GET_CODE (true_rtx) == IOR
 	  && rtx_equal_p (XEXP (true_rtx, 0), false_rtx))
-	term1 = false_rtx, true_rtx = XEXP(true_rtx, 1), false_rtx = const0_rtx;
+	term1 = false_rtx, true_rtx = XEXP (true_rtx, 1), false_rtx = const0_rtx;
       else if (GET_CODE (true_rtx) == IOR
 	       && rtx_equal_p (XEXP (true_rtx, 1), false_rtx))
-	term1 = false_rtx, true_rtx = XEXP(true_rtx, 0), false_rtx = const0_rtx;
+	term1 = false_rtx, true_rtx = XEXP (true_rtx, 0), false_rtx = const0_rtx;
       else if (GET_CODE (false_rtx) == IOR
 	       && rtx_equal_p (XEXP (false_rtx, 0), true_rtx))
-	term1 = true_rtx, false_rtx = XEXP(false_rtx, 1), true_rtx = const0_rtx;
+	term1 = true_rtx, false_rtx = XEXP (false_rtx, 1), true_rtx = const0_rtx;
       else if (GET_CODE (false_rtx) == IOR
 	       && rtx_equal_p (XEXP (false_rtx, 1), true_rtx))
-	term1 = true_rtx, false_rtx = XEXP(false_rtx, 0), true_rtx = const0_rtx;
+	term1 = true_rtx, false_rtx = XEXP (false_rtx, 0), true_rtx = const0_rtx;
 
       term2 = gen_binary (AND, GET_MODE (src),
 			  XEXP (XEXP (src, 0), 0), true_rtx);
@@ -6452,7 +6452,7 @@ extract_left_shift (x, count)
     case PLUS:  case IOR:  case XOR:  case AND:
       /* If we can safely shift this constant and we find the inner shift,
 	 make a new operation.  */
-      if (GET_CODE (XEXP (x,1)) == CONST_INT
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && (INTVAL (XEXP (x, 1)) & ((((HOST_WIDE_INT) 1 << count)) - 1)) == 0
 	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
 	return gen_binary (code, mode, tem,
@@ -7254,7 +7254,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	  temp = simplify_binary_operation (code == ROTATE ? ROTATERT : ROTATE,
 					    GET_MODE (x), GEN_INT (mask),
 					    XEXP (x, 1));
-	  if (temp && GET_CODE(temp) == CONST_INT)
+	  if (temp && GET_CODE (temp) == CONST_INT)
 	    SUBST (XEXP (x, 0),
 		   force_to_mode (XEXP (x, 0), GET_MODE (x),
 				  INTVAL (temp), reg, next_select));
@@ -7326,7 +7326,7 @@ force_to_mode (x, mode, mask, reg, just_select)
       SUBST (XEXP (x, 2),
 	     gen_lowpart_for_combine (GET_MODE (x),
 				      force_to_mode (XEXP (x, 2), mode,
-						     mask, reg,next_select)));
+						     mask, reg, next_select)));
       break;
 
     default:
@@ -9798,7 +9798,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
   /* If COMPLEMENT_P is set, we have to complement X before doing the outer
      operation.  */
   if (complement_p)
-    x =simplify_gen_unary (NOT, result_mode, x, result_mode);
+    x = simplify_gen_unary (NOT, result_mode, x, result_mode);
 
   if (outer_op != NIL)
     {
@@ -10454,7 +10454,7 @@ simplify_comparison (code, pop0, pop1)
 
 	  /* (unsigned) > 0x7fffffff is equivalent to < 0.  */
 	  else if ((mode_width <= HOST_BITS_PER_WIDE_INT)
-		    && (const_op == ((HOST_WIDE_INT) 1 << (mode_width - 1)) - 1))
+		   && (const_op == ((HOST_WIDE_INT) 1 << (mode_width - 1)) - 1))
 	    {
 	      const_op = 0, op1 = const0_rtx;
 	      code = LT;
@@ -11277,6 +11277,7 @@ combine_reversed_comparison_code (exp)
   return reversed_comparison_code_parts (GET_CODE (exp),
 					 XEXP (x, 0), XEXP (x, 1), NULL);
 }
+
 /* Return comparison with reversed code of EXP and operands OP0 and OP1.
    Return NULL_RTX in case we fail to do the reversal.  */
 static rtx

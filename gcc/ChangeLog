@@ -1,5 +1,9 @@
 2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* combine.c: Fix formatting.
+
+2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/gccint.texi: Update the copyright.
 
 2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
