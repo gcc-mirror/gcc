@@ -1,5 +1,11 @@
 2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* combine.c (simplify_comparison): Convert
+	(ne (and (lshiftrt (xor X CST) Y) 1) 0) into
+	(eq (and (lshiftrt X Y) 1) 0).
+
+2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* alias.c: Follow spelling conventions.
 	* cpphash.h: Likewise.
 	* fold-const.c: Likewise.
