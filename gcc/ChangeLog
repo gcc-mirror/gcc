@@ -1,3 +1,7 @@
+2003-04-30  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* diagnostic.c (output_pointer): Use HOST_PTR_PRINTF.
+
 2003-04-30  Andreas Schwab  <schwab@suse.de>
 
 	* doc/extend.texi (Other Builtins): Enclose multiple word data

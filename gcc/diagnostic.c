@@ -352,7 +352,7 @@ output_long_hexadecimal (output_buffer *buffer, long unsigned int i)
 static inline void
 output_pointer (output_buffer *buffer, void *p)
 {
-  output_formatted_scalar (buffer, "%p", p);
+  output_formatted_scalar (buffer, HOST_PTR_PRINTF, p);
 }
 
 /* Append to BUFFER a string specified by its STARTING character
