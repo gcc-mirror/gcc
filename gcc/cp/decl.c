@@ -5727,15 +5727,21 @@ lookup_name (name, prefer_type)
   return lookup_name_real (name, prefer_type, 0, 0);
 }
 
-/* Similar to `lookup_name' but look only at current binding level.  */
+/* Similar to `lookup_name' but look only in the innermost non-class
+   binding level.  */
 
 tree
 lookup_name_current_level (name)
      tree name;
 {
-  register tree t = NULL_TREE;
+  struct binding_level *b;
+  tree t = NULL_TREE;
 
-  if (current_binding_level->namespace_p)
+  b = current_binding_level;
+  while (b->parm_flag == 2)
+    b = b->level_chain;
+
+  if (b->namespace_p)
     {
       t =  IDENTIFIER_NAMESPACE_VALUE (name);
 
@@ -5746,8 +5752,6 @@ lookup_name_current_level (name)
   else if (IDENTIFIER_BINDING (name) 
 	   && LOCAL_BINDING_P (IDENTIFIER_BINDING (name)))
     {
-      struct binding_level *b = current_binding_level;
-
       while (1)
 	{
 	  if (BINDING_LEVEL (IDENTIFIER_BINDING (name)) == b)
