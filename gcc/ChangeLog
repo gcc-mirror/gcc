@@ -1,3 +1,10 @@
+2001-02-13  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* ggc-common.c (ggc_mark_rtx_children): No need to mark 'S' or
+	's' slots in RTXen.
+	* ggc-page.c, ggc-simple.c (ggc_mark_if_gcable): Delete function.
+	* ggc.h (ggc_mark_if_gcable): Delete prototype.
+
 Wed Feb 14 01:03:14 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* regclass.c (init_reg_sets_1): Optimize calculation of move_cost
