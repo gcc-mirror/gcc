@@ -1,3 +1,9 @@
+Wed Jun 20 08:35:02 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa.c (rename_block): Update parameter to remove_phi_alternative
+	(convert_from_ssa): Do create REG_DEAD and REG_UNUSED notes when
+	re-running life analysis. 
+
 2001-06-20  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (hash_init): Assume xmalloc always succeeds,
