@@ -8224,6 +8224,13 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 
       if (type != error_mark_node)
 	{
+	  /* If this type is passed by invisible reference, make the PARM_DECL
+	     reflect that so that alias analysis knows that the actual object
+	     is external to the function.  */
+	  if (TREE_ADDRESSABLE (type))
+	    decl = build_decl (PARM_DECL, DECL_NAME (decl),
+			       build_reference_type (type));
+
 	  /* Top-level qualifiers on the parameters are
 	     ignored for function types.  */
 	  type = cp_build_qualified_type (type, 0);
@@ -8258,7 +8265,7 @@ grokparms (cp_parameter_declarator *first_parm, tree *parms)
 	    }
 
 	  if (!any_error && init)
-	    init = check_default_argument (decl, init);
+	    init = check_default_argument (type, init);
 	  else
 	    init = NULL_TREE;
 	}

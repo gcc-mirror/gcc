@@ -1,3 +1,9 @@
+2004-06-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16115
+	* decl.c (grokparms): Give the PARM_DECL reference type if the
+	parameter is passed by invisible reference.
+
 2004-06-24  Andreas Schwab  <schwab@suse.de>
 
 	* cp-tree.h (enum cp_storage_class): Remove trailing comma.
