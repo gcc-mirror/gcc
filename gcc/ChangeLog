@@ -1,5 +1,7 @@
 Wed Apr 12 08:47:38 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.c (unsave_expr_now_r, unsafe_for_reeval): Properly do TREE_LIST.
+
 	* print-rtl.c (print_rtx): For CALL_PLACEHOLDER, output the
 	CALL_INSN from the normal case.
 
