@@ -1,3 +1,7 @@
+2000-08-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/22_locale/codecvt.html: Add more bits, format. 
+
 2000-08-28  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/configopts.html:  Mention new options.
