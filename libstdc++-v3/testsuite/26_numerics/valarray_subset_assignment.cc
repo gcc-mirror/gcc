@@ -33,7 +33,7 @@
 #include <valarray>
 #include <testsuite_hooks.h>
 
-bool check_array(std::valarray<double>& a, double[] b)
+bool check_array(std::valarray<double>& a, double b[])
 {
   for (int i=0; i < a.size(); i++)
     if (a[i] != b[i]) return false;
@@ -65,7 +65,7 @@ int main()
   std::gslice gslc(1, val_size, val_stride);
   val_c[gslc] = val_d1[gslc];
 
-  double ans2[10] = {10, 1, 2, 3 10, 5, 6, 7, 10, 10};
+  double ans2[10] = {10, 1, 2, 3, 10, 5, 6, 7, 10, 10};
   VERIFY(check_array(val_c, ans2));
 
   std::valarray<bool> val_b(false, 10);

@@ -1,6 +1,10 @@
+2004-03-10  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/26_numerics/valarray_subset_assignment.cc: Fix typos.
+
 2004-03-10  Jerry Quinn  <jlquinn@optonline.net>
 
-	PR 3247
+	PR libstdc++/3247
 	* include/bits/gslice_array.h (gslice_array()): Make public.
 	(operator=(gslice_array)): Make public.  Implement.
 	* include/bits/indirect_array.h (indirect_array()): Make public.
