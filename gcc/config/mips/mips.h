@@ -1909,7 +1909,7 @@ extern const enum reg_class mips_regno_to_class[];
    'd'  General (aka integer) registers
         Normally this is GR_REGS, but in mips16 mode this is M16_REGS
    'y'  General registers (in both mips16 and non mips16 mode)
-   'e'	mips16 non argument registers (M16_NA_REGS)
+   'e'	Effective address registers (general registers except $25)
    't'  mips16 temporary register ($24)
    'f'	Floating point registers
    'h'	Hi register

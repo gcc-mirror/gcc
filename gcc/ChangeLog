@@ -1,5 +1,11 @@
 2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
+	* config/mips/mips.c (override_options): Remove an obsolete 
+	duplicate definition of the "e" constraint.
+	* config/mips/mips.h: Update a comment accordingly.
+
+2004-02-28  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
 	* config/mips/mips.md: Complete the unfinished R4000
 	multiply/shift errata workaround.  Improve documentation.
 	(hazard): Use TARGET_FIX_R4000 to decide whether an "imul" instruction
