@@ -1,3 +1,8 @@
+2001-12-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (sibcall_osf_1_er): New.
+	(sibcall_value_osf_1_er): New.
+
 2001-12-15  Dan Nicolaescu  <dann@ics.uci.edu>
 
         * config/sparc/sparc.c (mems_ok_for_ldd_peep): Rename from
