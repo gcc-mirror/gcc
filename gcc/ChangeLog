@@ -1,3 +1,8 @@
+Sat Aug 19 12:37:08 EDT 2000  John Wehle  (john@feith.com)
+
+	* loop.c (scan_loop): Use CONST_CALL_P instead of
+	checking for REG_LIBCALL / REG_RETVAL.
+
 Sat Aug 19 09:18:47 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_as_needed): Accept dumpfile argument,
