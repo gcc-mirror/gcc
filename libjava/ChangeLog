@@ -1,3 +1,10 @@
+2003-02-17  Jesse Rosenstock  <jmr@ugcs.caltech.edu>
+
+	* java/nio/charset/Charset.java
+	(isRegistered): Fixed method args and implementation.
+	* java/nio/charset/CharsetEncoder.java
+	(unmappableCharacterAction): New method.
+
 2003-02-17  Raif S. Naffah <raif@fl.net.au>
 
 	* java/math/BigInteger.java (euclidInv): Return array of

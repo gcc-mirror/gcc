@@ -319,6 +319,11 @@ public abstract class CharsetEncoder
     return this;
   }
 
+  public CodingErrorAction unmappableCharacterAction ()
+  {
+    return unmappableCharacterAction;
+  }
+
   public final CharsetEncoder onUnmappableCharacter
     (CodingErrorAction newAction)
   {

@@ -187,9 +187,10 @@ public abstract class Charset implements Comparable
     return canonicalName;
   }
 
-  public final boolean isRegistered (String name)
+  public final boolean isRegistered ()
   {
-    return !name.startsWith ("x-") && !name.startsWith ("X-");
+    return (!canonicalName.startsWith ("x-")
+            && !canonicalName.startsWith ("X-"));
   }
 
   public abstract boolean contains (Charset cs);
