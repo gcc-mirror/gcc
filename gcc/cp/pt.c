@@ -8915,6 +8915,12 @@ unify (tparms, targs, parm, arg, strict)
 	}
       else
 	{
+	  /* If ARG is an offset type, we're trying to unify '*T' with
+	     'U C::*', which is ill-formed. See the comment in the
+	     POINTER_TYPE case about this ugliness. */
+	  if (TREE_CODE (arg) == OFFSET_TYPE)
+	    return 1;
+	  
 	  /* If PARM is `const T' and ARG is only `int', we don't have
 	     a match unless we are allowing additional qualification.
 	     If ARG is `const int' and PARM is just `T' that's OK;

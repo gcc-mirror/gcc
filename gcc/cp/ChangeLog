@@ -1,3 +1,8 @@
+2003-01-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9437
+	* pt.c (unify): Don't unify '*T' with 'U C::*'.
+
 2003-01-27  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	PR c++/47
