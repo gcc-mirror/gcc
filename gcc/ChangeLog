@@ -1,3 +1,7 @@
+2001-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Update information for *-*-solaris*.
+
 Tue Jul  3 22:33:15 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (plus_constant_wide): Reinitialize Y for restart.
