@@ -115,6 +115,9 @@ Fri Jul 17 13:30:18 1998  Ian Lance Taylor  <ian@cygnus.com>
         * ylwrap: Don't use a full path name if the source file is in the
         same directory.  From hjl@lucon.org (H.J. Lu).
 
+	* config-ml.in: Default to being verbose, to match Feb 18 change to
+	configure.
+
 Tue Jul 14 13:22:18 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* ltmain.sh: Add some hacks to make SunOS --enable-shared work
