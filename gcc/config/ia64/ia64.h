@@ -1021,6 +1021,7 @@ enum reg_class
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS) \
   (CLASS == FR_REGS && GET_CODE (X) == MEM && MEM_VOLATILE_P (X) ? NO_REGS   \
+   : CLASS == FR_REGS && GET_CODE (X) == CONST_DOUBLE ? NO_REGS		     \
    : GET_RTX_CLASS (GET_CODE (X)) != 'o' && CLASS > GR_AND_FR_REGS ? NO_REGS \
    : CLASS)
 
