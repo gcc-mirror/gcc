@@ -30,8 +30,10 @@
 #include <cstring>
 #include <locale>
 
-namespace std
+namespace __gnu_cxx
 {
+  using namespace std;
+
   // Defined in globals.cc.
   extern locale::facet** facet_vec;
   extern char* facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
@@ -66,6 +68,11 @@ namespace std
   extern time_put<wchar_t> 			time_put_w;
   extern std::messages<wchar_t> 		messages_w;
 #endif
+} // namespace __gnu_cxx
+
+namespace std
+{
+  using namespace __gnu_cxx;
 
   locale::_Impl::
   ~_Impl() throw()

@@ -39,28 +39,34 @@
 #include <bits/atomicity.h>
 #include <ext/stdio_filebuf.h>
 
-namespace std 
+namespace __gnu_cxx
 {
   // Extern declarations for global objects in src/globals.cc.
+  extern stdio_filebuf<char> buf_cout;
+  extern stdio_filebuf<char> buf_cin;
+  extern stdio_filebuf<char> buf_cerr;
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  extern stdio_filebuf<wchar_t> buf_wcout;
+  extern stdio_filebuf<wchar_t> buf_wcin;
+  extern stdio_filebuf<wchar_t> buf_wcerr;
+#endif
+} // namespace __gnu_cxx
+
+namespace std 
+{
+  using namespace __gnu_cxx;
+  
   extern istream cin;
   extern ostream cout;
   extern ostream cerr;
   extern ostream clog;
-
-  using __gnu_cxx::stdio_filebuf;
-  extern stdio_filebuf<char> buf_cout;
-  extern stdio_filebuf<char> buf_cin;
-  extern stdio_filebuf<char> buf_cerr;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   extern wistream wcin;
   extern wostream wcout;
   extern wostream wcerr;
   extern wostream wclog;
-
-  extern stdio_filebuf<wchar_t> buf_wcout;
-  extern stdio_filebuf<wchar_t> buf_wcin;
-  extern stdio_filebuf<wchar_t> buf_wcerr;
 #endif
 
   // Definitions for static const data members of __ios_flags.

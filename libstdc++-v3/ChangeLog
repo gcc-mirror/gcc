@@ -1,3 +1,13 @@
+2002-10-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu (GLIBCPP_3.2.1): Add.
+	(GLIBCPP_3.2): Don't export locale::_S_*. 
+	* src/ios.cc: Move globals into __gnu_cxx. Make old exported
+	symbols match.
+	* src/locale.cc: Same.
+	* src/localename.cc: Same.	
+	* src/globals.cc: Same. 
+
 2002-10-10  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/21_strings/howto.html:  Write #5, char_traits.
