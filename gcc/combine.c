@@ -7544,10 +7544,12 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case SUBREG:
-	  /* If the inner mode is smaller and we are extracting the low
-	     part, we can treat the SUBREG as if it were a ZERO_EXTEND.  */
-	  if (! subreg_lowpart_p (op0)
-	      || GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) >= mode_width)
+	  /* If the inner mode is narrower and we are extracting the low part,
+	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
+	  if (subreg_lowpart_p (op0)
+	      && GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0))) < mode_width)
+	    /* Fall through */ ;
+	  else
 	    break;
 
 	  /* ... fall through ... */
