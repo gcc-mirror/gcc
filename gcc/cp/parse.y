@@ -769,8 +769,6 @@ fn.def2:
 		  $$ = start_method (specs, $2); goto rest_of_mdef; }
 	| constructor_declarator
 		{ $$ = start_method (NULL_TREE, $$); goto rest_of_mdef; }
-        | template_header fn.def2 
-                { $$ = finish_member_template_decl ($1, $2); }
 	;
 
 return_id:
@@ -2760,6 +2758,14 @@ component_decl:
 	| extension component_decl
 		{ $$ = $2;
 		  pedantic = $<itype>1; }
+        | template_header component_decl
+                { $$ = finish_member_template_decl ($1, $2); }
+	| template_header typed_declspecs ';'
+                {
+		  shadow_tag ($2.t);
+		  note_list_got_semicolon ($2.t);
+		  $$ = finish_member_template_decl ($1, $2.t);
+		}
 	;
 
 component_decl_1:
@@ -2799,8 +2805,6 @@ component_decl_1:
 				  build_tree_list ($3, NULL_TREE)); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
-        | template_header component_decl_1 
-                { $$ = finish_member_template_decl ($1, $2); }
 
 /* The case of exactly one component is handled directly by component_decl.  */
 /* ??? Huh? ^^^ */

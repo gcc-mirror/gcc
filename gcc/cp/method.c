@@ -151,11 +151,6 @@ do_inline_function_hair (type, friend_list)
 	      DECL_CONTEXT (args) = method;
 	      args = TREE_CHAIN (args);
 	    }
-
-	  /* Allow this decl to be seen in global scope.  Don't do this for
-             local class methods, though.  */
-	  if (! current_function_decl)
-	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (method)) = method;
 	}
       method = TREE_CHAIN (method);
     }
@@ -174,10 +169,6 @@ do_inline_function_hair (type, friend_list)
 	      DECL_CONTEXT (args) = fndecl;
 	      args = TREE_CHAIN (args);
 	    }
-
-	  /* Allow this decl to be seen in global scope */
-	  if (! current_function_decl)
-	    IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (fndecl)) = fndecl;
 	}
 
       friend_list = TREE_CHAIN (friend_list);

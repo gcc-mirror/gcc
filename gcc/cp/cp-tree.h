@@ -1439,12 +1439,9 @@ extern int flag_new_for_scope;
   (TREE_CODE (NODE) == TEMPLATE_DECL \
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
 
-/* A `primary' template is one which depends on no tbemplate parameters
-   except those specified in its parameter list.  So, a template
-   member of a non-template class is primary, and every global
-   function template is primary, but a member function of a template
-   class is not primary, neither is a member template of a template
-   class.  */
+/* A `primary' template is one that has its own template header.  A
+   member function of a class template is a template, but not primary.
+   A member template is primary.  */
 #define PRIMARY_TEMPLATE_P(NODE) \
   (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)) == (NODE))
 

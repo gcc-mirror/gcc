@@ -1836,6 +1836,9 @@ build_offset_ref (type, name)
   tree basebinfo = NULL_TREE;
   int dtor = 0;
 
+  if (TREE_CODE (name) != IDENTIFIER_NODE)
+    return name;
+
   if (type == std_node)
     return do_scoped_id (name, 0);
 

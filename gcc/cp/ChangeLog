@@ -1,3 +1,28 @@
+Fri Feb 27 02:25:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst, TEMPLATE_DECL): Support member class templates.
+	(tsubst, *_PARM): Support multiple levels of template classes.
+	(instantiate_class_template): Look up the pattern from the
+	original template.
+	(lookup_template_class): Handle getting a template for d1.
+	(push_template_decl): Correct setting of 'primary'.
+	(reduce_template_parm_level): Add 'levels' parm.
+	(finish_member_template_decl): Support member class templates.
+	(template_class_depth): Handle multiple levels.
+	* parse.y (component_decl_1, fn.def2): Remove member template case.
+	(component_decl): Add member template cases.
+	* decl2.c (check_member_template): We now handle member template
+	classes.
+	* decl.c (pushtag): Handle member templates.
+	* method.c (do_inline_function_hair): Don't touch
+	IDENTIFIER_GLOBAL_VALUE.
+	* init.c (build_offset_ref): If name isn't an identifier, just 
+	return it.
+	* spew.c (yylex): Handle PTYPENAME like TYPENAME.
+
+	* typeck.c (get_delta_difference): Do adjust for conversions to
+	and from virtual base.
+
 Wed Feb 25 09:51:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (get_delta_difference): Give hard error for conversion

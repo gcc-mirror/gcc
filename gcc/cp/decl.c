@@ -2179,47 +2179,43 @@ pushtag (name, type, globalize)
       /* Do C++ gratuitous typedefing.  */
       if (IDENTIFIER_TYPE_VALUE (name) != type)
         {
-          register tree d;
-	  int newdecl = 0;
-	  
-	  if (b->parm_flag != 2
-	      || TYPE_SIZE (current_class_type) != NULL_TREE)
-	    {
-	      d = lookup_nested_type (type, c_decl);
+          register tree d = NULL_TREE;
+	  int newdecl = 0, in_class = 0;
 
-	      if (d == NULL_TREE)
-		{
-		  newdecl = 1;
-		  d = build_decl (TYPE_DECL, name, type);
-		  SET_DECL_ARTIFICIAL (d);
-		  set_identifier_type_value_with_scope (name, type, b);
-		}
-	      else
-		d = TYPE_MAIN_DECL (d);
-
-	      TYPE_NAME (type) = d;
-	      DECL_CONTEXT (d) = context;
-	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
-		d = push_template_decl (d);
-
-	      if (b->parm_flag == 2)
-		d = pushdecl_class_level (d);
-	      else
-		d = pushdecl_with_scope (d, b);
-	    }
+	  if ((b->pseudo_global && b->level_chain->parm_flag == 2)
+	      || b->parm_flag == 2)
+	    in_class = 1;
 	  else
+	    d = lookup_nested_type (type, c_decl);
+
+	  if (d == NULL_TREE)
 	    {
-	      /* Make nested declarations go into class-level scope.  */
 	      newdecl = 1;
 	      d = build_decl (TYPE_DECL, name, type);
 	      SET_DECL_ARTIFICIAL (d);
-	      TYPE_NAME (type) = d;
-	      DECL_CONTEXT (d) = context;
-	      if (! globalize && processing_template_decl && IS_AGGR_TYPE (type))
-		d = push_template_decl (d);
-
-	      d = pushdecl_class_level (d);
+	      if (! in_class)
+		set_identifier_type_value_with_scope (name, type, b);
 	    }
+	  else
+	    d = TYPE_MAIN_DECL (d);
+
+	  TYPE_NAME (type) = d;
+	  DECL_CONTEXT (d) = context;
+
+	  if (! globalize && processing_template_decl
+	      && IS_AGGR_TYPE (type))
+	    {
+	      d = push_template_decl (d);
+	      if (b->pseudo_global && b->level_chain->parm_flag == 2)
+		pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
+				     b->level_chain);
+	    }
+
+	  if (b->parm_flag == 2)
+	    d = pushdecl_class_level (d);
+	  else
+	    d = pushdecl_with_scope (d, b);
+
 	  if (newdecl)
 	    {
 	      if (ANON_AGGRNAME_P (name))
