@@ -1,7 +1,7 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Source originally from hartzell@boulder.colorado.edu
-   Rewritten by: meissner@osf.org
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Contributed by hartzell@boulder.colorado.edu,
+   Rewritten by meissner@osf.org.
 
 This file is part of GNU CC.
 
@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/file.h>
+#include <time.h>
 #include <fcntl.h>
 #include <errno.h>
 #include "config.h"
@@ -273,7 +274,6 @@ extern PTR_T	calloc	__proto((size_t, size_t));
 extern PTR_T	realloc	__proto((PTR_T, size_t));
 extern void	free	__proto((PTR_T));
 #endif
-extern char    *ctime	__proto((time_t *));
 
 extern char *optarg;
 extern int   optind;
