@@ -749,7 +749,7 @@ help ()
 }
 
 static void
-no_argument (opt)
+java_no_argument (opt)
      char *opt;
 {
   fprintf (stderr, "gjavah: no argument given for option `%s'\n", opt);
@@ -793,21 +793,21 @@ DEFUN(main, (argc, argv),
 	  if (argi + 1 < argc)
 	    output_file = argv[++argi];
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-d") == 0)
 	{
 	  if (argi + 1 < argc)
 	    output_directory = argv[++argi];
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-td") == 0)
 	{
 	  if (argi + 1 < argc)
 	    temp_directory = argv[++argi];
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-prepend") == 0)
 	{
@@ -818,7 +818,7 @@ DEFUN(main, (argc, argv),
 	      prepend_specs[prepend_count++] = argv[++argi];
 	    }
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-friend") == 0)
 	{
@@ -829,7 +829,7 @@ DEFUN(main, (argc, argv),
 	      friend_specs[friend_count++] = argv[++argi];
 	    }
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-add") == 0)
 	{
@@ -840,7 +840,7 @@ DEFUN(main, (argc, argv),
 	      add_specs[add_count++] = argv[++argi];
 	    }
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-append") == 0)
 	{
@@ -851,14 +851,14 @@ DEFUN(main, (argc, argv),
 	      append_specs[append_count++] = argv[++argi];
 	    }
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-classpath") == 0)
 	{
 	  if (argi + 1 < argc)
 	    classpath = argv[++argi];
 	  else
-	    no_argument (argv[argi]);
+	    java_no_argument (argv[argi]);
 	}
       else if (strcmp (arg, "-verbose") == 0 || strcmp (arg, "-v") == 0)
 	verbose++;
