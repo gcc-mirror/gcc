@@ -1,3 +1,7 @@
+Wed Dec  2 01:44:58 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* egcs-1.1.1 released.
+
 Mon Nov 23 20:28:02 1998  Mike Stump  <mrs@wrs.com>
 
 	* libgcc2.c (top_elt): Remove top_elt, it isn't thread safe.
