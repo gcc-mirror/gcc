@@ -1,3 +1,8 @@
+2000-06-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-decl.c, timevar.c, tlink.c: Include intl.h.
+	* Makefile.in: Update deps.
+
 2000-06-29  Andrew Haley  <aph@cygnus.com>
 
 	* toplev.c (main): On an IA-64, make flag_unwind_tables defauit
