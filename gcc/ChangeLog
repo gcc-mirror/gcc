@@ -1,3 +1,12 @@
+Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sdbout.c: #include ggc.h.
+ 	(sdbout_init): Move to end of file.
+	Call ggc_add_tree_root for anonymous_types.
+	(sdbout_symbol): Use DECL_NAME for local, not DECL_ASSEMBLER_NAME.
+	(sdbout_one_type): Use DECL_NAME for field name.
+	* Makefile.in (sdbout.o): Show includes ggc.h.
+
 Wed Mar 21 20:33:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (override_options): Default ix86_regparm to REGPARM_MAX.
@@ -15,8 +24,10 @@ Wed Mar 21 20:33:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 	(print_operand_address): Output (%rip) where possible.
 	(split_di): Abort on 64bit registers.
 	(ix86_expand_branch): DImode comparison is simple for x86_64.
-	(memory_address_length): Recognize memory addresses formed using PRE/POST modify.
-	(ix86_data_alignment, ix86_local_alignment): Align arrays to 16 bytes for x86_64.
+	(memory_address_length): Recognize memory addresses formed using
+	PRE/POST modify.
+	(ix86_data_alignment, ix86_local_alignment): Align arrays to 16 bytes 
+	for x86_64.
 	* i386.h (TARGET_USE_SAHF): Disable for 64bit.
 
 Wed Mar 21 18:51:19 CET 2001  Jan Hubicka  <jh@suse.cz>
