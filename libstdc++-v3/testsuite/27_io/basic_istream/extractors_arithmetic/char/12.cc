@@ -25,11 +25,8 @@
 // XXX http://gcc.gnu.org/ml/gcc/2002-12/msg01422.html
 // { dg-do run { xfail sparc*-*-solaris2* } }
 
-#include <cstdio> // for printf
 #include <istream>
-#include <ostream>
 #include <sstream>
-#include <locale>
 #include <testsuite_hooks.h>
 
 std::string str_01;

@@ -29,18 +29,14 @@
 void test02()
 {
   bool test = true;
-  std::locale loc_c1("C");
-  std::locale loc_c2 ("C");
-  
+
   std::locale loc_1("");
   std::locale loc_2("");
-
-  VERIFY( loc_c1 == loc_c2 );
   VERIFY( loc_1 == loc_2 );
 }
  
 int main()
 {
-  test02();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test02);
   return 0;
 }

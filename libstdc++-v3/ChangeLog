@@ -1,5 +1,15 @@
 2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/22_locale/locale/cons/3.cc: Split.
+	* testsuite/22_locale/locale/cons/7222-c.cc: New.
+	* testsuite/22_locale/locale/cons/7222-env.cc: New.	
+	Check before trying to create a locale from the environment.
+	* testsuite/27_io/ios_base/state/1.cc (test02): Use "C" locale.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Adjust includes.
+	
+2003-04-11  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/22_locale/ctype/is/char/3.cc (test03): Use the classic
 	locale to construct this hybrid locale, not the global locale.
 

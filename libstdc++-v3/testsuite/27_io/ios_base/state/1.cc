@@ -39,9 +39,9 @@ test02()
   std::string str01;
   std::string str02;
 
-  std::locale loc("");
+  std::locale loc_c = std::locale::classic();
   std::ostringstream ostr01;
-  ostr01.imbue(loc);
+  ostr01.imbue(loc_c);
   std::ios_base::fmtflags ff = ostr01.flags(std::ios_base::boolalpha);
 
   ostr01 << true;
