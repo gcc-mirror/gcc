@@ -2580,6 +2580,47 @@
   "bv%* 0(%%r2)"
   [(set_attr "type" "branch")])
 
+;; Use a different pattern for functions which have non-trivial 
+;; epilogues so as not to confuse jump and reorg.
+(define_insn "return_internal"
+  [(use (reg:SI 2))
+   (return)]
+  ""
+  "bv%* 0(%%r2)"
+  [(set_attr "type" "branch")])
+
+(define_expand "prologue"
+  [(const_int 0)]
+  ""
+  "hppa_expand_prologue ();DONE;")
+
+(define_expand "epilogue"
+  [(return)]
+  ""
+  "
+{
+  /* Try to use the trivial return first.  Else use the full 
+     epilogue.  */
+  if (hppa_can_use_return_insn_p ())
+   emit_jump_insn (gen_return ());
+  else
+    {
+      hppa_expand_epilogue ();
+      emit_jump_insn (gen_return_internal ());
+    }
+  DONE;
+}")
+
+;; Special because we use the value placed in %r2 by the bl instruction
+;; from within its delay slot to set the value for the 2nd parameter to
+;; the call.
+(define_insn "call_profiler"
+  [(unspec_volatile [(const_int 0)] 0)
+   (use (match_operand:SI 0 "const_int_operand" ""))]
+  ""
+  "bl _mcount,%%r2\;ldo %0(%%r2),%%r25"
+  [(set_attr "length" "2")])
+
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
