@@ -522,6 +522,7 @@ const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4;
 const int x86_use_ffreep = m_ATHLON_K8;
 const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6;
 const int x86_inter_unit_moves = ~(m_ATHLON_K8);
+const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_PPRO;
 
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
@@ -934,6 +935,11 @@ static rtx construct_container PARAMS ((enum machine_mode, tree, int, int, int,
 					const int *, int));
 static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 						    enum x86_64_reg_class));
+
+/* Table of constants used by fldpi, fldln2, etc...  */
+static REAL_VALUE_TYPE ext_80387_constants_table [5];
+static bool ext_80387_constants_init = 0;
+static void init_ext_80387_constants PARAMS ((void));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -4214,9 +4220,34 @@ aligned_operand (op, mode)
   return 1;
 }
 
+/* Initialize the table of extra 80387 mathematical constants.  */
+
+static void
+init_ext_80387_constants ()
+{
+  static const char * cst[5] =
+  {
+    "0.3010299956639811952256464283594894482",  /* 0: fldlg2  */
+    "0.6931471805599453094286904741849753009",  /* 1: fldln2  */
+    "1.4426950408889634073876517827983434472",  /* 2: fldl2e  */
+    "3.3219280948873623478083405569094566090",  /* 3: fldl2t  */
+    "3.1415926535897932385128089594061862044",  /* 4: fldpi   */
+  };
+  int i;
+
+  for (i = 0; i < 5; i++)
+    {
+      real_from_string (&ext_80387_constants_table[i], cst[i]);
+      /* Ensure each constant is rounded to XFmode precision.  */
+      real_convert (&ext_80387_constants_table[i], XFmode,
+		    &ext_80387_constants_table[i]);
+    }
+
+  ext_80387_constants_init = 1;
+}
+
 /* Return true if the constant is something that can be loaded with
-   a special instruction.  Only handle 0.0 and 1.0; others are less
-   worthwhile.  */
+   a special instruction.  */
 
 int
 standard_80387_constant_p (x)
@@ -4224,14 +4255,87 @@ standard_80387_constant_p (x)
 {
   if (GET_CODE (x) != CONST_DOUBLE || !FLOAT_MODE_P (GET_MODE (x)))
     return -1;
-  /* Note that on the 80387, other constants, such as pi, that we should support
-     too.  On some machines, these are much slower to load as standard constant,
-     than to load from doubles in memory.  */
+
   if (x == CONST0_RTX (GET_MODE (x)))
     return 1;
   if (x == CONST1_RTX (GET_MODE (x)))
     return 2;
+
+  /* For XFmode constants, try to find a special 80387 instruction on
+     those CPUs that benefit from them.  */
+  if (GET_MODE (x) == XFmode
+      && x86_ext_80387_constants & CPUMASK)
+    {
+      REAL_VALUE_TYPE r;
+      int i;
+
+      if (! ext_80387_constants_init)
+	init_ext_80387_constants ();
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      for (i = 0; i < 5; i++)
+        if (real_identical (&r, &ext_80387_constants_table[i]))
+	  return i + 3;
+    }
+
   return 0;
+}
+
+/* Return the opcode of the special instruction to be used to load
+   the constant X.  */
+
+const char *
+standard_80387_constant_opcode (x)
+     rtx x;
+{
+  switch (standard_80387_constant_p (x))
+    {
+    case 1: 
+      return "fldz";
+    case 2:
+      return "fld1";
+    case 3: 
+      return "fldlg2";
+    case 4:
+      return "fldln2";
+    case 5: 
+      return "fldl2e";
+    case 6:
+      return "fldl2t";
+    case 7: 
+      return "fldpi";
+    }
+  abort ();
+}
+
+/* Return the CONST_DOUBLE representing the 80387 constant that is
+   loaded by the specified special instruction.  The argument IDX
+   matches the return value from standard_80387_constant_p.  */
+
+rtx
+standard_80387_constant_rtx (idx)
+     int idx;
+{
+  int i;
+
+  if (! ext_80387_constants_init)
+    init_ext_80387_constants ();
+
+  switch (idx)
+    {
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+      i = idx - 3;
+      break;
+
+    default:
+      abort ();
+    }
+
+  return CONST_DOUBLE_FROM_REAL_VALUE (ext_80387_constants_table[i], XFmode);
 }
 
 /* Return 1 if X is FP constant we can load to SSE register w/o using memory.
@@ -14737,10 +14841,11 @@ ix86_rtx_costs (x, code, outer_code, total)
 	  case 1: /* 0.0 */
 	    *total = 1;
 	    break;
-	  case 2: /* 1.0 */
+	  default: /* Other constants */
 	    *total = 2;
 	    break;
-	  default:
+	  case 0:
+	  case -1:
 	    /* Start with (MEM (SYMBOL_REF)), since that's where
 	       it'll probably end up.  Add a penalty for size.  */
 	    *total = (COSTS_N_INSNS (1)

@@ -39,6 +39,8 @@ extern void ix86_output_addr_diff_elt PARAMS ((FILE *, int, int));
 extern int ix86_aligned_p PARAMS ((rtx));
 
 extern int standard_80387_constant_p PARAMS ((rtx));
+extern const char *standard_80387_constant_opcode PARAMS ((rtx));
+extern rtx standard_80387_constant_rtx PARAMS ((int));
 extern int standard_sse_constant_p PARAMS ((rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern bool extended_reg_mentioned_p PARAMS ((rtx));

@@ -1,3 +1,26 @@
+2003-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (x86_ext_80387_constants): Use 80387 insns
+	to load mathematical constants on K6, Athlon, Pentium 4 and PPro.
+	(ext_80387_constants_table): Global table of 80387 special constants
+	guarded by ext_80387_constants_init flag when not initialized.
+	(init_ext_80387_constants): New function to initialize this table.
+	(standard_80387_constant_p): Extend to recognize extra 80387
+	constants, in XFmode, on processors where this is a win.
+	(standard_80387_constant_opcode): New function to return the
+	opcode associated with standard_80387_constant_p.
+	(standard_80387_constant_rtx): New function to return the XFmode
+	CONST_DOUBLE associated with standard_80387_constant_p.
+	(ix86_rtx_costs): Give the new constants the same cost as 1.0.
+
+	* config/i386/i386-protos.h (standard_80387_constant_opcode):
+	Prototype here.
+	(standard_80387_constant_rtx): Likewise.
+
+	* config/i386/i386.md (*movsf1, *movsf1_nointerunit, *movdf_nointeger,
+	*movdf_integer, *movxf_nointeger, *movtf_nointeger, *movxf_integer,
+	*movtf_integer): Simplify using new standard_80387_constant_opcode.
+
 2003-02-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Optimize Options): Correct @option syntax.
