@@ -1,3 +1,13 @@
+2005-02-13  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR target/17428
+	* cfgrtl.c (safe_insert_insn_on_edge): Avoid extending life range of hard
+	registers.
+	* value-prof.c (insn_prefetch_values_to_profile): Only scan normal insns.
+
+	* value-prof.c (rtl_find_values_to_profile): Do not look for values to
+	profile in libcalls.
+
 2005-02-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.h (bitmap_and_compl_into): Return bool.
