@@ -1,5 +1,9 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.c-torture/compile/20010611-1.c: New test.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/c99-tag-1.c: Add more tests.
 
 2001-06-10  Alexandre Oliva  <aoliva@redhat.com>

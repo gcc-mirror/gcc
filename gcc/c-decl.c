@@ -6436,9 +6436,11 @@ store_parm_decls ()
 					    "prototype declaration");
 		  break;
 		}
-	      /* Type for passing arg must be consistent
-		 with that declared for the arg.  */
-	      if (! comptypes (DECL_ARG_TYPE (parm), TREE_VALUE (type)))
+	      /* Type for passing arg must be consistent with that
+		 declared for the arg.  ISO C says we take the unqualified
+		 type for parameters declared with qualified type.  */
+	      if (! comptypes (TYPE_MAIN_VARIANT (DECL_ARG_TYPE (parm)),
+			       TYPE_MAIN_VARIANT (TREE_VALUE (type))))
 		{
 		  if (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
 		      == TYPE_MAIN_VARIANT (TREE_VALUE (type)))
