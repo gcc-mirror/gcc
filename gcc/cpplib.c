@@ -1,6 +1,6 @@
 /* CPP Library.
    Copyright (C) 1986, 87, 89, 92-6, 1997 Free Software Foundation, Inc.
-   Written by Per Bothner, 1994-95.
+   Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
 
@@ -1308,7 +1308,8 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 	     Don't leave the # in the expansion.  */
 	  exp_p--;
 	  SKIP_WHITE_SPACE (p);
-	  if (p == limit || ! is_idstart[*p])
+	  if (p == limit || ! is_idstart[*p]
+	      || (*p == 'L' && p + 1 < limit && (p[1] == '\'' || p[1] == '"')))
 	    cpp_error (pfile,
 		     "`#' operator is not followed by a macro argument name");
 	  else
@@ -1369,7 +1370,8 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
       while (p != limit && is_idchar[*p]) p++;
       id_len = p - id_beg;
 
-      if (is_idstart[c]) {
+      if (is_idstart[c]
+	  && ! (id_len == 1 && c == 'L' && (*p == '\'' || *p == '"'))) {
 	register struct arglist *arg;
 
 	for (arg = arglist; arg != NULL; arg = arg->next) {
@@ -1667,7 +1669,8 @@ check_macro_name (pfile, symname, usage)
   for (p = symname; is_idchar[*p]; p++)
     ;
   sym_length = p - symname;
-  if (sym_length == 0)
+  if (sym_length == 0
+      || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
     cpp_error (pfile, "invalid %s name", usage);
   else if (!is_idstart[*symname]) {
     U_CHAR *msg;			/* what pain...  */
@@ -2416,6 +2419,8 @@ special_symbol (hp, pfile)
 	}
 
       if (!is_idstart[*ip->cur])
+	goto oops;
+      if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
 	goto oops;
       if (hp = cpp_lookup (pfile, ip->cur, -1, -1))
 	{
