@@ -1,3 +1,7 @@
+Mon Oct 12 06:21:08 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (gen_mem_addressof): Copy REG_USERVAR_P to new reg.
+
 Sun Oct 11 14:40:24 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* calls.c (store_one_arg): Use ARGS_SIZE_RTX to get size of argument
