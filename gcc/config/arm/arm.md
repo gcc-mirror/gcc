@@ -4007,7 +4007,7 @@
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
    ;; store the high byte
-   (set (match_dup 4) (subreg:QI (match_dup 2) 0))]	;explicit subreg safe
+   (set (match_dup 4) (match_dup 5))]
   "TARGET_ARM"
   "
   {
@@ -4023,7 +4023,8 @@
     operands[1] = adjust_address (operands[1], QImode, 0);
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
-    operands[2] = gen_reg_rtx (SImode); 
+    operands[2] = gen_reg_rtx (SImode);
+    operands[5] = gen_lowpart (QImode, operands[2]);
   }"
 )
 
@@ -4031,7 +4032,7 @@
   [(set (match_dup 4) (match_dup 3))
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
-   (set (match_operand 1 "" "")	(subreg:QI (match_dup 2) 3))]
+   (set (match_operand 1 "" "")	(match_dup 5))]
   "TARGET_ARM"
   "
   {
@@ -4048,13 +4049,14 @@
     operands[3] = gen_lowpart (QImode, operands[0]);
     operands[0] = gen_lowpart (SImode, operands[0]);
     operands[2] = gen_reg_rtx (SImode);
+    operands[5] = gen_lowpart (QImode, operands[2]);
   }"
 )
 
 ;; Subroutine to store a half word integer constant into memory.
 (define_expand "storeinthi"
   [(set (match_operand 0 "" "")
-	(subreg:QI (match_operand 1 "" "") 0))
+	(match_operand 1 "" ""))
    (set (match_dup 3) (match_dup 2))]
   "TARGET_ARM"
   "
@@ -4095,6 +4097,7 @@
     operands[3] = adjust_address (op0, QImode, 1);
     operands[0] = adjust_address (operands[0], QImode, 0);
     operands[2] = gen_lowpart (QImode, operands[2]);
+    operands[1] = gen_lowpart (QImode, operands[1]);
   }"
 )
 
@@ -4415,11 +4418,12 @@
    (set (match_dup 3)
 	(ashiftrt:SI (match_dup 2) (const_int 16)))
    (set (match_operand:HI 0 "s_register_operand" "")
-	(subreg:HI (match_dup 3) 0))]
+	(match_dup 4))]
   "TARGET_ARM"
   "
   operands[2] = gen_reg_rtx (SImode);
   operands[3] = gen_reg_rtx (SImode);
+  operands[4] = gen_lowpart (HImode, operands[3]);
   "
 )
 
