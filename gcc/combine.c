@@ -9831,12 +9831,6 @@ gen_lowpart_for_combine (mode, x)
 	    || GET_MODE_SIZE (GET_MODE (x)) == GET_MODE_SIZE (mode)))
     return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
 
-  /* simplify_gen_subreg does not know how to handle the case where we try
-     to convert an integer constant to a vector.
-     ??? We could try to teach it to generate CONST_VECTORs.  */
-  if (GET_MODE (x) == VOIDmode && VECTOR_MODE_P (mode))
-    return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
-
   /* X might be a paradoxical (subreg (mem)).  In that case, gen_lowpart
      won't know what to do.  So we will strip off the SUBREG here and
      process normally.  */
@@ -9903,9 +9897,15 @@ gen_lowpart_for_combine (mode, x)
     {
       int offset = 0;
       rtx res;
+      enum machine_mode sub_mode = GET_MODE (x);
 
-      offset = subreg_lowpart_offset (mode, GET_MODE (x));
-      res = simplify_gen_subreg (mode, x, GET_MODE (x), offset);
+      offset = subreg_lowpart_offset (mode, sub_mode);
+      if (sub_mode == VOIDmode)
+	{
+	  sub_mode = int_mode_for_mode (mode);
+	  x = gen_lowpart_common (sub_mode, x);
+	}
+      res = simplify_gen_subreg (mode, x, sub_mode, offset);
       if (res)
 	return res;
       return gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
