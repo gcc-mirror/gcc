@@ -1,3 +1,7 @@
+Sun Oct 28 09:59:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_constructor_field): Only call adjust_address on MEM.
+
 Sun Oct 28 16:48:09 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* genrecog.c (write_switch):  Output if before switch for
