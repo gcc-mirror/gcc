@@ -69,7 +69,7 @@ extern char *output_call ();
 #define TARGET_C2 (target_flags & 2)
 #define TARGET_C34 (target_flags & 4)
 #define TARGET_C38 (target_flags & 010)
-#define TARGET_INDIRECTS (target_flags & 020)
+#define TARGET_INDIRECTS (1)
 #define TARGET_ARGCOUNT (target_flags & 040)
 
 /* Macro to define tables used to set the flags.
@@ -85,7 +85,7 @@ extern char *output_call ();
     { "c34", 006 },	\
     { "c38", 012 },	\
     { "noc1", -001 }, 	\
-    { "noc2", -022 },	\
+    { "noc2", -002 },	\
     { "argcount", 040 },  \
     { "noargcount", -040 }, \
     { "", TARGET_DEFAULT }}
