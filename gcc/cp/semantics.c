@@ -2558,6 +2558,12 @@ finish_id_expression (tree id_expression,
 	  if (TREE_CODE (decl) == VAR_DECL
 	      || TREE_CODE (decl) == PARM_DECL)
 	    return decl;
+	  /* The same is true for FIELD_DECL, but we also need to
+	     make sure that the syntax is correct.  */
+	  else if (TREE_CODE (decl) == FIELD_DECL)
+	    return finish_non_static_data_member
+		     (decl, current_class_ref,
+		      /*qualifying_scope=*/NULL_TREE);
 	  return id_expression;
 	}
 

@@ -7519,7 +7519,16 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, complain, in_decl,
 				  /*entering_scope=*/1);
 	  if (ctx != DECL_CONTEXT (t))
-	    return lookup_field (ctx, DECL_NAME (t), 0, false);
+	    {
+	      tree r = lookup_field (ctx, DECL_NAME (t), 0, false);
+	      if (!r)
+		{
+		  if (complain & tf_error)
+		    error ("using invalid field `%D'", t);
+		  return error_mark_node;
+		}
+	      return r;
+	    }
 	}
       return t;
 
@@ -8548,7 +8557,9 @@ tsubst_copy_and_build (tree t,
 	else
 	  member = tsubst_copy (member, args, complain, in_decl);
 
-	if (!CLASS_TYPE_P (TREE_TYPE (object)))
+	if (member == error_mark_node)
+	  return error_mark_node;
+	else if (!CLASS_TYPE_P (TREE_TYPE (object)))
 	  {
 	    if (TREE_CODE (member) == BIT_NOT_EXPR)
 	      return finish_pseudo_destructor_expr (object, 
