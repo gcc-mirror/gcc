@@ -9,7 +9,8 @@
 
 2000-03-20 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
-	* call.c (check_dtor_name,build_new_method_call): Likewise.
+	* call.c (check_dtor_name,build_new_method_call): Use DECL_P and
+	TYPE_P macros.
 	* decl.c (push_class_binding,poplevel,pushtag,lookup_namespace_name,
 	make_typename_type,check_initializer,cp_finish_decl,xref_tag): Likewise.
 	* decl2.c (grokfield,build_expr_from_tree,build_expr_from_tree,
