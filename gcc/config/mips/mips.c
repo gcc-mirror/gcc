@@ -147,6 +147,28 @@ static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static void mips_encode_section_info		PARAMS ((tree, int));
 
+/* Structure to be filled in by compute_frame_size with register
+   save masks, and offsets for the current function.  */
+
+struct mips_frame_info GTY(())
+{
+  long total_size;		/* # bytes that the entire frame takes up */
+  long var_size;		/* # bytes that variables take up */
+  long args_size;		/* # bytes that outgoing arguments take up */
+  long extra_size;		/* # bytes of extra gunk */
+  int  gp_reg_size;		/* # bytes needed to store gp regs */
+  int  fp_reg_size;		/* # bytes needed to store fp regs */
+  long mask;			/* mask of saved gp registers */
+  long fmask;			/* mask of saved fp registers */
+  long gp_save_offset;		/* offset from vfp to store gp registers */
+  long fp_save_offset;		/* offset from vfp to store fp registers */
+  long gp_sp_offset;		/* offset from new sp to store gp registers */
+  long fp_sp_offset;		/* offset from new sp to store fp registers */
+  int  initialized;		/* != 0 if frame size already calculated */
+  int  num_gp;			/* number of gp registers saved */
+  int  num_fp;			/* number of fp registers saved */
+};
+
 struct machine_function GTY(()) {
   /* Pseudo-reg holding the address of the current function when
      generating embedded PIC code.  Created by LEGITIMIZE_ADDRESS,
@@ -156,6 +178,12 @@ struct machine_function GTY(()) {
   /* Pseudo-reg holding the value of $28 in a mips16 function which
      refers to GP relative global variables.  */
   rtx mips16_gp_pseudo_rtx;
+
+  /* Current frame information, calculated by compute_frame_size.  */
+  struct mips_frame_info frame;
+
+  /* Length of instructions in function; mips16 only.  */
+  long insns_len;
 };
 
 /* Information about a single argument.  */
@@ -334,12 +362,6 @@ static enum machine_mode gpr_mode;
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
 char mips_hard_regno_mode_ok[(int)MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
-
-/* Current frame information calculated by compute_frame_size.  */
-struct mips_frame_info current_frame_info;
-
-/* Zero structure to initialize current_frame_info.  */
-struct mips_frame_info zero_frame_info;
 
 /* The length of all strings seen when compiling for the mips16.  This
    is used to tell how many strings are in the constant pool, so that
@@ -929,18 +951,18 @@ simple_memory_operand (op, mode)
          getting this right is during delayed branch scheduling, so
          don't need to check until then.  The machine_dependent_reorg
          function will set the total length of the instructions used
-         in the function in current_frame_info.  If that is small
+         in the function (cfun->machine->insns_len).  If that is small
          enough, we know for sure that this is a small offset.  It
          would be better if we could take into account the location of
          the instruction within the function, but we can't, because we
          don't know where we are.  */
       if (TARGET_MIPS16
 	  && CONSTANT_POOL_ADDRESS_P (addr)
-	  && current_frame_info.insns_len > 0)
+	  && cfun->machine->insns_len > 0)
 	{
 	  long size;
 
-	  size = current_frame_info.insns_len + get_pool_size ();
+	  size = cfun->machine->insns_len + get_pool_size ();
 	  if (GET_MODE_SIZE (mode) == 4)
 	    return size < 4 * 0x100;
 	  else if (GET_MODE_SIZE (mode) == 8)
@@ -1695,11 +1717,11 @@ m16_usym8_4 (op, mode)
 {
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
-      && current_frame_info.insns_len > 0
+      && cfun->machine->insns_len > 0
       && XSTR (op, 0)[0] == '*'
       && strncmp (XSTR (op, 0) + 1, LOCAL_LABEL_PREFIX,
 		  sizeof LOCAL_LABEL_PREFIX - 1) == 0
-      && (current_frame_info.insns_len + get_pool_size () + mips_string_length
+      && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x100))
     {
       struct string_constant *l;
@@ -1722,11 +1744,11 @@ m16_usym5_4 (op, mode)
 {
   if (GET_CODE (op) == SYMBOL_REF
       && SYMBOL_REF_FLAG (op)
-      && current_frame_info.insns_len > 0
+      && cfun->machine->insns_len > 0
       && XSTR (op, 0)[0] == '*'
       && strncmp (XSTR (op, 0) + 1, LOCAL_LABEL_PREFIX,
 		  sizeof LOCAL_LABEL_PREFIX - 1) == 0
-      && (current_frame_info.insns_len + get_pool_size () + mips_string_length
+      && (cfun->machine->insns_len + get_pool_size () + mips_string_length
 	  < 4 * 0x20))
     {
       struct string_constant *l;
@@ -2399,7 +2421,30 @@ mips_move_1word (operands, insn, unsignedp)
 
   return ret;
 }
+
+/* Return instructions to restore the global pointer from the stack,
+   assuming TARGET_ABICALLS.  Used by exception_receiver to set up
+   the GP for exception handlers.
 
+   OPERANDS is an array of operands whose contents are undefined
+   on entry.  INSN is the exception_handler instruction.  */
+
+const char *
+mips_restore_gp (operands, insn)
+     rtx *operands, insn;
+{
+  rtx loc;
+
+  operands[0] = pic_offset_table_rtx;
+  if (frame_pointer_needed)
+    loc = hard_frame_pointer_rtx;
+  else
+    loc = stack_pointer_rtx;
+  loc = plus_constant (loc, cfun->machine->frame.args_size);
+  operands[1] = gen_rtx_MEM (Pmode, loc);
+
+  return mips_move_1word (operands, insn, 0);
+}
 
 /* Return the appropriate instructions to move 2 words */
 
@@ -3442,6 +3487,36 @@ mips_gen_conditional_trap (operands)
   emit_insn (gen_rtx_TRAP_IF (VOIDmode,
 			      gen_rtx (cmp_code, GET_MODE (operands[0]), op0, op1),
 			      operands[1]));
+}
+
+/* Emit code to change the current function's return address to
+   ADDRESS.  SCRATCH is available as a scratch register, if needed.
+   ADDRESS and SCRATCH are both word-mode GPRs.  */
+
+void
+mips_set_return_address (address, scratch)
+     rtx address, scratch;
+{
+  HOST_WIDE_INT gp_offset;
+
+  compute_frame_size (get_frame_size ());
+  if (((cfun->machine->frame.mask >> 31) & 1) == 0)
+    abort ();
+  gp_offset = cfun->machine->frame.gp_sp_offset;
+
+  /* Reduce SP + GP_OFSET to a legitimate address and put it in SCRATCH.  */
+  if (gp_offset < 32768)
+    scratch = plus_constant (stack_pointer_rtx, gp_offset);
+  else
+    {
+      emit_move_insn (scratch, GEN_INT (gp_offset));
+      if (Pmode == DImode)
+	emit_insn (gen_adddi3 (scratch, scratch, stack_pointer_rtx));
+      else
+	emit_insn (gen_addsi3 (scratch, scratch, stack_pointer_rtx));
+    }
+
+  emit_move_insn (gen_rtx_MEM (GET_MODE (address), scratch), address);
 }
 
 /* Write a loop to move a constant number of bytes.
@@ -5442,9 +5517,9 @@ mips_debugger_offset (addr, offset)
   if (reg == stack_pointer_rtx || reg == frame_pointer_rtx
       || reg == hard_frame_pointer_rtx)
     {
-      HOST_WIDE_INT frame_size = (!current_frame_info.initialized)
+      HOST_WIDE_INT frame_size = (!cfun->machine->frame.initialized)
 				  ? compute_frame_size (get_frame_size ())
-				  : current_frame_info.total_size;
+				  : cfun->machine->frame.total_size;
 
       /* MIPS16 frame is smaller */
       if (frame_pointer_needed && TARGET_MIPS16)
@@ -6584,17 +6659,17 @@ compute_frame_size (size)
     total_size = 32;
 
   /* Save other computed information.  */
-  current_frame_info.total_size = total_size;
-  current_frame_info.var_size = var_size;
-  current_frame_info.args_size = args_size;
-  current_frame_info.extra_size = extra_size;
-  current_frame_info.gp_reg_size = gp_reg_size;
-  current_frame_info.fp_reg_size = fp_reg_size;
-  current_frame_info.mask = mask;
-  current_frame_info.fmask = fmask;
-  current_frame_info.initialized = reload_completed;
-  current_frame_info.num_gp = gp_reg_size / UNITS_PER_WORD;
-  current_frame_info.num_fp = fp_reg_size / (FP_INC * UNITS_PER_FPREG);
+  cfun->machine->frame.total_size = total_size;
+  cfun->machine->frame.var_size = var_size;
+  cfun->machine->frame.args_size = args_size;
+  cfun->machine->frame.extra_size = extra_size;
+  cfun->machine->frame.gp_reg_size = gp_reg_size;
+  cfun->machine->frame.fp_reg_size = fp_reg_size;
+  cfun->machine->frame.mask = mask;
+  cfun->machine->frame.fmask = fmask;
+  cfun->machine->frame.initialized = reload_completed;
+  cfun->machine->frame.num_gp = gp_reg_size / UNITS_PER_WORD;
+  cfun->machine->frame.num_fp = fp_reg_size / (FP_INC * UNITS_PER_FPREG);
 
   if (mask)
     {
@@ -6608,13 +6683,13 @@ compute_frame_size (size)
       else
 	offset = total_size - GET_MODE_SIZE (gpr_mode);
 
-      current_frame_info.gp_sp_offset = offset;
-      current_frame_info.gp_save_offset = offset - total_size;
+      cfun->machine->frame.gp_sp_offset = offset;
+      cfun->machine->frame.gp_save_offset = offset - total_size;
     }
   else
     {
-      current_frame_info.gp_sp_offset = 0;
-      current_frame_info.gp_save_offset = 0;
+      cfun->machine->frame.gp_sp_offset = 0;
+      cfun->machine->frame.gp_save_offset = 0;
     }
 
   if (fmask)
@@ -6622,17 +6697,58 @@ compute_frame_size (size)
       unsigned long offset = (args_size + extra_size + var_size
 			      + gp_reg_rounded + fp_reg_size
 			      - FP_INC * UNITS_PER_FPREG);
-      current_frame_info.fp_sp_offset = offset;
-      current_frame_info.fp_save_offset = offset - total_size;
+      cfun->machine->frame.fp_sp_offset = offset;
+      cfun->machine->frame.fp_save_offset = offset - total_size;
     }
   else
     {
-      current_frame_info.fp_sp_offset = 0;
-      current_frame_info.fp_save_offset = 0;
+      cfun->machine->frame.fp_sp_offset = 0;
+      cfun->machine->frame.fp_save_offset = 0;
     }
 
   /* Ok, we're done.  */
   return total_size;
+}
+
+/* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
+   pointer, argument pointer, or return address pointer.  TO is either
+   the stack pointer or hard frame pointer.  */
+
+int
+mips_initial_elimination_offset (from, to)
+     int from, to;
+{
+  int offset;
+
+  /* Set OFFSET to the offset from the stack pointer.  */
+  switch (from)
+    {
+    case FRAME_POINTER_REGNUM:
+      offset = 0;
+      break;
+
+    case ARG_POINTER_REGNUM:
+      compute_frame_size (get_frame_size ());
+      offset = cfun->machine->frame.total_size;
+      if (mips_abi == ABI_N32 || mips_abi == ABI_64 || mips_abi == ABI_MEABI)
+	offset -= current_function_pretend_args_size;
+      break;
+
+    case RETURN_ADDRESS_POINTER_REGNUM:
+      compute_frame_size (get_frame_size ());
+      offset = cfun->machine->frame.gp_sp_offset;
+      if (BYTES_BIG_ENDIAN)
+	offset += UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT);
+      break;
+
+    default:
+      abort ();
+    }
+
+  if (TARGET_MIPS16 && to == HARD_FRAME_POINTER_REGNUM)
+    offset -= current_function_outgoing_args_size;
+
+  return offset;
 }
 
 /* Common code to emit the insns (or to write the instructions to a file)
@@ -6731,8 +6847,8 @@ save_restore_insns (store_p, large_reg, large_offset)
      rtx large_reg;	/* register holding large offset constant or NULL */
      long large_offset;	/* large constant offset value */
 {
-  long mask = current_frame_info.mask;
-  long fmask = current_frame_info.fmask;
+  long mask = cfun->machine->frame.mask;
+  long fmask = cfun->machine->frame.fmask;
   long real_mask = mask;
   int regno;
   rtx base_reg_rtx;
@@ -6769,9 +6885,9 @@ save_restore_insns (store_p, large_reg, large_offset)
 	 the constant created in the prologue/epilogue to adjust the stack
 	 frame.  */
 
-      gp_offset = current_frame_info.gp_sp_offset;
+      gp_offset = cfun->machine->frame.gp_sp_offset;
       end_offset
-	= gp_offset - (current_frame_info.gp_reg_size
+	= gp_offset - (cfun->machine->frame.gp_reg_size
 		       - GET_MODE_SIZE (gpr_mode));
 
       if (gp_offset < 0 || end_offset < 0)
@@ -6879,8 +6995,8 @@ save_restore_insns (store_p, large_reg, large_offset)
   if (fmask)
     {
       /* Pick which pointer to use as a base register.  */
-      fp_offset = current_frame_info.fp_sp_offset;
-      end_offset = fp_offset - (current_frame_info.fp_reg_size
+      fp_offset = cfun->machine->frame.fp_sp_offset;
+      end_offset = fp_offset - (cfun->machine->frame.fp_reg_size
 				- UNITS_PER_FPVALUE);
 
       if (fp_offset < 0 || end_offset < 0)
@@ -6951,7 +7067,7 @@ mips_output_function_prologue (file, size)
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   const char *fnname;
 #endif
-  HOST_WIDE_INT tsize = current_frame_info.total_size;
+  HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
 
   /* ??? When is this really needed?  At least the GNU assembler does not
      need the source filename more than once in the file, beyond what is
@@ -7002,18 +7118,18 @@ mips_output_function_prologue (file, size)
 		? ((long) tsize - current_function_outgoing_args_size)
 		: (long) tsize),
 	       reg_names[GP_REG_FIRST + 31],
-	       current_frame_info.var_size,
-	       current_frame_info.num_gp,
-	       current_frame_info.num_fp,
+	       cfun->machine->frame.var_size,
+	       cfun->machine->frame.num_gp,
+	       cfun->machine->frame.num_fp,
 	       current_function_outgoing_args_size,
-	       current_frame_info.extra_size);
+	       cfun->machine->frame.extra_size);
 
       /* .mask MASK, GPOFFSET; .fmask FPOFFSET */
       fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
-	       current_frame_info.mask,
-	       current_frame_info.gp_save_offset,
-	       current_frame_info.fmask,
-	       current_frame_info.fp_save_offset);
+	       cfun->machine->frame.mask,
+	       cfun->machine->frame.gp_save_offset,
+	       cfun->machine->frame.fmask,
+	       cfun->machine->frame.fp_save_offset);
 
       /* Require:
 	 OLD_SP == *FRAMEREG + FRAMESIZE => can find old_sp from nominated FP reg.
@@ -7022,9 +7138,9 @@ mips_output_function_prologue (file, size)
 
   if (mips_entry && ! mips_can_use_return_insn ())
     {
-      int save16 = BITSET_P (current_frame_info.mask, 16);
-      int save17 = BITSET_P (current_frame_info.mask, 17);
-      int save31 = BITSET_P (current_frame_info.mask, 31);
+      int save16 = BITSET_P (cfun->machine->frame.mask, 16);
+      int save17 = BITSET_P (cfun->machine->frame.mask, 17);
+      int save31 = BITSET_P (cfun->machine->frame.mask, 31);
       int savearg = 0;
       rtx insn;
 
@@ -7146,7 +7262,7 @@ mips_output_function_prologue (file, size)
 	  fprintf (file, "\t%s\t%s,%s,%ld\n",
 		   (Pmode == DImode ? "dsubu" : "subu"),
 		   sp_str, sp_str, (long) tsize);
-	  fprintf (file, "\t.cprestore %ld\n", current_frame_info.args_size);
+	  fprintf (file, "\t.cprestore %ld\n", cfun->machine->frame.args_size);
 	}
 
       if (dwarf2out_do_frame ())
@@ -7355,17 +7471,17 @@ mips_expand_prologue ()
 	 which may return a floating point value.  Set up a sequence
 	 of instructions to do so.  Later on we emit them at the right
 	 moment.  */
-      if (TARGET_MIPS16 && BITSET_P (current_frame_info.mask, 18))
+      if (TARGET_MIPS16 && BITSET_P (cfun->machine->frame.mask, 18))
 	{
 	  rtx reg_rtx = gen_rtx (REG, gpr_mode, GP_REG_FIRST + 3);
 	  long gp_offset, base_offset;
 
-	  gp_offset = current_frame_info.gp_sp_offset;
-	  if (BITSET_P (current_frame_info.mask, 16))
+	  gp_offset = cfun->machine->frame.gp_sp_offset;
+	  if (BITSET_P (cfun->machine->frame.mask, 16))
 	    gp_offset -= UNITS_PER_WORD;
-	  if (BITSET_P (current_frame_info.mask, 17))
+	  if (BITSET_P (cfun->machine->frame.mask, 17))
 	    gp_offset -= UNITS_PER_WORD;
-	  if (BITSET_P (current_frame_info.mask, 31))
+	  if (BITSET_P (cfun->machine->frame.mask, 31))
 	    gp_offset -= UNITS_PER_WORD;
 	  if (tsize > 32767)
 	    base_offset = tsize;
@@ -7547,8 +7663,8 @@ mips_output_function_epilogue (file, size)
 
   if (TARGET_STATS)
     {
-      int num_gp_regs = current_frame_info.gp_reg_size / 4;
-      int num_fp_regs = current_frame_info.fp_reg_size / 8;
+      int num_gp_regs = cfun->machine->frame.gp_reg_size / 4;
+      int num_fp_regs = cfun->machine->frame.fp_reg_size / 8;
       int num_regs = num_gp_regs + num_fp_regs;
       const char *name = fnname;
 
@@ -7560,10 +7676,10 @@ mips_output_function_epilogue (file, size)
       fprintf (stderr,
 	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3d reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
 	       name, frame_pointer_needed ? 'y' : 'n',
-	       (current_frame_info.mask & RA_MASK) != 0 ? 'n' : 'y',
+	       (cfun->machine->frame.mask & RA_MASK) != 0 ? 'n' : 'y',
 	       current_function_calls_alloca ? 'y' : 'n',
 	       current_function_calls_setjmp ? 'y' : 'n',
-	       current_frame_info.total_size,
+	       cfun->machine->frame.total_size,
 	       current_function_outgoing_args_size, num_gp_regs, num_fp_regs,
 	       dslots_load_total, dslots_load_filled,
 	       dslots_jump_total, dslots_jump_filled,
@@ -7584,7 +7700,6 @@ mips_output_function_epilogue (file, size)
   num_refs[2] = 0;
   mips_load_reg = 0;
   mips_load_reg2 = 0;
-  current_frame_info = zero_frame_info;
 
   while (string_constants != NULL)
     {
@@ -7610,7 +7725,7 @@ mips_output_function_epilogue (file, size)
 void
 mips_expand_epilogue ()
 {
-  HOST_WIDE_INT tsize = current_frame_info.total_size;
+  HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
   rtx tsize_rtx = GEN_INT (tsize);
   rtx tmp_rtx = (rtx)0;
 
@@ -7679,7 +7794,7 @@ mips_expand_epilogue ()
 	 are going to restore it, then we must emit a blockage insn to
 	 prevent the scheduler from moving the restore out of the epilogue.  */
       else if (TARGET_ABICALLS && mips_abi != ABI_32 && mips_abi != ABI_O64
-	       && (current_frame_info.mask
+	       && (cfun->machine->frame.mask
 		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
 	emit_insn (gen_blockage ());
 
@@ -7741,7 +7856,7 @@ mips_expand_epilogue ()
     }
 
   /* The mips16 loads the return address into $7, not $31.  */
-  if (TARGET_MIPS16 && (current_frame_info.mask & RA_MASK) != 0)
+  if (TARGET_MIPS16 && (cfun->machine->frame.mask & RA_MASK) != 0)
     emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode,
 						  GP_REG_FIRST + 7)));
   else
@@ -7776,8 +7891,8 @@ mips_can_use_return_insn ()
       && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
     return 0;
 
-  if (current_frame_info.initialized)
-    return current_frame_info.total_size == 0;
+  if (cfun->machine->frame.initialized)
+    return cfun->machine->frame.total_size == 0;
 
   return compute_frame_size (get_frame_size ()) == 0;
 }
@@ -9457,9 +9572,9 @@ machine_dependent_reorg (first)
 	}
     }
 
-  /* Store the original value of insns_len in current_frame_info, so
+  /* Store the original value of insns_len in cfun->machine, so
      that simple_memory_operand can look at it.  */
-  current_frame_info.insns_len = insns_len;
+  cfun->machine->insns_len = insns_len;
 
   pool_size = get_pool_size ();
   if (insns_len + pool_size + mips_string_length < 0x8000)

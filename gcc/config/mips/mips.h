@@ -2346,31 +2346,6 @@ extern enum reg_class mips_char_to_class[256];
 
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
-/* Structure to be filled in by compute_frame_size with register
-   save masks, and offsets for the current function.  */
-
-struct mips_frame_info
-{
-  long total_size;		/* # bytes that the entire frame takes up */
-  long var_size;		/* # bytes that variables take up */
-  long args_size;		/* # bytes that outgoing arguments take up */
-  long extra_size;		/* # bytes of extra gunk */
-  int  gp_reg_size;		/* # bytes needed to store gp regs */
-  int  fp_reg_size;		/* # bytes needed to store fp regs */
-  long mask;			/* mask of saved gp registers */
-  long fmask;			/* mask of saved fp registers */
-  long gp_save_offset;		/* offset from vfp to store gp registers */
-  long fp_save_offset;		/* offset from vfp to store fp registers */
-  long gp_sp_offset;		/* offset from new sp to store gp registers */
-  long fp_sp_offset;		/* offset from new sp to store fp registers */
-  int  initialized;		/* != 0 if frame size already calculated */
-  int  num_gp;			/* number of gp registers saved */
-  int  num_fp;			/* number of fp registers saved */
-  long insns_len;		/* length of insns; mips16 only */
-};
-
-extern struct mips_frame_info current_frame_info;
-
 /* If defined, this macro specifies a table of register pairs used to
    eliminate unneeded registers that point into the stack frame.  If
    it is not defined, the only elimination attempted by the compiler
@@ -2442,47 +2417,8 @@ extern struct mips_frame_info current_frame_info;
 	      && (! TARGET_MIPS16					\
 	          || compute_frame_size (get_frame_size ()) < 32768)))))
 
-/* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
-   specifies the initial difference between the specified pair of
-   registers.  This macro must be defined if `ELIMINABLE_REGS' is
-   defined.  */
-
-#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			 \
-{  compute_frame_size (get_frame_size ());				 \
-  if (TARGET_MIPS16 && (FROM) == FRAME_POINTER_REGNUM			 \
-      && (TO) == HARD_FRAME_POINTER_REGNUM)				 \
-    (OFFSET) = - current_function_outgoing_args_size;			 \
-  else if ((FROM) == FRAME_POINTER_REGNUM)				 \
-    (OFFSET) = 0;							 \
-  else if (TARGET_MIPS16 && (FROM) == ARG_POINTER_REGNUM		 \
-	   && (TO) == HARD_FRAME_POINTER_REGNUM)			 \
-    (OFFSET) = (current_frame_info.total_size				 \
-		- current_function_outgoing_args_size			 \
-		- ((mips_abi != ABI_32 					 \
-		    && mips_abi != ABI_O64				 \
-		    && mips_abi != ABI_EABI)				 \
-		   ? current_function_pretend_args_size			 \
-		   : 0));						 \
-  else if ((FROM) == ARG_POINTER_REGNUM)				 \
-    (OFFSET) = (current_frame_info.total_size				 \
-		- ((mips_abi != ABI_32 					 \
-		    && mips_abi != ABI_O64				 \
-		    && mips_abi != ABI_EABI)				 \
-		   ? current_function_pretend_args_size			 \
-		   : 0));						 \
-  /* Some ABIs store 64 bits to the stack, but Pmode is 32 bits,	 \
-     so we must add 4 bytes to the offset to get the right value.  */	 \
-  else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM)			 \
-  {									 \
-    (OFFSET) = current_frame_info.gp_sp_offset			 	 \
-      + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))		 \
-	 * (BYTES_BIG_ENDIAN != 0));					 \
-    if (TARGET_MIPS16 && (TO) != STACK_POINTER_REGNUM)			 \
-      (OFFSET) -= current_function_outgoing_args_size;			 \
-  }									 \
-  else									 \
-    abort();								 \
-}
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+	(OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.

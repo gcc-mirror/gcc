@@ -10022,49 +10022,14 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
   [(const_int 0)]
   "
 {
-  HOST_WIDE_INT gp_offset;
-  rtx base;
-
-  compute_frame_size (get_frame_size ());
-  if (((current_frame_info.mask >> 31) & 1) == 0)
-    abort ();
-  gp_offset = current_frame_info.gp_sp_offset;
-
-  if (gp_offset < 32768)
-    base = stack_pointer_rtx;
-  else
-    {
-      base = operands[1];
-      emit_move_insn (base, GEN_INT (gp_offset));
-      if (Pmode == DImode)
-	emit_insn (gen_adddi3 (base, base, stack_pointer_rtx));
-      else
-	emit_insn (gen_addsi3 (base, base, stack_pointer_rtx));
-      gp_offset = 0;
-    }
-  emit_move_insn (gen_rtx_MEM (GET_MODE (operands[0]),
-			       plus_constant (base, gp_offset)),
-		  operands[0]);
+  mips_set_return_address (operands[0], operands[1]);
   DONE;
 }")
 
 (define_insn "exception_receiver"
   [(unspec_volatile [(const_int 0)] UNSPEC_EH_RECEIVER)]
   "TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64)"
-  "*
-{
-  rtx loc;
-
-  operands[0] = pic_offset_table_rtx;
-  if (frame_pointer_needed)
-    loc = hard_frame_pointer_rtx;
-  else
-    loc = stack_pointer_rtx;
-  loc = plus_constant (loc, current_frame_info.args_size);
-  operands[1] = gen_rtx_MEM (Pmode, loc);
-
-  return mips_move_1word (operands, insn, 0);
-}"
+  "* return mips_restore_gp (operands, insn);"
   [(set_attr "type"   "load")
    (set_attr "length" "8")])
 
