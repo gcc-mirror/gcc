@@ -51,8 +51,8 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 all:
 	cd ..; $(MAKE) sublibobjc.a
 
-OBJC_O = hash.o sarray.o oc-class.o oc-msg.o oc-init.o oc-arch.o \
-         oc-sel.o oc-obj.o oc-misc.o Object.o Protocol.o
+OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o \
+         selctor.o objects.o misc.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
 	-rm -f libobjc.a
@@ -73,8 +73,8 @@ copy-headers: $(OBJC_H)
 	  chmod a+r $(incinstalldir)/objc; \
 	done
 
-oc-msg.o: oc-msg.c fflags
-	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/oc-msg.c
+sendmsg.o: sendmsg.c fflags
+	$(GCC_FOR_TARGET) `cat fflags` -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/sendmsg.c
 
 ## Next to are for heuristics on forwarding mechanism... 
 _forward: _forward.c
