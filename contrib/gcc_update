@@ -72,7 +72,7 @@ intl/configure: intl/configure.in intl/aclocal.m4
 intl/config.h.in: intl/configure.in intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
 gcc/configure: gcc/configure.in
-gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
+gcc/cstamp-h.in: gcc/configure.in
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
 # And then, language-specific files
