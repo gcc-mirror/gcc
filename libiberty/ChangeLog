@@ -1,3 +1,8 @@
+2002-06-30  Douglas Rupp  <rupp@gnat.com>
+
+	* configure.in (OUTPUT_OPTION,NO_MINUS_C_MINUS_O): Configure.
+	* Makefile.in (OUTPUT_OPTION): Use.
+
 2002-06-22  Peter Breitenlohner <peb@mppmu.mpg.de>
 
 	* Makefile.in (install_to_libdir): Add $(DESTDIR).
