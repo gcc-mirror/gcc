@@ -74,6 +74,7 @@ s390x-*-linux-*) TARGET=S390; TARGETDIR=s390;;
 x86_64-*-linux*) TARGET=X86_64; TARGETDIR=x86;;
 sh-*-linux* | sh[[34]]*-*-linux*) TARGET=SH; TARGETDIR=sh;;
 sh64-*-linux* | sh5*-*-linux*) TARGET=SH64; TARGETDIR=sh64;;
+hppa-*-linux* | parisc-*-linux*) TARGET=PA; TARGETDIR=pa;;
 esac
 
 AC_SUBST(AM_RUNTESTFLAGS)
@@ -98,6 +99,7 @@ AM_CONDITIONAL(S390, test x$TARGET = xS390)
 AM_CONDITIONAL(X86_64, test x$TARGET = xX86_64)
 AM_CONDITIONAL(SH, test x$TARGET = xSH)
 AM_CONDITIONAL(SH64, test x$TARGET = xSH64)
+AM_CONDITIONAL(PA, test x$TARGET = xPA)
 
 case x$TARGET in
   xMIPS*) TARGET=MIPS ;;

@@ -1,3 +1,22 @@
+2004-03-19  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am: Update 
+	* Makefile.in: Regenerate.
+	* src/pa/ffi.h.in: Remove.
+	* src/pa/ffitarget.h: New file.
+
+2004-02-10  Randolph Chung  <tausq@debian.org>
+
+	* Makefile.am: Add PA support.
+	* Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* configure.ac: Add PA target.
+	* configure: Regenerate.
+	* src/pa/ffi.c: New file.
+	* src/pa/ffi.h.in: Add PA support.
+	* src/pa/linux.S: New file.
+	* prep_cif.c: Add PA support.
+
 2004-03-16  Hosaka Yuji  <hos@tamanegi.org>
 
 	* src/types.c: Fix alignment size of X86_WIN32 case int64 and
