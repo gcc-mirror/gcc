@@ -462,7 +462,7 @@ count_basic_blocks (f)
   register int count = 0;
   int eh_region = 0;
   int call_had_abnormal_edge = 0;
-  rtx prev_call = NULL_RTX;
+  int in_libcall = 0;
 
   prev_code = JUMP_INSN;
   for (insn = f; insn; insn = NEXT_INSN (insn))
@@ -473,34 +473,35 @@ count_basic_blocks (f)
 	  || (GET_RTX_CLASS (code) == 'i'
 	      && (prev_code == JUMP_INSN
 		  || prev_code == BARRIER
-		  || (prev_code == CALL_INSN && call_had_abnormal_edge))))
-	{
-	  count++;
-	}
+		  || (prev_code == CALL_INSN
+		      && call_had_abnormal_edge && in_libcall == 0))))
+	count++;
+
+      /* Track whether or not we are in a LIBCALL block.  These must
+	 all be within the same basic block.  */
+      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX) != 0)
+	in_libcall++;
+      else if (find_reg_note (insn, REG_RETVAL, NULL_RTX) != 0)
+	in_libcall--;
 
       /* Record whether this call created an edge.  */
       if (code == CALL_INSN)
 	{
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 	  int region = (note ? INTVAL (XEXP (note, 0)) : 1);
-	  prev_call = insn;
+
 	  call_had_abnormal_edge = 0;
 
 	  /* If there is an EH region or rethrow, we have an edge.  */
 	  if ((eh_region && region > 0)
 	      || find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
 	    call_had_abnormal_edge = 1;
-	  else
-	    {
-	      /* If there is a nonlocal goto label and the specified
-		 region number isn't -1, we have an edge. (0 means
-		 no throw, but might have a nonlocal goto).  */
-	      if (nonlocal_goto_handler_labels && region >= 0)
-		call_had_abnormal_edge = 1;
-	    }
+	  else if (nonlocal_goto_handler_labels && region >= 0)
+	    /* If there is a nonlocal goto label and the specified
+	       region number isn't -1, we have an edge. (0 means
+	       no throw, but might have a nonlocal goto).  */
+	    call_had_abnormal_edge = 1;
 	}
-      else if (code != NOTE)
-	prev_call = NULL_RTX;
 
       if (code != NOTE)
 	prev_code = code;
@@ -508,7 +509,6 @@ count_basic_blocks (f)
 	++eh_region;
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
 	--eh_region;
-
     }
 
   /* The rest of the compiler works a bit smoother when we don't have to
@@ -532,13 +532,13 @@ find_basic_blocks_1 (f)
      rtx f;
 {
   register rtx insn, next;
-  int call_has_abnormal_edge = 0;
   int i = 0;
   rtx bb_note = NULL_RTX;
   rtx eh_list = NULL_RTX;
   rtx label_value_list = NULL_RTX;
   rtx head = NULL_RTX;
   rtx end = NULL_RTX;
+  int in_libcall = 0;
   
   /* We process the instructions in a slightly different way than we did
      previously.  This is so that we see a NOTE_BASIC_BLOCK after we have
@@ -552,27 +552,6 @@ find_basic_blocks_1 (f)
 
       next = NEXT_INSN (insn);
 
-      if (code == CALL_INSN)
-	{
-	  /* Record whether this call created an edge.  */
-	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? INTVAL (XEXP (note, 0)) : 1);
-	  call_has_abnormal_edge = 0;
-
-	  /* If there is an EH region or rethrow, we have an edge.  */
-	  if ((eh_list && region > 0)
-	      || find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
-	    call_has_abnormal_edge = 1;
-	  else
-	    {
-	      /* If there is a nonlocal goto label and the specified
-		 region number isn't -1, we have an edge. (0 means
-		 no throw, but might have a nonlocal goto).  */
-	      if (nonlocal_goto_handler_labels && region >= 0)
-		call_has_abnormal_edge = 1;
-	    }
-	}
-
       switch (code)
 	{
 	case NOTE:
@@ -585,6 +564,7 @@ find_basic_blocks_1 (f)
 	    else if (kind == NOTE_INSN_EH_REGION_END)
 	      {
 		rtx t = eh_list;
+
 		eh_list = XEXP (eh_list, 1);
 		free_INSN_LIST_node (t);
 	      }
@@ -597,9 +577,9 @@ find_basic_blocks_1 (f)
 	      {
 		if (bb_note == NULL_RTX)
 		  bb_note = insn;
+
 		next = flow_delete_insn (insn);
 	      }
-
 	    break;
 	  }
 
@@ -613,8 +593,7 @@ find_basic_blocks_1 (f)
 		 does not imply an abnormal edge, it will be a bit before
 		 everything can be updated.  So continue to emit a noop at
 		 the end of such a block.  */
-	      if (GET_CODE (end) == CALL_INSN
-		  && ! SIBLING_CALL_P (end))
+	      if (GET_CODE (end) == CALL_INSN && ! SIBLING_CALL_P (end))
 		{
 		  rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
 		  end = emit_insn_after (nop, end);
@@ -623,6 +602,7 @@ find_basic_blocks_1 (f)
 	      create_basic_block (i++, head, end, bb_note);
 	      bb_note = NULL_RTX;
 	    }
+
 	  head = end = insn;
 	  break;
 
@@ -666,8 +646,7 @@ find_basic_blocks_1 (f)
 	     imply an abnormal edge, it will be a bit before everything can
 	     be updated.  So continue to emit a noop at the end of such a
 	     block.  */
-	  if (GET_CODE (end) == CALL_INSN
-	      && ! SIBLING_CALL_P (end))
+	  if (GET_CODE (end) == CALL_INSN && ! SIBLING_CALL_P (end))
 	    {
 	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
 	      end = emit_insn_after (nop, end);
@@ -675,20 +654,38 @@ find_basic_blocks_1 (f)
 	  goto new_bb_exclusive;
 
 	case CALL_INSN:
-	  /* A basic block ends at a call that can either throw or
-	     do a non-local goto.  */
-	  if (call_has_abnormal_edge)
-	    {
-	    new_bb_inclusive:
-	      if (head == NULL_RTX)
-		head = insn;
-	      end = insn;
+	  {
+	    /* Record whether this call created an edge.  */
+	    rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	    int region = (note ? INTVAL (XEXP (note, 0)) : 1);
+	    int call_has_abnormal_edge = 0;
 
-	    new_bb_exclusive:
-	      create_basic_block (i++, head, end, bb_note);
-	      head = end = NULL_RTX;
-	      bb_note = NULL_RTX;
-	      break;
+	    /* If there is an EH region or rethrow, we have an edge.  */
+	    if ((eh_list && region > 0)
+		|| find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
+	      call_has_abnormal_edge = 1;
+	    else if (nonlocal_goto_handler_labels && region >= 0)
+	      /* If there is a nonlocal goto label and the specified
+		 region number isn't -1, we have an edge. (0 means
+		 no throw, but might have a nonlocal goto).  */
+	      call_has_abnormal_edge = 1;
+
+	    /* A basic block ends at a call that can either throw or
+	       do a non-local goto.  LIBCALLs must reside totally in one
+	       basic block, so don't end a block after them.  */
+	    if (call_has_abnormal_edge && in_libcall == 0)
+	      {
+	      new_bb_inclusive:
+		if (head == NULL_RTX)
+		  head = insn;
+		end = insn;
+
+	      new_bb_exclusive:
+		create_basic_block (i++, head, end, bb_note);
+		head = end = NULL_RTX;
+		bb_note = NULL_RTX;
+		break;
+	      }
 	    }
 	  /* FALLTHRU */
 
@@ -716,21 +713,27 @@ find_basic_blocks_1 (f)
 	     we know isn't part of any otherwise visible control flow.  */
 	     
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
-	    if (REG_NOTE_KIND (note) == REG_LABEL)
-	      {
-	        rtx lab = XEXP (note, 0), next;
+	    {
+	      if (REG_NOTE_KIND (note) == REG_LABEL)
+		{
+		  rtx lab = XEXP (note, 0), next;
 
-		if (lab == eh_return_stub_label)
-		  ;
-		else if ((next = next_nonnote_insn (lab)) != NULL
-			 && GET_CODE (next) == JUMP_INSN
-			 && (GET_CODE (PATTERN (next)) == ADDR_VEC
-			     || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
-		  ;
-		else
-		  label_value_list
-		    = alloc_EXPR_LIST (0, XEXP (note, 0), label_value_list);
-	      }
+		  if (lab == eh_return_stub_label)
+		    ;
+		  else if ((next = next_nonnote_insn (lab)) != NULL
+			   && GET_CODE (next) == JUMP_INSN
+			   && (GET_CODE (PATTERN (next)) == ADDR_VEC
+			       || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
+		    ;
+		  else
+		    label_value_list
+		      = alloc_EXPR_LIST (0, XEXP (note, 0), label_value_list);
+		}
+	      else if (REG_NOTE_KIND (note) == REG_LIBCALL)
+		in_libcall++;
+	      else if (REG_NOTE_KIND (note) == REG_RETVAL)
+		in_libcall--;
+	    }
 	}
     }
 
