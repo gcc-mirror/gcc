@@ -30,7 +30,6 @@ extern void scev_reset (void);
 extern void scev_finalize (void);
 extern tree analyze_scalar_evolution (struct loop *, tree);
 extern tree instantiate_parameters (struct loop *, tree);
-extern void eliminate_redundant_checks (void);
 extern void gather_stats_on_scev_database (void);
 extern void scev_analysis (void);
 extern bool simple_iv (struct loop *, tree, tree, tree *, tree *);

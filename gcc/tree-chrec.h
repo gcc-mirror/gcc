@@ -74,7 +74,6 @@ extern tree chrec_type (tree);
 /* Operations.  */
 extern tree chrec_apply (unsigned, tree, tree);
 extern tree chrec_replace_initial_condition (tree, tree);
-extern tree update_initial_condition_to_origin (tree);
 extern tree initial_condition (tree);
 extern tree initial_condition_in_loop_num (tree, unsigned);
 extern tree evolution_part_in_loop_num (tree, unsigned);

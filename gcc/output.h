@@ -149,7 +149,6 @@ extern const char *get_insn_template (int, rtx);
 extern int add_weak (tree, const char *, const char *);
 
 /* Functions in flow.c */
-extern void allocate_for_life_analysis (void);
 extern int regno_clobbered_at_setjmp (int);
 
 /* Functions in varasm.c.  */
@@ -282,7 +281,6 @@ extern void assemble_zeros (unsigned HOST_WIDE_INT);
 
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
 extern void assemble_align (int);
-extern void assemble_eh_align (int);
 
 /* Assemble a string constant with the specified C string as contents.  */
 extern void assemble_string (const char *, int);
@@ -292,7 +290,6 @@ extern void assemble_external_libcall (rtx);
 
 /* Assemble a label named NAME.  */
 extern void assemble_label (const char *);
-extern void assemble_eh_label (const char *);
 
 /* Output to FILE a reference to the assembler name of a C-level name NAME.
    If NAME starts with a *, the rest of NAME is output verbatim.

@@ -838,8 +838,6 @@ extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 
 extern tree c_staticp (tree);
 
-extern int c_common_unsafe_for_reeval (tree);
-
 extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
