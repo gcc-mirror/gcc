@@ -1,3 +1,7 @@
+2003-04-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* reload1.c (reg_set_luid): Fix a comment typo.
+
 2003-04-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* varasm.c (const_str_htab_hash, const_str_htab_eq, STRHASH,
