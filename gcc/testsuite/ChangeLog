@@ -1,5 +1,9 @@
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/deduct3.C: New test.
+
+2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/spec34.C: New test.
 
 2001-01-19  "Billinghurst, David (CRTS)" <David.Billinghurst@riotinto.com>

@@ -1,5 +1,16 @@
 2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (lookup_template_class): Add complain parm.
+	* decl.c (lookup_namespace_name): Adjust call to
+	lookup_template_class.
+	(make_typename_type): Likewise.
+	* semantics.c (finish_template_type): Likewise.
+	* pt.c (lookup_template_class): Add complain parm. Adjust.
+	(tsubst_aggr_type): Pass COMPLAIN down to lookup_template_class.
+	(tsubst): Likewise.
+
+2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (copy_default_args_to_explicit_spec): Preserve
 	object's CV quals. Reorganize.
 

@@ -5439,7 +5439,8 @@ lookup_namespace_name (namespace, name)
 					 TREE_OPERAND (template_id, 1),
 					 /*in_decl=*/NULL_TREE,
 					 /*context=*/NULL_TREE,
-					 /*entering_scope=*/0);
+					 /*entering_scope=*/0,
+	                                 /*complain=*/1);
 	  else if (DECL_FUNCTION_TEMPLATE_P (val)
 		   || TREE_CODE (val) == OVERLOAD)
 	    val = lookup_template_function (val,
@@ -5623,7 +5624,8 @@ make_typename_type (context, name, complain)
 	  return lookup_template_class (tmpl,
 					TREE_OPERAND (fullname, 1),
 					NULL_TREE, context,
-					/*entering_scope=*/0);
+					/*entering_scope=*/0,
+	                                /*complain=*/1);
 	}
       else
 	{
