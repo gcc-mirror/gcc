@@ -2006,7 +2006,6 @@ try_combine (i3, i2, i1)
   /* If we had to change another insn, make sure it is valid also.  */
   if (undobuf.other_insn)
     {
-      rtx other_notes = REG_NOTES (undobuf.other_insn);
       rtx other_pat = PATTERN (undobuf.other_insn);
       rtx new_other_notes;
       rtx note, next;
@@ -2056,8 +2055,6 @@ try_combine (i3, i2, i1)
     rtx i3notes, i2notes, i1notes = 0;
     rtx i3links, i2links, i1links = 0;
     rtx midnotes = 0;
-    int all_adjacent = (next_real_insn (i2) == i3
-			&& (i1 == 0 || next_real_insn (i1) == i2));
     register int regno;
     /* Compute which registers we expect to eliminate.  */
     rtx elim_i2 = (newi2pat || i2dest_in_i2src || i2dest_in_i1src
@@ -2743,7 +2740,7 @@ subst (x, from, to, in_dest, unique_copy)
      int in_dest;
      int unique_copy;
 {
-  register enum rtx_code code = GET_CODE (x), orig_code = code;
+  register enum rtx_code code = GET_CODE (x);
   enum machine_mode op0_mode = VOIDmode;
   register char *fmt;
   register int len, i;
@@ -4059,7 +4056,7 @@ simplify_if_then_else (x)
       rtx cond_op1 = XEXP (cond, 1);
       enum rtx_code op, extend_op = NIL;
       enum machine_mode m = mode;
-      rtx z = 0, c1, c2;
+      rtx z = 0, c1;
 
       if (f == const0_rtx)
 	return gen_binary (MULT, mode, gen_binary (true_code, mode, cond_op0,
@@ -5279,7 +5276,7 @@ make_compound_operation (x, in_code)
   enum machine_mode mode = GET_MODE (x);
   int mode_width = GET_MODE_BITSIZE (mode);
   enum rtx_code next_code;
-  int i, count;
+  int i;
   rtx new = 0;
   rtx tem;
   char *fmt;
@@ -6218,7 +6215,7 @@ known_cond (x, cond, reg, val)
      rtx reg, val;
 {
   enum rtx_code code = GET_CODE (x);
-  rtx new, temp;
+  rtx temp;
   char *fmt;
   int i, j;
 
@@ -6304,7 +6301,6 @@ make_field_assignment (x)
 {
   rtx dest = SET_DEST (x);
   rtx src = SET_SRC (x);
-  rtx ourdest;
   rtx assign;
   HOST_WIDE_INT c1;
   int pos, len;
@@ -6545,8 +6541,6 @@ simplify_and_const_int (x, mode, varop, constop)
      rtx varop;
      unsigned HOST_WIDE_INT constop;
 {
-  register enum machine_mode tmode;
-  register rtx temp;
   unsigned HOST_WIDE_INT nonzero;
   int i;
 
@@ -7692,7 +7686,6 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      int first_count = INTVAL (XEXP (varop, 1));
 	      unsigned HOST_WIDE_INT mask;
 	      rtx mask_rtx;
-	      rtx inner;
 
 	      if (first_code == LSHIFT)
 		first_code = ASHIFT;
