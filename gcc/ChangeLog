@@ -1,3 +1,18 @@
+Mon Jan 18 03:52:56 1999  Christian Bruel <Christian.Bruel@st.com>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (last_mem_set): Delete variable.  References removed.
+	(mem_set_list): New variable.
+	(life_analysis): Initialize and finalize alias analysis.
+	(propagate_block); Initialize mem_set_list.  Clear for CALL_INSNs.
+	(insn_dead_p): For a store to memory, search the entire mem_set_list
+	for a match.
+	(mark_set_1): Kill entries on the mem_set_list for aliased writes or
+	changes to their addresses.  Add new entries to the mem_set_list for
+	memory writes writes.
+	(mark_used_regs): Kill entries on the mem_set_list which may be
+	referenced by a load operation.
+
 Mon Jan 18 01:01:02 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* alias.c (base_alias_check): Add missing return for differing
