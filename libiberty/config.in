@@ -174,6 +174,9 @@
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
 
+/* Define if you have the sysmp function.  */
+#undef HAVE_SYSMP
+
 /* Define if you have the times function.  */
 #undef HAVE_TIMES
 
@@ -230,6 +233,9 @@
 
 /* Define if you have the <sys/stat.h> header file.  */
 #undef HAVE_SYS_STAT_H
+
+/* Define if you have the <sys/sysmp.h> header file.  */
+#undef HAVE_SYS_SYSMP_H
 
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
