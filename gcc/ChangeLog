@@ -1,3 +1,11 @@
+Die Feb 13 11:04:25 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (VALID_FP_MODE_P, VALID_INT_MODE_P): New.
+	(HARD_REGNO_MODE_OK): Move offline to ....
+	* i386.c (ix86_hard_regno_mode_ok) ... here;
+	refuse all incorrect modes.
+	* i386-protos.h (ix86_hard_regno_mode_ok): Declare.
+
 2001-02-13  Richard Henderson  <rth@redhat.com>
 
 	* sparc.md (cmp_cc_arith_op_set): Don't use match_dup on the
