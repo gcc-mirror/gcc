@@ -11844,7 +11844,7 @@ grok_op_properties (decl, virtualp, friendp)
 	      if ((name == ansi_opname[(int) POSTINCREMENT_EXPR]
 		   || name == ansi_opname[(int) POSTDECREMENT_EXPR])
 		  && ! processing_template_decl
-		  && TREE_VALUE (TREE_CHAIN (argtypes)) != integer_type_node)
+		  && ! same_type_p (TREE_VALUE (TREE_CHAIN (argtypes)), integer_type_node))
 		{
 		  if (methodp)
 		    cp_error ("postfix `%D' must take `int' as its argument",

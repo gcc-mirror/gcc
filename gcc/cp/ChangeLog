@@ -1,3 +1,7 @@
+1999-01-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grok_op_properties): Use same_type_p.
+
 Tue Dec 22 15:09:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (cvt.o): Depend on toplev.h.
