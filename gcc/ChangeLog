@@ -1,3 +1,8 @@
+Sun Dec  6 05:16:16 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (check_dbra_loop): New argument loop_info.  Update fields
+	as needed.
+
 Sun Dec 6 03:40:13 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
