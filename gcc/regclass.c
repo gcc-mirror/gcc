@@ -118,6 +118,9 @@ char global_regs[FIRST_PSEUDO_REGISTER];
 /* Table of register numbers in the order in which to try to use them.  */
 #ifdef REG_ALLOC_ORDER
 int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
+
+/* The inverse of reg_alloc_order.  */
+int inv_reg_alloc_order[FIRST_PSEUDO_REGISTER];
 #endif
 
 /* For each reg class, a HARD_REG_SET saying which registers are in it.  */
@@ -251,6 +254,11 @@ init_reg_sets ()
 
   /* Do any additional initialization regsets may need */
   INIT_ONCE_REG_SET ();
+
+#ifdef REG_ALLOC_ORDER
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    inv_reg_alloc_order[reg_alloc_order[i]] = i;
+#endif
 }
 
 /* After switches have been processed, which perhaps alter

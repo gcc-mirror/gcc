@@ -1,3 +1,46 @@
+1999-12-10  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* hard-reg-set.h (inv_reg_alloc_order): Declare if REG_ALLOC_ORDER is
+	defined.
+	* regclass.c (inv_reg_alloc_order): New array.
+	(regclass_init): If REG_ALLOC_ORDER is defined, initialize it.
+
+	* reload.h (struct insn_chain): Delete fields group_size, group_mode,
+	counted_for_groups, counted_for_nongroups.  Add fields rld and
+	n_reloads.
+	* reload.c (push_secondary_reload): Don't set nongroup field of
+	new reloads.
+	(push_reload): Likewise.
+	(find_reloads): Delete code to compute nongroup fields.
+	* reload1.c (reload_insn_firstobj): New static variable.
+	(pseudos_counted, spilled_pseudos): Now of type regset_head.  All
+	users changed.
+	(calculate_needs, find_tworeg_group, find_group, possible_group_p,
+	count_possible_groups, modes_equiv_for_class_p, new_spill_reg,
+	dump_needs, maybe_mark_pseudo_spilled, hard_reg_use_compare): Delete
+	functions.
+	(count_pseudo, select_reload_regs, copy_reloads, find_reg): New
+	functions.
+	(struct hard_reg_n_uses): Deleted.
+	(potential_reload_regs): Deleted.
+	(init_reload): Initialize spilled_pseudos and pseudos_counted.
+	(reload): Don't try to allocate reload registers if we already know
+	we have to make another pass.  Call select_reload_regs.  Free memory
+	starting with reload_firstobj when starting another pass.
+	Don't allocate spilled_pseudos.
+	(calculate_needs_all_insns): Call copy_reloads for an insn that
+	needs reloads; don't call calculate_needs.
+	(spill_cost): New static array.
+	(used_spill_regs_local): New static variable.
+	(order_regs_for_reload): Rewrite to lose hard_reg_n_uses and the code
+	to compute potential_reload_regs.
+	(find_reload_regs): Completely rewritten to use find_reg.
+	(allocate_reload_reg): Don't test counted_for_groups or
+	counted_for_nongroups.  Lose NOERROR arg and code to give an error;
+	all cllers changed.
+	(choose_reload_regs): Add fallback code that uses the existing
+	register allocation from find_reload_regs.
+
 Mon Dec 13 00:54:14 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* flow.c (create_edge_list): Cast xmalloc return value.
