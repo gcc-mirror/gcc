@@ -531,7 +531,7 @@ Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* flow.c (propagate_one_insn): Use it.
 	(mark_used_regs): Handle NIL.
 
-2001-01-25  Geoffrey Keating  <geoffk@redhat.com>
+2002-01-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/stormy16/stormy16.md (tablejump_pcrel): Use a MEM
 	to help folding.
@@ -1823,7 +1823,7 @@ Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/h8300/h8300.h: Fix formatting.
 
-2001-01-10  Ira Ruben	<ira@apple.com>
+2002-01-10  Ira Ruben	<ira@apple.com>
 
 	Add __attribute__ ((deprecated)).
 	* extend.texi: Document __attribute__ ((deprecated)).
@@ -1859,7 +1859,7 @@ Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* cp/lex.c (do_identifier): Test for deprecated primaries.
 	* cp/typeck.c (build_component_ref): Test for deprecated fields.
 
-2001-01-10  Ira Ruben	<ira@apple.com>
+2002-01-10  Ira Ruben	<ira@apple.com>
 
 	Fix to assign attributes to inline member functions.
 	* cp/decl.c (start_method): Handle attrlist.
@@ -2570,7 +2570,7 @@ Fri Jan  4 11:45:05 2002  Jeffrey A Law  (law@redhat.com)
 	* config/pa/pa64-hpux.h (ASM_FILE_START): Likewise.
 	* config/pa/som.h (ASM_FILE_START): Likewise.
 
-2001-01-04  Daniel Berlin  <dan@cgsoftware.com>
+2002-01-04  Daniel Berlin  <dan@cgsoftware.com>
 
 	* lcm.c: Include df.h.
 	Add available_transfer_function prototype.
