@@ -1,3 +1,7 @@
+2005-03-17  Ian Lance Taylor  <ian@airs.com>
+
+	* gmon.c: Remove.
+
 2005-03-17  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/arc/arc.c (arc_cpu_string): Make static.  Default to "base"
