@@ -541,7 +541,6 @@ cpp_reader_init (pfile, lang)
       cpp_init ();
     }
 
-  set_lang (pfile, lang);
   CPP_OPTION (pfile, warn_import) = 1;
   CPP_OPTION (pfile, warn_paste) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
@@ -550,6 +549,9 @@ cpp_reader_init (pfile, lang)
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
+
+  /* After creating pfile->pending.  */
+  set_lang (pfile, lang);
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);

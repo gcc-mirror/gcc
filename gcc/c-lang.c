@@ -36,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "cpplib.h"
 
-extern cpp_reader  parse_in;
 static int c_tree_printer PARAMS ((output_buffer *));
 
 /* Each of the functions defined here

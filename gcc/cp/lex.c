@@ -247,7 +247,7 @@ void
 lang_init_options ()
 {
   cpp_init ();
-  cpp_reader_init (&parse_in, CLK_GNUC89);
+  cpp_reader_init (&parse_in, CLK_GNUCXX);
 
   /* Default exceptions on.  */
   flag_exceptions = 1;

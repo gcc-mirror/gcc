@@ -45,8 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #define SPEW_INLINE inline
 #endif
 
-extern cpp_reader parse_in;
-
 /* This takes a token stream that hasn't decided much about types and
    tries to figure out as much as it can, with excessive lookahead and
    backtracking.  */
