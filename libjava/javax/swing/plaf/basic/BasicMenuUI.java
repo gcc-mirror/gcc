@@ -342,7 +342,6 @@ public class BasicMenuUI extends BasicMenuItemUI
 	    {
 	      // If menu is visible and menu button was pressed.. 
 	      // then need to cancel the menu
-	      menu.fireMenuCanceled();
 	      manager.clearSelectedPath();
 	    }
 	  else
@@ -351,7 +350,6 @@ public class BasicMenuUI extends BasicMenuItemUI
 	      int x = 0;
 	      int y = menu.getHeight();
 
-	      menu.fireMenuSelected();
 	      manager.setSelectedPath(getPath());
 
 	      JMenuBar mb = (JMenuBar) menu.getParent();
