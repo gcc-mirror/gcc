@@ -1,3 +1,29 @@
+2000-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.h (store_by_pieces): Add prototype.
+	(can_store_by_pieces): Likewise.
+	* expr.c (struct store_by_pieces): Renamed from clear_by_pieces.
+	(can_store_by_pieces): New.
+	(store_by_pieces): New.
+	(clear_by_pieces): New.
+	(clear_by_pieces_1): New.
+	(store_by_pieces_1): Renamed from clear_by_pieces, handle storing
+	arbitrary compiler generated constants into memory block.
+	(store_by_pieces_2): Renamed from clear_by_pieces_1, likewise.
+	* builtins.c (c_readstr): New.
+	(builtin_memcpy_read_str): New.
+	(expand_builtin_memcpy): If src is string constant and
+	emit_block_move would move it by pieces, compute integer constants
+	from the string and store it into memory block instead.
+	(builtin_strncpy_read_str): New.
+	(expand_builtin_strncpy): If N is not constant zero and c_strlen does
+	not return INTEGER_CST, don't optimize.
+	If N is larger than strlen(src) + 1, try to copy the string
+	including padding with store_by_pieces.
+	(expand_builtin_strcmp): If both arguments have side effects, don't
+	optimize.
+	(expand_builtin_fputs): If STR has side effects, don't optimize.
+
 2000-11-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (sibcall, sibcall_value, sibcall_insn, sibcall_value_insn):

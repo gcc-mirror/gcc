@@ -81,6 +81,8 @@ tree (*lang_type_promotes_to) PARAMS ((tree));
 static int get_pointer_alignment	PARAMS ((tree, unsigned));
 static tree c_strlen			PARAMS ((tree));
 static const char *c_getstr		PARAMS ((tree));
+static rtx c_readstr			PARAMS ((const char *,
+						 enum machine_mode));
 static rtx get_memory_rtx		PARAMS ((tree));
 static int apply_args_size		PARAMS ((void));
 static int apply_result_size		PARAMS ((void));
@@ -106,8 +108,12 @@ static rtx expand_builtin_strcmp	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_strncmp	PARAMS ((tree, rtx,
 						 enum machine_mode));
+static rtx builtin_memcpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
+						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree));
+static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
+						 enum machine_mode));
 static rtx expand_builtin_strncpy	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_memset	PARAMS ((tree));
@@ -306,6 +312,41 @@ c_getstr (src)
     }
 
   return ptr + offset;
+}
+
+/* Return a CONST_INT or CONST_DOUBLE corresponding to target
+   reading GET_MODE_BITSIZE (MODE) bits from string constant
+   STR.  */
+static rtx
+c_readstr (str, mode)
+     const char *str;
+     enum machine_mode mode;
+{
+  HOST_WIDE_INT c[2];
+  HOST_WIDE_INT ch;
+  unsigned int i, j;
+
+  if (GET_MODE_CLASS (mode) != MODE_INT)
+    abort ();
+  c[0] = 0;
+  c[1] = 0;
+  ch = 1;
+  for (i = 0; i < GET_MODE_SIZE (mode); i++)
+    {
+      j = i;
+      if (WORDS_BIG_ENDIAN)
+	j = GET_MODE_SIZE (mode) - i - 1;
+      if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN
+	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
+      j *= BITS_PER_UNIT;
+      if (j > 2 * HOST_BITS_PER_WIDE_INT)
+	abort ();
+      if (ch)
+	ch = (unsigned char) str[i];
+      c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
+    }
+  return immed_double_const (c[0], c[1], mode);
 }
 
 /* Given TEM, a pointer to a stack frame, follow the dynamic chain COUNT
@@ -1685,6 +1726,24 @@ expand_builtin_strpbrk (arglist, target, mode)
     }
 }
 
+/* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
+   bytes from constant string DATA + OFFSET and return it as target
+   constant.  */
+
+static rtx
+builtin_memcpy_read_str (data, offset, mode)
+     PTR data;
+     HOST_WIDE_INT offset;
+     enum machine_mode mode;
+{
+  const char *str = (const char *) data;
+
+  if (offset + GET_MODE_SIZE (mode) > strlen (str) + 1)
+    abort ();  /* Attempt to read past the end of constant string.  */
+
+  return c_readstr (str + offset, mode);
+}
+
 /* Expand a call to the memcpy builtin, with arguments in ARGLIST.  */
 static rtx
 expand_builtin_memcpy (arglist)
@@ -1706,6 +1765,7 @@ expand_builtin_memcpy (arglist)
       tree dest = TREE_VALUE (arglist);
       tree src = TREE_VALUE (TREE_CHAIN (arglist));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      const char *src_str;
 
       int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
       int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
@@ -1717,8 +1777,26 @@ expand_builtin_memcpy (arglist)
 	return 0;
 
       dest_mem = get_memory_rtx (dest);
-      src_mem = get_memory_rtx (src);
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      src_str = c_getstr (src);
+
+      /* If SRC is a string constant and block move would be done
+	 by pieces, we can avoid loading the string from memory
+	 and only stored the computed constants.  */
+      if (src_str
+	  && !current_function_check_memory_usage
+	  && GET_CODE (len_rtx) == CONST_INT
+	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
+	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
+				  (PTR) src_str, dest_align))
+	{
+	  store_by_pieces (dest_mem, INTVAL (len_rtx),
+			   builtin_memcpy_read_str,
+			   (PTR) src_str, dest_align);
+	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	}
+
+      src_mem = get_memory_rtx (src);
 
       /* Just copy the rights of SRC to the rights of DEST.  */
       if (current_function_check_memory_usage)
@@ -1774,6 +1852,24 @@ expand_builtin_strcpy (exp)
   return result;
 }
 
+/* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
+   bytes from constant string DATA + OFFSET and return it as target
+   constant.  */
+
+static rtx
+builtin_strncpy_read_str (data, offset, mode)
+     PTR data;
+     HOST_WIDE_INT offset;
+     enum machine_mode mode;
+{
+  const char *str = (const char *) data;
+
+  if ((unsigned HOST_WIDE_INT) offset > strlen (str))
+    return const0_rtx;
+
+  return c_readstr (str + offset, mode);
+}
+
 /* Expand expression EXP, which is a call to the strncpy builtin.  Return 0
    if we failed the caller should emit a normal call.  */
 
@@ -1814,17 +1910,35 @@ expand_builtin_strncpy (arglist, target, mode)
 	  return expand_expr (TREE_VALUE (arglist), target, mode,
 			      EXPAND_NORMAL);
 	}
-      
+
       /* Now, we must be passed a constant src ptr parameter.  */
-      if (slen == 0)
+      if (slen == 0 || TREE_CODE (slen) != INTEGER_CST)
 	return 0;
 
       slen = size_binop (PLUS_EXPR, slen, ssize_int (1));
 
       /* We're required to pad with trailing zeros if the requested
-         len is greater than strlen(s2)+1, so in that case punt.  */
+         len is greater than strlen(s2)+1.  In that case try to
+	 use store_by_pieces, if it fails, punt.  */
       if (tree_int_cst_lt (slen, len))
-	return 0;
+	{
+	  tree dest = TREE_VALUE (arglist);
+	  int dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+	  const char *p = c_getstr (TREE_VALUE (TREE_CHAIN (arglist)));
+	  rtx dest_mem;
+
+	  if (!p || !dest_align || TREE_INT_CST_HIGH (len)
+	      || !can_store_by_pieces (TREE_INT_CST_LOW (len),
+				       builtin_strncpy_read_str,
+				       (PTR) p, dest_align))
+	    return 0;
+
+	  dest_mem = get_memory_rtx (dest);
+	  store_by_pieces (dest_mem, TREE_INT_CST_LOW (len),
+			   builtin_strncpy_read_str,
+			   (PTR) p, dest_align);
+	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	}
       
       /* OK transform into builtin memcpy.  */
       return expand_builtin_memcpy (arglist);
@@ -2081,7 +2195,8 @@ expand_builtin_strcmp (exp, target, mode)
     /* If we don't have a constant length for the first, use the length
        of the second, if we know it.  We don't require a constant for
        this case; some cost analysis could be done if both are available
-       but neither is constant.  For now, assume they're equally cheap.
+       but neither is constant.  For now, assume they're equally cheap
+       unless one has side effects.
 
        If both strings have constant lengths, use the smaller.  This
        could arise if optimization results in strcpy being called with
@@ -2091,7 +2206,7 @@ expand_builtin_strcmp (exp, target, mode)
 
     if (!len || TREE_CODE (len) != INTEGER_CST)
       {
-	if (len2)
+	if (len2 && !TREE_SIDE_EFFECTS (len2))
 	  len = len2;
 	else if (len == 0)
 	  return 0;
@@ -2099,6 +2214,10 @@ expand_builtin_strcmp (exp, target, mode)
     else if (len2 && TREE_CODE (len2) == INTEGER_CST
 	     && tree_int_cst_lt (len2, len))
       len = len2;
+
+    /* If both arguments have side effects, we cannot optimize.  */
+    if (TREE_SIDE_EFFECTS (len))
+      return 0;
 
     chainon (arglist, build_tree_list (NULL_TREE, len));
     result = expand_builtin_memcmp (exp, arglist, target);
@@ -2760,7 +2879,8 @@ expand_builtin_fputs (arglist, ignore)
 
   /* Get the length of the string passed to fputs.  If the length
      can't be determined, punt.  */
-  if (!(len = c_strlen (TREE_VALUE (arglist))))
+  if (!(len = c_strlen (TREE_VALUE (arglist)))
+      || TREE_CODE (len) != INTEGER_CST)
     return 0;
 
   switch (compare_tree_int (len, 1))
