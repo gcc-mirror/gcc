@@ -1682,9 +1682,27 @@ dump_expr (tree t, int flags)
       break;
 
     case NOP_EXPR:
-      dump_expr (TREE_OPERAND (t, 0), flags);
-      break;
-
+      {
+	tree op = TREE_OPERAND (t, 0);
+	
+	if (!same_type_p (TREE_TYPE (op), TREE_TYPE (t)))
+	  {
+	    /* It is a cast, but we cannot tell whether it is a
+	       reinterpret or static cast. Use the C style notation.  */
+	    if (flags & TFF_EXPR_IN_PARENS)
+	      pp_left_paren (cxx_pp);
+	    pp_left_paren (cxx_pp);
+	    dump_type (TREE_TYPE (t), flags);
+	    pp_right_paren (cxx_pp);
+	    dump_expr (op, flags | TFF_EXPR_IN_PARENS);
+	    if (flags & TFF_EXPR_IN_PARENS)
+	      pp_right_paren (cxx_pp);
+	  }
+	else
+	  dump_expr (op, flags);
+	break;
+      }
+      
     case EXPR_WITH_FILE_LOCATION:
       dump_expr (EXPR_WFL_NODE (t), flags);
       break;
