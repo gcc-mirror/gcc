@@ -90,7 +90,7 @@ It would not make an case in output_insn_hairy because the template
 given in the entry is a constant (it does not start with `*').  */
 
 #include <stdio.h>
-#include "config.h"
+#include "hconfig.h"
 #include "rtl.h"
 #include "obstack.h"
 
