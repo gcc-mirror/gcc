@@ -1,3 +1,11 @@
+2001-09-06  Anthony Green  <green@redhat.com>
+
+	* java/util/ResourceBundle.java (tryLocalBundle): Eliminate
+	redundant method calls.
+	(emptyLocale): New private member.
+	(tryBundle): Use emptyLocale.  Remove duplicate code.  Only cache
+	exact matches.
+
 2001-09-06  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/RuleBasedCollator.java (clone): Rewrote.
