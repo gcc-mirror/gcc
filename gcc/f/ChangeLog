@@ -1,3 +1,7 @@
+Mon Dec 16 13:55:24 2002  Mark Mitchell  <mark@codesourcery.com>
+
+	* root.texi (DEVELOPMENT): @clear it.
+
 2002-11-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* invoke.texi: Explain the purpose of -fmove-all-movables,
