@@ -1,5 +1,9 @@
 2000-05-26  Geoffrey Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.md (movsi_internal1): Use '%a1' rather
+	than '%1(%*)'.
+	(movdi_internal64): Likewise.
+
 	* config/rs6000/rs6000.md: Correct order of operands for DImode
 	boolean patterns.
 
