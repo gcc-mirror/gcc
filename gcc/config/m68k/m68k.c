@@ -330,9 +330,9 @@ output_function_epilogue (stream, size)
       && (mask || fmask || fpoffset))
     {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Omove.l %0I%d,%Ra0\n", -fsize);
+      asm_fprintf (stream, "\t%Omove.l %0I%d,%Ra1\n", -fsize);
 #else
-      asm_fprintf (stream, "\tmovel %0I%d,%Ra0\n", -fsize);
+      asm_fprintf (stream, "\tmovel %0I%d,%Ra1\n", -fsize);
 #endif
       fsize = 0, big = 1;
     }
@@ -352,12 +352,12 @@ output_function_epilogue (stream, size)
             if (big)
 	      {
 #ifdef MOTOROLA
-		asm_fprintf (stream, "\t%Omove.l -%d(%s,%Ra0.l),%s\n",
+		asm_fprintf (stream, "\t%Omove.l -%d(%s,%Ra1.l),%s\n",
 			     offset + fsize,
 			     reg_names[FRAME_POINTER_REGNUM],
 			     reg_names[i]);
 #else
-		asm_fprintf (stream, "\tmovel %s@(-%d,%Ra0:l),%s\n",
+		asm_fprintf (stream, "\tmovel %s@(-%d,%Ra1:l),%s\n",
 			     reg_names[FRAME_POINTER_REGNUM],
 			     offset + fsize, reg_names[i]);
 #endif
@@ -393,12 +393,12 @@ output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%d(%s,%Ra0.l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmovm.l -%d(%s,%Ra1.l),%0I0x%x\n",
 		       offset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%d,%Ra0:l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tmoveml %s@(-%d,%Ra1:l),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       offset + fsize, mask);
 #endif
@@ -430,12 +430,12 @@ output_function_epilogue (stream, size)
       if (big)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tfmovm -%d(%s,%Ra0.l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovm -%d(%s,%Ra1.l),%0I0x%x\n",
 		       foffset + fsize,
 		       reg_names[FRAME_POINTER_REGNUM],
 		       fmask);
 #else
-	  asm_fprintf (stream, "\tfmovem %s@(-%d,%Ra0:l),%0I0x%x\n",
+	  asm_fprintf (stream, "\tfmovem %s@(-%d,%Ra1:l),%0I0x%x\n",
 		       reg_names[FRAME_POINTER_REGNUM],
 		       foffset + fsize, fmask);
 #endif
@@ -469,12 +469,12 @@ output_function_epilogue (stream, size)
 	  if (big)
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tfpmovd -%d(%s,%Ra0.l), %s\n",
+	      asm_fprintf (stream, "\tfpmovd -%d(%s,%Ra1.l), %s\n",
 			   fpoffset + fsize,
 			   reg_names[FRAME_POINTER_REGNUM],
 			   reg_names[regno]);
 #else
-	      asm_fprintf (stream, "\tfpmoved %s@(-%d,%Ra0:l), %s\n",
+	      asm_fprintf (stream, "\tfpmoved %s@(-%d,%Ra1:l), %s\n",
 			   reg_names[FRAME_POINTER_REGNUM],
 			   fpoffset + fsize, reg_names[regno]);
 #endif
