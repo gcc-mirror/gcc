@@ -1,3 +1,10 @@
+Thu Nov 20 13:19:32 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (ASM_OUTPUT_DWARF_OFFSET4): Rename from VALUE4.
+	Use assemble_name.
+	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Use assemble_name.
+	(output_call_frame_info): Emit a \n after using it.
+
 Thu Nov 20 00:38:46 1997  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Add AC_ARG_ENABLE for Haifa as documentation.
