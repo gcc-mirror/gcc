@@ -842,7 +842,7 @@ _cpp_parse_expr (pfile)
 	    case CPP_PLUS:
 	      if (!(top->flags & HAVE_VALUE))
 		{
-		  UNARY(+);
+		  UNARY(/* + */);	/* K+R C doesn't like unary + */
 		}
 	      else
 		{
