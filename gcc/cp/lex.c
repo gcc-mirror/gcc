@@ -263,7 +263,8 @@ init_operators ()
 	 : &operator_name_info[(int) CODE]);				    \
   oni->identifier = identifier;						    \
   oni->name = NAME;							    \
-  oni->mangled_name = MANGLING;
+  oni->mangled_name = MANGLING;                                             \
+  oni->arity = ARITY;
 
 #include "operators.def"
 #undef DEF_OPERATOR

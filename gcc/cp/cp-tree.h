@@ -3481,6 +3481,8 @@ typedef struct operator_name_info_t
   const char *name;
   /* The mangled name of the operator.  */
   const char *mangled_name;
+  /* The arity of the operator.  */
+  int arity;
 } operator_name_info_t;
 
 /* A mapping from tree codes to operator name information.  */

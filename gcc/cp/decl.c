@@ -7836,7 +7836,7 @@ reshape_init (tree type, tree *initp)
       return old_init;
     }
 
-  if (TREE_CODE (old_init) == STRING_CST
+  if (TREE_CODE (old_init_value) == STRING_CST
       && TREE_CODE (type) == ARRAY_TYPE
       && char_type_p (TREE_TYPE (type)))
     {
