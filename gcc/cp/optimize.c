@@ -44,34 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Prototypes.  */
 
-static tree calls_setjmp_r (tree *, int *, void *);
 static void update_cloned_parm (tree, tree);
-
-/* Called from calls_setjmp_p via walk_tree.  */
-
-static tree
-calls_setjmp_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-                void *data ATTRIBUTE_UNUSED)
-{
-  /* We're only interested in FUNCTION_DECLS.  */
-  if (TREE_CODE (*tp) != FUNCTION_DECL)
-    return NULL_TREE;
-
-  return setjmp_call_p (*tp) ? *tp : NULL_TREE;
-}
-
-/* Returns nonzero if FN calls `setjmp' or some other function that
-   can return more than once.  This function is conservative; it may
-   occasionally return a nonzero value even when FN does not actually
-   call `setjmp'.  */
-
-bool
-calls_setjmp_p (tree fn)
-{
-  return walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-				       calls_setjmp_r,
-				       NULL) != NULL_TREE;
-}
 
 /* CLONED_PARM is a copy of CLONE, generated for a cloned constructor
    or destructor.  Update it to ensure that the source-position for

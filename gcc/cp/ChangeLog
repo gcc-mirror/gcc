@@ -1,3 +1,10 @@
+2005-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* optimize.c (calls_setjmp_r): Remove.
+	(calls_setjmp_p): Remove.
+	* cp-tree.c (calls_setjmp_p): Remove.
+	* decl.c (finish_function): Do not call calls_setjmp_p.
+
 2004-05-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (cp_finish_decl): Use mark_decl_referenced.
