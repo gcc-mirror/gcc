@@ -1,5 +1,5 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1052,8 +1052,8 @@ notype_initdcl:
 maybe_attribute:
     /* empty */
 		{ $$ = NULL_TREE; }
-    | ATTRIBUTE '(' '(' attribute_list ')' ')'
-		{ $$ = $4; }
+    | maybe_attribute ATTRIBUTE '(' '(' attribute_list ')' ')'
+		{ $$ = chainon ($5, $1); }
     ;
 
 attribute_list
