@@ -1,3 +1,9 @@
+2002-08-29  Richard Earnshaw  <rearnshaw@arm.com>
+
+	* config/cpu/arm/cpu_limits.h: New file.
+	* configure.target: Use config/cpu/arm for XScale and StrongARM
+	configurations.
+
 2002-08-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/std/std_limits.h (__glibcpp_char_bits,

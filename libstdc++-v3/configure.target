@@ -72,7 +72,7 @@ case "${target_cpu}" in
   alpha*)
     cpu_include_dir="cpu/alpha"
     ;;
-  arm*)
+  arm* | strongarm* | xscale* )
     cpu_include_dir="cpu/arm"
     ;;
   i486 | i586 | i686 | i786)
