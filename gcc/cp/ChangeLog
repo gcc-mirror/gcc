@@ -1,5 +1,14 @@
 2004-09-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16162
+	* parser.c (cp_parser_id_expression): Correct value for
+	is_declarator.
+	(cp_parser_nested_name_specifier_opt): Look through typenames as
+	necessary.
+	(cp_parser_template_name): Honor check_dependency_p.
+
+2004-09-13  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/17327
 	* pt.c (unify): Add ENUMERAL_TYPE case.  Replace sorry with
 	gcc_unreacable.
