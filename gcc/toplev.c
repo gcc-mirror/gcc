@@ -3258,6 +3258,15 @@ rest_of_compilation (decl)
   cleanup_cfg ();
   check_function_return_warnings ();
 
+  /* It may make more sense to mark constant functions after dead code is
+     eliminated by life_analyzis, but we need to do it early, as -fprofile-arcs
+     may insert code making function non-constant, but we still must consider
+     it as constant, otherwise -fbranch-probabilities will not read data back.
+
+     life_analyzis rarely eliminates modification of external memory.
+   */
+  mark_constant_function ();
+
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
@@ -3290,7 +3299,6 @@ rest_of_compilation (decl)
       flow_loops_free (&loops);
     }
   life_analysis (insns, rtl_dump_file, PROP_FINAL);
-  mark_constant_function ();
   timevar_pop (TV_FLOW);
 
   register_life_up_to_date = 1;
