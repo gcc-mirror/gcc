@@ -8053,7 +8053,7 @@ sparc_aout_select_section (t, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align;
 {
-  default_select_section (t, reloc | SUNOS4_SHARED_LIBRARIES, align)
+  default_select_section (t, reloc | SUNOS4_SHARED_LIBRARIES, align);
 }
 
 int

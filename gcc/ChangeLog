@@ -1,3 +1,7 @@
+2002-05-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.c (sparc_aout_select_section): Fixed typo.
+
 2002-05-17  kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/sh.h (ENCODE_SECTION_INFO): Consider MODULE_LOCAL_P
