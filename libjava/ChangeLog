@@ -1,3 +1,13 @@
+2004-01-28  Jeroen Frijters  <jeroen@frijters.net>
+
+	PR libgcj/19649
+	* java/util/Date.java
+	(Date(int,int,int), Date(int,int,int,int,int)): Delegate to other
+	constructor.
+	(Date(int,int,int,int,int,int)): Fixed to handle out-of-range
+	arguments.
+	(getTimezoneOffset): Inverted sign.
+
 2005-01-26  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Update for PR java/19070,
