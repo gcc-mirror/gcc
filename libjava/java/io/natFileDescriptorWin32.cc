@@ -1,6 +1,7 @@
 // natFileDescriptorWin32.cc - Native part of FileDescriptor class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation, Inc.
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software 
+   Foundation, Inc.
 
    This file is part of libgcj.
 
@@ -288,7 +289,13 @@ java::io::FileDescriptor::read(void)
   DWORD read;
 
   if (! ReadFile ((HANDLE)fd, &buf, 1, &read, NULL))
-    throw new IOException (JvNewStringLatin1 (winerr ()));
+    {
+      if (GetLastError () == ERROR_BROKEN_PIPE)
+        return -1;
+      else
+        throw new IOException (JvNewStringLatin1 (winerr ()));
+    }
+
   if (! read)
     return -1;
   else
@@ -313,9 +320,15 @@ java::io::FileDescriptor::read(jbyteArray buffer, jint offset, jint count)
 
   DWORD read;
   if (! ReadFile((HANDLE)fd, bytes, count, &read, NULL))
-    throw new IOException (JvNewStringLatin1 (winerr ()));
+    {
+      if (GetLastError () == ERROR_BROKEN_PIPE)
+        return -1;
+      else
+        throw new IOException (JvNewStringLatin1 (winerr ()));
+    }
 
   if (read == 0) return -1;
+
   return (jint)read;
 }
 
