@@ -2703,7 +2703,7 @@ tmp-gcc.xtar: distdir
 	tar -chf tmp-gcc.xtar gcc-$(version)
 
 distdir-cvs: force
-	if [ -d $(srcdir)/CVS ]; then cvs -r update; fi
+	if [ -d $(srcdir)/CVS ]; then cd $(srcdir) && cvs -r update; fi
 
 # This target exists to do the initial work before the language specific
 # stuff gets done.
@@ -2718,7 +2718,7 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	awk '$$1 " " $$2 " " $$3 == "This directory contains" \
 		{ $$6 = version; print $$0 } \
 	     $$1 " " $$2 " " $$3 != "This directory contains"' \
-	  version=$(version) README > tmp.README
+	  version=$(version) $(srcdir)/README > tmp.README
 	mv tmp.README README
 	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
@@ -2726,31 +2726,33 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	mkdir tmp
 	mkdir tmp/config
 	mkdir tmp/ginclude
-	for file in *[0-9a-zA-Z+]; do \
-	  $(LN) $$file tmp; \
+	mkdir tmp/objc
+	for file in `(cd $(srcdir) && echo *[0-9a-zA-Z+])`; do \
+	  test -f $(srcdir)/$$file && $(LN_S) $(srcdir)/$$file tmp; \
 	done
-	cd config; \
-	for file in *[0-9a-zA-Z+]; do \
-	  if test -d $$file && test "$$file" != RCS && test "$$file" != CVS; then \
-	    mkdir ../tmp/config/$$file; \
-	    cd $$file; \
-	    for subfile in *[0-9a-zA-Z+]; do \
-	      $(LN) $$subfile ../../tmp/config/$$file; \
+	if test "$(srcdir)" != "." ; then \
+	  for file in c-parse.c cexp.c ; do \
+	    test -f ./$$file && $(LN_S) ../$$file tmp; \
+	  done; \
+	fi
+	for file in `(cd $(srcdir)/config && echo *[0-9a-zA-Z+])`; do \
+	  if test -d $(srcdir)/config/$$file \
+	      && test "$$file" != RCS && test "$$file" != CVS; then \
+	    mkdir tmp/config/$$file; \
+	    for subfile in `(cd $(srcdir)/config/$$file && echo *[0-9a-zA-Z+])`; do \
+	      $(LN_S) $(srcdir)/config/$$file/$$subfile tmp/config/$$file; \
 	    done; \
-	    cd ..; \
 	  else \
-	    $(LN) $$file ../tmp/config; \
+	    $(LN_S) $(srcdir)/config/$$file tmp/config; \
 	  fi; \
 	done
-	cd ginclude; \
-	for file in *[0-9a-zA-Z+]; do \
-	  $(LN) $$file ../tmp/ginclude; \
+	for file in `(cd $(srcdir)/ginclude && echo *[0-9a-zA-Z+])`; do \
+	  $(LN_S) $(srcdir)/ginclude/$$file tmp/ginclude; \
 	done
-	cd objc; \
-	for file in *[0-9a-zA-Z+]; do \
-	  $(LN) $$file ../tmp/objc; \
+	for file in `(cd $(srcdir)/objc && echo *[0-9a-zA-Z+])`; do \
+	  $(LN_S) $(srcdir)/objc/$$file tmp/objc; \
 	done
-	$(LN) .gdbinit tmp
+	$(LN_S) .gdbinit tmp
 
 # Finish making `distdir', after the languages have done their thing.
 distdir-finish:
