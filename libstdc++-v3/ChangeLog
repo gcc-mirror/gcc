@@ -1,3 +1,17 @@
+2001-05-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	other/2931
+	* acinclude.m4 (GLIBCPP_ENABLE_C99): Use AC_TRY_COMPILE.
+	* aclocal.m4: Regenerate.
+	* configure: Same.
+	
+2001-05-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+            Phil Edwards  <pme@sources.redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+        * acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
+        in an amd-safe manner. Revert glibcpp_prefixdir.
+
 2001-05-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/c_std/bits/std_cmath.h: Tweak.  #define away abs, cos,
