@@ -86,7 +86,6 @@ static tree gimplify_c_loop (tree, tree, tree, bool);
 static void push_context (void);
 static void pop_context (void);
 static void add_block_to_enclosing (tree);
-static void gimplify_condition (tree *);
 
 enum bc_t { bc_break = 0, bc_continue = 1 };
 static tree begin_bc_block (enum bc_t);
@@ -417,23 +416,6 @@ gimplify_expr_stmt (tree *stmt_p)
   return GS_OK;
 }
 
-/* If the condition for a loop (or the like) is a decl, it will be a
-   TREE_LIST where the TREE_PURPOSE is a DECL_STMT and the TREE_VALUE is
-   a use of the decl.  Turn such a thing into a COMPOUND_EXPR.  */
-
-static void
-gimplify_condition (tree *cond_p)
-{
-  tree cond = *cond_p;
-  if (cond && TREE_CODE (cond) == TREE_LIST)
-    {
-      tree decl = TREE_PURPOSE (cond);
-      tree value = TREE_VALUE (cond);
-      gimplify_stmt (&decl);
-      *cond_p = build (COMPOUND_EXPR, TREE_TYPE (value), decl, value);
-    }
-}
-
 /* Begin a scope which can be exited by a break or continue statement.  BC
    indicates which.
 
@@ -548,7 +530,6 @@ gimplify_c_loop (tree cond, tree body, tree incr, bool cond_is_first)
       exit = build_and_jump (&LABEL_EXPR_LABEL (top));
       if (cond)
 	{
-	  gimplify_condition (&cond);
 	  t = build_bc_goto (bc_break);
 	  exit = build (COND_EXPR, void_type_node, cond, exit, t);
 	  exit = fold (exit);
@@ -647,7 +628,6 @@ gimplify_if_stmt (tree *stmt_p)
     else_ = build_empty_stmt ();
 
   stmt = build (COND_EXPR, void_type_node, IF_COND (stmt), then_, else_);
-  gimplify_condition (& TREE_OPERAND (stmt, 0));
   *stmt_p = stmt;
 
   return GS_OK;
@@ -663,8 +643,6 @@ gimplify_switch_stmt (tree *stmt_p)
   location_t stmt_locus = input_location;
 
   break_block = begin_bc_block (bc_break);
-
-  gimplify_condition (&SWITCH_COND (stmt));
 
   body = SWITCH_BODY (stmt);
   if (!body)

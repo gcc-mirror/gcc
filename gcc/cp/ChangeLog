@@ -1,3 +1,14 @@
+2004-06-18  Richard Henderson  <rth@redhat.com>
+
+	PR c++/16034
+	* semantics.c (begin_cond): New.
+	(finish_cond): Rewrite to handle template DECL_STMTs specially.
+	Assume that non-template decls go land before the conditional.
+	(simplify_loop_decl_cond): Likewise.
+	(begin_if_stmt, finish_if_stmt_cond, begin_while_stmt, 
+	finish_while_stmt_cond, finish_for_init_stmt, finish_for_cond,
+	begin_switch_stmt, finish_switch_cond): Update to match.
+
 2004-06-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/16015

@@ -1,5 +1,11 @@
 2004-06-18  Richard Henderson  <rth@redhat.com>
 
+	* c-gimplify.c (gimplify_condition): Remove.
+	(gimplify_c_loop, gimplify_if_stmt, gimplify_switch_stmt): Don't
+	call it.
+
+2004-06-18  Richard Henderson  <rth@redhat.com>
+
 	* tree-eh.c (decide_copy_try_finally): Fix scaling of copy and
 	switch estimates.
 
