@@ -1192,7 +1192,12 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   expand_start_bindings (0);
   if (GET_CODE (parm_insns) == NOTE
       && NOTE_LINE_NUMBER (parm_insns) > 0)
-    emit_note (NOTE_SOURCE_FILE (parm_insns), NOTE_LINE_NUMBER (parm_insns));
+    {
+      rtx note = emit_note (NOTE_SOURCE_FILE (parm_insns),
+			    NOTE_LINE_NUMBER (parm_insns));
+      if (note)
+	RTX_INTEGRATED_P (note) = 1;
+    }
 
   /* Expand the function arguments.  Do this first so that any
      new registers get created before we allocate the maps.  */
@@ -1212,7 +1217,10 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       /* Where parameter is located in the function.  */
       rtx copy;
 
-      emit_note (DECL_SOURCE_FILE (formal), DECL_SOURCE_LINE (formal));
+      rtx note = emit_note (DECL_SOURCE_FILE (formal),
+			    DECL_SOURCE_LINE (formal));
+      if (note)
+	RTX_INTEGRATED_P (note) = 1;
 
       arg_trees[i] = arg;
       loc = RTVEC_ELT (arg_vector, i);
@@ -1398,7 +1406,10 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 	  && ! (GET_CODE (XEXP (loc, 0)) == REG
 		&& REGNO (XEXP (loc, 0)) > LAST_VIRTUAL_REGISTER))
 	{
-	  emit_note (DECL_SOURCE_FILE (formal), DECL_SOURCE_LINE (formal));
+	  rtx note = emit_note (DECL_SOURCE_FILE (formal),
+				DECL_SOURCE_LINE (formal));
+	  if (note)
+	    RTX_INTEGRATED_P (note) = 1;
 
 	  /* Compute the address in the area we reserved and store the
 	     value there.  */
