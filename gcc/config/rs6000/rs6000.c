@@ -4957,10 +4957,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 /* For an arg passed partly in registers and partly in memory, this is
-   the number of registers used.  For args passed entirely in registers
-   or entirely in memory, zero.  When an arg is described by a PARALLEL,
-   perhaps using more than one register type, this function returns the
-   number of bytes of registers used by the PARALLEL.  */
+   the number of bytes passed in registers.  For args passed entirely in
+   registers or entirely in memory, zero.  When an arg is described by a
+   PARALLEL, perhaps using more than one register type, this function
+   returns the number of bytes used by the first element of the PARALLEL.  */
 
 static int
 rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
@@ -4985,9 +4985,10 @@ rs6000_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   align_words = rs6000_parm_start (mode, type, cum->words);
 
   if (USE_FP_FOR_ARG_P (cum, mode, type)
-      /* If we are passing this arg in gprs as well, then this function
-	 should return the number of gprs (or memory) partially passed,
-	 *not* the number of fprs.  */
+      /* If we are passing this arg in the fixed parameter save area
+	 (gprs or memory) as well as fprs, then this function should
+	 return the number of bytes passed in the parameter save area
+	 rather than bytes passed in fprs.  */ 
       && !(type
 	   && (cum->nargs_prototype <= 0
 	       || (DEFAULT_ABI == ABI_AIX
