@@ -1253,7 +1253,32 @@ cc_register (x, mode)
 
   return FALSE;
 }
-       
+
+/* Return TRUE if this is the condition code register, if we aren't given
+   a mode, accept any mode in class CC_MODE that is reversible */
+
+int
+reversible_cc_register (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  if (mode == VOIDmode)
+    {
+      mode = GET_MODE (x);
+      if (GET_MODE_CLASS (mode) != MODE_CC
+	  && GET_CODE (x) == REG && REGNO (x) == 24)
+	abort ();
+      if (GET_MODE_CLASS (mode) != MODE_CC
+	  || (! flag_fast_math && ! REVERSIBLE_CC_MODE (mode)))
+	return FALSE;
+    }
+
+  if (mode == GET_MODE (x) && GET_CODE (x) == REG && REGNO (x) == 24)
+    return TRUE;
+
+  return FALSE;
+}
+
 enum rtx_code
 minmax_code (x)
      rtx x;
@@ -3460,7 +3485,13 @@ final_prescan_insn (insn, opvec, noperands)
       rtx this_insn = start_insn, label = 0;
 
       if (get_attr_conds (insn) == CONDS_JUMP_CLOB)
-	jump_clobbers = 1;
+	{
+	  /* The code below is wrong for these, and I haven't time to
+	     fix it now.  So we just do the safe thing and return.  This
+	     whole function needs re-writing anyway.  */
+	  jump_clobbers = 1;
+	  return;
+	}
       
       /* Register the insn jumped to.  */
       if (reverse)
