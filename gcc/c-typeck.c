@@ -1528,6 +1528,10 @@ check_format (info, params)
 		  cur_param = TREE_VALUE (params);
 		  params = TREE_CHAIN (params);
 		  ++arg_num;
+		  /* size_t is generally not valid here.
+		     It will work on most machines, because size_t and int
+		     have the same mode.  But might as well warn anyway,
+		     since it will fail on other machines.  */
 		  if (TREE_TYPE (cur_param) != integer_type_node)
 		    {
 		      sprintf (message,
