@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -771,9 +771,19 @@ package body System.Fat_Gen is
       type Float_Word is mod 2**Positive'Min (System.Word_Size, 32);
       type Rep_Index is range 0 .. 7;
 
-      Rep_Last : constant Rep_Index := (T'Size - 1) / Float_Word'Size;
+      Rep_Words : constant Positive :=
+         (T'Size + Float_Word'Size - 1) / Float_Word'Size;
+      Rep_Last  : constant Rep_Index := Rep_Index'Min
+        (Rep_Index (Rep_Words - 1), (T'Mantissa + 16) / Float_Word'Size);
+      --  Determine the number of Float_Words needed for representing
+      --  the entire floating-poinit value. Do not take into account
+      --  excessive padding, as occurs on IA-64 where 80 bits floats get
+      --  padded to 128 bits. In general, the exponent field cannot
+      --  be larger than 15 bits, even for 128-bit floating-poin t types,
+      --  so the final format size won't be larger than T'Mantissa + 16.
 
-      type Float_Rep is array (Rep_Index range 0 .. Rep_Last) of Float_Word;
+      type Float_Rep is
+         array (Rep_Index range 0 .. Rep_Index (Rep_Words - 1)) of Float_Word;
 
       pragma Suppress_Initialization (Float_Rep);
       --  This pragma supresses the generation of an initialization procedure
@@ -791,12 +801,12 @@ package body System.Fat_Gen is
       Exponent_Factor : constant Float_Word :=
                           2**(Float_Word'Size - 1) /
                             Float_Word (IEEE_Emax - IEEE_Emin + 3) *
-                              Boolean'Pos (T'Size /= 96) +
-                                Boolean'Pos (T'Size = 96);
+                              Boolean'Pos (Most_Significant_Word /= 2) +
+                                Boolean'Pos (Most_Significant_Word = 2);
       --  Factor that the extracted exponent needs to be divided by
       --  to be in range 0 .. IEEE_Emax - IEEE_Emin + 2.
-      --  Special kludge: Exponent_Factor is 0 for x86 double extended
-      --  as GCC adds 16 unused bits to the type.
+      --  Special kludge: Exponent_Factor is 1 for x86/IA64 double extended
+      --  as GCC adds unused bits to the type.
 
       Exponent_Mask : constant Float_Word :=
                         Float_Word (IEEE_Emax - IEEE_Emin + 2) *
