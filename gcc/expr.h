@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987, 91-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

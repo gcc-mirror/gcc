@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 97, 98 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
