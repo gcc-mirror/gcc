@@ -1,3 +1,8 @@
+2005-01-27  Matt Austern  <austern@apple.com>
+
+	* objc-act.c (objc_finish_file): In ObjC++ mode, set at_eof before
+	calling instantiate_pending_templates.
+	
 2005-01-26  Alexander Malmberg  <alexander@malmberg.org>
 
 	PR objc/18862
