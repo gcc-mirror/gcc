@@ -1,3 +1,10 @@
+Thu Jul 16 13:26:36 1998  Craig Burley  <burley@gnu.org>
+
+	* (ffecom_finish_symbol_transform_): Revert change
+	of 1998-05-23, as it was too aggressive, in that it
+	prevented transformation of (used) functions before
+	primary code generation.
+
 1998-07-15  Dave Love  <d.love@dl.ac.uk>
 
 	* intdoc.texi: Regenerated.
