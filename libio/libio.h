@@ -273,7 +273,7 @@ extern int __overflow __P((_IO_FILE*, int));
     ? __overflow(_fp, (unsigned char)(_ch)) \
     : (unsigned char)(*(_fp)->_IO_write_ptr++ = (_ch)))
 
-#define _IO_feof_unclocked(__fp) (((__fp)->_flags & _IO_EOF_SEEN) != 0)
+#define _IO_feof_unlocked(__fp) (((__fp)->_flags & _IO_EOF_SEEN) != 0)
 #define _IO_ferror_unlocked(__fp) (((__fp)->_flags & _IO_ERR_SEEN) != 0)
 
 extern int _IO_getc __P ((_IO_FILE *__fp));
