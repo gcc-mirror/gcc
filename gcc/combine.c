@@ -3724,9 +3724,9 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
      if they are logically related (i.e. (a & b) & a).  */
   if ((code == PLUS || code == MINUS
        || code == MULT || code == AND || code == IOR || code == XOR
-       || code == DIV || code == UDIV
        || code == SMAX || code == SMIN || code == UMAX || code == UMIN)
-      && INTEGRAL_MODE_P (mode))
+      && (INTEGRAL_MODE_P (mode)
+	  || (flag_unsafe_math_optimizations && FLOAT_MODE_P (mode))))
     {
       if (GET_CODE (XEXP (x, 0)) == code)
 	{
@@ -4230,6 +4230,16 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
 	  if (GET_CODE (x) != MULT)
 	    return x;
+	}
+      /* Try simplify a*(b/c) as (a*b)/c.  */
+      if (FLOAT_MODE_P (mode) && flag_unsafe_math_optimizations
+	  && GET_CODE (XEXP (x, 0)) == DIV)
+	{
+	  rtx tem = simplify_binary_operation (MULT, mode,
+					       XEXP (XEXP (x, 0), 0),
+					       XEXP (x, 1));
+	  if (tem)
+	    return gen_binary (DIV, mode, tem, XEXP (XEXP (x, 0), 1));
 	}
       break;
 
