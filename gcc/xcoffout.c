@@ -152,12 +152,14 @@ static const struct xcoff_type_number xcoff_type_numbers[] = {
 int
 xcoff_assign_fundamental_type_number (tree decl)
 {
-  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  const char *name;
   size_t i;
 
   /* Do not waste time searching the list for non-intrinsic types.  */
-  if (DECL_SOURCE_LINE (decl) > 0)
+  if (DECL_NAME (decl) == 0 || DECL_SOURCE_LINE (decl) > 0)
     return 0;
+
+  name = IDENTIFIER_POINTER (DECL_NAME (decl));
 
   /* Linear search, blech, but the list is too small to bother
      doing anything else.  */
