@@ -272,7 +272,9 @@ extern const int x86_epilogue_using_move, x86_decompose_lea;
 
 #define TARGET_SSE ((target_flags & (MASK_SSE | MASK_SSE2)) != 0)
 #define TARGET_SSE2 ((target_flags & MASK_SSE2) != 0)
-#define TARGET_MIX_SSE_I387 ((target_flags & MASK_MIX_SSE_I387) != 0)
+#define TARGET_SSE_MATH ((ix86_fpmath & FPMATH_SSE) != 0)
+#define TARGET_MIX_SSE_I387 ((ix86_fpmath & FPMATH_SSE) \
+			     && (ix86_fpmath & FPMATH_387))
 #define TARGET_MMX ((target_flags & MASK_MMX) != 0)
 #define TARGET_3DNOW ((target_flags & MASK_3DNOW) != 0)
 #define TARGET_3DNOW_A ((target_flags & MASK_3DNOW_A) != 0)
@@ -365,10 +367,6 @@ extern const int x86_epilogue_using_move, x86_decompose_lea;
   { "no-sse2",			 -MASK_SSE2, N_("") },			      \
   { "no-sse2",			 MASK_SSE2_SET,				      \
     N_("Do not support MMX, SSE and SSE2 builtins and code generation") },    \
-  { "mix-sse-i387",		 MASK_MIX_SSE_I387,			      \
-    N_("Use both SSE and i387 instruction sets for floating point arithmetics") },\
-  { "no-mix-sse-i387",		-MASK_MIX_SSE_I387,			      \
-    N_("Do not use both SSE and i387 instruction sets for floating point arithmetics") },\
   { "128bit-long-double",	 MASK_128BIT_LONG_DOUBLE,		      \
     N_("sizeof(long double) is 16") },					      \
   { "96bit-long-double",	-MASK_128BIT_LONG_DOUBLE,		      \
@@ -404,8 +402,14 @@ enum processor_type
   PROCESSOR_PENTIUM4,
   PROCESSOR_max
 };
+enum fpmath_unit
+{
+  FPMATH_387 = 1,
+  FPMATH_SSE = 2
+};
 
 extern enum processor_type ix86_cpu;
+extern enum fpmath_unit ix86_fpmath;
 
 extern int ix86_arch;
 
@@ -421,6 +425,8 @@ extern int ix86_arch;
 #define TARGET_OPTIONS						\
 { { "cpu=",		&ix86_cpu_string,			\
     N_("Schedule code for given CPU")},				\
+  { "fpmath=",		&ix86_fpmath_string,			\
+    N_("Generate floating point mathematics using given instruction set")},\
   { "arch=",		&ix86_arch_string,			\
     N_("Generate code for given CPU")},				\
   { "regparm=",		&ix86_regparm_string,			\
@@ -1271,7 +1277,7 @@ enum reg_class
 #define SSE_REG_P(n) (REG_P (n) && SSE_REGNO_P (REGNO (n)))
 
 #define SSE_FLOAT_MODE_P(m) \
-  ((TARGET_SSE && (m) == SFmode) || (TARGET_SSE2 && (m) == DFmode))
+  ((TARGET_SSE_MATH && (m) == SFmode) || (TARGET_SSE2 && (m) == DFmode))
 
 #define MMX_REGNO_P(n) ((n) >= FIRST_MMX_REG && (n) <= LAST_MMX_REG)
 #define MMX_REG_P(xop) (REG_P (xop) && MMX_REGNO_P (REGNO (xop)))
@@ -3112,6 +3118,7 @@ extern enum cmodel ix86_cmodel;
 /* Variables in i386.c */
 extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
 extern const char *ix86_arch_string;		/* for -march=<xxx> */
+extern const char *ix86_fpmath_string;		/* for -mfpmath=<xxx> */
 extern const char *ix86_regparm_string;		/* # registers to use to pass args */
 extern const char *ix86_align_loops_string;	/* power of two alignment for loops */
 extern const char *ix86_align_jumps_string;	/* power of two alignment for non-loop jumps */

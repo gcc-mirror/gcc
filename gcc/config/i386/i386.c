@@ -578,12 +578,16 @@ enum cmodel ix86_cmodel;
 /* which cpu are we scheduling for */
 enum processor_type ix86_cpu;
 
+/* which unit we are generating floating point math for */
+enum fpmath_unit ix86_fpmath;
+
 /* which instruction set architecture to use.  */
 int ix86_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
 const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
 const char *ix86_arch_string;		/* for -march=<xxx> */
+const char *ix86_fpmath_string;		/* for -mfpmath=<xxx> */
 
 /* # of registers to use to pass arguments.  */
 const char *ix86_regparm_string;
@@ -1066,8 +1070,45 @@ override_options ()
       if (TARGET_RTD)
 	error ("-mrtd calling convention not supported in the 64bit mode");
       /* Enable by default the SSE and MMX builtins.  */
-      target_flags |= MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE;
+      target_flags |= (MASK_SSE2 | MASK_SSE | MASK_MMX | MASK_128BIT_LONG_DOUBLE);
+      ix86_fpmath = FPMATH_SSE;
      }
+  else
+    ix86_fpmath = FPMATH_387;
+
+  if (ix86_fpmath_string != 0)
+    {
+      if (! strcmp (ix86_fpmath_string, "387"))
+	ix86_fpmath = FPMATH_387;
+      else if (! strcmp (ix86_fpmath_string, "sse"))
+	{
+	  if (!TARGET_SSE)
+	    {
+	      warning ("SSE instruction set disabled, using 387 arithmetics");
+	      ix86_fpmath = FPMATH_387;
+	    }
+	  else
+	    ix86_fpmath = FPMATH_SSE;
+	}
+      else if (! strcmp (ix86_fpmath_string, "387,sse")
+	       || ! strcmp (ix86_fpmath_string, "sse,387"))
+	{
+	  if (!TARGET_SSE)
+	    {
+	      warning ("SSE instruction set disabled, using 387 arithmetics");
+	      ix86_fpmath = FPMATH_387;
+	    }
+	  else if (!TARGET_80387)
+	    {
+	      warning ("387 instruction set disabled, using SSE arithmetics");
+	      ix86_fpmath = FPMATH_SSE;
+	    }
+	  else
+	    ix86_fpmath = FPMATH_SSE | FPMATH_387;
+	}
+      else 
+	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
+    }
 
   /* It makes no sense to ask for just SSE builtins, so MMX is also turned
      on by -msse.  */
@@ -8117,8 +8158,8 @@ ix86_expand_fp_movcc (operands)
 
   /* For SF/DFmode conditional moves based on comparisons
      in same mode, we may want to use SSE min/max instructions.  */
-  if (((TARGET_SSE && GET_MODE (operands[0]) == SFmode)
-       || (TARGET_SSE2 && GET_MODE (operands[0]) == DFmode))
+  if (((TARGET_SSE_MATH && GET_MODE (operands[0]) == SFmode)
+       || (TARGET_SSE2 && TARGET_SSE_MATH && GET_MODE (operands[0]) == DFmode))
       && GET_MODE (ix86_compare_op0) == GET_MODE (operands[0])
       /* The SSE comparisons does not support the LTGT/UNEQ pair.  */
       && (!TARGET_IEEE_FP
