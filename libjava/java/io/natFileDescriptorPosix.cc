@@ -68,10 +68,8 @@ java::io::FileDescriptor::sync (void)
 jint
 java::io::FileDescriptor::open (jstring path, jint jflags)
 {
-  // FIXME: eww.
-  char buf[MAXPATHLEN];
+  char *buf = (char *) _Jv_AllocBytes (_Jv_GetStringUTFLength (path) + 1);
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), buf);
-  // FIXME?
   buf[total] = '\0';
   int flags = 0;
 #ifdef O_BINARY
@@ -121,17 +119,20 @@ void
 java::io::FileDescriptor::write (jint b)
 {
   jbyte d = (jbyte) b;
-  int r = ::write (fd, &d, 1);
-  if (java::lang::Thread::interrupted())
+  int r = 0;
+  while (r != 1)
     {
-      InterruptedIOException *iioe
-	= new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
+      r = ::write (fd, &d, 1);
+      if (java::lang::Thread::interrupted())
+	{
+	  InterruptedIOException *iioe
+	    = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
+	  iioe->bytesTransferred = r == -1 ? 0 : r;
+	  throw iioe;
+	}
+      else if (r == -1)
+	throw new IOException (JvNewStringLatin1 (strerror (errno)));
     }
-  else if (r == -1)
-    throw new IOException (JvNewStringLatin1 (strerror (errno)));
-  // FIXME: loop if r != 1.
 }
 
 void
@@ -142,17 +143,26 @@ java::io::FileDescriptor::write (jbyteArray b, jint offset, jint len)
   if (offset < 0 || len < 0 || offset + len > JvGetArrayLength (b))
     throw new java::lang::ArrayIndexOutOfBoundsException;
   jbyte *bytes = elements (b) + offset;
-  int r = ::write (fd, bytes, len);
-  if (java::lang::Thread::interrupted())
+
+  int written = 0;
+  while (len > 0)
     {
-      InterruptedIOException *iioe
-	= new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
-      iioe->bytesTransferred = r == -1 ? 0 : r;
-      throw iioe;
+      int r = ::write (fd, bytes, len);
+      if (r != -1)
+	written += r;
+      if (java::lang::Thread::interrupted())
+	{
+	  InterruptedIOException *iioe
+	    = new InterruptedIOException (JvNewStringLatin1 ("write interrupted"));
+	  iioe->bytesTransferred = written;
+	  throw iioe;
+	}
+      else if (r == -1)
+	throw new IOException (JvNewStringLatin1 (strerror (errno)));
+
+      len -= r;
+      bytes += r;
     }
-  else if (r == -1)
-    throw new IOException (JvNewStringLatin1 (strerror (errno)));
-  // FIXME: loop if r != len.
 }
 
 void
