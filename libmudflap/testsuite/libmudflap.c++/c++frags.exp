@@ -1,5 +1,5 @@
 
-libmudflap-init [find_g++]
+libmudflap-init c++
 
 dg-init
 

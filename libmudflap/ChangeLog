@@ -1,3 +1,13 @@
+2004-05-17  Frank Ch. Eigler  <fche@redhat.com>
+
+	* lib/libmudflap.exp (libmudflap-init): For C++ test cases only,
+	import some build settings from libstdc++-v3 testsuite_flags.
+	* .../cfrags.exp, .../c++frags.exp, .../cthfrags.exp: Corresponding
+	changes to pass test language.
+
+	* mf-runtime.c (__mfu_check): Poison the cache with antidote for
+	quicker mode-nop handling.
+
 2004-03-25  Frank Ch. Eigler  <fche@redhat.com>
 
 	* mf-impl.h: Added libgcc license header.

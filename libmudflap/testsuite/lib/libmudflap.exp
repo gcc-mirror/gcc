@@ -21,7 +21,7 @@
 load_lib mfdg.exp
 load_lib libgloss.exp
 
-proc libmudflap-init { compiler } {
+proc libmudflap-init { language } {
     global srcdir
     global outdir
     global blddir
@@ -34,9 +34,17 @@ proc libmudflap-init { compiler } {
     global ld_library_path
     global tool_root_dir
 
-    verbose "libmudflap-init $compiler"
+    switch $language {
+        "c" { set cxx [find_gcc] }
+        "c++" { set cxx [find_g++] }
+        default { error "bad language code $language"; return }
+    }
+
+    verbose -log "libmudflap-init $cxx"
 
     set blddir [lookfor_file [get_multilibs] libmudflap]
+    set cxxblddir [lookfor_file [get_multilibs] libstdc++-v3]
+    set cxxflags_file "${cxxblddir}/scripts/testsuite_flags"
 
     # By default, we assume we want to run program images.
     global dg-do-what-default
@@ -52,7 +60,7 @@ proc libmudflap-init { compiler } {
 
     set ld_library_path "."
     append ld_library_path ":${gccdir}"
-    append ld_library_path ":../../libstdc++-v3/src/.libs"
+    append ld_library_path ":${cxxblddir}/src/.libs"
     if {[is_remote host] == 0} {
 	foreach i "[exec ${gccdir}/xgcc --print-multi-lib]" {
 	    set mldir ""
@@ -63,17 +71,28 @@ proc libmudflap-init { compiler } {
 	    }
 	    if { [llength [glob -nocomplain ${gccdir}/${mldir}/libgcc_s*.so.*]] == 1 } {
 		append ld_library_path ":${gccdir}/${mldir}"
-		append ld_library_path ":../../libstdc++-v3/${mldir}/src/.libs"
 	    }
 	}
     }
     append ld_library_path ":${blddir}/.libs"
-    set cxx $compiler
-    set libs "-L../.libs -L../../libstdc++-v3/src/.libs -L../../../gcc"
+
+    set libs "-L../.libs -L../../../gcc"
     set cxxflags "-ggdb3 -DDEBUG_ASSERT"
     set includes "-I${srcdir} -I.."
 
-    verbose "ld_library_path=$ld_library_path"
+    if {$language == "c++"} {
+        if {[file exists $cxxflags_file]} then {
+            set includes "${includes} [exec sh $cxxflags_file --build-includes]"
+            set cxxflags "${cxxflags} [exec sh $cxxflags_file --cxxflags]"
+            # c++ libs are included by --build-cxx below
+            set cxx "[exec sh $cxxflags_file --build-cxx]"
+        } else {
+            lappend libs "-L../../libstdc++-v3/src/.libs"
+            lappend includes "-I../../libstdc++-v3/include"
+        }
+    }
+
+    verbose -log "ld_library_path=$ld_library_path"
     setenv  LD_LIBRARY_PATH     $ld_library_path
     setenv  SHLIB_PATH          $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
@@ -212,9 +231,9 @@ proc libmudflap-list-sourcefiles { } {
 	set res {}
 	foreach w $sfiles {
 	    if [regexp "wchar_t" $w] {
-		verbose "element out list is $w"
+		verbose -log "element out list is $w"
 	    } else {
-		verbose "element in list is $w"
+		verbose -log "element in list is $w"
 		lappend res $w
 	    }
 	}
