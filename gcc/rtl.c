@@ -1346,7 +1346,7 @@ rtl_check_failed_code2 (r, code1, code2, file, line, func)
   internal_error
     ("RTL check: expected code `%s' or `%s', have `%s' in %s, at %s:%d",
      GET_RTX_NAME (code1), GET_RTX_NAME (code2), GET_RTX_NAME (GET_CODE (r)),
-     ffunc, trim_filename (file), line);
+     func, trim_filename (file), line);
 }
 
 /* XXX Maybe print the vector?  */
