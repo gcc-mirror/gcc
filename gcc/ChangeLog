@@ -1,3 +1,8 @@
+Thu Jun 25 11:12:29 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* gcc.c (default_compilers): Use new | syntax to eliminate
+	string concatenation.
+
 Thu Jun 25 01:00:48 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_function_name): Delete.

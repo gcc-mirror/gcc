@@ -602,8 +602,7 @@ static struct compiler default_compilers[] =
   {"@c",
    {
 #if USE_CPPLIB
-#define CPP_FOR_C \
-     "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+     "%{E|M|MM:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -613,12 +612,8 @@ static struct compiler default_compilers[] =
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n"
-
-     "%{E:"CPP_FOR_C"}"
-     "%{!E:%{M:"CPP_FOR_C"}"
-          "%{!M:%{MM:"CPP_FOR_C"}"
-               "%{!MM:cc1 %i %1 \
+        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
+      %{!E:%{!M:%{!MM:cc1 %i %1 \
                   -lang-c%{ansi:89} %{nostdinc*} %{A*} %{I*} %I\
                   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
