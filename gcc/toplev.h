@@ -123,7 +123,6 @@ extern int flag_ssa_dce;
 extern int time_report;
 extern int flag_new_regalloc;
 
-extern void display_help (void);
 extern void display_target_options (void);
 extern void print_version (FILE *, const char *);
 extern void set_target_switch (const char *);
@@ -138,9 +137,6 @@ extern void set_fast_math_flags         (int);
 
 /* Handle -d switch.  */
 extern void decode_d_option		(const char *);
-
-/* Handle -g switch.  */
-extern void decode_g_option		(const char *);
 
 /* Return true iff flags are set as if -ffast-math.  */
 extern bool fast_math_flags_set_p	(void);

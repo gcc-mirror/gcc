@@ -1,3 +1,20 @@
+2003-08-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* common.opt: Add debug switches.
+	* flags.h (use_gnu_debug_info_extensions): Boolify.
+	* opts.c (write_symbols, debug_info_level,
+	use_gnu_debug_info_extensions): Move from toplev.c.
+	(set_debug_level): New.
+	(common_handle_options): Handle debug switches.
+	(print_help): Display target options directly.
+	* toplev.c (debug_hooks): Don't initialize.
+	(write_symbols, debug_info_level,
+	use_gnu_debug_info_extensions): Move to opts.c.
+	(debug_args, display_help, decode_g_option): Remove.
+	(process_options): Set no debug if level zero here,
+	and no-debug-hooks.  Error here if impossible debug format selected.
+	* toplev.h (display_help, decode_g_option): Remove.
+
 2003-08-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* tree.c (get_file_function_name_long): Fix size of alloca() area.
