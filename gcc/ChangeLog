@@ -1,3 +1,8 @@
+Sat Jun 19 22:52:55 1999  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (sched_analyze): Mark call-user regs as clobbered
+	instead of set.
+
 Sat Jun 19 05:40:07 1999  Philip Blundell <pb@nexus.co.uk>
 
 	* arm.c (arm_reload_in_hi): Invert sense of test on BYTES_BIG_ENDIAN.

@@ -3957,11 +3957,7 @@ sched_analyze (head, tail)
 		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-		    if (global_regs[i])
-		      for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
-		        add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-
-		    SET_REGNO_REG_SET (reg_pending_sets, i);
+		    SET_REGNO_REG_SET (reg_pending_clobbers, i);
 		  }
 	    }
 
