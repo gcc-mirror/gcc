@@ -1508,9 +1508,12 @@ free_deps (deps)
   EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
     {
       struct deps_reg *reg_last = &deps->reg_last[i];
-      free_INSN_LIST_list (&reg_last->uses);
-      free_INSN_LIST_list (&reg_last->sets);
-      free_INSN_LIST_list (&reg_last->clobbers);
+      if (reg_last->uses)
+	free_INSN_LIST_list (&reg_last->uses);
+      if (reg_last->sets)
+	free_INSN_LIST_list (&reg_last->sets);
+      if (reg_last->clobbers)
+	free_INSN_LIST_list (&reg_last->clobbers);
     });
   CLEAR_REG_SET (&deps->reg_last_in_use);
 
