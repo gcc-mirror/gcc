@@ -1,3 +1,10 @@
+2004-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/14697
+	* acinclude.m4 (glibcxx_shared_libgcc): Correct
+	glibcxx_shared_libgcc test for multilibs.
+	* configure: Rebuilt.
+
 2004-07-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get<>::do_get_time,
