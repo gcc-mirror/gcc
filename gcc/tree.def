@@ -365,7 +365,7 @@ DEFTREECODE (COMPONENT_REF, "component_ref", 'r', 2)
    operand 1 is a tree giving the number of bits being referenced;
    operand 2 is a tree giving the position of the first referenced bit.
    The field can be either a signed or unsigned field;
-   TREE_UNSIGNED says which.  */
+   BIT_FIELD_REF_UNSIGNED says which.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", 'r', 3)
    
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */

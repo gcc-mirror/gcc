@@ -14754,8 +14754,8 @@ ffe_truthvalue_conversion (tree expr)
 #if 0
     case COMPONENT_REF:
       /* A one-bit unsigned bit-field is already acceptable.  */
-      if (1 == TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (expr, 1)))
-	  && TREE_UNSIGNED (TREE_OPERAND (expr, 1)))
+      if (integer_onep (DECL_SIZE (TREE_OPERAND (expr, 1)))
+	  && DECL_UNSIGNED (TREE_OPERAND (expr, 1)))
 	return expr;
       break;
 #endif

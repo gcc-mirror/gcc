@@ -364,7 +364,7 @@ layout_decl (tree decl, unsigned int known_align)
      size in bytes from the size in bits.  If we have already set the mode,
      don't set it again since we can be called twice for FIELD_DECLs.  */
 
-  TREE_UNSIGNED (decl) = TYPE_UNSIGNED (type);
+  DECL_UNSIGNED (decl) = TYPE_UNSIGNED (type);
   if (DECL_MODE (decl) == VOIDmode)
     DECL_MODE (decl) = TYPE_MODE (type);
 

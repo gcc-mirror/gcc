@@ -4415,7 +4415,7 @@ get_unwidened (tree op, tree for_type)
     {
       unsigned int innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
+      int unsignedp = (DECL_UNSIGNED (TREE_OPERAND (op, 1))
 		       || TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
       type = lang_hooks.types.type_for_size (innerprec, unsignedp);
 
@@ -4500,7 +4500,7 @@ get_narrower (tree op, int *unsignedp_ptr)
     {
       unsigned HOST_WIDE_INT innerprec
 	= tree_low_cst (DECL_SIZE (TREE_OPERAND (op, 1)), 1);
-      int unsignedp = (TREE_UNSIGNED (TREE_OPERAND (op, 1))
+      int unsignedp = (DECL_UNSIGNED (TREE_OPERAND (op, 1))
 		       || TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op, 1))));
       tree type = lang_hooks.types.type_for_size (innerprec, unsignedp);
 
@@ -4514,11 +4514,11 @@ get_narrower (tree op, int *unsignedp_ptr)
 
       if (innerprec < TYPE_PRECISION (TREE_TYPE (op))
 	  && ! DECL_BIT_FIELD (TREE_OPERAND (op, 1))
-	  && (first || uns == TREE_UNSIGNED (TREE_OPERAND (op, 1)))
+	  && (first || uns == DECL_UNSIGNED (TREE_OPERAND (op, 1)))
 	  && type != 0)
 	{
 	  if (first)
-	    uns = TREE_UNSIGNED (TREE_OPERAND (op, 1));
+	    uns = DECL_UNSIGNED (TREE_OPERAND (op, 1));
 	  win = build (COMPONENT_REF, type, TREE_OPERAND (op, 0),
 		       TREE_OPERAND (op, 1));
 	  TREE_SIDE_EFFECTS (win) = TREE_SIDE_EFFECTS (op);
