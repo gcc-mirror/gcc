@@ -1,3 +1,7 @@
+2004-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c: Consistently use logN not log* in comments.
+
 2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* rtl.h (mem_expr_equal_p): Function prototype added.
