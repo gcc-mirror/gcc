@@ -36,6 +36,29 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef _GLIBCPP_HAVE_SYS_IOCTL_H
+#define BSD_COMP /* Get FIONREAD on Solaris2. */
+#include <sys/ioctl.h>
+#endif
+
+// Pick up FIONREAD on Solaris 2.5.
+#ifdef _GLIBCPP_HAVE_SYS_FILIO_H
+#include <sys/filio.h>
+#endif
+
+#ifdef _GLIBCPP_HAVE_POLL
+#include <poll.h>
+#endif
+
+#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+# include <sys/stat.h>
+# ifdef _GLIBCPP_HAVE_S_ISREG
+#  define _GLIBCPP_ISREG(x) S_ISREG(x)
+# else
+#  define _GLIBCPP_ISREG(x) (((x) & S_IFMT) == S_IFREG)
+# endif
+#endif
+
 namespace std 
 {
   // Definitions for __basic_file<char>.
@@ -76,11 +99,7 @@ namespace std
     if (__testi && !__testo && !__testt && !__testa)
       {
 	strcpy(__c_mode, "r");
-#if defined (O_NONBLOCK)
-	__p_mode |=  O_RDONLY | O_NONBLOCK;
-#else
 	__p_mode |=  O_RDONLY;
-#endif
       }
     if (__testi && __testo && !__testt && !__testa)
       {
@@ -156,13 +175,6 @@ namespace std
 	if ((_M_cfile = fopen(__name, __c_mode)))
 	  {
 	    _M_cfile_created = true;
-
-#if defined (F_SETFL) && defined (O_NONBLOCK)
-	    // Set input to nonblocking for fifos.
-	    if (__mode & ios_base::in)
-	      fcntl(this->fd(), F_SETFL, O_NONBLOCK);
-#endif
-
 	    __ret = this;
 	  }
       }
@@ -261,4 +273,38 @@ namespace std
   int 
   __basic_file<char>::sync() 
   { return fflush(_M_cfile); }
+
+  streamsize
+  __basic_file<char>::showmanyc_helper(bool __stdio)
+  {
+#ifdef FIONREAD
+    // Pipes and sockets.    
+    int __num = 0;
+    int __r = ioctl(this->fd(), FIONREAD, &__num);
+    if (!__r && __num >= 0)
+      return __num; 
+#endif    
+
+#ifdef _GLIBCPP_HAVE_POLL
+    // Cheap test.
+    struct pollfd __pfd[1];
+    __pfd[0].fd = this->fd();
+    __pfd[0].events = POLLIN;
+    if (poll(__pfd, 1, 0) <= 0)
+      return 0;
+#endif   
+
+#if defined(_GLIBCPP_HAVE_S_ISREG) || defined(_GLIBCPP_HAVE_S_IFREG)
+    // Regular files.
+    struct stat __buffer;
+    int __ret = fstat(this->fd(), &__buffer);
+    if (!__ret && _GLIBCPP_ISREG(__buffer.st_mode))
+      if (__stdio)
+	return __buffer.st_size - ftell(_M_cfile);
+      else
+	return __buffer.st_size - lseek(this->fd(), 0, ios_base::cur);
+#endif
+    return 0;
+  }
+
 }  // namespace std

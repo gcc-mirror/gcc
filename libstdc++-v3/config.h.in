@@ -113,6 +113,15 @@
 // Define if the compiler/host combination has __builtin_sqrtl
 #undef HAVE___BUILTIN_SQRTL
 
+// Define if poll is available in <poll.h>.
+#undef HAVE_POLL
+
+// Define if S_ISREG (Posix) is available in <sys/stat.h>.
+#undef HAVE_S_ISREG
+
+// Define if S_IFREG is available in <sys/stat.h>.
+#undef HAVE_S_IFREG
+
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
@@ -739,6 +748,12 @@
 
 /* Define if you have the <string.h> header file.  */
 #undef HAVE_STRING_H
+
+/* Define if you have the <sys/filio.h> header file.  */
+#undef HAVE_SYS_FILIO_H
+
+/* Define if you have the <sys/ioctl.h> header file.  */
+#undef HAVE_SYS_IOCTL_H
 
 /* Define if you have the <sys/isa_defs.h> header file.  */
 #undef HAVE_SYS_ISA_DEFS_H
