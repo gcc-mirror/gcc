@@ -1,3 +1,13 @@
+2002-03-15  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/collate_members_char.cc
+	(test01): compare the result of collate::compare with
+	that of collate::transform + string::compare, not with
+	that of collate::transform + collate::compare.
+	(test01): values returned by collate::compare are
+	normalized, therefore test against +-1.
+	* testsuite/22_locale/collate_members_wchar_t.cc: Ditto.
+
 2002-03-12  Loren Rittle  <ljrittle@acm.org>
 
 	reported by Peter Schmid <schmid@snake.iap.physik.tu-darmstadt.de>
