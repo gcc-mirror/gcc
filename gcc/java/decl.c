@@ -311,7 +311,7 @@ static struct binding_level *global_binding_level;
 
 static struct binding_level clear_binding_level
   = {NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-       NULL_BINDING_LEVEL, 0, LARGEST_PC};
+       NULL_BINDING_LEVEL, LARGEST_PC, 0};
 
 #if 0
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
