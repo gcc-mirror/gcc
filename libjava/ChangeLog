@@ -1,3 +1,8 @@
+2001-06-14  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/3144:
+	* java/util/Date.java: Merged with Classpath.
+
 2001-06-12  Tom Tromey  <tromey@redhat.com>
 
 	* aclocal.m4, configure: Rebuilt.
