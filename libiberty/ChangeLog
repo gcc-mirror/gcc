@@ -1,3 +1,7 @@
+Tue May 30 15:07:52 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (objalloc.o): Depend on config.h
+
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* hashtab.c, partition.c, sort.c, xmemdup.c: Include string.h
