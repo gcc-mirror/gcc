@@ -15,13 +15,20 @@ details.  */
 #include <java/lang/System.h>
 #include <java/util/Properties.h>
 
-int main (int argc, const char **argv)
+// This is used to initialize the compiled-in system properties.
+const char *_Jv_Compiler_Properties[] =
+{
+  NULL
+};
+
+int
+main (int argc, const char **argv)
 {
   if (argc < 2)
     {
-      printf ("usage: %s <class name> args\n", argv[0]);
+      printf ("usage: %s CLASS [ARGS]...\n", argv[0]);
       exit (1);
     }
 
-  _Jv_RunMain (argv[1], argc-1, argv+1);
+  _Jv_RunMain (argv[1], argc - 1, argv + 1);
 }

@@ -1,5 +1,13 @@
 1999-10-15  Tom Tromey  <tromey@cygnus.com>
 
+	* gij.cc (main): Formatting fixes.
+	(_Jv_Compiler_Properties): Define.
+	* java/lang/natSystem.cc (_Jv_Environment_Properties): Don't
+	declare.
+	(init_properties): Set properites from _Jv_Compiler_Properties.
+	* include/java-props.h (_Jv_Compiler_Properties,
+	_Jv_Environment_Properties): Declare.
+
 	* include/java-props.h: Added copyright.
 
 1999-10-13  Anthony Green  <green@cygnus.com>
