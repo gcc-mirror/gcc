@@ -1,3 +1,31 @@
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* final.c (shorten_branches, final, get_insn_template,
+	output_alternate_entry_point, final_scan_insn, alter_subreg,
+	alter_cond, output_operand, asm_fprintf, final_forward_branch_p,
+	leaf_renumber_regs_insn): Use gcc_assert and gcc_unreachable.
+	* fix-header.c (lookup_std_proto): Likewise.
+	* flow.c (first_insn_after_basic_block_note, verify_wide_reg,
+	verify_local_live_at_start, update_life_info, mark_reg,
+	calculate_global_regs_live, allocate_reg_life_data,
+	init_propagate_block_info, mark_set_regs, flush_reg_cond_reg_1,
+	ior_reg_cond, not_reg_cond, and_reg_cond, elim_reg_cond,
+	attempt_auto_inc, mark_used_reg, mark_used_regs): Likewise.
+	* fold-const.c (force_fit_type, div_and_round_double,
+	may_negate_without_overflow_p, int_const_binop, const_binop,
+	size_binop, size_diffop, fold_convert_const, fold_convert,
+	invert_tree_comparison, swap_tree_comparison,
+	comparison_to_compcode, compcode_to_comparison, invert_truthvalue,
+	range_binop, make_range, fold_cond_expr_with_comparison,
+	fold_div_compare, fold, fold_checksum_tree, fold_negate_const,
+	fold_abs_const, fold_not_const, fold_relational_const, round_up,
+	round_down): Likewise.
+	* function.c (find_function_data, assign_stack_temp_for_type,
+	instantiate_virtual_regs_lossage, aggregate_value_p,
+	assign_parm_find_entry_rtl, assign_parm_setup_block,
+	expand_function_start, expand_function_end, keep_stack_depressed,
+	handle_epilogue_set, thread_prologue_and_epilogue_insns): Likewise.
+
 2004-09-08  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (tree-loop-linear.o): Added.
