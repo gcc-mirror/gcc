@@ -1,3 +1,8 @@
+2001-09-07  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* typeck.c (java_array_type_length, build_prim_array_type):
+	Represent empty arrays by NULL index.
+
 2001-09-06  Anthony Green  <green@redhat.com>
 
 	* class.c (O_BINARY): Define if necessary.

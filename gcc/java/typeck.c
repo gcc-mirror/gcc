@@ -353,9 +353,12 @@ java_array_type_length (array_type)
   if (arfld != NULL_TREE)
     {
       tree index_type = TYPE_DOMAIN (TREE_TYPE (arfld));
-      tree high = TYPE_MAX_VALUE (index_type);
-      if (TREE_CODE (high) == INTEGER_CST)
-	return TREE_INT_CST_LOW (high) + 1;
+      if (index_type != NULL_TREE)
+	{
+	  tree high = TYPE_MAX_VALUE (index_type);
+	  if (TREE_CODE (high) == INTEGER_CST)
+	    return TREE_INT_CST_LOW (high) + 1;
+	}
     }
   return -1;
 }
@@ -370,9 +373,15 @@ build_prim_array_type (element_type, length)
      tree element_type;
      HOST_WIDE_INT length;
 {
-  tree max_index = build_int_2 (length - 1, (0 == length ? -1 : 0));
-  TREE_TYPE (max_index) = sizetype;
-  return build_array_type (element_type, build_index_type (max_index));
+  tree index = NULL;
+
+  if (length != -1)
+    {
+      tree max_index = build_int_2 (length - 1, (0 == length ? -1 : 0));
+      TREE_TYPE (max_index) = sizetype;
+      index = build_index_type (max_index);
+    }
+  return build_array_type (element_type, index);
 }
 
 /* Return a Java array type with a given ELEMENT_TYPE and LENGTH.
