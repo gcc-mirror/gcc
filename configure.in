@@ -532,6 +532,9 @@ case "${host}" in
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv"
      noconfigdirs="expect dejagnu cvs autoconf automake send-pr gprof rcs guile perl texinfo apache inet libtool"
 	;;
+  i[3456]86-*-beos*)
+     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
+     ;;
   *-*-cygwin32)
      noconfigdirs="autoconf automake send-pr gprof rcs guile perl apache inet"
     ;;
@@ -546,6 +549,9 @@ case "${host}" in
     ;;
   ppc*-*-pe)
      noconfigdirs="patch diff make tk tcl expect dejagnu cvssrc autoconf automake texinfo bison send-pr gprof rcs guile perl apache inet itcl tix db snavigator gnuserv"
+  powerpc-*-beos*)
+    noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
+    ;;
     ;;
 esac
 
@@ -693,6 +699,9 @@ case "${target}" in
     # but that's okay since emacs doesn't work anyway
     noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss"
     ;;
+  i[3456]86-*-beos*)
+     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
+     ;;
   mn10200-*-*)
     noconfigdirs="$noconfigdirs"
     if [ x${is_cross_compiler} != xno ] ; then
@@ -723,6 +732,9 @@ case "${target}" in
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
     noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db snavigator gnuserv"
+    ;;
+  powerpc-*-beos*)
+    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
     ;;
   rs6000-*-lynxos*)
     # The CVS server code doesn't work on the RS/6000
