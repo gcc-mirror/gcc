@@ -7278,7 +7278,8 @@ build_vtbl_initializer (tree binfo,
   vid.ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
   vid.generate_vcall_entries = true;
   /* The first vbase or vcall offset is at index -3 in the vtable.  */
-  vid.index = ssize_int (-3 * TARGET_VTABLE_DATA_ENTRY_DISTANCE);
+  vid.index = build_int_cst (ssizetype,
+			     -3 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
 
   /* Add entries to the vtable for RTTI.  */
   build_rtti_vtbl_entries (binfo, &vid);
