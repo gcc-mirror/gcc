@@ -4234,7 +4234,15 @@ delete_labelref_insn (insn, label, delete_this)
 /* Like rtx_equal_p except that it considers two REGs as equal
    if they renumber to the same value and considers two commutative
    operations to be the same if the order of the operands has been
-   reversed.  */
+   reversed.
+
+   ??? Addition is not commutative on the PA due to the weird implicit
+   space register selection rules for memory addresses.  Therefore, we
+   don't consider a + b == b + a.
+
+   We could/should make this test a little tighter.  Possibly only
+   disabling it on the PA via some backend macro or only disabling this
+   case when the PLUS is inside a MEM.  */
 
 int
 rtx_renumbered_equal_p (x, y)
@@ -4342,8 +4350,11 @@ rtx_renumbered_equal_p (x, y)
     return 0;
 
   /* For commutative operations, the RTX match if the operand match in any
-     order.  Also handle the simple binary and unary cases without a loop.  */
-  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
+     order.  Also handle the simple binary and unary cases without a loop.
+
+     ??? Don't consider PLUS a commutative operator; see comments above.  */
+  if ((code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
+      && code != PLUS)
     return ((rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0))
 	     && rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 1)))
 	    || (rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 1))

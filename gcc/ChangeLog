@@ -1,3 +1,7 @@
+Thu Aug 20 19:43:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (rtx_renumbered_equal_p): Do not consider PLUS commutative.
+
 Thu Aug 20 17:35:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movtf_insn_sp32): All memory operands
