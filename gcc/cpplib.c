@@ -7656,7 +7656,7 @@ cpp_message_from_errno (pfile, is_error, name)
   if (ip != NULL)
     cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
 
-  cpp_message (pfile, is_error, "%s: %s", name, my_strerror (e), "");
+  cpp_message (pfile, is_error, "%s: %s", name, my_strerror (e));
 }
 
 void

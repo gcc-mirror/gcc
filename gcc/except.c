@@ -792,7 +792,8 @@ void remove_handler (removing_label)
    currently exist in all regions. */
 
 int 
-find_all_handler_type_matches (void ***array)
+find_all_handler_type_matches (array)
+  void ***array;
 {
   struct handler_info *handler, *last;
   int x,y;

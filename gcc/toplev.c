@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #endif
 
-#ifdef DBX_DEBUGGING_INFO
+#if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
 #endif
 

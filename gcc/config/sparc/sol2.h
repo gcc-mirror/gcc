@@ -107,7 +107,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*.L%s%d", PREFIX, NUM)
+  sprintf ((LABEL), "*.L%s%ld", (PREFIX), (long)(NUM))
 
 
 /* We don't use the standard svr4 STARTFILE_SPEC because it's wrong for us.

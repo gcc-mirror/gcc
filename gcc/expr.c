@@ -8769,7 +8769,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  tree dest = TREE_VALUE (arglist);
 	  tree src = TREE_VALUE (TREE_CHAIN (arglist));
 	  tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-	  tree type;
 
 	  int src_align
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
@@ -8830,7 +8829,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  tree dest = TREE_VALUE (arglist);
 	  tree val = TREE_VALUE (TREE_CHAIN (arglist));
 	  tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-	  tree type;
 
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;

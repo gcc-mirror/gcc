@@ -1683,7 +1683,7 @@ extern int gen_v9_scc ();
    the assembler).  */
 
 #define ASM_DECLARE_RESULT(FILE, RESULT) \
-  fprintf ((FILE), "\t.proc\t0%o\n", sparc_type_code (TREE_TYPE (RESULT)))
+  fprintf ((FILE), "\t.proc\t0%lo\n", sparc_type_code (TREE_TYPE (RESULT)))
 
 /* Output the label for a function definition.  */
 
@@ -2245,16 +2245,16 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    has been allocated, which happens in local-alloc.c.  */
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
-((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32U)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < (unsigned)32)
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32U)
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < (unsigned)32)
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((unsigned) (REGNO) - 32 < (TARGET_V9 ? 64U : 32U)) \
-   || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? 64U : 32U)))
+  (((unsigned) (REGNO) - 32 < (TARGET_V9 ? (unsigned)64 : (unsigned)32)) \
+   || ((unsigned) reg_renumber[REGNO] - 32 < (TARGET_V9 ? (unsigned)64 : (unsigned)32)))
 #define REGNO_OK_FOR_CCFP_P(REGNO) \
  (TARGET_V9 \
-  && (((unsigned) (REGNO) - 96 < 4U) \
-      || ((unsigned) reg_renumber[REGNO] - 96 < 4U)))
+  && (((unsigned) (REGNO) - 96 < (unsigned)4) \
+      || ((unsigned) reg_renumber[REGNO] - 96 < (unsigned)4)))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -2888,7 +2888,7 @@ extern struct rtx_def *legitimize_pic_address ();
    This is suitable for output with `assemble_name'.  */
 
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
-  sprintf (LABEL, "*%s%d", PREFIX, NUM)
+  sprintf ((LABEL), "*%s%ld", (PREFIX), (long)(NUM))
 
 /* This is how to output an assembler line defining a `float' constant.
    We always have to use a .long pseudo-op to do this because the native

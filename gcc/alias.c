@@ -54,7 +54,7 @@ static rtx find_base_value		PROTO((rtx));
    && (MEM_ALIAS_SET (MEM1) || MEM_ALIAS_SET (MEM2))	\
    ? (abort (), 0) : 0)
 #else 
-#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2) 0
+#define CHECK_ALIAS_SETS_FOR_CONSISTENCY(MEM1, MEM2) ((void)0)
 #endif
 
 /* Returns nonzero if MEM1 and MEM2 do not alias because they are in

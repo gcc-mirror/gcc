@@ -718,7 +718,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		}
 	    }
 	}
-      else if (note = find_reg_note (insn, REG_LABEL, NULL_RTX))
+      else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)))
 	set_label_in_map (map, CODE_LABEL_NUMBER (XEXP (note, 0)),
 			  XEXP (note, 0));
     }
