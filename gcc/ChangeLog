@@ -1,3 +1,7 @@
+2001-07-31  Jeff Sturm  <jsturm@one-point.com>
+
+        * except.c (duplicate_eh_regions): Test n_array[i] for NULL.
+
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.md: Replace all general_operand with

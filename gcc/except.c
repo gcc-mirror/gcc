@@ -1448,7 +1448,7 @@ duplicate_eh_regions (ifun, map)
 	cur->inner = root;
 
       for (i = 1; i <= ifun_last_region_number; ++i)
-	if (n_array[i]->outer == NULL)
+	if (n_array[i] && n_array[i]->outer == NULL)
 	  n_array[i]->outer = cur;
     }
   else
