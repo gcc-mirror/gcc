@@ -124,6 +124,7 @@ extern void ggc_mark_roots		PARAMS ((void));
 /* Save and restore the string pool entries for PCH.  */
 
 extern void gt_pch_save_stringpool	PARAMS ((void));
+extern void gt_pch_fixup_stringpool     PARAMS ((void));
 extern void gt_pch_restore_stringpool	PARAMS ((void));
 
 /* PCH and GGC handling for strings, mostly trivial.  */

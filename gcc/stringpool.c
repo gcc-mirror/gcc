@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "hashtable.h"
+#include "cpplib.h"
 
 /* The "" allocated string.  */
 const char empty_string[] = "";
@@ -50,6 +51,7 @@ static struct obstack string_stack;
 
 static hashnode alloc_node PARAMS ((hash_table *));
 static int mark_ident PARAMS ((struct cpp_reader *, hashnode, const PTR));
+static int ht_copy_and_clear PARAMS ((struct cpp_reader *, hashnode, const void *));
 
 /* Initialize the string pool.  */
 void
@@ -214,6 +216,33 @@ struct string_pool_data GTY(())
 
 static GTY(()) struct string_pool_data * spd;
 
+static int 
+ht_copy_and_clear (r, hp, ht2_p)
+     cpp_reader *r ATTRIBUTE_UNUSED;
+     hashnode hp;
+     const void *ht2_p;
+{
+  cpp_hashnode *h = CPP_HASHNODE (hp);
+  struct ht *ht2 = (struct ht *) ht2_p;
+
+  if (h->type != NT_VOID
+      && (h->flags & NODE_BUILTIN) == 0)
+    {
+      cpp_hashnode *h2 = CPP_HASHNODE (ht_lookup (ht2,
+						  NODE_NAME (h),
+						  NODE_LEN (h),
+						  HT_ALLOC));
+      h2->type = h->type;
+      memcpy (&h2->value, &h->value, sizeof (h->value));
+
+      h->type = NT_VOID;
+      memset (&h->value, 0, sizeof (h->value));
+    }
+  return 1;
+}
+
+static struct ht *saved_ident_hash;
+
 void
 gt_pch_save_stringpool ()
 {
@@ -228,6 +257,18 @@ gt_pch_save_stringpool ()
       spd->entries[i] = HT_IDENT_TO_GCC_IDENT (ident_hash->entries[i]);
     else
       spd->entries[i] = NULL;
+
+  saved_ident_hash = ht_create (14);
+  saved_ident_hash->alloc_node = alloc_node;
+  ht_forall (ident_hash, ht_copy_and_clear, saved_ident_hash);
+}
+
+void
+gt_pch_fixup_stringpool ()
+{
+  ht_forall (saved_ident_hash, ht_copy_and_clear, ident_hash);
+  ht_destroy (saved_ident_hash);
+  saved_ident_hash = 0;
 }
 
 void
