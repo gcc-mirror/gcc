@@ -1,3 +1,7 @@
+2002-07-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/escaped-nl.c: New test.
+
 2002-06-30  Devang Patel  <dpatel@apple.com>
 
 	* objc.dg/fsyntax-only.m: New test.
