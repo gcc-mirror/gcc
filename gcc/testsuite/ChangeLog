@@ -1,3 +1,7 @@
+2001-01-15  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/compile/20010115.f: New test.
+
 2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/nontype5.C: New test.
