@@ -884,6 +884,11 @@ and later return that value, without knowing what data type
 the function tried to return (as long as your caller expects
 that data type).
 
+However, these built-in functions may interact badly with some
+sophisticated features or other extensions of the language.  It
+is, therefore, not recommended to use them outside very simple
+functions acting as mere forwarders for their arguments.
+
 @deftypefn {Built-in Function} {void *} __builtin_apply_args ()
 This built-in function returns a pointer to data
 describing how to perform a call with the same arguments as were passed
