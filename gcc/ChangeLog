@@ -1,3 +1,9 @@
+2003-08-08  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* configure.in (gcc_cv_prog_cmp_skip): Flipflop make_compare_target
+	and gcc_cv_prog_cmp_skip. 
+	* configure: Regenerate.
+
 2003-08-08  Stan Cox  <scox@redhat.com>
 
 	* config/iq2000: New port.

@@ -2702,19 +2702,19 @@ else
   echo cdfoo >t2
   if cmp --ignore-initial=2 t1 t2 > /dev/null 2>&1; then
     if cmp --ignore-initial=1 t1 t2 > /dev/null 2>&1; then
-      make_compare_target=slowcompare
+      gcc_cv_prog_cmp_skip=slowcompare
     else
-      make_compare_target=gnucompare
+      gcc_cv_prog_cmp_skip=gnucompare
     fi
   else
-    make_compare_target=slowcompare
+    gcc_cv_prog_cmp_skip=slowcompare
   fi
   rm t1 t2
-  gcc_cv_prog_cmp_skip=$make_compare_target
 
 fi
 
 echo "$ac_t""$gcc_cv_prog_cmp_skip" 1>&6
+make_compare_target=$gcc_cv_prog_cmp_skip
 
 
 # How about lex?
