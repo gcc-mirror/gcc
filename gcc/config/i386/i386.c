@@ -72,14 +72,14 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   40					/* cost of a divide/mod */
 };
 
-struct processor_costs pentium_cost = {	/* 486 specific costs */
+struct processor_costs pentium_cost = {
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
   3,					/* variable shift costs */
-  2,					/* constant shift costs */
+  1,					/* constant shift costs */
   12,					/* cost of starting a multiply */
   1,					/* cost of multiply per each bit set */
-  40					/* cost of a divide/mod */
+  25					/* cost of a divide/mod */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;
@@ -1674,6 +1674,31 @@ ix86_unary_operator_ok (code, mode, operands)
 }
 
 
+
+static rtx pic_label_rtx;
+
+/* This function generates code for -fpic that loads %ebx with
+   with the return address of the caller and then returns.  */
+void
+asm_output_function_prefix (file, name)
+    FILE * file;
+    char * name;
+{
+  rtx xops[2];
+  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool);
+  xops[0] = pic_offset_table_rtx;
+  xops[1] = stack_pointer_rtx;
+
+  if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
+    {
+      pic_label_rtx = (rtx) gen_label_rtx ();
+      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (pic_label_rtx));
+      output_asm_insn ("movl (%1),%0", xops);
+      output_asm_insn ("ret", xops);
+    }
+}
+
 /* This function generates the assembly code for function entry.
    FILE is an stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate. */
@@ -1719,16 +1744,23 @@ function_prologue (file, size)
 	output_asm_insn ("push%L0 %0", xops);
       }
 
-  if (pic_reg_used)
+  if (pic_reg_used && TARGET_PENTIUMPRO)
     {
       xops[0] = pic_offset_table_rtx;
-      xops[1] = (rtx) gen_label_rtx ();
+      xops[1] = pic_label_rtx;
 
       output_asm_insn (AS1 (call,%P1), xops);
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
-      output_asm_insn (AS1 (pop%L0,%0), xops);
-      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
     }
+  else {
+    xops[0] = pic_offset_table_rtx;
+    xops[1] = (rtx) gen_label_rtx ();
+ 
+    output_asm_insn (AS1 (call,%P1), xops);
+    ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
+    output_asm_insn (AS1 (pop%L0,%0), xops);
+    output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+  } 
 }
 
 /* Return 1 if it is appropriate to emit `ret' instructions in the
@@ -2526,9 +2558,53 @@ output_pic_addr_const (file, x, code)
     }
 }
 
+
+/* Append the correct conditional move suffix which corresponds to CODE */
+
+static void
+put_condition_code (code, file)
+    enum rtx_code code;
+    FILE * file;
+{
+  switch (code)
+    {
+      case NE: 
+	  if (cc_prev_status.flags & CC_Z_IN_NOT_C)
+	    fputs ("b", file);
+	  else
+	    fputs ("ne", file);
+	  return;
+      case EQ: 
+	  if (cc_prev_status.flags & CC_Z_IN_NOT_C)
+	    fputs ("ae", file);
+	  else
+	    fputs ("e", file);
+	  return;
+      case GE: 
+	  fputs ("ge", file); return;
+      case GT: 
+	  fputs ("g", file); return;
+      case LE: 
+	  fputs ("le", file); return;
+      case LT: 
+	  fputs ("l", file); return;
+      case GEU: 
+	  fputs ("ae", file); return;
+      case GTU: 
+	  fputs ("a", file); return;
+      case LEU: 
+	  fputs ("be", file); return;
+      case LTU: 
+	  fputs ("b", file); return;
+      default: output_operand_lossage ("Invalid %%C operand");
+    }
+}
+
 /* Meaning of CODE:
    f -- float insn (print a CONST_DOUBLE as a float rather than in hex).
    D,L,W,B,Q,S -- print the opcode suffix for specified size of operand.
+   C -- print opcode suffix for set/cmov insn.
+   N -- like C, but print reversed condition
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
@@ -2650,6 +2726,15 @@ print_operand (file, x, code)
 	    /* no matching branches for GT nor LE */
 	    }
 	  abort ();
+
+      /* This is used by the conditional move instructions.  */
+    case 'C':
+	put_condition_code (GET_CODE (x), file);
+	return;
+      /* like above but reverse condition */
+    case 'N':
+	put_condition_code (reverse_condition (GET_CODE (x)), file);
+	return;
 
 	default:
 	  {
@@ -4396,7 +4481,7 @@ output_strlen_unroll (operands)
 
   if (QI_REG_P (xops[1]))
     {
-	/* on i586 it is faster to compare the hi- and lo- part */
+ 	/* on i586 it is faster to compare the hi- and lo- part */
 	/* as a kind of lookahead.  If xoring both is zero, then one */
 	/* of both *could* be zero, otherwith none of both is zero */
 	/* this saves one instruction, on i486 this is slower */
