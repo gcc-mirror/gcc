@@ -1,3 +1,8 @@
+2003-06-04  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_complex_function_value): Unpack
+        complex numbers <= 32 bits into two registers.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c (print_operand_address): Fix format specifier warnings.

@@ -14452,7 +14452,8 @@ rs6000_complex_function_value (enum machine_mode mode)
       regno = GP_ARG_RETURN;
 
       /* 32-bit is OK since it'll go in r3/r4.  */
-      if (TARGET_32BIT)
+      if (TARGET_32BIT
+	  && GET_MODE_BITSIZE (inner) >= 32)
 	return gen_rtx_REG (mode, regno);
     }
 
