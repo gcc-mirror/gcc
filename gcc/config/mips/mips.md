@@ -830,7 +830,8 @@
   [(set (match_operand:SI 0 "register_operand" "=l")
 	(mult:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   ""
   "
 {
@@ -847,7 +848,8 @@
   [(set (match_operand:SI 0 "register_operand" "=l")
 	(mult:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
-   (clobber (match_scratch:SI 3 "=h"))]
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "mips_cpu != PROCESSOR_R4000"
   "mult\\t%1,%2"
   [(set_attr "type"	"imul")
@@ -859,7 +861,8 @@
 	(mult:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_scratch:SI 3 "=h"))
-   (clobber (match_scratch:SI 4 "=l"))]
+   (clobber (match_scratch:SI 4 "=l"))
+   (clobber (match_scratch:SI 5 "=a"))]
   "mips_cpu == PROCESSOR_R4000"
   "*
 {
@@ -881,7 +884,8 @@
 	(mult:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_scratch:SI 3 "=h"))
-   (clobber (match_scratch:SI 4 "=l"))]
+   (clobber (match_scratch:SI 4 "=l"))
+   (clobber (match_scratch:SI 5 "=a"))]
   "TARGET_MAD"
   "mul\\t%0,%1,%2"
   [(set_attr "type"	"imul")
@@ -892,7 +896,8 @@
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(mult:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))]
+   (clobber (match_scratch:DI 3 "=h"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT"
   "
 {
@@ -907,7 +912,8 @@
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(mult:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "register_operand" "d")))
-   (clobber (match_scratch:DI 3 "=h"))]
+   (clobber (match_scratch:DI 3 "=h"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && mips_cpu != PROCESSOR_R4000"
   "dmult\\t%1,%2"
   [(set_attr "type"	"imul")
@@ -919,7 +925,8 @@
 	(mult:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "register_operand" "d")))
    (clobber (match_scratch:DI 3 "=h"))
-   (clobber (match_scratch:DI 4 "=l"))]
+   (clobber (match_scratch:DI 4 "=l"))
+   (clobber (match_scratch:DI 5 "=a"))]
   "TARGET_64BIT && mips_cpu == PROCESSOR_R4000"
   "*
 {
@@ -936,18 +943,40 @@
    (set_attr "mode"	"DI")
    (set_attr "length"	"3")])		;; mult + mflo + delay
 
-;; In 64 bit mode the mult instruction still writes 32 bits each to HI
-;; and LO, so to do mulsidi3 and umultsidi3 we need to pull the values
-;; out and combine them by hand into the single output register.  Not
-;; supported for now.
-
 ;; ??? We could define a mulditi3 pattern when TARGET_64BIT.
 
-(define_insn "mulsidi3"
+(define_expand "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
+  ""
+  "
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_mulsidi3_64bit (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_mulsidi3_internal (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "mulsidi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))
+   (clobber (match_scratch:SI 3 "=a"))]
   "!TARGET_64BIT"
+  "mult\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn "mulsidi3_64bit"
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
+		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=h"))]
+  "TARGET_64BIT"
   "mult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
@@ -959,18 +988,46 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
 			       (sign_extend:DI (match_operand:SI 2 "register_operand" "d")))
 		      (const_int 32))))
-   (clobber (match_scratch:SI 3 "=l"))]
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   ""
   "mult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
 
-(define_insn "umulsidi3"
+(define_expand "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))]
+  ""
+  "
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_umulsidi3_64bit (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_umulsidi3_internal (operands[0], operands[1], operands[2]));
+  DONE;
+}")
+
+(define_insn "umulsidi3_internal"
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))
+   (clobber (match_scratch:SI 3 "=a"))]
   "!TARGET_64BIT"
+  "multu\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+(define_insn "umulsidi3_64bit"
+  [(set (match_operand:DI 0 "register_operand" "=a")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
+		 (zero_extend:DI (match_operand:SI 2 "register_operand" "d"))))
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=h"))]
+  "TARGET_64BIT"
   "multu\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
@@ -982,7 +1039,8 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "d"))
 			       (zero_extend:DI (match_operand:SI 2 "register_operand" "d")))
 		      (const_int 32))))
-   (clobber (match_scratch:SI 3 "=l"))]
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   ""
   "multu\\t%1,%2"
   [(set_attr "type"	"imul")
@@ -995,7 +1053,8 @@
 	 (lshiftrt:TI (mult:TI (sign_extend:TI (match_operand:DI 1 "register_operand" "d"))
 			       (sign_extend:TI (match_operand:DI 2 "register_operand" "d")))
 		      (const_int 64))))
-   (clobber (match_scratch:DI 3 "=l"))]
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT"
   "dmult\\t%1,%2"
   [(set_attr "type"	"imul")
@@ -1008,7 +1067,8 @@
 	 (lshiftrt:TI (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "d"))
 			       (zero_extend:TI (match_operand:DI 2 "register_operand" "d")))
 		      (const_int 64))))
-   (clobber (match_scratch:DI 3 "=l"))]
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT"
   "dmultu\\t%1,%2"
   [(set_attr "type"	"imul")
@@ -1023,16 +1083,13 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
 			  (match_operand:SI 2 "register_operand" "d"))
 		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "=h"))]
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_MAD"
   "mad\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
-
-;; ??? We can only refer to HI/LO as a register pair when not
-;; compiling 64 bit code.  That's because we don't know how to extract
-;; the two 32 bit values into a single 64 bit register.
 
 (define_insn "maddi"
   [(set (match_operand:DI 0 "register_operand" "+x")
@@ -1040,8 +1097,24 @@
 			   (match_operand:SI 1 "register_operand" "d"))
 			  (sign_extend:DI
 			   (match_operand:SI 2 "register_operand" "d")))
-		 (match_dup 0)))]
+		 (match_dup 0)))
+   (clobber (match_scratch:SI 3 "=a"))]
   "TARGET_MAD && ! TARGET_64BIT"
+  "mad\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"   "1")])
+
+(define_insn "maddi_64bit"
+  [(set (match_operand:DI 0 "register_operand" "+a")
+	(plus:DI (mult:DI (sign_extend:DI
+			   (match_operand:SI 1 "register_operand" "d"))
+			  (sign_extend:DI
+			   (match_operand:SI 2 "register_operand" "d")))
+		 (match_dup 0)))
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=h"))]
+  "TARGET_MAD && TARGET_64BIT"
   "mad\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
@@ -1053,8 +1126,24 @@
 			   (match_operand:SI 1 "register_operand" "d"))
 			  (zero_extend:DI
 			   (match_operand:SI 2 "register_operand" "d")))
-		 (match_dup 0)))]
+		 (match_dup 0)))
+   (clobber (match_scratch:SI 3 "=a"))]
   "TARGET_MAD && ! TARGET_64BIT"
+  "madu\\t%1,%2"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"SI")
+   (set_attr "length"   "1")])
+
+(define_insn "umaddi_64bit"
+  [(set (match_operand:DI 0 "register_operand" "+a")
+	(plus:DI (mult:DI (zero_extend:DI
+			   (match_operand:SI 1 "register_operand" "d"))
+			  (zero_extend:DI
+			   (match_operand:SI 2 "register_operand" "d")))
+		 (match_dup 0)))
+   (clobber (match_scratch:DI 3 "=l"))
+   (clobber (match_scratch:DI 4 "=h"))]
+  "TARGET_MAD && TARGET_64BIT"
   "madu\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
@@ -1200,7 +1289,8 @@
 	(mod:SI (match_dup 1)
 		(match_dup 2)))
    (clobber (match_scratch:SI 4 "=l"))
-   (clobber (match_scratch:SI 5 "=h"))]
+   (clobber (match_scratch:SI 5 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "optimize"
   "*
 {
@@ -1224,7 +1314,8 @@
 	(mod:DI (match_dup 1)
 		(match_dup 2)))
    (clobber (match_scratch:DI 4 "=l"))
-   (clobber (match_scratch:DI 5 "=h"))]
+   (clobber (match_scratch:DI 5 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && optimize"
   "*
 {
@@ -1248,7 +1339,8 @@
 	(umod:SI (match_dup 1)
 		 (match_dup 2)))
    (clobber (match_scratch:SI 4 "=l"))
-   (clobber (match_scratch:SI 5 "=h"))]
+   (clobber (match_scratch:SI 5 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "optimize"
   "*
 {
@@ -1272,7 +1364,8 @@
 	(umod:DI (match_dup 1)
 		 (match_dup 2)))
    (clobber (match_scratch:DI 4 "=l"))
-   (clobber (match_scratch:DI 5 "=h"))]
+   (clobber (match_scratch:DI 5 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && optimize"
   "*
 {
@@ -1293,7 +1386,8 @@
 	(div:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))]
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
   "div\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1305,7 +1399,8 @@
 	(div:DI (match_operand:DI 1 "register_operand" "d")
 		(match_operand:DI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
+   (clobber (match_scratch:DI 4 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
   "ddiv\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1317,7 +1412,8 @@
 	(mod:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))]
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
   "rem\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1329,7 +1425,8 @@
 	(mod:DI (match_operand:DI 1 "register_operand" "d")
 		(match_operand:DI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
+   (clobber (match_scratch:DI 4 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
   "drem\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1341,7 +1438,8 @@
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))]
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
   "divu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1353,7 +1451,8 @@
 	(udiv:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
+   (clobber (match_scratch:DI 4 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
   "ddivu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1365,7 +1464,8 @@
 	(umod:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))]
+   (clobber (match_scratch:SI 4 "=h"))
+   (clobber (match_scratch:SI 6 "=a"))]
   "!optimize"
   "remu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -1377,7 +1477,8 @@
 	(umod:DI (match_operand:DI 1 "register_operand" "d")
 		 (match_operand:DI 2 "nonmemory_operand" "di")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))]
+   (clobber (match_scratch:DI 4 "=h"))
+   (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && !optimize"
   "dremu\\t%0,%1,%2"
   [(set_attr "type"	"idiv")
@@ -2925,18 +3026,149 @@ move\\t%0,%z4\\n\\
   "")
 
 (define_insn "movdi_internal2"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*x")
-	(match_operand:DI 1 "general_operand" " d,S,IKL,Mnis,R,m,dJ,dJ,*x,*d"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*x,*a")
+	(match_operand:DI 1 "general_operand" " d,S,IKL,Mnis,R,m,dJ,dJ,*x,*d,*I"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
        || operands[1] == CONST0_RTX (DImode))"
   "* return mips_move_2words (operands, insn); "
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,hilo,hilo,hilo")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,2")])
 
+;; Handle input reloads in DImode.
+;; This is mainly to handle reloading HILO_REGNUM.  Note that we may
+;; see it as the source or the destination, depending upon which way
+;; reload handles the instruction.
+;; Making the second operand TImode is a trick.  The compiler may
+;; reuse the same register for operand 0 and operand 2.  Using TImode
+;; gives us two registers, so we can always use the one which is not
+;; used.
+
+(define_expand "reload_indi"
+  [(set (match_operand:DI 0 "register_operand" "=b")
+	(match_operand:DI 1 "general_operand" "b"))
+   (clobber (match_operand:TI 2 "register_operand" "=&d"))]
+  "TARGET_64BIT"
+  "
+{
+  rtx scratch = gen_rtx (REG, DImode,
+			 (REGNO (operands[0]) == REGNO (operands[2]) 
+			  ? REGNO (operands[2]) + 1
+			  : REGNO (operands[2])));
+
+  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == HILO_REGNUM)
+    {
+      if (GET_CODE (operands[1]) == MEM)
+	{
+	  rtx memword, offword, hiword, loword;
+
+	  scratch = gen_rtx (REG, SImode, REGNO (scratch));
+	  memword = change_address (operands[1], SImode, NULL_RTX);
+	  offword = change_address (adj_offsettable_operand (operands[1], 4),
+				    SImode, NULL_RTX);
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      hiword = memword;
+	      loword = offword;
+	    }
+	  else
+	    {
+	      hiword = offword;
+	      loword = memword;
+	    }
+	  emit_move_insn (scratch, hiword);
+	  emit_move_insn (gen_rtx (REG, SImode, 64), scratch);
+	  emit_move_insn (scratch, loword);
+	  emit_move_insn (gen_rtx (REG, SImode, 65), scratch);
+	}
+      else
+	{
+	  emit_insn (gen_ashrdi3 (scratch, operands[1], GEN_INT (32)));
+	  emit_insn (gen_movdi (gen_rtx (REG, DImode, 64), scratch));
+	  emit_insn (gen_ashldi3 (scratch, operands[1], GEN_INT (32)));
+	  emit_insn (gen_ashrdi3 (scratch, scratch, GEN_INT (32)));
+	  emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), scratch));
+	}
+      DONE;
+    }
+  if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == HILO_REGNUM)
+    {
+      emit_insn (gen_movdi (scratch, gen_rtx (REG, DImode, 65)));
+      emit_insn (gen_ashldi3 (scratch, scratch, GEN_INT (32)));
+      emit_insn (gen_lshrdi3 (scratch, scratch, GEN_INT (32)));
+      emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
+      emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
+      emit_insn (gen_iordi3 (operands[0], operands[0], scratch));
+      DONE;
+    }
+  /* This handles moves between a float register and HI/LO.  */
+  emit_move_insn (scratch, operands[1]);
+  emit_move_insn (operands[0], scratch);
+  DONE;
+}")
+
+;; Handle output reloads in DImode.
+
+(define_expand "reload_outdi"
+  [(set (match_operand:DI 0 "general_operand" "=b")
+	(match_operand:DI 1 "register_operand" "b"))
+   (clobber (match_operand:DI 2 "register_operand" "=&d"))]
+  "TARGET_64BIT"
+  "
+{
+  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == HILO_REGNUM)
+    {
+      emit_insn (gen_ashrdi3 (operands[2], operands[1], GEN_INT (32)));
+      emit_insn (gen_movdi (gen_rtx (REG, DImode, 64), operands[2]));
+      emit_insn (gen_ashldi3 (operands[2], operands[1], GEN_INT (32)));
+      emit_insn (gen_ashrdi3 (operands[2], operands[2], GEN_INT (32)));
+      emit_insn (gen_movdi (gen_rtx (REG, DImode, 65), operands[2]));
+      DONE;
+    }
+  if (GET_CODE (operands[1]) == REG && REGNO (operands[1]) == HILO_REGNUM)
+    {
+      if (GET_CODE (operands[0]) == MEM)
+	{
+	  rtx scratch, memword, offword, hiword, loword;
+
+	  scratch = gen_rtx (REG, SImode, REGNO (operands[2]));
+	  memword = change_address (operands[0], SImode, NULL_RTX);
+	  offword = change_address (adj_offsettable_operand (operands[0], 4),
+				    SImode, NULL_RTX);
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      hiword = memword;
+	      loword = offword;
+	    }
+	  else
+	    {
+	      hiword = offword;
+	      loword = memword;
+	    }
+	  emit_move_insn (scratch, gen_rtx (REG, SImode, 64));
+	  emit_move_insn (hiword, scratch);
+	  emit_move_insn (scratch, gen_rtx (REG, SImode, 65));
+	  emit_move_insn (loword, scratch);
+	}
+      else
+	{
+	  emit_insn (gen_movdi (operands[2], gen_rtx (REG, DImode, 65)));
+	  emit_insn (gen_ashldi3 (operands[2], operands[2], GEN_INT (32)));
+	  emit_insn (gen_lshrdi3 (operands[2], operands[2], GEN_INT (32)));
+	  emit_insn (gen_movdi (operands[0], gen_rtx (REG, DImode, 64)));
+	  emit_insn (gen_ashldi3 (operands[0], operands[0], GEN_INT (32)));
+	  emit_insn (gen_iordi3 (operands[0], operands[0], operands[2]));
+	}
+      DONE;
+    }
+  /* This handles moves between a float register and HI/LO.  */
+  emit_move_insn (operands[2], operands[1]);
+  emit_move_insn (operands[0], operands[2]);
+  DONE;
+}")
 
 ;; 32-bit Integer moves
 
@@ -3011,29 +3243,51 @@ move\\t%0,%z4\\n\\
 ;; in FP registers (off by default, use -mdebugh to enable).
 
 (define_insn "movsi_internal1"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*d")
-	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,*d,*x"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*f*z,*f,*f,*f,*R,*m,*x,*x,*d,*d")
+	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*f*z,*d,*f,*R,*m,*f,*f,I,*d,*x,*a"))]
   "TARGET_DEBUG_H_MODE
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo,hilo,hilo")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1,2,1,2,1,1,1,1")])
 
 (define_insn "movsi_internal2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*d,*x")
-	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,*x,*d"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*z,*x,*d,*x,*d")
+	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*z,*d,I,*x,*d,*a"))]
   "!TARGET_DEBUG_H_MODE
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode)
        || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
   "* return mips_move_1word (operands, insn, FALSE);"
-  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo")
+  [(set_attr "type"	"move,load,arith,arith,load,load,store,store,xfer,xfer,hilo,hilo,hilo,hilo")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1")])
+   (set_attr "length"	"1,2,1,2,1,2,1,2,1,1,1,1,1,1")])
 
+;; Reload HILO_REGNUM in SI mode.  This needs a scratch register in
+;; order to set the sign bit correctly in the HI register.
+
+(define_expand "reload_outsi"
+  [(set (match_operand:SI 0 "general_operand" "=b")
+	(match_operand:SI 1 "register_operand" "d"))
+   (clobber (match_operand:SI 2 "register_operand" "=&d"))]
+  "TARGET_64BIT"
+  "
+{
+  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == HILO_REGNUM)
+    {
+      emit_insn (gen_movsi (gen_rtx (REG, SImode, 65), operands[1]));
+      emit_insn (gen_ashrsi3 (operands[2], operands[1], GEN_INT (31)));
+      emit_insn (gen_movsi (gen_rtx (REG, SImode, 64), operands[2]));
+      DONE;
+    }
+  /* This handles moves between a float register and HI/LO.  */
+  emit_move_insn (operands[2], operands[1]);
+  emit_move_insn (operands[0], operands[2]);
+  DONE;
+}")
 
 ;; 16-bit Integer moves
 
@@ -4201,7 +4455,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_ne"
   [(set (pc)
-	(if_then_else (ne:CC_FP (reg:CC_FP 66)
+	(if_then_else (ne:CC_FP (reg:CC_FP 67)
 				(const_int 0))
 		      (match_operand 0 "pc_or_label_operand" "")
 		      (match_operand 1 "pc_or_label_operand" "")))]
@@ -4217,7 +4471,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_ne_rev"
   [(set (pc)
-	(if_then_else (ne:CC_REV_FP (reg:CC_REV_FP 66)
+	(if_then_else (ne:CC_REV_FP (reg:CC_REV_FP 67)
 				    (const_int 0))
 		      (match_operand 0 "pc_or_label_operand" "")
 		      (match_operand 1 "pc_or_label_operand" "")))]
@@ -4233,7 +4487,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_eq"
   [(set (pc)
-	(if_then_else (eq:CC_FP (reg:CC_FP 66)
+	(if_then_else (eq:CC_FP (reg:CC_FP 67)
 				(const_int 0))
 		      (match_operand 0 "pc_or_label_operand" "")
 		      (match_operand 1 "pc_or_label_operand" "")))]
@@ -4249,7 +4503,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "branch_fp_eq_rev"
   [(set (pc)
-	(if_then_else (eq:CC_REV_FP (reg:CC_REV_FP 66)
+	(if_then_else (eq:CC_REV_FP (reg:CC_REV_FP 67)
 				    (const_int 0))
 		      (match_operand 0 "pc_or_label_operand" "")
 		      (match_operand 1 "pc_or_label_operand" "")))]
@@ -5285,7 +5539,7 @@ move\\t%0,%z4\\n\\
 ;;  ....................
 
 (define_insn "seq_df"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(eq:CC_FP (match_operand:DF 0 "register_operand" "f")
 		  (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5303,7 +5557,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sne_df"
-  [(set (reg:CC_REV_FP 66)
+  [(set (reg:CC_REV_FP 67)
 	(ne:CC_REV_FP (match_operand:DF 0 "register_operand" "f")
 		      (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5321,7 +5575,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "slt_df"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(lt:CC_FP (match_operand:DF 0 "register_operand" "f")
 		  (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5339,7 +5593,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sle_df"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(le:CC_FP (match_operand:DF 0 "register_operand" "f")
 		  (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5357,7 +5611,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sgt_df"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(gt:CC_FP (match_operand:DF 0 "register_operand" "f")
 		  (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5375,7 +5629,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sge_df"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(ge:CC_FP (match_operand:DF 0 "register_operand" "f")
 		  (match_operand:DF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
@@ -5393,7 +5647,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "seq_sf"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(eq:CC_FP (match_operand:SF 0 "register_operand" "f")
 		  (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -5411,7 +5665,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sne_sf"
-  [(set (reg:CC_REV_FP 66)
+  [(set (reg:CC_REV_FP 67)
 	(ne:CC_REV_FP (match_operand:SF 0 "register_operand" "f")
 		      (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -5429,7 +5683,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "slt_sf"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(lt:CC_FP (match_operand:SF 0 "register_operand" "f")
 		  (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -5447,7 +5701,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sle_sf"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(le:CC_FP (match_operand:SF 0 "register_operand" "f")
 		  (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -5465,7 +5719,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sgt_sf"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(gt:CC_FP (match_operand:SF 0 "register_operand" "f")
 		  (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -5483,7 +5737,7 @@ move\\t%0,%z4\\n\\
   (set_attr "length"	"1")])
 
 (define_insn "sge_sf"
-  [(set (reg:CC_FP 66)
+  [(set (reg:CC_FP 67)
 	(ge:CC_FP (match_operand:SF 0 "register_operand" "f")
 		  (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_HARD_FLOAT"
@@ -6193,7 +6447,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(if_then_else:SI
-	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
 	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
   "mips_isa >= 4"
@@ -6221,7 +6475,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(if_then_else:DI
-	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
 	 (match_operand:DI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 2 "reg_or_0_operand" "0,dJ")))]
   "mips_isa >= 4"
@@ -6249,7 +6503,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
-	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
 	 (match_operand:SF 1 "register_operand" "f,0")
 	 (match_operand:SF 2 "register_operand" "0,f")))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"
@@ -6277,7 +6531,7 @@ move\\t%0,%z4\\n\\
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
-	 (match_operator 3 "equality_op" [(reg:CC_FP 66) (const_int 0)])
+	 (match_operator 3 "equality_op" [(reg:CC_FP 67) (const_int 0)])
 	 (match_operand:DF 1 "register_operand" "f,0")
 	 (match_operand:DF 2 "register_operand" "0,f")))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"

@@ -246,7 +246,7 @@ char mips_reg_names[][8] =
  "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
  "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
- "hi",   "lo",   "$fcr31"
+ "hi",   "lo",   "accum","$fcr31"
 };
 
 /* Mips software names for the registers, used to overwrite the
@@ -262,7 +262,7 @@ char mips_sw_reg_names[][8] =
   "$f8",  "$f9",  "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",
   "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",
   "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31",
-  "hi",   "lo",   "$fcr31"
+  "hi",   "lo",   "accum","$fcr31"
 };
 
 /* Map hard register number to register class */
@@ -284,7 +284,7 @@ enum reg_class mips_regno_to_class[] =
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-  HI_REG,	LO_REG,		ST_REGS
+  HI_REG,	LO_REG,		HILO_REG,	ST_REGS
 };
 
 /* Map register constraint character to register class.  */
@@ -927,7 +927,10 @@ mips_move_1word (operands, insn, unsignedp)
 	      else if (MD_REG_P (regno1))
 		{
 		  delay = DELAY_HILO;
-		  ret = "mf%1\t%0";
+		  if (regno1 != HILO_REGNUM)
+		    ret = "mf%1\t%0";
+		  else
+		    ret = "mflo\t%0";
 		}
 
 	      else
@@ -958,7 +961,8 @@ mips_move_1word (operands, insn, unsignedp)
 	      if (GP_REG_P (regno1))
 		{
 		  delay = DELAY_HILO;
-		  ret = "mt%0\t%1";
+		  if (regno0 != HILO_REGNUM)
+		    ret = "mt%0\t%1";
 		}
 	    }
 
@@ -1039,6 +1043,12 @@ mips_move_1word (operands, insn, unsignedp)
 		{
 		  delay = DELAY_LOAD;
 		  ret = "mtc1\t%z1,%0";
+		}
+
+	      else if (MD_REG_P (regno0))
+		{
+		  delay = DELAY_HILO;
+		  ret = "mt%0\t%.";
 		}
 	    }
 
@@ -1301,7 +1311,12 @@ mips_move_2words (operands, insn)
 	    {
 	      delay = DELAY_HILO;
 	      if (TARGET_64BIT)
-		ret = "mt%0\t%1";
+		{
+		  if (regno0 != HILO_REGNUM)
+		    ret = "mt%0\t%1";
+		  else if (regno1 == 0)
+		    ret = "mtlo\t%.\n\tmthi\t%.";
+		}
 	      else
 		ret = "mthi\t%M1\n\tmtlo\t%L1";
 	    }
@@ -1310,7 +1325,10 @@ mips_move_2words (operands, insn)
 	    {
 	      delay = DELAY_HILO;
 	      if (TARGET_64BIT)
-		ret = "mf%1\t%0";
+		{
+		  if (regno1 != HILO_REGNUM)
+		    ret = "mf%1\t%0";
+		}
 	      else
 		ret = "mfhi\t%M0\n\tmflo\t%L0";
 	    }
@@ -1397,6 +1415,14 @@ mips_move_2words (operands, insn)
 				: (TARGET_FLOAT64
 				   ? "li.d\t%0,%1"
 				   : "mtc1\t%.,%0\n\tmtc1\t%.,%D0");
+	    }
+	  else if (MD_REG_P (regno0))
+	    {
+	      delay = DELAY_HILO;
+	      if (regno0 != HILO_REGNUM)
+		ret = "mt%0\t%.\n";
+	      else
+		ret = "mtlo\t%.\n\tmthi\t%.";
 	    }
 	}
 	
@@ -3352,7 +3378,9 @@ override_options ()
   mips_char_to_class['f'] = ((TARGET_HARD_FLOAT) ? FP_REGS : NO_REGS);
   mips_char_to_class['h'] = HI_REG;
   mips_char_to_class['l'] = LO_REG;
+  mips_char_to_class['a'] = HILO_REG;
   mips_char_to_class['x'] = MD_REGS;
+  mips_char_to_class['b'] = ALL_REGS;
   mips_char_to_class['y'] = GR_REGS;
   mips_char_to_class['z'] = ST_REGS;
 
@@ -5533,24 +5561,58 @@ mips_function_value (valtype, func)
 }
 #endif
 
-/* Moving the HI or LO register somewhere requires a general register.  */
+/* This function returns the register class required for a secondary
+   register when copying between one of the registers in CLASS, and X,
+   using MODE.  If IN_P is nonzero, the copy is going from X to the
+   register, otherwise the register is the source.  A return value of
+   NO_REGS means that no secondary register is required.  */
 
 enum reg_class
-mips_secondary_reload_class (class, mode, x)
+mips_secondary_reload_class (class, mode, x, in_p)
      enum reg_class class;
      enum machine_mode mode;
      rtx x;
+     int in_p;
 {
-  if (class != HI_REG && class != LO_REG && class != MD_REGS)
-    return NO_REGS;
+  int regno = -1;
 
   if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
-    {
-      int regno = true_regnum (x);
+    regno = true_regnum (x);
 
-      if (regno >= GP_REG_FIRST && regno <= GP_REG_LAST)
+  /* We always require a general register when copying anything to
+     HILO_REGNUM, except when copying an SImode value from HILO_REGNUM
+     to a general register, or when copying from register 0.  */
+  if (class == HILO_REG && regno != GP_REG_FIRST + 0)
+    {
+      if (! in_p
+	  && GP_REG_P (regno)
+	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
 	return NO_REGS;
+      return GR_REGS;
+    }
+  if (regno == HILO_REGNUM)
+    {
+      if (in_p
+	  && class == GR_REGS
+	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (SImode))
+	return NO_REGS;
+      return GR_REGS;
     }
 
-  return GR_REGS;
+  /* Copying from HI or LO to anywhere other than a general register
+     requires a general register.  */
+  if (class == HI_REG || class == LO_REG || class == MD_REGS)
+    {
+      if (GP_REG_P (regno))
+	return NO_REGS;
+      return GR_REGS;
+    }
+  if (MD_REG_P (regno))
+    {
+      if (class == GR_REGS)
+	return NO_REGS;
+      return GR_REGS;
+    }
+
+  return NO_REGS;
 }
