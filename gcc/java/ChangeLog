@@ -1,23 +1,29 @@
 1999-07-15  Andrew Haley  <aph@cygnus.com>
 
-	* lang.c (flag_use_divide_subroutine): New variable.
-	* typeck.c: (convert_ieee_real_to_integer): Bounds check
-	fp-to-integer conversion.
-	(convert): Call convert_ieee_real_to_integer when flag_fast_math
-	is not set.
+        * lang.c (flag_use_divide_subroutine): New variable.
+        * typeck.c: (convert_ieee_real_to_integer): Bounds check
+        fp-to-integer conversion.
+        (convert): Call convert_ieee_real_to_integer when flag_fast_math
+        is not set.
 
-	* expr.c (build_java_soft_divmod): New function.
-	(build_java_binop): Call build_java_soft_divmod if
-	flag_use_divide_subroutine is set.
-	* decl.c: soft_idiv_node, soft_irem_node, soft_ldiv_node, tree
-	soft_lrem_node: new builtin functions.
-	(init_decl_processing) Initialize the new builtins.
-	* java-tree.h soft_idiv_node, soft_irem_node, soft_ldiv_node, tree
-	soft_lrem_node: new builtin functions.
-	(build_java_soft_divmod): New function.
-	* parse.y: Call build_java_soft_divmod if
-	flag_use_divide_subroutine is set.
-	
+        * expr.c (build_java_soft_divmod): New function.
+        (build_java_binop): Call build_java_soft_divmod if
+        flag_use_divide_subroutine is set.
+        * decl.c: soft_idiv_node, soft_irem_node, soft_ldiv_node, tree
+        soft_lrem_node: new builtin functions.
+        (init_decl_processing) Initialize the new builtins.
+        * java-tree.h soft_idiv_node, soft_irem_node, soft_ldiv_node, tree
+        soft_lrem_node: new builtin functions.
+        (build_java_soft_divmod): New function.
+        * parse.y: Call build_java_soft_divmod if
+        flag_use_divide_subroutine is set.
+        * parse.c: Rebuilt.
+
+        * jvspec.c (lang_specific_driver): Always allow an extra arg (for
+        a --specs= arg) even if not linking.
+        * lang-options.h (DEFINE_LANG_NAME ("Java")): Add
+        -fuse-divide-subroutine
+
 Tue Jul 20 13:20:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_and_layout): Check methods only once.

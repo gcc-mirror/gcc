@@ -2212,7 +2212,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/misc/bison.simple"
+#line 3 "/usr/local/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2229,7 +2229,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2363,9 +2363,7 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
-#ifndef YYPARSE_PARAM
 int yyparse (void);
-#endif
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -2407,7 +2405,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/share/misc/bison.simple"
+#line 196 "/usr/local/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4696,7 +4694,7 @@ case 495:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/misc/bison.simple"
+#line 498 "/usr/local/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -11998,6 +11996,12 @@ patch_binop (node, wfl_op1, wfl_op2)
       if (code == RDIV_EXPR && TREE_CODE (prom_type) == INTEGER_TYPE)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
 
+      if (TREE_CODE (prom_type) == INTEGER_TYPE
+	  && flag_use_divide_subroutine
+	  && ! flag_emit_class_files
+	  && (code == RDIV_EXPR || code == TRUNC_MOD_EXPR))
+	return build_java_soft_divmod (TREE_CODE (node), prom_type, op1, op2);
+ 
       /* This one is more complicated. FLOATs are processed by a
 	 function call to soft_fmod. Duplicate the value of the
 	 COMPOUND_ASSIGN_P flag. */
