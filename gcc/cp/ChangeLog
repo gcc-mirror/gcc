@@ -1,3 +1,9 @@
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl2.c (build_call_from_tree): Fix uninitialized variable.
+	* parse.y (parse_finish_call_expr): Likewise.
+	* repo.c (old_args, old_dir, old_main): Const-ify.
+
 2002-08-11  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* decl.c (duplicate_decls): Replace DECL_SOURCE_FILE +

@@ -4140,7 +4140,10 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 		  name = TREE_OPERAND (name, 0);
 		}
 	      else 
-		template_id = NULL_TREE;
+	        {
+		  template_id = NULL_TREE;
+		  template_args = NULL_TREE;
+		}
 
 	      if (BASELINK_P (name))
 		fn = name;

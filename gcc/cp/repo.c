@@ -47,7 +47,7 @@ static GTY(()) tree original_repo;
 static char *repo_name;
 static FILE *repo_file;
 
-static char *old_args, *old_dir, *old_main;
+static const char *old_args, *old_dir, *old_main;
 
 static struct obstack temporary_obstack;
 

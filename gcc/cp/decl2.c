@@ -3497,7 +3497,10 @@ build_call_from_tree (tree fn, tree args, bool disallow_virtual)
       fn = TREE_OPERAND (fn, 0);
     }
   else
-    template_id = NULL_TREE;
+    {
+      template_id = NULL_TREE;
+      template_args = NULL_TREE;
+    }
 
   f = (TREE_CODE (fn) == OVERLOAD) ? get_first_fn (fn) : fn;
   /* Make sure we have a baselink (rather than simply a
