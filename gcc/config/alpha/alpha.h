@@ -1467,19 +1467,44 @@ literal_section ()						\
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
-     fprintf (FILE, "\t.t_floating %s\n", dstr);	\
-   } while (0)
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t[2];							\
+	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+	fprintf (FILE, "\t.quad 0x%lx%08lx\n",				\
+		t[1] & 0xffffffff, t[0] & 0xffffffff);			\
+      }									\
+    else								\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", str);			\
+	fprintf (FILE, "\t.t_floating %s\n", str);			\
+      }									\
+  }
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
-     fprintf (FILE, "\t.s_floating %s\n", dstr);	\
-   } while (0)
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t;								\
+	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+	fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
+      }									\
+    else								\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);			\
+	fprintf (FILE, "\t.s_floating %s\n", str);			\
+      }									\
+  }
   
 /* This is how to output an assembler line defining an `int' constant.  */
 
