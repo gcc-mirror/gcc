@@ -1,3 +1,9 @@
+2004-09-03  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (output_andsi3): Use -1 instead of
+	(HOST_WIDE_INT)0xffffffff since CONST_INT value are always sign
+	extended.
+
 2004-09-02  Jan Beulich  <jbeulich@novell.com>
 
 	* Makefile.in (LIB2ADDEHDEP): Add unwind.h and unwind-pe.h.
