@@ -105,7 +105,7 @@ namespace std
     {
       __in_desc = iconv_open(__intc_enc, __extc_enc);
       __out_desc = iconv_open(__extc_enc, __intc_enc);
-      if (__out_desc == (iconv_t) -1 || __in_desc == (iconv_t) -1)
+      if (__out_desc == iconv_t(-1) || __in_desc == iconv_t(-1))
 	{
 	  // XXX Extended error checking.
 	}
