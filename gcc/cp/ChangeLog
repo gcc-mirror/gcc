@@ -1,3 +1,31 @@
+2005-02-21  Douglas Gregor  <dgregor@cs.indiana.edu>
+	
+	PR c++/19076
+	PR c++/6628
+	* cp-tree.h (cp_apply_type_quals_to_decl): Declared.
+	* decl.c (grokdeclarator): Pedwarn about qualifying a function
+	type. 
+	Add qualifiers when declaring a typedef of a function type.
+	Member function pointers pick up the qualifiers of the typedef
+	used to declare them.
+        Don't complain about creating cv-qualified function types.
+	Complain about qualified function typedefs that are used to
+	declare non-static member functions or free functions.
+	Use cp_apply_type_quals_to_decl.
+	(start_preparsed_function): Use cp_apply_type_quals_to_decl.
+	(grokclassfn): Use cp_apply_type_quals_to_decl.
+	* error.c (dump_type_suffix): Print qualifiers for function
+	types. 
+	* pt.c (tsubst_decl): Use cp_apply_type_quals_to_decl.
+	(tsubst): When substituting a function type into a member
+	pointer type, pass along the qualifiers.
+	(unify): Unify member pointers to member function pointers.
+	* tree.c (cp_build_qualified_type_real): Function types may be
+	qualified. This includes restrict qualifiers.
+	* typeck.c (cp_apply_type_quals_to_decl): New function to replace
+	use of c_apply_type_quals_to_decl. Drops qualifiers that are being
+	added to function types.
+
 2005-02-20  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18785
