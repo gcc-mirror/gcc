@@ -1,3 +1,7 @@
+Thu Sep  9 12:20:34 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (documented_lang_options): 
+
 Thu Sep  9 03:37:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-simple.c (IS_MARKED, IGNORE_MARK): New.
