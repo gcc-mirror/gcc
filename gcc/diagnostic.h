@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /*  Forward declarations.  */
 typedef struct output_buffer output_buffer;
+typedef struct diagnostic_context diagnostic_context;
 
 #define DIAGNOSTICS_SHOW_PREFIX_ONCE       0x0
 #define DIAGNOSTICS_SHOW_PREFIX_NEVER      0x1
@@ -79,6 +80,51 @@ struct output_buffer
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
 
+/* This data structure bundles altogether any information relevent to
+   the context of a diagnostic message.  */
+struct diagnostic_context
+{
+  /* The diagnostic message to output.  */
+  const char *message;
+
+  /* A pointer to a variable list of the arguments necessary for the
+     purpose of  message formatting.  */
+  va_list *args_ptr;
+
+  /* The name of the source file involved in the diiagnostic.  */     
+  const char *file;
+
+  /* The line-location in the source file.  */
+  int line;
+
+  /* Is it message a warning?  */
+  int warn;
+
+  /* This function is called before any message is printed out.  It is
+     respondible for preparing message prefix and such.  For example, it
+     might say:
+     In file included from "/usr/local/include/curses.h:5:
+                      from "/home/gdr/src/nifty_printer.h:56:
+                      ...
+  */
+  void (*begin_diagnostic) PARAMS ((output_buffer *, diagnostic_context *));
+
+  /* This function is called after the diagnostic message is printed.   */
+  void (*end_diagnostic) PARAMS ((output_buffer *, diagnostic_context *));
+
+  /* Hook for front-end extensions.  */
+  void *x_data;
+};
+
+#define diagnostic_message(DC) (DC)->message
+#define diagnostic_argument_list(DC) (DC)->args_ptr
+#define diagnostic_file_location(DC) (DC)->file
+#define diagnostic_line_location(DC) (DC)->line
+#define diagnostic_is_warning(DC) (DC)->warn
+#define diagnostic_starter(DC) (DC)->begin_diagnostic
+#define diagnostic_finalizer(DC) (DC)->end_diagnostic
+#define diagnostic_auxiliary_data(DC) (DC)->x_data
+
 /* If non-NULL, this function formats data in the BUFFER. When called,
    output_buffer_text_cursor (BUFFER) points to a format code.  LANG_PRINTER
    should call output_add_string (and related functions) to add data to
@@ -101,10 +147,11 @@ extern int diagnostic_message_length_per_line;
 extern output_buffer *diagnostic_buffer;
 
 /* Prototypes */
+void set_diagnostic_context     PARAMS ((diagnostic_context *, const char *,
+                                         va_list *, const char *, int, int));
 void set_fatal_function		PARAMS ((void (*) PARAMS ((const char *,
 							   va_list *))));
-void report_diagnostic          PARAMS ((const char *, va_list *,
-                                         const char *, int, int));
+void report_diagnostic          PARAMS ((diagnostic_context *));
 void initialize_diagnostics     PARAMS ((void));
 void reshape_diagnostic_buffer  PARAMS ((void));
 void default_initialize_buffer  PARAMS ((output_buffer *));

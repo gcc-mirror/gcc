@@ -1,3 +1,24 @@
+2000-08-20  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* c-errors.c (pedwarn_c99): Adjust call to report_diagnostic.
+
+	* diagnostic.c (default_diagnostic_starter,
+	default_diagnostic_finalizer): New functions.
+	(diagnostic_for_asm, diagnostic_for_decl): Tweak.
+	(pedwarn, pedwarn_with_file_and_line, error,
+	error_with_file_and_line, fatal, warning,
+	warning_with_file_and_line): Adjust call to report_diagnostic.
+	(report_diagnostic): Rework.
+	(set_diagnostic_context): New function.
+
+	* diagnostic.h (struct diagnostic_context): New data structure.
+	(diagnostic_message, diagnostic_argument_list,
+	diagnostic_file_location, diagnostic_line_location,
+	diagnostic_is_warning, diagnostic_starter, diagnostic_finalizer,
+	diagnostic_finalizer, diagnostic_auxiliary_data): New macros.
+	(set_diagnostic_context): Declare.
+	(report_diagnostic): Change prototype.
+
 Sun 20-Aug-2000 09:25:45 BST  Neil Booth  <NeilB@earthling.net>
 
 	* fix-header.c (main): Initialize cpplib.
