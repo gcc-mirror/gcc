@@ -1,3 +1,10 @@
+2005-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (struct s390_frame_layout): Remove 
+	save_backchain_p.
+	(s390_frame_info, s390_emit_prologue): Replace occurrences of
+	save_backchain_p with TARGET_BACKCHAIN.
+
 2005-01-11  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/18916

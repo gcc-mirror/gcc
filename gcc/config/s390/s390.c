@@ -333,9 +333,6 @@ struct s390_frame_layout GTY (())
   /* Set if return address needs to be saved.  */
   bool save_return_addr_p;
 
-  /* Set if backchain needs to be saved.  */
-  bool save_backchain_p;
-
   /* Size of stack frame.  */
   HOST_WIDE_INT frame_size;
 };
@@ -6488,8 +6485,6 @@ s390_frame_info (void)
   if (!TARGET_64BIT && cfun_frame_layout.frame_size > 0x7fff0000)
     fatal_error ("Total size of local variables exceeds architecture limit.");
   
-  cfun_frame_layout.save_backchain_p = TARGET_BACKCHAIN;
-
   if (!TARGET_PACKED_STACK)
     {
       cfun_frame_layout.backchain_offset = 0;
@@ -6559,8 +6554,8 @@ s390_frame_info (void)
 				     + cfun_frame_layout.high_fprs * 8);
   else
     {
-      cfun_frame_layout.frame_size += (cfun_frame_layout.save_backchain_p
-				       * UNITS_PER_WORD);
+      if (TARGET_BACKCHAIN)
+	cfun_frame_layout.frame_size += UNITS_PER_WORD;
 
       /* No alignment trouble here because f8-f15 are only saved under 
 	 64 bit.  */
@@ -7031,7 +7026,7 @@ s390_emit_prologue (void)
 	warning ("%qs uses dynamic stack allocation", current_function_name ());
 
       /* Save incoming stack pointer into temp reg.  */
-      if (cfun_frame_layout.save_backchain_p || next_fpr)
+      if (TARGET_BACKCHAIN || next_fpr)
 	insn = emit_insn (gen_move_insn (temp_reg, stack_pointer_rtx));
 
       /* Subtract frame size from stack pointer.  */
@@ -7062,7 +7057,7 @@ s390_emit_prologue (void)
 
       /* Set backchain.  */
 
-      if (cfun_frame_layout.save_backchain_p)
+      if (TARGET_BACKCHAIN)
 	{
 	  if (cfun_frame_layout.backchain_offset)
 	    addr = gen_rtx_MEM (Pmode, 
@@ -7078,7 +7073,7 @@ s390_emit_prologue (void)
 	 we need to make sure the backchain pointer is set up
 	 before any possibly trapping memory access.  */
 
-      if (cfun_frame_layout.save_backchain_p && flag_non_call_exceptions)
+      if (TARGET_BACKCHAIN && flag_non_call_exceptions)
 	{
 	  addr = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
 	  emit_insn (gen_rtx_CLOBBER (VOIDmode, addr));
