@@ -9134,7 +9134,7 @@ cannot_modify_jumps_past_reload_p ()
 @end smallexample
 @end deftypefn
 
-@deftypefn {Target Hook} enum reg_class TARGET_BRANCH_TARGET_REGISTER_CLASS (void)
+@deftypefn {Target Hook} int TARGET_BRANCH_TARGET_REGISTER_CLASS (void)
 This target hook returns a register class for which branch target register
 optimizations should be applied.  All registers in this class should be
 usable interchangably.  After reload, registers in this class will be

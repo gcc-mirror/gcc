@@ -41,9 +41,9 @@ hook_bool_void_false ()
   return false;
 }
 
-/* The same, but formally returning an enum reg_class.  */
-enum reg_class
-hook_reg_class_void_no_regs (void)
+/* The same, but formally returning NO_REGS.  */
+int
+hook_int_void_no_regs (void)
 {
   return NO_REGS;
 }

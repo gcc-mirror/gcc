@@ -1,3 +1,14 @@
+2003-06-20  Richard Henderson  <rth@redhat.com>
+
+	* hooks.c (hook_int_void_no_regs): Rename from
+	hook_reg_class_void_no_regs; change return type.
+	* hooks.h: Update.
+	* target-def.h (TARGET_BRANCH_TARGET_REGISTER_CLASS): Update.
+	* target.h (branch_target_register_class): Change return type to int.
+	Add documentation.
+	* config/sh/sh.c (sh_target_reg_class): Change return type.
+	* doc/tm.texi (TARGET_BRANCH_TARGET_REGISTER_CLASS): Likewise.
+
 2003-06-20  Andreas Tobler <toa@pop.agri.ch>
 
 	* c-format.c: Change _Bool to bool reverting part of the last

@@ -282,7 +282,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
-#define TARGET_BRANCH_TARGET_REGISTER_CLASS hook_reg_class_void_no_regs
+#define TARGET_BRANCH_TARGET_REGISTER_CLASS hook_int_void_no_regs
 #define TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED hook_bool_bool_false
 #define TARGET_CANNOT_FORCE_CONST_MEM hook_bool_rtx_false
 #define TARGET_CANNOT_COPY_INSN_P NULL
