@@ -1,3 +1,9 @@
+Wed Feb  3 11:56:23 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (insn_sets_and_refs_are_delayed): New function.
+	* pa.h (INSN_SETS_ARE_DELAYED): Use it.
+	(INSN_REFERENCES_ARE_DELAYED): Likewise.
+ 
 Wed Feb  3 06:24:49 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* config/arm/t-arm-elf (LIBGCC2_CFLAGS): Delete.

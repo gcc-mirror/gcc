@@ -2002,19 +2002,8 @@ while (0)
    get_attr_type will try to recognize the given insn, so make sure to
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
-#define INSN_SETS_ARE_DELAYED(X) \
-  ((GET_CODE (X) == INSN			\
-    && GET_CODE (PATTERN (X)) != SEQUENCE	\
-    && GET_CODE (PATTERN (X)) != USE		\
-    && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_MILLI))
-
-#define INSN_REFERENCES_ARE_DELAYED(X) \
-  ((GET_CODE (X) == INSN			\
-    && GET_CODE (PATTERN (X)) != SEQUENCE	\
-    && GET_CODE (PATTERN (X)) != USE		\
-    && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_MILLI))
+#define INSN_SETS_ARE_DELAYED(X) (insn_sets_and_refs_are_delayed (X))
+#define INSN_REFERENCES_ARE_DELAYED(X) (insn_sets_and_refs_are_delayed (X))
 
 
 /* Control the assembler format that we output.  */
@@ -2526,6 +2515,7 @@ extern int hppa_can_use_return_insn_p ();
 extern int is_function_label_plus_const ();
 extern int jump_in_call_delay ();
 extern enum reg_class secondary_reload_class ();
+extern int insn_sets_and_refs_are_delayed ();
 
 /* Declare functions defined in pa.c and used in templates.  */
 
