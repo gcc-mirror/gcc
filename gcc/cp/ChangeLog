@@ -1,3 +1,7 @@
+2000-03-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* parse.y (extdefs): Call ggc_collect.
+
 2000-03-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (build_base_field): Use TYPE_ALIGN to examine a type.
