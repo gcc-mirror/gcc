@@ -9960,7 +9960,7 @@ ix86_split_long_move (rtx operands[])
 	}
     }
 
-  /* If optimizing for size, attempt to locally unCSE non-zero constants.  */
+  /* If optimizing for size, attempt to locally unCSE nonzero constants.  */
   if (optimize_size)
     {
       if (GET_CODE (operands[5]) == CONST_INT

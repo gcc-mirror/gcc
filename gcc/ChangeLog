@@ -1,3 +1,9 @@
+2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/darwin-c.c, config/alpha/alpha.c, config/i386/i386.c,
+	config/i386/predicates.md, config/sparc/sparc.c: Follow
+	spelling conventions.
+
 2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 	    Steven Bosscher  <stevenb@suse.de>
 

@@ -449,7 +449,7 @@ darwin_register_frameworks (int stdinc)
    fails to find a header.  We search each file in the include stack,
    using FUNC, starting from the most deeply nested include and
    finishing with the main input file.  We stop searching when FUNC
-   returns non-zero.  */
+   returns nonzero.  */
 
 static const char*
 find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
