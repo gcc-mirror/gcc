@@ -1,3 +1,10 @@
+Thu Dec 11 23:55:17 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fixincludes (str{len,spn,cspn} return value): Handle different
+	layout on sysV88.
+	(hypot): Provide a fake for hypot which is broken on 
+	m88k-motorola-sysv3.
+
 Thu Dec 11 23:50:17 1997  John F. Carr  <jfc@mit.edu>
 
 	* tree.c, tree.h: Change tree_code_type, tree_code_length, and
