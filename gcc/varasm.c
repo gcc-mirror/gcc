@@ -1541,7 +1541,8 @@ const_hash (exp)
 	       & ((1 << HASHBITS) - 1)) % MAX_HASH_TABLE;
 
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	hi = (hi * 603 + const_hash (TREE_VALUE (link))) % MAX_HASH_TABLE;
+	if (TREE_VALUE (link))
+	  hi = (hi * 603 + const_hash (TREE_VALUE (link))) % MAX_HASH_TABLE;
 
       return hi;
     }
@@ -1677,8 +1678,22 @@ compare_constant_1 (exp, p)
 	}
 
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
-	  return 0;
+	{
+	  if (TREE_VALUE (link))
+	    {
+	      if ((p = compare_constant_1 (TREE_VALUE (link), p)) == 0)
+		return 0;
+	    }
+	  else
+	    {
+	      tree zero = 0;
+
+	      if (bcmp (&zero, p, sizeof zero))
+		return 0;
+	      p += sizeof zero;
+	    }
+	}
+
       return p;
     }
   else if (code == ADDR_EXPR)
@@ -1798,7 +1813,17 @@ record_constant_1 (exp)
 	}
 
       for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	record_constant_1 (TREE_VALUE (link));
+	{
+	  if (TREE_VALUE (link))
+	    record_constant_1 (TREE_VALUE (link));
+	  else
+	    {
+	      tree zero = 0;
+
+	      obstack_grow (&permanent_obstack, (char *) &zero, sizeof zero);
+	    }
+	}
+
       return;
     }
   else if (code == ADDR_EXPR)
@@ -2520,8 +2545,7 @@ output_constant (exp, size)
 
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
-  if (TREE_CODE (exp) == CONSTRUCTOR
-      && TREE_OPERAND (exp, 1) == 0)
+  if (TREE_CODE (exp) == CONSTRUCTOR && CONSTRUCTOR_ELTS (exp) == 0)
     {
       assemble_zeros (size);
       return;

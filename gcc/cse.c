@@ -2379,7 +2379,7 @@ canon_reg (x, insn)
 	      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
 		   != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER))
 		  || (insn != 0 && insn_n_dups[recog_memoized (insn)] > 0)))
-	    validate_change (insn, &XEXP (x, i), new, 0);
+	    validate_change (insn, &XEXP (x, i), new, 1);
 	  else
 	    XEXP (x, i) = new;
 	}
@@ -5359,6 +5359,7 @@ cse_insn (insn, in_libcall_block)
       else if (GET_CODE (SET_SRC (x)) == CALL)
 	{
 	  canon_reg (SET_SRC (x), insn);
+	  apply_change_group ();
 	  fold_rtx (SET_SRC (x), insn);
 	  invalidate (SET_DEST (x));
 	}
@@ -5400,6 +5401,7 @@ cse_insn (insn, in_libcall_block)
 	      if (GET_CODE (SET_SRC (y)) == CALL)
 		{
 		  canon_reg (SET_SRC (y), insn);
+		  apply_change_group ();
 		  fold_rtx (SET_SRC (y), insn);
 		  invalidate (SET_DEST (y));
 		}
@@ -5428,6 +5430,7 @@ cse_insn (insn, in_libcall_block)
 	  else if (GET_CODE (y) == CALL)
 	    {
 	      canon_reg (y, insn);
+	      apply_change_group ();
 	      fold_rtx (y, insn);
 	    }
 	}
@@ -5449,6 +5452,7 @@ cse_insn (insn, in_libcall_block)
   else if (GET_CODE (x) == CALL)
     {
       canon_reg (x, insn);
+      apply_change_group ();
       fold_rtx (x, insn);
     }
 
@@ -5467,20 +5471,9 @@ cse_insn (insn, in_libcall_block)
      we don't break the duplicate nature of the pattern.  So we will replace
      both operands at the same time.  Otherwise, we would fail to find an
      equivalent substitution in the loop calling validate_change below.
-     (We also speed up that loop when a canonicalization was done since
-     recog_memoized need not be called for just a canonicalization unless
-     a pseudo register is being replaced by a hard reg of vice versa.)
 
      We used to suppress canonicalization of DEST if it appears in SRC,
-     but we don't do this any more.
-
-     ??? The way this code is written now, if we have a MATCH_DUP between
-     two operands that are pseudos and we would want to canonicalize them
-     to a hard register, we won't do that.  The only time this would happen
-     is if the hard reg was a fixed register, and this should be rare.
-
-     ??? This won't work if there is a MATCH_DUP between an input and an
-     output, but these never worked and must be declared invalid.  */
+     but we don't do this any more.  */
 
   for (i = 0; i < n_sets; i++)
     {
@@ -5488,19 +5481,20 @@ cse_insn (insn, in_libcall_block)
       rtx src = SET_SRC (sets[i].rtl);
       rtx new = canon_reg (src, insn);
 
-      if (GET_CODE (new) == REG && GET_CODE (src) == REG
-	  && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
-	      != (REGNO (src) < FIRST_PSEUDO_REGISTER)))
-	validate_change (insn, &SET_SRC (sets[i].rtl), new, 0);
+      if ((GET_CODE (new) == REG && GET_CODE (src) == REG
+	   && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
+	       != (REGNO (src) < FIRST_PSEUDO_REGISTER)))
+	  || insn_n_dups[recog_memoized (insn)] > 0)
+	validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
       else
 	SET_SRC (sets[i].rtl) = new;
 
       if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
 	{
 	  validate_change (insn, &XEXP (dest, 1),
-			   canon_reg (XEXP (dest, 1), insn), 0);
+			   canon_reg (XEXP (dest, 1), insn), 1);
 	  validate_change (insn, &XEXP (dest, 2),
-			   canon_reg (XEXP (dest, 2), insn), 0);
+			   canon_reg (XEXP (dest, 2), insn), 1);
 	}
 
       while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
@@ -5511,6 +5505,14 @@ cse_insn (insn, in_libcall_block)
       if (GET_CODE (dest) == MEM)
 	canon_reg (dest, insn);
     }
+
+  /* Now that we have done all the replacements, we can apply the change
+     group and see if they all work.  Note that this will cause some
+     canonicalizations that would have worked individually not to be applied
+     because some other canonicalization didn't work, but this should not
+     occur often.  */
+
+  apply_change_group ();
 
   /* Set sets[i].src_elt to the class each source belongs to.
      Detect assignments from or to volatile things
@@ -6294,11 +6296,16 @@ cse_insn (insn, in_libcall_block)
       sets[i].src_elt = src_eqv_elt;
 
   invalidate_from_clobbers (&writes_memory, x);
-  /* Memory, and some registers, are invalidate by subroutine calls.  */
+
+  /* Some registers are invalidated by subroutine calls.  Memory is 
+     invalidated by non-constant calls.  */
+
   if (GET_CODE (insn) == CALL_INSN)
     {
       static struct write_data everything = {0, 1, 1, 1};
-      invalidate_memory (&everything);
+
+      if (! CONST_CALL_P (insn))
+	invalidate_memory (&everything);
       invalidate_for_call ();
     }
 
@@ -7672,7 +7679,7 @@ delete_dead_from_cse (insns, nreg)
      int nreg;
 {
   int *counts = (int *) alloca (nreg * sizeof (int));
-  rtx insn;
+  rtx insn, prev;
   rtx tem;
   int i;
   int in_libcall = 0;
@@ -7685,14 +7692,16 @@ delete_dead_from_cse (insns, nreg)
   /* Go from the last insn to the first and delete insns that only set unused
      registers or copy a register to itself.  As we delete an insn, remove
      usage counts for registers it uses.  */
-  for (insn = prev_real_insn (get_last_insn ());
-       insn; insn = prev_real_insn (insn))
+  for (insn = prev_real_insn (get_last_insn ()); insn; insn = prev)
     {
       int live_insn = 0;
 
+      prev = prev_real_insn (insn);
+
       /* Don't delete any insns that are part of a libcall block.
-	 Flow or loop might get confused if we did that.  */
-      if (find_reg_note (insn, REG_LIBCALL, 0))
+	 Flow or loop might get confused if we did that.  Remember
+	 that we are scanning backwards.  */
+      if (find_reg_note (insn, REG_RETVAL, 0))
 	in_libcall = 1;
 
       if (in_libcall)
@@ -7754,12 +7763,10 @@ delete_dead_from_cse (insns, nreg)
       if (! live_insn)
 	{
 	  count_reg_usage (insn, counts, -1);
-	  PUT_CODE (insn, NOTE);
-	  NOTE_SOURCE_FILE (insn) = 0;
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  delete_insn (insn);
 	}
 
-      if (find_reg_note (insn, REG_RETVAL, 0))
+      if (find_reg_note (insn, REG_LIBCALL, 0))
 	in_libcall = 0;
     }
 }
