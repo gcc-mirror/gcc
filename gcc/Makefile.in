@@ -1386,6 +1386,7 @@ install-cross-tools: install-dir
 	      if [ -f $(libsubdir)/$$file ] ; \
 	      then true; \
 	      else  \
+		rm -rf $(libsubdir)/$$file; \
 		$(SYMLINK) $(tooldir)/bin/$$file $(libsubdir)/$$file \
 		|| (echo "#!/bin/sh"; echo $(tooldir)/bin/$$file "$$@") > $(libsubdir)/$$file; \
 	      fi; \
@@ -1396,6 +1397,7 @@ install-cross-tools: install-dir
 		if [ -f $(libsubdir)/`basename $$file` ] ; \
 		then true; \
 		else  \
+		  rm -rf $(libsubdir)/`basename $$file`; \
 		  $(SYMLINK) $$file $(libsubdir)/`basename $$file` \
 		  || $(INSTALL_DATA) $$file $(libsubdir)/`basename $$file`; \
 		fi; \
@@ -1403,6 +1405,7 @@ install-cross-tools: install-dir
 	      fi; \
 	    done; \
 	    if [ -d $(tooldir)/include/. ] ; then \
+	      rm -rf $(libsubdir)/sys-include; \
 	      $(SYMLINK) $(tooldir)/include $(libsubdir)/sys-include \
 	      || (if [ -d $(libsubdir)/sys-include ] ; then true ; else mkdir $(libsubdir)/sys-include ; fi; \
 		  (cd $(tooldir)/include; tar cf - .) | (cd $(libsubdir)/sys-include; tar xpf -)); \
