@@ -144,9 +144,9 @@ static void check_field_decl PARAMS ((tree, tree, int *, int *, int *, int *));
 static void check_field_decls PARAMS ((tree, tree *, int *, int *, int *, 
 				     int *));
 static bool build_base_field PARAMS ((record_layout_info, tree, int *,
-				     splay_tree));
+				     splay_tree, tree));
 static bool build_base_fields PARAMS ((record_layout_info, int *,
-				      splay_tree));
+				      splay_tree, tree));
 static tree build_vbase_pointer_fields PARAMS ((record_layout_info, int *));
 static tree build_vtbl_or_vbase_field PARAMS ((tree, tree, tree, tree, tree,
 					       int *));
@@ -159,7 +159,7 @@ static void layout_class_type PARAMS ((tree, int *, int *, tree *, tree *));
 static void fixup_pending_inline PARAMS ((tree));
 static void fixup_inline_methods PARAMS ((tree));
 static void set_primary_base PARAMS ((tree, tree, int *));
-static void propagate_binfo_offsets PARAMS ((tree, tree));
+static void propagate_binfo_offsets PARAMS ((tree, tree, tree));
 static void layout_virtual_bases PARAMS ((tree, splay_tree));
 static tree dfs_set_offset_for_unshared_vbases PARAMS ((tree, void *));
 static void build_vbase_offset_vtbl_entries PARAMS ((tree, vtbl_init_data *));
@@ -181,9 +181,9 @@ static void initialize_vtable PARAMS ((tree, tree));
 static void initialize_array PARAMS ((tree, tree));
 static void layout_nonempty_base_or_field PARAMS ((record_layout_info,
 						   tree, tree,
-						   splay_tree));
+						   splay_tree, tree));
 static unsigned HOST_WIDE_INT end_of_class PARAMS ((tree, int));
-static bool layout_empty_base PARAMS ((tree, tree, splay_tree));
+static bool layout_empty_base PARAMS ((tree, tree, splay_tree, tree));
 static void accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree, tree));
 static tree dfs_accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree,
 					       tree));
@@ -1676,6 +1676,10 @@ force_canonical_binfo_r (to, from, type, mappings)
   BINFO_INDIRECT_PRIMARY_P (to)
           = BINFO_INDIRECT_PRIMARY_P (from);
   BINFO_INDIRECT_PRIMARY_P (from) = 0;
+  BINFO_UNSHARED_MARKED (to) = BINFO_UNSHARED_MARKED (from);
+  BINFO_UNSHARED_MARKED (from) = 0;
+  BINFO_LOST_PRIMARY_P (to) = BINFO_LOST_PRIMARY_P (from);
+  BINFO_LOST_PRIMARY_P (from) = 0;
   if (BINFO_PRIMARY_P (from))
     {
       tree primary = BINFO_PRIMARY_BASE_OF (from);
@@ -1689,7 +1693,8 @@ force_canonical_binfo_r (to, from, type, mappings)
       BINFO_PRIMARY_BASE_OF (to) = primary;
       BINFO_PRIMARY_BASE_OF (from) = NULL_TREE;
     }
-  my_friendly_assert (same_type_p (BINFO_TYPE (to), BINFO_TYPE (from)), 20010104);
+  my_friendly_assert (same_type_p (BINFO_TYPE (to), BINFO_TYPE (from)),
+		      20010104);
   mappings = tree_cons (from, to, mappings);
   for (i = 0; i != n_baseclasses; i++)
     {
@@ -1698,9 +1703,10 @@ force_canonical_binfo_r (to, from, type, mappings)
       
       if (TREE_VIA_VIRTUAL (from_binfo))
         {
-          tree shared_binfo = binfo_for_vbase (BINFO_TYPE (from_binfo), type);
-          
-          if (shared_binfo == from_binfo)
+	  if (BINFO_PRIMARY_P (from_binfo) &&
+	      purpose_member (BINFO_PRIMARY_BASE_OF (from_binfo), mappings))
+	    /* This base is a primary of some binfo we have already
+	       reseated. We must reseat this one too.  */
             force_canonical_binfo (to_binfo, from_binfo, type, mappings);
         }
       else
@@ -1764,7 +1770,7 @@ mark_primary_virtual_base (binfo, base_binfo, type)
   delta = size_diffop (BINFO_OFFSET (binfo), BINFO_OFFSET (base_binfo));
   if (!integer_zerop (delta))
     {
-      propagate_binfo_offsets (base_binfo, delta);
+      propagate_binfo_offsets (base_binfo, delta, type);
       BINFO_OFFSET (base_binfo) = BINFO_OFFSET (binfo);
     }
   return base_binfo;
@@ -1772,19 +1778,43 @@ mark_primary_virtual_base (binfo, base_binfo, type)
 
 /* If BINFO is an unmarked virtual binfo for a class with a primary virtual
    base, then BINFO has no primary base in this graph.  Called from
-   mark_primary_bases. */
+   mark_primary_bases.  DATA is the most derived type. */
 
 static tree dfs_unshared_virtual_bases (binfo, data)
      tree binfo;
-     void *data ATTRIBUTE_UNUSED;
+     void *data;
 {
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_MARKED (binfo)
-      && CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo))
-      && TREE_VIA_VIRTUAL (CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (binfo))))
-    BINFO_LOST_PRIMARY_P (binfo) = 1;
-
-  CLEAR_BINFO_MARKED (binfo);
+  tree t = (tree) data;
   
+  if (!BINFO_UNSHARED_MARKED (binfo)
+      && CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+    {
+      /* This morally virtual base has a primary base when it
+         is a complete object. We need to locate the shared instance
+         of this binfo in the type dominated by T. We duplicate the
+         primary base information from there to here.  */
+      tree vbase;
+      tree unshared_base;
+      
+      for (vbase = binfo; !TREE_VIA_VIRTUAL (vbase);
+	   vbase = BINFO_INHERITANCE_CHAIN (vbase))
+	continue;
+      unshared_base = get_original_base (binfo,
+					 binfo_for_vbase (BINFO_TYPE (vbase),
+							  t));
+      my_friendly_assert (unshared_base != binfo, 20010612);
+      BINFO_LOST_PRIMARY_P (binfo) = BINFO_LOST_PRIMARY_P (unshared_base);
+      if (!BINFO_LOST_PRIMARY_P (binfo))
+	      BINFO_PRIMARY_BASE_OF (get_primary_binfo (binfo)) = binfo;
+    }
+  
+  if (binfo != TYPE_BINFO (t))
+    /* The vtable fields will have been copied when duplicating the
+       base binfos. That information is bogus, make sure we don't try
+       and use it. */
+    BINFO_VTABLE (binfo) = NULL_TREE;
+  
+  BINFO_UNSHARED_MARKED (binfo) = 0;
   return NULL;
 }
 
@@ -1813,12 +1843,13 @@ mark_primary_bases (type)
 
       if (base_binfo)
         BINFO_PRIMARY_BASE_OF (base_binfo) = binfo;
-      SET_BINFO_MARKED (binfo);
+      
+      BINFO_UNSHARED_MARKED (binfo) = 1;
     }
-  /* There could remain unshared virtual bases which were not visited
+  /* There could remain unshared morally virtual bases which were not visited
      in the inheritance graph walk. These bases will have lost their
-     primary base (should they have one). We must now find them. */
-  dfs_walk (TYPE_BINFO (type), dfs_unshared_virtual_bases, NULL, NULL);
+     virtual primary base (should they have one). We must now find them. */
+  dfs_walk (TYPE_BINFO (type), dfs_unshared_virtual_bases, NULL, type);
 }
 
 /* Make the BINFO the primary base of T.  */
@@ -3933,15 +3964,16 @@ layout_conflict_p (type, offset, offsets, vbases_p)
 /* DECL is a FIELD_DECL corresponding either to a base subobject of a
    non-static data member of the type indicated by RLI.  BINFO is the
    binfo corresponding to the base subobject, OFFSETS maps offsets to
-   types already located at those offsets.  This function determines
-   the position of the DECL.  */
+   types already located at those offsets.  T is the most derived
+   type.  This function determines the position of the DECL.  */
 
 static void
-layout_nonempty_base_or_field (rli, decl, binfo, offsets)
+layout_nonempty_base_or_field (rli, decl, binfo, offsets, t)
      record_layout_info rli;
      tree decl;
      tree binfo;
      splay_tree offsets;
+     tree t;
 {
   tree offset = NULL_TREE;
   tree type = TREE_TYPE (decl);
@@ -3998,24 +4030,25 @@ layout_nonempty_base_or_field (rli, decl, binfo, offsets)
 	break;
     }
 
-  /* Now that we know where it wil be placed, update its
+  /* Now that we know where it will be placed, update its
      BINFO_OFFSET.  */
   if (binfo && CLASS_TYPE_P (BINFO_TYPE (binfo)))
     propagate_binfo_offsets (binfo, 
-			     convert (ssizetype, offset));
+			     convert (ssizetype, offset), t);
 }
 
 /* Layout the empty base BINFO.  EOC indicates the byte currently just
    past the end of the class, and should be correctly aligned for a
    class of the type indicated by BINFO; OFFSETS gives the offsets of
-   the empty bases allocated so far. Return non-zero iff we added it
-   at the end. */
+   the empty bases allocated so far. T is the most derived
+   type.  Return non-zero iff we added it at the end. */
 
 static bool
-layout_empty_base (binfo, eoc, offsets)
+layout_empty_base (binfo, eoc, offsets, t)
      tree binfo;
      tree eoc;
      splay_tree offsets;
+     tree t;
 {
   tree alignment;
   tree basetype = BINFO_TYPE (binfo);
@@ -4035,7 +4068,7 @@ layout_empty_base (binfo, eoc, offsets)
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
       atend = true;
-      propagate_binfo_offsets (binfo, convert (ssizetype, eoc));
+      propagate_binfo_offsets (binfo, convert (ssizetype, eoc), t);
       while (1) 
 	{
 	  if (!layout_conflict_p (BINFO_TYPE (binfo),
@@ -4046,7 +4079,7 @@ layout_empty_base (binfo, eoc, offsets)
 	    break;
 
 	  /* There's overlap here, too.  Bump along to the next spot.  */
-	  propagate_binfo_offsets (binfo, alignment);
+	  propagate_binfo_offsets (binfo, alignment, t);
 	}
     }
   return atend;
@@ -4055,15 +4088,17 @@ layout_empty_base (binfo, eoc, offsets)
 /* Build a FIELD_DECL for the base given by BINFO in the class
    indicated by RLI.  If the new object is non-empty, clear *EMPTY_P.
    *BASE_ALIGN is a running maximum of the alignments of any base
-   class.  OFFSETS gives the location of empty base subobjects. Return
-   non-zero if the new object cannot be nearly-empty. */
+   class.  OFFSETS gives the location of empty base subobjects.  T is
+   the most derived type.  Return non-zero if the new object cannot be
+   nearly-empty. */
 
 static bool
-build_base_field (rli, binfo, empty_p, offsets)
+build_base_field (rli, binfo, empty_p, offsets, t)
      record_layout_info rli;
      tree binfo;
      int *empty_p;
      splay_tree offsets;
+     tree t;
 {
   tree basetype = BINFO_TYPE (binfo);
   tree decl;
@@ -4091,7 +4126,7 @@ build_base_field (rli, binfo, empty_p, offsets)
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
 	 objects of the same type at the same address.  */
-      layout_nonempty_base_or_field (rli, decl, binfo, offsets);
+      layout_nonempty_base_or_field (rli, decl, binfo, offsets, t);
     }
   else
     {
@@ -4101,7 +4136,7 @@ build_base_field (rli, binfo, empty_p, offsets)
 	 byte-aligned.  */
       eoc = tree_low_cst (rli_size_unit_so_far (rli), 0);
       eoc = CEIL (eoc, DECL_ALIGN_UNIT (decl)) * DECL_ALIGN_UNIT (decl);
-      atend |= layout_empty_base (binfo, size_int (eoc), offsets);
+      atend |= layout_empty_base (binfo, size_int (eoc), offsets, t);
     }
 
   /* Record the offsets of BINFO and its base subobjects.  */
@@ -4113,14 +4148,15 @@ build_base_field (rli, binfo, empty_p, offsets)
 }
 
 /* Layout all of the non-virtual base classes.  Record empty
-   subobjects in OFFSETS. Return non-zero if the type cannot be nearly
-   empty.  */
+   subobjects in OFFSETS.  T is the most derived type.  Return
+   non-zero if the type cannot be nearly empty.  */
 
 static bool
-build_base_fields (rli, empty_p, offsets)
+build_base_fields (rli, empty_p, offsets, t)
      record_layout_info rli;
      int *empty_p;
      splay_tree offsets;
+     tree t;
 {
   /* Chain to hold all the new FIELD_DECLs which stand in for base class
      subobjects.  */
@@ -4133,7 +4169,7 @@ build_base_fields (rli, empty_p, offsets)
      first.  */
   if (CLASSTYPE_HAS_PRIMARY_BASE_P (rec))
     build_base_field (rli, CLASSTYPE_PRIMARY_BINFO (rec), 
-		      empty_p, offsets);
+		      empty_p, offsets, t);
 
   /* Now allocate the rest of the bases.  */
   for (i = 0; i < n_baseclasses; ++i)
@@ -4154,7 +4190,7 @@ build_base_fields (rli, empty_p, offsets)
 	  && !BINFO_PRIMARY_P (base_binfo))
 	continue;
 
-      atend |= build_base_field (rli, base_binfo, empty_p, offsets);
+      atend |= build_base_field (rli, base_binfo, empty_p, offsets, t);
     }
   return atend;
 }
@@ -4728,9 +4764,10 @@ fixup_inline_methods (type)
    OFFSET, which is a type offset, is number of bytes.  */
 
 static void
-propagate_binfo_offsets (binfo, offset)
+propagate_binfo_offsets (binfo, offset, t)
      tree binfo;
      tree offset;
+     tree t;
 {
   int i;
   tree primary_binfo;
@@ -4751,9 +4788,9 @@ propagate_binfo_offsets (binfo, offset)
     {
       tree base_binfo;
 
-      /* On the first through the loop, do the primary base.  Because
-	 the primary base need not be an immediate base, we must
-	 handle the primary base specially.  */
+      /* On the first time through the loop, do the primary base.
+	 Because the primary base need not be an immediate base, we
+	 must handle the primary base specially.  */
       if (i == -1) 
 	{
 	  if (!primary_binfo) 
@@ -4769,12 +4806,13 @@ propagate_binfo_offsets (binfo, offset)
 	    continue;
 	}
 
-      /* Skip virtual bases that aren't our primary base.  */
+      /* Skip virtual bases that aren't our canonical primary base.  */
       if (TREE_VIA_VIRTUAL (base_binfo)
-	  && BINFO_PRIMARY_BASE_OF (base_binfo) != binfo)
+	  && (BINFO_PRIMARY_BASE_OF (base_binfo) != binfo
+	      || base_binfo != binfo_for_vbase (BINFO_TYPE (base_binfo), t)))
 	continue;
 
-      propagate_binfo_offsets (base_binfo, offset);
+      propagate_binfo_offsets (base_binfo, offset, t);
     }
 }
 
@@ -4788,15 +4826,18 @@ dfs_set_offset_for_unshared_vbases (binfo, data)
   /* If this is a virtual base, make sure it has the same offset as
      the shared copy.  If it's a primary base, then we know it's
      correct.  */
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
+  if (TREE_VIA_VIRTUAL (binfo))
     {
       tree t = (tree) data;
       tree vbase;
       tree offset;
       
       vbase = binfo_for_vbase (BINFO_TYPE (binfo), t);
-      offset = size_diffop (BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
-      propagate_binfo_offsets (binfo, offset);
+      if (vbase != binfo)
+	{
+	  offset = size_diffop (BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
+	  propagate_binfo_offsets (binfo, offset, t);
+	}
     }
 
   return NULL_TREE;
@@ -4866,7 +4907,7 @@ layout_virtual_bases (t, offsets)
 	  if (is_empty_class (basetype))
 	    layout_empty_base (vbase,
 			       size_int (CEIL (dsize, BITS_PER_UNIT)),
-			       offsets);
+			       offsets, t);
 	  else
 	    {
 	      tree offset;
@@ -4877,7 +4918,7 @@ layout_virtual_bases (t, offsets)
 					     BINFO_OFFSET (vbase)));
 
 	      /* And compute the offset of the virtual base.  */
-	      propagate_binfo_offsets (vbase, offset);
+	      propagate_binfo_offsets (vbase, offset, t);
 	      /* Every virtual baseclass takes a least a UNIT, so that
 		 we can take it's address and get something different
 		 for each base.  */
@@ -5055,7 +5096,7 @@ layout_class_type (t, empty_p, vfuns_p,
   /* Build FIELD_DECLs for all of the non-virtual base-types.  */
   empty_base_offsets = splay_tree_new (splay_tree_compare_integer_csts, 
 				       NULL, NULL);
-  if (build_base_fields (rli, empty_p, empty_base_offsets))
+  if (build_base_fields (rli, empty_p, empty_base_offsets, t))
     CLASSTYPE_NEARLY_EMPTY_P (t) = 0;
   
   /* Add pointers to all of our virtual base-classes.  */
@@ -5117,7 +5158,7 @@ layout_class_type (t, empty_p, vfuns_p,
 	padding = NULL_TREE;
 
       layout_nonempty_base_or_field (rli, field, NULL_TREE,
-				     empty_base_offsets);
+				     empty_base_offsets, t);
 
       /* If we needed additional padding after this field, add it
 	 now.  */
@@ -5134,7 +5175,7 @@ layout_class_type (t, empty_p, vfuns_p,
 	  DECL_USER_ALIGN (padding_field) = 0;
 	  layout_nonempty_base_or_field (rli, padding_field,
 					 NULL_TREE, 
-					 empty_base_offsets);
+					 empty_base_offsets, t);
 	}
     }
 
@@ -6716,18 +6757,24 @@ get_vtbl_decl_for_binfo (binfo)
   return decl;
 }
 
-/* Called from get_primary_binfo via dfs_walk.  */
+/* Called from get_primary_binfo via dfs_walk.  DATA is a TREE_LIST
+   who's TREE_PURPOSE is the TYPE of the required primary base and
+   who's TREE_VALUE is a list of candidate binfos that we fill in. */
 
 static tree
 dfs_get_primary_binfo (binfo, data)
      tree binfo;
      void *data;
 {
-  tree primary_base = (tree) data;
+  tree cons = (tree) data;
+  tree primary_base = TREE_PURPOSE (cons);
 
   if (TREE_VIA_VIRTUAL (binfo) 
-      && same_type_p (BINFO_TYPE (binfo), BINFO_TYPE (primary_base)))
-    return binfo;
+      && same_type_p (BINFO_TYPE (binfo), primary_base))
+    /* This is the right type of binfo, but it might be an unshared
+       instance, and the shared instance is later in the dfs walk.  We
+       must keep looking.  */
+    TREE_VALUE (cons) = tree_cons (NULL, binfo, TREE_VALUE (cons));
   
   return NULL_TREE;
 }
@@ -6745,7 +6792,8 @@ get_primary_binfo (binfo)
 {
   tree primary_base;
   tree result;
-
+  tree virtuals;
+  
   primary_base = CLASSTYPE_PRIMARY_BINFO (BINFO_TYPE (binfo));
   if (!primary_base)
     return NULL_TREE;
@@ -6773,9 +6821,48 @@ get_primary_binfo (binfo)
 
   /* For a primary virtual base, we have to scan the entire hierarchy
      rooted at BINFO; the virtual base could be an indirect virtual
-     base.  */
-  result = dfs_walk (binfo, dfs_get_primary_binfo, NULL, primary_base);
-  my_friendly_assert (result != NULL_TREE, 20000730);
+     base.  There could be more than one instance of the primary base
+     in the hierarchy, and if one is the canonical binfo we want that
+     one.  If it exists, it should be the first one we find, but as a
+     consistency check we find them all and make sure.  */
+  virtuals = build_tree_list (BINFO_TYPE (primary_base), NULL_TREE);
+  dfs_walk (binfo, dfs_get_primary_binfo, NULL, virtuals);
+  virtuals = TREE_VALUE (virtuals);
+  
+  /* We must have found at least one instance.  */
+  my_friendly_assert (virtuals, 20010612);
+
+  if (TREE_CHAIN (virtuals))
+    {
+      /* We found more than one instance of the base. We must make
+         sure that, if one is the canonical one, it is the first one
+         we found. As the chain is in reverse dfs order, that means
+         the last on the list.  */
+      tree complete_binfo;
+      tree canonical;
+      
+      for (complete_binfo = binfo;
+	   BINFO_INHERITANCE_CHAIN (complete_binfo);
+	   complete_binfo = BINFO_INHERITANCE_CHAIN (complete_binfo))
+	continue;
+      canonical = binfo_for_vbase (BINFO_TYPE (primary_base),
+				   BINFO_TYPE (complete_binfo));
+      
+      for (; virtuals; virtuals = TREE_CHAIN (virtuals))
+	{
+	  result = TREE_VALUE (virtuals);
+
+	  if (canonical == result)
+	    {
+	      /* This is the unshared instance. Make sure it was the
+		 first one found.  */
+	      my_friendly_assert (!TREE_CHAIN (virtuals), 20010612);
+	      break;
+	    }
+	}
+    }
+  else
+    result = TREE_VALUE (virtuals);
   return result;
 }
 
@@ -7477,6 +7564,10 @@ accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, inits)
 				   BINFO_TYPE (orig_binfo)),
 		      20000517);
 
+  /* If it doesn't have a vpte, we don't do anything. */
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    return;
+  
   /* If we're building a construction vtable, we're not interested in
      subobjects that don't require construction vtables.  */
   if (ctor_vtbl_p 
@@ -7562,10 +7653,20 @@ dfs_accumulate_vtbl_inits (binfo, orig_binfo, rtti_binfo, t, l)
 
 	      for (; b; b = BINFO_PRIMARY_BASE_OF (b))
 		{
+		  tree probe;
+
+		  /* See if B is still within the hierarchy starting
+		     at RTTI_BINFO. */
+		  for (probe = b; probe;
+		       probe = BINFO_INHERITANCE_CHAIN (probe))
+		    if (probe == rtti_binfo)
+		      break;
+		  
+		  if (!probe)
+		    break;
+		  
 		  primary = b;
 		  orig_primary = BINFO_PRIMARY_BASE_OF (orig_primary);
-		  if (b == rtti_binfo)
-		    break;
 		}
 	    }
 	  else
