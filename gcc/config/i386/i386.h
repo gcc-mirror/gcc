@@ -1111,7 +1111,8 @@ while (0)
   case PLUS:						\
     if (GET_CODE (XEXP (X, 0)) == REG			\
         && GET_CODE (XEXP (X, 1)) == CONST_INT)		\
-      return 1;
+      return 1;						\
+    break;
 
 
 /* Compute the cost of computing a constant rtl expression RTX
