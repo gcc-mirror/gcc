@@ -585,21 +585,19 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "name", utf8const_ptr_type);
   PUSH_FIELD (class_type_node, field, "accflags", access_flags_type_node);
   PUSH_FIELD (class_type_node, field, "superclass", class_ptr_type);
-  PUSH_FIELD (class_type_node, field, "subclass_head", class_ptr_type);
-  PUSH_FIELD (class_type_node, field, "subclass_next", class_ptr_type);
   PUSH_FIELD (class_type_node, field, "constants", constants_type_node);
   PUSH_FIELD (class_type_node, field, "methods", method_ptr_type_node);
   PUSH_FIELD (class_type_node, field, "nmethods", short_type_node);
-  PUSH_FIELD (class_type_node, field, "msize", short_type_node);
+  PUSH_FIELD (class_type_node, field, "method_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "fields", field_ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "bfsize", int_type_node);
-  PUSH_FIELD (class_type_node, field, "nfields", short_type_node);
-  PUSH_FIELD (class_type_node, field, "nsfields", short_type_node);
+  PUSH_FIELD (class_type_node, field, "size_in_bytes", int_type_node);
+  PUSH_FIELD (class_type_node, field, "field_count", short_type_node);
+  PUSH_FIELD (class_type_node, field, "static_field_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "dtable", dtable_ptr_type);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);
-  PUSH_FIELD (class_type_node, field, "interface_len", short_type_node);
+  PUSH_FIELD (class_type_node, field, "interface_count", short_type_node);
   PUSH_FIELD (class_type_node, field, "state", byte_type_node);
   PUSH_FIELD (class_type_node, field, "thread", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
