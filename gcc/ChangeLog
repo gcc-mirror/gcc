@@ -1,3 +1,11 @@
+Fri Mar  8 21:27:49 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (purge_dead_edges): Set BB_DRITY flags if edge has been
+	removed; fix return value.
+	* combine.c (combine_instructions): Dirtify blocks where we failed to
+	update liveness; purge dead edges; use update_life_info_in_dirty_blocks.
+	* toplev.c (rest_of_compilation): Do not purge_dead_edges after combine.
+
 2002-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcse.c (insert_insn_end_bb): Fix typo in last change.
