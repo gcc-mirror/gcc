@@ -339,18 +339,24 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS,
   MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
-  MMX_REGS, MMX_REGS
+  MMX_REGS, MMX_REGS,
+  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS,
 };
 
-/* The "default" register map.  */
+/* The "default" register map used in 32bit mode.  */
 
 int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
   12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
-  -1, -1, -1, -1,			/* arg, flags, fpsr, dir */
+  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, dir, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
+  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
