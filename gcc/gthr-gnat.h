@@ -34,7 +34,7 @@ typedef int __gthread_mutex_t;
 
 #define __GTHREAD_MUTEX_INIT 0
 
-extern void __gnat_install_locks (void (*lock) (), void (*unlock) ());
+extern void __gnat_install_locks (void (*lock) (void), void (*unlock) (void));
 extern int __gthread_active_p (void);
 extern int __gthread_mutex_lock (__gthread_mutex_t *);
 extern int __gthread_mutex_unlock (__gthread_mutex_t *);

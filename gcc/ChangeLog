@@ -1,3 +1,14 @@
+2003-05-29  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gthr-gnat.c: Remove #undef UNUSED.
+	(__gnat_default_lock, __gnat_default_unlock): Prototype.
+	(__gnat_task_lock, __gnat_task_unlock): Make declarations
+	prototypes.
+	(__gnat_install_locks): Convert declaration to ISO C90, make
+	parameter declarations prototypes, and remove blank line.
+	* gthr-gnat.h (__gnat_install_locks): Make parameter
+	declarations prototypes.
+
 2003-05-29  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (unstrap): Remove stage_last after make unstage1.
@@ -40,6 +51,7 @@
 	(expand_unreachable_stmt): Expand unreachable while statements
 	using genrtl_do_stmt_1.
 
+>>>>>>> 1.17950
 2003-05-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_output_load_label): Declare.
