@@ -1,7 +1,0 @@
-// -*- C++ -*- forwarding header.
-// This file is part of the GNU ANSI C++ Library.
-
-#ifndef __VECTOR__
-#define __VECTOR__
-#include <vector.h>
-#endif

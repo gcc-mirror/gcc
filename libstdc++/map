@@ -1,7 +1,0 @@
-// -*- C++ -*- forwarding header.
-// This file is part of the GNU ANSI C++ Library.
-
-#ifndef __MAP__
-#define __MAP__
-#include <map.h>
-#endif
