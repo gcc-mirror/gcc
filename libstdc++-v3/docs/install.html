@@ -2,22 +2,22 @@
 <HTML>
 <HEAD>
    <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
-   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="AUTHOR" CONTENT="pme@sources.redhat.com (Phil Edwards)">
    <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, egcs, g++">
    <META NAME="DESCRIPTION" CONTENT="README for the GNU libstdc++ effort.">
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
-<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.3 2000/06/20 23:14:37 bkoz Exp $ -->
+<!-- $Id: install.html,v 1.4 2000/06/27 15:56:17 pme Exp $ -->
 </HEAD>
 <BODY>
 
 <H1 CLASS="centered"><A NAME="top">libstdc++-v3 INSTALL</A></H1>
 
 <P>The latest version of this document is always available at
-   <A HREF="http://sourceware.cygnus.com/libstdc++/install.html">
-   http://sourceware.cygnus.com/libstdc++/install.html</A>.
+   <A HREF="http://sources.redhat.com/libstdc++/install.html">
+   http://sources.redhat.com/libstdc++/install.html</A>.
 </P>
 
 <P>To the <A HREF="index.html">libstdc++-v3 homepage</A>.
@@ -52,9 +52,9 @@
       the configure scripts you'll need the nuevo automake (version
       1.4 from Cygnus, not the one on the net.  In addition, libtool
       and autoconf are also required to be installed in the same
-      location as the new automake: you can get them all in one
+      location as the new automake:  you can get them all in one
       easy-to-use tarball 
-<A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/20000619-maintainer-tools.tar.gz"> here</A>.
+<A HREF="ftp://sources.redhat.com/pub/libstdc++/20000619-maintainer-tools.tar.gz">here</A>.
    </P>
    <P>If you don't have bash, and want to run <TT>'make check'</TT> to
       test your build, you'll need to get bash 2.x.  Also recommended
@@ -63,21 +63,22 @@
    </P>
 
    <P>As of June 19, 2000, libstdc++ attempts to use tricky and
-   space-saving features of the GNU toolchain, enabled with
-   <TT>-ffunction-sections -fdata-sections -Wl,--gc-sections</TT>. To
-   obtain maximum benefit from this, binutils after this date should
-   also be used (bugs were fixed with c++ exception handling related
-   to this change in libstdc++-v3.) The version of these tools should
-   be: <TT>2.10.90</TT>, and you can get snapshots (as well as releases) of binutils 
-<A HREF="ftp://sourceware.cygnus.com/pub/binutils"> here</A>.
+      space-saving features of the GNU toolchain, enabled with
+      <TT>-ffunction-sections -fdata-sections -Wl,--gc-sections</TT>.
+      To obtain maximum benefit from this, binutils after this date
+      should also be used (bugs were fixed with C++ exception handling
+      related to this change in libstdc++-v3).  The version of these
+      tools should be <TT>2.10.90</TT>, and you can get snapshots (as
+      well as releases) of binutils
+      <A HREF="ftp://sources.redhat.com/pub/binutils">here</A>.
    </P>
  
-   <P>Finally, if you are using cygwin to compile libstdc++-v3 on
-      win32, you'll have to get a version of the cygwin.dll that is
-      dated on or after February 1, 2000. This is necessary to
+   <P>Finally, if you are using Cygwin to compile libstdc++-v3 on
+      Win32, you'll have to get a version of the cygwin1.dll that is
+      dated on or after February 1, 2000.  This is necessary to
       successfully run the script "mknumeric_limits" which probes the
-      floating-point environment of the host in question--before this
-      date, Cygwin would freeze when running this script. In addition,
+      floating-point environment of the host in question -- before this
+      date, Cygwin would freeze when running this script.  In addition,
       you may want to get a current version of libtool (say
       libtool-1.3.4 and above) as earlier versions supposedly had
       problems creating shared libraries.
@@ -86,8 +87,8 @@
 <HR>
 
 <H2><A NAME="srcsetup">Setting up the source directories</A></H2>
-   <P><EM>As the libstdc++-v3 sources and the core GCC sources move
-      towards convergence, more and more effort goes to building the
+   <P><EM>As the libstdc++-v3 sources and the core GCC sources have
+      converged, more and more effort goes to building the
       library as the default version to be shipped with g++.  With the
       2.90.8 snapshot, and especially for CVS versions after this
       release, this is treated as the usual scenario.  If you want to
@@ -133,97 +134,94 @@
       </OL>
    </P>
 
-<p>
-Since the release of libstdc++-2.90.8, configuration patches have gone
-into CVS gcc that make the management of the various libstdc++ source
-trees a bit easier. Because of this, both libstdc++-v2 and
-libstdc++-v3 and live together more or less in peace, without the need
-for soft linking. If a CVS gcc source directory after April 5, 2000 is
-being used, then the directions are slightly different: please pick
-which of the following two scenarios best represents your particular
-situation.
+   <P>Since the release of libstdc++-2.90.8, configuration patches have gone
+      into CVS gcc that make the management of the various libstdc++ source
+      trees a bit easier.  Because of this, both libstdc++-v2 and
+      libstdc++-v3 and live together more or less in peace, without the need
+      for soft linking.  If a CVS gcc source directory after April 5, 2000 is
+      being used, then the directions are slightly different:  please pick
+      which of the following two scenarios best represents your particular
+      situation.
+   </P>
 
-<P>
-<B>...with gcc-2.95.2</B>
-   <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
-      instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
-      Once in <EM>gccsrcdir</EM>, you'll need to rename the directories
-      called <TT> libstdc++ </TT> and <TT> libio </TT> like so:
-      <PRE>
-      mv libstdc++ libstdc++-v2
-      mv libio libio-v2</PRE>
-   </P>
-   <P>Next, unpack the libstdc++-v3 library tarball into the
-      <EM>gccsrcdir</EM> directory; it will create a
-      <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
-      <PRE>
+   <P><B>...with gcc-2.95.2</B>
+      <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
+         instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
+         Once in <EM>gccsrcdir</EM>, you'll need to rename the directories
+         called <TT> libstdc++ </TT> and <TT> libio </TT> like so:
+         <PRE>
+   mv libstdc++ libstdc++-v2
+   mv libio libio-v2</PRE>
+      </P>
+      <P>Next, unpack the libstdc++-v3 library tarball into the
+         <EM>gccsrcdir</EM> directory; it will create a
+         <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
+         <PRE>
    gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
-   </P>
-   <P>Finally, make a soft link between <EM>libsrcdir</EM> and
-      <TT>libstdc++</TT> so that libstdc++-v3 will be the default C++
-      library used.
-      <PRE>
+      </P>
+      <P>Finally, make a soft link between <EM>libsrcdir</EM> and
+         <TT>libstdc++</TT> so that libstdc++-v3 will be the default C++
+         library used.
+         <PRE>
    ln -s <EM>libsrcdir</EM> libstdc++</PRE>
-      This complexity of having two completely separate libstdc++
-      libraries is necessary so that you can unlink <EM>libsrcdir</EM>
-      and update the compiler sources.  If you're not this adventurous, or
-      would not like to switch between different C++ standard libraries,
-      this extra effort is probably wasted; just remove the v2 sources.
+         This complexity of having two completely separate libstdc++
+         libraries is necessary so that you can unlink <EM>libsrcdir</EM>
+         and update the compiler sources.  If you're not this adventurous, or
+         would not like to switch between different C++ standard libraries,
+         this extra effort is probably wasted; just remove the v2 sources.
+      </P>
    </P>
 
-<P>
-<B>...with CVS gcc</B> 
-   <P> Check out or download the gcc sources: the
-   resulting source director is <EM>gccsrcdir</EM>.
-   </P>
-   <P>Next, unpack the libstdc++-v3 library tarball into this
-      <EM>gccsrcdir</EM> directory; it will create a
-      <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
-      <PRE>
+   <P><B>...with CVS gcc</B> 
+      <P>Check out or download the gcc sources: the resulting source
+         directory is <EM>gccsrcdir</EM>.
+      </P>
+      <P>Next, unpack the libstdc++-v3 library tarball into this
+         <EM>gccsrcdir</EM> directory; it will create a
+         <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
+         <PRE>
    gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
-   </P>
-
-   <P> If CVS libstdc++-v3 is being used instead of a snapshot's
-   tarball, then move the source directory from the cvs checkout into
-   the <EM>gccsrcdir</EM> directory.
-
-   <P>Finally, rename <EM>libsrcdir</EM> to
-      <TT>libstdc++-v3</TT> so that gcc's configure flags will be able
-      to deal with the new library.
-      <PRE>
+      </P>
+   
+      <P>If CVS libstdc++-v3 is being used instead of a snapshot's tarball,
+         then move the source directory from the CVS checkout into the
+         <EM>gccsrcdir</EM> directory.
+   
+      <P>Finally, rename <EM>libsrcdir</EM> to <TT>libstdc++-v3</TT> so that
+         gcc's configure flags will be able to deal with the new library.
+         <PRE>
    mv <EM>libsrcdir</EM> libstdc++-v3</PRE>
+      </P>
    </P>
+
 
 <HR>
 <H2><A NAME="config">Configuring</A></H2>
+   <P>Due to namespaces, when building libstdc++-v3 you'll have to configure
+      the entire <EM>gccsrcdir</EM> directory.  The full list of libstdc++-v3
+      specific configuration options, not dependent on the specific compiler
+      release being used, can be found <A HREF="configopts.html">here</A>.
+   </P>
+   <P>Consider possibly using --enable-languages=c++ to save time by only
+      building the C++ language parts.
+   </P>
 
-Due to namespaces, when building libstdc++-v3 you'll have to configure
-the entire <EM>gccsrcdir</EM> directory. The full list of
-libstdc++-v3 specific configuration options, not dependent on the
-specific compiler release being used, can be found <A
-HREF="configopts.html"> here </A> 
-<P>
-[Consider possibly using
---enable-languages=c++ to save time by only building the C++ language
-parts]
+   <P><B>...with gcc-2.95.2</B>
+      <PRE>
+   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM></PRE>
+   </P>
+   
+   <P><B>...with CVS gcc</B> 
+      <PRE>
+   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --enable-libstdcxx-v3</PRE>
+   </P>
+   
+   <P>Adding <TT>--enable-libstdcxx-v3</TT> automatically selects libstdc++-v3
+      as the C++ library to be used alongside the C++ compiler being built,
+      and also enables -fhonor-std by default.  This option is not available
+      with gcc-2.95.2.
+   </P>
 
-<P>
-<B>...with gcc-2.95.2</B>
-<P>
-   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM>
-       </PRE>
-<P>
-
-<P>
-<B>...with CVS gcc</B> 
-<P>
-
-   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --enable-libstdcxx-v3
-
-<P>
-[Adding <TT> --enable-libstdcxx-v3</TT> automatically selects
-libstdc++-v3 as the C++ library to be used alongside the C++ compiler
-being built, and also enables -fhonor-std by default. This option is not available with gcc-2.95.2] </P>
 
 <HR>
 <H2><A NAME="install">Building and installing the library</A></H2>
@@ -240,28 +238,31 @@ being built, and also enables -fhonor-std by default. This option is not availab
    </P>
 
    <H3>[re]building only libstdc++</H3>
-  Due to differences in the configure process, the resulting Makefiles
-  in the<EM>gccbuilddir</EM> will have different rules depending on
-  the source base being used.
-<P>
-<B>...with gcc-2.95.2</B>
-<P>
-   <EM>libstdc++-rule</EM> is <TT>libstdc++</TT>
+   <P>Due to differences in the configure process, the resulting Makefiles
+      in the<EM>gccbuilddir</EM> will have different rules depending on
+      the source base being used.
+   </P>
 
-<P>
-
-<P>
-<B>...with CVS gcc</B> 
-<P>
-   <EM>libstdc++-rule</EM> is <TT>libstdc++-v3</TT>
-<P>
-
-To rebuild just libstdc++, use:
-<P>
-   <PRE>make all-target-<EM>libstdc++-rule</EM></PRE>
+   <P><B>...with gcc-2.95.2</B>
+      <BLOCKQUOTE>
+      <EM>libstdc++-rule</EM> is <TT>libstdc++</TT>
+      </BLOCKQUOTE>
+   </P>
+   
+   <P><B>...with CVS gcc</B> 
+      <BLOCKQUOTE>
+      <EM>libstdc++-rule</EM> is <TT>libstdc++-v3</TT>
+      </BLOCKQUOTE>
+   </P>
+   
+   <P>To rebuild just libstdc++, use:
+      <PRE>
+   make all-target-<EM>libstdc++-rule</EM></PRE>
       This will configure and build the C++ library in the
       <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++ directory.
-      As en example, for CVS gcc this would be <TT>make all-target-libstdc++-v3</TT>, and for gcc-2.95.2 it would be <TT>make all-target-libstdc++</TT>  
+      As en example, for CVS gcc this would be
+      <TT>make all-target-libstdc++-v3</TT>, and for gcc-2.95.2 it would be
+      <TT>make all-target-libstdc++</TT>
    </P>
    <P>If the build fails with a &quot;warning: can't inline call&quot;
       message when compiling stringMAIN.cc, see <A HREF="#Werror">the
@@ -269,12 +270,13 @@ To rebuild just libstdc++, use:
    </P>
    <P>You're done.  Now install the rebuilt pieces with
       <PRE>
-   make install
-
-   or 
-
+   make install</PRE>
+      or 
+      <PRE>
    make install-gcc
    make install-target-<EM>libstdc++-rule</EM></PRE>
+   </P>
+
 
 <HR>
 <H2><A NAME="postinstall">Post-installation</A></H2>
@@ -333,7 +335,7 @@ To rebuild just libstdc++, use:
        <P>Use the <TT>ldd(1)</TT> utility to show which library the system
           thinks it will get at runtime.
        </P>
-   </OL
+   </OL>
    </P>
 
 
@@ -360,7 +362,7 @@ To rebuild just libstdc++, use:
       of something else.  The compiler in CVS could inline more than what
       2.95.2 does, and the libstdc++ changes were made with that
       compiler.  One of the libstdc++ maintainers explains this
-<A HREF="http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00420.html">here</A>.
+<A HREF="http://sources.redhat.com/ml/libstdc++/2000-q1/msg00420.html">here</A>.
    </P>
    <P>This has been patched in current CVS sources.
    </P>
@@ -379,9 +381,9 @@ To rebuild just libstdc++, use:
 <HR>
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.3 2000/06/20 23:14:37 bkoz Exp $
+<BR> $Id: install.html,v 1.4 2000/06/27 15:56:17 pme Exp $
 </EM></P>
 
 
