@@ -1,5 +1,5 @@
 // Boilerplate support routines for -*- C++ -*- dynamic memory management.
-// Copyright (C) 1997, 1998, 1999 Free Software Foundation
+// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -58,8 +58,7 @@ WEAK (void operator delete (void *ptr) throw ())
 #ifdef L_op_vdel
 WEAK (void operator delete[] (void *ptr) throw ())
 {
-  if (ptr)
-    free (ptr);
+  ::operator delete (ptr);
 }
 #endif
 
@@ -74,7 +73,6 @@ WEAK (void operator delete (void *ptr, const std::nothrow_t&) throw ())
 #ifdef L_op_vdelnt
 WEAK (void operator delete[] (void *ptr, const std::nothrow_t&) throw ())
 {
-  if (ptr)
-    free (ptr);
+  ::operator delete (ptr);
 }
 #endif
