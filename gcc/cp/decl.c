@@ -12380,7 +12380,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   DECL_INITIAL (decl1) = error_mark_node;
 
 #ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attributes);
+  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
 #endif
   
   /* This function exists in static storage.
