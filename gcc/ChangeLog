@@ -1,3 +1,8 @@
+Tue Jul 14 03:02:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump again to distinguish mainline tree from the
+	egcs-1.1 branch.
+
 Tue Jul 14 02:20:38 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump to avoid problems with old spec files during
