@@ -119,7 +119,6 @@ static int rs6000_sr_alias_set;
 static void rs6000_add_gc_roots PARAMS ((void));
 static int num_insns_constant_wide PARAMS ((HOST_WIDE_INT));
 static rtx expand_block_move_mem PARAMS ((enum machine_mode, rtx, rtx));
-static int ccr_bit_negated_p PARAMS((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
 static void rs6000_emit_allocate_stack PARAMS ((HOST_WIDE_INT, int));
@@ -3195,29 +3194,6 @@ ccr_bit (op, scc_p)
       abort ();
     }
 }
-
-/* Given a comparison operation, say whether the bit tested (as returned
-   by ccr_bit) should be negated.  */
-
-static int
-ccr_bit_negated_p (op)
-     rtx op;
-{
-  enum rtx_code code = GET_CODE (op);
-  enum machine_mode mode = GET_MODE (XEXP (op, 0));
-  
-  if (code == EQ
-      || code == LT || code == GT
-      || code == LTU || code == GTU)
-    return 0;
-  else if (mode != CCFPmode
-      || code == NE
-      || code == ORDERED
-      || code == UNGE || code == UNLE)
-    return 1;
-  else
-    return 0;
-}
 
 /* Return the GOT register.  */
 
@@ -3732,29 +3708,6 @@ print_operand (file, x, code)
 	  return;
 	}
 
-    case 't':
-      /* Write 12 if this jump operation will branch if true, 4 otherwise. */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%t value");
-
-      else if (! ccr_bit_negated_p (x))
-	fputs ("12", file);
-      else
-	putc ('4', file);
-      return;
-      
-    case 'T':
-      /* Opposite of 't': write 4 if this jump operation will branch if true,
-	 12 otherwise.   */
-      if (GET_RTX_CLASS (GET_CODE (x)) != '<')
-	output_operand_lossage ("invalid %%T value");
-
-      else if (! ccr_bit_negated_p (x))
-	putc ('4', file);
-      else
-	fputs ("12", file);
-      return;
-      
     case 'u':
       /* High-order 16 bits of constant for use in unsigned operand.  */
       if (! INT_P (x))
@@ -4009,6 +3962,130 @@ print_operand_address (file, x)
     }
   else
     abort ();
+}
+
+/* Return the string to output a conditional branch to LABEL, which is
+   the operand number of the label, or -1 if the branch is really a
+   conditional return.  
+
+   OP is the conditional expression.  XEXP (OP, 0) is assumed to be a
+   condition code register and its mode specifies what kind of
+   comparison we made.
+
+   REVERSED is non-zero if we should reverse the sense of the comparison.
+
+   INSN is the insn.  */
+
+char *
+output_cbranch (op, label, reversed, insn)
+     rtx op;
+     const char * label;
+     int reversed;
+     rtx insn;
+{
+  static char string[64];
+  enum rtx_code code = GET_CODE (op);
+  rtx cc_reg = XEXP (op, 0);
+  enum machine_mode mode = GET_MODE (cc_reg);
+  int cc_regno = REGNO (cc_reg) - CR0_REGNO;
+  int need_longbranch = label != NULL && get_attr_length (insn) == 12;
+  int really_reversed = reversed ^ need_longbranch;
+  char *s = string;
+  const char *ccode;
+  const char *pred;
+  rtx note;
+
+  /* Work out which way this really branches.  */
+  if (really_reversed)
+    {
+      /* Reversal of FP compares takes care -- an ordered compare
+	 becomes an unordered compare and vice versa.  */
+      if (mode == CCFPmode)
+	code = reverse_condition_maybe_unordered (code);
+      else
+	code = reverse_condition (code);
+    }
+
+  /* If needed, print the CROR required for various floating-point
+     comparisons; and decide on the condition code to test.  */
+  if ((code == LE || code == GE
+       || code == UNEQ || code == LTGT
+       || code == UNGT || code == UNLT)
+      && mode == CCFPmode)
+    {
+      int base_bit = 4 * cc_regno;
+      int bit0, bit1;
+      
+      if (code == UNEQ)
+	bit0 = 2;
+      else if (code == UNGT || code == GE)
+	bit0 = 1;
+      else
+	bit0 = 0;
+      if (code == LTGT)
+	bit1 = 1;
+      else if (code == LE || code == GE)
+	bit1 = 2;
+      else
+	bit1 = 3;
+      
+      s += sprintf (s, "cror %d,%d,%d\n\t", base_bit + 3,
+		    base_bit + bit1, base_bit + bit0);
+      ccode = "so";
+    }
+  else switch (code)
+    {
+      /* Not all of these are actually distinct opcodes, but
+	 we distinguish them for clarity of the resulting assembler.  */
+    case NE: ccode = "ne"; break;
+    case EQ: ccode = "eq"; break;
+    case GE: case GEU: ccode = "ge"; break;
+    case GT: case GTU: ccode = "gt"; break;
+    case LE: case LEU: ccode = "le"; break;
+    case LT: case LTU: ccode = "lt"; break;
+    case UNORDERED: ccode = "un"; break;
+    case ORDERED: ccode = "nu"; break;
+    case UNGE: ccode = "nl"; break;
+    case UNLE: ccode = "ng"; break;
+    default:
+      abort();
+    }
+  
+  /* Maybe we have a guess as to how likely the branch is.  */
+  note = find_reg_note (insn, REG_BR_PROB, NULL_RTX);
+  if (note != NULL_RTX)
+    {
+      /* PROB is the difference from 50%.  */
+      int prob = INTVAL (XEXP (note, 0)) - REG_BR_PROB_BASE / 2;
+      
+      /* For branches that are very close to 50%, assume not-taken.  */
+      if (abs (prob) > REG_BR_PROB_BASE / 20
+	  && ((prob > 0) ^ need_longbranch))
+	pred = "+";
+      else
+	pred = "-";
+    }
+  else
+    pred = "";
+
+  if (label == NULL)
+    s += sprintf (s, "{b%sr|b%slr}%s ", ccode, ccode, pred);
+  else
+    s += sprintf (s, "b%s%s ", ccode, pred);
+
+  s += sprintf (s, "cr%d", cc_regno);
+
+  if (label != NULL)
+    {
+      /* If the branch distance was too far, we may have to use an
+	 unconditional branch to go the distance.  */
+      if (need_longbranch)
+	s += sprintf (s, ",%c$+8 ; b %s", '%', label);
+      else
+	s += sprintf (s, ",%s", label);
+    }
+
+  return string;
 }
 
 /* This page contains routines that are used to determine what the function
