@@ -519,7 +519,7 @@ dump_special_to_buffer (pfile, macro_name)
 {
   static const char define_directive[] = "#define ";
   int macro_name_length = strlen (macro_name);
-  output_line_command (pfile, same_file);
+  _cpp_output_line_command (pfile, same_file);
   CPP_RESERVE (pfile, sizeof(define_directive) + macro_name_length);
   CPP_PUTS_Q (pfile, define_directive, sizeof(define_directive)-1);
   CPP_PUTS_Q (pfile, macro_name, macro_name_length);
@@ -872,6 +872,9 @@ cpp_start_read (pfile, fname)
      with a compiler that supports C99 designated initializers.  */
   init_IStable ();
 
+  /* Set up the tables used by read_and_prescan.  */
+  _cpp_init_input_buffer (pfile);
+  
   /* Set up the include search path now.  */
   if (! opts->no_standard_includes)
     initialize_standard_includes (pfile);
@@ -933,7 +936,7 @@ cpp_start_read (pfile, fname)
        counter accordingly.  */
     pfile->lineno = CPP_BUFFER (pfile)->lineno;
   else
-    output_line_command (pfile, same_file);
+    _cpp_output_line_command (pfile, same_file);
   pfile->only_seen_white = 2;
 
   /* The -imacros files can be scanned now, but the -include files
@@ -957,7 +960,7 @@ cpp_start_read (pfile, fname)
   while (p)
     {
       if (cpp_read_file (pfile, p->arg))
-	output_line_command (pfile, enter_file);
+	_cpp_output_line_command (pfile, enter_file);
 
       q = p->next;
       free (p);
