@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Vax.
-   Copyright (C) 1987, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #define FALSE 0
 #define TRUE 1
 
-#ifdef VAXC
+#if defined(VAXC) || defined(__DECC)
 /* if compiling with VAXC, need to fix problem with <stdio.h>
    which defines a macro called FILE_TYPE that breaks "tree.h".
    Fortunately it uses #ifndef to suppress multiple inclusions.
@@ -128,7 +128,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define HAVE_VPRINTF
 
-#ifdef VAXC
+#if defined(VAXC) || defined(__DECC)
 /* Customizations/kludges for building with DEC's VAX C compiler
    rather than GCC.  */
 #define NO_SYS_PARAMS_H		/* don't have <sys/params.h> */
@@ -178,4 +178,25 @@ Boston, MA 02111-1307, USA.  */
 /* #define QSORT_WORKAROUND */
 #ifdef QSORT_WORKAROUND
 #define qsort not_qsort
+#endif
+
+#ifdef __DECC
+/* DECC$SHR doesn't have VAXCRTL's bugs.  */
+#undef QSORT_WORKAROUND
+#undef qsort
+/* Avoid a lot of informational level diagnostics about implicitly
+   declared functions.  */
+#include <stdlib.h>
+#include <string.h>
+/* this is for genopinit.c */
+ #pragma message disable (undefescap)
+#endif
+
+#if defined(USE_C_ALLOCA) && !defined(alloca)
+/* Declare alloca() using similar logic to that in alloca.c.  */
+#ifdef __STDC__
+extern void *alloca(unsigned);
+#else
+extern char *alloca();
+#endif
 #endif
