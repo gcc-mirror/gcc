@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 88, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -686,14 +686,20 @@ extern enum reg_class regno_reg_class[];
    `J' is used for the range of signed numbers that fit in 16 bits.
    `K' is for numbers that moveq can't handle.
    `L' is for range -8 to -1, range of values that can be added with subq.
-   `M' is for numbers that moveq+notb can't handle.  */
+   `M' is for numbers that moveq+notb can't handle.
+   'N' is for range 24 to 31, rotatert:SI 8 to 1 expressed as rotate.
+   'O' is for 16 (for rotate using swap).
+   'P' is for range 8 to 15, rotatert:HI 8 to 1 expressed as rotate.  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
   ((C) == 'I' ? (VALUE) > 0 && (VALUE) <= 8 : \
    (C) == 'J' ? (VALUE) >= -0x8000 && (VALUE) <= 0x7FFF : \
    (C) == 'K' ? (VALUE) < -0x80 || (VALUE) >= 0x80 : \
    (C) == 'L' ? (VALUE) < 0 && (VALUE) >= -8 : \
-   (C) == 'M' ? (VALUE) < -0x100 && (VALUE) >= 0x100 : 0)
+   (C) == 'M' ? (VALUE) < -0x100 && (VALUE) >= 0x100 : \
+   (C) == 'N' ? (VALUE) >= 24 && (VALUE) <= 31 : \
+   (C) == 'O' ? (VALUE) == 16 : \
+   (C) == 'P' ? (VALUE) >= 8 && (VALUE) <= 15 : 0)
 
 /*
  * A small bit of explanation:
