@@ -1,5 +1,12 @@
 2001-12-23  Richard Henderson  <rth@redhat.com>
 
+	PR c/5163:
+	* c-decl.c (duplicate_decls): As needed, set DECL_INLINE when
+	we have a function body associated.  Minor cleanups.
+	(grokdeclarator): Do not set DECL_INLINE without a function body.
+
+2001-12-23  Richard Henderson  <rth@redhat.com>
+
 	* stmt.c (resolve_operand_names): Handle operand modifiers.
 
 2001-12-23  Richard Henderson  <rth@redhat.com>
