@@ -244,9 +244,12 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 				     note->type,
 				     (int) _cpp_trigraph_map[note->type]);
 	      else
-		cpp_error_with_line (pfile, DL_WARNING, pfile->line, col,
-				     "trigraph ??%c ignored",
-				     note->type);
+		{
+		  cpp_error_with_line 
+		    (pfile, DL_WARNING, pfile->line, col,
+		     "trigraph ??%c ignored, use -trigraphs to enable",
+		     note->type);
+		}
 	    }
 	}
       else
