@@ -829,7 +829,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/bsd/freebsd"
       ctype_default=no
     fi
     fi
@@ -845,7 +845,23 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_freebsd34=yes, ctype_freebsd34=no)
     AC_MSG_RESULT($ctype_freebsd34)
     if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/bsd/freebsd"
+      ctype_default=no
+    fi
+    fi
+
+    dnl Test for <ctype> functionality -- NetBSD
+    if test $ctype_default = "yes"; then
+    AC_MSG_CHECKING([<ctype> for NetBSD])
+    AC_TRY_COMPILE([#include <ctype.h>],
+    [int
+    foo (int a)
+    { return _S + _C + _U + _L \
+      + _N + _P + _X + _tolower_tab_[a] + _toupper_tab_[a];}], \
+    ctype_netbsd=yes, ctype_netbsd=no)
+    AC_MSG_RESULT($ctype_netbsd)
+    if test $ctype_netbsd = "yes"; then
+      ctype_include_dir="config/os/bsd/netbsd"
       ctype_default=no
     fi
     fi
