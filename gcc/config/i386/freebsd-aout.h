@@ -94,22 +94,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Profiling routines, partially copied from i386/osfrose.h.  */
 
-/* Redefine this to use %eax instead of %edx.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
-}
+#undef MCOUNT_NAME
+#define MCOUNT_NAME "mcount"
+#undef PROFILE_COUNT_REGISTER
+#define PROFILE_COUNT_REGISTER "eax"
 
 /*
  * Some imports from svr4.h in support of shared libraries.

@@ -53,14 +53,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define NO_PROFILE_COUNTERS
 
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    fprintf (FILE, "\tcall\t*mcount@GOT(%%ebx)\n");			\
-  else									\
-    fprintf (FILE, "\tcall\tmcount\n");					\
-}
+#undef MCOUNT_NAME
+#define MCOUNT_NAME "mcount"
 
 /* The GLIBC version of mcount for the x86 assumes that there is a
    frame, so we cannot allow profiling without a frame pointer.  */

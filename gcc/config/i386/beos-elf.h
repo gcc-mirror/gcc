@@ -40,21 +40,8 @@ Boston, MA 02111-1307, USA.  */
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
 
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
-}
+#undef MCOUNT_NAME
+#define MCOUNT_NAME "mcount"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"

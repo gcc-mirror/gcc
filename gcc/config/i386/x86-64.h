@@ -29,16 +29,8 @@ Boston, MA 02111-1307, USA.  */
 /* Output assembler code to FILE to call the profiler.  */
 #define NO_PROFILE_COUNTERS
 
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (TARGET_64BIT && flag_pic)						\
-    fprintf (FILE, "\tcall\t*mcount@PLT\n");				\
-  else if (flag_pic)							\
-    fprintf (FILE, "\tcall\t*mcount@GOT(%%ebx)\n");			\
-  else									\
-    fprintf (FILE, "\tcall\tmcount\n");					\
-}
+#undef MCOUNT_NAME
+#define MCOUNT_NAME mcount
 
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_64BIT ? "long unsigned int" : "unsigned int")
