@@ -197,6 +197,25 @@ namespace __gnu_test
     out << std::endl;
     out.close();
   }
+
+  void
+  report_header(const std::string file, const std::string header)
+  {
+    const char space = ' ';
+    const char tab = '\t';
+    const char* name = "libstdc++-performance.sum";
+    std::string::const_iterator i = file.begin() + file.find_last_of('/') + 1;
+    std::string testname(i, file.end());
+
+    std::ofstream out(name, std::ios_base::app);
+
+    out.setf(std::ios_base::left);
+    out << std::setw(25) << testname << tab;
+    out << std::setw(25) << header << tab;
+
+    out << std::endl;
+    out.close();
+  }
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_PERFORMANCE_H
