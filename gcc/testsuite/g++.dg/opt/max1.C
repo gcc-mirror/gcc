@@ -1,7 +1,7 @@
 /* PR middle-end/19068 */
 /* Test case by Andrew Pinski <pinskia@physics.uc.edu> */
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-deprecated" } */
 
 extern "C" void abort (void);
 

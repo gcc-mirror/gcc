@@ -1,3 +1,10 @@
+2005-03-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_warn_min_max): New function.
+	(cp_parser_binary_expression): Use it.
+	(cp_parser_assignment_operator_opt): Likewise.
+	(cp_parser_operator): Likewise.
+
 2005-03-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/19980

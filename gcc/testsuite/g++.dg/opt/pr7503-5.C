@@ -1,6 +1,6 @@
 // PR c++/7503
 // { dg-do run }
-// { dg-options "-O2" }
+// { dg-options "-O2 -Wno-deprecated" }
 
 extern "C" void abort();
 

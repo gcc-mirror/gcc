@@ -9119,7 +9119,6 @@ test specifically for GNU C++ (@pxref{Common Predefined Macros,,
 Predefined Macros,cpp,The GNU C Preprocessor}).
 
 @menu
-* Min and Max::		C++ Minimum and maximum operators.
 * Volatiles::		What constitutes an access to a volatile object.
 * Restricted Pointers:: C99 restricted pointers and references.
 * Vague Linkage::       Where G++ puts inlines, vtables and such.
@@ -9135,51 +9134,6 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * Deprecated Features:: Things will disappear from g++.
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
-
-@node Min and Max
-@section Minimum and Maximum Operators in C++
-
-It is very convenient to have operators which return the ``minimum'' or the
-``maximum'' of two arguments.  In GNU C++ (but not in GNU C),
-
-@table @code
-@item @var{a} <? @var{b}
-@findex <?
-@cindex minimum operator
-is the @dfn{minimum}, returning the smaller of the numeric values
-@var{a} and @var{b};
-
-@item @var{a} >? @var{b}
-@findex >?
-@cindex maximum operator
-is the @dfn{maximum}, returning the larger of the numeric values @var{a}
-and @var{b}.
-@end table
-
-These operations are not primitive in ordinary C++, since you can
-use a macro to return the minimum of two things in C++, as in the
-following example.
-
-@smallexample
-#define MIN(X,Y) ((X) < (Y) ? : (X) : (Y))
-@end smallexample
-
-@noindent
-You might then use @w{@samp{int min = MIN (i, j);}} to set @var{min} to
-the minimum value of variables @var{i} and @var{j}.
-
-However, side effects in @code{X} or @code{Y} may cause unintended
-behavior.  For example, @code{MIN (i++, j++)} will fail, incrementing
-the smaller counter twice.  The GNU C @code{typeof} extension allows you
-to write safe macros that avoid this kind of problem (@pxref{Typeof}).
-However, writing @code{MIN} and @code{MAX} as macros also forces you to
-use function-call notation for a fundamental arithmetic operation.
-Using GNU C++ extensions, you can write @w{@samp{int min = i <? j;}}
-instead.
-
-Since @code{<?} and @code{>?} are built into the compiler, they properly
-handle expressions with side-effects;  @w{@samp{int min = i++ <? j++;}}
-works correctly.
 
 @node Volatiles
 @section When is a Volatile Object Accessed?
@@ -9826,6 +9780,11 @@ G++ allows a virtual function returning @samp{void *} to be overridden
 by one returning a different pointer type.  This extension to the
 covariant return type rules is now deprecated and will be removed from a
 future version.
+
+The G++ minimum and maximum operators (@samp{<?} and @samp{>?}) and
+their compound forms (@samp{<?=}) and @samp{>?=}) have been deprecated
+and will be removed in a future version.  Code using these operators
+should be modified to use @code{std::min} and @code{std::max} instead.
 
 The named return value extension has been deprecated, and is now
 removed from G++.
