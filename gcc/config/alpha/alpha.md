@@ -1055,21 +1055,6 @@
   ""
   "extwh %r1,%2,%0")
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI
-	 (and:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-		 (const_int 8))
-	 (minus:DI (const_int 56)
-		    (ashift:DI
-		     (and:DI
-		      (plus:DI (match_operand:DI 2 "reg_or_8bit_operand" "rI")
-			       (const_int -1))
-		      (const_int 7))
-		     (const_int 3)))))]
-  ""
-  "extbh %r1,%2,%0")
-
 ;; This converts an extXl into an extXh with an appropriate adjustment
 ;; to the address calculation.
 
