@@ -221,11 +221,10 @@ namespace std
 
       if (__testin)
 	{
-	  bool __testeof = false;
-	  if (_M_in_cur >= _M_in_end)
-	    __testeof = this->underflow() == traits_type::eof();
-	  if (!__testeof)
+	  if (_M_in_cur < _M_in_end)
 	    __ret = _M_in_end - _M_in_cur;
+	  else
+	    __ret = 0;
 	}
       _M_last_overflowed = false;	
       return __ret;
