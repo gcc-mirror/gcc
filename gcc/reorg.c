@@ -3052,13 +3052,13 @@ fill_simple_delay_slots (first, non_jumps_p)
 	  || (GET_CODE (insn) != JUMP_INSN && ! non_jumps_p))
 	continue;
      
-      if (GET_CODE (insn) == JUMP_INSN)
-	flags = get_jump_flags (insn, JUMP_LABEL (insn));
-      else
-	flags = get_jump_flags (insn, NULL_RTX);
+      /* It may have been that this insn used to need delay slots, but
+	 now doesn't; ignore in that case.  This can happen, for example,
+	 on the HP PA RISC, where the number of delay slots depends on
+	 what insns are nearby.  */
       slots_to_fill = num_delay_slots (insn);
       if (slots_to_fill == 0)
-	abort ();
+	continue;
 
       /* This insn needs, or can use, some delay slots.  SLOTS_TO_FILL
 	 says how many.  After initialization, first try optimizing
@@ -3080,6 +3080,11 @@ fill_simple_delay_slots (first, non_jumps_p)
 
       slots_filled = 0;
       delay_list = 0;
+
+      if (GET_CODE (insn) == JUMP_INSN)
+	flags = get_jump_flags (insn, JUMP_LABEL (insn));
+      else
+	flags = get_jump_flags (insn, NULL_RTX);
 
       if ((trial = next_active_insn (insn))
 	  && GET_CODE (trial) == JUMP_INSN
@@ -3929,7 +3934,7 @@ fill_eager_delay_slots (first)
 
       slots_to_fill = num_delay_slots (insn);
       if (slots_to_fill == 0)
-	abort ();
+	continue;
 
       slots_filled = 0;
       target_label = JUMP_LABEL (insn);
