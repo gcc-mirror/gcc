@@ -313,7 +313,6 @@ common_type (t1, t2)
 	  return build_type_attribute_variant (t2, attributes);
 	/* Merge the element types, and have a size if either arg has one.  */
 	t1 = build_array_type (elt, TYPE_DOMAIN (TYPE_DOMAIN (t1) ? t1 : t2));
-	record_component_aliases (t1);
 	return build_type_attribute_variant (t1, attributes);
       }
 

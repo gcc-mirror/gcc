@@ -3023,10 +3023,6 @@ init_decl_processing ()
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
 
-  record_component_aliases (char_array_type_node);
-  record_component_aliases (int_array_type_node);
-  record_component_aliases (wchar_array_type_node);
-
   void_list_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
   default_function_type
@@ -4405,7 +4401,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  type = build_array_type (type, itype);
 	  if (type_quals)
 	    type = c_build_qualified_type (type, type_quals);
-	  record_component_aliases (type);
 
 #if 0	/* don't clear these; leave them set so that the array type
 	   or the variable is itself const or volatile.  */
@@ -4578,7 +4573,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       && TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == 0)
     {
       type = build_array_type (TREE_TYPE (type), 0);
-      record_component_aliases (type);
       if (size_varies)
 	C_TYPE_VARIABLE_SIZE (type) = 1;
     }
@@ -4691,7 +4685,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
 							     type_quals),
 				     TYPE_DOMAIN (type));
-	    record_component_aliases (type);
 #if 0 /* Leave the field const or volatile as well.  */
 	    type_quals = TYPE_UNQUALIFIED;
 #endif
@@ -4774,7 +4767,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = build_array_type (c_build_qualified_type (TREE_TYPE (type),
 							     type_quals),
 				     TYPE_DOMAIN (type));
-	    record_component_aliases (type);
 #if 0 /* Leave the variable const or volatile as well.  */
 	    type_quals = TYPE_UNQUALIFIED;
 #endif

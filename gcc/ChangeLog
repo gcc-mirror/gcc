@@ -1,3 +1,11 @@
+Mon Jun  5 06:46:28 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (get_alias_set): If compnent is addressable, use alias
+	set of component.
+	* c-decl.c (init_decl_processing): Don't call record_component_aliases.
+	(grokdeclarator): Likewise.
+	* c-typeck.c (common_type): Likewise.
+
 2000-06-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* Makefile.in (OBJS): Remove dyn_string.o

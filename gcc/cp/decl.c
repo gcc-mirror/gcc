@@ -6478,9 +6478,6 @@ init_decl_processing ()
   int_array_type_node
     = build_array_type (integer_type_node, array_domain_type);
 
-  record_component_aliases (char_array_type_node);
-  record_component_aliases (int_array_type_node);
-
   if (flag_new_abi)
     delta_type_node = ptrdiff_type_node;
   else if (flag_huge_objects)
@@ -6544,7 +6541,6 @@ init_decl_processing ()
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
-  record_component_aliases (wchar_array_type_node);
 
   if (flag_vtable_thunks)
     {
