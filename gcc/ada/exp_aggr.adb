@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3062,8 +3062,11 @@ package body Exp_Aggr is
                Type_Definition =>
                  Make_Constrained_Array_Definition (Loc,
                    Discrete_Subtype_Definitions => Indices,
-                   Subtype_Indication =>
-                     New_Occurrence_Of (Component_Type (Typ), Loc)));
+                   Component_Definition =>
+                     Make_Component_Definition (Loc,
+                       Aliased_Present => False,
+                       Subtype_Indication =>
+                         New_Occurrence_Of (Component_Type (Typ), Loc))));
 
          Insert_Action (N, Decl);
          Analyze (Decl);

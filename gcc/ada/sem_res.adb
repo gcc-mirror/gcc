@@ -382,7 +382,7 @@ package body Sem_Res is
 
          if Nkind (P) = N_Range_Constraint
            and then Nkind (Parent (P)) = N_Subtype_Indication
-           and then Nkind (Parent (Parent (P))) = N_Component_Declaration
+           and then Nkind (Parent (Parent (P))) = N_Component_Definition
          then
             Error_Msg_N ("discriminant cannot constrain scalar type", N);
 
@@ -409,7 +409,7 @@ package body Sem_Res is
               and then not
                 (Nkind (Parent (P)) = N_Subtype_Indication
                  and then
-                  (Nkind (Parent (Parent (P))) = N_Component_Declaration
+                  (Nkind (Parent (Parent (P))) = N_Component_Definition
                    or else Nkind (Parent (Parent (P))) = N_Subtype_Declaration)
                   and then Paren_Count (N) = 0)
             then
@@ -559,7 +559,7 @@ package body Sem_Res is
 
          if (Nkind (P) = N_Subtype_Indication
               and then
-                (Nkind (Parent (P)) = N_Component_Declaration
+                (Nkind (Parent (P)) = N_Component_Definition
                    or else
                  Nkind (Parent (P)) = N_Derived_Type_Definition)
               and then D = Constraint (P))

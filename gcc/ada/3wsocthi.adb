@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2003 Ada Core Technologies, Inc.         --
+--              Copyright (C) 2001-2004 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@
 --  This version is for NT.
 
 with GNAT.Sockets.Constants; use GNAT.Sockets.Constants;
+with Interfaces.C.Strings;   use Interfaces.C.Strings;
 
 with System; use System;
 
@@ -70,6 +71,166 @@ package body GNAT.Sockets.Thin is
       Timeout   : Timeval_Access)
       return      C.int;
    pragma Import (Stdcall, Standard_Select, "select");
+
+   type Error_Type is
+     (N_EINTR,
+      N_EBADF,
+      N_EACCES,
+      N_EFAULT,
+      N_EINVAL,
+      N_EMFILE,
+      N_EWOULDBLOCK,
+      N_EINPROGRESS,
+      N_EALREADY,
+      N_ENOTSOCK,
+      N_EDESTADDRREQ,
+      N_EMSGSIZE,
+      N_EPROTOTYPE,
+      N_ENOPROTOOPT,
+      N_EPROTONOSUPPORT,
+      N_ESOCKTNOSUPPORT,
+      N_EOPNOTSUPP,
+      N_EPFNOSUPPORT,
+      N_EAFNOSUPPORT,
+      N_EADDRINUSE,
+      N_EADDRNOTAVAIL,
+      N_ENETDOWN,
+      N_ENETUNREACH,
+      N_ENETRESET,
+      N_ECONNABORTED,
+      N_ECONNRESET,
+      N_ENOBUFS,
+      N_EISCONN,
+      N_ENOTCONN,
+      N_ESHUTDOWN,
+      N_ETOOMANYREFS,
+      N_ETIMEDOUT,
+      N_ECONNREFUSED,
+      N_ELOOP,
+      N_ENAMETOOLONG,
+      N_EHOSTDOWN,
+      N_EHOSTUNREACH,
+      N_SYSNOTREADY,
+      N_VERNOTSUPPORTED,
+      N_NOTINITIALISED,
+      N_EDISCON,
+      N_HOST_NOT_FOUND,
+      N_TRY_AGAIN,
+      N_NO_RECOVERY,
+      N_NO_DATA,
+      N_OTHERS);
+
+   Error_Messages : constant array (Error_Type) of chars_ptr :=
+     (N_EINTR =>
+        New_String ("Interrupted system call"),
+      N_EBADF =>
+        New_String ("Bad file number"),
+      N_EACCES =>
+        New_String ("Permission denied"),
+      N_EFAULT =>
+        New_String ("Bad address"),
+      N_EINVAL =>
+        New_String ("Invalid argument"),
+      N_EMFILE =>
+        New_String ("Too many open files"),
+      N_EWOULDBLOCK =>
+        New_String ("Operation would block"),
+      N_EINPROGRESS =>
+        New_String ("Operation now in progress. This error is "
+                    & "returned if any Windows Sockets API "
+                    & "function is called while a blocking "
+                    & "function is in progress"),
+      N_EALREADY =>
+        New_String ("Operation already in progress"),
+      N_ENOTSOCK =>
+        New_String ("Socket operation on nonsocket"),
+      N_EDESTADDRREQ =>
+        New_String ("Destination address required"),
+      N_EMSGSIZE =>
+        New_String ("Message too long"),
+      N_EPROTOTYPE =>
+        New_String ("Protocol wrong type for socket"),
+      N_ENOPROTOOPT =>
+        New_String ("Protocol not available"),
+      N_EPROTONOSUPPORT =>
+        New_String ("Protocol not supported"),
+      N_ESOCKTNOSUPPORT =>
+        New_String ("Socket type not supported"),
+      N_EOPNOTSUPP =>
+        New_String ("Operation not supported on socket"),
+      N_EPFNOSUPPORT =>
+        New_String ("Protocol family not supported"),
+      N_EAFNOSUPPORT =>
+        New_String ("Address family not supported by protocol family"),
+      N_EADDRINUSE =>
+        New_String ("Address already in use"),
+      N_EADDRNOTAVAIL =>
+        New_String ("Cannot assign requested address"),
+      N_ENETDOWN =>
+        New_String ("Network is down. This error may be "
+                    & "reported at any time if the Windows "
+                    & "Sockets implementation detects an "
+                    & "underlying failure"),
+      N_ENETUNREACH =>
+        New_String ("Network is unreachable"),
+      N_ENETRESET =>
+        New_String ("Network dropped connection on reset"),
+      N_ECONNABORTED =>
+        New_String ("Software caused connection abort"),
+      N_ECONNRESET =>
+        New_String ("Connection reset by peer"),
+      N_ENOBUFS =>
+        New_String ("No buffer space available"),
+      N_EISCONN  =>
+        New_String ("Socket is already connected"),
+      N_ENOTCONN =>
+        New_String ("Socket is not connected"),
+      N_ESHUTDOWN =>
+        New_String ("Cannot send after socket shutdown"),
+      N_ETOOMANYREFS =>
+        New_String ("Too many references: cannot splice"),
+      N_ETIMEDOUT =>
+        New_String ("Connection timed out"),
+      N_ECONNREFUSED =>
+        New_String ("Connection refused"),
+      N_ELOOP =>
+        New_String ("Too many levels of symbolic links"),
+      N_ENAMETOOLONG =>
+        New_String ("File name too long"),
+      N_EHOSTDOWN =>
+        New_String ("Host is down"),
+      N_EHOSTUNREACH =>
+        New_String ("No route to host"),
+      N_SYSNOTREADY =>
+        New_String ("Returned by WSAStartup(), indicating that "
+                    & "the network subsystem is unusable"),
+      N_VERNOTSUPPORTED =>
+        New_String ("Returned by WSAStartup(), indicating that "
+                    & "the Windows Sockets DLL cannot support "
+                    & "this application"),
+      N_NOTINITIALISED =>
+        New_String ("Winsock not initialized. This message is "
+                    & "returned by any function except WSAStartup(), "
+                    & "indicating that a successful WSAStartup() has "
+                    & "not yet been performed"),
+      N_EDISCON =>
+        New_String ("Disconnect"),
+      N_HOST_NOT_FOUND =>
+        New_String ("Host not found. This message indicates "
+                    & "that the key (name, address, and so on) was not found"),
+      N_TRY_AGAIN =>
+        New_String ("Nonauthoritative host not found. This error may "
+                    & "suggest that the name service itself is not "
+                    & "functioning"),
+      N_NO_RECOVERY =>
+        New_String ("Nonrecoverable error. This error may suggest that the "
+                    & "name service itself is not functioning"),
+      N_NO_DATA =>
+        New_String ("Valid name, no data record of requested type. "
+                    & "This error indicates that the key (name, address, "
+                    & "and so on) was not found."),
+      N_OTHERS =>
+        New_String ("Unknown system error"));
 
    ---------------
    -- C_Connect --
@@ -366,165 +527,60 @@ package body GNAT.Sockets.Thin is
    -- Socket_Error_Message --
    --------------------------
 
-   function Socket_Error_Message (Errno : Integer) return String is
+   function Socket_Error_Message
+     (Errno : Integer)
+     return  C.Strings.chars_ptr
+   is
       use GNAT.Sockets.Constants;
 
    begin
       case Errno is
-         when EINTR =>
-            return "Interrupted system call";
-
-         when EBADF =>
-            return "Bad file number";
-
-         when EACCES =>
-            return "Permission denied";
-
-         when EFAULT =>
-            return "Bad address";
-
-         when EINVAL =>
-            return "Invalid argument";
-
-         when EMFILE =>
-            return "Too many open files";
-
-         when EWOULDBLOCK =>
-            return "Operation would block";
-
-         when EINPROGRESS =>
-            return "Operation now in progress. This error is "
-              & "returned if any Windows Sockets API "
-              & "function is called while a blocking "
-              & "function is in progress";
-
-         when EALREADY =>
-            return "Operation already in progress";
-
-         when ENOTSOCK =>
-            return "Socket operation on nonsocket";
-
-         when EDESTADDRREQ =>
-            return "Destination address required";
-
-         when EMSGSIZE =>
-            return "Message too long";
-
-         when EPROTOTYPE =>
-            return "Protocol wrong type for socket";
-
-         when ENOPROTOOPT =>
-            return "Protocol not available";
-
-         when EPROTONOSUPPORT =>
-            return "Protocol not supported";
-
-         when ESOCKTNOSUPPORT =>
-            return "Socket type not supported";
-
-         when EOPNOTSUPP =>
-            return "Operation not supported on socket";
-
-         when EPFNOSUPPORT =>
-            return "Protocol family not supported";
-
-         when EAFNOSUPPORT =>
-            return "Address family not supported by protocol family";
-
-         when EADDRINUSE =>
-            return "Address already in use";
-
-         when EADDRNOTAVAIL =>
-            return "Cannot assign requested address";
-
-         when ENETDOWN =>
-            return "Network is down. This error may be "
-              & "reported at any time if the Windows "
-              & "Sockets implementation detects an "
-              & "underlying failure";
-
-         when ENETUNREACH =>
-            return "Network is unreachable";
-
-         when ENETRESET =>
-            return "Network dropped connection on reset";
-
-         when ECONNABORTED =>
-            return "Software caused connection abort";
-
-         when ECONNRESET =>
-            return "Connection reset by peer";
-
-         when ENOBUFS =>
-            return "No buffer space available";
-
-         when EISCONN  =>
-            return "Socket is already connected";
-
-         when ENOTCONN =>
-            return "Socket is not connected";
-
-         when ESHUTDOWN =>
-            return "Cannot send after socket shutdown";
-
-         when ETOOMANYREFS =>
-            return "Too many references: cannot splice";
-
-         when ETIMEDOUT =>
-            return "Connection timed out";
-
-         when ECONNREFUSED =>
-            return "Connection refused";
-
-         when ELOOP =>
-            return "Too many levels of symbolic links";
-
-         when ENAMETOOLONG =>
-            return "File name too long";
-
-         when EHOSTDOWN =>
-            return "Host is down";
-
-         when EHOSTUNREACH =>
-            return "No route to host";
-
-         when SYSNOTREADY =>
-            return "Returned by WSAStartup(), indicating that "
-              & "the network subsystem is unusable";
-
-         when VERNOTSUPPORTED =>
-            return "Returned by WSAStartup(), indicating that "
-              & "the Windows Sockets DLL cannot support this application";
-
-         when NOTINITIALISED =>
-            return "Winsock not initialized. This message is "
-              & "returned by any function except WSAStartup(), "
-              & "indicating that a successful WSAStartup() has "
-              & "not yet been performed";
-
-         when EDISCON =>
-            return "Disconnect";
-
-         when HOST_NOT_FOUND =>
-            return "Host not found. This message indicates "
-              & "that the key (name, address, and so on) was not found";
-
-         when TRY_AGAIN =>
-            return "Nonauthoritative host not found. This error may "
-              & "suggest that the name service itself is not functioning";
-
-         when NO_RECOVERY =>
-            return "Nonrecoverable error. This error may suggest that the "
-              & "name service itself is not functioning";
-
-         when NO_DATA =>
-            return "Valid name, no data record of requested type. "
-              & "This error indicates that the key (name, address, "
-              & "and so on) was not found.";
-
-         when others =>
-            return "Unknown system error";
-
+         when EINTR =>           return Error_Messages (N_EINTR);
+         when EBADF =>           return Error_Messages (N_EBADF);
+         when EACCES =>          return Error_Messages (N_EACCES);
+         when EFAULT =>          return Error_Messages (N_EFAULT);
+         when EINVAL =>          return Error_Messages (N_EINVAL);
+         when EMFILE =>          return Error_Messages (N_EMFILE);
+         when EWOULDBLOCK =>     return Error_Messages (N_EWOULDBLOCK);
+         when EINPROGRESS =>     return Error_Messages (N_EINPROGRESS);
+         when EALREADY =>        return Error_Messages (N_EALREADY);
+         when ENOTSOCK =>        return Error_Messages (N_ENOTSOCK);
+         when EDESTADDRREQ =>    return Error_Messages (N_EDESTADDRREQ);
+         when EMSGSIZE =>        return Error_Messages (N_EMSGSIZE);
+         when EPROTOTYPE =>      return Error_Messages (N_EPROTOTYPE);
+         when ENOPROTOOPT =>     return Error_Messages (N_ENOPROTOOPT);
+         when EPROTONOSUPPORT => return Error_Messages (N_EPROTONOSUPPORT);
+         when ESOCKTNOSUPPORT => return Error_Messages (N_ESOCKTNOSUPPORT);
+         when EOPNOTSUPP =>      return Error_Messages (N_EOPNOTSUPP);
+         when EPFNOSUPPORT =>    return Error_Messages (N_EPFNOSUPPORT);
+         when EAFNOSUPPORT =>    return Error_Messages (N_EAFNOSUPPORT);
+         when EADDRINUSE =>      return Error_Messages (N_EADDRINUSE);
+         when EADDRNOTAVAIL =>   return Error_Messages (N_EADDRNOTAVAIL);
+         when ENETDOWN =>        return Error_Messages (N_ENETDOWN);
+         when ENETUNREACH =>     return Error_Messages (N_ENETUNREACH);
+         when ENETRESET =>       return Error_Messages (N_ENETRESET);
+         when ECONNABORTED =>    return Error_Messages (N_ECONNABORTED);
+         when ECONNRESET =>      return Error_Messages (N_ECONNRESET);
+         when ENOBUFS =>         return Error_Messages (N_ENOBUFS);
+         when EISCONN =>         return Error_Messages (N_EISCONN);
+         when ENOTCONN =>        return Error_Messages (N_ENOTCONN);
+         when ESHUTDOWN =>       return Error_Messages (N_ESHUTDOWN);
+         when ETOOMANYREFS =>    return Error_Messages (N_ETOOMANYREFS);
+         when ETIMEDOUT =>       return Error_Messages (N_ETIMEDOUT);
+         when ECONNREFUSED =>    return Error_Messages (N_ECONNREFUSED);
+         when ELOOP =>           return Error_Messages (N_ELOOP);
+         when ENAMETOOLONG =>    return Error_Messages (N_ENAMETOOLONG);
+         when EHOSTDOWN =>       return Error_Messages (N_EHOSTDOWN);
+         when EHOSTUNREACH =>    return Error_Messages (N_EHOSTUNREACH);
+         when SYSNOTREADY =>     return Error_Messages (N_SYSNOTREADY);
+         when VERNOTSUPPORTED => return Error_Messages (N_VERNOTSUPPORTED);
+         when NOTINITIALISED =>  return Error_Messages (N_NOTINITIALISED);
+         when EDISCON =>         return Error_Messages (N_EDISCON);
+         when HOST_NOT_FOUND =>  return Error_Messages (N_HOST_NOT_FOUND);
+         when TRY_AGAIN =>       return Error_Messages (N_TRY_AGAIN);
+         when NO_RECOVERY =>     return Error_Messages (N_NO_RECOVERY);
+         when NO_DATA =>         return Error_Messages (N_NO_DATA);
+         when others =>          return Error_Messages (N_OTHERS);
       end case;
    end Socket_Error_Message;
 

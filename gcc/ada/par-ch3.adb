@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2018,10 +2018,11 @@ package body Ch3 is
    --  Error recovery: can raise Error_Resync
 
    function P_Array_Type_Definition return Node_Id is
-      Array_Loc  : Source_Ptr;
-      Def_Node   : Node_Id;
-      Subs_List  : List_Id;
-      Scan_State : Saved_Scan_State;
+      Array_Loc    : Source_Ptr;
+      CompDef_Node : Node_Id;
+      Def_Node     : Node_Id;
+      Subs_List    : List_Id;
+      Scan_State   : Saved_Scan_State;
 
    begin
       Array_Loc := Token_Ptr;
@@ -2079,12 +2080,16 @@ package body Ch3 is
       T_Right_Paren;
       T_Of;
 
+      CompDef_Node := New_Node (N_Component_Definition, Token_Ptr);
+
       if Token = Tok_Aliased then
-         Set_Aliased_Present (Def_Node, True);
+         Set_Aliased_Present (CompDef_Node, True);
          Scan; -- past ALIASED
       end if;
 
-      Set_Subtype_Indication (Def_Node, P_Subtype_Indication);
+      Set_Subtype_Indication (CompDef_Node, P_Subtype_Indication);
+      Set_Component_Definition (Def_Node, CompDef_Node);
+
       return Def_Node;
    end P_Array_Type_Definition;
 
@@ -2728,11 +2733,12 @@ package body Ch3 is
    --  items, do we need to add this capability sometime in the future ???
 
    procedure P_Component_Items (Decls : List_Id) is
-      Decl_Node  : Node_Id;
-      Scan_State : Saved_Scan_State;
-      Num_Idents : Nat;
-      Ident      : Nat;
-      Ident_Sloc : Source_Ptr;
+      CompDef_Node : Node_Id;
+      Decl_Node    : Node_Id;
+      Scan_State   : Saved_Scan_State;
+      Num_Idents   : Nat;
+      Ident        : Nat;
+      Ident_Sloc   : Source_Ptr;
 
       Idents : array (Int range 1 .. 4096) of Entity_Id;
       --  This array holds the list of defining identifiers. The upper bound
@@ -2783,13 +2789,15 @@ package body Ch3 is
                Scan;
             end if;
 
+            CompDef_Node := New_Node (N_Component_Definition, Token_Ptr);
+
             if Token_Name = Name_Aliased then
                Check_95_Keyword (Tok_Aliased, Tok_Identifier);
             end if;
 
             if Token = Tok_Aliased then
                Scan; -- past ALIASED
-               Set_Aliased_Present (Decl_Node, True);
+               Set_Aliased_Present (CompDef_Node, True);
             end if;
 
             if Token = Tok_Array then
@@ -2797,8 +2805,9 @@ package body Ch3 is
                raise Error_Resync;
             end if;
 
-            Set_Subtype_Indication (Decl_Node, P_Subtype_Indication);
-            Set_Expression (Decl_Node, Init_Expr_Opt);
+            Set_Subtype_Indication   (CompDef_Node, P_Subtype_Indication);
+            Set_Component_Definition (Decl_Node, CompDef_Node);
+            Set_Expression           (Decl_Node, Init_Expr_Opt);
 
             if Ident > 1 then
                Set_Prev_Ids (Decl_Node, True);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2003 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,6 +229,7 @@ package body Impunit is
      "g-regist",    -- GNAT.Registry
      "g-regpat",    -- GNAT.Regpat
      "g-semaph",    -- GNAT.Semaphores
+     "g-sestin",    -- GNAT.Secondary_Stack_Info
      "g-signal",    -- GNAT.Signals
      "g-socket",    -- GNAT.Sockets
      "g-souinf",    -- GNAT.Source_Info

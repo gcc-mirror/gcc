@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2275,8 +2275,7 @@ package Sinfo is
       --  N_Unconstrained_Array_Definition
       --  Sloc points to ARRAY
       --  Subtype_Marks (List2)
-      --  Aliased_Present (Flag4) from component definition
-      --  Subtype_Indication (Node5) from component definition
+      --  Component_Definition (Node4)
 
       -----------------------------------
       -- 3.6  Index Subtype Definition --
@@ -2304,8 +2303,7 @@ package Sinfo is
       --  N_Constrained_Array_Definition
       --  Sloc points to ARRAY
       --  Discrete_Subtype_Definitions (List2)
-      --  Aliased_Present (Flag4) from component definition
-      --  Subtype_Indication (Node5) from component definition
+      --  Component_Definition (Node4)
 
       --------------------------------------
       -- 3.6  Discrete Subtype Definition --
@@ -2320,15 +2318,16 @@ package Sinfo is
 
       --  COMPONENT_DEFINITION ::= [aliased] SUBTYPE_INDICATION
 
-      --  There is no explicit node in the tree for a component definition.
-      --  Instead the subtype indication appears directly, and the ALIASED
-      --  indication (Aliased_Present flag) is in the parent node.
-
       --  Note: although the syntax does not permit a component definition to
       --  be an anonymous array (and the parser will diagnose such an attempt
       --  with an appropriate message), it is possible for anonymous arrays
       --  to appear as component definitions. The semantics and back end handle
       --  this case properly, and the expander in fact generates such cases.
+
+      --  N_Component_Definition
+      --  Sloc points to ALIASED or to first token of subtype mark
+      --  Aliased_Present (Flag4)
+      --  Subtype_Indication (Node5)
 
       -----------------------------
       -- 3.6.1  Index Constraint --
@@ -2537,8 +2536,7 @@ package Sinfo is
       --  N_Component_Declaration
       --  Sloc points to first identifier
       --  Defining_Identifier (Node1)
-      --  Aliased_Present (Flag4) from component definition
-      --  Subtype_Indication (Node5) from component definition
+      --  Component_Definition (Node4)
       --  Expression (Node3) (set to Empty if no default expression)
       --  More_Ids (Flag5) (set to False if no more identifiers in list)
       --  Prev_Ids (Flag6) (set to False if no previous identifiers in list)
@@ -6651,6 +6649,7 @@ package Sinfo is
       N_Compilation_Unit,
       N_Compilation_Unit_Aux,
       N_Component_Association,
+      N_Component_Definition,
       N_Component_List,
       N_Derived_Type_Definition,
       N_Decimal_Fixed_Point_Definition,
@@ -6967,6 +6966,9 @@ package Sinfo is
 
    function Component_Clauses
      (N : Node_Id) return List_Id;    -- List3
+
+   function Component_Definition
+     (N : Node_Id) return Node_Id;    -- Node4
 
    function Component_Items
      (N : Node_Id) return List_Id;    -- List3
@@ -7748,6 +7750,9 @@ package Sinfo is
    procedure Set_Component_Clauses
      (N : Node_Id; Val : List_Id);            -- List3
 
+   procedure Set_Component_Definition
+     (N : Node_Id; Val : Node_Id);            -- Node4
+
    procedure Set_Component_Items
      (N : Node_Id; Val : List_Id);            -- List3
 
@@ -8471,6 +8476,7 @@ package Sinfo is
    pragma Inline (Compile_Time_Known_Aggregate);
    pragma Inline (Component_Associations);
    pragma Inline (Component_Clauses);
+   pragma Inline (Component_Definition);
    pragma Inline (Component_Items);
    pragma Inline (Component_List);
    pragma Inline (Component_Name);
@@ -8728,6 +8734,7 @@ package Sinfo is
    pragma Inline (Set_Compile_Time_Known_Aggregate);
    pragma Inline (Set_Component_Associations);
    pragma Inline (Set_Component_Clauses);
+   pragma Inline (Set_Component_Definition);
    pragma Inline (Set_Component_Items);
    pragma Inline (Set_Component_List);
    pragma Inline (Set_Component_Name);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,6 +62,9 @@ package body GNAT.Sockets.Thin is
    --  two attempts on a blocking operation.
 
    Thread_Blocking_IO : Boolean := True;
+
+   Unknown_System_Error : constant C.Strings.chars_ptr :=
+     C.Strings.New_String ("Unknown system error");
 
    --  The following types and variables are required to create a Hostent
    --  record "by hand".
@@ -588,7 +591,9 @@ package body GNAT.Sockets.Thin is
    -- Socket_Error_Message --
    --------------------------
 
-   function Socket_Error_Message (Errno : Integer) return String is
+   function Socket_Error_Message
+     (Errno : Integer) return C.Strings.chars_ptr
+   is
       use type Interfaces.C.Strings.chars_ptr;
 
       C_Msg : C.Strings.chars_ptr;
@@ -597,9 +602,10 @@ package body GNAT.Sockets.Thin is
       C_Msg := C_Strerror (C.int (Errno));
 
       if C_Msg = C.Strings.Null_Ptr then
-         return "Unknown system error";
+         return Unknown_System_Error;
+
       else
-         return C.Strings.Value (C_Msg);
+         return C_Msg;
       end if;
    end Socket_Error_Message;
 

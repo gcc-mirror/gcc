@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -427,44 +427,55 @@ package body Sem_Dist is
                       Defining_Identifier =>
                         Make_Defining_Identifier (Loc,
                           Chars => Name_Ras),
-                      Subtype_Indication =>
-                        New_Occurrence_Of
-                          (RTE (RE_Unsigned_64), Loc)),
+                      Component_Definition =>
+                        Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                            New_Occurrence_Of (RTE (RE_Unsigned_64), Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
                         Make_Defining_Identifier (Loc,
                           Chars => Name_Origin),
-                      Subtype_Indication =>
-                        New_Reference_To
-                          (Standard_Integer,
-                           Loc)),
+                      Component_Definition =>
+                        Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                            New_Reference_To
+                              (Standard_Integer, Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
                         Make_Defining_Identifier (Loc,
                           Chars => Name_Receiver),
-                      Subtype_Indication =>
-                        New_Reference_To
-                          (RTE (RE_Unsigned_64), Loc)),
+                      Component_Definition =>
+                        Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                            New_Reference_To
+                              (RTE (RE_Unsigned_64), Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
                         Make_Defining_Identifier (Loc,
                           Chars => Name_Subp_Id),
-                      Subtype_Indication =>
-                        New_Reference_To
-                          (Standard_Natural,
-                           Loc)),
+                      Component_Definition =>
+                        Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                            New_Reference_To
+                              (Standard_Natural, Loc))),
 
                     Make_Component_Declaration (Loc,
                       Defining_Identifier =>
                         Make_Defining_Identifier (Loc,
                           Chars => Name_Async),
-                      Subtype_Indication =>
-                        New_Reference_To
-                          (Standard_Boolean,
-                           Loc))))));
+                      Component_Definition =>
+                        Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                            New_Reference_To
+                              (Standard_Boolean, Loc)))))));
 
       Insert_After (N, New_Type_Decl);
       Set_Equivalent_Type (User_Type, Fat_Type);

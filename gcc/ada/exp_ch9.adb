@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2611,8 +2611,11 @@ package body Exp_Ch9 is
                          (Etype (Discrete_Subtype_Definition
                            (Parent (Efam)))), Loc))),
 
-                    Subtype_Indication =>
-                      New_Reference_To (Standard_Character, Loc)));
+                    Component_Definition =>
+                       Make_Component_Definition (Loc,
+                          Aliased_Present    => False,
+                          Subtype_Indication =>
+                             New_Reference_To (Standard_Character, Loc))));
 
             Insert_After (Current_Node, Efam_Decl);
             Current_Node := Efam_Decl;
@@ -2623,17 +2626,21 @@ package body Exp_Ch9 is
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Chars (Efam)),
 
-                Subtype_Indication =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (Efam_Type, Loc),
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present    => False,
+                    Subtype_Indication =>
+                      Make_Subtype_Indication (Loc,
+                        Subtype_Mark =>
+                          New_Occurrence_Of (Efam_Type, Loc),
+                        Constraint  =>
+                          Make_Index_Or_Discriminant_Constraint (Loc,
+                            Constraints => New_List (
+                              New_Occurrence_Of
+                                (Etype (Discrete_Subtype_Definition
+                                  (Parent (Efam))), Loc)))))));
 
-                    Constraint  =>
-                      Make_Index_Or_Discriminant_Constraint (Loc,
-                        Constraints => New_List (
-                          New_Occurrence_Of
-                            (Etype (Discrete_Subtype_Definition
-                              (Parent (Efam))), Loc))))));
+
          end if;
 
          Next_Entity (Efam);
@@ -3265,14 +3272,19 @@ package body Exp_Ch9 is
         Make_Component_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, New_Internal_Name ('P')),
-          Subtype_Indication  =>
-            New_Occurrence_Of (RTE (RE_Address), Loc)),
+          Component_Definition =>
+            Make_Component_Definition (Loc,
+              Aliased_Present    => False,
+              Subtype_Indication =>
+                New_Occurrence_Of (RTE (RE_Address), Loc))),
 
         Make_Component_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
-          Subtype_Indication  =>
-            New_Occurrence_Of (D_T2, Loc)));
+          Component_Definition =>
+            Make_Component_Definition (Loc,
+              Aliased_Present    => False,
+              Subtype_Indication => New_Occurrence_Of (D_T2, Loc))));
 
       Decl2 :=
         Make_Full_Type_Declaration (Loc,
@@ -4668,7 +4680,10 @@ package body Exp_Ch9 is
             Append_To (Components,
               Make_Component_Declaration (Loc,
                 Defining_Identifier => Component,
-                Subtype_Indication  => New_Reference_To (Ctype, Loc)));
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present    => False,
+                    Subtype_Indication => New_Reference_To (Ctype, Loc))));
 
             Next_Formal_With_Extras (Formal);
          end loop;
@@ -5227,8 +5242,10 @@ package body Exp_Ch9 is
            Make_Component_Declaration (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uObject),
-             Aliased_Present     => True,
-             Subtype_Indication  => Protection_Subtype);
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => True,
+                 Subtype_Indication => Protection_Subtype));
       end;
 
       pragma Assert (Present (Pdef));
@@ -5246,8 +5263,13 @@ package body Exp_Ch9 is
                  Make_Component_Declaration (Loc,
                    Defining_Identifier =>
                      Make_Defining_Identifier (Sloc (Pent), Chars (Pent)),
-                   Subtype_Indication =>
-                     New_Copy_Tree (Subtype_Indication (Priv), Discr_Map),
+                   Component_Definition =>
+                     Make_Component_Definition (Sloc (Pent),
+                       Aliased_Present    => False,
+                       Subtype_Indication =>
+                         New_Copy_Tree (Subtype_Indication
+                                         (Component_Definition (Priv)),
+                                        Discr_Map)),
                    Expression => Expression (Priv));
 
                Append_To (Cdecls, New_Priv);
@@ -7175,7 +7197,11 @@ package body Exp_Ch9 is
         Make_Component_Declaration (Loc,
           Defining_Identifier =>
             Make_Defining_Identifier (Loc, Name_uTask_Id),
-          Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_ID), Loc)));
+          Component_Definition =>
+            Make_Component_Definition (Loc,
+              Aliased_Present    => False,
+              Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_ID),
+                                    Loc))));
 
       --  Add components for entry families
 
@@ -7216,7 +7242,11 @@ package body Exp_Ch9 is
               Make_Component_Declaration (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uPriority),
-                Subtype_Indication => New_Reference_To (Standard_Integer, Loc),
+                Component_Definition =>
+                  Make_Component_Definition (Loc,
+                    Aliased_Present    => False,
+                    Subtype_Indication => New_Reference_To (Standard_Integer,
+                                                            Loc)),
                 Expression => Expr));
          end;
       end if;
@@ -7231,7 +7261,11 @@ package body Exp_Ch9 is
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uSize),
 
-             Subtype_Indication => New_Reference_To (RTE (RE_Size_Type), Loc),
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication => New_Reference_To (RTE (RE_Size_Type),
+                                                         Loc)),
 
              Expression =>
                Convert_To (RTE (RE_Size_Type),
@@ -7249,8 +7283,11 @@ package body Exp_Ch9 is
            Make_Component_Declaration (Loc,
              Defining_Identifier =>
                Make_Defining_Identifier (Loc, Name_uTask_Info),
-             Subtype_Indication =>
-               New_Reference_To (RTE (RE_Task_Info_Type), Loc),
+             Component_Definition =>
+               Make_Component_Definition (Loc,
+                 Aliased_Present    => False,
+                 Subtype_Indication =>
+                   New_Reference_To (RTE (RE_Task_Info_Type), Loc)),
              Expression => New_Copy (
                Expression (First (
                  Pragma_Argument_Associations (
