@@ -617,7 +617,8 @@
 #       define OS_TYPE "LINUX"
 #       define STACKBOTTOM ((ptr_t)0xf0000000)
 #       define USE_GENERIC_PUSH_REGS
-		/* We never got around to the assembly version. */
+#	     define USE_MMAP
+	      /* We never got around to the assembly version. */
 /* #       define MPROTECT_VDB - Reported to not work  9/17/01 */
 #       ifdef __ELF__
 #            define DYNAMIC_LOADING
