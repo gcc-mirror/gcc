@@ -854,6 +854,7 @@ member_init:
 	| typename_sub LEFT_RIGHT
 		{ expand_member_init (current_class_ref, TYPE_MAIN_DECL ($1),
 				      void_type_node); }
+        | error
 	;
 
 identifier:
@@ -2081,8 +2082,8 @@ pending_inline:
                   process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init error
-		{ free_after_compilation (current_function);
-		  current_function = NULL;
+		{ 
+		  finish_function (lineno, 2); 
 		  process_next_inline ($1); }
 	;
 

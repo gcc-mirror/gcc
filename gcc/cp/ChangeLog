@@ -1,3 +1,17 @@
+1999-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (poplevel_class): Declare.
+	* class.c (popclass): Use poplevel_class, not poplevel.
+	* decl.c (poplevel_class): Don't make it static.  Don't return a
+	value.
+	(poplevel): Don't call poplevel_class; abort in a class
+	binding level is seen.
+	* semantics.c (finish_translation_unit): Use pop_everything.
+	* parse.y (member_init): Allow errors.
+	(pending_inline): Call finish_function.
+	* parse.c: Regenerated.
+	* Makefile.in (CONFLICTS): Adjust.
+
 1999-09-17  Gabriel Dos Reis  <gdr@codesourcery.com>
 	
 	* error.c: Reduce code duplication.

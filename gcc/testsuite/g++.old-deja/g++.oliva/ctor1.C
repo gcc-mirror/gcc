@@ -15,5 +15,5 @@ struct B {
 
 struct C {
   // The error message below says it is within A::B::m()!
-  void n() {} // gets bogus error - XFAIL *-*-*
+  void n() {}
 };
