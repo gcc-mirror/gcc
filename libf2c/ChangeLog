@@ -1,3 +1,8 @@
+2001-10-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* Makefile.in: Set major:minor:sub version number
+	of shared libf2c to 0:0:0.
+
 2001-09-29  Juergen Pfeifer  <juergen.pfeifer@gmx.net>
             Toon Moene  <toon@moene.indiv.nluug.nl>
 

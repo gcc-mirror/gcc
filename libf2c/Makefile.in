@@ -36,10 +36,9 @@ top_builddir = .
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 #
+# Versions should start at 0:0:0 - See libtool manual.
 VERSION_MAJOR=0
-VERSION_MINOR=5
-# We'd rather had 27 here - to indicate the version at which
-# a shared libf2c was created; however, libtool doesn't accept this.
+VERSION_MINOR=0
 VERSION_SUB=0
 
 # Multilib support variables.
@@ -51,6 +50,7 @@ MULTIDO = true
 MULTICLEAN = true
 
 # Not configured per top-level version, since that doesn't get passed
+# Versions should start at 0:0:0 - See libtool manual.
 # down at configure time, but overrridden by the top-level install
 # target.
 INSTALL = @INSTALL@
