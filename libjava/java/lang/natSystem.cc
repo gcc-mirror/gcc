@@ -339,6 +339,31 @@ java::lang::System::init_properties (void)
 #endif /* HAVE_UNISTD_H */
 #endif /* HAVE_GETCWD */
 
+  // Set user locale properties based on setlocale()
+#ifdef HAVE_SETLOCALE
+  char *locale = setlocale (LC_ALL, "");
+  if (locale && strlen (locale) >= 2)
+    {
+      char buf[3];
+      buf[2] = '\0';
+      // copy the first two chars to user.language
+      strncpy (buf, locale, 2);
+      SET ("user.language", buf);
+      // if the next char is a '_', copy the two after that to user.region
+      locale += 2;
+      if (locale[0] == '_')
+        {
+	  locale++;
+	  strncpy (buf, locale, 2);
+	  SET ("user.region", buf);
+        }
+    }
+  else
+#endif /* HAVE_SETLOCALE */
+    {
+      SET ("user.language", "en");
+    }  
+
   // Set some properties according to whatever was compiled in with
   // `-D'.
   for (int i = 0; _Jv_Compiler_Properties[i]; ++i)
@@ -382,7 +407,7 @@ java::lang::System::init_properties (void)
 	  sb->append ((jchar) ';');
 #else
 	  sb->append ((jchar) ':');
-#endif;
+#endif
 	}
       if (cp != NULL)
 	sb->append (cp);

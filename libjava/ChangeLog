@@ -1,3 +1,11 @@
+2000-11-29  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natSystem.cc (init_properties): Set user.language and
+	user.region.
+	* configure.in: Check for setlocale.
+	* configure: Rebuilt.
+	* include/config.h.in: Rebuilt.
+
 2000-11-28  Warren Levy  <warrenl@cygnus.com>
 
 	* java/text/DateFormatSymbols.java (zoneStringsDefault): Added
@@ -5,7 +13,7 @@
 	* java/text/SimpleDateFormat.java (format): Added case for
 	TIMEZONE_FIELD.
 
-2000-11-28  Bryce McKinlay  <bryce@abatross.co.nz>
+2000-11-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/DataInputStream.java: Merge classpath docs. Call in.read()
 	directly rather than read() in all cases. Make primitive read 
