@@ -1,5 +1,5 @@
 // GROUPS passed vtable
-extern "C" printf (const char *, ...);
+extern "C" int printf (const char *, ...);
 extern "C" void exit(int);
 
 class A {

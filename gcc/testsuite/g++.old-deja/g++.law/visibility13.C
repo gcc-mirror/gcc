@@ -37,7 +37,7 @@ ostream& operator<<( ostream& os, Array<Type>& ar )
 template <class Type>
 void Array<Type>::print(ostream& os)
 {
-    const lineLength = 12;
+    const int lineLength = 12;
 
     os << "( " << size << " )< ";
     for (int ix = 0; ix < size; ++ix) {
