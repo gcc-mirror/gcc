@@ -1,0 +1,47 @@
+
+The fast-fixincludes system now, to the best of our collective belief,
+correctly implements exactly the same functionality as the previous
+fixincludes/fixinc.* shell scripts.  On most systems where many fixes
+are required, this is accomplished by putting most of the functionality
+into a binary executable.  On systems that had dedicated fixinc.* shell
+scripts, those scripts are still used by default until they can be
+converted.
+
+KNOWN PROBLEMS
+
+There may be some systems on which the fixinc binary program appears
+to be functional, but fails to work.  Current thinking is that this
+is due to some new process limitations (fork() calls) on those
+systems.  If you are experiencing this problem, then copy the script
+${src}/gcc/fixinc/inclhack.sh into ${builddir}/gcc/fixinc.sh and run
+make again.
+
+Oh, yes, please also report the problem with a description of
+the failure mode (symptoms) and the output from:
+
+        egcs/config.guess
+
+TO DO
+
+* fixincl needs to be converted to use gcc's system.h, libiberty, and
+  other portability frameworks.
+
+* FIXME: XXX needs to have tests for file descriptors > 10 or 12 added
+  to detect/solve XXX.
+
+* 
+
+
+
+THEORY OF OPS
+
+inclhack.def contains a list of potential fixes to be applied to the
+system headers.   This file is processed by autogen to make both a
+shell script and a binary to apply those fixes to your headers.
+If the binary cannot be built, the shell version will be used instead.
+
+If mkfixinc.sh determines that your system needs machine-specific
+fixes that have not yet been applied to inclhack.def, it will install
+and use the current fixinc.* for that system instead.
+
+
