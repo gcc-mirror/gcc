@@ -77,3 +77,4 @@ target_modules = { module= libjava; };
 target_modules = { module= zlib; };
 target_modules = { module= boehm-gc; };
 target_modules = { module= qthreads; };
+target_modules = { module= rda; };
