@@ -1,3 +1,15 @@
+2004-03-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* params.def (PARAM_MAX_SCHED_REGION_BLOCKS): New.
+	(PARAM_MAX_SCHED_REGION_INSNS): New.
+	* sched-rgn.c: Include params.h
+	(MAX_RGN_BLOCKS): Delete.
+	(MAX_RGN_INSNS): Delete.
+	(too_large): Return bool.  Convert to PARAM_VALUE.
+	* Makefile.in (sched-rgn): Depend on $(PARAMS_H).
+	* doc/invoke.texi (param): Document max-sched-region-blocks and
+	max-sched-region-insns.
+
 2004-03-22  Joel Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (is_subrange_type): Do not emit a subrange_type DIE
