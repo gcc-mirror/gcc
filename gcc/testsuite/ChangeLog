@@ -1,3 +1,8 @@
+2003-09-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/11409
+	* g++.dg/overload/builtin3.C: New test case.
+
 2003-09-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c/9862

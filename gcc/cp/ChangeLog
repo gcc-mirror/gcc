@@ -1,3 +1,10 @@
+2003-09-06  Roger Sayle  <roger@eyesopen.com>
+
+	PR c++/11409
+	* class.c (resolve_address_of_overloaded_function): When building
+	list of matching non-template function decls, ignore anticipated
+	declarations of undeclared or shadowed GCC builtins.
+
 2003-09-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR c++/11595
