@@ -1,3 +1,8 @@
+2004-12-08  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* resolve.c (resolve_code): Impose correct restrictions on
+	assigned variable.
+
 2004-12-02  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 

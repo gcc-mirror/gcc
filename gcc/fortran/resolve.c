@@ -3678,9 +3678,14 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
           if (code->label->defined == ST_LABEL_UNKNOWN)
             gfc_error ("Label %d referenced at %L is never defined",
                        code->label->value, &code->label->where);
-          if (t == SUCCESS && code->expr->ts.type != BT_INTEGER)
-	    gfc_error ("ASSIGN statement at %L requires an INTEGER "
-		       "variable", &code->expr->where);
+          if (t == SUCCESS
+	      && (code->expr->expr_type != EXPR_VARIABLE
+		  || code->expr->symtree->n.sym->ts.type != BT_INTEGER
+		  || code->expr->symtree->n.sym->ts.kind 
+		        != gfc_default_integer_kind
+		  || code->expr->symtree->n.sym->as != NULL))
+	    gfc_error ("ASSIGN statement at %L requires a scalar "
+		       "default INTEGER variable", &code->expr->where);
 	  break;
 
 	case EXEC_POINTER_ASSIGN:
