@@ -1,3 +1,8 @@
+2001-05-16  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/SimpleDateFormat.java (parse): Handle non-dst time
+	zones.
+
 2001-05-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/GregorianCalendar.java (computeTime): Only call

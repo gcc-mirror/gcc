@@ -518,6 +518,7 @@ public class SimpleDateFormat extends DateFormat
     // then this.equals() will no longer have the desired result.
     Calendar theCalendar = (Calendar) calendar.clone ();
     theCalendar.clear();
+    boolean saw_timezone = false;
     int quote_start = -1;
     for (; fmt_index < fmt_max; ++fmt_index)
       {
@@ -635,7 +636,6 @@ public class SimpleDateFormat extends DateFormat
 	    // We need a special case for the timezone, because it
 	    // uses a different data structure than the other cases.
 	    is_numeric = false;
-	    // We don't actually use this; see below.
 	    calendar_field = Calendar.DST_OFFSET;
 	    String[][] zoneStrings = formatData.getZoneStrings();
 	    int zoneCount = zoneStrings.length;
@@ -653,8 +653,16 @@ public class SimpleDateFormat extends DateFormat
 		if (k != strings.length)
 		  {
 		    found_zone = true;
+		    saw_timezone = true;
 		    TimeZone tz = TimeZone.getTimeZone (strings[0]);
 		    theCalendar.setTimeZone (tz);
+		    theCalendar.set (Calendar.ZONE_OFFSET, tz.getRawOffset ());
+		    offset = 0;
+		    if (k > 2 && tz instanceof SimpleTimeZone)
+		      {
+			SimpleTimeZone stz = (SimpleTimeZone) tz;
+			offset = stz.getDSTSavings ();
+		      }
 		    pos.setIndex(index + strings[k].length());
 		    break;
 		  }
@@ -698,19 +706,21 @@ public class SimpleDateFormat extends DateFormat
 	    value = i;
 	  }
 	else
-	  value = 0;
+	  value = offset;
 
 	// Assign the value and move on.
-	if (calendar_field != Calendar.DST_OFFSET)
-	  theCalendar.set(calendar_field, value);
+	theCalendar.set(calendar_field, value);
       }
 
     try
       {
-	// Clear calendar fields here to force getTime() to correctly
-	// respect DST in the timezone.
-	theCalendar.clear (Calendar.DST_OFFSET);
-	theCalendar.clear (Calendar.ZONE_OFFSET);
+	if (! saw_timezone)
+	  {
+	    // Use the real rules to determine whether or not this
+	    // particular time is in daylight savings.
+	    theCalendar.clear (Calendar.DST_OFFSET);
+	    theCalendar.clear (Calendar.ZONE_OFFSET);
+	  }
         return theCalendar.getTime();
       }
     catch (IllegalArgumentException x)
