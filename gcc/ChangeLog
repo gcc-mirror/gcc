@@ -1,3 +1,7 @@
+Mon Aug 24 19:45:40 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* tree.def (DECL_RESULT): Correct documentation.
+
 Tue Aug 25 01:15:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_before_p): New argument EQUIV;  Changed
