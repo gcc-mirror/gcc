@@ -1,5 +1,12 @@
 2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/16357
+	* config/mips/mips.c (mips_block_move_straight): Pass BLKmode memrefs
+	to mips_expand_unaligned_load, mips_expand_unaligned_store, and
+	move_by_pieces.
+
+2004-07-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR target/15869
 	* config/mips/mips.c (mips_avoid_hazards): Call split_all_insns_noflow.
 
