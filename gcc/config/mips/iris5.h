@@ -90,6 +90,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* We do not want to run mips-tfile!  */
 #undef ASM_FINAL_SPEC
 
+/* The system header files are C++ aware. */
+#define NO_IMPLICIT_EXTERN_C 1
+
 /* We don't support debugging info for now. */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
