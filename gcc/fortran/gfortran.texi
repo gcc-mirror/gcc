@@ -470,7 +470,7 @@ Not recommended:
 @end itemize
 
 Many Fortran programs only use a small subset of the available IO
-capabilities, so your milage may vary.
+capabilities, so your mileage may vary.
 
 @node Proposed Extensions
 @section Proposed Extensions
