@@ -1,3 +1,16 @@
+2005-03-23  Sven de Marothy  <sven@physto.se>
+
+	PR libgcj/2641, PR libgcj/9854, PR libgcj/14892, PR libgcj/18083,
+	PR libgcj/11085:
+	* java/util/Calendar.java
+	(set): Use starting day of week when one is needed if none is given.
+	* java/text/SimpleDateFormat.java
+	(parse): Handle 1-12 and 1-24 timestamps correctly.
+	* java/util/GregorianCalendar.java
+	(computeTime, computeFields): HOUR should be in 0-11 format.
+	(nonLeniencyCheck): Adjust leniency checking to that fact.
+	(getLinearDay): Should be private.
+
 2005-03-22  Mohan Embar  <gnustuff@thisiscool.com>
 	    David Daney  <ddaney@avtrex.com>
 
