@@ -2227,7 +2227,7 @@ finish_anon_union (anon_union_decl)
 
   if (static_p)
     {
-      make_decl_rtl (main_decl, 0, toplevel_bindings_p ());
+      make_decl_rtl (main_decl, 0);
       DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
       expand_anon_union_decl (anon_union_decl, 
 			      NULL_TREE,

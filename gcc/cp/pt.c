@@ -4525,7 +4525,7 @@ tsubst_friend_function (decl, args)
     {
       set_mangled_name_for_decl (new_friend);
       DECL_RTL (new_friend) = 0;
-      make_decl_rtl (new_friend, NULL_PTR, 1);
+      make_decl_rtl (new_friend, NULL_PTR);
     }
       
   if (DECL_NAMESPACE_SCOPE_P (new_friend))
@@ -5789,7 +5789,7 @@ tsubst_decl (t, args, type, in_decl)
 	      }
 	    
 	    DECL_RTL (r) = 0;
-	    make_decl_rtl (r, NULL_PTR, 1);
+	    make_decl_rtl (r, NULL_PTR);
 	    
 	    /* Like grokfndecl.  If we don't do this, pushdecl will
 	       mess up our TREE_CHAIN because it doesn't find a

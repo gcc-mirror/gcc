@@ -5244,7 +5244,7 @@ finish_struct_1 (t)
 	  && TREE_TYPE (x) == t)
 	{
 	  DECL_MODE (x) = TYPE_MODE (t);
-	  make_decl_rtl (x, NULL, 0);
+	  make_decl_rtl (x, NULL);
 	}
     }
 

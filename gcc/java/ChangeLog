@@ -1,3 +1,19 @@
+2001-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_utf8_ref): Remove last argument in call to
+	make_decl_rtl; use make_function_rtl instead of make_decl_rtl.
+	(build_class_ref): Likewise.
+	(build_static_field_ref): Likewise.
+	(get_dispatch_table): Likewise.
+	(layout_class_method): Likewise.
+	(emit_register_classes): Likewise.
+	* constants.c (build_constant_data_ref): Likewise.
+	* decl.c (builtin_function): Likewise.
+	(create_primitive_vtable): Likewise.
+	* expr.c (build_known_method_def): Likewise.
+	(build_jni_stub): Likewise.
+	(java_lang_expand_expr): Likewise.
+	
 2001-01-10  Tom Tromey  <tromey@redhat.com>
 
 	* jvspec.c (jvgenmain_spec): Omit -fencoding from cc1 invocation.

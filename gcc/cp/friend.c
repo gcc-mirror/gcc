@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -409,7 +409,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	    }
 	}
 
-      make_decl_rtl (decl, NULL_PTR, 1);
+      make_decl_rtl (decl, NULL_PTR);
       add_friend (current_class_type, 
 		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl);
       DECL_FRIEND_P (decl) = 1;

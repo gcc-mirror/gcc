@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -2367,7 +2367,7 @@ expand_body (fn)
     {
       /* Give the function RTL now so that we can assign it to a
 	 function pointer, etc.  */
-      make_function_rtl (fn);
+      make_decl_rtl (fn, NULL);
       /* Set DECL_EXTERNAL so that assemble_external will be called as
 	 necessary.  We'll clear it again in finish_file.  */
       if (!DECL_EXTERNAL (fn))

@@ -2758,7 +2758,7 @@ extern void set_yydebug			PARAMS ((int));
 extern void fixup_signed_type		PARAMS ((tree));
 
 /* varasm.c */
-extern void make_decl_rtl		PARAMS ((tree, const char *, int));
+extern void make_decl_rtl		PARAMS ((tree, const char *));
 extern void make_decl_one_only		PARAMS ((tree));
 extern int supports_one_only		PARAMS ((void));
 extern void variable_section		PARAMS ((tree, int));

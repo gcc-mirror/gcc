@@ -202,11 +202,6 @@ extern void function_section		PARAMS ((tree));
 /* Tell assembler to switch to the section for the exception table.  */
 extern void exception_section		PARAMS ((void));
 
-/* Create the rtl to represent a function, for a function definition.
-   DECL is a FUNCTION_DECL node which describes which function.
-   The rtl is stored into DECL.  */
-extern void make_function_rtl		PARAMS ((tree));
-
 /* Declare DECL to be a weak symbol.  */
 extern void declare_weak		PARAMS ((tree));
 #endif /* TREE_CODE */
@@ -224,15 +219,6 @@ extern void weak_finish			PARAMS ((void));
 extern int decode_reg_name		PARAMS ((const char *));
 
 #ifdef TREE_CODE
-/* Create the DECL_RTL for a declaration for a static or external variable
-   or static or external function.
-   ASMSPEC, if not 0, is the string which the user specified
-   as the assembler symbol name.
-   TOP_LEVEL is nonzero if this is a file-scope variable.
-
-   This is never called for PARM_DECL nodes.  */
-extern void make_decl_rtl		PARAMS ((tree, const char *, int));
-
 /* Make the rtl for variable VAR be volatile.
    Use this only for static variables.  */
 extern void make_var_volatile		PARAMS ((tree));

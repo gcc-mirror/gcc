@@ -3152,7 +3152,7 @@ builtin_function (name, type, function_code, class, library_name)
     DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
-  make_decl_rtl (decl, NULL_PTR, 1);
+  make_decl_rtl (decl, NULL_PTR);
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -5951,7 +5951,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
   declare_parm_level (1);
   current_binding_level->subblocks_tag_transparent = 1;
 
-  make_function_rtl (current_function_decl);
+  make_decl_rtl (current_function_decl, NULL);
 
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
   /* Promote the value to int before returning it.  */
