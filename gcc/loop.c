@@ -5467,6 +5467,7 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
       insn = p;
       while (1)
 	{
+	  rtx dest;
 	  do
 	    {
 	      insn = PREV_INSN (insn);
@@ -5479,21 +5480,26 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
 	  set = single_set (insn);
 	  if (set == 0)
 	    break;
+	  dest = SET_DEST (set);
+	  if (dest == x
+	      || (GET_CODE (dest) == SUBREG
+		  && (GET_MODE_SIZE (GET_MODE (dest)) <= UNITS_PER_WORD)
+		  && (GET_MODE_CLASS (GET_MODE (dest)) == MODE_INT)
+		  && SUBREG_REG (dest) == x))
+	    return basic_induction_var (loop, SET_SRC (set),
+					(GET_MODE (SET_SRC (set)) == VOIDmode
+					 ? GET_MODE (x)
+					 : GET_MODE (SET_SRC (set))),
+					dest_reg, insn,
+					inc_val, mult_val, location);
 
-	  if ((SET_DEST (set) == x
-	       || (GET_CODE (SET_DEST (set)) == SUBREG
-		   && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
-		       <= UNITS_PER_WORD)
-		   && (GET_MODE_CLASS (GET_MODE (SET_DEST (set)))
-		       == MODE_INT)
-		   && SUBREG_REG (SET_DEST (set)) == x))
-	      && basic_induction_var (loop, SET_SRC (set),
-				      (GET_MODE (SET_SRC (set)) == VOIDmode
-				       ? GET_MODE (x)
-				       : GET_MODE (SET_SRC (set))),
-				      dest_reg, insn,
-				      inc_val, mult_val, location))
-	    return 1;
+	  while (GET_CODE (dest) == SIGN_EXTRACT
+		 || GET_CODE (dest) == ZERO_EXTRACT
+		 || GET_CODE (dest) == SUBREG
+		 || GET_CODE (dest) == STRICT_LOW_PART)
+	    dest = XEXP (dest, 0);
+	  if (dest == x)
+	    break;
 	}
       /* Fall through.  */
 
