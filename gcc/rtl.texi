@@ -389,8 +389,7 @@ other functions or by aliasing.)  Stored in the
 @cindex @code{integrated}, in @code{insn}
 @item RTX_INTEGRATED_P (@var{insn})
 Nonzero in an insn if it resulted from an in-line function call.
-Stored in the @code{integrated} field and printed as @samp{/i}.  This
-may be deleted; nothing currently depends on it.
+Stored in the @code{integrated} field and printed as @samp{/i}.
 
 @findex SYMBOL_REF_USED
 @cindex @code{used}, in @code{symbol_ref}
