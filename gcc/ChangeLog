@@ -1,3 +1,8 @@
+2005-01-23  Steven Bosscher  <stevenb@suse.de>
+
+	* gengtype.c (walk_type): Produce `not equal to' compares for loop
+	tests, instead of `less than'.
+
 2005-01-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* function.c (assign_parm_setup_block): When creating a new stack slot

@@ -1679,7 +1679,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	    oprintf (d->of, "%*sif (%s != NULL) {\n", d->indent, "", d->val);
 	    d->indent += 2;
 	    oprintf (d->of, "%*ssize_t i%d;\n", d->indent, "", loopcounter);
-	    oprintf (d->of, "%*sfor (i%d = 0; i%d < (size_t)(", d->indent, "",
+	    oprintf (d->of, "%*sfor (i%d = 0; i%d != (size_t)(", d->indent, "",
 		     loopcounter, loopcounter);
 	    output_escaped_param (d, length, "length");
 	    oprintf (d->of, "); i%d++) {\n", loopcounter);
@@ -1715,7 +1715,7 @@ walk_type (type_p t, struct walk_type_data *d)
 	oprintf (d->of, "%*s{\n", d->indent, "");
 	d->indent += 2;
 	oprintf (d->of, "%*ssize_t i%d;\n", d->indent, "", loopcounter);
-	oprintf (d->of, "%*sfor (i%d = 0; i%d < (size_t)(", d->indent, "",
+	oprintf (d->of, "%*sfor (i%d = 0; i%d != (size_t)(", d->indent, "",
 		 loopcounter, loopcounter);
 	if (length)
 	  output_escaped_param (d, length, "length");
