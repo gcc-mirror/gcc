@@ -2588,6 +2588,12 @@ eliminate_regs (x, mem_mode, insn)
 	return x;
 
     case USE:
+      /* Handle insn_list USE that a call to a pure function may generate.  */
+      new = eliminate_regs (XEXP (x, 0), 0, insn);
+      if (new != XEXP (x, 0))
+	return gen_rtx_USE (GET_MODE (x), new);
+      return x;
+
     case CLOBBER:
     case ASM_OPERANDS:
     case SET:
