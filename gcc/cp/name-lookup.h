@@ -325,7 +325,6 @@ extern void push_local_binding (tree, tree, int);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree);
 extern bool push_class_level_binding (tree, tree);
-extern void storetags (tree);
 extern tree getdecls (void);
 extern tree cp_namespace_decls (tree);
 extern void set_decl_namespace (tree, tree, bool);

@@ -1,3 +1,7 @@
+2005-01-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h, name-lookup.h: Remove unused prototypes.
+
 2005-01-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/19375
