@@ -55,8 +55,6 @@
 	(build_ptrmemfunc): Use type_unknown_p.
 	(convert_for_assignment): Also do default_conversion on overloaded
 	functions.  Hand them off to ocp_convert.
-	* pt.c (convert_nontype_argument): Tell instantiate_type to complain.
-	Do complain about overload resolution producing a non-public fn.
 
 1998-10-26  Mark Mitchell  <mark@markmitchell.com>
 
