@@ -1,3 +1,7 @@
+Sun Jan 3 23:32:18 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Jan  3 23:00:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* optabs.c (emit_cmp_and_jump_insns): Use CONSTANT_P canonicalizing
