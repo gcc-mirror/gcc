@@ -1,6 +1,6 @@
 // Position types -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -64,6 +64,7 @@ namespace std
   typedef long long     __streamoff_base_type;
 #endif
 
+  /// Integral type for I/O operation counts and buffer sizes.
   typedef ptrdiff_t	streamsize; // Signed integral type
 
   template<typename _StateT>
@@ -127,19 +128,30 @@ namespace std
     }
   };
 
-  // In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
-  // implementation defined type. In this implementation it is a
-  // distinct class type.
-  // Note: In versions of GCC up to and including GCC 3.3, streamoff
-  // was typedef long.
+  /**
+   *  @brief  Type used by fpos, char_traits<char>, and char_traits<wchar_t>.
+   *
+   *  @if maint
+   *  In clauses 21.1.3.1 and 27.4.1 streamoff is described as an
+   *  implementation defined type. In this implementation it is a
+   *  distinct class type.
+   *  Note: In versions of GCC up to and including GCC 3.3, streamoff
+   *  was typedef long.
+   *  @endif
+  */
   typedef class streamoff streamoff;
 
-  // The standard fails to place any requiremens on the template
-  // argument StateT. In this implementation StateT must be
-  // DefaultConstructible, CopyConstructible and Assignable.  The
-  // standard only requires that fpos should contain a member of type
-  // StateT. In this implementation it also contains an offset stored
-  // as a signed integer.
+  /**
+   *  @brief  Class representing stream positions.
+   *
+   *  The standard places no requirements upon the template parameter StateT.
+   *  In this implementation StateT must be DefaultConstructible,
+   *  CopyConstructible and Assignable.  The standard only requires that fpos
+   *  should contain a member of type StateT. In this implementation it also
+   *  contains an offset stored as a signed integer.
+   *
+   *  @param  StateT  Type passed to and returned from state().
+   */
   template<typename _StateT>
     class fpos
     {
@@ -161,6 +173,7 @@ namespace std
       // fpos, but gives no meaningful semantics for this
       // conversion. In this implementation this constructor stores
       // the integer as the offset and default constructs the state.
+      /// Construct position from integer.
       fpos(__streamoff_base_type __off)
       : _M_off(__off), _M_state() { }
 
@@ -170,13 +183,16 @@ namespace std
       // implementation implicit conversion is also allowed, and this
       // constructor stores the streamoff as the offset and default
       // constructs the state.
+      /// Construct position from offset.
       fpos(const streamoff& __off)
       : _M_off(__off), _M_state() { }
 
+      /// Remember the value of @a st.
       void
       state(_StateT __st)
       { _M_state = __st; }
 
+      /// Return the last set value of @a st.
       _StateT
       state() const
       { return _M_state; }
@@ -185,10 +201,12 @@ namespace std
       // equivalence relation. In this implementation two fpos<StateT>
       // objects belong to the same equivalence class if the contained
       // offsets compare equal.
+      /// Test if equivalent to another position.
       bool
       operator==(const fpos& __other) const
       { return _M_off == __other._M_off; }
 
+      /// Test if not equivalent to another position.
       bool
       operator!=(const fpos& __other) const
       { return _M_off != __other._M_off; }
@@ -196,6 +214,7 @@ namespace std
       // The standard requires that this operator must be defined, but
       // gives no semantics. In this implemenation it just adds it's
       // argument to the stored offset and returns *this.
+      /// Add offset to this position.
       fpos&
       operator+=(const streamoff& __off)
       {
@@ -206,6 +225,7 @@ namespace std
       // The standard requires that this operator must be defined, but
       // gives no semantics. In this implemenation it just subtracts
       // it's argument from the stored offset and returns *this.
+      /// Subtract offset from this position.
       fpos&
       operator-=(const streamoff& __off)
       {
@@ -218,6 +238,7 @@ namespace std
       // implementation it constructs a copy of *this, adds the
       // argument to that copy using operator+= and then returns the
       // copy.
+      /// Add position and offset.
       fpos
       operator+(const streamoff& __off) const
       {
@@ -231,6 +252,7 @@ namespace std
       // implementation it constructs a copy of *this, subtracts the
       // argument from that copy using operator-= and then returns the
       // copy.
+      /// Subtract offset from position.
       fpos
       operator-(const streamoff& __off) const
       {
@@ -243,11 +265,13 @@ namespace std
       // defines it's semantics only in terms of operator+. In this
       // implementation it returns the difference between the offset
       // stored in *this and in the argument.
+      /// Subtract position to return offset.
       streamoff
       operator-(const fpos& __other) const
       { return _M_off - __other._M_off; }
     };
 
+  /// Construct offset from position.
   template<typename _StateT>
     inline
     streamoff::streamoff(const fpos<_StateT>& __pos)
@@ -256,7 +280,9 @@ namespace std
   // Clauses 21.1.3.1 and 21.1.3.2 describe streampos and wstreampos
   // as implementation defined types, but clause 27.2 requires that
   // they must both be typedefs for fpos<mbstate_t>
+  /// File position for char streams.
   typedef fpos<mbstate_t> streampos;
+  /// File position for wchar_t streams.
   typedef fpos<mbstate_t> wstreampos;
 } // namespace std
 
