@@ -1,3 +1,9 @@
+Sun Sep 19 09:03:40 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtl.h (insns_safe_to_move_p): New function.
+	* loop.c (find_and_verify_loops): Use it.
+	* rtlanal.c (insns_safe_to_move_p): Define it.
+
 Sat Sep 18 16:01:18 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2.h (CPP_SPEC): Support -[p]threads
