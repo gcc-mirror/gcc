@@ -791,22 +791,35 @@ const64_operand (op, mode)
 {
   return ((GET_CODE (op) == CONST_INT
 	   && SPARC_SIMM13_P (INTVAL (op)))
+#if HOST_BITS_PER_WIDE_INT != 64
 	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
+	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
+	      && (CONST_DOUBLE_HIGH (op) ==
+		  ((CONST_DOUBLE_LOW (op) & 0x80000000) != 0 ?
+		   0xffffffff : 0)))
+#endif
 	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
-/* The same, but considering what can fit for a sethi instruction.  */
+/* The same, but only for sethi instructions.  */
 int
 const64_high_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT
-	   && SPARC_SETHI_P (INTVAL (op)))
+	   && (INTVAL (op) & 0xfffffc00) != 0
+	   && SPARC_SETHI_P (INTVAL (op))
+#if HOST_BITS_PER_WIDE_INT != 64
+	   /* Must be positive on non-64bit host else the
+	      optimizer is fooled into thinking that sethi
+	      sign extends, even though it does not.  */
+	   && INTVAL (op) >= 0
+#endif
+	   )
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && CONST_DOUBLE_HIGH (op) == 0
+	      && (CONST_DOUBLE_LOW (op) & 0xfffffc00) != 0
 	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op)))
 	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
@@ -1006,14 +1019,29 @@ input_operand (op, mode)
   /* Allow any one instruction integer constant, and all CONST_INT
      variants when we are working in DImode and !arch64.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
-      && GET_CODE (op) == CONST_INT
-      && ((SPARC_SETHI_P (INTVAL (op))
-	   && (! TARGET_ARCH64
-	       || (INTVAL (op) >= 0)
-	       || mode == SImode))
-	  || SPARC_SIMM13_P (INTVAL (op))
-	  || (mode == DImode
-	      && ! TARGET_ARCH64)))
+      && ((GET_CODE (op) == CONST_INT
+	   && ((SPARC_SETHI_P (INTVAL (op))
+		&& (! TARGET_ARCH64
+		    || (INTVAL (op) >= 0)
+		    || mode == SImode))
+	       || SPARC_SIMM13_P (INTVAL (op))
+	       || (mode == DImode
+		   && ! TARGET_ARCH64)))
+	  || (TARGET_ARCH64
+	      && GET_CODE (op) == CONST_DOUBLE
+	      && ((CONST_DOUBLE_HIGH (op) == 0
+		   && SPARC_SETHI_P (CONST_DOUBLE_LOW (op)))
+		  ||
+#if HOST_BITS_PER_WIDE_INT == 64
+		  (CONST_DOUBLE_HIGH (op) == 0
+		   && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
+#else
+		  (SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))
+		   && (((CONST_DOUBLE_LOW (op) & 0x80000000) == 0
+			&& CONST_DOUBLE_HIGH (op) == 0)
+		       || (CONST_DOUBLE_HIGH (op) == -1)))
+#endif
+		  ))))
     return 1;
 
   /* Always match this.  */
@@ -1084,11 +1112,11 @@ sparc_emit_set_const32 (op0, op1)
   else
     temp = gen_reg_rtx (mode);
 
-  emit_insn (gen_rtx_SET (mode,
+  emit_insn (gen_rtx_SET (VOIDmode,
 			  temp,
 			  gen_rtx_HIGH (mode,
 					op1)));
-  emit_insn (gen_rtx_SET (mode,
+  emit_insn (gen_rtx_SET (VOIDmode,
 			  op0,
 			  gen_rtx_LO_SUM (mode,
 					  temp,
@@ -1116,8 +1144,8 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 
 	 sethi	%hi(symbol), %temp
 	 or	%temp, %lo(symbol), %reg  */
-      emit_insn (gen_rtx_SET (DImode, temp1, gen_rtx_HIGH (DImode, op1)));
-      emit_insn (gen_rtx_SET (DImode, op0, gen_rtx_LO_SUM (DImode, temp1, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, temp1, gen_rtx_HIGH (DImode, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, op0, gen_rtx_LO_SUM (DImode, temp1, op1)));
       break;
 
     case CM_MEDMID:
@@ -1135,7 +1163,7 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	 or	%temp3, %l44(symbol), %reg  */
       emit_insn (gen_seth44 (op0, op1));
       emit_insn (gen_setm44 (op0, op0, op1));
-      emit_insn (gen_rtx_SET (DImode, temp1,
+      emit_insn (gen_rtx_SET (VOIDmode, temp1,
 			      gen_rtx_ASHIFT (DImode, op0, GEN_INT (12))));
       emit_insn (gen_setl44 (op0, temp1, op1));
       break;
@@ -1166,9 +1194,9 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
       emit_insn (gen_sethh (op0, op1));
       emit_insn (gen_setlm (temp1, op1));
       emit_insn (gen_sethm (op0, op0, op1));
-      emit_insn (gen_rtx_SET (DImode, op0,
+      emit_insn (gen_rtx_SET (VOIDmode, op0,
 			      gen_rtx_ASHIFT (DImode, op0, GEN_INT (32))));
-      emit_insn (gen_rtx_SET (DImode, op0,
+      emit_insn (gen_rtx_SET (VOIDmode, op0,
 			      gen_rtx_PLUS (DImode, op0, temp1)));
       emit_insn (gen_setlo (op0, op0, op1));
       break;
@@ -1209,9 +1237,9 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	  emit_insn (gen_embmedany_textuhi (op0, op1));
 	  emit_insn (gen_embmedany_texthi  (temp1, op1));
 	  emit_insn (gen_embmedany_textulo (op0, op0, op1));
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_ASHIFT (DImode, op0, GEN_INT (32))));
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_PLUS (DImode, op0, temp1)));
 	  emit_insn (gen_embmedany_textlo  (op0, op0, op1));
 	}
@@ -1222,19 +1250,63 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
     }
 }
 
-/* This avoids problems when cross compiling. */
-static rtx safe_constDI	PROTO((HOST_WIDE_INT));
+/* These avoid problems when cross compiling.  If we do not
+   go through all this hair then the optimizer will see
+   invalid REG_EQUAL notes or in some cases none at all.  */
+static void sparc_emit_set_safe_HIGH64 PROTO ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_SET64 PROTO ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_OR64 PROTO ((rtx, HOST_WIDE_INT));
+static rtx gen_safe_XOR64 PROTO ((rtx, HOST_WIDE_INT));
 
-static rtx
-safe_constDI(val)
+#if HOST_BITS_PER_WIDE_INT == 64
+#define GEN_HIGHINT64(__x)		GEN_INT ((__x) & 0xfffffc00)
+#define GEN_INT64(__x)			GEN_INT (__x)
+#else
+#define GEN_HIGHINT64(__x) \
+	gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx, \
+			      (__x) & 0xfffffc00, 0)
+#define GEN_INT64(__x) \
+	gen_rtx_CONST_DOUBLE (VOIDmode, const0_rtx, \
+			      (__x) & 0xffffffff, \
+			      ((__x) & 0x80000000 \
+			       ? 0xffffffff : 0))
+#endif
+
+/* The optimizer is not to assume anything about exactly
+   which bits are set for a HIGH, they are unspecified.
+   Unfortunately this leads to many missed optimizations
+   during CSE.  We mask out the non-HIGH bits, and matches
+   a plain movdi, to alleviate this problem.  */
+static void
+sparc_emit_set_safe_HIGH64 (dest, val)
+     rtx dest;
      HOST_WIDE_INT val;
 {
-#if HOST_BITS_PER_WIDE_INT != 64
-  if (val & 0x80000000)
-    return immed_double_const (val, 0, DImode);
-  else
-#endif
-    return GEN_INT (val);
+  emit_insn (gen_rtx_SET (VOIDmode, dest, GEN_HIGHINT64 (val)));
+}
+
+static rtx
+gen_safe_SET64 (dest, val)
+     rtx dest;
+     HOST_WIDE_INT val;
+{
+  return gen_rtx_SET (VOIDmode, dest, GEN_INT64 (val));
+}
+
+static rtx
+gen_safe_OR64 (src, val)
+     rtx src;
+     HOST_WIDE_INT val;
+{
+  return gen_rtx_IOR (DImode, src, GEN_INT64 (val));
+}
+
+static rtx
+gen_safe_XOR64 (src, val)
+     rtx src;
+     HOST_WIDE_INT val;
+{
+  return gen_rtx_XOR (DImode, src, GEN_INT64 (val));
 }
 
 /* Worker routines for 64-bit constant formation on arch64.
@@ -1262,21 +1334,14 @@ sparc_emit_set_const64_quick1 (op0, temp, low_bits, is_neg)
   else
     high_bits = low_bits;
 
-  emit_insn (gen_rtx_SET (DImode, temp,
-			  gen_rtx_HIGH (DImode,
-					safe_constDI (high_bits))));
+  sparc_emit_set_safe_HIGH64 (temp, high_bits);
   if (!is_neg)
-    {
-      emit_insn (gen_rtx_SET (DImode, op0,
-			      gen_rtx_LO_SUM (DImode, temp,
-					      safe_constDI (high_bits))));
-    }
+    emit_insn (gen_rtx_SET (VOIDmode, op0,
+			    gen_safe_OR64 (temp, (high_bits & 0x3ff))));
   else
-    { /* as opposed to, say, tricky dick... */
-      rtx tricky_bits = safe_constDI (-0x400 | (low_bits & 0x3ff));
-      emit_insn (gen_rtx_SET (DImode, op0,
-			      gen_rtx_XOR (DImode, temp, tricky_bits)));
-    }
+    emit_insn (gen_rtx_SET (VOIDmode, op0,
+			    gen_safe_XOR64 (temp,
+					    (-0x400 | (low_bits & 0x3ff)))));
 }
 
 static void sparc_emit_set_const64_quick2
@@ -1295,33 +1360,29 @@ sparc_emit_set_const64_quick2 (op0, temp, high_bits, low_immediate, shift_count)
 
   if ((high_bits & 0xfffffc00) != 0)
     {
-      emit_insn (gen_rtx_SET (DImode, temp,
-			      gen_rtx_HIGH (DImode,
-					    safe_constDI (high_bits))));
+      sparc_emit_set_safe_HIGH64 (temp, high_bits);
       if ((high_bits & ~0xfffffc00) != 0)
-	emit_insn (gen_rtx_SET (DImode, op0,
-				gen_rtx_LO_SUM (DImode, temp,
-						safe_constDI (high_bits))));
+	emit_insn (gen_rtx_SET (VOIDmode, op0,
+				gen_safe_OR64 (temp, (high_bits & 0x3ff))));
       else
 	temp2 = temp;
     }
   else
     {
-      emit_insn (gen_rtx_SET (DImode, temp, safe_constDI (high_bits)));
+      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high_bits)));
       temp2 = temp;
     }
 
   /* Now shift it up into place. */
-  emit_insn (gen_rtx_SET (DImode, op0,
+  emit_insn (gen_rtx_SET (VOIDmode, op0,
 			  gen_rtx_ASHIFT (DImode, temp2,
 					  GEN_INT (shift_count))));
 
   /* If there is a low immediate part piece, finish up by
      putting that in as well.  */
   if (low_immediate != 0)
-    emit_insn (gen_rtx_SET (DImode, op0,
-			    gen_rtx_IOR (DImode, op0,
-					 safe_constDI (low_immediate & 0x3ff))));
+    emit_insn (gen_rtx_SET (VOIDmode, op0,
+			    gen_safe_OR64 (op0, low_immediate)));
 }
 
 static void sparc_emit_set_const64_longway
@@ -1345,21 +1406,17 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 
   if ((high_bits & 0xfffffc00) != 0)
     {
-      emit_insn (gen_rtx_SET (DImode,
-			      temp,
-			      gen_rtx_HIGH (DImode,
-					    safe_constDI (high_bits))));
+      sparc_emit_set_safe_HIGH64 (temp, high_bits);
       if ((high_bits & ~0xfffffc00) != 0)
-	emit_insn (gen_rtx_SET (DImode,
+	emit_insn (gen_rtx_SET (VOIDmode,
 				sub_temp,
-				gen_rtx_LO_SUM (DImode, temp,
-						safe_constDI (high_bits))));
+				gen_safe_OR64 (temp, (high_bits & 0x3ff))));
       else
 	sub_temp = temp;
     }
   else
     {
-      emit_insn (gen_rtx_SET (DImode, temp, safe_constDI (high_bits)));
+      emit_insn (gen_rtx_SET (VOIDmode, temp, GEN_INT (high_bits)));
       sub_temp = temp;
     }
 
@@ -1369,28 +1426,22 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
       rtx temp3 = gen_reg_rtx (DImode);
       rtx temp4 = gen_reg_rtx (DImode);
 
-      emit_insn (gen_rtx_SET (DImode, temp4,
+      emit_insn (gen_rtx_SET (VOIDmode, temp4,
 			      gen_rtx_ASHIFT (DImode, sub_temp,
 					      GEN_INT (32))));
 
-      /* Be careful, we must mask the bits here because otherwise
-	 on a 32-bit host the optimizer will think we're putting
-	 something like "-1" here and optimize it away.  */
-      emit_insn (gen_rtx_SET (DImode, temp2,
-			      gen_rtx_HIGH (DImode,
-					    safe_constDI (low_bits))));
+      sparc_emit_set_safe_HIGH64 (temp2, low_bits);
       if ((low_bits & ~0xfffffc00) != 0)
-	emit_insn (gen_rtx_SET (DImode, temp3,
-				gen_rtx_LO_SUM (DImode, temp2,
-						safe_constDI (low_bits))));
-      emit_insn (gen_rtx_SET (DImode, op0,
+	emit_insn (gen_rtx_SET (VOIDmode, temp3,
+				gen_safe_OR64 (temp2, (low_bits & 0x3ff))));
+      emit_insn (gen_rtx_SET (VOIDmode, op0,
 			      gen_rtx_PLUS (DImode, temp4, temp3)));
     }
   else
     {
-      rtx low1 = safe_constDI ((low_bits >> (32 - 12))          & 0xfff);
-      rtx low2 = safe_constDI ((low_bits >> (32 - 12 - 12))     & 0xfff);
-      rtx low3 = safe_constDI ((low_bits >> (32 - 12 - 12 - 8)) & 0x0ff);
+      rtx low1 = GEN_INT ((low_bits >> (32 - 12))          & 0xfff);
+      rtx low2 = GEN_INT ((low_bits >> (32 - 12 - 12))     & 0xfff);
+      rtx low3 = GEN_INT ((low_bits >> (32 - 12 - 12 - 8)) & 0x0ff);
       int to_shift = 12;
 
       /* We are in the middle of reload, so this is really
@@ -1398,10 +1449,10 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 	 avoid emmitting truly stupid code.  */
       if (low1 != const0_rtx)
 	{
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_ASHIFT (DImode, sub_temp,
 						  GEN_INT (to_shift))));
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_IOR (DImode, op0, low1)));
 	  sub_temp = op0;
 	  to_shift = 12;
@@ -1412,10 +1463,10 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 	}
       if (low2 != const0_rtx)
 	{
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_ASHIFT (DImode, sub_temp,
 						  GEN_INT (to_shift))));
-	  emit_insn (gen_rtx_SET (DImode, op0,
+	  emit_insn (gen_rtx_SET (VOIDmode, op0,
 				  gen_rtx_IOR (DImode, op0, low2)));
 	  sub_temp = op0;
 	  to_shift = 8;
@@ -1424,11 +1475,11 @@ sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits)
 	{
 	  to_shift += 8;
 	}
-      emit_insn (gen_rtx_SET (DImode, op0,
+      emit_insn (gen_rtx_SET (VOIDmode, op0,
 			      gen_rtx_ASHIFT (DImode, sub_temp,
 					      GEN_INT (to_shift))));
       if (low3 != const0_rtx)
-	emit_insn (gen_rtx_SET (DImode, op0,
+	emit_insn (gen_rtx_SET (VOIDmode, op0,
 				gen_rtx_IOR (DImode, op0, low3)));
       /* phew... */
     }
@@ -1482,7 +1533,7 @@ analyze_64bit_constant (high_bits, low_bits, hbsp, lbsp, abbasp)
      as one instruction!  */
   if (lowest_bit_set == -1
       || highest_bit_set == -1)
-    abort();
+    abort ();
   all_bits_between_are_set = 1;
   for (i = lowest_bit_set; i <= highest_bit_set; i++)
     {
@@ -1525,7 +1576,11 @@ const64_is_2insns (high_bits, low_bits)
       && all_bits_between_are_set != 0)
     return 1;
 
-  if ((highest_bit_set - lowest_bit_set) < 22)
+  if ((highest_bit_set - lowest_bit_set) < 21)
+    return 1;
+
+  if (high_bits == 0
+      || high_bits == 0xffffffff)
     return 1;
 
   return 0;
@@ -1553,7 +1608,7 @@ create_simple_focus_bits (high_bits, low_bits, highest_bit_set, lowest_bit_set, 
       hi = ((high_bits >> (lowest_bit_set - 32)) << shift);
     }
   if (hi & lo)
-    abort();
+    abort ();
   return (hi | lo);
 }
 
@@ -1577,7 +1632,7 @@ sparc_emit_set_const64 (op0, op1)
       || GET_CODE (op0) != REG
       || (REGNO (op0) >= SPARC_FIRST_FP_REG
 	  && REGNO (op0) <= SPARC_LAST_V9_FP_REG))
-    abort();
+    abort ();
 
   if (GET_CODE (op1) != CONST_DOUBLE
       && GET_CODE (op1) != CONST_INT)
@@ -1641,7 +1696,7 @@ sparc_emit_set_const64 (op0, op1)
        && all_bits_between_are_set != 0)
       || ((highest_bit_set - lowest_bit_set) < 12))
     {
-      rtx the_const = constm1_rtx;
+      HOST_WIDE_INT the_const = -1;
       int shift = lowest_bit_set;
 
       if (highest_bit_set == lowest_bit_set)
@@ -1650,29 +1705,29 @@ sparc_emit_set_const64 (op0, op1)
 	     can be done in one instruction.  */
 	  if (lowest_bit_set < 32)
 	    abort ();
-	  the_const = const1_rtx;
+	  the_const = 1;
 	}
       else if (all_bits_between_are_set == 0)
 	{
 	  the_const =
-	    safe_constDI (create_simple_focus_bits (high_bits, low_bits,
-						    highest_bit_set,
-						    lowest_bit_set, 0));
+	    create_simple_focus_bits (high_bits, low_bits,
+				      highest_bit_set,
+				      lowest_bit_set, 0);
 	}
       else if (lowest_bit_set == 0)
-	shift = -(64 - highest_bit_set);
-      emit_insn (gen_rtx_SET (DImode, temp, the_const));
+	shift = -(63 - highest_bit_set);
 
+      emit_insn (gen_safe_SET64 (temp, the_const));
       if (shift > 0)
-	emit_insn (gen_rtx_SET (DImode,
+	emit_insn (gen_rtx_SET (VOIDmode,
 				op0,
 				gen_rtx_ASHIFT (DImode,
 						temp,
 						GEN_INT (shift))));
       else if (shift < 0)
-	emit_insn (gen_rtx_SET (DImode,
+	emit_insn (gen_rtx_SET (VOIDmode,
 				op0,
-				gen_rtx_ASHIFTRT (DImode,
+				gen_rtx_LSHIFTRT (DImode,
 						  temp,
 						  GEN_INT (-shift))));
       else
@@ -1691,22 +1746,21 @@ sparc_emit_set_const64 (op0, op1)
       unsigned HOST_WIDE_INT focus_bits =
 	create_simple_focus_bits (high_bits, low_bits,
 				  highest_bit_set, lowest_bit_set, 10);
-      emit_insn (gen_rtx_SET (DImode,
-			      temp,
-			      gen_rtx_HIGH (DImode, safe_constDI (focus_bits))));
+      sparc_emit_set_safe_HIGH64 (temp, focus_bits);
 
+      /* If lowest_bit_set == 10 then a sethi alone could have done it.  */
       if (lowest_bit_set < 10)
-	emit_insn (gen_rtx_SET (DImode,
+	emit_insn (gen_rtx_SET (VOIDmode,
 				op0,
-				gen_rtx_ASHIFTRT (DImode, temp,
+				gen_rtx_LSHIFTRT (DImode, temp,
 						  GEN_INT (10 - lowest_bit_set))));
-      else if (lowest_bit_set >= 10)
-	emit_insn (gen_rtx_SET (DImode,
+      else if (lowest_bit_set > 10)
+	emit_insn (gen_rtx_SET (VOIDmode,
 				op0,
 				gen_rtx_ASHIFT (DImode, temp,
 						GEN_INT (lowest_bit_set - 10))));
       else
-	abort();
+	abort ();
       return;
     }
 
@@ -1747,13 +1801,13 @@ sparc_emit_set_const64 (op0, op1)
 	  || (((~high_bits) & 0xffffffff) == 0xffffffff
 	      && ((~low_bits) & 0x80000000) != 0))
 	{
-	  rtx fast_int = GEN_INT (~low_bits & 0xffffffff);
+	  HOST_WIDE_INT fast_int = (~low_bits & 0xffffffff);
 
-	  if (input_operand (fast_int, DImode))
-	    emit_insn (gen_rtx_SET (DImode, temp,
-				    safe_constDI (~low_bits & 0xffffffff)));
+	  if (SPARC_SETHI_P (fast_int)
+	      || SPARC_SIMM13_P (((int)fast_int)))
+	    emit_insn (gen_safe_SET64 (temp, fast_int));
 	  else
-	    sparc_emit_set_const64 (temp, fast_int);
+	    sparc_emit_set_const64 (temp, GEN_INT64 (fast_int));
 	}
       else
 	{
@@ -1762,16 +1816,16 @@ sparc_emit_set_const64 (op0, op1)
 	  negated_const = GEN_INT (((~low_bits) & 0xfffffc00) |
 				   (((HOST_WIDE_INT)((~high_bits) & 0xffffffff))<<32));
 #else
-	  negated_const = gen_rtx_CONST_DOUBLE (DImode, NULL_RTX,
+	  negated_const = gen_rtx_CONST_DOUBLE (DImode, const0_rtx,
 						(~low_bits) & 0xfffffc00,
 						(~high_bits) & 0xffffffff);
 #endif
 	  sparc_emit_set_const64 (temp, negated_const);
 	}
-      emit_insn (gen_rtx_SET (DImode,
+      emit_insn (gen_rtx_SET (VOIDmode,
 			      op0,
-			      gen_rtx_XOR (DImode, temp,
-					   safe_constDI (-0x400 | trailing_bits))));
+			      gen_safe_XOR64 (temp,
+					      (-0x400 | trailing_bits))));
       return;
     }
 
@@ -1786,14 +1840,14 @@ sparc_emit_set_const64 (op0, op1)
       /* We can't get here in this state.  */
       if (highest_bit_set < 32
 	  || lowest_bit_set >= 32)
-	abort();
+	abort ();
 
       /* So what we know is that the set bits straddle the
 	 middle of the 64-bit word.  */
       hi = (low_bits >> lowest_bit_set);
       lo = (high_bits << (32 - lowest_bit_set));
       if (hi & lo)
-	abort();
+	abort ();
       focus_bits = (hi | lo);
       sparc_emit_set_const64_quick2 (op0, temp,
 				     focus_bits, 0,
@@ -3685,7 +3739,7 @@ function_arg_record_value (type, mode, slotno, named, regbase)
 	nregs = SPARC_INT_ARG_MAX - slotno;
     }
   if (nregs == 0)
-    abort();
+    abort ();
 
   parms.ret = gen_rtx_PARALLEL (mode, rtvec_alloc (nregs));
 
@@ -4489,7 +4543,7 @@ epilogue_renumber (where)
 
     default:
       debug_rtx (*where);
-      abort();
+      abort ();
     }
 }
 
@@ -4611,7 +4665,7 @@ sparc_splitdi_legitimate(reg, mem)
 
   /* Punt if we are here by mistake.  */
   if (! reload_completed)
-    abort();
+    abort ();
 
   /* We must have an offsettable memory reference.  */
   if (! offsettable_memref_p (mem))
