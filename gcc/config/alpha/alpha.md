@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -2244,9 +2244,9 @@
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF 
 	 (match_operator 3 "signed_comparison_operator"
-			 [(match_operand:DF 1 "reg_or_fp0_operand" "fG,fG")
+			 [(match_operand:DF 4 "reg_or_fp0_operand" "fG,fG")
 			  (match_operand:DF 2 "fp0_operand" "G,G")])
-	 (float_extend:DF (match_operand:SF 4 "reg_or_fp0_operand" "fG,0"))
+	 (float_extend:DF (match_operand:SF 1 "reg_or_fp0_operand" "fG,0"))
 	 (match_operand:DF 5 "reg_or_fp0_operand" "0,fG")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "@
