@@ -210,6 +210,7 @@ extern const char *ia64_fixed_range_string;
    defines in other tm.h files.  */
 #define CPP_SPEC \
   "%{mcpu=itanium:-D__itanium__} %{mbig-endian:-D__BIG_ENDIAN__}	\
+   %(cpp_cpu)	\
    -D__LONG_MAX__=9223372036854775807L"
 
 /* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
