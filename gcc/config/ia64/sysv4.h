@@ -84,9 +84,15 @@ while (0)
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fputs ("\tdata8\t @fptr(", FILE);					\
+    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
+      fputs ("\tdata8\t ", FILE);					\
+    else								\
+      fputs ("\tdata8\t @fptr(", FILE);					\
     assemble_name (FILE, NAME);						\
-    fputs (")\n", FILE);						\
+    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
+      fputs ("\n", FILE);						\
+    else								\
+      fputs (")\n", FILE);						\
   } while (0)
 
 /* A C statement (sans semicolon) to output an element in the table of
@@ -96,9 +102,15 @@ while (0)
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fputs ("\tdata8\t @fptr(", FILE);					\
+    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
+      fputs ("\tdata8\t ", FILE);					\
+    else								\
+      fputs ("\tdata8\t @fptr(", FILE);					\
     assemble_name (FILE, NAME);              				\
-    fputs (")\n", FILE);						\
+    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
+      fputs ("\n", FILE);						\
+    else								\
+      fputs (")\n", FILE);						\
   } while (0)
 
 /* svr4.h undefines this, so we need to define it here.  */

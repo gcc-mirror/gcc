@@ -1,3 +1,37 @@
+Wed May  3 11:43:53 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Add check for
+	TREE_ASM_WRITTEN.
+
+2000-05-03  David Mosberger  <davidm@hpl.hp.com>
+
+	* config/ia64/ia64.c (ia64_override_options): Force -mconstant-gp
+	if -mauto-pic is on.
+	(ia64_epilogue_uses): Mark "gp" (r1) as used by the epilogue if
+	-mconstant-gp is in effect and function-descriptors are being used
+	to make indirect calls.
+	* config/ia64/ia64.h (MASK_CONST_GP): New macro.
+	(MASK_AUTO_PIC): Ditto.
+	(TARGET_CONST_GP): Ditto.
+	(TARGET_AUTO_PIC): Ditto.
+	(TARGET_SWITCHES): Add -mconstant-gp and -mauto-pic options.
+	(ASM_OUTPUT_DOUBLE_INT): Don't generate @fptr() if -mauto-pic or
+	-mno-pic is in effect.
+	(ASM_OUTPUT_XDATA_DOUBLE_INT): Ditto.
+	* config/ia64/ia64.md (movdi): Use gen_load_gprel64() if
+	-mauto-pic is in effect.
+	(gprel64_offset): New pattern.
+	(load_gprel64): Ditto.
+	(call): Handle -mauto-pic like -mno-pic (don't use fptr).  If
+	-mconstant-gp is in effect, no need to preserve gp around direct
+	calls.
+	(call_value): Ditto.
+	* config/ia64/linux.h (PROFILE_BEFORE_PROLOGUE): Define.
+	(FUNCTION_PROFILER): Define.
+	* config/ia64/sysv4.h (ASM_OUTPUT_CONSTRUCTOR): Don't generate
+	@fptr() directive when -mno-pic or -mauto-pic is in effect.
+	(ASM_OUTPUT_DESTRUCTOR): Ditto.
+
 2000-05-03  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (STAGESTUFF): Add libgcc libgcc.mk.

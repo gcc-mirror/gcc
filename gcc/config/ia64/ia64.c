@@ -2057,6 +2057,9 @@ ia64_mark_machine_status (p)
 void
 ia64_override_options ()
 {
+  if (TARGET_AUTO_PIC)
+    target_flags |= MASK_CONST_GP;
+
   if (ia64_fixed_range_string)
     fix_range (ia64_fixed_range_string);
 
@@ -2707,6 +2710,14 @@ int
 ia64_epilogue_uses (regno)
      int regno;
 {
+  /* When a function makes a call through a function descriptor, we
+     will write a (potentially) new value to "gp".  After returning
+     from such a call, we need to make sure the function restores the
+     original gp-value, even if the function itself does not use the
+     gp anymore.  */
+  if (regno == R_GR(1) && TARGET_CONST_GP && !(TARGET_AUTO_PIC || TARGET_NO_PIC))
+    return 1;
+
   /* For functions defined with the syscall_linkage attribute, all input
      registers are marked as live at all function exits.  This prevents the
      register allocator from using the input registers, which in turn makes it
@@ -2810,6 +2821,14 @@ ia64_encode_section_info (decl)
 	 instead.  */
       if (! strcmp (str, "__CTOR_LIST__")
 	  || ! strcmp (str, "__DTOR_END__"))
+	;
+
+      /* If the variable has already been defined in the output file, then it
+	 is too late to put it in sdata if it wasn't put there in the first
+	 place.  The test is here rather than above, because if it is already
+	 in sdata, then it can stay there.  */
+	 
+      else if (TREE_ASM_WRITTEN (decl))
 	;
 
       /* If this is an incomplete type with size 0, then we can't put it in

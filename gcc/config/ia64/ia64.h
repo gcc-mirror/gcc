@@ -66,6 +66,10 @@ extern int target_flags;
 
 #define MASK_NO_SDATA   0x00000080	/* Disable sdata/scommon/sbss.  */
 
+#define MASK_CONST_GP	0x00000100	/* treat gp as program-wide constant */
+
+#define MASK_AUTO_PIC	0x00000200	/* generate automatically PIC */
+
 #define MASK_DWARF2_ASM 0x40000000	/* test dwarf2 line info via gas.  */
 
 #define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
@@ -84,13 +88,17 @@ extern int target_flags;
 
 #define TARGET_NO_SDATA		(target_flags & MASK_NO_SDATA)
 
+#define TARGET_CONST_GP		(target_flags & MASK_CONST_GP)
+
+#define TARGET_AUTO_PIC		(target_flags & MASK_AUTO_PIC)
+
 #define TARGET_DWARF2_ASM	(target_flags & MASK_DWARF2_ASM)
 
 /* This macro defines names of command options to set and clear bits in
    `target_flags'.  Its definition is an initializer with a subgrouping for
    each command option.  */
 
-#define TARGET_SWITCHES \
+#define TARGET_SWITCHES							\
 {									\
   { "big-endian",	MASK_BIG_ENDIAN,				\
       "Generate big endian code" },					\
@@ -118,6 +126,10 @@ extern int target_flags;
       "Disable use of sdata/scommon/sbss"},				\
   { "sdata",		-MASK_NO_SDATA,					\
       "Enable use of sdata/scommon/sbss"},				\
+  { "constant-gp",	MASK_CONST_GP,					\
+      "gp is constant (but save/restore gp on indirect calls)" },	\
+  { "auto-pic",		MASK_AUTO_PIC,					\
+      "Generate self-relocatable code" },				\
   { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
       "Enable Dwarf 2 line debug info via GNU as"},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
@@ -2116,10 +2128,10 @@ do {									\
 #define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)				\
 do {									\
   fprintf (FILE, "\tdata8\t");						\
-  if (SYMBOL_REF_FLAG (VALUE))						\
+  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC) && SYMBOL_REF_FLAG (VALUE))	\
     fprintf (FILE, "@fptr(");						\
   output_addr_const (FILE, (VALUE));					\
-  if (SYMBOL_REF_FLAG (VALUE))						\
+  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC) && SYMBOL_REF_FLAG (VALUE))	\
     fprintf (FILE, ")");						\
   fprintf (FILE, "\n");							\
 } while (0)
@@ -2161,16 +2173,16 @@ do {									\
 
 #define ASM_OUTPUT_XDATA_DOUBLE_INT(FILE, SECTION, VALUE)		\
 do {									\
+  int need_closing_paren = 0;						\
   fprintf (FILE, "\t.xdata8\t\"%s\", ", SECTION);			\
-  if (GET_CODE (VALUE) == SYMBOL_REF)					\
+  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC)				\
+      && GET_CODE (VALUE) == SYMBOL_REF)				\
     {									\
-      if (SYMBOL_REF_FLAG (VALUE))					\
-	fprintf (FILE, "@fptr(");					\
-      else								\
-	fprintf (FILE, "@segrel(");					\
+      fprintf (FILE, SYMBOL_REF_FLAG (VALUE) ? "@fptr(" : "@segrel(");	\
+      need_closing_paren = 1;						\
     }									\
-  output_addr_const (FILE, (VALUE));					\
-  if (GET_CODE (VALUE) == SYMBOL_REF)					\
+  output_addr_const (FILE, VALUE);					\
+  if (need_closing_paren)						\
     fprintf (FILE, ")");						\
   fprintf (FILE, "\n");							\
 } while (0)
