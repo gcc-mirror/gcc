@@ -3736,7 +3736,9 @@ simplify_rtx (x, op0_mode, last, in_dest)
       if (GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 	break;
 
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+				    GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))))
 	SUBST (XEXP (x, 0),
 	       force_to_mode (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
 			      GET_MODE_MASK (mode), NULL_RTX, 0));
