@@ -1,3 +1,13 @@
+2000-06-19  Anthony Williams  <anthony@anthonyw.cjb.net>
+	
+	* testsuite/21_strings/find.cc: Empty strings can be found at all
+	positions. Modified.
+
+2000-06-19  Branko Cibej  <branko.cibej@hermes.si>
+
+        * testsuite/20_utilities: New directory.	
+        * testsuite/20_utilities/auto_ptr.cc: New file.
+	
 2000-06-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
       	* src/Makefile.am (string_sources): Simplify, assuming that with

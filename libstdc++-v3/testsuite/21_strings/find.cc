@@ -1,6 +1,6 @@
 // 1999-06-09 bkoz
 
-// Copyright (C) 1994, 1999 Free Software Foundation, Inc.
+// Copyright (C) 1994, 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,21 +56,16 @@ bool test01(void)
   test &= csz01 == 8;
   csz01 = str01.find(str03, 12);
   test &= csz01 == npos;
-  // It is implementation-defined if a given string contains an empty
-  // string. The only two times a char_type() (== empty string) ending
-  // element is required to be part of the string is on c_str() and
-  // operator[size()] const: the indeterminate, stored state of the
-  // string can vary, and not include a terminal char_type().
   csz01 = str01.find(str04, 0);
-  test &= csz01 == npos || csz01 == str01.size();
+  test &= csz01 == 0;
   csz01 = str01.find(str04, 5);
-  test &= csz01 == npos || csz01 == str01.size();
+  test &= csz01 == 5;
   
   // size_type find(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find(str_lit01, 0, 3);
   test &= csz01 == 0;
   csz01 = str01.find(str_lit01, 3, 0);
-  test &= csz01 == npos;
+  test &= csz01 == 3;
 
   // size_type find(const char* s, size_type pos = 0) const;
   csz01 = str01.find(str_lit01);
@@ -107,15 +102,17 @@ bool test01(void)
   csz01 = str01.find_first_of(str05, 4);
   test &= csz01 == 4;
 
-  // It is implementation-defined if a given string contains an empty
-  // string. The only two times a char_type() (== empty string) ending
-  // element is required to be part of the string is on c_str() and
-  // operator[size()] const: the indeterminate, stored state of the
-  // string can vary, and not include a terminal char_type().
+  // An empty string consists of no characters
+  // therefore it should be found at every point in a string,
+  // except beyond the end
   csz01 = str01.find_first_of(str04, 0);
-  test &= csz01 == npos || csz01 == str01.size();
+  test &= csz01 == npos;
   csz01 = str01.find_first_of(str04, 5);
-  test &= csz01 == npos || csz01 == str01.size();
+  test &= csz01 == npos;
+  csz01 = str01.find(str04, str01.size());
+  test &= csz01 == str01.size();
+  csz01 = str01.find(str04, str01.size() + 1);
+  test &= csz01 == npos;
   
   // size_type find_first_of(const char* s, size_type pos, size_type n) const;
   csz01 = str01.find_first_of(str_lit01, 0, 3);
