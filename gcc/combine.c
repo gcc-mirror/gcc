@@ -1835,8 +1835,13 @@ try_combine (i3, i2, i1)
 	  if (split_code == MULT
 	      && GET_CODE (XEXP (*split, 1)) == CONST_INT
 	      && (i = exact_log2 (INTVAL (XEXP (*split, 1)))) >= 0)
-	    SUBST (*split, gen_rtx_combine (ASHIFT, split_mode,
-					    XEXP (*split, 0), GEN_INT (i)));
+	    {
+	      SUBST (*split, gen_rtx_combine (ASHIFT, split_mode,
+					      XEXP (*split, 0), GEN_INT (i)));
+	      /* Update split_code because we may not have a multiply
+		 anymore.  */
+	      split_code = GET_CODE (*split);
+	    }
 
 #ifdef INSN_SCHEDULING
 	  /* If *SPLIT is a paradoxical SUBREG, when we split it, it should
