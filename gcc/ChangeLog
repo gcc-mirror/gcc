@@ -1,3 +1,10 @@
+2004-01-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): lo_sum
+	addresses are legitimate on Darwin even when flag_pic.
+	(rs6000_legitimize_reload_address) [TARGET_MACHO]: Don't create
+	non-offsettable addresses for loads of TFmode constants.
+
 2004-01-08  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (ASM_OUTPUT_ALIGNED_BSS): Actually emit
