@@ -1,3 +1,7 @@
+2004-11-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (thread_jumps): Fix a comment typo.
+
 2004-10-31  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/ieee754-sf.S (floatdisf): Fix regression with
