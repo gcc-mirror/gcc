@@ -50,7 +50,12 @@ namespace std {
   typedef _IO_off_t  	wstreamoff;
 #endif
 
-  typedef _IO_lock_t	__c_lock;
+#ifdef _GLIBCPP_USE_THREADS
+  typedef _IO_lock_t   __c_lock;
+#else
+  typedef int          __c_lock;
+#endif
+
 
 // from basic_file.h
 #define _GLIBCPP_BASIC_FILE_INHERITANCE 1

@@ -1,3 +1,87 @@
+2000-10-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * include/bits/stl_pair.h (make_pair): Add LWG solution.
+
+        * testsuite/21_strings/compare.cc (test01): Inject namespace std
+	into the mix.
+
+	* mkcheck.in (MAX_MEM_USAGE): Bump up to 3072. Strangely enough,
+	this works. 
+
+2000-10-24  Levente Farkas  <lfarkas@mindmaker.hu>
+
+	* include/bits/std_bitset.h (_M_do_find_next): Fix typo.
+
+2000-10-24  Phil Edwards  <pme@sources.redhat.com>
+
+        * acconfig.h:  List _GLIBCPP_USE_THREADS.
+        * acinclude.m4:  General formatting cleanup (tabs/spaces), typo
+          correction, etc.  Add comments about following *real* changes
+          where they are used.
+          (GLIBCPP_ENABLE_C_MBCHAR):  New test...
+          (GLIBCPP_CHECK_WCHAR_T_SUPPORT):  ...results used here.
+          (GLIBCPP_ENABLE_CSTDIO):  Define need_wlibio iff wide characters
+          are requested.
+          (GLIBCPP_ENABLE_THREADS):  If threads are used, define new
+          macro _GLIBCPP_USE_THREADS in c++config.h.
+          (GLIBCPP_ENABLE_SHADOW):  For C_INCLUDE_DIR, change () to {} as
+          this is used in both makefiles and shell scripts (mkcheck).
+        * configure.in:  Call GLIBCPP_ENABLE_C_MBCHAR.
+
+        * libio/_G_config.h:  Wrap _IO_MTSAFE_IO in _GLIBCPP_USE_THREADS.
+        * config/c_io_libio.h:  In nonthreaded case, typedef __c_lock to
+          something harmless, like int.
+
+        * config/os/aix/bits/os_defines.h:  Guard with _GLIBCPP_OS_DEFINES,
+          add comment/instructions.
+        * config/os/bsd/bits/os_defines.h:  Ditto.
+        * config/os/generic/bits/os_defines.h:  Ditto.
+        * config/os/gnu-linux/bits/os_defines.h:  Ditto.
+        * config/os/irix/bits/os_defines.h:  Ditto.
+        * config/os/newlib/bits/os_defines.h:  Ditto.
+        * config/os/solaris/solaris2.5/bits/os_defines.h:  Ditto.
+        * config/os/solaris/solaris2.6/bits/os_defines.h:  Ditto.
+
+        * mkcheck.in:  Limit the available heap size for testsuite
+          binaries, initially at 2MB.
+
+2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/21_strings/compare.cc (test01): Add using declarations.
+
+	* include/c_std/bits/std_cerrno.h: And here.
+	* include/c_std/bits/std_cassert.h: Tweaks.
+
+	* mkcheck.in: Simplify.
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): Simplify.
+	(GLIBCPP_ENABLE_LONG_LONG): Same.
+	* aclocal.m4: Regenerate.
+
+	* src/Makefile.am (c_shadow_headers): Add features.h,
+	bits/wrap_features.h.
+	* src/Makefile.in: Regenerate.
+	* include/c_std/features.h: New file.
+	* include/c_std/bits/wrap_features.h (_CPP_WRAP_FEATURES_H): New
+	file. Need to have c++config.h included before this file so
+	_ISOC99_SOURCE around.
+
+	* include/c_std/sys/cdefs.h: Hack.
+	* include/c_std/stdlib.h: Same, use c++config.h.
+	* include/c_std/bits/std_cstdlib.h: Use _GLIBCPP_HAVE_STRTOLD.
+
+	* include/c_std/bits/std_cassert.h: Fix.
+	* include/c_std/bits/std_cerrno.h: Make consistent.
+
+	* include/c_std/bits/std_csetjmp.h (setjmp): Unscope global
+	declaration from ::_C_legacy to _C_legacy.
+
+	* include/c_std/bits/std_cstdio.h: same with printf.
+	* include/c_std/stdio.h: And here.
+
+	* include/c_std/bits/std_cstdlib.h: abort, exit comment.
+	* include/c_std/stdlib.h: Same here.
+	
 2000-10-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/compare.cc (test01): Add using declarations.

@@ -6,7 +6,9 @@
 
 #ifndef _LIBC
 # include <bits/c++config.h>
-# define _IO_MTSAFE_IO
+# ifdef _GLIBCPP_USE_THREADS
+#   define _IO_MTSAFE_IO
+# endif
 #endif
 
 /* Define types for libio in terms of the standard internal type names.  */
