@@ -24,6 +24,11 @@ extern void __assert(const char *, const char *, int);
 #endif  /* ALPHA___ASSERT_CHECK */
 
 
+#if defined( ALPHA_ASSERT_CHECK )
+#define assert(EX) ((EX) ? (void)0 : __assert(#EX, __FILE__, __LINE__))
+#endif  /* ALPHA_ASSERT_CHECK */
+
+
 #if defined( BROKEN_ASSERT_STDIO_CHECK )
 extern FILE* stderr;
 #endif  /* BROKEN_ASSERT_STDIO_CHECK */

@@ -5,6 +5,12 @@
         * config/rs6000/rs6000.c (rs6000_legitimate_address): Disallow
         PRE_INC and PRE_DEC for altivec modes.
 
+2002-05-01  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/check.tpl(set-writable): make sure the function exists first
+	* fixinc/inclhack.def(alpha_assert): fix test_text
+	* fixinc/tests/base/assert.h: add in missing result
+
 2002-05-01  Jeff Law  <law@redhat.com>
 
 	* pa.h (EXTRA_CONSTRAINT): Don't accept PIC addresses for the
