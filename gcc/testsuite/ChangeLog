@@ -1,3 +1,7 @@
+Fri Nov  8 10:52:15 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20021108-1.c: New testcase for x86-64 failure.
+
 2002-11-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vthunk3.C: New test.
