@@ -1,3 +1,11 @@
+2004-10-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17407
+	* gcc.c-torture/compile/pr17407.c: New test.
+
+	PR c++/18121
+	* g++.dg/template/array8.C: New test.
+
 2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18138

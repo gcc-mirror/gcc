@@ -4333,9 +4333,12 @@ build_array_type (tree elt_type, tree index_type)
   t = make_node (ARRAY_TYPE);
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
-
+  
   if (index_type == 0)
-    return t;
+    {
+      layout_type (t);
+      return t;
+    }
 
   hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
   hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);

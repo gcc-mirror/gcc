@@ -1,3 +1,10 @@
+2004-10-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17407
+	* c-decl.c (grokdeclarator) <case cdk_array>: Remove the call
+	layout_type as it is already done by build_array_type.
+	* tree.c (build_array_type): Layout the type even
+
 2004-10-25  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/linux.h (TARGET_C99_FUNCTIONS): Define to 0.

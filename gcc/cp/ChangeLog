@@ -1,3 +1,9 @@
+2004-10-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18121
+	* decl.c (grokdeclarator) <case cdk_array>: Remove the call
+	layout_type as it is already done by create_array_type_for_decl.
+
 2004-10-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18095
