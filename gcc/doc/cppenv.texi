@@ -66,7 +66,8 @@ with an optional @option{-MT} switch too.
 This variable is the same as the environment variable
 @env{DEPENDENCIES_OUTPUT} (@pxref{DEPENDENCIES_OUTPUT}), except that
 system header files are not ignored, so it implies @option{-M} rather
-than @option{-MM}.
+than @option{-MM}.  However, the dependence on the main input file is
+omitted.
 @ifset cppmanual
 @xref{Invocation}.
 @end ifset

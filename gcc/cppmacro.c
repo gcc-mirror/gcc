@@ -613,7 +613,20 @@ collect_args (pfile, node)
     }
 
   if (!error)
-    return base_buff;
+    {
+      /* GCC has special semantics for , ## b where b is a varargs
+	 parameter: we remove the comma if b was omitted entirely.
+	 If b was merely an empty argument, the comma is retained.
+	 If the macro takes just one (varargs) parameter, then we
+	 retain the comma only if we are standards conforming.
+
+	 If FIRST is NULL replace_args () swallows the comma.  */
+      if (macro->variadic && (argc < macro->paramc
+			      || (argc == 1 && args[0].count == 0
+				  && !CPP_OPTION (pfile, std))))
+	args[macro->paramc - 1].first = NULL;
+      return base_buff;
+    }
 
   _cpp_release_buff (pfile, base_buff);
   return NULL;
@@ -799,15 +812,13 @@ replace_args (pfile, node, args)
 	  count = arg->count, from = arg->first;
 	  if (dest != first)
 	    {
-	      /* GCC has special semantics for , ## b where b is a
-		 varargs parameter: the comma disappears if b was
-		 given no actual arguments (not merely if b is an
-		 empty argument); otherwise the paste flag is removed.  */
 	      if (dest[-1]->type == CPP_COMMA
 		  && macro->variadic
 		  && src->val.arg_no == macro->paramc)
 		{
-		  if (count == 0)
+		  /* Swallow a pasted comma if from == NULL, otherwise
+		     drop the paste flag.  */
+		  if (from == NULL)
 		    dest--;
 		  else
 		    paste_flag = dest - 1;

@@ -1676,6 +1676,15 @@ eprintf ("success!\n")
      @expansion{} fprintf(stderr, "success!\n");
 @end example
 
+@noindent
+The above explanation is ambiguous about the case where the only macro
+parameter is a variable arguments parameter, as it is meaningless to
+try to distinguish whether no argument at all is an empty argument or
+a missing argument.  In this case the C99 standard is clear that the
+comma must remain, however the existing GCC extension used to swallow
+the comma.  So CPP retains the comma when conforming to a specific C
+standard, and drops it otherwise.
+
 C99 mandates that the only place the identifier @code{@w{__VA_ARGS__}}
 can appear is in the replacement list of a variadic macro.  It may not
 be used as a macro name, macro argument name, or within a different type

@@ -279,6 +279,9 @@ struct cpp_options
   /* If true, fopen (deps_file, "a") else fopen (deps_file, "w").  */
   unsigned char print_deps_append;
 
+  /* If true, no dependency is generated on the main file.  */
+  unsigned char deps_ignore_main_file;
+
   /* Nonzero means print names of header files (-H).  */
   unsigned char print_include_names;
 
@@ -334,6 +337,9 @@ struct cpp_options
 
   /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
   unsigned char c99;
+
+  /* Nonzero if conforming to some particular standard.  */
+  unsigned char std;
 
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   unsigned char pedantic;

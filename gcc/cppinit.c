@@ -396,7 +396,7 @@ struct lang_flags
   char objc;
   char cplusplus;
   char extended_numbers;
-  char trigraphs;
+  char std;
   char dollars_in_ident;
   char cplusplus_comments;
   char digraphs;
@@ -404,7 +404,7 @@ struct lang_flags
 
 /* ??? Enable $ in identifiers in assembly? */
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 objc c++ xnum trig dollar c++comm digr  */
+{ /*              c99 objc c++ xnum std dollar c++comm digr  */
   /* GNUC89 */  { 0,  0,   0,  1,   0,   1,     1,      1     },
   /* GNUC99 */  { 1,  0,   0,  1,   0,   1,     1,      1     },
   /* STDC89 */  { 0,  0,   0,  0,   1,   0,     0,      0     },
@@ -431,7 +431,8 @@ set_lang (pfile, lang)
   CPP_OPTION (pfile, objc)		 = l->objc;
   CPP_OPTION (pfile, cplusplus)		 = l->cplusplus;
   CPP_OPTION (pfile, extended_numbers)	 = l->extended_numbers;
-  CPP_OPTION (pfile, trigraphs)		 = l->trigraphs;
+  CPP_OPTION (pfile, std)		 = l->std;
+  CPP_OPTION (pfile, trigraphs)		 = l->std;
   CPP_OPTION (pfile, dollars_in_ident)	 = l->dollars_in_ident;
   CPP_OPTION (pfile, cplusplus_comments) = l->cplusplus_comments;
   CPP_OPTION (pfile, digraphs)		 = l->digraphs;
@@ -1880,7 +1881,10 @@ init_dependency_output (pfile)
 	{
 	  spec = getenv ("SUNPRO_DEPENDENCIES");
 	  if (spec)
-	    CPP_OPTION (pfile, print_deps) = 2;
+	    {
+	      CPP_OPTION (pfile, print_deps) = 2;
+	      CPP_OPTION (pfile, deps_ignore_main_file) = 1;
+	    }
 	  else
 	    return;
 	}
