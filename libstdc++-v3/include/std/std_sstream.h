@@ -219,7 +219,7 @@ namespace std
 	    // things will quickly blow up.
 	    
 	    // Step 1: Destroy the current internal array.
-	    _M_string = __string_type(__s, __n);
+	    _M_string.assign(__s, __n);
 	    
 	    // Step 2: Use the external array.
 	    _M_sync(__s, 0, 0);
@@ -253,20 +253,19 @@ namespace std
       {
 	const bool __testin = this->_M_mode & ios_base::in;
 	const bool __testout = this->_M_mode & ios_base::out;
-	const __size_type __len = _M_string.size();
+	char_type* __end = __base + _M_string.size();
 
 	if (__testin)
-	  this->setg(__base, __base + __i, __base + __len);
+	  this->setg(__base, __base + __i, __end);
 	if (__testout)
 	  {
 	    this->setp(__base, __base + _M_string.capacity());
 	    this->pbump(__o);
-	    // We need a pointer to the string end anyway, even when
-	    // !__testin: in that case, however, for the correct
-	    // functioning of the streambuf inlines all the get area
-	    // pointers must be identical.
+	    // egptr() always tracks the string end. When !__testin,
+	    // for the correct functioning of the streambuf inlines
+	    // the other get area pointers are identical.
 	    if (!__testin)
-	      this->setg(__base + __len, __base + __len, __base + __len);
+	      this->setg(__end, __end, __end);
 	  }
       }
 

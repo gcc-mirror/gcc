@@ -187,14 +187,14 @@ namespace std
       const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
 
       const char_type* __beg = __testin ? this->eback() : this->pbase();
-      if (__beg)
+      if (__beg && (__testin || __testout))
 	{
 	  _M_update_egptr();
 
-	  off_type __pos(__sp);
+	  const off_type __pos(__sp);
 	  const bool __testpos = 0 <= __pos
 	                         && __pos <=  this->egptr() - __beg;
-	  if ((__testin || __testout) && __testpos)
+	  if (__testpos)
 	    {
 	      if (__testin)
 		this->gbump((__beg + __pos) - this->gptr());
