@@ -1,3 +1,8 @@
+2004-07-25  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (output_fp_compare): Use ffreep to pop top
+	value off of the stack if TARGET_USE_FFREEP.
+
 2004-07-26  Bernardo Innocenti  <bernie@develer.com>
 
 	* gengtype.c (oprintf): Replace xrealloc () with XRESIZEVEC ().
