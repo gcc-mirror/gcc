@@ -1052,8 +1052,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		  if (!nargs || notZero)
 		      VERIFICATION_ERROR 
 		        ("invalid argument number in invokeinterface");
-		  // If we verify/resolve the constant pool, as we should,
-		  // this test (and the one just following) are redundant.
+		  /* If we verify/resolve the constant pool, as we should,
+		     this test (and the one just following) are redundant.  */
 		  if (! self_is_interface)
 		    VERIFICATION_ERROR ("invokeinterface calls method not in interface");
 		  break;
