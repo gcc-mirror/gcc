@@ -1,3 +1,8 @@
+2004-09-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/asmreg-1.c (__syscall_getdents64): Adjust signedness
+	declaration/use mismatch for dirp parameter.
+
 2004-09-12  Andrew Pinski  <apinski@apple.com>
 
 	* lib/objc.exp (objc_target_compile): Look for libobjc-gnu.a also when
