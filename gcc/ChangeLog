@@ -1,3 +1,7 @@
+1999-06-04  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* loop.c (check_dbra_loop): Fix change of Jan 19.
+
 Fri Jun  4 00:12:40 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* freebsd-elf.h (SWITCH_TAKES_ARG):  Redefine, not define.

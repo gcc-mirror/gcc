@@ -7777,7 +7777,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 
 	      reversible_mem_store
 		= (! unknown_address_altered
-		   && ! invariant_p (XEXP (loop_store_mems, 0)));
+		   && ! invariant_p (XEXP (XEXP (loop_store_mems, 0), 0)));
 
 	      /* If the store depends on a register that is set after the
 		 store, it depends on the initial value, and is thus not
