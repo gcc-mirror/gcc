@@ -212,7 +212,7 @@ extern int target_flags;
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME) \
   text_section (); \
   if (!TARGET_PORTABLE_RUNTIME) \
-    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
+    fputs ("\t.SPACE $TEXT$\n\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
   else \
     fprintf (FILE, "%s\n", TEXT_SECTION_ASM_OP); \
   fprintf (FILE,							\
