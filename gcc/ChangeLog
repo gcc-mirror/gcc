@@ -1,3 +1,11 @@
+2004-08-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/16446
+	* config/mips/mips.c (struct mips_arg_info): Delete num_bytes.
+	(mips_arg_info): Update accordingly.  Remove common treatment of fpr_p;
+	treat each ABI separately.  Deal with n32/n64 complex float arguments.
+	(function_arg): Add associated complex handling here.
+
 2004-08-19  Richard Henderson  <rth@redhat.com>
 
 	* config/arm/arm.c (arm_gen_load_multiple): Use
