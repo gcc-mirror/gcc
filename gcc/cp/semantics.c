@@ -79,6 +79,57 @@ static tree clear_decl_rtl PARAMS ((tree *, int *, void *));
       (SUBSTMT) = (COND);				\
   } while (0)
 
+/* Deferred Access Checking Overview
+   ---------------------------------
+
+   Most C++ expressions and declarations require access checking
+   to be performed during parsing.  However, in several cases,
+   this has to be treated differently.
+
+   For member declarations, access checking has to be deferred
+   until more information about the declaration is known.  For
+   example:
+
+     class A {
+         typedef int X;
+       public:
+         X f();
+     };
+
+     A::X A::f();
+     A::X g();
+
+   When we are parsing the function return type `A::X', we don't
+   really know if this is allowed until we parse the function name.
+
+   Furthermore, some contexts require that access checking is
+   never performed at all.  These include class heads, and template
+   instantiations.
+
+   Typical use of access checking functions is described here:
+   
+   1. When we enter a context that requires certain access checking
+      mode, the function `push_deferring_access_checks' is called with
+      DEFERRING argument specifying the desired mode.  Access checking
+      may be performed immediately (dk_no_deferred), deferred
+      (dk_deferred), or not performed (dk_no_check).
+
+   2. When a declaration such as a type, or a variable, is encountered,
+      the function `perform_or_defer_access_check' is called.  It
+      maintains a TREE_LIST of all deferred checks.
+
+   3. The global `current_class_type' or `current_function_decl' is then
+      setup by the parser.  `enforce_access' relies on these information
+      to check access.
+
+   4. Upon exiting the context mentioned in step 1,
+      `perform_deferred_access_checks' is called to check all declaration
+      stored in the TREE_LIST.   `pop_deferring_access_checks' is then
+      called to restore the previous access checking mode.
+
+      In case of parsing error, we simply call `pop_deferring_access_checks'
+      without `perform_deferred_access_checks'.  */
+
 /* Data for deferred access checking.  */
 static GTY(()) deferred_access *deferred_access_stack;
 static GTY(()) deferred_access *deferred_access_free_list;
@@ -86,7 +137,7 @@ static GTY(()) deferred_access *deferred_access_free_list;
 /* Save the current deferred access states and start deferred
    access checking iff DEFER_P is true.  */
 
-void push_deferring_access_checks (bool deferring_p)
+void push_deferring_access_checks (deferring_kind deferring)
 {
   deferred_access *d;
 
@@ -101,7 +152,7 @@ void push_deferring_access_checks (bool deferring_p)
 
   d->next = deferred_access_stack;
   d->deferred_access_checks = NULL_TREE;
-  d->deferring_access_checks_p = deferring_p;
+  d->deferring_access_checks_kind = deferring;
   deferred_access_stack = d;
 }
 
@@ -110,14 +161,16 @@ void push_deferring_access_checks (bool deferring_p)
 
 void resume_deferring_access_checks (void)
 {
-  deferred_access_stack->deferring_access_checks_p = true;
+  if (deferred_access_stack->deferring_access_checks_kind == dk_no_deferred)
+    deferred_access_stack->deferring_access_checks_kind = dk_deferred;
 }
 
 /* Stop deferring access checks.  */
 
 void stop_deferring_access_checks (void)
 {
-  deferred_access_stack->deferring_access_checks_p = false;
+  if (deferred_access_stack->deferring_access_checks_kind == dk_deferred)
+    deferred_access_stack->deferring_access_checks_kind = dk_no_deferred;
 }
 
 /* Discard the current deferred access checks and restore the
@@ -199,11 +252,14 @@ void perform_or_defer_access_check (tree class_type, tree decl)
   tree check;
 
   /* If we are not supposed to defer access checks, just check now.  */
-  if (!deferred_access_stack->deferring_access_checks_p)
+  if (deferred_access_stack->deferring_access_checks_kind == dk_no_deferred)
     {
       enforce_access (class_type, decl);
       return;
     }
+  /* Exit if we are in a context that no access checking is performed.  */
+  else if (deferred_access_stack->deferring_access_checks_kind == dk_no_check)
+    return;
 
   /* See if we are already going to perform this check.  */
   for (check = deferred_access_stack->deferred_access_checks;

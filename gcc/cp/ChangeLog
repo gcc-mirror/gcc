@@ -1,3 +1,18 @@
+2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9554
+	* parser.c (cp_parser_class_name): Remove check_access parameter.
+	All caller adjusted.  Update declaration.
+	(cp_parser_lookup_name): Likewise.
+	* semantics.c (push_deferring_access_checks): Change parameter type
+	to enum deferring_kind.  All caller adjusted.
+	(resume_deferring_access_checks): Adjust to use new enum.
+	(stop_deferring_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+	* cp-tree.h (deferring_kind): New enum.
+	(deferred_access): Adjust field type.
+	(push_deferring_access_checks): Update declaration.
+
 2003-05-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10555, c++/10576
