@@ -1,5 +1,8 @@
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* decl2.c: Silently ignore -Wstrict-prototypes; warn about
+	-Wno-strict-prototypes.
+
 	* g++spec.c: Adjust type of second argument to
 	lang_specific_driver, and update code as necessary.
 

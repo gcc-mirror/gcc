@@ -737,6 +737,11 @@ lang_decode_option (argc, argv)
 	warn_pointer_arith = setting;
       else if (!strcmp (p, "missing-prototypes"))
 	warn_missing_prototypes = setting;
+      else if (!strcmp (p, "strict-prototypes"))
+	{
+	  if (setting == 0)
+	    warning ("-Wno-strict-prototypes is not supported in C++");
+	}
       else if (!strcmp (p, "redundant-decls"))
 	warn_redundant_decls = setting;
       else if (!strcmp (p, "missing-braces"))
