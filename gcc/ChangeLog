@@ -1,5 +1,10 @@
 2004-11-24  Roger Sayle  <roger@eyesopen.com>
 
+	* config/i386/i386.c (override_options): Disable x87 fancy math
+	intrinsics if -mfpmath= doesn't include 387 (default on x86_64).
+
+2004-11-24  Roger Sayle  <roger@eyesopen.com>
+
 	* configure.ac: Tweak test for HAVE_DECL_LDGETNAME to avoid a
 	system header conflict on AIX 5.2.
 	* configure: Regenerate.
