@@ -1,6 +1,6 @@
 //Build don't link:
-#include <vector.h>
-#include <algo.h>
+#include <vector>
+#include <algorithm>
 
 template <class T> class Expr
 {
@@ -14,6 +14,6 @@ inline bool compare(const Expr<T> a, const Expr<T> b){ return true; };
 
 int main()
 {
-vector<int>     a(3);
-sort( a.begin(), a.end(), compare ); // ERROR - no matching function 
+  std::vector<int>     a(3);
+  std::sort( a.begin(), a.end(), compare ); // ERROR - no matching function 
 }

@@ -1,4 +1,8 @@
-2001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+22001-04-11  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * g++.old-deja/g++.robertl/eb42.C: Same.
+
+001-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/wtr-conversion-1.c: New testcase.
 
