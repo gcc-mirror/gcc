@@ -167,7 +167,9 @@ if test x${gxx_include_dir} = x; then
     gxx_include_dir='${libsubdir}/include/g++'
   else
     topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
+changequote(<<, >>)dnl
     gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/g++"-${libstdcxx_interface}
+changequote([, ])dnl
   fi
 fi
 
