@@ -275,6 +275,11 @@ build_scoped_method_call (exp, basetype, name, parms)
 	}
     }
 
+  if (TREE_CODE (basetype) == NAMESPACE_DECL)
+    {
+      cp_error ("`%D' is a namespace", basetype);
+      return error_mark_node;
+    }
   if (! is_aggr_type (basetype, 1))
     return error_mark_node;
 
