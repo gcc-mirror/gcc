@@ -2907,6 +2907,7 @@ init_emit ()
   last_filename = 0;
   first_label_num = label_num;
   last_label_num = 0;
+  sequence_stack = NULL;
 
   /* Clear the start_sequence/gen_sequence cache.  */
   sequence_element_free_list = 0;
