@@ -2363,6 +2363,19 @@ emit_group_load (dst, orig_src, ssize)
 	  else
 	    abort ();
 	}
+      /* FIXME: A SIMD parallel will eventually lead to a subreg of a
+	 SIMD register, which is currently broken.  While we get GCC
+	 to emit proper RTL for these cases, let's dump to memory.  */
+      else if (VECTOR_MODE_P (GET_MODE (dst))
+	       && GET_CODE (src) == REG)
+	{
+	  int slen = GET_MODE_SIZE (GET_MODE (src));
+	  rtx mem;
+
+	  mem = assign_stack_temp (GET_MODE (src), slen, 0);
+	  emit_move_insn (mem, src);
+	  tmps[i] = adjust_address (mem, mode, (int) bytepos);
+	}
       else if (CONSTANT_P (src)
 	       || (GET_CODE (src) == REG && GET_MODE (src) == mode))
 	tmps[i] = src;
