@@ -340,6 +340,7 @@ save_tree_status (p, context)
   p->all_types_permanent = all_types_permanent;
   p->momentary_stack = momentary_stack;
   p->maybepermanent_firstobj = maybepermanent_firstobj;
+  p->temporary_firstobj = temporary_firstobj;
   p->momentary_firstobj = momentary_firstobj;
   p->momentary_function_firstobj = momentary_function_firstobj;
   p->function_obstack = function_obstack;
@@ -392,6 +393,7 @@ save_tree_status (p, context)
   expression_obstack = &permanent_obstack;
   rtl_obstack = saveable_obstack = &permanent_obstack;
 
+  temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
   momentary_firstobj = (char *) obstack_finish (&momentary_obstack);
   momentary_function_firstobj = momentary_firstobj;
 }
@@ -420,6 +422,7 @@ restore_tree_status (p)
   obstack_free (function_obstack, 0);
   free (function_obstack);
 
+  temporary_firstobj = p->temporary_firstobj;
   momentary_firstobj = p->momentary_firstobj;
   momentary_function_firstobj = p->momentary_function_firstobj;
   maybepermanent_firstobj = p->maybepermanent_firstobj;
