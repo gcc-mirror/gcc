@@ -404,7 +404,8 @@ extern char *rs6000_cpu_string;
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (FP_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_FLOAT	\
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC	\
-   : ! INT_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_INT	\
+   : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT  \
+			      && GET_MODE_SIZE (MODE) <= UNITS_PER_WORD)  \
    : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
