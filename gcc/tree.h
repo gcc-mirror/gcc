@@ -3770,4 +3770,7 @@ extern bool in_gimple_form;
 tree lower_bound_in_type (tree, tree);
 tree upper_bound_in_type (tree, tree);
 
+/* In tree-ssa-threadupdate.c.  */
+extern bool thread_through_all_blocks (void);
+
 #endif  /* GCC_TREE_H  */

@@ -356,6 +356,10 @@ struct bb_ann_d GTY(())
   /* Nonzero if this block contains an escape point (see is_escape_site).  */
   unsigned has_escape_site : 1;
 
+  /* Nonzero if one or more incoming edges to this block should be threaded
+     to an outgoing edge of this block.  */
+  unsigned incoming_edge_threaded : 1;
+
   struct edge_prediction *predictions;
 };
 
@@ -474,7 +478,7 @@ extern void debug_loop_ir (void);
 extern void print_loop_ir (FILE *);
 extern void cleanup_dead_labels (void);
 extern void group_case_labels (void);
-extern void cleanup_tree_cfg (void);
+extern bool cleanup_tree_cfg (void);
 extern tree first_stmt (basic_block);
 extern tree last_stmt (basic_block);
 extern tree *last_stmt_ptr (basic_block);
@@ -561,7 +565,6 @@ typedef bool (*walk_use_def_chains_fn) (tree, tree, void *);
 
 /* In tree-ssa.c  */
 extern void init_tree_ssa (void);
-extern void rewrite_vars_out_of_ssa (bitmap);
 extern void dump_reaching_defs (FILE *);
 extern void debug_reaching_defs (void);
 extern void dump_tree_ssa (FILE *);
