@@ -1,3 +1,8 @@
+2002-03-01  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (TARGET_EXPR_SLOT, TARGET_EXPR_INITIAL): New macros.
+	(TARGET_EXPR_CLEANUP): New macro.
+
 2002-02-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/rtl.texi (SUBREG_PROMOTED_UNSIGNED_P): Change definition
@@ -78,7 +83,7 @@
 	(STARTFILE_SPEC): Add 64 bit files.
 	(ENDFILE_SPEC): Likewise.
 
-2002-02-25  Jason Merrill  <jason@redhat.com>
+2002-02-28  Jason Merrill  <jason@redhat.com>
 
 	* c-decl.c (finish_function): Only warn about missing return
 	statement with -Wreturn-type.

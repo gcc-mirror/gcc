@@ -277,7 +277,7 @@ cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(SYSTEM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h
 cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
-  cp/cfns.h $(EXPR_H) libfuncs.h cp/decl.h $(OBSTACK_H)
+  cp/cfns.h $(EXPR_H) libfuncs.h tree-inline.h
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
   except.h $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \

@@ -1201,6 +1201,26 @@ build_aggr_init (exp, init, flags)
   return stmt_expr;
 }
 
+/* Like build_aggr_init, but not just for aggregates.  */
+
+tree
+build_init (decl, init, flags)
+     tree decl, init;
+     int flags;
+{
+  tree expr;
+
+  if (IS_AGGR_TYPE (TREE_TYPE (decl))
+      || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+    expr = build_aggr_init (decl, init, flags);
+  else
+    {
+      expr = build (INIT_EXPR, TREE_TYPE (decl), decl, init);
+      TREE_SIDE_EFFECTS (expr) = 1;
+    }
+  return expr;
+}
+
 static void
 expand_default_init (binfo, true_exp, exp, init, flags)
      tree binfo;
