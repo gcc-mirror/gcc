@@ -1,3 +1,8 @@
+2003-06-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (print_operand): Remove support for
+	operand character 'u'.
+
 2003-06-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Fix typo.
