@@ -1,5 +1,5 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-Copyright (C) 1986, 1987, 1989, 2000 Free Software Foundation, Inc.
+Copyright (C) 1986, 1987, 1989, 2000, 2001 Free Software Foundation, Inc.
                     Written by Paul Rubin, June 1986
 		    Adapted to ANSI C, Richard Stallman, Jan 1987
 		    Dusted off, polished, and adapted for use as traditional
@@ -768,6 +768,7 @@ main (argc, argv)
      so that only their macro definitions matter.  */
 
   no_output++;
+  indepth++;
   for (i = 1; i < argc; i++)
     if (pend[i].type == PD_FILE)
       {
@@ -779,6 +780,7 @@ main (argc, argv)
 	  }
 	finclude (fd, pend[i].arg, &outbuf);
       }
+  indepth--;
   no_output--;
 
   /* Pending directives no longer needed.  */
