@@ -3796,7 +3796,9 @@ static void mark_limbo_die_list		PARAMS ((void *));
 /* Section flags for .debug_str section.  */
 #ifdef HAVE_GAS_SHF_MERGE
 #define DEBUG_STR_SECTION_FLAGS \
-  (SECTION_DEBUG | SECTION_MERGE | SECTION_STRINGS | 1)
+  (flag_merge_constants						\
+   ? SECTION_DEBUG | SECTION_MERGE | SECTION_STRINGS | 1	\
+   : SECTION_DEBUG)
 #else
 #define DEBUG_STR_SECTION_FLAGS	SECTION_DEBUG
 #endif

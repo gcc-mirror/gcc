@@ -1,3 +1,7 @@
+2004-04-01  Alan Modra  <amodra@bigpond.net.au>
+
+	* dwarf2out.c (DEBUG_STR_SECTION_FLAGS): Heed flag_merge_constants.
+
 2004-03-30  Matthias Klose  <doko@debian.org>
 
 	Backport:
