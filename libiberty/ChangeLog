@@ -1,3 +1,7 @@
+Thu Dec  4 17:25:19 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* strsignal.c (sys_nsig): Try NSIG and _NSIG.
+
 Tue Oct 28 23:41:15 1997  Judy Goldberg  <jodyg@idt.net>
 
 	* Makefile.in (CFILES): Add pexecute.c.
