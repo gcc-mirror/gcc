@@ -131,6 +131,10 @@ char *temporary_firstobj;
 char *momentary_firstobj;
 char *temp_decl_firstobj;
 
+/* This is used to preserve objects (mainly array initializers) that need to
+   live until the end of the current function, but no further.  */
+char *momentary_function_firstobj;
+
 /* Nonzero means all ..._TYPE nodes should be allocated permanently.  */
 
 int all_types_permanent;
@@ -269,6 +273,7 @@ init_obstacks ()
   temporary_firstobj = (char *) obstack_alloc (&temporary_obstack, 0);
   gcc_obstack_init (&momentary_obstack);
   momentary_firstobj = (char *) obstack_alloc (&momentary_obstack, 0);
+  momentary_function_firstobj = momentary_firstobj;
   gcc_obstack_init (&maybepermanent_obstack);
   maybepermanent_firstobj
     = (char *) obstack_alloc (&maybepermanent_obstack, 0);
@@ -316,6 +321,7 @@ save_tree_status (p)
   p->momentary_stack = momentary_stack;
   p->maybepermanent_firstobj = maybepermanent_firstobj;
   p->momentary_firstobj = momentary_firstobj;
+  p->momentary_function_firstobj = momentary_function_firstobj;
   p->function_obstack = function_obstack;
   p->function_maybepermanent_obstack = function_maybepermanent_obstack;
   p->current_obstack = current_obstack;
@@ -336,6 +342,7 @@ save_tree_status (p)
   rtl_obstack = saveable_obstack = &permanent_obstack;
 
   momentary_firstobj = (char *) obstack_finish (&momentary_obstack);
+  momentary_function_firstobj = momentary_firstobj;
   maybepermanent_firstobj
     = (char *) obstack_finish (function_maybepermanent_obstack);
 }
@@ -350,7 +357,7 @@ restore_tree_status (p)
   all_types_permanent = p->all_types_permanent;
   momentary_stack = p->momentary_stack;
 
-  obstack_free (&momentary_obstack, momentary_firstobj);
+  obstack_free (&momentary_obstack, momentary_function_firstobj);
 
   /* Free saveable storage used by the function just compiled and not
      saved.
@@ -365,6 +372,7 @@ restore_tree_status (p)
   free (function_obstack);
 
   momentary_firstobj = p->momentary_firstobj;
+  momentary_function_firstobj = p->momentary_function_firstobj;
   maybepermanent_firstobj = p->maybepermanent_firstobj;
   function_obstack = p->function_obstack;
   function_maybepermanent_obstack = p->function_maybepermanent_obstack;
@@ -494,14 +502,21 @@ allocation_temporary_p ()
 
 /* Go back to allocating on the permanent obstack
    and free everything in the temporary obstack.
-   This is done in finish_function after fully compiling a function.  */
+
+   FUNCTION_END is true only if we have just finished compiling a function.
+   In that case, we also free preserved initial values on the momentary
+   obstack.  */
 
 void
-permanent_allocation ()
+permanent_allocation (function_end)
+     int function_end;
 {
   /* Free up previous temporary obstack data */
   obstack_free (&temporary_obstack, temporary_firstobj);
-  obstack_free (&momentary_obstack, momentary_firstobj);
+  if (function_end)
+    obstack_free (&momentary_obstack, momentary_function_firstobj);
+  else
+    obstack_free (&momentary_obstack, momentary_firstobj);
   obstack_free (&maybepermanent_obstack, maybepermanent_firstobj);
   obstack_free (&temp_decl_obstack, temp_decl_firstobj);
 
@@ -522,12 +537,20 @@ preserve_data ()
 void
 preserve_initializer ()
 {
+  struct momentary_level *tem;
+  char *old_momentary;
+
   temporary_firstobj
     = (char *) obstack_alloc (&temporary_obstack, 0);
-  momentary_firstobj
-    = (char *) obstack_alloc (&momentary_obstack, 0);
   maybepermanent_firstobj
     = (char *) obstack_alloc (function_maybepermanent_obstack, 0);
+
+  old_momentary = momentary_firstobj;
+  momentary_firstobj
+    = (char *) obstack_alloc (&momentary_obstack, 0);
+  if (momentary_firstobj != old_momentary)
+    for (tem = momentary_stack; tem; tem = tem->prev)
+      tem->base = momentary_firstobj;
 }
 
 /* Start allocating new rtl in current_obstack.
@@ -733,7 +756,10 @@ pop_momentary ()
   struct momentary_level *tem = momentary_stack;
   momentary_stack = tem->prev;
   expression_obstack = tem->obstack;
-  obstack_free (&momentary_obstack, tem);
+  /* We can't free TEM from the momentary_obstack, because there might
+     be objects above it which have been saved.  We can free back to the
+     stack of the level we are popping off though.  */
+  obstack_free (&momentary_obstack, tem->base);
 }
 
 /* Pop back to the previous level of momentary allocation,
