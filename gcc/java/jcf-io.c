@@ -27,6 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "jcf.h"
 #include "tree.h"
+#include "toplev.h"
 #include "java-tree.h"
 
 /* DOS brain-damage */
@@ -286,7 +287,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 
   java_buffer = (char *) alloca (buflen);
 
-  jcf->java_source = jcf->outofsynch = 0;
+  jcf->java_source = 0;
 
   for (entry = jcf_path_start (); entry != NULL; entry = jcf_path_next (entry))
     {
@@ -352,8 +353,24 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 	}
     }
 
+  /* We preferably pick a class file if we have a chance. If the source
+     file is newer than the class file, we issue a warning and parse the
+     source file instead.
+     There should be a flag to allow people have the class file picked
+     up no matter what. FIXME. */
   if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
-    jcf->outofsynch = 1;
+    {
+      char *stripped_class_name = xstrdup (classname);
+      int i = strlen (stripped_class_name);
+      
+      while (stripped_class_name [i] != '.')
+	i--;
+      
+      stripped_class_name [i] = '\0';
+      warning ("Source file for class `%s' is newer than its matching class file. Source file used instead", stripped_class_name);
+      free (stripped_class_name);
+      class = -1;
+    }
 
   if (! java)
     dep_file = java_buffer;
@@ -382,7 +399,10 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 #else
   if (!class)
     {
-      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      SOURCE_FRONTEND_DEBUG ((stderr, "[Class selected: %s]\n",
+			      classname+classname_length-
+			      (classname_length <= 30 ? 
+			       classname_length : 30)));
       fd = open (buffer, O_RDONLY | O_BINARY);
       if (fd >= 0)
 	goto found;
@@ -391,7 +411,10 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
   if (!java)
     {
       strcpy (buffer, java_buffer);
-      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      SOURCE_FRONTEND_DEBUG ((stderr, "[Source selected: %s]\n",
+			      classname+classname_length-
+			      (classname_length <= 30 ? 
+			       classname_length : 30)));
       fd = open (buffer, O_RDONLY);
       if (fd >= 0)
 	{
