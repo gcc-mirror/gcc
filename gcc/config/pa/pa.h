@@ -235,7 +235,7 @@ extern int target_flags;
    has different fp units: define separate register sets for the 1.0
    and 1.1 fp units. */
 
-#define FIRST_PSEUDO_REGISTER 113  /* 32 + 16 1.0 regs + 64 1.1 regs + */
+#define FIRST_PSEUDO_REGISTER 101  /* 32 + 12 1.0 regs + 56 1.1 regs + */
 				   /* 1 shift reg */
 
 /* 1 for registers that have pervasive standard uses
@@ -258,7 +258,7 @@ extern int target_flags;
    Reg 30	= stack pointer
    Reg 31	= Temporary/Millicode Return Pointer (hp)
 
-   Freg 0-3	= Status Registers
+   Freg 0-3	= Status Registers	 -- Not known to the compiler.
    Freg 4-7	= Arguments/Return Value
    Freg 8-11	= Temporary Registers
    Freg 12-15	= Preserved Registers
@@ -267,27 +267,24 @@ extern int target_flags;
 
    On the Snake, fp regs are
 
-   Freg 0-3	= Status Registers
+   Freg 0-3	= Status Registers	-- Not known to the compiler.
    Freg 4L-7R	= Arguments/Return Value
    Freg 8L-11R	= Temporary Registers
-   Freg 12L-15R	= Preserved Registers
-
-   Freg 16L-31R	= ?? Some partition of temporary and preserved; assume
-   preserved for now.
+   Freg 12L-21R	= Preserved Registers
+   Freg 22L-31R = Temporary Registers
    
 
 */
 
 #define FIXED_REGISTERS  \
- {0, 0, 1, 0, 1, 0, 0, 0, \
+ {0, 0, 0, 0, 1, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 1, 0, 0, 1, 0, \
   /* 1.0 fp registers */ \
-  1, 1, 1, 1, 0, 0, 0, 0, \
+  0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   /* 1.1 fp registers */ \
-  1, 1, 1, 1, 1, 1, 1, 1, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
   0, 0, 0, 0, 0, 0, 0, 0, \
@@ -309,10 +306,9 @@ extern int target_flags;
   0, 0, 0, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   /* 1.0 fp registers */ \
-  1, 1, 1, 1, 1, 1, 1, 1, \
+  1, 1, 1, 1, \
   1, 1, 1, 1, 0, 0, 0, 0, \
   /* 1.1 fp registers */ \
-  1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, \
   0, 0, 0, 0, 0, 0, 0, 0, \
@@ -362,28 +358,32 @@ extern int target_flags;
    the number of registers that need to be saved (as call used
    registers will generally not be allocated across a call).
 
-   It is possible that it would be wise to allocate the floating point
-   registers before the regular ones, but I doubt it matters.  Same
-   comment for parameters versus normal.  */
+   Experimentation has shown slightly better results by allocating
+   FP registers first.  */
 
 #define REG_ALLOC_ORDER \
- {19, 20, 21, 22, 23, 24, 25, 26,	\
-  27, 28, 29, 30, 31, 40, 41, 42,	\
-  43, 36, 37, 38, 39,			\
-  56, 57, 58, 59, 60, 61, 62, 63, 	\
-  64, 65, 66, 67, 68, 69, 70, 71, 	\
-  72, 73, 74, 75, 76, 77, 78, 79, 	\
-  80, 81, 82, 83, 84, 85, 86, 87, 	\
-  88, 89, 90, 91, 92, 93, 94, 95, 	\
-  96, 97, 98, 99, 100, 101, 102, 103, 	\
-  104, 105, 106, 107, 108, 109, 110, 111,\
-   3, 5,  6,  7,			\
-   8,  9, 10, 11, 12, 13, 14, 15,	\
-  16, 17, 18, 44, 45, 46, 47,		\
-  48, 49, 50, 51, 52, 53, 54, 55,	\
-     1,	\
-   2, 4, 32, 33, 34, 35,  0,		\
-   112}
+  /* 1.0 caller-saved fp regs.  */	\
+ {36, 37, 38, 39, 32, 33, 34, 35,	\
+  /* 1.1 caller-saved fp regs.  */	\
+  52, 53, 54, 55, 56, 57, 58, 59, 	\
+  80, 81, 82, 83, 84, 85, 86, 87,	\
+  88, 89, 90, 91, 92, 93, 94, 95,	\
+  96, 97, 98, 99,			\
+  44, 45, 46, 47, 48, 49, 50, 51, 	\
+  /* caller-saved general regs.  */	\
+  19, 20, 21, 22, 23, 24, 25, 26,	\
+  27, 28, 29, 31,  2,			\
+  /* 1.0 callee-saved fp regs.  */	\
+  40, 41, 42, 43,			\
+  /* 1.1 callee-saved fp regs.  */	\
+  60, 61, 62, 63, 64, 65, 66, 67, 	\
+  68, 69, 70, 71, 72, 73, 74, 75, 	\
+  76, 77, 78, 79, 			\
+  /* callee-saved general regs.  */	\
+   3,  5,  6,  7,  8,  9, 10, 11,	\
+  12, 13, 14, 15, 16, 17, 18,		\
+  /* special registers.  */		\
+   1,  4, 30,  0, 100}
 
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -395,7 +395,7 @@ extern int target_flags;
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  (((REGNO) < 32 || (REGNO) >= 48)	\
+  (((REGNO) < 32 || (REGNO) >= 44)	\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) : 1)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -404,7 +404,7 @@ extern int target_flags;
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
-   : (REGNO) < 48 ? (GET_MODE_SIZE (MODE) >= 4)				\
+   : (REGNO) < 44 ? (GET_MODE_SIZE (MODE) >= 4)				\
    : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
       : 1))
 
@@ -508,14 +508,14 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 { {0, 0, 0, 0},			/* NO_REGS */		\
   {0x2, 0, 0, 0},		/* R1_REGS */		\
   {-2, 0, 0, 0},		/* GENERAL_REGS */	\
-  {0, 0xffff, 0, 0},		/* FP_REGS */		\
-  {-2, 0xffff, 0, 0},		/* GENERAL_OR_FP_REGS */\
-  {0, 0, 0xffff0000, 0xffff},	/* HI_SNAKE_FP_REGS */	\
-  {0, 0xffff0000, ~0, 0xffff},	/* SNAKE_FP_REGS */	\
-  {-2, 0xffff0000, ~0, 0xffff},	/* GENERAL_OR_SNAKE_FP_REGS */\
-  {0, ~0, ~0, 0xffff},		/* FP_OR_SNAKE_FP_REGS */\
-  {0, 0, 0, 0x10000},		/* SHIFT_REGS */	\
-  {-2, ~0, ~0, 0x1ffff}}	/* ALL_REGS */
+  {0, 0xfff, 0, 0},		/* FP_REGS */		\
+  {-2, 0xfff, 0, 0},		/* GENERAL_OR_FP_REGS */\
+  {0, 0, 0xfffffff0, 0xf},	/* HI_SNAKE_FP_REGS */	\
+  {0, 0xfffff000, ~0, 0xf},	/* SNAKE_FP_REGS */	\
+  {-2, 0xfffff000, ~0, 0xf},	/* GENERAL_OR_SNAKE_FP_REGS */\
+  {0, ~0, ~0, 0xf},		/* FP_OR_SNAKE_FP_REGS */\
+  {0, 0, 0, 0x10},		/* SHIFT_REGS */	\
+  {-2, ~0, ~0, 0x1f}}		/* ALL_REGS */
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -526,9 +526,9 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   ((REGNO) == 0 ? NO_REGS 		\
    : (REGNO) == 1 ? R1_REGS		\
    : (REGNO) < 32 ? GENERAL_REGS	\
-   : (REGNO) < 48 ? FP_REGS		\
-   : (REGNO) < 80 ? SNAKE_FP_REGS	\
-   : (REGNO) < 112 ? HI_SNAKE_FP_REGS	\
+   : (REGNO) < 44 ? FP_REGS		\
+   : (REGNO) < 68 ? SNAKE_FP_REGS	\
+   : (REGNO) < 100 ? HI_SNAKE_FP_REGS	\
    : SHIFT_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -684,13 +684,13 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    otherwise, FUNC is 0.  */
 
 /* On the HP-PA the value is found in register(s) 28(-29), unless
-   the mode is SF or DF. Then the value is returned in fr4 (36, ) */
+   the mode is SF or DF. Then the value is returned in fr4 (32, ) */
 
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx (REG, TYPE_MODE (VALTYPE), ((TYPE_MODE (VALTYPE) == SFmode ||\
 				       TYPE_MODE (VALTYPE) == DFmode) ? \
-				      (TARGET_SNAKE ? 56 : 36) : 28))
+				      (TARGET_SNAKE ? 44 : 32) : 28))
 
 #define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
   FUNCTION_VALUE(VALTYPE, FUNC)
@@ -700,18 +700,18 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 #define LIBCALL_VALUE(MODE) \
   gen_rtx (REG, MODE, (MODE == SFmode || MODE == DFmode ?\
-		       (TARGET_SNAKE ? 56 : 36) : 28))
+		       (TARGET_SNAKE ? 44 : 32) : 28))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 28 || (N) == 36 || (N) == 56)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == 28 || (N) == 32 || (N) == 44)
 
 /* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(N) (((N) >= 23 && (N) <= 26) || \
-				 ((N) >= 36 && (N) <= 39) || \
-				 ((N) >= 56 && (N) <= 63))
+				 ((N) >= 32 && (N) <= 35) || \
+				 ((N) >= 44 && (N) <= 51))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -772,11 +772,11 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    ? gen_rtx (REG, (MODE),						\
 	      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1			\
 	       ? ((MODE) == DFmode					\
-		  ? ((CUM) ? (TARGET_SNAKE ? 62 : 39)			\
-		     : (TARGET_SNAKE ? 58 : 37))			\
+		  ? ((CUM) ? (TARGET_SNAKE ? 50 : 35)			\
+		     : (TARGET_SNAKE ? 46 : 33))			\
 		  : ((CUM) ? 23 : 25))					\
 	       : ((MODE) == SFmode					\
-		  ? (TARGET_SNAKE ? 56 + 2 * (CUM) : 36  + (CUM))	\
+		  ? (TARGET_SNAKE ? 44 + 2 * (CUM) : 32  + (CUM))	\
 		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
    : 0)
 
@@ -997,8 +997,8 @@ extern union tree_node *current_function_decl;
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((REGNO) >= 32 && (REGNO) <= 111)\
-   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 111))
+  (((REGNO) >= 32 && (REGNO) <= 99)\
+   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 99))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -1483,9 +1483,8 @@ bss_section ()								\
  "%r8", "%r9", "%r10", "%r11", "%r12", "%r13", "%r14", "%r15",		\
  "%r16", "%r17", "%r18", "%r19", "%r20", "%r21", "%r22", "%r23",	\
  "%r24", "%r25", "%r26", "%r27", "%r28", "%r29", "%r30", "%r31",	\
- "%fr0", "%fr1", "%fr2", "%fr3", "%fr4", "%fr5", "%fr6", "%fr7",	\
+ "%fr4", "%fr5", "%fr6", "%fr7",	\
  "%fr8", "%fr9", "%fr10", "%fr11", "%fr12", "%fr13", "%fr14", "%fr15",	\
- "%fr0", "%fr0R", "%fr1", "%fr1R", "%fr2", "%fr2R", "%fr3", "%fr3R",	\
  "%fr4", "%fr4R", "%fr5", "%fr5R", "%fr6", "%fr6R", "%fr7", "%fr7R",	\
  "%fr8", "%fr8R", "%fr9", "%fr9R", "%fr10", "%fr10R", "%fr11", "%fr11R",\
  "%fr12", "%fr12R", "%fr13", "%fr13R", "%fr14", "%fr14R", "%fr15", "%fr15R",\
@@ -1594,9 +1593,13 @@ bss_section ()								\
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
+{ fprintf (FILE, "\t.word ");			\
+  if (TARGET_SHARED_LIBS			\
+      && function_label_operand (VALUE, VOIDmode)\
+      && in_section != in_text)			\
+    fprintf (FILE, "P%%");			\
+  output_addr_const (FILE, (VALUE));		\
+  fprintf (FILE, "\n");}
 
 /* Likewise for `short' and `char' constants.  */
 
