@@ -2498,55 +2498,22 @@ JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
 {
   JvAssert (! the_vm);
 
-  _Jv_CreateJavaVM (NULL);
+  jint version = * (jint *) args;
+  // We only support 1.2 and 1.4.
+  if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_4)
+    return JNI_EVERSION;
+
+  JvVMInitArgs* vm_args = reinterpret_cast<JvVMInitArgs *> (args);
+
+  jint result = _Jv_CreateJavaVM (vm_args);
+  if (result)
+    return result;
 
   // FIXME: synchronize
   JavaVM *nvm = (JavaVM *) _Jv_MallocUnchecked (sizeof (JavaVM));
   if (nvm == NULL)
     return JNI_ERR;
   nvm->functions = &_Jv_JNI_InvokeFunctions;
-
-  // Parse the arguments.
-  if (args != NULL)
-    {
-      jint version = * (jint *) args;
-      // We only support 1.2 and 1.4.
-      if (version != JNI_VERSION_1_2 && version != JNI_VERSION_1_4)
-	return JNI_EVERSION;
-      JavaVMInitArgs *ia = reinterpret_cast<JavaVMInitArgs *> (args);
-      for (int i = 0; i < ia->nOptions; ++i)
-	{
-	  if (! strcmp (ia->options[i].optionString, "vfprintf")
-	      || ! strcmp (ia->options[i].optionString, "exit")
-	      || ! strcmp (ia->options[i].optionString, "abort"))
-	    {
-	      // We are required to recognize these, but for now we
-	      // don't handle them in any way.  FIXME.
-	      continue;
-	    }
-	  else if (! strncmp (ia->options[i].optionString,
-			      "-verbose", sizeof ("-verbose") - 1))
-	    {
-	      // We don't do anything with this option either.  We
-	      // might want to make sure the argument is valid, but we
-	      // don't really care all that much for now.
-	      continue;
-	    }
-	  else if (! strncmp (ia->options[i].optionString, "-D", 2))
-	    {
-	      // FIXME.
-	      continue;
-	    }
-	  else if (ia->ignoreUnrecognized)
-	    {
-	      if (ia->options[i].optionString[0] == '_'
-		  || ! strncmp (ia->options[i].optionString, "-X", 2))
-		continue;
-	    }
-
-	  return JNI_ERR;
-	}
-    }
 
   jint r =_Jv_JNI_AttachCurrentThread (nvm, penv, NULL);
   if (r < 0)

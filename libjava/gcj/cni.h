@@ -17,6 +17,7 @@ details.  */
 #include <java/lang/Class.h>
 
 #include <gcj/array.h>
+#include <gcj/javaprims.h>
 
 #include <string.h>
 
@@ -113,8 +114,11 @@ JvFree (void *ptr)
   return _Jv_Free (ptr);
 }
 
+typedef struct _Jv_VMOption JvVMOption;
+typedef struct _Jv_VMInitArgs JvVMInitArgs;
+
 extern inline jint
-JvCreateJavaVM (void* vm_args)
+JvCreateJavaVM (JvVMInitArgs* vm_args)
 {
   return _Jv_CreateJavaVM (vm_args);
 }

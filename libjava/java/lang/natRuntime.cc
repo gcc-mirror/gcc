@@ -557,7 +557,7 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // `-D'.  Important: after this point, the only properties that
   // should be set are those which either the user cannot meaningfully
   // override, or which augment whatever value the user has provided.
-  for (int i = 0; _Jv_Compiler_Properties[i]; ++i)
+  for (int i = 0; i < _Jv_Properties_Count; ++i)
     {
       const char *s, *p;
       // Find the `='.
