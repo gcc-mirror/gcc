@@ -60,12 +60,36 @@ research.att.com: netlib/cephes/ldouble.shar.Z  */
 
 /* Type of computer arithmetic.
  * Only one of DEC, MIEEE, IBMPC, or UNK should get defined.
- * The following modification converts gcc macros into the ones
- * used by ieee.c.
- *
- * Note: long double formats differ between IBMPC and MIEEE
- * by more than just endian-ness.
  */
+
+/* `MIEEE' refers generically to big-endian IEEE floating-point data
+   structure.  This definition should work in SFmode `float' type and
+   DFmode `double' type on virtually all big-endian IEEE machines.
+   If LONG_DOUBLE_TYPE_SIZE has been defined to be 96, then MIEEE
+   also invokes the particular XFmode (`long double' type) data
+   structure used by the Motorola 680x0 series processors.
+
+   `IBMPC' refers generally to little-endian IEEE machines. In this
+   case, if LONG_DOUBLE_TYPE_SIZE has been defined to be 96, then
+   IBMPC also invokes the particular XFmode `long double' data
+   structure used by the Intel 80x86 series processors.
+
+   `DEC' refers specifically to the Digital Equipment Corp PDP-11
+   and VAX floating point data structure.  This model currently
+   supports no type wider than DFmode.
+
+   If LONG_DOUBLE_TYPE_SIZE = 64 (the default, unless tm.h defines it)
+   then `long double' and `double' are both implemented, but they
+   both mean DFmode.  In this case, the software floating-point
+   support available here is activated by writing
+      #define REAL_ARITHMETIC
+   in tm.h. 
+
+   The case LONG_DOUBLE_TYPE_SIZE = 128 activates TFmode support
+   (Not Yet Implemented) and may deactivate XFmode since
+   `long double' is used to refer to both modes.    */
+
+/* The following converts gcc macros into the ones used by this file.  */
 
 /* REAL_ARITHMETIC defined means that macros in real.h are
    defined to call emulator functions.  */
@@ -114,11 +138,19 @@ unknown arithmetic type
 
 #endif /* REAL_ARITHMETIC not defined */
 
-/* Define for support of infinity.  */
+/* Define INFINITY for support of infinity.
+   Define NANS for support of Not-a-Number's (NaN's).  */
 #ifndef DEC
 #define INFINITY
+#define NANS
 #endif
 
+/* Support of NaNs requires support of infinity. */
+#ifdef NANS
+#ifndef INFINITY
+#define INFINITY
+#endif
+#endif
 
 /* ehead.h
  *
@@ -255,17 +287,18 @@ do { EMUSHORT w[4];		\
 
 void warning ();
 extern int extra_warnings;
-int ecmp (), enormlz (), eshift (), eisneg (), eisinf ();
+int ecmp (), enormlz (), eshift ();
+int eisneg (), eisinf (), eisnan (), eiisinf (), eiisnan ();
 void eadd (), esub (), emul (), ediv ();
 void eshup1 (), eshup8 (), eshup6 (), eshdn1 (), eshdn8 (), eshdn6 ();
 void eabs (), eneg (), emov (), eclear (), einfin (), efloor ();
 void eldexp (), efrexp (), eifrac (), euifrac (), ltoe (), ultoe ();
-void eround (), ereal_to_decimal ();
+void eround (), ereal_to_decimal (), eiinfin (), einan ();
 void esqrt (), elog (), eexp (), etanh (), epow ();
 void asctoe (), asctoe24 (), asctoe53 (), asctoe64 ();
 void etoasc (), e24toasc (), e53toasc (), e64toasc ();
 void etoe64 (), etoe53 (), etoe24 (), e64toe (), e53toe (), e24toe ();
-void mtherr ();
+void mtherr (), make_nan ();
 extern unsigned EMUSHORT ezero[], ehalf[], eone[], etwo[];
 extern unsigned EMUSHORT elog2[], esqrt2[];
 
@@ -372,6 +405,19 @@ earith (value, icode, r1, r2)
 
   GET_REAL (r1, d1);
   GET_REAL (r2, d2);
+#ifdef NANS
+/*  Return NaN input back to the caller. */
+  if (eisnan (d1))
+    {
+      PUT_REAL (d1, value);
+      return;
+    }
+  if (eisnan (d2))
+    {
+      PUT_REAL (d2, value);
+      return;
+    }
+#endif
   code = (enum tree_code) icode;
   switch (code)
     {
@@ -390,7 +436,14 @@ earith (value, icode, r1, r2)
     case RDIV_EXPR:
 #ifndef REAL_INFINITY
       if (ecmp (d2, ezero) == 0)
+	{
+#ifdef NANS
+	enan (v);
+	break;
+#else
 	abort ();
+#endif
+	}
 #endif
       ediv (d2, d1, v);	/* d1/d2 */
       break;
@@ -417,7 +470,7 @@ PUT_REAL (v, value);
 
 
 /* Truncate REAL_VALUE_TYPE toward zero to signed HOST_WIDE_INT
- * implements REAL_VALUE_FIX_TRUNCATE (x) (etrunci (x))
+ * implements REAL_VALUE_RNDZINT (x) (etrunci (x))
  */
 REAL_VALUE_TYPE 
 etrunci (x)
@@ -428,6 +481,10 @@ etrunci (x)
   long l;
 
   GET_REAL (&x, g);
+#ifdef NANS
+  if (eisnan (g))
+    return (x);
+#endif
   eifrac (g, &l, f);
   ltoe (&l, g);
   PUT_REAL (g, &r);
@@ -436,7 +493,7 @@ etrunci (x)
 
 
 /* Truncate REAL_VALUE_TYPE toward zero to unsigned HOST_WIDE_INT
- * implements REAL_VALUE_UNSIGNED_FIX_TRUNCATE (x) (etruncui (x))
+ * implements REAL_VALUE_UNSIGNED_RNDZINT (x) (etruncui (x))
  */
 REAL_VALUE_TYPE 
 etruncui (x)
@@ -447,6 +504,10 @@ etruncui (x)
   unsigned long l;
 
   GET_REAL (&x, g);
+#ifdef NANS
+  if (eisnan (g))
+    return (x);
+#endif
   euifrac (g, &l, f);
   ultoe (&l, g);
   PUT_REAL (g, &r);
@@ -499,6 +560,10 @@ ereal_negate (x)
   REAL_VALUE_TYPE r;
 
   GET_REAL (&x, e);
+#ifdef NANS
+  if (eisnan (e))
+    return (x);
+#endif
   eneg (e);
   PUT_REAL (e, &r);
   return (r);
@@ -518,6 +583,13 @@ eroundi (x)
   EMULONG l;
 
   GET_REAL (&x, f);
+#ifdef NANS
+  if (eisnan (f))
+    {
+      warning ("conversion from NaN to int");
+      return (-1);
+    }
+#endif
   eround (f, g);
   eifrac (g, &l, f);
   return ((int) l);
@@ -537,6 +609,13 @@ eroundui (x)
   unsigned EMULONG l;
 
   GET_REAL (&x, f);
+#ifdef NANS
+  if (eisnan (f))
+    {
+      warning ("conversion from NaN to unsigned int");
+      return (-1);
+    }
+#endif
   eround (f, g);
   euifrac (g, &l, f);
   return ((unsigned int)l);
@@ -609,6 +688,15 @@ ereal_to_int (low, high, rr)
   int s;
 
   GET_REAL (&rr, d);
+#ifdef NANS
+  if (eisnan (&rr))
+    {
+      warning ("conversion from NaN to int");
+      *low = -1;
+      *high = -1;
+      return;
+    }
+#endif
   /* convert positive value */
   s = 0;
   if (eisneg (d))
@@ -644,6 +732,10 @@ ereal_ldexp (x, n)
   REAL_VALUE_TYPE r;
 
   GET_REAL (&x, e);
+#ifdef NANS
+  if (eisnan (e))
+    return (x);
+#endif
   eldexp (e, n, y);
   PUT_REAL (y, &r);
   return (r);
@@ -669,17 +761,21 @@ target_isinf (x)
 }
 
 
-/* Check whether an IEEE double precision number is a NaN. */
+/* Check whether a REAL_VALUE_TYPE item is a NaN. */
 
 int
 target_isnan (x)
      REAL_VALUE_TYPE x;
 {
+#ifdef NANS
+  return (eisnan (&x));
+#else
   return (0);
+#endif
 }
 
 
-/* Check for a negative IEEE double precision number.
+/* Check for a negative REAL_VALUE_TYPE number.
  * this means strictly less than zero, not -0.
  */
 
@@ -690,7 +786,7 @@ target_negative (x)
   unsigned EMUSHORT e[NE];
 
   GET_REAL (&x, e);
-  if (ecmp (e, ezero) < 0)
+  if (ecmp (e, ezero) == -1)
     return (1);
   return (0);
 }
@@ -707,6 +803,10 @@ real_value_truncate (mode, arg)
   REAL_VALUE_TYPE r;
 
   GET_REAL (&arg, e);
+#ifdef NANS
+  if (eisnan (e))
+    return (arg);
+#endif
   eclear (t);
   switch (mode)
     {
@@ -855,7 +955,8 @@ ereal_isneg (x)
  *	eabs (e)			absolute value
  *	eadd (a, b, c)		c = b + a
  *	eclear (e)		e = 0
- *	ecmp (a, b)		compare a to b, return 1, 0, or -1
+ *	ecmp (a, b)		Returns 1 if a > b, 0 if a == b,
+ *				-1 if a < b, -2 if either a or b is a NaN.
  *	ediv (a, b, c)		c = b / a
  *	efloor (a, b)		truncate to integer, toward -infinity
  *	efrexp (a, exp, s)	extract exponent and significand
@@ -878,7 +979,9 @@ ereal_isneg (x)
  *	ltoe (&l, e)		long (32 bit) integer to e type
  *	ultoe (&l, e)		unsigned long (32 bit) integer to e type
  *      eisneg (e)              1 if sign bit of e != 0, else 0
- *      eisinf (e)              1 if e has maximum exponent
+ *      eisinf (e)              1 if e has maximum exponent (non-IEEE)
+ *				or is infinite (IEEE)
+ *      eisnan (e)              1 if e is a NaN
  *
  *
  *		Routines for internal format numbers
@@ -902,31 +1005,34 @@ ereal_isneg (x)
  *	eshup8 (ai)		shift up 8 bits
  *	eshup6 (ai)		shift up 16 bits
  *	esubm (ai, bi)		subtract significands, bi = bi - ai
+ *      eiisinf (ai)            1 if infinite
+ *      eiisnan (ai)            1 if a NaN
+ *      einan (ai)              set ai = NaN
+ *      eiinfin (ai)            set ai = infinity
  *
  *
  * The result is always normalized and rounded to NI-4 word precision
  * after each arithmetic operation.
  *
- * Exception flags and NaNs are NOT fully supported.
- * This arithmetic should never produce a NaN output, but it might
- * be confused by a NaN input.
- * Define INFINITY in mconf.h for support of infinity; otherwise a
+ * Exception flags are NOT fully supported.
+ *
+ * Signaling NaN's are NOT supported; they are treated the same
+ * as quiet NaN's.
+ *
+ * Define INFINITY for support of infinity; otherwise a
  * saturation arithmetic is implemented.
+ *
+ * Define NANS for support of Not-a-Number items; otherwise the
+ * arithmetic will never produce a NaN output, and might be confused
+ * by a NaN input.
+ * If NaN's are supported, the output of `ecmp (a,b)' is -2 if
+ * either a or b is a NaN. This means asking `if (ecmp (a,b) < 0)'
+ * may not be legitimate. Use `if (ecmp (a,b) == -1)' for `less than'
+ * if in doubt.
+ *
  * Denormals are always supported here where appropriate (e.g., not
  * for conversion to DEC numbers).
  *
- */
-
-/*
- * Revision history:
- *
- *  5 Jan 84	PDP-11 assembly language version
- *  2 Mar 86	fixed bug in asctoq
- *  6 Dec 86	C language version
- * 30 Aug 88	100 digit version, improved rounding
- * 15 May 92    80-bit long double support
- *
- * Author:  S. L. Moshier.
  */
 
 
@@ -990,6 +1096,7 @@ ereal_isneg (x)
 #define UNDERFLOW	4	/* underflow range error */
 #define TLOSS		5	/* total loss of precision */
 #define PLOSS		6	/* partial loss of precision */
+#define INVALID		7	/* NaN-producing operation */
 
 /*  e type constants used by high precision check routines */
 
@@ -1148,19 +1255,27 @@ eneg (x)
      unsigned EMUSHORT x[];
 {
 
+#ifdef NANS
+  if (eisnan (x))
+    return;
+#endif
   x[NE - 1] ^= 0x8000;		/* Toggle the sign bit */
 }
 
 
 
 /* Return 1 if external format number is negative,
- * else return zero.
+ * else return zero, including when it is a NaN.
  */
 int 
 eisneg (x)
      unsigned EMUSHORT x[];
 {
 
+#ifdef NANS
+  if (eisnan (x))
+    return (0);
+#endif
   if (x[NE - 1] & 0x8000)
     return (1);
   else
@@ -1168,7 +1283,7 @@ eisneg (x)
 }
 
 
-/* Return 1 if external format number has maximum possible exponent,
+/* Return 1 if external format number is infinity.
  * else return zero.
  */
 int 
@@ -1176,6 +1291,10 @@ eisinf (x)
      unsigned EMUSHORT x[];
 {
 
+#ifdef NANS
+  if (eisnan (x))
+    return (0);
+#endif
   if ((x[NE - 1] & 0x7fff) == 0x7fff)
     return (1);
   else
@@ -1183,14 +1302,32 @@ eisinf (x)
 }
 
 
-/*
-; Fill entire number, including exponent and significand, with
-; largest possible number.  These programs implement a saturation
-; value that is an ordinary, legal number.  A special value
-; "infinity" may also be implemented; this would require tests
-; for that value and implementation of special rules for arithmetic
-; operations involving inifinity.
-*/
+/* Check if e-type number is not a number.
+   The bit pattern is one that we defined, so we know for sure how to
+   detect it.  */
+
+int 
+eisnan (x)
+     unsigned EMUSHORT x[];
+{
+
+#ifdef NANS
+  int i;
+/* NaN has maximum exponent */
+  if ((x[NE - 1] & 0x7fff) != 0x7fff)
+    return (0);
+/* ... and non-zero significand field. */
+  for (i = 0; i < NE - 1; i++)
+    {
+      if (*x++ != 0)
+        return (1);
+    }
+#endif
+  return (0);
+}
+
+/*  Fill external format number with infinity pattern (IEEE)
+    or largest possible number (non-IEEE). */
 
 void 
 einfin (x)
@@ -1227,6 +1364,22 @@ einfin (x)
 }
 
 
+/* Output an e-type NaN.
+   This generates Intel's quiet NaN pattern for extended real.
+   The exponent is 7fff, the leading mantissa word is c000.  */
+
+void 
+enan (x)
+     register unsigned EMUSHORT *x;
+{
+  register int i;
+
+  for (i = 0; i < NE - 2; i++)
+    *x++ = 0;
+  *x++ = 0xc000;
+  *x = 0x7fff;
+}
+
 
 /* Move in external format number,
  * converting it to internal format.
@@ -1251,6 +1404,15 @@ emovi (a, b)
 #ifdef INFINITY
   if ((*(q - 1) & 0x7fff) == 0x7fff)
     {
+#ifdef NANS
+      if (eisnan (a))
+	{
+	  *q++ = 0;
+	  for (i = 3; i < NI; i++)
+	    *q++ = *p--;
+	  return;
+	}
+#endif
       for (i = 2; i < NI; i++)
 	*q++ = 0;
       return;
@@ -1287,8 +1449,15 @@ emovo (a, b)
 #ifdef INFINITY
   if (*(p - 1) == 0x7fff)
     {
+#ifdef NANS
+      if (eiisnan (a))
+	{
+	  enan (b);
+	  return;
+	}
+#endif
       einfin (b);
-      return;
+	return;
     }
 #endif
   /* skip over guard word */
@@ -1342,6 +1511,67 @@ emovz (a, b)
     *b++ = *a++;
   /* clear low guard word */
   *b = 0;
+}
+
+/* Generate internal format NaN.
+   The explicit pattern for this is maximum exponent and
+   top two significand bits set.  */
+
+void
+einan (x)
+     unsigned EMUSHORT x[];
+{
+
+  ecleaz (x);
+  x[E] = 0x7fff;
+  x[M + 1] = 0xc000;
+}
+
+/* Return nonzero if internal format number is a NaN. */
+
+int 
+eiisnan (x)
+     unsigned EMUSHORT x[];
+{
+  int i;
+
+  if ((x[E] & 0x7fff) == 0x7fff)
+    {
+      for (i = M + 1; i < NI; i++)
+	{
+	  if (x[i] != 0)
+	    return (1);
+	}
+    }
+  return (0);
+}
+
+/* Fill internal format number with infinity pattern.
+   This has maximum exponent and significand all zeros.  */
+
+void
+eiinfin (x)
+     unsigned EMUSHORT x[];
+{
+
+  ecleaz (x);
+  x[E] = 0x7fff;
+}
+
+/* Return nonzero if internal format number is infinite. */
+
+int 
+eiisinf (x)
+     unsigned EMUSHORT x[];
+{
+
+#ifdef NANS
+  if (eiisnan (x))
+    return (0);
+#endif
+  if ((x[E] & 0x7fff) == 0x7fff)
+    return (1);
+  return (0);
 }
 
 
@@ -1979,6 +2209,27 @@ esub (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
 
+#ifdef NANS
+  if (eisnan (a))
+    {
+      emov (a, c);
+      return;
+    }
+  if (eisnan (b))
+    {
+      emov (b, c);
+      return;
+    }
+/* Infinity minus infinity is a NaN.
+   Test for subtracting infinities of the same sign. */
+  if (eisinf (a) && eisinf (b)
+      && ((eisneg (a) ^ eisneg (b)) == 0))
+    {
+      mtherr ("esub", INVALID);
+      enan (c);
+      return;
+    }
+#endif
   subflg = 1;
   eadd1 (a, b, c);
 }
@@ -1995,6 +2246,28 @@ eadd (a, b, c)
      unsigned EMUSHORT *a, *b, *c;
 {
 
+#ifdef NANS
+/* NaN plus anything is a NaN. */
+  if (eisnan (a))
+    {
+      emov (a, c);
+      return;
+    }
+  if (eisnan (b))
+    {
+      emov (b, c);
+      return;
+    }
+/* Infinity minus infinity is a NaN.
+   Test for adding infinities of opposite signs. */
+  if (eisinf (a) && eisinf (b)
+      && ((eisneg (a) ^ eisneg (b)) != 0))
+    {
+      mtherr ("esub", INVALID);
+      enan (c);
+      return;
+    }
+#endif
   subflg = 0;
   eadd1 (a, b, c);
 }
@@ -2117,6 +2390,28 @@ ediv (a, b, c)
   int i;
   EMULONG lt, lta, ltb;
 
+#ifdef NANS
+/* Return any NaN input. */
+  if (eisnan (a))
+    {
+    emov (a, c);
+    return;
+    }
+  if (eisnan (b))
+    {
+    emov (b, c);
+    return;
+    }
+/* Zero over zero, or infinity over infinity, is a NaN. */
+  if (((ecmp (a, ezero) == 0) && (ecmp (b, ezero) == 0))
+      || (eisinf (a) && eisinf (b)))
+    {
+    mtherr ("ediv", INVALID);
+    enan (c);
+    return;
+    }
+#endif
+/* Infinity over anything else is infinity. */
 #ifdef INFINITY
   if (eisinf (b))
     {
@@ -2127,6 +2422,7 @@ ediv (a, b, c)
       einfin (c);
       return;
     }
+/* Anything else over infinity is zero. */
   if (eisinf (a))
     {
       eclear (c);
@@ -2166,6 +2462,8 @@ ediv (a, b, c)
 	*(c + (NE - 1)) = 0;
       else
 	*(c + (NE - 1)) = 0x8000;
+/* Divide by zero is not an invalid operation.
+   It is a divide-by-zero operation!   */
       einfin (c);
       mtherr ("ediv", SING);
       return;
@@ -2200,6 +2498,28 @@ emul (a, b, c)
   int i, j;
   EMULONG lt, lta, ltb;
 
+#ifdef NANS
+/* NaN times anything is the same NaN. */
+  if (eisnan (a))
+    {
+    emov (a, c);
+    return;
+    }
+  if (eisnan (b))
+    {
+    emov (b, c);
+    return;
+    }
+/* Zero times infinity is a NaN. */
+  if ((eisinf (a) && (ecmp (b, ezero) == 0))
+      || (eisinf (b) && (ecmp (a, ezero) == 0)))
+    {
+    mtherr ("emul", INVALID);
+    enan (c);
+    return;
+    }
+#endif
+/* Infinity times anything else is infinity. */
 #ifdef INFINITY
   if (eisinf (a) || eisinf (b))
     {
@@ -2268,20 +2588,21 @@ emul (a, b, c)
 ;	e53toe (&d, x);
 */
 void 
-e53toe (e, y)
-     unsigned EMUSHORT *e, *y;
+e53toe (pe, y)
+     unsigned EMUSHORT *pe, *y;
 {
 #ifdef DEC
 
-  dectoe (e, y);		/* see etodec.c */
+  dectoe (pe, y);		/* see etodec.c */
 
 #else
 
   register unsigned EMUSHORT r;
-  register unsigned EMUSHORT *p;
+  register unsigned EMUSHORT *e, *p;
   unsigned EMUSHORT yy[NI];
   int denorm, k;
 
+  e = pe;
   denorm = 0;			/* flag if denormalized number */
   ecleaz (yy);
 #ifdef IBMPC
@@ -2296,12 +2617,29 @@ e53toe (e, y)
 #ifdef INFINITY
   if (r == 0x7ff0)
     {
+#ifdef NANS
+#ifdef IBMPC
+      if (((pe[3] & 0xf) != 0) || (pe[2] != 0)
+	  || (pe[1] != 0) || (pe[0] != 0))
+	{
+	  enan (y);
+	  return;
+	}
+#else
+      if (((pe[0] & 0xf) != 0) || (pe[1] != 0)
+	  || (pe[2] != 0) || (pe[3] != 0))
+	{
+	  enan (y);
+	  return;
+	}
+#endif
+#endif  /* NANS */
       einfin (y);
       if (r & 0x8000)
 	eneg (y);
       return;
     }
-#endif
+#endif  /* INFINITY */
   r >>= 4;
   /* If zero exponent, then the significand is denormalized.
    * So, take back the understood high significand bit. */
@@ -2337,13 +2675,14 @@ e53toe (e, y)
 }
 
 void 
-e64toe (e, y)
-     unsigned EMUSHORT *e, *y;
+e64toe (pe, y)
+     unsigned EMUSHORT *pe, *y;
 {
   unsigned EMUSHORT yy[NI];
-  unsigned EMUSHORT *p, *q;
+  unsigned EMUSHORT *e, *p, *q;
   int i;
 
+  e = pe;
   p = yy;
   for (i = 0; i < NE - 5; i++)
     *p++ = 0;
@@ -2367,12 +2706,33 @@ e64toe (e, y)
 #ifdef INFINITY
   if (*p == 0x7fff)
     {
+#ifdef NANS
+#ifdef IBMPC
+      for (i = 0; i < 4; i++)
+	{
+	  if (pe[i] != 0)
+	    {
+	      enan (y);
+	      return;
+	    }
+	}
+#else
+      for (i = 1; i <= 4; i++)
+	{
+	  if (pe[i] != 0)
+	    {
+	      enan (y);
+	      return;
+	    }
+	}
+#endif
+#endif /* NANS */
       einfin (y);
       if (*p & 0x8000)
 	eneg (y);
       return;
     }
-#endif
+#endif  /* INFINITY */
   for (i = 0; i < NE; i++)
     *q++ = *p++;
 }
@@ -2385,14 +2745,15 @@ e64toe (e, y)
 ;	dtox (&d, x);
 */
 void 
-e24toe (e, y)
-     unsigned EMUSHORT *e, *y;
+e24toe (pe, y)
+     unsigned EMUSHORT *pe, *y;
 {
   register unsigned EMUSHORT r;
-  register unsigned EMUSHORT *p;
+  register unsigned EMUSHORT *e, *p;
   unsigned EMUSHORT yy[NI];
   int denorm, k;
 
+  e = pe;
   denorm = 0;			/* flag if denormalized number */
   ecleaz (yy);
 #ifdef IBMPC
@@ -2410,12 +2771,27 @@ e24toe (e, y)
 #ifdef INFINITY
   if (r == 0x7f80)
     {
+#ifdef NANS
+#ifdef MIEEE
+      if (((pe[0] & 0x7f) != 0) || (pe[1] != 0))
+	{
+	  enan (y);
+	  return;
+	}
+#else
+      if (((pe[1] & 0x7f) != 0) || (pe[0] != 0))
+	{
+	  enan (y);
+	  return;
+	}
+#endif
+#endif  /* NANS */
       einfin (y);
       if (r & 0x8000)
 	eneg (y);
       return;
     }
-#endif
+#endif  /* INFINITY */
   r >>= 7;
   /* If zero exponent, then the significand is denormalized.
    * So, take back the understood high significand bit. */
@@ -2457,6 +2833,13 @@ etoe64 (x, e)
   EMULONG exp;
   int rndsav;
 
+#ifdef NANS
+  if (eisnan (x))
+    {
+      make_nan (e, XFmode);
+      return;
+    }
+#endif
   emovi (x, xi);
   /* adjust exponent for offset */
   exp = (EMULONG) xi[E];
@@ -2481,6 +2864,13 @@ toe64 (a, b)
   register unsigned EMUSHORT *p, *q;
   unsigned EMUSHORT i;
 
+#ifdef NANS
+  if (eiisnan (a))
+    {
+      make_nan (b, XFmode);
+      return;
+    }
+#endif
   p = a;
 #ifdef MIEEE
   q = b;
@@ -2552,6 +2942,13 @@ etoe53 (x, e)
   EMULONG exp;
   int rndsav;
 
+#ifdef NANS
+  if (eisnan (x))
+    {
+      make_nan (e, DFmode);
+      return;
+    }
+#endif
   emovi (x, xi);
   /* adjust exponent for offsets */
   exp = (EMULONG) xi[E] - (EXONE - 0x3ff);
@@ -2576,7 +2973,13 @@ toe53 (x, y)
   unsigned EMUSHORT i;
   unsigned EMUSHORT *p;
 
-
+#ifdef NANS
+  if (eiisnan (x))
+    {
+      make_nan (y, DFmode);
+      return;
+    }
+#endif
   p = &x[0];
 #ifdef IBMPC
   y += 3;
@@ -2659,6 +3062,13 @@ etoe24 (x, e)
   unsigned EMUSHORT xi[NI];
   int rndsav;
 
+#ifdef NANS
+  if (eisnan (x))
+    {
+      make_nan (e, SFmode);
+      return;
+    }
+#endif
   emovi (x, xi);
   /* adjust exponent for offsets */
   exp = (EMULONG) xi[E] - (EXONE - 0177);
@@ -2682,6 +3092,13 @@ toe24 (x, y)
   unsigned EMUSHORT i;
   unsigned EMUSHORT *p;
 
+#ifdef NANS
+  if (eiisnan (x))
+    {
+      make_nan (y, SFmode);
+      return;
+    }
+#endif
   p = &x[0];
 #ifdef IBMPC
   y += 1;
@@ -2759,6 +3176,7 @@ toe24 (x, y)
  *  returns +1 if a > b
  *           0 if a == b
  *          -1 if a < b
+ *          -2 if either a or b is a NaN.
  */
 int 
 ecmp (a, b)
@@ -2769,6 +3187,10 @@ ecmp (a, b)
   register int i;
   int msign;
 
+#ifdef NANS
+  if (eisnan (a)  || eisnan (b))
+      return (-2);
+#endif
   emovi (a, ai);
   p = ai;
   emovi (b, bi);
@@ -3262,24 +3684,6 @@ e24toasc (x, string, ndigs)
 {
   unsigned EMUSHORT w[NI];
 
-#ifdef INFINITY
-#ifdef IBMPC
-  if ((x[1] & 0x7f80) == 0x7f80)
-#else
-  if ((x[0] & 0x7f80) == 0x7f80)
-#endif
-    {
-#ifdef IBMPC
-      if (x[1] & 0x8000)
-#else
-      if (x[0] & 0x8000)
-#endif
-        sprintf (string, " -Infinity ");
-      else
-        sprintf (string, " Infinity ");
-      return;
-    }
-#endif
   e24toe (x, w);
   etoasc (w, string, ndigs);
 }
@@ -3293,24 +3697,6 @@ e53toasc (x, string, ndigs)
 {
   unsigned EMUSHORT w[NI];
 
-#ifdef INFINITY
-#ifdef IBMPC
-  if ((x[3] & 0x7ff0) == 0x7ff0)
-#else
-  if ((x[0] & 0x7ff0) == 0x7ff0)
-#endif
-    {
-#ifdef IBMPC
-      if (x[3] & 0x8000)
-#else
-      if (x[0] & 0x8000)
-#endif
-        sprintf (string, " -Infinity ");
-      else
-        sprintf (string, " Infinity ");
-      return;
-    }
-#endif
   e53toe (x, w);
   etoasc (w, string, ndigs);
 }
@@ -3324,24 +3710,6 @@ e64toasc (x, string, ndigs)
 {
   unsigned EMUSHORT w[NI];
 
-#ifdef INFINITY
-#ifdef IBMPC
-  if ((x[4] & 0x7fff) == 0x7fff)
-#else
-  if ((x[0] & 0x7fff) == 0x7fff)
-#endif
-    {
-#ifdef IBMPC
-      if (x[4] & 0x8000)
-#else
-      if (x[0] & 0x8000)
-#endif
-        sprintf (string, " -Infinity ");
-      else
-        sprintf (string, " Infinity ");
-      return;
-    }
-#endif
   e64toe (x, w);
   etoasc (w, string, ndigs);
 }
@@ -3363,11 +3731,19 @@ etoasc (x, string, ndigs)
   char *s, *ss;
   unsigned EMUSHORT m;
 
+
+  rndsav = rndprc;
   ss = string;
   s = wstring;
-  while ((*s++ = *ss++) != '\0')
-    ;
-  rndsav = rndprc;
+  *ss = '\0';
+  *s = '\0';
+#ifdef NANS
+  if (eisnan (x))
+    {
+      sprintf (wstring, " NaN ");
+      goto bxit;
+    }
+#endif
   rndprc = NBITS;		/* set to full precision */
   emov (x, y);			/* retain external format */
   if (y[NE - 1] & 0x8000)
@@ -3394,8 +3770,7 @@ etoasc (x, string, ndigs)
     }
  tnzro:
 
-  /* Test for infinity.  Don't bother with illegal infinities.
-   */
+  /* Test for infinity. */
   if (y[NE - 1] == 0x7fff)
     {
       if (sign)
@@ -3419,6 +3794,9 @@ etoasc (x, string, ndigs)
   i = ecmp (eone, y);
   if (i == 0)
     goto isone;
+
+  if (i == -2)
+    abort ();
 
   if (i < 0)
     {				/* Number is greater than 1 */
@@ -3452,6 +3830,7 @@ etoasc (x, string, ndigs)
       emov (eone, t);
       m = MAXP;
       p = &etens[0][0];
+      /* An unordered compare result shouldn't happen here. */
       while (ecmp (ten, u) <= 0)
 	{
 	  if (ecmp (p, u) <= 0)
@@ -3835,8 +4214,12 @@ asctoeg (ss, y, oprec)
       goto infinite;
     default:
     error:
+#ifdef NANS
+      einan (yy);
+#else
       mtherr ("asctoe", DOMAIN);
-      eclear (y);
+      eclear (yy);
+#endif
       goto aexit;
     }
  donchr:
@@ -4146,6 +4529,16 @@ eremain (a, b, c)
 {
   unsigned EMUSHORT den[NI], num[NI];
 
+#ifdef NANS
+  if ( eisinf (b)
+       || (ecmp (a, ezero) == 0)
+       || eisnan (a)
+       || eisnan (b))
+    {
+      enan (c);
+      return;
+    }
+#endif
   if (ecmp (a, ezero) == 0)
     {
       mtherr ("eremain", SING);
@@ -4223,6 +4616,7 @@ eiremain (den, num)
  *    UNDERFLOW         4       underflow range error
  *    TLOSS             5       total loss of precision
  *    PLOSS             6       partial loss of precision
+ *    INVALID           7       NaN - producing operation
  *    EDOM             33       Unix domain error code
  *    ERANGE           34       Unix range error code
  *
@@ -4256,7 +4650,8 @@ Direct inquiries to 30 Frost Street, Cambridge, MA 02140
  * messages is bound to the error codes defined
  * in mconf.h.
  */
-static char *ermsg[7] =
+#define NMSGS 8
+static char *ermsg[NMSGS] =
 {
   "unknown",			/* error code 0 */
   "domain",			/* error code 1 */
@@ -4264,7 +4659,8 @@ static char *ermsg[7] =
   "overflow",
   "underflow",
   "total loss of precision",
-  "partial loss of precision"
+  "partial loss of precision",
+  "invalid operation"
 };
 
 int merror = 0;
@@ -4285,7 +4681,7 @@ mtherr (name, code)
   /* Display error message defined
    * by the code argument.
    */
-  if ((code <= 0) || (code >= 6))
+  if ((code <= 0) || (code >= NMSGS))
     code = 0;
   sprintf (errstr, "\n%s %s error\n", name, ermsg[code]);
   if (extra_warnings)
@@ -4488,5 +4884,86 @@ todec (x, y)
 }
 
 #endif /* not 0 */
+
+
+/* Output a binary NaN bit pattern in the target machine's format.  */
+
+/* If special NaN bit patterns are required, define them in tm.h
+   as arrays of unsigned 16-bit shorts.  Otherwise, use the default
+   patterns here. */
+#ifndef TFMODE_NAN
+#ifdef MIEEE
+unsigned EMUSHORT TFnan[8] =
+ {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
+#endif
+#ifdef IBMPC
+unsigned EMUSHORT TFnan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
+#endif
+#endif
+
+#ifndef XFMODE_NAN
+#ifdef MIEEE
+unsigned EMUSHORT XFnan[6] = {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
+#endif
+#ifdef IBMPC
+unsigned EMUSHORT XFnan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
+#endif
+#endif
+
+#ifndef DFMODE_NAN
+#ifdef MIEEE
+unsigned EMUSHORT DFnan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
+#endif
+#ifdef IBMPC
+unsigned EMUSHORT DFnan[4] = {0, 0, 0, 0xfff8};
+#endif
+#endif
+
+#ifndef SFMODE_NAN
+#ifdef MIEEE
+unsigned EMUSHORT SFnan[2] = {0x7fff, 0xffff};
+#endif
+#ifdef IBMPC
+unsigned EMUSHORT SFnan[2] = {0, 0xffc0};
+#endif
+#endif
+
+
+void
+make_nan (nan, mode)
+unsigned EMUSHORT *nan;
+enum machine_mode mode;
+{
+  int i, n;
+  unsigned EMUSHORT *p;
+
+  switch (mode)
+    {
+/* Possibly the `reserved operand' patterns on a VAX can be
+   used like NaN's, but probably not in the same way as IEEE. */
+#ifndef DEC
+    case TFmode:
+      n = 8;
+      p = TFnan;
+      break;
+    case XFmode:
+      n = 6;
+      p = XFnan;
+      break;
+    case DFmode:
+      n = 4;
+      p = DFnan;
+      break;
+    case SFmode:
+      n = 2;
+      p = SFnan;
+      break;
+#endif
+    default:
+      abort ();
+    }
+  for (i=0; i < n; i++)
+    *nan++ = *p++;
+}
 
 #endif /* EMU_NON_COMPILE not defined */
