@@ -9,6 +9,15 @@
 	* fix-header.c (cb_file_change):  Likewise.
 	* c-ppoutput.c (pp_file_change):  Likewise.
 
+	* cpplex.c (_cpp_get_fresh_line):  Revert my no-longer-needed
+	08-28 change, since we're never called with a NULL buffer.
+	(_cpp_lex_direct):  Likewise.
+	* cpptrad.c (_cpp_read_logical_line_trad):  Likewise.
+	Return false if buffer is NULL at end.
+
+	* cpplex.c (_cpp_get_fresh_line):  Return value now just depends on
+	whether pfile->buffer is NULL after pop, ignoring return_at_eof.
+
 2003-10-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* target.h (init_libfuncs): New hook.
