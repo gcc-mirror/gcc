@@ -5233,12 +5233,14 @@ dwarfout_init (asm_out_file, main_input_filename)
   ASM_OUTPUT_LABEL (asm_out_file, DATA_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
+#if 0 /* GNU C doesn't currently use .data1.  */
   /* Output a starting label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
+#endif
 
   /* Output a starting label for the .rodata section.  */
 
@@ -5247,12 +5249,14 @@ dwarfout_init (asm_out_file, main_input_filename)
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
+#if 0 /* GNU C doesn't currently use .rodata1.  */
   /* Output a starting label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
+#endif
 
   /* Output a starting label for the .bss section.  */
 
@@ -5410,12 +5414,14 @@ dwarfout_finish ()
   ASM_OUTPUT_LABEL (asm_out_file, DATA_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
+#if 0 /* GNU C doesn't currently use .data1.  */
   /* Output a terminator label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
+#endif
 
   /* Output a terminator label for the .rodata section.  */
 
@@ -5424,12 +5430,14 @@ dwarfout_finish ()
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
+#if 0 /* GNU C doesn't currently use .rodata1.  */
   /* Output a terminator label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
+#endif
 
   /* Output a terminator label for the .bss section.  */
 
@@ -5504,17 +5512,21 @@ dwarfout_finish ()
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DATA_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, DATA_END_LABEL, DATA_BEGIN_LABEL);
 
+#if 0 /* GNU C doesn't currently use .data1.  */
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DATA1_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, DATA1_END_LABEL,
 					     DATA1_BEGIN_LABEL);
+#endif
 
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, RODATA_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, RODATA_END_LABEL,
 					     RODATA_BEGIN_LABEL);
 
+#if 0 /* GNU C doesn't currently use .rodata1.  */
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, RODATA1_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, RODATA1_END_LABEL,
 					     RODATA1_BEGIN_LABEL);
+#endif
 
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, BSS_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, BSS_END_LABEL, BSS_BEGIN_LABEL);
