@@ -1,6 +1,6 @@
 // std::numpunct implementation details, GNU version -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,13 +54,11 @@ namespace std
 	  _M_data->_M_decimal_point = '.';
 	  _M_data->_M_thousands_sep = ',';
 
-	  for (size_t i = 0; i < __num_base::_S_oend; ++i)
-	    _M_data->_M_atoms_out[i] = __num_base::_S_atoms_out[i];
-	  _M_data->_M_atoms_out[__num_base::_S_oend] = char();
+	  for (size_t __i = 0; __i < __num_base::_S_oend; ++__i)
+	    _M_data->_M_atoms_out[__i] = __num_base::_S_atoms_out[__i];
 
-	  for (size_t i = 0; i < __num_base::_S_iend; ++i)
-	    _M_data->_M_atoms_in[i] = __num_base::_S_atoms_in[i];
-	  _M_data->_M_atoms_in[__num_base::_S_iend] = char();
+	  for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
+	    _M_data->_M_atoms_in[__i] = __num_base::_S_atoms_in[__i];
 	}
       else
 	{
@@ -107,19 +105,17 @@ namespace std
 #endif
 	  // Use ctype::widen code without the facet...
 	  unsigned char uc;
-	  for (size_t i = 0; i < __num_base::_S_oend; ++i)
+	  for (size_t __i = 0; __i < __num_base::_S_oend; ++__i)
 	    {
-	      uc = static_cast<unsigned char>(__num_base::_S_atoms_out[i]);
-	      _M_data->_M_atoms_out[i] = btowc(uc);
+	      uc = static_cast<unsigned char>(__num_base::_S_atoms_out[__i]);
+	      _M_data->_M_atoms_out[__i] = btowc(uc);
 	    }
-	  _M_data->_M_atoms_out[__num_base::_S_oend] = wchar_t();
 
-	  for (size_t i = 0; i < __num_base::_S_iend; ++i)
+	  for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
 	    {
-	      uc = static_cast<unsigned char>(__num_base::_S_atoms_in[i]);
-	      _M_data->_M_atoms_in[i] = btowc(uc);
+	      uc = static_cast<unsigned char>(__num_base::_S_atoms_in[__i]);
+	      _M_data->_M_atoms_in[__i] = btowc(uc);
 	    }
-	  _M_data->_M_atoms_in[__num_base::_S_iend] = wchar_t();
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 	  __uselocale(__old);
 #endif

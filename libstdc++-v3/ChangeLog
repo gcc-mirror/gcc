@@ -1,3 +1,15 @@
+2004-01-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/numeric_members.cc (_M_initialize_numpunct):
+	Avoid unnecessarily zero terminating _M_atoms_out and _M_atoms_in;
+	always use double underscored names.
+	* config/locale/gnu/numeric_members.cc (_M_initialize_numpunct):
+	Likewise.
+	* include/bits/locale_facets.h (struct __numpunct_cache):
+	Dimension _M_atoms_out and _M_atoms_in one position smaller.
+	(__numpunct_cache<>::_M_cache): Don't zero terminate _M_atoms_out
+	and _M_atoms_in.
+
 2003-12-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_int,
