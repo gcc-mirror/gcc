@@ -655,8 +655,6 @@ public class SimpleDateFormat extends DateFormat
 		    found_zone = true;
 		    TimeZone tz = TimeZone.getTimeZone (strings[0]);
 		    theCalendar.setTimeZone (tz);
-		    theCalendar.clear (Calendar.DST_OFFSET);
-		    theCalendar.clear (Calendar.ZONE_OFFSET);
 		    pos.setIndex(index + strings[k].length());
 		    break;
 		  }
@@ -709,6 +707,10 @@ public class SimpleDateFormat extends DateFormat
 
     try
       {
+	// Clear calendar fields here to force getTime() to correctly
+	// respect DST in the timezone.
+	theCalendar.clear (Calendar.DST_OFFSET);
+	theCalendar.clear (Calendar.ZONE_OFFSET);
         return theCalendar.getTime();
       }
     catch (IllegalArgumentException x)
