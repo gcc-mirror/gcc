@@ -1,3 +1,7 @@
+2000-04-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* lang-specs.h: Pass -fno-show-column to the preprocessor.
+
 Thu Mar 30 06:32:51 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (chill_expand_expr): Pass bit alignment to emit_block_move.
