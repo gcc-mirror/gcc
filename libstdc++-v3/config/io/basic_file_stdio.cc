@@ -195,12 +195,12 @@ namespace std
     __basic_file* __retval = static_cast<__basic_file*>(NULL);
     if (this->is_open())
       {
-	fflush(_M_cfile);
-	if ((_M_cfile_created && fclose(_M_cfile) == 0) || !_M_cfile_created)
-	  {
-	    _M_cfile = 0;
-	    __retval = this;
-	  }
+	if (_M_cfile_created)
+	  fclose(_M_cfile);
+	else
+	  fflush(_M_cfile);
+	_M_cfile = 0;
+	__retval = this;
       }
     return __retval;
   }
