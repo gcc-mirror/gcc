@@ -1,3 +1,8 @@
+2003-12-08  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/13324, PR ada/12614
+        * doc/install.texi: Update requirements for building Ada.
+
 2003-12-07  David Edelsohn  <edelsohn@gnu.org>
 	    Graham Reed <greed@pobox.com>
 
