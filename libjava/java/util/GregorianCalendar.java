@@ -540,7 +540,7 @@ public class GregorianCalendar extends Calendar
     fields[DAY_OF_WEEK] = weekday;
 
     // get a first approximation of the year.  This may be one 
-    // year to big.
+    // year too big.
     int year = 1970 + (gregorian
 		       ? ((day - 100) * 400) / (365 * 400 + 100 - 4 + 1)
 		       : ((day - 100) * 4) / (365 * 4 + 1));
@@ -709,6 +709,10 @@ public class GregorianCalendar extends Calendar
    * it does what you expect: Jan, 25 + 10 Days is Feb, 4.
    * @param field the time field. One of the time field constants.
    * @param amount the amount of time.
+   * @exception IllegalArgumentException if <code>field</code> is 
+   *   <code>ZONE_OFFSET</code>, <code>DST_OFFSET</code>, or invalid; or
+   *   if <code>amount</code> contains an out-of-range value and the calendar
+   *   is not in lenient mode.
    */
   public void add(int field, int amount)
   {
@@ -785,18 +789,9 @@ public class GregorianCalendar extends Calendar
 	areFieldsSet = false;
 	break;
       case ZONE_OFFSET:
-	complete();
-	fields[ZONE_OFFSET] += amount;
-	time -= amount;
-	break;
       case DST_OFFSET:
-	complete();
-	fields[DST_OFFSET] += amount;
-	isTimeSet = false;
-	break;
       default:
-	throw new IllegalArgumentException
-	  ("Unknown Calendar field: " + field);
+	throw new IllegalArgumentException("Invalid or unknown field");
       }
   }
 
