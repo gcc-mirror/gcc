@@ -1,3 +1,8 @@
+2000-05-24  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* configure.in:  For --enable-languages=LIST, check for empty LIST.
+	* configure:  Regenerate.
+
 2000-05-24  Lars Brinkhoff  <lars@nocrew.org>
 
 	* pdp11.h (STACK_BOUNDARY): Define.
