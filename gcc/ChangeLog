@@ -1,3 +1,8 @@
+2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* function.c (fixup_var_refs): Use push_to_full_sequence where
+	possible.
+
 2001-01-05  Michael Meissner  <meissner@redhat.com>
 
 	* flags.h (flag_reorder_blocks): Add declaration.

@@ -1558,7 +1558,7 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
   /* Scan all pending sequences too.  */
   for (; stack; stack = stack->next)
     {
-      push_to_sequence (stack->first);
+      push_to_full_sequence (stack->first, stack->last);
       fixup_var_refs_insns (var, promoted_mode, unsignedp,
 			    stack->first, stack->next != 0, 0);
       /* Update remembered end of sequence
