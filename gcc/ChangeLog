@@ -1,3 +1,8 @@
+Wed Apr 12 08:47:38 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* print-rtl.c (print_rtx): For CALL_PLACEHOLDER, output the
+	CALL_INSN from the normal case.
+
 Fri Apr  7 12:23:04 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_sub_esp_4, x86_sub_esp_8, x86_add_esp_4, x86_add_esp_8):
