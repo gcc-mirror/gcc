@@ -53,6 +53,7 @@ should submit your patches for inclusion in GCC@.
 * Scopes::              Namespaces and classes.
 * Functions::           Overloading, function bodies, and linkage.
 * Declarations::        Type declarations and variables.
+* Attributes::          Declaration and type attributes.
 * Expression trees::    From @code{typeid} to @code{throw}.
 @end menu
 
@@ -1655,6 +1656,40 @@ condition.
 The @code{WHILE_BODY} is the body of the loop.
 
 @end table
+
+@c ---------------------------------------------------------------------
+@c Attributes
+@c ---------------------------------------------------------------------
+@node Attributes
+@section Attributes in trees
+@cindex attributes
+
+Attributes, as specified using the @code{__attribute__} keyword, are
+represented internally as a @code{TREE_LIST}.  The @code{TREE_PURPOSE}
+is the name of the attribute, as an @code{IDENTIFIER_NODE}.  The
+@code{TREE_VALUE} is a @code{TREE_LIST} of the arguments of the
+attribute, if any, or @code{NULL_TREE} if there are no arguments; the
+arguments are stored as the @code{TREE_VALUE} of successive entries in
+the list, and may be identifiers or expressions.  The @code{TREE_CHAIN}
+of the attribute is the next attribute in a list of attributes applying
+to the same declaration or type, or @code{NULL_TREE} if there are no
+further attributes in the list.
+
+Attributes may be attached to declarations and to types; these
+attributes may be accessed with the following macros.  At present only
+machine-dependent attributes are stored in this way (other attributes
+cause changes to the declaration or type or to other internal compiler
+data structures, but are not themselves stored along with the
+declaration or type), but in future all attributes may be stored like
+this.
+
+@deftypefn {Tree Macro} tree DECL_MACHINE_ATTRIBUTES (tree @var{decl})
+This macro returns the attributes on the declaration @var{decl}.
+@end deftypefn
+
+@deftypefn {Tree Macro} tree TYPE_ATTRIBUTES (tree @var{type})
+This macro returns the attributes on the type @var{type}.
+@end deftypefn
 
 @c ---------------------------------------------------------------------
 @c Expressions
