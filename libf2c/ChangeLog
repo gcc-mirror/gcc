@@ -1,21 +1,25 @@
+2001-07-07  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/Makefile.in: Add necessary dependencies on config.h.
+
 2001-07-06  Toon Moene  <toon@moene.indiv.nluug.nl>
             Pedro Vazquez  <vazquez@penelope.iqm.unicamp.br>
 
-	* configure.in: Check for fseeko, ftello.
-	* configure: Rebuilt.
-	* config.h.in: Rebuilt.
-	* fio.h: Define FSEEK to be fseek or fseeko, depending
+	* libI77/configure.in: Check for fseeko, ftello.
+	* libI77/configure: Rebuilt.
+	* libI77/config.h.in: Rebuilt.
+	* libI77/fio.h: Define FSEEK to be fseek or fseeko, depending
 	on configure's findings.  Ditto for FTELL and ftell / ftello.
-	* backspace.c (f_back): Use FSEEK for fseek, FTELL for ftell.
-	* dfe.c (c_dfe): Ditto.
-	* due.c (c_due, e_rdue): Ditto.
-	* endfile.c (t_runc): Ditto.
-	* err.c (f__nowreading, f__nowwriting): Ditto.
-	* ftell_.c (G77_ftell_0, G77_fseek_0): Ditto.
-	* inquire.c (f_inqu): Ditto.
-	* open.c (f_open): Ditto.
-	* rdfmt.c (rd_ed): Ditto.
-	* sue.c (s_wsue, e_wsue, e_rsue): Ditto.
+	* libI77/backspace.c (f_back): Use FSEEK for fseek, FTELL for ftell.
+	* libI77/dfe.c (c_dfe): Ditto.
+	* libI77/due.c (c_due, e_rdue): Ditto.
+	* libI77/endfile.c (t_runc): Ditto.
+	* libI77/err.c (f__nowreading, f__nowwriting): Ditto.
+	* libI77/ftell_.c (G77_ftell_0, G77_fseek_0): Ditto.
+	* libI77/inquire.c (f_inqu): Ditto.
+	* libI77/open.c (f_open): Ditto.
+	* libI77/rdfmt.c (rd_ed): Ditto.
+	* libI77/sue.c (s_wsue, e_wsue, e_rsue): Ditto.
 
 2001-07-04  Zack Weinberg  <zackw@stanford.edu>
 
