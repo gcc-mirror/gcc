@@ -2,10 +2,26 @@
 /^multilib.h/ s/multilib/not-multilib/
 /^target=/ c\
 target=go32
+/^out_file=/ c\
+out_file=config/i386/i386.c
+/^out_object_file=/ c\
+out_object_file=i386.o
+/^md_file=/ c\
+md_file=config/i386/i386.md
+/^tm_file=/ c\
+tm_file=config/i386/go32.h
+/^build_xm_file=/ c\
+build_xm_file=config/i386/xm-dos.h
+/^host_xm_file=/ c\
+host_xm_file=config/i386/xm-dos.h
+/^lang_specs_files=/ d
+/^lang_options_files=/ d
 /^xmake_file=/ d
 /^tmake_file=/ d
 /^version=/ c\
-version=2.6.1
+version=2.7.0
+/^mainversion=/ c\
+mainversion=2.7.0
 s/CC = cc/CC = gcc/
 s/:\$/: \$/g
 s/^	\ *\.\//	go32 /
@@ -19,7 +35,7 @@ s/^	cd \$(srcdir)[ 	]*;/	/
 USE_HOST_OBSTACK=obstack.o
 /^stamp-attrtab/,/update/ {
   /\\/d
-  /fi/d
+  /[ 	]fi[ 	]/d
   /update/ i\
 	  go32 genattrtab md > t-attrtab.c
 }
