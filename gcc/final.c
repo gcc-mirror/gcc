@@ -2315,15 +2315,15 @@ output_addr_const (file, x)
 	    fprintf (file,
 #if HOST_BITS_PER_WIDE_INT == 64
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%016lx",
+		     "0x%lx%016lx",
 #else
-		 " 0x%x%016x",
+		     "0x%x%016x",
 #endif
 #else
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%08lx",
+		     "0x%lx%08lx",
 #else
-		 " 0x%x%08x",
+		     "0x%x%08x",
 #endif
 #endif
 		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
