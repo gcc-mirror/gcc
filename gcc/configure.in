@@ -630,21 +630,22 @@ fi
 # skip bytes instead of using tail.  The test being performed is
 # "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"
 # but we need to sink errors and handle broken shells.
-AC_MSG_CHECKING([for cmp's capabilities])
-echo abfoo >t1
-echo cdfoo >t2
-if cmp --ignore-initial=2 t1 t2 > /dev/null 2>&1; then
-  if cmp --ignore-initial=1 t1 t2 > /dev/null 2>&1; then
-    make_compare_target=slowcompare
+AC_CACHE_CHECK([for cmp's capabilities], gcc_cv_prog_cmp_skip,
+[ echo abfoo >t1
+  echo cdfoo >t2
+  if cmp --ignore-initial=2 t1 t2 > /dev/null 2>&1; then
+    if cmp --ignore-initial=1 t1 t2 > /dev/null 2>&1; then
+      make_compare_target=slowcompare
+    else
+      make_compare_target=gnucompare
+    fi
   else
-    make_compare_target=gnucompare
+    make_compare_target=slowcompare
   fi
-else
-  make_compare_target=slowcompare
-fi
-rm t1 t2
+  rm t1 t2
+  gcc_cv_prog_cmp_skip=$make_compare_target
+])
 AC_SUBST(make_compare_target)
-AC_MSG_RESULT($make_compare_target)
 
 # How about lex?
 dnl Don't use AC_PROG_LEX; we insist on flex.
