@@ -1,3 +1,25 @@
+2004-01-22  Graydon Hoare  <graydon@redhat.com>
+	
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java: 
+	* gnu/java/awt/peer/gtk/GdkGlyphVector.java:
+	Predicate static initialization on GtkToolkit.useGraphics2D().
+	* java/awt/Component.java (processPaintEvent): Consume event.
+	* javax/swing/AbstractButton.java: Reimplement, document.
+	* javax/swing/DefaultButtonModel.java: Reimplement, document.
+	* javax/swing/JComponent.java (paint): Use double buffer.
+	(listenerList): Enable member.
+	* javax/swing/ToggleButtonModel.java: Remove incorrect constructor.
+	* javax/swing/JToggleButton.java 
+	(JToggleButton): Modify model constructor.
+	* javax/swing/SwingUtilities.java 
+	(layoutCompoundLabel): Adjust arithmetic.
+	* javax/swing/plaf/basic/BasicButtonUI.java: Reimplement, document.
+	* javax/swing/plaf/basic/BasicGraphicsUtils.java 
+	(getPreferredButtonSize): Include margins in calculation.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals):
+	Receive up events from subordinate layout component.
+
 2004-01-21  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/Component.java (show): Set visible to true before
