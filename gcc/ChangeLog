@@ -1,3 +1,7 @@
+Thu Oct  3 15:15:00 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (lea to mul peep2): Fix condition.
+	
 2002-10-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (FUNCTION_OK_FOR_SIBCALL): Delete macro.
