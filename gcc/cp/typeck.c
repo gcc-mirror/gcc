@@ -4733,7 +4733,7 @@ unary_complex_lvalue (code, arg)
       else
 	{
 	  tree type;
-	  tree offset = integer_zero_node;
+	  tree offset;
 
 	  if (TREE_OPERAND (arg, 0)
 	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
@@ -4747,29 +4747,21 @@ unary_complex_lvalue (code, arg)
 		return error_mark_node;
 	      }
 
-	  type = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
-
-	  /* Now in the offset to the final subobject.  */
-	  offset = size_binop (PLUS_EXPR,
-			       offset,
-			       get_delta_difference (DECL_FIELD_CONTEXT (t), 
-						     type,
-						     0));
-
 	  /* Add in the offset to the field.  */
-	  offset = size_binop (PLUS_EXPR, offset,
-			       convert (sizetype,
-					size_binop (EASY_DIV_EXPR,
-						    DECL_FIELD_BITPOS (t),
-						    size_int (BITS_PER_UNIT))
-					));
+	  offset = convert (sizetype,
+			    size_binop (EASY_DIV_EXPR,
+					DECL_FIELD_BITPOS (t),
+					size_int (BITS_PER_UNIT)));
 
 	  /* We offset all pointer to data members by 1 so that we can
 	     distinguish between a null pointer to data member and the first
 	     data member of a structure.  */
 	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
 
-	  return cp_convert (build_pointer_type (TREE_TYPE (arg)), offset);
+	  type = build_offset_type (DECL_FIELD_CONTEXT (t), TREE_TYPE (t));
+	  type = build_pointer_type (type);
+
+	  return cp_convert (type, offset);
 	}
     }
 
