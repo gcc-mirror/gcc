@@ -123,6 +123,18 @@ extern int target_flags;
 	/* A 68020 without bitfields is a good heuristic for a CPU32 */
 #define TARGET_CPU32	(TARGET_68020 && !TARGET_BITFIELD)
 
+/* Use PC-relative addressing modes (without using a global offset table).
+   The m68000 supports 16-bit PC-relative addressing.
+   The m68020 supports 32-bit PC-relative addressing
+   (using outer displacements).
+
+   Under this model, all SYMBOL_REFs (and CONSTs) and LABEL_REFs are
+   treated as all containing an implicit PC-relative component, and hence
+   cannot be used directly as addresses for memory writes.  See the comments
+   in m68k.c for more information.  */
+#define MASK_PCREL	4096
+#define TARGET_PCREL	(target_flags & MASK_PCREL)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -181,6 +193,7 @@ extern int target_flags;
     { "cpu32", MASK_68020},						\
     { "align-int", MASK_ALIGN_INT },					\
     { "no-align-int", -MASK_ALIGN_INT },				\
+    { "pcrel", MASK_PCREL},						\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
@@ -215,6 +228,8 @@ extern int target_flags;
   override_options();			\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+  if (TARGET_PCREL && flag_pic == 0)	\
+    flag_pic = 1;			\
   SUBTARGET_OVERRIDE_OPTIONS;		\
 }
 
@@ -760,11 +775,35 @@ extern enum reg_class regno_reg_class[];
    C.  If C is not defined as an extra constraint, the value returned should 
    be 0 regardless of VALUE.  */
 
-/* For the m68k, `Q' means address register indirect addressing mode. */
+/* Letters in the range `Q' through `U' may be defined in a
+   machine-dependent fashion to stand for arbitrary operand types. 
+   The machine description macro `EXTRA_CONSTRAINT' is passed the
+   operand as its first argument and the constraint letter as its
+   second operand.
 
-#define EXTRA_CONSTRAINT(OP, C)	\
-  ((C) == 'Q' ? (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG) : \
-   0 )
+   `Q' means address register indirect addressing mode.
+   `S' is for operands that satisfy 'm' when -mpcrel is in effect.
+   `T' is for operands that satisfy 's' when -mpcrel is not in effect.  */
+
+#define EXTRA_CONSTRAINT(OP,CODE)			\
+  (((CODE) == 'S')					\
+   ? (TARGET_PCREL					\
+      && GET_CODE (OP) == MEM				\
+      && (GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		\
+	  || GET_CODE (XEXP (OP, 0)) == LABEL_REF	\
+	  || GET_CODE (XEXP (OP, 0)) == CONST))		\
+   : 							\
+  (((CODE) == 'T')					\
+   ? ( !TARGET_PCREL 					\
+      && (GET_CODE (OP) == SYMBOL_REF			\
+	  || GET_CODE (OP) == LABEL_REF			\
+	  || GET_CODE (OP) == CONST))			\
+   :							\
+  (((CODE) == 'Q')					\
+   ? (GET_CODE (OP) == MEM 				\
+      && GET_CODE (XEXP (OP, 0)) == REG)		\
+   :							\
+   0)))
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -789,6 +828,10 @@ extern enum reg_class regno_reg_class[];
    ? (! CONST_DOUBLE_OK_FOR_LETTER_P (X, 'G')	\
       && (CLASS == FP_REGS || CLASS == DATA_OR_FP_REGS) \
       ? FP_REGS : NO_REGS)			\
+   : (TARGET_PCREL				\
+      && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST \
+	  || GET_CODE (X) == LABEL_REF))	\
+   ? ADDR_REGS					\
    : (CLASS))
 
 /* Force QImode output reloads from subregs to be allocated to data regs,
@@ -1353,7 +1396,17 @@ __transfer_from_trampoline ()					\
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and 
-   that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
+   that X satisfies CONSTANT_P or is a CONST_DOUBLE.
+
+   PCREL_GENERAL_OPERAND_OK makes reload accept addresses that are
+   accepted by insn predicates, but which would otherwise fail the
+   `general_operand' test.  */
+
+#ifndef REG_OK_STRICT
+#define PCREL_GENERAL_OPERAND_OK 0
+#else
+#define PCREL_GENERAL_OPERAND_OK (TARGET_PCREL)
+#endif
 
 #define LEGITIMATE_PIC_OPERAND_P(X)	\
   ((! symbolic_operand (X, VOIDmode)				\
@@ -1361,7 +1414,8 @@ __transfer_from_trampoline ()					\
 	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
 	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0),	\
 			       VOIDmode)))			\
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
+   || PCREL_GENERAL_OPERAND_OK)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -1431,7 +1485,7 @@ __transfer_from_trampoline ()					\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
        && flag_pic && GET_CODE (XEXP (X, 1)) == SYMBOL_REF)		\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
-       && flag_pic && GET_CODE (XEXP (X, 1)) == LABEL_REF))		\
+       && flag_pic && GET_CODE (XEXP (X, 1)) == LABEL_REF))
 
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
 { if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR; }
@@ -2032,6 +2086,8 @@ do { long l;						\
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
+   'o' for operands to go directly to output_operand_address (bypassing
+       print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
    'w' for FPA insn (print a CONST_DOUBLE as a SunFPA constant rather
        than directly).  Second part of 'y' below.
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),

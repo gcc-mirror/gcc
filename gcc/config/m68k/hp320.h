@@ -635,7 +635,8 @@ do { register int i;			\
     && ! (GET_CODE (X) == CONST_DOUBLE && CONST_DOUBLE_MEM (X)	\
 	  && GET_CODE (CONST_DOUBLE_MEM (X)) == MEM		\
 	  && symbolic_operand (XEXP (CONST_DOUBLE_MEM (X), 0), VOIDmode))) \
-   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))       \
+   || PCREL_GENERAL_OPERAND_OK)
 
 /* hpux8 and later have C++ compatible include files, so do not
    pretend they are `extern "C"'.  */

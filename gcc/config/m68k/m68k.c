@@ -54,6 +54,7 @@ int switch_table_difference_label_flag;
 
 static rtx find_addr_reg ();
 rtx legitimize_pic_address ();
+void print_operand_address ();
 
 
 /* Alignment to use for loops and jumps */
@@ -2717,6 +2718,8 @@ standard_sun_fpa_constant_p (x)
    'b' for byte insn (no effect, on the Sun; this is for the ISI).
    'd' to force memory addressing to be absolute, not relative.
    'f' for float insn (print a CONST_DOUBLE as a float rather than in hex)
+   'o' for operands to go directly to output_operand_address (bypassing
+       print_operand_address--used only for SYMBOL_REFs under TARGET_PCREL)
    'w' for FPA insn (print a CONST_DOUBLE as a SunFPA constant rather
        than directly).  Second part of 'y' below.
    'x' for float insn (print a CONST_DOUBLE as a float rather than in hex),
@@ -2793,6 +2796,14 @@ print_operand (file, op, letter)
     {
       asm_fprintf (file, "%R");
     }
+  else if (letter == 'o')
+    {
+      /* This is only for direct addresses with TARGET_PCREL */
+      if (GET_CODE (op) != MEM || GET_CODE (XEXP (op, 0)) != SYMBOL_REF
+          || !TARGET_PCREL) 
+	abort ();
+      output_addr_const (file, XEXP (op, 0));
+    }
   else if (GET_CODE (op) == REG)
     {
 #ifdef SUPPORT_SUN_FPA
@@ -2858,7 +2869,14 @@ print_operand (file, op, letter)
     }
   else
     {
-      asm_fprintf (file, "%0I"); output_addr_const (file, op);
+      /* Use `print_operand_address' instead of `output_addr_const'
+	 to ensure that we print relevant PIC stuff.  */
+      asm_fprintf (file, "%0I");
+      if (TARGET_PCREL
+	  && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST))
+	print_operand_address (file, op);
+      else
+	output_addr_const (file, op);
     }
 }
 
@@ -3159,7 +3177,7 @@ print_operand_address (file, addr)
 	    fprintf (file, "l)");
 	    break;
 	  }
-	/* FALL-THROUGH (is this really what we want? */
+	/* FALL-THROUGH (is this really what we want?)  */
       default:
         if (GET_CODE (addr) == CONST_INT
 	    && INTVAL (addr) < 0x8000
@@ -3175,6 +3193,25 @@ print_operand_address (file, addr)
 #else
 	    fprintf (file, "%d:w", INTVAL (addr));
 #endif
+	  }
+	else if (GET_CODE (addr) == CONST_INT)
+	  {
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		     "%d",
+#else
+		     "%ld",
+#endif
+		     INTVAL (addr));
+	  }
+	else if (TARGET_PCREL)
+	  {
+	    fputc ('(', file);
+	    output_addr_const (file, addr);
+	    if (flag_pic == 1)
+	      asm_fprintf (file, ":w,%Rpc)");
+	    else
+	      asm_fprintf (file, ":l,%Rpc)");
 	  }
 	else
 	  {
@@ -3286,6 +3323,128 @@ const_sint32_operand (op, mode)
   /* All allowed constants will fit a CONST_INT.  */
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
+}
+
+/* Operand predicates for implementing asymmetric pc-relative addressing
+   on m68k.  The m68k supports pc-relative addressing (mode 7, register 2)
+   when used as a source operand, but not as a destintation operand.
+
+   We model this by restricting the meaning of the basic predicates
+   (general_operand, memory_operand, etc) to forbid the use of this
+   addressing mode, and then define the following predicates that permit
+   this addressing mode.  These predicates can then be used for the
+   source operands of the appropriate instructions.
+
+   n.b.  While it is theoretically possible to change all machine patterns
+   to use this addressing more where permitted by the architecture,
+   it has only been implemented for "common" cases: SImode, HImode, and
+   QImode operands, and only for the principle operations that would
+   require this addressing mode: data movement and simple integer operations.
+
+   In parallel with these new predicates, two new constraint letters
+   were defined: 'S' and 'T'.  'S' is the -mpcrel analog of 'm'.
+   'T' replaces 's' in the non-pcrel case.  It is a no-op in the pcrel case.
+   In the pcrel case 's' is only valid in combination with 'a' registers.
+   See addsi3, subsi3, cmpsi, and movsi patterns for a better understanding
+   of how these constraints are used.
+
+   The use of these predicates is strictly optional, though patterns that
+   don't will cause an extra reload register to be allocated where one
+   was not necessary:
+
+	lea (abc:w,%pc),%a0	; need to reload address
+	moveq &1,%d1		; since write to pc-relative space
+	movel %d1,%a0@		; is not allowed
+	...
+	lea (abc:w,%pc),%a1	; no need to reload address here
+	movel %a1@,%d0		; since "movel (abc:w,%pc),%d0" is ok
+
+   For more info, consult tiemann@cygnus.com.
+
+
+   All of the ugliness with predicates and constraints is due to the
+   simple fact that the m68k does not allow a pc-relative addressing
+   mode as a destination.  gcc does not distinguish between source and
+   destination addresses.  Hence, if we claim that pc-relative address
+   modes are valid, e.g. GO_IF_LEGITIMATE_ADDRESS accepts them, then we
+   end up with invalid code.  To get around this problem, we left
+   pc-relative modes as invalid addresses, and then added special
+   predicates and constraints to accept them.
+
+   A cleaner way to handle this is to modify gcc to distinguish
+   between source and destination addresses.  We can then say that
+   pc-relative is a valid source address but not a valid destination
+   address, and hopefully avoid a lot of the predicate and constraint
+   hackery.  Unfortunately, this would be a pretty big change.  It would
+   be a useful change for a number of ports, but there aren't any current
+   plans to undertake this.
+
+   ***************************************************************************/
+
+
+/* Special case of a general operand that's used as a source operand.
+   Use this to permit reads from PC-relative memory when -mpcrel
+   is specified.  */
+
+int
+general_src_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_PCREL
+      && GET_CODE (op) == MEM
+      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
+	  || GET_CODE (XEXP (op, 0)) == CONST))
+    return 1;
+  return general_operand (op, mode);
+}
+
+/* Special case of a nonimmediate operand that's used as a source.
+   Use this to permit reads from PC-relative memory when -mpcrel
+   is specified.  */
+
+int
+nonimmediate_src_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_PCREL && GET_CODE (op) == MEM
+      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
+	  || GET_CODE (XEXP (op, 0)) == CONST))
+    return 1;
+  return nonimmediate_operand (op, mode);
+}
+
+/* Special case of a memory operand that's used as a source.
+   Use this to permit reads from PC-relative memory when -mpcrel
+   is specified.  */
+
+int
+memory_src_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (TARGET_PCREL && GET_CODE (op) == MEM
+      && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (op, 0)) == LABEL_REF
+	  || GET_CODE (XEXP (op, 0)) == CONST))
+    return 1;
+  return memory_operand (op, mode);
+}
+
+/* Predicate that accepts only a pc-relative address.  This is needed
+   because pc-relative addresses don't satisfy the predicate
+   "general_src_operand".  */
+
+int
+pcrel_address (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF
+	  || GET_CODE (op) == CONST);
 }
 
 char *
