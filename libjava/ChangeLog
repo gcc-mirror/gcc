@@ -1,3 +1,8 @@
+2000-12-01  Warren Levy  <warrenl@cygnus.com>
+
+	* mauve-libgcj: Turned on JDK1.2 and turned off tests for classes
+	that aren't quite 1.2 compatible yet.
+
 2000-11-30  Warren Levy  <warrenl@cygnus.com>
 
 	* java/sql/Array.java: New file from classpath.
