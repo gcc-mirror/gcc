@@ -513,7 +513,7 @@ find_a_file (pprefix, name)
 
   if (*name == '/')
     {
-      if (access (name, X_OK))
+      if (access (name, X_OK) == 0)
 	{
 	  strcpy (temp, name);
 	  return temp;
@@ -629,7 +629,7 @@ main (argc, argv)
   char *ld_suffix	= "ld";
   char *full_ld_suffix	= ld_suffix;
   char *real_ld_suffix	= "real-ld";
-  char *full_real_ld_suffix = ld_suffix;
+  char *full_real_ld_suffix = real_ld_suffix;
   char *gld_suffix	= "gld";
   char *full_gld_suffix	= gld_suffix;
   char *nm_suffix	= "nm";
