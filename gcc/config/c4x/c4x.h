@@ -2265,7 +2265,7 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)  \
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),    \
-  sprintf ((OUTPUT), "%s%d", (NAME), (LABELNO)))
+  sprintf ((OUTPUT), "%s$%d", (NAME), (LABELNO)))
 
 
 /* Output of Dispatch Tables.  */
