@@ -604,8 +604,6 @@ find_basic_blocks (f, nregs, file)
   int max_uid;
   timevar_push (TV_CFG);
 
-  if (basic_block_for_insn)
-    VARRAY_FREE (basic_block_for_insn);
   basic_block_for_insn = 0;
 
   /* Flush out existing data.  */

@@ -2751,6 +2751,9 @@ rest_of_compilation (decl)
 	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	      cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
 	      optimize = saved_optimize;
+
+	      /* CFG is no longer maitained up-to-date.  */
+	      free_bb_for_insn ();
 	    }
 
 	  current_function_nothrow = nothrow_function_p ();
@@ -2859,6 +2862,9 @@ rest_of_compilation (decl)
   rebuild_jump_labels (insns);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP);
+
+  /* CFG is no longer maitained up-to-date.  */
+  free_bb_for_insn ();
   copy_loop_headers (insns);
   purge_line_number_notes (insns);
 
@@ -2940,6 +2946,8 @@ rest_of_compilation (decl)
       timevar_pop (TV_FROM_SSA);
 
       ggc_collect ();
+      /* CFG is no longer maitained up-to-date.  */
+      free_bb_for_insn ();
     }
 
   timevar_push (TV_JUMP);
@@ -2957,6 +2965,8 @@ rest_of_compilation (decl)
       if_convert (0);
       timevar_pop (TV_IFCVT);
 
+      /* CFG is no longer maitained up-to-date.  */
+      free_bb_for_insn ();
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
 	delete_null_pointer_checks (insns);
@@ -3006,6 +3016,8 @@ rest_of_compilation (decl)
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
+	  /* CFG is no longer maitained up-to-date.  */
+	  free_bb_for_insn ();
 	}
 
       /* Run this after jump optmizations remove all the unreachable code
@@ -3021,6 +3033,8 @@ rest_of_compilation (decl)
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
 	  delete_null_pointer_checks (insns);
+	  /* CFG is no longer maitained up-to-date.  */
+	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 	}
 
@@ -3059,6 +3073,8 @@ rest_of_compilation (decl)
       save_cfj = flag_cse_follow_jumps;
       flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
+      /* CFG is no longer maitained up-to-date.  */
+      free_bb_for_insn ();
       /* If -fexpensive-optimizations, re-run CSE to clean up things done
 	 by gcse.  */
       if (flag_expensive_optimizations)
@@ -3080,6 +3096,8 @@ rest_of_compilation (decl)
 	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
+	  /* CFG is no longer maitained up-to-date.  */
+	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 
 	  if (flag_expensive_optimizations)
@@ -3105,6 +3123,7 @@ rest_of_compilation (decl)
     {
       timevar_push (TV_LOOP);
       open_dump_file (DFI_loop, decl);
+      free_bb_for_insn ();
 
       if (flag_rerun_loop_opt)
 	{
@@ -3166,6 +3185,8 @@ rest_of_compilation (decl)
 
 	  timevar_pop (TV_JUMP);
 
+	  /* CFG is no longer maitained up-to-date.  */
+	  free_bb_for_insn ();
 	  reg_scan (insns, max_reg_num (), 0);
 	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
 
@@ -3175,6 +3196,8 @@ rest_of_compilation (decl)
 	      rebuild_jump_labels (insns);
 	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	      cleanup_cfg (CLEANUP_EXPENSIVE);
+	      /* CFG is no longer maitained up-to-date.  */
+	      free_bb_for_insn ();
 	      timevar_pop (TV_JUMP);
 	    }
 	}
@@ -3488,8 +3511,6 @@ rest_of_compilation (decl)
   verify_flow_info ();
 #endif
 
-  compute_bb_for_insn (get_max_uid ());
-
   /* If optimizing, then go ahead and split insns now.  */
   if (optimize > 0)
     split_all_insns (0);
@@ -3594,7 +3615,7 @@ rest_of_compilation (decl)
 
   reg_to_stack (insns, rtl_dump_file);
 
-  close_dump_file (DFI_stack, print_rtl, insns);
+  close_dump_file (DFI_stack, print_rtl_with_bb, insns);
   timevar_pop (TV_REG_STACK);
 
   ggc_collect ();
@@ -3619,6 +3640,9 @@ rest_of_compilation (decl)
     }
   compute_alignments ();
 
+  /* CFG is no longer maitained up-to-date.  */
+  free_bb_for_insn ();
+
   /* If a machine dependent reorganization is needed, call it.  */
 #ifdef MACHINE_DEPENDENT_REORG
   timevar_push (TV_MACH_DEP);
@@ -3631,8 +3655,6 @@ rest_of_compilation (decl)
 
   ggc_collect ();
 #endif
-
-  /* CFG no longer kept up to date.  */
 
   purge_line_number_notes (insns);
   cleanup_barriers ();

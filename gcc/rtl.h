@@ -1743,6 +1743,7 @@ extern void mark_reg_pointer			PARAMS ((rtx, int));
 extern void mark_user_reg			PARAMS ((rtx));
 extern void reset_used_flags			PARAMS ((rtx));
 extern void reorder_insns			PARAMS ((rtx, rtx, rtx));
+extern void reorder_insns_nobb			PARAMS ((rtx, rtx, rtx));
 extern int get_max_uid				PARAMS ((void));
 extern int in_sequence_p			PARAMS ((void));
 extern void force_next_line_note		PARAMS ((void));

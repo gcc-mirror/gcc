@@ -290,7 +290,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
 
   /* Scramble the insn chain.  */
   if (a->end != PREV_INSN (b->head))
-    reorder_insns (a->head, a->end, PREV_INSN (b->head));
+    reorder_insns_nobb (a->head, a->end, PREV_INSN (b->head));
 
   if (rtl_dump_file)
     {
@@ -349,7 +349,7 @@ merge_blocks_move_successor_nojumps (a, b)
   squeeze_notes (&b->head, &b->end);
 
   /* Scramble the insn chain.  */
-  reorder_insns (b->head, b->end, a->end);
+  reorder_insns_nobb (b->head, b->end, a->end);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
@@ -904,8 +904,6 @@ try_crossjump_to_edge (mode, e1, e2)
   src1->end = emit_jump_insn_before (gen_jump (label), newpos1);
   JUMP_LABEL (src1->end) = label;
   LABEL_NUSES (label)++;
-  if (basic_block_for_insn)
-    set_block_for_new_insns (src1->end, src1);
 
   /* Delete the now unreachable instructions.  */
   flow_delete_insn_chain (newpos1, last);

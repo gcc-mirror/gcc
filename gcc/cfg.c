@@ -451,6 +451,9 @@ expunge_block (b)
       x->index = i;
     }
 
+  /* Invalidate data to make bughunting easier.  */
+  memset (b, 0, sizeof (*b));
+  b->index = -3;
   basic_block_info->num_elements--;
   n_basic_blocks--;
 }
@@ -550,6 +553,16 @@ compute_bb_for_insn (max)
 	  insn = NEXT_INSN (insn);
 	}
     }
+}
+
+/* Release the basic_block_for_insn array.  */
+
+void
+free_bb_for_insn ()
+{
+  if (basic_block_for_insn)
+    VARRAY_FREE (basic_block_for_insn);
+  basic_block_for_insn = 0;
 }
 
 /* Update insns block within BB.  */
@@ -933,7 +946,7 @@ merge_blocks_nomove (a, b)
 	}
 #endif
 
-      a_end = prev;
+      a_end = PREV_INSN (del_first);
     }
   else if (GET_CODE (NEXT_INSN (a_end)) == BARRIER)
     del_first = NEXT_INSN (a_end);
@@ -960,13 +973,14 @@ merge_blocks_nomove (a, b)
   /* Reassociate the insns of B with A.  */
   if (!b_empty)
     {
+      rtx x = a_end;
       if (basic_block_for_insn)
 	{
-	  BLOCK_FOR_INSN (b_head) = a;
-	  while (b_head != b_end)
+	  BLOCK_FOR_INSN (x) = a;
+	  while (x != b_end)
 	    {
-	      b_head = NEXT_INSN (b_head);
-	      BLOCK_FOR_INSN (b_head) = a;
+	      x = NEXT_INSN (x);
+	      BLOCK_FOR_INSN (x) = a;
 	    }
 	}
       a_end = b_end;
@@ -1061,8 +1075,6 @@ try_redirect_by_replacing_jump (e, target)
       src->end = emit_jump_insn_before (gen_jump (target_label), kill_from);
       JUMP_LABEL (src->end) = target_label;
       LABEL_NUSES (target_label)++;
-      if (basic_block_for_insn)
-	set_block_for_new_insns (src->end, src);
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (src->end));
@@ -1279,11 +1291,9 @@ force_nonfallthru_and_redirect (e, target)
     jump_block = e->src;
   e->flags &= ~EDGE_FALLTHRU;
   label = block_label (target);
-  jump_block->end = emit_jump_insn_after (gen_jump (label), jump_block->end);
+  emit_jump_insn_after (gen_jump (label), jump_block->end);
   JUMP_LABEL (jump_block->end) = label;
   LABEL_NUSES (label)++;
-  if (basic_block_for_insn)
-    set_block_for_new_insns (jump_block->end, jump_block);
   emit_barrier_after (jump_block->end);
   redirect_edge_succ_nodup (e, target);
 
@@ -1641,28 +1651,13 @@ commit_one_edge_insertion (e)
 
   /* Now that we've found the spot, do the insertion.  */
 
-  /* Set the new block number for these insns, if structure is allocated.  */
-  if (basic_block_for_insn)
-    {
-      rtx i;
-      for (i = insns; i != NULL_RTX; i = NEXT_INSN (i))
-	set_block_for_insn (i, bb);
-    }
-
   if (before)
     {
       emit_insns_before (insns, before);
-      if (before == bb->head)
-	bb->head = insns;
-
       last = prev_nonnote_insn (before);
     }
   else
-    {
-      last = emit_insns_after (insns, after);
-      if (after == bb->end)
-	bb->end = last;
-    }
+    last = emit_insns_after (insns, after);
 
   if (returnjump_p (last))
     {
@@ -1679,7 +1674,6 @@ commit_one_edge_insertion (e)
       e->flags &= ~EDGE_FALLTHRU;
 
       emit_barrier_after (last);
-      bb->end = last;
 
       if (before)
 	flow_delete_insn (before);
@@ -1696,7 +1690,6 @@ commit_edge_insertions ()
 {
   int i;
   basic_block bb;
-  compute_bb_for_insn (get_max_uid ());
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
@@ -2171,6 +2164,18 @@ verify_flow_info ()
 	  edge_checksum[e->dest->index + 2] -= (size_t) e;
 	  e = e->pred_next;
 	}
+       for (x = bb->head; x != NEXT_INSN (bb->end); x = NEXT_INSN (x))
+	 if (basic_block_for_insn && BLOCK_FOR_INSN (x) != bb)
+	   {
+	     debug_rtx (x);
+	     if (! BLOCK_FOR_INSN (x))
+	       error ("Insn %d is inside basic block %d but block_for_insn is NULL",
+		      INSN_UID (x), bb->index);
+	     else
+	       error ("Insn %d is inside basic block %d but block_for_insn is %i",
+		      INSN_UID (x), bb->index, BLOCK_FOR_INSN (x)->index);
+	     err = 1;
+	   }
 
       /* OK pointers are correct.  Now check the header of basic
          block.  It ought to contain optional CODE_LABEL followed

@@ -2574,7 +2574,7 @@ try_split (pat, trial, last)
 	      if (GET_CODE (XVECEXP (seq, 0, i)) == INSN)
 	        mark_label_nuses (PATTERN (XVECEXP (seq, 0, i)));
 
-	  tem = emit_insn_after (seq, before);
+	  tem = emit_insn_after (seq, trial);
 
 	  delete_insn (trial);
 	  if (has_barrier)
@@ -2710,6 +2710,7 @@ add_insn_after (insn, after)
      rtx insn, after;
 {
   rtx next = NEXT_INSN (after);
+  basic_block bb;
 
   if (optimize && INSN_DELETED_P (after))
     abort ();
@@ -2740,6 +2741,21 @@ add_insn_after (insn, after)
 	abort ();
     }
 
+  if (basic_block_for_insn
+      && (unsigned int)INSN_UID (after) < basic_block_for_insn->num_elements
+      && (bb = BLOCK_FOR_INSN (after)))
+    {
+      set_block_for_insn (insn, bb);
+      /* Should not happen as first in the BB is always
+	 eigther NOTE or LABEL.  */
+      if (bb->end == after
+	  /* Avoid clobbering of structure when creating new BB.  */
+	  && GET_CODE (insn) != BARRIER
+	  && (GET_CODE (insn) != NOTE
+	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
+	bb->end = insn;
+    }
+
   NEXT_INSN (after) = insn;
   if (GET_CODE (after) == INSN && GET_CODE (PATTERN (after)) == SEQUENCE)
     {
@@ -2758,6 +2774,7 @@ add_insn_before (insn, before)
      rtx insn, before;
 {
   rtx prev = PREV_INSN (before);
+  basic_block bb;
 
   if (optimize && INSN_DELETED_P (before))
     abort ();
@@ -2788,6 +2805,21 @@ add_insn_before (insn, before)
 	  }
 
       if (stack == 0)
+	abort ();
+    }
+
+  if (basic_block_for_insn
+      && (unsigned int)INSN_UID (before) < basic_block_for_insn->num_elements
+      && (bb = BLOCK_FOR_INSN (before)))
+    {
+      set_block_for_insn (insn, bb);
+      /* Should not happen as first in the BB is always
+	 eigther NOTE or LABEl.  */
+      if (bb->head == insn
+	  /* Avoid clobbering of structure when creating new BB.  */
+	  && GET_CODE (insn) != BARRIER
+	  && (GET_CODE (insn) != NOTE
+	      || NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK))
 	abort ();
     }
 
@@ -2879,7 +2911,7 @@ delete_insns_since (from)
    called after delay-slot filling has been done.  */
 
 void
-reorder_insns (from, to, after)
+reorder_insns_nobb (from, to, after)
      rtx from, to, after;
 {
   /* Splice this bunch out of where it is now.  */
@@ -2901,6 +2933,38 @@ reorder_insns (from, to, after)
   NEXT_INSN (after) = from;
   if (after == last_insn)
     last_insn = to;
+}
+
+/* Same as function above, but take care to update BB boundaries.  */
+void
+reorder_insns (from, to, after)
+     rtx from, to, after;
+{
+  rtx prev = PREV_INSN (from);
+  basic_block bb, bb2;
+
+  reorder_insns_nobb (from, to, after);
+
+  if (basic_block_for_insn
+      && (unsigned int)INSN_UID (after) < basic_block_for_insn->num_elements
+      && (bb = BLOCK_FOR_INSN (after)))
+    {
+      rtx x;
+ 
+      if (basic_block_for_insn
+	  && (unsigned int)INSN_UID (from) < basic_block_for_insn->num_elements
+	  && (bb2 = BLOCK_FOR_INSN (from)))
+	{
+	  if (bb2->end == to)
+	    bb2->end = prev;
+	}
+
+      if (bb->end == after)
+	bb->end = to;
+
+      for (x = from; x != NEXT_INSN (to); x = NEXT_INSN (x))
+	set_block_for_insn (x, bb);
+    }
 }
 
 /* Return the line note insn preceding INSN.  */
@@ -3089,20 +3153,6 @@ emit_insn_before (pattern, before)
   return insn;
 }
 
-/* Similar to emit_insn_before, but update basic block boundaries as well.  */
-
-rtx
-emit_block_insn_before (pattern, before, block)
-     rtx pattern, before;
-     basic_block block;
-{
-  rtx prev = PREV_INSN (before);
-  rtx r = emit_insn_before (pattern, before);
-  if (block && block->head == before)
-    block->head = NEXT_INSN (prev);
-  return r;
-}
-
 /* Make an instruction with body PATTERN and code JUMP_INSN
    and output it before the instruction BEFORE.  */
 
@@ -3241,19 +3291,6 @@ emit_insn_after_with_line_notes (pattern, after, from)
     emit_line_note_after (NOTE_SOURCE_FILE (after_line),
 			  NOTE_LINE_NUMBER (after_line),
 			  insn);
-}
-
-/* Similar to emit_insn_after, but update basic block boundaries as well.  */
-
-rtx
-emit_block_insn_after (pattern, after, block)
-     rtx pattern, after;
-     basic_block block;
-{
-  rtx r = emit_insn_after (pattern, after);
-  if (block && block->end == after)
-    block->end = r;
-  return r;
 }
 
 /* Make an insn of code JUMP_INSN with body PATTERN
@@ -3431,6 +3468,7 @@ emit_insns_after (first, after)
 {
   register rtx last;
   register rtx after_after;
+  basic_block bb;
 
   if (!after)
     abort ();
@@ -3438,8 +3476,19 @@ emit_insns_after (first, after)
   if (!first)
     return first;
 
-  for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
-    continue;
+  if (basic_block_for_insn
+      && (unsigned int)INSN_UID (after) < basic_block_for_insn->num_elements
+      && (bb = BLOCK_FOR_INSN (after)))
+    {
+      for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
+	set_block_for_insn (last, bb);
+      set_block_for_insn (last, bb);
+      if (bb->end == after)
+	bb->end = last;
+    }
+  else
+    for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
+      continue;
 
   after_after = NEXT_INSN (after);
 

@@ -964,9 +964,9 @@ emit_pop_insn (insn, regstack, reg, where)
 			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
 
   if (where == EMIT_AFTER)
-    pop_insn = emit_block_insn_after (pop_rtx, insn, current_block);
+    pop_insn = emit_insn_after (pop_rtx, insn);
   else
-    pop_insn = emit_block_insn_before (pop_rtx, insn, current_block);
+    pop_insn = emit_insn_before (pop_rtx, insn);
 
   REG_NOTES (pop_insn)
     = gen_rtx_EXPR_LIST (REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode),
@@ -1062,9 +1062,9 @@ emit_swap_insn (insn, regstack, reg)
 			 FP_MODE_REG (FIRST_STACK_REG, XFmode));
 
   if (i1)
-    emit_block_insn_after (swap_rtx, i1, current_block);
+    emit_insn_after (swap_rtx, i1);
   else if (current_block)
-    emit_block_insn_before (swap_rtx, current_block->head, current_block);
+    emit_insn_before (swap_rtx, current_block->head);
   else
     emit_insn_before (swap_rtx, insn);
 }
@@ -2748,7 +2748,7 @@ convert_regs_1 (file, block)
 
 	  set = gen_rtx_SET (VOIDmode, FP_MODE_REG (reg, SFmode),
 			     nan);
-	  insn = emit_block_insn_after (set, insn, block);
+	  insn = emit_insn_after (set, insn);
 	  subst_stack_regs (insn, &regstack);
 	}
     }
