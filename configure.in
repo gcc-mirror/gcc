@@ -256,9 +256,6 @@ case "${host}" in
   *-interix*)
     host_makefile_frag="${host_makefile_frag} config/mh-interix"
     ;;
-  *-windows*)
-    host_makefile_frag="${host_makefile_frag} config/mh-windows"
-    ;;
   vax-*-ultrix2*)
     # The old BSD pcc isn't up to compiling parts of gdb so use gcc
     tentative_cc=gcc
