@@ -1,6 +1,6 @@
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
-	* c-aux-info.c: Convert to ISO C99.
+	* c-aux-info.c: Convert to ISO C90.
 	* c-pragma.c: Likewise.
 	* c-common.c: Likewise.
 	* c-common.h: Likewise.
