@@ -1,3 +1,13 @@
+2004-06-29  Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs): Move immediately before
+	gimplify_modify_expr.
+	(gimplify_init_constructor): Likewise.  Gimplify the null
+	CONSTRUCTOR assignment.
+	(gimplify_modify_expr_to_memcpy): New.
+	(gimplify_modify_expr_to_memset): New.
+	(gimplify_modify_expr): Use them.
+
 2004-06-29  Roman Zippel <zippel@linux-m68k.org>
 
 	* web.c (union_defs): use all defs of an instruction to create a
