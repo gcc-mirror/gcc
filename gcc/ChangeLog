@@ -1,3 +1,7 @@
+2001-03-10  kaz Kojima <kkojima@rr.iij4u.or.jp>
+
+	* config/sh/sh.h (LEGITIMATE_PIC_OPERAND_P): Defined.
+
 2001-03-10  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
 	* config/sh/sh.md (umulhisi3_i, mulhisi3_i): Fix mnemonics. 
