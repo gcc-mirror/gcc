@@ -1,3 +1,8 @@
+2001-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sparc/sol2.h (CPLUSPLUS_CPP_SPEC): Add all of CPP_SPEC instead
+	of just copying CPP_CPU_SPEC.
+
 2001-05-30  Gordon Sadler <gbsadler1@lcisp.com>
 
 	* invoke.texi (Option Summary): Remove -isystem-c++ from options.
@@ -42,7 +47,7 @@
 	
 2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
-        * fixinc/fixtests.c: Declare entries in ENV_TABLE.
+	* fixinc/fixtests.c: Declare entries in ENV_TABLE.
 
 2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
