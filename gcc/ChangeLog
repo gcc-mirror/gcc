@@ -1,3 +1,21 @@
+Sun Jun  7 15:29:04 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* regmove.c: New file.
+	* Makefile.in (OBJS): Add regmove.o.
+	(regmove.o): New rules.
+	(mostlyclean): Remove regmove dumps.
+	* toplev.c (regmove_{dump,dump_file,time}, flag_regmove): New vars.
+	(f_options): Add -foptimize-register-move.
+	(compile_file): Run regmove pass after combine pass and do its dump.
+	(main): Enable regmove dump when -dN or -da.
+	(fatal_insn): Flush regmove dump file.
+	* flags.h (flag_regmove): Declare.
+	* flow.c (find_use_as_address): Export.
+	* rtl.h (find_use_as_address): Declare.
+	* local-alloc.c (optimize_reg_copy_{1,2}): Removed, all calls deleted.
+	* reload1.c (count_occurrences): Export.
+	* reload.h (count_occurrences): Declare.
+
 Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (init_emit_once): Provide default for DOUBLE_TYPE_SIZE.
