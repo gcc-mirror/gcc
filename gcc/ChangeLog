@@ -1,3 +1,10 @@
+Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (movsf): Disable explicit secondary-reload-like
+	functionality if TARGET_POWERPC64.
+	(movdf): Remove TARGET_POWERPC64 explicit secondary-reload-like
+	functionality.
+
 Thu Sep  3 11:41:40 1998  Robert Lipe   <robertl@dgii.com>
 
 	* fixinc.sco: Borrow code to wrap 'bool' typedefs from tinfo.h
