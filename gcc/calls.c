@@ -1017,7 +1017,7 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
      int *old_pending_adj;
      int *must_preallocate;
      int *is_const;
-     int ecf_flags;
+     int ecf_flags ATTRIBUTE_UNUSED;
 {
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
