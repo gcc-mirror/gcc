@@ -65,6 +65,11 @@ then
 fi
 
 dnl Checks for programs.
+
+dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
+dnl not be able to.
+define([AC_PROG_CC_WORKS],[])
+
 # For ObjC we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
 AC_PROG_CC
@@ -77,6 +82,17 @@ else
   AC_PROG_RANLIB
 fi
 AC_PROG_INSTALL
+
+# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
+# at least currently, we never actually build a program, so we never
+# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
+# fails, because we are probably configuring with a cross compiler
+# which cant create executables.  So we include AC_EXEEXT to keep
+# automake happy, but we dont execute it, since we dont care about
+# the result.
+if false; then
+  AC_EXEEXT
+fi
 
 dnl Checks for libraries.
 
