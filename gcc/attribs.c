@@ -259,13 +259,7 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  && (TREE_CODE (*node) == VAR_DECL
 	      || TREE_CODE (*node) == PARM_DECL
 	      || TREE_CODE (*node) == RESULT_DECL))
-	{
-	  /* Force a recalculation of mode and size.  */
-	  DECL_MODE (*node) = VOIDmode;
-	  DECL_SIZE (*node) = 0;
-
-	  layout_decl (*node, 0);
-	}
+	relayout_decl (*node);
 
       if (!no_add_attrs)
 	{

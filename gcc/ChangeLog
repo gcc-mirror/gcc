@@ -1,5 +1,12 @@
 2004-12-09  Richard Henderson  <rth@redhat.com>
 
+	PR c/18282
+	* attribs.c (decl_attributes): Use relayout_decl.
+	* c-common.c (handle_mode_attribute): Copy all relevant type
+	parameters from the new underlying integral type.
+
+2004-12-09  Richard Henderson  <rth@redhat.com>
+
 	* c-common.c (shorten_compare): Don't special-case min/maxval
 	for C enumerations.
 
