@@ -1505,36 +1505,43 @@ demangle_template_value_parm (work, mangled, s, tk)
     }
   else if (tk == tk_pointer || tk == tk_reference)
     {
-      int symbol_len = consume_count (mangled);
-      if (symbol_len == -1)
-	return -1;
-      if (symbol_len == 0)
-	string_appendn (s, "0", 1);
+      if (**mangled == 'Q')
+	success = demangle_qualified (work, mangled, s,
+				      /*isfuncname=*/0, 
+				      /*append=*/1);
       else
 	{
-	  char *p = xmalloc (symbol_len + 1), *q;
-	  strncpy (p, *mangled, symbol_len);
-	  p [symbol_len] = '\0';
-	  /* We use cplus_demangle here, rather than
-	     internal_cplus_demangle, because the name of the entity
-	     mangled here does not make use of any of the squangling
-	     or type-code information we have built up thus far; it is
-	     mangled independently.  */
-	  q = cplus_demangle (p, work->options);
-	  if (tk == tk_pointer)
-	    string_appendn (s, "&", 1);
-	  /* FIXME: Pointer-to-member constants should get a
-	            qualifying class name here.  */
-	  if (q)
-	    {
-	      string_append (s, q);
-	      free (q);
-	    }
+	  int symbol_len  = consume_count (mangled);
+	  if (symbol_len == -1)
+	    return -1;
+	  if (symbol_len == 0)
+	    string_appendn (s, "0", 1);
 	  else
-	    string_append (s, p);
-	  free (p);
+	    {
+	      char *p = xmalloc (symbol_len + 1), *q;
+	      strncpy (p, *mangled, symbol_len);
+	      p [symbol_len] = '\0';
+	      /* We use cplus_demangle here, rather than
+		 internal_cplus_demangle, because the name of the entity
+		 mangled here does not make use of any of the squangling
+		 or type-code information we have built up thus far; it is
+		 mangled independently.  */
+	      q = cplus_demangle (p, work->options);
+	      if (tk == tk_pointer)
+		string_appendn (s, "&", 1);
+	      /* FIXME: Pointer-to-member constants should get a
+		 qualifying class name here.  */
+	      if (q)
+		{
+		  string_append (s, q);
+		  free (q);
+		}
+	      else
+		string_append (s, p);
+	      free (p);
+	    }
+	  *mangled += symbol_len;
 	}
-      *mangled += symbol_len;
     }
 
   return success;
@@ -3040,11 +3047,6 @@ do_type (work, mangled, result)
 
 	    member = **mangled == 'M';
 	    (*mangled)++;
-	    if (!isdigit ((unsigned char)**mangled) && **mangled != 't')
-	      {
-		success = 0;
-		break;
-	      }
 
 	    string_append (&decl, ")");
 	    string_prepend (&decl, SCOPE_STRING (work));
@@ -3060,7 +3062,13 @@ do_type (work, mangled, result)
 		string_prependn (&decl, *mangled, n);
 		*mangled += n;
 	      }
-	    else
+	    else if (**mangled == 'X' || **mangled == 'Y')
+	      {
+		string temp;
+		do_type (work, mangled, &temp);
+		string_prepends (&decl, &temp);
+	      }
+	    else if (**mangled == 't')
 	      {
 		string temp;
 		string_init (&temp);
@@ -3074,6 +3082,12 @@ do_type (work, mangled, result)
 		else
 		  break;
 	      }
+	    else
+	      {
+		success = 0;
+		break;
+	      }
+
 	    string_prepend (&decl, "(");
 	    if (member)
 	      {

@@ -1,3 +1,9 @@
+1999-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cplus-dem.c (demangle_template_value_parm): Handle
+	pointers-to-members.
+	(do_type): Handle template parameters as qualifiers.
+
 1999-04-01  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	* cplus-dem.c: Attempt to handle overflows in counts with some
