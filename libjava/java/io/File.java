@@ -79,7 +79,7 @@ public class File implements Serializable
   {
     if (name == null)
       throw new NullPointerException ();
-    if (dirPath != null)
+    if (dirPath != null && dirPath.length() > 0)
       {
 	// Try to be smart about the number of separator characters.
 	if (dirPath.charAt(dirPath.length() - 1) == separatorChar)
