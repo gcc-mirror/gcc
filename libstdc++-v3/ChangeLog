@@ -1,5 +1,11 @@
 2002-01-09  Paolo Carlini <pcarlini@unitus.it>
 
+        * libsupc++/exception (bad_exception): Add comment.
+        * libsupc++/new (bad_alloc): Same.
+        * libsupc++/typeinfo (bad_cast, bad_typeid): Same.
+
+2002-01-09  Paolo Carlini <pcarlini@unitus.it>
+
 	libstdc++/3150: revert 2001-11-30 commit. DR266 only means
 	that the destructors should be removed from the descriptions
 	in the standard: writing them explicitly allows the vtable

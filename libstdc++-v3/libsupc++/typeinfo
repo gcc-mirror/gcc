@@ -130,6 +130,8 @@ namespace std
   {
   public:
     bad_cast() throw() { }
+    // This declaration is not useless:
+    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_cast() throw();
   };
   
@@ -138,6 +140,8 @@ namespace std
   {
   public:
     bad_typeid () throw() { }
+    // This declaration is not useless:
+    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
     virtual ~bad_typeid() throw();
   };
 } // namespace std
