@@ -1398,12 +1398,16 @@ fix = {
  *  comment.  Fortunately, HP/UX already uses #ifndefs in limits.h; if
  *  we find a #ifndef FLT_MIN we assume that all the required #ifndefs
  *  are there, and we do not add them ourselves.
+ *
+ *  QNX Software Systems also guards the defines, but doesn't define
+ *  FLT_MIN.  Therefore, bypass the fix for *either* guarded FLT_MIN
+ *  or guarded FLT_MAX.
  */
 fix = {
     hackname = limits_ifndefs;
     files  = "sys/limits.h";
     files  = "limits.h";
-    bypass = "ifndef[ \t]+FLT_MIN";
+    bypass = "ifndef[ \t]+FLT_(MIN|MAX)";
 
     c_fix     = format;
     c_fix_arg = "#ifndef %1\n%0\n#endif";
