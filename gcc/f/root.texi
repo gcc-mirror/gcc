@@ -17,7 +17,7 @@
 @clear FSF-G77
 
 @set email-general gcc@@gcc.gnu.org
-@set email-bugs gcc-bugs@@gcc.gnu.org
+@set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 @set path-g77 egcs/gcc/f
 @set path-libf2c egcs/libf2c
 
