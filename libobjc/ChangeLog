@@ -1,3 +1,9 @@
+2004-06-17  Richard Henderson  <rth@redhat.com>
+
+	* exception.c: New file.
+	* Makefile.in (exception.lo): New.
+	(OBJS): Add it.
+
 2004-06-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* linking.m (_objcInit): New empty function
