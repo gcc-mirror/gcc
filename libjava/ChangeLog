@@ -1,3 +1,8 @@
+2003-11-12  Tom Fitzsimmons  <fitzsim@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c (setAlignment):
+	Rename to nativeSetAlignment.
+
 2003-11-11  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* jni.cc (JNI_CreateJavaVM): Remove JNIEXPORT.
