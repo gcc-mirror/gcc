@@ -111,77 +111,95 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
 }
 
 /* A subroutine of expand_gimple_basic_block.  Expand one CALL_EXPR
-   that has CALL_EXPR_TAILCALL set.  Returns a new basic block if we've
-   terminated the current basic block and created a new one.  */
+   that has CALL_EXPR_TAILCALL set.  Returns non-null if we actually
+   generated a tail call (something that might be denied by the ABI
+   rules governing the call; see calls.c).  */
 
 static basic_block
 expand_gimple_tailcall (basic_block bb, tree stmt)
 {
   rtx last = get_last_insn ();
+  edge e;
+  int probability;
+  gcov_type count;
 
   expand_expr_stmt (stmt);
 
   for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
-    {
-      if (CALL_P (last) && SIBLING_CALL_P (last))
-	{
-	  edge e;
-	  int probability = 0;
-	  gcov_type count = 0;
-
-	  do_pending_stack_adjust ();
-	  e = bb->succ;
-	  while (e)
-	    {
-	      edge next = e->succ_next;
-
-	      if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
-		{
-		  if (e->dest != EXIT_BLOCK_PTR)
-		    {
-		      e->dest->count -= e->count;
-		      e->dest->frequency -= EDGE_FREQUENCY (e);
-		      if (e->dest->count < 0)
-		        e->dest->count = 0;
-		      if (e->dest->frequency < 0)
-		        e->dest->frequency = 0;
-		    }
-		  count += e->count;
-		  probability += e->probability;
-		  remove_edge (e);
-		}
-
-	      e = next;
-	    }
-
-	  /* This is somewhat ugly: the call_expr expander often emits
-	     instructions after the sibcall (to perform the function
-	     return).  These confuse the find_sub_basic_blocks code,
-	     so we need to get rid of these.  */
-	  last = NEXT_INSN (last);
-	  if (!BARRIER_P (last))
-	    abort ();
-	  while (NEXT_INSN (last))
-	    {
-	      /* For instance an sqrt builtin expander expands if with
-		 sibcall in the then and label for `else`.  */
-	      if (LABEL_P (NEXT_INSN (last)))
-		break;
-	      delete_insn (NEXT_INSN (last));
-	    }
-	  e = make_edge (bb, EXIT_BLOCK_PTR, EDGE_ABNORMAL | EDGE_SIBCALL);
-	  e->probability += probability;
-	  e->count += count;
-	  BB_END (bb) = last;
-	  update_bb_for_insn (bb);
-	  if (NEXT_INSN (last))
-	    bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
-	  else
-	    return bb;
-	}
-    }
+    if (CALL_P (last) && SIBLING_CALL_P (last))
+      goto found;
 
   return NULL;
+
+ found:
+  /* ??? Wouldn't it be better to just reset any pending stack adjust?
+     Any instructions emitted here are about to be deleted.  */
+  do_pending_stack_adjust ();
+
+  /* Remove any non-eh, non-abnormal edges that don't go to exit.  */
+  /* ??? I.e. the fallthrough edge.  HOWEVER!  If there were to be
+     EH or abnormal edges, we shouldn't have created a tail call in
+     the first place.  So it seems to me we should just be removing
+     all edges here, or redirecting the existing fallthru edge to
+     the exit block.  */
+
+  e = bb->succ;
+  probability = 0;
+  count = 0;
+  while (e)
+    {
+      edge next = e->succ_next;
+
+      if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
+	{
+	  if (e->dest != EXIT_BLOCK_PTR)
+	    {
+	      e->dest->count -= e->count;
+	      e->dest->frequency -= EDGE_FREQUENCY (e);
+	      if (e->dest->count < 0)
+	        e->dest->count = 0;
+	      if (e->dest->frequency < 0)
+	        e->dest->frequency = 0;
+	    }
+	  count += e->count;
+	  probability += e->probability;
+	  remove_edge (e);
+	}
+
+      e = next;
+    }
+
+  /* This is somewhat ugly: the call_expr expander often emits instructions
+     after the sibcall (to perform the function return).  These confuse the
+     find_sub_basic_blocks code, so we need to get rid of these.  */
+  last = NEXT_INSN (last);
+  if (!BARRIER_P (last))
+    abort ();
+  while (NEXT_INSN (last))
+    {
+      /* For instance an sqrt builtin expander expands if with
+	 sibcall in the then and label for `else`.  */
+      if (LABEL_P (NEXT_INSN (last)))
+	break;
+      delete_insn (NEXT_INSN (last));
+    }
+
+  e = make_edge (bb, EXIT_BLOCK_PTR, EDGE_ABNORMAL | EDGE_SIBCALL);
+  e->probability += probability;
+  e->count += count;
+  BB_END (bb) = last;
+  update_bb_for_insn (bb);
+
+  if (NEXT_INSN (last))
+    {
+      bb = create_basic_block (NEXT_INSN (last), get_last_insn (), bb);
+
+      last = BB_END (bb);
+      if (BARRIER_P (last))
+	BB_END (bb) = PREV_INSN (last);
+    }
+
+  return bb;
 }
 
 /* Expand basic block BB from GIMPLE trees to RTL.  */
