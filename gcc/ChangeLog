@@ -1,3 +1,8 @@
+Sun Oct  3 14:14:16 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* t-fr30 (LIB2FUNCS_EXTRA): Remove definition.
+	(FPBIT, DPBIT): Define.
+
 Sun Oct  3 12:44:05 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* print-tree.c (print_node, indent_to): Remove redundant prototypes.
