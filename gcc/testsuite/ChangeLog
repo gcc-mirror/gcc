@@ -1,3 +1,10 @@
+2002-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20020604-1.x: New.
+	* gcc.c-torture/compile/simd-5.x: Likewise.
+	* gcc.c-torture/execute/920710-1.x: Likewise.
+	* gcc.c-torture/execute/20020720-1.x: Disable on h8300.
+
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/inherit/override1.C: Add dg-options clause.
