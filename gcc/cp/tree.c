@@ -2105,3 +2105,31 @@ make_temp_vec (len)
   pop_obstacks ();
   return node;
 }
+
+/* The type of ARG when used as an lvalue.  */
+
+tree
+lvalue_type (arg)
+     tree arg;
+{
+  return cp_build_type_variant
+    (TREE_TYPE (arg), TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
+}
+
+/* The type of ARG for printing error messages; denote lvalues with
+   reference types.  */
+
+tree
+error_type (arg)
+     tree arg;
+{
+  tree type = TREE_TYPE (arg);
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    ;
+  else if (real_lvalue_p (arg))
+    type = build_reference_type (lvalue_type (arg));
+  else if (IS_AGGR_TYPE (type))
+    type = lvalue_type (arg);
+
+  return type;
+}

@@ -128,11 +128,7 @@ int flag_ansi;
 /* Nonzero means do argument matching for overloading according to the
    ANSI rules, rather than what g++ used to believe to be correct.  */
 
-#ifdef NEW_OVER
 int flag_ansi_overloading = 1;
-#else
-int flag_ansi_overloading;
-#endif
 
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
@@ -2481,6 +2477,31 @@ mark_vtable_entries (decl)
     }
 }
 
+/* Set DECL up to have the closest approximation of "initialized common"
+   linkage available.  */
+
+void
+comdat_linkage (decl)
+     tree decl;
+{
+  TREE_PUBLIC (decl) = 0;
+
+#ifdef DECL_ONE_ONLY
+  if (SUPPORTS_ONE_ONLY)
+    {
+      DECL_ONE_ONLY (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+#endif
+
+  if (flag_weak)
+    {
+      DECL_WEAK (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+    }
+
+}
+
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
    based on TYPE and other static flags.
 
@@ -2532,21 +2553,7 @@ import_export_vtable (decl, type, final)
 
       if (final || ! found)
 	{
-#ifdef DECL_ONE_ONLY
-	  if (SUPPORTS_ONE_ONLY)
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_ONE_ONLY (decl) = 1;
-	    }
-	  else
-#endif
-	  if (flag_weak)
-	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_WEAK (decl) = 1;
-	    }
-	  else
-	    TREE_PUBLIC (decl) = 0;
+	  comdat_linkage (decl);
 	  DECL_EXTERNAL (decl) = 0;
 	}
       else
@@ -2764,17 +2771,7 @@ import_export_decl (decl)
 	  && (flag_implicit_templates || DECL_THIS_INLINE (decl)))
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
-	    {
-#ifdef DECL_ONE_ONLY
-	      if (SUPPORTS_ONE_ONLY)
-		DECL_ONE_ONLY (decl) = 1;
-	      else
-#endif
-	      if (flag_weak)
-		DECL_WEAK (decl) = 1;
-	      else
-		TREE_PUBLIC (decl) = 0;
-	    }
+	    comdat_linkage (decl);
 	  /* Dynamically initialized vars go into common.  */
 	  else if (DECL_INITIAL (decl) == NULL_TREE
 		   || DECL_INITIAL (decl) == error_mark_node)
@@ -2784,14 +2781,18 @@ import_export_decl (decl)
 	      DECL_COMMON (decl) = 1;
 	      DECL_INITIAL (decl) = error_mark_node;
 	    }
+	  else
+	    {
+	      /* Statically initialized vars are weak or comdat, if
+                 supported.  */
 #ifdef DECL_ONE_ONLY
-	  else if (SUPPORTS_ONE_ONLY)
-	    DECL_ONE_ONLY (decl) = 1;
+	      if (SUPPORTS_ONE_ONLY)
+		DECL_ONE_ONLY (decl) = 1;
 #endif
-	  /* Statically initialized vars are weak or comdat, if supported.  */
-	  else if (flag_weak)
-	    DECL_WEAK (decl) = 1;
-	  /* else leave vars public so multiple defs will break.  */
+	      if (flag_weak)
+		DECL_WEAK (decl) = 1;
+	      /* else leave vars public so multiple defs will break.  */
+	    }
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -2805,20 +2806,15 @@ import_export_decl (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 	}
-#ifdef DECL_ONE_ONLY
-      else if (SUPPORTS_ONE_ONLY)
-	DECL_ONE_ONLY (decl) = 1;
-#endif
-      else if (flag_weak)
-	DECL_WEAK (decl) = 1;
       else
-	TREE_PUBLIC (decl) = 0;
+	comdat_linkage (decl);
     }
   /* tinfo function */
   else if (DECL_ARTIFICIAL (decl) && DECL_MUTABLE_P (decl))
     {
       tree ctype = TREE_TYPE (DECL_NAME (decl));
-      if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype))
+      if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
+	  && TYPE_VIRTUAL_P (ctype))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
@@ -2826,25 +2822,13 @@ import_export_decl (decl)
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
-#ifdef DECL_ONE_ONLY
-      else if (SUPPORTS_ONE_ONLY)
-	DECL_ONE_ONLY (decl) = 1;
-#endif
-      else if (flag_weak)
-	DECL_WEAK (decl) = 1;
       else
-	TREE_PUBLIC (decl) = 0;
+	comdat_linkage (decl);
     } 
   else if (DECL_C_STATIC (decl))
     TREE_PUBLIC (decl) = 0;
-#ifdef DECL_ONE_ONLY
-  else if (SUPPORTS_ONE_ONLY)
-    DECL_ONE_ONLY (decl) = 1;
-#endif
-  else if (flag_weak)
-    DECL_WEAK (decl) = 1;
   else
-    TREE_PUBLIC (decl) = 0;
+    comdat_linkage (decl);
 
   DECL_INTERFACE_KNOWN (decl) = 1;
 }

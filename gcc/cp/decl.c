@@ -341,6 +341,11 @@ tree static_aggregates;
 tree integer_zero_node;
 tree null_pointer_node;
 
+/* The value for __null (NULL), either of type `void *' or, with -ansi,
+   an integer type of the same size.  */
+
+tree null_node;
+
 /* A node for the integer constants 1, 2, and 3.  */
 
 tree integer_one_node, integer_two_node, integer_three_node;
@@ -4911,7 +4916,14 @@ init_decl_processing ()
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
   TREE_PARMLIST (void_list_node) = 1;
 
+  null_pointer_node = build_int_2 (0, 0);
   TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
+  layout_type (TREE_TYPE (null_pointer_node));
+     
+  if (flag_ansi)
+    TREE_TYPE (null_node) = type_for_size (POINTER_SIZE, 0);
+  else
+    TREE_TYPE (null_node) = build_pointer_type (void_type_node);
 
   /* Used for expressions that do nothing, but are not errors.  */
   void_zero_node = build_int_2 (0, 0);
@@ -11086,7 +11098,7 @@ start_function (declspecs, declarator, raises, attrs, pre_parsed_p)
      It doesn't matter whether it's inline or not.  */
   else if (interface_unknown == 0
 	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
-	       || flag_external_templates))
+	       || flag_alt_external_templates))
     {
       if (DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1)
 	  || current_template_parms)

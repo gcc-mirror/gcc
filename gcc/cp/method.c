@@ -1713,15 +1713,7 @@ make_thunk (function, delta)
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       DECL_EXTERNAL (thunk) = 1;
-#ifdef DECL_ONE_ONLY
-      if (SUPPORTS_ONE_ONLY)
-	{
-	  DECL_ONE_ONLY (thunk) = 1;
-	  TREE_PUBLIC (thunk) = 1;
-	}
-      else
-#endif
-	TREE_PUBLIC (thunk) = 0;
+      comdat_linkage (thunk);
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }

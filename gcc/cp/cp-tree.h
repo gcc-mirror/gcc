@@ -1520,6 +1520,8 @@ extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 extern tree integer_two_node, integer_three_node;
 extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 
+extern tree null_node;
+
 /* in pt.c  */
 
 extern tree current_template_parms;
@@ -2410,6 +2412,8 @@ extern tree break_out_target_exprs		PROTO((tree));
 extern tree get_type_decl			PROTO((tree));
 extern tree vec_binfo_member			PROTO((tree, tree));
 extern tree hack_decl_function_context 		PROTO((tree));
+extern tree lvalue_type				PROTO((tree));
+extern tree error_type				PROTO((tree));
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));
