@@ -1,5 +1,9 @@
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.in (host_configargs): Replace reference to
+	no-longer-defined buildopts with --build=${build_alias}.
+	* configure: Rebuilt.
+
 	* Makefile.tpl ($(NOTPARALLEL)): Move to the end.  Bring uses of
 	program_transform_name to standard idiom.
 	(AUTOGEN, AUTOCONF): Define.

@@ -676,8 +676,6 @@ test "$program_transform_name" = "" && program_transform_name="s,x,x,"
 
  
 
-
-
 # clear some things potentially inherited from environment.
 
 enable_threads=no
@@ -2406,7 +2404,7 @@ case "${cache_file}" in
   cache_file_option="--cache-file=../${cache_file}" ;;
 esac
 
-host_configargs="${cache_file_option} ${buildopt} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
+host_configargs="${cache_file_option} --build=${build_alias} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
 
 target_configargs=${baseargs}
 
@@ -2663,7 +2661,7 @@ test -n "$target_alias" && ncn_target_tool_prefix=$target_alias-
   # Extract the first word of "${ncn_tool_prefix}ar", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}ar; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2667: checking for $ac_word" >&5
+echo "configure:2665: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_AR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2692,39 +2690,40 @@ fi
 fi
 if test -z "$ac_cv_prog_AR" ; then
   if test $build = $host ; then
-    ncn_ct_AR=$AR
+    ncn_cv_AR=$AR
     # Extract the first word of "ar", so it can be a program name with args.
 set dummy ar; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2700: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_AR'+set}'`\" = set"; then
+echo "configure:2698: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_AR'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_AR"; then
-  ac_cv_prog_ncn_ct_AR="$ncn_ct_AR" # Let the user override the test.
+  if test -n "$ncn_cv_AR"; then
+  ac_cv_prog_ncn_cv_AR="$ncn_cv_AR" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_AR="ar"
+      ac_cv_prog_ncn_cv_AR="ar"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_AR" && ac_cv_prog_ncn_cv_AR="ar"
 fi
 fi
-ncn_ct_AR="$ac_cv_prog_ncn_ct_AR"
-if test -n "$ncn_ct_AR"; then
-  echo "$ac_t""$ncn_ct_AR" 1>&6
+ncn_cv_AR="$ac_cv_prog_ncn_cv_AR"
+if test -n "$ncn_cv_AR"; then
+  echo "$ac_t""$ncn_cv_AR" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    AR=$ncn_ct_AR
+    AR=$ncn_cv_AR
   else
-    AR=""
+    AR="${ncn_tool_prefix}ar"
   fi
 else
   AR="$ac_cv_prog_AR"
@@ -2734,7 +2733,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}as", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}as; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2738: checking for $ac_word" >&5
+echo "configure:2737: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_AS'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2763,39 +2762,40 @@ fi
 fi
 if test -z "$ac_cv_prog_AS" ; then
   if test $build = $host ; then
-    ncn_ct_AS=$AS
+    ncn_cv_AS=$AS
     # Extract the first word of "as", so it can be a program name with args.
 set dummy as; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2771: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_AS'+set}'`\" = set"; then
+echo "configure:2770: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_AS'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_AS"; then
-  ac_cv_prog_ncn_ct_AS="$ncn_ct_AS" # Let the user override the test.
+  if test -n "$ncn_cv_AS"; then
+  ac_cv_prog_ncn_cv_AS="$ncn_cv_AS" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_AS="as"
+      ac_cv_prog_ncn_cv_AS="as"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_AS" && ac_cv_prog_ncn_cv_AS="as"
 fi
 fi
-ncn_ct_AS="$ac_cv_prog_ncn_ct_AS"
-if test -n "$ncn_ct_AS"; then
-  echo "$ac_t""$ncn_ct_AS" 1>&6
+ncn_cv_AS="$ac_cv_prog_ncn_cv_AS"
+if test -n "$ncn_cv_AS"; then
+  echo "$ac_t""$ncn_cv_AS" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    AS=$ncn_ct_AS
+    AS=$ncn_cv_AS
   else
-    AS=""
+    AS="${ncn_tool_prefix}as"
   fi
 else
   AS="$ac_cv_prog_AS"
@@ -2834,39 +2834,40 @@ fi
 fi
 if test -z "$ac_cv_prog_DLLTOOL" ; then
   if test $build = $host ; then
-    ncn_ct_DLLTOOL=$DLLTOOL
+    ncn_cv_DLLTOOL=$DLLTOOL
     # Extract the first word of "dlltool", so it can be a program name with args.
 set dummy dlltool; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:2842: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_DLLTOOL'+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_DLLTOOL'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_DLLTOOL"; then
-  ac_cv_prog_ncn_ct_DLLTOOL="$ncn_ct_DLLTOOL" # Let the user override the test.
+  if test -n "$ncn_cv_DLLTOOL"; then
+  ac_cv_prog_ncn_cv_DLLTOOL="$ncn_cv_DLLTOOL" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_DLLTOOL="dlltool"
+      ac_cv_prog_ncn_cv_DLLTOOL="dlltool"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_DLLTOOL" && ac_cv_prog_ncn_cv_DLLTOOL="dlltool"
 fi
 fi
-ncn_ct_DLLTOOL="$ac_cv_prog_ncn_ct_DLLTOOL"
-if test -n "$ncn_ct_DLLTOOL"; then
-  echo "$ac_t""$ncn_ct_DLLTOOL" 1>&6
+ncn_cv_DLLTOOL="$ac_cv_prog_ncn_cv_DLLTOOL"
+if test -n "$ncn_cv_DLLTOOL"; then
+  echo "$ac_t""$ncn_cv_DLLTOOL" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    DLLTOOL=$ncn_ct_DLLTOOL
+    DLLTOOL=$ncn_cv_DLLTOOL
   else
-    DLLTOOL=""
+    DLLTOOL="${ncn_tool_prefix}dlltool"
   fi
 else
   DLLTOOL="$ac_cv_prog_DLLTOOL"
@@ -2876,7 +2877,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}ld", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}ld; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2880: checking for $ac_word" >&5
+echo "configure:2881: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LD'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2905,39 +2906,40 @@ fi
 fi
 if test -z "$ac_cv_prog_LD" ; then
   if test $build = $host ; then
-    ncn_ct_LD=$LD
+    ncn_cv_LD=$LD
     # Extract the first word of "ld", so it can be a program name with args.
 set dummy ld; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2913: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_LD'+set}'`\" = set"; then
+echo "configure:2914: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_LD'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_LD"; then
-  ac_cv_prog_ncn_ct_LD="$ncn_ct_LD" # Let the user override the test.
+  if test -n "$ncn_cv_LD"; then
+  ac_cv_prog_ncn_cv_LD="$ncn_cv_LD" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_LD="ld"
+      ac_cv_prog_ncn_cv_LD="ld"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_LD" && ac_cv_prog_ncn_cv_LD="ld"
 fi
 fi
-ncn_ct_LD="$ac_cv_prog_ncn_ct_LD"
-if test -n "$ncn_ct_LD"; then
-  echo "$ac_t""$ncn_ct_LD" 1>&6
+ncn_cv_LD="$ac_cv_prog_ncn_cv_LD"
+if test -n "$ncn_cv_LD"; then
+  echo "$ac_t""$ncn_cv_LD" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    LD=$ncn_ct_LD
+    LD=$ncn_cv_LD
   else
-    LD=""
+    LD="${ncn_tool_prefix}ld"
   fi
 else
   LD="$ac_cv_prog_LD"
@@ -2947,7 +2949,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}nm", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}nm; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2951: checking for $ac_word" >&5
+echo "configure:2953: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_NM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2976,39 +2978,40 @@ fi
 fi
 if test -z "$ac_cv_prog_NM" ; then
   if test $build = $host ; then
-    ncn_ct_NM=$NM
+    ncn_cv_NM=$NM
     # Extract the first word of "nm", so it can be a program name with args.
 set dummy nm; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:2984: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_NM'+set}'`\" = set"; then
+echo "configure:2986: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_NM'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_NM"; then
-  ac_cv_prog_ncn_ct_NM="$ncn_ct_NM" # Let the user override the test.
+  if test -n "$ncn_cv_NM"; then
+  ac_cv_prog_ncn_cv_NM="$ncn_cv_NM" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_NM="nm"
+      ac_cv_prog_ncn_cv_NM="nm"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_NM" && ac_cv_prog_ncn_cv_NM="nm"
 fi
 fi
-ncn_ct_NM="$ac_cv_prog_ncn_ct_NM"
-if test -n "$ncn_ct_NM"; then
-  echo "$ac_t""$ncn_ct_NM" 1>&6
+ncn_cv_NM="$ac_cv_prog_ncn_cv_NM"
+if test -n "$ncn_cv_NM"; then
+  echo "$ac_t""$ncn_cv_NM" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    NM=$ncn_ct_NM
+    NM=$ncn_cv_NM
   else
-    NM=""
+    NM="${ncn_tool_prefix}nm"
   fi
 else
   NM="$ac_cv_prog_NM"
@@ -3018,7 +3021,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}ranlib", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3022: checking for $ac_word" >&5
+echo "configure:3025: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RANLIB'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3047,38 +3050,38 @@ fi
 fi
 if test -z "$ac_cv_prog_RANLIB" ; then
   if test $build = $host ; then
-    ncn_ct_RANLIB=$RANLIB
+    ncn_cv_RANLIB=$RANLIB
     # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3055: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_RANLIB'+set}'`\" = set"; then
+echo "configure:3058: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_RANLIB'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_RANLIB"; then
-  ac_cv_prog_ncn_ct_RANLIB="$ncn_ct_RANLIB" # Let the user override the test.
+  if test -n "$ncn_cv_RANLIB"; then
+  ac_cv_prog_ncn_cv_RANLIB="$ncn_cv_RANLIB" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_RANLIB="ranlib"
+      ac_cv_prog_ncn_cv_RANLIB="ranlib"
       break
     fi
   done
   IFS="$ac_save_ifs"
-  test -z "$ac_cv_prog_ncn_ct_RANLIB" && ac_cv_prog_ncn_ct_RANLIB=":"
+  test -z "$ac_cv_prog_ncn_cv_RANLIB" && ac_cv_prog_ncn_cv_RANLIB=":"
 fi
 fi
-ncn_ct_RANLIB="$ac_cv_prog_ncn_ct_RANLIB"
-if test -n "$ncn_ct_RANLIB"; then
-  echo "$ac_t""$ncn_ct_RANLIB" 1>&6
+ncn_cv_RANLIB="$ac_cv_prog_ncn_cv_RANLIB"
+if test -n "$ncn_cv_RANLIB"; then
+  echo "$ac_t""$ncn_cv_RANLIB" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    RANLIB=$ncn_ct_RANLIB
+    RANLIB=$ncn_cv_RANLIB
   else
     RANLIB=":"
   fi
@@ -3090,7 +3093,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}windres", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}windres; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3094: checking for $ac_word" >&5
+echo "configure:3097: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_WINDRES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3119,39 +3122,40 @@ fi
 fi
 if test -z "$ac_cv_prog_WINDRES" ; then
   if test $build = $host ; then
-    ncn_ct_WINDRES=$WINDRES
+    ncn_cv_WINDRES=$WINDRES
     # Extract the first word of "windres", so it can be a program name with args.
 set dummy windres; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3127: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_WINDRES'+set}'`\" = set"; then
+echo "configure:3130: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_WINDRES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_WINDRES"; then
-  ac_cv_prog_ncn_ct_WINDRES="$ncn_ct_WINDRES" # Let the user override the test.
+  if test -n "$ncn_cv_WINDRES"; then
+  ac_cv_prog_ncn_cv_WINDRES="$ncn_cv_WINDRES" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_WINDRES="windres"
+      ac_cv_prog_ncn_cv_WINDRES="windres"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_WINDRES" && ac_cv_prog_ncn_cv_WINDRES="windres"
 fi
 fi
-ncn_ct_WINDRES="$ac_cv_prog_ncn_ct_WINDRES"
-if test -n "$ncn_ct_WINDRES"; then
-  echo "$ac_t""$ncn_ct_WINDRES" 1>&6
+ncn_cv_WINDRES="$ac_cv_prog_ncn_cv_WINDRES"
+if test -n "$ncn_cv_WINDRES"; then
+  echo "$ac_t""$ncn_cv_WINDRES" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    WINDRES=$ncn_ct_WINDRES
+    WINDRES=$ncn_cv_WINDRES
   else
-    WINDRES=""
+    WINDRES="${ncn_tool_prefix}windres"
   fi
 else
   WINDRES="$ac_cv_prog_WINDRES"
@@ -3161,7 +3165,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}objcopy", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}objcopy; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3165: checking for $ac_word" >&5
+echo "configure:3169: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_OBJCOPY'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3190,39 +3194,40 @@ fi
 fi
 if test -z "$ac_cv_prog_OBJCOPY" ; then
   if test $build = $host ; then
-    ncn_ct_OBJCOPY=$OBJCOPY
+    ncn_cv_OBJCOPY=$OBJCOPY
     # Extract the first word of "objcopy", so it can be a program name with args.
 set dummy objcopy; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3198: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_OBJCOPY'+set}'`\" = set"; then
+echo "configure:3202: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_OBJCOPY'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_OBJCOPY"; then
-  ac_cv_prog_ncn_ct_OBJCOPY="$ncn_ct_OBJCOPY" # Let the user override the test.
+  if test -n "$ncn_cv_OBJCOPY"; then
+  ac_cv_prog_ncn_cv_OBJCOPY="$ncn_cv_OBJCOPY" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_OBJCOPY="objcopy"
+      ac_cv_prog_ncn_cv_OBJCOPY="objcopy"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_OBJCOPY" && ac_cv_prog_ncn_cv_OBJCOPY="objcopy"
 fi
 fi
-ncn_ct_OBJCOPY="$ac_cv_prog_ncn_ct_OBJCOPY"
-if test -n "$ncn_ct_OBJCOPY"; then
-  echo "$ac_t""$ncn_ct_OBJCOPY" 1>&6
+ncn_cv_OBJCOPY="$ac_cv_prog_ncn_cv_OBJCOPY"
+if test -n "$ncn_cv_OBJCOPY"; then
+  echo "$ac_t""$ncn_cv_OBJCOPY" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    OBJCOPY=$ncn_ct_OBJCOPY
+    OBJCOPY=$ncn_cv_OBJCOPY
   else
-    OBJCOPY=""
+    OBJCOPY="${ncn_tool_prefix}objcopy"
   fi
 else
   OBJCOPY="$ac_cv_prog_OBJCOPY"
@@ -3232,7 +3237,7 @@ fi
   # Extract the first word of "${ncn_tool_prefix}objdump", so it can be a program name with args.
 set dummy ${ncn_tool_prefix}objdump; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3236: checking for $ac_word" >&5
+echo "configure:3241: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_OBJDUMP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3261,39 +3266,40 @@ fi
 fi
 if test -z "$ac_cv_prog_OBJDUMP" ; then
   if test $build = $host ; then
-    ncn_ct_OBJDUMP=$OBJDUMP
+    ncn_cv_OBJDUMP=$OBJDUMP
     # Extract the first word of "objdump", so it can be a program name with args.
 set dummy objdump; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3269: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_OBJDUMP'+set}'`\" = set"; then
+echo "configure:3274: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_OBJDUMP'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_OBJDUMP"; then
-  ac_cv_prog_ncn_ct_OBJDUMP="$ncn_ct_OBJDUMP" # Let the user override the test.
+  if test -n "$ncn_cv_OBJDUMP"; then
+  ac_cv_prog_ncn_cv_OBJDUMP="$ncn_cv_OBJDUMP" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_OBJDUMP="objdump"
+      ac_cv_prog_ncn_cv_OBJDUMP="objdump"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_OBJDUMP" && ac_cv_prog_ncn_cv_OBJDUMP="objdump"
 fi
 fi
-ncn_ct_OBJDUMP="$ac_cv_prog_ncn_ct_OBJDUMP"
-if test -n "$ncn_ct_OBJDUMP"; then
-  echo "$ac_t""$ncn_ct_OBJDUMP" 1>&6
+ncn_cv_OBJDUMP="$ac_cv_prog_ncn_cv_OBJDUMP"
+if test -n "$ncn_cv_OBJDUMP"; then
+  echo "$ac_t""$ncn_cv_OBJDUMP" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    OBJDUMP=$ncn_ct_OBJDUMP
+    OBJDUMP=$ncn_cv_OBJDUMP
   else
-    OBJDUMP=""
+    OBJDUMP="${ncn_tool_prefix}objdump"
   fi
 else
   OBJDUMP="$ac_cv_prog_OBJDUMP"
@@ -3312,7 +3318,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}ar", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}ar; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3316: checking for $ac_word" >&5
+echo "configure:3322: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_AR_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3341,39 +3347,40 @@ fi
 fi
 if test -z "$ac_cv_prog_AR_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_AR_FOR_TARGET=$AR_FOR_TARGET
+    ncn_cv_AR_FOR_TARGET=$AR_FOR_TARGET
     # Extract the first word of "ar", so it can be a program name with args.
 set dummy ar; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3349: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_AR_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3355: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_AR_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_AR_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_AR_FOR_TARGET="$ncn_ct_AR_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_AR_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_AR_FOR_TARGET="$ncn_cv_AR_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_AR_FOR_TARGET="ar"
+      ac_cv_prog_ncn_cv_AR_FOR_TARGET="ar"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_AR_FOR_TARGET" && ac_cv_prog_ncn_cv_AR_FOR_TARGET="ar"
 fi
 fi
-ncn_ct_AR_FOR_TARGET="$ac_cv_prog_ncn_ct_AR_FOR_TARGET"
-if test -n "$ncn_ct_AR_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_AR_FOR_TARGET" 1>&6
+ncn_cv_AR_FOR_TARGET="$ac_cv_prog_ncn_cv_AR_FOR_TARGET"
+if test -n "$ncn_cv_AR_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_AR_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    AR_FOR_TARGET=$ncn_ct_AR_FOR_TARGET
+    AR_FOR_TARGET=$ncn_cv_AR_FOR_TARGET
   else
-    AR_FOR_TARGET=""
+    AR_FOR_TARGET="${ncn_target_tool_prefix}ar"
   fi
 else
   AR_FOR_TARGET="$ac_cv_prog_AR_FOR_TARGET"
@@ -3383,7 +3390,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}as", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}as; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3387: checking for $ac_word" >&5
+echo "configure:3394: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_AS_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3412,39 +3419,40 @@ fi
 fi
 if test -z "$ac_cv_prog_AS_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_AS_FOR_TARGET=$AS_FOR_TARGET
+    ncn_cv_AS_FOR_TARGET=$AS_FOR_TARGET
     # Extract the first word of "as", so it can be a program name with args.
 set dummy as; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3420: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_AS_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3427: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_AS_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_AS_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_AS_FOR_TARGET="$ncn_ct_AS_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_AS_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_AS_FOR_TARGET="$ncn_cv_AS_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_AS_FOR_TARGET="as"
+      ac_cv_prog_ncn_cv_AS_FOR_TARGET="as"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_AS_FOR_TARGET" && ac_cv_prog_ncn_cv_AS_FOR_TARGET="as"
 fi
 fi
-ncn_ct_AS_FOR_TARGET="$ac_cv_prog_ncn_ct_AS_FOR_TARGET"
-if test -n "$ncn_ct_AS_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_AS_FOR_TARGET" 1>&6
+ncn_cv_AS_FOR_TARGET="$ac_cv_prog_ncn_cv_AS_FOR_TARGET"
+if test -n "$ncn_cv_AS_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_AS_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    AS_FOR_TARGET=$ncn_ct_AS_FOR_TARGET
+    AS_FOR_TARGET=$ncn_cv_AS_FOR_TARGET
   else
-    AS_FOR_TARGET=""
+    AS_FOR_TARGET="${ncn_target_tool_prefix}as"
   fi
 else
   AS_FOR_TARGET="$ac_cv_prog_AS_FOR_TARGET"
@@ -3454,7 +3462,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}dlltool", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}dlltool; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3458: checking for $ac_word" >&5
+echo "configure:3466: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_DLLTOOL_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3483,39 +3491,40 @@ fi
 fi
 if test -z "$ac_cv_prog_DLLTOOL_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
+    ncn_cv_DLLTOOL_FOR_TARGET=$DLLTOOL_FOR_TARGET
     # Extract the first word of "dlltool", so it can be a program name with args.
 set dummy dlltool; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3491: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_DLLTOOL_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3499: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_DLLTOOL_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_DLLTOOL_FOR_TARGET="$ncn_ct_DLLTOOL_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_DLLTOOL_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET="$ncn_cv_DLLTOOL_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_DLLTOOL_FOR_TARGET="dlltool"
+      ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET="dlltool"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET" && ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET="dlltool"
 fi
 fi
-ncn_ct_DLLTOOL_FOR_TARGET="$ac_cv_prog_ncn_ct_DLLTOOL_FOR_TARGET"
-if test -n "$ncn_ct_DLLTOOL_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_DLLTOOL_FOR_TARGET" 1>&6
+ncn_cv_DLLTOOL_FOR_TARGET="$ac_cv_prog_ncn_cv_DLLTOOL_FOR_TARGET"
+if test -n "$ncn_cv_DLLTOOL_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_DLLTOOL_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    DLLTOOL_FOR_TARGET=$ncn_ct_DLLTOOL_FOR_TARGET
+    DLLTOOL_FOR_TARGET=$ncn_cv_DLLTOOL_FOR_TARGET
   else
-    DLLTOOL_FOR_TARGET=""
+    DLLTOOL_FOR_TARGET="${ncn_target_tool_prefix}dlltool"
   fi
 else
   DLLTOOL_FOR_TARGET="$ac_cv_prog_DLLTOOL_FOR_TARGET"
@@ -3525,7 +3534,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}ld", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}ld; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3529: checking for $ac_word" >&5
+echo "configure:3538: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_LD_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3554,39 +3563,40 @@ fi
 fi
 if test -z "$ac_cv_prog_LD_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_LD_FOR_TARGET=$LD_FOR_TARGET
+    ncn_cv_LD_FOR_TARGET=$LD_FOR_TARGET
     # Extract the first word of "ld", so it can be a program name with args.
 set dummy ld; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3562: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_LD_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3571: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_LD_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_LD_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_LD_FOR_TARGET="$ncn_ct_LD_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_LD_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_LD_FOR_TARGET="$ncn_cv_LD_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_LD_FOR_TARGET="ld"
+      ac_cv_prog_ncn_cv_LD_FOR_TARGET="ld"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_LD_FOR_TARGET" && ac_cv_prog_ncn_cv_LD_FOR_TARGET="ld"
 fi
 fi
-ncn_ct_LD_FOR_TARGET="$ac_cv_prog_ncn_ct_LD_FOR_TARGET"
-if test -n "$ncn_ct_LD_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_LD_FOR_TARGET" 1>&6
+ncn_cv_LD_FOR_TARGET="$ac_cv_prog_ncn_cv_LD_FOR_TARGET"
+if test -n "$ncn_cv_LD_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_LD_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    LD_FOR_TARGET=$ncn_ct_LD_FOR_TARGET
+    LD_FOR_TARGET=$ncn_cv_LD_FOR_TARGET
   else
-    LD_FOR_TARGET=""
+    LD_FOR_TARGET="${ncn_target_tool_prefix}ld"
   fi
 else
   LD_FOR_TARGET="$ac_cv_prog_LD_FOR_TARGET"
@@ -3596,7 +3606,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}nm", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}nm; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3600: checking for $ac_word" >&5
+echo "configure:3610: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_NM_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3625,39 +3635,40 @@ fi
 fi
 if test -z "$ac_cv_prog_NM_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_NM_FOR_TARGET=$NM_FOR_TARGET
+    ncn_cv_NM_FOR_TARGET=$NM_FOR_TARGET
     # Extract the first word of "nm", so it can be a program name with args.
 set dummy nm; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3633: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_NM_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3643: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_NM_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_NM_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_NM_FOR_TARGET="$ncn_ct_NM_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_NM_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_NM_FOR_TARGET="$ncn_cv_NM_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_NM_FOR_TARGET="nm"
+      ac_cv_prog_ncn_cv_NM_FOR_TARGET="nm"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_NM_FOR_TARGET" && ac_cv_prog_ncn_cv_NM_FOR_TARGET="nm"
 fi
 fi
-ncn_ct_NM_FOR_TARGET="$ac_cv_prog_ncn_ct_NM_FOR_TARGET"
-if test -n "$ncn_ct_NM_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_NM_FOR_TARGET" 1>&6
+ncn_cv_NM_FOR_TARGET="$ac_cv_prog_ncn_cv_NM_FOR_TARGET"
+if test -n "$ncn_cv_NM_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_NM_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    NM_FOR_TARGET=$ncn_ct_NM_FOR_TARGET
+    NM_FOR_TARGET=$ncn_cv_NM_FOR_TARGET
   else
-    NM_FOR_TARGET=""
+    NM_FOR_TARGET="${ncn_target_tool_prefix}nm"
   fi
 else
   NM_FOR_TARGET="$ac_cv_prog_NM_FOR_TARGET"
@@ -3667,7 +3678,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}ranlib", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3671: checking for $ac_word" >&5
+echo "configure:3682: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_RANLIB_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3696,38 +3707,38 @@ fi
 fi
 if test -z "$ac_cv_prog_RANLIB_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
+    ncn_cv_RANLIB_FOR_TARGET=$RANLIB_FOR_TARGET
     # Extract the first word of "ranlib", so it can be a program name with args.
 set dummy ranlib; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3704: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3715: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_RANLIB_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET="$ncn_ct_RANLIB_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_RANLIB_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET="$ncn_cv_RANLIB_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET="ranlib"
+      ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET="ranlib"
       break
     fi
   done
   IFS="$ac_save_ifs"
-  test -z "$ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET" && ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET=":"
+  test -z "$ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET" && ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET=":"
 fi
 fi
-ncn_ct_RANLIB_FOR_TARGET="$ac_cv_prog_ncn_ct_RANLIB_FOR_TARGET"
-if test -n "$ncn_ct_RANLIB_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_RANLIB_FOR_TARGET" 1>&6
+ncn_cv_RANLIB_FOR_TARGET="$ac_cv_prog_ncn_cv_RANLIB_FOR_TARGET"
+if test -n "$ncn_cv_RANLIB_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_RANLIB_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    RANLIB_FOR_TARGET=$ncn_ct_RANLIB_FOR_TARGET
+    RANLIB_FOR_TARGET=$ncn_cv_RANLIB_FOR_TARGET
   else
     RANLIB_FOR_TARGET=":"
   fi
@@ -3739,7 +3750,7 @@ fi
   # Extract the first word of "${ncn_target_tool_prefix}windres", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}windres; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3743: checking for $ac_word" >&5
+echo "configure:3754: checking for $ac_word" >&5
 if eval "test \"`echo '$''{'ac_cv_prog_WINDRES_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -3768,39 +3779,40 @@ fi
 fi
 if test -z "$ac_cv_prog_WINDRES_FOR_TARGET" ; then
   if test $build = $target ; then
-    ncn_ct_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
+    ncn_cv_WINDRES_FOR_TARGET=$WINDRES_FOR_TARGET
     # Extract the first word of "windres", so it can be a program name with args.
 set dummy windres; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
-echo "configure:3776: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_ncn_ct_WINDRES_FOR_TARGET'+set}'`\" = set"; then
+echo "configure:3787: checking for $ac_word" >&5
+if eval "test \"`echo '$''{'ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$ncn_ct_WINDRES_FOR_TARGET"; then
-  ac_cv_prog_ncn_ct_WINDRES_FOR_TARGET="$ncn_ct_WINDRES_FOR_TARGET" # Let the user override the test.
+  if test -n "$ncn_cv_WINDRES_FOR_TARGET"; then
+  ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET="$ncn_cv_WINDRES_FOR_TARGET" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_ncn_ct_WINDRES_FOR_TARGET="windres"
+      ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET="windres"
       break
     fi
   done
   IFS="$ac_save_ifs"
+  test -z "$ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET" && ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET="windres"
 fi
 fi
-ncn_ct_WINDRES_FOR_TARGET="$ac_cv_prog_ncn_ct_WINDRES_FOR_TARGET"
-if test -n "$ncn_ct_WINDRES_FOR_TARGET"; then
-  echo "$ac_t""$ncn_ct_WINDRES_FOR_TARGET" 1>&6
+ncn_cv_WINDRES_FOR_TARGET="$ac_cv_prog_ncn_cv_WINDRES_FOR_TARGET"
+if test -n "$ncn_cv_WINDRES_FOR_TARGET"; then
+  echo "$ac_t""$ncn_cv_WINDRES_FOR_TARGET" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
  
-    WINDRES_FOR_TARGET=$ncn_ct_WINDRES_FOR_TARGET
+    WINDRES_FOR_TARGET=$ncn_cv_WINDRES_FOR_TARGET
   else
-    WINDRES_FOR_TARGET=""
+    WINDRES_FOR_TARGET="${ncn_target_tool_prefix}windres"
   fi
 else
   WINDRES_FOR_TARGET="$ac_cv_prog_WINDRES_FOR_TARGET"
@@ -3903,15 +3915,34 @@ trap 'rm -f $CONFIG_STATUS conftest*; exit 1' 1 2 15
 # Transform confdefs.h into DEFS.
 # Protect against shell expansion while executing Makefile rules.
 # Protect against Makefile macro expansion.
-cat > conftest.defs <<\EOF
-s%#define \([A-Za-z_][A-Za-z0-9_]*\) *\(.*\)%-D\1=\2%g
-s%[ 	`~#$^&*(){}\\|;'"<>?]%\\&%g
-s%\[%\\&%g
-s%\]%\\&%g
-s%\$%$$%g
-EOF
-DEFS=`sed -f conftest.defs confdefs.h | tr '\012' ' '`
-rm -f conftest.defs
+#
+# If the first sed substitution is executed (which looks for macros that
+# take arguments), then we branch to the quote section.  Otherwise,
+# look for a macro that doesn't take arguments.
+cat >confdef2opt.sed <<\_ACEOF
+t clear
+: clear
+s,^[ 	]*#[ 	]*define[ 	][ 	]*\([^ 	(][^ 	(]*([^)]*)\)[ 	]*\(.*\),-D\1=\2,g
+t quote
+s,^[ 	]*#[ 	]*define[ 	][ 	]*\([^ 	][^ 	]*\)[ 	]*\(.*\),-D\1=\2,g
+t quote
+d
+: quote
+s,[ 	`~#$^&*(){}\\|;'"<>?],\\&,g
+s,\[,\\&,g
+s,\],\\&,g
+s,\$,$$,g
+p
+_ACEOF
+# We use echo to avoid assuming a particular line-breaking character.
+# The extra dot is to prevent the shell from consuming trailing
+# line-breaks from the sub-command output.  A line-break within
+# single-quotes doesn't work because, if this script is created in a
+# platform that uses two characters for line-breaks (e.g., DOS), tr
+# would break.
+ac_LF_and_DOT=`echo; echo .`
+DEFS=`sed -n -f confdef2opt.sed confdefs.h | tr "$ac_LF_and_DOT" ' .'`
+rm -f confdef2opt.sed
 
 
 # Without the "./", some shells look in PATH for config.status.
@@ -4048,42 +4079,42 @@ s%@MAKEINFO@%$MAKEINFO%g
 s%@YACC@%$YACC%g
 s%@config_shell@%$config_shell%g
 s%@AR@%$AR%g
-s%@ncn_ct_AR@%$ncn_ct_AR%g
+s%@ncn_cv_AR@%$ncn_cv_AR%g
 s%@AS@%$AS%g
-s%@ncn_ct_AS@%$ncn_ct_AS%g
+s%@ncn_cv_AS@%$ncn_cv_AS%g
 s%@DLLTOOL@%$DLLTOOL%g
-s%@ncn_ct_DLLTOOL@%$ncn_ct_DLLTOOL%g
+s%@ncn_cv_DLLTOOL@%$ncn_cv_DLLTOOL%g
 s%@LD@%$LD%g
-s%@ncn_ct_LD@%$ncn_ct_LD%g
+s%@ncn_cv_LD@%$ncn_cv_LD%g
 s%@NM@%$NM%g
-s%@ncn_ct_NM@%$ncn_ct_NM%g
+s%@ncn_cv_NM@%$ncn_cv_NM%g
 s%@RANLIB@%$RANLIB%g
-s%@ncn_ct_RANLIB@%$ncn_ct_RANLIB%g
+s%@ncn_cv_RANLIB@%$ncn_cv_RANLIB%g
 s%@WINDRES@%$WINDRES%g
-s%@ncn_ct_WINDRES@%$ncn_ct_WINDRES%g
+s%@ncn_cv_WINDRES@%$ncn_cv_WINDRES%g
 s%@OBJCOPY@%$OBJCOPY%g
-s%@ncn_ct_OBJCOPY@%$ncn_ct_OBJCOPY%g
+s%@ncn_cv_OBJCOPY@%$ncn_cv_OBJCOPY%g
 s%@OBJDUMP@%$OBJDUMP%g
-s%@ncn_ct_OBJDUMP@%$ncn_ct_OBJDUMP%g
+s%@ncn_cv_OBJDUMP@%$ncn_cv_OBJDUMP%g
 s%@CC@%$CC%g
 s%@CXX@%$CXX%g
 s%@DEFAULT_YACC@%$DEFAULT_YACC%g
 s%@DEFAULT_LEX@%$DEFAULT_LEX%g
 s%@DEFAULT_M4@%$DEFAULT_M4%g
 s%@AR_FOR_TARGET@%$AR_FOR_TARGET%g
-s%@ncn_ct_AR_FOR_TARGET@%$ncn_ct_AR_FOR_TARGET%g
+s%@ncn_cv_AR_FOR_TARGET@%$ncn_cv_AR_FOR_TARGET%g
 s%@AS_FOR_TARGET@%$AS_FOR_TARGET%g
-s%@ncn_ct_AS_FOR_TARGET@%$ncn_ct_AS_FOR_TARGET%g
+s%@ncn_cv_AS_FOR_TARGET@%$ncn_cv_AS_FOR_TARGET%g
 s%@DLLTOOL_FOR_TARGET@%$DLLTOOL_FOR_TARGET%g
-s%@ncn_ct_DLLTOOL_FOR_TARGET@%$ncn_ct_DLLTOOL_FOR_TARGET%g
+s%@ncn_cv_DLLTOOL_FOR_TARGET@%$ncn_cv_DLLTOOL_FOR_TARGET%g
 s%@LD_FOR_TARGET@%$LD_FOR_TARGET%g
-s%@ncn_ct_LD_FOR_TARGET@%$ncn_ct_LD_FOR_TARGET%g
+s%@ncn_cv_LD_FOR_TARGET@%$ncn_cv_LD_FOR_TARGET%g
 s%@NM_FOR_TARGET@%$NM_FOR_TARGET%g
-s%@ncn_ct_NM_FOR_TARGET@%$ncn_ct_NM_FOR_TARGET%g
+s%@ncn_cv_NM_FOR_TARGET@%$ncn_cv_NM_FOR_TARGET%g
 s%@RANLIB_FOR_TARGET@%$RANLIB_FOR_TARGET%g
-s%@ncn_ct_RANLIB_FOR_TARGET@%$ncn_ct_RANLIB_FOR_TARGET%g
+s%@ncn_cv_RANLIB_FOR_TARGET@%$ncn_cv_RANLIB_FOR_TARGET%g
 s%@WINDRES_FOR_TARGET@%$WINDRES_FOR_TARGET%g
-s%@ncn_ct_WINDRES_FOR_TARGET@%$ncn_ct_WINDRES_FOR_TARGET%g
+s%@ncn_cv_WINDRES_FOR_TARGET@%$ncn_cv_WINDRES_FOR_TARGET%g
 s%@GCC_FOR_TARGET@%$GCC_FOR_TARGET%g
 s%@FLAGS_FOR_TARGET@%$FLAGS_FOR_TARGET%g
 s%@CC_FOR_TARGET@%$CC_FOR_TARGET%g
