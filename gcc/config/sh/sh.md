@@ -1224,12 +1224,11 @@
   [(use (reg:SI 0))]
   "
 {
-  rtx and_source = operands[1];
+  rtx and_source = operands[rtx_equal_p (operands[0], operands[1]) ? 3 : 1];
 
   if (INTVAL (operands[2]))
     {
       gen_shifty_op (LSHIFTRT, operands);
-      and_source = operands[3];
     }
   emit_insn (gen_andsi3 (operands[0], operands[0], and_source));
   operands[2] = operands[4];
