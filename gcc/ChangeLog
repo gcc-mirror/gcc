@@ -1,3 +1,7 @@
+Thu Oct  3 23:35:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (athlon_cost): Fix the move costs.
+
 Thu Oct  3 23:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (final): Use symbol name as function name for profiling.
