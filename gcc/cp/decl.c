@@ -8202,6 +8202,7 @@ reshape_init (tree type, tree *initp)
     {
       my_friendly_assert (TREE_CODE (old_init) == TREE_LIST, 20021202);
       TREE_VALUE (old_init) = error_mark_node;
+      *initp = TREE_CHAIN (old_init);
       return old_init;
     }
 

@@ -1,3 +1,8 @@
+2003-07-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11282
+	* g++.dg/parse/crash7.C: New test.
+
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/10679

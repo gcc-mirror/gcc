@@ -1,3 +1,8 @@
+2003-07-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11282
+	* decl.c: (reshape_init): Always advance *INITP.
+
 2003-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11546
