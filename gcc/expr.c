@@ -6364,9 +6364,9 @@ bc_expand_expr (exp)
 	    if (DECL_RTL (vars) == 0)
 	      {
 		vars_need_expansion = 1;
-		bc_expand_decl (vars, 0);
+		expand_decl (vars);
 	      }
-	    bc_expand_decl_init (vars);
+	    expand_decl_init (vars);
 	    vars = TREE_CHAIN (vars);
 	  }
 	
