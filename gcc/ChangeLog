@@ -1,3 +1,9 @@
+2003-06-19  DJ Delorie  <dj@redhat.com>
+
+	PR preprocessor/11022
+	* cppmacro.c (warn_of_redefinition): Handle cases where the two
+	definitions have different numbers of tokens.
+
 2003-06-18  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/unwind-ia64.c (_Unwind_GetCFA): New.

@@ -1,3 +1,7 @@
+2003-06-19  Loren James Rittle  <ljrittle@acm.org>
+	
+	* gcc.dg/cpp/redef3.c: New file.
+
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10712
