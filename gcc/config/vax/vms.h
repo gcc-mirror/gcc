@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 #undef CPP_PREDEFINES
-#undef TARGET_VERSION
+#undef TARGET_NAME
 #undef TARGET_DEFAULT
 #undef CALL_USED_REGISTERS
 #undef MAYBE_VMS_FUNCTION_PROLOGUE
@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
 #define TARGET_DEFAULT 1
-#define TARGET_VERSION fprintf (stderr, " (vax vms)");
+#define TARGET_NAME "vax/vms"
 
 /* The structure return address arrives as an "argument" on VMS.  */
 #undef STRUCT_VALUE_REGNUM
