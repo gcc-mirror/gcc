@@ -1,3 +1,8 @@
+2001-02-27  Andreas Jaeger  <aj@suse.de>
+
+	* configure.in: Document that --disable-checking is default.
+	* configure: Regenerated.
+
 2001-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in: Make --disable-checking the default.

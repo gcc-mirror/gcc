@@ -188,7 +188,7 @@ AC_ARG_ENABLE(checking,
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
 			  Categories are: misc,tree,rtl,gc,gcac; default
-			  is misc,tree,gc],
+			  is no checking],
 [ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
