@@ -4602,7 +4602,7 @@ decl_tls_model (tree decl)
     }
 
   is_local = targetm.binds_local_p (decl);
-  if (!flag_pic)
+  if (!flag_shlib)
     {
       if (is_local)
 	kind = TLS_MODEL_LOCAL_EXEC;
