@@ -271,6 +271,7 @@ static int all_blocks		PARAMS ((tree, tree *));
    can always export `prologue_epilogue_contains'.  */
 static int *record_insns	PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static int contains		PARAMS ((rtx, int *));
+static void emit_return_into_block PARAMS ((basic_block));
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int, 
 					  struct hash_table *));
@@ -6577,6 +6578,27 @@ prologue_epilogue_contains (insn)
   return 0;
 }
 
+/* Insert gen_return at the end of block BB.  This also means updating
+   block_for_insn appropriately.  */
+
+static void
+emit_return_into_block (bb)
+     basic_block bb;
+{
+  rtx p, end;
+
+  end = emit_jump_insn_after (gen_return (), bb->end);
+  p = NEXT_INSN (bb->end); 
+  while (1)
+    {
+      set_block_for_insn (p, bb);
+      if (p == end)
+	break;
+      p = NEXT_INSN (p);
+    }
+  bb->end = end;
+}
+
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
    the epilogue begins.  Update the basic block information when possible.  */
@@ -6629,6 +6651,93 @@ thread_prologue_and_epilogue_insns (f)
   if (e == NULL)
     goto epilogue_done;
 
+#ifdef HAVE_return
+  if (optimize && HAVE_return)
+    {
+      /* If we're allowed to generate a simple return instruction,
+	 then by definition we don't need a full epilogue.  Examine
+	 the block that falls through to EXIT.   If it does not 
+	 contain any code, examine its predecessors and try to 
+	 emit (conditional) return instructions.  */
+
+      basic_block last;
+      edge e_next;
+      rtx label;
+
+      for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+	if (e->flags & EDGE_FALLTHRU)
+	  break;
+      if (e == NULL)
+	goto epilogue_done;
+      last = e->src;
+
+      /* Verify that there are no active instructions in the last block.  */
+      label = last->end;
+      while (label && GET_CODE (label) != CODE_LABEL)
+	{
+	  if (active_insn_p (label))
+	    break;
+	  label = PREV_INSN (label);
+	}
+
+      if (last->head == label && GET_CODE (label) == CODE_LABEL)
+	{
+	  for (e = last->pred; e ; e = e_next)
+	    {
+	      basic_block bb = e->src;
+	      rtx jump;
+
+	      e_next = e->pred_next;
+	      if (bb == ENTRY_BLOCK_PTR)
+		continue;
+
+	      jump = bb->end;
+	      if (GET_CODE (jump) != JUMP_INSN)
+		continue;
+
+	      /* If we have an unconditional jump, we can replace that
+		 with a simple return instruction.  */
+	      if (simplejump_p (jump))
+		{
+		  emit_return_into_block (bb);
+		  flow_delete_insn (jump);
+		}
+
+	      /* If we have a conditional jump, we can try to replace
+		 that with a conditional return instruction.  */
+	      else if (condjump_p (jump))
+		{
+		  rtx ret, *loc;
+
+		  ret = SET_SRC (PATTERN (jump));
+		  if (GET_CODE (XEXP (ret, 1)) == LABEL_REF)
+		    loc = &XEXP (ret, 1);
+		  else
+		    loc = &XEXP (ret, 2);
+		  ret = gen_rtx_RETURN (VOIDmode);
+
+		  if (! validate_change (jump, loc, ret, 0))
+		    continue;
+		  if (JUMP_LABEL (jump))
+		    LABEL_NUSES (JUMP_LABEL (jump))--;
+		}
+	      else
+		continue;
+
+	      /* Fix up the CFG for the successful change we just made.  */
+	      remove_edge (e);
+	      make_edge (NULL, bb, EXIT_BLOCK_PTR, 0);
+	    }
+	}
+
+      /* Emit a return insn for the exit fallthru block.  Whether
+	 this is still reachable will be determined later.  */
+
+      emit_barrier_after (last->end);
+      emit_return_into_block (last);
+      goto epilogue_done;
+    }
+#endif
 #ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
