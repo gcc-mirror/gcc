@@ -1,5 +1,10 @@
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/17301
+	* gcc.dg/pr17301-1.c: New test.
+
+2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/17189
 	* gcc.dg/anon-struct-5.c: New test.
 
