@@ -77,90 +77,6 @@
 #undef tan
 #undef tanh
 
-// ...and in the darkness bind them...
-namespace __gnu_cxx
-{
-  namespace  __c99_binding
-  {
-#if _GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_CHECK || \
-    _GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC
-    extern "C" float (acosf)(float);
-    extern "C" float (asinf)(float);
-    extern "C" float (atanf)(float);
-    extern "C" float (atan2f)(float, float);
-    extern "C" float (ceilf)(float);
-    extern "C" float (coshf)(float);
-    extern "C" float (expf)(float);
-    extern "C" float (floorf)(float);
-    extern "C" float (fmodf)(float, float);
-    extern "C" float (frexpf)(float, int*);
-    extern "C" float (ldexpf)(float, int);
-    extern "C" float (logf)(float);
-    extern "C" float (log10f)(float);
-    extern "C" float (modff)(float, float*);
-    extern "C" float (powf)(float, float);
-    extern "C" float (sinhf)(float);
-    extern "C" float (tanf)(float);
-    extern "C" float (tanhf)(float);
-#endif
-#if !_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC
-#if _GLIBCXX_HAVE_ACOSF
-    using ::acosf;
-#endif
-#if _GLIBCXX_HAVE_ASINF
-    using ::asinf;
-#endif
-#if _GLIBCXX_HAVE_ATANF
-    using ::atanf;
-#endif
-#if _GLIBCXX_HAVE_ATAN2F
-    using ::atan2f;
-#endif
-#if _GLIBCXX_HAVE_CEILF
-    using ::ceilf;
-#endif
-#if _GLIBCXX_HAVE_COSHF
-    using ::coshf;
-#endif
-#if _GLIBCXX_HAVE_EXPF
-    using ::expf;
-#endif
-#if _GLIBCXX_HAVE_FLOORF
-    using ::floorf;
-#endif
-#if _GLIBCXX_HAVE_FMODF
-    using ::fmodf;
-#endif
-#if _GLIBCXX_HAVE_FREXPF
-    using ::frexpf;
-#endif
-#if _GLIBCXX_HAVE_LDEXPF
-    using ::ldexpf;
-#endif
-#if _GLIBCXX_HAVE_LOGF
-    using ::logf;
-#endif
-#if _GLIBCXX_HAVE_LOG10F
-    using ::log10f;
-#endif
-#if _GLIBCXX_HAVE_MODFF
-    using ::modff;
-#endif
-#if _GLIBCXX_HAVE_POWF
-    using ::powf;
-#endif
-#if _GLIBCXX_HAVE_SINHF
-    using ::sinhf;
-#endif
-#if _GLIBCXX_HAVE_TANF
-    using ::tanf;
-#endif
-#if _GLIBCXX_HAVE_TANHF
-    using ::tanhf;
-#endif
-#endif /* _GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC */
-  }
-}
 
 namespace std 
 {
@@ -180,125 +96,83 @@ namespace std
   abs(long double __x)
   { return __builtin_fabsl(__x); }
 
-#if _GLIBCXX_HAVE_ACOSF
-  inline float 
-  acos(float __x) { return __gnu_cxx::__c99_binding::acosf(__x); }
-#else
-  inline float 
-  acos(float __x) { return ::acos(static_cast<double>(__x)); }
-#endif
-
   using ::acos;
-  
-#if _GLIBCXX_HAVE_ACOSL
-  inline long double 
-  acos(long double __x) { return ::acosl(__x); }
-#else
-  inline long double 
-  acos(long double __x) { return ::acos(static_cast<double>(__x)); }
-#endif
+
+  inline float
+  acos(float __x)
+  { return __builtin_acosf(__x); }
+
+  inline long double
+  acos(long double __x)
+  { return __builtin_acosl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     acos(_Tp __x)
     {
-      return ::acos(static_cast<double>(__x));
+      return __builtin_acos(__x);
     }
   
   using ::asin;
 
-#if _GLIBCXX_HAVE_ASINF
   inline float 
-  asin(float __x) { return __gnu_cxx::__c99_binding::asinf(__x); }
-#else
-  inline float 
-  asin(float __x) { return ::asin(static_cast<double>(__x)); }
-#endif
+  asin(float __x)
+  { return __builtin_asinf(__x); }
 
-#if _GLIBCXX_HAVE_ASINL
   inline long double 
-  asin(long double __x) { return ::asinl(__x); }
-#else
-  inline long double 
-  asin(long double __x) { return ::asin(static_cast<double>(__x)); }
-#endif
+  asin(long double __x)
+  { return __builtin_asinl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     asin(_Tp __x)
-    { return ::asin(static_cast<double>(__x)); }
+    { return __builtin_asin(__x); }
 
   using ::atan;
 
-#if _GLIBCXX_HAVE_ATANF
   inline float 
-  atan(float __x) { return __gnu_cxx::__c99_binding::atanf(__x); }
-#else
-  inline float 
-  atan(float __x) { return ::atan(static_cast<double>(__x)); }
-#endif
+  atan(float __x)
+  { return __builtin_atanf(__x); }
 
-#if _GLIBCXX_HAVE_ATANL
   inline long double 
-  atan(long double __x) { return ::atanl(__x); }
-#else
-  inline long double 
-  atan(long double __x) { return ::atan(static_cast<double>(__x)); }
-#endif
+  atan(long double __x)
+  { return __builtin_atanl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     atan(_Tp __x)
-    { return ::atan(static_cast<double>(__x)); }
+    { return __builtin_atan(__x); }
   
   using ::atan2;
 
-#if _GLIBCXX_HAVE_ATAN2F
-  inline float 
-  atan2(float __y, float __x) { return __gnu_cxx::__c99_binding::atan2f(__y, __x); }
-#else
   inline float 
   atan2(float __y, float __x)
-  { return ::atan2(static_cast<double>(__y), static_cast<double>(__x)); }
-#endif
+  { return __builtin_atan2f(__y, __x); }
 
-#if _GLIBCXX_HAVE_ATAN2L
   inline long double 
-  atan2(long double __y, long double __x) { return ::atan2l(__y, __x); }
-#else
-  inline long double 
-  atan2(long double __y, long double __x) 
-  { return ::atan2(static_cast<double>(__y), static_cast<double>(__x)); }
-#endif
+  atan2(long double __y, long double __x)
+  { return __builtin_atan2l(__y, __x); }
 
   template<typename _Tp, typename _Up>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type
                                         && __is_integer<_Up>::_M_type>::_M_type
-    atan2(_Tp __x, _Up __y)
-    { return ::atan2(static_cast<double>(__x), static_cast<double>(__y)); }
+    atan2(_Tp __y, _Up __x)
+    { return __builtin_atan2(__y, __x); }
 
   using ::ceil;
 
-#if _GLIBCXX_HAVE_CEILF
   inline float 
-  ceil(float __x) { return __gnu_cxx::__c99_binding::ceilf(__x); }
-#else
-  inline float 
-  ceil(float __x) { return ::ceil(static_cast<double>(__x)); }
-#endif
+  ceil(float __x)
+  { return __builtin_ceilf(__x); }
 
-#if _GLIBCXX_HAVE_CEILL
   inline long double 
-  ceil(long double __x) { return ::ceill(__x); }
-#else
-  inline long double 
-  ceil(long double __x) { return ::ceil(static_cast<double>(__x)); }
-#endif
+  ceil(long double __x)
+  { return __builtin_ceill(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     ceil(_Tp __x)
-    { return ::ceil(static_cast<double>(__x)); }
+    { return __builtin_ceil(__x); }
   
   using ::cos;
 
@@ -317,49 +191,33 @@ namespace std
 
   using ::cosh;
 
-#if _GLIBCXX_HAVE_COSHF
   inline float 
-  cosh(float __x) { return __gnu_cxx::__c99_binding::coshf(__x); }
-#else
-  inline float 
-  cosh(float __x) { return ::cosh(static_cast<double>(__x)); }
-#endif
+  cosh(float __x)
+  { return __builtin_coshf(__x); }
 
-#if _GLIBCXX_HAVE_COSHL
   inline long double 
-  cosh(long double __x) { return ::coshl(__x); }
-#else
-  inline long double 
-  cosh(long double __x) { return ::cosh(static_cast<double>(__x)); }
-#endif
+  cosh(long double __x)
+  { return __builtin_coshl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     cosh(_Tp __x)
-    { return ::cosh(static_cast<double>(__x)); }
+    { return __builtin_cosh(__x); }
 
   using ::exp;
 
-#if _GLIBCXX_HAVE_EXPF
   inline float 
-  exp(float __x) { return __gnu_cxx::__c99_binding::expf(__x); }
-#else
-  inline float 
-  exp(float __x) { return ::exp(static_cast<double>(__x)); }
-#endif
+  exp(float __x)
+  { return __builtin_expf(__x); }
 
-#if _GLIBCXX_HAVE_EXPL
   inline long double 
-  exp(long double __x) { return ::expl(__x); }
-#else
-  inline long double 
-  exp(long double __x) { return ::exp(static_cast<double>(__x)); }
-#endif
+  exp(long double __x)
+  { return __builtin_expl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     exp(_Tp __x)
-    { return ::exp(static_cast<double>(__x)); }
+    { return __builtin_exp(__x); }
   
   using ::fabs;
 
@@ -378,171 +236,98 @@ namespace std
 
   using ::floor;
 
-#if _GLIBCXX_HAVE_FLOORF
   inline float 
-  floor(float __x) { return __gnu_cxx::__c99_binding::floorf(__x); }
-#else
-  inline float 
-  floor(float __x) { return ::floor(static_cast<double>(__x)); }
-#endif
+  floor(float __x)
+  { return __builtin_floorf(__x); }
 
-#if _GLIBCXX_HAVE_FLOORL
   inline long double 
-  floor(long double __x) { return ::floorl(__x); }
-#else
-  inline long double 
-  floor(long double __x) { return ::floor(static_cast<double>(__x)); }
-#endif
+  floor(long double __x)
+  { return __builtin_floorl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     floor(_Tp __x)
-    { return ::floor(static_cast<double>(__x)); }
+    { return __builtin_floor(__x); }
   
   using ::fmod;
 
-#if _GLIBCXX_HAVE_FMODF
-  inline float 
-  fmod(float __x, float __y) { return __gnu_cxx::__c99_binding::fmodf(__x, __y); }
-#else
   inline float 
   fmod(float __x, float __y)
-  { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
-#endif
+  { return __builtin_fmodf(__x, __y); }
 
-#if _GLIBCXX_HAVE_FMODL
   inline long double 
-  fmod(long double __x, long double __y) { return ::fmodl(__x, __y); }
-#else
-  inline long double 
-  fmod(long double __x, long double __y) 
-  { return ::fmod(static_cast<double>(__x), static_cast<double>(__y)); }
-#endif
+  fmod(long double __x, long double __y)
+  { return __builtin_fmodl(__x, __y); }
 
   using ::frexp;
 
-#if _GLIBCXX_HAVE_FREXPF
   inline float 
-  frexp(float __x, int* __exp) { return __gnu_cxx::__c99_binding::frexpf(__x, __exp); }
-#else
-  inline float 
-  frexp(float __x, int* __exp) { return ::frexp(__x, __exp); }
-#endif
+  frexp(float __x, int* __exp)
+  { return __builtin_frexpf(__x, __exp); }
 
-#if _GLIBCXX_HAVE_FREXPL
   inline long double 
-  frexp(long double __x, int* __exp) { return ::frexpl(__x, __exp); }
-#else
-  inline long double 
-  frexp(long double __x, int* __exp) 
-  { return ::frexp(static_cast<double>(__x), __exp); }
-#endif
+  frexp(long double __x, int* __exp)
+  { return __builtin_frexpl(__x, __exp); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     frexp(_Tp __x, int* __exp)
-    { return ::frexp(static_cast<double>(__x), __exp); }
+    { return __builtin_frexp(__x, __exp); }
   
   using ::ldexp;
 
-#if _GLIBCXX_HAVE_LDEXPF
-  inline float 
-  ldexp(float __x, int __exp) { return __gnu_cxx::__c99_binding::ldexpf(__x, __exp); }
-#else
   inline float 
   ldexp(float __x, int __exp)
-  { return ::ldexp(static_cast<double>(__x), __exp); }
-#endif
+  { return __builtin_ldexpf(__x, __exp); }
 
-#if _GLIBCXX_HAVE_LDEXPL
   inline long double 
-  ldexp(long double __x, int __exp) { return ::ldexpl(__x, __exp); }
-#else
-  inline long double 
-  ldexp(long double __x, int __exp) 
-  { return ::ldexp(static_cast<double>(__x), __exp); }
-#endif
+  ldexp(long double __x, int __exp)
+  { return __builtin_ldexpl(__x, __exp); }
 
   template<typename _Tp>
   inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
   ldexp(_Tp __x, int __exp)
-  { return ::ldexp(static_cast<double>(__x), __exp); }
+  { return __builtin_ldexp(__x, __exp); }
 
   using ::log;
 
-#if _GLIBCXX_HAVE_LOGF
   inline float 
-  log(float __x) { return __gnu_cxx::__c99_binding::logf(__x); }
-#else
-  inline float log(float __x)
-  { return ::log(static_cast<double>(__x)); }
-#endif
+  log(float __x)
+  { return __builtin_logf(__x); }
 
-#if _GLIBCXX_HAVE_LOGL
   inline long double 
-  log(long double __x) { return ::logl(__x); }
-#else
-  inline long double 
-  log(long double __x) { return ::log(static_cast<double>(__x)); }
-#endif
+  log(long double __x)
+  { return __builtin_logl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     log(_Tp __x)
-    { return ::log(static_cast<double>(__x)); }
+    { return __builtin_log(__x); }
   
   using ::log10;
 
-#if _GLIBCXX_HAVE_LOG10F
   inline float 
-  log10(float __x) { return __gnu_cxx::__c99_binding::log10f(__x); }
-#else
-  inline float 
-  log10(float __x) { return ::log10(static_cast<double>(__x)); }
-#endif
+  log10(float __x)
+  { return __builtin_log10f(__x); }
 
-#if _GLIBCXX_HAVE_LOG10L
   inline long double 
-  log10(long double __x) { return ::log10l(__x); }
-#else
-  inline long double 
-  log10(long double __x) { return ::log10(static_cast<double>(__x)); }
-#endif
+  log10(long double __x)
+  { return __builtin_log10l(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     log10(_Tp __x)
-    { return ::log10(static_cast<double>(__x)); }
+    { return __builtin_log10(__x); }
   
   using ::modf;
 
-#if _GLIBCXX_HAVE_MODFF
-  inline float 
-  modf(float __x, float* __iptr) { return __gnu_cxx::__c99_binding::modff(__x, __iptr); }
-#else
   inline float 
   modf(float __x, float* __iptr)
-  {
-    double __tmp;
-    double __res = ::modf(static_cast<double>(__x), &__tmp);
-    *__iptr = static_cast<float>(__tmp);
-    return __res;
-  }
-#endif
+  { return __builtin_modff(__x, __iptr); }
 
-#if _GLIBCXX_HAVE_MODFL
   inline long double 
-  modf(long double __x, long double* __iptr) { return ::modfl(__x, __iptr); }
-#else
-  inline long double 
-  modf(long double __x, long double* __iptr) 
-  { 
-    double __tmp;
-    double __res = ::modf(static_cast<double>(__x), &__tmp);
-    * __iptr = static_cast<long double>(__tmp);
-    return __res;
-  }
-#endif
+  modf(long double __x, long double* __iptr)
+  { return __builtin_modfl(__x, __iptr); }
 
   template<typename _Tp>
     inline _Tp
@@ -555,23 +340,13 @@ namespace std
 
   using ::pow;
 
-#if _GLIBCXX_HAVE_POWF
-  inline float 
-  pow(float __x, float __y) { return __gnu_cxx::__c99_binding::powf(__x, __y); }
-#else
   inline float 
   pow(float __x, float __y)
-  { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
-#endif
+  { return __builtin_powf(__x, __y); }
 
-#if _GLIBCXX_HAVE_POWL
   inline long double 
-  pow(long double __x, long double __y) { return ::powl(__x, __y); }
-#else
-  inline long double 
-  pow(long double __x, long double __y) 
-  { return ::pow(static_cast<double>(__x), static_cast<double>(__y)); }
-#endif
+  pow(long double __x, long double __y)
+  { return __builtin_powl(__x, __y); }
 
   inline double 
   pow(double __x, int __i)
@@ -602,26 +377,18 @@ namespace std
 
   using ::sinh;
 
-#if _GLIBCXX_HAVE_SINHF
   inline float 
-  sinh(float __x) { return __gnu_cxx::__c99_binding::sinhf(__x); }
-#else
-  inline float 
-  sinh(float __x) { return ::sinh(static_cast<double>(__x)); }
-#endif
+  sinh(float __x)
+  { return __builtin_sinhf(__x); }
 
-#if _GLIBCXX_HAVE_SINHL
   inline long double 
-  sinh(long double __x) { return ::sinhl(__x); }
-#else
-  inline long double 
-  sinh(long double __x) { return ::sinh(static_cast<double>(__x)); }
-#endif
+  sinh(long double __x)
+  { return __builtin_sinhl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     sinh(_Tp __x)
-    { return ::sinh(static_cast<_Tp>(__x)); }
+    { return __builtin_sinh(__x); }
   
   using ::sqrt;
 
@@ -640,49 +407,33 @@ namespace std
   
   using ::tan;
 
-#if _GLIBCXX_HAVE_TANF
   inline float 
-  tan(float __x) { return __gnu_cxx::__c99_binding::tanf(__x); }
-#else
-  inline float 
-  tan(float __x) { return ::tan(static_cast<double>(__x)); }
-#endif
+  tan(float __x)
+  { return __builtin_tanf(__x); }
 
-#if _GLIBCXX_HAVE_TANL
   inline long double 
-  tan(long double __x) { return ::tanl(__x); }
-#else
-  inline long double 
-  tan(long double __x) { return ::tan(static_cast<double>(__x)); }
-#endif
+  tan(long double __x)
+  { return __builtin_tanl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     tan(_Tp __x)
-    { return ::tan(static_cast<double>(__x)); }
+    { return __builtin_tan(__x); }
   
   using ::tanh;
 
-#if _GLIBCXX_HAVE_TANHF
   inline float 
-  tanh(float __x) { return __gnu_cxx::__c99_binding::tanhf(__x); }
-#else
-  inline float 
-  tanh(float __x) { return ::tanh(static_cast<double>(__x)); }
-#endif
+  tanh(float __x)
+  { return __builtin_tanhf(__x); }
 
-#if _GLIBCXX_HAVE_TANHL
   inline long double 
-  tanh(long double __x) { return ::tanhl(__x); }
-#else
-  inline long double 
-  tanh(long double __x) { return ::tanh(static_cast<double>(__x)); }
-#endif
+  tanh(long double __x)
+  { return __builtin_tanhl(__x); }
 
   template<typename _Tp>
     inline typename __enable_if<double, __is_integer<_Tp>::_M_type>::_M_type
     tanh(_Tp __x)
-    { return ::tanh(static_cast<double>(__x)); }
+    { return __builtin_tanh(__x); }
 } 
 
 
