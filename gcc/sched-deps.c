@@ -1267,20 +1267,29 @@ sched_analyze (deps, head, tail)
 	    }
 	  else
 	    {
-	      /* A call may read and modify global register variables.
-		 Other call-clobbered hard regs may be clobbered.  We
-		 don't know what set of fixed registers might be used
-		 by the function.  It is certain that the stack pointer
-		 is among them, but be conservative.  */
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		/* A call may read and modify global register variables.  */
 		if (global_regs[i])
 		  {
 		    SET_REGNO_REG_SET (reg_pending_sets, i);
 		    SET_REGNO_REG_SET (reg_pending_uses, i);
 		  }
+		/* Other call-clobbered hard regs may be clobbered.  */
 		else if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
 		  SET_REGNO_REG_SET (reg_pending_clobbers, i);
+		/* We don't know what set of fixed registers might be used
+		   by the function, but it is certain that the stack pointer
+		   is among them, but be conservative.  */
 		else if (fixed_regs[i])
+		  SET_REGNO_REG_SET (reg_pending_uses, i);
+		/* The frame pointer is normally not used by the function
+		   itself, but by the debugger.  */
+		/* ??? MIPS o32 is an exception.  It uses the frame pointer
+		   in the macro expansion of jal but does not represent this
+		   fact in the call_insn rtl.  */
+		else if (i == FRAME_POINTER_REGNUM
+			 || (i == HARD_FRAME_POINTER_REGNUM
+			     && (! reload_completed || frame_pointer_needed)))
 		  SET_REGNO_REG_SET (reg_pending_uses, i);
 	    }
 

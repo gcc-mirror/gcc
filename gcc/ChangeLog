@@ -1,3 +1,7 @@
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
+	* sched-deps.c (sched_analyze): Make a call read the frame pointer.
+
 2002-01-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* expmed.c (emit_store_flag): Call protect_from_queue on op0 and op1.
