@@ -160,7 +160,7 @@ case $basic_machine in
 		;;
 	encore | umax | mmax)
 		basic_machine=ns32k-encore
-		os=-sysv
+		os=-bsd
 		;;
 	genix)
 		basic_machine=ns32k-ns
