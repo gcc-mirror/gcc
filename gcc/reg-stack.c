@@ -817,7 +817,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
   bzero (reg_used_as_output, sizeof (reg_used_as_output));
   for (i = 0; i < n_outputs; i++)
     if (STACK_REG_P (operands[i]))
-      if (reg_class_size[operand_class[i]] != 1)
+      if (reg_class_size[(int) operand_class[i]] != 1)
 	{
 	  error_for_asm
 	    (insn, "Output constraint %d must specify a single register", i);
