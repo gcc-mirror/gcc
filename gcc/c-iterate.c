@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "obstack.h"
 #include "rtl.h"
+#include "toplev.h"
 
 /*
 		KEEPING TRACK OF EXPANSIONS
