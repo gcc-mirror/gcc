@@ -1599,6 +1599,9 @@ constrain_operands (insn_code_num, strict)
      int strict;
 {
   char *constraints[MAX_RECOG_OPERANDS];
+  int matching_operands[MAX_RECOG_OPERANDS];
+  enum op_type {OP_IN, OP_OUT, OP_INOUT} op_types[MAX_RECOG_OPERANDS];
+  int earlyclobber[MAX_RECOG_OPERANDS];
   register int c;
   int noperands = insn_n_operands[insn_code_num];
 
@@ -1610,7 +1613,11 @@ constrain_operands (insn_code_num, strict)
     return 1;
 
   for (c = 0; c < noperands; c++)
-    constraints[c] = insn_operand_constraint[insn_code_num][c];
+    {
+      constraints[c] = insn_operand_constraint[insn_code_num][c];
+      matching_operands[c] = -1;
+      op_types[c] = OP_IN;
+    }
 
   which_alternative = 0;
 
@@ -1629,6 +1636,8 @@ constrain_operands (insn_code_num, strict)
 	  int win = 0;
 	  int val;
 
+	  earlyclobber[opno] = 0;
+
 	  if (GET_CODE (op) == SUBREG)
 	    {
 	      if (GET_CODE (SUBREG_REG (op)) == REG
@@ -1645,14 +1654,23 @@ constrain_operands (insn_code_num, strict)
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-	      case '+':
 	      case '?':
 	      case '#':
-	      case '&':
 	      case '!':
 	      case '*':
 	      case '%':
+		break;
+
+	      case '=':
+		op_types[opno] = OP_OUT;
+		break;
+
+	      case '+':
+		op_types[opno] = OP_INOUT;
+		break;
+
+	      case '&':
+		earlyclobber[opno] = 1;
 		break;
 
 	      case '0':
@@ -1673,6 +1691,9 @@ constrain_operands (insn_code_num, strict)
 		else
 		  val = operands_match_p (recog_operand[c - '0'],
 					  recog_operand[opno]);
+
+		matching_operands[opno] = c - '0';
+		matching_operands[c - '0'] = opno;
 
 		if (val != 0)
 		  win = 1;
@@ -1850,12 +1871,36 @@ constrain_operands (insn_code_num, strict)
 	 Change whichever operands this alternative says to change.  */
       if (! lose)
 	{
-	  while (--funny_match_index >= 0)
+	  int opno, eopno;
+
+	  /* See if any earlyclobber operand conflicts with some other
+	     operand.  */
+
+	  if (strict > 0)
+	    for (eopno = 0; eopno < noperands; eopno++)
+	      if (earlyclobber[eopno])
+		for (opno = 0; opno < noperands; opno++)
+		  if ((GET_CODE (recog_operand[opno]) == MEM
+		       || op_types[opno] != OP_OUT)
+		      && opno != eopno
+		      && constraints[opno] != 0
+		      && ! (matching_operands[opno] == eopno
+			    && rtx_equal_p (recog_operand[opno],
+					    recog_operand[eopno]))
+		      && ! safe_from_earlyclobber (recog_operand[opno],
+						   recog_operand[eopno]))
+		    lose = 1;
+
+	  if (! lose)
 	    {
-	      recog_operand[funny_match[funny_match_index].other]
-		= recog_operand[funny_match[funny_match_index].this];
+	      while (--funny_match_index >= 0)
+		{
+		  recog_operand[funny_match[funny_match_index].other]
+		    = recog_operand[funny_match[funny_match_index].this];
+		}
+
+	      return 1;
 	    }
-	  return 1;
 	}
 
       which_alternative++;
