@@ -45,7 +45,7 @@ stmp-float_h: libgcc.lib enquire.exe
 	touch stmp-float_h
 
 fixinc-nt.obj: $(srcdir)/config/winnt/fixinc-nt.c
-	cl -c -I. -I$(srcdir) -I$(srcdir)/include $(srcdir)/config/winnt/fixinc-nt.c
+	cl -c -I. -I$(srcdir) -I$(srcdir)/include -I$(srcdir)/config/winnt $(srcdir)/config/winnt/fixinc-nt.c
 
 fixinc-nt.exe: fixinc-nt.obj dirent.obj
 	cl fixinc-nt.obj dirent.obj libc.lib kernel32.lib
