@@ -6394,31 +6394,31 @@ to 64 bits.
 
 @item -mcmodel=medlow
 @opindex mcmodel=medlow
-Generate code for the Medium/Low code model: the program must be linked
-in the low 32 bits of the address space.  Pointers are 64 bits.
-Programs can be statically or dynamically linked.
+Generate code for the Medium/Low code model: 64-bit addresses, programs
+must be linked in the low 32 bits of memory.  Programs can be statically
+or dynamically linked.
 
 @item -mcmodel=medmid
 @opindex mcmodel=medmid
-Generate code for the Medium/Middle code model: the program must be linked
-in the low 44 bits of the address space, the text segment must be less than
-2G bytes, and data segment must be within 2G of the text segment.
-Pointers are 64 bits.
+Generate code for the Medium/Middle code model: 64-bit addresses, programs
+must be linked in the low 44 bits of memory, the text and data segments must
+be less than 2GB in size and the data segment must be located within 2GB of
+the text segment.
 
 @item -mcmodel=medany
 @opindex mcmodel=medany
-Generate code for the Medium/Anywhere code model: the program may be linked
-anywhere in the address space, the text segment must be less than
-2G bytes, and data segment must be within 2G of the text segment.
-Pointers are 64 bits.
+Generate code for the Medium/Anywhere code model: 64-bit addresses, programs
+may be linked anywhere in memory, the text and data segments must be less
+than 2GB in size and the data segment must be located within 2GB of the
+text segment.
 
 @item -mcmodel=embmedany
 @opindex mcmodel=embmedany
 Generate code for the Medium/Anywhere code model for embedded systems:
-assume a 32-bit text and a 32-bit data segment, both starting anywhere
-(determined at link time).  Register %g4 points to the base of the
-data segment.  Pointers are still 64 bits.
-Programs are statically linked, PIC is not supported.
+64-bit addresses, the text and data segments must be less than 2GB in
+size, both starting anywhere in memory (determined at link time).  The
+global register %g4 points to the base of the data segment.  Programs
+are statically linked and PIC is not supported.
 
 @item -mstack-bias
 @itemx -mno-stack-bias

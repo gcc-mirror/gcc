@@ -1,3 +1,10 @@
+2004-03-15  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* config/sparc/sparc.h: Rework comments about the code model
+	in 64-bit environment and the mode 'Pmode'.
+	* doc/invoke.texi (SPARC options): Rework description of the
+	different code models supported in 64-bit environment.
+
 2004-03-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/contrib.texi, doc/extend.texi, doc/gcov.texi,
