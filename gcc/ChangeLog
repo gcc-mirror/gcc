@@ -1,3 +1,30 @@
+2003-03-13  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (try_split): Handle 1-1 splits of call insns properly.
+
+	* config/ia64/ia64.c (TARGET_FUNCTION_OK_FOR_SIBCALL): New.
+	(ia64_gp_save_reg): Remove.
+	(struct ia64_frame_info): Move to the beginning of the file;
+	add reg_save_gp.
+	(ia64_expand_call): Rearrange for new call patterns.
+	(ia64_reload_gp): New.
+	(ia64_split_call): New.
+	(ia64_compute_frame_size): Allocate reg_save_gp.
+	(ia64_expand_prologue): Save reg_save_gp.
+	(ia64_expand_epilogue): Don't restore gp.
+	(ia64_hard_regno_rename_ok): Remove R4 hack.
+	(ia64_function_ok_for_sibcall): New.
+	(ia64_output_mi_thunk): Set reload_completed, no_new_pseudos; 
+	call try_split on sibcall pattern.
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.md (call_nogp, call_value_nogp, sibcall_nogp):
+	Rename from nopic versions.  Confiscate 2nd argument to call as
+	a marker.
+	(call_pic, call_value_pic, sibcall_pic): Remove.
+	(call_gp, call_value_gp, sibcall_gp): New.
+	(builtin_setjmp_setup): Remove.
+	(builtin_setjmp_receiver): Call ia64_reload_gp.
+
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c, 

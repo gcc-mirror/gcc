@@ -3375,6 +3375,8 @@ try_split (pat, trial, last)
   rtx tem;
   rtx note, seq;
   int probability;
+  rtx insn_last, insn;
+  int njumps = 0;
 
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
@@ -3393,172 +3395,147 @@ try_split (pat, trial, last)
       after = NEXT_INSN (after);
     }
 
-  if (seq)
+  if (!seq)
+    return trial;
+
+  /* Avoid infinite loop if any insn of the result matches
+     the original pattern.  */
+  insn_last = seq;
+  while (1)
     {
-      /* Sometimes there will be only one insn in that list, this case will
-	 normally arise only when we want it in turn to be split (SFmode on
-	 the 29k is an example).  */
-      if (NEXT_INSN (seq) != NULL_RTX)
+      if (INSN_P (insn_last)
+	  && rtx_equal_p (PATTERN (insn_last), pat))
+	return trial;
+      if (!NEXT_INSN (insn_last))
+	break;
+      insn_last = NEXT_INSN (insn_last);
+    }
+
+  /* Mark labels.  */
+  for (insn = insn_last; insn ; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) == JUMP_INSN)
 	{
-	  rtx insn_last, insn;
-	  int njumps = 0;
-
-	  /* Avoid infinite loop if any insn of the result matches
-	     the original pattern.  */
-	  insn_last = seq;
-	  while (1)
+	  mark_jump_label (PATTERN (insn), insn, 0);
+	  njumps++;
+	  if (probability != -1
+	      && any_condjump_p (insn)
+	      && !find_reg_note (insn, REG_BR_PROB, 0))
 	    {
-	      if (INSN_P (insn_last)
-		  && rtx_equal_p (PATTERN (insn_last), pat))
-		return trial;
-	      if (NEXT_INSN (insn_last) == NULL_RTX)
-		break;
-	      insn_last = NEXT_INSN (insn_last);
+	      /* We can preserve the REG_BR_PROB notes only if exactly
+		 one jump is created, otherwise the machine description
+		 is responsible for this step using
+		 split_branch_probability variable.  */
+	      if (njumps != 1)
+		abort ();
+	      REG_NOTES (insn)
+		= gen_rtx_EXPR_LIST (REG_BR_PROB,
+				     GEN_INT (probability),
+				     REG_NOTES (insn));
 	    }
+	}
+    }
 
-	  /* Mark labels.  */
+  /* If we are splitting a CALL_INSN, look for the CALL_INSN
+     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
+  if (GET_CODE (trial) == CALL_INSN)
+    {
+      for (insn = insn_last; insn ; insn = PREV_INSN (insn))
+	if (GET_CODE (insn) == CALL_INSN)
+	  {
+	    CALL_INSN_FUNCTION_USAGE (insn)
+	      = CALL_INSN_FUNCTION_USAGE (trial);
+	    SIBLING_CALL_P (insn) = SIBLING_CALL_P (trial);
+	  }
+    }
+
+  /* Copy notes, particularly those related to the CFG.  */
+  for (note = REG_NOTES (trial); note; note = XEXP (note, 1))
+    {
+      switch (REG_NOTE_KIND (note))
+	{
+	case REG_EH_REGION:
+	  insn = insn_last;
+	  while (insn != NULL_RTX)
+	    {
+	      if (GET_CODE (insn) == CALL_INSN
+		  || (flag_non_call_exceptions
+		      && may_trap_p (PATTERN (insn))))
+		REG_NOTES (insn)
+		  = gen_rtx_EXPR_LIST (REG_EH_REGION,
+				       XEXP (note, 0),
+				       REG_NOTES (insn));
+	      insn = PREV_INSN (insn);
+	    }
+	  break;
+
+	case REG_NORETURN:
+	case REG_SETJMP:
+	case REG_ALWAYS_RETURN:
+	  insn = insn_last;
+	  while (insn != NULL_RTX)
+	    {
+	      if (GET_CODE (insn) == CALL_INSN)
+		REG_NOTES (insn)
+		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
+				       XEXP (note, 0),
+				       REG_NOTES (insn));
+	      insn = PREV_INSN (insn);
+	    }
+	  break;
+
+	case REG_NON_LOCAL_GOTO:
 	  insn = insn_last;
 	  while (insn != NULL_RTX)
 	    {
 	      if (GET_CODE (insn) == JUMP_INSN)
-		{
-		  mark_jump_label (PATTERN (insn), insn, 0);
-		  njumps++;
-		  if (probability != -1
-		      && any_condjump_p (insn)
-		      && !find_reg_note (insn, REG_BR_PROB, 0))
-		    {
-		      /* We can preserve the REG_BR_PROB notes only if exactly
-			 one jump is created, otherwise the machine description
-			 is responsible for this step using
-			 split_branch_probability variable.  */
-		      if (njumps != 1)
-			abort ();
-		      REG_NOTES (insn)
-			= gen_rtx_EXPR_LIST (REG_BR_PROB,
-					     GEN_INT (probability),
-					     REG_NOTES (insn));
-		    }
-		}
-
+		REG_NOTES (insn)
+		  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
+				       XEXP (note, 0),
+				       REG_NOTES (insn));
 	      insn = PREV_INSN (insn);
 	    }
+	  break;
 
-	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
-	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
-	  if (GET_CODE (trial) == CALL_INSN)
-	    {
-	      insn = insn_last;
-	      while (insn != NULL_RTX)
-		{
-		  if (GET_CODE (insn) == CALL_INSN)
-		    CALL_INSN_FUNCTION_USAGE (insn)
-		      = CALL_INSN_FUNCTION_USAGE (trial);
-
-		  insn = PREV_INSN (insn);
-		}
-	    }
-
-	  /* Copy notes, particularly those related to the CFG.  */
-	  for (note = REG_NOTES (trial); note; note = XEXP (note, 1))
-	    {
-	      switch (REG_NOTE_KIND (note))
-		{
-		case REG_EH_REGION:
-		  insn = insn_last;
-		  while (insn != NULL_RTX)
-		    {
-		      if (GET_CODE (insn) == CALL_INSN
-			  || (flag_non_call_exceptions
-			      && may_trap_p (PATTERN (insn))))
-			REG_NOTES (insn)
-			  = gen_rtx_EXPR_LIST (REG_EH_REGION,
-					       XEXP (note, 0),
-					       REG_NOTES (insn));
-		      insn = PREV_INSN (insn);
-		    }
-		  break;
-
-		case REG_NORETURN:
-		case REG_SETJMP:
-		case REG_ALWAYS_RETURN:
-		  insn = insn_last;
-		  while (insn != NULL_RTX)
-		    {
-		      if (GET_CODE (insn) == CALL_INSN)
-			REG_NOTES (insn)
-			  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
-					       XEXP (note, 0),
-					       REG_NOTES (insn));
-		      insn = PREV_INSN (insn);
-		    }
-		  break;
-
-		case REG_NON_LOCAL_GOTO:
-		  insn = insn_last;
-		  while (insn != NULL_RTX)
-		    {
-		      if (GET_CODE (insn) == JUMP_INSN)
-			REG_NOTES (insn)
-			  = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
-					       XEXP (note, 0),
-					       REG_NOTES (insn));
-		      insn = PREV_INSN (insn);
-		    }
-		  break;
-
-		default:
-		  break;
-		}
-	    }
-
-	  /* If there are LABELS inside the split insns increment the
-	     usage count so we don't delete the label.  */
-	  if (GET_CODE (trial) == INSN)
-	    {
-	      insn = insn_last;
-	      while (insn != NULL_RTX)
-		{
-		  if (GET_CODE (insn) == INSN)
-		    mark_label_nuses (PATTERN (insn));
-
-		  insn = PREV_INSN (insn);
-		}
-	    }
-
-	  tem = emit_insn_after_scope (seq, trial, INSN_SCOPE (trial));
-
-	  delete_insn (trial);
-	  if (has_barrier)
-	    emit_barrier_after (tem);
-
-	  /* Recursively call try_split for each new insn created; by the
-	     time control returns here that insn will be fully split, so
-	     set LAST and continue from the insn after the one returned.
-	     We can't use next_active_insn here since AFTER may be a note.
-	     Ignore deleted insns, which can be occur if not optimizing.  */
-	  for (tem = NEXT_INSN (before); tem != after; tem = NEXT_INSN (tem))
-	    if (! INSN_DELETED_P (tem) && INSN_P (tem))
-	      tem = try_split (PATTERN (tem), tem, 1);
+	default:
+	  break;
 	}
-      /* Avoid infinite loop if the result matches the original pattern.  */
-      else if (rtx_equal_p (PATTERN (seq), pat))
-	return trial;
-      else
-	{
-	  PATTERN (trial) = PATTERN (seq);
-	  INSN_CODE (trial) = -1;
-	  try_split (PATTERN (trial), trial, last);
-	}
-
-      /* Return either the first or the last insn, depending on which was
-	 requested.  */
-      return last
-		? (after ? PREV_INSN (after) : last_insn)
-		: NEXT_INSN (before);
     }
 
-  return trial;
+  /* If there are LABELS inside the split insns increment the
+     usage count so we don't delete the label.  */
+  if (GET_CODE (trial) == INSN)
+    {
+      insn = insn_last;
+      while (insn != NULL_RTX)
+	{
+	  if (GET_CODE (insn) == INSN)
+	    mark_label_nuses (PATTERN (insn));
+
+	  insn = PREV_INSN (insn);
+	}
+    }
+
+  tem = emit_insn_after_scope (seq, trial, INSN_SCOPE (trial));
+
+  delete_insn (trial);
+  if (has_barrier)
+    emit_barrier_after (tem);
+
+  /* Recursively call try_split for each new insn created; by the
+     time control returns here that insn will be fully split, so
+     set LAST and continue from the insn after the one returned.
+     We can't use next_active_insn here since AFTER may be a note.
+     Ignore deleted insns, which can be occur if not optimizing.  */
+  for (tem = NEXT_INSN (before); tem != after; tem = NEXT_INSN (tem))
+    if (! INSN_DELETED_P (tem) && INSN_P (tem))
+      tem = try_split (PATTERN (tem), tem, 1);
+
+  /* Return either the first or the last insn, depending on which was
+     requested.  */
+  return last
+    ? (after ? PREV_INSN (after) : last_insn)
+    : NEXT_INSN (before);
 }
 
 /* Make and return an INSN rtx, initializing all its slots.
