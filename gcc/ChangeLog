@@ -1,3 +1,8 @@
+Thu Jun 25 12:47:41 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* fold-const.c (make_range): Don't go looking at TREE_OPERANDs of
+	nodes that are not expressions.
+
 Thu Jun 25 15:08:16 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* invoke.texi (-fstrict-aliasing): Document.
