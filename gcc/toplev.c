@@ -907,6 +907,7 @@ char *lang_options[] =
   "-lang-c++",
   "-nostdinc",
   "-nostdinc++",
+  "-trigraphs",
   "-undef",
   "-remap",
 
