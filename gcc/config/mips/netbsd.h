@@ -214,6 +214,8 @@ do {                                                                         \
     fprintf (asm_out_text_file, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
   else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))                    \
     fprintf (F, "\t.section %s,\"a\",@progbits\n", (NAME));                  \
+  else if (! strcmp (NAME, ".bss"))                         	             \
+    fprintf (F, "\t.section %s,\"aw\",@nobits\n", (NAME));      	     \
   else                                                                       \
     fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));                 \
 } while (0)
