@@ -10,7 +10,7 @@ struct a {
 	void bar( double );
 	void bar( float );
 
-	void foo( void (a::*member)(float) );
+  void foo( void (a::*member)(float) ); // ERROR - candidate
 };
 
 a::a()
