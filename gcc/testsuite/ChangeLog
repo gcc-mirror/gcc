@@ -1,3 +1,16 @@
+2004-06-08  David Edelsohn  <edelsohn@gnu.org>
+
+        * g++.dg/ext/altivec-1.C: Correct dg syntax.
+        * g++.dg/ext/altivec-10.C: Same.
+        * g++.dg/ext/altivec-2.C: Same.
+        * g++.dg/ext/altivec-3.C: Same.
+        * g++.dg/ext/altivec-4.C: Same.
+        * g++.dg/ext/altivec-5.C: Same.
+        * g++.dg/ext/altivec-6.C: Same.
+        * g++.dg/ext/altivec-7.C: Same.
+        * g++.dg/ext/altivec-8.C: Same.
+        * g++.dg/ext/altivec-9.C: Same.
+
 2004-06-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/7841
