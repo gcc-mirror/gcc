@@ -1,6 +1,6 @@
 // FileDescriptor.java - Open file or device
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -101,4 +101,6 @@ public final class FileDescriptor
   // we want to make sure this has the value -1.  This is the most
   // efficient way to accomplish that.
   private int fd = -1;
+
+  private long position = 0;
 }

@@ -1,5 +1,14 @@
 2003-01-03  Mark Wielaard  <mark@klomp.org>
 
+	* java/io/FileDescriptor.java (position): New private field.
+	* java/io/natFileDescriptorPosix.cc (write): Up position.
+	(setLength): Use and set position.
+	(seek): Set position.
+	(getFilePointer): Return position.
+	(read): Up position.
+
+2003-01-03  Mark Wielaard  <mark@klomp.org>
+
 	Merge with Classpath:
 	* java/io/ObjectStreamClass.java (lookup): Split method and call
 	lookupForClassObject().
