@@ -100,6 +100,8 @@ extern void expand_df_binop PARAMS ((rtx (*)(rtx, rtx, rtx, rtx), rtx *));
 extern void expand_fp_branch PARAMS ((rtx (*)(void), rtx (*)(void)));
 extern int sh_insn_length_adjustment PARAMS ((rtx));
 extern int sh_can_redirect_branch PARAMS ((rtx, rtx));
+extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
+extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 #ifdef TREE_CODE
 extern void sh_va_start PARAMS ((tree, rtx));
 extern rtx sh_va_arg PARAMS ((tree, tree));
@@ -117,8 +119,6 @@ extern void output_file_start PARAMS ((FILE *));
 extern int sh_media_register_for_return PARAMS ((void));
 extern void sh_expand_prologue PARAMS ((void));
 extern void sh_expand_epilogue PARAMS ((void));
-extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
-extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
 extern int sh_need_epilogue PARAMS ((void));
 extern int initial_elimination_offset PARAMS ((int, int));
 extern int fldi_ok PARAMS ((void));

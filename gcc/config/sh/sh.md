@@ -857,8 +857,8 @@
 
 (define_split
   [(set (reg:SI T_REG)
-	(eq:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
-	       (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
+	(eq:SI (match_operand:DI 0 "arith_reg_operand" "")
+	       (match_operand:DI 1 "arith_reg_or_0_operand" "")))]
 ;; If we applied this split when not optimizing, it would only be
 ;; applied during the machine-dependent reorg, when no new basic blocks
 ;; may be created.
@@ -1142,9 +1142,9 @@
   [(set_attr "length" "6")])
 
 (define_split
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
-		 (match_operand:DI 2 "arith_reg_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(plus:DI (match_operand:DI 1 "arith_reg_operand" "")
+		 (match_operand:DI 2 "arith_reg_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
@@ -1253,9 +1253,9 @@
   [(set_attr "length" "6")])
 
 (define_split
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
-		  (match_operand:DI 2 "arith_reg_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(minus:DI (match_operand:DI 1 "arith_reg_operand" "")
+		  (match_operand:DI 2 "arith_reg_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && reload_completed"
   [(const_int 0)]
@@ -1350,12 +1350,12 @@
 
 ;; The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
 ;; also has an effect on the register that holds the address of the sfunc.
-;; To make this work, we have an extra dummy insns that shows the use
+;; To make this work, we have an extra dummy insn that shows the use
 ;; of this register for reorg.
 
 (define_insn "use_sfunc_addr"
   [(set (reg:SI PR_REG)
-	(unspec [(match_operand:SI 0 "register_operand" "r")] UNSPEC_SFUNC))]
+	(unspec:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_SFUNC))]
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")])
@@ -2378,7 +2378,7 @@
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "n")))
+		   (match_operand:SI 2 "const_int_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && reload_completed"
   [(use (reg:SI R0_REG))]
@@ -2441,7 +2441,7 @@
 (define_split
   [(set (match_operand:HI 0 "arith_reg_operand" "")
 	(ashift:HI (match_operand:HI 1 "arith_reg_operand" "")
-		   (match_operand:HI 2 "const_int_operand" "n")))
+		   (match_operand:HI 2 "const_int_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && reload_completed"
   [(use (reg:SI R0_REG))]
@@ -2482,8 +2482,8 @@
   [(set_attr "length" "4")])
 
 (define_split
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
 		     (const_int 16)))]
   "TARGET_SH1"
   [(set (match_dup 0) (rotate:SI (match_dup 1) (const_int 16)))
@@ -2502,8 +2502,8 @@
   [(set_attr "length" "4")])
 
 (define_split
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
 		     (const_int 31)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
@@ -2628,7 +2628,7 @@
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
-		     (match_operand:SI 2 "const_int_operand" "n")))
+		     (match_operand:SI 2 "const_int_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && reload_completed"
   [(use (reg:SI R0_REG))]
@@ -2803,8 +2803,8 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
-			   (match_operand:SI 2 "const_int_operand" "n"))
-		(match_operand:SI 3 "const_int_operand" "n")))]
+			   (match_operand:SI 2 "const_int_operand" ""))
+		(match_operand:SI 3 "const_int_operand" "")))]
   "TARGET_SH1 && (unsigned)INTVAL (operands[2]) < 32"
   [(use (reg:SI R0_REG))]
   "if (gen_shl_and (operands[0], operands[2], operands[3], operands[1])) FAIL;
@@ -2813,8 +2813,8 @@
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
 	(and:SI (ashift:SI (match_operand:SI 1 "register_operand" "")
-			   (match_operand:SI 2 "const_int_operand" "n"))
-		(match_operand:SI 3 "const_int_operand" "n")))
+			   (match_operand:SI 2 "const_int_operand" ""))
+		(match_operand:SI 3 "const_int_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1 && (unsigned)INTVAL (operands[2]) < 32"
   [(use (reg:SI R0_REG))]
@@ -2895,15 +2895,15 @@
    (set_attr "type" "arith")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r,&r")
+  [(set (match_operand:SI 0 "register_operand" "")
 	(lshiftrt:SI
 	 (ashift:SI
 	  (and:SI
-	   (lshiftrt:SI (match_operand:SI 1 "register_operand" "r,0")
-			(match_operand:SI 2 "const_int_operand" "N,n"))
-	   (match_operand:SI 3 "register_operand" "0,r"))
-	  (match_operand:SI 4 "const_int_operand" "n,n"))
-	 (match_operand:SI 5 "const_int_operand" "n,n")))
+	   (lshiftrt:SI (match_operand:SI 1 "register_operand" "")
+			(match_operand:SI 2 "const_int_operand" ""))
+	   (match_operand:SI 3 "register_operand" ""))
+	  (match_operand:SI 4 "const_int_operand" ""))
+	 (match_operand:SI 5 "const_int_operand" "")))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
   [(use (reg:SI R0_REG))]
@@ -2928,11 +2928,11 @@
 
 ;; signed left/right shift combination.
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "")
         (sign_extract:SI
-	 (ashift:SI (match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "const_int_operand" "n"))
-	 (match_operand:SI 3 "const_int_operand" "n")
+	 (ashift:SI (match_operand:SI 1 "register_operand" "")
+		    (match_operand:SI 2 "const_int_operand" ""))
+	 (match_operand:SI 3 "const_int_operand" "")
 	 (const_int 0)))
    (clobber (reg:SI T_REG))]
   "TARGET_SH1"
@@ -3107,8 +3107,8 @@
   [(set_attr "type" "*,load_media")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:HI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:DI (match_operand:HI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:DI (subreg:DI (match_dup 1) 0) (const_int 48)))
    (set (match_dup 0) (lshiftrt:DI (match_dup 0) (const_int 48)))]
@@ -3121,7 +3121,7 @@
 ;; ??? when a truncated input to a zero_extrend is reloaded, reload will
 ;; reload the entrire truncate expression.
 (define_insn_and_split "*loaddi_trunc"
-  [(set (match_operand 0 "register_operand" "=r")
+  [(set (match_operand 0 "int_gpr_dest" "=r")
 	(truncate (match_operand:DI 1 "memory_operand" "m")))]
   "TARGET_SHMEDIA && reload_completed"
   "#"
@@ -3166,8 +3166,8 @@
   [(set_attr "type" "arith_media,load_media")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:HI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI (match_operand:HI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:SI (subreg:SI (match_dup 1) 0) (const_int 16)))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 16)))]
@@ -3239,8 +3239,8 @@
   [(set_attr "type" "*,load_media")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:HI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:HI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:DI (subreg:DI (match_dup 1) 0) (const_int 48)))
    (set (match_dup 0) (ashiftrt:DI (match_dup 0) (const_int 48)))]
@@ -3260,8 +3260,8 @@
   [(set_attr "type" "*,load_media")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:QI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI (match_operand:QI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:DI (subreg:DI (match_dup 1) 0) (const_int 56)))
    (set (match_dup 0) (ashiftrt:DI (match_dup 0) (const_int 56)))]
@@ -3297,8 +3297,8 @@
   [(set_attr "type" "arith_media,load_media")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extend:SI (match_operand:HI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:SI (subreg:SI (match_dup 1) 0) (const_int 16)))
    (set (match_dup 0) (ashiftrt:SI (match_dup 0) (const_int 16)))]
@@ -3334,8 +3334,8 @@
   [(set_attr "type" "arith_media,load_media")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "extend_reg_operand" "r")))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(sign_extend:SI (match_operand:QI 1 "extend_reg_operand" "")))]
   "TARGET_SHMEDIA && reload_completed"
   [(set (match_dup 0) (ashift:SI (subreg:SI (match_dup 1) 0) (const_int 24)))
    (set (match_dup 0) (ashiftrt:SI (match_dup 0) (const_int 24)))]
@@ -3601,8 +3601,8 @@
    (set_attr "length" "4,4,8,4,4,4,4,12")])
 
 (define_split
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(match_operand:SI 1 "immediate_operand" "s"))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(match_operand:SI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   [(set (subreg:DI (match_dup 0) 0) (match_dup 2))]
@@ -3613,8 +3613,8 @@
 }")
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "immediate_operand" "n"))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && ((GET_CODE (operands[1]) == CONST_INT
 	&& ! CONST_OK_FOR_J (INTVAL (operands[1])))
@@ -3799,8 +3799,8 @@
   [(set_attr "type" "arith_media,arith_media,*,load_media,store_media")])
 
 (define_split
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(match_operand:HI 1 "immediate_operand" "n"))]
+  [(set (match_operand:HI 0 "register_operand" "")
+	(match_operand:HI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && ! CONST_OK_FOR_J (INTVAL (operands[1]))"
   [(set (subreg:DI (match_dup 0) 0) (match_dup 1))])
@@ -3932,8 +3932,8 @@
    (set_attr "length" "4,4,16,4,4,4,4,*")])
 
 (define_split
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(match_operand:DI 1 "immediate_operand" "s"))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(match_operand:DI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && MOVI_SHORI_BASE_OPERAND_P (operands[1])"
   [(set (match_dup 0) (match_dup 1))]
@@ -4040,8 +4040,8 @@
   "")
 
 (define_split
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(match_operand:DI 1 "immediate_operand" "i"))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(match_operand:DI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && GET_CODE (operands[1]) == CONST_INT
    && ! CONST_OK_FOR_J (INTVAL (operands[1]))"
@@ -4138,8 +4138,8 @@
 }")
 
 (define_split
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(match_operand:DI 1 "immediate_operand" "F"))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(match_operand:DI 1 "immediate_operand" ""))]
   "TARGET_SHMEDIA && reload_completed
    && GET_CODE (operands[1]) == CONST_DOUBLE"
   [(set (match_dup 0) (match_dup 2))
@@ -4326,7 +4326,7 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 "=X"))]
   "TARGET_SH4 && reload_completed
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
@@ -4365,8 +4365,8 @@
 (define_split
   [(set (match_operand:DF 0 "general_movdst_operand" "")
 	(match_operand:DF 1 "general_movsrc_operand"  ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (match_scratch:SI 3 "X"))]
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH4
    && reload_completed
    && true_regnum (operands[0]) < 16
@@ -4438,7 +4438,7 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand"  ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (reg:SI R0_REG))]
   "TARGET_SH4 && reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
@@ -4476,7 +4476,7 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
@@ -4495,8 +4495,8 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(mem:DF (match_operand:SI 1 "register_operand" "")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (match_scratch:SI 3 "X"))]
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
@@ -4521,8 +4521,8 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
 	(match_operand:DF 1 "memory_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (match_scratch:SI 3 "X"))]
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))"
   [(const_int 0)]
@@ -4562,8 +4562,8 @@
 (define_split
   [(set (match_operand:DF 0 "memory_operand" "")
 	(match_operand:DF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (match_scratch:SI 3 "X"))]
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
+   (clobber (match_scratch:SI 3 ""))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
    && FP_OR_XD_REGISTER_P (true_regnum (operands[1]))"
   [(const_int 0)]
@@ -5022,7 +5022,7 @@
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
 	(match_operand:SF 1 "register_operand" ""))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
+   (use (match_operand:PSI 2 "fpscr_operand" ""))
    (clobber (reg:SI FPUL_REG))]
   "TARGET_SH1"
   [(parallel [(set (reg:SF FPUL_REG) (match_dup 1))
@@ -5057,7 +5057,7 @@
 }")
 
 (define_insn "mov_nop"
-  [(set (match_operand 0 "register_operand" "") (match_dup 0))]
+  [(set (match_operand 0 "any_register_operand" "") (match_dup 0))]
   "TARGET_SH3E"
   ""
   [(set_attr "length" "0")
@@ -5138,8 +5138,8 @@
 ;; This one has the additional purpose to record a possible scratch register
 ;; for the following branch.
 (define_insn "indirect_jump_scratch"
-  [(set (match_operand 0 "register_operand" "=r")
-	(unspec [(match_operand 1 "const_int_operand" "")] UNSPEC_BBR))]
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI [(match_operand 1 "const_int_operand" "")] UNSPEC_BBR))]
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")])
@@ -6210,7 +6210,7 @@
   [(call (mem:SI (match_operand:SI 0 "register_operand" "k,k"))
 	 (match_operand 1 "" ""))
    (return)
-   (use (match_operand 2 "register_operand" "z,x"))
+   (use (match_operand:SI 2 "register_operand" "z,x"))
    (use (reg:SI R1_REG))
    (use (reg:PSI FPSCR_REG))
    ;; We want to make sure the `x' above will only match MACH_REG
@@ -6633,7 +6633,7 @@
 
 (define_insn "mova"
   [(set (reg:SI R0_REG)
-	(unspec [(label_ref (match_operand 0 "" ""))] UNSPEC_MOVA))]
+	(unspec:SI [(label_ref (match_operand 0 "" ""))] UNSPEC_MOVA))]
   "TARGET_SH1"
   "mova	%O0,r0"
   [(set_attr "in_delay_slot" "no")
@@ -6642,7 +6642,7 @@
 ;; machine_dependent_reorg() will make this a `mova'.
 (define_insn "mova_const"
   [(set (reg:SI R0_REG)
-	(unspec [(match_operand 0 "immediate_operand" "i")] UNSPEC_MOVA))]
+	(unspec:SI [(match_operand 0 "immediate_operand" "i")] UNSPEC_MOVA))]
   "TARGET_SH1"
   "#"
   [(set_attr "in_delay_slot" "no")
@@ -6650,8 +6650,8 @@
 
 (define_expand "GOTaddr2picreg"
   [(set (reg:SI R0_REG)
-	(unspec [(const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC))]
-		UNSPEC_MOVA))
+	(unspec:SI [(const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC))]
+		   UNSPEC_MOVA))
    (set (match_dup 0) (const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC)))
    (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
   "" "
@@ -6728,8 +6728,8 @@
    (set_attr "length" "*")])
 
 (define_insn "ptrel"
-  [(set (match_operand:DI 0 "target_reg_operand" "=bk")
-	(plus (match_operand:DI 1 "register_operand" "r")
+  [(set (match_operand:DI 0 "target_reg_operand" "=b")
+	(plus:DI (match_operand:DI 1 "register_operand" "r")
 	      (pc)))
    (match_operand:DI 2 "" "")]
   "TARGET_SHMEDIA"
@@ -6979,7 +6979,7 @@
 
 (define_insn "casesi_worker_0"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI [(match_operand 1 "register_operand" "0,r")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "0,r")
 		 (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 "=X,1"))
    (clobber (match_scratch:SI 4 "=&z,z"))]
@@ -6988,37 +6988,38 @@
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
-	(unspec [(match_operand 1 "register_operand" "")
-		 (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
+	(unspec:SI [(match_operand:SI 1 "register_operand" "")
+		    (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 ""))
    (clobber (match_scratch:SI 4 ""))]
   "TARGET_SH1 && ! TARGET_SH2 && reload_completed"
-  [(set (reg:SI R0_REG) (unspec [(label_ref (match_dup 2))] UNSPEC_MOVA))
+  [(set (reg:SI R0_REG) (unspec:SI [(label_ref (match_dup 2))] UNSPEC_MOVA))
    (parallel [(set (match_dup 0)
-	      (unspec [(reg:SI R0_REG) (match_dup 1)
-		       (label_ref (match_dup 2))] UNSPEC_CASESI))
+	      (unspec:SI [(reg:SI R0_REG) (match_dup 1)
+			  (label_ref (match_dup 2))] UNSPEC_CASESI))
 	      (clobber (match_dup 3))])
    (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
   "if (GET_CODE (operands[2]) == CODE_LABEL) LABEL_NUSES (operands[2])++;")
 
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
-	(unspec:SI [(match_operand 1 "register_operand" "")
-		 (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
+	(unspec:SI [(match_operand:SI 1 "register_operand" "")
+		    (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 ""))
    (clobber (match_scratch:SI 4 ""))]
   "TARGET_SH2 && reload_completed"
-  [(set (reg:SI R0_REG) (unspec [(label_ref (match_dup 2))] UNSPEC_MOVA))
+  [(set (reg:SI R0_REG) (unspec:SI [(label_ref (match_dup 2))] UNSPEC_MOVA))
    (parallel [(set (match_dup 0)
 	      (unspec:SI [(reg:SI R0_REG) (match_dup 1)
-		       (label_ref (match_dup 2))] UNSPEC_CASESI))
+			  (label_ref (match_dup 2))] UNSPEC_CASESI))
 	      (clobber (match_dup 3))])]
   "if (GET_CODE (operands[2]) == CODE_LABEL) LABEL_NUSES (operands[2])++;")
 
 (define_insn "*casesi_worker"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec [(reg:SI R0_REG) (match_operand 1 "register_operand" "0,r")
-		 (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
+	(unspec:SI [(reg:SI R0_REG)
+		    (match_operand:SI 1 "register_operand" "0,r")
+		    (label_ref (match_operand 2 "" ""))] UNSPEC_CASESI))
    (clobber (match_scratch:SI 3 "=X,1"))]
   "TARGET_SH1"
   "*
@@ -7192,23 +7193,23 @@
 }")
 
 (define_insn "shcompact_preserve_incoming_args"
-  [(set (match_operand 0 "register_operand" "+r")
-	(unspec [(match_dup 0)] UNSPEC_COMPACT_ARGS))]
+  [(set (match_operand:SI 0 "register_operand" "+r")
+	(unspec:SI [(match_dup 0)] UNSPEC_COMPACT_ARGS))]
   "TARGET_SHCOMPACT"
   ""
   [(set_attr "length" "0")])
 
 (define_insn "shcompact_incoming_args"
-  [(set (reg:SI R2_REG) (unspec [(reg:SI R2_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R3_REG) (unspec [(reg:SI R3_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R4_REG) (unspec [(reg:SI R4_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R5_REG) (unspec [(reg:SI R5_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R6_REG) (unspec [(reg:SI R6_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R7_REG) (unspec [(reg:SI R7_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R8_REG) (unspec [(reg:SI R8_REG)] UNSPEC_COMPACT_ARGS))
-   (set (reg:SI R9_REG) (unspec [(reg:SI R9_REG)] UNSPEC_COMPACT_ARGS))
+  [(set (reg:SI R2_REG) (unspec:SI [(reg:SI R2_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R3_REG) (unspec:SI [(reg:SI R3_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R4_REG) (unspec:SI [(reg:SI R4_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R5_REG) (unspec:SI [(reg:SI R5_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R6_REG) (unspec:SI [(reg:SI R6_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R7_REG) (unspec:SI [(reg:SI R7_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R8_REG) (unspec:SI [(reg:SI R8_REG)] UNSPEC_COMPACT_ARGS))
+   (set (reg:SI R9_REG) (unspec:SI [(reg:SI R9_REG)] UNSPEC_COMPACT_ARGS))
    (set (mem:BLK (reg:SI MACL_REG))
-	(unspec [(reg:SI MACH_REG)] UNSPEC_COMPACT_ARGS))
+	(unspec:BLK [(reg:SI MACH_REG)] UNSPEC_COMPACT_ARGS))
    (use (reg:SI R0_REG))
    (clobber (reg:SI R0_REG))
    (clobber (reg:SI MACL_REG))
@@ -9898,7 +9899,7 @@
 (define_insn "mperm_w0"
   [(set (match_operand:V4HI 0 "arith_reg_dest" "=r")
 	(vec_duplicate:V4HI (truncate:HI (match_operand 1
-					  "extend_reg_operand" "r"))))]
+					  "trunc_hi_operand" "r"))))]
   "TARGET_SHMEDIA"
   "mperm.w	%1, r63, %0"
   [(set_attr "type" "arith_media")])

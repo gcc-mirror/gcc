@@ -3828,7 +3828,7 @@ machine_dependent_reorg (first)
 		    {
 		      lab = add_constant (XVECEXP (src, 0, 0), mode, 0);
 		      newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
-		      newsrc = gen_rtx_UNSPEC (VOIDmode,
+		      newsrc = gen_rtx_UNSPEC (SImode,
 					       gen_rtvec (1, newsrc),
 					       UNSPEC_MOVA);
 		    }
@@ -5870,6 +5870,21 @@ arith_reg_dest (op, mode)
 }
 
 int
+int_gpr_dest (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum machine_mode op_mode = GET_MODE (op);
+
+  if (GET_MODE_CLASS (op_mode) != MODE_INT
+      || GET_MODE_SIZE (op_mode) >= UNITS_PER_WORD)
+    return 0;
+  if (! reload_completed)
+    return 0;
+  return true_regnum (op) <= LAST_GENERAL_REG;
+}
+
+int
 fp_arith_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -6256,6 +6271,19 @@ extend_reg_operand (op, mode)
   return (GET_CODE (op) == TRUNCATE
 	  ? arith_operand
 	  : arith_reg_operand) (op, mode);
+}
+
+int
+trunc_hi_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  enum machine_mode op_mode = GET_MODE (op);
+
+  if (op_mode != SImode && op_mode != DImode
+      && op_mode != V4HImode && op_mode != V2SImode)
+    return 0;
+  return extend_reg_operand (op, mode);
 }
 
 int

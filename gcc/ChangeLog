@@ -1,3 +1,29 @@
+Thu Jul 18 19:39:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh-protos.h (sh_expand_unop_v2sf): Move inside #ifdef RTX_CODE guard.
+	(sh_expand_binop_v2sf): Likewise.
+	* sh.c (machine_dependent_reorg): Add move for UNSPEC_MOVA.
+	(int_gpr_dest, trunc_hi_operand): New functions.
+	* sh.h (PREDICATE_CODES): Add any_register_operand, int_gpr_dest and
+	trunc_hi_operand.
+	(SPECIAL_MODE_PREDICATES, any_register_operand): Define.
+	* sh.md (cmpeqdi_t+1): Remove comments that genrecog warns about.
+	(adddi3_compact+1, subdi3_compact+1, ashlsi3_n+1, ashlhi3+1): Likewise.
+	(ashrsi2_16+1, ashrsi2_31+1, lshrsi3_n+1, ashrdi3+[12]): Likewise.
+	(and_shl_scratch+[12], zero_extendhidi2+1): Likewise.
+	(zero_extendhisi2_media+1, extendhidi2+1, extendqidi2+1): Likewise.
+	(extendhisi2_media+1, extendqisi2_media+1): Likewise.
+	(movsi_media_nofpu+[12], movhi_media+1, movdi_media_nofpu+1): Likewise.
+	(movdi_const_16bit+[12], movdf_i4+[123], reload_outdf+[2-5]): Likewise.
+	(movsf_ie+1): Likewise.
+	(loaddi_trunc): Use int_gpr_dest predicate.
+	(use_sfunc_addr, indirect_jump_scratch, sibcall_compact): Add mode(s).
+	(mova, mova_const, GOTaddr2picreg, ptrel, casesi_worker_0): Likewise.
+	(casesi_worker_0+[12], casesi_worker): Likewise.
+	(shcompact_preserve_incoming_args): Likewise.
+	(mov_nop): Use any_register_operand predicate.
+	(mperm_w0): Use trunc_hi_operand predicate.
+
 2002-07-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (DWARF2_UNWIND_INFO): Delete define.
