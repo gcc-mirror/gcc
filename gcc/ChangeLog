@@ -1,3 +1,10 @@
+2000-10-31  Neil Booth  <neilb@earthling.net>
+
+	* cppmacro.c (STDC_0_IN_SYSTEM_HEADERS): Define to 0 if
+	undefined.  Remove #ifdef check.
+	* config/i386/sol2.h, config/rs6000/sol2.h, config/sparc/sol2.h:
+	Define STDC_0_IN_SYSTEM_HEADERS to 1.
+
 2000-10-31  Jan Hubicka  <jh@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
