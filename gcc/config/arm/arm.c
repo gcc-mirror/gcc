@@ -3539,7 +3539,7 @@ find_barrier (from, max_count)
   while (from && count < max_count)
     {
       if (GET_CODE (from) == BARRIER)
-	found_barrier = from;
+	return from;
 
       /* Count the length of this insn */
       if (GET_CODE (from) == INSN
