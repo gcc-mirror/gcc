@@ -465,7 +465,6 @@ struct tree_exp
 #define TYPE_UID(NODE) ((NODE)->type.uid)
 #define TYPE_SIZE(NODE) ((NODE)->type.size)
 #define TYPE_MODE(NODE) ((NODE)->type.mode)
-#define TYPE_ALIGN(NODE) ((NODE)->type.align)
 #define TYPE_VALUES(NODE) ((NODE)->type.values)
 #define TYPE_DOMAIN(NODE) ((NODE)->type.values)
 #define TYPE_FIELDS(NODE) ((NODE)->type.values)
@@ -488,6 +487,10 @@ struct tree_exp
 #define TYPE_NONCOPIED_PARTS(NODE) ((NODE)->type.noncopied_parts)
 #define TYPE_CONTEXT(NODE) ((NODE)->type.context)
 #define TYPE_LANG_SPECIFIC(NODE) ((NODE)->type.lang_specific)
+
+/* The alignment necessary for objects of this type.
+   The value is an int, measured in bits.  */
+#define TYPE_ALIGN(NODE) ((NODE)->type.align)
 
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
 
