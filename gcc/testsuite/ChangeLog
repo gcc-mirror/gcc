@@ -1,3 +1,7 @@
+2000-10-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/va-arg-21.c: New test.
+
 2000-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c99-complex-2.c: New test.
