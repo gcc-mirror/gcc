@@ -90,6 +90,11 @@ extern int target_flags;
 
 #define TARGET_SOFT_FLOAT	(target_flags & 512)
 
+/* This means that we should not emit the multm or mutmu instructions
+   that some embedded systems' trap handlers don't support.  */
+
+#define TARGET_MULTM		((target_flags & 1024) == 0)
+
 #define TARGET_SWITCHES			\
   { {"dw", 1},				\
     {"ndw", -1},			\
@@ -109,6 +114,7 @@ extern int target_flags;
     {"reuse-arg-regs", -256},		\
     {"no-reuse-arg-regs", 256},		\
     {"soft-float", 512},		\
+    {"no-multm", 1024},			\
     {"", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
