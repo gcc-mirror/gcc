@@ -1551,7 +1551,7 @@ record_address_regs (x, class, scale)
 	    record_address_regs (arg0, BASE_REG_CLASS, scale);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
 	  }
-	else if ((code1 == REG && REGNO_POINTER_FLAG (regno (arg1)))
+	else if ((code1 == REG && REGNO_POINTER_FLAG (REGNO (arg1)))
 		 || code0 == MULT)
 	  {
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
