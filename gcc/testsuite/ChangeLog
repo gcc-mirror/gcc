@@ -1,3 +1,10 @@
+2004-06-11  Hartmut Penner  <hpenner@de.ibm.com>	
+	
+	Backport from mainline:
+
+	2004-03-30  Hartmut Penner  <hpenner@de.ibm.com>
+	* gcc.dg/altivec-11.c: Extend test for more valid cases.
+
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/15569
