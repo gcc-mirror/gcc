@@ -1,3 +1,8 @@
+2001-07-19  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* alias.c (rtx_equal_for_memref_p): Allow strings as types in
+	operands.
+
 Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-ccp.c (visit_expression): Handle CALL_INSNs that can
