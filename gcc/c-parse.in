@@ -2106,11 +2106,17 @@ label:	  CASE expr_no_commas ':'
 
 		  stmt_count++;
 
-		  if (value != error_mark_node)
+		  if (value != error_mark_node);
 		    {
 		      tree duplicate;
-		      int success = pushcase (value, convert_and_check,
-					      label, &duplicate);
+		      int success;
+
+		      if (pedantic && ! INTEGRAL_TYPE_P (TREE_TYPE (value)))
+			pedwarn ("label must have integral type in ANSI C");
+
+		      success = pushcase (value, convert_and_check,
+					  label, &duplicate);
+
 		      if (success == 1)
 			error ("case label not within a switch statement");
 		      else if (success == 2)
