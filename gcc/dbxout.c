@@ -1519,7 +1519,7 @@ dbxout_symbol (decl, local)
 	    {
 	      current_sym_addr = XEXP (DECL_RTL (decl), 0);
 
-	      letter = TREE_PERMANENT (decl) ? 'S' : 'V';
+	      letter = decl_function_context (decl) ? 'V' : 'S';
 
 	      if (!DECL_INITIAL (decl))
 		current_sym_code = N_LCSYM;

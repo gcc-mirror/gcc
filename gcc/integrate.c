@@ -1875,7 +1875,26 @@ copy_rtx_and_substitute (orig, map)
     case PC:
     case CC0:
     case CONST_INT:
+      return orig;
+
     case SYMBOL_REF:
+      /* Symbols which represent the address of a label stored in the constant
+	 pool must be modified to point to a constant pool entry for the
+	 remapped label.  Otherwise, symbols are returned unchanged.  */
+      if (CONSTANT_POOL_ADDRESS_P (orig))
+	{
+	  rtx constant = get_pool_constant (orig);
+	  if (GET_CODE (constant) == LABEL_REF)
+	    {
+	      copy = rtx_alloc (LABEL_REF);
+	      PUT_MODE (copy, mode);
+	      XEXP (copy, 0)
+		= map->label_map[CODE_LABEL_NUMBER (XEXP (constant, 0))];
+	      LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
+	      copy = force_const_mem (Pmode, copy);
+	      return XEXP (copy, 0);
+	    }
+	}
       return orig;
 
     case CONST_DOUBLE:
