@@ -4277,37 +4277,31 @@ to the lookup function, which returns a pointer to the method.
 This is about addressing modes.
 
 @table @code
-@findex HAVE_POST_INCREMENT
-@item HAVE_POST_INCREMENT
-A C expression that is nonzero the machine supports post-increment addressing.
-
 @findex HAVE_PRE_INCREMENT
-@findex HAVE_POST_DECREMENT
 @findex HAVE_PRE_DECREMENT
+@findex HAVE_POST_INCREMENT
+@findex HAVE_POST_DECREMENT
 @item HAVE_PRE_INCREMENT
-@itemx HAVE_POST_DECREMENT
 @itemx HAVE_PRE_DECREMENT
-Similar for other kinds of addressing.
+@itemx HAVE_POST_INCREMENT
+@itemx HAVE_POST_DECREMENT
+A C expression that is non-zero if the machine supports pre-increment,
+pre-decrement, post-increment, or post-decrement addressing respectively.
 
 @findex HAVE_POST_MODIFY_DISP
-@item HAVE_POST_MODIFY_DISP
-Define this macro if the machine supports post-modify addressing
-with a constant displacement.
-
 @findex HAVE_PRE_MODIFY_DISP
 @item HAVE_PRE_MODIFY_DISP
-Define this macro if the machine supports pre-modify addressing
-with a constant displacement.
+@itemx HAVE_POST_MODIFY_DISP
+A C expression that is non-zero if the machine supports pre- or
+post-address side-effect generation involving constants other than
+the size of the memory operand.
 
 @findex HAVE_POST_MODIFY_REG
-@item HAVE_POST_MODIFY_REG
-Define this macro if the machine supports post-modify addressing
-by the contents of a register.
-
 @findex HAVE_PRE_MODIFY_REG
 @item HAVE_PRE_MODIFY_REG
-Define this macro if the machine supports pre-modify addressing
-by the contents of a register.
+@itemx HAVE_POST_MODIFY_REG
+A C expression that is non-zero if the machine supports pre- or
+post-address side-effect generation involving a register displacement.
 
 @findex CONSTANT_ADDRESS_P
 @item CONSTANT_ADDRESS_P (@var{x})
