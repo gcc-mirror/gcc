@@ -1,3 +1,8 @@
+Sun Aug 17 15:15:53 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c (default_compilers): Add __EGCS__ and __EGCS_MINOR__
+	predefines.
+
 Sat Aug 16 01:08:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (is_power_of_2, is_conditional_branch): Delete unused
