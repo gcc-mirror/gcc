@@ -4924,6 +4924,9 @@ loop_givs_rescan (loop, bl, reg_map)
 					  gen_move_insn (v->dest_reg,
 							 v->new_reg));
 
+	  /* We must do this now because we just emitted a new set.  */
+	  RTX_UNCHANGING_P (v->dest_reg) = 0;
+
  	  /* The original insn may have a REG_EQUAL note.  This note is
  	     now incorrect and may result in invalid substitutions later.
  	     The original insn is dead, but may be part of a libcall

@@ -1,3 +1,9 @@
+2004-05-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/13653
+	* loop.c (loop_givs_rescan): When reducing a non-replaceable giv,
+	clear the RTX_UNCHANGING_P flag.
+
 2004-05-28  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR bootstrap/14671
