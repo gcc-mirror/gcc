@@ -62,6 +62,7 @@
 #include "iterator.h"
 #include <bits/stl_algo.h>
 #include <bits/stl_numeric.h>
+#include <ext/algorithm>
 
 // Names from <stl_algo.h>
 using std::for_each; 
@@ -91,8 +92,6 @@ using std::reverse_copy;
 using std::rotate; 
 using std::rotate_copy; 
 using std::random_shuffle; 
-using std::random_sample; 
-using std::random_sample_n; 
 using std::partition; 
 using std::stable_partition; 
 using std::sort; 
@@ -117,8 +116,6 @@ using std::next_permutation;
 using std::prev_permutation; 
 using std::find_first_of; 
 using std::find_end; 
-using std::is_sorted; 
-using std::is_heap; 
 
 // Names from stl_heap.h
 using std::push_heap;
@@ -133,6 +130,12 @@ using std::partial_sum;
 using std::adjacent_difference; 
 using std::power; 
 using std::iota; 
+
+// Names from ext/algorithm
+using __gnu_cxx::random_sample; 
+using __gnu_cxx::random_sample_n;
+using __gnu_cxx::is_sorted; 
+using __gnu_cxx::is_heap; 
 
 #endif /* _CPP_BACKWARD_ALGO_H */
 
