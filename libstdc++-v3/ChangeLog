@@ -1,7 +1,14 @@
+2001-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Enable gnu locale model
+	on linux by default.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2001-12-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Clean up initialization and simplfy caching of underlying "C"
-	locale objects.
+	default locale objects.
 	* src/localename.cc (locale::_Impl::_Impl(string, size_t):
 	Unconditionally create __clocale object for all named locales,
 	including "C" and "POSIX".
