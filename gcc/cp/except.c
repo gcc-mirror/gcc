@@ -319,7 +319,7 @@ call_eh_info ()
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      tree t, fields[5];
+      tree t, fields[6];
 
       /* Declare cp_eh_info * __cp_exception_info (void),
 	 as defined in exception.cc. */
@@ -342,9 +342,11 @@ call_eh_info ()
 					 boolean_type_node);
       fields[4] = build_lang_field_decl (FIELD_DECL, get_identifier ("next"),
 					 build_pointer_type (t));
+      fields[5] = build_lang_field_decl
+	(FIELD_DECL, get_identifier ("handlers"), long_integer_type_node);
       /* N.B.: The fourth field LEN is expected to be
 	 the number of fields - 1, not the total number of fields.  */
-      finish_builtin_type (t, "cp_eh_info", fields, 4, ptr_type_node);
+      finish_builtin_type (t, "cp_eh_info", fields, 5, ptr_type_node);
       t = build_pointer_type (t);
 
       /* And now the function.  */
@@ -414,6 +416,16 @@ static tree
 get_eh_caught ()
 {
   return build_component_ref (get_eh_info (), get_identifier ("caught"),
+			      NULL_TREE, 0);
+}
+
+/* Returns a reference to whether or not the current exception
+   has been caught.  */
+
+static tree
+get_eh_handlers ()
+{
+  return build_component_ref (get_eh_info (), get_identifier ("handlers"),
 			      NULL_TREE, 0);
 }
 
@@ -513,6 +525,9 @@ push_eh_cleanup ()
   int yes = suspend_momentary ();
   expand_decl_cleanup_no_eh (NULL_TREE, do_pop_exception (boolean_false_node));
   resume_momentary (yes);
+
+  expand_expr (build_unary_op (PREINCREMENT_EXPR, get_eh_handlers (), 1),
+	       const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* We don't destroy the exception object on rethrow, so we can't use
      the normal cleanup mechanism for it.  */
