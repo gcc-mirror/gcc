@@ -76,6 +76,9 @@ Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Jul  6 22:47:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* reload.c (find_equiv_reg): When looking for stack pointer + const,
+	make sure we don't use a stack adjust.
+
 	* reload.c (find_equiv_reg): If need_stable_sp is set,
 	check if stack pointer is changed directly.
 
