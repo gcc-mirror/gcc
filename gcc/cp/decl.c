@@ -4372,6 +4372,40 @@ make_typename_type (context, name)
   return t;
 }
 
+/* Given a TYPE_DECL T looked up in CONTEXT, return a TYPENAME_TYPE
+   where the scope is either CONTEXT or the first base of CONTEXT along the
+   inheritance chain to T that depends on template parameters.
+
+   Called from lookup_name_real to implement the implicit typename
+   extension.  */
+
+static tree
+make_implicit_typename (context, t)
+     tree context, t;
+{
+  tree retval;
+
+  if (uses_template_parms (DECL_CONTEXT (t))
+      && DECL_CONTEXT (t) != context)
+    {
+      tree binfo = get_binfo (DECL_CONTEXT (t), context, 0);
+      for (;;)
+	{
+	  tree next = BINFO_INHERITANCE_CHAIN (binfo);
+	  if (! uses_template_parms (BINFO_TYPE (next))
+	      || BINFO_TYPE (next) == context)
+	    break;
+	  binfo = next;
+	}
+      retval = make_typename_type (BINFO_TYPE (binfo), DECL_NAME (t));
+    }
+  else
+    retval = make_typename_type (context, DECL_NAME (t));
+  
+  TREE_TYPE (retval) = TREE_TYPE (t);
+  return retval;
+}
+
 /* Look up NAME in the current binding level and its superiors in the
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
@@ -4464,8 +4498,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  && val && TREE_CODE (val) == TYPE_DECL
 	  && ! DECL_ARTIFICIAL (val))
 	{
-	  tree t = make_typename_type (got_scope, DECL_NAME (val));
-	  TREE_TYPE (t) = TREE_TYPE (val);
+	  tree t = make_implicit_typename (got_scope, val);
 	  val = TYPE_MAIN_DECL (t);
 	}
 
@@ -4505,9 +4538,7 @@ lookup_name_real (name, prefer_type, nonclass)
 	  && uses_template_parms (DECL_CONTEXT (classval))
 	  && ! DECL_ARTIFICIAL (classval))
 	{
-	  tree t = make_typename_type (DECL_CONTEXT (classval),
-				       DECL_NAME (classval));
-	  TREE_TYPE (t) = TREE_TYPE (classval);
+	  tree t = make_implicit_typename (current_class_type, classval);
 	  classval = TYPE_MAIN_DECL (t);
 	}
     }
