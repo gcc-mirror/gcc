@@ -1,3 +1,14 @@
+2005-03-05  Roger Sayle  <roger@eyesopen.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	    Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR libgcj/20155
+	* Makefile.am (libgcj0_convenience.la): New rule to create a file
+	of the object files to link to avoid exceeding the command line
+	length limits on some platforms.
+	(clean-local): Clean up objectlist files.
+	* Makefile.in: Regenerate.
+
 2005-03-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	PR libgcj/20292

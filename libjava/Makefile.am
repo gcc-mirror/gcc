@@ -226,6 +226,9 @@ libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
+libgcj0_convenience_la_LDFLAGS = 
+libgcj0_convenience_la_LIBADD =
+libgcj0_convenience_la_LINK = $(LIBLINK)
 noinst_LTLIBRARIES = libgcj0_convenience.la
 
 libgcj_la_SOURCES =
@@ -577,6 +580,8 @@ mostlyclean-local:
 clean-local:
 ## Remove every .class file that was created.
 	find . -name '*.class' -print | xargs rm -f
+## Remove every .objectlist file that was created.
+	find . -name '*.objectlist' -print | xargs rm -f
 
 distclean-local:
 ## Remove every .d file that was created.
@@ -610,6 +615,16 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
 	$(libgcj_la_LIBADD) \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
+
+## Pass the list of object files to libtool in a temporary file to
+## avoid tripping platform command line length limits.
+libgcj0_convenience.la: $(libgcj0_convenience_la_OBJECTS) $(libgcj0_convenience_la_DEPENDENCIES)
+	@echo Creating list of files to link...
+	@: $(call write_entries_to_file,$(libgcj0_convenience_la_OBJECTS),libgcj0_convenience.objectlist)
+	$(libgcj0_convenience_la_LINK) \
+	-objectlist libgcj0_convenience.objectlist \
+	$(libgcj0_convenience_la_LIBADD) \
+	-rpath $(toolexeclibdir) $(libgcj0_convenience_la_LDFLAGS) $(LIBS)
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
