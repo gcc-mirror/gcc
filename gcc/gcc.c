@@ -1179,7 +1179,16 @@ static struct spec_list static_specs[] = {
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
-static struct spec_list extra_specs[] = { EXTRA_SPECS };
+/* Structure to keep track of just the first two args of a spec_list.
+   That is all that the EXTRA_SPECS macro gives us. */
+struct spec_list_1
+{
+  char *name;
+  char *ptr;
+};
+
+static struct spec_list_1 extra_specs_1[] = { EXTRA_SPECS };
+static struct spec_list * extra_specs = (struct spec_list *)0;
 #endif
 
 /* List of dynamically allocates specs that have been defined so far.  */
@@ -1203,9 +1212,17 @@ init_spec ()
     fprintf (stderr, "Using builtin specs.\n");
 
 #ifdef EXTRA_SPECS
-  for (i = (sizeof (extra_specs) / sizeof (extra_specs[0])) - 1; i >= 0; i--)
+  extra_specs = (struct spec_list *)
+    xmalloc (sizeof(struct spec_list) *
+	     (sizeof(extra_specs_1)/sizeof(extra_specs_1[0])));
+  bzero ((PTR) extra_specs, sizeof(struct spec_list) *
+	 (sizeof(extra_specs_1)/sizeof(extra_specs_1[0])));
+  
+  for (i = (sizeof(extra_specs_1) / sizeof(extra_specs_1[0])) - 1; i >= 0; i--)
     {
       sl = &extra_specs[i];
+      sl->name = extra_specs_1[i].name;
+      sl->ptr = extra_specs_1[i].ptr;
       sl->next = next;
       sl->name_len = strlen (sl->name);
       sl->ptr_spec = &sl->ptr;
