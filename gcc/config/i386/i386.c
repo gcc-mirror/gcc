@@ -457,7 +457,7 @@ static int const x86_64_int_return_registers[4] = {0 /*RAX*/, 1 /*RDI*/, 5, 4};
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
-  33, 34, 35, 36, 37, 38, 39, 40	/* fp regs */
+  33, 34, 35, 36, 37, 38, 39, 40,	/* fp regs */
   -1, -1, -1, -1, -1,			/* arg, flags, fpsr, dir, frame */
   17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
@@ -12493,4 +12493,79 @@ x86_order_regs_for_local_alloc ()
       at all.  */
    while (pos < FIRST_PSEUDO_REGISTER)
      reg_alloc_order [pos++] = 0;
+}
+
+void
+x86_output_mi_thunk (file, delta, function)
+     FILE *file;
+     int delta;
+     tree function;
+{
+  tree parm;
+  rtx xops[3];
+
+  if (ix86_regparm > 0)
+    parm = TYPE_ARG_TYPES (TREE_TYPE (function));
+  else
+    parm = NULL_TREE;
+  for (; parm; parm = TREE_CHAIN (parm))
+    if (TREE_VALUE (parm) == void_type_node)
+      break;
+
+  xops[0] = GEN_INT (delta);
+  if (TARGET_64BIT)
+    {
+      int n = aggregate_value_p (TREE_TYPE (TREE_TYPE (function))) != 0;
+      xops[1] = gen_rtx_REG (DImode, x86_64_int_parameter_registers[n]);
+      output_asm_insn ("add{q} {%0, %1|%1, %0}", xops);
+      if (flag_pic)
+	{
+	  fprintf (file, "\tjmp *");
+	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	  fprintf (file, "@GOTPCREL(%%rip)\n");
+	}
+      else
+	{
+	  fprintf (file, "\tjmp ");
+	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	  fprintf (file, "\n");
+	}
+    }
+  else
+    {
+      if (parm)
+	xops[1] = gen_rtx_REG (SImode, 0);
+      else if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+	xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));
+      else
+	xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));
+      output_asm_insn ("add{l} {%0, %1|%1, %0}", xops);
+
+      if (flag_pic)
+	{
+	  xops[0] = pic_offset_table_rtx;
+	  xops[1] = gen_label_rtx ();
+	  xops[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+
+	  if (ix86_regparm > 2)
+	    abort ();
+	  output_asm_insn ("push{l}\t%0", xops);
+	  output_asm_insn ("call\t%P1", xops);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (xops[1]));
+	  output_asm_insn ("pop{l}\t%0", xops);
+	  output_asm_insn
+	    ("add{l}\t{%2+[.-%P1], %0|%0, OFFSET FLAT: %2+[.-%P1]}", xops);
+	  xops[0] = gen_rtx_MEM (SImode, XEXP (DECL_RTL (function), 0));
+	  output_asm_insn
+	    ("mov{l}\t{%0@GOT(%%ebx), %%ecx|%%ecx, %0@GOT[%%ebx]}", xops);
+	  asm_fprintf (file, "\tpop{l\t%%ebx|\t%%ebx}\n");
+	  asm_fprintf (file, "\tjmp\t{*%%ecx|%%ecx}\n");
+	}
+      else
+	{
+	  fprintf (file, "\tjmp ");
+	  assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
+	  fprintf (file, "\n");
+	}
+    }
 }

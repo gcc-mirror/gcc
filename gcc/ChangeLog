@@ -1,3 +1,22 @@
+Tue Jun  4 13:09:18 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (emit_prefetch_instructions): Properly place the address
+	computation.
+
+	* dwarf2out.c (output_call_frame_info): Do not skip unwind info
+	when flag_asynchronous_unwind_tables is set.
+
+	* i386-protos.h (x86_output_mi_thunk): Declare.
+	* unix.h (ASM_OUTPUT_MI_THUNK): Move offline to ...
+	* i386.c (x86_output_mi_thunk): ... here; handle 64bits.
+
+	* config/i386/i386.c (ix86_expand_int_movcc): Truncate to proper
+	mode.
+
+	* i386.md (movabsdi): Kill broken alternative.
+
+	* i386.c (dbx64_register_map): Fix typo
+
 2002-06-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/rs6000/netbsd.h (DRAFT_V4_STRUCT_RET): Remove.
