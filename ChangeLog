@@ -1,3 +1,7 @@
+2003-11-17  Stan Cox  <scox@redhat.com>
+
+	* MAINTAINERS: Add myself as iq2000 port maintainer.
+
 2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
 
         * Makefile.in (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
