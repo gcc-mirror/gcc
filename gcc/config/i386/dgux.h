@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.4 $"
+#define VERSION_INFO2   "$Revision: 1.5 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -277,3 +277,7 @@ char insn; int insn_; char * file_; int line_;
 	 fprintf ((FILE), "\t.backalign %s,%d,%d\n", &buf[1], 1<<(LOG), \
 		  ((TARGET_PENTIUMPRO || TARGET_486) && LOG==4) ? 6 : 2);\
         }
+
+/* add .align 1 to avoid .backalign bug in assembler */
+#undef CONST_SECTION_ASM_OP
+#define CONST_SECTION_ASM_OP    ".section\t.rodata\n\t.align 1"
