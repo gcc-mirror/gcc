@@ -1346,8 +1346,12 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 
 	  /* Don't constant fold this floating point operation if the
 	     result may dependent upon the run-time rounding mode and
-	     flag_rounding_math is set.  */
-	  if (flag_rounding_math
+	     flag_rounding_math is set, or if GCC's software emulation
+	     is unable to accurately represent the result.  */
+
+	  if ((flag_rounding_math
+	       || (REAL_MODE_FORMAT_COMPOSITE_P (mode)
+		   && !flag_unsafe_math_optimizations))
 	      && (inexact || !real_identical (&result, &value)))
 	    return NULL_RTX;
 
