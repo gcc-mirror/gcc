@@ -1,3 +1,10 @@
+2001-09-17  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.h (FIXED_REGISTERS): Use FIXED_R2.
+	* config/rs6000/aix.h (FIXED_R2): Define.
+	* config/rs6000/darwin.h (FIXED_R2): Define.
+	* config/rs6000/sysv4.h (FIXED_R2): Define.
+
 2001-09-17  Jeff Sturm  <jsturm@one-point.com>
 
 	* except.c (dw2_build_landing_pads): New local

@@ -161,6 +161,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_NO_TOC		0
 #define	TARGET_TOC		1
 
+#define FIXED_R2 1
 /* AIX allows r13 to be used.  */
 #define FIXED_R13 0
 

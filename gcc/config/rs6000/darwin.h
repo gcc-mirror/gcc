@@ -39,6 +39,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define CC1_SPEC "%{!static:-fPIC}"
 
+/* Make both r2 and r3 available for allocation.  */
+#define FIXED_R2 0
 #define FIXED_R13 0
 
 #undef  TARGET_DEFAULT
