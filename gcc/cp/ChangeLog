@@ -1,5 +1,8 @@
 1999-05-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* lex.c (make_lang_type): Create TYPE_BINFO for
+	TEMPLATE_TYPE_PARMs just like for non-template types.
+
 	* decl.c (start_decl): Move checks on initialization to ...
 	(cp_finish_decl): Here.  Tidy formatting slightly.
 
