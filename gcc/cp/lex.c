@@ -1022,7 +1022,7 @@ interface_strcmp (s)
 	return 0;
 
       /* Don't get faked out by xxx.yyy.cc vs xxx.zzz.cc.  */
-      if (index (s1, '.') || index (t1, '.'))
+      if (strchr (s1, '.') || strchr (t1, '.'))
 	continue;
 
       if (*s1 == '\0' || s1[-1] != '.' || t1[-1] != '.')

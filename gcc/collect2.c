@@ -1172,7 +1172,7 @@ main (argc, argv)
 		output_file = *ld1++ = *ld2++ = *++argv;
 	      else if (1
 #ifdef SWITCHES_NEED_SPACES
-		       && ! index (SWITCHES_NEED_SPACES, arg[1])
+		       && ! strchr (SWITCHES_NEED_SPACES, arg[1])
 #endif
 		       )
 
@@ -1201,7 +1201,7 @@ main (argc, argv)
 	      break;
 	    }
 	}
-      else if ((p = rindex (arg, '.')) != (char *) 0
+      else if ((p = strrchr (arg, '.')) != (char *) 0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0
 		   || strcmp (p, ".so") == 0 || strcmp (p, ".lo") == 0))
 	{
@@ -1829,7 +1829,7 @@ write_c_file_stat (stream, name)
   int frames = (frame_tables.number > 0);
 
   /* Figure out name of output_file, stripping off .so version.  */
-  p = rindex (output_file, '/');
+  p = strrchr (output_file, '/');
   if (p == 0)
     p = output_file;
   else
@@ -1837,7 +1837,7 @@ write_c_file_stat (stream, name)
   q = p;
   while (q)
     {
-      q = index (q,'.');
+      q = strchr (q,'.');
       if (q == 0)
 	{
 	  q = p + strlen (p);

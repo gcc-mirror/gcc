@@ -1,3 +1,10 @@
+2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* dump.c (dequeue_and_dump), lex.c (interface_strcmp), method.c
+	(build_overload_value), repo.c (open_repo_file), xref.c
+	(open_xref_file): Use strchr () and strrchr () instead of index ()
+	and rindex ().
+
 2000-11-01  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* call.c (build_over_call): Call fold on the CALL_EXPR.

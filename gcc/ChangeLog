@@ -1,5 +1,13 @@
 2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* collect2.c (main, write_c_file_stat), gcc.c (translate_options,
+	process_command, main), gcov.c (open_files, output_data), tlink.c
+	(frob_extension, scan_linker_output), toplev.c
+	(file_name_nondirectory): Use strchr () and strrchr () instead of
+	index () and rindex ().
+
+2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (get_flag_spec, check_format_info_main,
 	check_format_types): Use strchr () instead of index ().  Compare
 	against error_mark_node instead of comparing the TREE_CODE against
