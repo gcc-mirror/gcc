@@ -1462,7 +1462,11 @@ expand_builtin_constant_p (tree arglist, enum machine_mode target_mode)
 
   /* We have taken care of the easy cases during constant folding.  This
      case is not obvious, so emit (constant_p_rtx (ARGLIST)) and let CSE
-     get a chance to see if it can deduce whether ARGLIST is constant.  */
+     get a chance to see if it can deduce whether ARGLIST is constant.
+     If CSE isn't going to run, of course, don't bother waiting.  */
+
+  if (cse_not_expected)
+    return const0_rtx;
 
   current_function_calls_constant_p = 1;
 
@@ -5470,15 +5474,14 @@ fold_builtin_constant_p (tree arglist)
 	  && TREE_CODE (TREE_OPERAND (arglist, 0)) == STRING_CST))
     return integer_one_node;
 
-  /* If we aren't going to be running CSE or this expression
-     has side effects, show we don't know it to be a constant.
-     Likewise if it's a pointer or aggregate type since in those
-     case we only want literals, since those are only optimized
+  /* If this expression has side effects, show we don't know it to be a
+     constant.  Likewise if it's a pointer or aggregate type since in
+     those case we only want literals, since those are only optimized
      when generating RTL, not later.
      And finally, if we are compiling an initializer, not code, we
      need to return a definite result now; there's not going to be any
      more optimization done.  */
-  if (TREE_SIDE_EFFECTS (arglist) || cse_not_expected
+  if (TREE_SIDE_EFFECTS (arglist)
       || AGGREGATE_TYPE_P (TREE_TYPE (arglist))
       || POINTER_TYPE_P (TREE_TYPE (arglist))
       || cfun == 0)
