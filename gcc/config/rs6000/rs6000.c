@@ -395,7 +395,7 @@ static rtx rs6000_spe_function_arg (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree);
 static rtx rs6000_mixed_function_arg (CUMULATIVE_ARGS *,
 				      enum machine_mode, tree, int);
-static void rs6000_move_block_from_reg(int regno, rtx x, int nregs);
+static void rs6000_move_block_from_reg (int regno, rtx x, int nregs);
 static void setup_incoming_varargs (CUMULATIVE_ARGS *,
 				    enum machine_mode, tree,
 				    int *, int);
@@ -2546,7 +2546,8 @@ legitimate_offset_address_p (enum machine_mode mode, rtx x, int strict)
       break;
     }
 
-  return (offset + extra >= offset) && (offset + extra + 0x8000 < 0x10000);
+  offset += 0x8000;
+  return (offset < 0x10000) && (offset + extra < 0x10000);
 }
 
 static bool
