@@ -3093,7 +3093,7 @@ output_prolog (file, size)
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCF", rs6000_pic_labelno);
 	  fprintf (file, "\tmflr %s\n", reg_names[30]);
 
-	  asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz}" : "\tld");
+	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz}" : "\tld");
 	  fprintf (file, " %s,(", reg_names[0]);
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	  assemble_name (file, buf);
@@ -3969,7 +3969,7 @@ rs6000_trampoline_size ()
 
     case ABI_V4:
     case ABI_AIX_NODESC:
-      ret = (TARGET_32BIT ? 40 : 48);
+      ret = (TARGET_32BIT) ? 40 : 48;
       break;
 
     case ABI_NT:
