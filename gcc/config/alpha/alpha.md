@@ -1,5 +1,5 @@
 ;; Machine description for DEC Alpha for GNU C compiler
-;; Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
+;; Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -2842,16 +2842,9 @@
     operands[1] = force_reg (DFmode, operands[1]);
 }")
 
-;; There is a problem with 32-bit values in FP registers.  We keep such
-;; values in the register as a quadword.  This is done on loads by using
-;; the cvtlq instruction.  On stores, we can't do anything directly from
-;; floating-point registers.  Disallow such an operation and let reload
-;; use an integer register instead.  Don't encourage 32-bit values to
-;; be placed in FP registers at all.
-
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,*f,*f,*f")
-	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,*f,J,m"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m")
+	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -2864,8 +2857,9 @@
    stl %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0
-   lds %0,%1\;cvtlq %0,%0"
-  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ld,st,fpop,fpop,ld")])
+   lds %0,%1
+   sts %R1,%0"
+  [(set_attr "type" "iaddlog,iaddlog,iaddlog,iaddlog,iaddlog,ld,st,fpop,fpop,ld,st")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
