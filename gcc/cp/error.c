@@ -305,7 +305,15 @@ dump_template_bindings (parms, args)
 
       for (i = 0; i < TREE_VEC_LENGTH (p); ++i)
 	{
-	  tree arg = TMPL_ARG (args, lvl, arg_idx);
+	  tree arg = NULL_TREE;
+
+	  /* Don't crash if we had an invalid argument list.  */
+	  if (TMPL_ARGS_DEPTH (args) >= lvl)
+	    {
+	      tree lvl_args = TMPL_ARGS_LEVEL (args, lvl);
+	      if (NUM_TMPL_ARGS (lvl_args) > arg_idx)
+		arg = TREE_VEC_ELT (lvl_args, arg_idx);
+	    }
 
 	  if (need_comma)
 	    OB_PUTS (", ");

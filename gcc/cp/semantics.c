@@ -564,21 +564,8 @@ finish_switch_cond (cond, switch_stmt)
 	}
       if (cond != error_mark_node)
 	{
-	  tree idx;
-	  tree type;
-	  
 	  cond = default_conversion (cond);
-	  type = TREE_TYPE (cond);
-	  idx = get_unwidened (cond, 0);
-	  /* We can't strip a conversion from a signed type to an unsigned,
-	     because if we did, int_fits_type_p would do the wrong thing
-	     when checking case values for being in range,
-	     and it's too hard to do the right thing.  */
-	  if (TREE_UNSIGNED (TREE_TYPE (cond)) 
-	      == TREE_UNSIGNED (TREE_TYPE (idx)))
-	    cond = idx;
-	  
-	  cond = fold (build1 (CLEANUP_POINT_EXPR, type, cond));
+	  cond = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (cond), cond));
 	}
     }
   FINISH_COND (cond, switch_stmt, SWITCH_COND (switch_stmt));

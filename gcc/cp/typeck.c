@@ -6905,7 +6905,20 @@ tree
 c_expand_start_case (exp)
      tree exp;
 {
-  expand_start_case (1, exp, TREE_TYPE (exp), "switch statement");
+  tree type;
+  tree index;
+
+  type = TREE_TYPE (exp);
+  index = get_unwidened (exp, NULL_TREE);
+  /* We can't strip a conversion from a signed type to an unsigned,
+     because if we did, int_fits_type_p would do the wrong thing
+     when checking case values for being in range,
+     and it's too hard to do the right thing.  */
+  if (TREE_UNSIGNED (TREE_TYPE (exp))
+      == TREE_UNSIGNED (TREE_TYPE (index)))
+    exp = index;
+
+  expand_start_case (1, exp, type, "switch statement");
 
   return exp;
 }
