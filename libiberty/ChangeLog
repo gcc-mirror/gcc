@@ -1,5 +1,9 @@
 2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.c (d_print_function_type): Print the function
+	parameters with no modifiers.
+	* testsuite/demangle-expected: Add test case.
+
 	* cp-demangle.c (d_demangle): If DMGL_PARAMS is not set, don't
 	expect that we've read the entire string.
 	(is_ctor_or_dtor): Don't expect that we've read the entire
