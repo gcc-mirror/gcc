@@ -1,6 +1,7 @@
 /* Exception support for GNU CHILL.
    WARNING:  Only works for native (needs setjmp.h)!  FIXME!
-   Copyright (C) 1992, 93, 94, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
