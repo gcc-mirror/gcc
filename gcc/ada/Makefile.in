@@ -106,6 +106,7 @@ AR = ar
 AR_FLAGS = rc
 LS = ls
 RANLIB = @RANLIB@
+RANLIB_FLAGS = @ranlib_flags@
 
 SHELL = @SHELL@
 PWD_COMMAND = $${PWDCMD-pwd}
@@ -1696,7 +1697,7 @@ install-gnatlib: ../stamp-gnatlib
 	-$(INSTALL_DATA) rts/g-trasym$(objext) $(DESTDIR)$(ADA_RTL_OBJ_DIR)
 	-cd rts; for file in *$(arext);do \
 	    $(INSTALL_DATA) $$file $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
-	    $(RANLIB) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
+	    -$(RANLIB) $(RANLIB_FLAGS) $(DESTDIR)$(ADA_RTL_OBJ_DIR)/$$file; \
 	done
 	-$(foreach file, $(EXTRA_ADALIB_FILES), \
 	    $(INSTALL_DATA_DATE) rts/$(file) $(DESTDIR)$(ADA_RTL_OBJ_DIR) && \
@@ -1788,13 +1789,13 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
         ifneq ($(PREFIX_OBJS),)
 		$(AR) $(AR_FLAGS) rts/libgccprefix$(arext) $(PREFIX_OBJS);
         endif
-	-$(RANLIB) rts/libgnat$(arext)
+	-$(RANLIB) $(RANLIB_FLAGS) rts/libgnat$(arext)
 	$(AR) $(AR_FLAGS) rts/libgnarl$(arext) \
 	   $(addprefix rts/,$(GNATRTL_TASKING_OBJS))
-	-$(RANLIB) rts/libgnarl$(arext)
+	-$(RANLIB) $(RANLIB_FLAGS) rts/libgnarl$(arext)
         ifeq ($(GMEM_LIB),gmemlib)
 		$(AR) $(AR_FLAGS) rts/libgmem$(arext) rts/memtrack.o
-		-$(RANLIB) rts/libgmem$(arext)
+		-$(RANLIB) $(RANLIB_FLAGS) rts/libgmem$(arext)
         endif
 	$(CHMOD) a-wx rts/*.ali
 	touch ../stamp-gnatlib
