@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param ggc-min-expand=0 -param ggc-min-heapsize=0" } */
+/* { dg-options "--param ggc-min-expand=0 --param ggc-min-heapsize=0" } */
 __attribute__ ((vector_size (64))) unsigned char v1, v2, v3;
 void
 vadd (void)
