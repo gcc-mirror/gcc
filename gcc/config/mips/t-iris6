@@ -53,3 +53,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	echo '#undef US_SOFTWARE_GOFAST' >> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+# This is only needed in the static libgcc as a band-aid until gcc correctly
+# implements the N32/N64 ABI structure passing conventions
+LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/mips/irix6-libc-compat.c
