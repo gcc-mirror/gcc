@@ -37,7 +37,11 @@ public abstract class NumberFormat extends Format implements Cloneable
   public final StringBuffer format (Object obj, StringBuffer sbuf,
 				    FieldPosition pos)
     {
-      return format(((Number) obj).doubleValue(), sbuf, pos);
+      if (obj instanceof Number)
+        return format(((Number) obj).doubleValue(), sbuf, pos);
+      else
+        throw new IllegalArgumentException 
+          ("Cannot format given Object as a Number");
     }
 
   public abstract StringBuffer format (double number,

@@ -400,6 +400,7 @@ public class MessageFormat extends Format
 
   public MessageFormat (String pattern)
     {
+      locale = Locale.getDefault();
       applyPattern (pattern);
     }
 
