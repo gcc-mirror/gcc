@@ -1,5 +1,7 @@
 Tue Oct 13 09:17:06 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* config.sub: Bring back lost sparcv9.
+
 	* Makefile.in (all-snvavigator): Remove all-flexlm dependency.
 
 Mon Oct 12 12:09:44 1998  Jeffrey A Law  (law@cygnus.com)
