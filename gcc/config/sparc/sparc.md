@@ -136,6 +136,9 @@
 ;; (Noted only for documentation; units that take one cycle do not need to
 ;; be specified.)
 
+;; On the sparclite, integer multiply takes 1, 3, or 5 cycles depending on
+;; the inputs.
+
 ;; (define_function_unit "alu" 1 0
 ;;  (eq_attr "type" "unary,binary,move,address") 1 0)
 
@@ -1215,13 +1218,8 @@
   "! TARGET_FPU
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
-  "*
-{
-  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
-    return output_fp_move_double (operands);
-  return output_move_double (operands);
-}"
-  [(set_attr "type" "fpstore,fpload,move,store,load")
+  "* return output_move_double (operands);"
+  [(set_attr "type" "store,load,move,store,load")
    (set_attr "length" "1,1,2,3,3")])
 
 (define_insn ""
@@ -1837,7 +1835,7 @@
    (clobber (match_scratch:SI 3 "=&r"))]
   "TARGET_V8"
   "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdiv %1,%2,%0"
-  [(set_attr "length" "3")])
+  [(set_attr "length" "6")])
 
 ;; It is not known whether this will match.
 
@@ -1851,7 +1849,7 @@
    (clobber (match_scratch:SI 3 "=&r"))]
   "TARGET_V8"
   "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdivcc %1,%2,%0"
-  [(set_attr "length" "3")])
+  [(set_attr "length" "6")])
 
 (define_insn "udivsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1859,7 +1857,7 @@
 		(match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_V8"
   "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udiv %1,%2,%0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "5")])
 
 ;; It is not known whether this will match.
 
@@ -1872,7 +1870,7 @@
 		    (const_int 0)))]
   "TARGET_V8"
   "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udivcc %1,%2,%0"
-  [(set_attr "length" "2")])
+  [(set_attr "length" "5")])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
@@ -2790,6 +2788,22 @@
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
+
+;; find first set.
+
+;; The scan instruction searches from the most significant bit while ffs
+;; searches from the least significant bit.  The bit index and treatment of
+;; zero also differ.  It takes at least 7 instructions to get the proper
+;; result.  Here is an obvious 8 instruction seequence.
+
+(define_insn "ffssi2"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(ffs:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_SPARCLITE"
+  "sub %%g0,%1,%0\;and %0,%1,%0\;scan %0,0,%0\;mov 32,%2\;sub %2,%0,%0\;sra %0,31,%2\;and %2,31,%2\;add %2,%0,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 ;; Split up troublesome insns for better scheduling.  */
 
