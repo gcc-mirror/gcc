@@ -1,3 +1,7 @@
+2003-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/format/gcc_diag-1.c: New test.
+
 2003-06-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.c-torture/execute/multi-ix.c: Fix off-by-one bugs.

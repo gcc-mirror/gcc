@@ -56,6 +56,8 @@ set_Wformat (int setting)
 /* This must be in the same order as format_types, with format_type_error
    last.  */
 enum format_type { printf_format_type, asm_fprintf_format_type,
+		   gcc_diag_format_type, gcc_cdiag_format_type,
+		   gcc_cxxdiag_format_type,
 		   scanf_format_type, strftime_format_type,
 		   strfmon_format_type, format_type_error };
 
@@ -523,6 +525,18 @@ static const format_length_info asm_fprintf_length_specs[] =
   { NULL, 0, 0, NULL, 0, 0 }
 };
 
+/* Length specifiers valid for GCC diagnostics.  */
+static const format_length_info gcc_diag_length_specs[] =
+{
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
+  { "w", FMT_LEN_none, STD_C89, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
+};
+
+/* The custom diagnostics all accept the same length specifiers.  */
+#define gcc_cdiag_length_specs gcc_diag_length_specs
+#define gcc_cxxdiag_length_specs gcc_diag_length_specs
+
 /* This differs from printf_length_specs only in that "Z" is not accepted.  */
 static const format_length_info scanf_length_specs[] =
 {
@@ -589,6 +603,32 @@ static const format_flag_pair asm_fprintf_flag_pairs[] =
   { '0', '-', 1, 0   },
   { '0', 'p', 1, 'i' },
   { 0, 0, 0, 0 }
+};
+
+static const format_flag_pair gcc_diag_flag_pairs[] =
+{
+  { 0, 0, 0, 0 }
+};
+
+#define gcc_cdiag_flag_pairs gcc_diag_flag_pairs
+#define gcc_cxxdiag_flag_pairs gcc_diag_flag_pairs
+
+static const format_flag_spec gcc_diag_flag_specs[] =
+{
+  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, NULL, NULL, 0 }
+};
+
+#define gcc_cdiag_flag_specs gcc_diag_flag_specs
+
+static const format_flag_spec gcc_cxxdiag_flag_specs[] =
+{
+  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
+  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, NULL, NULL, 0 }
 };
 
 static const format_flag_spec scanf_flag_specs[] =
@@ -755,6 +795,72 @@ static const format_char_info asm_fprintf_char_table[] =
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
+static const format_char_info gcc_diag_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+
+  /* Custom conversion specifiers.  */
+
+  /* %H will require "location_t" at runtime.  */
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
+  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL }
+};
+
+static const format_char_info gcc_cdiag_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+
+  /* Custom conversion specifiers.  */
+
+  /* %H will require "location_t" at runtime.  */
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
+  /* These will require a "tree" at runtime.  */
+  { "DFT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
+  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL }
+};
+
+static const format_char_info gcc_cxxdiag_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+
+  /* Custom conversion specifiers.  */
+
+  /* %H will require "location_t" at runtime.  */
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
+  /* These will require a "tree" at runtime.  */
+  { "ADEFTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "+#",   ""   },
+
+  /* These accept either an `int' or an `enum tree_code' (which is handled as an `int'.)  */
+  { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+
+  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL }
+};
+
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -823,6 +929,24 @@ static const format_kind_info format_types_orig[] =
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L',
     NULL, NULL
+  },
+  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "", NULL, 
+    gcc_diag_flag_specs, gcc_diag_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 'p', 0, 'L',
+    NULL, &integer_type_node
+  },
+  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "", NULL, 
+    gcc_cdiag_flag_specs, gcc_cdiag_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 'p', 0, 'L',
+    NULL, &integer_type_node
+  },
+  { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "+#", NULL, 
+    gcc_cxxdiag_flag_specs, gcc_cxxdiag_flag_pairs,
+    FMT_FLAG_ARG_CONVERT,
+    0, 0, 'p', 0, 'L',
+    NULL, &integer_type_node
   },
   { "scanf",    scanf_length_specs,   scan_char_table,  "*'I", NULL, 
     scanf_flag_specs, scanf_flag_pairs,
@@ -2330,6 +2454,26 @@ check_format_types (int *status, format_wanted_type *types)
     }
 }
 
+/* Given a format_char_info array FCI, and a character C, this function
+   returns the index into the conversion_specs where that specifier's
+   data is located.  If the character isn't found it aborts.  */
+static unsigned int
+find_char_info_specifier_index (const format_char_info *fci, int c)
+{
+  unsigned int i = 0;
+  
+  while (fci->format_chars)
+    {
+      if (strchr (fci->format_chars, c))
+	return i;
+      i++; fci++;
+    }
+  
+  /* We shouldn't be looking for a non-existent specifier.  */
+  abort ();
+  
+}
+
 /* Given a format_length_info array FLI, and a character C, this
    function returns the index into the conversion_specs where that
    modifier's data is located.  If the character isn't found it
@@ -2391,6 +2535,118 @@ init_dynamic_asm_fprintf_info (void)
     }
 }
 
+/* Determine the types of "tree" and "location_t" in the code being
+   compiled for use in GCC's diagnostic custom format attributes.  You
+   must have set dynamic_format_types before calling this function.  */
+static void
+init_dynamic_diag_info (void)
+{
+  static tree t, loc, hwi;
+      
+  if (!loc || !t || !hwi)
+    {
+      static format_char_info *diag_fci, *cdiag_fci, *cxxdiag_fci;
+      static format_length_info *diag_ls;
+      unsigned int i;
+
+      /* For the GCC-diagnostics custom format specifiers to work, one
+	 must have declared `tree' and/or `location_t' prior to using
+	 those attributes.  If we haven't seen these declarations then
+	 you shouldn't use the specifiers requiring these types.
+	 However we don't force a hard ICE because we may see only one
+	 or the other type.  */
+      if ((loc = maybe_get_identifier ("location_t")))
+	loc = TREE_TYPE (identifier_global_value (loc));
+
+      /* We need to grab the underlying `union tree_node' so peek into
+	 an extra type level.  */
+      if ((t = maybe_get_identifier ("tree")))
+	t = TREE_TYPE (TREE_TYPE (identifier_global_value (t)));
+    
+      /* Find the underlying type for HOST_WIDE_INT.  For the %w
+	 length modifier to work, one must have issued: "typedef
+	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
+	 prior to using that modifier.  */
+      if ((hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
+	hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi));
+      
+      /* Assign the new data for use.  */
+
+      /* All the GCC diag formats use the same length specs.  */
+      if (! diag_ls)
+	dynamic_format_types[gcc_diag_format_type].length_char_specs =
+	  dynamic_format_types[gcc_cdiag_format_type].length_char_specs =
+	  dynamic_format_types[gcc_cxxdiag_format_type].length_char_specs =
+	  diag_ls = xmemdup (gcc_diag_length_specs,
+			     sizeof (gcc_diag_length_specs),
+			     sizeof (gcc_diag_length_specs)); 
+      if (hwi)
+        {
+	  /* HOST_WIDE_INT must be one of 'long' or 'long long'.  */
+	  i = find_length_info_modifier_index (diag_ls, 'w');
+	  if (hwi == long_integer_type_node)
+	    diag_ls[i].index = FMT_LEN_l;
+	  else if (hwi == long_long_integer_type_node)
+	    diag_ls[i].index = FMT_LEN_ll;
+	  else
+	    abort ();
+	}
+
+      /* Handle the __gcc_diag__ format specifics.  */
+      if (! diag_fci)
+	dynamic_format_types[gcc_diag_format_type].conversion_specs =
+	  diag_fci = xmemdup (gcc_diag_char_table,
+			      sizeof(gcc_diag_char_table),
+			      sizeof(gcc_diag_char_table));
+      if (loc)
+        {
+	  i = find_char_info_specifier_index (diag_fci, 'H');
+	  diag_fci[i].types[0].type = &loc;
+	  diag_fci[i].pointer_count = 1;
+	}
+
+      /* Handle the __gcc_cdiag__ format specifics.  */
+      if (! cdiag_fci)
+	dynamic_format_types[gcc_cdiag_format_type].conversion_specs =
+	  cdiag_fci = xmemdup (gcc_cdiag_char_table,
+			       sizeof(gcc_cdiag_char_table),
+			       sizeof(gcc_cdiag_char_table));
+      if (loc)
+        {
+	  i = find_char_info_specifier_index (cdiag_fci, 'H');
+	  cdiag_fci[i].types[0].type = &loc;
+	  cdiag_fci[i].pointer_count = 1;
+	}
+      if (t)
+        {
+	  /* All specifiers taking a tree share the same struct. */
+	  i = find_char_info_specifier_index (cdiag_fci, 'D');
+	  cdiag_fci[i].types[0].type = &t;
+	  cdiag_fci[i].pointer_count = 1;
+	}
+
+      /* Handle the __gcc_cxxdiag__ format specifics.  */
+      if (! cxxdiag_fci)
+	dynamic_format_types[gcc_cxxdiag_format_type].conversion_specs =
+	  cxxdiag_fci = xmemdup (gcc_cxxdiag_char_table,
+				 sizeof(gcc_cxxdiag_char_table),
+				 sizeof(gcc_cxxdiag_char_table));
+      if (loc)
+        {
+	  i = find_char_info_specifier_index (cxxdiag_fci, 'H');
+	  cxxdiag_fci[i].types[0].type = &loc;
+	  cxxdiag_fci[i].pointer_count = 1;
+	}
+      if (t)
+        {
+	  /* All specifiers taking a tree share the same struct. */
+	  i = find_char_info_specifier_index (cxxdiag_fci, 'D');
+	  cxxdiag_fci[i].types[0].type = &t;
+	  cxxdiag_fci[i].pointer_count = 1;
+	}
+    }
+}
+
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -2440,9 +2696,12 @@ handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
       return NULL_TREE;
     }
 
-  /* If this is format type __asm_fprintf__, we have to initialize
-     GCC's notion of HOST_WIDE_INT for checking %wd.  */
-  if (info.format_type == asm_fprintf_format_type)
+  /* If this is a custom GCC-internal format type, we have to
+     initialize certain bits a runtime.  */
+  if (info.format_type == asm_fprintf_format_type
+      || info.format_type == gcc_diag_format_type
+      || info.format_type == gcc_cdiag_format_type
+      || info.format_type == gcc_cxxdiag_format_type)
     {
       /* Our first time through, we have to make sure that our
          format_type data is allocated dynamically and is modifiable.  */
@@ -2451,7 +2710,18 @@ handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
 	  xmemdup (format_types_orig, sizeof (format_types_orig),
 		   sizeof (format_types_orig));
 
-      init_dynamic_asm_fprintf_info();
+      /* If this is format __asm_fprintf__, we have to initialize
+         GCC's notion of HOST_WIDE_INT for checking %wd.  */
+      if (info.format_type == asm_fprintf_format_type)
+	init_dynamic_asm_fprintf_info();
+      /* If this is one of the diagnostic attributes, then we have to
+         intialize `location_t' and `tree' at runtime.  */
+      else if (info.format_type == gcc_diag_format_type
+	       || info.format_type == gcc_cdiag_format_type
+	       || info.format_type == gcc_cxxdiag_format_type)
+	init_dynamic_diag_info();
+      else
+	abort();
     }
 
   return NULL_TREE;
