@@ -1,3 +1,9 @@
+2003-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9898
+	* error.c (dump_decl) [CONST_DECL]: Print '<enumerator>'.
+	(dump_expr) [CONSTRUCTOR]: Print default ctor as a function call.
+
 2003-03-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp/decl2.c (arg_assoc_class): Correct check for namespace-scope
