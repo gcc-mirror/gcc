@@ -9855,7 +9855,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
       if (! basic_block_info)
 	init_flow ();
       rtl_register_cfg_hooks ();
-      find_basic_blocks (insns, max_reg_num (), dump_file);
+      find_basic_blocks (insns);
       life_analysis (dump_file, PROP_FINAL);
 
       split_all_insns (1);

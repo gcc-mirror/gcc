@@ -1,3 +1,10 @@
+2005-02-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR target/20007
+	* config/ip2k/ip2k.c (ip2k_reorg): Adjust calls to
+	find_basic_blocks.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+
 2005-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/19857
