@@ -282,6 +282,7 @@ package body Prj.Strt is
          end loop;
 
          --  If only one is not used, report a single warning for this value
+
          if Non_Used = 1 then
             Error_Msg_Name_1 := Choices.Table (First_Non_Used).The_String;
             Error_Msg ("?value { is not used as label", Case_Location);

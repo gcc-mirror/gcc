@@ -104,6 +104,9 @@ package Targparm is
    --  if a pragma Suppress_Exception_Locations appears, then the flag
    --  Opt.Exception_Locations_Suppressed is set to True.
 
+   --  If a pragma Profile with a valid profile argument appears, then
+   --  the appropriate restrictions and policy flags are set.
+
    --  The only other pragma allowed is a pragma Restrictions that specifies
    --  a restriction that will be imposed on all units in the partition. Note
    --  that in this context, only one restriction can be specified in a single
@@ -112,6 +115,8 @@ package Targparm is
    Restrictions_On_Target : Restrictions_Info;
    --  Records restrictions specified by system.ads. Only the Set and Value
    --  members are modified. The Violated and Count fields are never modified.
+   --  Note that entries can be set either by a pragma Restrictions or by
+   --  a pragma Profile.
 
    -------------------
    -- Run Time Name --

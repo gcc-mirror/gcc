@@ -718,8 +718,7 @@ package body Symbols is
             Put (File, Case_Sensitive);
             Put_Line (File, "yes");
 
-            --  Put a line in the symbol file for each symbol in the symbol
-            --  table.
+            --  Put a line in the symbol file for each symbol in symbol table
 
             for Index in 1 .. Symbol_Table.Last (Original_Symbols) loop
                if Original_Symbols.Table (Index).Present then

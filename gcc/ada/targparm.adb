@@ -152,6 +152,33 @@ package body Targparm is
       HIM_Str'Access,
       LSI_Str'Access);
 
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Set_Profile_Restrictions (P : Profile_Name);
+   --  Set Restrictions_On_Target for the given profile
+
+   ------------------------------
+   -- Set_Profile_Restrictions --
+   ------------------------------
+
+   procedure Set_Profile_Restrictions (P : Profile_Name) is
+      R : Restriction_Flags  renames Profile_Info (P).Set;
+      V : Restriction_Values renames Profile_Info (P).Value;
+
+   begin
+      for J in R'Range loop
+         if R (J) then
+            Restrictions_On_Target.Set (J) := True;
+
+            if J in All_Parameter_Restrictions then
+               Restrictions_On_Target.Value (J) := V (J);
+            end if;
+         end if;
+      end loop;
+   end Set_Profile_Restrictions;
+
    ---------------------------
    -- Get_Target_Parameters --
    ---------------------------
@@ -213,6 +240,26 @@ package body Targparm is
          --  Skip comments quickly
 
          if System_Text (P) = '-' then
+            goto Line_Loop_Continue;
+
+         --  Test for pragma Profile (Ravenscar);
+
+         elsif System_Text (P .. P + 26) =
+                 "pragma Profile (Ravenscar);"
+         then
+            Set_Profile_Restrictions (Ravenscar);
+            Opt.Task_Dispatching_Policy := 'F';
+            Opt.Locking_Policy     := 'C';
+            P := P + 27;
+            goto Line_Loop_Continue;
+
+         --  Test for pragma Profile (Restricted);
+
+         elsif System_Text (P .. P + 27) =
+                 "pragma Profile (Restricted);"
+         then
+            Set_Profile_Restrictions (Restricted);
+            P := P + 28;
             goto Line_Loop_Continue;
 
          --  Test for pragma Restrictions

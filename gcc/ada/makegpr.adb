@@ -2139,7 +2139,9 @@ package body Makegpr is
          Local_Errors := False;
          Data := Projects.Table (Project);
 
-         if not Data.Virtual then
+         --  Nothing to do when no sources of language other than Ada
+
+         if (not Data.Virtual) and then Data.Sources_Present then
 
             --  If the imported directory switches are unknown, compute them
 
@@ -2149,51 +2151,47 @@ package body Makegpr is
                Projects.Table (Project) := Data;
             end if;
 
-            --  Nothing to do when no sources of language other than Ada
+            Need_To_Rebuild_Archive := Force_Compilations;
 
-            if Data.Sources_Present then
-               Need_To_Rebuild_Archive := Force_Compilations;
+            --  Compilation will occur in the object directory
 
-               --  Compilation will occur in the object directory
+            Change_Dir (Get_Name_String (Data.Object_Directory));
 
-               Change_Dir (Get_Name_String (Data.Object_Directory));
+            Source_Id := Data.First_Other_Source;
 
-               Source_Id := Data.First_Other_Source;
+            --  Process each source one by one
 
-               --  Process each source one by one
+            while Source_Id /= No_Other_Source loop
+               Source := Other_Sources.Table (Source_Id);
+               Need_To_Compile := Force_Compilations;
 
-               while Source_Id /= No_Other_Source loop
-                  Source := Other_Sources.Table (Source_Id);
-                  Need_To_Compile := Force_Compilations;
+               --  Check if compilation is needed
 
-                  --  Check if compilation is needed
-
-                  if not Need_To_Compile then
-                     Check_Compilation_Needed (Source, Need_To_Compile);
-                  end if;
-
-                  --  Proceed, if compilation is needed
-
-                  if Need_To_Compile then
-
-                     --  If a source is compiled/recompiled, of course the
-                     --  archive will need to be built/rebuilt.
-
-                     Need_To_Rebuild_Archive := True;
-                     Compile (Source_Id, Data, Local_Errors);
-                  end if;
-
-                  --  Next source, if any
-
-                  Source_Id := Source.Next;
-               end loop;
-
-               --  If there was no compilation error, build/rebuild the archive
-               --  if necessary.
-
-               if not Local_Errors then
-                  Build_Archive (Project, Need_To_Rebuild_Archive);
+               if not Need_To_Compile then
+                  Check_Compilation_Needed (Source, Need_To_Compile);
                end if;
+
+               --  Proceed, if compilation is needed
+
+               if Need_To_Compile then
+
+                  --  If a source is compiled/recompiled, of course the
+                  --  archive will need to be built/rebuilt.
+
+                  Need_To_Rebuild_Archive := True;
+                  Compile (Source_Id, Data, Local_Errors);
+               end if;
+
+               --  Next source, if any
+
+               Source_Id := Source.Next;
+            end loop;
+
+            --  If there was no compilation error, build/rebuild the archive
+            --  if necessary.
+
+            if not Local_Errors then
+               Build_Archive (Project, Need_To_Rebuild_Archive);
             end if;
          end if;
       end loop;

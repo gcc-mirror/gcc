@@ -283,4 +283,112 @@ package System.Rident is
       --  that the actual violation count is at least 3 but might be higher.
    end record;
 
+   ----------------------------------
+   -- Profile Definitions and Data --
+   ----------------------------------
+
+   type Profile_Name is (Ravenscar, Restricted);
+   --  Names of recognized pfofiles
+
+   type Profile_Data is record
+      Set : Restriction_Flags;
+      --  Set to True if given restriction must be set for the profile,
+      --  and False if it need not be set (False does not mean that it
+      --  must not be set, just that it need not be set). If the flag
+      --  is True for a parameter restriction, then the Value array
+      --  gives the maximum value permitted by the profile.
+
+      Value : Restriction_Values;
+      --  An entry in this array is meaningful only if the corresponding
+      --  flag in Set is True. In that case, the value in this array is
+      --  the maximum value of the parameter permitted by the profile.
+   end record;
+
+   Profile_Info : array (Profile_Name) of Profile_Data :=
+
+                     --  Restricted Profile
+
+                    (Restricted =>
+
+                        --  Restrictions for Restricted profile
+
+                       (Set   =>
+                          (No_Abort_Statements             => True,
+                           No_Asynchronous_Control         => True,
+                           No_Dynamic_Attachment           => True,
+                           No_Dynamic_Priorities           => True,
+                           No_Entry_Queue                  => True,
+                           No_Local_Protected_Objects      => True,
+                           No_Protected_Type_Allocators    => True,
+                           No_Requeue_Statements           => True,
+                           No_Task_Allocators              => True,
+                           No_Task_Attributes_Package      => True,
+                           No_Task_Hierarchy               => True,
+                           No_Terminate_Alternatives       => True,
+                           Max_Asynchronous_Select_Nesting => True,
+                           Max_Protected_Entries           => True,
+                           Max_Select_Alternatives         => True,
+                           Max_Task_Entries                => True,
+                           others                          => False),
+
+                        --  Value settings for Restricted profile
+
+                        Value =>
+                          (Max_Asynchronous_Select_Nesting => 0,
+                           Max_Protected_Entries           => 1,
+                           Max_Select_Alternatives         => 0,
+                           Max_Task_Entries                => 0,
+                           others                          => 0)),
+
+                     --  Ravenscar Profile
+
+                     --  Note: the table entries here only represent the
+                     --  required restriction profile for Ravenscar. The
+                     --  full Ravenscar profile also requires:
+
+                     --    pragma Dispatching_Policy (FIFO_Within_Priorities);
+                     --    pragma Locking_Policy (Ceiling_Locking);
+                     --    pragma Detect_Blocking_Mode ???
+
+                     Ravenscar  =>
+
+                     --  Restrictions for Ravenscar = Restricted profile ..
+
+                       (Set   =>
+                          (No_Abort_Statements             => True,
+                           No_Asynchronous_Control         => True,
+                           No_Dynamic_Attachment           => True,
+                           No_Dynamic_Priorities           => True,
+                           No_Entry_Queue                  => True,
+                           No_Local_Protected_Objects      => True,
+                           No_Protected_Type_Allocators    => True,
+                           No_Requeue_Statements           => True,
+                           No_Task_Allocators              => True,
+                           No_Task_Attributes_Package      => True,
+                           No_Task_Hierarchy               => True,
+                           No_Terminate_Alternatives       => True,
+                           Max_Asynchronous_Select_Nesting => True,
+                           Max_Protected_Entries           => True,
+                           Max_Select_Alternatives         => True,
+                           Max_Task_Entries                => True,
+
+                           --  plus these additional restrictions:
+
+                           No_Calendar                     => True,
+                           No_Implicit_Heap_Allocations    => True,
+                           No_Relative_Delay               => True,
+                           No_Select_Statements            => True,
+                           No_Task_Termination             => True,
+                           Simple_Barriers                 => True,
+                           others                          => False),
+
+                        --  Value settings for Ravenscar (same as Restricted)
+
+                        Value =>
+                          (Max_Asynchronous_Select_Nesting => 0,
+                           Max_Protected_Entries           => 1,
+                           Max_Select_Alternatives         => 0,
+                           Max_Task_Entries                => 0,
+                           others                          => 0)));
+
 end System.Rident;

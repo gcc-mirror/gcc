@@ -1164,8 +1164,9 @@ package body Prj.Part is
          end;
 
          declare
-            Project_Name : Name_Id :=
-                             Tree_Private_Part.Projects_Htable.Get_First.Name;
+            Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
+                              Tree_Private_Part.Projects_Htable.Get_First;
+            Project_Name : Name_Id := Name_And_Node.Name;
 
          begin
             --  Check if we already have a project with this name
@@ -1173,13 +1174,17 @@ package body Prj.Part is
             while Project_Name /= No_Name
               and then Project_Name /= Name_Of_Project
             loop
-               Project_Name := Tree_Private_Part.Projects_Htable.Get_Next.Name;
+               Name_And_Node := Tree_Private_Part.Projects_Htable.Get_Next;
+               Project_Name := Name_And_Node.Name;
             end loop;
 
             --  Report an error if we already have a project with this name
 
             if Project_Name /= No_Name then
-               Error_Msg ("duplicate project name", Token_Ptr);
+               Error_Msg_Name_1 := Project_Name;
+               Error_Msg ("duplicate project name {", Location_Of (Project));
+               Error_Msg_Name_1 := Path_Name_Of (Name_And_Node.Node);
+               Error_Msg ("\already in {", Location_Of (Project));
 
             else
                --  Otherwise, add the name of the project to the hash table, so

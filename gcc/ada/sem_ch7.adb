@@ -805,8 +805,8 @@ package body Sem_Ch7 is
 
       procedure Inspect_Deferred_Constant_Completion is
          Decl   : Node_Id;
-      begin
 
+      begin
          Decl := First (Priv_Decls);
          while Present (Decl) loop
 
@@ -828,7 +828,6 @@ package body Sem_Ch7 is
                Error_Msg_N
                  ("constant declaration requires initialization expression",
                  Defining_Identifier (Decl));
-
             end if;
 
             Decl := Next (Decl);
@@ -929,8 +928,7 @@ package body Sem_Ch7 is
 
          Analyze_Declarations (Priv_Decls);
 
-         --  Check the private declarations for incomplete deferred
-         --  constants.
+         --  Check the private declarations for incomplete deferred constants
 
          Inspect_Deferred_Constant_Completion;
 

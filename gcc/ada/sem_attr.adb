@@ -862,6 +862,7 @@ package body Sem_Attr is
          --  Case of an expression
 
          Resolve (P);
+
          if Is_Access_Type (P_Type) then
 
             --  If there is an implicit dereference, then we must freeze

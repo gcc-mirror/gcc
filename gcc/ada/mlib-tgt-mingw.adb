@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2002-2004, Ada Core Technologies, Inc.           --
+--          Copyright (C) 2002-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,7 +28,8 @@
 --  This package provides a set of target dependent routines to build
 --  static, dynamic and shared libraries.
 
---  This is the Windows version of the body.
+--  This is the Windows version of the body. Works only with GCC versions
+--  supporting the "-shared" option.
 
 with Namet;  use Namet;
 with Opt;
@@ -37,11 +38,13 @@ with Prj.Com;
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 
-with MDLL;
-with MDLL.Utl;
 with MLib.Fil;
+with MLib.Utl;
 
 package body MLib.Tgt is
+
+   package Files renames MLib.Fil;
+   package Tools renames MLib.Utl;
 
    ---------------------
    -- Archive_Builder --
@@ -98,73 +101,121 @@ package body MLib.Tgt is
       Relocatable  : Boolean := False;
       Auto_Init    : Boolean := False)
    is
-      pragma Unreferenced (Ofiles);
-      pragma Unreferenced (Interfaces);
-      pragma Unreferenced (Symbol_Data);
-      pragma Unreferenced (Driver_Name);
-      pragma Unreferenced (Lib_Version);
+      pragma Unreferenced (Foreign);
+      pragma Unreferenced (Afiles);
       pragma Unreferenced (Auto_Init);
+      pragma Unreferenced (Symbol_Data);
+      pragma Unreferenced (Interfaces);
+      pragma Unreferenced (Lib_Version);
 
-      Imp_File : constant String :=
-                   "lib" & MLib.Fil.Ext_To (Lib_Filename, Archive_Ext);
-      --  Name of the import library
+      Strip_Name  : constant String := "strip";
+      Strip_Exec  : String_Access;
 
-      DLL_File : constant String := MLib.Fil.Ext_To (Lib_Filename, DLL_Ext);
-      --  Name of the DLL file
+      procedure Strip_Reloc (Lib_File : String);
+      --  Strip .reloc section to build a non relocatable DLL
 
-      Lib_File : constant String := Lib_Dir & Directory_Separator & DLL_File;
-      --  Full path of the DLL file
+      -----------------
+      -- Strip_Reloc --
+      -----------------
 
-      Success : Boolean;
+      procedure Strip_Reloc (Lib_File : String) is
+         Arguments   : Argument_List (1 .. 3);
+         Success     : Boolean;
+         Line_Length : Natural;
+
+      begin
+         --  Look for strip executable
+
+         Strip_Exec := Locate_Exec_On_Path (Strip_Name);
+
+         if Strip_Exec = null then
+            Fail (Strip_Name, " not found in path");
+
+         elsif Opt.Verbose_Mode then
+            Write_Str  ("found ");
+            Write_Line (Strip_Exec.all);
+         end if;
+
+         --  Call it: strip -R .reloc <dll>
+
+         Arguments (1) := new String'("-R");
+         Arguments (2) := new String'(".reloc");
+         Arguments (3) := new String'(Lib_File);
+
+         if not Opt.Quiet_Output then
+            Write_Str (Strip_Exec.all);
+            Line_Length := Strip_Exec'Length;
+
+            for K in Arguments'Range loop
+
+               --  Make sure the Output buffer does not overflow
+
+               if Line_Length + 1 + Arguments (K)'Length >
+                 Integer (Opt.Max_Line_Length)
+               then
+                  Write_Eol;
+                  Line_Length := 0;
+               end if;
+
+               Write_Char (' ');
+               Write_Str  (Arguments (K).all);
+               Line_Length := Line_Length + 1 + Arguments (K)'Length;
+            end loop;
+
+            Write_Eol;
+         end if;
+
+         Spawn (Strip_Exec.all, Arguments, Success);
+
+         if not Success then
+            Fail (Strip_Name, " execution error.");
+         end if;
+
+         for K in Arguments'Range loop
+            Free (Arguments (K));
+         end loop;
+      end Strip_Reloc;
+
+      Lib_File : constant String :=
+        Lib_Dir & Directory_Separator & "lib" &
+        Files.Ext_To (Lib_Filename, DLL_Ext);
+
+      I_Base    : aliased String := "-Wl,--image-base," & Lib_Address;
+
+      Options_2 : Argument_List (1 .. 1);
+      O_Index   : Natural := 0;
+
+   --  Start of processing for Build_Dynamic_Library
 
    begin
       if Opt.Verbose_Mode then
-         if Relocatable then
-            Write_Str ("building relocatable shared library ");
-         else
-            Write_Str ("building non-relocatable shared library ");
+         Write_Str ("building ");
+
+         if not Relocatable then
+            Write_Str ("non-");
          end if;
 
+         Write_Str ("relocatable shared library ");
          Write_Line (Lib_File);
       end if;
 
-      MDLL.Verbose := Opt.Verbose_Mode;
-      MDLL.Quiet   := not MDLL.Verbose;
-
-      MDLL.Utl.Locate;
-
-      MDLL.Build_Dynamic_Library
-        (Foreign, Afiles,
-         MDLL.Null_Argument_List, MDLL.Null_Argument_List, Options,
-         Lib_Filename, Lib_Filename & ".def",
-         Lib_Address, True, Relocatable);
-
-      --  Move the DLL and import library in the lib directory
-
-      Copy_File (DLL_File, Lib_Dir, Success, Mode => Overwrite);
-
-      if not Success then
-         Fail ("could not copy DLL to library dir");
+      if not Relocatable then
+         O_Index := O_Index + 1;
+         Options_2 (O_Index) := I_Base'Unchecked_Access;
       end if;
 
-      Copy_File (Imp_File, Lib_Dir, Success, Mode => Overwrite);
+      Tools.Gcc
+        (Output_File => Lib_File,
+         Objects     => Ofiles,
+         Options     => Options,
+         Driver_Name => Driver_Name,
+         Options_2   => Options_2 (1 .. O_Index));
 
-      if not Success then
-         Fail ("could not copy import library to library dir");
-      end if;
+      if not Relocatable then
 
-      --  Delete files
+         --  Strip reloc symbols from the DLL
 
-      Delete_File (DLL_File, Success);
-
-      if not Success then
-         Fail ("could not delete DLL from build dir");
-      end if;
-
-      Delete_File (Imp_File, Success);
-
-      if not Success then
-         Fail ("could not delete import library from build dir");
+         Strip_Reloc (Lib_File);
       end if;
    end Build_Dynamic_Library;
 
@@ -192,7 +243,7 @@ package body MLib.Tgt is
 
    function Dynamic_Option return String is
    begin
-      return "";
+      return "-shared";
    end Dynamic_Option;
 
    -------------------
@@ -219,7 +270,7 @@ package body MLib.Tgt is
 
    function Is_Archive_Ext (Ext : String) return Boolean is
    begin
-      return Ext = ".a";
+      return Ext = ".a" or else Ext = ".dll";
    end Is_Archive_Ext;
 
    -------------
@@ -245,24 +296,21 @@ package body MLib.Tgt is
       else
          declare
             Lib_Dir : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Dir);
+                        Get_Name_String
+                          (Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (Projects.Table (Project).Library_Name);
 
          begin
             if Projects.Table (Project).Library_Kind = Static then
-
-               --  Static libraries are named : lib<name>.a
-
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
                   MLib.Fil.Ext_To (Lib_Name, Archive_Ext));
 
             else
-               --  Shared libraries are named : <name>.dll
-
                return Is_Regular_File
-                 (Lib_Dir & Directory_Separator &
+                 (Lib_Dir & Directory_Separator & "lib" &
                   MLib.Fil.Ext_To (Lib_Name, DLL_Ext));
             end if;
          end;
@@ -283,23 +331,16 @@ package body MLib.Tgt is
       else
          declare
             Lib_Name : constant String :=
-                         Get_Name_String
-                           (Projects.Table (Project).Library_Name);
+              Get_Name_String (Projects.Table (Project).Library_Name);
 
          begin
+            Name_Len := 3;
+            Name_Buffer (1 .. Name_Len) := "lib";
+
             if Projects.Table (Project).Library_Kind = Static then
-
-               --  Static libraries are named : lib<name>.a
-
-               Name_Len := 3;
-               Name_Buffer (1 .. Name_Len) := "lib";
-
                Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
 
             else
-               --  Shared libraries are named : <name>.dll
-
-               Name_Len := 0;
                Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
             end if;
 
