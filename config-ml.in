@@ -553,6 +553,7 @@ multi-do:
 				LIBCFLAGS="$(LIBCFLAGS) $${flags}" \
 				LIBCXXFLAGS="$(LIBCXXFLAGS) $${flags}" \
 				LDFLAGS="$(LDFLAGS) $${flags}" \
+				DESTDIR="$(DESTDIR)" \
 				$(DO)); then \
 		  true; \
 		else \

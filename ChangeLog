@@ -1,3 +1,7 @@
+2003-02-12  Marc Espie  <espie@openbsd.org>
+
+	* config-ml.in: Propagate DESTDIR.
+
 2003-02-05  Release Manager
 
 	* GCC 3.2.2 Released.
