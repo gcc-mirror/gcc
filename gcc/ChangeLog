@@ -1,5 +1,18 @@
 2003-08-02  Neil Booth  <neil@daikokuya.co.uk>
 
+	* cppfiles.c (struct _cpp_file): Rename once_only_next to
+	next_file.  Remove import and pragma_once, add once_only.
+	(find_file): Add new file structures to the all_files list.
+	(should_stack_file): Mark #import-ed files once-only, and
+	don't stack them if the file has already been stacked.
+	(_cp_mark_file_once_only): Simplify.
+	* cpphash.h (struct cpp_reader): Rename once_only_files
+	to all_files.  Rename saw_pragma_once to seen_once_only.
+	(_cpp_mark_file_once_only): Update prototype.
+	* cpplib.c (do_pragma_once): Update.
+
+2003-08-02  Neil Booth  <neil@daikokuya.co.uk>
+
 	* cppfiles.c (ENOTDIR): Remove.
 	(open_file_in_dir): Rename find_file_in_dir.  Handle errors
 	other than ENOENT here.

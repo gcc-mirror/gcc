@@ -70,8 +70,8 @@ struct _cpp_file
      been calculated yet.  */
   const char *dir_name;
 
-  /* Chain through #import-ed files or those  containing #pragma once.  */
-  struct _cpp_file *once_only_next;
+  /* Chain through all files.  */
+  struct _cpp_file *next_file;
 
   /* The contents of NAME after calling read_file().  */
   const uchar *buffer;
@@ -97,11 +97,8 @@ struct _cpp_file
   /* Number of times the file has been stacked for preprocessing.  */
   unsigned short stack_count;
 
-  /* If opened with #import.  */
-  bool import;
-
-  /* If contains #pragma once.  */
-  bool pragma_once;
+  /* If opened with #import or contains #pragma once.  */
+  bool once_only;
 
   /* If read() failed before.  */
   bool dont_read;
@@ -383,13 +380,21 @@ find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool fake)
 
       entry = search_cache (*hash_slot, file->dir);
       if (entry)
-	{
-	  /* Cache for START_DIR too, sharing the _cpp_file structure.  */
-	  free ((char *) file->name);
-	  free (file);
-	  file = entry->u.file;
-	  break;
-	}
+	break;
+    }
+
+  if (entry)
+    {
+      /* Cache for START_DIR too, sharing the _cpp_file structure.  */
+      free ((char *) file->name);
+      free (file);
+      file = entry->u.file;
+    }
+  else
+    {
+      /* This is a new file; put it in the list.  */
+      file->next_file = pfile->all_files;
+      pfile->all_files = file;
     }
 
   /* Store this new result in the hash table.  */
@@ -520,6 +525,22 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 {
   _cpp_file *f;
 
+  /* Skip once-only files.  */
+  if (file->once_only)
+    return false;
+
+  /* We must mark the file once-only if #import now, before header 
+     guard checks.  Otherwise, undefining the header guard might
+     cause the file to be re-stacked.  */
+  if (import)
+    {
+      _cpp_mark_file_once_only (pfile, file);
+
+      /* Don't stack files that have been stacked before.  */
+      if (file->stack_count)
+	return false;
+    }
+
   /* Skip if the file had a header guard and the macro is defined.
      PCH relies on this appearing before the PCH handler below.  */
   if (file->cmacro && file->cmacro->type == NT_MACRO)
@@ -534,34 +555,23 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
       return false;
     }
 
-  /* Did this file contain #pragma once?  */
-  if (file->pragma_once)
-    return false;
-
-  /* Are we #import-ing a previously #import-ed file?  */
-  if (import && file->import)
-    return false;
-
-  /* Read the file's contents.  */
   if (!read_file (pfile, file))
     return false;
 
-  /* Nothing to check if this isn't #import and there haven't been any
-     #pragma_once directives.  */
-  if (!import && !pfile->saw_pragma_once)
+  /* Now we've read the file's contents, we can stack it if there
+     are no once-only files.  */
+  if (!pfile->seen_once_only)
     return true;
 
-  /* We may have #imported it under a different name, though.  Look
+  /* We may have read the file under a different name.  Look
      for likely candidates and compare file contents to be sure.  */
-  for (f = pfile->once_only_files; f; f = f->once_only_next)
+  for (f = pfile->all_files; f; f = f->next_file)
     {
       if (f == file)
 	continue;
 
-      if (!f->pragma_once && !(f->import && import))
-	continue;
-
-      if (f->err_no == 0
+      if ((import || f->once_only)
+	  && f->err_no == 0
 	  && f->st.st_mtime == file->st.st_mtime
 	  && f->st.st_size == file->st.st_size
 	  && read_file (pfile, f)
@@ -570,9 +580,6 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 	  && !memcmp (f->buffer, file->buffer, f->st.st_size))
 	break;
     }
-
-  if (import || f != NULL)
-    _cpp_mark_file_once_only (pfile, file, import);
 
   return f == NULL;
 }
@@ -619,27 +626,12 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
   return true;
 }
 
-/* Mark FILE to be included once only.  IMPORT is true if because of
-   #import, otherwise it is assumed to be #pragma once.  */
+/* Mark FILE to be included once only.  */
 void
-_cpp_mark_file_once_only (cpp_reader *pfile, _cpp_file *file, bool import)
+_cpp_mark_file_once_only (cpp_reader *pfile, _cpp_file *file)
 {
-  /* Put it on the once-only list if it's not on there already (an
-     earlier #include with a #pragma once might have put it on there
-     already).  */
-  if (!file->import && !file->pragma_once)
-    {
-      file->once_only_next = pfile->once_only_files;
-      pfile->once_only_files = file;
-    }
-
-  if (import)
-    file->import = true;
-  else
-    {
-      pfile->saw_pragma_once = true;
-      file->pragma_once = true;
-    }
+  pfile->seen_once_only = true;
+  file->once_only = true;
 }
 
 /* Return the directory from which searching for FNAME should start,

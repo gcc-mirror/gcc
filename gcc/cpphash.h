@@ -359,8 +359,8 @@ struct cpp_reader
   struct cpp_dir *bracket_include;	/* <> */
   struct cpp_dir no_search_path;	/* No path.  */
 
-  /* Chain of files that were #import-ed or contain #pragma once.  */
-  struct _cpp_file *once_only_files;
+  /* Chain of all hashed _cpp_file instances.  */
+  struct _cpp_file *all_files;
 
   /* File and directory hash table.  */
   struct htab *file_hash;
@@ -371,8 +371,9 @@ struct cpp_reader
      directory.  */
   bool quote_ignores_source_dir;
 
-  /* Non-zero if any file has contained #pragma once.  */
-  bool saw_pragma_once;
+  /* Non-zero if any file has contained #pragma once or #import has
+     been used.  */
+  bool seen_once_only;
 
   /* Multiple include optimization.  */
   const cpp_hashnode *mi_cmacro;
@@ -514,7 +515,7 @@ extern void _cpp_init_hashtable (cpp_reader *, hash_table *);
 extern void _cpp_destroy_hashtable (cpp_reader *);
 
 /* In cppfiles.c */
-extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *, bool);
+extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
 extern bool _cpp_stack_file (cpp_reader *, const char *);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
