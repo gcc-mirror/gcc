@@ -121,10 +121,17 @@ proc gfortran_link_flags { paths } {
     # Doing this does cause trouble when testing cross-compilers.
     if {![is_remote target]} {
         global env;
-        if { [info exists env(LD_LIBRARY_PATH)]
-             && $env(LD_LIBRARY_PATH) != "" } {
-                append ld_library_path ":$env(LD_LIBRARY_PATH)";
-        }
+	if [info exists env(LD_LIBRARY_PATH)] {
+	    # If we've already added these directories once, keep the
+	    # existing path.
+	    if {$ld_library_path == $env(LD_LIBRARY_PATH)
+		|| [string first $ld_library_path: \
+				 $env(LD_LIBRARY_PATH)] == 0} {
+		set ld_library_path $env(LD_LIBRARY_PATH)
+	    } elseif { $env(LD_LIBRARY_PATH) != "" } {
+		append ld_library_path ":$env(LD_LIBRARY_PATH)"
+	    }
+	}
         setenv  LD_LIBRARY_PATH     $ld_library_path
         setenv  SHLIB_PATH          $ld_library_path
         setenv  LD_LIBRARYN32_PATH  $ld_library_path

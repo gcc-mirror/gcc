@@ -1,3 +1,9 @@
+2004-07-30  Richard Sandiford  <rsandifo@redhat.com>
+
+	* lib/g++.exp (g++_link_flags): Check whether LD_LIBRARY_PATH already
+	contains $ld_library_path.
+	* lib/gfortran.exp (gfortran_link_flags): Likewise.
+
 2004-07-29  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/template/sizeof8.C: Don't assume 32bit pointers.
