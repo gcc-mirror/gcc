@@ -1,3 +1,12 @@
+2001-12-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.c-torture/execute/builtin-prefetch-1.c: New test.
+	* gcc.c-torture/execute/builtin-prefetch-2.c: New test.
+	* gcc.c-torture/execute/builtin-prefetch-3.c: New test.
+	* gcc.c-torture/execute/builtin-prefetch-4.c: New test.
+	* gcc.c-torture/execute/builtin-prefetch-5.c: New test.
+	* gcc.dg/builtin-prefetch-1.c: New test.
+
 2001-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20011130-1.c: New test.
