@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 1988, 1989, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -369,7 +369,7 @@ extern int target_flags;
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		(TARGET_V9 ? 8 : 4)
-#define MAX_UNITS_PER_WORD	8
+#define MIN_UNITS_PER_WORD	4
 
 /* Now define the sizes of the C data types.  */
 

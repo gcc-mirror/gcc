@@ -967,7 +967,7 @@ do {							\
 
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
-#define MAX_UNITS_PER_WORD 8
+#define MIN_UNITS_PER_WORD 4
 
 /* For MIPS, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
