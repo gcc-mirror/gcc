@@ -1,3 +1,8 @@
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java (getCanonicalHostName):
+	Support IPv6 addresses.
+
 2004-11-16  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Object.java: Added javadocs all over (merged from GNU
