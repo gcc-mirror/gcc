@@ -11095,28 +11095,11 @@ do_store_flag (exp, target, mode, only_cheap)
 
   if ((code == NE || code == EQ)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1))
-      && TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT)
+      && integer_pow2p (TREE_OPERAND (arg0, 1)))
     {
       tree inner = TREE_OPERAND (arg0, 0);
-      HOST_WIDE_INT tem;
-      int bitnum;
+      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
       int ops_unsignedp;
-
-      tem = INTVAL (expand_expr (TREE_OPERAND (arg0, 1),
-				 NULL_RTX, VOIDmode, 0));
-      /* In this case, immed_double_const will sign extend the value to make
-	 it look the same on the host and target.  We must remove the
-	 sign-extension before calling exact_log2, since exact_log2 will
-	 fail for negative values.  */
-      if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
-	  && BITS_PER_WORD == GET_MODE_BITSIZE (TYPE_MODE (type)))
-	/* We don't use the obvious constant shift to generate the mask,
-	   because that generates compiler warnings when BITS_PER_WORD is
-	   greater than or equal to HOST_BITS_PER_WIDE_INT, even though this
-	   code is unreachable in that case.  */
-	tem = tem & GET_MODE_MASK (word_mode);
-      bitnum = exact_log2 (tem);
 
       /* If INNER is a right shift of a constant and it plus BITNUM does
 	 not overflow, adjust BITNUM and INNER.  */
@@ -11127,7 +11110,7 @@ do_store_flag (exp, target, mode, only_cheap)
 	  && (bitnum + TREE_INT_CST_LOW (TREE_OPERAND (inner, 1))
 	      < TYPE_PRECISION (type)))
 	{
-	  bitnum +=TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
+	  bitnum += TREE_INT_CST_LOW (TREE_OPERAND (inner, 1));
 	  inner = TREE_OPERAND (inner, 0);
 	}
 
