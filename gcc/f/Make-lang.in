@@ -195,9 +195,9 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 # be universally valid.  `$(TEX)' should be used if it gets defined in
 # gcc/Makefile.in.
 	if [ -f lang-f77 ]; then \
-	  TEXINPUTS=$(srcdir)/f:$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
+	  TEXINPUTS=$(srcdir)/f:$(srcdir):$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
 	  texindex g77.??; \
-	  TEXINPUTS=$(srcdir)/f:$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
+	  TEXINPUTS=$(srcdir)/f:$(srcdir):$$TEXINPUTS tex $(srcdir)/f/g77.texi; \
 	  mv g77.dvi f; \
 	else true; fi
 
