@@ -1,4 +1,4 @@
-2005-03-18  2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
+2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r-protos.h: Remove the prototypes for
 	call_address_operand, symbolic_operand, seth_add3_operand,
@@ -25,6 +25,27 @@
 	* config/m32r/m32r.h (PREDICATE_CODES): Remove.
 	* config/m32r/m32r.md: Include predicates.md.
 	* config/m32r/predicates.md: New.
+
+	* config/pa/pa-protos.h: Add prototypes for magic_milli and
+	shadd_constant_p.
+	* config/pa/pa.c (reg_or_0_operand, call_operand_address,
+	symbolic_operand, symbolic_memory_operand,
+	reg_or_0_or_nonsymb_mem_operand, reg_before_reload_operand,
+	indexed_memory_operand, move_dest_operand, move_src_operand,
+	prefetch_cc_operand, prefetch_nocc_operand,
+	reg_or_cint_move_operand, pic_label_operand, fp_reg_operand,
+	arith_operand, arith11_operand, pre_cint_operand,
+	post_cint_operan, arith_double_operand, ireg_or_int5_operand,
+	ireg_operand, int5_operand, uint5_operand, int11_operand,
+	uint32_operand, arith5_operand, and_operand, ior_operand,
+	lhs_lshift_operand, lhs_lshift_cint_operand, arith32_operand,
+	pc_or_label_operand, div_operand, plus_xor_ior_operator,
+	shadd_operand, movb_comparison_operator,
+	cmpib_comparison_operator): Move to predicates.md.
+	(magic_milli, shadd_constant_p): Make it extern.
+	* config/pa/pa.h (PREDICATE_CODES): Remove.
+	* config/pa/pa.md: Include predicates.md.
+	* config/pa/predicates.md: New.
 
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 

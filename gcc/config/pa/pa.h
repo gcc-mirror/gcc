@@ -2128,49 +2128,6 @@ forget_section (void)							\
 /* The number of Pmode words for the setjmp buffer.  */
 #define JMP_BUF_SIZE 50
 
-#define PREDICATE_CODES							\
-  {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
-  {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
-			    CONST_DOUBLE, CONST, HIGH}},		 \
-  {"indexed_memory_operand", {SUBREG, MEM}},				\
-  {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
-  {"symbolic_memory_operand", {SUBREG, MEM}},				\
-  {"reg_before_reload_operand", {REG, MEM}},				\
-  {"reg_or_0_or_nonsymb_mem_operand", {SUBREG, REG, MEM, CONST_INT,	\
-				       CONST_DOUBLE}},			\
-  {"move_dest_operand", {SUBREG, REG, MEM}},				\
-  {"move_src_operand", {SUBREG, REG, CONST_INT, MEM}},			\
-  {"prefetch_cc_operand", {MEM}},					\
-  {"prefetch_nocc_operand", {MEM}},					\
-  {"reg_or_cint_move_operand", {SUBREG, REG, CONST_INT}},		\
-  {"pic_label_operand", {LABEL_REF, CONST}},				\
-  {"fp_reg_operand", {REG}},						\
-  {"arith_operand", {SUBREG, REG, CONST_INT}},				\
-  {"arith11_operand", {SUBREG, REG, CONST_INT}},			\
-  {"pre_cint_operand", {CONST_INT}},					\
-  {"post_cint_operand", {CONST_INT}},					\
-  {"arith_double_operand", {SUBREG, REG, CONST_DOUBLE}},		\
-  {"ireg_or_int5_operand", {CONST_INT, REG}},				\
-  {"int5_operand", {CONST_INT}},					\
-  {"uint5_operand", {CONST_INT}},					\
-  {"int11_operand", {CONST_INT}},					\
-  {"uint32_operand", {CONST_INT,					\
-   HOST_BITS_PER_WIDE_INT > 32 ? 0 : CONST_DOUBLE}},			\
-  {"arith5_operand", {SUBREG, REG, CONST_INT}},				\
-  {"and_operand", {SUBREG, REG, CONST_INT}},				\
-  {"ior_operand", {CONST_INT}},						\
-  {"lhs_lshift_cint_operand", {CONST_INT}},				\
-  {"lhs_lshift_operand", {SUBREG, REG, CONST_INT}},			\
-  {"arith32_operand", {SUBREG, REG, CONST_INT}},			\
-  {"pc_or_label_operand", {PC, LABEL_REF}},				\
-  {"plus_xor_ior_operator", {PLUS, XOR, IOR}},				\
-  {"shadd_operand", {CONST_INT}},					\
-  {"div_operand", {REG, CONST_INT}},					\
-  {"ireg_operand", {REG}},						\
-  {"cmpib_comparison_operator", {EQ, NE, LT, LE, LEU,			\
-   GT, GTU, GE}},							\
-  {"movb_comparison_operator", {EQ, NE, LT, GE}},
-
 /* We need a libcall to canonicalize function pointers on TARGET_ELF32.  */
 #define CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL \
   "__canonicalize_funcptr_for_compare"
