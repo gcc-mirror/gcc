@@ -37,7 +37,7 @@
 namespace std {
 
   template<typename _CharT, typename _Traits>
-    basic_streambuf<_CharT, _Traits>::int_type
+    typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
     sbumpc()
     {
@@ -54,7 +54,7 @@ namespace std {
     }
 
   template<typename _CharT, typename _Traits>
-    basic_streambuf<_CharT, _Traits>::int_type
+    typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
     sputbackc(char_type __c) 
     {
@@ -72,7 +72,7 @@ namespace std {
     }
   
   template<typename _CharT, typename _Traits>
-    basic_streambuf<_CharT, _Traits>::int_type
+    typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
     sungetc()
     {
@@ -93,7 +93,7 @@ namespace std {
   // buffers will still be valid. (This happens if setp is used to set
   // the internal buffer to say some externally-allocated sequence.)
   template<typename _CharT, typename _Traits>
-    basic_streambuf<_CharT, _Traits>::int_type
+    typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
     sputc(char_type __c)
     {

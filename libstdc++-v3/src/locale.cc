@@ -603,6 +603,7 @@ namespace std
     return __hi;
   }
 
+  template<>
   ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<char>(new mask[table_size], true, __refs)
   { }
@@ -1002,11 +1003,14 @@ namespace std
     return __incl_prec;
   }
 
+  template <>
   collate<char>::collate(size_t __refs)
   : locale::facet(__refs) { }
   
+  template<>
   collate<char>::~collate() { }
   
+  template<>
   int 
   collate<char>::do_compare(const char* __lo1, const char* __hi1, 
 			    const char* __lo2, const char* __hi2) const
@@ -1022,11 +1026,13 @@ namespace std
       return 0;
   }
   
+  template<>
   string
   collate<char>::
   do_transform(const char* __lo, const char* __hi) const
   { return string(__lo, __hi - __lo); }
   
+  template<>
   long
   collate<char>::
   do_hash(const char* __lo, const char* __hi) const
@@ -1037,18 +1043,22 @@ namespace std
 		   (__val >> (numeric_limits<unsigned long>::digits - 1)));
     return __val;
   }
-  
+
+  template<>  
   collate_byname<char>::collate_byname(const char* /*__s*/, size_t __refs)
   : collate<char>(__refs) { }
 
+  template<>
   moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
 						    size_t __refs)
   : moneypunct<char, false>(__refs) { }
   
+  template<>
   moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
 						   size_t __refs)
   : moneypunct<char, true>(__refs) { }
   
+  template<>
   messages_byname<char>::
   messages_byname(const char* /*__s*/, size_t __refs)
   : messages<char>(__refs) { }
@@ -1205,16 +1215,20 @@ namespace std
     return __hi;
   }
 
+  template<>
   ctype_byname<wchar_t>::
   ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<wchar_t>(__refs) { }
 
+  template<>
   collate<wchar_t>::
   collate(size_t __refs): locale::facet(__refs) { }
   
+  template<>
   collate<wchar_t>::
   ~collate() { }
 
+  template<>
   int 
   collate<wchar_t>::
   do_compare(const wchar_t* /*__lo1*/, const wchar_t* /*__hi1*/,
@@ -1222,23 +1236,27 @@ namespace std
   {
     return 0; // XXX not done
   }
-  
+
+  template<>  
   wstring collate<wchar_t>::
   do_transform(const wchar_t* /*__lo*/, const wchar_t* /*__hi*/) const
   {
     return wstring(); // XXX not done
   }
   
+  template<>
   long collate<wchar_t>::
   do_hash(const wchar_t* /*__lo*/, const wchar_t* /*__hi*/) const
   {
     return 0; // XXX not done
   }
 
+  template<>
   collate_byname<wchar_t>::
   collate_byname(const char* /*__s*/, size_t __refs)
   : collate<wchar_t> (__refs) { }
   
+  template<>
   messages_byname<wchar_t>::
   messages_byname(const char* /*__s*/, size_t __refs)
   : messages<wchar_t> (__refs) { }

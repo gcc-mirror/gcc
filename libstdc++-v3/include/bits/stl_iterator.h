@@ -442,7 +442,7 @@ namespace std
 
   template<typename _Iterator, typename _Container>
   inline __normal_iterator<_Iterator, _Container>
-  operator+(__normal_iterator<_Iterator, _Container>::difference_type __n,
+  operator+(typename __normal_iterator<_Iterator, _Container>::difference_type __n,
 	    const __normal_iterator<_Iterator, _Container>& __i)
   { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
 } // namespace std

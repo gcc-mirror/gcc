@@ -1,3 +1,18 @@
+2001-07-19  Phil Edwards  <pme@sources.redhat.com>
+            Mark Mitchell <mark@codesourcery.com>
+
+	Merge from cp-parser-branch.
+	* include/bits/basic_string.h:  Qualify symbols with 'template'.
+	* include/bits/basic_string.tcc:  Likewise.
+	* include/bits/fstream.tcc:  Likewise.
+	* include/bits/istream.tcc:  Likewise.
+	* include/bits/sstream.tcc:  Likewise.
+	* include/bits/std_istream.h:  Likewise.
+	* include/bits/stl_iterator.h:  Likewise.
+	* include/bits/streambuf.tcc:  Likewise.
+	* src/gen-num-limits.cc:  Add 'template<>' to specializations.
+	* src/locale.cc:  Likewise.
+
 2001-07-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 	    Bert De Knuydt <Bert.Deknuydt@esat.kuleuven.ac.be>
 

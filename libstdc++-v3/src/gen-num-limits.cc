@@ -206,7 +206,9 @@ template<typename T>
   };
 
 #define DEFINED_TYPE_NAME(T)                                            \
+template<>                                                              \
 const char type_name_trait< T >::type_name[] = #T;                      \
+template<>                                                              \
 const char type_name_trait< T >::trait_name[] = "numeric_limits<" #T ">";
 
 DEFINED_TYPE_NAME(bool);
@@ -279,7 +281,9 @@ template<typename T>
 const bool predicate<T>::is_exact = true;
 
 #define SPECIALIZE_EXACTNESS(T)						\
+template<>                                                              \
 const bool predicate< T >::is_integer = false;				\
+template<>                                                              \
 const bool predicate< T >::is_exact = false
 
 SPECIALIZE_EXACTNESS(float);
@@ -311,6 +315,7 @@ template<typename T>
 const bool predicate<T>::is_iec559 = false;
 
 #define SPECIALIZE_IEC559(T)						\
+template<>                                                              \
 const bool predicate< T >::is_iec559 = true
 
 SPECIALIZE_IEC559(bool);
@@ -349,7 +354,9 @@ template<typename T>
 
 #define DEFINE_EXTREMA(T, m, M)  DO_DEFINE_EXTREMA(T, m, M)
 #define DO_DEFINE_EXTREMA(T, m, M)					\
+template<>                                                              \
 const char value< T >::min[] = #m;					\
+template<>                                                              \
 const char value< T >::max[] = #M
 
 DEFINE_EXTREMA(bool, false, true);
@@ -386,8 +393,10 @@ const int value<T>::digits =
 template<typename T>
 const int value<T>::radix = 2;
 
-#define SPECIALIZE_DIGITS(T, D, D10)					\
-const int value< T >::digits = D;					\
+#define SPECIALIZE_DIGITS(T, D, D10)		\
+template<>					\
+const int value< T >::digits = D;		\
+template<>					\
 const int value< T >::digits10 = D10
 
 SPECIALIZE_DIGITS(float, FLT_MANT_DIG, FLT_DIG);
@@ -397,7 +406,9 @@ SPECIALIZE_DIGITS(long double, LDBL_MANT_DIG, LDBL_DIG);
 #undef SPECIALIZE_DIGITS
 
 
-#define SPECIALIZE_RADIX(T, R) const int value< T >::radix = R
+#define SPECIALIZE_RADIX(T, R)			\
+template<>					\
+const int value< T >::radix = R
 
 SPECIALIZE_RADIX(float, FLT_RADIX);
 SPECIALIZE_RADIX(double, FLT_RADIX);
@@ -418,7 +429,9 @@ const char value<T>::epsilon[] = "0";
 #endif
 
 #define SPECIALIZE_EPSILON(T, E) DO_SPECIALIZE_EPSILON(T, E)
-#define DO_SPECIALIZE_EPSILON(T, E) const char value< T >::epsilon[] = #E
+#define DO_SPECIALIZE_EPSILON(T, E)		\
+template<> 					\
+const char value< T >::epsilon[] = #E
 
 // unsophisticated, gross method
 #if 1
@@ -457,7 +470,9 @@ template<typename T>
 const char value<T>::round_error[] = "0";
 #endif
 
-#define SPECIALIZE_ROUND_ERROR(T, R) const char value< T >::round_error[] = #R
+#define SPECIALIZE_ROUND_ERROR(T, R) 		\
+template<>					\
+const char value< T >::round_error[] = #R
 // unsophisticated, gross method
 #if 1
 SPECIALIZE_ROUND_ERROR(bool, 0);
@@ -494,10 +509,14 @@ const int value<T>::max_exponent = 0;
 template<typename T>
 const int value<T>::max_exponent10 = 0;
 
-#define SPECIALIZE_EXPONENTS(T, m, m10, M, M10)				\
-const int value< T >::min_exponent = m;					\
-const int value< T >::min_exponent10 = m10;				\
-const int value< T >::max_exponent = M;					\
+#define SPECIALIZE_EXPONENTS(T, m, m10, M, M10)	\
+template<>					\
+const int value< T >::min_exponent = m;		\
+template<>					\
+const int value< T >::min_exponent10 = m10;	\
+template<>					\
+const int value< T >::max_exponent = M;		\
+template<>					\
 const int value< T >::max_exponent10 = M10
 
 SPECIALIZE_EXPONENTS(float, FLT_MIN_EXP, FLT_MIN_10_EXP,
