@@ -1,3 +1,8 @@
+2002-07-24  Michael Matz  <matz@suse.de>
+
+	* ra-colorize.c (INV_REG_ALLOC_ORDER): New macro.
+	(free_reg): Use it.
+
 2002-07-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (arm_buneq, arm_bltgt): put '\' before ';' in output

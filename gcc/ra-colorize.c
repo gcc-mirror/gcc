@@ -1031,6 +1031,13 @@ color_usable_p (c, dont_begin_colors, free_colors, mode)
   return 0;
 }
 
+/* I don't want to clutter up the actual code with ifdef's.  */
+#ifdef REG_ALLOC_ORDER
+#define INV_REG_ALLOC_ORDER(c) inv_reg_alloc_order[c]
+#else
+#define INV_REG_ALLOC_ORDER(c) c
+#endif
+
 /* Searches in FREE_COLORS for a block of hardregs of the right length
    for MODE, which doesn't begin at a hardreg mentioned in DONT_BEGIN_COLORS.
    If it needs more than one hardreg it prefers blocks beginning
@@ -1065,16 +1072,16 @@ get_free_reg (dont_begin_colors, free_colors, mode)
 	  {
 	    if (size < 2 || (c & 1) == 0)
 	      {
-		if (inv_reg_alloc_order[c] < pref_reg_order)
+		if (INV_REG_ALLOC_ORDER (c) < pref_reg_order)
 		  {
 		    pref_reg = c;
-		    pref_reg_order = inv_reg_alloc_order[c];
+		    pref_reg_order = INV_REG_ALLOC_ORDER (c);
 		  }
 	      }
-	    else if (inv_reg_alloc_order[c] < last_resort_reg_order)
+	    else if (INV_REG_ALLOC_ORDER (c) < last_resort_reg_order)
 	      {
 		last_resort_reg = c;
-		last_resort_reg_order = inv_reg_alloc_order[c];
+		last_resort_reg_order = INV_REG_ALLOC_ORDER (c);
 	      }
 	  }
 	else
