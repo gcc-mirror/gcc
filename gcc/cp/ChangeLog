@@ -1,3 +1,9 @@
+2000-01-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* friend.c (do_friend): Don't resolve scopes when processing
+	template declarations, even if the qualifying scope doesn't
+	involve template parameters.
+
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
 	* class.c (dfs_modify_vtables_queue_p): Remove.
