@@ -169,7 +169,6 @@ Boston, MA 02111-1307, USA.  */
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
-#if 0
 /* Undefine the following which were defined in elf.h.  This will cause the linux
    port to continue to use collect2 for constructors/destructors.  These may be removed
    when .ctor/.dtor section support is desired. */
@@ -197,5 +196,4 @@ Boston, MA 02111-1307, USA.  */
 #undef CTOR_LIST_END
 #undef DTOR_LIST_BEGIN
 #undef DTOR_LIST_END
-#endif
 /*  End of undefines to turn off .ctor/.dtor section support */

@@ -1,3 +1,8 @@
+2000-04-26  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h: Remove erroneous commit of #if 0/#endif in
+	last patch.
+
 2000-04-25  Richard Henderson  <rth@cygnus.com>
 
         * cse.c (cse_insn): Emit barrier after unconditional jump.
