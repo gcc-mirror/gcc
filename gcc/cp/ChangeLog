@@ -1,5 +1,12 @@
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20073
+	* decl.c (start_decl_1): Don't clear TREE_READONLY.
+	(cp_finish_decl): Likewise.
+	(complete_vars): Call cp_apply_type_quals_to_decl.
+	* typeck.c (cp_apply_type_quals): Avoid setting TREE_READONLY in
+	cases where that's not valid.
+
 	PR c++/19991
 	* init.c (integral_constant_value): Iterate if the value of a decl
 	is itself a constant.
