@@ -1,3 +1,9 @@
+2005-01-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (remove_forwarder_block): Fix the check to
+	prevent a nonlocal label from appearing in the middle of a
+	basic block.
+
 2005-01-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/19462
