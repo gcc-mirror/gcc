@@ -1,3 +1,12 @@
+Wed Feb 23 16:42:21 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (shorten_branches): Make value passed to LABEL_ALIGN
+	conform to documentation.
+	* sh.h (LABEL_ALIGN): If aligning loops, call sh_label_align
+	to check for special cases.
+	* sh-protos.h (sh_label_align): Declare.
+	* sh.c (sh_label_align): Define.
+
 2000-02-22  Andrew Haley  <aph@cygnus.com>
 
 	* config/mips/mips.h (GAS_ASM_SPEC): Pass -mgp32/-mgp64 to gas.
