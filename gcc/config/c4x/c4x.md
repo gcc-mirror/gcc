@@ -4248,7 +4248,7 @@
     emit_insn (gen_rtx_SET (QImode, operands[0],
                             gen_rtx_IF_THEN_ELSE (QImode,
                                  gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx),
-                                          operands[2], operands[3])));
+						 operands[2], operands[3])));
     DONE;}")
                       
 (define_insn "*ldf_conditional"
@@ -4292,7 +4292,7 @@
     emit_insn (gen_rtx_SET (QFmode, operands[0],
                             gen_rtx_IF_THEN_ELSE (QFmode,
                                  gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx),
-                                          operands[2], operands[3])));
+						 operands[2], operands[3])));
     DONE;}")
 
 (define_insn "*ldhf_conditional"
@@ -4335,7 +4335,7 @@
     emit_insn (gen_rtx_SET (HFmode, operands[0],
                             gen_rtx_IF_THEN_ELSE (HFmode,
                                  gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx),
-                                          operands[2], operands[3])));
+						 operands[2], operands[3])));
     DONE;}")
 
 (define_expand "seq"

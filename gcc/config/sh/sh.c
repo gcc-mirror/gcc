@@ -958,13 +958,13 @@ prepare_scc_operands (enum rtx_code code)
     (mode == SFmode ? emit_sf_insn : emit_df_insn)
      (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
 		gen_rtx_SET (VOIDmode, t_reg,
-			 gen_rtx_fmt_ee (code, SImode,
-				  sh_compare_op0, sh_compare_op1)),
+			     gen_rtx_fmt_ee (code, SImode,
+					     sh_compare_op0, sh_compare_op1)),
 		gen_rtx_USE (VOIDmode, get_fpscr_rtx ()))));
   else
     emit_insn (gen_rtx_SET (VOIDmode, t_reg,
-			gen_rtx_fmt_ee (code, SImode, sh_compare_op0,
-				 sh_compare_op1)));
+			    gen_rtx_fmt_ee (code, SImode,
+					    sh_compare_op0, sh_compare_op1)));
 
   return t_reg;
 }
@@ -997,8 +997,8 @@ from_compare (rtx *operands, int code)
   else
     insn = gen_rtx_SET (VOIDmode,
 			gen_rtx_REG (SImode, T_REG),
-			gen_rtx_fmt_ee (code, SImode, sh_compare_op0,
-				 sh_compare_op1));
+			gen_rtx_fmt_ee (code, SImode,
+					sh_compare_op0, sh_compare_op1));
   if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       insn = gen_rtx_PARALLEL (VOIDmode,

@@ -1856,7 +1856,7 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	    continue;
 	  
 	  insn = gen_rtx_SET (VOIDmode, w_dest, gen_rtx_fmt_ee (code, mode,
-							 w_src0, w_src1));
+								w_src0, w_src1));
 	  break;
 
 	case NOT:
