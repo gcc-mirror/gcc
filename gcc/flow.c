@@ -464,7 +464,10 @@ life_analysis (rtx f, FILE *file, int flags)
      is not immediately handy.  */
 
   if (flags & PROP_REG_INFO)
-    memset (regs_ever_live, 0, sizeof (regs_ever_live));
+    {
+      memset (regs_ever_live, 0, sizeof (regs_ever_live));
+      memset (regs_asm_clobbered, 0, sizeof (regs_asm_clobbered));
+    }
   update_life_info (NULL, UPDATE_LIFE_GLOBAL, flags);
 
   /* Clean up.  */
@@ -2445,6 +2448,7 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
   rtx cond = NULL_RTX;
   rtx link;
   enum rtx_code code;
+  int flags = pbi->flags;
 
   if (insn)
     for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
@@ -2453,14 +2457,17 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
 	  mark_set_1 (pbi, SET, XEXP (link, 0),
 		      (GET_CODE (x) == COND_EXEC
 		       ? COND_EXEC_TEST (x) : NULL_RTX),
-		      insn, pbi->flags);
+		      insn, flags);
       }
  retry:
   switch (code = GET_CODE (x))
     {
     case SET:
+      if (GET_CODE (XEXP (x, 1)) == ASM_OPERANDS)
+	flags |= PROP_ASM_SCAN;
+      /* Fall thru */
     case CLOBBER:
-      mark_set_1 (pbi, code, SET_DEST (x), cond, insn, pbi->flags);
+      mark_set_1 (pbi, code, SET_DEST (x), cond, insn, flags);
       return;
 
     case COND_EXEC:
@@ -2483,13 +2490,20 @@ mark_set_regs (struct propagate_block_info *pbi, rtx x, rtx insn)
 
 		cond = COND_EXEC_TEST (sub);
 		sub = COND_EXEC_CODE (sub);
-		if (GET_CODE (sub) != SET && GET_CODE (sub) != CLOBBER)
-		  break;
-		/* Fall through.  */
+		if (GET_CODE (sub) == SET)
+		  goto mark_set;
+		if (GET_CODE (sub) == CLOBBER)
+		  goto mark_clob;
+		break;
 
 	      case SET:
+	      mark_set:
+		if (GET_CODE (XEXP (sub, 1)) == ASM_OPERANDS)
+		  flags |= PROP_ASM_SCAN;
+		/* Fall thru */
 	      case CLOBBER:
-		mark_set_1 (pbi, code, SET_DEST (sub), cond, insn, pbi->flags);
+	      mark_clob:
+		mark_set_1 (pbi, code, SET_DEST (sub), cond, insn, flags);
 		break;
 
 	      default:
@@ -2713,6 +2727,9 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 		{
 		  for (i = regno_first; i <= regno_last; i++)
 		    regs_ever_live[i] = 1;
+		  if (flags & PROP_ASM_SCAN)
+		    for (i = regno_first; i <= regno_last; i++)
+		      regs_asm_clobbered[i] = 1;
 		}
 	      else
 		{
@@ -2798,6 +2815,14 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
     {
       if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
 	pbi->reg_next_use[regno_first] = 0;
+
+      if ((flags & PROP_REG_INFO) != 0
+	  && (flags & PROP_ASM_SCAN) != 0
+	  &&  regno_first < FIRST_PSEUDO_REGISTER)
+	{
+	  for (i = regno_first; i <= regno_last; i++)
+	    regs_asm_clobbered[i] = 1;
+	}
     }
 
   /* If this is the last pass and this is a SCRATCH, show it will be dying

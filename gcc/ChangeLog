@@ -1,3 +1,15 @@
+2003-12-06  Alan Modra  <amodra@bigpond.net.au>
+
+	PR 13169
+	* basic-block.h (PROP_ASM_SCAN): Define.
+	* final.c (regs_asm_clobbered): New array.
+	* regs.h (regs_asm_clobbered): Declare.
+	* flow.c (life_analysis): Init it.
+	(mark_set_regs): Set PROP_ASM_SCAN for asms.
+	(mark_set_1): Set regs_asm_clobbered.
+	* global.c (global_alloc): Don't set eliminable_regset when
+	regs_asm_clobbered.
+
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/ia64/ia64.h (MUST_PASS_IN_STACK): Define.

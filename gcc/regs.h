@@ -153,10 +153,13 @@ extern bitmap_head subregs_of_mode;
 
 extern short *reg_renumber;
 
-/* Vector indexed by hardware reg
-   saying whether that reg is ever used.  */
+/* Vector indexed by hardware reg saying whether that reg is ever used.  */
 
 extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
+
+/* Like regs_ever_live, but saying whether reg is set by asm statements.  */
+
+extern char regs_asm_clobbered[FIRST_PSEUDO_REGISTER];
 
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise
