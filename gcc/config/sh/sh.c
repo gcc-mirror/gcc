@@ -201,8 +201,8 @@ push_regs (mask)
 
 
 /* Print an instruction which would have gone into a delay slot after
-   an instructiuon, but couldn't because the instruction expanded into a
-   sequence where putting the slot insn at the end wouldn't work. */
+   another instruction, but couldn't because the other instruction expanded
+   into a sequence where putting the slot insn at the end wouldn't work. */
 
 static void
 print_slot (insn)
@@ -248,13 +248,6 @@ calc_live_regs (count_ptr)
 	      count++;
 	    }
 	}
-      else if (TARGET_SMALLCALL)
-	{
-	  /* Don't need to push anthing, but count the regs which have
-	     been pushed by the wrapper */
-	  if (call_used_regs[reg])
-	    count++;
-	}
       else
 	{
 	  /* Only push those regs which are used and need to be saved */
@@ -271,12 +264,16 @@ calc_live_regs (count_ptr)
   return live_regs_mask;
 }
 
+/* This returns true if INSN is a conditional branch whose delay slot
+   has been filled.  This indicates that it must be a bf.s/bt.s.
+
+   ??? This function could be eliminated.  */
 
 static int
 need_slot (insn)
      rtx insn;
 {
-  return (insn && !INSN_ANNULLED_BRANCH_P (XVECEXP (insn, 0, 0)));
+  return insn;
 }
 
 /* Print the operand address in x to the stream */
@@ -343,9 +340,6 @@ print_operand_address (stream, x)
    according to modifier code.
 
    '.'  print a .s if insn needs delay slot
-   '*'  print a local label
-   '^'  increment the local label number
-   '!'  dump the constant table
    '#'  output a nop if there is nothing to put in the delay slot
    '@'  print rte or rts depending upon pragma interruptness
    'R'  print the LSW of a dp value - changes if in little endian
@@ -366,12 +360,6 @@ print_operand (stream, x, code)
     case '.':
       if (need_slot (final_sequence))
 	fprintf (stream, ".s");
-      break;
-    case '*':
-      fprintf (stream, "LF%d", lf);
-      break;
-    case '^':
-      lf++;
       break;
     case '@':
       if (pragma_interrupt)
@@ -488,6 +476,9 @@ sextb (x)
    00000000 00000000 00000000 1NNNNNNNN load and zero extend byte
    00000000 00000000 11111111 1NNNNNNNN load and zero extend word
 
+   ??? Can add cases using swap.b and swap.w.
+   Can add cases using andi to get `1s 1s 1s 0NNNNNN1'.
+   Can add many more cases for TARGET_CLEN3, but doubt their usefulness.
 
 */
 
@@ -521,13 +512,13 @@ synth_constant (operands, mode)
   if ((i & 0xffffff80) == 0x0000ff80)
     {
       emit_move_insn (dst, GEN_INT (sextb (i)));
-      emit_insn (gen_and_ffff (dst, dst));
+      emit_insn (gen_zero_extendhisi2 (dst, gen_lowpart (HImode, dst)));
     }
   /*    00000000 00000000 00000000 1NNNNNNNN load and zero extend byte */
   else if ((i & 0xffffff80) == 0x00000080)
     {
       emit_move_insn (dst, GEN_INT (sextb (i)));
-      emit_insn (gen_and_ff (dst, dst));
+      emit_insn (gen_zero_extendqisi2 (dst, gen_lowpart (QImode, dst)));
     }
   /*   00000000 00000000 00000000 NNNNNNNN0 load and shift by 1
        11111111 11111111 11111111 NNNNNNNN0 load and shift by 1 */
@@ -535,7 +526,7 @@ synth_constant (operands, mode)
 	   || (i & 0xffffff01) == 0xffffff00)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 1)));
-      emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (1)));
+      emit_insn (gen_ashlsi3_k (dst, dst, GEN_INT (1)));
     }
   /*   00000000 00000000 0000000N NNNNNNN00 load and shift by 2
        11111111 11111111 1111111N NNNNNNN00 load and shift by 2*/
@@ -543,7 +534,7 @@ synth_constant (operands, mode)
 	   || (i & 0xfffffe03) == 0xfffffe00)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 2)));
-      emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (2)));
+      emit_insn (gen_ashlsi3_k (dst, dst, GEN_INT (2)));
     }
   /*   00000000 00000000 0NNNNNNN 000000000 load and shift by 8
        11111111 11111111 1NNNNNNN 000000000 load and shift by 8 */
@@ -552,7 +543,7 @@ synth_constant (operands, mode)
 	   || (i & 0xffff80ff) == 0xffff8000)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 8)));
-      emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (8)));
+      emit_insn (gen_ashlsi3_k (dst, dst, GEN_INT (8)));
     }
   /*     00000000 0NNNNNNN 00000000 000000000 load and shift by 16
 	 11111111 1NNNNNNN 00000000 000000000 load and shift by 16 */
@@ -560,13 +551,13 @@ synth_constant (operands, mode)
 	   || (i & 0xff80ffff) == 0xff800000)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 16)));
-      emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (16)));
+      emit_insn (gen_ashlsi3_k (dst, dst, GEN_INT (16)));
     }
   /*   00000000 00000000 0NNNNNNN 0NNNNNNNN load shift 8 and add */
   else if ((i & 0xffff8080) == 0 && TARGET_CLEN3)
     {
       emit_move_insn (dst, GEN_INT (sextb (i >> 8)));
-      emit_insn (gen_ashlsi3_n (dst, dst, GEN_INT (8)));
+      emit_insn (gen_ashlsi3_k (dst, dst, GEN_INT (8)));
       emit_insn (gen_addsi3 (dst, dst, GEN_INT (i & 0x7f)));
     }
   else
@@ -808,8 +799,8 @@ prepare_scc_operands (code)
       switch (code)
 	{
 	case NE:
-	  newcode = EQ;
-	  break;
+	  /* It isn't possible to handle this case.  */
+	  abort ();
 	case LT:
 	  newcode = GT;
 	  break;
@@ -861,8 +852,6 @@ output_movedouble (insn, operands, mode)
   rtx dst = operands[0];
   rtx src = operands[1];
 
-/*   fprintf (asm_out_file, "! move double \n");
-  fprintf (asm_out_file, "! pc %04x\n", insn_addresses[INSN_UID (insn)]);*/
   if (GET_CODE (dst) == MEM
       && GET_CODE (XEXP (dst, 0)) == POST_INC)
     {
@@ -881,9 +870,9 @@ output_movedouble (insn, operands, mode)
        */
 
       if (REGNO (src) + 1 == REGNO (dst))
-	return "mov	%T1,%T0\n\tmov	%1,%0 ! cra";
+	return "mov	%T1,%T0\n\tmov	%1,%0";
       else
-	return "mov	%1,%0\n\tmov	%T1,%T0 ! crb";
+	return "mov	%1,%0\n\tmov	%T1,%T0";
     }
   else if (GET_CODE (src) == CONST_INT)
     {
@@ -929,7 +918,7 @@ output_movedouble (insn, operands, mode)
 	}
       else if (GET_CODE (inside) == POST_INC)
 	{
-	  return "mov.l	%1,%0\n\tmov.l	%1,%T0 !mdi\n";
+	  return "mov.l	%1,%0\n\tmov.l	%1,%T0";
 	}
       else
 	abort ();
@@ -942,7 +931,7 @@ output_movedouble (insn, operands, mode)
 	{
 	  /* This move clobbers both index registers,
 	     calculate the sum in one register.  */
-	  fprintf (asm_out_file, "	add	%s,%s ! special fix\n",
+	  fprintf (asm_out_file, "	add	%s,%s\n",
 		   reg_names[ptrreg2], reg_names[ptrreg1]);
 
 	  if (dreg == ptrreg1)
@@ -976,7 +965,7 @@ output_movedouble (insn, operands, mode)
       if (dreg == ptrreg1)
 	{
 	  /* Copy into the second half first */
-	  return "mov.l	%T1,%T0\n\tmov.l	%1,%0 ! cr";
+	  return "mov.l	%T1,%T0\n\tmov.l	%1,%0";
 	}
     }
 
@@ -1114,14 +1103,14 @@ output_far_jump (insn, op)
       output_asm_insn ("mov.l	%1,@-r15", vec);
       output_asm_insn ("mov.l	%O0,%1", vec);
 
-      output_asm_insn ("jmp	@%1 ! 32 xcond", vec);
+      output_asm_insn ("jmp	@%1", vec);
       output_asm_insn ("mov.l	@r15+,%1", vec);
     }
   else
     {
       output_asm_insn ("mov.l	r13,@-r15", 0);
       output_asm_insn ("mov.l	%O0,r13", &thislab);
-      output_asm_insn ("jmp	@r13 ! 32 zcond", 0);
+      output_asm_insn ("jmp	@r13", 0);
       output_asm_insn ("mov.l	@r15+,r13", 0);
     }
 
@@ -1138,8 +1127,6 @@ output_branch (logic, insn)
 {
   extern rtx recog_operand[];
   int label = lf++;
-
-  /*  fprintf (asm_out_file, "! pc %04x\n", insn_addresses[INSN_UID (insn)]);*/
 
   switch (get_attr_length (insn))
     {
@@ -1172,7 +1159,7 @@ output_branch (logic, insn)
 	  }
 	recog_operand[0] = oldop;
 
-	output_asm_insn ("bra	%l0	! 12 bit cond ", recog_operand);
+	output_asm_insn ("bra	%l0", recog_operand);
 	fprintf (asm_out_file, "\tor	r0,r0\n");
 	fprintf (asm_out_file, "LF%d:\n", label);
       }
@@ -1330,11 +1317,6 @@ final_prescan_insn (insn, opvec, noperands)
     }
 }
 
-
-
-
-/* Stuff taken from m88k.c */
-
 /* Output to FILE the start of the assembler file.  */
 
 struct option
@@ -1582,10 +1564,7 @@ gen_ashift (type, n, reg)
       emit_insn (gen_lshrsi3_k (reg, reg, GEN_INT (n)));
       break;
     case ASHIFT:
-      if (n == 1)
-	emit_insn (gen_addsi3 (reg, reg, reg));
-      else
-	emit_insn (gen_ashlsi3_k (reg, reg, GEN_INT (n)));
+      emit_insn (gen_ashlsi3_k (reg, reg, GEN_INT (n)));
       break;
     }
 }
@@ -1809,15 +1788,9 @@ fixit (src, mode)
       return 1;
     }
   if (GET_CODE (src) == LABEL_REF)
-    {
-      return 1;
-    }
+    return 1;
   if (GET_CODE (src) == CONST_INT)
     {
-      /* All QI insns are ok */
-      if (mode == QImode)
-	return 1;
-      /* The rest may need to be fixed */
       return !CONST_OK_FOR_I (INTVAL (src));
     }
   return 0;
@@ -1834,10 +1807,6 @@ hi_const (src)
       && GET_CODE (XEXP (XEXP (src, 0), 0)) == SYMBOL_REF)
     return 1;
 
-  if (TARGET_SHORTADDR
-      && GET_CODE (src) == SYMBOL_REF)
-    return 1;
-
   return (GET_CODE (src) == CONST_INT
 	  && INTVAL (src) >= -32768
 	  && INTVAL (src) <= 32767);
@@ -1845,6 +1814,14 @@ hi_const (src)
 
 /* Find the last barrier less than MAX_COUNT bytes from FROM, or create one.
    If an HI move is found, then make sure that MAX_COUNT_HI isn't broken from that one. */
+
+/* ??? It would be good to put constant pool tables between a case jump and
+   the jump table.  This fails for two reasons.  First, there is no
+   barrier after the case jump.  This is a bug in the casesi pattern.
+   Second, inserting the table here may break the mova instruction that
+   loads the jump table address, by moving the jump table too far away.
+   We fix that problem by never outputting the constant pool between a mova
+   and its label.  */
 
 static
 rtx
@@ -1856,6 +1833,7 @@ find_barrier (from)
   int found_hi = 0;
   int found_si = 0;
   rtx found_barrier = 0;
+  rtx found_mova = 0;
   while (from
 	 && count_si < max_count_si
 	 && count_hi < max_count_hi)
@@ -1885,12 +1863,29 @@ find_barrier (from)
 	{
 	  inc = get_attr_length (from);
 	}
+
+      /* ??? This isn't correct anymore.  The mova RTL has changed.  */
+      if (GET_CODE (from) == INSN
+	  && GET_CODE (PATTERN (from)) == SET
+	  && GET_CODE (SET_DEST (PATTERN (from))) == REG
+	  && GET_CODE (SET_SRC (PATTERN (from))) == LABEL_REF)
+	found_mova = from;
+      else if (GET_CODE (from) == JUMP_INSN
+	       && (GET_CODE (PATTERN (from)) == ADDR_VEC
+		   || GET_CODE (PATTERN (from)) == ADDR_DIFF_VEC))
+	found_mova = 0;
+
       if (found_si)
 	count_si += inc;
       if (found_hi)
 	count_hi += inc;
       from = NEXT_INSN (from);
     }
+
+  /* Insert the constant pool table before the mova instruction, to prevent
+     the mova label reference from going out of range.  */
+  if (found_mova)
+    from = found_mova;
 
   if (!found_barrier)
     {
@@ -2036,41 +2031,6 @@ equality_operator (x, mode)
   return (code == EQ || code == NE);
 }
 
-
-/* Add this function to the list of ones seen - temporary
-   gross hack to try out bsrs. */
-struct flist
-{
-  char *name;
-  struct flist *next;
-};
-struct flist *head;
-
-static void
-add_function (name)
-     char *name;
-{
-  struct flist *n = (struct flist *) xmalloc (sizeof (struct flist));
-  int l = strlen (name) + 1;
-  n->name = xmalloc (l);
-  memcpy (n->name, name, l);
-  n->next = head;
-  head = n;
-}
-
-static int
-seen_function (name)
-     char *name;
-{
-  struct flist *p = head;
-  for (p = head; p; p = p->next)
-    {
-      if (strcmp (p->name, name) == 0)
-	return 1;
-    }
-  return 0;
-}
-
  /* Framefull frame looks like:
 
     arg-5
@@ -2090,10 +2050,6 @@ seen_function (name)
     local-1
     local-0        <- fp points here
 
-
-    If TARGET_SMALLCALL, then the preserved registers are pushed by a
-    wrapper before the routine is entered, so the regs are always pushed
-    and there are two pr's on the stack - the caller and the wrapper.
   */
 
 
@@ -2136,10 +2092,6 @@ sh_expand_prologue ()
   if (frame_pointer_needed)
     {
       emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
-    }
-  if (TARGET_BSR)
-    {
-      add_function (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
     }
 
   /* ??? Hack.  Clear out the table set up by gen_shifty_op since this
@@ -2245,10 +2197,7 @@ handle_pragma (file)
 
 /* insn expand helpers */
 
-/* Emit insns to perform a call.
-   If TARGET_SHORTADDR then use a bsr. If TARGET_SMALLCALL, then load the
-   target address into r1 and call __saveargs, otherwise
-   perform the standard call sequence */
+/* Emit insns to perform a call.  */
 
 void
 expand_acall (isa_retval, operands)
@@ -2260,29 +2209,13 @@ expand_acall (isa_retval, operands)
   rtx call_target = operands[isa_retval + 0];
   rtx numargs = operands[isa_retval + 1];
 
-  if (TARGET_BSR && bsr_operand (call_target, VOIDmode))
+  if (GET_CODE (call_target) == MEM)
     {
-      call = gen_rtx (CALL, VOIDmode, call_target, numargs);
+      call_target = force_reg (Pmode, XEXP (call_target, 0));
     }
-  else
-    {
-      if (GET_CODE (call_target) == MEM)
-	{
-	  call_target = force_reg (Pmode,
-				   XEXP (call_target, 0));
-	}
-      if (TARGET_SMALLCALL)
-	{
-	  rtx tmp = gen_reg_rtx (SImode);
-	  rtx r1 = gen_rtx (REG, SImode, 1);
-	  emit_move_insn (tmp, gen_rtx (SYMBOL_REF, SImode, "__saveargs"));
-	  emit_move_insn (r1, call_target);
-	  emit_insn (gen_rtx (USE, VOIDmode, r1));
-	  call_target = tmp;
-	}
 
-      call = gen_rtx (CALL, VOIDmode, gen_rtx (MEM, SImode, call_target), numargs);
-    }
+  call = gen_rtx (CALL, VOIDmode, gen_rtx (MEM, SImode, call_target), numargs);
+
   if (isa_retval)
     {
       call = gen_rtx (SET, VOIDmode, ret, call);
@@ -2345,11 +2278,6 @@ general_movsrc_operand (op, mode)
 	  && system_reg_operand (XEXP (op, 0), mode)))
     return 0;
 
-  if (GET_CODE (op) == CONST_INT)
-    {
-      int i = INTVAL (op);
-      return CONST_OK_FOR_I (i);
-    }
   return general_operand (op, mode);
 }
 
@@ -2378,26 +2306,6 @@ general_movdst_operand (op, mode)
 }
 
 
-
-/* Returns 1 if OP is valid destination for a bsr.  */
-
-int
-bsr_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (TARGET_BSR)
-    {
-      if (GET_CODE (op) == SYMBOL_REF)
-	{
-	  if (!strcmp (XSTR (op, 0),
-		      IDENTIFIER_POINTER (DECL_NAME (current_function_decl))))
-	    return 1;
-	  return (seen_function (XSTR (op, 0)));
-	}
-    }
-  return 0;
-}
 
 /* Returns 1 if OP is an immediate ok for a byte index.  */
 
@@ -2539,25 +2447,6 @@ logical_operand (op, mode)
   return 0;
 }
 
-/* Returns 1 if OP is a valid operand for a MAC instruction,
-   either a register or indirect memory.  For now we don't
-   try and recognise a mac insn */
-
-int
-mac_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (arith_reg_operand (op, mode))
-    return 1;
-#if 0
-  Turned off till mac is understood
-  if (GET_CODE (op) == MEM)
-    return 1;
-#endif
-  return 0;
-}
-
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
    or a hard register in which to store the argument.
@@ -2619,17 +2508,3 @@ sh_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
     }
   return 0;
 }
-
-
-
-/* Turn this on to recognise shift insns which aren't supported in the
-   hardware.  This will allow the combiner to notice more patterns,
-   but the down side is that the asm outputter will have to emit
-   several instructions for each shift which isn't possible in the
-   hardware, this makes scheduling perform badly .*/ 
-
-int fake_shift()
-{
-  return 0;
-}
-
