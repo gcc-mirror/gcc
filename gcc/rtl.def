@@ -582,6 +582,10 @@ DEF_RTL_EXPR(SET_ATTR_ALTERNATIVE, "set_attr_alternative", "sE", 'x')
    attribute name and the second is the comparison value.  */
 DEF_RTL_EXPR(EQ_ATTR, "eq_attr", "ss", 'x')
 
+/* A special case of the above representing a set of alternatives.  The first
+   operand is bitmap of the set, the second one is the default value.  */
+DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ii", 'x')
+
 /* A conditional expression which is true if the specified flag is
    true for the insn being scheduled in reorg.
 
