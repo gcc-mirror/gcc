@@ -1,3 +1,8 @@
+2002-02-07  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (two_insn_adds_subs_operand): Revise a
+	comment.  Accept HImode only if TARGET_H8300.
+
 2002-02-07  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/crtn.asm: Cleanup #ifdefs.
