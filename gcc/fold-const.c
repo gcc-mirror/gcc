@@ -121,7 +121,8 @@ static tree optimize_minmax_comparison (enum tree_code, tree, tree, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree);
 static int multiple_of_p (tree, tree, tree);
-static tree fold_binary_op_with_conditional_arg (tree, enum tree_code, 
+static tree fold_binary_op_with_conditional_arg (enum tree_code, tree,
+						 tree, tree,
 						 tree, tree, int);
 static bool fold_real_zero_addition_p (tree, tree, int);
 static tree fold_mathfn_compare (enum built_in_function, enum tree_code,
@@ -5453,14 +5454,12 @@ extract_array_ref (tree expr, tree *base, tree *offset)
    possible.  */
 
 static tree
-fold_binary_op_with_conditional_arg (tree t, enum tree_code code, tree cond,
-				     tree arg, int cond_first_p)
+fold_binary_op_with_conditional_arg (enum tree_code code,
+				     tree type, tree op0, tree op1,
+				     tree cond, tree arg, int cond_first_p)
 {
-  const tree type = TREE_TYPE (t);
-  tree cond_type = cond_first_p ? TREE_TYPE (TREE_OPERAND (t, 0)) 
-				: TREE_TYPE (TREE_OPERAND (t, 1));
-  tree arg_type = cond_first_p ? TREE_TYPE (TREE_OPERAND (t, 1)) 
-			       : TREE_TYPE (TREE_OPERAND (t, 0));
+  tree cond_type = cond_first_p ? TREE_TYPE (op0) : TREE_TYPE (op1);
+  tree arg_type = cond_first_p ? TREE_TYPE (op0) : TREE_TYPE (op1);
   tree test, true_value, false_value;
   tree lhs = NULL_TREE;
   tree rhs = NULL_TREE;
@@ -7159,7 +7158,8 @@ fold_binary (tree expr)
 
       if (TREE_CODE (arg0) == COND_EXPR || COMPARISON_CLASS_P (arg0))
 	{
-	  tem = fold_binary_op_with_conditional_arg (t, code, arg0, arg1, 
+	  tem = fold_binary_op_with_conditional_arg (code, type, op0, op1,
+						     arg0, arg1, 
 						     /*cond_first_p=*/1);
 	  if (tem != NULL_TREE)
 	    return tem;
@@ -7167,7 +7167,8 @@ fold_binary (tree expr)
 
       if (TREE_CODE (arg1) == COND_EXPR || COMPARISON_CLASS_P (arg1))
 	{
-	  tem = fold_binary_op_with_conditional_arg (t, code, arg1, arg0, 
+	  tem = fold_binary_op_with_conditional_arg (code, type, op0, op1,
+						     arg1, arg0, 
 					             /*cond_first_p=*/0);
 	  if (tem != NULL_TREE)
 	    return tem;
