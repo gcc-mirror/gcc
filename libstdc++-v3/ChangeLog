@@ -1,3 +1,9 @@
+2003-04-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/istream.tcc (putback, unget, sync, tellg, seekg):
+	Comment and change to comply with DR 60 and the effect on gcount().
+	* include/std/std_istream.h:  Update comments.
+
 2003-04-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/27_io/filebuf_members.cc (test_07):  Adjust timing.

@@ -841,6 +841,10 @@ namespace std
     basic_istream<_CharT, _Traits>::
     putback(char_type __c)
     {
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 60. What is a formatted input function?
+      _M_gcount = 0;
+#endif
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
@@ -871,7 +875,10 @@ namespace std
     basic_istream<_CharT, _Traits>::
     unget(void)
     {
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 60. What is a formatted input function?
       _M_gcount = 0;
+#endif
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
@@ -902,8 +909,8 @@ namespace std
     basic_istream<_CharT, _Traits>::
     sync(void)
     {
+      // DR60.  Do not change _M_gcount.
       int __ret = -1;
-      _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
@@ -935,6 +942,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     tellg(void)
     {
+      // DR60.  Do not change _M_gcount.
       pos_type __ret = pos_type(-1);
       if (!this->fail())
 	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
@@ -947,7 +955,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     seekg(pos_type __pos)
     {
-      _M_gcount = 0;
+      // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
@@ -967,7 +975,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     seekg(off_type __off, ios_base::seekdir __dir)
     {
-      _M_gcount = 0;
+      // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
