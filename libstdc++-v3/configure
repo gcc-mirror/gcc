@@ -24367,6 +24367,11 @@ test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 	 grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
 	 ;;
      esac
+     case $CONFIG_FILES in
+       *testsuite/Makefile*)
+	 grep '^MULTISUBDIR =' Makefile >> testsuite/Makefile
+	 ;;
+     esac
    fi
  fi
  chmod +x scripts/check_survey

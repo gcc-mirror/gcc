@@ -477,10 +477,10 @@ fi
 AC_SUBST(LIBSUPCXX_PICFLAGS)
 
 # Generate the various Makefiles, include files, and scripts.
-# NB: Multilibs need MULTISUBDIR defined correctly in src/Makefile.am
-# and libsupc++/Makefile.am so that multilib installs will end up
-# installed in the correct place. To work around this not being passed
-# down from config-ml.in -> top_srcdir/Makefile.am ->
+# NB: Multilibs need MULTISUBDIR defined correctly in src/Makefile.am,
+# libsupc++/Makefile.am and testsuite/Makefile.am so that multilib installs
+# will end up installed in the correct place. To work around this not being 
+# passed # down from config-ml.in -> top_srcdir/Makefile.am ->
 # top_srcdir/{src,libsupc++}/Makefile.am, manually append it here.
 AC_OUTPUT(Makefile \
 include/Makefile src/Makefile \
@@ -504,6 +504,11 @@ po/Makefile testsuite/Makefile scripts/check_survey scripts/testsuite_flags,
      case $CONFIG_FILES in
        *libsupc++/Makefile*)
 	 grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+	 ;;
+     esac
+     case $CONFIG_FILES in
+       *testsuite/Makefile*)
+	 grep '^MULTISUBDIR =' Makefile >> testsuite/Makefile
 	 ;;
      esac
    fi
@@ -545,6 +550,11 @@ dnl    esac
 dnl    case $CONFIG_FILES in
 dnl      *libsupc++/Makefile*)
 dnl        grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+dnl        ;;
+dnl    esac
+dnl    case $CONFIG_FILES in
+dnl      *testsuite/Makefile*)
+dnl        grep '^MULTISUBDIR =' Makefile >> testsuite/Makefile
 dnl        ;;
 dnl    esac
 dnl  fi

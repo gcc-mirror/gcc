@@ -87,7 +87,7 @@ check-local: check-abi
 
 baseline_dir = @baseline_dir@
 baseline_file = ${baseline_dir}/baseline_symbols.txt
-extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
+extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
 
 current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
 	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
