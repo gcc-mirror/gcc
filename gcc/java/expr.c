@@ -1361,6 +1361,8 @@ lookup_field (typep, name)
 	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
 	  if ((field = lookup_field (&t, name)))
 	    {
+	      if (save_field == field)
+		continue;
 	      if (save_field == NULL_TREE)
 		save_field = field;
 	      else
