@@ -1,0 +1,38 @@
+0.92		08/24/2000	Improved support for other Unix platforms.
+				Now works on Solaris, AIX, True 64, and HP-UX.
+				Hopefully resolved all big endian problems.
+				Fixed bug in update which caused it to skip
+				openning update file
+
+0.90            12/06/1999      Fixed recursive archival bug.
+
+0.86            10/12/1999      Applied patch to fix leading "./" problem.
+
+0.85            5/10/1999       The -t and -x flags now work.  Hooray!  Those
+                                took quite a long time to get working. 
+                                Handling extraction/listing added quite a bit
+                                of code, 500-1000 lines. ouch!
+
+0.75            4/27/1999       Added support for -C flag, allowing you to
+                                change directories before adding files.  See
+                                fastjar's usage screen for more info.  Also
+                                improved the total compression display, and
+                                added install/uninstall targets to the
+                                Makefile.
+
+0.71            4/27/1999       Added -V flag to print version info.  Added
+                                better error messages, and added configure
+                                script for better portability.
+
+0.70            4/25/1999       Added compression.  Only deflation is supported
+                                at this time (only one jar supports) and is
+                                enabled by default.  use the -0 flag to disable
+                                compression.
+
+0.60            4/21/1999       Added support for manifest files (-m, -M).
+                                Fixed bug with mod time/date in central header.
+
+0.50.1          4/20/1999       Added patch from John Bley. (Fixes bug with
+                                not properly closing the file)
+
+0.50            4/20/1999       First public release
