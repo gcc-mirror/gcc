@@ -1,3 +1,10 @@
+2001-09-29  Andris Pavenis  <pavenis@lanet.lv>
+
+	* config/i386/xm-djgpp.h (GCC_DRIVER_HOST_INITIALIZATION): Don't
+	update md_exec_prefix.
+	(UPDATE_PATH_HOST_CANONICALIZE): Don't free PATH as it can point
+	to string constant.
+
 2001-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (EXTRA_CC_MODES): Add CCLmode.
