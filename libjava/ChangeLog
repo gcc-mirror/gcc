@@ -1,3 +1,17 @@
+2004-09-09  Jeroen Frijters  <jeroen@frijters.net>
+
+	(normalizePath): Added special case for windows systems.
+
+2004-09-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/File.java
+	(dupSeparator): Made private.
+	(File(URI)): New constructor.
+	(getParentFile): Fixed javadoc.
+	(createTempFile): Reformated.
+	(setReadOnly): Added comment.
+	(deleteOnExit): Merged javadoc with classpath version.
+
 2004-09-09  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am: Don't try to include deps.mk.
