@@ -2702,13 +2702,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       || (mode != BLKmode && ! direct_store[(int) mode])
       || GET_CODE (target) == REG
       || GET_CODE (target) == SUBREG
-      /* If the field isn't aligned enough to fetch as a unit,
-	 fetch it as a bit field.  */
-#ifdef STRICT_ALIGNMENT
-      || align * BITS_PER_UNIT < GET_MODE_ALIGNMENT (mode)
-      || bitpos % GET_MODE_ALIGNMENT (mode) != 0
-#endif
-      )
+      /* If the field isn't aligned enough to store as an ordinary memref,
+	 store it as a bit field.  */
+      || (STRICT_ALIGNMENT
+	  && align * BITS_PER_UNIT < GET_MODE_ALIGNMENT (mode))
+      || (STRICT_ALIGNMENT && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
       /* Store the value in the bitfield.  */
@@ -3970,18 +3968,23 @@ expand_expr (exp, target, tmode, modifier)
 	    MEM_VOLATILE_P (op0) = 1;
 	  }
 
+	/* In cases where an aligned union has an unaligned object
+	   as a field, we might be extracting a BLKmode value from
+	   an integer-mode (e.g., SImode) object.  Handle this case
+	   by doing the extract into an object as wide as the field
+	   (which we know to be the width of a basic mode), then
+	   storing into memory, and changing the mode to BLKmode.  */
 	if (mode1 == VOIDmode
 	    || (mode1 != BLKmode && ! direct_load[(int) mode1]
 		&& modifier != EXPAND_CONST_ADDRESS
 		&& modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
+	    /* If the field isn't aligned enough to fetch as a memref,
+	       fetch it as a bit field.  */
+	    || (STRICT_ALIGNMENT
+		&& TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode))
+	    || (STRICT_ALIGNMENT && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
 	  {
-	    /* In cases where an aligned union has an unaligned object
-	       as a field, we might be extracting a BLKmode value from
-	       an integer-mode (e.g., SImode) object.  Handle this case
-	       by doing the extract into an object as wide as the field
-	       (which we know to be the width of a basic mode), then
-	       storing into memory, and changing the mode to BLKmode.  */
 	    enum machine_mode ext_mode = mode;
 
 	    if (ext_mode == BLKmode)
