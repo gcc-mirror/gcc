@@ -116,7 +116,7 @@ hashf (s, len)
    Otherwise, compute the length by scanning the entire name.  */
 
 HASHNODE *
-cpp_lookup (pfile, name, len)
+_cpp_lookup (pfile, name, len)
      cpp_reader *pfile;
      const U_CHAR *name;
      int len;
@@ -147,7 +147,7 @@ cpp_lookup (pfile, name, len)
    do_define when redefining macros.  */
 
 void
-free_definition (d)
+_cpp_free_definition (d)
      DEFINITION *d;
 {
   struct reflist *ap, *nextap;
@@ -169,7 +169,7 @@ free_definition (d)
  */
 
 void
-delete_macro (hp)
+_cpp_delete_macro (hp)
      HASHNODE *hp;
 {
   if (hp->prev != NULL)
@@ -183,7 +183,7 @@ delete_macro (hp)
     *hp->bucket_hdr = hp->next;
 
   if (hp->type == T_MACRO)
-    free_definition (hp->value.defn);
+    _cpp_free_definition (hp->value.defn);
 
   free (hp);
 }
@@ -202,7 +202,7 @@ delete_macro (hp)
    Otherwise, compute the hash code.  */
 
 HASHNODE *
-cpp_install (pfile, name, len, type, value)
+_cpp_install (pfile, name, len, type, value)
      cpp_reader *pfile;
      const U_CHAR *name;
      int len;
@@ -698,7 +698,7 @@ collect_formal_parameters (pfile)
    macro.  */
 
 DEFINITION *
-create_definition (pfile, funlike)
+_cpp_create_definition (pfile, funlike)
      cpp_reader *pfile;
      int funlike;
 {
@@ -959,7 +959,7 @@ special_symbol (hp, pfile)
    an argument list follows; arguments come from the input stack.  */
 
 void
-macroexpand (pfile, hp)
+_cpp_macroexpand (pfile, hp)
      cpp_reader *pfile;
      HASHNODE *hp;
 {
@@ -1484,7 +1484,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
 /* Return zero if two DEFINITIONs are isomorphic.  */
 
 int
-compare_defs (pfile, d1, d2)
+_cpp_compare_defs (pfile, d1, d2)
      cpp_reader *pfile;
      DEFINITION *d1, *d2;
 {
@@ -1576,7 +1576,7 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
    to be read back in again. */
 
 void
-dump_definition (pfile, sym, len, defn)
+_cpp_dump_definition (pfile, sym, len, defn)
      cpp_reader *pfile;
      const U_CHAR *sym;
      long len;

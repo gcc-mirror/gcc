@@ -41,10 +41,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    case CPP_BUMP_LINE must not be called.  */
 #define ACTIVE_MARK_P() (CPP_BUFFER (pfile)->mark != -1)
 
-/* External declarations.  */
-
-extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
-
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
 struct directive
@@ -259,7 +255,7 @@ cpp_defined (pfile, id, len)
      const U_CHAR *id;
      int len;
 {
-  HASHNODE *hp = cpp_lookup (pfile, id, len);
+  HASHNODE *hp = _cpp_lookup (pfile, id, len);
   if (hp && hp->type == T_POISON)
     {
       cpp_error (pfile, "attempt to use poisoned `%s'", hp->name);
@@ -686,17 +682,17 @@ do_define (pfile, keyword)
        as an object-like macro if this happens, with a warning.  */
     cpp_pedwarn (pfile, "missing white space after `#define %.*s'", len, sym);
 
-  def = create_definition (pfile, funlike);
+  def = _cpp_create_definition (pfile, funlike);
   if (def == 0)
     return 0;
 
-  if ((hp = cpp_lookup (pfile, sym, len)) != NULL)
+  if ((hp = _cpp_lookup (pfile, sym, len)) != NULL)
     {
       int ok;
 
       /* Redefining a macro is ok if the definitions are the same.  */
       if (hp->type == T_MACRO)
-	ok = ! compare_defs (pfile, def, hp->value.defn);
+	ok = ! _cpp_compare_defs (pfile, def, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
@@ -721,17 +717,17 @@ do_define (pfile, keyword)
 	{
 	  /* Replace the old definition.  */
 	  if (hp->type == T_MACRO)
-	    free_definition (hp->value.defn);
+	    _cpp_free_definition (hp->value.defn);
 	  hp->type = T_MACRO;
 	  hp->value.defn = def;
 	}
     }
   else
-    cpp_install (pfile, sym, len, T_MACRO, (char *) def);
+    _cpp_install (pfile, sym, len, T_MACRO, (char *) def);
 
   if (CPP_OPTIONS (pfile)->debug_output
       || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
-    dump_definition (pfile, sym, len, def);
+    _cpp_dump_definition (pfile, sym, len, def);
   else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
     pass_thru_directive (sym, len, pfile, keyword);
 
@@ -1201,7 +1197,7 @@ do_include (pfile, keyword)
       return 0;
     }
 
-  fd = find_include_file (pfile, ftok, search_start, &ihash, &before);
+  fd = _cpp_find_include_file (pfile, ftok, search_start, &ihash, &before);
 
   if (fd == -2)
     return 0;
@@ -1280,7 +1276,7 @@ do_include (pfile, keyword)
   if (angle_brackets)
     pfile->system_include_depth++;   /* Decremented in file_cleanup. */
 
-  if (finclude (pfile, fd, ihash))
+  if (_cpp_read_include_file (pfile, fd, ihash))
     {
       output_line_command (pfile, enter_file);
       pfile->only_seen_white = 2;
@@ -1479,7 +1475,7 @@ do_undef (pfile, keyword)
   }
   CPP_SET_WRITTEN (pfile, here);
 
-  while ((hp = cpp_lookup (pfile, name, len)) != NULL)
+  while ((hp = _cpp_lookup (pfile, name, len)) != NULL)
     {
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
@@ -1491,7 +1487,7 @@ do_undef (pfile, keyword)
 	{
 	  if (hp->type != T_MACRO)
 	    cpp_warning (pfile, "undefining `%s'", hp->name);
-	  delete_macro (hp);
+	  _cpp_delete_macro (hp);
 	}
     }
 
@@ -1705,7 +1701,6 @@ do_pragma_implementation (pfile)
 {
   /* Be quiet about `#pragma implementation' for a file only if it hasn't
      been included yet.  */
-  struct include_hash *ptr;
   enum cpp_token token;
   long written = CPP_WRITTEN (pfile);
   U_CHAR *name;
@@ -1723,9 +1718,8 @@ do_pragma_implementation (pfile)
   name = pfile->token_buffer + written + 1;
   copy = xstrdup (name);
   copy[strlen(copy)] = '\0';  /* trim trailing quote */
-  
-  ptr = include_hash (pfile, copy, 0);
-  if (ptr)
+
+  if (cpp_included (pfile, copy))
     cpp_warning (pfile,
 	 "`#pragma implementation' for `%s' appears after file is included",
 		 copy);
@@ -1766,18 +1760,19 @@ do_pragma_poison (pfile)
 
       p = pfile->token_buffer + written;
       len = strlen (p);
-      if ((hp = cpp_lookup (pfile, p, len)))
+      if ((hp = _cpp_lookup (pfile, p, len)))
 	{
 	  if (hp->type != T_POISON)
 	    {
 	      cpp_warning (pfile, "poisoning existing macro `%s'", p);
-	      free_definition (hp->value.defn);
+	      if (hp->type == T_MACRO)
+		_cpp_free_definition (hp->value.defn);
 	      hp->value.defn = 0;
 	      hp->type = T_POISON;
 	    }
 	}
       else
-	cpp_install (pfile, p, len, T_POISON, 0);
+	_cpp_install (pfile, p, len, T_POISON, 0);
       if (writeit)
 	CPP_PUTC (pfile, ' ');
     }
@@ -1952,7 +1947,7 @@ eval_if_expression (pfile)
   long old_written = CPP_WRITTEN (pfile);
 
   pfile->parsing_if_directive++;
-  value = cpp_parse_expr (pfile);
+  value = _cpp_parse_expr (pfile);
   pfile->parsing_if_directive--;
 
   skip_rest_of_line (pfile);
@@ -2683,7 +2678,7 @@ cpp_get_token (pfile)
 	      return CPP_NAME;
 	    ident = pfile->token_buffer + before_name_written;
 	    ident_len = CPP_PWRITTEN (pfile) - ident;
-	    hp = cpp_lookup (pfile, ident, ident_len);
+	    hp = _cpp_lookup (pfile, ident, ident_len);
 	    if (!hp)
 	      return CPP_NAME;
 	    if (hp->type == T_DISABLED)
@@ -2751,7 +2746,7 @@ cpp_get_token (pfile)
 	    /* This is now known to be a macro call.
 	       Expand the macro, reading arguments as needed,
 	       and push the expansion on the input stack.  */
-	    macroexpand (pfile, hp);
+	    _cpp_macroexpand (pfile, hp);
 	    CPP_SET_WRITTEN (pfile, before_name_written);
 	  }
 	  goto get_next;
@@ -3085,16 +3080,16 @@ do_assert (pfile, keyword)
 
   thislen = strlen (sym);
   baselen = index (sym, '(') - sym;
-  this = cpp_lookup (pfile, sym, thislen);
+  this = _cpp_lookup (pfile, sym, thislen);
   if (this)
     {
       cpp_warning (pfile, "`%s' re-asserted", sym);
       goto error;
     }
 
-  base = cpp_lookup (pfile, sym, baselen);
+  base = _cpp_lookup (pfile, sym, baselen);
   if (! base)
-    base = cpp_install (pfile, sym, baselen, T_ASSERT, 0);
+    base = _cpp_install (pfile, sym, baselen, T_ASSERT, 0);
   else if (base->type != T_ASSERT)
   {
     /* Token clash - but with what?! */
@@ -3102,7 +3097,7 @@ do_assert (pfile, keyword)
     goto error;
   }
 
-  this = cpp_install (pfile, sym, thislen, T_ASSERT,
+  this = _cpp_install (pfile, sym, thislen, T_ASSERT,
 		      (char *)base->value.aschain);
   base->value.aschain = this;
   
@@ -3143,7 +3138,7 @@ do_unassert (pfile, keyword)
   thislen = strlen (sym);
   if (ret == 1)
     {
-      base = cpp_lookup (pfile, sym, thislen);
+      base = _cpp_lookup (pfile, sym, thislen);
       if (! base)
 	goto error;  /* It isn't an error to #undef what isn't #defined,
 			so it isn't an error to #unassert what isn't
@@ -3152,16 +3147,16 @@ do_unassert (pfile, keyword)
       for (this = base->value.aschain; this; this = next)
         {
 	  next = this->value.aschain;
-	  delete_macro (this);
+	  _cpp_delete_macro (this);
 	}
-      delete_macro (base);
+      _cpp_delete_macro (base);
     }
   else
     {
       baselen = index (sym, '(') - sym;
-      base = cpp_lookup (pfile, sym, baselen);
+      base = _cpp_lookup (pfile, sym, baselen);
       if (! base) goto error;
-      this = cpp_lookup (pfile, sym, thislen);
+      this = _cpp_lookup (pfile, sym, thislen);
       if (! this) goto error;
 
       next = base;
@@ -3169,10 +3164,10 @@ do_unassert (pfile, keyword)
 	next = next->value.aschain;
 
       next->value.aschain = this->value.aschain;
-      delete_macro (this);
+      _cpp_delete_macro (this);
 
       if (base->value.aschain == NULL)
-	delete_macro (base);  /* Last answer for this predicate deleted. */
+	_cpp_delete_macro (base);  /* Last answer for this predicate deleted. */
     }
   
   pfile->limit = (unsigned char *) sym; /* Pop */

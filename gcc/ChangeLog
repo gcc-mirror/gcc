@@ -1,3 +1,33 @@
+2000-03-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (_cpp_find_include_file): Make sure ih->name is
+	initialized.
+	* cppinit.c (cpp_cleanup): Free imp->nshort also.
+
+	* cpperror.c (cpp_print_containing_files,
+	cpp_print_file_and_line, v_cpp_message): Rename to
+	print_containing_files, print_file_and_line, and v_message.
+	* cppexp.c (cpp_parse_expr, cpp_parse_escape, cpp_lex): Rename
+	to _cpp_parse_expr, parse_escape, and lex.
+	(parse_charconst): Remove broken multibyte support.
+	* cppfiles.c (include_hash): Make static.
+	(cpp_included): New function.
+	(merge_include_chains, find_include_file, finclude,
+	simplify_pathname): Rename to _cpp_merge_include_chains,
+	_cpp_find_include_file, _cpp_read_include_file, and
+	_cpp_simplify_pathname.
+	* cpphash.c (cpp_lookup, free_definition, delete_macro,
+	cpp_install, create_definition, macroexpand, compare_defs,
+	dump_definition): Rename to _cpp_lookup, _cpp_free_definition,
+	_cpp_delete_macro, _cpp_install, _cpp_create_definition,
+	_cpp_macroexpand, _cpp_compare_defs, and _cpp_dump_definition.
+	* cppinit.c (cpp_handle_option): Rename to handle_option, make
+	static.
+	* cpplib.c: Remove extern prototype of cpp_parse_expr.
+
+	* cpphash.h: Update prototypes.
+	* cpplib.h: Likewise.  Prototype _cpp_parse_expr here.
+
 2000-03-07  Andrew Haley  <aph@cygnus.com>
 
 	* config/mips/mips.h (PTRDIFF_TYPE): Revert broken change;

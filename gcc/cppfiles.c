@@ -29,11 +29,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "intl.h"
 
-/* The entry points to this file are: find_include_file,
-   cpp_read_file, finclude, include_hash, append_include_chain, and
-   file_cleanup.  file_cleanup is only called through
-   CPP_BUFFER(pfile)->cleanup, so it's static anyway. */
-
+static struct include_hash *include_hash PARAMS ((cpp_reader *,
+						  const char *, int));
 static struct include_hash *redundant_include_p
 					PARAMS ((cpp_reader *,
 						 struct include_hash *,
@@ -83,7 +80,7 @@ static void hack_vms_include_specification PARAMS ((char *));
    how?) and possibly preload the include hash. */
 
 void
-merge_include_chains (opts)
+_cpp_merge_include_chains (opts)
      struct cpp_options *opts;
 {
   struct file_name_list *prev, *cur, *other;
@@ -208,7 +205,7 @@ merge_include_chains (opts)
  #include name (there are at least three ways this can happen).  The
  hash function could probably be improved a bit. */
 
-struct include_hash *
+static struct include_hash *
 include_hash (pfile, fname, add)
      cpp_reader *pfile;
      const char *fname;
@@ -293,6 +290,19 @@ redundant_include_p (pfile, ihash, ilist)
   return 0;
 }
 
+/* Return 1 if the file named by FNAME has been included before in
+   any context, 0 otherwise.  */
+int
+cpp_included (pfile, fname)
+     cpp_reader *pfile;
+     const char *fname;
+{
+  struct include_hash *ptr;
+
+  ptr = include_hash (pfile, fname, 0);
+  return (ptr != NULL);
+}
+
 static int
 file_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
@@ -316,7 +326,7 @@ file_cleanup (pbuf, pfile)
    *BEFORE is 1 if the file was included before (but needs to be read
    again). */
 int
-find_include_file (pfile, fname, search_start, ihash, before)
+_cpp_find_include_file (pfile, fname, search_start, ihash, before)
      cpp_reader *pfile;
      const char *fname;
      struct file_name_list *search_start;
@@ -362,6 +372,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
     }
   *before = 0;
   *ihash = ih;
+  ih->name = NULL;
   ih->nshort = xstrdup (fname);
   ih->control_macro = NULL;
   
@@ -383,7 +394,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
       bcopy (l->name, name, l->nlen);
       name[l->nlen] = '/';
       strcpy (&name[l->nlen+1], fname);
-      simplify_pathname (name);
+      _cpp_simplify_pathname (name);
       if (CPP_OPTIONS (pfile)->remap)
 	name = remap_filename (pfile, name, l);
 
@@ -626,10 +637,11 @@ cpp_read_file (pfile, fname)
     }
 
   /* Open the file in nonblocking mode, so we don't get stuck if
-     someone clever has asked cpp to process /dev/rmt0.  finclude()
-     will check that we have a real file to work with.  Also take
-     care not to acquire a controlling terminal by mistake (this can't
-     happen on sane systems, but paranoia is a virtue).  */
+     someone clever has asked cpp to process /dev/rmt0.
+     _cpp_read_include_file will check that we have a real file to
+     work with.  Also take care not to acquire a controlling terminal
+     by mistake (this can't happen on sane systems, but paranoia is a
+     virtue).  */
   else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
     {
       cpp_notice_from_errno (pfile, fname);
@@ -651,7 +663,7 @@ cpp_read_file (pfile, fname)
   ih_fake->control_macro = 0;
   ih_fake->buf = (char *)-1;
   ih_fake->limit = 0;
-  if (!finclude (pfile, f, ih_fake))
+  if (!_cpp_read_include_file (pfile, f, ih_fake))
     goto failed_finclude;
 
   return 1;
@@ -672,7 +684,7 @@ cpp_read_file (pfile, fname)
    The caller is responsible for the cpp_push_buffer.  */
 
 int
-finclude (pfile, fd, ihash)
+_cpp_read_include_file (pfile, fd, ihash)
      cpp_reader *pfile;
      int fd;
      struct include_hash *ihash;
@@ -1245,7 +1257,7 @@ initialize_input_buffer (pfile, fd, st)
    of the string.
  */
 void
-simplify_pathname (path)
+_cpp_simplify_pathname (path)
     char *path;
 {
     char *from, *to;

@@ -64,7 +64,6 @@ enum cpp_token
 typedef enum cpp_token (*parse_underflow_t) PARAMS((cpp_reader *));
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
-extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
 extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
@@ -694,16 +693,21 @@ extern void output_line_command		PARAMS ((cpp_reader *,
 						 enum file_change_code));
 
 /* In cppfiles.c */
-extern void simplify_pathname		PARAMS ((char *));
-extern void merge_include_chains	PARAMS ((struct cpp_options *));
-extern int find_include_file		PARAMS ((cpp_reader *, const char *,
+extern int cpp_included			PARAMS ((cpp_reader *, const char *));
+extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
+
+extern void _cpp_simplify_pathname	PARAMS ((char *));
+extern void _cpp_merge_include_chains	PARAMS ((struct cpp_options *));
+extern int _cpp_find_include_file	PARAMS ((cpp_reader *, const char *,
 						struct file_name_list *,
 						struct include_hash **,
 						int *));
-extern int finclude			PARAMS ((cpp_reader *, int,
+extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int,
 					        struct include_hash *));
-extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
-extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, int));
+
+/* In cppexp.c */
+extern HOST_WIDEST_INT _cpp_parse_expr	PARAMS ((cpp_reader *));
+
 
 #ifdef __cplusplus
 }

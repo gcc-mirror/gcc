@@ -183,6 +183,7 @@ static void initialize_dependency_output PARAMS ((cpp_reader *));
 static void initialize_standard_includes PARAMS ((cpp_reader *));
 static void new_pending_define		PARAMS ((struct cpp_options *,
 						 const char *));
+static int handle_option		PARAMS ((cpp_reader *, int, char **));
 
 /* Fourth argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -293,7 +294,7 @@ append_include_chain (pfile, pend, dir, path, cxx_aware)
   struct stat st;
   unsigned int len;
 
-  simplify_pathname (dir);
+  _cpp_simplify_pathname (dir);
   if (stat (dir, &st))
     {
       /* Dirs that don't exist are silently ignored. */
@@ -428,6 +429,7 @@ cpp_cleanup (pfile)
 	  struct include_hash *next = imp->next;
 
 	  free ((PTR) imp->name);
+	  free ((PTR) imp->nshort);
 	  free (imp);
 	  imp = next;
 	}
@@ -437,7 +439,7 @@ cpp_cleanup (pfile)
   for (i = HASHSIZE; --i >= 0;)
     {
       while (pfile->hashtab[i])
-	delete_macro (pfile->hashtab[i]);
+	_cpp_delete_macro (pfile->hashtab[i]);
     }
   free (pfile->hashtab);
 }
@@ -507,7 +509,7 @@ initialize_builtins (pfile)
       val = (b->flags & ULP) ? user_label_prefix : b->value;
       len = strlen (b->name);
 
-      cpp_install (pfile, b->name, len, b->type, val);
+      _cpp_install (pfile, b->name, len, b->type, val);
       if ((b->flags & DUMP) && CPP_OPTIONS (pfile)->debug_output)
 	dump_special_to_buffer (pfile, b->name);
     }
@@ -719,7 +721,7 @@ cpp_start_read (pfile, fname)
   if (! opts->no_standard_includes)
     initialize_standard_includes (pfile);
 
-  merge_include_chains (opts);
+  _cpp_merge_include_chains (opts);
 
   /* With -v, print the list of dirs to search.  */
   if (opts->verbose)
@@ -876,7 +878,8 @@ cpp_finish (pfile)
 	  for (h = pfile->hashtab[i]; h; h = h->next)
 	    if (h->type == T_MACRO)
 	      {
-		dump_definition (pfile, h->name, h->length, h->value.defn);
+		_cpp_dump_definition (pfile, h->name, h->length,
+				      h->value.defn);
 		CPP_PUTC (pfile, '\n');
 	      }
 	}
@@ -901,8 +904,8 @@ new_pending_define (opts, text)
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
 
-int
-cpp_handle_option (pfile, argc, argv)
+static int
+handle_option (pfile, argc, argv)
      cpp_reader *pfile;
      int argc;
      char **argv;
@@ -1493,7 +1496,7 @@ cpp_handle_options (pfile, argc, argv)
   int strings_processed;
   for (i = 0; i < argc; i += strings_processed)
     {
-      strings_processed = cpp_handle_option (pfile, argc - i, argv + i);
+      strings_processed = handle_option (pfile, argc - i, argv + i);
       if (strings_processed == 0)
 	break;
     }
