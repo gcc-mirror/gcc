@@ -1596,7 +1596,7 @@ while (0)
 #define SLOW_BYTE_ACCESS 1
 
 /* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
+#define DBX_CONTIN_LENGTH 4000
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
