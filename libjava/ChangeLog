@@ -1,4 +1,16 @@
 2001-07-12  Tom Tromey  <tromey@redhat.com>
+	    David Brownell  <david-b@pacbell.net>
+	
+	Fix for PR libgcj/3426:
+	* gnu/gcj/convert/natIconv.cc: Include CharConversionException.h,
+	errno.h.
+	(read): Throw exception if character conversion fails.
+	* java/io/BufferedInputStream.java (refill): Now package-private.
+	* java/io/InputStreamReader.java (ready): Simplified.
+	(refill): New method.
+	(read): Use it.
+
+2001-07-12  Tom Tromey  <tromey@redhat.com>
 
 	Report from Henner Zeller:
 	* java/io/FileOutputStream.java (FileOutputStream): Throw
