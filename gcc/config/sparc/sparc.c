@@ -4043,7 +4043,7 @@ sparc_type_code (type)
    (to store insns).  This is a bit excessive.  Perhaps a different
    mechanism would be better here.
 
-   Emit 3 FLUSH instructions (UNSPEC_VOLATILE 2) to synchonize the data
+   Emit 3 FLUSH instructions (UNSPEC_VOLATILE 3) to synchonize the data
    and instruction caches.
 
    ??? v9: We assume the top 32 bits of function addresses are 0.  */
@@ -4081,13 +4081,13 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 0)),
-		      2));
+		      3));
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 8)),
-		      2));
+		      3));
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 16)),
-		      2));
+		      3));
 }
 
 void
@@ -4129,13 +4129,13 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (tramp, 16)), low_cxt);
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 0)),
-		      2));
+		      3));
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 8)),
-		      2));
+		      3));
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
 		      gen_rtvec (1, plus_constant (tramp, 16)),
-		      2));
+		      3));
 }
 
 /* Subroutines to support a flat (single) register window calling
