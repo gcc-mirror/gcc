@@ -2971,12 +2971,19 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 #endif
 	}
       
-      /* Givs are only updated once by definition.  Mark it so if this is
+      /* Unreduced givs are only updated once by definition.  Reduced givs
+	 are updated as many times as their biv is.  Mark it so if this is
 	 a splittable register.  Don't need to do anything for address givs
 	 where this may not be a register.  */
 
       if (GET_CODE (v->new_reg) == REG)
-	splittable_regs_updates[REGNO (v->new_reg)] = 1;
+	{
+	  int count = 1;
+	  if (! v->ignore)
+	    count = reg_biv_class[REGNO (v->src_reg)]->biv_count;
+
+	  splittable_regs_updates[REGNO (v->new_reg)] = count;
+	}
 
       result++;
       
