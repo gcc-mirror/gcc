@@ -1,3 +1,8 @@
+2002-05-06  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall): Do not
+	allow result to overlap input operands in memory.
+
 2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 doc:
