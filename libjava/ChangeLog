@@ -1,3 +1,8 @@
+2005-02-17  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* gnu/java/nio/channels/FileChannelImpl.java (write(ByteBuffer)):
+	Move the position of the source buffer forward.
+
 2005-02-17  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (_Jv_GetMethodString): Updated declaration.
