@@ -1,3 +1,9 @@
+Sat Aug 29 14:48:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.md (beq0_di): Generate correct (and more efficient) code when
+	the clobbered operand overlaps with an input.
+	(bne0_di): Similarly.
+
 Sat Aug 29 12:38:54 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* NEWS: Various updates.
