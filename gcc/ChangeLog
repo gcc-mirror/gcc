@@ -1,5 +1,7 @@
 2003-05-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (out_object_file): Don't set -Wno-error for ${cpu}.o. 
+
 	* sparc.c (print_operand): Fix uninitialized warning.
 
 2003-05-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
