@@ -1,5 +1,10 @@
 2001-10-05  Richard Henderson  <rth@redhat.com>
 
+	* i386.md (movsi_xor): Export.
+	(setcc peep2): Use it when available.
+
+2001-10-05  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (FRAME_BEGIN_LABEL): New.
 	(output_call_frame_info): Use it instead of __FRAME_BEGIN__ and
 	the gas section-name-as-label feature.
