@@ -1,3 +1,21 @@
+2002-08-19  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (build_ivar_chain): Remove.
+	(objc_copy_list): Likewise.
+	(get_class_ivars): Inline call to removed build_ivar_chain
+	function.  Save off a clean copy of ivars in the CLASS_OWN_IVARS
+	slot; use that slot (rather than CLASS_IVARS) when accessing
+	ivars for base classes.  Call copy_list and chainon instead of
+	objc_copy_list.
+	(build_private_template): Call get_class_ivars instead of
+	build_ivar_chain.
+	(start_class): Allocate room for the CLASS_OWN_IVARS slot.
+	(continue_class): Call get_class_ivars instead of 
+	build_ivar_chain.
+	(encode_field_decl): Check for DECL_BIT_FIELD_TYPE instead
+	of DECL_BIT_FIELD (which may have been cleared).
+	* objc/objc-act.h (CLASS_OWN_IVARS): New accessor macro.
+
 2002-08-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genautomata.c (output_translate_vect, output_state_ainsn_table,
