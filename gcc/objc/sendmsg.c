@@ -570,5 +570,13 @@ void __objc_print_dtable_stats()
   objc_mutex_unlock(__objc_runtime_mutex);
 }
 
+/* Returns the dispatch table */
+__inline__
+struct sarray* 
+objc_get_uninstalled_dtable()
+{
+  return __objc_uninstalled_dtable;
+}
+
 
 
