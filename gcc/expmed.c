@@ -1689,7 +1689,7 @@ struct algorithm
   int cost;
   unsigned int ops;
   enum alg_code op[MAX_BITS_PER_WORD];
-  unsigned int coeff[MAX_BITS_PER_WORD];
+  unsigned HOST_WIDE_INT coeff[MAX_BITS_PER_WORD];
 };
 
 /* Compute and return the best algorithm for multiplying by T.
