@@ -1,7 +1,5 @@
-/* Collect static initialization info into data structures
-   that can be traversed by C++ initialization and finalization
-   routines.
-
+/* Collect static initialization info into data structures that can be
+   traversed by C++ initialization and finalization routines.
    Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
@@ -551,6 +549,7 @@ dump_file (name)
 	break;
       putc (c, stderr);
     }
+  fclose (stream);
 }
 
 /* Decide whether the given symbol is:
