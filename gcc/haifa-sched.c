@@ -5163,9 +5163,10 @@ find_post_sched_live (bb)
   next_tail = NEXT_INSN (tail);
   prev_head = PREV_INSN (head);
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (REGNO_REG_SET_P (bb_live_regs, i))
-      sched_reg_basic_block[i] = REG_BLOCK_GLOBAL;
+  EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, FIRST_PSEUDO_REGISTER, i,
+			     {
+			       sched_reg_basic_block[i] = REG_BLOCK_GLOBAL;
+			     });
 
   /* if the block is empty, same regs are alive at its end and its start.
      since this is not guaranteed after interblock scheduling, make sure they
@@ -5314,9 +5315,11 @@ update_reg_usage ()
   int regno;
 
   if (n_basic_blocks > 0)
-    for (regno = FIRST_PSEUDO_REGISTER; regno < max_regno; regno++)
-      if (REGNO_REG_SET_P (basic_block_live_at_start[0], regno))
-	sched_reg_basic_block[regno] = REG_BLOCK_GLOBAL;
+    EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, FIRST_PSEUDO_REGISTER, regno,
+			       {
+				 sched_reg_basic_block[regno]
+				   = REG_BLOCK_GLOBAL;
+			       });
 
   for (regno = 0; regno < max_regno; regno++)
     if (sched_reg_live_length[regno])
@@ -7220,11 +7223,19 @@ compute_block_backward_dependences (bb)
 	while (e != first_edge);
     }
 
-  /* Free up the INSN_LISTs */
+  /* Free up the INSN_LISTs 
+
+     Note this loop is executed max_reg * nr_regions times.  It's first 
+     implementation accounted for over 90% of the calls to free_list.
+     The list was empty for the vast majority of those calls.  On the PA,
+     not calling free_list in those cases improves -O2 compile times by
+     3-5% on average.  */
   for (b = 0; b < max_reg; ++b)
     {
-      free_list (&reg_last_sets[b], &unused_insn_list);
-      free_list (&reg_last_uses[b], &unused_insn_list);
+      if (reg_last_sets[b])
+	free_list (&reg_last_sets[b], &unused_insn_list);
+      if (reg_last_uses[b])
+	free_list (&reg_last_uses[b], &unused_insn_list);
     }
 
   /* Assert that we won't need bb_reg_last_* for this block anymore.  */
