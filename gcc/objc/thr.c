@@ -118,15 +118,15 @@ objc_mutex_lock_x(_objc_mutex_t mutex, const char *f, int l)
  */
 
 #if defined(__sparc__) && defined(__svr4__)     /* Solaris only code.       */
-#include "thread-solaris.c"
+#include "thr-solaris.c"
 #elif defined(__sgi__) && defined(__mips__)     /* IRIX only code.          */
-#include "thread-irix.c"
+#include "thr-irix.c"
 #elif defined(__alpha__) && defined(__osf__)    /* Alpha OSF/1 only code.   */
-#include "thread-decosf1.c"
+#include "thr-decosf1.c"
 #elif defined(__WIN32__)
-#include "thread-win32.c"
+#include "thr-win32.c"
 #else						/* Single threaded code.    */
-#include "thread-single.c"
+#include "thr-single.c"
 #endif
 
 /* End of File */
