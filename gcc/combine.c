@@ -3722,10 +3722,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
   /* If CODE is an associative operation not otherwise handled, see if we
      can associate some operands.  This can win if they are constants or
      if they are logically related (i.e. (a & b) & a).  */
-  if ((code == PLUS || code == MINUS
-       || code == MULT || code == AND || code == IOR || code == XOR
+  if ((code == PLUS || code == MINUS || code == MULT || code == DIV
+       || code == AND || code == IOR || code == XOR
        || code == SMAX || code == SMIN || code == UMAX || code == UMIN)
-      && (INTEGRAL_MODE_P (mode)
+      && ((INTEGRAL_MODE_P (mode) && code != DIV)
 	  || (flag_unsafe_math_optimizations && FLOAT_MODE_P (mode))))
     {
       if (GET_CODE (XEXP (x, 0)) == code)
@@ -3745,7 +3745,6 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	    }
 	  inner = simplify_binary_operation (code == MINUS ? PLUS
 					     : code == DIV ? MULT
-					     : code == UDIV ? MULT
 					     : code,
 					     mode, inner_op0, inner_op1);
 
