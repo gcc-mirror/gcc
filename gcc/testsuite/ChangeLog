@@ -1,3 +1,7 @@
+Fri Feb 11 12:35:40 2000  Martin Buchholz <martin@xemacs.org>
+
+	* gcc.c-torture/compile/20000211-2.c: New test.
+
 Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/compile/20000211-1.c: New test.
