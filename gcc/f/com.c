@@ -506,7 +506,7 @@ static tree builtin_function (char *name, tree type,
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
-static char *lang_printable_name (tree decl, char **kind);
+static char *lang_printable_name (tree decl, int v);
 static tree lookup_name_current_level (tree name);
 static struct binding_level *make_binding_level (void);
 static void pop_f_function_context (void);
@@ -14148,9 +14148,8 @@ finish_function (int nested)
    nested function and all).  */
 
 static char *
-lang_printable_name (tree decl, char **kind)
+lang_printable_name (tree decl, int v)
 {
-  *kind = "program unit";
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 

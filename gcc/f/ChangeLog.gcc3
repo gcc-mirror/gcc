@@ -1,0 +1,17 @@
+Tue Aug 12 10:23:02 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.info*: Rebuilt.
+
+	* config-lang.in: Don't demand the backend patch.
+	* com.c (lang_printable_name): Second argument is now an int.  Don't
+	store into the value of the second argument.
+	* top.c (ffe_decode_option): Temporarily disable setting
+	of "Toon" loop options until we figure out how to address
+	them.
+
+Mon Aug 11 23:18:35 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* g77-0.5.21-19970811 Imported.
+	This file describes changes to the front end necessary to make
+	it work with gcc3.
+

@@ -175,9 +175,11 @@ ffe_decode_option (char *opt)
 	{
 	  ffe_is_do_internal_checks_ = 0;
 #if BUILT_FOR_270	/* User must have applied patch (circa 2.7.2 and beyond). */
+#if 0
 	  flag_move_all_movables = 1;
 	  flag_reduce_all_givs = 1;
 	  flag_rerun_loop_opt = 1;
+#endif
 	  flag_argument_noalias = 2;
 #endif
 	}
