@@ -1,3 +1,8 @@
+2001-12-30  Richard Henderson  <rth@redhat.com>
+
+	* integrate.c (copy_rtx_and_substitute): Fix error last change:
+	we need to unconditionally create a new mem.
+
 2001-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("*call_real"): Fix typo in comment.
