@@ -1,3 +1,8 @@
+2002-10-19  Sebastian Pop  <s.pop@laposte.net>
+
+	* dependence.c : Removed.
+        * Makefile.in : Remove dependence.o.
+
 Sat Oct 19 10:46:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* mmintrin.h (__m64): typedef it to v2si.
