@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision$
+ *                            $Revision: 1.4 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1421,7 +1421,6 @@ tree_transform (gnat_node)
 	      tree gnu_inner;
 	      enum machine_mode mode;
 	      int unsignedp, volatilep;
-	      unsigned int alignment;
 
 	      gnu_result_type = get_unpadded_type (Etype (gnat_node));
 	      gnu_prefix = remove_conversions (gnu_prefix);
@@ -1444,7 +1443,7 @@ tree_transform (gnat_node)
 		gigi_abort (310);
 
 	      get_inner_reference (gnu_prefix, &bitsize, &bitpos, &gnu_offset,
-				   &mode, &unsignedp, &volatilep, &alignment);
+				   &mode, &unsignedp, &volatilep);
 
 
 	      if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
