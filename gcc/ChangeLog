@@ -1,3 +1,8 @@
+Fri Jan 23 15:39:42 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in: Remove remaining bytecode stuff.
+	* emit-rtl.c, expr.c: Likewise.
+
 Fri Jan 23 12:41:10 1998  Nick Clifton  (nickc@cygnus.com)
 
 	* toplev.c (lang_options): Add unknown-pragma options.

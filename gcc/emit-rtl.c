@@ -53,8 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "obstack.h"
 
-#include "machmode.h"
-
 /* Commonly used modes.  */
 
 enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */

@@ -147,12 +147,10 @@ struct clear_by_pieces
   int reverse;
 };
 
-static rtx get_push_address	PROTO ((int));
-extern int local_vars_size;
-extern int stack_depth;
-extern int max_stack_depth;
 extern struct obstack permanent_obstack;
 extern rtx arg_pointer_save_area;
+
+static rtx get_push_address	PROTO ((int));
 
 static rtx enqueue_insn		PROTO((rtx, rtx));
 static int queued_subexp_p	PROTO((rtx));
