@@ -1,3 +1,14 @@
+2001-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.h (tree_dump_index): Add more comments.
+	* c-dump.c (dump_files): Name flags `tree' rather than `ast'.
+	(dump_option_value_info): New struct.
+	(dump_options): New array.
+	(dump_switch_p): Parse switch options symbolically.
+	* doc/invoke.texi (-fdump-ast): Rename to ...
+	(-fdump-tree): ... here. Document that options are symbolic, and
+	not all are applicable.
+
 2001-09-04  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md (define_splits): Kill constraints.
