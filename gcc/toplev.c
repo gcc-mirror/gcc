@@ -1875,7 +1875,8 @@ compile_file (name)
     for (i = 0; i < len; i++)
       {
 	decl = vec[i];
-	if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0)
+	if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
+	    && incomplete_decl_finalize_hook != 0)
 	  (*incomplete_decl_finalize_hook) (decl);
 
 	if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
