@@ -188,9 +188,9 @@ compute_immediate_uses (int flags, bool (*calc_for)(tree))
 }
 
 
-/* Invalidates dataflow information for a statement STMT.  */
+/* Invalidates dataflow information for a statement STMT.   */
 
-static void
+void
 free_df_for_stmt (tree stmt)
 {
   dataflow_t *df;
@@ -221,7 +221,13 @@ free_df_for_stmt (tree stmt)
 }
 
 
-/* Invalidate dataflow information for the whole function.  */
+/* Invalidate dataflow information for the whole function. 
+
+   Note this only invalidates dataflow information on statements and
+   PHI nodes which are reachable.
+
+   A deleted statement may still have attached dataflow information
+   on it.  */
 
 void
 free_df (void)

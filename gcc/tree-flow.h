@@ -530,6 +530,7 @@ extern void dump_immediate_uses_for (FILE *, tree);
 extern void debug_immediate_uses_for (tree);
 extern void compute_immediate_uses (int, bool (*)(tree));
 extern void free_df (void);
+extern void free_df_for_stmt (tree);
 extern tree get_virtual_var (tree);
 extern void add_referenced_tmp_var (tree var);
 extern void mark_new_vars_to_rename (tree, bitmap);

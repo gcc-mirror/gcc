@@ -326,6 +326,14 @@ dse_optimize_stmt (struct dom_walk_data *walk_data,
 	     This allows us to cascade dead stores.  */
 	  redirect_immediate_uses (stmt, skipped_phi ? skipped_phi : use);
 
+	  /* Be sure to remove any dataflow information attached to
+	     this statement.  */
+	  free_df_for_stmt (stmt);
+
+	  /* And release any SSA_NAMEs set in this statement back to the
+	     SSA_NAME manager.  */
+	  release_defs (stmt);
+
 	  /* Finally remove the dead store.  */
 	  bsi_remove (&bsi);
 	}
