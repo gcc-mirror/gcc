@@ -1,6 +1,5 @@
 /* Subroutines for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
-
+   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -96,7 +95,7 @@ output_options (file, f_options, f_len, W_options, W_len,
 			   indent, pos, max);
 
   pos = output_option (file, sep, "-mcpu=", ix86_cpu_string, indent, pos, max);
-  pos = output_option (file, sep, "-march=", ix86_isa_string, indent, pos, max);
+  pos = output_option (file, sep, "-march=", ix86_arch_string, indent, pos, max);
   fprintf (file, term);
 }
 
