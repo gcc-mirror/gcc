@@ -107,7 +107,7 @@ namespace std
     inline _ForwardIter
     uninitialized_copy(_InputIter __first, _InputIter __last, _ForwardIter __result)
     {
-      typedef typename iterator_traits<_InputIter>::value_type _ValueType;
+      typedef typename iterator_traits<_ForwardIter>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
       return __uninitialized_copy_aux(__first, __last, __result, _Is_POD());
     }

@@ -21,6 +21,7 @@
 // 23.2.4.1 vector constructors, copy, and assignment
 
 #include <vector>
+#include <string>
 #include <testsuite_hooks.h>
 
 template<typename T>
@@ -81,11 +82,24 @@ test03()
 #endif
 }
 
+// libstdc++/6513
+void test04()
+{
+  bool test = true;
+  const char* c_strings[5] = { "1", "2", "3", "4", "5" };
+  std::vector<std::string> strings(c_strings, c_strings + 5);
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+}
+
 int main()
 {
   test01();
   test02(); 
   test03();
+  test04();
 
   return 0;
 }

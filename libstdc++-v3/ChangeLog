@@ -1,3 +1,12 @@
+2002-05-01  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/6513
+	* include/bits/stl_uninitialized.h
+	(uninitialized_copy(_InputIter, _InputIter, _ForwardIter)):
+	Fix typo in 2001-07-17 commit: typedef _ValueType to
+	iterator_traits<_ForwardIter> not <_InputIter>.
+	* testsuite/23_containers/vector_ctor.cc: Add test04.
+
 2002-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 	
 	PR libstdc++/6501
