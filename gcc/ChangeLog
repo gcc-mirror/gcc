@@ -1,5 +1,9 @@
 2000-09-11  Richard Henderson  <rth@cygnus.com>
 
+	* cse.c (fold_rtx): Honor NO_FUNCTION_CSE.
+
+2000-09-11  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64-protos.h (fr_nonimmediate_operand): Declare.
 	* config/ia64/ia64.c (fr_nonimmediate_operand): New.
 	(ia64_override_options): Prevent optimizing division for both
