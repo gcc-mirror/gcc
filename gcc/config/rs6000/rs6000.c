@@ -600,7 +600,7 @@ num_insns_constant_wide (value)
 
       else
 	return (num_insns_constant_wide (high)
-		+ num_insns_constant_low (low) + 1);
+		+ num_insns_constant_wide (low) + 1);
     }
 #endif
 
