@@ -257,20 +257,21 @@ add_test (rtx cond, basic_block bb, basic_block dest)
    describes the loop, DESC describes the number of iterations of the
    loop, and DOLOOP_INSN is the low-overhead looping insn to emit at the
    end of the loop.  CONDITION is the condition separated from the
-   DOLOOP_SEQ.  */
+   DOLOOP_SEQ.  COUNT is the number of iterations of the LOOP.  */
 
 static void
 doloop_modify (struct loop *loop, struct niter_desc *desc,
-	       rtx doloop_seq, rtx condition)
+	       rtx doloop_seq, rtx condition, rtx count)
 {
   rtx counter_reg;
-  rtx count, tmp, noloop = NULL_RTX;
+  rtx tmp, noloop = NULL_RTX;
   rtx sequence;
   rtx jump_insn;
   rtx jump_label;
   int nonneg = 0, irr;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
+  enum machine_mode mode;
 
   jump_insn = BB_END (loop_end);
 
@@ -291,8 +292,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)
     counter_reg = XEXP (counter_reg, 0);
+  mode = GET_MODE (counter_reg);
 
-  count = copy_rtx (desc->niter_expr);
   increment_count = false;
   switch (GET_CODE (condition))
     {
@@ -323,7 +324,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if (desc->niter_max
 	  <= ((unsigned HOST_WIDEST_INT) 1
-	      << (GET_MODE_BITSIZE (GET_MODE (counter_reg)) - 1)))
+	      << (GET_MODE_BITSIZE (mode) - 1)))
 	nonneg = 1;
       break;
 
@@ -333,7 +334,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     }
 
   if (increment_count)
-    count = simplify_gen_binary (PLUS, desc->mode, count, const1_rtx);
+    count = simplify_gen_binary (PLUS, mode, count, const1_rtx);
 
   /* Insert initialization of the count register into the loop header.  */
   start_sequence ();
@@ -438,12 +439,14 @@ doloop_optimize (struct loop *loop)
 {
   enum machine_mode mode;
   rtx doloop_seq, doloop_pat, doloop_reg;
-  rtx iterations;
+  rtx iterations, count;
   rtx iterations_max;
   rtx start_label;
   rtx condition;
   unsigned level, est_niter;
   struct niter_desc *desc;
+  unsigned word_mode_size;
+  unsigned HOST_WIDE_INT word_mode_max;
 
   if (dump_file)
     fprintf (dump_file, "Doloop: Processing loop %d.\n", loop->num);
@@ -481,6 +484,7 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
+  count = copy_rtx (desc->niter_expr);
   iterations = desc->const_iter ? desc->niter_expr : const0_rtx;
   iterations_max = GEN_INT (desc->niter_max);
   level = get_loop_level (loop) + 1;
@@ -492,8 +496,33 @@ doloop_optimize (struct loop *loop)
   doloop_reg = gen_reg_rtx (mode);
   doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
 			       GEN_INT (level), start_label);
-  if (! doloop_seq && mode != word_mode)
+
+  word_mode_size = GET_MODE_BITSIZE (word_mode);
+  word_mode_max
+	  = ((unsigned HOST_WIDE_INT) 1 << (word_mode_size - 1) << 1) - 1;
+  if (! doloop_seq
+      && mode != word_mode
+      /* Before trying mode different from the one in that # of iterations is
+	 computed, we must be sure that the number of iterations fits into
+	 the new mode.  */
+      && (word_mode_size >= GET_MODE_BITSIZE (mode)
+	  || desc->niter_max <= word_mode_max))
     {
+      if (word_mode_size > GET_MODE_BITSIZE (mode))
+	{
+	  count = simplify_gen_unary (ZERO_EXTEND, word_mode,
+				      iterations, mode);
+	  iterations = simplify_gen_unary (ZERO_EXTEND, word_mode,
+					   iterations, mode);
+	  iterations_max = simplify_gen_unary (ZERO_EXTEND, word_mode,
+					       iterations_max, mode);
+	}
+      else
+	{
+	  count = lowpart_subreg (word_mode, count, mode);
+	  iterations = lowpart_subreg (word_mode, iterations, mode);
+	  iterations_max = lowpart_subreg (word_mode, iterations_max, mode);
+	}
       PUT_MODE (doloop_reg, word_mode);
       doloop_seq = gen_doloop_end (doloop_reg, iterations, iterations_max,
 				   GEN_INT (level), start_label);
@@ -528,7 +557,7 @@ doloop_optimize (struct loop *loop)
       return false;
     }
 
-  doloop_modify (loop, desc, doloop_seq, condition);
+  doloop_modify (loop, desc, doloop_seq, condition, count);
   return true;
 }
 
