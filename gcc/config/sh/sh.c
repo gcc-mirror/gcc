@@ -1041,7 +1041,11 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 
 	    case TLS_MODEL_INITIAL_EXEC:
 	      if (! flag_pic)
-		emit_insn (gen_GOTaddr2picreg ());
+		{
+		  emit_insn (gen_GOTaddr2picreg ());
+		  emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode,
+								 PIC_REG)));
+		}
 	      tga_op1 = no_new_pseudos ? op0 : gen_reg_rtx (Pmode);
 	      tmp = gen_sym2GOTTPOFF (op1);
 	      emit_insn (gen_tls_initial_exec (tga_op1, tmp));

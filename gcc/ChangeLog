@@ -1,3 +1,8 @@
+2004-11-06  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (prepare_move_operands): Emit a use of r12
+	for non-PIC TLS_MODEL_INITIAL_EXEC case.
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expmed.c: Fix a comment typo.
