@@ -1,3 +1,7 @@
+2003-07-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): New.
+
 2003-07-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	2001-12-13  Alexandre Oliva  <aoliva@redhat.com>
