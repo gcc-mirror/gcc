@@ -336,6 +336,7 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_label,			         /* label */
   debug_nothing_int,		         /* handle_pch */
   debug_nothing_rtx,		         /* var_location */
+  debug_nothing_void,                    /* switch_text_section */
   0                                      /* start_end_main_source_file */
 };
 

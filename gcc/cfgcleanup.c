@@ -155,9 +155,8 @@ try_simplify_condjump (basic_block cbranch_block)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (BB_PARTITION (jump_block) != BB_PARTITION (jump_dest_block)
-	  || (cbranch_jump_edge->flags & EDGE_CROSSING)))
+  if (BB_PARTITION (jump_block) != BB_PARTITION (jump_dest_block)
+      || (cbranch_jump_edge->flags & EDGE_CROSSING))
     return false;
 
   /* The conditional branch must target the block after the
@@ -435,8 +434,7 @@ try_forward_edges (int mode, basic_block b)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
+  if (find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX))
     return false;
 
   for (ei = ei_start (b->succs); (e = ei_safe_edge (ei)); )
@@ -471,8 +469,7 @@ try_forward_edges (int mode, basic_block b)
 	 bb-reorder.c:partition_hot_cold_basic_blocks for complete
 	 details.  */
 
-      if (flag_reorder_blocks_and_partition
-	  && first != EXIT_BLOCK_PTR
+      if (first != EXIT_BLOCK_PTR
 	  && find_reg_note (BB_END (first), REG_CROSSING_JUMP, NULL_RTX))
 	return false;
 
@@ -684,9 +681,7 @@ merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (BB_PARTITION (a) != BB_PARTITION (b)
-	  || find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)))
+  if (BB_PARTITION (a) != BB_PARTITION (b))
     return;
 
   barrier = next_nonnote_insn (BB_END (a));
@@ -742,9 +737,7 @@ merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (find_reg_note (BB_END (a), REG_CROSSING_JUMP, NULL_RTX)
-	  || BB_PARTITION (a) != BB_PARTITION (b)))
+  if (BB_PARTITION (a) != BB_PARTITION (b))
     return;
 
   real_b_end = BB_END (b);
@@ -814,10 +807,7 @@ merge_blocks_move (edge e, basic_block b, basic_block c, int mode)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (find_reg_note (BB_END (b), REG_CROSSING_JUMP, NULL_RTX)
-	  || find_reg_note (BB_END (c), REG_CROSSING_JUMP, NULL_RTX)
-	  || BB_PARTITION (b) != BB_PARTITION (c)))
+  if (BB_PARTITION (b) != BB_PARTITION (c))
     return NULL;
       
     
@@ -1725,9 +1715,9 @@ try_crossjump_bb (int mode, basic_block bb)
      partition boundaries).  See the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && (BB_PARTITION (EDGE_PRED (bb, 0)->src) != BB_PARTITION (EDGE_PRED (bb, 1)->src)
-	  || (EDGE_PRED (bb, 0)->flags & EDGE_CROSSING)))
+  if (BB_PARTITION (EDGE_PRED (bb, 0)->src) != 
+                                        BB_PARTITION (EDGE_PRED (bb, 1)->src)
+      || (EDGE_PRED (bb, 0)->flags & EDGE_CROSSING))
     return false;
 
   /* It is always cheapest to redirect a block that ends in a branch to

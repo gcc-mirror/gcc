@@ -621,6 +621,10 @@ FUNCTION (void)								\
       if (asm_out_file)							\
 	fputs ("\t" DIRECTIVE "\n", asm_out_file);			\
       in_section = SECTION;						\
+      if ((SECTION == in_text_coal)                                     \
+	  || (SECTION == in_text_unlikely)                              \
+	  || (SECTION == in_text_unlikely_coal))                        \
+        last_text_section = SECTION;                                    \
     }									\
 }									\
 
@@ -659,10 +663,6 @@ static void objc_section_init (void);				\
 SECTION_FUNCTION (text_coal_section,				\
 		  in_text_coal,					\
 		  ".section __TEXT,__textcoal_nt,coalesced,"	\
-		    "pure_instructions", 0)			\
-SECTION_FUNCTION (text_unlikely_section,			\
-		  in_text_unlikely,				\
-		  ".section __TEXT,__text_unlikely,coalesced,"	\
 		    "pure_instructions", 0)			\
 SECTION_FUNCTION (text_unlikely_coal_section,			\
 		  in_text_unlikely_coal,			\

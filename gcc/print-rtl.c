@@ -319,7 +319,7 @@ print_rtx (rtx in_rtx)
 		}
 		break;
 
-	      case NOTE_INSN_UNLIKELY_EXECUTED_CODE:
+	      case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 		{
 #ifndef GENERATOR_FILE
 		  basic_block bb = NOTE_BASIC_BLOCK (in_rtx);

@@ -1016,12 +1016,17 @@ machopic_select_section (tree exp, int reloc,
   bool weak_p = DECL_P (exp) && DECL_WEAK (exp);
   static void (* const base_funs[][2])(void) = {
     { text_section, text_coal_section },
-    { text_unlikely_section, text_unlikely_coal_section },
+    { unlikely_text_section, text_unlikely_coal_section },
     { readonly_data_section, const_coal_section },
     { const_data_section, const_data_coal_section },
     { data_section, data_coal_section }
   };
 
+  if (reloc == 0
+      && (last_text_section == in_text_unlikely
+	  || last_text_section == in_text_unlikely_coal))
+    reloc = 1;
+    
   if (TREE_CODE (exp) == FUNCTION_DECL)
     base_function = base_funs[reloc][weak_p];
   else if (decl_readonly_section_1 (exp, reloc, MACHOPIC_INDIRECT))

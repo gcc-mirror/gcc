@@ -2865,12 +2865,13 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
      partition boundaries).  See  the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && ((BB_END (then_bb) 
-	   && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
-	  || (BB_END (else_bb)
-	      && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
-				NULL_RTX))))
+  if ((BB_END (then_bb) 
+       && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+      || (BB_END (test_bb)
+	  && find_reg_note (BB_END (test_bb), REG_CROSSING_JUMP, NULL_RTX))
+      || (BB_END (else_bb)
+	  && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
+			    NULL_RTX)))
     return FALSE;
 
   /* THEN has one successor.  */
@@ -2970,12 +2971,13 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
      partition boundaries).  See  the comments at the top of 
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (flag_reorder_blocks_and_partition
-      && ((BB_END (then_bb)
-	   && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
-	  || (BB_END (else_bb) 
-	      && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
-				NULL_RTX))))
+  if ((BB_END (then_bb)
+       && find_reg_note (BB_END (then_bb), REG_CROSSING_JUMP, NULL_RTX))
+      || (BB_END (test_bb)
+	  && find_reg_note (BB_END (test_bb), REG_CROSSING_JUMP, NULL_RTX))
+      || (BB_END (else_bb) 
+	  && find_reg_note (BB_END (else_bb), REG_CROSSING_JUMP, 
+			    NULL_RTX)))
     return FALSE;
 
   /* ELSE has one successor.  */

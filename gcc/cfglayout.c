@@ -51,7 +51,6 @@ static void change_scope (rtx, tree, tree);
 void verify_insn_chain (void);
 static void fixup_fallthru_exit_predecessor (void);
 static tree insn_scope (rtx);
-static void update_unlikely_executed_notes (basic_block);
 
 rtx
 unlink_insn_chain (rtx first, rtx last)
@@ -784,28 +783,12 @@ fixup_reorder_chain (void)
 	     section boundaries).  */
 	  BB_COPY_PARTITION (e_fall->src, single_pred (bb));
 	  if (flag_reorder_blocks_and_partition
-	      && targetm.have_named_sections)
-	    {
-	      if (BB_PARTITION (single_pred (bb)) == BB_COLD_PARTITION)
-		{
-		  rtx new_note;
-		  rtx note = BB_HEAD (e_fall->src);
-		  
-		  while (!INSN_P (note)
-			 && note != BB_END (e_fall->src))
-		    note = NEXT_INSN (note);
-		  
-		  new_note = emit_note_before 
-                                          (NOTE_INSN_UNLIKELY_EXECUTED_CODE, 
-					   note);
-		  NOTE_BASIC_BLOCK (new_note) = bb;
-		}
-	      if (JUMP_P (BB_END (bb))
-		  && !any_condjump_p (BB_END (bb))
-  		  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
-		REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST 
-		  (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
-	    }
+	      && targetm.have_named_sections
+	      && JUMP_P (BB_END (bb))
+	      && !any_condjump_p (BB_END (bb))
+	      && (EDGE_SUCC (bb, 0)->flags & EDGE_CROSSING))
+	    REG_NOTES (BB_END (bb)) = gen_rtx_EXPR_LIST
+	      (REG_CROSSING_JUMP, NULL_RTX, REG_NOTES (BB_END (bb)));
 	}
     }
 
@@ -840,8 +823,6 @@ fixup_reorder_chain (void)
       bb->index = index;
       BASIC_BLOCK (index) = bb;
 
-      update_unlikely_executed_notes (bb);
-
       bb->prev_bb = prev_bb;
       prev_bb->next_bb = bb;
     }
@@ -861,21 +842,6 @@ fixup_reorder_chain (void)
       if (e && !can_fallthru (e->src, e->dest))
 	force_nonfallthru (e);
     }
-}
-
-/* Update the basic block number information in any 
-   NOTE_INSN_UNLIKELY_EXECUTED_CODE notes within the basic block.  */
-
-static void
-update_unlikely_executed_notes (basic_block bb)
-{
-  rtx cur_insn;
-
-  for (cur_insn = BB_HEAD (bb); cur_insn != BB_END (bb); 
-       cur_insn = NEXT_INSN (cur_insn)) 
-    if (NOTE_P (cur_insn)
-	&& NOTE_LINE_NUMBER (cur_insn) == NOTE_INSN_UNLIKELY_EXECUTED_CODE)
-      NOTE_BASIC_BLOCK (cur_insn) = bb;
 }
 
 /* Perform sanity checks on the insn chain.
@@ -1046,7 +1012,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      break;
 
 	    case NOTE_INSN_REPEATED_LINE_NUMBER:
-	    case NOTE_INSN_UNLIKELY_EXECUTED_CODE:
+	    case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	      emit_note_copy (insn);
 	      break;
 

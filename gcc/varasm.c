@@ -52,6 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-mudflap.h"
 #include "cgraph.h"
 #include "cfglayout.h"
+#include "basic-block.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"		/* Needed for external data
@@ -95,25 +96,44 @@ int size_directive_output;
 
 tree last_assemble_variable_decl;
 
-/* The following global variable indicates if the section label for the
-   "cold" section of code has been output yet to the assembler.  The
-   label is useful when running gdb.  This is part of the optimization that
-   partitions hot and cold basic blocks into separate sections of the .o
-   file.  */
+/* The following global variable indicates if the first basic block
+   in a function belongs to the cold partition or not.  */
 
-static bool unlikely_section_label_printed = false;
+bool first_function_block_is_cold;
 
 /* The following global variable indicates the label name to be put at
    the start of the first cold section within each function, when
-   partitioning basic blocks into hot and cold sections.  */
+   partitioning basic blocks into hot and cold sections.  Used for
+   debug info.  */
 
-static char *unlikely_section_label = NULL;
+char *unlikely_section_label;
+
+/* The following global variable indicates the label name to be put at
+   the start of the first hot section within each function, when
+   partitioning basic blocks into hot and cold sections.  Used for
+   debug info.  */
+
+char *hot_section_label;
+
+/* The following global variable indicates the label name to be put at
+   the end of the last hot section within each function, when
+   partitioning basic blocks into hot and cold sections.  Used for
+   debug info.  */
+
+char *hot_section_end_label;
+
+/* The following global variable indicates the label name to be put at
+   the end of the last cold section within each function, when
+   partitioning basic blocks into hot and cold sections.  Used for 
+   debug info.*/
+
+char *cold_section_end_label;
  
-/* The following global variable indicates the section name to be used
-   for the current cold section, when partitioning hot and cold basic
+/* The following global variable indicates the seciton name to be used
+   for the current cold section, when partitiong hot and cold basic 
    blocks into separate sections.  */
 
-static char *unlikely_text_section_name = NULL;
+char *unlikely_text_section_name;
 
 /* We give all constants their own alias set.  Perhaps redundant with
    MEM_READONLY_P, but pre-dates it.  */
@@ -140,6 +160,7 @@ static void globalize_decl (tree);
 static void maybe_assemble_visibility (tree);
 static int in_named_entry_eq (const void *, const void *);
 static hashval_t in_named_entry_hash (const void *);
+static void initialize_cold_section_name (void);
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_BSS
 static void asm_output_bss (FILE *, tree, const char *,
@@ -156,25 +177,8 @@ static bool asm_emit_uninitialised (tree, const char*,
 				    unsigned HOST_WIDE_INT);
 static void mark_weak (tree);
 
-enum in_section { no_section, in_text, in_unlikely_executed_text, in_data, 
-		  in_named
-#ifdef BSS_SECTION_ASM_OP
-  , in_bss
-#endif
-#ifdef CTORS_SECTION_ASM_OP
-  , in_ctors
-#endif
-#ifdef DTORS_SECTION_ASM_OP
-  , in_dtors
-#endif
-#ifdef READONLY_DATA_SECTION_ASM_OP
-  , in_readonly_data
-#endif
-#ifdef EXTRA_SECTIONS
-  , EXTRA_SECTIONS
-#endif
-};
 static GTY(()) enum in_section in_section = no_section;
+enum in_section last_text_section;
 
 /* Return a nonzero value if DECL has a section attribute.  */
 #ifndef IN_NAMED_SECTION
@@ -185,6 +189,7 @@ static GTY(()) enum in_section in_section = no_section;
 
 /* Text of section name when in_section == in_named.  */
 static GTY(()) const char *in_named_name;
+const char *last_text_section_name;
 
 /* Hash table of flags that have been used for a particular named section.  */
 
@@ -202,24 +207,10 @@ static GTY((param_is (struct in_named_entry))) htab_t in_named_htab;
 EXTRA_SECTION_FUNCTIONS
 #endif
 
-/* Tell assembler to switch to text section.  */
-
-void
-text_section (void)
+static void
+initialize_cold_section_name (void)
 {
-  if (in_section != in_text)
-    {
-      in_section = in_text;
-      fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-    }
-}
-
-/* Tell assembler to switch to unlikely-to-be-executed text section.  */
-
-void
-unlikely_text_section (void)
-{
-  const char *name;
+  const char* name;
   int len;
 
   if (! unlikely_text_section_name)
@@ -235,18 +226,35 @@ unlikely_text_section (void)
 	  name = TREE_STRING_POINTER (DECL_SECTION_NAME 
 				                   (current_function_decl));
 	  len = strlen (name);
-	  unlikely_text_section_name = xmalloc ((len + 10) * sizeof (char));
-	  strcpy (unlikely_text_section_name, name);
-	  strcat (unlikely_text_section_name, "_unlikely");
+	  unlikely_text_section_name = xmalloc (len + 10);
+	  sprintf (unlikely_text_section_name, "%s%s", name, "_unlikely");
 	}
       else
-	{
-	  len = strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
-	  unlikely_text_section_name = xmalloc (len+1 * sizeof (char));
-	  strcpy (unlikely_text_section_name, 
-		  UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
-	}
+	unlikely_text_section_name = 
+	                      xstrdup (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
     }
+}
+
+/* Tell assembler to switch to text section.  */
+
+void
+text_section (void)
+{
+  if (in_section != in_text)
+    {
+      in_section = in_text;
+      last_text_section = in_text;
+      fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
+    }
+}
+
+/* Tell assembler to switch to unlikely-to-be-executed text section.  */
+
+void
+unlikely_text_section (void)
+{
+  if (! unlikely_text_section_name)
+    initialize_cold_section_name ();
 
   if ((in_section != in_unlikely_executed_text)
       &&  (in_section != in_named 
@@ -254,12 +262,7 @@ unlikely_text_section (void)
     {
       named_section (NULL_TREE, unlikely_text_section_name, 0);
       in_section = in_unlikely_executed_text;
-
-      if (!unlikely_section_label_printed)
-	{
-	  ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
-	  unlikely_section_label_printed = true;
-	}
+      last_text_section = in_unlikely_executed_text;
     }
 }
 
@@ -437,6 +440,12 @@ named_section_real (const char *name, unsigned int flags, tree decl)
 	  in_section = in_named;
 	}
     }
+
+  if (in_text_section () || in_unlikely_text_section ())
+    {
+      last_text_section = in_section;
+      last_text_section_name = name;
+    }
 }
 
 /* Tell assembler to change to section NAME for DECL.
@@ -565,28 +574,40 @@ asm_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
 void
 function_section (tree decl)
 {
-  if (decl == NULL_TREE)
-    text_section ();
-  else
-    {
-      /* ??? Typical use of this function maybe shouldn't be looking
-	 for unlikely blocks at all - in the event that an entire
-	 function is going into the unlikely-execute section, that
-	 should be reflected in its DECL_SECTION_NAME.  */
-      rtx insns = cfun && cfun->emit ? get_insns () : 0;
-      bool unlikely = insns && scan_ahead_for_unlikely_executed_note (insns);
-
+  bool unlikely = false;
+    
+  if (first_function_block_is_cold)
+    unlikely = true;
+  
 #ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
-      targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
+  targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
 #else
-      if (unlikely)
-	unlikely_text_section ();
-      else if (DECL_SECTION_NAME (decl))
-	named_section (decl, 0, 0);
-      else
-	text_section ();
+  if (decl != NULL_TREE
+      && DECL_SECTION_NAME (decl) != NULL_TREE)
+    named_section (decl, (char *) 0, 0);
+  else
+    text_section ();
 #endif
-    }
+}
+
+void
+current_function_section (tree decl)
+{
+#ifdef USE_SELECT_SECTION_FOR_FUNCTIONS
+  bool unlikely = (in_unlikely_text_section () 
+		   || (last_text_section == in_unlikely_executed_text));
+  
+  targetm.asm_out.select_section (decl, unlikely, DECL_ALIGN (decl));
+#else
+  if (last_text_section == in_unlikely_executed_text)
+    unlikely_text_section ();
+  else if (last_text_section == in_text)
+    text_section ();
+  else if (last_text_section == in_named)
+    named_section (NULL_TREE, last_text_section_name, 0);
+  else
+    function_section (decl);
+#endif
 }
 
 /* Switch to read-only data section associated with function DECL.  */
@@ -1203,16 +1224,19 @@ void
 assemble_start_function (tree decl, const char *fnname)
 {
   int align;
+  bool hot_label_written = false;
 
-  if (unlikely_text_section_name)
-    free (unlikely_text_section_name);
-
-  unlikely_section_label_printed = false;
   unlikely_text_section_name = NULL;
   
+  first_function_block_is_cold = false;
+  hot_section_label = reconcat (hot_section_label, fnname, ".hot_section", NULL);
   unlikely_section_label = reconcat (unlikely_section_label, 
 				     fnname, ".unlikely_section", NULL);
-  
+  hot_section_end_label = reconcat (hot_section_end_label,
+				    fnname, ".end", NULL);
+  cold_section_end_label = reconcat (cold_section_end_label,
+				    fnname, ".end.cold", NULL);
+
   /* The following code does not need preprocessing in the assembler.  */
 
   app_disable ();
@@ -1220,22 +1244,67 @@ assemble_start_function (tree decl, const char *fnname)
   if (CONSTANT_POOL_BEFORE_FUNCTION)
     output_constant_pool (fnname, decl);
 
-  /* Make sure the cold text (code) section is properly aligned.  This
-     is necessary here in the case where the function has both hot and
-     cold sections, because we don't want to re-set the alignment when the
-     section switch happens mid-function.  We don't need to set the hot
-     section alignment here, because code further down in this function
-     sets the alignment for whichever section comes first, and if there
-     is a hot section it is guaranteed to be first.  */
+  /* Make sure the not and cold text (code) sections are properly
+     aligned.  This is necessary here in the case where the function
+     has both hot and cold sections, because we don't want to re-set
+     the alignment when the section switch happens mid-function.  */
 
   if (flag_reorder_blocks_and_partition)
     {
       unlikely_text_section ();
       assemble_align (FUNCTION_BOUNDARY);
+      ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
+      if (BB_PARTITION (ENTRY_BLOCK_PTR->next_bb) == BB_COLD_PARTITION)
+	{
+	  /* Since the function starts with a cold section, we need to
+	     explicitly align the hot section and write out the hot
+	     section label.  */
+	  text_section ();
+	  assemble_align (FUNCTION_BOUNDARY);
+	  ASM_OUTPUT_LABEL (asm_out_file, hot_section_label);
+	  hot_label_written = true;
+	  first_function_block_is_cold = true;
+	}
+    }
+  else if (DECL_SECTION_NAME (decl))
+    {
+      /* Calls to function_section rely on first_function_block_is_cold
+	 being accurate.  The first block may be cold even if we aren't
+	 doing partitioning, if the entire function was decided by
+	 choose_function_section (predict.c) to be cold.  */
+
+      int i;
+      int len;
+      char *s;
+
+      initialize_cold_section_name ();
+
+      /* The following is necessary, because 'strcmp
+	(TREE_STRING_POINTER (DECL_SECTION_NAME (decl)), blah)' always
+	fails, presumably because TREE_STRING_POINTER is declared to
+	be an array of size 1 of char.  */
+
+      len = TREE_STRING_LENGTH (DECL_SECTION_NAME (decl));
+      s = (char *) xmalloc (len + 1);
+
+      for (i = 0; i < len; i ++)
+	s[i] = (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)))[i];
+      s[len] = '\0';
+      
+      if (unlikely_text_section_name 
+	  && (strcmp (s, unlikely_text_section_name) == 0))
+	first_function_block_is_cold = true;
     }
 
+  last_text_section = no_section;
+  in_section = no_section;
   resolve_unique_section (decl, 0, flag_function_sections);
+
+  /* Switch to the correct text section for the start of the function.  */
+
   function_section (decl);
+  if (!hot_label_written)
+    ASM_OUTPUT_LABEL (asm_out_file, hot_section_label);
 
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
@@ -1288,12 +1357,7 @@ assemble_start_function (tree decl, const char *fnname)
   ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
 
-  if (in_unlikely_text_section ()
-      && !unlikely_section_label_printed)
-    {
-      ASM_OUTPUT_LABEL (asm_out_file, unlikely_section_label);
-      unlikely_section_label_printed = true;
-    }
+  insert_section_boundary_note ();
 }
 
 /* Output assembler code associated with defining the size of the
@@ -1302,6 +1366,7 @@ assemble_start_function (tree decl, const char *fnname)
 void
 assemble_end_function (tree decl, const char *fnname)
 {
+  enum in_section save_text_section;
 #ifdef ASM_DECLARE_FUNCTION_SIZE
   ASM_DECLARE_FUNCTION_SIZE (asm_out_file, fnname, decl);
 #endif
@@ -1310,6 +1375,15 @@ assemble_end_function (tree decl, const char *fnname)
       output_constant_pool (fnname, decl);
       function_section (decl);	/* need to switch back */
     }
+  /* Output labels for end of hot/cold text sections (to be used by
+     debug info.)  */
+  save_text_section = in_section;
+  unlikely_text_section ();
+  ASM_OUTPUT_LABEL (asm_out_file, cold_section_end_label);
+  text_section ();
+  ASM_OUTPUT_LABEL (asm_out_file, hot_section_end_label);
+  if (save_text_section == in_unlikely_executed_text)
+    unlikely_text_section ();
 }
 
 /* Assemble code to leave SIZE bytes of zeros.  */

@@ -120,6 +120,10 @@ struct gcc_debug_hooks
   /* Called from final_scan_insn for any NOTE_INSN_VAR_LOCATION note.  */
   void (* var_location) (rtx);
 
+  /* Called from final_scan_insn if there is a switch between hot and cold
+     text sections.  */
+  void (* switch_text_section) (void);
+
   /* This is 1 if the debug writer wants to see start and end commands for the
      main source files, and 0 otherwise.  */
   int start_end_main_source_file;
