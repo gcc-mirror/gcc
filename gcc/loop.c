@@ -5580,6 +5580,20 @@ combine_givs_p (g1, g2)
   return 0;
 }
 
+#ifdef GIV_SORT_CRITERION
+/* Compare two givs and sort the most desirable one for combinations first.
+   This is used only in one qsort call below.  */
+
+static int
+giv_sort (x, y)
+     struct induction **x, **y;
+{
+  GIV_SORT_CRITERION (*x, *y);
+
+  return 0;
+}
+#endif
+
 /* Check all pairs of givs for iv_class BL and see if any can be combined with
    any other.  If so, point SAME to the giv combined with and set NEW_REG to
    be an expression (in terms of the other giv's DEST_REG) equivalent to the
@@ -5589,39 +5603,67 @@ static void
 combine_givs (bl)
      struct iv_class *bl;
 {
-  struct induction *g1, *g2;
-  int pass;
+  struct induction *g1, *g2, **giv_array, *temp_iv;
+  int i, j, giv_count, pass;
 
+  /* Count givs, because bl->giv_count is incorrect here.  */
+  giv_count = 0;
   for (g1 = bl->giv; g1; g1 = g1->next_iv)
-    for (pass = 0; pass <= 1; pass++)
-      for (g2 = bl->giv; g2; g2 = g2->next_iv)
-	if (g1 != g2
-	    /* First try to combine with replaceable givs, then all givs. */
-	    && (g1->replaceable || pass == 1)
-	    /* If either has already been combined or is to be ignored, can't
-	       combine.  */
-	    && ! g1->ignore && ! g2->ignore && ! g1->same && ! g2->same
-	    /* If something has been based on G2, G2 cannot itself be based
-	       on something else.  */
-	    && ! g2->combined_with
-	    && combine_givs_p (g1, g2))
-	  {
-	    /* g2->new_reg set by `combine_givs_p'  */
-	    g2->same = g1;
-	    g1->combined_with = 1;
-	    g1->benefit += g2->benefit;
-	    /* ??? The new final_[bg]iv_value code does a much better job
-	       of finding replaceable giv's, and hence this code may no
-	       longer be necessary.  */
-	    if (! g2->replaceable && REG_USERVAR_P (g2->dest_reg))
-	      g1->benefit -= copy_cost;
-	    g1->lifetime += g2->lifetime;
-	    g1->times_used += g2->times_used;
+    giv_count++;
 
-	    if (loop_dump_stream)
-	      fprintf (loop_dump_stream, "giv at %d combined with giv at %d\n",
-		       INSN_UID (g2->insn), INSN_UID (g1->insn));
+  giv_array
+    = (struct induction **) alloca (giv_count * sizeof (struct induction *));
+  i = 0;
+  for (g1 = bl->giv; g1; g1 = g1->next_iv)
+    giv_array[i++] = g1;
+
+#ifdef GIV_SORT_CRITERION
+  /* Sort the givs if GIV_SORT_CRITERION is defined.
+     This is usually defined for processors which lack
+     negative register offsets so more givs may be combined.  */
+
+  if (loop_dump_stream)
+    fprintf (loop_dump_stream, "%d givs counted, sorting...\n", giv_count);
+
+  qsort (giv_array, giv_count, sizeof (struct induction *), giv_sort);
+#endif
+
+  for (i = 0; i < giv_count; i++)
+    {
+      g1 = giv_array[i];
+      for (pass = 0; pass <= 1; pass++)
+	for (j = 0; j < giv_count; j++)
+	  {
+	    g2 = giv_array[j];
+	    if (g1 != g2
+		/* First try to combine with replaceable givs, then all givs. */
+		&& (g1->replaceable || pass == 1)
+		/* If either has already been combined or is to be ignored, can't
+		   combine.  */
+		&& ! g1->ignore && ! g2->ignore && ! g1->same && ! g2->same
+		/* If something has been based on G2, G2 cannot itself be based
+		   on something else.  */
+		&& ! g2->combined_with
+		&& combine_givs_p (g1, g2))
+	      {
+		/* g2->new_reg set by `combine_givs_p'  */
+		g2->same = g1;
+		g1->combined_with = 1;
+		g1->benefit += g2->benefit;
+		/* ??? The new final_[bg]iv_value code does a much better job
+		   of finding replaceable giv's, and hence this code may no
+		   longer be necessary.  */
+		if (! g2->replaceable && REG_USERVAR_P (g2->dest_reg))
+		  g1->benefit -= copy_cost;
+		g1->lifetime += g2->lifetime;
+		g1->times_used += g2->times_used;
+		
+		if (loop_dump_stream)
+		  fprintf (loop_dump_stream, "giv at %d combined with giv at %d\n",
+			   INSN_UID (g2->insn), INSN_UID (g1->insn));
+	      }
 	  }
+    }
 }
 
 /* EMIT code before INSERT_BEFORE to set REG = B * M + A.  */
