@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -317,6 +317,9 @@ const_section ()					\
   fputc ('\n', (FILE));							\
 }
 
+/* True for VMS V4.6 and later.  */
+#define HAVE_ATEXIT
+
 /* The following definitions are used in libgcc2.c with the __main
    function.  The _SHR symbol is used when the sharable image library
    for libg++ is used - this is picked up automatically by the linker
@@ -335,25 +338,22 @@ const_section ()					\
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
   func_ptr *p;								\
-  extern func_ptr __CTOR_LIST__[1];					\
-  extern func_ptr __CTOR_LIST_END__[1];					\
-  extern func_ptr __CTOR_LIST_SHR__[1];					\
-  extern func_ptr __CTOR_LIST_SHR_END__[1];				\
-  if( &__CTOR_LIST_SHR__[0] != &__CTOR_LIST__[1])			\
-  for (p = __CTOR_LIST_SHR__ + 1; p < __CTOR_LIST_SHR_END__ ; p++ )	\
-    if (*p) (*p) ();							\
+  extern func_ptr __CTOR_LIST__[1], __CTOR_LIST_END__[1];		\
+  extern func_ptr __CTOR_LIST_SHR__[1], __CTOR_LIST_SHR_END__[1];	\
+  if (&__CTOR_LIST_SHR__[0] != &__CTOR_LIST__[1])			\
+    for (p = __CTOR_LIST_SHR__ + 1; p < __CTOR_LIST_SHR_END__ ; p++ )	\
+      if (*p) (*p) ();							\
   for (p = __CTOR_LIST__ + 1; p < __CTOR_LIST_END__ ; p++ )		\
     if (*p) (*p) ();							\
-  atexit (__do_global_dtors);						\
-    {									\
+  do {	/* arrange for `return' from main() to pass through exit() */	\
       __label__ foo;							\
       int *callers_caller_fp = (int *) __builtin_frame_address (3);	\
       register int retval asm ("r0");					\
       callers_caller_fp[4] = (int) && foo;				\
-      return;								\
+      break;		/* out of do-while block */			\
     foo:								\
       exit (retval);							\
-    }									\
+  } while (0);								\
 } while (0)
 
 #define __DTOR_LIST__ __gxx_clean_0
@@ -365,15 +365,13 @@ do {									\
 #define DO_GLOBAL_DTORS_BODY						\
 do {									\
   func_ptr *p;								\
-  extern func_ptr __DTOR_LIST__[1];					\
-  extern func_ptr __DTOR_LIST_END__[1];					\
-  extern func_ptr __DTOR_LIST_SHR__[1];					\
-  extern func_ptr __DTOR_LIST_SHR_END__[1];				\
+  extern func_ptr __DTOR_LIST__[1], __DTOR_LIST_END__[1];		\
+  extern func_ptr __DTOR_LIST_SHR__[1], __DTOR_LIST_SHR_END__[1];	\
   for (p = __DTOR_LIST__ + 1; p < __DTOR_LIST_END__ ; p++ )		\
     if (*p) (*p) ();							\
-  if( &__DTOR_LIST_SHR__[0] != &__DTOR_LIST__[1])			\
-  for (p = __DTOR_LIST_SHR__ + 1; p < __DTOR_LIST_SHR_END__ ; p++ )	\
-    if (*p) (*p) ();							\
+  if (&__DTOR_LIST_SHR__[0] != &__DTOR_LIST__[1])			\
+    for (p = __DTOR_LIST_SHR__ + 1; p < __DTOR_LIST_SHR_END__ ; p++ )	\
+      if (*p) (*p) ();							\
 } while (0)
 
 #endif /* L__main */
