@@ -915,7 +915,7 @@ reg_set_last (x, insn)
   return 0;
 }
 
-/* This is 1 until after reload pass.  */
+/* This is 1 until after the rtl generation pass.  */
 int rtx_equal_function_value_matters;
 
 /* Return 1 if X and Y are identical-looking rtx's.
