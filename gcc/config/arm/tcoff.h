@@ -87,7 +87,7 @@ do {								\
 /* Define this macro if jump tables (for `tablejump' insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.  */
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 #undef READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION	rdata_section

@@ -2321,7 +2321,7 @@ DTORS_SECTION_FUNCTION
     fprintf (FILE, "\tb L$%04d\n\tnop\n", VALUE)
 
 /* Jump tables are executable code and live in the TEXT section on the PA.  */
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* This is how to output an element of a case-vector that is relative.
    This must be defined correctly as it is used when generating PIC code.

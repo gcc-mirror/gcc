@@ -4826,9 +4826,10 @@ data section.
 
 @findex JUMP_TABLES_IN_TEXT_SECTION
 @item JUMP_TABLES_IN_TEXT_SECTION
-Define this macro if jump tables (for @code{tablejump} insns) should be
-output in the text section, along with the assembler instructions.
-Otherwise, the readonly data section is used.
+Define this macro to be an expression with a non-zero value if jump 
+tables (for @code{tablejump} insns) should be output in the text
+section, along with the assembler instructions.  Otherwise, the
+readonly data section is used.
 
 This macro is irrelevant if there is no separate readonly data section.
 

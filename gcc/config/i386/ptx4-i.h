@@ -244,4 +244,4 @@ do { long value[3];							\
 /* Indicate that jump tables go in the text section.  This is
    necessary when compiling PIC code.  */
 
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1

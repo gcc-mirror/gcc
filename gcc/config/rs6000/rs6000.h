@@ -2375,7 +2375,7 @@ extern int rs6000_trunc_used;
 
 /* Indicate that jump tables go in the text section.  */
 
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Define the routines to implement these extra sections.  */
 

@@ -1,3 +1,27 @@
+Fri May 22 00:57:00 1998  Bernd Schmidt (crux@pool.informatik.rwth-aachen.de>
+
+	* final.c (JUMP_TABLES_IN_TEXT_SECTION): Provide a default value.
+	(shorten_branches, final_scan_insn): Test value of
+	JUMP_TABLES_IN_TEXT_SECTION instead of just testing whether it
+	is defined.
+	* tm.texi (JUMP_TABLES_IN_TEXT_SECTION): Corresponding changes.
+	* arm/coff.h: Define JUMP_TABLES_IN_TEXT_SECTION to 1.
+	coff.h: Likewise.
+	* i386/386bsd.h: Likewise.
+	* i386/freebsd-elf.h: Likewise.
+	* i386/freebsd.h: Likewise.
+	* i386/netbsd.h: Likewise.
+	* i386/ptx4-i.h: Likewise.
+	* i386/sysv4.h: Likewise.
+	* pa/pa.h: Likewise.
+	* rs6000/linux.h: Likewise.
+	* rs6000/rs6000.h: Likewise.
+	* sh/sh.h: Likewise.
+	* sparc/sp64-elf.h: Likewise.
+	* v850/v850.h: Likewise.
+	* rs6000/sysv4.h: Define JUMP_TABLES_IN_TEXT_SECTION to 0.
+	* i386/linux.h: Define JUMP_TABLES_IN_TEXT_SECTION to (flag_pic).
+
 Thu May 21 19:50:13 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (gen_add3_insn): New function.

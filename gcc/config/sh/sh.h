@@ -1518,7 +1518,7 @@ dtors_section()							\
 
 /* Define this so that jump tables go in same section as the current function,
    which could be text or it could be a user defined section.  */
-#define JUMP_TABLES_IN_TEXT_SECTION
+#define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
