@@ -468,3 +468,6 @@ do {						\
   for (p = __DTOR_LIST__ + 1; *p; )		\
     (*p++) ();					\
 } while (0)
+
+/* The .align directive in the HP assembler allows up to a 32 alignment.  */
+#define MAX_OFILE_ALIGNMENT 32768
