@@ -152,6 +152,7 @@ enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
 #include "insn-config.h"
 #include "integrate.h"
 #include "regs.h"
+#include "recog.h"
 #include "flags.h"
 #include "expr.h"
 #include "loop.h"

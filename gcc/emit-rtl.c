@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "regs.h"
 #include "insn-config.h"
+#include "recog.h"
 #include "real.h"
 #include "obstack.h"
 
