@@ -65,8 +65,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    The ordering is by increasing byte size, with QI coming before HI,
    HI before SI, etc.
 
-   Eigth arg is the mode of the internal elements in a vector.
-   VOIDmode if not a vector.
+   Eigth arg is the mode of the internal elements in a vector or
+   complex, and VOIDmode if not applicable.
 */
 
 /* VOIDmode is used when no mode needs to be specified,
@@ -98,19 +98,19 @@ DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, BITS_PER_UNIT*12, 12, 12, TFmode, VOIDmo
 DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, BITS_PER_UNIT*16, 16, 16, VOIDmode, VOIDmode)
 
 /* Complex modes.  */
-DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*2, 2, 1, HCmode, VOIDmode)
-DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*4, 4, 2, SCmode, VOIDmode)
-DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*8, 8, 4, DCmode, VOIDmode)
-DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*16, 16, 8, XCmode, VOIDmode)
-DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*24, 24, 12, TCmode, VOIDmode)
-DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*32, 32, 16, VOIDmode, VOIDmode)
+DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*2, 2, 1, HCmode, QFmode)
+DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*4, 4, 2, SCmode, HFmode)
+DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*8, 8, 4, DCmode, SFmode)
+DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*16, 16, 8, XCmode, DFmode)
+DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*24, 24, 12, TCmode, XFmode)
+DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, BITS_PER_UNIT*32, 32, 16, VOIDmode, TFmode)
 
-DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, BITS_PER_UNIT*2, 2, 1, CHImode, VOIDmode)
-DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, BITS_PER_UNIT*4, 4, 2, CSImode, VOIDmode)
-DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, BITS_PER_UNIT*8, 8, 4, CDImode, VOIDmode)
-DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, BITS_PER_UNIT*16, 16, 8, CTImode, VOIDmode)
-DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, BITS_PER_UNIT*32, 32, 16, COImode, VOIDmode)
-DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, BITS_PER_UNIT*64, 64, 32, VOIDmode, VOIDmode)
+DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, BITS_PER_UNIT*2, 2, 1, CHImode, QImode)
+DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, BITS_PER_UNIT*4, 4, 2, CSImode, HImode)
+DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, BITS_PER_UNIT*8, 8, 4, CDImode, SImode)
+DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, BITS_PER_UNIT*16, 16, 8, CTImode, DImode)
+DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, BITS_PER_UNIT*32, 32, 16, COImode, TImode)
+DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, BITS_PER_UNIT*64, 64, 32, VOIDmode, OImode)
 
 /* Vector modes.  */
 /* There are no V1xx vector modes.  These are equivalent to normal
