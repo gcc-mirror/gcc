@@ -545,10 +545,6 @@ while (0)
 /* Ranges for the various kinds of registers.  */
 #define ADDL_REGNO_P(REGNO) ((REGNO) >= 0 && (REGNO) <= 3)
 #define GR_REGNO_P(REGNO) ((REGNO) >= 0 && (REGNO) <= 127)
-#define FR_FP_REGNO_P(REGNO) \
-  (((REGNO) >= 128 && (REGNO) <= 143) || ((REGNO) >= 152 && (REGNO) <= 223))
-#define FR_INT_REGNO_P(REGNO) \
-  (((REGNO) >= 144 && (REGNO) <= 151) || ((REGNO) >= 224 && (REGNO) <= 255))
 #define FR_REGNO_P(REGNO) ((REGNO) >= 128 && (REGNO) <= 255)
 #define PR_REGNO_P(REGNO) ((REGNO) >= 256 && (REGNO) <= 319)
 #define BR_REGNO_P(REGNO) ((REGNO) >= 320 && (REGNO) <= 327)
@@ -816,10 +812,7 @@ while (0)
    that one).  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  (FR_FP_REGNO_P (REGNO) ? ! INTEGRAL_MODE_P (MODE)			\
-   : FR_INT_REGNO_P (REGNO) ? ! FLOAT_MODE_P (MODE)			\
-   : PR_REGNO_P (REGNO) ? (MODE) == CCmode				\
-   : 1)
+  (PR_REGNO_P (REGNO) ? (MODE) == CCmode : 1)
 
 /* A C expression that is nonzero if it is desirable to choose register
    allocation so as to avoid move instructions between a value of mode MODE1
@@ -861,11 +854,6 @@ while (0)
    register class, followed by one more enumeral value, `LIM_REG_CLASSES',
    which is not a register class but rather tells how many classes there
    are.  */
-/* ??? FP registers hold INT and FP values in different representations, so
-   we can't just use a subreg to convert between the two.  We get around this
-   problem by segmenting the FP register set into two parts.  One part (FR_INT)
-   only holds integer values, and one part (FR_FP) only hold FP values.  Thus
-   we always know which representation is being used.  */
 /* ??? When compiling without optimization, it is possible for the only use of
    a pseudo to be a parameter load from the stack with a REG_EQUIV note.
    Regclass handles this case specially and does not assign any costs to the
@@ -879,11 +867,7 @@ enum reg_class
   BR_REGS,
   ADDL_REGS,
   GR_REGS,
-  FR_INT_REGS,
-  FR_FP_REGS,
   FR_REGS,
-  GR_AND_FR_INT_REGS,
-  GR_AND_FR_FP_REGS,
   GR_AND_FR_REGS,
   ALL_REGS,
   LIM_REG_CLASSES
@@ -897,9 +881,8 @@ enum reg_class
 /* An initializer containing the names of the register classes as C string
    constants.  These names are used in writing some of the debugging dumps.  */
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", "FR_INT_REGS", \
-  "FR_FP_REGS", "FR_REGS", "GR_AND_FR_INT_REGS", "GR_AND_FR_FP_REGS",	  \
-  "GR_AND_FR_REGS", "ALL_REGS" }
+{ "NO_REGS", "PR_REGS", "BR_REGS", "ADDL_REGS", "GR_REGS", \
+  "FR_REGS", "GR_AND_FR_REGS", "ALL_REGS" }
 
 /* An initializer containing the contents of the register classes, as integers
    which are bit masks.  The Nth integer specifies the contents of class N.
@@ -927,26 +910,10 @@ enum reg_class
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x300 },			\
-  /* FR_INT_REGS.  */					\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00FF0000, 0x00000000, 0x00000000, 0xFFFFFFFF,	\
-    0x00000000, 0x00000000, 0x000 },			\
-  /* FR_FP_REGS.  */					\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,	\
-    0x00000000, 0x00000000, 0x000 },			\
   /* FR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x000 },			\
-  /* GR_AND_FR_INT_REGS.  */				\
-  { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0x00FF0000, 0x00000000, 0x00000000, 0xFFFFFFFF,	\
-    0x00000000, 0x00000000, 0x300 },			\
-  /* GR_AND_FR_FP_REGS.  */				\
-  { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000,	\
-    0x00000000, 0x00000000, 0x300 },			\
   /* GR_AND_FR_REGS.  */				\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
@@ -966,8 +933,7 @@ enum reg_class
 #define REGNO_REG_CLASS(REGNO) \
 (ADDL_REGNO_P (REGNO) ? ADDL_REGS	\
  : GENERAL_REGNO_P (REGNO) ? GR_REGS	\
- : FR_FP_REGNO_P (REGNO) ? FR_FP_REGS	\
- : FR_INT_REGNO_P (REGNO) ? FR_INT_REGS	\
+ : FR_REGNO_P (REGNO) ? FR_REGS		\
  : PR_REGNO_P (REGNO) ? PR_REGS		\
  : BR_REGNO_P (REGNO) ? BR_REGS		\
  : NO_REGS)
@@ -990,8 +956,7 @@ enum reg_class
    will not be passed to this macro; you do not need to handle it.  */
 
 #define REG_CLASS_FROM_LETTER(CHAR) \
-((CHAR) == 'f' ? FR_FP_REGS		\
- : (CHAR) == 'e' ? FR_INT_REGS		\
+((CHAR) == 'f' ? FR_REGS		\
  : (CHAR) == 'a' ? ADDL_REGS		\
  : (CHAR) == 'b' ? BR_REGS		\
  : (CHAR) == 'c' ? PR_REGS		\
@@ -1041,9 +1006,8 @@ enum reg_class
    This is closely related to the macro `HARD_REGNO_NREGS'.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
-  ((MODE) == CCmode && (CLASS) == PR_REGS ? 2				\
-   : (((CLASS) == FR_REGS || (CLASS) == FR_FP_REGS			\
-       || (CLASS) == FR_INT_REGS) && (MODE) == XFmode) ? 1		\
+  ((MODE) == CCmode && (CLASS) == PR_REGS ? 2			\
+   : ((CLASS) == FR_REGS && (MODE) == XFmode) ? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If defined, gives a class of registers that cannot be used as the
@@ -1160,6 +1124,7 @@ enum reg_class
    or a `MEM' representing a location in the stack.  This enables DWARF2
    unwind info for C++ EH.  */
 #define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (VOIDmode, BR_REG (0))
+
 /* ??? This is not defined because of three problems.
    1) dwarf2out.c assumes that DWARF_FRAME_RETURN_COLUMN fits in one byte.
    The default value is FIRST_PSEUDO_REGISTER which doesn't.  This can be
@@ -1925,8 +1890,6 @@ do {									\
 ((FROM) == BR_REGS && (TO) == BR_REGS ? 8				\
  : (((FROM) == BR_REGS && (TO) != GENERAL_REGS)				\
     || ((TO) == BR_REGS && (FROM) != GENERAL_REGS)) ? 6			\
- : (((FROM) == FR_FP_REGS && (TO) == FR_INT_REGS)			\
-    || ((FROM) == FR_INT_REGS && (TO) == FR_FP_REGS)) ? 4		\
  : 2)
 
 /* A C expression for the cost of moving data of mode M between a register and
