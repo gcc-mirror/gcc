@@ -6101,7 +6101,13 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	      if (got_scope && got_scope != type
 		  && val && TREE_CODE (val) == TYPE_DECL
 		  && TREE_CODE (TREE_TYPE (val)) == TYPENAME_TYPE)
-		TYPE_CONTEXT (TREE_TYPE (val)) = got_scope;
+		{
+		  val = TREE_TYPE (val);
+		  val = build_typename_type (got_scope, name,
+					     TYPENAME_TYPE_FULLNAME (val),
+					     TREE_TYPE (val));
+		  val = TYPE_STUB_DECL (val);
+		}
 	    }
 	}
       else
