@@ -9286,16 +9286,6 @@ xref_basetypes (tree ref, tree base_list)
 	  continue;
 	}
 
-      if (TYPE_MARKED_P (basetype))
-	{
-	  if (basetype == ref)
-	    error ("recursive type `%T' undefined", basetype);
-	  else
-	    error ("duplicate base type `%T' invalid", basetype);
-	  continue;
-	}
-      TYPE_MARKED_P (basetype) = 1;
-
       if (TYPE_FOR_JAVA (basetype) && (current_lang_depth () == 0))
 	TYPE_FOR_JAVA (ref) = 1;
 
@@ -9318,6 +9308,18 @@ xref_basetypes (tree ref, tree base_list)
 	  CLASSTYPE_REPEATED_BASE_P (ref)
 	    |= CLASSTYPE_REPEATED_BASE_P (basetype);
 	}
+      
+      /* We must do this test after we've seen through a typedef
+	 type.  */
+      if (TYPE_MARKED_P (basetype))
+	{
+	  if (basetype == ref)
+	    error ("recursive type `%T' undefined", basetype);
+	  else
+	    error ("duplicate base type `%T' invalid", basetype);
+	  continue;
+	}
+      TYPE_MARKED_P (basetype) = 1;
 
       base_binfo = copy_binfo (base_binfo, basetype, ref,
 			       &igo_prev, via_virtual);
