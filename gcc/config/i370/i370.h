@@ -609,12 +609,6 @@ enum reg_class
     strcpy (mvs_function_name, "gccmain");				\
   else									\
     strcpy (mvs_function_name, NAME);					\
-  fprintf (FILE, "\tDS\t0F\n");						\
-  assemble_name (FILE, mvs_function_name);				\
-  fputs ("\tEQU\t*\n", FILE);						\
-  fputs ("\tENTRY\t", FILE);						\
-  assemble_name (FILE, mvs_function_name);				\
-  fputc ('\n', FILE);							\
 }
 
 /* This macro generates the assembly code for function exit, on machines
