@@ -1,3 +1,7 @@
+Sun Apr 19 02:42:06 1998  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (queue_to_ready): Fix typo in prototype.
+
 Sat Apr 18 23:52:35 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
