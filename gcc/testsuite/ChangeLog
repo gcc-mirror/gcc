@@ -1,3 +1,8 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13969
+	* g++.dg/template/static6.C: New test.
+
 2004-02-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc.dg/encode-2.m, objc.dg/encode-3.m, objc.dg/encode-4.m: Fix

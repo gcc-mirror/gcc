@@ -1,3 +1,15 @@
+2004-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13969
+	* cp-tree.h (fold_non_dependent_expr): New function.
+	* parser.c (cp_parser_fold_non_dependent_expr): Remove.
+	(cp_parser_template_argument): Use fold_non_dependent_expr.
+	(cp_parser_direct_declarator): Likewise.
+	* pt.c (fold_non_dependent_expr): New function.
+	(convert_nontype_argument): Use it.
+	(tsubst_qualified_id): Simplify.
+	(tsubst_copy_and_build): Likewise.
+
 2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13997
