@@ -4664,8 +4664,11 @@ validate_nonmember_using_decl (decl, scope, name)
 {
   if (TREE_CODE (decl) == SCOPE_REF
       && TREE_OPERAND (decl, 0) == std_node)
-    return NULL_TREE;
-  if (TREE_CODE (decl) == SCOPE_REF)
+    {
+      *scope = global_namespace;
+      *name = TREE_OPERAND (decl, 1);
+    }
+  else if (TREE_CODE (decl) == SCOPE_REF)
     {
       *scope = TREE_OPERAND (decl, 0);
       *name = TREE_OPERAND (decl, 1);

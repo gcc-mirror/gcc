@@ -1,3 +1,8 @@
+1998-10-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl2.c (validate_nonmember_using_decl): Fix using-directives of
+	std if std is ignored.
+
 1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokvardecl): Fix thinko.
