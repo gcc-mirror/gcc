@@ -533,26 +533,22 @@ copy_eh_entry (entry)
   return newentry;
 }
 
-/* Push a new eh_node entry onto STACK, and return the start label for
-   the entry.  */
+/* Push a new eh_node entry onto STACK.  */
 
-static rtx
+static void
 push_eh_entry (stack)
      struct eh_stack *stack;
 {
   struct eh_node *node = (struct eh_node *) xmalloc (sizeof (struct eh_node));
   struct eh_entry *entry = (struct eh_entry *) xmalloc (sizeof (struct eh_entry));
 
-  entry->start_label = gen_label_rtx ();
-  entry->end_label = gen_label_rtx ();
+  entry->outer_context = gen_label_rtx ();
   entry->exception_handler_label = gen_label_rtx ();
   entry->finalization = NULL_TREE;
 
   node->entry = entry;
   node->chain = stack->top;
   stack->top = node;
-
-  return entry->start_label;
 }
 
 /* Pop an entry from the given STACK.  */
@@ -1007,7 +1003,7 @@ expand_eh_region_start_for_decl (decl)
 
   if (exceptions_via_longjmp == 0)
     note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
-  emit_label (push_eh_entry (&ehstack));
+  push_eh_entry (&ehstack);
   if (exceptions_via_longjmp == 0)
     NOTE_BLOCK_NUMBER (note)
       = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
@@ -1047,21 +1043,25 @@ expand_eh_region_end (handler)
 
   if (exceptions_via_longjmp == 0)
     {
+      rtx label;
       rtx note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
       NOTE_BLOCK_NUMBER (note) = CODE_LABEL_NUMBER (entry->exception_handler_label);
-    }
 
-  /* Emit a label marking the end of this exception region.  */
-  emit_label (entry->end_label);
+      label = gen_label_rtx ();
+      emit_jump (label);
 
-  if (exceptions_via_longjmp == 0)
-    {
+      /* Emit a label marking the end of this exception region that
+	 is used for rethrowing into the outer context.  */
+      emit_label (entry->outer_context);
+
       /* Put in something that takes up space, as otherwise the end
 	 address for this EH region could have the exact same address as
 	 its outer region. This would cause us to miss the fact that
 	 resuming exception handling with this PC value would be inside
 	 the outer region.  */
       emit_insn (gen_nop ());
+      emit_barrier ();
+      emit_label (label);
     }
 
   entry->finalization = handler;
@@ -1181,11 +1181,12 @@ expand_leftover_cleanups ()
 	    emit_throw ();
 	  else
 	    {
-	      /* The below can be optimized away, and we could just fall into the
-		 next EH handler, if we are certain they are nested.  */
+	      /* The below can be optimized away, and we could just
+		 fall into the next EH handler, if we are certain they
+		 are nested.  */
 	      /* Emit code to throw to the outer context if we fall off
 		 the end of the handler.  */
-	      expand_internal_throw (entry->end_label);
+	      expand_internal_throw (entry->outer_context);
 	    }
 	}
 
@@ -1302,7 +1303,7 @@ expand_start_all_catch ()
 		 into the next EH handler) if we are certain they are
 		 nested.  */
 
-	      expand_internal_throw (entry->end_label);
+	      expand_internal_throw (entry->outer_context);
 	    }
 	}
       free (entry);

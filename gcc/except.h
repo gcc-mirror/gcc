@@ -38,9 +38,7 @@ struct label_node {
 
 /* An eh_entry is used to describe one exception handling region.
 
-   START_LABEL is the label corresponding to the start of the region.
-
-   END_LABEL is the label corresponding to the end of the region.
+   OUTER_CONTEXT is the label used for rethrowing into the outer context.
 
    EXCEPTION_HANDLER_LABEL is the label corresponding to the handler
    for this region.
@@ -50,8 +48,7 @@ struct label_node {
    end of a group of try blocks.  */
 
 struct eh_entry {
-  rtx start_label;
-  rtx end_label;
+  rtx outer_context;
   rtx exception_handler_label;
 
   tree finalization;
