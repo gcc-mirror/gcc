@@ -1,3 +1,8 @@
+2002-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/os/irix/irix5.2/bits/os_defines.h
+	(__glibcpp_long_double_bits, __glibcpp_long_bits): Define.
+
 2002-05-19  Paolo Carlini  <pcarlini@unitus.it>
             Jakub Jelinek  <jakub@redhat.com>
 
