@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-02-13
+@set last-update-news 2002-03-23
 
 @include root.texi
 
@@ -157,26 +157,30 @@ The following information was last updated on @value{last-update-news}:
 @itemize @bullet
 @item
 Problem Reports fixed (in chronological order of submission):
-@enumerate
-@item
- 947 Data statement initialization with subscript of kind INTEGER*2
-@item
-3743 Reference to intrinsic `ISHFT' invalid
-@item
-3807 Function BESJN(integer,double) problems
-@item
-3957 g77 -pipe -xf77-cpp-input sends output to stdout
-@item
-4279 g77 -h" gives bogus output
-@item
-4752 g77 -v -c -xf77-version /dev/null -xnone causes ice
-@item
-4885 BACKSPACE example that doesn't work as of gcc/g77-3.0.x
-@item
-5122 g77 rejects accepted use of INTEGER*2 as type of DATA statement loop index
-@item
-5473 ICE on BESJN(integer*8,real)
-@end enumerate
+@table @code
+@item 947
+Data statement initialization with subscript of kind INTEGER*2
+@item 3743
+Reference to intrinsic `ISHFT' invalid
+@item 3807
+Function BESJN(integer,double) problems
+@item 3957
+g77 -pipe -xf77-cpp-input sends output to stdout
+@item 4279
+g77 -h" gives bogus output
+@item 4730
+ICE on valid input using CALL EXIT(%VAL(...))
+@item 4752
+g77 -v -c -xf77-version /dev/null -xnone causes ice
+@item 4885
+BACKSPACE example that doesn't work as of gcc/g77-3.0.x
+@item 5122
+g77 rejects accepted use of INTEGER*2 as type of DATA statement loop index
+@item 5397
+ICE on compiling source with 540 000 000 REAL array
+@item 5473
+ICE on BESJN(integer*8,real)
+@end table
 
 @item
 @command{g77} now has its man page generated from the texinfo documentation,
