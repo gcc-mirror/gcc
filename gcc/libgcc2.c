@@ -3692,16 +3692,21 @@ __unwinding_cleanup ()
    for a dummy call to a routine __unwinding_cleanup() when there are nothing
    but cleanups remaining. This allows a debugger to examine the state
    at which the throw was executed, before any cleanups, rather than
-   at the terminate point after the stack has been unwound. */
+   at the terminate point after the stack has been unwound.
+
+   EH is the current eh_context structure.
+   PC is the address of the call to __throw.
+   MY_UDATA is the unwind information for __throw.
+   OFFSET_P is where we return the SP adjustment offset.  */
 
 static void *
-throw_helper (eh, pc, my_udata, udata_p)
+throw_helper (eh, pc, my_udata, offset_p)
      struct eh_context *eh;
      void *pc;
      frame_state *my_udata;
-     frame_state **udata_p;
+     long *offset_p;
 {
-  frame_state *udata = *udata_p;
+  frame_state ustruct2, *udata = &ustruct2;
   frame_state ustruct;
   frame_state *sub_udata = &ustruct;
   void *saved_pc = pc;
@@ -3714,11 +3719,14 @@ throw_helper (eh, pc, my_udata, udata_p)
   int only_cleanup = 0;
   int rethrow = 0;
   int saved_state = 0;
+  long args_size;
   __eh_info *eh_info = (__eh_info *)eh->info;
 
   /* Do we find a handler based on a re-throw PC? */
   if (eh->table_index != (void *) 0)
     rethrow = 1;
+
+  memcpy (udata, my_udata, sizeof (*udata));
 
   handler = (void *) 0;
   for (;;)
@@ -3795,6 +3803,8 @@ throw_helper (eh, pc, my_udata, udata_p)
 
   eh->handler_label = handler;
 
+  args_size = udata->args_size;
+
   if (pc == saved_pc)
     /* We found a handler in the throw context, no need to unwind.  */
     udata = my_udata;
@@ -3847,7 +3857,17 @@ throw_helper (eh, pc, my_udata, udata_p)
     }
   /* udata now refers to the frame called by the handler frame.  */
 
-  *udata_p = udata;
+  /* We adjust SP by the difference between __throw's CFA and the CFA for
+     the frame called by the handler frame, because those CFAs correspond
+     to the SP values at the two call sites.  We need to further adjust by
+     the args_size of the handler frame itself to get the handler frame's
+     SP from before the args were pushed for that call.  */
+#ifdef STACK_GROWS_DOWNWARD
+  *offset_p = udata->cfa - my_udata->cfa + args_size;
+#else
+  *offset_p = my_udata->cfa - udata->cfa - args_size;
+#endif
+		       
   return handler;
 }
 
@@ -3867,8 +3887,10 @@ __throw ()
 {
   struct eh_context *eh = (*get_eh_context) ();
   void *pc, *handler;
-  frame_state ustruct;
-  frame_state *udata = &ustruct;
+  long offset;
+
+  /* XXX maybe make my_ustruct static so we don't have to look it up for
+     each throw.  */
   frame_state my_ustruct, *my_udata = &my_ustruct;
 
   /* This is required for C++ semantics.  We must call terminate if we
@@ -3879,14 +3901,12 @@ __throw ()
     
   /* Start at our stack frame.  */
 label:
-  udata = __frame_state_for (&&label, udata);
-  if (! udata)
+  my_udata = __frame_state_for (&&label, my_udata);
+  if (! my_udata)
     __terminate ();
 
   /* We need to get the value from the CFA register. */
-  udata->cfa = __builtin_dwarf_cfa ();
-
-  memcpy (my_udata, udata, sizeof (*udata));
+  my_udata->cfa = __builtin_dwarf_cfa ();
 
   /* Do any necessary initialization to access arbitrary stack frames.
      On the SPARC, this means flushing the register windows.  */
@@ -3895,17 +3915,11 @@ label:
   /* Now reset pc to the right throw point.  */
   pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
 
-  handler = throw_helper (eh, pc, my_udata, &udata);
+  handler = throw_helper (eh, pc, my_udata, &offset);
 
   /* Now go!  */
 
-  __builtin_eh_return ((void *)eh,
-#ifdef STACK_GROWS_DOWNWARD
-		       udata->cfa - my_udata->cfa,
-#else
-		       my_udata->cfa - udata->cfa,
-#endif
-		       handler);
+  __builtin_eh_return ((void *)eh, offset, handler);
 
   /* Epilogue:  restore the handler frame's register values and return
      to the stub.  */
@@ -3919,8 +3933,10 @@ __rethrow (index)
 {
   struct eh_context *eh = (*get_eh_context) ();
   void *pc, *handler;
-  frame_state ustruct;
-  frame_state *udata = &ustruct;
+  long offset;
+
+  /* XXX maybe make my_ustruct static so we don't have to look it up for
+     each throw.  */
   frame_state my_ustruct, *my_udata = &my_ustruct;
 
   /* This is required for C++ semantics.  We must call terminate if we
@@ -3936,14 +3952,12 @@ __rethrow (index)
     
   /* Start at our stack frame.  */
 label:
-  udata = __frame_state_for (&&label, udata);
-  if (! udata)
+  my_udata = __frame_state_for (&&label, my_udata);
+  if (! my_udata)
     __terminate ();
 
   /* We need to get the value from the CFA register. */
-  udata->cfa = __builtin_dwarf_cfa ();
-
-  memcpy (my_udata, udata, sizeof (*udata));
+  my_udata->cfa = __builtin_dwarf_cfa ();
 
   /* Do any necessary initialization to access arbitrary stack frames.
      On the SPARC, this means flushing the register windows.  */
@@ -3952,17 +3966,11 @@ label:
   /* Now reset pc to the right throw point.  */
   pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
 
-  handler = throw_helper (eh, pc, my_udata, &udata);
+  handler = throw_helper (eh, pc, my_udata, &offset);
 
   /* Now go!  */
 
-  __builtin_eh_return ((void *)eh,
-#ifdef STACK_GROWS_DOWNWARD
-		       udata->cfa - my_udata->cfa,
-#else
-		       my_udata->cfa - udata->cfa,
-#endif
-		       handler);
+  __builtin_eh_return ((void *)eh, offset, handler);
 
   /* Epilogue:  restore the handler frame's register values and return
      to the stub.  */
