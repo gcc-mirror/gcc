@@ -1,3 +1,8 @@
+1999-08-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* pthread_alloc: Solaris' ctype.h defines _U to 01; use _Up as
+	template parameter instead.
+
 1999-06-18  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* stl_queue.h: Rename _M_c to c, and _M_comp to comp.
