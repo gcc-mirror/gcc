@@ -1,3 +1,7 @@
+2003-02-11  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c:  Fix failure caused by commiting wrong patch.
+
 2003-02-11  Dale Johannesen  <dalej@apple.com>
 	* ra-build.c (compare_and_free_webs):  Relax checking.
 	* config/rs6000/darwin.h (HOT_TEXT_SECTION_NAME):  Define.
