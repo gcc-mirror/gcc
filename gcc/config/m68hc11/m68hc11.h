@@ -1481,14 +1481,16 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
      /* with two registers.  */					\
      /* 'clr' is slow */					\
    if ((OUTER_CODE) == SET && (RTX) == const0_rtx)		\
-     return 1;							\
+     /* After reload, the reload_cse pass checks the cost */    \
+     /* to change a SET into a PLUS.  Make const0 cheap.  */    \
+     return 1 - reload_completed;				\
    else								\
      return 0;							\
  case CONST:							\
  case LABEL_REF:						\
  case SYMBOL_REF:						\
    if ((OUTER_CODE) == SET)					\
-      return 1;							\
+      return 1 - reload_completed;				\
    return 0;							\
  case CONST_DOUBLE:						\
    return 0;
