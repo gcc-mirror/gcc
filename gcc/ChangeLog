@@ -1,3 +1,7 @@
+2002-01-15  Andreas Jaeger  <aj@suse.de>
+
+	* config.gcc (x86_64-*-*): Install mmintrin.h and xmmintrin.h.
+
 2002-01-15  Kazu Hirata  <kazu@hxi.com>
 
 	* mips-tfile.c: Fix formatting.
@@ -86,12 +90,12 @@ Mon Jan 14 20:18:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	(extendsidi2, zero_extendsidi2): Remove no-conflict blocks.
 
-	(movti splitter): Never use register 0 as base register.	
+	(movti splitter): Never use register 0 as base register.
 
 2002-01-14  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* combine.c (simplify_shift_const): Always generate new rtx 
-	for shift expression instead of reusing given expression. 
+	* combine.c (simplify_shift_const): Always generate new rtx
+	for shift expression instead of reusing given expression.
 
 Mon Jan 14 07:08:55 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -130,7 +134,7 @@ Sun Jan 13 06:55:31 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-01-12  Tom Rix  <trix@redhat.com>
 
-	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Use ior for 
+	* config/rs6000/rs6000.c (rs6000_emit_set_long_const): Use ior for
 	TARGET_POWERPC64.
 
 2002-01-12  Richard Henderson  <rth@redhat.com>
@@ -153,7 +157,7 @@ Sat Jan 12 08:54:51 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	offsets, and change line folding.
 	* optabs.c (expand_binop): Remove warnings.
 	* sdbout.c (sdbout_record_type_name): Constify NAME to avoid warning.
-	
+
 2002-01-12  Graham Stott <grahams@redhat.com>
 
 	* attribs.c (handle_deprecated_attribute): constify WHAT.
@@ -209,7 +213,7 @@ Sat Jan 12 08:54:51 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* conflict.c (conflict_graph_compute): Free regsets when finished.
 	* ssa.c (compute_coalesced_reg_partition): Likewise.
-	
+
 2002-01-12  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* global.c (find_reg): Check for HARD_REGNO_CALL_PART_CLOBBERED
