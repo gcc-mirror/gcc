@@ -4397,9 +4397,18 @@ store_constructor (exp, target, align, cleared, size)
       register int i;
       int need_to_clear;
       tree domain = TYPE_DOMAIN (type);
-      HOST_WIDE_INT minelt = TREE_INT_CST_LOW (TYPE_MIN_VALUE (domain));
-      HOST_WIDE_INT maxelt = TREE_INT_CST_LOW (TYPE_MAX_VALUE (domain));
       tree elttype = TREE_TYPE (type);
+      int const_bounds_p = (host_integerp (TYPE_MIN_VALUE (domain), 0)
+			    && host_integerp (TYPE_MAX_VALUE (domain), 0));
+      HOST_WIDE_INT minelt;
+      HOST_WIDE_INT maxelt;
+
+      /* If we have constant bounds for the range of the type, get them.  */
+      if (const_bounds_p)
+	{
+	  minelt = tree_low_cst (TYPE_MIN_VALUE (domain), 0);
+	  maxelt = tree_low_cst (TYPE_MAX_VALUE (domain), 0);
+	}
 
       /* If the constructor has fewer elements than the array,
          clear the whole array first.  Similarly if this is
@@ -4409,12 +4418,13 @@ store_constructor (exp, target, align, cleared, size)
       else
 	{
 	  HOST_WIDE_INT count = 0, zero_count = 0;
-	  need_to_clear = 0;
+	  need_to_clear = ! const_bounds_p;
+
 	  /* This loop is a more accurate version of the loop in
 	     mostly_zeros_p (it handles RANGE_EXPR in an index).
 	     It is also needed to check for missing elements.  */
 	  for (elt = CONSTRUCTOR_ELTS (exp);
-	       elt != NULL_TREE;
+	       elt != NULL_TREE && ! need_to_clear;
 	       elt = TREE_CHAIN (elt))
 	    {
 	      tree index = TREE_PURPOSE (elt);
@@ -4437,16 +4447,19 @@ store_constructor (exp, target, align, cleared, size)
 		}
 	      else
 		this_node_count = 1;
+
 	      count += this_node_count;
 	      if (mostly_zeros_p (TREE_VALUE (elt)))
 		zero_count += this_node_count;
 	    }
+
 	  /* Clear the entire array first if there are any missing elements,
 	     or if the incidence of zero elements is >= 75%.  */
-	  if (count < maxelt - minelt + 1
-	      || 4 * zero_count >= 3 * count)
+	  if (! need_to_clear
+	      && (count < maxelt - minelt + 1 || 4 * zero_count >= 3 * count))
 	    need_to_clear = 1;
 	}
+
       if (need_to_clear && size > 0)
 	{
 	  if (! cleared)
@@ -4495,7 +4508,8 @@ store_constructor (exp, target, align, cleared, size)
 	      tree position;
 
 	      /* If the range is constant and "small", unroll the loop.  */
-	      if (host_integerp (lo_index, 0)
+	      if (const_bounds_p
+		  && host_integerp (lo_index, 0)
 		  && host_integerp (hi_index, 0)
 		  && (lo = tree_low_cst (lo_index, 0),
 		      hi = tree_low_cst (hi_index, 0),
@@ -5762,7 +5776,7 @@ expand_expr (exp, target, tmode, modifier)
   enum expand_modifier ro_modifier;
 
   /* Handle ERROR_MARK before anybody tries to access its type.  */
-  if (TREE_CODE (exp) == ERROR_MARK)
+  if (TREE_CODE (exp) == ERROR_MARK || TREE_CODE (type) == ERROR_MARK)
     {
       op0 = CONST0_RTX (tmode);
       if (op0 != 0)
