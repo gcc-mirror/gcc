@@ -1,4 +1,4 @@
-/* Declarations for objc-actions.c.
+/* Declarations for objc-act.c.
    Copyright (C) 1990 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
