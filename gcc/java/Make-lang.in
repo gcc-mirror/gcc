@@ -217,7 +217,9 @@ java.install-common: installdirs
 	    rm -f $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
 	    chmod a+x $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
-	    if [ $$tool = gcjh ]; then \
+	    if [ -f $(GCJ)-cross$(exeext) ]; then \
+	      true; \
+	    elif [ $$tool = gcjh ]; then \
 	      rm -f $(DESTDIR)$(bindir)/$(GCJH_TARGET_INSTALL_NAME)$(exeext); \
 	      ( cd $(DESTDIR)$(bindir) && \
 	        $(LN) $$tool_transformed_name$(exeext) $(GCJH_TARGET_INSTALL_NAME)$(exeext) ); \
