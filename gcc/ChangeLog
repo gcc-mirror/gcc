@@ -1,3 +1,9 @@
+2004-04-08  Joel Sherrill  <joel@oarcorp.com>
+
+	PR ada/14665
+	* ada/osint.adb (Find_Program_Name): Rework to properly handle
+	filenames which end in .exe or have versioning suffixes like VMS.
+
 2004-04-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* fixinc/inclhack.def (rpc_xdr_lvalue_cast_a,
