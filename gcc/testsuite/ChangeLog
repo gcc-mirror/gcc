@@ -1,5 +1,10 @@
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/3663
+	* g++.dg/template/access7.C: New test.
+
+2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/8442
 	* g++.dg/template/type2.C: New test.
 	* g++.dg/template/ttp3.C: Change expected error message.
