@@ -8688,6 +8688,18 @@ sparc_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = sparc_costs->int_cmove;
       return false;
 
+    case IOR:
+      /* Handle the NAND vector patterns.  */
+      if (sparc_vector_mode_supported_p (GET_MODE (x))
+	  && GET_CODE (XEXP (x, 0)) == NOT
+	  && GET_CODE (XEXP (x, 1)) == NOT)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+      else
+        return false;
+
     default:
       return false;
     }

@@ -1,3 +1,21 @@
+2004-11-13  James A. Morrison  <phython@gcc.gnu.org>
+            Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/18230
+	* config/sparc/sparc.c (sparc_rtx_costs): Handle the NAND vector
+	patterns.
+	* config/sparc/sparc.md (V64I): New macro for 64-bit modes.
+	(V32I): New macro for 32-bit modes.
+	(anddi3, anddi_sp32, anddi_sp64, and_not_di_sp32, and_not_di_sp64,
+	iordi3, iordi3_sp32, iordi_sp64, or_not_di_sp32, or_not_di_sp64,
+	xordi3, xordi3_sp32, xordi3_sp64, {AND, IOR, XOR} DI splitter,
+	xor_not_di_sp32, xordi_not_di_sp64, one_cmpldi2, one_cmpldi_sp32,
+	one_cmpldi_sp64): Use V64I instead of DI.
+	(andsi3, andsi_sp32, andsi_sp64, and_not_si, iorsi3, or_not_si,
+	xorsi3, xor_not_si, one_cmplsi2): Use V32I instead of SI.
+	(addv2si3, addv4hi3, addv2hi3): Remove % modifier.
+	(nandv64i_vis, nandv32i_vis): New patterns.
+
 2004-11-12  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in: Add html support.
