@@ -3910,8 +3910,10 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 immediately after its use, so that flow can create an
 		 auto-increment addressing mode.  */
 	      if (v->giv_type == DEST_ADDR && bl->biv_count == 1
-		  && bl->biv->always_executed
-		  && ! bl->biv->maybe_multiple
+		  && bl->biv->always_executed && ! bl->biv->maybe_multiple
+		  /* We don't handle reversed biv's because bl->biv->insn
+		     does not have a valid INSN_LUID.  */
+		  && ! bl->reversed
 		  && v->always_executed && ! v->maybe_multiple)
 		{
 		  /* If other giv's have been combined with this one, then
