@@ -420,11 +420,6 @@ enum reg_class
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
 
-/* If defined, a C expression that indicates when it is more
-   desirable to keep an argument passed by invisible reference as a
-   reference, rather than copying it to a pseudo register.  */
-/* #define FUNCTION_ARG_KEEP_AS_REFERENCE(CUM, MODE, TYPE, NAMED) */
-
 /* For this platform, the value of CUMULATIVE_ARGS is the number of words
    of arguments that have been passed in registers so far.  */
 #define CUMULATIVE_ARGS int
