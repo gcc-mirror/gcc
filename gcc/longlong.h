@@ -1,5 +1,5 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
-   Copyright (C) 1991, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1994, 1995, 1996 Free Software Foundation, Inc.
 
    This definition file is free software; you can redistribute it
    and/or modify it under the terms of the GNU General Public
@@ -425,7 +425,13 @@
 	     "d" ((USItype) (bh)),					\
 	     "1" ((USItype) (al)),					\
 	     "g" ((USItype) (bl)))
-#if defined (__mc68020__) || defined (__NeXT__) || defined(mc68020)
+
+/* The '020, '030, '040 and CPU32 have 32x32->64 and 64/32->32q-32r. */
+#if defined (__mc68020__) || defined(mc68020) \
+	|| defined(__mc68030__) || defined(mc68030) \
+	|| defined(__mc68040__) || defined(mc68040) \
+	|| defined(__mc68332__) || defined(mc68332) \
+	|| defined(__NeXT__)
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("mulu%.l %3,%1:%0"						\
 	   : "=d" ((USItype) (w0)),					\
@@ -448,11 +454,9 @@
 	   : "0" ((USItype) (n0)),					\
 	     "1" ((USItype) (n1)),					\
 	     "dmi" ((USItype) (d)))
-#define count_leading_zeros(count, x) \
-  __asm__ ("bfffo %1{%b2:%b2},%0"					\
-	   : "=d" ((USItype) (count))					\
-	   : "od" ((USItype) (x)), "n" (0))
+
 #else /* not mc68020 */
+#if !defined(__mc5200__)
 /* %/ inserts REGISTER_PREFIX, %# inserts IMMEDIATE_PREFIX.  */
 #define umul_ppmm(xh, xl, a, b) \
   __asm__ ("| Inlined umul_ppmm
@@ -484,11 +488,24 @@
 	   : "=g" ((USItype) (xh)),					\
 	     "=g" ((USItype) (xl))					\
 	   : "g" ((USItype) (a)),					\
-	     "g" ((USItype) (b))						\
+	     "g" ((USItype) (b))					\
 	   : "d0", "d1", "d2", "d3", "d4")
 #define UMUL_TIME 100
 #define UDIV_TIME 400
+#endif /* not mcf5200 */
 #endif /* not mc68020 */
+
+/* The '020, '030, '040 and '060 have bitfield insns. */
+#if defined (__mc68020__) || defined(mc68020) \
+	|| defined(__mc68030__) || defined(mc68030) \
+	|| defined(__mc68040__) || defined(mc68040) \
+	|| defined(__mc68060__) || defined(mc68060) \
+	|| defined(__NeXT__)
+#define count_leading_zeros(count, x) \
+  __asm__ ("bfffo %1{%b2:%b2},%0"					\
+	   : "=d" ((USItype) (count))					\
+	   : "od" ((USItype) (x)), "n" (0))
+#endif
 #endif /* mc68000 */
 
 #if defined (__m88000__)
