@@ -1,3 +1,8 @@
+Thu Aug 13 15:24:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-typeck.c (initializer_constant_valid_p): Allow conversion of 0
+	of any size to a pointer.
+
 Thu Aug 13 12:53:13 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* i386/winnt.c (i386_pe_asm_file_end): Check TREE_SYMBOL_REFERENCED.
@@ -567,7 +572,7 @@ Tue Jul 28 22:31:12 1998  Craig Burley  <burley@gnu.org>
 	SUBREG, MEM.
 	* rtlanal.c (replace_rtx): Prohibit replaces in	CONST_DOUBLE. 
 
-Tue Jul 28 11:33:09 1998  Mark Mitchell  <mark@markmitchell.com>
+
 
 	* cplus-dem.c (type_kind_t): New type.
 	(demangle_template_value_parm): Add type_kind_t parameter.  Rely
