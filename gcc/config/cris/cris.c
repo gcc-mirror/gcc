@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "target.h"
 #include "target-def.h"
+#include "ggc.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
