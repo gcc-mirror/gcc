@@ -2444,7 +2444,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
      basic_block new_dest;
      int reversep;
 {
-  rtx head, end, jump, earliest, old_dest, new_label;
+  rtx head, end, jump, earliest, old_dest, new_label = NULL_RTX;
 
   jump = test_bb->end;
 
