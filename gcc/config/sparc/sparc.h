@@ -1655,13 +1655,16 @@ do {									\
 
 extern char *singlemove_string ();
 extern char *output_move_double ();
+extern char *output_move_quad ();
 extern char *output_fp_move_double ();
+extern char *output_fp_move_quad ();
 extern char *output_block_move ();
 extern char *output_scc_insn ();
 extern char *output_cbranch ();
 extern char *output_return ();
 extern char *output_floatsisf2 ();
 extern char *output_floatsidf2 ();
+extern char *output_floatsitf2 ();
 
 /* Defined in flags.h, but insn-emit.c does not include flags.h.  */
 

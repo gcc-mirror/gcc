@@ -196,6 +196,18 @@
   DONE;
 }")
 
+(define_expand "cmptf"
+  [(set (reg:CCFP 0)
+	(compare:CCFP (match_operand:TF 0 "register_operand" "")
+		      (match_operand:TF 1 "register_operand" "")))]
+  ""
+  "
+{
+  sparc_compare_op0 = operands[0];
+  sparc_compare_op1 = operands[1];
+  DONE;
+}")
+
 ;; Next come the scc insns.  For seq, sne, sgeu, and sltu, we can do this
 ;; without jumps using the addx/subx instructions.  For the rest, we do
 ;; branches.  Seq_special and sne_special clobber the CC reg, because they
@@ -368,6 +380,14 @@
 		      (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fcmpes %0,%1"
+  [(set_attr "type" "fpcmp")])
+
+(define_insn ""
+  [(set (reg:CCFP 0)
+	(compare:CCFP (match_operand:TF 0 "register_operand" "f")
+		      (match_operand:TF 1 "register_operand" "f")))]
+  ""
+  "fcmpeq %0,%1"
   [(set_attr "type" "fpcmp")])
 
 ;; The SEQ and SNE patterns are special because they can be done
@@ -1003,6 +1023,71 @@
 
 ;; Floating point move insns
 
+;; This pattern forces (set (reg:TF ...) (const_double ...))
+;; to be reloaded by putting the constant into memory.
+;; It must come before the more general movtf pattern.
+(define_insn ""
+  [(set (match_operand:TF 0 "general_operand" "=?r,f,o")
+	(match_operand:TF 1 "" "?E,m,G"))]
+  "GET_CODE (operands[1]) == CONST_DOUBLE"
+  "*
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return output_move_quad (operands);
+    case 1:
+      return output_fp_move_quad (operands);
+    case 2:
+      operands[1] = adj_offsettable_operand (operands[0], 4);
+      operands[2] = adj_offsettable_operand (operands[0], 8);
+      operands[3] = adj_offsettable_operand (operands[0], 12);
+      return \"st %%g0,%0\;st %%g0,%1\;st %%g0,%2\;st %%g0,%3\";
+    }
+}"
+  [(set_attr "type" "load,fpload,store")
+   (set_attr "length" "5,5,5")])
+
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "general_operand" "")
+	(match_operand:TF 1 "general_operand" ""))]
+  ""
+  "
+{
+  if (emit_move_sequence (operands, TFmode, 0))
+    DONE;
+}")
+
+(define_insn ""
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r,?f,?r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q,r,f"))]
+  "register_operand (operands[0], TFmode)
+   || register_operand (operands[1], TFmode)"
+  "*
+{
+  if (FP_REG_P (operands[0]) || FP_REG_P (operands[1]))
+    return output_fp_move_quad (operands);
+  return output_move_quad (operands);
+}"
+  [(set_attr "type" "fp,move,fpstore,store,fpload,load,multi,multi")
+   (set_attr "length" "4,4,5,5,5,5,5,5")])
+
+(define_insn ""
+  [(set (mem:TF (match_operand:SI 0 "symbolic_operand" "i,i"))
+	(match_operand:TF 1 "reg_or_0_operand" "rf,G"))
+   (clobber (match_scratch:SI 2 "=&r,&r"))]
+  ""
+  "*
+{
+  output_asm_insn (\"sethi %%hi(%a0),%2\", operands);
+  if (which_alternative == 0)
+    return \"std %1,[%2+%%lo(%a0)]\;std %S1,[%2+%%lo(%a0+8)]\";
+  else
+    return \"st %%g0,[%2+%%lo(%a0)]\;st %%g0,[%2+%%lo(%a0+4)]\; st %%g0,[%2+%%lo(%a0+8)]\;st %%g0,[%2+%%lo(%a0+12)]\";
+}"
+  [(set_attr "type" "store")
+   (set_attr "length" "5")])
+
 ;; This pattern forces (set (reg:DF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movdf pattern.
@@ -1318,7 +1403,7 @@
   return \"andcc %0,%1,%%g0\";
 }")
 
-;; Conversions between float and double.
+;; Conversions between float, double and long double.
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -1328,12 +1413,44 @@
   "fstod %1,%0"
   [(set_attr "type" "fp")])
 
+(define_insn "extendsftf2"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(float_extend:TF
+	 (match_operand:SF 1 "register_operand" "f")))]
+  ""
+  "fstoq %1,%0"
+  [(set_attr "type" "fp")])
+
+(define_insn "extenddftf2"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(float_extend:TF
+	 (match_operand:DF 1 "register_operand" "f")))]
+  ""
+  "fdtoq %1,%0"
+  [(set_attr "type" "fp")])
+
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
 	 (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fdtos %1,%0"
+  [(set_attr "type" "fp")])
+
+(define_insn "trunctfsf2"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(float_truncate:SF
+	 (match_operand:TF 1 "register_operand" "f")))]
+  ""
+  "fqtos %1,%0"
+  [(set_attr "type" "fp")])
+
+(define_insn "trunctfdf2"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(float_truncate:DF
+	 (match_operand:TF 1 "register_operand" "f")))]
+  ""
+  "fqtod %1,%0"
   [(set_attr "type" "fp")])
 
 ;; Conversion between fixed point and floating point.
@@ -1351,6 +1468,14 @@
 	(float:DF (match_operand:SI 1 "nonimmediate_operand" "rfm")))]
   ""
   "* return output_floatsidf2 (operands);"
+  [(set_attr "type" "fp")
+   (set_attr "length" "3")])
+
+(define_insn "floatsitf2"
+  [(set (match_operand:TF 0 "general_operand" "=f")
+	(float:TF (match_operand:SI 1 "nonimmediate_operand" "rfm")))]
+  ""
+  "* return output_floatsitf2 (operands);"
   [(set_attr "type" "fp")
    (set_attr "length" "3")])
 
@@ -1397,6 +1522,77 @@
     return \"st %2,%0\";
   else
     return \"st %2,[%%fp-4]\;ld [%%fp-4],%0\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "3")])
+
+(define_insn "fix_trunctfsi2"
+  [(set (match_operand:SI 0 "general_operand" "=rm")
+	(fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm"))))
+   (clobber (match_scratch:DF 2 "=&f"))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fqtoi %1,%2\", operands);
+  else
+    {
+      rtx xoperands[3];
+      xoperands[0] = operands[2];
+      xoperands[1] = operands[1];
+      output_asm_insn (output_fp_move_quad (xoperands), xoperands);
+      output_asm_insn (\"fqtoi %2,%2\", operands);
+    }
+  if (GET_CODE (operands[0]) == MEM)
+    return \"st %2,%0\";
+  else
+    return \"st %2,[%%fp-4]\;ld [%%fp-4],%0\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "3")])
+
+;; Allow combiner to combine a fix_trunctfsi2 with a floatsitf2
+;; This eliminates 2 useless instructions.
+;; The first one matches if the fixed result is needed.  The second one
+;; matches if the fixed result is not needed.
+
+(define_insn ""
+  [(set (match_operand:TF 0 "general_operand" "=f")
+	(float:TF (fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm")))))
+   (set (match_operand:SI 2 "general_operand" "=rm")
+	(fix:SI (fix:TF (match_dup 1))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fqtoi %1,%0\", operands);
+  else
+    {
+      output_asm_insn (output_fp_move_quad (operands), operands);
+      output_asm_insn (\"fqtoi %0,%0\", operands);
+    }
+  if (GET_CODE (operands[2]) == MEM)
+    return \"st %0,%2\;fitoq %0,%0\";
+  else
+    return \"st %0,[%%fp-4]\;fitoq %0,%0\;ld [%%fp-4],%2\";
+}"
+  [(set_attr "type" "fp")
+   (set_attr "length" "5")])
+
+(define_insn ""
+  [(set (match_operand:TF 0 "general_operand" "=f")
+	(float:TF (fix:SI (fix:TF (match_operand:TF 1 "general_operand" "fm")))))]
+  ""
+  "*
+{
+  if (FP_REG_P (operands[1]))
+    output_asm_insn (\"fqtoi %1,%0\", operands);
+  else
+    {
+      output_asm_insn (output_fp_move_quad (operands), operands);
+      output_asm_insn (\"fqtoi %0,%0\", operands);
+    }
+  return \"fitoq %0,%0\";
 }"
   [(set_attr "type" "fp")
    (set_attr "length" "3")])
@@ -1962,6 +2158,14 @@
 
 ;; Floating point arithmetic instructions.
 
+(define_insn "addtf3"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(plus:TF (match_operand:TF 1 "register_operand" "f")
+		 (match_operand:TF 2 "register_operand" "f")))]
+  ""
+  "faddq %1,%2,%0"
+  [(set_attr "type" "fp")])
+
 (define_insn "adddf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(plus:DF (match_operand:DF 1 "register_operand" "f")
@@ -1976,6 +2180,14 @@
 		 (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fadds %1,%2,%0"
+  [(set_attr "type" "fp")])
+
+(define_insn "subtf3"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(minus:TF (match_operand:TF 1 "register_operand" "f")
+		  (match_operand:TF 2 "register_operand" "f")))]
+  ""
+  "fsubq %1,%2,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "subdf3"
@@ -1994,6 +2206,14 @@
   "fsubs %1,%2,%0"
   [(set_attr "type" "fp")])
 
+(define_insn "multf3"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(mult:TF (match_operand:TF 1 "register_operand" "f")
+		 (match_operand:TF 2 "register_operand" "f")))]
+  ""
+  "fmulq %1,%2,%0"
+  [(set_attr "type" "fpmul")])
+
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
@@ -2009,6 +2229,14 @@
   ""
   "fmuls %1,%2,%0"
   [(set_attr "type" "fpmul")])
+
+(define_insn "divtf3"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(div:TF (match_operand:TF 1 "register_operand" "f")
+		(match_operand:TF 2 "register_operand" "f")))]
+  ""
+  "fdivq %1,%2,%0"
+  [(set_attr "type" "fpdiv")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2026,6 +2254,16 @@
   "fdivs %1,%2,%0"
   [(set_attr "type" "fpdiv")])
 
+(define_insn "negtf2"
+  [(set (match_operand:TF 0 "register_operand" "=f,f")
+	(neg:TF (match_operand:TF 1 "register_operand" "0,f")))]
+  ""
+  "@
+   fnegs %0,%0
+   fnegs %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0"
+  [(set_attr "type" "fp")
+   (set_attr "length" "1,4")])
+
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(neg:DF (match_operand:DF 1 "register_operand" "0,f")))]
@@ -2036,13 +2274,22 @@
   [(set_attr "type" "fp")
    (set_attr "length" "1,2")])
 
-
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fnegs %1,%0"
   [(set_attr "type" "fp")])
+
+(define_insn "abstf2"
+  [(set (match_operand:TF 0 "register_operand" "=f,f")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,f")))]
+  ""
+  "@
+   fabss %0,%0
+   fabss %1,%0\;fmovs %R1,%R0\;fmovs %S1,%S0\;fmovs %T1,%T0"
+  [(set_attr "type" "fp")
+   (set_attr "length" "1,4")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f,f")
@@ -2060,6 +2307,13 @@
   ""
   "fabss %1,%0"
   [(set_attr "type" "fp")])
+
+(define_insn "sqrttf2"
+  [(set (match_operand:TF 0 "register_operand" "=f")
+	(sqrt:TF (match_operand:TF 1 "register_operand" "f")))]
+  ""
+  "fsqrtq %1,%0"
+  [(set_attr "type" "fpsqrt")])
 
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")

@@ -955,35 +955,137 @@ singlemove_string (operands)
   return "mov %1,%0";
 }
 
+/* Return non-zero if it is OK to assume that the given memory operand is
+   aligned at least to a 8-byte boundary.  This should only be called
+   for memory accesses whose size is 8 bytes or larger.  */
+
+static int
+mem_aligned_8 (mem)
+     register rtx mem;
+{
+  register rtx addr;
+  register rtx base;
+  register rtx offset;
+
+  if (GET_CODE (mem) != MEM)
+    abort ();	/* It's gotta be a MEM! */
+
+  addr = XEXP (mem, 0);
+
+#if 1
+  /* Now that all misaligned double parms are copied on function entry,
+     we can assume any 64-bit object is 64-bit aligned.  */
+
+  /* See what register we use in the address.  */
+  base = 0;
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == REG
+	  && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	{
+	  base = XEXP (addr, 0);
+	  offset = XEXP (addr, 1);
+	}
+    }
+  else if (GET_CODE (addr) == REG)
+    {
+      base = addr;
+      offset = const0_rtx;
+    }
+
+  /* If it's the stack or frame pointer, check offset alignment.
+     We can have improper aligment in the function entry code.  */
+  if (base
+      && (REGNO (base) == FRAME_POINTER_REGNUM
+	  || REGNO (base) == STACK_POINTER_REGNUM))
+    {
+      if ((INTVAL (offset) & 0x7) == 0)
+	return 1;
+    }
+  else
+    /* Anything else, we know is properly aligned.  */
+    return 1;
+#else
+  /* If the operand is known to have been allocated in static storage, then
+     it must be aligned.  */
+
+  if (CONSTANT_P (addr) || GET_CODE (addr) == LO_SUM)
+    return 1;
+
+  base = 0;
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == REG
+          && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+        {
+          base = XEXP (addr, 0);
+          offset = XEXP (addr, 1);
+        }
+    }
+  else if (GET_CODE (addr) == REG)
+    {
+      base = addr;
+      offset = const0_rtx;
+    }
+
+  /* Trust round enough offsets from the stack or frame pointer.
+     If TARGET_HOPE_ALIGN, trust round enough offset from any register.
+     If it is obviously unaligned, don't ever return true.  */
+  if (base
+      && (REGNO (base) == FRAME_POINTER_REGNUM
+          || REGNO (base) == STACK_POINTER_REGNUM
+	  || TARGET_HOPE_ALIGN))
+    {
+      if ((INTVAL (offset) & 0x7) == 0)
+	return 1;
+    }
+  /* Otherwise, we can assume that an access is aligned if it is to an
+     aggregate.  Also, if TARGET_HOPE_ALIGN, then assume everything that isn't
+     obviously unaligned is aligned.  */
+  else if (MEM_IN_STRUCT_P (mem) || TARGET_HOPE_ALIGN)
+    return 1;
+#endif
+
+  /* An obviously unaligned address.  */
+  return 0;
+}
+
+enum optype { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP };
+
 /* Output assembler code to perform a doubleword move insn
-   with operands OPERANDS.  */
+   with operands OPERANDS.  This is very similar to the following
+   output_move_quad function.  */
 
 char *
 output_move_double (operands)
      rtx *operands;
 {
-  enum { REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
+  register rtx op0 = operands[0];
+  register rtx op1 = operands[1];
+  register enum optype optype0;
+  register enum optype optype1;
   rtx latehalf[2];
-  rtx addreg0 = 0, addreg1 = 0;
+  rtx addreg0 = 0;
+  rtx addreg1 = 0;
 
   /* First classify both operands.  */
 
-  if (REG_P (operands[0]))
+  if (REG_P (op0))
     optype0 = REGOP;
-  else if (offsettable_memref_p (operands[0]))
+  else if (offsettable_memref_p (op0))
     optype0 = OFFSOP;
-  else if (GET_CODE (operands[0]) == MEM)
+  else if (GET_CODE (op0) == MEM)
     optype0 = MEMOP;
   else
     optype0 = RNDOP;
 
-  if (REG_P (operands[1]))
+  if (REG_P (op1))
     optype1 = REGOP;
-  else if (CONSTANT_P (operands[1]))
+  else if (CONSTANT_P (op1))
     optype1 = CNSTOP;
-  else if (offsettable_memref_p (operands[1]))
+  else if (offsettable_memref_p (op1))
     optype1 = OFFSOP;
-  else if (GET_CODE (operands[1]) == MEM)
+  else if (GET_CODE (op1) == MEM)
     optype1 = MEMOP;
   else
     optype1 = RNDOP;
@@ -992,180 +1094,76 @@ output_move_double (operands)
      supposed to allow to happen.  Abort if we get one,
      because generating code for these cases is painful.  */
 
-  if (optype0 == RNDOP || optype1 == RNDOP)
+  if (optype0 == RNDOP || optype1 == RNDOP
+      || (optype0 == MEM && optype1 == MEM))
     abort ();
 
   /* If an operand is an unoffsettable memory ref, find a register
      we can increment temporarily to make it refer to the second word.  */
 
   if (optype0 == MEMOP)
-    addreg0 = find_addr_reg (XEXP (operands[0], 0));
+    addreg0 = find_addr_reg (XEXP (op0, 0));
 
   if (optype1 == MEMOP)
-    addreg1 = find_addr_reg (XEXP (operands[1], 0));
+    addreg1 = find_addr_reg (XEXP (op1, 0));
 
   /* Ok, we can do one word at a time.
-     Normally we do the low-numbered word first,
-     but if either operand is autodecrementing then we
-     do the high-numbered word first.
-
-     In either case, set up in LATEHALF the operands to use for the
+     Set up in LATEHALF the operands to use for the
      high-numbered (least significant) word and in some cases alter the
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx (REG, SImode, REGNO (op0) + 1);
   else if (optype0 == OFFSOP)
-    latehalf[0] = adj_offsettable_operand (operands[0], 4);
+    latehalf[0] = adj_offsettable_operand (op0, 4);
   else
-    latehalf[0] = operands[0];
+    latehalf[0] = op0;
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx (REG, SImode, REGNO (op1) + 1);
   else if (optype1 == OFFSOP)
-    latehalf[1] = adj_offsettable_operand (operands[1], 4);
+    latehalf[1] = adj_offsettable_operand (op1, 4);
   else if (optype1 == CNSTOP)
-    split_double (operands[1], &operands[1], &latehalf[1]);
+    split_double (op1, &operands[1], &latehalf[1]);
   else
-    latehalf[1] = operands[1];
+    latehalf[1] = op1;
 
-  /* If the first move would clobber the source of the second one,
-     do them in the other order.
-
-     RMS says "This happens only for registers;
-     such overlap can't happen in memory unless the user explicitly
-     sets it up, and that is an undefined circumstance."
-
-     but it happens on the sparc when loading parameter registers,
-     so I am going to define that circumstance, and make it work
-     as expected.  */
-
-  /* Easy case: try moving both words at once.  */
-  /* First check for moving between an even/odd register pair
-     and a memory location.  */
+  /* Easy case: try moving both words at once.  Check for moving between
+     an even/odd register pair and a memory location.  */
   if ((optype0 == REGOP && optype1 != REGOP && optype1 != CNSTOP
-       && (REGNO (operands[0]) & 1) == 0)
+       && (REGNO (op0) & 1) == 0)
       || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
-	  && (REGNO (operands[1]) & 1) == 0))
+	  && (REGNO (op1) & 1) == 0))
     {
-      /* Now that all misaligned double parms are copied
-	 on function entry, we can assume any 64-bit object
-	 is 64-bit aligned.  */
-#if 1
-      rtx addr;
-      rtx base, offset;
+      register rtx mem;
 
       if (optype0 == REGOP)
-	addr = operands[1];
+	mem = op1;
       else
-	addr = operands[0];
+	mem = op0;
 
-      /* See what register we use in the address.  */
-      base = 0;
-      if (GET_CODE (XEXP (addr, 0)) == PLUS)
-	{
-	  rtx temp = XEXP (addr, 0);
-	  if (GET_CODE (XEXP (temp, 0)) == REG
-	      && GET_CODE (XEXP (temp, 1)) == CONST_INT)
-	    base = XEXP (temp, 0), offset = XEXP (temp, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 0)) == REG)
-	base = XEXP (addr, 0), offset = const0_rtx;
-
-      /* If it's the  stack or frame pointer, check offset alignment.
-	 We can have improper aligment in the function entry code.  */
-      if (base
-	  && (REGNO (base) == FRAME_POINTER_REGNUM
-	      || REGNO (base) == STACK_POINTER_REGNUM))
-	{
-	  if ((INTVAL (offset) & 0x7) == 0)
-	    return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
-	}
-      else
-	/* Anything else, we know is properly aligned.  */
-	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
-#else
-      /* This old code is preserved in case we ever need
-	 it for Fortran.  It won't be complete right;
-	 In Fortran, doubles can be just 32-bit aligned
-	 even in global variables and arrays.  */
-      rtx addr;
-      rtx base, offset;
-
-      if (optype0 == REGOP)
-	addr = operands[1];
-      else
-	addr = operands[0];
-
-      /* Now see if we can trust the address to be 8-byte aligned.
-	 Trust double-precision floats in global variables.  */
-
-      if (GET_CODE (XEXP (addr, 0)) == LO_SUM && GET_MODE (addr) == DFmode)
-	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
-
-      base = 0;
-      if (GET_CODE (XEXP (addr, 0)) == PLUS)
-	{
-	  rtx temp = XEXP (addr, 0);
-	  if (GET_CODE (XEXP (temp, 0)) == REG
-	      && GET_CODE (XEXP (temp, 1)) == CONST_INT)
-	    base = XEXP (temp, 0), offset = XEXP (temp, 1);
-	}
-      else if (GET_CODE (XEXP (addr, 0)) == REG)
-	base = XEXP (addr, 0), offset = const0_rtx;
-
-      /* Trust round enough offsets from the stack or frame pointer.
-	 If TARGET_HOPE_ALIGN, trust round enough offset from any register
-	 for DFmode loads.  If it is obviously unaligned, don't ever
-	 generate ldd or std.  */
-      if (base
-	  && (REGNO (base) == FRAME_POINTER_REGNUM
-	      || REGNO (base) == STACK_POINTER_REGNUM
-	      || (TARGET_HOPE_ALIGN && GET_MODE (addr) == DFmode)))
-	{
-	  if ((INTVAL (offset) & 0x7) == 0)
-	    return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
-	}
-      /* We know structs not on the stack are properly aligned.  Since a
-	 double asks for 8-byte alignment, we know it must have got that
-	 if it is in a struct.  But a DImode need not be 8-byte aligned,
-	 because it could be a struct containing two ints or pointers.
-	 Hence, a constant DFmode address will always be 8-byte aligned.
-	 Any DFmode access inside a struct will always be aligned.
-	 If TARGET_HOPE_ALIGN, then assume all doubles are aligned even if this
-	 is not a constant address.  */
-      else if (GET_MODE (addr) == DFmode
-	       && (CONSTANT_P (XEXP (addr, 0))
-		   || MEM_IN_STRUCT_P (addr)
-		   || TARGET_HOPE_ALIGN))
-	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
-#endif /* 0 */
+      if (mem_aligned_8 (mem))
+	return (mem == op1 ? "ldd %1,%0" : "std %1,%0");
     }
 
-  if (optype0 == REGOP && optype1 == REGOP
-      && REGNO (operands[0]) == REGNO (latehalf[1]))
-    {
-      /* Make any unoffsettable addresses point at high-numbered word.  */
-      if (addreg0)
-	output_asm_insn ("add %0,0x4,%0", &addreg0);
-      if (addreg1)
-	output_asm_insn ("add %0,0x4,%0", &addreg1);
+  /* If the first move would clobber the source of the second one,
+     do them in the other order.  */
 
+  /* Overlapping registers.  */
+  if (optype0 == REGOP && optype1 == REGOP
+      && REGNO (op0) == REGNO (latehalf[1]))
+    {
       /* Do that word.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
-
-      /* Undo the adds we just did.  */
-      if (addreg0)
-	output_asm_insn ("add %0,-0x4,%0", &addreg0);
-      if (addreg1)
-	output_asm_insn ("add %0,-0x4,%0", &addreg1);
-
       /* Do low-numbered word.  */
       return singlemove_string (operands);
     }
+  /* Loading into a register which overlaps a register used in the address.  */
   else if (optype0 == REGOP && optype1 != REGOP
-	   && reg_overlap_mentioned_p (operands[0], operands[1]))
+	   && reg_overlap_mentioned_p (op0, op1))
     {
+      /* ??? This fails if the address is a double register address, each
+	 of which is clobbered by operand 0.  */
       /* Do the late half first.  */
       output_asm_insn (singlemove_string (latehalf), latehalf);
       /* Then clobber.  */
@@ -1193,8 +1191,217 @@ output_move_double (operands)
 
   return "";
 }
+
+/* Output assembler code to perform a quadword move insn
+   with operands OPERANDS.  This is very similar to the preceeding
+   output_move_double function.  */
+
+char *
+output_move_quad (operands)
+     rtx *operands;
+{
+  register rtx op0 = operands[0];
+  register rtx op1 = operands[1];
+  register enum optype optype0;
+  register enum optype optype1;
+  rtx wordpart[4][2];
+  rtx addreg0 = 0;
+  rtx addreg1 = 0;
+
+  /* First classify both operands.  */
+
+  if (REG_P (op0))
+    optype0 = REGOP;
+  else if (offsettable_memref_p (op0))
+    optype0 = OFFSOP;
+  else if (GET_CODE (op0) == MEM)
+    optype0 = MEMOP;
+  else
+    optype0 = RNDOP;
+
+  if (REG_P (op1))
+    optype1 = REGOP;
+  else if (CONSTANT_P (op1))
+    optype1 = CNSTOP;
+  else if (offsettable_memref_p (op1))
+    optype1 = OFFSOP;
+  else if (GET_CODE (op1) == MEM)
+    optype1 = MEMOP;
+  else
+    optype1 = RNDOP;
+
+  /* Check for the cases that the operand constraints are not
+     supposed to allow to happen.  Abort if we get one,
+     because generating code for these cases is painful.  */
+
+  if (optype0 == RNDOP || optype1 == RNDOP
+      || (optype0 == MEM && optype1 == MEM))
+    abort ();
+
+  /* If an operand is an unoffsettable memory ref, find a register
+     we can increment temporarily to make it refer to the later words.  */
+
+  if (optype0 == MEMOP)
+    addreg0 = find_addr_reg (XEXP (op0, 0));
+
+  if (optype1 == MEMOP)
+    addreg1 = find_addr_reg (XEXP (op1, 0));
+
+  /* Ok, we can do one word at a time.
+     Set up in wordpart the operands to use for each word of the arguments.  */
+
+  if (optype0 == REGOP)
+    {
+      wordpart[0][0] = gen_rtx (REG, SImode, REGNO (op0) + 0);
+      wordpart[1][0] = gen_rtx (REG, SImode, REGNO (op0) + 1);
+      wordpart[2][0] = gen_rtx (REG, SImode, REGNO (op0) + 2);
+      wordpart[3][0] = gen_rtx (REG, SImode, REGNO (op0) + 3);
+    }
+  else if (optype0 == OFFSOP)
+    {
+      wordpart[0][0] = adj_offsettable_operand (op0, 0);
+      wordpart[1][0] = adj_offsettable_operand (op0, 4);
+      wordpart[2][0] = adj_offsettable_operand (op0, 8);
+      wordpart[3][0] = adj_offsettable_operand (op0, 12);
+    }
+  else
+    {
+      wordpart[0][0] = op0;
+      wordpart[1][0] = op0;
+      wordpart[2][0] = op0;
+      wordpart[3][0] = op0;
+    }
+
+  if (optype1 == REGOP)
+    {
+      wordpart[0][1] = gen_rtx (REG, SImode, REGNO (op1) + 0);
+      wordpart[1][1] = gen_rtx (REG, SImode, REGNO (op1) + 1);
+      wordpart[2][1] = gen_rtx (REG, SImode, REGNO (op1) + 2);
+      wordpart[3][1] = gen_rtx (REG, SImode, REGNO (op1) + 3);
+    }
+  else if (optype1 == OFFSOP)
+    {
+      wordpart[0][1] = adj_offsettable_operand (op1, 0);
+      wordpart[1][1] = adj_offsettable_operand (op1, 4);
+      wordpart[2][1] = adj_offsettable_operand (op1, 8);
+      wordpart[3][1] = adj_offsettable_operand (op1, 12);
+    }
+  else if (optype1 == CNSTOP)
+    {
+      /* This case isn't implemented yet, because there is no internal
+	 representation for quad-word constants, and there is no split_quad
+	 function.  */
+#if 0
+      split_quad (op1, &wordpart[0][1], &wordpart[1][1],
+		  &wordpart[2][1], &wordpart[3][1]);
+#else
+      abort ();
+#endif
+    }
+  else
+    {
+      wordpart[0][1] = op1;
+      wordpart[1][1] = op1;
+      wordpart[2][1] = op1;
+      wordpart[3][1] = op1;
+    }
+
+  /* Easy case: try moving the quad as two pairs.  Check for moving between
+     an even/odd register pair and a memory location.  */
+  /* ??? Should also handle the case of non-offsettable addresses here.
+     We can at least do the first pair as a ldd/std, and then do the third
+     and fourth words individually.  */
+  if ((optype0 == REGOP && optype1 == OFFSOP && (REGNO (op0) & 1) == 0)
+      || (optype0 == OFFSOP && optype1 == REGOP && (REGNO (op1) & 1) == 0))
+    {
+      rtx mem;
+
+      if (optype0 == REGOP)
+	mem = op1;
+      else
+	mem = op0;
+
+      if (mem_aligned_8 (mem))
+	{
+	  operands[2] = adj_offsettable_operand (mem, 8);
+	  if (mem == op1)
+	    return "ldd %1,%0;ldd %2,%S0";
+	  else
+	    return "std %1,%0;std %S1,%2";
+	}
+    }
+
+  /* If the first move would clobber the source of the second one,
+     do them in the other order.  */
+
+  /* Overlapping registers.  */
+  if (optype0 == REGOP && optype1 == REGOP
+      && (REGNO (op0) == REGNO (wordpart[1][3])
+	  || REGNO (op0) == REGNO (wordpart[1][2])
+	  || REGNO (op0) == REGNO (wordpart[1][1])))
+    {
+      /* Do fourth word.  */
+      output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
+      /* Do the third word.  */
+      output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
+      /* Do the second word.  */
+      output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
+      /* Do lowest-numbered word.  */
+      return singlemove_string (wordpart[0]);
+    }
+  /* Loading into a register which overlaps a register used in the address.  */
+  if (optype0 == REGOP && optype1 != REGOP
+      && reg_overlap_mentioned_p (op0, op1))
+    {
+      /* ??? Not implemented yet.  This is a bit complicated, because we
+	 must load which ever part overlaps the address last.  If the address
+	 is a double-reg address, then there are two parts which need to
+	 be done last, which is impossible.  We would need a scratch register
+	 in that case.  */
+      abort ();
+    }
+
+  /* Normal case: move the four words in lowest to higest address order.  */
+
+  output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
+
+  /* Make any unoffsettable addresses point at the second word.  */
+  if (addreg0)
+    output_asm_insn ("add %0,0x4,%0", &addreg0);
+  if (addreg1)
+    output_asm_insn ("add %0,0x4,%0", &addreg1);
+
+  /* Do the second word.  */
+  output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
+
+  /* Make any unoffsettable addresses point at the third word.  */
+  if (addreg0)
+    output_asm_insn ("add %0,0x4,%0", &addreg0);
+  if (addreg1)
+    output_asm_insn ("add %0,0x4,%0", &addreg1);
+
+  /* Do the third word.  */
+  output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
+
+  /* Make any unoffsettable addresses point at the fourth word.  */
+  if (addreg0)
+    output_asm_insn ("add %0,0x4,%0", &addreg0);
+  if (addreg1)
+    output_asm_insn ("add %0,0x4,%0", &addreg1);
+
+  /* Do the fourth word.  */
+  output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
+
+  /* Undo the adds we just did.  */
+  if (addreg0)
+    output_asm_insn ("add %0,-0xc,%0", &addreg0);
+  if (addreg1)
+    output_asm_insn ("add %0,-0xc,%0", &addreg1);
+
+  return "";
+}
 
-/* Output assembler code to perform a doubleword move insn with perands
+/* Output assembler code to perform a doubleword move insn with operands
    OPERANDS, one of which must be a floating point register.  */
 
 char *
@@ -1230,6 +1437,47 @@ output_fp_move_double (operands)
 	return output_move_double (operands);
     }
   else abort ();
+}
+
+/* Output assembler code to perform a quadword move insn with operands
+   OPERANDS, one of which must be a floating point register.  */
+
+char *
+output_fp_move_quad (operands)
+     rtx *operands;
+{
+  register rtx op0 = operands[0];
+  register rtx op1 = operands[1];
+  register rtx addr;
+
+  if (FP_REG_P (op0))
+    {
+      if (FP_REG_P (op1))
+	return "fmovs %1,%0\n\tfmovs %R1,%R0\n\tfmovs %S1,%S0\n\tfmovs %T1,%T0";
+      if (GET_CODE (op1) == REG)
+	{
+	  if ((REGNO (op1) & 1) == 0)
+	    return "std %1,[%@-8]\n\tldd [%@-8],%0\n\tstd %S1,[%@-8]\n\tldd [%@-8],%S0";
+	  else
+	    return "st %R1,[%@-4]\n\tst %1,[%@-8]\n\tldd [%@-8],%0\n\tst %T1,[%@-4]\n\tst %S1,[%@-8]\n\tldd [%@-8],%S0";
+	}
+      else
+	return output_move_quad (operands);
+    }
+  else if (FP_REG_P (op1))
+    {
+      if (GET_CODE (op0) == REG)
+	{
+	  if ((REGNO (op0) & 1) == 0)
+	    return "std %1,[%@-8]\n\tldd [%@-8],%0\n\tstd %S1,[%@-8]\n\tldd [%@-8],%S0";
+	  else
+	    return "std %S1,[%@-8]\n\tld [%@-4],%T0\n\tld [%@-8],%S0\n\tstd %1,[%@-8]\n\tld [%@-4],%R0\n\tld [%@-8],%0";
+	}
+      else
+	return output_move_quad (operands);
+    }
+  else
+    abort ();
 }
 
 /* Return a REG that occurs in ADDR with coefficient 1.
@@ -2140,6 +2388,8 @@ output_cbranch (op, label, reversed, annul, noop)
   return string;
 }
 
+/* Output assembler code to return from a function.  */
+
 char *
 output_return (operands)
      rtx *operands;
@@ -2199,6 +2449,8 @@ output_return (operands)
     }
 }
 
+/* Output assembler code for a SImode to SFmode conversion.  */
+
 char *
 output_floatsisf2 (operands)
      rtx *operands;
@@ -2210,6 +2462,8 @@ output_floatsisf2 (operands)
   return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitos %0,%0";
 }
 
+/* Output assembler code for a SImode to DFmode conversion.  */
+
 char *
 output_floatsidf2 (operands)
      rtx *operands;
@@ -2219,6 +2473,19 @@ output_floatsidf2 (operands)
   else if (FP_REG_P (operands[1]))
     return "fitod %1,%0";
   return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitod %0,%0";
+}
+
+/* Output assembler code for a SImode to TFmode conversion.  */
+
+char *
+output_floatsitf2 (operands)
+     rtx *operands;
+{
+  if (GET_CODE (operands[1]) == MEM)
+    return "ld %1,%0\n\tfitoq %0,%0";
+  else if (FP_REG_P (operands[1]))
+    return "fitoq %1,%0";
+  return "st %r1,[%%fp-4]\n\tld [%%fp-4],%0\n\tfitoq %0,%0";
 }
 
 /* Leaf functions and non-leaf functions have different needs.  */
@@ -2436,9 +2703,19 @@ print_operand (file, x, code)
       fputs (frame_base_name, file);
       return;
     case 'R':
-      /* Print out the second register name of a register pair.
+      /* Print out the second register name of a register pair or quad.
 	 I.e., R (%o0) => %o1.  */
       fputs (reg_names[REGNO (x)+1], file);
+      return;
+    case 'S':
+      /* Print out the third register name of a register quad.
+	 I.e., S (%o0) => %o2.  */
+      fputs (reg_names[REGNO (x)+2], file);
+      return;
+    case 'T':
+      /* Print out the fourth register name of a register quad.
+	 I.e., T (%o0) => %o3.  */
+      fputs (reg_names[REGNO (x)+3], file);
       return;
     case 'm':
       /* Print the operand's address only.  */
