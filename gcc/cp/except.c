@@ -699,7 +699,9 @@ process_start_catch_block_old (declspecs, declarator)
       DECL_INITIAL (decl) = init;
       decl = pushdecl (decl);
 
-      cp_finish_decl (decl, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
+      start_decl_1 (decl);
+      cp_finish_decl (decl, DECL_INITIAL (decl),
+		      NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   else
     {

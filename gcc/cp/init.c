@@ -1200,7 +1200,8 @@ expand_default_init (binfo, true_exp, exp, init, alias_this, flags)
 
   rval = build_method_call (exp, ctor_identifier,
 			    parms, binfo, flags);
-  expand_expr_stmt (rval);
+  if (TREE_SIDE_EFFECTS (rval))
+    expand_expr_stmt (rval);
 }
 
 /* This function is responsible for initializing EXP with INIT
