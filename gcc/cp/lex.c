@@ -61,7 +61,6 @@ extern struct obstack permanent_obstack;
 extern struct obstack *current_obstack, *saveable_obstack;
 
 extern void yyprint PROTO((FILE *, int, YYSTYPE));
-extern void set_float_handler PROTO((jmp_buf));
 extern void compiler_error PROTO((char *, HOST_WIDE_INT,
 				  HOST_WIDE_INT));
 
@@ -296,9 +295,6 @@ int interface_unknown;		/* whether or not we know this class
 				   to behave according to #pragma interface.  */
 
 /* lexical analyzer */
-
-/* File used for outputting assembler code.  */
-extern FILE *asm_out_file;
 
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE
@@ -2338,9 +2334,6 @@ check_newline ()
 	      && getch () == 't'
 	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
-#ifdef ASM_OUTPUT_IDENT
-              extern FILE *asm_out_file;
-#endif
 	      /* #ident.  The pedantic warning is now in cccp.c.  */
 
 	      /* Here we have just seen `#ident '.

@@ -1819,6 +1819,8 @@ struct tinst_level
 
 extern int minimal_parse_mode;
 
+extern void maybe_print_template_context	PROTO ((void));
+
 /* in class.c */
 extern tree current_class_name;
 extern tree current_class_type;
@@ -2420,6 +2422,7 @@ extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
 extern tree grok_x_components			PROTO((tree, tree));
 extern void maybe_retrofit_in_chrg		PROTO((tree));
+extern void maybe_make_one_only			PROTO((tree));
 extern void grokclassfn				PROTO((tree, tree, tree, enum overload_flags, tree));
 extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));

@@ -1,3 +1,17 @@
+Mon Jun  8 20:45:52 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (decl2.o): Depend on dwarf2out.h and dwarfout.h.
+
+	* cp-tree.h: Add prototype for `maybe_print_template_context' and
+ 	`maybe_make_one_only'.
+
+	* decl.c (auto_function): Remove unused variable `decl'.
+
+	* decl2.c: Include dwarf2out.h and dwarfout.h.
+
+	* lex.c: Remove redundant declarations of `set_float_handler' and
+ 	`asm_out_file'.
+
 1998-06-08  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (init_exception_processing): Remove NEW_EH_MODEL compile 
