@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on AMD Am29000.
-   Copyright (C) 1987, 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 90, 91, 92, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -259,7 +259,8 @@ gpc_reg_operand (op, mode)
   else
     return 0;
 
-  return regno >= FIRST_PSEUDO_REGISTER || regno < R_BP;
+  return (regno >= FIRST_PSEUDO_REGISTER || regno < R_BP
+	  || (regno >= R_KR (0) && regno <= R_KR (31)));
 }
 
 /* Returns 1 if OP is either an 8-bit constant integer or a general register.
@@ -332,7 +333,9 @@ call_operand (op, mode)
     {
     case SYMBOL_REF:
       return (TARGET_SMALL_MEMORY
-	      || ! strcmp (XSTR (op, 0), current_function_name));
+	      || (! TARGET_LARGE_MEMORY
+		  && ((GET_CODE (op) == SYMBOL_REF && SYMBOL_REF_FLAG (op))
+		      || ! strcmp (XSTR (op, 0), current_function_name))));
 
     case CONST_INT:
       return (unsigned HOST_WIDE_INT) INTVAL (op) < 0x40000;
