@@ -1718,7 +1718,7 @@ arm_encode_call_attribute (decl, flag)
 {
   const char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   int          len = strlen (str);
-  char *       newstr;
+  const char * newstr;
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     return;
