@@ -1,3 +1,8 @@
+Mon Mar 22 20:13:19 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (expand_builtin, case BUILT_IN_CONSTANT_P): If MODE is
+	VOIDmode, use mode of expression.
+
 Sun Mar 21 18:49:02 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (contains_muldiv): New function.
