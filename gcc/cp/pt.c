@@ -3099,20 +3099,60 @@ redeclare_class_template (tree type, tree parms)
     }
 }
 
+/* Simplify EXPR if it is a non-dependent expression.  Returns the
+   (possibly simplified) expression.  */
+
+tree
+fold_non_dependent_expr (tree expr)
+{
+  /* If we're in a template, but EXPR isn't value dependent, simplify
+     it.  We're supposed to treat:
+     
+       template <typename T> void f(T[1 + 1]);
+       template <typename T> void f(T[2]);
+		   
+     as two declarations of the same function, for example.  */
+  if (processing_template_decl
+      && !type_dependent_expression_p (expr)
+      && !value_dependent_expression_p (expr))
+    {
+      HOST_WIDE_INT saved_processing_template_decl;
+
+      saved_processing_template_decl = processing_template_decl;
+      processing_template_decl = 0;
+      expr = tsubst_copy_and_build (expr,
+				    /*args=*/NULL_TREE,
+				    tf_error,
+				    /*in_decl=*/NULL_TREE,
+				    /*function_p=*/false);
+      processing_template_decl = saved_processing_template_decl;
+    }
+  return expr;
+}
+
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
    converted value.  If the conversion is unsuccessful, return
    NULL_TREE if we issued an error message, or error_mark_node if we
    did not.  We issue error messages for out-and-out bad template
    parameters, but not simply because the conversion failed, since we
-   might be just trying to do argument deduction.  By the time this
-   function is called, neither TYPE nor EXPR may make use of template
-   parameters.  */
+   might be just trying to do argument deduction.  Both TYPE and EXPR
+   must be non-dependent.  */
 
 static tree
 convert_nontype_argument (tree type, tree expr)
 {
-  tree expr_type = TREE_TYPE (expr);
+  tree expr_type;
+
+  /* If we are in a template, EXPR may be non-dependent, but still
+     have a syntactic, rather than semantic, form.  For example, EXPR
+     might be a SCOPE_REF, rather than the VAR_DECL to which the
+     SCOPE_REF refers.  Preserving the qualifying scope is necessary
+     so that access checking can be performed when the template is
+     instantiated -- but here we need the resolved form so that we can
+     convert the argument.  */
+  expr = fold_non_dependent_expr (expr);
+  expr_type = TREE_TYPE (expr);
 
   /* A template-argument for a non-type, non-template
      template-parameter shall be one of:
@@ -3136,12 +3176,31 @@ convert_nontype_argument (tree type, tree expr)
      --a pointer to member expressed as described in _expr.unary.op_.  */
 
   /* An integral constant-expression can include const variables or
-     enumerators.  Simplify things by folding them to their values,
+.     enumerators.  Simplify things by folding them to their values,
      unless we're about to bind the declaration to a reference
      parameter.  */
-  if (INTEGRAL_TYPE_P (expr_type)
-      && TREE_CODE (type) != REFERENCE_TYPE)
-    expr = decl_constant_value (expr);
+  if (INTEGRAL_TYPE_P (expr_type) && TREE_CODE (type) != REFERENCE_TYPE)
+    while (true) 
+      {
+	tree const_expr = decl_constant_value (expr);
+	/* In a template, the initializer for a VAR_DECL may not be
+	   marked as TREE_CONSTANT, in which case decl_constant_value
+	   will not return the initializer.  Handle that special case
+	   here.  */
+	if (expr == const_expr
+	    && TREE_CODE (expr) == VAR_DECL
+	    && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (expr)
+	    && CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (expr))
+	    /* DECL_INITIAL can be NULL if we are processing a
+	       variable initialized to an expression involving itself.
+	       We know it is initialized to a constant -- but not what
+	       constant, yet.  */
+	    && DECL_INITIAL (expr))
+	  const_expr = DECL_INITIAL (expr);
+	if (expr == const_expr)
+	  break;
+	expr = fold_non_dependent_expr (const_expr);
+      }
 
   if (is_overloaded_fn (expr))
     /* OK for now.  We'll check that it has external linkage later.
@@ -7279,11 +7338,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
   
   /* Remember that there was a reference to this entity.  */
   if (DECL_P (expr))
-    {
-      mark_used (expr);
-      if (!args && TREE_CODE (expr) == VAR_DECL)
-	expr = DECL_INITIAL (expr);
-    }
+    mark_used (expr);
 
   if (is_template)
     expr = lookup_template_function (expr, template_args);
@@ -8485,11 +8540,6 @@ tsubst_copy_and_build (tree t,
     case VAR_DECL:
       if (args)
 	t = tsubst_copy (t, args, complain, in_decl);
-      else
-	/* If there are no ARGS, then we are evaluating a
-	   non-dependent expression.  If the expression is
-	   non-dependent, the variable must be a constant.  */
-	t = DECL_INITIAL (t);
       return convert_from_reference (t);
 
     case VA_ARG_EXPR:

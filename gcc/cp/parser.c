@@ -1669,8 +1669,6 @@ static tree cp_parser_sizeof_operand
   (cp_parser *, enum rid);
 static bool cp_parser_declares_only_class_p
   (cp_parser *);
-static tree cp_parser_fold_non_dependent_expr
-  (tree);
 static bool cp_parser_friend_p
   (tree);
 static cp_token *cp_parser_require
@@ -8411,7 +8409,7 @@ cp_parser_template_argument (cp_parser* parser)
   argument = cp_parser_constant_expression (parser, 
 					    /*allow_non_constant_p=*/false,
 					    /*non_constant_p=*/NULL);
-  argument = cp_parser_fold_non_dependent_expr (argument);
+  argument = fold_non_dependent_expr (argument);
   if (!maybe_type_id)
     return argument;
   if (!cp_parser_next_token_ends_template_argument_p (parser))
@@ -10417,7 +10415,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 /*allow_non_constant=*/true,
 						 &non_constant_p);
 	      if (!non_constant_p)
-		bounds = cp_parser_fold_non_dependent_expr (bounds);
+		bounds = fold_non_dependent_expr (bounds);
 	    }
 	  else
 	    bounds = NULL_TREE;
@@ -14732,37 +14730,6 @@ cp_parser_declares_only_class_p (cp_parser *parser)
      declarator.  */
   return (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON)
 	  || cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
-}
-
-/* Simplify EXPR if it is a non-dependent expression.  Returns the
-   (possibly simplified) expression.  */
-
-static tree
-cp_parser_fold_non_dependent_expr (tree expr)
-{
-  /* If we're in a template, but EXPR isn't value dependent, simplify
-     it.  We're supposed to treat:
-     
-       template <typename T> void f(T[1 + 1]);
-       template <typename T> void f(T[2]);
-		   
-     as two declarations of the same function, for example.  */
-  if (processing_template_decl
-      && !type_dependent_expression_p (expr)
-      && !value_dependent_expression_p (expr))
-    {
-      HOST_WIDE_INT saved_processing_template_decl;
-
-      saved_processing_template_decl = processing_template_decl;
-      processing_template_decl = 0;
-      expr = tsubst_copy_and_build (expr,
-				    /*args=*/NULL_TREE,
-				    tf_error,
-				    /*in_decl=*/NULL_TREE,
-				    /*function_p=*/false);
-      processing_template_decl = saved_processing_template_decl;
-    }
-  return expr;
 }
 
 /* DECL_SPECIFIERS is the representation of a decl-specifier-seq.
