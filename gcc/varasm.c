@@ -3401,6 +3401,7 @@ output_constructor (exp, size)
      int size;
 {
   register tree link, field = 0;
+  HOST_WIDE_INT min_index = 0;
   /* Number of bytes output or skipped so far.
      In other words, current position within the constructor.  */
   int total_bytes = 0;
@@ -3413,6 +3414,10 @@ output_constructor (exp, size)
 
   if (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE)
     field = TYPE_FIELDS (TREE_TYPE (exp));
+
+  if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
+    min_index
+      = TREE_INT_CST_LOW (TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (exp))));
 
   /* As LINK goes through the elements of the constant,
      FIELD goes through the structure fields, if the constant is a structure.
@@ -3457,7 +3462,7 @@ output_constructor (exp, size)
 	  if (index != 0)
 	    bitpos = (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (val)))
 		      / BITS_PER_UNIT
-		      * TREE_INT_CST_LOW (index));
+		      * (TREE_INT_CST_LOW (index) - min_index));
 
 	  /* Output any buffered-up bit-fields preceding this element.  */
 	  if (byte_buffer_in_use)
