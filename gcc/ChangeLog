@@ -1,3 +1,8 @@
+2002-03-06  Jeffrey A Law  (law@redhat.com)
+
+	* ssa-ccp.c (ssa_fast_dce): Update the DF def-use chains
+	after completing fast dead code elimination.
+
 2002-03-06  Richard Henderson  <rth@redhat.com>
 
 	* genemit.c (gen_exp): New argument used.  Invoke copy_rtx
