@@ -3204,15 +3204,9 @@ expand_decl (decl)
 			  NULL_RTX, VOIDmode, 0);
       free_temp_slots ();
 
-      /* This is equivalent to calling alloca.  */
-      current_function_calls_alloca = 1;
-
       /* Allocate space on the stack for the variable.  */
       address = allocate_dynamic_stack_space (size, NULL_RTX,
 					      DECL_ALIGN (decl));
-
-      if (nonlocal_goto_handler_slot != 0)
-	emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, NULL_RTX);
 
       /* Reference the variable indirect through that rtx.  */
       DECL_RTL (decl) = gen_rtx (MEM, DECL_MODE (decl), address);
