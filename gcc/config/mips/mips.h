@@ -206,7 +206,6 @@ extern char	       *permalloc ();
 extern int		reg_mentioned_p ();
 
 /* Functions in the standard library that we reference.  */
-extern void		abort ();
 extern int		atoi ();
 extern char	       *getenv ();
 extern char	       *mktemp ();
