@@ -150,6 +150,8 @@ typedef struct edge_def {
 #define EDGE_DFS_BACK		32	/* A backwards edge */
 #define EDGE_CAN_FALLTHRU	64	/* Candidate for straight line
 					   flow.  */
+#define EDGE_IRREDUCIBLE_LOOP	128	/* Part of irreducible loop.  */
+#define EDGE_ALL_FLAGS		255
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
@@ -540,7 +542,7 @@ extern void init_flow                   PARAMS ((void));
 extern void reorder_basic_blocks	PARAMS ((void));
 extern void dump_bb			PARAMS ((basic_block, FILE *));
 extern void debug_bb			PARAMS ((basic_block));
-extern void debug_bb_n			PARAMS ((int));
+extern basic_block debug_bb_n		PARAMS ((int));
 extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));

@@ -43,12 +43,12 @@ static basic_block flow_loop_pre_header_find PARAMS ((basic_block,
 						      dominance_info));
 static int flow_loop_level_compute	PARAMS ((struct loop *));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
+static void establish_preds		PARAMS ((struct loop *));
 static basic_block make_forwarder_block PARAMS ((basic_block, int, int,
 						 edge, int));
 static void canonicalize_loop_headers   PARAMS ((void));
 static bool glb_enum_p PARAMS ((basic_block, void *));
 static void redirect_edge_with_latch_update PARAMS ((edge, basic_block));
-static void flow_loop_free PARAMS ((struct loop *));
 
 /* Dump loop related CFG information.  */
 
@@ -185,7 +185,7 @@ flow_loops_dump (loops, file, loop_dump_aux, verbose)
 }
 
 /* Free data allocated for LOOP.  */
-static void
+void
 flow_loop_free (loop)
      struct loop *loop;
 {
@@ -447,8 +447,26 @@ flow_loop_pre_header_find (header, dom)
   return pre_header;
 }
 
+static void
+establish_preds (loop)
+     struct loop *loop;
+{
+  struct loop *ploop, *father = loop->outer;
+
+  loop->depth = father->depth + 1;
+  if (loop->pred)
+    free (loop->pred);
+  loop->pred = xmalloc (sizeof (struct loop *) * loop->depth);
+  memcpy (loop->pred, father->pred, sizeof (struct loop *) * father->depth);
+  loop->pred[father->depth] = father;
+
+  for (ploop = loop->inner; ploop; ploop = ploop->next)
+    establish_preds (ploop);
+}
+
 /* Add LOOP to the loop hierarchy tree where FATHER is father of the
-   added loop.  */
+   added loop.  If LOOP has some children, take care of that their
+   pred field will be initialized correctly.  */
 
 void
 flow_loop_tree_node_add (father, loop)
@@ -459,10 +477,7 @@ flow_loop_tree_node_add (father, loop)
   father->inner = loop;
   loop->outer = father;
 
-  loop->depth = father->depth + 1;
-  loop->pred = xmalloc (sizeof (struct loop *) * loop->depth);
-  memcpy (loop->pred, father->pred, sizeof (struct loop *) * father->depth);
-  loop->pred[father->depth] = father;
+  establish_preds (loop);
 }
 
 /* Remove LOOP from the loop hierarchy tree.  */
@@ -1029,6 +1044,37 @@ get_loop_body (loop)
   return tovisit;
 }
 
+/* Gets exit edges of a LOOP, returning their number in N_EDGES.  */
+edge *
+get_loop_exit_edges (loop, n_edges)
+     const struct loop *loop;
+     unsigned *n_edges;
+{
+  edge *edges, e;
+  unsigned i, n;
+  basic_block * body;
+
+  if (loop->latch == EXIT_BLOCK_PTR)
+    abort ();
+
+  body = get_loop_body (loop);
+  n = 0;
+  for (i = 0; i < loop->num_nodes; i++)
+    for (e = body[i]->succ; e; e = e->succ_next)
+      if (!flow_bb_inside_loop_p (loop, e->dest))
+	n++;
+  edges = xmalloc (n * sizeof (edge));
+  *n_edges = n;
+  n = 0;
+  for (i = 0; i < loop->num_nodes; i++)
+    for (e = body[i]->succ; e; e = e->succ_next)
+      if (!flow_bb_inside_loop_p (loop, e->dest))
+	edges[n++] = e;
+  free (body);
+
+  return edges;
+}
+
 /* Adds basic block BB to LOOP.  */
 void
 add_bb_to_loop (bb, loop)
@@ -1135,6 +1181,7 @@ verify_loop_structure (loops)
   basic_block *bbs, bb;
   struct loop *loop;
   int err = 0;
+  edge e;
 
   /* Check sizes.  */
   sizes = xcalloc (loops->num, sizeof (int));
@@ -1215,6 +1262,12 @@ verify_loop_structure (loops)
 	  error ("Loop %d's header does not belong directly to it.", i);
 	  err = 1;
 	}
+      if ((loops->state & LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
+	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
+	{
+	  error ("Loop %d's latch is marked as part of irreducible region.", i);
+	  err = 1;
+	}
     }
 
   /* Check irreducible loops.  */
@@ -1223,10 +1276,15 @@ verify_loop_structure (loops)
       /* Record old info.  */
       irreds = sbitmap_alloc (last_basic_block);
       FOR_EACH_BB (bb)
-	if (bb->flags & BB_IRREDUCIBLE_LOOP)
-	  SET_BIT (irreds, bb->index);
-	else
-	  RESET_BIT (irreds, bb->index);
+	{
+	  if (bb->flags & BB_IRREDUCIBLE_LOOP)
+	    SET_BIT (irreds, bb->index);
+	  else
+	    RESET_BIT (irreds, bb->index);
+	  for (e = bb->succ; e; e = e->succ_next)
+	    if (e->flags & EDGE_IRREDUCIBLE_LOOP)
+      	      e->flags |= EDGE_ALL_FLAGS + 1;
+	}
 
       /* Recount it.  */
       mark_irreducible_loops (loops);
@@ -1245,6 +1303,24 @@ verify_loop_structure (loops)
 	    {
 	      error ("Basic block %d should not be marked irreducible.", bb->index);
 	      err = 1;
+	    }
+	  for (e = bb->succ; e; e = e->succ_next)
+	    {
+	      if ((e->flags & EDGE_IRREDUCIBLE_LOOP)
+		  && !(e->flags & (EDGE_ALL_FLAGS + 1)))
+		{
+		  error ("Edge from %d to %d should be marked irreducible.",
+			 e->src->index, e->dest->index);
+		  err = 1;
+		}
+	      else if (!(e->flags & EDGE_IRREDUCIBLE_LOOP)
+		       && (e->flags & (EDGE_ALL_FLAGS + 1)))
+		{
+		  error ("Edge from %d to %d should not be marked irreducible.",
+			 e->src->index, e->dest->index);
+		  err = 1;
+		}
+	      e->flags &= ~(EDGE_ALL_FLAGS + 1);
 	    }
 	}
       free (irreds);

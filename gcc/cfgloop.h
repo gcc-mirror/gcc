@@ -266,6 +266,7 @@ extern void flow_loop_dump		PARAMS ((const struct loop *, FILE *,
 						FILE *, int), int));
 extern int flow_loop_scan		PARAMS ((struct loops *,
 						struct loop *, int));
+extern void flow_loop_free		PARAMS ((struct loop *));
 void mark_irreducible_loops		PARAMS ((struct loops *));
 
 /* Loop datastructure manipulation/querying.  */
@@ -282,6 +283,7 @@ extern int average_num_loop_insns	PARAMS ((struct loop *));
 
 /* Loops & cfg manipulation.  */
 extern basic_block *get_loop_body	PARAMS ((const struct loop *));
+extern edge *get_loop_exit_edges	PARAMS ((const struct loop *, unsigned *));
 
 extern edge loop_preheader_edge		PARAMS ((const struct loop *));
 extern edge loop_latch_edge		PARAMS ((const struct loop *));
@@ -326,6 +328,7 @@ extern int duplicate_loop_to_header_edge PARAMS ((struct loop *, edge,
 						unsigned *, int));
 extern struct loop *loopify		PARAMS ((struct loops *, edge,
 						edge, basic_block));
+extern void unloop			PARAMS ((struct loops *, struct loop *));
 extern bool remove_path			PARAMS ((struct loops *, edge));
 extern edge split_loop_bb		PARAMS ((struct loops *, basic_block,
 						rtx));

@@ -180,25 +180,6 @@ peel_loops_completely (loops, flags)
 	fprintf (rtl_dump_file, ";; Considering loop %d for complete peeling\n",
 		 loop->num);
 
-      /* Do not peel cold areas.  */
-      if (!maybe_hot_bb_p (loop->header))
-	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, ";; Not considering loop, cold area\n");
-	  loop = next;
-	  continue;
-	}
-
-      /* Can the loop be manipulated?  */
-      if (!can_duplicate_loop_p (loop))
-	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file,
-		     ";; Not considering loop, cannot duplicate\n");
-	  loop = next;
-	  continue;
-	}
-
       loop->ninsns = num_loop_insns (loop);
 
       decide_peel_once_rolling (loops, loop, flags);
@@ -348,6 +329,23 @@ decide_peel_completely (loops, loop, flags)
       return;
     }
 
+  /* Do not peel cold areas.  */
+  if (!maybe_hot_bb_p (loop->header))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, ";; Not considering loop, cold area\n");
+      return;
+    }
+
+  /* Can the loop be manipulated?  */
+  if (!can_duplicate_loop_p (loop))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file,
+		 ";; Not considering loop, cannot duplicate\n");
+      return;
+    }
+
   /* npeel = number of iterations to peel. */
   npeel = PARAM_VALUE (PARAM_MAX_COMPLETELY_PEELED_INSNS) / loop->ninsns;
   if (npeel > (unsigned) PARAM_VALUE (PARAM_MAX_COMPLETELY_PEEL_TIMES))
@@ -411,45 +409,40 @@ peel_loop_completely (loops, loop)
 {
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
-  edge e;
   unsigned n_remove_edges, i;
   edge *remove_edges;
   struct loop_desc *desc = &loop->desc;
   
   npeel = desc->niter;
 
-  wont_exit = sbitmap_alloc (npeel + 2);
-  sbitmap_ones (wont_exit);
-  RESET_BIT (wont_exit, 0);
-  RESET_BIT (wont_exit, npeel + 1);
-  if (desc->may_be_zero)
-    RESET_BIT (wont_exit, 1);
+  if (npeel)
+    {
+      wont_exit = sbitmap_alloc (npeel + 1);
+      sbitmap_ones (wont_exit);
+      RESET_BIT (wont_exit, 0);
+      if (desc->may_be_zero)
+	RESET_BIT (wont_exit, 1);
 
-  remove_edges = xcalloc (npeel, sizeof (edge));
-  n_remove_edges = 0;
+      remove_edges = xcalloc (npeel, sizeof (edge));
+      n_remove_edges = 0;
 
-  if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
-	loops, npeel + 1,
-	wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
-	DLTHE_FLAG_UPDATE_FREQ))
-    abort ();
+      if (!duplicate_loop_to_header_edge (loop, loop_preheader_edge (loop),
+		loops, npeel,
+		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
+		DLTHE_FLAG_UPDATE_FREQ))
+	abort ();
 
-  free (wont_exit);
+      free (wont_exit);
 
-  /* Remove the exit edges.  */
-  for (i = 0; i < n_remove_edges; i++)
-    remove_path (loops, remove_edges[i]);
-  free (remove_edges);
+      /* Remove the exit edges.  */
+      for (i = 0; i < n_remove_edges; i++)
+	remove_path (loops, remove_edges[i]);
+      free (remove_edges);
+    }
 
-  /* Now remove the loop.  */
-  for (e = RBI (desc->in_edge->src)->copy->succ;
-       e && e->dest != RBI (desc->in_edge->dest)->copy;
-       e = e->succ_next);
-
-  if (!e)
-    abort ();
-
-  remove_path (loops, e);
+  /* Now remove the unreachable part of the last iteration and cancel
+     the loop.  */
+  remove_path (loops, desc->in_edge);
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Peeled loop completely, %d times\n", (int) npeel);
