@@ -1,5 +1,9 @@
 2001-03-28  Loren J. Rittle  <ljrittle@acm.org>
 
+	* g++.old-deja/g++.other/eh4.C: Fix typo.
+
+2001-03-28  Loren J. Rittle  <ljrittle@acm.org>
+
 	* g++.dg/special/ecos.exp (conpr-1.C): Do not write in $srcdir.
 
 2001-03-27  Alan Modra  <alan@linuxcare.com.au>

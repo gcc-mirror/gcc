@@ -1,5 +1,5 @@
 // Origin: Jean-Marc Bourguet <bourguet@cadence.com>
-// Build, don't link:
+// Build don't link:
 
 class foo {
 public:
