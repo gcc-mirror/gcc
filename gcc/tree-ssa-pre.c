@@ -1695,7 +1695,8 @@ add_to_sets (tree var, tree expr, vuse_optype vuses, bitmap_set_t s1,
   if (var != expr)
     vn_add (var, val, NULL);
 
-  bitmap_insert_into_set (s1, var);
+  if (s1)
+    bitmap_insert_into_set (s1, var);
   bitmap_value_insert_into_set (s2, var);
 }
 
@@ -1881,8 +1882,7 @@ compute_avail (void)
 	  for (j = 0; j < NUM_USES (STMT_USE_OPS (stmt)); j++)
 	    {
 	      tree use = USE_OP (STMT_USE_OPS (stmt), j);
-	      add_to_sets (use, use, NULL, TMP_GEN (block),
-			    AVAIL_OUT (block));
+	      add_to_sets (use, use, NULL, NULL, AVAIL_OUT (block));
 	    }
 	}
 
