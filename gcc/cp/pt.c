@@ -1690,8 +1690,8 @@ check_explicit_specialization (tree declarator,
 	     template <class T> void f<int>(); */
 
 	  if (uses_template_parms (declarator))
-	    error ("partial specialization `%D' of function template",
-		      declarator);
+	    error ("function template partial specialization `%D' "
+		   "is not allowed", declarator);
 	  else
 	    error ("template-id `%D' in declaration of primary template",
 		      declarator);
