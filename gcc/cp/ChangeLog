@@ -1,3 +1,8 @@
+Tue Feb 10 23:41:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (check_explicit_specialization): Allow old-style specialization
+	of class template members.
+
 Tue Feb 10 20:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 			  Manfred Hollstein  <manfred@s-direktnet.de>
 
