@@ -1,5 +1,11 @@
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
+	* varasm.c (restore_varasm_status): New.
+	* function.h: Declare it.
+	* function.c (pop_function_context_from): Call it.
+
+2001-10-08  Richard Henderson  <rth@redhat.com>
+
 	* c-common.h (struct c_lang_decl): Add declared_inline.
 	* c-tree.h (DECL_DECLARED_INLINE_P): New.
 	* c-lang.c (c_disregard_inline_limits): Use it.

@@ -3493,6 +3493,23 @@ init_varasm_status (f)
   p->x_const_double_chain = 0;
 }
 
+/* Nested functions diddle with our const_double_chain via
+   clear_const_double_mem and const_tiny_rtx.  Remove these
+   entries from our const_double_chain.  */
+
+void
+restore_varasm_status (f)
+     struct function *f;
+{
+  rtx *p = &f->varasm->x_const_double_chain;
+
+  while (*p)
+    if (CONST_DOUBLE_MEM (*p) == cc0_rtx)
+      *p = CONST_DOUBLE_CHAIN (*p);
+    else
+      p = &CONST_DOUBLE_CHAIN (*p);
+}
+
 /* Mark PC for GC.  */
 
 static void
