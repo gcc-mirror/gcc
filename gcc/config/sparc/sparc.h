@@ -1502,6 +1502,7 @@ extern struct rtx_def *legitimize_pic_address ();
 #define SQRTTF2_LIBCALL "*_Q_sqrt"
 #define FLOATSITF2_LIBCALL "*_Q_itoq"
 #define FIX_TRUNCTFSI2_LIBCALL "*_Q_qtoi"
+#define FIXUNS_TRUNCTFSI2_LIBCALL "*_Q_qtou"
 #define EXTENDSFTF2_LIBCALL "*_Q_stoq"
 #define TRUNCTFSF2_LIBCALL "*_Q_qtos"
 #define EXTENDDFTF2_LIBCALL "*_Q_dtoq"
