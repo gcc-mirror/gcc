@@ -1,3 +1,8 @@
+2001-06-24  Andreas Jaeger  <aj@suse.de>
+
+	* libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Fix path for
+	jni.h.
+
 2001-06-14  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.jni/jni.exp: New file.
@@ -189,7 +194,7 @@
 Fri Nov 24 11:25:20 2000  Anthony Green  <green@redhat.com>
 
 	* lib/libjava.exp (bytecompile_file): Change default from javac to
- 	gcj -C.
+	gcj -C.
 	(libjava_arguments): Fix classpath.
 
 	* libjava.compile/PR129_B.no-link: New file.
@@ -317,7 +322,7 @@ Sun Oct  8 19:14:05 2000  Anthony Green  <green@redhat.com>
 
 	Test for PR gcj/224:
 	* libjava.compile/PR224.java: New file.
-	* libjava.compile/PR224.xfail: New file.	
+	* libjava.compile/PR224.xfail: New file.
 
 2000-04-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
@@ -729,7 +734,7 @@ Sun Oct  8 19:14:05 2000  Anthony Green  <green@redhat.com>
 
 	* lib/libjava.exp (bytecompile_file): Use `env(SUN_JAVAC)', that
 	defaults to javac, as Sun-javac compiler or compatible.
-	(libjava_init): Get GCJ from environment if neither GCJ_UNDER_TEST 
+	(libjava_init): Get GCJ from environment if neither GCJ_UNDER_TEST
 	nor TOOL_EXECUTABLE are set.  Set `original_ld_library_path' from
 	environment.
 	(libjava_arguments): Prepend `.' and `$srcdir/$subdir' to
@@ -835,7 +840,7 @@ Sun Oct  8 19:14:05 2000  Anthony Green  <green@redhat.com>
 Thu Jul  1 16:22:19 1999  Anthony Green  <green@cygnus.com>
 
 	* libjava.mauve/mauve.exp: Don't stop counting test results
- 	prematurely.
+	prematurely.
 
 1999-06-25  Tom Tromey  <tromey@cygnus.com>
 
@@ -1130,21 +1135,21 @@ Fri Sep 18 12:43:52 1998  Warren Levy  <warrenl@cygnus.com>
 
 	* libjava.lang/Integer_1.java, libjava.lang/Integer_1.out,
 	libjava.lang/Integer_2.java, libjava.lang/Integer_2.out: Created.
-	
+
 	* libjava.lang/String_2.java, libjava.lang/String_2.out: Use JDK 1.2
 	values for hashCode.
 
 Thu Sep 10 12:44:42 1998  Warren Levy  <warrenl@cygnus.com>
 
 	* libjava.lang/String_1.java, libjava.lang/String_1.out,
- 	libjava.lang/String_2.java, libjava.lang/String_2.out,
- 	libjava.lang/String_3.java, libjava.lang/String_3.out,
- 	libjava.lang/String_4.java, libjava.lang/String_4.out,
- 	libjava.lang/String_5.java, libjava.lang/String_5.out,
- 	libjava.lang/String_6.java, libjava.lang/String_6.out,
- 	libjava.lang/String_7.java, libjava.lang/String_7.out,
- 	libjava.lang/String_8.java, libjava.lang/String_8.out,
- 	libjava.lang/String_9.java, libjava.lang/String_9.out: Created.
+	libjava.lang/String_2.java, libjava.lang/String_2.out,
+	libjava.lang/String_3.java, libjava.lang/String_3.out,
+	libjava.lang/String_4.java, libjava.lang/String_4.out,
+	libjava.lang/String_5.java, libjava.lang/String_5.out,
+	libjava.lang/String_6.java, libjava.lang/String_6.out,
+	libjava.lang/String_7.java, libjava.lang/String_7.out,
+	libjava.lang/String_8.java, libjava.lang/String_8.out,
+	libjava.lang/String_9.java, libjava.lang/String_9.out: Created.
 
 Tue Sep  8 13:31:59 1998  Warren Levy  <warrenl@cygnus.com>
 
@@ -1154,10 +1159,10 @@ Tue Sep  8 13:31:59 1998  Warren Levy  <warrenl@cygnus.com>
 Thu Sep  3 15:57:57 1998  Warren Levy  <warrenl@cygnus.com>
 
 	* libjava.lang/Boolean_1.java, libjava.lang/Boolean_1.out,
- 	libjava.lang/Boolean_2.java, libjava.lang/Boolean_2.out,
- 	libjava.lang/Boolean_3.java, libjava.lang/Boolean_3.out,
- 	libjava.lang/Boolean_4.java, libjava.lang/Boolean_4.out,
- 	libjava.lang/Boolean_5.java, libjava.lang/Boolean_5.out: Created.
+	libjava.lang/Boolean_2.java, libjava.lang/Boolean_2.out,
+	libjava.lang/Boolean_3.java, libjava.lang/Boolean_3.out,
+	libjava.lang/Boolean_4.java, libjava.lang/Boolean_4.out,
+	libjava.lang/Boolean_5.java, libjava.lang/Boolean_5.out: Created.
 
 Tue Sep  1 12:27:54 1998  Tom Tromey  <tromey@cygnus.com>
 
@@ -1194,14 +1199,14 @@ Tue Sep  1 12:27:54 1998  Tom Tromey  <tromey@cygnus.com>
 Mon Aug 31 17:49:21 1998  Warren Levy  <warrenl@cygnus.com>
 
 	* libjava.util/Random_1.java, libjava.util/Random_1.out,
- 	libjava.util/Random_2.java, libjava.util/Random_2.out,
- 	libjava.util/Random_3.java, libjava.util/Random_3.out,
- 	libjava.util/Random_4.java, libjava.util/Random_4.out,
- 	libjava.util/Random_5.java, libjava.util/Random_5.out,
- 	libjava.util/Random_6.java, libjava.util/Random_6.out,
- 	libjava.util/Random_7.java, libjava.util/Random_7.out,
- 	libjava.util/Random_8.java, libjava.util/Random_8.out,
- 	libjava.util/test.exp: Created.
+	libjava.util/Random_2.java, libjava.util/Random_2.out,
+	libjava.util/Random_3.java, libjava.util/Random_3.out,
+	libjava.util/Random_4.java, libjava.util/Random_4.out,
+	libjava.util/Random_5.java, libjava.util/Random_5.out,
+	libjava.util/Random_6.java, libjava.util/Random_6.out,
+	libjava.util/Random_7.java, libjava.util/Random_7.out,
+	libjava.util/Random_8.java, libjava.util/Random_8.out,
+	libjava.util/test.exp: Created.
 
 Mon Aug 31 16:37:19 1998  Tom Tromey  <tromey@cygnus.com>
 
@@ -1223,4 +1228,3 @@ Tue Aug 25 17:27:37 1998  Anthony Green  <green@cygnus.com>
 	libjava.lang/Finalize_1.java, libjava.lang/Finalize_1.out,
 	libjava.lang/Float_1.java, libjava.lang/Float_1.out
 	libjava.lang/test.exp, Makefile.am, Makefile.in: Created.
-
