@@ -9,7 +9,7 @@ enum rtx_code
   UNKNOWN,
   CODE_LABEL,
   NOTE,
-  LAST_AND_UNUSED_RTX_CODE
+  LAST_AND_UNUSED_RTX_CODE = 256
 };
 typedef union rtunion_def rtunion;
 struct rtx_def
