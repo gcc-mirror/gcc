@@ -1,3 +1,7 @@
+1999-12-21  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+ 	* md.texi: Add c4x constraints documentation.
+
 1999-12-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* config/i386/dgux.c (struct option): Rename to
