@@ -1,3 +1,7 @@
+2001-05-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Makefile.in (site.exp): Set TESTING_IN_BUILD_TREE.
+
 2001-05-03  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("bitcmpqi"): New pattern for bitb

@@ -1,3 +1,10 @@
+2001-05-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* lib/g++.exp (g++_include_flags): Don't use any special flags
+	if TESTING_IN_BUILD_TREE is not defined.
+	(g++_init): Use a plain 'c++' as the compiler if 
+	TESTING_IN_BUILD_TREEE is not defined.
+
 2001-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.eh/catch13.C: New test.
