@@ -1,3 +1,7 @@
+2003-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* cppcharset.c (one_utf8_to_utf32): Initialize 's' to silence warning.
+
 2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/12712
