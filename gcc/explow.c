@@ -897,6 +897,8 @@ allocate_dynamic_stack_space (size, target, known_align)
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = gen_reg_rtx (Pmode);
 
+  mark_reg_pointer (target);
+
 #ifndef STACK_GROWS_DOWNWARD
   emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
