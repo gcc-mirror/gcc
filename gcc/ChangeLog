@@ -1,5 +1,7 @@
 Wed Dec 23 07:30:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* mips.md (movdf [mips4]): Remove '=' in constraint when not output.
+
 	* toplev.c (fatal_function): New static variable.
 	(set_fatal_function): New function.
 	(vfatal): If fatal_function nonzero, call it.
