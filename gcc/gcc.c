@@ -2197,6 +2197,8 @@ process_command (argc, argv)
 	      /* Count only the option arguments in separate argv elements.  */
 	      n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
 	    }
+	    if (i + n_args >= argc)
+	      fatal ("argument to `-%s' is missing", p);
 	    switches[n_switches].args
 	      = (char **) xmalloc ((n_args + 1) * sizeof (char *));
 	    while (j < n_args)
