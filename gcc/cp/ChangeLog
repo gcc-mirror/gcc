@@ -1,3 +1,10 @@
+2003-03-01  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (duplicate_decls): Convert use of warning_with_decl() to
+	that of warning().
+	(start_decl): Likewise.
+	(start_function): Likewise.
+
 2003-03-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (CXX_C_OBJS): Update.
