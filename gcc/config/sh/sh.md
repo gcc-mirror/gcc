@@ -3484,12 +3484,12 @@
 }"
   [(set_attr "length" "4")])
 
-;; ??? This is not the proper place to invoke another compiler pass;
-;; Alas, there is no proper place to put it.
-;; ??? This is also an odd place for the call to emit_fpscr_use.  It
-;; would be all right if it were for an define_expand for return, but
-;; that doesn't mix with emitting a prologue.
-(define_insn "return"
+(define_expand "return"
+  [(return)]
+  "reload_completed && ! sh_need_epilogue ()"
+  "")
+
+(define_insn "*return_i"
   [(return)]
   "reload_completed"
   "%@	%#"
