@@ -1,3 +1,7 @@
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/execute/20010520-1.c: New.
+
 2001-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.old-deja/g++.warn/compare1.C: New test.
