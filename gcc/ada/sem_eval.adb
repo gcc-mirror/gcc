@@ -1947,6 +1947,13 @@ package body Sem_Eval is
         or else Nkind (Parent (N)) = N_Allocator
       then
          Check_Non_Static_Context (Operand);
+
+         --  If operand is known to raise constraint_error, set the
+         --  flag on the expression so it does not get optimized away.
+
+         if Nkind (Operand) = N_Raise_Constraint_Error then
+            Set_Raises_Constraint_Error (N);
+         end if;
          return;
       end if;
 

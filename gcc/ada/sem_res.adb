@@ -4965,6 +4965,7 @@ package body Sem_Res is
       end loop;
 
       Set_Entity (N, Op);
+      Set_Is_Overloaded (N, False);
 
       --  If the operand type is private, rewrite with suitable
       --  conversions on the operands and the result, to expose
@@ -4993,17 +4994,21 @@ package body Sem_Res is
         or else Typ /= Etype (Right_Opnd (N))
       then
          --  Add explicit conversion where needed, and save interpretations
-         --  if operands are overloaded.
+         --  in case operands are overloaded.
 
-         Arg1 := Convert_To (Typ, Left_Opnd (N));
+         Arg1 := Convert_To (Typ, Left_Opnd  (N));
          Arg2 := Convert_To (Typ, Right_Opnd (N));
 
          if Nkind (Arg1) = N_Type_Conversion then
             Save_Interps (Left_Opnd (N), Expression (Arg1));
+         else
+            Save_Interps (Left_Opnd (N), Arg1);
          end if;
 
          if Nkind (Arg2) = N_Type_Conversion then
             Save_Interps (Right_Opnd (N), Expression (Arg2));
+         else
+            Save_Interps (Right_Opnd (N), Arg1);
          end if;
 
          Rewrite (Left_Opnd  (N), Arg1);

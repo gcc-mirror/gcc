@@ -1310,16 +1310,24 @@ begin
                  and then not GNAT_Mode
                then
                   declare
-                     Name : constant String :=
-                              Get_Name_String
-                               (Unit_Name (Current_Source_Unit));
+                     Uname : constant String :=
+                               Get_Name_String
+                                 (Unit_Name (Current_Source_Unit));
+                     Name : String (1 .. Uname'Length - 2);
+
                   begin
-                     if (Name = "ada"                  or else
-                         Name = "calendar"             or else
-                         Name = "interfaces"           or else
-                         Name = "system"               or else
-                         Name = "machine_code"         or else
-                         Name = "unchecked_conversion" or else
+                     --  Because Unit_Name includes "%s" or "%b", we need to
+                     --  strip the last two characters to get the real unit
+                     --  name.
+
+                     Name := Uname (Uname'First .. Uname'Last - 2);
+
+                     if (Name = "ada"                    or else
+                         Name = "calendar"               or else
+                         Name = "interfaces"             or else
+                         Name = "system"                 or else
+                         Name = "machine_code"           or else
+                         Name = "unchecked_conversion"   or else
                          Name = "unchecked_deallocation"
                            or else (Name'Length > 4
                                      and then
