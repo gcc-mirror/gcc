@@ -22,10 +22,10 @@ CRTSTUFF_T_CFLAGS=-g1
 # Build a shared libgcc library.
 SHLIB_EXT = .so
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
-        -Wl,-soname,@shlib_base_name@.so.0 \
+        -Wl,-soname,@shlib_base_name@.so.1 \
 	-o @shlib_base_name@.so @multilib_flags@ @shlib_objs@ -lc && \
-	rm -f @shlib_base_name@.so.0 && \
-	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.0
+	rm -f @shlib_base_name@.so.1 && \
+	$(LN_S) @shlib_base_name@.so @shlib_base_name@.so.1
 # ??? Irix 6.5 seems to eat the option fine (if we somehow remove the
 # -hidden_symbol option, which is documented to be ignored in conjunction
 # with -exports_file), but fails to actually hide any symbols.
@@ -33,9 +33,9 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_name@.so.0; \
+SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.so $$(slibdir)/@shlib_base_name@.so.1; \
 	rm -f $$(slibdir)/@shlib_base_name@.so; \
-	$(LN_S) @shlib_base_name@.so.0 $$(slibdir)/@shlib_base_name@.so
+	$(LN_S) @shlib_base_name@.so.1 $$(slibdir)/@shlib_base_name@.so
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver 
 

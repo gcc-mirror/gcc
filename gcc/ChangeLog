@@ -1,3 +1,12 @@
+2001-06-12  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in: Move _bb and __gcc_bcmp from LIB2FUNCS to
+	LIB2FUNCS_ST.
+	* libgcc-std.ver: Don't export __bb* or __gcc_bcmp.
+	* config/t-slibgcc-elf-ver, config/t-slibgcc-sld,
+	config/alpha/t-osf4, config/mips/t-iris6: Bump libgcc soname
+	to .so.1.
+
 2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/texinfo.texi: Copied from mainline.
