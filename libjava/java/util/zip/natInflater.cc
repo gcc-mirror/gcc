@@ -68,7 +68,7 @@ java::util::zip::Inflater::getRemaining ()
 {
   JvSynchronize sync (this);
   z_streamp s = (z_streamp) zstream;
-  return s->avail_in - last_input_count;
+  return s->avail_in;
 }
 
 jint
@@ -97,6 +97,9 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
     _Jv_Throw (new java::lang::NullPointerException);
   if (off < 0 || len < 0 || off + len > buf->length)
     _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
+
+  if (len == 0)
+    return 0;
 
   s->next_out = (Bytef *) (elements (buf) + off);
   s->avail_out = len;
@@ -169,7 +172,6 @@ java::util::zip::Inflater::setInput (jbyteArray buf, jint off, jint len)
   if (off < 0 || len < 0 || off + len > buf->length)
     _Jv_Throw (new java::lang::ArrayIndexOutOfBoundsException);
 
-  last_input_count = len;
   s->next_in = (Bytef *) (elements (buf) + off);
   s->avail_in = len;
 }

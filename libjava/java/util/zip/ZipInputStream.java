@@ -28,13 +28,9 @@ import java.io.*;
 
 public class ZipInputStream extends InflaterInputStream
 {
-  ZipEntry current;
-  int current_flags;
-  int avail;
-
   public ZipInputStream (InputStream in)
   {
-    super(in);
+    super (in, new Inflater (true));
   }
 
   public ZipEntry getNextEntry () throws IOException
@@ -101,15 +97,41 @@ public class ZipInputStream extends InflaterInputStream
     entry.time = ZipEntry.timeFromDOS(moddate, modtime);
     current = entry;
     avail = uncompressedSize;
+    compressed_bytes = compressedSize;
     return entry;
+  }
+
+  // We override fill to let us control how much data gets read from
+  // the underlying input stream.  This lets us avoid having to push
+  // back data.
+  protected void fill () throws IOException
+  {
+    int count = buf.length;
+    if (count > compressed_bytes)
+      count = compressed_bytes;
+    len = in.read(buf, 0, count);
+    if (len != -1)
+      {
+	compressed_bytes -= len;
+	inf.setInput(buf, 0, len);
+      }
   }
 
   public int read (byte[] b, int off, int len)  throws IOException
   {
     if (len > avail)
       len = avail;
-    int count = super.read(b, off, len);
-    if (count > 0)
+    int count;
+    if (current.method == Deflater.DEFLATED)
+      count = super.read(b, off, len);
+    else
+      count = in.read(b, off, len);
+    if (count == -1 || avail == 0)
+      {
+	inf.reset();
+	count = -1;
+      }
+    else
       avail -= count;
     return count;
   }
@@ -118,7 +140,11 @@ public class ZipInputStream extends InflaterInputStream
   {
     if (n > avail)
       n = avail;
-    long count = super.skip(n);
+    long count;
+    if (current.method == Deflater.DEFLATED)
+      count = super.skip(n);
+    else
+      count = in.skip(n);
     avail = avail - (int) count;
     return count;
   }
@@ -187,4 +213,11 @@ public class ZipInputStream extends InflaterInputStream
     current = null;
     super.close();
   }
+
+  private ZipEntry current;
+  private int current_flags;
+  // Number of uncompressed bytes to be read.
+  private int avail;
+  // Number of bytes we can read from underlying stream.
+  private int compressed_bytes;
 }

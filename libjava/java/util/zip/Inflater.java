@@ -95,7 +95,4 @@ public class Inflater
 
   // True if dictionary needed.
   private boolean dict_needed;
-
-  // Total number of bytes made available at last setInput.
-  private int last_input_count;
 }
