@@ -1978,29 +1978,35 @@ stmp-fixproto: fixhdr.ready fixproto stmp-headers
 # Remake the info files.
 
 doc: info
-info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info
+info: cpp.info gcc.info lang.info
 
-$(srcdir)/cpp.info: cpp.texi
-	cd $(srcdir); $(MAKEINFO) $(MAKEINFOFLAGS) cpp.texi
+cpp.info: $(srcdir)/cpp.texi
+	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(srcdir) $(srcdir)/cpp.texi -o cpp.info
 
-$(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
-		md.texi rtl.texi tm.texi gcov.texi
-	cd $(srcdir); $(MAKEINFO) $(MAKEINFOFLAGS) gcc.texi
+gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
+	  $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
+	  $(srcdir)/tm.texi $(srcdir)/gcov.texi
+	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(srcdir) $(srcdir)/gcc.texi -o gcc.info
 
-dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi lang.dvi
-
-# This works with GNU Make's default rule.
-$(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
-		md.texi rtl.texi tm.texi gcov.texi
-	$(TEXI2DVI) $<
+dvi: gcc.dvi cpp.dvi lang.dvi
 
 # This works with GNU Make's default rule.
-$(srcdir)/cpp.dvi: cpp.texi
-	$(TEXI2DVI) $<
+gcc.dvi: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
+	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi \
+	 $(srcdir)/tm.texi $(srcdir)/gcov.texi
+	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
+	texindex gcc.??
+	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex gcc.texi
 
-$(srcdir)/INSTALL: install1.texi install.texi
-	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
-	install1.texi -o INSTALL
+cpp.dvi: $(srcdir)/cpp.texi
+	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
+	texindex cpp.??
+	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
+
+
+INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
+	$(MAKEINFO) -D INSTALLONLY --no-header --no-split \
+	$(srcdir)/install1.texi -o INSTALL
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2252,7 +2258,7 @@ install-driver: xgcc
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	for f in $(srcdir)/cpp.info* $(srcdir)/gcc.info*; do \
+	for f in cpp.info* gcc.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	done
