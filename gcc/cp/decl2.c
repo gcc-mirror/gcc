@@ -1356,7 +1356,8 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
     }
 
   if (declspecs == NULL_TREE
-      && TREE_CODE (declarator) == SCOPE_REF)
+      && TREE_CODE (declarator) == SCOPE_REF
+      && TREE_CODE (TREE_OPERAND (declarator, 1)) == IDENTIFIER_NODE)
     {
       /* Access declaration */
       if (! IS_AGGR_TYPE_CODE (TREE_CODE (TREE_OPERAND (declarator, 0))))
@@ -2296,18 +2297,10 @@ void
 comdat_linkage (decl)
      tree decl;
 {
-  TREE_PUBLIC (decl) = 0;
-
-#ifdef MAKE_DECL_ONE_ONLY
-  MAKE_DECL_ONE_ONLY (decl);
-  TREE_PUBLIC (decl) = 1;
-#endif
-
   if (flag_weak)
-    {
-      DECL_WEAK (decl) = 1;
-      TREE_PUBLIC (decl) = 1;
-    }
+    make_decl_one_only (decl);
+  else
+    TREE_PUBLIC (decl) = 0;
 }
 
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
@@ -2424,11 +2417,7 @@ finish_vtable_vardecl (prev, vars)
 {
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars)
-      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars)
-#ifdef DECL_ONE_ONLY
-	   && ! DECL_ONE_ONLY (vars)
-#endif
-	   )
+      && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
@@ -2594,11 +2583,8 @@ import_export_decl (decl)
 	    {
 	      /* Statically initialized vars are weak or comdat, if
                  supported.  */
-#ifdef MAKE_DECL_ONE_ONLY
-	      MAKE_DECL_ONE_ONLY (decl);
-#endif
 	      if (flag_weak)
-		DECL_WEAK (decl) = 1;
+		make_decl_one_only (decl);
 	      /* else leave vars public so multiple defs will break.  */
 	    }
 	}
@@ -2851,9 +2837,7 @@ finish_file ()
 	  && ! DECL_EXTERNAL (decl))
 	{
 	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-#ifdef DECL_ONE_ONLY
 						|| DECL_ONE_ONLY (decl)
-#endif
 						|| DECL_WEAK (decl)));
 
 	  temp = build_cleanup (decl);
@@ -2932,9 +2916,7 @@ finish_file ()
 	  if (TREE_CODE (decl) == VAR_DECL)
 	    {
 	  int protect = (TREE_PUBLIC (decl) && (DECL_COMMON (decl)
-#ifdef DECL_ONE_ONLY
 						|| DECL_ONE_ONLY (decl)
-#endif
 						|| DECL_WEAK (decl)));
 
 	      /* Set these global variables so that GDB at least puts
@@ -3085,10 +3067,7 @@ finish_file ()
 	    else if (DECL_INITIAL (decl) == 0)
 	      p = &TREE_CHAIN (*p);
 	    else if ((TREE_PUBLIC (decl) && ! DECL_WEAK (decl)
-#ifdef DECL_ONE_ONLY
-		      && ! DECL_ONE_ONLY (decl)
-#endif
-		      )
+		      && ! DECL_ONE_ONLY (decl))
 		     || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 		     || flag_keep_inline_functions)
 	      {

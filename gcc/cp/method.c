@@ -1705,11 +1705,11 @@ make_thunk (function, delta)
       TREE_READONLY (thunk) = TYPE_READONLY (TREE_TYPE (vtable_entry_type));
       TREE_THIS_VOLATILE (thunk) = TYPE_VOLATILE (TREE_TYPE (vtable_entry_type));
       make_function_rtl (thunk);
+      comdat_linkage (thunk);
       TREE_SET_CODE (thunk, THUNK_DECL);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       DECL_EXTERNAL (thunk) = 1;
-      comdat_linkage (thunk);
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
