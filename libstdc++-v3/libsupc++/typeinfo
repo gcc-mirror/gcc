@@ -129,7 +129,6 @@ namespace std
   {
   public:
     bad_cast() throw() { }
-    virtual ~bad_cast() throw();
   };
   
   /** If you use a NULL pointer in a @c typeid expression, this is thrown.  */
@@ -137,7 +136,6 @@ namespace std
   {
   public:
     bad_typeid () throw() { }
-    virtual ~bad_typeid () throw();
   };
 } // namespace std
 

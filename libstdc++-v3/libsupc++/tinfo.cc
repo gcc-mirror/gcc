@@ -39,9 +39,6 @@ std::type_info::
 ~type_info ()
 { }
 
-std::bad_cast::~bad_cast() throw() { }
-std::bad_typeid::~bad_typeid() throw() { }
-
 #if !__GXX_MERGED_TYPEINFO_NAMES
 
 // We can't rely on common symbols being shared between shared objects.

@@ -50,7 +50,6 @@ namespace std
   {
   public:
     bad_alloc() throw() { }
-    virtual ~bad_alloc() throw();
   };
 
   struct nothrow_t { };

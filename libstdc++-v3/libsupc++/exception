@@ -62,7 +62,6 @@ namespace std
   {
   public:
     bad_exception() throw() { }
-    virtual ~bad_exception() throw();
   };
 
   /// If you write a replacement %terminate handler, it must be of this type.
