@@ -1,3 +1,8 @@
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (gnat_to_gnu <N_Handled_Sequence_Of_Statements>): Update
+	commentary.
+
 2004-07-06  Vincent Celier  <celier@gnat.com>
 
 	* vms_conv.ads: Minor reformatting.

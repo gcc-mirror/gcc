@@ -4549,15 +4549,6 @@ expand_function_end (void)
      sh mach_dep_reorg) that still try and compute their own lifetime info
      instead of using the general framework.  */
   use_return_register ();
-
-  /* Fix up any gotos that jumped out to the outermost
-     binding level of the function.
-     Must follow emitting RETURN_LABEL.  */
-
-  /* If you have any cleanups to do at this point,
-     and they need to create temporary variables,
-     then you will lose.  */
-  expand_fixups (get_insns ());
 }
 
 rtx

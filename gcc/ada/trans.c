@@ -3236,20 +3236,9 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Handled_Sequence_Of_Statements:
 
       /* The GCC exception handling mechanism can handle both ZCX and SJLJ
-	 schemes and we have our own SJLJ mechanism. To call the GCC
-	 mechanism, we first call expand_eh_region_start if there is at least
-	 one handler associated with the region.  We then generate code for
-	 the region and call expand_start_all_catch to announce that the
-	 associated handlers are going to be generated.
-
-	 For each handler we call expand_start_catch, generate code for the
-	 handler, and then call expand_end_catch.
-
-	 After all the handlers, we call expand_end_all_catch.
-
-	 Here we deal with the region level calls and the
-	 N_Exception_Handler branch deals with the handler level calls
-	 (start_catch/end_catch).
+	 schemes and we have our own SJLJ mechanism.  To call the GCC
+	 mechanism, we call add_cleanup, and when we leave the binding,
+	 end_stmt_group will create the TRY_FINALLY_EXPR.
 
 	 ??? The region level calls down there have been specifically put in
 	 place for a ZCX context and currently the order in which things are

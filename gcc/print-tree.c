@@ -337,8 +337,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (TREE_CODE (node) == FIELD_DECL && DECL_NONADDRESSABLE_P (node))
 	fputs (" nonaddressable", file);
 
-      if (TREE_CODE (node) == LABEL_DECL && DECL_TOO_LATE (node))
-	fputs (" too-late", file);
       if (TREE_CODE (node) == LABEL_DECL && DECL_ERROR_ISSUED (node))
 	fputs (" error-issued", file);
 

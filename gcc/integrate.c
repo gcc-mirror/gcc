@@ -160,7 +160,6 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
       if (TREE_CODE (copy) == LABEL_DECL)
 	{
 	  TREE_ADDRESSABLE (copy) = 0;
-	  DECL_TOO_LATE (copy) = 0;
 	}
     }
 

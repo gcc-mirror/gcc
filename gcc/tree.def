@@ -494,16 +494,11 @@ DEFTREECODE (LABELED_BLOCK_EXPR, "labeled_block_expr", 'e', 2)
 DEFTREECODE (CALL_EXPR, "call_expr", 'e', 3)
 
 /* Specify a value to compute along with its corresponding cleanup.
-   Operand 0 argument is an expression whose value needs a cleanup.
-   Operand 1 is the cleanup expression for the object.
-   Operand 2 is unused.
-   The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR, if
-   it exists, otherwise it is the responsibility of the caller to manually
-   call expand_start_target_temps/expand_end_target_temps, as needed.
-
-   This differs from TRY_CATCH_EXPR in that operand 2 is always
-   evaluated when an exception isn't thrown when cleanups are run.  */
-DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", 'e', 3)
+   Operand 0 is the cleanup expression.
+   The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR,
+   which must exist.  This differs from TRY_CATCH_EXPR in that operand 1
+   is always evaluated when cleanups are run.  */
+DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", 'e', 1)
 
 /* Specify a cleanup point.
    Operand 0 is an expression that may have cleanups.  If it does, those
@@ -789,13 +784,6 @@ DEFTREECODE (LABEL_EXPR, "label_expr", 's', 1)
 /* GOTO.  Operand 0 is a LABEL_DECL node or an expression.
    The type should be void and the value should be ignored.  */
 DEFTREECODE (GOTO_EXPR, "goto_expr", 's', 1)
-
-/* Used internally for cleanups in the implementation of TRY_FINALLY_EXPR.
-   (Specifically, it is created by expand_expr, not front-ends.)
-   Operand 0 is the rtx for the start of the subroutine we need to call.
-   Operand 1 is the rtx for a variable in which to store the address
-   of where the subroutine should return to.  */
-DEFTREECODE (GOTO_SUBROUTINE_EXPR, "goto_subroutine", 's', 2)
 
 /* RETURN.  Evaluates operand 0, then returns from the current function.
    Presumably that operand is an assignment that stores into the

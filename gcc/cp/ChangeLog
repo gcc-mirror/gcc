@@ -1,3 +1,7 @@
+2004-07-08  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h (expand_eh_spec_block): Remove.
+
 2004-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (saved_scope): Remove x_previous_class_type and

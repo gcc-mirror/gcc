@@ -9048,7 +9048,6 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
   fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
   if (TREE_CODE_CLASS (code) != 't' && TREE_CODE_CLASS (code) != 'd')
     fold_checksum_tree (TREE_CHAIN (expr), ctx, ht);
-  len = TREE_CODE_LENGTH (code);
   switch (TREE_CODE_CLASS (code))
     {
     case 'c':
@@ -9085,18 +9084,12 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 	}
       break;
     case 'e':
-      switch (code)
-	{
-	case GOTO_SUBROUTINE_EXPR: len = 0; break;
-	case WITH_CLEANUP_EXPR: len = 2; break;
-	default: break;
-	}
-      /* Fall through.  */
     case 'r':
     case '<':
     case '1':
     case '2':
     case 's':
+      len = first_rtl_op (code);
       for (i = 0; i < len; ++i)
 	fold_checksum_tree (TREE_OPERAND (expr, i), ctx, ht);
       break;

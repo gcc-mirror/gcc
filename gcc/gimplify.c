@@ -3210,7 +3210,7 @@ gimplify_cleanup_point_expr (tree *expr_p, tree *pre_p)
 	{
 	  if (tsi_one_before_end_p (iter))
 	    {
-	      tsi_link_before (&iter, TREE_OPERAND (wce, 1), TSI_SAME_STMT);
+	      tsi_link_before (&iter, TREE_OPERAND (wce, 0), TSI_SAME_STMT);
 	      tsi_delink (&iter);
 	      break;
 	    }
@@ -3220,8 +3220,8 @@ gimplify_cleanup_point_expr (tree *expr_p, tree *pre_p)
 
 	      sl = tsi_split_statement_list_after (&iter);
 	      tfe = build (TRY_FINALLY_EXPR, void_type_node, sl, NULL_TREE);
-	      append_to_statement_list (TREE_OPERAND (wce, 1),
-				     &TREE_OPERAND (tfe, 1));
+	      append_to_statement_list (TREE_OPERAND (wce, 0),
+				        &TREE_OPERAND (tfe, 1));
 	      *wce_p = tfe;
 	      iter = tsi_start (sl);
 	    }
@@ -3285,8 +3285,7 @@ gimple_push_cleanup (tree var, tree cleanup, tree *pre_p)
       tree ftrue = build (MODIFY_EXPR, void_type_node, flag,
 			  boolean_true_node);
       cleanup = build (COND_EXPR, void_type_node, flag, cleanup, NULL);
-      wce = build (WITH_CLEANUP_EXPR, void_type_node, NULL_TREE,
-		   cleanup, NULL_TREE);
+      wce = build (WITH_CLEANUP_EXPR, void_type_node, cleanup);
       append_to_statement_list (ffalse, &gimplify_ctxp->conditional_cleanups);
       append_to_statement_list (wce, &gimplify_ctxp->conditional_cleanups);
       append_to_statement_list (ftrue, pre_p);
@@ -3298,12 +3297,11 @@ gimple_push_cleanup (tree var, tree cleanup, tree *pre_p)
     }
   else
     {
-      wce = build (WITH_CLEANUP_EXPR, void_type_node, NULL_TREE,
-		   cleanup, NULL_TREE);
+      wce = build (WITH_CLEANUP_EXPR, void_type_node, cleanup);
       append_to_statement_list (wce, pre_p);
     }
 
-  gimplify_stmt (&TREE_OPERAND (wce, 1));
+  gimplify_stmt (&TREE_OPERAND (wce, 0));
 }
 
 /* Gimplify a TARGET_EXPR which doesn't appear on the rhs of an INIT_EXPR.  */
