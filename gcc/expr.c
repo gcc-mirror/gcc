@@ -5656,8 +5656,6 @@ expand_expr (exp, target, tmode, modifier)
 		if (DECL_BIT_FIELD (TREE_PURPOSE (elt)))
 		  {
 		    int bitsize = DECL_FIELD_SIZE (TREE_PURPOSE (elt));
-		    enum machine_mode imode
-		      = TYPE_MODE (TREE_TYPE (TREE_PURPOSE (elt)));
 
 		    if (TREE_UNSIGNED (TREE_TYPE (TREE_PURPOSE (elt))))
 		      {
@@ -5666,8 +5664,11 @@ expand_expr (exp, target, tmode, modifier)
 		      }
 		    else
 		      {
+			enum machine_mode imode
+			  = TYPE_MODE (TREE_TYPE (TREE_PURPOSE (elt)));
 			tree count
-			  = build_int_2 (imode - bitsize, 0);
+			  = build_int_2 (GET_MODE_BITSIZE (imode) - bitsize,
+					 0);
 
 			op0 = expand_shift (LSHIFT_EXPR, imode, op0, count,
 					    target, 0);
@@ -5707,7 +5708,8 @@ expand_expr (exp, target, tmode, modifier)
 				!= INTEGER_CST)
 			    ? target : NULL_RTX),
 			   VOIDmode,
-			   modifier == EXPAND_INITIALIZER ? modifier : 0);
+			   modifier == EXPAND_INITIALIZER
+			   ? modifier : EXPAND_NORMAL);
 
 	/* If this is a constant, put it into a register if it is a
 	   legitimate constant and memory if it isn't.  */
