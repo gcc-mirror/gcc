@@ -1,3 +1,7 @@
+Thu Mar 11 17:32:55 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Add AUTOMATIC to list of unsupported extensions.
+
 Sat Mar  6 02:28:35 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Warn about non-Y2K-compliant intrinsics:

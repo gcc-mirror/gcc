@@ -14,7 +14,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-03-06
+@set last-up-date 1999-03-11
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -11999,6 +11999,7 @@ GNU Fortran language:
 * Intrinsics in PARAMETER Statements::
 * SELECT CASE on CHARACTER Type::
 * RECURSIVE Keyword::
+* AUTOMATIC Statement::
 * Popular Non-standard Types::
 * Full Support for Compiler Types::
 * Array Bounds Expressions::
@@ -12156,6 +12157,30 @@ designed to do recursion.
 
 All recursive code can be rewritten to not use recursion,
 but the result is not pretty.
+
+@node AUTOMATIC Statement
+@subsection @code{AUTOMATIC} Statement
+@cindex @code{AUTOMATIC} statement
+@cindex statements, @code{AUTOMATIC}
+@cindex automatic variables
+@cindex variables, automatic
+
+@code{g77} doesn't support the @code{AUTOMATIC} keyword that
+@code{f2c} does.
+
+It is not yet clear exactly what this statement would achieve.
+The semantic equivalent would be provided by @code{RECURSIVE}
+combined with lack of @code{SAVE}.
+In that sense, perhaps all it would provide is an
+overriding of an unadorned (blanket) @code{SAVE} statement
+for specific variables.
+
+It might also serve as a hint to the compiler that placing
+even a very large array on the stack is acceptable.
+
+Perhaps it should disallow @code{DATA}
+or other specification of any initial values
+for affected variables as well.
 
 @node Increasing Precision/Range
 @subsection Increasing Precision/Range
