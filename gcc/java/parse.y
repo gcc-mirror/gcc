@@ -577,7 +577,7 @@ static tree src_parse_roots[1] = { NULL_TREE };
 			switch_statement synchronized_statement throw_statement
 			try_statement switch_expression switch_block
 			catches catch_clause catch_clause_parameter finally
-			anonymous_class_creation
+			anonymous_class_creation trap_overflow_corner_case
 %type    <node>         return_statement break_statement continue_statement
 
 %type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK  
@@ -2317,16 +2317,24 @@ post_decrement_expression:
 		{ $$ = build_incdec ($2.token, $2.location, $1, 1); }
 ;
 
-unary_expression:
+trap_overflow_corner_case:
 	pre_increment_expression
 |	pre_decrement_expression
 |	PLUS_TK unary_expression
 		{$$ = build_unaryop ($1.token, $1.location, $2); }
-|	MINUS_TK unary_expression
-		{$$ = build_unaryop ($1.token, $1.location, $2); }
 |	unary_expression_not_plus_minus
 |	PLUS_TK error
 		{yyerror ("Missing term"); RECOVER}
+;
+
+unary_expression:
+	trap_overflow_corner_case
+		{
+		  error_if_numeric_overflow ($1);
+		  $$ = $1;
+		}
+|	MINUS_TK trap_overflow_corner_case
+		{$$ = build_unaryop ($1.token, $1.location, $2); }
 |	MINUS_TK error
 		{yyerror ("Missing term"); RECOVER}
 ;
