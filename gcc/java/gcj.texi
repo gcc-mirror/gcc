@@ -14,6 +14,10 @@
 @set version-gcc 3.1
 @set which-gcj GCC-@value{version-gcc}
 
+@macro gcctabopt{body}
+@code{\body\}
+@end macro
+
 @ifinfo
 @format
 @dircategory Programming
@@ -33,6 +37,7 @@
 @end direntry
 @end format
 
+@c man begin COPYRIGHT
 Copyright (C) @value{copyrights-gcj} Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -40,8 +45,15 @@ under the terms of the GNU Free Documentation License, Version 1.1 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``GNU General Public License'', the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
+(see below).  A copy of the license is included in the
+@c man end
+section entitled
 ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
 
 (a) The FSF's Front-Cover Text is:
 
@@ -120,10 +132,32 @@ files and object files, and it can read both Java source code and
 @node Invoking gcj
 @chapter Invoking gcj
 
+@c man title gcj Ahead-of-time compiler for the Java language
+
+@ignore
+@c man begin SYNOPSIS gcj
+gcj [@option{-I}@var{dir}@dots{}] [@option{-d}@var{dir}@dots{}]
+    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
+    [@option{-f}@var{option}@dots{}] [@option{--encoding}=@var{name}]
+    [@option{--main}=@var{classname}] [@option{-D}@var{name}[=@var{value}]@dots{}]
+    [@option{-C}] [@option{-R} @var{resource-name}] [@option{-d} @var{directory}]
+    [@option{-W}@var{warn}@dots{}]
+    @var{sourcefile}@dots{}
+@c man end
+@c man begin SEEALSO gcj
+gcc(1), gcjh(1), gij(1), jv-scan(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gcj
+
 As @code{gcj} is just another front end to @code{gcc}, it supports many
 of the same options as gcc.  @xref{Option Summary, , Option Summary,
 gcc, Using the GNU Compiler Collection}.  This manual only documents the
 options specific to @code{gcj}.
+
+@c man end
 
 @menu
 * Input and output files::
@@ -134,6 +168,8 @@ options specific to @code{gcj}.
 * Configure-time Options::	Options you won't use
 @end menu
 
+@c man begin OPTIONS gcj
+
 @node Input and output files
 @section Input and output files
 
@@ -141,7 +177,7 @@ A @code{gcj} command is like a @code{gcc} command, in that it
 consists of a number of options and file names.  The following kinds
 of input file names are supported:
 
-@table @code
+@table @gcctabopt
 @item @var{file}.java
 Java source files.
 @item @var{file}.class
@@ -192,7 +228,7 @@ In the below, a directory or path component can refer either to an
 actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
 file, which @code{gcj} will search as if it is a directory.
 
-@table @code
+@table @gcctabopt
 @item -I@var{dir}
 All directories specified by @code{-I} are kept in order and prepended
 to the class path constructed from all the other options.  Unless
@@ -245,7 +281,7 @@ if it isn't found, unless it compiles to bytecode (the option
 @code{-fforce-classes-archive-check} can be used to overide this
 behavior in this particular case.)
 
-@table @code
+@table @gcctabopt
 @item -fforce-classes-archive-check
 This forces the compiler to always check for the special zero length
 attribute @code{gnu.gcj.gcj-compiled} in @code{java.lang.Object} and
@@ -287,7 +323,7 @@ warning, then @code{-Wno-foo} will disable it.  Here we've chosen to
 document the form of the warning which will have an effect -- the
 default being the opposite of what is listed.
 
-@table @code
+@table @gcctabopt
 @item -Wredundant-modifiers
 With this flag, @code{gcj} will warn about redundant modifiers.  For
 instance, it will warn if an interface method is declared @code{public}.
@@ -316,7 +352,7 @@ This is the same as @code{-Wredundant-modifiers -Wextraneous-semicolon
 In addition to the many @code{gcc} options controlling code generation,
 @code{gcj} has several options specific to itself.
 
-@table @code
+@table @gcctabopt
 @item --main=@var{CLASSNAME}
 This option is used when linking to specify the name of the class whose
 @code{main} method should be invoked when the resulting executable is
@@ -382,7 +418,7 @@ this group into a @samp{spec} file which is read by @code{gcj}.  These
 options are listed here for completeness; if you are using @code{libgcj}
 then you won't want to touch these options.
 
-@table @code
+@table @gcctabopt
 @item -fuse-boehm-gc
 This enables the use of the Boehm GC bitmap marking code.  In particular
 this causes @code{gcj} to put an object marking descriptor into each
@@ -406,6 +442,7 @@ this because null pointer accesses are caught automatically by the
 processor.
 @end table
 
+@c man end
 
 @node Compatibility
 @chapter Compatibility with the Java Platform
@@ -443,12 +480,37 @@ the appropriate response.
 @node Invoking gcjh
 @chapter Invoking gcjh
 
+@c man title gcjh generate header files from Java class files
+
+@c man begin DESCRIPTION gcjh
+
 The @code{gcjh} program is used to generate header files from class
 files.  It can generate both CNI and JNI header files, as well as stub
 implementation files which can be used as a basis for implementing the
 required native methods.
 
-@table @code
+@c man end
+
+@ignore
+@c man begin SYNOPSIS gcjh
+gcjh [@option{-stubs}] [@option{-jni}]
+    [@option{-add}@var{text}] [@option{-append}@var{text}] [@option{-friend}@var{text}] [@option{-preprend}@var{text}]
+    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
+    [@option{-I}@var{dir}@dots{}] [@option{-d}@var{dir}@dots{}]
+    [@option{-o}@var{file}] [@option{-td}@var{dir}]
+    [@option{-M}] [@option{-MM}] [@option{-MD}] [@option{-MMD}]
+    [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
+    @var{classname}@dots{}
+@c man end
+@c man begin SEEALSO gcjh
+gcc(1), gcj(1), gij(1), jv-scan(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin OPTIONS gcjh
+
+@table @gcctabopt
 @item -stubs
 This causes @code{gcjh} to generate stub files instead of header files.
 By default the stub file will be named after the class, with a suffix of
@@ -488,24 +550,61 @@ one class on the command line.
 @item -td @var{directory}
 Sets the name of the directory to use for temporary files.
 
+@item -M
+Print all dependencies to stdout; suppress ordinary output.
+
+@item -MM
+Print non-system dependencies to stdout; suppress ordinary output.
+
+@item -MD
+Print all dependencies to stdout.
+
+@item -MMD
+Print non-system dependencies to stdout.
+
 @item --help
 Print help about @code{gcjh} and exit.  No further processing is done.
 
 @item --version
 Print version information for @code{gcjh} and exit.  No further
 processing is done.
+
+@item -v, --verbose
+Print extra information while running.
 @end table
 
 All remaining options are considered to be names of classes.
 
+@c man end
 
 @node Invoking jv-scan
 @chapter Invoking jv-scan
 
+@c man title jv-scan print information about Java source file
+
+@c man begin DESCRIPTION jv-scan
+
 The @code{jv-scan} program can be used to print information about a Java
 source file (@file{.java} file).
 
-@table @code
+@c man end
+
+@ignore
+@c man begin SYNOPSIS jv-scan
+jv-scan [@option{--complexity}] [@option{--encoding}@var{name}]
+    [@option{--print-main}] [@option{--list-class}] [@option{--list-filename}]
+    [@option{--version}] [@option{--help}]
+    [@option{-o}@var{file}] @var{inputfile}@dots{}
+@c man end
+@c man begin SEEALSO jv-scan
+gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin OPTIONS jv-scan
+
+@table @gcctabopt
 @item --complexity
 This prints a complexity measure, related to cyclomatic complexity, for
 each input file.
@@ -526,17 +625,46 @@ also print the name of the file in which each class was found.
 
 @item -o @var{file}
 Print output to the named file.
+
+@item --help
+Print help, then exit.
+
+@item --version
+Print version number, then exit.
 @end table
 
+@c man end
 
 @node Invoking jcf-dump
 @chapter Invoking jcf-dump
+
+@c man title jcf-dump print information about Java class files
+
+@ignore
+@c man begin SYNOPSIS jcf-dump
+jcf-dump [@option{-c}] [@option{--javap}]
+    [@option{--classpath}=@var{path}] [@option{--CLASSPATH}=@var{path}]
+    [@option{-I}@var{dir}@dots{}] [@option{-o}@var{file}]
+    [@option{--version}] [@option{--help}] [@option{-v}] [@option{--verbose}]
+    @var{classname}@dots{}
+@c man end
+@c man begin SEEALSO jcf-dump
+gcc(1), gcj(1), gcjh(1), gij(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION jcf-dump
 
 This is a class file examiner, similar to @code{javap}.  It will print
 information about a number of classes, which are specifed by class name
 or file name.
 
-@table @code
+@c man end
+
+@c man begin OPTIONS jcf-dump
+
+@table @gcctabopt
 @item -c
 Disassemble method bodies.  By default method bodies are not printed.
 
@@ -549,11 +677,41 @@ feature is very incomplete.
 @itemx -I@var{directory}
 @itemx -o @var{file}
 These options as the same as the corresponding @code{gcj} options.
+
+@item --help
+Print help, then exit.
+
+@item --version
+Print version number, then exit.
+
+@item -v, --verbose
+Print extra information while running.
 @end table
 
+@c man end
 
 @node Invoking gij
 @chapter Invoking gij
+
+@c man title gij GNU interpreter for Java bytecode
+
+@ignore
+@c man begin SYNOPSIS gij
+gij [@option{OPTION}] @dots{} @var{JARFILE} [@var{ARGS}@dots{}]
+
+gij [@option{-jar}] [@option{OPTION}] @dots{} @var{CLASS} [@var{ARGS}@dots{}]
+
+  [@option{-D}@var{name}[=@var{value}]@dots{}]
+  [@option{-ms=}@var{number}] [@option{-mx=}@var{number}]
+  [@option{--version}] [@option{--help}]
+@c man end
+@c man begin SEEALSO gij
+gcc(1), gcj(1), gcjh(1), jv-scan(1), jcf-dump(1), gfdl(7),
+and the Info entries for @file{gcj} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gij
 
 @code{gij} is a Java bytecode interpreter included with @code{libgcj}.
 @code{gij} is not available on every platform; porting it requires a
@@ -580,7 +738,11 @@ Note that @code{gij} is not limited to interpreting code.  Because
 objects, it is possible to give @code{gij} the name of a class which has
 been compiled and put into a shared library on the class path.
 
-@table @code
+@c man end
+
+@c man begin OPTIONS gij
+
+@table @gcctabopt
 @item -D@var{name}[=@var{value}]
 This defines a system property named @var{name} with value @var{value}.
 If @var{value} is not specified then it defaults to the empty string.
@@ -589,7 +751,7 @@ be retrieved at runtime using the @code{java.lang.System.getProperty}
 method.
 
 @item -ms=@var{number}
-This sets the initial heap size 
+This sets the initial heap size.
 
 @item -mx=@var{number}
 This sets the maximum heap size.
@@ -597,8 +759,15 @@ This sets the maximum heap size.
 @item -jar
 This indicates that the name passed to @code{gij} should be interpreted
 as the name of a jar file, not a class.
+
+@item --help
+Print help, then exit.
+
+@item --version
+Print version number, then exit.
 @end table
 
+@c man end
 
 @node Resources
 @chapter Resources
