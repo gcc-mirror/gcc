@@ -1,3 +1,7 @@
+Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* decl2.c (mark_vtable_entries): Fix check for rtti offset.
+
 1999-07-06  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* typeck.c (unsigned_type,signed_type,signed_or_unsigned_type) :
