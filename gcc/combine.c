@@ -173,6 +173,11 @@ static int last_call_cuid;
 
 static rtx subst_insn;
 
+/* This is an insn that belongs before subst_insn, but is not currently
+   on the insn chain.  */
+
+static rtx subst_prev_insn;
+
 /* This is the lowest CUID that `subst' is currently dealing with.
    get_last_value will not return a value if the register was set at or
    after this CUID.  If not for this mechanism, we could get confused if
@@ -1358,8 +1363,9 @@ try_combine (i3, i2, i1)
 	     never appear in the insn stream so giving it the same INSN_UID
 	     as I2 will not cause a problem.  */
 
-	  i1 = gen_rtx (INSN, VOIDmode, INSN_UID (i2), 0, i2,
-			XVECEXP (PATTERN (i2), 0, 1), -1, 0, 0);
+	  subst_prev_insn = i1
+	    = gen_rtx (INSN, VOIDmode, INSN_UID (i2), 0, i2,
+		       XVECEXP (PATTERN (i2), 0, 1), -1, 0, 0);
 
 	  SUBST (PATTERN (i2), XVECEXP (PATTERN (i2), 0, 0));
 	  SUBST (XEXP (SET_SRC (PATTERN (i2)), 0),
@@ -9943,9 +9949,12 @@ get_last_value (x)
   /* If the value was set in a later insn than the ones we are processing,
      we can't use it even if the register was only set once, but make a quick
      check to see if the previous insn set it to something.  This is commonly
-     the case when the same pseudo is used by repeated insns.  */
+     the case when the same pseudo is used by repeated insns.
 
-  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
+     This does not work if there exists an instruction which is temporarily
+     not on the insn chain.  */
+
+  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid && ! subst_prev_insn)
     {
       rtx insn, set;
 
