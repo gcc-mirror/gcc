@@ -1,3 +1,53 @@
+2003-11-21  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 5ztiitho.adb: Remove an unreferenced variable.
+
+2003-11-21  Thomas Quinot  <quinot@act-europe.fr>
+
+	* adaint.c: For FreeBSD, use mkstemp.
+
+2003-11-21  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnatlbr.adb: Now reference Gnat_Static_Version_String.
+
+2003-11-21  Robert Dewar  <dewar@gnat.com>
+
+	* bld.adb: Remove useless USE of gnatvsn
+
+	* gnatchop.adb: Minor reformatting
+	Clean up version handling to be more consistent
+
+	* gnatxref.adb: Minor reformatting
+
+	* gprcmd.adb: Minor reformatting
+	Fix output of copyright to be more consistent with other tools
+
+2003-11-21  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Scan_Make_Args): Do not transmit --RTS= to gnatlink
+
+2003-11-21  Sergey Rybin  <rybin@act-europe.fr>
+
+	* atree.adb (Initialize): Add initializations for global variables
+	used in New_Copy_Tree.
+
+	* cstand.adb (Create_Standard): Add call to Initialize_Scanner (with
+	Internal_Source_File as the actual).
+	Put the set of statements creating Any_Character before the set of
+	statements creating Any_Array to have Any_Character fully initialized
+	when it is used in creating Any_Array.
+
+	* scn.adb (Initialize_Scanner): Do not set Comes_From_Source ON and do
+	not call Scan in case if the actual is Internal_Source_File
+	Add 2003 to copyright note.
+
+	* sinput.adb (Source_First, Source_Last, Source_Text): Add code for
+	processing Internal_Source_File.
+
+	* types.ads: Add the constant Internal_Source_File representing the
+	source buffer for artificial source-code-like strings created within
+	the compiler (the definition of Source_File_Index is changed).
+
 2003-11-20  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 35soccon.ads, 45intnam.ads, 55osinte.adb, 55osinte.ads,

@@ -39,23 +39,22 @@
 --    stamp        copy file time stamp from file1 to file2
 --    prefix       get the prefix of the GNAT installation
 
+with Gnatvsn;
+with Osint;   use Osint;
+with Namet;   use Namet;
+
 with Ada.Characters.Handling;   use Ada.Characters.Handling;
 with Ada.Command_Line;          use Ada.Command_Line;
 with Ada.Text_IO;               use Ada.Text_IO;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Regpat;               use GNAT.Regpat;
-with Gnatvsn;
-with Osint;                     use Osint;
-with Namet;                     use Namet;
+
 
 procedure Gprcmd is
 
    --  ??? comments are thin throughout this unit
 
-   Version : constant String :=
-               "GPRCMD " & Gnatvsn.Gnat_Version_String &
-               " Copyright 2002-2003, Free Software Fundation, Inc.";
 
    procedure Cat (File : String);
    --  Print the contents of file on standard output.
@@ -350,7 +349,13 @@ begin
 
    begin
       if Cmd = "-v" then
-         Put_Line (Standard_Error, Version);
+
+         --  Should this be on Standard_Error ???
+
+         Put (Standard_Error, "GPRCMD ");
+         Put (Standard_Error, Gnatvsn.Gnat_Version_String);
+         Put_Line (Standard_Error,
+                   " Copyright 2002-2003, Free Software Fundation, Inc.");
          Usage;
 
       elsif Cmd = "pwd" then

@@ -43,7 +43,6 @@ procedure Initialize_Task_Hooks is
    procedure taskCreateHookAdd (createHookFunction : FUNCPTR);
    pragma Import (C, taskCreateHookAdd, "taskCreateHookAdd");
 
-   Result : OSI.STATUS;
 begin
    taskCreateHookAdd (Register'Access);
 end Initialize_Task_Hooks;

@@ -40,7 +40,7 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 with Erroutc;  use Erroutc;
 with Err_Vars; use Err_Vars;
-with Gnatvsn;  use Gnatvsn;
+with Gnatvsn;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;

@@ -37,11 +37,6 @@ with Hostparm;
 
 procedure Gnatchop is
 
-   Cwrite : constant String :=
-              "GNATCHOP " &
-              Gnatvsn.Gnat_Version_String  &
-              " Copyright 1998-2000, Ada Core Technologies Inc.";
-
    Terminate_Program : exception;
    --  Used to terminate execution immediately
 
@@ -57,9 +52,13 @@ procedure Gnatchop is
    Gnat_Cmd : String_Access;
    --  Command to execute the GNAT compiler
 
-   Gnat_Args : Argument_List_Access   := new Argument_List'
-     (new String'("-c"), new String'("-x"), new String'("ada"),
-      new String'("-gnats"), new String'("-gnatu"));
+   Gnat_Args : Argument_List_Access :=
+                 new Argument_List'
+                   (new String'("-c"),
+                    new String'("-x"),
+                    new String'("ada"),
+                    new String'("-gnats"),
+                    new String'("-gnatu"));
    --  Arguments used in Gnat_Cmd call
 
    EOF : constant Character := Character'Val (26);
@@ -1110,6 +1109,7 @@ procedure Gnatchop is
                            else
                               Error_Msg ("-k# requires numeric parameter");
                            end if;
+
                            return False;
                         end if;
                      end loop;
@@ -1129,23 +1129,31 @@ procedure Gnatchop is
                end;
 
             when 'p' =>
-               Preserve_Mode     := True;
+               Preserve_Mode := True;
 
             when 'q' =>
-               Quiet_Mode        := True;
+               Quiet_Mode := True;
 
             when 'r' =>
                Source_References := True;
 
             when 'v' =>
-               Verbose_Mode      := True;
-               Put_Line (Standard_Error, Cwrite);
+               Verbose_Mode := True;
+
+               --  Why is following written to standard error. Most other
+               --  tools write to standard output ???
+
+               Put (Standard_Error, "GNATCHOP ");
+               Put (Standard_Error, Gnatvsn.Gnat_Version_String);
+               Put_Line
+                 (Standard_Error,
+                  " Copyright 1998-2000, Ada Core Technologies Inc.");
 
             when 'w' =>
-               Overwrite_Files   := True;
+               Overwrite_Files := True;
 
             when 'x' =>
-               Exit_On_Error     := True;
+               Exit_On_Error := True;
 
             when others =>
                null;
