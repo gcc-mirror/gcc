@@ -520,14 +520,14 @@ public class Socket
 
   /**
    * Returns the port number of the remote end of the socket connection.  If
-   * this socket is not connected, then -1 is returned.
+   * this socket is not connected, then 0 is returned.
    *
    * @return The remote port this socket is connected to
    */
   public int getPort()
   {
     if (! isConnected())
-      return -1;
+      return 0;
 
     try
       {
