@@ -470,6 +470,7 @@ case $machine in
 	extra_parts="crt2.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
+	extra_objs="darwin.o"
 	;;	
 *-*-vxworks*)
 	tmake_file=t-vxworks
@@ -1958,7 +1959,6 @@ powerpc-*-beos*)
 powerpc-*-darwin*)
 	tm_file="${tm_file} rs6000/darwin.h"
 	tmake_file="rs6000/t-fprules t-darwin rs6000/t-darwin"
-	extra_objs="darwin.o"
 	extra_headers=altivec.h
 	# override ppc default
 	need_64bit_hwint=
