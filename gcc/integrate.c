@@ -45,10 +45,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "langhooks.h"
 
-#include "obstack.h"
-
-extern struct obstack *function_maybepermanent_obstack;
-
 /* Similar, but round to the next highest integer that meets the
    alignment.  */
 #define CEIL_ROUND(VALUE,ALIGN)	(((VALUE) + (ALIGN) - 1) & ~((ALIGN)- 1))

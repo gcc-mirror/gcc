@@ -361,8 +361,7 @@ gen_fake_label ()
   char *labelstr;
   SDB_GENERATE_FAKE (label, unnamed_struct_number);
   unnamed_struct_number++;
-  labelstr = (char *) permalloc (strlen (label) + 1);
-  strcpy (labelstr, label);
+  labelstr = xstrdup (label);
   return labelstr;
 }
 

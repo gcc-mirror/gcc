@@ -44,8 +44,6 @@ static void link_handler PARAMS ((struct eh_range *, struct eh_range *));
 static void check_start_handlers PARAMS ((struct eh_range *, int));
 static void free_eh_ranges PARAMS ((struct eh_range *range));
 
-extern struct obstack permanent_obstack;
-
 struct eh_range *current_method_handlers;
 
 struct eh_range *current_try_block = NULL;

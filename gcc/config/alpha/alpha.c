@@ -9824,7 +9824,7 @@ unicosmk_add_extern (name)
   struct unicosmk_extern_list *p;
 
   p = (struct unicosmk_extern_list *)
-       permalloc (sizeof (struct unicosmk_extern_list));
+       xmalloc (sizeof (struct unicosmk_extern_list));
   p->next = unicosmk_extern_head;
   p->name = name;
   unicosmk_extern_head = p;
@@ -9906,7 +9906,7 @@ unicosmk_need_dex (x)
       --i;
     }
       
-  dex = (struct unicosmk_dex *) permalloc (sizeof (struct unicosmk_dex));
+  dex = (struct unicosmk_dex *) xmalloc (sizeof (struct unicosmk_dex));
   dex->name = name;
   dex->next = unicosmk_dex_list;
   unicosmk_dex_list = dex;

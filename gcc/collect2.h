@@ -36,7 +36,6 @@ extern int file_exists PARAMS ((const char *));
 extern const char *ldout;
 extern const char *c_file_name;
 extern struct obstack temporary_obstack;
-extern struct obstack permanent_obstack;
 extern char *temporary_firstobj;
 extern int vflag, debug;
 

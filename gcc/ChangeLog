@@ -1,3 +1,55 @@
+2002-08-04  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Makefile.in (sdbout.o): Doesn't need $(OBSTACK_H).
+	* collect2.h (permanent_obstack): Delete declaration.
+	* collect2.c (permanent_obstack): Delete definition.
+	(main): Don't initialise permanent_obstack.  Use xstrdup instead.
+	* expr.c: Don't include obstack.h.
+	(permanent_obstack): Delete declaration.
+	* function.c: Don't include obstack.h.
+	(permanent_obstack): Delete declaration.
+	* integrate.c: Don't include obstack.h.
+	(function_maybepermanent_obstack): Delete declaration.
+	* print-tree.c (debug_tree): Use x*alloc not permalloc.
+	* sdbout.c (gen_fake_label): Use x*alloc not permalloc.
+	* tlink.c (pfgets): Use xstrdup not permanent_obstack.
+	* toplev.c (lang_independent_init): Rename init_obstacks to init_ttree.
+	* tree.h: Rename init_obstacks to init_ttree.  Remove declarations
+	of permalloc, expralloc, perm_calloc.
+	* tree.c (permanent_obstack): Delete definition.
+	(init_ttree): Rename from init_obstacks.
+	(permalloc): Delete.
+	(perm_calloc): Delete.
+	(dump_tree_statistics): Don't print information about
+	permanent_obstack.
+	* varasm.c (assemble_start_function): Use xstrdup instead of
+	permalloc/strcpy.
+	(assemble_variable): Likewise.
+	* config/alpha/alpha.c (unicosmk_need_dex): Use xmalloc instead of
+	permalloc.
+	(unicosmk_add_extern): Likewise.
+	* config/c4x/c4x.c (c4x_external_ref): Likewise.
+	(c4x_global_label): Likewise.
+	* config/frv/frv.c (frv_encode_section_info): Likewise.
+	* config/i386/winnt.c (i386_pe_record_external_function): Likewise.
+	(i386_pe_record_exported_symbol): Likewise.
+	* config/mips/mips.c (mips_output_external): Likewise.
+	(mips_output_external_libcall): Likewise.
+	* config/pa/pa.c: (permanent_obstack): Delete declaration.
+	(output_call): Use ggc_strdup instead of allocating on
+	permanent_obstack.
+	* config/romp/romp.c: Include ggc.h.
+	(get_symref): Don't declare permanent_obstack, use ggc_strdup
+	intead of permanent_obstack.
+	* config/rs6000/aix31.h (ASM_OUTPUT_EXTERNAL): Use concat
+	instead of permalloc.
+	* config/rs6000/rs6000.c (rs6000_gen_section_name): Use xmalloc
+	instead of permalloc
+	* config/rs6000/xcoff.h (ASM_OUTPUT_EXTERNAL): Use concat
+	instead of permalloc.
+	* config/vax/vax.c (vms_check_external): Use xmalloc instead of
+	permalloc.
+
 2002-08-04  Bernd Schmidt  <bernds@redhat.com>
 
 	Contribute a port developed primarily by Michael Meissner,

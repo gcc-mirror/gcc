@@ -48,8 +48,7 @@ void
 debug_tree (node)
      tree node;
 {
-  table = (struct bucket **) permalloc (HASH_SIZE * sizeof (struct bucket *));
-  memset ((char *) table, 0, HASH_SIZE * sizeof (struct bucket *));
+  table = (struct bucket **) xcalloc (HASH_SIZE, sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
   table = 0;
   fprintf (stderr, "\n");
@@ -213,7 +212,7 @@ print_node (file, prefix, node, indent)
       }
 
   /* Add this node to the table.  */
-  b = (struct bucket *) permalloc (sizeof (struct bucket));
+  b = (struct bucket *) xmalloc (sizeof (struct bucket));
   b->node = node;
   b->next = table[hash];
   table[hash] = b;

@@ -53,7 +53,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "output.h"
 #include "basic-block.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "hashtab.h"
 #include "ggc.h"
@@ -6421,8 +6420,6 @@ expand_main_function ()
 #endif
 }
 
-extern struct obstack permanent_obstack;
-
 /* The PENDING_SIZES represent the sizes of variable-sized types.
    Create RTL for the various sizes now (using temporary variables),
    so that we can refer to the sizes from the RTL we are generating

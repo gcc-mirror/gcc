@@ -6044,7 +6044,7 @@ mips_output_external (file, decl, name)
 	  || strcmp (TREE_STRING_POINTER (section_name), ".sbss") == 0
 	  || strcmp (TREE_STRING_POINTER (section_name), ".sdata") == 0))
     {
-      p = (struct extern_list *) permalloc (sizeof (struct extern_list));
+      p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
       p->next = extern_head;
       p->name = name;
       p->size = len;
@@ -6060,7 +6060,7 @@ mips_output_external (file, decl, name)
 	 bootstrap under Irix 5.1.  */
       && strcmp (name, "__builtin_next_arg"))
     {
-      p = (struct extern_list *) permalloc (sizeof (struct extern_list));
+      p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
       p->next = extern_head;
       p->name = name;
       p->size = -1;
@@ -6079,7 +6079,7 @@ mips_output_external_libcall (file, name)
 {
   register struct extern_list *p;
 
-  p = (struct extern_list *) permalloc (sizeof (struct extern_list));
+  p = (struct extern_list *) xmalloc (sizeof (struct extern_list));
   p->next = extern_head;
   p->name = name;
   p->size = -1;

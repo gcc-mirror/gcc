@@ -66,9 +66,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "jcf.h"
 
-extern struct obstack *saveable_obstack;
 extern struct obstack temporary_obstack;
-extern struct obstack permanent_obstack;
 
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */

@@ -622,7 +622,7 @@ i386_pe_record_external_function (name)
 {
   struct extern_list *p;
 
-  p = (struct extern_list *) permalloc (sizeof *p);
+  p = (struct extern_list *) xmalloc (sizeof *p);
   p->next = extern_head;
   p->name = name;
   extern_head = p;
@@ -652,7 +652,7 @@ i386_pe_record_exported_symbol (name, is_data)
 {
   struct export_list *p;
 
-  p = (struct export_list *) permalloc (sizeof *p);
+  p = (struct export_list *) xmalloc (sizeof *p);
   p->next = export_head;
   p->name = name;
   p->is_data = is_data;

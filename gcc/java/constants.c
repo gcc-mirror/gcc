@@ -29,8 +29,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "ggc.h"
 
-extern struct obstack permanent_obstack;
-
 static void set_constant_entry PARAMS ((CPool *, int, int, jword));
 static int find_class_or_string_constant PARAMS ((CPool *, int, tree));
 static int find_name_and_type_constant PARAMS ((CPool *, tree, tree));

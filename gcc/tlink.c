@@ -334,7 +334,7 @@ static char *
 pfgets (stream)
      FILE *stream;
 {
-  return obstack_fgets (stream, &permanent_obstack);
+  return xstrdup (tfgets (stream));
 }
 
 /* Real tlink code.  */

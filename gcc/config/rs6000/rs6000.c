@@ -11874,7 +11874,7 @@ rs6000_gen_section_name (buf, filename, section_desc)
     }
 
   len = strlen (after_last_slash) + strlen (section_desc) + 2;
-  *buf = (char *) permalloc (len);
+  *buf = (char *) xmalloc (len);
 
   p = *buf;
   *p++ = '_';

@@ -5161,7 +5161,7 @@ lang_independent_init (no_backend)
   init_ggc ();
 
   init_stringpool ();
-  init_obstacks ();
+  init_ttree ();
 
   if (no_backend)
     return;
