@@ -2140,10 +2140,13 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
 {
   rtx insn;
   int count = 0;
+
   if (bb1->index > bb2->index)
     return false;
+
   if (bb1->index == bb2->index)
     return true;
+
   for (insn = bb1->end; insn != bb2->head && count >= 0;
        insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
@@ -2153,6 +2156,7 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
 	  count--;
       }
+
   return count >= 0;
 }
 
@@ -5938,6 +5942,7 @@ libcall_dead_p (pbi, note, insn)
   if (x)
     {
       register rtx r = SET_SRC (x);
+
       if (GET_CODE (r) == REG)
 	{
 	  rtx call = XEXP (note, 0);
@@ -7579,7 +7584,7 @@ mark_used_regs (pbi, x, cond, insn)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register const char *fmt = GET_RTX_FORMAT (code);
+    register const char * const fmt = GET_RTX_FORMAT (code);
     register int i;
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -7741,7 +7746,7 @@ find_use_as_address (x, reg, plusconst)
      HOST_WIDE_INT plusconst;
 {
   enum rtx_code code = GET_CODE (x);
-  const char *fmt = GET_RTX_FORMAT (code);
+  const char * const fmt = GET_RTX_FORMAT (code);
   register int i;
   register rtx value = 0;
   register rtx tem;
