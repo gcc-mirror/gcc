@@ -3899,7 +3899,7 @@ extern tree xref_tag				PARAMS ((tree, tree, int));
 extern tree xref_tag_from_type			PARAMS ((tree, tree, int));
 extern void xref_basetypes			PARAMS ((tree, tree, tree, tree));
 extern tree start_enum				PARAMS ((tree));
-extern tree finish_enum				PARAMS ((tree));
+extern void finish_enum				PARAMS ((tree));
 extern void build_enumerator			PARAMS ((tree, tree, tree));
 extern int start_function			PARAMS ((tree, tree, tree, int));
 extern tree finish_function			PARAMS ((int));

@@ -12920,138 +12920,126 @@ start_enum (name)
 
 /* After processing and defining all the values of an enumeration type,
    install their decls in the enumeration type and finish it off.
-   ENUMTYPE is the type object and VALUES a list of name-value pairs.
-   Returns ENUMTYPE.  */
+   ENUMTYPE is the type object and VALUES a list of name-value pairs.  */
 
-tree
+void
 finish_enum (enumtype)
      tree enumtype;
 {
-  register tree minnode = NULL_TREE, maxnode = NULL_TREE;
-  /* Calculate the maximum value of any enumerator in this type.  */
+  tree pair;
+  tree minnode;
+  tree maxnode;
+  tree t;
+  bool unsignedp;
+  int lowprec;
+  int highprec; 
+  int precision;
 
-  tree values = TYPE_VALUES (enumtype);
-  if (values)
-    {
-      tree pair;
+  /* We built up the VALUES in reverse order.  */
+  TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
 
-      for (pair = values; pair; pair = TREE_CHAIN (pair))
-	{
-	  tree decl;
-	  tree value;
+  /* [dcl.enum]
 
-	  /* The TREE_VALUE is a CONST_DECL for this enumeration
-	     constant.  */
-	  decl = TREE_VALUE (pair);
-
-	  /* [dcl.enum]
-
-	     Following the closing brace of an enum-specifier, each
-	     enumerator has the type of its enumeration.  Prior to the
-	     closing brace, the type of each enumerator is the type of
-	     its initializing value.  */
-	  TREE_TYPE (decl) = enumtype;
-
-	  /* The DECL_INITIAL will be NULL if we are processing a
-	     template declaration and this enumeration constant had no
-	     explicit initializer.  */
-	  value = DECL_INITIAL (decl);
-	  if (value && !processing_template_decl)
-	    {
-	      /* Set the TREE_TYPE for the VALUE as well.  That's so
-		 that when we call decl_constant_value we get an
-		 entity of the right type (but with the constant
-		 value).  Since we shouldn't ever call
-		 decl_constant_value on a template type, there's no
-		 reason to do that when processing_template_decl.
-		 And, if the expression is something like a
-		 TEMPLATE_PARM_INDEX or a CAST_EXPR doing so will
-		 wreak havoc on the intended type of the expression.
-
-	         Of course, there's also no point in trying to compute
-		 minimum or maximum values if we're in a template.  */
-	      TREE_TYPE (value) = enumtype;
-
-	      if (!minnode)
-		minnode = maxnode = value;
-	      else if (tree_int_cst_lt (maxnode, value))
-		maxnode = value;
-	      else if (tree_int_cst_lt (value, minnode))
-		minnode = value;
-	    }
-
-	  if (processing_template_decl)
-	    /* If this is just a template, leave the CONST_DECL
-	       alone.  That way tsubst_copy will find CONST_DECLs for
-	       CONST_DECLs, and not INTEGER_CSTs.  */
-	    ;
-	  else
-	    /* In the list we're building up, we want the enumeration
-	       values, not the CONST_DECLs.  */
-	    TREE_VALUE (pair) = value;
-	}
-    }
-  else
-    maxnode = minnode = integer_zero_node;
-
-  TYPE_VALUES (enumtype) = nreverse (values);
-
+     Following the closing brace of an enum-specifier, each
+     enumerator has the type of its enumeration.  Prior to the
+     closing brace, the type of each enumerator is the type of
+     its initializing value.  */
+  for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
+    TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+  
+  /* For a enum defined in a template, all further processing is
+     postponed until the template is instantiated.  */
   if (processing_template_decl)
     {
       tree scope = current_scope ();
       if (scope && TREE_CODE (scope) == FUNCTION_DECL)
 	add_stmt (build_min (TAG_DEFN, enumtype));
+
+      return;
+    }
+
+  /* Figure out what the minimum and maximum values of the enumerators
+     are.  */
+  if (TYPE_VALUES (enumtype))
+    {
+      minnode = maxnode = NULL_TREE;
+
+      for (pair = TYPE_VALUES (enumtype);
+	   pair;
+	   pair = TREE_CHAIN (pair))
+	{
+	  tree value;
+
+	  value = DECL_INITIAL (TREE_VALUE (pair));
+
+	  if (!minnode)
+	    minnode = maxnode = value;
+	  else if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
+	}
     }
   else
+    minnode = maxnode = integer_zero_node;
+
+  /* Compute the number of bits require to represent all values of the
+     enumeration.  We must do this before the type of MINNODE and
+     MAXNODE are transformed, since min_precision relies on the
+     TREE_TYPE of the value it is passed.  */
+  unsignedp = tree_int_cst_sgn (minnode) >= 0;
+  lowprec = min_precision (minnode, unsignedp);
+  highprec = min_precision (maxnode, unsignedp);
+  precision = MAX (lowprec, highprec);
+
+  /* Set the TREE_TYPE for the values as well.  That's so that when we
+     call decl_constant_value we get an entity of the right type (but
+     with the constant value).  In addition, transform the TYPE_VALUES
+     list to contain the values, rather than the CONST_DECLs for them.  */
+  for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
     {
-      int unsignedp = tree_int_cst_sgn (minnode) >= 0;
-      int lowprec = min_precision (minnode, unsignedp);
-      int highprec = min_precision (maxnode, unsignedp);
-      int precision = MAX (lowprec, highprec);
-      tree tem;
+      tree value = DECL_INITIAL (TREE_VALUE (pair));
 
-      TYPE_SIZE (enumtype) = NULL_TREE;
-
-      /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
-
-      TYPE_PRECISION (enumtype) = precision;
-      if (unsignedp)
-	fixup_unsigned_type (enumtype);
-      else
-	fixup_signed_type (enumtype);
-
-      if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
-	/* Use the width of the narrowest normal C type which is wide
-	   enough.  */
-	TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
-						    (precision, 1));
-      else
-	TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-
-      TYPE_SIZE (enumtype) = 0;
-      layout_type (enumtype);
-
-      /* Fix up all variant types of this enum type.  */
-      for (tem = TYPE_MAIN_VARIANT (enumtype); tem;
-	   tem = TYPE_NEXT_VARIANT (tem))
-	{
-	  TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
-	  TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
-	  TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
-	  TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
-	  TYPE_SIZE_UNIT (tem) = TYPE_SIZE_UNIT (enumtype);
-	  TYPE_MODE (tem) = TYPE_MODE (enumtype);
-	  TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
-	  TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
-	  TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
-	  TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
-	}
-
-      /* Finish debugging output for this type.  */
-      rest_of_type_compilation (enumtype, namespace_bindings_p ());
+      TREE_TYPE (value) = enumtype;
+      TREE_VALUE (pair) = value;
     }
 
-  return enumtype;
+  /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
+  TYPE_SIZE (enumtype) = NULL_TREE;
+  TYPE_PRECISION (enumtype) = precision;
+  if (unsignedp)
+    fixup_unsigned_type (enumtype);
+  else
+    fixup_signed_type (enumtype);
+
+  if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
+    /* Use the width of the narrowest normal C type which is wide
+       enough.  */
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
+						(precision, 1));
+  else
+    TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+
+  TYPE_SIZE (enumtype) = NULL_TREE;
+  layout_type (enumtype);
+
+  /* Fix up all variant types of this enum type.  */
+  for (t = TYPE_MAIN_VARIANT (enumtype); t; t = TYPE_NEXT_VARIANT (t))
+    {
+      TYPE_VALUES (t) = TYPE_VALUES (enumtype);
+      TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (enumtype);
+      TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (enumtype);
+      TYPE_SIZE (t) = TYPE_SIZE (enumtype);
+      TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (enumtype);
+      TYPE_MODE (t) = TYPE_MODE (enumtype);
+      TYPE_PRECISION (t) = TYPE_PRECISION (enumtype);
+      TYPE_ALIGN (t) = TYPE_ALIGN (enumtype);
+      TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (enumtype);
+      TREE_UNSIGNED (t) = TREE_UNSIGNED (enumtype);
+    }
+
+  /* Finish debugging output for this type.  */
+  rest_of_type_compilation (enumtype, namespace_bindings_p ());
 }
 
 /* Build and install a CONST_DECL for an enumeration constant of the

@@ -1,3 +1,9 @@
+2001-04-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (finish_enum): Change prototype.
+	* decl.c (finish_enum): Reorganize.
+	* parse.y (structsp): Adjust calls to finish_enum.
+	
 2001-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (cp_tree_equal): Adjust final switch formatting. Add

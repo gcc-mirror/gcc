@@ -2229,7 +2229,8 @@ structsp:
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum ($2); }
 	  enumlist_opt '}'
-		{ $$.t = finish_enum (current_enum_type);
+		{ $$.t = current_enum_type;
+		  finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>4;
 		  check_for_missing_semicolon ($$.t); }
@@ -2237,7 +2238,8 @@ structsp:
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum (make_anon_name ()); }
 	  enumlist_opt '}'
-                { $$.t = finish_enum (current_enum_type);
+                { $$.t = current_enum_type;
+		  finish_enum (current_enum_type);
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>3;
 		  check_for_missing_semicolon ($$.t); }
