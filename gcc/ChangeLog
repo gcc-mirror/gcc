@@ -1,3 +1,8 @@
+2001-08-02  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* Makefile.in (libgcc.mk): Define mkinstalldirs.
+	* mklibgcc.in: Use mkinstalldirs instead of mkdir.
+
 2001-08-02  Lars Brinkhoff  <lars@nocrew.org>
 
 	* config/vax/vax.c: include expr.h.
