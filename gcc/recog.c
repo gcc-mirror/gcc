@@ -40,9 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-/* Import from final.c: */
-extern rtx alter_subreg ();
-
 static void validate_replace_rtx_1 PROTO((rtx *, rtx, rtx, rtx));
 static rtx *find_single_use_1 PROTO((rtx, rtx *));
 static rtx *find_constant_term_loc PROTO((rtx *));
