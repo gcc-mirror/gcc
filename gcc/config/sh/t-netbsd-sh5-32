@@ -1,0 +1,3 @@
+MULTILIB_OPTIONS += m5-32media-nofpu/m5-compact/m5-compact-nofpu/m5-64media/m5-64media-nofpu
+MULTILIB_DIRNAMES=
+MULTILIB_MATCHES =

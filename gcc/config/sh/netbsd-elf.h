@@ -20,69 +20,111 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
-#undef TARGET_VERSION
 #if TARGET_ENDIAN_DEFAULT == LITTLE_ENDIAN_BIT
-#define TARGET_VERSION  fputs (" (NetBSD/shle ELF)", stderr);
+#define TARGET_VERSION_ENDIAN "le"
 #else
-#define TARGET_VERSION	fputs (" (NetBSD/sh ELF)", stderr);
+#define TARGET_VERSION_ENDIAN ""
 #endif
+
+#if TARGET_CPU_DEFAULT & SH5_BIT
+#if TARGET_CPU_DEFAULT & SH3E_BIT
+#define TARGET_VERSION_CPU "sh5"
+#else
+#define TARGET_VERSION_CPU "sh64"
+#endif /* SH3E_BIT */
+#else
+#define TARGET_VERSION_CPU "sh"
+#endif /* SH5_BIT */
+
+#undef TARGET_VERSION
+#define TARGET_VERSION	fprintf (stderr, " (NetBSD/%s%s ELF)",		\
+                                 TARGET_VERSION_CPU, TARGET_VERSION_ENDIAN)
+
 
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
       NETBSD_OS_CPP_BUILTINS_ELF();					\
+      if (TARGET_SHMEDIA64)						\
+	NETBSD_OS_CPP_BUILTINS_LP64();					\
       builtin_define ("__NO_LEADING_UNDERSCORES__");			\
     }									\
   while (0)
 
 /* Provide a LINK_SPEC appropriate for a NetBSD/sh ELF target.
-   This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
-   the SH target.  */
+   We use the SH_LINK_SPEC from sh/sh.h, and define the appropriate
+   SUBTARGET_LINK_SPEC that pulls in what we need from a generic
+   NetBSD ELF LINK_SPEC.  */
+
+/* LINK_EMUL_PREFIX from sh/elf.h */
+
+#undef LINK_DEFAULT_CPU_EMUL
+#if TARGET_CPU_DEFAULT & SH5_BIT
+#if TARGET_CPU_DEFAULT & SH3E_BIT
+#define LINK_DEFAULT_CPU_EMUL "32"
+#else
+#define LINK_DEFAULT_CPU_EMUL "64"
+#endif /* SH3E_BIT */
+#else
+#define LINK_DEFAULT_CPU_EMUL ""
+#endif /* SH5_BIT */
+
+#undef SUBTARGET_LINK_EMUL_SUFFIX
+#define SUBTARGET_LINK_EMUL_SUFFIX "_nbsd"
+
+#undef SUBTARGET_LINK_SPEC
+#define SUBTARGET_LINK_SPEC \
+  "%{assert*} %{R*} \
+   %{shared:-shared} \
+   %{!shared: \
+     -dc -dp \
+     %{!nostdlib: \
+       %{!r*: \
+	 %{!e*:-e __start}}} \
+     %{!static: \
+       %{rdynamic:-export-dynamic} \
+       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
+     %{static:-static}}"
 
 #undef LINK_SPEC
-#define LINK_SPEC							\
-  "%{assert*} %{R*}							\
-   %{mb:-m shelf_nbsd}							\
-   %{ml:-m shlelf_nbsd}							\
-   %{mrelax:-relax}							\
-   %{shared:-shared}							\
-   %{!shared:								\
-     -dc -dp								\
-     %{!nostdlib:							\
-       %{!r*:								\
-	 %{!e*:-e __start}}}						\
-     %{!static:								\
-       %{rdynamic:-export-dynamic}					\
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-     %{static:-static}}"
+#define LINK_SPEC SH_LINK_SPEC
 
 
 /* Provide a CPP_SPEC appropriate for NetBSD.  */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC NETBSD_CPP_SPEC
 
-/* Restore the ASM_SPEC from sh/sh.h; sh/elf.h clobbers it.  */
-#undef ASM_SPEC
-#define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax}"
-
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (SH1_BIT|SH2_BIT|SH3_BIT | USERMODE_BIT | TARGET_ENDIAN_DEFAULT)
+  (TARGET_CPU_DEFAULT | USERMODE_BIT | TARGET_ENDIAN_DEFAULT)
 
  
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\
 do									\
   {									\
-    fprintf((STREAM), "\tmov.l\t%cLP%d,r1\n",				\
-            LOCAL_LABEL_PREFIX, (LABELNO));				\
-    fprintf((STREAM), "\tmova\t%cLP%dr,r0\n",				\
-            LOCAL_LABEL_PREFIX, (LABELNO));				\
-    fprintf((STREAM), "\tjmp\t@r1\n");					\
-    fprintf((STREAM), "\tnop\n");					\
-    fprintf((STREAM), "\t.align\t2\n");					\
-    fprintf((STREAM), "%cLP%d:\t.long\t__mcount\n",			\
-            LOCAL_LABEL_PREFIX, (LABELNO));				\
-    fprintf((STREAM), "%cLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
+    if (TARGET_SHMEDIA32)						\
+      {									\
+	/* FIXME */							\
+	abort ();							\
+      }									\
+    else if (TARGET_SHMEDIA64)						\
+      {									\
+	/* FIXME */							\
+	abort ();							\
+      }									\
+    else								\
+      {									\
+        fprintf((STREAM), "\tmov.l\t%cLP%d,r1\n",			\
+                LOCAL_LABEL_PREFIX, (LABELNO));				\
+        fprintf((STREAM), "\tmova\t%cLP%dr,r0\n",			\
+                LOCAL_LABEL_PREFIX, (LABELNO));				\
+        fprintf((STREAM), "\tjmp\t@r1\n");				\
+        fprintf((STREAM), "\tnop\n");					\
+        fprintf((STREAM), "\t.align\t2\n");				\
+        fprintf((STREAM), "%cLP%d:\t.long\t__mcount\n",			\
+                LOCAL_LABEL_PREFIX, (LABELNO));				\
+        fprintf((STREAM), "%cLP%dr:\n", LOCAL_LABEL_PREFIX, (LABELNO));	\
+      }									\
   }									\
 while (0)
