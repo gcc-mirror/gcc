@@ -1,3 +1,57 @@
+1999-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (print_name, print_base_classname, utf8_cmp,
+	cxx_keyword_subst, generate_access, name_is_method_p,
+	get_field_name, print_field_name, super_class_name, print_include,
+	decode_signature_piece, print_class_decls, usage, help,
+	java_no_argument, version, add_namelet, print_namelet): Add static
+	prototype.
+	(print_base_classname, utf8_cmp, cxx_keyword_subst,
+	name_is_method_p): Constify a char*.
+	(get_field_name): Likewise.  Prefer xstrdup over malloc/strcpy.
+	Provide a final else clause in an if-else-if.
+	(print_field_info): Add missing final arg in function call to
+	`print_field_name'.
+	(print_method_info, decompile_method, decode_signature_piece,
+	print_c_decl, print_full_cxx_name, print_stub,
+	print_mangled_classname, super_class_name, print_include,
+	add_namelet, add_class_decl, print_class_decls, process_file,
+	help): Constify a char*.
+
+	* jcf-write.c (jcf_handler, push_constant1, push_constant2,
+	push_int_const, find_constant_wide, find_constant_index,
+	push_long_const, field_op, maybe_wide, emit_dup, emit_pop,
+	emit_iinc, emit_load_or_store, emit_load, emit_store, emit_unop,
+	emit_binop, emit_reloc, emit_switch_reloc, emit_case_reloc,
+	emit_if, emit_goto, emit_jsr, call_cleanups,
+	make_class_file_name): Add static prototypes.
+	(generate_bytecode_return, generate_bytecode_insns): Pass a
+	NULL_PTR, not a NULL_TREE.
+
+	* jv-scan.c: Include "jcf.h".
+	(main): Declare using DEFUN macro.
+
+	* jvspec.c (find_spec_file, lang_specific_pre_link,
+	lang_specific_driver): Add prototypes.
+	(find_spec_file): Constify a char*.
+
+	* keyword.gperf (hash, java_keyword): Add prototypes.
+
+	* lang.c (lang_print_error): Add static prototype.
+	(lang_init): Prefer memcpy over bcopy to avoid casts.
+
+	* lex.c (yylex): Add static prototype.
+
+	* parse-scan.y: Include "lex.c" earlier.
+
+	* parse.h: Remove redundant declaration for `yylex'.
+
+	* parse.y (java_decl_equiv, binop_compound_p, search_loop,
+	labeled_block_contains_loop_p): Add static prototypes.
+	(not_accessible_p): Make static to match prototype.
+
+	* verify.c (start_pc_cmp): Don't needlessly cast away const.
+
 Sun Aug 22 11:07:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (check_method_redefinition): Changed leading comment.

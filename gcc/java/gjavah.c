@@ -119,6 +119,23 @@ static void add_class_decl PROTO ((FILE*, JCF*, JCF_u2));
 
 static int java_float_finite PROTO ((jfloat));
 static int java_double_finite PROTO ((jdouble));
+static void print_name PROTO ((FILE *, JCF *, int));
+static void print_base_classname PROTO ((FILE *, JCF *, int));
+static int utf8_cmp PROTO ((const unsigned char *, int, const char *));
+static const char *cxx_keyword_subst PROTO ((const unsigned char *, int));
+static void generate_access PROTO ((FILE *, JCF_u2));
+static int name_is_method_p PROTO ((const unsigned char *, int));
+static char *get_field_name PROTO ((JCF *, int, JCF_u2));
+static void print_field_name PROTO ((FILE *, JCF *, int, JCF_u2));
+static const unsigned char *super_class_name PROTO ((JCF *, int *));
+static void print_include PROTO ((FILE *, const unsigned char *, int));
+static const unsigned char *decode_signature_piece
+  PROTO ((FILE *, const unsigned char *, const unsigned char *, int *));
+static void print_class_decls PROTO ((FILE *, JCF *, int));
+static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
+static void help PROTO ((void)) ATTRIBUTE_NORETURN;
+static void java_no_argument PROTO ((const char *)) ATTRIBUTE_NORETURN;
+static void version PROTO ((void)) ATTRIBUTE_NORETURN;
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -209,7 +226,7 @@ java_double_finite (d)
   return (u.i & D_NAN_MASK) != D_NAN_MASK;
 }
 
-void
+static void
 DEFUN(print_name, (stream, jcf, name_index),
       FILE* stream AND JCF* jcf AND int name_index)
 {
@@ -231,7 +248,7 @@ print_base_classname (stream, jcf, index)
 {
   int name_index = JPOOL_USHORT1 (jcf, index);
   int len;
-  unsigned char *s, *p, *limit;
+  const unsigned char *s, *p, *limit;
 
   s = JPOOL_UTF_DATA (jcf, name_index);
   len = JPOOL_UTF_LENGTH (jcf, name_index);
@@ -258,11 +275,11 @@ print_base_classname (stream, jcf, index)
 
 static int
 utf8_cmp (str, length, name)
-     unsigned char *str;
+     const unsigned char *str;
      int length;
-     char *name;
+     const char *name;
 {
-  unsigned char *limit = str + length;
+  const unsigned char *limit = str + length;
   int i;
 
   for (i = 0; name[i]; ++i)
@@ -280,9 +297,9 @@ utf8_cmp (str, length, name)
    Otherwise, return NULL.  FIXME: for now, we only handle those
    keywords we know to be a problem for libgcj.  */
 
-static char *
+static const char *
 cxx_keyword_subst (str, length)
-     unsigned char *str;
+     const unsigned char *str;
      int length;
 {
   if (! utf8_cmp (str, length, "delete"))
@@ -329,7 +346,7 @@ generate_access (stream, flags)
 /* See if NAME is already the name of a method.  */
 static int
 name_is_method_p (name, length)
-     unsigned char *name;
+     const unsigned char *name;
      int length;
 {
   struct method_name *p;
@@ -352,6 +369,8 @@ get_field_name (jcf, name_index, flags)
   unsigned char *name = JPOOL_UTF_DATA (jcf, name_index);
   int length = JPOOL_UTF_LENGTH (jcf, name_index);
   char *override;
+  const char *tmpconstptr;
+
 
   if (name_is_method_p (name, length))
     {
@@ -370,14 +389,14 @@ get_field_name (jcf, name_index, flags)
       memcpy (override, name, length);
       strcpy (override + length, "__");
     }
-  else if ((override = cxx_keyword_subst (name, length)) != NULL)
+  else if ((tmpconstptr = cxx_keyword_subst (name, length)) != NULL)
     {
       /* Must malloc OVERRIDE.  */
-      char *o2 = (char *) malloc (strlen (override) + 1);
-      strcpy (o2, override);
-      override = o2;
+      override = xstrdup (tmpconstptr);
     }
-
+  else
+    override = NULL;
+  
   return override;
 }
 
@@ -431,7 +450,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jint num;
 		int most_negative = 0;
 		fputs ("  static const jint ", out);
-		print_field_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index, 0);
 		fputs (" = ", out);
 		num = JPOOL_INT (jcf, current_field_value);
 		/* We single out the most negative number to print
@@ -450,7 +469,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jlong num;
 		int most_negative = 0;
 		fputs ("  static const jlong ", out);
-		print_field_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index, 0);
 		fputs (" = ", out);
 		num = JPOOL_LONG (jcf, current_field_value);
 		/* We single out the most negative number to print
@@ -468,7 +487,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
 		fputs ("  static const jfloat ", out);
-		print_field_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index, 0);
 		if (! java_float_finite (fnum))
 		  fputs (";\n", out);
 		else
@@ -479,7 +498,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 	      {
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
 		fputs ("  static const jdouble ", out);
-		print_field_name (out, jcf, name_index);
+		print_field_name (out, jcf, name_index, 0);
 		if (! java_double_finite (dnum))
 		  fputs (";\n", out);
 		else
@@ -515,7 +534,7 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       FILE *stream AND JCF* jcf
       AND int name_index AND int sig_index AND JCF_u2 flags)
 {
-  unsigned char *str;
+  const unsigned char *str;
   int length, is_init = 0;
   const char *override = NULL;
 
@@ -613,7 +632,7 @@ decompile_method (out, jcf, code_len)
      JCF *jcf;
      int code_len;
 {
-  unsigned char *codes = jcf->read_ptr;
+  const unsigned char *codes = jcf->read_ptr;
   int index;
   uint16 name_and_type, name;
 
@@ -669,10 +688,10 @@ decompile_method (out, jcf, code_len)
 
 /* Print one piece of a signature.  Returns pointer to next parseable
    character on success, NULL on error.  */
-static unsigned char *
+static const unsigned char *
 decode_signature_piece (stream, signature, limit, need_space)
      FILE *stream;
-     unsigned char *signature, *limit;
+     const unsigned char *signature, *limit;
      int *need_space;
 {
   const char *ctype;
@@ -778,12 +797,12 @@ DEFUN(print_c_decl, (stream, jcf, name_index, signature_index, is_init,
   else
     {
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
-      unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-      register  unsigned char *str = str0;
-      unsigned char *limit = str + length;
+      const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
+      register const  unsigned char *str = str0;
+      const unsigned char *limit = str + length;
       int need_space = 0;
       int is_method = str[0] == '(';
-      unsigned char *next;
+      const unsigned char *next;
 
       /* If printing a method, skip to the return signature and print
 	 that first.  However, there is no return value if this is a
@@ -827,12 +846,12 @@ DEFUN(print_full_cxx_name, (stream, jcf, name_index, signature_index, is_init, n
       AND const char *name_override)
 {
   int length = JPOOL_UTF_LENGTH (jcf, signature_index);
-  unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-  register  unsigned char *str = str0;
-  unsigned char *limit = str + length;
+  const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
+  register const unsigned char *str = str0;
+  const unsigned char *limit = str + length;
   int need_space = 0;
   int is_method = str[0] == '(';
-  unsigned char *next;
+  const unsigned char *next;
 
   if (name_override)
     fputs (name_override, stream);
@@ -885,12 +904,12 @@ DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
   else
     {
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
-      unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
-      register  unsigned char *str = str0;
-      unsigned char *limit = str + length;
+      const unsigned char *str0 = JPOOL_UTF_DATA (jcf, signature_index);
+      register const unsigned char *str = str0;
+      const unsigned char *limit = str + length;
       int need_space = 0;
       int is_method = str[0] == '(';
-      unsigned char *next;
+      const unsigned char *next;
 
       /* If printing a method, skip to the return signature and print
 	 that first.  However, there is no return value if this is a
@@ -932,7 +951,7 @@ DEFUN(print_stub, (stream, jcf, name_index, signature_index, is_init,
     }
 }
 
-void
+static void
 DEFUN(print_mangled_classname, (stream, jcf, prefix, index),
       FILE *stream AND JCF *jcf AND const char *prefix AND int index)
 {
@@ -956,7 +975,7 @@ print_cxx_classname (stream, prefix, jcf, index)
 {
   int name_index = JPOOL_USHORT1 (jcf, index);
   int len, c;
-  unsigned char *s, *p, *limit;
+  const unsigned char *s, *p, *limit;
 
   s = JPOOL_UTF_DATA (jcf, name_index);
   len = JPOOL_UTF_LENGTH (jcf, name_index);
@@ -985,14 +1004,15 @@ int written_class_count = 0;
 
 /* Return name of superclass.  If LEN is not NULL, fill it with length
    of name.  */
-static unsigned char *
+static const unsigned char *
 super_class_name (derived_jcf, len)
      JCF *derived_jcf;
      int *len;
 {
   int supername_index = JPOOL_USHORT1 (derived_jcf, derived_jcf->super_class);
   int supername_length = JPOOL_UTF_LENGTH (derived_jcf, supername_index);
-  unsigned char *supername = JPOOL_UTF_DATA (derived_jcf, supername_index);
+  const unsigned char *supername =
+    JPOOL_UTF_DATA (derived_jcf, supername_index);
 
   if (len)
     *len = supername_length;
@@ -1017,7 +1037,7 @@ static struct include *all_includes = NULL;
 static void
 print_include (out, utf8, len)
      FILE *out;
-     unsigned char *utf8;
+     const unsigned char *utf8;
      int len;
 {
   struct include *incl;
@@ -1063,6 +1083,10 @@ struct namelet
   struct namelet *next;
 };
 
+static void add_namelet PROTO ((const unsigned char *,
+				const unsigned char *, struct namelet *));
+static void print_namelet PROTO ((FILE *, struct namelet *, int));
+
 /* The special root namelet.  */
 static struct namelet root =
 {
@@ -1077,10 +1101,10 @@ static struct namelet root =
    recursively.  */
 static void
 add_namelet (name, name_limit, parent)
-     unsigned char *name, *name_limit;
+     const unsigned char *name, *name_limit;
      struct namelet *parent;
 {
-  unsigned char *p;
+  const unsigned char *p;
   struct namelet *n = NULL, *np;
 
   /* We want to skip the standard namespaces that we assume the
@@ -1192,13 +1216,13 @@ add_class_decl (out, jcf, signature)
      JCF *jcf;
      JCF_u2 signature;
 {
-  unsigned char *s = JPOOL_UTF_DATA (jcf, signature);
+  const unsigned char *s = JPOOL_UTF_DATA (jcf, signature);
   int len = JPOOL_UTF_LENGTH (jcf, signature);
   int i;
   /* Name of class we are processing.  */
   int name_index = JPOOL_USHORT1 (jcf, jcf->this_class);
   int tlen = JPOOL_UTF_LENGTH (jcf, name_index);
-  char *tname = JPOOL_UTF_DATA (jcf, name_index);
+  const char *tname = JPOOL_UTF_DATA (jcf, name_index);
 
   for (i = 0; i < len; ++i)
     {
@@ -1253,7 +1277,7 @@ print_class_decls (out, jcf, self)
      that should be declared.  */
   int name_index = JPOOL_USHORT1 (jcf, self);
   int len;
-  unsigned char *s;
+  const unsigned char *s;
 
   s = JPOOL_UTF_DATA (jcf, name_index);
   len = JPOOL_UTF_LENGTH (jcf, name_index);
@@ -1341,7 +1365,8 @@ DEFUN(process_file, (jcf, out),
 	  if (jcf->super_class)
 	    {
 	      int super_length;
-	      unsigned char *supername = super_class_name (jcf, &super_length);
+	      const unsigned char *supername =
+		super_class_name (jcf, &super_length);
 	      
 	      fputs ("\n", out);
 	      print_include (out, supername, super_length);
@@ -1473,7 +1498,7 @@ help ()
 
 static void
 java_no_argument (opt)
-     char *opt;
+     const char *opt;
 {
   fprintf (stderr, "gcjh: no argument given for option `%s'\n", opt);
   exit (1);

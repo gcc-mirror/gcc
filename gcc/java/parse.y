@@ -258,6 +258,10 @@ static char * operator_string PROTO ((tree));
 static tree do_merge_string_cste PROTO ((tree, const char *, int, int));
 static tree merge_string_cste PROTO ((tree, tree, int));
 static tree java_refold PROTO ((tree));
+static int java_decl_equiv PROTO ((tree, tree));
+static int binop_compound_p PROTO ((enum tree_code));
+static tree search_loop PROTO ((tree));
+static int labeled_block_contains_loop_p PROTO ((tree, tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -6927,7 +6931,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 /* 6.6 Qualified name and access control. Returns 1 if MEMBER (a decl)
    can't be accessed from REFERENCE (a record type). */
 
-int not_accessible_p (reference, member, from_super)
+static int
+not_accessible_p (reference, member, from_super)
      tree reference, member;
      int from_super;
 {

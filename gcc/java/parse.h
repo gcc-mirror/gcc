@@ -673,7 +673,6 @@ extern void java_parser_context_save_global PROTO ((void));
 extern void java_parser_context_restore_global PROTO ((void));
 int yyparse PROTO ((void));
 extern int java_parse PROTO ((void));
-int yylex ();
 void yyerror PROTO ((const char *));
 extern void java_expand_classes PROTO ((void));
 #endif

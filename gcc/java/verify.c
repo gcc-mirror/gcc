@@ -316,8 +316,8 @@ start_pc_cmp (xp, yp)
      const PTR xp;
      const PTR yp;
 {
-  struct pc_index *x = (struct pc_index *) xp;
-  struct pc_index *y = (struct pc_index *) yp;
+  const struct pc_index *x = (const struct pc_index *) xp;
+  const struct pc_index *y = (const struct pc_index *) yp;
   return x->start_pc - y->start_pc;
 }
 

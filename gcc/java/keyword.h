@@ -26,6 +26,14 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 struct java_keyword { const char *name; int token; };
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash		PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
 
 #define TOTAL_KEYWORDS 50
 #define MIN_WORD_LENGTH 2

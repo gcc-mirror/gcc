@@ -517,7 +517,9 @@ java_parse_escape_sequence ()
     }
 }
 
-int
+static int yylex		PARAMS ((YYSTYPE *));
+
+static int
 #ifdef JC1_LITE
 yylex (java_lval)
 #else
