@@ -1,2 +1,2 @@
-lappend additional_flags [ieee-options]
+add-ieee-options
 return 0

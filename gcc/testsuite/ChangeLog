@@ -1,3 +1,12 @@
+2004-09-12  Richard Henderson  <rth@redhat.com>
+
+	* lib/fortran-torture.exp (add-ieee-options): Replace ieee-options;
+	do the uplevel thing and update additional_flags directly.
+	* gfortran.fortran-torture/execute/intrinsic_fraction_exponent.x,
+	gfortran.fortran-torture/execute/intrinsic_nearest.x,
+	gfortran.fortran-torture/execute/intrinsic_set_exponent.x,
+	gfortran.fortran-torture/execute/nan_inf_fmt.x: Update to match.
+
 2004-09-11  Steven Bosscher  <stevenb@suse.de>
 
 	* g++.dg/parse/break-in-for.C: Fix for -ansi -pedantic-errors.
