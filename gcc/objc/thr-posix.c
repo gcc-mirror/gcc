@@ -1,8 +1,7 @@
 /* GNU Objective C Runtime Thread Interface for POSIX compliant threads
    Copyright (C) 1996 Free Software Foundation, Inc.
-
-Author: Galen C. Hunt (gchunt@cs.rochester.edu)
-Modified for Linux & Pthreads: Kai-Uwe Sattler (kus@iti.cs.uni-magdeburg.de)
+   Contributed by Galen C. Hunt (gchunt@cs.rochester.edu)
+   Modified for Linux/Pthreads by Kai-Uwe Sattler (kus@iti.cs.uni-magdeburg.de)
 
 This file is part of GNU CC.
 
@@ -26,6 +25,8 @@ Boston, MA 02111-1307, USA.  */
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+#include <objc/thr.h>
+#include "runtime.h"
 #include <pthread.h>
 
 /********
