@@ -1,3 +1,7 @@
+Mon May 10 17:38:39 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Doc upgrade to netlib libf2c as of today.
+
 Sun May  9 18:52:13 1999  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* f/g77spec.c (lang_specific_driver): Correct bug-report address

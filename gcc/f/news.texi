@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-06
+@set last-update-news 1999-05-10
 
 @include root.texi
 
@@ -296,7 +296,7 @@ and providing more information on internals of the front end.
 
 @ifclear USERVISONLY
 @item
-Upgrade to @code{libf2c} as of 1999-05-03.
+Upgrade to @code{libf2c} as of 1999-05-10.
 @end ifclear
 @end itemize
 
