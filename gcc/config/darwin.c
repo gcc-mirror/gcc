@@ -45,6 +45,7 @@ extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));
 static int machopic_data_defined_p PARAMS ((const char *));
 static int func_name_maybe_scoped PARAMS ((const char *));
 static void update_non_lazy_ptrs PARAMS ((const char *));
+static void update_stubs PARAMS ((const char *));
 
 int
 name_needs_quotes (name)
@@ -329,6 +330,8 @@ machopic_stub_name (name)
        temp = TREE_CHAIN (temp))
     {
       if (ident == TREE_VALUE (temp))
+	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
+      if (strcmp (name, IDENTIFIER_POINTER (TREE_VALUE (temp))) == 0)
 	return IDENTIFIER_POINTER (TREE_PURPOSE (temp));
     }
 
@@ -1025,9 +1028,6 @@ darwin_encode_section_info (decl)
       memcpy (new_str, orig_str, len);
       new_str[1] = code;
       XSTR (sym_ref, 0) = ggc_alloc_string (new_str, len);
-      /* The non-lazy pointer list may have captured references to the
-	 old encoded name, change them.  */
-      update_non_lazy_ptrs (XSTR (sym_ref, 0));
     }
   else
     {
@@ -1041,6 +1041,10 @@ darwin_encode_section_info (decl)
       memcpy (new_str + 4, orig_str, len);
       XSTR (sym_ref, 0) = ggc_alloc_string (new_str, new_len);
     }
+  /* The non-lazy pointer list may have captured references to the
+     old encoded name, change them.  */
+  update_non_lazy_ptrs (XSTR (sym_ref, 0));
+  update_stubs (XSTR (sym_ref, 0));
 }
 
 /* Scan the list of non-lazy pointers and update any recorded names whose
@@ -1056,6 +1060,37 @@ update_non_lazy_ptrs (name)
   STRIP_NAME_ENCODING (name1, name);
 
   for (temp = machopic_non_lazy_pointers;
+       temp != NULL_TREE; 
+       temp = TREE_CHAIN (temp))
+    {
+      char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+
+      if (*sym_name == '!')
+	{
+	  STRIP_NAME_ENCODING (name2, sym_name);
+	  if (strcmp (name1, name2) == 0)
+	    {
+	      IDENTIFIER_POINTER (TREE_VALUE (temp)) = name;
+	      break;
+	    }
+	}
+    }
+}
+
+
+/* Scan the list of stubs and update any recorded names whose
+   stripped name matches the argument.  */
+
+static void
+update_stubs (name)
+     const char *name;
+{
+  char *name1, *name2;
+  tree temp;
+
+  STRIP_NAME_ENCODING (name1, name);
+
+  for (temp = machopic_stubs;
        temp != NULL_TREE; 
        temp = TREE_CHAIN (temp))
     {
