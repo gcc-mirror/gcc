@@ -25,6 +25,9 @@
 
 // map and set
 // libstdc++/86: map & set iterator comparisons are not type-safe
+
+// { dg-do compile }
+
 int main(void)
 {
   bool test = true;
@@ -35,8 +38,8 @@ int main(void)
   std::set<unsigned int>::iterator itr(setByIndex.begin());
   
   // NB: it's not setByIndex!!
-  test &= itr != setByName.end();  // ERROR - *  XFAIL *-*-*
-  test &= itr == setByName.end();  // ERROR - *  XFAIL *-*-*
+  test &= itr != setByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
+  test &= itr == setByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
 
   return 0;
 }
