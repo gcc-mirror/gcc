@@ -1,3 +1,9 @@
+Wed Mar  4 15:51:19 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (shorten_branches): Tag the loop alignment onto the
+	first label after NOTE_INSN_LOOP_BEG even if there is an
+	intervening insn.
+
 Tue Mar  3 21:48:35 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (insn_current_reference_address):

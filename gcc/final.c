@@ -982,13 +982,23 @@ shorten_branches (first)
 
   /* Initialize label_align and set up uid_shuid to be strictly
      monotonically rising with insn order.  */
+  /* We use max_log here to keep track of the maximum alignment we want to
+     impose on the next CODE_LABEL (or the current one if we are processing
+     the CODE_LABEL itself).  */
+     
   for (max_log = 0, insn = get_insns (), i = 1; insn; insn = NEXT_INSN (insn))
     {
       int log;
 
       INSN_SHUID (insn) = i++;
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	max_log = 0;
+	{
+	  /* reorg might make the first insn of a loop being run once only,
+             and delete the label in front of it.  Then we want to apply
+             the loop alignment to the new label created by reorg, which
+             is separated by the former loop start insn from the
+	     NOTE_INSN_LOOP_BEG.  */
+	}
       else if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  rtx next;
@@ -1028,13 +1038,14 @@ shorten_branches (first)
 		break;
 	      }
 	}
+      /* Again, we allow NOTE_INSN_LOOP_BEG - INSN - CODE_LABEL
+	 sequences in order to handle reorg output efficiently.  */
       else if (GET_CODE (insn) == NOTE
 	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	{
 	  rtx label;
 
-	  for (label = insn; label && GET_RTX_CLASS (GET_CODE (label)) != 'i';
-	       label = NEXT_INSN (label))
+	  for (label = insn; label; label = NEXT_INSN (label))
 	    if (GET_CODE (label) == CODE_LABEL)
 	      {
 		log = LOOP_ALIGN (insn);
