@@ -2391,148 +2391,28 @@ ccr_bit (op, scc_p)
     }
 }
 
-/* Return the GOT register, creating it if needed.  */
+/* Return the GOT register.  */
 
 struct rtx_def *
 rs6000_got_register (value)
      rtx value;
 {
-  if (! current_function_uses_pic_offset_table || ! pic_offset_table_rtx)
-    {
-      if (no_new_pseudos)
-	fatal_insn ("internal error -- needed new GOT register during reload phase to load:",
-		    value);
+  /* The second flow pass currently (June 1999) can't update regs_ever_live
+     without disturbing other parts of the compiler, so update it here to
+     make the prolog/epilogue code happy. */
+  if (no_new_pseudos && !regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 
-      current_function_uses_pic_offset_table = 1;
-      pic_offset_table_rtx = gen_rtx_REG (Pmode, GOT_TOC_REGNUM);
-    }
-
+  current_function_uses_pic_offset_table = 1;
   return pic_offset_table_rtx;
 }
 
-
-/* Replace all occurrences of register FROM with an new pseudo register in an insn X.
-   Store the pseudo register used in REG.
-   This is only safe during FINALIZE_PIC, since the registers haven't been setup
-   yet.  */
-
-static rtx
-rs6000_replace_regno (x, from, reg)
-     rtx x;
-     int from;
-     rtx *reg;
-{
-  register int i, j;
-  register const char *fmt;
-
-  /* Allow this function to make replacements in EXPR_LISTs.  */
-  if (!x)
-    return x;
-
-  switch (GET_CODE (x))
-    {
-    case SCRATCH:
-    case PC:
-    case CC0:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return x;
-
-    case REG:
-      if (REGNO (x) == from)
-	{
-	  if (! *reg)
-	    *reg = pic_offset_table_rtx = gen_reg_rtx (Pmode);
-
-	  return *reg;
-	}
-
-      return x;
-
-    default:
-      break;
-    }
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	XEXP (x, i) = rs6000_replace_regno (XEXP (x, i), from, reg);
-      else if (fmt[i] == 'E')
-	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  XVECEXP (x, i, j) = rs6000_replace_regno (XVECEXP (x, i, j), from, reg);
-    }
-
-  return x;
-}  
-
-
-/* By generating position-independent code, when two different
-   programs (A and B) share a common library (libC.a), the text of
-   the library can be shared whether or not the library is linked at
-   the same address for both programs.  In some of these
-   environments, position-independent code requires not only the use
-   of different addressing modes, but also special code to enable the
-   use of these addressing modes.
-
-   The `FINALIZE_PIC' macro serves as a hook to emit these special
-   codes once the function is being compiled into assembly code, but
-   not before.  (It is not done before, because in the case of
-   compiling an inline function, it would lead to multiple PIC
-   prologues being included in functions which used inline functions
-   and were compiled to assembly language.)  */
-
-void
-rs6000_finalize_pic ()
-{
-  /* Loop through all of the insns, replacing the special GOT_TOC_REGNUM
-     with an appropriate pseudo register.  If we find we need GOT/TOC,
-     add the appropriate init code.  */
-  if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
-    {
-      rtx insn = get_insns ();
-      rtx reg = NULL_RTX;
-      rtx first_insn;
-      rtx last_insn = NULL_RTX;
-
-      if (GET_CODE (insn) == NOTE)
-	insn = next_nonnote_insn (insn);
-
-      first_insn = insn;
-      for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
-	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	    {
-	      PATTERN (insn) = rs6000_replace_regno (PATTERN (insn),
-						     GOT_TOC_REGNUM,
-						     &reg);
-
-	      if (REG_NOTES (insn))
-		REG_NOTES (insn) = rs6000_replace_regno (REG_NOTES (insn),
-							 GOT_TOC_REGNUM,
-							 &reg);
-	    }
-
-	  if (GET_CODE (insn) != NOTE)
-	    last_insn = insn;
-	}
-
-      if (reg)
-	{
-	  rtx init = gen_init_v4_pic (reg);
-	  emit_insn_before (init, first_insn);
-	  if (!optimize && last_insn)
-	    emit_insn_after (gen_rtx_USE (VOIDmode, reg), last_insn);
-	}
-    }
-}
-
-
 /* Search for any occurrence of the GOT_TOC register marker that should
-   have been eliminated, but may have crept back in.  */
+   have been eliminated, but may have crept back in.
+
+   This function could completely go away now (June 1999), but we leave it 
+   in for a while until all the possible issues with the new -fpic handling 
+   are resolved. */
 
 void
 rs6000_reorg (insn)
@@ -2540,7 +2420,7 @@ rs6000_reorg (insn)
 {
   if (flag_pic && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
     {
-      rtx got_reg = gen_rtx_REG (Pmode, GOT_TOC_REGNUM);
+      rtx got_reg = gen_rtx_REG (Pmode, 2);
       for ( ; insn != NULL_RTX; insn = NEXT_INSN (insn))
 	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && reg_mentioned_p (got_reg, PATTERN (insn)))
@@ -2556,7 +2436,6 @@ struct machine_function
   int save_toc_p;
   int fpmem_size;
   int fpmem_offset;
-  rtx pic_offset_table_rtx;
 };
 
 /* Functions to save and restore rs6000_fpmem_size.
@@ -2574,7 +2453,6 @@ rs6000_save_machine_status (p)
   machine->sysv_varargs_p = rs6000_sysv_varargs_p;
   machine->fpmem_size     = rs6000_fpmem_size;
   machine->fpmem_offset   = rs6000_fpmem_offset;
-  machine->pic_offset_table_rtx = pic_offset_table_rtx;
 }
 
 void
@@ -2586,7 +2464,6 @@ rs6000_restore_machine_status (p)
   rs6000_sysv_varargs_p = machine->sysv_varargs_p;
   rs6000_fpmem_size     = machine->fpmem_size;
   rs6000_fpmem_offset   = machine->fpmem_offset;
-  pic_offset_table_rtx  = machine->pic_offset_table_rtx;
 
   free (machine);
   p->machine = (struct machine_function *)0;
@@ -2601,7 +2478,6 @@ rs6000_init_expanders ()
   rs6000_sysv_varargs_p = 0;
   rs6000_fpmem_size = 0;
   rs6000_fpmem_offset = 0;
-  pic_offset_table_rtx = (rtx)0;
 
   /* Arrange to save and restore machine status around nested functions.  */
   save_machine_status = rs6000_save_machine_status;
@@ -2646,7 +2522,7 @@ print_operand (file, x, code)
 
     case '*':
       /* Write the register number of the TOC register.  */
-      fputs (TARGET_MINIMAL_TOC ? reg_names[30] : reg_names[2], file);
+      fputs (TARGET_MINIMAL_TOC ? reg_names[30] : reg_names[2 /* PIC_OFFSET_TABLE_REGNUM? */ ], file);
       return;
 
     case '$':
@@ -3252,7 +3128,7 @@ print_operand_address (file, x)
 	;
 #endif
       else
-	fprintf (file, "(%s)", reg_names[ TARGET_MINIMAL_TOC ? 30 : 2 ]);
+	fprintf (file, "(%s)", reg_names[ TARGET_MINIMAL_TOC ? 30 : 2 /* PIC_OFFSET_TABLE_REGNUM? */ ]);
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == REG)
     {
@@ -4119,6 +3995,20 @@ output_prolog (file, size)
       else
 	asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset + sp_offset,
 		     reg_names[sp_reg]);
+    }
+
+  /* If we need PIC_OFFSET_TABLE_REGNUM, initialize it now */
+  if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) 
+      && flag_pic == 1 && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      if (!info->lr_save_p)
+	asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
+
+      fputs ("\tbl _GLOBAL_OFFSET_TABLE_@local-4\n", file);
+      asm_fprintf (file, "\tmflr %s\n", reg_names[PIC_OFFSET_TABLE_REGNUM]);
+
+      if (!info->lr_save_p)
+	asm_fprintf (file, "\tmtlr %s\n", reg_names[0]);
     }
 
   /* NT needs us to probe the stack frame every 4k pages for large frames, so
