@@ -1,3 +1,8 @@
+2002-06-01  Alan Lehotsky  <apl@alum.mit.edu>
+	
+	* except.c (nothrow_function_p): Walk epilogue delay list
+	checking the insn, not the chain for potential throws.
+	
 2002-05-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (INSTALL_CPP, UNINSTALL_CPP): Remove.
@@ -126,7 +131,7 @@
 	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Define.
 
 2002-05-31  Alan Lehotsky <apl@alum.mit.edu>
-
+	
 	* varasm.c (mark_constant_pool): Walk epilogue delay list
 	checking the insn, not the chain for potential constants.
 
