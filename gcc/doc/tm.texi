@@ -5600,14 +5600,18 @@ This macro is irrelevant if there is no separate readonly data section.
 
 @findex ENCODE_SECTION_INFO
 @item ENCODE_SECTION_INFO (@var{decl})
-Define this macro if references to a symbol must be treated differently
-depending on something about the variable or function named by the
-symbol (such as what section it is in).
+Define this macro if references to a symbol or a constant must be
+treated differently depending on something about the variable or
+function named by the symbol (such as what section it is in).
 
-The macro definition, if any, is executed immediately after the rtl for
-@var{decl} has been created and stored in @code{DECL_RTL (@var{decl})}.
-The value of the rtl will be a @code{mem} whose address is a
-@code{symbol_ref}.
+The macro definition, if any, is executed under two circumstances.  One
+is immediately after the rtl for @var{decl} that represents a variable
+or a function has been created and stored in @code{DECL_RTL
+(@var{decl})}.  The value of the rtl will be a @code{mem} whose address
+is a @code{symbol_ref}.  The other is immediately after the rtl for
+@var{decl} that represents a constant has been created and stored in
+@code{TREE_CST_RTL (@var{decl})}.  The macro is called once for each
+distinct constant in a source file.
 
 @cindex @code{SYMBOL_REF_FLAG}, in @code{ENCODE_SECTION_INFO}
 The usual thing for this macro to do is to record a flag in the

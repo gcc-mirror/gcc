@@ -1,3 +1,8 @@
+2001-08-12  Kazu Hirata  <kazu@hxi.com>
+
+	* doc/tm.texi (ENCODE_SECTION_INFO): Add documentation on how
+	a tree representing a constant is passed to the macro.
+
 2001-08-12  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_elf_asm_out_constructor): New.
