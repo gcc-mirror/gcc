@@ -2361,6 +2361,7 @@ process_command (argc, argv)
   int last_language_n_infiles;
   int have_c = 0;
   int have_o = 0;
+  int lang_n_infiles = 0;
 
   gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
 
@@ -2615,6 +2616,11 @@ process_command (argc, argv)
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
 	n_infiles++;
+      else if (strcmp (argv[i], "-save-temps") == 0)
+	{
+	  save_temps_flag = 1;
+	  n_switches++;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
@@ -2697,19 +2703,14 @@ process_command (argc, argv)
 	      warn_std_ptr = &warn_std;
 	      break;
 
-	    case 's':
-	      if (!strcmp (p, "save-temps"))
+	    case 'c':
+	      if (p[1] == 0)
 		{
-		  save_temps_flag = 1;
+		  have_c = 1;
 		  n_switches++;
 		  break;
 		}
 	      goto normal_switch;
-
-	    case 'c':
-	      have_c = 1;
-	      n_switches++;
-	      break;
 
 	    case 'o':
 	      have_o = 1;
@@ -2726,10 +2727,13 @@ process_command (argc, argv)
 	    }
 	}
       else
-	n_infiles++;
+	{
+	  n_infiles++;
+	  lang_n_infiles++;
+	}
     }
 
-  if (have_c && have_o && n_infiles != 1)
+  if (have_c && have_o && lang_n_infiles > 1)
     fatal ("cannot specify -o with -c and multiple compilations");
 
   /* Set up the search paths before we go looking for config files.  */
