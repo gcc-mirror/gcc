@@ -4678,8 +4678,8 @@
 
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
-  [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
-  ""
+  [(set (pc) (match_operand 0 "register_operand" "r"))]
+  "GET_MODE (operands[0]) == word_mode"
   "bv%* %%r0(%0)"
   [(set_attr "type" "branch")
    (set_attr "length" "4")])
@@ -5168,8 +5168,8 @@
 
 (define_insn "dcacheflush"
   [(unspec_volatile [(const_int 1)] 0)
-   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
-   (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
+   (use (mem:SI (match_operand 0 "register_operand" "r")))
+   (use (mem:SI (match_operand 1 "register_operand" "r")))]
   ""
   "fdc 0(%0)\;fdc 0(%1)\;sync"
   [(set_attr "type" "multi")
@@ -5177,11 +5177,11 @@
 
 (define_insn "icacheflush"
   [(unspec_volatile [(const_int 2)] 0)
-   (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
-   (use (mem:SI (match_operand:SI 1 "register_operand" "r")))
-   (use (match_operand:SI 2 "register_operand" "r"))
-   (clobber (match_operand:SI 3 "register_operand" "=&r"))
-   (clobber (match_operand:SI 4 "register_operand" "=&r"))]
+   (use (mem:SI (match_operand 0 "register_operand" "r")))
+   (use (mem:SI (match_operand 1 "register_operand" "r")))
+   (use (match_operand 2 "register_operand" "r"))
+   (clobber (match_operand 3 "register_operand" "=&r"))
+   (clobber (match_operand 4 "register_operand" "=&r"))]
   ""
   "mfsp %%sr0,%4\;ldsid (%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
   [(set_attr "type" "multi")
