@@ -960,7 +960,7 @@ finish_handler_parms (tree decl, tree handler)
     type = expand_start_catch_block (decl);
 
   HANDLER_TYPE (handler) = type;
-  if (type)
+  if (!processing_template_decl && type)
     mark_used (eh_type_info (type));
 }
 
