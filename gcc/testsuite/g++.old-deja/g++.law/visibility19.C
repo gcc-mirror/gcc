@@ -7,7 +7,7 @@
 // Message-ID: <9308252030.AA02352@tnt.acsys.com>
 class B {
 protected:
-    int i;
+    int i; // ERROR - protected
 };
 
 class D1 : public B {

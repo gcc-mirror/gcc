@@ -3,7 +3,7 @@
 
 struct A {
 protected:
-  int i;
+  int i;                        // ERROR - private
   int f ();			// ERROR - 
 };
 

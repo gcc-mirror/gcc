@@ -151,8 +151,8 @@ struct __streambuf {
     char* _gptr;	 
     char* _egptr;	 
     char* _eback;	 
-    char* _pbase;	 
-    char* _pptr;	 
+    char* _pbase; // ERROR - inacessible
+    char* _pptr;  // ERROR - inacessible	 
     char* _epptr;	 
     char* _base;	 
     char* _ebuf;	 

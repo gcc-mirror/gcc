@@ -1,10 +1,11 @@
+// Build don't link:
 // The standard sez that a use of a name gets the most access it can through
 // the various paths that can reach it.  Here, the access decl in B gives
 // us access.
 
 struct A
 {
-  void f ();			// gets bogus error - ref below XFAIL *-*-*
+  void f ();			
 };
 
 struct B: private virtual A
@@ -21,5 +22,5 @@ main ()
 {
   C c;
 
-  c.f ();			// gets bogus error - private XFAIL *-*-*
+  c.f ();			
 }

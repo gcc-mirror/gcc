@@ -2388,16 +2388,8 @@ left_curly:
                 { $<ttype>0 = begin_class_definition ($<ttype>0); }
 	;
 
-self_reference:
-	  /* empty */
-		{
-		  finish_member_declaration (build_self_reference ());
-		}
-	;
-
 opt.component_decl_list:
-	  self_reference
-	| self_reference component_decl_list
+	| component_decl_list
 	| opt.component_decl_list access_specifier component_decl_list
 	| opt.component_decl_list access_specifier 
 	;

@@ -3,7 +3,7 @@
 
 class Outer {
 private:
-  int x;
+  int x; // ERROR - private
 public:
   struct Inner {
     int y;

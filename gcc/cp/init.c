@@ -1490,7 +1490,8 @@ tree
 build_offset_ref (type, name)
      tree type, name;
 {
-  tree decl, fnfields, fields, t = error_mark_node;
+  tree decl, t = error_mark_node;
+  tree member;
   tree basebinfo = NULL_TREE;
   tree orig_name = name;
 
@@ -1558,17 +1559,17 @@ build_offset_ref (type, name)
 
   decl = maybe_dummy_object (type, &basebinfo);
 
-  fnfields = lookup_fnfields (basebinfo, name, 1);
-  fields = lookup_field (basebinfo, name, 0, 0);
+  member = lookup_member (basebinfo, name, 1, 0);
 
-  if (fields == error_mark_node || fnfields == error_mark_node)
+  if (member == error_mark_node)
     return error_mark_node;
 
   /* A lot of this logic is now handled in lookup_field and
      lookup_fnfield.  */
-  if (fnfields)
+  if (member && TREE_CODE (member) == TREE_LIST)
     {
       /* Go from the TREE_BASELINK to the member function info.  */
+      tree fnfields = member;
       t = TREE_VALUE (fnfields);
 
       if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
@@ -1596,26 +1597,13 @@ build_offset_ref (type, name)
 
       if (!really_overloaded_fn (t))
 	{
-	  tree access;
-
 	  /* Get rid of a potential OVERLOAD around it */
 	  t = OVL_CURRENT (t);
 
 	  /* unique functions are handled easily.  */
 	  basebinfo = TREE_PURPOSE (fnfields);
-	  access = compute_access (basebinfo, t);
-	  if (access == access_protected_node)
-	    {
-	      cp_error_at ("member function `%#D' is protected", t);
-	      error ("in this context");
-	      return error_mark_node;
-	    }
-	  if (access == access_private_node)
-	    {
-	      cp_error_at ("member function `%#D' is private", t);
-	      error ("in this context");
-	      return error_mark_node;
-	    }
+	  if (!enforce_access (basebinfo, t))
+	    return error_mark_node;
 	  mark_used (t);
 	  if (DECL_STATIC_FUNCTION_P (t))
 	    return t;
@@ -1638,14 +1626,7 @@ build_offset_ref (type, name)
       return t;
     }
 
-  /* Now that we know we are looking for a field, see if we
-     have access to that field.  Lookup_field will give us the
-     error message.  */
-
-  t = lookup_field (basebinfo, name, 1, 0);
-
-  if (t == error_mark_node)
-    return error_mark_node;
+  t = member;
 
   if (t == NULL_TREE)
     {
@@ -1754,7 +1735,6 @@ resolve_offset_ref (exp)
       && (base == current_class_ref || is_dummy_object (base)))
     {
       tree basetype_path;
-      tree access;
       tree expr;
 
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
@@ -1771,18 +1751,8 @@ resolve_offset_ref (exp)
 	}
       /* Kludge: we need to use basetype_path now, because
 	 convert_pointer_to will bash it.  */
-      access = compute_access (basetype_path, member);
+      enforce_access (basetype_path, member);
       addr = convert_pointer_to (basetype, base);
-
-      /* Issue errors if there was an access violation.  */
-      if (access != access_public_node)
-	{
-	  cp_error_at ("member `%D' is %s", 
-		       access == access_private_node 
-		       ? "private" : "protected",
-		       member);
-	  cp_error ("in this context");
-	} 
 
       /* Even in the case of illegal access, we form the
 	 COMPONENT_REF; that will allow better error recovery than

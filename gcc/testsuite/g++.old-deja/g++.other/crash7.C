@@ -4,8 +4,8 @@ void f()
 {
   union {
   private:
-    int i;
+    int i; // ERROR - private
   } u;
 
-  u.i = 3; // ERROR - private
+  u.i = 3; // ERROR - within this context
 }

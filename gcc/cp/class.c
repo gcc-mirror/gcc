@@ -1440,7 +1440,6 @@ alter_access (t, binfo, fdecl, access)
   else
     {
       enforce_access (binfo, fdecl);
-
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }
@@ -5548,18 +5547,24 @@ maybe_push_cache_obstack ()
    into  the scope of the class itself.  For purposes of access checking,
    the inserted class name is treated as if it were a public member name.  */
 
-tree
+void
 build_self_reference ()
 {
   tree name = constructor_name (current_class_type);
   tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
+  tree saved_cas;
+
   DECL_NONLOCAL (value) = 1;
   DECL_CONTEXT (value) = current_class_type;
   DECL_CLASS_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
 
   pushdecl_class_level (value);
-  return value;
+
+  saved_cas = current_access_specifier;
+  current_access_specifier = access_public_node;
+  finish_member_declaration (value);
+  current_access_specifier = saved_cas;
 }
 
 /* Returns 1 if TYPE contains only padding bytes.  */

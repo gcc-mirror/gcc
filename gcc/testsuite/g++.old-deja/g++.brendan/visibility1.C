@@ -2,7 +2,7 @@
 // GROUPS passed visibility
 class foo {
 protected:
-  int i;
+  int i; // ERROR - protected
 };
 
 class bar : public foo {

@@ -7,9 +7,9 @@
 // Message-ID: <9308051553.AA07639@nwd2sun1.analog.com>
 class A {
   protected:
-    int astuff;
+    int astuff; // ERROR - protected
     A() {
-        astuff = 3;
+        astuff = 3; 
     }
 };
 

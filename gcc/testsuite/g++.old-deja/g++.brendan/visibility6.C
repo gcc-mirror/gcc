@@ -3,7 +3,7 @@
 class bottom
 {
 public:
-  int b;
+  int b; // ERROR - private
 };
 class middle : private bottom
 {

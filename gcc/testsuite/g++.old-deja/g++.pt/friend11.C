@@ -20,7 +20,7 @@ class C
   template <class U>
   friend void S<T>::f(U);
 
-  int i;
+  int i; // ERROR - private
 };
 
 

@@ -8,7 +8,7 @@
 
 class A {
 protected:
-    int a;
+    int a; // ERROR - protected
 };
 
 class B : public A {

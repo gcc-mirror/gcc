@@ -900,7 +900,10 @@ print_candidates (fns)
 
   for (fn = fns; fn != NULL_TREE; fn = TREE_CHAIN (fn))
     {
-      cp_error_at ("%s %+#D", str, TREE_VALUE (fn));
+      tree f;
+
+      for (f = TREE_VALUE (fn); f; f = OVL_NEXT (f))
+	cp_error_at ("%s %+#D", str, OVL_CURRENT (f));
       str = "               ";
     }
 }
@@ -4807,7 +4810,7 @@ instantiate_class_template (type)
 		access = access_public_virtual_node;
 	      else if (TREE_VIA_PROTECTED (pbase))
 		access = access_protected_virtual_node;
-	      else if (TREE_VIA_PRIVATE (pbase))
+	      else 
 		access = access_private_virtual_node;
 	    }
 	  else
@@ -4816,7 +4819,7 @@ instantiate_class_template (type)
 		access = access_public_node;
 	      else if (TREE_VIA_PROTECTED (pbase))
 		access = access_protected_node;
-	      else if (TREE_VIA_PRIVATE (pbase))
+	      else 
 		access = access_private_node;
 	    }
 
@@ -7840,7 +7843,7 @@ get_template_base (tparms, targs, parm, arg)
 
   /* Since get_template_base_recursive marks the bases classes, we
      must unmark them here.  */
-  dfs_walk (arg_binfo, dfs_unmark, markedp);
+  dfs_walk (arg_binfo, dfs_unmark, markedp, 0);
 
   return rval;
 }

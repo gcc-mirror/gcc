@@ -1,3 +1,62 @@
+1999-03-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (flag_access_control): Declare.
+	(TREE_VIA_PPUBLIC): Document.
+	(DECL_NONSTATIC_MEMBER_P): New macro.
+	(enforce_access): Return an indication of whether or not access
+	was permitted.
+	(build_self_reference): Change prototype.
+	(compute_access): Replace with ...
+	(accessible_p): New function.
+	(dfs_walk): Change prototype.
+	(dfs_unmark): Likewise.
+	(markedp): Likewise.
+	* call.c (enforce_access): Use accessible_p.
+	* class.c (build_self_reference): Insert the declaration into the
+	list of members for this type, and make it public.
+	* decl.c (xref_basetypes): Avoid ill-timed recursion.
+	* init.c (build_offset_ref): Use lookup_member, not three separate
+	name-lookups.  Call enforce_access rather than checking for
+	illegal accesses here.
+	(resolve_offset_ref): Likewise.
+	* lex.c (do_identifier): Likewise.
+	* method.c (hack_identifier): Likewise.
+	* parse.y (self_reference): Remove.
+	(opt_component_decl_list): Don't use it.
+	* parse.c: Regenerated.
+	* pt.c (print_candidates): Generalize to handle lists of
+	overloaded functions.
+	(instantiate_class_template): Don't rely on TREE_VIA_PRIVATE; it's
+	not set.
+	(get_template_base): Use new calling convention for dfs_walk.
+	* search.c: Include varray.h.  Add prototypes.
+	(dfs_walk): Accept a data pointer to pass to the work functions. 
+	All callers changed.  All work functions changed.
+	(breadth_first_search): Rename to bfs_walk, and make consistent
+	with dfs_walk.
+	(dfs_walk_real): New function.
+	(canonical_binfo): New function.
+	(context_for_name_lookup): Likewise.
+	(shared_marked_p): Likewise.
+	(shared_unmarked_p): Likewise.
+	(lokup_field_queue_p): Likewise.
+	(lookup_field_r): Generalize to handle both functions and fields.
+	(lookup_field): Just call lookup_member.
+	(lookup_fnfields): Likewise.
+	(lookup_member): Move body of lookup_field here and generalize.
+	(dfs_accessible_queue_p): Likewise.
+	(dfs_accessible_p): Likewise.
+	(dfs_access_in_type): Likewise.
+	(access_in_type): Likewise.
+	(compute_access): Remove, and replace with ...
+	(accessible_p): New function.
+	(vbase_types): Remove.
+	(vbase_decl_ptr_intermediate): Likewise.
+	(vbase_decl_ptr): Likewise.
+	(vbase_init_result): Likewise.
+	(closed_envelopes): Likewise.
+	(bvtable): Likewise.
+
 1999-03-09  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (add_function_candidate): Check for proper number of args
