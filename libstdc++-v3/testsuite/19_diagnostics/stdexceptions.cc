@@ -38,7 +38,7 @@ void test01()
   // 2
   // std::logic_error obj((std::string)strlit);
 
-  VERIFY( strcmp(obj.what(), s.data()) == 0 );
+  VERIFY( std::strcmp(obj.what(), s.data()) == 0 );
 }
 
 void test02()
@@ -47,7 +47,7 @@ void test02()
   std::string s("lack of sunlight error");
   std::domain_error x(s);
   
-  VERIFY( strcmp(x.what(), s.data()) == 0 );
+  VERIFY( std::strcmp(x.what(), s.data()) == 0 );
 }
 
 // libstdc++/2089
@@ -64,7 +64,7 @@ void test03()
   try
     { throw fuzzy_logic(); }
   catch(const fuzzy_logic& obj)
-    { VERIFY( strcmp("whoa", obj.what()) == 0 ); }
+    { VERIFY( std::strcmp("whoa", obj.what()) == 0 ); }
   catch(...)
     { VERIFY( false ); }
 }
@@ -93,7 +93,7 @@ void test04()
     obj1 = obj2;
   }
   allocate_on_stack();
-  VERIFY( strcmp(strlit1, obj1.what()) == 0 ); 
+  VERIFY( std::strcmp(strlit1, obj1.what()) == 0 ); 
 
   // block 02
   {
@@ -102,7 +102,7 @@ void test04()
     obj1 = obj3;
   }
   allocate_on_stack();     
-  VERIFY( strcmp(strlit2, obj1.what()) == 0 ); 
+  VERIFY( std::strcmp(strlit2, obj1.what()) == 0 ); 
 }
 
 int main(void)
