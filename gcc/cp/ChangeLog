@@ -125,18 +125,6 @@ Mon Oct 20 10:52:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(common_type): Likewise.
 	* error.c (args_as_string): Recognize null_node.
 
-/* start-sanitize-depragmaize */
-Mon Oct 20 10:36:44 1997  Nick Clifton  <nickc@cygnus.com>
-
-	* decl2.c (lang_decode_option): Warning changed to
-	-Wunknown-pragmas to avoid spelling complications.
-
-Thu Oct 16 15:27:48 1997  Nick Clifton  <nickc@cygnus.com>
-
-	* decl2.c (lang_decode_option): Add support for command line
-	option: -Wunrecognised-pragmas.
-
-/* end-sanitize-depragmaize */
 Thu Oct 16 15:31:09 1997  Judy Goldberg <judygold@sanwafp.com>
 
 	* pt.c (determine_explicit_specialization): Initialize "dummy"

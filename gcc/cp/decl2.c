@@ -271,12 +271,6 @@ int warn_sign_promo;
 
 int warn_old_style_cast;
 
-/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
-/* Warn about #pragma directives that are not recognised.  */
-
-int warn_unknown_pragmas = 0; /* Tri state variable.  */
-/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
-
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -659,12 +653,6 @@ lang_decode_option (p)
 	warn_sign_promo = setting;
       else if (!strcmp (p, "old-style-cast"))
 	warn_old_style_cast = setting;
-/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
-      else if (!strcmp (p, "unknown-pragmas"))
-	/* Set to greater than 1, so that even unknown pragmas in
-	   system headers will be warned about.  */
-	warn_unknown_pragmas = setting * 2; 
-/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -694,11 +682,6 @@ lang_decode_option (p)
 	  warn_template_debugging = setting;
 	  warn_reorder = setting;
 	  warn_sign_promo = setting;
-/* start-sanitize-depragmaize */  /* CYGNUS LOCAL depragmaize/nickc */
-	  /* Only warn about unknown pragmas that are not in system
-	     headers.  */
-	  warn_unknown_pragmas = 1;
-/* end-sanitize-depragmaize */  /* END CYGNUS LOCAL depragmaize/nickc */
 	}
 
       else if (!strcmp (p, "overloaded-virtual"))
