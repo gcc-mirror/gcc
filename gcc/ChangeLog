@@ -1,3 +1,8 @@
+2003-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_64_sign_extended_value):  Return false from tls variables.
+	(x86_64_zero_extended_value):  likewise.
+
 2003-11-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (loadgp): Take $25 as a second operand.
