@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.5 $
+ *                            $Revision: 1.5.10.1 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -292,7 +292,7 @@ __gnat_ttyname (filedes)
 
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
-  || defined (__MACHTEN__)
+  || defined (__MACHTEN__) || defined (__CYGWIN__)
 #include <termios.h>
 
 #else
@@ -347,7 +347,7 @@ getc_immediate_common (stream, ch, end_of_file, avail, waiting)
 {
 #if defined (linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
-    || defined (__CYGWIN32__) || defined (__MACHTEN__)
+    || defined (__CYGWIN__) || defined (__MACHTEN__) 
   char c;
   int nread;
   int good_one = 0;
