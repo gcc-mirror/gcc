@@ -10916,14 +10916,15 @@ gen_label_die (tree decl, dw_die_ref context_die)
     equate_decl_number_to_die (decl, lbl_die);
   else
     {
-      insn = DECL_RTL (decl);
+      insn = DECL_RTL_IF_SET (decl);
 
       /* Deleted labels are programmer specified labels which have been
 	 eliminated because of various optimizations.  We still emit them
 	 here so that it is possible to put breakpoints on them.  */
-      if (GET_CODE (insn) == CODE_LABEL
-	  || ((GET_CODE (insn) == NOTE
-	       && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)))
+      if (insn
+	  && (GET_CODE (insn) == CODE_LABEL
+	      || ((GET_CODE (insn) == NOTE
+	           && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))))
 	{
 	  /* When optimization is enabled (via -O) some parts of the compiler
 	     (e.g. jump.c and cse.c) may try to delete CODE_LABEL insns which
