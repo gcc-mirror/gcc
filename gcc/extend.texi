@@ -3236,7 +3236,7 @@ You may use @code{__builtin_expect} to provide the compiler with
 branch prediction information.  In general, you should prefer to
 use actual profile feedback for this (@samp{-fprofile-arcs}), as
 programmers are notoriously bad at predicting how their programs
-actually preform.  However, there are applications in which this
+actually perform.  However, there are applications in which this
 data is hard to collect.
 
 The return value is the value of @var{exp}, which should be an
