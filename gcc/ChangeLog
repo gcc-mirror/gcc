@@ -1,3 +1,13 @@
+2003-10-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR target/11087
+	Backport from gcc-3_3-rhl-branch and mainline.
+
+	2003-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* loop.c (basic_induction_var): Check if convert_modes
+	emitted any instructions. Remove them and return 0 if so.
+
 2003-10-13  Matt Kraai <kraai@alumni.cmu.edu>
 
 	PR target/11949
