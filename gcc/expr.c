@@ -127,7 +127,7 @@ struct move_by_pieces
 int local_vars_size;
 extern int stack_depth;
 extern int max_stack_depth;
-struct obstack permanent_obstack;
+extern struct obstack permanent_obstack;
 
 
 static rtx enqueue_insn		PROTO((rtx, rtx));
