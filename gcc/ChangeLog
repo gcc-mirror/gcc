@@ -1,3 +1,7 @@
+2004-02-20  Josef Zlomek  <zlomekj@suse.cz>
+
+	* tree-inline.c (copy_body_r): Do not replace ret_label.
+
 2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c (process_command): Allow translation of the copyright

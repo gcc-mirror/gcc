@@ -572,8 +572,11 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
   /* Local variables and labels need to be replaced by equivalent
      variables.  We don't want to copy static variables; there's only
      one of those, no matter how many times we inline the containing
-     function.  */
-  else if ((*lang_hooks.tree_inlining.auto_var_in_fn_p) (*tp, fn))
+     function.
+     We do not also want to copy the label which we put into
+     GOTO_STMT which replaced RETURN_STMT.  */
+  else if (*tp != id->ret_label
+	   && (*lang_hooks.tree_inlining.auto_var_in_fn_p) (*tp, fn))
     {
       tree new_decl;
 
