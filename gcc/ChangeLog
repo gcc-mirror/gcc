@@ -1,3 +1,8 @@
+2000-03-24  Geoff Keating  <geoffk@cygnus.com>
+
+	* flow.c (propagate_block): When we delete an ADDR_VEC,
+	also delete the BARRIER following it if there is one.
+
 2000-03-24  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_bzero): Convert `length' argument
