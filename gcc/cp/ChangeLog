@@ -1,5 +1,7 @@
 2001-06-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* semantics.c (begin_class_definition): Robustify.
+
 	* pt.c (instantiate_decl): Tell the repository code about the
 	clones, not the cloned functions.
 	* repo.c (repo_template_used): Explicitly instantiate the cloned
