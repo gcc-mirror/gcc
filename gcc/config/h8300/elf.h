@@ -34,3 +34,6 @@
 #define USER_LABEL_PREFIX "_"
 
 #define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
+
+#undef LINK_SPEC
+#define LINK_SPEC "%{mh:-m h8300helf} %{ms:-m h8300self}"
