@@ -507,6 +507,20 @@ extern void push_labeled_block PROTO ((tree));
 extern tree prepare_eh_table_type PROTO ((tree));
 extern void java_set_exception_lang_code PROTO (());
 extern tree generate_name PROTO ((void));
+extern void pop_labeled_block PROTO (());
+extern char *lang_printable_name PROTO ((tree, int));
+extern tree maybe_add_interface PROTO ((tree, tree));
+extern void set_super_info PROTO ((int, tree, tree, int));
+extern int get_access_flags_from_decl PROTO ((tree));
+extern int interface_of_p PROTO ((tree, tree));
+extern int inherits_from_p PROTO ((tree, tree));
+extern void fix_classpath PROTO (());
+extern void complete_start_java_method PROTO ((tree));
+extern void emit_handlers PROTO (());
+extern void init_outgoing_cpool PROTO (());
+extern void make_class_data PROTO ((tree));
+extern void register_class PROTO (());
+extern int alloc_name_constant PROTO ((int, tree));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
