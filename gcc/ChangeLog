@@ -1,3 +1,10 @@
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (pushqi1_h8300hs): Rename to
+	pushqi1_h8300hs_advanced.  Adjust its caller.
+	(pushhi1_h8300hs): Rename to pushhi1_h8300hs_advanced.
+	Adjust its caller.
+
 2004-03-02  Roche Nicolas <roche@act-europe.fr>
 
 	* Makefile.in (install-libgcc, install-multilib): Pass
