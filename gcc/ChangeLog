@@ -1,3 +1,7 @@
+Wed Feb 25 21:09:38 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* toplev.c (TICKS_PER_SECOND): Renamed from CLOCKS_PER_SECOND.
+
 Wed Feb 25 20:50:08 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* reorg.c (fill_slots_from_thread): Mark resources referenced in
