@@ -4260,6 +4260,11 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 This will not prevent the biv from being eliminated.  */
 	      if (v->lifetime == 0)
 		v->ignore = 1;
+
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "Increment %d of biv %d converted to giv %d.\n\n",
+			 INSN_UID (v->insn), old_regno, new_regno);
 	    }
 	}
     }
