@@ -1,3 +1,12 @@
+2003-09-14  Andreas Jaeger  <aj@suse.de>
+
+	* objc/objc-act.c: Convert to ISO C90 prototypes.
+	* objc/objc-act.h: Likewise.
+
+2003-09-14  Olaf Hering  <olh@suse.de>
+
+	* config/rs6000/rs6000.c: Fix typo: Remove extra ')'.
+
 2003-09-13  Andrew Pinski <pinskia@physics.uc.edu>
 
 	PR target/12021
