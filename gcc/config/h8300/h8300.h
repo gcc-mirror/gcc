@@ -869,10 +869,10 @@ struct cum_arg
        && REG_OK_FOR_BASE_P (XEXP (OP, 0)))				\
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF	\
        && TARGET_H8300S)						\
-   || ((GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST	\
-	&& GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS			\
-	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF	\
-	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)	\
+   || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST		\
+       && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS			\
+       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF	\
+       && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT	\
        && (TARGET_H8300S						\
 	   || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\

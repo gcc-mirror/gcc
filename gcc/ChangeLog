@@ -1,5 +1,9 @@
 2002-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (OK_FOR_U): Remove extra parentheses.
+
+2002-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (h8300_shift_costs): New.
 	* config/h8300/h8300.h (RTX_COSTS): Use h8300_shift_costs.
 	* config/h8300/h8300-protos.h: Add a prototype for
