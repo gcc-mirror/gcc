@@ -310,8 +310,9 @@ skip_white_space (c)
     {
       switch (c)
 	{
-	  /* There is no need to process comments, backslash-newline,
-             or \r here.  None can occur in the output of cpp.  */
+	  /* There is no need to process comments or backslash-newline
+             here.  None can occur in the output of cpp.  Do handle \r
+	     in case someone sent us a .i file.  */
 
 	case '\n':
 	  if (linemode)
@@ -322,12 +323,13 @@ skip_white_space (c)
 	  c = check_newline ();
 	  break;
 
+	case '\r':
 	  /* Per C99, horizontal whitespace is just these four characters.  */
 	case ' ':
 	case '\t':
 	case '\f':
 	case '\v':
-	    c = getch ();
+	  c = getch ();
 	  break;
 
 	case '\\':
@@ -1503,9 +1505,10 @@ c_lex (value)
       case '\t':
       case '\f':
       case '\v':
-	  c = getch ();
+	c = getch ();
 	break;
 
+      case '\r':
       case '\n':
 	c = skip_white_space (c);
       default:
