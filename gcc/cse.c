@@ -647,7 +647,7 @@ static void invalidate_skipped_block PROTO((rtx));
 static void cse_check_loop_start PROTO((rtx, rtx));
 static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
-static void count_reg_usage	PROTO((rtx, int *, int));
+static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
@@ -8282,12 +8282,17 @@ cse_basic_block (from, to, next_branch, around_loop)
 
 /* Count the number of times registers are used (not set) in X.
    COUNTS is an array in which we accumulate the count, INCR is how much
-   we count each register usage.  */
+   we count each register usage.  
+
+   Don't count a usage of DEST, which is the SET_DEST of a SET which 
+   contains X in its SET_SRC.  This is because such a SET does not
+   modify the liveness of DEST.  */
 
 static void
-count_reg_usage (x, counts, incr)
+count_reg_usage (x, counts, dest, incr)
      rtx x;
      int *counts;
+     rtx dest;
      int incr;
 {
   enum rtx_code code = GET_CODE (x);
@@ -8297,7 +8302,8 @@ count_reg_usage (x, counts, incr)
   switch (code)
     {
     case REG:
-      counts[REGNO (x)] += incr;
+      if (x != dest)
+	counts[REGNO (x)] += incr;
       return;
 
     case PC:
@@ -8313,28 +8319,28 @@ count_reg_usage (x, counts, incr)
     case SET:
       /* Unless we are setting a REG, count everything in SET_DEST.  */
       if (GET_CODE (SET_DEST (x)) != REG)
-	count_reg_usage (SET_DEST (x), counts, incr);
-      count_reg_usage (SET_SRC (x), counts, incr);
+	count_reg_usage (SET_DEST (x), counts, NULL_RTX, incr);
+      count_reg_usage (SET_SRC (x), counts, SET_DEST (x), incr);
       return;
 
     case INSN:
     case JUMP_INSN:
     case CALL_INSN:
-      count_reg_usage (PATTERN (x), counts, incr);
+      count_reg_usage (PATTERN (x), counts, NULL_RTX, incr);
 
       /* Things used in a REG_EQUAL note aren't dead since loop may try to
 	 use them.  */
 
       if (REG_NOTES (x))
-	count_reg_usage (REG_NOTES (x), counts, incr);
+	count_reg_usage (REG_NOTES (x), counts, NULL_RTX, incr);
       return;
 
     case EXPR_LIST:
     case INSN_LIST:
       if (REG_NOTE_KIND (x) == REG_EQUAL)
-	count_reg_usage (XEXP (x, 0), counts, incr);
+	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
       if (XEXP (x, 1))
-	count_reg_usage (XEXP (x, 1), counts, incr);
+	count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
     }
 
@@ -8342,10 +8348,10 @@ count_reg_usage (x, counts, incr)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	count_reg_usage (XEXP (x, i), counts, incr);
+	count_reg_usage (XEXP (x, i), counts, dest, incr);
       else if (fmt[i] == 'E')
 	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-	  count_reg_usage (XVECEXP (x, i, j), counts, incr);
+	  count_reg_usage (XVECEXP (x, i, j), counts, dest, incr);
     }
 }
 
@@ -8371,7 +8377,7 @@ delete_dead_from_cse (insns, nreg)
   /* First count the number of times each register is used.  */
   bzero (counts, sizeof (int) * nreg);
   for (insn = next_real_insn (insns); insn; insn = next_real_insn (insn))
-    count_reg_usage (insn, counts, 1);
+    count_reg_usage (insn, counts, NULL_RTX, 1);
 
   /* Go from the last insn to the first and delete insns that only set unused
      registers or copy a register to itself.  As we delete an insn, remove
@@ -8446,7 +8452,7 @@ delete_dead_from_cse (insns, nreg)
 
       if (! live_insn)
 	{
-	  count_reg_usage (insn, counts, -1);
+	  count_reg_usage (insn, counts, NULL_RTX, -1);
 	  delete_insn (insn);
 	}
 
