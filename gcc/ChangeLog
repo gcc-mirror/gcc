@@ -103,6 +103,24 @@
 
 	* config/mips/mips.h (TARGET_*): Boolify.
 
+2004-07-12  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Add sh-*-symbianelf target.
+	* config/sh/sh.c: Add new target macros:
+	TARGET_ENCODE_SECTION_INFO, TARGET_STRIP_NAME_ENCODING,
+	TARGET_CXX_IMPORT_EXPORT_CLASS.
+	(sh_file_start): Create a definition of the .directive section.
+	(sh_attribute): Add dllimport and dllexport attributes.
+	* config/sh/symbian-pre.h: New file.
+	* config/sh/symbian-post.h: New file.
+	* config/sh/symbian.c: New file. Contains Symbian specific
+	functions.
+	* config/sh/sh-protos.h: Add prototypes for new functions
+	provided by symbian.c.
+	* config/sh/t-symbian: New file.
+	* doc/extend.texi: Document support for dllimport and dllexport
+	attributes by the sh-symbianelf target.
+
 2004-07-12  James E Wilson  <wilson@specifixinc.com>
 
 	* Makefile.in (AR): Use @AR@ not ar.
