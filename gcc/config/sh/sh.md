@@ -2842,7 +2842,6 @@
   return \"mov r0,r15\";
 }"
   [(set_attr "length" "10")])
-   (set_attr "type" "move")])
 
 ;; Switch back to the original stack for interrupt funtions with the
 ;; sp_switch attribute.  */
