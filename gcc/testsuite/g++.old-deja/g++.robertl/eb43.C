@@ -3,8 +3,11 @@
 // The first one should still fail because it requires an implicit conversion
 // to pointer_to_binary_function, which has an `explicit' constructor.
 
-#include <vector.h>
-#include <algo.h>
+#include <vector>
+#include <algorithm>
+#include <functional>
+
+using namespace std;
 
 template <class T> class Expr 
 {
