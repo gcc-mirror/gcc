@@ -390,6 +390,8 @@ extern enum processor_type rs6000_cpu;
     N_("Specify yes/no if isel instructions should be generated") },    \
    {"spe=", &rs6000_spe_string,                                         \
     N_("Specify yes/no if SPE SIMD instructions should be generated") },\
+   {"float-gprs=", &rs6000_float_gprs_string,                           \
+    N_("Specify yes/no if using floating point in the GPRs") },         \
    {"vrsave=", &rs6000_altivec_vrsave_string,                         \
     N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
    {"longcall", &rs6000_longcall_switch,				\
@@ -428,7 +430,8 @@ extern int rs6000_altivec_abi;
 extern int rs6000_spe_abi;
 extern int rs6000_isel;
 extern int rs6000_spe;
-extern int rs6000_fprs;
+extern int rs6000_float_gprs;
+extern const char *rs6000_float_gprs_string;
 extern const char *rs6000_isel_string;
 extern const char *rs6000_spe_string;
 extern const char *rs6000_altivec_vrsave_string;

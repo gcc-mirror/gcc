@@ -32,7 +32,8 @@ Boston, MA 02111-1307, USA.  */
     rs6000_cpu = PROCESSOR_PPC8540; \
   if (rs6000_abi_string == NULL || strstr (rs6000_abi_string, "spe") == NULL) \
     rs6000_spe_abi = 1; \
-  rs6000_fprs = 0; \
+  if (rs6000_float_gprs_string == NULL) \
+    rs6000_float_gprs = 1; \
   /* See note below.  */ \
   /*if (rs6000_long_double_size_string == NULL)*/ \
   /*  rs6000_long_double_type_size = 128;*/ \
