@@ -21,4 +21,3 @@ Boston, MA 02111-1307, USA.  */
 
 #include <arm/xm-arm.h>
 #include <xm-linux.h>
-

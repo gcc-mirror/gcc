@@ -3,5 +3,3 @@
 /* Big buffers improve performance.  */
 
 #define IO_BUFFER_SIZE (0x8000 - 1024)
-
-

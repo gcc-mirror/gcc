@@ -7,4 +7,3 @@
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
-

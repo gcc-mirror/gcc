@@ -21,4 +21,3 @@ Boston, MA 02111-1307, USA.  */
 
 #include <i386/xm-i386.h>
 #include <xm-linux.h>
-

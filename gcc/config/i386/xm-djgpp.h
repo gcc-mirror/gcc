@@ -110,4 +110,3 @@ Boston, MA 02111-1307, USA.  */
     if (strchr (PATH, DIR_SEPARATOR_2) == NULL) \
       return PATH; \
   } while (0)
-
