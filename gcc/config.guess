@@ -1,6 +1,6 @@
 #!/bin/sh
 # This script attempts to guess a canonical system name.
-#   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@
 
 #
 # This script attempts to guess a canonical system name similar to
-# config.sub. If it succeeds, it prints the system name on stdout, and
-# exits with 0.  Otherwise, it prints an error message on stderr, and
-# exits with 1.
+# config.sub.  If it succeeds, it prints the system name on stdout, and
+# exits with 0.  Otherwise, it exits with 1.
 #
 # The plan is that this can be called by configure scripts if you
 # don't specify an explicit system type (host/target name).
@@ -34,12 +33,25 @@ UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
 UNAME_SYSTEM=`(uname -s) 2>/dev/null` || UNAME_SYSTEM=unknown
 UNAME_VERSION=`(uname -v) 2>/dev/null` || UNAME_VERSION=unknown
 
+trap 'rm -f dummy.c dummy.o dummy; exit 1' 1 2 15
+
 # Note: order is significant - the case branches are not exclusive.
 
 case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
+    *:NetBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-netbsd`echo ${UNAME_RELEASE}|sed -e 's/-.*//'`
+	exit 0 ;;
     alpha:OSF1:1.*:*)
+	# 1.2 uses "1.2" for uname -r.
 	echo alpha-dec-osf${UNAME_RELEASE}
         exit 0 ;;
+    alpha:OSF1:V1.*:* | alpha:OSF1:V[2-9].*:*)
+	# 1.3 and later use "V1.3", etc. for uname -r.
+	echo alpha-dec-osf`echo ${UNAME_RELEASE} | sed -e 's/^V//'`
+	exit 0 ;;
+    arm:RISC*:1.[012]*:*|arm:riscix:1.[012]*:*)
+	echo arm-acorn-riscix${UNAME_RELEASE}
+	exit 0;;
     sun4*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
@@ -61,11 +73,27 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     VAX*:ULTRIX*:*:*)
 	echo vax-dec-ultrix${UNAME_RELEASE}
 	exit 0 ;;
+    mips:*:5*:RISCos)
+	echo mips-mips-riscos${UNAME_RELEASE}
+	exit 0 ;;
     m88k:*:4*:R4*)
 	echo m88k-motorola-sysv4
 	exit 0 ;;
     m88k:*:3*:R3*)
 	echo m88k-motorola-sysv3
+	exit 0 ;;
+    AViiON:dgux:*:*)
+ 	echo m88k-dg-dgux${UNAME_RELEASE}
+ 	exit 0 ;;
+    M88*:*:R3*:*)
+	# Delta 88k system running SVR3
+	echo m88k-motorola-sysv3
+	exit 0 ;;
+    XD88*:*:*:*) # Tektronix XD88 system running UTekV (SVR3)
+	echo m88k-tektronix-sysv3
+	exit 0 ;;
+    Tek43[0-9][0-9]:UTek:*:*) # Tektronix 4300 system running UTek (BSD)
+	echo m68k-tektronix-bsd
 	exit 0 ;;
     *:IRIX:*:*)
 	echo mips-sgi-irix${UNAME_RELEASE}
@@ -74,7 +102,13 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo i386-ibm-aix
 	exit 0 ;;
     *:AIX:2:3)
-	echo rs6000-ibm-aix3.2
+	if grep bos325 /usr/include/stdio.h >/dev/null 2>&1; then
+		echo rs6000-ibm-aix3.2.5
+	elif grep bos324 /usr/include/stdio.h >/dev/null 2>&1; then
+		echo rs6000-ibm-aix3.2.4
+	else
+		echo rs6000-ibm-aix3.2
+	fi
 	exit 0 ;;
     *:AIX:*:*)
 	echo rs6000-ibm-aix
@@ -82,28 +116,66 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     *:BOSX:*:*)
 	echo rs6000-bull-bosx
 	exit 0 ;;
-    9000/31?:HP-UX:*:*)
-	echo m68000-hp-hpux
+    DPX/2?00:B.O.S.:*:*)
+	echo m68k-bull-sysv3
 	exit 0 ;;
-    9000/3??:HP-UX:*:*)
-	echo m68k-hp-hpux
+    9000/[34]??:4.3bsd:1.*:*)
+	echo m68k-hp-bsd
 	exit 0 ;;
-    9000/7??:HP-UX:*:* | 9000/8?7:HP-UX:*:* )
-	echo hppa1.1-hp-hpux
+    hp300:4.4BSD:*:* | 9000/[34]??:4.3bsd:2.*:*)
+	echo m68k-hp-bsd4.4
 	exit 0 ;;
-    9000/8??:HP-UX:*:*)
-	echo hppa1.0-hp-hpux
+    9000/[3478]??:HP-UX:*:* | 9000/8?7:HP-UX:*:* )
+	case "${UNAME_MACHINE}" in
+	    9000/31? )            HP_ARCH=m68000 ;;
+	    9000/[34]?? )         HP_ARCH=m68k ;;
+	    9000/7?? | 9000/8?7 ) HP_ARCH=hppa1.1 ;;
+	    9000/8?? )            HP_ARCH=hppa1.0 ;;
+	esac
+	case ${UNAME_RELEASE} in
+	    *.B7.* )          HPUX_REV=7 ;;
+	    *.B8.* | *.08.* ) HPUX_REV=8 ;;
+	    *.09.* )          HPUX_REV=9 ;;
+	esac
+	echo ${HP_ARCH}-hp-hpux${HPUX_REV}
 	exit 0 ;;
-    9000/8??:4.3bsd:*:* | 9000/8?7:4.3bsd:*:* )
+    3050*:HI-UX:*:*)
+	sed 's/^	//' << EOF >dummy.c
+	#include <unistd.h>
+	int
+	main ()
+	{
+	  long cpu = sysconf (_SC_CPU_VERSION);
+	  if (CPU_IS_HP_MC68K (cpu))
+	    puts ("m68k-hitachi-hiuxwe2");
+	  else if (CPU_IS_PA_RISC (cpu))
+	    {
+	      switch (cpu)
+		{
+		  case CPU_PA_RISC1_0: puts ("hppa1.0-hitachi-hiuxwe2"); break;
+		  case CPU_PA_RISC1_1: puts ("hppa1.1-hitachi-hiuxwe2"); break;
+		  case CPU_PA_RISC2_0: puts ("hppa2.0-hitachi-hiuxwe2"); break;
+		  default: puts ("hppa-hitachi-hiuxwe2"); break;
+		}
+	    }
+	  else puts ("unknown-hitachi-hiuxwe2");
+	  exit (0);
+	}
+EOF
+	${CC-cc} dummy.c -o dummy && ./dummy && rm dummy.c dummy && exit 0
+	rm -f dummy.c dummy
+	echo unknown-hitachi-hiuxwe2
+	exit 0 ;;
+    9000/7??:4.3bsd:*:* | 9000/8?7:4.3bsd:*:* )
 	echo hppa1.1-hp-bsd
 	exit 0 ;;
     9000/8??:4.3bsd:*:*)
 	echo hppa1.0-hp-bsd
 	exit 0 ;;
-    C1*:ConvexOS:*:*)
+    C1*:ConvexOS:*:* | convex:ConvexOS:C1:*)
 	echo c1-convex-bsd
         exit 0 ;;
-    C2*:ConvexOS:*:*)
+    C2*:ConvexOS:*:* | convex:ConvexOS:C2:*)
 	echo c2-convex-bsd
         exit 0 ;;
     CRAY*X-MP:UNICOS:*:*)
@@ -115,10 +187,16 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
     CRAY-2:UNICOS:*:*)
 	echo cray2-cray-unicos
         exit 0 ;;
+    i[34]86:BSD/386:*:*)
+	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
+	exit 0 ;;
+    i[34]86:FreeBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-freebsd
+	exit 0 ;;
     i[34]86:Linux:*:*)
 	echo ${UNAME_MACHINE}-unknown-linux
 	exit 0 ;;
-    i[34]86:UNIX_SV:4.*:*)
+    i[34]86:UNIX_SV:4.*:* | i[34]86:SYSTEM_V:4.*:*)
 	if grep Novell /usr/include/link.h >/dev/null 2>/dev/null; then
 		echo ${UNAME_MACHINE}-univel-sysv${UNAME_RELEASE}
 	else
@@ -130,19 +208,44 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 		UNAME_REL=`(/bin/uname -X|egrep Release|sed -e 's/.*= //')`
 		(/bin/uname -X|egrep i80486 >/dev/null) && UNAME_MACHINE=i486
 		echo ${UNAME_MACHINE}-unknown-sco$UNAME_REL
+	elif test -f /usr/options/cb.name; then
+		UNAME_REL=`sed -n 's/.*Version //p' </usr/options/cb.name`
+		echo ${UNAME_MACHINE}-unknown-isc$UNAME_REL
 	else
-		echo ${UNAME_MACHINE}-unknown-sysv3.2
+		echo ${UNAME_MACHINE}-unknown-sysv32
+	fi
+	exit 0 ;;
+    i860:*:4.*:*) # i860-SVR4
+	if grep Stardent /usr/include/sys/uadmin.h >/dev/null 2>&1 ; then
+	  echo i860-stardent-sysv${UNAME_RELEASE} # Stardent Vistra i860-SVR4
+	else # Add other i860-SVR4 vendors below as they are discovered.
+	  echo i860-unknown-sysv${UNAME_RELEASE}  # Unknown i860-SVR4
 	fi
 	exit 0 ;;
     mini*:CTIX:SYS*5:*)
 	# "miniframe"
 	echo m68010-convergent-sysv
 	exit 0 ;;
-     M680[234]0:*:R3V[567]*:*)
+    M680[234]0:*:R3V[567]*:*)
 	test -r /sysV68 && echo 'm68k-motorola-sysv' && exit 0 ;;
+    3[34]??:*:4.0:* | 3[34]??,3[34]??:*:4.0:*)
+	uname -p 2>/dev/null | grep 86 >/dev/null \
+	  && echo i486-ncr-sysv4 && exit 0 ;;
+    m680[234]0:LynxOS:2.2*:*)
+	echo m68k-lynx-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    mc68030:UNIX_System_V:4.*:*)
+        echo m68k-atari-sysv4
+        exit 0 ;;
+    i[34]86:LynxOS:2.2*:*)
+	echo i386-lynx-lynxos${UNAME_RELEASE}
+	exit 0 ;;
+    TSUNAMI:LynxOS:2.2*:*)
+	echo sparc-lynx-lynxos${UNAME_RELEASE}
+	exit 0 ;;
 esac
 
-echo '(No uname command or uname output not recognized.)' 1>&2
+#echo '(No uname command or uname output not recognized.)' 1>&2
 #echo "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" 1>&2
 
 cat >dummy.c <<EOF
@@ -150,13 +253,38 @@ main()
 {
 #if defined (sony)
 #if defined (MIPSEB)
+  /* BFD wants "bsd" instead of "newsos".  Perhaps BFD should be changed,
+     I don't know....  */
+  printf ("mips-sony-bsd\n"); exit (0);
 #else
   printf("m68k-sony-newsos\n"); exit(0);
 #endif
 #endif
 
+#if defined (__arm) && defined (__acorn) && defined (__unix)
+  printf("arm-acorn-riscix"); exit (0);
+#endif
+
 #if defined(hp300) && !defined(hpux)
   printf("m68k-hp-bsd\n"); exit(0);
+#endif
+
+#if defined(NeXT)
+#if !defined(__ARCHITECTURE__)
+#define __ARCHITECTURE__ "m68k"
+#endif
+  int version;
+  version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
+  if (version==2)
+    {
+      printf("%s-next-ns2\n", __ARCHITECTURE__);
+      exit(0);
+    }
+  else
+    {
+      printf("%s-next-ns3\n", __ARCHITECTURE__);
+      exit(0);
+    }
 #endif
 
 #if defined (MULTIMAX) || defined (n16)
@@ -188,13 +316,25 @@ main()
   printf("i386-sequent-ptx\n"); exit(0);
 #endif
 
+#if defined(vax)
+#if !defined(ultrix)
+  printf("vax-dec-bsd\n"); exit(0);
+#else
+  printf("vax-dec-ultrix\n"); exit(0);
+#endif
+#endif
+
   exit (1);
 }
 EOF
 
-${CC-cc} dummy.c -o dummy && ./dummy && rm dummy.c dummy && exit 0
+${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy && rm dummy.c dummy && exit 0
 rm -f dummy.c dummy
 
-echo '(Unable to guess system type)' 1>&2
+# Apollos put the system type in the environment.
+
+test -d /usr/apollo && { echo ${ISP}-apollo-${SYSTYPE}; exit 0; }
+
+#echo '(Unable to guess system type)' 1>&2
 
 exit 1
