@@ -101,8 +101,8 @@ $(GCJ).o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) $(GCJ).c \
 
 # Create the compiler driver for $(GCJ).
 $(GCJ)$(exeext): $(GCJ).o jvspec.o version.o \
-	   prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJ).o jvspec.o prefix.o \
+	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCJ).o jvspec.o prefix.o intl.o \
 	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the $(GCJ) driver which calls the cross-compiler.

@@ -1,3 +1,7 @@
+1999-03-21  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (g77$(exeext)): Depend on intl.o.  Link in intl.o.
+
 Wed Mar 17 11:39:44 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Editorial fix.
