@@ -1,3 +1,12 @@
+2004-07-09  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/RuleBasedCollator.java
+	(mergeRules): Use ArrayList instead of Vector.
+	(subParseString): likewise.
+	(parseString): likewise.
+	(buildCollationVector): likewise.
+	(getCollationKey): likewise.
+
 2004-07-09  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/text/DateFormat.java (parse):
