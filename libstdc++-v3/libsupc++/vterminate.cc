@@ -27,11 +27,19 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <bits/c++config.h>
 #include <cstdlib>
-#include <cstdio>
 #include <exception>
 #include <exception_defines.h>
 #include <cxxabi.h>
+
+#ifdef _GLIBCPP_HAVE_UNISTD_H
+# include <unistd.h>
+# define writestr(str)  write(2, str, sizeof(str) - 1)
+#else
+# include <cstdio>
+# define writestr(str)  std::fputs(str, stderr)
+#endif
 
 using namespace std;
 using namespace abi;
@@ -57,8 +65,12 @@ namespace __gnu_cxx
 	  
 	  dem = __cxa_demangle(name, 0, 0, &status);
 
-	  fprintf(stderr, "terminate called after throwing a `%s'\n", 
-		  status == 0 ? dem : name);
+	  writestr("terminate called after throwing an instance of '");
+	  if (status == 0)
+	    writestr(dem);
+	  else
+	    writestr(name);
+	  writestr("'\n");
 
 	  if (status == 0)
 	    free(dem);
@@ -69,12 +81,17 @@ namespace __gnu_cxx
 	try { __throw_exception_again; }
 #ifdef __EXCEPTIONS
 	catch (exception &exc)
-	  { fprintf(stderr, "  what(): %s\n", exc.what()); }
+	  {
+	    char const *w = exc.what();
+	    writestr("  what():  ");
+	    writestr(w);
+	    writestr("\n");
+          }
 #endif
 	catch (...) { }
       }
     else
-      fprintf(stderr, "terminate called without an active exception\n");
+      writestr("terminate called without an active exception\n");
     
     abort();
   }

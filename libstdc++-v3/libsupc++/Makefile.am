@@ -81,9 +81,11 @@ sources = \
 	eh_exception.cc \
 	eh_globals.cc \
 	eh_personality.cc \
+	eh_term_handler.cc \
 	eh_terminate.cc \
 	eh_throw.cc \
 	eh_type.cc \
+	eh_unex_handler.cc \
 	guard.cc \
 	new_handler.cc \
 	new_op.cc \
@@ -93,7 +95,8 @@ sources = \
 	pure.cc \
 	tinfo.cc \
 	tinfo2.cc \
-	vec.cc
+	vec.cc \
+	vterminate.cc
 
 libsupc___la_SOURCES = $(sources) $(c_sources)
 libsupc__convenience_la_SOURCES = $(sources) $(c_sources)

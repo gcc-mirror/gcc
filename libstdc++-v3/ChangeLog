@@ -1,3 +1,18 @@
+2002-12-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* src/vterminate.cc:  Move to...
+	* libsupc++/vterminate.cc:  ...here.  New file.  Replace fprintf with
+	writestr macro.  Slight reword to explanatory text.
+	* libsupc++/eh_terminate.cc (__cxxabiv1::__terminate_handler,
+	__cxxabiv1::__unexpected_handler):  Break definitions out to...
+	* libsupc++/eh_unex_handler.cc:  ...here (new file), and...
+	* libsupc++/eh_term_handler.cc:  ...here (new file).  Initialize
+	__terminate_handler with __gnu_cxx::__verbose_terminate_handler
+	instead of std::abort.
+
+	* libsupc++/Makefile.am (sources), src/Makefile.am (sources):  Update.
+	* libsupc++/Makefile.in, src/Makefile.in:  Regenerate.
+
 2002-12-23  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/io/basic_file_stdio.cc (__basic_file::_M_open_mode):

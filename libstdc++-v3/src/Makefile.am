@@ -143,7 +143,6 @@ sources = \
 	string-inst.cc \
 	strstream.cc \
 	valarray-inst.cc \
-	vterminate.cc \
 	wstring-inst.cc \
 	${target_sources} \
 	${target_sources_extra}
