@@ -3688,10 +3688,11 @@ static unsigned get_AT_unsigned		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static inline dw_die_ref get_AT_ref 	PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
-static int is_c_family			PARAMS ((void));
-static int is_cxx			PARAMS ((void));
-static int is_java			PARAMS ((void));
-static int is_fortran			PARAMS ((void));
+static bool is_c_family			PARAMS ((void));
+static bool is_cxx			PARAMS ((void));
+static bool is_java			PARAMS ((void));
+static bool is_fortran			PARAMS ((void));
+static bool is_ada			PARAMS ((void));
 static void remove_AT			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static inline void free_die		PARAMS ((dw_die_ref));
@@ -3766,6 +3767,8 @@ static void output_file_names           PARAMS ((void));
 static dw_die_ref base_type_die		PARAMS ((tree));
 static tree root_type			PARAMS ((tree));
 static int is_base_type			PARAMS ((tree));
+static bool is_ada_subrange_type        PARAMS ((tree));
+static dw_die_ref subrange_type_die     PARAMS ((tree));
 static dw_die_ref modified_type_die	PARAMS ((tree, int, int, dw_die_ref));
 static int type_is_enum			PARAMS ((tree));
 static unsigned int reg_number		PARAMS ((rtx));
@@ -5090,36 +5093,54 @@ get_AT_ref (die, attr_kind)
   return a ? AT_ref (a) : NULL;
 }
 
-static inline int
+/* Return TRUE if the language is C or C++.  */
+
+static inline bool
 is_c_family ()
 {
-  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
 
   return (lang == DW_LANG_C || lang == DW_LANG_C89
 	  || lang == DW_LANG_C_plus_plus);
 }
 
-static inline int
+/* Return TRUE if the language is C++.  */
+
+static inline bool
 is_cxx ()
 {
   return (get_AT_unsigned (comp_unit_die, DW_AT_language)
 	  == DW_LANG_C_plus_plus);
 }
 
-static inline int
+/* Return TRUE if the language is Fortran.  */
+
+static inline bool
 is_fortran ()
 {
-  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
 
-  return (lang == DW_LANG_Fortran77 || lang == DW_LANG_Fortran90);
+  return lang == DW_LANG_Fortran77 || lang == DW_LANG_Fortran90;
 }
 
-static inline int
+/* Return TRUE if the language is Java.  */
+
+static inline bool
 is_java ()
 {
-  unsigned lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
 
-  return (lang == DW_LANG_Java);
+  return lang == DW_LANG_Java;
+}
+
+/* Return TRUE if the language is Ada.  */
+
+static inline bool
+is_ada ()
+{
+  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  
+  return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
 }
 
 /* Free up the memory used by A.  */
@@ -8028,6 +8049,50 @@ simple_type_size_in_bits (type)
     return TYPE_ALIGN (type);
 }
 
+/* Return true if the debug information for the given type should be
+   emitted as a subrange type.  */
+
+static inline bool
+is_ada_subrange_type (type)
+    tree type;
+{
+  /* We do this for INTEGER_TYPEs that have names, parent types, and when
+     we are compiling Ada code.  */
+  return (TREE_CODE (type) == INTEGER_TYPE
+	  && TYPE_NAME (type) != 0 && TREE_TYPE (type) != 0
+	  && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
+	  && TREE_UNSIGNED (TREE_TYPE (type)) && is_ada ());
+}
+
+/*  Given a pointer to a tree node for a subrange type, return a pointer
+    to a DIE that describes the given type.  */
+
+static dw_die_ref
+subrange_type_die (type)
+    tree type;
+{
+  dw_die_ref subtype_die;
+  dw_die_ref subrange_die;
+  tree name = TYPE_NAME (type);
+  
+  subtype_die = base_type_die (TREE_TYPE (type));
+
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+
+  subrange_die = new_die (DW_TAG_subrange_type, comp_unit_die, type);
+  add_name_attribute (subrange_die, IDENTIFIER_POINTER (name));
+  if (TYPE_MIN_VALUE (type) != NULL)
+    add_bound_info (subrange_die, DW_AT_lower_bound,
+                    TYPE_MIN_VALUE (type));
+  if (TYPE_MAX_VALUE (type) != NULL)
+    add_bound_info (subrange_die, DW_AT_upper_bound,
+                    TYPE_MAX_VALUE (type));
+  add_AT_die_ref (subrange_die, DW_AT_type, subtype_die);
+
+  return subrange_die;
+}
+
 /* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
    entry that chains various modifiers in front of the given type.  */
 
@@ -8122,6 +8187,8 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 #endif
 	  item_type = TREE_TYPE (type);
 	}
+      else if (is_ada_subrange_type (type))
+        mod_type_die = subrange_type_die (type);
       else if (is_base_type (type))
 	mod_type_die = base_type_die (type);
       else

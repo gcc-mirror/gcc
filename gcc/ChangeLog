@@ -1,3 +1,10 @@
+2003-04-21  Joel Brobecker  <brobecker@gnat.com>
+
+	* dwarf2out.c (is_ada, is_ada_subrange_type): New functions.
+	(subrange_type_die): Likewise.
+	(modified_type_die): Emit a subrange_type DIE for Ada subrange types.
+	(is_c_family, is_cxx, is_java, is_fortran): Return bool and clean up.
+
 2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
         Break out coverage routines to new file.
