@@ -2290,7 +2290,7 @@ for machine in $build $host $target; do
 		xm_file=sparc/xm-linux.h # with ELF format using the
 		xmake_file=x-linux	 # Linux C library 5.
 		tm_file=sparc/linux.h
-		tmake_file=t-linux t-linux-gnulibc1
+		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
@@ -2300,7 +2300,7 @@ for machine in $build $host $target; do
 		xm_file=sparc/xm-linux.h # with ELF format using glibc 2
 		xmake_file=x-linux	 # aka the Linux C library 6.
 		tm_file=sparc/linux.h
-		tmake_file=t-linux
+		tmake_file="t-linux sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
