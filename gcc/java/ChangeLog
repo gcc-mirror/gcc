@@ -1,5 +1,13 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
+	* decl.c (end_java_method): Do not save and restore
+	flag_non_call_exceptions.
+	* parse.y (source_end_java_method): Likewise.
+	* lang.c (flag_exceptions): Don't declare.
+	(java_init_options): Set flag_non_call_exceptions.  Set
+	flag_exceptions here ...
+	(java_init): ... not here.
+
 	* lang.c (flag_new_exceptions): Don't declare it.
 	(java_init_options): Or set it.
 
@@ -28,7 +36,7 @@
 
 2001-05-03  Mo DeJong  <mdejong@redhat.com>
 
-        * lex.c (java_new_lexer): Call iconv_close on temp handle used to
+	* lex.c (java_new_lexer): Call iconv_close on temp handle used to
 	check for byte swap.
 
 2001-05-01  Tom Tromey  <tromey@redhat.com>
@@ -476,7 +484,7 @@ Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Make-lang.in (jvspec.o): Modify rule to match that of cp/g++spec.o.
 
 2001-02-14  Tom Tromey  <tromey@redhat.com>
-            Alexandre Petit-Bianco  <apbianco@redhat.com>
+	    Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	Fix for PR java/1261.
 	* typeck.c (build_java_array_type): Add public `clone' method to
@@ -1103,7 +1111,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gen-table.pl: new file.
 
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
-            Alexandre Petit-Bianco  <apbianco@cygnus.com>
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_lhs): Only allow compound assignment of
 	reference type if type is String.
