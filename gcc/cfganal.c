@@ -936,7 +936,7 @@ dfs_enumerate_from (basic_block bb, int reverse,
 /* Compute dominance frontiers, ala Harvey, Ferrante, et al.
    
    This algorithm can be found in Timothy Harvey's PhD thesis, at
-   http://www.cs.rice.edu/~harv/thesis.pdf in the section on iterative
+   http://www.cs.rice.edu/~harv/dissertation.pdf in the section on iterative
    dominance algorithms.
 
    First, we identify each join point, j (any node with more than one
