@@ -1575,7 +1575,7 @@ assemble_name (file, name)
   if (name[0] == '*')
     {
       if (output_bytecode)
-	bc_emit_labelref (name);
+	bc_emit_labelref (name, 0);
       else
 	fputs (&name[1], file);
     }
@@ -3685,7 +3685,8 @@ bc_assemble_integer (exp, size)
   else
     if (size == 4
 	&& TREE_CODE (TREE_OPERAND (addr_part, 0)) == VAR_DECL)
-      bc_emit_labelref (DECL_ASSEMBLER_NAME (TREE_OPERAND (addr_part, 0)),
+      bc_emit_labelref (IDENTIFIER_POINTER
+			(DECL_ASSEMBLER_NAME (TREE_OPERAND (addr_part, 0))),
 			TREE_INT_CST_LOW (const_part));
     else
       abort ();		/* FIXME: there may be more cases.  */
