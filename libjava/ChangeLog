@@ -1,3 +1,10 @@
+1999-07-07  Andrew Haley  <aph@cygnus.com>
+
+        * include/i386-signal.h (MAKE_THROW_FRAME): Advance EIP by two
+	bytes to make it point after the instruction where the trap
+	occurred.
+	(HANDLE_DIVIDE_OVERFLOW): Ditto.
+
 1999-07-07  Tom Tromey  <tromey@cygnus.com>
 
 	* mauve-libgcj: Explicitly enable formerly disabled java.text
