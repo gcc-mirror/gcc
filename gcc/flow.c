@@ -4968,8 +4968,8 @@ dump_flow_info (file)
       register int regno;
       register edge e;
 
-      fprintf (file, "\nBasic block %d: first insn %d, last %d.\n",
-	       i, INSN_UID (bb->head), INSN_UID (bb->end));
+      fprintf (file, "\nBasic block %d: first insn %d, last %d, loop_depth %d.\n",
+	       i, INSN_UID (bb->head), INSN_UID (bb->end), bb->loop_depth);
 
       fprintf (file, "Predecessors: ");
       for (e = bb->pred; e ; e = e->pred_next)
@@ -6574,11 +6574,13 @@ flow_loop_nodes_find (header, latch, nodes)
   sbitmap_zero (nodes);
   SET_BIT (nodes, header->index);
   num_nodes++;
+  header->loop_depth++;
 
   /* Push the loop latch on to the stack.  */
   if (! TEST_BIT (nodes, latch->index))
     {
       SET_BIT (nodes, latch->index);
+      latch->loop_depth++;
       num_nodes++;
       stack[sp++] = latch;
     }
@@ -6599,6 +6601,7 @@ flow_loop_nodes_find (header, latch, nodes)
 	      && ! TEST_BIT (nodes, ancestor->index))
 	    {
 	      SET_BIT (nodes, ancestor->index);
+	      ancestor->loop_depth++;
 	      num_nodes++;
 	      stack[sp++] = ancestor;
 	    }
@@ -6832,7 +6835,8 @@ flow_loops_level_compute (loops)
 }
 
 
-/* Find all the natural loops in the function and save in LOOPS structure.
+/* Find all the natural loops in the function and save in LOOPS structure
+   and recalculate loop_depth information in basic block structures.
    Return the number of natural loops found.  */
 int 
 flow_loops_find (loops)
@@ -6861,10 +6865,15 @@ flow_loops_find (loops)
   compute_flow_dominators (dom, NULL);
 
   /* Count the number of loop edges (back edges).  This should be the
-     same as the number of natural loops.  */
+     same as the number of natural loops.  Also clear the loop_depth
+     and as we work from inner->outer in a loop nest we call
+     find_loop_nodes_find which will increment loop_depth for nodes
+     within the current loop, which happens to enclose inner loops.  */
+
   num_loops = 0;
   for (b = 0; b < n_basic_blocks; b++)
     {
+      BASIC_BLOCK (b)->loop_depth = 1;
       for (e = BASIC_BLOCK (b)->pred; e; e = e->pred_next)
 	{
 	  basic_block latch = e->src;
