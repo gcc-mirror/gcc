@@ -1,3 +1,15 @@
+2000-06-16  Benjamin Chelf  <chelf@codesourcery.com>
+
+	* c-common.c (c_tree_code_type): New array.
+	(c_tree_code_length): Likewise.
+	(c_tree_code_name): Likewise.
+	(add_c_tree_codes): New function.
+
+	* c-common.h (add_c_tree_codes): Declare.
+	(enum c_tree_code): New enum.
+
+	* c-lex.c (init_parse): Added call to add_c_tree_codes.
+	
 2000-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/inclhack.def (ctrl_quotes_def, io_quotes_def): Modify
@@ -37,7 +49,7 @@ Wed Jun 14 23:46:26 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(print_operand): Remove unused variables neg and op.
 	(toc_hash_mark_entry): Fix prototype.
 
-2000-06-14  Benjamin Chelf  <chelf@cabriolet.stanford.edu>
+2000-06-14  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* c-common.h (IF_COND): Moved here from cp/cp-tree.h.
 	(THEN_CLAUSE): Likewise.

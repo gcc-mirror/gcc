@@ -246,3 +246,16 @@ extern tree simple_type_promotes_to		PARAMS ((tree));
    function ended.  */
 #define STMT_LINENO_FOR_FN_P(NODE) 		\
   (TREE_LANG_FLAG_2 ((NODE)))
+
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,
+
+enum c_tree_code {
+  C_DUMMY_TREE_CODE = LAST_AND_UNUSED_TREE_CODE,
+#include "c-common.def"
+  LAST_C_TREE_CODE
+};
+
+#undef DEFTREECODE
+
+extern void add_c_tree_codes		        PARAMS ((void));

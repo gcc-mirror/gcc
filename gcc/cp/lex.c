@@ -341,15 +341,13 @@ get_time_identifier (name)
   return time_identifier;
 }
 
-/* Table indexed by tree code giving a string containing a character
-   classifying the tree code.  Possibilities are
-   t, d, s, c, r, <, 1 and 2.  See cp/cp-tree.def for details.  */
+
+/* Tree code classes. */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
 static char cplus_tree_code_type[] = {
   'x',
-#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -362,7 +360,6 @@ static char cplus_tree_code_type[] = {
 
 static int cplus_tree_code_length[] = {
   0,
-#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -373,7 +370,6 @@ static int cplus_tree_code_length[] = {
 
 static const char *cplus_tree_code_name[] = {
   "@@dummy",
-#include "c-common.def"
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -584,15 +580,17 @@ init_parse (filename)
   init_tree ();
   init_cplus_expand ();
 
-  memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+  add_c_tree_codes ();
+
+  memcpy (tree_code_type + (int) LAST_C_TREE_CODE,
 	  cplus_tree_code_type,
-	  (int)LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE,
+	  (int)LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE);
+  memcpy (tree_code_length + (int) LAST_C_TREE_CODE,
 	  cplus_tree_code_length,
-	  (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
-  memcpy (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE,
+	  (LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE) * sizeof (int));
+  memcpy (tree_code_name + (int) LAST_C_TREE_CODE,
 	  cplus_tree_code_name,
-	  (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+	  (LAST_CPLUS_TREE_CODE - (int)LAST_C_TREE_CODE) * sizeof (char *));
 
   init_operators ();
   init_method ();
