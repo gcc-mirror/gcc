@@ -10645,7 +10645,7 @@ loop_dump_aux (const struct loop *loop, FILE *file,
 {
   rtx label;
 
-  if (! loop || ! file)
+  if (! loop || ! file || !BB_HEAD (loop->first))
     return;
 
   /* Print diagnostics to compare our concept of a loop with

@@ -1,3 +1,13 @@
+2004-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (loop_dump_aux): Do not print RTL when not available.
+	* tree-ssa-loop-ivopts.c (add_standard_iv_candidates): Do not use
+	frontend specific type nodes.
+	(produce_memory_decl_rtl): Break out from ...
+	(prepare_decl_rtl): ... here.  Handle ADDR_EXPR correctly.
+	(get_computation_at): Avoid random tree sharing.
+	(tree_ssa_iv_optimize): Verify tree sharing; dump loops.
+
 2004-09-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (rtl.o, bitmap.o): Correct dependencies, remove
