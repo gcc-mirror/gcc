@@ -81,7 +81,6 @@ extern void expand_eh_return (void);
 extern rtx expand_builtin_extend_pointer (tree);
 extern rtx get_exception_pointer (struct function *);
 extern rtx get_exception_filter (struct function *);
-extern int check_handled (tree, tree);
 
 extern void sjlj_emit_function_exit_after (rtx);
 
