@@ -33,6 +33,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::		Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
+* Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
 * Macro Varargs::	Macros with variable number of arguments.
@@ -78,6 +79,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::		Double-word integers---@code{long long int}.
 * Complex::             Data types for complex numbers.
+* Hex Floats::          Hexadecimal floating-point constants.
 * Zero Length::         Zero-length arrays.
 * Variable Length::     Arrays whose length is computed at run time.
 * Macro Varargs::	Macros with variable number of arguments.
@@ -789,6 +791,19 @@ examine and set these two fictitious variables with your debugger.
 
 A future version of GDB will know how to recognize such pairs and treat
 them as a single variable with a complex type.
+
+@node Hex Floats
+@section Hex Floats
+@cindex hex floats
+
+GNU CC recognizes floating-point numbers writen not only in the usual
+decimal notation, such as @code{1.55e1}, but also numbers such as
+@code{0x1.fp3} written in hexadecimal format.  In that format the
+@code{0x} hex introducer and the @code{p} or @code{P} exponent field are
+mandatory.  The exponent is a decimal number that indicates the power of
+2 by which the significand part will be multiplied.  Thus @code{0x1.f} is
+1 15/16, @code{p3} multiplies it by 8, and the value of @code{0x1.fp3}
+is the same as @code{1.55e1}.
 
 @node Zero Length
 @section Arrays of Length Zero
