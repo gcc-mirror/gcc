@@ -1,6 +1,6 @@
 #!/bin/sh
 # Submit a problem report to a GNATS site.
-# Copyright (C) 1993, 2000, 2001, 2002 Free Software Foundation, Inc.
+# Copyright (C) 1993, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 # Contributed by Brendan Kehoe (brendan@cygnus.com), based on a
 # version written by Heinz G. Seidl (hgs@cygnus.com).
 #
@@ -198,7 +198,7 @@ EOF
 done
 
 # spam does not need to be listed here
-CATEGORIES="ada bootstrap c++ c debug driver fortran inline-asm java libf2c libgcj libobjc libstdc++ middle-end objc optimization other preprocessor target web"
+CATEGORIES="ada bootstrap c++ c debug driver fortran inline-asm java libf2c libgcj libobjc libstdc++ middle-end objc optimization other pch preprocessor target web"
 
 case "$FORMAT" in
   lisp) echo "$CATEGORIES" | \
