@@ -1,3 +1,9 @@
+2003-10-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: Add snprintf to gcc_AC_CHECK_DECLS list.
+	* system.h: Declare snprintf if necessary.
+	* configure, config.in: Regenerate.
+
 2003-10-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_va_arg): Only align vector
@@ -26,13 +32,13 @@
 
 	* config/darwin-protos.h (machopic_non_lazy_ptr_name): Delete
 	prototype.  Clean up some whitespace.
-	* config/darwin.c: Use gen_rtx_FOO (...) rather than 
-	gen_rtx (FOO, ...).  
+	* config/darwin.c: Use gen_rtx_FOO (...) rather than
+	gen_rtx (FOO, ...).
 	(machopic_non_lazy_ptr_name): Make static.
 	(name_needs_quotes): Allow '.' and '$' unquoted.
 	(machopic_legitimize_pic_address): Improve codegen in dynamic-no-pic
 	case.
-	
+
 2003-10-15  Gábor Lóki  <alga@rgai.hu>
 
 	* fold-const.c (tree_swap_operands_p): Disable some features
