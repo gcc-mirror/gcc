@@ -1,3 +1,8 @@
+2003-05-07  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_conditional_expr): Don't assume that the folded
+	expression has result_type.
+
 2003-05-06  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* typeck.c (build_unary_op): Deal with const qualifier in

@@ -3530,16 +3530,19 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
  valid_operands:
   result = fold (build (COND_EXPR, result_type, arg1, arg2, arg3));
+  /* We can't use result_type below, as fold might have returned a
+     throw_expr.  */
+
   /* Expand both sides into the same slot, hopefully the target of the
      ?: expression.  We used to check for TARGET_EXPRs here, but now we
      sometimes wrap them in NOP_EXPRs so the test would fail.  */
-  if (!lvalue_p && IS_AGGR_TYPE (result_type))
-    result = build_target_expr_with_type (result, result_type);
+  if (!lvalue_p && IS_AGGR_TYPE (TREE_TYPE (result)))
+    result = get_target_expr (result);
   
   /* If this expression is an rvalue, but might be mistaken for an
      lvalue, we must add a NON_LVALUE_EXPR.  */
   if (!lvalue_p && real_lvalue_p (result))
-    result = build1 (NON_LVALUE_EXPR, result_type, result);
+    result = build1 (NON_LVALUE_EXPR, TREE_TYPE (result), result);
 
   return result;
 }
