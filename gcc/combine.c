@@ -11552,8 +11552,9 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  if (! find_regno_note (tem, REG_UNUSED,
 						 REGNO (XEXP (note, 0))))
 			    REG_NOTES (tem)
-			      = gen_rtx (EXPR_LIST, REG_UNUSED, XEXP (note, 0),
-					 REG_NOTES (tem));
+			      = gen_rtx_EXPR_LIST (REG_UNUSED,
+						   XEXP (note, 0),
+						   REG_NOTES (tem));
 			}
 		      else
 			{

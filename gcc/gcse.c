@@ -805,8 +805,8 @@ compute_can_copy ()
 #ifdef AVOID_CCMODE_COPIES
 	  can_copy_p[i] = 0;
 #else
-	  reg = gen_rtx (REG, (enum machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
-	  insn = emit_insn (gen_rtx (SET, VOIDmode, reg, reg));
+	  reg = gen_rtx_REG ((enum machine_mode) i, LAST_VIRTUAL_REGISTER + 1);
+	  insn = emit_insn (gen_rtx_SET (VOIDmode, reg, reg));
 	  if (recog (PATTERN (insn), insn, NULL_PTR) >= 0)
 	    can_copy_p[i] = 1;
 #endif
@@ -3139,8 +3139,9 @@ handle_avail_expr (insn, expr)
       /* Generate the new insn.  */
       /* ??? If the change fails, we return 0, even though we created
 	 an insn.  I think this is ok.  */
-      new_insn = emit_insn_after (gen_rtx (SET, VOIDmode, to,
-					   SET_DEST (PATTERN (insn_computes_expr))),
+      new_insn
+	= emit_insn_after (gen_rtx_SET (VOIDmode, to,
+					SET_DEST (PATTERN (insn_computes_expr))),
 				  insn_computes_expr);
       /* Keep block number table up to date.  */
       set_block_num (new_insn, BLOCK_NUM (insn_computes_expr));
@@ -4321,7 +4322,7 @@ pre_insert_insn (expr, bb)
   int regno = REGNO (reg);
   rtx pat;
 
-  pat = gen_rtx (SET, VOIDmode, reg, copy_rtx (expr->expr));
+  pat = gen_rtx_SET (VOIDmode, reg, copy_rtx (expr->expr));
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
      handle cc0, etc. properly].  */
@@ -4443,7 +4444,7 @@ pre_insert_copy_insn (expr, insn)
 
   if (!set)
     abort ();
-  new_insn = emit_insn_after (gen_rtx (SET, VOIDmode, reg, SET_DEST (set)),
+  new_insn = emit_insn_after (gen_rtx_SET (VOIDmode, reg, SET_DEST (set)),
 			      insn);
   /* Keep block number table up to date.  */
   set_block_num (new_insn, BLOCK_NUM (insn));
