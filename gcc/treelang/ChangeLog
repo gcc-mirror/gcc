@@ -1,3 +1,7 @@
+2004-08-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* treetree.c (tree_code_get_integer_value): Fix build_int_cst call.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treelang/treetree.c (treelang_init_decl_processing): Adjust
