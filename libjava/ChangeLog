@@ -1,5 +1,13 @@
 2003-12-09  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.am (nat_headers_install): New variable with header files to
+	install automatically.
+	(install-data-local): Install all headers listed in
+	nat_headers_install. Install innert nat headers explicitely.
+	* Makefile.in: Regenerated.
+
+2003-12-09  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Calendar.java,
 	java/util/IdentityHashMap.java,
 	java/util/prefs/Preferences.java:
