@@ -1,7 +1,9 @@
 Fri Jun 19 20:38:34 1998  H.J. Lu  (hjl@gnu.org)
 
+	* dwarf2out.h (debug_dwarf, debug_dwarf_die): New declarations.
+
 	* c-typeck.c (c_expand_asm_operands): Use proper values when calling
-	expand_expr..
+	expand_expr.
 
 	* c-lex.c (yyprint): Add prototype.
 	(check_newline, build_objc_string): Remove declaration.
