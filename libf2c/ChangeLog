@@ -1,3 +1,35 @@
+1998-07-06  Dave Love  <d.love@dl.ac.uk>
+
+	* libU77/Makefile.in (lib): Change variable lib to LIBS.
+
+1998-07-06  Robert Lipe <robertl@dgii.com>
+
+	* libU77/configure.in: Look for -lsocket, add to LIBS if found.
+
+	* libU77/Makefile.in (lib):  Use LIBS from above.
+
+1998-07-05  Dave Love  <d.love@dl.ac.uk>
+
+	* f2cext.c (system_clock_): Remove (just f90 intrinsic).
+
+	* Makefile.in (F2CEXT): Add datetime, remove sclock.
+	(UOBJ): Add libU77/datetime_.o.
+
+	* libU77/config.h.in: Add HAVE_GETTIMEOFDAY.
+
+	* libU77/configure.in: Check for gettimeofday.
+
+	* libU77/datetime_.c: New file.
+
+	* libU77/sys_clock_.c: Allow optional args.
+
+	* libU77/Makefile.in (G77DIR): Fix for current directory
+	structure.
+	(SRCS, OBJS): Add datetime.
+
+	* libU77/u77-test.f: Call date_and_time.  Call system_clock
+	omitting args.
+
 1998-06-29  Dave Love  <d.love@dl.ac.uk>
 
 	* libI77/wsfe.c (s_wsfe): Fix setting of f__curunit lost in
