@@ -1,3 +1,9 @@
+2005-02-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* print-tree.c (print_node_brief): Print LABEL_DECL_UID.
+	(print_node): Likewise.
+	Print TYPE_SIZES_GIMPLIFIED.
+
 2005-02-24  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md ("umulhisi3", "umulqihi3", "mulsi3")
