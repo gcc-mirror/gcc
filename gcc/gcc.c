@@ -836,6 +836,18 @@ static int argbuf_length;
 
 static int argbuf_index;
 
+/* This is the list of suffixes and codes (%g/%u/%U) and the associated
+   temp file.  Used only if MKTEMP_EACH_FILE.  */
+
+static struct temp_name {
+  char *suffix;		/* suffix associated with the code.  */
+  int length;		/* strlen (suffix).  */
+  int unique;		/* Indicates whether %g or %u/%U was used.  */
+  char *filename;	/* associated filename.  */
+  int filename_length;	/* strlen (filename).  */
+  struct temp_name *next;
+} *temp_names;
+
 /* Number of commands executed so far.  */
 
 static int execution_count;
@@ -1130,6 +1142,8 @@ choose_temp_base ()
 
   mktemp (temp_filename);
   temp_filename_length = strlen (temp_filename);
+  if (temp_filename_length == 0)
+    abort ();
 }
 
 
@@ -2545,16 +2559,42 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      obstack_grow (&obstack, input_basename, basename_length);
 	    else
 	      {
-#ifdef MKTEMP_EACH_FILE /* ??? This has a problem: the total number of
-			   values mktemp can return is limited.
-			   That matters for the names of object files.
-			   In 2.4, do something about that.  */
-		/* Choose a new temp_filename, but get rid of the
-		   suffix that the spec wants to add to it.  */
-		choose_temp_base ();
+#ifdef MKTEMP_EACH_FILE
+		/* ??? This has a problem: the total number of
+		   values mktemp can return is limited.
+		   That matters for the names of object files.
+		   In 2.4, do something about that.  */
+		struct temp_name *t;
+		char *suffix = p;
 		while (*p == '.' || isalpha (*p))
 		  p++;
-		obstack_grow (&obstack, temp_filename, temp_filename_length);
+
+		/* See if we already have an association of %g/%u/%U and
+		   suffix.  */
+		for (t = temp_names; t; t = t->next)
+		  if (t->length == p - suffix
+		      && strncmp (t->suffix, suffix, p - suffix) == 0
+		      && t->unique == (c != 'g'))
+		    break;
+
+		/* Make a new association if needed.  %u requires one.  */
+		if (t == 0 || c == 'u')
+		  {
+		    if (t == 0)
+		      {
+			t = (struct temp_name *) xmalloc (sizeof (struct temp_name));
+			t->next = temp_names;
+			temp_names = t;
+		      }
+		    t->length = p - suffix;
+		    t->suffix = save_string (suffix, p - suffix);
+		    t->unique = (c != 'g');
+		    choose_temp_base ();
+		    t->filename = temp_filename;
+		    t->filename_length = temp_filename_length;
+		  }
+
+		obstack_grow (&obstack, t->filename, t->filename_length);
 		delete_this_arg = 1;
 #else
 		obstack_grow (&obstack, temp_filename, temp_filename_length);
