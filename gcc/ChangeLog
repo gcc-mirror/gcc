@@ -1,5 +1,11 @@
 Wed Feb 24 14:03:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (finalize_must_preallocate): New function, extracted from
+	expand_call.
+	(expand_call): Use finalize_must_preallocate.
+
+	* calls.c (store_one_arg): Mark "variable_size" as possibly unused.
+
 	* regclass.c (record_reg_classes, case 'p'): Set classes appropriately.
 	An alternative always fails if it needs a pseudo and no suitable
 	register class can be found.

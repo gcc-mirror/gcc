@@ -137,6 +137,10 @@ static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
 					int));
 static void store_unaligned_arguments_into_pseudos PROTO ((struct arg_data *,
 							   int));
+static int finalize_must_preallocate		PROTO ((int, int,
+							struct arg_data *,
+							struct args_size *));
+
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
@@ -822,6 +826,64 @@ store_unaligned_arguments_into_pseudos (args, num_actuals)
       }
 }
 
+/* Given the current state of MUST_PREALLOCATE and information about
+   arguments to a function call in NUM_ACTUALS, ARGS and ARGS_SIZE,
+   compute and return the final value for MUST_PREALLOCATE.  */
+
+static int
+finalize_must_preallocate (must_preallocate, num_actuals, args, args_size)
+     int must_preallocate;
+     int num_actuals;
+     struct arg_data *args;
+     struct args_size *args_size;
+{
+  /* See if we have or want to preallocate stack space.
+
+     If we would have to push a partially-in-regs parm
+     before other stack parms, preallocate stack space instead.
+
+     If the size of some parm is not a multiple of the required stack
+     alignment, we must preallocate.
+
+     If the total size of arguments that would otherwise create a copy in
+     a temporary (such as a CALL) is more than half the total argument list
+     size, preallocation is faster.
+
+     Another reason to preallocate is if we have a machine (like the m88k)
+     where stack alignment is required to be maintained between every
+     pair of insns, not just when the call is made.  However, we assume here
+     that such machines either do not have push insns (and hence preallocation
+     would occur anyway) or the problem is taken care of with
+     PUSH_ROUNDING.  */
+
+  if (! must_preallocate)
+    {
+      int partial_seen = 0;
+      int copy_to_evaluate_size = 0;
+      int i;
+
+      for (i = 0; i < num_actuals && ! must_preallocate; i++)
+	{
+	  if (args[i].partial > 0 && ! args[i].pass_on_stack)
+	    partial_seen = 1;
+	  else if (partial_seen && args[i].reg == 0)
+	    must_preallocate = 1;
+
+	  if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
+	      && (TREE_CODE (args[i].tree_value) == CALL_EXPR
+		  || TREE_CODE (args[i].tree_value) == TARGET_EXPR
+		  || TREE_CODE (args[i].tree_value) == COND_EXPR
+		  || TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value))))
+	    copy_to_evaluate_size
+	      += int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	}
+
+      if (copy_to_evaluate_size * 2 >= args_size->constant
+	  && args_size->constant > 0)
+	must_preallocate = 1;
+    }
+  return must_preallocate;
+}
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -1569,50 +1631,9 @@ expand_call (exp, target, ignore)
 #endif
     }
 
-  /* See if we have or want to preallocate stack space.
-
-     If we would have to push a partially-in-regs parm
-     before other stack parms, preallocate stack space instead.
-
-     If the size of some parm is not a multiple of the required stack
-     alignment, we must preallocate.
-
-     If the total size of arguments that would otherwise create a copy in
-     a temporary (such as a CALL) is more than half the total argument list
-     size, preallocation is faster.
-
-     Another reason to preallocate is if we have a machine (like the m88k)
-     where stack alignment is required to be maintained between every
-     pair of insns, not just when the call is made.  However, we assume here
-     that such machines either do not have push insns (and hence preallocation
-     would occur anyway) or the problem is taken care of with
-     PUSH_ROUNDING.  */
-
-  if (! must_preallocate)
-    {
-      int partial_seen = 0;
-      int copy_to_evaluate_size = 0;
-
-      for (i = 0; i < num_actuals && ! must_preallocate; i++)
-	{
-	  if (args[i].partial > 0 && ! args[i].pass_on_stack)
-	    partial_seen = 1;
-	  else if (partial_seen && args[i].reg == 0)
-	    must_preallocate = 1;
-
-	  if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) == BLKmode
-	      && (TREE_CODE (args[i].tree_value) == CALL_EXPR
-		  || TREE_CODE (args[i].tree_value) == TARGET_EXPR
-		  || TREE_CODE (args[i].tree_value) == COND_EXPR
-		  || TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value))))
-	    copy_to_evaluate_size
-	      += int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	}
-
-      if (copy_to_evaluate_size * 2 >= args_size.constant
-	  && args_size.constant > 0)
-	must_preallocate = 1;
-    }
+  /* Now make final decision about preallocating stack space.  */
+  must_preallocate = finalize_must_preallocate (must_preallocate,
+						num_actuals, args, &args_size);
 
   /* If the structure value address will reference the stack pointer, we must
      stabilize it.  We don't need to do this if we know that we are not going
@@ -3481,7 +3502,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
      struct arg_data *arg;
      rtx argblock;
      int may_be_alloca;
-     int variable_size;
+     int variable_size ATTRIBUTE_UNUSED;
      int reg_parm_stack_space;
 {
   register tree pval = arg->tree_value;
