@@ -7829,7 +7829,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 static void
 replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
 {
-  rtx insn, mem, note, set, ptr;
+  rtx insn, mem, note, set, ptr, pair;
 
   mem = smexpr->pattern;
   insn = gen_move_insn (reg, SET_SRC (single_set (del)));
@@ -7851,6 +7851,26 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
 	XEXP (ptr, 0) = insn;
 	break;
       }
+
+  /* Move the notes from the deleted insn to its replacement, and patch
+     up the LIBCALL notes.  */
+  REG_NOTES (insn) = REG_NOTES (del);
+
+  note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
+  if (note)
+    {
+      pair = XEXP (note, 0);
+      note = find_reg_note (pair, REG_LIBCALL, NULL_RTX);
+      XEXP (note, 0) = insn;
+    }
+  note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
+  if (note)
+    {
+      pair = XEXP (note, 0);
+      note = find_reg_note (pair, REG_RETVAL, NULL_RTX);
+      XEXP (note, 0) = insn;
+    }
+
   delete_insn (del);
 
   /* Now we must handle REG_EQUAL notes whose contents is equal to the mem;

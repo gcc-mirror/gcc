@@ -1,3 +1,8 @@
+2004-09-01  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR rtl-optimization/16408
+	* gcse.c (replace_store_insn): Fix LIBCALL/RETVAL notes.
+
 2004-09-01  Richard Henderson  <rth@redhat.com>
 
         * config/ns32k/ns32k.h (TRANSFER_FROM_TRAMPOLINE): Remove.
