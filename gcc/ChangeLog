@@ -1,3 +1,7 @@
+2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* pretty-print.h: New file.
+
 2002-07-23	Paul Koning	<pkoning@equallogic.com>
 
 	* real.c (REAL_WORDS_BIG_ENDIAN): Make 1 for DEC.
