@@ -927,6 +927,17 @@ reload (first, global, dumpfile)
 	    {
 	      spill_hard_reg (i, dumpfile, 1);
 	      did_spill = 1;
+
+	      /* Regardless of the state of spills, if we previously had
+		 a register that we thought we could eliminate, but no can
+		 not eliminate, we must run another pass.
+
+		 Consider pseudos which have an entry in reg_equiv_* which
+		 reference an eliminable register.  We must make another pass
+		 to update reg_equiv_* so that we do not substitute in the
+		 old value from when we thought the elimination could be
+		 performed.  */
+	      something_changed = 1;
 	    }
       }
 
