@@ -1,3 +1,21 @@
+Tue Feb 24 20:57:39 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (topsrcdir): New.
+	(CHECK_SUBDIRS, configdirs): Check ${topsrcdir}/gcc instead.
+	(config-ml.in): Use ${topsrcdir}/config-ml.in.
+
+	* tests/configure.in (topsrcdir): New.
+	(CHECK): Check ${topsrcdir}/gcc instead.
+
+	* configure.in (CHECK_SUBDIRS): Set to testsuite only if
+	${srcdir}/../gcc exists.
+	(configdirs): Include testsuite only if ${srcdir}/../gcc exists.
+
+	* tests/Makefile.in (check): Depend on $(CHECK).
+
+	* tests/configure.in (CHECK): Set to "check-iostream
+	check-stdio" if ${srcdir}/../../gcc doesn't exists.
+
 1998-02-17  Andreas Schwab  (schwab@issan.informatik.uni-dortmund.de)
 
 	* iostream.cc (istream::operator>>(long double&))
