@@ -1428,7 +1428,16 @@ free_temps_for_rtl_expr (t)
 
   for (p = temp_slots; p; p = p->next)
     if (p->rtl_expr == t)
-      p->in_use = 0;
+      {
+	/* If this slot is below the current TEMP_SLOT_LEVEL, then it
+	   needs to be preserved.  This can happen if a temporary in
+	   the RTL_EXPR was addressed; preserve_temp_slots will move
+	   the temporary into a higher level.   */
+	if (temp_slot_level <= p->level)
+	  p->in_use = 0;
+	else
+	  p->rtl_expr = NULL_TREE;
+      }
 
   combine_temp_slots ();
 }
