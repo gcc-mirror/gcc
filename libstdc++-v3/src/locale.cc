@@ -232,22 +232,22 @@ namespace std
 	      _M_facets[__i]->_M_add_reference();
 	  }
 	_M_caches = new const facet*[_M_facets_size];
-	for (size_t __i = 0; __i < _M_facets_size; ++__i)
+	for (size_t __j = 0; __j < _M_facets_size; ++__j)
 	  {
-	    _M_caches[__i] = __imp._M_caches[__i];
-	    if (_M_caches[__i])
-	      _M_caches[__i]->_M_add_reference(); 	
+	    _M_caches[__j] = __imp._M_caches[__j];
+	    if (_M_caches[__j])
+	      _M_caches[__j]->_M_add_reference(); 	
 	  }
 	_M_names = new char*[_S_categories_size];
-	for (size_t __i = 0; __i < _S_categories_size; ++__i)
-	  _M_names[__i] = 0;
+	for (size_t __k = 0; __k < _S_categories_size; ++__k)
+	  _M_names[__k] = 0;
 
 	// Name all the categories.
-	for (size_t __i = 0; __i < _S_categories_size; ++__i)
+	for (size_t __l = 0; __l < _S_categories_size; ++__l)
 	  {
-	    char* __new = new char[std::strlen(__imp._M_names[__i]) + 1];
-	    std::strcpy(__new, __imp._M_names[__i]);
-	    _M_names[__i] = __new;
+	    char* __new = new char[std::strlen(__imp._M_names[__l]) + 1];
+	    std::strcpy(__new, __imp._M_names[__l]);
+	    _M_names[__l] = __new;
 	  }
       }
     catch(...)
@@ -259,7 +259,8 @@ namespace std
 
   void
   locale::_Impl::
-  _M_replace_category(const _Impl* __imp, const locale::id* const* __idpp)
+  _M_replace_category(const _Impl* __imp, 
+		      const locale::id* const* __idpp)
   {
     for (; *__idpp; ++__idpp)
       _M_replace_facet(__imp, *__idpp);
@@ -270,7 +271,8 @@ namespace std
   _M_replace_facet(const _Impl* __imp, const locale::id* __idp)
   {
     size_t __index = __idp->_M_id();
-    if ((__index > (__imp->_M_facets_size - 1)) || !__imp->_M_facets[__index])
+    if ((__index > (__imp->_M_facets_size - 1)) 
+	|| !__imp->_M_facets[__index])
       __throw_runtime_error(__N("locale::_Impl::_M_replace_facet"));
     _M_install_facet(__idp, __imp->_M_facets[__index]); 
   }
@@ -294,8 +296,8 @@ namespace std
 	    __newf = new const facet*[__new_size]; 
 	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
 	      __newf[__i] = _M_facets[__i];
-	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
-	      __newf[__i2] = 0;
+	    for (size_t __l = _M_facets_size; __l < __new_size; ++__l)
+	      __newf[__l] = 0;
 
 	    // New cache array.
 	    const facet** __oldc = _M_caches;
@@ -309,10 +311,10 @@ namespace std
 		delete [] __newf;
 		__throw_exception_again;
 	      }
-	    for (size_t __i = 0; __i < _M_facets_size; ++__i)
-	      __newc[__i] = _M_caches[__i];
-	    for (size_t __i2 = _M_facets_size; __i2 < __new_size; ++__i2)
-	      __newc[__i2] = 0;
+	    for (size_t __j = 0; __j < _M_facets_size; ++__j)
+	      __newc[__j] = _M_caches[__j];
+	    for (size_t __k = _M_facets_size; __k < __new_size; ++__k)
+	      __newc[__k] = 0;
 
 	    _M_facets_size = __new_size;
 	    _M_facets = __newf;

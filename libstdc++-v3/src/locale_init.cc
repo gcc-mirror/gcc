@@ -257,10 +257,10 @@ namespace std
 
     // Name all the categories.
     _M_names = new (&name_vec) char*[_S_categories_size];
-    for (size_t __i = 0; __i < _S_categories_size; ++__i)
+    for (size_t __j = 0; __j < _S_categories_size; ++__j)
       {
-	_M_names[__i] = new (&name_c[__i]) char[2];
-	std::strcpy(_M_names[__i], locale::facet::_S_get_c_name());
+	_M_names[__j] = new (&name_c[__j]) char[2];
+	std::strcpy(_M_names[__j], locale::facet::_S_get_c_name());
       }
 
     // This is needed as presently the C++ version of "C" locales

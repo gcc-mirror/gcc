@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -373,8 +373,8 @@ namespace std
 	}
       _M_data->_M_atoms_out[__num_base::_S_oend] = pod_type();
       
-      for (size_t i = 0; i < __num_base::_S_iend; ++i)
-	_M_data->_M_atoms_in[i].value = value_type(__num_base::_S_atoms_in[i]);
+      for (size_t j = 0; j < __num_base::_S_iend; ++j)
+	_M_data->_M_atoms_in[j].value = value_type(__num_base::_S_atoms_in[j]);
       _M_data->_M_atoms_in[__num_base::_S_iend] = pod_type();
 
       // "true"

@@ -114,10 +114,10 @@ namespace __gnu_debug
 	__old->_M_attach(0, false);
       }
     
-    for (_Safe_iterator_base* __iter = _M_const_iterators; __iter; )
+    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2; )
       {
-	_Safe_iterator_base* __old = __iter;
-	__iter = __iter->_M_next;
+	_Safe_iterator_base* __old = __iter2;
+	__iter2 = __iter2->_M_next;
 	__old->_M_attach(0, true);
       }
   }
@@ -134,10 +134,10 @@ namespace __gnu_debug
 	  __old->_M_attach(0, false);
       }
 
-    for (_Safe_iterator_base* __iter = _M_const_iterators; __iter; )
+    for (_Safe_iterator_base* __iter2 = _M_const_iterators; __iter2; )
       {
-	_Safe_iterator_base* __old = __iter;
-	__iter = __iter->_M_next;
+	_Safe_iterator_base* __old = __iter2;
+	__iter2 = __iter2->_M_next;
 	if (__old->_M_singular())
 	  __old->_M_attach(0, true);
       }
