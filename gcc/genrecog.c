@@ -1933,6 +1933,8 @@ write_header ()
 #include \"real.h\"\n\
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
+#include \"hard-reg-set.h\"\n\
+#include \"resource.h\"\n\
 \n");
 
   puts ("\n\

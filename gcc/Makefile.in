@@ -1684,7 +1684,7 @@ s-emit : $(md_file) genemit $(srcdir)/move-if-change
 	touch s-emit
 
 insn-recog.o : insn-recog.c $(CONFIG_H) $(RTL_H) insn-config.h $(RECOG_H) \
-  real.h output.h flags.h system.h function.h
+  real.h output.h flags.h system.h function.h hard-reg-set.h resource.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-recog.c
 
 insn-recog.c: s-recog ; @true
