@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -155,10 +155,10 @@ htab_empty (htab)
 static void **
 find_empty_slot_for_expand (htab, hash)
      htab_t htab;
-     unsigned int hash;
+     hashval_t hash;
 {
   size_t size = htab->size;
-  unsigned int hash2 = 1 + hash % (size - 2);
+  hashval_t hash2 = 1 + hash % (size - 2);
   unsigned int index = hash % size;
 
   for (;;)
@@ -221,9 +221,10 @@ void *
 htab_find_with_hash (htab, element, hash)
      htab_t htab;
      const void *element;
-     unsigned int hash;
+     hashval_t hash;
 {
-  unsigned int index, hash2;
+  unsigned int index;
+  hashval_t hash2;
   size_t size;
   void *entry;
 
@@ -272,11 +273,12 @@ void **
 htab_find_slot_with_hash (htab, element, hash, insert)
      htab_t htab;
      const void *element;
-     unsigned int hash;
+     hashval_t hash;
      int insert;
 {
   void **first_deleted_slot;
-  unsigned int index, hash2;
+  unsigned int index;
+  hashval_t hash2;
   size_t size;
 
   if (insert && htab->size * 3 <= htab->n_elements * 4)
