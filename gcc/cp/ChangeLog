@@ -1,5 +1,8 @@
 2004-07-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16240
+	* mangle.c (write_template_arg): Correct mangling.
+
 	PR c++/16297
 	* decl.c (grokdeclarator): Robustify.
 

@@ -1,3 +1,9 @@
+2004-07-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16240
+	* g++.dg/abi/mangle22.C: New test.
+	* g++.dg/abi/mangle23.C: Likewise.
+
 2004-07-02  David Billinghurst  (David.Billinghurst@riotinto.com)
 
 	PR fortran/16290
