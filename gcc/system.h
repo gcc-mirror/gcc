@@ -484,7 +484,7 @@ extern void abort ();
 #ifndef STDOUT_FILENO
 # define STDOUT_FILENO  1
 #endif
-#ifndef STDOUT_FILENO
+#ifndef STDERR_FILENO
 # define STDERR_FILENO  2
 #endif
 
