@@ -6,8 +6,23 @@ Sun Oct 17 02:09:50 1999  Andrew MacLeod  <amacleod@cygnus.com>
 	* gcse.c (compute_ae_kill): Add ae_gen and ae_kill as parameters.
 	(compute_available): Move to lcm.c, and change parameter order.
 	(one_classic_gcse_pass): Call compute_ae_kill with parameters.
-	(pre_insert): Delete.
-	
+	(pre_insert, s_preds, s_succs, num_preds, num_succs): Delete.
+	(gcse_main): No longer call compute_preds_succs.  Rebuild the
+	set table after reach pre pass.
+	(pre_insert_map, pre_delete_map, edge_list): New.
+	(alloc_pre_mem): Allocate edge vectors.
+	(free_pre_mem): Delete edge vectors.
+	(compute_pre_data): Call new edge based lcm routines.
+	(process_insert_insn): New function.
+	(insert_insn_end_bb): Use it.
+	(pre_edge_insert): New function.
+	(pre_insert_copy_insn): Formatting fixes.  Update BLOCK_END as
+	needed.
+	(pre_insert_copies): Revamp using new edge based lcm outputs.
+	(pre_delete): Likewise.
+	(one_pre_gcse_pass): Insert & remove fake edges to the exit
+	block.
+	(compute_code_hoist_vbeinout): New new edge based routines.
 	* lcm.c: Remove all the old LCM functions.  Replace with new ones
 	that work with the new cfg datastructures and work with edges
 	instead of blocks.
