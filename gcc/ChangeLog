@@ -1,5 +1,14 @@
 Sun Nov 18 14:13:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (TYPE_ALIGN_OK): New flag.
+	* emit-rtl.c (set_mem_attributes): Handle it.
+	* expr.c (emit_single_push_insn): Only set to alias set 0 if
+	doing sibcall optimization.
+	(expand_expr, case COMPONENT_REF): Call set_mem_attributes on case
+	when make temporary.
+	(expand_expr, case CONVERT_EXPR): Simplify convert-to-union case.
+	(expand_expr, case ADDR_EXPR): Abort if TYPE_ALIGN_OK and need copy.
+
 	* sdbout.c (sdbout_symbol): Avoid warning due to &DECL_RTL.
 
 2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>

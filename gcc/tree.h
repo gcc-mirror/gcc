@@ -596,6 +596,14 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    an exception.  In a CALL_EXPR, nonzero means the call cannot throw.  */
 #define TREE_NOTHROW(NODE) ((NODE)->common.nothrow_flag)
 
+/* In a type, nonzero means that all objects of the type are guaranteed by the
+   language or front-end to be properly aligned, so we can indicate that a MEM
+   of this type is aligned at least to the alignment of the type, even if it
+   doesn't appear that it is.  We see this, for example, in object-oriented
+   languages where a tag field may show this is an object of a more-aligned
+   variant of the more generic type.  */
+#define TYPE_ALIGN_OK(NODE) (TYPE_CHECK (NODE)->common.nothrow_flag)
+
 /* Used in classes in C++.  */
 #define TREE_PRIVATE(NODE) ((NODE)->common.private_flag)
 /* Used in classes in C++.

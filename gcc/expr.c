@@ -3199,11 +3199,13 @@ emit_single_push_insn (mode, x, type)
   if (type != 0)
     {
       set_mem_attributes (dest, type, 1);
-      /* Function incoming arguments may overlap with sibling call
-         outgoing arguments and we cannot allow reordering of reads
-         from function arguments with stores to outgoing arguments
-         of sibling calls.  */
-      set_mem_alias_set (dest, 0);
+
+      if (flag_optimize_sibling_calls)
+	/* Function incoming arguments may overlap with sibling call
+	   outgoing arguments and we cannot allow reordering of reads
+	   from function arguments with stores to outgoing arguments
+	   of sibling calls.  */
+	set_mem_alias_set (dest, 0);
     }
   emit_move_insn (dest, x);
 }
@@ -7180,13 +7182,14 @@ expand_expr (exp, target, tmode, modifier)
 
 	    if (mode == BLKmode)
 	      {
-		tree nt = build_qualified_type (type_for_mode (ext_mode, 0),
-						TYPE_QUAL_CONST);
-		rtx new = assign_temp (nt, 0, 1, 1);
+		rtx new = assign_temp (build_qualified_type
+				       (type_for_mode (ext_mode, 0),
+					TYPE_QUAL_CONST), 0, 1, 1);
 
 		emit_move_insn (new, op0);
 		op0 = copy_rtx (new);
 		PUT_MODE (op0, BLKmode);
+		set_mem_attributes (op0, exp, 1);
 	      }
 
 	    return op0;
@@ -7423,14 +7426,17 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
 
-	  /* If both input and output are BLKmode, this conversion
-	     isn't actually doing anything unless we need to make the
-	     alignment stricter.  */
-	  if (mode == BLKmode && TYPE_MODE (valtype) == BLKmode
-	      && (TYPE_ALIGN (type) <= TYPE_ALIGN (valtype)
-		  || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT))
-	    return expand_expr (TREE_OPERAND (exp, 0), target, tmode,
-				modifier);
+	  /* If both input and output are BLKmode, this conversion isn't doing
+	     anything except possibly changing memory attribute.  */
+	  if (mode == BLKmode && TYPE_MODE (valtype) == BLKmode)
+	    {
+	      rtx result = expand_expr (TREE_OPERAND (exp, 0), target, tmode,
+					modifier);
+
+	      result = copy_rtx (result);
+	      set_mem_attributes (result, exp, 0);
+	      return result;
+	    }
 
 	  if (target == 0)
 	    target = assign_temp (type, 0, 1, 1);
@@ -8672,6 +8678,9 @@ expand_expr (exp, target, tmode, modifier)
 		   1, build_qualified_type (inner_type,
 					    (TYPE_QUALS (inner_type)
 					     | TYPE_QUAL_CONST)));
+
+	      if (TYPE_ALIGN_OK (inner_type))
+		abort ();
 
 	      emit_block_move (new, op0, expr_size (TREE_OPERAND (exp, 0)));
 	      op0 = new;
