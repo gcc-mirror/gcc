@@ -3855,7 +3855,6 @@ extern void cxx_finish (void);
 
 /* in method.c */
 extern void init_method	(void);
-extern void set_mangled_name_for_decl (tree);
 extern tree make_thunk (tree, bool, tree, tree);
 extern void finish_thunk (tree);
 extern void use_thunk (tree, bool);

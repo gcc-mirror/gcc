@@ -6202,9 +6202,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     default:	/* just do library call, if unknown builtin */
-      if (!DECL_ASSEMBLER_NAME_SET_P (fndecl))
-	error ("built-in function `%s' not currently supported",
-	       IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+      break;
     }
 
   /* The switch statement above can drop through to cause the function

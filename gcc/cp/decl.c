@@ -1259,7 +1259,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	    return NULL_TREE;
 
 	  /* Replace the old RTL to avoid problems with inlining.  */
-	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
+	  COPY_DECL_RTL (newdecl, olddecl);
 	}
       /* Even if the types match, prefer the new declarations type
 	 for anticipated built-ins, for exception lists, etc...  */
@@ -1288,7 +1288,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	     that all remnants of the builtin-ness of this function
 	     will be banished.  */
 	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
-	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
+	  COPY_DECL_RTL (newdecl, olddecl);
 	}
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
@@ -1827,7 +1827,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
 	  COPY_DECL_ASSEMBLER_NAME (newdecl, olddecl);
-	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
+	  COPY_DECL_RTL (newdecl, olddecl);
 	}
       if (! types_match || new_defines_function)
 	{
@@ -1851,7 +1851,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	      /* If we're keeping the built-in definition, keep the rtl,
 		 regardless of declaration matches.  */
-	      SET_DECL_RTL (newdecl, DECL_RTL (olddecl));
+	      COPY_DECL_RTL (olddecl, newdecl);
 	    }
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
@@ -3183,7 +3183,6 @@ builtin_function_1 (const char* name,
      function in the namespace.  */
   if (libname)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));
-  make_decl_rtl (decl, NULL);
 
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
@@ -3271,7 +3270,6 @@ build_cp_library_fn (tree name, enum tree_code operator_code, tree type)
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
   SET_DECL_LANGUAGE (fn, lang_cplusplus);
-  set_mangled_name_for_decl (fn);
   return fn;
 }
 
@@ -5828,12 +5826,6 @@ grokvardecl (tree type,
     set_decl_namespace (decl, scope, 0);
   else
     DECL_CONTEXT (decl) = scope;
-
-  if (name && scope && current_lang_name != lang_name_c)
-    /* We can't mangle lazily here because we don't have any
-       way to recover whether or not a variable was `extern
-       "C"' later.  */
-    mangle_decl (decl);
 
   if (RIDBIT_SETP (RID_EXTERN, specbits))
     {

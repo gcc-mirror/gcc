@@ -502,6 +502,12 @@ struct gcc_target
      at the beginning of assembly output.  */
   bool file_start_file_directive;
 
+  /* True if #pragma redefine_extname is to be supported.  */
+  bool handle_pragma_redefine_extname;
+
+  /* True if #pragma extern_prefix is to be supported.  */
+  bool handle_pragma_extern_prefix;
+
   /* Leave the boolean fields at the end.  */
 };
 

@@ -2382,7 +2382,6 @@ builtin_function (const char *name, tree type, int function_code,
   DECL_FUNCTION_CODE (decl) = function_code;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL);
 
   /* Should never be called on a symbol with a preexisting meaning.  */
   if (I_SYMBOL_BINDING (id))

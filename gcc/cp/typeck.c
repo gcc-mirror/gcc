@@ -4318,7 +4318,6 @@ cxx_mark_addressable (tree exp)
 
       case FUNCTION_DECL:
 	TREE_ADDRESSABLE (x) = 1;
-	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;
 	return true;
 
       case CONSTRUCTOR:

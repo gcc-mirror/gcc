@@ -677,9 +677,15 @@ pushdecl (tree x)
 	      if (decls_match (x, t))
 		/* The standard only says that the local extern
 		   inherits linkage from the previous decl; in
-		   particular, default args are not shared.  It would
-		   be nice to propagate inlining info, though.  FIXME.  */
-		TREE_PUBLIC (x) = TREE_PUBLIC (t);
+		   particular, default args are not shared.  We must
+		   also tell cgraph to treat these decls as the same,
+		   or we may neglect to emit an "unused" static - we
+		   do this by making the DECL_UIDs equal, which should
+		   be viewed as a kludge.  FIXME.  */
+		{
+		  TREE_PUBLIC (x) = TREE_PUBLIC (t);
+		  DECL_UID (x) = DECL_UID (t);
+		}
 	    }
 	  else if (TREE_CODE (t) == PARM_DECL)
 	    {

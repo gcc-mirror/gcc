@@ -1,3 +1,21 @@
+2004-06-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* cp-lang.c (has_c_linkage): Implement.
+
+	* cp-tree.h (set_mangled_name_for_decl): Don't prototype.
+	* decl.c (duplicate_decls): Use COPY_DECL_RTL.
+	(builtin_function_1): Don't call make_decl_rtl.
+	(build_cp_library_fn): Don't call set_mangled_name_for_decl.
+	(grokvardecl): Don't call mangle_decl.
+	* except.c (nothrow_libfn_p): Look at DECL_NAME, not
+	DECL_ASSEMBLER_NAME.
+	* method.c (set_mangled_name_for_decl): Delete.
+	* name-lookup.c (pushdecl): When a local extern shadows a
+	file-scope declaration of the same object, give both DECLs the
+	same DECL_UID.
+	* typeck.c (cxx_mark_addressable): Don't set TREE_ADDRESSABLE
+	on DECL_ASSEMBLER_NAME.
+
 2004-06-19  Richard Henderson  <rth@redhat.com>
 
 	* cp-gimplify.c: Remove unnecessary prototypes.
@@ -15,7 +33,7 @@
 	(finish_cond): Rewrite to handle template DECL_STMTs specially.
 	Assume that non-template decls go land before the conditional.
 	(simplify_loop_decl_cond): Likewise.
-	(begin_if_stmt, finish_if_stmt_cond, begin_while_stmt, 
+	(begin_if_stmt, finish_if_stmt_cond, begin_while_stmt,
 	finish_while_stmt_cond, finish_for_init_stmt, finish_for_cond,
 	begin_switch_stmt, finish_switch_cond): Update to match.
 
@@ -165,7 +183,7 @@
 		* cp-tree.h: Fix typo.
 
 		* cp-tree.h: Include cgraph.h
-		(DECL_NEEDED_P): Use cgraph_*node on the decl instead of 
+		(DECL_NEEDED_P): Use cgraph_*node on the decl instead of
 		TREE_SYMBOL_REFERENCED on the DECL_ASSEMBLER_NAME of the decl.
 
 2004-06-12  Jason Merrill  <jason@redhat.com>
@@ -288,8 +306,8 @@
 
 	PR c++/15554
 	* pt.c (tsubst_copy): Do not try to substitute for an enumeration
-	constant in a non-dependent context. 
-	
+	constant in a non-dependent context.
+
 	PR c++/15057
 	* except.c (build_throw): Ensure that temp_expr has been
 	initialized.
@@ -316,7 +334,7 @@
 	* decl2.c (maybe_emit_vtables): If TARGET_WEAK_NOT_IN_ARCHIVE_TOC
 	is nonzero, and if we see a noninline definition of a key method,
 	make the vtables nonweak.
-	
+
 2004-06-02  Matt Austern  <austern@apple.com>
 
 	* cp-tree.h (instantiate_decl): new boolean parameter,
@@ -335,7 +353,7 @@
 	change it to an implicit instantiation.
 	(instantiate_pending_templates): Add new argument to instantiate_decl.
 	* tree.c (cp_cannot_inline_tree_fn): Likewise.
-	
+
 2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cp-tree.h: Fix typo.

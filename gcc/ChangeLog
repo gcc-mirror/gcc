@@ -1,3 +1,41 @@
+2004-06-20  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.h (has_c_linkage): New interface.
+	* c-cppbuiltin.c: Include target.h.
+	(c_cpp_builtins): Define __PRAGMA_REDEFINE_EXTNAME and
+	__PRAGMA_EXTERN_PREFIX when appropriate.
+	* c-pragma.c: Include target.h.
+	Document clarified semantics of symbol-renaming #pragmas.
+	(handle_pragma_redefine_extname, handle_pragma_extern_prefix)
+	(maybe_apply_renaming_pragma): Rewrite according to clarified
+	semantics.  Always recognize, but do not necessarily execute.
+	(init_pragma): Unconditionally register symbol-renaming pragmas.
+	* system.h: Poison HANDLE_PRAGMA_REDEFINE_EXTNAME
+	and HANDLE_PRAGMA_EXTERN_PREFIX.
+	* target.h (struct gcc_target): Add handle_pragma_redefine_extname
+	and handle_pragma_extern_prefix flags.
+	* target-def.h: Add defaults for TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME
+	and TARGET_HANDLE_PRAGMA_EXTERN_PREFIX.
+	* Makefile.in (c-pragma.o, c-cppbuiltin.o): Update dependencies.
+	* config/sol2.h: Define TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME,
+	not HANDLE_PRAGMA_REDEFINE_EXTNAME.
+	(TARGET_OS_CPP_BUILTINS): No need to define __PRAGMA_REDEFINE_EXTNAME.
+	(TRANSFER_FROM_TRAMPOLINE): Prototype mprotect.
+	* config/alpha/osf.h: Define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX,
+	not HANDLE_PRAGMA_EXTERN_PREFIX.
+	(TARGET_OS_CPP_BUILTINS): No need to define __PRAGMA_EXTERN_PREFIX.
+	* doc/extend.texi (Solaris Pragmas, Tru64 Pragmas): Combine
+	into one section "Symbol-Renaming Pragmas"; clarify; document
+	adjusted semantics.
+
+	* builtins.c (expand_builtin): Do not issue error for a builtin
+	with no special case code and no DECL_ASSEMBLER_NAME; just do the
+	library call.
+	* c-decl.c (builtin_function): Don't call make_decl_rtl.
+	* c-objc-common.c (has_c_linkage): Stub implementation.
+	* cgraphunit.c (cgraph_expand_function)
+	(cgraph_remove_unreachable_nodes): Don't clear DECL_ARGUMENTS.
+
 2004-06-19  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_unordered_cmp): Take an EXP argument
@@ -104,7 +142,7 @@
 
 2004-06-18  Richard Henderson  <rth@redhat.com>
 
-	PR c++/16036 
+	PR c++/16036
 	* gimple-low.c (lower_function_body): Generate return statement for
 	fall off the end of the function here ...
 	* tree-cfg.c (make_edges): ... instead of here.
@@ -267,10 +305,10 @@
 	UTAG_RETHROWEXC_VAR, UTAG_EVALONCE_VAR, struct val_stack,
 	catch_count_stack, exc_binding_stack, if_nesting_count,
 	blk_nesting_count, objc_enter_block, objc_exit_block,
-	objc_declare_variable, val_stack_push, val_stack_pop, 
+	objc_declare_variable, val_stack_push, val_stack_pop,
 	objc_build_try_enter_fragment, objc_build_extract_expr,
 	objc_build_try_exit_fragment, objc_build_extract_fragment,
-	objc_build_try_prologue, objc_build_try_epilogue, 
+	objc_build_try_prologue, objc_build_try_epilogue,
 	objc_build_catch_stmt, objc_build_catch_epilogue,
 	objc_build_finally_prologue, objc_build_finally_epilogue,
 	objc_build_try_catch_finally_stmt, objc_build_synchronized_prologue,
@@ -381,9 +419,9 @@
 	* tree-ssa-operands.h (struct def_optype_d):  Change underlying type.
 	(struct use_optype_d):  Change underlying type.
 	(def_operand_p, use_operand_p):  New types for pointers to operands.
-	(USE_OP, DEF_OP, V_MAY_DEF_RESULT, V_MAY_DEF_OP, VUSE_OP, 
+	(USE_OP, DEF_OP, V_MAY_DEF_RESULT, V_MAY_DEF_OP, VUSE_OP,
 	V_MUST_DEF_OP):  Use new pointer type instead of dereferencing directly.
-	(USE_FROM_PTR, DEF_FROM_PTR):  New macros to "dereference" operand 
+	(USE_FROM_PTR, DEF_FROM_PTR):  New macros to "dereference" operand
 	pointer types.
 	(SET_USE, SET_DEF):  New macros to set operands from their pointer.
 	(SET_USE_OP, SET_DEF_OP, SET_V_MAY_DEF_RESULT, SET_V_MAY_DEF_OP,
@@ -411,7 +449,7 @@
 	* tree.h (duplicate_ssa_name): Declare.
 
 2004-06-17  David Ayers  <d.ayers@inode.at>
- 
+
 	* c-parse.in: Unify Objective-C token names.
 
 2004-06-17  Zack Weinberg  <zack@codesourcery.com>
