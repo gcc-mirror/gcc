@@ -224,7 +224,9 @@ struct lang_identifier GTY(())
   cxx_binding *bindings;
   tree class_value;
   tree class_template_info;
-  struct lang_id2 *x;
+  tree label_value;
+  tree implicit_decl;
+  tree error_locus;
 };
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
@@ -235,13 +237,6 @@ struct lang_identifier GTY(())
 
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
-
-struct lang_id2 GTY(())
-{
-  tree label_value;
-  tree implicit_decl;
-  tree error_locus;
-};
 
 typedef struct template_parm_index_s GTY(())
 {
@@ -392,30 +387,20 @@ struct tree_wrapper GTY(())
 #define SET_IDENTIFIER_TYPE_VALUE(NODE,TYPE) (TREE_TYPE (NODE) = (TYPE))
 #define IDENTIFIER_HAS_TYPE_VALUE(NODE) (IDENTIFIER_TYPE_VALUE (NODE) ? 1 : 0)
 
-#define LANG_ID_FIELD(NAME, NODE)			\
-  (LANG_IDENTIFIER_CAST (NODE)->x			\
-   ? LANG_IDENTIFIER_CAST (NODE)->x->NAME : 0)
-
-#define SET_LANG_ID(NODE, VALUE, NAME)					     \
-  (LANG_IDENTIFIER_CAST (NODE)->x == 0					     \
-   ? LANG_IDENTIFIER_CAST (NODE)->x					     \
-      = (struct lang_id2 *)ggc_alloc_cleared (sizeof (struct lang_id2)) : 0, \
-   LANG_IDENTIFIER_CAST (NODE)->x->NAME = (VALUE))
-
 #define IDENTIFIER_LABEL_VALUE(NODE) \
-  LANG_ID_FIELD (label_value, NODE)
+  (LANG_IDENTIFIER_CAST (NODE)->label_value)
 #define SET_IDENTIFIER_LABEL_VALUE(NODE, VALUE)   \
-  SET_LANG_ID (NODE, VALUE, label_value)
+  IDENTIFIER_LABEL_VALUE (NODE) = (VALUE)
 
 #define IDENTIFIER_IMPLICIT_DECL(NODE) \
-  LANG_ID_FIELD (implicit_decl, NODE)
+  (LANG_IDENTIFIER_CAST (NODE)->implicit_decl)
 #define SET_IDENTIFIER_IMPLICIT_DECL(NODE, VALUE) \
-  SET_LANG_ID (NODE, VALUE, implicit_decl)
+  IDENTIFIER_IMPLICIT_DECL (NODE) = (VALUE)
 
 #define IDENTIFIER_ERROR_LOCUS(NODE) \
-  LANG_ID_FIELD (error_locus, NODE)
+  (LANG_IDENTIFIER_CAST (NODE)->error_locus)
 #define SET_IDENTIFIER_ERROR_LOCUS(NODE, VALUE)	\
-  SET_LANG_ID (NODE, VALUE, error_locus)
+  IDENTIFIER_ERROR_LOCUS (NODE) = (VALUE)
 
 /* Nonzero if this identifier is used as a virtual function name somewhere
    (optimizes searches).  */
