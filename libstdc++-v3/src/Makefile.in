@@ -220,7 +220,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(
 # the rules automake generates would be used.  We cannot allow CXX to
 # be used in libtool since this would add -lstdc++ to the link line
 # which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --tag CC --mode=link "$(CC)" 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link "$(CC)" 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
