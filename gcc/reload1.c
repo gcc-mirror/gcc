@@ -5899,6 +5899,10 @@ merge_assigned_reloads (insn)
 
   for (i = 0; i < n_reloads; i++)
     {
+      int conflicting_input = 0;
+      int max_input_address_opnum = -1;
+      int min_conflicting_input_opnum = MAX_RECOG_OPERANDS;
+
       if (reload_in[i] == 0 || reload_when_needed[i] == RELOAD_OTHER
 	  || reload_out[i] != 0 || reload_reg_rtx[i] == 0
 	  || reg_set_p (reload_reg_rtx[i], insn))
@@ -5917,24 +5921,42 @@ merge_assigned_reloads (insn)
 					    reload_reg_rtx[i]))
 	    continue;
 
+	  if (reload_when_needed[j] == RELOAD_FOR_INPUT_ADDRESS
+	      && reload_opnum[j] > max_input_address_opnum)
+	    max_input_address_opnum = reload_opnum[j];
+
 	  /* If the reload regs aren't exactly the same (e.g, different modes)
-	     or if the values are different, we can't merge anything with this
-	     reload register.  */
+	     or if the values are different, we can't merge this reload.
+	     But if it is an input reload, we might still merge
+	     RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_OTHER_ADDRESS reloads.  */
 
 	  if (! rtx_equal_p (reload_reg_rtx[i], reload_reg_rtx[j])
 	      || reload_out[j] != 0 || reload_in[j] == 0
 	      || ! rtx_equal_p (reload_in[i], reload_in[j]))
-	    break;
+	    {
+	      if (reload_when_needed[j] != RELOAD_FOR_INPUT
+		  || ((reload_when_needed[i] != RELOAD_FOR_INPUT_ADDRESS
+		       || reload_opnum[i] > reload_opnum[j])
+		      && reload_when_needed[i] != RELOAD_FOR_OTHER_ADDRESS))
+		break;
+	      conflicting_input = 1;
+	      if (min_conflicting_input_opnum > reload_opnum[j])
+		min_conflicting_input_opnum = reload_opnum[j];
+	    }
 	}
 
       /* If all is OK, merge the reloads.  Only set this to RELOAD_OTHER if
 	 we, in fact, found any matching reloads.  */
 
-      if (j == n_reloads)
+      if (j == n_reloads
+	  && max_input_address_opnum <= min_conflicting_input_opnum)
 	{
 	  for (j = 0; j < n_reloads; j++)
 	    if (i != j && reload_reg_rtx[j] != 0
-		&& rtx_equal_p (reload_reg_rtx[i], reload_reg_rtx[j]))
+		&& rtx_equal_p (reload_reg_rtx[i], reload_reg_rtx[j])
+		&& (! conflicting_input
+		    || reload_when_needed[j] == RELOAD_FOR_INPUT_ADDRESS
+		    || reload_when_needed[j] == RELOAD_FOR_OTHER_ADDRESS))
 	      {
 		reload_when_needed[i] = RELOAD_OTHER;
 		reload_in[j] = 0;
