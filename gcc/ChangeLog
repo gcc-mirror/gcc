@@ -4,7 +4,7 @@
 
 2000-12-04  DJ Delorie  <dj@redhat.com>
 
-	* print-tree.c (print_node): target-specific builtins print
+	* print-tree.c (print_node): Target-specific builtins print
 	numbers, not names.
 
 2000-12-04  Jason Merrill  <jason@redhat.com>
