@@ -46,6 +46,7 @@ derived_filebuf fb_03; // in | out
 
 const int buffer_size = 8192;
 
+
 // initialize filebufs to be the same size regardless of platform
 void test00()
 {
@@ -53,6 +54,7 @@ void test00()
   fb_02.set_size(buffer_size);
   fb_03.set_size(buffer_size);
 }
+
 
 // test the filebuf/stringbuf locale settings
 bool test01() {
@@ -75,7 +77,7 @@ bool test02() {
   test &= !fb_03.is_open();
 
   // filebuf_type* open(const char* __s, ios_base::openmode __mode)
-  fb_01.open(name_01, std::ios_base::in |  std::ios_base::ate);
+  fb_01.open(name_01, std::ios_base::in | std::ios_base::ate);
   fb_02.open(name_02, std::ios_base::in | std::ios_base::out | std::ios_base::trunc);
   // Try to open two different files without closing the first:
   // Should keep the old file attached, and disregard attempt to overthrow.

@@ -71,7 +71,6 @@ namespace std {
       const __codecvt_type*	_M_fcvt;       // Cached value from use_facet.
       __mutext_type           	_M_lock;
       bool			_M_last_overflowed;  // XXX Needed?
-      bool			_M_fileno_based; // Open/closed via filenos.
  
     public:
       // Constructors/destructor:
@@ -85,8 +84,6 @@ namespace std {
       { 
 	this->close();
 	_M_fcvt = NULL;
-	delete _M_file;
-	_M_file = NULL;
 	_M_last_overflowed = false;
       }
 

@@ -1,3 +1,18 @@
+2000-06-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* testsuite/27_io/filebuf.cc: Tweak.
+	* testsuite/27_io/filebuf_members.cc (test_01): Fix.
+	* config/c_io_libio.cc (__basic_file::~__basic_file): Match libio
+	filebuf dtor.
+	(__basic_file::basic_file): Clean, add calls similar to
+	_IO_file_attach.
+	(__basic_file::open): Clean.
+	(__basic_file::sys_open): Clean.
+
+	* bits/std_fstream.h: Revert.
+	* bits/fstream.tcc (filebuf::close()): Revert.
+	(filebuf::basic_filebuf()): Revert.
+
 2000-06-27  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	Update to SGI STL 3.3
@@ -30,7 +45,7 @@
 
 	* docs/install.html:  Fix minor typo as reported.
 
-2000-06-13  Brent Verner <brent@rcfile.org>
+2000-06-26  Brent Verner <brent@rcfile.org>
 
 	* bits/string.tcc (string::rfind): Fix.
 	* testsuite/21_strings/rfind.cc: New file.
