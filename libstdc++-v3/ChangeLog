@@ -1,3 +1,8 @@
+2003-07-01  Jerry Quinn  <jlquinn@optonline.net>
+
+	* 22_locale/num_put/put/char/7.cc: New.
+	* 22_locale/num_put/put/wchar_t/7.cc: New.
+
 2003-06-30  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/locale.cc (__use_cache<numpunct>): Revert previous relocation.
