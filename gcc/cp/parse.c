@@ -6207,7 +6207,7 @@ case 510:
     break;}
 case 511:
 #line 2276 "parse.y"
-{ yyval.ttype = TYPE_MAIN_DECL (yyvsp[0].ttype); ;
+{ if (yyval.ttype != error_mark_node) yyval.ttype = TYPE_MAIN_DECL (yyvsp[0].ttype); ;
     break;}
 case 513:
 #line 2279 "parse.y"

@@ -1,3 +1,13 @@
+1998-09-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_type_real): Handle NAMESPACE_DECL.
+	* parse.y (base_class.1): Avoid crash on error.
+
+1998-09-08  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (make_typename_type): If context is a namespace, the code
+	is in error.
+
 1998-09-08  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* parse.y (nomods_initdcl0): Set up the parser stack correctly.
