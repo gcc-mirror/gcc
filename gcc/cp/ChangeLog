@@ -1,3 +1,26 @@
+2000-04-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_tree_index): Add CPTI_BASE_CTOR_IDENTIFIER,
+	CPTI_BASE_DTOR_IDENTIFIER, and CPTI_DELETING_DTOR_IDENTIFIER.
+	(base_ctor_identifier): New macro.
+	(base_dtor_identifier): Likewise.
+	(deleting_dtor_identifier): Likewise.
+	* decl.c: Don't include obstack.h.
+	(obstack_chunk_alloc): Don't define.
+	(obstack_chunk_free): Likewise.
+	(struct predefined_identifier): New type.
+	(initialize_predefined_identifiers): New function.
+	(init_decl_processing): Use it.
+	(debug_temp_inits): Remove.
+	(start_method): Don't call preserve_data.
+	(hack_incomplete_structures): Update comment.
+	* init.c (init_init_processing): Don't initialize
+	nelts_identifier.
+	(build_offset_rf): Remove dead code.
+	(build_delete): Use CLASSTYPE_N_BASECLASSES.
+	* search.c (init_search_processing): Don't initialize
+	vptr_identifier.
+	
 2000-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* typeck.c (build_binary_op): Call `tree_expr_nonnegative_p' to elide

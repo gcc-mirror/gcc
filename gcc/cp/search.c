@@ -3393,7 +3393,6 @@ void
 init_search_processing ()
 {
   gcc_obstack_init (&search_obstack);
-  vptr_identifier = get_identifier ("_vptr");
 }
 
 void
