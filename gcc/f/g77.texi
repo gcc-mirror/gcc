@@ -14,8 +14,12 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1998-05-29
+@set last-up-date 1998-07-13
 @set version-g77 0.5.23
+@set email-general egcs@@cygnus.com
+@set email-bugs egcs-bugs@@cygnus.com
+@set path-g77 egcs/gcc/f
+@set path-libf2c egcs/libf2c
 
 @c @setfilename useg77.info
 @c @setfilename portg77.info
@@ -819,7 +823,7 @@ Work is needed on documentation, testing, porting
 to various machines, and in some cases, coding (although major
 changes planned for version 0.6 make it difficult to add manpower to this
 area).
-Email @email{egcs@@cygnus.com} to volunteer for this work.
+Email @email{@value{email-general}} to volunteer for this work.
 
 @xref{Funding,,Funding Free Software}, for more information.
 
@@ -1564,12 +1568,13 @@ and when the resulting commands compile Fortran source files.)
 @cindex -fset-g77-defaults option
 @cindex options, -fset-g77-defaults
 @item -fset-g77-defaults
+@emph{Version info:}
+This option is obsolete in @code{egcs}
+as of version 1.1.
+
 Set up whatever @code{gcc} options are to apply to Fortran
 compilations, and avoid running internal consistency checks
 that might take some time.
-
-As of version 0.5.20, this is equivalent to @samp{-fmove-all-movables
--freduce-all-givs -frerun-loop-opt -fargument-noalias-global}.
 
 This option is supplied automatically when compiling Fortran code
 via the @code{g77} or @code{gcc} command.
@@ -2716,6 +2721,10 @@ Improves performance on some code.
 @item -fno-rerun-loop-opt
 @cindex -fno-rerun-loop-opt option
 @cindex options, -fno-rerun-loop-opt
+@emph{Version info:}
+These options are not supported by
+versions of @code{g77} based on @code{gcc} version 2.8.
+
 Each of these might improve performance on some code.
 
 Analysis of Fortran code optimization and the resulting
@@ -3163,6 +3172,10 @@ the programs you compile before assuming they are working.
 @item -fargument-alias
 @item -fargument-noalias
 @item -fno-argument-noalias-global
+@emph{Version info:}
+These options are not supported by
+versions of @code{g77} based on @code{gcc} version 2.8.
+
 These options specify to what degree aliasing
 (overlap)
 is permitted between
@@ -3296,6 +3309,43 @@ Fortran, retrieve @uref{ftp://alpha.gnu.org/g77.plan}
 or, if you cannot do that, email
 @email{fortran@@gnu.org} asking for a recent copy of the
 GNU Fortran @file{.plan} file.
+
+@heading In @code{egcs} 1.1:
+@itemize @bullet
+@item
+@code{g77} now treats @samp{%LOC(@var{expr})} and
+@samp{LOC(@var{expr})} as ``ordinary'' expressions
+when they are used as arguments in procedure calls.
+This change applies only to global (filewide) analysis,
+making it consistent with
+how @code{g77} actually generates code
+for these cases.
+
+Previously, @code{g77} treated these expressions
+as denoting special ``pointer'' arguments
+for the purposes of filewide analysis.
+
+@item
+The @code{g77} driver now ensures that @samp{-lg2c}
+is specified in the link phase prior to any
+occurrence of @samp{-lm}.
+This prevents accidentally linking to a routine
+in the SunOS4 @samp{-lm} library
+when the generated code wants to link to the one
+in @code{libf2c} (@code{libg2c}).
+
+@item
+The F90 @samp{DATE_AND_TIME} intrinsic now is
+supported.
+
+@item
+The F90 @samp{SYSTEM_CLOCK} intrinsic allows
+the optional arguments (except for the @samp{Count}
+argument) to be omitted.
+
+@item
+Upgrade to @code{libf2c} as of 1998-06-18.
+@end itemize
 
 @heading In 0.5.23:
 @itemize @bullet
@@ -8294,10 +8344,10 @@ This might change in future versions of @code{g77},
 with appropriate notification in the release notes.
 
 For more information, consult the source code for the above routines.
-These are in @file{egcs/libf2c/libF77/}, named @file{main.c},
+These are in @file{@value{path-libf2c}/libF77/}, named @file{main.c},
 @file{setarg.c}, @file{setsig.c}, @file{getarg_.c}, and @file{iargc_.c}.
 
-Also, the file @file{egcs/gcc/f/com.c} contains the code @code{g77}
+Also, the file @file{@value{path-g77}/com.c} contains the code @code{g77}
 uses to open-code (inline) references to @code{IARGC}.
 
 @include g77install.texi
@@ -8387,7 +8437,7 @@ However, if you don't intend to use @code{g77} (or @code{f2c}) to compile
 your main program unit---that is, if you intend to compile a @code{main()}
 procedure using some other language---you should carefully
 examine the code for @code{main()} in @code{libg2c}, found in the source
-file @file{gcc/f/runtime/libF77/main.c}, to see what kinds of things
+file @file{@value{path-libf2c}/libF77/main.c}, to see what kinds of things
 might need to be done by your @code{main()} in order to provide the
 Fortran environment your Fortran code is expecting.
 
@@ -8462,7 +8512,7 @@ The second argument is appended to the end of the user-specified
 calling sequence and is named @samp{__g77_length_@var{x}}, where @var{x}
 is the user-specified name.
 This argument is of the C type @code{ftnlen}
-(see @file{egcs/libf2c/g2c.h.in} for information on that type) and
+(see @file{@value{path-libf2c}/g2c.h.in} for information on that type) and
 is the number of characters the caller has allocated in the
 array pointed to by the first argument.
 
@@ -10760,7 +10810,7 @@ ebadexec: file: a.out appears to be executable
 %
 @end smallexample
 
-Browsing through @file{gcc/f/Makefile.in},
+Browsing through @file{@value{path-g77}/Makefile.in},
 you will find that the @code{f771} program itself also has to be
 linked with these flags---it has large statically allocated
 data structures.
@@ -12705,8 +12755,8 @@ exposes it more readily than other compilers.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex egcs-bugs@@cygnus.com
-Send bug reports for GNU Fortran to @email{egcs-bugs@@cygnus.com}.
+@kindex @value{email-bugs}
+Send bug reports for GNU Fortran to @email{@value{email-bugs}}.
 
 Often people think of posting bug reports to a newsgroup instead of
 mailing them.
@@ -13042,7 +13092,7 @@ we should be able to reproduce the crash ourselves.
 If you would like to write bug fixes or improvements for the GNU Fortran
 compiler, that is very helpful.
 Send suggested fixes to the bug report
-mailing list, @email{egcs-bugs@@cygnus.com}.
+mailing list, @email{@value{email-bugs}}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -13167,7 +13217,7 @@ The service directory is found in the file named @file{SERVICE} in the
 GNU CC distribution.
 
 @item
-Send a message to @email{egcs@@cygnus.com}.
+Send a message to @email{@value{email-general}}.
 @end itemize
 
 @end ifset
@@ -13197,7 +13247,7 @@ when compiling most any kind of program.
 @end itemize
 
 @emph{Fortran options} are listed in the file
-@file{gcc/f/lang-options.h},
+@file{@value{path-g77}/lang-options.h},
 which is used during the build of @code{gcc} to
 build a list of all options that are accepted by
 at least one language's compiler.
@@ -13206,7 +13256,7 @@ in @file{gcc/toplev.c}, which uses this array to
 determine whether a particular option should be
 offered to the linked-in front end for processing
 by calling @samp{lang_option_decode}, which, for
-@code{g77}, is in @file{gcc/f/com.c} and just
+@code{g77}, is in @file{@value{path-g77}/com.c} and just
 calls @samp{ffe_decode_option}.
 
 If the linked-in front end ``rejects'' a
@@ -13230,14 +13280,14 @@ a warning about this would be helpful if it were
 possible.
 
 Code that processes Fortran options is found in
-@file{gcc/f/top.c}, function @samp{ffe_decode_option}.
+@file{@value{path-g77}/top.c}, function @samp{ffe_decode_option}.
 This code needs to check positive and negative forms
 of each option.
 
 The defaults for Fortran options are set in their
-global definitions, also found in @file{gcc/f/top.c}.
+global definitions, also found in @file{@value{path-g77}/top.c}.
 Many of these defaults are actually macros defined
-in @file{gcc/f/target.h}, since they might be
+in @file{@value{path-g77}/target.h}, since they might be
 machine-specific.
 However, since, in practice, GNU compilers
 should behave the same way on all configurations
@@ -13247,7 +13297,7 @@ is likely to be deprecated and, ultimately, stopped
 in future versions of @code{g77}.
 
 Accessor macros for Fortran options, used by code
-in the @code{g77} FFE, are defined in @file{gcc/f/top.h}.
+in the @code{g77} FFE, are defined in @file{@value{path-g77}/top.h}.
 
 @emph{Compiler options} are listed in @file{gcc/toplev.c}
 in the array @samp{f_options}.
@@ -13264,21 +13314,21 @@ the way @code{f771} handles the @samp{-fset-g77-defaults}
 option, which is always provided as the first option when
 called by @code{g77} or @code{gcc}.
 
-This code is in @samp{ffe_decode_options} in @file{gcc/f/top.c}.
+This code is in @samp{ffe_decode_options} in @file{@value{path-g77}/top.c}.
 Have it change just the variables that you want to default
 to a different setting for Fortran compiles compared to
 compiles of other languages.
 
 The @samp{-fset-g77-defaults} option is passed to @code{f771}
 automatically because of the specification information
-kept in @file{gcc/f/lang-specs.h}.
+kept in @file{@value{path-g77}/lang-specs.h}.
 This file tells the @code{gcc} command how to recognize,
 in this case, Fortran source files (those to be preprocessed,
 and those that are not), and further, how to invoke the
 appropriate programs (including @code{f771}) to process
 those source files.
 
-It is in @file{gcc/f/lang-specs.h} that @samp{-fset-g77-defaults},
+It is in @file{@value{path-g77}/lang-specs.h} that @samp{-fset-g77-defaults},
 @samp{-fversion}, and other options are passed, as appropriate,
 even when the user has not explicitly specified them.
 Other ``internal'' options such as @samp{-quiet} also
