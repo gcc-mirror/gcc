@@ -1145,10 +1145,10 @@ ffelex_hash_ (FILE *finput)
 	      if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc, buffer))
 		goto skipline;
 #endif /* HANDLE_PRAGMA */
-#ifdef HANDLE_SYSV_PRAGMA
-	      if (handle_sysv_pragma (buffer))
+#ifdef HANDLE_GENERIC_PRAGMAS
+	      if (handle_generic_pragma (buffer))
 		goto skipline;
-#endif /* !HANDLE_SYSV_PRAGMA */
+#endif /* !HANDLE_GENERIC_PRAGMAS */
 
 	      /* Issue a warning message if we have been asked to do so.
 		 Ignoring unknown pragmas in system header file unless

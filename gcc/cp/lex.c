@@ -75,8 +75,8 @@ static void store_pending_inline PROTO((tree, struct pending_inline *));
 static void reinit_parse_for_expr PROTO((struct obstack *));
 static int *init_cpp_parse PROTO((void));
 static int handle_cp_pragma PROTO((char *));
-#ifdef HANDLE_SYSV_PRAGMA
-static int handle_sysv_pragma PROTO((int));
+#ifdef HANDLE_GENERIC_PRAGMAS
+static int handle_generic_pragma PROTO((int));
 #endif
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
@@ -2308,7 +2308,7 @@ check_newline ()
 		goto skipline;
 
 #ifdef HANDLE_PRAGMA
-	      /* We invoke HANDLE_PRAGMA before HANDLE_SYSV_PRAGMA
+	      /* We invoke HANDLE_PRAGMA before HANDLE_GENERIC_PRAGMAS
 		 (if both are defined), in order to give the back
 		 end a chance to override the interpretation of
 		 SYSV style pragmas.  */
@@ -2317,10 +2317,10 @@ check_newline ()
 		goto skipline;
 #endif /* HANDLE_PRAGMA */
 	      
-#ifdef HANDLE_SYSV_PRAGMA
-	      if (handle_sysv_pragma (token))
+#ifdef HANDLE_GENERIC_PRAGMAS
+	      if (handle_generic_pragma (token))
 		goto skipline;
-#endif /* !HANDLE_SYSV_PRAGMA */
+#endif /* HANDLE_GENERIC_PRAGMAS */
 
 	      /* Issue a warning message if we have been asked to do so.
 		 Ignoring unknown pragmas in system header file unless
@@ -4934,17 +4934,17 @@ handle_cp_pragma (pname)
   return 0;
 }
 
-#ifdef HANDLE_SYSV_PRAGMA
+#ifdef HANDLE_GENERIC_PRAGMAS
 
-/* Handle a #pragma directive.  INPUT is the current input stream,
-   and C is a character to reread.  Processes the entire input line
-   and returns a character for the caller to reread: either \n or EOF.  */
+/* Handle a #pragma directive.  TOKEN is the type of the word following
+   the #pragma directive on the line.  Process the entire input line and
+   return non-zero iff the directive successfully parsed.  */
 
 /* This function has to be in this file, in order to get at
    the token types.  */
 
 static int
-handle_sysv_pragma (token)
+handle_generic_pragma (token)
      register int token;
 {
   for (;;)
@@ -4977,7 +4977,8 @@ handle_sysv_pragma (token)
 	default:
 	  return handle_pragma_token (NULL_PTR, NULL_TREE);
 	}
+      
       token = real_yylex ();
     }
 }
-#endif /* HANDLE_SYSV_PRAGMA */
+#endif /* HANDLE_GENERIC_PRAGMAS */
