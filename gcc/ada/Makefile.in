@@ -1320,7 +1320,6 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   EXTRA_GNATTOOLS = ../../gnatdll$(exeext)
-  GNAT_WRAPPER_TOOL = ../../gnat_wrapper$(exeext)
   EXTRA_GNATMAKE_OBJS = mdll.o mdll-utl.o mdll-fil.o
   EXTRA_GNATRTL_NONTASKING_OBJS = g-regist.o
   soext = .dll
@@ -1660,11 +1659,10 @@ gnattools2: ../stamp-tools
 	  TOOLSCASE=native \
 	  ../../gnatchop$(exeext) ../../gnat$(exeext) ../../gnatkr$(exeext) \
 	  ../../gnatls$(exeext) ../../gnatprep$(exeext) \
-	  ../../gnatpsta$(exeext) ../../gnatxref$(exeext) \
+	  ../../gnatxref$(exeext) \
 	  ../../gnatfind$(exeext) ../../gnatname$(exeext) \
 	  ../../gnatclean$(exeext) \
-	  ../../gprcmd$(exeext)   ../../gpr2make$(exeext) \
-	  $(GNAT_WRAPPER_TOOL)
+	  ../../gprcmd$(exeext)   ../../gpr2make$(exeext)
 
 # These tools are only built for the native version.
 gnattools3: ../stamp-tools
@@ -1717,12 +1715,6 @@ gnattools4: ../stamp-tools
 	$(GNATLINK) -v gnatprep -o $@ --GCC="$(CC) $(ADA_INCLUDES)" \
 		    $(TOOLS_LIBS)
 
-../../gnatpsta$(exeext): deftarg.o ../stamp-tools
-#	$(GNATMAKE) -c $(ADA_INCLUDES) gnatpsta --GCC="$(CC) $(ALL_ADAFLAGS)"
-#	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatpsta 
-#	$(GNATLINK) -v gnatpsta -o $@ --GCC="$(CC) $(ADA_INCLUDES)"\
-#                      ../targtyps.o deftarg.o $(TOOLS_LIBS)
-
 ../../gnatxref$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatxref --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatxref 
@@ -1759,12 +1751,6 @@ endif
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC="$(CC) $(ADA_INCLUDES)" \
-		$(TOOLS_LIBS)
-
-../../gnat_wrapper$(exeext): ../stamp-tools
-	$(GNATMAKE) -c -O2 -gnatpn $(ADA_INCLUDES) gnat_wrapper --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnat_wrapper
-	$(GNATLINK) -v gnat_wrapper -o $@ --GCC="$(CC) $(ADA_INCLUDES)" \
 		$(TOOLS_LIBS)
 
 ../../gprcmd$(exeext): ../stamp-tools

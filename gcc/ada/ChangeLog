@@ -1,3 +1,12 @@
+2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in, Make-lang.in: Remove build of gnat_wrapper and gnatpsta,
+	no longer needed.
+
+	* gnatpsta.adb, gnat_wrapper.adb: Removed, no longer needed.
+
+	* sysdep.c: Add handling of cygwin.
+
 2003-11-10  GNAT Script  <nobody@gnat.com>
 
 	* Make-lang.in: Makefile automatically updated
