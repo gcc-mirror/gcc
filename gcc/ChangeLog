@@ -1,3 +1,7 @@
+2002-09-27  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (active_insn_p): Revert last change.
+
 2002-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/extend.texi (tls_model): Document.
