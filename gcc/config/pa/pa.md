@@ -3195,12 +3195,10 @@
       if (!hppa_save_pic_table_rtx)
 	{
 	  hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-	  push_topmost_sequence ();
-	  emit_insn_after (gen_rtx (SET, VOIDmode,
+	  emit_insn_before (gen_rtx (SET, VOIDmode,
 				    hppa_save_pic_table_rtx,
 				    pic_offset_table_rtx),
-			   get_insns ());
-	  pop_topmost_sequence ();
+			   call_insn);
 	}
 
       emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
@@ -3293,12 +3291,10 @@
       if (!hppa_save_pic_table_rtx)
 	{
 	  hppa_save_pic_table_rtx = gen_reg_rtx (Pmode);
-	  push_topmost_sequence ();
-	  emit_insn_after (gen_rtx (SET, VOIDmode,
+	  emit_insn_before (gen_rtx (SET, VOIDmode,
 				    hppa_save_pic_table_rtx,
 				    pic_offset_table_rtx),
-			   get_insns ());
-	  pop_topmost_sequence ();
+			   call_insn);
 	}
 
       emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
