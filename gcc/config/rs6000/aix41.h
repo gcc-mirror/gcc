@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.1.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@npac.syr.edu).
 
 This file is part of GNU CC.
@@ -36,6 +36,38 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
 
+/* Common ASM definitions used by ASM_SPEC amonst the various targets
+   for handling -mcpu=xxx switches.  */
+#undef ASM_CPU_SPEC
+#define ASM_CPU_SPEC \
+"%{!mcpu*: \
+  %{mpower: %{!mpower2: -mpwr}} \
+  %{mpower2: -mpwr2} \
+  %{mpowerpc*: -mppc} \
+  %{!mpower*: %{!mpowerpc*: %(asm_default)}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwr2} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwr2} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
+%{mcpu=603: -m603} \
+%{mcpu=603e: -m603} \
+%{mcpu=604: -m604} \
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
+
+#undef	ASM_DEFAULT_SPEC
+#define ASM_DEFAULT_SPEC "-mcom"
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_AIX41 \
 -Asystem(unix) -Asystem(aix)"
@@ -46,11 +78,37 @@ Boston, MA 02111-1307, USA.  */
    %{mthreads: -D_THREAD_SAFE}\
    %(cpp_cpu)"
 
+/* Common CPP definitions used by CPP_SPEC among the various targets
+   for handling -mcpu=xxx switches.  */
+#undef CPP_CPU_SPEC
+#define CPP_CPU_SPEC \
+"%{!mcpu*: \
+  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
+  %{mpower2: -D_ARCH_PWR2} \
+  %{mpowerpc*: -D_ARCH_PPC} \
+  %{!mpower*: %{!mpowerpc*: %(cpp_default)}}} \
+%{mcpu=common: -D_ARCH_COM} \
+%{mcpu=power: -D_ARCH_PWR} \
+%{mcpu=power2: -D_ARCH_PWR2} \
+%{mcpu=powerpc: -D_ARCH_PPC} \
+%{mcpu=rios: -D_ARCH_PWR} \
+%{mcpu=rios1: -D_ARCH_PWR} \
+%{mcpu=rios2: -D_ARCH_PWR2} \
+%{mcpu=rsc: -D_ARCH_PWR} \
+%{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=505: -D_ARCH_PPC} \
+%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
+%{mcpu=602: -D_ARCH_PPC} \
+%{mcpu=603: -D_ARCH_PPC} \
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=821: -D_ARCH_PPC} \
+%{mcpu=860: -D_ARCH_PPC}"
+
 #undef	CPP_DEFAULT_SPEC
 #define CPP_DEFAULT_SPEC "-D_ARCH_COM"
-
-#undef	ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-mcom"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_NEW_MNEMONICS
