@@ -1365,9 +1365,6 @@ struct lang_type
    1, if D's vtable came from B2.  */
 #define CLASSTYPE_VFIELD_PARENT(NODE)	(TYPE_LANG_SPECIFIC(NODE)->vfield_parent)
 
-/* Remove when done merging.  */
-#define CLASSTYPE_VFIELD(NODE) TYPE_VFIELD(NODE)
-
 /* The number of virtual functions defined for this
    _CLASSTYPE node.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)

@@ -2094,12 +2094,12 @@ build_component_ref (datum, component, basetype_path, protect)
     }
 
   /* Look up component name in the structure type definition.  */
-  if (CLASSTYPE_VFIELD (basetype)
-      && DECL_NAME (CLASSTYPE_VFIELD (basetype)) == component)
+  if (TYPE_VFIELD (basetype)
+      && DECL_NAME (TYPE_VFIELD (basetype)) == component)
     /* Special-case this because if we use normal lookups in an ambiguous
        hierarchy, the compiler will abort (because vptr lookups are
        not supposed to be ambiguous.  */
-    field = CLASSTYPE_VFIELD (basetype);
+    field = TYPE_VFIELD (basetype);
   else if (TREE_CODE (component) == FIELD_DECL)
     field = component;
   else if (TREE_CODE (component) == TYPE_DECL)
@@ -3697,8 +3697,8 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 				   DECL_VINDEX (TREE_OPERAND (op1, 0)),
 				   integer_one_node);
 	      op1 = integer_zero_node;
-	      delta21 = CLASSTYPE_VFIELD (TYPE_METHOD_BASETYPE
-					  (TREE_TYPE (type1)));
+	      delta21 = TYPE_VFIELD (TYPE_METHOD_BASETYPE
+				     (TREE_TYPE (type1)));
 	      delta21 = DECL_FIELD_BITPOS (delta21);
 	      delta21 = size_binop (FLOOR_DIV_EXPR, delta21,
 				    size_int (BITS_PER_UNIT));

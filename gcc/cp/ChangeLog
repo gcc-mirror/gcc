@@ -1,3 +1,22 @@
+1999-10-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_VFIELD): Remove.
+	* call.c (build_vfield_ref): Use TYPE_VFIELD, not
+	CLASSTYPE_VFIELD.
+	* class.c (get_vfield_offset): Likewise.
+	(finish_base_struct): Likewise.
+	(modify_one_vtable): Likewise.
+	(fixup_vtable_deltas): Likewise.
+	(finish_struct_1): Likewise.
+	* init.c (expand_virtual_init): Likewise.
+	* search.c (lookup_field_1): Likewise.
+	(expand_upcast_fixups): Likewise.
+	* typeck.c (build_component_ref): Likewise.
+	(build_binary_op_nodefault): Likewise.
+	
+	* dump.c (dqueue_and_dump): Dump TYPE_VFIELD.
+	* ir.texi: Document TYPE_VFIELD.
+
 1999-10-06  Brendan Kehoe  <brendan@cygnus.com>
 
 	* decl.c (grokdeclarator): Only warn about non-zero arrays if

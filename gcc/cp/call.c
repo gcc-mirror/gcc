@@ -112,10 +112,10 @@ build_vfield_ref (datum, type)
     datum = convert_from_reference (datum);
 
   if (! TYPE_USES_COMPLEX_INHERITANCE (type))
-    rval = build (COMPONENT_REF, TREE_TYPE (CLASSTYPE_VFIELD (type)),
-		  datum, CLASSTYPE_VFIELD (type));
+    rval = build (COMPONENT_REF, TREE_TYPE (TYPE_VFIELD (type)),
+		  datum, TYPE_VFIELD (type));
   else
-    rval = build_component_ref (datum, DECL_NAME (CLASSTYPE_VFIELD (type)), NULL_TREE, 0);
+    rval = build_component_ref (datum, DECL_NAME (TYPE_VFIELD (type)), NULL_TREE, 0);
 
   return rval;
 }

@@ -656,7 +656,7 @@ lookup_field_1 (type, name)
     {
       /* Give the user what s/he thinks s/he wants.  */
       if (TYPE_VIRTUAL_P (type))
-	return CLASSTYPE_VFIELD (type);
+	return TYPE_VFIELD (type);
     }
   return NULL_TREE;
 }
@@ -2685,7 +2685,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      /* Update the vtable pointers as necessary.  */
 	      ref = build_vfield_ref
 		(build_indirect_ref (addr, NULL_PTR),
-		 DECL_CONTEXT (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))));
+		 DECL_CONTEXT (TYPE_VFIELD (BINFO_TYPE (binfo))));
 	      finish_expr_stmt
 		(build_modify_expr (ref, NOP_EXPR, nvtbl));
 	    }

@@ -605,7 +605,7 @@ get_vfield_offset (binfo)
 {
   tree tmp
     = size_binop (FLOOR_DIV_EXPR,
-		  DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))),
+		  DECL_FIELD_BITPOS (TYPE_VFIELD (BINFO_TYPE (binfo))),
 		  size_int (BITS_PER_UNIT));
   tmp = convert (sizetype, tmp);
   return size_binop (PLUS_EXPR, tmp, BINFO_OFFSET (binfo));
@@ -1603,7 +1603,7 @@ finish_base_struct (t, b)
 	      TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
 	      TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
 	      b->has_virtual = CLASSTYPE_VSIZE (basetype);
-	      b->vfield = CLASSTYPE_VFIELD (basetype);
+	      b->vfield = TYPE_VFIELD (basetype);
 	      b->vfields = copy_list (CLASSTYPE_VFIELDS (basetype));
 	      vfields = b->vfields;
 	      while (vfields)
@@ -1612,15 +1612,15 @@ finish_base_struct (t, b)
 		      || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields)))
 		    {
 		      tree value = VF_BASETYPE_VALUE (vfields);
-		      if (DECL_NAME (CLASSTYPE_VFIELD (value))
-			  == DECL_NAME (CLASSTYPE_VFIELD (basetype)))
+		      if (DECL_NAME (TYPE_VFIELD (value))
+			  == DECL_NAME (TYPE_VFIELD (basetype)))
 			VF_NORMAL_VALUE (b->vfields) = basetype;
 		      else
 			VF_NORMAL_VALUE (b->vfields) = VF_NORMAL_VALUE (vfields);
 		    }
 		  vfields = TREE_CHAIN (vfields);
 		}
-	      CLASSTYPE_VFIELD (t) = b->vfield;
+	      TYPE_VFIELD (t) = b->vfield;
 	    }
 	  else
 	    {
@@ -1633,8 +1633,8 @@ finish_base_struct (t, b)
 		    {
 		      tree value = VF_BASETYPE_VALUE (vfields);
 		      b->vfields = tree_cons (base_binfo, value, b->vfields);
-		      if (DECL_NAME (CLASSTYPE_VFIELD (value))
-			  == DECL_NAME (CLASSTYPE_VFIELD (basetype)))
+		      if (DECL_NAME (TYPE_VFIELD (value))
+			  == DECL_NAME (TYPE_VFIELD (basetype)))
 			VF_NORMAL_VALUE (b->vfields) = basetype;
 		      else
 			VF_NORMAL_VALUE (b->vfields) = VF_NORMAL_VALUE (vfields);
@@ -1652,8 +1652,8 @@ finish_base_struct (t, b)
 		  TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
 		  TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
 		  b->has_virtual = CLASSTYPE_VSIZE (basetype);
-		  b->vfield = CLASSTYPE_VFIELD (basetype);
-		  CLASSTYPE_VFIELD (t) = b->vfield;
+		  b->vfield = TYPE_VFIELD (basetype);
+		  TYPE_VFIELD (t) = b->vfield;
 		  /* When we install the first one, set the VF_NORMAL_VALUE
 		     to be the current class, as this it is the most derived
 		     class.  Hopefully, this is not set to something else
@@ -1661,8 +1661,8 @@ finish_base_struct (t, b)
 		  vfields = b->vfields;
 		  while (vfields)
 		    {
-		      if (DECL_NAME (CLASSTYPE_VFIELD (t))
-			  == DECL_NAME (CLASSTYPE_VFIELD (basetype)))
+		      if (DECL_NAME (TYPE_VFIELD (t))
+			  == DECL_NAME (TYPE_VFIELD (basetype)))
 			{
 			  VF_NORMAL_VALUE (vfields) = t;
 			  /* There should only be one of them!  And it should
@@ -2400,7 +2400,7 @@ modify_one_vtable (binfo, t, fndecl)
       if (binfo == TYPE_BINFO (t))
 	{
 	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
-	    build_vtable (TYPE_BINFO (DECL_CONTEXT (CLASSTYPE_VFIELD (t))), t);
+	    build_vtable (TYPE_BINFO (DECL_CONTEXT (TYPE_VFIELD (t))), t);
 	}
       else
 	{
@@ -2428,7 +2428,7 @@ modify_one_vtable (binfo, t, fndecl)
 	{
 	  tree base_offset, offset;
 	  tree context = DECL_CLASS_CONTEXT (fndecl);
-	  tree vfield = CLASSTYPE_VFIELD (t);
+	  tree vfield = TYPE_VFIELD (t);
 	  tree this_offset;
 
 	  offset = get_class_offset (context, t, binfo, fndecl);
@@ -2520,7 +2520,7 @@ fixup_vtable_deltas1 (binfo, t)
 	{
 	  tree base_offset, offset;
 	  tree context = DECL_CLASS_CONTEXT (fndecl);
-	  tree vfield = CLASSTYPE_VFIELD (t);
+	  tree vfield = TYPE_VFIELD (t);
 	  tree this_offset;
 
 	  offset = get_class_offset (context, t, binfo, fndecl);
@@ -3284,7 +3284,7 @@ finish_struct_1 (t)
      modified.  Needed at this point to make add_virtual_function
      and modify_vtable_entries work.  */
   CLASSTYPE_VFIELDS (t) = vfields;
-  CLASSTYPE_VFIELD (t) = vfield;
+  TYPE_VFIELD (t) = vfield;
 
   for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
     {
@@ -3753,7 +3753,7 @@ finish_struct_1 (t)
 	 other VFIELD_BASEs and VTABLE_BASEs in the code, and change
 	 them too.  */
       DECL_ASSEMBLER_NAME (vfield) = get_identifier (VFIELD_BASE);
-      CLASSTYPE_VFIELD (t) = vfield;
+      TYPE_VFIELD (t) = vfield;
       DECL_VIRTUAL_P (vfield) = 1;
       DECL_ARTIFICIAL (vfield) = 1;
       DECL_FIELD_CONTEXT (vfield) = t;
@@ -3923,7 +3923,7 @@ finish_struct_1 (t)
       DECL_CLASS_CONTEXT (vfield) = t;
       DECL_FIELD_BITPOS (vfield)
 	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
-      CLASSTYPE_VFIELD (t) = vfield;
+      TYPE_VFIELD (t) = vfield;
     }
     
 #ifdef NOTQUITE
@@ -4046,7 +4046,7 @@ finish_struct_1 (t)
 
       layout_type (atype);
 
-      CLASSTYPE_VFIELD (t) = vfield;
+      TYPE_VFIELD (t) = vfield;
 
       /* We may have to grow the vtable.  */
       if (TREE_TYPE (TYPE_BINFO_VTABLE (t)) != atype)
@@ -4062,7 +4062,7 @@ finish_struct_1 (t)
 	}
     }
   else if (first_vfn_base_index >= 0)
-    CLASSTYPE_VFIELD (t) = vfield;
+    TYPE_VFIELD (t) = vfield;
   CLASSTYPE_VFIELDS (t) = vfields;
 
   finish_struct_bits (t, max_has_virtual);
