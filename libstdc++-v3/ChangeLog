@@ -1,5 +1,10 @@
 2000-08-30  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* docs/22_locale/codecvt.html: Formatting cleanups.
+	* src/locale.cc (ctype<wchar_t>::do_is): Fix thinko.
+
+2000-08-30  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* bits/locale_facets.h (ctype<char>): Remove __table_type.
 	Add include for bits/std_cwctype.h, for wctype_t.
 	* src/locale.cc (ctype<wchar_t>): Implement.
