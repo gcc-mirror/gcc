@@ -2236,7 +2236,16 @@ pushtag (name, type, globalize)
 	  TYPE_NAME (type) = d;
 	  DECL_CONTEXT (d) = context;
 
-	  if (IS_AGGR_TYPE (type)
+	  if (processing_template_parmlist)
+	    /* You can't declare a new template type in a template
+	       parameter list.  But, you can declare a non-template
+	       type:
+
+	         template <class A*> struct S;
+
+	       is a forward-declaration of `A'.  */
+	    ;
+	  else if (IS_AGGR_TYPE (type)
 	      && (/* If !GLOBALIZE then we are looking at a
 		     definition.  It may not be a primary template.
 		     (For example, in:
@@ -2255,15 +2264,9 @@ pushtag (name, type, globalize)
 		         friend class S2; 
 		       };
 
-		     declares S2 to be at global scope.  We must be
-		     careful, however, of the following case:
-
-		       template <class A*> struct S;
-
-		     which declares a non-template class `A'.  */
-		  || (!processing_template_parmlist
-		      && (processing_template_decl > 
-			  template_class_depth (current_class_type)))))
+		     declares S2 to be at global scope.  */
+		  || (processing_template_decl > 
+		      template_class_depth (current_class_type))))
 	    {
 	      d = push_template_decl_real (d, globalize);
 	      /* If the current binding level is the binding level for
