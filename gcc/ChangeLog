@@ -1,3 +1,10 @@
+2003-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*tst_extzv_bitqi_1_n): Accept the
+	test of bit 7.
+	(*tst_extzv_memqi_1_n): Likewise.
+	(a peephole2): New.
+
 2002-02-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Wrap in
