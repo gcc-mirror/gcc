@@ -648,21 +648,26 @@ expand_virtual_init (binfo, decl)
   tree vtbl, vtbl_ptr;
   tree vtype, vtype_binfo;
 
-  /* This code is crusty.  Should be simple, like:
-     vtbl = BINFO_VTABLE (binfo);
-     */
+  /* Compute the location of the vtable.  */
   vtype = DECL_CONTEXT (TYPE_VFIELD (type));
   vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
   vtbl = BINFO_VTABLE (binfo_value (DECL_FIELD_CONTEXT (TYPE_VFIELD (type)), binfo));
   assemble_external (vtbl);
   TREE_USED (vtbl) = 1;
   vtbl = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (vtbl)), vtbl);
+  /* Under the new ABI, we need to point into the middle of the
+     vtable.  */
+  if (flag_new_abi)
+    vtbl = build (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, 
+		  size_extra_vtbl_entries (binfo));
+
+  /* Compute the location of the vtpr.  */
   decl = convert_pointer_to_real (vtype_binfo, decl);
   vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL_PTR), vtype);
   if (vtbl_ptr == error_mark_node)
     return;
 
-  /* Have to convert VTBL since array sizes may be different.  */
+  /* Assign the vtable to the vptr.  */
   vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl, 0);
   finish_expr_stmt (build_modify_expr (vtbl_ptr, NOP_EXPR, vtbl));
 }

@@ -1,6 +1,6 @@
 /* Convert language-specific tree expression to rtl instructions,
    for GNU compiler.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -131,6 +131,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
       }
 
     case THUNK_DECL:
+      my_friendly_assert (DECL_RTL (exp) != NULL_RTX, 20000115);
       return DECL_RTL (exp);
 
     case THROW_EXPR:

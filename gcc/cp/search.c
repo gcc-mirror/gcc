@@ -150,7 +150,7 @@ static void setup_class_bindings PROTO ((tree, int));
 static int template_self_reference_p PROTO ((tree, tree));
 static void fixup_all_virtual_upcast_offsets PROTO ((tree, tree));
 static tree dfs_mark_primary_bases PROTO((tree, void *));
-static tree get_shared_vbase_if_not_primary PROTO((tree, tree));
+static tree get_shared_vbase_if_not_primary PROTO((tree, void *));
 static tree dfs_find_vbase_instance PROTO((tree, void *));
 
 /* Allocate a level of searching.  */
@@ -2240,12 +2240,17 @@ mark_primary_bases (type)
    either a non-virtual base or a primary virtual base.  */
 
 static tree
-get_shared_vbase_if_not_primary (binfo, type)
+get_shared_vbase_if_not_primary (binfo, data)
      tree binfo;
-     tree type;
+     void *data;
 {
   if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
     {
+      tree type = (tree) data;
+
+      if (TREE_CODE (type) == TREE_LIST)
+	type = TREE_PURPOSE (type);
+
       /* This is a non-primary virtual base.  If there is no primary
 	 version, get the shared version.  */
       binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), type);
@@ -2271,11 +2276,7 @@ dfs_unmarked_real_bases_queue_p (binfo, data)
      tree binfo;
      void *data;
 {
-  tree type = (tree) data;
-
-  if (TREE_CODE (type) == TREE_LIST)
-    type = TREE_PURPOSE (type);
-  binfo = get_shared_vbase_if_not_primary (binfo, type); 
+  binfo = get_shared_vbase_if_not_primary (binfo, data); 
   return binfo ? unmarkedp (binfo, NULL) : NULL_TREE;
 }
 
@@ -2287,12 +2288,32 @@ dfs_marked_real_bases_queue_p (binfo, data)
      tree binfo;
      void *data;
 {
-  tree type = (tree) data;
-
-  if (TREE_CODE (type) == TREE_LIST)
-    type = TREE_PURPOSE (type);
-  binfo = get_shared_vbase_if_not_primary (binfo, type);
+  binfo = get_shared_vbase_if_not_primary (binfo, data); 
   return binfo ? markedp (binfo, NULL) : NULL_TREE;
+}
+
+/* Like dfs_unmarked_real_bases_queue_p but walks only into things
+   that are not BINFO_VTABLE_PATH_MARKED.  */
+
+tree
+dfs_vtable_path_unmarked_real_bases_queue_p (binfo, data)
+     tree binfo;
+     void *data;
+{
+  binfo = get_shared_vbase_if_not_primary (binfo, data); 
+  return binfo ? unmarked_vtable_pathp (binfo, NULL): NULL_TREE;
+}
+
+/* Like dfs_unmarked_real_bases_queue_p but walks only into things
+   that are BINFO_VTABLE_PATH_MARKED.  */
+
+tree
+dfs_vtable_path_marked_real_bases_queue_p (binfo, data)
+     tree binfo;
+     void *data;
+{
+  binfo = get_shared_vbase_if_not_primary (binfo, data); 
+  return binfo ? marked_vtable_pathp (binfo, NULL): NULL_TREE;
 }
 
 /* A queue function that skips all virtual bases (and their 
@@ -2546,14 +2567,21 @@ dfs_vbase_unmark (binfo, data)
   return dfs_unmark (binfo, data);
 }
 
+/* Clear BINFO_VTABLE_PATH_MARKED.  */
+
+tree
+dfs_vtable_path_unmark (binfo, data)
+     tree binfo;
+     void *data ATTRIBUTE_UNUSED;
+{ 
+  CLEAR_BINFO_VTABLE_PATH_MARKED (binfo); 
+  return NULL_TREE;
+}
+
 #if 0
 static void
 dfs_mark_vtable_path (binfo) tree binfo;
 { SET_BINFO_VTABLE_PATH_MARKED (binfo); }
-
-static void
-dfs_unmark_vtable_path (binfo) tree binfo;
-{ CLEAR_BINFO_VTABLE_PATH_MARKED (binfo); }
 
 static void
 dfs_mark_new_vtable (binfo) tree binfo;

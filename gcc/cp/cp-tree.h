@@ -3464,6 +3464,8 @@ extern void unreverse_member_declarations       PROTO((tree));
 extern void invalidate_class_lookup_cache       PROTO((void));
 extern void maybe_note_name_used_in_class       PROTO((tree, tree));
 extern void note_name_declared_in_class         PROTO((tree, tree));
+extern tree num_extra_vtbl_entries              PROTO((tree));
+extern tree size_extra_vtbl_entries             PROTO((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -3961,12 +3963,17 @@ extern tree dfs_walk                            PROTO((tree,
 						       void *));
 extern tree dfs_unmark                          PROTO((tree, void *));
 extern tree dfs_vbase_unmark                    PROTO((tree, void *));
+extern tree dfs_vtable_path_unmark              PROTO((tree, void *));
 extern tree markedp                             PROTO((tree, void *));
 extern tree unmarkedp                           PROTO((tree, void *));
 extern tree dfs_skip_nonprimary_vbases_unmarkedp PROTO((tree, void *));
 extern tree dfs_skip_nonprimary_vbases_markedp  PROTO((tree, void *));
 extern tree dfs_unmarked_real_bases_queue_p     PROTO((tree, void *));
 extern tree dfs_marked_real_bases_queue_p       PROTO((tree, void *));
+extern tree dfs_vtable_path_unmarked_real_bases_queue_p
+                                                PROTO((tree, void *));
+extern tree dfs_vtable_path_marked_real_bases_queue_p
+                                                PROTO((tree, void *));
 extern tree dfs_skip_vbases                     PROTO((tree, void *));
 extern void mark_primary_bases                  PROTO((tree));
 extern tree convert_pointer_to_vbase            PROTO((tree, tree));
