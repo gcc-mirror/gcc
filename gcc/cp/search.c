@@ -2045,7 +2045,7 @@ dfs_skip_nonprimary_vbases_unmarkedp (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 {
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
+  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
     /* This is a non-primary virtual base.  Skip it.  */
     return NULL_TREE;
 
@@ -2060,7 +2060,7 @@ dfs_skip_nonprimary_vbases_markedp (binfo, data)
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
 {
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
+  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
     /* This is a non-primary virtual base.  Skip it.  */
     return NULL_TREE;
 
@@ -2078,7 +2078,7 @@ get_shared_vbase_if_not_primary (binfo, data)
      tree binfo;
      void *data;
 {
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_MARKED_P (binfo))
+  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
     {
       tree type = (tree) data;
 
@@ -2088,7 +2088,7 @@ get_shared_vbase_if_not_primary (binfo, data)
       /* This is a non-primary virtual base.  If there is no primary
 	 version, get the shared version.  */
       binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
-      if (BINFO_PRIMARY_MARKED_P (binfo))
+      if (BINFO_PRIMARY_P (binfo))
 	return NULL_TREE;
     }
 
@@ -2152,7 +2152,7 @@ dfs_get_pure_virtuals (binfo, data)
   /* We're not interested in primary base classes; the derived class
      of which they are a primary base will contain the information we
      need.  */
-  if (!BINFO_PRIMARY_MARKED_P (binfo))
+  if (!BINFO_PRIMARY_P (binfo))
     {
       tree virtuals;
       
@@ -2455,7 +2455,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
   tree delta;
   HOST_WIDE_INT n;
 
-  while (BINFO_PRIMARY_MARKED_P (binfo))
+  while (BINFO_PRIMARY_P (binfo))
     {
       binfo = BINFO_INHERITANCE_CHAIN (binfo);
       if (TREE_VIA_VIRTUAL (binfo))
@@ -2593,7 +2593,7 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
       tree real_base_binfo = TREE_VEC_ELT (real_binfos, i);
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       int is_not_base_vtable
-	= !BINFO_PRIMARY_MARKED_P (real_base_binfo);
+	= !BINFO_PRIMARY_P (real_base_binfo);
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
 	fixup_virtual_upcast_offsets (real_base_binfo, base_binfo,
 				      is_not_base_vtable, can_elide, addr,
@@ -2737,7 +2737,7 @@ dfs_find_vbase_instance (binfo, data)
 {
   tree base = TREE_VALUE ((tree) data);
 
-  if (BINFO_PRIMARY_MARKED_P (binfo)
+  if (BINFO_PRIMARY_P (binfo)
       && same_type_p (BINFO_TYPE (binfo), base))
     return binfo;
 
@@ -2755,7 +2755,7 @@ find_vbase_instance (base, type)
   tree instance;
 
   instance = binfo_for_vbase (base, type);
-  if (!BINFO_PRIMARY_MARKED_P (instance))
+  if (!BINFO_PRIMARY_P (instance))
     return instance;
 
   return dfs_walk (TYPE_BINFO (type), 
@@ -3249,14 +3249,32 @@ binfo_for_vtable (var)
   return main_binfo;
 }
 
-/* Returns the binfo of the first direct or indirect virtual base from
-   which BINFO is derived, or NULL if binfo is not via virtual.  */
+/* Returns the binfo of the first direct or indirect virtual base derived
+   from BINFO, or NULL if binfo is not via virtual.  */
 
 tree
 binfo_from_vbase (binfo)
      tree binfo;
 {
   for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
+    {
+      if (TREE_VIA_VIRTUAL (binfo))
+	return binfo;
+    }
+  return NULL_TREE;
+}
+
+/* Returns the binfo of the first direct or indirect virtual base derived
+   from BINFO up to the TREE_TYPE, LIMIT, or NULL if binfo is not
+   via virtual.  */
+
+tree
+binfo_via_virtual (binfo, limit)
+     tree binfo;
+     tree limit;
+{
+  for (; binfo && (!limit || !same_type_p (BINFO_TYPE (binfo), limit));
+       binfo = BINFO_INHERITANCE_CHAIN (binfo))
     {
       if (TREE_VIA_VIRTUAL (binfo))
 	return binfo;

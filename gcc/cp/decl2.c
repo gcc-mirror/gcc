@@ -403,6 +403,10 @@ int flag_operator_names = 1;
 
 int flag_check_new;
 
+/* Nonnull if we want to dump class heirarchies.  */
+
+const char *flag_dump_class_layout;
+
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
    initialization variables.
    0: Old rules, set by -fno-for-scope.
@@ -647,13 +651,23 @@ cxx_decode_option (argc, argv)
 	name_mangling_version 
 	  = read_integral_parameter (option_value, p - 2, name_mangling_version);
       else if ((option_value
-                = skip_leading_substring (p, "dump-translation-unit-")))
+                = skip_leading_substring (p, "dump-translation-unit=")))
 	{
-	  if (p[22] == '\0')
+	  if (!*option_value)
 	    error ("no file specified with -fdump-translation-unit");
 	  else
 	    flag_dump_translation_unit = option_value;
 	}
+      else if ((option_value
+                = skip_leading_substring (p, "dump-class-layout=")))
+	{
+	  if (!*option_value)
+	    error ("no file specified with -fdump-class-layout");
+	  else
+	    flag_dump_class_layout = option_value;
+	}
+      else if (!strcmp (p, "dump-class-layout"))
+	flag_dump_class_layout = ""; /* empty string for stderr */
       else 
 	{
 	  int found = 0;

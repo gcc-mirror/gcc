@@ -1,3 +1,22 @@
+2001-02-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/primary2.C: New test.
+	* g++.old-deja/g++.abi/primary3.C: New test.
+	* g++.old-deja/g++.abi/primary4.C: New test.
+	* g++.old-deja/g++.abi/primary5.C: New test.
+	* g++.old-deja/g++.abi/vtable3.h: New test.
+	* g++.old-deja/g++.abi/vtable3a.C: New test.
+	* g++.old-deja/g++.abi/vtable3b.C: New test.
+	* g++.old-deja/g++.abi/vtable3c.C: New test.
+	* g++.old-deja/g++.abi/vtable3d.C: New test.
+	* g++.old-deja/g++.abi/vtable3e.C: New test.
+	* g++.old-deja/g++.abi/vtable3f.C: New test.
+	* g++.old-deja/g++.abi/vtable3g.C: New test.
+	* g++.old-deja/g++.abi/vtable3h.C: New test.
+	* g++.old-deja/g++.abi/vtable3i.C: New test.
+	* g++.old-deja/g++.abi/vtable3j.C: New test.
+	* g++.old-deja/g++.oliva/thunk1.C: Remove XFAIL.
+
 2001-02-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/anon6.C: New test.

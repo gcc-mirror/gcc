@@ -4,7 +4,6 @@
 // based on bug report by Fredrik Öhrström <d92-foh@nada.kth.se>
 
 // Special g++ Options: -fvtable-thunks
-// execution test - XFAIL *-*-*
 
 #include <cstdlib>
 

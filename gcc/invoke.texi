@@ -223,8 +223,8 @@ in the following sections.
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
 @gccoptlist{
--a  -ax  -d@var{letters}  -fdump-unnumbered -fdump-translation-unit-@var{file} @gol
--fpretend-float -fprofile-arcs  -ftest-coverage @gol
+-a  -ax  -d@var{letters}  -fdump-unnumbered -fdump-translation-unit=@var{file} @gol
+-fdump-class-layout=@var{file} -fpretend-float -fprofile-arcs  -ftest-coverage @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
@@ -2679,9 +2679,14 @@ numbers and line number note output.  This makes it more feasible to
 use diff on debugging dumps for compiler invocations with different
 options, in particular with and without -g.
 
-@item -fdump-translation-unit-@var{file} (C and C++ only)
+@item -fdump-translation-unit=@var{file} (C and C++ only)
 Dump a representation of the tree structure for the entire translation
 unit to @var{file}.
+
+@item -fdump-class_layout=@var{file} (C++ only)
+@item -fdump-class_layout (C++ only)
+Dump a representation of each class's heirarchy to @var{file}, or
+@code{stderr} if not specified.
 
 @item -fpretend-float
 When running a cross-compiler, pretend that the target machine uses the

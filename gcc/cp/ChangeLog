@@ -1,3 +1,77 @@
+2001-02-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Fix specification and implementation bugs in V3 ABI
+	construction vtables.
+	* cp-tree.h (flag_dump_class_layout): New flag.
+	(BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P): Remove.
+	(BINFO_LOST_PRIMARY_P): New flag.
+	(SET_BINFO_NEW_VTABLE_MARKED): Adjust asserts.
+	(BINFO_PRIMARY_MARKED_P): Rename to ...
+	(BINFO_PRIMARY_P): ... here.
+	(binfo_via_virtual): New prototype.
+	* decl2.c (flag_dump_class_layout): New flag.
+	(cxx_decode_option): Set it. Adjust -fdump-translation-unit to
+	use `=' as a file name separator.
+	* init.c (dfs_initialize_vtbl_ptrs): Walk into virtual primary
+	bases.
+	(build_vtbl_address): If this is a virtual primary base, then
+	get the vtbl of what it is ultimately primary for.
+	* search.c (dfs_skip_nonprimary_vbases_unmarkedp): Adjust
+	for BINFO_PRIMARY_P.
+	(dfs_skip_nonprimary_vbases_markedp): Likewise.
+	(get_shared_vbase_if_not_primary): Likewise.
+	(dfs_get_pure_virtuals): Likewise.
+	(expand_upcast_fixups): Likewise.
+	(fixup_virtual_upcast_offsets): Likewise.
+	(dfs_find_vbase_instance): Likewise.
+	(find_vbase_instance): Likewise.
+	(binfo_from_vbase): Adjust comment to reflect reality.
+	(binfo_via_virtual): New function.
+	* class.c (VTT_TOP_LEVEL_P, VTT_MARKED_BINFO_P): New macros
+	for binfo walking during VTT construction.
+	(dfs_mark_primary_bases): Remove.
+	(force_canonical_binfo_r): New function.
+	(force_canonical_binfo): New function.
+	(mark_primary_virtual_base): New function.
+	(mark_primary_bases): Walk in inheritance graph order, use
+	mark_primary_virtual_base.
+	(determine_primary_base): Use some more intermediate variables.
+	(dfs_find_final_overrider): Don't check for overriding along a
+	virtual path.
+	(dfs_modify_vtables): Walk into primary virtual bases too.
+	(walk_subobject_offsets): Adjust for BINFO_PRIMARY_P.
+	(build_base_fields): Likewise.
+	(dfs_set_offset_for_unshared_vbases): Likewise.
+	(layout_virtual_bases): Likewise.
+	(end_of_class): Likewise.
+	(finish_struct_1): Call dump_class_hierarchy, if requested.
+	(dfs_get_primary_binfo): Use BINFO_TYPE for binfos.
+	(dump_class_hierarchy_r): Add stream parameter. Emit more information.
+	(dump_class_hierarchy): Add file parameter. Append to file, if
+	required.
+	(finish_vtbls): Adjust accumulate_vtbl_inits call.
+	Use canonical base for virtual bases.
+	(build_vtt): Add more comments. Adjust build_vtt_inits call.
+	(build_vtt_inits): Remove VIRTUAL_VTTS_P parm.
+	Only set BINFO_VPTR_INDEX on top level. Use VTT_TOP_LEVEL_P,
+	VTT_MARKED_BINFO_P for binfo walking. Use canonical vbase for
+	virtual VTTs.
+	(dfs_build_secondary_vptr_vtt_inits): Extract VTT_TOP_LEVEL_P
+	from DATA.  We want virtual primary bases and all bases via virtual.
+	Only set BINFO_VPTR_INDEX for top level. Look up from a primary
+	virtual base when not a construction vtable.
+	(dfs_ctor_vtable_bases_queue_p): New DFS predicate.
+	(build_ctor_vtbl_group): Adjust accumulate_vtbl_inits call.
+	Use canonical bases when processing virtual bases.
+	(accumulate_vtbl_inits): We're interested in any base via a
+	virtual path.
+	(dfs_accumulate_vtbl_inits): If this is a primary virtual base
+	within a construction vtable, determine what is being overridden.
+	(build_vtbl_initializer): Add more comments
+	(add_vcall_offset_vtbl_entries_1): Adjust comment.
+	(build_rtti_vtbl_entries): Check if the base has lost its
+	primary.
+
 2001-02-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (g++spec.o): Adjust use of DRIVER_DEFINES.
