@@ -13,8 +13,6 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 */
  
 #include "ansidecl.h"
-#include "libiberty.h"
- 
 #ifdef ANSI_PROTOTYPES
 #include <stddef.h>
 #else
@@ -23,6 +21,7 @@ Uses @code{malloc} to allocate storage for @var{nelem} objects of
 
 /* For systems with larger pointers than ints, this must be declared.  */
 PTR malloc PARAMS ((size_t));
+void bzero PARAMS ((PTR, size_t));
 
 PTR
 calloc (nelem, elsize)

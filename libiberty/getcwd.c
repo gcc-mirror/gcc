@@ -40,7 +40,7 @@ extern int errno;
 char *
 getcwd (buf, len)
   char *buf;
-  int len;
+  size_t len;
 {
   char ourbuf[MAXPATHLEN];
   char *result;

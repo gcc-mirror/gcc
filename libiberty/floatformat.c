@@ -17,9 +17,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+#include "ansidecl.h"
 #include "floatformat.h"
 #include <math.h>		/* ldexp */
-#ifdef __STDC__
+#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
 extern void *memcpy (void *s1, const void *s2, size_t n);
 extern void *memset (void *s, int c, size_t n);

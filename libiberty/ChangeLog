@@ -1,3 +1,25 @@
+2003-04-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* argv.c: Fix comments.
+	* calloc.c: Don't unnecessarily include "libiberty.h".
+	(bzero): Add prototype.
+	* floatformat.c: Include "ansidecl.h", rely on ANSI_PROTOTYPES.
+	* getcwd.c (getcwd): Use standard definition to avoid conflicts
+	with system headers.
+	* hashtab.c (htab_traverse): Delete unused variables.
+	* rename.c: Include "ansidecl.h".
+	(rename): Use standard definition to avoid conflicts with system
+	headers.
+	* strsignal.c: Rely on ANSI_PROTOTYPES.
+	* strstr.c: Check GNUC >= 2, not GNUC == 2.
+	* vfprintf.c: Include "ansidecl.h", rely on ANSI_PROTOTYPES.
+	* vprintf.c: Include "ansidecl.h" earlier, rely on
+	ANSI_PROTOTYPES.
+	* vsprintf.c: Include "ansidecl.h" earlier, rely on
+	ANSI_PROTOTYPES and possibly include <stdarg.h>.
+	
+	* Makefile.in: Regenerate dependencies.
+
 2003-04-15  DJ Delorie  <dj@redhat.com>
 
 	* maint-tool (deps): Scan for headers in $srcdir also.
