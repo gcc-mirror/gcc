@@ -1,3 +1,9 @@
+2002-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/22_locale/num_put_members_char.cc (test01): Swap size
+	and decimal_point arguments of find.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test01): Likewise.
+
 2002-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (check-abi, new-abi-baseline): Use @glibcpp_srcdir@
