@@ -1,5 +1,10 @@
 2002-12-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (get_shift_alg): Make shift insn
+	sequences end with a valid cc0 whenever possible.
+
+2002-12-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (negsf2): New.
 	(*negsf2_h8300): Likewise.
 	(*negsf2_h8300hs): Likewise.

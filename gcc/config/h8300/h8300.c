@@ -2590,21 +2590,29 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0";
-	      info->shift1  = "shal.b\t%t0";
-	      info->shift2  = "shal.b\t#2,%t0";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
-	      info->shift1  = "shlr.b\t%s0";
-	      info->shift2  = "shlr.b\t#2,%s0";
+	      if (TARGET_H8300)
+		{
+		  info->special = "mov.b\t%t0,%s0\n\tsub.b\t%t0,%t0";
+		  info->shift1  = "shlr.b\t%s0";
+		}
+	      else
+		{
+		  info->special = "mov.b\t%t0,%s0\n\textu.w\t%T0";
+		}
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      if (TARGET_H8300)
-		info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0";
+		{
+		  info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0";
+		  info->shift1  = "shar.b\t%s0";
+		  info->shift2  = "shar.b\t#2,%s0";
+		}
 	      else
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
-	      info->shift1 = "shar.b\t%s0";
-	      info->shift2 = "shar.b\t#2,%s0";
+		{
+		  info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
+		}
 	      goto end;
 	    }
 	}
@@ -2730,15 +2738,14 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		}
 	      goto end;
 	    case SHIFT_LSHIFTRT:
-	      info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
 	      if (TARGET_H8300)
 		{
-		  info->shift1 = "shlr\t%x0\n\trotxr\t%w0";
+		  info->special = "mov.w\t%e0,%f0\n\tsub.w\t%e0,%e0";
+		  info->shift1  = "shlr\t%x0\n\trotxr\t%w0";
 		}
 	      else
 		{
-		  info->shift1 = "shlr.l\t%S0";
-		  info->shift2 = "shlr.l\t#2,%S0";
+		  info->special = "mov.w\t%e0,%f0\n\textu.l\t%S0";
 		}
 	      goto end;
 	    case SHIFT_ASHIFTRT:
@@ -2750,8 +2757,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      else
 		{
 		  info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
-		  info->shift1  = "shar.l\t%S0";
-		  info->shift2  = "shar.l\t#2,%S0";
 		}
 	      goto end;
 	    }
@@ -2814,9 +2819,9 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      info->shift1  = "";
 	      info->shift2  = "";
 	      goto end;
@@ -2838,9 +2843,9 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      info->shift1  = "";
 	      info->shift2  = "";
 	      goto end;
@@ -2862,9 +2867,9 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
-		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\tsub.w\t%e0,%e0";
+		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
 	      info->shift1  = "";
 	      info->shift2  = "";
 	      goto end;
@@ -2900,7 +2905,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		  info->special = "shll.l\t%S0\n\txor.l\t%S0,%S0\n\trotxl.l\t%S0";
 		  goto end;
 		case SHIFT_ASHIFTRT:
-		  info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\tmov.b\t%w0,%x0\n\tmov.w\t%f0,%e0";
+		  info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\texts.w\t%T0\n\texts.l\t%S0";
 		  goto end;
 		}
 	    }
