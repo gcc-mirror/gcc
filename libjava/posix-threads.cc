@@ -26,6 +26,7 @@ extern "C"
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
+#include <errno.h>
 
 #include <cni.h>
 #include <jvm.h>
