@@ -1,3 +1,8 @@
+2000-11-19  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* gcc.c (process_command): Define 'j' variable when
+	MODIFY_TARGET_NAME is defined.
+
 2000-11-19  Richard Henderson  <rth@redhat.com>
 
 	* stor-layout.c (variable_size): Only put SAVE_EXPRs on pending_sizes.
