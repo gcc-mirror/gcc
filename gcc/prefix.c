@@ -1,5 +1,5 @@
 /* Utility to update paths from internal to external forms.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -101,9 +101,6 @@ get_key_value (key)
 
   if (prefix == 0)
     prefix = getenv (concat (key, "_ROOT", NULL_PTR));
-
-  if (prefix == 0)
-    prefix = PREFIX;
 
   return prefix;
 }
@@ -235,7 +232,7 @@ translate_name (name)
      char *name;
 {
   char code = name[0];
-  char *key, *prefix;
+  char *key, *prefix = 0;
   int keylen;
 
   if (code != '@' && code != '$')
@@ -257,17 +254,12 @@ translate_name (name)
   name = &name[keylen + 1];
 
   if (code == '@')
-    {
-      prefix = get_key_value (key);
-      if (prefix == 0)
-	prefix = PREFIX;
-    }
+    prefix = get_key_value (key);
   else
-    {
-      prefix = getenv (key);
-      if (prefix == 0)
-	prefix = concat ("$", key, NULL_PTR);
-    }
+    prefix = getenv (key);
+
+  if (prefix == 0)
+    prefix = PREFIX;
 
   /* Remove any trailing directory separator from what we got.  */
   if (prefix[strlen (prefix) - 1] == '/'
