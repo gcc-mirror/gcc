@@ -471,7 +471,7 @@ endian (e, x, mode)
 	  th = (unsigned long) e[0] & 0xffff;
 	  t = (unsigned long) e[1] & 0xffff;
 	  t |= th << 16;
-	  x[0] = t;
+	  x[0] = (long) t;
 	  break;
 
 	default:
@@ -520,7 +520,7 @@ endian (e, x, mode)
 	  th = (unsigned long) e[1] & 0xffff;
 	  t = (unsigned long) e[0] & 0xffff;
 	  t |= th << 16;
-	  x[0] = t;
+	  x[0] = (long) t;
 	  break;
 
 	default:
@@ -2978,8 +2978,14 @@ e64toe (pe, y)
   else
     {
       p = &yy[0] + (NE - 1);
+#ifdef ARM_EXTENDED_IEEE_FORMAT
+      /* For ARMs, the exponent is in the lowest 15 bits of the word.  */
+      *p-- = (e[0] & 0x8000) | (e[1] & 0x7ffff);
+      e += 2;
+#else
       *p-- = *e++;
       ++e;
+#endif
       for (i = 0; i < 4; i++)
 	*p-- = *e++;
     }
@@ -2987,7 +2993,7 @@ e64toe (pe, y)
 #ifdef INFINITY
   /* Point to the exponent field and check max exponent cases.  */
   p = &yy[NE - 1];
-  if (*p == 0x7fff)
+  if ((*p & 0x7fff) == 0x7fff)
     {
 #ifdef NANS
       if (! REAL_WORDS_BIG_ENDIAN)
@@ -3005,7 +3011,8 @@ e64toe (pe, y)
 	}
       else
 	{
-	  for (i = 1; i <= 4; i++)
+#ifdef ARM_EXTENDED_IEEE_FORMAT
+	  for (i = 2; i <= 5; i++)
 	    {
 	      if (pe[i] != 0)
 		{
@@ -3013,6 +3020,23 @@ e64toe (pe, y)
 		  return;
 		}
 	    }
+#else /* not ARM */
+	  /* In Motorola extended precision format, the most significant
+	     bit of an infinity mantissa could be either 1 or 0.  It is
+	     the lower order bits that tell whether the value is a NaN.  */
+	  if ((pe[2] & 0x7fff) != 0)
+	    goto bigend_nan;
+
+	  for (i = 3; i <= 5; i++)
+	    {
+	      if (pe[i] != 0)
+		{
+bigend_nan:
+		  enan (y, (*p & 0x8000) != 0);
+		  return;
+		}
+	    }
+#endif /* not ARM */
 	}
 #endif /* NANS */
       eclear (y);
@@ -3390,11 +3414,17 @@ toe64 (a, b)
 #ifdef IEEE
   if (REAL_WORDS_BIG_ENDIAN)
     {
+#ifdef ARM_EXTENDED_IEEE_FORMAT
+      /* The exponent is in the lowest 15 bits of the first word.  */
+      *q++ = i ? 0x8000 : 0;
+      *q++ = *p++;
+#else
       if (i)
 	*q++ = *p++ | 0x8000;
       else
 	*q++ = *p++;
       *q++ = 0;
+#endif
     }
   else
     {
