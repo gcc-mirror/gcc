@@ -1,5 +1,13 @@
 2005-03-31  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/altivec-16.c: Use cleanup-saved-temps.
+	* gcc.dg/cpp/direct2s.c: Ditto.
+	* gcc.dg/cpp/paste4.c: Ditto.
+	* gcc.dg/cpp/separate-1.c: Ditto.
+	* gcc.dg/pch/save-temps-1.c: Ditto.
+	* g++.dg/ext/altivec-10.C: Ditto.
+	* g++.dg/pch/pch.C: Ditto.
+
 	* g++.dg/other/static11.C: Use cleanup-rtl-dump.
 
 	* g++.dg/parse/repo1.C: Use cleanup-repo-files.

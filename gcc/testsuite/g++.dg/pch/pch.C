@@ -5,3 +5,5 @@ int main()
 {
   return 0;
 }
+
+// { dg-final { cleanup-saved-temps } }

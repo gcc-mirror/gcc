@@ -40,3 +40,5 @@ void f ()
   int i = X;    /* { dg-error "undeclared|for each" "no macro X" } */
   int j = Y;    /* { dg-error "undeclared|for each" "no macro Y" } */
 }
+
+/* { dg-final { cleanup-saved-temps } } */
