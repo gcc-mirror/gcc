@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
    by all passes of the compiler.  */
 
 #include "config.h"
+#include <stdio.h>
 #include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
@@ -45,7 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
-#include <stdio.h>
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>

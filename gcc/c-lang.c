@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for C front end.
-   Copyright (C) 1991, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include "tree.h"
 #include <stdio.h>
+#include "tree.h"
 #include "input.h"
 
 /* Each of the functions defined here
