@@ -2157,7 +2157,7 @@ pop_everything ()
 }
 
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
-   Normally put into into the inner-most non-tag-transparent scope,
+   Normally put it into the inner-most non-tag-transparent scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
    The latter is needed for implicit declarations.  */
 
@@ -2226,11 +2226,52 @@ pushtag (name, type, globalize)
 	  TYPE_NAME (type) = d;
 	  DECL_CONTEXT (d) = context;
 
-	  if (! globalize && processing_template_decl
-	      && IS_AGGR_TYPE (type))
+	  if (IS_AGGR_TYPE (type)
+	      && (/* If !GLOBALIZE then we are looking at a
+		     definition.  */
+		  (processing_template_decl && !globalize)
+		  /* This next condition is tricky.  If we are
+		     declaring a friend template class, we will have
+		     GLOBALIZE set, since something like:
+
+		       template <class T>
+		       struct S1 {
+		         template <class U>
+		         friend class S2; 
+		       };
+
+		     declares S2 to be at global scope.  The condition
+		     says that we are looking at a primary template
+		     that is being declared in class scope.  We can't
+		     just drop the `in class scope' and then not check
+		     GLOBALIZE either since on this code:
+		  
+		       template <class T>
+		       struct S1 {};
+		       template <class T>
+		       struct S2 { S1<T> f(); } 
+
+		     we get called by lookup_template_class (with TYPE
+		     set to S1<T> and GLOBALIZE set to 1).  However,
+		     lookup_template_class calls
+		     maybe_push_to_top_level which doesn't clear
+		     processing_template_decl, so we would then
+		     incorrectly call push_template_decl.  */
+		  || (current_class_type != NULL_TREE
+		      && (processing_template_decl > 
+			  template_class_depth (current_class_type)))))
 	    {
-	      d = push_template_decl (d);
-	      if (b->pseudo_global && b->level_chain->parm_flag == 2)
+	      d = push_template_decl_real (d, globalize);
+	      /* If the current binding level is the binding level for
+		 the template parameters (see the comment in
+		 begin_template_parm_list) and the enclosing level is
+		 a class scope, and we're not looking at a friend,
+		 push the declaration of the member class into the
+		 class scope.  In the friend case, push_template_decl
+		 will already have put the friend into global scope,
+		 if appropriate.  */ 
+	      if (!globalize && b->pseudo_global &&
+		  b->level_chain->parm_flag == 2)
 		pushdecl_with_scope (CLASSTYPE_TI_TEMPLATE (type),
 				     b->level_chain);
 	    }
@@ -10812,6 +10853,15 @@ xref_tag (code_type_node, name, binfo, globalize)
 	{
 	  /* Try finding it as a type declaration.  If that wins, use it.  */
 	  ref = lookup_name (name, 1);
+
+	  if (ref != NULL_TREE
+	      && processing_template_decl
+	      && DECL_CLASS_TEMPLATE_P (ref)
+	      && template_class_depth (current_class_type) == 0)
+	    /* Since GLOBALIZE is true, we're declaring a global
+	       template, so we want this type.  */
+	    ref = DECL_RESULT (ref);
+
 	  if (ref && TREE_CODE (ref) == TYPE_DECL
 	      && TREE_CODE (TREE_TYPE (ref)) == code)
 	    ref = TREE_TYPE (ref);
@@ -10898,7 +10948,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 	}
 
       if (!globalize && processing_template_decl && IS_AGGR_TYPE (ref))
-	redeclare_class_template (ref);
+	redeclare_class_template (ref, current_template_parms);
     }
 
   if (binfo)

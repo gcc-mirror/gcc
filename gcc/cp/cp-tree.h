@@ -1139,6 +1139,15 @@ struct lang_decl
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
 #define LOOKUP_EXPR_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 
+/* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
+   TEMPLATE_DECL.  This macro determines whether or not a given class
+   type is really a template type, as opposed to an instantiation or
+   specialization of one.  */
+#define CLASSTYPE_IS_TEMPLATE(NODE)  \
+  (CLASSTYPE_TEMPLATE_INFO (NODE)    \
+   && !CLASSTYPE_USE_TEMPLATE (NODE) \
+   && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE)))
+
 #define TYPENAME_TYPE_FULLNAME(NODE)	CLASSTYPE_SIZE (NODE)
 
 /* Nonzero in INT_CST means that this int is negative by dint of
@@ -1412,11 +1421,22 @@ extern int flag_new_for_scope;
   (TREE_CODE (NODE) == TEMPLATE_DECL \
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
 
+/* Nonzero for a DECL that represents a template class.  */
+#define DECL_CLASS_TEMPLATE_P(NODE) \
+  (TREE_CODE (NODE) == TEMPLATE_DECL \
+   && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == TYPE_DECL \
+   && !DECL_TEMPLATE_TEMPLATE_PARM_P (NODE))
+
 /* A `primary' template is one that has its own template header.  A
    member function of a class template is a template, but not primary.
-   A member template is primary.  */
-#define PRIMARY_TEMPLATE_P(NODE) \
-  (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)) == (NODE))
+   A member template is primary.  Friend templates are primary, too.  */
+
+/* Returns the primary template corresponding to these parameters.  */
+#define DECL_PRIMARY_TEMPLATE(NODE) \
+  (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)))
+
+/* Returns non-zero if NODE is a primary template.  */
+#define PRIMARY_TEMPLATE_P(NODE) (DECL_PRIMARY_TEMPLATE (NODE) == NODE)
 
 #define CLASSTYPE_TEMPLATE_LEVEL(NODE) \
   (TREE_INT_CST_HIGH (TREE_PURPOSE (CLASSTYPE_TI_TEMPLATE (NODE))))
@@ -2435,7 +2455,8 @@ extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
 extern tree current_template_args		PROTO((void));
 extern tree push_template_decl			PROTO((tree));
-extern void redeclare_class_template            PROTO((tree));
+extern tree push_template_decl_real             PROTO((tree, int));
+extern void redeclare_class_template            PROTO((tree, tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree, tree));
 extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));
@@ -2467,6 +2488,9 @@ extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
 extern int comp_template_parms                  PROTO((tree, tree));
 extern int template_class_depth                 PROTO((tree));
+extern int is_specialization_of                 PROTO((tree, tree));
+extern int comp_template_args                   PROTO((tree, tree));
+
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
 

@@ -2498,8 +2498,12 @@ component_decl:
                 { $$ = finish_member_template_decl ($1, $2); }
 	| template_header typed_declspecs ';'
                 {
-		  shadow_tag ($2.t);
 		  note_list_got_semicolon ($2.t);
+		  grok_x_components ($2.t, NULL_TREE); 
+		  if (TYPE_CONTEXT (TREE_VALUE ($2.t)) != current_class_type)
+		    /* The component was in fact a friend
+		       declaration.  */
+		    $2.t = NULL_TREE;
 		  $$ = finish_member_template_decl ($1, $2.t);
 		}
 	;

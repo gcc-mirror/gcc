@@ -1,5 +1,34 @@
 Sun Apr 26 12:10:18 1998  Mark Mitchell  <mmitchell@usa.net>
 
+	* cp-tree.h (CLASSTYPE_IS_TEMPLATE): New macro.
+	(DECL_CLASS_TEMPLATE_P): Likewise.
+	(DECL_PRIMARY_TEMPLATE): Likewise.
+	(PRIMARY_TEMPLATE_P): Use it.
+	(push_template_decl_real): New function.
+	(redeclare_class_template): Take new template parameters as
+	input. 
+	(is_specialization_of): New function.
+	(comp_template_args): Declare.
+	* decl.c (pushtag): Handle friend template classes.
+	(xref_tag): Likewise.  Use new calling convention for
+	redeclare_class_template.
+	* decl2.c (grok_x_components): Handle friend templates.
+	* friend.c (is_friend): Use is_specialization_of where
+	appropriate.  Deal with friend class templates.
+	(make_friend_class): Let a class template be friends with itself.
+	* pt.c (comp_template_args): Remove declaration.
+	(tsubst_friend_class): New function.
+	(push_template_decl_real): New function.
+	(push_template_decl): Use it.
+	(redeclare_class_template): Adjust for new calling convention.
+	(comp_template_args): Give it external linkage.
+	(instantiate_class_type): Use tsubst_friend_class to deal
+	with friend templates.
+	* typeck.c (comptypes): Use comp_template_args, rather than
+	expanding it inline.
+	* parse.y (component_decl): Handle a nested template type 
+	like other component type declarations.
+
 	* pt.c (check_explicit_specialization): Handle overloaded
 	constructors correctly.
 
