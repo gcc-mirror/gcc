@@ -1,3 +1,8 @@
+2004-10-25  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* config/mips/mips.c(mips_output_filename): Remove unused 
+	array ltext_label_name
+
 2004-10-24  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* config/rs6000/darwin.h (BLOCK_REG_PADDING): Define.
