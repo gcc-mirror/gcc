@@ -44,6 +44,7 @@
 #undef ENABLE_MALLOC_CHECKING
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
+
 #define UNW_VER(x)		((x) >> 48)
 #define UNW_FLAG_MASK		0x0000ffff00000000
 #define UNW_FLAG_OSMASK		0x0000f00000000000
@@ -1754,6 +1755,9 @@ _Unwind_GetBSP (struct _Unwind_Context *context)
   return (_Unwind_Ptr) context->bsp;
 }
 
+#ifdef MD_UNWIND_SUPPORT
+#include MD_UNWIND_SUPPORT
+#endif
 
 static _Unwind_Reason_Code
 uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
@@ -1777,7 +1781,8 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 os-specific fallback mechanism.  This will necessarily
 	 not provide a personality routine or LSDA.  */
 #ifdef MD_FALLBACK_FRAME_STATE_FOR
-      MD_FALLBACK_FRAME_STATE_FOR (context, fs, success);
+      if (MD_FALLBACK_FRAME_STATE_FOR (context, fs) == _URC_NO_REASON)
+	return _URC_NO_REASON;
 
       /* [SCRA 11.4.1] A leaf function with no memory stack, no exception
 	 handlers, and which keeps the return value in B0 does not need
@@ -1792,15 +1797,10 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	  fs->curr.reg[UNW_REG_RP].where = UNW_WHERE_BR;
 	  fs->curr.reg[UNW_REG_RP].when = -1;
 	  fs->curr.reg[UNW_REG_RP].val = 0;
-	  goto success;
+	  return _URC_NO_REASON;
 	}
-
-      return _URC_END_OF_STACK;
-    success:
-      return _URC_NO_REASON;
-#else
-      return _URC_END_OF_STACK;
 #endif
+      return _URC_END_OF_STACK;
     }
 
   context->region_start = ent->start_offset + segment_base;

@@ -371,14 +371,7 @@ extern const char *darwin_one_byte_bool;
 #include <stdbool.h>
 #endif
 
-#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
-  {									\
-    extern bool _Unwind_fallback_frame_state_for			\
-      (struct _Unwind_Context *context, _Unwind_FrameState *fs);	\
-									\
-    if (_Unwind_fallback_frame_state_for (CONTEXT, FS))			\
-      goto SUCCESS;							\
-  }
+#define MD_UNWIND_SUPPORT "config/rs6000/darwin-unwind.h"
 
 #define HAS_MD_FALLBACK_FRAME_STATE_FOR 1
 
