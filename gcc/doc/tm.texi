@@ -5736,13 +5736,6 @@ assembler operation that should precede instructions and read-only data.
 Normally @code{"\t.text"} is right.
 @end defmac
 
-@defmac TEXT_SECTION
-A C statement that switches to the default section containing instructions.
-Normally this is not needed, as simply defining @code{TEXT_SECTION_ASM_OP}
-is enough.  The MIPS port uses this to sort all functions after all data
-declarations.
-@end defmac
-
 @defmac HOT_TEXT_SECTION_NAME
 If defined, a C string constant for the name of the section containing most
 frequently executed functions of the program.  If not defined, GCC will provide

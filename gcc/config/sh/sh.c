@@ -1336,7 +1336,7 @@ sh_file_start (void)
   if (TARGET_ELF)
     /* We need to show the text section with the proper
        attributes as in TEXT_SECTION_ASM_OP, before dwarf2out
-       emits it without attributes in TEXT_SECTION, else GAS
+       emits it without attributes in TEXT_SECTION_ASM_OP, else GAS
        will complain.  We can teach GAS specifically about the
        default attributes for our choice of text section, but
        then we would have to change GAS again if/when we change

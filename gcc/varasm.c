@@ -234,11 +234,7 @@ text_section (void)
   if (in_section != in_text)
     {
       in_section = in_text;
-#ifdef TEXT_SECTION
-      TEXT_SECTION ();
-#else
       fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-#endif
     }
 }
 
