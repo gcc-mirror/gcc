@@ -1,3 +1,8 @@
+Sun Jan  4 01:01:50 1998  scott snyder  <snyder@d0sgif.fnal.gov>
+
+	* configure.in: Make gthr-default.h a forwarding header instead of
+	a symlink.
+
 Sat Jan  3 12:08:06 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcov-io.h: Include sys/types.h to ensure we get size_t.
