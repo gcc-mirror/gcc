@@ -2792,8 +2792,8 @@
 		       (match_operand:SF 1 "fpu_add_operand" "fG,H")))]
   ""
   "@
-   cmf%?\\t%0, %1
-   cnf%?\\t%0, #%N1"
+   cmf%?e\\t%0, %1
+   cnf%?e\\t%0, #%N1"
 [(set_attr "conds" "set")
  (set_attr "type" "f_2_r")])
 
@@ -3146,7 +3146,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(match_operator:SI 1 "comparison_operator" [(reg 24) (const_int 0)]))]
   ""
-  "mov%d1\\t%0, #1\;mov%D1\\t%0, #0"
+  "mov%D1\\t%0, #0\;mov%d1\\t%0, #1"
 [(set_attr "conds" "use")
  (set_attr "length" "8")])
 
@@ -3155,7 +3155,7 @@
 	(neg:SI (match_operator:SI 1 "comparison_operator"
 		 [(reg 24) (const_int 0)])))]
   ""
-  "mvn%d1\\t%0, #0\;mov%D1\\t%0, #0"
+  "mov%D1\\t%0, #0\;mvn%d1\\t%0, #0"
 [(set_attr "conds" "use")
  (set_attr "length" "8")])
 
@@ -3164,7 +3164,7 @@
 	(not:SI (match_operator:SI 1 "comparison_operator"
 		 [(reg 24) (const_int 0)])))]
   ""
-  "mvn%d1\\t%0, #1\;mov%D1\\t%0, #0"
+  "mov%D1\\t%0, #0\;mvn%d1\\t%0, #1"
 [(set_attr "conds" "use")
  (set_attr "length" "8")])
 
@@ -3634,7 +3634,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(and:SI (match_operator 1 "comparison_operator"
-		 [(reg 24) (const_int 0)])
+		 [(match_operand 3 "reversible_cc_register" "") (const_int 0)])
 		(match_operand:SI 2 "s_register_operand" "r")))]
   ""
   "mov%D1\\t%0, #0\;and%d1\\t%0, %2, #1"
@@ -3851,10 +3851,10 @@
   "*
   if (GET_CODE (operands[3]) == NE)
     {
-      if (which_alternative != 0)
-	output_asm_insn (\"mov%d4\\t%0, %1\", operands);
       if (which_alternative != 1)
 	output_asm_insn (\"mov%D4\\t%0, %2\", operands);
+      if (which_alternative != 0)
+	output_asm_insn (\"mov%d4\\t%0, %1\", operands);
       return \"\";
     }
   if (which_alternative != 0)
@@ -5401,7 +5401,8 @@
 (define_insn ""
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(if_then_else:SI (match_operator 4 "comparison_operator"
-			  [(match_operand 3 "cc_register" "") (const_int 0)])
+			  [(match_operand 3 "reversible_cc_register" "")
+			   (const_int 0)])
 			 (match_operand:SI 1 "arm_rhs_operand" "0,?rI")
 			 (not:SI
 			  (match_operand:SI 2 "s_register_operand" "r,r"))))]
