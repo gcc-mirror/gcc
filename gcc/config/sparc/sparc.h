@@ -1014,12 +1014,16 @@ do								\
       fixed_regs[4] = 0;					\
     if (TARGET_FLAT)						\
       {								\
+	int regno;						\
 	/* Let the compiler believe the frame pointer is still	\
 	   %fp, but output it as %i7.  */			\
 	fixed_regs[31] = 1;					\
 	reg_names[HARD_FRAME_POINTER_REGNUM] = "%i7";		\
 	/* Disable leaf functions */				\
 	memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);	\
+	/* Make LEAF_REG_REMAP a noop.  */			\
+	for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
+	  leaf_reg_remap [regno] = regno;			\
       }								\
   }								\
 while (0)
@@ -1316,7 +1320,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 extern char sparc_leaf_regs[];
 #define LEAF_REGISTERS sparc_leaf_regs
 
-extern const char leaf_reg_remap[];
+extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
 
 /* The class value for index registers, and the one for base regs.  */
