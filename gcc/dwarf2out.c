@@ -3265,16 +3265,6 @@ extern int flag_traditional;
 #endif
 #endif
 
-/* Define the architecture-dependent minimum instruction length (in bytes).
-   In this implementation of DWARF, this field is used for information
-   purposes only.  Since GCC generates assembly language, we have
-   no a priori knowledge of how many instruction bytes are generated
-   for each source line, and therefore can use only the  DW_LNE_set_address
-   and DW_LNS_fixed_advance_pc line information commands.
-   Accordingly, we define this as `1', which is "correct enough" for
-   all architectures, and don't let the target override.  */
-#define DWARF_LINE_MIN_INSTR_LENGTH 1
-
 /* Minimum line offset in a special line info. opcode.
    This value was chosen to give a reasonable range of values.  */
 #define DWARF_LINE_BASE  -10
@@ -7031,8 +7021,17 @@ output_line_info ()
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
-  dw2_asm_output_data (1, DWARF_LINE_MIN_INSTR_LENGTH,
+  /* Define the architecture-dependent minimum instruction length (in
+   bytes).  In this implementation of DWARF, this field is used for
+   information purposes only.  Since GCC generates assembly language,
+   we have no a priori knowledge of how many instruction bytes are
+   generated for each source line, and therefore can use only the
+   DW_LNE_set_address and DW_LNS_fixed_advance_pc line information
+   commands.  Accordingly, we fix this as `1', which is "correct
+   enough" for all architectures, and don't let the target override.  */
+  dw2_asm_output_data (1, 1,
 		       "Minimum Instruction Length");
+
   dw2_asm_output_data (1, DWARF_LINE_DEFAULT_IS_STMT_START,
 		       "Default is_stmt_start flag");
   dw2_asm_output_data (1, DWARF_LINE_BASE,
