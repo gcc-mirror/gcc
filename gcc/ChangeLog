@@ -1,3 +1,9 @@
+2005-01-11  Jan Beulich  <jbeulich@novell.com>
+	* config/ia64/ia64.md (zero_extendsidi2): Replace zxt4 by addp4.
+	Change respective itanium_class attribute to ialu.
+	(shladdp4_internal): New.
+	* config/ia64/predicates.md (shladd_log2_operand): New.
+
 2005-01-11  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (store_constructor): Use rtvec_alloc instead of
