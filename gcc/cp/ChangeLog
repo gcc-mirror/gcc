@@ -1,3 +1,7 @@
+Sat Jun 27 12:22:56 1998  Jeffrey A Law  (law@cygnus.com)
+
+        * Make-lang.in (g++): Depend on mkstemp.o.  Link in mkstemp.o
+
 Sat Jun 27 07:36:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (EXPR_H): New dependency variable.
