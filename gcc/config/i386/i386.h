@@ -2723,6 +2723,7 @@ do { long l;						\
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
+   A -- print an absolute memory reference.
    P -- if PIC, print an @PLT suffix.
    X -- don't print any sort of PIC '@' suffix for a symbol.
    s -- ??? something to do with double shifts.  not actually used, afaik.

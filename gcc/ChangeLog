@@ -67,6 +67,16 @@ Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
 	otherwise leave empty.
 	* configure: Regenerate.
 
+2000-10-23  Diego Novillo  <dnovillo@cygnus.com>
+
+	* i386.c (print_operand): Handle new 'A' formatting code.
+	387 opcodes need suffixes even with -mintel-syntax.
+	Check for explicit size override (codes 'b', 'w' and 'k').
+	(print_operand_address): Check if register prefix is needed when
+	emitting `ds' segment override.
+	* i386.h: Add comment about new 'A' formatting code.
+	* i386.md (jump and call patterns): Emit absolute references using %A.
+
 2000-10-23  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_expand_prologue): Mark extra 
