@@ -16,10 +16,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.6 1991/11/21 22:27:06 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.7 1991/11/23 22:18:29 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/21 22:27:06 $
+  $Date: 1991/11/23 22:18:29 $
   $Log: hash.c,v $
+ * Revision 0.7  1991/11/23  22:18:29  dennisg
+ * deleted hashIndex() and moved it to hash-inline.h
+ * converted hash_value_for_key() to a inline and moved it to hash-inline.h.
+ *
  * Revision 0.6  1991/11/21  22:27:06  dennisg
  * changed hash value calculation.
  * func name changed from hashValue() to hashIndex().  the
@@ -117,7 +121,7 @@ void hash_delete( Cache_t theCache ) {
 
 void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
-  u_short     indx = hashIndex( *theCache, aKey );
+  u_int       indx = hashIndex( *theCache, aKey );
   CacheNode_t aCacheNode = calloc( 1, sizeof( CacheNode ));
 
 
@@ -189,7 +193,7 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
 void hash_remove( Cache_t theCache, void* aKey ) {
 
-  u_short     indx = hashIndex( theCache, aKey );
+  u_int       indx = hashIndex( theCache, aKey );
   CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
   
   
