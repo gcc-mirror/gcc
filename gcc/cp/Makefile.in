@@ -114,7 +114,7 @@ all: all.indirect
 
 all.indirect: Makefile ../cc1plus
 
-# IN_GCC tells obstack.h to use gstddef.h.
+# IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
 
 # This is the variable actually used when we compile.
@@ -189,9 +189,6 @@ config.status:
 
 # Note that dependencies on obstack.h are not written
 # because that file is not part of GCC.
-# Dependencies on gvarargs.h are not written
-# because all that file does, when not compiling with GCC,
-# is include the system varargs.h.
 
 # C++ language specific files.
 
