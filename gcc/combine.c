@@ -1465,6 +1465,10 @@ cant_combine_insn_p (insn)
     return 0;
   src = SET_SRC (set);
   dest = SET_DEST (set);
+  if (GET_CODE (src) == SUBREG)
+    src = SUBREG_REG (src);
+  if (GET_CODE (dest) == SUBREG)
+    dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
       && ((REGNO (src) < FIRST_PSEUDO_REGISTER
 	   && ! fixed_regs[REGNO (src)])
