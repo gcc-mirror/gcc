@@ -3419,14 +3419,6 @@ x86_64_zext_immediate_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return x86_64_zero_extended_value (op);
 }
 
-/* Return nonzero if OP is (const_int 1), else return zero.  */
-
-int
-const_int_1_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return op == const1_rtx;
-}
-
 /* Return nonzero if OP is CONST_INT >= 1 and <= 31 (a valid operand
    for shift & compare patterns, as shifting by 0 does not change flags),
    else return zero.  */
