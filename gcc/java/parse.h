@@ -129,6 +129,13 @@ extern tree stabilize_reference PROTO ((tree));
   (TREE_CODE (DECL_NAME (METHOD)) == EXPR_WITH_FILE_LOCATION ?	\
    EXPR_WFL_NODE (DECL_NAME (METHOD)) : DECL_NAME (METHOD))
 
+/* Get TYPE name string, regardless whether TYPE is a class or an
+   array. */
+#define GET_TYPE_NAME(TYPE)				\
+  (TREE_CODE (TYPE_NAME (TYPE)) == IDENTIFIER_NODE ?	\
+   IDENTIFIER_POINTER (TYPE_NAME (TYPE)) :		\
+   IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (TYPE))))
+
 /* Pedantic warning on obsolete modifiers. Note: when cl is NULL,
    flags was set artificially, such as for a interface method */
 #define OBSOLETE_MODIFIER_WARNING(cl, flags, modifier, format, arg)          \

@@ -1,3 +1,30 @@
+1999-03-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_stabilize_reference): Return NODE when patching a
+	COMPOUND_EXPR.
+	(java_complete_lhs): Put parenthesis around truth values.
+
+1999-03-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class_method): Don't make rtl for interface
+	methods.
+	* parse.h (GET_TYPE_NAME): New macro.
+	* parse.y (if_then_statement:): Fixed indentation.
+	(if_then_else_statement:): Likewise.
+	(for_statement:): Fixed spacing.
+	(try_statement:): Fixed indentation.
+	(create_interface): Don't force interfaces to be abstract.
+	(method_header): Abstract methods are OK in interfaces.
+	(declare_local_variables): Fixed typo in comment.
+	(java_complete_expand_method): Fixed indentation.
+	(resolve_qualified_expression_name): Use GET_TYPE_NAME to report
+	non accessible fields.
+	(java_stabilize_reference): New function.
+	(java_complete_lhs): Fixed indentation. Use
+	java_stabilize_reference in compound assignement. Insert the
+	cast. If not processing `+' fix string constants before processing
+	binop.
+
 Fri Mar 12 19:42:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* constants.c (find_class_or_string_constant): Cast variable `j'
@@ -37,6 +64,11 @@ Wed Mar 10 23:20:11 1999  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-write.c (generate_bytecode_insns):  Handle __builtin_fmod, for %.
 
+  Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+  
+ 	* parse.y (method_header): Don't set ACC_ABSTRACT flags on
+  	interfaces.
+  
 Fri Mar  5 15:17:29 1999  Per Bothner  <bothner@cygnus.com>
 
 	* lex.c (java_parse_end_comment):  Take extra parameter (next char).
@@ -54,7 +86,7 @@ Fri Mar  5 15:17:29 1999  Per Bothner  <bothner@cygnus.com>
 	* parse.y (find_expr_with_wfl):  Optimize tail-calls.
 	(build_array_from_name):  Re-order &index[string] to &string[index].
 
-	* parse.y (java_complete_tree):  Don't call patch_assignment if rhs is
+	* parse.y (java_complete_lhs):  Don't call patch_assignment if rhs is
 	error_mark (it might catch more errors, but it is more likely to lose).
 
 Sat Mar  6 11:17:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
