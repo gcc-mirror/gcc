@@ -1,0 +1,188 @@
+/* Structure for saving state for a nested function.
+   Copyright (C) 1989 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+
+#ifndef NULL_TREE
+#define tree int *
+#endif
+#ifndef GET_CODE
+#define rtx int *
+#endif
+
+struct var_refs_queue
+  {
+    rtx modified;
+    rtx original;
+    struct var_refs_queue *next;
+  };
+
+/* Stack of pending (incomplete) sequences saved by `start_sequence'.
+   Each element describes one pending sequence.
+   The main insn-chain is saved in the last element of the chain,
+   unless the chain is empty.  */
+
+struct sequence_stack
+{
+  /* First and last insns in the chain of the saved sequence.  */
+  rtx first, last;
+  struct sequence_stack *next;
+};
+
+extern struct sequence_stack *sequence_stack;
+
+/* This structure can save all the important global and static variables
+   describing the status of the current function.  */
+
+struct function
+{
+  struct function *next;
+
+  /* For function.c.  */
+  char *name;
+  tree decl;
+  int pops_args;
+  int returns_struct;
+  int returns_pcc_struct;
+  int needs_context;
+  int calls_setjmp;
+  int calls_longjmp;
+  int calls_alloca;
+  int has_nonlocal_label;
+  rtx nonlocal_goto_handler_slot;
+  rtx nonlocal_goto_stack_level;
+  tree nonlocal_labels;
+  int args_size;
+  int pretend_args_size;
+  rtx arg_offset_rtx;
+  int max_parm_reg;
+  rtx *parm_reg_stack_loc;
+  int outgoing_args_size;
+  rtx return_rtx;
+  rtx cleanup_label;
+  rtx return_label;
+  rtx save_expr_regs;
+  rtx stack_slot_list;
+  rtx parm_birth_insn;
+  int frame_offset;
+  rtx tail_recursion_label;
+  rtx tail_recursion_reentry;
+  rtx internal_arg_pointer;
+  rtx arg_pointer_save_area;
+  tree rtl_expr_chain;
+  rtx last_parm_insn;
+  tree context_display;
+  tree trampoline_list;
+  int function_call_count;
+  struct temp_slot *temp_slots;
+  int temp_slot_level;
+  /* This slot is initialized as 0 and is added to
+     during the nested function.  */
+  struct var_refs_queue *fixup_var_refs_queue;
+
+  /* For stmt.c  */
+  struct nesting *block_stack;
+  struct nesting *stack_block_stack;
+  struct nesting *cond_stack;
+  struct nesting *loop_stack;
+  struct nesting *case_stack;
+  struct nesting *nesting_stack;
+  int nesting_depth;
+  int block_start_count;
+  tree last_expr_type;
+  rtx last_expr_value;
+  int expr_stmts_for_value;
+  char *emit_filename;
+  int emit_lineno;
+  struct goto_fixup *goto_fixup_chain;
+
+  /* For expr.c.  */
+  int pending_stack_adjust;
+  int inhibit_defer_pop;
+  tree cleanups_this_call;
+  rtx saveregs_value;
+  rtx forced_labels;
+
+  /* For emit-rtl.c.  */
+  int reg_rtx_no;
+  int first_label_num;
+  rtx first_insn;
+  rtx last_insn;
+  struct sequence_stack *sequence_stack;
+  int cur_insn_uid;
+  int last_linenum;
+  char *last_filename;
+  char *regno_pointer_flag;
+  int regno_pointer_flag_length;
+  rtx *regno_reg_rtx;
+
+  /* For stor-layout.c.  */
+  tree permanent_type_chain;
+  tree temporary_type_chain;
+  tree permanent_type_end;
+  tree temporary_type_end;
+  tree pending_sizes;
+  int immediate_size_expand;
+
+  /* For tree.c.  */
+  int all_types_permanent;
+  struct momentary_level *momentary_stack;
+  char *maybepermanent_firstobj;
+  char *temporary_firstobj;
+  char *momentary_firstobj;
+  struct obstack *current_obstack;
+  struct obstack *function_obstack;
+  struct obstack *function_maybepermanent_obstack;
+  struct obstack *expression_obstack;
+  struct obstack *saveable_obstack;
+  struct obstack *rtl_obstack;
+
+  /* For integrate.c.  */
+  int uses_const_pool;
+
+  /* For md files.  */
+  int uses_pic_offset_table;
+};
+
+/* The FUNCTION_DECL for an inline function currently being expanded.  */
+extern tree inline_function_decl;
+
+/* Label that will go on function epilogue.
+   Jumping to this label serves as a "return" instruction
+   on machines which require execution of the epilogue on all returns.  */
+extern rtx return_label;
+
+/* List (chain of EXPR_LISTs) of all stack slots in this function.
+   Made for the sake of unshare_all_rtl.  */
+extern rtx stack_slot_list;
+
+#ifdef rtx
+#undef rtx
+#endif
+
+#ifdef tree
+#undef tree
+#endif
+
+
+/* Given a function decl for a containing function,
+   return the `struct function' for it.  */
+struct function *find_function_data ();
+
+/* Pointer to chain of `struct function' for containing functions.  */
+extern struct function *outer_function_chain;
