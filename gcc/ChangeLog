@@ -1,3 +1,7 @@
+Thu Feb 15 15:15:29 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.h (BOOL_TYPE_SIZE): Don't define.
+
 Thu Feb 15 00:20:31 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (RETURN_IN_MEMORY): Fix formating; reject TFmodes
