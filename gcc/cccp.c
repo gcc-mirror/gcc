@@ -6902,7 +6902,8 @@ macroexpand (hp, op)
     args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
 
     for (i = 0; i < nargs; i++) {
-      args[i].raw = args[i].expanded = (U_CHAR *) "";
+      args[i].raw = (U_CHAR *) "";
+      args[i].expanded = 0;
       args[i].raw_length = args[i].expand_length
 	= args[i].stringified_length = 0;
       args[i].free1 = args[i].free2 = 0;
@@ -6997,9 +6998,22 @@ macroexpand (hp, op)
 	  xbuf_len += args[ap->argno].stringified_length;
 	else if (ap->raw_before || ap->raw_after || traditional)
 	  xbuf_len += args[ap->argno].raw_length;
-	else
-	  xbuf_len += args[ap->argno].expand_length;
+	else {
+	  /* We have an ordinary (expanded) occurrence of the arg.
+	     So compute its expansion, if we have not already.  */
+	  if (args[ap->argno].expanded == 0) {
+	    FILE_BUF obuf;
+	    obuf = expand_to_temp_buffer (args[ap->argno].raw,
+					  args[ap->argno].raw + args[ap->argno].raw_length,
+					  1, 0);
 
+	    args[ap->argno].expanded = obuf.buf;
+	    args[ap->argno].expand_length = obuf.length;
+	    args[ap->argno].free2 = obuf.buf;
+	  }
+
+	  xbuf_len += args[ap->argno].expand_length;
+	}
 	if (args[ap->argno].use_count < 10)
 	  args[ap->argno].use_count++;
       }
@@ -7291,17 +7305,8 @@ macarg (argptr, rest_args)
      All this info goes into *ARGPTR.  */
 
   if (argptr != 0) {
-    FILE_BUF obuf;
     register U_CHAR *buf, *lim;
     register int totlen;
-
-    obuf = expand_to_temp_buffer (argptr->raw,
-				  argptr->raw + argptr->raw_length,
-				  1, 0);
-
-    argptr->expanded = obuf.buf;
-    argptr->expand_length = obuf.length;
-    argptr->free2 = obuf.buf;
 
     buf = argptr->raw;
     lim = buf + argptr->raw_length;
@@ -8321,7 +8326,8 @@ make_definition (str, op)
   for (kt = directive_table; kt->type != T_DEFINE; kt++)
     ;
 
-  do_define (buf, buf + strlen (buf) , op, kt);
+  /* Pass NULL instead of OP, since this is a "predefined" macro.  */
+  do_define (buf, buf + strlen (buf), NULL, kt);
   --indepth;
 }
 
