@@ -78,7 +78,6 @@ Boston, MA 02111-1307, USA.  */
    order, so nothing more needs to be done.  */
 
 
-#include <setjmp.h>
 #include "config.h"
 #include "system.h"
 #include "rtl.h"

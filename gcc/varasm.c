@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -138,6 +137,7 @@ tree last_assemble_variable_decl;
 
 static const char *strip_reg_name	PARAMS ((const char *));
 static int contains_pointers_p		PARAMS ((tree));
+static void assemble_real_1		PARAMS ((PTR));
 static void decode_addr_const		PARAMS ((tree, struct addr_const *));
 static int const_hash			PARAMS ((tree));
 static int compare_constant		PARAMS ((tree,
@@ -1798,68 +1798,74 @@ assemble_integer (x, size, force)
 }
 
 /* Assemble the floating-point constant D into an object of size MODE.  */
-
-void
-assemble_real (d, mode)
-     REAL_VALUE_TYPE d;
-     enum machine_mode mode;
+struct assemble_real_args
 {
-  jmp_buf output_constant_handler;
+  REAL_VALUE_TYPE *d;
+  enum machine_mode mode;
+};
 
-  if (setjmp (output_constant_handler))
-    {
-      error ("floating point trap outputting a constant");
-#ifdef REAL_IS_NOT_DOUBLE
-      memset ((char *) &d, 0, sizeof d);
-      d = dconst0;
-#else
-      d = 0;
-#endif
-    }
-
-  set_float_handler (output_constant_handler);
+static void
+assemble_real_1 (p)
+     PTR p;
+{
+  struct assemble_real_args *args = (struct assemble_real_args *) p;
+  REAL_VALUE_TYPE *d = args->d;
+  enum machine_mode mode = args->mode;
 
   switch (mode)
     {
 #ifdef ASM_OUTPUT_BYTE_FLOAT
     case QFmode:
-      ASM_OUTPUT_BYTE_FLOAT (asm_out_file, d);
+      ASM_OUTPUT_BYTE_FLOAT (asm_out_file, *d);
       break;
 #endif
 #ifdef ASM_OUTPUT_SHORT_FLOAT
     case HFmode:
-      ASM_OUTPUT_SHORT_FLOAT (asm_out_file, d);
+      ASM_OUTPUT_SHORT_FLOAT (asm_out_file, *d);
       break;
 #endif
 #ifdef ASM_OUTPUT_THREE_QUARTER_FLOAT
     case TQFmode:
-      ASM_OUTPUT_THREE_QUARTER_FLOAT (asm_out_file, d);
+      ASM_OUTPUT_THREE_QUARTER_FLOAT (asm_out_file, *d);
       break;
 #endif
 #ifdef ASM_OUTPUT_FLOAT
     case SFmode:
-      ASM_OUTPUT_FLOAT (asm_out_file, d);
+      ASM_OUTPUT_FLOAT (asm_out_file, *d);
       break;
 #endif
 
 #ifdef ASM_OUTPUT_DOUBLE
     case DFmode:
-      ASM_OUTPUT_DOUBLE (asm_out_file, d);
+      ASM_OUTPUT_DOUBLE (asm_out_file, *d);
       break;
 #endif
 
 #ifdef ASM_OUTPUT_LONG_DOUBLE
     case XFmode:
     case TFmode:
-      ASM_OUTPUT_LONG_DOUBLE (asm_out_file, d);
+      ASM_OUTPUT_LONG_DOUBLE (asm_out_file, *d);
       break;
 #endif
 
     default:
       abort ();
     }
+}
 
-  set_float_handler (NULL);
+void
+assemble_real (d, mode)
+     REAL_VALUE_TYPE d;
+     enum machine_mode mode;
+{
+  struct assemble_real_args args;
+  args.d = &d;
+  args.mode = mode;
+
+  if (do_float_handler (assemble_real_1, (PTR) &args))
+    return;
+
+  internal_error ("floating point trap outputting a constant");
 }
 
 /* Here we combine duplicate floating constants to make

@@ -102,9 +102,6 @@ extern void error_for_asm		PARAMS ((struct rtx_def *,
 extern void warning_for_asm		PARAMS ((struct rtx_def *,
 						 const char *, ...))
 					       ATTRIBUTE_PRINTF_2;
-#if defined (_JBLEN) || defined (setjmp)
-extern void set_float_handler PARAMS ((jmp_buf));
-#endif
 extern int do_float_handler PARAMS ((void (*) (PTR), PTR));
 
 #ifdef BUFSIZ
