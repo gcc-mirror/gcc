@@ -1,5 +1,10 @@
 Mon Jun 21 05:33:15 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* c-pragma.c (push_alignment): Don't ignore alignments greater than
+	4 bytes.
+	(insert_pack_attributes): Take into account member natural 
+	alignment.
+
 	* i386/winnt.c (exports_head): New static variable.
 	(i386_pe_record_exported_symbol): New function.
 	(i386_pe_asm_file_end): Use.
