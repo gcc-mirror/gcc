@@ -2030,10 +2030,15 @@ output_source_line (file, insn)
 	}
 #endif
 
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-      if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+#if defined (DBX_DEBUGGING_INFO)
+      if (write_symbols == DBX_DEBUG)
 	dbxout_source_line (file, filename, NOTE_LINE_NUMBER (insn));
-#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+#endif
+
+#if defined (XCOFF_DEBUGGING_INFO)
+      if (write_symbols == XCOFF_DEBUG)
+	xcoffout_source_line (file, filename, insn);
+#endif
 
 #ifdef DWARF_DEBUGGING_INFO
       if (write_symbols == DWARF_DEBUG)
