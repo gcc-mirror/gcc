@@ -1,3 +1,9 @@
+2003-10-18  Fariborz Jahanian  <fjahanian@apple.com>
+
+        * rs6000.md: Separate TARGET_POWERPC64 patterns for TARGET_64BIT or TARGET_32BIT.
+        (ashrdisi3_noppc64) Generate more efficient code for 32-bit right-shift of
+        a "long long" argument.
+
 2003-10-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* final.c (final_scan_insn): Run FINAL_PRESCAN_INSNS on asm insns
