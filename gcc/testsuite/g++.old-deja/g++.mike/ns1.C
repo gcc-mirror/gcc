@@ -1,10 +1,10 @@
-namespace Foo { // WARNING - namespaces mostly broken
+namespace Foo {
   bar() {
     return 0;
   }
 }
 
-using namespace Foo; // ERROR - using not implemented
+using namespace Foo;
 
 main() {
   bar();

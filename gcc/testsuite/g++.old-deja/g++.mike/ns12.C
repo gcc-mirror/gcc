@@ -1,4 +1,4 @@
-namespace { 	// WARNING - namespaces mostly broken
+namespace {
   int i = 10;
   enum fish { one = 1, two = 2, red = 3, blue = 4 };
 }
