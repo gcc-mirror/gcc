@@ -134,6 +134,7 @@ extern int rs6000_legitimate_address (enum machine_mode, rtx, int);
 extern bool rs6000_mode_dependent_address (rtx);
 extern rtx rs6000_return_addr (int, rtx);
 extern void rs6000_output_symbol_ref (FILE*, rtx);
+extern HOST_WIDE_INT rs6000_initial_elimination_offset (int, int);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx orig, 
                             enum machine_mode mode, rtx reg);
@@ -168,7 +169,6 @@ extern void rs6000_override_options (const char *);
 extern int direct_return (void);
 extern int first_reg_to_save (void);
 extern int first_fp_reg_to_save (void);
-extern rs6000_stack_t *rs6000_stack_info (void);
 extern void output_ascii (FILE *, const char *, int);
 extern void rs6000_gen_section_name (char **, const char *, const char *);
 extern void output_function_profiler (FILE *, int);
@@ -187,7 +187,7 @@ extern void rs6000_emit_prologue (void);
 extern void rs6000_emit_load_toc_table (int);
 extern void rs6000_aix_emit_builtin_unwind_init (void);
 extern void rs6000_emit_epilogue (int);
-extern void debug_stack_info (rs6000_stack_t *);
+extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
 extern int vrsave_operation (rtx, enum machine_mode);
 extern int rs6000_register_move_cost (enum machine_mode,
