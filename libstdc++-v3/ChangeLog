@@ -1,3 +1,8 @@
+2004-05-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15675
+	* docs/html/documentation.html: Update doxygen links for 3.4.0.
+
 2004-05-30  Jan Beulich  <jbeulich@novell.com>
 
 	* scripts/create_testsuite_files: Tweak.
