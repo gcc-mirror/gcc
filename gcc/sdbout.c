@@ -1397,7 +1397,15 @@ sdbout_begin_block (file, line, n)
 {
   tree decl = current_function_decl;
   MAKE_LINE_SAFE (line);
-  PUT_SDB_BLOCK_START (line - sdb_begin_function_line);
+
+  /* The SCO compiler does not emit a separate block for the function level
+     scope, so we avoid it here also.  However, mips ECOFF compilers do emit
+     a separate block, so we retain it when MIPS_DEBUGGING_INFO is defined.  */
+#ifndef MIPS_DEBUGGING_INFO
+  if (n != 1)
+#endif
+    PUT_SDB_BLOCK_START (line - sdb_begin_function_line);
+
   if (n == 1)
     {
       /* Include the outermost BLOCK's variables in block 1.  */
@@ -1422,11 +1430,19 @@ sdbout_begin_block (file, line, n)
 /* Describe the end line-number of an internal block within a function.  */
 
 void
-sdbout_end_block (file, line)
+sdbout_end_block (file, line, n)
      FILE *file;
      int line;
+     int n;
 {
   MAKE_LINE_SAFE (line);
+
+  /* The SCO compiler does not emit a separate block for the function level
+     scope, so we avoid it here also.  However, mips ECOFF compilers do emit
+     a separate block, so we retain it when MIPS_DEBUGGING_INFO is defined.  */
+#ifndef MIPS_DEBUGGING_INFO
+  if (n != 1)
+#endif
   PUT_SDB_BLOCK_END (line - sdb_begin_function_line);
 }
 
