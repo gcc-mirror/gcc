@@ -1,3 +1,8 @@
+2003-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.jacks/jacks.xfail: All 8.4.3 tests and 9.4-modifier-10
+	now pass.
+
 2003-01-12  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/9139:
