@@ -1,3 +1,31 @@
+2000-03-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (class_hint_flags): Rename flags.
+	(class_initializer): Remove flags.
+	(synthesize_tinfo_var): Combine offset and flags. Add flags
+	for __vmi_class_type_info.
+	(create_tinfo_types): Remove flags from __class_type_info and
+	__si_class_type_info. Merge flags and offset from
+	base_class_type_info.
+	* inc/cxxabi.h (__base_class_info): Merge offset and vmi_flags.
+	(__base_class_info::is_virtual_p): Adjust.
+	(__base_class_info::is_public_p): Adjust.
+	(__base_class_info::offset): New accessor.
+	(__class_type_info::details): Remove member.
+	(__class_type_info::__class_type_info): Lose details.
+	(__class_type_info::detail_masks): Remove.
+	(__si_class_type_info::__si_class_type_info): Lose details.
+	(__vmi_class_type_info::details): New member.
+	(__vmi_class_type_info::__vmi_class_type_info): Adjust.
+	(__vmi_class_type_info::detail_masks): New member.
+	* tinfo.cc (__class_type_info::do_upcast): Initialize result
+	with unknown_details_mask.
+	(__vmi_class_type_info::do_find_public_src): Adjust
+	(__vmi_class_type_info::do_dyncast): Adjust.
+	(__vmi_class_type_info::do_upcast): Set result details, if
+	needed. Adjust.
+	(__dynamic_cast): Temporarily #if out optimization.
+
 2000-03-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtti.c (get_tinfo_decl): Mark used.
