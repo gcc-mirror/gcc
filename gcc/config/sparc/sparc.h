@@ -1531,8 +1531,6 @@ do {									\
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
-/* FIXME -- this does not parameterize how it generates labels (like the
-   above FUNCTION_PROFILER).  Broken on Solaris-2.   --gnu@cygnus.com */
 
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
   do { \
