@@ -216,10 +216,12 @@ typedef struct _DST_SRC_COMMAND
 	  unsigned char dst_b_src_df_length;
 	  unsigned char dst_b_src_df_flags;
 	  unsigned short int dst_w_src_df_fileid;
-#ifdef __GNUC__
+#ifdef HAVE_LONG_LONG
 	  long long dst_q_src_df_rms_cdt;
 #else
+#ifdef HAVE___INT64
 	  __int64 dst_q_src_df_rms_cdt;
+#endif
 #endif
 	  unsigned int dst_l_src_df_rms_ebk;
 	  unsigned short int dst_w_src_df_rms_ffb;

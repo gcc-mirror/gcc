@@ -18,11 +18,15 @@
 #ifdef HAVE_LONG_LONG
 # define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
 #else
+#ifdef HAVE__INT64
+# define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF___INT64)
+#else
 /* If we're here and we're GCC, assume this is stage 2+ of a bootstrap
    and 'long long' has the width of the *target*'s long long.  */
 # if GCC_VERSION > 3000
 #  define HOST_BITS_PER_LONGLONG LONG_LONG_TYPE_SIZE
 # endif /* gcc */
+#endif
 #endif /* no long long */
 
 /* Find the largest host integer type and set its size and type.  */
