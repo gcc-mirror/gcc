@@ -67,7 +67,7 @@ struct lookup_data
 };
 
 static int
-find_symbol (lt_dlhandle handle, lt_ptr_t data)
+find_symbol (lt_dlhandle handle, lt_ptr data)
 {
   lookup_data *ld = (lookup_data *) data;
   ld->result = lt_dlsym (handle, ld->symname);
@@ -80,7 +80,7 @@ _Jv_FindSymbolInExecutable (const char *symname)
   lookup_data data;
   data.symname = symname;
   data.result = NULL;
-  lt_dlforeach (find_symbol, (lt_ptr_t) &data);
+  lt_dlforeach (find_symbol, (lt_ptr) &data);
   return data.result;
 }
 
