@@ -1308,9 +1308,8 @@ begin_stmt_expr ()
    statement-expression.  */
 
 tree 
-finish_stmt_expr (rtl_expr, expr)
+finish_stmt_expr (rtl_expr)
      tree rtl_expr;
-     tree expr;
 {
   tree result;
 
@@ -1335,20 +1334,8 @@ finish_stmt_expr (rtl_expr, expr)
       last_tree = rtl_expr;
       TREE_CHAIN (last_tree) = NULL_TREE;
     }
-  else if (expr && TREE_CODE (expr) == BLOCK)
-    {
-      result = build (BIND_EXPR, TREE_TYPE (rtl_expr),
-		      NULL_TREE, rtl_expr, expr);
-      delete_block (expr);
-    }
-  else
+  else 
     result = rtl_expr;
-
-  if (expr && TREE_CODE (expr) == BLOCK)
-    /* Remove the block from the tree at this point.  It gets put back
-       at the proper place when the STMT_EXPR or BIND_EXPR is
-       expanded.  */
-    delete_block (expr);
 
   return result;
 }
