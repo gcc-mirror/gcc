@@ -1267,7 +1267,7 @@ precompute_arguments (is_const, must_preallocate, num_actuals, args, args_size)
 
 	push_temp_slots ();
 
-	args[i].initial_value = args[i].value
+	args[i].value
 	  = expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
 
 	preserve_temp_slots (args[i].value);
@@ -1278,13 +1278,30 @@ precompute_arguments (is_const, must_preallocate, num_actuals, args, args_size)
 	emit_queue ();
 
 	args[i].initial_value = args[i].value
-	  = protect_from_queue (args[i].initial_value, 0);
+	  = protect_from_queue (args[i].value, 0);
 
 	if (TYPE_MODE (TREE_TYPE (args[i].tree_value)) != args[i].mode)
-	  args[i].value
-	    = convert_modes (args[i].mode, 
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
+	  {
+	    args[i].value
+	      = convert_modes (args[i].mode, 
+			       TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			       args[i].value, args[i].unsignedp);
+#ifdef PROMOTE_FOR_CALL_ONLY
+	    /* CSE will replace this only if it contains args[i].value
+	       pseudo, so convert it down to the declared mode using
+	       a SUBREG.  */
+	    if (GET_CODE (args[i].value) == REG
+		&& GET_MODE_CLASS (args[i].mode) == MODE_INT)
+	      {
+		args[i].initial_value
+		  = gen_rtx_SUBREG (TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+				    args[i].value, 0);
+		SUBREG_PROMOTED_VAR_P (args[i].initial_value) = 1;
+		SUBREG_PROMOTED_UNSIGNED_P (args[i].initial_value)
+		  = args[i].unsignedp;
+	      }
+#endif
+	  }
       }
 }
 

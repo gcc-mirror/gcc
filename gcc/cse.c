@@ -4426,6 +4426,8 @@ struct set
   enum machine_mode mode;
   /* A constant equivalent for SET_SRC, if any.  */
   rtx src_const;
+  /* Original SET_SRC value used for libcall notes.  */
+  rtx orig_src;
   /* Hash value of constant equivalent for SET_SRC.  */
   unsigned src_const_hash;
   /* Table entry for constant equivalent for SET_SRC, if any.  */
@@ -4624,6 +4626,7 @@ cse_insn (insn, libcall_insn)
       rtx new = canon_reg (src, insn);
       int insn_code;
 
+      sets[i].orig_src = src;
       if ((GET_CODE (new) == REG && GET_CODE (src) == REG
 	   && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
 	       != (REGNO (src) < FIRST_PSEUDO_REGISTER)))
@@ -5123,7 +5126,7 @@ cse_insn (insn, libcall_insn)
          the current contents will be tested and will always be valid.  */
       while (1)
         {
-          rtx trial, old_src;
+          rtx trial;
 
           /* Skip invalid entries.  */
           while (elt && GET_CODE (elt->exp) != REG
@@ -5189,10 +5192,6 @@ cse_insn (insn, libcall_insn)
 	     insert the substitution here and we will delete and re-emit
 	     the insn later.  */
 
-	  /* Keep track of the original SET_SRC so that we can fix notes
-	     on libcall instructions.  */
- 	  old_src = SET_SRC (sets[i].rtl);
-
 	  if (n_sets == 1 && dest == pc_rtx
 	      && (trial == pc_rtx
 		  || (GET_CODE (trial) == LABEL_REF
@@ -5221,10 +5220,10 @@ cse_insn (insn, libcall_insn)
 		 need to make the same substitution in any notes attached
 		 to the RETVAL insn.  */
 	      if (libcall_insn
-		  && (GET_CODE (old_src) == REG
-		      || GET_CODE (old_src) == SUBREG
-		      ||  GET_CODE (old_src) == MEM))
-		replace_rtx (REG_NOTES (libcall_insn), old_src, 
+		  && (GET_CODE (sets[i].orig_src) == REG
+		      || GET_CODE (sets[i].orig_src) == SUBREG
+		      ||  GET_CODE (sets[i].orig_src) == MEM))
+		replace_rtx (REG_NOTES (libcall_insn), sets[i].orig_src, 
 			     canon_reg (SET_SRC (sets[i].rtl), insn));
 
 	      /* The result of apply_change_group can be ignored; see

@@ -777,6 +777,18 @@ if (TARGET_ARCH64				\
    for this value.  */
 #define PROMOTE_FUNCTION_RETURN
 
+/* Define this macro if the promotion described by PROMOTE_MODE
+   should _only_ be performed for outgoing function arguments or
+   function return values, as specified by PROMOTE_FUNCTION_ARGS
+   and PROMOTE_FUNCTION_RETURN, respectively.  */
+/* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
+   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
+   for this value.  For TARGET_ARCH64 we need it, as we don't have instructions
+   for arithmetic operations which do zero/sign extension at the same time,
+   so without this we end up with a srl/sra after every assignment to an
+   user variable,  which means very very bad code.  */
+#define PROMOTE_FOR_CALL_ONLY
+
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
 
