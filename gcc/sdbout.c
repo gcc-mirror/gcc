@@ -54,6 +54,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 #include "reload.h"
 #include "output.h"
 #include "toplev.h"
+#include "tm_p.h"
 
 /* Mips systems use the SDB functions to dump out symbols, but do not
    supply usable syms.h include files.  Which syms.h file to use is a

@@ -1474,7 +1474,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) $(BASIC_BLOCK_H) graph.h loop.h \
-   except.h $(lang_options_files)
+   except.h regs.h $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`

@@ -1,3 +1,15 @@
+2000-01-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (toplev.o): Depend on regs.h.
+
+	* output.h (tdesc_section): Prototype.
+
+	* regclass.c (copy_cost): Mark parameters with ATTRIBUTE_UNUSED.
+
+	* sdbout.c: Include "tm_p.h".
+
+	* toplev.c: Include "regs.h".
+
 Tue Jan 11 11:37:58 2000  Mike Stump  <mrs@wrs.com>
 
 	* unroll.c (unroll_loop): Add EH support.
