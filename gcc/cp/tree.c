@@ -2193,7 +2193,10 @@ cp_copy_res_decl_for_inlining (tree result,
 	  /* We have a named return value; copy the name and source
 	     position so we can get reasonable debugging information, and
 	     register the return variable as its equivalent.  */
-	  if (TREE_CODE (var) == VAR_DECL)
+	  if (TREE_CODE (var) == VAR_DECL
+	      /* But not if we're initializing a variable from the
+		 enclosing function which already has its own name.  */
+	      && DECL_NAME (var) == NULL_TREE)
 	    {
 	      DECL_NAME (var) = DECL_NAME (nrv);
 	      DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (nrv);
