@@ -4,6 +4,13 @@ Thu Oct 14 03:23:08 1999  Richard Henderson  <rth@cygnus.com>
 	(*): Add missing output reload constraints.  Remove constraints
 	from define_splits.
 
+	* i386.h (SPECIAL_MODE_PREDICATES): New.
+	* i386.md (movstricthi_1): Use nonimmediate_operand for op 0.
+	(movqi_1, movdi_1, movdi_2, some splits): Likewise.
+	(addsi_lea_3): Add missing mode for op 3.
+	(prologue_set_got, prologue_get_pc): Add missing modes.
+	(*) Add missing output reload constraints.
+
 Thu Oct 14 03:59:57 1999  Stephane Carrez  <stcarrez@worldnet.fr>
 
 	* stor-layout.c (layout_union): Use HOST_WIDE_INT for const_size;
