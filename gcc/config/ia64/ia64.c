@@ -6933,7 +6933,7 @@ ia64_reorg (insns)
 {
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
-  compute_bb_for_insn (get_max_uid ());
+  compute_bb_for_insn ();
 
   /* If optimizing, we'll have split before scheduling.  */
   if (optimize == 0)

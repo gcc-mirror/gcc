@@ -306,7 +306,7 @@ extern struct basic_block_def entry_exit_blocks[2];
 #define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
 #define set_block_for_insn(INSN, BB)  (BLOCK_FOR_INSN (INSN) = BB)
 
-extern void compute_bb_for_insn		PARAMS ((int));
+extern void compute_bb_for_insn		PARAMS ((void));
 extern void free_bb_for_insn		PARAMS ((void));
 extern void update_bb_for_insn		PARAMS ((basic_block));
 
@@ -333,7 +333,7 @@ extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
 extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
-extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx, basic_block));
+extern basic_block create_basic_block_structure PARAMS ((rtx, rtx, rtx, basic_block));
 extern basic_block create_basic_block	PARAMS ((rtx, rtx, basic_block));
 extern int flow_delete_block		PARAMS ((basic_block));
 extern int flow_delete_block_noexpunge	PARAMS ((basic_block));

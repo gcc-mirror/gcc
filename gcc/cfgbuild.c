@@ -493,7 +493,7 @@ find_basic_blocks_1 (f)
       if ((GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == BARRIER)
 	  && head)
 	{
-	  prev = create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
+	  prev = create_basic_block_structure (head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -507,7 +507,7 @@ find_basic_blocks_1 (f)
 
       if (head && control_flow_insn_p (insn))
 	{
-	  prev = create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
+	  prev = create_basic_block_structure (head, end, bb_note, prev);
 	  head = end = NULL_RTX;
 	  bb_note = NULL_RTX;
 	}
@@ -589,7 +589,7 @@ find_basic_blocks_1 (f)
     }
 
   if (head != NULL_RTX)
-    create_basic_block_structure (last_basic_block++, head, end, bb_note, prev);
+    create_basic_block_structure (head, end, bb_note, prev);
   else if (bb_note)
     delete_insn (bb_note);
 
@@ -612,7 +612,6 @@ find_basic_blocks (f, nregs, file)
      int nregs ATTRIBUTE_UNUSED;
      FILE *file ATTRIBUTE_UNUSED;
 {
-  int max_uid;
   basic_block bb;
 
   timevar_push (TV_CFG);
@@ -653,14 +652,7 @@ find_basic_blocks (f, nregs, file)
      tagged directly with the basic block that it starts.  It is used for
      more than that currently, but IMO that is the only valid use.  */
 
-  max_uid = get_max_uid ();
-#ifdef AUTO_INC_DEC
-  /* Leave space for insns life_analysis makes in some cases for auto-inc.
-     These cases are rare, so we don't need too much space.  */
-  max_uid += max_uid / 10;
-#endif
-
-  compute_bb_for_insn (max_uid);
+  compute_bb_for_insn ();
 
   /* Discover the edges of our cfg.  */
   make_edges (label_value_list, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);

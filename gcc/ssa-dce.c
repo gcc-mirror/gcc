@@ -500,8 +500,6 @@ ssa_eliminate_dead_code ()
   int *pdom;
   struct edge_list *el;
 
-  int max_insn_uid = get_max_uid ();
-
   /* Initialize the data structures.  */
   mark_all_insn_unnecessary ();
   VARRAY_RTX_INIT (unprocessed_instructions, 64,
@@ -511,7 +509,7 @@ ssa_eliminate_dead_code ()
   /* Prepare for use of BLOCK_NUM ().  */
   connect_infinite_loops_to_exit ();
    /* Be careful not to clear the added edges.  */
-  compute_bb_for_insn (max_insn_uid);
+  compute_bb_for_insn ();
 
   /* Compute control dependence.  */
   pdom = (int *) xmalloc (last_basic_block * sizeof (int));
