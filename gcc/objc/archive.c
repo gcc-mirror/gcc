@@ -1362,6 +1362,12 @@ objc_read_array (TypedStream* stream, const char* type,
   return 1;
 }
 
+static void
+__objc_free (void* p)
+{
+  free (p);
+}
+
 static int 
 __objc_fread(FILE* file, char* data, int len)
 {
@@ -1446,7 +1452,7 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 	  reflist = reflist->tail;
 	}
     }
-  list_mapcar (free_list, free);
+  list_mapcar (free_list, __objc_free);
   list_free (free_list);
 
   /* empty object reference table */
