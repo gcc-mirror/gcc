@@ -1,3 +1,8 @@
+Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/mips/mips.c (simple_memory_operand): Access the
+	INTVAL of the address, not it's containing MEM.
+
 2000-07-11  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixtests.c(double_slash): obsolete

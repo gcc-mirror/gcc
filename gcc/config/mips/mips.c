@@ -729,7 +729,7 @@ simple_memory_operand (op, mode)
     case CONST_INT:
       if (TARGET_MIPS16)
 	return 0;
-      return SMALL_INT (op);
+      return SMALL_INT (addr);
 
     case PLUS:
       plus0 = XEXP (addr, 0);
