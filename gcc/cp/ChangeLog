@@ -1,3 +1,7 @@
+2001-02-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (g++spec.o): Fix typo.
+
 2001-02-09  Jason Merrill  <jason@redhat.com>
 
 	* lang-specs.h: Restore definition of __EXCEPTIONS.
