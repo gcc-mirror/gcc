@@ -1,5 +1,10 @@
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/interface.texi, doc/tm.texi, doc/trouble.texi: Don't
+	mention deprecated target macros.
+
+2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config.gcc: Remove obsolete ports and configurations.
 	* config/linux-aout.h, config/netware.h,
 	config/t-linux-gnulibc1, config/d30v/abi,
