@@ -1,3 +1,8 @@
+Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/sparc/sparc.md (nonlocal_goto): Emit goto_handler_and_restore
+	as JUMP_INSN.
+
 2001-01-01  Bernd Schmidt  <bernds@redhat.com>
 
 	* builtins.c (expand_builtin_return_addr): Don't use MEM_ALIAS_SET on

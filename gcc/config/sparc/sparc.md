@@ -8970,8 +8970,9 @@
   if (TARGET_V9 && GET_CODE (chain) == CONST_INT
       && ! (INTVAL (chain) & ~(HOST_WIDE_INT)0xffffffff))
     {
-      emit_insn (gen_goto_handler_and_restore_v9 (labreg, static_chain_rtx,
-						  chain));
+      emit_jump_insn (gen_goto_handler_and_restore_v9 (labreg,
+						       static_chain_rtx,
+						       chain));
       emit_barrier ();
       DONE;
     }
@@ -8980,7 +8981,7 @@
 #endif
 
   emit_insn (gen_rtx_USE (VOIDmode, static_chain_rtx));
-  emit_insn (gen_goto_handler_and_restore (labreg));
+  emit_jump_insn (gen_goto_handler_and_restore (labreg));
   emit_barrier ();
   DONE;
 }")
