@@ -1069,6 +1069,118 @@
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
+
+(define_insn "smuldi3_highpart"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (sign_extend:TI (match_operand:DI 1 "register_operand" "d"))
+			       (sign_extend:TI (match_operand:DI 2 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 64))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT"
+  "*
+{
+  rtx xoperands[10];
+
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_rtx (REG, DImode, HI_REGNUM);
+
+  output_asm_insn (\"dmult\\t%1,%2\", operands);
+  output_asm_insn (mips_move_1word (xoperands, insn, TRUE), xoperands);
+  return \"\";
+}"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"3")])		;; mult + mfhi + delay
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (sign_extend:TI (match_operand:DI 1 "register_operand" "d"))
+			       (sign_extend:TI (match_operand:DI 2 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 64))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT && !TARGET_DEBUG_D_MODE"
+  [(parallel [(set (reg:DI 64)		;; high register
+		   (truncate:DI
+		    (lshiftrt:TI (mult:TI (sign_extend:TI (match_dup 1))
+					  (sign_extend:TI (match_dup 2)))
+				 (const_int 64))))
+	      (clobber (reg:DI 65))])
+   (set (match_dup 0)
+	(reg:DI 64))]
+  "")
+
+(define_insn "smuldi3_highpart_internal"
+  [(set (reg:DI 64)			;; high register
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (sign_extend:TI (match_operand:DI 0 "register_operand" "d"))
+			       (sign_extend:TI (match_operand:DI 1 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT"
+  "dmult\\t%0,%1"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"1")])
+
+(define_insn "umuldi3_highpart"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "d"))
+			       (zero_extend:TI (match_operand:DI 2 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 64))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT"
+  "*
+{
+  rtx xoperands[10];
+
+  xoperands[0] = operands[0];
+  xoperands[1] = gen_rtx (REG, DImode, HI_REGNUM);
+
+  output_asm_insn (\"dmultu\\t%1,%2\", operands);
+  output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
+  return \"\";
+}"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"3")])		;; multu + mfhi + delay
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (zero_extend:TI (match_operand:DI 1 "register_operand" "d"))
+			       (zero_extend:TI (match_operand:DI 2 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 64))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT && !TARGET_DEBUG_D_MODE"
+  [(parallel [(set (reg:DI 64)		;; high register
+		   (truncate:DI
+		    (lshiftrt:TI (mult:TI (zero_extend:TI (match_dup 1))
+					  (zero_extend:TI (match_dup 2)))
+				 (const_int 64))))
+	      (clobber (reg:DI 65))])
+   (set (match_dup 0)
+	(reg:DI 64))]
+  "")
+
+(define_insn "umuldi3_highpart_internal"
+  [(set (reg:DI 64)			;; high register
+	(truncate:DI
+	 (lshiftrt:TI (mult:TI (zero_extend:TI (match_operand:DI 0 "register_operand" "d"))
+			       (zero_extend:TI (match_operand:DI 1 "register_operand" "d")))
+		      (const_int 64))))
+   (clobber (reg:DI 65))]
+  "TARGET_64BIT"
+  "dmultu\\t%0,%1"
+  [(set_attr "type"	"imul")
+   (set_attr "mode"	"DI")
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................
