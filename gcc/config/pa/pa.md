@@ -5681,12 +5681,21 @@
       xoperands[0] = operands[0];
       xoperands[1] = gen_label_rtx ();
 
-      output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
-		       xoperands);
-      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-                                 CODE_LABEL_NUMBER (xoperands[1]));
-      output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv %%r0(%%r1)\",
-		       xoperands);
+      if (TARGET_SOM || !TARGET_GAS)
+        {
+          output_asm_insn (\"{bl|b,l} .+8,%%r1\\n\\taddil L'%l0-%l1,%%r1\",
+			   xoperands);
+          ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				     CODE_LABEL_NUMBER (xoperands[1]));
+          output_asm_insn (\"ldo R'%l0-%l1(%%r1),%%r1\\n\\tbv %%r0(%%r1)\",
+			   xoperands);
+	}
+      else
+        {
+	  output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
+	  output_asm_insn (\"addil L'%l0-$PIC_pcrel$0+4,%%r1\", xoperands);
+	  output_asm_insn (\"ldo R'%l0-$PIC_pcrel$0+8(%%r1),%%r1\", xoperands);
+	}
     }
   else
     output_asm_insn (\"ldil L'%l0,%%r1\\n\\tbe R'%l0(%%sr4,%%r1)\", operands);;

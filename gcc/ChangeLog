@@ -1,3 +1,9 @@
+2003-02-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_millicode_call): Use $PIC_pcrel$0 for long PIC
+	millicode calls when !TARGET_SOM and TARGET_GAS is true.
+	* pa.md (jump): Likewise.
+
 2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
             Richard Henderson <rth@redhat.com>
     

@@ -5926,10 +5926,19 @@ output_millicode_call (insn, call_dest)
 	  output_asm_insn ("{bl|b,l} .+8,%%r1", xoperands);
 
 	  /* Add %r1 to the offset of our target from the next insn.  */
-	  output_asm_insn ("addil L%%%0-%1,%%r1", xoperands);
-	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
-				     CODE_LABEL_NUMBER (xoperands[1]));
-	  output_asm_insn ("ldo R%%%0-%1(%%r1),%%r1", xoperands);
+	  if (TARGET_SOM || !TARGET_GAS)
+	    {
+	      output_asm_insn ("addil L%%%0-%1,%%r1", xoperands);
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
+					 CODE_LABEL_NUMBER (xoperands[1]));
+	      output_asm_insn ("ldo R%%%0-%1(%%r1),%%r1", xoperands);
+	    }
+	  else
+	    {
+	      output_asm_insn ("addil L'%0-$PIC_pcrel$0+8,%%r1", xoperands);
+	      output_asm_insn ("ldo R'%0-$PIC_pcrel$0+12(%%r1),%%r1",
+			       xoperands);
+	    }
 
 	  /* Get the return address into %r31.  */
 	  output_asm_insn ("blr 0,%3", xoperands);
