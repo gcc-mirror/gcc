@@ -346,6 +346,7 @@ function tries to return. */
   {"no-apcs-frame",	       -ARM_FLAG_APCS_FRAME, "" }, \
   {"poke-function-name",	ARM_FLAG_POKE, 		\
      "Store function names in object code" },		\
+  {"no-poke-function-name",    -ARM_FLAG_POKE, "" },	\
   {"fpe",			ARM_FLAG_FPE,  "" },	\
   {"apcs-32",			ARM_FLAG_APCS_32, 	\
      "Use the 32bit version of the APCS" },		\
@@ -2190,6 +2191,7 @@ char * arithmetic_instr PROTO ((Rtx, int));
 void   output_ascii_pseudo_op STDIO_PROTO ((FILE *, unsigned char *, int));
 char * output_return_instruction PROTO ((Rtx, int, int));
 int    arm_volatile_func PROTO ((void));
+void   arm_poke_function_name STDIO_PROTO ((FILE *, char *));
 void   output_func_prologue STDIO_PROTO ((FILE *, int));
 void   output_func_epilogue STDIO_PROTO ((FILE *, int));
 void   arm_expand_prologue PROTO ((void));

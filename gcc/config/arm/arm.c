@@ -5398,6 +5398,51 @@ arm_volatile_func ()
   return (optimize > 0 && TREE_THIS_VOLATILE (current_function_decl));
 }
 
+/* Write the function name into the code section, directly preceding
+   the function prologue.
+
+   Code will be output similar to this:
+     t0
+	 .ascii "arm_poke_function_name", 0
+	 .align
+     t1
+	 .word 0xff000000 + (t1 - t0)
+     arm_poke_function_name
+	 mov     ip, sp
+	 stmfd   sp!, {fp, ip, lr, pc}
+	 sub     fp, ip, #4
+
+   When performing a stack backtrace, code can inspect the value
+   of 'pc' stored at 'fp' + 0.  If the trace function then looks
+   at location pc - 12 and the top 8 bits are set, then we know
+   that there is a function name embedded immediately preceding this
+   location and has length ((pc[-3]) & 0xff000000).
+
+   We assume that pc is declared as a pointer to an unsigned long.
+
+   It is of no benefit to output the function name if we are assembling
+   a leaf function.  These function types will not contain a stack
+   backtrace structure, therefore it is not possible to determine the
+   function name.  */
+
+void
+arm_poke_function_name (stream, name)
+   FILE * stream;
+   char * name;
+{
+  unsigned long alignlength;
+  unsigned long length;
+  rtx           x;
+
+  length = strlen (name);
+  alignlength = (length + 1) + 3 & ~3;
+  
+  ASM_OUTPUT_ASCII (stream, name, length + 1);
+  ASM_OUTPUT_ALIGN (stream, 2);
+  x = GEN_INT (0xff000000UL + alignlength);
+  ASM_OUTPUT_INT (stream, x);
+}
+
 /* The amount of stack adjustment that happens here, in output_return and in
    output_epilogue must be exactly the same as was calculated during reload,
    or things will point to the wrong place.  The only time we can safely
