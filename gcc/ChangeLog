@@ -1,3 +1,14 @@
+Mon Jun 21 05:17:00 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Use worst case insn length
+	attributes for cases 1 and 2.
+
+	* rs6000.c (find_addr_reg): New function.
+	* rs6000.h (find_addr_reg): Declare.
+	(offsettable_addr_operand): Delete.
+	* rs6000.md (movdf_hardfloat32): Handle non-offsettable loads
+	from and stores to GPRs.
+
 Mon Jun 21 04:44:31 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* sparc.h (LEGITIMIZE_RELOAD_ADDRESS): Fix paren error introduced

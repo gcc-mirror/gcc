@@ -5676,7 +5676,33 @@ rs6000_encode_section_info (decl)
 }
 
 #endif /* USING_SVR4_H */
+
 
+/* Return a REG that occurs in ADDR with coefficient 1.
+   ADDR can be effectively incremented by incrementing REG.  */
+
+struct rtx_def *
+find_addr_reg (addr)
+     rtx addr;
+{
+  while (GET_CODE (addr) == PLUS)
+    {
+      if (GET_CODE (XEXP (addr, 0)) == REG)
+	addr = XEXP (addr, 0);
+      else if (GET_CODE (XEXP (addr, 1)) == REG)
+	addr = XEXP (addr, 1);
+      else if (CONSTANT_P (XEXP (addr, 0)))
+	addr = XEXP (addr, 1);
+      else if (CONSTANT_P (XEXP (addr, 1)))
+	addr = XEXP (addr, 0);
+      else
+	abort ();
+    }
+  if (GET_CODE (addr) == REG)
+    return addr;
+  abort ();
+}
+
 void
 rs6000_fatal_bad_address (op)
   rtx op;
