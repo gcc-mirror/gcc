@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 13 Nov 2001 <nathan@codesourcery.com>
 
 // Bug 3154
@@ -17,7 +17,7 @@ struct B : A
 class T
 {
   typedef int Foo;
-  T () : Foo () {}	// { dg-error "type `T::Foo' is not" "" }
+  T () : Foo () {}	// { dg-error "T::Foo' is not" "" }
 };
 
 struct S : B

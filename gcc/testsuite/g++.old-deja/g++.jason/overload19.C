@@ -3,7 +3,7 @@
 
 enum E { A=5, B=32, C=100 };
 
-E operator|(E a, E b) { return C; };
+E operator|(E a, E b) { return C; }
 
 int main()
 {

@@ -18,7 +18,7 @@ template <class X> struct D { };
 template <class T>
 bool is_C (const T&) {
    return is_instance_of<C,T>::answer;
-};
+}
 
 int main() {
    if (!is_C(C<int>()))

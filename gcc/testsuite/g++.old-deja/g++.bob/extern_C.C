@@ -4,6 +4,6 @@ extern "C" {
   public:
     void a();
   };
-};
+}
 
 void A::a() {}

@@ -19,7 +19,7 @@ extern Two goo;
 extern Two coo[];
 extern Two koo[];
 
-Two foo( 5, 6 ) __attribute__((init_priority(1005)));
+Two foo __attribute__((init_priority(1005))) ( 5, 6 );
 
 Two goo __attribute__((init_priority(1007))) = Two( 7, 8 );
 

@@ -15,7 +15,7 @@ public:
 
   vect<t>& operator=( const vect<t>& v );
   vect<t>  operator-( void ) const;
-  friend vect<t> operator- <>( const vect<t>&, const vect<t>& );
+  friend vect<t> (::operator- <>)( const vect<t>&, const vect<t>& );
 
 private:
   t a_;

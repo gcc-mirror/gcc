@@ -12,4 +12,4 @@ void foo ()
   int one=1, two=2;
   X a(one), b(two);
   a = b;			// ERROR - no assignment semantics defined
-};
+}

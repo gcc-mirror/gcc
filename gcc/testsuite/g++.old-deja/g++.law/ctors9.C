@@ -28,7 +28,7 @@ struct var_Foo: public Foo
 int blort(Foo& f)
 {
   return f->a;
-};
+}
 
 int main()
 {

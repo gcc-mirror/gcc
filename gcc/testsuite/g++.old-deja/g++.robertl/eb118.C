@@ -16,6 +16,7 @@ A<T>::test(){
   std::cerr << "test for " << typeid(*this).name() << std::endl;
 }
 // Specialization declaration
+template <> 
 void                           
 A<double>::test();
 

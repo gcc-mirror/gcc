@@ -14,4 +14,4 @@ class D {
   template <class U>
   friend class N::D;
 };
-};
+}

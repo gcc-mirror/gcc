@@ -2,9 +2,10 @@
 // crash test - XFAIL *-*-*
 
 // by Paul Burchard <burchard@pobox.com>, Level Set Systems, Inc.
-// Copyright (C) 1999 Free Software Foundation
+// Copyright (C) 1999, 2002 Free Software Foundation
 
 class Q {
+public:
 	template<class>
 	class X {
 	};

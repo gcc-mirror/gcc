@@ -16,6 +16,6 @@ class Outer {
 template <int dim>
 typename Outer::Inner<dim>::T  Outer::Inner<dim>::foo () {
   return 1;
-};
+}
 
-template Outer::Inner<2>;
+template struct Outer::Inner<2>;

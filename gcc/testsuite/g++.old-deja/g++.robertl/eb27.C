@@ -28,8 +28,8 @@ class test
 
 // named return value version
 template <class T>
-test<T> operator + (const test<T>& a, const test<T>& b) return c(a);
-{ c += b; };
+test<T> operator + (const test<T>& a, const test<T>& b) return c(a);// ERROR - named return value
+{ c += b; } // ERROR - c undeclared
 
 int main()
 {

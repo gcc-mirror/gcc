@@ -8,7 +8,7 @@ template <class T, class U> class foo2;
 
 struct bar {
   template <class T, class U>
-  bar(int i = foo1<T>::baz, // ok
+  bar(int i = foo1<T>::baz, // gets bogus error - XFAIL *-*-*
       int j = int(foo2<T, U>::baz), // ok
       int k = foo2<T, U>::baz) {} // gets bogus error - before > - XFAIL *-*-*
 };

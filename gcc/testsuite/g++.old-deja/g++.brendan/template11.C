@@ -24,7 +24,7 @@ aCallback<Called>::aCallback(Called& obj,
                              int (Called::*met)()) :
 object(obj),
 method(met)
-{};
+{}
 
 template <class Called>
 int aCallback<Called>::callback()

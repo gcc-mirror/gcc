@@ -7,6 +7,13 @@
 class A {};
 
 template <class TP>
+class B;
+
+template <class TP>
+inline A &
+operator<< (A &o, const B<TP> &m);
+
+template <class TP>
 class B
 {
   A &(*_f) (A &, TP);

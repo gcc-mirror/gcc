@@ -341,7 +341,7 @@ operator>=(const SetLD<T>& a, const SetLD<T>& b)
 { return ! (a < b); }
 class String { };
 class IcaseString: public String { };
-class SetLD< IcaseString >: public SetLD<    String  > {	public:	 SetLD (): SetLD<    String  >() { };	 SetLD (const ListD<   IcaseString  >& other): SetLD<    String  >()	{ ListD<   IcaseString  >::Vix x;	for (other.first(x); 0 != x; other.next(x))	add(other(x)); };	 SetLD (const  SetLD & other): SetLD<    String  >(other) { };	const    IcaseString  & operator()(const Vix& x) const	{ return (   IcaseString  &) SetLD<    String  >::operator()(x); }	}; 	typedef SetLD<  String > SetLD_String_IcaseString_old_tmp99;	typedef SetLD< IcaseString > SetLD_String_IcaseString_new_tmp99;	
+template <> class SetLD< IcaseString >: public SetLD<    String  > {	public:	 SetLD (): SetLD<    String  >() { };	 SetLD (const ListD<   IcaseString  >& other): SetLD<    String  >()	{ ListD<   IcaseString  >::Vix x;	for (other.first(x); 0 != x; other.next(x))	add(other(x)); };	 SetLD (const  SetLD & other): SetLD<    String  >(other) { };	const    IcaseString  & operator()(const Vix& x) const	{ return (   IcaseString  &) SetLD<    String  >::operator()(x); }	}; 	typedef SetLD<  String > SetLD_String_IcaseString_old_tmp99;	typedef SetLD< IcaseString > SetLD_String_IcaseString_new_tmp99;	
 inline int	 operator== (const SetLD_String_IcaseString_new_tmp99& a,	const SetLD_String_IcaseString_new_tmp99& b)
 {// ERROR - candidate for call
 const SetLD_String_IcaseString_old_tmp99& oa = a;
@@ -371,7 +371,7 @@ inline int	 operator>= (const SetLD_String_IcaseString_new_tmp99& a,	const SetLD
 {
 const SetLD_String_IcaseString_old_tmp99& oa = a;
 const SetLD_String_IcaseString_old_tmp99& ob = b;
-return  operator>= (oa, ob);	}   ;
+return  operator>= (oa, ob);	}   
 typedef SetLD<IcaseString> SLDiS;
 static void
 nop(int i)

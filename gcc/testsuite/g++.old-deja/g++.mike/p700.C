@@ -249,73 +249,73 @@ inline  int& operator >>=(int& a,  const Int &   b)
 //# 289 "../../../../libg++/etc/benchmarks/Int.h"
 
 
-inline  Int  operator -  (const Int &   a) return r(a)
-{ r.negate();  }
-inline  Int  operator ~  (const Int &   a) return r(a)
-{ r.complement();  }
+inline  Int  operator -  (const Int &   a) return r(a) // ERROR - 
+{ r.negate();  } // ERROR - 
+inline  Int  operator ~  (const Int &   a) return r(a) // ERROR - 
+{ r.complement();  } // ERROR - 
 
-inline  Int  operator +  (const Int &   a, const Int &   b) return r(a)
-{ r += b.Int::val();  }
-inline  Int  operator -  (const Int &   a, const Int &   b) return r(a)
-{ r -= b.Int::val();  }
-inline  Int  operator *  (const Int &   a, const Int &   b) return r(a)
-{ r *= b.Int::val();  }
-inline  Int  operator /  (const Int &   a, const Int &   b) return r(a)
-{ r /= b.Int::val();  }
-inline  Int  operator %  (const Int &   a, const Int &   b) return r(a)
-{ r %= b.Int::val();  }
-inline  Int  operator << (const Int &   a, const Int &   b) return r(a)
-{ r <<= b.Int::val();  }
-inline  Int  operator >> (const Int &   a, const Int &   b) return r(a)
-{ r >>= b.Int::val();  }
-inline  Int  operator &  (const Int &   a, const Int &   b) return r(a)
-{ r &= b.Int::val();  }
-inline  Int  operator |  (const Int &   a, const Int &   b) return r(a)
-{ r |= b.Int::val();  }
-inline  Int  operator ^  (const Int &   a, const Int &   b) return r(a)
-{ r ^= b.Int::val();  }
+inline  Int  operator +  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r += b.Int::val();  } // ERROR - 
+inline  Int  operator -  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r -= b.Int::val();  } // ERROR - 
+inline  Int  operator *  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r *= b.Int::val();  } // ERROR - 
+inline  Int  operator /  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r /= b.Int::val();  } // ERROR - 
+inline  Int  operator %  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r %= b.Int::val();  } // ERROR - 
+inline  Int  operator << (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r <<= b.Int::val();  } // ERROR - 
+inline  Int  operator >> (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r >>= b.Int::val();  } // ERROR - 
+inline  Int  operator &  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r &= b.Int::val();  } // ERROR - 
+inline  Int  operator |  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r |= b.Int::val();  } // ERROR - 
+inline  Int  operator ^  (const Int &   a, const Int &   b) return r(a) // ERROR - 
+{ r ^= b.Int::val();  } // ERROR - 
 
-inline  Int  operator +  (const Int &   a, const int b) return r(a)
-{ r += b;  }
-inline  Int  operator -  (const Int &   a, const int b) return r(a)
-{ r -= b;  }
-inline  Int  operator *  (const Int &   a, const int b) return r(a)
-{ r *= b;  }
-inline  Int  operator /  (const Int &   a, const int b) return r(a)
-{ r /= b;  }
-inline  Int  operator %  (const Int &   a, const int b) return r(a)
-{ r %= b;  }
-inline  Int  operator << (const Int &   a, const int b) return r(a)
-{ r <<= b;  }
-inline  Int  operator >> (const Int &   a, const int b) return r(a)
-{ r >>= b;  }
-inline  Int  operator &  (const Int &   a, const int b) return r(a)
-{ r &= b;  }
-inline  Int  operator |  (const Int &   a, const int b) return r(a)
-{ r |= b;  }
-inline  Int  operator ^  (const Int &   a, const int b) return r(a)
-{ r ^= b;  }
+inline  Int  operator +  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r += b;  } // ERROR - 
+inline  Int  operator -  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r -= b;  } // ERROR - 
+inline  Int  operator *  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r *= b;  } // ERROR - 
+inline  Int  operator /  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r /= b;  } // ERROR - 
+inline  Int  operator %  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r %= b;  } // ERROR - 
+inline  Int  operator << (const Int &   a, const int b) return r(a) // ERROR - 
+{ r <<= b;  } // ERROR - 
+inline  Int  operator >> (const Int &   a, const int b) return r(a) // ERROR - 
+{ r >>= b;  } // ERROR - 
+inline  Int  operator &  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r &= b;  } // ERROR - 
+inline  Int  operator |  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r |= b;  } // ERROR - 
+inline  Int  operator ^  (const Int &   a, const int b) return r(a) // ERROR - 
+{ r ^= b;  } // ERROR - 
 
-inline  Int  operator +  (const int a, const Int &   b) return r(a)
-{ r += b.Int::val();  }
-inline  Int  operator -  (const int a, const Int &   b) return r(a)
-{ r -= b.Int::val();  }
-inline  Int  operator *  (const int a, const Int &   b) return r(a)
-{ r *= b.Int::val();  }
-inline  Int  operator /  (const int a, const Int &   b) return r(a)
-{ r /= b.Int::val();  }
-inline  Int  operator %  (const int a, const Int &   b) return r(a)
-{ r %= b.Int::val();  }
-inline  Int  operator << (const int a, const Int &   b) return r(a)
-{ r <<= b.Int::val();  }
-inline  Int  operator >> (const int a, const Int &   b) return r(a)
-{ r >>= b.Int::val();  }
-inline  Int  operator &  (const int a, const Int &   b) return r(a)
-{ r &= b.Int::val();  }
-inline  Int  operator |  (const int a, const Int &   b) return r(a)
-{ r |= b.Int::val();  }
-inline  Int  operator ^  (const int a, const Int &   b) return r(a)
-{ r ^= b.Int::val();  }
+inline  Int  operator +  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r += b.Int::val();  } // ERROR - 
+inline  Int  operator -  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r -= b.Int::val();  } // ERROR - 
+inline  Int  operator *  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r *= b.Int::val();  } // ERROR - 
+inline  Int  operator /  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r /= b.Int::val();  } // ERROR - 
+inline  Int  operator %  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r %= b.Int::val();  } // ERROR - 
+inline  Int  operator << (const int a, const Int &   b) return r(a) // ERROR - 
+{ r <<= b.Int::val();  } // ERROR - 
+inline  Int  operator >> (const int a, const Int &   b) return r(a) // ERROR - 
+{ r >>= b.Int::val();  } // ERROR - 
+inline  Int  operator &  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r &= b.Int::val();  } // ERROR - 
+inline  Int  operator |  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r |= b.Int::val();  } // ERROR - 
+inline  Int  operator ^  (const int a, const Int &   b) return r(a) // ERROR - 
+{ r ^= b.Int::val();  } // ERROR - 
 
 
 
@@ -588,73 +588,73 @@ inline  char& operator >>=(char& a,  const Char &   b)
 //# 291 "../../../../libg++/etc/benchmarks/Char.h"
 
 
-inline  Char  operator -  (const Char &   a) return r(a)
-{ r.negate();  }
-inline  Char  operator ~  (const Char &   a) return r(a)
-{ r.complement();  }
+inline  Char  operator -  (const Char &   a) return r(a) // ERROR - 
+{ r.negate();  } // ERROR - 
+inline  Char  operator ~  (const Char &   a) return r(a) // ERROR - 
+{ r.complement();  } // ERROR - 
 
-inline  Char  operator +  (const Char &   a, const Char &   b) return r(a)
-{ r += b.Char::val();  }
-inline  Char  operator -  (const Char &   a, const Char &   b) return r(a)
-{ r -= b.Char::val();  }
-inline  Char  operator *  (const Char &   a, const Char &   b) return r(a)
-{ r *= b.Char::val();  }
-inline  Char  operator /  (const Char &   a, const Char &   b) return r(a)
-{ r /= b.Char::val();  }
-inline  Char  operator %  (const Char &   a, const Char &   b) return r(a)
-{ r %= b.Char::val();  }
-inline  Char  operator << (const Char &   a, const Char &   b) return r(a)
-{ r <<= b.Char::val();  }
-inline  Char  operator >> (const Char &   a, const Char &   b) return r(a)
-{ r >>= b.Char::val();  }
-inline  Char  operator &  (const Char &   a, const Char &   b) return r(a)
-{ r &= b.Char::val();  }
-inline  Char  operator |  (const Char &   a, const Char &   b) return r(a)
-{ r |= b.Char::val();  }
-inline  Char  operator ^  (const Char &   a, const Char &   b) return r(a)
-{ r ^= b.Char::val();  }
+inline  Char  operator +  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r += b.Char::val();  } // ERROR - 
+inline  Char  operator -  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r -= b.Char::val();  } // ERROR - 
+inline  Char  operator *  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r *= b.Char::val();  } // ERROR - 
+inline  Char  operator /  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r /= b.Char::val();  } // ERROR - 
+inline  Char  operator %  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r %= b.Char::val();  } // ERROR - 
+inline  Char  operator << (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r <<= b.Char::val();  } // ERROR - 
+inline  Char  operator >> (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r >>= b.Char::val();  } // ERROR - 
+inline  Char  operator &  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r &= b.Char::val();  } // ERROR - 
+inline  Char  operator |  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r |= b.Char::val();  } // ERROR - 
+inline  Char  operator ^  (const Char &   a, const Char &   b) return r(a) // ERROR - 
+{ r ^= b.Char::val();  } // ERROR - 
 
-inline  Char  operator +  (const Char &   a, const char b) return r(a)
-{ r += b;  }
-inline  Char  operator -  (const Char &   a, const char b) return r(a)
-{ r -= b;  }
-inline  Char  operator *  (const Char &   a, const char b) return r(a)
-{ r *= b;  }
-inline  Char  operator /  (const Char &   a, const char b) return r(a)
-{ r /= b;  }
-inline  Char  operator %  (const Char &   a, const char b) return r(a)
-{ r %= b;  }
-inline  Char  operator << (const Char &   a, const char b) return r(a)
-{ r <<= b;  }
-inline  Char  operator >> (const Char &   a, const char b) return r(a)
-{ r >>= b;  }
-inline  Char  operator &  (const Char &   a, const char b) return r(a)
-{ r &= b;  }
-inline  Char  operator |  (const Char &   a, const char b) return r(a)
-{ r |= b;  }
-inline  Char  operator ^  (const Char &   a, const char b) return r(a)
-{ r ^= b;  }
+inline  Char  operator +  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r += b;  } // ERROR - 
+inline  Char  operator -  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r -= b;  } // ERROR - 
+inline  Char  operator *  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r *= b;  } // ERROR - 
+inline  Char  operator /  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r /= b;  } // ERROR - 
+inline  Char  operator %  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r %= b;  } // ERROR - 
+inline  Char  operator << (const Char &   a, const char b) return r(a) // ERROR - 
+{ r <<= b;  } // ERROR - 
+inline  Char  operator >> (const Char &   a, const char b) return r(a) // ERROR - 
+{ r >>= b;  } // ERROR - 
+inline  Char  operator &  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r &= b;  } // ERROR - 
+inline  Char  operator |  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r |= b;  } // ERROR - 
+inline  Char  operator ^  (const Char &   a, const char b) return r(a) // ERROR - 
+{ r ^= b;  } // ERROR - 
 
-inline  Char  operator +  (const char a, const Char &   b) return r(a)
-{ r += b.Char::val();  }
-inline  Char  operator -  (const char a, const Char &   b) return r(a)
-{ r -= b.Char::val();  }
-inline  Char  operator *  (const char a, const Char &   b) return r(a)
-{ r *= b.Char::val();  }
-inline  Char  operator /  (const char a, const Char &   b) return r(a)
-{ r /= b.Char::val();  }
-inline  Char  operator %  (const char a, const Char &   b) return r(a)
-{ r %= b.Char::val();  }
-inline  Char  operator << (const char a, const Char &   b) return r(a)
-{ r <<= b.Char::val();  }
-inline  Char  operator >> (const char a, const Char &   b) return r(a)
-{ r >>= b.Char::val();  }
-inline  Char  operator &  (const char a, const Char &   b) return r(a)
-{ r &= b.Char::val();  }
-inline  Char  operator |  (const char a, const Char &   b) return r(a)
-{ r |= b.Char::val();  }
-inline  Char  operator ^  (const char a, const Char &   b) return r(a)
-{ r ^= b.Char::val();  }
+inline  Char  operator +  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r += b.Char::val();  } // ERROR - 
+inline  Char  operator -  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r -= b.Char::val();  } // ERROR - 
+inline  Char  operator *  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r *= b.Char::val();  } // ERROR - 
+inline  Char  operator /  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r /= b.Char::val();  } // ERROR - 
+inline  Char  operator %  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r %= b.Char::val();  } // ERROR - 
+inline  Char  operator << (const char a, const Char &   b) return r(a) // ERROR - 
+{ r <<= b.Char::val();  } // ERROR - 
+inline  Char  operator >> (const char a, const Char &   b) return r(a) // ERROR - 
+{ r >>= b.Char::val();  } // ERROR - 
+inline  Char  operator &  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r &= b.Char::val();  } // ERROR - 
+inline  Char  operator |  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r |= b.Char::val();  } // ERROR - 
+inline  Char  operator ^  (const char a, const Char &   b) return r(a) // ERROR - 
+{ r ^= b.Char::val();  } // ERROR - 
 
 
 

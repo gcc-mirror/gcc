@@ -14,4 +14,4 @@ struct S {
 
 template <class T>
 template <class U>
-typename S<T>::I<U>::X S<T>::I<U>::f() {}
+typename S<T>::template I<U>::X S<T>::I<U>::f() {}

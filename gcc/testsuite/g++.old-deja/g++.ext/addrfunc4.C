@@ -21,4 +21,4 @@ int main()
   fn1 = a.f; 
   fn1 = (pmf1)a.f;
   fn2 = (pmf2)a.f;
-};
+}

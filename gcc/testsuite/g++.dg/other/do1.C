@@ -8,6 +8,6 @@
 void init ()
 {
   do {  } while (0)
-	    obj = 0; // { dg-error "parse error" "" }
+	    obj = 0; // { dg-error "expected|undeclared" "" }
      
 }

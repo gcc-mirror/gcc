@@ -4,7 +4,7 @@
 
 namespace std {
   const int __stl_chunk_size = 7;
-};
+}
 
 int main ()
 {

@@ -4,7 +4,7 @@
 extern "C" 
 {
   int printf(const char *, ...);
-};
+}
 
 
 void Munge(int& x) 

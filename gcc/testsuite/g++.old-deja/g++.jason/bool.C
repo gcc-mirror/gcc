@@ -31,7 +31,7 @@ void g ()
 template <class T> struct F { };
 template class F<bool>;
 
-template <class T> void f (T, bool) { };
+template <class T> void f (T, bool) { }
 template void f (bool, bool);
 
 /* Special cases.  */

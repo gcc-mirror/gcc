@@ -6,6 +6,6 @@ template <int D> struct C {
 };
 
 template<int D>
-C<D>::C() : d((int[]){1,2,3}) {};
+C<D>::C() : d((int[]){1,2,3}) {}
 
 template class C<1>;

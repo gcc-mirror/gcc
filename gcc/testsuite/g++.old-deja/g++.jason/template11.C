@@ -6,6 +6,7 @@ template <class T> struct A {
 
 int foo () { return 1; }
 
+template <>
 int A<int>::t = foo ();
 
 int main ()

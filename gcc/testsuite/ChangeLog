@@ -1,3 +1,239 @@
+2002-12-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/eh/spec4.C: Remove stray semicolon.
+	* g++.dg/expr/pmf-1.C: Change error message.
+	* g++.dg/ext/asm1.C: Remove stray semicolon.
+	* g++.dg/ext/typename1.C: Add missing typenames.
+	* g++.dg/inherit/template-as-base.C: Change error message.
+	* g++.dg/lookup/scoped1.C: Likewise.
+	* g++.dg/lookup/scoped2.C: Likewise.
+	* g++.dg/lookup/using2.C: Likewise.
+	* g++.dg/other/component1.C: Remove stray semicolon.
+	* g++.dg/other/do1.C: Change error message.
+	* g++.dg/other/error2.C: Likewise.
+	* g++.dg/other/init1.C: Likewise.
+	* g++.dg/other/packed1.C: Remove stray semicolon.
+	* g++.dg/other/ptrmem2.C: Change error message.
+	* g++.dg/parse/parameter-declaration-1.C: Remove line number
+	marker.
+	* g++.dg/special/initp1.C: Remove invalid attribute usage.
+	* g++.dg/template/access3.C: Add typename keyword.
+	* g++.dg/template/access5.C: Remove stray semicolon.
+	* g++.dg/template/access6.C: Likewise.
+	* g++.dg/template/complit1.C: Likewise.
+	* g++.dg/template/crash1.C: Change error message.
+	* g++.dg/template/inherit2.C: Remove stray semicolon.
+	* g++.dg/template/instantiate2.C: Likewise.
+	* g++.dg/template/instantiate3.C: Change error message.
+	* g++.dg/template/qual1.C: Remove stray semicolon.
+	* g++.dg/template/qualttp18.C: Change error message.
+	* g++.dg/template/ref1.C: Remove stray semicolon.
+	* g++.dg/template/sizeof1.C (A::value): Declare it.
+	* g++.dg/template/spec4.C: Change error message.
+	* g++.dg/template/static1.C: Likewise.
+	* g++.dg/template/type1.C: Likewise.
+	* g++.dg/template/typename3.C: Likewise.
+	* g++.old-deja/g++.benjamin/13478.C: Change error message.
+	* g++.old-deja/g++.benjamin/15799.C: Remove stray semicolon.
+	* g++.old-deja/g++.benjamin/bool01.C: Likewise.
+	* g++.old-deja/g++.benjamin/bool02.C: Likewise.
+	* g++.old-deja/g++.benjamin/p13417.C: Now fails due to use of
+	named return value extension.
+	* g++.old-deja/g++.benjamin/tem06.C: Remove stray semicolon.
+	* g++.old-deja/g++.benjmain/warn01.C: Likewise.
+	* g++.old-deja/g++.bob/extern_C.C: Likewise.
+	* g++.old-deja/g++.bob/inherit2.C: Likewise.
+	* g++.old-deja/g++.brendan/complex1.C: Likewise.
+	* g++.old-deja/g++.brendan/copy5.C: Likewise.
+	* g++.old-deja/g++.brendan/crash13.C: Likewise.
+	* g++.old-deja/g++.brendan/crash15.C: Likewise.
+	* g++.old-deja/g++.brendan/crash18.C: Change error message.
+	* g++.old-deja/g++.brendan/crash37.C: Remove stray semicolon.
+	* g++.old-deja/g++.brendan/crash38.C: Likewise.
+	* g++.old-deja/g++.brendan/crash50.C: Likewise.
+	* g++.old-deja/g++.brendan/crash56.C: Likewise.
+	* g++.old-deja/g++.brendan/crash6.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.brendan/crash66.C: Remove stray semicolon.
+	* g++.old-deja/g++.brendan/crash8.C: Change error message.
+	* g++.old-deja/g++.brendan/ctors1.C: Remove stray semicolon.
+	* g++.old-deja/g++.brendan/ctors2.C: Likewise.
+	* g++.old-deja/g++.brendan/shadow1.C: Likewise.
+	* g++.old-deja/g++.brendan/template11.C: Likewise.
+	* g++.old-deja/g++.brendan/template26.C: Likewise.
+	* g++.old-deja/g++.brendan/template27.C: Use explicit
+	specialization syntax.
+	* g++.old-deja/g++.brendan/template30.C: Likewise.
+	* g++.old-deja/g++.brendan/template5.C: Remove stray semicolon.
+	* g++.old-deja/g++.brendan/visibility3.C: Account for use of
+	non-dependent names.
+	* g++.old-deja/g++.brendan/warnings4.C: Remove stray semicolon.
+	* g++.old-deja/g++.brendan/warnings7.C: Likewise.
+	* g++.old-deja/g++.bugs/900121_02.C: Likewise.
+	* g++.old-deja/g++.eh/catchptr1.C: Likewise.
+	* g++.old-deja/g++.ext/addrfunc4.C: Likewise.
+	* g++.old-deja/g++.ext/namedret1.C: Now fails due to use of
+	named return value extension.
+	* g++.old-deja/g++.ext/namedret2.C: Likewise.
+	* g++.old-deja/g++.ext/namedret3.C: Likewise.
+	* g++.old-deja/g++.ext/return1.C: Likewise.
+	* g++.old-deja/g++.ext/typename1.C: Add missing typename keywords.
+	* g++.old-deja/g++.jason/access17.C: Issue more error messages.
+	* g++.old-deja/g++.jason/access8.C: Likewise.
+	* g++.old-deja/g++.jason/bool.C: Remove stray semicolon.
+	* g++.old-deja/g++.jason/destruct.C: Remove incorrect
+	pseudo-destructor names.
+	* g++.old-deja/g++.jason/dtor3.C: Remove stray semicolon.
+	* g++.old-deja/g++.jason/dtor5.C: Remove incorrect
+	pseudo-destructor names.
+	* g++.old-deja/g++.jason/opeq3.C: Remove stray semicolon.
+	* g++.old-deja/g++.jason/overload19.C: Likewise.
+	* g++.old-deja/g++.jason/overload32.C: Likewise.
+	* g++.old-deja/g++.jason/parse11.C: Issue error messages about
+	stray semicolons.
+	* g++.old-deja/g++.jason/pmem2.C: Remove stray semicolon.
+	* g++.old-deja/g++.jason/return.C: Likewise.
+	* g++.old-deja/g++.jason/return2.C: Likewise.
+	* g++.old-deja/g++.jason/shadow1.C: Likewise.
+	* g++.old-deja/g++.jason/special.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.jason/template10.C: Account for use of
+	non-dependent names.
+	* g++.old-deja/g++.jason/template11.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.jason/template37.C: Likewise.
+	* g++.old-deja/g++.law/access4.C: Change error messages.
+	* g++.old-deja/g++.law/arm13.C:  Remove incorrect
+	pseudo-destructor names.
+	* g++.old-deja/g++.law/code-gen5.C: Remove stray semicolon.
+	* g++.old-deja/g++.law/ctors9.C: Likewise.
+	* g++.old-deja/g++.law/cvt22.C: Likewise.
+	* g++.old-deja/g++.law/dtors5.C: Likewise.
+	* g++.old-deja/g++.law/global-init1.C: Likewise.
+	* g++.old-deja/g++.law/missed-error3.C: Likewise.
+	* g++.old-deja/g++.law/operators28.C: Likewise.
+	* g++.old-deja/g++.law/visibility28.C: Likewise.
+	* g++.old-deja/g++.martin/eval1.C: Likewise.
+	* g++.old-deja/g++.martin/pmf2.C: Remove qualifier in constructor
+	name.
+	* g++.old-deja/g++.mike/hog1.C: Remove stray semicolon.
+	* g++.old-deja/g++.mike/net34.C: Likewise.
+	* g++.old-deja/g++.mike/net36.C: Likewise.
+	* g++.old-deja/g++.mike/ns2.C: Likewise.
+	* g++.old-deja/g++.mike/p12306.C: Likewise.
+	* g++.old-deja/g++.mike/p646.C: Adjust for removal of named return
+	value extension.
+	* g++.old-deja/g++.mike/p700.C: Likewise.
+	* g++.old-deja/g++.mike/p701.C: Remove stray semicolon.
+	* g++.old-deja/g++.mike/p710.C: Likewise.
+	* g++.old-deja/g++.mike/p784.C: Adjust for removal of named return
+	value extension.
+	* g++.old-deja/g++.mike/pmf7.C: Remove stray semicolon.
+	* g++.old-deja/g++.mike/pmf9.C: Likewise.
+	* g++.old-deja/g++.ns/crash2.C: Likewise.
+	* g++.old-deja/g++.ns/crash3.C: Likewise.
+	* g++.old-deja/g++.ns/invalid1.C: Likewise.
+	* g++.old-deja/g++.ns/ns17.C: Likewise.
+	* g++.old-deja/g++.ns/template16.C: Likewise.
+	* g++.old-deja/g++.ns/template5.C: Remove invalid use of template
+	keyword.
+	* g++.old-deja/g++.ns/template6.C: Remove stray semicolon.
+	* g++.old-deja/g++.ns/using9.C: Remove stray semicolon.
+	* g++.old-deja/g++.oliva/nameret1.C: Now fails due to use of
+	named return value extension.
+	* g++.old-deja/g++.oliva/nameret2.C: Likewise.
+	* g++.old-deja/g++.other/access4.C: Issue additional error
+	messages.
+	* g++.old-deja/g++.other/array6.C: Remove stray semicolon.
+	* g++.old-deja/g++.other/crash1.C: Isue additional error messages.
+	* g++.old-deja/g++.other/crash11.C: Add missing class-key.
+	* g++.old-deja/g++.other/crash25.C: Change error message.
+	* g++.old-deja/g++.other/crash4.C: Change error message.
+	* g++.old-deja/g++.other/debug7.C: Remove stray semicolon.
+	* g++.old-deja/g++.other/decl5.C: Issue more error messages.
+	* g++.old-deja/g++.other/defarg7.C: Remove circular dependency
+	checks.
+	* g++.old-deja/g++.other/defarg8.C: Likewise.
+	* g++.old-deja/g++.other/dtor1.C: Remove stray semicolon.
+	* g++.old-deja/g++.other/dtor10.C: Likewise.
+	* g++.old-deja/g++.other/incomplete.C: Likewise.
+	* g++.old-deja/g++.other/linkage7.C: Likewise.
+	* g++.old-deja/g++.other/lookup19.C: Now fails due to corrected
+	lookup algorithm.
+	* g++.old-deja/g++.other/mangle2.C: Likewise.
+	* g++.old-deja/g++.other/refinit2.C: Likewise.
+	* g++.old-deja/g++.other/sizeof2.C: Change error messages.
+	* g++.old-deja/g++.other/std1.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/crash28.C: Likewise.
+	* g++.old-deja/g++.pt/crash29.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.pt/crash32.C: Change error message.
+	* g++.old-deja/g++.pt/crash43.C: Adjust error messages.
+	* g++.old-deja/g++.pt/crash58.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/crash65.C: Tweak to acount for change in
+	error message position.
+	* g++.old-deja/g++.pt/defarg5.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/defarg8.C: Change error message.
+	* g++.old-deja/g++.pt/eichin01.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.pt/eichin01a.C: Define static data members.
+	* g++.old-deja/g++.pt/eichin01b.C: Likewise.
+	* g++.old-deja/g++.pt/enum7.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/explicit12.C: Remove invalid use of template
+	keyword.
+	* g++.old-deja/g++.pt/explicit31.C: Likewise.
+	* g++.old-deja/g++.pt/explicit33.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/explicit35.C: Remove invalid use of template
+	keyword.
+	* g++.old-deja/g++.pt/explicit71.C: Change error message.
+	* g++.old-deja/g++.pt/explicit80.C: Use explicit specialization
+	syntax.
+	* g++.old-deja/g++.pt/friend28.C: Account for use of
+	non-dependent names.
+	* g++.old-deja/g++.pt/friend29.C: Likewise.
+	* g++.old-deja/g++.pt/friend46.C: Adjust for correct name lookup
+	rules.
+	* g++.old-deja/g++.pt/friend48.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/instantiate1.C: Use correct class-key.
+	* g++.old-deja/g++.pt/instantiate11.C: Adjust for correct name
+	lookup rules.
+	* g++.old-deja/g++.pt/instantiate8.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/instantiate9.C: Insert missing typename
+	keyword.
+	* g++.old-deja/g++.pt/memclass20.C: Likewise.
+	* g++.old-deja/g++.pt/memclass5.C: Likewise.
+	* g++.old-deja/g++.pt/memclass7.C: Remove invalid use of template
+	keyword.
+	* g++.old-deja/g++.pt/memtemp75.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp81.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/memtemp87.C: Add missing access specifier.
+	* g++.old-deja/g++.pt/overload13.C: Correct error messages.
+	* g++.old-deja/g++.pt/parms2.C: Add missing typename keyword.
+	* g++.old-deja/g++.pt/ptrmem1.C: Remove invalid use of template	
+	keyword.
+	* g++.old-deja/g++.pt/spec10.C: Likewise.
+	* g++.old-deja/g++.pt/spec28.C: Reorder declarations.
+	* g++.old-deja/g++.pt/t10.C: Add explicit specialization syntax.
+	* g++.old-deja/g++.pt/t32.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/t35a.C: Add explicit specialization syntax.
+	* g++.old-deja/g++.pt/ttp24.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/ttp62.C: Likewise.
+	* g++.old-deja/g++.pt/ttp64.C: Likewise.
+	* g++.old-deja/g++.pt/typename11.C: Add missing typename keyword.
+	* g++.old-deja/g++.pt/typename15.C: Likewise.
+	* g++.old-deja/g++.pt/typename22.C: Likewise.
+	* g++.old-deja/g++.pt/typename6.C: Change error messages.
+	* g++.old-deja/g++.pt/using1.C: Remove stray semicolon.
+	* g++.old-deja/g++.pt/virtual2.C: Likewise.
+	* g++.old-deja/g++.robertl/eb118.C: Add explicit specialization
+	syntax.
+	* g++.old-deja/g++.robertl/eb27.C: Now fails due to use of named
+	return value extension.
+	* g++.old-deja/g++.robertl/eb43.C: Remove stray semicolon.
+	* g++.old-deja/g++.robertl/eb79.C: Correct for new name lookup rules.
+	* g++.old-deja/g++.robertl/eb82.C: Remove stray semicolons.
+	* g++.old-deja/g++.robertl/eb86.C: Add missing forward declaration.
+	
 2002-12-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/warn/inline1.C: New test.

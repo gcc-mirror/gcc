@@ -21,4 +21,4 @@ template <>
 void bar<2>::foo (Point<2> p) {
   const int dim = 2;
   Point<dim> q = p;
-};
+}

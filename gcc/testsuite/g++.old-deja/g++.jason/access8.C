@@ -3,7 +3,7 @@
 // Bug: g++ forgets access decls after the definition.
 // Build don't link:
 
-class inh {
+class inh { // ERROR - inaccessible
         int a;
 protected:
         void myf(int);

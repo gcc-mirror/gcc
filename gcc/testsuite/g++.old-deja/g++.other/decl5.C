@@ -1,6 +1,6 @@
 // Build don't link:
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 22 Apr 1999 <nathan@acm.org>
 // derived from a bug report by <rch@larissa.sd.bi.ruhr-uni-bochum.de>
 // http://gcc.gnu.org/ml/gcc-bugs/1999-04n/msg00631.html
@@ -26,12 +26,12 @@ struct B {
   struct A::fink {    // ERROR - no such member
   int m;
   };
-  struct A::Z {       // ERROR XFAIL - A::Z not a member of B
+  struct A::Z {       // ERROR - A::Z not a member of B XFAIL 
     int m;
   };
   int m;
   int n;
-  struct ::Q {        // ERROR XFAIL - ::Q not a member of B
+  struct ::Q {        // ERROR - ::Q not a member of B XFAIL 
     int m;
   };
   int A::fn() {       // ERROR - A::fn not a member of B
@@ -66,7 +66,7 @@ namespace NMS
   int N::fn() {       // ERROR - N::fn not a member of NMS
     return 0;
   }
-  struct N::F {       // ERROR XFAIL - N::F not a member of NMS
+  struct N::F {       // ERROR - N::F not a member of NMS XFAIL 
     int i;
   };
 }

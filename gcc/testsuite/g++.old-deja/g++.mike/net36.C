@@ -16,4 +16,4 @@ public:
 
 void f(B* b) {
   b->setHandler(A::handlerFn);	// ERROR - 
-};
+}

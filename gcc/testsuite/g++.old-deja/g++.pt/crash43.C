@@ -7,7 +7,7 @@ struct S {
   struct Y {};
 
   template <int U>
-  friend struct S<U>::X; // ERROR - typename as friend
+  friend struct S<U>::X;
 
   template <int U>
   friend typename S<U>::Y; // ERROR - typename as friend
@@ -15,7 +15,7 @@ struct S {
 
 struct T {
   template <int T>
-  friend struct S<T>::X; // ERROR - typename as friend
+  friend struct S<T>::X;
 };
 
 struct U {

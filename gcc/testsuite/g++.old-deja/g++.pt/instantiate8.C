@@ -1,5 +1,5 @@
 // Build don't link:
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 14 Nov 2000 <nathan@codesourcery.com>
 
 // bug 616. We failed to complete the type of decls in templates, leading to
@@ -35,6 +35,6 @@ void f()
   const X<dim+1> y[3];
   Z z2;           // ERROR - incomplete
   typedef Z z3;   // ok
-};
+}
 
 template void f<3> ();

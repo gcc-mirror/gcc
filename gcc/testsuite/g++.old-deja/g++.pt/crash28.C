@@ -11,4 +11,4 @@ void f(unsigned int n) {
   int x[n];
 
   asize(x); // ERROR - no matching function
-};
+}

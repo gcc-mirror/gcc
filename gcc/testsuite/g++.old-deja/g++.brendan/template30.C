@@ -6,7 +6,8 @@
         class X1 { };
         class RefProto { };
         template<class REP> class Ref { };
-        
+
+        template <>        
         class MapLS<String, Ref<X1> >: public MapLS<String, RefProto> {
         public:
             ~MapLS();

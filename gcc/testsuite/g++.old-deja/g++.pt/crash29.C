@@ -50,6 +50,7 @@ public:
 				: MetaClassGeneric( TypeIDInit<T>::info ) {}
 };
 
+template <>
 class MetaClass<UUId>
 : public NameInfo<UUId>
 {

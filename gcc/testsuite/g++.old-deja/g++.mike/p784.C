@@ -5,7 +5,7 @@
 //# 1 "GctSymbol.GctSymbol.CHMap.cc"
 // This may look like C code, but it is really -*- C++ -*-
 /*
-Copyright (C) 1988, 2000 Free Software Foundation
+Copyright (C) 1988, 2000, 2002 Free Software Foundation
     written by Doug Lea (dl@rocky.oswego.edu)
 
 This file is part of the GNU C++ Library.  This library is free
@@ -1602,74 +1602,74 @@ inline void String:: operator +=(char y)
 
 
 
-inline String operator + (const String& x, const String& y) return r;
+inline String operator + (const String& x, const String& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const String& x, const SubString& y) return r;
+inline String operator + (const String& x, const SubString& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const String& x, const char* y) return r;
+inline String operator + (const String& x, const char* y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const String& x, char y) return r;
+inline String operator + (const String& x, char y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const SubString& x, const String& y) return r;
+inline String operator + (const SubString& x, const String& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const SubString& x, const SubString& y) return r;
+inline String operator + (const SubString& x, const SubString& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const SubString& x, const char* y) return r;
+inline String operator + (const SubString& x, const char* y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const SubString& x, char y) return r;
+inline String operator + (const SubString& x, char y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const char* x, const String& y) return r;
+inline String operator + (const char* x, const String& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String operator + (const char* x, const SubString& y) return r;
+inline String operator + (const char* x, const SubString& y) return r; // ERROR - 
 {
-  cat(x, y, r);
+  cat(x, y, r); // ERROR - 
 }
 
-inline String reverse(const String& x) return r;
+inline String reverse(const String& x) return r; // ERROR - 
 {
-  r.rep = Sreverse(x.rep, r.rep);
+  r.rep = Sreverse(x.rep, r.rep); // ERROR - 
 }
 
-inline String upcase(const String& x) return r;
+inline String upcase(const String& x) return r; // ERROR - 
 {
-  r.rep = Supcase(x.rep, r.rep);
+  r.rep = Supcase(x.rep, r.rep); // ERROR - 
 }
 
-inline String downcase(const String& x) return r;
+inline String downcase(const String& x) return r; // ERROR - 
 {
-  r.rep = Sdowncase(x.rep, r.rep);
+  r.rep = Sdowncase(x.rep, r.rep); // ERROR - 
 }
 
-inline String capitalize(const String& x) return r;
+inline String capitalize(const String& x) return r; // ERROR - 
 {
-  r.rep = Scapitalize(x.rep, r.rep);
+  r.rep = Scapitalize(x.rep, r.rep); // ERROR - 
 }
 
 //# 883 "/projects/gnu-cygnus/gnu-cygnus-8/common/g++-include/String.h"

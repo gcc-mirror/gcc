@@ -37,7 +37,7 @@ main()
   Implicit<Implicit<INTEGER, 2> ,  3> y;
 
   y = 10;
-};
+}
 
 
 

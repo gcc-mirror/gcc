@@ -1,5 +1,5 @@
 // Build don't link:
-// Copyright (C) 1999, 2000 Free Software Foundation
+// Copyright (C) 1999, 2000, 2002 Free Software Foundation
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 
@@ -7,7 +7,7 @@
 
 // Special g++ Options: -Wno-deprecated
 
-inline int bar () return r {}
+inline int bar () return r {} // ERROR - 
 
 int foo () {
   return bar ();

@@ -8,10 +8,10 @@
 class S
 {
   public:
-  template <class I> void Foo(int (*f)(S& o) ); // { dg-error "candidate" "" }
+  template <class I> void Foo(int (*f)(S& o) ); 
 };
 
 template <class I>
-void S::Foo(int (*f)(TYPO&o) )
-{ // { dg-error "template definition|variable declaration|prototype" "" }
+void S::Foo(int (*f)(TYPO&o) ) // { dg-error "Foo" }
+{ // { dg-error "expected `;'" }
 }

@@ -5,7 +5,7 @@
 // The Alpha ABI specifies that 32-bit return values have bit 31 propagated,
 // i.e. the value is sign-extended even if the unpromoted type is unsigned.
 
-unsigned int f(unsigned int x) return y(x) { }
+unsigned int f(unsigned int x) return y(x) { } // ERROR - 
 
 extern "C" void abort ();
 

@@ -1,6 +1,6 @@
 // Special g++ Options: -Wno-deprecated
 
-int f(int x) return y(x) { }
+int f(int x) return y(x) { } // ERROR - 
 
 extern "C" void abort ();
 

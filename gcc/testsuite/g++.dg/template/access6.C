@@ -11,7 +11,7 @@ template <class> class Base {
     
 template <class T> struct Derived : public Base<T> {
   typedef typename Base<T>::Type Type;
-  template <class Arg> void f(Type = Type()) {};
+  template <class Arg> void f(Type = Type()) {}
 };
     
 template void Derived<char>::f<int> (Type);

@@ -3,8 +3,8 @@
 // Build don't link:
 
 namespace standard 
-{ void print(int) {};
-  void dump(int)  {};
+{ void print(int) {}
+  void dump(int)  {}
 }
 namespace A { using standard::print; }
 namespace B { using namespace standard; }

@@ -1,13 +1,13 @@
 // Build don't link:
 // 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 5 Sept 2000 <nathan@codesourcery.com>
 
 // bug 147. We ICE'd on an unprocessed LOOKUP_EXPR during tsubsting
 
 namespace EManip {
     template <class T> void do_assign(T* d);  // ERROR - candidate
-};
+}
 template <class T> void do_assign(T* d);    // ERROR - candidate
 
 template <class T>

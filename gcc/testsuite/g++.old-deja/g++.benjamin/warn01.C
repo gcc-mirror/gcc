@@ -12,7 +12,7 @@ void f (void) {
    catch( int)
     {    
     }
-};
+}
 
 //
 //2 g++/12923 __attribute__((__unused__)) not working for objects
@@ -77,7 +77,7 @@ int foofunc(T x){
   Mutex sm(2);
   AutoMutex m(&sm);
   return 0;
-};
+}
 
 
 //5 sanity check to make sure other attributes cannot be used

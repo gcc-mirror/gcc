@@ -7,7 +7,7 @@ template <class X> struct A {
   inline int z () { return 5; }
 };
 
-template <class Y> int A<Y>::fooo (int t) { return (this->*(x?&A<Y>::y : &A<Y>::z))() + t; };	// gets bogus error
+template <class Y> int A<Y>::fooo (int t) { return (this->*(x?&A<Y>::y : &A<Y>::z))() + t; }	// gets bogus error
 
 A<int> ai;
 

@@ -5,7 +5,7 @@ class B
 public:
         int i;
         };
-int operator & (const B &s) { return ( s.i  );};
+int operator & (const B &s) { return ( s.i  );}
 
 
 

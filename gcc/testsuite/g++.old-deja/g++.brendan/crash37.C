@@ -6,7 +6,7 @@ extern "C" {
 }
 extern "C" {
         extern void foo();
-};
+}
 class SS {
         friend void foo();
 protected:

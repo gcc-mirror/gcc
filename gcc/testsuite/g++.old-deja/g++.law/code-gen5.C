@@ -248,7 +248,7 @@ operator double()
 {
 	assert( v.r->vec != 0 );
 	return *v.r->vec;
-};
+}
 
 double VecElem::
 operator=( double d )

@@ -24,4 +24,4 @@ base::base(int arg1, int arg2)
 {
 	f1 = arg1;
 	f2 = arg2;
-};
+}

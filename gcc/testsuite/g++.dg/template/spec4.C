@@ -8,4 +8,4 @@ struct X {
   template <int dim> void f(int=0);
 };
 
-template <> void X::f<1> () {}	// { dg-error "(not match|syntax error)" }
+template <> void X::f<1> () {}	// { dg-error "(not match|declaration)" }

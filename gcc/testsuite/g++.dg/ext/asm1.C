@@ -20,7 +20,7 @@ int foo (void)
          [third] "i" (j + 2),
          [fourth] "i" (100));
   return i;
-};
+}
 
 template<class TYPE>
 TYPE bar (TYPE t)

@@ -18,7 +18,8 @@ int main()
 
   int* p = (int*) new char[sizeof (int)];
   new (p + r++) int;
-  p[--r].~int();
+  typedef int I;
+  p[--r].~I();
   
   return r;
 }

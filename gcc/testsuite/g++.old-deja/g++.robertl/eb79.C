@@ -19,7 +19,7 @@ int main()
   double d = 1234.5678;
 
   cout.precision(12);
-  cout << max(d, i) << endl;  // #1
-  cout << max(i, d) << endl;  // #2
+  cout << max(d, i) << endl;  // ERROR - 
+  cout << max(i, d) << endl;  // ERROR - 
   return 0;
 }

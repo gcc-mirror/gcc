@@ -21,5 +21,5 @@ int
 main()
 {
   bar<int>	b;
-  b.template doit<print>(2);
+  b.doit<print>(2);
 }

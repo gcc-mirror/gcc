@@ -2,7 +2,7 @@
 
 namespace N {
   template <class T> struct S;
-};
+}
 
 void f()
 {

@@ -16,4 +16,4 @@ struct B: public A {
 int main() 
 {
     B<int> a; 
-};
+}

@@ -9,7 +9,7 @@ struct S
 S* S::foo(){
   i = 0;
   return this;
-};
+}
 
 int S::i = 1;
 int main(void)

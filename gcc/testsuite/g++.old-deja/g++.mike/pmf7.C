@@ -10,7 +10,7 @@ public:
 template<class SP, class CB> SP& call_dummy(SP* sp, CB cb) {
   sp->dummy(cb);
   return *sp;
-};
+}
 
 class A {
 public:

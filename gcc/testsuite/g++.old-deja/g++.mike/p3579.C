@@ -36,4 +36,4 @@ int main (int, char **) {
     }
     printf("PASS\n");
     return 0;
-};
+}

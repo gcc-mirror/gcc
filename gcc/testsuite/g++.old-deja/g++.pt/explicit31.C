@@ -11,7 +11,7 @@ struct S
 
 int main()
 {
-  double d = S<int>::template foo<char>(3.3);
+  double d = S<int>::foo<char>(3.3);
 
   return (d >= 3.1);
 }

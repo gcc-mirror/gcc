@@ -126,7 +126,7 @@ public:
   template <class T161>
   friend bool foo(T161 u)
     {
-      Xseven<T161, 5, int> obj;
+      Xseven<T161, 5, int> obj; // ERROR - .*
       return (obj.inst == u.inst);
     }
 

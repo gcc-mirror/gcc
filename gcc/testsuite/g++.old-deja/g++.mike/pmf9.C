@@ -13,7 +13,7 @@ private:
 
 int Q::g() {
   return (kp->f)(42);
-};
+}
 
 
 int main () {

@@ -4,7 +4,7 @@ namespace foo
   class c
   {
   };
-};
+}
 
 int
 foo::c:fn ()  // ERROR - syntax error

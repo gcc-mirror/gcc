@@ -14,7 +14,7 @@ struct A {
 
 template <typename T1>
 struct B {
-   A<T1>::C<int> s1;
+   typename A<T1>::template C<int> s1;
 };
 
 int main()

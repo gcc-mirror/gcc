@@ -3,7 +3,7 @@
 
 class aClass 
 { 
-  ;
+  ; // ERROR - missing declaration
 private: 
-  ;   // This line causes problems 
+  ; // ERROR - missing declaration
 }; 

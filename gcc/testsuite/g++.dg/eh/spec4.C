@@ -14,4 +14,4 @@ public:
 
 typedef HandlerStack<std::set_terminate> Terminate;
 
-template<> void Terminate::defaultHandler() {};
+template<> void Terminate::defaultHandler() {}

@@ -12,7 +12,7 @@ struct X {
 
 const X foo() { 
   return X(3); 
-};
+}
 
 int main()
 {

@@ -14,7 +14,7 @@ struct Y {
 
 Y foo() { 
   return X(3); 
-};
+}
 
 int main()
 {

@@ -4,12 +4,12 @@
 
 class A {
  public:
-  virtual ~A() {std::cout << "executed ~A()\n";};
+  virtual ~A() {std::cout << "executed ~A()\n";}
 };
 
 class B : public A {
  public:
-  virtual ~B() {std::cout << "executed ~B()\n";};
+  virtual ~B() {std::cout << "executed ~B()\n";}
 };
 
 int
@@ -18,5 +18,5 @@ main() {
   B b;
   b.~A();// ERROR -  destructor
   std::cout << "done\n";
-};
+}
 

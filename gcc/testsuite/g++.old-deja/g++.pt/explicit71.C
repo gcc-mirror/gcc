@@ -12,4 +12,4 @@ class bug {
 };
 template <class X> 
 template <>			// ERROR - invalid specialization
-class bug<X>::a<char> {};	// ERROR -  ""
+class bug<X>::a<char> {};	

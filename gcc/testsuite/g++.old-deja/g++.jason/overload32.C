@@ -16,4 +16,4 @@ void f( const D & );
 void g( const X & x )
 {
    f( x );
-};
+}
