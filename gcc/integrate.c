@@ -1470,8 +1470,8 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 		  /* If we must not delete the source,
 		     load it into a new temporary.  */
 		  copy = emit_insn (copy_rtx_and_substitute (pattern, map));
-		  SET_DEST (pattern)
-		    = gen_reg_rtx (GET_MODE (SET_DEST (pattern)));
+		  SET_DEST (PATTERN (copy)) 
+		    = gen_reg_rtx (GET_MODE (SET_DEST (PATTERN (copy))));
 		}
 	      else
 		break;
