@@ -71,6 +71,7 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
     case WITH_CLEANUP_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case NOP_EXPR:
       return lvalue_p_1 (TREE_OPERAND (ref, 0),
 			 treat_class_rvalues_as_lvalues);
 
@@ -193,7 +194,7 @@ build_cplus_new (type, init)
   tree rval;
 
   if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != AGGR_INIT_EXPR)
-    return init;
+    return convert (type, init);
 
   slot = build (VAR_DECL, type);
   DECL_ARTIFICIAL (slot) = 1;
