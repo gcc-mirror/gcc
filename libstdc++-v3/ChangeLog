@@ -1,3 +1,8 @@
+Sat Dec 22 09:52:41 2001  Jeffrey A Law  (law@redhat.com)
+
+        * config/os/hpux/bits/os_defines.h: Update to avoid #defines
+        for strtoll and strtoull.
+
 Fri Dec 21 17:35:21 2001  Jeffrey A Law  (law@redhat.com)
 
 	* config/os/hpux/bits/os_defines.h: Include <sys/_inttypes.h.
