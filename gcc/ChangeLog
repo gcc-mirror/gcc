@@ -1,3 +1,8 @@
+2001-08-16  Andreas Jaeger  <aj@suse.de>
+
+	* config/s390/s390.c: Include "debug.h" for dwarf2out_do_frame
+	prototype.
+
 Wed Aug 15 15:22:52 EDT 2001  John Wehle  (john@feith.com)
 
 	* rtl.h (only_sets_cc0_p): New prototype.
