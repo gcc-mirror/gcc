@@ -64,10 +64,12 @@ Boston, MA 02111-1307, USA.  */
 #define PTRDIFF_TYPE "int"
 
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "long int"
+#define WCHAR_TYPE "int"
 
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
+#define WCHAR_TYPE_SIZE 32
+
+#undef MAX_WCHAR_TYPE_SIZE
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
