@@ -39,34 +39,28 @@ exception statement from your version. */
 package java.awt;
 
 /**
-  * Need this class since the serialization spec for ScrollPane
-  * uses it.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * Need this class since the serialization spec for ScrollPane
+ * uses it.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 class ScrollPaneAdjustable extends Scrollbar
 {
+  public ScrollPaneAdjustable (int orientation)
+  {
+    super (orientation);
+  }
 
-public
-ScrollPaneAdjustable(int orientation)
-{
-  super(orientation);
-}
+  public void setMaximum (int maximum)
+  {
+  }
 
-public void
-setMaximum(int maximum)
-{
-}
+  public void setMinimum (int minimum)
+  {
+  }
 
-public void
-setMinimum(int minimum)
-{
-}
-
-public void
-setVisibleAmount(int visibleAmount)
-{
-}
-
+  public void setVisibleAmount (int visibleAmount)
+  {
+  }
 } // class ScrollPaneAdjustable
 

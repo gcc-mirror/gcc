@@ -1,3 +1,7 @@
+2003-02-19  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/ScrollPaneAdjustable.java: Reformated.
+
 2003-02-19  Michael Koch <konqueror@gmx.de>
 
 	* gnu/awt/j2d/Graphics2DImpl.java
