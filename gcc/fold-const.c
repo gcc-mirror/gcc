@@ -4487,7 +4487,12 @@ extract_muldiv (t, c, code, wide_type)
 	 constant.  */
       t1 = extract_muldiv (op0, c, code, wide_type);
       t2 = extract_muldiv (op1, c, code, wide_type);
-      if (t1 != 0 && t2 != 0)
+      if (t1 != 0 && t2 != 0
+	  && (code == MULT_EXPR
+	      /* If not multiplication, we can only do this if either operand
+		 is divisible by c.  */
+	      || multiple_of_p (ctype, op0, c)
+	      || multiple_of_p (ctype, op1, c)))
 	return fold (build (tcode, ctype, convert (ctype, t1),
 			    convert (ctype, t2)));
 
@@ -7280,6 +7285,25 @@ multiple_of_p (type, top, bottom)
       return (multiple_of_p (type, TREE_OPERAND (top, 0), bottom)
 	      && multiple_of_p (type, TREE_OPERAND (top, 1), bottom));
 
+    case LSHIFT_EXPR:
+      if (TREE_CODE (TREE_OPERAND (top, 1)) == INTEGER_CST)
+	{
+	  tree op1, t1;
+
+	  op1 = TREE_OPERAND (top, 1);
+	  /* const_binop may not detect overflow correctly,
+	     so check for it explicitly here.  */
+	  if (TYPE_PRECISION (TREE_TYPE (size_one_node))
+	      > TREE_INT_CST_LOW (op1)
+	      && TREE_INT_CST_HIGH (op1) == 0
+	      && 0 != (t1 = convert (type,
+				     const_binop (LSHIFT_EXPR, size_one_node,
+						  op1, 0)))
+	      && ! TREE_OVERFLOW (t1))
+	    return multiple_of_p (type, t1, bottom);
+	}
+      return 0;
+
     case NOP_EXPR:
       /* Can't handle conversions from non-integral or wider integral type.  */
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
@@ -7293,9 +7317,10 @@ multiple_of_p (type, top, bottom)
       return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
 
     case INTEGER_CST:
-      if ((TREE_CODE (bottom) != INTEGER_CST)
-	  || (tree_int_cst_sgn (top) < 0)
-	  || (tree_int_cst_sgn (bottom) < 0))
+      if (TREE_CODE (bottom) != INTEGER_CST
+	  || (TREE_UNSIGNED (type)
+	      && (tree_int_cst_sgn (top) < 0
+		  || tree_int_cst_sgn (bottom) < 0)))
 	return 0;
       return integer_zerop (const_binop (TRUNC_MOD_EXPR,
 					 top, bottom, 0));
