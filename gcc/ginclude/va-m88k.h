@@ -19,8 +19,12 @@ typedef struct
 
 #ifdef _STDARG_H /* stdarg.h support */
 
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that LASTARG is correct.  */
 #if __GNUC__ > 1 /* GCC 2.0 and beyond */
-#define va_start(AP,LASTARG) ((AP) = *(__gnuc_va_list *)__builtin_saveregs())
+#define va_start(AP,LASTARG)				\
+ (__builtin_next_arg (LASTARG),				\
+  (AP) = *(__gnuc_va_list *)__builtin_saveregs())
 #else
 #define va_start(AP,LASTARG) \
   ( (AP).__va_reg = (int *) __builtin_saveregs2(0), \

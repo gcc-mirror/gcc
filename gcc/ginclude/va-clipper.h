@@ -22,9 +22,12 @@ typedef struct
 #define _VA_LIST_
 #define _SYS_INT_STDARG_H		/* acc compatibility */
 
+/* Call __builtin_next_arg even though we aren't using its value, so that
+   we can verify that LASTARG is correct.  */
 #ifdef _STDARG_H
 #define va_start(AP,LASTARG)			\
-  ((AP) = *(va_list *)__builtin_saveregs(),	\
+  (__builtin_next_arg (LASTARG),		\
+   (AP) = *(va_list *)__builtin_saveregs(),	\
    (AP).__va_num = __builtin_args_info (0),	\
    (AP).__va_ap += __builtin_args_info (1))
 #else
