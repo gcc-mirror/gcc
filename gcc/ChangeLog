@@ -1,3 +1,18 @@
+Sun May 28 18:37:07 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* lcm.c (make_preds_opaque): Fix comment.
+	(optimize_mode_switching): Use NORMAL_MODE instead of 
+	MODE_USES_IN_EXIT_BLOCK.  Change leftover instance of
+	FP_MODE_NONE to no_mode.  Rename MODE_AT_ENTRY to NORMAL_MODE.
+	Handle insertions before an existing NOTE_INSN_BASIC_BLOCK.
+	* tm.texi (OPTIMIZE_MODE_SWITCHING): Refer to NORMAL_MODE.
+	(MODE_USES_IN_EXIT_BLOCK): Delete.
+	(MODE_AT_ENTRY) Rename to NORMAL_MODE.
+	* sh.h (MODE_USES_IN_EXIT_BLOCK): Delete.
+	(MODE_AT_ENTRY): Rename to NORMAL_MODE.
+	(MODE_NEEDED): Don't look for USE.
+	(EPILOGUE_USES): Define.
+
 Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 
 	* mklibgcc.in (all): Variable initialised to `libgcc'.

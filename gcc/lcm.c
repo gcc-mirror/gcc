@@ -840,7 +840,7 @@ static sbitmap *comp;
 static sbitmap *delete;
 static sbitmap *insert;
 
-static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));;
+static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));
 static void add_seginfo PARAMS ((struct bb_info *, struct seginfo *));
 static void reg_dies PARAMS ((rtx, HARD_REG_SET));
 static void reg_becomes_live PARAMS ((rtx, rtx, void *));
@@ -850,7 +850,7 @@ static void make_preds_opaque PARAMS ((basic_block, int));
 #ifdef OPTIMIZE_MODE_SWITCHING
 
 /* This function will allocate a new BBINFO structure, initialized
-   with the FP_MODE, INSN, and basic block BB parameters.  */
+   with the MODE, INSN, and basic block BB parameters.  */
 
 static struct seginfo *
 new_seginfo (mode, insn, bb, regs_live)
@@ -994,29 +994,6 @@ optimize_mode_switching (file)
   if (! n_entities)
     return 0;
 
-#ifdef MODE_USES_IN_EXIT_BLOCK
-  /* For some ABIs a particular mode setting is required at function exit.  */
-
-  for (eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
-    {
-      int bb = eg->src->index;
-      rtx insn = BLOCK_END (bb);
-      rtx use = MODE_USES_IN_EXIT_BLOCK;
-
-      /* If the block ends with the use of the return value
-	 and / or a return, insert the new use(s) in front of them.  */
-      while ((GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
-	     || GET_CODE (insn) == JUMP_INSN)
-	insn = PREV_INSN (insn);
-
-      use = emit_insn_after (use, insn);
-      if (insn == BLOCK_END (bb))
-	BLOCK_END (bb) = use;
-      else if (NEXT_INSN (use) == BLOCK_HEAD (bb))
-	BLOCK_HEAD (bb) = NEXT_INSN (insn);
-    }
-#endif /* MODE_USES_IN_EXIT_BLOCK */
-
   /* Create the bitmap vectors.  */
 
   antic = sbitmap_vector_alloc (n_basic_blocks, n_entities);
@@ -1071,6 +1048,29 @@ optimize_mode_switching (file)
 		}
 	    }
 
+	  /* If this is a predecessor of the exit block, and we must 
+	     force a mode on exit, make note of that.  */
+#ifdef NORMAL_MODE
+	  if (NORMAL_MODE (e) != no_mode && last_mode != NORMAL_MODE (e))
+	    for (eg = BASIC_BLOCK (bb)->succ; eg; eg = eg->succ_next)
+	      if (eg->dest == EXIT_BLOCK_PTR)
+		{
+		  rtx insn = BLOCK_END (bb);
+
+		  /* Find the last insn before a USE and/or JUMP.  */
+		  while ((GET_CODE (insn) == INSN 
+			      && GET_CODE (PATTERN (insn)) == USE)
+			  || GET_CODE (insn) == JUMP_INSN)
+		    insn = PREV_INSN (insn);
+		  if (insn != BLOCK_END (bb) && NEXT_INSN (insn))
+		    insn = NEXT_INSN (insn);
+		  last_mode = NORMAL_MODE (e);
+		  add_seginfo (info + bb, 
+		      new_seginfo (last_mode, insn, bb, live_now));
+		  RESET_BIT (transp[bb], j);
+		} 
+#endif
+
 	  info[bb].computing = last_mode;
 	  /* Check for blocks without ANY mode requirements.  */
 	  if (last_mode == no_mode)
@@ -1079,9 +1079,9 @@ optimize_mode_switching (file)
 	      add_seginfo (info + bb, ptr);
 	    }
 	}
-#ifdef MODE_AT_ENTRY
+#ifdef NORMAL_MODE
       {
-	int mode = MODE_AT_ENTRY (e);
+	int mode = NORMAL_MODE (e);
 
 	if (mode != no_mode)
 	  {
@@ -1112,7 +1112,7 @@ optimize_mode_switching (file)
 	      }
 	  }
       }
-#endif /* MODE_AT_ENTRY */
+#endif /* NORMAL_MODE */
     }
 
   kill = sbitmap_vector_alloc (n_basic_blocks, n_entities);
@@ -1214,13 +1214,15 @@ optimize_mode_switching (file)
   /* Now output the remaining mode sets in all the segments.  */
   for (j = n_entities - 1; j >= 0; j--)
     {
+      int no_mode = num_modes[entity_map[j]];
+
       for (bb = n_basic_blocks - 1; bb >= 0; bb--)
 	{
 	  struct seginfo *ptr, *next;
 	  for (ptr = bb_info[j][bb].seginfo; ptr; ptr = next)
 	    {
 	      next = ptr->next;
-	      if (ptr->mode != FP_MODE_NONE)
+	      if (ptr->mode != no_mode)
 		{
 		  rtx mode_set;
 
@@ -1229,8 +1231,12 @@ optimize_mode_switching (file)
 		  mode_set = gen_sequence ();
 		  end_sequence ();
 
-		  emit_block_insn_before (mode_set, ptr->insn_ptr,
-					  BASIC_BLOCK (ptr->bbnum));
+		  if (NOTE_LINE_NUMBER (ptr->insn_ptr) == NOTE_INSN_BASIC_BLOCK)
+		    emit_block_insn_after (mode_set, ptr->insn_ptr,
+    		                           BASIC_BLOCK (ptr->bbnum));
+		  else
+		    emit_block_insn_before (mode_set, ptr->insn_ptr,
+					    BASIC_BLOCK (ptr->bbnum));
 		}
 
 	      free (ptr);

@@ -2249,18 +2249,15 @@ do {									\
 
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) TARGET_SH4
 
-#define MODE_USES_IN_EXIT_BLOCK gen_rtx_USE (VOIDmode, get_fpscr_rtx ())
+#define NORMAL_MODE(ENTITY) \
+   (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE) 
+
+#define EPILOGUE_USES(REGNO)       (TARGET_SH4 && (REGNO) == FPSCR_REG)
 
 #define MODE_NEEDED(ENTITY, INSN)					\
   (recog_memoized (INSN) >= 0						\
    ? get_attr_fp_mode (INSN)						\
-   : (GET_CODE (PATTERN (INSN)) == USE				\
-      && rtx_equal_p (XEXP (PATTERN (INSN), 0), get_fpscr_rtx ()))	\
-   ? (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)		\
    : FP_MODE_NONE)
-
-#define MODE_AT_ENTRY(ENTITY) \
-  (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
 
 #define MODE_PRIORITY_TO_MODE(ENTITY, N) \
   ((TARGET_FPU_SINGLE != 0) ^ (N) ? FP_MODE_SINGLE : FP_MODE_DOUBLE)
