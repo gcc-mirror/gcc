@@ -707,10 +707,10 @@ copy_decl_rtls (block)
    modified.  In the second case, FNDECL is used for the last time,
    so modifying the rtl is not a problem.
 
-   ??? Actually, we do not verify that FNDECL is not inline expanded
-   by other functions which must also be written down at the end
-   of compilation.  We could set flag_no_inline to nonzero when
-   the time comes to write down such functions.  */
+   We don't have to worry about FNDECL being inline expanded by
+   other functions which are written at the end of compilation
+   because flag_no_inline is turned on when we begin writing
+   functions at the end of compilation.  */
 
 void
 save_for_inline_nocopy (fndecl)
@@ -3003,6 +3003,7 @@ output_inline_function (fndecl)
 {
   rtx head;
   rtx last;
+  int save_flag_no_inline = flag_no_inline;
 
   if (output_bytecode)
     {
@@ -3097,8 +3098,15 @@ output_inline_function (fndecl)
   /* We're not deferring this any longer.  */
   DECL_DEFER_OUTPUT (fndecl) = 0;
 
+  /* Integrating function calls isn't safe anymore, so turn on
+     flag_no_inline.  */
+  flag_no_inline = 1;
+
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
+
+  /* Reset flag_no_inline to its original value.  */
+  flag_no_inline = save_flag_no_inline;
 
   current_function_decl = 0;
 }
