@@ -76,7 +76,7 @@ __register_frame_info_bases (void *begin, struct object *ob,
 			     void *tbase, void *dbase)
 {
   /* If .eh_frame is empty, don't register at all.  */
-  if (*(uword *)begin == 0)
+  if (*(uword *) begin == 0)
     return;
 
   ob->pc_begin = (void *)-1;
@@ -107,7 +107,7 @@ __register_frame (void *begin)
   struct object *ob;
 
   /* If .eh_frame is empty, don't register at all.  */
-  if (*(uword *)begin == 0)
+  if (*(uword *) begin == 0)
     return;
 
   ob = (struct object *) malloc (sizeof (struct object));
@@ -171,7 +171,7 @@ __deregister_frame_info_bases (void *begin)
   struct object *ob = 0;
 
   /* If .eh_frame is empty, we haven't registered.  */
-  if (*(uword *)begin == 0)
+  if (*(uword *) begin == 0)
     return ob;
 
   init_object_mutex_once ();
@@ -224,7 +224,7 @@ void
 __deregister_frame (void *begin)
 {
   /* If .eh_frame is empty, we haven't registered.  */
-  if (*(uword *)begin != 0)
+  if (*(uword *) begin != 0)
     free (__deregister_frame_info (begin));
 }
 
@@ -443,10 +443,10 @@ fde_split (struct object *ob, fde_compare_t fde_compare,
            probe != &marker && fde_compare (ob, linear->array[i], *probe) < 0;
            probe = chain_end)
         {
-          chain_end = (fde **)erratic->array[probe - linear->array];
+          chain_end = (fde **) erratic->array[probe - linear->array];
           erratic->array[probe - linear->array] = NULL;
         }
-      erratic->array[i] = (fde *)chain_end;
+      erratic->array[i] = (fde *) chain_end;
       chain_end = &linear->array[i];
     }
 
@@ -642,8 +642,8 @@ classify_object_over_fdes (struct object *ob, fde *this_fde)
 	continue;
 
       count += 1;
-      if ((void *)pc_begin < ob->pc_begin)
-	ob->pc_begin = (void *)pc_begin;
+      if ((void *) pc_begin < ob->pc_begin)
+	ob->pc_begin = (void *) pc_begin;
     }
 
   return count;
@@ -679,7 +679,7 @@ add_fdes (struct object *ob, struct fde_accumulator *accu, fde *this_fde)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  if (*(_Unwind_Ptr *)this_fde->pc_begin == 0)
+	  if (*(_Unwind_Ptr *) this_fde->pc_begin == 0)
 	    continue;
 	}
       else
@@ -797,8 +797,8 @@ linear_search_fdes (struct object *ob, fde *this_fde, void *pc)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  pc_begin = ((_Unwind_Ptr *)this_fde->pc_begin)[0];
-	  pc_range = ((_Unwind_Ptr *)this_fde->pc_begin)[1];
+	  pc_begin = ((_Unwind_Ptr *) this_fde->pc_begin)[0];
+	  pc_range = ((_Unwind_Ptr *) this_fde->pc_begin)[1];
 	  if (pc_begin == 0)
 	    continue;
 	}
@@ -825,7 +825,7 @@ linear_search_fdes (struct object *ob, fde *this_fde, void *pc)
 	    continue;
 	}
 
-      if ((_Unwind_Ptr)pc - pc_begin < pc_range)
+      if ((_Unwind_Ptr) pc - pc_begin < pc_range)
         return this_fde;
     }
 
@@ -848,8 +848,8 @@ binary_search_unencoded_fdes (struct object *ob, void *pc)
       void *pc_begin;
       uaddr pc_range;
 
-      pc_begin = ((void **)f->pc_begin)[0];
-      pc_range = ((uaddr *)f->pc_begin)[1];
+      pc_begin = ((void **) f->pc_begin)[0];
+      pc_range = ((uaddr *) f->pc_begin)[1];
 
       if (pc < pc_begin)
 	hi = i;
@@ -881,9 +881,9 @@ binary_search_single_encoding_fdes (struct object *ob, void *pc)
 					&pc_begin);
       read_encoded_value_with_base (encoding & 0x0F, 0, p, &pc_range);
 
-      if ((_Unwind_Ptr)pc < pc_begin)
+      if ((_Unwind_Ptr) pc < pc_begin)
 	hi = i;
-      else if ((_Unwind_Ptr)pc >= pc_begin + pc_range)
+      else if ((_Unwind_Ptr) pc >= pc_begin + pc_range)
 	lo = i + 1;
       else
 	return f;
@@ -912,9 +912,9 @@ binary_search_mixed_encoding_fdes (struct object *ob, void *pc)
 					f->pc_begin, &pc_begin);
       read_encoded_value_with_base (encoding & 0x0F, 0, p, &pc_range);
 
-      if ((_Unwind_Ptr)pc < pc_begin)
+      if ((_Unwind_Ptr) pc < pc_begin)
 	hi = i;
-      else if ((_Unwind_Ptr)pc >= pc_begin + pc_range)
+      else if ((_Unwind_Ptr) pc >= pc_begin + pc_range)
 	lo = i + 1;
       else
 	return f;

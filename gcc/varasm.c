@@ -2684,7 +2684,7 @@ compare_constant_1 (exp, p)
       if ((enum machine_mode) *p++ != TYPE_MODE (TREE_TYPE (exp)))
 	return 0;
 
-      strp = (const unsigned char *)TREE_STRING_POINTER (exp);
+      strp = (const unsigned char *) TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (memcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		  sizeof TREE_STRING_LENGTH (exp)))

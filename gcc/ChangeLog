@@ -1,3 +1,12 @@
+2002-01-21  Kazu Hirata  <kazu@hxi.com>
+
+	* unwind-dw2.c: Fix formatting.
+	* unwind-dw2-fde.c: Likewise.
+	* unwind-dw2-fde.h: Likewise.
+	* unwind-pe.h: Likewise.
+	* varasm.c: Likewise.
+	* varray.h: Likewise.
+
 2002-01-21  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Remove workaround for register stack overwrite bug in mmix.

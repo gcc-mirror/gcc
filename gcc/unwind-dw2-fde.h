@@ -156,7 +156,7 @@ get_cie (struct dwarf_fde *f)
 static inline fde *
 next_fde (fde *f)
 {
-  return (fde *)((char *)f + f->length + sizeof (f->length));
+  return (fde *) ((char *) f + f->length + sizeof (f->length));
 }
 
 extern fde * _Unwind_Find_FDE (void *, struct dwarf_eh_bases *);
