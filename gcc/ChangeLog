@@ -1,3 +1,15 @@
+2003-01-28  Stan Shebs  <shebs@apple.com>
+
+	* coretypes.h (cpp_reader): Forward declare struct.
+	* c-pragma.h (cpp_reader): Remove forward declaration.
+	* hashtable.h (cpp_reader): Likewise.
+	* scan.h (cpp_reader): Likewise.
+	* tree.h (cpp_reader): Likewise.
+	* config/darwin-protos.h (cpp_reader): Likewise.
+	* config/arm/arm-protos.h (cpp_reader): Likewise.
+	* config/rs6000/rs6000-protos.h: Remove GCC_CPPLIB_H ifdef, use
+	struct cpp_reader in prototypes.
+
 2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* doc/install.texi: Add documentation for installation into

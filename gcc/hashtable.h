@@ -32,11 +32,6 @@ struct ht_identifier GTY(())
 #define HT_LEN(NODE) ((NODE)->len)
 #define HT_STR(NODE) ((NODE)->str)
 
-/* We want code outside cpplib, such as the compiler front-ends, to be
-   able to include this header, and to be able to link with
-   cpphashtbl.o without pulling in any other parts of cpplib.  */
-
-struct cpp_reader;
 typedef struct ht hash_table;
 typedef struct ht_identifier *hashnode;
 
