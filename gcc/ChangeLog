@@ -1,5 +1,9 @@
 2001-12-31  Graham Stott  <grahams@redhat.com>
 
+	* halfpic.h: Remove foward defs of tree_node and rtx_def.
+
+2001-12-31  Graham Stott  <grahams@redhat.com>
+
         * toplev.h: Remove forward def of tree_node, rtx_def.
 
 2001-12-31 Graham Stott  <grahams@redhat.com>

@@ -20,11 +20,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef NO_HALF_PIC
 
-#ifdef ANSI_PROTOTYPES
-union tree_node;		/* forward reference */
-struct rtx_def;
-#endif
-
 /* Declare the variable flag_half_pic as 'int' instead of 'extern
    int', so that BSS variables are created (even though this is not
    strict ANSI).  This is because rtl.c now refers to the
