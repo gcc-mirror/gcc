@@ -1127,7 +1127,7 @@ and64_operand (op, mode)
   if (fixed_regs[68])	/* CR0 not available, don't do andi./andis. */
     return (gpc_reg_operand (op, mode) || mask64_operand (op, mode));
 
-  return (logical_u_operand (op, mode) || mask64_operand (op, mode));
+  return (logical_operand (op, mode) || mask64_operand (op, mode));
 }
 
 /* Return 1 if the operand is either a non-special register or a

@@ -1,5 +1,9 @@
 2001-01-11  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Revert this patch:
+	2000-12-18  David Edelsohn  <edelsohn@gnu.org>
+	* rs6000.c (and64_operand): Use logical_u_operand.
+
 	Mon Oct  4 16:56:11 1999  Richard Henderson  <rth@cygnus.com>
 	* tree.c (build1): Set TREE_SIDE_EFFECTS for expressions that
 	always have side-effects.
