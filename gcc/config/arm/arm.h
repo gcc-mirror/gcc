@@ -2883,6 +2883,9 @@ extern int making_const_table;
   {"load_multiple_operation",  {PARALLEL}},				\
   {"store_multiple_operation", {PARALLEL}},				\
   {"equality_operator", {EQ, NE}},					\
+  {"arm_comparison_operator", {EQ, NE, LE, LT, GE, GT, GEU, GTU, LEU,	\
+			       LTU, UNORDERED, ORDERED, UNLT, UNLE,	\
+			       UNGE, UNGT}},				\
   {"arm_rhsm_operand", {SUBREG, REG, CONST_INT, MEM}},			\
   {"const_shift_operand", {CONST_INT}},					\
   {"multi_register_push", {PARALLEL}},					\

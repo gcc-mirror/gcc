@@ -3000,6 +3000,17 @@ equality_operator (x, mode)
   return GET_CODE (x) == EQ || GET_CODE (x) == NE;
 }
 
+/* Return TRUE if x is a comparison operator other than LTGT or UNEQ.  */
+int
+arm_comparison_operator (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  return (comparison_operator (x, mode)
+	  && GET_CODE (x) != LTGT
+	  && GET_CODE (x) != UNEQ);
+}
+
 /* Return TRUE for SMIN SMAX UMIN UMAX operators.  */
 int
 minmax_operator (x, mode)
@@ -4194,7 +4205,31 @@ arm_select_cc_mode (op, x, y)
   /* All floating point compares return CCFP if it is an equality
      comparison, and CCFPE otherwise.  */
   if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-    return (op == EQ || op == NE) ? CCFPmode : CCFPEmode;
+    {
+      switch (op)
+	{
+	case EQ:
+	case NE:
+	case UNORDERED:
+	case ORDERED:
+	case UNLT:
+	case UNLE:
+	case UNGT:
+	case UNGE:
+	case UNEQ:
+	case LTGT:
+	  return CCFPmode;
+
+	case LT:
+	case LE:
+	case GT:
+	case GE:
+	  return CCFPEmode;
+
+	default:
+	  abort ();
+	}
+    }
   
   /* A compare with a shifted operand.  Because of canonicalization, the
      comparison will have to be swapped when we emit the assembler.  */
@@ -7642,7 +7677,6 @@ get_arm_condition_code (comparison)
 	}
 
     case CC_Zmode:
-    case CCFPmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -7651,12 +7685,27 @@ get_arm_condition_code (comparison)
 	}
 
     case CCFPEmode:
+    case CCFPmode:
+      /* These encodings assume that AC=1 in the FPA system control
+	 byte.  This allows us to handle all cases except UNEQ and
+	 LTGT.  */
       switch (comp_code)
 	{
 	case GE: return ARM_GE;
 	case GT: return ARM_GT;
 	case LE: return ARM_LS;
 	case LT: return ARM_MI;
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case ORDERED: return ARM_VC;
+	case UNORDERED: return ARM_VS;
+	case UNLT: return ARM_LT;
+	case UNLE: return ARM_LE;
+	case UNGT: return ARM_HI;
+	case UNGE: return ARM_PL;
+	  /* UNEQ and LTGT do not have a representation.  */
+	case UNEQ: /* Fall through.  */
+	case LTGT: /* Fall through.  */
 	default: abort ();
 	}
 
@@ -7812,11 +7861,10 @@ arm_final_prescan_insn (insn)
       int then_not_else = TRUE;
       rtx this_insn = start_insn, label = 0;
 
+      /* If the jump cannot be done with one instruction, we cannot 
+	 conditionally execute the instruction in the inverse case.  */
       if (get_attr_conds (insn) == CONDS_JUMP_CLOB)
 	{
-	  /* The code below is wrong for these, and I haven't time to
-	     fix it now.  So we just do the safe thing and return.  This
-	     whole function needs re-writing anyway.  */
 	  jump_clobbers = 1;
 	  return;
 	}
