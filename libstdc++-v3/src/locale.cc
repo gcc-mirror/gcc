@@ -41,15 +41,15 @@
 # include <bits/std_cwctype.h>     // for towupper, etc.
 #endif
 
-namespace std {
-
+namespace std 
+{
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
-  const locale::category 	locale::collate;
   const locale::category 	locale::ctype;
-  const locale::category 	locale::monetary;
   const locale::category 	locale::numeric;
+  const locale::category 	locale::collate;
   const locale::category 	locale::time;
+  const locale::category 	locale::monetary;
   const locale::category 	locale::messages;
   const locale::category 	locale::all;
 
@@ -58,7 +58,67 @@ namespace std {
   const int 			locale::_S_categories_num;
   const int 			locale::_S_facets_num;
 
+  // Definitions for locale::id of standard facets. 
+  locale::id ctype<char>::id;
+  locale::id codecvt<char, char, mbstate_t>::id;
+  locale::id num_get<char>::id;
+  locale::id num_put<char>::id;
+  locale::id numpunct<char>::id;
+  locale::id collate<char>::id;
+  locale::id time_get<char>::id;
+  locale::id time_put<char>::id;
+  locale::id money_get<char>::id;
+  locale::id money_put<char>::id;
+  locale::id moneypunct<char, false>::id;
+  locale::id moneypunct<char, true>::id;
+  locale::id messages<char>::id;
+
+#ifdef _GLIBCPP_USE_WCHAR_T  
+  locale::id ctype<wchar_t>::id;
+  locale::id codecvt<wchar_t, char, mbstate_t>::id;
+  locale::id num_get<wchar_t>::id;
+  locale::id num_put<wchar_t>::id;
+  locale::id numpunct<wchar_t>::id;
+  locale::id collate<wchar_t>::id;
+  locale::id time_get<wchar_t>::id;
+  locale::id time_put<wchar_t>::id;
+  locale::id money_get<wchar_t>::id;
+  locale::id money_put<wchar_t>::id;
+  locale::id moneypunct<wchar_t, false>::id;
+  locale::id moneypunct<wchar_t, true>::id;
+  locale::id messages<wchar_t>::id;
+#endif
+
+  // Definitions for static const data members of locale::id
+  size_t locale::id::_S_highwater;  // init'd to 0 by linker
+
   // Definitions for static const data members of locale::_Impl
+  const locale::id* const
+  locale::_Impl::_S_id_ctype[] =
+  {
+    &std::ctype<char>::id, 
+    &codecvt<char, char, mbstate_t>::id,
+#ifdef _GLIBCPP_USE_WCHAR_T
+    &std::ctype<wchar_t>::id,
+    &codecvt<wchar_t, char, mbstate_t>::id,
+#endif
+    0
+  };
+
+  const locale::id* const
+  locale::_Impl::_S_id_numeric[] =
+  {
+    &num_get<char>::id,  
+    &num_put<char>::id,  
+    &numpunct<char>::id, 
+#ifdef _GLIBCPP_USE_WCHAR_T
+    &num_get<wchar_t>::id,
+    &num_put<wchar_t>::id,
+    &numpunct<wchar_t>::id,
+#endif
+    0
+  };
+  
   const locale::id* const
   locale::_Impl::_S_id_collate[] =
   {
@@ -68,85 +128,41 @@ namespace std {
 #endif
     0
   };
-  
-  const locale::id* const
-  locale::_Impl::_S_id_ctype[] =
-  {
-    &std::ctype<char>::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &std::ctype<wchar_t>::id,
-#endif
-    &codecvt<char, char, mbstate_t>::id,
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &codecvt<wchar_t, char, mbstate_t>::id,
-#endif
-    0
-  };
 
-  const locale::id* const
-  locale::_Impl::_S_id_monetary[] =
-  {
-    &moneypunct<char, false>::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &moneypunct<wchar_t, false>::id,
-#endif
-    &std::moneypunct<char,true >::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &moneypunct<wchar_t,true >::id,
-#endif
-    &money_get<char>::id,        
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &money_get<wchar_t>::id,
-#endif
-    &money_put<char>::id,        
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &money_put<wchar_t>::id,
-#endif
-    0
-  };
-
-  const locale::id* const
-  locale::_Impl::_S_id_numeric[] =
-  {
-    &numpunct<char>::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &numpunct<wchar_t>::id,
-#endif
-    &num_get<char>::id,  
- #ifdef _GLIBCPP_USE_WCHAR_T
-    &num_get<wchar_t>::id,
-#endif
-    &num_put<char>::id,  
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &num_put<wchar_t>::id,
-#endif
-    0
-  };
-  
   const locale::id* const
   locale::_Impl::_S_id_time[] =
   {
     &time_get<char>::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &time_get<wchar_t>::id,
-#endif
     &time_put<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
+    &time_get<wchar_t>::id,
     &time_put<wchar_t>::id,
 #endif
     0
   };
   
   const locale::id* const
+  locale::_Impl::_S_id_monetary[] =
+  {
+    &money_get<char>::id,        
+    &money_put<char>::id,        
+    &moneypunct<char, false>::id, 
+    &moneypunct<char, true >::id, 
+#ifdef _GLIBCPP_USE_WCHAR_T
+    &money_get<wchar_t>::id,
+    &money_put<wchar_t>::id,
+    &moneypunct<wchar_t, false>::id,
+    &moneypunct<wchar_t, true >::id,
+#endif
+    0
+  };
+
+  const locale::id* const
   locale::_Impl::_S_id_messages[] =
   {
-    &time_get<char>::id, 
+    &std::messages<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
-    &time_get<wchar_t>::id,
-#endif
-    &time_put<char>::id, 
-#ifdef _GLIBCPP_USE_WCHAR_T
-    &time_put<wchar_t>::id,
+    &std::messages<wchar_t>::id,
 #endif
     0
   };
@@ -155,17 +171,14 @@ namespace std {
   locale::_Impl::_S_facet_categories[] =
   {
     // Order must match the decl order in class locale.
-    locale::_Impl::_S_id_collate,
     locale::_Impl::_S_id_ctype,
-    locale::_Impl::_S_id_monetary,
     locale::_Impl::_S_id_numeric,
+    locale::_Impl::_S_id_collate,
     locale::_Impl::_S_id_time,
+    locale::_Impl::_S_id_monetary,
     locale::_Impl::_S_id_messages,
     0
   };
-
-  // Definitions for static const data members of locale::id
-  size_t locale::id::_S_highwater;  // init'd to 0 by linker
 
   // Definitions for static const data members of money_base
   const money_base::pattern 
@@ -794,8 +807,6 @@ namespace std {
   // Platform-specific initialization code for ctype tables.
   #include <bits/ctype_noninline.h>
 
-  locale::id ctype<char>::id;
-
   const size_t ctype<char>::table_size;
 
   ctype<char>::~ctype()
@@ -845,8 +856,6 @@ namespace std {
   ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<char>(new mask[table_size], true, __refs)
   { }
-
-  locale::id collate<char>::id;
 
   collate<char>::collate(size_t __refs)
   : _Collate<char>(__refs) { }
@@ -903,8 +912,6 @@ namespace std {
   : messages<char>(__refs) { }
 
 #ifdef _GLIBCPP_USE_WCHAR_T  
-  locale::id ctype<wchar_t>::id;
-
   ctype<wchar_t>::__wmask_type
   ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
   {
@@ -1059,8 +1066,6 @@ namespace std {
   ctype_byname<wchar_t>::
   ctype_byname(const char* /*__s*/, size_t __refs)
   : ctype<wchar_t>(__refs) { }
-
-  locale::id collate<wchar_t>::id;
 
   collate<wchar_t>::
   collate(size_t __refs)

@@ -36,9 +36,6 @@ namespace std {
   const int __enc_traits::_S_max_size;
 #endif /* _GLIBCPP_USE_WCHAR_T */
 
-  // codecvt<char, char, mbstate_t> required specialization
-  locale::id codecvt<char, char, mbstate_t>::id;
-
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<char, char, mbstate_t>(__refs)
@@ -107,8 +104,6 @@ namespace std {
   
 #ifdef _GLIBCPP_USE_WCHAR_T
   // codecvt<wchar_t, char, mbstate_t> required specialization
-  locale::id codecvt<wchar_t, char, mbstate_t>::id;
-
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs) { }

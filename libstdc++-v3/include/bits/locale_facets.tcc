@@ -159,16 +159,6 @@ namespace std
     }
 
   template<typename _CharT>
-    locale::id ctype<_CharT>::id;
-
-  template<typename _CharT>
-    int _Format_cache<_CharT>::_S_pword_ix;
-
-  template<typename _CharT>
-    const char _Format_cache<_CharT>::
-    _S_literals[] = "-+xX0123456789abcdef0123456789ABCDEF";
-
-  template<typename _CharT>
     _Format_cache<_CharT>::_Format_cache()
     : _M_valid(true), _M_use_grouping(false)
     { }
@@ -243,9 +233,6 @@ namespace std
 
       return __ncp;
     }
-
-  template<typename _CharT, typename _InIter>
-    locale::id num_get<_CharT, _InIter>::id;
 
   // This member function takes an (w)istreambuf_iterator object and
   // parses it into a generic char array suitable for parsing with
@@ -729,9 +716,6 @@ namespace std
       return __beg;
     }
 
-  template <typename _CharT, typename _OutIter>
-    locale::id num_put<_CharT, _OutIter>::id;
-
   // _S_fill is specialized for ostreambuf_iterator, random access iterator.
   template <typename _CharT, typename _OutIter>
     inline _OutIter
@@ -1119,12 +1103,6 @@ namespace std
       }
     }
 
-  template<typename _CharT>
-    locale::id numpunct<_CharT>::id;
-
-  template<typename _CharT>
-    locale::id collate<_CharT>::id;
-
   // Support for time_get:
   // Note that these partial specializations could, and maybe should,
   // be changed to full specializations (by eliminating the _Dummy
@@ -1194,9 +1172,6 @@ namespace std
 #endif
 
   template<typename _CharT, typename _InIter>
-    locale::id time_get<_CharT, _InIter>::id;
-
-  template<typename _CharT, typename _InIter>
     _InIter
     time_get<_CharT, _InIter>::
     do_get_weekday(iter_type __s, iter_type __end,
@@ -1249,27 +1224,6 @@ namespace std
         __err |= __io.failbit;
       return __out;
     }
-
-  template<typename _CharT, typename _OutIter>
-    locale::id time_put<_CharT, _OutIter>::id;
-
-  template<typename _CharT, typename _InIter>
-    locale::id money_get<_CharT, _InIter>::id;
-
-  template<typename _CharT, typename _OutIter>
-    locale::id money_put<_CharT, _OutIter>::id;
-
-  template<typename _CharT, bool _Intl>
-    locale::id moneypunct<_CharT, _Intl>::id;
-
-  template<typename _CharT, bool _Intl>
-    const bool moneypunct<_CharT, _Intl>::intl;
-
-  template<typename _CharT, bool _Intl>
-    const bool moneypunct_byname<_CharT, _Intl>::intl;
-
-  template<typename _CharT>
-    locale::id messages<_CharT>::id;
 } // std::
 
 #endif /* _CPP_BITS_LOCFACETS_TCC */
