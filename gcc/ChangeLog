@@ -1,5 +1,8 @@
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.h (EXPR_WFL_LINECOL): Used by Java in node other than
+	EXPR_WITH_FILE_LOCATION, so change checks and documentation.
+
 	* tree.h (TREE_VIA_PROTECTED): Update to show can be in TREE_VEC.
 
 	* tree.h: Add missing checks on some macros; make formatting more
