@@ -165,6 +165,24 @@
   operands[5] = GEN_INT (mult);
 }")
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI
+	 (plus:SI (match_operator:SI 1 "comparison_operator"
+				     [(match_operand 2 "" "")
+				      (match_operand 3 "" "")])
+		  (match_operand:SI 4 "add_operand" ""))))
+   (clobber (match_operand:DI 5 "register_operand" ""))]
+  ""
+  [(set (match_dup 5) (match_dup 6))
+   (set (match_dup 0) (sign_extend:DI (plus:SI (match_dup 7) (match_dup 4))))]
+  "
+{
+  operands[6] = gen_rtx (GET_CODE (operands[1]), DImode,
+			 operands[2], operands[3]);
+  operands[7] = gen_lowpart (SImode, operands[5]);
+}")
+
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
