@@ -1,6 +1,13 @@
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
+	2004-03-11  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/14476
+	* decl.c (xref_tag): Do not create dummy ENUMERAL_TYPEs.
+
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
 	2004-03-08  Mark Mitchell  <mark@codesourcery.com>
 	PR c++/14401
 	* class.c (check_field_decls): Complain about non-static data
