@@ -1,3 +1,9 @@
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sh/sh.h (SUBTARGET_EXTRA_SPECS): Define empty
+	if not already defined. 
+	(EXTRA_SPECS): Add SUBTARGET_EXTRA_SPECS.
+
 2002-06-08  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* config/avr/avr.c (avr_regs_to_save): No need to save any registers
