@@ -1,3 +1,19 @@
+2002-07-30  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* c-pretty-print.h (struct c_pretty_print_info): Add new member.
+	(pp_initializer): New macro.
+	(pp_c_initializer): Declare.
+	* c-pretty-print.c (pp_c_primary_expression): HAndle TARGET_EXPR.
+	(pp_c_initializer): Define.
+	(pp_c_initializer_list): New function.
+	(pp_c_postfix_expression): Handle ABS_EXPR, COMPLEX_CST,
+	VECTOR_CST, CONSTRUCTOR.
+	(pp_c_unary_expression): Handle CONJ_EXPR, REALPART_EXPR,
+	IMAGPART_EXPR. 
+	(pp_c_cast_expression): Handle FLOAT_EXPR.
+	(pp_c_assignment_expression): Handle INIT_EXPR.
+	(pp_c_expression): Update.
+
 2002-07-30  Neil Booth  <neil@daikokuya.co.uk>
 
 	* objc/objc-act.c (objc_init): Return immediately if filename
