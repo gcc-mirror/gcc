@@ -1524,7 +1524,6 @@ case " $skipdirs " in
       # Here host == target, so we don't need to build gcc,
       # so we don't want to discard standard headers.
       FLAGS_FOR_TARGET=`echo " $FLAGS_FOR_TARGET " | sed -e 's/ -nostdinc / /'`
-      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$$r/$(TARGET_SUBDIR)/newlib/'
       ;;
    *)
       # If we're building newlib, use its generic headers last, but search

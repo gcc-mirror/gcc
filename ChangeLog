@@ -1,3 +1,9 @@
+2002-05-03  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* configure.in (FLAGS_FOR_TARGET): Do not add
+	-B$$r/$(TARGET_SUBDIR)/newlib/ when compiling newlib natively
+	on i[3456]86-*-linux*.
+
 2002-05-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* configure.in (noconfigdirs): Replace [ ] with test.
