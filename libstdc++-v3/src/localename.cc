@@ -90,8 +90,7 @@ namespace std
       _M_names[i] = __str;
 
     // Construct all standard facets and add them to _M_facets.
-    // XXX Eventually, all should use __clocale ctor like numpunct
-    // XXX how to deal cleanly, consistently with null ("C") __cloc?
+    // XXX How to deal cleanly, consistently with null ("C") __cloc?
     _M_init_facet(new std::collate<char>(__cloc));
     _M_init_facet(new std::ctype<char>);
     _M_init_facet(new codecvt<char, char, mbstate_t>);
@@ -102,6 +101,7 @@ namespace std
     _M_init_facet(new numpunct<char>(__cloc));
     _M_init_facet(new num_get<char>);
     _M_init_facet(new num_put<char>);
+    _M_init_facet(new __timepunct<char>(__cloc, __str.c_str()));
     _M_init_facet(new time_get<char>);
     _M_init_facet(new time_put<char>);
     _M_init_facet(new std::messages<char>(__cloc, __str.c_str()));
@@ -117,6 +117,7 @@ namespace std
     _M_init_facet(new numpunct<wchar_t>(__cloc));
     _M_init_facet(new num_get<wchar_t>);
     _M_init_facet(new num_put<wchar_t>);
+    _M_init_facet(new __timepunct<wchar_t>(__cloc, __str.c_str()));
     _M_init_facet(new time_get<wchar_t>);
     _M_init_facet(new time_put<wchar_t>);
     _M_init_facet(new std::messages<wchar_t>(__cloc, __str.c_str()));

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -67,6 +67,7 @@ AR = @AR@
 AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 BASIC_FILE_H = @BASIC_FILE_H@
+BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
@@ -77,6 +78,7 @@ CMESSAGES_H = @CMESSAGES_H@
 CPP = @CPP@
 CSHADOW_FLAGS = @CSHADOW_FLAGS@
 CSTDIO_H = @CSTDIO_H@
+CTIME_H = @CTIME_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -88,17 +90,17 @@ EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GENCAT = @GENCAT@
+GLIBC21 = @GLIBC21@
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
-GT_NO = @GT_NO@
-GT_YES = @GT_YES@
-INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
-INTLDEPS = @INTLDEPS@
+INTLBISON = @INTLBISON@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
+INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
+LIBICONV = @LIBICONV@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
@@ -144,7 +146,6 @@ glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
 gxx_include_dir = @gxx_include_dir@
 ifGNUmake = @ifGNUmake@
-l = @l@
 libio_la = @libio_la@
 libtool_VERSION = @libtool_VERSION@
 release_VERSION = @release_VERSION@
@@ -160,7 +161,9 @@ EXTRA_LONG_DOUBLE_yes = signbitl.c
 
 EXTRA_DIST = $(EXTRA_LONG_DOUBLE_yes) 
 
-libmath_la_LIBADD =  	@LIBMATHOBJS@ 	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
+libmath_la_LIBADD = \
+	@LIBMATHOBJS@ \
+	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
 
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
@@ -172,7 +175,8 @@ LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES =  	$(TOPLEVEL_INCLUDES) 
+INCLUDES = \
+	$(TOPLEVEL_INCLUDES) 
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

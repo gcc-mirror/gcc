@@ -114,9 +114,11 @@ namespace std
   const locale::id* const
   locale::_Impl::_S_id_time[] =
   {
+    &__timepunct<char>::id, 
     &time_get<char>::id, 
     &time_put<char>::id, 
 #ifdef _GLIBCPP_USE_WCHAR_T
+    &__timepunct<wchar_t>::id, 
     &time_get<wchar_t>::id,
     &time_put<wchar_t>::id,
 #endif

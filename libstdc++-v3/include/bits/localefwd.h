@@ -47,9 +47,9 @@ namespace std
 {
   // NB: Don't instantiate required wchar_t facets if no wchar_t support.
 #ifdef _GLIBCPP_USE_WCHAR_T
-# define  _GLIBCPP_NUM_FACETS 26
+# define  _GLIBCPP_NUM_FACETS 28
 #else
-# define  _GLIBCPP_NUM_FACETS 13
+# define  _GLIBCPP_NUM_FACETS 14
 #endif
 
   // 22.1.1 Locale

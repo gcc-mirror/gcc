@@ -1037,7 +1037,6 @@ namespace std
     class collate_byname : public collate<_CharT>
     {
     public:
-      // Types:
       typedef _CharT               char_type;
       typedef basic_string<_CharT> string_type;
 
@@ -1058,6 +1057,57 @@ namespace std
     enum dateorder { no_order, dmy, mdy, ymd, ydm };
   };
 
+  template<typename _CharT>
+    class __timepunct : public locale::facet
+    {
+    public:
+      // Types:
+      typedef _CharT          		char_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      static locale::id id;
+
+    protected:
+      __c_locale			_M_c_locale_timepunct;
+#if 1
+      // Only needed if glibc < 2.3
+      const char*			_M_name_timepunct;
+#endif
+
+    public:
+      explicit 
+      __timepunct(size_t __refs = 0) 
+      : locale::facet(__refs), _M_c_locale_timepunct(NULL), 
+      _M_name_timepunct("C")
+      { 
+	//	_M_initialize_numpunct(); 
+      }
+
+      explicit 
+      __timepunct(__c_locale __cloc, const char* __s, size_t __refs = 0) 
+      : locale::facet(__refs)
+      {
+	_M_name_timepunct = __s;
+	if (__cloc)
+	  _M_c_locale_timepunct = _S_clone_c_locale(__cloc); 
+      }
+
+      void
+      _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
+		    const tm* __tm) const;
+
+    protected:
+      virtual 
+      ~__timepunct()
+      {
+	if (_M_c_locale_timepunct)
+	  _S_destroy_c_locale(_M_c_locale_timepunct); 
+      }
+    };
+
+  template<typename _CharT>
+    locale::id __timepunct<_CharT>::id;
+
   template<typename _CharT, typename _InIter>
     class time_get : public locale::facet, public time_base
     {
@@ -1068,6 +1118,11 @@ namespace std
 
       static locale::id id;
 
+    protected:
+      mutable basic_string<_CharT>* 	_M_daynames;
+      mutable basic_string<_CharT>* 	_M_monthnames;
+
+    public:
       explicit 
       time_get(size_t __refs = 0) 
       : locale::facet (__refs), _M_daynames(0), _M_monthnames(0) { }
@@ -1077,29 +1132,29 @@ namespace std
       { return do_date_order(); }
 
       iter_type 
-      get_time(iter_type __s, iter_type __end, ios_base& __f, 
+      get_time(iter_type __s, iter_type __end, ios_base& __io, 
 	       ios_base::iostate& __err, tm* __t)  const
-      { return do_get_time(__s, __end, __f, __err, __t); }
+      { return do_get_time(__s, __end, __io, __err, __t); }
 
       iter_type 
-      get_date(iter_type __s, iter_type __end, ios_base& __f,
+      get_date(iter_type __s, iter_type __end, ios_base& __io,
 	       ios_base::iostate& __err, tm* __t)  const
-      { return do_get_date(__s, __end, __f, __err, __t); }
+      { return do_get_date(__s, __end, __io, __err, __t); }
 
       iter_type 
-      get_weekday(iter_type __s, iter_type __end, ios_base& __f,
+      get_weekday(iter_type __s, iter_type __end, ios_base& __io,
 		  ios_base::iostate& __err, tm* __t) const
-      { return do_get_weekday(__s,__end,__f,__err,__t); }
+      { return this->do_get_weekday(__s, __end, __io, __err, __t); }
 
       iter_type 
-      get_monthname(iter_type __s, iter_type __end, ios_base& __f, 
+      get_monthname(iter_type __s, iter_type __end, ios_base& __io, 
 		    ios_base::iostate& __err, tm* __t) const
-      { return do_get_monthname(__s,__end,__f,__err,__t); }
+      { return this->do_get_monthname(__s, __end, __io, __err, __t); }
 
       iter_type 
-      get_year(iter_type __s, iter_type __end, ios_base& __f,
+      get_year(iter_type __s, iter_type __end, ios_base& __io,
 	       ios_base::iostate& __err, tm* __t) const
-      { return do_get_year(__s,__end,__f,__err,__t); }
+      { return this->do_get_year(__s, __end, __io, __err, __t); }
 
     protected:
       virtual 
@@ -1135,9 +1190,6 @@ namespace std
       do_get_year(iter_type __s, iter_type /*__end*/, ios_base&,
 		   ios_base::iostate& /*__err*/, tm* /*__t*/) const
       { return __s; }
-
-      mutable basic_string<_CharT>* _M_daynames;
-      mutable basic_string<_CharT>* _M_monthnames;
     };
 
   template<typename _CharT, typename _InIter>
@@ -1162,34 +1214,33 @@ namespace std
     class time_put : public locale::facet, public time_base
     {
     public:
+      // Types:
       typedef _CharT     char_type;
       typedef _OutIter   iter_type;
 
       static locale::id id;
 
       explicit 
-      time_put(size_t __refs = 0) : locale::facet (__refs) { }
-
-      // NB: this is a nonvirtual, calls do_put in a loop.
-      iter_type 
-      put(iter_type __s, ios_base& /*__f*/, char_type /*__fill*/,
-          const tm* /*__tmb*/, const _CharT* /*__pattern*/,
-          const _CharT* /*__pat_end*/) const
-      { return __s; }
+      time_put(size_t __refs = 0) 
+      : locale::facet(__refs) { }
 
       iter_type 
-      put(iter_type __s, ios_base& __f, char_type __fill,
-	  const tm* __tmb, char __format, char __modifier = 0) const
-      { return do_put(__s, __f, __fill, __tmb, __format, __modifier); }
+      put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
+	  const _CharT* __beg, const _CharT* __end) const;
+
+      iter_type 
+      put(iter_type __s, ios_base& __io, char_type __fill,
+	  const tm* __tm, char __format, char __mod = 0) const
+      { return this->do_put(__s, __io, __fill, __tm, __format, __mod); }
 
     protected:
       virtual 
-      ~time_put() { }
+      ~time_put()
+      { }
 
       virtual iter_type 
-      do_put(iter_type __s, ios_base&, char_type, const tm* /*__t*/, 
-	     char /*__format*/, char /*__mod*/) const
-      { return __s; }
+      do_put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm, 
+	     char __format, char __mod) const;
     };
 
   template<typename _CharT, typename _OutIter>
@@ -1199,17 +1250,22 @@ namespace std
     class time_put_byname : public time_put<_CharT, _OutIter>
     {
     public:
+      // Types:
       typedef _CharT     char_type;
       typedef _OutIter   iter_type;
 
       explicit 
-      time_put_byname(const char*, size_t __refs = 0) 
-      : time_put<_CharT, _OutIter> (__refs) { }
+      time_put_byname(const char* /*__s*/, size_t __refs = 0) 
+      : time_put<_CharT, _OutIter>(__refs) 
+      { };
 
     protected:
       virtual 
       ~time_put_byname() { }
     };
+
+  // Include host and configuration specific messages virtual functions.
+  #include <bits/time_members.h>
 
 
   struct money_base
@@ -1409,28 +1465,26 @@ namespace std
       money_get(size_t __refs = 0) : locale::facet(__refs) { }
 
       iter_type 
-      get(iter_type __s, iter_type __end, bool __intl,
-	  ios_base& __f, ios_base::iostate& __err, long double& __units) const
-      { return this->do_get(__s, __end, __intl, __f, __err, __units); }
+      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+	  ios_base::iostate& __err, long double& __units) const
+      { return this->do_get(__s, __end, __intl, __io, __err, __units); }
 
       iter_type 
-      get(iter_type __s, iter_type __end, bool __intl, ios_base& __f, 
+      get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
 	  ios_base::iostate& __err, string_type& __digits) const
-      { return this->do_get(__s, __end, __intl, __f, __err, __digits); }
+      { return this->do_get(__s, __end, __intl, __io, __err, __digits); }
 
     protected:
       virtual 
       ~money_get() { }
 
       virtual iter_type 
-      do_get(iter_type __s, iter_type __end, bool __intl,
-             ios_base& __io, ios_base::iostate& __err,
-             long double& __units) const;
+      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+	     ios_base::iostate& __err, long double& __units) const;
 
       virtual iter_type 
-      do_get(iter_type __s, iter_type __end, bool __intl,
-             ios_base& __io, ios_base::iostate& __err,
-             string_type& __digits) const;
+      do_get(iter_type __s, iter_type __end, bool __intl, ios_base& __io, 
+	     ios_base::iostate& __err, string_type& __digits) const;
     };
 
   template<typename _CharT, typename _InIter>
@@ -1450,14 +1504,14 @@ namespace std
       money_put(size_t __refs = 0) : locale::facet(__refs) { }
 
       iter_type 
-      put(iter_type __s, bool __intl, ios_base& __f,
+      put(iter_type __s, bool __intl, ios_base& __io,
 	  char_type __fill, long double __units) const
-      { return this->do_put(__s, __intl, __f, __fill, __units); }
+      { return this->do_put(__s, __intl, __io, __fill, __units); }
 
       iter_type 
-      put(iter_type __s, bool __intl, ios_base& __f,
+      put(iter_type __s, bool __intl, ios_base& __io,
 	  char_type __fill, const string_type& __digits) const
-      { return this->do_put(__s, __intl, __f, __fill, __digits); }
+      { return this->do_put(__s, __intl, __io, __fill, __digits); }
 
     protected:
       virtual 
@@ -1493,10 +1547,10 @@ namespace std
       // Underlying "C" library locale information saved from
       // initialization, needed by messages_byname as well.
       __c_locale			_M_c_locale_messages;
-      #if 1
+#if 1
       // Only needed if glibc < 2.3
       const char*			_M_name_messages;
-      #endif
+#endif
 
     public:
       static locale::id id;

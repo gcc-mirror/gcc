@@ -81,12 +81,14 @@ namespace std
 #endif
 
   // time_get and time_put
+  template class __timepunct<char>;
   template class time_put<char, obuf_iterator>;
   template class time_put_byname<char, obuf_iterator>;
   template class time_get<char, ibuf_iterator>;
   template class time_get_byname<char, ibuf_iterator>;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  template class __timepunct<wchar_t>;
   template class time_put<wchar_t, wobuf_iterator>;
   template class time_put_byname<wchar_t, wobuf_iterator>;
   template class time_get<wchar_t, wibuf_iterator>;
@@ -130,49 +132,70 @@ namespace std
 #endif
     
   // use_facet
-  template 
-    const num_put<char, obuf_iterator >& 
-    use_facet<num_put<char, obuf_iterator> >(const locale&);
-  template 
-    const num_get<char, ibuf_iterator >& 
-    use_facet<num_get<char, ibuf_iterator> >(const locale&);
-  template
-    const codecvt<char, char, mbstate_t>& 
-    use_facet<codecvt<char, char, mbstate_t> >(const locale&);
   template
     const numpunct<char>& 
     use_facet<numpunct<char> >(const locale&);
+
+  template 
+    const num_put<char, obuf_iterator >& 
+    use_facet<num_put<char, obuf_iterator> >(const locale&);
+
+  template 
+    const num_get<char, ibuf_iterator >& 
+    use_facet<num_get<char, ibuf_iterator> >(const locale&);
+
+  template
+    const codecvt<char, char, mbstate_t>& 
+    use_facet<codecvt<char, char, mbstate_t> >(const locale&);
+
   template
     const collate<char>& 
     use_facet<collate<char> >(const locale&);
+
   template
     const moneypunct<char, true>& 
     use_facet<moneypunct<char, true> >(const locale&);
+
   template
     const moneypunct<char, false>& 
     use_facet<moneypunct<char, false> >(const locale&);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template 
-    const num_put<wchar_t, wobuf_iterator>& 
-    use_facet<num_put<wchar_t, wobuf_iterator> >(const locale&);
-  template 
-    const num_get<wchar_t, wibuf_iterator>& 
-    use_facet<num_get<wchar_t, wibuf_iterator> >(const locale&);
+
   template
-    const codecvt<wchar_t, char, mbstate_t>& 
-    use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const&);
+    const __timepunct<char>& 
+    use_facet<__timepunct<char> >(const locale&);
+
+#ifdef _GLIBCPP_USE_WCHAR_T
   template
     const numpunct<wchar_t>& 
     use_facet<numpunct<wchar_t> >(const locale&);
+
+  template 
+    const num_put<wchar_t, wobuf_iterator>& 
+    use_facet<num_put<wchar_t, wobuf_iterator> >(const locale&);
+
+  template 
+    const num_get<wchar_t, wibuf_iterator>& 
+    use_facet<num_get<wchar_t, wibuf_iterator> >(const locale&);
+
+  template
+    const codecvt<wchar_t, char, mbstate_t>& 
+    use_facet<codecvt<wchar_t, char, mbstate_t> >(locale const&);
+
   template
     const collate<wchar_t>& 
     use_facet<collate<wchar_t> >(const locale&);
+
   template
     const moneypunct<wchar_t, true>& 
     use_facet<moneypunct<wchar_t, true> >(const locale&);
+
   template
     const moneypunct<wchar_t, false>& 
     use_facet<moneypunct<wchar_t, false> >(const locale&);
+
+  template
+    const __timepunct<wchar_t>& 
+    use_facet<__timepunct<wchar_t> >(const locale&);
 #endif
 
   // has_facet
