@@ -24,3 +24,6 @@
 /* Use atexit for static destructors, instead of defining
    our own exit function.  */
 #define HAVE_ATEXIT
+
+/* Assembler pseudo-op for shared data segment. */
+#define SHARED_SECTION_ASM_OP ".section .shdata, \"ws\""
