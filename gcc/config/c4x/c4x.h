@@ -818,7 +818,7 @@ enum reg_class
      (IS_INDEX_REGNO(REGNO) || IS_INDEX_REGNO((unsigned)reg_renumber[REGNO]))
 
 /* If we have to generate framepointer + constant prefer an ADDR_REGS
-   register. This avoids using EXT_REGS in addqi3_noclobber_reload.  */
+   register.  This avoids using EXT_REGS in addqi3_noclobber_reload.  */
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)			\
      (GET_CODE (X) == PLUS					\
@@ -2672,16 +2672,3 @@ if (final_sequence != NULL_RTX)		\
   {"parallel_operand", {SUBREG, REG, MEM}},			\
   {"symbolic_address_operand", {SYMBOL_REF, LABEL_REF, CONST}},	\
   {"mem_operand", {MEM}},					
-
-
-/* Variables in c4x.c */
-
-/* Smallest class containing REGNO.  */
-extern enum reg_class c4x_regclass_map[];
-extern enum machine_mode c4x_caller_save_map[];
-
-extern struct rtx_def *c4x_compare_op0;	/* Operand 0 for comparisons.  */
-extern struct rtx_def *c4x_compare_op1;	/* Operand 1 for comparisons.  */
-
-extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
-extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */

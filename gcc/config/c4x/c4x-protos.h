@@ -65,6 +65,8 @@ extern struct rtx_def *c4x_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
 
 extern int c4x_check_legit_addr PARAMS ((enum machine_mode, rtx, int));
 
+extern int c4x_hard_regno_mode_ok PARAMS ((int, enum machine_mode));
+
 extern struct rtx_def *c4x_legitimize_address PARAMS ((rtx,
 						       enum machine_mode));
 
@@ -262,5 +264,14 @@ extern rtx floatunshiqf2_libfunc;
 extern rtx floathihf2_libfunc;
 extern rtx floatunshihf2_libfunc;
 
+extern struct rtx_def *c4x_compare_op0;	/* Operand 0 for comparisons.  */
+extern struct rtx_def *c4x_compare_op1;	/* Operand 1 for comparisons.  */
+
 #endif /* RTX_CODE */
 
+/* Smallest class containing REGNO.  */
+extern enum reg_class c4x_regclass_map[];
+extern enum machine_mode c4x_caller_save_map[];
+
+extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
+extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */
