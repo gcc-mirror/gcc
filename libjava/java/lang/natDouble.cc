@@ -10,10 +10,6 @@ details.  */
 
 #include <config.h>
 
-#if HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
-
 #include <stdlib.h>
 
 #include <gcj/cni.h>
@@ -166,11 +162,7 @@ java::lang::Double::parseDouble(jstring str)
   int length = str->length();
   // Note that UTF can expand 3x.
 
-#ifdef HAVE_ALLOCA
-  char *data = (char *) alloca (3 * length + 1);
-#else
-#error --- need an alternate implementation here ---
-#endif
+  char *data = (char *) __builtin_alloca (3 * length + 1);
 
   data[_Jv_GetStringUTFRegion (str, 0, length, data)] = 0; 
 

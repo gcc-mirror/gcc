@@ -25,9 +25,6 @@ details.  */
 #ifdef INTERPRETER
 
 #include <stdlib.h>
-#if HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
 #include <java-cpool.h>
 #include <gcj/cni.h>
 
@@ -678,7 +675,7 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 	// order to accomondate gcj's internal representation.
 
 	int len = get2u (this_data);
-	char *buffer = (char*) alloca (len);
+	char *buffer = (char*) __builtin_alloca (len);
 	char *s = ((char*) this_data)+2;
 
 	/* FIXME: avoid using a buffer here */
