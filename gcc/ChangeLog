@@ -1,3 +1,11 @@
+2005-01-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	PR target/17771
+	Backport from mainline:
+	* config/s390/s390.md ("reload_outti"): Remove predicate for
+	output operand.  Abort if operand is not a MEM.
+	("reload_outdi", "reload_outdf"): Likewise.
+
 2005-01-27  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/19293
