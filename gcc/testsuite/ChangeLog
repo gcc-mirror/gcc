@@ -1,3 +1,7 @@
+Mon Apr  3 02:35:34 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000403-1.c: New test.
+
 2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.c-torture/compile/981211-1.c: Move to...
