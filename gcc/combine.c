@@ -10171,6 +10171,11 @@ gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0, rtx op1)
   rtx result;
   rtx tem;
 
+  if (GET_CODE (op0) == CLOBBER)
+    return op0;
+  else if (GET_CODE (op1) == CLOBBER)
+    return op1;
+  
   if (GET_RTX_CLASS (code) == 'c'
       && swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem;
