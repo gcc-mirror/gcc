@@ -1248,6 +1248,18 @@ do {									\
 #undef  USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX "_"
 
+/* When ASM_OUTPUT_SHORT is used to emit the offsets for a switch
+   table it can encounter (TRUNCATE:HI (MINUS:SI (LABEL_REF:SI) (LABEL_REF:SI))).
+   output_addr_const will normally barf at this, but it is OK to omit
+   the truncate and just emit the difference of the two labels.  The
+   .hword directive will automatically handle the truncation for us.  */
+
+#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
+  if (GET_CODE (x) == TRUNCATE)				\
+    return output_addr_const (FILE, XEXP (X, 0));	\
+  else							\
+    goto FAIL;
+
 /* This is how to output an assembler line defining a `double' constant.
    It is .double or .float, depending.  */
 
