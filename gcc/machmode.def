@@ -48,98 +48,100 @@ Boston, MA 02111-1307, USA.  */
    MODE_VECTOR_INT, MODE_VECTOR_FLOAT - vector
    MODE_RANDOM - anything else
 
-   Fourth argument is the relative size of the object, in bytes.
+   Fourth argument is the relative size of the object, in bits,
+   so we can have modes smaller than 1 byte.
+
+   Fifth argument is the relative size of the object, in bytes.
    It is zero when the size is meaningless or not determined.
    A byte's size is determined by BITS_PER_UNIT in tm.h. 
 
-
-   Fifth arg is the relative size of subunits of the object.
+   Sixth arg is the relative size of subunits of the object.
    It is same as the fourth argument except for complexes,
    since they are really made of two equal size subunits.
 
-   Sixth arg is next wider natural mode of the same class.
+   Seventh arg is next wider natural mode of the same class.
    0 if there is none.  */
 
 /* VOIDmode is used when no mode needs to be specified,
    as for example on CONST_INT RTL expressions.  */
-DEF_MACHMODE (VOIDmode, "VOID", MODE_RANDOM, 0, 0, VOIDmode)
+DEF_MACHMODE (VOIDmode, "VOID", MODE_RANDOM, 0, 0, 0, VOIDmode)
 
-DEF_MACHMODE (PQImode, "PQI", MODE_PARTIAL_INT, 1, 1, PHImode)
-DEF_MACHMODE (QImode, "QI", MODE_INT, 1, 1, HImode)		/* int types */
-DEF_MACHMODE (PHImode, "PHI", MODE_PARTIAL_INT, 2, 2, PSImode)
-DEF_MACHMODE (HImode, "HI", MODE_INT, 2, 2, SImode)
-/* Pointers on some machines use this type to distinguish them from ints.
-   Useful if a pointer is 4 bytes but has some bits that are not significant,
-   so it is really not quite as wide as an integer.  */
-DEF_MACHMODE (PSImode, "PSI", MODE_PARTIAL_INT, 4, 4, PDImode)
-DEF_MACHMODE (SImode, "SI", MODE_INT, 4, 4, DImode)
-DEF_MACHMODE (PDImode, "PDI", MODE_PARTIAL_INT, 8, 8, VOIDmode)
-DEF_MACHMODE (DImode, "DI", MODE_INT, 8, 8, TImode)
-DEF_MACHMODE (TImode, "TI", MODE_INT, 16, 16, OImode)
-DEF_MACHMODE (OImode, "OI", MODE_INT, 32, 32, VOIDmode)
+DEF_MACHMODE (BImode, "BI", MODE_INT, 1, 1, 1, QImode)
+DEF_MACHMODE (QImode, "QI", MODE_INT, 8, 1, 1, HImode)
+DEF_MACHMODE (HImode, "HI", MODE_INT, 16, 2, 2, SImode)
+DEF_MACHMODE (SImode, "SI", MODE_INT, 32, 4, 4, DImode)
+DEF_MACHMODE (DImode, "DI", MODE_INT, 64, 8, 8, TImode)
+DEF_MACHMODE (TImode, "TI", MODE_INT, 128, 16, 16, OImode)
+DEF_MACHMODE (OImode, "OI", MODE_INT, 256, 32, 32, VOIDmode)
 
-DEF_MACHMODE (QFmode, "QF", MODE_FLOAT, 1, 1, HFmode)
-DEF_MACHMODE (HFmode, "HF", MODE_FLOAT, 2, 2, TQFmode)
-DEF_MACHMODE (TQFmode, "TQF", MODE_FLOAT, 3, 3, SFmode)  /* MIL-STD-1750A */
-DEF_MACHMODE (SFmode, "SF", MODE_FLOAT, 4, 4, DFmode)
-DEF_MACHMODE (DFmode, "DF", MODE_FLOAT, 8, 8, XFmode)
-DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, 12, 12, TFmode)   /* IEEE extended */
-DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, 16, 16, VOIDmode)
+/* Pointers on some machines use these types to distinguish them from
+   ints.  Useful if a pointer is 4 bytes but has some bits that are
+   not significant, so it is really not quite as wide as an integer.  */
+DEF_MACHMODE (PQImode, "PQI", MODE_PARTIAL_INT, 8, 1, 1, PHImode)
+DEF_MACHMODE (PHImode, "PHI", MODE_PARTIAL_INT, 16, 2, 2, PSImode)
+DEF_MACHMODE (PSImode, "PSI", MODE_PARTIAL_INT, 32, 4, 4, PDImode)
+DEF_MACHMODE (PDImode, "PDI", MODE_PARTIAL_INT, 64, 8, 8, VOIDmode)
+
+DEF_MACHMODE (QFmode, "QF", MODE_FLOAT, 8, 1, 1, HFmode)
+DEF_MACHMODE (HFmode, "HF", MODE_FLOAT, 16, 2, 2, TQFmode)
+DEF_MACHMODE (TQFmode, "TQF", MODE_FLOAT, 24, 3, 3, SFmode) /* MIL-STD-1750A */
+DEF_MACHMODE (SFmode, "SF", MODE_FLOAT, 32, 4, 4, DFmode)
+DEF_MACHMODE (DFmode, "DF", MODE_FLOAT, 64, 8, 8, XFmode)
+DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, 96, 12, 12, TFmode) /* IEEE extended */
+DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, 128, 16, 16, VOIDmode)
 
 /* Complex modes.  */
-DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, 2, 1, HCmode)
-DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, 4, 2, SCmode)
-DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, 8, 4, DCmode)
-DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, 16, 8, XCmode)
-DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, 24, 12, TCmode)
-DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, 32, 16, VOIDmode)
+DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, 16, 2, 1, HCmode)
+DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, 32, 4, 2, SCmode)
+DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, 64, 8, 4, DCmode)
+DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, 128, 16, 8, XCmode)
+DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, 192, 24, 12, TCmode)
+DEF_MACHMODE (TCmode, "TC", MODE_COMPLEX_FLOAT, 256, 32, 16, VOIDmode)
 
-DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, 2, 1, CHImode)
-DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, 4, 2, CSImode)
-DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, 8, 4, CDImode)
-DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, 16, 8, CTImode)
-DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, 32, 16, COImode)
-DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, 64, 32, VOIDmode)
+DEF_MACHMODE (CQImode, "CQI", MODE_COMPLEX_INT, 16, 2, 1, CHImode)
+DEF_MACHMODE (CHImode, "CHI", MODE_COMPLEX_INT, 32, 4, 2, CSImode)
+DEF_MACHMODE (CSImode, "CSI", MODE_COMPLEX_INT, 64, 8, 4, CDImode)
+DEF_MACHMODE (CDImode, "CDI", MODE_COMPLEX_INT, 128, 16, 8, CTImode)
+DEF_MACHMODE (CTImode, "CTI", MODE_COMPLEX_INT, 256, 32, 16, COImode)
+DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, 512, 64, 32, VOIDmode)
 
 /* Vector modes.  */
-/* There are no V1xx vector modes.  These are equivalent to normal non-vector
-   modes.  */
-DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, 2, 1, VOIDmode)
-DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, 4, 2, VOIDmode)
-DEF_MACHMODE (V2SImode, "V2SI", MODE_VECTOR_INT, 8, 4, VOIDmode)
-DEF_MACHMODE (V2DImode, "V2DI", MODE_VECTOR_INT, 16, 8, VOIDmode)
+/* There are no V1xx vector modes.  These are equivalent to normal
+   scalar modes.  */
+DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, 16, 2, 1, VOIDmode)
+DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, 32, 4, 2, VOIDmode)
+DEF_MACHMODE (V2SImode, "V2SI", MODE_VECTOR_INT, 64, 8, 4, VOIDmode)
+DEF_MACHMODE (V2DImode, "V2DI", MODE_VECTOR_INT, 128, 16, 8, VOIDmode)
 
-DEF_MACHMODE (V4QImode, "V4QI", MODE_VECTOR_INT, 4, 1, VOIDmode)
-DEF_MACHMODE (V4HImode, "V4HI", MODE_VECTOR_INT, 8, 2, VOIDmode)
-DEF_MACHMODE (V4SImode, "V4SI", MODE_VECTOR_INT, 16, 4, VOIDmode)
-DEF_MACHMODE (V4DImode, "V4DI", MODE_VECTOR_INT, 32, 8, VOIDmode)
+DEF_MACHMODE (V4QImode, "V4QI", MODE_VECTOR_INT, 32, 4, 1, VOIDmode)
+DEF_MACHMODE (V4HImode, "V4HI", MODE_VECTOR_INT, 64, 8, 2, VOIDmode)
+DEF_MACHMODE (V4SImode, "V4SI", MODE_VECTOR_INT, 128, 16, 4, VOIDmode)
+DEF_MACHMODE (V4DImode, "V4DI", MODE_VECTOR_INT, 256, 32, 8, VOIDmode)
 
-DEF_MACHMODE (V8QImode, "V8QI", MODE_VECTOR_INT, 8, 1, VOIDmode)
-DEF_MACHMODE (V8HImode, "V8HI", MODE_VECTOR_INT, 16, 2, VOIDmode)
-DEF_MACHMODE (V8SImode, "V8SI", MODE_VECTOR_INT, 32, 4, VOIDmode)
-DEF_MACHMODE (V8DImode, "V8DI", MODE_VECTOR_INT, 64, 8, VOIDmode)
+DEF_MACHMODE (V8QImode, "V8QI", MODE_VECTOR_INT, 64, 8, 1, VOIDmode)
+DEF_MACHMODE (V8HImode, "V8HI", MODE_VECTOR_INT, 128, 16, 2, VOIDmode)
+DEF_MACHMODE (V8SImode, "V8SI", MODE_VECTOR_INT, 256, 32, 4, VOIDmode)
+DEF_MACHMODE (V8DImode, "V8DI", MODE_VECTOR_INT, 512, 64, 8, VOIDmode)
 
-DEF_MACHMODE (V2SFmode, "V2SF", MODE_VECTOR_FLOAT, 8, 4, VOIDmode)
-DEF_MACHMODE (V2DFmode, "V2DF", MODE_VECTOR_FLOAT, 16, 8, VOIDmode)
+DEF_MACHMODE (V2SFmode, "V2SF", MODE_VECTOR_FLOAT, 64, 8, 4, VOIDmode)
+DEF_MACHMODE (V2DFmode, "V2DF", MODE_VECTOR_FLOAT, 128, 16, 8, VOIDmode)
 
-DEF_MACHMODE (V4SFmode, "V4SF", MODE_VECTOR_FLOAT, 16, 4, VOIDmode)
-DEF_MACHMODE (V4DFmode, "V4DF", MODE_VECTOR_FLOAT, 32, 8, VOIDmode)
+DEF_MACHMODE (V4SFmode, "V4SF", MODE_VECTOR_FLOAT, 128, 16, 4, VOIDmode)
+DEF_MACHMODE (V4DFmode, "V4DF", MODE_VECTOR_FLOAT, 256, 32, 8, VOIDmode)
 
-DEF_MACHMODE (V8SFmode, "V8SF", MODE_VECTOR_FLOAT, 32, 4, VOIDmode)
-DEF_MACHMODE (V8DFmode, "V8DF", MODE_VECTOR_FLOAT, 64, 8, VOIDmode)
+DEF_MACHMODE (V8SFmode, "V8SF", MODE_VECTOR_FLOAT, 256, 32, 4, VOIDmode)
+DEF_MACHMODE (V8DFmode, "V8DF", MODE_VECTOR_FLOAT, 512, 64, 8, VOIDmode)
 
 /* BLKmode is used for structures, arrays, etc.
    that fit no more specific mode.  */
-DEF_MACHMODE (BLKmode, "BLK", MODE_RANDOM, 0, 0, VOIDmode)
+DEF_MACHMODE (BLKmode, "BLK", MODE_RANDOM, 0, 0, 0, VOIDmode)
 
-/* The modes for representing the condition codes come last.  CCmode is
-   always defined.  Additional modes for the condition code can be specified
-   in the EXTRA_CC_MODES macro.
-   All MODE_CC modes are the same width as SImode and have VOIDmode as their
-   next wider mode.
-*/
+/* The modes for representing the condition codes come last.  CCmode
+   is always defined.  Additional modes for the condition code can be
+   specified in the EXTRA_CC_MODES macro.  All MODE_CC modes are the
+   same width as SImode and have VOIDmode as their next wider mode.  */
 
-#define CC(E, M)  DEF_MACHMODE (E, M, MODE_CC, 4, 4, VOIDmode)
+#define CC(E, M)  DEF_MACHMODE (E, M, MODE_CC, 32, 4, 4, VOIDmode)
 
 CC (CCmode, "CC")
 

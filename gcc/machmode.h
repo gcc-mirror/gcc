@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Make an enum class that gives all the machine modes.  */
 
-#define DEF_MACHMODE(SYM, NAME, TYPE, SIZE, UNIT, WIDER)  SYM,
+#define DEF_MACHMODE(SYM, NAME, TYPE, BITSIZE, SIZE, UNIT, WIDER)  SYM,
 
 enum machine_mode {
 #include "machmode.def"
@@ -93,7 +93,8 @@ extern const unsigned int mode_unit_size[];
 
 /* Get the size in bits of an object of mode MODE.  */
 
-#define GET_MODE_BITSIZE(MODE)  (BITS_PER_UNIT * mode_size[(int) (MODE)])
+extern const unsigned int mode_bitsize[];
+#define GET_MODE_BITSIZE(MODE)  (mode_bitsize[(int) (MODE)])
 
 #ifdef HOST_WIDE_INT
 

@@ -128,7 +128,7 @@ const char * const rtx_name[] = {
 /* Indexed by machine mode, gives the name of that machine mode.
    This name does not include the letters "mode".  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  NAME,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  NAME,
 
 const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 #include "machmode.def"
@@ -139,12 +139,22 @@ const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 
 #undef DEF_MACHMODE
 
-/* Indexed by machine mode, gives the length of the mode, in bytes.
-   GET_MODE_CLASS uses this.  */
+/* Indexed by machine mode, gives the class mode for GET_MODE_CLASS.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  CLASS,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  CLASS,
 
 const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
+#include "machmode.def"
+};
+
+#undef DEF_MACHMODE
+
+/* Indexed by machine mode, gives the length of the mode, in bits.
+   GET_MODE_BITSIZE uses this.  */
+
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  BITSIZE,
+
+const unsigned int mode_bitsize[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
@@ -153,7 +163,7 @@ const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
 /* Indexed by machine mode, gives the length of the mode, in bytes.
    GET_MODE_SIZE uses this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  SIZE,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  SIZE,
 
 const unsigned int mode_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
@@ -164,7 +174,7 @@ const unsigned int mode_size[(int) MAX_MACHINE_MODE] = {
 /* Indexed by machine mode, gives the length of the mode's subunit.
    GET_MODE_UNIT_SIZE uses this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  UNIT,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  UNIT,
 
 const unsigned int mode_unit_size[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"		/* machine modes are documented here */
@@ -176,7 +186,7 @@ const unsigned int mode_unit_size[(int) MAX_MACHINE_MODE] = {
    (QI -> HI -> SI -> DI, etc.)  Widening multiply instructions
    use this.  */
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  \
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
   (unsigned char) WIDER,
 
 const unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
@@ -185,8 +195,8 @@ const unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 #undef DEF_MACHMODE
 
-#define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  \
-  ((SIZE) * BITS_PER_UNIT >= HOST_BITS_PER_WIDE_INT) ? ~(unsigned HOST_WIDE_INT)0 : ((unsigned HOST_WIDE_INT) 1 << (SIZE) * BITS_PER_UNIT) - 1,
+#define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
+  ((BITSIZE) >= HOST_BITS_PER_WIDE_INT) ? ~(unsigned HOST_WIDE_INT)0 : ((unsigned HOST_WIDE_INT) 1 << (BITSIZE)) - 1,
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
@@ -196,7 +206,12 @@ const unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
 
 /* Indexed by mode class, gives the narrowest mode for each class.
    The Q modes are always of width 1 (2 for complex) - it is impossible
-   for any mode to be narrower.  */
+   for any mode to be narrower.
+
+   Note that we use QImode instead of BImode for MODE_INT, since
+   otherwise the middle end will try to use it for bitfields in
+   structures and the like, which we do not want.  Only the target
+   md file should generate BImode widgets.  */
 
 const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS] = {
     /* MODE_RANDOM */		VOIDmode,
