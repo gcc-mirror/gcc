@@ -717,7 +717,7 @@ build_vtable (binfo, type)
 #endif
 
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (decl, type, at_eof);
+  import_export_vtable (decl, type, 0);
 
   decl = pushdecl_top_level (decl);
   SET_IDENTIFIER_GLOBAL_VALUE (name, decl);
@@ -901,7 +901,7 @@ prepare_fresh_vtable (binfo, for_type)
 #endif
 
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (new_decl, for_type, at_eof);
+  import_export_vtable (new_decl, for_type, 0);
 
   if (TREE_VIA_VIRTUAL (binfo))
     my_friendly_assert (binfo == binfo_member (BINFO_TYPE (binfo),
@@ -3703,8 +3703,8 @@ finish_struct_1 (t, warn_anon)
 		    fie = "constructor";
 		  else if (TYPE_NEEDS_DESTRUCTOR (type))
 		    fie = "destructor";
-		  else if (TYPE_HAS_REAL_ASSIGNMENT (type))
-		    fie = "assignment operator";
+		  else if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
+		    fie = "copy assignment operator";
 		  if (fie)
 		    cp_error_at ("member `%#D' with %s not allowed in union", x,
 				 fie);
@@ -4042,11 +4042,6 @@ finish_struct_1 (t, warn_anon)
     max_has_virtual = has_virtual;
   if (max_has_virtual > 0)
     TYPE_VIRTUAL_P (t) = 1;
-
-  /* Do this here before we start messing with vtables so that we are ready
-     for import_export_vtable.  */
-  if (at_eof)
-    import_export_class (t);
 
   if (flag_rtti && TYPE_VIRTUAL_P (t) && !pending_hard_virtuals)
     modify_all_vtables (t, NULL_TREE, NULL_TREE);
