@@ -19,6 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern int  flag_half_pic;		/* Global half-pic flag.  */
 extern void half_pic_encode ();		/* encode whether half-pic */
+extern void half_pic_declare ();	/* declare object local */
 extern void half_pic_init ();		/* half_pic initialization */
 extern void half_pic_finish ();		/* half_pic termination */
 extern int  half_pic_address_p ();	/* true if an address is half-pic */
@@ -29,6 +30,7 @@ extern struct rtx_def *half_pic_ptr ();	/* return RTX for half-pic pointer */
 
 #define HALF_PIC_P()		(flag_half_pic)
 #define HALF_PIC_ENCODE(DECL)	half_pic_encode (DECL)
+#define HALF_PIC_DECLARE(NAME)	half_pic_declare (NAME)
 #define HALF_PIC_INIT()		half_pic_init ()
 #define HALF_PIC_FINISH(STREAM)	half_pic_finish (STREAM)
 #define HALF_PIC_ADDRESS_P(X)	half_pic_address_p (X)
