@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package java.nio;
 
-import gnu.java.nio.ByteBufferImpl;
-
 public abstract class ByteBuffer extends Buffer
 {
 }
