@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 /* Declarations for functions used in insn-output.c.  */
 #ifdef RTX_CODE
 extern const char *emit_a_shift PARAMS ((rtx, rtx *));
+extern const char *emit_a_rotate PARAMS ((int, rtx *));
 extern const char *output_adds_subs PARAMS ((rtx *));
 extern const char *output_simode_bld PARAMS ((int, int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));
@@ -34,6 +35,7 @@ extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
 extern int do_movsi PARAMS ((rtx[]));
 extern void notice_update_cc PARAMS ((rtx, rtx));
 extern int expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
+extern int expand_a_rotate PARAMS ((int, rtx[]));
 extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));
 extern int h8300_adjust_insn_length PARAMS ((rtx, int));
 extern void split_adds_subs PARAMS ((enum machine_mode, rtx[]));
