@@ -4171,6 +4171,9 @@ dwarf_attr_name (attr)
       return "DW_AT_body_begin";
     case DW_AT_body_end:
       return "DW_AT_body_end";
+    case DW_AT_GNU_vector:
+      return "DW_AT_GNU_vector";
+
     case DW_AT_VMS_rtnbeg_pd_address:
       return "DW_AT_VMS_rtnbeg_pd_address";
 
@@ -5111,9 +5114,6 @@ static inline dw_die_ref
 lookup_type_die (type)
      tree type;
 {
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    type = TYPE_DEBUG_REPRESENTATION_TYPE (type);
-
   return (dw_die_ref) TYPE_SYMTAB_POINTER (type);
 }
 
@@ -9767,6 +9767,16 @@ gen_array_type_die (type, context_die)
 #endif
 
   array_die = new_die (DW_TAG_array_type, scope_die, type);
+  add_name_attribute (array_die, type_tag (type));
+  equate_type_number_to_die (type, array_die);
+
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      /* The frontend feeds us a representation for the vector as a struct
+	 containing an array.  Pull out the array type.  */
+      type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
+      add_AT_flag (array_die, DW_AT_GNU_vector, 1);
+    }
 
 #if 0
   /* We default the array ordering.  SDB will probably do
@@ -9787,9 +9797,6 @@ gen_array_type_die (type, context_die)
   else
 #endif
     add_subscript_info (array_die, type);
-
-  add_name_attribute (array_die, type_tag (type));
-  equate_type_number_to_die (type, array_die);
 
   /* Add representation of the type of the elements of this array type.  */
   element_type = TREE_TYPE (type);
@@ -11133,7 +11140,7 @@ gen_type_die (type, context_die)
       break;
 
     case VECTOR_TYPE:
-      gen_type_die (TYPE_DEBUG_REPRESENTATION_TYPE (type), context_die);
+      gen_array_type_die (type, context_die);
       break;
 
     case ENUMERAL_TYPE:

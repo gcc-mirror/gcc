@@ -239,6 +239,7 @@ enum dwarf_attribute
     DW_AT_src_coords = 0x2104,
     DW_AT_body_begin = 0x2105,
     DW_AT_body_end   = 0x2106,
+    DW_AT_GNU_vector = 0x2107,
     /* VMS Extensions.  */
     DW_AT_VMS_rtnbeg_pd_address = 0x2201
   };
