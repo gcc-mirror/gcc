@@ -197,13 +197,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.59 $"
+#define VERSION_INFO2   "$Revision: 1.60 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.59 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.60 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What$"
 #endif  /* __STDC__ */
@@ -1849,6 +1849,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   fprintf (FILE, "\t%s\t \"%s\"\n", FILE_ASM_OP, NAME)
 
 #ifdef SDB_DEBUGGING_INFO
+#undef ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
   if (m88k_prologue_done)					\
     fprintf (FILE, "\n\tln\t %d\t\t\t\t; Real source line %d\n",\
