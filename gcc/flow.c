@@ -397,7 +397,7 @@ static void flow_loops_cfg_dump		PARAMS ((const struct loops *, FILE *));
 static int flow_loop_nested_p		PARAMS ((struct loop *, struct loop *));
 static int flow_loop_exits_find		PARAMS ((const sbitmap, edge **));
 static int flow_loop_nodes_find	PARAMS ((basic_block, basic_block, sbitmap));
-static int flow_depth_first_order_compute PARAMS ((int *));
+static int flow_depth_first_order_compute PARAMS ((int *, int *));
 static basic_block flow_loop_pre_header_find PARAMS ((basic_block, const sbitmap *));
 static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
@@ -7070,6 +7070,14 @@ flow_loops_cfg_dump (loops, file)
 	fprintf (file, "%d ", loops->cfg.dfs_order[i]);
       fputs ("\n", file);
     }
+  /* Dump the reverse completion node order.  */
+  if (loops->cfg.rc_order)
+    {
+      fputs (";; RC order: ", file);
+      for (i = 0; i < n_basic_blocks; i++)
+	fprintf (file, "%d ", loops->cfg.rc_order[i]);
+      fputs ("\n", file);
+    }
 }
 
 
@@ -7135,7 +7143,8 @@ flow_loops_dump (loops, file, verbose)
 		     must be disjoint.  */
 		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop,
 						   smaller ? oloop : loop);
-		  fprintf (file, ";; loop header %d shared by loops %d, %d %s\n",
+		  fprintf (file, 
+			   ";; loop header %d shared by loops %d, %d %s\n",
 			   loop->header->index, i, j,
 			   disjoint ? "disjoint" : "nested");
 		}
@@ -7307,16 +7316,20 @@ flow_loop_nodes_find (header, latch, nodes)
 
 
 /* Compute the depth first search order and store in the array
-   DFS_ORDER, marking the nodes visited in VISITED.  Returns the
-   number of nodes visited.  A depth first search tries to get as far
-   away from the starting point as quickly as possible.  */
+  DFS_ORDER if non-zero, marking the nodes visited in VISITED.  If
+  RC_ORDER is non-zero, return the reverse completion number for each
+  node.  Returns the number of nodes visited.  A depth first search
+  tries to get as far away from the starting point as quickly as
+  possible.  */
 static int
-flow_depth_first_order_compute (dfs_order)
+flow_depth_first_order_compute (dfs_order, rc_order)
      int *dfs_order;
+     int *rc_order;
 {
   edge *stack;
   int sp;
   int dfsnum = 0;
+  int rcnum = n_basic_blocks - 1;
   sbitmap visited;
 
   /* Allocate stack for back-tracking up CFG.  */
@@ -7348,6 +7361,9 @@ flow_depth_first_order_compute (dfs_order)
 	{
 	  /* Mark that we have visited the destination.  */
 	  SET_BIT (visited, dest->index);
+	  
+	  if (dfs_order)
+	    dfs_order[dfsnum++] = dest->index;
 
  	  if (dest->succ)
  	    {
@@ -7358,8 +7374,9 @@ flow_depth_first_order_compute (dfs_order)
  	  else
  	    {
  	      /* There are no successors for the DEST node so assign
- 		 its DFS number.  */
- 	      dfs_order[n_basic_blocks - ++dfsnum] = dest->index;
+ 		 its reverse completion number.  */
+	      if (rc_order)
+		rc_order[rcnum--] = dest->index;
  	    }
 	}
       else
@@ -7367,8 +7384,9 @@ flow_depth_first_order_compute (dfs_order)
 	  if (! e->succ_next && src != ENTRY_BLOCK_PTR)
   	    {
  	      /* There are no more successors for the SRC node
- 		 so assign its DFS number.  */
- 	      dfs_order[n_basic_blocks - ++dfsnum] = src->index;
+ 		 so assign its reverse completion number.  */
+	      if (rc_order)
+		rc_order[rcnum--] = src->index;
   	    }
 	  
 	  if (e->succ_next)
@@ -7557,11 +7575,13 @@ flow_loops_find (loops)
   sbitmap headers;
   sbitmap *dom;
   int *dfs_order;
+  int *rc_order;
   
   loops->num = 0;
   loops->array = NULL;
   loops->tree = NULL;
   dfs_order = NULL;
+  rc_order = NULL;
 
   /* Taking care of this degenerate case makes the rest of
      this code simpler.  */
@@ -7602,7 +7622,8 @@ flow_loops_find (loops)
       /* Compute depth first search order of the CFG so that outer
 	 natural loops will be found before inner natural loops.  */
       dfs_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
-      flow_depth_first_order_compute (dfs_order);
+      rc_order = (int *) xmalloc (n_basic_blocks * sizeof (int));
+      flow_depth_first_order_compute (dfs_order, rc_order);
 
       /* Allocate loop structures.  */
       loops->array
@@ -7623,7 +7644,7 @@ flow_loops_find (loops)
 
 	  /* Search the nodes of the CFG in DFS order that we can find
 	     outer loops first.  */
-	  header = BASIC_BLOCK (dfs_order[b]);
+	  header = BASIC_BLOCK (rc_order[b]);
 	  
 	  /* Look for all the possible latch blocks for this header.  */
 	  for (e = header->pred; e; e = e->pred_next)
@@ -7645,6 +7666,7 @@ flow_loops_find (loops)
 		  
 		  loop->header = header;
 		  loop->latch = latch;
+		  loop->num = num_loops;
 		  
 		  /* Keep track of blocks that are loop headers so
 		     that we can tell which loops should be merged.  */
@@ -7696,6 +7718,7 @@ flow_loops_find (loops)
   /* Save CFG derived information to avoid recomputing it.  */
   loops->cfg.dom = dom;
   loops->cfg.dfs_order = dfs_order;
+  loops->cfg.rc_order = rc_order;
 
   /* Build the loop hierarchy tree.  */
   flow_loops_tree_build (loops);
