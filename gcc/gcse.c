@@ -4376,7 +4376,10 @@ pre_insert_insn (expr, bb)
     }
   /* Likewise if the last insn is a call, as will happen in the presence
      of exception handling.  */
-  else if (GET_CODE (insn) == CALL_INSN)
+  /* ??? The flag_exceptions test is not exact.  We don't know if we are
+     actually in an eh region.  Fix flow to tell us this.  */
+  else if (GET_CODE (insn) == CALL_INSN
+	   && (current_function_has_nonlocal_label || flag_exceptions))
     {
       HARD_REG_SET parm_regs;
       int nparm_regs;
@@ -4389,6 +4392,8 @@ pre_insert_insn (expr, bb)
 
       /* It should always be the case that we can put these instructions
 	 anywhere in the basic block.  Check this.  */
+      /* ??? Well, it would be the case if we'd split all critical edges.
+	 Since we didn't, we may very well abort.  */
       if (!TEST_BIT (pre_antloc[bb], expr->bitmap_index)
 	  && !TEST_BIT (pre_transp[bb], expr->bitmap_index))
 	abort ();
