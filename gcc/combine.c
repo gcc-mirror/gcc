@@ -7923,6 +7923,17 @@ make_field_assignment (x)
 		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 		       dest, 0);
 
+  /* If SRC is masked by an AND that does not make a difference in
+     the value being stored, strip it.  */
+  if (GET_CODE (assign) == ZERO_EXTRACT
+      && GET_CODE (XEXP (assign, 1)) == CONST_INT
+      && INTVAL (XEXP (assign, 1)) < HOST_BITS_PER_WIDE_INT
+      && GET_CODE (src) == AND
+      && GET_CODE (XEXP (src, 1)) == CONST_INT
+      && (INTVAL (XEXP (src, 1))
+	  == ((unsigned HOST_WIDE_INT) 1 << INTVAL (XEXP (assign, 1))) - 1))
+    src = XEXP (src, 0);
+
   return gen_rtx_SET (VOIDmode, assign, src);
 }
 

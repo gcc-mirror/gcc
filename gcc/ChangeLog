@@ -1,3 +1,8 @@
+2003-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (make_field_assignment): Remove unnecessary AND
+	when storing into zero_extract.
+
 2003-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* aclocal.m4 (gcc_AC_EXAMINE_OBJECT, gcc_AC_C_FLOAT_FORMAT): Delete.
