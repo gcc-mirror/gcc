@@ -2493,8 +2493,8 @@ that the specified function is an interrupt handler.  The compiler will
 generate function entry and exit sequences suitable for use in an
 interrupt handler when this attribute is present.
 
-Note, interrupt handlers for the H8/300, H8/300H, H8S, and SH processors can
-be specified via the @code{interrupt_handler} attribute.
+Note, interrupt handlers for the m68k, H8/300, H8/300H, H8S, and SH processors
+can be specified via the @code{interrupt_handler} attribute.
 
 Note, on the AVR, interrupts will be enabled inside the function.
 
@@ -2508,9 +2508,9 @@ void f () __attribute__ ((interrupt ("IRQ")));
 Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 @item interrupt_handler
-@cindex interrupt handler functions on the H8/300 and SH processors
-Use this attribute on the H8/300, H8/300H, H8S, and SH to indicate that the
-specified function is an interrupt handler.  The compiler will generate
+@cindex interrupt handler functions on the m68k, H8/300 and SH processors
+Use this attribute on the m68k, H8/300, H8/300H, H8S, and SH to indicate that
+the specified function is an interrupt handler.  The compiler will generate
 function entry and exit sequences suitable for use in an interrupt
 handler when this attribute is present.
 
@@ -2527,7 +2527,7 @@ void f () __attribute__ ((interrupt_handler,
 @end smallexample
 
 @item trap_exit
-Use this attribute on the SH for an @code{interrupt_handle} to return using
+Use this attribute on the SH for an @code{interrupt_handler} to return using
 @code{trapa} instead of @code{rte}.  This attribute expects an integer
 argument specifying the trap number to be used.
 

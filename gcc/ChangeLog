@@ -1,3 +1,14 @@
+2003-10-26  Bernardo Innocenti  <bernie@develer.com>
+	    Paul Dale  <pauli@snapgear.com>
+
+	* doc/extend.texi (interrupt_handler): Add m68k to the
+	list of processors implementing it.
+	* doc/invoke.texi (-msep-data): Document new m68k option.
+	(-mno-sep-data): Likewise.
+	(-mid-shared-library): Likewise.
+	(-mno-id-shared-library): Likewise.
+	(-mshared-library-id): Likewise.
+
 2003-10-26  Andreas Jaeger  <aj@suse.de>
 
 	* unwind-dw2.c (_Unwind_GetGR): Avoid warning about unsigned
