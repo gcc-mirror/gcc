@@ -329,7 +329,7 @@ allocate_edge_info (edge e)
 }
 
 /* Free all EDGE_INFO structures associated with edges in the CFG.
-   If a partciular edge can be threaded, copy the redirection
+   If a particular edge can be threaded, copy the redirection
    target from the EDGE_INFO structure into the edge's AUX field
    as required by code to update the CFG and SSA graph for
    jump threading.  */
@@ -2431,7 +2431,7 @@ record_edge_info (basic_block bb)
 
 	  extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
 
-	  /* If the conditinoal is a single variable 'X', record 'X = 1'
+	  /* If the conditional is a single variable 'X', record 'X = 1'
 	     for the true edge and 'X = 0' on the false edge.  */
 	  if (SSA_VAR_P (cond))
 	    {

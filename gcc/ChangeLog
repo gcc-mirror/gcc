@@ -1,3 +1,7 @@
+2004-10-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c: Fix comment typos.
+
 2004-10-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (prepare_move_operands): Use operands[0]
