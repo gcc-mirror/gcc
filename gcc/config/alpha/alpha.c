@@ -38,6 +38,23 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "tree.h"
 
+/* Specify how accurate floating-point traps need to be.  */
+
+enum alpha_trap_precision alpha_tp;
+
+/* Specify the floating-point rounding mode.  */
+
+enum alpha_fp_rounding_mode alpha_fprm;
+
+/* Specify which things cause traps.  */
+
+enum alpha_fp_trap_mode alpha_fptm;
+
+/* Strings decoded into the above options.  */
+char *alpha_tp_string;		/* -mtrap-precision=[p|s|i] */
+char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
+char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
+
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 
@@ -54,6 +71,10 @@ char *alpha_function_name;
 
 static int inside_function = FALSE;
 
+/* Non-zero if an instruction that may cause a trap is pending.  */
+
+static int trap_pending = 0;
+
 /* Nonzero if the current function needs gp.  */
 
 int alpha_function_needs_gp;
@@ -64,6 +85,97 @@ extern int rtx_equal_function_value_matters;
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
 static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
+
+/* Parse target option strings. */
+
+void
+override_options ()
+{
+  alpha_tp = ALPHA_TP_PROG;
+  alpha_fprm = ALPHA_FPRM_NORM;
+  alpha_fptm = ALPHA_FPTM_N;
+
+  if (TARGET_IEEE)
+    {
+      alpha_tp_string = "i";
+      alpha_fptm_string = "su";
+      target_flags |= MASK_IEEE_CONFORMANT;
+    }
+
+  if (TARGET_IEEE_WITH_INEXACT)
+    {
+      alpha_tp_string = "i";
+      alpha_fptm_string = "sui";
+      target_flags |= MASK_IEEE_CONFORMANT;
+    }
+
+  if (alpha_tp_string)
+    switch (alpha_tp_string[0])
+      {
+      case 'p':
+	alpha_tp = ALPHA_TP_PROG;
+	break;
+
+      case 'f':
+	alpha_tp = ALPHA_TP_FUNC;
+	break;
+
+      case 'i':
+	alpha_tp = ALPHA_TP_INSN;
+	break;
+
+      default:
+	error ("bad value (%s) for -mtrap-precision switch",
+		 alpha_tp_string);
+	  break;
+      }
+
+  if (alpha_fprm_string)
+    switch (alpha_fprm_string[0])
+      {
+      case 'n':
+	alpha_fprm = ALPHA_FPRM_NORM;
+	break;
+
+      case 'm':
+	alpha_fprm = ALPHA_FPRM_MINF;
+	break;
+
+      case 'c':
+	alpha_fprm = ALPHA_FPRM_CHOP;
+	break;
+
+      case 'd':
+	alpha_fprm = ALPHA_FPRM_DYN;
+	break;
+
+      default:
+	error ("bad value (%s) for -mfp-rounding-mode switch",
+	       alpha_fprm_string);
+	break;
+      }
+
+  if (alpha_fptm_string)
+    if (strcmp (alpha_fptm_string, "n") == 0)
+      alpha_fptm = ALPHA_FPTM_N;
+    else if (strcmp (alpha_fptm_string, "u") == 0)
+      alpha_fptm = ALPHA_FPTM_U;
+    else if (strcmp (alpha_fptm_string, "su") == 0)
+      alpha_fptm = ALPHA_FPTM_SU;
+    else if (strcmp (alpha_fptm_string, "sui") == 0)
+      alpha_fptm = ALPHA_FPTM_SUI;
+    else
+      error ("bad value (%s) for -mfp-trap-mode switch",
+	     alpha_fptm_string);
+
+  /* Do some sanity checks on the above option. */
+
+  if (alpha_fptm >= ALPHA_FPTM_SU && alpha_tp != ALPHA_TP_INSN)
+    {
+      error ("fp software completion requires -mtrap-precision=i");
+      alpha_tp = ALPHA_TP_INSN;
+    }
+}
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
 
@@ -922,6 +1034,67 @@ print_operand (file, x, code)
 
   switch (code)
     {
+    case '&':
+      /* Generates fp-rounding mode suffix: nothing for normal, 'c' for
+	 chopped, 'm' for minus-infinity, and 'd' for dynamic rounding
+	 mode.  alpha_fprm controls which suffix is generated.  */
+      switch (alpha_fprm)
+	{
+	case ALPHA_FPRM_NORM:
+	  break;
+	case ALPHA_FPRM_MINF: 
+	  fputc ('m', file);
+	  break;
+	case ALPHA_FPRM_CHOP:
+	  fputc ('c', file);
+	  break;
+	case ALPHA_FPRM_DYN:
+	  fputc ('d', file);
+	  break;
+	}
+      break;
+
+    case '\'':
+      /* Generates trap-mode suffix for instructions that accept the su
+	 suffix only (cmpt et al).  */
+      if (alpha_tp == ALPHA_TP_INSN)
+	fputs ("su", file);
+      break;
+
+    case ')':
+      /* Generates trap-mode suffix for instructions that accept the u, su,
+	 and sui suffix.  This is the bulk of the IEEE floating point
+	 instructions (addt et al).  */
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  break;
+	case ALPHA_FPTM_U:
+	  fputc ('u', file);
+	  break;
+	case ALPHA_FPTM_SU:
+	  fputs ("su", file);
+	  break;
+	case ALPHA_FPTM_SUI:
+	  fputs ("sui", file);
+	  break;
+	}
+      break;
+
+    case '+':
+      /* Generates trap-mode suffix for instructions that accept the sui
+	 suffix (cvtqt and cvtqs).  */
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N: case ALPHA_FPTM_U:
+	case ALPHA_FPTM_SU:	/* cvtqt/cvtqs can't cause underflow */
+	  break;
+	case ALPHA_FPTM_SUI:
+	  fputs ("sui", file);
+	  break;
+	}
+      break;
+
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
       if (GET_CODE (x) == REG)
@@ -1364,6 +1537,12 @@ output_prolog (file, size)
   ASM_OUTPUT_LABEL (file, alpha_function_name);
   inside_function = TRUE;
 
+  if (TARGET_IEEE_CONFORMANT)
+    /* Set flags in procedure descriptor to request IEEE-conformant
+       math-library routines.  The value we set it to is PDSC_EXC_IEEE
+       (/usr/include/pdsc.h). */
+    fprintf (file, "\t.eflag 48\n");
+
   /* Set up offsets to alpha virtual arg/local debugging pointer.  */
 
   alpha_auto_offset = -frame_size + current_function_pretend_args_size;
@@ -1548,6 +1727,8 @@ output_epilog (file, size)
     {
       int fp_offset = 0;
 
+      final_prescan_insn (NULL_RTX, NULL_PTR, 0);
+
       /* If we have a frame pointer, restore SP from it.  */
       if (frame_pointer_needed)
 	fprintf (file, "\tbis $15,$15,$30\n");
@@ -1709,4 +1890,260 @@ alpha_output_lineno (stream, line)
     }
   else
     fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
+}
+
+/* Structure to show the current status of registers and memory.  */
+
+struct shadow_summary
+{
+  struct {
+    unsigned long i     : 32;	/* Mask of int regs */
+    unsigned long fp    : 32;	/* Mask of fp regs */
+    unsigned long mem   :  1;	/* mem == imem | fpmem */
+  } used, defd;
+};
+
+/* Summary the effects of expression X on the machine.  Update SUM, a pointer
+   to the summary structure.  SET is nonzero if the insn is setting the
+   object, otherwise zero.  */
+
+static void
+summarize_insn (x, sum, set)
+     rtx x;
+     struct shadow_summary *sum;
+     int set;
+{
+  char *format_ptr;
+  int i, j;
+
+  if (x == 0)
+    return;
+
+  switch (GET_CODE (x))
+    {
+      /* ??? Note that this case would be incorrect if the Alpha had a
+	 ZERO_EXTRACT in SET_DEST.  */
+    case SET:
+      summarize_insn (SET_SRC (x), sum, 0);
+      summarize_insn (SET_DEST (x), sum, 1);
+      break;
+
+    case CLOBBER:
+      summarize_insn (XEXP (x, 0), sum, 1);
+      break;
+
+    case USE:
+      summarize_insn (XEXP (x, 0), sum, 0);
+      break;
+
+    case PARALLEL:
+      for (i = XVECLEN (x, 0); i >= 0; i--)
+	summarize_insn (XVECEXP (x, 0, i), sum, 0);
+      break;
+
+    case REG:
+      {
+	int regno = REGNO (x);
+	unsigned long mask = 1UL << (regno % 32);
+
+	if (regno == 31 || regno == 63)
+	  break;
+
+	if (set)
+	  {
+	    if (regno < 32)
+	      sum->defd.i |= mask;
+	    else
+	      sum->defd.fp |= mask;
+	  }
+	else
+	  {
+	    if (regno < 32)
+	      sum->used.i  |= mask;
+	    else
+	      sum->used.fp |= mask;
+	  }
+	}
+      break;
+
+    case MEM:
+      if (set)
+	sum->defd.mem = 1;
+      else
+	sum->used.mem = 1;
+
+      /* Find the regs used in memory address computation: */
+      summarize_insn (XEXP (x, 0), sum, 0);
+      break;
+
+      /* Handle common unary and binary ops for efficiency.  */
+    case COMPARE:  case PLUS:    case MINUS:   case MULT:      case DIV:
+    case MOD:      case UDIV:    case UMOD:    case AND:       case IOR:
+    case XOR:      case ASHIFT:  case ROTATE:  case ASHIFTRT:  case LSHIFTRT:
+    case ROTATERT: case SMIN:    case SMAX:    case UMIN:      case UMAX:
+    case NE:       case EQ:      case GE:      case GT:        case LE:
+    case LT:       case GEU:     case GTU:     case LEU:       case LTU:
+      summarize_insn (XEXP (x, 0), sum, 0);
+      summarize_insn (XEXP (x, 1), sum, 0);
+      break;
+
+    case NEG:  case NOT:  case SIGN_EXTEND:  case ZERO_EXTEND:
+    case TRUNCATE:  case FLOAT_EXTEND:  case FLOAT_TRUNCATE:  case FLOAT:
+    case FIX:  case UNSIGNED_FLOAT:  case UNSIGNED_FIX:  case ABS:
+    case SQRT:  case FFS: 
+      summarize_insn (XEXP (x, 0), sum, 0);
+      break;
+
+    default:
+      format_ptr = GET_RTX_FORMAT (GET_CODE (x));
+      for (i = GET_RTX_LENGTH (GET_CODE (x)); i >= 0; i--)
+	switch (*format_ptr++)
+	  {
+	  case 'e':
+	    summarize_insn (XEXP (x, i), sum, 0);
+	    break;
+
+	  case 'E':
+	    for (j = XVECLEN (x, i); j >= 0; j--)
+	      summarize_insn (XVECEXP (x, i, j), sum, 0);
+	    break;
+
+	  default:
+	    abort ();
+	  }
+    }
+}
+
+/* This function is executed just prior to the output of assembler code for
+   INSN to modify the extracted operands so they will be output differently.
+
+   OPVEC is the vector containing the operands extracted from INSN, and
+   NOPERANDS is the number of elements of the vector which contain meaningful
+   data for this insn.  The contents of this vector are what will be used to
+   convert the insn template into assembler code, so you can change the
+   assembler output by changing the contents of the vector.
+
+   We use this function to ensure a sufficient number of `trapb' instructions
+   are in the code when the user requests code with a trap precision of
+   functions or instructions.
+
+   In naive mode, when the user requests a trap-precision of "instruction", a
+   trapb is needed after every instruction that may generate a trap (and after
+   jsr/bsr instructions, because called functions may import a trap from the
+   caller).  This ensures that the code is resumption safe but it is also slow.
+
+   When optimizations are turned on, we delay issuing a trapb as long as
+   possible.  In this context, a trap shadow is the sequence of instructions
+   that starts with a (potentially) trap generating instruction and extends to
+   the next trapb or call_pal instruction (but GCC never generates call_pal by
+   itself).  We can delay (and therefore sometimes omit) a trapb subject to the
+   following conditions:
+
+   (a) On entry to the trap shadow, if any Alpha register or memory location
+   contains a value that is used as an operand value by some instruction in
+   the trap shadow (live on entry), then no instruction in the trap shadow
+   may modify the register or memory location.
+
+   (b) Within the trap shadow, the computation of the base register for a
+   memory load or store instruction may not involve using the result
+   of an instruction that might generate an UNPREDICTABLE result.
+
+   (c) Within the trap shadow, no register may be used more than once as a
+   destination register.  (This is to make life easier for the trap-handler.)
+
+   (d) The trap shadow may not include any branch instructions.
+
+     */
+
+void
+final_prescan_insn (insn, opvec, noperands)
+     rtx insn;
+     rtx *opvec;
+     int noperands;
+{
+  static struct shadow_summary shadow = {0, 0, 0, 0, 0};
+
+#define CLOSE_SHADOW				\
+  do						\
+    {						\
+      fputs ("\ttrapb\n", asm_out_file);	\
+      trap_pending = 0;				\
+      bzero ((char *) &shadow,  sizeof shadow);	\
+    }						\
+  while (0)
+
+  if (alpha_tp == ALPHA_TP_PROG)
+    return;
+
+  if (trap_pending)
+    switch (alpha_tp)
+      {
+      case ALPHA_TP_FUNC:
+	/* Generate one trapb before epilogue (indicated by INSN==0) */
+	if (insn == 0)
+	  CLOSE_SHADOW;
+	break;
+
+      case ALPHA_TP_INSN:
+	if (optimize && insn != 0)
+	  {
+	    struct shadow_summary sum = {0, 0, 0};
+
+	    switch (GET_CODE(insn))
+	      {
+	      case INSN:
+		summarize_insn (PATTERN (insn), &sum, 0);
+
+		if ((sum.defd.i & shadow.defd.i)
+		    || (sum.defd.fp & shadow.defd.fp))
+		  {
+		    /* (c) would be violated */
+		    CLOSE_SHADOW;
+		    break;
+		  }
+
+		/* Combine shadow with summary of current insn: */
+		shadow.used.i     |= sum.used.i;
+		shadow.used.fp    |= sum.used.fp;
+		shadow.used.mem   |= sum.used.mem;
+		shadow.defd.i     |= sum.defd.i;
+		shadow.defd.fp    |= sum.defd.fp;
+		shadow.defd.mem   |= sum.defd.mem;
+
+		if ((sum.defd.i & shadow.used.i)
+		    || (sum.defd.fp & shadow.used.fp)
+		    || (sum.defd.mem & shadow.used.mem))
+		  {
+		    /* (a) would be violated (also takes care of (b)).  */
+		    if (get_attr_trap (insn) == TRAP_YES
+			&& ((sum.defd.i & sum.used.i)
+			    || (sum.defd.fp & sum.used.fp)))
+		      abort ();
+
+		    CLOSE_SHADOW;
+		    break;
+		  }
+		break;
+
+	      case JUMP_INSN:
+	      case CALL_INSN:
+	      case CODE_LABEL:
+		CLOSE_SHADOW;
+		break;
+
+	      default:
+		abort ();
+	      }
+	  }
+	else
+	  CLOSE_SHADOW;
+	break;
+      }
+
+  if (insn != 0 && get_attr_trap (insn) == TRAP_YES)
+    {
+      if (optimize && !trap_pending && GET_CODE (insn) == INSN)
+	summarize_insn (PATTERN (insn), &shadow, 0);
+      trap_pending = 1;
+    }
 }
