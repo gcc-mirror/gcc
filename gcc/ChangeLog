@@ -5,6 +5,10 @@ Mon Jul  6 00:28:43 1998  Mark Mitchell  <mark@markmitchell.com>
 
 Sun Jul  5 23:58:19 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (cse_insn): Second arg is an RTX now.  Update all callers.
+	(cse_basic_block): Keep track of the current RETVAL insn for a
+	libcall instead of just noting that we're in a libcall.
+
 	* combine.c (simplify_comparison): Do not commute a AND into
 	a paradoxical SUBREG if not WORD_REGISTER_OPERATIONS.
 
