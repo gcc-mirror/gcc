@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.96 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -26,30 +26,30 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Output;   use Output;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Sem;      use Sem;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Uname;    use Uname;
+with Atree;     use Atree;
+with Casing;    use Casing;
+with Csets;     use Csets;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Fname;     use Fname;
+with Fname.UF;  use Fname.UF;
+with Lib;       use Lib;
+with Lib.Load;  use Lib.Load;
+with Namet;     use Namet;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Output;    use Output;
+with Opt;       use Opt;
+with Restrict;  use Restrict;
+with Sem;       use Sem;
+with Sem_Ch7;   use Sem_Ch7;
+with Sem_Util;  use Sem_Util;
+with Sinfo;     use Sinfo;
+with Stand;     use Stand;
+with Snames;    use Snames;
+with Tbuild;    use Tbuild;
+with Uname;     use Uname;
 
 package body Rtsfind is
 
@@ -581,7 +581,6 @@ package body Rtsfind is
       Lib_Unit : Node_Id;
       Pkg_Ent  : Entity_Id;
       Ename    : Name_Id;
-      Enode    : Node_Id;
 
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
@@ -713,6 +712,15 @@ package body Rtsfind is
    --  Start of processing for RTE
 
    begin
+      --  Check violation of no run time mode
+
+      if No_Run_Time
+        and then not OK_To_Use_In_No_Run_Time_Mode (U_Id)
+      then
+         Disallow_In_No_Run_Time_Mode (Current_Error_Node);
+         return Empty;
+      end if;
+
       --  Doing a rtsfind in system.ads is special, as we cannot do this
       --  when compiling System itself. So if we are compiling system then
       --  we should already have acquired and processed the declaration
@@ -730,8 +738,6 @@ package body Rtsfind is
       then
          return Find_Local_Entity (E);
       end if;
-
-      Enode := Current_Error_Node;
 
       --  Load unit if unit not previously loaded
 
@@ -769,10 +775,21 @@ package body Rtsfind is
                Next_Entity (Pkg_Ent);
             end loop;
 
-            --  If we didn't find the unit we want, something is wrong!
+            --  If we didn't find the unit we want, something is wrong
+            --  although in no run time mode, we already gave a suitable
+            --  message, and so we simply return Empty, and the caller must
+            --  be prepared to handle this if the RTE call is otherwise
+            --  possible in high integrity mode.
 
-            Load_Fail ("entity not in package", U_Id,  RE_Id'Image (E));
-            raise Program_Error;
+            if No_Run_Time
+              and then not OK_To_Use_In_No_Run_Time_Mode (U_Id)
+            then
+               return Empty;
+
+            else
+               Load_Fail ("entity not in package", U_Id,  RE_Id'Image (E));
+               raise Program_Error;
+            end if;
          end if;
       end if;
 
@@ -809,7 +826,7 @@ package body Rtsfind is
          end;
       end if;
 
-      --  We can now obtain the entity. Check that the No_Run_Time condition
+      --  We can now obtain the entity. Check that the no run time condition
       --  is not violated. Note that we do not signal the error if we detect
       --  it in a runtime unit. This can only arise if the user explicitly
       --  with'ed the runtime unit (or another runtime unit that uses it
@@ -822,11 +839,12 @@ package body Rtsfind is
 
       if Is_Subprogram (Ent)
         and then not Is_Inlined (Ent)
-        and then Sloc (Enode) /= Standard_Location
+        and then Sloc (Current_Error_Node) /= Standard_Location
         and then not
-          Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Enode)))
+          Is_Predefined_File_Name
+            (Unit_File_Name (Get_Source_Unit (Current_Error_Node)))
       then
-         Disallow_In_No_Run_Time_Mode (Enode);
+         Disallow_In_No_Run_Time_Mode (Current_Error_Node);
       end if;
 
       return Ent;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.216 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -375,6 +375,23 @@ package Rtsfind is
      range System_Tasking_Async_Delays_Enqueue_Calendar ..
        System_Tasking_Async_Delays_Enqueue_RT;
    --  Range of values for children of System.Tasking.Async_Delays
+
+   OK_To_Use_In_No_Run_Time_Mode : array (RTU_Id) of Boolean :=
+     (Ada_Tags                => True,
+      Interfaces              => True,
+      System                  => True,
+      System_Fat_Flt          => True,
+      System_Fat_LFlt         => True,
+      System_Fat_LLF          => True,
+      System_Fat_SFlt         => True,
+      System_Machine_Code     => True,
+      System_Storage_Elements => True,
+      System_Unsigned_Types   => True,
+      others                  => False);
+   --  This array defines the set of packages that can legitimately be
+   --  accessed by Rtsfind in No_Run_Time mode. Any attempt to load
+   --  any other package in this mode will result in a message noting
+   --  use of a feature not supported in high integrity mode.
 
    --------------------------
    -- Runtime Entity Table --
@@ -2291,7 +2308,13 @@ package Rtsfind is
    --  expanding) its spec if the unit has not already been loaded. If the
    --  unit cannot be found, or if it does not contain the specified entity,
    --  then an appropriate error message is output ("run-time configuration
-   --  error") and an Unrecoverable_Error exception is raised.
+   --  error") and an Unrecoverable_Error exception is raised. There is one
+   --  situation in which RTE can generate an error message, and that is if
+   --  an unuathorized entity is accessed in high integrity mode. If this
+   --  occurs, the result returned may be Empty, and the caller must deal
+   --  with this possibility if the call to RTE may occur in high integrity
+   --  mode (often this will have been ruled out by specific checks for
+   --  high integrity mode prior to the RTE call).
 
    function Is_RTE (Ent : Entity_Id; E : RE_Id) return Boolean;
    --  This function determines if the given entity corresponds to the entity

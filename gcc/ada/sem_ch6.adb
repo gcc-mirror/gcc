@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.508 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -34,6 +34,7 @@ with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Exp_Ch7;  use Exp_Ch7;
+with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
@@ -816,23 +817,25 @@ package body Sem_Ch6 is
    --  the subprogram, or to perform conformance checks.
 
    procedure Analyze_Subprogram_Body (N : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (N);
       Body_Spec : constant Node_Id    := Specification (N);
       Body_Id   : Entity_Id           := Defining_Entity (Body_Spec);
       Prev_Id   : constant Entity_Id  := Current_Entity_In_Scope (Body_Id);
 
-      HSS         : Node_Id;
-      Spec_Id     : Entity_Id;
-      Spec_Decl   : Node_Id   := Empty;
-      Last_Formal : Entity_Id := Empty;
-      Conformant  : Boolean;
-      Missing_Ret : Boolean;
+      HSS          : Node_Id;
+      Spec_Id      : Entity_Id;
+      Spec_Decl    : Node_Id   := Empty;
+      Last_Formal  : Entity_Id := Empty;
+      Conformant   : Boolean;
+      Missing_Ret  : Boolean;
+      Body_Deleted : Boolean := False;
 
    begin
       if Debug_Flag_C then
          Write_Str ("====  Compiling subprogram body ");
          Write_Name (Chars (Body_Id));
          Write_Str (" from ");
-         Write_Location (Sloc (N));
+         Write_Location (Loc);
          Write_Eol;
       end if;
 
@@ -922,7 +925,6 @@ package body Sem_Ch6 is
          --  the protected subprogram that will be used in internal calls.
 
          declare
-            Loc      : constant Source_Ptr := Sloc (N);
             Decl     : Node_Id;
             Plist    : List_Id;
             Formal   : Entity_Id;
@@ -1158,7 +1160,40 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Here we have a real body, not a stub
+      --  Here we have a real body, not a stub. First step is to null out
+      --  the subprogram body if we have the special case of no run time
+      --  mode with a predefined unit, and the subprogram is not marked
+      --  as Inline_Always. The reason is that we should never call such
+      --  a routine in no run time mode, and it may in general have some
+      --  statements that we cannot handle in no run time mode.
+
+      --  ASIS note: we do a replace here, because we are really NOT going
+      --  to analyze the original body and declarations at all, so it is
+      --  useless to keep them around, we really are obliterating the body,
+      --  basically creating a specialized no run time version on the fly
+      --  in which the bodies *are* null.
+
+      if No_Run_Time
+        and then Present (Spec_Id)
+        and then Is_Predefined_File_Name
+                   (Unit_File_Name (Get_Source_Unit (Loc)))
+        and then not Is_Always_Inlined (Spec_Id)
+      then
+         Replace (N,
+           Make_Subprogram_Body (Loc,
+             Specification              => Specification (N),
+             Declarations               => Empty_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements         => New_List (
+                   Make_Null_Statement (Loc)),
+                 End_Label          =>
+                   End_Label (Handled_Statement_Sequence (N)))));
+         Set_Corresponding_Spec (N, Spec_Id);
+         Body_Deleted := True;
+      end if;
+
+      --  Now we can go on to analyze the body
 
       HSS := Handled_Statement_Sequence (N);
       Set_Actual_Subtypes (N, Current_Scope);
@@ -1223,7 +1258,9 @@ package body Sem_Ch6 is
                   Set_Has_Missing_Return (Id);
                end if;
 
-            elsif not Is_Machine_Code_Subprogram (Id) then
+            elsif not Is_Machine_Code_Subprogram (Id)
+              and then not Body_Deleted
+            then
                Error_Msg_N ("missing RETURN statement in function body", N);
             end if;
          end;
@@ -1293,7 +1330,13 @@ package body Sem_Ch6 is
             end loop;
          end if;
 
-         Check_References (Body_Id);
+         --  Check references in body unless it was deleted. Note that the
+         --  check of Body_Deleted here is not just for efficiency, it is
+         --  necessary to avoid junk warnings on formal parameters.
+
+         if not Body_Deleted then
+            Check_References (Body_Id);
+         end if;
       end;
    end Analyze_Subprogram_Body;
 
