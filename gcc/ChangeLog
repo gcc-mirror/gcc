@@ -1,5 +1,11 @@
 2005-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	PR target/20625
+	* tree-ssa-loop-ivopts.c (generic_type_for): New function.
+	(add_candidate_1): Use generic_type_for instead of unsigned_type_for.
+
+2005-04-06  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* tree-flow.h (number_of_iterations_cond): Declaration removed.
 	* tree-ssa-loop-niter.c (number_of_iterations_cond): Made static.
 	(number_of_iterations_special): New function.
