@@ -165,13 +165,16 @@ Boston, MA 02111-1307, USA.  */
 
 /* OpenBSD assembler is hacked to have .type & .size support even in a.out
    format object files.  Functions size are supported but not activated 
-   yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).  */
+   yet (look for GRACE_PERIOD_EXPIRED in gas/config/obj-aout.c).  
+   SET_ASM_OP is needed for attribute alias to work.  */
 
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
+#undef SET_ASM_OP
 
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
+#define SET_ASM_OP	".set"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  */

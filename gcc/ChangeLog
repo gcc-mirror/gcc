@@ -1,3 +1,8 @@
+Fri Aug 27 14:01:19 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* config/openbsd.h: Define SET_ASM_OP.
+	* tm.texi: cross-reference SET_ASM_OP in the index.
+
 1999-08-27 13:27 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* rtl.c: Define CONST_DOUBLE_FORMAT to the appropriate format
