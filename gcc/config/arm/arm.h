@@ -21,6 +21,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Configuration triples for ARM ports work as follows:
+   arm-*-*: little endian
+   armel-*-*: little endian
+   armeb-*-*: big endian
+*/
+
 extern void output_func_prologue ();
 extern void output_func_epilogue ();
 extern char *output_add_immediate ();
