@@ -23,11 +23,11 @@
 
 2003-07-09  Michael Koch  <konqueror@gmx.de>
 
-	* libgcj.pc.in
-	* Makefile.am
-	* Makefile.in
-	* configure
-	* configure.in
+	* libgcj.pc.in: New file.
+	* Makefile.am: Install libgcj.pc in $libdir/pkgconfig.
+	* Makefile.in: Regenerated.
+	* configure: Regenrated.
+	* configure.in: Create libgcj.pc from libgcj.pc.in.
 
 2003-07-08  Mark Wielaard <mark@klomp.org>
 
