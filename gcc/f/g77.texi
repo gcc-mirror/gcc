@@ -24,33 +24,6 @@
 @c and make sure the following does NOT begin with '@c':
 @c @clear USING
 
-@c 6/27/96 FSF DO wants smallbook fmt for 1st bound edition. (from gcc.texi)
-@c @smallbook
-
-@c i also commented out the finalout command, so if there *are* any
-@c overfulls, you'll (hopefully) see the rectangle in the right hand
-@c margin. -- burley 1999-03-13 (from mew's comment in gcc.texi).
-@c @finalout
-
-@macro gcctabopt{body}
-@code{\body\}
-@end macro
-@macro gccoptlist{body}
-@smallexample
-\body\
-@end smallexample
-@end macro
-@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
-@c they get lost at some point in handling the macro.  But if @macro is
-@c used here rather than @alias, it produces double line breaks.
-@iftex
-@alias gol = *
-@end iftex
-@ifnottex
-@macro gol
-@end macro
-@end ifnottex
-
 @ifset INTERNALS
 @ifset USING
 @settitle Using and Porting GNU Fortran
@@ -142,7 +115,6 @@ Inspired by a first pass at translating @file{g77-0.5.16/f/DOC} that
 was contributed to Craig by David Ronis (@email{ronis@@onsager.chem.mcgill.ca}).
 
 @setchapternewpage odd
-@c @finalout
 @titlepage
 @ifset INTERNALS
 @ifset USING

@@ -6,6 +6,11 @@
 
 @set version-GCC 3.4
 
+@c DEVELOPMENT is set to indicate an in-development version,
+@c as compared to a release version.  When making a release
+@c branch, clear this.
+@set DEVELOPMENT
+
 @c Common macros to support generating man pages:
 
 @macro gcctabopt{body}

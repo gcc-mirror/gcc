@@ -8,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision: 1.3.8.1 $
+@c                            $Revision: 1.8 $
 @c                                                                            o
 @c              Copyright (C) 1995-2002 Free Software Foundation              o
 @c                                                                            o
@@ -22,6 +22,8 @@
 @setchapternewpage odd
 @syncodeindex fn cp
 
+@include gcc-common.texi
+
 @dircategory GNU Ada tools
 @direntry
 * GNAT Reference Manual: (gnat_rm).  Reference Manual for GNU Ada tools.
@@ -31,12 +33,7 @@
 
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
-@ifset vxworks
-@title Version 3.16w
-@end ifset
-@ifclear vxworks
-@subtitle Version 3.16w
-@end ifclear
+@subtitle GNAT Version for GCC @value{version-GCC}
 @author Ada Core Technologies, Inc.
 
 @page
@@ -64,12 +61,7 @@ GNAT Reference Manual
 
 GNAT, The GNU Ada 95 Compiler
 
-@ifset vxworks
-Version 3.16w
-@end ifset
-@ifclear vxworks
-Version 3.16w
-@end ifclear
+GNAT Version for GCC @value{version-GCC}
 
 Ada Core Technologies, Inc.
 
