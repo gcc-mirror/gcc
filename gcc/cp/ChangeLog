@@ -1,3 +1,9 @@
+1999-10-7   Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+        * cp-tree.h (cp_make_lake_type): Renamed from make_lang_type.
+        * lex.c (cp_make_lake_type): Likewise.
+        * tree.c (init_tree): Init make_lang_type_fn.
+	
 1999-10-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_expr): Set DECL_TEMPLATE_INSTANTIATED for a catch

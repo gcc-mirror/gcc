@@ -4795,7 +4795,7 @@ copy_lang_decl (node)
 }
 
 tree
-make_lang_type (code)
+cp_make_lang_type (code)
      enum tree_code code;
 {
   register tree t = make_node (code);
