@@ -1,3 +1,8 @@
+Tue Oct 26 02:48:32 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* Makefile.in (AR_FOR_TARGET, RANLIB_FOR_TARGET):  Fix target name 
+	substitution.
+
 Tue Oct 26 01:27:32 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (BLOCK_TYPE_TAGS): Remove.

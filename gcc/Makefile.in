@@ -187,7 +187,7 @@ AR_FOR_TARGET = ` \
     if [ "$(host_canonical)" = "$(target)" ] ; then \
       echo ar; \
     else \
-       t='$(program_transform_name)'; echo ar | sed -e $$t ; \
+       t='$(program_transform_cross_name)'; echo ar | sed -e $$t ; \
     fi; \
   fi`
 AR_FLAGS_FOR_TARGET = rc
@@ -198,7 +198,7 @@ RANLIB_FOR_TARGET = ` \
     if [ "$(host_canonical)" = "$(target)" ] ; then \
       echo ranlib; \
     else \
-       t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
+       t='$(program_transform_cross_name)'; echo ranlib | sed -e $$t ; \
     fi; \
   fi`
 RANLIB_TEST_FOR_TARGET = \
