@@ -547,10 +547,9 @@ build_vtable (binfo, type)
   n_vtable_elems += list_length (virtuals);
 #endif
 
-#if 0				/* Now done from finish_vtable_vardecl */
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (decl, type);
-#endif
+  if (! flag_vtable_thunks)
+    import_export_vtable (decl, type);
 
   IDENTIFIER_GLOBAL_VALUE (name) = decl = pushdecl_top_level (decl);
   /* Initialize the association list for this type, based
@@ -688,10 +687,9 @@ prepare_fresh_vtable (binfo, for_type)
   n_vtable_elems += list_length (BINFO_VIRTUALS (binfo));
 #endif
 
-#if 0 /* Now done in finish_vtable_vardecl */
   /* Set TREE_PUBLIC and TREE_EXTERN as appropriate.  */
-  import_export_vtable (new_decl, for_type);
-#endif
+  if (! flag_vtable_thunks)
+    import_export_vtable (new_decl, for_type);
 
   if (TREE_VIA_VIRTUAL (binfo))
     my_friendly_assert (binfo == binfo_member (BINFO_TYPE (binfo),

@@ -1289,8 +1289,10 @@ count_functions (t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL)
     return 1;
+  else if (TREE_CODE (t) == TREE_LIST)
+    return decl_list_length (TREE_VALUE (t));
 
-  return decl_list_length (TREE_VALUE (t));
+  my_friendly_abort (359);
 }
 
 /* Like value_member, but for DECL_CHAINs.  */

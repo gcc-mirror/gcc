@@ -1244,7 +1244,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  grok_function_init (value, init);
 	  init = NULL_TREE;
 	}
-      else if (pedantic && ! TREE_STATIC (value))
+      else if (pedantic && TREE_CODE (value) != VAR_DECL)
 	/* Already complained in grokdeclarator.  */
 	init = NULL_TREE;
       else
@@ -1296,7 +1296,7 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	 fill in the value of our TREE_CHAIN.  Instead, we
 	 modify finish_decl to do the right thing, namely, to
 	 put this decl out straight away.  */
-      if (TREE_STATIC (value))
+      if (TREE_PUBLIC (value))
 	{
 	  /* current_class_type can be NULL_TREE in case of error.  */
 	  if (asmspec == 0 && current_class_type)
@@ -2335,22 +2335,13 @@ mark_vtable_entries (decl)
    Note that anything public is tagged TREE_PUBLIC, whether
    it's public in this file or in another one.  */
 
-static void
+void
 import_export_vtable (decl, type)
   tree decl, type;
 {
   if (write_virtuals >= 2
       || CLASSTYPE_TEMPLATE_INSTANTIATION (type))
     {
-      if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
-	  && ! flag_implicit_templates
-	  && CLASSTYPE_INTERFACE_UNKNOWN (type))
-	{
-	  SET_CLASSTYPE_INTERFACE_KNOWN (type);
-	  CLASSTYPE_INTERFACE_ONLY (type) = 1;
-	  CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 0;
-	}
-
       if (CLASSTYPE_INTERFACE_KNOWN (type))
 	{
 	  TREE_PUBLIC (decl) = 1;
@@ -2366,10 +2357,25 @@ import_export_vtable (decl, type)
 }
 
 static void
+import_export_template (type)
+     tree type;
+{
+  if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
+      && ! flag_implicit_templates
+      && CLASSTYPE_INTERFACE_UNKNOWN (type))
+    {
+      SET_CLASSTYPE_INTERFACE_KNOWN (type);
+      CLASSTYPE_INTERFACE_ONLY (type) = 1;
+      CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 0;
+    }
+}
+    
+static void
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
 {
   tree ctype = DECL_CONTEXT (vars);
+  import_export_template (ctype);
   import_export_vtable (vars, ctype);
 
   if (flag_vtable_thunks && !CLASSTYPE_INTERFACE_KNOWN (ctype))
@@ -2798,7 +2804,8 @@ finish_file ()
 #endif
 
   walk_vtables ((void (*)())0, finish_vtable_vardecl);
-  walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
+  if (flag_handle_signatures)
+    walk_sigtables ((void (*)())0, finish_sigtable_vardecl);
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {

@@ -1,3 +1,30 @@
+Fri Jul  8 17:41:46 1994  Mike Stump  (mrs@cygnus.com)
+
+	* decl.c (cplus_expand_expr_stmt): Wrap statement expressions inside
+	CLEANUP_POINT_EXPRs so that the stack slots can be reused.
+
+Fri Jul  8 12:59:38 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* method.c (hack_identifier): Fix for new overloading.
+
+	* typeck.c (build_binary_op_nodefault): Don't mess with division by
+        zero.
+
+Fri Jul  8 13:20:28 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
+
+	* decl2.c (finish_file): Only call walk_sigtables, if
+	flag_handle_signatures is turned on, don't waste time otherwise.
+
+Fri Jul  8 02:27:41 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (push_overloaded_decl): Don't create overloads of one when
+	shadowing a class type.
+	* typeck.c (build_x_function_call): Complain about overloads of one
+
+	* decl.c (grokdeclarator): Don't try to treat a char* as a tree.
+	(grokdeclarator): Fix setting of TREE_STATIC.
+	(start_decl): Clear DECL_IN_AGGR_P after calling duplicate_decls.
+
 Thu Jul  7 22:20:46 1994  Gerald Baumgartner  (gb@andros.cygnus.com)
 
 	* cp-tree.h (walk_sigtables): Created extern declaration.
@@ -9,6 +36,22 @@ Thu Jul  7 22:20:46 1994  Gerald Baumgartner  (gb@andros.cygnus.com)
 
 	* sig.c (build_signature_table_constructor): Mark class member
 	function pointed to from signature table entry as addressable.
+
+Thu Jul  7 13:39:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (start_decl): Check new decl of static member variable
+	against the declaration in the class here.
+	(grokvardecl): Instead of here.
+
+	* class.c (prepare_fresh_vtable): Call import_export_vtable if not
+	-fvtable-thunks.
+	(build_vtable): Ditto.
+
+	* decl2.c (import_export_vtable): Move logic for deciding the
+	interface of a template class from here.
+	(import_export_template): To here.
+	(finish_vtable_vardecl): Call import_export_template before
+	import_export_vtable.
 
 Wed Jul  6 20:25:48 1994  Mike Stump  (mrs@cygnus.com)
 
@@ -30,6 +73,22 @@ Wed Jul  6 17:55:32 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* decl2.c (mark_vtable_entries):  If -ftable-thunks, set the
 	vtable entry properly to abort.
+
+Tue Jul  5 14:07:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_binary_op_nodefault): Downgrade division by zero
+	errors to warnings.
+
+	* call.c (build_overload_call_real): Handle fnname being a list of
+	functions.
+	* typeck.c (build_x_function_call): Pass list of functions to
+	build_overload_call, not just the name.
+	* tree.c (count_functions): Complain when called for invalid
+	argument.
+
+	* decl.c (grokdeclarator): Fix settings of TREE_STATIC, TREE_PUBLIC
+	and DECL_EXTERNAL on static members and initialized const members.
+	* decl2.c (grokfield): Reflect this change.
 
 Fri Jul  1 09:35:51 1994  Jason Merrill  (jason@deneb.cygnus.com)
 

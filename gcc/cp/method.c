@@ -1460,12 +1460,12 @@ hack_identifier (value, name, yychar)
 
   if (TREE_CODE (value) == TREE_LIST)
     {
-      tree t = value;
-      while (t && TREE_CODE (t) == TREE_LIST)
+      tree t = get_first_fn (value);
+      while (t)
 	{
-	  assemble_external (TREE_VALUE (t));
+	  assemble_external (t);
 	  TREE_USED (t) = 1;
-	  t = TREE_CHAIN (t);
+	  t = DECL_CHAIN (t);
 	}
     }
   else

@@ -2076,16 +2076,16 @@ build_x_function_call (function, params, decl)
 	}
       else
 	{
-	  tree id = TREE_PURPOSE (function);
-	  function = TREE_VALUE (function);
+	  tree val = TREE_VALUE (function);
 
-	  if (TREE_CODE (function) == TEMPLATE_DECL)
+	  if (TREE_CODE (val) == TEMPLATE_DECL)
 	    return build_overload_call_maybe
-	      (id, params, LOOKUP_COMPLAIN, (struct candidate *)0);
-	  else if (DECL_CHAIN (function) != NULL_TREE)
+	      (function, params, LOOKUP_COMPLAIN, (struct candidate *)0);
+	  else if (DECL_CHAIN (val) != NULL_TREE)
 	    return build_overload_call
-	      (id, params, LOOKUP_COMPLAIN, (struct candidate *)0);
-	  /* else fall out */
+	      (function, params, LOOKUP_COMPLAIN, (struct candidate *)0);
+	  else
+	    my_friendly_abort (360);
 	}
     }
 
@@ -2893,15 +2893,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST && integer_zerop (op1))
-	    {
-	      error ("division by zero");
-	      op1 = integer_one_node;
-	    }
+	    cp_warning ("division by zero in `%E / 0'", op0);
 	  else if (TREE_CODE (op1) == REAL_CST && real_zerop (op1))
-	    {
-	      error ("division by zero");
-	      op1 = build_real (TREE_TYPE (op1), dconst1);
-	    }
+	    cp_warning ("division by zero in `%E / 0.'", op0);
 	      
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
@@ -2954,15 +2948,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case TRUNC_MOD_EXPR:
     case FLOOR_MOD_EXPR:
       if (code1 == INTEGER_TYPE && integer_zerop (op1))
-	{
-	  error ("division by zero");
-	  op1 = integer_one_node;
-	}
+	cp_warning ("division by zero in `%E % 0'", op0);
       else if (code1 == REAL_TYPE && real_zerop (op1))
-	{
-	  error ("division by zero");
-	  op1 = build_real (TREE_TYPE (op1), dconst1);
-	}
+	cp_warning ("division by zero in `%E % 0.'", op0);
       
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{

@@ -3250,6 +3250,7 @@ push_overloaded_decl (decl, forgettable)
 	  tree t = TREE_TYPE (old);
 	  if (IS_AGGR_TYPE (t) && warn_shadow)
 	    cp_warning ("`%#D' hides constructor for `%#T'", decl, t);
+	  old = NULL_TREE;
 	}
       else if (is_overloaded_fn (old))
         {
@@ -5263,17 +5264,6 @@ start_decl (declarator, declspecs, initialized, raises)
       decl = d;
     }
 
-  if (context && TYPE_SIZE (context) != NULL_TREE)
-    {
-      /* If it was not explicitly declared `extern',
-	 revoke any previous claims of DECL_EXTERNAL.  */
-      if (DECL_THIS_EXTERN (decl) == 0)
-	DECL_EXTERNAL (decl) = 0;
-      if (DECL_LANG_SPECIFIC (decl))
-	DECL_IN_AGGR_P (decl) = 0;
-      pushclass (context, 2);
-    }
-
   /* If this type of object needs a cleanup, and control may
      jump past it, make a new binding level so that it is cleaned
      up only when it is initialized first.  */
@@ -5365,9 +5355,30 @@ start_decl (declarator, declspecs, initialized, raises)
       DECL_INITIAL (decl) = error_mark_node;
     }
 
+  if (context && TYPE_SIZE (context) != NULL_TREE)
+    {
+      if (TREE_CODE (decl) == VAR_DECL)
+	{
+	  tree field = lookup_field (context, DECL_NAME (decl), 0, 0);
+	  if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
+	    cp_error ("`%#D' is not a static member of `%#T'", decl, context);
+	  else if (duplicate_decls (decl, field))
+	    decl = field;
+	}
+      
+      /* If it was not explicitly declared `extern',
+	 revoke any previous claims of DECL_EXTERNAL.  */
+      if (DECL_THIS_EXTERN (decl) == 0)
+	DECL_EXTERNAL (decl) = 0;
+      if (DECL_LANG_SPECIFIC (decl))
+	DECL_IN_AGGR_P (decl) = 0;
+      pushclass (context, 2);
+    }
+
   /* Add this decl to the current binding level, but not if it
      comes from another scope, e.g. a static member variable.
      TEM may equal DECL or it may be a previous decl of the same name.  */
+  
   if ((TREE_CODE (decl) != PARM_DECL && DECL_CONTEXT (decl) != NULL_TREE)
       || (TREE_CODE (decl) == TEMPLATE_DECL && !global_bindings_p ())
       || TREE_CODE (type) == LANG_TYPE)
@@ -6779,47 +6790,11 @@ grokvardecl (type, declarator, specbits, initialized)
     {
       /* If you declare a static member so that it
 	 can be initialized, the code will reach here.  */
-      tree field = lookup_field (TYPE_OFFSET_BASETYPE (type),
-				 declarator, 0, 0);
-      if (field == NULL_TREE || TREE_CODE (field) != VAR_DECL)
-	{
-	  tree basetype = TYPE_OFFSET_BASETYPE (type);
-	  error ("`%s' is not a static member of class `%s'",
-		 IDENTIFIER_POINTER (declarator),
-		 TYPE_NAME_STRING (basetype));
-	  type = TREE_TYPE (type);
-	  decl = build_lang_field_decl (VAR_DECL, declarator, type);
-	  DECL_CONTEXT (decl) = basetype;
-	  DECL_CLASS_CONTEXT (decl) = basetype;
-	}
-      else
-	{
-	  tree f_type = TREE_TYPE (field);
-	  tree o_type = TREE_TYPE (type);
-
-	  if (TYPE_SIZE (f_type) == NULL_TREE)
-	    {
-	      if (TREE_CODE (f_type) != TREE_CODE (o_type)
-		  || (TREE_CODE (f_type) == ARRAY_TYPE
-		      && TREE_TYPE (f_type) != TREE_TYPE (o_type)))
-		error ("redeclaration of type for `%s'",
-		       IDENTIFIER_POINTER (declarator));
-	      else if (TYPE_SIZE (o_type) != NULL_TREE)
-		TREE_TYPE (field) = type;
-	    }
-	  else if (f_type != o_type)
-	    error ("redeclaration of type for `%s'",
-		   IDENTIFIER_POINTER (declarator));
-	  decl = field;
-	  if (initialized && DECL_INITIAL (decl)
-	      /* Complain about multiply-initialized
-		 member variables, but don't be faked
-		 out if initializer is empty.  */
-	      && ! EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-	    error_with_aggr_type (DECL_CONTEXT (decl),
-				  "multiple initializations of static member `%s::%s'",
-				  IDENTIFIER_POINTER (DECL_NAME (decl)));
-	}
+      tree basetype = TYPE_OFFSET_BASETYPE (type);
+      type = TREE_TYPE (type);
+      decl = build_lang_field_decl (VAR_DECL, declarator, type);
+      DECL_CONTEXT (decl) = basetype;
+      DECL_CLASS_CONTEXT (decl) = basetype;
     }
   else
     decl = build_decl (VAR_DECL, declarator, type);
@@ -6837,7 +6812,7 @@ grokvardecl (type, declarator, specbits, initialized)
     {
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
-      DECL_EXTERNAL (decl) = !initialized;
+      DECL_EXTERNAL (decl) = 0;
     }
   /* At top level, either `static' or no s.c. makes a definition
      (perhaps tentative), and absence of `static' makes it public.  */
@@ -8400,7 +8375,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 						      TREE_TYPE (type), TYPE_ARG_TYPES (type));
 		    else
 		      {
-			cp_error ("cannot declare member function `%T::%D' within `%T'",
+			cp_error ("cannot declare member function `%T::%s' within `%T'",
 				  ctype, name, current_class_type);
 			return void_type_node;
 		      }
@@ -8408,7 +8383,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		else if (TYPE_MAIN_VARIANT (ctype) == current_class_type)
 		  {
 		    if (extra_warnings)
-		      cp_warning ("redundant qualification `%T' on member `%D' ignored",
+		      cp_warning ("redundant qualification `%T' on member `%s' ignored",
 				  ctype, name);
 		    type = build_offset_type (ctype, type);
 		  }
@@ -8920,11 +8895,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		   This VAR_DECL is built by build_lang_field_decl.
 		   All other VAR_DECLs are built by build_decl.  */
 		decl = build_lang_field_decl (VAR_DECL, declarator, type);
-		if (staticp || TREE_CODE (type) == ARRAY_TYPE)
-		  TREE_STATIC (decl) = 1;
-		/* In class context, static means public access.  */
-		TREE_PUBLIC (decl) = 1;
-		DECL_EXTERNAL (decl) = !!staticp;
+		TREE_STATIC (decl) = 1;
+		/* In class context, 'static' means public access.  */
+		TREE_PUBLIC (decl) = DECL_EXTERNAL (decl) = !!staticp;
 	      }
 	    else
 	      {
@@ -11980,6 +11953,7 @@ cplus_expand_expr_stmt (exp)
 	  warning ("at this point in file");
 	}
 
+      exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
       expand_expr_stmt (break_out_cleanups (exp));
     }
 
