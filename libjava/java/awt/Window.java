@@ -102,8 +102,7 @@ public class Window extends Container
   public void addNotify()
   {
     if (peer == null)
-      // FIXME: This cast should NOT be required. ??? Compiler bug ???
-      peer = (ComponentPeer) getToolkit ().createWindow (this);
+      peer = getToolkit ().createWindow (this);
     super.addNotify ();
   }
 
