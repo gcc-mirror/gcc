@@ -4492,16 +4492,16 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
 	      /* First check if we recognize any of the labels.  */
 	      if (GET_CODE (then_dest) == LABEL_REF
-		  && XEXP (then_dest, 1) == if_true_label)
+		  && XEXP (then_dest, 0) == if_true_label)
 		taken = 1;
 	      else if (GET_CODE (then_dest) == LABEL_REF
-		       && XEXP (then_dest, 1) == if_false_label)
+		       && XEXP (then_dest, 0) == if_false_label)
 		taken = 0;
 	      else if (GET_CODE (else_dest) == LABEL_REF
-		       && XEXP (else_dest, 1) == if_false_label)
+		       && XEXP (else_dest, 0) == if_false_label)
 		taken = 1;
 	      else if (GET_CODE (else_dest) == LABEL_REF
-		       && XEXP (else_dest, 1) == if_true_label)
+		       && XEXP (else_dest, 0) == if_true_label)
 		taken = 0;
 	      /* Otherwise check where we drop through.  */
 	      else if (else_dest == pc_rtx)
@@ -4511,7 +4511,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
 		  if (next && GET_CODE (next) == JUMP_INSN
 		      && any_uncondjump_p (next))
-		    next = XEXP (SET_SRC (pc_set (next)), 1);
+		    next = XEXP (SET_SRC (pc_set (next)), 0);
 
 		  /* NEXT is either a CODE_LABEL, NULL_RTX or something
 		     else that can't possibly match either target label.  */
@@ -4527,7 +4527,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 
 		  if (next && GET_CODE (next) == JUMP_INSN
 		      && any_uncondjump_p (next))
-		    next = XEXP (SET_SRC (pc_set (next)), 1);
+		    next = XEXP (SET_SRC (pc_set (next)), 0);
 
 		  if (next == if_false_label)
 		    taken = 0;
