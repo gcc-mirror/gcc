@@ -27,6 +27,7 @@
 #ifdef DEBUG_ASSERT
 #include <assert.h>
 #endif
+#include <cmath>
 
 template<typename R>
 inline bool flteq(R x, R y)
