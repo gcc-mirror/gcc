@@ -30,7 +30,7 @@
 
 /* Default to using software floating point.  */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_FRAME)
+#define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT)
 #endif
 
 /* Now we define the strings used to build the spec file.  */
