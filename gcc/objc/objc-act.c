@@ -1361,11 +1361,11 @@ build_objc_string_object (strings)
 
 /* Declare a static instance of CLASS_DECL initialized by CONSTRUCTOR.  */
 
+static GTY(()) int num_static_inst;
 static tree
 objc_add_static_instance (constructor, class_decl)
      tree constructor, class_decl;
 {
-  static int num_static_inst;
   tree *chain, decl;
   char buf[256];
 
@@ -1983,14 +1983,14 @@ generate_strings ()
     }
 }
 
+static GTY(()) int selector_reference_idx;
 static tree
 build_selector_reference_decl ()
 {
   tree decl, ident;
   char buf[256];
-  static int idx = 0;
 
-  sprintf (buf, "_OBJC_SELECTOR_REFERENCES_%d", idx++);
+  sprintf (buf, "_OBJC_SELECTOR_REFERENCES_%d", selector_reference_idx++);
 
   ident = get_identifier (buf);
 
@@ -2198,14 +2198,14 @@ build_selector_reference (ident)
 			     build_int_2 (index, 0)));
 }
 
+static GTY(()) int class_reference_idx;
 static tree
 build_class_reference_decl ()
 {
   tree decl, ident;
   char buf[256];
-  static int idx = 0;
 
-  sprintf (buf, "_OBJC_CLASS_REFERENCES_%d", idx++);
+  sprintf (buf, "_OBJC_CLASS_REFERENCES_%d", class_reference_idx++);
 
   ident = get_identifier (buf);
 
@@ -2326,15 +2326,16 @@ add_objc_string (ident, section)
   return build_unary_op (ADDR_EXPR, decl, 1);
 }
 
+static GTY(()) int class_names_idx;
+static GTY(()) int meth_var_names_idx;
+static GTY(()) int meth_var_types_idx;
+
 static tree
 build_objc_string_decl (section)
      enum string_section section;
 {
   tree decl, ident;
   char buf[256];
-  static int class_names_idx = 0;
-  static int meth_var_names_idx = 0;
-  static int meth_var_types_idx = 0;
 
   if (section == class_names)
     sprintf (buf, "_OBJC_CLASS_NAME_%d", class_names_idx++);
@@ -2927,11 +2928,11 @@ generate_method_descriptors (protocol)
 /* Generate a temporary FUNCTION_DECL node to be used in
    hack_method_prototype below.  */
 
+static GTY(()) int build_tmp_function_decl_xxx;
 static tree
 build_tmp_function_decl ()
 {
   tree decl_specs, expr_decl, parms;
-  static int xxx = 0;
   char buffer[80];
 
   /* struct objc_object *objc_xxx (id, SEL, ...); */
@@ -2953,7 +2954,7 @@ build_tmp_function_decl ()
   poplevel (0, 0, 0);
 
   decl_specs = build_tree_list (NULL_TREE, objc_object_reference);
-  sprintf (buffer, "__objc_tmp_%x", xxx++);
+  sprintf (buffer, "__objc_tmp_%x", build_tmp_function_decl_xxx++);
   expr_decl = build_nt (CALL_EXPR, get_identifier (buffer), parms, NULL_TREE);
   expr_decl = build1 (INDIRECT_REF, NULL_TREE, expr_decl);
 
@@ -8561,4 +8562,5 @@ lookup_objc_ivar (id)
     return 0;
 }
 
+#include "gt-objc-objc-act.h"
 #include "gtype-objc.h"

@@ -34,4 +34,4 @@ stagestuff=""
 
 target_libs=target-libobjc
 
-gtfiles="\$(srcdir)/objc/objc-act.h \$(srcdir)/c-parse.in \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.c \$(srcdir)/c-parse.in"
+gtfiles="\$(srcdir)/objc/objc-act.h \$(srcdir)/c-parse.in \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.c \$(srcdir)/objc/objc-act.c"

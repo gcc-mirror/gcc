@@ -24,8 +24,6 @@ Boston, MA 02111-1307, USA.  */
 
   {".m", "@objective-c", 0},
   {"@objective-c",
-   /* cc1obj has an integrated ISO C preprocessor.  We should invoke the
-      external preprocessor if -save-temps or -traditional is given.  */
      "%{E|M|MM:%(trad_capable_cpp)\
           -lang-objc %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
@@ -40,3 +38,17 @@ Boston, MA 02111-1307, USA.  */
   {"@objc-cpp-output",
      "%{!M:%{!MM:%{!E:cc1obj -fpreprocessed %i %(cc1_options) %{gen-decls}\
 			     %{!fsyntax-only:%(invoke_as)}}}}", 0},
+  {"@objective-c-header",
+     "%{E|M|MM:%(trad_capable_cpp)\
+          -lang-objc %(cpp_options) %(cpp_debug_options)}\
+      %{!E:%{!M:%{!MM:\
+	%{traditional|ftraditional|traditional-cpp:\
+%eGNU Objective C no longer supports traditional compilation}\
+	%{save-temps:cc1obj -E %(cpp_options) %b.mi \n\
+	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{gen-decls}\
+                        -o %g.s %{!o*:--output-pch=%i.pch}\
+                        %W{o*:--output-pch=%*}%V}\
+	%{!save-temps:\
+	    cc1obj %(cpp_unique_options) %(cc1_options) %{gen-decls}\
+                        -o %g.s %{!o*:--output-pch=%i.pch}\
+                        %W{o*:--output-pch=%*}%V}}}}", 0},
