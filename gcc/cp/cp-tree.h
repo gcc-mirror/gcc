@@ -1936,7 +1936,7 @@ struct lang_decl
    anything that isn't comdat, but we don't know for sure whether or
    not something is comdat until end-of-file.  */
 #define DECL_NEEDED_P(DECL)					\
-  ((at_eof && !DECL_COMDAT (DECL))				\
+  ((at_eof && TREE_PUBLIC (DECL) && !DECL_COMDAT (DECL))	\
    || (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME ((DECL))))	\
    || (flag_syntax_only && TREE_USED ((DECL))))
 
