@@ -260,6 +260,12 @@ while [ $# != 0 ]; do
 	|| echo "Can't copy $file"
 	chmod +w $2/$file
 	chmod a+r $2/$file
+	# Here is how the sed commands in braces work.
+	# (It doesn't work to put the comments inside the sed commands.)
+		# Surround each word with spaces, to simplify matching below.
+		# ANSIfy each pre-ANSI machine-dependent symbol
+		# by surrounding it with __ __.
+		# Remove the spaces that we inserted around each word.
 	sed -e '
 				   :loop
 	  /\\$/			N
@@ -276,11 +282,8 @@ while [ $# != 0 ]; do
 	  /#define._CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[el]*if/{
-		# Surround each word with spaces, to simplify matching below.
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
 
-		# ANSIfy each pre-ANSI machine-dependent symbol
-		# by surrounding it with __ __.
 		s/ bsd4\([0-9]\) / __bsd4\1__ /g
 		s/ _*i386 / __i386__ /g
 		s/ is68k / __is68k__ /g
@@ -295,7 +298,6 @@ while [ $# != 0 ]; do
 		s/ unix / __unix__ /g
 		s/ vax / __vax__ /g
 
-		# Remove the spaces that we inserted around each word.
 		s/ \([a-zA-Z0-9_][a-zA-Z0-9_]*\) /\1/g
 	  }
 	  /^#define.NULL[ 	]/	i\
