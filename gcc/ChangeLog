@@ -1,3 +1,46 @@
+2000-02-07  Dmitri Makarov  <dim@wrs.com> & Bernd Schmidt <bernds@redhat.com>
+
+	* config/arm/arm.c (arm_init_cumulative_args); New function:
+	Initlaise the CUMULATIE_ARGS strcuture for a function
+	defintion. 
+	(arm_function_arg): New function: Determine where to place a
+	function's argument.  Also handles deciding the function's
+	call cookie.
+	(current_file_function_operand): New function: Return true if
+	the symbol is a function which has already been compiled.
+	(arm_is_long_call_p): New function: Return true if the
+	indicated function should be called via a long call.
+	(arm_valid_type_attribute_p): New function: Return true if the
+	attribute is a valid, arm specific, attribute.
+	(arm_comp_type_attribute): New function: Return true if the
+	two types have compatable, arm specific, attributes.
+
+	* config/arm/arm.h (CUMULATIVE_ARGS): Redefine to be a
+        structure.
+	(FUNCTION_ARG): Redefine to call arm_function_arg.
+	(FUNCTION_ARG_PARTIAL_NREGS): Redefine to use correct
+        structure field.
+	(INIT_CUMULATIVE_ARGS): Redefine to call
+        arm_init_cumulative_args.
+	(FUNCTION_ARG_ADVANCE): Redefine to use correct structure
+        field. 
+	(SETUP_INCOMING_VARARGS): Redefine to use correct structure 
+        field. 
+	(ARM_MARK_NEARBY_FUNCTION): New macro: Mark already compiled
+        functions.
+	(ENCODE_SECTION): Add call to ARM_MARK_NEARBY_FUNCTION.
+	(VALID_MACHINE_TYPE_ATTRIBUTE): Define.
+	(COMP_TYPE_ATTRIBUTES): Define.
+
+	* config/arm/arm.md (call): Call arm_is_long_call_p to decide
+        if a long call is needed.
+	(call_value): Call arm_is_long_call_p to decide if a long call
+        is needed.
+	(call_symbol): Call arm_is_long_call_p to decide if a long call
+        is needed.
+
+	* config/arm/arm-protos.h: Add prototype for arm_is_long_call_p.
+
 2000-02-11  Denis Chertykov  <denisc@overta.ru>
 
 	* README.AVR: New file with information about the avr ports.

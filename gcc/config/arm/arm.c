@@ -1,5 +1,5 @@
 /* Output routines for GCC for ARM.
-   Copyright (C) 1991, 93-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 93, 94, 95, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -1134,7 +1134,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       /* See if two shifts will do 2 or more insn's worth of work.  */
       if (clear_sign_bit_copies >= 16 && clear_sign_bit_copies < 24)
 	{
-	  HOST_WIDE_INT shift_mask = ((0xffffffffUL 
+	  HOST_WIDE_INT shift_mask = ((0xffffffffUL
 				       << (32 - clear_sign_bit_copies))
 				      & 0xffffffffUL);
 
@@ -1536,14 +1536,16 @@ arm_function_arg (pcum, mode, type, named)
 }
 
 
-/* Return 1 if the operand is a SYMBOL_REF for a function known to be in
-   this file.  */
+/* Return 1 if the operand is a SYMBOL_REF for a function
+   known to be defined in the current compilation unit.  */
 static int
 current_file_function_operand (sym_ref)
   rtx sym_ref;
 {
-  return (SYMBOL_REF_FLAG (sym_ref)
-	  || sym_ref == XEXP (DECL_RTL (current_function_decl), 0));
+  /* XXX FIXME - we need some way to determine if SYMREF has already been
+     compiled.  We wanted to used SYMBOL_REF_FLAG but this is already in use
+     by the constant pool generation code.  */
+  return sym_ref == XEXP (DECL_RTL (current_function_decl), 0);
 }
 
 /* Return non-zero if a 32 bit "long call" should be generated for this
@@ -6141,7 +6143,7 @@ output_func_epilogue (frame_size)
   if (use_return_insn (FALSE) && return_used_this_function
       && (frame_size + current_function_outgoing_args_size) != 0
       && ! (frame_pointer_needed && TARGET_APCS))
-	abort ();
+    abort ();
 
   /* Reset the ARM-specific per-function variables.  */
   current_function_anonymous_args = 0;
@@ -6827,7 +6829,7 @@ arm_final_prescan_insn (insn)
 
 	    case CALL_INSN:
 	      /* If using 32-bit addresses the cc is not preserved over
-		 calls */
+		 calls.  */
 	      if (TARGET_APCS_32)
 		{
 		  /* Succeed if the following insn is the target label,
@@ -6858,7 +6860,7 @@ arm_final_prescan_insn (insn)
       	      /* If this is an unconditional branch to the same label, succeed.
 		 If it is to another label, do nothing.  If it is conditional,
 		 fail.  */
-	      /* XXX Probably, the tests for SET and the PC are unnecessary. */
+	      /* XXX Probably, the tests for SET and the PC are unnecessary.  */
 
 	      scanbody = PATTERN (this_insn);
 	      if (GET_CODE (scanbody) == SET
