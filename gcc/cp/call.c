@@ -2825,7 +2825,7 @@ build_conditional_expr (arg1, arg2, arg3)
       if ((TREE_CODE (arg2) == THROW_EXPR)
 	  ^ (TREE_CODE (arg3) == THROW_EXPR))
 	result_type = ((TREE_CODE (arg2) == THROW_EXPR) 
-		       ? arg2_type : arg3_type);
+		       ? arg3_type : arg2_type);
       else if (arg2_void_p && arg3_void_p)
 	result_type = void_type_node;
       else
