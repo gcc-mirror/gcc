@@ -13554,6 +13554,9 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
   /* Start the statement-tree, start the tree now.  */
   begin_stmt_tree (&DECL_SAVED_TREE (decl1));
 
+  /* Don't double-count statements in templates.  */
+  DECL_NUM_STMTS (decl1) = 0;
+
   /* Let the user know we're compiling this function.  */
   announce_function (decl1);
 
