@@ -1,6 +1,6 @@
 /* Configuration for GNU compiler
    for an Intel i386 or later processor running OS/2 2.x.
-   Copyright (C) 1993, 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Samuel Figueroa (figueroa@apple.com)
 
 This file is part of GNU CC.
@@ -54,6 +54,12 @@ int spawnvp (int modeflag, char *path, char *argv[]);
 #ifndef DIR_SEPARATOR
 #define DIR_SEPARATOR '\\'
 #endif
+#ifndef DIR_SEPARATOR_2
+#define DIR_SEPARATOR_2 '/'
+#endif
+
+/* Allow handling of drive names. */
+#define HAVE_DOS_BASED_FILE_SYSTEM
 
 #define EXECUTABLE_SUFFIX ".exe"
 

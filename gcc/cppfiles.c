@@ -1168,7 +1168,7 @@ simplify_pathname (path)
     char *base;
     int absolute = 0;
 
-#if defined _WIN32 || defined __MSDOS__
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
     /* Convert all backslashes to slashes. */
     for (from = path; *from; from++)
 	if (*from == '\\') *from = '/';

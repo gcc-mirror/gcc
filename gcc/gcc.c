@@ -66,6 +66,14 @@ compilation is specified by a string called a "spec".  */
 #define DIR_SEPARATOR '/'
 #endif
 
+/* Define IS_DIR_SEPARATOR.  */
+#ifndef DIR_SEPARATOR_2
+# define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
+#else /* DIR_SEPARATOR_2 */
+# define IS_DIR_SEPARATOR(ch) \
+	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
+#endif /* DIR_SEPARATOR_2 */
+
 static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 
 #define obstack_chunk_alloc xmalloc
@@ -1991,10 +1999,12 @@ find_a_file (pprefix, name, mode)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (*name == '/' || *name == DIR_SEPARATOR
+  if (IS_DIR_SEPARATOR (*name)
+#ifdef HAVE_DOS_BASED_FILESYSTEM
       /* Check for disk name on MS-DOS-based systems.  */
-      || (DIR_SEPARATOR == '\\' && name[1] == ':'
-	  && (name[2] == DIR_SEPARATOR || name[2] == '/')))
+      || (name[0] && name[1] == ':' && IS_DIR_SEPARATOR (name[2]))
+#endif
+      )
     {
       if (access (name, mode) == 0)
 	{
@@ -2434,7 +2444,7 @@ convert_filename (name, do_exe)
     return name;
 
   for (i = len - 1; i >= 0; i--)
-    if (name[i] == '/' || name[i] == DIR_SEPARATOR)
+    if (IS_DIR_SEPARATOR (name[i]))
       break;
 
   for (i++; i < len; i++)
@@ -2597,13 +2607,12 @@ process_command (argc, argv)
     {
       int len = strlen (gcc_exec_prefix);
       if (len > (int) sizeof ("/lib/gcc-lib/")-1
-	  && (gcc_exec_prefix[len-1] == '/'
-	      || gcc_exec_prefix[len-1] == DIR_SEPARATOR))
+	  && (IS_DIR_SEPARATOR (gcc_exec_prefix[len-1])))
 	{
 	  temp = gcc_exec_prefix + len - sizeof ("/lib/gcc-lib/") + 1;
-	  if ((*temp == '/' || *temp == DIR_SEPARATOR)
+	  if (IS_DIR_SEPARATOR (*temp)
 	      && strncmp (temp+1, "lib", 3) == 0
-	      && (temp[4] == '/' || temp[4] == DIR_SEPARATOR)
+	      && IS_DIR_SEPARATOR (temp[4])
 	      && strncmp (temp+5, "gcc-lib", 7) == 0)
 	    len -= sizeof ("/lib/gcc-lib/") - 1;
 	}
@@ -2630,7 +2639,7 @@ process_command (argc, argv)
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
 		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
-	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
+	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
@@ -2664,7 +2673,7 @@ process_command (argc, argv)
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
 		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
-	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
+	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
@@ -2697,7 +2706,7 @@ process_command (argc, argv)
 	      strncpy (nstore, startp, endp-startp);
 	      if (endp == startp)
 		strcpy (nstore, concat (".", dir_separator_str, NULL_PTR));
-	      else if (endp[-1] != '/' && endp[-1] != DIR_SEPARATOR)
+	      else if (!IS_DIR_SEPARATOR (endp[-1]))
 		{
 		  nstore[endp-startp] = DIR_SEPARATOR;
 		  nstore[endp-startp+1] = 0;
@@ -2902,12 +2911,10 @@ process_command (argc, argv)
 		  int len = strlen (value);
 		  if ((len == 7
 		       || (len > 7
-			   && (value[len - 8] == '/'
-			       || value[len - 8] == DIR_SEPARATOR)))
+			   && (IS_DIR_SEPARATOR (value[len - 8]))))
 		      && strncmp (value + len - 7, "stage", 5) == 0
 		      && ISDIGIT (value[len - 2])
-		      && (value[len - 1] == '/'
-			  || value[len - 1] == DIR_SEPARATOR))
+		      && (IS_DIR_SEPARATOR (value[len - 1])))
 		    {
 		      if (len == 7)
 			add_prefix (&include_prefixes, "include", NULL_PTR,
@@ -3074,7 +3081,7 @@ process_command (argc, argv)
      directories, so that we can search both the user specified directory
      and the standard place.  */
 
-  if (*tooldir_prefix != '/' && *tooldir_prefix != DIR_SEPARATOR)
+  if (!IS_DIR_SEPARATOR (*tooldir_prefix))
     {
       if (gcc_exec_prefix)
 	{
@@ -3525,7 +3532,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Relative directories always come from -B,
 		     and it is better not to use them for searching
 		     at run time.  In particular, stage1 loses  */
-		  if (pl->prefix[0] != '/' && pl->prefix[0] != DIR_SEPARATOR)
+		  if (!IS_DIR_SEPARATOR (pl->prefix[0]))
 		    continue;
 #endif
 		  /* Try subdirectory if there is one.  */
@@ -3582,8 +3589,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  buffer = (char *) xrealloc (buffer, bufsize);
 			  strcpy (buffer, machine_suffix);
 			  idx = strlen (buffer);
-			  if (buffer[idx - 1] == '/'
-			      || buffer[idx - 1] == DIR_SEPARATOR)
+			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
 			    buffer[idx - 1] = 0;
 			  do_spec_1 (buffer, 1, NULL_PTR);
 			  /* Make this a separate argument.  */
@@ -3604,8 +3610,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  buffer = (char *) xrealloc (buffer, bufsize);
 			  strcpy (buffer, pl->prefix);
 			  idx = strlen (buffer);
-			  if (buffer[idx - 1] == '/'
-			      || buffer[idx - 1] == DIR_SEPARATOR)
+			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
 			    buffer[idx - 1] = 0;
 			  do_spec_1 (buffer, 1, NULL_PTR);
 			  /* Make this a separate argument.  */
@@ -4598,7 +4603,7 @@ is_directory (path1, path2, linker)
   memcpy (path, path1, len1);
   memcpy (path + len1, path2, len2);
   cp = path + len1 + len2;
-  if (cp[-1] != '/' && cp[-1] != DIR_SEPARATOR)
+  if (!IS_DIR_SEPARATOR (cp[-1]))
     *cp++ = DIR_SEPARATOR;
   *cp++ = '.';
   *cp = '\0';
@@ -4646,7 +4651,8 @@ main (argc, argv)
   struct user_specs *uptr;
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/' && p[-1] != DIR_SEPARATOR) --p;
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
+    --p;
   programname = p;
 
 #ifdef HAVE_LC_MESSAGES
@@ -4848,14 +4854,12 @@ main (argc, argv)
 	 standard_exec_prefix.  This lets us move the installed tree
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
-      if (*standard_startfile_prefix == '/'
-	  || *standard_startfile_prefix == DIR_SEPARATOR
-	  || *standard_startfile_prefix == '$'
-#ifdef __MSDOS__
-	  /* Check for disk name on MS-DOS-based systems.  */
+      if (IS_DIR_SEPARATOR (*standard_startfile_prefix)
+	    || *standard_startfile_prefix == '$'
+#ifdef HAVE_DOS_BASED_FILESYSTEM
+  	    /* Check for disk name on MS-DOS-based systems.  */
           || (standard_startfile_prefix[1] == ':'
-	      && (standard_startfile_prefix[2] == DIR_SEPARATOR
-		  || standard_startfile_prefix[2] == '/'))
+	      && (IS_DIR_SEPARATOR (standard_startfile_prefix[2])))
 #endif
 	  )
 	add_prefix (&startfile_prefixes, standard_startfile_prefix, "BINUTILS",
@@ -4884,7 +4888,7 @@ main (argc, argv)
     }
   else
     {
-      if (*standard_startfile_prefix != DIR_SEPARATOR && gcc_exec_prefix)
+      if (!IS_DIR_SEPARATOR (*standard_startfile_prefix) && gcc_exec_prefix)
 	add_prefix (&startfile_prefixes,
 		    concat (gcc_exec_prefix, machine_suffix,
 			    standard_startfile_prefix, NULL_PTR),
@@ -5046,7 +5050,7 @@ main (argc, argv)
 
 	  input_basename = input_filename;
 	  for (p = input_filename; *p; p++)
-	    if (*p == '/' || *p == DIR_SEPARATOR)
+	    if (IS_DIR_SEPARATOR (*p))
 	      input_basename = p + 1;
 
 	  /* Find a suffix starting with the last period,

@@ -81,6 +81,17 @@ static char *lookup_key		PROTO((char *));
 static HKEY reg_key = (HKEY) INVALID_HANDLE_VALUE;
 #endif
 
+#ifndef DIR_SEPARATOR
+# define IS_DIR_SEPARATOR(ch) ((ch) == '/')
+#else /* DIR_SEPARATOR */
+# ifndef DIR_SEPARATOR_2
+#  define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
+# else /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
+#  define IS_DIR_SEPARATOR(ch) \
+	(((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
+# endif /* DIR_SEPARATOR && DIR_SEPARATOR_2 */
+#endif /* DIR_SEPARATOR */
+
 /* Given KEY, as above, return its value.  */
 
 static const char *
@@ -241,11 +252,7 @@ translate_name (name)
     return name;
 
   for (keylen = 0;
-       (name[keylen + 1] != 0 && name[keylen + 1] != '/'
-#ifdef DIR_SEPARATOR
-	&& name[keylen + 1] != DIR_SEPARATOR
-#endif
-	);
+       (name[keylen + 1] != 0 && !IS_DIR_SEPARATOR (name[keylen + 1]));
        keylen++)
     ;
 
@@ -268,11 +275,7 @@ translate_name (name)
     prefix = PREFIX;
 
   /* Remove any trailing directory separator from what we got.  */
-  if (prefix[strlen (prefix) - 1] == '/'
-#ifdef DIR_SEPARATOR
-      || prefix[strlen (prefix) - 1] == DIR_SEPARATOR
-#endif
-      )
+  if (IS_DIR_SEPARATOR (prefix[strlen (prefix) - 1]))
     {
       char * temp = save_string (prefix, strlen (prefix));
       temp[strlen (temp) - 1] = 0;
@@ -299,17 +302,33 @@ update_path (path, key)
       while (path[0] == '@' || path[0] == '$')
 	path = translate_name (path);
     }
+
+#ifdef DIR_SEPARATOR_2
+  /* Convert DIR_SEPARATOR_2 to DIR_SEPARATOR. */
+  if (DIR_SEPARATOR != DIR_SEPARATOR_2)
+    {
+      int i;
+      int len = strlen (path);
+      char *new_path = save_string (path, len);
+      for (i = 0; i < len; i++)
+        if (new_path[i] == DIR_SEPARATOR_2)
+          new_path[i] = DIR_SEPARATOR;
+      path = new_path;
+    }
+#endif
       
-#ifdef DIR_SEPARATOR
+#if defined (DIR_SEPARATOR) && !defined (DIR_SEPARATOR_2)
   if (DIR_SEPARATOR != '/')
     {
       int i;
       int len = strlen (path);
+      char *new_path = save_string (path, len);
 
-      path = save_string (path, len);
       for (i = 0; i < len; i++)
-	if (path[i] == '/')
-	  path[i] = DIR_SEPARATOR;
+        if (new_path[i] == '/')
+          new_path[i] = DIR_SEPARATOR;
+
+      path = new_path;
     }
 #endif
 

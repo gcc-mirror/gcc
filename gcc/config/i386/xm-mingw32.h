@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows32.
    using GNU tools and the Windows32 API Library.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,6 +36,12 @@ Boston, MA 02111-1307, USA. */
 
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'
+#define DIR_SEPARATOR_2 '/'
+
+/* Mingw32 does not try to hide the underlying DOS-based file system
+   like Cygwin does.  */
+#define HAVE_DOS_BASED_FILE_SYSTEM
+
 #define EXECUTABLE_SUFFIX ".exe"
 
 #undef PATH_SEPARATOR

@@ -823,9 +823,8 @@ find_a_file (pprefix, name)
   /* Determine the filename to execute (special case for absolute paths).  */
 
   if (*name == '/'
-#ifdef DIR_SEPARATOR
-      || (DIR_SEPARATOR == '\\' && name[1] == ':'
-      && (name[2] == DIR_SEPARATOR || name[2] == '/'))
+#ifdef HAVE_DOS_BASED_FILE_SYSTEM
+      || (*name && name[1] == ':')
 #endif
       )
     {
@@ -838,6 +837,16 @@ find_a_file (pprefix, name)
 	  
 	  return temp;
 	}
+
+#ifdef EXECUTABLE_SUFFIX
+	/* Some systems have a suffix for executable files.
+	   So try appending that.  */
+      strcpy (temp, name);
+	strcat (temp, EXECUTABLE_SUFFIX);
+	
+	if (access (temp, X_OK) == 0)
+	  return temp;
+#endif
 
       if (debug)
 	fprintf (stderr, "  - failed to locate using absolute path\n");

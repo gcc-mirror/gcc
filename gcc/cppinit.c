@@ -430,7 +430,7 @@ base_name (fname)
 {
   char *s = (char *)fname;
   char *p;
-#if defined (__MSDOS__) || defined (_WIN32)
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   if (ISALPHA (s[0]) && s[1] == ':') s += 2;
   if ((p = rindex (s, '\\'))) s = p + 1;
 #elif defined VMS
