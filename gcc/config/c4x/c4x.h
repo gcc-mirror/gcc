@@ -22,8 +22,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#include "hwint.h"
-
 /* RUN-TIME TARGET SPECIFICATION.  */
 
 #define C4x   1
@@ -1648,14 +1646,6 @@ fini_section ()							\
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION c4x_asm_named_section
 
-/* The TI assembler wants to have hex numbers this way.  */
-
-#undef HOST_WIDE_INT_PRINT_HEX
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-# define HOST_WIDE_INT_PRINT_HEX "0%lxh"
-#else
-# define HOST_WIDE_INT_PRINT_HEX "0%llxh"
-#endif
 
 /* Overall Framework of an Assembler File.  */
 /* We need to have a data section we can identify so that we can set
