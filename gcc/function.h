@@ -456,6 +456,8 @@ struct function
   struct machine_function *machine;
   /* The largest alignment of slot allocated on the stack.  */
   int stack_alignment_needed;
+  /* Preferred alignment of the end of stack frame.  */
+  int preferred_stack_boundary;
 
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function *language;

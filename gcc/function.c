@@ -5686,6 +5686,9 @@ prepare_function_start ()
   cfun->original_arg_vector = 0;  
 
   cfun->stack_alignment_needed = 0;
+#ifdef STACK_BOUNDARY
+  cfun->preferred_stack_boundary = STACK_BOUNDARY;
+#endif
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;

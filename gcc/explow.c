@@ -1178,6 +1178,13 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
     size = convert_to_mode (Pmode, size, 1);
 
+  /* We can't attempt to minimize alignment necessary, because we don't
+     know the final value of preferred_stack_boundary yet while executing
+     this code.  */
+#ifdef PREFERRED_STACK_BOUNDARY
+  cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#endif
+
   /* We will need to ensure that the address we return is aligned to
      BIGGEST_ALIGNMENT.  If STACK_DYNAMIC_OFFSET is defined, we don't
      always know its final value at this point in the compilation (it 

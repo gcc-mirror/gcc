@@ -1,3 +1,21 @@
+Mon Feb  7 18:36:41 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (compute_argument_block_size): New argument
+	preferred_stack_boundary.
+	(expand_call): update cfun->preferred_stack_boundary, update call of
+	compute_argument_block_size
+	(emit_library_call): Increate cfun->preferred_stack_boundary
+	to PREFERRED_STACK_BOUNDARY
+	(emit_library_call_value): Likewise.
+	* explow.c (allocate_dynamic_stack_spave): Likewise.
+	* function.c (prepare_function_start): Set
+	cfun->preferred_stack_boundary
+	* function.h (struct function): Add preferred_stack_boundary field.
+	* integrate.c (expand_inline_function): Update
+	cfun->preferred_stack_boundary and cfun->stack_alignment_needed.
+	(copy_rtx_and_substitute): Align frame to stack_alignment_needed only.
+	* i386.c (compute_frame_size): Use cfun->preferred_stack_boundary.
+
 2000-02-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (my_strerror, cpp_error, cpp_error_with_line,
