@@ -2337,7 +2337,7 @@ emit_associated_thunks (fn)
      is so that you can know statically the entire set of thunks that
      will ever be needed for a given virtual function, thereby
      enabling you to output all the thunks with the function itself.  */
-  if (vcall_offsets_in_vtable_p () && DECL_VIRTUAL_P (fn))
+  if (DECL_VIRTUAL_P (fn))
     {
       tree binfo;
       tree v;
@@ -2403,8 +2403,8 @@ expand_body (fn)
 				simplify_aggr_init_exprs_r,
 				NULL);
 
-  /* If this is a constructor or destructor body, we have to clone it
-     under the new ABI.  */
+  /* If this is a constructor or destructor body, we have to clone
+     it.  */
   if (maybe_clone_body (fn))
     {
       /* We don't want to process FN again, so pretend we've written

@@ -133,11 +133,9 @@ Boston, MA 02111-1307, USA.  */
      The BV_FN is the declaration for the virtual function itself.
 
    BINFO_VTABLE
-     Sometimes this is a VAR_DECL.  Under the new ABI, it is instead
-     an expression with POINTER_TYPE pointing that gives the value
+     This is an expression with POINTER_TYPE that gives the value
      to which the vptr should be initialized.  Use get_vtbl_decl_for_binfo
-     to extract the VAR_DECL for the complete vtable; that macro works
-     in both ABIs.
+     to extract the VAR_DECL for the complete vtable.
 
    DECL_ARGUMENTS
      For a VAR_DECL this is DECL_ANON_UNION_ELEMS.
@@ -223,40 +221,6 @@ extern int flag_rtti;
    objects.  */
 
 extern int flag_huge_objects;
-
-/* Nonzero if virtual base class offsets are stored in the virtual
-   function table.  Zero if, instead, a pointer to the virtual base is
-   stored in the object itself.  */
-#define vbase_offsets_in_vtable_p() (1)
-
-/* Nonzero if displacements to the `this' pointer to use when calling
-   virtual functions in a virtual base class are present in the
-   vtable.  */
-#define vcall_offsets_in_vtable_p() (1)
-
-/* Nonzero if a derived class that needs a vptr should always get one,
-   even if a non-primary base class already has one.  For example,
-   given:
-
-     struct S { int i; virtual void f(); };
-     struct T : virtual public S {};
-
-   one could either reuse the vptr in `S' for `T', or create a new
-   vptr for `T'.  If this flag is nonzero we choose the latter
-   alternative; otherwise, we choose the former.  */
-#define vptrs_present_everywhere_p() (1)
-
-/* Nonzero if the vtable for a derived class should contain the
-   virtual functions from the primary base and all virtual functions
-   present in the class itself.  Zero if, instead, it should contain
-   only those virtual functions from the primary base together with
-   the functions declared in the derived class (but not in any base
-   class).  */
-#define all_overridden_vfuns_in_vtables_p() (1)
-
-/* Nonzero if primary and secondary vtables are combined into a single
-   vtable.  */
-#define merge_primary_and_secondary_vtables_p() (1)
 
 
 /* Language-dependent contents of an identifier.  */
@@ -2431,8 +2395,7 @@ struct lang_decl
 /* Nonzero if this class has a virtual function table pointer.  */
 #define TYPE_CONTAINS_VPTR_P(NODE)		\
   (TYPE_POLYMORPHIC_P (NODE)			\
-   || (vbase_offsets_in_vtable_p ()		\
-       && TYPE_USES_VIRTUAL_BASECLASSES (NODE)))
+   || TYPE_USES_VIRTUAL_BASECLASSES (NODE))
 
 extern int flag_new_for_scope;
 
@@ -2587,67 +2550,15 @@ extern int flag_new_for_scope;
 
 /* A pointer-to-function member type looks like:
 
-   struct {
-     short __delta;
-     short __index;
-     union {
-       P __pfn;
-       short __delta2;
-     } __pfn_or_delta2;
-   };
-
-   where P is a POINTER_TYPE to a METHOD_TYPE appropriate for the
-   pointer to member.  The fields are used as follows:
-
-     If __INDEX is -1, then the function to call is non-virtual, and
-     is located at the address given by __PFN.
-
-     If __INDEX is zero, then this a NULL pointer-to-member.
-
-     Otherwise, the function to call is virtual.  Then, __DELTA2 gives
-     the offset from an instance of the object to the virtual function
-     table, and __INDEX - 1 is the index into the vtable to use to
-     find the function.
-
-     The value to use for the THIS parameter is the address of the
-     object plus __DELTA.
-
-   For example, given:
-
-     struct B1 {
-       int i;
-     };
-
-     struct B2 {
-       double d;
-       void f();
-     };
-
-     struct S : public B1, B2 {};
-
-   the pointer-to-member for `&S::f' looks like:
-
-     { 4, -1, { &f__2B2 } };
-
-   The `4' means that given an `S*' you have to add 4 bytes to get to
-   the address of the `B2*'.  Then, the -1 indicates that this is a
-   non-virtual function.  Of course, `&f__2B2' is the name of that
-   function.
-
-   (Of course, the exact values may differ depending on the mangling
-   scheme, sizes of types, and such.).
-
-   Under the new ABI, we do:
-
      struct {
        __P __pfn;
        ptrdiff_t __delta;
      };
 
-   (We don't need DELTA2, because the vtable is always the first thing
-   in the object.)  If the function is virtual, then PFN is one plus
-   twice the index into the vtable; otherwise, it is just a pointer to
-   the function.
+   (As the vtable is always the first thing in the object, we don't
+   need an offset to it.)  If the function is virtual, then PFN is one
+   plus twice the index into the vtable; otherwise, it is just a
+   pointer to the function.
 
    Unfortunately, using the lowest bit of PFN doesn't work in
    architectures that don't impose alignment requirements on function
@@ -3341,15 +3252,6 @@ extern varray_type local_classes;
 #define VTABLE_DELTA2_NAME	"__delta2"
 
 #define EXCEPTION_CLEANUP_NAME	"exception cleanup"
-
-/* The name used as a prefix for VTTs.  When the new ABI mangling
-   scheme is implemented, this should be removed.  */
-
-#define VTT_NAME_PREFIX "__vtt_"
-
-/* The name used as a prefix for construction vtables.  */
-
-#define CTOR_VTBL_NAME_PREFIX "__ctorvt_"
 
 #define THIS_NAME_P(ID_NODE) (strcmp(IDENTIFIER_POINTER (ID_NODE), "this") == 0)
 
@@ -4165,7 +4067,6 @@ extern tree lookup_fnfields			PARAMS ((tree, tree, int));
 extern tree lookup_member			PARAMS ((tree, tree, int, int));
 extern int look_for_overrides			PARAMS ((tree, tree));
 extern void get_pure_virtuals		        PARAMS ((tree));
-extern tree init_vbase_pointers			PARAMS ((tree, tree));
 extern void get_vbase_types			PARAMS ((tree));
 extern void maybe_suppress_debug_info		PARAMS ((tree));
 extern void note_debug_info_needed		PARAMS ((tree));

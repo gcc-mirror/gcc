@@ -175,9 +175,9 @@ initialize_vtbl_ptrs (addr)
   list = build_tree_list (type, addr);
 
   /* Walk through the hierarchy, initializing the vptr in each base
-     class.  We do these in pre-order because under the new ABI we
-     can't find the virtual bases for a class until we've initialized
-     the vtbl for that class.  */
+     class.  We do these in pre-order because can't find the virtual
+     bases for a class until we've initialized the vtbl for that
+     class.  */
   dfs_walk_real (TYPE_BINFO (type), dfs_initialize_vtbl_ptrs, 
 		 NULL, dfs_unmarked_real_bases_queue_p, list);
   dfs_walk (TYPE_BINFO (type), dfs_unmark,
@@ -851,8 +851,8 @@ expand_virtual_init (binfo, decl)
   /* Compute the initializer for vptr.  */
   vtbl = build_vtbl_address (binfo);
 
-  /* Under the new ABI, we may get this vptr from a VTT, if this is a
-     subobject constructor or subobject destructor.  */
+  /* We may get this vptr from a VTT, if this is a subobject
+     constructor or subobject destructor.  */
   vtt_index = BINFO_VPTR_INDEX (binfo);
   if (vtt_index)
     {
@@ -950,22 +950,6 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 
   /* If there are no virtual baseclasses, we shouldn't even be here.  */
   my_friendly_assert (TYPE_USES_VIRTUAL_BASECLASSES (type), 19990621);
-
-  /* First set the pointers in our object that tell us where to find
-     our virtual baseclasses.  */
-  if (!vbase_offsets_in_vtable_p ())
-    {
-      tree if_stmt;
-      tree result;
-
-      if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (flag, if_stmt);
-      result = init_vbase_pointers (type, this_ptr);
-      if (result)
-	finish_expr_stmt (build_compound_expr (result));
-      finish_then_clause (if_stmt);
-      finish_if_stmt ();
-    }
 
   /* Now, run through the baseclasses, initializing each.  */ 
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases;
@@ -2213,7 +2197,7 @@ build_java_class_ref (type)
       jclass_node = TREE_TYPE (jclass_node);
     }
 
-  /* Mangle the class$ field, new and old ABI */
+  /* Mangle the class$ field */
   {
     tree field;
     for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -2252,8 +2236,8 @@ get_cookie_size (type)
 {
   tree cookie_size;
 
-  /* Under the new ABI, we need to allocate an additional max
-     (sizeof (size_t), alignof (true_type)) bytes.  */
+  /* We need to allocate an additional max (sizeof (size_t), alignof
+     (true_type)) bytes.  */
   tree sizetype_size;
   tree type_align;
   
@@ -2360,9 +2344,7 @@ build_new_1 (exp)
   if (!has_array || !TYPE_VEC_NEW_USES_COOKIE (true_type))
     use_cookie = 0;
   /* When using placement new, users may not realize that they need
-     the extra storage.  Under the old ABI, we don't allocate the
-     cookie whenever they use one placement argument of type `void
-     *'.  Under the new ABI, we require that the operator called be
+     the extra storage.  We require that the operator called be
      the global placement operator delete[].  */
   else if (placement && !TREE_CHAIN (placement) 
 	   && same_type_p (TREE_TYPE (TREE_VALUE (placement)),
@@ -2479,9 +2461,8 @@ build_new_1 (exp)
       tree cookie;
 
       /* Store the number of bytes allocated so that we can know how
-	 many elements to destroy later.  Under the new ABI, we use
-	 the last sizeof (size_t) bytes to store the number of
-	 elements.  */
+	 many elements to destroy later.  We use the last sizeof
+	 (size_t) bytes to store the number of elements.  */
       cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
 		      alloc_node, size_in_bytes (sizetype));
       cookie = build_indirect_ref (cookie, NULL);

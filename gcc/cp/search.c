@@ -102,7 +102,6 @@ static tree marked_pushdecls_p PARAMS ((tree, void *));
 static tree unmarked_pushdecls_p PARAMS ((tree, void *));
 static tree dfs_debug_unmarkedp PARAMS ((tree, void *));
 static tree dfs_debug_mark PARAMS ((tree, void *));
-static tree dfs_init_vbase_pointers PARAMS ((tree, void *));
 static tree dfs_get_vbase_types PARAMS ((tree, void *));
 static tree dfs_push_type_decls PARAMS ((tree, void *));
 static tree dfs_push_decls PARAMS ((tree, void *));
@@ -140,7 +139,6 @@ static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
 static tree dfs_find_vbase_instance PARAMS ((tree, void *));
 static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
 static tree dfs_build_inheritance_graph_order PARAMS ((tree, void *));
-static tree dfs_vtable_path_unmark PARAMS ((tree, void *));
 
 /* Allocate a level of searching.  */
 
@@ -2335,108 +2333,6 @@ dfs_unmark (binfo, data)
 }
 
 
-static tree
-dfs_init_vbase_pointers (binfo, data)
-     tree binfo;
-     void *data;
-{
-  struct vbase_info *vi = (struct vbase_info *) data;
-  tree type = BINFO_TYPE (binfo);
-  tree fields;
-  tree this_vbase_ptr;
-
-  /* Don't initialize the same base more than once.  */
-  SET_BINFO_VTABLE_PATH_MARKED (binfo);
-
-  /* We know that VI->DECL_PTR points to the complete object.  So,
-     finding a pointer to this subobject is easy.  */
-  this_vbase_ptr = build (PLUS_EXPR,
-			  build_pointer_type (type),
-			  vi->decl_ptr,
-			  BINFO_OFFSET (binfo));
-
-  /* We're going to iterate through all the pointers to virtual
-     base-classes.  They come at the beginning of the class.  */
-  fields = TYPE_FIELDS (type);
-
-  if (fields == NULL_TREE
-      || DECL_NAME (fields) == NULL_TREE
-      || ! VBASE_NAME_P (DECL_NAME (fields)))
-    return NULL_TREE;
-
-  if (build_pointer_type (type) 
-      != TYPE_MAIN_VARIANT (TREE_TYPE (this_vbase_ptr)))
-    my_friendly_abort (125);
-
-  while (fields && DECL_NAME (fields) && VBASE_NAME_P (DECL_NAME (fields)))
-    {
-      tree ref = build (COMPONENT_REF, TREE_TYPE (fields),
-			build_indirect_ref (this_vbase_ptr, NULL), fields);
-      tree init;
-      tree vbase_type;
-      tree vbase_binfo;
-
-      vbase_type = TREE_TYPE (TREE_TYPE (fields));
-      vbase_binfo = binfo_for_vbase (vbase_type, vi->type);
-      init = build (PLUS_EXPR, 
-		    build_pointer_type (vbase_type),
-		    vi->decl_ptr,
-		    BINFO_OFFSET (vbase_binfo));
-      vi->inits 
-	= tree_cons (vbase_binfo,
-		     build_modify_expr (ref, NOP_EXPR, init),
-		     vi->inits);
-      fields = TREE_CHAIN (fields);
-    }
-  
-  return NULL_TREE;
-}
-
-/* Call CLEAR_BINFO_VTABLE_PATH_MARKED for BINFO.  */
-
-static tree
-dfs_vtable_path_unmark (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  CLEAR_BINFO_VTABLE_PATH_MARKED (binfo);
-  return NULL_TREE;
-}
-
-tree
-init_vbase_pointers (type, decl_ptr)
-     tree type;
-     tree decl_ptr;
-{
-  my_friendly_assert (!vbase_offsets_in_vtable_p (), 20000516);
-
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-    {
-      struct vbase_info vi;
-      tree binfo = TYPE_BINFO (type);
-
-      /* Find all the virtual base classes, marking them for later
-	 initialization.  */
-      vi.type = type;
-      vi.decl_ptr = decl_ptr;
-      vi.inits = NULL_TREE;
-
-      /* Build up a list of the initializers.  */
-      dfs_walk_real (binfo, 
-		     dfs_init_vbase_pointers, 0,
-		     unmarked_vtable_pathp,
-		     &vi);
-      dfs_walk (binfo,
-		dfs_vtable_path_unmark,
-		marked_vtable_pathp,
-		NULL);
-
-      return vi.inits;
-    }
-
-  return 0;
-}
-
 /* get the virtual context (the vbase that directly contains the
    DECL_CONTEXT of the FNDECL) that the given FNDECL is declared in,
    or NULL_TREE if there is none.

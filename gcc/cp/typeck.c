@@ -6105,8 +6105,7 @@ build_ptrmemfunc (type, pfn, force)
 	  delta = build_component_ref (pfn, delta_identifier, NULL_TREE, 0);
 	}
 
-      /* Under the new ABI, the conversion is easy.  Just adjust
-	 the DELTA field.  */
+      /* Just adjust the DELTA field.  */
       delta = cp_convert (ptrdiff_type_node, delta);
       if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
 	n = cp_build_binary_op (LSHIFT_EXPR, n, integer_one_node);
@@ -6171,10 +6170,9 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
       *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
 			    *delta, BINFO_OFFSET (binfo)));
 
-      /* Under the new ABI, we set PFN to the vtable offset at
-	 which the function can be found, plus one (unless
-	 ptrmemfunc_vbit_in_delta, in which case delta is shifted
-	 left, and then incremented).  */
+      /* We set PFN to the vtable offset at which the function can be
+	 found, plus one (unless ptrmemfunc_vbit_in_delta, in which
+	 case delta is shifted left, and then incremented).  */
       *pfn = DECL_VINDEX (fn);
       *pfn = fold (build (MULT_EXPR, integer_type_node, *pfn,
 			  TYPE_SIZE_UNIT (vtable_entry_type)));

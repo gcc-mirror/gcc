@@ -48,8 +48,7 @@ Boston, MA 02111-1307, USA.  */
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
 #ifndef BOOL_TYPE_SIZE
-/* In the new ABI, `bool' has size and alignment `1', on all
-   platforms.  */
+/* `bool' has size and alignment `1', on all platforms.  */
 #define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
 #endif
 
@@ -9475,7 +9474,6 @@ check_special_function_return_type (sfk, type, optype)
       if (type)
 	cp_error ("return type specification for constructor invalid");
 
-      /* In the new ABI constructors do not return a value.  */
       type = void_type_node;
       break;
 
