@@ -38,28 +38,34 @@
   ctype<char>::
   is(mask __m, char __c) const
   { 
-    if (__m & (digit | xdigit))
-      return __isctype(__c, __m);
-    else
-      return __istype(__c, __m);
+    return __istype(__c, __m);
   }
 
   const char*
   ctype<char>::
   is(const char* __low, const char* __high, mask* __vec) const
   {
-    const int __bitmasksize = 11; // Highest bitmask in ctype_base == 10
     for (;__low < __high; ++__vec, ++__low)
       {
+#if defined (_CTYPE_S) || defined (__istype)
+	*__vec = __maskrune (*__low, upper | lower | alpha | digit | xdigit
+			     | space | print | graph | cntrl | punct | alnum);
+#else
 	mask __m = 0;
-	int __i = 0; // Lowest bitmask in ctype_base == 0
-	for (;__i < __bitmasksize; ++__i)
-	  {
-	    mask __bit = static_cast<mask>(1 << __i);
-	    if (this->is(__bit, *__low))
-	      __m |= __bit;
-	  }
+	if (this->is(upper, *__low)) __m |= upper;
+	if (this->is(lower, *__low)) __m |= lower;
+	if (this->is(alpha, *__low)) __m |= alpha;
+	if (this->is(digit, *__low)) __m |= digit;
+	if (this->is(xdigit, *__low)) __m |= xdigit;
+	if (this->is(space, *__low)) __m |= space;
+	if (this->is(print, *__low)) __m |= print;
+	if (this->is(graph, *__low)) __m |= graph;
+	if (this->is(cntrl, *__low)) __m |= cntrl;
+	if (this->is(punct, *__low)) __m |= punct;
+	// Do not include explicit line for alnum mask since it is a
+	// pure composite of masks on FreeBSD.
 	*__vec = __m;
+#endif
       }
     return __high;
   }
