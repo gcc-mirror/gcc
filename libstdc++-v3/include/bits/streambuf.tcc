@@ -203,6 +203,9 @@ namespace std
       streamsize __ret = 0;
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
+      const typename _Traits::off_type __size_opt =
+	__sbin->_M_buf_size_opt > 0 ? __sbin->_M_buf_size_opt : 1;
+
       try 
 	{
 	  while (__bufsize != -1)
@@ -218,12 +221,33 @@ namespace std
 		}
  	      else 
 		{
-		  size_t __size =
-		    __sbin->_M_buf_size_opt > 0 ? __sbin->_M_buf_size_opt : 1;
-		  _CharT* __buf =
-		    static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __size));
-		  streamsize __charsread = __sbin->sgetn(__buf, __size);
-		  __xtrct = __sbout->sputn(__buf, __charsread);
+		  streamsize __charsread;
+		  const streamsize __size =
+		    min(__size_opt, __sbout->_M_out_buf_size());
+		  if (__size > 1)
+		    {
+		      _CharT* __buf =
+			static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							      * __size));
+		      // Since the next sputn cannot fail sgetn can be
+		      // safely used.
+		      __charsread = __sbin->sgetn(__buf, __size);
+		      __xtrct = __sbout->sputn(__buf, __charsread);
+		    }
+		  else
+		    {
+		      __xtrct = __charsread = 0;
+		      int_type __c = __sbin->sgetc();
+		      while (!_Traits::eq_int_type(__c, _Traits::eof()))
+			{
+			  ++__charsread;
+			  if (_Traits::eq_int_type(__sbout->sputc(_Traits::to_char_type(__c)),
+						   _Traits::eof()))
+			    break;
+			  ++__xtrct;
+			  __c = __sbin->snextc();
+			}
+		    }		      
 		  __ret += __xtrct;
 		  if (__xtrct != __charsread)
 		    break;

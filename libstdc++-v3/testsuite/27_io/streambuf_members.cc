@@ -431,6 +431,91 @@ void test10()
   VERIFY( buf.result() == "Bad Moon Rising" );
 }
 
+// libstdc++/9424
+class Outbuf_2 : public std::streambuf
+{
+  char buf[1];
+
+public:
+  Outbuf_2()
+  {
+    setp(buf, buf + 1);
+  }
+
+  int_type overflow(int_type c)
+  {
+    int_type eof = traits_type::eof();
+    
+    if (pptr() < epptr())
+      {
+	if (traits_type::eq_int_type(c, eof))
+	  return traits_type::not_eof(c);
+	
+	*pptr() = traits_type::to_char_type(c);
+	pbump(1);
+	return c;
+      }
+
+    return eof;
+  }
+};
+
+class Inbuf_2 : public std::streambuf
+{
+  static const char buf[];
+  const char* current;
+  int size;
+
+public:
+  Inbuf_2()
+  {
+    current = buf;
+    size = std::strlen(buf);
+  }
+  
+  int_type underflow()
+  {
+    if (current < buf + size)
+      return traits_type::to_int_type(*current);
+    return traits_type::eof();
+  }
+  
+  int_type uflow()
+  {
+    if (current < buf + size)
+      return traits_type::to_int_type(*current++);
+    return traits_type::eof();
+  }
+};
+
+const char Inbuf_2::buf[] = "Atteivlis";
+
+// <1>
+void test11()
+{
+  bool test = true;
+
+  Inbuf_2 inbuf1;
+  std::istream is(&inbuf1);
+  Outbuf_2 outbuf1;
+  is >> &outbuf1;
+  VERIFY( inbuf1.sgetc() == 't' );
+  VERIFY( is.good() );
+}
+
+// <2>
+void test12()
+{ 
+  bool test = true;
+ 
+  Outbuf_2 outbuf2;
+  std::ostream os (&outbuf2);
+  Inbuf_2 inbuf2;
+  os << &inbuf2;
+  VERIFY( inbuf2.sgetc() == 't' );
+  VERIFY( os.good() );
+}
+
 int main() 
 {
   test01();
@@ -445,5 +530,7 @@ int main()
 
   test09();
   test10();
+  test11();
+  test12();
   return 0;
 }
