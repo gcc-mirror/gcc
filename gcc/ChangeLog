@@ -1,3 +1,13 @@
+2002-07-29  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Rename from
+	set_mem_attributes and add BITPOS argument.  Subtract it from
+	OFFSET when same is adjusted.
+	(set_mem_attributes): New wrapper function.
+	* expr.c (expand_assignment): Use set_mem_attributes_minus_bitpos;
+	remove offset adjustment hack.
+	* expr.h (set_mem_attributes_minus_bitpos): Declare.
+
 2002-07-29  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* Makefile.in (C_OBJS): Include c-pretty-print.o
