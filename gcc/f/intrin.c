@@ -1153,7 +1153,23 @@ ffeintrin_check_any_ (ffebld arglist)
   return FALSE;
 }
 
-/* Compare name to intrinsic's name.  Uses strcmp on arguments' names.
+/* Compare a forced-to-uppercase name with a known-upper-case name.  */
+
+static int
+upcasecmp_ (const char *name, const char *ucname)
+{
+  for ( ; *name != 0 && *ucname != 0; name++, ucname++)
+    {
+      int i = TOUPPER(*name) - *ucname;
+
+      if (i != 0)
+        return i;
+    }
+
+  return *name - *ucname;
+}
+
+/* Compare name to intrinsic's name.
    The intrinsics table is sorted on the upper case entries; so first
    compare irrespective of case on the `uc' entry.  If it matches,
    compare according to the setting of intrinsics case comparison mode.  */
@@ -1166,7 +1182,7 @@ ffeintrin_cmp_name_ (const void *name, const void *intrinsic)
   const char *const ic = ((const struct _ffeintrin_name_ *) intrinsic)->name_ic;
   int i;
 
-  if ((i = strcasecmp (name, uc)) == 0)
+  if ((i = upcasecmp_ (name, uc)) == 0)
     {
       switch (ffe_case_intrin ())
 	{
