@@ -3143,19 +3143,19 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      if (TREE_STATIC (decl) && DECL_SIZE (decl) == 0)
+      if (DECL_SIZE (decl) == 0
+	  && (TREE_STATIC (decl)
+	      ?
+		/* A static variable with an incomplete type
+		   is an error if it is initialized or `static'.
+		   Otherwise, let it through, but if it is not `extern'
+		   then it may cause an error message later.  */
+		!TREE_PUBLIC (decl) || DECL_INITIAL (decl)
+	      :
+		/* An automatic variable with an incomplete type
+		   is an error.  */
+		!TREE_EXTERNAL (decl)))
 	{
-	  /* A static variable with an incomplete type:
-	     that is an error if it is initialized or `static'.
-	     Otherwise, let it through, but if it is not `extern'
-	     then it may cause an error message later.  */
-	  if (! (TREE_PUBLIC (decl) && DECL_INITIAL (decl) == 0))
-	    error_with_decl (decl, "storage size of `%s' isn't known");
-	}
-      else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == 0)
-	{
-	  /* An automatic variable with an incomplete type:
-	     that is an error.  */
 	  error_with_decl (decl, "storage size of `%s' isn't known");
 	  TREE_TYPE (decl) = error_mark_node;
 	}
