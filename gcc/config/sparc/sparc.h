@@ -463,7 +463,7 @@ extern int target_flags;
 #define TARGET_HARD_QUAD (target_flags & MASK_HARD_QUAD)
 
 /* Nonzero on little-endian machines.  */
-/* ??? Little endian support currently only exists for sparclet-aout and
+/* ??? Little endian support currently only exists for sparc86x-elf and
    sparc64-elf configurations.  May eventually want to expand the support
    to all targets, but for now it's kept local to only those two.  */
 #define MASK_LITTLE_ENDIAN 0x1000
