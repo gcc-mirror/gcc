@@ -12521,7 +12521,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	{
 	case REG_BR_PROB:
 	case REG_BR_PRED:
-	case REG_EXEC_COUNT:
 	  /* Doesn't matter much where we put this, as long as it's somewhere.
 	     It is preferable to keep these notes on branches, which is most
 	     likely to be i3.  */
