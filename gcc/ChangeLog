@@ -1,3 +1,8 @@
+Sun Oct 25 12:07:00 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* i386/crtdll.h (CPP_PREDEFINES): Fix typo.
+	* i386/mingw32.h (CPP_PREDEFINES): Likewise.
+
 Fri Oct 23 23:42:03 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* loop.c (loop_has_tablejump): New variable.
