@@ -98,18 +98,18 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"s",1 },			\
-    {"no-s",-1},		\
-    {"int32",8},		\
-    {"addresses",64 },		\
-    {"quickcall",128},  	\
-    {"no-quickcall",-128},	\
-    {"slowbyte",256},		\
-    {"relax",1024},		\
-    {"rtl-dump",2048},		\
-    {"h",4096},			\
-    {"no-h",-4096},		\
-    {"align-300",8192},	\
+  { {"s",		1,     "Generate H8/S code"},			\
+    {"no-s",		-1,    "Do not generate H8/S code"},		\
+    {"int32",		8,     "Make integers 32 bits wide"},		\
+    {"addresses",	64,    NULL},					\
+    {"quickcall",	128,   "Use registers for argument passing"},  	\
+    {"no-quickcall",	-128,  "Do not use registers for argument passing"},\
+    {"slowbyte",	256,   "Consider access to byte sized memory slow"},\
+    {"relax",		1024,  "Enable linker relaxing"},		\
+    {"rtl-dump",	2048,  NULL},					\
+    {"h",		4096,  "Generate H8/300H code"},		\
+    {"no-h",		-4096, "Do not generate H8/300H code"},		\
+    {"align-300",	8192,  "Use H8/300 alignment rules"},		\
     { "", TARGET_DEFAULT}}
 
 /* Do things that must be done once at start up.  */
