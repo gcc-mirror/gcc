@@ -323,6 +323,7 @@ for combo in ${combinations}; do
     osdirout=`echo ${osdirout} | sed -e 's|^/||' -e 's|/$||g'`
     if [ "x${enable_multilib}" != xyes ]; then
       dirout=".:${osdirout}"
+      disable_multilib=yes
     else
       case "${osdirout}" in
         !*)
@@ -402,6 +403,12 @@ echo "};"
 moptions=`echo ${options} | sed -e 's,[ 	][ 	]*, ,g'`
 echo ""
 echo "static const char *multilib_options = \"${moptions}\";"
+
+# Finally output the disable flag if specified
+if [ "x${disable_multilib}" = xyes ]; then
+  echo ""
+  echo "#define DISABLE_MULTILIB  1"
+fi
 
 cd ..
 rm -r tmpmultilib.$$

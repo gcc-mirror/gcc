@@ -149,11 +149,27 @@
 #define LINK_ARCH64_SPEC LINK_ARCH64_SPEC_BASE
 
 #undef LINK_ARCH_SPEC
+#if DISABLE_MULTILIB
+#if DEFAULT_ARCH32_P
+#define LINK_ARCH_SPEC "\
+%{m32:%(link_arch32)} \
+%{m64:%edoes not support multilib} \
+%{!m32:%{!m64:%(link_arch_default)}} \
+"
+#else
+#define LINK_ARCH_SPEC "\
+%{m32:%edoes not support multilib} \
+%{m64:%(link_arch64)} \
+%{!m32:%{!m64:%(link_arch_default)}} \
+"
+#endif
+#else
 #define LINK_ARCH_SPEC "\
 %{m32:%(link_arch32)} \
 %{m64:%(link_arch64)} \
 %{!m32:%{!m64:%(link_arch_default)}} \
 "
+#endif
 
 #define LINK_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? LINK_ARCH32_SPEC : LINK_ARCH64_SPEC)
