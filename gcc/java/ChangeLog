@@ -1,3 +1,8 @@
+2001-12-12  Matthias Klose  <doko@debian.org>
+
+	* Make-lang.in: JAVA_INSTALL_NAME, JAVA_CROSS_NAME: Remove
+	whitespace at end of line.
+
 2001-12-11  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (java_init_lex): Define wfl_to_string as

@@ -42,10 +42,10 @@
 # - define the names for selecting the language in LANGUAGES.
 
 # Actual names to use when installing a native compiler.
-JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'` 
+JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
-JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'` 
+JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'`
 
 GCJ = gcj
 
