@@ -626,8 +626,8 @@ extern char *note_insn_name[];
 #define ORIGINAL_ARG_VECTOR(RTX) ((RTX)->fld[14].rtvec)
 #define ORIGINAL_DECL_INITIAL(RTX) ((RTX)->fld[15].rtx)
 #define INLINE_REGNO_REG_RTX(RTX) ((RTX)->fld[16].rtvec)
-#define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[16].rtstr)
-#define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[17].rtstr)
+#define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[17].rtstr)
+#define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[18].rtstr)
 
 /* In FUNCTION_FLAGS we save some variables computed when emitting the code
    for the function and which must be `or'ed into the current flag values when
