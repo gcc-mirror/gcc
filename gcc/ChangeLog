@@ -1,5 +1,9 @@
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
+	* opts.sh: Quote '+' in regex.
+
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
 	* c-opts.c (lang_flags): Update for new spelling of flags.
 	(write_langs): Similarly.
 	* c.opt: Specify languages.
