@@ -1,3 +1,7 @@
+Mon Dec 15 18:40:08 1997  Richard Henderson  <rth@cygnus.com>
+
+	* expmed.c (expand_shift): If SHIFT_COUNT_TRUNCATED, drop a SUBREG.
+
 Mon Dec 15 18:31:43 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_cpu_name): New variable.
