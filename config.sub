@@ -238,7 +238,7 @@ case $basic_machine in
 		| mips16 | mips64 | mipsel | mips64el \
 		| mips64orion | mips64orionel | mipstx39 | mipstx39el \
 		| mips64vr4300 | mips64vr4300el | mips64vr4100 | mips64vr4100el \
-		| mips64vr5000 | miprs64vr5000el | mcore | s390 | s390x \
+		| mips64vr5000 | mips64vr5000el | mcore | s390 | s390x \
 		| sparc | sparclet | sparclite | sparc64 | sparcv9 | sparcv9b \
 		| v850 | c4x \
 		| thumb | d10v | d30v | fr30 | avr | openrisc | tic80 \

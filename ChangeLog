@@ -1,3 +1,7 @@
+2001-07-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.sub: Fix mips64vr5000el typo in CPU-COMPANY.
+
 Fri Jul 13 14:31:57 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 
 	* MAINTAINERS (Write After Approval): Added myself.
