@@ -5184,6 +5184,30 @@ expand_expr (exp, target, tmode, modifier)
 	  op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, VOIDmode,
 			     (modifier == EXPAND_INITIALIZER
 			      ? modifier : EXPAND_CONST_ADDRESS));
+
+	  /* We would like the object in memory.  If it is a constant,
+	     we can have it be statically allocated into memory.  For
+	     a non-constant (REG or SUBREG), we need to allocate some
+	     memory and store the value into it.  */
+
+	  if (CONSTANT_P (op0))
+	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),
+				   op0);
+
+	  if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	    {
+	      /* If this object is in a register, it must be not
+		 be BLKmode. */
+	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
+	      enum machine_mode inner_mode = TYPE_MODE (inner_type);
+	      rtx memloc
+		= assign_stack_temp (inner_mode,
+				     int_size_in_bytes (inner_type), 1);
+
+	      emit_move_insn (memloc, op0);
+	      op0 = memloc;
+	    }
+
 	  if (GET_CODE (op0) != MEM)
 	    abort ();
   
