@@ -530,10 +530,6 @@ emit_call_1 (rtx funexp, tree fndecl ATTRIBUTE_UNUSED, tree funtype ATTRIBUTE_UN
      if the context of the call as a whole permits.  */
   inhibit_defer_pop = old_inhibit_defer_pop;
 
-  /* Don't bother cleaning up after a noreturn function.  */
-  if (ecf_flags & (ECF_NORETURN | ECF_LONGJMP))
-    return;
-
   if (n_popped > 0)
     {
       if (!already_popped)
@@ -557,7 +553,7 @@ emit_call_1 (rtx funexp, tree fndecl ATTRIBUTE_UNUSED, tree funtype ATTRIBUTE_UN
 
       if (rounded_stack_size != 0)
 	{
-	  if (ecf_flags & ECF_SP_DEPRESSED)
+	  if (ecf_flags & (ECF_SP_DEPRESSED | ECF_NORETURN | ECF_LONGJMP))
 	    /* Just pretend we did the pop.  */
 	    stack_pointer_delta -= rounded_stack_size;
 	  else if (flag_defer_pop && inhibit_defer_pop == 0
@@ -3171,9 +3167,14 @@ expand_call (tree exp, rtx target, int ignore)
 
 	  emit_barrier_after (last);
 
-	  /* Stack adjustments after a noreturn call are dead code.  */
-	  stack_pointer_delta = old_stack_allocated;
-	  pending_stack_adjust = 0;
+	  /* Stack adjustments after a noreturn call are dead code.
+	     However when NO_DEFER_POP is in effect, we must preserve
+	     stack_pointer_delta.  */
+	  if (inhibit_defer_pop == 0)
+	    {
+	      stack_pointer_delta = old_stack_allocated;
+	      pending_stack_adjust = 0;
+	    }
 	}
 
       if (flags & ECF_LONGJMP)

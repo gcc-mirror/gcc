@@ -1,3 +1,12 @@
+2003-10-03  Jeff Sturm  <jsturm@one-point.com>
+	    Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/12289
+	* calls.c (emit_call_1): Pretend to have popped the arguments
+	to noreturn and longjmp functions instead of ignoring them.
+	(expand_call): Don't adjust stack_pointer_dela while
+	inhibit_defer_pop is set.
+
 2003-10-03  Andreas Schwab  <schwab@suse.de>
 
 	PR bootstrap/12276
