@@ -1,3 +1,9 @@
+Mon Feb 14 11:24:44 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.texi (Passes): Fix typo.
+	* md.texi (Standard Names): Ditto.
+	* tm.texi (Storage Layout): Ditto.
+
 2000-02-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (do_define): Only free the old definition if it
