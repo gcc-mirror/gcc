@@ -1,3 +1,11 @@
+2003-03-05  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (PAD_VARARGS_DOWN): Define and return
+	according to va_arg type.
+	(EXPAND_BUILTIN_VA_ARG): Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_va_arg): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_va_arg): Remove.
+
 2003-03-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_variable_issue): Remove unnecessary
