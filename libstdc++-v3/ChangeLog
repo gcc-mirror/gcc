@@ -1,5 +1,12 @@
 2002-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* config/os/solaris/solaris2.5/bits/os_defines.h: Remove
+	_G_USING_THUNKS.
+	* config/os/solaris/solaris2.6/bits/os_defines.h: Same.
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Same.
+
+2002-05-18  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* docs/html/17_intro/RELEASE-NOTES (New): Update.
 
 2002-05-18  Benjamin Kosnik  <bkoz@redhat.com>
