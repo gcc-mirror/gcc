@@ -2052,6 +2052,14 @@ remove_bb (basic_block bb)
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
 }
 
+/* A list of all the noreturn calls passed to modify_stmt.
+   cleanup_control_flow uses it to detect cases where a mid-block
+   indirect call has been turned into a noreturn call.  When this
+   happens, all the instructions after the call are no longer
+   reachable and must be deleted as dead.  */
+
+VEC(tree) *modified_noreturn_calls;
+
 /* Try to remove superfluous control structures.  */
 
 static bool
@@ -2060,7 +2068,16 @@ cleanup_control_flow (void)
   basic_block bb;
   block_stmt_iterator bsi;
   bool retval = false;
-  tree stmt, call;
+  tree stmt;
+
+  /* Detect cases where a mid-block call is now known not to return.  */
+  while (VEC_length (tree, modified_noreturn_calls))
+    {
+      stmt = VEC_pop (tree, modified_noreturn_calls);
+      bb = bb_for_stmt (stmt);
+      if (bb != NULL && last_stmt (bb) != stmt && noreturn_call_p (stmt))
+	split_block (bb, stmt);
+    }
 
   FOR_EACH_BB (bb)
     {
@@ -2076,10 +2093,7 @@ cleanup_control_flow (void)
 
       /* Check for indirect calls that have been turned into
 	 noreturn calls.  */
-      call = get_call_expr_in (stmt);
-      if (call != 0
-	  && (call_expr_flags (call) & ECF_NORETURN) != 0
-	  && remove_fallthru_edge (bb->succs))
+      if (noreturn_call_p (stmt) && remove_fallthru_edge (bb->succs))
 	{
 	  free_dominance_info (CDI_DOMINATORS);
 	  retval = true;
