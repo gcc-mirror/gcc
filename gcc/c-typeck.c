@@ -1217,12 +1217,12 @@ build_indirect_ref (ptr, errorstring)
 	  register tree ref = build1 (INDIRECT_REF,
 				      TYPE_MAIN_VARIANT (t), pointer);
 
-	  if (!COMPLETE_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
+	  if (!COMPLETE_OR_VOID_TYPE_P (t) && TREE_CODE (t) != ARRAY_TYPE)
 	    {
 	      error ("dereferencing pointer to incomplete type");
 	      return error_mark_node;
 	    }
-	  if (TREE_CODE (t) == VOID_TYPE && skip_evaluation == 0)
+	  if (VOID_TYPE_P (t) && skip_evaluation == 0)
 	    warning ("dereferencing `void *' pointer");
 
 	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
