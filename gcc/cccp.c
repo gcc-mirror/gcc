@@ -1751,13 +1751,7 @@ main (argc, argv)
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
 	    new->control_macro = 0;
-#ifdef NO_IMPLICIT_EXTERN_C
-	    /* On some systems, the system header files are C++-compatible.
-	       So don't pretend they are `extern "C"'.  */
-	    new->c_system_include_path = 0;
-#else
 	    new->c_system_include_path = !p->cplusplus;
-#endif
 	    append_include_chain (new, new);
 	    if (first_system_include == 0)
 	      first_system_include = new;
@@ -4265,7 +4259,10 @@ redundant_include_p (name)
    it is the name of a file which resides either directly in a "system"
    include file directory, or within any subdirectory thereof, then the
    given file must be a "system" include file.  This function tells us
-   if we should suppress pedantic errors/warnings for the given FILENAME.  */
+   if we should suppress pedantic errors/warnings for the given FILENAME.
+
+   The value is 2 if the file is a C-language system header file
+   for which C++ should (on most systems) assume `extern "C"'.  */
 
 static int
 is_system_include (filename)
@@ -7198,11 +7195,13 @@ output_line_command (ip, op, conditional, file_change)
     *line_end++ = ' ';
     *line_end++ = '3';
   }
+#ifndef NO_IMPLICIT_EXTERN_C
   /* Tell cc1plus if following text should be treated as C.  */
   if (ip->system_header_p == 2 && cplusplus) {
     *line_end++ = ' ';
     *line_end++ = '4';
   }
+#endif
   *line_end++ = '\n';
   len = line_end - line_cmd_buf;
   check_expand (op, len + 1);
