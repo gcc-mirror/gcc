@@ -7830,13 +7830,8 @@ type_unification_real (tparms, targs, parms, args, subr,
       if (!subr)
 	maybe_adjust_types_for_deduction (strict, &parm, &arg);
 
-      switch (unify (tparms, targs, parm, arg, sub_strict))
-	{
-	case 0:
-	  break;
-	case 1:
-	  return 1;
-	}
+      if (unify (tparms, targs, parm, arg, sub_strict))
+        return 1;
     }
   /* Fail if we've reached the end of the parm list, and more args
      are present, and the parm list isn't variadic.  */
@@ -8450,8 +8445,10 @@ unify (tparms, targs, parm, arg, strict)
 	 parameter-list and, if the corresponding template-argument is
 	 deduced, the template-argument type shall match the type of the
 	 template-parameter exactly, except that a template-argument
-	 deduced from an array bound may be of any integral type.  */
-      if (same_type_p (TREE_TYPE (arg), TREE_TYPE (parm)))
+	 deduced from an array bound may be of any integral type. 
+	 The non-type parameter might use already deduced type parameters.  */
+      if (same_type_p (TREE_TYPE (arg),
+                       tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE)))
 	/* OK */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
 	       && (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
