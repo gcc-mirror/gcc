@@ -1,3 +1,8 @@
+2003-06-26  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* reload.c (can_reload_into): New function.
+	(push_reload): Use it.
+
 2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (compute_a_rotate_length): Fix the
