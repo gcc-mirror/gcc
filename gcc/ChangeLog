@@ -1,3 +1,9 @@
+Wed Apr 15 11:33:09 1998  Alexandre Petit-Bianco  <apbianco@sendai.cygnus.com>
+
+        * tree.c (build_expr_wfl): Use NULL_TREE if the file name is NULL.
+        Propagate TREE_SIDE_EFFECTS and TREE_TYPE iff the encapsulated
+        node is non NULL. Cache last file name and file name identifier node.
+
 1998-04-15  Mark Mitchell  <mmitchell@usa.net>
 
 	* c-common.c (declare_hidden_char_array): Use TYPE_DOMAIN to get
