@@ -1,3 +1,9 @@
+2005-02-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/lookup/anon2.C: Don't let access checks make it look like
+	the test passes.
+	* g++.dg/other/anon3.C: Accept a warning.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.dg/pr20017.c: Fix a comment typo.
