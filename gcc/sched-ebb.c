@@ -291,7 +291,7 @@ schedule_ebbs (dump_file)
   current_sched_info = &ebb_sched_info;
 
   allocate_reg_life_data ();
-  compute_bb_for_insn (get_max_uid ());
+  compute_bb_for_insn ();
 
   /* Schedule every region in the subroutine.  */
   FOR_EACH_BB (bb)

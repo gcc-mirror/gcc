@@ -2746,7 +2746,7 @@ rest_of_compilation (decl)
      we'll save big on memory.  */
   renumber_insns (rtl_dump_file);
   if (optimize)
-    compute_bb_for_insn (get_max_uid ());
+    compute_bb_for_insn ();
   timevar_pop (TV_JUMP);
 
   close_dump_file (DFI_jump, print_rtl_with_bb, insns);
@@ -2794,7 +2794,7 @@ rest_of_compilation (decl)
       /* The second pass of jump optimization is likely to have
          removed a bunch more instructions.  */
       renumber_insns (rtl_dump_file);
-      compute_bb_for_insn (get_max_uid ());
+      compute_bb_for_insn ();
 
       timevar_pop (TV_CSE);
       close_dump_file (DFI_cse, print_rtl_with_bb, insns);

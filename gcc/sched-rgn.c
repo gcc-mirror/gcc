@@ -3016,7 +3016,7 @@ schedule_insns (dump_file)
      best way to test for this kind of thing...  */
 
   allocate_reg_life_data ();
-  compute_bb_for_insn (get_max_uid ());
+  compute_bb_for_insn ();
 
   any_large_regions = 0;
   large_region_blocks = sbitmap_alloc (last_basic_block);

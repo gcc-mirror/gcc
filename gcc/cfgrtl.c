@@ -245,8 +245,7 @@ delete_insn_chain_and_edges (first, last)
    AFTER is the basic block we should be put after.  */
 
 basic_block
-create_basic_block_structure (index, head, end, bb_note, after)
-     int index;
+create_basic_block_structure (head, end, bb_note, after)
      rtx head, end, bb_note;
      basic_block after;
 {
@@ -304,10 +303,10 @@ create_basic_block_structure (index, head, end, bb_note, after)
 
   bb->head = head;
   bb->end = end;
-  bb->index = index;
+  bb->index = last_basic_block++;
   bb->flags = BB_NEW;
   link_block (bb, after);
-  BASIC_BLOCK (index) = bb;
+  BASIC_BLOCK (bb->index) = bb;
   update_bb_for_insn (bb);
 
   /* Tag the block so that we know it has been used when considering
@@ -328,14 +327,13 @@ create_basic_block (head, end, after)
      basic_block after;
 {
   basic_block bb;
-  int index = last_basic_block++;
 
   /* Place the new block just after the end.  */
-  VARRAY_GROW (basic_block_info, last_basic_block);
+  VARRAY_GROW (basic_block_info, last_basic_block+1);
 
   n_basic_blocks++;
 
-  bb = create_basic_block_structure (index, head, end, NULL, after);
+  bb = create_basic_block_structure (head, end, NULL, after);
   bb->aux = NULL;
   return bb;
 }
@@ -423,12 +421,10 @@ flow_delete_block (b)
   return deleted_handler;
 }
 
-/* Records the basic block struct in BB_FOR_INSN, for every instruction
-   indexed by INSN_UID.  MAX is the size of the array.  */
+/* Records the basic block struct in BLOCK_FOR_INSN for every insn.  */
 
 void
-compute_bb_for_insn (max)
-     int max;
+compute_bb_for_insn ()
 {
   basic_block bb;
 
