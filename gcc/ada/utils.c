@@ -791,8 +791,11 @@ finish_record_type (tree record_type,
 	DECL_BIT_FIELD (field) = 0;
 
       /* If we still have DECL_BIT_FIELD set at this point, we know the field
-	 is technically not addressable.  */
-      DECL_NONADDRESSABLE_P (field) |= DECL_BIT_FIELD (field);
+	 is technically not addressable.  Except that it can actually be
+	 addressed if the field is BLKmode and happens to be properly
+	 aligned.  */
+      DECL_NONADDRESSABLE_P (field)
+	|= DECL_BIT_FIELD (field) && DECL_MODE (field) != BLKmode;
 
       if (has_rep && ! DECL_BIT_FIELD (field))
 	TYPE_ALIGN (record_type)

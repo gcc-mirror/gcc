@@ -37,6 +37,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Erroutc;  use Erroutc;
 with Fname;    use Fname;
+with Hostparm; use Hostparm;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -186,6 +187,14 @@ package body Errout is
    --  Class_Flag is set to True if the resulting entity should have
    --  'Class appended to its name (see Add_Class procedure), and is
    --  otherwise unchanged.
+
+   procedure VMS_Convert;
+   --  This procedure has no effect if called when the host is not OpenVMS.
+   --  If the host is indeed OpenVMS, then the error message stored in
+   --  Msg_Buffer is scanned for appearences of switch names which need
+   --  converting to corresponding VMS qualifer names. See Gnames/Vnames
+   --  table in Errout spec for precise definition of the conversion that
+   --  is performed by this routine in OpenVMS mode.
 
    -----------------------
    -- Change_Error_Text --
@@ -2258,6 +2267,8 @@ package body Errout is
                Set_Msg_Char (C);
          end case;
       end loop;
+
+      VMS_Convert;
    end Set_Msg_Text;
 
    ----------------
@@ -2484,5 +2495,54 @@ package body Errout is
          Set_Msg_Char ('"');
       end if;
    end Unwind_Internal_Type;
+
+   -----------------
+   -- VMS_Convert --
+   -----------------
+
+   procedure VMS_Convert is
+      P : Natural;
+      L : Natural;
+      N : Natural;
+
+   begin
+      if not OpenVMS then
+         return;
+      end if;
+
+      P := Msg_Buffer'First;
+      loop
+         if P >= Msglen then
+            return;
+         end if;
+
+         if Msg_Buffer (P) = '-' then
+            for G in Gnames'Range loop
+               L := Gnames (G)'Length;
+
+               --  See if we have "-ggg switch", where ggg is Gnames entry
+
+               if P + L + 7 <= Msglen
+                 and then Msg_Buffer (P + 1 .. P + L) = Gnames (G).all
+                 and then Msg_Buffer (P + L + 1 .. P + L + 7) = " switch"
+               then
+                  --  Replace by "/vvv qualifier", where vvv is Vnames entry
+
+                  N := Vnames (G)'Length;
+                  Msg_Buffer (P + N + 11 .. Msglen + N - L + 3) :=
+                    Msg_Buffer (P + L + 8 .. Msglen);
+                  Msg_Buffer (P) := '/';
+                  Msg_Buffer (P + 1 .. P + N) := Vnames (G).all;
+                  Msg_Buffer (P + N + 1 .. P + N + 10) := " qualifier";
+                  P := P + N + 10;
+                  Msglen := Msglen + N - L + 3;
+                  exit;
+               end if;
+            end loop;
+         end if;
+
+         P := P + 1;
+      end loop;
+   end VMS_Convert;
 
 end Errout;

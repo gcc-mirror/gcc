@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -333,15 +333,7 @@ package body Scng is
 
       procedure Error_Illegal_Wide_Character is
       begin
-         if OpenVMS then
-            Error_Msg_S
-              ("illegal wide character, check " &
-                 "'/'W'I'D'E'_'C'H'A'R'A'C'T'E'R'_'E'N'C'O'D'I'N'G qualifier");
-         else
-            Error_Msg_S
-              ("illegal wide character, check -gnatW switch");
-         end if;
-
+         Error_Msg_S ("illegal wide character, check -gnatW switch");
          Scan_Ptr := Scan_Ptr + 1;
       end Error_Illegal_Wide_Character;
 

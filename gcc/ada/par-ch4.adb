@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,6 @@
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical
-
-with Hostparm; use Hostparm;
 
 separate (Par)
 package body Ch4 is
@@ -1411,15 +1409,7 @@ package body Ch4 is
          if not Extensions_Allowed then
             Error_Msg_SP
               ("(Ada 0Y) limited aggregates are an Ada0X extension");
-
-            if OpenVMS then
-               Error_Msg_SP
-                 ("\unit must be compiled with " &
-                  "'/'E'X'T'E'N'S'I'O'N'S'_'A'L'L'O'W'E'D qualifier");
-            else
-               Error_Msg_SP
-                 ("\unit must be compiled with -gnatX switch");
-            end if;
+            Error_Msg_SP ("\unit must be compiled with -gnatX switch");
          end if;
 
          Set_Box_Present (Assoc_Node);

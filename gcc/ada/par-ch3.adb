@@ -28,7 +28,6 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical
 
-with Hostparm; use Hostparm;
 with Sinfo.CN; use Sinfo.CN;
 
 separate (Par)
@@ -1325,15 +1324,7 @@ package body Ch3 is
                Error_Msg_SP
                  ("generalized use of anonymous access types " &
                   "is an Ada 0Y extension");
-
-               if OpenVMS then
-                  Error_Msg_SP
-                    ("\unit must be compiled with " &
-                     "'/'E'X'T'E'N'S'I'O'N'S'_'A'L'L'O'W'E'D qualifier");
-               else
-                  Error_Msg_SP
-                    ("\unit must be compiled with -gnatX switch");
-               end if;
+               Error_Msg_SP ("\unit must be compiled with -gnatX switch");
             end if;
 
             Acc_Node := P_Access_Definition;
@@ -2125,15 +2116,7 @@ package body Ch3 is
             Error_Msg_SP
               ("generalized use of anonymous access types " &
                "is an Ada 0Y extension");
-
-            if OpenVMS then
-               Error_Msg_SP
-                 ("\unit must be compiled with " &
-                  "'/'E'X'T'E'N'S'I'O'N'S'_'A'L'L'O'W'E'D qualifier");
-            else
-               Error_Msg_SP
-                 ("\unit must be compiled with -gnatX switch");
-            end if;
+            Error_Msg_SP ("\unit must be compiled with -gnatX switch");
          end if;
 
          Set_Subtype_Indication (CompDef_Node, Empty);
@@ -2862,15 +2845,7 @@ package body Ch3 is
                   Error_Msg_SP
                     ("Generalized use of anonymous access types " &
                      "is an Ada0X extension");
-
-                  if OpenVMS then
-                     Error_Msg_SP
-                       ("\unit must be compiled with " &
-                        "'/'E'X'T'E'N'S'I'O'N'S'_'A'L'L'O'W'E'D qualifier");
-                  else
-                     Error_Msg_SP
-                       ("\unit must be compiled with -gnatX switch");
-                  end if;
+                  Error_Msg_SP ("\unit must be compiled with -gnatX switch");
                end if;
 
                Set_Subtype_Indication (CompDef_Node, Empty);

@@ -1909,6 +1909,35 @@ package body Freeze is
                S := Scope (S);
             end loop;
          end;
+
+      --  Similarly, an inlined instance body may make reference to global
+      --  entities, but these references cannot be the proper freezing point
+      --  for them, and the the absence of inlining freezing will take place
+      --  in their own scope. Normally instance bodies are analyzed after
+      --  the enclosing compilation, and everything has been frozen at the
+      --  proper place, but with front-end inlining an instance body is
+      --  compiled before the end of the enclosing scope, and as a result
+      --  out-of-order freezing must be prevented.
+
+      elsif Front_End_Inlining
+        and then  In_Instance_Body
+        and then Present (Scope (E))
+      then
+         declare
+            S : Entity_Id := Scope (E);
+         begin
+            while Present (S) loop
+               if Is_Generic_Instance (S) then
+                  exit;
+               else
+                  S := Scope (S);
+               end if;
+            end loop;
+
+            if No (S) then
+               return No_List;
+            end if;
+         end;
       end if;
 
       --  Here to freeze the entity

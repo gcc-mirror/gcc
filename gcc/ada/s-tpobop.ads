@@ -110,7 +110,10 @@ package System.Tasking.Protected_Objects.Operations is
    --
    --  This must be called with abortion deferred and with the corresponding
    --  object locked.
-   --  If Unlock_Object, then Object is unlocked on return.
+   --
+   --  If Unlock_Object is set True, then Object is unlocked on return,
+   --  otherwise Object remains locked and the caller is responsible for
+   --  the required unlock.
 
    procedure Complete_Entry_Body (Object : Entries.Protection_Entries_Access);
    --  Called from within an entry body procedure, indicates that the

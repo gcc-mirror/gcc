@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,25 +61,25 @@ package body Prj.Env is
    --  platforms, except on VMS where the logical names are deassigned, thus
    --  avoiding the pollution of the environment of the caller.
 
-   package Namings is new Table.Table (
-     Table_Component_Type => Naming_Data,
-     Table_Index_Type     => Naming_Id,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 5,
-     Table_Increment      => 100,
-     Table_Name           => "Prj.Env.Namings");
+   package Namings is new Table.Table
+     (Table_Component_Type => Naming_Data,
+      Table_Index_Type     => Naming_Id,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 5,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Env.Namings");
 
    Default_Naming : constant Naming_Id := Namings.First;
 
    Fill_Mapping_File : Boolean := True;
 
-   package Path_Files is new Table.Table (
-     Table_Component_Type => Name_Id,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 50,
-     Table_Increment      => 50,
-     Table_Name           => "Prj.Env.Path_Files");
+   package Path_Files is new Table.Table
+     (Table_Component_Type => Name_Id,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 50,
+      Table_Increment      => 50,
+      Table_Name           => "Prj.Env.Path_Files");
    --  Table storing all the temp path file names.
    --  Used by Delete_All_Path_Files.
 
@@ -322,7 +322,7 @@ package body Prj.Env is
    begin
       while Current /= Nil_String loop
          Source_Dir := String_Elements.Table (Current);
-         Add_To_Path (Get_Name_String (Source_Dir.Value));
+         Add_To_Path (Get_Name_String (Source_Dir.Display_Value));
          Current := Source_Dir.Next;
       end loop;
    end Add_To_Path;
@@ -1420,13 +1420,16 @@ package body Prj.Env is
             The_String : String_Element;
 
          begin
-            --  Call action with the name of every source directorie
+            --  If there are Ada sources, call action with the name of every
+            --  source directory.
 
-            while Current /= Nil_String loop
-               The_String := String_Elements.Table (Current);
-               Action (Get_Name_String (The_String.Value));
-               Current := The_String.Next;
-            end loop;
+            if Projects.Table (Project).Sources_Present then
+               while Current /= Nil_String loop
+                  The_String := String_Elements.Table (Current);
+                  Action (Get_Name_String (The_String.Value));
+                  Current := The_String.Next;
+               end loop;
+            end if;
          end;
 
          --  If we are extending a project, visit it
@@ -1866,8 +1869,11 @@ package body Prj.Env is
                if Process_Source_Dirs then
 
                   --  Add to path all source directories of this project
+                  --  if there are Ada sources.
 
-                  Add_To_Path_File (Data.Source_Dirs, Source_FD);
+                  if Projects.Table (Project).Sources_Present then
+                     Add_To_Path_File (Data.Source_Dirs, Source_FD);
+                  end if;
                end if;
 
                if Process_Object_Dirs then

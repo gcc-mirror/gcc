@@ -1320,8 +1320,41 @@ package body Exp_Util is
    ----------------------
 
    procedure Force_Evaluation (Exp : Node_Id; Name_Req : Boolean := False) is
+      Component_In_Lhs : Boolean := False;
+      Par              : Node_Id;
+
    begin
-      Remove_Side_Effects (Exp, Name_Req, Variable_Ref => True);
+      --  Loop to determine whether there is a component reference in
+      --  the left hand side if this appears on the left side of an
+      --  assignment statement. Needed to determine if form of result
+      --  must be a variable.
+
+      Par := Exp;
+      while Present (Par)
+        and then Nkind (Par) = N_Selected_Component
+      loop
+         if Nkind (Parent (Par)) = N_Assignment_Statement
+           and then Par = Name (Parent (Par))
+         then
+            Component_In_Lhs := True;
+            exit;
+         else
+            Par := Parent (Par);
+         end if;
+      end loop;
+
+      --  If the expression is a selected component, it is being evaluated
+      --  as part of a discriminant check. If it is part of a left-hand
+      --  side, this is the last use of its value and it is safe to create
+      --  a renaming for it, rather than a temporary. In addition, if it
+      --  is not an addressable field, creating a temporary may be a problem
+      --  for gigi, or might drop the value of the assignment. Therefore,
+      --  if the expression is on the lhs of an assignment, remove side
+      --  effects without requiring a temporary, and create a renaming.
+      --  (See remove_side_effects for details).
+
+      Remove_Side_Effects
+        (Exp, Name_Req, Variable_Ref => not Component_In_Lhs);
    end Force_Evaluation;
 
    ------------------------

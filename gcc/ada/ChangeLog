@@ -1,3 +1,94 @@
+2004-03-02  Emmanuel Briot  <briot@act-europe.fr>
+
+	* ali.adb (Read_Instantiation_Instance): Do not modify the
+	current_file_num when reading information about instantiations, since
+	this corrupts files in later references.
+
+2004-03-02  Vincent Celier  <celier@gnat.com>
+
+	* bcheck.adb (Check_Consistency): Get the full path of an ALI file
+	before checking if it is read-only.
+
+	* bld.adb (Recursive_Process): Concatenate <PROJECT>.src_dirs in front
+	of SRC_DIRS and eliminate duplicates.
+
+	* gprcmd.adb: Replace command "path" with command "path_sep" to return
+	the path separator.
+	(Usage): Document path_sep
+
+	* Makefile.generic: For Ada and GNU C++ cases, link directly with the
+	C++ compiler. No need for a script.
+	Replace use of C*_INCLUDE_PATH env var for GCC compilers with CPATH.
+	Do not call gprcmd to build the C*_INCLUDE_PATHs, do it with function
+	subst.
+
+	* prj-env.adb (For_All_Source_Dirs): Only add source dirs in project
+	where there are Ada sources.
+	(Set_Ada_Paths): Only add to the include path the source dirs of project
+	with Ada sources.
+	(Add_To_Path): Add the Display_Values of the directories, not their
+	Values.
+
+	* prj-nmsc.adb (Find_Sources): Set flag Sources_Present in the project
+	data.
+
+	* prj-nmsc.adb (Add_ALI_For): Make sure that the element Display_Value
+	is not No_Name.
+	(Find_Source_Dirs): Set Display_Value to a non canonicalized value, only
+	Value is canonicalized.
+	(Language_Independent_Check): Do not copy Value to Display_Value when
+	canonicalizing Value.
+
+	* prj-part.adb (Post_Parse_Context_Clause): Compare canonical cased
+	path to find limited with cycles.
+	(Parse_Single_Project): Use canonical cased path to find the end of a
+	with cycle.
+
+2004-03-02  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch10.adb (Optional_Subunit): Verify that unit contains a subunit
+	and not a child unit.
+
+	* sinfo.ads, sinfo.adb: Rearrange flags so that Private_Present can
+	appear in a with_clause.
+
+	* decl.c (gnat_to_gnu_type): If entity is a generic type, which can
+	only happen in type_annotate mode, do not try to elaborate it.
+
+	* exp_util.adb (Force_Evaluation): If expression is a selected
+	component on the left of an assignment, use a renaming rather than a
+	temporary to remove side effects.
+
+	* freeze.adb (Freeze_Entity): Do not freeze a global entity within an
+	inlined instance body, which is analyzed before the end of the
+	enclosing scope.
+
+2004-03-02  Robert Dewar  <dewar@gnat.com>
+
+	* par-ch10.adb, par-ch3.adb, par-ch4.adb, scng.adb,
+	sem_ch4.adb: Use new feature for substitution of keywords in VMS
+
+	* errout.ads, errout.adb: Implement new circuit for substitution of
+	keywords in VMS.
+
+	* sem_case.adb (Analyze_Choices): Place message properly when case is
+	a subtype reference rather than an explicit range.
+
+	* sem_elim.adb, s-tpobop.ads, exp_ch2.adb: Minor reformatting
+
+2004-03-02  Doug Rupp  <rupp@gnat.com>
+
+	* init.c (__gnat_initialize)[VMS]: Resignal RDB-E-STREAM_EOF.
+
+2004-03-02  Thomas Quinot  <quinot@act-europe.fr>
+
+	* s-tporft.adb: Add missing locking around call to Initialize_ATCB.
+
+2004-03-02  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils.c (finish_record_type): Do not set DECL_NONADDRESSABLE for a
+	BLKmode bitfield.
+
 2004-02-25  Robert Dewar  <dewar@gnat.com>
 
 	* 51osinte.ads, 52osinte.ads, 53osinte.ads, 54osinte.ads,
