@@ -1,3 +1,8 @@
+Mon Jul 13 23:26:43 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* tree.h (tree_common): Note front-end dependencies on layout of
+	this structure.
+
 Mon Jul 13 23:18:39 1998  Craig Burley  <burley@gnu.org>
 
 	* stmt.c (expand_expr_stmt): If not assigning fresh

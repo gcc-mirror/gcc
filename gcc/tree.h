@@ -154,7 +154,11 @@ typedef union tree_node *tree;
 /* Every kind of tree node starts with this structure,
    so all nodes have these fields.
 
-   See the accessor macros, defined below, for documentation of the fields.  */
+   See the accessor macros, defined below, for documentation of the fields. 
+
+   DO NOT change the layout of tree_common unless absolutely necessary.  Some
+   front-ends (namely g++) depend on the internal layout of this tructure.
+   See my_tree_cons in the cp subdir for such uglyness.  Ugh.  */
 
 struct tree_common
 {
