@@ -29,20 +29,18 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".FPP", "@f77-cpp-input"},
   {"@f77-cpp-input",
    "tradcpp0 -lang-fortran %(cpp_options) %{!M:%{!MM:%{!E:%{!pipe:%g.f |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-    as %(asm_options) %{!pipe:%g.s} %A }}}}}}\n"},
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}}"},
   {".r", "@ratfor"},
   {"@ratfor",
    "%{C:%{!E:%eGNU C does not support -C without using -E}}\
     ratfor %{C} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-    as %(asm_options) %{!pipe:%g.s} %A }}}\n"},
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}"},
   {".f",   "@f77"},
   {".for", "@f77"},
   {".FOR", "@f77"},
   {"@f77",
-   "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{I*} %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-     as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"},
+   "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{I*}\
+	%{!fsyntax-only:%(invoke_as)}}}}"},
   /* XXX This is perverse and should not be necessary.  */
   {"@f77-version",
    "tradcpp0 -lang-fortran %(cpp_options) %j \n\

@@ -30,28 +30,31 @@ Boston, MA 02111-1307, USA.  */
   {".C",   "@c++"},
   {"@c++",
 #if USE_CPPLIB
+   /* cc1plus has an integrated ISO C preprocessor.  We should invoke
+      the external preprocessor if -save-temps is given.  */
     "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)}\
-     %{!E:%{!M:%{!MM:cc1plus -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
+     %{!E:%{!M:%{!MM:\
+       %{save-temps:cpp0 -lang-c++ %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+		    %(cpp_options) %b.ii \n}\
+      cc1plus %{save-temps: -fpreprocessed %b.ii} -lang-c++\
+       %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
        %(cpp_options) %(cc1_options) %{+e*}\
-       %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-     as %(asm_options) %{!pipe:%g.s} %A }}}}}"
+       %{!fsyntax-only:%(invoke_as)}}}}"
 #else /* ! USE_CPPLIB */
     "cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
        %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)\
        %{!M:%{!MM:%{!E:%{!pipe:%g.ii} |\n\
      cc1plus -lang-c++ %{!pipe:%g.ii} %(cc1_options) %{+e*}\
-     %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-     as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"
+     %{!fsyntax-only:%(invoke_as)}}}}\n"
 #endif /* ! USE_CPPLIB */
   },
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
     cc1plus -lang-c++ -fpreprocessed %i %(cc1_options) %{+e*}\
-    %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-    as %(asm_options) %{!pipe:%g.s} %A }}}}}"},
+    %{!fsyntax-only:%(invoke_as)}}}}"},

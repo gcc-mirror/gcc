@@ -583,9 +583,11 @@ static const char *cpp_options =
  %{!ffreestanding:%{!fno-hosted:-D__STDC_HOSTED__=1}}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
+ %{ftabstop=*}\
  %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{U*} %{D*} %{i*} %Z %i\
  %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
 
+/* NB: This is shared amongst all front-ends.  */
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
@@ -597,6 +599,9 @@ static const char *cc1_options =
 
 static const char *asm_options =
 "%a %Y %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}";
+
+static const char *invoke_as =
+"%{!S:-o %{|!pipe:%g.s} |\n as %(asm_options) %{!pipe:%g.s} %A }";
 
 /* Some compilers have limits on line lengths, and the multilib_select
    and/or multilib_matches strings can be very long, so we build them at
@@ -709,15 +714,24 @@ static struct compiler default_compilers[] =
   {".c", "@c"},
   {"@c",
 #if USE_CPPLIB
+   /* cc1 has an integrated ISO C preprocessor.  We should invoke the
+      external preprocessor if -save-temps or -traditional is given.  */
      "%{E|M|MM:%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)}\
-      %{!E:%{!M:%{!MM:cc1 -lang-c %{ansi:-std=c89} %(cpp_options)\
-			  %(cc1_options) %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-      as %(asm_options) %{!pipe:%g.s} %A }}}}}"
+      %{!E:%{!M:%{!MM:\
+	  %{save-temps:%(trad_capable_cpp) -lang-c %{ansi:-std=c89}\
+		%(cpp_options) %b.i \n\
+		    cc1 -fpreprocessed %b.i %(cc1_options)}\
+	  %{!save-temps:\
+	    %{traditional|ftraditional|traditional-cpp:\
+		tradcpp0 -lang-c %{ansi:-std=c89} %(cpp_options) %{!pipe:%g.i} |\n\
+		    cc1 -fpreprocessed %{!pipe:%g.i} %(cc1_options)}\
+	    %{!traditional:%{!ftraditional:%{!traditional-cpp:\
+		cc1 -lang-c %{ansi:-std=c89} %(cpp_options) %(cc1_options)}}}}\
+        %{!fsyntax-only:%(invoke_as)}}}}"
 #else /* ! USE_CPPLIB */
      "%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options) \
 			  %{!M:%{!MM:%{!E:%{!pipe:%g.i} |\n\
-      cc1 %{!pipe:%g.i} %(cc1_options) %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-      as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"
+      cc1 %{!pipe:%g.i} %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"
 #endif /* ! USE_CPPLIB */
   },
   {"-",
@@ -729,17 +743,14 @@ static struct compiler default_compilers[] =
     %(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)"},
   {".i", "@cpp-output"},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:\
-    cc1 %i %(cc1_options) %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
-    as %(asm_options) %{!pipe:%g.s} %A }}}}}"},
+   "%{!M:%{!MM:%{!E:cc1 %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}"},
   {".s", "@assembler"},
   {"@assembler",
    "%{!M:%{!MM:%{!E:%{!S:as %(asm_options) %i %A }}}}"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
-   "%(trad_capable_cpp) -lang-asm %(cpp_options) \
-			%{!M:%{!MM:%{!E:%{!S: %{!pipe:%g.s} |\n\
-    as %(asm_options) %{!pipe:%g.s} %A }}}}"},
+   "%(trad_capable_cpp) -lang-asm %(cpp_options)\
+	%{!M:%{!MM:%{!E:%(invoke_as)}}}"},
 #include "specs.h"
   /* Mark end of table */
   {0, 0}
@@ -1083,6 +1094,7 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("asm",			&asm_spec),
   INIT_STATIC_SPEC ("asm_final",		&asm_final_spec),
   INIT_STATIC_SPEC ("asm_options",		&asm_options),
+  INIT_STATIC_SPEC ("invoke_as",		&invoke_as),
   INIT_STATIC_SPEC ("cpp",			&cpp_spec),
   INIT_STATIC_SPEC ("cpp_options",		&cpp_options),
   INIT_STATIC_SPEC ("trad_capable_cpp",		&trad_capable_cpp),
