@@ -267,8 +267,8 @@ do
     rel_source_ident=`echo $rel_source_file | tr ./ __`
     required_list=`eval echo '${required_'${rel_source_ident}'-}'`
     cat >tmp.h <<EOF
-#ifndef ${rel_source_ident}
-#define ${rel_source_ident}
+#ifndef __${rel_source_ident}
+#define __${rel_source_ident}
 EOF
     if test $rel_source_file = stdlib.h
     then
@@ -281,7 +281,7 @@ EOF
     fi
     cat >>tmp.h <<EOF
 
-#endif /* ${rel_source_ident} */
+#endif /* __${rel_source_ident} */
 EOF
     ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file ${DEFINES} $include_path
     rm tmp.h
