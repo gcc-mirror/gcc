@@ -1,4 +1,8 @@
 2001-07-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/fio.h: Include <sys/types.h> for off_t.
+
+2001-07-01  Toon Moene  <toon@moene.indiv.nluug.nl>
             Pedro Vazquez  <vazquez@penelope.iqm.unicamp.br>
 
 	* libI77/fio.h: Use off_t when appropriate.
