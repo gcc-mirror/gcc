@@ -1,5 +1,11 @@
 2003-10-23  Roger Sayle  <roger@eyesopen.com>
 
+	PR middle-end/11414
+	* loop.c (load_mems): Use redirect_jump to forward jumps from
+	the original loop end label to the new "loop sink" block's label.
+
+2003-10-23  Roger Sayle  <roger@eyesopen.com>
+
 	PR middle-end/12705
 	* optabs.c (expand_binop): When expanding complex operations
 	inline, always calculate result into a new temporary register.
