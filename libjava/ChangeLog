@@ -1,5 +1,10 @@
 2003-12-02  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c
+	(initState): Mark obj parameter as unused.
+	(stringWidth): Mark obj parameter as unused.  Initialize
+	font_name properly.
+
 	* gnu/java/awt/peer/gtk/GdkPixbufDecoder.java: Make
 	BufferedImageBuilder class static.
 

@@ -47,7 +47,7 @@ exception statement from your version. */
 #define NUM_METRICS 5
 
 JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_initState
-  (JNIEnv *env, jobject obj, jstring fname, jint size)
+  (JNIEnv *env, jobject obj __attribute__((unused)), jstring fname, jint size)
 {
   jintArray array;
   jint *metrics;
@@ -93,7 +93,8 @@ JNIEXPORT jintArray JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_initState
 }
 
 JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_stringWidth
-  (JNIEnv *env, jobject obj, jstring fname, jint size, jstring str)
+  (JNIEnv *env, jobject obj __attribute__((unused)),
+   jstring fname, jint size, jstring str)
 {
   PangoFontDescription *font_desc;
   PangoContext *context;
@@ -103,6 +104,7 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_stringWidth
   const char *font_name;
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
+  font_name = (*env)->GetStringUTFChars (env, fname, NULL);
 
   gdk_threads_enter ();
 
@@ -121,6 +123,7 @@ JNIEXPORT jint JNICALL Java_gnu_java_awt_peer_gtk_GdkFontMetrics_stringWidth
 
   gdk_threads_leave ();
 
+  (*env)->ReleaseStringUTFChars (env, fname, font_name);
   (*env)->ReleaseStringUTFChars (env, str, cstr);
 
   return width;
