@@ -1,3 +1,8 @@
+1999-09-28  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (LIB_AC_PROG_CC): Provide appropriate AC_PROG_ symbol.
+
 Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Rebuilt.
