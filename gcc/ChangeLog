@@ -1,3 +1,8 @@
+2005-01-13  David O'Brien  <obrien@FreeBSD.org>
+
+	Backport from mainline:
+	* config/freebsd-spec.h:  Use KSE pthread lib for -pthread.
+
 2005-01-08  Sergey M. Samoylov  <ssamoylov@dev.rtsoft.ru>
 
 	Backport:

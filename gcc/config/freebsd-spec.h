@@ -130,13 +130,7 @@ is built with the --enable-threads configure-time option.}		\
     %{pg:  -lc_p}							\
   }"
 #else
-#if FBSD_MAJOR >= 5
-#define FBSD_LIB_SPEC "							\
-  %{!shared:								\
-    %{!pg: %{pthread:-lc_r} -lc}					\
-    %{pg:  %{pthread:-lc_r_p} -lc_p}					\
-  }"
-#else
+#if FBSD_MAJOR < 5
 #define FBSD_LIB_SPEC "							\
   %{!shared:								\
     %{!pg:								\
@@ -145,6 +139,12 @@ is built with the --enable-threads configure-time option.}		\
     %{pg:								\
       %{!pthread:-lc_p}							\
       %{pthread:-lc_r_p}}						\
+  }"
+#else
+#define FBSD_LIB_SPEC "							\
+  %{!shared:								\
+    %{!pg: %{pthread:-lpthread} -lc}					\
+    %{pg:  %{pthread:-lpthread_p} -lc_p}				\
   }"
 #endif
 #endif
