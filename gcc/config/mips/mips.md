@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001 Free Software Foundation, Inc.
+;;  1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -10558,7 +10558,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
       if (GET_MODE (target) == SImode)
 	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
       else
-	return \"la\\t%^,%1\\n\\tjal\\t%4,%^\";
+	return \"dla\\t%^,%1\\n\\tjal\\t%4,%^\";
     }
   else if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
     return \"move\\t%^,%1\\n\\tjal\\t%4,%^\";
