@@ -1,3 +1,7 @@
+2000-11-30  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/execute/20001130-2.c: New testcase.
+
 2000-11-30  Richard Henderson  <rth@redhat.com>
 
 	* gcc.c-torture/execute/20001130-1.c: New test.
