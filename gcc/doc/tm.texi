@@ -7680,8 +7680,7 @@ debugging output.  Currently, the allowable values are @code{DBX_DEBUG},
 
 When the user specifies @option{-ggdb}, GCC normally also uses the
 value of this macro to select the debugging output format, but with two
-exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined and
-@code{LINKER_DOES_NOT_WORK_WITH_DWARF2} is not defined, GCC uses the
+exceptions.  If @code{DWARF2_DEBUGGING_INFO} is defined, GCC uses the
 value @code{DWARF2_DEBUG}.  Otherwise, if @code{DBX_DEBUGGING_INFO} is
 defined, GCC uses @code{DBX_DEBUG}.
 
@@ -7979,13 +7978,6 @@ Define this macro to a nonzero value if GCC should always output
 Dwarf 2 frame information.  If @code{DWARF2_UNWIND_INFO}
 (@pxref{Exception Region Output} is nonzero, GCC will output this
 information not matter how you define @code{DWARF2_FRAME_INFO}.
-@end defmac
-
-@defmac LINKER_DOES_NOT_WORK_WITH_DWARF2
-Define this macro if the linker does not work with Dwarf version 2.
-Normally, if the user specifies only @option{-ggdb} GCC will use Dwarf
-version 2 if available; this macro disables this.  See the description
-of the @code{PREFERRED_DEBUGGING_TYPE} macro for more details.
 @end defmac
 
 @defmac DWARF2_GENERATE_TEXT_SECTION_LABEL
