@@ -1200,7 +1200,6 @@ static GENERIC_PTR xcalloc PROTO((size_t, size_t));
 static char *savestring PROTO((char *));
 
 static int file_size_and_mode PROTO((int, int *, long int *));
-static void output_dots PROTO((FILE *, int));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
    retrying if necessary.  Return a negative value if an error occurs,
@@ -4633,10 +4632,8 @@ get_filename:
     }   
 
     /* Handle -H option.  */
-    if (print_include_names) {
-      output_dots (stderr, indepth);
-      fprintf (stderr, "%s\n", fname);
-    }
+    if (print_include_names)
+      fprintf (stderr, "%*s%s\n", indepth, "", fname);
 
     if (angle_brackets)
       system_include_depth++;
@@ -10030,18 +10027,6 @@ file_size_and_mode (fd, mode_pointer, size_pointer)
   if (size_pointer) *size_pointer = sbuf.st_size;
   return 0;
 }
-
-static void
-output_dots (fd, depth)
-     FILE* fd;
-     int depth;
-{
-  while (depth > 0) {
-    putc ('.', fd);
-    depth--;
-  }
-}
-  
 
 #ifdef VMS
 
