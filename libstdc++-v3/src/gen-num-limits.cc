@@ -770,3 +770,28 @@ int main()
     // .__convert_long_double_d); }
 }
 
+// G++ doesn't have support for automatic instantiation of static data
+// members on platforms that don't have weak symbols.  On AIX, in
+// particular, static data members must be explicitly instantiated.
+// So, we explicitly instantiate some of the ones we need.  To save
+// typing, we don't name the static data members explicitly; we
+// instead name their containing types.
+
+#define INSTANTIATIONS(TYPE)			\
+  template struct predicate<TYPE>;		\
+  template struct value<TYPE>
+
+INSTANTIATIONS (bool);
+INSTANTIATIONS (char);
+INSTANTIATIONS (signed char);
+INSTANTIATIONS (unsigned char);
+INSTANTIATIONS (short);
+INSTANTIATIONS (unsigned short);
+INSTANTIATIONS (int);
+INSTANTIATIONS (unsigned int);
+INSTANTIATIONS (long);
+INSTANTIATIONS (unsigned long);
+INSTANTIATIONS (float);
+INSTANTIATIONS (double);
+INSTANTIATIONS (long double);
+
