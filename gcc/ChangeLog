@@ -1,7 +1,10 @@
 2004-02-10  Aldy Hernandez  <aldyh@redhat.com>
- 
-        * config/rs6000/spe.md ("*movv2si_internal"): Check for register
-        operand.
+
+	* config/rs6000/spe.md ("*movv2si_internal"): Check for register
+	operand.
+	(movv4hi_internal): Same.
+	(movv2sf_internal): Same.
+	(movv1di_internal): Same.
 
 2004-02-11  Richard Sandiford  <rsandifo@redhat.com>
 
