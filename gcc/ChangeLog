@@ -1,3 +1,8 @@
+2001-09-12  Diego Novillo  <dnovillo@redhat.com>
+
+	* basic-block.h (expunge_block): Declare.
+	* cfg.c (expunge_block): Remove static declaration.
+
 2001-09-12  Richard Henderson  <rth@redhat.com>
 
 	* integrate.c (copy_insn_list): Copy label name from

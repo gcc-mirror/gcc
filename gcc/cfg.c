@@ -144,7 +144,6 @@ static int can_delete_note_p		PARAMS ((rtx));
 static int can_delete_label_p		PARAMS ((rtx));
 static void commit_one_edge_insertion	PARAMS ((edge));
 static bool try_redirect_by_replacing_jump PARAMS ((edge, basic_block));
-static void expunge_block		PARAMS ((basic_block));
 static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
 static basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
@@ -439,7 +438,7 @@ create_basic_block (index, head, end)
 
 /* Remove block B from the basic block array and compact behind it.  */
 
-static void
+void
 expunge_block (b)
      basic_block b;
 {
