@@ -1,3 +1,7 @@
+Tue Oct 30 11:02:31 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movti_rex64 splitter): Fix condition.
+
 2001-10-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Do not assume that gas's version number is the
