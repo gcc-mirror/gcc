@@ -1,5 +1,8 @@
 1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (start_decl): An explicit specialization of a static data
+	member is only a definition if it has an initializer.
+
 	* except.c (expand_throw): Use cp_finish_decl for the throw temp.
 	* cvt.c (build_up_reference): Pass DIRECT_BIND down into
 	cp_finish_decl.
