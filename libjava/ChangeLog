@@ -1,3 +1,8 @@
+2002-03-08  Adam Megacz  <adam@xwt.org>
+
+	* java/net/natPlainSocketImpl.cc (read, write, close): Formatting
+	fixed.
+	
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* posix.cc (_Jv_platform_gettimeofday): Make sure result doesn't get
