@@ -1557,15 +1557,14 @@ gen_group_rtx (rtx orig)
   return gen_rtx_PARALLEL (GET_MODE (orig), gen_rtvec_v (length, tmps));
 }
 
-/* Emit code to move a block ORIG_SRC of type TYPE to a block DST,
-   where DST is non-consecutive registers represented by a PARALLEL.
-   SSIZE represents the total size of block ORIG_SRC in bytes, or -1
-   if not known.  */
+/* A subroutine of emit_group_load.  Arguments as for emit_group_load,
+   except that values are placed in TMPS[i], and must later be moved
+   into corrosponding XEXP (XVECEXP (DST, 0, i), 0) element.  */
 
-void
-emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
+static void
+emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 {
-  rtx *tmps, src;
+  rtx src;
   int start, i;
   enum machine_mode m = GET_MODE (orig_src);
 
@@ -1585,7 +1584,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
       /* ...and back again.  */
       if (imode != BLKmode)
 	src = gen_lowpart (imode, src);
-      emit_group_load (dst, src, type, ssize);
+      emit_group_load_1 (tmps, dst, src, type, ssize);
       return;
     }
 
@@ -1595,8 +1594,6 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
     start = 0;
   else
     start = 1;
-
-  tmps = alloca (sizeof (rtx) * XVECLEN (dst, 0));
 
   /* Process the pieces.  */
   for (i = start; i < XVECLEN (dst, 0); i++)
@@ -1709,10 +1706,61 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
 				build_int_cst (NULL_TREE, shift), tmps[i], 0);
     }
+}
+
+/* Emit code to move a block SRC of type TYPE to a block DST,
+   where DST is non-consecutive registers represented by a PARALLEL.
+   SSIZE represents the total size of block ORIG_SRC in bytes, or -1
+   if not known.  */
+
+void
+emit_group_load (rtx dst, rtx src, tree type, int ssize)
+{
+  rtx *tmps;
+  int i;
+
+  tmps = alloca (sizeof (rtx) * XVECLEN (dst, 0));
+  emit_group_load_1 (tmps, dst, src, type, ssize);
 
   /* Copy the extracted pieces into the proper (probable) hard regs.  */
-  for (i = start; i < XVECLEN (dst, 0); i++)
-    emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0), tmps[i]);
+  for (i = 0; i < XVECLEN (dst, 0); i++)
+    {
+      rtx d = XEXP (XVECEXP (dst, 0, i), 0);
+      if (d == NULL)
+	continue;
+      emit_move_insn (d, tmps[i]);
+    }
+}
+
+/* Similar, but load SRC into new pseudos in a format that looks like
+   PARALLEL.  This can later be fed to emit_group_move to get things
+   in the right place.  */
+
+rtx
+emit_group_load_into_temps (rtx parallel, rtx src, tree type, int ssize)
+{
+  rtvec vec;
+  int i;
+
+  vec = rtvec_alloc (XVECLEN (parallel, 0));
+  emit_group_load_1 (&RTVEC_ELT (vec, 0), parallel, src, type, ssize);
+
+  /* Convert the vector to look just like the original PARALLEL, except
+     with the computed values.  */
+  for (i = 0; i < XVECLEN (parallel, 0); i++)
+    {
+      rtx e = XVECEXP (parallel, 0, i);
+      rtx d = XEXP (e, 0);
+
+      if (d)
+	{
+	  d = force_reg (GET_MODE (d), RTVEC_ELT (vec, i));
+	  e = alloc_EXPR_LIST (REG_NOTE_KIND (e), d, XEXP (e, 1));
+	}
+      RTVEC_ELT (vec, i) = e;
+    }
+
+  return gen_rtx_PARALLEL (GET_MODE (parallel), vec);
 }
 
 /* Emit code to move a block SRC to block DST, where SRC and DST are
@@ -1731,6 +1779,27 @@ emit_group_move (rtx dst, rtx src)
   for (i = XEXP (XVECEXP (src, 0, 0), 0) ? 0 : 1; i < XVECLEN (src, 0); i++)
     emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0),
 		    XEXP (XVECEXP (src, 0, i), 0));
+}
+
+/* Move a group of registers represented by a PARALLEL into pseudos.  */
+
+rtx
+emit_group_move_into_temps (rtx src)
+{
+  rtvec vec = rtvec_alloc (XVECLEN (src, 0));
+  int i;
+
+  for (i = 0; i < XVECLEN (src, 0); i++)
+    {
+      rtx e = XVECEXP (src, 0, i);
+      rtx d = XEXP (e, 0);
+
+      if (d)
+	e = alloc_EXPR_LIST (REG_NOTE_KIND (e), copy_to_reg (d), XEXP (e, 1));
+      RTVEC_ELT (vec, i) = e;
+    }
+
+  return gen_rtx_PARALLEL (GET_MODE (src), vec);
 }
 
 /* Emit code to move a block SRC to a block ORIG_DST of type TYPE,

@@ -644,7 +644,8 @@ call_expr_flags (tree t)
    Set REG_PARM_SEEN if we encounter a register parameter.  */
 
 static void
-precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg_parm_seen)
+precompute_register_parameters (int num_actuals, struct arg_data *args,
+				int *reg_parm_seen)
 {
   int i;
 
@@ -679,6 +680,17 @@ precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg
 			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
 			     args[i].value, args[i].unsignedp);
 
+	/* If we're going to have to load the value by parts, pull the
+	   parts into pseudos.  The part extraction process can involve
+	   non-trivial computation.  */
+	if (GET_CODE (args[i].reg) == PARALLEL)
+	  {
+	    tree type = TREE_TYPE (args[i].tree_value);
+	    args[i].value
+	      = emit_group_load_into_temps (args[i].reg, args[i].value,
+					    type, int_size_in_bytes (type));
+	  }
+
 	/* If the value is expensive, and we are inside an appropriately
 	   short loop, put the value into a pseudo and then put the pseudo
 	   into the hard reg.
@@ -687,13 +699,13 @@ precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg
 	   register parameters.  This is to avoid reload conflicts while
 	   loading the parameters registers.  */
 
-	if ((! (REG_P (args[i].value)
-		|| (GET_CODE (args[i].value) == SUBREG
-		    && REG_P (SUBREG_REG (args[i].value)))))
-	    && args[i].mode != BLKmode
-	    && rtx_cost (args[i].value, SET) > COSTS_N_INSNS (1)
-	    && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
-		|| optimize))
+	else if ((! (REG_P (args[i].value)
+		     || (GET_CODE (args[i].value) == SUBREG
+			 && REG_P (SUBREG_REG (args[i].value)))))
+		 && args[i].mode != BLKmode
+		 && rtx_cost (args[i].value, SET) > COSTS_N_INSNS (1)
+		 && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
+		     || optimize))
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 }
@@ -1454,11 +1466,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	     locations.  The Irix 6 ABI has examples of this.  */
 
 	  if (GET_CODE (reg) == PARALLEL)
-	    {
-	      tree type = TREE_TYPE (args[i].tree_value);
-	      emit_group_load (reg, args[i].value, type,
-			       int_size_in_bytes (type));
-	    }
+	    emit_group_move (reg, args[i].value);
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
