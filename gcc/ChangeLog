@@ -1,3 +1,37 @@
+Tue Nov 17 11:51:16 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* hash.h (hash_table_key): New type.
+	(hash_entry): Change `string' field to generic `key'.
+	(hash_table): Add `comp' and `hash' functions.
+	(hash_table_init): Take them as input.
+	(hash_table_init_n): Likewise.
+	(hash_lookup): Modify for generic keys.
+	(hash_newfunc): Likewise.
+	(hash_traverse): Likewise.
+	(string_hash): New function.
+	(string_compare): Likewise.
+	(string_copy): Likewise.
+	* hash.c (hash_table_init_n): Modify for generic keys.
+	(hash_table_init): Likewise.
+	(hash_lookup): Likewise.
+	(hash_newfunc): Likewise.
+	(hash_traverse): Likewise.
+	(string_hash): Split out from hash_lookup.
+	(string_compare): New function.
+	(string_copy): Split out from hash_lookup.
+	* tlink.c (symbol_hash_newfunc): Modify for new interfaces to hash
+	tables.
+	(symbol_hash_lookup): Likewise.
+	(file_hash_newfunc): Likewise.
+	(file_hash_lookup): Likewise.
+	(demangled_hash_newfunc): Likewise.
+	(demangled_hash_lookup): Likewise.
+	(tlink_int): Likewise.
+	(read_repo_file): Likewise.
+	(recompile_files): Likewise.
+	(demangle_new_symbols): Likewise.
+	(scan_linker_output): Likewise.
+	
 Tue Nov 17 17:13:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* flow.c (insn_dead_p): New argument NOTES.  Changed all callers.
