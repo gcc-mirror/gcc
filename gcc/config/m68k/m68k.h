@@ -1448,13 +1448,13 @@ __transfer_from_trampoline ()					\
   case PLUS:							\
     /* An lea costs about three times as much as a simple add.  */  \
     if (GET_MODE (X) == SImode					\
-	&& GET_CODE (XEXP (X, 0)) == REG			\
-	&& GET_CODE (XEXP (X, 1)) == MULT			\
-	&& GET_CODE (XEXP (XEXP (X, 1), 0)) == REG		\
-	&& GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT	\
-	&& (INTVAL (XEXP (XEXP (X, 1), 1)) == 2			\
-	    || INTVAL (XEXP (XEXP (X, 1), 1)) == 4		\
-	    || INTVAL (XEXP (XEXP (X, 1), 1)) == 8))		\
+	&& GET_CODE (XEXP (X, 1)) == REG			\
+	&& GET_CODE (XEXP (X, 0)) == MULT			\
+	&& GET_CODE (XEXP (XEXP (X, 0), 0)) == REG		\
+	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT	\
+	&& (INTVAL (XEXP (XEXP (X, 0), 1)) == 2			\
+	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 4		\
+	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 8))		\
       return COSTS_N_INSNS (3);	 /* lea an@(dx:l:i),am */	\
     break;							\
   case ASHIFT:							\
