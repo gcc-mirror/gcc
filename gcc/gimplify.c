@@ -1948,9 +1948,10 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	     gimplified.  */
 	  if (!TREE_OPERAND (t, 2))
 	    {
-	      TREE_OPERAND (t, 2) = unshare_expr (array_ref_low_bound (t));
-	      if (!is_gimple_min_invariant (TREE_OPERAND (t, 2)))
+	      tree low = unshare_expr (array_ref_low_bound (t));
+	      if (!is_gimple_min_invariant (low))
 		{
+	          TREE_OPERAND (t, 2) = low;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 					is_gimple_tmp_var, fb_rvalue);
 		  ret = MIN (ret, tret);
@@ -1967,9 +1968,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 		 type (above).  */
 	      elmt_size = size_binop (EXACT_DIV_EXPR, elmt_size, factor);
 
-	      TREE_OPERAND (t, 3) = elmt_size;
-	      if (!is_gimple_min_invariant (TREE_OPERAND (t, 3)))
+	      if (!is_gimple_min_invariant (elmt_size))
 		{
+	          TREE_OPERAND (t, 3) = elmt_size;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 3), pre_p, post_p,
 					is_gimple_tmp_var, fb_rvalue);
 		  ret = MIN (ret, tret);
@@ -1989,9 +1990,9 @@ gimplify_compound_lval (tree *expr_p, tree *pre_p,
 	      /* Divide the offset by its alignment.  */
 	      offset = size_binop (EXACT_DIV_EXPR, offset, factor);
 
-	      TREE_OPERAND (t, 2) = offset;
-	      if (!is_gimple_min_invariant (TREE_OPERAND (t, 2)))
+	      if (!is_gimple_min_invariant (offset))
 		{
+	          TREE_OPERAND (t, 2) = offset;
 		  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 					is_gimple_tmp_var, fb_rvalue);
 		  ret = MIN (ret, tret);
