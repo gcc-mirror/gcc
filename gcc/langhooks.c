@@ -27,6 +27,8 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
+#include "langhooks.h"
+
 
 /* lang_hooks.tree_inlining.walk_subtrees is called by walk_tree()
    after handling common cases, but before walking code-specific
