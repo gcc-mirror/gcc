@@ -8076,8 +8076,13 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 	      bl->reversed = 1;
 
 	      if (loop_dump_stream)
-		fprintf (loop_dump_stream,
-			 "Reversed loop and added reg_nonneg\n");
+		{
+		  fprintf (loop_dump_stream, "Reversed loop");
+		  if (bl->nonneg)
+		    fprintf (loop_dump_stream, " and added reg_nonneg\n");
+		  else
+		    fprintf (loop_dump_stream, "\n");
+		}
 
 	      return 1;
 	    }
