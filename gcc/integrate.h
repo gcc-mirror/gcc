@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "varray.h"
+
 /* This structure is used to remap objects in the function being inlined to
    those belonging to the calling function.  It is passed by
    expand_inline_function to its children.
@@ -67,19 +69,15 @@ struct inline_remap
      pseudos that contain pointers into the replacement area allocated for
      this inline instance.  These pseudos are then marked as being equivalent
      to the appropriate address and substituted if valid.  */
-  rtx *const_equiv_map;
-  /* Number of entries in const_equiv_map and const_arg_map.  */
-  int const_equiv_map_size;
+  varray_type const_equiv_varray;
   /* This is incremented for each new basic block.
-     It is used to store in const_age_map to record the domain of validity
-     of each entry in const_equiv_map.
+     It is used to store in the age field to record the domain of validity
+     of each entry in const_equiv_varray.
      A value of -1 indicates an entry for a reg which is a parm.
      All other values are "positive".  */
 #define CONST_AGE_PARM (-1)
   unsigned int const_age;
-  /* In parallel with const_equiv_map, record the valid age for each entry.
-     The entry is invalid if its age is less than const_age.  */
-  unsigned int *const_age_map;
+
   /* Target of the inline function being expanded, or NULL if none.  */
   rtx inline_target;
   /* When an insn is being copied by copy_rtx_and_substitute,
@@ -128,9 +126,29 @@ extern rtx get_label_from_map PROTO((struct inline_remap *, int));
 /* Set the label indicated.  */
 #define set_label_in_map(MAP, I, X) ((MAP)->label_map[I] = (X))
 
-/* Unfortunately, we need a global copy of const_equiv map for communication
-   with a function called from note_stores.  Be *very* careful that this
-   is used properly in the presence of recursion.  */
+/* Unfortunately, we need a global copy of const_equiv varray for
+   communication with a function called from note_stores.  Be *very*
+   careful that this is used properly in the presence of recursion.  */
 
-extern rtx *global_const_equiv_map;
-extern int global_const_equiv_map_size;
+extern varray_type global_const_equiv_varray;
+
+#define MAYBE_EXTEND_CONST_EQUIV_VARRAY(MAP,MAX)			\
+  {									\
+    if ((MAX) >= VARRAY_SIZE ((MAP)->const_equiv_varray))		\
+      {									\
+        int is_global = (global_const_equiv_varray			\
+			 == (MAP)->const_equiv_varray);			\
+        VARRAY_GROW ((MAP)->const_equiv_varray, (MAX)+1);		\
+	if (is_global)							\
+	   global_const_equiv_varray = (MAP)->const_equiv_varray;	\
+      }									\
+  }
+
+#define SET_CONST_EQUIV_DATA(MAP,REG,RTX,AGE)				\
+  {									\
+    struct const_equiv_data *p;						\
+    MAYBE_EXTEND_CONST_EQUIV_VARRAY ((MAP), REGNO (REG));		\
+    p = &VARRAY_CONST_EQUIV ((MAP)->const_equiv_varray, REGNO (REG));	\
+    p->rtx = (RTX);							\
+    p->age = (AGE);							\
+  }

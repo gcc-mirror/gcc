@@ -239,7 +239,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   char *local_label;
   char *local_regno;
   int maxregnum;
-  int new_maxregnum;
   rtx exit_label = 0;
   rtx start_label;
   struct iv_class *bl;
@@ -684,6 +683,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   map = (struct inline_remap *) alloca (sizeof (struct inline_remap));
 
   map->integrating = 0;
+  map->const_equiv_varray = 0;
 
   /* Allocate the label map.  */
 
@@ -873,12 +873,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 	  map->reg_map = (rtx *) alloca (maxregnum * sizeof (rtx));
 
-	  map->const_equiv_map = (rtx *) alloca (maxregnum * sizeof (rtx));
-	  map->const_age_map = (unsigned *) alloca (maxregnum
-						    * sizeof (unsigned));
-	  map->const_equiv_map_size = maxregnum;
-	  global_const_equiv_map = map->const_equiv_map;
-	  global_const_equiv_map_size = maxregnum;
+	  VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray, maxregnum,
+				   "unroll_loop");
+	  global_const_equiv_varray = map->const_equiv_varray;
 
 	  init_reg_map (map, maxregnum);
 
@@ -1045,9 +1042,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 				PREV_INSN (loop_start));
 
 	      bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
-	      bzero ((char *) map->const_equiv_map, maxregnum * sizeof (rtx));
-	      bzero ((char *) map->const_age_map,
-		     maxregnum * sizeof (unsigned));
+	      bzero ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
+		     (VARRAY_SIZE (map->const_equiv_varray)
+		      * sizeof (struct const_equiv_data)));
 	      map->const_age = 0;
 
 	      for (j = 0; j < max_labelno; j++)
@@ -1113,7 +1110,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, "Unrolling failure: Naive unrolling not being done.\n");
-      return;
+      goto egress;
     }
 
   /* At this point, we are guaranteed to unroll the loop.  */
@@ -1149,19 +1146,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   init_reg_map (map, maxregnum);
 
-  /* Space is needed in some of the map for new registers, so new_maxregnum
-     is an (over)estimate of how many registers will exist at the end.  */
-  new_maxregnum = maxregnum + (temp * unroll_number * 2);
-
-  /* Must realloc space for the constant maps, because the number of registers
-     may have changed.  */
-
-  map->const_equiv_map = (rtx *) alloca (new_maxregnum * sizeof (rtx));
-  map->const_age_map = (unsigned *) alloca (new_maxregnum * sizeof (unsigned));
-
-  map->const_equiv_map_size = new_maxregnum;
-  global_const_equiv_map = map->const_equiv_map;
-  global_const_equiv_map_size = new_maxregnum;
+  if (map->const_equiv_varray == 0)
+    VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray,
+			     maxregnum + temp * unroll_number * 2,
+			     "unroll_loop");
+  global_const_equiv_varray = map->const_equiv_varray;
 
   /* Search the list of bivs and givs to find ones which need to be remapped
      when split, and set their reg_map entry appropriately.  */
@@ -1202,8 +1191,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   for (i = 0; i < unroll_number; i++)
     {
       bzero ((char *) map->insn_map, max_insnno * sizeof (rtx));
-      bzero ((char *) map->const_equiv_map, new_maxregnum * sizeof (rtx));
-      bzero ((char *) map->const_age_map, new_maxregnum * sizeof (unsigned));
+      bzero ((char *) &VARRAY_CONST_EQUIV (map->const_equiv_varray, 0),
+	     VARRAY_SIZE (map->const_equiv_varray) * sizeof (struct const_equiv_data));
       map->const_age = 0;
 
       for (j = 0; j < max_labelno; j++)
@@ -1280,6 +1269,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      not taken.  */
   if (exit_label)
     emit_label_after (exit_label, loop_end);
+
+ egress:
+  if (map && map->const_equiv_varray)
+    VARRAY_FREE (map->const_equiv_varray);
 }
 
 /* Return true if the loop can be safely, and profitably, preconditioned
@@ -1949,9 +1942,10 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	    {
 	      int regno = REGNO (SET_DEST (pattern));
 
-	      if (regno < map->const_equiv_map_size
-		  && map->const_age_map[regno] == map->const_age)
-		map->const_age_map[regno] = -1;
+	      if (regno < VARRAY_SIZE (map->const_equiv_varray)
+		  && (VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age
+		      == map->const_age))
+		VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age = -1;
 	    }
 	  break;
 	  
@@ -2106,7 +2100,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 
 	  /* Be lazy and assume CALL_INSNs clobber all hard registers.  */
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    map->const_equiv_map[i] = 0;
+	    VARRAY_CONST_EQUIV (map->const_equiv_varray, i).rtx = 0;
 	  break;
 	  
 	case CODE_LABEL:

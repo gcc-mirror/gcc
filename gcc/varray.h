@@ -30,6 +30,30 @@
 #include "system.h"
 #endif
 
+/* Auxiliary structure used inside the varray structure, used for
+   function integration data.  */
+
+struct const_equiv_data {
+  /* Map pseudo reg number in calling function to equivalent constant.  We
+     cannot in general substitute constants into parameter pseudo registers,
+     since some machine descriptions (many RISCs) won't always handle
+     the resulting insns.  So if an incoming parameter has a constant
+     equivalent, we record it here, and if the resulting insn is
+     recognizable, we go with it.
+
+     We also use this mechanism to convert references to incoming arguments
+     and stacked variables.  copy_rtx_and_substitute will replace the virtual
+     incoming argument and virtual stacked variables registers with new
+     pseudos that contain pointers into the replacement area allocated for
+     this inline instance.  These pseudos are then marked as being equivalent
+     to the appropriate address and substituted if valid.  */
+  rtx rtx;
+
+  /* Record the valid age for each entry.  The entry is invalid if its
+     age is less than const_age.  */
+  unsigned age;
+};
+
 /* Union of various array types that are used.  */
 typedef union varray_data_tag {
   char			 c[1];
@@ -50,6 +74,7 @@ typedef union varray_data_tag {
   struct bitmap_head_def *bitmap[1];
   struct sched_info_tag	 *sched[1];
   struct reg_info_def	 *reg[1];
+  struct const_equiv_data const_equiv[1];
 } varray_data;
 
 /* Virtual array of pointers header.  */
@@ -118,6 +143,9 @@ extern varray_type varray_init	PROTO ((size_t, size_t, const char *));
 #define VARRAY_REG_INIT(va, num, name) \
   va = varray_init (num, sizeof (struct reg_info_def *), name)
 
+#define VARRAY_CONST_EQUIV_INIT(va, num, name) \
+  va = varray_init (num, sizeof (struct const_equiv_data), name)
+
 /* Free up memory allocated by the virtual array, but do not free any of the
    elements involved.  */
 #define VARRAY_FREE(vp) \
@@ -127,6 +155,8 @@ extern varray_type varray_init	PROTO ((size_t, size_t, const char *));
 extern varray_type varray_grow	PROTO((varray_type, size_t));
 
 #define VARRAY_GROW(VA, N) ((VA) = varray_grow (VA, N))
+
+#define VARRAY_SIZE(VA)	((VA)->num_elements)
 
 /* Check for VARRAY_xxx macros being in bound, return N for use as an
    index.  */
@@ -159,5 +189,6 @@ extern varray_type varray_grow	PROTO((varray_type, size_t));
 #define VARRAY_BITMAP(VA, N)	((VA)->data.bitmap[ VARRAY_CHECK (VA, N) ])
 #define VARRAY_SCHED(VA, N)	((VA)->data.sched[ VARRAY_CHECK (VA, N) ])
 #define VARRAY_REG(VA, N)	((VA)->data.reg[ VARRAY_CHECK (VA, N) ])
+#define VARRAY_CONST_EQUIV(VA, N) ((VA)->data.const_equiv[ VARRAY_CHECK (VA, N) ])
 
 #endif /* _VARRAY_H_ */
