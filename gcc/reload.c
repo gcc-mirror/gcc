@@ -2763,8 +2763,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  int earlyclobber = 0;
 
 	  /* If the predicate accepts a unary operator, it means that
-             we need to reload the operand.  */
-	  if (GET_RTX_CLASS (GET_CODE (operand)) == '1')
+             we need to reload the operand, but do not do this for
+	     match_operator and friends.  */
+	  if (GET_RTX_CLASS (GET_CODE (operand)) == '1' && *p != 0)
 	    operand = XEXP (operand, 0);
 
 	  /* If the operand is a SUBREG, extract
