@@ -412,9 +412,16 @@ extern void move_block_to_reg PARAMS ((int, rtx, int, enum machine_mode));
    The number of registers to be filled is NREGS.  */
 extern void move_block_from_reg PARAMS ((int, rtx, int, int));
 
+/* Generate a non-consecutive group of registers represented by a PARALLEL.  */
+extern rtx gen_group_rtx PARAMS ((rtx));
+
 /* Load a BLKmode value into non-consecutive registers represented by a
    PARALLEL.  */
 extern void emit_group_load PARAMS ((rtx, rtx, int));
+
+/* Move a non-consecutive group of registers represented by a PARALLEL into
+   a non-consecutive group of registers represented by a PARALLEL.  */
+extern void emit_group_move PARAMS ((rtx, rtx));
 
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */

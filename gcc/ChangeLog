@@ -1,3 +1,15 @@
+2002-11-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* expr.c (gen_group_rtx, emit_group_move): New functions.
+	* expr.h (gen_group_rtx, emit_group_move): Prototype.
+	* function.c (expand_function_start): Use gen_group_rtx to create a
+	PARALLEL rtx to hold the return value when the real return rtx is a
+	PARALLEL.
+	(expand_function_end): Use emit_group_move to move the return value
+	from a PARALLEL to the real return registers.
+	* rtl.h (REG_FUNCTION_VALUE_P): Allow function values to be returned
+	in PARALLELs.
+
 2002-11-26  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/t-libc-ok: Fix typo.
