@@ -63,6 +63,7 @@ static GTY(()) tree gfc_max_array_element_size;
    equivalent C type, at least for now.  We also give
    names to the types here, and we push them in the
    global binding level context.*/
+
 void
 gfc_init_types (void)
 {
@@ -180,6 +181,7 @@ gfc_init_types (void)
 }
 
 /* Get a type node for an integer kind */
+
 tree
 gfc_get_int_type (int kind)
 {
@@ -203,6 +205,7 @@ gfc_get_int_type (int kind)
 }
 
 /* Get a type node for a real kind */
+
 tree
 gfc_get_real_type (int kind)
 {
@@ -222,6 +225,7 @@ gfc_get_real_type (int kind)
 }
 
 /* Get a type node for a complex kind */
+
 tree
 gfc_get_complex_type (int kind)
 {
@@ -241,6 +245,7 @@ gfc_get_complex_type (int kind)
 }
 
 /* Get a type node for a logical kind */
+
 tree
 gfc_get_logical_type (int kind)
 {
@@ -264,6 +269,7 @@ gfc_get_logical_type (int kind)
 }
 
 /* Get a type node for a character kind.  */
+
 tree
 gfc_get_character_type (int kind, gfc_charlen * cl)
 {
@@ -292,6 +298,7 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
 }
 
 /* Covert a basic type.  This will be an array for character types.  */
+
 tree
 gfc_typenode_for_spec (gfc_typespec * spec)
 {
@@ -335,6 +342,7 @@ gfc_typenode_for_spec (gfc_typespec * spec)
 }
 
 /* Build an INT_CST for constant expressions, otherwise return NULL_TREE.  */
+
 static tree
 gfc_conv_array_bound (gfc_expr * expr)
 {
@@ -374,7 +382,7 @@ gfc_get_element_type (tree type)
 }
 
 /* Build an array. This function is called from gfc_sym_type().
-   Actualy returns array descriptor type.
+   Actually returns array descriptor type.
 
    Format of array descriptors is as follows:
 
@@ -397,7 +405,7 @@ gfc_get_element_type (tree type)
    the descriptor directly. Any changes to the array descriptor type will
    require changes in gfc_conv_descriptor_* and gfc_build_array_initializer.
 
-   This is represented internaly as a RECORD_TYPE. The index nodes are
+   This is represented internally as a RECORD_TYPE. The index nodes are
    gfc_array_index_type and the data node is a pointer to the data. See below
    for the handling of character types.
 
@@ -406,9 +414,9 @@ gfc_get_element_type (tree type)
     type = (dtype & GFC_DTYPE_TYPE_MASK) >> GFC_DTYPE_TYPE_SHIFT // 3 bits
     size = dtype >> GFC_DTYPE_SIZE_SHIFT
 
-   I originaly used nested ARRAY_TYPE nodes to represent arrays, but this
+   I originally used nested ARRAY_TYPE nodes to represent arrays, but this
    generated poor code for assumed/deferred size arrays.  These require
-   use of PLACEHOLDER_EXPR/WITH_RECORD_EXPR, which isn't part of GIMPLE
+   use of PLACEHOLDER_EXPR/WITH_RECORD_EXPR, which isn't part of the GENERIC
    grammar.  Also, there is no way to explicitly set the array stride, so
    all data must be packed(1).  I've tried to mark all the functions which
    would require modification with a GCC ARRAYS comment.
@@ -419,7 +427,7 @@ gfc_get_element_type (tree type)
 
    An element is accessed by
    data[offset + index0*stride0 + index1*stride1 + index2*stride2]
-   This gives good performance as it computation does not involve the
+   This gives good performance as the computation does not involve the
    bounds of the array.  For packed arrays, this is optimized further by
    substituting the known strides.
 
@@ -495,6 +503,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as)
 }
 
 /* Returns the struct descriptor_dimension type.  */
+
 static tree
 gfc_get_desc_dim_type (void)
 {
@@ -893,6 +902,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 }
 
 /* Build a pointer type. This function is called from gfc_sym_type().  */
+
 static tree
 gfc_build_pointer_type (gfc_symbol * sym, tree type)
 {
@@ -906,8 +916,8 @@ gfc_build_pointer_type (gfc_symbol * sym, tree type)
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
    For functions return the return type.
-   For subroutines return void_type_node.
- */
+   For subroutines return void_type_node.  */
+
 tree
 gfc_sym_type (gfc_symbol * sym)
 {
@@ -971,6 +981,7 @@ gfc_sym_type (gfc_symbol * sym)
 }
 
 /* Layout and output debug info for a record type.  */
+
 void
 gfc_finish_type (tree type)
 {
@@ -988,6 +999,7 @@ gfc_finish_type (tree type)
    to the fieldlist pointed to by FIELDLIST.
 
    Returns a pointer to the new field.  */
+
 tree
 gfc_add_field_to_struct (tree *fieldlist, tree context,
 			 tree name, tree type)
@@ -1008,6 +1020,7 @@ gfc_add_field_to_struct (tree *fieldlist, tree context,
 
 
 /* Build a tree node for a derived type.  */
+
 static tree
 gfc_get_derived_type (gfc_symbol * derived)
 {
@@ -1125,6 +1138,7 @@ gfc_return_by_reference (gfc_symbol * sym)
   return 0;
 }
 
+
 tree
 gfc_get_function_type (gfc_symbol * sym)
 {
@@ -1194,12 +1208,11 @@ gfc_get_function_type (gfc_symbol * sym)
 	     For this reason all parameters to global functions must be
 	     passed by reference.  Passing by value would potentialy
 	     generate bad code.  Worse there would be no way of telling that
-	     this code wad bad, except that it would give incorrect results.
+	     this code was bad, except that it would give incorrect results.
 
 	     Contained procedures could pass by value as these are never
 	     used without an explicit interface, and connot be passed as
-	     actual parameters for a dummy procedure.
-	   */
+	     actual parameters for a dummy procedure.  */
 	  if (arg->ts.type == BT_CHARACTER)
             nstr++;
 	  typelist = gfc_chainon_list (typelist, type);
@@ -1371,6 +1384,7 @@ gfc_type_for_mode (enum machine_mode mode, int unsignedp)
 }
 
 /* Return an unsigned type the same as TYPE in other respects.  */
+
 tree
 gfc_unsigned_type (tree type)
 {
