@@ -1,3 +1,8 @@
+2004-04-19  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.md (fixuns_truncsfsi2, fixuns_truncdfsi2,
+	floatunssisf2, floatunssidf2): New patterns.
+
 2004-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR other/14918

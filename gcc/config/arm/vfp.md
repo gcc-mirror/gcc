@@ -558,6 +558,26 @@
    (set_attr "type" "farith")]
 )
 
+
+(define_insn "fixuns_truncsfsi2"
+  [(set (match_operand:SI		  0 "s_register_operand" "=w")
+	(unsigned_fix:SI (fix:SF (match_operand:SF 1 "s_register_operand" "w"))))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "ftouizs%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "farith")]
+)
+
+(define_insn "fixuns_truncdfsi2"
+  [(set (match_operand:SI		  0 "s_register_operand" "=w")
+	(unsigned_fix:SI (fix:DF (match_operand:DF 1 "s_register_operand" "w"))))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "ftouizd%?\\t%0, %P1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "farith")]
+)
+
+
 (define_insn "*floatsisf2_vfp"
   [(set (match_operand:SF	    0 "s_register_operand" "=w")
 	(float:SF (match_operand:SI 1 "s_register_operand" "w")))]
@@ -572,6 +592,25 @@
 	(float:DF (match_operand:SI 1 "s_register_operand" "w")))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
   "fsitod%?\\t%P0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "farith")]
+)
+
+
+(define_insn "floatunssisf2"
+  [(set (match_operand:SF	    0 "s_register_operand" "=w")
+	(unsigned_float:SF (match_operand:SI 1 "s_register_operand" "w")))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "fuitos%?\\t%0, %1"
+  [(set_attr "predicable" "yes")
+   (set_attr "type" "farith")]
+)
+
+(define_insn "floatunssidf2"
+  [(set (match_operand:DF	    0 "s_register_operand" "=w")
+	(unsigned_float:DF (match_operand:SI 1 "s_register_operand" "w")))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_VFP"
+  "fuitod%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "type" "farith")]
 )
@@ -740,5 +779,3 @@
 ;; fmdhr et al (VFPv1)
 ;; Support for xD (single precision only) variants.
 ;; fmrrs, fmsrr
-;; fuito*
-;; ftoui*
