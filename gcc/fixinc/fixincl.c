@@ -225,7 +225,7 @@ initialize ( argc, argv )
 #else
     "fixincl ERROR:  %s environment variable not defined\n"
     "each of these must be defined:\n"
-# define _ENV_(v,m,n,t) "\t" n "  - " t "\n"
+# define _ENV_(vv,mm,nn,tt) "\t" nn "  - " tt "\n"
   ENV_TABLE
 # undef _ENV_
 #endif
