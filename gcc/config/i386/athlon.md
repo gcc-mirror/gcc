@@ -581,7 +581,7 @@
 			 (and (eq_attr "cpu" "k8")
 			      (eq_attr "type" "sselog"))
 			 "athlon-double,athlon-fpsched,athlon-fmul")
-;; ??? pcmp executes in addmul, probably not wortwhile to brother about that.
+;; ??? pcmp executes in addmul, probably not worthwhile to bother about that.
 (define_insn_reservation "athlon_ssecmp_load" 2
 			 (and (eq_attr "cpu" "athlon")
 			      (and (eq_attr "type" "ssecmp")
