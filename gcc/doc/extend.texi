@@ -2047,7 +2047,8 @@ warnings are requested (using @option{-Wformat}), so there is no need to
 modify the header file @file{stdio.h}.  In C99 mode, the functions
 @code{snprintf}, @code{vsnprintf}, @code{vscanf}, @code{vfscanf} and
 @code{vsscanf} are also checked.  Except in strictly conforming C
-standard modes, the X/Open function @code{strfmon} is also checked.
+standard modes, the X/Open function @code{strfmon} is also checked as
+are @code{printf_unlocked} and @code{fprintf_unlocked}.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 
 @item format_arg (@var{string-index})
@@ -4259,7 +4260,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex fabsl
 @findex ffs
 @findex fprintf
+@findex fprintf_unlocked
 @findex fputs
+@findex fputs_unlocked
 @findex imaxabs
 @findex index
 @findex labs
@@ -4268,6 +4271,7 @@ v4si f (v4si a, v4si b, v4si c)
 @findex memcpy
 @findex memset
 @findex printf
+@findex printf_unlocked
 @findex rindex
 @findex sin
 @findex sinf
@@ -4315,8 +4319,9 @@ in.  @code{_exit} is not recognized in strict ISO C mode (@option{-ansi},
 strict C89 mode (@option{-ansi} or @option{-std=c89}).
 
 Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
-@code{bzero}, @code{index}, @code{rindex} and @code{ffs} may be handled
-as built-in functions.  All these functions have corresponding versions
+@code{bzero}, @code{index}, @code{rindex}, @code{ffs}, @code{fputs_unlocked},
+@code{printf_unlocked} and @code{fprintf_unlocked} may be handled as
+built-in functions.  All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
 mode.
 

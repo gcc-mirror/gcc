@@ -125,6 +125,8 @@ DEF_ATTR_TREE_LIST (ATTR_FORMAT_ARG_2, ATTR_FORMAT_ARG, ATTR_LIST_2, ATTR_NULL)
    -ffreestanding.  */
 DEF_FN_ATTR_IDENT (__builtin_printf, ATTR_FORMAT_PRINTF_1_2, true)
 DEF_FN_ATTR_IDENT (__builtin_fprintf, ATTR_FORMAT_PRINTF_2_3, true)
+DEF_FN_ATTR_IDENT (__builtin_printf_unlocked, ATTR_FORMAT_PRINTF_1_2, true)
+DEF_FN_ATTR_IDENT (__builtin_fprintf_unlocked, ATTR_FORMAT_PRINTF_2_3, true)
 
 /* Functions from ISO/IEC 9899:1990.  */
 #define DEF_C89_ATTR(NAME, ATTRS) DEF_FN_ATTR_IDENT (NAME, ATTRS, flag_hosted)
@@ -162,5 +164,8 @@ DEF_EXT_ATTR (dgettext, ATTR_FORMAT_ARG_2)
 DEF_EXT_ATTR (dcgettext, ATTR_FORMAT_ARG_2)
 /* X/Open strfmon function.  */
 DEF_EXT_ATTR (strfmon, ATTR_FORMAT_STRFMON_3_4)
+/* Glibc thread-unsafe stdio functions.  */
+DEF_EXT_ATTR (printf_unlocked, ATTR_FORMAT_PRINTF_1_2)
+DEF_EXT_ATTR (fprintf_unlocked, ATTR_FORMAT_PRINTF_2_3)
 #undef DEF_EXT_ATTR
 #undef DEF_FN_ATTR_IDENT

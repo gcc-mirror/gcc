@@ -16,6 +16,10 @@ foo (int i, char *s, size_t n, int *ip, va_list v0, va_list v1, va_list v2,
   fprintf (stdout, "%ld", i); /* { dg-warning "format" "fprintf" } */
   printf ("%d", i);
   printf ("%ld", i); /* { dg-warning "format" "printf" } */
+  fprintf_unlocked (stdout, "%d", i);
+  fprintf_unlocked (stdout, "%ld", i); /* { dg-warning "format" "fprintf_unlocked" } */
+  printf_unlocked ("%d", i);
+  printf_unlocked ("%ld", i); /* { dg-warning "format" "printf_unlocked" } */
   sprintf (s, "%d", i);
   sprintf (s, "%ld", i); /* { dg-warning "format" "sprintf" } */
   snprintf (s, n, "%d", i);

@@ -16,6 +16,9 @@ foo (int i, char *s, size_t n, va_list v0, va_list v1, va_list v2, va_list v3,
   fprintf (stdout, "%ld", i); /* { dg-warning "format" "fprintf" } */
   printf ("%d", i);
   printf ("%ld", i); /* { dg-warning "format" "printf" } */
+  /* The "unlocked" functions shouldn't warn in c90 mode.  */
+  fprintf_unlocked (stdout, "%ld", i); /* { dg-bogus "format" "fprintf_unlocked" } */
+  printf_unlocked ("%ld", i); /* { dg-bogus "format" "printf_unlocked" } */
   sprintf (s, "%d", i);
   sprintf (s, "%ld", i); /* { dg-warning "format" "sprintf" } */
   vfprintf (stdout, "%d", v0);

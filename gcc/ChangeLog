@@ -1,3 +1,27 @@
+2001-12-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-attrs.def (__builtin_printf_unlocked,
+	__builtin_fprintf_unlocked, printf_unlocked, fprintf_unlocked):
+	Mark with the __printf__ attribute.
+	
+	* builtins.c (expand_builtin_fputs): Add an `unlocked' parameter
+	and set the replacement function depending on it.
+	(expand_builtin): Skip BUILT_IN_*_UNLOCKED when not optimizing.
+	Handle BUILT_IN_*_UNLOCKED when optimizing.
+	
+	* builtins.def (DEF_EXT_FALLBACK_BUILTIN,
+	DEF_EXT_FRONT_END_LIB_BUILTIN): New macros.
+	Declare the "unlocked" stdio functions.
+	
+	* c-common.c (c_expand_builtin_printf, c_expand_builtin_fprintf):
+	Add an `unlocked' parameter and set the replacement function
+	depending on it.
+	(c_expand_builtin): Handle BUILT_IN_PRINTF_UNLOCKED and
+	BUILT_IN_FPRINTF_UNLOCKED.
+
+	* doc/extend.texi (printf_unlocked, fprintf_unlocked,
+	fputs_unlocked): Document.
+
 2001-12-20  Josef Zlomek  <zlomek@matfyz.cz>
 
 	* cfgloop.c (flow_loops_find): Use the information of the depth
