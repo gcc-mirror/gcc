@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* These attempt to coax various unix flavours to declare all our
    needed tidbits in the system headers.  */
-#if !defined(__FreeBSD__)
+#if !defined(__FreeBSD__) && !defined(__APPLE__)
 #define _POSIX_SOURCE
 #endif /* Some BSDs break <sys/socket.h> if this is defined. */
 #define _GNU_SOURCE 
