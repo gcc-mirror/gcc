@@ -1,3 +1,8 @@
+2003-09-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/12232
+	* g++.dg/template/memtmpl2.C: New test.
+
 2003-09-18  Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/11184
