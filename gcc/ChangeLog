@@ -1,3 +1,17 @@
+2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c (init_decl_processing):
+	 Don't call start_identifier_warnings.
+	* flags.h (warn_id_clash, id_clash_len): Remove.
+	* stringpool.c: Don't include flags.h.
+	(scan_for_clashes, do_identifier_warnings,
+	start_identifier_warnings): Remove.
+	* toplev.c (warn_id_clash, id_clash_len): Remove.
+	(display_help): Don't document -Wid-clash.
+	(decode_W_option): Print warning on -Wid-clash.
+	* tree.h (start_identifier_warnings): Remove.
+	* invoke.texi: Remove documentation of -Wid-clash.
+
 2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * fixinc/fixtests.c: Declare entries in ENV_TABLE.

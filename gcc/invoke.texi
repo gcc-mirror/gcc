@@ -208,7 +208,7 @@ in the following sections.
 -Wconversion  -Wdisabled-optimization -Werror @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wformat-nonliteral -Wformat-security @gol
--Wid-clash-@var{len}  -Wimplicit -Wimplicit-int  @gol
+-Wimplicit -Wimplicit-int  @gol
 -Wimplicit-function-declaration @gol
 -Werror-implicit-function-declaration @gol
 -Wimport  -Winline @gol
@@ -2231,11 +2231,6 @@ Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 @item -Wshadow
 Warn whenever a local variable shadows another local variable, parameter or
 global variable or whenever a built-in function is shadowed.
-
-@item -Wid-clash-@var{len}
-Warn whenever two distinct identifiers match in the first @var{len}
-characters.  This may help you prepare a program that will compile
-with certain obsolete, brain-damaged compilers.
 
 @item -Wlarger-than-@var{len}
 Warn whenever an object of larger than @var{len} bytes is defined.

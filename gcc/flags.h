@@ -142,12 +142,6 @@ extern int warn_missing_noreturn;
 
 extern int warn_cast_align;
 
-/* Nonzero means warn about any identifiers that match in the first N
-   characters.  The value N is in `id_clash_len'.  */
-
-extern int warn_id_clash;
-extern unsigned int id_clash_len;
-
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */

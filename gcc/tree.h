@@ -2718,7 +2718,6 @@ extern void expand_function_start	PARAMS ((tree, int));
 
 extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
-extern void start_identifier_warnings	PARAMS ((void));
 extern void gcc_obstack_init		PARAMS ((struct obstack *));
 extern void init_obstacks		PARAMS ((void));
 extern void build_common_tree_nodes	PARAMS ((int));

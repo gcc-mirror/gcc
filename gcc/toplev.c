@@ -1455,12 +1455,6 @@ int warn_return_type;
 
 int warn_cast_align;
 
-/* Nonzero means warn about any identifiers that match in the first N
-   characters.  The value N is in `id_clash_len'.  */
-
-int warn_id_clash;
-unsigned int id_clash_len;
-
 /* Nonzero means warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes. The value N is in `larger_than_size'.  */
@@ -3905,7 +3899,6 @@ display_help ()
     }
 
   printf (_("  -Wunused                Enable unused warnings\n"));
-  printf (_("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n"));
   printf (_("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n"));
   printf (_("  -p                      Enable function profiling\n"));
 #if defined (BLOCK_PROFILER) || defined (FUNCTION_BLOCK_PROFILER)
@@ -4239,12 +4232,7 @@ decode_W_option (arg)
     }
 
   if ((option_value = skip_leading_substring (arg, "id-clash-")))
-    {
-      id_clash_len = read_integral_parameter (option_value, arg - 2, -1);
-
-      if (id_clash_len != -1)
-	warn_id_clash = 1;
-    }
+    warning ("-Wid-clash-LEN is no longer supported");
   else if ((option_value = skip_leading_substring (arg, "larger-than-")))
     {
       larger_than_size = read_integral_parameter (option_value, arg - 2, -1);

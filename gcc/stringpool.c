@@ -32,7 +32,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "hashtable.h"
-#include "flags.h"
 #include "toplev.h"
 
 /* The "" allocated string.  */
@@ -47,13 +46,10 @@ const char digit_vector[] = {
 
 struct ht *ident_hash;
 static struct obstack string_stack;
-static int do_identifier_warnings;
 
 static hashnode alloc_node PARAMS ((hash_table *));
 static int mark_ident PARAMS ((struct cpp_reader *, hashnode, const PTR));
 static void mark_ident_hash PARAMS ((void *));
-static int scan_for_clashes PARAMS ((struct cpp_reader *, hashnode,
-				     const char *));
 
 /* Initialize the string pool.  */
 void
@@ -131,28 +127,6 @@ maybe_get_identifier (text)
   return NULL_TREE;
 }
 
-/* If this identifier is longer than the clash-warning length,
-   do a brute force search of the entire table for clashes.  */
-
-static int
-scan_for_clashes (pfile, h, text)
-     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
-     hashnode h;
-     const char *text;
-{
-  tree node = HT_IDENT_TO_GCC_IDENT (h);
-
-  if (IDENTIFIER_LENGTH (node) >= id_clash_len
-      && !memcmp (IDENTIFIER_POINTER (node), text, id_clash_len))
-    {
-      warning ("\"%s\" and \"%s\" identical in first %d characters",
-	       text, IDENTIFIER_POINTER (node), id_clash_len);
-      return 0;
-    }
-
-  return 1;
-}
-
 /* Record the size of an identifier node for the language in use.
    SIZE is the total size in bytes.
    This is called by the language-specific files.  This must be
@@ -164,15 +138,6 @@ set_identifier_size (size)
 {
   tree_code_length[(int) IDENTIFIER_NODE]
     = (size - sizeof (struct tree_common)) / sizeof (tree);
-}
-
-/* Enable warnings on similar identifiers (if requested).
-   Done after the built-in identifiers are created.  */
-
-void
-start_identifier_warnings ()
-{
-  do_identifier_warnings = 1;
 }
 
 /* Report some basic statistics about the string pool.  */
