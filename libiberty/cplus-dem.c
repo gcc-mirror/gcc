@@ -420,33 +420,43 @@ qualifier_string PARAMS ((int));
 static const char*
 demangle_qualifier PARAMS ((int));
 
-/*  Translate count to integer, consuming tokens in the process.
-    Conversion terminates on the first non-digit character.
-    Trying to consume something that isn't a count results in
-    no consumption of input and a return of 0.  */
+/* Translate count to integer, consuming tokens in the process.
+   Conversion terminates on the first non-digit character.
+
+   Trying to consume something that isn't a count results in no
+   consumption of input and a return of -1.
+
+   Overflow consumes the rest of the digits, and returns -1.  */
 
 static int
 consume_count (type)
      const char **type;
 {
-  unsigned int count = 0;
-  char *save = *type;
+  int count = 0;
+
+  if (! isdigit ((unsigned char)**type))
+    return -1;
 
   while (isdigit ((unsigned char)**type))
     {
       count *= 10;
-      count += **type - '0';
-      /* A sanity check.  Otherwise a symbol like
-	 `_Utf390_1__1_9223372036854775807__9223372036854775'
-	 can cause this function to return a negative value.
-	 In this case we just consume until the end of the string.  */
-      if (count > strlen (*type))
+
+      /* Check for overflow.
+	 We assume that count is represented using two's-complement;
+	 no power of two is divisible by ten, so if an overflow occurs
+	 when multiplying by ten, the result will not be a multiple of
+	 ten.  */
+      if ((count % 10) != 0)
 	{
-	  *type = save;
-	  return 0;
+	  while (isdigit ((unsigned char) **type))
+	    (*type)++;
+	  return -1;
 	}
+
+      count += **type - '0';
       (*type)++;
     }
+
   return (count);
 }
 
@@ -1440,12 +1450,15 @@ demangle_template_value_parm (work, mangled, s, tk)
 	}
       string_appendn (s, "'", 1);
       val = consume_count(mangled);
-      if (val == 0)
-	return -1;
-      tmp[0] = (char)val;
-      tmp[1] = '\0';
-      string_appendn (s, &tmp[0], 1);
-      string_appendn (s, "'", 1);
+      if (val <= 0)
+	success = 0;
+      else
+	{
+	  tmp[0] = (char)val;
+	  tmp[1] = '\0';
+	  string_appendn (s, &tmp[0], 1);
+	  string_appendn (s, "'", 1);
+	}
     }
   else if (tk == tk_bool)
     {
@@ -1493,7 +1506,7 @@ demangle_template_value_parm (work, mangled, s, tk)
   else if (tk == tk_pointer || tk == tk_reference)
     {
       int symbol_len = consume_count (mangled);
-      if (symbol_len == 0)
+      if (symbol_len == -1)
 	return -1;
       if (symbol_len == 0)
 	string_appendn (s, "0", 1);
@@ -1589,7 +1602,7 @@ demangle_template (work, mangled, tname, trawname, is_type, remember)
 	}
       else
 	{
-	  if ((r = consume_count (mangled)) == 0
+	  if ((r = consume_count (mangled)) <= 0
 	      || (int) strlen (*mangled) < r)
 	    {
 	      return (0);
@@ -1768,6 +1781,8 @@ arm_pt (work, mangled, n, anchor, args)
       int len;
       *args = *anchor + 6;
       len = consume_count (args);
+      if (len == -1)
+	return 0;
       if (*args + len == mangled + n && **args == '_')
 	{
 	  ++*args;
@@ -1783,6 +1798,8 @@ arm_pt (work, mangled, n, anchor, args)
           int len;
           *args = *anchor + 6;
           len = consume_count (args);
+	  if (len == -1)
+	    return 0;
           if (*args + len == mangled + n && **args == '_')
             {
               ++*args;
@@ -1794,6 +1811,8 @@ arm_pt (work, mangled, n, anchor, args)
  	  int len;
  	  *args = *anchor + 3;
  	  len = consume_count (args);
+	  if (len == -1)
+	    return 0;
  	  if (*args + len == mangled + n && **args == '_')
             {
               ++*args;
@@ -1969,7 +1988,9 @@ demangle_class_name (work, mangled, declp)
   int success = 0;
 
   n = consume_count (mangled);
-  if (n > 0)
+  if (n == -1)
+    return 0;
+  if ((int) strlen (*mangled) >= n)
     {
       demangle_arm_hp_template (work, mangled, n, declp);
       success = 1;
@@ -2417,6 +2438,11 @@ gnu_special (work, mangled, declp)
 	  break;
 	default:
 	  n = consume_count (mangled);
+	  if (n < 0 || n > strlen (*mangled))
+	    {
+	      success = 0;
+	      break;
+	    }
 	  string_appendn (declp, *mangled, n);
 	  (*mangled) += n;
 	}
@@ -2437,21 +2463,30 @@ gnu_special (work, mangled, declp)
     }
   else if (strncmp (*mangled, "__thunk_", 8) == 0)
     {
-      int delta = ((*mangled) += 8, consume_count (mangled));
-      char *method = internal_cplus_demangle (work, ++*mangled);
-      if (method)
-	{
-	  char buf[50];
-	  sprintf (buf, "virtual function thunk (delta:%d) for ", -delta);
-	  string_append (declp, buf);
-	  string_append (declp, method);
-	  free (method);
-	  n = strlen (*mangled);
-	  (*mangled) += n;
-	}
+      int delta;
+
+      (*mangled) += 8;
+      delta = consume_count (mangled);
+      if (delta == -1)
+	success = 0;
       else
 	{
-	  success = 0;
+	  char *method = internal_cplus_demangle (work, ++*mangled);
+
+	  if (method)
+	    {
+	      char buf[50];
+	      sprintf (buf, "virtual function thunk (delta:%d) for ", -delta);
+	      string_append (declp, buf);
+	      string_append (declp, method);
+	      free (method);
+	      n = strlen (*mangled);
+	      (*mangled) += n;
+	    }
+	  else
+	    {
+	      success = 0;
+	    }
 	}
     }
   else if (strncmp (*mangled, "__t", 3) == 0
@@ -2555,7 +2590,7 @@ arm_special (mangled, declp)
       while (*scan != '\0')        /* first check it can be demangled */
         {
           n = consume_count (&scan);
-          if (n==0)
+          if (n == -1)
 	    {
 	      return (0);           /* no good */
 	    }
@@ -2569,6 +2604,9 @@ arm_special (mangled, declp)
       while (**mangled != '\0')
 	{
 	  n = consume_count (mangled);
+          if (n == -1
+	      || n > strlen (*mangled))
+	    return 0;
 	  string_prependn (declp, *mangled, n);
 	  (*mangled) += n;
 	  if ((*mangled)[0] == '_' && (*mangled)[1] == '_')
@@ -2753,6 +2791,11 @@ demangle_qualified (work, mangled, result, isfuncname, append)
  	       * This is necessary to deal with templates in
  	       * mangling styles like EDG */
 	      namelength = consume_count (mangled);
+	      if (namelength == -1)
+		{
+		  success = 0;
+		  break;
+		}
  	      recursively_demangle(work, mangled, &temp, namelength);
             }
           else
@@ -2816,7 +2859,37 @@ SYNOPSIS
 
 DESCRIPTION
 
-	Return 0 if no conversion is performed, 1 if a string is converted.
+	Assume that *type points at a count in a mangled name; set
+	*count to its value, and set *type to the next character after
+	the count.  There are some weird rules in effect here.
+
+	If *type does not point at a string of digits, return zero.
+
+	If *type points at a string of digits followed by an
+	underscore, set *count to their value as an integer, advance
+	*type to point *after the underscore, and return 1.
+
+	If *type points at a string of digits not followed by an
+	underscore, consume only the first digit.  Set *count to its
+	value as an integer, leave *type pointing after that digit,
+	and return 1.
+
+        The excuse for this odd behavior: in the ARM and HP demangling
+        styles, a type can be followed by a repeat count of the form
+        `Nxy', where:
+
+        `x' is a single digit specifying how many additional copies
+            of the type to append to the argument list, and
+
+        `y' is one or more digits, specifying the zero-based index of
+            the first repeated argument in the list.  Yes, as you're
+            unmangling the name you can figure this out yourself, but
+            it's there anyway.
+
+        So, for example, in `bar__3fooFPiN51', the first argument is a
+        pointer to an integer (`Pi'), and then the next five arguments
+        are the same (`N5'), and the first repeat is the function's
+        second argument (`1').
 */
 
 static int
@@ -2978,7 +3051,8 @@ do_type (work, mangled, result)
 	    if (isdigit ((unsigned char)**mangled))
 	      {
 		n = consume_count (mangled);
-		if ((int) strlen (*mangled) < n)
+		if (n == -1
+		    || (int) strlen (*mangled) < n)
 		  {
 		    success = 0;
 		    break;
@@ -3423,7 +3497,7 @@ do_hpacc_template_literal (work, mangled, result)
 
   literal_len = consume_count (mangled);
 
-  if (!literal_len)
+  if (literal_len <= 0)
     return 0;
 
   /* Literal parameters are names of arrays, functions, etc.  and the
@@ -3513,7 +3587,7 @@ do_arg (work, mangled, result)
       (*mangled)++;
       work->nrepeats = consume_count(mangled);
 
-      if (work->nrepeats == 0)
+      if (work->nrepeats <= 0)
 	/* This was not a repeat count after all.  */
 	return 0;
 
@@ -3800,7 +3874,7 @@ demangle_args (work, mangled, declp)
                  count but it's impossible to demangle that case properly
                  anyway. Eg if we already have 12 types is T12Pc "(..., type1,
                  Pc, ...)"  or "(..., type12, char *, ...)" */
-              if ((t = consume_count(mangled)) == 0)
+              if ((t = consume_count(mangled)) <= 0)
                 {
                   return (0);
                 }
