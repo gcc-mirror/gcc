@@ -6,38 +6,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-typedef __SIZE_TYPE__ size_t;
-typedef __PTRDIFF_TYPE__ ptrdiff_t;
-
-/* Kludges to get types corresponding to size_t and ptrdiff_t.  */
-#define unsigned signed
-typedef __SIZE_TYPE__ signed_size_t;
-#undef unsigned
-#define signed /* Type might or might not have explicit 'signed'.  */
-typedef unsigned __PTRDIFF_TYPE__ unsigned_ptrdiff_t;
-#undef signed
-
-/* These next definitions are kludges.  When GCC has a <stdint.h> it
-   should be used.
-*/
-#include <limits.h>
-#if INT_MAX == LLONG_MAX
-typedef int intmax_t;
-#elif LONG_MAX == LLONG_MAX
-typedef long intmax_t;
-#else
-typedef long long intmax_t;
-#endif
-#if UINT_MAX == ULLONG_MAX
-typedef unsigned int uintmax_t;
-#elif ULONG_MAX == ULLONG_MAX
-typedef unsigned long uintmax_t;
-#else
-typedef unsigned long long uintmax_t;
-#endif
-
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,

@@ -6,28 +6,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic -Wformat" } */
 
-/* This may not be correct in the particular case, but allows the
-   prototypes to be declared, and we don't try to link.
-*/
-typedef struct _FILE FILE;
-extern FILE *stdout;
-
-typedef __SIZE_TYPE__ size_t;
-typedef __builtin_va_list va_list;
-
-extern int fprintf (FILE *, const char *, ...);
-extern int printf (const char *, ...);
-extern int sprintf (char *, const char *, ...);
-extern int vfprintf (FILE *, const char *, va_list);
-extern int vprintf (const char *, va_list);
-extern int vsprintf (char *, const char *, va_list);
-
-extern int snprintf (char *, size_t, const char *, ...);
-extern int vsnprintf (char *, size_t, const char *, va_list);
-
-extern char *gettext (const char *);
-extern char *dgettext (const char *, const char *);
-extern char *dcgettext (const char *, const char *, int);
+#include "format.h"
 
 void
 foo (int i, char *s, size_t n, va_list v0, va_list v1, va_list v2, va_list v3,

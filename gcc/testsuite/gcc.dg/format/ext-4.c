@@ -3,9 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu89 -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (char **sp, wchar_t **lsp)

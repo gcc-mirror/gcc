@@ -5,9 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-
-extern int scanf (const char *, ...);
+#include "format.h"
 
 void
 foo (int *ip, long long int *llp, wchar_t *ls)

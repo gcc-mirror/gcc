@@ -3,16 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-/* Kludge to get something that may be ssize_t.  */
-#define unsigned signed
-typedef __SIZE_TYPE__ ssize_t;
-#undef unsigned
-
-#define NULL ((void *)0)
-
-extern ssize_t strfmon (char *restrict, size_t, const char *restrict, ...);
+#include "format.h"
 
 void
 foo (char *s, size_t m, double d, long double ld)

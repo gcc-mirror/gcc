@@ -3,9 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat" } */
 
-#define NULL ((void *)0)
-
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (long l, int nfoo)
@@ -25,5 +23,5 @@ foo (long l, int nfoo)
   printf ((nfoo > 1) ? "%d foos" : ((nfoo > 0) ? "%ld foo" : "%d foos"), nfoo); /* { dg-warning "long int format" "wrong type" } */
   /* Extra arguments to NULL should be complained about.  */
   printf (NULL, "foo"); /* { dg-warning "too many" "NULL extra args" } */
-  /* { dg-warning "null" "null format arg" { target *-*-* } 27 } */
+  /* { dg-warning "null" "null format arg" { target *-*-* } 25 } */
 }

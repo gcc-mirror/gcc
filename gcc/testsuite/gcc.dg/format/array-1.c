@@ -3,7 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu99 -Wformat=2" } */
 
-extern int printf (const char *, ...);
+#include "format.h"
 
 const char a1[] = "foo";
 const char a2[] = "foo%d";

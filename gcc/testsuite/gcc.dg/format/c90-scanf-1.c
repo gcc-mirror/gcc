@@ -6,14 +6,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic -Wformat" } */
 
-typedef __WCHAR_TYPE__ wchar_t;
-
-__extension__ typedef long long int llong;
-__extension__ typedef unsigned long long int ullong;
-
-extern int scanf (const char *, ...);
-
-#define NULL ((void *)0)
+#include "format.h"
 
 void
 foo (int *ip, unsigned int *uip, short int *hp, unsigned short int *uhp,

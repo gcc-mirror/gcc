@@ -3,10 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-
-extern int printf (const char *, ...);
-extern int scanf (const char *, ...);
+#include "format.h"
 
 size_t
 foo (void)

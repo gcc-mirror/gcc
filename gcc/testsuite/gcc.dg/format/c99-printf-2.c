@@ -5,11 +5,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1999 -pedantic -Wformat" } */
 
-typedef __SIZE_TYPE__ size_t;
-typedef __WCHAR_TYPE__ wchar_t;
-typedef __WINT_TYPE__ wint_t;
-
-extern int printf (const char *, ...);
+#include "format.h"
 
 void
 foo (int i, long long ll, size_t z, wint_t lc, wchar_t *ls)
