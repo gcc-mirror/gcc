@@ -9,14 +9,27 @@
 # reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
 # are omitted. 
 # 
+# If the first parameter reads --patch, the second parameter is considered
+# a patch file.
+# 
+# If the first parameter is --touch, no cvs operation will be performed,
+# only generated files that appear to be out of date in the local tree
+# will be touched.
+#
+# If the first parameter is --list, a list of the generated files and
+# their dependencies will be printed; --help prints this message.
+#
 # Examples:
 #
 # contrib/egcs_update -r egcs_latest_snapshot
 # contrib/egcs_update -A
 # contrib/egcs_update --nostdflags -P -r egcs_1_1_branch gcc/testsuite
+# contrib/egcs_update --patch some-patch
+# contrib/egcs_update --touch
+# contrib/egcs_update --list
 #
 #
-# (C) 1998 Free Software Foundation
+# (C) 1998-1999 Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -24,83 +37,166 @@
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 
 
+# Default options used when updating via CVS.
 UPDATE_OPTIONS=-P
 # Add -d to create any directories that exist in the repository but not
 #        locally.
 # Add -A to reset any sticky tags, dates, or `-k' options.
 
 
-echo "Current directory is `pwd`."
+# This function prints a list of all generated files, along with their
+# dependencies.  Note that only one target is supported per line: the
+# colon is stripped from the output.
+files_and_dependencies () {
+    sed -e 's/ *#.*//' -e '/^$/d' -e 's/://' <<\EOF
+# All automake dependencies within texinfo
+# In fact, not all, since we do not care about sub-directories that
+# we do not build.  In particular, *.po and *.gmo are not touched.
+texinfo/aclocal.m4: texinfo/configure.in texinfo/acinclude.m4
+texinfo/Makefile.in: texinfo/Makefile.am texinfo/configure.in texinfo/aclocal.m4
+texinfo/configure: texinfo/configure.in texinfo/aclocal.m4
+texinfo/stamp-h.in: texinfo/configure.in texinfo/aclocal.m4 texinfo/acconfig.h
+texinfo/lib/Makefile.in: texinfo/lib/Makefile.am texinfo/configure.in texinfo/aclocal.m4
+texinfo/makeinfo/Makefile.in: texinfo/makeinfo/Makefile.am texinfo/configure.in texinfo/aclocal.m4
+texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/aclocal.m4
+# Now, proceed to gcc automatically generated files
+gcc/configure: gcc/configure.in
+gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
+gcc/config.in: gcc/cstamp-h.in
+gcc/c-parse.y: gcc/c-parse.in
+gcc/c-parse.c: gcc/c-parse.y
+gcc/c-parse.h: gcc/c-parse.c
+gcc/c-gperf.h: gcc/c-parse.gperf
+gcc/cexp.c: gcc/cexp.y
+gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
+gcc/fixinc/inclhack.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl gcc/fixinc/hackshell.tpl
+gcc/fixinc/fixincl.sh: gcc/fixinc/inclhack.def gcc/fixinc/inclhack.tpl
+# And then, language-specific files
+gcc/cp/parse.c: gcc/cp/parse.y
+gcc/cp/parse.h: gcc/cp/parse.c
+gcc/objc/objc-parse.y: gcc/c-parse.in
+gcc/objc/objc-parse.c: gcc/objc/objc-parse.y
+gcc/java/parse.h: gcc/java/parse.y
+gcc/java/parse.c: gcc/java/parse.y gcc/java/lex.c gcc/java/parse.h gcc/java/lex.h
+gcc/java/parse-scan.c: gcc/java/parse-scan.y gcc/java/lex.c gcc/java/parse.h gcc/java/lex.h
+# And libraries, at last
+libchill/configure: libchill/configure.in
+libf2c/configure: libf2c/configure.in
+libf2c/libF77/configure: libf2c/libF77/configure.in
+libf2c/libI77/configure: libf2c/libI77/configure.in
+libf2c/libU77/configure: libf2c/libU77/configure.in
+libf2c/libU77/stamp-h.in: libf2c/libU77/configure.in libf2c/libU77/acconfig.h
+libobjc/configure: libobjc/configure.in
+EOF
+}
 
-# First of all, check whether this indeed looks like a local CVS of egcs.
-if [ ! -d CVS ] || [ ! -f gcc/version.c ]; then
-	echo "This does not seem to be an egcs CVS tree!"
-	exit
+
+# This function checks whether its first argument is newer than all
+# the other arguments.  It returns success (0) otherwise.
+is_out_of_date () {
+  test `ls -1dt ${1+"$@"} | sed 1q` != "$1"
+}
+
+
+# This function touches generated files such that the ``end'' user does
+# not have to rebuild them.
+touch_files () {
+    files_and_dependencies | while read f deps; do
+	if test -f $f && is_out_of_date "$f" $deps; then
+	    echo Touching "$f"...
+	    touch $f
+	    if is_out_of_date "$f" $deps; then
+		# Hmm, it may have got the same timestamp as one of
+		# its touched dependencies.  Wait a second and retry
+		sleep 1
+		touch $f
+	    fi
+	fi
+    done
+}
+
+
+# This functions applies a patch to an existing tree.
+apply_patch () {
+    if [ -f $1 ]; then
+	echo "Applying patch file $1"
+	case "$1" in
+	*gz)
+	    gzip -d -c $1 | patch -p1 ;;
+	*)
+	    cat $1 | patch -p1 ;;
+	esac
+    fi
+    echo "Adjusting file timestamps"
+    touch_files
+}
+
+# Check whether this indeed looks like a local tree.
+if [ ! -f gcc/version.c ]; then
+    echo "This does not seem to be an egcs tree!"
+    exit
+fi
+
+case "$1" in
+# First of all, check whether we are going to process a patch.
+--patch) 
+    if test "$#" != 2; then
+        echo "$1" expects only one argument >&2
+	exit 1
+    fi
+    apply_patch "${2}"
+    exit $?
+    ;;
+
+--touch)
+    if test "$#" != 1; then
+        echo "$1" does not expect any argument >&2
+	exit 1
+    fi
+    touch_files
+    exit $?
+    ;;
+
+--list)
+    if test "$#" != 1; then
+        echo "$1" does not expect any argument >&2
+	exit 1
+    fi
+    files_and_dependencies | sed 's/ /: /'
+    exit $?
+    ;;
+
+--help)
+    sed -e '1,2d' -e '/^UPDATE_OPTIONS=/{i\
+\
+
+p
+}' \
+	-e '/^$/,$d' -e 's/#//' -e 's/^ //' < $0
+    exit $?
+    ;;
+
+esac
+
+# Check whether this indeed looks like a local CVS tree.
+if [ ! -d CVS ]; then
+    echo "This does not seem to be an egcs CVS tree!"
+    exit
 fi
 
 # Check command-line options
-
 if [ x"${1}"x = x"--nostdflags"x ]; then
     shift
 else
     set -- $UPDATE_OPTIONS ${1+"$@"}
 fi
 
-
-echo "Pass 1: Updating autoconf and bison generated files"
-# Do a CVS update on those files that exist in CVS directories.  libg++
-# makes sense to drop into the tree, but it isn't CVS-controlled.
-X=`for i in \`find . -name configure.in -o -name '*.y'\`
-do
-    D=\`dirname $i\`/CVS
-    if [ -f $i -a -d $D ]; then 
-        echo $i
-    fi
-done`
-cvs -q update $X
-if [ $? -ne 0 ]; then 
-    echo "CVS update of generated files failed." >&2
-    exit 1
-fi
-
-
-echo "Pass 2: Updating full tree"
+echo "Updating CVS tree"
 cvs -q update ${1+"$@"}
 if [ $? -ne 0 ]; then 
     echo "CVS update of full tree failed." >&2
     exit 1
 fi
 
-echo "Pass 3: Fixing local tree"
-# Please also update the FAQ accordingly if you change the list of
-# files below. Note that generated files should be touched only
-# after the corresponding *.y files.
-touch `find . -name configure -print`
-touch `find texinfo -name Makefile.in -print`
-touch `find texinfo -name \*.pot -print`
-touch `find texinfo -name \*.gmo -print`
-for f in gcc/c-parse.y \
-	 gcc/c-parse.h \
-	 gcc/c-parse.c \
-	 gcc/cstamp-h.in \
-	 gcc/c-gperf.h \
-	 gcc/cexp.c \
-	 gcc/cp/parse.c \
-	 gcc/cp/parse.h \
-	 gcc/objc/objc-parse.y \
-	 gcc/objc/objc-parse.c \
-	 gcc/java/parse.h \
-	 gcc/java/parse.c \
-	 gcc/java/parse-scan.c \
-	 libf2c/libU77/stamp-h.in \
-	 contrib/fixinc/fixincl.x \
-	 contrib/fixinc/inclhack.sh \
-	 contrib/fixinc/fixincl.sh \
-	 gcc/fixinc/fixincl.x \
-	 gcc/fixinc/inclhack.sh \
-	 gcc/fixinc/fixincl.sh
-do
-	if [ -f $f ]; then
-		touch $f
-	fi
-done
+echo "Adjusting file timestamps"
+touch_files
