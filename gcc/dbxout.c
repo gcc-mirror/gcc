@@ -331,7 +331,7 @@ void dbxout_types ();
 void dbxout_args ();
 void dbxout_symbol ();
 
-#ifndef NO_DBX_FUNCTION_END
+#if defined(ASM_OUTPUT_SECTION_NAME)
 static void dbxout_function_end		PROTO((void));
 #endif
 static void dbxout_typedefs		PROTO((tree));
@@ -352,7 +352,7 @@ static void dbxout_finish_symbol	PROTO((tree));
 static void dbxout_block		PROTO((tree, int, tree));
 static void dbxout_really_begin_function PROTO((tree));
 
-#ifndef NO_DBX_FUNCTION_END
+#if defined(ASM_OUTPUT_SECTION_NAME)
 static void
 dbxout_function_end ()
 {
