@@ -12915,7 +12915,7 @@ start_function (declspecs, declarator, attrs, flags)
      We haven't necessarily assigned RTL to all variables yet, so it's
      not safe to try to expand expressions involving them.  */
   immediate_size_expand = 0;
-  get_pending_sizes ();
+  current_function->x_dont_save_pending_sizes_p = 1;
 
   /* Let the user know we're compiling this function.  */
   if (processing_template_decl || !building_stmt_tree ())
