@@ -3664,12 +3664,13 @@ lookup_compiler (name, length, language)
   /* Look for a suffix.  */
   for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
     {
-      if (strlen (cp->suffix) < length
-	       /* See if the suffix matches the end of NAME.  */
-	       && !strcmp (cp->suffix,
-			   name + length - strlen (cp->suffix))
-	       /* The suffix `-' matches only the file name `-'.  */
-	       && !(!strcmp (cp->suffix, "-") && length != 1))
+      if (/* The suffix `-' matches only the file name `-'.  */
+	  (!strcmp (cp->suffix, "-") && !strcmp (name, "-"))
+	  ||
+	  (strlen (cp->suffix) < length
+	   /* See if the suffix matches the end of NAME.  */
+	   && !strcmp (cp->suffix,
+		       name + length - strlen (cp->suffix))))
 	{
 	  if (cp->spec[0][0] == '@')
 	    {
