@@ -38,6 +38,9 @@ exception statement from your version. */
 
 package java.io;
 
+import java.nio.channels.FileChannel;
+import gnu.java.nio.FileChannelImpl;
+
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date September 25, 1998 
@@ -78,7 +81,8 @@ public class RandomAccessFile implements DataOutput, DataInput
     return fd.length();
   }
 
-  public RandomAccessFile (String fileName, String mode) throws IOException
+  public RandomAccessFile (String fileName, String mode)
+    throws FileNotFoundException
   {
     int fdmode;
     if (mode.compareTo ("r") == 0)
@@ -101,7 +105,7 @@ public class RandomAccessFile implements DataOutput, DataInput
     in = new DataInputStream (new FileInputStream (fd));
   }
 
-  public RandomAccessFile (File file, String mode) throws IOException
+  public RandomAccessFile (File file, String mode) throws FileNotFoundException
   {
     this (file.getPath(), mode);
   }
@@ -276,10 +280,21 @@ public class RandomAccessFile implements DataOutput, DataInput
     out.writeUTF(s);
   }
 
+  public FileChannel getChannel ()
+  {
+    synchronized (this)
+      {
+        if (ch == null)
+          ch = new FileChannelImpl (fd, true, this);
+
+	return ch;
+      }
+  }
 
   // The underlying file.
   private FileDescriptor fd;
   // The corresponding input and output streams.
   private DataOutputStream out;
   private DataInputStream in;
+  private FileChannel ch;
 }

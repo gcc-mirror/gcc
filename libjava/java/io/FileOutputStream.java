@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.io;
 
 import java.nio.channels.FileChannel;
+import gnu.java.nio.FileChannelImpl;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -147,11 +148,18 @@ public class FileOutputStream extends OutputStream
       fd.close();
   }
 
-  // Instance variables.
-  private FileDescriptor fd;
-
   public FileChannel getChannel ()
   {
-    return null;
+    synchronized (this)
+      {
+        if (ch == null)
+          ch = new FileChannelImpl (fd, true, this);
+
+        return ch;
+      }
   }
+
+  // Instance variables.
+  private FileDescriptor fd;
+  private FileChannel ch;
 }
