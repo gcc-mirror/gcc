@@ -7695,7 +7695,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (decl == error_mark_node)
 	      qualified_name_lookup_error (scope, name);
 	    else
-	      do_local_using_decl (decl);
+	      do_local_using_decl (decl, scope, name);
 	  }
 	else
 	  {

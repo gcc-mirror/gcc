@@ -2071,17 +2071,13 @@ push_overloaded_decl (tree decl, int flags)
    being used, and the USING_DECL, or NULL_TREE on failure.  */
 
 static tree
-validate_nonmember_using_decl (tree decl, tree *scope, tree *name)
+validate_nonmember_using_decl (tree decl, tree scope, tree name)
 {
-  *scope = global_namespace;
-  *name = NULL_TREE;
-
   if (TREE_CODE (decl) == TEMPLATE_ID_EXPR)
     {
-      *name = TREE_OPERAND (decl, 0);
       /* 7.3.3/5
 	   A using-declaration shall not name a template-id.  */
-      error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
+      error ("a using-declaration cannot specify a template-id.  Try `using %D'", name);
       return NULL_TREE;
     }
 
@@ -2104,25 +2100,17 @@ validate_nonmember_using_decl (tree decl, tree *scope, tree *name)
 
   my_friendly_assert (DECL_P (decl), 20020908);
 
-  if (TREE_CODE (decl) == CONST_DECL)
-    /* Enumeration constants to not have DECL_CONTEXT set.  */
-    *scope = TYPE_CONTEXT (TREE_TYPE (decl));
-  else
-    *scope = DECL_CONTEXT (decl);
-  if (!*scope)
-    *scope = global_namespace;
-
   /* [namespace.udecl]
        A using-declaration for a class member shall be a
        member-declaration.  */
-  if (TYPE_P (*scope))
+  if (TYPE_P (scope))
     {
-      error ("`%T' is not a namespace", *scope);
+      error ("`%T' is not a namespace", scope);
       return NULL_TREE;
     }
-  *name = DECL_NAME (decl);
+
   /* Make a USING_DECL.  */
-  return push_using_decl (*scope, *name);
+  return push_using_decl (scope, name);
 }
 
 /* Process local and global using-declarations.  */
@@ -2235,12 +2223,11 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 /* Process a using-declaration at function scope.  */
 
 void
-do_local_using_decl (tree decl)
+do_local_using_decl (tree decl, tree scope, tree name)
 {
-  tree scope, name;
   tree oldval, oldtype, newval, newtype;
 
-  decl = validate_nonmember_using_decl (decl, &scope, &name);
+  decl = validate_nonmember_using_decl (decl, scope, name);
   if (decl == NULL_TREE)
     return;
 
@@ -3248,13 +3235,12 @@ add_using_namespace (tree user, tree used, bool indirect)
 /* Process a using-declaration not appearing in class or local scope.  */
 
 void
-do_toplevel_using_decl (tree decl)
+do_toplevel_using_decl (tree decl, tree scope, tree name)
 {
-  tree scope, name;
   tree oldval, oldtype, newval, newtype;
   cxx_binding *binding;
 
-  decl = validate_nonmember_using_decl (decl, &scope, &name);
+  decl = validate_nonmember_using_decl (decl, scope, name);
   if (decl == NULL_TREE)
     return;
   
