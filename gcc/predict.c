@@ -188,16 +188,14 @@ dump_prediction (predictor, probability, bb)
 
   if (bb->count)
     {
-      fprintf (rtl_dump_file, "  exec ",
-	       bb->count, e->count, e->count * 100.0 / bb->count);
+      fprintf (rtl_dump_file, "  exec ");
       fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,
 	       (HOST_WIDEST_INT) bb->count);
-      fprintf (rtl_dump_file, " hit ",
-	       e->count, e->count * 100.0 / bb->count);
+      fprintf (rtl_dump_file, " hit ");
       fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,
 	       (HOST_WIDEST_INT) e->count);
       fprintf (rtl_dump_file, " (%.1f%%)",
-	       e->count, e->count * 100.0 / bb->count);
+	       e->count * 100.0 / bb->count);
     }
   fprintf (rtl_dump_file, "\n");
 }
