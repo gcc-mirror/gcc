@@ -4995,7 +4995,7 @@ tree_check3_failed (const tree node, enum tree_code code1,
 		  function, trim_filename (file), line);
 }
 
-/* ... and for four different codes.  */
+/* ... and for five different codes.  */
 
 void
 tree_check5_failed (const tree node, enum tree_code code1,
