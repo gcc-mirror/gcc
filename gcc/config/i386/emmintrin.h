@@ -937,25 +937,25 @@ _mm_unpacklo_pd (__m128d __A, __m128d __B)
 static __inline __m128d
 _mm_loadh_pd (__m128d __A, double const *__B)
 {
-  return (__m128d)__builtin_ia32_loadhpd ((__v2df)__A, (__v2si *)__B);
+  return (__m128d)__builtin_ia32_loadhpd ((__v2df)__A, __B);
 }
 
 static __inline void
 _mm_storeh_pd (double *__A, __m128d __B)
 {
-  __builtin_ia32_storehpd ((__v2si *)__A, (__v2df)__B);
+  __builtin_ia32_storehpd (__A, (__v2df)__B);
 }
 
 static __inline __m128d
 _mm_loadl_pd (__m128d __A, double const *__B)
 {
-  return (__m128d)__builtin_ia32_loadlpd ((__v2df)__A, (__v2si *)__B);
+  return (__m128d)__builtin_ia32_loadlpd ((__v2df)__A, __B);
 }
 
 static __inline void
 _mm_storel_pd (double *__A, __m128d __B)
 {
-  __builtin_ia32_storelpd ((__v2si *)__A, (__v2df)__B);
+  __builtin_ia32_storelpd (__A, (__v2df)__B);
 }
 
 static __inline int
