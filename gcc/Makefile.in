@@ -1295,7 +1295,7 @@ install-cross-tools: install-dir
 	then \
 	  if [ -d $(tooldir)/. ] ; \
 	  then \
-	    for file in as ld ar ranlib; do \
+	    for file in as ld ar nm ranlib; do \
 	      if [ -f $(libsubdir)/$$file ] ; \
 	      then true; \
 	      else  \
