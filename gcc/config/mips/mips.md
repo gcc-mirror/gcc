@@ -426,29 +426,7 @@
   [(set (match_operand:SI 0 "register_operand")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand")
 		 (match_operand:SI 2 "arith_operand")))]
-  ""
-{
-  /* If a large stack adjustment was forced into a register, we may be
-     asked to generate rtx such as:
-
-	(set (reg:SI sp) (plus:SI (reg:SI sp) (reg:SI pseudo)))
-
-     but no such instruction is available in mips16.  Handle it by
-     using a temporary.  */
-  if (TARGET_MIPS16
-      && REGNO (operands[0]) == STACK_POINTER_REGNUM
-      && ((GET_CODE (operands[1]) == REG
-	   && REGNO (operands[1]) != STACK_POINTER_REGNUM)
-	  || GET_CODE (operands[2]) != CONST_INT))
-    {
-      rtx tmp = gen_reg_rtx (SImode);
-
-      emit_move_insn (tmp, operands[1]);
-      emit_insn (gen_addsi3 (tmp, tmp, operands[2]));
-      emit_move_insn (operands[0], tmp);
-      DONE;
-    }
-})
+  "")
 
 (define_insn "addsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=d,d")
@@ -493,19 +471,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d,d,d")
 	(plus:SI (match_operand:SI 1 "register_operand" "0,d,d")
 		 (match_operand:SI 2 "arith_operand" "Q,O,d")))]
-  "TARGET_MIPS16
-   && (GET_CODE (operands[1]) != REG
-       || REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER
-       || M16_REG_P (REGNO (operands[1]))
-       || REGNO (operands[1]) == ARG_POINTER_REGNUM
-       || REGNO (operands[1]) == FRAME_POINTER_REGNUM
-       || REGNO (operands[1]) == STACK_POINTER_REGNUM)
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) >= FIRST_PSEUDO_REGISTER
-       || M16_REG_P (REGNO (operands[2]))
-       || REGNO (operands[2]) == ARG_POINTER_REGNUM
-       || REGNO (operands[2]) == FRAME_POINTER_REGNUM
-       || REGNO (operands[2]) == STACK_POINTER_REGNUM)"
+  "TARGET_MIPS16"
 {
   if (REGNO (operands[0]) == REGNO (operands[1]))
     return "addu\t%0,%2";
@@ -595,29 +561,7 @@
   [(set (match_operand:DI 0 "register_operand")
 	(plus:DI (match_operand:DI 1 "register_operand")
 		 (match_operand:DI 2 "arith_operand")))]
-  "TARGET_64BIT"
-{
-  /* If a large stack adjustment was forced into a register, we may be
-     asked to generate rtx such as:
-
-	(set (reg:DI sp) (plus:DI (reg:DI sp) (reg:DI pseudo)))
-
-     but no such instruction is available in mips16.  Handle it by
-     using a temporary.  */
-  if (TARGET_MIPS16
-      && REGNO (operands[0]) == STACK_POINTER_REGNUM
-      && ((GET_CODE (operands[1]) == REG
-	   && REGNO (operands[1]) != STACK_POINTER_REGNUM)
-	  || GET_CODE (operands[2]) != CONST_INT))
-    {
-      rtx tmp = gen_reg_rtx (DImode);
-
-      emit_move_insn (tmp, operands[1]);
-      emit_insn (gen_adddi3 (tmp, tmp, operands[2]));
-      emit_move_insn (operands[0], tmp);
-      DONE;
-    }
-})
+  "TARGET_64BIT")
 
 (define_insn "adddi3_internal"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
@@ -662,19 +606,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d,d,d")
 	(plus:DI (match_operand:DI 1 "register_operand" "0,d,d")
 		 (match_operand:DI 2 "arith_operand" "Q,O,d")))]
-  "TARGET_MIPS16 && TARGET_64BIT
-   && (GET_CODE (operands[1]) != REG
-       || REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER
-       || M16_REG_P (REGNO (operands[1]))
-       || REGNO (operands[1]) == ARG_POINTER_REGNUM
-       || REGNO (operands[1]) == FRAME_POINTER_REGNUM
-       || REGNO (operands[1]) == STACK_POINTER_REGNUM)
-   && (GET_CODE (operands[2]) != REG
-       || REGNO (operands[2]) >= FIRST_PSEUDO_REGISTER
-       || M16_REG_P (REGNO (operands[2]))
-       || REGNO (operands[2]) == ARG_POINTER_REGNUM
-       || REGNO (operands[2]) == FRAME_POINTER_REGNUM
-       || REGNO (operands[2]) == STACK_POINTER_REGNUM)"
+  "TARGET_MIPS16 && TARGET_64BIT"
 {
   if (REGNO (operands[0]) == REGNO (operands[1]))
     return "daddu\t%0,%2";
