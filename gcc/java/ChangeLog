@@ -1,5 +1,9 @@
 2003-11-12  Andrew Haley  <aph@redhat.com>
 
+	PR java/11045
+	* parse.y (fold_constant_for_init): Check that we really do have a
+	constant.
+
 	PR java/11533
 	* lang.c (merge_init_test_initialization): Clear DECL_INITIAL for
 	init_test_decls being inlined.
