@@ -3781,10 +3781,75 @@ main (argc, argv, envp)
 	    }
 	  else if (str[0] == 'g')
 	    {
+	      /* If more than one debugging type is supported,
+		 you must define PREFERRED_DEBUGGING_TYPE
+		 to choose a format in a system-dependent way.  */
+	      /* This is one long line cause VAXC can't handle a \-newline.  */
+#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
+#ifndef PREFERRED_DEBUGGING_TYPE
+You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
+#endif /* no PREFERRED_DEBUGGING_TYPE */
+#else /* Only one debugging format supported.  Define PREFERRED_DEBUGGING_TYPE
+	 so the following code needn't care.  */
+#ifdef DBX_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#endif
+#ifdef SDB_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#endif
+#ifdef XCOFF_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
+#endif
+#endif /* More than one debugger format enabled.  */
+
 	      char *p = str + 1;
 	      char *q;
 	      unsigned len;
 	      unsigned level;
+	      /* A lot of code assumes write_symbols == NO_DEBUG if the
+		 debugging level is 0 (thus -gstabs1 -gstabs0 would lose track
+		 of what debugging type has been selected).  This records the
+		 selected type.  It is an error to specify more than one
+		 debugging type.  */
+	      static enum debug_info_type selected_debug_type = NO_DEBUG;
+	      /* Non-zero if debugging format has been explicitly set.
+		 -g and -ggdb don't explicitly set the debugging format so
+		 -gdwarf -g3 is equivalent to -gdwarf3.  */
+	      static int type_explicitly_set_p = 0;
+	      /* Table of supported debugging formats.  */
+	      static struct {
+		char *arg;
+		/* Since PREFERRED_DEBUGGING_TYPE isn't necessarily a
+		   constant expression, we use NO_DEBUG in its place.  */
+		enum debug_info_type debug_type;
+		int use_extensions_p;
+	      } *da, debug_args[] = {
+		{ "g", NO_DEBUG, DEFAULT_GDB_EXTENSIONS },
+		{ "ggdb", NO_DEBUG, 1 },
+#ifdef DBX_DEBUGGING_INFO
+		{ "gstabs", DBX_DEBUG, 0 },
+		{ "gstabs+", DBX_DEBUG, 1 },
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+		{ "gdwarf", DWARF_DEBUG, 0 },
+		{ "gdwarf+", DWARF_DEBUG, 1 },
+#endif
+#ifdef XCOFF_DEBUGGING_INFO
+		{ "gxcoff", XCOFF_DEBUG, 0 },
+		{ "gxcoff+", XCOFF_DEBUG, 1 },
+#endif
+#ifdef SDB_DEBUGGING_INFO
+		{ "gcoff", SDB_DEBUG, 0 },
+#endif
+		{ 0, 0, 0 }
+	      };
+	      /* Indexed by enum debug_info_type.  */
+	      static char *debug_type_names[] = {
+		"none", "stabs", "coff", "dwarf", "xcoff"
+	      };
 
 	      while (*p && (*p < '0' || *p > '9'))
 		p++;
@@ -3800,114 +3865,54 @@ main (argc, argv, envp)
 		{
 		  warning ("invalid debug level specification in option: `-%s'",
 			   str);
+		  /* ??? This error message is incorrect in the case of
+		     -g4 -g.  */
 		  warning ("no debugging information will be generated");
 		  level = 0;
 		}
 
-	      /* If more than one debugging type is supported,
-		 you must define PREFERRED_DEBUGGING_TYPE
-		 to choose a format in a system-dependent way.  */
-	      /* This is one long line cause VAXC can't handle a \-newline.  */
-#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO))
-#ifdef PREFERRED_DEBUGGING_TYPE
-	      if (!strncmp (str, "ggdb", len))
-		write_symbols = PREFERRED_DEBUGGING_TYPE;
-#else /* no PREFERRED_DEBUGGING_TYPE */
-You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
-#endif /* no PREFERRED_DEBUGGING_TYPE */
-#endif /* More than one debugger format enabled.  */
-#ifdef DBX_DEBUGGING_INFO
-	      if (write_symbols != NO_DEBUG)
-		;
-	      else if (!strncmp (str, "ggdb", len))
-		write_symbols = DBX_DEBUG;
-	      else if (!strncmp (str, "gstabs", len))
-		write_symbols = DBX_DEBUG;
-	      else if (!strncmp (str, "gstabs+", len))
-		write_symbols = DBX_DEBUG;
+	      /* Look up STR in the table.  */
+	      for (da = debug_args; da->arg; da++)
+		{
+		  if (! strncmp (str, da->arg, len))
+		    {
+		      enum debug_info_type type = da->debug_type;
+		      /* ??? A few targets use STR and LEN in the
+			 definition of PREFERRED_DEBUGGING_TYPE!  */
+		      if (type == NO_DEBUG)
+			type = PREFERRED_DEBUGGING_TYPE;
 
-	      /* Always enable extensions for -ggdb or -gstabs+, 
-		 always disable for -gstabs.
-		 For plain -g, use system-specific default.  */
-	      if (write_symbols == DBX_DEBUG && !strncmp (str, "ggdb", len)
-		  && len >= 2)
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == DBX_DEBUG && !strncmp (str, "gstabs+", len)
-		       && len >= 7)
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == DBX_DEBUG
-		       && !strncmp (str, "gstabs", len) && len >= 2)
-		use_gnu_debug_info_extensions = 0;
-	      else
-		use_gnu_debug_info_extensions = DEFAULT_GDB_EXTENSIONS;
-#endif /* DBX_DEBUGGING_INFO */
-#ifdef DWARF_DEBUGGING_INFO
-	      if (write_symbols != NO_DEBUG)
-		;
-	      else if (!strncmp (str, "g", len))
-		write_symbols = DWARF_DEBUG;
-	      else if (!strncmp (str, "ggdb", len))
-		write_symbols = DWARF_DEBUG;
-	      else if (!strncmp (str, "gdwarf", len))
-		write_symbols = DWARF_DEBUG;
-
-	      /* Always enable extensions for -ggdb or -gdwarf+, 
-		 always disable for -gdwarf.
-		 For plain -g, use system-specific default.  */
-	      if (write_symbols == DWARF_DEBUG && !strncmp (str, "ggdb", len)
-		  && len >= 2)
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == DWARF_DEBUG && !strcmp (str, "gdwarf+"))
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == DWARF_DEBUG
-		       && !strncmp (str, "gdwarf", len) && len >= 2)
-		use_gnu_debug_info_extensions = 0;
-	      else
-		use_gnu_debug_info_extensions = DEFAULT_GDB_EXTENSIONS;
-#endif
-#ifdef SDB_DEBUGGING_INFO
-	      if (write_symbols != NO_DEBUG)
-		;
-	      else if (!strncmp (str, "g", len))
-		write_symbols = SDB_DEBUG;
-	      else if (!strncmp (str, "gdb", len))
-		write_symbols = SDB_DEBUG;
-	      else if (!strncmp (str, "gcoff", len))
-		write_symbols = SDB_DEBUG;
-#endif /* SDB_DEBUGGING_INFO */
-#ifdef XCOFF_DEBUGGING_INFO
-	      if (write_symbols != NO_DEBUG)
-		;
-	      else if (!strncmp (str, "g", len))
-		write_symbols = XCOFF_DEBUG;
-	      else if (!strncmp (str, "ggdb", len))
-		write_symbols = XCOFF_DEBUG;
-	      else if (!strncmp (str, "gxcoff", len))
-		write_symbols = XCOFF_DEBUG;
-	      else if (!strncmp (str, "gxcoff+", len))
-		write_symbols = XCOFF_DEBUG;
-
-	      /* Always enable extensions for -ggdb or -gxcoff+,
-		 always disable for -gxcoff.
-		 For plain -g, use system-specific default.  */
-	      if (write_symbols == XCOFF_DEBUG && !strncmp (str, "ggdb", len)
-		  && len >= 2)
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == XCOFF_DEBUG && !strcmp (str, "gxcoff+"))
-		use_gnu_debug_info_extensions = 1;
-	      else if (write_symbols == XCOFF_DEBUG
-		       && !strncmp (str, "gxcoff", len) && len >= 2)
-		use_gnu_debug_info_extensions = 0;
-	      else
-		use_gnu_debug_info_extensions = DEFAULT_GDB_EXTENSIONS;
-#endif	      
-	      if (write_symbols == NO_DEBUG)
+		      /* Does it conflict with an already selected type?  */
+		      if (type_explicitly_set_p
+			  /* -g/-ggdb don't conflict with anything */
+			  && da->debug_type != NO_DEBUG
+			  && type != selected_debug_type)
+			warning ("`-%s' ignored, conflicts with `-g%s'",
+				 str, debug_type_names[(int) selected_debug_type]);
+		      else
+			{
+			  /* If the format has already been set, -g/-ggdb
+			     only change the debug level.  */
+			  if (type_explicitly_set_p
+			      && da->debug_type == NO_DEBUG)
+			    ; /* don't change debugging type */
+			  else
+			    {
+			      selected_debug_type = type;
+			      type_explicitly_set_p = da->debug_type != NO_DEBUG;
+			    }
+			  write_symbols = (level == 0
+					   ? NO_DEBUG
+					   : selected_debug_type);
+			  use_gnu_debug_info_extensions = da->use_extensions_p;
+			  debug_info_level = (enum debug_info_level) level;
+			}
+		      break;
+		    }
+		}
+	      if (! da->arg)
 		warning ("`-%s' not supported by this configuration of GCC",
 			 str);
-	      else if (level == 0)
-		write_symbols = NO_DEBUG;
-	      else
-		debug_info_level = (enum debug_info_level) level;
 	    }
 	  else if (!strcmp (str, "o"))
 	    {
