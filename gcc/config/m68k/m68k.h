@@ -880,15 +880,61 @@ extern enum reg_class regno_reg_class[];
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
 
-#define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
-  asm_fprintf (FILE, "\ttstl %LLPBX0\n\tbne %LLPI%d\n\tpea %LLPBX0\n\tjsr %U__bb_init_func\n\taddql %I4,%Rsp\n%LLPI%d:\n",  \
-	   LABELNO, LABELNO);
+#define FUNCTION_BLOCK_PROFILER(FILE, BLOCK_OR_LABEL)	\
+do							\
+  {							\
+    switch (profile_block_flag)				\
+      {							\
+      case 2:						\
+        asm_fprintf (FILE, "\tpea %d\n\tpea %LLPBX0\n\tjsr %U__bb_init_trace_func\n\taddql %I8,%Rsp\n", \
+                           (BLOCK_OR_LABEL)); \
+        break;						\
+							\
+      default:						\
+        asm_fprintf (FILE, "\ttstl %LLPBX0\n\tbne %LLPI%d\n\tpea %LLPBX0\n\tjsr %U__bb_init_func\n\taddql %I4,%Rsp\n%LLPI%d:\n", \
+                           (BLOCK_OR_LABEL), (BLOCK_OR_LABEL)); \
+        break;						\
+      }							\
+  }							\
+while(0)
 
-/* Output assembler code to FILE to increment the entry-count for
+/* Output assembler code to FILE to increment the counter for
    the BLOCKNO'th basic block in this source file.  */
 
 #define BLOCK_PROFILER(FILE, BLOCKNO)	\
-  asm_fprintf (FILE, "\taddql %I1,%LLPBX2+%d\n", 4 * BLOCKNO)
+do							\
+  {							\
+    switch (profile_block_flag)				\
+      {							\
+      case 2:						\
+        asm_fprintf (FILE, "\tmovel %Ra1,%Rsp@-\n\tlea ___bb,%Ra1\n\tmovel %I%d,%Ra1@(0)\n\tmovel %I%LLPBX0,%Ra1@(4)\n\tmovel %Rsp@+,%Ra1\n\tjsr %U__bb_trace_func\n", \
+                           BLOCKNO);			\
+        break;						\
+							\
+      default:						\
+        asm_fprintf (FILE, "\taddql %I1,%LLPBX2+%d\n", 4 * BLOCKNO); \
+        break;						\
+      }							\
+  }							\
+while(0)
+
+/* Output assembler code to FILE to indicate return from 
+   a function during basic block profiling. */
+
+#define FUNCTION_BLOCK_PROFILER_EXIT(FILE)		\
+  asm_fprintf (FILE, "\tjsr %U__bb_trace_ret\n");
+
+/* Save all registers which may be clobbered by a function call. */
+
+#define MACHINE_STATE_SAVE(id)			\
+  asm ("	movew cc,sp@-");		\
+  asm ("	moveml d0/d1/a0/a1,sp@-");
+
+/* Restore all registers saved by MACHINE_STATE_SAVE. */
+
+#define MACHINE_STATE_RESTORE(id)		\
+  asm ("	moveml sp@+,d0/d1/a0/a1");	\
+  asm ("	movew sp@+,cc");
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
