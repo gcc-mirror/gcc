@@ -114,8 +114,6 @@ extern int m16_uimm8_4 (rtx, enum machine_mode);
 extern int m16_nuimm8_4 (rtx, enum machine_mode);
 extern int m16_simm8_8 (rtx, enum machine_mode);
 extern int m16_nsimm8_8 (rtx, enum machine_mode);
-extern int m16_usym8_4 (rtx, enum machine_mode);
-extern int m16_usym5_4 (rtx, enum machine_mode);
 
 extern struct rtx_def *embedded_pic_fnaddr_reg (void);
 extern struct rtx_def *embedded_pic_offset (rtx);

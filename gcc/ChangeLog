@@ -1,3 +1,46 @@
+2004-04-18  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (m16_usym8_4, m16_usym5_4): Delete.
+	* config/mips/mips.h (mips_entry, mips_string_length): Delete.
+	(CONSTANT_POOL_BEFORE_FUNCTION, ASM_OUTPUT_POOL_EPILOGUE): Undefine.
+	* config/mips/mips.c (struct mips16_constant): Renamed from struct
+	constant.  Propogate change throughout file.
+	(struct machine_function): Remove insns_len.
+	(mips_string_length, mips16_strings, string_constants): Delete.
+	(mips_classify_symbol): Return SYMBOL_CONSTANT_POOL for LABEL_REFs
+	when generating mips16 code.  Remove special mips16 treatment of
+	string constants.
+	(mips_symbolic_constant_p): Allow mips16 constant pool accesses
+	to have the form LABEL+CONSTANT.
+	(mips_symbolic_address_p): Fix comment.
+	(m16_usym8_4, m16_usym5_4): Delete.
+	(mips_output_function_epilogue): Remove mips16 string handling.
+	(mips_output_mi_thunk): Call mips16_lay_out_constants.
+	(mips_select_section, mips_encode_section_info): Remove mips16
+	string handling.
+	(struct mips16_constant_pool): New.
+	(add_constant): Take a mips16_constant_pool structure.  Keep pool
+	sorted into order of ascending mode size.  Keep track of the highest
+	possible start address, taking padding and the masking of the base PC
+	value into account.
+	(dump_constants_1): New function, split out from dump_constants.
+	Handle vector constants.  Use gen_consttable_{int,float} rather than
+	separate functions for each mode.
+	(dump_constants): Simplify.  Use GET_MODE_ALIGNMENT.  Use gen_align
+	rather than separate functions for each alignment.
+	(mips_find_symbol): Delete.
+	(mips16_insn_length): New function, split out from
+	mips16_lay_out_constants.
+	(mips16_rewrite_pool_refs): New function.
+	(mips16_lay_out_constants): Rework. Remove string handling.
+	Always create an inline constant pool.
+	* config/mips/mips.md (UNSPEC_CONSTTABLE_INT, UNSPEC_CONSTTABLE_FLOAT)
+	(UNSPEC_ALIGN): New constants.
+	(UNSPEC_CONSTTABLE_[QHSD]I, UNSPEC_CONSTTABLE_[SD]F): Delete.
+	(UNSPEC_ALIGN_[248]): Delete.
+	(consttable_int, consttable_float, align): New patterns.
+	(consttable_[qhsd]i, consttable_[sd]f, align_[248]): Delete.
+
 2004-04-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/altivec.h (vec_any_numeric): Correct typo in
