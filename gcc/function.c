@@ -839,6 +839,7 @@ assign_stack_temp (mode, size, keep)
 				 plus_constant (XEXP (best_p->slot, 0),
 						rounded_size));
 	      p->address = 0;
+	      p->rtl_expr = 0;
 	      p->next = temp_slots;
 	      temp_slots = p;
 
