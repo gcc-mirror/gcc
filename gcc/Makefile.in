@@ -380,6 +380,7 @@ host_xm_defines=@host_xm_defines@
 xm_file_list=@xm_file_list@
 xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
+lang_checks=check-gcc
 lang_opt_files=@lang_opt_files@ $(srcdir)/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -3253,10 +3254,6 @@ site.exp: ./config.status Makefile
 
 CHECK_TARGETS = check-gcc @check_languages@
 
-check-c++ : check-g++
-check-f77 : check-g77
-check-java :
-
 check: $(CHECK_TARGETS)
 
 # The idea is to parallelize testing of multilibs, for example:
@@ -3264,7 +3261,8 @@ check: $(CHECK_TARGETS)
 # will run 3 concurrent sessions of check-gcc, eventually testing
 # all 10 combinations.  GNU make is required, as is a shell that expands
 # alternations within braces.
-check-gcc//% check-g++//% check-g77//% check-objc//%: site.exp
+lang_checks_parallel = $(lang_checks:=//%)
+$(lang_checks_parallel): site.exp
 	target=`echo "$@" | sed 's,//.*,,'`; \
 	variant=`echo "$@" | sed 's,^[^/]*//,,'`; \
 	vardots=`echo "$$variant" | sed 's,/,.,g'`; \
@@ -3279,7 +3277,7 @@ $(TESTSUITEDIR)/site.exp: site.exp
 	-rm -f $@
 	sed '/set tmpdir/ s|testsuite|$(TESTSUITEDIR)|' < site.exp > $@
 
-check-g++ check-gcc check-g77 check-objc: check-% : $(TESTSUITEDIR)/site.exp
+$(lang_checks): check-% : $(TESTSUITEDIR)/site.exp
 	-(rootme=`${PWD_COMMAND}`; export rootme; \
 	srcdir=`cd ${srcdir}; ${PWD_COMMAND}` ; export srcdir ; \
 	cd $(TESTSUITEDIR); \

@@ -153,6 +153,9 @@ info:: $(docobjdir)/g77.info
 dvi:: $(docobjdir)/g77.dvi
 generated-manpages:: $(docobjdir)/g77.1
 
+check-f77 : check-g77
+lang_checks += check-g77
+
 # g77 documentation.
 $(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \

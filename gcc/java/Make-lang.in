@@ -170,6 +170,8 @@ generated-manpages:: $(docobjdir)/gcj.1 $(docobjdir)/gcjh.1 \
 	$(docobjdir)/gij.1 $(docobjdir)/jv-convert.1 \
 	$(docobjdir)/rmic.1 $(docobjdir)/rmiregistry.1
 
+check-java :
+
 # Install hooks:
 # jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part
 # of $(COMPILERS).

@@ -1,3 +1,11 @@
+2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Makefile.in (lang_checks): Add.
+	(check-c++, check-f77, check-java, check-g++, check-g77,
+	check-objc): Remove hardcoded targets.
+	* doc/sourcebuild.texi: Document testsuite hooks.
+	* objc/Make-lang.in (check-objc, lang_checks): Add.
+
 2003-11-19  Scott Snyder  <snyder@fnal.gov>
 
 	PR target/13131
