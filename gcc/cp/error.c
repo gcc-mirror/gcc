@@ -667,7 +667,6 @@ dump_simple_decl (t, type, v)
     {
       dump_type_prefix (type, v, 0);
       OB_PUTC (' ');
-      dump_readonly_or_volatile (t, after);
     }
   if (DECL_CLASS_SCOPE_P (t))
     {

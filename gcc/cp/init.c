@@ -2391,12 +2391,26 @@ build_new_1 (exp)
       if (! TYPE_NEEDS_CONSTRUCTING (type)
 	  && ! IS_AGGR_TYPE (type) && ! has_array)
 	{
-	  /* New 2.0 interpretation: `new int (10)' means
-	     allocate an int, and initialize it with 10.  */
+	  /* We are processing something like `new int (10)', which
+	     means allocate an int, and initialize it with 10.  */
 	  tree deref;
+	  tree deref_type;
 
+	  /* At present RVAL is a temporary variable, created to hold
+	     the value from the call to `operator new'.  We transform
+	     it to (*RVAL = INIT, RVAL).  */
 	  rval = save_expr (rval);
 	  deref = build_indirect_ref (rval, NULL_PTR);
+
+	  /* Even for something like `new const int (10)' we must
+	     allow the expression to be non-const while we do the
+	     initialization.  */
+	  deref_type = TREE_TYPE (deref);
+	  if (TYPE_READONLY (deref_type))
+	    TREE_TYPE (deref) 
+	      = cp_build_type_variant (deref_type,
+				       /*constp=*/0,
+				       TYPE_VOLATILE (deref_type));
 	  TREE_READONLY (deref) = 0;
 
 	  if (TREE_CHAIN (init) != NULL_TREE)

@@ -1684,9 +1684,7 @@ decay_conversion (exp)
   if (code == ARRAY_TYPE)
     {
       register tree adr;
-      tree restype;
       tree ptrtype;
-      int constp, volatilep;
 
       if (TREE_CODE (exp) == INDIRECT_REF)
 	{
@@ -1718,21 +1716,7 @@ decay_conversion (exp)
 	  return error_mark_node;
 	}
 
-      constp = volatilep = 0;
-      if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'r'
-	  || TREE_CODE_CLASS (TREE_CODE (exp)) == 'd')
-	{
-	  constp = TREE_READONLY (exp);
-	  volatilep = TREE_THIS_VOLATILE (exp);
-	}
-
-      restype = TREE_TYPE (type);
-      if (TYPE_READONLY (type) || TYPE_VOLATILE (type)
-	  || constp || volatilep)
-	restype = cp_build_type_variant (restype,
-					 TYPE_READONLY (type) || constp,
-					 TYPE_VOLATILE (type) || volatilep);
-      ptrtype = build_pointer_type (restype);
+      ptrtype = build_pointer_type (TREE_TYPE (type));
 
       if (TREE_CODE (exp) == VAR_DECL)
 	{
@@ -1954,14 +1938,24 @@ build_component_ref (datum, component, basetype_path, protect)
      tree datum, component, basetype_path;
      int protect;
 {
-  register tree basetype = TREE_TYPE (datum);
+  register tree basetype;
   register enum tree_code code;
   register tree field = NULL;
   register tree ref;
+  tree field_type;
+  int constp;
+  int volatilep;
 
   if (processing_template_decl)
     return build_min_nt (COMPONENT_REF, datum, component);
+  
+  if (datum == error_mark_node 
+      || TREE_TYPE (datum) == error_mark_node)
+    return error_mark_node;
 
+  /* BASETYPE holds the type of the class containing the COMPONENT.  */
+  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
+    
   /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference
      inside it.  */
   switch (TREE_CODE (datum))
@@ -1995,13 +1989,13 @@ build_component_ref (datum, component, basetype_path, protect)
   if (code == REFERENCE_TYPE)
     {
       datum = convert_from_reference (datum);
-      basetype = TREE_TYPE (datum);
+      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
       code = TREE_CODE (basetype);
     }
   if (TREE_CODE (datum) == OFFSET_REF)
     {
       datum = resolve_offset_ref (datum);
-      basetype = TREE_TYPE (datum);
+      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
       code = TREE_CODE (basetype);
     }
 
@@ -2086,7 +2080,7 @@ build_component_ref (datum, component, basetype_path, protect)
 		  tree access, fndecl;
 
 		  /* Unique, so use this one now.  */
-		  basetype = TREE_PURPOSE (fndecls);
+		  basetype = TYPE_MAIN_VARIANT (TREE_PURPOSE (fndecls));
 		  fndecl = TREE_VALUE (fndecls);
 		  access = compute_access (TREE_PURPOSE (fndecls), fndecl);
 		  if (access == access_public_node)
@@ -2198,15 +2192,40 @@ build_component_ref (datum, component, basetype_path, protect)
 	}
     }
 
-  ref = fold (build (COMPONENT_REF, TREE_TYPE (field),
+  /* Compute the type of the field, as described in [expr.ref].  */
+  constp = 0;
+  volatilep = 0;
+  field_type = TREE_TYPE (field);
+  if (TREE_CODE (field_type) == REFERENCE_TYPE)
+    /* The standard says that the type of the result should be the
+       type referred to by the reference.  But for now, at least, we
+       do the conversion from reference type later.  */
+    ;
+  else
+    {
+      /* A field is const (volatile) if the enclosing object, or the
+	 field itself, is const (volatile).  But, a mutable field is
+	 not const, even within a const object.  */
+      constp = (!(DECL_LANG_SPECIFIC (field) 
+		  && DECL_MUTABLE_P (field))
+		&& (TYPE_READONLY (field_type)
+		    || TYPE_READONLY (TREE_TYPE (datum))));
+      volatilep = (TYPE_VOLATILE (field_type)
+		   || TYPE_VOLATILE (TREE_TYPE (datum)));
+      if (!IS_SIGNATURE (field_type))
+	field_type = cp_build_type_variant (field_type, constp, volatilep);
+    }
+
+  ref = fold (build (COMPONENT_REF, field_type,
 		     break_out_cleanups (datum), field));
 
-  if (TREE_READONLY (datum) || TREE_READONLY (field))
+  /* Mark the expression const or volatile, as appropriate.  Even
+     though we've dealt with the type above, we still have to mark the
+     expression itself.  */
+  if (constp)
     TREE_READONLY (ref) = 1;
-  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (field))
+  else if (volatilep)
     TREE_THIS_VOLATILE (ref) = 1;
-  if (DECL_LANG_SPECIFIC (field) && DECL_MUTABLE_P (field))
-    TREE_READONLY (ref) = 0;
 
   return ref;
 }
@@ -2270,29 +2289,34 @@ build_indirect_ref (ptr, errorstring)
 
   if (TREE_CODE (type) == POINTER_TYPE || TREE_CODE (type) == REFERENCE_TYPE)
     {
+      /* [expr.unary.op]
+	 
+	 If the type of the expression is "pointer to T," the type
+	 of  the  result  is  "T."   
+
+         We must use the canonical variant because certain parts of
+	 the back end, like fold, do pointer comparisons between
+	 types.  */
+      tree t = canonical_type_variant (TREE_TYPE (type));
+
       if (TREE_CODE (pointer) == ADDR_EXPR
 	  && !flag_volatile
-	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (pointer, 0)))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (type)))
-	  && (TREE_READONLY (TREE_OPERAND (pointer, 0))
-	      == TYPE_READONLY (TREE_TYPE (type)))
-	  && (TREE_THIS_VOLATILE (TREE_OPERAND (pointer, 0))
-	      == TYPE_VOLATILE (TREE_TYPE (type))))
+	  && comptypes (t, TREE_TYPE (TREE_OPERAND (pointer, 0)), 1))
+	/* The POINTER was something like `&x'.  We simplify `*&x' to
+	   `x'.  */
 	return TREE_OPERAND (pointer, 0);
       else
 	{
-	  tree t = TREE_TYPE (type);
-	  register tree ref = build1 (INDIRECT_REF,
-				      TYPE_MAIN_VARIANT (t), pointer);
+	  tree ref = build1 (INDIRECT_REF, t, pointer);
 
 	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
 	     so that we get the proper error message if the result is used
 	     to assign to.  Also, &* is supposed to be a no-op.  */
 	  TREE_READONLY (ref) = TYPE_READONLY (t);
-	  TREE_SIDE_EFFECTS (ref)
-	    = (TYPE_VOLATILE (t) || TREE_SIDE_EFFECTS (pointer)
-	       || flag_volatile);
 	  TREE_THIS_VOLATILE (ref) = TYPE_VOLATILE (t);
+	  TREE_SIDE_EFFECTS (ref)
+	    = (TREE_THIS_VOLATILE (ref) || TREE_SIDE_EFFECTS (pointer)
+	       || flag_volatile);
 	  return ref;
 	}
     }
@@ -2403,23 +2427,16 @@ build_array_ref (array, idx)
 	    warning ("subscripting array declared `register'");
 	}
 
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (array)));
+      type = TREE_TYPE (TREE_TYPE (array));
       rval = build (ARRAY_REF, type, array, idx);
       /* Array ref is const/volatile if the array elements are
 	 or if the array is..  */
       TREE_READONLY (rval)
-	|= (TYPE_READONLY (TREE_TYPE (TREE_TYPE (array)))
-	    | TREE_READONLY (array));
+	|= (TYPE_READONLY (type) | TREE_READONLY (array));
       TREE_SIDE_EFFECTS (rval)
-	|= (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (array)))
-	    | TREE_SIDE_EFFECTS (array));
+	|= (TYPE_VOLATILE (type) | TREE_SIDE_EFFECTS (array));
       TREE_THIS_VOLATILE (rval)
-	|= (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (array)))
-	    /* This was added by rms on 16 Nov 91.
-	       It fixes  vol struct foo *a;  a->elts[1] 
-	       in an inline function.
-	       Hope it doesn't break something else.  */
-	    | TREE_THIS_VOLATILE (array));
+	|= (TYPE_VOLATILE (type) | TREE_THIS_VOLATILE (array));
       return require_complete_type (fold (rval));
     }
 
@@ -4720,7 +4737,8 @@ build_unary_op (code, xarg, noconvert)
 	       && !lvalue_or_else (arg, "unary `&'"))
 	return error_mark_node;
 
-      argtype = build_pointer_type (argtype);
+      if (argtype != error_mark_node)
+	argtype = build_pointer_type (argtype);
 
       if (mark_addressable (arg) == 0)
 	return error_mark_node;
@@ -4871,14 +4889,12 @@ unary_complex_lvalue (code, arg)
 	  if (TREE_OPERAND (arg, 0)
 	      && (TREE_CODE (TREE_OPERAND (arg, 0)) != NOP_EXPR
 		  || (TREE_OPERAND (TREE_OPERAND (arg, 0), 0)
-		      != error_mark_node)))
-	    if (TREE_CODE (t) != FIELD_DECL)
-	      {
-		/* Don't know if this should return address to just
-		   _DECL, or actual address resolved in this expression.  */
-		sorry ("address of bound pointer-to-member expression");
-		return error_mark_node;
-	      }
+		      != error_mark_node))
+	      && TREE_CODE (t) != FIELD_DECL)
+	    {
+	      cp_error ("taking address of bound pointer-to-member expression");
+	      return error_mark_node;
+	    }
 
 	  /* Add in the offset to the field.  */
 	  offset = convert (sizetype,
@@ -5115,8 +5131,8 @@ build_conditional_expr (ifexp, op1, op2)
       if (type1 != type2)
 	type1 = cp_build_type_variant
 			(type1,
-			 TREE_READONLY (op1) || TREE_READONLY (op2),
-			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
+			 TYPE_READONLY (op1) || TYPE_READONLY (op2),
+			 TYPE_VOLATILE (op1) || TYPE_VOLATILE (op2));
       /* ??? This is a kludge to deal with the fact that
 	 we don't sort out integers and enums properly, yet.  */
       result = fold (build (COND_EXPR, type1, ifexp, op1, op2));

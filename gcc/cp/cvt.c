@@ -664,9 +664,19 @@ ocp_convert (type, expr, convtype, flags)
       && TYPE_HAS_CONSTRUCTOR (type))
     /* We need a new temporary; don't take this shortcut.  */;
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
-    /* Trivial conversion: cv-qualifiers do not matter on rvalues.  */
-    return fold (build1 (NOP_EXPR, type, e));
-  
+    {
+      if (comptypes (type, TREE_TYPE (e), 1))
+	/* The call to fold will not always remove the NOP_EXPR as
+	   might be expected, since if one of the types is a typedef;
+	   the comparsion in fold is just equality of pointers, not a
+	   call to comptypes.  */
+	;
+      else
+	e = build1 (NOP_EXPR, type, e);
+
+      return fold (e);
+    }
+
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     return build1 (CONVERT_EXPR, type, e);
 
