@@ -1,3 +1,9 @@
+2001-01-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (handle_using_decl): Reject using of constructor name
+	of sourcing class. Allow injecting of a method with same name as
+	nested class. Fixup error messages.
+
 2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (lang_decode_option): Handle -Wformat=2.
