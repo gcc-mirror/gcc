@@ -1,3 +1,8 @@
+2001-12-09  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (gnu/gcj/runtime/VMClassLoader.h): Use `::java'.
+
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
