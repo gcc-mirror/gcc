@@ -52,8 +52,6 @@ Boston, MA 02111-1307, USA.  */
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-extern char *make_temp_file PROTO ((const char *));
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library

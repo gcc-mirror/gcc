@@ -1,3 +1,8 @@
+1999-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* choose-temp.c: Remove obsolete comment about gcc.
+	(make_temp_file): Constify a char*.
+
 Wed Sep  8 20:03:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* xmemdup.c: Include sys/types.h.

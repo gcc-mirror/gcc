@@ -1,3 +1,7 @@
+1999-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (make_temp_file):  Add a prototype.
+
 Tue Sep 14 00:35:02 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* libiberty.h (basename):  OpenBSD has a correct prototype.

@@ -1,3 +1,11 @@
+Sat Sep 25 09:03:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (make_temp_file): Don't prototype.
+
+	* gcc.c (make_temp_file): Likewise.
+
+	* mips.c (mips_make_temp_file): Renamed from `make_temp_file'.
+
 Sat Sep 25 13:42:15 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* varasm.c (asm_emit_uninitialised): New function: Generate
