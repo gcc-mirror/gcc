@@ -1,3 +1,13 @@
+Tue Dec 16 15:14:09 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* objc/Make-lang.in: Create runtime-info.h and libobjc_entry.o in
+	the build directory.
+	(libobjc.a): Update dependency list.
+	(libobjc.dll): Likewise.  Use libobjc_entry.o from the build
+	directory.
+	(objc/sendmsg.o): Add -Iobjc to find runtime-info.h.
+	(objc.mostlyclean): Remove runtime-info.h.
+
 Fri Dec 19 00:19:42 1997  Richard Henderson  <rth@cygnus.com>
 
 	* tree.c (build_range_type): Allow creation of ranges with no maximum.
