@@ -924,20 +924,17 @@ rename_insn_1 (ptr, data)
 	{
 	  rtx new_reg = ssa_rename_to_lookup (x);
 
-	  if (new_reg != RENAME_NO_RTX)
+	  if (new_reg != RENAME_NO_RTX && new_reg != NULL_RTX)
 	    {
-	      if (new_reg != NULL_RTX)
-		{
-		  if (GET_MODE (x) != GET_MODE (new_reg))
-		    abort ();
-		  *ptr = new_reg;
-		}
-	      else
-		{
-		  /* Undefined value used, rename it to a new pseudo register so
-		     that it cannot conflict with an existing register */
-		  *ptr = gen_reg_rtx (GET_MODE(x));
-		}
+	      if (GET_MODE (x) != GET_MODE (new_reg))
+		abort ();
+	      *ptr = new_reg;
+	    }
+	  else
+	    {
+	      /* Undefined value used, rename it to a new pseudo register so
+		 that it cannot conflict with an existing register.  */
+	      *ptr = gen_reg_rtx (GET_MODE (x));
 	    }
 	}
       return -1;
