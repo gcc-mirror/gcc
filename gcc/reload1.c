@@ -7931,6 +7931,7 @@ delete_output_reload (insn, j, last_reload_reg)
      and forget we had a stack slot for the pseudo.  */
   if (reload_out[j] != reload_in[j]
       && REG_N_DEATHS (REGNO (reg)) == 1
+      && REG_N_SETS (REGNO (reg)) == 1
       && REG_BASIC_BLOCK (REGNO (reg)) >= 0
       && find_regno_note (insn, REG_DEAD, REGNO (reg)))
     {
