@@ -1,3 +1,11 @@
+2001-01-15  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/i386.c (ix86_init_builtins): Make i size_t to remove warnings.
+	(ix86_expand_builtin): Likewise.
+
+	* gencodes.c (output_predicate_decls): Make i size_t to avoid
+	warning about comparison between signed and unsigned.
+
 2001-01-14  Geoffrey Keating  <geoffk@redhat.com>
 
 	* expr.c (do_jump): Treat VOIDmode CONST_DOUBLEs like CONST_INTs.

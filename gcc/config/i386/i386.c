@@ -1715,7 +1715,7 @@ asm_output_function_prefix (file, name)
 	     internal (non-global) label that's being emitted, it didn't make
 	     sense to have .type information for local labels.   This caused
 	     the SCO OpenServer 5.0.4 ELF assembler grief (why are you giving
-  	     me debug info for a label that you're declaring non-global?) this
+	     me debug info for a label that you're declaring non-global?) this
 	     was changed to call ASM_OUTPUT_LABEL() instead.  */
 
 	  ASM_OUTPUT_LABEL (file, pic_label_name);
@@ -3025,23 +3025,23 @@ output_pic_addr_const (file, x, code)
 
      case UNSPEC:
        if (XVECLEN (x, 0) != 1)
- 	abort ();
+	abort ();
        output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
        switch (XINT (x, 1))
- 	{
- 	case 6:
- 	  fputs ("@GOT", file);
- 	  break;
- 	case 7:
- 	  fputs ("@GOTOFF", file);
- 	  break;
- 	case 8:
- 	  fputs ("@PLT", file);
- 	  break;
- 	default:
- 	  output_operand_lossage ("invalid UNSPEC as operand");
- 	  break;
- 	}
+	{
+	case 6:
+	  fputs ("@GOT", file);
+	  break;
+	case 7:
+	  fputs ("@GOTOFF", file);
+	  break;
+	case 8:
+	  fputs ("@PLT", file);
+	  break;
+	default:
+	  output_operand_lossage ("invalid UNSPEC as operand");
+	  break;
+	}
        break;
 
     default:
@@ -5176,7 +5176,7 @@ ix86_expand_compare (code, second_test, bypass_test)
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode),
-		    		  second_test, bypass_test);
+				  second_test, bypass_test);
   else
     ret = ix86_expand_int_compare (code, op0, op1);
 
@@ -6324,7 +6324,7 @@ ix86_split_lshrdi (operands, scratch)
    out = result, initialized with the start address
    align_rtx = alignment of the address.
    scratch = scratch register, initialized with the startaddress when
-   	not aligned, otherwise undefined
+	not aligned, otherwise undefined
 
    This is just the body. It needs the initialisations mentioned above and
    some address computing at the end.  These things are done in i386.md.  */
@@ -6362,7 +6362,7 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 				    NULL_RTX, 0, OPTAB_WIDEN);
 
 	  emit_cmp_and_jump_insns (align_rtx, const0_rtx, EQ, NULL,
-			  	   SImode, 1, 0, align_4_label);
+				   SImode, 1, 0, align_4_label);
 	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), EQ, NULL,
 				   SImode, 1, 0, align_2_label);
 	  emit_cmp_and_jump_insns (align_rtx, GEN_INT (2), GTU, NULL,
@@ -6441,8 +6441,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
        emit_insn (gen_rtx_SET (VOIDmode, tmpreg,
 			       gen_rtx_IF_THEN_ELSE (SImode, tmp,
-				       		     reg,
-				       		     tmpreg)));
+						     reg,
+						     tmpreg)));
        /* Emit lea manually to avoid clobbering of flags.  */
        emit_insn (gen_rtx_SET (SImode, reg,
 			       gen_rtx_PLUS (SImode, out, GEN_INT (2))));
@@ -6451,8 +6451,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
        emit_insn (gen_rtx_SET (VOIDmode, out,
 			       gen_rtx_IF_THEN_ELSE (SImode, tmp,
-				       		     reg,
-				       		     out)));
+						     reg,
+						     out)));
 
     }
   else
@@ -7581,7 +7581,7 @@ void
 ix86_init_builtins ()
 {
   struct builtin_description * d;
-  int i;
+  size_t i;
   tree endlink = void_list_node;
 
   tree pchar_type_node = build_pointer_type (char_type_node);
@@ -8231,7 +8231,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
      int ignore ATTRIBUTE_UNUSED;
 {
   struct builtin_description *d;
-  int i;
+  size_t i;
   enum insn_code icode;
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);

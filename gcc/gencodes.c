@@ -60,7 +60,7 @@ output_predicate_decls ()
   } predicate[] = {
     PREDICATE_CODES
   };
-  int i;
+  size_t i;
 
   putc ('\n', stdout);
   puts ("struct rtx_def;\n#include \"machmode.h\"\n");
