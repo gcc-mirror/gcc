@@ -1,3 +1,8 @@
+2000-07-28  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectOutputStream.java (writeObject): Per spec, call
+	NotSerializableException with just the class name.
+
 2000-07-26  Andrew Haley  <aph@cygnus.com>
 
 	* interpret.cc (continue1): Insert missing break into switch.
