@@ -432,8 +432,7 @@ package body Sem_Prag is
 
       function Is_Before_First_Decl
         (Pragma_Node : Node_Id;
-         Decls       : List_Id)
-         return        Boolean;
+         Decls       : List_Id) return Boolean;
       --  Return True if Pragma_Node is before the first declarative item in
       --  Decls where Decls is the list of declarative items.
 
@@ -1122,7 +1121,6 @@ package body Sem_Prag is
             when N_Index_Or_Discriminant_Constraint =>
                declare
                   IDC : Entity_Id := First (Constraints (Constr));
-
                begin
                   while Present (IDC) loop
                      Check_Static_Constraint (IDC);
@@ -1506,8 +1504,7 @@ package body Sem_Prag is
 
       function Is_Before_First_Decl
         (Pragma_Node : Node_Id;
-         Decls       : List_Id)
-         return        Boolean
+         Decls       : List_Id) return Boolean
       is
          Item : Node_Id := First (Decls);
 
@@ -2185,8 +2182,7 @@ package body Sem_Prag is
 
          function Same_Base_Type
           (Ptype  : Node_Id;
-           Formal : Entity_Id)
-           return Boolean;
+           Formal : Entity_Id) return Boolean;
          --  Determines if Ptype references the type of Formal. Note that
          --  only the base types need to match according to the spec. Ptype
          --  here is the argument from the pragma, which is either a type
@@ -2196,7 +2192,10 @@ package body Sem_Prag is
          -- Same_Base_Type --
          --------------------
 
-         function Same_Base_Type (Ptype, Formal : Entity_Id) return Boolean is
+         function Same_Base_Type
+           (Ptype  : Node_Id;
+            Formal : Entity_Id) return Boolean
+         is
             Ftyp : constant Entity_Id := Base_Type (Etype (Formal));
             Pref : Node_Id;
 
@@ -2823,9 +2822,8 @@ package body Sem_Prag is
          if Nkind (Parent (N)) = N_Compilation_Unit_Aux then
             declare
                Cunit : constant Node_Id := Parent (Parent (N));
-
             begin
-               Set_Body_Required    (Cunit, False);
+               Set_Body_Required (Cunit, False);
             end;
          end if;
       end Process_Import_Or_Interface;
@@ -2869,10 +2867,21 @@ package body Sem_Prag is
             elsif Nkind (Decl) = N_Subprogram_Declaration
               and then Present (Corresponding_Body (Decl))
             then
-               return
-                 Present (Exception_Handlers
-                   (Handled_Statement_Sequence
-                     (Unit_Declaration_Node (Corresponding_Body (Decl)))));
+               --  If the subprogram is a renaming as body, the body is
+               --  just a call to the renamed subprogram, and inlining is
+               --  trivially possible.
+
+               if Nkind (Unit_Declaration_Node (Corresponding_Body (Decl))) =
+                                            N_Subprogram_Renaming_Declaration
+               then
+                  return False;
+
+               else
+                  return
+                    Present (Exception_Handlers
+                      (Handled_Statement_Sequence
+                        (Unit_Declaration_Node (Corresponding_Body (Decl)))));
+               end if;
             else
                --  If body is not available, assume the best, the check is
                --  performed again when compiling enclosing package bodies.
@@ -3701,11 +3710,9 @@ package body Sem_Prag is
 
       declare
          Arg_Node : Node_Id;
-
       begin
          Arg_Count := 0;
          Arg_Node := Arg1;
-
          while Present (Arg_Node) loop
             Arg_Count := Arg_Count + 1;
             Next (Arg_Node);
@@ -4480,7 +4487,6 @@ package body Sem_Prag is
          when Pragma_Convention => Convention : declare
             C : Convention_Id;
             E : Entity_Id;
-
          begin
             Check_Ada_83_Warning;
             Check_Arg_Count (2);

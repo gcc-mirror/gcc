@@ -3727,6 +3727,13 @@ package body Sem_Res is
          Establish_Transient_Scope
            (N, Sec_Stack => not Functions_Return_By_DSP_On_Target);
 
+         --  If the call appears within the bounds of a loop, it will
+         --  be rewritten and reanalyzed, nothing left to do here.
+
+         if Nkind (N) /= N_Function_Call then
+            return;
+         end if;
+
       elsif Is_Init_Proc (Nam)
         and then not Within_Init_Proc
       then

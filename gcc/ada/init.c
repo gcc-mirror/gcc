@@ -1551,6 +1551,7 @@ __gnat_initialize ()
 
 extern int __gnat_inum_to_ivec (int);
 static void __gnat_error_handler (int, int, struct sigcontext *);
+void __gnat_map_signal (int);
 
 #ifndef __alpha_vxworks
 
@@ -1573,26 +1574,13 @@ __gnat_inum_to_ivec (int num)
   return INUM_TO_IVEC (num);
 }
 
-static void
-__gnat_error_handler (int sig, int code, struct sigcontext *sc)
+/* Exported to 5zintman.adb in order to handle different signal
+   to exception mappings in different VxWorks versions */
+void
+__gnat_map_signal (int sig)
 {
   struct Exception_Data *exception;
-  sigset_t mask;
-  int result;
   char *msg;
-
-  /* VxWorks will always mask out the signal during the signal handler and
-     will reenable it on a longjmp.  GNAT does not generate a longjmp to
-     return from a signal handler so the signal will still be masked unless
-     we unmask it. */
-  sigprocmask (SIG_SETMASK, NULL, &mask);
-  sigdelset (&mask, sig);
-  sigprocmask (SIG_SETMASK, &mask, NULL);
-
-  /* VxWorks will suspend the task when it gets a hardware exception.  We
-     take the liberty of resuming the task for the application. */
-  if (taskIsSuspended (taskIdSelf ()) != 0)
-    taskResume (taskIdSelf ());
 
   switch (sig)
     {
@@ -1609,8 +1597,13 @@ __gnat_error_handler (int sig, int code, struct sigcontext *sc)
       msg = "SIGSEGV";
       break;
     case SIGBUS:
+#ifdef VTHREADS
+      exception = &storage_error;
+      msg = "SIGBUS: possible stack overflow";
+#else
       exception = &program_error;
       msg = "SIGBUS";
+#endif
       break;
     default:
       exception = &program_error;
@@ -1618,6 +1611,29 @@ __gnat_error_handler (int sig, int code, struct sigcontext *sc)
     }
 
   Raise_From_Signal_Handler (exception, msg);
+}
+
+static void
+__gnat_error_handler (int sig, int code, struct sigcontext *sc)
+{
+  sigset_t mask;
+  int result;
+
+  /* VxWorks will always mask out the signal during the signal handler and
+     will reenable it on a longjmp.  GNAT does not generate a longjmp to
+     return from a signal handler so the signal will still be masked unless
+     we unmask it. */
+  sigprocmask (SIG_SETMASK, NULL, &mask);
+  sigdelset (&mask, sig);
+  sigprocmask (SIG_SETMASK, &mask, NULL);
+
+  /* VxWorks will suspend the task when it gets a hardware exception.  We
+     take the liberty of resuming the task for the application. */
+  if (taskIsSuspended (taskIdSelf ()) != 0)
+    taskResume (taskIdSelf ());
+
+  __gnat_map_signal (sig);
+
 }
 
 void
@@ -1755,6 +1771,8 @@ __gnat_install_handler(void)
     sigaction (SIGSEGV, &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
+
+  __gnat_handler_installed = 1;
 }
 
 void
@@ -1762,22 +1780,6 @@ __gnat_initialize (void)
 {
   __gnat_install_handler ();
   __gnat_init_float ();
-}
-
-/***************************************/
-/* __gnat_initialize (RTEMS version) */
-/***************************************/
-
-#elif defined(__rtems__)
-
-extern void __gnat_install_handler (void);
-
-/* For RTEMS, each bsp will provide a custom __gnat_install_handler (). */
-
-void
-__gnat_initialize (void)
-{
-   __gnat_install_handler ();
 }
 
 /***************************************/

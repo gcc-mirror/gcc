@@ -33,9 +33,6 @@
 
 --  This is the VxWorks version of this package
 
-with System.OS_Interface;
---  used for various Constants, Signal and types
-
 with Interfaces.C;
 --  used for int and other types
 
@@ -47,10 +44,58 @@ package body System.Init is
    --  This unit contains initialization circuits that are system dependent.
 
    use Ada.Exceptions;
-   use System.OS_Interface;
-   use type Interfaces.C.int;
+   use Interfaces.C;
 
-   --  Copies of global values computed by the binder
+   --------------------------
+   --  Signal Definitions  --
+   --------------------------
+
+   NSIG : constant := 32;
+   --  Number of signals on the target OS
+   type Signal is new int range 0 .. Interfaces.C."-" (NSIG, 1);
+
+   SIGILL  : constant :=  4; --  illegal instruction (not reset)
+   SIGFPE  : constant :=  8; --  floating point exception
+   SIGBUS  : constant := 10; --  bus error
+   SIGSEGV : constant := 11; --  segmentation violation
+
+   type sigset_t is new long;
+
+   SIG_SETMASK : constant := 3;
+   SA_ONSTACK   : constant := 16#0004#;
+
+   type struct_sigaction is record
+      sa_handler : System.Address;
+      sa_mask    : sigset_t;
+      sa_flags   : int;
+   end record;
+   pragma Convention (C, struct_sigaction);
+   type struct_sigaction_ptr is access all struct_sigaction;
+
+   function sigdelset (set : access sigset_t; sig : Signal) return int;
+   pragma Import (C, sigdelset, "sigdelset");
+
+   function sigemptyset (set : access sigset_t) return int;
+   pragma Import (C, sigemptyset, "sigemptyset");
+
+   function sigaction
+     (sig  : Signal;
+      act  : struct_sigaction_ptr;
+      oact : struct_sigaction_ptr) return int;
+   pragma Import (C, sigaction, "sigaction");
+
+   type sigset_t_ptr is access all sigset_t;
+
+   function pthread_sigmask
+     (how  : int;
+      set  : sigset_t_ptr;
+      oset : sigset_t_ptr) return int;
+   pragma Import (C, pthread_sigmask, "sigprocmask");
+
+   -------------------------------
+   --  Binder Generated Values  --
+   -------------------------------
+
    Gl_Main_Priority : Integer := -1;
    pragma Export (C, Gl_Main_Priority, "__gl_main_priority");
 

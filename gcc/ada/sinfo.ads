@@ -244,7 +244,7 @@ package Sinfo is
    --      Variant := First (Variants (N));
    --      while Present (Variant) loop
    --         ...
-   --         Alt := Next (Alt);
+   --         Variant := Next (Variant);
    --      end loop;
 
    --  or
@@ -252,7 +252,7 @@ package Sinfo is
    --      Variant := First_Non_Pragma (Variants (N));
    --      while Present (Variant) loop
    --         ...
-   --         Alt := Next_Non_Pragma (Alt);
+   --         Variant := Next_Non_Pragma (Variant);
    --      end loop;
 
    --  In the first form of the loop, Variant can either be an N_Pragma or

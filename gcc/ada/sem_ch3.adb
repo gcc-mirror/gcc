@@ -8492,7 +8492,6 @@ package body Sem_Ch3 is
       Set_Small_Value    (T, Delta_Val);
       Set_Scale_Value    (T, Scale_Val);
       Set_Is_Constrained (T);
-
    end Decimal_Fixed_Point_Type_Declaration;
 
    -----------------------

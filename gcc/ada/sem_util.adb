@@ -6371,7 +6371,10 @@ package body Sem_Util is
             Error_Msg_N (
               "operator of the type is not directly visible!", Expr);
 
-         elsif Ekind (Found_Type) = E_Void then
+         elsif Ekind (Found_Type) = E_Void
+           and then Present (Parent (Found_Type))
+           and then Nkind (Parent (Found_Type)) = N_Full_Type_Declaration
+         then
             Error_Msg_NE ("found premature usage of}!", Expr, Found_Type);
 
          else
