@@ -396,6 +396,11 @@ Thu Sep 20 12:19:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(i386_simplify_dwarf_addr): Strip down the 64bit PIC references.
 	* i386.h (CASE_VECTOR_MODE): Set to SImode for 64bit PIC compilation.
 
+2001-09-19  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* stringpool.c (get_identifier_with_length): New function.
+	* tree.h (get_identifier_with_length): New prototype.
+
 2001-09-19  Alan Modra  <amodra@bigpond.net.au>
 	    David Edelsohn  <edelsohn@gnu.org>
 

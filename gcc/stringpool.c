@@ -109,6 +109,22 @@ get_identifier (text)
   return HT_IDENT_TO_GCC_IDENT (ht_node);
 }
 
+/* Identical to get_identifier, except that the length is assumed
+   known.  */
+   
+tree
+get_identifier_with_length (text, length)
+     const char *text;
+     unsigned int length;
+{
+  hashnode ht_node = ht_lookup (ident_hash,
+				(const unsigned char *) text,
+				length, HT_ALLOC);
+
+  /* ht_node can't be NULL here.  */
+  return HT_IDENT_TO_GCC_IDENT (ht_node);
+}
+
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return
    NULL_TREE.  */
