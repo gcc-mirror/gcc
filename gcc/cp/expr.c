@@ -107,6 +107,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    type = TYPE_POINTER_TO (type);
 	    /* Don't clobber a value that might be part of a default
 	       parameter value.  */
+	    mark_addressable (slot);
 	    if (TREE_PERMANENT (args))
 	      args = tree_cons (0, build1 (ADDR_EXPR, type, slot),
 				TREE_CHAIN (args));

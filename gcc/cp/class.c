@@ -3287,6 +3287,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		      && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
 		    {
 		      cant_have_default_ctor = 1;
+#if 0
+		      /* This is wrong for aggregates.  */
 		      if (! TYPE_HAS_CONSTRUCTOR (t))
 			{
 			  if (DECL_NAME (x))
@@ -3296,6 +3298,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 			  cp_pedwarn_at ("in class without a constructor",
 					 x);
 			}
+#endif
 		    }
 		}
 	      if (DECL_INITIAL (x) != NULL_TREE)
