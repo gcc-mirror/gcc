@@ -3775,7 +3775,7 @@ find_reloads_address (mode, memrefloc, ad, loc, operand, ind_levels)
 
   /* If constants aren't valid addresses, reload the constant address
      into a register.  */
-  if (CONSTANT_ADDRESS_P (ad) && ! strict_memory_address_p (mode, ad))
+  if (CONSTANT_P (ad) && ! strict_memory_address_p (mode, ad))
     {
       /* If AD is in address in the constant pool, the MEM rtx may be shared.
 	 Unshare it so we can safely alter it.  */
