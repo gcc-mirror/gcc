@@ -1,3 +1,10 @@
+2002-03-25  Benjamin Kosnik  <bkoz@redhat.com>
+            Jakub Jelinek  <jakub@redhat.com>
+	
+	* config/locale/gnu/messages_members.h: Correct conditional.
+	* config/locale/gnu/messages_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.
+	
 2002-03-25  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
             Paolo Carlini  <pcarlini@unitus.it>
 
@@ -95,7 +102,7 @@
 	* configure.in:  Add comments pointing the way for autoconf 2.5x.
 	* aclocal.m4, config.h.in, configure:  Regenerate.
 
-2002-03-15  Philipp Thomas  <pthomas@suse.de>
+2002-03-18  Philipp Thomas  <pthomas@suse.de>
 
 	* include/backward/hash_map.h: hash, hashtable, hash_map and
 	hash_multimap are in namespace __gnu_cxx.

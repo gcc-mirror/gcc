@@ -44,7 +44,7 @@ namespace std
     _M_put_helper(char* __s, size_t __maxlen, const char* __format, 
 		  const tm* __tm) const
     {
-#if __GLIBC__ >= 2 && __GLIBC_MINOR__ > 2
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       if (_M_c_locale_timepunct)
 	__strftime_l(__s, __maxlen, _M_c_locale_timepunct, __format, __tm);
       else
@@ -188,7 +188,7 @@ namespace std
     _M_put_helper(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
 		  const tm* __tm) const
     {
-#if __GLIBC__ >= 2 && __GLIBC_MINOR__ > 2
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       if (_M_c_locale_timepunct)
 	__wcsftime_l(__s, __maxlen, _M_c_locale_timepunct, __format, __tm);
       else

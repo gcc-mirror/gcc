@@ -59,7 +59,7 @@
     messages<_CharT>::do_get(catalog, int, int, 
 			     const string_type& __dfault) const
     { 
-#if __GLIBC__ >= 2 && __GLIBC_MINOR__ > 2
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       __c_locale __old = __uselocale(_M_c_locale_messages);
       char* __msg = gettext(_M_convert_to_char(__dfault));
       __uselocale(__old);

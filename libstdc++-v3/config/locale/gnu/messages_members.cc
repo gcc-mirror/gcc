@@ -42,7 +42,7 @@ namespace std
     string
     messages<char>::do_get(catalog, int, int, const string& __dfault) const
     {
-#if __GLIBC__ >= 2 && __GLIBC_MINOR__ > 2
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       __c_locale __old = __uselocale(_M_c_locale_messages);
       const char* __msg = const_cast<const char*>(gettext(__dfault.c_str()));
       __uselocale(__old);
