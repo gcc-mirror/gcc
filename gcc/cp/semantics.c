@@ -2397,9 +2397,6 @@ expand_body (fn)
   if (DECL_EXTERNAL (fn))
     return;
 
-  /* Emit any thunks that should be emitted at the same time as FN.  */
-  emit_associated_thunks (fn);
-
   timevar_push (TV_INTEGRATION);
 
   /* Optimize the body of the function before expanding it.  */
@@ -2452,6 +2449,9 @@ expand_body (fn)
   extract_interface_info ();
 
   timevar_pop (TV_EXPAND);
+
+  /* Emit any thunks that should be emitted at the same time as FN.  */
+  emit_associated_thunks (fn);
 }
 
 /* Helper function for walk_tree, used by finish_function to override all

@@ -1,3 +1,15 @@
+2002-02-04  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (current_function_is_thunk): Don't check
+	current_function_is_thunk.
+	(alpha_sa_mask): Distinguish between current_function_is_thunk
+	called from ASM_OUTPUT_MI_THUNK and not.
+	(alpha_does_function_need_gp): Thunks always need gp.
+	(alpha_start_function, alpha_output_function_end_prologue): Likewise.
+	(alpha_output_mi_thunk_osf): New.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): New.
+
 2002-02-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* c-typeck.c (build_c_cast): Warn when qualifiers are added to

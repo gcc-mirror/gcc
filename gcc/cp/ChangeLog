@@ -1,3 +1,8 @@
+2002-02-04  Richard Henderson  <rth@redhat.com>
+
+	* method.c (use_thunk): Always initialize the block tree.  Reindent.
+	* semantics.c (expand_body): Emit thunks after function, not before.
+
 2002-02-04  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (start_function): Call cplus_decl_attributes immediately
