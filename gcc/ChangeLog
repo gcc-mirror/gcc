@@ -1,3 +1,8 @@
+2002-12-10  Jim Wilson  <wilson@redhat.com>
+
+	* rs6000.h (RETURN_IN_MEMORY): If ABI_V4, then TFmode is returned in
+	memory.
+
 2002-12-10  Andrew Haley  <aph@redhat.com>
 
 	* cse.c (cse_insn): Don't cse past a basic block boundary.
