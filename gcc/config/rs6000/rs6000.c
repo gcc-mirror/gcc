@@ -3943,20 +3943,20 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:
-      emit_move_insn (gen_rtx (MEM, SImode,
-			       memory_address (SImode, (addr))),
-		      gen_rtx (MEM, SImode,
-			       memory_address (SImode, (fnaddr))));
-      emit_move_insn (gen_rtx (MEM, SImode,
-			       memory_address (SImode,
+      emit_move_insn (gen_rtx (MEM, Pmode,
+			       memory_address (Pmode, (addr))),
+		      gen_rtx (MEM, Pmode,
+			       memory_address (Pmode, (fnaddr))));
+      emit_move_insn (gen_rtx (MEM, Pmode,
+			       memory_address (Pmode,
 					       plus_constant ((addr), 4))),
-		      gen_rtx (MEM, SImode,
-			       memory_address (SImode,
+		      gen_rtx (MEM, Pmode,
+			       memory_address (Pmode,
 					       plus_constant ((fnaddr), 4))));
-      emit_move_insn (gen_rtx (MEM, SImode,
-			       memory_address (SImode,
+      emit_move_insn (gen_rtx (MEM, Pmode,
+			       memory_address (Pmode,
 					       plus_constant ((addr), 8))),
-		      force_reg (SImode, (cxt)));
+		      force_reg (Pmode, (cxt)));
       break;
 
     /* Under V.4/eabi, update the two words after the bl to have the real
