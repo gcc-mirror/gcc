@@ -2948,12 +2948,12 @@ simplify_unary_operation (code, mode, op, op_mode)
       return gen_rtx (CONST_INT, VOIDmode, val);
     }
 #endif
-  else if (GET_MODE_CLASS (mode) == MODE_INT
-	   || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+  /* This was formerly used only for non-IEEE float.
+     eggert@twinsun.com says it is safe for IEEE also.  */
+  else
     {
       /* There are some simplifications we can do even if the operands
-	 aren't constant, but they don't apply to floating-point
-	 unless not IEEE.  */
+	 aren't constant.  */
       switch (code)
 	{
 	case NEG:
@@ -2979,8 +2979,6 @@ simplify_unary_operation (code, mode, op, op_mode)
 
       return 0;
     }
-  else
-    return 0;
 }
 
 /* Simplify a binary operation CODE with result mode MODE, operating on OP0

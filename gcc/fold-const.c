@@ -3007,15 +3007,17 @@ fold (expr)
 	  /* Except with IEEE floating point, x-0 equals x.  */
 	  if (real_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
-	}
-      /* Fold &x - &x.  This can happen from &x.foo - &x. 
-	 Note that can't be done for certain floats even in non-IEEE formats.
-	 Also note that operand_equal_p is always false is an operand
-	 is volatile.  */
 
-      if (operand_equal_p (arg0, arg1,
-			   TREE_CODE (type) == REAL_TYPE))
-	return convert (type, integer_zero_node);
+	  /* Fold &x - &x.  This can happen from &x.foo - &x. 
+	     This is unsafe for certain floats even in non-IEEE formats.
+	     In IEEE, it is unsafe because it does wrong for NaNs.
+	     Also note that operand_equal_p is always false is an operand
+	     is volatile.  */
+
+	  if (operand_equal_p (arg0, arg1,
+			       TREE_CODE (type) == REAL_TYPE))
+	    return convert (type, integer_zero_node);
+	}
       goto associate;
 
     case MULT_EXPR:
