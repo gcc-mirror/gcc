@@ -1,3 +1,8 @@
+2001-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (expr_no_commas, primary), c-typeck.c
+	(parser_build_binary_op): Use IS_EXPR_CODE_CLASS.
+
 2001-10-29  David Edelsohn  <edelsohn@gnu.org>
 
 	Undo assemble_name change in earlier patch.

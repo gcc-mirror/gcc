@@ -1752,11 +1752,9 @@ parser_build_binary_op (code, arg1, arg2)
   enum tree_code code1 = ERROR_MARK;
   enum tree_code code2 = ERROR_MARK;
 
-  if (class1 == 'e' || class1 == '1'
-      || class1 == '2' || class1 == '<')
+  if (IS_EXPR_CODE_CLASS (class1))
     code1 = C_EXP_ORIGINAL_CODE (arg1);
-  if (class2 == 'e' || class2 == '1'
-      || class2 == '2' || class2 == '<')
+  if (IS_EXPR_CODE_CLASS (class2))
     code2 = C_EXP_ORIGINAL_CODE (arg2);
 
   /* Check for cases such as x+y<<z which users are likely
@@ -1826,8 +1824,7 @@ parser_build_binary_op (code, arg1, arg2)
 
   /* Record the code that was specified in the source,
      for the sake of warnings about confusing nesting.  */
-  if (class == 'e' || class == '1'
-      || class == '2' || class == '<')
+  if (IS_EXPR_CODE_CLASS (class))
     C_SET_EXP_ORIGINAL_CODE (result, code);
   else
     {
