@@ -1,3 +1,35 @@
+Wed Feb 12 22:47:18 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-unit-at-a-time
+	(OBJS): Add callgraph.o
+	(callgraph.o): New.
+	* c-decl.c (expand_body_1): Break out from ...
+	(expand_body): This one;  change calling convention
+	(finish_function): Move some of expand_body logic here.
+	(c_expand_deferred_function): Update call of expand_body
+	(c_expand_stmt): Use c_expand_body_1.
+	* c-lang.c (LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION): Define.
+	* c-objc-commin.c (c_objc_common_finish_file): Use callgraph code.
+	* c-tree.h (c_expand_body): Declare.
+	* callgraph.c: New file.
+	* flags.h (flag_unit_at_a_time): Declare.
+	* langhooks.h (LANG_HOOKS_CALLGRAPH_LOWER_FUNCTION,
+	LANG_HOOKS_CALLGRAPH_EXPAND_FUNCTION,
+	LANG_HOOKS_CALLGRAPH_INITIALIZER): New macros.
+	* langhooks.h (struct lang_hooks_for_callgraph): New.
+	(struct lang_hooks): Add callgraph field.
+	* toplev.c (flag_unit_at_a_time): New.
+	(lang_independent_options): Add flag_unit_at_a_time.
+	(process_options): Disable unit-at-a-time mode for frontends not
+	supporting callgraph.
+	* tree-inline.c (typedef struct inline_data): Add "decl"
+	(expand_call_inline): Update callgraph.
+	(optimize_inline_calls): Set id.decl.
+	* tree.h (cgraph_finalize_function, cgraph_finalize_compilation_unit,
+	cgraph_create_edges, dump_cgraph, cgraph_optimize, cgraph_remove_call
+	cgraph_calls_p): Declare.
+	* invoke.texi (-funit-at-a-time): Document
+
 2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/spe.h: Fix misc formatting.

@@ -361,7 +361,13 @@ c_objc_common_finish_file ()
   if (pch_file)
     c_common_write_pch ();
 
-  expand_deferred_fns ();
+  if (flag_unit_at_a_time)
+    {
+      cgraph_finalize_compilation_unit ();
+      cgraph_optimize ();
+    }
+  else
+    expand_deferred_fns ();
 
   if (static_ctors)
     {
