@@ -227,7 +227,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* How to parse #pragma's */
 
-#define HANDLE_PRAGMA(finput) handle_pragma (finput)
+#define HANDLE_PRAGMA(finput) handle_pragma (finput, &get_directive_line)
 
 /* Create new Mach-O sections. */
 
