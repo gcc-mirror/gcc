@@ -875,6 +875,7 @@ static void
 compute_flow_insensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
+  sbitmap res;
 
   /* Initialize counter for the total number of virtual operands that
      aliasing will introduce.  When AI->TOTAL_ALIAS_VOPS goes beyond the
@@ -942,6 +943,75 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	    }
 	}
     }
+
+  /* Since this analysis is based exclusively on symbols, it fails to
+     handle cases where two pointers P and Q have different memory
+     tags with conflicting alias set numbers but no aliased symbols in
+     common.
+
+     For example, suppose that we have two memory tags TMT.1 and TMT.2
+     such that
+     
+     		may-aliases (TMT.1) = { a }
+		may-aliases (TMT.2) = { b }
+
+     and the alias set number of TMT.1 conflicts with that of TMT.2.
+     Since they don't have symbols in common, loads and stores from
+     TMT.1 and TMT.2 will seem independent of each other, which will
+     lead to the optimizers making invalid transformations (see
+     testsuite/gcc.c-torture/execute/pr15262-[12].c).
+
+     To avoid this problem, we do a final traversal of AI->POINTERS
+     looking for pairs of pointers that have no aliased symbols in
+     common and yet have conflicting alias set numbers.  */
+  res = sbitmap_alloc (num_referenced_vars);
+
+  for (i = 0; i < ai->num_pointers; i++)
+    {
+      size_t j;
+      struct alias_map_d *p_map1 = ai->pointers[i];
+      tree tag1 = var_ann (p_map1->var)->type_mem_tag;
+      sbitmap may_aliases1 = p_map1->may_aliases;
+
+      for (j = i + 1; j < ai->num_pointers; j++)
+	{
+	  struct alias_map_d *p_map2 = ai->pointers[j];
+	  tree tag2 = var_ann (p_map2->var)->type_mem_tag;
+	  var_ann_t tag2_ann = var_ann (tag2);
+	  sbitmap may_aliases2 = p_map2->may_aliases;
+
+	  /* If the pointers may not point to each other, do nothing.  */
+	  if (!may_alias_p (p_map1->var, p_map1->set, p_map2->var, p_map2->set))
+	    continue;
+
+	  /* The two pointers may alias each other.  If they already have
+	     symbols in common, do nothing.  */
+	  sbitmap_a_and_b (res, may_aliases1, may_aliases2);
+	  if (sbitmap_first_set_bit (res) >= 0)
+	    continue;
+
+	  if (sbitmap_first_set_bit (may_aliases2) >= 0)
+	    {
+	      size_t k;
+
+	      /* Add all the aliases for TAG2 into TAG1's alias set.
+		 FIXME, update grouping heuristic counters.  */
+	      EXECUTE_IF_SET_IN_SBITMAP (may_aliases2, 0, k,
+		  add_may_alias (tag1, referenced_var (k)));
+	      sbitmap_a_or_b (may_aliases1, may_aliases1, may_aliases2);
+	      sbitmap_zero (may_aliases2);
+	      tag2_ann->may_aliases = NULL;
+	    }
+	  else
+	    {
+	      /* Since TAG2 does not have any aliases of its own, add
+		 TAG2 itself to the alias set of TAG1.  */
+	      add_may_alias (tag1, tag2);
+	    }
+	}
+    }
+
+  sbitmap_free (res);
 
   if (dump_file)
     fprintf (dump_file, "%s: Total number of aliased vops: %ld\n",
@@ -1262,8 +1332,9 @@ setup_pointers_and_addressables (struct alias_info *ai)
 
       /* Name memory tags already have flow-sensitive aliasing
 	 information, so they need not be processed by
-	 compute_may_aliases.  Similarly, type memory tags are already
-	 accounted for when we process their associated pointer.  */
+	 compute_flow_insensitive_aliasing.  Similarly, type memory
+	 tags are already accounted for when we process their
+	 associated pointer.  */
       if (v_ann->mem_tag_kind != NOT_A_TAG)
 	continue;
 
@@ -1365,41 +1436,6 @@ setup_pointers_and_addressables (struct alias_info *ai)
 		  ann->type_mem_tag = NULL_TREE;
 		}
 	    }
-	}
-    }
-
-  /* If we found no addressable variables, but we have more than one
-     pointer, we will need to check for conflicts between the
-     pointers.  Otherwise, we would miss alias relations as in
-     testsuite/gcc.dg/tree-ssa/20040319-1.c:
-
-		struct bar { int count;  int *arr;};
-
-		void foo (struct bar *b)
-		{
-		  b->count = 0;
-		  *(b->arr) = 2;
-		  if (b->count == 0)
-		    abort ();
-		}
-
-     b->count and *(b->arr) could be aliased if b->arr == &b->count.
-     To do this, we add all the memory tags for the pointers in
-     AI->POINTERS to AI->ADDRESSABLE_VARS, so that
-     compute_flow_insensitive_aliasing will naturally compare every
-     pointer to every type tag.  */
-  if (ai->num_addressable_vars == 0
-      && ai->num_pointers > 1)
-    {
-      free (ai->addressable_vars);
-      ai->addressable_vars = xcalloc (ai->num_pointers,
-				      sizeof (struct alias_map_d *));
-      ai->num_addressable_vars = 0;
-      for (i = 0; i < ai->num_pointers; i++)
-	{
-	  struct alias_map_d *p = ai->pointers[i];
-	  tree tag = var_ann (p->var)->type_mem_tag;
-	  create_alias_map_for (tag, ai);
 	}
     }
 }
@@ -1536,58 +1572,9 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
   /* If the alias sets don't conflict then MEM cannot alias VAR.  */
   if (!alias_sets_conflict_p (mem_alias_set, var_alias_set))
     {
-      /* Handle aliases to structure fields.  If either VAR or MEM are
-	 aggregate types, they may not have conflicting types, but one of
-	 the structures could contain a pointer to the other one.
-
-	 For instance, given
-
-		MEM -> struct P *p;
-		VAR -> struct Q *q;
-
-	 It may happen that '*p' and '*q' can't alias because 'struct P'
-	 and 'struct Q' have non-conflicting alias sets.  However, it could
-	 happen that one of the fields in 'struct P' is a 'struct Q *' or
-	 vice-versa.
-
-	 Therefore, we also need to check if 'struct P' aliases 'struct Q *'
-	 or 'struct Q' aliases 'struct P *'.  Notice, that since GIMPLE
-	 does not have more than one-level pointers, we don't need to
-	 recurse into the structures.  */
-      if (AGGREGATE_TYPE_P (TREE_TYPE (mem))
-	  || AGGREGATE_TYPE_P (TREE_TYPE (var)))
-	{
-	  tree ptr_to_var;
-	  
-	  if (TREE_CODE (TREE_TYPE (var)) == ARRAY_TYPE)
-	    ptr_to_var = TYPE_POINTER_TO (TREE_TYPE (TREE_TYPE (var)));
-	  else
-	    ptr_to_var = TYPE_POINTER_TO (TREE_TYPE (var));
-
-	  /* If no pointer-to VAR exists, then MEM can't alias VAR.  */
-	  if (ptr_to_var == NULL_TREE)
-	    {
-	      alias_stats.alias_noalias++;
-	      alias_stats.tbaa_resolved++;
-	      return false;
-	    }
-
-	  /* If MEM doesn't alias a pointer to VAR and VAR doesn't alias
-	     PTR, then PTR can't alias VAR.  */
-	  if (!alias_sets_conflict_p (mem_alias_set, get_alias_set (ptr_to_var))
-	      && !alias_sets_conflict_p (var_alias_set, get_alias_set (ptr)))
-	    {
-	      alias_stats.alias_noalias++;
-	      alias_stats.tbaa_resolved++;
-	      return false;
-	    }
-	}
-      else
-	{
-	  alias_stats.alias_noalias++;
-	  alias_stats.tbaa_resolved++;
-	  return false;
-	}
+      alias_stats.alias_noalias++;
+      alias_stats.tbaa_resolved++;
+      return false;
     }
 
   alias_stats.alias_mayalias++;

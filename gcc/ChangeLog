@@ -1,3 +1,15 @@
+2004-09-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/15262
+	* tree-dfa.c (dump_variable): Also print the type of the
+	variable.
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): If two
+	memory tags are of conflicting alias sets but have no aliased
+	symbols in common, add one tag to the alias set of the other.
+	(setup_pointers_and_addressables): Remove hack to deal with
+	programs with no aliased symbols.
+	(may_alias_p): Don't special case aggregate types.
+
 2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15498

@@ -528,6 +528,9 @@ dump_variable (FILE *file, tree var)
 
   fprintf (file, ", UID %u", (unsigned) ann->uid);
 
+  fprintf (file, ", ");
+  print_generic_expr (file, TREE_TYPE (var), dump_flags);
+
   if (ann->type_mem_tag)
     {
       fprintf (file, ", type memory tag: ");
