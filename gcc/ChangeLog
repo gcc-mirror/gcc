@@ -1,3 +1,10 @@
+2003-02-18  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.h (enum processor_type): Sort entries
+	alphabetically.
+	* config/mips/mips.md (define_attr cpu): Sync with processor_type
+	enum values, including adding entries that were missing.
+
 Tue Feb 18 20:15:54 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (calc_live_regs): Also check GET_CODE when checking if initial value

@@ -125,7 +125,7 @@
 
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
-  "default,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sr71000,r4kc,r5kc,r20kc"
+  "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r8000,sb1,sr71000"
   (const (symbol_ref "mips_cpu_attr")))
 
 ;; Does the instruction have a mandatory delay slot?
