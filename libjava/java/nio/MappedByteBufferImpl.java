@@ -138,9 +138,14 @@ final class MappedByteBufferImpl extends MappedByteBuffer
   public ByteBuffer slice()
   {
     int rem = remaining();
-    return new DirectByteBufferImpl
+    if (isReadOnly())
+        return new DirectByteBufferImpl.ReadOnly
       (this, VMDirectByteBuffer.adjustAddress(address, position()),
-       rem, rem, 0, isReadOnly());
+       rem, rem, 0);
+    else
+        return new DirectByteBufferImpl.ReadWrite
+      (this, VMDirectByteBuffer.adjustAddress(address, position()),
+       rem, rem, 0);
   }
 
   private ByteBuffer duplicate(boolean readOnly)
@@ -149,9 +154,14 @@ final class MappedByteBufferImpl extends MappedByteBuffer
     reset();
     int mark = position();
     position(pos);
-    DirectByteBufferImpl result
-      = new DirectByteBufferImpl(this, address, capacity(), limit(),
-				 pos, readOnly);
+    DirectByteBufferImpl result;
+    if (readOnly)
+        result = new DirectByteBufferImpl.ReadOnly(this, address, capacity(),
+                                                   limit(), pos);
+    else
+        result = new DirectByteBufferImpl.ReadWrite(this, address, capacity(),
+                                                    limit(), pos);
+
     if (mark != pos)
       {
 	result.position(mark);

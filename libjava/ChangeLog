@@ -1,3 +1,22 @@
+2004-11-24  Jeroen Frijters  <address@bogus.example.com>
+
+	* java/nio/DirectByteBufferImpl.java
+	(ReadOnly): New inner subclass.
+	(ReadWrite): New inner subclass.
+	(owner): Made final and private.
+	(address): Made final.
+	(DirectByteBufferImpl(int)): New constructor.
+	(DirectByteBufferImpl(Object,RawData,int,int,int)): New constructor.
+	(DirectByteBufferImpl(Object,RawData,int,int,int,boolean)): Removed.
+	(allocate): Modified to instantiate ReadWrite subclass.
+	(finalize): Fixed to only free the buffer, if we own it.
+	(put): Removed read-only check.
+	(slice, duplicate): Modified to instantiate appropriate subclass.
+	(isReadOnly): Removed.
+	* java/nio/MappedByteBufferImpl.java
+	(slice, duplicate): Modified to instantiate appropriate
+	DirectByteBufferImpl subclass.
+
 2004-11-24  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/NIOServerSocket.java: Added email to @author tag.
