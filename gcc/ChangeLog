@@ -1,3 +1,10 @@
+2003-09-05  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR optimization/1823
+	* expmed.c (expand_divmod <EXACT_DIV_EXPR>): Use an unsigned
+	multiplication to implement division by constant integer.
+
 Fri Sep  5 07:35:16 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* opts.c (decode_options): Enable unit-at-a-time at -O2.
