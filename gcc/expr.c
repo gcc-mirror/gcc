@@ -648,7 +648,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 	     Generate what we need with	shifts.  */
 	  shift_amount = build_int_cst (NULL_TREE,
 					GET_MODE_BITSIZE (to_mode)
-					- GET_MODE_BITSIZE (from_mode), 0);
+					- GET_MODE_BITSIZE (from_mode));
 	  from = gen_lowpart (to_mode, force_reg (from_mode, from));
 	  tmp = expand_shift (LSHIFT_EXPR, to_mode, from, shift_amount,
 			      to, unsignedp);
@@ -1703,8 +1703,7 @@ emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
 
       if (shift)
 	tmps[i] = expand_shift (LSHIFT_EXPR, mode, tmps[i],
-				build_int_cst (NULL_TREE,
-					       shift, 0), tmps[i], 0);
+				build_int_cst (NULL_TREE, shift), tmps[i], 0);
     }
 
   /* Copy the extracted pieces into the proper (probable) hard regs.  */
@@ -1815,8 +1814,8 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 	    {
 	      int shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
 	      tmps[i] = expand_shift (RSHIFT_EXPR, mode, tmps[i],
-				      build_int_cst (NULL_TREE,
-						     shift, 0), tmps[i], 0);
+				      build_int_cst (NULL_TREE, shift),
+				      tmps[i], 0);
 	    }
 	  bytelen = ssize - bytepos;
 	}
@@ -3642,7 +3641,7 @@ expand_assignment (tree to, tree from, int want_value)
 		  binop = xor_optab;
 		}
 	      value = expand_shift (LSHIFT_EXPR, GET_MODE (str_rtx), value,
-				    build_int_cst (NULL_TREE,bitpos1, 0),
+				    build_int_cst (NULL_TREE, bitpos1),
 				    NULL_RTX, 1);
 	      result = expand_binop (GET_MODE (str_rtx), binop, str_rtx,
 				     value, str_rtx, 1, OPTAB_WIDEN);
@@ -4538,7 +4537,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		value
 		  = fold (build2 (LSHIFT_EXPR, type, value,
 				  build_int_cst (NULL_TREE,
-						 BITS_PER_WORD - bitsize, 0)));
+						 BITS_PER_WORD - bitsize)));
 	      bitsize = BITS_PER_WORD;
 	      mode = word_mode;
 	    }
@@ -5274,7 +5273,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 				   NULL_RTX);
 
 	      count = build_int_cst (NULL_TREE,
-				     GET_MODE_BITSIZE (tmode) - bitsize, 0);
+				     GET_MODE_BITSIZE (tmode) - bitsize);
 	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
 	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
 	    }
@@ -6767,8 +6766,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		      {
 			tree count
 			  = build_int_cst (NULL_TREE,
-					   GET_MODE_BITSIZE (imode) - bitsize,
-					   0);
+					   GET_MODE_BITSIZE (imode) - bitsize);
 
 			op0 = expand_shift (LSHIFT_EXPR, imode, op0, count,
 					    target, 0);
@@ -8234,7 +8232,7 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
   else
     {
       tree count = build_int_cst (NULL_TREE,
-				  GET_MODE_BITSIZE (GET_MODE (exp)) - prec, 0);
+				  GET_MODE_BITSIZE (GET_MODE (exp)) - prec);
       exp = expand_shift (LSHIFT_EXPR, GET_MODE (exp), exp, count, target, 0);
       return expand_shift (RSHIFT_EXPR, GET_MODE (exp), exp, count, target, 0);
     }

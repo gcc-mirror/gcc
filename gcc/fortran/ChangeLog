@@ -1,3 +1,20 @@
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* trans-array.c (gfc_trans_array_constructor_value): Adjust
+	build_int_cst calls.
+	* trans-const.c (gfc_build_string_const, gfc_init_constants,
+	gfc_conv_mpz_to_tree, gfc_conv_constant_to_tree): Likewise.
+	* trans-decl.c (gfc_get_symbol_decl, build_entry_thunks,
+	gfc_trans_entry_master_switch): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_ibits,
+	gfc_conv_intrinsic_len, prepare_arg_info): Likewise.
+	* trans-io.c (add_case, set_error_locus,
+	transfer_namelist_element, transfer_expr): Likewise.
+	* trans-stmt.c (gfc_trans_label_assign, gfc_trans_pause,
+	gfc_trans_stop, gfc_trans_character_select): Likewise.
+	* trans-types.c (gfc_init_types, gfc_get_dtype): Likewise.
+	* trans.c (gfc_trans_runtime_check): Likewise.
+
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-decl.c, trans-types.c: Add and remove blank lines as 
@@ -22,7 +39,7 @@
 
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* fortran/f95-lang.c (gfc_init_decl_processing): Adjust
+	* f95-lang.c (gfc_init_decl_processing): Adjust
 	build_common_tree_nodes call.
 
 2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>

@@ -3400,9 +3400,9 @@ ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       ? int_size_in_bytes (type) > 8 : TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
     {
       tree t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		      build_int_cst (NULL_TREE, 2 * UNITS_PER_WORD - 1, 0));
+		      build_int_cst (NULL_TREE, 2 * UNITS_PER_WORD - 1));
       t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
-		 build_int_cst (NULL_TREE, -2 * UNITS_PER_WORD, -1));
+		 build_int_cst (NULL_TREE, -2 * UNITS_PER_WORD));
       t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
       gimplify_and_add (t, pre_p);
     }

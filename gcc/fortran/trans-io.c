@@ -451,7 +451,7 @@ add_case (int label_value, gfc_st_label * label, stmtblock_t * body)
   if (label == NULL)
     return;			/* No label, no case */
 
-  value = build_int_cst (NULL_TREE, label_value, 0);
+  value = build_int_cst (NULL_TREE, label_value);
 
   /* Make a backend label for this case.  */
   tmp = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
@@ -524,7 +524,7 @@ set_error_locus (stmtblock_t * block, locus * where)
   gfc_add_modify_expr (block, locus_file, tmp);
 
   line = where->lb->linenum;
-  gfc_add_modify_expr (block, locus_line, build_int_cst (NULL_TREE, line, 0));
+  gfc_add_modify_expr (block, locus_line, build_int_cst (NULL_TREE, line));
 }
 
 
@@ -896,7 +896,7 @@ transfer_namelist_element (stmtblock_t * block, gfc_typespec * ts, tree addr_exp
   args = gfc_chainon_list (NULL_TREE, addr_expr);
   args = gfc_chainon_list (args, string);
   args = gfc_chainon_list (args, string_length);
-  arg2 = build_int_cst (gfc_array_index_type, ts->kind, 0);
+  arg2 = build_int_cst (gfc_array_index_type, ts->kind);
   args = gfc_chainon_list (args,arg2);
 
   switch (ts->type)
@@ -1152,22 +1152,22 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr)
   switch (ts->type)
     {
     case BT_INTEGER:
-      arg2 = build_int_cst (NULL_TREE, kind, 0);
+      arg2 = build_int_cst (NULL_TREE, kind);
       function = iocall_x_integer;
       break;
 
     case BT_REAL:
-      arg2 = build_int_cst (NULL_TREE, kind, 0);
+      arg2 = build_int_cst (NULL_TREE, kind);
       function = iocall_x_real;
       break;
 
     case BT_COMPLEX:
-      arg2 = build_int_cst (NULL_TREE, kind, 0);
+      arg2 = build_int_cst (NULL_TREE, kind);
       function = iocall_x_complex;
       break;
 
     case BT_LOGICAL:
-      arg2 = build_int_cst (NULL_TREE, kind, 0);
+      arg2 = build_int_cst (NULL_TREE, kind);
       function = iocall_x_logical;
       break;
 

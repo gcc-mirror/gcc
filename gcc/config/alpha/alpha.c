@@ -4925,7 +4925,7 @@ alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
       temp = expand_binop (DImode, sub_optab, fnaddr, temp, temp, 1,
 			   OPTAB_WIDEN);
       temp = expand_shift (RSHIFT_EXPR, Pmode, temp,
-		           build_int_cst (NULL_TREE, 2, 0), NULL_RTX, 1);
+		           build_int_cst (NULL_TREE, 2), NULL_RTX, 1);
       temp = expand_and (SImode, gen_lowpart (SImode, temp),
 			 GEN_INT (0x3fff), 0);
 
@@ -5379,12 +5379,12 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
       t = make_tree (ptr_type_node, virtual_incoming_args_rtx);
       t = build (PLUS_EXPR, ptr_type_node, t,
-		 build_int_cst (NULL_TREE, offset, 0));
+		 build_int_cst (NULL_TREE, offset));
       t = build (MODIFY_EXPR, TREE_TYPE (base_field), base_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-      t = build_int_cst (NULL_TREE, NUM_ARGS * UNITS_PER_WORD, 0);
+      t = build_int_cst (NULL_TREE, NUM_ARGS * UNITS_PER_WORD);
       t = build (MODIFY_EXPR, TREE_TYPE (offset_field), offset_field, t);
       TREE_SIDE_EFFECTS (t) = 1;
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -5400,7 +5400,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
      reserved for the registers.  */
   if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
-      t = build_int_cst (TREE_TYPE (offset), 6*8, 0);
+      t = build_int_cst (TREE_TYPE (offset), 6*8);
       t = build (MODIFY_EXPR, TREE_TYPE (offset), offset,
 		 build (MAX_EXPR, TREE_TYPE (offset), offset, t));
       gimplify_and_add (t, pre_p);
@@ -5429,7 +5429,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
     {
       tree fpaddend, cond, fourtyeight;
 
-      fourtyeight = build_int_cst (TREE_TYPE (addend), 6*8, 0);
+      fourtyeight = build_int_cst (TREE_TYPE (addend), 6*8);
       fpaddend = fold (build (MINUS_EXPR, TREE_TYPE (addend),
 			      addend, fourtyeight));
       cond = fold (build (LT_EXPR, boolean_type_node, addend, fourtyeight));

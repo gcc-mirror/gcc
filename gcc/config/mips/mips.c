@@ -3385,7 +3385,7 @@ mips_build_builtin_va_list (void)
 			  unsigned_char_type_node);
       /* Explicitly pad to the size of a pointer, so that -Wpadded won't
 	 warn on every user file.  */
-      index = build_int_cst (NULL_TREE, GET_MODE_SIZE (ptr_mode) - 2 - 1, 0);
+      index = build_int_cst (NULL_TREE, GET_MODE_SIZE (ptr_mode) - 2 - 1);
       array = build_array_type (unsigned_char_type_node,
 			        build_index_type (index));
       f_res = build_decl (FIELD_DECL, get_identifier ("__reserved"), array);
@@ -3470,7 +3470,7 @@ mips_va_start (tree valist, rtx nextarg)
 	  if (cum->stack_words > 0)
 	    t = build (PLUS_EXPR, TREE_TYPE (ovfl), t,
 		       build_int_cst (NULL_TREE,
-				      cum->stack_words * UNITS_PER_WORD, 0));
+				      cum->stack_words * UNITS_PER_WORD));
 	  t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
  	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -3487,14 +3487,14 @@ mips_va_start (tree valist, rtx nextarg)
 	  fpr_offset &= ~(UNITS_PER_FPVALUE - 1);
 	  if (fpr_offset)
 	    t = build (PLUS_EXPR, TREE_TYPE (ftop), t,
-		       build_int_cst (NULL_TREE, -fpr_offset, -1));
+		       build_int_cst (NULL_TREE, -fpr_offset));
 	  t = build (MODIFY_EXPR, TREE_TYPE (ftop), ftop, t);
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
 	  /* Emit code to initialize GOFF, the offset from GTOP of the
 	     next GPR argument.  */
 	  t = build (MODIFY_EXPR, TREE_TYPE (goff), goff,
-		     build_int_cst (NULL_TREE, gpr_save_area_size, 0));
+		     build_int_cst (NULL_TREE, gpr_save_area_size));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
 	  /* Likewise emit code to initialize FOFF, the offset from FTOP
@@ -3502,7 +3502,7 @@ mips_va_start (tree valist, rtx nextarg)
 	  fpr_save_area_size
 	    = (MAX_ARGS_IN_REGISTERS - cum->num_fprs) * UNITS_PER_FPREG;
 	  t = build (MODIFY_EXPR, TREE_TYPE (foff), foff,
-		     build_int_cst (NULL_TREE, fpr_save_area_size, 0));
+		     build_int_cst (NULL_TREE, fpr_save_area_size));
 	  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	}
       else
@@ -3626,7 +3626,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	    {
 	      /* [1] Emit code for: off &= -rsize.	*/
 	      t = build (BIT_AND_EXPR, TREE_TYPE (off), off,
-			 build_int_cst (NULL_TREE, -rsize, -1));
+			 build_int_cst (NULL_TREE, -rsize));
 	      t = build (MODIFY_EXPR, TREE_TYPE (off), off, t);
 	      gimplify_and_add (t, pre_p);
 	    }
@@ -3640,7 +3640,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       /* [5] Emit code for: off -= rsize.  We do this as a form of
 	 post-increment not available to C.  Also widen for the
 	 coming pointer arithmetic.  */
-      t = fold_convert (TREE_TYPE (off), build_int_cst (NULL_TREE, rsize, 0));
+      t = fold_convert (TREE_TYPE (off), build_int_cst (NULL_TREE, rsize));
       t = build (POSTDECREMENT_EXPR, TREE_TYPE (off), off, t);
       t = fold_convert (sizetype, t);
       t = fold_convert (TREE_TYPE (top), t);
@@ -3651,7 +3651,7 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
       if (BYTES_BIG_ENDIAN && rsize > size)
 	{
 	  u = fold_convert (TREE_TYPE (t), build_int_cst (NULL_TREE,
-							  rsize - size, 0));
+							  rsize - size));
 	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
       COND_EXPR_THEN (addr) = t;
@@ -3660,10 +3660,10 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	{
 	  /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
 	  u = fold_convert (TREE_TYPE (ovfl),
-			    build_int_cst (NULL_TREE, osize - 1, 0));
+			    build_int_cst (NULL_TREE, osize - 1));
 	  t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl, u);
 	  u = fold_convert (TREE_TYPE (ovfl),
-			    build_int_cst (NULL_TREE, -osize, -1));
+			    build_int_cst (NULL_TREE, -osize));
 	  t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t, u);
 	  align = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
 	}
@@ -3674,12 +3674,12 @@ mips_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 	 post-increment ovfl by osize.  On big-endian machines,
 	 the argument has OSIZE - SIZE bytes of leading padding.  */
       u = fold_convert (TREE_TYPE (ovfl),
-			build_int_cst (NULL_TREE, osize, 0));
+			build_int_cst (NULL_TREE, osize));
       t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl, u);
       if (BYTES_BIG_ENDIAN && osize > size)
 	{
 	  u = fold_convert (TREE_TYPE (t),
-			    build_int_cst (NULL_TREE, osize - size, 0));
+			    build_int_cst (NULL_TREE, osize - size));
 	  t = build (PLUS_EXPR, TREE_TYPE (t), t, u);
 	}
 

@@ -14181,7 +14181,7 @@ arm_get_cookie_size (tree type)
   if (!TARGET_AAPCS_BASED)
     return default_cxx_get_cookie_size (type);
 
-  size = build_int_cst (sizetype, 8, 0);
+  size = build_int_cst (sizetype, 8);
   return size;
 }
 

@@ -7050,12 +7050,12 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   n_fpr = current_function_args_info.fprs;
 
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-	     build_int_cst (NULL_TREE, n_gpr, 0));
+	     build_int_cst (NULL_TREE, n_gpr));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-	     build_int_cst (NULL_TREE, n_fpr, 0));
+	     build_int_cst (NULL_TREE, n_fpr));
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
@@ -7068,7 +7068,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
     fprintf (stderr, "va_start: n_gpr = %d, n_fpr = %d off %d\n",
 	     (int)n_gpr, (int)n_fpr, off);
 
-  t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off, 0));
+  t = build (PLUS_EXPR, TREE_TYPE (ovf), t, build_int_cst (NULL_TREE, off));
 
   t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
   TREE_SIDE_EFFECTS (t) = 1;
@@ -7080,10 +7080,10 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
     t = build (PLUS_EXPR, TREE_TYPE (sav), t,
 	       build_int_cst (NULL_TREE,
 			      -(RETURN_REGNUM - 2) * UNITS_PER_WORD
-			      - (TARGET_64BIT ? 4 : 2) * 8, -1));
+			      - (TARGET_64BIT ? 4 : 2) * 8));
   else
     t = build (PLUS_EXPR, TREE_TYPE (sav), t,
-	       build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD, -1));
+	       build_int_cst (NULL_TREE, -RETURN_REGNUM * UNITS_PER_WORD));
 
   t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
   TREE_SIDE_EFFECTS (t) = 1;

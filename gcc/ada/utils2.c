@@ -1444,13 +1444,13 @@ build_call_raise (int msg)
 
   TREE_TYPE (filename)
     = build_array_type (char_type_node,
-			build_index_type (build_int_cst (NULL_TREE, len, 0)));
+			build_index_type (build_int_cst (NULL_TREE, len)));
 
   return
     build_call_2_expr (fndecl,
 		       build1 (ADDR_EXPR, build_pointer_type (char_type_node),
 			       filename),
-		       build_int_cst (NULL_TREE, input_line, 0));
+		       build_int_cst (NULL_TREE, input_line));
 }
 
 /* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
@@ -1799,7 +1799,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       /* If the size overflows, pass -1 so the allocator will raise
 	 storage error.  */
       if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
-	size = build_int_cst (ssizetype, -1, -1);
+	size = build_int_cst (ssizetype, -1);
 
       storage = build_call_alloc_dealloc (NULL_TREE, size,
 					  TYPE_ALIGN (storage_type),
@@ -1872,7 +1872,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   /* If the size overflows, pass -1 so the allocator will raise
      storage error.  */
   if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
-    size = build_int_cst (ssizetype, -1, -1);
+    size = build_int_cst (ssizetype, -1);
 
   /* If this is a type whose alignment is larger than the
      biggest we support in normal alignment and this is in

@@ -1,3 +1,23 @@
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+
+	* call.c (convert_class_to_reference): Adjust build_int_cst calls.
+	(build_user_type_conversion_1, convert_like_real,
+	build_java_interface_fn_ref, build_special_member_call): Likewise.
+	* class.c (finish_struct_1, build_vtbl_initializer): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	* decl.c (cxx_init_decl_processing, complete_array_type): Likewise.
+	* decl2.c (start_static_initialization_or_destruction,
+	generate_ctor_or_dtor_function): Likewise.
+	* except.c (build_throw): Likewise.
+	* mangle.c (write_integer_cst): Likewise.
+	* method.c (finish_thunk): Likewise.
+	* rtti.c (build_headof, get_tinfo_decl_dynamic,
+	build_dynamic_cast_1, ptr_initializer, ptm_initializer,
+	get_pseudo_ti_init): Likewise.
+	* search.c (get_dynamic_cast_base_type): Likewise.
+	
 2004-08-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* class.c, search.c: Remove references to DWARF_DEBUG.
@@ -6,10 +26,9 @@
 
 	* repo.c (extract_string): Reset backquote after one character.
 	(get_base_filename): Fix indentation.
-
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* cp/decl.c (cxx_init_decl_processing): Adjust
+	* decl.c (cxx_init_decl_processing): Adjust
 	build_common_tree_nodes call.
 
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>

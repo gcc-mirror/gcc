@@ -179,9 +179,7 @@ void
 finish_thunk (tree thunk)
 {
   tree function, name;
-  tree fixed_offset = build_int_cst (ssizetype,
-				     THUNK_FIXED_OFFSET (thunk),
-				     THUNK_FIXED_OFFSET (thunk) < 0 ? -1 : 0);
+  tree fixed_offset = build_int_cst (ssizetype, THUNK_FIXED_OFFSET (thunk));
   tree virtual_offset = THUNK_VIRTUAL_OFFSET (thunk);
 
   my_friendly_assert (!DECL_NAME (thunk) && DECL_THUNK_P (thunk), 20021127);

@@ -1795,7 +1795,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 
 	  if (rhs_code == TRUNC_DIV_EXPR)
 	    t = build (RSHIFT_EXPR, TREE_TYPE (op0), op0,
-		       build_int_cst (NULL_TREE, tree_log2 (op1), 0));
+		       build_int_cst (NULL_TREE, tree_log2 (op1)));
 	  else
 	    t = build (BIT_AND_EXPR, TREE_TYPE (op0), op0,
 		       local_fold (build (MINUS_EXPR, TREE_TYPE (op1),

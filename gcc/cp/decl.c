@@ -2963,8 +2963,8 @@ cxx_init_decl_processing (void)
   java_char_type_node = record_builtin_java_type ("__java_char", -16);
   java_boolean_type_node = record_builtin_java_type ("__java_boolean", -1);
 
-  integer_two_node = build_int_cst (NULL_TREE, 2, 0);
-  integer_three_node = build_int_cst (NULL_TREE, 3, 0);
+  integer_two_node = build_int_cst (NULL_TREE, 2);
+  integer_three_node = build_int_cst (NULL_TREE, 3);
 
   record_builtin_type (RID_BOOL, "bool", boolean_type_node);
   truthvalue_type_node = boolean_type_node;
@@ -5254,13 +5254,13 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
 	  maxindex = build_int_cst (NULL_TREE,
 				    (TREE_STRING_LENGTH (initial_value)
-				     / eltsize) - 1, 0);
+				     / eltsize) - 1);
 	}
       else if (TREE_CODE (initial_value) == CONSTRUCTOR)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
 
-	  maxindex = build_int_cst (ssizetype, -1, -1);
+	  maxindex = build_int_cst (ssizetype, -1);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))
@@ -5278,14 +5278,14 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	    initial_value = NULL_TREE;
 
 	  /* Prevent further error messages.  */
-	  maxindex = build_int_cst (NULL_TREE, 0, 0);
+	  maxindex = build_int_cst (NULL_TREE, 0);
 	}
     }
 
   if (!maxindex)
     {
       if (do_default)
-	maxindex = build_int_cst (NULL_TREE, 0, 0);
+	maxindex = build_int_cst (NULL_TREE, 0);
       value = 2;
     }
 

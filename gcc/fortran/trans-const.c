@@ -82,7 +82,7 @@ gfc_build_string_const (int length, const char *s)
   tree len;
 
   str = build_string (length, s);
-  len = build_int_cst (NULL_TREE, length, 0);
+  len = build_int_cst (NULL_TREE, length);
   TREE_TYPE (str) =
     build_array_type (gfc_character1_type_node,
 		      build_range_type (gfc_strlen_type_node,
@@ -146,7 +146,7 @@ gfc_init_constants (void)
   int n;
 
   for (n = 0; n <= GFC_MAX_DIMENSIONS; n++)
-    gfc_rank_cst[n] = build_int_cst (gfc_array_index_type, n, 0);
+    gfc_rank_cst[n] = build_int_cst (gfc_array_index_type, n);
 
   gfc_strconst_bounds = gfc_build_string_const (21, "Array bound mismatch");
 
@@ -315,7 +315,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
       return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind);
 
     case BT_LOGICAL:
-      return build_int_cst (NULL_TREE, expr->value.logical, 0);
+      return build_int_cst (NULL_TREE, expr->value.logical);
 
     case BT_COMPLEX:
       {

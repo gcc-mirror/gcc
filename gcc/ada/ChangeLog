@@ -1,6 +1,13 @@
+2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cuintp.c (UI_To_gnu): Adjust build_int_cst calls.
+	* trans.c (Exception_Handler_to_gnu_sjlj, gnat_to_gnu): Likewise.
+	* utils.c (init_gigi_decls): Likewise.
+	* utils2.c (build_call_raise, build_allocator): Likewise.
+	
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
-	* ada/utils.c (gnat_init_decl_processing): Adjust
+	* utils.c (gnat_init_decl_processing): Adjust
 	build_common_tree_nodes call.
 
 2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>

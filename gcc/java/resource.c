@@ -69,9 +69,9 @@ compile_resource_data (const char *name, const char *buffer, int length)
   FINISH_RECORD (rtype);
   START_RECORD_CONSTRUCTOR (rinit, rtype);
   PUSH_FIELD_VALUE (rinit, "name_length", 
-		    build_int_cst (NULL_TREE, strlen (name), 0));
+		    build_int_cst (NULL_TREE, strlen (name)));
   PUSH_FIELD_VALUE (rinit, "resource_length", 
-		    build_int_cst (NULL_TREE, length, 0));
+		    build_int_cst (NULL_TREE, length));
   data = build_string (strlen(name) + length, buffer);
   TREE_TYPE (data) = data_type;
   PUSH_FIELD_VALUE (rinit, "data", data);

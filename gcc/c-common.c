@@ -660,7 +660,7 @@ start_fname_decls (void)
 
       if (decl)
 	{
-	  saved = tree_cons (decl, build_int_cst (NULL_TREE, ix, 0), saved);
+	  saved = tree_cons (decl, build_int_cst (NULL_TREE, ix), saved);
 	  *fname_vars[ix].decl = NULL_TREE;
 	}
     }
@@ -851,7 +851,7 @@ fix_string_type (tree value)
      For C++, this is the standard behavior.  */
   if (flag_const_strings)
     e_type = build_type_variant (e_type, 1, 0);
-  i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1, 0));
+  i_type = build_index_type (build_int_cst (NULL_TREE, nchars - 1));
   TREE_TYPE (value) = build_array_type (e_type, i_type);
 
   TREE_CONSTANT (value) = 1;
@@ -1992,9 +1992,9 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	{
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
-	  tree tmp = build_int_cst (*restype_ptr,
-				    TREE_INT_CST_LOW (primop1),
-				    TREE_INT_CST_HIGH (primop1));
+	  tree tmp = build_int_cst_wide (*restype_ptr,
+					 TREE_INT_CST_LOW (primop1),
+					 TREE_INT_CST_HIGH (primop1));
 
 	  primop1 = force_fit_type (tmp, 0, TREE_OVERFLOW (primop1),
 				    TREE_CONSTANT_OVERFLOW (primop1));
@@ -3897,8 +3897,7 @@ c_init_attributes (void)
 #define DEF_ATTR_NULL_TREE(ENUM)				\
   built_in_attributes[(int) ENUM] = NULL_TREE;
 #define DEF_ATTR_INT(ENUM, VALUE)				\
-  built_in_attributes[(int) ENUM] = build_int_cst		\
-	(NULL_TREE, VALUE, VALUE < 0 ? -1 : 0);
+  built_in_attributes[(int) ENUM] = build_int_cst (NULL_TREE, VALUE);
 #define DEF_ATTR_IDENT(ENUM, STRING)				\
   built_in_attributes[(int) ENUM] = get_identifier (STRING);
 #define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN)	\

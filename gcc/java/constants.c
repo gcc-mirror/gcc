@@ -324,7 +324,7 @@ get_tag_node (int tag)
   /* A Cache for build_int_cst (CONSTANT_XXX, 0). */
 
   if (tag_nodes[tag] == NULL_TREE)
-    tag_nodes[tag] = build_int_cst (NULL_TREE, tag, 0);
+    tag_nodes[tag] = build_int_cst (NULL_TREE, tag);
   return tag_nodes[tag];
 }
 
@@ -424,7 +424,7 @@ tree
 build_ref_from_constant_pool (int index)
 {
   tree d = build_constant_data_ref ();
-  tree i = build_int_cst (NULL_TREE, index, 0);
+  tree i = build_int_cst (NULL_TREE, index);
   return build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (d)), d, i,
 		 NULL_TREE, NULL_TREE);
 }
@@ -453,7 +453,7 @@ build_constants_constructor (void)
   if (outgoing_cpool->count > 0)
     {
       tree data_decl, tags_decl, tags_type;
-      tree max_index = build_int_cst (sizetype, outgoing_cpool->count - 1, 0);
+      tree max_index = build_int_cst (sizetype, outgoing_cpool->count - 1);
       tree index_type = build_index_type (max_index);
 
       /* Add dummy 0'th element of constant pool. */
@@ -485,7 +485,7 @@ build_constants_constructor (void)
     }
   START_RECORD_CONSTRUCTOR (cons, constants_type_node);
   PUSH_FIELD_VALUE (cons, "size",
-		    build_int_cst (NULL_TREE, outgoing_cpool->count, 0));
+		    build_int_cst (NULL_TREE, outgoing_cpool->count));
   PUSH_FIELD_VALUE (cons, "tags", tags_value);
   PUSH_FIELD_VALUE (cons, "data", data_value);
   FINISH_RECORD_CONSTRUCTOR (cons);

@@ -43,7 +43,7 @@ convert_to_pointer (tree type, tree expr)
 {
   if (integer_zerop (expr))
     {
-      expr = build_int_cst (type, 0, 0);
+      expr = build_int_cst (type, 0);
       return expr;
     }
 

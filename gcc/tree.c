@@ -428,11 +428,26 @@ copy_list (tree list)
 }
 
 
+/* Create an INT_CST node with a LOW value sign extended.  */
+
+tree build_int_cst (tree type, HOST_WIDE_INT low)
+{
+  return build_int_cst_wide (type, low,
+			     low < 0 ? -1 : 0);
+}
+
+/* Create an INT_CST node with a LOW value zero extended.  */
+
+tree build_int_cstu (tree type, unsigned HOST_WIDE_INT low)
+{
+  return build_int_cst_wide (type, low, 0);
+}
+
 /* Create an INT_CST node of TYPE and value HI:LOW.  If TYPE is NULL,
    integer_type_node is used.  */
 
 tree
-build_int_cst (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
+build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 {
   tree t;
   int ix = -1;
@@ -5328,7 +5343,7 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
   layout_type (t);
 
   {
-    tree index = build_int_cst (NULL_TREE, nunits - 1, 0);
+    tree index = build_int_cst (NULL_TREE, nunits - 1);
     tree array = build_array_type (innertype, build_index_type (index));
     tree rt = make_node (RECORD_TYPE);
 
@@ -5405,7 +5420,7 @@ build_common_tree_nodes (bool signed_char, bool signed_sizetype)
      boolean_type_node before calling build_common_tree_nodes_2.  */
   boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
-  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1, 0);
+  TYPE_MAX_VALUE (boolean_type_node) = build_int_cst (boolean_type_node, 1);
   TYPE_PRECISION (boolean_type_node) = 1;
 
   /* Fill in the rest of the sized types.  Reuse existing type nodes
@@ -5434,9 +5449,9 @@ void
 build_common_tree_nodes_2 (int short_double)
 {
   /* Define these next since types below may used them.  */
-  integer_zero_node = build_int_cst (NULL_TREE, 0, 0);
-  integer_one_node = build_int_cst (NULL_TREE, 1, 0);
-  integer_minus_one_node = build_int_cst (NULL_TREE, -1, -1);
+  integer_zero_node = build_int_cst (NULL_TREE, 0);
+  integer_one_node = build_int_cst (NULL_TREE, 1);
+  integer_minus_one_node = build_int_cst (NULL_TREE, -1);
 
   size_zero_node = size_int (0);
   size_one_node = size_int (1);
@@ -5455,8 +5470,7 @@ build_common_tree_nodes_2 (int short_double)
   TYPE_ALIGN (void_type_node) = BITS_PER_UNIT;
   TYPE_USER_ALIGN (void_type_node) = 0;
 
-  null_pointer_node = build_int_cst (build_pointer_type (void_type_node),
-				     0, 0);
+  null_pointer_node = build_int_cst (build_pointer_type (void_type_node), 0);
   layout_type (TREE_TYPE (null_pointer_node));
 
   ptr_type_node = build_pointer_type (void_type_node);

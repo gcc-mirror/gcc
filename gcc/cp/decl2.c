@@ -2351,7 +2351,7 @@ start_static_initialization_or_destruction (tree decl, int initp)
   guard_if_stmt = begin_if_stmt ();
   cond = cp_build_binary_op (EQ_EXPR,
 			     priority_decl,
-			     build_int_cst (NULL_TREE, priority, 0));
+			     build_int_cst (NULL_TREE, priority));
   init_cond = initp ? integer_one_node : integer_zero_node;
   init_cond = cp_build_binary_op (EQ_EXPR,
 				  initialize_p_decl,
@@ -2602,10 +2602,10 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
 	      body = start_objects (function_key, priority);
 
 	    arguments = tree_cons (NULL_TREE,
-				   build_int_cst (NULL_TREE, priority, 0), 
+				   build_int_cst (NULL_TREE, priority), 
 				   NULL_TREE);
 	    arguments = tree_cons (NULL_TREE,
-				   build_int_cst (NULL_TREE, constructor_p, 0),
+				   build_int_cst (NULL_TREE, constructor_p),
 				   arguments);
 	    finish_expr_stmt (build_function_call (fndecl, arguments));
 	  }

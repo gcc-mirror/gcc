@@ -405,7 +405,7 @@ get_trampoline_type (void)
       align = STACK_BOUNDARY;
     }
 
-  t = build_index_type (build_int_cst (NULL_TREE, size - 1, 0));
+  t = build_index_type (build_int_cst (NULL_TREE, size - 1));
   t = build_array_type (char_type_node, t);
   t = build_decl (FIELD_DECL, get_identifier ("__data"), t);
   DECL_ALIGN (t) = align;
@@ -489,7 +489,7 @@ get_nl_goto_field (struct nesting_info *info)
       size = size + 1;
 
       type = build_array_type
-	(type, build_index_type (build_int_cst (NULL_TREE, size, 0)));
+	(type, build_index_type (build_int_cst (NULL_TREE, size)));
 
       field = make_node (FIELD_DECL);
       DECL_NAME (field) = get_identifier ("__nl_goto_buf");

@@ -376,7 +376,7 @@ init_eh (void)
 			 integer_type_node);
       DECL_FIELD_CONTEXT (f_cs) = sjlj_fc_type_node;
 
-      tmp = build_index_type (build_int_cst (NULL_TREE, 4 - 1, 0));
+      tmp = build_index_type (build_int_cst (NULL_TREE, 4 - 1));
       tmp = build_array_type (lang_hooks.types.type_for_mode (word_mode, 1),
 			      tmp);
       f_data = build_decl (FIELD_DECL, get_identifier ("__data"), tmp);
@@ -392,19 +392,17 @@ init_eh (void)
 
 #ifdef DONT_USE_BUILTIN_SETJMP
 #ifdef JMP_BUF_SIZE
-      tmp = build_int_cst (NULL_TREE, JMP_BUF_SIZE - 1, 0);
+      tmp = build_int_cst (NULL_TREE, JMP_BUF_SIZE - 1);
 #else
       /* Should be large enough for most systems, if it is not,
 	 JMP_BUF_SIZE should be defined with the proper value.  It will
 	 also tend to be larger than necessary for most systems, a more
 	 optimal port will define JMP_BUF_SIZE.  */
-      tmp = build_int_cst (NULL_TREE,
-			   FIRST_PSEUDO_REGISTER + 2 - 1, 0);
+      tmp = build_int_cst (NULL_TREE, FIRST_PSEUDO_REGISTER + 2 - 1);
 #endif
 #else
       /* builtin_setjmp takes a pointer to 5 words.  */
-      tmp = build_int_cst (NULL_TREE,
-			   5 * BITS_PER_WORD / POINTER_SIZE - 1, 0);
+      tmp = build_int_cst (NULL_TREE, 5 * BITS_PER_WORD / POINTER_SIZE - 1);
 #endif
       tmp = build_index_type (tmp);
       tmp = build_array_type (ptr_type_node, tmp);
@@ -1416,7 +1414,7 @@ assign_filter_values (void)
 	      for (;tp_node; tp_node = TREE_CHAIN (tp_node))
 		{
 		  int flt = add_ttypes_entry (ttypes, TREE_VALUE (tp_node));
-		  tree flt_node = build_int_cst (NULL_TREE, flt, 0);
+		  tree flt_node = build_int_cst (NULL_TREE, flt);
 
 		  r->u.catch.filter_list
 		    = tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);
@@ -1427,7 +1425,7 @@ assign_filter_values (void)
 	      /* Get a filter value for the NULL list also since it will need
 		 an action record anyway.  */
 	      int flt = add_ttypes_entry (ttypes, NULL);
-	      tree flt_node = build_int_cst (NULL_TREE, flt, 0);
+	      tree flt_node = build_int_cst (NULL_TREE, flt);
 
 	      r->u.catch.filter_list
 		= tree_cons (NULL_TREE, flt_node, r->u.catch.filter_list);

@@ -786,9 +786,10 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
       if (tree_int_cst_sgn (i) < 0)
         {
           pp_c_char (pp, '-');
-          i = build_int_cst (NULL_TREE,
-			     -TREE_INT_CST_LOW (i),
-			     ~TREE_INT_CST_HIGH (i) + !TREE_INT_CST_LOW (i));
+          i = build_int_cst_wide (NULL_TREE,
+				  -TREE_INT_CST_LOW (i),
+				  ~TREE_INT_CST_HIGH (i)
+				  + !TREE_INT_CST_LOW (i));
         }
       sprintf (pp_buffer (pp)->digit_buffer,
                HOST_WIDE_INT_PRINT_DOUBLE_HEX,
