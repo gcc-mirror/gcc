@@ -1,3 +1,40 @@
+2004-12-17  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (x86_64_reg_class_name): Re-indent.
+	(classify_argument, examine_argument, construct_container,
+	merge_classes): Remove prototypes.
+	(type_natural_mode): Split out from ...
+	(function_arg): ... here.
+	(gen_reg_or_parallel): Remove alt_mode argument.  Update callers.
+	Use orig_mode unless it's BLKmode.
+	(construct_container): Add orig_mode argument.  Update callers.
+	Use gen_reg_or_parallel for SSE registers.
+	(ix86_function_value): Use type_natural_mode.
+	(ix86_gimplify_va_arg): Likewise.
+	(ix86_hard_regno_mode_ok): Always accept all SSE, MMX, 3DNOW modes in
+	SSE registers; always accept all MMX, 3DNOW modes in MMX registers.
+	* config/i386/i386.h (VALID_SSE2_REG_MODE): Don't include
+	VALID_MMX_REG_MODE.
+	* config/i386/i386.md (attribute mode): Add V1DF.
+	(movsi_1): Use 'x' instead of 'Y' constraints.
+	(movsi_1_nointernunit, movdi_2, movdi_1_rex64): Likewise.
+	(movdi_1_rex64_nointerunit): Likewise.
+	(movdf_nointeger, movdf_integer): Likewise.  Handle SSE1.
+	(movsf_1, movsf_1_nointerunit): Line up constraint alternatives.
+	(swapsf): Use fp_register_operand, don't disable for TARGET_SSE.
+	(swapdf): Likewise.
+	(swapxf): Enable only for TARGET_80387.
+	(movv2sf, movv2sf_internal, pushv2sf): Enable for MMX.
+	(movtf): Remove double-check for TARGET_64BIT.
+	(movv2df_internal): Enable for SSE1.
+	(movv8hi_internal, movv16qi_internal): Likewise.
+	(movv2df, movv8hi, movv16qi): Likewise.
+	(pushv2di, pushv8hi, pushv16qi, pushv4si): Likewise.
+	(pushdi2_rex64, movv4sf_internal, movv4si_internal, movv2di_internal,
+	movv8qi_internal, movv4hi_internal, movv2sf_internal,
+	movv2df_internal, movv8hi_internal, movv16qi_internal,
+	movti_internal): Add leading '*' to name.
+
 2004-12-17  Dale Johannesen  <dalej@apple.com>
 
 	* c-decl.c (diagnose_mismatched_decls):  Accept mismatched
