@@ -878,8 +878,8 @@
    (set_attr "length" "1")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
+	(match_operand:SI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
@@ -890,11 +890,9 @@
    ldw%M1 %1,%0
    stw%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,1")])
 
 ;; Load indexed.  We don't use unscaled modes since they can't be used
 ;; unless we can tell which of the registers is the base and which is
@@ -1069,8 +1067,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
+	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1081,11 +1079,9 @@
    ldh%M1 %1,%0
    sth%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,1")])
 
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
@@ -1146,8 +1142,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*r,!fx,!fx")
-	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fx,!*r,!fxM"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
+	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
@@ -1158,11 +1154,9 @@
    ldb%M1 %1,%0
    stb%M0 %r1,%0
    mtsar %r1
-   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   stw %1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,load,fpload,fpalu")
-   (set_attr "length" "1,1,1,1,1,1,1,2,2,1")])
+  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
+   (set_attr "length" "1,1,1,1,1,1,1,1")])
 
 (define_insn ""
   [(set (match_operand:QI 3 "register_operand" "=r")
@@ -1261,9 +1255,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,*r,Q,?Q,fx,*&r,?fx,?*r")
+			  "=fx,*r,Q,?Q,fx,*&r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fxG,*rG,fx,*r,Q,Q,*r,fx"))]
+			  "fxG,*rG,fx,*r,Q,Q"))]
   "register_operand (operands[0], DFmode)
    || reg_or_0_operand (operands[1], DFmode)"
   "*
@@ -1273,8 +1267,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpalu,move,fpstore,store,fpload,load,fpload,load")
-   (set_attr "length" "1,2,1,2,1,2,3,3")])
+  [(set_attr "type" "fpalu,move,fpstore,store,fpload,load")
+   (set_attr "length" "1,2,1,2,1,2")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=fx")
@@ -1394,9 +1388,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,fx,fx,*r")
+			  "=r,Q,&r,&r,fx")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,Q,i,*r,fxM,fx"))]
+			  "rM,r,Q,i,fxM"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1406,12 +1400,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-;; Use move in the last type..  This case happens often with xmpyu
-;; and in nearly all cases we only access the data from the first 
-;; of the two loads generated, and that can't stall on a data conflict
-;; because of the second load.
-  [(set_attr "type" "move,store,load,misc,fpload,fpalu,move")
-   (set_attr "length" "2,3,3,3,3,1,3")])
+  [(set_attr "type" "move,store,load,misc,fpalu")
+   (set_attr "length" "2,3,3,3,1")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1444,22 +1434,20 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,r,*r,fx,fx,r,Q,Q")
+			  "=fx,r,fx,r,Q,Q")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fxG,rG,!fx,!*r,Q,Q,fx,rG"))]
+			  "fxG,rG,Q,Q,fx,rG"))]
   "register_operand (operands[0], SFmode)
    || reg_or_0_operand (operands[1], SFmode)"
   "@
    fcpy,sgl %r1,%0
    copy %r1,%0
-   fstws %1,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   stw %r1,-16(0,%%r30)\;fldws -16(0,%%r30),%0
    fldws%F1 %1,%0
    ldw%M1 %1,%0
    fstws%F0 %r1,%0
    stw%M0 %r1,%0"
-  [(set_attr "type" "fpalu,move,load,fpload,fpload,load,fpstore,store")
-   (set_attr "length" "1,1,2,2,1,1,1,1")])
+  [(set_attr "type" "fpalu,move,fpload,load,fpstore,store")
+   (set_attr "length" "1,1,1,1,1,1")])
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=fx")
@@ -1642,26 +1630,20 @@
 ;; Truncation is performed as part of the conversion.
 
 (define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,fx")
-	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fx,fx"))))
-   (clobber (match_scratch:SI 2 "=&fx,X"))]
+  [(set (match_operand:SI 0 "register_operand" "=fx")
+	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "fx"))))]
   ""
-  "@
-   fcnvfxt,sgl,sgl %1,%2\;fstws %2,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   fcnvfxt,sgl,sgl %1,%0"
-  [(set_attr "type" "fpalu,fpalu")
-   (set_attr "length" "3,1")])
+  "fcnvfxt,sgl,sgl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
 
 (define_insn "fix_truncdfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r,fx")
-	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fx,fx"))))
-   (clobber (match_scratch:SI 2 "=&fx,X"))]
+  [(set (match_operand:SI 0 "register_operand" "=fx")
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "fx"))))]
   ""
-  "@
-   fcnvfxt,dbl,sgl %1,%2\;fstws %2,-16(0,%%r30)\;ldw -16(0,%%r30),%0
-   fcnvfxt,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu,fpalu")
-   (set_attr "length" "3,1")])
+  "fcnvfxt,dbl,sgl %1,%0"
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "1")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=fx")
