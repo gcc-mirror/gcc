@@ -1,3 +1,8 @@
+2003-12-21  Bernardo Innocenti  <bernie@develer.com>
+ 
+ 	* configure.in (*-*-uclinux): Exclude newlib, libgloss and rda.
+ 	* configure: Regenerated.
+
 2003-12-16  Jan Hubicka  <jh@suse.cz>
 
 	* MAINTAINERS: Add myself as callgraph maintainer.
