@@ -5384,7 +5384,7 @@ tree
 finish_enum (enumtype, values)
      register tree enumtype, values;
 {
-  register tree pair;
+  register tree pair, tem;
   tree minnode = 0, maxnode = 0;
   register HOST_WIDE_INT maxvalue = 0;
   register HOST_WIDE_INT minvalue = 0;
@@ -5473,6 +5473,19 @@ finish_enum (enumtype, values)
     TREE_PURPOSE (pair) = DECL_NAME (TREE_PURPOSE (pair));
 
   TYPE_VALUES (enumtype) = values;
+
+  /* Fix up all variant types of this enum type.  */
+  for (tem = TYPE_MAIN_VARIANT (enumtype); tem; tem = TYPE_NEXT_VARIANT (tem))
+    {
+      TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
+      TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
+      TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
+      TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
+      TYPE_MODE (tem) = TYPE_MODE (enumtype);
+      TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
+      TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+      TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
+    }
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, toplevel);
