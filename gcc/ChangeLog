@@ -1,3 +1,13 @@
+Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cppspec.c: Insert -no-gcc into command line unless -gcc was
+	given by user.
+	* gcc.c (default_compilers): Define __GNUC__ and
+	__GNUC_MINOR__ only if -no-gcc was not given.
+	* objc/lang-specs.h: Likewise.
+	* cpp.texi: Document -x and -std options; explain that -lang
+	is no longer supported.  Minor related corrections.
+
 Mon May 17 23:56:39 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* Makefile.in (stmp-fixproto): Pass location of mkinstalldirs to
