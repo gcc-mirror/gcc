@@ -1037,15 +1037,17 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
     case GDK_KEY_PRESS:
     case GDK_KEY_RELEASE:
       {
-        GtkWindow *window;
         GdkWindow *obj_window;
         jobject *focus_obj_ptr = NULL;
+	int generates_key_typed = 0;
 
         /* A widget with a grab will get key events */
 	if (!GTK_IS_WINDOW (widget))
 	    *focus_obj_ptr = peer;
 	else
 	  {
+            GtkWindow *window;
+
             /* Check if we have an enabled focused widget in this window.
 	       If not don't handle the event. */
 	    window = GTK_WINDOW (widget);
@@ -1079,6 +1081,9 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
             /* If the window has no jobject attached we can't send anything */
 	    if (!focus_obj_ptr)
 	      return FALSE;
+	      
+	    /* Should we generate an AWT_KEY_TYPED event? */
+	    generates_key_typed = generates_key_typed_event (event, window->focus_widget);
 	  }	
 
 	if (event->type == GDK_KEY_PRESS)	
@@ -1092,7 +1097,7 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
                                         keyevent_to_awt_keychar (event),
                                         keysym_to_awt_keylocation (event));
 
-            if (generates_key_typed_event (event, window->focus_widget))
+            if (generates_key_typed)
               {
                 (*gdk_env)->CallVoidMethod (gdk_env, *focus_obj_ptr,
                                             postKeyEventID,
@@ -1159,10 +1164,11 @@ connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...)
 {
   va_list ap;
   jobject *obj;
+void *ptr = NSA_GET_PTR (env, peer_obj);
 
-  obj = (jobject *) malloc (sizeof (jobject));
-  *obj = (*env)->NewGlobalRef (env, peer_obj);
-  //g_print("Connection obj %p\n", peer_obj);
+  obj = NSA_GET_GLOBAL_REF (env, peer_obj);
+  //g_print("Connection obj %s\n", gtk_widget_get_name (GTK_WIDGET (ptr)));
+  g_assert (obj);
 
   va_start (ap, nwindows);
   {
@@ -1170,7 +1176,6 @@ connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...)
   for (i = 0; i < nwindows; i++)
     {
       GdkWindow* attach = (va_arg (ap, GdkWindow *));
-      //g_print("attach peer obj %p and %p\n", peer_obj, attach);
       attach_jobject(attach, obj);
     }
   }

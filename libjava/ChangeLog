@@ -1,3 +1,88 @@
+2003-12-12  Fernando Nasser  <fnasser@redhat.com>
+
+	* jni/gtk-peer/gtkpeer.h: Extend NSA set of macros to handle a second
+	native state table -- native_global_ref_table.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c: Define
+	native_global_ref_table pointer.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkGenericPeer_dispose): Make sure JNI
+	global reference is deleted and memory allocated for pointer freed.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(pre_event_handler): Remove compilation warning.
+	(connect_awt_hook): Use saved JNI global reference instead of creating
+	a new one.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create): Save JNI global
+	reference to the Java object.
+	(Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectSignals): Remove
+	unused variable declaration and add comment.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create): Save JNI global
+	reference to the Java object.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate): Ditto.
+	(Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.
+	(item_toggled): Add debug statement.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create): Save JNI global
+	reference to the Java object.
+	(connect_choice_item_selectable_hook): Use saved JNI global references
+	instead of JNI local reference.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkEmbeddedWindowPeer_create): Save JNI
+	global reference to the Java object.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_create): Save JNI global
+	reference to the Java object.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkLabelPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkMenuBarPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkMenuPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkListPeer_create): Ditto.
+	(Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.
+	(item_selected): Add debug statement.
+	(item_unselected): Add debug statement.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_create): Save JNI global
+	reference to the Java object.
+	Connect "activate" signal handler using global JNI reference.
+	(connect_activate_hook): Removed in favor of inline code.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkPanelPeer_create): Save JNI global
+	reference to the Java object.
+	(Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.  Add FIXME comment.
+	(Java_gnu_java_awt_peer_gtk_GtkPanelPeer_gtkPanelNew): Save JNI global
+	reference to the Java object.  Add FIXME comment.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create): Save JNI global
+	reference to the Java object.
+	(Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectSignals): Use
+	saved JNI global reference instead of JNI local reference.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create): Save JNI global
+	reference to the Java object.
+	(Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals): Use saved
+	JNI global reference instead of JNI local reference.
+
 2003-12-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/Format.java (serialVersionUID): Fixed value.

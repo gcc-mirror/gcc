@@ -45,8 +45,13 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
 {
   GtkWidget *widget;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   widget = gtk_entry_new ();
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, widget);

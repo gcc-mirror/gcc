@@ -82,6 +82,9 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
 {
   GtkWidget *button;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
 
   if (group == NULL)
@@ -98,6 +101,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
 	}
     }
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), state);
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, button);
@@ -108,11 +112,13 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
 
   gdk_threads_enter ();
 
   g_signal_connect (G_OBJECT (ptr), "toggled",
-		      GTK_SIGNAL_FUNC (item_toggled), obj);
+		      GTK_SIGNAL_FUNC (item_toggled), *gref);
 
   gdk_threads_leave ();
 
@@ -161,6 +167,7 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeSetCheckboxGroup
 static void
 item_toggled (GtkToggleButton *item, jobject peer)
 {
+  //g_print ("toggled\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer,
 			      postItemEventID,
 			      peer,

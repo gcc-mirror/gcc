@@ -58,7 +58,11 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
 {
   GtkWidget *list, *sw;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   list = gtk_clist_new (1);
   gtk_widget_show (list);
   sw = gtk_scrolled_window_new (NULL, NULL);
@@ -66,6 +70,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
 				  GTK_POLICY_AUTOMATIC,
 				  GTK_POLICY_AUTOMATIC);
   gtk_container_add (GTK_CONTAINER (sw), list);
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, sw);
@@ -90,12 +95,12 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectJObject
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
-  (JNIEnv *env, jobject peer_obj)
+  (JNIEnv *env, jobject obj)
 {
   GtkCList *list;
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, peer_obj);
+  void *ptr = NSA_GET_PTR (env, obj);
+  jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  g_assert (gref);
 
   gdk_threads_enter ();
 
@@ -106,17 +111,17 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
   list = CLIST_FROM_SW (ptr);
 
   g_signal_connect (G_OBJECT (list), "select_row", 
-		      GTK_SIGNAL_FUNC (item_select), peer_obj);
+		      GTK_SIGNAL_FUNC (item_select), *gref);
 
   g_signal_connect (G_OBJECT (list), "unselect_row", 
-		      GTK_SIGNAL_FUNC (item_unselect), peer_obj);
+		      GTK_SIGNAL_FUNC (item_unselect), *gref);
 
   /* Connect the superclass signals.  */
   /* FIXME: Cannot do that here or it will get the sw and not the list.
      We must a generic way of doing this. */
   /* Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, peer_obj); */
   g_signal_connect (GTK_OBJECT (list), "event", 
-                    G_CALLBACK (pre_event_handler), peer_obj);
+                    G_CALLBACK (pre_event_handler), *gref);
 
   gdk_threads_leave ();
 }
@@ -319,6 +324,7 @@ item_select (GtkCList *list __attribute__((unused)),
 	     GdkEventButton *event __attribute__((unused)), 
 	     jobject peer_obj)
 {
+  //g_print ("select_row\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,
@@ -332,6 +338,7 @@ item_unselect (GtkCList *list __attribute__((unused)),
 	       GdkEventButton *event __attribute__((unused)),
 	       jobject peer_obj)
 {
+  //g_print ("unselect_row\n");
   (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,

@@ -45,8 +45,13 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create
 {
   gpointer window;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   window = gtk_scrolled_window_new (NULL, NULL);
+
   gdk_threads_leave ();
 
   NSA_SET_PTR (env, obj, window);

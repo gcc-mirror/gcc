@@ -40,26 +40,35 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkMenuItemPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 
-static void
-connect_activate_hook (JNIEnv *, jobject, GtkMenuItem *);
+static void item_activate (GtkMenuItem *item __attribute__((unused)),
+                           jobject *peer_obj);
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuItemPeer_create
   (JNIEnv *env, jobject obj, jstring label)
 {
   GtkWidget *widget;
   const char *str;
+  jobject *gref;
+
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+  gref = NSA_GET_GLOBAL_REF (env, obj);
 
   str = (*env)->GetStringUTFChars (env, label, NULL);
 
   gdk_threads_enter ();
-
+  
   if (strcmp (str, "-") == 0) /* "-" signals that we need a separator */
     widget = gtk_menu_item_new ();
   else
     widget = gtk_menu_item_new_with_label (str);
 
-  connect_activate_hook (env, obj, GTK_MENU_ITEM (widget));
+  /* Connect activate hook */
+  g_signal_connect (G_OBJECT (widget), "activate", 
+		      GTK_SIGNAL_FUNC (item_activate), *gref);
+
   gtk_widget_show (widget);
+
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, label, str);
@@ -101,14 +110,3 @@ item_activate (GtkMenuItem *item __attribute__((unused)), jobject *peer_obj)
 			      postMenuActionEventID);
 }
 
-static void
-connect_activate_hook (JNIEnv *env, jobject peer_obj, GtkMenuItem *item)
-{
-  jobject *obj;
-
-  obj = (jobject *) malloc (sizeof (jobject));
-  *obj = (*env)->NewGlobalRef (env, peer_obj);
-
-  g_signal_connect (G_OBJECT (item), "activate", 
-		      GTK_SIGNAL_FUNC (item_activate), obj);
-}

@@ -51,7 +51,11 @@ Java_gnu_java_awt_peer_gtk_GtkChoicePeer_create
   GtkOptionMenu *option_menu;
   GtkRequisition child_requisition;
 
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
+
   gdk_threads_enter ();
+  
   option_menu = GTK_OPTION_MENU (gtk_option_menu_new ());
   menu = gtk_menu_new ();
   gtk_widget_show (menu);
@@ -193,12 +197,19 @@ connect_choice_item_selectable_hook (JNIEnv *env, jobject peer_obj,
 				     GtkItem *item, jobject item_obj)
 {
   struct item_event_hook_info *ie;
+  jobject *peer_objGlobPtr;
+  jobject *item_objGlobPtr;
 
   ie = (struct item_event_hook_info *) 
     malloc (sizeof (struct item_event_hook_info));
 
-  ie->peer_obj = (*env)->NewGlobalRef (env, peer_obj);
-  ie->item_obj = (*env)->NewGlobalRef (env, item_obj);
+  peer_objGlobPtr = NSA_GET_GLOBAL_REF (env, peer_obj);
+  g_assert (peer_objGlobPtr);
+  item_objGlobPtr = NSA_GET_GLOBAL_REF (env, item_obj);
+  g_assert (item_objGlobPtr);
+
+  ie->peer_obj = *peer_objGlobPtr;
+  ie->item_obj = *item_objGlobPtr;
 
   g_signal_connect (G_OBJECT (item), "activate", 
 		      GTK_SIGNAL_FUNC (item_activate), ie);

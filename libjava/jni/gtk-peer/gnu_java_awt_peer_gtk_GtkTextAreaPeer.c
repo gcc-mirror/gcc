@@ -46,8 +46,11 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
 {
   GtkWidget *text, *sw;
 
-  gdk_threads_enter ();
+  /* Create global reference and save it for future use */
+  NSA_SET_GLOBAL_REF (env, obj);
 
+  gdk_threads_enter ();
+  
   text = gtk_text_view_new ();
   gtk_widget_show (text);
 
