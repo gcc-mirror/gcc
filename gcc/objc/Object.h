@@ -112,10 +112,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
         /* Archiving */
 + (int)version;
 + setVersion:(int)aVersion;
+
+#ifndef __alpha__ /* TypedStream not supported on alpha yet.  */
 + (int)streamVersion: (TypedStream*)aStream;
 
 - read: (TypedStream*)aStream;
 - write: (TypedStream*)aStream;
+#endif
+
 - awake;
 
 @end
