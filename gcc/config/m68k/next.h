@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running NeXTSTEP
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -175,7 +175,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	GO_IF_INDEXABLE_BASE(X, ADDR)
 #define GO_IF_INDEXABLE_BASE(X, ADDR)	\
-{ if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR; }
+{ if (LEGITIMATE_BASE_REG_P (X)) goto ADDR; }
 
 /* This accounts for the return pc and saved fp on the m68k. */
 
