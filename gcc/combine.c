@@ -6512,6 +6512,14 @@ if_then_else_cond (x, ptrue, pfalse)
       if ((cond0 != 0 || cond1 != 0)
 	  && ! (cond0 != 0 && cond1 != 0 && ! rtx_equal_p (cond0, cond1)))
 	{
+	  /* If if_then_else_cond returned zero, then true/false are the
+	     same rtl.  We must copy one of them to prevent invalid rtl
+	     sharing.  */
+	  if (cond0 == 0)
+	    true0 = copy_rtx (true0);
+	  else if (cond1 == 0)
+	    true1 = copy_rtx (true1);
+
 	  *ptrue = gen_binary (code, mode, true0, true1);
 	  *pfalse = gen_binary (code, mode, false0, false1);
 	  return cond0 ? cond0 : cond1;
