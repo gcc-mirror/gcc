@@ -1,3 +1,8 @@
+2005-02-08  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/19803
+	* predict.c (PROB_VERY_UNLIKELY): Use 1% instead of 10%.
+
 2005-02-07  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/m68k/t-rtems (MULTILIB_MATCHES): Let m528x match m5200.
