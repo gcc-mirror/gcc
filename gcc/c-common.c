@@ -37,6 +37,10 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
+/* Nonzero means the expression being parsed will never be evaluated.
+   This is a count, since unevaluated expressions can nest.  */
+int skip_evaluation;
+
 enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
 	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS};
@@ -1602,7 +1606,8 @@ overflow_warning (value)
       && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
-      warning ("integer overflow in expression");
+      if (skip_evaluation == 0)
+	warning ("integer overflow in expression");
     }
   else if ((TREE_CODE (value) == REAL_CST
 	    || (TREE_CODE (value) == COMPLEX_CST
@@ -1610,7 +1615,8 @@ overflow_warning (value)
 	   && TREE_OVERFLOW (value))
     {
       TREE_OVERFLOW (value) = 0;
-      warning ("floating point overflow in expression");
+      if (skip_evaluation == 0)
+	warning ("floating point overflow in expression");
     }
 }
 
@@ -1626,6 +1632,7 @@ unsigned_conversion_warning (result, operand)
   if (TREE_CODE (operand) == INTEGER_CST
       && TREE_CODE (TREE_TYPE (result)) == INTEGER_TYPE
       && TREE_UNSIGNED (TREE_TYPE (result))
+      && skip_evaluation == 0
       && !int_fits_type_p (operand, TREE_TYPE (result)))
     {
       if (!int_fits_type_p (operand, signed_type (TREE_TYPE (result))))
@@ -1661,10 +1668,11 @@ convert_and_check (type, expr)
 		&& TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr))))
 	    /* If EXPR fits in the unsigned version of TYPE,
 	       don't warn unless pedantic.  */
-	    if (pedantic
-		|| TREE_UNSIGNED (type)
-		|| ! int_fits_type_p (expr, unsigned_type (type)))
-	      warning ("overflow in implicit constant conversion");
+	    if ((pedantic
+		 || TREE_UNSIGNED (type)
+		 || ! int_fits_type_p (expr, unsigned_type (type)))
+	        && skip_evaluation == 0)
+		warning ("overflow in implicit constant conversion");
 	}
       else
 	unsigned_conversion_warning (t, expr);
