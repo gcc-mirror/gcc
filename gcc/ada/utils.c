@@ -688,6 +688,18 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
   DECL_BUILT_IN_CLASS (setjmp_decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (setjmp_decl) = BUILT_IN_SETJMP;
 
+  /* update_setjmp_buf updates a setjmp buffer from the current stack pointer
+     address.  */
+  update_setjmp_buf_decl
+    = create_subprog_decl
+      (get_identifier ("__builtin_update_setjmp_buf"), NULL_TREE,
+       build_function_type (void_type_node,
+			    tree_cons (NULL_TREE,  jmpbuf_ptr_type, endlink)),
+       NULL_TREE, 0, 1, 1, 0);
+
+  DECL_BUILT_IN_CLASS (update_setjmp_buf_decl) = BUILT_IN_NORMAL;
+  DECL_FUNCTION_CODE (update_setjmp_buf_decl) = BUILT_IN_UPDATE_SETJMP_BUF;
+
   main_identifier_node = get_identifier ("main");
 }
 

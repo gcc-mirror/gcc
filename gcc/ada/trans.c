@@ -265,6 +265,8 @@ gnat_to_gnu (Node_Id gnat_node)
      we do generates RTL and returns error_mark_node.  */
   if (!global_bindings_p ())
     {
+      do_pending_stack_adjust ();
+      emit_queue ();
       start_sequence ();
       emit_note (NOTE_INSN_DELETED);
       made_sequence = true;
@@ -285,14 +287,19 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gigi_abort (303);
 	}
 
+      do_pending_stack_adjust ();
+      emit_queue ();
       gnu_root = make_expr_stmt_from_rtl (first_nondeleted_insn (get_insns ()),
 					  gnat_node);
       end_sequence ();
     }
   else if (made_sequence)
     {
-      rtx insns = first_nondeleted_insn (get_insns ());
+      rtx insns;
 
+      do_pending_stack_adjust ();
+      emit_queue ();
+      insns = first_nondeleted_insn (get_insns ());
       end_sequence ();
 
       if (insns)

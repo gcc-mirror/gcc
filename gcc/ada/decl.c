@@ -1048,7 +1048,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| (flag_stack_check && ! STACK_CHECK_BUILTIN
 		    && 0 < compare_tree_int (DECL_SIZE_UNIT (gnu_decl),
 					     STACK_CHECK_MAX_VAR_SIZE))))
-	  update_setjmp_buf (TREE_VALUE (gnu_block_stack));
+	  expand_expr_stmt
+	    (build_call_1_expr (update_setjmp_buf_decl,
+				build_unary_op
+				(ADDR_EXPR, NULL_TREE,
+				 TREE_VALUE (gnu_block_stack))));
 
 	/* If this is a public constant or we're not optimizing and we're not
 	   making a VAR_DECL for it, make one just for export or debugger
