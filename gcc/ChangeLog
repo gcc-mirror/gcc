@@ -26,6 +26,19 @@ Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 	* config/sparc/linux-aout.h (TARGET_LIVE_G0,
 	TARGET_BROKEN_SAVERESTORE): Likewise.
 
+	* config/sparc/sparc.h (SPARC_DEFAULT_CMODEL): Default to CM_32.
+	(CONDITIONAL_REGISTER_USAGE): For block profiling fix %g4 on sparc64,
+	not %g2.
+	(MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Use %g4 instead of %g2
+	as sparc64 block profiling register.
+	* config/sparc/sparc.c (sparc_override_options): Allow block
+	profiling with -m32.
+	(sparc_block_profiler): Use %g4 instead of %g2 as sparc64 block
+	profiling register.
+	* config/sparc/linux64.h (MACHINE_STATE_*): Only provide these
+	macros on TARGET_ARCH32. sparc.h has macros good enough for sparc64.
+	* config/sparc/sol2.h (MACHINE_STATE_*): Likewise.
+
 1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* combine.c (combine_simplify_rtx): Don't make shared rtl.

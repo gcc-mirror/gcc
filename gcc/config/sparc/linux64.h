@@ -356,6 +356,7 @@ do {									\
 #undef TARGET_BROKEN_SAVERESTORE
 #define TARGET_BROKEN_SAVERESTORE	0
 
+#if TARGET_ARCH32
 /* Override MACHINE_STATE_{SAVE,RESTORE} because we have special
    traps available which can get and set the condition codes
    reliably.  */
@@ -374,6 +375,7 @@ do {									\
 	       "ta	0x21\n\t"			\
 	       : /* no outputs */			\
 	       : "r" (ms_flags), "r" (ms_saveret));
+#endif /* sparc32 */
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */

@@ -343,7 +343,7 @@ sparc_override_options ()
   sparc_init_modes ();
 
   if ((profile_flag || profile_block_flag)
-      && sparc_cmodel != CM_MEDLOW)
+      && sparc_cmodel != CM_32 && sparc_cmodel != CM_MEDLOW)
     {
       error ("profiling does not support code models other than medlow");
     }
@@ -8077,32 +8077,33 @@ sparc_block_profiler(file, blockno)
      int blockno;
 {
   char LPBX[32];
+  int bbreg = TARGET_ARCH64 ? 4 : 2;
 
   if (profile_block_flag == 2)
     {
       ASM_GENERATE_INTERNAL_LABEL (LPBX, "LPBX", 0);
 
       fprintf (file, "\tsethi\t%%hi(%s__bb),%%g1\n", user_label_prefix);
-      fprintf (file, "\tsethi\t%%hi(%d),%%g2\n", blockno);
+      fprintf (file, "\tsethi\t%%hi(%d),%%g%d\n", blockno, bbreg);
       fprintf (file, "\tor\t%%g1,%%lo(%s__bb),%%g1\n", user_label_prefix);
-      fprintf (file, "\tor\t%%g2,%%lo(%d),%%g2\n", blockno);
+      fprintf (file, "\tor\t%%g%d,%%lo(%d),%%g%d\n", bbreg, blockno, bbreg);
 
-      fputs ("\tst\t%g2,[%g1]\n", file);
+      fprintf (file, "\tst\t%%g%d,[%%g1]\n", bbreg);
 
       fputs ("\tsethi\t%hi(", file);
       assemble_name (file, LPBX);
-      fputs ("),%g2\n", file);
+      fprintf (file, "),%%g%d\n", bbreg);
   
       fputs ("\tor\t%o2,%lo(", file);
       assemble_name (file, LPBX);
-      fputs ("),%g2\n", file);
+      fprintf (file, "),%%g%d\n", bbreg);
   
-      fputs ("\tst\t%g2,[%g1+4]\n", file);
-      fputs ("\tmov\t%o7,%g2\n", file);
+      fprintf (file, "\tst\t%%g%d,[%%g1+4]\n", bbreg);
+      fprintf (file, "\tmov\t%%o7,%%g%d\n", bbreg);
 
       fprintf (file, "\tcall\t%s__bb_trace_func\n\t nop\n", user_label_prefix);
 
-      fputs ("\tmov\t%g2,%o7\n", file);
+      fprintf (file, "\tmov\t%%g%d,%%o7\n", bbreg);
     }
   else if (profile_block_flag != 0)
     {
@@ -8114,13 +8115,19 @@ sparc_block_profiler(file, blockno)
 
       fputs ("\tld\t[%g1+%lo(", file);
       assemble_name (file, LPBX);
-      fprintf (file, "+%d)],%%g2\n", blockno*4);
+      if (TARGET_ARCH64 && USE_AS_OFFSETABLE_LO10)
+	fprintf (file, ")+%d],%%g%d\n", blockno*4, bbreg);
+      else
+	fprintf (file, "+%d)],%%g%d\n", blockno*4, bbreg);
 
-      fputs ("\tadd\t%g2,1,%g2\n", file);
+      fprintf (file, "\tadd\t%%g%d,1,%%g%d\n", bbreg, bbreg);
 
-      fputs ("\tst\t%g2,[%g1+%lo(", file);
+      fprintf (file, "\tst\t%%g%d,[%%g1+%%lo(", bbreg);
       assemble_name (file, LPBX);
-      fprintf (file, "+%d)]\n", blockno*4);
+      if (TARGET_ARCH64 && USE_AS_OFFSETABLE_LO10)
+	fprintf (file, ")+%d]\n", blockno*4);
+      else
+	fprintf (file, "+%d)]\n", blockno*4);
     }
 }
 
