@@ -118,16 +118,19 @@ void x3 (Multivs1 *ii) { ii->f2();}
 void x4 (Multiss2 *ii) { ii->f2();}
 void x5 (Multivv3 *ii) { ii->f2();}
 
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multivv3, 0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multivv3, 0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multiss2, vtable for Base2" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multivs1, vtable for Base2" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multivs1, vtable for Base2" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multisv0, vtable for Side0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multisv0, vtable for Side0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Side0, 0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for VbasedA, 0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for VbasedA, 0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base2, vtable for Base1" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base1, vtable for Base0" } }
-// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base0, 0" } }
+// Use .* because of ia64's convention of marking symbols with "#", which
+// makes it through the c++filt.
+
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multivv3.*0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multivv3.*0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multiss2.*vtable for Base2" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multivs1.*vtable for Base2" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multivs1.*vtable for Base2" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Multisv0.*vtable for Side0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for Multisv0.*vtable for Side0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Side0.*0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for VbasedA.*0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*VTT for VbasedA.*0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base2.*vtable for Base1" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base1.*vtable for Base0" } }
+// { dg-final { scan-assembler-dem "\.vtable_inherit\[ \t\]*vtable for Base0.*0" } }
