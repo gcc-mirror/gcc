@@ -1,3 +1,7 @@
+2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.c-torture/execute/20020529-1.c: New test.
+
 2002-05-27  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/ext/attrib6.C: New test case.
