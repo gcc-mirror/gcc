@@ -1,3 +1,7 @@
+2003-02-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c (cprop_jump): Revert the 2003-02-23 change.
+
 2003-02-25  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
             Richard Henderson  <rth@redhat.com>
 
