@@ -11,6 +11,10 @@ Mon Oct 18 02:38:46 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Mon Oct 18 01:41:35 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* mn10200.md (outline_epilogue_jump): Embed a (return) to indicate
+	to the cfg code that this is a return instruction.
+	* mn10300.md (return_internal): Similarly.
+
 	* combine.c (get_last_value): If the last set of a register
 	is after subst_low_cuid, then we can not use it to determine
 	the register's last value.
