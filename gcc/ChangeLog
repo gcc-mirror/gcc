@@ -1,3 +1,8 @@
+2005-01-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	* cfganal.c (compute_dominance_frontiers_1): Replace with new algorithm
+	(compute_dominance_frontiers): Ditto.
+
 2005-01-19  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	PR target/19529
