@@ -340,7 +340,7 @@ OTHER_FIXINCLUDES_DIRS=
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -489,6 +489,7 @@ FLAGS_TO_PASS = \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CC=set-by-configure" \
 	"CFLAGS=$(CFLAGS)" \
+	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LEX=$(LEX)" \
@@ -1114,7 +1115,8 @@ c-lex.o : c-lex.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h $(srcdir)/c-parse.h \
     input.h flags.h $(srcdir)/c-gperf.h c-pragma.h
 c-aux-info.o : c-aux-info.c  $(CONFIG_H) $(TREE_H) c-tree.h flags.h
 c-convert.o : c-convert.c $(CONFIG_H) $(TREE_H) flags.h
-c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H) c-pragma.h
+c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H) except.h function.h \
+    defaults.h c-pragma.h
 c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
