@@ -1,3 +1,10 @@
+2003-02-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	PR fortran/9038
+	* c-opts.c (sanitize_cpp_opts): Add Fortran front end
+	options to be ignored.
+	(c_common_decode_option): Ignore them when preprocessing.
+
 Thu Feb 20 21:41:19 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (flag_sched2_use_superblocks, flag_sched2_use_traces):  New global variables.
