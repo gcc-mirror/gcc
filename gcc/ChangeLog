@@ -1,3 +1,7 @@
+Thu Mar 21 09:50:48 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (emit_group_store): Don't copy const0_rtx to a CONCAT.
+
 2002-03-21  Eric Botcazou <ebotcazou@multimania.com>
 	    Richard Henderson  <rth@redhat.com>
 
