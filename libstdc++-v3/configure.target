@@ -27,6 +27,7 @@
 # DEFAULTS
 c_model=c_std
 c_compatibility=no
+abi_baseline_triplet=${target}
 
 
 # TARGET-SPECIFIC OVERRIDES 

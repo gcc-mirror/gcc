@@ -36,6 +36,8 @@
 #include <fstream>
 #include <iostream>
 #include <cxxabi.h>
+#include <stdlib.h>    // for system(3)
+#include <unistd.h>    // for access(2)
 
 struct symbol_info
 {
@@ -225,6 +227,19 @@ int main(int argc, char** argv)
   const char* baseline_file = argv[1];
   const char* test_file = "current_symbols.txt";
   const char* test_lib = "../src/.libs/libstdc++.so";
+
+  // Quick sanity/setup check
+  if (access(baseline_file, R_OK) != 0)
+    {
+      cerr << "Cannot read baseline file " << baseline_file << endl;
+      exit(1);
+    }
+  if (access(test_lib, R_OK) != 0)
+    {
+      cerr << "Cannot read library " << test_lib
+           << ", did you forget to build first?" << endl;
+      exit(1);
+    }
 
   // Get list of symbols.
   // Assume external symbol list computed "as if" by

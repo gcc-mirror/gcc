@@ -1,3 +1,12 @@
+2002-08-26  Phil Edwards  <pme@gcc.gnu.org>
+
+	* Makefile.am (check-abi):  Specify current directory.
+	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE):  Fix shell syntax, use
+	abi_baseline_triplet in baseline_file.
+	* Makefile.in, aclocal.m4, configure:  Regenerate.
+	* configure.target:  Add abi_baseline_triplet with default.
+	* testsuite/abi_check.cc:  More error checking.
+
 2002-08-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Set
