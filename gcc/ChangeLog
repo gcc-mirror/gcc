@@ -1,3 +1,17 @@
+Tue Jun 16 13:44:02 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* genattrtab.c (struct attr_desc): Change int flags to bit
+	fields.  Add bit fields for this being function_units_used
+	or *_blockage_range attributes.
+	(write_unit_name): New function to print a function unit name
+	given unit #.
+	(expand_units): Indicate whether this is function_units_used or
+	*_blockage_range attributes.
+	(write_toplevel_expr): Print function_units_used and
+	*_blockage_range attributes in a more friendly fashion.
+	(make_internal_attr): Indicate whether this attribute is either
+	function_units_used or *_blockage_range.
+
 Mon Jun 15 17:06:43 1998  Michael Meissner  <meissner@cygnus.com>
 			  Jim Wilson  <wilson@cygnus.com>
 
