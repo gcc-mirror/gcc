@@ -312,6 +312,7 @@ Thu Oct 31 18:31:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/8334
 	* expr.c (expand_expr) [PLUS]: Don't use simplify_binary_operation;
 	check for zero operands explicitly.
 
