@@ -508,8 +508,6 @@ extern void free_block_changes (void);
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
 extern HOST_WIDE_INT get_frame_size (void);
-/* Likewise, but for a different than the current function.  */
-extern HOST_WIDE_INT get_func_frame_size (struct function *);
 
 /* A pointer to a function to create target specific, per-function
    data structures.  */
