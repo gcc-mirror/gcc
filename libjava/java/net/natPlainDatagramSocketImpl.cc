@@ -309,6 +309,7 @@ java::net::PlainDatagramSocketImpl::close ()
   // the return value.
   ::close (fnum);
   fnum = -1;
+  timeout = 0;
 }
 
 void
