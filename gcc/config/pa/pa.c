@@ -6932,7 +6932,7 @@ output_indirect_call (insn, call_dest)
      No need to check target flags as the length uniquely identifies
      the remaining cases.  */
   if (attr_length_indirect_call (insn) == 8)
-    return ".CALL\tARGW0=GR\n\t{bl|b,l} $$dyncall,%%r31\n\tcopy %%r31,%%r2";
+    return ".CALL\tARGW0=GR\n\t{bl|b,l} $$dyncall,%%r2\n\tcopy %%r2,%%r31";
 
   /* Long millicode call, but we are not generating PIC or portable runtime
      code.  */

@@ -1,3 +1,9 @@
+2004-07-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/16459
+	* pa.c (output_indirect_call): Use %r2 as the link register when
+	calling $$dyncall with a pc-relative branch.
+
 2004-07-07  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md: Define new attribute "empty".
