@@ -1,5 +1,15 @@
 2000-12-29  Bernd Schmidt  <bernds@redhat.com>
 
+	* ia64.c (ia64_expand_load_address): Accept additional scratch
+	register argument.  All callers & prototype changed.
+	Use scratch register when generating load_symptr insns.
+	* ia64.md (movdi_symbolic): Clobber a scratch register.  Use it
+	when calling ia64_expand_load_address.
+	(movdi): Generate movdi_symbolic with additional operand.
+	(load_gprel64): Use pic_offset_table_rtx instead of (reg:DI 1).
+	(load_symptr): Likewise.  Use additional operand as a scratch
+	register instead of generating it here.
+
 	* basic-block.h: Add a comment.
 	* flow.c (PROP_POSTRELOAD): New macro.
 	(update_life_info): Add it to prop_flags.

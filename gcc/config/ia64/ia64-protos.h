@@ -81,7 +81,7 @@ extern void ia64_function_prologue PARAMS((FILE *, int));
 extern void ia64_function_epilogue PARAMS((FILE *, int));
 
 extern int ia64_direct_return PARAMS((void));
-extern void ia64_expand_load_address PARAMS((rtx, rtx));
+extern void ia64_expand_load_address PARAMS((rtx, rtx, rtx));
 extern int ia64_hard_regno_rename_ok PARAMS((int, int));
 
 extern void ia64_initialize_trampoline PARAMS((rtx, rtx, rtx));

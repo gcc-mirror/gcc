@@ -798,8 +798,8 @@ ia64_depz_field_mask (rop, rshift)
 /* ??? Should generalize this, so that we can also support 32 bit pointers.  */
 
 void
-ia64_expand_load_address (dest, src)
-      rtx dest, src;
+ia64_expand_load_address (dest, src, scratch)
+      rtx dest, src, scratch;
 {
   rtx temp;
 
@@ -831,11 +831,22 @@ ia64_expand_load_address (dest, src)
       lo = ((ofs & 0x3fff) ^ 0x2000) - 0x2000;
       hi = ofs - lo;
 
-      emit_insn (gen_load_symptr (subtarget, plus_constant (sym, hi)));
+      if (! scratch)
+	scratch = no_new_pseudos ? subtarget : gen_reg_rtx (DImode);
+
+      emit_insn (gen_load_symptr (subtarget, plus_constant (sym, hi),
+				  scratch));
       emit_insn (gen_adddi3 (temp, subtarget, GEN_INT (lo)));
     }
   else
-    emit_insn (gen_load_symptr (temp, src));
+    {
+      rtx insn;
+      if (! scratch)
+	scratch = no_new_pseudos ? temp : gen_reg_rtx (DImode);
+
+      insn = emit_insn (gen_load_symptr (temp, src, scratch));
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
+    }
 
   if (temp != dest)
     emit_move_insn (dest, temp);
