@@ -1,3 +1,7 @@
+Sun Mar  1 18:06:21 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* fold-const.c (fold_range_test): Always return a value.
+
 Sun Mar  1 17:57:34 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* config/i386/winnt.c (i386_pe_unique_section): Put read-only
