@@ -260,11 +260,18 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
       rtx p = DECL_RTL (parms);
 
       if (GET_CODE (p) == MEM && copy)
-	/* Copy the rtl so that modifications of the address
-	   later in compilation won't affect this arg_vector.
-	   Virtual register instantiation can screw the address
-	   of the rtl.  */
-	DECL_RTL (parms) = copy_rtx (p);
+	{
+	  /* Copy the rtl so that modifications of the addresses
+	     later in compilation won't affect this arg_vector.
+	     Virtual register instantiation can screw the address
+	     of the rtl.  */
+	  rtx new = copy_rtx (p);
+
+	  /* Don't leave the old copy anywhere in this decl.  */
+	  if (DECL_RTL (parms) == DECL_INCOMING_RTL (parms))
+	    DECL_INCOMING_RTL (parms) = new;
+	  DECL_RTL (parms) = new;
+	}
 
       RTVEC_ELT (arg_vector, i) = p;
 
