@@ -1,3 +1,8 @@
+Thu Jun  4 16:09:51 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* dbxout.c (dbxout_type): Output arrays of bits as if
+	they were bitstrings for Chill
+
 Thu Jun  4 14:35:27 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* tree.c (get_inner_array_type): New function.
