@@ -35,6 +35,10 @@
 #include "tsystem.h"
 #include "unwind.h"
 #include "unwind-ia64.h"
+#include "ia64intrin.h"
+
+/* This isn't thread safe, but nice for occasional tests.  */
+#undef ENABLE_MALLOC_CHECKING
 
 #ifndef __USING_SJLJ_EXCEPTIONS__
 #define UNW_VER(x)		((x) >> 48)
@@ -237,14 +241,128 @@ static unsigned char const save_order[] =
 
 #define MIN(X, Y) ((X) < (Y) ? (X) : (Y))
 
+/* MASK is a bitmap describing the allocation state of emergency buffers,
+   with bit set indicating free. Return >= 0 if allocation is successful;
+   < 0 if failure.  */
+
+static inline int
+atomic_alloc (unsigned int *mask)
+{
+  unsigned int old = *mask, ret, new;
+
+  while (1)
+    {
+      if (old == 0)
+	return -1;
+      ret = old & -old;
+      new = old & ~ret;
+      new = __sync_val_compare_and_swap (mask, old, new);
+      if (old == new)
+	break;
+      old = new;
+    }
+
+  return __builtin_ffs (ret) - 1;
+}
+
+/* Similarly, free an emergency buffer.  */
+
+static inline void
+atomic_free (unsigned int *mask, int bit)
+{
+  __sync_xor_and_fetch (mask, 1 << bit);
+}
+
+
+#define SIZE(X)		(sizeof(X) / sizeof(*(X)))
+#define MASK_FOR(X)	((2U << (SIZE (X) - 1)) - 1)
+#define PTR_IN(X, P)	((P) >= (X) && (P) < (X) + SIZE (X))
+
+static struct unw_reg_state emergency_reg_state[32];
+static int emergency_reg_state_free = MASK_FOR (emergency_reg_state);
+
+static struct unw_labeled_state emergency_labeled_state[8];
+static int emergency_labeled_state_free = MASK_FOR (emergency_labeled_state);
+
+#ifdef ENABLE_MALLOC_CHECKING
+static int reg_state_alloced;
+static int labeled_state_alloced;
+#endif
+
+/* Allocation and deallocation of structures.  */
+
+static struct unw_reg_state *
+alloc_reg_state (void)
+{
+  struct unw_reg_state *rs;
+
+#ifdef ENABLE_MALLOC_CHECKING
+  reg_state_alloced++;
+#endif
+
+  rs = malloc (sizeof (struct unw_reg_state));
+  if (!rs)
+    {
+      int n = atomic_alloc (&emergency_reg_state_free);
+      if (n >= 0)
+	rs = &emergency_reg_state[n];
+    }
+
+  return rs;
+}
+
+static void
+free_reg_state (struct unw_reg_state *rs)
+{
+#ifdef ENABLE_MALLOC_CHECKING
+  reg_state_alloced--;
+#endif
+
+  if (PTR_IN (emergency_reg_state, rs))
+    atomic_free (&emergency_reg_state_free, rs - emergency_reg_state);
+  else
+    free (rs);
+}
+
+static struct unw_labeled_state *
+alloc_label_state (void)
+{
+  struct unw_labeled_state *ls;
+
+#ifdef ENABLE_MALLOC_CHECKING
+  labeled_state_alloced++;
+#endif
+
+  ls = malloc(sizeof(struct unw_labeled_state));
+  if (!ls)
+    {
+      int n = atomic_alloc (&emergency_labeled_state_free);
+      if (n >= 0)
+	ls = &emergency_labeled_state[n];
+    }
+
+  return ls;
+}
+
+static void
+free_label_state (struct unw_labeled_state *ls)
+{
+#ifdef ENABLE_MALLOC_CHECKING
+  labeled_state_alloced--;
+#endif
+
+  if (PTR_IN (emergency_labeled_state, ls))
+    atomic_free (&emergency_labeled_state_free, emergency_labeled_state - ls);
+  else
+    free (ls);
+}
+
 /* Routines to manipulate the state stack.  */
 
 static void
 push (struct unw_state_record *sr)
 {
-  struct unw_reg_state *rs;
-
-  rs = malloc (sizeof (struct unw_reg_state));
+  struct unw_reg_state *rs = alloc_reg_state ();
   memcpy (rs, &sr->curr, sizeof (*rs));
   sr->curr.next = rs;
 }
@@ -255,12 +373,13 @@ pop (struct unw_state_record *sr)
   struct unw_reg_state *rs = sr->curr.next;
 
   if (!rs)
-    abort();
-  memcpy(&sr->curr, rs, sizeof(*rs));
-  free (rs);
+    abort ();
+  memcpy (&sr->curr, rs, sizeof(*rs));
+  free_reg_state (rs);
 }
 
 /* Make a copy of the state stack.  Non-recursive to avoid stack overflows.  */
+
 static struct unw_reg_state *
 dup_state_stack (struct unw_reg_state *rs)
 {
@@ -268,8 +387,8 @@ dup_state_stack (struct unw_reg_state *rs)
 
   while (rs)
     {
-      copy = malloc(sizeof(struct unw_state_record));
-      memcpy(copy, rs, sizeof(*copy));
+      copy = alloc_reg_state ();
+      memcpy (copy, rs, sizeof(*copy));
       if (first)
 	prev->next = copy;
       else
@@ -277,6 +396,7 @@ dup_state_stack (struct unw_reg_state *rs)
       rs = rs->next;
       prev = copy;
     }
+
   return first;
 }
 
@@ -289,9 +409,25 @@ free_state_stack (struct unw_reg_state *rs)
   for (p = rs->next; p != NULL; p = next)
     {
       next = p->next;
-      free(p);
+      free_reg_state (p);
     }
   rs->next = NULL;
+}
+
+/* Free all labeled states.  */
+
+static void
+free_label_states (struct unw_labeled_state *ls)
+{
+  struct unw_labeled_state *next;
+
+  for (; ls ; ls = next)
+    {
+      next = ls->next;
+
+      free_state_stack (&ls->saved_state);
+      free_label_state (ls);
+    }
 }
 
 /* Unwind decoder routines */
@@ -377,7 +513,7 @@ finish_prologue (struct unw_state_record *sr)
   /* First, resolve implicit register save locations
      (see Section "11.4.2.3 Rules for Using Unwind Descriptors", rule 3).  */
 
-  for (i = 0; i < (int) sizeof(save_order); ++i)
+  for (i = 0; i < (int) sizeof (save_order); ++i)
     {
       reg = sr->curr.reg + save_order[i];
       if (reg->where == UNW_WHERE_GR_SAVE)
@@ -410,8 +546,8 @@ finish_prologue (struct unw_state_record *sr)
 	    mask = *cp++;
 	  kind = (mask >> 2*(3-(t & 3))) & 3;
 	  if (kind > 0)
-	    spill_next_when(&regs[kind - 1], sr->curr.reg + limit[kind - 1],
-			    sr->region_start + t);
+	    spill_next_when (&regs[kind - 1], sr->curr.reg + limit[kind - 1],
+			     sr->region_start + t);
 	}
     }
 
@@ -419,12 +555,12 @@ finish_prologue (struct unw_state_record *sr)
   if (sr->any_spills)
     {
       off = sr->spill_offset;
-      alloc_spill_area(&off, 16, sr->curr.reg + UNW_REG_F2,
-		       sr->curr.reg + UNW_REG_F31); 
-      alloc_spill_area(&off,  8, sr->curr.reg + UNW_REG_B1,
-		       sr->curr.reg + UNW_REG_B5);
-      alloc_spill_area(&off,  8, sr->curr.reg + UNW_REG_R4,
-		       sr->curr.reg + UNW_REG_R7);
+      alloc_spill_area (&off, 16, sr->curr.reg + UNW_REG_F2,
+		        sr->curr.reg + UNW_REG_F31); 
+      alloc_spill_area (&off,  8, sr->curr.reg + UNW_REG_B1,
+		        sr->curr.reg + UNW_REG_B5);
+      alloc_spill_area (&off,  8, sr->curr.reg + UNW_REG_R4,
+		        sr->curr.reg + UNW_REG_R7);
     }
 }
 
@@ -439,7 +575,7 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
   int i;
 
   if (!(sr->in_body || sr->first_region))
-    finish_prologue(sr);
+    finish_prologue (sr);
   sr->first_region = 0;
 
   /* Check if we're done.  */
@@ -450,12 +586,13 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
     }
 
   for (i = 0; i < sr->epilogue_count; ++i)
-    pop(sr);
+    pop (sr);
+
   sr->epilogue_count = 0;
   sr->epilogue_start = UNW_WHEN_NEVER;
 
   if (!body)
-    push(sr);
+    push (sr);
 
   sr->region_start += sr->region_len;
   sr->region_len = rlen;
@@ -685,9 +822,9 @@ desc_copy_state (unw_word label, struct unw_state_record *sr)
     {
       if (ls->label == label)
         {
-	  free_state_stack(&sr->curr);
-   	  memcpy(&sr->curr, &ls->saved_state, sizeof(sr->curr));
-	  sr->curr.next = dup_state_stack(ls->saved_state.next);
+	  free_state_stack (&sr->curr);
+   	  memcpy (&sr->curr, &ls->saved_state, sizeof (sr->curr));
+	  sr->curr.next = dup_state_stack (ls->saved_state.next);
 	  return;
 	}
     }
@@ -697,14 +834,13 @@ desc_copy_state (unw_word label, struct unw_state_record *sr)
 static inline void
 desc_label_state (unw_word label, struct unw_state_record *sr)
 {
-  struct unw_labeled_state *ls;
+  struct unw_labeled_state *ls = alloc_label_state ();
 
-  ls = malloc(sizeof(struct unw_labeled_state));
   ls->label = label;
-  memcpy(&ls->saved_state, &sr->curr, sizeof(ls->saved_state));
-  ls->saved_state.next = dup_state_stack(sr->curr.next);
+  memcpy (&ls->saved_state, &sr->curr, sizeof (ls->saved_state));
+  ls->saved_state.next = dup_state_stack (sr->curr.next);
 
-  /* insert into list of labeled states: */
+  /* Insert into list of labeled states.  */
   ls->next = sr->labeled_states;
   sr->labeled_states = ls;
 }
@@ -1574,6 +1710,14 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   while (!fs->done && insn < insn_end)
     insn = unw_decode (insn, fs->in_body, fs);
 
+  free_label_states (fs->labeled_states);
+  free_state_stack (&fs->curr);
+
+#ifdef ENABLE_MALLOC_CHECKING
+  if (reg_state_alloced || labeled_state_alloced)
+    abort ();
+#endif
+
   /* If we're in the epilogue, sp has been restored and all values
      on the memory stack below psp also have been restored.  */
   if (fs->when_target > fs->epilogue_start)
@@ -1634,7 +1778,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
       /* Note that while RVAL can only be 1-5 from normal descriptors,
 	 we can want to look at B0 due to having manually unwound a
 	 signal frame.  */
-      if (rval >= 0 && rval <= 5)
+      if (rval <= 5)
 	addr = context->br_loc[rval];
       else
 	abort ();
@@ -1733,8 +1877,7 @@ uw_update_reg_address (struct _Unwind_Context *context,
       context->psp = *(unsigned long *)addr;
       break;
 
-    case UNW_REG_RNAT:
-    case UNW_NUM_REGS:
+    default:
       abort ();
     }
 }
