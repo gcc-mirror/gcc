@@ -1,3 +1,8 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* intdoc.in: Likewise.
+
 2002-09-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	Fix PR web/7596:
@@ -1747,7 +1752,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 Tue Sep 21 09:08:30 1999  Toon Moene  <toon@moene.indiv.nluug.nl>
 
-	* g77spec.c (lang_specific_driver): Initialise return value.
+	* g77spec.c (lang_specific_driver): Initialize return value.
 
 Thu Sep 16 18:07:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
