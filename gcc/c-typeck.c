@@ -3223,6 +3223,18 @@ mark_addressable (exp)
 		       IDENTIFIER_POINTER (DECL_NAME (x)));
 		return 0;
 	      }
+
+	    /* If we are making this addressable due to its having
+	       volatile components, give a different error message.  Also
+	       handle the case of an unnamed parameter by not trying
+	       to give the name.  */
+
+	    else if (C_TYPE_FIELDS_VOLATILE (TREE_TYPE (x)))
+	      {
+		error ("cannot put object with volatile field into register");
+		return 0;
+	      }
+
 	    pedwarn ("address of register variable `%s' requested",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
