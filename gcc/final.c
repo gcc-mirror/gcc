@@ -1210,13 +1210,25 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    for (idx = 0; idx < vlen; idx++)
 	      {
 		if (GET_CODE (body) == ADDR_VEC)
-		  ASM_OUTPUT_ADDR_VEC_ELT
-		    (file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+		  {
+#ifdef ASM_OUTPUT_ADDR_VEC_ELT
+		    ASM_OUTPUT_ADDR_VEC_ELT
+		      (file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+#else
+		    abort ();
+#endif
+		  }
 		else
-		  ASM_OUTPUT_ADDR_DIFF_ELT
-		    (file,
-		     CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
-		     CODE_LABEL_NUMBER (XEXP (XEXP (body, 0), 0)));
+		  {
+#ifdef ASM_OUTPUT_ADDR_DIFF_ELT
+		    ASM_OUTPUT_ADDR_DIFF_ELT
+		      (file,
+		       CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
+		       CODE_LABEL_NUMBER (XEXP (XEXP (body, 0), 0)));
+#else
+		    abort ();
+#endif
+		  }
 	      }
 #ifdef ASM_OUTPUT_CASE_END
 	    ASM_OUTPUT_CASE_END (file,
