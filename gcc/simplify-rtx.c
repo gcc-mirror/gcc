@@ -2430,9 +2430,14 @@ simplify_subreg (outermode, op, innermode, byte)
       int is_realpart = byte < GET_MODE_UNIT_SIZE (innermode);
       rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
       unsigned int final_offset;
+      rtx res;
 
       final_offset = byte % (GET_MODE_UNIT_SIZE (innermode));
-      return simplify_subreg (outermode, part, GET_MODE (part), final_offset);
+      res = simplify_subreg (outermode, part, GET_MODE (part), final_offset);
+      if (res)
+	return res;
+      /* We can at least simplify it by referring directly to the relevent part. */
+      return gen_rtx_SUBREG (outermode, part, final_offset);
     }
 
   return NULL_RTX;
