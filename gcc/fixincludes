@@ -476,7 +476,7 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-  sed -e 's/typedef char \*	malloc_t/typedef void \*	malloc_t/g' \
+  sed -e 's/typedef[ 	]char \*	malloc_t/typedef void \*	malloc_t/g' \
   ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
