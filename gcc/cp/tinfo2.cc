@@ -119,7 +119,8 @@ struct __array_type_info : public type_info {
    variables and thrown objects.  */
 
 extern "C" void*
-__throw_type_match_rtti (void *catch_type_r, void *throw_type_r, void *objptr)
+__throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
+			 void *objptr)
 {
   const type_info &catch_type = *(const type_info *)catch_type_r;
   const type_info &throw_type = *(const type_info *)throw_type_r;

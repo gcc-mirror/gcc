@@ -47,7 +47,8 @@ __default_unexpected ()
   terminate ();
 }
 
-static unexpected_handler __unexpected_func = __default_unexpected;
+static unexpected_handler __unexpected_func __attribute__((__noreturn__))
+  = __default_unexpected;
 
 terminate_handler
 set_terminate (terminate_handler func)
@@ -157,6 +158,54 @@ __uncatch_exception (void)
   if (p)
     p->caught = false;
   /* otherwise __throw will call terminate(); don't crash here.  */
+}
+
+/* As per [except.unexpected]:
+   If an exception is thrown, we check it against the spec.  If it doesn't
+   match, we call unexpected ().  If unexpected () throws, we check that
+   exception against the spec.  If it doesn't match, if the spec allows
+   bad_exception we throw that; otherwise we call terminate ().
+
+   The compiler treats an exception spec as a try block with a generic
+   handler that just calls this function with a list of the allowed
+   exception types, so we have an active exception that can be rethrown.
+
+   This function does not return.  */   
+
+extern "C" void
+__check_eh_spec (int n, const void **spec)
+{
+  cp_eh_info *p = __cp_exception_info ();
+
+  for (int i = 0; i < n; ++i)
+    {
+      if (__throw_type_match_rtti (spec[i], p->type, p->value))
+	throw;
+    }
+
+  try
+    {
+      unexpected ();
+    }
+  catch (...)
+    {
+      // __exception_info is an artificial var pushed into each catch block.
+      p = __exception_info;
+      for (int i = 0; i < n; ++i)
+	{
+	  if (__throw_type_match_rtti (spec[i], p->type, p->value))
+	    throw;
+	}
+
+      const type_info &bad_exc = typeid (bad_exception);
+      for (int i = 0; i < n; ++i)
+	{
+	  if (__throw_type_match_rtti (spec[i], &bad_exc, p->value))
+	    throw bad_exception ();
+	}
+
+      terminate ();
+    }
 }
 
 extern "C" void

@@ -1,5 +1,15 @@
 Fri Nov 21 12:22:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c (expand_start_eh_spec): Use the try/catch code.
+	(expand_end_eh_spec): Likewise.  Call __check_eh_spec instead of
+	doing everything inline.
+	(init_exception_processing): throw_type_match now takes
+ 	const void pointers.
+	* exception.cc (__check_eh_spec): New fn.
+	* inc/exception: Neither terminate nor unexpected return.
+	* decl.c: Make const_ptr_type_node public.
+	* tinfo2.cc (__throw_type_match_rtti): Take the typeinfos constly.
+
 	* except.c (expand_start_catch_block): We only need the rethrow
  	region for non-sjlj exceptions.
 	(expand_end_catch_block): Likewise.  Use outer_context_label_stack.
