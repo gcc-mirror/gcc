@@ -1,5 +1,5 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -22,9 +22,23 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-#define HASH_SIZE 2503 /* a prime */
+int verbose = 0;
+char *progname;
 
-int
+/* Table of prototypes that override sys-protos.h.  */
+static char *overrides[] =
+{
+#ifdef SYS_PROTO_OVERRIDES
+  SYS_PROTO_OVERRIDES
+#endif
+  0
+};
+
+#define HASH_SIZE 2503 /* a prime */
+int hash_tab[HASH_SIZE];
+int next_index;
+
+static int
 hashf (name, len, hashsize)
      register U_CHAR *name;
      register int len;
@@ -38,20 +52,99 @@ hashf (name, len, hashsize)
   return MAKE_POS (r) % hashsize;
 }
 
-int hash_tab[HASH_SIZE];
-int verbose = 0;
-char *progname;
-
-sstring linebuf;
-
-/* Avoid error if config defines abort as fancy_abort.
-   It's not worth "really" implementing this because ordinary
-   compiler users never run fix-header.  */
-
-void
-fancy_abort ()
+static void
+add_hash (fname)
+     char *fname;
 {
-  abort ();
+  int i, i0;
+
+  /* NOTE:  If you edit this, also edit lookup_std_proto in fix-header.c !! */
+  i = hashf (fname, strlen (fname), HASH_SIZE);
+  i0 = i;
+  if (hash_tab[i] != 0)
+    {
+      for (;;)
+	{
+	  i = (i+1) % HASH_SIZE;
+	  if (i == i0)
+	    abort ();
+	  if (hash_tab[i] == 0)
+	    break;
+	}
+    }
+  hash_tab[i] = next_index;
+
+  next_index++;
+}
+
+/* Given a function prototype, fill in the fields of FN.
+   The result is a boolean indicating if a function prototype was found.
+
+   The input string is modified (trailing NULs are inserted).
+   The fields of FN point to the input string.  */
+
+static int
+parse_fn_proto (start, end, fn)
+     char *start, *end;
+     struct fn_decl *fn;
+{
+  register char *ptr;
+  int param_nesting = 1;
+  char *param_start, *param_end, *decl_start, *name_start, *name_end;
+
+  ptr = end - 1;
+  while (*ptr == ' ' || *ptr == '\t') ptr--;
+  if (*ptr-- != ';')
+    {
+      fprintf (stderr, "Funny input line: %s\n", start);
+      return 0;
+    }
+  while (*ptr == ' ' || *ptr == '\t') ptr--;
+  if (*ptr != ')')
+    {
+      fprintf (stderr, "Funny input line: %s\n", start);
+      return 0;
+    }
+  param_end = ptr;
+  for (;;)
+    {
+      int c = *--ptr;
+      if (c == '(' && --param_nesting == 0)
+	break;
+      else if (c == ')')
+	param_nesting++;
+    }
+  param_start = ptr+1;
+
+  ptr--;
+  while (*ptr == ' ' || *ptr == '\t') ptr--;
+
+  if (!isalnum (*ptr))
+    {
+      if (verbose)
+	fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
+		 progname, start);
+      return 0;
+    }
+  name_end = ptr+1;
+
+  while (isalnum (*ptr) || *ptr == '_') --ptr;
+  name_start = ptr+1;
+  while (*ptr == ' ' || *ptr == '\t') ptr--;
+  ptr[1] = 0;
+  *param_end = 0;
+  *name_end = 0;
+
+  decl_start = start;
+  if (strncmp (decl_start, "typedef ", 8) == 0)
+    return 0;
+  if (strncmp (decl_start, "extern ", 7) == 0)
+    decl_start += 7;
+
+  fn->fname = name_start;
+  fn->rtype = decl_start;
+  fn->params = param_start;
+  return 1;
 }
 
 int
@@ -61,22 +154,50 @@ main (argc, argv)
 {
   FILE *inf = stdin;
   FILE *outf = stdout;
-  int next_index = 0;
-  int i, i0;
+  int i;
+  sstring linebuf;
+  char **optr;
+  struct fn_decl fn_decl;
 
   i = strlen (argv[0]);
   while (i > 0 && argv[0][i-1] != '/') --i;
   progname = &argv[0][i];
 
+  INIT_SSTRING (&linebuf);
+
   fprintf (outf, "struct fn_decl std_protos[] = {\n");
+
+  /* A hash table entry of 0 means "unused" so reserve it.  */
+  fprintf (outf, "  {\"\", \"\", \"\"},\n");
+  next_index = 1;
+  
+  /* Output the overriding prototypes first so fix-header will use them
+     in preference to the default ones.  */
+  /* ??? Two copies of the prototype are output.  This doesn't cause any
+     problems, but one might wish to avoid outputting the second one.  */
+
+  for (optr = overrides; *optr; ++optr)
+    {
+      /* Using sstring's here may be overkill but parse_fn_proto modifies
+	 the input string.  */
+      linebuf.ptr = linebuf.base;
+      make_sstring_space (&linebuf, strlen (*optr) + 1);
+      strcpy (linebuf.base, *optr);
+      linebuf.ptr = linebuf.base + strlen (*optr);
+
+      if (! parse_fn_proto (linebuf.base, linebuf.ptr, &fn_decl))
+	continue;
+
+      add_hash (fn_decl.fname);
+
+      fprintf (outf, "  {\"%s\", \"%s\", \"%s\"},\n",
+	       fn_decl.fname, fn_decl.rtype, fn_decl.params);
+    }
 
   for (;;)
     {
       int c = skip_spaces (inf, ' ');
-      int param_nesting = 1;
-      char *param_start, *param_end, *decl_start,
-      *name_start, *name_end;
-      register char *ptr;
+
       if (c == EOF)
 	break;
       linebuf.ptr = linebuf.base;
@@ -87,83 +208,18 @@ main (argc, argv)
       if (linebuf.base[0] == '\0') /* skip empty line */
 	continue;
 
-      ptr = linebuf.ptr - 1;
-      while (*ptr == ' ' || *ptr == '\t') ptr--;
-      if (*ptr-- != ';')
-	{
-	  fprintf (stderr, "Funny input line: %s\n", linebuf.base);
-	  continue;
-	}
-      while (*ptr == ' ' || *ptr == '\t') ptr--;
-      if (*ptr != ')')
-	{
-	  fprintf (stderr, "Funny input line: %s\n", linebuf.base);
-	  continue;
-	}
-      param_end = ptr;
-      for (;;)
-	{
-	  int c = *--ptr;
-	  if (c == '(' && --param_nesting == 0)
-	    break;
-	  else if (c == ')')
-	    param_nesting++;
-	}
-      param_start = ptr+1;
-
-      ptr--;
-      while (*ptr == ' ' || *ptr == '\t') ptr--;
-
-      if (!isalnum (*ptr))
-	{
-	  if (verbose)
-	    fprintf (stderr, "%s: Can't handle this complex prototype: %s\n",
-		     argv[0], linebuf.base);
-	  continue;
-	}
-      name_end = ptr+1;
-
-      while (isalnum (*ptr) || *ptr == '_') --ptr;
-      name_start = ptr+1;
-      while (*ptr == ' ' || *ptr == '\t') ptr--;
-      ptr[1] = 0;
-      *name_end = 0;
-      *param_end = 0;
-      *name_end = 0;
-
-      decl_start = linebuf.base;
-      if (strncmp (decl_start, "typedef ", 8) == 0)
+      if (! parse_fn_proto (linebuf.base, linebuf.ptr, &fn_decl))
 	continue;
-      if (strncmp (decl_start, "extern ", 7) == 0)
-	decl_start += 7;
 
+      add_hash (fn_decl.fname);
 
-      /* NOTE:  If you edit this,
-	 also edit lookup_std_proto in fix-header.c !! */
-      i = hashf (name_start, name_end - name_start, HASH_SIZE);
-      i0 = i;
-      if (hash_tab[i] != 0)
-	{
-	  for (;;)
-	    {
-	      i = (i+1) % HASH_SIZE;
-	      if (i == i0)
-		abort ();
-	      if (hash_tab[i] == 0)
-		break;
-	    }
-	}
-      hash_tab[i] = next_index;
-
-      fprintf (outf, "  {\"%s\", \"%s\", \"%s\" },\n",
-	       name_start, decl_start, param_start);
-
-      next_index++;
+      fprintf (outf, "  {\"%s\", \"%s\", \"%s\"},\n",
+	       fn_decl.fname, fn_decl.rtype, fn_decl.params);
 
       if (c == EOF)
 	break;
     }
-  fprintf (outf, "{0, 0, 0}\n};\n");
+  fprintf (outf, "  {0, 0, 0}\n};\n");
 
 
   fprintf (outf, "#define HASH_SIZE %d\n", HASH_SIZE);
@@ -173,6 +229,16 @@ main (argc, argv)
   fprintf (outf, "};\n");
 
   return 0;
+}
+
+/* Avoid error if config defines abort as fancy_abort.
+   It's not worth "really" implementing this because ordinary
+   compiler users never run fix-header.  */
+
+void
+fancy_abort ()
+{
+  abort ();
 }
 
 void
