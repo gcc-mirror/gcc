@@ -69,6 +69,11 @@ import java.util.Locale;
 public class Connection extends URLConnection
 {
   /**
+   * Default permission for a file
+   */
+  private static final String DEFAULT_PERMISSION = "read";
+
+  /**
    * HTTP-style DateFormat, used to format the last-modified header.
    */
   private static SimpleDateFormat dateFormat
@@ -93,11 +98,18 @@ public class Connection extends URLConnection
   private OutputStream outputStream;
   
   /**
+   * FilePermission to read the file
+   */
+  private FilePermission permission;
+
+  /**
    * Calls superclass constructor to initialize.
    */
   public Connection(URL url)
   {
     super (url);
+
+    permission = new FilePermission(getURL().getFile(), DEFAULT_PERMISSION);
   }
   
   /**
@@ -187,6 +199,26 @@ public class Connection extends URLConnection
   }
 
   /**
+   * Get the last modified time of the resource.
+   *
+   * @return the time since epoch that the resource was modified.
+   */
+  public long getLastModified()
+  {
+    try
+      {
+	if (!connected)
+	  connect();
+
+	return file.lastModified();
+      }
+    catch (IOException e)
+      {
+	return -1;
+      }
+  }
+  
+  /**
    *  Get an http-style header field. Just handle a few common ones. 
    */
   public String getHeaderField(String field)
@@ -224,30 +256,10 @@ public class Connection extends URLConnection
   {
     try
       {
- 	if (!connected)
- 	  connect();
-
-	return (int) file.length();
-      }
-    catch (IOException e)
-      {
- 	return -1;
-      }
-  }
-
-  /**
-   * Get the last modified time of the resource.
-   *
-   * @return the time since epoch that the resource was modified.
-   */
-  public long getLastModified()
-  {
-    try
-      {
 	if (!connected)
 	  connect();
         
-	return file.lastModified();
+	return (int) file.length();
       }
     catch (IOException e)
       {
@@ -265,6 +277,6 @@ public class Connection extends URLConnection
    */
   public Permission getPermission() throws IOException
   {
-    return new FilePermission(getURL().getFile(), "read");
+    return permission;
   }
 }
