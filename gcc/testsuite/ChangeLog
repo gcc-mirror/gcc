@@ -1,3 +1,7 @@
+2005-01-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20050113-1.c: XFAIL on SPARC.
+
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/19551

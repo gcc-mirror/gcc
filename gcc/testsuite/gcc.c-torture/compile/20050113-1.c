@@ -1,4 +1,5 @@
 /* PR c/17297 */
+/* { dg-xfail-if "PR target/12916" { "sparc*-*-*" } { "*" } { "" } } */
 
 typedef float V2SF __attribute__ ((vector_size (8)));
 
