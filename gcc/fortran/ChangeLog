@@ -1,3 +1,8 @@
+2005-01-15  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de
+
+	* primary.c (check_digit): Call 'ISXDIGIT' instead of assuming
+	ASCII-like character encoding.
+
 2005-01-14  Steven G. Kargl  <kargls@comcast.net>
 
 	* resolve.c (compare_case): Cleanup.
