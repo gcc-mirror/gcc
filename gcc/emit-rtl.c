@@ -3022,11 +3022,34 @@ int
 active_insn_p (insn)
      rtx insn;
 {
-  return (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
-	  || (GET_CODE (insn) == INSN
-	      && (! reload_completed
-		  || (GET_CODE (PATTERN (insn)) != USE
-		      && GET_CODE (PATTERN (insn)) != CLOBBER))));
+  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
+    return true;
+  if (GET_CODE (insn) == INSN)
+    {
+      if (reload_completed)
+	{
+	  rtx pat = PATTERN (insn);
+
+	  /* After reload, remaining USE insns are noops.  */
+	  if (GET_CODE (pat) == USE)
+	    return false;
+
+	  if (GET_CODE (pat) == CLOBBER)
+	    {
+	      /* ??? Don't skip past the clobber of the return register.
+		 If we eliminate it, we risk a variety of life analysis
+		 problems on broken code.  */
+	      if (GET_CODE (XEXP (pat, 0)) == REG
+		  && REG_FUNCTION_VALUE_P (XEXP (pat, 0)))
+		return true;
+
+	      /* Otherwise, clobbers don't do anything either.  */
+	      return false;
+	    }
+	}
+      return true;
+    }
+  return false;
 }
 
 rtx
