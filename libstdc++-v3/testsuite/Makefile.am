@@ -39,18 +39,14 @@ GLIBCXX_DIR=${glibcxx_builddir}/src/.libs
 CXXLINK = \
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	-R $(GLIBGCC_DIR) -R $(GLIBCXX_DIR) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
-
-# Generated lists of files to run.  All of these names are valid make
-# targets, if you wish to generate a list manually.
-lists_of_files = \
-   testsuite_files \
-   testsuite_files_interactive \
-   testsuite_files_performance
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -lv3test -L. -o $@
 
 ## Build support library.
 noinst_LIBRARIES = libv3test.a
-libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
+libv3test_a_SOURCES = \
+	testsuite_abi.cc \
+	testsuite_allocator.cc \
+	testsuite_hooks.cc 
 
 ## Build support utilities.
 if GLIBCXX_TEST_ABI
@@ -59,6 +55,7 @@ else
 noinst_PROGRAMS =
 endif
 abi_check_SOURCES = abi_check.cc
+abi_check_DEPENDENCIES = libv3test.a
 
 all-local: stamp_wchar testsuite_files
 
@@ -69,6 +66,14 @@ stamp_wchar:
 else
 stamp_wchar:
 endif
+
+# Generated lists of files to run.  All of these names are valid make
+# targets, if you wish to generate a list manually.
+lists_of_files = \
+   testsuite_files \
+   testsuite_files_interactive \
+   testsuite_files_performance
+
 
 # We need more things in site.exp, but automake completely controls the
 # creation of that file; there's no way to append to it without messing up

@@ -2,16 +2,13 @@ std::allocator
 
   - switch to mt_allocator with --enable-threads=posix. 
 
-  - Try to figure out a way to switch allocators in a more elegant
-    manner, and make the default allocator configurable.
-
   - persistent allocator
 
   - global/extern allocator
 
 std::string 
 
-  - re-design for multi-paradigm, meta string class solution incorporating COW
+  - Policy-based design incorporating COW
     vs. deep copy issues, MT scalability
     See Andrei Alexandrescu, June 2001, C/C++ Users Journal
     "Generic<Programming>: A Policy-Based basic_string Implementation"
@@ -53,8 +50,6 @@ std::locale
 
   - minimize ctype convertion in data facets, see numpunct/num_put/num_get
 
-  - finish caching data facets and using the caches
-
 std::basic_filebuf, 27_io
 
   - wfilebuf, get variable-encoding working and tested, including
@@ -86,10 +81,10 @@ testsuite
 
   - diffing generated output files
 
+  - provide testsuites for numerics.
+
   - make check-abi needs to have full symbol checking. Scope the LSB
     testsuite, see what's going on with the typeinfo etc. bits.
-
-  - provide testsuites for numerics.
 
   - try to do a better job of ABI testing, with instantiations of all
     standard-specified types checked, not just exported symbols.
@@ -139,9 +134,6 @@ Nathan's commentary on cantrip, http://www.cantrip.org/cheaders.html
 
 - auto_ptr: seems to be some disagreement on what is
 standards-conformant behavior, specially on conversion operators.
-
-- looks like deque::get_allocator not standards conformant or deque
-allocator non-standard.
 
 - list::assignment operator needs const_cast
 

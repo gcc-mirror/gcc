@@ -58,8 +58,8 @@ ARFLAGS = cru
 LIBRARIES = $(noinst_LIBRARIES)
 libv3test_a_AR = $(AR) $(ARFLAGS)
 libv3test_a_LIBADD =
-am_libv3test_a_OBJECTS = testsuite_hooks.$(OBJEXT) \
-	testsuite_allocator.$(OBJEXT)
+am_libv3test_a_OBJECTS = testsuite_abi.$(OBJEXT) \
+	testsuite_allocator.$(OBJEXT) testsuite_hooks.$(OBJEXT)
 libv3test_a_OBJECTS = $(am_libv3test_a_OBJECTS)
 PROGRAMS = $(noinst_PROGRAMS)
 am_abi_check_OBJECTS = abi_check.$(OBJEXT)
@@ -272,8 +272,16 @@ GLIBCXX_DIR = ${glibcxx_builddir}/src/.libs
 CXXLINK = \
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	-R $(GLIBGCC_DIR) -R $(GLIBCXX_DIR) \
-	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -lv3test -L. -o $@
 
+noinst_LIBRARIES = libv3test.a
+libv3test_a_SOURCES = \
+	testsuite_abi.cc \
+	testsuite_allocator.cc \
+	testsuite_hooks.cc 
+
+abi_check_SOURCES = abi_check.cc
+abi_check_DEPENDENCIES = libv3test.a
 
 # Generated lists of files to run.  All of these names are valid make
 # targets, if you wish to generate a list manually.
@@ -282,9 +290,6 @@ lists_of_files = \
    testsuite_files_interactive \
    testsuite_files_performance
 
-noinst_LIBRARIES = libv3test.a
-libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
-abi_check_SOURCES = abi_check.cc
 baseline_file = ${baseline_dir}/baseline_symbols.txt
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
 
