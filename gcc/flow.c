@@ -132,7 +132,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "insn-flags.h"
-#include "resource.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc
@@ -5371,6 +5370,7 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 	  if (tem == orig_last_insn)
 	    break;
 	}
+
       /* So it's a new register, presumably only used within this
 	 group of insns. Find the last insn in the set of new insns
 	 that DEST is referenced in, and add a dead note to it. */
@@ -5393,17 +5393,13 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 	    }
 	  else
 	    {
-	      struct resources res;
 	      rtx curr;
+	      int got_set = 0;
 
-	      CLEAR_RESOURCE (&res);
-	      for (curr = orig_first_insn;
-		   curr != NULL_RTX;
-		   curr = NEXT_INSN (curr))
+	      for (curr = orig_first_insn; curr; curr = NEXT_INSN (curr))
 		{
-		  if (GET_RTX_CLASS (GET_CODE (curr)) == 'i')
-		    mark_set_resources (PATTERN (curr), &res, 0, 0);
-		  if (TEST_HARD_REG_BIT (res.regs, REGNO (dest)))
+		  got_set = sets_reg_or_subreg (curr, dest);
+		  if (got_set)
 		    break;
 		  if (curr == orig_last_insn)
 		    break;
@@ -5411,7 +5407,7 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 
 	      /* In case reg was not used later, it is dead store.
 	         add REG_UNUSED note.  */
-	      if (! TEST_HARD_REG_BIT (res.regs, REGNO (dest)))
+	      if (! got_set)
 	        {
 	          rtx note = rtx_alloc (EXPR_LIST);
 	          PUT_REG_NOTE_KIND (note, REG_UNUSED);
@@ -5422,9 +5418,11 @@ new_insn_dead_notes (pat, insn, first, last, orig_first_insn, orig_last_insn)
 	        }
 	    }
 	}
+
       if (insn != first)
 	{
 	  rtx set = single_set (insn);
+
 	  /* If this is a set, scan backwards for a previous
 	     reference, and attach a REG_DEAD note to it. But we don't
 	     want to do it if the insn is both using and setting the
