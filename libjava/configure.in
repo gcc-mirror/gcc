@@ -914,6 +914,9 @@ case "${host}" in
  s390*-*-linux*)
     SIGNAL_HANDLER=include/s390-signal.h
     ;;
+ x86_64*-*-linux*)
+    SIGNAL_HANDLER=include/dwarf2-signal.h
+    ;;
  sparc*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;

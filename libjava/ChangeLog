@@ -1,3 +1,11 @@
+2002-07-19  Bo Thorsen  <bo@berlioz.suse.de>
+
+	* java/lang/ieeefp.h: Add x86-64 support.
+	* configure.in: Likewise.
+	* configure.host: Likewise.
+	* configure: Regenerated.
+	* sysdep/x86-64/locks.h: New file with x86-64 locks.
+
 2002-07-16  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/StreamTokenizer.java (pushBack): Update documentation.

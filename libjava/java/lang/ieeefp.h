@@ -58,6 +58,10 @@
 #define __IEEE_LITTLE_ENDIAN
 #endif
 
+#ifdef __x86_64__
+#define __IEEE_LITTLE_ENDIAN
+#endif
+
 #ifdef __i960__
 #define __IEEE_LITTLE_ENDIAN
 #endif

@@ -209,6 +209,9 @@ do								\
 while (0)  
 #endif
 #elif !defined(__ia64__)
+#if defined(__x86_64__)
+#define SYS_sigaction SYS_rt_sigaction
+#endif
 #define INIT_SEGV						\
 do								\
   {								\
