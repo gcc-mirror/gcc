@@ -176,7 +176,9 @@ push_access_scope (tree t)
   gcc_assert (TREE_CODE (t) == FUNCTION_DECL
 	      || TREE_CODE (t) == VAR_DECL);
 
-  if (DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t))
+    push_nested_class (DECL_FRIEND_CONTEXT (t));
+  else if (DECL_CLASS_SCOPE_P (t))
     push_nested_class (DECL_CONTEXT (t));
   else
     push_to_top_level ();
@@ -201,7 +203,7 @@ pop_access_scope (tree t)
       saved_access_scope = TREE_CHAIN (saved_access_scope);
     }
 
-  if (DECL_CLASS_SCOPE_P (t))
+  if (DECL_FRIEND_CONTEXT (t) || DECL_CLASS_SCOPE_P (t))
     pop_nested_class ();
   else
     pop_from_top_level ();
