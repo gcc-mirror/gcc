@@ -2982,7 +2982,8 @@ duplicate_decls (newdecl, olddecl)
 	cp_error ("invalid redeclaration of %D", newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
       DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
-      DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
+      if (DECL_TEMPLATE_INFO (newdecl))
+	DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
       DECL_TEMPLATE_SPECIALIZATIONS (olddecl) 
 	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
 		   DECL_TEMPLATE_SPECIALIZATIONS (newdecl));
@@ -11861,12 +11862,13 @@ start_enum (name)
    Returns ENUMTYPE.  */
 
 tree
-finish_enum (enumtype, values)
-     register tree enumtype, values;
+finish_enum (enumtype)
+     tree enumtype;
 {
   register tree minnode = NULL_TREE, maxnode = NULL_TREE;
   /* Calculate the maximum value of any enumerator in this type.  */
 
+  tree values = TYPE_VALUES (enumtype);
   if (values)
     {
       tree pair;
@@ -11899,12 +11901,15 @@ finish_enum (enumtype, values)
 		  = build1 (NOP_EXPR, enumtype, value);
 	      TREE_TYPE (value) = enumtype;
 
-	      if (!minnode)
-		minnode = maxnode = value;
-	      else if (tree_int_cst_lt (maxnode, value))
-		maxnode = value;
-	      else if (tree_int_cst_lt (value, minnode))
-		minnode = value;
+	      if (!processing_template_decl)
+		{
+		  if (!minnode)
+		    minnode = maxnode = value;
+		  else if (tree_int_cst_lt (maxnode, value))
+		    maxnode = value;
+		  else if (tree_int_cst_lt (value, minnode))
+		    minnode = value;
+		}
 	    }
 
 	  /* In the list we're building up, we want the enumeration

@@ -85,7 +85,7 @@ static tree tsubst_expr_values PROTO((tree, tree));
 static int list_eq PROTO((tree, tree));
 static tree get_class_bindings PROTO((tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int));
-static tree tsubst_enum	PROTO((tree, tree));
+static void tsubst_enum	PROTO((tree, tree, tree));
 static tree add_to_template_args PROTO((tree, tree));
 static tree add_outermost_template_args PROTO((tree, tree));
 static void maybe_adjust_types_for_deduction PROTO((unification_kind_t, tree*,
@@ -3152,8 +3152,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
      int entering_scope;
 {
   tree template = NULL_TREE, parmlist;
-  char *mangled_name;
-  tree id, t;
+  tree t;
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
@@ -3242,11 +3241,14 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     }
   else 
     {
+      extern tree current_local_enum;
       tree template_type = TREE_TYPE (template);
       tree type_decl;
       tree found = NULL_TREE;
       int arg_depth;
       int parm_depth;
+      int is_partial_instantiation;
+      tree prev_local_enum;
 
       template = most_general_template (template);
       parmlist = DECL_TEMPLATE_PARMS (template);
@@ -3398,13 +3400,20 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	 DECL_TEMPLATE_INSTANTIATIONS list, it must be permanent.  */
       push_obstacks (&permanent_obstack, &permanent_obstack);
       
+      /* This type is a "partial instantiation" if any of the template
+	 arguments still inolve template parameters.  */
+      is_partial_instantiation = uses_template_parms (arglist);
+
       /* Create the type.  */
       if (TREE_CODE (template_type) == ENUMERAL_TYPE)
 	{
-	  if (!uses_template_parms (arglist))
-	    t = tsubst_enum (template_type, arglist);
+	  if (!is_partial_instantiation)
+	    {
+	      prev_local_enum = current_local_enum;
+	      t = start_enum (TYPE_IDENTIFIER (template_type));
+	    }
 	  else
-	    /* We don't want to call tsubst_enum for this type, since
+	    /* We don't want to call start_enum for this type, since
 	       the values for the enumeration constants may involve
 	       template parameters.  And, no one should be interested
 	       in the enumeration constants for such a type.  */
@@ -3439,22 +3448,37 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       else
 	type_decl = TYPE_NAME (t);
 
-      /* We're done with the permanent obstack, now.  */
-      pop_obstacks ();
-
       /* Set up the template information.  */
       arglist = copy_to_permanent (arglist);
       SET_TYPE_TEMPLATE_INFO (t,
-			      perm_tree_cons (template, arglist, NULL_TREE));
-      DECL_TEMPLATE_INSTANTIATIONS (template) = perm_tree_cons
-	(arglist, t, DECL_TEMPLATE_INSTANTIATIONS (template));
+			      tree_cons (template, arglist, NULL_TREE));
+      DECL_TEMPLATE_INSTANTIATIONS (template) 
+	= tree_cons (arglist, t, 
+		     DECL_TEMPLATE_INSTANTIATIONS (template));
+
+      if (TREE_CODE (t) == ENUMERAL_TYPE 
+	  && !is_partial_instantiation)
+	{
+	  /* Now that the type has been registered on the
+	     instantiations list, we set up the enumerators.  Because
+	     the enumeration constants may involve the enumeration
+	     type itself, we make sure to register the type first, and
+	     then create the constants.  That way, doing tsubst_expr
+	     for the enumeration constants won't result in recursive
+	     calls here; we'll find the instantiation and exit above.  */
+	  tsubst_enum (template_type, t, arglist);
+	  current_local_enum = prev_local_enum;
+	}
+
+      /* We're done with the permanent obstack, now.  */
+      pop_obstacks ();
 
       /* Reset the name of the type, now that CLASSTYPE_TEMPLATE_INFO
 	 is set up.  */
       if (TREE_CODE (t) != ENUMERAL_TYPE)
 	DECL_NAME (type_decl) = classtype_mangled_name (t);
       DECL_ASSEMBLER_NAME (type_decl) = DECL_NAME (type_decl);
-      if (! uses_template_parms (arglist))
+      if (!is_partial_instantiation)
 	{
 	  DECL_ASSEMBLER_NAME (type_decl)
 	    = get_identifier (build_overload_name (t, 1, 1));
@@ -4708,8 +4732,6 @@ tsubst_decl (t, args, type, in_decl)
 	/* We can get here when processing a member template function
 	   of a template class.  */
 	tree decl = DECL_TEMPLATE_RESULT (t);
-	tree parms;
-	tree* new_parms;
 	tree spec;
 	int is_template_template_parm = DECL_TEMPLATE_TEMPLATE_PARM_P (t);
 
@@ -7781,7 +7803,6 @@ regenerate_decl_from_template (decl, tmpl)
      tree tmpl;
 {
   tree args;
-  tree save_ti;
   tree code_pattern;
   tree new_decl;
   tree gen_tmpl;
@@ -8172,17 +8193,17 @@ add_maybe_template (d, fns)
   DECL_MAYBE_TEMPLATE (d) = 1;
 }
 
-/* Instantiate an enumerated type.  */
+/* Instantiate an enumerated type.  TAG is the template type, NEWTAG
+   is the instantiation (which should have been created with
+   start_enum) and ARGS are the template arguments to use.  */
 
-static tree
-tsubst_enum (tag, args)
-     tree tag, args;
+static void
+tsubst_enum (tag, newtag, args)
+     tree tag;
+     tree newtag;
+     tree args;
 {
-  extern tree current_local_enum;
-  tree prev_local_enum = current_local_enum;
-
-  tree newtag = start_enum (TYPE_IDENTIFIER (tag));
-  tree e, values = NULL_TREE;
+  tree e;
 
   for (e = TYPE_VALUES (tag); e; e = TREE_CHAIN (e))
     {
@@ -8194,21 +8215,22 @@ tsubst_enum (tag, args)
 	{
 	  if (TREE_CODE (value) == NOP_EXPR)
 	    /* This is the special case where the value is really a
-	   TEMPLATE_PARM_INDEX.  See finish_enum.  */
+	       TEMPLATE_PARM_INDEX.  See finish_enum.  */
 	    value = TREE_OPERAND (value, 0);
 	  value = tsubst_expr (value, args, NULL_TREE);
 	}
 
       elt = build_enumerator (TREE_PURPOSE (e), value);
-      TREE_CHAIN (elt) = values;
-      values = elt;
+
+      /* We save the enumerators we have built so far in the
+	 TYPE_VALUES so that if the enumeration constants for
+	 subsequent enumerators involve those for previous ones,
+	 tsubst_copy will be able to find them.  */
+      TREE_CHAIN (elt) = TYPE_VALUES (newtag);
+      TYPE_VALUES (newtag) = elt;
     }
 
-  finish_enum (newtag, values);
-
-  current_local_enum = prev_local_enum;
-
-  return newtag;
+  finish_enum (newtag);
 }
 
 /* Set the DECL_ASSEMBLER_NAME for DECL, which is a FUNCTION_DECL that

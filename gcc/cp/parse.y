@@ -2060,24 +2060,26 @@ structsp:
 		{ $<itype>3 = suspend_momentary ();
 		  $<ttype>$ = start_enum ($2); }
 	  enumlist maybecomma_warn '}'
-		{ $$.t = finish_enum ($<ttype>4, $5);
+		{ TYPE_VALUES ($<ttype>4) = $5;
+		  $$.t = finish_enum ($<ttype>4);
 		  $$.new_type_flag = 1;
 		  resume_momentary ((int) $<itype>3);
 		  check_for_missing_semicolon ($<ttype>4); }
 	| ENUM identifier '{' '}'
-		{ $$.t = finish_enum (start_enum ($2), NULL_TREE);
+		{ $$.t = finish_enum (start_enum ($2));
 		  $$.new_type_flag = 1;
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{'
 		{ $<itype>2 = suspend_momentary ();
 		  $<ttype>$ = start_enum (make_anon_name ()); }
 	  enumlist maybecomma_warn '}'
-		{ $$.t = finish_enum ($<ttype>3, $4);
+                { TYPE_VALUES ($<ttype>3) = $4;
+		  $$.t = finish_enum ($<ttype>3);
 		  resume_momentary ((int) $<itype>1);
 		  check_for_missing_semicolon ($<ttype>3);
 		  $$.new_type_flag = 1; }
 	| ENUM '{' '}'
-		{ $$.t = finish_enum (start_enum (make_anon_name()), NULL_TREE);
+		{ $$.t = finish_enum (start_enum (make_anon_name()));
 		  $$.new_type_flag = 1;
 		  check_for_missing_semicolon ($$.t); }
 	| ENUM identifier
