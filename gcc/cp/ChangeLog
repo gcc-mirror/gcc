@@ -1,3 +1,9 @@
+2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
+
+	PR c++/7050
+	* expr.c (cxx_expand_expr): Return const0_rtx for throw
+	expressions.
+
 2003-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9798

@@ -1,3 +1,9 @@
+2003-03-12  Andrew Lewycky  <andrew@mxc.ca>
+
+	PR c++/7050
+	* expr.c (store_expr): Don't attempt to store void-typed trees,
+	just evaluate them for side effects.
+
 2003-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	Backport from mainline:
