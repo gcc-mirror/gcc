@@ -1,3 +1,6 @@
+/* { dg-do preprocess }
+   { dg-options "-fno-show-column" } */
+
 #pragma poison foo
 foo			/* { dg-error "foo" "use of foo" } */
 #pragma poison foo2 foo3

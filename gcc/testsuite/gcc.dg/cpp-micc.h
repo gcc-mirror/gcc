@@ -3,7 +3,7 @@
 #ifndef CPP_MICC_H
 #define CPP_MICC_H
 
-int a;
+int b;
 
 #endif
 

@@ -1,3 +1,18 @@
+2000-06-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/20000625-1.c, gcc.dg/20000625-2.c, gcc.dg/cpp-mi3.c:
+        New tests.
+	* gcc.dg/cpp-mi3.def: New file.
+
+	* gcc.dg/cpp-as1.c: Also test that macro expansion does not occur
+	inside assertions.
+	* gcc.dg/cpp-as2.c: Make error regexps match either old or new
+	lexer's error messages.
+	* gcc.dg/cpp-mi.c: Use -H and examine the output, don't try to
+	divine anything from the linemarkers.
+	* gcc.dg/cpp-micc.h: Fix typo (declare int b, not int a);
+	* gcc.dg/poison-1.c: Preprocess only; apply -fno-show-column.
+
 2000-06-23  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* gcc.dg/20000623-1.c: New test.
