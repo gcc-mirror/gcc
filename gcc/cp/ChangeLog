@@ -1,3 +1,13 @@
+2004-07-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct tree_pair_s): New.
+	(typedef tree_pair_p): New.
+	(DEF_VEC_O(tree_pair_s)): New.
+	(struct lang_type_class): Make vcall_indices a VEC(tree_pair_s).
+	(CLASSTYPE_VCALL_INDICES): Update documentation.
+	* class.c (get_vcall_index): Adjust.
+	(add_vcall_offset): Adjust.
+
 2004-07-27  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* pt.c, typeck.c: Remove spurious carriage returns.

@@ -1955,17 +1955,19 @@ find_final_overrider (tree derived, tree binfo, tree fn)
 static tree
 get_vcall_index (tree fn, tree type)
 {
-  tree v;
+  VEC (tree_pair_s) *indices = CLASSTYPE_VCALL_INDICES (type);
+  tree_pair_p p;
+  unsigned ix;
 
-  for (v = CLASSTYPE_VCALL_INDICES (type); v; v = TREE_CHAIN (v))
-    if ((DECL_DESTRUCTOR_P (fn) && DECL_DESTRUCTOR_P (TREE_PURPOSE (v)))
-	|| same_signature_p (fn, TREE_PURPOSE (v)))
-      break;
+  for (ix = 0; VEC_iterate (tree_pair_s, indices, ix, p); ix++)
+    if ((DECL_DESTRUCTOR_P (fn) && DECL_DESTRUCTOR_P (p->purpose))
+	|| same_signature_p (fn, p->purpose))
+      return p->value;
 
   /* There should always be an appropriate index.  */
-  my_friendly_assert (v, 20021103);
+  abort ();
 
-  return TREE_VALUE (v);
+  return NULL_TREE;
 }
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
@@ -7682,10 +7684,14 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
      the vtable for the most derived class, remember the vcall
      offset.  */
   if (vid->binfo == TYPE_BINFO (vid->derived))
-    CLASSTYPE_VCALL_INDICES (vid->derived) 
-      = tree_cons (orig_fn, vid->index, 
-		   CLASSTYPE_VCALL_INDICES (vid->derived));
-
+    {
+      tree_pair_p elt = VEC_safe_push (tree_pair_s,
+				       CLASSTYPE_VCALL_INDICES (vid->derived),
+				       NULL);
+      elt->purpose = orig_fn;
+      elt->value = vid->index;
+    }
+  
   /* The next vcall offset will be found at a more negative
      offset.  */
   vid->index = size_binop (MINUS_EXPR, vid->index,
