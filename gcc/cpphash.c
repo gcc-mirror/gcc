@@ -34,6 +34,11 @@ static int change_newlines	 PARAMS ((U_CHAR *, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static int unsafe_chars		 PARAMS ((int, int));
+static int macro_cleanup	 PARAMS ((cpp_buffer *, cpp_reader *));
+static enum cpp_token macarg	 PARAMS ((cpp_reader *, int));
+static struct tm *timestamp	 PARAMS ((cpp_reader *));
+static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
+
 
 #define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
@@ -60,6 +65,9 @@ struct arglist
   int argno;
   char rest_args;
 };
+
+static DEFINITION *collect_expansion PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *,
+					      int, struct arglist *));
 
 /* This structure represents one parsed argument in a macro call.
    `raw' points to the argument text as written (`raw_length' is its length).
@@ -203,7 +211,7 @@ delete_macro (hp)
 HASHNODE *
 cpp_install (pfile, name, len, type, value, hash)
      cpp_reader *pfile;
-     U_CHAR *name;
+     const U_CHAR *name;
      int len;
      enum node_type type;
      const char *value;
@@ -211,7 +219,7 @@ cpp_install (pfile, name, len, type, value, hash)
 {
   register HASHNODE *hp;
   register int i, bucket;
-  register U_CHAR *p;
+  register const U_CHAR *p;
 
   if (len < 0)
     {
@@ -594,7 +602,8 @@ create_definition (buf, limit, pfile, predefinition)
   int sym_length;		/* and how long it is */
   int rest_args = 0;
   long line, col;
-  char *file = CPP_BUFFER (pfile) ? CPP_BUFFER (pfile)->nominal_fname : "";
+  const char *file =
+    CPP_BUFFER (pfile) ? CPP_BUFFER (pfile)->nominal_fname : "";
   DEFINITION *defn;
   int arglengths = 0;		/* Accumulate lengths of arg names
 				   plus number of args.  */
@@ -883,7 +892,7 @@ timestamp (pfile)
   return pfile->timebuf;
 }
 
-static char *monthnames[] =
+static const char * const monthnames[] =
 {
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",

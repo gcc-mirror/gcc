@@ -38,7 +38,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Forward declarations.  */
 
-static char *my_strerror		PROTO ((int));
+static const char *my_strerror		PROTO ((int));
 static void validate_else		PROTO ((cpp_reader *, const char *));
 static HOST_WIDEST_INT eval_if_expression	PROTO ((cpp_reader *));
 
@@ -86,6 +86,24 @@ static int do_sccs PARAMS ((cpp_reader *, const struct directive *));
 static int do_assert PARAMS ((cpp_reader *, const struct directive *));
 static int do_unassert PARAMS ((cpp_reader *, const struct directive *));
 static int do_warning PARAMS ((cpp_reader *, const struct directive *));
+static enum cpp_token null_underflow PARAMS ((cpp_reader *));
+static int null_cleanup PARAMS ((cpp_buffer *, cpp_reader *));
+static int skip_comment PARAMS ((cpp_reader *, int));
+static int copy_comment PARAMS ((cpp_reader *, int));
+static void copy_rest_of_line PARAMS ((cpp_reader *));
+static int handle_directive PARAMS ((cpp_reader *));
+static void pass_thru_directive PARAMS ((const U_CHAR *, size_t, cpp_reader *,
+					 const struct directive *));
+static enum cpp_token get_directive_token PARAMS ((cpp_reader *));
+static int read_line_number PARAMS ((cpp_reader *, int *));
+static void cpp_print_file_and_line PARAMS ((cpp_reader *));
+static void v_cpp_error PARAMS ((cpp_reader *, const char *, va_list));
+static void v_cpp_warning PARAMS ((cpp_reader *, const char *, va_list));
+static void v_cpp_error_with_line PARAMS ((cpp_reader *, int, int,
+					   const char *, va_list));
+static void v_cpp_warning_with_line PARAMS ((cpp_reader *, int, int, const char *, va_list));
+static U_CHAR *detect_if_not_defined PARAMS ((cpp_reader *));
+static int consider_directive_while_skipping PARAMS ((cpp_reader *, IF_STACK_FRAME *));
 
 /* Here is the actual list of #-directives.
    This table is ordered by frequency of occurrence; the numbers
@@ -557,7 +575,7 @@ handle_directive (pfile)
 
 static void
 pass_thru_directive (buf, len, pfile, keyword)
-     U_CHAR *buf;
+     const U_CHAR *buf;
      size_t len;
      cpp_reader *pfile;
      const struct directive *keyword;
@@ -578,10 +596,10 @@ pass_thru_directive (buf, len, pfile, keyword)
 int
 check_macro_name (pfile, symname, assertion)
      cpp_reader *pfile;
-     U_CHAR *symname;
+     const U_CHAR *symname;
      int assertion;
 {
-  U_CHAR *p;
+  const U_CHAR *p;
   int sym_length;
 
   for (p = symname; is_idchar[*p]; p++)
@@ -786,7 +804,7 @@ cpp_scan_buffer (pfile)
 void
 cpp_expand_to_buffer (pfile, buf, length)
      cpp_reader *pfile;
-     U_CHAR *buf;
+     const U_CHAR *buf;
      int length;
 {
   register cpp_buffer *ip;
@@ -3076,7 +3094,7 @@ parse_goto_mark (pfile)
   ip->mark = -1;
 }
 
-void
+static void
 cpp_print_file_and_line (pfile)
      cpp_reader *pfile;
 {
@@ -3312,12 +3330,12 @@ cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column,
    giving specified file name and line number, not current.  */
 
 void
-cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line,
-					const char *msgid, ...))
+cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, const char *file,
+					int line, const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   cpp_reader *pfile;
-  char *file;
+  const char *file;
   int line;
   const char *msgid;
 #endif
@@ -3327,7 +3345,7 @@ cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line,
 
 #ifndef ANSI_PROTOTYPES
   pfile = va_arg (ap, cpp_reader *);
-  file = va_arg (ap, char *);
+  file = va_arg (ap, const char *);
   line = va_arg (ap, int);
   msgid = va_arg (ap, const char *);
 #endif
@@ -3344,11 +3362,11 @@ cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line,
 /* my_strerror - return the descriptive text associated with an
    `errno' code.  */
 
-static char *
+static const char *
 my_strerror (errnum)
      int errnum;
 {
-  char *result;
+  const char *result;
 
 #ifndef VMS
 #ifndef HAVE_STRERROR

@@ -32,12 +32,13 @@ extern char *getenv ();
 #include "cpplib.h"
 #include "intl.h"
 
-char *progname;
+const char *progname;
 
 cpp_reader parse_in;
 cpp_options options;
 
 
+extern int main				PARAMS ((int, char **));
 int
 main (argc, argv)
      int argc;
@@ -67,12 +68,12 @@ main (argc, argv)
   if (argi < argc && ! CPP_FATAL_ERRORS (&parse_in))
     cpp_fatal (&parse_in, "Invalid option `%s'", argv[argi]);
   if (CPP_FATAL_ERRORS (&parse_in))
-    exit (FATAL_EXIT_CODE);
+    return (FATAL_EXIT_CODE);
       
   parse_in.show_column = 1;
 
   if (! cpp_start_read (&parse_in, opts->in_fname))
-    exit (FATAL_EXIT_CODE);
+    return (FATAL_EXIT_CODE);
 
   /* Now that we know the input file is valid, open the output.  */
 
@@ -117,6 +118,6 @@ main (argc, argv)
     cpp_pfatal_with_name (&parse_in, opts->out_fname);
 
   if (parse_in.errors)
-    exit (FATAL_EXIT_CODE);
-  exit (SUCCESS_EXIT_CODE);
+    return (FATAL_EXIT_CODE);
+  return (SUCCESS_EXIT_CODE);
 }

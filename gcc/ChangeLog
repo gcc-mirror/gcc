@@ -1,3 +1,55 @@
+Tue Sep  7 11:39:41 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpperror.c (cpp_file_line_for_message): Constify a char*.
+
+	* cppexp.c (parse_number, parse_charconst, cpp_lex,
+	cpp_parse_expr): Add static prototypes.
+	(parse_charconst): Don't cast away const-ness.
+	(token): Constify a char*.
+
+	* cppfiles.c (file_name_list, include_hash, find_include_file,
+	finclude, initialize_input_buffer): Constify a char*.
+	(file_cleanup, find_position): Add static prototypes.
+
+	* cpphash.c (macro_cleanup, macarg, timestamp, special_symbol,
+	collect_expansion): Add static prototypes.
+	(cpp_install, create_definition, monthnames): Constify a char*.
+
+	* cpphash.h (cpp_install): Likewise.
+
+	* cppinit.c (known_suffixes, default_include,
+	dump_special_to_buffer, NAME, cpp_start_read, cpp_finish): Likewise.
+	(base_name, dump_special_to_buffer, initialize_dependency_output):
+	Add static prototypes.
+
+	* cpplib.c (my_strerror): Constify a char*.
+	(null_underflow, null_cleanup, skip_comment, copy_comment,
+	copy_rest_of_line, handle_directive, pass_thru_directive,
+	get_directive_token, read_line_number, cpp_print_file_and_line,
+	v_cpp_error, v_cpp_warning, v_cpp_error_with_line,
+	v_cpp_warning_with_line, detect_if_not_defined,
+	consider_directive_while_skipping): Add static prototypes.
+	(pass_thru_directive, check_macro_name, cpp_expand_to_buffer,
+	cpp_pedwarn_with_file_and_line): Constify a char*.
+
+	* cpplib.h (cpp_options, include_hash, progname, definition,
+	cpp_pedwarn_with_file_and_line, cpp_expand_to_buffer,
+	check_macro_name, cpp_pfatal_with_name, cpp_file_line_for_message,
+	find_include_file, deps_output, include_hash): Constify a char*.
+
+	* cppmain.c (progname): Constify.
+	(main): Add prototype.  Use return, not exit.
+
+	* fix-header.c (fatal, add_symbols, lookup_std_proto, write_lbrac,
+	recognized_macro, check_macro_names, read_scan_file, write_rbrac,
+	inf_skip_spaces, inf_read_upto, inf_scan_ident, inf_scan_ident,
+	check_protection): Add static prototype.
+	(xfree): Remove.
+	(progname, recognized_macrom, recognized_extern): Constify a char*.
+	(main): Add prototype.
+
+	* gen-protos.c (progname): Constify a char*.
+
 Tue Sep  7 00:47:52 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (free_emit_status): Take decl as a parameter.

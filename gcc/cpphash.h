@@ -48,7 +48,7 @@ typedef struct hashnode HASHNODE;
 #define HASHSTEP(old, c) ((old << 2) + c)
 #define MAKE_POS(v) (v & 0x7fffffff) /* make number positive */
 
-extern HASHNODE *cpp_install	  PARAMS ((cpp_reader *, U_CHAR *, int,
+extern HASHNODE *cpp_install	  PARAMS ((cpp_reader *, const U_CHAR *, int,
 					   enum node_type, const char *, int));
 extern int hashf		  PARAMS ((const U_CHAR *, int, int));
 extern void delete_macro	  PARAMS ((HASHNODE *));

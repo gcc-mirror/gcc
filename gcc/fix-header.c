@@ -78,7 +78,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 
 static void v_fatal PROTO ((const char *, va_list)) ATTRIBUTE_NORETURN;
-void fatal PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void fatal PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 sstring buf;
 
@@ -187,7 +187,19 @@ struct symbol_list {
 struct symbol_list symbol_table[SYMBOL_TABLE_SIZE];
 int cur_symbol_table_size;
 
-void
+static void add_symbols PROTO ((symbol_flags, namelist));
+static struct fn_decl *lookup_std_proto PROTO ((const char *, int));
+static void write_lbrac PROTO ((void));
+static void recognized_macro PROTO ((const char *));
+static void check_macro_names PROTO ((cpp_reader *, namelist));
+static void read_scan_file PROTO ((char *, int, char **));
+static void write_rbrac PROTO ((void));
+static int inf_skip_spaces PROTO ((int));
+static int inf_read_upto PROTO ((sstring *, int));
+static int inf_scan_ident PROTO ((sstring *, int));
+static int check_protection PROTO ((int *, int *));
+
+static void
 add_symbols (flags, names)
      symbol_flags flags;
      namelist names;
@@ -358,22 +370,13 @@ int seen_errno = 0;
 /* The following are only used when handling stdlib.h */
 int seen_EXIT_FAILURE = 0, seen_EXIT_SUCCESS = 0;
 
-/* Wrapper around free, to avoid prototype clashes.  */
-
-void
-xfree (ptr)
-     char *ptr;
-{
-  free (ptr);
-}
-
 #define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free xfree
+#define obstack_chunk_free free
 struct obstack scan_file_obstack;
 
 /* NOTE:  If you edit this, also edit gen-protos.c !! */
 
-struct fn_decl *
+static struct fn_decl *
 lookup_std_proto (name, name_length)
      const char *name;
      int name_length;
@@ -397,7 +400,7 @@ lookup_std_proto (name, name_length)
 
 char *inc_filename;
 int inc_filename_length;
-char *progname = "fix-header";
+const char *progname = "fix-header";
 FILE *outf;
 sstring line;
 
@@ -406,7 +409,7 @@ int lbrac_line, rbrac_line;
 int required_unseen_count = 0;
 int required_other = 0;
 
-void 
+static void 
 write_lbrac ()
 {
   
@@ -443,9 +446,9 @@ struct partial_proto required_dummy_proto, seen_dummy_proto;
 #define SET_SEEN(FN) ((FN)->partial = &seen_dummy_proto)
 #define SEEN(FN) ((FN)->partial == &seen_dummy_proto)
 
-void
+static void
 recognized_macro (fname)
-     char *fname;
+     const char *fname;
 {
   /* The original include file defines fname as a macro.  */
   struct fn_decl *fn = lookup_std_proto (fname, strlen (fname));
@@ -496,8 +499,8 @@ recognized_macro (fname)
 void
 recognized_extern (name, name_length, type, type_length)
      char *name;
-     char *type;
-     int name_length, type_length;
+     char *type ATTRIBUTE_UNUSED;
+     int name_length, type_length ATTRIBUTE_UNUSED;
 {
   switch (special_file_handling)
     {
@@ -594,7 +597,7 @@ recognized_function (fname, fname_length,
 /* For any name in NAMES that is defined as a macro,
    call recognized_macro on it.  */
 
-void
+static void
 check_macro_names (pfile, names)
      cpp_reader *pfile;
      namelist names;
@@ -607,7 +610,7 @@ check_macro_names (pfile, names)
     }
 }
 
-void
+static void
 read_scan_file (in_fname, argc, argv)
      char *in_fname;
      int argc;
@@ -728,7 +731,7 @@ read_scan_file (in_fname, argc, argv)
     }
 }
 
-void
+static void
 write_rbrac ()
 {
   struct fn_decl *fn;
@@ -871,7 +874,7 @@ write_rbrac ()
 #define INF_GET() (inf_ptr < inf_limit ? *(unsigned char *) inf_ptr++ : EOF)
 #define INF_UNGET(c) ((c)!=EOF && inf_ptr--)
 
-int
+static int
 inf_skip_spaces (c)
      int c;
 {
@@ -910,7 +913,7 @@ inf_skip_spaces (c)
 
 /* Read into STR from inf_buffer upto DELIM.  */
 
-int
+static int
 inf_read_upto (str, delim)
      sstring *str;
      int delim;
@@ -928,7 +931,7 @@ inf_read_upto (str, delim)
   return ch;
 }
 
-int
+static int
 inf_scan_ident (s, c)
      register sstring *s;
      int c;
@@ -954,7 +957,7 @@ inf_scan_ident (s, c)
    and setting *endif_line to the final #endif.
    Otherwise return 0.  */
 
-int
+static int
 check_protection (ifndef_line, endif_line)
      int *ifndef_line, *endif_line;
 {
@@ -1058,6 +1061,8 @@ check_protection (ifndef_line, endif_line)
 
   return 1;
 }
+
+extern int main			PROTO ((int, char **));
 
 int
 main (argc, argv)
@@ -1314,7 +1319,7 @@ v_fatal (str, ap)
   exit (FATAL_EXIT_CODE);
 }
 
-void
+static void
 fatal VPROTO ((const char *str, ...))
 {
 #ifndef ANSI_PROTOTYPES

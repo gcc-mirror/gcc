@@ -327,7 +327,7 @@ struct cpp_options {
   char *in_fname;
 
   /* Name of output file, for error messages.  */
-  char *out_fname;
+  const char *out_fname;
 
   struct file_name_map_list *map_list;
 
@@ -551,14 +551,14 @@ struct include_hash
   struct file_name_list *foundhere;
   char *name;		/* (partial) pathname of file */
   char *nshort;		/* name of file as referenced in #include */
-  char *control_macro;	/* macro, if any, preventing reinclusion - see
-			   redundant_include_p */
+  const char *control_macro; /* macro, if any, preventing reinclusion - see
+				redundant_include_p */
   char *buf, *limit;	/* for file content cache, not yet implemented */
 };
 
 /* Name under which this program was invoked.  */
 
-extern char *progname;
+extern const char *progname;
 
 /* The structure of a node in the hash table.  The hash table
    has entries for all tokens defined by #define commands (type T_MACRO),
@@ -641,7 +641,7 @@ struct definition {
 				/* came from the command line */
   unsigned char *expansion;
   int line;			/* Line number of definition */
-  char *file;			/* File of definition */
+  const char *file;		/* File of definition */
   char rest_args;		/* Nonzero if last arg. absorbs the rest */
   struct reflist {
     struct reflist *next;
@@ -711,7 +711,7 @@ extern void cpp_warning_with_line PVPROTO ((cpp_reader *, int, int, const char *
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
-extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, char *, int, const char *, ...))
+extern void cpp_pedwarn_with_file_and_line PVPROTO ((cpp_reader *, const char *, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
 extern void cpp_message_from_errno PROTO ((cpp_reader *, int, const char *));
 extern void cpp_error_from_errno PROTO ((cpp_reader *, const char *));
@@ -735,9 +735,10 @@ extern void skip_rest_of_line PARAMS ((cpp_reader *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 
 extern void quote_string		PARAMS ((cpp_reader *, const char *));
-extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, U_CHAR *, int));
+extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
+						 int));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
-extern int check_macro_name		PARAMS ((cpp_reader *, U_CHAR *, int));
+extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *, int));
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, enter_file, leave_file};
@@ -749,22 +750,25 @@ extern void cpp_fatal PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 extern void cpp_message PVPROTO ((cpp_reader *, int, const char *, ...))
   ATTRIBUTE_PRINTF_3;
-extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *));
-extern void cpp_file_line_for_message PROTO ((cpp_reader *, char *, int, int));
+extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *))
+  ATTRIBUTE_NORETURN;
+extern void cpp_file_line_for_message PROTO ((cpp_reader *, const char *,
+					      int, int));
 extern void cpp_print_containing_files PROTO ((cpp_reader *));
 extern void cpp_notice PVPROTO ((const char *msgid, ...)) ATTRIBUTE_PRINTF_1;
 
 /* In cppfiles.c */
 extern void simplify_pathname		PROTO ((char *));
 extern void merge_include_chains	PROTO ((struct cpp_options *));
-extern int find_include_file		PROTO ((cpp_reader *, char *,
+extern int find_include_file		PROTO ((cpp_reader *, const char *,
 						struct file_name_list *,
 						struct include_hash **,
 						int *));
 extern int finclude			PROTO ((cpp_reader *, int,
 					        struct include_hash *));
-extern void deps_output			PROTO ((cpp_reader *, char *, int));
-extern struct include_hash *include_hash PROTO ((cpp_reader *, char *, int));
+extern void deps_output			PROTO ((cpp_reader *,
+						const char *, int));
+extern struct include_hash *include_hash PROTO ((cpp_reader *, const char *, int));
 
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
