@@ -1022,6 +1022,8 @@ struct cum_arg
    switch on CODE.  */
 
 #define RTX_COSTS(RTX, CODE, OUTER_CODE)		\
+  case AND:						\
+    return COSTS_N_INSNS (h8300_and_costs (RTX));	\
   case MOD:						\
   case DIV:						\
     return 60;						\

@@ -1,3 +1,10 @@
+2002-11-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_and_costs): New.
+	* config/h8300/h8300.h (RTX_COSTS): Use h8300_and_costs.
+	* config/h8300/h8300-protos.h: Add a prototype for
+	h8300_and_costs.
+
 2002-11-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/rs6000/rs6000.c (altivec_init_builtins): Make the
