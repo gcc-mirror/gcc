@@ -1,3 +1,9 @@
+2000-01-08  Loren J. Rittle  <ljrittle@acm.org>
+
+	* gcc.c-torture/execute/ieee/mzero2.x: Adjust statement of
+	where a failure is expected.
+	* gcc.c-torture/execute/ieee/rbug.x: Likewise.
+
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old_deja/g++.pt/instantiate12.C: New test.
