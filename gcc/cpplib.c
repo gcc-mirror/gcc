@@ -510,7 +510,7 @@ quote_string (pfile, src)
 	  CPP_PUTC_Q (pfile, c);
 	else
 	  {
-	    sprintf (CPP_PWRITTEN (pfile), "\\%03o", c);
+	    sprintf ((char *) CPP_PWRITTEN (pfile), "\\%03o", c);
 	    CPP_ADJUST_WRITTEN (pfile, 4);
 	  }
 	break;
@@ -2133,7 +2133,7 @@ output_line_command (pfile, conditional, file_change)
     CPP_PUTS_Q (pfile, sharp_line, sizeof(sharp_line)-1);
   }
 
-  sprintf (CPP_PWRITTEN (pfile), "%d ", line);
+  sprintf ((char *) CPP_PWRITTEN (pfile), "%d ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
@@ -2809,7 +2809,7 @@ macroexpand (pfile, hp)
 		      else
 			{
 			  CPP_RESERVE (pfile, 4);
-			  sprintf (CPP_PWRITTEN (pfile), "\\%03o",
+			  sprintf ((char *) CPP_PWRITTEN (pfile), "\\%03o",
 				   (unsigned int) c);
 			  CPP_ADJUST_WRITTEN (pfile, 4);
 			}
@@ -3728,7 +3728,7 @@ do_line (pfile, keyword)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi (pfile->token_buffer + old_written) - 1;
+  new_lineno = atoi ((char *) pfile->token_buffer + old_written) - 1;
   CPP_SET_WRITTEN (pfile, old_written);
 
   /* NEW_LINENO is one less than the actual line number here.  */
