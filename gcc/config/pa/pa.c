@@ -75,18 +75,19 @@ int n_deferred_plabels = 0;
 void
 override_options ()
 {
-  /* Default to 700 scheduling which is reasonable for older 800 processors
-     correct for the 700s, and not too bad for the 7100s and 7100LCs.  */
+  /* Default to 7100 scheduling.  If the 7100LC scheduling ever
+     gets reasonably tuned, it should be the default since that
+     what most PAs sold now are.  */
   if (pa_cpu_string == NULL
-      || ! strcmp (pa_cpu_string, "700"))
-    {
-      pa_cpu_string = "700";
-      pa_cpu = PROCESSOR_700;
-    }
-  else if (! strcmp (pa_cpu_string, "7100"))
+      || ! strcmp (pa_cpu_string, "7100"))
     {
       pa_cpu_string = "7100";
       pa_cpu = PROCESSOR_7100;
+    }
+  else if (! strcmp (pa_cpu_string, "700"))
+    {
+      pa_cpu_string = "700";
+      pa_cpu = PROCESSOR_700;
     }
   else if (! strcmp (pa_cpu_string, "7100LC"))
     {
