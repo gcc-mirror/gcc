@@ -12,6 +12,9 @@
 	* modulo-sched.c: Remove unused prototype
 	set_row_column_for_ps.
 
+	* tree-ssa-phiopt.c (tree_ssa_phiopt,
+	replace_phi_edge_with_variable): Remove unused variable i.
+
 2005-03-07  Per Bothner  <per@bothner.com>
 
 	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.

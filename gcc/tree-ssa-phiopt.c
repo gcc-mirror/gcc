@@ -178,7 +178,6 @@ tree_ssa_phiopt (void)
       if (phi && PHI_CHAIN (phi) == NULL)
 	{
 	  tree arg0 = NULL, arg1 = NULL;
-	  int i;
 
 	  arg0 = PHI_ARG_DEF_TREE (phi, e1->dest_idx);
 	  arg1 = PHI_ARG_DEF_TREE (phi, e2->dest_idx);
@@ -229,7 +228,6 @@ replace_phi_edge_with_variable (basic_block cond_block, basic_block bb,
 				edge e, tree phi, tree new)
 {
   basic_block block_to_remove;
-  int i;
   block_stmt_iterator bsi;
 
   /* Change the PHI argument to new.  */
