@@ -314,8 +314,8 @@
   "lprd sp,%0")
 
 (define_insn "movsi"
-  [(set (match_operand:SI 0 "general_operand" "=g<,*f,g")
-	(match_operand:SI 1 "general_operand" "gxy,g,*f"))]
+  [(set (match_operand:SI 0 "general_operand" "=g<,g<,*f,g")
+	(match_operand:SI 1 "general_operand" "g,?xy,g,*f"))]
   ""
   "*
 {
