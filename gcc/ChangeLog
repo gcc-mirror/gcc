@@ -1,3 +1,11 @@
+2003-11-03  Syd Polk  <spolk@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Add G3, G4, and G5
+	marketing names to the list of supported processors.
+	* config/rs6000/rs6000.h: Ditto.
+	* doc/invoke.texi: Ditto.
+	* config.gcc: Ditto.
+
 2003-11-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Allow tab before va_list.
