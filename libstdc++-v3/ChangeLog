@@ -1,3 +1,11 @@
+2004-07-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/copy/1.cc: Add instantiations for
+	systems with no COMDAT or weak support.
+	* testsuite/25_algorithms/copy/2.cc: Likewise.
+	* testsuite/25_algorithms/copy/3.cc: Likewise.
+	* testsuite/25_algorithms/copy/4.cc: Likewise.
+
 2004-07-03  Paul Brook  <paul@codesourcery.com>
 
 	* configure.ac: Set ABI_TWEAKS_SRCDIR.

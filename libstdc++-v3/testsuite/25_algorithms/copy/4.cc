@@ -58,6 +58,12 @@ test01()
   VERIFY( equal(s2, s2 + N, a.begin()) );
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
+template class __gnu_cxx::__mt_alloc<int>;
+#endif
+
 int
 main()
 {
