@@ -12267,6 +12267,48 @@ again:				/* :::::::::::::::::::: */
 
     case FFEEXPR_contextINDEX_:
     case FFEEXPR_contextSFUNCDEFINDEX_:
+      if ((error = (expr != NULL) && (ffeinfo_rank (info) != 0)))
+	break;
+      switch ((expr == NULL) ? FFEINFO_basictypeNONE
+	      : ffeinfo_basictype (info))
+	{
+	case FFEINFO_basictypeNONE:
+	  error = FALSE;
+	  break;
+
+	case FFEINFO_basictypeLOGICAL:
+	  expr = ffeexpr_convert (expr, ft, ft, FFEINFO_basictypeLOGICAL,
+	     FFEINFO_kindtypeLOGICALDEFAULT, 0, FFETARGET_charactersizeNONE,
+				  FFEEXPR_contextLET);
+	  /* Fall through. */
+	case FFEINFO_basictypeREAL:
+	case FFEINFO_basictypeCOMPLEX:
+	  if (ffe_is_pedantic ())
+	    {
+	      error = TRUE;
+	      break;
+	    }
+	  /* Fall through. */
+	case FFEINFO_basictypeHOLLERITH:
+	case FFEINFO_basictypeTYPELESS:
+	  error = FALSE;
+	  expr = ffeexpr_convert (expr, ft, ft, FFEINFO_basictypeINTEGER,
+	     FFEINFO_kindtypeINTEGERDEFAULT, 0, FFETARGET_charactersizeNONE,
+				  FFEEXPR_contextLET);
+	  break;
+
+	case FFEINFO_basictypeINTEGER:
+	  /* Specifically, allow INTEGER(KIND=2), aka INTEGER*8, through
+	     unmolested.  Leave it to downstream to handle kinds.  */
+	  break;
+
+	default:
+	  error = TRUE;
+	  break;
+	}
+      break;			/* expr==NULL ok for substring; element case
+				   caught by callback. */
+
     case FFEEXPR_contextRETURN:
       if ((error = (expr != NULL) && (ffeinfo_rank (info) != 0)))
 	break;
@@ -12303,8 +12345,7 @@ again:				/* :::::::::::::::::::: */
 	  error = TRUE;
 	  break;
 	}
-      break;			/* expr==NULL ok for substring; element case
-				   caught by callback. */
+      break;
 
     case FFEEXPR_contextDO:
       if ((error = (expr == NULL) || (ffeinfo_rank (info) != 0)))
@@ -18602,7 +18643,8 @@ ffeexpr_token_elements_ (ffelexToken ft, ffebld expr, ffelexToken t)
 	      ffeexpr_stack_->immediate = FALSE;
 	      break;
 	    }
-	  if (ffebld_op (expr) == FFEBLD_opCONTER)
+	  if (ffebld_op (expr) == FFEBLD_opCONTER
+	      && ffebld_kindtype (expr) == FFEINFO_kindtypeINTEGERDEFAULT)
 	    {
 	      val = ffebld_constant_integerdefault (ffebld_conter (expr));
 
@@ -18913,26 +18955,33 @@ ffeexpr_token_substring_1_ (ffelexToken ft, ffebld last, ffelexToken t)
   ffetargetIntegerDefault last_val;
   ffetargetCharacterSize size;
   ffetargetCharacterSize strop_size_max;
+  bool first_known;
 
   string = ffeexpr_stack_->exprstack;
   strop = string->u.operand;
   info = ffebld_info (strop);
 
-  if ((first == NULL) || (ffebld_op (first) == FFEBLD_opCONTER))
+  if (first == NULL
+      || (ffebld_op (first) == FFEBLD_opCONTER
+	  && ffebld_kindtype (first) == FFEINFO_kindtypeINTEGERDEFAULT))
     {				/* The starting point is known. */
       first_val = (first == NULL) ? 1
 	: ffebld_constant_integerdefault (ffebld_conter (first));
+      first_known = TRUE;
     }
   else
     {				/* Assume start of the entity. */
       first_val = 1;
+      first_known = FALSE;
     }
 
-  if ((last != NULL) && (ffebld_op (last) == FFEBLD_opCONTER))
+  if (last != NULL
+      && (ffebld_op (last) == FFEBLD_opCONTER
+	  && ffebld_kindtype (last) == FFEINFO_kindtypeINTEGERDEFAULT))
     {				/* The ending point is known. */
       last_val = ffebld_constant_integerdefault (ffebld_conter (last));
 
-      if ((first == NULL) || (ffebld_op (first) == FFEBLD_opCONTER))
+      if (first_known)
 	{			/* The beginning point is a constant. */
 	  if (first_val <= last_val)
 	    size = last_val - first_val + 1;

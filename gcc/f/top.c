@@ -74,6 +74,7 @@ bool ffe_is_dollar_ok_ = FFETARGET_defaultIS_DOLLAR_OK;
 bool ffe_is_f2c_ = FFETARGET_defaultIS_F2C;
 bool ffe_is_f2c_library_ = FFETARGET_defaultIS_F2C_LIBRARY;
 bool ffe_is_ffedebug_ = FALSE;
+bool ffe_is_flatten_arrays_ = FALSE;
 bool ffe_is_free_form_ = FFETARGET_defaultIS_FREE_FORM;
 bool ffe_is_globals_ = TRUE;
 bool ffe_is_init_local_zero_ = FFETARGET_defaultIS_INIT_LOCAL_ZERO;
@@ -216,6 +217,10 @@ ffe_decode_option (argc, argv)
 	ffe_set_is_f2c_library (TRUE);
       else if (strcmp (&opt[2], "no-f2c-library") == 0)
 	ffe_set_is_f2c_library (FALSE);
+      else if (strcmp (&opt[2], "flatten-arrays") == 0)
+	ffe_set_is_flatten_arrays (TRUE);
+      else if (strcmp (&opt[2], "no-flatten-arrays") == 0)
+	ffe_set_is_flatten_arrays (FALSE);
       else if (strcmp (&opt[2], "free-form") == 0)
 	ffe_set_is_free_form (TRUE);
       else if (strcmp (&opt[2], "no-free-form") == 0)

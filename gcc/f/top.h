@@ -90,6 +90,7 @@ extern bool ffe_is_dollar_ok_;
 extern bool ffe_is_f2c_;
 extern bool ffe_is_f2c_library_;
 extern bool ffe_is_ffedebug_;
+extern bool ffe_is_flatten_arrays_;
 extern bool ffe_is_free_form_;
 extern bool ffe_is_globals_;
 extern bool ffe_is_init_local_zero_;
@@ -178,6 +179,7 @@ void ffe_terminate_4 (void);
 #define ffe_is_f2c() ffe_is_f2c_
 #define ffe_is_f2c_library() ffe_is_f2c_library_
 #define ffe_is_ffedebug() ffe_is_ffedebug_
+#define ffe_is_flatten_arrays() ffe_is_flatten_arrays_
 #define ffe_is_free_form() ffe_is_free_form_
 #define ffe_is_globals() ffe_is_globals_
 #define ffe_is_init_local_zero() ffe_is_init_local_zero_
@@ -230,6 +232,7 @@ void ffe_terminate_4 (void);
 #define ffe_set_is_f2c(f) (ffe_is_f2c_ = (f))
 #define ffe_set_is_f2c_library(f) (ffe_is_f2c_library_ = (f))
 #define ffe_set_is_ffedebug(f) (ffe_is_ffedebug_ = (f))
+#define ffe_set_is_flatten_arrays(f) (ffe_is_flatten_arrays_ = (f))
 #define ffe_set_is_free_form(f) (ffe_is_free_form_ = (f))
 #define ffe_set_is_globals(f) (ffe_is_globals_ = (f))
 #define ffe_set_is_init_local_zero(f) (ffe_is_init_local_zero_ = (f))

@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-12
+@set last-update-news 1999-05-13
 
 @include root.texi
 
@@ -166,6 +166,15 @@ For example, @samp{INTEGER*8 J; J = 4E10} now works as documented.
 
 @ifclear USERVISONLY
 @item
+@code{g77} no longer truncates @code{INTEGER(KIND=2)}
+(usually @code{INTEGER*8})
+subscript expressions when evaluating array references
+on systems with pointers widers than @code{INTEGER(KIND=1)}
+(such as Alphas).
+@end ifclear
+
+@ifclear USERVISONLY
+@item
 @code{g77} no longer generates bad code
 for an assignment to a @code{COMPLEX} variable or array
 that partially overlaps one or more of the sources
@@ -277,6 +286,15 @@ and not @code{SAVE}'d.
 @code{g77} no longer generates code to maintain @code{errno},
 a C-language concept,
 when performing operations such as the @code{SqRt} intrinsic.
+
+@ifclear USERVISONLY
+@item
+@code{g77} developers can temporarily use
+the @samp{-fflatten-arrays} option
+to compare how the compiler handles code generation
+using C-like constructs as compared to the
+Fortran-like method constructs normally used.
+@end ifclear
 
 @ifclear USERVISONLY
 @item
