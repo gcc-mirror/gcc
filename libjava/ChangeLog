@@ -1,3 +1,22 @@
+2002-03-27  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/net/PlainDatagramSocketImpl.java
+	(close): Use native implementation.
+	(finalize): New method.
+
+	* java/net/PlainSocketImpl.java (finalize): New method.
+
+	* java/net/natPlainDatagramSocketImpl.cc
+	(java/io/FileDescriptor.h): Don't include.
+	(close): Implement method here.
+	(create): Don't assign fd.
+
+	* java/net/natPlainSocketImpl.cc
+	(java/io/FileDescriptor.h): Don't include.
+	(create): Don't assign fd.
+	(accept): Likewise.
+	(close): Synchronize.
+
 2002-03-27  Richard Henderson  <rth@redhat.com>
 
 	* include/posix-threads.h [alpha] (_Jv_ThreadSelf): Avoid a copy.

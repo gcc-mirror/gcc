@@ -67,27 +67,7 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   public native Object getOption(int optID) throws SocketException;
   private native void mcastGrp(InetAddress inetaddr, boolean join)
 	throws IOException;
-
-  protected void close()
-  {
-    // FIXME: The close method in each of the DatagramSocket* classes does
-    // not throw an IOException.  The issue is that FileDescriptor.close()
-    // in natFileDescriptorPosix.cc can throw one, so we have to catch
-    // it here.  It seems that FileDescriptor.close is properly throwing
-    // the IOException on errors since many of the java.io classes depend
-    // on that.  This probably requires a bit more research but for now,
-    // we'll catch the IOException here.
-    try
-      {
-        if (fd.valid())
-	  fd.close();
-      }
-    catch (IOException e)
-      {
-	System.err.println("PlainDatagramSocketImpl.close: Error closing - " +
-	  e.getMessage());
-      }
-  }
+  protected native void close();
 
   // Deprecated in JDK 1.2.
   protected byte getTTL() throws IOException
@@ -109,5 +89,15 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   protected void leave(InetAddress inetaddr) throws IOException
   {
     mcastGrp(inetaddr, false);
+  }
+
+  protected void finalize() throws Throwable
+  {
+    synchronized (this)
+      {
+	if (fnum != -1)
+	  close();
+      }
+    super.finalize();
   }
 }
