@@ -1,3 +1,8 @@
+1998-02-18  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/dnrm2.f (dnrm2): Avoid uninitialized (and
+	possibly uninitialized) variables and declare dnrm2.
+
 Fri Feb 13 00:36:07 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/ifelse-1.c: New test.
