@@ -1,3 +1,8 @@
+2002-06-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/os/aix/bits/ctype_noninline.h (do_toupper,do_tolower):
+	Call external symbol.
+
 2002-06-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3_target_compile):
