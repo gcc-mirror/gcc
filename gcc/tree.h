@@ -2681,6 +2681,16 @@ extern int lvalue_or_else		PARAMS ((tree, const char *));
 
 extern tree save_expr			PARAMS ((tree));
 
+/* Look inside EXPR and into any simple arithmetic operations.  Return
+   the innermost non-arithmetic node.  */
+
+extern tree skip_simple_arithmetic	PARAMS ((tree));
+
+/* Return TRUE if EXPR is a SAVE_EXPR or wraps simple arithmetic around a
+   SAVE_EXPR.  Return FALSE otherwise.  */
+
+extern bool saved_expr_p                PARAMS ((tree));
+
 /* Returns the index of the first non-tree operand for CODE, or the number
    of operands if all are trees.  */
 

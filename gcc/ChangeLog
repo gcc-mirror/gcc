@@ -1,5 +1,12 @@
 2003-04-16  Olivier Hainque <hainque@act-europe.fr>
 
+        * tree.c (skip_simple_arithmetics_at, saved_expr_p): New functions.
+        (save_expr): Replace loop by call to skip_simple_arithmetics_at.
+        * tree.h: Add prototypes for the two new functions.
+        * fold-const.c (fold_binary_op_with_conditional_arg): Replace test
+        updates introduced in the previous revision by call to saved_expr_p.
+        * stor-layout.c (put_pending_size): Use skip_simple_arithmetics_at.
+
         * expr.c (store_field): Force usage of bitfield instructions when
         the field position requires it, whatever SLOW_UNALIGNED_ACCESS.
         (expand_expr, case BIT_FIELD_REF): likewise.

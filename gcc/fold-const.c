@@ -4568,21 +4568,19 @@ fold_binary_op_with_conditional_arg (code, type, cond, arg, cond_first_p)
       false_value = convert (testtype, integer_zero_node);
     }
 
-  /* If ARG is complex we want to make sure we only evaluate
-     it once.  Though this is only required if it is volatile, it
-     might be more efficient even if it is not.  However, if we
-     succeed in folding one part to a constant, we do not need
-     to make this SAVE_EXPR.  Since we do this optimization
-     primarily to see if we do end up with constant and this
-     SAVE_EXPR interferes with later optimizations, suppressing
-     it when we can is important.
+  /* If ARG is complex we want to make sure we only evaluate it once.  Though
+     this is only required if it is volatile, it might be more efficient even
+     if it is not.  However, if we succeed in folding one part to a constant,
+     we do not need to make this SAVE_EXPR.  Since we do this optimization
+     primarily to see if we do end up with constant and this SAVE_EXPR
+     interferes with later optimizations, suppressing it when we can is
+     important.
 
-     If we are not in a function, we can't make a SAVE_EXPR, so don't
-     try to do so.  Don't try to see if the result is a constant
-     if an arm is a COND_EXPR since we get exponential behavior
-     in that case.  */
+     If we are not in a function, we can't make a SAVE_EXPR, so don't try to
+     do so.  Don't try to see if the result is a constant if an arm is a
+     COND_EXPR since we get exponential behavior in that case.  */
 
-  if (TREE_CODE (arg) == SAVE_EXPR)
+  if (saved_expr_p (arg))
     save = 1;
   else if (lhs == 0 && rhs == 0
 	   && !TREE_CONSTANT (arg)
