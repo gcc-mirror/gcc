@@ -954,6 +954,29 @@ do { char dstr[30];					\
 
 #define DBX_REGISTER_NUMBER(REGNO) REGNO
 
+/* GDB always assumes the current function's frame begins at the value
+   of the stack pointer upon entry to the current function.  Accessing
+   local variables and parameters passed on the stack is done using the
+   base of the frame + an offset provided by GCC.
+
+   For functions which have frame pointers this method works fine;
+   the (frame pointer) == (stack pointer at function entry) and GCC provides
+   an offset relative to the frame pointer.
+
+   This loses for functions without a frame pointer; GCC provides an offset
+   which is relative to the stack pointer after adjusting for the function's
+   frame size.  GDB would prefer the offset to be relative to the value of
+   the stack pointer at the function's entry.  Yuk!  */
+#define DEBUGGER_AUTO_OFFSET(X) \
+  ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) \
+    + (frame_pointer_needed \
+       ? 0 : -initial_offset (FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM)))
+
+#define DEBUGGER_ARG_OFFSET(OFFSET, X) \
+  ((GET_CODE (X) == PLUS ? OFFSET : 0) \
+    + (frame_pointer_needed \
+       ? 0 : -initial_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)))
+
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
    decimal <-> binary conversion. */
 #define REAL_ARITHMETIC
