@@ -1,3 +1,7 @@
+2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	* decl.c, resolve.c, trans-array.c, trans.h: Fix comment typo(s).
+
 2005-02-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	Revert yesterday's patch:

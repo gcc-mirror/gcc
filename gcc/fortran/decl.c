@@ -27,7 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "parse.h"
 
 
-/* This flag is set if a an old-style length selector is matched
+/* This flag is set if an old-style length selector is matched
    during a type-declaration statement.  */
 
 static int old_char_selector;

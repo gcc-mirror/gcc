@@ -884,8 +884,8 @@ set_type:
 }
 
 
-/* Figure out if if a function reference is pure or not.  Also sets the name
-   of the function for a potential error message.  Returns nonzero if the
+/* Figure out if a function reference is pure or not.  Also set the name
+   of the function for a potential error message.  Return nonzero if the
    function is PURE, zero if not.  */
 
 static int
