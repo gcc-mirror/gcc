@@ -5761,6 +5761,18 @@ function_arg_pass_by_reference (cum, mode, type, named)
 {
   int size;
 
+  /* We must pass by reference if we would be both passing in registers
+     and the stack.  This is because any subsequent partial arg would be
+     handled incorrectly in this case.
+
+     ??? This is really a kludge.  We should either fix GCC so that such
+     a situation causes an abort and then do something in the MIPS port
+     to prevent it, or add code to function.c to properly handle the case.  */
+  if (FUNCTION_ARG (*cum, mode, type, named) != 0
+      && MUST_PASS_IN_STACK (mode, type))
+    return 1;
+
+  /* Otherwise, we only do this if EABI is selected.  */
   if (mips_abi != ABI_EABI)
     return 0;
 
