@@ -1,3 +1,7 @@
+2000-12-28  Ben Elliston  <bje@redhat.com>
+
+	* MAINTAINERS: Add myself under ``Write After Approval''.
+
 2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* texinfo: Remove directory from GCC.
