@@ -1893,6 +1893,11 @@ calculate a single number, then compare that against a threshold:
 @noindent
 Many people find this form easier to understand.
 
+@item __OBJC__
+This macro is defined, with value 1, when the Objective-C compiler is in
+use.  You can use @code{__OBJC__} to test whether a header is compiled
+by a C compiler or a Objective-C compiler.
+
 @item __GNUG__
 The GNU C++ compiler defines this.  Testing it is equivalent to
 testing @code{@w{(__GNUC__ && __cplusplus)}}.
