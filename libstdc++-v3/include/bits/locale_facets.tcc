@@ -1619,11 +1619,9 @@ namespace std
 		  if (__ctype.is(ctype_base::space, *__beg))
 		    _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9, 1,
 				   __ctype, __err);
-		  else if (*__beg != __ctype.widen('0'))
+		  else
 		    _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31, 2,
 				   __ctype, __err);		    
-		  else
-		    __err |= ios_base::failbit;
 		  break;		    
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
@@ -1763,14 +1761,9 @@ namespace std
       size_t __i = 0;
       string __digits;
       bool __testvalid = true;
-      char_type __c = *__beg;
-      while (__beg != __end && __i < __len 
-	     && __ctype.is(ctype_base::digit, __c)) 
-	{
-	  __digits += __ctype.narrow(__c, 0);
-	  __c = *(++__beg);
-	  ++__i;
-	}
+      for (; __beg != __end && __i < __len 
+	     && __ctype.is(ctype_base::digit, *__beg); ++__beg, ++__i) 
+	__digits += __ctype.narrow(*__beg, 0);
       if (__i == __len)
 	{
 	  const int __value = std::atoi(__digits.c_str());
@@ -1802,11 +1795,14 @@ namespace std
       bool __testvalid = true;
       const char_type* __name;
 
-      char_type __c = *__beg;
       // Look for initial matches.
-      for (size_t __i1 = 0; __i1 < __indexlen; ++__i1)
-	if (__c == __names[__i1][0])
-	  __matches[__nmatches++] = __i1;
+      if (__beg != __end)
+	{
+	  const char_type __c = *__beg;
+	  for (size_t __i1 = 0; __i1 < __indexlen; ++__i1)
+	    if (__c == __names[__i1][0])
+	      __matches[__nmatches++] = __i1;
+	}
       
       while (__nmatches > 1)
 	{
@@ -1815,15 +1811,14 @@ namespace std
 	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
 	    __minlen = std::min(__minlen, 
 				__traits_type::length(__names[__matches[__i2]]));
-	  
+	  ++__beg;
 	  if (__pos < __minlen && __beg != __end)
 	    {
 	      ++__pos;
-	      __c = *(++__beg);
 	      for (size_t __i3 = 0; __i3 < __nmatches; ++__i3)
 		{
 		  __name = __names[__matches[__i3]];
-		  if (__name[__pos] != __c)
+		  if (__name[__pos] != *__beg)
 		    __matches[__i3] = __matches[--__nmatches];
 		}
 	    }
