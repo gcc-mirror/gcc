@@ -57,14 +57,11 @@
 #define SUBTARGET_EXTRA_ASM_SPEC	\
   "-matpcs %{fpic|fpie:-k} %{fPIC|fPIE:-k}"
 
-/* Default floating point model is soft-VFP.
-   FIXME: -mhard-float currently implies FPA.  */
+/* Default to full VFP if -mhard-float is specified.  */
 #undef SUBTARGET_ASM_FLOAT_SPEC
 #define SUBTARGET_ASM_FLOAT_SPEC	\
-  "%{mhard-float:-mfpu=fpa} \
-   %{msoft-float:-mfpu=softvfp} \
-   %{!mhard-float: \
-     %{!msoft-float:-mfpu=softvfp}}"
+  "%{mhard-float:{!mfpu=*:-mfpu=vfp}}   \
+   %{mfloat-abi=hard:{!mfpu=*:-mfpu=vfp}}"
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS				\
@@ -171,3 +168,7 @@ do									\
     (void) sysarch (0, &s);						\
   }									\
 while (0)
+
+#undef FPUTYPE_DEFAULT
+#define FPUTYPE_DEFAULT FPUTYPE_VFP
+

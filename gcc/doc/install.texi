@@ -926,12 +926,13 @@ and SPARC@.
 @itemx --with-arch=@var{cpu}
 @itemx --with-tune=@var{cpu}
 @itemx --with-abi=@var{abi}
+@itemx --with-fpu=@var{type}
 @itemx --with-float=@var{type}
 These configure options provide default values for the @option{-mschedule=},
-@option{-march=}, @option{-mtune=}, and @option{-mabi=} options and for
-@option{-mhard-float} or @option{-msoft-float}.  As with @option{--with-cpu},
-which switches will be accepted and acceptable values of the arguments depend
-on the target.
+@option{-march=}, @option{-mtune=}, @option{-mabi=}, and @option{-mfpu=}
+options and for @option{-mhard-float} or @option{-msoft-float}.  As with
+@option{--with-cpu}, which switches will be accepted and acceptable values
+of the arguments depend on the target.
 
 @item --enable-altivec
 Specify that the target supports AltiVec vector enhancements.  This

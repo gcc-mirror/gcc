@@ -55,7 +55,7 @@
    %{shared:-lc} \
    %{!shared:%{profile:-lc_p}%{!profile:-lc}}"
 
-#define LIBGCC_SPEC "%{msoft-float:-lfloat} -lgcc"
+#define LIBGCC_SPEC "%{msoft-float:-lfloat} %{mfloat-abi=soft*:-lfloat} -lgcc"
 
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which

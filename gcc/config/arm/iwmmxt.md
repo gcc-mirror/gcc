@@ -86,7 +86,7 @@
     }
 }"
   [(set_attr "length"         "8,8,8,4,4,4,4,4")
-   (set_attr "type"           "*,load,store2,*,*,*,*,*")
+   (set_attr "type"           "*,load1,store2,*,*,*,*,*")
    (set_attr "pool_range"     "*,1020,*,*,*,*,*,*")
    (set_attr "neg_pool_range" "*,1012,*,*,*,*,*,*")]
 )
@@ -110,7 +110,7 @@
    case 7: return \"wstrw\\t%1, %0\";
    default:return \"wstrw\\t%1, [sp, #-4]!\;wldrw\\t%0, [sp], #4\\t@move CG reg\";
   }"
-  [(set_attr "type"           "*,*,load,store1,*,*,load,store1,*")
+  [(set_attr "type"           "*,*,load1,store1,*,*,load1,store1,*")
    (set_attr "length"         "*,*,*,        *,*,*,  16,     *,8")
    (set_attr "pool_range"     "*,*,4096,     *,*,*,1024,     *,*")
    (set_attr "neg_pool_range" "*,*,4084,     *,*,*,   *,  1012,*")
@@ -148,7 +148,7 @@
    case 4: return \"tmcr%?\\t%0, %1\";
    default: return \"tmrc%?\\t%0, %1\";
   }"
-  [(set_attr "type"           "*,*,load,store1,*,*")
+  [(set_attr "type"           "*,*,load1,store1,*,*")
    (set_attr "pool_range"     "*,*,4096,     *,*,*")
    (set_attr "neg_pool_range" "*,*,4084,     *,*,*")]
 )
@@ -169,7 +169,7 @@
    }"
   [(set_attr "predicable" "yes")
    (set_attr "length"         "4,     4,   4,4,4,   8")
-   (set_attr "type"           "*,store1,load,*,*,load")
+   (set_attr "type"           "*,store1,load1,*,*,load1")
    (set_attr "pool_range"     "*,     *, 256,*,*, 256")
    (set_attr "neg_pool_range" "*,     *, 244,*,*, 244")])
 
@@ -189,7 +189,7 @@
    }"
   [(set_attr "predicable" "yes")
    (set_attr "length"         "4,     4,   4,4,4,   8")
-   (set_attr "type"           "*,store1,load,*,*,load")
+   (set_attr "type"           "*,store1,load1,*,*,load1")
    (set_attr "pool_range"     "*,     *, 256,*,*, 256")
    (set_attr "neg_pool_range" "*,     *, 244,*,*, 244")])
 
@@ -209,7 +209,7 @@
    }"
   [(set_attr "predicable" "yes")
    (set_attr "length"         "4,     4,   4,4,4,  24")
-   (set_attr "type"           "*,store1,load,*,*,load")
+   (set_attr "type"           "*,store1,load1,*,*,load1")
    (set_attr "pool_range"     "*,     *, 256,*,*, 256")
    (set_attr "neg_pool_range" "*,     *, 244,*,*, 244")])
 
@@ -225,7 +225,7 @@
   "* return output_move_double (operands);"
   [(set_attr "predicable"     "yes")
    (set_attr "length"         "8")
-   (set_attr "type"           "load")
+   (set_attr "type"           "load1")
    (set_attr "pool_range"     "256")
    (set_attr "neg_pool_range" "244")])
 
@@ -1149,7 +1149,7 @@
   "wsrawg%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")])
 
-(define_insn "ashrdi3"
+(define_insn "ashrdi3_iwmmxt"
   [(set (match_operand:DI              0 "register_operand" "=y")
 	(ashiftrt:DI (match_operand:DI 1 "register_operand" "y")
 		   (match_operand:SI   2 "register_operand" "z")))]
@@ -1173,7 +1173,7 @@
   "wsrlwg%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")])
 
-(define_insn "lshrdi3"
+(define_insn "lshrdi3_iwmmxt"
   [(set (match_operand:DI              0 "register_operand" "=y")
 	(lshiftrt:DI (match_operand:DI 1 "register_operand" "y")
 		     (match_operand:SI 2 "register_operand" "z")))]
