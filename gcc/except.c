@@ -2728,14 +2728,20 @@ reachable_handlers (insn)
   region = cfun->eh->region_array[region_number];
 
   type_thrown = NULL_TREE;
-  if (region->type == ERT_THROW)
+  if (GET_CODE (insn) == JUMP_INSN
+      && GET_CODE (PATTERN (insn)) == RESX)
+    {
+      /* A RESX leaves a region instead of entering it.  Thus the
+	 region itself may have been deleted out from under us.  */
+      if (region == NULL)
+	return NULL;
+      region = region->outer;
+    }
+  else if (region->type == ERT_THROW)
     {
       type_thrown = region->u.throw.type;
       region = region->outer;
     }
-  else if (GET_CODE (insn) == JUMP_INSN
-	   && GET_CODE (PATTERN (insn)) == RESX)
-    region = region->outer;
 
   for (; region; region = region->outer)
     if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)
