@@ -1,5 +1,12 @@
 2004-04-22  Mark Wielaard  <mark@klomp.org>
 
+	* Makefile.am (PEDANTIC_CFLAGS): New -ansi -pedantic -Wall
+	-Wno-long-long flags variable.
+	(gtk_c_files): Use PEDANTIC_CFLAGS.
+	* Makefile.in: Regenerated.
+
+2004-04-22  Mark Wielaard  <mark@klomp.org>
+
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c:
 	Changed C++ comments into C comments.
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c:

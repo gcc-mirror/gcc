@@ -120,6 +120,9 @@ else
 AM_CFLAGS = @LIBGCJ_CFLAGS@
 endif
 
+## Extra CFLAGS used for JNI C sources shared with GNU Classpath.
+PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
+
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
 
@@ -471,9 +474,11 @@ $(extra_cc_files): %.lo: %.cc
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: see above
+## These JNI C files are shared with GNU Classpath which needs PEDANTIC_CFLAGS.
 $(gtk_c_files): %.lo: %.c
 	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer \
-	$(GTK_CFLAGS) $(LIBART_CFLAGS) $(CAIRO_LIBS) $(PANGOFT2_LIBS) -o $@ $<
+	$(PEDANTIC_CFLAGS) $(GTK_CFLAGS) $(LIBART_CFLAGS) \
+	$(CAIRO_LIBS) $(PANGOFT2_LIBS) -o $@ $<
 
 $(gtk_c_files): $(gtk_c_headers)
 
