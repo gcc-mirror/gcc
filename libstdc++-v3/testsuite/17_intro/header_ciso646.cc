@@ -20,6 +20,8 @@
 
 // 17.4.1.2 Headers, ciso646
 
+// { dg-do link }
+
 #include <ciso646>
 #include <debug_assert.h>
 

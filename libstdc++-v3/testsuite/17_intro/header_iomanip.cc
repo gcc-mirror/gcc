@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, iomanip
 
-#include <iomanip>
+#include <iomanip>              // { dg-do compile }
 #include <debug_assert.h>
 
 

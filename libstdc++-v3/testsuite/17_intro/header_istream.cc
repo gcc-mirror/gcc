@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, istream
 
-#include <istream>
+#include <istream>              // { dg-do compile }
 #include <debug_assert.h>
 
 

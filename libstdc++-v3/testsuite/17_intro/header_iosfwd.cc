@@ -20,7 +20,7 @@
 
 // 17.4.1.2 Headers, iosfwd
 
-#include <iosfwd>
+#include <iosfwd>               // { dg-do compile }
 #include <debug_assert.h>
 
 
