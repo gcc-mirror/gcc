@@ -214,6 +214,37 @@ std_headers = \
 	${std_srcdir}/std_utility.h \
 	${std_srcdir}/std_valarray.h \
 	${std_srcdir}/std_vector.h
+# Renamed at build time. 
+std_headers_rename = \
+	${std_builddir}/algorithm \
+	${std_builddir}/bitset \
+	${std_builddir}/complex \
+	${std_builddir}/deque \
+	${std_builddir}/fstream \
+	${std_builddir}/functional \
+	${std_builddir}/iomanip \
+	${std_builddir}/ios \
+	${std_builddir}/iosfwd \
+	${std_builddir}/iostream \
+	${std_builddir}/istream \
+	${std_builddir}/iterator \
+	${std_builddir}/limits \
+	${std_builddir}/list \
+	${std_builddir}/locale \
+	${std_builddir}/map \
+	${std_builddir}/memory \
+	${std_builddir}/numeric \
+	${std_builddir}/ostream \
+	${std_builddir}/queue \
+	${std_builddir}/set \
+	${std_builddir}/sstream \
+	${std_builddir}/stack \
+	${std_builddir}/stdexcept \
+	${std_builddir}/streambuf \
+	${std_builddir}/string \
+	${std_builddir}/utility \
+	${std_builddir}/valarray \
+	${std_builddir}/vector
 
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
 target_builddir = ./${target_alias}/bits
@@ -372,7 +403,7 @@ install-data-local:
 	for file in ${c_base_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
-	for file in ${std_headers}; do \
+	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
 	for file in ${target_headers} ${extra_target_headers}; do \
