@@ -1,3 +1,14 @@
+2003-08-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/fixfixes.c, fixinc/fixlib.c, fixinc/fixlib.h,
+	fixinc/fixtests.c, fixinc/procopen.c, fixinc/server.c,
+	fixinc/server.h, fixinc/fixincl.c: ANSIfy function prototypes
+	and defintions.
+
+	* fixinc/inclhack.def (broken_cabs): Make matching more generous.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/math.h: Regenerate to match test_text change.
+
 2003-08-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* ggc-common.c (gt_pch_restore): Case MAP_FAILED to void *.

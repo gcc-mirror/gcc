@@ -73,10 +73,8 @@ tSCC* p_cur_dir = (char *) NULL;
  *  The read data are stored in a malloc-ed string that is truncated
  *  to size at the end.  Input is assumed to be an ASCII string.
  */
-static char *load_data PARAMS ((FILE *));
 static char *
-load_data (fp)
-     FILE *fp;
+load_data (FILE* fp)
 {
   char *pz_text;
   size_t text_size;
@@ -137,7 +135,7 @@ load_data (fp)
  *  pipes to it and from it, finally NULL out the file pointers
  */
 void
-close_server ()
+close_server (void)
 {
   if (  (server_id != NULLPROCESS)
      && (server_master_pid == getpid ()))
@@ -157,10 +155,8 @@ close_server ()
  *  to our server, and also that if the server dies, we do not
  *  die from a sigpipe problem.
  */
-static void sig_handler PARAMS ((int));
 static void
-sig_handler (signo)
-     int signo ATTRIBUTE_UNUSED;
+sig_handler (int signo ATTRIBUTE_UNUSED)
 {
 #ifdef DEBUG
   /* FIXME: this is illegal to do in a signal handler.  */
@@ -178,9 +174,8 @@ sig_handler (signo)
  *  Also establishes the current directory to give to the
  *  server process at the start of every server command.
  */
-static void server_setup PARAMS ((void));
 static void
-server_setup ()
+server_setup (void)
 {
   static int atexit_done = 0;
   char buff [MAXPATHLEN + 1];
@@ -213,9 +208,8 @@ server_setup ()
  *  override with $CONFIG_SHELL, so we do the same.
  */
 
-static const char *find_shell PARAMS ((void));
 static const char *
-find_shell ()
+find_shell (void)
 {
   char * shell = getenv ("CONFIG_SHELL");
   if (shell)
@@ -245,8 +239,7 @@ find_shell ()
  *     "ShElL-OuTpUt-HaS-bEeN-cOmPlEtEd"
  */
 char *
-run_shell (pz_cmd)
-     const char *pz_cmd;
+run_shell (const char* pz_cmd)
 {
   tSCC zNoServer[] = "Server not running, cannot run:\n%s\n\n";
   t_bool retry = BOOL_TRUE;

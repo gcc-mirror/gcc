@@ -62,10 +62,7 @@ STATIC const char* def_args[] =
  *  to store the child's process id.
  */
 int
-chain_open (stdin_fd, pp_args, p_child)
-     int stdin_fd;
-     tCC **pp_args;
-     pid_t *p_child;
+chain_open (int stdin_fd, tCC** pp_args, pid_t* p_child)
 {
   t_fd_pair stdout_pair;
   pid_t ch_id;
@@ -182,9 +179,7 @@ chain_open (stdin_fd, pp_args, p_child)
  *  The return value is the process id of the created process.
  */
 pid_t
-proc2_open (p_pair, pp_args)
-     t_fd_pair *p_pair;
-     tCC **pp_args;
+proc2_open (t_fd_pair* p_pair, tCC** pp_args)
 {
   pid_t ch_id;
 
@@ -209,9 +204,7 @@ proc2_open (p_pair, pp_args)
  *  "fdopen(3)"-ed into file pointers instead.
  */
 pid_t
-proc2_fopen (pf_pair, pp_args)
-     t_pf_pair *pf_pair;
-     tCC **pp_args;
+proc2_fopen (t_pf_pair* pf_pair, tCC** pp_args)
 {
   t_fd_pair fd_pair;
   pid_t ch_id = proc2_open (&fd_pair, pp_args);

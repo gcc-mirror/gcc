@@ -59,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
 
 tSCC zNeedsArg[] = "fixincl error:  `%s' needs %s argument (c_fix_arg[%d])\n";
 
-typedef void t_fix_proc PARAMS ((const char *, const char *, tFixDesc *));
+typedef void t_fix_proc (const char *, const char *, tFixDesc *) ;
 typedef struct {
     const char*  fix_name;
     t_fix_proc*  fix_proc;
@@ -74,12 +74,10 @@ typedef struct {
   _FT_( "gnu_type",         gnu_type_fix )
 
 
-#define FIX_PROC_HEAD( fix )						\
-static void fix PARAMS ((const char *, const char *, tFixDesc *));	\
-static void fix ( filname, text, p_fixd )				\
-    const char* filname ATTRIBUTE_UNUSED;				\
-    const char* text ATTRIBUTE_UNUSED;					\
-    tFixDesc* p_fixd ATTRIBUTE_UNUSED;
+#define FIX_PROC_HEAD( fix )	\
+static void fix (const char* filname ATTRIBUTE_UNUSED , \
+                 const char* text ATTRIBUTE_UNUSED , \
+                 tFixDesc* p_fixd ATTRIBUTE_UNUSED )
 
 #ifdef NEED_PRINT_QUOTE
 /*
@@ -89,9 +87,7 @@ static void fix ( filname, text, p_fixd )				\
  *  We are not doing a correctness syntax check here.
  */
 static char*
-print_quote( q, text )
-  char  q;
-  char* text;
+print_quote(char q, char* text )
 {
   fputc( q, stdout );
 
@@ -131,11 +127,8 @@ print_quote( q, text )
  *  this thing can be encountered countless times during a compile
  *  and not cause even a warning.
  */
-static const char *emit_gnu_type PARAMS ((const char *, regmatch_t *));
 static const char*
-emit_gnu_type ( text, rm )
-  const char* text;
-  regmatch_t* rm;
+emit_gnu_type (const char* text, regmatch_t* rm )
 {
   char z_TYPE[ 64 ];
   char z_type[ 64 ];
@@ -182,12 +175,8 @@ typedef __%s_TYPE__ %s_t;\n\
  *  '%' characters in other contexts and all other characters are
  *  copied out verbatim.
  */
-static void format_write PARAMS ((tCC *, tCC *, regmatch_t[]));
 static void
-format_write (format, text, av)
-     tCC* format;
-     tCC* text;
-     regmatch_t av[];
+format_write (tCC* format, tCC* text, regmatch_t av[] )
 {
   int c;
 
@@ -710,9 +699,7 @@ FIX_PROC_HEAD( gnu_type_fix )
 
 */
 void
-apply_fix( p_fixd, filname )
-  tFixDesc* p_fixd;
-  tCC* filname;
+apply_fix( tFixDesc* p_fixd, tCC* filname )
 {
 #define _FT_(n,p) { n, p },
   static fix_entry_t fix_table[] = { FIXUP_TABLE { NULL, NULL }};
@@ -748,9 +735,7 @@ tSCC z_reopen[] =
 "FS error %d (%s) reopening %s as std%s\n";
 
 int
-main( argc, argv )
-  int     argc;
-  char**  argv;
+main( int argc, char** argv )
 {
   tFixDesc* pFix;
   char* pz_tmptmp;
