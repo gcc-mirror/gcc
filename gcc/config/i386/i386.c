@@ -1879,14 +1879,19 @@ load_pic_register (do_rtl)
 	{
 	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
 	  emit_insn (gen_prologue_set_got (xops[0],
-					   gen_rtx (SYMBOL_REF, Pmode,
-						    "$_GLOBAL_OFFSET_TABLE_"),
+#ifdef YES_UNDERSCORES
+					   gen_rtx_SYMBOL_REF (Pmode,
+  					            "$__GLOBAL_OFFSET_TABLE_"),
+#else
+					   gen_rtx_SYMBOL_REF (Pmode,
+					            "$_GLOBAL_OFFSET_TABLE_"),
+#endif
 					   xops[1]));
 	}
       else
 	{
 	  output_asm_insn (AS1 (call,%X1), xops);
-	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
+	  output_asm_insn ("addl $%__GLOBAL_OFFSET_TABLE_,%0", xops);
 	  pic_label_rtx = 0;
 	}
     }
@@ -1909,7 +1914,7 @@ load_pic_register (do_rtl)
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				     CODE_LABEL_NUMBER (xops[1]));
 	  output_asm_insn (AS1 (pop%L0,%0), xops);
-	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
+	  output_asm_insn ("addl $%__GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);
 	}
     }
 
@@ -3372,7 +3377,8 @@ put_condition_code (code, reverse_cc, mode, file)
    k --  likewise, print the SImode name of the register.
    h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
    y --  print "st(0)" instead of "st" as a register.
-   P --  print as a PIC constant */
+   P --  print as a PIC constant 
+   _ --  output "_" if YES_UNDERSCORES */
 
 void
 print_operand (file, x, code)
@@ -3387,6 +3393,12 @@ print_operand (file, x, code)
 	case '*':
 	  if (USE_STAR)
 	    putc ('*', file);
+	  return;
+
+	case '_':
+#ifdef YES_UNDERSCORES
+	  putc ('_', file);
+#endif
 	  return;
 
 	case 'L':

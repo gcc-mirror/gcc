@@ -1,4 +1,12 @@
-Mon Apr 19 08:12:30 1999  Richard Henderson  <rth@cygnus.com>
+Sat Apr 17 19:13:22 1999  Donn Terry  <donn@interix.com>
+
+        * i386.h (PRINT_OPERAND_PUNCT_VALID_P): Allow _.
+        * i386.c (print_operand): New %_ operator.
+	(load_pic_register): Proper number of leading _ in GOT literal.
+        * i386.md (prologue_get_pc_and_set_got): Likewise.
+        * i386/unix.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
+Sat Apr 17 19:13:07 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (alpha_expand_prologue): Use gen_adddi3 instead of 
 	emit_move_insn+plus_constant.  For NT, don't use the stack probe

@@ -176,7 +176,7 @@ do {									      \
       output_asm_insn (AS1 (call,%P1), xops);				      \
       ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));     \
       output_asm_insn (AS1 (pop%L0,%0), xops);				      \
-      output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);	      \
+      output_asm_insn ("addl $%__GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);     \
       fprintf (FILE, "\tmovl ");					      \
       assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	      \
       fprintf (FILE, "@GOT(%%ebx),%%ecx\n\tpopl %%ebx\n\tjmp *%%ecx\n");      \
