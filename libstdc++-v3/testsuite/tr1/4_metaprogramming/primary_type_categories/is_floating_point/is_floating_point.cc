@@ -30,28 +30,28 @@ void test01()
   using std::tr1::is_floating_point;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_floating_point, void, false>()) );
-  VERIFY( (test_category<is_floating_point, char, false>()) );
-  VERIFY( (test_category<is_floating_point, signed char, false>()) );
-  VERIFY( (test_category<is_floating_point, unsigned char, false>()) );
+  VERIFY( (test_category<is_floating_point, void>(false)) );
+  VERIFY( (test_category<is_floating_point, char>(false)) );
+  VERIFY( (test_category<is_floating_point, signed char>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned char>(false)) );
 #ifdef _GLIBCXX_USE_WCHAR_T
-  VERIFY( (test_category<is_floating_point, wchar_t, false>()) );
+  VERIFY( (test_category<is_floating_point, wchar_t>(false)) );
 #endif
-  VERIFY( (test_category<is_floating_point, short, false>()) );
-  VERIFY( (test_category<is_floating_point, unsigned short, false>()) );
-  VERIFY( (test_category<is_floating_point, int, false>()) );
-  VERIFY( (test_category<is_floating_point, unsigned int, false>()) );
-  VERIFY( (test_category<is_floating_point, long, false>()) );
-  VERIFY( (test_category<is_floating_point, unsigned long, false>()) );
-  VERIFY( (test_category<is_floating_point, long long, false>()) );
-  VERIFY( (test_category<is_floating_point, unsigned long long, false>()) );
+  VERIFY( (test_category<is_floating_point, short>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned short>(false)) );
+  VERIFY( (test_category<is_floating_point, int>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned int>(false)) );
+  VERIFY( (test_category<is_floating_point, long>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned long>(false)) );
+  VERIFY( (test_category<is_floating_point, long long>(false)) );
+  VERIFY( (test_category<is_floating_point, unsigned long long>(false)) );
 
-  VERIFY( (test_category<is_floating_point, float, true>()) );
-  VERIFY( (test_category<is_floating_point, double, true>()) );
-  VERIFY( (test_category<is_floating_point, long double, true>()) );
+  VERIFY( (test_category<is_floating_point, float>(true)) );
+  VERIFY( (test_category<is_floating_point, double>(true)) );
+  VERIFY( (test_category<is_floating_point, long double>(true)) );
 
   // Sanity check.
-  VERIFY( (test_category<is_floating_point, ClassType, false>()) );
+  VERIFY( (test_category<is_floating_point, ClassType>(false)) );
 }
 
 int main()

@@ -1,3 +1,41 @@
+2004-12-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement rank.
+	* testsuite/testsuite_tr1.h (test_property): Generalize to any
+	value_type.
+	(test_category, test_relationship): Slightly tweak consistently.
+	* testsuite/tr1/4_metaprogramming/type_properties/rank/
+	rank.cc: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/rank/
+	typedefs.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_compound/is_compound.cc: New.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_compound/typedefs.cc: Likewise.
+
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_arithmetic/is_arithmetic.cc: Tweak consistently with the
+	testsuite_tr1.h changes.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_fundamental/is_fundamental.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_array/is_array.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_floating_point/is_floating_point.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_integral/is_integral.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_reference/is_reference.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_void/is_void.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/relationships_between_types/
+	is_same/is_same.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_const/
+	is_const.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/is_volatile/
+	is_volatile.cc: Likewise.
+
 2004-12-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement remove_const, remove_volatile,

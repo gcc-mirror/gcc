@@ -30,28 +30,28 @@ void test01()
   using std::tr1::is_void;
   using namespace __gnu_test;
 
-  VERIFY( (test_category<is_void, void, true>()) );
+  VERIFY( (test_category<is_void, void>(true)) );
   
-  VERIFY( (test_category<is_void, char, false>()) );
-  VERIFY( (test_category<is_void, signed char, false>()) );
-  VERIFY( (test_category<is_void, unsigned char, false>()) );
+  VERIFY( (test_category<is_void, char>(false)) );
+  VERIFY( (test_category<is_void, signed char>(false)) );
+  VERIFY( (test_category<is_void, unsigned char>(false)) );
 #ifdef _GLIBCXX_USE_WCHAR_T
-  VERIFY( (test_category<is_void, wchar_t, false>()) );
+  VERIFY( (test_category<is_void, wchar_t>(false)) );
 #endif
-  VERIFY( (test_category<is_void, short, false>()) );
-  VERIFY( (test_category<is_void, unsigned short, false>()) );
-  VERIFY( (test_category<is_void, int, false>()) );
-  VERIFY( (test_category<is_void, unsigned int, false>()) );
-  VERIFY( (test_category<is_void, long, false>()) );
-  VERIFY( (test_category<is_void, unsigned long, false>()) );
-  VERIFY( (test_category<is_void, long long, false>()) );
-  VERIFY( (test_category<is_void, unsigned long long, false>()) );
-  VERIFY( (test_category<is_void, float, false>()) );
-  VERIFY( (test_category<is_void, double, false>()) );
-  VERIFY( (test_category<is_void, long double, false>()) );
+  VERIFY( (test_category<is_void, short>(false)) );
+  VERIFY( (test_category<is_void, unsigned short>(false)) );
+  VERIFY( (test_category<is_void, int>(false)) );
+  VERIFY( (test_category<is_void, unsigned int>(false)) );
+  VERIFY( (test_category<is_void, long>(false)) );
+  VERIFY( (test_category<is_void, unsigned long>(false)) );
+  VERIFY( (test_category<is_void, long long>(false)) );
+  VERIFY( (test_category<is_void, unsigned long long>(false)) );
+  VERIFY( (test_category<is_void, float>(false)) );
+  VERIFY( (test_category<is_void, double>(false)) );
+  VERIFY( (test_category<is_void, long double>(false)) );
 
   // Sanity check.
-  VERIFY( (test_category<is_void, ClassType, false>()) );
+  VERIFY( (test_category<is_void, ClassType>(false)) );
 }
 
 int main()

@@ -233,8 +233,17 @@ namespace tr1
   template<typename _Tp>
     struct alignment_of;
   
+  template<typename>
+    struct rank
+    : public integral_constant<std::size_t, 0> { };
+   
+  template<typename _Tp, std::size_t _Size>
+    struct rank<_Tp[_Size]>
+    : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
+
   template<typename _Tp>
-    struct rank;
+    struct rank<_Tp[]>
+    : public integral_constant<std::size_t, 1 + rank<_Tp>::value> { };
    
   template<typename _Tp, unsigned _Uint = 0>
     struct extent;
@@ -324,25 +333,25 @@ namespace tr1
   template<typename _Tp>
     struct remove_extent
     {
-      typedef _Tp   type;
+      typedef _Tp     type;
     };
 
   template<typename _Tp, std::size_t _Size>
     struct remove_extent<_Tp[_Size]>
     {
-      typedef _Tp   type;
+      typedef _Tp     type;
     };
 
   template<typename _Tp>
     struct remove_extent<_Tp[]>
     {
-      typedef _Tp   type;
+      typedef _Tp     type;
     };
 
   template<typename _Tp>
     struct remove_all_extents
     {
-      typedef _Tp   type;
+      typedef _Tp     type;
     };
 
   template<typename _Tp, std::size_t _Size>
