@@ -803,6 +803,9 @@ int flag_gnu_linker = 0;
 int flag_gnu_linker = 1;
 #endif
 
+/* Nonzero means put zero initialized data in the bss section.  */
+int flag_zero_initialized_in_bss = 1;
+
 /* Enable SSA.  */
 int flag_ssa = 0;
 
@@ -1135,6 +1138,8 @@ static const lang_independent_options f_options[] =
    N_("Suppress output of instruction numbers and line number notes in debugging dumps") },
   {"instrument-functions", &flag_instrument_function_entry_exit, 1,
    N_("Instrument function entry/exit with profiling calls") },
+  {"zero-initialized-in-bss", &flag_zero_initialized_in_bss, 1,
+   N_("Put zero initialized data in the bss section") },
   {"ssa", &flag_ssa, 1,
    N_("Enable SSA optimizations") },
   {"ssa-ccp", &flag_ssa_ccp, 1,

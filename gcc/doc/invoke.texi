@@ -273,6 +273,7 @@ in the following sections.
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
+-fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -freduce-all-givs -fregmove  -frename-registers @gol
@@ -3407,6 +3408,19 @@ an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 The default is @option{-ftrapping-math}.
+
+@item -fno-zero-initialized-in-bss
+@opindex fno-zero-initialized-in-bss
+If the target supports a BSS section, GCC by default puts variables that
+are initialized to zero into BSS@.  This can save space in the resulting
+code.
+
+This option turns off this behavior because some programs explicitly
+rely on variables going to the data section.  E.g., so that the
+resulting executable can find the beginning of that section and/or make
+assumptions based on that.
+
+The default is @option{-fzero-initialized-in-bss}.
 @end table
 
 The following options control specific optimizations.  The @option{-O2}

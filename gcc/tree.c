@@ -4975,3 +4975,45 @@ make_vector (mode, innertype, unsignedp)
 
   return t;
 }
+
+/* Given an initializer INIT, return TRUE if INIT is zero or some
+   aggregate of zeros.  Otherwise return FALSE.  */
+
+bool
+initializer_zerop (init)
+     tree init;
+{
+  STRIP_NOPS (init);
+
+  switch (TREE_CODE (init))
+    {
+    case INTEGER_CST:
+      return integer_zerop (init);
+    case REAL_CST:
+      return real_zerop (init)
+	&& ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (init));
+    case COMPLEX_CST:
+      return integer_zerop (init)
+	|| (real_zerop (init)
+	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_REALPART (init)))
+	    && ! REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (TREE_IMAGPART (init))));
+    case CONSTRUCTOR:
+      {
+	if (AGGREGATE_TYPE_P (TREE_TYPE (init)))
+	{
+	  tree aggr_init = TREE_OPERAND (init, 1);
+	  
+	  while (aggr_init)
+	    {
+	      if (! initializer_zerop (TREE_VALUE (aggr_init)))
+		return false;
+	      aggr_init = TREE_CHAIN (aggr_init);
+	    }
+	  return true;
+	}
+	return false;
+      }
+    default:
+      return false;
+    }
+}

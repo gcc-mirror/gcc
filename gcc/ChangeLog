@@ -1,3 +1,15 @@
+2002-03-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-zero-initialized-in-bss.
+	* doc/invoke.texi (-fno-zero-initialized-in-bss): Document.
+	* flags.h (flag_zero_initialized_in_bss): Declare.
+	* toplev.c (flag_zero_initialized_in_bss): New flag.
+	(lang_independent_options): Add flag_zero_initialized_in_bss.
+	* tree.c (initializer_zerop): New function.
+	* tree.h (initializer_zerop): Declare.
+	* varasm.c (assemble_variable): If we can emit bss, put zero
+	initializers in the bss section.
+
 2002-03-02  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h (ASM_WEAKEN_DECL): AIX assembler doesn't
