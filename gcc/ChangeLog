@@ -1,3 +1,12 @@
+2004-06-10  Alan Modra  <amodra@bigpond.net.au>
+
+	Apply from mainline:
+	2004-03-12  Jakub Jelinek  <jakub@redhat.com>
+	* config/rs6000/rs6000-protos.h (rs6000_output_dwarf_dtprel): Add
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): New.
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+
 2004-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/unwind-ia64.c (uw_frame_state_for): Don't assume a
