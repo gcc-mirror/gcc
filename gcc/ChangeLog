@@ -1,3 +1,7 @@
+2002-01-19  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/rs6000.md: Fix DF split for 64 bit hosts.
+
 2002-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/tm.texi (STARTING_FRAME_PHASE): Document.
