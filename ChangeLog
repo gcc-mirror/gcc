@@ -1,3 +1,8 @@
+2004-08-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* ltcf-cxx.sh: On Darwin, make archive multi-module, and don't
+	use -all_load flag.
+
 2004-08-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.in: Sync from src, add noconfigdirs for crx-*-*.
