@@ -7,6 +7,9 @@ Tue Feb  9 17:27:29 GMT 1999  Nathan Sidwell  <nathan@acm.org>
 
 Tue Feb  9 16:52:22 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* Makefile.in (collect2$(exeext)): Delete redundant dependency and
+	add missing exeext to target.
+
 	* gcc.c (convert_filename): Handle null filename argument.
 
 Wed Feb 10 15:46:10 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
