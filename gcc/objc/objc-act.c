@@ -142,6 +142,9 @@ char *util_firstobj;
 #define OBJC_ENCODE_INLINE_DEFS 	0
 #define OBJC_ENCODE_DONT_INLINE_DEFS	1
 
+/* Needed to help fix missing @end situations.  */
+extern tree objc_implementation_context;
+
 /*** Private Interface (procedures) ***/
 
 /* Used by compile_file.  */
@@ -272,6 +275,7 @@ static void warn_with_method			PARAMS ((const char *, int, tree));
 static void error_with_ivar			PARAMS ((const char *, tree, tree));
 static char *gen_method_decl			PARAMS ((tree, char *));
 static char *gen_declaration			PARAMS ((tree, char *));
+static void gen_declaration_1			PARAMS ((tree, char *));
 static char *gen_declarator			PARAMS ((tree, char *,
 						       const char *));
 static int is_complex_decl			PARAMS ((tree));
@@ -727,7 +731,7 @@ objc_init ()
   /* If gen_declaration desired, open the output file.  */
   if (flag_gen_declaration)
     {
-      register char * const dumpname = concat (dumpname, ".decl", NULL);
+      register char * const dumpname = concat (dump_base_name, ".decl", NULL);
       gen_declaration_file = fopen (dumpname, "w");
       if (gen_declaration_file == 0)
 	fatal_io_error ("can't open %s", dumpname);
@@ -1146,7 +1150,7 @@ get_object_reference (protocols)
       type = TREE_TYPE (type_decl);
       if (TYPE_MAIN_VARIANT (type) != id_type)
 	warning ("Unexpected type for `id' (%s)",
-		gen_declaration (type, errbuf));
+		 gen_declaration (type, errbuf));
     }
   else
     {
@@ -3616,13 +3620,11 @@ error_with_ivar (message, decl, rawdecl)
 
   report_error_function (DECL_SOURCE_FILE (decl));
 
-  strcpy (errbuf, message);
-  strcat (errbuf, " `");
-  gen_declaration (rawdecl, errbuf + strlen (errbuf));
-  strcat (errbuf, "'");
   error_with_file_and_line (DECL_SOURCE_FILE (decl),
 			    DECL_SOURCE_LINE (decl),
-			    errbuf);
+			    "%s `%s'",
+			    message, gen_declaration (rawdecl, errbuf));
+
 }
 
 #define USERTYPE(t) \
@@ -4717,6 +4719,7 @@ build_keyword_selector (selector)
   tree key_chain, key_name;
   char *buf;
 
+  /* Scan the selector to see how much space we'll need.  */
   for (key_chain = selector; key_chain; key_chain = TREE_CHAIN (key_chain))
     {
       if (TREE_CODE (selector) == KEYWORD_DECL)
@@ -4733,8 +4736,9 @@ build_keyword_selector (selector)
 	len++;
     }
 
-  buf = (char *)alloca (len + 1);
-  memset (buf, 0, len + 1);
+  buf = (char *) alloca (len + 1);
+  /* Start the buffer out as an empty string.  */
+  buf[0] = '\0';
 
   for (key_chain = selector; key_chain; key_chain = TREE_CHAIN (key_chain))
     {
@@ -4970,7 +4974,6 @@ build_message_expr (mess)
 	       /* Allow any type that matches objc_class_type.  */
 	       && ! comptypes (rtype, objc_class_type))
 	{
-	  memset (errbuf, 0, BUFSIZE);
 	  warning ("invalid receiver type `%s'",
 		   gen_declaration (rtype, errbuf));
 	}
@@ -6135,6 +6138,14 @@ start_class (code, class_name, super_name, protocol_list)
 {
   tree class, decl;
 
+  if (objc_implementation_context)
+    {
+      warning ("`@end' missing in implementation context");
+      finish_class (objc_implementation_context);
+      objc_ivar_chain = NULL_TREE;
+      objc_implementation_context = NULL_TREE;
+    }
+
   class = make_node (code);
   TYPE_BINFO (class) = make_tree_vec (5);
 
@@ -7047,13 +7058,11 @@ warn_with_method (message, mtype, method)
   report_error_function (DECL_SOURCE_FILE (method));
 
   /* Add a readable method name to the warning.  */
-  sprintf (errbuf, "%s `%c", message, mtype);
-  gen_method_decl (method, errbuf + strlen (errbuf));
-  strcat (errbuf, "'");
-
   warning_with_file_and_line (DECL_SOURCE_FILE (method),
 			      DECL_SOURCE_LINE (method),
-			      errbuf);
+			      "%s `%c%s'",
+			      message, mtype,
+			      gen_method_decl (method, errbuf));
 }
 
 /* Return 1 if METHOD is consistent with PROTO.  */
@@ -7477,7 +7486,7 @@ adorn_decl (decl, str)
       strcat (str, "(");
       while (chain)
 	{
-	  gen_declaration (chain, str);
+	  gen_declaration_1 (chain, str);
 	  chain = TREE_CHAIN (chain);
 	  if (chain)
 	    strcat (str, ", ");
@@ -7492,7 +7501,7 @@ adorn_decl (decl, str)
       strcat (str, "(");
       while (chain && TREE_VALUE (chain) != void_type_node)
 	{
-	  gen_declaration (TREE_VALUE (chain), str);
+	  gen_declaration_1 (TREE_VALUE (chain), str);
 	  chain = TREE_CHAIN (chain);
 	  if (chain && TREE_VALUE (chain) != void_type_node)
 	    strcat (str, ", ");
@@ -7885,8 +7894,24 @@ gen_declspecs (declspecs, buf, raw)
     }
 }
 
+/* Given a tree node, produce a printable description of it in the given
+   buffer, overwriting the buffer.  */
+
 static char *
 gen_declaration (atype_or_adecl, buf)
+     tree atype_or_adecl;
+     char *buf;
+{
+  buf[0] = '\0';
+  gen_declaration_1 (atype_or_adecl, buf);
+  return buf;
+}
+
+/* Given a tree node, append a printable description to the end of the
+   given buffer.  */
+
+static void
+gen_declaration_1 (atype_or_adecl, buf)
      tree atype_or_adecl;
      char *buf;
 {
@@ -7969,11 +7994,12 @@ gen_declaration (atype_or_adecl, buf)
 	  strcat (buf, gen_declarator (declarator, declbuf, ""));
 	}
     }
-
-  return buf;
 }
 
 #define RAW_TYPESPEC(meth) (TREE_VALUE (TREE_PURPOSE (TREE_TYPE (meth))))
+
+/* Given a method tree, put a printable description into the given
+   buffer (overwriting) and return a pointer to the buffer.  */
 
 static char *
 gen_method_decl (method, buf)
@@ -7982,10 +8008,11 @@ gen_method_decl (method, buf)
 {
   tree chain;
 
+  buf[0] = '\0';
   if (RAW_TYPESPEC (method) != objc_object_reference)
     {
-      strcpy (buf, "(");
-      gen_declaration (TREE_TYPE (method), buf);
+      strcat (buf, "(");
+      gen_declaration_1 (TREE_TYPE (method), buf);
       strcat (buf, ")");
     }
 
@@ -8002,7 +8029,7 @@ gen_method_decl (method, buf)
 	  if (RAW_TYPESPEC (chain) != objc_object_reference)
 	    {
 	      strcat (buf, "(");
-	      gen_declaration (TREE_TYPE (chain), buf);
+	      gen_declaration_1 (TREE_TYPE (chain), buf);
 	      strcat (buf, ")");
 	    }
 
@@ -8023,7 +8050,7 @@ gen_method_decl (method, buf)
           while (chain)
             {
 	      strcat (buf, ", ");
-	      gen_declaration (chain, buf);
+	      gen_declaration_1 (chain, buf);
 	      chain = TREE_CHAIN (chain);
             }
 	}
@@ -8064,7 +8091,6 @@ dump_interface (fp, chain)
       fprintf (fp, "{\n");
       do
 	{
-	  memset (buf, 0, 256);
 	  fprintf (fp, "\t%s;\n", gen_declaration (ivar_decls, buf));
 	  ivar_decls = TREE_CHAIN (ivar_decls);
 	}
@@ -8074,14 +8100,12 @@ dump_interface (fp, chain)
 
   while (nst_methods)
     {
-      memset (buf, 0, 256);
       fprintf (fp, "- %s;\n", gen_method_decl (nst_methods, buf));
       nst_methods = TREE_CHAIN (nst_methods);
     }
 
   while (cls_methods)
     {
-      memset (buf, 0, 256);
       fprintf (fp, "+ %s;\n", gen_method_decl (cls_methods, buf));
       cls_methods = TREE_CHAIN (cls_methods);
     }
@@ -8195,6 +8219,15 @@ finish_objc ()
      Don't warn about this.  */
   int save_warn_missing_braces = warn_missing_braces;
   warn_missing_braces = 0;
+
+  /* A missing @end may not be detected by the parser.  */
+  if (objc_implementation_context)
+    {
+      warning ("`@end' missing in implementation context");
+      finish_class (implementation_context);
+      objc_ivar_chain = NULL_TREE;
+      objc_implementation_context = NULL_TREE;
+    }
 
   generate_forward_declaration_to_string_table ();
 
@@ -8480,9 +8513,7 @@ objc_debug (fp)
 	if (TREE_CODE (loop) == FUNCTION_DECL && DECL_INITIAL (loop))
 	  {
 	    /* We have a function definition: generate prototype.  */
-            memset (errbuf, 0, BUFSIZE);
-	    gen_declaration (loop, errbuf);
-	    fprintf (fp, "%s;\n", errbuf);
+	    fprintf (fp, "%s;\n", gen_declaration (loop, errbuf));
 	  }
 	loop = TREE_CHAIN (loop);
       }
@@ -8500,7 +8531,6 @@ objc_debug (fp)
 	    fprintf (fp, "\n\nnst_method_hash_list[%d]:\n", i);
 	    do
 	      {
-		memset (buf, 0, 256);
 		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
 		hashlist = hashlist->next;
 	      }
@@ -8515,7 +8545,6 @@ objc_debug (fp)
 	    fprintf (fp, "\n\ncls_method_hash_list[%d]:\n", i);
 	    do
 	      {
-		memset (buf, 0, 256);
 		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
 		hashlist = hashlist->next;
 	      }

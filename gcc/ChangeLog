@@ -1,3 +1,21 @@
+2001-03-27  Stan Shebs  <shebs@apple.com>
+
+	* objc/objc-act.c (objc_init): Use dump_base_name.
+	(gen_declaration): Clear the buffer arg.
+	(gen_declaration_1): New function, body of gen_declaration.
+	(adorn_decl): Call gen_declaration_1 instead of gen_declaration.
+	(gen_method_decl): Ditto, plus always clear buffer arg.
+	(error_with_ivar): Simplify.
+	(warn_with_method): Ditto.
+	(build_message_expr): Don't clear buffers.
+	(dump_interface): Ditto.
+	(objc_debug): Ditto.
+	(build_keyword_selector): Clear the buffer by only zeroing
+	the first element.
+	(objc_implementation_context): Declare.
+	(start_class): Warn about missing @end.
+	(finish_objc): Ditto.
+
 2001-03-28  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* reload1.c (eliminate_regs): Don't abort on MEM USEs.
