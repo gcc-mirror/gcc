@@ -1494,7 +1494,7 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
 
   /* We're going to be generating comments, so turn on app.  */
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     app_enable ();
 
   if (for_eh)
@@ -1658,7 +1658,7 @@ output_call_frame_info (for_eh)
 #endif
 
   /* Turn off app to make assembly quicker.  */
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     app_disable ();
 }
 
