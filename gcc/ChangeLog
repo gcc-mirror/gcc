@@ -1,3 +1,27 @@
+2000-07-12  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.c (save_output_state): Remove.
+	(restore_output_state): Likewise.
+	(clear_text_info): New function.
+	(clear_diagnostic_info): Likewise.
+	(output_text_length, is_starting_newline, output_prefix,
+	line_wrap_cutoff, ideal_line_wrap_cutoff, prefix_was_emitted_for,
+	prefixing_policy, output_buffer_ptr_to_format_args): New macros
+	(set_real_maximum_length, output_set_maximum_length,
+	output_set_prefix, output_get_prefix, output_set_maximum_length, 
+	output_destroy_prefix, init_output_buffer,
+	reshape_diagnostic_buffer, output_space_left, output_emit_prefix,
+	output_add_newline, output_add_character, output_add_space,
+	output_append_r, output_append, wrap_text, output_format,
+	output_do_printf, output_printf, output_do_verbatim,
+	output_verbatim, verbatim): Use them.
+	(output_clear): Split into cleat_text_info and
+	clear_diagnostic_info.
+	(struct output_state): Move to...
+
+	* diagnostic.h: ...Here
+	(struct output_buffer): Adjust. 
+	
 2000-07-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplex.c (parse_name): No longer inline (premature optimization).
