@@ -1,3 +1,7 @@
+2000-02-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i386.h (TARGET_SWITCHES): Fix typo in option name.
+
 2000-02-08  Clinton Popetz  <cpopetz@cygnus.com>
 
         * function.c (thread_prologue_and_epilogue_insns): Don't replace

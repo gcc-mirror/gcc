@@ -247,7 +247,7 @@ extern const int x86_promote_QImode, x86_single_stringop;
     "Align destination of the string operations" },			      \
   { "no-align-stringops",	 MASK_NO_ALIGN_STROPS,			      \
     "Do not align destination of the string operations" },		      \
-  { "inline-all-strinops",	 MASK_INLINE_ALL_STROPS,		      \
+  { "inline-all-stringops",	 MASK_INLINE_ALL_STROPS,		      \
     "Inline all known string operations" },				      \
   { "no-inline-all-stringops",	-MASK_INLINE_ALL_STROPS,		      \
     "Do not inline all known string operations" },			      \
