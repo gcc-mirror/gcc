@@ -9,11 +9,17 @@
    <TITLE>How to automatically rebuild libgcc.a.</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: gccrebuild.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $ -->
+<!-- $Id: gccrebuild.html,v 1.2 2000/05/03 16:11:02 pme Exp $ -->
 </HEAD>
 <BODY>
 
 <H2 CLASS="centered"><TT>--enable-libgcc-rebuild</TT></H2>
+
+<P> NOTE: If using the <TT> --enable-libstdcxx-v3</TT> approach to
+    configuring, the std namespace will be turned on for you, without
+    going this route. Only use this flag if you'd like to experiment with
+    yet more binary incompatibilities, as discussed below.
+</P>
 
 <P>If you build libstdc++ using certain flags (e.g., -fnew-abi), then
    programs that use some of the new C++ language features (like namespace
@@ -22,26 +28,24 @@
    the name mangling algorithm) will have the same effect.
 </P>
 
-<P>Since the compiler and this library are currently separate projects,
-   you would normally have to do this yourself.  Passing
-   --enable-libgcc-rebuild to libstdc++'s configure script means that when
-   you type 'make' next, after libstdc++ is built, then libgcc will also
-   be rebuilt.  If you've given other --enable/--with switches to libstdc++
-   that would require a core library rebuild, then those compiler options
-   will be automatically used when compiling libgcc, such that both
-   libraries will always be built with the same options.
+<P>Passing --enable-libgcc-rebuild to libstdc++'s configure script
+   means that when you type 'make' next, after libstdc++ is built,
+   then libgcc will also be rebuilt.  If you've given other
+   --enable/--with switches to libstdc++ that would require a core
+   library rebuild, then those compiler options will be automatically
+   used when compiling libgcc, such that both libraries will always be
+   built with the same options.
 </P>
 
-<P>Of course, since they are currently separate projects, the libstdc++
-   scripts have no idea where you've built your GCC, so you must tell it.
-   The argument to this enable switch is the path to the GCC build
+<P>The argument to this enable switch is the path to the GCC build
    directory.  The GCC configuration documentation refers to this directory
    as <EM>objdir</EM>; here it will be called <EM>GCCobjdir</EM>.
 </P>
 
-<P>This is a kludge, and will go away eventually.  (In a sense, it has
-   already gone away, as the library sources have been merged into the
-   compiler sources.)
+<P>This is a kludge, and will go away eventually, as more and more of
+   these copiler-level ABI switches get turned on by default.  (In a
+   sense, it has already gone away, as the library sources have been
+   merged into the compiler sources.)
 </P>
 
 <HR>
@@ -114,7 +118,7 @@
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: gccrebuild.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $
+$Id: gccrebuild.html,v 1.2 2000/05/03 16:11:02 pme Exp $
 </EM></P>
 
 

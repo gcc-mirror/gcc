@@ -888,6 +888,73 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
 ])
 
 
+dnl
+dnl Check to see what the underlying c library or math library is like.
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is found.
+dnl
+dnl GLIBCPP_CHECK_MATH_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_CHECK_LIB(m, sin, libm="-lm")
+  save_LIBS="$LIBS"
+  LIBS="$LIBS $libm"
+
+  dnl Check to see if basic C math functions have float, long double versions.
+  AC_REPLACE_MATHFUNCS(cosf fabsf sinf sqrtf)
+  AC_CHECK_FUNCS(isnan isnanf isnanl isinf isinff isinfl copysign copysignl \
+  acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosl \
+  coshf coshl expf expl fabsl floorf floorl fmodf fmodl frexpf frexpl ldexpf \
+  ldexpl logf logl log10f log10l modff modfl powf powl sinl sinhf \
+  sinhl sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
+  sincosl finite finitef finitel fqfinite fpclass qfpclass)
+
+#Some runtimes have these functions with a preceding underscore. Please
+# keep this sync'd with the one above. And if you add any new symbol,
+# please add the corresponding block in the @BOTTOM@ section of
+# acconfig.h.
+
+  AC_CHECK_FUNCS(_isnan _isnanf _isnanl _isinf _isinff _isinfl _copysign \
+  _copysignl _acosf _acosl _asinf _asinl _atanf _atanl _atan2f _atan2l \
+  _ceilf _ceill _cosf _cosl _coshf _coshl _expf _expl _fabsf _fabsl \
+  _floorf _floorl _fmodf _fmodl _frexpf _frexpl _ldexpf _ldexpl _logf _logl \
+  _log10f _log10l _modff _modfl _powf _powl _sinf _sinl _sinhf _sinhl \
+  _sqrtf _sqrtl _tanf _tanl _tanhf _tanhl _strtof _strtold _sincos _sincosf \
+  _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
+
+  LIBS="$save_LIBS"
+  AC_LANG_RESTORE
+])
+
+
+dnl
+dnl Check to see if there is native support for complex 
+dnl
+dnl Don't compile bits in math/* if native support exits.
+dnl
+dnl Define USE_COMPLEX_LONG_DOUBLE etc if "cargf" is found.
+dnl
+dnl GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
+  dnl Check for complex versions of math functions of platform.
+  AC_CHECK_HEADERS([complex.h])
+  AC_REPLACE_MATHFUNCS(ccos ccosf ccosh ccoshf cexp cexpf c_log c_logf \
+  clog10 clog10f cpow cpowf csin csinf csinh csinhf csqrt csqrtf \
+  ctan ctanf ctanh ctanhf \
+  carg cargf nan hypot hypotf atan2f expf copysignf)
+
+  dnl We compile the long double complex functions only if the function 
+  dnl provides the non-complex long double functions.
+  USE_LONG_DOUBLE=no
+  AC_CHECK_FUNC(copysignl,
+  USE_LONG_DOUBLE=yes
+  AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
+  csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l))
+  AC_SUBST(USE_COMPLEX_LONG_DOUBLE)
+])
+
 
 dnl Check to see what architecture we are compiling for. If it's
 dnl supported, use special hand-crafted routines to provide thread
@@ -1086,59 +1153,6 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 
 
 dnl
-dnl Check to see what the underlying c library or math library is like.
-dnl
-dnl Define HAVE_CARGF etc if "cargf" is found.
-dnl
-dnl GLIBCPP_CHECK_MATH_SUPPORT
-AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
-  AC_CHECK_LIB(m, sin, libm="-lm")
-  save_LIBS="$LIBS"
-  LIBS="$LIBS $libm"
-
-  dnl Check for complex versions of math functions of platform.
-  AC_CHECK_HEADERS([complex.h])
-  AC_REPLACE_MATHFUNCS(ccos ccosf ccosh ccoshf cexp cexpf c_log c_logf \
-  clog10 clog10f cpow cpowf csin csinf csinh csinhf csqrt csqrtf \
-  ctan ctanf ctanh ctanhf \
-  carg cargf nan hypot hypotf atan2f expf copysignf)
-
-  dnl We compile the long double complex functions only if the function 
-  dnl provides the non-complex long double functions.
-  USE_LONG_DOUBLE=no
-  AC_CHECK_FUNC(copysignl,
-  USE_LONG_DOUBLE=yes
-  AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
-  csqrtl ctanhl ctanl cargl hypotl signbitl c_logl clog10l))
-  AC_SUBST(USE_LONG_DOUBLE)
-
-  dnl Check to see if basic C math functions have float, long double versions.
-  AC_REPLACE_MATHFUNCS(cosf fabsf sinf sqrtf)
-  AC_CHECK_FUNCS(isnan isnanf isnanl isinf isinff isinfl copysign copysignl \
-  acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosl \
-  coshf coshl expf expl fabsl floorf floorl fmodf fmodl frexpf frexpl ldexpf \
-  ldexpl logf logl log10f log10l modff modfl powf powl sinl sinhf \
-  sinhl sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
-  sincosl finite finitef finitel fqfinite fpclass qfpclass)
-
-#Some runtimes have these functions with a preceding underscore. Please
-# keep this sync'd with the one above. And if you add any new symbol,
-# please add the corresponding block in the @BOTTOM@ section of
-# acconfig.h.
-
-  AC_CHECK_FUNCS(_isnan _isnanf _isnanl _isinf _isinff _isinfl _copysign \
-  _copysignl _acosf _acosl _asinf _asinl _atanf _atanl _atan2f _atan2l \
-  _ceilf _ceill _cosf _cosl _coshf _coshl _expf _expl _fabsf _fabsl \
-  _floorf _floorl _fmodf _fmodl _frexpf _frexpl _ldexpf _ldexpl _logf _logl \
-  _log10f _log10l _modff _modfl _powf _powl _sinf _sinl _sinhf _sinhl \
-  _sqrtf _sqrtl _tanf _tanl _tanhf _tanhl _strtof _strtold _sincos _sincosf \
-  _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
-
-LIBS="$save_LIBS"
-])
-
-
-dnl
 dnl Check to see if this target can enable the wchar_t parts of libstdc++.
 dnl
 dnl Define _GLIBCPP_USE_WCHAR_T if all the bits are found 
@@ -1232,9 +1246,33 @@ dnl __complex__ float support.
 dnl
 dnl Define _GLIBCPP_BUGGY_FLOAT_COMPLEX if buggy.
 dnl
-dnl GLIBCPP_CHECK_COMPLEX_FLOAT_SUPPORT
-AC_DEFUN(GLIBCPP_CHECK_COMPLEX_FLOAT_SUPPORT, [
+dnl Check to see if this version of GNU C++ is afflicted by bugs in 
+dnl __complex__ support.Check for buggy __complex__ that will cause ICE in
+dnl gcc-2.95.x when using the library, unless we define the default copy
+dnl ctor in the specializations of complex<>. 
+dnl 
+dnl Define _GLIBCPP_BUGGY_COMPLEX if buggy.
+dnl GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT
+AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT, [
   AC_REQUIRE([AC_PROG_CXX])
+
+  AC_MSG_CHECKING([for GNU C++ __complex__ support])
+  AC_CACHE_VAL(glibcpp_cv_complex, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([struct dcomplex { __complex__ double x; }; \
+		    dcomplex f(const dcomplex& x) { return dcomplex(x); }], \
+		    [ dcomplex x; f(x); ],
+      glibcpp_cv_complex=ok,
+      glibcpp_cv_complex=buggy
+    )
+    AC_LANG_RESTORE
+  ])
+  AC_MSG_RESULT($glibcpp_cv_complex)
+  if test $glibcpp_cv_complex = buggy; then
+    AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
+  fi
+
   AC_MSG_CHECKING([for GNU C++ __complex__ float support])
   AC_CACHE_VAL(glibcpp_cv_float_complex, [
     AC_LANG_SAVE
@@ -1267,37 +1305,6 @@ EOB
   AC_MSG_RESULT($glibcpp_cv_float_complex)
   if test $glibcpp_cv_float_complex = buggy; then
     AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
-  fi
-])
-
-
-dnl
-dnl 
-dnl Check to see if this version of GNU C++ is afflicted by bugs in 
-dnl __complex__ support.Check for buggy __complex__ that will cause ICE in
-dnl gcc-2.95.x when using the library, unless we define the default copy
-dnl ctor in the specializations of complex<>. 
-dnl 
-dnl Define _GLIBCPP_BUGGY_COMPLEX if buggy.
-dnl
-dnl GLIBCPP_CHECK_COMPLEX_SUPPORT
-AC_DEFUN(GLIBCPP_CHECK_COMPLEX_SUPPORT, [
-  AC_REQUIRE([AC_PROG_CXX])
-  AC_MSG_CHECKING([for GNU C++ __complex__ support])
-  AC_CACHE_VAL(glibcpp_cv_complex, [
-    AC_LANG_SAVE
-    AC_LANG_CPLUSPLUS
-    AC_TRY_COMPILE([struct dcomplex { __complex__ double x; }; \
-		    dcomplex f(const dcomplex& x) { return dcomplex(x); }], \
-		    [ dcomplex x; f(x); ],
-      glibcpp_cv_complex=ok,
-      glibcpp_cv_complex=buggy
-    )
-    AC_LANG_RESTORE
-  ])
-  AC_MSG_RESULT($glibcpp_cv_complex)
-  if test $glibcpp_cv_complex = buggy; then
-    AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
   fi
 ])
 
