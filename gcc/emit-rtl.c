@@ -1886,7 +1886,7 @@ change_address (rtx memref, enum machine_mode mode, rtx addr)
 	      && MEM_ALIGN (memref) == align))
 	return new;
 
-      new = gen_rtx_MEM (mmode, addr);
+      new = gen_rtx_MEM (mmode, XEXP (memref, 0));
       MEM_COPY_ATTRIBUTES (new, memref);
     }
 
