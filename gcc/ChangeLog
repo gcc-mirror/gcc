@@ -1,3 +1,18 @@
+Sun Dec 21 22:10:59 1997  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* i386/cygwin32.h (NO_IMPLICIT_EXTERN_C): Don't assume anything
+	about system headers.
+	(LIB_SPEC): Add -ladvapi32 -lshell32 to be consistent with mingw32
+	and also to resolve symbols in prefix.c.
+
+	* i386/xm-cygwin32.h (HAVE_BCOPY): Define. This avoids a conflict
+	between gansidecl.h and newlib's _ansi.h when building libgcc2.a,
+	when the definitions in auto-config.h is not visible.
+	(HAVE_BZERO): Likewise.
+	(HAVE_BCMP): Likewise.
+	(HAVE_RINDEX): Likewise.
+	(HAVE_INDEX): Likewise.
+
 Sun Dec 21 21:54:22 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (emit_move_sequence): Handle a function label source

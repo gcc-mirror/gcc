@@ -51,7 +51,8 @@ Boston, MA 02111-1307, USA. */
    ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
+#define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 \
+  -ladvapi32 -lshell32"
 
 #define LINK_SPEC "%{mwindows:--subsystem windows}"
 
@@ -209,3 +210,5 @@ do {								\
 /* DWARF2 Unwinding doesn't work with exception handling yet. */
 #define DWARF2_UNWIND_INFO 0
 
+/* Don't assume anything about the header files. */
+#define NO_IMPLICIT_EXTERN_C
