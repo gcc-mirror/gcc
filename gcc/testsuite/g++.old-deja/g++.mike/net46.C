@@ -4,7 +4,7 @@
 
 int fail = 1;
 
-static void *operator new(size_t size) throw (std::bad_alloc) {
+void *operator new(size_t size) throw (std::bad_alloc) {
   --fail;
   return (void*) 0;
 }

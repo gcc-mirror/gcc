@@ -2921,8 +2921,7 @@ decls_match (newdecl, olddecl)
 }
 
 /* If NEWDECL is `static' and an `extern' was seen previously,
-   warn about it.  (OLDDECL may be NULL_TREE; NAME contains
-   information about previous usage as an `extern'.)
+   warn about it.  OLDDECL is the previous declaration.
 
    Note that this does not apply to the C++ case of declaring
    a variable `extern const' and then later `const'.
@@ -2934,33 +2933,31 @@ static void
 warn_extern_redeclared_static (newdecl, olddecl)
      tree newdecl, olddecl;
 {
-  tree name;
-
   static const char *explicit_extern_static_warning
     = "`%D' was declared `extern' and later `static'";
   static const char *implicit_extern_static_warning
     = "`%D' was declared implicitly `extern' and later `static'";
 
+  tree name;
+
   if (TREE_CODE (newdecl) == TYPE_DECL)
     return;
 
+  /* If the old declaration was `static', or the new one isn't, then
+     then everything is OK.  */
+  if (DECL_THIS_STATIC (olddecl) || !DECL_THIS_STATIC (newdecl))
+    return;
+
+  /* It's OK to declare a builtin function as `static'.  */
+  if (TREE_CODE (olddecl) == FUNCTION_DECL
+      && DECL_ARTIFICIAL (olddecl))
+    return;
+
   name = DECL_ASSEMBLER_NAME (newdecl);
-  if (TREE_PUBLIC (name) && DECL_THIS_STATIC (newdecl))
-    {
-      /* It's okay to redeclare an ANSI built-in function as static,
-	 or to declare a non-ANSI built-in function as anything.  */
-      if (! (TREE_CODE (newdecl) == FUNCTION_DECL
-	     && olddecl != NULL_TREE
-	     && TREE_CODE (olddecl) == FUNCTION_DECL
-	     && DECL_ARTIFICIAL (olddecl)))
-	{
-	  cp_pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
-		      ? implicit_extern_static_warning
-		      : explicit_extern_static_warning, newdecl);
-	  if (olddecl != NULL_TREE)
-	    cp_pedwarn_at ("previous declaration of `%D'", olddecl);
-	}
-    }
+  cp_pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
+	      ? implicit_extern_static_warning
+	      : explicit_extern_static_warning, newdecl);
+  cp_pedwarn_at ("previous declaration of `%D'", olddecl);
 }
 
 /* Handle when a new declaration NEWDECL has the same name as an old
@@ -3046,6 +3043,14 @@ duplicate_decls (newdecl, olddecl)
 	  else
 	    /* Discard the old built-in function.  */
 	    return 0;
+	}
+      
+      if (DECL_THIS_STATIC (newdecl) && !DECL_THIS_STATIC (olddecl))
+	{
+	  /* If a builtin function is redeclared as `static', merge
+	     the declarations, but make the original one static.  */
+	  DECL_THIS_STATIC (olddecl) = 1;
+	  TREE_PUBLIC (olddecl) = 0;
 	}
     }
   else if (TREE_CODE (olddecl) != TREE_CODE (newdecl))
