@@ -1,6 +1,6 @@
 2001-02-05  Chandrakala Chavva  <cchavva@redhat.com>
 
-	* final.c: Move the declaration profile_label_no to ...
+	* final.c: Move the declaration of profile_label_no to ...
         * output.h: ... here.
         * function.c (expand_function_start): Call PROFILE_HOOK.
         * config/rs6000/aix.h: Define PROFILE_HOOK.
