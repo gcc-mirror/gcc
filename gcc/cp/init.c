@@ -79,6 +79,45 @@ void init_init_processing ()
   ggc_add_tree_root (&BI_header_size, 1);
 }
 
+/* We are about to generate some complex initialization code.
+   Conceptually, it is all a single expression.  However, we may want
+   to include conditionals, loops, and other such statement-level
+   constructs.  Therefore, we build the initialization code inside a
+   statement-expression.  This function starts such an expression.
+   STMT_EXPR_P and COMPOUND_STMT_P are filled in by this function;
+   pass them back to finish_init_stmts when the expression is
+   complete.  */
+
+void
+begin_init_stmts (stmt_expr_p, compound_stmt_p)
+     tree *stmt_expr_p;
+     tree *compound_stmt_p;
+{
+  *stmt_expr_p = begin_stmt_expr ();
+  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+}
+
+/* Finish out the statement-expression begun by the previous call to
+   begin_init_stmts.  Returns the statement-expression itself.  */
+
+tree
+finish_init_stmts (stmt_expr, compound_stmt)
+     tree stmt_expr;
+     tree compound_stmt;
+{
+  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  stmt_expr = finish_stmt_expr (stmt_expr);
+
+  /* To avoid spurious warnings about unused values, we set 
+     TREE_USED.  */
+  if (stmt_expr)
+    TREE_USED (stmt_expr) = 1;
+
+  return stmt_expr;
+}
+
+/* Constructors */
+
 /* Called from initialize_vtbl_ptrs via dfs_walk.  */
 
 static tree
@@ -132,8 +171,6 @@ initialize_vtbl_ptrs (type, addr)
     expand_indirect_vtbls_init (TYPE_BINFO (type), addr);
 }
 
-
-/* 348 - 351 */
 /* Subroutine of emit_base_init.  */
 
 static void
@@ -239,8 +276,6 @@ perform_member_init (member, name, init, explicit)
 	finish_subobject (expr);
     }
 }
-
-extern int warn_reorder;
 
 /* Subroutine of emit_member_init.  */
 
@@ -485,7 +520,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
    Note that emit_base_init does *not* initialize virtual base
    classes.  That is done specially, elsewhere.  */
 
-tree
+void
 emit_base_init (t)
      tree t;
 {
@@ -494,9 +529,8 @@ emit_base_init (t)
   tree rbase_init_list, vbase_init_list;
   tree t_binfo = TYPE_BINFO (t);
   tree binfos = BINFO_BASETYPES (t_binfo);
-  int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  tree stmt_expr;
-  tree compound_stmt;
+  int i;
+  int n_baseclasses = BINFO_N_BASETYPES (t_binfo);
 
   mem_init_list = sort_member_init (t);
   current_member_init_list = NULL_TREE;
@@ -504,8 +538,6 @@ emit_base_init (t)
   sort_base_init (t, &rbase_init_list, &vbase_init_list);
   current_base_init_list = NULL_TREE;
 
-  begin_init_stmts (&stmt_expr, &compound_stmt);
-  
   /* First, initialize the virtual base classes, if we are
      constructing the most-derived object.  */
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
@@ -618,25 +650,6 @@ emit_base_init (t)
 	}
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
-
-  /* All the implicit try blocks we built up will be zapped
-     when we come to a real binding contour boundary.  */
-  return finish_init_stmts (stmt_expr, compound_stmt);
-}
-
-/* Check that all fields are properly initialized after
-   an assignment to `this'.  Called only when such an assignment
-   is actually noted.  */
-
-void
-check_base_init (t)
-     tree t;
-{
-  tree member;
-  for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
-    if (DECL_NAME (member) && TREE_USED (member))
-      cp_error ("field `%D' used before initialized (after assignment to `this')",
-		member);
 }
 
 /* This code sets up the virtual function tables appropriate for
@@ -983,43 +996,6 @@ expand_member_init (exp, name, init)
     }
 }
 
-/* We are about to generate some complex initialization code.
-   Conceptually, it is all a single expression.  However, we may want
-   to include conditionals, loops, and other such statement-level
-   constructs.  Therefore, we build the initialization code inside a
-   statement-expression.  This function starts such an expression.
-   STMT_EXPR_P and COMPOUND_STMT_P are filled in by this function;
-   pass them back to finish_init_stmts when the expression is
-   complete.  */
-
-void
-begin_init_stmts (stmt_expr_p, compound_stmt_p)
-     tree *stmt_expr_p;
-     tree *compound_stmt_p;
-{
-  *stmt_expr_p = begin_stmt_expr ();
-  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
-}
-
-/* Finish out the statement-expression begun by the previous call to
-   begin_init_stmts.  Returns the statement-expression itself.  */
-
-tree
-finish_init_stmts (stmt_expr, compound_stmt)
-     tree stmt_expr;
-     tree compound_stmt;
-{
-  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
-  stmt_expr = finish_stmt_expr (stmt_expr);
-
-  /* To avoid spurious warnings about unused values, we set 
-     TREE_USED.  */
-  if (stmt_expr)
-    TREE_USED (stmt_expr) = 1;
-
-  return stmt_expr;
-}
-
 /* This is like `expand_member_init', only it stores one aggregate
    value into another.
 
@@ -1266,39 +1242,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, flags)
   /* We know that expand_default_init can handle everything we want
      at this point.  */
   expand_default_init (binfo, true_exp, exp, init, flags);
-}
-
-/* Report an error if NAME is not the name of a user-defined,
-   aggregate type.  If OR_ELSE is nonzero, give an error message.  */
-
-int
-is_aggr_typedef (name, or_else)
-     tree name;
-     int or_else;
-{
-  tree type;
-
-  if (name == error_mark_node)
-    return 0;
-
-  if (IDENTIFIER_HAS_TYPE_VALUE (name))
-    type = IDENTIFIER_TYPE_VALUE (name);
-  else
-    {
-      if (or_else)
-	cp_error ("`%T' is not an aggregate typedef", name);
-      return 0;
-    }
-
-  if (! IS_AGGR_TYPE (type)
-      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (type) != TEMPLATE_TEMPLATE_PARM)
-    {
-      if (or_else)
-	cp_error ("`%T' is not an aggregate type", type);
-      return 0;
-    }
-  return 1;
 }
 
 /* Report an error if TYPE is not a user-defined, aggregate type.  If
@@ -2413,8 +2356,7 @@ build_new_1 (exp)
 	      flags |= LOOKUP_HAS_IN_CHARGE;
 	    }
 
-	  if (use_java_new)
-	    rval = save_expr (rval);
+	  rval = save_expr (rval);
 	  newrval = rval;
 
 	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
@@ -2426,10 +2368,7 @@ build_new_1 (exp)
 	  if (newrval == NULL_TREE || newrval == error_mark_node)
 	    return error_mark_node;
 
-	  /* Java constructors compiled by jc1 do not return this. */
-	  if (use_java_new)
-	    newrval = build (COMPOUND_EXPR, TREE_TYPE (newrval),
-			     newrval, rval);
+	  newrval = build (COMPOUND_EXPR, TREE_TYPE (rval), newrval, rval);
 	  rval = newrval;
 	  TREE_HAS_CONSTRUCTOR (rval) = 1;
 	}

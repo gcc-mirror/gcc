@@ -1235,7 +1235,7 @@ setup_vtbl_ptr ()
 	  add_tree (ctor_stmt);
 	  
 	  /* And actually initialize the base-classes and members.  */
-	  finish_expr_stmt (emit_base_init (current_class_type));
+	  emit_base_init (current_class_type);
 	}
     }
   else if (DECL_DESTRUCTOR_P (current_function_decl)
