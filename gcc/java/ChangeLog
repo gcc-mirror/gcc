@@ -15,6 +15,42 @@ Sat Mar 27 15:49:18 1999  Per Bothner  <bothner@cygnus.com>
 	(patch_loop_statement):  Re-organize.
 	(patch_bc_statement):  Re-write.
 
+Sat Mar 27 15:13:21 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (EXPR_WFL_GET_LINECOL): Set a line and column count
+ 	using a WFL compound value.
+	* parse.y (xref.h): Include.
+	(maybe_create_class_interface_decl): Set DECL_SOURCE_LINE to the
+ 	WFL compound value.
+	(register_fields): Set WFL compound value to lineno if doing
+ 	xrefs.
+	(java_complete_expand_method): Call expand_xref if flag_emit_xref
+ 	is set.
+	* xref.c (system.h, jcf.h, parse.h, obstack.h): Include.
+	* xref.h (expand_xref): Prototype renamed from xref_generate.
+
+Sat Mar 27 14:16:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (BLOCK_CHAIN_DECL): New use GET_CURRENT_BLOCK.
+	(GET_CURRENT_BLOCK): New macro.
+	* parse.y (current_static_block): New global variable.
+	(method_body:): Define action.
+	(complete_method_declaration): Set current_function_decl to NULL
+ 	when work on the current method is done.
+	(declare_local_variables): Use GET_CURRENT_BLOCK.
+	(java_method_add_stmt): Likewise.
+	(java_complete_expand_method): Disable the use of `this' when
+ 	expanding <clinit>.
+	(enter_a_block): If no current method exist, use
+ 	current_static_block to link static initializer blocks.
+	(exit_block): Rewritten to use current_static_block when no current
+ 	method decl exists.
+	(lookup_name_in_blocks): Use GET_CURRENT_BLOCK.
+	(patch_return): Forbid the use of `return' in static initializers.
+	(patch_throw_statement): Fixed indentation. Issue specific error
+ 	for uncaught thrown checked exception in static initializer
+ 	blocks. Removed FIXME.
+
 1999-03-25  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* java/Make-lang.in: Remove all references to gcj.o/gcj.c.

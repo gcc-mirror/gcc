@@ -26,9 +26,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include <stdio.h>
 #include "config.h"
+#include "system.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "xref.h"
+#include "jcf.h"
+#include "parse.h"
+#include "obstack.h"
 
 
 static xref_flag_table xref_table [] = {

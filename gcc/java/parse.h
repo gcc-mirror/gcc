@@ -456,9 +456,14 @@ typedef struct _jdeplist {
 #define BLOCK_CHAIN_DECL(NODE)						    \
   {		 							    \
     TREE_CHAIN ((NODE)) = 						    \
-      BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));	    \
-    BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl)) = (NODE); \
+      BLOCK_EXPR_DECLS (GET_CURRENT_BLOCK (current_function_decl));         \
+    BLOCK_EXPR_DECLS (GET_CURRENT_BLOCK (current_function_decl)) = (NODE);  \
   }
+
+/* Return the current block, either found in the body of the currently
+   declared function or in the current static block being defined. */
+#define GET_CURRENT_BLOCK(F) ((F) ? DECL_FUNCTION_BODY ((F)) :	\
+			     current_static_block)
 
 /* For an artificial BLOCK (created to house a local variable declaration not
    at the start of an existing block), the parent block;  otherwise NULL. */
@@ -471,6 +476,13 @@ typedef struct _jdeplist {
 /* Retrieve those two info separately. */
 #define DECL_SOURCE_LINE_FIRST(DECL)    (DECL_SOURCE_LINE(DECL) & 0x0000ffff)
 #define DECL_SOURCE_LINE_LAST(DECL)     (DECL_SOURCE_LINE(DECL) >> 16)
+
+/* Retrieve line/column from a WFL. */
+#define EXPR_WFL_GET_LINECOL(V,LINE,COL)	\
+  {						\
+     (LINE) = (V) >> 12;			\
+     (COL) = (V) & 0xfff;			\
+   }
 
 /* Build a WFL for expression nodes */
 #define BUILD_EXPR_WFL(NODE, WFL)					\
