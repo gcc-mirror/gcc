@@ -2597,7 +2597,7 @@ static GTY ((param_is (union tree_node))) htab_t conv_type_names;
 static hashval_t
 hash_type (const void *val)
 {
-  return htab_hash_pointer (TREE_PURPOSE (*((tree *) val)));
+  return htab_hash_pointer (TREE_PURPOSE ((tree) val));
 }
 
 /* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
