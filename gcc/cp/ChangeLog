@@ -1,3 +1,8 @@
+2000-12-15  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (reduce_template_parm_level): Set DECL_ARTIFICIAL and
+	DECL_TEMPLATE_PARM_P.
+
 2000-12-15  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_new_1): Reorganize.  Now with 100% fewer SAVE_EXPRs!
