@@ -321,6 +321,7 @@ extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 extern void tidy_fallthru_edges		PARAMS ((void));
 extern void flow_reverse_top_sort_order_compute	PARAMS ((int *));
 extern int flow_depth_first_order_compute	PARAMS ((int *, int *));
+extern void flow_preorder_transversal_compute	PARAMS ((int *));
 extern void dump_edge_info		PARAMS ((FILE *, edge, int));
 extern void clear_edges			PARAMS ((void));
 extern void mark_critical_edges		PARAMS ((void));
