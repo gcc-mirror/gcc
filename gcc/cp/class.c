@@ -2446,13 +2446,11 @@ layout_vtable_decl (binfo, n)
      tree binfo;
      int n;
 {
-  tree itype;
   tree atype;
   tree vtable;
 
-  itype = size_int (n);
   atype = build_cplus_array_type (vtable_entry_type, 
-				  build_index_type (itype));
+				  build_index_type (size_int (n - 1)));
   layout_type (atype);
 
   /* We may have to grow the vtable.  */
@@ -4856,7 +4854,7 @@ layout_virtual_bases (t, offsets)
   TYPE_ALIGN (t) = MAX (TYPE_ALIGN (t), BITS_PER_UNIT);
 
   /* Go through the virtual bases, allocating space for each virtual
-     base that is not already a primary base class.  Under the new
+     base that is not already a primary base class.  Under the old
      ABI, these are allocated according to a depth-first left-to-right
      postorder traversal; in the new ABI, inheritance graph order is
      used instead.  */
@@ -7149,7 +7147,7 @@ build_vtt (t)
     return;
 
   /* Figure out the type of the VTT.  */
-  type = build_index_type (size_int (list_length (inits)));
+  type = build_index_type (size_int (list_length (inits) - 1));
   type = build_cplus_array_type (const_ptr_type_node, type);
 				 
   /* Now, build the VTT object itself.  */
@@ -7468,7 +7466,7 @@ build_ctor_vtbl_group (binfo, t)
   inits = TREE_VALUE (list);
 
   /* Figure out the type of the construction vtable.  */
-  type = build_index_type (size_int (list_length (inits)));
+  type = build_index_type (size_int (list_length (inits) - 1));
   type = build_cplus_array_type (vtable_entry_type, type);
   TREE_TYPE (vtbl) = type;
 

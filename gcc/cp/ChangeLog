@@ -1,5 +1,12 @@
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (layout_vtable_decl): Fix off by one error on
+	build_index_type.
+	(build_vtt): Likewise.
+	(build_ctor_vtbl_group): Likewise.
+
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (maybe_indent_hierarchy): New function.
 	(dump_class_hierarchy_r): Add flags. Dump extra binfo
 	information, if enabled. Use maybe_indent_hierarchy. Adjust
