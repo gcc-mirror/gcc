@@ -1,3 +1,10 @@
+2001-02-27  Diego Novillo  <dnovillo@redhat.com>
+
+	* c-common.c (walk_stmt_tree): Visit the chain of the current tree
+	even if walk_subtrees is 0.
+	* c-semantics.c (prune_unused_decls): Return a non-null value to
+	stop traversing the tree chain.
+
 2001-02-27  DJ Delorie  <dj@redhat.com>
 
 	* config/m68k/m68k.c (output_function_prologue): Save the new CFA
