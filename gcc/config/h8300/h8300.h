@@ -1148,6 +1148,16 @@ readonly_data() 						\
 
 #include "dbxcoff.h"
 
+/* Override definition in dbxcoff.h.  */
+/* Generate a blank trailing N_SO to mark the end of the .o file, since
+   we can't depend upon the linker to mark .o file boundaries with
+   embedded stabs.  */
+
+#undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "\t.text\n.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
+
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
