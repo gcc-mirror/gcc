@@ -2778,7 +2778,7 @@ v850_va_arg (valist, type)
     }
 
   addr = save_expr (valist);
-  incr = fold (build (PLUS_EXPR, ptr_type_node, valist,
+  incr = fold (build (PLUS_EXPR, ptr_type_node, addr,
 		      build_int_2 (rsize, 0)));
 
   incr = build (MODIFY_EXPR, ptr_type_node, valist, incr);
