@@ -1,6 +1,6 @@
 // Low-level functions for atomic operations: Generic version  -*- C++ -*-
 
-// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,22 +30,37 @@
 #ifndef _BITS_ATOMICITY_H
 #define _BITS_ATOMICITY_H	1
 
+#include <bits/gthr.h>
+
 typedef int _Atomic_word;
+
+namespace __gnu_cxx
+{
+  __gthread_mutex_t _Atomic_add_mutex __attribute__ ((__weak__))
+                                                      = __GTHREAD_MUTEX_INIT;
+}
 
 static inline _Atomic_word
 __attribute__ ((__unused__))
-__exchange_and_add (_Atomic_word* __mem, int __val)
+__exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
-  _Atomic_word __result = *__mem;
-  *__mem += __val;
+   _Atomic_word __result;
+
+   __gthread_mutex_lock (&__gnu_cxx::_Atomic_add_mutex);
+
+   __result = *__mem;
+   *__mem += __val;
+
+  __gthread_mutex_unlock (&__gnu_cxx::_Atomic_add_mutex);
   return __result;
 }
 
+
 static inline void
 __attribute__ ((__unused__))
-__atomic_add (_Atomic_word* __mem, int __val)
+__atomic_add (volatile _Atomic_word* __mem, int __val)
 {
-  *__mem += __val;
+  (void) __exchange_and_add (__mem, __val);
 }
 
 #endif /* atomicity.h */

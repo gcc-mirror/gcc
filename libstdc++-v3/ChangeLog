@@ -1,3 +1,9 @@
+2002-11-07  Phil Edwards  <pme@gcc.gnu.org>
+            Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/cpu/generic/atomicity.h:  Provide atomic __exchange_and_add
+	and __atomic_add.
+
 2002-11-08  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/gnu/monetary_members.cc
