@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.26 2001/06/15 07:18:55 ljrittle Exp $
+@comment $Id: install.texi,v 1.27 2001/06/15 16:41:04 aj Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -1177,8 +1177,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#alpha*-*-*,,alpha*-*-*}
 @item
-@uref{#alpha-*-osf1,,alpha-*-osf1}
-@item
 @uref{#alpha*-dec-osf*,,alpha*-dec-osf*}
 @item
 @uref{#arc-*-elf,,arc-*-elf}
@@ -1434,8 +1432,8 @@ AMD Am29050 used in a system running a variant of BSD Unix.
 
 This section contains general configuration information for all
 alpha-based platforms using ELF (in particular, ignore this section for
-OSF and tru64).  In addition to reading this section, please read all
-other sections that match your target.
+DEC OSF/1, Digital UNIX and Tru64 UNIX).  In addition to reading this
+section, please read all other sections that match your target.
 
 We require binutils 2.11.1 (as of yet unreleased), binutils with
 @samp{binutils-2_11-branch} tag after May 31, 2001 (as taken below), or newer.
@@ -1463,10 +1461,26 @@ options to point into the prefix used above.
 </p>
 <hr>
 @end html
-@heading @anchor{alpha-*-osf1}alpha-*-osf1
+@heading @anchor{alpha*-dec-osf*}alpha*-dec-osf*
 Systems using processors that implement the DEC Alpha architecture and
-are running the DEC Unix (OSF/1) operating system, for example the DEC
-Alpha AXP systems.CC.)
+are running the DEC/Compaq Unix (DEC OSF/1, Digital UNIX, or Compaq
+Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
+
+In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
+currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
+we need to use the old assembler, invoked via the barely documented
+@option{-oldas} option.  To bootstrap GCC, you either need to use the
+Compaq C Compiler:
+
+@example
+   % CC=cc @var{srcdir}/configure [@var{target}] [@var{options}]
+@end example
+
+or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
+
+@example
+   % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{target}] [@var{options}]
+@end example
 
 GNU CC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
@@ -1509,52 +1523,6 @@ different depending on whether or not @option{-g} is also specified.
 To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
 DBX.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
-
-@html
-</p>
-<hr>
-@end html
-@heading @anchor{alpha*-dec-osf*}alpha*-dec-osf*
-
-If you install a shared libstdc++ and, when you link a non-trivial C++
-program (for example, @file{gcc/testsuite/g++.other/delete3.C}),
-the linker reports a couple of errors about multiply-defined symbols
-(for example, @code{nothrow}, @code{__throw} and
-@code{terminate(void)}), you've probably got a linker bug, for
-which there's no known fix.  The officially recommended work-around is
-to remove the shared libstdc++.
-
-An alternative solution is to arrange that all symbols from
-@code{libgcc} get copied to the shared @code{libstdc++};
-see detailed solution below.  (Surprising as it may seem, this does
-indeed fix the problem!)  @emph{Beware} that this may bring you
-binary-compatibility problems in the future, if you don't use the same
-work-around next time you build @code{libstdc++}: if programs
-start to depend on @code{libstdc++} to provide symbols that used
-to be only in @code{libgcc}, you must arrange that
-@code{libstdc++} keeps providing them, otherwise the programs
-will have to be relinked.
-
-The magic spell is to add @option{-Wl,-all,-lgcc,-none} to the
-definition of macro @code{SHDEPS} in
-@file{libstdc++/config/dec-osf.ml} @emph{before}
-@file{alpha*-dec-osf*/libstdc++/Makefile} is created (a 
-@uref{dec-osf-shlibstdc++.patch,,patch} 
-that does just that is available).  If the Makefile already exists, run
-@file{./config.status} within directory
-@file{alpha*-dec-osf*/libstdc++} (and
-@file{alpha*-dec-osf*/ieee/libstdc++}, if it also exists).
-Remove any existing @file{libstdc++.so*} from such directories,
-and run @samp{make all-target-libstdc++} in the top-level
-directory, then @samp{make install-target-libstdc++}.
-
-If you have already removed the build tree, you may just remove
-@file{libstdc++.so.2.10.0} from the install tree and re-create
-it with the command 
-@samp{gcc -shared -o libstdc++.so.2.10.0 -Wl,-all,-lstdc++,-lgcc,-none -lm}.
-If the @file{ieee}
-sub-directory exists, repeat this command in it, with the additional
-flag @option{-mieee}.
 
 @html
 </p>
