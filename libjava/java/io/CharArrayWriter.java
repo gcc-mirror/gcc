@@ -50,8 +50,8 @@ package java.io;
   * following two properties:
   * <p>
   * <ul>
-  * <li><xmp>gnu.java.io.CharArrayWriter.initialBufferSize</xmp>
-  * <li><xmp>gnu.java.io.CharArrayWriter.bufferIncrementSize</xmp>
+  * <li><xmp>gnu.java.io.CharArrayWriter.initialBufferSize</xmp></li>
+  * <li><xmp>gnu.java.io.CharArrayWriter.bufferIncrementSize</xmp></li>
   * </ul>
   * <p>
   * There is a constructor that specified the initial buffer size and

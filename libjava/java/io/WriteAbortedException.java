@@ -81,7 +81,7 @@ public class WriteAbortedException extends ObjectStreamException
   /**
    * This method returns a message indicating what went wrong, in this
    * format:
-   * <code>super.getMessage() + (detail == null ? "" : "; " + detail)<code>.
+   * <code>super.getMessage() + (detail == null ? "" : "; " + detail)</code>.
    *
    * @return the chained message
    */

@@ -105,7 +105,7 @@ public abstract class InputStream
    * @param readLimit The number of bytes that can be read before the
    *                  mark becomes invalid
    */
-  public void mark(int readlimit)
+  public void mark(int readLimit)
   {
     // Do nothing
   }
@@ -117,7 +117,7 @@ public abstract class InputStream
    * point.
    * <p>
    * This method always returns <code>false</code> in this class, but
-   * subclasses can override this method to return </code>true</code>
+   * subclasses can override this method to return <code>true</code>
    * if they support mark/reset functionality.
    *
    * @return <code>true</code> if mark/reset functionality is

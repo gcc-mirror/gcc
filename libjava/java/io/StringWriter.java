@@ -60,6 +60,8 @@ public class StringWriter extends Writer
   /**
    * This method closes the stream.  The contents of the internal buffer
    * can still be retrieved, but future writes are not guaranteed to work.
+   *
+   * @exception IOException If an error orrurs.
    */
   public void close () throws IOException
   {

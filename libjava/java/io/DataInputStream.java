@@ -277,16 +277,16 @@ public class DataInputStream extends FilterInputStream implements DataInput
    * buffer
    * @exception IOException If any other error occurs
    */
-  public final void readFully (byte[] b, int off, int len) throws IOException
+  public final void readFully (byte[] buf, int offset, int len) throws IOException
   {
     while (len > 0)
       {
 	// in.read will block until some data is available.
-	int numread = in.read (b, off, len);
+	int numread = in.read (buf, offset, len);
 	if (numread < 0)
 	  throw new EOFException ();
 	len -= numread;
-	off += numread;
+	offset += numread;
       }
   }
 

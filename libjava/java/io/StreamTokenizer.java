@@ -73,12 +73,12 @@ public class StreamTokenizer
    * The rules are as follows:
    * <ul>
    * <li>For a token consisting of a single ordinary character, this is the 
-   *     value of that character.
-   * <li>For a quoted string, this is the value of the quote character
-   * <li>For a word, this is TT_WORD
-   * <li>For a number, this is TT_NUMBER
-   * <li>For the end of the line, this is TT_EOL
-   * <li>For the end of the stream, this is TT_EOF
+   *     value of that character.</li>
+   * <li>For a quoted string, this is the value of the quote character</li>
+   * <li>For a word, this is TT_WORD</li>
+   * <li>For a number, this is TT_NUMBER</li>
+   * <li>For the end of the line, this is TT_EOL</li>
+   * <li>For the end of the stream, this is TT_EOF</li>
    * </ul>
    */
   public int ttype = TT_NONE;
@@ -141,13 +141,13 @@ public class StreamTokenizer
    * following manner:
    * <ul>
    * <li>The values 'A' through 'Z', 'a' through 'z' and 0xA0 through 0xFF
-   *     are initialized as alphabetic
-   * <li>The values 0x00 through 0x20 are initialized as whitespace
-   * <li>The values '\'' and '"' are initialized as quote characters
-   * <li>'/' is a comment character
-   * <li>Numbers will be parsed
-   * <li>EOL is not treated as significant
-   * <li>C  and C++ (//) comments are not recognized
+   *     are initialized as alphabetic</li>
+   * <li>The values 0x00 through 0x20 are initialized as whitespace</li>
+   * <li>The values '\'' and '"' are initialized as quote characters</li>
+   * <li>'/' is a comment character</li>
+   * <li>Numbers will be parsed</li>
+   * <li>EOL is not treated as significant</li>
+   * <li>C  and C++ (//) comments are not recognized</li>
    * </ul>
    *
    * @param in The <code>Reader</code> to read chars from
@@ -251,13 +251,13 @@ public class StreamTokenizer
    * returns it.  It also can set <code>sval</code> or <code>nval</code>
    * as described below.  The parsing strategy is as follows:
    * <ul>
-   * <li>Skip any whitespace characters.
+   * <li>Skip any whitespace characters.</li>
    * <li>If a numeric character is encountered, attempt to parse a numeric
    * value.  Leading '-' characters indicate a numeric only if followed by
    * another non-'-' numeric.  The value of the numeric token is terminated
    * by either the first non-numeric encountered, or the second occurrence of
    * '-' or '.'.  The token type returned is TT_NUMBER and <code>nval</code>
-   * is set to the value parsed.
+   * is set to the value parsed.</li>
    * <li>If an alphabetic character is parsed, all subsequent characters
    * are read until the first non-alphabetic or non-numeric character is
    * encountered.  The token type returned is TT_WORD and the value parsed
@@ -266,10 +266,10 @@ public class StreamTokenizer
    * sequence terminates a word only if EOL signficance has been turned on.
    * The start of a comment also terminates a word.  Any character with a 
    * non-alphabetic and non-numeric attribute (such as white space, a quote,
-   * or a commet) are treated as non-alphabetic and terminate the word.
+   * or a commet) are treated as non-alphabetic and terminate the word.</li>
    * <li>If a comment character is parsed, then all remaining characters on
    * the current line are skipped and another token is parsed.  Any EOL or
-   * EOF's encountered are not discarded, but rather terminate the comment.
+   * EOF's encountered are not discarded, but rather terminate the comment.</li>
    * <li>If a quote character is parsed, then all characters up to the 
    * second occurrence of the same quote character are parsed into a
    * <code>String</code>.  This <code>String</code> is stored as
@@ -280,18 +280,18 @@ public class StreamTokenizer
    * (carriage return), \" (double quote), \' (single quote), \\
    * (backslash), \XXX (octal esacpe)) are converted to the appropriate
    * char values.  Invalid esacape sequences are left in untranslated.  
-   * Unicode characters like ('\ u0000') are not recognized. 
+   * Unicode characters like ('\ u0000') are not recognized. </li>
    * <li>If the C++ comment sequence "//" is encountered, and the parser
    * is configured to handle that sequence, then the remainder of the line
    * is skipped and another token is read exactly as if a character with
-   * the comment attribute was encountered.
+   * the comment attribute was encountered.</li>
    * <li>If the C comment sequence "/*" is encountered, and the parser
    * is configured to handle that sequence, then all characters up to and
    * including the comment terminator sequence are discarded and another
-   * token is parsed.
+   * token is parsed.</li>
    * <li>If all cases above are not met, then the character is an ordinary
    * character that is parsed as a token by itself.  The char encountered
-   * is returned as the token type.
+   * is returned as the token type.</li>
    * </ul>
    *
    * @return The token type
@@ -635,15 +635,15 @@ public class StreamTokenizer
    * 'x' is determined as follows.
    * <p>
    * <ul>
-   * <li>If no token has been read, then 'x' is "NOTHING" and 'n' is 0
-   * <li>If <code>ttype</code> is TT_EOF, then 'x' is "EOF"
-   * <li>If <code>ttype</code> is TT_EOL, then 'x' is "EOL"
-   * <li>If <code>ttype</code> is TT_WORD, then 'x' is <code>sval</code>
+   * <li>If no token has been read, then 'x' is "NOTHING" and 'n' is 0</li>
+   * <li>If <code>ttype</code> is TT_EOF, then 'x' is "EOF"</li>
+   * <li>If <code>ttype</code> is TT_EOL, then 'x' is "EOL"</li>
+   * <li>If <code>ttype</code> is TT_WORD, then 'x' is <code>sval</code></li>
    * <li>If <code>ttype</code> is TT_NUMBER, then 'x' is "n=strnval" where
-   * 'strnval' is <code>String.valueOf(nval)</code>.
+   * 'strnval' is <code>String.valueOf(nval)</code>.</li>
    * <li>If <code>ttype</code> is a quote character, then 'x' is
-   * <code>sval</code>
-   * <li>For all other cases, 'x' is <code>ttype</code>
+   * <code>sval</code></li>
+   * <li>For all other cases, 'x' is <code>ttype</code></li>
    * </ul>
    */
   public String toString()

@@ -1,3 +1,29 @@
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/BufferedWriter.java,
+	java/io/ByteArrayInputStream.java,
+	java/io/CharArrayWriter.java,
+	java/io/DataInput.java,
+	java/io/DataInputStream.java,
+	java/io/File.java,
+	java/io/FilterInputStream.java,
+	java/io/InputStream.java,
+	java/io/InputStreamReader.java,
+	java/io/ObjectInputStream.java,
+	java/io/ObjectStreamClass.java,
+	java/io/PipedInputStream.java,
+	java/io/PipedReader.java,
+	java/io/PushbackInputStream.java,
+	java/io/PushbackReader.java,
+	java/io/RandomAccessFile.java,
+	java/io/SerializablePermission.java,
+	java/io/StreamTokenizer.java,
+	java/io/StringWriter.java,
+	java/io/WriteAbortedException.java,
+	java/io/Writer.java:
+	Fixed javadocs all over, rename arguments to match javadocs,
+	fixed coding style.
+
 2004-04-20  Ingo Proetel  <proetel@aicas.com>
 
 	* java/awt/FontMetrics.java:

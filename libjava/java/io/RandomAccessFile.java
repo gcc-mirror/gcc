@@ -318,12 +318,12 @@ public class RandomAccessFile implements DataOutput, DataInput
    * significant byte first (i.e., "big endian") regardless of the native
    * host byte ordering. 
    * <p>
-   * As an example, if <code>byte1</code> and code{byte2</code> represent 
+   * As an example, if <code>byte1</code> and <code>byte2</code> represent 
    * the first
    * and second byte read from the stream respectively, they will be
    * transformed to a <code>char</code> in the following manner:
    * <p>
-   * <code>(char)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <code>(char)(((byte1 &amp; 0xFF) &lt;&lt; 8) | (byte2 &amp; 0xFF)</code>
    * <p>
    * This method can read a <code>char</code> written by an object 
    * implementing the
@@ -539,12 +539,12 @@ public class RandomAccessFile implements DataOutput, DataInput
    * significant byte first (i.e., "big endian") regardless of the native
    * host byte ordering. 
    * <p>
-   * As an example, if <code>byte1</code> and code{byte2</code> 
+   * As an example, if <code>byte1</code> and <code>byte2</code> 
    * represent the first
    * and second byte read from the stream respectively, they will be
    * transformed to a <code>short</code> in the following manner:
    * <p>
-   * <code>(short)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <code>(short)(((byte1 &amp; 0xFF) &lt;&lt; 8) | (byte2 &amp; 0xFF)</code>
    * <p>
    * The value returned is in the range of -32768 to 32767.
    * <p>
