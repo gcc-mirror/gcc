@@ -1,3 +1,13 @@
+2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR target/16457
+	* config/rs6000/rs6000.c (mask64_2_operand): Stub to call
+	mask64_1or2_operand.
+	(mask64_1or2_operand): Broken out of mask64_2_operand, add flag
+	to spot rlwinm opportunities.
+	(and64_2_operand): Use mask_1or2_operand.
+	* config/rs6000/rs6000.md (anddi3): Use rlwinm when possible.
+
 2004-11-11  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* tree-vectorizer.c (update_phi_nodes_for_guard): Call reverse_phis.
