@@ -161,11 +161,6 @@ GCC_FOR_TARGET = ./xgcc -B./
 # It also specifies -I./include to find, e.g., stddef.h.
 GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include $(TCFLAGS)
 
-# Special flags for compiling enquire.
-# We disable optimization to make floating point more reliable.
-ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
-ENQUIRE_LDFLAGS = $(LDFLAGS)
-
 # Sed command to transform gcc to installed name.  Overwritten by configure.
 program_transform_name = @program_transform_name@
 program_transform_cross_name = s,^,$(target_alias)-,
@@ -225,14 +220,6 @@ SYSTEM_HEADER_DIR = /usr/include
 
 # Control whether to run fixproto.
 STMP_FIXPROTO = stmp-fixproto
-
-# Test to see whether <float.h> exists in the system header files,
-# and is not derived from GCC.
-FLOAT_H_TEST = \
-  [ -f $(SYSTEM_HEADER_DIR)/float.h ] && \
-  if grep 'ifndef _FLOAT_H___' $(SYSTEM_HEADER_DIR)/float.h >/dev/null; \
-  then false; \
-  else :; fi
 
 # Test to see whether <limits.h> exists in the system header files.
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
@@ -353,10 +340,6 @@ TARGET_LIBGCC2_CFLAGS =
 # Some targets override this to stmp-int-hdrs
 LIBGCC2_DEPS =
 
-# Enquire target (This is a variable so that a target can choose not to
-# build it.)
-ENQUIRE = enquire
-
 # libgcc1-test target (must also be overridable for a target)
 LIBGCC1_TEST = libgcc1-test
 
@@ -402,6 +385,10 @@ LIB2FUNCS_EXTRA =
 # Default float.h source to use for cross-compiler.
 # This is overridden by configure.
 CROSS_FLOAT_H=$(srcdir)/config/float-@float_format@.h
+
+# We do not try to build float.h anymore.  Let configure select the
+# appropriate pre-built float.h file for the target.
+FLOAT_H=$(srcdir)/config/float-@float_format@.h
 
 # Program to convert libraries.
 LIBCONVERT = 
@@ -474,12 +461,6 @@ ALL=all.internal
 
 # Choose the real install target.
 INSTALL_TARGET=install-normal
-
-# Source for float.h.  Overridden by cross-make.
-FLOAT_H=float.h-nat
-# We do not try to build float.h anymore.  Let configure select the
-# appropriate pre-built float.h file for the target.
-FLOAT_H=$(srcdir)/config/float-@float_format@.h
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \
@@ -875,37 +856,6 @@ gfloat.h: $(FLOAT_H)
 	-rm -f gfloat.h
 	cp $(FLOAT_H) gfloat.h
 
-# Create float.h source for the native machine.
-# Make it empty if we can use the system float.h without changes.
-float.h-nat: enquire
-	-./enquire -f > tmp-float.h
-	grep '#define [^_]' tmp-float.h >/dev/null || true > tmp-float.h
-	mv tmp-float.h float.h-nat
-
-# Create a dummy float.h source for a cross-compiler.
-# ??? This isn't used anymore.  Should we create config/float-unkn.h
-# and make that the default float_format in configure?
-float.h-cross:
-	echo "#ifndef	__GCC_FLOAT_NOT_NEEDED" > t-float.h-cross
-	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
-	echo "#endif" >> t-float.h-cross
-	mv t-float.h-cross float.h-cross
-
-# Used to compile enquire with standard cc, but have forgotten why.
-# Let's try with GCC.
-enquire: enquire.o $(GCC_PARTS)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
-enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
-	rm -f include/float.h
-	if $(FLOAT_H_TEST); then \
-	  SYS_FLOAT_H_WRAP=1; \
-	else :; \
-	  SYS_FLOAT_H_WRAP=0; \
-	fi; \
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
-	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
-	  -I. -c $(srcdir)/enquire.c
-
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
 	if $(LIMITS_H_TEST) ; then \
@@ -1040,7 +990,7 @@ libgcc1.S: libgcc1.c $(CONFIG_H) config.status
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
-libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
+libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs $(STMP_FIXPROTO)
 	-if [ -f libgcc2.ready ] ; then \
 		true; \
 	else \
@@ -1970,9 +1920,9 @@ gcov$(exeext): gcov.o $(LIBDEPS)
 # s-* so that mostlyclean does not force the include directory to
 # be rebuilt.
 
-# Build the include directory except for float.h (which depends upon
+# Build the include directory including float.h (which no longer depends upon
 # enquire).
-stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
+stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h gfloat.h
 # Copy in the headers provided with gcc.
 # The sed command gets just the last file name component;
 # this is necessary because VPATH could add a dirname.
@@ -1990,20 +1940,20 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 	rm -f include/limits.h
 	cp xlimits.h include/limits.h
 	chmod a+r include/limits.h
-# Install the README
-	rm -f include/README
-	cp $(srcdir)/README-fixinc include/README
-	chmod a+r include/README
-	touch stmp-int-hdrs
-
-# Build the complete include directory, including float.h.
-stmp-headers: stmp-int-hdrs gfloat.h
 	rm -f include/float.h
 	if [ -s gfloat.h ]; then \
 	  cp gfloat.h include/float.h && \
 	  chmod a+r include/float.h; \
 	else :; fi
-	touch stmp-headers
+# Install the README
+	rm -f include/README
+	cp $(srcdir)/README-fixinc include/README
+	chmod a+r include/README
+	touch $@
+
+# Now that gfloat.h no longer depends upon enquire, this is actually a no-op.
+stmp-headers:
+	touch $@
 
 fixinc.sh :
 	cd ../contrib/fixinc ; CC=$(CC) MAKE=$(MAKE) CFLAGS=$(CFLAGS) \
@@ -2900,3 +2850,57 @@ risky-stage4: stage4
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
 
 force:
+
+# ---
+# The enquire rules are still useful for building new float-anything.h.
+# Special flags for compiling enquire.
+# We disable optimization to make floating point more reliable.
+ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
+ENQUIRE_LDFLAGS = $(LDFLAGS)
+
+# Enquire target (This is a variable so that a target can choose not to
+# build it.)
+ENQUIRE = enquire
+
+# Test to see whether <float.h> exists in the system header files,
+# and is not derived from GCC.
+FLOAT_H_TEST = \
+  [ -f $(SYSTEM_HEADER_DIR)/float.h ] && \
+  if grep 'ifndef _FLOAT_H___' $(SYSTEM_HEADER_DIR)/float.h >/dev/null; \
+  then false; \
+  else :; fi
+# We pretend to not having a usable <float.h>, hence disable the FLOAT_H_TEST
+# to ensure, we're emitting a full blown <float.h> ourselves.
+FLOAT_H_TEST = false
+
+# Used to compile enquire with standard cc, but have forgotten why.
+# Let's try with GCC.
+enquire: enquire.o $(GCC_PARTS)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
+enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
+	if $(FLOAT_H_TEST); then \
+	  rm -f include/float.h; \
+	  SYS_FLOAT_H_WRAP=1; \
+	else :; \
+	  SYS_FLOAT_H_WRAP=0; \
+	fi; \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
+	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
+	  -I. -c $(srcdir)/enquire.c
+
+# Create float.h source for the native machine.
+# Make it empty if we can use the system float.h without changes.
+float.h-nat: enquire
+	-./enquire -f > tmp-float.h
+	grep '#define [^_]' tmp-float.h >/dev/null || true > tmp-float.h
+	mv tmp-float.h float.h-nat
+
+# Create a dummy float.h source for a cross-compiler.
+# ??? This isn't used anymore.  Should we create config/float-unkn.h
+# and make that the default float_format in configure?
+float.h-cross:
+	echo "#ifndef	__GCC_FLOAT_NOT_NEEDED" > t-float.h-cross
+	echo "#error float.h values not known for cross-compiler" >> t-float.h-cross
+	echo "#endif" >> t-float.h-cross
+	mv t-float.h-cross float.h-cross
+

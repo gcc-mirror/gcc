@@ -27,8 +27,24 @@ Sat May 23 23:35:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 1998-05-23  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* Makefile.in (ENQUIRE_CFLAGS, ENQUIRE_LDFLAGS): Move down to the end
+	of the Makefile.
+	(FLOAT_H_TEST): Likewise.
+	(ENQUIRE): Likewise.
+	(float.h-nat): Likewise.
+	(float.h-cross): Likewise.
+	(enquire): Likewise.
+	(enquire.o): Likewise.
+	(stmp-int-hdrs): Fix comment about enquire; depend upon gfloat.h.
+	(stmp-headers): Move actions to stmp-int-hdrs, retaining only a
+	no-op.
+	(FLOAT_H): Remove old float.h-nat version; move current definition
+	to CROSS_FLOAT_H location.
+	(all.cross): Remove comments about enquire stuff.
+
 	* Makefile.in (all.cross): Swap $(LIBGCC) and $(STMP_FIXPROTO).
 	(rest.encap): Likewise.
+	(libgcc2.ready): Depend upon $(STMP_FIXPROTO)
 
 	* toplev.h (tree_node): Provide global declaration to avoid
 	`limited scope' warnings.
