@@ -1,3 +1,8 @@
+2002-09-09  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+            J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh/sh.h (OVERRIDE_OPTIONS): align_functions is in bytes, not bits.
+
 2002-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_binds_local_p): Return bool.
