@@ -1,5 +1,10 @@
 2004-01-25  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/performance/string_append.cc: Increase number
+	of iterations.
+
+2004-01-25  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (erase(size_type, size_type),
 	erase(iterator), erase(iterator, iterator)): Call _M_replace_safe
 	instead, thus avoiding redundant check for length_error.
