@@ -72,6 +72,7 @@ static tree give_name_to_class PROTO ((JCF *jcf, int index));
 void parse_zip_file_entries PROTO (());
 void process_zip_dir PROTO (());
 static void parse_source_file PROTO ((tree));
+static void jcf_parse_source PROTO ((JCF *));
 
 /* Handle "SourceFile" attribute. */
 
@@ -513,7 +514,7 @@ load_class (class_or_name, verbose)
 
 /* Parse a source file when JCF refers to a source file.  */
 
-int
+void
 jcf_parse_source (jcf)
      JCF *jcf;
 {
@@ -536,7 +537,7 @@ jcf_parse_source (jcf)
 
 /* Parse the .class file JCF. */
 
-int
+void
 jcf_parse (jcf)
      JCF* jcf;
 {
@@ -752,7 +753,7 @@ yyparse ()
       
       /* Set jcf up and open a new file */
       JCF_ZERO (main_jcf);
-      main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "r");
+      main_jcf->read_state = fopen (IDENTIFIER_POINTER (name), "rb");
       if (main_jcf->read_state == NULL)
 	pfatal_with_name (IDENTIFIER_POINTER (name));
       
@@ -783,10 +784,6 @@ yyparse ()
 	  break;
 	}
     }
-
-  if (main_jcf->read_state && fclose (main_jcf->read_state))
-    fatal ("failed to close input file `%s' - yyparse",
-	   (main_jcf->filename ? main_jcf->filename : "<unknown>"));
 
   java_expand_classes ();
   if (!java_report_errors () && !flag_emit_class_files)

@@ -1,3 +1,12 @@
+Thu Nov 19 11:16:55 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (jcf_parse_source): Function returned type is
+ 	void. Added prototype.
+	(jcf_parse): Function returned type is void.
+	(yyparse): Remove call to fclose on the last parsed file.
+
+	* java-tree.h (jcf_parse): Changed jcf_parse prototype.
+
 Wed Nov 18 23:54:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (unmangle_classname): Set QUALIFIED_P when appropriate.
@@ -115,6 +124,10 @@ Wed Nov 18 23:54:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(purge_unchecked_exceptions): Use IS_UNCHECKED_EXCEPTION_P instead
  	of IS_UNCHECKED_EXPRESSION_P.
 	
+Wed Nov 18 14:21:48 1998  Anthony Green  <green@cygnus.com>
+
+	* jcf-parse.c (yyparse): Open class file in binary mode.
+
 Sun Nov 15 17:14:17 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jvgenmain.c:  Need to #include "gansidecl.h" (to get PROTO).
