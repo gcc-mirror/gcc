@@ -1,3 +1,14 @@
+2001-08-23  Ulrich Drepper  <drepper@redhat.com>
+
+	* regex.c (truncate_wchar): Use wcrtomb not wctomb.
+
+2001-08-23  Ulrich Drepper  <drepper@redhat.com>
+
+	* posix/regex.c [_LIBC] (convert_mbs_to_wcs): Use __mbrtowc
+	instead of mbrtowc.
+	[_LIBC]: Use __iswctype instead of iswctype, __wcslen instead of
+	wcslen, and __wcscoll instead of wcscoll.
+
 2001-08-22  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
  	* fibheap.c (fibheap_init, fibnode_init): Remove.

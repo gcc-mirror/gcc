@@ -1288,7 +1288,11 @@ convert_mbs_to_wcs (dest, src, len, offset_buffer, is_binary)
   for( ; mb_remain > 0 ; ++wc_count, ++pdest, mb_remain -= consumed,
 	 psrc += consumed)
     {
+#ifdef _LIBC
+      consumed = __mbrtowc (pdest, psrc, mb_remain, &mbs);
+#else
       consumed = mbrtowc (pdest, psrc, mb_remain, &mbs);
+#endif
 
       if (consumed <= 0)
 	/* failed to convert. maybe src contains binary data.
@@ -4627,9 +4631,16 @@ static unsigned char
 truncate_wchar (c)
      CHAR_T c;
 {
-  unsigned char buf[MB_LEN_MAX];
-  int retval = wctomb(buf, c);
-  return retval > 0 ? buf[0] : (unsigned char)c;
+  unsigned char buf[MB_CUR_MAX];
+  mbstate_t state;
+  int retval;
+  memset (&state, '\0', sizeof (state));
+# ifdef _LIBC
+  retval = __wcrtomb (buf, c, &state);
+# else
+  retval = wcrtomb (buf, c, &state);
+# endif
+  return retval > 0 ? buf[0] : (unsigned char) c;
 }
 #endif /* WCHAR */
 
@@ -6337,8 +6348,13 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 		  		      & ~(uintptr_t)(__alignof__(wctype_t) - 1);
 		wctype = *((wctype_t*)alignedp);
 		workp += CHAR_CLASS_SIZE;
+# ifdef _LIBC
+		if (__iswctype((wint_t)c, wctype))
+		  goto char_set_matched;
+# else
 		if (iswctype((wint_t)c, wctype))
 		  goto char_set_matched;
+# endif
 	      }
 
             /* match with collating_symbol?  */
@@ -6374,12 +6390,20 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 		for (workp2 = workp + coll_symbol_length ; workp < workp2 ;)
 		  {
 		    const CHAR_T *backup_d = d, *backup_dend = dend;
-		    length = wcslen(workp);
+# ifdef _LIBC
+		    length = __wcslen (workp);
+# else
+		    length = wcslen (workp);
+# endif
 
 		    /* If wcscoll(the collating symbol, whole string) > 0,
 		       any substring of the string never match with the
 		       collating symbol.  */
-		    if (wcscoll(workp, d) > 0)
+# ifdef _LIBC
+		    if (__wcscoll (workp, d) > 0)
+# else
+		    if (wcscoll (workp, d) > 0)
+# endif
 		      {
 			workp += length + 1;
 			continue;
@@ -6404,7 +6428,11 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 			str_buf[i] = TRANSLATE(*d);
 			str_buf[i+1] = '\0';
 
-			match = wcscoll(workp, str_buf);
+# ifdef _LIBC
+			match = __wcscoll (workp, str_buf);
+# else
+			match = wcscoll (workp, str_buf);
+# endif
 			if (match == 0)
 			  goto char_set_matched;
 
@@ -6515,12 +6543,20 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 		for (workp2 = workp + equiv_class_length ; workp < workp2 ;)
 		  {
 		    const CHAR_T *backup_d = d, *backup_dend = dend;
-		    length = wcslen(workp);
+# ifdef _LIBC
+		    length = __wcslen (workp);
+# else
+		    length = wcslen (workp);
+# endif
 
 		    /* If wcscoll(the collating symbol, whole string) > 0,
 		       any substring of the string never match with the
 		       collating symbol.  */
-		    if (wcscoll(workp, d) > 0)
+# ifdef _LIBC
+		    if (__wcscoll (workp, d) > 0)
+# else
+		    if (wcscoll (workp, d) > 0)
+# endif
 		      {
 			workp += length + 1;
 			break;
@@ -6545,7 +6581,11 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 			str_buf[i] = TRANSLATE(*d);
 			str_buf[i+1] = '\0';
 
-			match = wcscoll(workp, str_buf);
+# ifdef _LIBC
+			match = __wcscoll (workp, str_buf);
+# else
+			match = wcscoll (workp, str_buf);
+# endif
 
 			if (match == 0)
 			  goto char_set_matched;
@@ -6568,7 +6608,7 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 	      }
 
             /* match with char_range?  */
-#ifdef _LIBC
+# ifdef _LIBC
 	    if (nrules != 0)
 	      {
 		uint32_t collseqval;
@@ -6591,7 +6631,7 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 		  }
 	      }
 	    else
-#endif
+# endif
 	      {
 		/* We set range_start_char at str_buf[0], range_end_char
 		   at str_buf[4], and compared char at str_buf[2].  */
@@ -6627,9 +6667,13 @@ byte_re_match_2_internal (bufp, string1, size1,string2, size2, pos,
 			range_end_char = str_buf + 4;
 		      }
 
-		    if (wcscoll(range_start_char, str_buf+2) <= 0 &&
-			wcscoll(str_buf+2, range_end_char) <= 0)
-
+# ifdef _LIBC
+		    if (__wcscoll (range_start_char, str_buf+2) <= 0
+			&& __wcscoll (str_buf+2, range_end_char) <= 0)
+# else
+		    if (wcscoll (range_start_char, str_buf+2) <= 0
+			&& wcscoll (str_buf+2, range_end_char) <= 0)
+# endif
 		      goto char_set_matched;
 		  }
 	      }
