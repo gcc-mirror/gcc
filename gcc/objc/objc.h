@@ -34,7 +34,6 @@ extern "C" {
 #endif
 
 #include  "record.h"
-#include  "gstdarg.h"
 
 
 #define nil (id)0                               /* id of Nil instance */
