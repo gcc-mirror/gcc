@@ -96,7 +96,7 @@ $(srcdir)/objc/objc-act.o : $(srcdir)/objc/objc-act.c \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
 	-c $(srcdir)/objc/objc-act.c -o $(srcdir)/objc/objc-act.o
 
-objc-runtime: libobjc.a
+objc-runtime: objc-headers libobjc.a
 
 # copy objc header files into build directory
 objc-headers: stmp-fixinc
