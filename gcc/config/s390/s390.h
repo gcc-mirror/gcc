@@ -80,6 +80,9 @@ extern const char *s390_stack_guard_string;
 
 /* Run-time target specification.  */
 
+/* This will be overridden by OS headers.  */
+#define TARGET_TPF 0
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()			\
   do							\
