@@ -402,9 +402,6 @@ toc_section ()						\
    Also, in order to output proper .bs/.es pairs, we need at least one static
    [RW] section emitted.
 
-   We then switch back to text to force the gcc2_compiled. label and the space
-   allocated after it (when profiling) into the text section.
-
    Finally, declare mcount when profiling to make the assembler happy.  */
 
 #define ASM_FILE_START(FILE)					\

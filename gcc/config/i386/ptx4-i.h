@@ -98,16 +98,6 @@ do { long value[3];							\
        }								\
    } while (0)
 
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-  do {									\
-	output_file_directive (FILE, main_input_filename);		\
-	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
-  } while (0)
-
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
 

@@ -133,13 +133,6 @@ while (0)
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-/* We don't want any symbol at the beginning of the file.  This is defined in
-   dbxelf.h which is included from elfos.h, so we need to undef/define it
-   here.  */
-
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)
-
 /* We redefine this to use the ia64 .proc pseudo-op.  */
 
 #undef ASM_DECLARE_FUNCTION_NAME

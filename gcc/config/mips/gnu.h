@@ -39,24 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (MIPS GNU/ELF)");
 
-/* Output at beginning of assembler file.  */
-/* The .file command should always begin the output.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)						\
-  do {									\
-	mips_asm_file_start (FILE);					\
-	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
-  } while (0)
-
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)						\
-  do {				 					\
-	mips_asm_file_end(FILE);					\
-	if (!flag_no_ident)						\
-	  fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
-		   IDENT_ASM_OP, version_string);			\
-  } while (0)
-
 #undef ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
   do {									\

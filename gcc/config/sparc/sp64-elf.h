@@ -119,11 +119,6 @@ crtbegin.o%s \
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* Stabs doesn't use this, and it confuses a simulator.  */
-/* ??? Need to see what DWARF needs, if anything.  */
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)
-
 /* Define the names of various pseudo-ops used by the Sparc/svr4 assembler.
    ??? If ints are 64 bits then UNALIGNED_INT_ASM_OP (defined elsewhere) is
    misnamed.  These should all refer to explicit sizes (half/word/xword?),

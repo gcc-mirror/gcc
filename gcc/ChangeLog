@@ -1,3 +1,65 @@
+2001-04-16  Zack Weinberg  <zackw@stanford.edu>
+
+	* toplev.c (output_lang_identify): Delete.
+	(compile_file): Don't call ASM_IDENTIFY_GCC or ASM_IDENTIFY_LANGUAGE.
+	Don't generate gcc2_compiled. label.  Don't emit a nop if profiling.
+	If IDENT_ASM_OP is defined, emit an .ident "GCC (GNU) <version>"
+	after calling ASM_FILE_END.
+
+	* dbxout.c (dbxout_init): Don't call ASM_IDENTIFY_GCC_AFTER_SOURCE.
+	Instead, unconditionally emit an N_OPT stab with string equal
+	to STABS_GCC_MARKER, which defaults to "gcc2_compiled."
+
+	* defaults.h: Don't provide default for ASM_IDENTIFY_LANGUAGE.
+
+	* config/dbxelf.h, config/freebsd.h, config/nextstep.h,
+	config/psos.h, config/ptx4.h, config/1750a/1750a.h,
+	config/alpha/alpha.h, config/alpha/elf.h, config/arc/arc.h,
+	config/arm/aof.h, config/arm/coff.h, config/arm/elf.h,
+	config/arm/linux-elf.h, config/avr/avr.h, config/d30v/d30v.h,
+	config/dsp16xx/dsp16xx.h, config/h8300/h8300.h,
+	config/i370/i370.h, config/i386/beos-elf.h,
+	config/i386/osf1elf.h, config/i386/osfrose.h,
+	config/ia64/sysv4.h, config/m68k/3b1.h, config/m68k/auxgas.h,
+	config/m68k/crds.h, config/m68k/hp320.h, config/m68k/m68kv4.h,
+	config/m68k/mot3300.h, config/m68k/news.h, config/m68k/sgs.h,
+	config/m68k/tower-as.h, config/mcore/mcore-elf.h,
+	config/mips/iris6.h, config/mips/osfrose.h,
+	config/mips/sni-svr4.h, config/pa/som.h, config/pdp11/pdp11.h,
+	config/sparc/sp64-elf.h:
+	Delete definitions of any or all of: ASM_IDENTIFY_GCC,
+	ASM_IDENTIFY_GCC_AFTER_SOURCE, and ASM_IDENTIFY_LANGUAGE.
+
+	* config/elfos.h, config/freebsd.h, config/linux.h,
+	config/alpha/elf.h, config/arm/linux-elf.h, config/i386/i386elf.h,
+	config/i386/ptx4-i.h, config/mips/gnu.h, config/mips/linux.h,
+	config/sparc/linux.h, config/sparc/linux64.h: Delete definitions
+	of ASM_FILE_START which merely emit a .version directive.  Delete
+	definitions of ASM_FILE_END which merely emit an .ident directive.
+
+	* config/avr/avr.h, config/vax/vax.h: Delete definition of
+	ASM_IDENTIFY_GCC and move part of its logic into
+	ASM_FILE_START.
+
+	* config/i386/att.h, config/i386/gas.h, config/i386/linux.h,
+	config/sparc/linux-aout.h: Don't emit .version directive in
+	ASM_FILE_START.
+
+	* config/i386/dgux.c, config/m88k/m88k.c, config/sh/sh.c
+	(output_file_start): Correct comment.
+
+	* config/i386/osfrose.h: Don't emit trailing .ident directive.
+	* config/m68k/mot3300.h: Override STABS_GCC_MARKER to "gcc2_compiled%"
+	to match gdb.
+	* config/pa/lib2funcs.asm: Delete gcc_compiled. label.
+	* config/rs6000/aix.h: Correct comment.
+
+	* config/i386/i386afe.h: Delete.
+	* config.gcc: Remove references to i386afe.h.
+
+	* tm.texi: Delete documentation of ASM_IDENTIFY_GCC.  The
+	other macros deleted by this patch were undocumented.
+
 Mon Apr 16 08:02:14 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload_outdi): Operand 0 must be a non hard register.
@@ -127,7 +189,7 @@ Wed Apr  4 00:28:23 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	* Makefile.in (LIB2FUNCS_STATIC_EXTRA): New macro.
 	(LIB2ADD_ST): New macro, pass it to mklibgcc.
 	* mklibgcc.in (libgcc2_st_objs): New variable, set it from LIB2ADD_ST.
-        (libgcc_st_objs): New, set from libgcc2_st_objs. Use it for libgcc.a.
+	(libgcc_st_objs): New, set from libgcc2_st_objs. Use it for libgcc.a.
 	* config/rs6000/t-ppccomm (LIB2FUNCS_STATIC_EXTRA): New macro.
 
 2001-04-09  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -135,13 +197,13 @@ Wed Apr  4 00:28:23 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	* configure.in: Add check for lstat.
 	* configure, config.in: Regenerate.
 	* cppinit.c (append_include_chain): Make empty path ".".
-        * cpplib.c (do_line): Don't simplify #line paths.
-        * cppfiles.c (remove_component_p): New function.
+	* cpplib.c (do_line): Don't simplify #line paths.
+	* cppfiles.c (remove_component_p): New function.
 	(find_or_create_entry): Acknowledge stat () errors during
 	path simplification.
 	(handle_missing_header): Don't simplify paths.
-        (_cpp_simplify_pathname): Don't simplify VMS paths.  Return
-        the empty path untouched.  Don't leave a trailing '/'.
+	(_cpp_simplify_pathname): Don't simplify VMS paths.  Return
+	the empty path untouched.  Don't leave a trailing '/'.
 
 Sun Apr  8 22:50:49 2001  Christopher Faylor <cgf@cygnus.com>
 
@@ -424,7 +486,7 @@ Sun Apr  8 22:20:27 2001  Christopher Faylor <cgf@cygnus.com>
 	flag_no_inline is on.
 	* tree.h (DECL_FRAME_SIZE): Remove.
 	(tree_decl): Adjust accordingly.
-	
+
 Mon Mar 26 15:59:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (truncdfsf2_3, trunctfsf2_2): Change predicate to memory_operand.
@@ -464,11 +526,11 @@ Mon Mar 26 15:59:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (make_decl_rtl): Add TREE_PUBLIC check to abort test.
 	(assemble_alias): Call make_decl_rtl.
-	
+
 2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* extend.texi: Document the "java_interface" attribute.
-	
+
 2001-03-22  Gordon Sadler  <gbsadler1@lcisp.com>
 
 	* Makefile.in (stage1_build): Pass CFLAGS to stage1_build.
@@ -564,7 +626,7 @@ Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	i386_pe_mark_dllimport.
 
 2001-03-20  David Billinghurst <David.Billinghurst@riotinto.com>
-  
+
 	* config/i386/cygwin.h: Include <stdio.h> Declare and constify
 	functions i386_pe_*.
 
@@ -661,7 +723,7 @@ Wed Mar 21 14:27:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fixinc/fixincl.c (fix_with_system): Quote file names before
 	passing them to shell.
-		 
+
 2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
 
 	* Makefile.in: Use fix-header$(build_exeext) instead

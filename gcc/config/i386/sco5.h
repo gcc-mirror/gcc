@@ -210,15 +210,6 @@ do {									\
   fprintf ((FILE), "\t.version\t\"01.01\"\n");				\
 } while (0)
 
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)						\
-do {									\
-     ix86_asm_file_end (FILE);						\
-     if (!flag_no_ident)						\
-	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
-		 IDENT_ASM_OP, version_string);				\
-} while (0)
-
 #undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \

@@ -4077,28 +4077,6 @@ extern const char *d30v_branch_cost_string;
    Defined in svr4.h.  */
 /* #define ASM_FILE_END(STREAM) */
 
-/* A C statement to output assembler commands which will identify the object
-   file as having been compiled with GNU CC (or another GNU compiler).
-
-   If you don't define this macro, the string `gcc_compiled.:' is output.  This
-   string is calculated to define a symbol which, on BSD systems, will never be
-   defined for any other reason.  GDB checks for the presence of this symbol
-   when reading the symbol table of an executable.
-
-   On non-BSD systems, you must arrange communication with GDB in some other
-   fashion.  If GDB is not used on your system, you can define this macro with
-   an empty body.
-
-   Defined in svr4.h.  */
-/* #define ASM_IDENTIFY_GCC(FILE) */
-
-/* Like ASM_IDENTIFY_GCC, but used when dbx debugging is selected to emit
-   a stab the debugger uses to identify gcc as the compiler that is emitted
-   after the stabs for the filename, which makes it easier for GDB to parse.
-
-   Defined in svr4.h.  */
-/* #define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE) */
-
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will end at the
    end of the line.  */

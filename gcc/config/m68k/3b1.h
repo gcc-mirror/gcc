@@ -64,10 +64,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_FILE_START(FILE) \
 output_file_directive ((FILE), main_input_filename)
 
-/* Don't try to define `gcc_compiled.' since the assembler might not
-   accept symbols with periods and GDB doesn't run on this machine anyway.  */
-#define ASM_IDENTIFY_GCC(FILE)
-
 /* Define __HAVE_68881__ in preprocessor if -m68881 is specified.
    This will control the use of inline 68881 insns in certain macros.  */
 

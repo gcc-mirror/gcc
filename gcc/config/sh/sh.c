@@ -905,8 +905,8 @@ output_file_start (file)
 {
   output_file_directive (file, main_input_filename);
 
-  /* Switch to the data section so that the coffsem symbol and the
-     gcc2_compiled. symbol aren't in the text section.  */
+  /* Switch to the data section so that the coffsem symbol
+     isn't in the text section.  */
   data_section ();
 
   if (TARGET_LITTLE_ENDIAN)

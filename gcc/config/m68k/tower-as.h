@@ -67,11 +67,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SDB_DEBUGGING_INFO
 
-/* This is only useful if gdb is changed, but doesn't harm anyway.  */
-
-#define ASM_IDENTIFY_GCC(FILE) \
-  fprintf (FILE, "gcc2_compiled%%:\n")
-
 /* All the ASM_OUTPUT macros need to conform to the Tower as syntax.  */
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME) \

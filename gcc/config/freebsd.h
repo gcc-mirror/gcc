@@ -101,9 +101,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Attach a special .ident directive to the end of the file to identify
-   the version of GCC which compiled this code.  The format of the .ident
-   string is patterned after the ones produced by native SVR4 C compilers.  */
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP "\t.ident\t"
 
@@ -111,20 +108,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME)					\
   fprintf ((FILE), "%s\"%s\"\n", IDENT_ASM_OP, (NAME));
-
-#undef ASM_IDENTIFY_LANGUAGE
-#define ASM_IDENTIFY_LANGUAGE(FILE)					\
-  fprintf ((FILE), "%s\"GCC (%s) %s\"\n", IDENT_ASM_OP,			\
-	   lang_identify (), version_string)
-
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)						\
-do {				 					\
-     if (!flag_no_ident)						\
-	fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
-		 IDENT_ASM_OP, version_string);				\
-   } while (0)
-
 
 /* Miscellaneous parameters.  */
 

@@ -26,12 +26,6 @@ Boston, MA 02111-1307, USA.  */
    from other embedded stabs implementations.  */
 #undef DBX_USE_BINCL
 
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE)
-
-#undef ASM_IDENTIFY_GCC_AFTER_SOURCE
-#define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)
-
 /* We make the first line stab special to avoid adding several
    gross hacks to GAS.  */
 #undef  ASM_OUTPUT_SOURCE_LINE

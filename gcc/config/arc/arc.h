@@ -1260,15 +1260,6 @@ do {							\
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) arc_asm_file_start (FILE)
 
-/* A C statement to output assembler commands which will identify the
-   object file as having been compiled with GNU CC (or another GNU
-   compiler).  */
-#undef ASM_IDENTIFY_GCC
-#define ASM_IDENTIFY_GCC(FILE) /* nothing */
-
-/* Needed because we define ASM_IDENTIFY_GCC.  */
-#define ASM_IDENTIFY_LANGUAGE(FILE) output_lang_identify (FILE)
-
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will
    end at the end of the line.  */

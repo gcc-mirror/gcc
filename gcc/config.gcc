@@ -956,7 +956,7 @@ i370-*-linux*)
 	;;
 i[34567]86-*-chorusos*)
 	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
-	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h i386/chorus.h"
+	tm_file="i386/i386.h i386/att.h elfos.h i386/i386elf.h i386/chorus.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
 	case x${enable_threads} in
@@ -967,7 +967,7 @@ i[34567]86-*-chorusos*)
 	;;
 i[34567]86-*-elf*)
 	xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h"
-	tm_file="i386/i386.h i386/att.h elfos.h i386/i386afe.h i386/i386elf.h"
+	tm_file="i386/i386.h i386/att.h elfos.h i386/i386elf.h"
 	tmake_file=i386/t-i386elf
 	xmake_file=x-svr4
 	;;
@@ -1087,7 +1087,7 @@ i[34567]86-*-freebsd[12] | i[34567]86-*-freebsd[12].* | i[34567]86-*-freebsd*aou
 	tmake_file=t-freebsd
 	;;
 i[34567]86-*-freebsd*)
-	tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/i386afe.h i386/freebsd.h i386/perform.h"
+	tm_file="i386/i386.h i386/att.h svr4.h freebsd.h i386/freebsd.h i386/perform.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	tmake_file=t-freebsd
 	gas=yes
@@ -1158,7 +1158,7 @@ i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 				# with ELF format using the
 				# GNU/Linux C library 5
 	xmake_file=x-linux	
-	tm_file="i386/i386.h i386/att.h linux.h i386/i386afe.h i386/linux.h"
+	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
 	tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -1171,7 +1171,7 @@ i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# with ELF format using glibc 2
 			# aka GNU/Linux C library 6
 	xmake_file=x-linux
-	tm_file="i386/i386.h i386/att.h linux.h i386/i386afe.h i386/linux.h"
+	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h"
 	tmake_file="t-linux i386/t-crtstuff"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
@@ -1202,7 +1202,7 @@ i[34567]86-pc-msdosdjgpp*)
 	esac
 	;;
 i[34567]86-moss-msdos* | i[34567]86-*-moss*)
-	tm_file="i386/i386.h i386/att.h linux.h i386/i386afe.h i386/linux.h i386/moss.h"
+	tm_file="i386/i386.h i386/att.h linux.h i386/linux.h i386/moss.h"
 	tmake_file=t-libc-ok
 	gnu_ld=yes
 	gas=yes
