@@ -1,3 +1,18 @@
+2000-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* exception.cc: Update license notice.
+	* new.cc: Likewise.
+	* new1.cc: Likewise.
+	* new2.cc: Likewise.
+	* tinfo.cc: Likewise.
+	* tinfo2.cc: Likewise.
+	* vec.cc: Likewise.
+	* inc/cxxabi.h: Likewise.
+	* inc/exception: Likewise.
+	* inc/new: Likewise.
+	* inc/new.h: Likewise.
+	* inc/typeinfo: Likewise.
+
 2000-05-01  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tree.c (build_target_expr_with_type): If we already have a
