@@ -55,7 +55,7 @@ __fixunsdfdi (double a1)
 
     dl1.d = a1;
 
-    /* +/- 0, denormalized, negativ */
+    /* +/- 0, denormalized, negative */
 
     if (!EXPD (dl1) || SIGND(dl1))
       return 0;
@@ -199,7 +199,7 @@ __fixunssfdi (float a1)
 
     fl1.f = a1;
 
-    /* +/- 0, denormalized, negativ */
+    /* +/- 0, denormalized, negative */
 
     if (!EXP (fl1) || SIGN(fl1))
       return 0;

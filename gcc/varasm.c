@@ -4421,7 +4421,7 @@ globalize_decl (tree decl)
 
 /* We have to be able to tell cgraph about the needed-ness of the target
    of an alias.  This requires that the decl have been defined.  Aliases
-   that preceed their definition have to be queued for later processing.  */
+   that precede their definition have to be queued for later processing.  */
 
 struct alias_pair GTY(())
 {

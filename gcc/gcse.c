@@ -3260,7 +3260,7 @@ cprop (int alter_jumps)
    settle for the condition variable in the jump instruction being integral.
    We prefer to be able to record the value of a user variable, rather than
    the value of a temporary used in a condition.  This could be solved by
-   recording the value of *every* register scaned by canonicalize_condition,
+   recording the value of *every* register scanned by canonicalize_condition,
    but this would require some code reorganization.  */
 
 rtx

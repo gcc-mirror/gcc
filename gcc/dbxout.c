@@ -2360,7 +2360,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
     DBXOUT_DECR_NESTING_AND_RETURN (0);
 
   /* If we are to generate only the symbols actually used then such
-     symbol nodees are flagged with TREE_USED.  Ignore any that
+     symbol nodes are flagged with TREE_USED.  Ignore any that
      aren't flaged as TREE_USED.  */
 
   if (flag_debug_only_used_symbols

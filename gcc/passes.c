@@ -252,7 +252,7 @@ rest_of_decl_compilation (tree decl,
       timevar_pop (TV_SYMOUT);
     }
 
-  /* Let cgraph know about the existance of variables.  */
+  /* Let cgraph know about the existence of variables.  */
   if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     cgraph_varpool_node (decl);
 }

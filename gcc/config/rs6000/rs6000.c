@@ -227,7 +227,7 @@ const char *rs6000_debug_name;
 int rs6000_debug_stack;		/* debug stack applications */
 int rs6000_debug_arg;		/* debug argument handling */
 
-/* Value is TRUE if register/mode pair is accepatable.  */
+/* Value is TRUE if register/mode pair is acceptable.  */
 bool rs6000_hard_regno_mode_ok_p[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 
 /* Opaque types.  */
@@ -15249,7 +15249,7 @@ static bool
 rs6000_is_costly_dependence (rtx insn, rtx next, rtx link, int cost,
 			     int distance)
 {
-  /* If the flag is not enbled - no dependence is considered costly;
+  /* If the flag is not enabled - no dependence is considered costly;
      allow all dependent insns in the same group.
      This is the most aggressive option.  */
   if (rs6000_sched_costly_dep == no_dep_costly)

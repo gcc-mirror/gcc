@@ -1183,7 +1183,7 @@ do {									\
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED  ix86_frame_pointer_required ()
 
-/* Override this in other tm.h files to cope with various OS losage
+/* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
 #ifndef SUBTARGET_FRAME_POINTER_REQUIRED
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0

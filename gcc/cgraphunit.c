@@ -282,8 +282,8 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   return false;
 }
 
-/* Walk the decls we marked as neccesary and see if they reference new variables
-   or functions and add them into the worklists.  */
+/* Walk the decls we marked as necessary and see if they reference new
+   variables or functions and add them into the worklists.  */
 static bool
 cgraph_varpool_analyze_pending_decls (void)
 {
@@ -307,10 +307,10 @@ cgraph_varpool_analyze_pending_decls (void)
 }
 
 /* Optimization of function bodies might've rendered some variables as
-   unnecesary so we want to avoid these from being compiled.
+   unnecessary so we want to avoid these from being compiled.
 
    This is done by prunning the queue and keeping only the variables that
-   really appear needed (ie thery are either externally visible or referenced
+   really appear needed (ie they are either externally visible or referenced
    by compiled function). Re-doing the reachability analysis on variables
    brings back the remaining variables referenced by these.  */
 static void
@@ -772,7 +772,7 @@ cgraph_finalize_compilation_unit (void)
 {
   struct cgraph_node *node;
   /* Keep track of already processed nodes when called multiple times for
-     intermodule optmization.  */
+     intermodule optimization.  */
   static struct cgraph_node *first_analyzed;
 
   finish_aliases_1 ();

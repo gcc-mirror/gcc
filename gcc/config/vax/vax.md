@@ -37,7 +37,7 @@
   ]
 )
 
-;; Integer modes supported on VAX, withd a mapping from machine mode
+;; Integer modes supported on VAX, with a mapping from machine mode
 ;; to mnemonic suffix.  DImode is always a special case.
 (define_mode_macro VAXint [QI HI SI])
 (define_mode_attr  isfx [(QI "b") (HI "w") (SI "l")])

@@ -4112,7 +4112,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 
   /* During reload iteration the amount of registers saved can change.
      Recompute the value as needed.  Do not recompute when amount of registers
-     didn't change as reload does mutiple calls to the function and does not
+     didn't change as reload does multiple calls to the function and does not
      expect the decision to change within single iteration.  */
   if (!optimize_size
       && cfun->machine->use_fast_prologue_epilogue_nregs != frame->nregs)
@@ -6030,7 +6030,7 @@ i386_output_dwarf_dtprel (FILE *file, int size, rtx x)
 }
 
 /* In the name of slightly smaller debug output, and to cater to
-   general assembler losage, recognize PIC+GOTOFF and turn it back
+   general assembler lossage, recognize PIC+GOTOFF and turn it back
    into a direct symbol reference.  */
 
 static rtx
@@ -6137,8 +6137,8 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, int reverse,
       suffix = "g";
       break;
     case GTU:
-      /* ??? Use "nbe" instead of "a" for fcmov losage on some assemblers.
-	 Those same assemblers have the same but opposite losage on cmov.  */
+      /* ??? Use "nbe" instead of "a" for fcmov lossage on some assemblers.
+	 Those same assemblers have the same but opposite lossage on cmov.  */
       if (mode != CCmode)
 	abort ();
       suffix = fp ? "nbe" : "a";
