@@ -329,8 +329,15 @@ THREADH=
 THREADSPEC=
 case "$THREADS" in
  posix)
-    THREADLIBS=-lpthread
-    THREADSPEC=-lpthread
+    case "$host" in
+     *-*-cygwin*)
+	# Don't set THREADLIBS here.  Cygwin doesn't have -lpthread.
+	;;
+     *)
+	THREADLIBS=-lpthread
+	THREADSPEC=-lpthread
+	;;
+    esac
     THREADOBJS=posix-threads.lo
     THREADH=posix-threads.h
     # MIT pthreads doesn't seem to have the mutexattr functions.
