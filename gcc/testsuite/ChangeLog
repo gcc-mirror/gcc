@@ -1,5 +1,9 @@
 2005-01-27  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/intmax_t-1.c: Extend dg-error to cover mips*-elf targets.
+
+2005-01-27  Richard Sandiford  <rsandifo@redhat.com>
+
 	* gcc.dg/mips-movcc-1.c, gcc.dg/mips-movcc-2.c, gcc.dg/mips-movcc-3.c,
 	* gcc.dg/mips-nmadd-1.c, gcc.dg/mips-nmadd-2.c, gcc.dg/mips-rsqrt-1.c,
 	* gcc.dg/mips-rsqrt-2, gcc.dg/mips-rsqrt-3.c: Add dummy asm statements
