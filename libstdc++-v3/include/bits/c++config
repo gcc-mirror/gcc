@@ -74,8 +74,4 @@
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
 
-/** @namespace std
- *  @brief Everything defined by the ISO C++ Standard is within namespace std.
- */
-
 // End of prewritten config; the discovered settings follow.
