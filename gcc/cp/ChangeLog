@@ -1,3 +1,8 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	2003-06-16  Jens-Michael Hoffmann  <jensmh@gmx.de>
+	* mangle.c: Convert to ISO C.
+
 2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp/decl.c, cp/pt.c, cp/search.c, cp/tree.c: Don't use the PTR
