@@ -1,5 +1,10 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/lib1funcs.asm (divnorm, modnorm): Optimize by
+	using ccr.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i860/i860-protos.h: Remove the prototype for
 	i860_saveregs.
 	* config/i860/i860.c (i860_saveregs): Make it static.
