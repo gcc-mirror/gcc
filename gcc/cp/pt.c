@@ -10998,6 +10998,7 @@ instantiate_decl (d, defer_ok)
 					   NULL);
 
       /* Set up context.  */
+      import_export_decl (d);
       start_function (NULL_TREE, d, NULL_TREE, SF_PRE_PARSED);
 
       /* Create substitution entries for the parameters.  */
@@ -11028,7 +11029,6 @@ instantiate_decl (d, defer_ok)
 
       /* Finish the function.  */
       d = finish_function (0);
-      import_export_decl (d);
       expand_body (d);
     }
 
