@@ -1,3 +1,7 @@
+2001-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20010209-1.c: New test.
+
 2001-02-11  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash26.C: XFAIL if parser produces

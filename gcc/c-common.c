@@ -232,6 +232,7 @@ static void add_attribute		PARAMS ((enum attrs, const char *,
 						 int, int, int));
 static void init_attributes		PARAMS ((void));
 static int default_valid_lang_attribute PARAMS ((tree, tree, tree, tree));
+static int constant_fits_type_p		PARAMS ((tree, tree));
 
 /* Keep a stack of if statements.  We record the number of compound
    statements seen up to the if keyword, as well as the line number
@@ -1189,6 +1190,20 @@ unsigned_conversion_warning (result, operand)
     }
 }
 
+/* Nonzero if constant C has a value that is permissible
+   for type TYPE (an INTEGER_TYPE).  */
+
+static int
+constant_fits_type_p (c, type)
+     tree c, type;
+{
+  if (TREE_CODE (c) == INTEGER_CST)
+    return int_fits_type_p (c, type);
+
+  c = convert (type, c);
+  return !TREE_OVERFLOW (c);
+}     
+
 /* Convert EXPR to TYPE, warning about conversion problems with constants.
    Invoke this function on every expression that is converted implicitly,
    i.e. because of language rules and not because of an explicit cast.  */
@@ -1216,7 +1231,7 @@ convert_and_check (type, expr)
 	       don't warn unless pedantic.  */
 	    if ((pedantic
 		 || TREE_UNSIGNED (type)
-		 || ! int_fits_type_p (expr, unsigned_type (type)))
+		 || ! constant_fits_type_p (expr, unsigned_type (type)))
 	        && skip_evaluation == 0)
 	      warning ("overflow in implicit constant conversion");
 	}
