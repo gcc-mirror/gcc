@@ -1,3 +1,8 @@
+2001-04-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (maybe_clone_body): Copy DECL_NUM_STMTS from the
+	cloned function to the clone.
+
 2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (cp/semantics.o): Depend on $(EXPR_H).
