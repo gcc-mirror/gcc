@@ -330,12 +330,12 @@ f77.dvi: f/g77.dvi
 
 # g77 documentation.
 f/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-	    $(srcdir)/f/install.texi $(srcdir)/f/news.texi \
+	    $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 	    $(srcdir)/f/intdoc.texi
 	$(MAKEINFO) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.info
 
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
-		     $(srcdir)/f/install.texi $(srcdir)/f/news.texi \
+		     $(srcdir)/f/g77install.texi $(srcdir)/f/news.texi \
 		     $(srcdir)/f/intdoc.texi
 	$(TEXI2DVI) -I$(srcdir)/f $(srcdir)/f/g77.texi -o f/g77.dvi
 
@@ -371,7 +371,7 @@ $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
 	  --no-validate bugs0.texi -o BUGS
 
-$(srcdir)/f/INSTALL: f/install0.texi f/install.texi
+$(srcdir)/f/INSTALL: f/install0.texi f/g77install.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D INSTALLONLY --no-header --no-split \
 	  --no-validate install0.texi -o INSTALL
 

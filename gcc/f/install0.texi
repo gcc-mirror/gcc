@@ -10,5 +10,5 @@ this copyright notice and permission notice.
 
 @node Top,,, (dir)
 @chapter Installing GNU Fortran
-@include install.texi
+@include g77install.texi
 @bye
