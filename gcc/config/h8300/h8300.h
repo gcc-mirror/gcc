@@ -814,7 +814,6 @@ extern struct rtx_def *function_arg();
      return 60;					\
    case MULT: 					\
      return 20; 				\
-   case LSHIFT:					\
    case ASHIFT:					\
    case ASHIFTRT:				\
    case LSHIFTRT:				\
