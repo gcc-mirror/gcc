@@ -1,3 +1,7 @@
+2000-04-25  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* ir.texi: Correct typo.
+
 2000-04-25  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (grokdeclarator): Reject VLAs as members.
