@@ -93,25 +93,36 @@ extern jstring _Jv_Win32NewString (LPCTSTR pcsz);
 /* Useful helper classes and methods. */
 
 /* A C++ wrapper around a WSAEVENT which closes the event
-	 in its destructor. If dwSelFlags is non-zero, we also
-	 issue an WSAEventSelect on the socket descriptor with
-	 the given flags; this is undone by a corresponding call
-	 to WSAEventSelect(fd, 0, 0) in our destructor. */
+   in its destructor. If dwSelFlags is non-zero, we also
+   issue an WSAEventSelect on the socket descriptor with
+   the given flags; this is undone by a corresponding call
+   to WSAEventSelect(fd, 0, 0) in our destructor. */
 class WSAEventWrapper
 {
 public:
-	WSAEventWrapper(int fd, DWORD dwSelFlags);
-	~WSAEventWrapper();
+  // Default constructor. Call init() after this.
+  WSAEventWrapper();
+  WSAEventWrapper(int fd, DWORD dwSelFlags);
+  ~WSAEventWrapper();
 
-	WSAEVENT getEventHandle()
-	{
-		return m_hEvent;
-	}
+  // Used for two-step initialization after calling
+  // default constructor.
+  void init(int fd, DWORD dwSelFlags);
+
+  int getFD()
+  {
+    return m_fd;
+  }
+
+  WSAEVENT getEventHandle()
+  {
+    return m_hEvent;
+  }
 
 private:
-	WSAEVENT m_hEvent;
-	int m_fd;
-	DWORD m_dwSelFlags;
+  WSAEVENT m_hEvent;
+  int m_fd;
+  DWORD m_dwSelFlags;
 };
 
 // Error string text. The int argument is compatible
@@ -141,7 +152,6 @@ _Jv_ThrowSocketException ();
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
-extern int _Jv_select (int n, fd_set *, fd_set *, fd_set *, struct timeval *);
 extern int _Jv_pipe (int filedes[2]);
 
 extern void

@@ -143,11 +143,24 @@ _Jv_Win32TempString::~_Jv_Win32TempString()
 }
 
 // class WSAEventWrapper
+WSAEventWrapper::WSAEventWrapper ():
+  m_hEvent(0),
+  m_fd(0),
+  m_dwSelFlags(0)
+{}
+
 WSAEventWrapper::WSAEventWrapper (int fd, DWORD dwSelFlags):
   m_hEvent(0),
-  m_fd(fd),
-  m_dwSelFlags(dwSelFlags)
+  m_fd(0),
+  m_dwSelFlags(0)
 {
+  init(fd, dwSelFlags);
+}
+
+void WSAEventWrapper::init(int fd, DWORD dwSelFlags)
+{
+  m_fd = fd;
+  m_dwSelFlags = dwSelFlags;
   m_hEvent = WSACreateEvent ();
   if (dwSelFlags)
     WSAEventSelect(fd, m_hEvent, dwSelFlags);
@@ -443,19 +456,6 @@ backtrace (void **__array, int __size)
     __array[i++] = (void*)(rfp[1]-4);
   }
   return i;
-}
-
-int
-_Jv_select (int n, fd_set *readfds, fd_set  *writefds,
-      fd_set *exceptfds, struct timeval *timeout)
-{
-  int r = ::select (n, readfds, writefds, exceptfds, timeout);
-  if (r == SOCKET_ERROR)
-    {
-      DWORD dwErrorCode = WSAGetLastError ();
-      throw new java::io::IOException (_Jv_WinStrError (dwErrorCode));
-    }
-  return r;      
 }
 
 int

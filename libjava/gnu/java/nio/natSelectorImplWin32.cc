@@ -11,81 +11,83 @@ details.  */
 #include <config.h>
 #include <platform.h>
 
-#include <errno.h>
-#include <string.h>
-
 #include <gnu/java/nio/SelectorImpl.h>
-#include <java/io/IOException.h>
-
-void
-helper_put_filedescriptors (jintArray fdArray, fd_set& fds, int& max_fd)
-{
-  jint* tmpFDArray = elements (fdArray);
-
-  for (int index = 0; index < JvGetArrayLength (fdArray); index++)
-    {
-      FD_SET (tmpFDArray [index], &fds);
-
-      if (tmpFDArray [index] > max_fd)
-        max_fd = tmpFDArray [index];
-    }
-}
-
-void
-helper_get_filedescriptors (jintArray& fdArray, fd_set fds)
-{
-  jint* tmpFDArray = elements (fdArray);
-  
-  for (int index = 0; index < JvGetArrayLength (fdArray); index++)
-    if (!FD_ISSET (tmpFDArray [index], &fds))
-      tmpFDArray [index] = 0;
-}
+#include <java/lang/Thread.h>
 
 jint
 gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
                                           jintArray except, jlong timeout)
 {
-  jint result;
-  int max_fd = 0;
-  fd_set read_fds;
-  fd_set write_fds;
-  fd_set except_fds;
-  struct timeval real_time_data;
-  struct timeval *time_data = NULL;
+  // FIXME: The API for implSelect is biased towards POSIX implementations.
+  jint* pReadFD = elements (read);
+  int nNbReadFDs = JvGetArrayLength (read);
 
-  real_time_data.tv_sec = 0;
-  real_time_data.tv_usec = timeout;
+  jint* pWriteFD = elements (write);
+  int nNbWriteFDs = JvGetArrayLength (write);
+  
+  int nNbEvents = nNbReadFDs + nNbWriteFDs;
+  
+  // Create and initialize our event wrapper array
+  
+  // FIXME: We're creating fresh WSAEVENTs for each call.
+  // This is inefficient. It would probably be better to cache these
+  // in the Win32 socket implementation class.
+  WSAEventWrapper aArray[nNbEvents];
 
-  // If not legal timeout value is given, use NULL.
-  // This means an infinite timeout.
-  if (timeout >= 0)
+  int nCurIndex = 0;
+  for (int i=0; i < nNbReadFDs; ++i)
+    aArray[nCurIndex++].init(pReadFD[i], FD_ACCEPT | FD_READ);
+
+  for (int i=0; i < nNbWriteFDs; ++i)
+    aArray[nCurIndex++].init(pWriteFD[i], FD_WRITE);
+
+  // Build our array of WSAEVENTs to wait on. Also throw in our thread's
+  // interrupt event in order to detect thread interruption.
+  HANDLE arh[nNbEvents + 1];
+  for (int i=0; i < nNbEvents; ++i)
+    arh[i] = aArray[i].getEventHandle();
+  arh[nNbEvents] = _Jv_Win32GetInterruptEvent ();
+  
+  // A timeout value of 0 needs to be treated as infinite.
+  if (timeout <= 0)
+    timeout = WSA_INFINITE;
+
+  // Do the select.
+  DWORD dwRet = WSAWaitForMultipleEvents (nNbEvents+1, arh, 0, timeout, false);
+  
+  if (dwRet == WSA_WAIT_FAILED)
+    _Jv_ThrowIOException ();
+
+  // Before we do anything else, clear output file descriptor arrays.
+  memset(pReadFD, 0, sizeof(jint) * nNbReadFDs);
+  memset(pWriteFD, 0, sizeof(jint) * nNbWriteFDs);
+  memset(elements (except), 0, sizeof(jint) * JvGetArrayLength (except));
+  
+  if (dwRet == DWORD(WSA_WAIT_EVENT_0 + nNbEvents))
     {
-      time_data = &real_time_data;
+      // We were interrupted. Set the current thread's interrupt
+      // status and get out of here, with nothing selected..
+      ::java::lang::Thread::currentThread ()->interrupt ();
+      return 0;
     }
-
-  // Reset all fd_set structures
-  FD_ZERO (&read_fds);
-  FD_ZERO (&write_fds);
-  FD_ZERO (&except_fds);
-
-  // Fill the fd_set data structures for the _Jv_select() call.
-  helper_put_filedescriptors (read, read_fds, max_fd);
-  helper_put_filedescriptors (write, write_fds, max_fd);
-  helper_put_filedescriptors (except, except_fds, max_fd);
-
-  // Actually do the select
-  result = _Jv_select (max_fd + 1, &read_fds, &write_fds, &except_fds, time_data);
-
-  if (result < 0)
+  else if (dwRet < DWORD(WSA_WAIT_EVENT_0 + nNbEvents))
     {
-      char* strerr = strerror (errno);
-      throw new ::java::io::IOException (JvNewStringUTF (strerr));
+      int nSelectedEventIndex = dwRet - WSA_WAIT_EVENT_0;
+
+      // Record the selected file descriptor.
+      // FIXME: This implementation only allows one file descriptor
+      // to be selected at a time. Remedy this by looping on
+      // WSAWaitForMultipleEvents 'til nothing more is selected.
+      jint fd = aArray[nSelectedEventIndex].getFD();
+      if (nSelectedEventIndex < nNbReadFDs)
+        pReadFD[0] = fd;
+      else
+        pWriteFD[0] = fd;
+
+      return 1;  
     }
-
-  // Set the file descriptors according to the values returned from select().
-  helper_get_filedescriptors (read, read_fds);
-  helper_get_filedescriptors (write, write_fds);
-  helper_get_filedescriptors (except, except_fds);
-
-  return result;
+  else
+    // None of the event objects was signalled, so nothing was
+    // selected.
+    return 0;
 }
