@@ -1962,14 +1962,6 @@ while (0)
   output_addr_const (FILE, (VALUE));		\
   fputs ("\n", FILE);}
 
-/* Likewise for double integers.  */
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
-{ fputs ("\t.dword ", FILE);			\
-  if (function_label_operand (VALUE, VOIDmode))	\
-    fputs ("P%", FILE);				\
-  output_addr_const (FILE, (VALUE));		\
-  fputs ("\n", FILE);}
-
 /* Likewise for `short' and `char' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
