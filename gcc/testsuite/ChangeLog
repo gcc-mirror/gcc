@@ -1,3 +1,8 @@
+2003-03-23  Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+
+	PR c/8224
+	* gcc.dg/20030323-1.c: New test.
+
 2003-03-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/compile/20030323-1.c: New test case.
