@@ -1,3 +1,8 @@
+Tue Mar 17 11:40:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (push_template_decl): Complain about template with C linkage,
+	anonymous template class.
+
 Mon Mar 16 12:10:39 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (pushclass): Only use the mi_matrix stuff #ifdef MI_MATRIX.
