@@ -148,6 +148,7 @@ static tree get_template_base PROTO((tree, tree, tree, tree));
 static tree try_class_unification PROTO((tree, tree, tree, tree));
 static int coerce_template_template_parms PROTO((tree, tree, int,
 						 tree, tree));
+static tree determine_specialization PROTO((tree, tree, tree *, int));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -917,18 +918,15 @@ print_candidates (fns)
    are output in a newly created vector *TARGS_OUT.
 
    If it is impossible to determine the result, an error message is
-   issued, unless COMPLAIN is 0.  In any case, error_mark_node is
-   returned to indicate failure.  */
+   issued.  The error_mark_node is returned to indicate failure.  */
 
 tree
 determine_specialization (template_id, decl, targs_out, 
-			  need_member_template,
-			  complain)
+			  need_member_template)
      tree template_id;
      tree decl;
      tree* targs_out;
      int need_member_template;
-     int complain;
 {
   tree fn;
   tree fns;
@@ -973,10 +971,6 @@ determine_specialization (template_id, decl, targs_out,
 	/* This is just an ordinary non-member function.  Nothing can
 	   be a specialization of that.  */
 	continue;
-      else if (!decl)
-	/* When there's no DECL to match, we know we're looking for
-	   non-members.  */
-	continue;
       else
 	{
 	  tree decl_arg_types;
@@ -1010,25 +1004,12 @@ determine_specialization (template_id, decl, targs_out,
 	  continue;
 	}
 
-      if (decl == NULL_TREE)
-	{
-	  /* Unify against ourselves to make sure that the args we have
-	     make sense and there aren't any undeducible parms.  It's OK if
-	     not all the parms are specified; they might be deduced
-	     later. */
-	  targs = get_bindings_overload (tmpl, DECL_RESULT (tmpl),
-					 explicit_targs);
-	  if (uses_template_parms (targs))
-	    /* We couldn't deduce all the arguments.  */
-	    continue;
-	}
-      else
-	/* See whether this function might be a specialization of this
-	   template.  */
-	targs = get_bindings (tmpl, decl, explicit_targs);
+      /* See whether this function might be a specialization of this
+	 template.  */
+      targs = get_bindings (tmpl, decl, explicit_targs);
 
       if (!targs)
-	/* Wwe cannot deduce template arguments that when used to
+	/* We cannot deduce template arguments that when used to
 	   specialize TMPL will produce DECL.  */
 	continue;
 
@@ -1036,7 +1017,7 @@ determine_specialization (template_id, decl, targs_out,
       templates = scratch_tree_cons (targs, tmpl, templates);
     }
 
-  if (decl && templates && TREE_CHAIN (templates))
+  if (templates && TREE_CHAIN (templates))
     {
       /* We have:
 	 
@@ -1079,21 +1060,18 @@ determine_specialization (template_id, decl, targs_out,
 
   if (templates == NULL_TREE && candidates == NULL_TREE)
     {
-      if (complain)
-	cp_error_at ("template-id `%D' for `%+D' does not match any template declaration",
-		     template_id, decl);
+      cp_error_at ("template-id `%D' for `%+D' does not match any template declaration",
+		   template_id, decl);
       return error_mark_node;
     }
   else if ((templates && TREE_CHAIN (templates))
-	   || (candidates && TREE_CHAIN (candidates)))
+	   || (candidates && TREE_CHAIN (candidates))
+	   || (templates && candidates))
     {
-      if (complain)
-	{
-	  cp_error_at ("ambiguous template specialization `%D' for `%+D'",
-		       template_id, decl);
-	  chainon (candidates, templates);
-	  print_candidates (candidates);
-	}
+      cp_error_at ("ambiguous template specialization `%D' for `%+D'",
+		   template_id, decl);
+      chainon (candidates, templates);
+      print_candidates (candidates);
       return error_mark_node;
     }
 
@@ -1445,8 +1423,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	 declaration.  */
       tmpl = determine_specialization (declarator, decl,
 				       &targs, 
-				       member_specialization,
-				       1);
+				       member_specialization);
 	    
       if (!tmpl || tmpl == error_mark_node)
 	/* We couldn't figure out what this declaration was
@@ -4366,8 +4343,7 @@ tsubst_friend_function (decl, args)
       new_friend = tsubst (decl, args, /*complain=*/1, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args, 
-				       /*need_member_template=*/0, 
-				       /*complain=*/1);
+				       /*need_member_template=*/0);
       new_friend = instantiate_template (tmpl, new_args);
       goto done;
     }
@@ -6045,8 +6021,8 @@ tsubst (t, args, complain, in_decl)
 	       Type deduction may fail for any of the following
 	       reasons:  
 
-	         Attempting to create an array with a size that is
-	         zero or negative.  */
+		 Attempting to create an array with a size that is
+		 zero or negative.  */
 	    if (complain)
 	      cp_error ("creating array with size `%E'", max);
 
@@ -6409,16 +6385,23 @@ tsubst (t, args, complain, in_decl)
 	if (ctx == error_mark_node || f == error_mark_node)
 	  return error_mark_node;
 
-	/* Normally, make_typename_type does not require that the CTX
-	   have complete type in order to allow things like:
-	     
-             template <class T> struct S { typename S<T>::X Y; };
-
-	   But, such constructs have already been resolved by this
-	   point, so here CTX really should have complete type, unless
-	   it's a partial instantiation.  */
-	if (!uses_template_parms (ctx) && !TYPE_BEING_DEFINED (ctx))
+	if (!IS_AGGR_TYPE (ctx))
 	  {
+	    if (complain)
+	      cp_error ("`%T' is not a class, struct, or union type",
+			ctx);
+	    return error_mark_node;
+	  }
+	else if (!uses_template_parms (ctx) && !TYPE_BEING_DEFINED (ctx))
+	  {
+	    /* Normally, make_typename_type does not require that the CTX
+	       have complete type in order to allow things like:
+	     
+	         template <class T> struct S { typename S<T>::X Y; };
+
+	       But, such constructs have already been resolved by this
+	       point, so here CTX really should have complete type, unless
+	       it's a partial instantiation.  */
 	    ctx = complete_type (ctx);
 	    if (!TYPE_SIZE (ctx))
 	      {

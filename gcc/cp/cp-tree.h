@@ -3053,7 +3053,6 @@ extern void reset_specialization                PROTO((void));
 extern void end_specialization                  PROTO((void));
 extern void begin_explicit_instantiation        PROTO((void));
 extern void end_explicit_instantiation          PROTO((void));
-extern tree determine_specialization            PROTO((tree, tree, tree *, int, int));
 extern tree check_explicit_specialization       PROTO((tree, tree, int, int));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
