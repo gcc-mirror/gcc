@@ -1468,7 +1468,8 @@ extern const struct mips_cpu_info *mips_tune_info;
    - 8 condition code registers
    - 2 accumulator registers (hi and lo)
    - 32 registers each for coprocessors 0, 2 and 3
-   - 6 dummy entries that were used at various times in the past.  */
+   - FAKE_CALL_REGNO (see the comment above load_callsi for details)
+   - 5 dummy entries that were used at various times in the past.  */
 
 #define FIRST_PSEUDO_REGISTER 176
 

@@ -1,3 +1,13 @@
+2003-12-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR bootstrap/13145
+	* config/mips/mips.h (FIRST_PSEUDO_REGISTER): Adjust comment.
+	* config/mips/mips.c (mips_reg_names, mips_sw_reg_names): Add $fcall.
+	(mips_load_got): Always create a constant MEM.
+	(mips_expand_call): Use load_callsi and load_calldi.
+	* config/mips/mips.md (UNSPEC_LOAD_CALL, FAKE_CALL_REGNO): New consts.
+	(load_callsi, load_calldi): New patterns.
+
 2003-12-05  Peter Gerwinski <peter@gerwinski.de>
 
         * tree.def (PLACEHOLDER_EXPR): Clarify commentary.

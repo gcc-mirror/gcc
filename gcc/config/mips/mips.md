@@ -54,8 +54,11 @@
    (UNSPEC_SDL			24)
    (UNSPEC_SDR			25)
    (UNSPEC_LOADGP		26)
+   (UNSPEC_LOAD_CALL		27)
 
-   (UNSPEC_ADDRESS_FIRST	100)])
+   (UNSPEC_ADDRESS_FIRST	100)
+
+   (FAKE_CALL_REGNO		79)])
 
 ;; ....................
 ;;
@@ -8330,6 +8333,42 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 ;;	FUNCTION CALLS
 ;;
 ;;  ....................
+
+;; Instructions to load a call address from the GOT.  The address might
+;; point to a function or to a lazy binding stub.  In the latter case,
+;; the stub will use the dynamic linker to resolve the function, which
+;; in turn will change the GOT entry to point to the function's real
+;; address.
+;;
+;; This means that every call, even pure and constant ones, can
+;; potentially modify the GOT entry.  And once a stub has been called,
+;; we must not call it again.
+;;
+;; We represent this restriction using an imaginary fixed register that
+;; acts like a GOT version number.  By making the register call-clobbered,
+;; we tell the target-independent code that the address could be changed
+;; by any call insn.
+(define_insn "load_callsi"
+  [(set (match_operand:SI 0 "register_operand" "=c")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "immediate_operand" "")
+		    (reg:SI FAKE_CALL_REGNO)]
+		   UNSPEC_LOAD_CALL))]
+  "TARGET_ABICALLS"
+  "lw\t%0,%R2(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn "load_calldi"
+  [(set (match_operand:DI 0 "register_operand" "=c")
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
+		    (match_operand:DI 2 "immediate_operand" "")
+		    (reg:DI FAKE_CALL_REGNO)]
+		   UNSPEC_LOAD_CALL))]
+  "TARGET_ABICALLS"
+  "ld\t%0,%R2(%1)"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
 
 ;; Sibling calls.  All these patterns use jump instructions.
 
