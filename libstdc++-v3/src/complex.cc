@@ -76,15 +76,15 @@ namespace std
 //  #endif
 //    }
 
-  template<>
-  complex<FLT>
-  cos(const complex<FLT>& __x)
-  { return complex<FLT>(ccos(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    cos(const complex<FLT>& __x)
+//    { return complex<FLT>(ccos(__x._M_value)); }
 
-  template<>
-  complex<FLT>
-  cosh(const complex<FLT>& __x)
-  { return complex<FLT>(ccosh(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    cosh(const complex<FLT>& __x)
+//    { return complex<FLT>(ccosh(__x._M_value)); }
 
 //    template<>
 //    complex<FLT>
@@ -121,15 +121,15 @@ namespace std
   pow(const FLT& __x, const complex<FLT>& __y)
   { return complex<FLT>(cexp(__y._M_value * log(__x))); }
 
-  template<>
-  complex<FLT>
-  sin(const complex<FLT>& __x)
-  { return complex<FLT>(csin(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    sin(const complex<FLT>& __x)
+//    { return complex<FLT>(csin(__x._M_value)); }
 
-  template<>
-  complex<FLT>
-  sinh(const complex<FLT>& __x)
-  { return complex<FLT>(csinh(__x._M_value)); }
+//    template<>
+//    complex<FLT>
+//    sinh(const complex<FLT>& __x)
+//    { return complex<FLT>(csinh(__x._M_value)); }
   
   template<>
   complex<FLT>
