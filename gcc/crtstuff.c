@@ -55,6 +55,9 @@ Boston, MA 02111-1307, USA.  */
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
 
+/* We include auto-host.h here to get HAVE_GAS_HIDDEN.  This is
+   supposedly valid even though this is a "target" file.  */
+#include "auto-host.h"
 #include "tconfig.h"
 #include "tsystem.h"
 #include "frame.h"

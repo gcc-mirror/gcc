@@ -1,3 +1,7 @@
+2001-03-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* crtstuff.c: Restore include of auto-host.h.
+
 2001-03-05  Fergus Henderson  <fjh@cs.mu.oz.au>
 
 	Put main() in a separate file, so that the language
