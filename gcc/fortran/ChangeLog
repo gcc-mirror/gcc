@@ -1,4 +1,11 @@
-2004-06-05  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
+2004-06-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/13201
+	* resolve.c (resolve_symbol): Verify that parameter array has an
+	explicit shape. Fix typos and coding style issues in surrounding
+	lines.
+
+2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15478
 	* gfortran.texi: The documentation doesn't contain infomration on
