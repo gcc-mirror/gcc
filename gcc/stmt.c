@@ -726,7 +726,7 @@ expand_goto (label)
 	     to the location of the function's incoming static chain info.
 	     The non-local goto handler will then adjust it to contain the
 	     proper value and reload the argument pointer, if needed.  */
-	  emit_move_insn (frame_pointer_rtx, lookup_static_chain (label));
+	  emit_move_insn (hard_frame_pointer_rtx, lookup_static_chain (label));
 
 	  /* We have now loaded the frame pointer hardware register with
 	     the address of that corresponds to the start of the virtual
@@ -737,21 +737,22 @@ expand_goto (label)
 	     which will do any cleanups and then jump to the label.  */
 	  addr = copy_rtx (p->nonlocal_goto_handler_slot);
 	  temp = copy_to_reg (replace_rtx (addr, virtual_stack_vars_rtx,
-					   frame_pointer_rtx));
+					   hard_frame_pointer_rtx));
 	  
 	  /* Restore the stack pointer.  Note this uses fp just restored.  */
 	  addr = p->nonlocal_goto_stack_level;
 	  if (addr)
 	    addr = replace_rtx (copy_rtx (addr),
-				virtual_stack_vars_rtx, frame_pointer_rtx);
+				virtual_stack_vars_rtx,
+				hard_frame_pointer_rtx);
 
 	  emit_stack_restore (SAVE_NONLOCAL, addr, NULL_RTX);
 
 	  /* Put in the static chain register the nonlocal label address.  */
 	  emit_move_insn (static_chain_rtx, label_ref);
-	  /* USE of frame_pointer_rtx added for consistency; not clear if
+	  /* USE of hard_frame_pointer_rtx added for consistency; not clear if
 	     really needed.  */
-	  emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));
+	  emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
 	  emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
 	  emit_indirect_jump (temp);
@@ -3144,7 +3145,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	   decrementing fp by STARTING_FRAME_OFFSET.  */
 	emit_move_insn (virtual_stack_vars_rtx, frame_pointer_rtx);
 
-#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
       if (fixed_regs[ARG_POINTER_REGNUM])
 	{
 #ifdef ELIMINABLE_REGS
@@ -3158,7 +3159,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
 	  for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
 	    if (elim_regs[i].from == ARG_POINTER_REGNUM
-		&& elim_regs[i].to == FRAME_POINTER_REGNUM)
+		&& elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
 	      break;
 
 	  if (i == sizeof elim_regs / sizeof elim_regs [0])
