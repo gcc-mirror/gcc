@@ -1078,10 +1078,10 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, non-const arg
   sed -e 's@atof( char \*__nptr );@atof( const char *__nptr );@' \
-      -e 's@inline int abs(int d) { return (d>0)?d:-d; }@@' \
-      -e 's@inline double abs(double d) { return fabs(d); }@@' \
-      -e 's@inline int sqr(int x) {return(x\*x);}  /\* For AT&T compatibility \*/@@' \
-      -e 's@inline double sqr(double x) {return(x\*x);}@@' \
+      -e 's@inline int abs(int [a-z][a-z]*) {.*}@@' \
+      -e 's@inline double abs(double [a-z][a-z]*) {.*}@@' \
+      -e 's@inline int sqr(int [a-z][a-z]*) {.*}@@' \
+      -e 's@inline double sqr(double [a-z][a-z]*) {.*}@@' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
