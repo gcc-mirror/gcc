@@ -315,8 +315,8 @@ java::lang::Class::getSignature (JArray<jclass> *param_types,
 }
 
 java::lang::reflect::Method *
-java::lang::Class::getDeclaredMethod (jstring name,
-				      JArray<jclass> *param_types)
+java::lang::Class::_getDeclaredMethod (jstring name,
+				       JArray<jclass> *param_types)
 {
   jstring partial_sig = getSignature (param_types, false);
   jint p_len = partial_sig->length();
@@ -324,7 +324,6 @@ java::lang::Class::getDeclaredMethod (jstring name,
   int i = isPrimitive () ? 0 : method_count;
   while (--i >= 0)
     {
-      // FIXME: access checks.
       if (_Jv_equalUtf8Consts (methods[i].name, utf_name)
 	  && _Jv_equaln (methods[i].signature, partial_sig, p_len))
 	{
@@ -336,7 +335,7 @@ java::lang::Class::getDeclaredMethod (jstring name,
 	  return rmethod;
 	}
     }
-  throw new java::lang::NoSuchMethodException;
+  return NULL;
 }
 
 JArray<java::lang::reflect::Method *> *
