@@ -1,3 +1,9 @@
+Wed Sep 22 17:55:31 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (expand_block_move): DImode loads and stores require
+	word-aligned displacements.  Increment address registers with
+	adddi3 on 64-bit platform.  Use TARGET_POWERPC64 not TARGET_64BIT.
+
 Wed Sep 22 07:07:44 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/i386/sol2.h (PREFERRED_DEBUGGING_TYPE): Use stabs.
@@ -32,7 +38,7 @@ Tue Sep  7 01:27:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Aug 19 14:42:38 1999  Mike Stump <mrs@wrs.com>
 				  Mark Mitchell <mark@codesourcery.com>
-	* c-common.c (c_get_alias_set): Fix support for poitners and
+	* c-common.c (c_get_alias_set): Fix support for pointers and
 	references.
 
 	Fri Aug 27 01:03:48 1999  Jim Kingdon  <http://developer.redhat.com>
