@@ -2306,7 +2306,7 @@ zero_iter:
 }
 
 /* Checks whether E is a simple exit from LOOP and stores its description
-   into DESC.  TODO Should replace cfgloopanal.c:simple_loop_exit_p.  */
+   into DESC.  */
 
 static void
 check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
@@ -2353,8 +2353,7 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
   iv_number_of_iterations (loop, at, condition, desc);
 }
 
-/* Finds a simple exit of LOOP and stores its description into DESC.
-   TODO Should replace cfgloopanal.c:simple_loop_p.  */
+/* Finds a simple exit of LOOP and stores its description into DESC.  */
 
 void
 find_simple_exit (struct loop *loop, struct niter_desc *desc)

@@ -36,29 +36,6 @@ struct lpt_decision
   unsigned times;
 };
 
-/* Description of loop for simple loop unrolling.  */
-struct loop_desc
-{
-  int postincr;		/* 1 if increment/decrement is done after loop exit condition.  */
-  rtx stride;		/* Value added to VAR in each iteration.  */
-  rtx var;		/* Loop control variable.  */
-  enum machine_mode inner_mode;
-			/* The mode from that it is extended.  */
-  enum rtx_code extend;	/* With this extend.  */
-  rtx var_alts;		/* List of definitions of its initial value.  */
-  rtx lim;		/* Expression var is compared with.  */
-  rtx lim_alts;		/* List of definitions of its initial value.  */
-  bool const_iter;      /* True if it iterates constant number of times.  */
-  unsigned HOST_WIDE_INT niter;
-			/* Number of iterations if it is constant.  */
-  bool may_be_zero;     /* If we cannot determine that the first iteration will pass.  */
-  enum rtx_code cond;	/* Exit condition.  */
-  int neg;		/* Set to 1 if loop ends when condition is satisfied.  */
-  edge out_edge;	/* The exit edge.  */
-  edge in_edge;		/* And the other one.  */
-  int n_branches;	/* Number of branches inside the loop.  */
-};
-
 /* Structure to hold information for each natural loop.  */
 struct loop
 {
@@ -76,11 +53,6 @@ struct loop
 
   /* For loop unrolling/peeling decision.  */
   struct lpt_decision lpt_decision;
-
-  /* Simple loop description.  */
-  int simple;
-  struct loop_desc desc;
-  int has_desc;
 
   /* Number of loop insns.  */
   unsigned ninsns;
@@ -305,8 +277,6 @@ extern void force_single_succ_latches (struct loops *);
 extern void verify_loop_structure (struct loops *);
 
 /* Loop analysis.  */
-extern bool simple_loop_p (struct loop *, struct loop_desc *);
-extern rtx count_loop_iterations (struct loop_desc *, rtx, rtx);
 extern bool just_once_each_iteration_p (struct loop *, basic_block);
 extern unsigned expected_loop_iterations (const struct loop *);
 
@@ -370,8 +340,8 @@ struct rtx_iv
   unsigned first_special : 1;
 };
 
-/* This should replace struct loop_desc.  We keep this just so that we are
-   able to compare the results.  */
+/* The description of an exit from the loop and of the number of iterations
+   till we take the exit.  */
 
 struct niter_desc
 {

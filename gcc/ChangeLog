@@ -1,3 +1,18 @@
+2004-03-02  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloop.h (struct loop_desc): Removed.
+	(struct loop): Fields simple, desc and has_desc removed.
+	(simple_loop_p, count_loop_iterations): Declaration removed.
+	* cfgloopanal.c (struct unmark_altered_insn_data): Removed.
+	(unmark_altered, blocks_invariant_registers, unmark_altered_insn
+	blocks_single_set_registers, invariant_rtx_wrto_regs_p_helper,
+	invariant_rtx_wrto_regs_p, test_for_iteration, constant_iterations,
+	simple_loop_exit_p, variable_initial_value, variable_initial_values,
+	simple_condition_p, simple_increment, count_strange_loop_iterations,
+	inverse, fits_in_mode_p, simple_loop_p, count_loop_iterations):
+	Removed.
+	* loop-iv.c (check_simple_exit, find_simple_exit): Update comments.
+
 2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genattrtab.c: Don't handle MATCH_INSN.
