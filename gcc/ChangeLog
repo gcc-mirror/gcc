@@ -1,3 +1,20 @@
+2001-06-05  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2.h (DW_EH_PE_aligned): New.
+	* dwarf2asm.c (eh_data_format_name): Name it.
+	(dw2_asm_output_encoded_addr_rtx): Align for it.
+	* dwarf2out.c (output_call_frame_info): Handle it for personality
+	routine and LSDA pointers.
+
+	* unwind-pe.h (DW_EH_PE_aligned): New.
+	(base_of_encoded_value): Handle it.
+	(read_encoded_value_with_base): Likewise.
+	* unwind-dw2-fde.c (base_from_object): Likewise.
+	(get_cie_encoding): Likewise.
+
+	* config/alpha/elf.h: Remove ecoff commentary.
+	* config/alpha/osf.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
+
 2001-06-05  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc, config/i386/bsd386.h:  Do not directly include
@@ -327,7 +344,7 @@ Sat Jun  2 06:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* README: Update references to installation instructions.
 
 2001-06-01  Laurent Guerby  <guerby@acm.org>
-            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi: Define srcdir when sources come from CVS.
 	Significantly improve markup.  Wrap overly long lines
@@ -481,7 +498,7 @@ Thu May 31 19:09:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * fixinc/fixtests.c: Declare entries in ENV_TABLE.
+	* fixinc/fixtests.c: Declare entries in ENV_TABLE.
 
 2001-05-27  Bruce Korb  <bkorb@gnu.org>
 

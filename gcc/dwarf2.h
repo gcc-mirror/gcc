@@ -580,5 +580,6 @@ enum dwarf_macinfo_record_type
 #define DW_EH_PE_textrel	0x20
 #define DW_EH_PE_datarel	0x30
 #define DW_EH_PE_funcrel	0x40
+#define DW_EH_PE_aligned	0x50
 
 #define DW_EH_PE_indirect	0x80

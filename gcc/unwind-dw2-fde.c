@@ -233,6 +233,7 @@ base_from_object (unsigned char encoding, struct object *ob)
     {
     case DW_EH_PE_absptr:
     case DW_EH_PE_pcrel:
+    case DW_EH_PE_aligned:
       return 0;
 
     case DW_EH_PE_textrel:
@@ -270,7 +271,12 @@ get_cie_encoding (struct dwarf_cie *cie)
 	return *p;
       /* Personality encoding and pointer.  */
       else if (*aug == 'P')
-	p = read_encoded_value_with_base (*p & 0xF, 0, p + 1, &dummy);
+	{
+	  /* ??? Avoid dereferencing indirect pointers, since we're
+	     faking the base address.  Gotta keep DW_EH_PE_aligned
+	     intact, however.  */
+	  p = read_encoded_value_with_base (*p & 0x7F, 0, p + 1, &dummy);
+	}
       /* LSDA encoding.  */
       else if (*aug == 'L')
 	p++;
