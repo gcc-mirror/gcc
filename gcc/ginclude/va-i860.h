@@ -3,27 +3,11 @@
    function __builtin_saveregs is called, GCC moves the call up to the
    very start of the function.  */
 
-#if !defined(_STDARG_H)
 
-/* varargs support */
+/* Define __gnuc_va_list.  */
 
-#define va_alist __builtin_va_alist
-
-#define va_dcl
-
-#define va_start(pvar) ((pvar) = * (va_list *) __builtin_saveregs ())
-
-#else /* ANSI stdarg.h */
-/* Note that CUMULATIVE_ARGS elements are measured in bytes on the i860,
-   so we divide by 4 to get # of registers.  */
-#define va_start(pvar, firstarg) \
- ((pvar) = *(va_list *) __builtin_saveregs (),			\
-  (pvar).__ireg_used = __builtin_args_info (0) / 4,		\
-  (pvar).__freg_used = __builtin_args_info (1) / 4,		\
-  (pvar).__mem_ptr = __builtin_next_arg ())
-
-#endif /* !defined(_STDARG_H)  ... varargs support */
-
+#ifndef __GNUC_VA_LIST
+#define __GNUC_VA_LIST
 
 typedef union {
   float		__freg[8];
@@ -38,10 +22,6 @@ typedef struct {
 #endif
 } __va_saved_regs;
 
-#ifndef _VA_LIST
-#define _VA_LIST
-#define __GNU_VA_LIST	/* Field names were properly prefixed with `__'.  */
-
 typedef struct {
 #if defined(__SVR4__) || defined(__alliant__)
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
@@ -54,10 +34,34 @@ typedef struct {
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
 #endif
-} va_list;
+} __gnuc_va_list;
+#endif /* not __GNUC_VA_LIST */
 
-#endif /* !defined(_VA_LIST) */
+/* If this is for internal libc use, don't define anything but
+   __gnuc_va_list.  */
+#if defined (_STDARG_H) || defined (_VARARGS_H)
 
+#if !defined(_STDARG_H)
+
+/* varargs support */
+#define va_alist __builtin_va_alist
+#define va_dcl
+#define va_start(pvar) ((pvar) = * (__gnuc_va_list *) __builtin_saveregs ())
+
+#else /* STDARG.H */
+
+/* ANSI alternative.  */
+/* Note that CUMULATIVE_ARGS elements are measured in bytes on the i860,
+   so we divide by 4 to get # of registers.  */
+#define va_start(pvar, firstarg) \
+ ((pvar) = *(__gnuc_va_list *) __builtin_saveregs (),			\
+  (pvar).__ireg_used = __builtin_args_info (0) / 4,		\
+  (pvar).__freg_used = __builtin_args_info (1) / 4,		\
+  (pvar).__mem_ptr = __builtin_next_arg ())
+
+#endif /* _STDARG_H */
+
+void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(__va)
 
 /* Values returned by __builtin_classify_type.  */
@@ -97,12 +101,14 @@ enum {
 
 /* Make allowances here for adding 128-bit (long double) floats someday.  */
 
+#if 0 /* What was this for? */
 #ifndef __GNU_VA_LIST
 #define __ireg_used ireg_used
 #define __freg_used freg_used
 #define __mem_ptr mem_ptr
 #define __reg_base reg_base
 #endif
+#endif /* 0 */
 
 /* Avoid errors if compiling GCC v2 with GCC v1.  */
 #if __GNUC__ == 1
@@ -194,4 +200,6 @@ __extension__								\
     }									\
   __rv;									\
 }))
+
+#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
