@@ -1,3 +1,9 @@
+2000-12-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* warn_summary: Fix subdirectory filtering.  Add -intl and -fixinc
+	subdirectory flags.  Add source directory prefix filtering.
+	Redirect diagnostic output to stderr.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* texi2pod.pl: If multiple @c man sections with the same tag

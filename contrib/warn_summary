@@ -3,7 +3,7 @@
 # This script parses the output of a gcc bootstrap when using warning
 # flags and determines various statistics.
 # 
-# usage: warn_summary [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java]
+# usage: warn_summary [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java|-intl|-fixinc]
 # 	[-pass|-wpass] [file(s)]
 #
 # -llf
@@ -19,10 +19,9 @@
 #
 # -nosub
 # Only show warnings from the gcc top level directory.
-# -ch|-cp|-f|-java
+# -ch|-cp|-f|-java|-intl|-fixinc
 # Only show warnings from the specified language subdirectory.
-# These flags assume the output contains "Entering/Leaving" messages from
-# gnu make.  They override each other so only the last one takes effect.
+# These override each other so only the last one passed takes effect.
 #
 # -pass
 # Pass through the bootstrap output after filtering stage and subdir
@@ -40,9 +39,9 @@
 longLineFilter()
 {
   if test -z "$llf" ; then
-    cat $1
+    cat
   else
-    sed 's/^\(...............................................................................................................................................................................................................................................................\).*/\1/' $1
+    sed 's/^\(...............................................................................................................................................................................................................................................................\).*/\1/'
   fi
 }
 
@@ -51,17 +50,17 @@ longLineFilter()
 # through a particular subdirectory set of warnings.
 subdirectoryFilter()
 {
-  longLineFilter $1 | (
+  longLineFilter | (
   if test -z "$filter" ; then
     # Pass through all lines.
     cat
   else
     if test "$filter" = nosub ; then
       # Omit all subdirectories.
-      $AWK 'BEGIN{t=1} ; /Entering directory.*\/gcc\/[a-z]/{t--} ; /Leaving directory.*\/gcc\/[a-z]/{t++} ; {if(t==1)print}'
+      egrep -v '/gcc/(ch|cp|f|java|intl|fixinc)/'
     else
       # Pass through only subdir $filter.
-      $AWK "BEGIN {t=-1} ; /^cd $filter; make/{t=0} ; /Entering directory .*\/gcc\/$filter/{t++} ; /Leaving directory .*\/gcc\/$filter/{t--} ; {if(t==1)print}"
+      grep "/gcc/$filter/"
     fi
   fi )
 }
@@ -87,7 +86,7 @@ stageNfilter()
 # This function displays lines containing warnings.
 warningFilter()
 {
-  grep ' warning: ' $1
+  grep ' warning: '
 }
 
 # This function replaces `xxx' with `???', where xxx is usually some
@@ -114,10 +113,26 @@ keywordFilter() {
 	s/"\([^"]*\)"/`\1'"'"'/g'
 }
 
+# This function strips out relative pathnames for source files printed
+# by the warningFilter function.  This is done so that as the snapshot
+# directory name changes every week, the output of this program can be
+# compared to previous runs without spurious diffs caused by source
+# directory name changes.
+
+srcdirFilter()
+{
+  sed '
+s%^[^ ]*/\(gcc/\)%\1%;
+s%^[^ ]*/\(include/\)%\1%;
+s%^[^ ]*/\(texinfo/\)%\1%;
+s%^[^ ]*/\(fastjar/\)%\1%;
+s%^[^ ]*/\(zlib/\)%\1%;
+s%^[^ ]*/\(lib[a-z23+-]*/\)%\1%;'
+}
 
 # Start the main section.
 
-usage="usage: `basename $0` [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java] [-pass|-wpass] [file(s)]"
+usage="usage: `basename $0` [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java|-intl|-fixinc] [-pass|-wpass] [file(s)]"
 stageN=3
 tmpfile=/tmp/tmp-warn.$$
 
@@ -140,12 +155,13 @@ fi
 while test -n "$1" ; do
  case "$1" in
    -llf) llf=1 ; shift ;;
-   -s)  if test -z "$2"; then echo $usage; exit 1; fi; stageN="$2"; shift 2 ;;
+   -s)  if test -z "$2"; then echo $usage 1>&2; exit 1; fi
+	stageN="$2"; shift 2 ;;
    -s*) stageN="`expr $1 : '-s\(.*\)'`" ; shift ;;
-   -nosub|-ch|-cp|-f|-java) filter="`expr $1 : '-\(.*\)'`" ; shift ;;
+   -nosub|-ch|-cp|-f|-java|-intl|-fixinc) filter="`expr $1 : '-\(.*\)'`" ; shift ;;
    -pass) pass=1 ; shift ;;
    -wpass) pass=w ; shift ;;
-   -*)  echo $usage ; exit 1 ;;
+   -*)  echo $usage 1>&2 ; exit 1 ;;
    *)   break ;;
  esac
 done
@@ -153,17 +169,17 @@ done
 # Check for a valid value of $stageN.
 case "$stageN" in
   [0-9]) ;;
-  *) echo "Stage <$stageN> must be in the range [0..9]." ; exit 1 ;;
+  *) echo "Stage <$stageN> must be in the range [0..9]." 1>&2 ; exit 1 ;;
 esac
 
 for file in "$@" ; do
 
-  subdirectoryFilter $file | stageNfilter > $tmpfile
+  stageNfilter < $file | subdirectoryFilter > $tmpfile
 
   # (Just) show me the warnings.
   if test "$pass" != '' ; then
     if test "$pass" = w ; then
-      warningFilter $tmpfile
+      warningFilter < $tmpfile
     else
       cat $tmpfile
     fi
@@ -179,15 +195,16 @@ for file in "$@" ; do
       echo "Counting warnings in the gcc/$filter subdirectory,"
     fi
   fi
-  count=`warningFilter $tmpfile | wc -l`
+  count=`warningFilter < $tmpfile | wc -l`
   echo there are $count warnings in stage$stageN of this bootstrap.
 
   echo
   echo Number of warnings per file:
-  warningFilter $tmpfile | $AWK -F: '{print$1}' | sort | uniq -c | sort -nr
+  warningFilter < $tmpfile | srcdirFilter | $AWK -F: '{print$1}' | sort | \
+    uniq -c | sort -nr
 
   echo
   echo Number of warning types:
-  warningFilter $tmpfile | keywordFilter | sort | uniq -c | sort -nr
+  warningFilter < $tmpfile | keywordFilter | sort | uniq -c | sort -nr
 
 done
