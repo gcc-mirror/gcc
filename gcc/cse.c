@@ -3964,6 +3964,12 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
       val = arg0s >> arg1;
+
+      /* Bootstrap compiler may not have sign extended the right shift.
+	 Manually extend the sign to insure bootstrap cc matches gcc.  */
+      if (arg0s < 0 && arg1 > 0)
+	val |= ((HOST_WIDE_INT) -1) << (HOST_BITS_PER_WIDE_INT - arg1);
+
       break;
 
     case ROTATERT:
