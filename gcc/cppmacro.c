@@ -348,6 +348,12 @@ stringify_arg (pfile, arg)
     }
 
   /* Commit the memory, including NUL, and return the token.  */
+  if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < 1)
+    {
+      size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+      _cpp_extend_buff (pfile, &pfile->u_buff, 1);
+      dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
+    }
   len = dest - BUFF_FRONT (pfile->u_buff);
   BUFF_FRONT (pfile->u_buff) = dest + 1;
   return new_string_token (pfile, dest - len, len);
