@@ -1,6 +1,14 @@
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/9888
+	* config/i386/i386.md (jcc_1): Fix range.
+	(jcc_2): Likewise.
+	(jump): LIkewise.
+	(doloop_end_internal): Likewise.
+
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9888
 	* config/i386/i386.md (movsi_1): Remove special alternatives
 	for %eax register.
 	(movhi_1): Likewise.
