@@ -23,10 +23,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the executable file might be covered by the GNU General Public License.  */
 
 /* 
-  $Header: /home/fsf/rms/c-runtime/dispatch/RCS/hash.c,v 0.14 1992/08/31 21:09:15 dglattin Exp rms $
-  $Author: dglattin $
-  $Date: 1992/08/31 21:09:15 $
+  $Header: /home/fsf/rms/c-runtime/dispatch/RCS/hash.c,v 0.15 1992/09/02 02:04:32 rms Exp rms $
+  $Author: rms $
+  $Date: 1992/09/02 02:04:32 $
   $Log: hash.c,v $
+ * Revision 0.15  1992/09/02  02:04:32  rms
+ * Changed some decls.
+ *
  * Revision 0.14  1992/08/31  21:09:15  dglattin
  * minor documentation changes.
  *
@@ -99,99 +102,99 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
                                                   
    These equations are percentages.  */
 #define FULLNESS(cache) \
-   ((((cache)->sizeOfHash * 75) / 100) <= (cache)->entriesInHash)
+   ((((cache)->size * 75) / 100) <= (cache)->used)
 #define EXPANSION(cache) \
-  ((cache)->sizeOfHash * 2)
+  ((cache)->size * 2)
 
-Cache_t 
-hash_new (u_int sizeOfHash, HashFunc aHashFunc, CompareFunc aCompareFunc)
+cache_ptr 
+hash_new (u_int size, hash_func_type hash_func, compare_func_type compare_func)
 {
-  Cache_t retCache;
+  cache_ptr cache;
 
 
   /* Pass me a value greater than 0 and a power of 2.  */
-  assert (sizeOfHash);
-  assert (!(sizeOfHash & (sizeOfHash - 1)));
+  assert (size);
+  assert (!(size & (size - 1)));
   
   /* Allocate the cache structure.  calloc insures
      its initialization for default values.  */
-  retCache = (Cache_t) calloc (1, sizeof (Cache));
-  assert (retCache);
+  cache = (cache_ptr) calloc (1, sizeof (struct cache));
+  assert (cache);
   
   /* Allocate the array of buckets for the cache.  
      calloc initializes all of the pointers to NULL.  */
-  retCache->theNodeTable
-    = (CacheNode_t *) calloc (sizeOfHash, sizeof (CacheNode_t));
-  assert (retCache->theNodeTable);
+  cache->node_table
+    = (node_ptr *) calloc (size, sizeof (node_ptr));
+  assert (cache->node_table);
   
-  retCache->sizeOfHash  = sizeOfHash;
+  cache->size  = size;
 
   /* This should work for all processor architectures? */
-  retCache->mask = (sizeOfHash - 1);
+  cache->mask = (size - 1);
 	
   /* Store the hashing function so that codes can be computed.  */
-  retCache->hashFunc = aHashFunc;
+  cache->hash_func = hash_func;
 
   /* Store the function that compares hash keys to 
      determine if they are equal.  */
-  retCache->compareFunc = aCompareFunc;
+  cache->compare_func = compare_func;
 
-  return retCache;
+  return cache;
 }
 
 
 void 
-hash_delete (Cache_t theCache)
+hash_delete (cache_ptr cache)
 {
-  CacheNode_t aNode;
+  node_ptr node;
 
 
   /* Purge all key/value pairs from the table.  */
-  while (aNode = hash_next (theCache, NULL))
-    hash_remove (theCache, aNode->theKey);
+  while (node = hash_next (cache, NULL))
+    hash_remove (cache, node->key);
 
   /* Release the array of nodes and the cache itself.  */
-  free (theCache->theNodeTable);
-  free (theCache);
+  free (cache->node_table);
+  free (cache);
 }
 
 
 void 
-hash_add (Cache_t *theCache, void *aKey, void *aValue)
+hash_add (cache_ptr *cachep, void *key, void *value)
 {
-  u_int       indx = (*(*theCache)->hashFunc)(*theCache, aKey);
-  CacheNode_t aCacheNode = (CacheNode_t) calloc (1, sizeof (CacheNode));
+  u_int indx = (*(*cachep)->hash_func)(*cachep, key);
+  node_ptr node = (node_ptr) calloc (1, sizeof (struct cache_node));
 
 
-  assert (aCacheNode);
+  assert (node);
   
   /* Initialize the new node.  */
-  aCacheNode->theKey    = aKey;
-  aCacheNode->theValue  = aValue;
-  aCacheNode->nextNode  = (*(*theCache)->theNodeTable) [indx];
+  node->key    = key;
+  node->value  = value;
+  node->next  = (*(*cachep)->node_table)[indx];
   
   /* Debugging.
      Check the list for another key.  */
 #ifdef DEBUG
-  { CacheNode_t checkHashNode = (*(*theCache)->theNodeTable) [indx];
+  { node_ptr node1 = (*(*cachep)->node_table)[indx];
     
-    while (checkHashNode) {
+    while (node1) {
     
-      assert (checkHashNode->theKey != aKey);
-      checkHashNode = checkHashNode->nextNode;
+      assert (node1->key != key);
+      node1 = node1->next;
     }
   }
 #endif
 
   /* Install the node as the first element on the list.  */
-  (*(*theCache)->theNodeTable) [indx] = aCacheNode;
+  (*(*cachep)->node_table)[indx] = node;
 
   /* Bump the number of entries in the cache.  */
-  ++(*theCache)->entriesInHash;
+  ++(*cachep)->used;
   
   /* Check the hash table's fullness.   We're going
      to expand if it is above the fullness level.  */
-  if (FULLNESS (*theCache)) {
+  if (FULLNESS (*cachep)) {
     
     /* The hash table has reached its fullness level.  Time to
        expand it. 
@@ -199,94 +202,92 @@ hash_add (Cache_t *theCache, void *aKey, void *aValue)
        I'm using a slow method here but is built on other
        primitive functions thereby increasing its 
        correctness.  */
-    CacheNode_t aNode = NULL;
-    Cache_t     newCache = hash_new (EXPANSION (*theCache), 
-				     (*theCache)->hashFunc, 
-				     (*theCache)->compareFunc);
+    node_ptr node1 = NULL;
+    cache_ptr new = hash_new (EXPANSION (*cachep), 
+			      (*cachep)->hash_func, 
+			      (*cachep)->compare_func);
 
     DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
-		  *theCache, (*theCache)->sizeOfHash, newCache->sizeOfHash);
+		  *cachep, (*cachep)->size, new->size);
       
     /* Copy the nodes from the first hash table to the new one.  */
-    while (aNode = hash_next (*theCache, aNode))
-      hash_add (&newCache, aNode->theKey, aNode->theValue);
+    while (node1 = hash_next (*cachep, node1))
+      hash_add (&new, node1->key, node1->value);
 
     /* Trash the old cache.  */
-    hash_delete (*theCache);
+    hash_delete (*cachep);
     
     /* Return a pointer to the new hash table.  */
-    *theCache = newCache;
+    *cachep = new;
   }
 }
 
 
 void 
-hash_remove (Cache_t theCache, void *aKey)
+hash_remove (cache_ptr cache, void *key)
 {
-  u_int       indx = (*theCache->hashFunc)(theCache, aKey);
-  CacheNode_t aCacheNode = (*theCache->theNodeTable) [indx];
+  u_int indx = (*cache->hash_func)(cache, key);
+  node_ptr node = (*cache->node_table)[indx];
   
   
   /* We assume there is an entry in the table.  Error if it is not.  */
-  assert (aCacheNode);
+  assert (node);
   
   /* Special case.  First element is the key/value pair to be removed.  */
-  if ((*theCache->compareFunc)(aCacheNode->theKey, aKey)) {
-    (*theCache->theNodeTable) [indx] = aCacheNode->nextNode;
-    free (aCacheNode);
+  if ((*cache->compare_func)(node->key, key)) {
+    (*cache->node_table)[indx] = node->next;
+    free (node);
   } else {
 
     /* Otherwise, find the hash entry.  */
-    CacheNode_t prevHashNode = aCacheNode;
+    node_ptr prev = node;
     BOOL        removed = NO;
     
     do {
     
-      if ((*theCache->compareFunc)(aCacheNode->theKey, aKey)) {
-        prevHashNode->nextNode = aCacheNode->nextNode, removed = YES;
-        free (aCacheNode);
+      if ((*cache->compare_func)(node->key, key)) {
+        prev->next = node->next, removed = YES;
+        free (node);
       } else
-        prevHashNode = aCacheNode, aCacheNode = aCacheNode->nextNode;
-    } while (!removed && aCacheNode);
+        prev = node, node = node->next;
+    } while (!removed && node);
     assert (removed);
   }
   
   /* Decrement the number of entries in the hash table.  */
-  --theCache->entriesInHash;
+  --cache->used;
 }
 
 
-CacheNode_t 
-hash_next (Cache_t theCache, CacheNode_t aCacheNode)
+node_ptr 
+hash_next (cache_ptr cache, node_ptr node)
 {
-  CacheNode_t theCacheNode = aCacheNode;
-
-
   /* If the scan is being started then reset the last node 
      visitied pointer and bucket index.  */
-  if (!theCacheNode)
-    theCache->lastBucket  = 0;
+  if (!node)
+    cache->last_bucket  = 0;
   
   /* If there is a node visited last then check for another 
      entry in the same bucket;  Otherwise step to the next bucket.  */
-  if (theCacheNode)
-    if (theCacheNode->nextNode)
+  if (node) {
+    if (node->next)
       /* There is a node which follows the last node 
 	 returned.  Step to that node and retun it.  */
-      return theCacheNode->nextNode;
+      return node->next;
     else
-      ++theCache->lastBucket;
+      ++cache->last_bucket;
+  }
 
   /* If the list isn't exhausted then search the buckets for 
      other nodes.  */
-  if (theCache->lastBucket < theCache->sizeOfHash) {
+  if (cache->last_bucket < cache->size) {
     /*  Scan the remainder of the buckets looking for an entry
 	at the head of the list.  Return the first item found.  */
-    while (theCache->lastBucket < theCache->sizeOfHash)
-      if ((*theCache->theNodeTable) [theCache->lastBucket])
-        return (*theCache->theNodeTable) [theCache->lastBucket];
+    while (cache->last_bucket < cache->size)
+      if ((*cache->node_table)[cache->last_bucket])
+        return (*cache->node_table)[cache->last_bucket];
       else
-        ++theCache->lastBucket;
+        ++cache->last_bucket;
   
     /* No further nodes were found in the hash table.  */
     return NULL;
@@ -300,20 +301,20 @@ hash_next (Cache_t theCache, CacheNode_t aCacheNode)
  * key/value pair isn't in the hash. 
  */
 void *
-hash_value_for_key (Cache_t theCache, void *aKey)
+hash_value_for_key (cache_ptr cache, void *key)
 {
-  CacheNode_t aCacheNode
-    =  (*theCache->theNodeTable) [(*theCache->hashFunc)(theCache, aKey)];
-  void        *retVal = NULL;
+  node_ptr node
+    =  (*cache->node_table)[(*cache->hash_func)(cache, key)];
+  void *retval = NULL;
   
 
-  if (aCacheNode)
+  if (node)
     do {
-      if ((*theCache->compareFunc)(aCacheNode->theKey, aKey))
-        retVal = aCacheNode->theValue;
+      if ((*cache->compare_func)(node->key, key))
+        retval = node->value;
       else
-        aCacheNode = aCacheNode->nextNode;
-    } while (!retVal && aCacheNode);
+        node = node->next;
+    } while (!retval && node);
   
-  return retVal;
+  return retval;
 }
