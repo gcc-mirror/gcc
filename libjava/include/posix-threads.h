@@ -241,23 +241,12 @@ _Jv_ThreadSelf (void)
 
 #ifdef __alpha__
 
-#ifdef __FreeBSD__
-#include <machine/pal.h>
-#define PAL_rduniq PAL_rdunique
-#elif defined (__osf__)
-#include <machine/pal.h>
-#else
-#include <asm/pal.h>
-#endif
-
-typedef unsigned long _Jv_ThreadId_t;
+typedef void *_Jv_ThreadId_t;
 
 inline _Jv_ThreadId_t
 _Jv_ThreadSelf (void)
 {
-  register unsigned long id __asm__("$0");
-  __asm__ ("call_pal %1" : "=r"(id) : "i"(PAL_rduniq));
-  return id;
+  return __builtin_thread_pointer ();
 }
 
 #define JV_SELF_DEFINED
