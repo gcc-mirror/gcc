@@ -1912,8 +1912,9 @@ expand_call (exp, target, ignore)
 
   /* If call is cse'able, make appropriate pair of reg-notes around it.
      Test valreg so we don't crash; may safely ignore `const'
-     if return type is void.  */
-  if (is_const && valreg != 0)
+     if return type is void.  Disable for PARALLEL return values, because
+     we have no way to move such values into a pseudo register.  */
+  if (is_const && valreg != 0 && GET_CODE (valreg) != PARALLEL)
     {
       rtx note = 0;
       rtx temp = gen_reg_rtx (GET_MODE (valreg));
