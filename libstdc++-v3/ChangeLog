@@ -1,3 +1,9 @@
+2005-02-02  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/19642
+	* config/locale/generic/c_locale.h (__convert_from_v): Switch only
+	LC_NUMERIC, and only when actually != "C".
+
 2005-01-31  Brad Spencer  <spencer@infointeractive.com>
 
         * crossconfig.m4: Repair Solaris cross bits for strtold and strtof.
