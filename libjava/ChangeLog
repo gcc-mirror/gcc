@@ -1,5 +1,10 @@
 2003-04-30  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/BreakIterator.java
+	(clone): New method.
+
+2003-04-30  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/CollationElementIterator.java,
 	java/text/CollationKey.java,
 	java/text/RuleBasedCollator.java:
