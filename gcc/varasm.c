@@ -3592,7 +3592,8 @@ initializer_constant_valid_p (tree value, tree endtype)
 
       /* Likewise conversions from int to pointers, but also allow
 	 conversions from 0.  */
-      if (POINTER_TYPE_P (TREE_TYPE (value))
+      if ((POINTER_TYPE_P (TREE_TYPE (value))
+	   || TREE_CODE (TREE_TYPE (value)) == OFFSET_TYPE)
 	  && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (value, 0))))
 	{
 	  if (integer_zerop (TREE_OPERAND (value, 0)))

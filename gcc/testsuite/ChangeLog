@@ -1,3 +1,11 @@
+2003-12-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12696
+	* g++.dg/init/error1.C: New test.
+
+	PR c++/12218
+	* g++.dg/init/pm3.C: New test.
+
 2003-12-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/3347
