@@ -22,20 +22,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef ASM_OUTPUT_IDENT
 
-/* This is copied from final.c and sparc.h.  */
-#undef ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
-{ if (write_symbols == SDB_DEBUG) {				\
-    fprintf ((FILE), "\t.ln\t%d\n",				\
-	     ((sdb_begin_function_line > -1)			\
-	      ? (LINE) - sdb_begin_function_line : 1));		\
-  } else if (write_symbols == DBX_DEBUG) {			\
-    static int sym_lineno = 1;					\
-    fprintf ((FILE), ".stabn 68,0,%d,LM%d\nLM%d:\n",		\
-	     (LINE), sym_lineno, sym_lineno);			\
-    sym_lineno += 1;						\
-  } }
-
 #undef SELECT_SECTION
 #undef SELECT_RTX_SECTION
 #define BSS_SECTION_ASM_OP	".section\t\".bss\""
@@ -50,6 +36,42 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define DBX_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* These are all necessary because this is how gdb expects gcc to output
+   stabs in coff.  */
+
+/* Be function-relative for block and source line stab directives.  */
+
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+
+/* but, to make this work, functions must appear prior to line info.  */
+
+#define DBX_FUNCTION_FIRST
+
+/* Generate a blank trailing N_SO to mark the end of the .o file, since
+   we can't depend upon the linker to mark .o file boundaries with
+   embedded stabs.  */
+
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
+
+/* This is copied from final.c and sparc.h.  */
+#undef ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)			\
+{ if (write_symbols == SDB_DEBUG) {				\
+    fprintf ((FILE), "\t.ln\t%d\n",				\
+	     ((sdb_begin_function_line > -1)			\
+	      ? (LINE) - sdb_begin_function_line : 1));		\
+  } else if (write_symbols == DBX_DEBUG) {			\
+    static int sym_lineno = 1;					\
+    fprintf (FILE, ".stabn 68,0,%d,.LM%d-",			\
+	     LINE, sym_lineno);					\
+    assemble_name (FILE,					\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
+    fprintf (FILE, "\n.LM%d:\n", sym_lineno);			\
+    sym_lineno += 1;						\
+  } }
 
 /* Support the ctors and dtors sections for g++.  */
 
