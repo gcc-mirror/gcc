@@ -21,6 +21,8 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+#include "hwint.h"
+
 /* RUN-TIME TARGET SPECIFICATION.  */
 
 #define C4x   1
@@ -2055,6 +2057,21 @@ dtors_section ()							\
   else									\
     const_section ();							\
 }
+
+/* The TI assembler wants to have hex numbers this way.  */
+
+#undef HOST_WIDE_INT_PRINT_HEX
+#ifndef HOST_WIDE_INT_PRINT_HEX
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+#  define HOST_WIDE_INT_PRINT_HEX "0%xh"
+# else
+#  if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+#   define HOST_WIDE_INT_PRINT_HEX "0%lxh"
+#  else
+#   define HOST_WIDE_INT_PRINT_HEX "0%llxh"
+#  endif
+# endif
+#endif /* ! HOST_WIDE_INT_PRINT_HEX */
 
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind
