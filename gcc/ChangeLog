@@ -1,3 +1,16 @@
+2000-10-31  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (struct dw_loc_descr_struct): Add dw_loc_addr.
+	(size_of_locs): Set it.
+	(output_loc_operands): Use it to compute branch displacement.
+	(int_loc_descriptor): New.
+	(mem_loc_descriptor): Dereference memory in the proper size.
+	Use DW_OP_plus_uconst when possible.  Use int_loc_descriptor.
+	(loc_descriptor_from_tree): New.
+	(rtl_for_decl_location): Break out from ...
+	(add_location_or_const_value_attribute): ... here.
+	(add_bound_info): Use loc_descriptor_from_tree.
+
 2000-10-31  Neil Booth  <neilb@earthling.net>
 
 	* cpp.texi: Update for new command line assertion syntax.
