@@ -2149,6 +2149,10 @@ compile_file (name)
   init_timevar ();
   timevar_start (TV_TOTAL);
 
+  /* Open assembler code output file.  Do this even if -fsyntax-only is on,
+     because then the driver will have provided the name of a temporary
+     file or bit bucket for us.  */
+
   if (! name_specified && asm_file_name == 0)
     asm_out_file = stdout;
   else
@@ -2209,10 +2213,6 @@ compile_file (name)
       if (aux_info_file == 0)
 	fatal_io_error ("can't open %s", aux_info_file_name);
     }
-
-  /* Open assembler code output file.  Do this even if -fsyntax-only is on,
-     because then the driver will have provided the name of a temporary
-     file or bit bucket for us.  */
 
 #ifdef IO_BUFFER_SIZE
   setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
