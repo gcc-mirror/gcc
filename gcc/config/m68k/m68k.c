@@ -3148,3 +3148,122 @@ const_sint32_operand (op, mode)
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) >= (-0x7fffffff - 1) && INTVAL (op) <= 0x7fffffff));
 }
+
+char *
+output_andsi3 (operands)
+     rtx *operands;
+{
+  int logval;
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (INTVAL (operands[2]) | 0xffff) == 0xffffffff
+      && (DATA_REG_P (operands[0])
+	  || offsettable_memref_p (operands[0]))
+      && !TARGET_5200)
+    {
+      if (GET_CODE (operands[0]) != REG)
+        operands[0] = adj_offsettable_operand (operands[0], 2);
+      operands[2] = gen_rtx (CONST_INT, VOIDmode,
+			     INTVAL (operands[2]) & 0xffff);
+      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
+      CC_STATUS_INIT;
+      if (operands[2] == const0_rtx)
+        return "clr%.w %0";
+      return "and%.w %2,%0";
+    }
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (logval = exact_log2 (~ INTVAL (operands[2]))) >= 0
+      && (DATA_REG_P (operands[0])
+          || offsettable_memref_p (operands[0])))
+    {
+      if (DATA_REG_P (operands[0]))
+        {
+          operands[1] = gen_rtx (CONST_INT, VOIDmode, logval);
+        }
+      else
+        {
+	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[1] = gen_rtx (CONST_INT, VOIDmode, logval % 8);
+        }
+      /* This does not set condition codes in a standard way.  */
+      CC_STATUS_INIT;
+      return "bclr %1,%0";
+    }
+  return "and%.l %2,%0";
+}
+
+char *
+output_iorsi3 (operands)
+     rtx *operands;
+{
+  register int logval;
+  if (GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) >> 16 == 0
+      && (DATA_REG_P (operands[0])
+	  || offsettable_memref_p (operands[0]))
+      && !TARGET_5200)
+    {
+      if (GET_CODE (operands[0]) != REG)
+        operands[0] = adj_offsettable_operand (operands[0], 2);
+      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
+      CC_STATUS_INIT;
+      if (INTVAL (operands[2]) == 0xffff)
+	return "mov%.w %2,%0";
+      return "or%.w %2,%0";
+    }
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (logval = exact_log2 (INTVAL (operands[2]))) >= 0
+      && (DATA_REG_P (operands[0])
+	  || offsettable_memref_p (operands[0])))
+    {
+      if (DATA_REG_P (operands[0]))
+	{
+	  operands[1] = gen_rtx (CONST_INT, VOIDmode, logval);
+	}
+      else
+        {
+	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[1] = gen_rtx (CONST_INT, VOIDmode, logval % 8);
+	}
+      CC_STATUS_INIT;
+      return "bset %1,%0";
+    }
+  return "or%.l %2,%0";
+}
+
+char *
+output_xorsi3 (operands)
+     rtx *operands;
+{
+  register int logval;
+  if (GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) >> 16 == 0
+      && (offsettable_memref_p (operands[0]) || DATA_REG_P (operands[0]))
+      && !TARGET_5200)
+    {
+      if (! DATA_REG_P (operands[0]))
+	operands[0] = adj_offsettable_operand (operands[0], 2);
+      /* Do not delete a following tstl %0 insn; that would be incorrect.  */
+      CC_STATUS_INIT;
+      if (INTVAL (operands[2]) == 0xffff)
+	return "not%.w %0";
+      return "eor%.w %2,%0";
+    }
+  if (GET_CODE (operands[2]) == CONST_INT
+      && (logval = exact_log2 (INTVAL (operands[2]))) >= 0
+      && (DATA_REG_P (operands[0])
+	  || offsettable_memref_p (operands[0])))
+    {
+      if (DATA_REG_P (operands[0]))
+	{
+	  operands[1] = gen_rtx (CONST_INT, VOIDmode, logval);
+	}
+      else
+        {
+	  operands[0] = adj_offsettable_operand (operands[0], 3 - (logval / 8));
+	  operands[1] = gen_rtx (CONST_INT, VOIDmode, logval % 8);
+	}
+      CC_STATUS_INIT;
+      return "bchg %1,%0";
+    }
+  return "eor%.l %2,%0";
+}
