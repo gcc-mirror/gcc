@@ -1,9 +1,4 @@
 # libgcc1.c is not needed, since the standard library has these functions.
-LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
+LIBGCC1=
+CROSS_LIBGCC1=
 
-# Specify other dirs of system header files to be fixed.
-OTHER_FIXINCLUDES_DIRS= /LocalDeveloper/Headers
-
-# <limits.h> is sometimes in /usr/include/ansi/limits.h.
-LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h -o -f $(SYSTEM_HEADER_DIR)/ansi/limits.h ]
