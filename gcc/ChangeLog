@@ -1,3 +1,7 @@
+2001-08-15  Richard Henderson  <rth@redhat.com>
+
+	* except.c (TYPE_HASH): Cast to size_t, not HOST_WIDE_INT.
+
 Tue Aug 14 17:30:59 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (commit_one_edge_insertion): Don't separate a LOOP_BEG
