@@ -512,13 +512,6 @@ integer symlnk_ (const char *path1, const char *path2, const ftnlen Lpath1, cons
 }
 #endif
 
-#ifdef Lsclock
-int system_clock_ (integer *count, integer *count_rate, integer *count_max) {
-    extern int G77_system_clock_0 (integer *count, integer *count_rate, integer *count_max);
-    return G77_system_clock_0 (count, count_rate, count_max);
-}
-#endif
-
 #ifdef Ltime
 longint time_ (void) {
     extern longint G77_time_0 (void);
