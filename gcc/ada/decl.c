@@ -52,9 +52,6 @@
 #include "ada-tree.h"
 #include "gigi.h"
 
-/* Setting this to 1 suppresses hashing of types.  */
-extern int debug_no_type_hash;
-
 /* Provide default values for the macros controlling stack checking.
    This is copied from GCC's expr.h.  */
 
@@ -1942,11 +1939,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     convert (bitsizetype, gnu_max_size),
 				     TYPE_SIZE (gnu_type));
 
-	  /* We don't want any array types shared for two reasons: first,
-	     we want to keep differently-named types distinct; second,
-	     setting TYPE_MULTI_ARRAY_TYPE of one type can clobber
-	     another.  */
-	  debug_no_type_hash = 1;
 	  for (index = array_dim - 1; index >= 0; index --)
 	    {
 	      gnu_type = build_array_type (gnu_type, gnu_index_type[index]);
@@ -2019,7 +2011,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      finish_record_type (gnu_bound_rec_type, gnu_field_list, 0, 0);
 	    }
 
-	  debug_no_type_hash = 0;
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
 	    = (Convention (gnat_entity) == Convention_Fortran);
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type)

@@ -222,6 +222,7 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
 #define LANG_HOOKS_REGISTER_BUILTIN_TYPE lhd_register_builtin_type
+#define LANG_HOOKS_HASH_TYPES		true
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -232,7 +233,8 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE, \
   LANG_HOOKS_TYPE_PROMOTES_TO, \
   LANG_HOOKS_REGISTER_BUILTIN_TYPE, \
-  LANG_HOOKS_INCOMPLETE_TYPE_ERROR \
+  LANG_HOOKS_INCOMPLETE_TYPE_ERROR, \
+  LANG_HOOKS_HASH_TYPES \
 }
 
 /* Declaration hooks.  */

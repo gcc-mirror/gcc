@@ -1,3 +1,14 @@
+2004-03-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* langhooks-def.h (LANG_HOOKS_HASH_TYPES): New macro and hook.
+	* langhooks.h (struct lang_hooks_for_types): New field hash_types.
+	* tree.c (debug_no_type_hash): Deleted.
+	(type_hash_canon): Abort if passed a variant.
+	Check lang_hooks.types.hash_types.
+	(build_type_no_quals): Copy mode of POINTER_TYPE and REFERENCE_TYPE.
+	(build_array_type): Remove unnecessary allocation of pointer type.
+	(build_complex_type): Properly qualify resulting type.
+
 2004-03-19  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_init_builtins): Fix typo.

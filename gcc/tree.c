@@ -3218,24 +3218,24 @@ type_hash_add (hashval_t hashcode, tree type)
 
 /* Given TYPE, and HASHCODE its hash code, return the canonical
    object for an identical type if one already exists.
-   Otherwise, return TYPE, and record it as the canonical object
-   if it is a permanent object.
+   Otherwise, return TYPE, and record it as the canonical object.
 
    To use this function, first create a type of the sort you want.
    Then compute its hash code from the fields of the type that
    make it different from other similar types.
-   Then call this function and use the value.
-   This function frees the type you pass in if it is a duplicate.  */
-
-/* Set to 1 to debug without canonicalization.  Never set by program.  */
-int debug_no_type_hash = 0;
+   Then call this function and use the value.  */
 
 tree
 type_hash_canon (unsigned int hashcode, tree type)
 {
   tree t1;
 
-  if (debug_no_type_hash)
+  /* The hash table only contains main variants, so ensure that's what we're
+     being passed.  */
+  if (TYPE_MAIN_VARIANT (type) != type)
+    abort ();
+
+  if (!lang_hooks.types.hash_types)
     return type;
 
   /* See if the type is in the hash table already.  If so, return it.
@@ -3931,9 +3931,12 @@ build_type_no_quals (tree t)
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
-      return build_pointer_type (build_type_no_quals (TREE_TYPE (t)));
+      return build_pointer_type_for_mode (build_type_no_quals (TREE_TYPE (t)),
+					  TYPE_MODE (t));
     case REFERENCE_TYPE:
-      return build_reference_type (build_type_no_quals (TREE_TYPE (t)));
+      return
+	build_reference_type_for_mode (build_type_no_quals (TREE_TYPE (t)),
+				       TYPE_MODE (t));
     default:
       return TYPE_MAIN_VARIANT (t);
     }
@@ -4026,19 +4029,12 @@ build_array_type (tree elt_type, tree index_type)
       elt_type = integer_type_node;
     }
 
-  /* Make sure TYPE_POINTER_TO (elt_type) is filled in.  */
-  build_pointer_type (elt_type);
-
-  /* Allocate the array after the pointer type,
-     in case we free it in type_hash_canon.  */
   t = make_node (ARRAY_TYPE);
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
 
   if (index_type == 0)
-    {
-      return t;
-    }
+    return t;
 
   hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
   hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
@@ -4087,7 +4083,7 @@ build_function_type (tree value_type, tree arg_types)
   TREE_TYPE (t) = value_type;
   TYPE_ARG_TYPES (t) = arg_types;
 
-  /* If we already have such a type, use the old one and free this one.  */
+  /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (value_type), hashcode);
   hashcode = type_hash_list (arg_types, hashcode);
   t = type_hash_canon (hashcode, t);
@@ -4149,12 +4145,10 @@ build_method_type_directly (tree basetype,
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
 
-  /* If we already have such a type, use the old one and free this one.
-     Note that it also frees up the above cons cell if found.  */
+  /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
   hashcode = iterative_hash_object (TYPE_HASH (rettype), hashcode);
   hashcode = type_hash_list (argtypes, hashcode);
-
   t = type_hash_canon (hashcode, t);
 
   if (!COMPLETE_TYPE_P (t))
@@ -4195,7 +4189,7 @@ build_offset_type (tree basetype, tree type)
   TYPE_OFFSET_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
   TREE_TYPE (t) = type;
 
-  /* If we already have such a type, use the old one and free this one.  */
+  /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (basetype), hashcode);
   hashcode = iterative_hash_object (TYPE_HASH (type), hashcode);
   t = type_hash_canon (hashcode, t);
@@ -4218,9 +4212,8 @@ build_complex_type (tree component_type)
   t = make_node (COMPLEX_TYPE);
 
   TREE_TYPE (t) = TYPE_MAIN_VARIANT (component_type);
-  set_type_quals (t, TYPE_QUALS (component_type));
 
-  /* If we already have such a type, use the old one and free this one.  */
+  /* If we already have such a type, use the old one.  */
   hashcode = iterative_hash_object (TYPE_HASH (component_type), 0);
   t = type_hash_canon (hashcode, t);
 
@@ -4262,7 +4255,7 @@ build_complex_type (tree component_type)
 	TYPE_NAME (t) = get_identifier (name);
     }
 
-  return t;
+  return build_qualified_type (t, TYPE_QUALS (component_type));
 }
 
 /* Return OP, stripped of any conversions to wider types as much as is safe.

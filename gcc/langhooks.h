@@ -151,6 +151,11 @@ struct lang_hooks_for_types
      was used (or 0 if that isn't known) and TYPE is the type that was
      invalid.  */
   void (*incomplete_type_error) (tree value, tree type);
+
+  /* Nonzero if types that are identical are to be hashed so that only
+     one copy is kept.  If a language requires unique types for each
+     user-specified type, such as Ada, this should be set to TRUE.  */
+  bool hash_types;
 };
 
 /* Language hooks related to decls and the symbol table.  */
