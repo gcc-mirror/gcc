@@ -8569,7 +8569,6 @@ nonzero_bits (x, mode)
       else
 	nonzero = -1;
       break;
-      break;
 
     case PARITY:
       nonzero = 1;
