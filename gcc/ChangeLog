@@ -1,3 +1,11 @@
+2003-02-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add a prototype for
+	gtuleu_operator.
+	* config/h8300/h8300.c (gtuleu_operator): New.
+	* config/h8300/h8300.h (PREDICATE_CODES): Add gtuleu_operator.
+	* config/h8300/h8300.md (a peephole2): New.
+
 Tue Feb 11 13:32:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* sched-ebb.c (schedule_ebbs): Do not verify_flow_info.

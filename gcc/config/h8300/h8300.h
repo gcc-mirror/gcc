@@ -1293,6 +1293,7 @@ struct cum_arg
   {"incdec_operand", {CONST_INT}},					\
   {"bit_operator", {XOR, AND, IOR}},					\
   {"nshift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT}},			\
-  {"eqne_operator", {EQ, NE}},
+  {"eqne_operator", {EQ, NE}},						\
+  {"gtuleu_operator", {GTU, LEU}},
 
 #endif /* ! GCC_H8300_H */
