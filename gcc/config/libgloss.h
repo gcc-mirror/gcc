@@ -22,12 +22,13 @@ Boston, MA 02111-1307, USA.  */
 /* The libgloss standard for crt0.s has the name based on the command line
    option. */
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{!shared:%{pg:pgcrt0%O%s}%{!pg:%{p:pcrt0%O%s}%{!p:crt0%
-O%s}}}"
+#define STARTFILE_SPEC "%{!shared:%{pg:pgcrt0%O%s}%{!pg:%{p:pcrt0%O%s}%{!p:crt0%O%s}}}"
 
-/* Don't set the target flags, this is done by the linker script */
-#undef LINK_SPEC
-#define LINK_SPEC ""
+/* This file used to force LINK_SPEC to be the null string, but that is not
+   correct.  LINK_SPEC is used to pass machine specific arguments to the
+   linker and hence can not be redefined here.  LINK_SPEC is never used to
+   specify startup files or libraries, so it should never conflict with
+   libgloss.  */
 
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
