@@ -4904,9 +4904,10 @@
   rtx otherop
     = rtx_equal_p (operands[2], operands[0]) ? operands[3] : operands[2];
 
-  /* Make sure we have canonical RTX so we match the insn pattern - a
-     register or MULT in the first operand, not a constant.  */
-  if (CONSTANT_P (otherop))
+  /* Make sure we have canonical RTX so we match the insn pattern -
+     not a constant in the first operand.  We also require the order
+     (plus reg mem) to match the final pattern.  */
+  if (CONSTANT_P (otherop) || MEM_P (otherop))
     {
       operands[7] = operands[1];
       operands[8] = otherop;
@@ -4954,9 +4955,10 @@
   rtx otherop
     = rtx_equal_p (operands[2], operands[0]) ? operands[3] : operands[2];
 
-  /* Make sure we have canonical RTX so we match the insn pattern - a
-     register or MULT in the first operand, not a constant.  */
-  if (CONSTANT_P (otherop))
+  /* Make sure we have canonical RTX so we match the insn pattern -
+     not a constant in the first operand.  We also require the order
+     (plus reg mem) to match the final pattern.  */
+  if (CONSTANT_P (otherop) || MEM_P (otherop))
     {
       operands[7] = operands[1];
       operands[8] = otherop;

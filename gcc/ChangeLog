@@ -1,3 +1,8 @@
+2004-09-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (moverside, movemside): With MEM, make sure
+	the address is (plus reg mem).
+
 2004-09-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/linux64.h (PROCESSOR_DEFAULT): Define.
