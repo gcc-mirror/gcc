@@ -1,5 +1,7 @@
 1998-12-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/expr1.C: New test.
+
 	* g++.old-deja/g++.eh/tmpl3.C: New test.
 
 	* g++.old-deja/g++.eh/tmpl2.C: New test.
