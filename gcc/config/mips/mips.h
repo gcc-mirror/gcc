@@ -2349,6 +2349,13 @@ typedef struct mips_args {
 
 #define TRAMPOLINE_ALIGNMENT (TARGET_LONG64 ? 64 : 32)
 
+/* INITIALIZE_TRAMPOLINE calls this library function to flush
+   program and data caches.  */
+
+#ifndef CACHE_FLUSH_FUNC
+#define CACHE_FLUSH_FUNC "_flush_cache"
+#endif
+
 /* A C statement to initialize the variable parts of a trampoline. 
    ADDR is an RTX for the address of the trampoline; FNADDR is an
    RTX for the address of the nested function; STATIC_CHAIN is an
@@ -2372,7 +2379,7 @@ typedef struct mips_args {
   /* Flush both caches.  We need to flush the data cache in case	    \
      the system has a write-back cache.  */				    \
   /* ??? Should check the return value for errors.  */			    \
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "_flush_cache"),	    \
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, CACHE_FLUSH_FUNC),	    \
 		     0, VOIDmode, 3, addr, Pmode,			    \
 		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
 		     GEN_INT (3), TYPE_MODE (integer_type_node));	    \
