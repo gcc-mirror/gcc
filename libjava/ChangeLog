@@ -1,3 +1,9 @@
+1999-09-20  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Send output of `-fuse-divide-subroutine' test
+	compilation to /dev/null.
+
 1999-09-14  Tom Tromey  <tromey@cygnus.com>
 
 	* include/java-insns.h: Turned constants into an enum.  Added
