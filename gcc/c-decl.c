@@ -1850,7 +1850,13 @@ warn_if_shadowing (tree new_decl)
       {
 	tree old_decl = b->decl;
 
-	if (TREE_CODE (old_decl) == PARM_DECL)
+	if (old_decl == error_mark_node)
+	  {
+	    warning ("%Jdeclaration of %qD shadows previous non-variable",
+		     new_decl, new_decl);
+	    break;
+	  }
+	else if (TREE_CODE (old_decl) == PARM_DECL)
 	  warning ("%Jdeclaration of %qD shadows a parameter",
 		   new_decl, new_decl);
 	else if (DECL_FILE_SCOPE_P (old_decl))
@@ -1858,15 +1864,16 @@ warn_if_shadowing (tree new_decl)
 		   new_decl, new_decl);
 	else if (TREE_CODE (old_decl) == FUNCTION_DECL
 		 && DECL_BUILT_IN (old_decl))
-	  warning ("%Jdeclaration of %qD shadows a built-in function",
-		   new_decl, new_decl);
+	  {
+	    warning ("%Jdeclaration of %qD shadows a built-in function",
+		     new_decl, new_decl);
+	    break;
+	  }
 	else
 	  warning ("%Jdeclaration of %qD shadows a previous local",
 		   new_decl, new_decl);
 
-	if (TREE_CODE (old_decl) != FUNCTION_DECL
-	    || !DECL_BUILT_IN (old_decl))
-	  warning ("%Jshadowed declaration is here", old_decl);
+	warning ("%Jshadowed declaration is here", old_decl);
 
 	break;
       }
@@ -2032,7 +2039,7 @@ pushdecl (tree x)
 	     its type saved; the others will already have had their
 	     proper types saved and the types will not have changed as
 	     their scopes will not have been re-entered.  */
-	  if (DECL_FILE_SCOPE_P (b->decl) && !type_saved)
+	  if (DECL_P (b->decl) && DECL_FILE_SCOPE_P (b->decl) && !type_saved)
 	    {
 	      b->type = TREE_TYPE (b->decl);
 	      type_saved = true;
@@ -2206,6 +2213,9 @@ implicitly_declare (tree functionid)
 
   if (decl)
     {
+      if (decl == error_mark_node)
+	return decl;
+
       /* FIXME: Objective-C has weird not-really-builtin functions
 	 which are supposed to be visible automatically.  They wind up
 	 in the external scope because they're pushed before the file

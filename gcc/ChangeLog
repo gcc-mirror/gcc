@@ -1,3 +1,10 @@
+2005-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/18946
+	* c-decl.c (warn_if_shadowing): Handle old_decl error_mark_node.
+	(pushdecl): Only use DECL_FILE_SCOPE_P if DECL_P.
+	(implicitly_declare): Handle error_mark_node.
+
 2005-01-27  Richard Henderson  <rth@redhat.com>
 
 	PR tree-opt/14329

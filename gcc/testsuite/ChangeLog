@@ -1,3 +1,8 @@
+2005-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/18946
+	* gcc.dg/noncompile/20050120-1.c: New test.
+
 2005-01-26  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/19633
