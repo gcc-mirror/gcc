@@ -4186,11 +4186,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
       if (TYPE_MAIN_VARIANT (ttl) == void_type_node
 	  || TYPE_MAIN_VARIANT (ttr) == void_type_node
-	  || comp_target_types (type, rhstype)
-	  || (!pedantic	  /* Unless pedantic, mix signed and unsigned.  */
-	      && TREE_CODE (ttl) == INTEGER_TYPE
-	      && TREE_CODE (ttr) == INTEGER_TYPE
-	      && TYPE_PRECISION (ttl) == TYPE_PRECISION (ttr)))
+	  || comp_target_types (type, rhstype))
 	{
 	  if (pedantic
 	      && ((TYPE_MAIN_VARIANT (ttl) == void_type_node
@@ -4229,8 +4225,11 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	}
       else if (unsigned_type (TYPE_MAIN_VARIANT (ttl))
 	       == unsigned_type (TYPE_MAIN_VARIANT (ttr)))
-	warn_for_assignment ("pointer targets in %s differ in signedness",
-			     get_spelling (errtype), funname, parmnum);
+	{
+	  if (pedantic)
+	    warn_for_assignment ("pointer targets in %s differ in signedness",
+				 get_spelling (errtype), funname, parmnum);
+	}
       else
 	warn_for_assignment ("%s from incompatible pointer type",
 			     get_spelling (errtype), funname, parmnum);
