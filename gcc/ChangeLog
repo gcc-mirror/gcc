@@ -1,3 +1,15 @@
+Tue Nov  2 17:04:36 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/tpe.h: Add prototypes for exported functions.
+	* config/arm/pe.c: Fix compile time warnings.
+	* config/arm/semi.h: Fix compile time warnings.
+	* config/arm/arm.c: Fix compile time warnings.
+	* config/arm/arm.h: Fix compile time warnings.
+	* config/arm/arm.md: Fix compile time warnings.
+	* config/arm/thumb.c: Fix compile time warnings.
+	* config/arm/thumb.h: Fix compile time warnings.
+	* config/arm/thumb.md: Fix compile time warnings.
+
 Tue Nov  2 04:10:24 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* jump.c (jump_optimize_1): Swap the incscc and the conditional mode

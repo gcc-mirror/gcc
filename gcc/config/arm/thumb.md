@@ -260,6 +260,8 @@
 {
   switch (which_alternative)
     {
+    default:
+      abort ();
     case 0:
       if (REGNO (operands[1]) == REGNO (operands[0]) + 1)
 	return \"add\\t%0, %1, #0\;add\\t%H0, %H1, #0\";
@@ -310,6 +312,8 @@
   "*
   switch (which_alternative)
     {
+    default:
+      abort ();
     case 0:
       if (REGNO (operands[1]) == REGNO (operands[0]) + 1)
 	return \"add\\t%0, %1, #0\;add\\t%H0, %H1, #0\";
@@ -596,6 +600,15 @@
 
 ;; Arithmetic insns
 
+(define_insn "negdi2"
+  [(set (match_operand:DI         0 "register_operand" "=&l")
+	(neg:DI (match_operand:DI 1 "register_operand"   "l")))]
+  ""
+  "neg\\t%Q0, %Q1\;mov\\t%R0, #0\;sbc\\t%R0, %R1"
+  [(set_attr "conds" "changed")
+   (set_attr "length" "6")]
+)
+
 (define_insn "adddi3"
   [(set (match_operand:DI 0 "register_operand" "=l")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0")
@@ -603,7 +616,7 @@
   ""
   "add\\t%Q0, %Q0, %Q2\;adc\\t%R0, %R0, %R2"
 [(set_attr "conds" "changed")
- (set_attr "length" "8")])
+ (set_attr "length" "4")])
 
 ;; register group 'k' is a single register group containing only the stack
 ;; register.  Trying to reload it will always fail catastrophically,
@@ -649,7 +662,7 @@
   ""
   "sub\\t%Q0, %Q0, %Q2\;sbc\\t%R0, %R0, %R2"
 [(set_attr "conds" "changed")
- (set_attr "length" "8")])
+ (set_attr "length" "4")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=l")
@@ -1168,6 +1181,7 @@
  [(unspec_volatile [(const_int 0)] 5)]
  ""
  "*
+   extern void assemble_align ();
    assemble_align (32);
    return \"\";
 ")
@@ -1184,7 +1198,7 @@
   "ldr\\t%0, %a1")
 
 (define_insn "pic_add_dot_plus_four"
-  [(set (match_operand 0 "register_operand" "+r")
+  [(set (match_operand:SI 0 "register_operand" "+r")
 	(plus:SI (match_dup 0) (const (plus:SI (pc) (const_int 4)))))
    (use (label_ref (match_operand 1 "" "")))]
   "flag_pic"

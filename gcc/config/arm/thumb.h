@@ -101,28 +101,29 @@ extern int target_flags;
 
 #define TARGET_SWITCHES                                 	\
 {                                                       	\
-  {"big-endian",		    THUMB_FLAG_BIG_END},	\
-  {"little-endian",	           -THUMB_FLAG_BIG_END},	\
-  {"thumb-interwork",		    ARM_FLAG_THUMB},		\
-  {"no-thumb-interwork",           -ARM_FLAG_THUMB},		\
-  {"tpcs-frame",		    THUMB_FLAG_BACKTRACE},	\
-  {"no-tpcs-frame",                -THUMB_FLAG_BACKTRACE},	\
-  {"tpcs-leaf-frame",	  	    THUMB_FLAG_LEAF_BACKTRACE},	\
-  {"no-tpcs-leaf-frame",           -THUMB_FLAG_LEAF_BACKTRACE},	\
-  {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
-  {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
-  {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
-  {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
+  {"big-endian",		    THUMB_FLAG_BIG_END, ""},	\
+  {"little-endian",	           -THUMB_FLAG_BIG_END, ""},	\
+  {"thumb-interwork",		    ARM_FLAG_THUMB, ""},	\
+  {"no-thumb-interwork",           -ARM_FLAG_THUMB, ""},	\
+  {"tpcs-frame",		    THUMB_FLAG_BACKTRACE, ""},	\
+  {"no-tpcs-frame",                -THUMB_FLAG_BACKTRACE, ""},	\
+  {"tpcs-leaf-frame",	  	    THUMB_FLAG_LEAF_BACKTRACE, ""},	\
+  {"no-tpcs-leaf-frame",           -THUMB_FLAG_LEAF_BACKTRACE, ""},	\
+  {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING, ""}, \
+  {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING, ""}, \
+  {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING, ""}, \
+  {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING, ""}, \
   {"single-pic-base",		    THUMB_FLAG_SINGLE_PIC_BASE,	\
      "Do not load the PIC register in function prologues" },	\
-  {"no-single-pic-base",	   -THUMB_FLAG_SINGLE_PIC_BASE, "" }, \
+  {"no-single-pic-base",	   -THUMB_FLAG_SINGLE_PIC_BASE, ""}, \
   SUBTARGET_SWITCHES						\
-  {"",                          TARGET_DEFAULT}         	\
+  {"",                          TARGET_DEFAULT, ""}         	\
 }
 
 #define TARGET_OPTIONS						\
 {								\
-  { "structure-size-boundary=", & structure_size_string }, 	\
+  { "structure-size-boundary=", & structure_size_string,        \
+      "Specify the structure aligment: 8 or 32 bits" }, 	\
   { "pic-register=", & thumb_pic_register_string,		\
      "Specify the register to be used for PIC addressing" }	\
 }
@@ -435,7 +436,7 @@ do {									\
 #define STRUCTURE_SIZE_BOUNDARY 32
 
 /* Used when parsing command line option -mstructure_size_boundary.  */
-extern char * structure_size_string;
+extern const char * structure_size_string;
 
 #define STRICT_ALIGNMENT 1
 
@@ -523,13 +524,13 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS	\
 {				\
-  0x00000,			\
-  0x000f0,			\
-  0x000ff,			\
-  0x02000,			\
-  0x020ff,			\
-  0x0ff00,			\
-  0x1ffff,			\
+  { 0x00000 },			\
+  { 0x000f0 },			\
+  { 0x000ff },			\
+  { 0x02000 },			\
+  { 0x020ff },			\
+  { 0x0ff00 },			\
+  { 0x1ffff },			\
 }
 
 #define REGNO_REG_CLASS(REGNO)			\
@@ -698,7 +699,16 @@ int thumb_shiftable_const ();
     (OFFSET) += current_function_outgoing_args_size;		\
 }
 
+/* A C expression whose value is RTL representing the value of the return
+   address for the frame COUNT steps up from the current frame.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)	\
+  thumb_return_addr (COUNT)
 /* Passing Arguments on the stack */
+
+/* Initialize data used by insn expanders.  This is called from insn_emit,
+   once for every function before code is generated.  */
+#define INIT_EXPANDERS  thumb_init_expanders ()
 
 #define PROMOTE_PROTOTYPES 1
 
@@ -835,9 +845,9 @@ extern int thumb_pic_register;
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
-	(! symbol_mentioned_p (X)				\
+	(! thumb_symbol_mentioned_p (X)				\
 	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
-	     || ! symbol_mentioned_p (get_pool_constant (X))))
+	     || ! thumb_symbol_mentioned_p (get_pool_constant (X))))
 
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
@@ -1016,7 +1026,7 @@ extern int making_const_table;
 	   && GET_CODE (X) == SYMBOL_REF				\
 	   && CONSTANT_POOL_ADDRESS_P (X)				\
 	   && ! (flag_pic						\
-		 && symbol_mentioned_p (get_pool_constant (X))))	\
+		 && thumb_symbol_mentioned_p (get_pool_constant (X))))	\
     goto WIN;								\
 }
 
@@ -1156,9 +1166,9 @@ extern int thumb_pic_register;
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)				\
-	(! symbol_mentioned_p (X)				\
+	(! thumb_symbol_mentioned_p (X)				\
 	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
-	     || ! symbol_mentioned_p (get_pool_constant (X))))
+	     || ! thumb_symbol_mentioned_p (get_pool_constant (X))))
  
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
@@ -1231,10 +1241,10 @@ extern int making_const_table;
   asm_fprintf ((STREAM), "\tpush {%R%s}\n", reg_names[(REGNO)])
 
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO)			\
-  fprintf ((STREAM), "\tpop {%R%s}\n", reg_names[(REGNO)])
+  asm_fprintf ((STREAM), "\tpop {%R%s}\n", reg_names[(REGNO)])
 
 #define FINAL_PRESCAN_INSN(INSN,OPVEC,NOPERANDS) \
-  final_prescan_insn((INSN))
+  thumb_final_prescan_insn (INSN)
 
 /* Controlling Debugging Information Format */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
@@ -1280,7 +1290,7 @@ extern int making_const_table;
 
 /* The literal pool needs to reside in the text area due to the
    limited PC addressing range: */
-#define MACHINE_DEPENDENT_REORG(INSN) thumb_reorg ((INSN))
+#define MACHINE_DEPENDENT_REORG(INSN) thumb_reorg (INSN)
 
 
 /* Options specific to Thumb */
@@ -1295,4 +1305,28 @@ extern char * thumb_load_double_from_address ();
 extern char * output_return ();
 extern int    far_jump_used_p();
 extern int    is_called_in_ARM_mode ();
+extern void   thumb_finalize_pic ();
+extern void   thumb_reorg ();
+extern void   thumb_override_options ();
+extern int    is_pic ();
+extern int    thumb_symbol_mentioned_p ();
+extern void   thumb_function_prologue ();
+extern void   thumb_function_epilogue ();
+extern void   thumb_print_operand ();
+extern void   thumb_final_prescan_insn ();
+extern int    thumb_cmp_operand ();
+extern void   thumb_expand_movstrqi ();
+extern void   thumb_expand_prologue ();
+extern void   thumb_expand_epilogue ();
+extern int    arm_valid_machine_decl_attribute ();
+extern void   thumb_init_expanders ();
+
+#ifndef RTX_CODE
+struct rtx_def;
+#define Rtx struct rtx_def *
+#else
+#define Rtx rtx
+#endif
+
+extern Rtx    thumb_return_addr ();
 

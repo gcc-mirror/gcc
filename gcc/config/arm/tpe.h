@@ -224,6 +224,7 @@ do {						\
 #define RETURN_IN_MEMORY(TYPE) 						\
   ((TYPE_MODE ((TYPE)) == BLKmode && ! TYPE_NO_FORCE_BLK (TYPE))	\
    || (AGGREGATE_TYPE_P ((TYPE)) && arm_pe_return_in_memory ((TYPE))))
+extern int arm_pe_return_in_memory ();
 
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
@@ -419,3 +420,8 @@ switch_to_section (section, decl) \
 
 
 extern int thumb_pe_valid_machine_decl_attribute ();
+extern int arm_dllexport_p ();
+extern int arm_dllimport_p ();
+extern int arm_dllexport_name_p ();
+extern int arm_dllimport_name_p ();
+extern int arm_pe_return_in_memory ();

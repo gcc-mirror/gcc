@@ -6759,7 +6759,7 @@ arm_final_prescan_insn (insn)
       /* Restore recog_data (getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
 	 across this call; since the insn has been recognized already we
-	 call recog direct). */
+	 call recog direct).  */
       recog (PATTERN (insn), insn, NULL_PTR);
     }
 }
