@@ -1,3 +1,17 @@
+Sun Oct 31 23:57:07 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc-page.c (struct page_entry): Remove save_num_free_objects.
+	(DIV_ROUND_UP): Robustify.
+	(ggc_recalculate_in_use_p): New function.
+	(release_pages): Don't inline it.
+	(ggc_alloc_obj): Don't refuse to allocate objects on pages for
+	outer contexts.
+	(ggc_pop_context): Use ggc_recalculate_in_use_p.
+	(clear_marks): Always save in_use_p.
+	(sweep_pages): Use ggc_recalculate_in_use_p.
+	(ggc_page_print_statistics): Avoid signed/unsigned comparisons.
+	Release pages before counting statistics.
+	
 Sun Oct 31 23:42:37 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* toplev.c (rest_of_compilation): Fix thinko in this change:

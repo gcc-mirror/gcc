@@ -169,10 +169,6 @@ typedef struct page_entry
      next allocation from this page.  */
   unsigned short next_bit_hint;
 
-  /* Saved number of free objects for pages that aren't in the topmost
-     context during colleciton.  */
-  unsigned short save_num_free_objects;
-
   /* A bit vector indicating whether or not objects are in use.  The
      Nth bit is one if the Nth object on this page is allocated.  This
      array is dynamically sized.  */
@@ -247,7 +243,7 @@ static struct globals
 
 /* Compute DIVIDEND / DIVISOR, rounded up.  */
 #define DIV_ROUND_UP(Dividend, Divisor) \
-  ((Dividend + Divisor - 1) / Divisor)
+  (((Dividend) + (Divisor) - 1) / (Divisor))
 
 /* The number of objects per allocation page, for objects of size
    2^ORDER.  */
@@ -279,6 +275,7 @@ static void free_page PROTO ((struct page_entry *));
 static void release_pages PROTO ((void));
 static void clear_marks PROTO ((void));
 static void sweep_pages PROTO ((void));
+static void ggc_recalculate_in_use_p PROTO ((page_entry *));
 
 #ifdef GGC_POISON
 static void poison_pages PROTO ((void));
@@ -533,7 +530,7 @@ free_page (entry)
 
 /* Release the free page cache to the system.  */
 
-static inline void
+static void
 release_pages ()
 {
 #ifdef HAVE_MMAP
@@ -638,9 +635,7 @@ ggc_alloc_obj (size, zero)
 
   /* If there is no page for this object size, or all pages in this
      context are full, allocate a new page.  */
-  if (entry == NULL 
-      || entry->num_free_objects == 0 
-      || entry->context_depth != G.context_depth)
+  if (entry == NULL || entry->num_free_objects == 0)
     {
       struct page_entry *new_entry;
       new_entry = alloc_page (order);
@@ -850,6 +845,44 @@ ggc_push_context ()
     abort ();
 }
 
+/* Merge the SAVE_IN_USE_P and IN_USE_P arrays in P so that IN_USE_P
+   reflects reality.  Recalculate NUM_FREE_OBJECTS as well.  */
+
+static void
+ggc_recalculate_in_use_p (p)
+     page_entry *p;
+{
+  unsigned int i;
+  size_t num_objects;
+
+  /* Because the past-the-end bit in in_use_p is always set, we 
+     pretend there is one additional object.  */
+  num_objects = OBJECTS_PER_PAGE (p->order) + 1;
+
+  /* Reset the free object count.  */
+  p->num_free_objects = num_objects;
+
+  /* Combine the IN_USE_P and SAVE_IN_USE_P arrays.  */
+  for (i = 0; 
+       i < DIV_ROUND_UP (BITMAP_SIZE (num_objects),
+			 sizeof (*p->in_use_p));
+       ++i)
+    {
+      unsigned long j;
+
+      /* Something is in use if it is marked, or if it was in use in a
+	 context further down the context stack.  */
+      p->in_use_p[i] |= p->save_in_use_p[i];
+
+      /* Decrement the free object count for every object allocated.  */
+      for (j = p->in_use_p[i]; j; j >>= 1)
+	p->num_free_objects -= (j & 1);
+    }
+
+  if (p->num_free_objects >= num_objects)
+    abort ();
+}
+
 /* Decrement the `GC context'.  All objects allocated since the 
    previous ggc_push_context are migrated to the outer context.  */
 
@@ -865,26 +898,20 @@ ggc_pop_context ()
      left over are imported into the previous context.  */
   for (order = 2; order < HOST_BITS_PER_PTR; order++)
     {
-      size_t num_objects = OBJECTS_PER_PAGE (order);
-      size_t bitmap_size = BITMAP_SIZE (num_objects);
-
       page_entry *p;
 
       for (p = G.pages[order]; p != NULL; p = p->next)
 	{
 	  if (p->context_depth > depth)
-	    {
-	      p->context_depth = depth;
-	    }
+	    p->context_depth = depth;
 
 	  /* If this page is now in the topmost context, and we'd
 	     saved its allocation state, restore it.  */
 	  else if (p->context_depth == depth && p->save_in_use_p)
 	    {
-	      memcpy (p->in_use_p, p->save_in_use_p, bitmap_size);
+	      ggc_recalculate_in_use_p (p);
 	      free (p->save_in_use_p);
 	      p->save_in_use_p = 0;
-	      p->num_free_objects = p->save_num_free_objects;
 	    }
 	}
     }
@@ -900,7 +927,7 @@ clear_marks ()
   for (order = 2; order < HOST_BITS_PER_PTR; order++)
     {
       size_t num_objects = OBJECTS_PER_PAGE (order);
-      size_t bitmap_size = BITMAP_SIZE (num_objects);
+      size_t bitmap_size = BITMAP_SIZE (num_objects + 1);
       page_entry *p;
 
       for (p = G.pages[order]; p != NULL; p = p->next)
@@ -914,12 +941,11 @@ clear_marks ()
 	  /* Pages that aren't in the topmost context are not collected;
 	     nevertheless, we need their in-use bit vectors to store GC
 	     marks.  So, back them up first.  */
-	  if (p->context_depth < G.context_depth
-	      && ! p->save_in_use_p)
+	  if (p->context_depth < G.context_depth)
 	    {
-	      p->save_in_use_p = xmalloc (bitmap_size);
+	      if (! p->save_in_use_p)
+		p->save_in_use_p = xmalloc (bitmap_size);
 	      memcpy (p->save_in_use_p, p->in_use_p, bitmap_size);
-	      p->save_num_free_objects = p->num_free_objects;
 	    }
 
 	  /* Reset reset the number of free objects and clear the
@@ -1025,6 +1051,12 @@ sweep_pages ()
 	  p = next;
 	} 
       while (! done);
+
+      /* Now, restore the in_use_p vectors for any pages from contexts
+         other than the current one.  */
+      for (p = G.pages[order]; p; p = p->next)
+	if (p->context_depth != G.context_depth)
+	  ggc_recalculate_in_use_p (p);
     }
 }
 
@@ -1122,7 +1154,7 @@ void
 ggc_page_print_statistics ()
 {
   struct ggc_statistics stats;
-  int i;
+  unsigned int i;
 
   /* Clear the statistics.  */
   bzero (&stats, sizeof (stats));
@@ -1132,6 +1164,10 @@ ggc_page_print_statistics ()
 
   /* Collect and print the statistics common across collectors.  */
   ggc_print_statistics (stderr, &stats);
+
+  /* Release free pages so that we will not count the bytes allocated
+     there as part of the total allocated memory.  */
+  release_pages ();
 
   /* Collect some information about the various sizes of 
      allocation.  */
