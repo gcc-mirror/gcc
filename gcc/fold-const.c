@@ -2091,6 +2091,8 @@ operand_equal_p (arg0, arg1, only_const)
   if (TREE_CODE (arg0) != TREE_CODE (arg1)
       /* This is needed for conversions and for COMPONENT_REF.
 	 Might as well play it safe and always test this.  */
+      || TREE_CODE (TREE_TYPE (arg0)) == ERROR_MARK
+      || TREE_CODE (TREE_TYPE (arg1)) == ERROR_MARK
       || TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1)))
     return 0;
 

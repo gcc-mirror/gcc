@@ -936,7 +936,8 @@ layout_type (type)
 	    {
 	      int bitpos;
 
-	      if (TREE_CODE (field) != FIELD_DECL)
+	      if (TREE_CODE (field) != FIELD_DECL
+		  || TREE_CODE (TREE_TYPE (field)) == ERROR_MARK)
 		continue;
 
 	      if (TYPE_MODE (TREE_TYPE (field)) == BLKmode
