@@ -337,7 +337,7 @@ extern int target_flags;
 /* Whether or not to work around multiplication instruction hardware bug
    when generating code for models where it may be present.  From the
    trouble report for Etrax 100 LX: "A multiply operation may cause
-   incorrect cache behavior under some specific circumstances. The
+   incorrect cache behaviour under some specific circumstances. The
    problem can occur if the instruction following the multiply instruction
    causes a cache miss, and multiply operand 1 (source operand) bits
    [31:27] matches the logical mapping of the mode register address
