@@ -1,3 +1,10 @@
+Tue May  3 19:11:24 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* Make-lang.in (cc1plus): Don't depend on OBJS or BC_OBJS, since
+	stamp-objlist does.
+	* Makefile.in (../cc1plus): Depend on OBJDEPS.
+	(OBJDEPS): Dependency version of OBJS.
+
 Thu Apr 28 16:29:11 1994  Doug Evans  (dje@canuck.cygnus.com)
 
 	* Make-lang.in (cc1plus): Depend on stamp-objlist.
