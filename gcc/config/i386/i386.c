@@ -15851,4 +15851,14 @@ ix86_md_asm_clobbers (tree clobbers)
   return clobbers;
 }
 
+/* Worker function for REVERSE_CONDITION.  */
+
+enum rtx_code
+ix86_reverse_condition (enum rtx_code code, enum machine_mode mode)
+{
+  return (mode != CCFPmode && mode != CCFPUmode
+	  ? reverse_condition (code)
+	  : reverse_condition_maybe_unordered (code));
+}
+
 #include "gt-i386.h"

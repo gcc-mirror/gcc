@@ -1,3 +1,13 @@
+2004-03-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386-protos.h: Add a prototype for
+	ix86_reverse_condition.
+	* config/i386/i386.c (ix86_reverse_condition): New.
+	* config/i386/i386.h (REVERSE_CONDITION): Use
+	ix86_reverse_condition.
+	* config/i386/i386.md: Use ix86_reverse_condition instead of
+	REVERSE_CONDITION.
+
 2004-03-16  J. Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (loc_descriptor_from_tree): Add handling for MIN_EXPR.

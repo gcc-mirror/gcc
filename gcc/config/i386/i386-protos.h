@@ -182,6 +182,7 @@ extern void x86_order_regs_for_local_alloc (void);
 extern void x86_function_profiler (FILE *, int);
 extern void x86_emit_floatuns (rtx [2]);
 
+extern enum rtx_code ix86_reverse_condition (enum rtx_code, enum machine_mode);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
