@@ -279,7 +279,6 @@ static int s390_match_ccmode_set (rtx, enum machine_mode);
 static int s390_branch_condition_mask (rtx);
 static const char *s390_branch_condition_mnemonic (rtx, int);
 static int check_mode (rtx, enum machine_mode *);
-static int general_s_operand (rtx, enum machine_mode, int);
 static int s390_short_displacement (rtx);
 static int s390_decompose_address (rtx, struct s390_address *);
 static rtx get_thread_pointer (void);
@@ -1423,15 +1422,12 @@ larl_operand (register rtx op, enum machine_mode mode)
   return 0;
 }
 
-/* Helper routine to implement s_operand and s_imm_operand.
+/* Return true if OP is a valid S-type operand.
    OP is the current operation.
-   MODE is the current operation mode.
-   ALLOW_IMMEDIATE specifies whether immediate operands should
-   be accepted or not.  */
+   MODE is the current operation mode.  */
 
-static int
-general_s_operand (register rtx op, enum machine_mode mode,
-		   int allow_immediate)
+int
+s_operand (rtx op, enum machine_mode mode)
 {
   struct s390_address addr;
 
@@ -1447,58 +1443,49 @@ general_s_operand (register rtx op, enum machine_mode mode,
       && GET_CODE (SUBREG_REG (op)) == MEM)
     op = SUBREG_REG (op);
 
+  if (GET_CODE (op) != MEM)
+    return 0;
+  if (!s390_decompose_address (XEXP (op, 0), &addr))
+    return 0;
+  if (addr.indx)
+    return 0;
+
+  return 1;
+}
+
+/* Return true if OP is a memory operand pointing to the
+   literal pool, or an immediate operand.  */
+
+bool
+s390_pool_operand (rtx op)
+{
+  struct s390_address addr;
+
+  /* Just like memory_operand, allow (subreg (mem ...))
+     after reload.  */
+  if (reload_completed
+      && GET_CODE (op) == SUBREG
+      && GET_CODE (SUBREG_REG (op)) == MEM)
+    op = SUBREG_REG (op);
+
   switch (GET_CODE (op))
     {
-      /* Constants are OK as s-operand if ALLOW_IMMEDIATE
-	 is true and we are still before reload.  */
-      case CONST_INT:
-      case CONST_DOUBLE:
-	if (!allow_immediate || reload_completed)
-	  return 0;
-	return 1;
+    case CONST_INT:
+    case CONST_DOUBLE:
+      return true;
 
-      /* Memory operands are OK unless they already use an
-	 index register.  */
-      case MEM:
-	if (!s390_decompose_address (XEXP (op, 0), &addr))
-	  return 0;
-	if (addr.indx)
-	  return 0;
-	/* Do not allow literal pool references unless ALLOW_IMMEDIATE
-	   is true.  This prevents compares between two literal pool
-	   entries from being accepted.  */
-	if (!allow_immediate
-	    && addr.base && REGNO (addr.base) == BASE_REGNUM)
-	  return 0;
-	return 1;
+    case MEM:
+      if (!s390_decompose_address (XEXP (op, 0), &addr))
+	return false;
+      if (addr.base && REG_P (addr.base) && REGNO (addr.base) == BASE_REGNUM)
+	return true;
+      if (addr.indx && REG_P (addr.indx) && REGNO (addr.indx) == BASE_REGNUM)
+	return true;
+      return false;
 
-      default:
-	break;
+    default:
+      return false;
     }
-
-  return 0;
-}
-
-/* Return true if OP is a valid S-type operand.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-s_operand (register rtx op, enum machine_mode mode)
-{
-  return general_s_operand (op, mode, 0);
-}
-
-/* Return true if OP is a valid S-type operand or an immediate
-   operand that can be addressed as S-type operand by forcing
-   it into the literal pool.
-   OP is the current operation.
-   MODE is the current operation mode.  */
-
-int
-s_imm_operand (register rtx op, enum machine_mode mode)
-{
-  return general_s_operand (op, mode, 1);
 }
 
 /* Return true if OP a valid shift count operand.
