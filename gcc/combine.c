@@ -6381,7 +6381,7 @@ nonzero_bits (x, mode)
     return nonzero;
 
 #ifndef BYTE_LOADS_EXTEND
-  /* If X is wider than MODE, but both are a single word for both the host
+  /* If MODE is wider than X, but both are a single word for both the host
      and target machines, we can compute this from which bits of the 
      object might be nonzero in its own mode, taking into account the fact
      that on many CISC machines, accessing an object in a wider mode
@@ -6391,7 +6391,7 @@ nonzero_bits (x, mode)
   if (GET_MODE (x) != VOIDmode && GET_MODE (x) != mode
       && GET_MODE_BITSIZE (GET_MODE (x)) <= BITS_PER_WORD
       && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
-      && GET_MODE_BITSIZE (mode) < GET_MODE_BITSIZE (GET_MODE (x)))
+      && GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (GET_MODE (x)))
     {
       nonzero &= nonzero_bits (x, GET_MODE (x));
       nonzero |= GET_MODE_MASK (mode) & ~ GET_MODE_MASK (GET_MODE (x));
@@ -6485,22 +6485,20 @@ nonzero_bits (x, mode)
       break;
 #endif
 
-#if STORE_FLAG_VALUE == 1
     case EQ:  case NE:
     case GT:  case GTU:
     case LT:  case LTU:
     case GE:  case GEU:
     case LE:  case LEU:
 
-      if (GET_MODE_CLASS (mode) == MODE_INT)
-	nonzero = 1;
+      /* If this produces an integer result, we know which bits are set.
+	 Code here used to clear bits outside the mode of X, but that is
+	 now done above.  */
 
-      /* A comparison operation only sets the bits given by its mode.  The
-	 rest are set undefined.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) < mode_width)
-	nonzero |= (GET_MODE_MASK (mode) & ~ GET_MODE_MASK (GET_MODE (x)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode_width <= HOST_BITS_PER_WIDE_INT)
+	nonzero = STORE_FLAG_VALUE;
       break;
-#endif
 
     case NEG:
       if (num_sign_bit_copies (XEXP (x, 0), GET_MODE (x))
