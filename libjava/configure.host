@@ -70,6 +70,7 @@ case "${host}" in
   alpha*-*)
 	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
+	enable_hash_synchronization_default=yes
 	;;
   powerpc*-*)
 	libgcj_interpreter=yes
