@@ -1,3 +1,11 @@
+2003-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/clzsi2.c: New.
+	* config/h8300/ctzsi2.c: Likewise.
+	* config/h8300/paritysi2.c: Likewise.
+	* config/h8300/popcountsi2.c: Likewise.
+	* config/h8300/t-h8300 (LIB2FUNCS_EXTRA): Add above files.
+
 2003-02-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
