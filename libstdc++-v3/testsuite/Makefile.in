@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -137,12 +137,17 @@ AUTOMAKE_OPTIONS = cygnus dejagnu
 
 DEJATOOL = libstdc++-v3
 
-EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then             echo @glibcpp_builddir@/../../expect/expect ;           else echo expect ; fi`
+EXPECT = `if [ -f @glibcpp_builddir@/../../expect/expect ] ; then \
+            echo @glibcpp_builddir@/../../expect/expect ; \
+          else echo expect ; fi`
 
 
-RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then 	       echo @glibcpp_srcdir@/../dejagnu/runtest ; 	    else echo runtest; fi`
+RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
+	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
 
+AM_RUNTESTFLAGS = 
 RUNTESTFLAGS = 
 
 CXX = @glibcpp_CXX@ @GLIBCPP_INCLUDES@
@@ -174,7 +179,7 @@ DIST_COMMON =  README Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libv3test_a_SOURCES)
 OBJECTS = $(libv3test_a_OBJECTS)

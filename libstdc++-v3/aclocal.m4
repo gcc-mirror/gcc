@@ -1,6 +1,6 @@
-dnl aclocal.m4 generated automatically by aclocal 1.4-p5
+dnl aclocal.m4 generated automatically by aclocal 1.4
 
-dnl Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
+dnl Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -15,7 +15,8 @@ dnl Initialize configure bits.
 dnl
 dnl GLIBCPP_CONFIGURE
 AC_DEFUN(GLIBCPP_CONFIGURE, [
-  dnl Default to --enable-multilib
+  dnl Default to --enable-multilib (this is also passed by default
+  dnl from the ubercommon-top-level configure)
   AC_ARG_ENABLE(multilib,
   [  --enable-multilib       build hella library versions (default)],
   [case "${enableval}" in
@@ -46,6 +47,8 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   toplevel_srcdir=\${top_srcdir}/$toprel
   AC_SUBST(toplevel_srcdir)
 
+#possibly test for the presence of the compiler sources here?
+
   # Export build and source directories.
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -63,7 +66,8 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
 
   AC_PROG_AWK
   # Will set LN_S to either 'ln -s' or 'ln'.  With autoconf 2.5x, can also
-  # be 'cp -p' if linking isn't available.
+  # be 'cp -p' if linking isn't available.  Uncomment the next line to
+  # force a particular method.
   #ac_cv_prog_LN_S='cp -p'
   AC_PROG_LN_S
 
@@ -193,14 +197,12 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
     AC_EXEEXT
   fi
 
-  . [$]{glibcpp_basedir}/configure.host
-
   case [$]{glibcpp_basedir} in
     /* | [A-Za-z]:[\\/]*) libgcj_flagbasedir=[$]{glibcpp_basedir} ;;
     *) glibcpp_flagbasedir='[$](top_builddir)/'[$]{glibcpp_basedir} ;;
   esac
 
-  # This does for the target what configure.host does for the host.  In
+  # Find platform-specific directories containing configuration info.  In
   # addition to possibly modifying the same flags, it also sets up symlinks.
   GLIBCPP_CHECK_TARGET
 
@@ -2139,12 +2141,14 @@ if test x$enable_shared = xno ||
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
-AC_MSG_CHECKING([for shared libgcc])
-ac_save_CFLAGS="$CFLAGS"
-CFLAGS=' -lgcc_s'
-AC_TRY_LINK( , [return 0], glibcpp_shared_libgcc=yes, glibcpp_shared_libgcc=no)
-CFLAGS="$ac_save_CFLAGS"
-AC_MSG_RESULT($glibcpp_shared_libgcc)
+if test $enable_symvers != no; then
+  AC_MSG_CHECKING([for shared libgcc])
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS=' -lgcc_s'
+  AC_TRY_LINK(, [return 0], glibcpp_shared_libgcc=yes, glibcpp_shared_libgcc=no)
+  CFLAGS="$ac_save_CFLAGS"
+  AC_MSG_RESULT($glibcpp_shared_libgcc)
+fi
 
 # For GNU ld, we need at least this version.  It's 2.12 in the same format
 # as the tested-for version.  See GLIBCPP_CHECK_LINKER_FEATURES for more.
@@ -2198,30 +2202,12 @@ AC_MSG_RESULT($enable_symvers)
 ])
 
 
-#serial 1
-# This test replaces the one in autoconf.
-# Currently this macro should have the same name as the autoconf macro
-# because gettext's gettext.m4 (distributed in the automake package)
-# still uses it.  Otherwise, the use in gettext.m4 makes autoheader
-# give these diagnostics:
-#   configure.in:556: AC_TRY_COMPILE was called before AC_ISC_POSIX
-#   configure.in:556: AC_TRY_RUN was called before AC_ISC_POSIX
-
-undefine([AC_ISC_POSIX])
-
-AC_DEFUN([AC_ISC_POSIX],
-  [
-    dnl This test replaces the obsolescent AC_ISC_POSIX kludge.
-    AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
-  ]
-)
-
 # Add --enable-maintainer-mode option to configure.
 # From Jim Meyering
 
 # serial 1
 
-AC_DEFUN([AM_MAINTAINER_MODE],
+AC_DEFUN(AM_MAINTAINER_MODE,
 [AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,
@@ -2238,7 +2224,7 @@ AC_DEFUN([AM_MAINTAINER_MODE],
 
 # Define a conditional.
 
-AC_DEFUN([AM_CONDITIONAL],
+AC_DEFUN(AM_CONDITIONAL,
 [AC_SUBST($1_TRUE)
 AC_SUBST($1_FALSE)
 if $2; then
@@ -2258,7 +2244,7 @@ fi])
 dnl Usage:
 dnl AM_INIT_AUTOMAKE(package,version, [no-define])
 
-AC_DEFUN([AM_INIT_AUTOMAKE],
+AC_DEFUN(AM_INIT_AUTOMAKE,
 [AC_REQUIRE([AC_PROG_INSTALL])
 PACKAGE=[$1]
 AC_SUBST(PACKAGE)
@@ -2286,7 +2272,7 @@ AC_REQUIRE([AC_PROG_MAKE_SET])])
 # Check to make sure that the build environment is sane.
 #
 
-AC_DEFUN([AM_SANITY_CHECK],
+AC_DEFUN(AM_SANITY_CHECK,
 [AC_MSG_CHECKING([whether build environment is sane])
 # Just in case
 sleep 1
@@ -2327,7 +2313,7 @@ AC_MSG_RESULT(yes)])
 
 dnl AM_MISSING_PROG(NAME, PROGRAM, DIRECTORY)
 dnl The program must properly implement --version.
-AC_DEFUN([AM_MISSING_PROG],
+AC_DEFUN(AM_MISSING_PROG,
 [AC_MSG_CHECKING(for working $2)
 # Run test in a subshell; some versions of sh will print an error if
 # an executable is not found, even if stderr is redirected.
@@ -2343,7 +2329,7 @@ AC_SUBST($1)])
 
 # Like AC_CONFIG_HEADER, but automatically create stamp file.
 
-AC_DEFUN([AM_CONFIG_HEADER],
+AC_DEFUN(AM_CONFIG_HEADER,
 [AC_PREREQ([2.12])
 AC_CONFIG_HEADER([$1])
 dnl When config.status generates a header, we must update the stamp-h file.

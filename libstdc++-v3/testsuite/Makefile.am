@@ -33,6 +33,7 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 	       echo @glibcpp_srcdir@/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 
+AM_RUNTESTFLAGS =
 RUNTESTFLAGS =
 
 CXX = @glibcpp_CXX@ @GLIBCPP_INCLUDES@

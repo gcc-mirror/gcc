@@ -12,7 +12,7 @@
 This file explains how to port libstdc++-v3 (the GNU C++ library) to 
 a new target.
 
-Copyright (c) 2000, 2001 Free Software Foundation, Inc.
+Copyright (c) 2000, 2001, 2002 Free Software Foundation, Inc.
 @end ifinfo
 
 @c ---------------------------------------------------------------------
@@ -24,7 +24,7 @@ Copyright (c) 2000, 2001 Free Software Foundation, Inc.
 @author Mark Mitchell
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2000, 2001 Free Software Foundation, Inc.
+Copyright @copyright{} 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -57,7 +57,9 @@ a new target.
 
 In order to make the GNU C++ library (libstdc++-v3) work with a new
 target, you must edit some configuration files and provide some new
-header files.  
+header files.  Unless this is done, libstdc++-v3 will use generic
+settings which may not be correct for your target; even if they are
+correct, they will likely be inefficient.
 
 Before you get started, make sure that you have a working C library on
 your target.  The C library need not precisely comply with any
@@ -72,6 +74,7 @@ Here are the primary steps required to port the library:
 
 @menu
 * Operating system::    Configuring for your operating system.
+* CPU::                 Configuring for your processor chip.
 * Character types::     Implementing character classification.
 * Thread safety::       Implementing atomic operations.
 * Numeric limits::	Implementing numeric limits.
@@ -86,7 +89,7 @@ Here are the primary steps required to port the library:
 @node Operating system
 @chapter Operating system
 
-If you are porting to a new operating-system (as opposed to a new chip
+If you are porting to a new operating system (as opposed to a new chip
 using an existing operating system), you will need to create a new
 directory in the @file{config/os} hierarchy.  For example, the IRIX
 configuration files are all in @file{config/os/irix}.  There is no set
@@ -160,6 +163,36 @@ this:
 
 We recommend copying an existing @file{bits/os_defines.h} to use as a
 starting point.
+
+@c ---------------------------------------------------------------------
+@c CPU
+@c ---------------------------------------------------------------------
+
+@node CPU
+@chapter CPU
+
+If you are porting to a new chip (as opposed to a new operating system
+running on an existing chip), you will need to create a new directory in the
+@file{config/cpu} hierarchy.  Much like the @ref{Operating system} setup,
+there are no strict rules on how to organize the CPU configuration
+directory, but careful naming choices will allow the configury to find your
+setup files without explicit help.
+
+We recommend that for a target triplet @code{<CPU>-<vendor>-<OS>}, you
+name your configuration directory @file{config/cpu/<CPU>}.  If you do this,
+the configury will find the directory itself.  Otherwise you will need to
+edit the @file{configure.target} file and, in the switch statement that sets
+@code{cpu_include_dir}, add a pattern to handle your chip.
+
+Note that some chip families share a single configuration directory, for
+example, @code{alpha}, @code{alphaev5}, and @code{alphaev6} all use the
+@file{config/cpu/alpha} directory, and there is an entry in the
+@file{configure.target} switch statement to handle this.
+
+The @code{cpu_include_dir} sets default locations for the files controlling
+@ref{Thread safety} and @ref{Numeric limits}, if the defaults are not
+appropriate for your chip.
+
 
 @c ---------------------------------------------------------------------
 @c Character types
@@ -383,14 +416,26 @@ If you want to provide custom, safe, versions of these functions, there
 are two distinct approaches.  One is to provide a version for your CPU,
 using assembly language constructs.  The other is to use the
 thread-safety primitives in your operating system.  In either case, you
-make a file called @file{bits/atomicity.h}.  
+make a file called @file{bits/atomicity.h}, and the variable
+@code{ATOMICITYH} must point to this file.
 
 If you are using the assembly-language approach, put this code in
 @file{config/cpu/<chip>/bits/atomicity.h}, where chip is the name of
-your processor.  In that case, edit the switch statement in
-@file{configure.target} to set the @code{cpu_include_dir}.  In either
-case, set the switch statement that sets @code{ATOMICITYH} to be the
-directory containing @file{bits/atomicity.h}.
+your processor (@pxref{CPU}).  No additional changes are necessary to
+locate the file in this case; @code{ATOMICITYH} will be set by default.
+
+If you are using the operating system thread-safety primitives approach,
+you can also put this code in the same CPU directory, in which case no more
+work is needed to locate the file.  For examples of this approach,
+see the @file{atomicity.h} file for IRIX or IA64.
+
+Alternatively, if the primitives are more closely related to the OS
+than they are to the CPU, you can put the @file{atomicity.h} file in
+the @ref{Operating system} directory instead.  In this case, you must
+edit @file{configure.target}, and in the switch statement that handles
+operating systems, override the @code{ATOMICITYH} variable to point to
+the appropriate @code{os_include_dir}.  For examples of this approach,
+see the @file{atomicity.h} file for AIX.
 
 With those bits out of the way, you have to actually write
 @file{bits/atomicity.h} itself.  This file should be wrapped in an
@@ -444,16 +489,12 @@ easiest just to indicate how many bits are used in each of the data
 types and let the library do the rest.  For information about the
 macros to define, see the top of @file{include/bits/std_limits.h}.
 
-If you need to define any macros, you can do so in
-@file{os_defines.h}.  However, if all operating systems for your CPU
-are likely to use the same values, you can provide a CPU-specific file
-instead so that you do not have to provide the same definitions for
-each operating system.  To take that approach, create a new file
-called @file{limits.h} in your CPU configuration directory (e.g.,
-@file{config/cpu/i386/bits}) and then modify @file{configure.target}
-so that @code{LIMITSH} is set to the CPU directory (e.g.,
-@file{config/cpu/i386}).  Note that @code{LIMITSH} should not include
-the @samp{bits} part of the directory name.
+If you need to define any macros, you can do so in @file{os_defines.h}.
+However, if all operating systems for your CPU are likely to use the
+same values, you can provide a CPU-specific file instead so that you
+do not have to provide the same definitions for each operating system.
+To take that approach, create a new file called @file{cpu_limits.h} in
+your CPU configuration directory (@pxref{CPU}).
 
 @c ---------------------------------------------------------------------
 @c Libtool
@@ -479,10 +520,10 @@ run as the library is loaded.  Often, that requires linking in special
 object files when the C++ library is built as a shared library, or
 taking other system-specific actions.
 
-The libstdc++-v3 library is linked with the C version of libtool, even though it
-is a C++ library.  Therefore, the C version of libtool needs to ensure
-that the run-time library initializers are run.  The usual way to do
-this is to build the library using @code{gcc -shared}.
+The libstdc++-v3 library is linked with the C version of libtool, even
+though it is a C++ library.  Therefore, the C version of libtool needs to
+ensure that the run-time library initializers are run.  The usual way to
+do this is to build the library using @code{gcc -shared}.
 
 If you need to change how the library is linked, look at
 @file{ltcf-c.sh} in the top-level directory.  Find the switch statement

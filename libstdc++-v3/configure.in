@@ -7,7 +7,7 @@ AC_INIT(src/ios.cc)
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
-# exported.
+# exported.  Only used at the end of this file.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 PACKAGE=libstdc++
@@ -20,6 +20,17 @@ libtool_VERSION=4:1:0
 AC_SUBST(libtool_VERSION)
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
+#
+# You will slowly go insane if you do not grok the following fact:  when
+# building v3 as part of the compiler, the top-level /target/ becomes the
+# library's /host/.  `configure' then causes --target to default to --host,
+# exactly like any other package using autoconf.  Therefore, 'target' and
+# 'host' will always be the same.  This makes sense both for native and
+# cross compilers, just think about it for a little while.  :-)
+#
+# Also, if v3 is being configured as part of a cross compiler, the top-level
+# configure script will pass the "real" host as $with_cross_host.
+#
 # AC 2.5x sets target_alias iff the user specified --target, but we use it
 # everywhere, so we set it here just to be sure.  In AC 2.13
 # AC_CANONICAL_TARGET was known as AC_CANONICAL_SYSTEM.
@@ -30,9 +41,8 @@ AC_SUBST(target_alias)
 AM_INIT_AUTOMAKE($PACKAGE, $release_VERSION)
 AM_CONFIG_HEADER(config.h)
 
-# Runs configure.host and configure.target, as well as finds CC, CXX
-# and assorted other critical bits.  Have to run this before the
-# GLIBCPP_ENABLE_* macros below.
+# Runs configure.target, finds CC, CXX and assorted other critical bits.
+# Must run this before the GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
 
 AC_LIBTOOL_DLOPEN
@@ -63,24 +73,25 @@ AC_CHECK_HEADERS(string.h stdlib.h)
 
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
-  # This lets us hard-code the functionality we know
-  # we'll have in the cross target environment. "Let" is a
-  # sugar-coated word placed on an especially dull and tedious hack, actually.
-  # Here's why GLIBCPP_CHECK_MATH_SUPPORT, and other autoconf macros
-  # that involve linking can't be used:
-  # "cannot open sim-crt0.o"
-  # "cannot open crt0.o"
-  # etc. All this is because there currently exists no unified,
-  # consistent way for top level CC information to be passed down
-  # to target directories: newlib includes, newlib linking info,
-  # libgloss versus newlib crt0.o, etc. When all of this is done, all
-  # of this hokey, excessive AC_DEFINE junk for crosses can be removed.
-
   # We are being configured with some form of cross compiler.
   GLIBCPP_IS_CROSS_COMPILING=1
 
-  # If Canadian cross, then don't pick up tools from the build
-  # directory.
+  # This lets us hard-code the functionality we know we'll have in the cross
+  # target environment.  "Let" is a sugar-coated word placed on an especially
+  # dull and tedious hack, actually.
+  #
+  # Here's why GLIBCPP_CHECK_MATH_SUPPORT, and other autoconf macros
+  # that involve linking, can't be used:
+  #    "cannot open sim-crt0.o"
+  #    "cannot open crt0.o"
+  # etc.  All this is because there currently exists no unified, consistent
+  # way for top level CC information to be passed down to target directories:
+  # newlib includes, newlib linking info, libgloss versus newlib crt0.o, etc.
+  # When all of that is done, all of this hokey, excessive AC_DEFINE junk for
+  # crosses can be removed.
+
+  # If Canadian cross, then don't pick up tools from the build directory.
+  # Used in GLIBCPP_EXPORT_INCLUDES (and nowhere else?).
   if test -n "$with_cross_host" && test x"$build" != x"$with_cross_host"; then
     CANADIAN=yes
   else
@@ -94,16 +105,15 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
   case "$target_alias" in
     *-linux*)
-      # Check for available headers.
+      os_include_dir="os/gnu-linux"
       AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
-	machine/endian.h machine/param.h sys/machine.h sys/types.h \
-	fp.h locale.h float.h inttypes.h])
+        machine/endian.h machine/param.h sys/machine.h sys/types.h \
+        fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS)
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
-      os_include_dir="config/os/gnu-linux"
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITEF)
@@ -112,20 +122,20 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       AC_DEFINE(HAVE_SINCOS)
       AC_DEFINE(HAVE_SINCOSF)
       if test x"long_double_math_on_this_cpu" = x"yes"; then
-	AC_DEFINE(HAVE_HYPOTL)
+        AC_DEFINE(HAVE_HYPOTL)
       fi
       ;;
     *-hpux*)
       # Check for available headers.
       AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
-	machine/endian.h machine/param.h sys/machine.h sys/types.h \
-	fp.h locale.h float.h inttypes.h])
+        machine/endian.h machine/param.h sys/machine.h sys/types.h \
+        fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS)
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
-      os_include_dir="config/os/hpux"
+      os_include_dir="os/hpux"
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITEF)
@@ -137,14 +147,14 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
     *-netbsd*)
       # Check for available headers.
       AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h \
-	machine/endian.h machine/param.h sys/machine.h sys/types.h \
-	fp.h locale.h float.h inttypes.h])
+        machine/endian.h machine/param.h sys/machine.h sys/types.h \
+        fp.h locale.h float.h inttypes.h])
       SECTION_FLAGS='-ffunction-sections -fdata-sections'
       AC_SUBST(SECTION_FLAGS) 
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
-      os_include_dir="config/os/bsd/netbsd"
+      os_include_dir="os/bsd/netbsd"
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
       AC_DEFINE(HAVE_FINITEF)
@@ -156,10 +166,10 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
-      os_include_dir="config/os/mingw32"
+      os_include_dir="os/mingw32"
       ;;
     *-windiss*)
-      os_include_dir="config/os/windiss"
+      os_include_dir="os/windiss"
       ;;
 changequote(,)dnl
     *-qnx6.[12]*)
@@ -169,7 +179,7 @@ changequote([,])dnl
       GLIBCPP_CHECK_LINKER_FEATURES
       GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
       GLIBCPP_CHECK_WCHAR_T_SUPPORT
-      os_include_dir="config/os/qnx/qnx6.1"
+      os_include_dir="os/qnx/qnx6.1"
       AC_DEFINE(HAVE_COSF)
       AC_DEFINE(HAVE_COSL)
       AC_DEFINE(HAVE_COSHF)
@@ -184,7 +194,7 @@ changequote([,])dnl
       AC_DEFINE(HAVE_SINHL)
       ;;
     *)
-      os_include_dir="config/os/newlib"
+      os_include_dir="os/newlib"
       AC_DEFINE(HAVE_HYPOT)
       ;;
   esac
@@ -290,6 +300,7 @@ changequote([,])dnl
     AC_DEFINE(HAVE_TANL)
     AC_DEFINE(HAVE_TANHL)
   fi
+
 else
 
   # We are being configured natively. We can do more elaborate tests
@@ -327,15 +338,17 @@ fi
 GLIBCPP_ENABLE_SYMVERS([yes])
 
 # Propagate the target-specific source directories through the build chain.
-OS_INC_SRCDIR=$os_include_dir/bits
-ATOMICITY_INC_SRCDIR=$ATOMICITYH/bits
-CPU_LIMITS_INC_SRCDIR=$CPULIMITSH/bits
+# (Nothing currently uses cpu_include_dir directly; only ATOMICITYH and
+# CPULIMITSH [might] use it, and they only get used here.)
+OS_INC_SRCDIR=config/${os_include_dir}/bits
+ATOMICITY_INC_SRCDIR=config/${ATOMICITYH}/bits
+CPU_LIMITS_INC_SRCDIR=config/${CPULIMITSH}/bits
 AC_SUBST(OS_INC_SRCDIR)
 AC_SUBST(ATOMICITY_INC_SRCDIR)
 AC_SUBST(CPU_LIMITS_INC_SRCDIR)
 
 # Set up cross-compile flags
-AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)
+AC_SUBST(GLIBCPP_IS_CROSS_COMPILING)  dnl Unused so far.
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
  
 AC_CACHE_SAVE
