@@ -3217,7 +3217,9 @@ c_apply_type_quals_to_decl (type_quals, decl)
      int type_quals;
      tree decl;
 {
-  if (type_quals & TYPE_QUAL_CONST)
+  if ((type_quals & TYPE_QUAL_CONST)
+      || (TREE_TYPE (decl) 
+	  && TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE))
     TREE_READONLY (decl) = 1;
   if (type_quals & TYPE_QUAL_VOLATILE)
     {
