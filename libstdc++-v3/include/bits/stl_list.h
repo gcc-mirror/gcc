@@ -707,7 +707,11 @@ namespace _GLIBCXX_STD
        */
       reference
       back()
-      { return *(--end()); }
+      { 
+	iterator __tmp = end();
+	--__tmp;
+	return *__tmp;
+      }
 
       /**
        *  Returns a read-only (constant) reference to the data at the last
@@ -715,7 +719,11 @@ namespace _GLIBCXX_STD
        */
       const_reference
       back() const
-      { return *(--end()); }
+      { 
+	const_iterator __tmp = end();
+	--__tmp;
+	return *__tmp;
+      }
 
       // [23.2.2.3] modifiers
       /**
