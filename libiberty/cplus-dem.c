@@ -2003,7 +2003,7 @@ gnu_special (work, mangled, declp)
 		     ".<digits>" indicating a static local symbol.  In
 		     any case, declare victory and move on; *don't* try
 		     to use n to allocate.  */
-		  if (n >= strlen (*mangled))
+		  if (n > strlen (*mangled))
 		    {
 		      success = 1;
 		      break;
