@@ -24,6 +24,15 @@ that, the naming seems mostly consistent. If the file exists, add a
 test to it. If it does not, then create a new file. All files are
 copyright the FSF, and GPL'd: this is very important. 
 
+In addition, some of the locale and io code tests different
+instantiating types: thus, 'char' or 'wchar_t' is appended to the name
+as constructed above.
+
+Also, some test files are negative tests. That is, they are supposed
+to fail (usually this involves making sure some kind of construct gets
+an error when it's compiled.) These test files have 'neg' appended to
+the name as constructed above.
+
 Inside a test file, the plan is to test the relevant parts of the
 standard, and then add specific regressions as additional test
 functions, ie test04() can represent a specific regression noted in

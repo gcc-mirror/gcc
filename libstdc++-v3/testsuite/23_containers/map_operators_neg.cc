@@ -1,6 +1,6 @@
 // 2000-09-07 bgarcia@laurelnetworks.com
 
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,26 +18,32 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.3.4 template class multiset
+// 23.3.4 template class multiset negative tests
 
-#include <set>
+#include <map>
 #include <string>
 
 // { dg-do compile }
 
 // libstdc++/86: map & set iterator comparisons are not type-safe
-int main(void)
+void test01()
 {
   bool test = true;
-
-  std::set<unsigned int> setByIndex;
-  std::set<std::string> setByName;
+  std::map<unsigned int, int> mapByIndex;
+  std::map<std::string, unsigned> mapByName;
   
-  std::set<unsigned int>::iterator itr(setByIndex.begin());
+  mapByIndex.insert(std::pair<unsigned, int>(0, 1));
+  mapByIndex.insert(std::pair<unsigned, int>(6, 5));
   
-  // NB: it's not setByIndex!!
-  test &= itr != setByName.end(); // { dg-error "no" } 
-  test &= itr == setByName.end(); // { dg-error "no" } 
+  std::map<unsigned, int>::iterator itr(mapByIndex.begin());
 
+  // NB: notice, it's not mapByIndex!!
+  test &= itr != mapByName.end(); // { dg-error "no" } 
+  test &= itr == mapByName.end(); // { dg-error "no" } 
+}
+ 
+int main()
+{
+  test01();
   return 0;
 }

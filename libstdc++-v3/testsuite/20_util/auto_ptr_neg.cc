@@ -1,6 +1,4 @@
-// 2000-09-07 bgarcia@laurelnetworks.com
-
-// Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,32 +16,35 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.3.4 template class multiset
+// 20.4.5 Template class auto_ptr negative tests [lib.auto.ptr]
 
-#include <map>
-#include <string>
-#include <iostream>
+#include <memory>
+#include <testsuite_hooks.h>
 
-// libstdc++/737
-// http://gcc.gnu.org/ml/libstdc++/2000-11/msg00093.html
-void test02()
+// { dg-do compile }
+// { dg-excess-errors "" }
+
+// via Jack Reeves <jack_reeves@hispeed.ch>
+// libstdc++/3946
+// http://gcc.gnu.org/ml/libstdc++/2002-07/msg00024.html
+struct Base { };
+struct Derived : public Base { };
+
+std::auto_ptr<Derived> 
+foo() { return std::auto_ptr<Derived>(new Derived); }
+
+int
+test01()
 {
-  typedef std::map<int,const int> MapInt;
-  
-  MapInt m;
-  
-  for (unsigned i=0;i<10;++i)
-    m.insert(MapInt::value_type(i,i));
-  
-  for (MapInt::const_iterator i = m.begin(); i != m.end(); ++i)
-    std::cerr << i->second << ' ';
-  
-  for (MapInt::const_iterator i = m.begin(); m.end() != i; ++i)
-    std::cerr << i->second << ' ';
+  std::auto_ptr<Base> ptr2;
+  ptr2 = new Base; // { dg-error "no" "candidates" "auto_ptr"} 
+  return 0;
 }
 
-int main()
+int 
+main()
 {
-  test02();
+  test01();
+
   return 0;
 }
