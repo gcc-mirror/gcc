@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
       LOCAL_BINDING_P (in CPLUS_BINDING)
       ICS_USER_FLAG (in _CONV)
       CLEANUP_P (in TRY_BLOCK)
+      AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -1527,6 +1528,10 @@ struct lang_decl
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_VEC(NODE)	TREE_LANG_FLAG_1 (NODE)
 #define LOOKUP_EXPR_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
+
+/* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
+   constructor call, rather than an ordinary function call.  */
+#define AGGR_INIT_VIA_CTOR_P(NODE) TREE_LANG_FLAG_0 (NODE)
 
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
