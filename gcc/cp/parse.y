@@ -418,6 +418,8 @@ template_header:
 		{ begin_template_parm_list (); }
 	  template_parm_list '>'
 		{ $$ = end_template_parm_list ($4); }
+	| TEMPLATE '<' '>'
+		{ $$ = NULL_TREE; }
 	;
 
 template_parm_list:
@@ -2321,7 +2323,11 @@ named_class_head:
 		        {
 		          if (CLASSTYPE_IMPLICIT_INSTANTIATION ($$)
 			      && TYPE_SIZE ($$) == NULL_TREE)
-			    SET_CLASSTYPE_TEMPLATE_SPECIALIZATION ($$);
+			    {
+			      SET_CLASSTYPE_TEMPLATE_SPECIALIZATION ($$);
+			      if (current_template_parms)
+				push_template_decl (TYPE_MAIN_DECL ($$));
+			    }
 			  else if (CLASSTYPE_TEMPLATE_INSTANTIATION ($$))
 			    cp_error ("specialization after instantiation of `%T'", $$);
 			}
@@ -2525,7 +2531,11 @@ left_curly: '{'
 		    {
 		      if (CLASSTYPE_IMPLICIT_INSTANTIATION (t)
 			  && TYPE_SIZE (t) == NULL_TREE)
-			SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
+			{
+			  SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
+			  if (current_template_parms)
+			    push_template_decl (TYPE_MAIN_DECL (t));
+			}
 		      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
 			cp_error ("specialization after instantiation of `%T'", t);
 		    }

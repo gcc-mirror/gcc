@@ -53,6 +53,9 @@ HOST_WIDE_INT processing_template_decl;
 tree pending_templates;
 static tree *template_tail = &pending_templates;
 
+tree maybe_templates;
+static tree *maybe_template_tail = &maybe_templates;
+
 int minimal_parse_mode;
 
 #define obstack_chunk_alloc xmalloc
@@ -65,6 +68,9 @@ void pop_template_decls ();
 tree classtype_mangled_name ();
 static char * mangle_class_name_for_template ();
 tree tsubst_expr_values ();
+tree most_specialized_class PROTO((tree, tree));
+tree get_class_bindings PROTO((tree, tree, tree));
+tree make_temp_vec PROTO((int));
 
 /* We've got a template header coming up; push to a new level for storing
    the parms.  */
@@ -181,6 +187,9 @@ end_template_parm_list (parms)
 void
 end_template_decl ()
 {
+  if (! current_template_parms)
+    return;
+
   /* This matches the pushlevel in begin_template_parm_list.  */
   poplevel (0, 0, 0);
 
@@ -229,6 +238,30 @@ push_template_decl (decl)
   args = nreverse (args);
   args = TREE_VALUE (args);
 
+  /* Partial specialization.  */
+  if (TREE_CODE (decl) == TYPE_DECL
+      && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
+    {
+      tree type = TREE_TYPE (decl);
+      tree maintmpl = CLASSTYPE_TI_TEMPLATE (type);
+      tree mainargs = CLASSTYPE_TI_ARGS (type);
+      tree spec = DECL_TEMPLATE_SPECIALIZATIONS (maintmpl);
+
+      for (; spec; spec = TREE_CHAIN (spec))
+	{
+	  /* purpose: args to main template
+	     value: spec template */
+	  if (comp_template_args (TREE_PURPOSE (spec), mainargs))
+	    return;
+	}
+
+      DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = perm_tree_cons
+	(mainargs, TREE_VALUE (current_template_parms),
+	 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
+      TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
+      return;
+    }
+
   if (! ctx || TYPE_BEING_DEFINED (ctx))
     {
       tmpl = build_lang_decl (TEMPLATE_DECL, DECL_NAME (decl), NULL_TREE);
@@ -237,6 +270,9 @@ push_template_decl (decl)
     }
   else
     {
+      if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
+	cp_error ("must specialize `%#T' before defining member `%#D'",
+		  ctx, decl);
       if (TREE_CODE (decl) == TYPE_DECL)
 	tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
       else if (! DECL_TEMPLATE_INFO (decl))
@@ -1004,10 +1040,35 @@ instantiate_class_template (type)
   template = TI_TEMPLATE (template_info);
   my_friendly_assert (TREE_CODE (template) == TEMPLATE_DECL, 279);
   args = TI_ARGS (template_info);
-  pattern = TREE_TYPE (template);
+
+  t = most_specialized_class
+    (DECL_TEMPLATE_SPECIALIZATIONS (template), args);
+
+  if (t == error_mark_node)
+    {
+      char *str = "candidates are:";
+      cp_error ("ambiguous class template instantiation for `%#T'", type);
+      for (t = DECL_TEMPLATE_SPECIALIZATIONS (template); t; t = TREE_CHAIN (t))
+	{
+	  if (get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args))
+	    {
+	      cp_error_at ("%s %+#T", str, TREE_TYPE (t));
+	      str = "               ";
+	    }
+	}
+      TYPE_BEING_DEFINED (type) = 1;
+      return;
+    }
+  else if (t)
+    pattern = TREE_TYPE (t);
+  else
+    pattern = TREE_TYPE (template);
 
   if (TYPE_SIZE (pattern) == NULL_TREE)
     return type;
+
+  if (t)
+    args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), args);
 
   TYPE_BEING_DEFINED (type) = 1;
 
@@ -2785,34 +2846,207 @@ int
 more_specialized (pat1, pat2)
      tree pat1, pat2;
 {
-  int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (pat1));
-  tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
-  int i, dummy = 0, winner = 0;
+  tree *targs;
+  int winner = 0;
 
-  i = type_unification (DECL_TEMPLATE_PARMS (pat1), targs,
-			TYPE_ARG_TYPES (TREE_TYPE (pat1)),
-			TYPE_ARG_TYPES (TREE_TYPE (pat2)),
-			&dummy, 0, 1);
+  targs = get_bindings (pat1, pat2);
+  if (targs)
+    {
+      free (targs);
+      --winner;
+    }
 
-  free (targs);
-  if (i == 0)
+  targs = get_bindings (pat2, pat1);
+  if (targs)
+    {
+      free (targs);
+      ++winner;
+    }
+
+  return winner;
+}
+
+/* Given two class template specialization list nodes PAT1 and PAT2, return:
+
+   1 if PAT1 is more specialized than PAT2 as described in [temp.class.order].
+   -1 if PAT2 is more specialized than PAT1.
+   0 if neither is more specialized.  */
+   
+int
+more_specialized_class (pat1, pat2)
+     tree pat1, pat2;
+{
+  tree targs;
+  int winner = 0;
+
+  targs = get_class_bindings
+    (TREE_VALUE (pat1), TREE_PURPOSE (pat1), TREE_PURPOSE (pat2));
+  if (targs)
     --winner;
 
-  ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (pat2));
-  targs = (tree *) malloc (sizeof (tree) * ntparms);
-
-  i = type_unification (DECL_TEMPLATE_PARMS (pat2), targs,
-			TYPE_ARG_TYPES (TREE_TYPE (pat2)),
-			TYPE_ARG_TYPES (TREE_TYPE (pat1)),
-			&dummy, 0, 1);
-
-  free (targs);
-  if (i == 0)
+  targs = get_class_bindings
+    (TREE_VALUE (pat2), TREE_PURPOSE (pat2), TREE_PURPOSE (pat1));
+  if (targs)
     ++winner;
 
   return winner;
 }
-  
+
+/* Return the template arguments that will produce the function signature
+   DECL from the function template FN.  */
+
+tree *
+get_bindings (fn, decl)
+     tree fn, decl;
+{
+  int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (fn));
+  tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
+  int i, dummy = 0;
+  i = type_unification (DECL_TEMPLATE_PARMS (fn), targs,
+			TYPE_ARG_TYPES (TREE_TYPE (fn)),
+			TYPE_ARG_TYPES (TREE_TYPE (decl)),
+			&dummy, 0, 1);
+  if (i == 0)
+    return targs;
+  free (targs);
+  return 0;
+}
+
+tree
+get_class_bindings (tparms, parms, args)
+     tree tparms, parms, args;
+{
+  int i, dummy, ntparms = TREE_VEC_LENGTH (tparms);
+  tree vec = make_temp_vec (ntparms);
+
+  for (i = 0; i < TREE_VEC_LENGTH (parms); ++i)
+    {
+      switch (unify (tparms, &TREE_VEC_ELT (vec, 0), ntparms,
+		     TREE_VEC_ELT (parms, i), TREE_VEC_ELT (args, i),
+		     &dummy, 1))
+	{
+	case 0:
+	  break;
+	case 1:
+	  return NULL_TREE;
+	}
+    }
+
+  for (i =  0; i < ntparms; ++i)
+    if (! TREE_VEC_ELT (vec, i))
+      return NULL_TREE;
+
+  return vec;
+}
+
+/* Return the most specialized of the list of templates in FNS that can
+   produce an instantiation matching DECL.  */
+
+tree
+most_specialized (fns, decl)
+     tree fns, decl;
+{
+  tree fn, champ, *args, *p;
+  int fate;
+
+  for (p = &fns; *p; )
+    {
+      args = get_bindings (TREE_VALUE (*p), decl);
+      if (args)
+	{
+	  free (args);
+	  p = &TREE_CHAIN (*p);
+	}
+      else
+	*p = TREE_CHAIN (*p);
+    }
+
+  if (! fns)
+    return NULL_TREE;
+
+  fn = fns;
+  champ = TREE_VALUE (fn);
+  fn = TREE_CHAIN (fn);
+  for (; fn; fn = TREE_CHAIN (fn))
+    {
+      fate = more_specialized (champ, TREE_VALUE (fn));
+      if (fate == 1)
+	;
+      else
+	{
+	  if (fate == 0)
+	    {
+	      fn = TREE_CHAIN (fn);
+	      if (! fn)
+		return error_mark_node;
+	    }
+	  champ = TREE_VALUE (fn);
+	}
+    }
+
+  for (fn = fns; fn && TREE_VALUE (fn) != champ; fn = TREE_CHAIN (fn))
+    {
+      fate = more_specialized (champ, TREE_VALUE (fn));
+      if (fate != 1)
+	return error_mark_node;
+    }
+
+  return champ;
+}
+
+/* Return the most specialized of the class template specializations in
+   SPECS that can produce an instantiation matching ARGS.  */
+
+tree
+most_specialized_class (specs, mainargs)
+     tree specs, mainargs;
+{
+  tree list = NULL_TREE, t, args, champ;
+  int fate;
+
+  for (t = specs; t; t = TREE_CHAIN (t))
+    {
+      args = get_class_bindings (TREE_VALUE (t), TREE_PURPOSE (t), mainargs);
+      if (args)
+	{
+	  list = decl_tree_cons (TREE_PURPOSE (t), TREE_VALUE (t), list);
+	  TREE_TYPE (list) = TREE_TYPE (t);
+	}
+    }
+
+  if (! list)
+    return NULL_TREE;
+
+  t = list;
+  champ = t;
+  t = TREE_CHAIN (t);
+  for (; t; t = TREE_CHAIN (t))
+    {
+      fate = more_specialized_class (champ, t);
+      if (fate == 1)
+	;
+      else
+	{
+	  if (fate == 0)
+	    {
+	      t = TREE_CHAIN (t);
+	      if (! t)
+		return error_mark_node;
+	    }
+	  champ = t;
+	}
+    }
+
+  for (t = list; t && t != champ; t = TREE_CHAIN (t))
+    {
+      fate = more_specialized (champ, t);
+      if (fate != 1)
+	return error_mark_node;
+    }
+
+  return champ;
+}
+
 /* called from the parser.  */
 
 void
@@ -2844,6 +3078,7 @@ do_function_instantiation (declspecs, declarator, storage)
     }
   else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
     {
+      tree templates = NULL_TREE;
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
 	if (decls_match (fn, decl)
 	    && DECL_DEFER_OUTPUT (fn))
@@ -2852,31 +3087,30 @@ do_function_instantiation (declspecs, declarator, storage)
 	    break;
 	  }
 	else if (TREE_CODE (fn) == TEMPLATE_DECL)
-	  {
-	    int ntparms = TREE_VEC_LENGTH (DECL_TEMPLATE_PARMS (fn));
-	    tree *targs = (tree *) malloc (sizeof (tree) * ntparms);
-	    int i, dummy = 0;
-	    i = type_unification (DECL_TEMPLATE_PARMS (fn), targs,
-				  TYPE_ARG_TYPES (TREE_TYPE (fn)),
-				  TYPE_ARG_TYPES (TREE_TYPE (decl)),
-				  &dummy, 0, 1);
-	    if (i == 0)
-	      {
-		if (result)
-		  {
-		    int win = more_specialized (DECL_TI_TEMPLATE (result), fn);
+	  templates = decl_tree_cons (NULL_TREE, fn, templates);
 
-		    if (win == 0)
-		      cp_error ("ambiguous template instantiation for `%D' requested", decl);
-		    else if (win == -1)
-		      result = instantiate_template (fn, targs);
-		    /* else keep current winner */
-		  }
-		else
-		  result = instantiate_template (fn, targs);
-	      }
-	    free (targs);
-	  }
+      if (! result)
+	{
+	  tree *args;
+	  result = most_specialized (templates, decl);
+	  if (result == error_mark_node)
+	    {
+	      char *str = "candidates are:";
+	      cp_error ("ambiguous template instantiation for `%D' requested", decl);
+	      for (fn = templates; fn; fn = TREE_CHAIN (fn))
+		{
+		  cp_error_at ("%s %+#D", str, TREE_VALUE (fn));
+		  str = "               ";
+		}
+	      return;
+	    }
+	  else if (result)
+	    {
+	      args = get_bindings (result, decl);
+	      result = instantiate_template (result, args);
+	      free (args);
+	    }
+	}
     }
   if (! result)
     {
@@ -3194,4 +3428,32 @@ add_tree (t)
      tree t;
 {
   last_tree = TREE_CHAIN (last_tree) = t;
+}
+
+/* D is an undefined function declaration in the presence of templates with
+   the same name, listed in FNS.  If one of them can produce D as an
+   instantiation, remember this so we can instantiate it at EOF if D has
+   not been defined by that time.  */
+
+void
+add_maybe_template (d, fns)
+     tree d, fns;
+{
+  tree t;
+
+  if (DECL_MAYBE_TEMPLATE (d))
+    return;
+
+  t = most_specialized (fns, d);
+  if (! t)
+    return;
+  if (t == error_mark_node)
+    {
+      cp_error ("ambiguous template instantiation for `%D'", d);
+      return;
+    }
+
+  *maybe_template_tail = perm_tree_cons (t, d, NULL_TREE);
+  maybe_template_tail = &TREE_CHAIN (*maybe_template_tail);
+  DECL_MAYBE_TEMPLATE (d) = 1;
 }

@@ -1135,7 +1135,7 @@ struct lang_decl
 #if 0				/* UNUSED */
 /* Nonzero in IDENTIFIER_NODE means that this name is overloaded, and
    should be looked up in a non-standard way.  */
-#define DECL_OVERLOADED(NODE) (DECL_LANG_FLAG_4 (NODE))
+#define DECL_OVERLOADED(NODE) (FOO)
 #endif
 
 /* Nonzero if this (non-TYPE)_DECL has its virtual attribute set.
@@ -1331,7 +1331,7 @@ extern int flag_new_for_scope;
 /* Accessor macros for C++ template decl nodes.  */
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS(NODE)
 /* For class templates.  */
-#define DECL_TEMPLATE_MEMBERS(NODE)     DECL_SIZE(NODE)
+#define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 /* For function, method, class-data templates.  */
 #define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT(NODE)
 #define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX(NODE)
@@ -1380,6 +1380,8 @@ extern int flag_new_for_scope;
 #define SET_CLASSTYPE_EXPLICIT_INSTANTIATION(NODE) \
   (CLASSTYPE_USE_TEMPLATE(NODE) = 3)
 
+/* This function may be a guiding decl for a template.  */
+#define DECL_MAYBE_TEMPLATE(NODE) DECL_LANG_FLAG_4 (NODE)
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
 
@@ -2308,6 +2310,7 @@ extern tree instantiate_decl			PROTO((tree));
 extern tree classtype_mangled_name		PROTO((tree));
 extern tree lookup_nested_type_by_name		PROTO((tree, tree));
 extern tree do_poplevel				PROTO((void));
+extern tree *get_bindings			PROTO((tree, tree));
 
 /* in search.c */
 extern void push_memoized_context		PROTO((tree, int));

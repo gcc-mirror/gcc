@@ -498,11 +498,6 @@ lang_decode_option (p)
 	  flag_alt_external_templates = 0;
 	  found = 1;
 	}
-      else if (!strcmp (p, "ansi-overloading"))
-	{
-	  warning ("-fansi-overloading is no longer meaningful");
-	  found = 1;
-	}
       else if (!strcmp (p, "repo"))
 	{
 	  flag_use_repository = 1;
@@ -2876,6 +2871,7 @@ build_cleanup (decl)
 
 extern int parse_time, varconst_time;
 extern tree pending_templates;
+extern tree maybe_templates;
 
 #define TIMEVAR(VAR, BODY)    \
 do { int otime = get_run_time (); BODY; VAR += get_run_time () - otime; } while (0)
@@ -2950,6 +2946,20 @@ finish_file ()
 	}
       else
 	instantiate_decl (decl);
+    }
+
+  for (fnname = maybe_templates; fnname; fnname = TREE_CHAIN (fnname))
+    {
+      tree *args, fn, decl = TREE_VALUE (fnname);
+
+      if (DECL_INITIAL (decl))
+	continue;
+
+      fn = TREE_PURPOSE (fnname);
+      args = get_bindings (fn, decl);
+      fn = instantiate_template (fn, args);
+      free (args);
+      instantiate_decl (fn);
     }
 
   /* Push into C language context, because that's all
@@ -3848,6 +3858,12 @@ mark_used (decl)
   if (current_template_parms)
     return;
   assemble_external (decl);
+  /* Is it a synthesized method that needs to be synthesized?  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_CLASS_CONTEXT (decl)
+      && DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
+      /* Kludge: don't synthesize for default args.  */
+      && current_function_decl)
+    synthesize_method (decl);
   if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
     instantiate_decl (decl);
 }
