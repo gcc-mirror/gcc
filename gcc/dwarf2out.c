@@ -520,27 +520,31 @@ expand_builtin_dwarf_reg_size (reg_tree, target)
      tree reg_tree;
      rtx target;
 {
-  int i, n_ranges, size;
+  int size;
   struct reg_size_range ranges[5];
   tree t, t2;
 
-  ranges[0].beg = 0;
-  ranges[0].size = GET_MODE_SIZE (reg_raw_mode[0]);
-  n_ranges = 1;
+  int i = 0;
+  int n_ranges = 0;
+  int last_size = -1;
 
-  for (i = 1; i < FIRST_PSEUDO_REGISTER; ++i)
+  for (; i < FIRST_PSEUDO_REGISTER; ++i)
     {
+      /* The return address is out of order on the MIPS, and we don't use
+	 copy_reg for it anyway, so we don't care here how large it is.  */
+      if (DWARF_FRAME_REGNUM (i) == DWARF_FRAME_RETURN_COLUMN)
+	continue;
+
       size = GET_MODE_SIZE (reg_raw_mode[i]);
-      if (size != ranges[n_ranges-1].size)
+      if (size != last_size)
 	{
-	  ranges[n_ranges-1].end = i-1;
 	  ranges[n_ranges].beg = i;
-	  ranges[n_ranges].size = GET_MODE_SIZE (reg_raw_mode[i]);
+	  ranges[n_ranges].size = last_size = GET_MODE_SIZE (reg_raw_mode[i]);
 	  ++n_ranges;
 	  assert (n_ranges < 5);
 	}
+      ranges[n_ranges].end = i;
     }
-  ranges[n_ranges-1].end = i-1;
 
   /* The usual case: fp regs surrounded by general regs.  */
   if (n_ranges == 3 && ranges[0].size == ranges[2].size)
