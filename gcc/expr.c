@@ -7648,6 +7648,10 @@ expand_increment (exp, post)
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   int op0_is_copy = 0;
   int single_insn = 0;
+  /* 1 means we can't store into OP0 directly,
+     because it is a subreg narrower than a word,
+     and we don't dare clobber the rest of the word.  */
+  int bad_subreg = 0;
 
   if (output_bytecode)
     {
@@ -7688,6 +7692,9 @@ expand_increment (exp, post)
 
   if (GET_CODE (op0) == SUBREG && SUBREG_PROMOTED_VAR_P (op0))
     SUBREG_REG (op0) = copy_to_reg (SUBREG_REG (op0));
+  else if (GET_CODE (op0) == SUBREG
+	   && GET_MODE_BITSIZE (GET_MODE (op0)) < BITS_PER_WORD)
+    bad_subreg = 1;
 
   op0_is_copy = ((GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
 		 && temp != get_last_insn ());
@@ -7723,8 +7730,11 @@ expand_increment (exp, post)
      then we cannot just increment OP0.  We must therefore contrive to
      increment the original value.  Then, for postincrement, we can return
      OP0 since it is a copy of the old value.  For preincrement, expand here
-     unless we can do it with a single insn.  */
-  if (op0_is_copy || (!post && !single_insn))
+     unless we can do it with a single insn.
+
+     Likewise if storing directly into OP0 would clobber high bits
+     we need to preserve (bad_subreg).  */
+  if (op0_is_copy || (!post && !single_insn) || bad_subreg)
     {
       /* This is the easiest way to increment the value wherever it is.
 	 Problems with multiple evaluation of INCREMENTED are prevented
