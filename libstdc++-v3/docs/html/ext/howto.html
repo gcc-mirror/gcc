@@ -276,6 +276,9 @@
       <code>__alloc</code> should not be noticably slower than
       <code>__single_client_alloc</code>.)
    </p>
+   <p>[Another threadsafe allocator where each thread keeps its own free
+      list, so that no locking is needed, might be described here.]
+   </p>
    <h3>A cannon to swat a fly:<code>  __USE_MALLOC</code></h3>
    <p>If you've already read <a href="../23_containers/howto.html#3">this
       advice</a> and decided to define this macro, then the situation changes
@@ -320,16 +323,30 @@
       <code>__default_alloc_template</code> classes take an integer parameter,
       called inst here.  This number is completely unused.
    </p>
-   <p>  More soon.
+   <p>The point of the number is to allow multiple instantiations of the
+      classes without changing the semantics at all.  All three of
+      <pre>
+    typedef  __default_alloc_template&lt;true,0&gt;    normal;
+    typedef  __default_alloc_template&lt;true,1&gt;    private;
+    typedef  __default_alloc_template&lt;true,42&gt;   also_private;</pre>
+      behave exactly the same way.  However, the memory pool for each type
+      (and remember that different instantiations result in different types)
+      remains separate.
    </p>
-   <p>
+   <p>The library uses <strong>0</strong> in all its instantiations.  If you
+      wish to keep separate free lists for a particular purpose, use a
+      different number.
    </p>
    <h3>3.0.x</h3>
-   <p>I don't even remember.  More soon.
+   <p>For 3.0.x, many of the names were incorrectly <em>not</em> prefixed
+      with underscores.  So symbols such as &quot;std::single_client_alloc&quot;
+      are present.  Be very careful to not depend on these names any more
+      than you would depend on implementation-only names.
    </p>
-   <p>
+   <p>Certain macros like <code>_NOTHREADS</code> and <code>__STL_THREADS</code>
+      can affect the 3.0.x allocators.  Do not use them.
    </p>
-   <p>
+   <p>More notes as we remember them...
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
