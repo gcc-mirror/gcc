@@ -474,7 +474,7 @@ DEFTREECODE (COND_EXPR, "cond_expr", tcc_expression, 3)
    for (i=0; i<N; i++)
      A[i] = X[i] < Y[i] ? B[i] : C[i];
 */
-DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", 'e', 3)
+DEFTREECODE (VEC_COND_EXPR, "vec_cond_expr", tcc_expression, 3)
 
 /* Declare local variables, including making RTL and allocating space.
    BIND_EXPR_VARS is a chain of VAR_DECL nodes for the variables.
