@@ -29,13 +29,8 @@ word sz;
     } else {
         GC_err_printf0("Leaked composite object at ");
     }
-    if (GC_debugging_started && GC_has_debug_info(p)) {
-        GC_print_obj(p);
-    } else {
-        GC_err_printf2("0x%lx (appr. size = %ld)\n",
-       		      (unsigned long)p,
-       		      (unsigned long)WORDS_TO_BYTES(sz));
-    }
+    GC_print_heap_obj(p);
+    GC_err_printf0("\n");
 }
 
 #   define FOUND_FREE(hblk, word_no) \

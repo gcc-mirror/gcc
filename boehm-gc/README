@@ -15,7 +15,7 @@ Permission to modify the code and to distribute modified code is granted,
 provided the above notices are retained, and a notice that the code was
 modified is included with the above copyright notice.
 
-This is version 5.0alpha6 of a conservative garbage collector for C and C++.
+This is version 5.0alpha7 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 
@@ -26,8 +26,8 @@ HISTORY -
   Early versions of this collector were developed as a part of research
 projects supported in part by the National Science Foundation
 and the Defense Advance Research Projects Agency.
-Much of the code was rewritten by Hans-J. Boehm (boehm@acm.org) at Xerox PARC
-and at SGI.
+Much of the code was rewritten by Hans-J. Boehm (boehm@acm.org) at Xerox PARC,
+SGI, and HP Labs.
 
 Some other contributors:  
 
@@ -1576,9 +1576,31 @@ Since 5.0 alpha4
  - Added Mingw32 support.  (Thanks again to Jeff Sturm for the patch.)
  - Changed the alpha port to use the generic register scanning code instead
    of alpha_mach_dep.s.  Alpha_mach_dep.s doesn't look for pointers in fp
-   registers, but gcc sometimes spills pointers there.  (Thanks to Manuel Serrano
-   for helping me debug this by email.)  Changed the IA64 code to do something
-   similar for similar reasons.
+   registers, but gcc sometimes spills pointers there.  (Thanks to Manuel
+   Serrano for helping me debug this by email.)  Changed the IA64 code to
+   do something similar for similar reasons.
+
+Since 5.0alpha6:
+ - -DREDIRECT_MALLOC was broken in alpha6. Fixed.
+ - Cleaned up gc_ccp.h slightly, thus also causing the HP C++ compiler to
+   accept it.
+ - Removed accidental reference to dbg_mlc.c, which caused dbg_mlc.o to be
+   linked into every executable.
+ - Added PREFETCH to bitmap marker.  Changed it to use the header cache.
+ - GC_push_marked sometimes pushed one object too many, resulting in a
+   segmentation fault in GC_mark_from_mark_stack.  This was probably an old
+   bug.  It finally showed up in gctest on win32.
+ - Gc_priv.h erroneously #defined GC_incremental to be TRUE instead of FALSE
+   when SMALL_CONFIG was defined.  This was no doubt a major performance bug for
+   the default win32 configuration.
+ - Removed -DSMALL_CONFIG from NT_MAKEFILE.  It seemed like an anchronism now
+   that the average PC has 64MB or so.
+ - Integrated Bryce McKinley's patches for linux threads and dynamic loading
+   from the libgcj tree.  Turned on dynamic loading support for Linux/PPC.
+ - Changed the stack finding code to use environ on HP/UX.  (Thanks
+   to Gustavo Rodriguez-Rivera for the suggestion.)  This should probably
+   be done on other platforms, too.  Since I can't test those, that'll
+   wait until after 5.0.
 
 To do:
  - Very large root set sizes (> 16 MB or so) could cause the collector

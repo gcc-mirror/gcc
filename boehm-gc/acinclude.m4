@@ -31,7 +31,7 @@ AC_SUBST(boehm_gc_basedir)
 
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE(boehm-gc, 5.0a6, no-define)
+AM_INIT_AUTOMAKE(boehm-gc, 5.0a7, no-define)
 
 # FIXME: We temporarily define our own version of AC_PROG_CC.  This is
 # copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We

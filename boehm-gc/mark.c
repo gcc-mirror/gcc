@@ -493,7 +493,8 @@ void GC_mark_from_mark_stack()
             if ((signed_word)descr < 0) {
               current = *current_p;
 	      if ((ptr_t)current >= least_ha && (ptr_t)current < greatest_ha) {
-                PUSH_CONTENTS((ptr_t)current, GC_mark_stack_top_reg,
+		PREFETCH(current);
+                HC_PUSH_CONTENTS((ptr_t)current, GC_mark_stack_top_reg,
 			      mark_stack_limit, current_p, exit1);
 	      }
             }
@@ -1116,6 +1117,7 @@ struct hblk *h;
 register hdr * hhdr;
 {
     register int sz = hhdr -> hb_sz;
+    register int descr = hhdr -> hb_descr;
     register word * p;
     register int word_no;
     register word * lim;
@@ -1123,19 +1125,14 @@ register hdr * hhdr;
     register mse * mark_stack_limit = &(GC_mark_stack[GC_mark_stack_size]);
     
     /* Some quick shortcuts: */
-	{ 
-	    struct obj_kind *ok = &(GC_obj_kinds[hhdr -> hb_obj_kind]);
-	    if ((0 | DS_LENGTH) == ok -> ok_descriptor
-		&& FALSE == ok -> ok_relocate_descr)
-		return;
-	}
+	if ((0 | DS_LENGTH) == descr) return;
         if (GC_block_empty(hhdr)/* nothing marked */) return;
 #   ifdef GATHERSTATS
         GC_n_rescuing_pages++;
 #   endif
     GC_objects_are_marked = TRUE;
     if (sz > MAXOBJSZ) {
-        lim = (word *)(h + 1);
+        lim = (word *)h + HDR_WORDS;
     } else {
         lim = (word *)(h + 1) - sz;
     }
@@ -1158,10 +1155,6 @@ register hdr * hhdr;
       GC_mark_stack_top_reg = GC_mark_stack_top;
       for (p = (word *)h + HDR_WORDS, word_no = HDR_WORDS; p <= lim;
          p += sz, word_no += sz) {
-         /* This ignores user specified mark procs.  This currently	*/
-         /* doesn't matter, since marking from the whole object		*/
-         /* is always sufficient, and we will eventually use the user	*/
-         /* mark proc to avoid any bogus pointers.			*/
          if (mark_bit_from_hdr(hhdr, word_no)) {
            /* Mark from fields inside the object */
              PUSH_OBJ((word *)p, hhdr, GC_mark_stack_top_reg, mark_stack_limit);

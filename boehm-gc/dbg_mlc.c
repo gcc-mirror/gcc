@@ -428,7 +428,31 @@ GC_PTR p;
     GC_end_stubborn_change(q);
 }
 
-#endif /* STUBBORN_ALLOC */
+#else /* !STUBBORN_ALLOC */
+
+# ifdef __STDC__
+    GC_PTR GC_debug_malloc_stubborn(size_t lb, GC_EXTRA_PARAMS)
+# else
+    GC_PTR GC_debug_malloc_stubborn(lb, s, i)
+    size_t lb;
+    char * s;
+    int i;
+# endif
+{
+    return GC_debug_malloc(lb, OPT_RA s, i);
+}
+
+void GC_debug_change_stubborn(p)
+GC_PTR p;
+{
+}
+
+void GC_debug_end_stubborn_change(p)
+GC_PTR p;
+{
+}
+
+#endif /* !STUBBORN_ALLOC */
 
 # ifdef __STDC__
     GC_PTR GC_debug_malloc_atomic(size_t lb, GC_EXTRA_PARAMS)

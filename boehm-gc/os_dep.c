@@ -642,31 +642,48 @@ ptr_t GC_get_stack_base()
 
 #ifdef LINUX_STACKBOTTOM
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 # define STAT_SKIP 27   /* Number of fields preceding startstack	*/
 			/* field in /proc/self/stat			*/
 
   ptr_t GC_linux_stack_base(void)
   {
-    FILE *f;
+    /* We read the stack base value from /proc/self/stat.  We do this	*/
+    /* using direct I/O system calls in order to avoid calling malloc   */
+    /* in case REDIRECT_MALLOC is defined.				*/ 
+#   define STAT_BUF_SIZE 4096
+#   ifdef USE_LD_WRAP
+#	define STAT_READ __real_read
+#   else
+#	define STAT_READ read
+#   endif    
+    char stat_buf[STAT_BUF_SIZE];
+    int f;
     char c;
     word result = 0;
-    int i;
+    size_t i, buf_offset = 0;
 
-    f = fopen("/proc/self/stat", "r");
-    if (NULL == f) ABORT("Couldn't open /proc/self/stat");
-    c = getc(f);
+    f = open("/proc/self/stat", O_RDONLY);
+    if (f < 0 || read(f, stat_buf, STAT_BUF_SIZE) < 2 * STAT_SKIP) {
+	ABORT("Couldn't read /proc/self/stat");
+    }
+    c = stat_buf[buf_offset++];
     /* Skip the required number of fields.  This number is hopefully	*/
     /* constant across all Linux implementations.			*/
       for (i = 0; i < STAT_SKIP; ++i) {
-	while (isspace(c)) c = getc(f);
-	while (!isspace(c)) c = getc(f);
+	while (isspace(c)) c = stat_buf[buf_offset++];
+	while (!isspace(c)) c = stat_buf[buf_offset++];
       }
-    while (isspace(c)) c = getc(f);
+    while (isspace(c)) c = stat_buf[buf_offset++];
     while (isdigit(c)) {
       result *= 10;
       result += c - '0';
-      c = getc(f);
+      c = stat_buf[buf_offset++];
     }
+    close(f);
     if (result < 0x10000000) ABORT("Absurd stack bottom value");
     return (ptr_t)result;
   }
