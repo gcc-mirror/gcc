@@ -1,3 +1,0 @@
-# Make assignments for compiling on NeXT with their compiler version.
-CC=cc -traditional-cpp
-OLDCC=cc -traditional-cpp

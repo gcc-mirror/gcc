@@ -1,3 +1,44 @@
+2001-04-07  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Set default for xmake_file at top, not bottom.
+	Change places that set xmake_file to "none" to set to the
+	empty string instead, or remove them entirely if there is no
+	default xmake_file for this cpu_type.  Remove references to
+	deleted files.
+
+	* config/x-lynx, config/convex/x-convex, config/elxsi/x-elxsi,
+	config/i386/x-isc, config/i386/x-isc3, config/i386/x-ncr3000,
+	config/i386/x-next, config/i386/x-sco, config/i386/x-sysv3,
+	config/i386/x-vsta, config/i860/x-sysv4, config/m68k/x-amix,
+	config/m68k/x-apollo68, config/m68k/x-ccur, config/m68k/x-crds,
+	config/m68k/x-hp2bsd, config/m68k/x-mot3300, config/m68k/x-mot3300-gas,
+	config/m68k/x-tower, config/m88k/x-sysv4, config/mips/x-dec-osf1,
+	config/mips/x-sni-svr4, config/mips/x-ultrix, config/romp/x-mach,
+	config/romp/x-romp, config/rs6000/x-beos, config/rs6000/x-lynx,
+	config/rs6000/x-mach, config/rs6000/x-sysv4, config/sparc/x-sysv4:
+	Delete.
+
+	* config/a29k/x-unix, config/i386/x-aix, config/i386/x-osf1elf,
+	config/i386/x-osfrose, config/m68k/x-dpx2, config/mips/x-iris3,
+	config/mips/x-mips, config/mips/x-osfrose, config/mips/x-sony,
+	config/mips/x-sysv, config/rs6000/x-aix31:
+	Just set CLIB to -lld or -lmld, as appropriate.
+
+	* config/arm/x-riscix, config/i370/x-oe, config/i386/x-dgux,
+	config/i386/x-sco4, config/i386/x-sco5, config/m68k/x-hp320,
+	config/m68k/x-hp320g, config/m68k/x-next, config/m88k/x-dgux,
+	config/mips/x-iris, config/pa/x-pa:
+	Just set (some of) FIXPROTO_DEFINES, STMP_FIXPROTO,
+	OTHER_FIXINCLUDES_DIRS.
+
+	* config/i386/x-djgpp: Don't set LN or LN_S.
+	* config/m88k/x-dolph: Don't define __m88k__.
+	* config/m88k/x-tekXD88: Don't set AR_FLAGS.
+	* config/pa/x-pa-mpeix: Just set up quadlib.asm.
+	* config/i860/fx2800.h: No need to #undef SVR4.
+
+	38 x-host fragments remain, 2 x-cpu.
+
 2001-04-07  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* c4x.h (HARD_REGNO_NREGS): HCmode mode uses 2 regs not 4.
@@ -11,16 +52,16 @@
 	* configure.in: Add check for lstat.
 	* configure, config.in: Regenerate.
 	* cppinit.c (append_include_chain): Make empty path ".".
-        * cpplib.c (do_line): Don't simplify #line paths.
-        * cppfiles.c (remove_component_p): New function.
+	* cpplib.c (do_line): Don't simplify #line paths.
+	* cppfiles.c (remove_component_p): New function.
 	(find_or_create_entry): Acknowledge stat () errors during
 	path simplification.
 	(handle_missing_header): Don't simplify paths.
-        (_cpp_simplify_pathname): Don't simplify VMS paths.  Return
-        the empty path untouched.  Don't leave a trailing '/'.
+	(_cpp_simplify_pathname): Don't simplify VMS paths.  Return
+	the empty path untouched.  Don't leave a trailing '/'.
 
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* cppdefault.c (GPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
 	* Makefile.in (-DGPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.
 
@@ -86,7 +127,7 @@ Thu Apr  5 18:25:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Thu Apr  5 13:44:17 2001  J"orn Rennecke <amylaar@redhat.com>
 
-        * i386.md (*andsi_1+3): If used after reload, make sure the operand
+	* i386.md (*andsi_1+3): If used after reload, make sure the operand
 	satisfies ANY_QI_REG_P.
 
 2001-04-05  Bernd Schmidt  <bernds@redhat.com>

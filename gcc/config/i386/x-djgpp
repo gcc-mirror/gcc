@@ -1,7 +1,2 @@
 # Location of DJGPP's header directory.
 SYSTEM_HEADER_DIR=$(DJDIR)/include
-
-# on DJGPP the 'ln -s' does not work correctly
-LN = cp -p
-LN_S = cp -p
-

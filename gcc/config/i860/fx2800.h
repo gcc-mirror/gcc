@@ -289,8 +289,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Overrides for svr4.h begin here */
 
-#undef SVR4
-
 #undef SWITCH_TAKES_ARG
 #undef WORD_SWITCH_TAKES_ARG
 

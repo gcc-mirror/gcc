@@ -1,4 +1,0 @@
-# configuration for IBM rs6000 running MACH
-
-# For some reason, we need -lm for cc1.
-CLIB=-lm
