@@ -1,4 +1,4 @@
-2002-10-10  Jakub Jelinek  <jakub@redhat.com>
+2002-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* jartool.c (add_to_jar): Only compare file to jarfile if jarfile is
 	non-NULL.
