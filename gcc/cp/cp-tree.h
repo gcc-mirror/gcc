@@ -3007,7 +3007,7 @@ extern void GNU_xref_decl			PROTO((tree, tree));
 extern void GNU_xref_call			PROTO((tree, char *));
 extern void GNU_xref_function			PROTO((tree, tree));
 extern void GNU_xref_assign			PROTO((tree));
-extern void GNU_xref_hier			PROTO((char *, char *, int, int, int));
+extern void GNU_xref_hier			PROTO((tree, tree, int, int, int));
 extern void GNU_xref_member			PROTO((tree, tree));
 
 /* -- end of C++ */

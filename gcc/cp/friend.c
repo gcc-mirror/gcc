@@ -267,8 +267,7 @@ make_friend_class (type, friend_type)
   else
     is_template_friend = 0;
 
-  GNU_xref_hier (TYPE_NAME_STRING (type),
-		 TYPE_NAME_STRING (friend_type), 0, 0, 1);
+  GNU_xref_hier (type, friend_type, 0, 0, 1);
 
   if (is_template_friend)
     friend_type = CLASSTYPE_TI_TEMPLATE (friend_type);

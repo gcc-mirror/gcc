@@ -1,3 +1,10 @@
+1998-07-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* xref.c (classname): New function.
+	(GNU_xref_hier): Change class and base parameters to tree.
+	* decl.c (xref_baseypes): Change caller.
+	* friend.c (make_friend_class): Likewise.
+
 1998-07-12  Kriang Lerdsuwanakij <lerdsuwa@scf-fs.usc.edu>
 
 	* typeck.c (comptypes, case TEMPLATE_TEMPLATE_PARM): Add parameter 
@@ -33,7 +40,6 @@
 	purpose_member.
 	* decl.c (lookup_name_real): Don't call complete_type on a namespace.
 	(grokvardecl): Use DECL_CLASS_SCOPE_P.
-	(xref_basetypes): Fix call to GNU_xref_hier.
 	* cvt.c (convert_pointer_to_real): Check for error_mark_node sooner.
 	* class.c (warn_hidden): Fix for OVERLOAD.
 	From grahams@rcp.co.uk:

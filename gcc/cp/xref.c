@@ -541,6 +541,19 @@ gen_assign(xf, name)
     fprintf(xref_file, "ASG %s %d %s\n", filename(xf), lineno, s);
 }
 
+static char*
+classname (cls)
+     tree cls;
+{
+  if (cls && TREE_CODE_CLASS (TREE_CODE (cls)) == 't')
+    cls = TYPE_NAME (cls);
+  if (cls && TREE_CODE_CLASS (TREE_CODE (cls)) == 'd')
+    cls = DECL_NAME (cls);
+  if (cls && TREE_CODE (cls) == IDENTIFIER_NODE)
+    return IDENTIFIER_POINTER (cls);
+  return "?";
+}
+
 /* Output cross-reference info about a class hierarchy.
    CLS is the class type of interest.  BASE is a baseclass
    for CLS.  PUB and VIRT give the access info about
@@ -551,8 +564,8 @@ gen_assign(xf, name)
 
 void
 GNU_xref_hier(cls, base, pub, virt, frnd)
-   char *cls;
-   char *base;
+   tree cls;
+   tree base;
    int pub;
    int virt;
    int frnd;
@@ -564,7 +577,8 @@ GNU_xref_hier(cls, base, pub, virt, frnd)
   if (xf == NULL) return;
 
   fprintf(xref_file, "HIE %s %d %s %s %d %d %d\n",
-	  filename(xf), lineno, cls, base, pub, virt, frnd);
+	  filename(xf), lineno, classname (cls), classname (base), 
+	  pub, virt, frnd);
 }
 
 /* Output cross-reference info about class members.  CLS
