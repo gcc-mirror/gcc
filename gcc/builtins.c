@@ -710,6 +710,13 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
 	{
 	  lab = copy_to_reg (lab);
 
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+				      gen_rtx_MEM (BLKmode,
+						   gen_rtx_SCRATCH (VOIDmode))));
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+				      gen_rtx_MEM (BLKmode,
+						   hard_frame_pointer_rtx)));
+
 	  emit_move_insn (hard_frame_pointer_rtx, fp);
 	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
