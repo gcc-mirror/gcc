@@ -12288,7 +12288,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		   && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
 	    place = i2;
 
-	  if (XEXP (note, 0) == elim_i2 || XEXP (note, 0) == elim_i1)
+	  if (rtx_equal_p (XEXP (note, 0), elim_i2)
+	      || rtx_equal_p (XEXP (note, 0), elim_i1))
 	    break;
 
 	  if (place == 0)
@@ -12468,13 +12469,11 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	      /* If this is a death note for a hard reg that is occupying
 		 multiple registers, ensure that we are still using all
 		 parts of the object.  If we find a piece of the object
-		 that is unused, we must add a USE for that piece before
-		 PLACE and put the appropriate REG_DEAD note on it.
-
-		 An alternative would be to put a REG_UNUSED for the pieces
-		 on the insn that set the register, but that can't be done if
-		 it is not in the same block.  It is simpler, though less
-		 efficient, to add the USE insns.  */
+		 that is unused, we must arrange for an appropriate REG_DEAD
+		 note to be added for it.  However, we can't just emit a USE
+		 and tag the note to it, since the register might actually
+		 be dead; so we recourse, and the recursive call then finds
+		 the previous insn that used this register.  */
 
 	      if (place && regno < FIRST_PSEUDO_REGISTER
 		  && HARD_REGNO_NREGS (regno, GET_MODE (XEXP (note, 0))) > 1)
@@ -12486,67 +12485,31 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		  unsigned int i;
 
 		  for (i = regno; i < endregno; i++)
-		    if (! refers_to_regno_p (i, i + 1, PATTERN (place), 0)
-			&& ! find_regno_fusage (place, USE, i))
-		      {
-			rtx piece = gen_rtx_REG (reg_raw_mode[i], i);
-			rtx p;
-
-			/* See if we already placed a USE note for this
-			   register in front of PLACE.  */
-			for (p = place;
-			     GET_CODE (PREV_INSN (p)) == INSN
-			     && GET_CODE (PATTERN (PREV_INSN (p))) == USE;
-			     p = PREV_INSN (p))
-			  if (rtx_equal_p (piece,
-					   XEXP (PATTERN (PREV_INSN (p)), 0)))
-			    {
-			      p = 0;
-			      break;
-			    }
-
-			if (p)
-			  {
-			    rtx use_insn
-			      = emit_insn_before (gen_rtx_USE (VOIDmode,
-							       piece),
-						  p);
-			    REG_NOTES (use_insn)
-			      = gen_rtx_EXPR_LIST (REG_DEAD, piece,
-						   REG_NOTES (use_insn));
-			  }
-
-			all_used = 0;
-		      }
-
-		  /* Check for the case where the register dying partially
-		     overlaps the register set by this insn.  */
-		  if (all_used)
-		    for (i = regno; i < endregno; i++)
-		      if (dead_or_set_regno_p (place, i))
-			{
-			  all_used = 0;
-			  break;
-			}
+		    if ((! refers_to_regno_p (i, i + 1, PATTERN (place), 0)
+			 && ! find_regno_fusage (place, USE, i))
+			|| dead_or_set_regno_p (place, i))
+		      all_used = 0;
 
 		  if (! all_used)
 		    {
 		      /* Put only REG_DEAD notes for pieces that are
-			 still used and that are not already dead or set.  */
+			 not already dead or set.  */
 
-		      for (i = regno; i < endregno; i++)
+		      for (i = regno; i < endregno;
+			   i += HARD_REGNO_NREGS (i, reg_raw_mode[i]))
 			{
 			  rtx piece = gen_rtx_REG (reg_raw_mode[i], i);
 
-			  if ((reg_referenced_p (piece, PATTERN (place))
-			       || (GET_CODE (place) == CALL_INSN
-				   && find_reg_fusage (place, USE, piece)))
-			      && ! dead_or_set_p (place, piece)
+			  if (! dead_or_set_p (place, piece)
 			      && ! reg_bitfield_target_p (piece,
 							  PATTERN (place)))
-			    REG_NOTES (place)
-			      = gen_rtx_EXPR_LIST (REG_DEAD, piece,
-						   REG_NOTES (place));
+			    {
+			      rtx new_note
+				= gen_rtx_EXPR_LIST (REG_DEAD, piece, NULL_RTX);
+
+			      distribute_notes (new_note, place, place,
+						NULL_RTX, NULL_RTX, NULL_RTX);
+			    }
 			}
 
 		      place = 0;

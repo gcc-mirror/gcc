@@ -1,3 +1,11 @@
+Thu Nov  2 21:52:35 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* combine.c (distribute_notes): Use rtx_equal_p to check elim_i2 /
+	elim_i1.
+	In REG_DEAD handling: When handling parts of multi-hard-reg hard
+	registers, increment the loop counter by the size of the parts;
+	use recursion to handle individual parts.
+
 2000-11-02  Neil Booth  <neilb@earthling.net>
 
 	* configure.in: Make integrated CPP the default.
