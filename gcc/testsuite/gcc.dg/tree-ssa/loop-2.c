@@ -23,7 +23,7 @@ void xxx(void)
 
 /* Access to arr_base[iter].y should be strength reduced.  */
 
-/* { dg-final { scan-tree-dump-times "arr_base.*=" 0 "vars" } } */
+/* { dg-final { scan-tree-dump-times "arr_base\[^\\n\\r\]*=" 0 "vars" } } */
 
 /* 17 * iter should be strength reduced.  */
 
