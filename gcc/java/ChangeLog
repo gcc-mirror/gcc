@@ -1,3 +1,8 @@
+2000-09-27  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.c (java_read_unicode): Reset bs_count when finished with
+	`\u' sequence.
+
 2000-10-01  Mark Mitchell  <mark@codesourcery.com>
 
 	Convert to GC.
