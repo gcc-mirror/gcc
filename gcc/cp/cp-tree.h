@@ -3591,7 +3591,7 @@ struct cp_declarator {
   union {
     /* For identifiers.  */
     struct {
-      /* If non-NULL, the qualifiying scope (a NAMESPACE_DECL or
+      /* If non-NULL, the qualifying scope (a NAMESPACE_DECL or
          *_TYPE) for this identifier.  */
       tree qualifying_scope;
       /* The unqualified name of the entity -- an IDENTIFIER_NODE,

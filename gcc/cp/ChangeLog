@@ -1,3 +1,7 @@
+2005-01-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cp-tree.h: Fix a comment typo.
+
 2005-01-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19298
