@@ -582,20 +582,6 @@ variable_section (decl, reloc)
     (*targetm.asm_out.select_section) (decl, reloc, DECL_ALIGN (decl));
 }
 
-/* Tell assembler to switch to the section for the exception handling
-   table.  */
-
-void
-default_exception_section ()
-{
-  if (targetm.have_named_sections)
-    named_section (NULL_TREE, ".gcc_except_table", 0);
-  else if (flag_pic)
-    data_section ();
-  else
-    readonly_data_section ();
-}
-
 /* Tell assembler to switch to the section for string merging.  */
 
 void

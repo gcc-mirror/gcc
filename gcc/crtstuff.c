@@ -90,6 +90,11 @@ call_ ## FUNC (void)					\
 #if defined(EH_FRAME_SECTION_NAME) && !defined(USE_PT_GNU_EH_FRAME)
 # define USE_EH_FRAME_REGISTRY
 #endif
+#if defined(EH_FRAME_SECTION_NAME) && defined(HAVE_LD_RO_RW_SECTION_MIXING)
+# define EH_FRAME_SECTION_CONST const
+#else
+# define EH_FRAME_SECTION_CONST
+#endif
 
 /* We do not want to add the weak attribute to the declarations of these
    routines in unwind-dw2-fde.h because that will cause the definition of
@@ -188,7 +193,7 @@ STATIC func_ptr __DTOR_LIST__[1]
 #ifdef USE_EH_FRAME_REGISTRY
 /* Stick a label at the beginning of the frame unwind info so we can register
    and deregister it with the exception handling library code.  */
-STATIC char __EH_FRAME_BEGIN__[]
+STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
      __attribute__((section(EH_FRAME_SECTION_NAME), aligned(4)))
      = { };
 #endif /* USE_EH_FRAME_REGISTRY */
@@ -453,7 +458,7 @@ STATIC func_ptr __DTOR_END__[1]
 #ifdef EH_FRAME_SECTION_NAME
 /* Terminate the frame unwind info section with a 4byte 0 as a sentinel;
    this would be the 'length' field in a real FDE.  */
-STATIC int __FRAME_END__[]
+STATIC EH_FRAME_SECTION_CONST int __FRAME_END__[]
      __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
 		     aligned(4)))
      = { 0 };
