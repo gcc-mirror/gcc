@@ -76,6 +76,21 @@ wish to add additional options which take arguments.  Any redefinition
 should call @code{DEFAULT_WORD_SWITCH_TAKES_ARG} and then check for
 additional options.
 
+@findex SWITCH_CURTAILS_COMPILATION
+@item SWITCH_CURTAILS_COMPILATION (@var{char})
+A C expression which determines whether the option @samp{-@var{char}}
+stops compilation before the generation of an executable.  The value is
+boolean, non-zero if the option does stop an executable from being
+generated, zero otherwise.
+
+By default, this macro is defined as
+@code{DEFAULT_SWITCH_CURTAILS_COMPILATION}, which handles the standard
+options properly.  You need not define
+@code{SWITCH_CURTAILS_COMPILATION} unless you wish to add additional
+options which affect the generation of an executable.  Any redefinition
+should call @code{DEFAULT_SWITCH_CURTAILS_COMPILATION} and then check
+for additional options.
+
 @findex SWITCHES_NEED_SPACES
 @item SWITCHES_NEED_SPACES
 A string-valued C expression which enumerates the options for which

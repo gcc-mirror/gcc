@@ -536,6 +536,18 @@ static struct user_specs *user_specs_head, *user_specs_tail;
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
 #endif
 
+
+#ifdef HAVE_EXECUTABLE_SUFFIX
+/* This defines which switches stop a full compilation.  */
+#define DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR) \
+  ((CHAR) == 'c' || (CHAR) == 'S')
+
+#ifndef SWITCH_CURTAILS_COMPILATION
+#define SWITCH_CURTAILS_COMPILATION(CHAR) \
+  DEFAULT_SWITCH_CURTAILS_COMPILATION(CHAR)
+#endif
+#endif
+
 /* Record the mapping from file suffixes for compilation specs.  */
 
 struct compiler
@@ -2780,6 +2792,7 @@ process_command (argc, argv)
 	      }
 	      break;
 
+	    case 'S':
 	    case 'c':
 	      if (p[1] == 0)
 		{
@@ -2791,10 +2804,40 @@ process_command (argc, argv)
 
 	    case 'o':
 	      have_o = 1;
+#if defined(HAVE_EXECUTABLE_SUFFIX)
+	      if (! have_c)
+		{
+		  int skip;
+		  
+		  /* Forward scan, just in case -S or -c is specified
+		     after -o.  */
+		  int j = i + 1;
+		  if (p[1] == 0)
+		    ++j;
+		  while (j < argc)
+		    {
+		      if (argv[j][0] == '-')
+			{
+			  if (SWITCH_CURTAILS_COMPILATION (argv[j][1])
+			      && argv[j][2] == 0)
+			    {
+			      have_c = 1;
+			      break;
+			    }
+			  else if (skip = SWITCH_TAKES_ARG (argv[j][1]))
+			    j += skip - (argv[j][2] != 0);
+			  else if (skip = WORD_SWITCH_TAKES_ARG (argv[j] + 1))
+			    j += skip;
+			}
+		      j++;
+		    }
+		}
+#endif
 #if defined(HAVE_EXECUTABLE_SUFFIX) || defined(HAVE_OBJECT_SUFFIX)
-	      argv[i] = convert_filename (argv[i], 1);
 	      if (p[1] == 0)
-		argv[i+1] = convert_filename (argv[i+1], 1);
+		argv[i+1] = convert_filename (argv[i+1], ! have_c);
+	      else
+		argv[i] = convert_filename (argv[i], ! have_c);
 #endif
 	      goto normal_switch;
 

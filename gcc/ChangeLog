@@ -1,3 +1,14 @@
+Mon May 18 00:08:19 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c (SWITCH_CURTAILS_COMPILATION): Definition.
+	(DEFAULT_SWITCH_CURTAILS_COMPILATION): True for options -S and -c.
+	(process_command): If HAVE_EXECUTABLE_SUFFIX is defined then scan
+	command line arguments to see if an executable is not being
+	created, and if so - do not append the suffix.
+
+	* tm.texi (SWITCH_CURTAILS_COMPILATION): Add description of new
+	driver macro.
+
 Sun May 17 23:59:45 1998  John Wehle  (john@feith.com)
 
 	* i386.h (ALIGN_DFmode): Delete.
