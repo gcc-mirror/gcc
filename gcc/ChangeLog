@@ -1,3 +1,13 @@
+2005-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/20611
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1b): Remove inline
+	label operand.  Remove (use (unspec..)).  Don't emit a label on
+	the offset word.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Don't
+	generate inline label for load_toc_v4_PIC_1b.
+	(rs6000_emit_load_toc_table): Likewise.
+
 2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config.gcc: Obsolete i860-*-sysv4*, ip2k-*-elf,
