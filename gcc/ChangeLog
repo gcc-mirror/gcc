@@ -1,5 +1,8 @@
 Tue Feb  3 01:11:12 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (jump_optimize): Lose calls to modified_in_p they are
+	not needed anymore due to changes elsewhere in jump.c.
+
 	* jump.c (jump_optimize): Fix first arg to modified_in_p in
 	previous change.
 
