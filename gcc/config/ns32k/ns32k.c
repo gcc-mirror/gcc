@@ -46,7 +46,7 @@ trace (s, s1, s2)
 int
 hard_regno_mode_ok (regno, mode)
      int regno;
-     int mode;
+     enum machine_mode mode;
 {
   switch (mode)
     {
@@ -107,7 +107,10 @@ hard_regno_mode_ok (regno, mode)
       else
 	return 0;
     }
-  abort(0);
+
+  /* Used to abort here, but simply saying "no" handles TImode
+     much better.  */
+  return 0;
 }
 
 /* ADDRESS_COST calls this.  This function is not optimal
