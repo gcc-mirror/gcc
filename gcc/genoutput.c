@@ -94,6 +94,7 @@ given in the entry is a constant (it does not start with `*').  */
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
+#include "errors.h"
 
 /* No instruction can have more operands than this.
    Sorry for this arbitrary limit, but what machine will
@@ -107,9 +108,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-static void error PVPROTO ((const char *, ...)) ATTRIBUTE_PRINTF_1;
 static int n_occurrences PROTO((int, char *));
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
@@ -931,49 +929,6 @@ xrealloc (old, size)
   return ptr;
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genoutput: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
-static void
-error VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genoutput: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-
-  have_error = 1;
-}
-
 int
 main (argc, argv)
      int argc;
@@ -983,6 +938,7 @@ main (argc, argv)
   FILE *infile;
   register int c;
 
+  progname = "genoutput";
   obstack_init (rtl_obstack);
 
   if (argc <= 1)

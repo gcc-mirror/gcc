@@ -107,6 +107,7 @@ Boston, MA 02111-1307, USA.  */
 /* We must include obstack.h after <sys/time.h>, to avoid lossage with
    /usr/include/sys/stdtypes.h on Sun OS 4.x.  */
 #include "obstack.h"
+#include "errors.h"
 
 static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;
@@ -118,9 +119,6 @@ struct obstack *temp_obstack = &obstack2;
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 char **insn_name_ptr = 0;
-
-void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 /* enough space to reserve for printing out ints */
 #define MAX_DIGITS (HOST_BITS_PER_INT * 3 / 10 + 3)
@@ -5906,27 +5904,6 @@ copy_rtx_unchanging (orig)
 #endif
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genattrtab: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
 /* Determine if an insn has a constant number of delay slots, i.e., the
    number of delay slots is not a function of the length of the insn.  */
 
@@ -5990,6 +5967,7 @@ main (argc, argv)
   }
 #endif
 
+  progname = "genattrtab";
   obstack_init (rtl_obstack);
   obstack_init (hash_obstack);
   obstack_init (temp_obstack);

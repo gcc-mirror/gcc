@@ -575,6 +575,7 @@ HOST_LIBS = $(USE_HOST_OBSTACK) $(USE_HOST_ALLOCA) $(USE_HOST_MALLOC)  \
 HOST_RTL = $(HOST_PREFIX)rtl.o $(HOST_PREFIX)bitmap.o
 HOST_RTLANAL = $(HOST_PREFIX)rtlanal.o
 HOST_PRINT = $(HOST_PREFIX)print-rtl.o
+HOST_ERRORS = $(HOST_PREFIX)errors.o
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
@@ -1454,6 +1455,7 @@ rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h basic-block.h
 rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
+errors.o : errors.c $(CONFIG_H) system.h errors.h
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \
    function.h defaults.h $(EXPR_H) hard-reg-set.h $(REGS_H) \
@@ -1760,81 +1762,81 @@ $(MD_FILE): $(MD_DEPS)
 	$(MD_CPP) $(MD_CPPFLAGS) $(md_file) | sed 's/^# /; /g' > tmp-$@
 	mv tmp-$@ $@
 
-genconfig : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genconfig : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genconfig.o : genconfig.c $(RTL_H) $(build_xm_file) system.h
+genconfig.o : genconfig.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c
 
-genflags : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genflags : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genflags.o : genflags.c $(RTL_H) $(build_xm_file) system.h
+genflags.o : genflags.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c
 
-gencodes : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+gencodes : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-gencodes.o : gencodes.c $(RTL_H) $(build_xm_file) system.h
+gencodes.o : gencodes.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c
 
-genemit : genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genemit : genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genemit.o : genemit.c $(RTL_H) $(build_xm_file) system.h
+genemit.o : genemit.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c
 
-genopinit : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genopinit : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genopinit.o : genopinit.c $(RTL_H) $(build_xm_file) system.h
+genopinit.o : genopinit.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c
 
-genrecog : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genrecog : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genrecog.o : genrecog.c $(RTL_H) $(build_xm_file) system.h
+genrecog.o : genrecog.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c
 
-genextract : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genextract : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genextract.o : genextract.c $(RTL_H) $(build_xm_file) system.h insn-config.h
+genextract.o : genextract.c $(RTL_H) $(build_xm_file) system.h insn-config.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c
 
-genpeep : genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genpeep : genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genpeep.o : genpeep.c $(RTL_H) $(build_xm_file) system.h
+genpeep.o : genpeep.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c
 
-genattr : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genattr : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genattr.o : genattr.c $(RTL_H) $(build_xm_file) system.h
+genattr.o : genattr.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c
 
-genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBDEPS)
+genattrtab : genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANAL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_RTLANAL) $(HOST_LIBS)
+	 genattrtab.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_RTLANAL) $(HOST_LIBS)
 
-genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h insn-config.h
+genattrtab.o : genattrtab.c $(RTL_H)  $(build_xm_file) system.h insn-config.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattrtab.c
 
-genoutput : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBDEPS)
+genoutput : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_LIBS)
+	 genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
 
-genoutput.o : genoutput.c $(RTL_H) $(build_xm_file) system.h
+genoutput.o : genoutput.c $(RTL_H) $(build_xm_file) system.h errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genoutput.c
 
 gengenrtl : gengenrtl.o $(HOST_LIBDEPS)
@@ -1895,6 +1897,12 @@ $(HOST_PREFIX_1)malloc.o: malloc.c
 	rm -f $(HOST_PREFIX)malloc.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/malloc.c > $(HOST_PREFIX)malloc.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)malloc.c
+
+$(HOST_PREFIX_1)errors.o: errors.c
+	rm -f $(HOST_PREFIX)errors.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c
+
 
 # This satisfies the dependency that we get if you cross-compile a compiler
 # that does not need to compile alloca, malloc or whatever.

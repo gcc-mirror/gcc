@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 #include "obstack.h"
+#include "errors.h"
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -45,9 +46,6 @@ struct link
   int pos;
   int vecelt;
 };
-
-void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 static int max_opno;
 
@@ -409,27 +407,6 @@ xrealloc (old, size)
   return ptr;
 }
 
-void
-fatal VPROTO ((const char *format, ...))
-{
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
-
-  fprintf (stderr, "genpeep: ");
-  vfprintf (stderr, format, ap);
-  va_end (ap);
-  fprintf (stderr, "\n");
-  exit (FATAL_EXIT_CODE);
-}
-
 int
 main (argc, argv)
      int argc;
@@ -441,6 +418,7 @@ main (argc, argv)
 
   max_opno = -1;
 
+  progname = "genpeep";
   obstack_init (rtl_obstack);
 
   if (argc <= 1)
