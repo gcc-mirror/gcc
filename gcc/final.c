@@ -1025,10 +1025,8 @@ shorten_branches (first)
 
   max_labelno = max_label_num ();
   min_labelno = get_first_label_num ();
-  label_align = (struct label_alignment *) xmalloc (
-    (max_labelno - min_labelno + 1) * sizeof (struct label_alignment));
-  bzero ((char *) label_align,
-    (max_labelno - min_labelno + 1) * sizeof (struct label_alignment));
+  label_align = (struct label_alignment **)
+    xcalloc ((max_labelno - min_labelno + 1), sizeof (struct label_alignment));
 
   uid_shuid = (int *) xmalloc (max_uid * sizeof *uid_shuid);
 
@@ -1148,24 +1146,19 @@ shorten_branches (first)
 
   /* Allocate the rest of the arrays.  */
   insn_lengths = (short *) xmalloc (max_uid * sizeof (short));
-  insn_addresses = (int *) xmalloc (max_uid * sizeof (int));
   insn_lengths_max_uid = max_uid;
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
-  bzero ((char *)insn_addresses, max_uid * sizeof *insn_addresses);
-  uid_align = (rtx *) xmalloc (max_uid * sizeof *uid_align);
+  insn_addresses = (int *) xcalloc (max_uid, sizeof (int));
 
-  varying_length = (char *) xmalloc (max_uid * sizeof (char));
-
-  bzero (varying_length, max_uid);
+  varying_length = (char *) xcalloc (max_uid, sizeof (char));
 
   /* Initialize uid_align.  We scan instructions
      from end to start, and keep in align_tab[n] the last seen insn
      that does an alignment of at least n+1, i.e. the successor
      in the alignment chain for an insn that does / has a known
      alignment of n.  */
-
-  bzero ((char *) uid_align, max_uid * sizeof *uid_align);
+  uid_align = (rtx *) xcalloc (max_uid, sizeof *uid_align);
 
   for (i = MAX_CODE_ALIGN; --i >= 0; )
     align_tab[i] = NULL_RTX;

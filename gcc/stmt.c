@@ -4900,12 +4900,11 @@ check_for_full_enumeration_handling (type)
   bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
 
   if (size > 0 && size < 600000
-      /* We deliberately use malloc here - not xmalloc.  */
-      && (cases_seen = (unsigned char *) malloc (bytes_needed)) != NULL)
+      /* We deliberately use calloc here - not xcalloc.  */
+      && (cases_seen = (unsigned char *) calloc (bytes_needed, 1)) != NULL)
     {
       long i;
       tree v = TYPE_VALUES (type);
-      bzero (cases_seen, bytes_needed);
 
       /* The time complexity of this code is normally O(N), where
 	 N being the number of members in the enumerated type.
@@ -5469,8 +5468,7 @@ estimate_case_costs (node)
 
   if (cost_table == NULL)
     {
-      cost_table = ((short *) xmalloc (129 * sizeof (short))) + 1;
-      bzero ((char *) (cost_table - 1), 129 * sizeof (short));
+      cost_table = ((short *) xcalloc (129, sizeof (short))) + 1;
 
       for (i = 0; i < 128; i++)
 	{

@@ -486,10 +486,8 @@ global_alloc (file)
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
      cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
-  conflicts = (INT_TYPE *) xmalloc (max_allocno * allocno_row_words
-				    * sizeof (INT_TYPE));
-  bzero ((char *) conflicts,
-	 max_allocno * allocno_row_words * sizeof (INT_TYPE));
+  conflicts = (INT_TYPE *) xcalloc (max_allocno * allocno_row_words,
+				    sizeof (INT_TYPE));
 
   allocnos_live = (INT_TYPE *) alloca (allocno_row_words * sizeof (INT_TYPE));
 
