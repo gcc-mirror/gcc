@@ -2623,7 +2623,7 @@ tSCC zSun_Auth_ProtoSelect0[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zSun_Auth_ProtoBypass0[] =
-       "\\(\\*[a-z][a-z_]*\\)\\([ \t]*[a-zA-Z.].*\\)";
+       "^[a-zA-Z0-9_ \t]*\\(\\*[a-z][a-z_]*\\)\\([ \t]*[a-zA-Z.].*\\)";
 
 #define    SUN_AUTH_PROTO_TEST_CT  2
 #define    SUN_AUTH_PROTO_RE_CT    2

@@ -2167,7 +2167,7 @@ void	(*signal(...))(...);\
 	./rpc/svc.h | \
 	./rpc/xdr.h )
     if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`" -a \
-              -z "`egrep '\\(\\*[a-z][a-z_]*\\)\\([ 	]*[a-zA-Z.].*\\)' ${file}`"
+              -z "`egrep '^[a-zA-Z0-9_ 	]*\\(\\*[a-z][a-z_]*\\)\\([ 	]*[a-zA-Z.].*\\)' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       sun_auth_proto"

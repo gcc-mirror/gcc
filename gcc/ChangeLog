@@ -2,6 +2,8 @@ Wed Jun  9 06:50 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	*fixinc/inclhack.def(sun_auth_proto): bypass the patch if
 	the typed arguments are not part of a comment
+	*fixinc/fixincl.x: regenerate
+	*fixinc/inclhack.sh: regenerate
 
 Wed Jun  9 22:57:02 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
