@@ -1,3 +1,8 @@
+2001-11-17  Christopher Faylor  <cgf@redhat.com>
+
+	* config/i386/cygwin.h: Search target specific include directory for
+	w32api stuff, if appropriate.
+
 Sat Nov 17 08:20:44 2001  Douglas Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (REG_ALLOC_ORDER): Redefine.
