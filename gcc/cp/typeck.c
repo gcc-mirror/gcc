@@ -355,6 +355,24 @@ common_type (t1, t2)
   code1 = TREE_CODE (t1);
   code2 = TREE_CODE (t2);
 
+  /* If one type is complex, form the common type of the non-complex
+     components, then make that complex.  Use T1 or T2 if it is the
+     required type.  */
+  if (code1 == COMPLEX_TYPE || code2 == COMPLEX_TYPE)
+    {
+      tree subtype1 = code1 == COMPLEX_TYPE ? TREE_TYPE (t1) : t1;
+      tree subtype2 = code2 == COMPLEX_TYPE ? TREE_TYPE (t2) : t2;
+      tree subtype = common_type (subtype1, subtype2);
+
+      if (code1 == COMPLEX_TYPE && TREE_TYPE (t1) == subtype)
+	return build_type_attribute_variant (t1, attributes);
+      else if (code2 == COMPLEX_TYPE && TREE_TYPE (t2) == subtype)
+	return build_type_attribute_variant (t2, attributes);
+      else
+	return build_type_attribute_variant (build_complex_type (subtype),
+					     attributes);
+    }
+
   switch (code1)
     {
     case INTEGER_TYPE:
@@ -1509,7 +1527,7 @@ decay_conversion (exp)
 			      inner);
 	      TREE_CONSTANT (inner) = TREE_CONSTANT (TREE_OPERAND (inner, 0));
 	    }
-	  return convert (build_pointer_type (TREE_TYPE (type)), inner);
+	  return cp_convert (build_pointer_type (TREE_TYPE (type)), inner);
 	}
 
       if (TREE_CODE (exp) == COMPOUND_EXPR)
@@ -1558,7 +1576,7 @@ decay_conversion (exp)
       /* This way is better for a COMPONENT_REF since it can
 	 simplify the offset for a component.  */
       adr = build_unary_op (ADDR_EXPR, exp, 1);
-      return convert (ptrtype, adr);
+      return cp_convert (ptrtype, adr);
     }
 
   return exp;
@@ -1580,7 +1598,7 @@ default_conversion (exp)
     {
       tree t = type_promotes_to (type);
       if (t != type)
-	return convert (t, exp);
+	return cp_convert (t, exp);
     }
 
   return exp;
@@ -2469,12 +2487,12 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 					    index_identifier,
 					    NULL_TREE, 0));
       e1 = fold (build (GT_EXPR, boolean_type_node, idx,
-			convert (delta_type_node, integer_zero_node)));
-      delta = convert (ptrdiff_type_node,
-		       build_component_ref (function, delta_identifier, NULL_TREE, 0));
+			cp_convert (delta_type_node, integer_zero_node)));
+      delta = cp_convert (ptrdiff_type_node,
+			  build_component_ref (function, delta_identifier, NULL_TREE, 0));
       delta2 = DELTA2_FROM_PTRMEMFUNC (function);
 
-      /* convert down to the right base, before using the instance.  */
+      /* Convert down to the right base, before using the instance.  */
       instance
 	= convert_pointer_to_real (TYPE_METHOD_BASETYPE (TREE_TYPE (fntype)),
 				   instance_ptr);
@@ -2485,7 +2503,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       vtbl
 	= build (PLUS_EXPR,
 		 build_pointer_type (build_pointer_type (vtable_entry_type)),
-		 vtbl, convert (ptrdiff_type_node, delta2));
+		 vtbl, cp_convert (ptrdiff_type_node, delta2));
       vtbl = build_indirect_ref (vtbl, NULL_PTR);
       aref = build_array_ref (vtbl, build_binary_op (MINUS_EXPR,
 						     idx,
@@ -2845,7 +2863,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	      && (TYPE_PRECISION (TREE_TYPE (val))
 		  < TYPE_PRECISION (double_type_node)))
 	    /* Convert `float' to `double'.  */
-	    result = tree_cons (NULL_TREE, convert (double_type_node, val), result);
+	    result = tree_cons (NULL_TREE, cp_convert (double_type_node, val), result);
 	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
 		   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	    {
@@ -3139,8 +3157,10 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     case FLOOR_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST && integer_zerop (op1))
 	    cp_warning ("division by zero in `%E / 0'", op0);
@@ -3249,7 +3269,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = convert (integer_type_node, op1);
+	    op1 = cp_convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}
@@ -3271,7 +3291,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = convert (integer_type_node, op1);
+	    op1 = cp_convert (integer_type_node, op1);
 	  /* Avoid converting op1 to result_type later.  */
 	  converted = 1;
 	}
@@ -3296,15 +3316,17 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  /* Convert the shift-count to an integer, regardless of
 	     size of value being shifted.  */
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (op1)) != integer_type_node)
-	    op1 = convert (integer_type_node, op1);
+	    op1 = cp_convert (integer_type_node, op1);
 	}
       break;
 
     case EQ_EXPR:
     case NE_EXPR:
       build_type = boolean_type_node; 
-      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+      if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
+	   || code0 == COMPLEX_TYPE)
+	  && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	      || code1 == COMPLEX_TYPE))
 	short_compare = 1;
       else if (code0 == POINTER_TYPE && code1 == POINTER_TYPE)
 	{
@@ -3496,9 +3518,12 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
       break;
     }
 
-  if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE)
-      && (code1 == INTEGER_TYPE || code1 == REAL_TYPE))
+  if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
+      &&
+      (code1 == INTEGER_TYPE || code1 == REAL_TYPE || code1 == COMPLEX_TYPE))
     {
+      int none_complex = (code0 != COMPLEX_TYPE && code1 != COMPLEX_TYPE);
+
       if (shorten || common || short_compare)
 	result_type = common_type (type0, type1);
 
@@ -3513,7 +3538,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	 Eg, (short)-1 | (unsigned short)-1 is (int)-1
 	 but calculated in (unsigned short) it would be (unsigned short)-1.  */
 
-      if (shorten)
+      if (shorten && none_complex)
 	{
 	  int unsigned0, unsigned1;
 	  tree arg0 = get_narrower (op0, &unsigned0);
@@ -3608,7 +3633,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 					   TREE_TYPE (arg0));
 	      /* Convert value-to-be-shifted to that type.  */
 	      if (TREE_TYPE (op0) != result_type)
-		op0 = convert (result_type, op0);
+		op0 = cp_convert (result_type, op0);
 	      converted = 1;
 	    }
 	}
@@ -3627,7 +3652,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree val 
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
 	  if (val != 0)
-	    return convert (boolean_type_node, val);
+	    return cp_convert (boolean_type_node, val);
 	  op0 = xop0, op1 = xop1;
 	  converted = 1;
 	  resultcode = xresultcode;
@@ -3758,9 +3783,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
   if (! converted)
     {
       if (TREE_TYPE (op0) != result_type)
-	op0 = convert (result_type, op0); 
+	op0 = cp_convert (result_type, op0); 
       if (TREE_TYPE (op1) != result_type)
-	op1 = convert (result_type, op1); 
+	op1 = cp_convert (result_type, op1); 
     }
 
   if (build_type == NULL_TREE)
@@ -3774,7 +3799,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
     if (folded == result)
       TREE_CONSTANT (folded) = TREE_CONSTANT (op0) & TREE_CONSTANT (op1);
     if (final_type != 0)
-      return convert (final_type, folded);
+      return cp_convert (final_type, folded);
     return folded;
   }
 }
@@ -3851,15 +3876,15 @@ pointer_int_sum (resultcode, ptrop, intop)
      so the multiply won't overflow spuriously.  */
 
   if (TYPE_PRECISION (TREE_TYPE (intop)) != TYPE_PRECISION (sizetype))
-    intop = convert (type_for_size (TYPE_PRECISION (sizetype), 0), intop);
+    intop = cp_convert (type_for_size (TYPE_PRECISION (sizetype), 0), intop);
 
   /* Replace the integer argument with a suitable product by the object size.
      Do this multiplication as signed, then convert to the appropriate
      pointer type (actually unsigned integral).  */
 
-  intop = convert (result_type,
-		   build_binary_op (MULT_EXPR, intop,
-				    convert (TREE_TYPE (intop), size_exp), 1));
+  intop = cp_convert (result_type,
+		      build_binary_op (MULT_EXPR, intop,
+				       cp_convert (TREE_TYPE (intop), size_exp), 1));
 
   /* Create the sum or difference.  */
 
@@ -3898,7 +3923,7 @@ pointer_diff (op0, op1)
      then drop through to build the divide operator.  */
 
   op0 = build_binary_op (MINUS_EXPR,
-			 convert (restype, op0), convert (restype, op1), 1);
+			 cp_convert (restype, op0), cp_convert (restype, op1), 1);
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
@@ -3913,7 +3938,7 @@ pointer_diff (op0, op1)
 
   /* Do the division.  */
 
-  result = build (EXACT_DIV_EXPR, restype, op0, convert (restype, op1));
+  result = build (EXACT_DIV_EXPR, restype, op0, cp_convert (restype, op1));
 
   folded = fold (result);
   if (folded == result)
@@ -3964,7 +3989,7 @@ build_component_addr (arg, argtype, msg)
 				size_int (BITS_PER_UNIT));
       int flag = TREE_CONSTANT (rval);
       rval = fold (build (PLUS_EXPR, argtype,
-			  rval, convert (argtype, offset)));
+			  rval, cp_convert (argtype, offset)));
       TREE_CONSTANT (rval) = flag;
     }
   return rval;
@@ -4028,7 +4053,7 @@ condition_conversion (expr)
   tree t;
   if (processing_template_decl)
     return expr;
-  t = convert (boolean_type_node, expr);
+  t = cp_convert (boolean_type_node, expr);
   t = fold (build1 (CLEANUP_POINT_EXPR, boolean_type_node, t));
   return t;
 }
@@ -4082,7 +4107,14 @@ build_unary_op (code, xarg, noconvert)
       break;
 
     case BIT_NOT_EXPR:
-      if (!(arg = build_expr_type_conversion (WANT_INT | WANT_ENUM, arg, 1)))
+      if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	{
+	  code = CONJ_EXPR;
+	  if (!noconvert)
+	    arg = default_conversion (arg);
+	}
+      else if (!(arg = build_expr_type_conversion (WANT_INT | WANT_ENUM,
+						   arg, 1)))
 	errstring = "wrong type argument to bit-complement";
       else if (!noconvert)
 	arg = default_conversion (arg);
@@ -4095,8 +4127,16 @@ build_unary_op (code, xarg, noconvert)
 	arg = default_conversion (arg);
       break;
 
+    case CONJ_EXPR:
+      /* Conjugating a real value is a no-op, but allow it anyway.  */
+      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, 1)))
+	errstring = "wrong type argument to conjugation";
+      else if (!noconvert)
+	arg = default_conversion (arg);
+      break;
+
     case TRUTH_NOT_EXPR:
-      arg = convert (boolean_type_node, arg);
+      arg = cp_convert (boolean_type_node, arg);
       val = invert_truthvalue (arg);
       if (arg != error_mark_node)
 	return val;
@@ -4105,6 +4145,22 @@ build_unary_op (code, xarg, noconvert)
 
     case NOP_EXPR:
       break;
+      
+    case REALPART_EXPR:
+      if (TREE_CODE (arg) == COMPLEX_CST)
+	return TREE_REALPART (arg);
+      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	return fold (build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+      else
+	return arg;
+
+    case IMAGPART_EXPR:
+      if (TREE_CODE (arg) == COMPLEX_CST)
+	return TREE_IMAGPART (arg);
+      else if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	return fold (build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg));
+      else
+	return cp_convert (TREE_TYPE (arg), integer_zero_node);
       
     case PREINCREMENT_EXPR:
     case POSTINCREMENT_EXPR:
@@ -4116,6 +4172,19 @@ build_unary_op (code, xarg, noconvert)
       val = unary_complex_lvalue (code, arg);
       if (val != 0)
 	return val;
+
+      /* Increment or decrement the real part of the value,
+	 and don't change the imaginary part.  */
+      if (TREE_CODE (TREE_TYPE (arg)) == COMPLEX_TYPE)
+	{
+	  tree real, imag;
+
+	  arg = stabilize_reference (arg);
+	  real = build_unary_op (REALPART_EXPR, arg, 1);
+	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);
+	  return build (COMPLEX_EXPR, TREE_TYPE (arg),
+			build_unary_op (code, real, 1), imag);
+	}
 
       /* Report invalid types.  */
 
@@ -4176,7 +4245,7 @@ build_unary_op (code, xarg, noconvert)
 	else
 	  inc = integer_one_node;
 
-	inc = convert (argtype, inc);
+	inc = cp_convert (argtype, inc);
 
 	/* Handle incrementing a cast-expression.  */
 
@@ -4251,7 +4320,7 @@ build_unary_op (code, xarg, noconvert)
 	  val = build (code, TREE_TYPE (arg), arg, inc);
 
 	TREE_SIDE_EFFECTS (val) = 1;
-	return convert (result_type, val);
+	return cp_convert (result_type, val);
       }
 
     case ADDR_EXPR:
@@ -4438,9 +4507,9 @@ convert_sequence (conversions, arg)
     case FIX_FLOOR_EXPR:
     case FIX_ROUND_EXPR:
     case FIX_CEIL_EXPR:
-      return convert (TREE_TYPE (conversions),
-		      convert_sequence (TREE_OPERAND (conversions, 0),
-					arg));
+      return cp_convert (TREE_TYPE (conversions),
+			 convert_sequence (TREE_OPERAND (conversions, 0),
+					   arg));
 
     default:
       return arg;
@@ -4556,7 +4625,7 @@ unary_complex_lvalue (code, arg)
 	     data member of a structure.  */
 	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
 
-	  return convert (build_pointer_type (TREE_TYPE (arg)), offset);
+	  return cp_convert (build_pointer_type (TREE_TYPE (arg)), offset);
 	}
     }
 
@@ -4608,6 +4677,8 @@ mark_addressable (exp)
       case ADDR_EXPR:
       case COMPONENT_REF:
       case ARRAY_REF:
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
 	x = TREE_OPERAND (x, 0);
 	break;
 
@@ -4731,7 +4802,7 @@ build_conditional_expr (ifexp, op1, op2)
       ifexp = op1 = save_expr (ifexp);
     }
 
-  ifexp = convert (boolean_type_node, ifexp);
+  ifexp = cp_convert (boolean_type_node, ifexp);
 
   if (TREE_CODE (ifexp) == ERROR_MARK)
     return error_mark_node;
@@ -5280,7 +5351,7 @@ build_reinterpret_cast (type, expr)
       return error_mark_node;
     }
       
-  return convert (type, expr);
+  return cp_convert (type, expr);
 }
 
 tree
@@ -5339,7 +5410,7 @@ build_const_cast (type, expr)
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && TREE_CODE (intype) == POINTER_TYPE
 	   && comp_ptr_ttypes_const (TREE_TYPE (type), TREE_TYPE (intype)))
-    return convert (type, expr);
+    return cp_convert (type, expr);
 
   cp_error ("const_cast from `%T' to `%T'", intype, type);
   return error_mark_node;
@@ -5621,9 +5692,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	   so the code to compute it is only emitted once.  */
 	tree cond
 	  = build_conditional_expr (TREE_OPERAND (lhs, 0),
-				    build_modify_expr (convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 1)),
+				    build_modify_expr (cp_convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 1)),
 						       modifycode, rhs),
-				    build_modify_expr (convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 2)),
+				    build_modify_expr (cp_convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 2)),
 						       modifycode, rhs));
 	if (cond == error_mark_node)
 	  return cond;
@@ -5632,7 +5703,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	return build (COMPOUND_EXPR, TREE_TYPE (lhs),
 		      /* Case to void to suppress warning
 			 from warn_if_unused_value.  */
-		      convert (void_type_node, rhs), cond);
+		      cp_convert (void_type_node, rhs), cond);
       }
     }
 
@@ -5779,11 +5850,11 @@ build_modify_expr (lhs, modifycode, rhs)
 	  pedwarn ("ANSI C++ forbids cast to non-reference type used as lvalue");
 
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
-				    convert (TREE_TYPE (inner_lhs),
-					     convert (lhstype, newrhs)));
+				    cp_convert (TREE_TYPE (inner_lhs),
+						cp_convert (lhstype, newrhs)));
 	if (result == error_mark_node)
 	  return result;
-	return convert (TREE_TYPE (lhs), result);
+	return cp_convert (TREE_TYPE (lhs), result);
       }
     }
 
@@ -5999,11 +6070,11 @@ build_modify_expr (lhs, modifycode, rhs)
 	  result
 	    = build (COND_EXPR, result_type, cond,
 		     build_modify_expr (lhs, modifycode,
-					convert (result_type,
-						 TREE_OPERAND (newrhs, 1))),
+					cp_convert (result_type,
+						    TREE_OPERAND (newrhs, 1))),
 		     build_modify_expr (lhs1, modifycode,
-					convert (result_type,
-						 TREE_OPERAND (newrhs, 2))));
+					cp_convert (result_type,
+						    TREE_OPERAND (newrhs, 2))));
 	}
     }
   else
@@ -6116,7 +6187,7 @@ get_delta_difference (from, to, force)
 	  warning ("pointer to member conversion to virtual base class will only work if you are very careful");
 	}
       delta = BINFO_OFFSET (binfo);
-      delta = convert (ptrdiff_type_node, delta);
+      delta = cp_convert (ptrdiff_type_node, delta);
       
       return build_binary_op (MINUS_EXPR,
 			      integer_zero_node,
@@ -6234,8 +6305,8 @@ build_ptrmemfunc (type, pfn, force)
       if (type == TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))
 	return pfn;
 
-      ndelta = convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
-      ndelta2 = convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
+      ndelta = cp_convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
+      ndelta2 = cp_convert (ptrdiff_type_node, DELTA2_FROM_PTRMEMFUNC (pfn));
       idx = build_component_ref (pfn, index_identifier, NULL_TREE, 0);
 
       n = get_delta_difference (TYPE_METHOD_BASETYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn)))),
@@ -6405,8 +6476,10 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       return error_mark_node;
     }
   /* Arithmetic types all interconvert.  */
-  if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == BOOLEAN_TYPE)
-       && (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == BOOLEAN_TYPE))
+  if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == BOOLEAN_TYPE
+       || codel == COMPLEX_TYPE)
+       && (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == BOOLEAN_TYPE
+	   || coder == COMPLEX_TYPE))
     {
       /* But we should warn if assigning REAL_TYPE to INTEGER_TYPE.  */
       if (coder == REAL_TYPE && codel == INTEGER_TYPE)
@@ -6444,7 +6517,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	   || (coder == ENUMERAL_TYPE
 	       && (INTEGRAL_CODE_P (codel) || codel == REAL_TYPE)))
     {
-      return cp_convert (type, rhs, CONV_IMPLICIT, LOOKUP_NORMAL);
+      return ocp_convert (type, rhs, CONV_IMPLICIT, LOOKUP_NORMAL);
     }
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE
@@ -6678,7 +6751,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	      return error_mark_node;
 	    }
 	}
-      return convert (type, rhs);
+      return cp_convert (type, rhs);
     }
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
     {
@@ -6693,7 +6766,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	    cp_pedwarn ("%s to `%T' from `%T' lacks a cast",
 			errtype, type, rhstype);
 	}
-      return convert (type, rhs);
+      return cp_convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE
 	   && (coder == POINTER_TYPE
@@ -6708,7 +6781,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       else
 	cp_pedwarn ("%s to `%T' from `%T' lacks a cast",
 		    errtype, type, rhstype);
-      return convert (type, rhs);
+      return cp_convert (type, rhs);
     }
   else if (codel == BOOLEAN_TYPE
 	   && (coder == POINTER_TYPE
@@ -6716,7 +6789,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 		   && (IS_SIGNATURE_POINTER (rhstype)
 		       || TYPE_PTRMEMFUNC_FLAG (rhstype)
 		       || IS_SIGNATURE_REFERENCE (rhstype)))))
-    return convert (type, rhs);
+    return cp_convert (type, rhs);
 
   /* C++ */
   else if (((coder == POINTER_TYPE
@@ -6754,14 +6827,14 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
       return nrhs;
     }
   else if (TYPE_HAS_CONSTRUCTOR (type) || IS_AGGR_TYPE (TREE_TYPE (rhs)))
-    return convert (type, rhs);
+    return cp_convert (type, rhs);
   /* Handle anachronistic conversions from (::*)() to cv void* or (*)().  */
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
 	       || TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
 	   && TREE_TYPE (rhs)
 	   && TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
-    return convert (type, rhs);
+    return cp_convert (type, rhs);
 
   cp_error ("%s to `%T' from `%T'", errtype, type, rhstype);
   return error_mark_node;
@@ -6881,7 +6954,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       && (TYPE_NEEDS_CONSTRUCTING (type) || TREE_HAS_CONSTRUCTOR (rhs)))
     {
       if (flag_ansi_overloading)
-	return cp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
+	return ocp_convert (type, rhs, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
       if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
 	{
@@ -6952,8 +7025,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	  return rhs;
 	}
 
-      return cp_convert (type, rhs, CONV_OLD_CONVERT,
-			 flags | LOOKUP_NO_CONVERSION);
+      return ocp_convert (type, rhs, CONV_OLD_CONVERT,
+			  flags | LOOKUP_NO_CONVERSION);
     }
 
   if (type == TREE_TYPE (rhs))

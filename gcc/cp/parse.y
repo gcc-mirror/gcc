@@ -140,6 +140,7 @@ empty_parms ()
 %token BREAK CONTINUE RETURN GOTO ASM_KEYWORD GCC_ASM_KEYWORD TYPEOF ALIGNOF
 %token SIGOF
 %token ATTRIBUTE EXTENSION LABEL
+%token REALPART IMAGPART
 
 /* the reserved words... C++ extensions */
 %token <ttype> AGGR
@@ -1104,6 +1105,10 @@ unary_expr:
 		{ $$ = delete_sanity ($5, $3, 2, $1);
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX; }
+	| REALPART cast_expr %prec UNARY
+		{ $$ = build_x_unary_op (REALPART_EXPR, $2); }
+	| IMAGPART cast_expr %prec UNARY
+		{ $$ = build_x_unary_op (IMAGPART_EXPR, $2); }
 	;
 
 new_placement:
@@ -1542,7 +1547,7 @@ primary:
 		      && (TREE_CODE (TREE_TYPE ($1)) 
 			  != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3)))))
 		    cp_error ("`%E' is not of type `%T'", $1, $3);
-		  $$ = convert (void_type_node, $1);
+		  $$ = cp_convert (void_type_node, $1);
 		}
 	| object TYPESPEC SCOPE '~' TYPESPEC LEFT_RIGHT
 		{
@@ -1551,7 +1556,7 @@ primary:
 		  if (TREE_CODE (TREE_TYPE ($1))
 		      != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($2))))
 		    cp_error ("`%E' is not of type `%T'", $1, $2);
-		  $$ = convert (void_type_node, $1);
+		  $$ = cp_convert (void_type_node, $1);
 		}
 	| object error
 		{
@@ -2558,9 +2563,6 @@ left_curly:
 self_reference:
 	  /* empty */
 		{
-		  if (CLASSTYPE_TEMPLATE_INFO (current_class_type))
-		    $$ = NULL_TREE;
-		  else
 		    $$ = build_self_reference ();
 		}
 	;

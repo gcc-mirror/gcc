@@ -639,6 +639,9 @@ init_lex ()
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_REGISTER],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_REGISTER]));
+  ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_COMPLEX],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_COMPLEX]));
 
   /* C++ extensions. These are probably not correctly named.  */
   ridpointers[(int) RID_WCHAR] = get_identifier ("__wchar_t");
@@ -806,6 +809,8 @@ init_lex ()
       UNSET_RESERVED_WORD ("signature");
       UNSET_RESERVED_WORD ("sigof");
     }
+  if (flag_no_gnu_keywords)
+    UNSET_RESERVED_WORD ("complex");
   if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
   if (! flag_operator_names)
@@ -2861,7 +2866,7 @@ real_yylex ()
 		  p = extend_token_buffer (p);
 
 		*p++ = c;
-		c = getc (finput);
+		c = getch (finput);
 	      }
 
 	    if (linemode && c == '\n')
@@ -3148,11 +3153,11 @@ real_yylex ()
 	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS} floatflag
 	  = NOT_FLOAT;
 
-	p = token_buffer;
-	*p++ = c;
-
 	for (count = 0; count < TOTAL_PARTS; count++)
 	  parts[count] = 0;
+
+	p = token_buffer;
+	*p++ = c;
 
 	if (c == '0')
 	  {
@@ -3177,16 +3182,23 @@ real_yylex ()
 	while (c == '.'
 	       || (isalnum (c) && (c != 'l') && (c != 'L')
 		   && (c != 'u') && (c != 'U')
+		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
 		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
 	  {
 	    if (c == '.')
 	      {
 		if (base == 16)
 		  error ("floating constant may not be in radix 16");
-		if (floatflag == AFTER_POINT)
+		if (floatflag == TOO_MANY_POINTS)
+		  /* We have already emitted an error.  Don't need another.  */
+		  ;
+		else if (floatflag == AFTER_POINT)
 		  {
 		    error ("malformed floating constant");
 		    floatflag = TOO_MANY_POINTS;
+		    /* Avoid another error from atof by forcing all characters
+		       from here on to be ignored.  */
+		    p[-1] = '\0';
 		  }
 		else
 		  floatflag = AFTER_POINT;
@@ -3286,9 +3298,8 @@ real_yylex ()
 	if (floatflag != NOT_FLOAT)
 	  {
 	    tree type = double_type_node;
-	    char f_seen = 0;
-	    char l_seen = 0;
-	    int garbage_chars = 0;
+	    int exceeds_double = 0;
+	    int imag = 0;
 	    REAL_VALUE_TYPE value;
 	    jmp_buf handler;
 
@@ -3327,76 +3338,117 @@ real_yylex ()
 	      }
 	    else
 	      {
+		int fflag = 0, lflag = 0;
+		/* Copy token_buffer now, while it has just the number
+		   and not the suffixes; once we add `f' or `i',
+		   REAL_VALUE_ATOF may not work any more.  */
+		char *copy = (char *) alloca (p - token_buffer + 1);
+		bcopy (token_buffer, copy, p - token_buffer + 1);
+
 		set_float_handler (handler);
-		/*  The second argument, machine_mode, of REAL_VALUE_ATOF
-		    tells the desired precision of the binary result of
-		    decimal-to-binary conversion.  */
 
-		/* Read the suffixes to choose a data type.  */
-		switch (c)
+		while (1)
 		  {
-		  case 'f': case 'F':
-		    type = float_type_node;
-		    value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		    garbage_chars = -1;
-		    break;
+		    int lose = 0;
 
-		  case 'l': case 'L':
-		    type = long_double_type_node;
-		    value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		    garbage_chars = -1;
-		    break;
+		    /* Read the suffixes to choose a data type.  */
+		    switch (c)
+		      {
+		      case 'f': case 'F':
+			if (fflag)
+			  error ("more than one `f' in numeric constant");
+			fflag = 1;
+			break;
 
-		  default:
-		    value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
+		      case 'l': case 'L':
+			if (lflag)
+			  error ("more than one `l' in numeric constant");
+			lflag = 1;
+			break;
+
+		      case 'i': case 'I':
+			if (imag)
+			  error ("more than one `i' or `j' in numeric constant");
+			else if (pedantic)
+			  pedwarn ("ANSI C++ forbids imaginary numeric constants");
+			imag = 1;
+			break;
+
+		      default:
+			lose = 1;
+		      }
+
+		    if (lose)
+		      break;
+
+		    if (p >= token_buffer + maxtoken - 3)
+		      p = extend_token_buffer (p);
+		    *p++ = c;
+		    *p = 0;
+		    c = getch (finput);
 		  }
+
+		/* The second argument, machine_mode, of REAL_VALUE_ATOF
+		   tells the desired precision of the binary result
+		   of decimal-to-binary conversion.  */
+
+		if (fflag)
+		  {
+		    if (lflag)
+		      error ("both `f' and `l' in floating constant");
+
+		    type = float_type_node;
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    /* A diagnostic is required here by some ANSI C testsuites.
+		       This is not pedwarn, become some people don't want
+		       an error for this.  */
+		    if (REAL_VALUE_ISINF (value) && pedantic)
+		      warning ("floating point number exceeds range of `float'");
+		  }
+		else if (lflag)
+		  {
+		    type = long_double_type_node;
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    if (REAL_VALUE_ISINF (value) && pedantic)
+		      warning ("floating point number exceeds range of `long double'");
+		  }
+		else
+		  {
+		    value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
+		    if (REAL_VALUE_ISINF (value) && pedantic)
+		      warning ("floating point number exceeds range of `double'");
+		  }
+
 		set_float_handler (NULL_PTR);
 	      }
-	    if (pedantic
-		&& (REAL_VALUE_ISINF (value)
 #ifdef ERANGE
-		    || (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-			&& errno == ERANGE
-			/* ERANGE is also reported for underflow, so test the
-			   value to distinguish overflow from that.  */
-			&& (REAL_VALUES_LESS (dconst1, value)
-			    || REAL_VALUES_LESS (value, dconstm1)))
+	    if (errno == ERANGE && pedantic)
+	      {
+  		/* ERANGE is also reported for underflow,
+  		   so test the value to distinguish overflow from that.  */
+		if (REAL_VALUES_LESS (dconst1, value)
+		    || REAL_VALUES_LESS (value, dconstm1))
+		  {
+		    pedwarn ("floating point number exceeds range of `%s'",
+			     IDENTIFIER_POINTER (TYPE_IDENTIFIER (type)));
+		    exceeds_double = 1;
+		  }
+	      }
 #endif
-		    ))
-	      {
-		pedwarn ("floating point number exceeds range of `%s'",
-			 IDENTIFIER_POINTER (TYPE_IDENTIFIER (type)));
-	      }
-	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
-	    while (isalnum (c))
-	      {
-		if (c == 'f' || c == 'F')
-		  {
-		    if (f_seen)
-		      error ("two `f's in floating constant");
-		    f_seen = 1;
-		  }
-		if (c == 'l' || c == 'L')
-		  {
-		    if (l_seen)
-		      error ("two `l's in floating constant");
-		    l_seen = 1;
-		  }
-		if (p >= token_buffer + maxtoken - 3)
-		  p = extend_token_buffer (p);
-		*p++ = c;
-		c = getch ();
-		garbage_chars++;
-	      }
 
-	    if (garbage_chars > 0)
-	      error ("garbage at end of number");
+	    /* If the result is not a number, assume it must have been
+	       due to some error message above, so silently convert
+	       it to a zero.  */
+	    if (REAL_VALUE_ISNAN (value))
+	      value = dconst0;
 
 	    /* Create a node with determined type and value.  */
-	    yylval.ttype = build_real (type, value);
-
-	    put_back (c);
-	    *p = 0;
+	    if (imag)
+	      yylval.ttype = build_complex (NULL_TREE,
+					    cp_convert (type, integer_zero_node),
+					    build_real (type, value));
+	    else
+	      yylval.ttype = build_real (type, value);
 	  }
 	else
 	  {
@@ -3405,6 +3457,7 @@ real_yylex ()
 	    int spec_unsigned = 0;
 	    int spec_long = 0;
 	    int spec_long_long = 0;
+	    int spec_imag = 0;
 	    int bytes, warn;
 
 	    while (1)
@@ -3427,28 +3480,21 @@ real_yylex ()
 		      }
 		    spec_long = 1;
 		  }
-		else
+		else if (c == 'i' || c == 'j' || c == 'I' || c == 'J')
 		  {
-		    if (isalnum (c))
-		      {
-			error ("garbage at end of number");
-			while (isalnum (c))
-			  {
-			    if (p >= token_buffer + maxtoken - 3)
-			      p = extend_token_buffer (p);
-			    *p++ = c;
-			    c = getch ();
-			  }
-		      }
-		    break;
+		    if (spec_imag)
+		      error ("more than one `i' or `j' in numeric constant");
+		    else if (pedantic)
+		      pedwarn ("ANSI C++ forbids imaginary numeric constants");
+		    spec_imag = 1;
 		  }
+		else
+		  break;
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
 		*p++ = c;
-		c = getch ();
+		c = getch (finput);
 	      }
-
-	    put_back (c);
 
 	    /* If the constant is not long long and it won't fit in an
 	       unsigned long, or if the constant is long long and won't fit
@@ -3499,23 +3545,17 @@ real_yylex ()
 		/* Nondecimal constants try unsigned even in traditional C.  */
 		type = unsigned_type_node;
 	      }
-
 	    else if (!spec_unsigned && !spec_long_long
 		     && int_fits_type_p (yylval.ttype, long_integer_type_node))
 	      type = long_integer_type_node;
-
-	    else if (! spec_long_long
-		     && int_fits_type_p (yylval.ttype,
-					 long_unsigned_type_node))
+	    else if (! spec_long_long)
 	      type = long_unsigned_type_node;
-
 	    else if (! spec_unsigned
 		     /* Verify value does not overflow into sign bit.  */
 		     && TREE_INT_CST_HIGH (yylval.ttype) >= 0
 		     && int_fits_type_p (yylval.ttype,
 					 long_long_integer_type_node))
 	      type = long_long_integer_type_node;
-
 	    else if (int_fits_type_p (yylval.ttype,
 				      long_long_unsigned_type_node))
 	      type = long_long_unsigned_type_node;
@@ -3527,11 +3567,24 @@ real_yylex ()
 
 		if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
 		  warning ("decimal integer constant is so large that it is unsigned");
+		if (spec_imag)
+		  {
+		    if (TYPE_PRECISION (type)
+			<= TYPE_PRECISION (integer_type_node))
+		      yylval.ttype
+			= build_complex (NULL_TREE, integer_zero_node,
+					 cp_convert (integer_type_node,
+						     yylval.ttype));
+		    else
+		      error ("complex integer constant is too wide for `complex int'");
+		  }
 	      }
 
 	    TREE_TYPE (yylval.ttype) = type;
-	    *p = 0;
 	  }
+
+	put_back (c);
+	*p = 0;
 
 	value = CONSTANT; break;
       }

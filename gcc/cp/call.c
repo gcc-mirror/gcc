@@ -1448,7 +1448,7 @@ build_scoped_method_call (exp, basetype, name, parms)
       if (basetype != name && basetype != get_type_value (name))
 	cp_error ("qualified type `%T' does not match destructor name `~%T'",
 		  basetype, name);
-      return convert (void_type_node, exp);
+      return cp_convert (void_type_node, exp);
     }
 
   if (! is_aggr_type (basetype, 1))
@@ -1494,7 +1494,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	      return error_mark_node;
 	    }
 	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
-	    return convert (void_type_node, exp);
+	    return cp_convert (void_type_node, exp);
 	  
 	  return build_delete (TREE_TYPE (decl), decl, integer_two_node,
 			       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR,
@@ -1751,11 +1751,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	{
 	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
 		    name, basetype);
-	  return convert (void_type_node, instance);
+	  return cp_convert (void_type_node, instance);
 	}
 
       if (! TYPE_HAS_DESTRUCTOR (basetype))
-	return convert (void_type_node, instance);
+	return cp_convert (void_type_node, instance);
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
       return build_delete (build_pointer_type (basetype),
@@ -1986,7 +1986,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    basetype = inst_ptr_basetype;
 	  else
 	    {
-	      instance_ptr = convert (build_pointer_type (basetype), instance_ptr);
+	      instance_ptr = cp_convert (build_pointer_type (basetype), instance_ptr);
 	      if (instance_ptr == error_mark_node)
 		return error_mark_node;
 	    }
@@ -4835,6 +4835,8 @@ builtin:
     case POSTINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case POSTDECREMENT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       return build_unary_op (code, arg1, candidates != 0);
 
     case ARRAY_REF:
@@ -4972,8 +4974,8 @@ convert_like (convs, expr)
     case LVALUE_CONV:
       return decay_conversion (expr);
     }
-  return cp_convert (TREE_TYPE (convs), expr, CONV_IMPLICIT,
-		     LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
+  return ocp_convert (TREE_TYPE (convs), expr, CONV_IMPLICIT,
+		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
 static tree
@@ -5125,7 +5127,7 @@ build_over_call (fn, convs, args, flags)
 	  && (TYPE_PRECISION (TREE_TYPE (val))
 	      < TYPE_PRECISION (double_type_node)))
 	/* Convert `float' to `double'.  */
-	val = convert (double_type_node, val);
+	val = cp_convert (double_type_node, val);
       else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
 	       && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	cp_warning ("cannot pass objects of type `%T' through `...'",

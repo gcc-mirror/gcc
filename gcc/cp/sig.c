@@ -620,20 +620,20 @@ build_signature_table_constructor (sig_ty, rhs)
 	  pfn_decl = TREE_CHAIN (index_decl);
 	  vt_off_decl = TREE_CHAIN (pfn_decl);
 	  
-	  tag = convert (TREE_TYPE (tag_decl), tag);
-	  vb_off = convert (TREE_TYPE (vb_off_decl), vb_off);
-	  delta = convert (TREE_TYPE (delta_decl), delta);
-	  idx = convert (TREE_TYPE (index_decl), idx);
+	  tag = cp_convert (TREE_TYPE (tag_decl), tag);
+	  vb_off = cp_convert (TREE_TYPE (vb_off_decl), vb_off);
+	  delta = cp_convert (TREE_TYPE (delta_decl), delta);
+	  idx = cp_convert (TREE_TYPE (index_decl), idx);
 
 	  if (DECL_VINDEX (rhs_method))
 	    {
-	      vt_off = convert (TREE_TYPE (vt_off_decl), vt_off);
+	      vt_off = cp_convert (TREE_TYPE (vt_off_decl), vt_off);
 
 	      tbl_entry = build_tree_list (vt_off_decl, vt_off);
 	    }
 	  else
 	    {
-	      pfn = convert (TREE_TYPE (pfn_decl), pfn);
+	      pfn = cp_convert (TREE_TYPE (pfn_decl), pfn);
 
 	      tbl_entry = build_tree_list (pfn_decl, pfn);
 	    }
@@ -956,11 +956,11 @@ build_signature_method_call (function, parms)
     }
 
   new_object_ptr = build (PLUS_EXPR, build_pointer_type (basetype),
-			  convert (ptrdiff_type_node, object_ptr),
-			  convert (ptrdiff_type_node, delta));
+			  cp_convert (ptrdiff_type_node, object_ptr),
+			  cp_convert (ptrdiff_type_node, delta));
 
   parms = tree_cons (NULL_TREE,
-		     convert (build_pointer_type (basetype), object_ptr),
+		     cp_convert (build_pointer_type (basetype), object_ptr),
 		     TREE_CHAIN (parms));
   new_parms = tree_cons (NULL_TREE, new_object_ptr, TREE_CHAIN (parms));
 
@@ -980,8 +980,8 @@ build_signature_method_call (function, parms)
 
       vfld = build (PLUS_EXPR,
 		    build_pointer_type (build_pointer_type (vtbl_type_node)),
-		    convert (ptrdiff_type_node, object_ptr),
-		    convert (ptrdiff_type_node, vt_off));
+		    cp_convert (ptrdiff_type_node, object_ptr),
+		    cp_convert (ptrdiff_type_node, vt_off));
       vtbl = build_indirect_ref (build_indirect_ref (vfld, NULL_PTR),
 				 NULL_PTR);
       aref = build_array_ref (vtbl, idx);

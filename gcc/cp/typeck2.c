@@ -816,7 +816,7 @@ digest_init (type, init, tail)
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
-      || code == BOOLEAN_TYPE
+      || code == BOOLEAN_TYPE || code == COMPLEX_TYPE
       || (code == RECORD_TYPE && ! raw_constructor
 	  && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))))
     {

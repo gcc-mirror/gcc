@@ -283,7 +283,7 @@ cp_convert_to_pointer (type, expr)
     {
       if (type_precision (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
-      expr = convert (type_for_size (POINTER_SIZE, 0), expr);
+      expr = cp_convert (type_for_size (POINTER_SIZE, 0), expr);
       /* Modes may be different but sizes should be the same.  */
       if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
 	  != GET_MODE_SIZE (TYPE_MODE (type)))
@@ -606,7 +606,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	rval = rval_as_conversion;
       else if (! IS_AGGR_TYPE (type) && ! IS_AGGR_TYPE (intype))
 	{
-	  rval = convert (type, expr);
+	  rval = cp_convert (type, expr);
 	  if (rval == error_mark_node)
 	    return error_mark_node;
 	  
@@ -922,12 +922,21 @@ convert_pointer_to (binfo, expr)
   return convert_pointer_to_real (type, expr);
 }
 
+/* C++ conversions, preference to static cast conversions.  */
+
+tree
+cp_convert (type, expr)
+     tree type, expr;
+{
+  return ocp_convert (type, expr, CONV_OLD_CONVERT, LOOKUP_NORMAL);
+}
+
 /* Conversion...
 
    FLAGS indicates how we should behave.  */
 
 tree
-cp_convert (type, expr, convtype, flags)
+ocp_convert (type, expr, convtype, flags)
      tree type, expr;
      int convtype, flags;
 {
@@ -951,7 +960,7 @@ cp_convert (type, expr, convtype, flags)
   /* This is incorrect.  A truncation can't be stripped this way.
      Extensions will be stripped by the use of get_unwidened.  */
   if (TREE_CODE (e) == NOP_EXPR)
-    return convert (type, TREE_OPERAND (e, 0));
+    return cp_convert (type, TREE_OPERAND (e, 0));
 #endif
 
   /* Just convert to the type of the member.  */
@@ -1014,7 +1023,7 @@ cp_convert (type, expr, convtype, flags)
   if (code == POINTER_TYPE || code == REFERENCE_TYPE
       || TYPE_PTRMEMFUNC_P (type))
     return fold (cp_convert_to_pointer (type, e));
-  if (code == REAL_TYPE)
+  if (code == REAL_TYPE || code == COMPLEX_TYPE)
     {
       if (IS_AGGR_TYPE (TREE_TYPE (e)))
 	{
@@ -1027,7 +1036,10 @@ cp_convert (type, expr, convtype, flags)
 	      cp_error ("`%#T' used where a floating point value was expected",
 			TREE_TYPE (e));
 	}
-      return fold (convert_to_real (type, e));
+      if (code == REAL_TYPE)
+	return fold (convert_to_real (type, e));
+      else if (code == COMPLEX_TYPE)
+	return fold (convert_to_complex (type, e));
     }
 
   /* New C++ semantics:  since assignment is now based on
@@ -1155,16 +1167,82 @@ cp_convert (type, expr, convtype, flags)
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable
    conversions; callers should filter out those that are
-   not permitted by the language being compiled.  */
+   not permitted by the language being compiled.
+
+   Most of this routine is from build_reinterpret_cast.
+
+   The backend cannot call cp_convert (what was convert) because
+   conversions to/from basetypes may involve memory references
+   (vbases) and adding or subtracting small values (multiple
+   inheritance), but it calls convert from the constant folding code
+   on subtrees of already build trees after it has ripped them apart.
+
+   Also, if we ever support range variables, we'll probably also have to
+   do a little bit more work.  */
 
 tree
 convert (type, expr)
      tree type, expr;
 {
-  return cp_convert (type, expr, CONV_OLD_CONVERT, LOOKUP_NORMAL);
+  tree intype;
+
+  if (type == error_mark_node || expr == error_mark_node)
+    return error_mark_node;
+
+  if (TREE_TYPE (expr) == type)
+    return expr;
+
+  if (TREE_CODE (type) != REFERENCE_TYPE)
+    {
+      expr = decay_conversion (expr);
+
+      /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
+	 Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
+      if (TREE_CODE (expr) == NOP_EXPR
+	  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
+	expr = TREE_OPERAND (expr, 0);
+    }
+
+  intype = TREE_TYPE (expr);
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    {
+      expr = build_unary_op (ADDR_EXPR, expr, 0);
+      if (expr != error_mark_node)
+	expr = convert (build_pointer_type (TREE_TYPE (type)), expr);
+      if (expr != error_mark_node)
+	expr = build_indirect_ref (expr, 0);
+      return expr;
+    }
+  else if (comptypes (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type), 1))
+    return build_static_cast (type, expr);
+
+  if (TYPE_PTR_P (type) && (TREE_CODE (intype) == INTEGER_TYPE
+			    || TREE_CODE (intype) == ENUMERAL_TYPE))
+    /* OK */;
+  else if (TREE_CODE (type) == INTEGER_TYPE && TYPE_PTR_P (intype))
+    {
+    }
+  else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
+	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
+    {
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
+      return fold (build1 (NOP_EXPR, type, expr));
+    }
+  else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+	   || (TYPE_PTROBV_P (type) && TYPE_PTROBV_P (intype)))
+    {
+      if (TREE_READONLY_DECL_P (expr))
+	expr = decl_constant_value (expr);
+      return fold (build1 (NOP_EXPR, type, expr));
+    }
+
+  return ocp_convert (type, expr, CONV_OLD_CONVERT,
+		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
-/* Like convert, except permit conversions to take place which
+/* Like cp_convert, except permit conversions to take place which
    are not normally allowed due to access restrictions
    (such as conversion from sub-type to private super-type).  */
 
@@ -1198,7 +1276,7 @@ convert_force (type, expr, convtype)
       return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
     }
 
-  return cp_convert (type, e, CONV_C_CAST|convtype, LOOKUP_NORMAL);
+  return ocp_convert (type, e, CONV_C_CAST|convtype, LOOKUP_NORMAL);
 }
 
 /* Subroutine of build_type_conversion.  */
@@ -1234,7 +1312,7 @@ build_type_conversion_1 (xtype, basetype, expr, typename, for_sure)
       && (TREE_READONLY (TREE_TYPE (TREE_TYPE (rval)))
 	  > TREE_READONLY (TREE_TYPE (xtype))))
     warning ("user-defined conversion casting away `const'");
-  return convert (xtype, rval);
+  return cp_convert (xtype, rval);
 }
 
 /* Convert an aggregate EXPR to type XTYPE.  If a conversion
@@ -1539,8 +1617,8 @@ build_default_binary_type_conversion (code, arg1, arg2)
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      *arg1 = convert (boolean_type_node, *arg1);
-      *arg2 = convert (boolean_type_node, *arg2);
+      *arg1 = cp_convert (boolean_type_node, *arg1);
+      *arg2 = cp_convert (boolean_type_node, *arg2);
       break;
 
     default:

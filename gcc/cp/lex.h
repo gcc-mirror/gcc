@@ -62,6 +62,7 @@ enum rid
   RID_SIGNED,
   RID_AUTO,
   RID_MUTABLE,
+  RID_COMPLEX,
 
   /* This is where grokdeclarator ends its search when setting the
      specbits.  */
@@ -81,7 +82,7 @@ enum rid
 #define NORID RID_UNUSED
 
 #define RID_FIRST_MODIFIER RID_EXTERN
-#define RID_LAST_MODIFIER RID_MUTABLE
+#define RID_LAST_MODIFIER RID_COMPLEX
 
 /* The type that can represent all values of RIDBIT.  */
 /* We assume that we can stick in at least 32 bits into this.  */

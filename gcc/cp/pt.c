@@ -133,7 +133,9 @@ process_template_parm (list, next)
 	    error ("  a template type parameter must begin with `class' or `typename'");
 	  TREE_TYPE (parm) = void_type_node;
 	}
-      else if (pedantic && TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE)
+      else if (pedantic
+	       && (TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE
+		   || TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE))
 	cp_pedwarn ("`%T' is not a valid type for a template constant parameter",
 		    TREE_TYPE (parm));
       tinfo = make_node (TEMPLATE_CONST_PARM);
@@ -916,6 +918,7 @@ uses_template_parms (t)
       return uses_template_parms (TYPE_MAX_VALUE (t));
 
     case REAL_TYPE:
+    case COMPLEX_TYPE:
     case VOID_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
@@ -1205,12 +1208,13 @@ instantiate_class_template (type)
 	{
 	  tree e, newtag = tsubst_enum (tag, &TREE_VEC_ELT (args, 0),
 					TREE_VEC_LENGTH (args));
-	  for (e = TYPE_VALUES (newtag); e; e = TREE_CHAIN (e))
-	    DECL_FIELD_CONTEXT (TREE_VALUE (e)) = type;
 
 	  *field_chain = grok_enum_decls (newtag, NULL_TREE);
 	  while (*field_chain)
-	    field_chain = &TREE_CHAIN (*field_chain);
+	    {
+	      DECL_FIELD_CONTEXT (*field_chain) = type;
+	      field_chain = &TREE_CHAIN (*field_chain);
+	    }
 	}
       else
 	tsubst (tag, &TREE_VEC_ELT (args, 0),
@@ -1387,6 +1391,7 @@ tsubst (t, args, nargs, in_decl)
     case OP_IDENTIFIER:
     case VOID_TYPE:
     case REAL_TYPE:
+    case COMPLEX_TYPE:
     case BOOLEAN_TYPE:
     case INTEGER_CST:
     case REAL_CST:
@@ -1413,14 +1418,18 @@ tsubst (t, args, nargs, in_decl)
 	return t;
 
       {
-	tree max = tsubst_expr (TYPE_MAX_VALUE (t), args, nargs, in_decl);
+	tree max = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
+	max = tsubst_expr (max, args, nargs, in_decl);
 	if (processing_template_decl)
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
 	    TYPE_MIN_VALUE (itype) = size_zero_node;
-	    TYPE_MAX_VALUE (itype) = max;
+	    TYPE_MAX_VALUE (itype) = build_min (MINUS_EXPR, sizetype, max,
+						integer_one_node);
 	    return itype;
 	  }
+
+	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node, 1));
 	return build_index_2_type (size_zero_node, max);
       }
 
@@ -2796,6 +2805,7 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
 		    nsubsts, strict);
 
     case REAL_TYPE:
+    case COMPLEX_TYPE:
     case INTEGER_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
