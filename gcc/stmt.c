@@ -3523,6 +3523,7 @@ expand_decl_init (decl)
   TREE_USED (decl) = was_used;
 
   /* Free any temporaries we made while initializing the decl.  */
+  preserve_temp_slots (NULL_RTX);
   free_temp_slots ();
 }
 
