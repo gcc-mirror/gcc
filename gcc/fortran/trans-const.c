@@ -353,7 +353,7 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
       assert (se->ss->expr == expr);
 
       se->expr = se->ss->data.scalar.expr;
-      se->string_length = se->ss->data.scalar.string_length;
+      se->string_length = se->ss->string_length;
       gfc_advance_se_ss_chain (se);
       return;
     }

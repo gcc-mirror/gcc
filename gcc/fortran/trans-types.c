@@ -267,15 +267,14 @@ gfc_get_logical_type (int kind)
     }
 }
 
-/* Get a type node for a character kind.  */
+/* Create a character type with the given kind and length.  */
 
 tree
-gfc_get_character_type (int kind, gfc_charlen * cl)
+gfc_get_character_type_len (int kind, tree len)
 {
   tree base;
-  tree type;
-  tree len;
   tree bounds;
+  tree type;
 
   switch (kind)
     {
@@ -287,13 +286,24 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
       fatal_error ("character kind=%d not available", kind);
     }
 
-  len = (cl == 0) ? NULL_TREE : cl->backend_decl;
-
   bounds = build_range_type (gfc_array_index_type, gfc_index_one_node, len);
   type = build_array_type (base, bounds);
   TYPE_STRING_FLAG (type) = 1;
 
   return type;
+}
+
+
+/* Get a type node for a character kind.  */
+
+tree
+gfc_get_character_type (int kind, gfc_charlen * cl)
+{
+  tree len;
+
+  len = (cl == NULL) ? NULL_TREE : cl->backend_decl;
+
+  return gfc_get_character_type_len (kind, len);
 }
 
 /* Covert a basic type.  This will be an array for character types.  */
@@ -480,6 +490,9 @@ gfc_is_nodesc_array (gfc_symbol * sym)
   return 1;
 }
 
+
+/* Create an array descriptor type.  */
+
 static tree
 gfc_build_array_type (tree type, gfc_array_spec * as)
 {
@@ -584,7 +597,9 @@ gfc_get_dtype (tree type, int rank)
       break;
 
     default:
-      abort ();
+      /* TODO: Don't do dtype for temporary descriptorless arrays.  */
+      /* We can strange array types for temporary arrays.  */
+      return gfc_index_zero_node;
     }
 
   assert (rank <= GFC_DTYPE_RANK_MASK);

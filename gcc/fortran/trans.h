@@ -162,13 +162,13 @@ typedef struct gfc_ss
   gfc_ss_type type;
   gfc_expr *expr;
   mpz_t *shape;
+  tree string_length;
   union
   {
     /* If type is GFC_SS_SCALAR or GFC_SS_REFERENCE.  */
     struct
     {
       tree expr;
-      tree string_length;
     }
     scalar;
 
@@ -179,7 +179,6 @@ typedef struct gfc_ss
          assigned expression.  */
       int dimen;
       tree type;
-      tree string_length;
     }
     temp;
     /* All other types.  */

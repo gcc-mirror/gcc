@@ -527,7 +527,7 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 
 tree
 gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
-			       tree eltype, tree string_length)
+			       tree eltype)
 {
   tree type;
   tree desc;
@@ -617,10 +617,6 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
       size = gfc_evaluate_now (size, &loop->pre);
     }
 
-  /* TODO: Where does the string length go?  */
-  if (string_length)
-    gfc_todo_error ("temporary arrays of strings");
-
   /* Get the size of the array.  */
   nelem = size;
   if (size)
@@ -648,6 +644,55 @@ gfc_put_offset_into_var (stmtblock_t * pblock, tree * poffset,
   gfc_add_modify_expr (pblock, *offsetvar, *poffset);
   *poffset = *offsetvar;
   TREE_USED (*offsetvar) = 1;
+}
+
+
+/* Assign an element of an array constructor.  */
+
+static void
+gfc_trans_array_ctor_element (stmtblock_t * pblock, tree pointer,
+			      tree offset, gfc_se * se, gfc_expr * expr)
+{
+  tree tmp;
+  tree args;
+
+  gfc_conv_expr (se, expr);
+
+  /* Store the value.  */
+  tmp = gfc_build_indirect_ref (pointer);
+  tmp = gfc_build_array_ref (tmp, offset);
+  if (expr->ts.type == BT_CHARACTER)
+    {
+      gfc_conv_string_parameter (se);
+      if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+	{
+	  /* The temporary is an array of pointers.  */
+	  se->expr = fold_convert (TREE_TYPE (tmp), se->expr);
+	  gfc_add_modify_expr (&se->pre, tmp, se->expr);
+	}
+      else
+	{
+	  /* The temporary is an array of string values.  */
+	  tmp = gfc_build_addr_expr (pchar_type_node, tmp);
+	  /* We know the temporary and the value will be the same length,
+	     so can use memcpy.  */
+	  args = gfc_chainon_list (NULL_TREE, tmp);
+	  args = gfc_chainon_list (args, se->expr);
+	  args = gfc_chainon_list (args, se->string_length);
+	  tmp = built_in_decls[BUILT_IN_MEMCPY];
+	  tmp = gfc_build_function_call (tmp, args);
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
+    }
+  else
+    {
+      /* TODO: Should the frontend already have done this conversion?  */
+      se->expr = fold_convert (TREE_TYPE (tmp), se->expr);
+      gfc_add_modify_expr (&se->pre, tmp, se->expr);
+    }
+
+  gfc_add_block_to_block (pblock, &se->pre);
+  gfc_add_block_to_block (pblock, &se->post);
 }
 
 
@@ -688,21 +733,17 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
   gfc_copy_loopinfo_to_se (&se, &loop);
   se.ss = ss;
 
-  gfc_conv_expr (&se, expr);
-  gfc_add_block_to_block (&body, &se.pre);
+  if (expr->ts.type == BT_CHARACTER)
+    gfc_todo_error ("character arrays in constructors");
 
-  /* Store the value.  */
-  tmp = gfc_build_indirect_ref (pointer);
-  tmp = gfc_build_array_ref (tmp, *poffset);
-  gfc_add_modify_expr (&body, tmp, se.expr);
+  gfc_trans_array_ctor_element (&body, pointer, *poffset, &se, expr);
+  assert (se.ss == gfc_ss_terminator);
 
   /* Increment the offset.  */
   tmp = build2 (PLUS_EXPR, gfc_array_index_type, *poffset, gfc_index_one_node);
   gfc_add_modify_expr (&body, *poffset, tmp);
 
   /* Finish the loop.  */
-  gfc_add_block_to_block (&body, &se.post);
-  assert (se.ss == gfc_ss_terminator);
   gfc_trans_scalarizing_loops (&loop, &body);
   gfc_add_block_to_block (&loop.pre, &loop.post);
   tmp = gfc_finish_block (&loop.pre);
@@ -720,7 +761,6 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 				   tree * poffset, tree * offsetvar)
 {
   tree tmp;
-  tree ref;
   stmtblock_t body;
   tree loopbody;
   gfc_se se;
@@ -763,14 +803,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	    {
 	      /* Scalar values.  */
 	      gfc_init_se (&se, NULL);
-	      gfc_conv_expr (&se, c->expr);
-	      gfc_add_block_to_block (&body, &se.pre);
-
-	      ref = gfc_build_indirect_ref (pointer);
-	      ref = gfc_build_array_ref (ref, *poffset);
-	      gfc_add_modify_expr (&body, ref,
-				   fold_convert (TREE_TYPE (ref), se.expr));
-	      gfc_add_block_to_block (&body, &se.post);
+	      gfc_trans_array_ctor_element (&body, pointer, *poffset, &se,
+					    c->expr);
 
 	      *poffset = fold (build2 (PLUS_EXPR, gfc_array_index_type,
 				       *poffset, gfc_index_one_node));
@@ -791,6 +825,16 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 		{
 		  gfc_init_se (&se, NULL);
 		  gfc_conv_constant (&se, p->expr);
+		  if (p->expr->ts.type == BT_CHARACTER
+		      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE
+			  (TREE_TYPE (pointer)))))
+		    {
+		      /* For constant character array constructors we build
+			 an array of pointers.  */
+		      se.expr = gfc_build_addr_expr (pchar_type_node,
+						      se.expr);
+		    }
+		    
 		  list = tree_cons (NULL_TREE, se.expr, list);
 		  c = p;
 		  p = p->next;
@@ -974,6 +1018,86 @@ gfc_get_array_cons_size (mpz_t * size, gfc_constructor * c)
 }
 
 
+/* Figure out the string length of a variable reference expression.
+   Used by get_array_ctor_strlen.  */
+
+static void
+get_array_ctor_var_strlen (gfc_expr * expr, tree * len)
+{
+  gfc_ref *ref;
+  gfc_typespec *ts;
+
+  /* Don't bother if we already know the length is a constant.  */
+  if (*len && INTEGER_CST_P (*len))
+    return;
+
+  ts = &expr->symtree->n.sym->ts;
+  for (ref = expr->ref; ref; ref = ref->next)
+    {
+      switch (ref->type)
+	{
+	case REF_ARRAY:
+	  /* Array references don't change teh sting length.  */
+	  break;
+
+	case COMPONENT_REF:
+	  /* Use the length of the component. */
+	  ts = &ref->u.c.component->ts;
+	  break;
+
+	default:
+	  /* TODO: Substrings are tricky because we can't evaluate the
+	     expression more than once.  For now we just give up, and hope
+	     we can figure it out elsewhere.  */
+	  return;
+	}
+    }
+
+  *len = ts->cl->backend_decl;
+}
+
+
+/* Figure out the string length of a character array constructor.
+   Returns TRUE if all elements are character constants.  */
+
+static bool
+get_array_ctor_strlen (gfc_constructor * c, tree * len)
+{
+  bool is_const;
+  
+  is_const = TRUE;
+  for (; c; c = c->next)
+    {
+      switch (c->expr->expr_type)
+	{
+	case EXPR_CONSTANT:
+	  if (!(*len && INTEGER_CST_P (*len)))
+	    *len = build_int_cstu (gfc_strlen_type_node,
+				   c->expr->value.character.length);
+	  break;
+
+	case EXPR_ARRAY:
+	  if (!get_array_ctor_strlen (c->expr->value.constructor, len))
+	    is_const = FALSE;
+	  break;
+
+	case EXPR_VARIABLE:
+	  is_const = false;
+	  get_array_ctor_var_strlen (c->expr, len);
+	  break;
+
+	default:
+	  is_const = FALSE;
+	  /* TODO: For now we just ignore anything we don't know how to
+	     handle, and hope we can figure it out a different way.  */
+	  break;
+	}
+    }
+
+  return is_const;
+}
+
+
 /* Array constructors are handled by constructing a temporary, then using that
    within the scalarization loop.  This is not optimal, but seems by far the
    simplest method.  */
@@ -986,13 +1110,28 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   tree desc;
   tree size;
   tree type;
+  bool const_string;
+
+  ss->data.info.dimen = loop->dimen;
 
   if (ss->expr->ts.type == BT_CHARACTER)
-    gfc_todo_error ("Character string array constructors");
-  type = gfc_typenode_for_spec (&ss->expr->ts);
-  ss->data.info.dimen = loop->dimen;
-  size =
-    gfc_trans_allocate_temp_array (loop, &ss->data.info, type, NULL_TREE);
+    {
+      const_string = get_array_ctor_strlen (ss->expr->value.constructor,
+					    &ss->string_length);
+      if (!ss->string_length)
+	gfc_todo_error ("complex character array constructors");
+
+      type = gfc_get_character_type_len (ss->expr->ts.kind, ss->string_length);
+      if (const_string)
+	type = build_pointer_type (type);
+    }
+  else
+    {
+      const_string = TRUE;
+      type = gfc_typenode_for_spec (&ss->expr->ts);
+    }
+
+  size = gfc_trans_allocate_temp_array (loop, &ss->data.info, type);
 
   desc = ss->data.info.descriptor;
   offset = gfc_index_zero_node;
@@ -1057,7 +1196,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
             gfc_add_block_to_block (&loop->post, &se.post);
 
 	  ss->data.scalar.expr = se.expr;
-	  ss->data.scalar.string_length = se.string_length;
+	  ss->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_REFERENCE:
@@ -1068,7 +1207,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 	  gfc_add_block_to_block (&loop->post, &se.post);
 
 	  ss->data.scalar.expr = gfc_evaluate_now (se.expr, &loop->pre);
-	  ss->data.scalar.string_length = se.string_length;
+	  ss->string_length = se.string_length;
 	  break;
 
 	case GFC_SS_SECTION:
@@ -1129,6 +1268,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   gfc_conv_expr_lhs (&se, ss->expr);
   gfc_add_block_to_block (block, &se.pre);
   ss->data.info.descriptor = se.expr;
+  ss->string_length = se.string_length;
 
   if (base)
     {
@@ -1496,11 +1636,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
 void
 gfc_conv_tmp_array_ref (gfc_se * se)
 {
-  tree desc;
-
-  desc = se->ss->data.info.descriptor;
-  /* TODO: We need the string length for string variables.  */
-
+  se->string_length = se->ss->string_length;
   gfc_conv_scalarized_array_ref (se, NULL);
 }
 
@@ -2247,7 +2383,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
       loop->temp_ss->type = GFC_SS_TEMP;
       loop->temp_ss->data.temp.type =
 	gfc_get_element_type (TREE_TYPE (dest->data.info.descriptor));
-      loop->temp_ss->data.temp.string_length = NULL_TREE;
+      loop->temp_ss->string_length = NULL_TREE;
       loop->temp_ss->data.temp.dimen = loop->dimen;
       loop->temp_ss->next = gfc_ss_terminator;
       gfc_add_ss_to_loop (loop, loop->temp_ss);
@@ -2295,7 +2431,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	  if (ss->type == GFC_SS_CONSTRUCTOR)
 	    {
 	      /* An unknown size constructor will always be rank one.
-		 Higher rank constructors will wither have known shape,
+		 Higher rank constructors will either have known shape,
 		 or still be wrapped in a call to reshape.  */
 	      assert (loop->dimen == 1);
 	      /* Try to figure out the size of the constructor.  */
@@ -2337,7 +2473,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	   */
 	  if (!specinfo)
 	    loopspec[n] = ss;
-	  /* TODO: Is != contructor correct?  */
+	  /* TODO: Is != constructor correct?  */
 	  else if (loopspec[n]->type != GFC_SS_CONSTRUCTOR)
 	    {
 	      if (integer_onep (info->stride[n])
@@ -2433,13 +2569,12 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
     {
       assert (loop->temp_ss->type == GFC_SS_TEMP);
       tmp = loop->temp_ss->data.temp.type;
-      len = loop->temp_ss->data.temp.string_length;
+      len = loop->temp_ss->string_length;
       n = loop->temp_ss->data.temp.dimen;
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
-      gfc_trans_allocate_temp_array (loop, &loop->temp_ss->data.info,
-				     tmp, len);
+      gfc_trans_allocate_temp_array (loop, &loop->temp_ss->data.info, tmp);
     }
 
   for (n = 0; n < loop->temp_dim; n++)
@@ -3502,10 +3637,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
       /* Which can hold our string, if present.  */
       if (expr->ts.type == BT_CHARACTER)
-	se->string_length = loop.temp_ss->data.temp.string_length
+	se->string_length = loop.temp_ss->string_length
 	  = TYPE_SIZE_UNIT (loop.temp_ss->data.temp.type);
       else
-	loop.temp_ss->data.temp.string_length = NULL;
+	loop.temp_ss->string_length = NULL;
       loop.temp_ss->data.temp.dimen = loop.dimen;
       gfc_add_ss_to_loop (&loop, loop.temp_ss);
     }
