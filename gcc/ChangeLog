@@ -8,7 +8,7 @@
 	(DRIVER_SELF_SPECS): Make -mfix-vr4122-bugs imply -march=vr4120.  Make
 	EABI64 -mlong32 the default ABI.  Enforce the default architecture.
 	* config/mips/t-vr (MULTILIB_OPTIONS): Add mfix-vr4122-bugs,
-	march=vr4130, march=vr4300 and march=vr5000.
+	march=vr4130, march=vr4300, march=vr5000 and march=vr5500.
 	(MULTILIB_MATCHES): Use -mfix-vr4122-bugs multilibs for -march=vr4120.
 	(MULTILIB_EXCEPTIONS): Change choice of multilibs.  Update comments
 	accordingly.
