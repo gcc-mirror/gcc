@@ -1,3 +1,10 @@
+2002-10-30  David Edelsohn  <edelsohn@gnu.org>
+	    Torbjorn Granlund  <tege@swox.com>
+
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1): Use preferred form
+	for addressibility.
+	(load_toc_v4_PIC_1b): Same.
+
 2002-10-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (h8300_eightbit_constant_address_p):
