@@ -1709,46 +1709,61 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   map->inline_target = 0;
   loc = DECL_RTL (DECL_RESULT (fndecl));
+
   if (TYPE_MODE (type) == VOIDmode)
     /* There is no return value to worry about.  */
     ;
   else if (GET_CODE (loc) == MEM)
     {
-      if (! structure_value_addr || ! aggregate_value_p (DECL_RESULT (fndecl)))
-	abort ();
-  
-      /* Pass the function the address in which to return a structure value.
-	 Note that a constructor can cause someone to call us with
-	 STRUCTURE_VALUE_ADDR, but the initialization takes place
-	 via the first parameter, rather than the struct return address.
-
-	 We have two cases:  If the address is a simple register indirect,
-	 use the mapping mechanism to point that register to our structure
-	 return address.  Otherwise, store the structure return value into
-	 the place that it will be referenced from.  */
-
-      if (GET_CODE (XEXP (loc, 0)) == REG)
-	{
-	  temp = force_reg (Pmode,
-			    force_operand (structure_value_addr, NULL_RTX));
-	  map->reg_map[REGNO (XEXP (loc, 0))] = temp;
-	  if ((CONSTANT_P (structure_value_addr)
-	       || GET_CODE (structure_value_addr) == ADDRESSOF
-	       || (GET_CODE (structure_value_addr) == PLUS
-		   && XEXP (structure_value_addr, 0) == virtual_stack_vars_rtx
-		   && GET_CODE (XEXP (structure_value_addr, 1)) == CONST_INT))
-	      && REGNO (temp) < map->const_equiv_map_size)
-	    {
-	      map->const_equiv_map[REGNO (temp)] = structure_value_addr;
-	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
-	    }
-	}
-      else
+      if (GET_CODE (XEXP (loc, 0)) == ADDRESSOF)
 	{
 	  temp = copy_rtx_and_substitute (loc, map);
 	  subst_constants (&temp, NULL_RTX, map);
 	  apply_change_group ();
-	  emit_move_insn (temp, structure_value_addr);
+	  target = temp;
+	}
+      else
+	{
+	  if (! structure_value_addr
+	      || ! aggregate_value_p (DECL_RESULT (fndecl)))
+	    abort ();
+  
+	  /* Pass the function the address in which to return a structure
+	     value.  Note that a constructor can cause someone to call us
+	     with STRUCTURE_VALUE_ADDR, but the initialization takes place
+	     via the first parameter, rather than the struct return address.
+
+	     We have two cases: If the address is a simple register
+	     indirect, use the mapping mechanism to point that register to
+	     our structure return address.  Otherwise, store the structure
+	     return value into the place that it will be referenced from.  */
+
+	  if (GET_CODE (XEXP (loc, 0)) == REG)
+	    {
+	      temp = force_operand (structure_value_addr, NULL_RTX);
+	      temp = force_reg (Pmode, temp);
+	      map->reg_map[REGNO (XEXP (loc, 0))] = temp;
+
+	      if ((CONSTANT_P (structure_value_addr)
+		   || GET_CODE (structure_value_addr) == ADDRESSOF
+		   || (GET_CODE (structure_value_addr) == PLUS
+		       && (XEXP (structure_value_addr, 0)
+			   == virtual_stack_vars_rtx)
+		       && (GET_CODE (XEXP (structure_value_addr, 1))
+			   == CONST_INT)))
+		  && REGNO (temp) < map->const_equiv_map_size)
+		{
+		  map->const_equiv_map[REGNO (temp)] = structure_value_addr;
+		  map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
+		}
+	    }
+	  else
+	    {
+	      temp = copy_rtx_and_substitute (loc, map);
+	      subst_constants (&temp, NULL_RTX, map);
+	      apply_change_group ();
+	      emit_move_insn (temp, structure_value_addr);
+	    }
 	}
     }
   else if (ignore)

@@ -1,3 +1,8 @@
+Wed Jan 13 20:12:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* integrate.c (expand_inline_function): Recognize (mem (addressof))
+	and substitute.  Copy the return value from there into a new pseudo.
+
 Thu Jan 14 13:52:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (in_annul_slot_3): Correctly allow unarycc 
