@@ -11654,10 +11654,15 @@ memory_address_length (rtx addr)
   disp = parts.disp;
   len = 0;
 
+  /* Rule of thumb:
+       - esp as the base always wants an index,
+       - ebp as the base always wants a displacement.  */
+
   /* Register Indirect.  */
   if (base && !index && !disp)
     {
-      /* Special cases: ebp and esp need the two-byte modrm form.  */
+      /* esp (for its index) and ebp (for its displacement) need
+	 the two-byte modrm form.  */
       if (addr == stack_pointer_rtx
 	  || addr == arg_pointer_rtx
 	  || addr == frame_pointer_rtx
@@ -11681,9 +11686,16 @@ memory_address_length (rtx addr)
 	  else
 	    len = 4;
 	}
+      /* ebp always wants a displacement.  */
+      else if (base == hard_frame_pointer_rtx)
+        len = 1;
 
-      /* An index requires the two-byte modrm form.  */
-      if (index)
+      /* An index requires the two-byte modrm form...  */
+      if (index
+	  /* ...like esp, which always wants an index.  */
+	  || base == stack_pointer_rtx
+	  || base == arg_pointer_rtx
+	  || base == frame_pointer_rtx)
 	len += 1;
     }
 
