@@ -1044,12 +1044,25 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
 	  CLEAR_REG_SET (&tmp);
 
+	  /* All memory writes and volatile reads must happen before the
+	     jump.  Non-volatile reads must happen before the jump iff
+	     the result is needed by the above register used mask.  */
+
 	  pending = deps->pending_write_insns;
 	  pending_mem = deps->pending_write_mems;
 	  while (pending)
 	    {
 	      add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+	      pending = XEXP (pending, 1);
+	      pending_mem = XEXP (pending_mem, 1);
+	    }
 
+	  pending = deps->pending_read_insns;
+	  pending_mem = deps->pending_read_mems;
+	  while (pending)
+	    {
+	      if (MEM_VOLATILE_P (XEXP (pending_mem, 0)))
+		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
 	      pending = XEXP (pending, 1);
 	      pending_mem = XEXP (pending_mem, 1);
 	    }

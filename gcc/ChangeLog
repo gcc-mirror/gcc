@@ -1,5 +1,10 @@
 2001-05-20  Richard Henderson  <rth@redhat.com>
 
+	* sched-deps.c (sched_analyze_insn): Force volatile memory reads
+	to be output before a branch.
+
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (dwarf2asm.o): Depend on $(TREE_H).
 
 2001-05-20  Richard Henderson  <rth@redhat.com>
