@@ -1,3 +1,8 @@
+Fri Nov  7 10:22:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* frame.c (add_fdes, count_fdes): Go back to checking pc_begin for
+ 	linked once FDEs.
+
 Wed Nov  5 01:42:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
