@@ -998,6 +998,8 @@ main (argc, argv)
 
   /* Non-0 means don't output the preprocessed program.  */
   int inhibit_output = 0;
+  /* Non-0 means -v, so print the full set of include dirs.  */
+  int verbose = 0;
 
   /* File name which deps are being written to.
      This is 0 if deps are being written to stdout.  */
@@ -1329,6 +1331,7 @@ main (argc, argv)
 	TARGET_VERSION;
 #endif
 	fprintf (stderr, "\n");
+	verbose = 1;
 	break;
 
       case 'H':
@@ -1703,6 +1706,18 @@ main (argc, argv)
   append_include_chain (after_include, last_after_include);
   if (first_system_include == 0)
     first_system_include = after_include;
+
+  /* With -v, print the list of dirs to search.  */
+  if (verbose) {
+    struct file_name_list *p;
+    fprintf (stderr, "#include \"...\" search starts here:\n");
+    for (p = include; p; p = p->next) {
+      if (p == first_bracket_include)
+	fprintf (stderr, "#include <...> search starts here:\n");
+      fprintf (stderr, " %s\n", p->fname);
+    }
+    fprintf (stderr, "End of search list.\n");
+  }
 
   /* Scan the -imacros files before the main input.
      Much like #including them, but with no_output set
