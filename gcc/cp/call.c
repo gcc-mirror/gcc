@@ -175,8 +175,8 @@ convert_harshness (type, parmtype, parm)
       if (! lvalue && ! (parm && TYPE_READONLY (ttl)))
 	return EVIL_RETURN (h);
 
-      if (TYPE_READONLY (ttl) < constp
-	  || TYPE_VOLATILE (ttl) < volatilep)
+      if ((TYPE_READONLY (ttl) < constp)
+	  || (TYPE_VOLATILE (ttl) < volatilep))
 	return EVIL_RETURN (h);
 
       /* When passing a non-const argument into a const reference, dig it a
@@ -646,9 +646,8 @@ convert_harshness (type, parmtype, parm)
    overload resolution.  */
 
 int
-user_harshness (type, parmtype, parm)
+user_harshness (type, parmtype)
      register tree type, parmtype;
-     tree parm;
 {
   tree conv;
   tree winner = NULL_TREE;
@@ -668,7 +667,7 @@ user_harshness (type, parmtype, parm)
 	continue;
 
       if (tmp = convert_harshness (type, TREE_VALUE (conv), NULL_TREE),
-	  tmp.code < USER_CODE && tmp.distance >= 0)
+	  (tmp.code < USER_CODE) && (tmp.distance >= 0))
 	{
 	  if (winner)
 	    return EVIL_CODE;
@@ -692,7 +691,7 @@ can_convert (to, from)
 {
   struct harshness_code h;
   h = convert_harshness (to, from, NULL_TREE);
-  return h.code < USER_CODE && h.distance >= 0;
+  return (h.code < USER_CODE) && (h.distance >= 0);
 }
 
 int
@@ -701,7 +700,7 @@ can_convert_arg (to, from, arg)
 {
   struct harshness_code h;
   h = convert_harshness (to, from, arg);
-  return h.code < USER_CODE && h.distance >= 0;
+  return (h.code < USER_CODE) && (h.distance >= 0);
 }
 
 #ifdef DEBUG_MATCHING
@@ -1091,11 +1090,9 @@ strictly_better (x, y)
    LEN is the length of the parameter list.  */
 
 static struct candidate *
-ideal_candidate (basetype, candidates, n_candidates, parms, len)
-     tree basetype;
+ideal_candidate (candidates, n_candidates, len)
      struct candidate *candidates;
      int n_candidates;
-     tree parms;
      int len;
 {
   struct candidate *cp = candidates+n_candidates;
@@ -1347,15 +1344,6 @@ find_scoped_type (type, inner_name, inner_types)
       tags = TREE_CHAIN (tags);
     }
 
-#if 0
-  /* XXX This needs to be fixed better.  */
-  if (TREE_CODE (type) == UNINSTANTIATED_P_TYPE)
-    {
-      sorry ("nested class lookup in template type");
-      return NULL_TREE;
-    }
-#endif
-
   /* Look for a TYPE_DECL.  */
   for (tags = TYPE_FIELDS (type); tags; tags = TREE_CHAIN (tags))
     if (TREE_CODE (tags) == TYPE_DECL && DECL_NAME (tags) == inner_name)
@@ -1477,6 +1465,17 @@ build_scoped_method_call (exp, basetype, name, parms)
       || basetype == error_mark_node)
     return error_mark_node;
 
+  if (current_template_parms)
+    {
+      if (TREE_CODE (name) == BIT_NOT_EXPR)
+	{
+	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 1);
+	  name = build_min_nt (BIT_NOT_EXPR, type);
+	}
+      name = build_min_nt (SCOPE_REF, basetype, name);
+      return build_min_nt (METHOD_CALL_EXPR, name, exp, parms, 0);
+    }
+
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
@@ -1489,7 +1488,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		  exp, basetype, type);
       name = TREE_OPERAND (name, 0);
-      if (basetype != get_type_value (name))
+      if (basetype != name && basetype != get_type_value (name))
 	cp_error ("qualified type `%T' does not match destructor name `~%T'",
 		  basetype, name);
       return convert (void_type_node, exp);
@@ -1520,7 +1519,8 @@ build_scoped_method_call (exp, basetype, name, parms)
 	{
 	  /* Explicit call to destructor.  */
 	  name = TREE_OPERAND (name, 0);
-	  if (! (name == constructor_name (TREE_TYPE (decl))
+	  if (! (name == TYPE_MAIN_VARIANT (TREE_TYPE (decl))
+		 || name == constructor_name (TREE_TYPE (decl))
 		 || TREE_TYPE (decl) == get_type_value (name)))
 	    {
 	      cp_error
@@ -1607,7 +1607,10 @@ build_method_call (instance, name, parms, basetype_path, flags)
 {
   register tree function, fntype, value_type;
   register tree basetype, save_basetype;
-  register tree baselink, result, method_name, parmtypes, parm;
+  register tree baselink, result, parmtypes, parm;
+#if 0
+  register tree method_name;
+#endif
   tree last;
   int pass;
   tree access = access_public_node;
@@ -1635,6 +1638,17 @@ build_method_call (instance, name, parms, basetype_path, flags)
       || parms == error_mark_node
       || (instance != NULL_TREE && TREE_TYPE (instance) == error_mark_node))
     return error_mark_node;
+
+  if (current_template_parms)
+    {
+      if (TREE_CODE (name) == BIT_NOT_EXPR)
+	{
+	  tree type = get_aggr_from_typedef (TREE_OPERAND (name, 0), 1);
+	  name = build_min_nt (BIT_NOT_EXPR, type);
+	}
+
+      return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, 0);
+    }
 
   /* This is the logic that magically deletes the second argument to
      operator delete, if it is not needed. */
@@ -1668,8 +1682,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
       basetype = TREE_TYPE (instance);
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	basetype = TREE_TYPE (basetype);
-      if (! ((IS_AGGR_TYPE (basetype)
-	      && name == constructor_name (basetype))
+      if (! (name == basetype
+	     || (IS_AGGR_TYPE (basetype)
+		 && name == constructor_name (basetype))
 	     || basetype == get_type_value (name)))
 	{
 	  cp_error ("destructor name `~%D' does not match type `%T' of expression",
@@ -1734,7 +1749,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       else if (IDENTIFIER_HAS_TYPE_VALUE (name))
 	{
 	  basetype = IDENTIFIER_TYPE_VALUE (name);
-	  name = constructor_name_full (basetype);
+	  name = constructor_name (basetype);
 	}
       else
 	{
@@ -1884,7 +1899,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      if (TREE_CODE (instance) != CALL_EXPR)
 		my_friendly_abort (125);
 	      if (TYPE_NEEDS_CONSTRUCTING (basetype))
-		instance = build_cplus_new (basetype, instance, 0);
+		instance = build_cplus_new (basetype, instance);
 	      else
 		{
 		  instance = get_temp_name (basetype, 0);
@@ -1942,7 +1957,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	}
     }
 
-  if (TYPE_SIZE (basetype) == 0)
+  if (TYPE_SIZE (complete_type (basetype)) == 0)
     {
       /* This is worth complaining about, I think.  */
       cp_error ("cannot lookup method in incomplete type `%T'", basetype);
@@ -2033,8 +2048,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   if ((IDENTIFIER_HAS_TYPE_VALUE (name)
        && ! IDENTIFIER_OPNAME_P (name)
-       && IS_AGGR_TYPE (IDENTIFIER_TYPE_VALUE (name))
-       && TREE_CODE (IDENTIFIER_TYPE_VALUE (name)) != UNINSTANTIATED_P_TYPE)
+       && IS_AGGR_TYPE (IDENTIFIER_TYPE_VALUE (name)))
       || name == constructor_name (basetype))
     {
       tree tmp = NULL_TREE;
@@ -2301,8 +2315,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      int n_candidates = cp - candidates;
 	      extern int warn_synth;
 	      TREE_VALUE (parms) = instance_ptr;
-	      cp = ideal_candidate (save_basetype, candidates,
-				    n_candidates, parms, len);
+	      cp = ideal_candidate (candidates, n_candidates, len);
 	      if (cp == (struct candidate *)0)
 		{
 		  if (flags & LOOKUP_COMPLAIN)
@@ -2529,7 +2542,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 
   value_type = TREE_TYPE (fntype) ? TREE_TYPE (fntype) : void_type_node;
 
-  if (TYPE_SIZE (value_type) == 0)
+  if (TYPE_SIZE (complete_type (value_type)) == 0)
     {
       if (flags & LOOKUP_COMPLAIN)
 	incomplete_type_error (0, value_type);
@@ -2710,7 +2723,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
      int buildxxx;
 {
   /* must check for overloading here */
-  tree overload_name, functions, function, parm;
+  tree functions, function, parm;
   tree parmtypes = NULL_TREE, last = NULL_TREE;
   register tree outer;
   int length;
@@ -2831,7 +2844,6 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       function = outer;
       if (TREE_CODE (function) != FUNCTION_DECL
 	  && ! (TREE_CODE (function) == TEMPLATE_DECL
-		&& ! DECL_TEMPLATE_IS_CLASS (function)
 		&& TREE_CODE (DECL_TEMPLATE_RESULT (function)) == FUNCTION_DECL))
 	{
 	  enum tree_code code = TREE_CODE (function);
@@ -2869,7 +2881,11 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
 				TYPE_ARG_TYPES (TREE_TYPE (function)),
 				parms, &template_cost, 0);
 	  if (i == 0)
-	    function = instantiate_template (function, targs);
+	    {
+	      function = instantiate_template (function, targs);
+	      if (function == error_mark_node)
+		return function;
+	    }
 	}
 
       if (TREE_CODE (function) == TEMPLATE_DECL)
@@ -2924,8 +2940,7 @@ build_overload_call_real (fnname, parms, flags, final_cp, buildxxx)
       if (cp - candidates > 1)
 	{
 	  struct candidate *best_cp
-	    = ideal_candidate (NULL_TREE, candidates,
-			       cp - candidates, parms, parmlength);
+	    = ideal_candidate (candidates, cp - candidates, parmlength);
 	  if (best_cp == (struct candidate *)0)
 	    {
 	      if (flags & LOOKUP_COMPLAIN)

@@ -356,7 +356,7 @@ build_up_reference (type, arg, flags, checkconst)
 	 initializing until now: it needs to initialize a temporary.  */
       if (TREE_HAS_CONSTRUCTOR (targ))
 	{
-	  tree temp = build_cplus_new (argtype, TREE_OPERAND (targ, 0), 1);
+	  tree temp = build_cplus_new (argtype, TREE_OPERAND (targ, 0));
 	  TREE_HAS_CONSTRUCTOR (targ) = 0;
 	  return build_up_reference (type, temp, flags, 1);
 	}
@@ -586,7 +586,7 @@ build_up_reference (type, arg, flags, checkconst)
 
       if (TREE_CODE (targ) == CALL_EXPR && IS_AGGR_TYPE (argtype))
 	{
-	  temp = build_cplus_new (argtype, targ, 1);
+	  temp = build_cplus_new (argtype, targ);
 	  rval = build1 (ADDR_EXPR, type, temp);
 	  goto done;
 	}
@@ -809,7 +809,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	      if (init == error_mark_node)
 		return error_mark_node;
 
-	      rval = build_cplus_new (type, init, 1);
+	      rval = build_cplus_new (type, init);
 	      rval = build_up_reference (reftype, rval, flags, 1);
 	    }
 	  rval_as_ctor = rval;
@@ -888,7 +888,11 @@ convert_to_aggr (type, expr, msgp, protect)
   tree basetype = type;
   tree name = TYPE_IDENTIFIER (basetype);
   tree function, fndecl, fntype, parmtypes, parmlist, result;
-  tree method_name, access;
+#if 0
+  /* See code below that used this.  */
+  tree method_name;
+#endif
+  tree access;
   int can_be_private, can_be_protected;
 
   if (! TYPE_HAS_CONSTRUCTOR (basetype))
@@ -1229,7 +1233,6 @@ cp_convert (type, expr, convtype, flags)
   if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (e);
-      enum tree_code form = TREE_CODE (intype);
       /* enum = enum, enum = int, enum = float are all errors. */
       if (flag_int_enum_equivalence == 0
 	  && TREE_CODE (type) == ENUMERAL_TYPE
@@ -1328,7 +1331,7 @@ cp_convert (type, expr, convtype, flags)
 	  return conversion;
 	}
 
-      if (TYPE_HAS_CONSTRUCTOR (type))
+      if (TYPE_HAS_CONSTRUCTOR (complete_type (type)))
 	ctor = build_method_call (NULL_TREE, constructor_name_full (type),
 				  build_tree_list (NULL_TREE, e),
 				  TYPE_BINFO (type),
@@ -1357,7 +1360,7 @@ cp_convert (type, expr, convtype, flags)
 	return conversion;
       else if (ctor)
 	{
-	  ctor = build_cplus_new (type, ctor, 0);
+	  ctor = build_cplus_new (type, ctor);
 	  return ctor;
 	}
     }

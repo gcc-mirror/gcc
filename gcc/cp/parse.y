@@ -55,6 +55,7 @@ extern int errno;
 
 extern int end_of_file;
 extern int current_class_depth;
+extern tree last_tree;
 
 /* FSF LOCAL dje prefix attributes */
 extern tree strip_attrs		PROTO((tree));
@@ -230,7 +231,7 @@ empty_parms ()
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL
 %type <ttype> fn.def1 /* Not really! */
-%type <ttype> fn.def2 return_id
+%type <ttype> fn.def2 return_id fn.defpen
 %type <itype> ctor_initializer_opt
 %type <ttype> named_class_head named_class_head_sans_basetype
 %type <ttype> named_complex_class_head_sans_basetype
@@ -247,22 +248,20 @@ empty_parms ()
 %type <itype> initdcl0 notype_initdcl0 member_init_list
 %type <ttype> template_header template_parm_list template_parm
 %type <ttype> template_type_parm
+%type <code>  template_close_bracket
 %type <ttype> template_type template_arg_list template_arg
-%type <ttype> template_instantiation template_type_name tmpl.2
-%type <ttype> template_instantiate_once template_instantiate_some
-%type <itype> fn_tmpl_end
 /* %type <itype> try_for_typename */
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
-%type <ttype> new_initializer new_placement specialization type_specifier_seq
+%type <ttype> new_initializer new_placement type_specifier_seq
 %type <ttype> using_decl .poplevel
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
-%type <ttype> named_class_head_sans_basetype_defn 
+%type <ttype> named_class_head_sans_basetype_defn
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
 
 %token NSNAME
@@ -271,7 +270,7 @@ empty_parms ()
 /* Used in lex.c for parsing pragmas.  */
 %token END_OF_LINE
 
-/* lex.c and pt.c depends on this being the last token.  Define
+/* lex.c and pt.c depend on this being the last token.  Define
    any new tokens before this one!  */
 %token END_OF_SAVED_INPUT
 
@@ -447,10 +446,13 @@ template_parm:
 	   their match before considering them nameless parameter
 	   declarations.  */
 	  template_type_parm
-		{ $$ = build_tree_list (NULL_TREE, $$); }
-	| template_type_parm '=' typespec
-		{ $$ = build_tree_list ($3, $$); }
-	| full_parm
+		{ $$ = build_tree_list (NULL_TREE, $1); }
+	| template_type_parm '=' type_id
+		{ $$ = build_tree_list (groktypename ($3), $1); }
+	| parm
+		{ $$ = build_tree_list (NULL_TREE, $1); }
+	| parm '=' expr_no_commas %prec ARITHCOMPARE
+		{ $$ = build_tree_list ($3, $1); }
 	;
 
 overloaddef:
@@ -463,102 +465,14 @@ ov_identifiers: IDENTIFIER
 	| ov_identifiers ',' IDENTIFIER
 		{ declare_overloaded ($3); }
 	;
-	  
-template_def:
-	/* Class template declarations go here; they aren't normal class
-	   declarations, because we can't process the bodies yet.  */
-	  template_header named_class_head_sans_basetype '{'
-		{ yychar = '{'; goto template1; }
-	 ';'
-	| template_header named_class_head_sans_basetype_defn '{'
-		{ yychar = '{'; goto template1; }
-	 ';'
-	| template_header named_class_head_sans_basetype ':'
-		{ yychar = ':'; goto template1; }
-	 ';'
-	| template_header named_class_head_sans_basetype_defn ':'
-		{
-		  yychar = ':';
-		template1:
-		  if (current_aggr == signature_type_node)
-		    sorry ("template type defining a signature");
-		  /* Maybe pedantic warning for union?
-		     How about an enum? :-)  */
-		  end_template_decl ($1, $2, current_aggr, 1);
-		  reinit_parse_for_template (yychar, $1, $2);
-		  yychar = YYEMPTY;
-		}
-	  ';'
-	| template_header named_class_head_sans_basetype ';'
-		{
-		  end_template_decl ($1, $2, current_aggr, 0);
-		  /* declare $2 as template name with $1 parm list */
-		}
-	| template_header named_class_head_sans_basetype_defn ';'
-		{
-		  end_template_decl ($1, $2, current_aggr, 0);
-		  /* declare $2 as template name with $1 parm list */
-		}
-	| template_header /* notype_initdcl0 ';' */
-	  notype_declarator exception_specification_opt maybeasm maybe_attribute
-	  fn_tmpl_end
-		{
-		  tree d;
-		  int momentary;
-		  int def = ($6 != ';');
-		  momentary = suspend_momentary ();
-		  d = start_decl ($<ttype>2, /*current_declspecs*/NULL_TREE, 0,
-				  $3);
-		  cplus_decl_attributes (d, $5, /*prefix_attributes*/NULL_TREE);
-		  cp_finish_decl (d, NULL_TREE, $4, 1, 0);
-		  end_template_decl ($1, d, 0, def);
-		  if (def)
-		    reinit_parse_for_template ((int) $6, $1, d);
-		  resume_momentary (momentary);
-		}
-	| template_header typed_declspecs /*initdcl0*/
-	  declarator exception_specification_opt maybeasm maybe_attribute
-	  fn_tmpl_end
-		{
-		  tree d, specs, attrs;
-		  int momentary;
-		  int def = ($7 != ';');
-		  split_specs_attrs ($2, &specs, &attrs);
-		  momentary = suspend_momentary ();
-		  d = start_decl ($<ttype>3, specs, 0, $<ttype>4);
-		  cplus_decl_attributes (d, $6, attrs);
-		  cp_finish_decl (d, NULL_TREE, $5, 1, 0);
-		  end_template_decl ($1, d, 0, def);
-		  if (def)
-		    {
-		      reinit_parse_for_template ((int) $7, $1, d);
-		      yychar = YYEMPTY;
-		    }
-		  note_list_got_semicolon ($<ttype>2);
-		  resume_momentary (momentary);
-		}
-	| template_header declmods notype_declarator fn_tmpl_end
-		{
-		  tree d, specs, attrs;
-		  int def = ($4 != ';');
-		  split_specs_attrs ($2, &specs, &attrs);
-		  d = start_decl ($<ttype>3, specs, 0, NULL_TREE);
-		  cplus_decl_attributes (d, NULL_TREE, attrs);
-		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
-		  end_template_decl ($1, d, 0, def);
-		  if (def)
-		    reinit_parse_for_template ((int) $4, $1, d);
-		}
-	/* Try to recover from syntax errors in templates.  */
-	| template_header error '}'	{ end_template_decl ($1, 0, 0, 0); }
-	| template_header error ';'	{ end_template_decl ($1, 0, 0, 0); }
-	;
 
-fn_tmpl_end: '{'		{ $$ = '{'; }
-	| ':'			{ $$ = ':'; }
-	| ';'			{ $$ = ';'; }
-	| '='			{ $$ = '='; }
-	| RETURN		{ $$ = RETURN; }
+template_def:
+	  template_header
+	  extdef
+		{ end_template_decl (); }
+	| template_header
+	  error %prec EMPTY
+		{ end_template_decl (); }
 	;
 
 datadef:
@@ -595,19 +509,6 @@ datadef:
 	    tree t, attrs;
 	    split_specs_attrs ($1, &t, &attrs);
 	    shadow_tag (t);
-	    if (TREE_CODE (t) == TREE_LIST
-		&& TREE_PURPOSE (t) == NULL_TREE)
-	      {
-		t = TREE_VALUE (t);
-		if (IS_AGGR_TYPE (t)
-		    && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (t)))
-		  {
-		    if (CLASSTYPE_USE_TEMPLATE (t) == 0)
-		      SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
-		    else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
-		      error ("override declaration for already-expanded template");
-		  }
-	      }
 	    note_list_got_semicolon ($<ttype>$);
 	  }
 	| error ';'
@@ -635,14 +536,9 @@ eat_saved_input:
 
 fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
-		{
-		  finish_function (lineno, (int)$3, 0);
-		  if ($<ttype>$) process_next_inline ($<ttype>$);
-		}
+		{ finish_function (lineno, (int)$3, 0); }
 	| fn.def1 maybe_return_init function_try_block
-		{
-		  if ($<ttype>$) process_next_inline ($<ttype>$);
-		}
+		{ if ($<ttype>$) process_next_inline ($<ttype>$); }
 	  eat_saved_input
 	| typed_declspecs declarator error
 		{}
@@ -672,10 +568,6 @@ fn.def1:
 		    YYERROR1;
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
-	| PRE_PARSED_FUNCTION_DECL
-		{ start_function (NULL_TREE, TREE_VALUE ($$),
-				  NULL_TREE, NULL_TREE, 1);
-		  reinit_parse_for_function (); }
 	;
 
 /* more C++ complexity.  See component_decl for a comment on the
@@ -683,6 +575,13 @@ fn.def1:
 fn.def2:
 	  typed_declspecs '(' parmlist ')' type_quals exception_specification_opt
 		{ tree specs = strip_attrs ($1);
+		  if (TREE_VALUE (specs) == current_class_type)
+		    {
+		      if (TREE_CHAIN (specs) == NULL_TREE)
+		        specs = get_decl_list (current_class_name);
+		      else
+		        TREE_VALUE (specs) = current_class_name;
+		    } 
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs), $3, $5);
 		  $$ = start_method (TREE_CHAIN (specs), $$, $6);
 		 rest_of_mdef:
@@ -817,15 +716,15 @@ identifier_defn:
 	;
 
 explicit_instantiation:
-	  TEMPLATE specialization template_instantiation
-		{ do_type_instantiation ($3 ? $3 : $2, NULL_TREE); }
+	  TEMPLATE aggr template_type
+		{ do_type_instantiation ($3, NULL_TREE); }
 	| TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($2);
 		  do_function_instantiation (specs, $3, NULL_TREE); }
 	| TEMPLATE notype_declarator
 		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
-	| SCSPEC TEMPLATE specialization template_instantiation
-		{ do_type_instantiation ($4 ? $4 : $3, $1); }
+	| SCSPEC TEMPLATE aggr template_type
+		{ do_type_instantiation ($4, $1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3);
 		  do_function_instantiation (specs, $4, $1); }
@@ -833,23 +732,45 @@ explicit_instantiation:
 		{ do_function_instantiation (NULL_TREE, $3, $1); }
 	;
 
+/* The TYPENAME expansions are to deal with use of a template class name as
+  a template within the class itself, where the template decl is hidden by
+  a type decl.  Got all that?  */
+
 template_type:
-	  template_type_name tmpl.2 template_instantiation
-		{ if ($3) $$ = $3; }
+	  PTYPENAME '<' template_arg_list template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, $3, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
+	| PTYPENAME '<' template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
+	| TYPENAME  '<' template_arg_list template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, $3, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
+	| TYPENAME '<' template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
 	;
 
-template_type_name:
-	  PTYPENAME '<' template_arg_list '>'
-		{ $$ = lookup_template_class ($$, $3, NULL_TREE); }
-	| PTYPENAME '<' '>'
-		{ $$ = lookup_template_class ($$, NULL_TREE, NULL_TREE); }
-	| TYPENAME  '<' template_arg_list '>'
-		{ $$ = lookup_template_class ($$, $3, NULL_TREE); }
-	;
-
-tmpl.2: 
-	  /* empty */ %prec EMPTY
-		{ $$ = instantiate_class_template ($<ttype>0, 1); }
+template_close_bracket:
+	  '>'
+	| RSHIFT 
+		{
+		  /* Handle `Class<Class<Type>>' without space in the `>>' */
+		  pedwarn ("`>>' should be `> >' in template class name");
+		  yyungetc ('>', 1);
+		}
 	;
 
 template_arg_list:
@@ -862,74 +783,8 @@ template_arg_list:
 template_arg:
 	  type_id
 		{ $$ = groktypename ($$); }
-	| expr_no_commas  %prec UNARY
+	| expr_no_commas  %prec ARITHCOMPARE
 	;
-
-template_instantiate_once:
-	  PRE_PARSED_CLASS_DECL maybe_base_class_list
-		{
-		  tree t, decl, tmpl;
-
-		  tmpl = TREE_PURPOSE (IDENTIFIER_TEMPLATE ($1));
-		  t = xref_tag (DECL_TEMPLATE_INFO (tmpl)->aggr, $1, $2, 0);
-		  set_current_level_tags_transparency (1);
-		  my_friendly_assert (TREE_CODE (t) == RECORD_TYPE
-				      || TREE_CODE (t) == UNION_TYPE, 257);
-		  $<ttype>$ = t;
-
-		  /* Now, put a copy of the decl in global scope, to avoid
-		     recursive expansion.  */
-		  decl = IDENTIFIER_LOCAL_VALUE ($1);
-		  if (!decl)
-		    decl = IDENTIFIER_CLASS_VALUE ($1);
-		  /* Now, put a copy of the decl in global scope, to avoid
-		     recursive expansion.  */
-                  if (decl)
-                    {
-		      /* Need to copy it to clear the chain pointer,
-			 and need to get it into permanent storage.  */
-                      my_friendly_assert (TREE_CODE (decl) == TYPE_DECL, 258);
-		      push_obstacks (&permanent_obstack, &permanent_obstack);
-                      decl = copy_node (decl);
-		      if (DECL_LANG_SPECIFIC (decl))
-			copy_lang_decl (decl);
-		      pop_obstacks ();
-		      pushdecl_top_level (decl);
-		    }
-		  /* Kludge; see instantiate_class_template.  */
-		  TYPE_BEING_DEFINED (t) = 0;
-		}
-	  left_curly opt.component_decl_list '}'
-		{
-		  tree t = finish_struct ($<ttype>3, $5, NULL_TREE, 0);
-
-		  pop_obstacks ();
-		  end_template_instantiation ($1);
-
-		  repo_template_used (t);
-
-                  /* Now go after the methods & class data.  */
-                  instantiate_member_templates ($1);
-
-		  pop_tinst_level();
-
-		  CLASSTYPE_GOT_SEMICOLON (t) = 1;
-		}
-	;
-
-template_instantiation:
-          /* empty */
-                { $$ = NULL_TREE; }
-        | template_instantiate_once
-                { $$ = $1; }
-        ;
-
-template_instantiate_some:
-          /* empty */
-                { $$ = NULL_TREE; /* never used from here... */}
-        | template_instantiate_once template_instantiate_some
-                { $$ = $1; /*???*/ }
-        ;
 
 unop:     '-'
 		{ $$ = NEGATE_EXPR; }
@@ -1013,8 +868,25 @@ compstmtend:
 	;
 
 already_scoped_stmt:
-	  '{' compstmtend
-		{ finish_stmt (); }
+	  '{'
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
+		      COMPOUND_STMT_NO_SCOPE ($<ttype>$) = 1;
+		      add_tree ($<ttype>$);
+		    }
+		}
+	  compstmtend
+		{ 
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  finish_stmt (); 
+		}
 	| simple_stmt
 	;
 
@@ -1078,27 +950,7 @@ unary_expr:
 		    }
 		}
 	| SIZEOF unary_expr  %prec UNARY
-		{ if (TREE_CODE ($2) == COMPONENT_REF
-		      && DECL_BIT_FIELD (TREE_OPERAND ($2, 1)))
-		    error ("sizeof applied to a bit-field");
-		  /* ANSI says arrays and functions are converted inside comma.
-		     But we can't really convert them in build_compound_expr
-		     because that would break commas in lvalues.
-		     So do the conversion here if operand was a comma.  */
-		  if (TREE_CODE ($2) == COMPOUND_EXPR
-		      && (TREE_CODE (TREE_TYPE ($2)) == ARRAY_TYPE
-			  || TREE_CODE (TREE_TYPE ($2)) == FUNCTION_TYPE))
-		    $2 = default_conversion ($2);
-		  else if (TREE_CODE ($2) == TREE_LIST)
-	            {
-		      tree t = TREE_VALUE ($2);
-		      if (t != NULL_TREE
-			  && ((TREE_TYPE (t)
-			      && TREE_CODE (TREE_TYPE (t)) == FUNCTION_TYPE)
-			      || is_overloaded_fn (t)))
-			pedwarn ("ANSI C++ forbids taking the sizeof a function type");
-		    }
-		  $$ = c_sizeof (TREE_TYPE ($2)); }
+		{ $$ = expr_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
 		{ $$ = c_sizeof (groktypename ($3)); }
 	| ALIGNOF unary_expr  %prec UNARY
@@ -1243,15 +1095,10 @@ expr_no_commas:
 	| expr_no_commas '?' xexpr ':' expr_no_commas
 		{ $$ = build_x_conditional_expr ($$, $3, $5); }
 	| expr_no_commas '=' expr_no_commas
-		{ $$ = build_modify_expr ($$, NOP_EXPR, $3);
+		{ $$ = build_x_modify_expr ($$, NOP_EXPR, $3);
                   C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
 	| expr_no_commas ASSIGN expr_no_commas
-		{ register tree rval;
-		  if ((rval = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL, $$, $3,
-					     make_node ($2))))
-		    $$ = rval;
-		  else
-		    $$ = build_modify_expr ($$, $2, $3); }
+		{ $$ = build_x_modify_expr ($$, $2, $3); }
 	| THROW
 		{ $$ = build_throw (NULL_TREE); }
 	| THROW expr_no_commas
@@ -1308,12 +1155,18 @@ primary:
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
 		  else
-		    $$ = do_identifier ($$);
+		    $$ = do_identifier ($$, 1);
 		}		
 	| CONSTANT
 	| boolean.literal
 	| string
-		{ $$ = combine_strings ($$); }
+		{
+		  if (current_template_parms)
+		    push_obstacks (&permanent_obstack, &permanent_obstack);
+		  $$ = combine_strings ($$);
+		  if (current_template_parms)
+		    pop_obstacks ();
+		}
 	| '(' expr ')'
 		{ char class;
 		  $$ = $2;
@@ -1362,16 +1215,11 @@ primary:
 		    $$ = $3;
 		}
 	| primary '(' nonnull_exprlist ')'
-                { /* [eichin:19911016.1902EST] */
-                  $<ttype>$ = build_x_function_call ($1, $3, current_class_decl); 
-                  /* here we instantiate_class_template as needed... */
-                  do_pending_templates ();
-                } template_instantiate_some {
-                  if (TREE_CODE ($<ttype>5) == CALL_EXPR
-                      && TREE_TYPE ($<ttype>5) != void_type_node)
-	            $$ = require_complete_type ($<ttype>5);
-                  else
-                    $$ = $<ttype>5;
+                {
+                  $$ = build_x_function_call ($1, $3, current_class_decl); 
+                  if (TREE_CODE ($$) == CALL_EXPR
+                      && TREE_TYPE ($$) != void_type_node)
+	            $$ = require_complete_type ($$);
                 }
 	| primary LEFT_RIGHT
                 {
@@ -1498,65 +1346,37 @@ primary:
 		{ tree type = groktypename ($3);
 		  $$ = get_typeid (TYPE_MAIN_VARIANT (type)); }
 	| global_scope IDENTIFIER
-		{
-		do_scoped_id:
-		  $$ = IDENTIFIER_GLOBAL_VALUE ($2);
-		  if (yychar == YYEMPTY)
-		    yychar = YYLEX;
-		  if (! $$)
-		    {
-		      if (yychar == '(' || yychar == LEFT_RIGHT)
-			$$ = implicitly_declare ($2);
-		      else
-			{
-			  if (IDENTIFIER_GLOBAL_VALUE ($2) != error_mark_node)
-			    error ("undeclared variable `%s' (first use here)",
-				   IDENTIFIER_POINTER ($2));
-			  $$ = error_mark_node;
-			  /* Prevent repeated error messages.  */
-			  IDENTIFIER_GLOBAL_VALUE ($2) = error_mark_node;
-			}
-		    }
-		  else
-		    {
-		      if (TREE_CODE ($$) == ADDR_EXPR)
-			mark_used (TREE_OPERAND ($$, 0));
-		      else
-			mark_used ($$);
-		    }
-		  if (TREE_CODE ($$) == CONST_DECL)
-		    {
-		      /* XXX CHS - should we set TREE_USED of the constant? */
-		      $$ = DECL_INITIAL ($$);
-		      /* This is to prevent an enum whose value is 0
-			 from being considered a null pointer constant.  */
-		      $$ = build1 (NOP_EXPR, TREE_TYPE ($$), $$);
-		      TREE_CONSTANT ($$) = 1;
-		    }
-
-		}
+		{ $$ = do_scoped_id ($2, 1); }
 	| global_scope operator_name
 		{
 		  got_scope = NULL_TREE;
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    goto do_scoped_id;
-		  $$ = $2;
+		    $$ = do_scoped_id ($2, 1);
+		  else
+		    $$ = $2;
 		}
 	| overqualified_id %prec HYPERUNARY
 		{ $$ = build_offset_ref (OP0 ($$), OP1 ($$)); }
 	| overqualified_id '(' nonnull_exprlist ')'
-		{ $$ = build_member_call (OP0 ($$), OP1 ($$), $3); }
+		{ if (current_template_parms)
+		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), $3, 0);
+		  else
+		    $$ = build_member_call (OP0 ($$), OP1 ($$), $3); }
 	| overqualified_id LEFT_RIGHT
-		{ $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
+		{ if (current_template_parms)
+		    $$ = build_min_nt (CALL_EXPR, copy_to_permanent ($1), 
+				       NULL_TREE, 0);
+		  else
+		    $$ = build_member_call (OP0 ($$), OP1 ($$), NULL_TREE); }
 	| object unqualified_id  %prec UNARY
-		{ got_object = NULL_TREE;
-		  $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
+		{ $$ = build_component_ref ($$, $2, NULL_TREE, 1); }
 	| object overqualified_id %prec UNARY
-		{ got_object = NULL_TREE;
-		  $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
+		{ if (current_template_parms)
+		    $$ = build_min_nt (COMPONENT_REF, $1, copy_to_permanent ($2));
+		  else
+		    $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
 	| object unqualified_id '(' nonnull_exprlist ')'
 		{
-		  got_object = NULL_TREE;
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
@@ -1572,7 +1392,6 @@ primary:
 		}
 	| object unqualified_id LEFT_RIGHT
 		{
-		  got_object = NULL_TREE;
 #if 0
 		  /* This is a future direction of this code, but because
 		     build_x_function_call cannot always undo what is done
@@ -1588,7 +1407,6 @@ primary:
 		}
 	| object overqualified_id '(' nonnull_exprlist ')'
 		{
-		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (OP0 ($2)))
 		    {
 		      warning ("signature name in scope resolution ignored");
@@ -1600,7 +1418,6 @@ primary:
 		}
 	| object overqualified_id LEFT_RIGHT
 		{
-		  got_object = NULL_TREE;
 		  if (IS_SIGNATURE (OP0 ($2)))
 		    {
 		      warning ("signature name in scope resolution ignored");
@@ -1613,7 +1430,6 @@ primary:
 	/* p->int::~int() is valid -- 12.4 */
 	| object '~' TYPESPEC LEFT_RIGHT
 		{
-		  got_object = NULL_TREE;
 		  if (IDENTIFIER_GLOBAL_VALUE ($3)
 		      && (TREE_CODE (TREE_TYPE ($1)) 
 			  != TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE ($3)))))
@@ -1622,7 +1438,6 @@ primary:
 		}
 	| object TYPESPEC SCOPE '~' TYPESPEC LEFT_RIGHT
 		{
-		  got_object = NULL_TREE;
 		  if ($2 != $5)
 		    cp_error ("destructor specifier `%T::~%T()' must have matching names", $2, $5);
 		  if (TREE_CODE (TREE_TYPE ($1))
@@ -1632,7 +1447,6 @@ primary:
 		}
 	| object error
 		{
-		  got_object = NULL_TREE;
 		  $$ = error_mark_node;
 		}
 	;
@@ -2126,6 +1940,9 @@ maybe_init:
 	| '=' init
 		{ $$ = $2; }
 
+/* If we are processing a template, we don't want to expand this
+   initializer yet.  */
+
 init:
 	  expr_no_commas %prec '='
 	| '{' '}'
@@ -2159,6 +1976,25 @@ initlist:
 		{ $$ = tree_cons ($3, $5, $$); }
 	;
 
+fn.defpen:
+	PRE_PARSED_FUNCTION_DECL
+		{ start_function (NULL_TREE, TREE_VALUE ($1),
+				  NULL_TREE, NULL_TREE, 1);
+		  reinit_parse_for_function (); }
+
+pending_inlines:
+	/* empty */
+	| pending_inlines fn.defpen maybe_return_init ctor_initializer_opt
+	  compstmt_or_error
+		{
+		  finish_function (lineno, (int)$4, 0);
+		  process_next_inline ($2);
+		}
+	| pending_inlines fn.defpen maybe_return_init function_try_block
+		{ process_next_inline ($2); }
+	  eat_saved_input
+	;
+
 structsp:
 	  ENUM identifier '{'
 		{ $<itype>3 = suspend_momentary ();
@@ -2184,8 +2020,10 @@ structsp:
 		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
 	| ENUM complex_type_name
 		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
-	| TYPENAME_KEYWORD complex_type_name
-		{ $$ = $2; }
+	| TYPENAME_KEYWORD nested_name_specifier identifier
+		{ $$ = make_typename_type ($2, $3); }
+	| TYPENAME_KEYWORD global_scope nested_name_specifier identifier
+		{ $$ = make_typename_type ($3, $4); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly opt.component_decl_list '}' maybe_attribute
 		{
@@ -2195,7 +2033,7 @@ structsp:
 #if 0
 		  /* Need to rework class nesting in the
 		     presence of nested classes, etc.  */
-		  shadow_tag (CLASSTYPE_AS_LIST ($$)); */
+		  shadow_tag (CLASSTYPE_AS_LIST ($1)); */
 #endif
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
@@ -2203,38 +2041,26 @@ structsp:
 		  /* finish_struct nukes this anyway; if
 		     finish_exception does too, then it can go. */
 		  if (semi)
-		    note_got_semicolon ($$);
+		    note_got_semicolon ($1);
 
-		  if (TREE_CODE ($$) == ENUMERAL_TYPE)
-		    /* $$ = $1 from default rule.  */;
+		  if (TREE_CODE ($1) == ENUMERAL_TYPE)
+		    ;
 		  else
 		    {
-		      $$ = finish_struct ($$, $3, $5, semi);
-		      if (semi) note_got_semicolon ($$);
+		      $<ttype>$ = finish_struct ($1, $3, $5, semi);
+		      if (semi) note_got_semicolon ($<ttype>$);
 		    }
 
 		  pop_obstacks ();
 
-		  id = TYPE_IDENTIFIER ($$);
-		  if (id && IDENTIFIER_TEMPLATE (id))
-		    {
-		      tree decl;
-
-		      /* I don't know if the copying of this TYPE_DECL is
-		       * really needed.  However, it's such a small per-
-		       * formance penalty that the extra safety is a bargain.
-		       * - niklas@appli.se
-		       */
-		      push_obstacks (&permanent_obstack, &permanent_obstack);
-		      decl = copy_node (lookup_name (id, 0));
-		      if (DECL_LANG_SPECIFIC (decl))
-			copy_lang_decl (decl);
-		      pop_obstacks ();
-		      undo_template_name_overload (id, 0);
-		      pushdecl_top_level (decl);
-		    }
 		  if (! semi)
-		    check_for_missing_semicolon ($$); }
+		    check_for_missing_semicolon ($1); 
+		  if (pending_inlines 
+		      && current_scope () == current_function_decl)
+		    do_pending_inlines ();
+		}
+	  pending_inlines
+		{ $$ = $<ttype>6; }
 	| class_head  %prec EMPTY
 		{
 		  /* struct B: public A; is not accepted by the WP grammar.  */
@@ -2267,39 +2093,23 @@ aggr:	  AGGR
 		{ error ("no body nor ';' separates two class, struct or union declarations"); }
 	;
 
-specialization:
-	  aggr template_type_name ';'
-		{ 
-		  yyungetc (';', 1); current_aggr = $$; $$ = $2; 
-		  if ($<ttype>0 == ridpointers[(int) RID_TEMPLATE])
-		    instantiate_class_template ($$, 2);
-		}
-	;
-
 named_class_head_sans_basetype:
 	  aggr identifier
 		{ current_aggr = $$; $$ = $2; }
-	| specialization
 	;
 
 named_class_head_sans_basetype_defn:
 	  aggr identifier_defn %prec EMPTY
 		{ current_aggr = $$; $$ = $2; }
-	| aggr template_type_name '{'
-		{ yyungetc ('{', 1);
-		aggr2:
-		  current_aggr = $$;
-		  $$ = $2;
-		  overload_template_name ($$, 0); }
-	| aggr template_type_name ':'
-		{ yyungetc (':', 1); goto aggr2; }
 	;
 
 named_complex_class_head_sans_basetype:
 	  aggr nested_name_specifier identifier
 		{ current_aggr = $$; $$ = $3; }
-	| aggr template_type %prec EMPTY
+	| aggr template_type
 		{ current_aggr = $$; $$ = $2; }
+	| aggr nested_name_specifier template_type
+		{ current_aggr = $$; $$ = $3; }
 	;
 
 do_xref_defn: /* empty */ %prec EMPTY
@@ -2320,7 +2130,7 @@ named_class_head:
 		{ 
 		  $$ = TREE_TYPE ($1);
 		  if ($2)
-		    xref_basetypes (current_aggr, $1, TREE_TYPE ($1), $2); 
+		    xref_basetypes (current_aggr, $1, $$, $2); 
 		}
 	;
 
@@ -2506,8 +2316,19 @@ left_curly: '{'
                       pushtag (TYPE_IDENTIFIER ($<ttype>0), t, 0);
                       $<ttype>0 = t;
                     }
+		  if (current_template_parms && TYPE_CONTEXT (t)
+		      && ! current_class_type)
+		    push_template_decl (TYPE_STUB_DECL (t));
 		  pushclass (t, 0);
 		  TYPE_BEING_DEFINED (t) = 1;
+		  if (IS_AGGR_TYPE (t) && CLASSTYPE_USE_TEMPLATE (t))
+		    {
+		      if (CLASSTYPE_IMPLICIT_INSTANTIATION (t)
+			  && TYPE_SIZE (t) == NULL_TREE)
+			SET_CLASSTYPE_TEMPLATE_SPECIALIZATION (t);
+		      else if (CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+			cp_error ("specialization after instantiation of `%T'", t);
+		    }
 		  /* Reset the interface data, at the earliest possible
 		     moment, as it might have been set via a class foo;
 		     before.  */
@@ -2650,6 +2471,13 @@ component_decl_1:
 	| typed_declspecs '(' parmlist ')' type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ tree specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
+		  if (TREE_VALUE (specs) == current_class_type)
+		    {
+		      if (TREE_CHAIN (specs) == NULL_TREE)
+		        specs = get_decl_list (current_class_name);
+		      else
+		        TREE_VALUE (specs) = current_class_name;
+		    } 
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs),
 					 $3, $5);
 		  $$ = grokfield ($$, TREE_CHAIN (specs), $6, $9, $7,
@@ -2657,6 +2485,13 @@ component_decl_1:
 	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ tree specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
+		  if (TREE_VALUE (specs) == current_class_type)
+		    {
+		      if (TREE_CHAIN (specs) == NULL_TREE)
+		        specs = get_decl_list (current_class_name);
+		      else
+		        TREE_VALUE (specs) = current_class_name;
+		    } 
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs),
 					 empty_parms (), $3);
 		  $$ = grokfield ($$, TREE_CHAIN (specs), $4, $7, $5,
@@ -2900,7 +2735,7 @@ complete_type_name:
 
 nested_type:
 	nested_name_specifier type_name %prec EMPTY
-		{ $$ = identifier_typedecl_value ($2); }
+		{ $$ = get_type_decl ($2); }
 	;
 
 direct_after_type_declarator:
@@ -3028,7 +2863,7 @@ nested_name_specifier_1:
 	| NSNAME SCOPE
 		{ got_scope = $$ = $1; }
 	| template_type SCOPE
-		{ got_scope = $$ = TREE_TYPE ($1); }
+		{ got_scope = $$ = complete_type (TREE_TYPE ($1)); }
 /* 	These break 'const i;'
 	| IDENTIFIER SCOPE
 		{
@@ -3181,17 +3016,11 @@ errstmt:  error ';'
   set up to point at this one.  */
 
 .pushlevel:  /* empty */
-		{ emit_line_note (input_filename, lineno);
-		  pushlevel (0);
-		  clear_last_expr ();
-		  push_momentary ();
-		  expand_start_bindings (0); }
+		{ do_pushlevel (); }
 	;
 
 .poplevel:   /* empty */
-		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
-		  $$ = poplevel (kept_level_p (), 1, 0);
-		  pop_momentary (); }
+		{ $$ = do_poplevel (); }
 	;
 
 /* Read zero or more forward-declarations for labels
@@ -3228,24 +3057,88 @@ compstmt_or_error:
 	| error compstmt
 	;
 
-compstmt: '{' .pushlevel compstmtend .poplevel
-		{ $$ = $4; }
+compstmt: '{'
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		}
+	  .pushlevel compstmtend .poplevel
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  $$ = $5;
+		}
 	;
 
 simple_if:
 	  IF
-		{ cond_stmt_keyword = "if"; }
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (IF_STMT, NULL_TREE, NULL_TREE,
+					        NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+                  cond_stmt_keyword = "if";
+		}
 	  .pushlevel paren_cond_or_null
-		{ emit_line_note (input_filename, lineno);
-		  expand_start_cond ($4, 0); }
+		{
+		  if (current_template_parms)
+		    {
+		      if (last_tree != $<ttype>2)
+		        {
+			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
+			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
+			  last_tree = $<ttype>2;
+			}
+		      else
+		        TREE_OPERAND ($<ttype>2, 0) = $4;
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      expand_start_cond ($4, 0);
+		    }
+		}
 	  implicitly_scoped_stmt
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      $<ttype>$ = last_tree = $<ttype>2;
+		    }
+		}
 	;
 
 implicitly_scoped_stmt:
 	  compstmt
 		{ finish_stmt (); }
-	| .pushlevel simple_stmt .poplevel
-		{ $$ = $3; }
+	| .pushlevel
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (COMPOUND_STMT, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		}
+	  simple_stmt .poplevel
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  $$ = $4;
+		}
 	;
 
 stmt:
@@ -3260,53 +3153,136 @@ simple_stmt:
 	| expr ';'
 		{
 		  tree expr = $1;
-		  emit_line_note (input_filename, lineno);
-		  /* Do default conversion if safe and possibly important,
-		     in case within ({...}).  */
-		  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
-		       && lvalue_p (expr))
-		      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
-		    expr = default_conversion (expr);
+		  if (! current_template_parms)
+		    {
+		      emit_line_note (input_filename, lineno);
+		      /* Do default conversion if safe and possibly important,
+		         in case within ({...}).  */
+		      if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
+		           && lvalue_p (expr))
+		          || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
+		        expr = default_conversion (expr);
+		    }
 		  cplus_expand_expr_stmt (expr);
 		  clear_momentary ();
 		  finish_stmt (); }
 	| simple_if ELSE
-		{ expand_start_else (); }
+		{ if (! current_template_parms) expand_start_else (); }
 	  implicitly_scoped_stmt
-		{ expand_end_cond (); }
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>1, 2) = TREE_CHAIN ($<ttype>1);
+		      TREE_CHAIN ($<ttype>1) = NULL_TREE;
+		      last_tree = $<ttype>1;
+		    }
+		  else
+		    expand_end_cond ();
+		}
 	  .poplevel
 		{ finish_stmt (); }
 	| simple_if %prec IF
-		{ expand_end_cond ();
+		{ if (! current_template_parms) expand_end_cond ();
 		  expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
 		  pop_momentary ();
 		  finish_stmt (); }
 	| WHILE
-		{ emit_nop ();
-		  emit_line_note (input_filename, lineno);
-		  expand_start_loop (1);
-		  cond_stmt_keyword = "while"; }
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (WHILE_STMT, NULL_TREE, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		  else
+		    {
+		      emit_nop ();
+		      emit_line_note (input_filename, lineno);
+		      expand_start_loop (1); 
+		    }
+		  cond_stmt_keyword = "while";
+		}
 	  .pushlevel paren_cond_or_null
-		{ expand_exit_loop_if_false (0, $4); }
+		{
+		  if (current_template_parms)
+		    {
+		      if (last_tree != $<ttype>2)
+		        {
+			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
+			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
+			  last_tree = $<ttype>2;
+			}
+		      else
+		        TREE_OPERAND ($<ttype>2, 0) = $4;
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      expand_exit_loop_if_false (0, $4);
+		    }
+		}
 	  already_scoped_stmt .poplevel
-		{ expand_end_loop ();
-		  finish_stmt (); }
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 1) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  else
+		    expand_end_loop ();
+		  finish_stmt ();
+		}
 	| DO
-		{ emit_nop ();
-		  emit_line_note (input_filename, lineno);
-		  expand_start_loop_continue_elsewhere (1); }
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (DO_STMT, NULL_TREE, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		  else
+		    {
+		      emit_nop ();
+		      emit_line_note (input_filename, lineno);
+		      expand_start_loop_continue_elsewhere (1);
+		    }
+		}
 	  implicitly_scoped_stmt WHILE
-		{ expand_loop_continue_here ();
-		  cond_stmt_keyword = "do"; }
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 0) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  else
+		    {
+		      expand_loop_continue_here ();
+		      cond_stmt_keyword = "do";
+		    }
+		}
 	  paren_expr_or_null ';'
-		{ emit_line_note (input_filename, lineno);
-		  expand_exit_loop_if_false (0, $6);
-		  expand_end_loop ();
+		{
+		  if (current_template_parms)
+		    TREE_OPERAND ($<ttype>2, 1) = $6;
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      expand_exit_loop_if_false (0, $6);
+		      expand_end_loop ();
+		    }
 		  clear_momentary ();
-		  finish_stmt (); }
+		  finish_stmt ();
+		}
 	| FOR
-		{ emit_line_note (input_filename, lineno);
+		{ if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (FOR_STMT, NULL_TREE, NULL_TREE, 
+					        NULL_TREE, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+                  else
+		    emit_line_note (input_filename, lineno);
 		  if (flag_new_for_scope > 0)
 		    {
 		      /* Conditionalize .pushlevel */
@@ -3318,22 +3294,66 @@ simple_stmt:
 		    }
 		}
 	  '(' for.init.statement
-		{ emit_nop ();
-		  emit_line_note (input_filename, lineno);
-		  expand_start_loop_continue_elsewhere (1); }
+		{
+		  if (current_template_parms)
+		    {
+		      if (last_tree != $<ttype>2)
+			{
+			  TREE_OPERAND ($<ttype>2, 0) = last_tree;
+			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
+			  last_tree = $<ttype>2;
+			}
+		    }
+		  else
+		    {
+		      emit_nop ();
+		      emit_line_note (input_filename, lineno);
+		      expand_start_loop_continue_elsewhere (1); 
+		    }
+		}
 	  .pushlevel xcond ';'
-		{ emit_line_note (input_filename, lineno);
-		  if ($7) expand_exit_loop_if_false (0, $7); }
+		{
+		  if (current_template_parms)
+		    {
+		      if (last_tree != $<ttype>2)
+		        {
+			  TREE_OPERAND ($<ttype>2, 1) = last_tree;
+			  TREE_CHAIN ($<ttype>2) = NULL_TREE;
+			  last_tree = $<ttype>2;
+			}
+		      else
+		        TREE_OPERAND ($<ttype>2, 1) = $7;
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      if ($7) expand_exit_loop_if_false (0, $7);
+		    }
+		}
 	  xexpr ')'
 		/* Don't let the tree nodes for $10 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
-		{ push_momentary (); }
+		{
+		  if (current_template_parms)
+		    TREE_OPERAND ($<ttype>2, 2) = $10;
+		  push_momentary ();
+		}
 	  already_scoped_stmt .poplevel
-		{ emit_line_note (input_filename, lineno);
-		  expand_loop_continue_here ();
-		  if ($10) cplus_expand_expr_stmt ($10);
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>2, 3) = TREE_CHAIN ($<ttype>2);
+		      TREE_CHAIN ($<ttype>2) = NULL_TREE;
+		      last_tree = $<ttype>2;
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      expand_loop_continue_here ();
+		      if ($10) cplus_expand_expr_stmt ($10);
+		      expand_end_loop ();
+		    }
 		  pop_momentary ();
-		  expand_end_loop ();
 		  if (flag_new_for_scope > 0)
 		    {
 		      expand_end_bindings (getdecls (), kept_level_p (), 1);
@@ -3342,98 +3362,57 @@ simple_stmt:
 		    }
 		  finish_stmt (); }
 	| SWITCH .pushlevel '(' condition ')'
-		{ emit_line_note (input_filename, lineno);
-		  c_expand_start_case ($4);
+		{
+		  if (current_template_parms)
+		    {
+		      $<ttype>$ = build_min_nt (SWITCH_STMT, $4, NULL_TREE);
+		      add_tree ($<ttype>$);
+		    }
+		  else
+		    {
+		      emit_line_note (input_filename, lineno);
+		      c_expand_start_case ($4);
+		    }
 		  push_switch ();
 		  /* Don't let the tree nodes for $4 be discarded by
 		     clear_momentary during the parsing of the next stmt.  */
-		  push_momentary (); }
+		  push_momentary ();
+		}
 	  implicitly_scoped_stmt
-		{ expand_end_case ($4);
+		{
+		  if (current_template_parms)
+		    {
+		      TREE_OPERAND ($<ttype>6, 1) = TREE_CHAIN ($<ttype>6);
+		      TREE_CHAIN ($<ttype>6) = NULL_TREE;
+		      last_tree = $<ttype>6;
+		    }
+		  else
+		    expand_end_case ($4);
 		  pop_momentary ();
-		  pop_switch (); }
+		  pop_switch (); 
+		}
 	  .poplevel
 		{ finish_stmt (); }
 	| CASE expr_no_commas ':'
-		{ register tree value = check_cp_case_value ($2);
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-		  if (value != error_mark_node)
-		    {
-		      tree duplicate;
-		      int success = pushcase (value, convert_and_check,
-					      label, &duplicate);
-		      if (success == 1)
-			cp_error ("case label `%E' not within a switch statement", $2);
-		      else if (success == 2)
-			{
-			  cp_error ("duplicate case value `%E'", $2);
-			  cp_error_at ("previously used here", duplicate);
-			}
-		      else if (success == 3)
-			warning ("case value out of range");
-		      else if (success == 5)
-			cp_error ("case label `%E' within scope of cleanup or variable array", $2);
-		    }
-		  define_case_label (label);
-		}
+		{ do_case ($2, NULL_TREE); }
 	  stmt
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-		{ register tree value1 = check_cp_case_value ($2);
-		  register tree value2 = check_cp_case_value ($4);
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-		  if (pedantic)
-		    pedwarn ("ANSI C++ forbids range expressions in switch statement");
-		  if (value1 != error_mark_node
-		      && value2 != error_mark_node)
-		    {
-		      tree duplicate;
-		      int success = pushcase_range (value1, value2,
-						    convert_and_check, label,
-						    &duplicate);
-		      if (success == 1)
-			error ("case label not within a switch statement");
-		      else if (success == 2)
-			{
-			  error ("duplicate (or overlapping) case value");
-			  error_with_decl (duplicate, "this is the first entry overlapping that value");
-			}
-		      else if (success == 3)
-			warning ("case value out of range");
-		      else if (success == 4)
-			warning ("empty range specified");
-		      else if (success == 5)
-			error ("case label within scope of cleanup or variable array");
-		    }
-		  define_case_label (label);
-		}
+		{ do_case ($2, $4); }
 	  stmt
 	| DEFAULT ':'
-		{
-		  tree duplicate;
-		  register tree label
-		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-		  int success = pushcase (NULL_TREE, 0, label, &duplicate);
-		  if (success == 1)
-		    error ("default label not within a switch statement");
-		  else if (success == 2)
-		    {
-		      error ("multiple default labels in one switch");
-		      error_with_decl (duplicate, "this is the first default label");
-		    }
-		  define_case_label (NULL_TREE);
-		}
+		{ do_case (NULL_TREE, NULL_TREE); }
 	  stmt
 	| BREAK ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ( ! expand_exit_something ())
+		  if (current_template_parms)
+		    add_tree (build_min_nt (BREAK_STMT));
+		  else if ( ! expand_exit_something ())
 		    error ("break statement not within loop or switch"); }
 	| CONTINUE ';'
 		{ emit_line_note (input_filename, lineno);
-		  if (! expand_continue_loop (0))
+		  if (current_template_parms)
+		    add_tree (build_min_nt (CONTINUE_STMT));
+		  else if (! expand_continue_loop (0))
 		    error ("continue statement not within a loop"); }
 	| RETURN ';'
 		{ emit_line_note (input_filename, lineno);
@@ -3478,14 +3457,26 @@ simple_stmt:
 		  finish_stmt ();
 		}
 	| GOTO '*' expr ';'
-		{ emit_line_note (input_filename, lineno);
-		  expand_computed_goto ($3); }
+		{
+		  if (current_template_parms)
+		    add_tree (build_min_nt (GOTO_STMT, $3));
+		  else
+		    { emit_line_note (input_filename, lineno);
+		      expand_computed_goto ($3); }
+		}
 	| GOTO identifier ';'
-		{ tree decl;
-		  emit_line_note (input_filename, lineno);
-		  decl = lookup_label ($2);
-		  TREE_USED (decl) = 1;
-		  expand_goto (decl); }
+		{
+		  if (current_template_parms)
+		    add_tree (build_min_nt (GOTO_STMT, $2));
+		  else
+		    {
+		      tree decl;
+		      emit_line_note (input_filename, lineno);
+		      decl = lookup_label ($2);
+		      TREE_USED (decl) = 1;
+		      expand_goto (decl); 
+		    }
+		}
 	| label_colon stmt
 		{ finish_stmt (); }
 	| label_colon '}'
@@ -3563,7 +3554,7 @@ label_colon:
 		{ tree label;
 		do_label:
 		  label = define_label (input_filename, lineno, $1);
-		  if (label)
+		  if (label && ! minimal_parse_mode)
 		    expand_label (label);
 		}
 	| PTYPENAME ':'

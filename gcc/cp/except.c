@@ -37,6 +37,7 @@ tree protect_list;
 
 extern void (*interim_eh_hook)	PROTO((tree));
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
+static void end_eh_unwinder PROTO((rtx));
 
 /* holds the fndecl for __builtin_return_address () */
 tree builtin_return_address_fndecl;
@@ -90,8 +91,6 @@ output_exception_table_entry (file, start_label, end_label, eh_label)
      FILE *file;
      rtx start_label, end_label, eh_label;
 {
-  char label[100];
-
   assemble_integer (start_label, GET_MODE_SIZE (Pmode), 1);
   assemble_integer (end_label, GET_MODE_SIZE (Pmode), 1);
   assemble_integer (eh_label, GET_MODE_SIZE (Pmode), 1);
@@ -146,7 +145,7 @@ asm (TEXT_SECTION_ASM_OP);
 
 #endif
 
-void
+static void
 exception_section ()
 {
 #ifdef ASM_OUTPUT_SECTION_NAME
@@ -320,15 +319,15 @@ struct ehQueue {
    ========================================================================= */
 
 /* Holds the pc for doing "throw" */
-tree saved_pc;
+static tree saved_pc;
 /* Holds the type of the thing being thrown. */
-tree saved_throw_type;
+static tree saved_throw_type;
 /* Holds the value being thrown.  */
-tree saved_throw_value;
+static tree saved_throw_value;
 /* Holds the cleanup for the value being thrown.  */
-tree saved_cleanup;
+static tree saved_cleanup;
 
-int throw_used;
+static int throw_used;
 
 static rtx catch_clauses;
 
@@ -454,7 +453,8 @@ top_label_entry (labelstack)
 /* Push to permanent obstack for rtl generation.
    One level only!  */
 static struct obstack *saved_rtl_obstack;
-void
+
+static void
 push_rtl_perm ()
 {
   extern struct obstack permanent_obstack;
@@ -468,9 +468,7 @@ push_rtl_perm ()
 static void
 pop_rtl_from_perm ()
 {
-  extern struct obstack permanent_obstack;
   extern struct obstack *rtl_obstack;
-  
   rtl_obstack = saved_rtl_obstack;
 }
 
@@ -587,7 +585,7 @@ new_eh_stack (stack)
 }
 
 /* cheesyness to save some typing. returns the return value rtx */
-rtx
+static rtx
 do_function_call (func, params, return_type)
      tree func, params, return_type;
 {
@@ -603,8 +601,6 @@ static void
 expand_internal_throw (pc)
      rtx pc;
 {
-  tree params;
-
   emit_move_insn (DECL_RTL (saved_pc), pc);
 #ifdef JUMP_TO_THROW
   emit_indirect_jump (gen_rtx (SYMBOL_REF, Pmode, "__throw"));
@@ -616,7 +612,7 @@ expand_internal_throw (pc)
 
 /* ========================================================================= */
 
-void
+static void
 lang_interim_eh (finalization)
      tree finalization;
 {
@@ -946,7 +942,7 @@ build_eh_type (exp)
 }
 
 /* This routine creates the cleanup for the exception handling object.  */
-void
+static void
 push_eh_cleanup ()
 {
   /* All cleanups must last longer than normal.  */
@@ -973,7 +969,6 @@ expand_start_catch_block (declspecs, declarator)
   rtx protect_label_rtx;
   tree decl = NULL_TREE;
   tree init;
-  tree cleanup;
 
   if (! doing_eh (1))
     return;
@@ -1243,7 +1238,7 @@ do_unwind (inner_throw_label)
 /* Given the return address, compute the new pc to throw.  This has to
    work for the current frame of the current function, and the one
    above it in the case of throw.  */
-rtx
+static rtx
 eh_outer_context (addr)
      rtx addr;
 {
@@ -1306,8 +1301,6 @@ expand_builtin_throw ()
   rtx return_val_rtx;
   rtx gotta_rethrow_it;
   rtx gotta_call_terminate;
-  rtx unwind_and_throw;
-  rtx goto_unwind_and_throw;
   rtx top_of_loop;
   rtx unwind_first;
   tree t;
@@ -1331,8 +1324,6 @@ expand_builtin_throw ()
 
   gotta_rethrow_it = gen_label_rtx ();
   gotta_call_terminate = gen_label_rtx ();
-  unwind_and_throw = gen_label_rtx ();
-  goto_unwind_and_throw = gen_label_rtx ();
   top_of_loop = gen_label_rtx ();
   unwind_first = gen_label_rtx ();
 
@@ -1421,7 +1412,7 @@ expand_start_eh_spec ()
   start_protect ();
 }
 
-void
+static void
 expand_end_eh_spec (raises)
      tree raises;
 {
@@ -1771,7 +1762,6 @@ emit_exception_table ()
   int count = 0;
   extern FILE *asm_out_file;
   struct ehEntry *entry;
-  tree eh_node_decl;
 
   if (! doing_eh (0))
     return;
@@ -1826,11 +1816,13 @@ build_throw (e)
   return e;
 }
 
+void
 start_eh_unwinder ()
 {
   start_protect ();
 }
 
+static void
 end_eh_unwinder (end)
      rtx end;
 {

@@ -183,7 +183,7 @@ GNU_xref_end (ect)
   if (xf == NULL) return;
 
   while (cur_scope != NULL)
-    GNU_xref_end_scope(cur_scope->gid,0,0,0,0);
+    GNU_xref_end_scope(cur_scope->gid,0,0,0);
 
   doing_xref = 0;
 
@@ -275,10 +275,10 @@ GNU_xref_start_scope (id)
    TRNS is ???  */
 
 void
-GNU_xref_end_scope (id,inid,prm,keep,trns)
+GNU_xref_end_scope (id,inid,prm,keep)
    HOST_WIDE_INT id;
    HOST_WIDE_INT inid;
-   int prm,keep,trns;
+   int prm,keep;
 {
   XREF_FILE xf;
   XREF_SCOPE xs,lxs,oxs;
@@ -400,7 +400,7 @@ GNU_xref_decl (fndecl,decl)
     }
   else if (TREE_CODE (decl) == TEMPLATE_DECL)
     {
-      if (DECL_TEMPLATE_IS_CLASS (decl))
+      if (TREE_CODE (DECL_RESULT (decl)) == TYPE_DECL)
 	cls = "CLASSTEMP";
       else if (TREE_CODE (DECL_RESULT (decl)) == FUNCTION_DECL)
 	cls = "FUNCTEMP";
@@ -599,7 +599,9 @@ GNU_xref_member(cls, fld)
   char *prot;
   int confg, pure;
   char *d;
+#ifdef XREF_SHORT_MEMBER_NAMES
   int i;
+#endif
   char buf[1024], bufa[1024];
 
   if (!doing_xref) return;
@@ -622,7 +624,9 @@ GNU_xref_member(cls, fld)
 
   d = IDENTIFIER_POINTER(cls);
   sprintf(buf, "%d%s", strlen(d), d);
+#ifdef XREF_SHORT_MEMBER_NAMES
   i = strlen(buf);
+#endif
   strcpy(bufa, declname(fld));
 
 #ifdef XREF_SHORT_MEMBER_NAMES

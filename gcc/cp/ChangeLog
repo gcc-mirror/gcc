@@ -1,3 +1,433 @@
+Wed Feb 28 09:28:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (do_identifier): Check for DECL_INITIAL before using it.
+
+Tue Feb 27 16:35:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (build_x_arrow): Call complete_type.
+
+	* pt.c (add_pending_template): Broken out.
+  	(lookup_template_class): If -fexternal-templates, call it for all
+ 	the methods of implemented types.
+	(instantiate_class_template): Instead of instantiating them here.
+	(instantiate_decl): Handle -fexternal-templates earlier.
+
+Tue Feb 27 15:51:32 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* search.c, lex.c, decl.c, class.c, cp-tree.h: Don't wrap the
+	memoized lookup stuff inside GATHER_STATISTICS.
+
+Tue Feb 27 10:38:08 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Complain about array of incomplete type
+	here.
+	(grokdeclarator): Not here.
+
+	* parse.y (template_parm): Expand full_parm inline so we can set
+ 	the rule's precedence.
+
+	* pt.c (tsubst_expr): If we're in a template, just do tsubst_copy.
+	(tsubst): tsubst_expr the DECL_INITIAL of FIELD_DECLs.
+	* decl2.c (grokbitfield): Don't check for integer constant here.
+	* class.c (finish_struct_1): Check here.
+
+	* decl.c (define_label): Make the min decl go on permanent_obstack.
+
+	* pt.c (unify): Don't handle CONST_DECLs.
+	(uses_template_parms): Don't check DECL_INITIAL on a CONST_DECL.
+	(tsubst_copy): Ditto.
+
+	* lex.c (do_identifier): Do pull the DECL_INITIAL out of a
+ 	CONST_DECL for a template parm.
+
+Mon Feb 26 12:48:18 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Complain about array of incomplete type
+	here.
+	(start_decl_1): Not here.
+
+	* pt.c (tsubst): Handle pointer-to-function declarators.
+
+	* method.c (hack_identifier): If pedantic, diagnose local class
+ 	methods that require a static chain.
+
+	* decl.c (grok_op_properties): No longer static.
+	* cp-tree.h: Declare it.
+	* pt.c (tsubst): Call it for operators.
+	Use tsubst_copy for TREE_VECs.
+
+	* parse.y (template_arg): The expr has precedence like '>'.
+
+Fri Feb 23 14:51:52 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (coerce_template_parms): Don't coerce an expression using
+ 	template parms.
+	(uses_template_parms): Also check DECL_INITIAL in CONST_DECLs.
+	(tsubst): Don't use build_index_2_type if the max_value uses template
+	parms.
+	* method.c (build_overload_int): Emit something arbitrary for an
+ 	expression using template parms.
+
+	* parse.y (template_close_bracket): New non-terminal to catch use
+ 	of '>>' instead of '> >' in template class names.
+	(template_type): Use it.
+	* Makefile.in (CONFLICTS): Causes one more r/r conflict.
+
+	* tree.def: Add CAST_EXPR.
+	* typeck2.c (build_functional_cast): Use CAST_EXPR instead of
+ 	CONVERT_EXPR for minimal_parse_mode.
+	* typeck.c (build_c_cast): Ditto.
+	* pt.c (tsubst_copy): Ditto.
+	* decl2.c (build_expr_from_tree): Ditto.
+	* error.c (dump_expr): Ditto.
+
+Fri Feb 23 10:36:46 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* except.c (SetTerminate, SetUnexpected): Put back global vars.
+	(init_exception_processing): Put back decl/init of
+	set_unexpected_fndecl and set_terminate_fndecl, needed to get the
+	fns from libstdc++.
+
+	* decl.c (struct binding_level): Delete ACCEPT_ANY bitfield.
+	(declare_uninstantiated_type_level, uninstantiated_type_level_p):
+	Delete unused fns.
+	* cp-tree.h (declare_uninstantiated_type_level,
+	uninstantiated_type_level_p): Delete prototypes.
+
+Thu Feb 22 19:36:15 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_expr): Add default return.
+
+Thu Feb 22 16:47:24 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* error.c (fndecl_as_string): Delete unused arg CNAME.
+	* sig.c (build_signature_table_constructor,
+	build_signature_method_call): Fix calls.
+
+	* class.c (the_null_vtable_entry): Delete var definition.
+	(init_class_processing): Delete tree the_null_vtable_entry init.
+	* decl.c (no_print_{functions, builtins}): Declare as static.
+	(__tp_desc_type_node): #if 0 var definition.
+	(init_type_desc): #if 0 init of __tp_desc_type_node.
+	(vb_off_identifier): Move var decl into init_decl_processing.
+	(current_function_assigns_this): Declare as static.
+	(int_ftype_ptr_ptr_int, void_ftype_ptr_int_int): Delete var decls.
+	(init_decl_processing): Delete init of void_ftype_ptr_ptr_int.
+	Move decls of string_ftype_ptr_ptr and int_ftype_string_string here.
+	* decl2.c (delete_sanity): Delete definition/mod of local var ELT_SIZE.
+	* init.c (BI_header_type, BI_header_size): Declare as static.
+	* pt.c (template_classes): Delete unused var.
+	(add_pending_template): Delete decl for non-existent fn.
+	(lookup_template_class): Delete vars CODE and TAG_CODE.
+	(instantiate_template): Delete unused var TARGS.
+	* cp-tree.h (vb_off_identifier, current_function_assigns_this):
+	Delete decls.
+	(__tp_desc_type_node): #if 0 var decl.
+	(fndecl_as_string): Fix prototype.
+
+Thu Feb 22 15:56:19 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.def: Add GOTO_STMT.
+	* pt.c (tsubst_expr): Support goto and labels.
+	* decl.c (define_label): Support minimal parsing.
+	* parse.y (simple_stmt): Ditto.
+
+Thu Feb 22 15:30:12 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* xref.c (GNU_xref_member): Only define/set var I if
+	XREF_SHORT_MEMBER_NAMES is defined, to match when it's actually
+	used.
+	(GNU_xref_end_scope): Delete unused fifth arg TRNS.
+	(GNU_xref_end): Fix call.
+	* decl.c (poplevel, poplevel_class, finish_method): Fix calls.
+	* cp-tree.h (GNU_xref_end_scope): Fix prototype.
+
+	* tree.c (build_exception_variant): Delete unused vars I, A, T,
+	T2, and CNAME.
+	(layout_vbasetypes): Delete unused var NONVIRTUAL_VAR_SIZE.
+	(mapcar): Delete unused var CODE.
+	(build_cplus_new): Delete unused arg WITH_CLEANUP_P.
+	(break_out_cleanups): Fix call.
+	(bot_manip): Likewise.
+	* call.c (build_method_call): Likewise.
+	* cvt.c (build_up_reference, convert_to_reference, cp_convert):
+	Likewise.
+	* typeck.c (unary_complex_lvalue, build_modify_expr,
+	convert_for_initialization): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+	* cp-tree.h (build_cplus_new): Fix prototype.
+
+	* repo.c (open_repo_file): Delete unused var Q.
+	(repo_compile_flags, repo_template_declared,
+	repo_template_defined, repo_class_defined, repo_inline_used,
+	repo_vtable_used, repo_tinfo_used): #if 0 unused fns.
+	(repo_get_id, repo_vtable_used): Declare as static. 
+	* cp-tree.h (mark_{decl,class}_instantiated, finish_repo): Add
+	prototypes.
+
+Thu Feb 22 14:53:35 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (pending_inlines): Add function_try_block case.
+
+	* pt.c (unify): Fix for template const parms.
+
+Thu Feb 22 13:24:15 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lex.c (extract_interface_info): Delete forward decl.
+	(default_copy_constructor_body, default_assign_ref_body): Delete
+	decls for non-existent functions.
+	(synth_firstobj, inline_text_firstobjs): Delete unused vars.
+	(init_lex): Delete setting them.
+	(cons_up_default_function): Delete unused vars FUNC_BUF,
+	FUNC_LEN, and COMPLEX.  Delete code setting COMPLEX.  Delete old
+	#if 0'd synth code.
+	(toplevel, expression_obstack): Delete unused extern decls.
+	(tree_node_kind): Delete unused enum.
+	(tree_node_counts, tree_node_sizes): Wrap with #ifdef
+	GATHER_STATISTICS.
+	(tree_node_kind_names): Delete unused extern decl.
+	(synth_obstack): Delete unused var.
+	(init_lex): Don't set it.
+	(init_parse): Add decl before use.
+	(reduce_count): Only define #ifdef GATHER_STATISTICS && REDUCE_LENGTH.
+	(current_unit_{name, language}): Delete unused vars. 
+	(check_newline): Don't bother setting them, just accept the #pragma.
+	* cp-tree.h (init_repo, peek_yylex): Add prototypes.
+	(current_unit_{name, language}): Delete decls.
+
+	* search.c: Wrap all of the memoized functions, macros, and
+	variables inside #ifdef GATHER_STATISTICS.
+	(lookup_field, lookup_fnfields): Likewise.
+	(init_search_processing): Likewise.
+	(reinit_search_statistics): Wrap whole function.
+	* lex.c (reinit_lang_specific): Wrap call to reinit_search_statistics.
+
+	* decl.c (finish_function): Only call pop_memoized_context if
+	GATHER_STATISTICS is defined.
+	(start_function): Likewise for push_memoized_context.
+	* class.c (pushclass, popclass): Likewise.
+
+	* cp-tree.h (CLASSTYPE_MTABLE_ENTRY): Move definition from here...
+	* search.c (CLASSTYPE_MTABLE_ENTRY): ... to here.
+
+	* cvt.c (cp_convert): Delete unused local var FORM.
+	* cp-tree.h (can_convert, can_convert_arg, real_lvalue_p): Add
+	prototypes.
+
+Thu Feb 22 13:19:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (do_poplevel): Oops; really return what we get from
+ 	poplevel this time.
+
+Thu Feb 22 11:41:44 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* cp-tree.h (is_aggr_type): Add prototype.
+
+	* cp-tree.h ({push,pop}_cp_function_context): Add decls.
+	* method.c ({push,pop}_cp_function_context): Delete decls.
+	* except.c (start_eh_unwinder, end_eh_unwinder): Declare as void.
+	(SetUnexpected, SetTerminate): Delete unused vars.
+	(init_exception_processing): Don't set SetUnexpected or
+	SetTerminate.  Don't set SET_UNEXPECTED_FNDECL or SET_TERMINATE_FNDECL.
+	(output_exception_table_entry): Delete unused array LABEL.
+	(expand_internal_throw): Delete unused var PARAMS.
+	(expand_start_catch_block): Delete unused var CLEANUP.
+	(emit_exception_table): Delete unused var EH_NODE_DECL.
+	(expand_builtin_throw): Delete unused vars UNWIND_AND_THROW and
+	GOTO_UNWIND_AND_THROW.  Don't set them.
+	(end_eh_unwinder): Add top decl.
+	(pop_rtl_from_perm): Delete unused decl of PERMANENT_OBSTACK.
+	(exception_section, push_rtl_perm, do_function_call,
+	lang_interim_eh, push_eh_cleanup, eh_outer_context,
+	expand_end_eh_spec, end_eh_unwinder): Declare as static.
+	(saved_pc, saved_throw_type, saved_throw_value, saved_cleanup,
+	throw_used): Likewise.
+	* cp-tree.h (expand_end_eh_spec): Delete prototype.
+
+	* search.c (dfs_mark, dfs_mark_vtable_path,
+	dfs_unmark_vtable_path, dfs_mark_new_vtable,
+	dfs_unmark_new_vtable, dfs_clear_search_slot,
+	dfs_search_slot_nonempty_p, bfs_markedp, bfs_unmarkedp,
+	bfs_marked_vtable_pathp, bfs_unmarked_vtable_pathp,
+	bfs_marked_new_vtablep, bfs_unmarked_new_vtablep): #if 0 unused
+	functions.
+	(n_fields_searched, n_calls_lookup_field, n_calls_lookup_field_1,
+	n_calls_lookup_fnfields, n_calls_lookup_fnfields_1,
+	n_calls_get_base_type, n_outer_fields_searched, n_contexts_saved):
+	Only define #ifdef GATHER_STATISTICS.
+	(reinit_search_statistics): Only init some vars if GATHER_STATISTICS
+	is defined.
+	(vbase_decl): Delete var definition.
+	(init_search): Delete old decl.
+	(init_vbase_pointers): Delete building of VBASE_DECL, since it's
+	never actually used.
+	(expand_indirect_vtbls_init): Delete init of VBASE_DECL.
+	(get_base_distance_recursive): Delete unused fourth arg
+	BASETYPE_PATH.  Fix call .
+	(get_base_distance): Fix call.
+	(push_class_decls): Delete unused var ID.
+	(make_memoized_table_entry): Declare as static.
+	(breadth_first_search): Declare as static.
+	(tree_has_any_destructor_p): Declare as static.
+	(pop_class_decls): Delete unused arg pop_class_decls.
+	* class.c (popclass): Fix call to pop_class_decls.
+	* cp-tree.h (make_memoized_table_entry, breadth_first_search,
+	tree_has_any_destructor_p): Delete prototypes.
+
+	* rtti.c (build_ptmf_desc): Delete unused arg TYPE.
+	(build_t_desc): Fix call.  Delete unused vars ELEMS and TT.
+	(build_dynamic_cast): Delete unused local vars TMP1 and RETVAL.
+	(build_user_desc): Delete unused var T.
+	(build_class_desc): Delete unused vars T and OFF.
+	(build_t_desc): Delete unused var NAME_STRING.
+	(build_headof): Make static.
+	(get_bad_cast_node): Likewise.
+	(get_def_to_follow): Likewise.
+	* cp-tree.h (init_type_desc): Add prototype.
+	(build_headof): Remove prototype.
+
+Thu Feb 22 00:54:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Only look for matching decls at file scope for
+ 	non-member functions.
+
+	* call.c (build_scoped_method_call): Handle scoped destructor
+ 	calls in templates.
+
+	* decl.c (*_top_level): Also save previous_class_values.
+
+	* pt.c (tsubst_expr): Support do {} while loops.
+	* parse.y (simple_stmt): Ditto.
+	* tree.def: Ditto.
+
+	* method.c (build_overload_identifier): For a class nested in a
+ 	template class, don't mangle in the template parms from our
+ 	context.
+
+	* lex.c, cp-tree.h: Remove support for template instantiations in
+ 	the pending_inlines code.
+	* pt.c: Remove dead functions and unused arguments.
+	(uses_template_parms): TYPENAME_TYPEs always use template parms.
+	* parse.y: Stop passing anything to end_template_decl.
+	* tree.c (print_lang_statistics): Only print tinst info #ifdef
+ 	GATHER_STATISTICS.
+
+Wed Feb 21 16:57:33 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* init.c (expand_recursive_init{,_1}): Delete decls. 
+	(sort_member_init): Delete unused var INIT.
+	(emit_base_init): Delete unused var X.
+	(build_offset_ref): Delete unused var CNAME.
+	(sort_member_init): Delete unused var FIELDS_TO_UNMARK.
+	(emit_base_init): Delete unused local var BASE.  Delete extern
+	decl of IN_CHARGE_IDENTIFIER.
+	(build_delete): Delete unused local var VIRTUAL_SIZE.
+
+	* init.c (build_vec_delete): Delete unused third arg ELT_SIZE.
+	(build_delete): Fix call.
+	* decl2.c (delete_sanity): Likewise.
+	* cp-tree.h (build_vec_delete): Update prototype.
+
+	* typeck.c (common_base_type): Delete unused var TMP.
+	(build_binary_op): Delete local var ARGS_SAVE.
+	(build_array_ref): Delete unused var ITYPE.
+	(c_expand_return): Delete unused var USE_TEMP.
+
+	* typeck.c (compexcepttypes): Delete unused arg STRICT.
+	(comptypes): Fix calls.
+	* decl.c (duplicate_decls): Likewise.
+	* cp-tree.h (compexcepttypes): Delete extra arg.
+
+	* decl2.c (check_classfn): Delete unused second arg CNAME.
+	* decl.c (start_decl, grokfndecl): Fix calls.
+	* init.c (do_friend): Likewise.
+	* cp-tree.h (check_classfn): Update prototype.
+
+	* cp-tree.h (signature_error, import_export_vtable,
+	append_signature_fields, id_in_current_class, mark_used,
+	copy_assignment_arg_p): Add decls.
+	* decl2.c (mark_used): Delete decl.
+
+	* class.c (n_*): Wrap with #ifdef GATHER_STATISTICS.
+
+	* class.c (get_vtable_entry): Diable unused function.
+	(doing_hard_virtuals): Delete unused static global var.
+	(finish_struct_1): Don't init DOING_HARD_VIRTUALS.
+	(prepare_fresh_vtable): Delete unused vars PATH and RESULT.
+	(overrides): Delete unused vars RETTYPE and BASE_RETTYPE.
+	(modify_one_vtable): Delete unused var OLD_RTTI.
+	(finish_struct_anon): Delete unused vars OFFSET and X.
+	(finish_struct_bits): Delete unused var METHOD_VEC.
+	(get_basefndecls): Delete unused var PURPOSE.  Delete unused
+	for-scope local variable METHODS.
+
+	* call.c (user_harshness): Delete unused/unneeded arg PARM.
+	(ideal_candidate): Delete unused args BASETYPE and PARMS.
+	(build_method_call): Delete unused args passed into ideal_candidate.
+	(build_overload_call_real): Likewise.  Delete unused var OVERLOAD_NAME.
+	* cp-tree.h (synthesize_method): Add decl.
+
+	* decl.c (note_level_for_for): Give void return type.
+	(pushdecl_nonclass_level): Likewise.
+	(finish_function): Delete unused vars VFIELDS and ALLOCATED_THIS.
+	(poplevel): Delete unused var IMPLICIT_TRY_BLOCK.
+	(suspend_binding_level): Delete unused var LEVEL.
+	(duplicate_decls): Delete unused var CTYPE.
+	(duplicate_decls): Delete unused var PREVIOUS_C_DECL.
+	(init_decl_processing): Delete unused vars FLOAT_ENDLINK and
+	PTR_ENDLINK.
+	(grokdeclarator): Delete unused var C.
+	(grokdeclarator): Delete unused var SIZE_VARIES.
+	(grokparms): Delete unused var SAW_VOID.
+	(start_function): Delete unused var OLDDECL.
+	(cplus_expand_expr_stmt): Delete unused var
+	REMOVE_IMPLICIT_IMMEDIATELY. 
+
+	* cp-tree.h (pushdecl_nonclass_level): Fix prototype.
+
+	* Makefile.in (CONFLICTS): Update to 12 shift/reduce.
+
+Wed Feb 21 00:06:17 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (build_min): Set TREE_COMPLEXITY to lineno.
+	(build_min_nt): Ditto.
+	* pt.c (do_pushlevel): Emit line note.
+	(do_poplevel): Return what we get from poplevel.
+	(tsubst_expr): Set lineno from TREE_COMPLEXITY in stmt nodes.
+	* parse.y: Use do_pushlevel and do_poplevel.
+	* cp-tree.h: Declare do_poplevel.
+	
+	* cp-tree.h: Declare at_eof.
+	* decl.c (cp_finish_decl): Pass it to rest_of_decl_compilation.
+	* decl2.c (import_export_decl): Renamed from import_export_inline.
+	(finish_file): Call it to do interface handling for statics.
+	* pt.c (tsubst_copy): Call mark_used on variables and functions
+ 	used here.
+
+	* decl2.c (finish_file): Don't emit statics we can't generate.
+	* pt.c (instantiate_decl): Don't set interface on instantiations
+ 	we can't generate.
+
+	* cp-tree.h (struct tinst_level): Change 'classname' to 'decl'.
+	* tree.c (print_lang_statistics): Print max template depth.
+	* pt.c (push_tinst_level): Dump entire instantiation context.
+	(instantiate_class_template): Use it and pop_tinst_level.
+	(instantiate_decl): Ditto.
+
+	* call.c class.c cp-tree.h decl.c decl2.c error.c lex.c method.c
+ 	pt.c ptree.c tree.def: Remove all traces of UNINSTANTIATED_P_TYPE.
+
+Tue Feb 20 18:21:51 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c class.c cp-tree.h cvt.c decl.c decl2.c error.c expr.c
+ 	init.c lex.c method.c parse.y pt.c repo.c search.c spew.c tree.c
+ 	tree.def typeck.c typeck2.c xref.c: Massive, systemic changes for
+ 	the new template implementation.
+
+Tue Feb 20 17:14:29 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl2.c (check_cp_case_value): Use STRIP_TYPE_NOPS.
+
 Thu Feb 15 18:44:42 1996  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (cp_finish_decl): Delay emitting the debug information for

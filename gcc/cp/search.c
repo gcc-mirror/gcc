@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-void init_search ();
 extern struct obstack *current_obstack;
 extern tree abort_fndecl;
 
@@ -82,8 +81,7 @@ static void dfs_unmark ();
 static void dfs_init_vbase_pointers ();
 
 static tree vbase_types;
-static tree vbase_decl, vbase_decl_ptr;
-static tree vbase_decl_ptr_intermediate;
+static tree vbase_decl_ptr_intermediate, vbase_decl_ptr;
 static tree vbase_init_result;
 
 /* Allocate a level of searching.  */
@@ -141,12 +139,14 @@ extern int flag_memoize_lookups, flag_save_memoized_contexts;
 static int my_memoized_entry_counter;
 static int memoized_fast_finds[2], memoized_adds[2], memoized_fast_rejects[2];
 static int memoized_fields_searched[2];
+#ifdef GATHER_STATISTICS
 static int n_fields_searched;
 static int n_calls_lookup_field, n_calls_lookup_field_1;
 static int n_calls_lookup_fnfields, n_calls_lookup_fnfields_1;
 static int n_calls_get_base_type;
 static int n_outer_fields_searched;
 static int n_contexts_saved;
+#endif
 
 /* Local variables to help save memoization contexts.  */
 static tree prev_type_memoized;
@@ -249,7 +249,7 @@ my_new_memoized_entry (chain)
 /* Make an entry in the memoized table for type TYPE
    that the entry for NAME is FIELD.  */
 
-tree
+static tree
 make_memoized_table_entry (type, name, function_p)
      tree type, name;
      int function_p;
@@ -492,10 +492,10 @@ get_binfo (parent, binfo, protect)
 
 /* This is the newer depth first get_base_distance routine.  */
 static int
-get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
+get_base_distance_recursive (binfo, depth, is_private, rval,
 			     rval_private_ptr, new_binfo_ptr, parent, path_ptr,
 			     protect, via_virtual_ptr, via_virtual)
-     tree binfo, basetype_path, *new_binfo_ptr, parent, *path_ptr;
+     tree binfo, *new_binfo_ptr, parent, *path_ptr;
      int *rval_private_ptr, depth, is_private, rval, protect, *via_virtual_ptr,
        via_virtual;
 {
@@ -569,7 +569,7 @@ get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
 
 	  was = WATCH_VALUES (rval, *via_virtual_ptr);
 	  rval = get_base_distance_recursive (base_binfo, depth, via_private,
-					      binfo, rval, rval_private_ptr,
+					      rval, rval_private_ptr,
 					      new_binfo_ptr, parent, path_ptr,
 					      protect, via_virtual_ptr,
 					      this_virtual);
@@ -619,8 +619,11 @@ get_base_distance (parent, binfo, protect, path_ptr)
   int via_virtual;
   int watch_access = protect;
 
+  /* Should we be completing types here?  */
   if (TREE_CODE (parent) != TREE_VEC)
-    parent = TYPE_MAIN_VARIANT (parent);
+    parent = complete_type (TYPE_MAIN_VARIANT (parent));
+  else
+    complete_type (TREE_TYPE (parent));
 
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);
@@ -647,7 +650,7 @@ get_base_distance (parent, binfo, protect, path_ptr)
   if (path_ptr)
     watch_access = 1;
 
-  rval = get_base_distance_recursive (binfo, 0, 0, NULL_TREE, -1,
+  rval = get_base_distance_recursive (binfo, 0, 0, -1,
 				      &rval_private, &new_binfo, parent,
 				      path_ptr, watch_access, &via_virtual, 0);
 
@@ -721,6 +724,8 @@ lookup_field_1 (type, name)
       if (TYPE_VIRTUAL_P (type))
 	return CLASSTYPE_VFIELD (type);
     }
+  if (name == constructor_name (type))
+    return TYPE_STUB_DECL (type);
   return NULL_TREE;
 }
 
@@ -1081,8 +1086,8 @@ lookup_field (xbasetype, name, protect, want_type)
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
     {
-      type = xbasetype;
-      basetype_path = TYPE_BINFO (xbasetype);
+      type = complete_type (xbasetype);
+      basetype_path = TYPE_BINFO (type);
       BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
@@ -1132,7 +1137,10 @@ lookup_field (xbasetype, name, protect, want_type)
 	    {
 	      if (TREE_CODE (rval) != TYPE_DECL)
 		{
-		  rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		  if (name == constructor_name (type))
+		    rval = type;
+		  else
+		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
 		  if (rval)
 		    rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
 		}
@@ -1314,7 +1322,10 @@ lookup_field (xbasetype, name, protect, want_type)
 	      {
 		if (TREE_CODE (rval) != TYPE_DECL)
 		  {
-		    rval = purpose_member (name, CLASSTYPE_TAGS (type));
+		    if (name == constructor_name (type))
+		      rval = type;
+		    else
+		      rval = purpose_member (name, CLASSTYPE_TAGS (type));
 		    if (rval)
 		      rval = TYPE_MAIN_DECL (TREE_VALUE (rval));
 		  }
@@ -1577,7 +1588,7 @@ lookup_fnfields (basetype_path, name, complain)
 
   binfo = basetype_path;
   binfo_h = binfo;
-  type = BINFO_TYPE (basetype_path);
+  type = complete_type (BINFO_TYPE (basetype_path));
 
   /* The memoization code is in need of maintenance. */
   if (!find_all && CLASSTYPE_MTABLE_ENTRY (type))
@@ -1826,7 +1837,7 @@ lookup_fnfields (basetype_path, name, complain)
    QFN, if non-NULL, is a predicate dictating whether the type should
    even be queued.  */
 
-HOST_WIDE_INT
+static HOST_WIDE_INT
 breadth_first_search (binfo, testfn, qfn)
      tree binfo;
      int (*testfn)();
@@ -1932,7 +1943,8 @@ static tree get_virtual_destructor (binfo, i)
   return 0;
 }
 
-int tree_has_any_destructor_p (binfo, i)
+static int
+tree_has_any_destructor_p (binfo, i)
      tree binfo;
      int i;
 {
@@ -2297,7 +2309,9 @@ dfs_walk (binfo, fn, qfn)
 
       if (qfn == 0 || (*qfn)(base_binfo))
 	{
-	  if (fn == dfs_init_vbase_pointers)
+	  if (TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TYPE_PARM)
+	    /* Pass */;
+	  else if (fn == dfs_init_vbase_pointers)
 	    {
 	      /* When traversing an arbitrary MI hierarchy, we need to keep
 		 a record of the path we took to get down to the final base
@@ -2334,8 +2348,9 @@ dfs_walk (binfo, fn, qfn)
 	      dfs_walk (base_binfo, fn, qfn);
 
 	      vbase_decl_ptr_intermediate = saved_vbase_decl_ptr_intermediate;
-	    } else
-	      dfs_walk (base_binfo, fn, qfn);
+	    }
+	  else
+	    dfs_walk (base_binfo, fn, qfn);
 	}
     }
 
@@ -2350,31 +2365,37 @@ static int unnumberedp (binfo) tree binfo;
 
 static int markedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo); }
-static int bfs_markedp (binfo, i) tree binfo; int i;
-{ return BINFO_MARKED (BINFO_BASETYPE (binfo, i)); }
 static int unmarkedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo) == 0; }
+
+#if 0
+static int bfs_markedp (binfo, i) tree binfo; int i;
+{ return BINFO_MARKED (BINFO_BASETYPE (binfo, i)); }
 static int bfs_unmarkedp (binfo, i) tree binfo; int i;
 { return BINFO_MARKED (BINFO_BASETYPE (binfo, i)) == 0; }
-static int marked_vtable_pathp (binfo) tree binfo;
-{ return BINFO_VTABLE_PATH_MARKED (binfo); }
 static int bfs_marked_vtable_pathp (binfo, i) tree binfo; int i;
 { return BINFO_VTABLE_PATH_MARKED (BINFO_BASETYPE (binfo, i)); }
-static int unmarked_vtable_pathp (binfo) tree binfo;
-{ return BINFO_VTABLE_PATH_MARKED (binfo) == 0; }
 static int bfs_unmarked_vtable_pathp (binfo, i) tree binfo; int i;
 { return BINFO_VTABLE_PATH_MARKED (BINFO_BASETYPE (binfo, i)) == 0; }
-static int marked_new_vtablep (binfo) tree binfo;
-{ return BINFO_NEW_VTABLE_MARKED (binfo); }
 static int bfs_marked_new_vtablep (binfo, i) tree binfo; int i;
 { return BINFO_NEW_VTABLE_MARKED (BINFO_BASETYPE (binfo, i)); }
-static int unmarked_new_vtablep (binfo) tree binfo;
-{ return BINFO_NEW_VTABLE_MARKED (binfo) == 0; }
 static int bfs_unmarked_new_vtablep (binfo, i) tree binfo; int i;
 { return BINFO_NEW_VTABLE_MARKED (BINFO_BASETYPE (binfo, i)) == 0; }
+#endif
 
+static int marked_vtable_pathp (binfo) tree binfo;
+{ return BINFO_VTABLE_PATH_MARKED (binfo); }
+static int unmarked_vtable_pathp (binfo) tree binfo;
+{ return BINFO_VTABLE_PATH_MARKED (binfo) == 0; }
+static int marked_new_vtablep (binfo) tree binfo;
+{ return BINFO_NEW_VTABLE_MARKED (binfo); }
+static int unmarked_new_vtablep (binfo) tree binfo;
+{ return BINFO_NEW_VTABLE_MARKED (binfo) == 0; }
+
+#if 0
 static int dfs_search_slot_nonempty_p (binfo) tree binfo;
 { return CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) != 0; }
+#endif
 
 static int dfs_debug_unmarkedp (binfo) tree binfo;
 { return CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) == 0; }
@@ -2400,14 +2421,17 @@ dfs_unnumber (binfo)
   BINFO_CID (binfo) = 0;
 }
 
+#if 0
 static void
 dfs_mark (binfo) tree binfo;
 { SET_BINFO_MARKED (binfo); }
+#endif
 
 static void
 dfs_unmark (binfo) tree binfo;
 { CLEAR_BINFO_MARKED (binfo); }
 
+#if 0
 static void
 dfs_mark_vtable_path (binfo) tree binfo;
 { SET_BINFO_VTABLE_PATH_MARKED (binfo); }
@@ -2427,6 +2451,7 @@ dfs_unmark_new_vtable (binfo) tree binfo;
 static void
 dfs_clear_search_slot (binfo) tree binfo;
 { CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (binfo)) = 0; }
+#endif
 
 static void
 dfs_debug_mark (binfo)
@@ -2571,9 +2596,7 @@ init_vbase_pointers (type, decl_ptr)
       tree binfo = TYPE_BINFO (type);
       flag_this_is_variable = -2;
       vbase_types = CLASSTYPE_VBASECLASSES (type);
-      vbase_decl_ptr = decl_ptr;
-      vbase_decl = build_indirect_ref (decl_ptr, NULL_PTR);
-      vbase_decl_ptr_intermediate = vbase_decl_ptr;
+      vbase_decl_ptr = vbase_decl_ptr_intermediate = decl_ptr;
       vbase_init_result = NULL_TREE;
       dfs_walk (binfo, dfs_find_vbases, unmarked_vtable_pathp);
       dfs_walk (binfo, dfs_init_vbase_pointers, marked_vtable_pathp);
@@ -2800,7 +2823,7 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
    offsets are valid to store vtables.  When zero, we must store new
    vtables through virtual baseclass pointers.
 
-   We setup and use the globals: vbase_decl, vbase_decl_ptr, vbase_types
+   We setup and use the globals: vbase_decl_ptr, vbase_types
    ICK!  */
 
 void
@@ -2816,7 +2839,6 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
       tree vbases = CLASSTYPE_VBASECLASSES (type);
       vbase_types = vbases;
       vbase_decl_ptr = true_exp ? build_unary_op (ADDR_EXPR, true_exp, 0) : decl_ptr;
-      vbase_decl = true_exp ? true_exp : build_indirect_ref (decl_ptr, NULL_PTR);
 
       dfs_walk (binfo, dfs_find_vbases, unmarked_new_vtablep);
 
@@ -2840,7 +2862,8 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 
 	  if (flag_vtable_thunks)
 	    {
-	      /* We don't have dynamic thunks yet!  So for now, just fail silently. */
+	      /* We don't have dynamic thunks yet!
+		 So for now, just fail silently. */
 	    }
 	  else
 	    {
@@ -3270,12 +3293,8 @@ void
 push_class_decls (type)
      tree type;
 {
-  tree id;
   struct obstack *ambient_obstack = current_obstack;
-
   search_stack = push_search_level (search_stack, &search_obstack);
-
-  id = TYPE_IDENTIFIER (type);
 
   /* Push class fields into CLASS_VALUE scope, and mark.  */
   dfs_walk (TYPE_BINFO (type), dfs_pushdecls, unmarkedp);
@@ -3351,8 +3370,7 @@ unuse_fields (type)
 }
 
 void
-pop_class_decls (type)
-     tree type;
+pop_class_decls ()
 {
   /* We haven't pushed a search level when dealing with cached classes,
      so we'd better not try to pop it.  */
@@ -3400,7 +3418,7 @@ init_search_processing ()
 
   /* This gives us room to build our chains of basetypes,
      whether or not we decide to memoize them.  */
-  type_stack = push_type_level (0, &type_obstack);
+  type_stack = push_type_level ((struct stack_level *)0, &type_obstack);
   _vptr_name = get_identifier ("_vptr");
 }
 
@@ -3416,12 +3434,14 @@ reinit_search_statistics ()
   memoized_fast_rejects[1] = 0;
   memoized_fields_searched[0] = 0;
   memoized_fields_searched[1] = 0;
+#ifdef GATHER_STATISTICS
   n_fields_searched = 0;
   n_calls_lookup_field = 0, n_calls_lookup_field_1 = 0;
   n_calls_lookup_fnfields = 0, n_calls_lookup_fnfields_1 = 0;
   n_calls_get_base_type = 0;
   n_outer_fields_searched = 0;
   n_contexts_saved = 0;
+#endif
 }
 
 static tree conversions;

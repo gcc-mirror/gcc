@@ -359,3 +359,85 @@ extract_init (decl, init)
   return 1;
 #endif
 }
+
+void
+do_case (start, end)
+     tree start, end;
+{
+  tree value1 = NULL_TREE, value2 = NULL_TREE, label;
+
+  if (end && pedantic)
+    pedwarn ("ANSI C++ forbids range expressions in switch statement");
+
+  if (current_template_parms)
+    {
+      add_tree (build_min_nt (CASE_LABEL, start, end));
+      return;
+    }
+
+  if (start)
+    value1 = check_cp_case_value (start);
+  if (end)
+    value2 = check_cp_case_value (end);
+  
+  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+
+  if (value1 != error_mark_node
+      && value2 != error_mark_node)
+    {
+      tree duplicate;
+      int success;
+
+      if (end)
+	success = pushcase_range (value1, value2, convert_and_check,
+				  label, &duplicate);
+      else if (start)
+	success = pushcase (value1, convert_and_check, label, &duplicate);
+      else
+	success = pushcase (NULL_TREE, 0, label, &duplicate);
+
+      if (success == 1)
+	{
+	  if (end)
+	    error ("case label not within a switch statement");
+	  else if (start)
+	    cp_error ("case label `%E' not within a switch statement", start);
+	  else
+	    error ("default label not within a switch statement");
+	}
+      else if (success == 2)
+	{
+	  if (end)
+	    {
+	      error ("duplicate (or overlapping) case value");
+	      cp_error_at ("this is the first entry overlapping that value",
+			   duplicate);
+	    }
+	  else if (start)
+	    {
+	      cp_error ("duplicate case value `%E'", start);
+	      cp_error_at ("previously used here", duplicate);
+	    }
+	  else
+	    {
+	      error ("multiple default labels in one switch");
+	      cp_error_at ("this is the first default label", duplicate);
+	    }
+	}
+      else if (success == 3)
+	warning ("case value out of range");
+      else if (success == 4)
+	warning ("empty range specified");
+      else if (success == 5)
+	{
+	  if (end)
+	    error ("case label within scope of cleanup or variable array");
+	  else
+	    cp_error ("case label `%E' within scope of cleanup or variable array", start);
+	}
+    }
+  if (start)
+    define_case_label (label);
+  else
+    define_case_label (NULL_TREE);
+}

@@ -72,13 +72,6 @@ print_lang_type (file, node, indent)
       return;
     }
 
-  if (TREE_CODE (node) == UNINSTANTIATED_P_TYPE)
-    {
-      print_node (file, "template", UPT_TEMPLATE (node), indent + 4);
-      print_node (file, "parameters", UPT_PARMS (node), indent + 4);
-      return;
-    }
-
   if (! (TREE_CODE (node) == RECORD_TYPE
 	 || TREE_CODE (node) == UNION_TYPE))
     return;

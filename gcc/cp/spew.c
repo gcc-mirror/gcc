@@ -295,8 +295,8 @@ yylex()
 	      if (lastiddecl != trrr)
 		{
 		  lastiddecl = trrr;
-		  if (got_scope || got_object)
-		    tmp_token.yylval.ttype = DECL_NESTED_TYPENAME (trrr);
+		  if (got_scope)
+		    tmp_token.yylval.ttype = trrr;
 		}
 	      break;
 	    case IDENTIFIER:
@@ -307,7 +307,7 @@ yylex()
 	      break;
 	    case NSNAME:
 	      lastiddecl = trrr;
-	      if (got_scope || got_object)
+	      if (got_scope)
 		tmp_token.yylval.ttype = trrr;
 	      break;
 	    default:
@@ -352,6 +352,7 @@ yylex()
       consume_token();
     }
 
+  got_object = NULL_TREE;
   yylval = tmp_token.yylval;
   yychar = tmp_token.yychar;
   end_of_file = tmp_token.end_of_file;

@@ -168,7 +168,6 @@ OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
 
 compiler: ../cc1plus
 ../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
-	rm -f ../cc1plus$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) $(OBJS) $(LIBS)
 
@@ -196,7 +195,7 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
-CONFLICTS = expect 7 shift/reduce conflicts and 38 reduce/reduce conflicts.
+CONFLICTS = expect 12 shift/reduce conflicts and 39 reduce/reduce conflicts.
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)

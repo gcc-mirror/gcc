@@ -81,7 +81,6 @@ tree previous_class_type;	/* _TYPE: the previous type that was a class */
 tree previous_class_values;		/* TREE_LIST: copy of the class_shadowed list
 				   when leaving an outermost class scope.  */
 static tree get_vfield_name PROTO((tree));
-tree the_null_vtable_entry;
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -109,6 +108,7 @@ tree access_private_virtual_node; /* 6 */
 
 /* Variables shared between class.c and call.c.  */
 
+#ifdef GATHER_STATISTICS
 int n_vtables = 0;
 int n_vtable_entries = 0;
 int n_vtable_searches = 0;
@@ -117,6 +117,7 @@ int n_convert_harshness = 0;
 int n_compute_conversion_costs = 0;
 int n_build_method_call = 0;
 int n_inner_fields_searched = 0;
+#endif
 
 /* Virtual baseclass things.  */
 tree
@@ -362,7 +363,6 @@ build_vbase_path (code, type, expr, path, alias_this)
    classes.  We do all overrides after we layout virtual base classes.
    */
 static tree pending_hard_virtuals;
-static int doing_hard_virtuals;
 
 /* Build an entry in the virtual function table.
    DELTA is the offset for the `this' pointer.
@@ -698,8 +698,7 @@ prepare_fresh_vtable (binfo, for_type)
      for_type, and we really want different names.  (mrs) */
   tree name = build_type_pathname (VTABLE_NAME_FORMAT, basetype, for_type);
   tree new_decl = build_decl (VAR_DECL, name, TREE_TYPE (orig_decl));
-  tree path, offset;
-  int result;
+  tree offset;
 
   /* Remember which class this vtable is really for.  */
   DECL_CONTEXT (new_decl) = for_type;
@@ -741,6 +740,7 @@ prepare_fresh_vtable (binfo, for_type)
   SET_BINFO_NEW_VTABLE_MARKED (binfo);
 }
 
+#if 0
 /* Access the virtual function table entry that logically
    contains BASE_FNDECL.  VIRTUALS is the virtual function table's
    initializer.  We can run off the end, when dealing with virtual
@@ -765,6 +765,7 @@ get_vtable_entry (virtuals, base_fndecl)
     }
   return virtuals;
 }
+#endif
 
 /* Put new entry ENTRY into virtual function table initializer
    VIRTUALS.
@@ -913,7 +914,7 @@ add_method (type, fields, method)
     decl = copy_node (method);
     if (DECL_RTL (decl) == 0
         && (!processing_template_decl
-            || !uses_template_parms (decl)))
+	    || !uses_template_parms (decl)))
       {
 	make_function_rtl (decl);
 	DECL_RTL (method) = DECL_RTL (decl);
@@ -1087,8 +1088,16 @@ delete_duplicate_fields_1 (field, fields)
 		    cp_error_at ("duplicate nested type `%D'", x);
 		  else if (TREE_CODE (field) == TYPE_DECL
 			   || TREE_CODE (x) == TYPE_DECL)
-		    cp_error_at ("duplicate field `%D' (as type and non-type)",
-				x);
+		    {
+		      /* Hide tag decls.  */
+		      if ((TREE_CODE (field) == TYPE_DECL
+			   && DECL_ARTIFICIAL (field))
+			  || (TREE_CODE (x) == TYPE_DECL
+			      && DECL_ARTIFICIAL (x)))
+			continue;
+		      cp_error_at ("duplicate field `%D' (as type and non-type)",
+				   x);
+		    }
 		  else
 		    cp_error_at ("duplicate member `%D'", x);
 		  if (prev == 0)
@@ -1658,7 +1667,6 @@ finish_struct_bits (t, max_has_virtual)
      int max_has_virtual;
 {
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-  tree method_vec = CLASSTYPE_METHOD_VEC (t);
 
   /* Fix up variants (if any).  */
   tree variants = TYPE_NEXT_VARIANT (t);
@@ -1677,6 +1685,7 @@ finish_struct_bits (t, max_has_virtual)
       /* Copy whatever these are holding today.  */
       TYPE_MIN_VALUE (variants) = TYPE_MIN_VALUE (t);
       TYPE_MAX_VALUE (variants) = TYPE_MAX_VALUE (t);
+      TYPE_FIELDS (variants) = TYPE_FIELDS (t);
       variants = TYPE_NEXT_VARIANT (variants);
     }
 
@@ -2167,7 +2176,7 @@ overrides (fndecl, base_fndecl)
     return 0;
   if (DECL_NAME (fndecl) == DECL_NAME (base_fndecl))
     {
-      tree rettype, base_rettype, types, base_types;
+      tree types, base_types;
 #if 0
       retypes = TREE_TYPE (TREE_TYPE (fndecl));
       base_retypes = TREE_TYPE (TREE_TYPE (base_fndecl));
@@ -2291,7 +2300,6 @@ modify_one_vtable (binfo, t, fndecl, pfn)
      tree binfo, t, fndecl, pfn;
 {
   tree virtuals = BINFO_VIRTUALS (binfo);
-  tree old_rtti;
   unsigned HOST_WIDE_INT n;
   
   /* update rtti entry */
@@ -2711,8 +2719,6 @@ get_basefndecls (fndecl, t)
 
   while (methods)
     {
-      tree purpose = NULL_TREE;
-
       if (TREE_CODE (methods) == FUNCTION_DECL
 	  && DECL_VINDEX (methods) != NULL_TREE
 	  && DECL_NAME (fndecl) == DECL_NAME (methods))
@@ -2728,7 +2734,6 @@ get_basefndecls (fndecl, t)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       tree basetype = BINFO_TYPE (base_binfo);
-      tree methods = TYPE_METHODS (basetype);
 
       base_fndecls = chainon (get_basefndecls (fndecl, basetype),
 			      base_fndecls);
@@ -2913,8 +2918,6 @@ finish_struct_anon (t)
 	  tree* uelt = &TYPE_FIELDS (TREE_TYPE (field));
 	  for (; *uelt; uelt = &TREE_CHAIN (*uelt))
 	    {
-	      tree offset, x;
-
 	      if (TREE_CODE (*uelt) != FIELD_DECL)
 		continue;
 
@@ -3190,8 +3193,11 @@ finish_struct_1 (t, attributes, warn_anon)
 						   &has_virtual, x, t);
 	  if (DECL_ABSTRACT_VIRTUAL_P (x))
 	    abstract_virtuals = tree_cons (NULL_TREE, x, abstract_virtuals);
+#if 0
+	  /* XXX Why did I comment this out?  (jason) */
 	  else
 	    TREE_USED (x) = 1;
+#endif
 	}
     }
 
@@ -3377,9 +3383,26 @@ finish_struct_1 (t, attributes, warn_anon)
 	  /* Detect and ignore out of range field width.  */
 	  if (DECL_INITIAL (x))
 	    {
-	      register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+	      tree w = DECL_INITIAL (x);
+	      register int width;
 
-	      if (width < 0)
+	      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
+	      STRIP_NOPS (w);
+
+	      /* detect invalid field size.  */
+	      if (TREE_CODE (w) == CONST_DECL)
+		w = DECL_INITIAL (w);
+	      else if (TREE_READONLY_DECL_P (w))
+		w = decl_constant_value (w);
+
+	      if (TREE_CODE (w) != INTEGER_CST)
+		{
+		  cp_error_at ("bit-field `%D' width not an integer constant",
+			       x);
+		  DECL_INITIAL (x) = NULL_TREE;
+		}
+	      else if (width = TREE_INT_CST_LOW (w),
+		       width < 0)
 		{
 		  DECL_INITIAL (x) = NULL;
 		  cp_error_at ("negative width in bit-field `%D'", x);
@@ -3789,6 +3812,8 @@ finish_struct_1 (t, attributes, warn_anon)
 	{
 	  tree name = DECL_NAME (x);
 	  int i = /*TREE_VEC_ELT (method_vec, 0) ? 0 : */ 1;
+	  if (TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x))
+	    continue;
 	  for (; i < n_methods; ++i)
 	    if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
 	      {
@@ -3842,7 +3867,6 @@ finish_struct_1 (t, attributes, warn_anon)
   /* Now fix up any virtual base class types that we left lying
      around.  We must get these done before we try to lay out the
      virtual function table.  */
-  doing_hard_virtuals = 1;
   pending_hard_virtuals = nreverse (pending_hard_virtuals);
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
@@ -3948,8 +3972,6 @@ finish_struct_1 (t, attributes, warn_anon)
 	  vbases = TREE_CHAIN (vbases);
 	}
     }
-
-  doing_hard_virtuals = 0;
 
   /* Under our model of GC, every C++ class gets its own virtual
      function table, at least virtually.  */
@@ -4090,42 +4112,6 @@ finish_struct_1 (t, attributes, warn_anon)
 	}
     }
 
-  /* Now add the tags, if any, to the list of TYPE_DECLs
-     defined for this type.  */
-  if (CLASSTYPE_TAGS (t))
-    {
-      x = CLASSTYPE_TAGS (t);
-      last_x = tree_last (TYPE_FIELDS (t));
-      while (x)
-	{
-	  tree tag = TYPE_NAME (TREE_VALUE (x));
-
-	  /* Check to see if it is already there.  This will be the case if
-	     was do enum { red; } color; */
-	  if (chain_member (tag, TYPE_FIELDS (t)))
-	      {
-		x = TREE_CHAIN (x);
-		continue;
-	      }
-
-#ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG)
-	    {
-	      /* Notify dwarfout.c that this TYPE_DECL node represent a
-		 gratuitous typedef.  */
-	      DECL_IGNORED_P (tag) = 1;
-	    }
-#endif /* DWARF_DEBUGGING_INFO */
-
-	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
-	  x = TREE_CHAIN (x);
-	  last_x = chainon (last_x, tag);
-	}
-      if (TYPE_FIELDS (t) == NULL_TREE)
-	TYPE_FIELDS (t) = last_x;
-      CLASSTYPE_LOCAL_TYPEDECLS (t) = 1;
-    }
-
   if (TYPE_HAS_CONSTRUCTOR (t))
     {
       tree vfields = CLASSTYPE_VFIELDS (t);
@@ -4185,17 +4171,12 @@ finish_struct_1 (t, attributes, warn_anon)
   /* Make the rtl for any new vtables we have created, and unmark
      the base types we marked.  */
   finish_vtbls (TYPE_BINFO (t), 1, t);
-  TYPE_BEING_DEFINED (t) = 0;
   hack_incomplete_structures (t);
 
 #if 0
   if (TYPE_NAME (t) && TYPE_IDENTIFIER (t))
     undo_template_name_overload (TYPE_IDENTIFIER (t), 1);
 #endif
-  if (current_class_type)
-    popclass (0);
-  else
-    error ("trying to finish struct, but kicked out due to previous parse errors.");
 
   resume_momentary (old);
 
@@ -4235,9 +4216,12 @@ finish_struct_1 (t, attributes, warn_anon)
 	      = (value_member (TYPE_IDENTIFIER (t), pending_vtables) == 0);
 	  else if (CLASSTYPE_INTERFACE_ONLY (t))
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
+#if 0
+	  /* XXX do something about this.  */
 	  else if (CLASSTYPE_INTERFACE_UNKNOWN (t))
 	    /* Only a first approximation!  */
 	    TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
+#endif
 	}
       else if (CLASSTYPE_INTERFACE_ONLY (t))
 	TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = 1;
@@ -4336,6 +4320,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
 	  if (TREE_CODE (x) == FUNCTION_DECL)
 	    {
+	      DECL_CLASS_CONTEXT (x) = t;
 	      if (last_x)
 		TREE_CHAIN (last_x) = TREE_CHAIN (x);
 	      /* Link x onto end of TYPE_METHODS. */
@@ -4354,6 +4339,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	      DECL_RESULT (x) = n;
 	    }
 #endif
+	  if (TREE_CODE (x) != TYPE_DECL)
+	    DECL_FIELD_CONTEXT (x) = t;
 
 	  if (! fields)
 	    fields = x;
@@ -4372,17 +4359,79 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	}
     }
 
+  /* Now add the tags, if any, to the list of TYPE_DECLs
+     defined for this type.  */
+  if (CLASSTYPE_TAGS (t))
+    {
+      x = CLASSTYPE_TAGS (t);
+      while (x)
+	{
+	  tree tag = TYPE_NAME (TREE_VALUE (x));
+
+	  /* Check to see if it is already there.  This will be the case if
+	     was do enum { red; } color; */
+	  if (chain_member (tag, fields))
+	      {
+		x = TREE_CHAIN (x);
+		continue;
+	      }
+
+#ifdef DWARF_DEBUGGING_INFO
+	  if (write_symbols == DWARF_DEBUG)
+	    {
+	      /* Notify dwarfout.c that this TYPE_DECL node represent a
+		 gratuitous typedef.  */
+	      DECL_IGNORED_P (tag) = 1;
+	    }
+#endif /* DWARF_DEBUGGING_INFO */
+
+	  TREE_NONLOCAL_FLAG (TREE_VALUE (x)) = 0;
+	  x = TREE_CHAIN (x);
+	  last_x = chainon (last_x, tag);
+	}
+      if (fields == NULL_TREE)
+	fields = last_x;
+      CLASSTYPE_LOCAL_TYPEDECLS (t) = 1;
+    }
+
   *tail = NULL_TREE;
   TYPE_FIELDS (t) = fields;
 
-  if (0 && processing_template_defn)
+  if (processing_template_decl)
     {
+      tree d = getdecls ();
+      for (; d; d = TREE_CHAIN (d))
+	{
+	  /* If this is the decl for the class or one of the template
+             parms, we've seen all the injected decls.  */
+	  if ((TREE_CODE (d) == TYPE_DECL
+	       && (TREE_TYPE (d) == t
+		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TYPE_PARM))
+	      || TREE_CODE (d) == CONST_DECL)
+	    break;
+	  /* Don't inject TYPE_NESTED_NAMEs.  */
+	  else if (TREE_MANGLED (DECL_NAME (d))
+		   || IDENTIFIER_TEMPLATE (DECL_NAME (d)))
+	    continue;
+	  DECL_TEMPLATE_INJECT (CLASSTYPE_TI_TEMPLATE (t))
+	    = tree_cons (NULL_TREE, d,
+			 DECL_TEMPLATE_INJECT (CLASSTYPE_TI_TEMPLATE (t)));
+	}
       CLASSTYPE_METHOD_VEC (t)
 	= finish_struct_methods (t, TYPE_METHODS (t), 1);
-      return t;
-    }
+      TYPE_SIZE (t) = integer_zero_node;
+    }      
   else
-    return finish_struct_1 (t, attributes, warn_anon);
+    t = finish_struct_1 (t, attributes, warn_anon);
+
+  TYPE_BEING_DEFINED (t) = 0;
+
+  if (current_class_type)
+    popclass (0);
+  else
+    error ("trying to finish struct, but kicked out due to previous parse errors.");
+
+  return t;
 }
 
 /* Return non-zero if the effective type of INSTANCE is static.
@@ -4516,7 +4565,6 @@ init_class_processing ()
   access_private_virtual_node = build_int_2 (6, 0);
 
   /* Keep these values lying around.  */
-  the_null_vtable_entry = build_vtable_entry (integer_zero_node, integer_zero_node);
   base_layout_decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, error_mark_node);
   TREE_TYPE (base_layout_decl) = make_node (RECORD_TYPE);
 
@@ -4592,6 +4640,9 @@ pushclass (type, modify)
 
   pushlevel_class ();
 
+  if (CLASSTYPE_TEMPLATE_INFO (type))
+    overload_template_name (type);
+
   if (modify)
     {
       tree tags;
@@ -4604,9 +4655,7 @@ pushclass (type, modify)
       else
 	current_function_decl = NULL_TREE;
 
-      if (TREE_CODE (type) == UNINSTANTIATED_P_TYPE)
-	declare_uninstantiated_type_level ();
-      else if (type != previous_class_type || current_class_depth > 1)
+      if (type != previous_class_type || current_class_depth > 1)
 	{
 	  build_mi_matrix (type);
 	  push_class_decls (type);
@@ -4632,9 +4681,6 @@ pushclass (type, modify)
 	    }
 	  unuse_fields (type);
 	}
-
-      if (IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (type)))
-	overload_template_name (current_class_name, 0);
 
       for (tags = CLASSTYPE_TAGS (type); tags; tags = TREE_CHAIN (tags))
 	{
@@ -4686,8 +4732,6 @@ popclass (modify)
 	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
 	  tags = TREE_CHAIN (tags);
 	}
-      if (IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (current_class_type)))
-	undo_template_name_overload (current_class_name, 0);
     }
 
   /* Force clearing of IDENTIFIER_CLASS_VALUEs after a class definition,
@@ -4698,7 +4742,7 @@ popclass (modify)
      this really only frees the obstack used for these decls.
      That's why it had to be moved down here.  */
   if (modify)
-    pop_class_decls (current_class_type);
+    pop_class_decls ();
 
   current_class_depth--;
   current_class_type = *--current_class_stack;
@@ -4724,7 +4768,8 @@ push_nested_class (type, modify)
 {
   tree context;
 
-  if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type))
+  if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
+      || TREE_CODE (type) == TEMPLATE_TYPE_PARM)
     return;
   
   context = DECL_CONTEXT (TYPE_NAME (type));
@@ -4992,7 +5037,10 @@ instantiate_type (lhstype, rhs, complain)
 		      }
 		  }
 	      if (save_elem)
-		return save_elem;
+		{
+		  mark_used (save_elem);
+		  return save_elem;
+		}
 	    }
 
 	    /* No match found, look for a compatible function.  */

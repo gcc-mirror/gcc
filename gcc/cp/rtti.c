@@ -37,7 +37,7 @@ extern tree combine_strings PROTO((tree));
 
 /* Given the expression EXP of type `class *', return the head
    of the object pointed to by EXP.  */
-tree
+static tree
 build_headof (exp)
      tree exp;
 {
@@ -156,7 +156,7 @@ get_typeid (type)
 /* Get a bad_cast node for the program to throw...
 
    See libstdc++::exception{,.cc} for __bad_cast_object */
-tree
+static tree
 get_bad_cast_node ()
 {
   static tree t;
@@ -179,7 +179,6 @@ build_dynamic_cast (type, expr)
   enum tree_code tc = TREE_CODE (type);
   tree exprtype = TREE_TYPE (expr);
   enum tree_code ec = TREE_CODE (exprtype);
-  tree retval;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -268,7 +267,7 @@ build_dynamic_cast (type, expr)
       else
 	{
 	  tree retval;
-          tree result, td1, td2, elems, tmp1, expr1;
+          tree result, td1, td2, elems, expr1;
 
  	  /* If we got here, we can't convert statically.  Therefore,
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
@@ -462,7 +461,7 @@ static tree
 build_user_desc (tdecl)
      tree tdecl;
 {
-  tree elems, name_string, t;
+  tree elems, name_string;
   tree tname = DECL_NAME (tdecl);
 
   name_string = combine_strings (build_string 
@@ -481,13 +480,15 @@ build_class_desc (tdecl, type)
   tree name_string;
 
   int i = CLASSTYPE_N_BASECLASSES (type);
-  int n_base = i;
   int base_cnt = 0;
   tree binfos = TYPE_BINFO_BASETYPES (type);
+#if 0
+  /* See code below that used these.  */
   tree vb = CLASSTYPE_VBASECLASSES (type);
+  int n_base = i;
+#endif
   tree base, elems, access, offset, isvir;
   tree base_list, off_list, acc_list, isvir_list;
-  tree t;
   static tree acc_pub = NULL_TREE;
   static tree acc_pro = NULL_TREE;
   static tree acc_pri = NULL_TREE;
@@ -516,7 +517,6 @@ build_class_desc (tdecl, type)
 	  tree t = BINFO_TYPE (binfo);
 	  char *name;
 	  tree field;
-	  int off;
 
 	  name = (char *) alloca (TYPE_NAME_LENGTH (t)+sizeof (VBASE_NAME)+1);
 	  sprintf (name, VBASE_NAME_FORMAT, TYPE_NAME_STRING (t));
@@ -659,9 +659,8 @@ build_func_desc (tdecl)
 
 /* Build an initializer for a __ptmf_type_info node.  */
 static tree
-build_ptmf_desc (tdecl, type)
+build_ptmf_desc (tdecl)
      tree tdecl;
-     tree type;
 { 
   tree elems, name_string;
   tree tname = DECL_NAME (tdecl);
@@ -711,7 +710,7 @@ add_uninstantiated_desc (type)
    objects, we do that here.  Return the type to link against if such a
    link exists, otherwise just return TYPE.  */
 
-tree
+static tree
 get_def_to_follow (type)
      tree type;
 {
@@ -735,10 +734,8 @@ build_t_desc (type, definition)
      tree type;
      int definition;
 {
-  tree tdecl;
-  tree tname, name_string;
-  tree elems;
-  tree t, tt, taggr;
+  tree tdecl, tname;
+  tree t, taggr;
 
   if (__ptmd_desc_type_node == NULL_TREE)
     {
@@ -841,13 +838,9 @@ build_t_desc (type, definition)
   else if (IS_AGGR_TYPE (type))
     {
       if (TYPE_PTRMEMFUNC_P (type))
-	{
-	  t = build_ptmf_desc (tdecl, type);
-	}
+	t = build_ptmf_desc (tdecl);
       else
-	{
-	  t = build_class_desc (tdecl, type);
-	}
+	t = build_class_desc (tdecl, type);
     }
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     t = build_func_desc (tdecl);

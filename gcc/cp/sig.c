@@ -534,7 +534,7 @@ build_signature_table_constructor (sig_ty, rhs)
 	    {
 	      error ("class `%s' does not contain a method conforming to `%s'",
 		     TYPE_NAME_STRING (rhstype),
-		     fndecl_as_string (NULL, sig_method, 1));
+		     fndecl_as_string (sig_method, 1));
 	      undo_casts (sig_ty);
 	      return error_mark_node;
 	    }
@@ -1000,7 +1000,7 @@ build_signature_method_call (basetype, instance, function, parms)
 	  && (!deflt_call || deflt_call == error_mark_node)))
     {
       compiler_error ("cannot build call of signature member function `%s'",
-		      fndecl_as_string (NULL, function, 1));
+		      fndecl_as_string (function, 1));
       return error_mark_node;
     }
 

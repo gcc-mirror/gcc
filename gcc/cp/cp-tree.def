@@ -90,17 +90,12 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", "d", 0)
    Use TYPE_FIELDS to find parmlist and index.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", "t", 0)
 
+/* A type designated by 'typename T::t'. */
+DEFTREECODE (TYPENAME_TYPE, "typename_type", "t", 0)
+
 /* Index into a template parameter list.  This parameter must not be a
    type.  */
 DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", "c", 2)
-
-/* For uninstantiated parameterized types.
-        TYPE_VALUES     tree list:
-                TREE_PURPOSE    template decl
-                TREE_VALUE      parm vector
-                TREE_CHAIN      null
-   Other useful fields to be defined later.  */
-DEFTREECODE (UNINSTANTIATED_P_TYPE, "uninstantiated_p_type", "t", 0)
 
 /* A thunk is a stub function.
 
@@ -118,3 +113,27 @@ DEFTREECODE (NAMESPACE_DECL, "namespace_decl", "d", 0)
 /* A using declaration.  DECL_INITIAL contains the specified scope.  
    This is not an alias, but is later expanded into multiple aliases.  */
 DEFTREECODE (USING_DECL, "using_decl", "d", 0)
+
+DEFTREECODE (LOOKUP_EXPR, "lookup_expr", "e", 2)
+DEFTREECODE (MODOP_EXPR, "modop_expr", "e", 3)
+DEFTREECODE (CAST_EXPR, "cast_expr", "e", 1)
+DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", "e", 1)
+DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", "e", 1)
+DEFTREECODE (ARROW_EXPR, "arrow_expr", "e", 1)
+DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", "e", 2)
+
+DEFTREECODE (EXPR_STMT, "expr_stmt", "e", 1)
+DEFTREECODE (COMPOUND_STMT, "compound_stmt", "e", 1)
+DEFTREECODE (DECL_STMT, "decl_stmt", "e", 4)
+DEFTREECODE (IF_STMT, "if_stmt", "e", 3)
+DEFTREECODE (FOR_STMT, "for_stmt", "e", 4)
+DEFTREECODE (WHILE_STMT, "while_stmt", "e", 2)
+DEFTREECODE (DO_STMT, "do_stmt", "e", 2)
+DEFTREECODE (RETURN_STMT, "return_stmt", "e", 1)
+DEFTREECODE (BREAK_STMT, "break_stmt", "e", 0)
+DEFTREECODE (CONTINUE_STMT, "continue_stmt", "e", 0)
+DEFTREECODE (SWITCH_STMT, "switch_stmt", "e", 2)
+DEFTREECODE (GOTO_STMT, "goto_stmt", "e", 1)
+
+DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", "e", 2)
+DEFTREECODE (CASE_LABEL, "case_label", "e", 2)
