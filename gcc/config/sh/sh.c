@@ -84,7 +84,7 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, PR_REGS, T_REGS, NO_REGS,
-  MAC_REGS, MAC_REGS, FPUL_REGS, NO_REGS,
+  MAC_REGS, MAC_REGS, FPUL_REGS, GENERAL_REGS,
   FP0_REGS,FP_REGS, FP_REGS, FP_REGS,
   FP_REGS, FP_REGS, FP_REGS, FP_REGS,
   FP_REGS, FP_REGS, FP_REGS, FP_REGS,
@@ -2074,8 +2074,8 @@ initial_elimination_offset (from, to)
   int total_saved_regs_space;
   int total_auto_space = get_frame_size ();
 
-  int live_regs_mask2;
-  calc_live_regs (&regs_saved, &live_regs_mask2);
+  int live_regs_mask, live_regs_mask2;
+  live_regs_mask = calc_live_regs (&regs_saved, &live_regs_mask2);
 
   total_saved_regs_space = (regs_saved) * 4;
 
@@ -2088,6 +2088,19 @@ initial_elimination_offset (from, to)
   /* Initial gap between fp and sp is 0.  */
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
+
+  if (from == RETURN_ADDRESS_POINTER_REGNUM
+      && (to == FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM))
+    {
+      int i, n = 0;
+      for (i = PR_REG+1; i < 32; i++)
+	if (live_regs_mask & (1 << i))
+	  n += 4;
+      for (i = 32; i < FIRST_PSEUDO_REGISTER; i++)
+	if (live_regs_mask2 & (1 << (i - 32)))
+	  n += 4;
+      return n + total_auto_space;
+    }
 
   abort ();
 }
