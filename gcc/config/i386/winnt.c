@@ -78,6 +78,36 @@ ix86_handle_shared_attribute (tree *node, tree name,
 
   return NULL_TREE;
 }
+
+/* Handle a "selectany" attribute;
+   arguments as in struct attribute_spec.handler.  */
+tree
+ix86_handle_selectany_attribute (tree *node, tree name,
+			         tree args ATTRIBUTE_UNUSED,
+			         int flags ATTRIBUTE_UNUSED,
+				 bool *no_add_attrs)
+{
+  /* The attribute applies only to objects that are initialized and have
+     external linkage,  */	
+  if (TREE_CODE (*node) == VAR_DECL && TREE_PUBLIC (*node)
+      && (DECL_INITIAL (*node)
+          /* If an object is initialized with a ctor, the static
+	     initialization and destruction code for it is present in
+	     each unit defining the object.  The code that calls the
+	     ctor is protected by a link-once guard variable, so that
+	     the object still has link-once semantics,  */
+    	  || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (*node))))
+    make_decl_one_only (*node);
+  else
+    {	
+      error ("%qs attribute applies only to initialized variables"
+       	     " with external linkage",  IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 
 /* Return the type that we should use to determine if DECL is
    imported or exported.  */
@@ -622,7 +652,7 @@ i386_pe_section_type_flags (tree decl, const char *name, int reloc)
 
 void
 i386_pe_asm_named_section (const char *name, unsigned int flags, 
-			   tree decl ATTRIBUTE_UNUSED)
+			   tree decl)
 {
   char flagchars[8], *f = flagchars;
 
@@ -649,10 +679,16 @@ i386_pe_asm_named_section (const char *name, unsigned int flags,
   if (flags & SECTION_LINKONCE)
     {
       /* Functions may have been compiled at various levels of
-         optimization so we can't use `same_size' here.
-         Instead, have the linker pick one.  */
+	 optimization so we can't use `same_size' here.
+	 Instead, have the linker pick one, without warning.
+	 If 'selectany' attibute has been specified,  MS compiler
+	 sets 'discard' characteristic, rather than telling linker
+	 to warn of size or content mismatch, so do the same.  */ 
+      bool discard = (flags & SECTION_CODE)
+		      || lookup_attribute ("selectany",
+					   DECL_ATTRIBUTES (decl));	 
       fprintf (asm_out_file, "\t.linkonce %s\n",
-	       (flags & SECTION_CODE ? "discard" : "same_size"));
+	       (discard  ? "discard" : "same_size"));
     }
 }
 
