@@ -8,6 +8,11 @@
 	line number.
 	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
 
+2004-08-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* cpu/hppa/atomicity.h (__exchange_and_add, __atomic_add): Add memory
+	barrier to locking asm.
+	
 2004-08-20  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/c_std/cmath.tcc (__cmath_power): Revert previous commit:
