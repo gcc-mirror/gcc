@@ -1,3 +1,7 @@
+2002-05-14  Release Manager
+
+	* GCC 3.1 Released.
+
 2002-03-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* jartool.c (expand_options): Handle tar-style argument list with a

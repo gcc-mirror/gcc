@@ -1,3 +1,7 @@
+2002-05-14  Release Manager
+
+	* GCC 3.1 Released.
+
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_release: Correct upload handling.

@@ -1,3 +1,7 @@
+2002-05-14  Release Manager
+
+	* GCC 3.1 Released.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4: Fix spelling error of "separate" as "seperate".

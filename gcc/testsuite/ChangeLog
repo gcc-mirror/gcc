@@ -1,3 +1,7 @@
+2002-05-14  Release Manager
+
+	* GCC 3.1 Released.
+
 2002-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/g77.exp (g77_link_flags): Append all multilib dirs containing
