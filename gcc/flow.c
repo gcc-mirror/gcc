@@ -1892,21 +1892,18 @@ insn_dead_p (pbi, x, call_ok, notes)
   enum rtx_code code = GET_CODE (x);
 
 #ifdef AUTO_INC_DEC
-  /* If flow is invoked after reload, we must take existing AUTO_INC
-     expresions into account.  */
-  if (reload_completed)
+  /* As flow is invoked after combine, we must take existing AUTO_INC
+     expressions into account.  */
+  for (; notes; notes = XEXP (notes, 1))
     {
-      for (; notes; notes = XEXP (notes, 1))
+      if (REG_NOTE_KIND (notes) == REG_INC)
 	{
-	  if (REG_NOTE_KIND (notes) == REG_INC)
-	    {
-	      int regno = REGNO (XEXP (notes, 0));
-
-	      /* Don't delete insns to set global regs.  */
-	      if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
-		  || REGNO_REG_SET_P (pbi->reg_live, regno))
-		return 0;
-	    }
+	  int regno = REGNO (XEXP (notes, 0));
+	  
+	  /* Don't delete insns to set global regs.  */
+	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
+	      || REGNO_REG_SET_P (pbi->reg_live, regno))
+	    return 0;
 	}
     }
 #endif

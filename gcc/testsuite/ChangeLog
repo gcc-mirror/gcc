@@ -1,5 +1,7 @@
 2001-11-09  Geoffrey Keating  <geoffk@redhat.com>
 
+	* gcc.c-torture/execute/20011109-2.c: New test.
+
 	* gcc.c-torture/execute/20011109-1.c: New test.
 
 2001-11-09  Jakub Jelinek  <jakub@redhat.com>
