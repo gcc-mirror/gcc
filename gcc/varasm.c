@@ -2705,7 +2705,8 @@ decode_rtx_const (mode, x, value)
     {
     case CONST_DOUBLE:
       value->kind = RTX_DOUBLE;
-      value->mode = GET_MODE (x);
+      if (GET_MODE (x) != VOIDmode)
+	value->mode = GET_MODE (x);
       bcopy (&CONST_DOUBLE_LOW (x), &value->un.du, sizeof value->un.du);
       break;
 
