@@ -1445,15 +1445,15 @@
 (define_insn "post_ldwm"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mem:SI (match_operand:SI 1 "register_operand" "=r")))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0)
+   (set (match_dup 1)
+	(plus:SI (match_dup 1)
 		 (match_operand:SI 2 "post_cint_operand" "")))]
   ""
   "*
 {
   if (INTVAL (operands[2]) > 0)
     return \"ldwm %2(0,%1),%0\";
-  return \"ldws,ma %2(0,%1),%1\";
+  return \"ldws,ma %2(0,%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
