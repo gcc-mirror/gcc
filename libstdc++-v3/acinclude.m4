@@ -299,7 +299,8 @@ dnl
 dnl Define SECTION_LDFLAGS='-Wl,--gc-sections' if possible.
 dnl Define OPT_LDFLAGS='-Wl,-O1' if possible.
 dnl Define LD, with_gnu_ld, and (possibly) glibcxx_gnu_ld_version as
-dnl side-effects of testing.
+dnl side-effects of testing.  The last will be a single integer, e.g.,
+dnl version 1.23.45.0.67.89 will set glibcxx_gnu_ld_version to 12345.
 dnl
 dnl GLIBCXX_CHECK_LINKER_FEATURES
 AC_DEFUN(GLIBCXX_CHECK_LINKER_FEATURES, [
@@ -2266,26 +2267,13 @@ glibcxx_min_gnu_ld_version=21400
 # above.
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
-    test $glibcxx_shared_libgcc = yes ;
+     test $glibcxx_shared_libgcc = yes ;
   then
     if test $glibcxx_gnu_ld_version -ge $glibcxx_min_gnu_ld_version ; then
-        enable_symvers=gnu
+      enable_symvers=gnu
     else
-      ac_test_CFLAGS="${CFLAGS+set}"
-      ac_save_CFLAGS="$CFLAGS"
-      CFLAGS='-shared -Wl,--version-script,conftest.map'
+      # The right tools, the right setup, but too old.  Fallbacks?
       enable_symvers=no
-      changequote(,)
-      echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
-      changequote([,])
-      AC_TRY_LINK([int foo;],, enable_symvers=gnu)
-      if test "$ac_test_CFLAGS" = set; then
-	CFLAGS="$ac_save_CFLAGS"
-      else
-	# this is the suspicious part
-	CFLAGS=''
-      fi
-      rm -f conftest.map
     fi
   else
     # just fail for now

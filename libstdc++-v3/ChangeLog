@@ -1,3 +1,9 @@
+2003-07-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS):  Do not test for binutils
+	2.11 with globbing backport fix.
+	* aclocal.m4, configure:  Regenerated.
+
 2003-07-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_fstream.h (xsputn): Don't call _M_destroy_pback:
