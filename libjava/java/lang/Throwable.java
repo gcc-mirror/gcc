@@ -88,6 +88,13 @@ class CPlusPlusDemangler extends OutputStream
 	written++;
       }
     p.flush ();
+    try
+      {
+	proc.waitFor ();
+      }
+    catch (InterruptedException _)
+      {
+      }
   }    
 }
 

@@ -17,6 +17,7 @@ details.  */
 #include <jvm.h>
 
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -38,8 +39,12 @@ public:
 #if defined (HAVE_PIPE) && defined (HAVE_FORK)
       close (f_pipe[1]);
       fclose (b_pipe_fd);
+
+      int wstat;
+      // We don't care about errors here.
+      waitpid (pid, &wstat, 0);
 #endif
-    }  
+    }
 
 /* Given a pointer to a function or method, try to convert it into a
    name and the appropriate line and source file.  The caller passes
@@ -60,10 +65,9 @@ public:
 private:
   void toHex (void *p);
 #if defined (HAVE_PIPE) && defined (HAVE_FORK)
-  int pid;
+  pid_t pid;
   int f_pipe[2], b_pipe[2];
   FILE *b_pipe_fd;
   int error;
 #endif
 };
-
