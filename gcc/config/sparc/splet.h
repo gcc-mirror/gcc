@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 #include "sparc/aout.h"
 
+/* -mbroken-saverestore is not included here because the long term
+   default is -mno-broken-saverestore.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
