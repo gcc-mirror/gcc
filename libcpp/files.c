@@ -438,7 +438,15 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       if (file->dir == NULL)
 	{
 	  if (search_path_exhausted (pfile, fname, file))
-	    return file;
+	    {
+	      /* Although this file must not go in the cache, because
+		 the file found might depend on things (like the current file)
+		 that aren't represented in the cache, it still has to go in
+		 the list of all files so that #import works.  */
+	      file->next_file = pfile->all_files;
+	      pfile->all_files = file;
+	      return file;
+	    }
 
 	  open_file_failed (pfile, file);
 	  if (invalid_pch)
