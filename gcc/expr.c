@@ -2701,7 +2701,14 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
   if (mode == VOIDmode
       || (mode != BLKmode && ! direct_store[(int) mode])
       || GET_CODE (target) == REG
-      || GET_CODE (target) == SUBREG)
+      || GET_CODE (target) == SUBREG
+      /* If the field isn't aligned enough to fetch as a unit,
+	 fetch it as a bit field.  */
+#ifdef STRICT_ALIGNMENT
+      || align * BITS_PER_UNIT < GET_MODE_ALIGNMENT (mode)
+      || bitpos % GET_MODE_ALIGNMENT (mode) != 0
+#endif
+      )
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
       /* Store the value in the bitfield.  */
@@ -4306,30 +4313,38 @@ expand_expr (exp, target, tmode, modifier)
 	 address.
 
 	 If this is an EXPAND_SUM call, always return the sum.  */
-      if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	  && (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
-	      || mode == Pmode))
+      if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
+	  || mode == Pmode)
 	{
-	  op1 = expand_expr (TREE_OPERAND (exp, 1), subtarget, VOIDmode,
-			     EXPAND_SUM);
-	  op1 = plus_constant (op1, TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)));
-	  if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	    op1 = force_operand (op1, target);
-	  return op1;
-	}
+	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && TREE_CONSTANT (TREE_OPERAND (exp, 1)))
+	    {
+	      op1 = expand_expr (TREE_OPERAND (exp, 1), subtarget, VOIDmode,
+				 EXPAND_SUM);
+	      op1 = plus_constant (op1, TREE_INT_CST_LOW (TREE_OPERAND (exp, 0)));
+	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
+		op1 = force_operand (op1, target);
+	      return op1;
+	    }
 
-      else if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
-	       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
-	       && (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
-		   || mode == Pmode))
-	{
-	  op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
-			     EXPAND_SUM);
-	  op0 = plus_constant (op0, TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)));
-	  if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	    op0 = force_operand (op0, target);
-	  return op0;
+	  else if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
+		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT
+		   && TREE_CONSTANT (TREE_OPERAND (exp, 0)))
+	    {
+	      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode,
+				 EXPAND_SUM);
+	      if (! CONSTANT_P (op0))
+		{
+		  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
+				     VOIDmode, modifier);
+		  goto both_summands;
+		}
+	      op0 = plus_constant (op0, TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)));
+	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
+		op0 = force_operand (op0, target);
+	      return op0;
+	    }
 	}
 
       /* No sense saving up arithmetic to be done
@@ -4337,7 +4352,8 @@ expand_expr (exp, target, tmode, modifier)
 	 And force_operand won't know whether to sign-extend or
 	 zero-extend.  */
       if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	  || mode != Pmode) goto binop;
+	  || mode != Pmode)
+	goto binop;
 
       preexpand_calls (exp);
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
@@ -4346,6 +4362,7 @@ expand_expr (exp, target, tmode, modifier)
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, modifier);
       op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, modifier);
 
+    both_summands:
       /* Make sure any term that's a sum with a constant comes last.  */
       if (GET_CODE (op0) == PLUS
 	  && CONSTANT_P (XEXP (op0, 1)))
@@ -6839,6 +6856,7 @@ expand_increment (exp, post)
   int icode;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   int op0_is_copy = 0;
+  int single_insn = 0;
 
   /* Stabilize any component ref that might need to be
      evaluated more than once below.  */
@@ -6877,12 +6895,25 @@ expand_increment (exp, post)
       || TREE_CODE (exp) == PREDECREMENT_EXPR)
     this_optab = sub_optab;
 
+  /* For a preincrement, see if we can do this with a single instruction.  */
+  if (!post)
+    {
+      icode = (int) this_optab->handlers[(int) mode].insn_code;
+      if (icode != (int) CODE_FOR_nothing
+	  /* Make sure that OP0 is valid for operands 0 and 1
+	     of the insn we want to queue.  */
+	  && (*insn_operand_predicate[icode][0]) (op0, mode)
+	  && (*insn_operand_predicate[icode][1]) (op0, mode)
+	  && (*insn_operand_predicate[icode][2]) (op1, mode))
+	single_insn = 1;
+    }
+
   /* If OP0 is not the actual lvalue, but rather a copy in a register,
      then we cannot just increment OP0.  We must therefore contrive to
      increment the original value.  Then, for postincrement, we can return
-     OP0 since it is a copy of the old value.  For preincrement, we want
-     to always expand here, since this generates better or equivalent code.  */
-  if (!post || op0_is_copy)
+     OP0 since it is a copy of the old value.  For preincrement, expand here
+     unless we can do it with a single insn.  */
+  if (op0_is_copy || (!post && !single_insn))
     {
       /* This is the easiest way to increment the value wherever it is.
 	 Problems with multiple evaluation of INCREMENTED are prevented
