@@ -1,5 +1,12 @@
 2000-04-07  Richard Henderson  <rth@cygnus.com>
 
+	* ggc.h (struct rtx_def): Forward declare.
+
+	* print-rtl.c (debug_rtx_range): New.
+	* rtl.h (debug_rtx_range): Declare.
+
+	* varray.h (VARRAY_ACTIVE_SIZE, VARRAY_POP_ALL): New.
+
 	* gcse.c (gcse_main): Don't rebuild the CFG here.
 	(delete_null_pointer_checks): Likewise.
 	* ssa.c (convert_to_ssa): Likewise.

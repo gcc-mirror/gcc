@@ -37,6 +37,7 @@ struct emit_status;
 struct expr_status;
 struct hash_table;
 struct label_node;
+struct rtx_def;
 struct rtvec_def;
 struct stmt_status;
 union  tree_node;

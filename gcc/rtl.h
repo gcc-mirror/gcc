@@ -1564,6 +1564,7 @@ extern void fix_sched_param		PARAMS ((const char *, const char *));
 /* In print-rtl.c */
 extern void debug_rtx			PARAMS ((rtx));
 extern void debug_rtx_list		PARAMS ((rtx, int));
+extern void debug_rtx_range		PARAMS ((rtx, rtx));
 extern rtx debug_rtx_find		PARAMS ((rtx, int));
 #ifdef BUFSIZ
 extern void print_rtl			PARAMS ((FILE *, rtx));
