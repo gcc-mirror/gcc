@@ -7760,16 +7760,31 @@ flow_loop_outside_edge_p (loop, e)
 }
 
 
-/* Clear LOG_LINKS fields of insns in a chain.  */
+/* Clear LOG_LINKS fields of insns in a chain.  
+   Also clear the global_live_at_{start,end} fields of the basic block
+   structures.  */
 
 void
 clear_log_links (insns)
      rtx insns;
 {
   rtx i;
+  int b;
+
   for (i = insns; i; i = NEXT_INSN (i))
     if (GET_RTX_CLASS (GET_CODE (i)) == 'i')
       LOG_LINKS (i) = 0;
+
+  for (b = 0; b < n_basic_blocks; b++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      bb->global_live_at_start = NULL;
+      bb->global_live_at_end = NULL;
+    }
+
+  ENTRY_BLOCK_PTR->global_live_at_end = NULL;
+  EXIT_BLOCK_PTR->global_live_at_start = NULL;
 }
 
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
