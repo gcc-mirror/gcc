@@ -28,6 +28,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SDB_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE \
   (GET_VERSION_0300_SYNTAX ? DWARF_DEBUG : SDB_DEBUG)
+/* This controls a bug fix in cp-decl.c.
+   For version 2.6, someone should figure out the right condition.  */
+#define RMS_QUICK_HACK_1
 
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
