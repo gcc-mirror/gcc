@@ -2399,12 +2399,12 @@ store_expr (exp, target, suggest_reg)
 	    {
 	      /* Compute the size of the data to copy from the string.  */
 	      tree copy_size
-		= fold (build (MIN_EXPR, sizetype,
-			       size_binop (CEIL_DIV_EXPR,
-					   TYPE_SIZE (TREE_TYPE (exp)),
-					   size_int (BITS_PER_UNIT)),
-			       convert (sizetype,
-					build_int_2 (TREE_STRING_LENGTH (exp), 0))));
+		= size_binop (MIN_EXPR,
+			      size_binop (CEIL_DIV_EXPR,
+					  TYPE_SIZE (TREE_TYPE (exp)),
+					  size_int (BITS_PER_UNIT)),
+			      convert (sizetype,
+				       build_int_2 (TREE_STRING_LENGTH (exp), 0)));
 	      rtx copy_size_rtx = expand_expr (copy_size, NULL_RTX,
 					       VOIDmode, 0);
 	      rtx label = 0;
