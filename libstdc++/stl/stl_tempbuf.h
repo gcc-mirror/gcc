@@ -99,7 +99,7 @@ public:
       allocate_buffer();
       if (len > 0)
         initialize_buffer(*first,
-                          __type_traits<T>::has_trivial_default_constructor());
+                          typename __type_traits<T>::has_trivial_default_constructor());
     }
     __STL_UNWIND(free(buffer); buffer = 0; len = 0);
   }
