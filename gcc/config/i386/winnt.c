@@ -558,7 +558,7 @@ i386_pe_strip_name_encoding (const char *str)
   return str;
 }
 
-/* Also strip the stdcall suffix.  */
+/* Also strip the fastcall prefix and stdcall suffix.  */
 
 const char *
 i386_pe_strip_name_encoding_full (const char *str)
@@ -566,6 +566,11 @@ i386_pe_strip_name_encoding_full (const char *str)
   const char *p;
   const char *name = i386_pe_strip_name_encoding (str);
 
+  /* Strip leading '@' on fastcall symbols.  */
+  if (*name == '@')
+    name++;
+
+  /* Strip trailing "@n".  */
   p = strchr (name, '@');
   if (p)
     return ggc_alloc_string (name, p - name);
