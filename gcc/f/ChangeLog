@@ -1,3 +1,7 @@
+2003-03-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* ffe.texi: Don't mention dead file proj.c.
+
 2003-03-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR fortran/9793
