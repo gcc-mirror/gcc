@@ -143,6 +143,9 @@
 /* Define if you have the <sys/varargs.h> header file.  */
 #undef HAVE_SYS_VARARGS_H
 
+/* Define if you have the <sys/wait.h> header file.  */
+#undef HAVE_SYS_WAIT_H
+
 /* Define if you have the <time.h> header file.  */
 #undef HAVE_TIME_H
 
@@ -151,3 +154,6 @@
 
 /* Define if you have the <varargs.h> header file.  */
 #undef HAVE_VARARGS_H
+
+/* Define if you have the <wait.h> header file.  */
+#undef HAVE_WAIT_H
