@@ -1,3 +1,12 @@
+1999-08-07  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* config/sparc/liteelf.h: New file to support sparclite-elf target
+	* config/sparc/t-sp86x: New file to support sparc86x targets
+	* config/sparc/sp86x-aout.h: New file to support sparc86x-aout target
+	* config/sparc/sp86x-elf.h: New file to support sparc86x-elf target
+	* configure.in: Support above target triplets
+	* configure: Regenerated
+
 Sat Aug  7 01:39:27 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* fixinc/server.c (server_setup): Do not prefix function used as
