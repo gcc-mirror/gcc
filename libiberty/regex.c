@@ -32,8 +32,10 @@
 #undef	_GNU_SOURCE
 #define _GNU_SOURCE
 
-#ifdef HAVE_CONFIG_H
-# include <config.h>
+#ifndef INSIDE_RECURSION
+# ifdef HAVE_CONFIG_H
+#  include <config.h>
+# endif
 #endif
 
 #include <ansidecl.h>

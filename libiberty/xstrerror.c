@@ -15,8 +15,8 @@ will never return a @code{NULL} pointer.
 
 #include <stdio.h>
 
-#include "libiberty.h"
 #include "config.h"
+#include "libiberty.h"
 
 #ifdef VMS
 #include <errno.h>
