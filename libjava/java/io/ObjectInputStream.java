@@ -135,7 +135,7 @@ public class ObjectInputStream extends InputStream
 	else
 	  dumpElementln ("BLOCKDATA");
 	readNextBlock (marker);
-	throw new BlockDataException (this.blockDataBytes);
+	throw new StreamCorruptedException ("Unexpected blockData");
 
       case TC_NULL:
 	dumpElementln ("NULL");
