@@ -1,3 +1,18 @@
+2003-01-03  Mark Wielaard  <mark@klomp.org>
+
+	Merge with Classpath:
+	* java/io/ObjectStreamClass.java (lookup): Split method and call
+	lookupForClassObject().
+	(lookupForClassObject): New method.
+	(isProxyClass): New field.
+	(setClass): Set isProxyClass, add object to classLookupTable, set
+	superClass and calculateOffsets.
+	(ObjectStreamClass): Set isProxyClass. Only set uid when Serializable
+	and not a proxy class.
+	(setFields): Set accessible true for serialPersistentFields.
+	(getClassUID): Same for suid. And check if suid is of type long.
+	(hasClassInitializer): Don't throw NoSuchMethodError.
+
 2003-01-03  Jeff Sturm  <jsturm@one-point.com>
 
 	* configure.host (sparc*-*): Enable bytecode interpreter.
