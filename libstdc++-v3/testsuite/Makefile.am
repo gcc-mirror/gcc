@@ -78,11 +78,7 @@ else
 stamp_wchar:
 endif
 
-# Override this so local rules are possible.
-check-am: 
-	$(MAKE) $(AM_MAKEFLAGS) check-DEJAGNU; \
-	$(MAKE) $(AM_MAKEFLAGS) check-local 
-
+# This is automatically run after the generated check-DEJAGNU rule.
 check-local: check-abi
 
 baseline_dir = @baseline_dir@
@@ -98,8 +94,7 @@ baseline_symbols:
 	    echo "Baseline file doesn't exist."; \
 	    echo "Try 'make new-abi-baseline' to create it."; \
 	    exit 1; \
-	  fi; \
-	touch baseline_symbols)
+	  fi; true)
 
 new-abi-baseline: 
 	-@$(mkinstalldirs) ${baseline_dir}
@@ -152,6 +147,8 @@ check-performance: ${performance_script}
 	-@(chmod + ${performance_script}; \
 	  ${performance_script} ${glibcpp_srcdir} ${glibcpp_builddir})
 
+.PHONY: baseline_symbols new-abi-baseline check-abi check-abi-verbose \
+check-script check-script-install check-performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \

@@ -1,3 +1,9 @@
+2003-06-30  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/Makefile.am (check-am):  Do not override.
+	(baseline_symbols):  Declare as PHONY, so no need to 'touch' it.
+	* testsuite/Makefile.in:  Regenerate.
+
 2003-06-30  Doug Gregor <dgregor@apple.com> 
 	
 	* testsuite/24_iterators/insert_iterator.cc (test01, test02):
