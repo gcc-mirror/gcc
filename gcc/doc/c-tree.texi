@@ -2127,25 +2127,21 @@ These nodes represent @code{?:} expressions.  The first operand
 is of boolean or integral type.  If it evaluates to a nonzero value,
 the second operand should be evaluated, and returned as the value of the
 expression.  Otherwise, the third operand is evaluated, and returned as
-the value of the expression.  As a GNU extension, the middle operand of
-the @code{?:} operator may be omitted in the source, like this:
+the value of the expression.
 
-@example
-x ? : 3
-@end example
-@noindent
-which is equivalent to
+The second operand must have the same type as the entire expression,
+unless it unconditionally throws an exception or calls a noreturn
+function, in which case it should have void type.  The same constraints
+apply to the third operand.  This allows array bounds checks to be
+represented conveniently as @code{(i >= 0 && i < 10) ? i : abort()}.
 
-@example
-x ? x : 3
-@end example
-
-@noindent
-assuming that @code{x} is an expression without side-effects.  However,
-in the case that the first operation causes side effects, the
-side-effects occur only once.  Consumers of the internal representation
-do not need to worry about this oddity; the second operand will be
-always be present in the internal representation.
+As a GNU extension, the C language front-ends allow the second
+operand of the @code{?:} operator may be omitted in the source.
+For example, @code{x ? : 3} is equivalent to @code{x ? x : 3},
+assuming that @code{x} is an expression without side-effects.
+In the tree representation, however, the second operand is always
+present, possibly protected by @code{SAVE_EXPR} if the first
+argument does cause side-effects.
 
 @item CALL_EXPR
 These nodes are used to represent calls to functions, including
