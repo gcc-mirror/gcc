@@ -5930,6 +5930,9 @@ choose_reload_regs (chain)
 			      || (TEST_HARD_REG_BIT (reg_used_in_insn, i)
 				  && reload_out[r]
 				  && ! TEST_HARD_REG_BIT (reg_reloaded_dead, i))
+			      /* Don't clobber the frame pointer.  */
+			      || (i == HARD_FRAME_POINTER_REGNUM
+				  && reload_out[r])
 			      /* Don't really use the inherited spill reg
 				 if we need it wider than we've got it.  */
 			      || (GET_MODE_SIZE (reload_mode[r])

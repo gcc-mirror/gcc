@@ -1,3 +1,8 @@
+Wed Mar 10 18:56:31 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (choose_reload_regs): When inheriting from the frame
+	pointer, don't clobber it.
+
 Wed Mar 10 08:01:52 1999  Bruce Korb <korb@datadesign.com>
 
 	* fixinc/fixinc.*: Resync-ed with the files in this
