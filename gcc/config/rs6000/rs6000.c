@@ -1677,7 +1677,7 @@ rs6000_legitimize_address (x, oldx, mode)
 
       /* Make sure both operands are registers.  */
       if (GET_CODE (x) == PLUS)
-	return gen_rtx_PLUS (Pmode, XEXP (x, 0),
+	return gen_rtx_PLUS (Pmode, force_reg (Pmode, XEXP (x, 0)),
 			     force_reg (Pmode, XEXP (x, 1)));
 
       reg = force_reg (Pmode, x);
