@@ -1,3 +1,8 @@
+2004-08-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/altivec-17.c: New test.
+	* gcc.dg/altivec-18.c: New test.
+
 2004-08-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6749
