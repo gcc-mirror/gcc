@@ -42,7 +42,7 @@ usage (void)
 }
 
 int
-main (int argc, char **argv ATTRIBUTE_UNUSED)
+main (int argc, char ** ARG_UNUSED (argv))
 {
   int i, j;
 

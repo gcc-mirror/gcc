@@ -501,7 +501,7 @@ builtin_function (const char *name,
 		  int function_code,
 		  enum built_in_class class,
 		  const char *library_name,
-		  tree attrs ATTRIBUTE_UNUSED)
+		  tree ARG_UNUSED (attrs))
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;

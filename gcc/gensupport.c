@@ -128,7 +128,7 @@ message_with_line (int lineno, const char *msg, ...)
    the gensupport programs.  */
 
 rtx
-gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED,
+gen_rtx_CONST_INT (enum machine_mode ARG_UNUSED (mode),
 		   HOST_WIDE_INT arg)
 {
   rtx rt = rtx_alloc (CONST_INT);

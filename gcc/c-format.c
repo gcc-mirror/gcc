@@ -83,7 +83,7 @@ static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 /* Handle a "format_arg" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_arg_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
+handle_format_arg_attribute (tree *node, tree ARG_UNUSED (name),
 			     tree args, int flags, bool *no_add_attrs)
 {
   tree type = *node;
@@ -2457,7 +2457,7 @@ extern const format_kind_info TARGET_FORMAT_TYPES[];
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
-handle_format_attribute (tree *node, tree name ATTRIBUTE_UNUSED, tree args,
+handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 			 int flags, bool *no_add_attrs)
 {
   tree type = *node;

@@ -6526,7 +6526,7 @@ current_stmt_tree (void)
    C.  */
 
 int
-anon_aggr_type_p (tree node ATTRIBUTE_UNUSED)
+anon_aggr_type_p (tree ARG_UNUSED (node))
 {
   return 0;
 }
