@@ -1808,7 +1808,7 @@ pushdecl (x)
 
 	 We get warnings about inline functions where they are defined.
 	 Avoid duplicate warnings where they are used.  */
-      if ((DECL_EXTERNAL (x) || TREE_PUBLIC (x)) && ! DECL_INLINE (x))
+      if (TREE_PUBLIC (x) && ! DECL_INLINE (x))
 	{
 	  tree decl;
 
@@ -3277,6 +3277,7 @@ finish_decl (decl, init, asmspec_tree)
 	  if (do_default)
 	    error_with_decl (decl, "array size missing in `%s'");
 	  else if (!pedantic && TREE_STATIC (decl))
+	    /* ??? Perhaps should set TREE_PUBLIC here?  */
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
