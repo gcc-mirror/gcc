@@ -93,11 +93,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 
    You can declare variables either before or after the VA_OPEN,
-   VA_FIXEDARG sequence.  You can _not_ put statements before VA_OPEN.
-   Also, VA_OPEN and VA_CLOSE are the beginning and end of a block.
-   They must appear at the same nesting level, and any variables
-   declared after VA_OPEN go out of scope at VA_CLOSE.  Unfortunately,
-   with a K+R compiler, that includes the argument list.
+   VA_FIXEDARG sequence.  Also, VA_OPEN and VA_CLOSE are the beginning
+   and end of a block.  They must appear at the same nesting level,
+   and any variables declared after VA_OPEN go out of scope at
+   VA_CLOSE.  Unfortunately, with a K+R compiler, that includes the
+   argument list.  You can have multiple instances of VA_OPEN/VA_CLOSE
+   pairs in a single function in case you need to traverse the
+   argument list more than once.
 
    For ease of writing code which uses GCC extensions but needs to be
    portable to other compilers, we provide the GCC_VERSION macro that
