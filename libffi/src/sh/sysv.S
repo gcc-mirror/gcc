@@ -117,12 +117,6 @@ L_pass_d:
 	bt	1f
 	add	#1,r3
 1:
-	mov	r15,r0
-	and	#7,r0
-	tst	r0,r0
-	bt	2f
-	add	#4,r15
-2:
 	mov	#12,r0
 	cmp/hs	r0,r3
 	bt/s	3f

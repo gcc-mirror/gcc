@@ -1,3 +1,8 @@
+2004-10-20  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/sysv.S (ffi_call_SYSV): Don't align for double data.
+	* testsuite/libffi.call/float3.c: New test case.
+
 2004-10-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (ffi_prep_closure): Set T bit in trampoline for
