@@ -7117,7 +7117,7 @@ static void
 source_end_java_method ()
 {
   tree fndecl = current_function_decl;
-  int flag_asynchronous_exceptions = asynchronous_exceptions;
+  int flag_flag_non_call_exceptions = flag_non_call_exceptions;
 
   if (!fndecl)
     return;
@@ -7154,11 +7154,11 @@ source_end_java_method ()
       expand_function_end (input_filename, lineno, 0);
 
       /* FIXME: If the current method contains any exception handlers,
-	 force asynchronous_exceptions: this is necessary because signal
+	 force flag_non_call_exceptions: this is necessary because signal
 	 handlers in libjava may throw exceptions.  This is far from being
 	 a perfect solution, but it's better than doing nothing at all.*/
       if (catch_clauses)
-	asynchronous_exceptions = 1;
+	flag_non_call_exceptions = 1;
 
       /* Run the optimizers and output assembler code for this function. */
       rest_of_compilation (fndecl);
@@ -7166,7 +7166,7 @@ source_end_java_method ()
 
   current_function_decl = NULL_TREE;
   java_parser_context_restore_global ();
-  asynchronous_exceptions = flag_asynchronous_exceptions;
+  flag_non_call_exceptions = flag_flag_non_call_exceptions;
 }
 
 /* Record EXPR in the current function block. Complements compound
