@@ -1,3 +1,7 @@
+2001-11-07  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (skip_padding): Fail if padding byte is nonzero.
+
 2001-11-06  Tom Tromey  <tromey@redhat.com>
 
 	* HACKING: Make people commit their own patches.

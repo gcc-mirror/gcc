@@ -1000,7 +1000,8 @@ private:
   void skip_padding ()
   {
     while ((PC % 4) > 0)
-      get_byte ();
+      if (get_byte () != 0)
+	verify_fail ("found nonzero padding byte");
   }
 
   // Return the subroutine to which the instruction at PC belongs.
