@@ -356,6 +356,11 @@ from the machine description file `md'.  */\n\n");
 
   printf ("void\ninit_all_optabs (void)\n{\n");
 
+  puts ("\
+#ifdef FIXUNS_TRUNC_LIKE_FIX_TRUNC\n\
+  int i, j;\n\
+#endif\n");
+
   /* Read the machine description.  */
 
   while (1)
