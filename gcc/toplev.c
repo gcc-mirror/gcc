@@ -589,6 +589,8 @@ char *lang_options[] =
   "-fno-short-enums",
 
   "-Wall",
+  "-Wbad-function-cast",
+  "-Wno-bad-function-cast",
   "-Wcast-qual",
   "-Wno-cast-qual",
   "-Wchar-subscripts",
