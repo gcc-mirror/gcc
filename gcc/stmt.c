@@ -2722,51 +2722,60 @@ expand_return (retval)
       && TYPE_MODE (TREE_TYPE (retval_rhs)) == BLKmode
       && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG)
     {
-      int i;
+      int i, bitpos, xbitpos;
       int big_endian_correction = 0;
       int bytes = int_size_in_bytes (TREE_TYPE (retval_rhs));
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+      int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),BITS_PER_WORD);
       rtx *result_pseudos = (rtx *) alloca (sizeof (rtx) * n_regs);
-      rtx result_reg;
+      rtx result_reg, src, dst;
       rtx result_val = expand_expr (retval_rhs, NULL_RTX, VOIDmode, 0);
       enum machine_mode tmpmode, result_reg_mode;
 
-      /* Structures smaller than a word are aligned to the least significant
-	 byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
-	 must skip the empty high order bytes when calculating the bit
-	 offset.  */
-      if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
-	big_endian_correction = (BITS_PER_WORD - (bytes * BITS_PER_UNIT));
+      /* Structures whose size is not a multiple of a word are aligned
+	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
+	 machine, this means we must skip the empty high order bytes when
+	 calculating the bit offset.  */
+      if (BYTES_BIG_ENDIAN && bytes % UNITS_PER_WORD)
+	big_endian_correction = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD)
+						  * BITS_PER_UNIT));
 
-      for (i = 0; i < n_regs; i++)
+      /* Copy the structure BITSIZE bits at a time.  */ 
+      for (bitpos = 0, xbitpos = big_endian_correction;
+	   bitpos < bytes * BITS_PER_UNIT;
+	   bitpos += bitsize, xbitpos += bitsize)
 	{
-	  rtx reg = gen_reg_rtx (word_mode);
-	  rtx word = operand_subword_force (result_val, i, BLKmode);
-	  int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (retval_rhs)),BITS_PER_WORD);
-	  int bitpos;
-
-	  result_pseudos[i] = reg;
-
-	  /* Clobber REG and move each partword into it.  Ensure we don't
-	     go past the end of the structure.  Note that the loop below
-	     works because we've already verified that padding and
-	     endianness are compatible.  */
-	  emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
-
-	  for (bitpos = 0;
-	       bitpos < BITS_PER_WORD && bytes > 0;
-	       bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
+	  /* We need a new destination pseudo each time xbitpos is
+	     on a word boundary and when xbitpos == big_endian_corrction
+	     (the first time through).  */
+	  if (xbitpos % BITS_PER_WORD == 0
+	      || xbitpos == big_endian_correction)
 	    {
-	      int xbitpos = bitpos + big_endian_correction;
+	      /* Generate an appropriate register.  */
+	      dst = gen_reg_rtx (word_mode);
+	      result_pseudos[xbitpos / BITS_PER_WORD] = dst;
 
-	      store_bit_field (reg, bitsize, xbitpos, word_mode,
-			       extract_bit_field (word, bitsize, bitpos, 1,
-						  NULL_RTX, word_mode,
-						  word_mode,
-						  bitsize / BITS_PER_UNIT,
-						  BITS_PER_WORD),
-			       bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+	      /* Clobber the destination before we move anything into it.  */
+	      emit_insn (gen_rtx (CLOBBER, VOIDmode, dst));
 	    }
+
+	  /* We need a new source operand each time bitpos is on a word
+	     boundary.  */
+	  if (bitpos % BITS_PER_WORD == 0)
+	    src = operand_subword_force (result_val,
+					 bitpos / BITS_PER_WORD,
+					 BLKmode);
+
+	  /* Use bitpos for the source extraction (left justified) and
+	     xbitpos for the destination store (right justified).  */
+	  store_bit_field (dst, bitsize, xbitpos % BITS_PER_WORD, word_mode,
+			   extract_bit_field (src, bitsize,
+					      bitpos % BITS_PER_WORD, 1,
+					      NULL_RTX, word_mode,
+					      word_mode,
+					      bitsize / BITS_PER_UNIT,
+					      BITS_PER_WORD),
+			   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
 	}
 
       /* Find the smallest integer mode large enough to hold the
