@@ -391,31 +391,13 @@ fix = {
 
 
 /*
- *  Fix else directives that contain non-commentary text
- *
- * The fixinc_eol stuff is to work around a bug in the sed
+ *  Fix else and endif directives that contain non-commentary text
  */
 fix = {
-    hackname = else_label;
-    select   = "^[ \t]*#[ \t]*else[ \t]+[!-.0-~]";
-    sed =      ":loop\n"
-               '/\\\\$/'                       "N\n"
-               's/\\\\$/\\\\+++fixinc_eol+++/' "\n"
-               '/\\\\$/'                       "b loop\n"
-               's/\\\\+++fixinc_eol+++/\\\\/g' "\n"
+    hackname = end_else_label;
 
-               "s%^\\([ \t]*#[ \t]*else\\)[ \t]*/[^*].*%\\1%\n"
-               "s%^\\([ \t]*#[ \t]*else\\)[ \t]*[^/ \t].*%\\1%";
-};
-
-
-/*
- *  Fix endif directives that contain non-commentary text
- */
-fix = {
-    hackname = endif_label;
     /*
-     *  Select files that contain '#endif' directives with
+     *  Select files that contain '#endif' or '#else' directives with
      *  some sort of following junk.  (Between the ascii '.'
      *  and '0' lies the character '/'.  This will *NOT*
      *  match '#endif / * foo * /', but it also wont match
@@ -427,13 +409,14 @@ fix = {
      *  "#endif /% blah %/ which appear on OSF4.0A and AIX4.2
      *  repsectively.
      * 
-     *  We use the pattern [!-.0-z{|}~] instead of [^/ \t] to match a noncomment
-     *  following #else or #endif because some buggy egreps think [^/] matches
-     *  newline, and they thus think `#else ' matches
+     *  We use the pattern [!-.0-z{|}~] instead of [^/ \t] to match a
+     *  noncomment following #else or #endif because some buggy egreps
+     *  think [^/] matches newline, and they thus think `#else ' matches
      *  `#e[ndiflse]*[ \t]+[^/ \t]'.
      *  [!-.0-~] does not work properly on AIX 4.1.
      */
-    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z\{\|\}\~]|^[ \t]*#[ \t]*endif[ \t]+/[^\*]";
+    select   = "^[ \t]*#[ \t]*(else|endif)[ \t]+"
+               "("  '[!-.0-z\{\|\}\~]'  "|"  '/[^\*]'  ")";
 
     /*
      *  First, join the continued input lines.
@@ -451,9 +434,11 @@ fix = {
                '/\\\\$/'                       "b loop\n"
                's/\\\\+++fixinc_eol+++/\\\\/g' "\n"
 
-               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*/[^*].*%\\1%\n"
-               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*\\*[^/].*%\\1%\n"
-               "s%^\\([ \t]*#[ \t]*endif\\)[ \t]*[^/* \t].*%\\1%";
+               "s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*/[^*].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*else\\)[ \t][ \t]*[^/ \t].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*/[^*].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*\*[^/].*%\\1%\n"
+               "s%^\\([ \t]*#[ \t]*endif\\)[ \t][ \t]*[^/* \t].*%\\1%";
 };
 
 
