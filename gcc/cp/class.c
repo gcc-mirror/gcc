@@ -2910,56 +2910,24 @@ static void
 check_for_override (decl, ctype)
      tree decl, ctype;
 {
-  tree binfos = BINFO_BASETYPES (TYPE_BINFO (ctype));
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-  int virtualp = DECL_VIRTUAL_P (decl);
-  int found_overriden_fn = 0;
+  if (TREE_CODE (decl) == TEMPLATE_DECL)
+    /* In [temp.mem] we have:
 
-  for (i = 0; i < n_baselinks; i++)
+         A specialization of a member function template does not
+         override a virtual function from a base class.  */
+    return;
+  if ((DECL_DESTRUCTOR_P (decl)
+       || IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)))
+      && look_for_overrides (ctype, decl)
+      && !DECL_STATIC_FUNCTION_P (decl))
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (TYPE_POLYMORPHIC_P (BINFO_TYPE (base_binfo)))
-	{
-	  tree tmp = get_matching_virtual
-	    (base_binfo, decl, DECL_DESTRUCTOR_P (decl));
-
-	  if (tmp && !found_overriden_fn)
-	    {
-	      /* If this function overrides some virtual in some base
-		 class, then the function itself is also necessarily
-		 virtual, even if the user didn't explicitly say so.  */
-	      DECL_VIRTUAL_P (decl) = 1;
-
-	      /* The TMP we really want is the one from the deepest
-		 baseclass on this path, taking care not to
-		 duplicate if we have already found it (via another
-		 path to its virtual baseclass.  */
-	      if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
-		{
-		  cp_error_at ("`static %#D' cannot be declared", decl);
-		  cp_error_at ("  since `virtual %#D' declared in base class",
-			       tmp);
-		  break;
-		}
-	      virtualp = 1;
-
-	      /* Set DECL_VINDEX to a value that is neither an
-		 INTEGER_CST nor the error_mark_node so that
-		 add_virtual_function will realize this is an
-		 overridden function.  */
-	      DECL_VINDEX (decl) 
-		= tree_cons (tmp, NULL_TREE, DECL_VINDEX (decl));
-	      
-	      /* We now know that DECL overrides something,
-		 which is all that is important.  But, we must
-		 continue to iterate through all the base-classes
-		 in order to allow get_matching_virtual to check for
-		 various illegal overrides.  */
-	      found_overriden_fn = 1;
-	    }
-	}
+      /* Set DECL_VINDEX to a value that is neither an
+	 INTEGER_CST nor the error_mark_node so that
+	 add_virtual_function will realize this is an
+	 overriding function.  */
+      DECL_VINDEX (decl) = decl;
     }
-  if (virtualp)
+  if (DECL_VIRTUAL_P (decl))
     {
       if (DECL_VINDEX (decl) == NULL_TREE)
 	DECL_VINDEX (decl) = error_mark_node;

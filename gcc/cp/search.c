@@ -83,7 +83,6 @@ struct vbase_info
   tree inits;
 };
 
-static tree next_baselink PARAMS ((tree));
 static tree get_vbase_1 PARAMS ((tree, tree, unsigned int *));
 static tree lookup_field_1 PARAMS ((tree, tree));
 static int lookup_fnfields_here PARAMS ((tree, tree));
@@ -110,11 +109,9 @@ static tree dfs_push_type_decls PARAMS ((tree, void *));
 static tree dfs_push_decls PARAMS ((tree, void *));
 static tree dfs_unuse_fields PARAMS ((tree, void *));
 static tree add_conversions PARAMS ((tree, void *));
-static tree get_virtuals_named_this PARAMS ((tree, tree));
-static tree get_virtual_destructor PARAMS ((tree, void *));
-static tree tree_has_any_destructor_p PARAMS ((tree, void *));
 static int covariant_return_p PARAMS ((tree, tree));
 static int check_final_overrider PARAMS ((tree, tree));
+static int look_for_overrides_r PARAMS ((tree, tree));
 static struct search_level *push_search_level
 	PARAMS ((struct stack_level *, struct obstack *));
 static struct search_level *pop_search_level
@@ -124,7 +121,6 @@ static tree bfs_walk
 	       void *));
 static tree lookup_field_queue_p PARAMS ((tree, void *));
 static tree lookup_field_r PARAMS ((tree, void *));
-static tree get_virtuals_named_this_r PARAMS ((tree, void *));
 static tree context_for_name_lookup PARAMS ((tree));
 static tree canonical_binfo PARAMS ((tree));
 static tree shared_marked_p PARAMS ((tree, void *));
@@ -1867,87 +1863,6 @@ dfs_walk (binfo, fn, qfn, data)
   return dfs_walk_real (binfo, 0, fn, qfn, data);
 }
 
-struct gvnt_info 
-{
-  /* The name of the function we are looking for.  */
-  tree name;
-  /* The overloaded functions we have found.  */
-  tree fields;
-};
-
-/* Called from get_virtuals_named_this via bfs_walk.  */
-
-static tree
-get_virtuals_named_this_r (binfo, data)
-     tree binfo;
-     void *data;
-{
-  struct gvnt_info *gvnti = (struct gvnt_info *) data;
-  tree type = BINFO_TYPE (binfo);
-  int idx;
-
-  idx = lookup_fnfields_here (BINFO_TYPE (binfo), gvnti->name);
-  if (idx >= 0)
-    gvnti->fields
-      = tree_cons (binfo, 
-		   TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx),
-		   gvnti->fields);
-
-  return NULL_TREE;
-}
-
-/* Return the virtual functions with the indicated NAME in the type
-   indicated by BINFO.  The result is a TREE_LIST whose TREE_PURPOSE
-   indicates the base class from which the TREE_VALUE (an OVERLOAD or
-   just a FUNCTION_DECL) originated.  */
-
-static tree
-get_virtuals_named_this (binfo, name)
-     tree binfo;
-     tree name;
-{
-  struct gvnt_info gvnti;
-  tree fields;
-
-  gvnti.name = name;
-  gvnti.fields = NULL_TREE;
-
-  bfs_walk (binfo, get_virtuals_named_this_r, 0, &gvnti);
-
-  /* Get to the function decls, and return the first virtual function
-     with this name, if there is one.  */
-  for (fields = gvnti.fields; fields; fields = next_baselink (fields))
-    {
-      tree fndecl;
-
-      for (fndecl = TREE_VALUE (fields); fndecl; fndecl = OVL_NEXT (fndecl))
-	if (DECL_VINDEX (OVL_CURRENT (fndecl)))
-	  return fields;
-    }
-  return NULL_TREE;
-}
-
-static tree
-get_virtual_destructor (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree type = BINFO_TYPE (binfo);
-  if (TYPE_HAS_DESTRUCTOR (type)
-      && DECL_VINDEX (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1)))
-    return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1);
-  return 0;
-}
-
-static tree
-tree_has_any_destructor_p (binfo, data)
-     tree binfo;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree type = BINFO_TYPE (binfo);
-  return TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type) ? binfo : NULL_TREE;
-}
-
 /* Returns > 0 if a function with type DRETTYPE overriding a function
    with type BRETTYPE is covariant, as defined in [class.virtual].
 
@@ -2026,124 +1941,128 @@ check_final_overrider (overrider, basefn)
 
       if (pedantic && i == -1)
 	{
-	  cp_pedwarn_at ("invalid covariant return type for `virtual %#D'", overrider);
-	  cp_pedwarn_at ("  overriding `virtual %#D' (must be pointer or reference to class)", basefn);
+	  cp_pedwarn_at ("invalid covariant return type for `%#D'", overrider);
+	  cp_pedwarn_at ("  overriding `%#D' (must be pointer or reference to class)", basefn);
 	}
     }
   else if (IS_AGGR_TYPE_2 (base_return, over_return)
 	   && same_or_base_type_p (base_return, over_return))
     {
-      cp_error_at ("invalid covariant return type for `virtual %#D'", overrider);
-      cp_error_at ("  overriding `virtual %#D' (must use pointer or reference)", basefn);
+      cp_error_at ("invalid covariant return type for `%#D'", overrider);
+      cp_error_at ("  overriding `%#D' (must use pointer or reference)", basefn);
       return 0;
     }
   else if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider)) == NULL_TREE)
     {
-      cp_error_at ("conflicting return type specified for `virtual %#D'", overrider);
-      cp_error_at ("  overriding `virtual %#D'", basefn);
+      cp_error_at ("conflicting return type specified for `%#D'", overrider);
+      cp_error_at ("  overriding `%#D'", basefn);
       SET_IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (overrider),
                                   DECL_CONTEXT (overrider));
       return 0;
     }
   
   /* Check throw specifier is subset.  */
-  /* XXX At the moment, punt on an overriding artificial function. We
-     don't generate its exception specifier, so can't check it properly.  */
+  /* XXX At the moment, punt with artificial functions. We
+     don't generate their exception specifiers, so can't check properly.  */
   if (! DECL_ARTIFICIAL (overrider)
       && !comp_except_specs (base_throw, over_throw, 0))
     {
-      cp_error_at ("looser throw specifier for `virtual %#F'", overrider);
-      cp_error_at ("  overriding `virtual %#F'", basefn);
+      cp_error_at ("looser throw specifier for `%#F'", overrider);
+      cp_error_at ("  overriding `%#F'", basefn);
       return 0;
     }
   return 1;
 }
 
-/* Given a class type TYPE, and a function decl FNDECL, look for a
-   virtual function in TYPE's hierarchy which FNDECL could match as a
-   virtual function.  It doesn't matter which one we find.
+/* Given a class TYPE, and a function decl FNDECL, look for
+   virtual functions in TYPE's hierarchy which FNDECL overrides.
+   We do not look in TYPE itself, only its bases.
+   
+   Returns non-zero, if we find any. Set FNDECL's DECL_VIRTUAL_P, if we
+   find that it overrides anything.
+   
+   We check that every function which is overridden, is correctly
+   overridden.  */
 
-   DTORP is nonzero if we are looking for a destructor.  Destructors
-   need special treatment because they do not match by name.  */
-
-tree
-get_matching_virtual (binfo, fndecl, dtorp)
-     tree binfo, fndecl;
-     int dtorp;
+int
+look_for_overrides (type, fndecl)
+     tree type, fndecl;
 {
-  tree tmp = NULL_TREE;
+  tree binfo = TYPE_BINFO (type);
+  tree basebinfos = BINFO_BASETYPES (binfo);
+  int nbasebinfos = basebinfos ? TREE_VEC_LENGTH (basebinfos) : 0;
+  int ix;
+  int found = 0;
 
-  if (TREE_CODE (fndecl) == TEMPLATE_DECL)
-    /* In [temp.mem] we have:
-
-         A specialization of a member function template does not
-         override a virtual function from a base class.  */
-    return NULL_TREE;
-
-  /* Breadth first search routines start searching basetypes
-     of TYPE, so we must perform first ply of search here.  */
-  if (dtorp)
-    return bfs_walk (binfo, get_virtual_destructor,
-		     tree_has_any_destructor_p, 0);
-  else
+  for (ix = 0; ix != nbasebinfos; ix++)
     {
-      tree drettype, dtypes, btypes, instptr_type;
-      tree baselink, best = NULL_TREE;
-      tree declarator = DECL_NAME (fndecl);
-      if (IDENTIFIER_VIRTUAL_P (declarator) == 0)
-	return NULL_TREE;
+      tree basetype = BINFO_TYPE (TREE_VEC_ELT (basebinfos, ix));
+      
+      if (TYPE_POLYMORPHIC_P (basetype))
+        found += look_for_overrides_r (basetype, fndecl);
+    }
+  return found;
+}
 
-      baselink = get_virtuals_named_this (binfo, declarator);
-      if (baselink == NULL_TREE)
-	return NULL_TREE;
+/* Look in TYPE for virtual functions overridden by FNDECL. Check both
+   TYPE itself and its bases. */
 
-      drettype = TREE_TYPE (TREE_TYPE (fndecl));
-      dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-      if (DECL_STATIC_FUNCTION_P (fndecl))
-	instptr_type = NULL_TREE;
-      else
-	instptr_type = TREE_TYPE (TREE_VALUE (dtypes));
-
-      for (; baselink; baselink = next_baselink (baselink))
-	{
-	  tree tmps;
-	  for (tmps = TREE_VALUE (baselink); tmps; tmps = OVL_NEXT (tmps))
+static int
+look_for_overrides_r (type, fndecl)
+     tree type, fndecl;
+{
+  int ix;
+  
+  if (DECL_DESTRUCTOR_P (fndecl))
+    ix = CLASSTYPE_DESTRUCTOR_SLOT;
+  else
+    ix = lookup_fnfields_here (type, DECL_NAME (fndecl));
+  if (ix >= 0)
+    {
+      tree fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
+      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+      tree thistype = DECL_STATIC_FUNCTION_P (fndecl)
+                      ? NULL_TREE : TREE_TYPE (TREE_VALUE (dtypes));
+  
+      for (; fns; fns = OVL_NEXT (fns))
+        {
+          tree fn = OVL_CURRENT (fns);
+          tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+          
+          if (!DECL_VIRTUAL_P (fn))
+            ;
+	  else if (thistype == NULL_TREE)
 	    {
-	      tmp = OVL_CURRENT (tmps);
-	      if (! DECL_VINDEX (tmp))
-		continue;
-
-	      btypes = TYPE_ARG_TYPES (TREE_TYPE (tmp));
-	      if (instptr_type == NULL_TREE)
-		{
-		  if (compparms (TREE_CHAIN (btypes), dtypes))
-		    /* Caller knows to give error in this case.  */
-		    return tmp;
-		  return NULL_TREE;
-		}
-
-	      if (/* The first parameter is the `this' parameter,
-		     which has POINTER_TYPE, and we can therefore
-		     safely use TYPE_QUALS, rather than
+	      if (compparms (TREE_CHAIN (btypes), dtypes))
+                {
+                  /* A static member function cannot match an inherited
+                     virtual member function.  */
+                  cp_error_at ("`%#D' cannot be declared", fndecl);
+                  cp_error_at ("  since `%#D' declared in base class", fn);
+                  return 1;
+                }
+            }
+          else
+            {
+              if (/* The first parameter is the `this' parameter,
+	             which has POINTER_TYPE, and we can therefore
+	             safely use TYPE_QUALS, rather than
 		     CP_TYPE_QUALS.  */
-		  (TYPE_QUALS (TREE_TYPE (TREE_VALUE (btypes)))
-		   == TYPE_QUALS (instptr_type))
-		  && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes)))
-		{
-	          check_final_overrider (fndecl, tmp);
-
-		  /* FNDECL overrides this function.  We continue to
-		     check all the other functions in order to catch
-		     errors; it might be that in some other baseclass
-		     a virtual function was declared with the same
-		     parameter types, but a different return type.  */
-		  best = tmp;
-		}
+	          (TYPE_QUALS (TREE_TYPE (TREE_VALUE (btypes)))
+	           == TYPE_QUALS (thistype))
+	          && compparms (TREE_CHAIN (btypes), TREE_CHAIN (dtypes)))
+                {
+                  /* It's definitely virtual, even if not explicitly set.  */
+                  DECL_VIRTUAL_P (fndecl) = 1;
+	          check_final_overrider (fndecl, fn);
+	      
+	          return 1;
+	        }
 	    }
 	}
-
-      return best;
     }
+  /* We failed to find one declared in this class. Look in its bases.  */
+  return look_for_overrides (type, fndecl);
 }
 
 /* A queue function for dfs_walk that skips any nonprimary virtual
@@ -2319,23 +2238,6 @@ get_pure_virtuals (type)
 	    cp_error ("`%#D' needs a final overrider", base_fndecl);
 	}
     }
-}
-
-static tree
-next_baselink (baselink)
-     tree baselink;
-{
-  tree tmp = TREE_TYPE (baselink);
-  baselink = TREE_CHAIN (baselink);
-  while (tmp)
-    {
-      /* @@ does not yet add previous base types.  */
-      baselink = tree_cons (TREE_PURPOSE (tmp), TREE_VALUE (tmp),
-			    baselink);
-      TREE_TYPE (baselink) = TREE_TYPE (tmp);
-      tmp = TREE_CHAIN (tmp);
-    }
-  return baselink;
 }
 
 /* DEPTH-FIRST SEARCH ROUTINES.  */

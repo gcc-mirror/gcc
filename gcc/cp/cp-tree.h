@@ -514,7 +514,8 @@ struct tree_srcloc
 #define SET_IDENTIFIER_ERROR_LOCUS(NODE,VALUE)	\
 	SET_LANG_ID(NODE, VALUE, error_locus)
 
-
+/* Nonzero if this identifier is used as a virtual function name somewhere
+   (optimizes searches).  */
 #define IDENTIFIER_VIRTUAL_P(NODE) TREE_LANG_FLAG_1(NODE)
 
 /* Nonzero if this identifier is the prefix for a mangled C++ operator
@@ -4250,7 +4251,7 @@ extern tree lookup_field			PARAMS ((tree, tree, int, int));
 extern int lookup_fnfields_1                    PARAMS ((tree, tree));
 extern tree lookup_fnfields			PARAMS ((tree, tree, int));
 extern tree lookup_member			PARAMS ((tree, tree, int, int));
-extern tree get_matching_virtual		PARAMS ((tree, tree, int));
+extern int look_for_overrides			PARAMS ((tree, tree));
 extern void get_pure_virtuals		        PARAMS ((tree));
 extern tree init_vbase_pointers			PARAMS ((tree, tree));
 extern void get_vbase_types			PARAMS ((tree));

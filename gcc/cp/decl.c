@@ -9038,12 +9038,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
     return decl;
 
   if (virtualp)
-    {
-      DECL_VIRTUAL_P (decl) = 1;
-      if (DECL_VINDEX (decl) == NULL_TREE)
-	DECL_VINDEX (decl) = error_mark_node;
-      IDENTIFIER_VIRTUAL_P (DECL_NAME (decl)) = 1;
-    }
+    DECL_VIRTUAL_P (decl) = 1;
 
   return decl;
 }

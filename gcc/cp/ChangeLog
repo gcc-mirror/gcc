@@ -1,5 +1,25 @@
 2000-12-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (IDENTIFIER_VIRTUAL_P): Document.
+	(get_matching_virtual): Remove.
+	(look_for_overrides): Declare new function.
+	* decl.c (grokfndecl): Don't set IDENTIFIER_VIRTUAL_P or
+	DECL_VINDEX here.
+	* class.c (check_for_override): Move base class iteration code
+	to look_for_overrides.
+	* search.c (next_baselink): Remove.
+	(get_virtuals_named_this): Remove.
+	(get_virtual_destructor): Remove.
+	(tree_has_any_destructors_p): Remove.
+	(struct gvnt_info): Remove.
+	(check_final_overrider): Remove `virtual' from error messages.
+	(get_matching_virtuals): Remove. Move functionality to ...
+	(look_for_overrides): ... here, and ...
+	(look_for_overrides_r): ... here. Set DECL_VIRTUAL_P, if found
+	to be overriding.
+
+2000-12-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* typeck.c (get_delta_difference): If via a virtual base,
 	return zero.
 	* cvt.c (cp_convert_to_pointer): If via a virtual base, do no

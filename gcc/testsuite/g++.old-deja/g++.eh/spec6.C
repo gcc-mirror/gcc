@@ -92,7 +92,7 @@ struct A
   virtual void wobble(int) throw(E *);    // ERROR - overriding 
   virtual void wabble(int) throw(E *);
   virtual void wubble(int) throw(E *, H *);
-  virtual ~A() throw();                   // ERROR - overriding XFAIL
+  virtual ~A() throw();                   // ERROR - overriding
 };
 
 struct B : A
@@ -133,9 +133,7 @@ struct C : A, A1
 
 struct D : A, A1
 {
-  // The xfail here is because we don't have the check in the right place to
-  // catch dtor failings.
-  virtual ~D() throw(int); // ERROR - looser throw - A::~A() - XFAIL
+  virtual ~D() throw(int); // ERROR - looser throw - A::~A()
 };
 
 // [except.spec] 5, types shall not be defined in exception specifiers
