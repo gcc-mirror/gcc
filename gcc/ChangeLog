@@ -1,3 +1,7 @@
+2002-01-29  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/sourcebuild.texi (C Tests): Document gcc.dg/debug directory.
+
 2002-01-29  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (print_rtl_and_abort): Remove.
