@@ -3851,7 +3851,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   enum machine_mode compare_mode;
   enum machine_mode target_mode = GET_MODE (target);
   rtx tem;
-  rtx last = 0;
+  rtx last = get_last_insn ();
   rtx pattern, comparison;
 
   /* If one operand is constant, make it the second one.  Only do this
@@ -4049,8 +4049,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	}
     }
 
-  if (last)
-    delete_insns_since (last);
+  delete_insns_since (last);
 
   /* If expensive optimizations, use different pseudo registers for each
      insn, instead of reusing the same pseudo.  This leads to better CSE,
