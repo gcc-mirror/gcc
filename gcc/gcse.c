@@ -4480,7 +4480,8 @@ fis_get_condition (rtx jump)
 
   /* Use canonicalize_condition to do the dirty work of manipulating
      MODE_CC values and COMPARE rtx codes.  */
-  tmp = canonicalize_condition (jump, cond, reverse, &earliest, NULL_RTX);
+  tmp = canonicalize_condition (jump, cond, reverse, &earliest, NULL_RTX,
+				false);
   if (!tmp)
     return NULL_RTX;
 
@@ -4498,7 +4499,8 @@ fis_get_condition (rtx jump)
   tmp = XEXP (tmp, 0);
   if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
     return NULL_RTX;
-  tmp = canonicalize_condition (jump, cond, reverse, &earliest, tmp);
+  tmp = canonicalize_condition (jump, cond, reverse, &earliest, tmp,
+				false);
   if (!tmp)
     return NULL_RTX;
 
@@ -5880,7 +5882,7 @@ delete_null_pointer_checks_1 (unsigned int *block_reg, sbitmap *nonnull_avin,
 	continue;
 
       /* LAST_INSN is a conditional jump.  Get its condition.  */
-      condition = get_condition (last_insn, &earliest);
+      condition = get_condition (last_insn, &earliest, false);
 
       /* If we can't determine the condition then skip.  */
       if (! condition)
@@ -5994,7 +5996,7 @@ delete_null_pointer_checks (rtx f ATTRIBUTE_UNUSED)
 	continue;
 
       /* LAST_INSN is a conditional jump.  Get its condition.  */
-      condition = get_condition (last_insn, &earliest);
+      condition = get_condition (last_insn, &earliest, false);
 
       /* If we were unable to get the condition, or it is not an equality
 	 comparison against zero then there's nothing we can do.  */

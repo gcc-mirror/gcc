@@ -522,7 +522,7 @@ estimate_probability (struct loops *loops_info)
 	    }
 	}
 
-      cond = get_condition (last_insn, &earliest);
+      cond = get_condition (last_insn, &earliest, false);
       if (! cond)
 	continue;
 
@@ -678,7 +678,7 @@ expected_value_to_br_prob (void)
 		(lt r70, r71)
 	 Could use cselib to try and reduce this further.  */
       cond = XEXP (SET_SRC (pc_set (insn)), 0);
-      cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg);
+      cond = canonicalize_condition (insn, cond, 0, NULL, ev_reg, false);
       if (! cond || XEXP (cond, 0) != ev_reg
 	  || GET_CODE (XEXP (cond, 1)) != CONST_INT)
 	continue;

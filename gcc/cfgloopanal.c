@@ -775,7 +775,7 @@ simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
 
   /* Condition must be a simple comparison in that one of operands
      is register and the other one is invariant.  */
-  if (!(condition = get_condition (exit_bb->end, NULL)))
+  if (!(condition = get_condition (exit_bb->end, NULL, false)))
     return false;
 
   if (!simple_condition_p (loop, condition, invariant_regs, desc))

@@ -141,7 +141,7 @@ may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
 
   /* Condition must be invariant.  We use just a stupid test of invariantness
      of the condition: all used regs must not be modified inside loop body.  */
-  test = get_condition (bb->end, NULL);
+  test = get_condition (bb->end, NULL, true);
   if (!test)
     return false;
 
@@ -248,7 +248,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 	  return;
 	}
 
-      if (!(cond = get_condition (bbs[i]->end, &split_before)))
+      if (!(cond = get_condition (bbs[i]->end, &split_before, true)))
 	abort ();
       rcond = reversed_condition (cond);
 

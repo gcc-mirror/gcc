@@ -1,3 +1,19 @@
+2003-09-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/10914
+	* expr.h (get_condition, canonicalize_condition): Declaration changed.
+	* cfgloopanal.c (simple_loop_exit_p): Add parameter to a get_condition
+	and canonicalize_condition calls.
+	* gcse.c (fis_get_condition, delete_null_pointer_checks_1,
+	delete_null_pointer_checks): Ditto.
+	* ifcvt.c (noce_get_alt_condition, noce_get_condition): Ditto.
+	* predict.c (estimate_probability, expected_value_to_br_prob): Ditto.
+	* loop.c (check_dbra_loop, get_condition_for_loop): Ditto.
+	(canonicalize_condition, get_condition): Allow to return comparisons
+	of cc mode registers.
+	* loop-unswitch.c (may_unswitch_on_p, unswitch_single_loop): Allow
+	cc mode registers comparison in condition.
+
 2003-09-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* coverage.c (create_coverage): Do not call pushlevel/poplevel.
