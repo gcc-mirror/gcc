@@ -709,7 +709,7 @@ current_tmpl_spec_kind (n_class_scopes)
 
 	    template <class T> template <> ...
 
-	 which is always illegal since [temp.expl.spec] forbids the
+	 which is always invalid since [temp.expl.spec] forbids the
 	 specialization of a class member template if the enclosing
 	 class templates are not explicitly specialized as well.  */
       if (b->template_spec_p)
@@ -746,7 +746,7 @@ current_tmpl_spec_kind (n_class_scopes)
 
          template <class T> void R<T>::S<T>::f(int);
 
-       This is illegal; there needs to be one set of template
+       This is invalid; there needs to be one set of template
        parameters for each class.  */
     return tsk_insufficient_parms;
   else if (n_template_parm_scopes == n_class_scopes)
@@ -932,7 +932,7 @@ push_binding (id, decl, level)
    stat' hack whereby a non-typedef class-name or enum-name can be
    bound at the same level as some other kind of entity.  It's the
    responsibility of the caller to check that inserting this name is
-   legal here.  Returns nonzero if the new binding was successful.  */
+   valid here.  Returns nonzero if the new binding was successful.  */
 static int
 add_binding (id, decl)
      tree id;
@@ -1069,7 +1069,7 @@ push_class_binding (id, decl)
   tree context;
 
   /* Note that we declared this value so that we can issue an error if
-     this an illegal redeclaration of a name already used for some
+     this is an invalid redeclaration of a name already used for some
      other purpose.  */
   note_name_declared_in_class (id, decl);
 
@@ -3213,7 +3213,7 @@ duplicate_decls (newdecl, olddecl)
        specialization, and the other is an instantiation of the same
        template, that we do not exit at this point.  That situation
        can occur if we instantiate a template class, and then
-       specialize one of its methods.  This situation is legal, but
+       specialize one of its methods.  This situation is valid, but
        the declarations must be merged in the usual way.  */
     return 0;
   else if (TREE_CODE (newdecl) == FUNCTION_DECL
@@ -7615,7 +7615,7 @@ layout_var_decl (decl)
   /* If we haven't already layed out this declaration, do so now.
      Note that we must not call complete type for an external object
      because it's type might involve templates that we are not
-     supposed to isntantiate yet.  (And it's perfectly legal to say
+     supposed to isntantiate yet.  (And it's perfectly valid to say
      `extern X x' for some incomplete type `X'.)  */
   if (!DECL_EXTERNAL (decl))
     complete_type (type);
@@ -9117,7 +9117,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    decl = DECL_TEMPLATE_RESULT (decl);
 
 	  /* Attempt to merge the declarations.  This can fail, in
-	     the case of some illegal specialization declarations.  */
+	     the case of some invalid specialization declarations.  */
 	  if (!duplicate_decls (decl, old_decl))
 	    error ("no `%#D' member function declared in class `%T'",
 		      decl, ctype);
@@ -11815,23 +11815,23 @@ friend declaration requires class-key, i.e. `friend %#T'",
 
 	if (staticp == 1)
 	  {
-	    int illegal_static = 0;
+	    int invalid_static = 0;
 
 	    /* Don't allow a static member function in a class, and forbid
 	       declaring main to be static.  */
 	    if (TREE_CODE (type) == METHOD_TYPE)
 	      {
 		pedwarn ("cannot declare member function `%D' to have static linkage", decl);
-		illegal_static = 1;
+		invalid_static = 1;
 	      }
 	    else if (current_function_decl)
 	      {
 		/* FIXME need arm citation */
 		error ("cannot declare static function inside another function");
-		illegal_static = 1;
+		invalid_static = 1;
 	      }
 
-	    if (illegal_static)
+	    if (invalid_static)
 	      {
 		staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
@@ -11989,7 +11989,7 @@ local_variable_p_walkfn (tp, walk_subtrees, data)
 }
 
 /* Check that ARG, which is a default-argument expression for a
-   parameter DECL, is legal.  Returns ARG, or ERROR_MARK_NODE, if
+   parameter DECL, is valid.  Returns ARG, or ERROR_MARK_NODE, if
    something goes wrong.  DECL may also be a _TYPE node, rather than a
    DECL, if there is no DECL available.  */
 

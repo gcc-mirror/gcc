@@ -1,3 +1,41 @@
+2002-08-08  Mike Stump  <mrs@apple.com>
+
+	* call.c (add_builtin_candidate): legal -> valid, illegal -> invalid.
+	(type_decays_to): Likewise.
+	* class.c (find_final_overrider): Likewise.
+	(maybe_note_name_used_in_class): Likewise.
+	* decl.c (current_tmpl_spec_kind): Likewise.
+	(add_binding): Likewise.
+	(push_class_binding): Likewise.
+	(duplicate_decls): Likewise.
+	(layout_var_decl): Likewise.
+	(grokfndecl): Likewise.
+	(grokdeclarator): Likewise.
+	(check_default_argument): Likewise.
+	* decl2.c (handle_class_head): Likewise.
+	* error.c (dump_template_decl): Likewise.
+	* init.c (build_offset_ref): Likewise.
+	* pt.c (check_specialization_scope): Likewise.
+	(determine_specialization): Likewise.
+	(check_explicit_specialization): Likewise.
+	(maybe_check_template_type): Likewise.
+	(process_partial_specialization): Likewise.
+	(check_default_tmpl_args): Likewise.
+	(push_template_decl_real): Likewise.
+	(convert_template_argument): Likewise.
+	(try_class_unification): Likewise.
+	(get_bindings_real): Likewise.
+	(do_decl_instantiation): Likewise.
+	* semantics.c (begin_function_definition): Likewise.
+	(finish_member_declaration): Likewise.
+	(check_multiple_declarators): Likewise.
+	* typeck.c (comp_array_types): Likewise.
+	(comptypes): Likewise.
+	(expr_sizeof): Likewise.
+	(build_binary_op): Likewise.
+	(dubious_conversion_warnings): Likewise.
+	(check_return_expr): Likewise.
+	
 2002-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (build_class_member_access_expr): Do not return

@@ -2020,7 +2020,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
 	 types are TYPE2.  */
 	break;
 
-      /* These arguments do not make for a legal overloaded operator.  */
+      /* These arguments do not make for a valid overloaded operator.  */
       return candidates;
 
     default:
@@ -2070,7 +2070,7 @@ type_decays_to (type)
    Here we generate a superset of the possible candidates for this particular
    case.  That is a subset of the full set the standard defines, plus some
    other cases which the standard disallows. add_builtin_candidate will
-   filter out the illegal set.  */
+   filter out the invalid set.  */
 
 static struct z_candidate *
 add_builtin_candidates (candidates, code, code2, fnname, args, flags)

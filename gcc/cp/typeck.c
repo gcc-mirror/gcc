@@ -857,7 +857,7 @@ comp_array_types (cmp, t1, t2, strict)
     return 1;
 
   /* If one of the arrays is dimensionless, and the other has a
-     dimension, they are of different types.  However, it is legal to
+     dimension, they are of different types.  However, it is valid to
      write:
 
        extern int a[];
@@ -897,7 +897,7 @@ comptypes (t1, t2, strict)
        extern int (*i)[];
        int (*i)[8];
 
-     is not legal, for example.  */
+     is invalid, for example.  */
   strict &= ~COMPARE_REDECLARATION;
 
   /* Suppress errors caused by previously reported errors */
@@ -1543,7 +1543,7 @@ expr_sizeof (e)
       cxx_incomplete_type_error (e, TREE_TYPE (e));
       return c_sizeof (char_type_node);
     }
-  /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
+  /* It's invalid to say `sizeof (X::i)' for `i' a non-static data
      member unless you're in a non-static member of X.  So hand off to
      resolve_offset_ref.  [expr.prim]  */
   else if (TREE_CODE (e) == OFFSET_REF)
@@ -3618,7 +3618,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
       return error_mark_node;
     }
 
-  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  /* Issue warnings about peculiar, but valid, uses of NULL.  */
   if (/* It's reasonable to use pointer values as operands of &&
 	 and ||, so NULL is no exception.  */
       !(code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
@@ -5713,7 +5713,7 @@ dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
   
-  /* Issue warnings about peculiar, but legal, uses of NULL.  */
+  /* Issue warnings about peculiar, but valid, uses of NULL.  */
   if (ARITHMETIC_TYPE_P (type) && expr == null_node)
     {
       if (fndecl)
@@ -6065,7 +6065,7 @@ maybe_warn_about_returning_address_of_local (retval)
     }
 }
 
-/* Check that returning RETVAL from the current function is legal.
+/* Check that returning RETVAL from the current function is valid.
    Return an expression explicitly showing all conversions required to
    change RETVAL into the function return type, and to assign it to
    the DECL_RESULT for the function.  */
