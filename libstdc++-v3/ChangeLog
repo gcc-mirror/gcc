@@ -1,3 +1,18 @@
+2004-05-20  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/istream.tcc (operator>>(basic_istream<>&,
+	basic_string<>&)): Use a temporary buffer, thus avoiding
+	reallocation for common case.
+	* testsuite/21_strings/basic_string/inserters_extractors/char/11.cc:
+	New.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Likewise.
+
+	* include/bits/istream.tcc: Const-ification of a few variables.
+
+	* include/bits/ostream.tcc: Trivial formatting fixes and
+	const-ification of some variables.
+
 2004-05-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/15123
