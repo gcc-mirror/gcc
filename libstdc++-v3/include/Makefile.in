@@ -222,6 +222,8 @@ std_headers_rename = \
 bits_srcdir = ${glibcpp_srcdir}/include/bits
 bits_builddir = ./bits
 bits_headers = \
+	${bits_srcdir}/allocator.h \
+	${bits_srcdir}/allocator_traits.h \
 	${bits_srcdir}/basic_ios.h \
 	${bits_srcdir}/basic_ios.tcc \
 	${bits_srcdir}/basic_string.h \
@@ -248,14 +250,12 @@ bits_headers = \
 	${bits_srcdir}/localefwd.h \
 	${bits_srcdir}/mask_array.h \
 	${bits_srcdir}/ostream.tcc \
-	${bits_srcdir}/pthread_allocimpl.h \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/slice_array.h \
 	${bits_srcdir}/sstream.tcc \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
-	${bits_srcdir}/stl_alloc.h \
 	${bits_srcdir}/stl_bvector.h \
 	${bits_srcdir}/stl_construct.h \
 	${bits_srcdir}/stl_deque.h \
@@ -270,7 +270,6 @@ bits_headers = \
 	${bits_srcdir}/stl_multiset.h \
 	${bits_srcdir}/stl_numeric.h \
 	${bits_srcdir}/stl_pair.h \
-	${bits_srcdir}/stl_pthread_alloc.h \
 	${bits_srcdir}/stl_queue.h \
 	${bits_srcdir}/stl_raw_storage_iter.h \
 	${bits_srcdir}/stl_relops.h \
@@ -336,6 +335,7 @@ ext_srcdir = ${glibcpp_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
 	${ext_srcdir}/algorithm \
+	${ext_srcdir}/debug_allocator.h \
 	${ext_srcdir}/enc_filebuf.h \
 	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/stdio_sync_filebuf.h \
@@ -343,8 +343,12 @@ ext_headers = \
 	${ext_srcdir}/hash_map \
 	${ext_srcdir}/hash_set \
 	${ext_srcdir}/iterator \
+	${ext_srcdir}/malloc_allocator.h \
 	${ext_srcdir}/memory \
+	${ext_srcdir}/mt_allocator.h \
+	${ext_srcdir}/new_allocator.h \
 	${ext_srcdir}/numeric \
+	${ext_srcdir}/pool_allocator.h \
 	${ext_srcdir}/rb_tree \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \

@@ -1,6 +1,6 @@
 // 1999-06-23 bkoz 
 
-// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,5 +33,11 @@
 #include <ext/rb_tree>
 #include <ext/rope>
 #include <ext/slist>
+#include <ext/debug_allocator.h>
+#include <ext/malloc_allocator.h>
+#include <ext/mt_allocator.h>
+#include <ext/pool_allocator.h>
+#include <ext/stdio_filebuf.h>
+#include <ext/stdio_sync_filebuf.h>
 
 int main() { }

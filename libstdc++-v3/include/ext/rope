@@ -53,7 +53,7 @@
 #include <bits/stl_algo.h>
 #include <bits/stl_function.h>
 #include <bits/stl_numeric.h>
-#include <bits/stl_alloc.h>
+#include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <ext/hash_fun.h>

@@ -84,7 +84,7 @@ iterators invalidated are those referring to the deleted node.
 */
 
 #include <bits/stl_algobase.h>
-#include <bits/stl_alloc.h>
+#include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_function.h>
 

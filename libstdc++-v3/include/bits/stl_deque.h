@@ -340,7 +340,7 @@ namespace std
    *  and destructor allocate (but don't initialize) storage.  This makes
    *  %exception safety easier.  Second, the base class encapsulates all of
    *  the differences between SGI-style allocators and standard-conforming
-   *  allocators.  (See stl_alloc.h for more on this topic.)  There are two
+   *  allocators.  (See allocator.h for more on this topic.)  There are two
    *  versions:  this ordinary one, and the space-saving specialization for
    *  instanceless allocators.
    *  @endif

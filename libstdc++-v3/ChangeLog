@@ -1,3 +1,46 @@
+2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_alloc.h (__debug_alloc): Move out.
+	(__malloc_alloc): Same.
+	(__pool_alloc): Same.
+	(__new_alloc): Same.
+	Rename to..
+	* include/bits/allocator.h: ...this.
+	* include/bits/stl_deque.h: Modify comment.
+	* include/bits/stl_tree.h: Modify include.
+	* include/std/std_memory.h: Same.
+	* include/ext/rope: Same.
+	* include/ext/slist: Same.	
+	* include/std/std_vector.h: Same.
+	* include/std/std_stack.h: Same.
+	* include/std/std_queue.h: Same.
+	* include/std/std_list.h: Same.
+	* include/std/std_deque.h: Same.
+	* include/backward/alloc.h: Same.
+	* include/ext/debug_allocator.h: New.
+	* include/ext/malloc_allocator.h: New.	
+	* include/ext/pool_allocator.h: New.		
+	* include/ext/new_allocator.h: New.
+	* include/bits/pthread_allocimpl.h: Remove.
+	* include/bits/stl_pthread_alloc.h: Remove.	
+	* include/Makefile.am (ext_headers): Add.
+	* include/Makefile.in: Regenerate.
+	* src/stl-inst.cc: Use __gnu_cxx namespace.
+	* src/stl-inst.cc: Move to...
+	* src/allocator-inst.cc: Here.
+	* src/Makefile.am (sources): Update.
+	* src/Makefile.in: Regenerate.
+	* config/linker-map.gnu: Remove __pool_alloc bits.
+	* testsuite/ext/headers.cc: Add.
+	* testsuite/ext/allocators.cc: Fixup.
+	
+2003-06-11  Stefan Olsson  <stefan@snon.net>
+            Ola Rönnerup  <fnolis@home.se>
+	
+	* include/Makefile.am (ext_headers): Add.
+	* include/Makefile.in: Regenerate.
+	* include/ext/mt_allocator.h: New file.
+
 2003-06-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (close): Clean up a bit.

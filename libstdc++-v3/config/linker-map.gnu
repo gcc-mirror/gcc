@@ -78,15 +78,6 @@ GLIBCPP_3.4 {
     # bool has_facet 
     _ZSt9has_facet*;
 
-    # std::__pool_alloc
-    _ZNSt12__pool_allocILb1ELi0EE10deallocateEPv[jm]*;
-    _ZNSt12__pool_allocILb1ELi0EE8allocateE[jm]*;
-    _ZNSt12__pool_allocILb1ELi0EE5_Lock*;
-    _ZNSt12__pool_allocILb1ELi0EE12_S_force_newE;
-    _ZNSt12__pool_allocILb1ELi0EE12_S_free_listE;
-    _ZNSt12__pool_allocILb1ELi0EE7_S_lockE;
-    _ZNSt12__pool_allocILb1ELi0EE9_S_refillE[jm];
-
     # operator new(size_t)
     _Znw[jm];
     # operator new(size_t, std::nothrow_t const&)
