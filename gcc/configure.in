@@ -599,7 +599,7 @@ changequote([,])dnl
 
 		xm_file="alpha/xm-alpha-interix.h xm-interix.h"
 		xmake_file="x-interix alpha/t-pe"
-		tmake_file="alpha/t-interix alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-interix alpha/t-ieee"
  		if test x$enable_threads = xyes ; then
 			thread_file='posix'
 		fi
@@ -612,7 +612,7 @@ changequote([,])dnl
 	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 		target_cpu_default="MASK_GAS"
-		tmake_file="alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-ieee"
 		gas=no
 		xmake_file=none
 		gas=yes gnu_ld=yes
@@ -620,7 +620,7 @@ changequote([,])dnl
 	alpha*-*-linux-gnulibc1*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
-		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux alpha/t-crtbe alpha/t-ieee"
+		tmake_file="t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-linux alpha/t-crtbe alpha/t-ieee"
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
@@ -631,7 +631,7 @@ changequote([,])dnl
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
-		tmake_file="t-linux alpha/t-linux alpha/t-crtbe alpha/t-ieee"
+		tmake_file="t-linux alpha/t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
@@ -642,7 +642,7 @@ changequote([,])dnl
 	alpha*-*-netbsd*)
 		tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsd-elf.h"
 		target_cpu_default="MASK_GAS"
-		tmake_file="alpha/t-crtbe alpha/t-ieee"
+		tmake_file="alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		xmake_file=none
 		gas=yes gnu_ld=yes
@@ -651,7 +651,7 @@ changequote([,])dnl
 	alpha*-*-openbsd*)
 		# default x-alpha is only appropriate for dec-osf.
 		target_cpu_default="MASK_GAS"
-		tmake_file="alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-ieee"
 		;;
 		
 	alpha*-dec-osf*)
@@ -664,7 +664,7 @@ changequote([,])dnl
 			extra_passes="mips-tfile mips-tdump"
 		fi
 		use_collect2=yes
-		tmake_file="alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-ieee"
 		case $machine in
 		  *-*-osf1*)
 		    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
@@ -694,7 +694,7 @@ changequote([,])dnl
 		;;
  	alpha*-*-vxworks*)
 		tm_file="${tm_file} dbx.h alpha/vxworks.h"
-		tmake_file="alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-ieee"
 		if [ x$gas != xyes ]
 		then
 			extra_passes="mips-tfile mips-tdump"
@@ -705,7 +705,7 @@ changequote([,])dnl
 	alpha*-*-winnt*)
 	 	tm_file="${tm_file} alpha/alpha32.h alpha/win-nt.h winnt/win-nt.h"
 		xm_file="${xm_file} config/winnt/xm-winnt.h alpha/xm-winnt.h"
-		tmake_file="t-libc-ok alpha/t-ieee"
+		tmake_file="t-libc-ok alpha/t-alpha alpha/t-ieee"
 		xmake_file=winnt/x-winnt
 		extra_host_objs=oldnames.o
 		extra_gcc_objs="spawnv.o oldnames.o"
@@ -720,7 +720,7 @@ changequote([,])dnl
 	alpha*-dec-vms*)
 		tm_file=alpha/vms.h
 		xm_file="${xm_file} alpha/xm-vms.h"
-		tmake_file="alpha/t-vms alpha/t-ieee"
+		tmake_file="alpha/t-alpha alpha/t-vms alpha/t-ieee"
 		;;
 	arc-*-elf*)
 		extra_parts="crtinit.o crtfini.o"
