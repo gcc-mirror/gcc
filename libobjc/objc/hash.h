@@ -28,14 +28,13 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __hash_INCLUDE_GNU
 #define __hash_INCLUDE_GNU
 
+#include <stddef.h>
+#include <string.h>
 #include <objc/objc.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <stddef.h>
-#include <string.h>
 
 /*
  * This data structure is used to hold items

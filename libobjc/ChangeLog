@@ -1,3 +1,13 @@
+2004-08-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* objc/Object.h: Move includes out of extern "C" blocks.
+	* objc/encoding.h: Likewise.
+	* objc/hash.h: Likewise.
+	* objc/objc-api.h: Likewise.
+	* objc/runtime.h: Likewise.
+	* objc/sarray.h: Likewise.
+	* objc/typedstream.h: Likewise.
+
 2004-08-12  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/NXConstStr.h: Update copyright date; bracket with
