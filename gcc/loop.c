@@ -1189,7 +1189,7 @@ record_excess_regs (in_this, not_in_this, output)
      rtx *output;
 {
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
   int i;
 
   code = GET_CODE (in_this);
@@ -1588,7 +1588,7 @@ rtx_equal_for_loop_p (x, y, movables)
   register int j;
   register struct movable *m;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == y)
     return 1;
@@ -1701,7 +1701,7 @@ add_label_notes (x, insns)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
-  char *fmt;
+  const char *fmt;
   rtx insn;
 
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
@@ -2246,7 +2246,7 @@ replace_call_address (x, reg, addr)
 {
   register enum rtx_code code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return;
@@ -2309,7 +2309,7 @@ count_nonfixed_reads (x)
 {
   register enum rtx_code code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
   int value;
 
   if (x == 0)
@@ -3163,7 +3163,7 @@ invariant_p (x)
 {
   register int i;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
   int conditional = 0;
   rtx mem_list_entry;
 
@@ -3408,7 +3408,7 @@ find_single_use_in_loop (insn, x, usage)
      varray_type usage;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt = GET_RTX_FORMAT (code);
+  const char *fmt = GET_RTX_FORMAT (code);
   int i, j;
 
   if (code == REG)
@@ -5207,7 +5207,7 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 {
   register int i, j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return;
@@ -7102,7 +7102,7 @@ find_life_end (x, stats, insn, biv)
      struct recombine_givs_stats *stats;
 {
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
   int i, j;
   int retval;
 
@@ -8351,7 +8351,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
   rtx new;
 #endif
   int arg_operand;
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   switch (code)
@@ -8744,7 +8744,7 @@ update_reg_last_use (x, insn)
   else
     {
       register int i, j;
-      register char *fmt = GET_RTX_FORMAT (GET_CODE (x));
+      register const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
       for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
 	{
 	  if (fmt[i] == 'e')

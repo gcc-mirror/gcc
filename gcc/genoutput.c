@@ -451,7 +451,7 @@ scan_operands (part, this_address_p, this_strict_low)
      int this_strict_low;
 {
   register int i, j;
-  register char *format_ptr;
+  register const char *format_ptr;
   int opno;
 
   if (part == 0)

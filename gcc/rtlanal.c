@@ -48,7 +48,7 @@ rtx_unstable_p (x)
 {
   register RTX_CODE code = GET_CODE (x);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (code == MEM)
     return ! RTX_UNCHANGING_P (x);
@@ -84,7 +84,7 @@ rtx_varies_p (x)
 {
   register RTX_CODE code = GET_CODE (x);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   switch (code)
     {
@@ -177,7 +177,7 @@ rtx_addr_varies_p (x)
 {
   register enum rtx_code code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return 0;
@@ -252,7 +252,7 @@ int
 reg_mentioned_p (reg, in)
      register rtx reg, in;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
   register enum rtx_code code;
 
@@ -528,7 +528,7 @@ regs_set_between_p (x, start, end)
      rtx start, end;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   switch (code)
@@ -574,7 +574,7 @@ modified_between_p (x, start, end)
      rtx start, end;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   switch (code)
@@ -629,7 +629,7 @@ modified_in_p (x, insn)
      rtx insn;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   switch (code)
@@ -805,7 +805,7 @@ refers_to_regno_p (regno, endregno, x, loc)
 {
   register int i;
   register RTX_CODE code;
-  register char *fmt;
+  register const char *fmt;
 
  repeat:
   /* The contents of a REG_NONNEG note is always zero, so we must come here
@@ -933,7 +933,7 @@ reg_overlap_mentioned_p (x, in)
     regno = REGNO (x);
   else if (GET_CODE (x) == MEM)
     {
-      char *fmt;
+      const char *fmt;
       int i;
 
       if (GET_CODE (in) == MEM)
@@ -1079,7 +1079,7 @@ rtx_equal_p (x, y)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == y)
     return 1;
@@ -1612,7 +1612,7 @@ volatile_insn_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -1678,7 +1678,7 @@ volatile_refs_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -1753,7 +1753,7 @@ side_effects_p (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
     
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -1783,7 +1783,7 @@ may_trap_p (x)
 {
   int i;
   enum rtx_code code;
-  char *fmt;
+  const char *fmt;
 
   if (x == 0)
     return 0;
@@ -1862,7 +1862,7 @@ int
 inequality_comparisons_p (x)
      rtx x;
 {
-  register char *fmt;
+  register const char *fmt;
   register int len, i;
   register enum rtx_code code = GET_CODE (x);
 
@@ -1926,7 +1926,7 @@ replace_rtx (x, from, to)
      rtx x, from, to;
 {
   register int i, j;
-  register char *fmt;
+  register const char *fmt;
 
   /* The following prevents loops occurrence when we change MEM in
      CONST_DOUBLE onto the same CONST_DOUBLE. */
@@ -1974,7 +1974,7 @@ replace_regs (x, reg_map, nregs, replace_dest)
 {
   register enum rtx_code code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return x;
@@ -2082,7 +2082,7 @@ jmp_uses_reg_or_mem (x)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   switch (code)
     {
@@ -2187,7 +2187,7 @@ for_each_rtx (x, f, data)
 {
   int result;
   int length;
-  char* format;
+  const char* format;
   int i;
 
   /* Call F on X.  */
@@ -2248,7 +2248,7 @@ regno_use_in (regno, x)
      int regno;
      rtx x;
 {
-  register char *fmt;
+  register const char *fmt;
   int i, j;
   rtx tem;
 

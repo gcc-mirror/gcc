@@ -73,7 +73,7 @@ walk_insn_part (part, recog_p, non_pc_set_src)
 {
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (part == 0)
     return;

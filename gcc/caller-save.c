@@ -495,7 +495,7 @@ mark_referenced_regs (x)
      rtx x;
 {
   enum rtx_code code = GET_CODE (x);
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   if (code == SET)

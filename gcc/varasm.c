@@ -3760,7 +3760,7 @@ mark_constants (x)
      register rtx x;
 {
   register int i;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (x == 0)
     return;

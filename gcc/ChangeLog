@@ -1,3 +1,142 @@
+Fri Aug 20 18:53:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.h (rtx_format): Constify a char*.
+
+	* rtl.c (rtx_format): Likewise.
+	(copy_rtx, copy_most_rtx, read_rtx): Likewise.
+	(init_rtl): Use accessor macro, not `rtx_format'.
+
+	* alias.c (rtx_equal_for_memref_p, find_symbolic_term): Constify a
+	char*.
+
+	* caller-save.c (mark_referenced_regs): Likewise.
+
+	* combine.c (subst, make_compound_operation, known_cond,
+	gen_rtx_combine, update_table_tick, get_last_value_validate,
+	use_crosses_set_p, mark_used_regs_combine, move_deaths): Likewise.
+
+	* cse.c (rtx_cost, mention_regs, canon_hash, exp_equiv_p,
+	refers_to_p, canon_reg, fold_rtx, cse_process_notes,
+	count_reg_usage): Likewise.
+
+	* emit-rtl.c (gen_rtx, copy_rtx_if_shared, reset_used_flags):
+	Likewise.
+
+	* final.c (leaf_renumber_regs_insn): Likewise.
+
+	* flow.c (mark_used_regs, find_use_as_address, dump_flow_info,
+	dump_edge_info, count_reg_references): Likewise.
+
+	* function.c (fixup_var_refs_1, walk_fixup_memory_subreg,
+	fixup_stack_1, purge_addressof_1, instantiate_virtual_regs_1):
+	Likewise.
+
+	* gcse.c (oprs_unchanged_p, hash_expr_1, expr_equiv_p,
+	oprs_not_set_p, expr_killed_p, compute_transp, find_used_regs,
+	add_label_notes): Likewise.
+
+	* genattrtab.c (attr_rtx, attr_copy_rtx, encode_units_mask,
+	clear_struct_flag, count_sub_rtxs, count_alternatives,
+	compares_alternatives_p, contained_in_p, walk_attr_value,
+	write_expr_attr_cache): Likewise.
+
+	* genconfig.c (walk_insn_part): Likewise.
+
+	* genemit.c (max_operand_1, gen_exp): Likewise.
+
+	* genextract.c (walk_rtx): Likewise.
+
+	* genflags.c (num_operands): Likewise.
+
+	* genoutput.c (scan_operands): Likewise.
+
+	* genpeep.c (match_rtx): Likewise.
+
+	* genrecog.c (add_to_sequence): Likewise.
+
+	* haifa-sched.c (may_trap_exp, sched_analyze_2, attach_deaths):
+	Likewise.
+
+	* integrate.c (save_constants, copy_for_inline,
+	copy_rtx_and_substitute, subst_constants, restore_constants):
+	Likewise.
+
+	* jump.c  (mark_jump_label, invert_exp, redirect_exp,
+	rtx_renumbered_equal_p, rtx_equal_for_thread_p): Likewise.
+
+	* local-alloc.c (contains_replace_regs, memref_referenced_p):
+	Likewise.
+
+	* loop.c (record_excess_regs, rtx_equal_for_loop_p,
+	add_label_notes, replace_call_address, count_nonfixed_reads,
+	invariant_p, find_single_use_in_loop, find_mem_givs,
+	find_life_end, maybe_eliminate_biv_1, update_reg_last_use):
+	Likewise.
+
+	* print-rtl.c (reg_names, print_rtx): Likewise.
+
+	* recog.c (validate_replace_rtx_1, find_single_use_1): Likewise.
+
+	* reg-stack.c (stack_regs_mentioned_p, record_label_references,
+	record_reg_life_pat, swap_rtx_condition, goto_block_pat,
+	print_blocks): Likewise.
+
+	* regclass.c (fix_register, record_address_regs,
+	reg_scan_mark_refs): Likewise.
+
+	* regmove.c (stable_but_for_p): Likewise.
+
+	* reload.c (loc_mentioned_in_p, operands_match_p,
+	find_reloads_toplevsubst_reg_equivs, find_reloads_address_1,
+	copy_replacements, refers_to_regno_for_reload_p,
+	refers_to_mem_for_reload_p, find_inc_amount, regno_clobbered_p,
+	reload_when_needed_name, reg_class_names, debug_reload_to_stream):
+	Likewise.
+
+	* reload1.c (eliminate_regs, scan_paradoxical_subregs,
+	delete_address_reloads_1, count_occurrences,
+	reload_cse_mem_conflict_p, reload_combine_note_use,
+	add_auto_inc_notes): Likewise.
+
+	* resource.c (mark_referenced_resources, mark_set_resources):
+	Likewise.
+
+	* rtlanal.c (rtx_unstable_p, rtx_varies_p, rtx_addr_varies_p,
+	reg_mentioned_p, regs_set_between_p, modified_between_p,
+	modified_in_p, refers_to_regno_p, reg_overlap_mentioned_p,
+	rtx_equal_p, volatile_insn_p, volatile_refs_p, side_effects_p,
+	may_trap_p, inequality_comparisons_p, replace_rtx, replace_regs,
+	jmp_uses_reg_or_mem, for_each_rtx, regno_use_in): Likewise.
+
+	* sched.c (sched_analyze_2, attach_deaths): Likewise.
+
+	* stupid.c (stupid_mark_refs): Likewise.
+
+	* unroll.c (remap_split_bivs): Likewise.
+
+	* varasm.c (mark_constants): Likewise.
+
+	* a29k/a29k.c (uses_local_reg_p): Likewise.
+
+	* alpha/alpha.c (summarize_insn): Likewise.
+
+	* arm/arm.c (symbol_mentioned_p, label_mentioned_p,
+	eliminate_lr2ip): Likewise.
+
+	* arm/thumb.c (symbol_mentioned_p, label_mentioned_p): Likewise.
+
+	* i386/i386.c (symbolic_reference_mentioned_p, copy_all_rtx,
+	reg_mentioned_in_mem): Likewise.
+
+	* ns32k/ns32k.c (global_symbolic_reference_mentioned_p,
+	symbolic_reference_mentioned_p): Likewise.
+
+	* romp/romp.c (unsigned_comparisons_p, hash_rtx): Likewise.
+
+	* sh/sh.c (regs_used, mark_use): Likewise.
+
+	* vax/vax.c (vax_rtx_cost): Likewise.
+
 Fri Aug 20 18:38:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* machmode.h (mode_name): Constify a char*.

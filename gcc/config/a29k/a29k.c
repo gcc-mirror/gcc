@@ -896,7 +896,7 @@ int
 uses_local_reg_p (x)
      rtx x;
 {
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   switch (GET_CODE (x))

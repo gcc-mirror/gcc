@@ -3007,7 +3007,7 @@ subst (x, from, to, in_dest, unique_copy)
 {
   register enum rtx_code code = GET_CODE (x);
   enum machine_mode op0_mode = VOIDmode;
-  register char *fmt;
+  register const char *fmt;
   register int len, i;
   rtx new;
 
@@ -5924,7 +5924,7 @@ make_compound_operation (x, in_code)
   int i;
   rtx new = 0;
   rtx tem;
-  char *fmt;
+  const char *fmt;
 
   /* Select the code to be used in recursive calls.  Once we are inside an
      address, we stay there.  If we have a comparison, set to COMPARE,
@@ -6951,7 +6951,7 @@ known_cond (x, cond, reg, val)
 {
   enum rtx_code code = GET_CODE (x);
   rtx temp;
-  char *fmt;
+  const char *fmt;
   int i, j;
 
   if (side_effects_p (x))
@@ -9276,7 +9276,7 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
   int n_args;
   rtx args[3];
   int j;
-  char *fmt;
+  const char *fmt;
   rtx rt;
   struct undo *undo;
 
@@ -10499,7 +10499,7 @@ update_table_tick (x)
      rtx x;
 {
   register enum rtx_code code = GET_CODE (x);
-  register char *fmt = GET_RTX_FORMAT (code);
+  register const char *fmt = GET_RTX_FORMAT (code);
   register int i;
 
   if (code == REG)
@@ -10723,7 +10723,7 @@ get_last_value_validate (loc, insn, tick, replace)
      int replace;
 {
   rtx x = *loc;
-  char *fmt = GET_RTX_FORMAT (GET_CODE (x));
+  const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
   int len = GET_RTX_LENGTH (GET_CODE (x));
   int i;
 
@@ -10881,7 +10881,7 @@ use_crosses_set_p (x, from_cuid)
      register rtx x;
      int from_cuid;
 {
-  register char *fmt;
+  register const char *fmt;
   register int i;
   register enum rtx_code code = GET_CODE (x);
 
@@ -11104,7 +11104,7 @@ mark_used_regs_combine (x)
   /* Recursively scan the operands of this expression.  */
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
       {
@@ -11160,7 +11160,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
      rtx to_insn;
      rtx *pnotes;
 {
-  register char *fmt;
+  register const char *fmt;
   register int len, i;
   register enum rtx_code code = GET_CODE (x);
 

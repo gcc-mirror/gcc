@@ -38,9 +38,9 @@ Boston, MA 02111-1307, USA.  */
 /* Array containing all of the register names */
 
 #ifdef DEBUG_REGISTER_NAMES
-static char *reg_names[] = DEBUG_REGISTER_NAMES;
+static const char * const reg_names[] = DEBUG_REGISTER_NAMES;
 #else
-static char *reg_names[] = REGISTER_NAMES;
+static const char * const reg_names[] = REGISTER_NAMES;
 #endif
 
 static FILE *outfile;
@@ -73,7 +73,7 @@ print_rtx (in_rtx)
 {
   register int i = 0;
   register int j;
-  register char *format_ptr;
+  register const char *format_ptr;
   register int is_insn;
 
   if (sawclose)

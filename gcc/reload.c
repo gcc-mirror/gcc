@@ -1626,7 +1626,7 @@ loc_mentioned_in_p (loc, in)
      rtx *loc, in;
 {
   enum rtx_code code = GET_CODE (in);
-  char *fmt = GET_RTX_FORMAT (code);
+  const char *fmt = GET_RTX_FORMAT (code);
   int i, j;
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -2075,7 +2075,7 @@ operands_match_p (x, y)
 {
   register int i;
   register RTX_CODE code = GET_CODE (x);
-  register char *fmt;
+  register const char *fmt;
   int success_2;
       
   if (x == y)
@@ -4381,7 +4381,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 {
   register RTX_CODE code = GET_CODE (x);
 
-  register char *fmt = GET_RTX_FORMAT (code);
+  register const char *fmt = GET_RTX_FORMAT (code);
   register int i;
   int copied;
 
@@ -4961,7 +4961,7 @@ subst_reg_equivs (ad, insn)
 {
   register RTX_CODE code = GET_CODE (ad);
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   switch (code)
     {
@@ -5554,7 +5554,7 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
     }
 
   {
-    register char *fmt = GET_RTX_FORMAT (code);
+    register const char *fmt = GET_RTX_FORMAT (code);
     register int i;
 
     for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
@@ -5777,7 +5777,7 @@ copy_replacements (x, y)
 {
   int i, j;
   enum rtx_code code = GET_CODE (x);
-  char *fmt = GET_RTX_FORMAT (code);
+  const char *fmt = GET_RTX_FORMAT (code);
   struct replacement *r;
 
   /* We can't support X being a SUBREG because we might then need to know its
@@ -5897,7 +5897,7 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
 {
   register int i;
   register RTX_CODE code;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return 0;
@@ -6070,7 +6070,7 @@ int
 refers_to_mem_for_reload_p (x)
      rtx x;
 {
-  char *fmt;
+  const char *fmt;
   int i;
 
   if (GET_CODE (x) == MEM)
@@ -6573,7 +6573,7 @@ find_inc_amount (x, inced)
      rtx x, inced;
 {
   register enum rtx_code code = GET_CODE (x);
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (code == MEM)
@@ -6638,7 +6638,7 @@ regno_clobbered_p (regno, insn)
   return 0;
 }
 
-static char *reload_when_needed_name[] =
+static const char *reload_when_needed_name[] =
 {
   "RELOAD_FOR_INPUT", 
   "RELOAD_FOR_OUTPUT", 
@@ -6653,7 +6653,7 @@ static char *reload_when_needed_name[] =
   "RELOAD_FOR_OTHER_ADDRESS"
 };
 
-static char *reg_class_names[] = REG_CLASS_NAMES;
+static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
 /* These functions are used to print the variables set by 'find_reloads' */
 
@@ -6662,7 +6662,7 @@ debug_reload_to_stream (f)
      FILE *f;
 {
   int r;
-  char *prefix;
+  const char *prefix;
 
   if (! f)
     f = stderr;

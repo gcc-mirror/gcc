@@ -4246,7 +4246,7 @@ summarize_insn (x, sum, set)
      struct shadow_summary *sum;
      int set;
 {
-  char *format_ptr;
+  const char *format_ptr;
   int i, j;
 
   if (x == 0)

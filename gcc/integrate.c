@@ -954,7 +954,7 @@ save_constants (px)
 
   else
     {
-      char *fmt = GET_RTX_FORMAT (GET_CODE (x));
+      const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
       int len = GET_RTX_LENGTH (GET_CODE (x));
 
       for (i = len-1; i >= 0; i--)
@@ -1017,7 +1017,7 @@ copy_for_inline (orig)
   register rtx new;
   register int i;
   register enum rtx_code code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (x == 0)
     return x;
@@ -2274,7 +2274,7 @@ copy_rtx_and_substitute (orig, map)
   register int i, j;
   register RTX_CODE code;
   register enum machine_mode mode;
-  register char *format_ptr;
+  register const char *format_ptr;
   int regno;
 
   if (orig == 0)
@@ -2819,7 +2819,7 @@ subst_constants (loc, insn, map)
   rtx x = *loc;
   register int i;
   register enum rtx_code code;
-  register char *format_ptr;
+  register const char *format_ptr;
   int num_changes = num_validated_changes ();
   rtx new = 0;
   enum machine_mode op0_mode = MAX_MACHINE_MODE;
@@ -3129,7 +3129,7 @@ restore_constants (px)
 {
   rtx x = *px;
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   if (x == 0)
     return;

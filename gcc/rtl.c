@@ -134,7 +134,7 @@ enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
    rtx's of that code.  The sequence is a C string in which
    each character describes one operand.  */
 
-char *rtx_format[] = {
+const char *rtx_format[] = {
   /* "*" undefined.
          can cause a warning message
      "0" field is unused (or used in a phase-dependent manner)
@@ -282,7 +282,7 @@ copy_rtx (orig)
   register rtx copy;
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   code = GET_CODE (orig);
 
@@ -410,7 +410,7 @@ copy_most_rtx (orig, may_share)
   register rtx copy;
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (orig == may_share)
     return orig;
@@ -665,7 +665,7 @@ read_rtx (infile)
 {
   register int i, j, list_counter;
   RTX_CODE tmp_code;
-  register char *format_ptr;
+  register const char *format_ptr;
   /* tmp_char is a buffer used for reading decimal integers
      and names of rtx types and machine modes.
      Therefore, 256 must be enough.  */
@@ -910,7 +910,7 @@ init_rtl ()
   int i;
 
   for (i = 0; i < NUM_RTX_CODE; i++)
-    rtx_length[i] = strlen (rtx_format[i]);
+    rtx_length[i] = strlen (GET_RTX_FORMAT(i));
 
   /* Make CONST_DOUBLE bigger, if real values are bigger than
      it normally expects to have room for.

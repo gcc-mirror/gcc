@@ -587,7 +587,7 @@ fix_register (name, fixed, call_used)
 	   )
 	  && (fixed == 0 || call_used == 0))
 	{
-	  static char* what_option[2][2] = {
+	  static const char * const what_option[2][2] = {
 	    { "call-saved", "call-used" },
 	    { "no-such-option", "fixed" }};
 	  
@@ -1777,7 +1777,7 @@ record_address_regs (x, class, scale)
 
     default:
       {
-	register char *fmt = GET_RTX_FORMAT (code);
+	register const char *fmt = GET_RTX_FORMAT (code);
 	register int i;
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  if (fmt[i] == 'e')
@@ -2160,7 +2160,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 
     default:
       {
-	register char *fmt = GET_RTX_FORMAT (code);
+	register const char *fmt = GET_RTX_FORMAT (code);
 	register int i;
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {

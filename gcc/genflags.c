@@ -61,7 +61,7 @@ num_operands (x)
   int count = 0;
   int i, j;
   enum rtx_code code = GET_CODE (x);
-  char *format_ptr = GET_RTX_FORMAT (code);
+  const char *format_ptr = GET_RTX_FORMAT (code);
 
   if (code == MATCH_OPERAND)
     return 1;

@@ -543,7 +543,7 @@ attr_rtx VPROTO((enum rtx_code code, ...))
 #endif
   va_list p;
   register int i;		/* Array indices...			*/
-  register char *fmt;		/* Current rtx's format...		*/
+  register const char *fmt;		/* Current rtx's format...		*/
   register rtx rt_val;		/* RTX to return to caller...		*/
   int hashcode;
   register struct attr_hash *h;
@@ -830,7 +830,7 @@ attr_copy_rtx (orig)
   register rtx copy;
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   /* No need to copy a permanent object.  */
   if (RTX_INTEGRATED_P (orig))
@@ -2238,7 +2238,7 @@ encode_units_mask (x)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   code = GET_CODE (x);
 
@@ -4024,7 +4024,7 @@ clear_struct_flag (x)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
 
   MEM_IN_STRUCT_P (x) = 0;
   if (RTX_UNCHANGING_P (x))
@@ -4082,7 +4082,7 @@ count_sub_rtxs (x, max)
   register int i;
   register int j;
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
   int total = 0;
 
   code = GET_CODE (x);
@@ -4191,7 +4191,7 @@ count_alternatives (exp)
      rtx exp;
 {
   int i, j, n;
-  char *fmt;
+  const char *fmt;
   
   if (GET_CODE (exp) == MATCH_OPERAND)
     return n_comma_elts (XSTR (exp, 2));
@@ -4229,7 +4229,7 @@ compares_alternatives_p (exp)
      rtx exp;
 {
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   if (GET_CODE (exp) == EQ_ATTR && XSTR (exp, 0) == alternative_name)
     return 1;
@@ -4262,7 +4262,7 @@ contained_in_p (inner, exp)
      rtx exp;
 {
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   if (rtx_equal_p (inner, exp))
     return 1;
@@ -4790,7 +4790,7 @@ walk_attr_value (exp)
      rtx exp;
 {
   register int i, j;
-  register char *fmt;
+  register const char *fmt;
   RTX_CODE code;
 
   if (exp == NULL)
@@ -5139,7 +5139,7 @@ write_expr_attr_cache (p, attr)
      rtx p;
      struct attr_desc *attr;
 {
-  char *fmt;
+  const char *fmt;
   int i, ie, j, je;
 
   if (GET_CODE (p) == EQ_ATTR)

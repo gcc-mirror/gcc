@@ -600,7 +600,7 @@ stupid_mark_refs (x, chain)
      struct insn_chain *chain;
 {
   register RTX_CODE code;
-  register char *fmt;
+  register const char *fmt;
   register int regno, i;
   rtx insn = chain->insn;
 

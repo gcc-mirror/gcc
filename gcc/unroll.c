@@ -4006,7 +4006,7 @@ remap_split_bivs (x)
 {
   register enum rtx_code code;
   register int i;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return x;

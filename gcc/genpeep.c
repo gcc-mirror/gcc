@@ -159,7 +159,7 @@ match_rtx (x, path, fail_label)
   register RTX_CODE code;
   register int i;
   register int len;
-  register char *fmt;
+  register const char *fmt;
   struct link link;
 
   if (x == 0)

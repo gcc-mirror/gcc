@@ -1698,7 +1698,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
   register int i;
   register rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
-  register char *fmt;
+  register const char *fmt;
   register rtx tem, tem1;
   struct fixup_replacement *replacement;
 
@@ -2310,7 +2310,7 @@ walk_fixup_memory_subreg (x, insn, uncritical)
      int uncritical;
 {
   register enum rtx_code code;
-  register char *fmt;
+  register const char *fmt;
   register int i;
 
   if (x == 0)
@@ -2352,7 +2352,7 @@ fixup_stack_1 (x, insn)
 {
   register int i;
   register RTX_CODE code = GET_CODE (x);
-  register char *fmt;
+  register const char *fmt;
 
   if (code == MEM)
     {
@@ -2708,7 +2708,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
   rtx x;
   RTX_CODE code;
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:
@@ -3333,7 +3333,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
   rtx temp;
   rtx seq;
   int i, j;
-  char *fmt;
+  const char *fmt;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:

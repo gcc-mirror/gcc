@@ -4103,7 +4103,7 @@ leaf_renumber_regs_insn (in_rtx)
      register rtx in_rtx;
 {
   register int i, j;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   if (in_rtx == 0)
     return;

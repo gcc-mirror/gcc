@@ -81,7 +81,7 @@ max_operand_1 (x)
   register RTX_CODE code;
   register int i;
   register int len;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     return;
@@ -154,7 +154,7 @@ gen_exp (x)
   register RTX_CODE code;
   register int i;
   register int len;
-  register char *fmt;
+  register const char *fmt;
 
   if (x == 0)
     {

@@ -2102,7 +2102,7 @@ stable_but_for_p (x, src, dst)
     case '<': case '1': case 'c': case '2': case 'b': case '3':
       {
 	int i;
-	char *fmt = GET_RTX_FORMAT (code);
+	const char *fmt = GET_RTX_FORMAT (code);
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  if (fmt[i] == 'e' && ! stable_but_for_p (XEXP (x, i), src, dst))
 	      return 0;
