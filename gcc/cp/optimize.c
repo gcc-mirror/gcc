@@ -77,6 +77,7 @@ static int inlinable_function_p PROTO((tree, inline_data *));
 static tree remap_decl PROTO((tree, inline_data *));
 static void remap_block PROTO((tree, tree, inline_data *));
 static void copy_scope_stmt PROTO((tree *, int *, inline_data *));
+static tree calls_setjmp_r PROTO((tree *, int *, void *));
 
 /* Remap DECL during the copying of the BLOCK tree for the function.
    DATA is really an `inline_data *'.  */
@@ -720,3 +721,39 @@ optimize_function (fn)
       VARRAY_FREE (id.fns);
     }
 }
+
+/* Called from calls_setjmp_p via walk_tree.  */
+
+static tree
+calls_setjmp_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  int setjmp_p;
+  int longjmp_p;
+  int malloc_p;
+  int alloca_p;
+
+  /* We're only interested in FUNCTION_DECLS.  */
+  if (TREE_CODE (*tp) != FUNCTION_DECL)
+    return NULL_TREE;
+
+  special_function_p (*tp, &setjmp_p, &longjmp_p, &malloc_p, &alloca_p);
+
+  return setjmp_p ? *tp : NULL_TREE;
+}
+
+/* Returns non-zero if FN calls `setjmp' or some other function that
+   can return more than once.  This function is conservative; it may
+   occasionally return a non-zero value even when FN does not actually
+   call `setjmp'.  */
+
+int
+calls_setjmp_p (fn)
+     tree fn;
+{
+  return (walk_tree (&DECL_SAVED_TREE (fn), calls_setjmp_r, NULL) 
+	  != NULL_TREE);
+}
+

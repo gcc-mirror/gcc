@@ -3777,6 +3777,7 @@ extern tree get_id_2				PROTO((const char *, tree));
 
 /* In optimize.c */
 extern void optimize_function                   PROTO((tree));
+extern int calls_setjmp_p                       PROTO((tree));
 
 /* in pt.c */
 extern void init_pt                             PROTO ((void));

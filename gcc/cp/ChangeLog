@@ -1,3 +1,11 @@
+1999-12-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (calls_setjmp_p): Declare.
+	* decl.c (finish_function): Mark functions that call setjmp as
+	uninlinable.
+	* optimize.c (calls_setjmp_r): New function.
+	(calls_setjmp_p): Likewise.
+
 1999-12-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (expand_call_inline): Wrap the expanded call in an
