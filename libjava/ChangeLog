@@ -1,3 +1,16 @@
+2004-01-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(getPreferredSize): Call preferredSize.
+	(preferredSize): Call gtkWidgetGetPreferredDimensions.
+	(getMinimumSize): Call minimumSize.
+	(minimumSize): Call gtkWidgetGetPreferredDimensions.
+	(gtkWidgetGetDimensions): Return the peer widget's current size
+	request.
+	(gtkWidgetGetPreferredDimensions): Return the peer widget's
+	natural size request.
+
 2004-01-05  Sascha Brawer  <brawer@dandelis.ch>
 
 	Thanks to Brian Gough <bjg@network-theory.com>
