@@ -1,3 +1,8 @@
+2001-01-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* ltcf-gcj.sh (lt_simple_link_test_code): Remove stray `(0)'.
+	* libtool.m4 (_AC_LIBTOOL_GCJ): Pass $CPPFLAGS on.
+
 2001-01-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Enable libgcj on several additional platforms.

@@ -2,7 +2,7 @@
 
 # ltcf-gcj.sh - Create a GCJ compiler specific configuration
 #
-# Copyright (C) 1996-1999,2000 Free Software Foundation, Inc.
+# Copyright (C) 1996-1999, 2000, 2001 Free Software Foundation, Inc.
 # Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 #
 # Original GCJ support by:
@@ -38,7 +38,7 @@ objext=o
 lt_simple_compile_test_code="class foo {}"
 
 # Code to be used in simple link tests
-lt_simple_link_test_code='public class conftest { public static void main(String[] argv) {} (0); }'
+lt_simple_link_test_code='public class conftest { public static void main(String[] argv) {}; }'
 
 ## Linker Characteristics
 case "$host_os" in

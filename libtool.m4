@@ -1,5 +1,6 @@
 ## libtool.m4 - Configure libtool for the host system. -*-Shell-script-*-
-## Copyright (C) 1996-1999,2000 Free Software Foundation, Inc.
+## Copyright 1996, 1997, 1998, 1999, 2000, 2001
+## Free Software Foundation, Inc.
 ## Originally by Gordon Matzigkeit <gord@gnu.ai.mit.edu>, 1996
 ##
 ## This program is free software; you can redistribute it and/or modify
@@ -802,7 +803,7 @@ lt_save_CC="$CC"
 lt_save_CFLAGS="$CFLAGS"
 dnl Make sure LTCC is set to the C compiler, i.e. set LTCC before CC
 dnl is set to the C++ compiler.
-AR="$AR" LTCC="$CC" CC="$GCJ" CFLAGS="$GCJFLAGS" CPPFLAGS="" \
+AR="$AR" LTCC="$CC" CC="$GCJ" CFLAGS="$GCJFLAGS" CPPFLAGS="$CPPFLAGS" \
 MAGIC_CMD="$MAGIC_CMD" LDFLAGS="$LDFLAGS" LIBS="$LIBS" \
 LN_S="$LN_S" NM="$NM" RANLIB="$RANLIB" STRIP="$STRIP" \
 AS="$AS" DLLTOOL="$DLLTOOL" OBJDUMP="$OBJDUMP" \
