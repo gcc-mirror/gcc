@@ -1366,7 +1366,18 @@ build_member_call (type, name, parmlist)
     {
       /* 'name' already refers to the decls from the namespace, since we
 	 hit do_identifier for template_ids.  */
-      my_friendly_assert (is_overloaded_fn (TREE_OPERAND (name, 0)), 980519);
+      method_name = TREE_OPERAND (name, 0);
+      /* FIXME: Since we don't do independent names right yet, the
+	 name might also be a LOOKUP_EXPR. Once we resolve this to a
+	 real decl earlier, this can go. This may happen during
+	 tsubst'ing.  */
+      if (TREE_CODE (method_name) == LOOKUP_EXPR)
+	{
+	  method_name = lookup_namespace_name 
+	    (type, TREE_OPERAND (method_name, 0));
+	  TREE_OPERAND (name, 0) = method_name;
+	}
+      my_friendly_assert (is_overloaded_fn (method_name), 980519);
       return build_x_function_call (name, parmlist, current_class_ref);
     }
 

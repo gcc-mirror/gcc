@@ -1,3 +1,8 @@
+1999-05-02  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* init.c (build_member_call): Lookup names coming from
+	namespace-scoped LOOKUP_EXPR.
+
 1999-05-03  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	* gxxint.texi: Add documentation for 'I'.
