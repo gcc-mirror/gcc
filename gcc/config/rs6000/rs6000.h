@@ -104,6 +104,17 @@ extern int target_flags;
 
 /* target machine storage layout */
 
+/* Define this macro if it is advisible to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases, 
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.  */
+
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
+  if (GET_MODE_CLASS (MODE) == MODE_INT	\
+      && GET_MODE_SIZE (MODE) < 4)  	\
+    (MODE) == SImode;
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields. */
 /* That is true on RS/6000. */
@@ -336,10 +347,10 @@ extern int target_flags;
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.
 
-   Set this to 2 on the RS/6000 since that is roughly the average cost of an
+   Set this to 3 on the RS/6000 since that is roughly the average cost of an
    unscheduled conditional branch.  */
 
-#define BRANCH_COST 2
+#define BRANCH_COST 3
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
