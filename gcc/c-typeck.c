@@ -6537,6 +6537,16 @@ process_init_element (value)
 	    fieldtype = TYPE_MAIN_VARIANT (fieldtype);
 	  fieldcode = TREE_CODE (fieldtype);
 
+	  /* Error for non-static initialization of a flexible array member.  */
+	  if (fieldcode == ARRAY_TYPE
+	      && !require_constant_value
+	      && TYPE_SIZE (fieldtype) == NULL_TREE
+	      && TREE_CHAIN (constructor_fields) == NULL_TREE)
+	    {
+	      error_init ("non-static initialization of a flexible array member");
+	      break;
+	    }
+
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value != 0
 	      && fieldcode == ARRAY_TYPE
