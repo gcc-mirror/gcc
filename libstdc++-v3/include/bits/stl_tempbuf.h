@@ -1,6 +1,6 @@
 // Temporary buffer implementation -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,6 +64,12 @@
 namespace std
 {
 
+/**
+ *  @maint
+ *  This class is used in two places:  stl_algo.h and ext/memory, where it
+ *  is wrapped as the temporary_buffer class.
+ *  @endmaint
+*/
 template <class _ForwardIterator, class _Tp>
 class _Temporary_buffer {
 private:
@@ -71,6 +77,7 @@ private:
   ptrdiff_t  _M_len;
   _Tp*       _M_buffer;
 
+  // this is basically get_temporary_buffer() all over again
   void _M_allocate_buffer() {
     _M_original_len = _M_len;
     _M_buffer = 0;

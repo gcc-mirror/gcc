@@ -1,6 +1,6 @@
 // <memory> -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,14 +55,71 @@
 #include <bits/stl_alloc.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_iterator_base_types.h> //for iterator_traits
-#include <bits/stl_tempbuf.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_raw_storage_iter.h>
 
 namespace std
 {
 
- template<class _Tp1> struct auto_ptr_ref {
+  /**
+   *  @maint
+   *  This is a helper function.  The unused second parameter exists to
+   *  permit the real get_temporary_buffer to use template parameter deduction.
+   *  @endmaint
+  */
+  template <class _Tp>
+  pair<_Tp*, ptrdiff_t> 
+  __get_temporary_buffer(ptrdiff_t __len, _Tp*)
+  {
+    if (__len > ptrdiff_t(INT_MAX / sizeof(_Tp)))
+      __len = INT_MAX / sizeof(_Tp);
+
+    while (__len > 0) {
+      _Tp* __tmp = (_Tp*) std::malloc((std::size_t)__len * sizeof(_Tp));
+      if (__tmp != 0)
+	return pair<_Tp*, ptrdiff_t>(__tmp, __len);
+      __len /= 2;
+    }
+
+    return pair<_Tp*, ptrdiff_t>((_Tp*)0, 0);
+  }
+
+  /**
+   *  @brief This is a mostly-useless wrapper around malloc().
+   *  @param  len  The number of objects of type Tp.
+   *  @return   See full description.
+   *
+   *  Reinventing the wheel, but this time with prettier spokes!
+   *
+   *  This function tries to obtain storage for @c len adjacent Tp objects.
+   *  The objects themselves are not constructed, of course.  A pair<> is
+   *  returned containing "the buffer s address and capacity (in the units of
+   *  sizeof(Tp)), or a pair of 0 values if no storage can be obtained."
+   *  Note that the capacity obtained may be less than that requested if the
+   *  memory is unavailable; you should compare len with the .second return
+   *  value.
+  */
+  template <class _Tp>
+  inline pair<_Tp*, ptrdiff_t> get_temporary_buffer(ptrdiff_t __len) {
+    return __get_temporary_buffer(__len, (_Tp*) 0);
+  }
+
+  /**
+   *  @brief The companion to get_temporary_buffer().
+   *  @param  p  A buffer previously allocated by get_temporary_buffer.
+   *  @return   None.
+   *
+   *  Frees the memory pointed to by p.
+   */
+  template <class _Tp>
+  void return_temporary_buffer(_Tp* __p) {
+    std::free(__p);
+  }
+
+
+template <class _Tp1>
+  struct auto_ptr_ref
+{
    _Tp1* _M_ptr;
    auto_ptr_ref(_Tp1* __p) : _M_ptr(__p) {}
 };
@@ -70,7 +127,9 @@ namespace std
 /**
  *  A simple smart pointer providing strict ownership semantics.  (More later.)
 */
-template <class _Tp> class auto_ptr {
+template <class _Tp>
+  class auto_ptr
+{
 private:
   _Tp* _M_ptr;
 

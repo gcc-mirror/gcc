@@ -58,6 +58,7 @@
 
 #pragma GCC system_header
 #include <memory>
+#include <bits/stl_tempbuf.h>
 
 namespace __gnu_cxx
 {
@@ -124,45 +125,14 @@ namespace __gnu_cxx
 				    __iterator_category(__first));
     }
 
-  template <class _Tp>
-  pair<_Tp*, ptrdiff_t> 
-  __get_temporary_buffer(ptrdiff_t __len, _Tp*)
-  {
-    if (__len > ptrdiff_t(INT_MAX / sizeof(_Tp)))
-      __len = INT_MAX / sizeof(_Tp);
-
-    while (__len > 0) {
-      _Tp* __tmp = (_Tp*) std::malloc((std::size_t)__len * sizeof(_Tp));
-      if (__tmp != 0)
-	return pair<_Tp*, ptrdiff_t>(__tmp, __len);
-      __len /= 2;
-    }
-
-    return pair<_Tp*, ptrdiff_t>((_Tp*)0, 0);
-  }
 
   /**
-   *  This is a mostly-useless wrapper around malloc().
-   */
-  template <class _Tp>
-  inline pair<_Tp*, ptrdiff_t> get_temporary_buffer(ptrdiff_t __len) {
-    return __get_temporary_buffer(__len, (_Tp*) 0);
-  }
-
-  /**
-   *  The companion to get_temporary_buffer().
-   */
-  template <class _Tp>
-  void return_temporary_buffer(_Tp* __p) {
-    std::free(__p);
-  }
-
-  // Class temporary_buffer is not part of the standard.  It is an extension.
-
+   *  Must come back and figure out these notes.
+   *  @ingroup SGIextensions
+  */
   template <class _ForwardIterator, 
 	    class _Tp 
-	    = typename std::iterator_traits<_ForwardIterator>::value_type
-  >
+	      = typename std::iterator_traits<_ForwardIterator>::value_type >
   struct temporary_buffer : public _Temporary_buffer<_ForwardIterator, _Tp>
   {
     temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)

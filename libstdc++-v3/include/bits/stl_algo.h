@@ -62,6 +62,7 @@
 #define __GLIBCPP_INTERNAL_ALGO_H
 
 #include <bits/stl_heap.h>
+#include <bits/stl_tempbuf.h>     // for _Temporary_buffer
 
 // See concept_check.h for the __glibcpp_*_requires macros.
 
