@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-95, 1996 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -3033,82 +3033,6 @@ function_arg_partial_nregs (cum, mode, type, named)
 
   return 0;
 }
-
-
-/* Print the options used in the assembly file.  */
-
-static struct {char *name; int value;} target_switches []
-  = TARGET_SWITCHES;
-
-void
-print_options (out)
-     FILE *out;
-{
-  int line_len;
-  int len;
-  int j;
-  char **p;
-  int mask = TARGET_DEFAULT;
-
-  /* Allow assembly language comparisons with -mdebug eliminating the
-     compiler version number and switch lists.  */
-
-  if (TARGET_DEBUG_MODE)
-    return;
-
-  fprintf (out, "\n # %s %s", language_string, version_string);
-#ifdef TARGET_VERSION_INTERNAL
-  TARGET_VERSION_INTERNAL (out);
-#endif
-#ifdef __GNUC__
-  fprintf (out, " compiled by GNU C\n\n");
-#else
-  fprintf (out, " compiled by CC\n\n");
-#endif
-
-  fprintf (out, " # Cc1 defaults:");
-  line_len = 32767;
-  for (j = 0; j < sizeof target_switches / sizeof target_switches[0]; j++)
-    {
-      if (target_switches[j].name[0] != '\0'
-	  && target_switches[j].value > 0
-	  && (target_switches[j].value & mask) == target_switches[j].value)
-	{
-	  mask &= ~ target_switches[j].value;
-	  len = strlen (target_switches[j].name) + 1;
-	  if (len + line_len > 79)
-	    {
-	      line_len = 2;
-	      fputs ("\n #", out);
-	    }
-	  fprintf (out, " -m%s", target_switches[j].name);
-	  line_len += len;
-	}
-    }
-
-  fprintf (out, "\n\n # Cc1 arguments (-G value = %d, Cpu = %s, ISA = %d):",
-	   mips_section_threshold, mips_cpu_string, mips_isa);
-
-  line_len = 32767;
-  for (p = &save_argv[1]; *p != (char *)0; p++)
-    {
-      char *arg = *p;
-      if (*arg == '-')
-	{
-	  len = strlen (arg) + 1;
-	  if (len + line_len > 79)
-	    {
-	      line_len = 2;
-	      fputs ("\n #", out);
-	    }
-	  fprintf (out, " %s", *p);
-	  line_len += len;
-	}
-    }
-
-  fputs ("\n\n", out);
-}
-
 
 /* Abort after printing out a specific insn.  */
 
@@ -4194,7 +4118,10 @@ mips_asm_file_start (stream)
   else
     asm_out_data_file = asm_out_text_file = stream;
 
-  print_options (stream);
+  if (flag_verbose_asm)
+    fprintf (stream, "\n%s -G value = %d, Cpu = %s, ISA = %d\n",
+	     ASM_COMMENT_START,
+	     mips_section_threshold, mips_cpu_string, mips_isa);
 }
 
 
