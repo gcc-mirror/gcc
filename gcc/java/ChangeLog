@@ -1,3 +1,146 @@
+Wed Oct 28 08:03:31 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class): Don't mangle <finit>, produce
+ 	__finit<class> instead. Don't verify artificial methods.
+	* decl.c (finit_identifier_node): New declared global.
+	(init_decl_processing): finit_identifier_node initialized.
+	* java-tree.def (CONDITIONAL_EXPR): New Java tree code.
+	* java-tree.h (finit_identifier_node): Declared as extern.
+	(struct lang_decl): New field called_constructor.
+	(DECL_CONSTRUCTOR_CALLS): Access macro to called_constructor.
+	(CLASS_HAS_FINIT_P): New macro.
+	(CALL_CONSTRUCTOR_P): Leading comment changed. Macro now checks
+ 	explicit constructor invocation.
+	(CALL_EXPLICIT_CONSTRUCTOR_P, CALL_THIS_CONSTRUCTOR_P,
+ 	CALL_SUPER_CONSTRUCTOR_P): New macros.
+	(write_classfile): Added prototype.
+	* jcf-parse.c (jcf_parse_source): Parse and remember for
+ 	generation if the file was seen on the command line.
+	(parse_source_file): Don't write the class file here.
+	(yyparse): Loop on files rewritten. Set current_jcf.
+	(parse_zip_file_entries): Parse class file only if it was found.
+	* lang.c (init_parse): Don't open command line provided filename
+ 	here.
+	(lang_parse): Don't set main_jcf anymore.
+	* parse.h (ABSTRAC_CHECK): Capitalized arguments.
+	(JCONSTRUCTOR_CHECK): New macro.
+	(JBSC_TYPE_P): New macro.
+	(IN_TRY_BLOCK_P, EXCEPTIONS_P): Fixed leading comment.
+	(COMPLETE_CHECK_OP_2): New macro.
+	(struct parse_ctxt): New field explicit_constructor_p.
+	(check_class_interface_creation): Fixed prototype indentation.
+	(patch_method_invocation_stmt): Prototype reflects added argument.
+	(patch_invoke): Likewise.
+	(complete_method_declaration, build_super_invocation,
+ 	verify_constructor_circularity,
+ 	build_this_super_qualified_invocation, get_printable_method_name,
+ 	patch_conditional_expr, maybe_generate_finit, fix_constructors,
+ 	verify_constructor_super, create_artificial_method,
+ 	start_artificial_method_body, end_artificial_method_body,
+ 	generate_field_initialization_code): New function prototypes.
+	* parse.y: Fixed leading comment
+	(constructor_header:, constructor_body:, block_end:): Rules tagged
+ 	<node>.
+	(type_declaration:): Call maybe_generate_finit.
+	(method_declaration:): Action for method_body: placed in new
+ 	function complete_method_declaration, called here.
+	(constructor_declaration:): Defined actions. Removed leading
+ 	FIXME.
+	(constructor_header:): New rule with action.
+	(constructor_body:): Rule rewritten using block_begin: and
+ 	block_end:. Defined actions.
+	(constructor_declarator:, explicit_constructor_invocation:):
+ 	Defined actions.
+	(block:): Use new rules block_begin: block_end:.
+	(block_begin:, block_end:): New rules and actions.
+	(block_statements:): Fixed error message for explicit
+ 	constructors.
+	(method_invocation:): Call build_this_super_qualified_invocation
+ 	if primary is `this' or `super' was seen.
+	(conditional_expression:): Action defined.
+	(extra_ctxp_pushed_p): New static global flag.
+	(java_parser_context_save_global): Create parser context if
+ 	necessary. Use extra_ctxp_pushed_p to remember it.
+	(java_parser_context_restore_global): Pop extra parser context if
+ 	one exists.
+	(build_array_from_name): Array on primitive types are marked
+ 	loaded.
+	(register_fields): Restore new name in field initializer
+ 	expression if type was altered. Non static fields initialized upon
+ 	declaration marked initialized.
+	(maybe_generate_finit): New function.
+	(maybe_generate_clinit): Use create_artificial_method,
+ 	start_artificial_method_body, end_artificial_method_body. Generate
+ 	debug info for enclosed initialization statements.
+	(method_header): Fixed leading comment. Check constructor
+ 	flags. Detect constructor declarations and set DECL_CONSTRUCTOR_P
+ 	accordingly.
+	(complete_method_declaration, constructor_circularity_msg,
+ 	verify_constructor_circularity): New functions.
+	(get_printable_method_name): New function.
+	(check_method_redefinition): Don't rename <finit> methods. Fix
+ 	declared constructor names. Error message for
+ 	constructors modified.
+	(java_check_regular_methods): Local variable seen_constructor
+ 	renamed saw_constructor. Skip verification on constructors. Create
+ 	default constructor with create_artificial_method.
+	(java_check_methods): Removed unnecessary empty line.
+	(create_artificial_method, start_artificial_method_body,
+ 	end_artificial_method_body): New functions.
+	(java_layout_classes): Changed leading comment. Reverse fields
+ 	list if necessary. Always layout java.lang.Object if being
+ 	defined.
+	(java_complete_expand_methods): Verify constructor circularity.
+	(java_complete_expand_method): Call fix_constructor on
+ 	constructors.  Local variable no_ac_found removed. Restore
+ 	bindings if method body expansion failed.
+	(fix_constructors, verify_constructor_super,
+ 	generate_field_initialization_code): New function.
+	(java_expand_classes): Fixed leading comment. Write class file
+ 	here.
+	(resolve_expression_name): Check for illegal instance variable
+ 	usage within the argument scope of an explicit constructor
+ 	invocation.
+	(resolve_qualified_expression_name): Pass extra from_super flag
+ 	when invoking patch_method_invocation_stmt. New case for
+ 	conditional expression when used as a primary. Check for error
+ 	when acquiring super.
+	(patch_method_invocation_stmt): Added extra argument super. New
+ 	local variable is_static_flag. Set class_to_search according to
+ 	the nature of the constructor invocation. Don't add `this'
+ 	argument when expanding NEW_CLASS_EXPR. Check for illegal method
+ 	invocation within the argument scope of explicit constructor
+ 	invocation. Set is_static according to is_static_flag. Provide
+ 	extra `super' argument to patch_invoke invocation.
+	(patch_invoke): New argument from_super. Loop on arguments
+ 	indentation fixed. Pass from_super to invocation_mode. New switch
+ 	case INVOKE_SUPER. Fixed error message in switch default case.
+  	Don't use CALL_CONSTRUCTOR_P but rather a test on the tree node
+ 	value.
+	(invocation_mode): Return INVOKE_SUPER mode when appropriate.
+	(lookup_method_invoke): Fixed prototypes in candidates list. Error
+ 	message takes constructors into account.
+	(find_applicable_accessible_methods_list): Fixed indentation.
+	(qualify_ambiguous_name): Take explicit constructor invocation
+ 	into account. Deal with a conditional expression as a primary to
+ 	a method call.
+	(java_complete_tree): Added local wfl_op3. New CONDITIONAL_EXPR
+ 	case. Added extra argument to patch_method_invocation_stmt.
+ 	Register calls made to explicit constructor `this'. Don't call
+ 	save_expr in ARRAY_REF case when emitting class files. Check for
+ 	illegal use of this when expanding explicit constructor invocation
+ 	arguments.
+	(complete_function_arguments): Set and reset parser context
+ 	explicit_constructor_p field value when appropriate.
+	(build_super_invocation, build_this_super_qualified_invocation):
+ 	New functions.
+	(patch_assignment): Fixed typo.
+	(patch_unaryop): Check on final fields occurs only when a decl
+ 	exits.
+	(patch_return): Take constructors into account.
+	(patch_conditional_expr): New function.
+	* typeck.c (build_java_signature): Removed unnecessary empty line.
+	
 Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (jcf-dump, gcjh): Link in $(LIBS) too.

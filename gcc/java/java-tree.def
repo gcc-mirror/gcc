@@ -64,3 +64,9 @@ DEFTREECODE (SYNCHRONIZED_EXPR, "synchronized", 'e', 2)
 /* Throw statement.
    Operand 0 is the throw expresion.  */
 DEFTREECODE (THROW_EXPR, "throw", '1', 1)
+
+/* Conditional operator.
+   Operand 0 is the condition expression
+   Operand 1 is the then-value
+   Operand 2 is the else-value.  */
+DEFTREECODE (CONDITIONAL_EXPR, "?:", 'e', 3)

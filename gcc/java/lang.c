@@ -259,15 +259,7 @@ init_parse (filename)
 	      free (buf);
 	    }
 	}
-
-      finput = fopen (filename, "r");
     }
-  if (finput == 0)
-    pfatal_with_name (filename);
-
-#ifdef IO_BUFFER_SIZE
-  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
-#endif
   init_lex ();
 
   return filename;
@@ -453,11 +445,6 @@ lang_init ()
   decl_printable_name = lang_printable_name;
   print_error_function = lang_print_error;
   lang_expand_expr = java_lang_expand_expr;
-
-  JCF_ZERO (main_jcf);
-  main_jcf->read_state = finput;
-  main_jcf->filbuf = jcf_filbuf_from_stdio;
-  current_jcf = main_jcf;
 
   flag_exceptions = 1;
 
