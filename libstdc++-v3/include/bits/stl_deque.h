@@ -900,7 +900,7 @@ deque<_Tp,_Alloc>::erase(iterator __first, iterator __last)
       copy_backward(_M_start, __first, __last);
       iterator __new_start = _M_start + __n;
       _Destroy(_M_start, __new_start);
-      _M_destroy_nodes(__new_start._M_node, _M_start._M_node);
+      _M_destroy_nodes(_M_start._M_node, __new_start._M_node);
       _M_start = __new_start;
     }
     else {
