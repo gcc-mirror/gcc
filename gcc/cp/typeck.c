@@ -5984,8 +5984,9 @@ check_return_expr (tree retval)
      returned expression uses the chosen variable somehow.  And people expect
      this restriction, anyway.  (jason 2000-11-19)
 
-     See finish_function, genrtl_start_function, and declare_return_variable
-     for other pieces of this optimization.  */
+     See finish_function, cxx_expand_function_start, and
+     cp_copy_res_decl_for_inlining for other pieces of this
+     optimization.  */
 
   if (fn_returns_value_p && flag_elide_constructors)
     {
