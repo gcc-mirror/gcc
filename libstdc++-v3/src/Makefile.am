@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.52 2000/11/25 09:11:15 bkoz Exp $
+## $Id: Makefile.am,v 1.53 2000/11/29 01:09:09 gdr Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -93,17 +93,6 @@ base_headers = \
 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h \
 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h \
 	bits/stl_threads.h bits/stl_iterator_base.h \
-	backward/complex.h backward/iomanip.h backward/istream.h \
-	backward/ostream.h backward/stream.h backward/streambuf.h \
-	backward/algo.h backward/algobase.h backward/alloc.h \
-	backward/bvector.h backward/defalloc.h backward/deque.h \
-	backward/function.h backward/hash_map.h backward/hash_set.h \
-	backward/hashtable.h backward/heap.h backward/iterator.h \
-	backward/list.h backward/map.h backward/multimap.h backward/new.h \
-	backward/multiset.h backward/pair.h backward/iostream.h \
-	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
-	backward/tempbuf.h backward/tree.h backward/vector.h \
-	backward/fstream.h backward/strstream.h backward/strstream \
 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h \
 	bits/std_iterator.h bits/std_list.h \
 	bits/std_map.h bits/std_memory.h bits/std_numeric.h \
@@ -119,10 +108,24 @@ base_headers = \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h \
 	bits/concept_checks.h bits/container_concepts.h \
-	bits/sequence_concepts.h \
+	bits/sequence_concepts.h bits/stl_config.h bits/stl_construct.h
+
+backward_headers = \
+	backward/complex.h backward/iomanip.h backward/istream.h \
+	backward/ostream.h backward/stream.h backward/streambuf.h \
+	backward/algo.h backward/algobase.h backward/alloc.h \
+	backward/bvector.h backward/defalloc.h backward/deque.h \
+	backward/function.h backward/hash_map.h backward/hash_set.h \
+	backward/hashtable.h backward/heap.h backward/iterator.h \
+	backward/list.h backward/map.h backward/multimap.h backward/new.h \
+	backward/multiset.h backward/pair.h backward/iostream.h \
+	backward/rope.h backward/set.h backward/slist.h backward/stack.h \
+	backward/tempbuf.h backward/tree.h backward/vector.h \
+	backward/fstream.h backward/strstream.h backward/strstream
+
+ext_headers = \
 	ext/ropeimpl.h ext/stl_rope.h \
-	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h \
-	ext/stl_hashtable.h ext/stl_hash_fun.h \
+	ext/stl_bvector.h ext/stl_hashtable.h ext/stl_hash_fun.h \
 	ext/hash_map ext/hash_set ext/rope ext/slist \
 	ext/tree ext/bvector 
 
@@ -134,6 +137,7 @@ c_base_headers = \
 	bits/std_cstdlib.h bits/std_cstring.h bits/std_ctime.h \
 	bits/std_cwchar.h bits/std_cwctype.h 
 
+if GLIBCPP_USE_CSHADOW
 c_shadow_headers = \
 	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h \
 	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h \
@@ -143,11 +147,8 @@ c_shadow_headers = \
 	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h \
 	bits/wrap_features.h bits/wrap_langinfo.h \
 	sys/cdefs.h 
-
-if GLIBCPP_USE_CSHADOW
-c_headers = $(c_base_headers) $(c_shadow_headers)
 else
-c_headers = $(c_base_headers)
+c_shadow_headers =
 endif
 
 std_headers = \
@@ -170,8 +171,6 @@ build_headers = \
 	bits/std_limits.h bits/c++config.h bits/c++io.h bits/c++threads.h \
 	bits/atomicity.h bits/os_defines.h \
 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
-
-headers = $(base_headers) $(c_headers)
 
 sources = \
 	limitsMEMBERS.cc \
@@ -235,35 +234,66 @@ myincludep = $(prefix)/include/g++-@libstdcxx_interface@
 endif
 endif
 
-# We have our own special, needlessly complicated installation routine
+# We have our own special, ridiculously complicated installation routine
 # here, as automake/autoconf is currently brain-damaged when it comes
-# to installing sub-directories of headers.
-install-data-local: myinstallheaders
+# to installing sub-directories of headers. In particular, we want to
+# 1) install build headers from (blddir)/include/bits -> (install)/bits
+# 2) install source headers from
+#      (srcdir)/include/bits -> (install)/bits
+#      (srcdir)/include/ext -> (install)/ext
+#      (srcdir)/include/backward -> (install)/backward
+#      ... and the always entertaining "C" compatibility bits
+#      where * represents configure-time directory switching
+#      (srcdir)/include/c* -> (install)/
+#      (srcdir)/include/c*/bits -> (install)/bits
+#      (srcdir)/include/c*/sys -> (install)/sys
+install-data-local: myinstalldirs myinstallheaders
+
+# NB: installation of shadow header directories is not attempted.
+myinstalldirs:
+	if test -z "$(MULTISUBDIR)"; then \
+	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
+	$(mkinstalldirs) $(DESTDIR)$(myincludep)/backward; \
+	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
+	fi
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
 # choke on an empty for... loop by using libio_headers_install
-myinstallheaders: $(headers:%=$(myincludep)/%)
+# NB: installation of shadow headers is not attempted.
+src_incdir = @GLIBCPP_INCLUDE_DIR@
+bld_incdir = $(top_builddir)/include
+c_incdir = @C_INCLUDE_DIR@
+myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
+	for i in $(base_headers); do \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/; \
+	done; \
+	for i in $(ext_headers); do \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/; \
+	done; \
+	for i in $(backward_headers); do \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/backward/; \
+	done; \
+	for i in $(c_base_headers); do \
+        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/"; \
+	  $(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/; \
+	done; \
 	for i in $(std_headers); do \
-	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep)";\
-	        $(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep); \
+	echo "$(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep)";\
+	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
-          echo "$(INSTALL_DATA) $(top_builddir)/include/$$i $(myincludep)/bits/"; \
-	     $(INSTALL_DATA) $(top_builddir)/include/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/"; \
+	  $(INSTALL_DATA) $(bld_incdir)/$$i $(myincludep)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
-          echo "$(INSTALL_DATA) $$i $(myincludep)"; \
-                $(INSTALL_DATA) $$i $(myincludep); \
+        echo "$(INSTALL_DATA) $$i $(myincludep)"; \
+          $(INSTALL_DATA) $$i $(myincludep); \
 	done; \
-	fi;
-
-$(headers:%=$(myincludep)/%): $(myincludep)/%: %
-	if test -z "$(MULTISUBDIR)"; then \
-	$(mkinstalldirs) $(@D); \
-	echo " $(INSTALL_DATA) $^ $@"; \
-	$(INSTALL_DATA) $^ $@; \
 	fi;
 
 # We have to handle misc-inst.cc and locale-inst.cc in a special way
@@ -289,14 +319,6 @@ wstring-inst.lo: string-inst.cc
 # Alexandre put this in here for some libtool-related reason.
 all: libstdc++.INC
 libstdc++.INC: Makefile
-	$(MAKE) \
-	  top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
-	  top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
-	  tmp-$@
-	-rm -f $@
-	mv tmp-$@ $@
-
-tmp-libstdc++.INC: Makefile
 	echo $(INCLUDES) > $@
 
 
@@ -340,12 +362,3 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # which of course is problematic at this point.
 CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
-
-
-
-
-
-
-
-
-

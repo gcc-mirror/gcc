@@ -1,3 +1,19 @@
+2000-11-29  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Fixes for build directories with colons, AIX build problems.
+	* src/Makefile.am: Cleanups, add documentation.
+	(libstdc++.INC): Simplify rule.
+	(myinstallheaders): Consolidate install rules.
+	(myinstalldirs): New, make directores.
+	(base_headers): Subdivide based on install directory.
+	(ext_headers): New.
+	(backward_headers): New.
+	(headers): Remove.
+	(c_headers): Remove, unused.
+	(c_shadow_headers): Split up, deal with conditional usage in a
+	sane manner.
+	* src/Makefile.in: Regenerate.
+	
 2000-11-29  Phil Edwards  <pme@sources.redhat.com>
 
 	Sync with the documentation from wwwdocs.
