@@ -3827,6 +3827,7 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
 CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+GCJCOMPILE = $(GCJ) $(AM_GCJFLAGS) $(GCJFLAGS)
 LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(AM_GCJFLAGS) \
 	$(GCJFLAGS)
 GCJLD = $(GCJ)
@@ -4129,7 +4130,6 @@ secdir = $(libdir)/security
 propdir = $(libdir)
 bin_SCRIPTS = addr2name.awk
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
-GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fclasspath= -fbootclasspath=$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 JAVAC = $(GCJ_WITH_FLAGS) -C
@@ -4152,6 +4152,7 @@ AM_CXXFLAGS = \
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
+	-fclasspath= -fbootclasspath=$(here) \
 	--encoding=UTF-8 \
 	-Wno-deprecated
 
@@ -21748,7 +21749,7 @@ $(gtk_jni_headers): $(gtk_awt_peer_sources)
 $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
 
 %.properties.lo: %.properties
-	$(GCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
+	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
 
 # Compile all classfiles in one go.
 
@@ -21793,13 +21794,13 @@ clean-nat:
 	rm -f $(nat_files) $(xlib_nat_files)
 
 $(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
-	$(GCJCOMPILE) -o $@ $<
+	$(LTGCJCOMPILE) -o $@ -c $<
 
 $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
-	$(GCJCOMPILE) -fjni -o $@ $<
+	$(LTGCJCOMPILE) -fjni -o $@ -c $<
 
 gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
-	$(GCJCOMPILE) -fno-optimize-sibling-calls -o $@ $<
+	$(LTGCJCOMPILE) -fno-optimize-sibling-calls -o $@ -c $<
 
 lib-gnu-awt-xlib.la: $(lib_gnu_awt_xlib_la_OBJECTS) $(lib_gnu_awt_xlib_la_DEPENDENCIES)
 	@echo Creating list of files to link...
