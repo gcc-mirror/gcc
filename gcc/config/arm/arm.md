@@ -1894,7 +1894,7 @@
 	{
 	  /* ... so modify the operands here.  */
 	  operands[1] = XEXP (operands[1], 0);
-	  output_asm_insn (\"sub%?\\t%0, pc, #(8 + . - %a1) & ~4095\",
+	  output_asm_insn (\"sub%?\\t%0, %|pc, #(8 + . - %a1) & ~4095\",
 			   operands);
 	  output_asm_insn (\"ldr%?\\t%0, [%0, #- ((4 + . - %a1) & 4095)]\",
 			   operands);
@@ -1903,7 +1903,7 @@
 	{
 	  /* ... and here.  */
 	  operands[1] = XEXP (operands[1], 0);
-	  output_asm_insn (\"ldr%?\\t%0, [pc, %1 - . - 8]\", operands);
+	  output_asm_insn (\"ldr%?\\t%0, [%|pc, %1 - . - 8]\", operands);
 	}
       return \"\";
 
@@ -2139,8 +2139,8 @@
    mnf%?s\\t%0, #%N1
    ldf%?s\\t%0, %1
    stf%?s\\t%1, %0
-   str%?\\t%1, [sp, #-4]!\;ldf%?s\\t%0, [sp], #4
-   stf%?s\\t%1, [sp, #-4]!\;ldr%?\\t%0, [sp], #4
+   str%?\\t%1, [%|sp, #-4]!\;ldf%?s\\t%0, [%|sp], #4
+   stf%?s\\t%1, [%|sp, #-4]!\;ldr%?\\t%0, [%|sp], #4
    mov%?\\t%0, %1
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
@@ -3252,27 +3252,27 @@
 	(match_operand:SI 0 "s_register_operand" "r"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "mov%?\\tpc, %0\\t%@ table jump, label %l1")
+  "mov%?\\t%|pc, %0\\t%@ table jump, label %l1")
 
 (define_insn ""
   [(set (pc)
 	(match_operand:SI 0 "memory_operand" "m"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "ldr%?\\tpc, %0\\t%@ table jump, label %l1"
+  "ldr%?\\t%|pc, %0\\t%@ table jump, label %l1"
 [(set_attr "type" "load")])
 
 (define_insn "indirect_jump"
   [(set (pc)
 	(match_operand:SI 0 "s_register_operand" "r"))]
   ""
-  "mov%?\\tpc, %0\\t%@ indirect jump")
+  "mov%?\\t%|pc, %0\\t%@ indirect jump")
 
 (define_insn ""
   [(set (pc)
 	(match_operand:SI 0 "memory_operand" "m"))]
   ""
-  "ldr%?\\tpc, %0\\t%@ indirect jump"
+  "ldr%?\\t%|pc, %0\\t%@ indirect jump"
 [(set_attr "type" "load")])
 
 ;; Misc insns
@@ -3500,8 +3500,8 @@
 		(match_operand:SI 1 "s_register_operand" "0,?r")))]
   ""
   "@
-  orr%d2\\t%0, %1, #1
-  mov%D2\\t%0, %1\;orr%d2\\t%0, %1, #1"
+   orr%d2\\t%0, %1, #1
+   mov%D2\\t%0, %1\;orr%d2\\t%0, %1, #1"
 [(set_attr "conds" "use")
  (set_attr "length" "4,8")])
 
@@ -4284,8 +4284,8 @@
    (clobber (reg 24))]
   ""
   "@
-  cmp\\t%4, %5\;mvn%D6\\t%0, %1\;%I7%d6\\t%0, %2, %3
-  cmn\\t%4, #%n5\;mvn%D6\\t%0, %1\;%I7%d6\\t%0, %2, %3"
+   cmp\\t%4, %5\;mvn%D6\\t%0, %1\;%I7%d6\\t%0, %2, %3
+   cmn\\t%4, #%n5\;mvn%D6\\t%0, %1\;%I7%d6\\t%0, %2, %3"
 [(set_attr "conds" "clob")
  (set_attr "length" "12")])
 
@@ -5029,18 +5029,18 @@
   if (TARGET_6)
     {
       if (backward)
-	output_asm_insn (\"sub%?\\tlr, pc, #(8 + . -%l2)\", operands);
+	output_asm_insn (\"sub%?\\t%|lr, %|pc, #(8 + . -%l2)\", operands);
       else
-	output_asm_insn (\"add%?\\tlr, pc, #(%l2 - . -8)\", operands);
+	output_asm_insn (\"add%?\\t%|lr, %|pc, #(%l2 - . -8)\", operands);
     }
   else
 #endif
     {
-      output_asm_insn (\"mov%?\\tlr, pc\\t%@ protect cc\", operands);
+      output_asm_insn (\"mov%?\\t%|lr, %|pc\\t%@ protect cc\", operands);
       if (backward)
-	output_asm_insn (\"sub%?\\tlr, lr, #(4 + . -%l2)\", operands);
+	output_asm_insn (\"sub%?\\t%|lr, %|lr, #(4 + . -%l2)\", operands);
       else
-	output_asm_insn (\"add%?\\tlr, lr, #(%l2 - . -4)\", operands);
+	output_asm_insn (\"add%?\\t%|lr, %|lr, #(%l2 - . -4)\", operands);
     }
   return \"b%?\\t%a0\";
 }"
@@ -5075,18 +5075,18 @@
   if (TARGET_6)
     {
       if (backward)
-	output_asm_insn (\"sub%?\\tlr, pc, #(8 + . -%l3)\", operands);
+	output_asm_insn (\"sub%?\\t%|lr, %|pc, #(8 + . -%l3)\", operands);
       else
-	output_asm_insn (\"add%?\\tlr, pc, #(%l3 - . -8)\", operands);
+	output_asm_insn (\"add%?\\t%|lr, %|pc, #(%l3 - . -8)\", operands);
     }
   else
 #endif
     {
-      output_asm_insn (\"mov%?\\tlr, pc\\t%@ protect cc\", operands);
+      output_asm_insn (\"mov%?\\t%|lr, %|pc\\t%@ protect cc\", operands);
       if (backward)
-	output_asm_insn (\"sub%?\\tlr, lr, #(4 + . -%l3)\", operands);
+	output_asm_insn (\"sub%?\\t%|lr, %|lr, #(4 + . -%l3)\", operands);
       else
-	output_asm_insn (\"add%?\\tlr, lr, #(%l3 - . -4)\", operands);
+	output_asm_insn (\"add%?\\t%|lr, %|lr, #(%l3 - . -4)\", operands);
     }
   return \"b%?\\t%a1\";
 }"
@@ -5226,8 +5226,8 @@
 			  (match_operand:SI 2 "s_register_operand" "r,r"))))]
   ""
   "@
-  mvn%D4\\t%0, %2
-  mov%d4\\t%0, %1\;mvn%D4\\t%0, %2"
+   mvn%D4\\t%0, %2
+   mov%d4\\t%0, %1\;mvn%D4\\t%0, %2"
 [(set_attr "conds" "use")
  (set_attr "length" "4,8")])
 
