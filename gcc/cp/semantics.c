@@ -1426,10 +1426,11 @@ finish_member_declaration (decl)
    type.  */
 
 tree
-finish_class_definition (t, attributes, semi)
+finish_class_definition (t, attributes, semi, pop_scope_p)
      tree t;
      tree attributes;
      int semi;
+     int pop_scope_p;
 {
   /* finish_struct nukes this anyway; if finish_exception does too,
      then it can go.  */
@@ -1454,6 +1455,8 @@ finish_class_definition (t, attributes, semi)
 
   if (! semi)
     check_for_missing_semicolon (t); 
+  if (pop_scope_p)
+    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (t)));
   if (current_scope () == current_function_decl)
     do_pending_defargs ();
 

@@ -1,3 +1,10 @@
+1999-04-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (finish_class_definition): Add parameter.
+	* parse.y (structsp): Use it.  Don't call pop_scope here.
+	* parse.c: Regenerated.
+	* semantics.c (finish_class_definition): Pop it here.
+
 1999-04-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (xref_tag): Revise handling of nested template
