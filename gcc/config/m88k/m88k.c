@@ -65,10 +65,16 @@ enum processor_type m88k_cpu;	/* target cpu */
 
 static void m88k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m88k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void m88k_output_function_end_prologue PARAMS ((FILE *));
+static void m88k_output_function_begin_epilogue PARAMS ((FILE *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE m88k_output_function_prologue
+#undef TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE m88k_output_function_end_prologue
+#undef TARGET_ASM_FUNCTION_BEGIN_EPILOGUE
+#define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE m88k_output_function_begin_epilogue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m88k_output_function_epilogue
 
@@ -1954,8 +1960,8 @@ m88k_output_function_prologue (stream, size)
   m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
 }
 
-void
-m88k_end_prologue (stream)
+static void
+m88k_output_function_end_prologue (stream)
      FILE *stream;
 {
   if (TARGET_OCS_DEBUG_INFO && !prologue_marked)
@@ -2031,8 +2037,8 @@ m88k_expand_prologue ()
    This is mandatory because of alloca; we also take advantage of it to
    omit stack adjustments before returning.  */
 
-void
-m88k_begin_epilogue (stream)
+static void
+m88k_output_function_begin_epilogue (stream)
      FILE *stream;
 {
   if (TARGET_OCS_DEBUG_INFO && !epilogue_marked && prologue_marked)

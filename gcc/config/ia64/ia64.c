@@ -137,8 +137,9 @@ static rtx ia64_expand_lock_test_and_set PARAMS ((enum machine_mode,
 						  tree, rtx));
 static rtx ia64_expand_lock_release PARAMS ((enum machine_mode, tree, rtx));
 static int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
-static void ia64_function_prologue PARAMS((FILE *, HOST_WIDE_INT));
-static void ia64_function_epilogue PARAMS((FILE *, HOST_WIDE_INT));
+static void ia64_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void ia64_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void ia64_output_function_end_prologue PARAMS ((FILE *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_VALID_TYPE_ATTRIBUTE
@@ -146,6 +147,8 @@ static void ia64_function_epilogue PARAMS((FILE *, HOST_WIDE_INT));
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
+#undef TARGET_ASM_FUNCTION_END_PROLOGUE
+#define TARGET_ASM_FUNCTION_END_PROLOGUE ia64_output_function_end_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE ia64_output_function_epilogue
 
@@ -2572,8 +2575,8 @@ ia64_output_function_prologue (file, size)
 
 /* Emit the .body directive at the scheduled end of the prologue.  */
 
-void
-ia64_output_end_prologue (file)
+static void
+ia64_output_function_end_prologue (file)
      FILE *file;
 {
   if (!flag_unwind_tables && (!flag_exceptions || USING_SJLJ_EXCEPTIONS))

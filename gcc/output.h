@@ -451,3 +451,6 @@ extern int profile_label_no;
 
 /* Default target function prologue and epilogue assembler output.  */
 extern void default_function_pro_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+
+/* Default target hook that outputs nothing to a stream.  */
+extern void no_asm_to_stream PARAMS ((FILE *));

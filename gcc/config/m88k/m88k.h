@@ -1046,9 +1046,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   m88k_va_arg (valist, type)
 
-/* Perform special actions at the point where the prologue ends.  */
-#define FUNCTION_END_PROLOGUE(FILE) m88k_end_prologue(FILE)
-
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Redefined in sysv3.h, sysv4.h and
    dgux.h.  */
@@ -1079,9 +1076,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    functions that have frame pointers.
    No definition is equivalent to always zero.  */
 #define EXIT_IGNORE_STACK (1)
-
-/* Perform special actions at the point where the epilogue begins.  */
-#define FUNCTION_BEGIN_EPILOGUE(FILE) m88k_begin_epilogue(FILE)
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms

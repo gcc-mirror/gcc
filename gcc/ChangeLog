@@ -1,3 +1,34 @@
+2001-07-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* final.c (no_asm_to_stream): New.
+	(final_scan_insn): Use target structures for prologue ends
+	and epilogue starts.
+	* output.h (no_asm_to_stream): New.
+	* target-def.h (TARGET_ASM_FUNCTION_END_PROLOGUE,
+	TARGET_ASM_FUNCTION_BEGIN_EPILOGUE): New.
+	(TARGET_ASM_OUT): Update.
+	* target.h (struct gcc_target): New members function_end_prologue
+	and function_begin_epilogue.
+config:
+	* 1750/1750.h (ASM_OUTPUT_FUNNAM): Delete as unused.
+	* alpha/alpha-protos.h (output_end_prologue): Delete.
+	* alpha/alpha.c (output_end_prologue): Rename to
+	alpha_output_function_end_prologue.  Use in target struct
+	and make static.
+	* alpha/alpha.h (FUNCTION_END_PROLOGUE): Delete.
+	* ia64/ia64-protos.h (ia64_output_end_prologue): Delete.
+	* ia64/ia64.c (ia64_output_end_prologue): Rename to
+	ia64_output_function_end_prologue.  Use in target struct
+	and make static.
+	(ia64_function_prologue, ia64_funciton_epilogue): Rename
+	mistyped prototypes.
+	* ia64/ia64.h (FUNCTION_END_PROLOGUE): Delete.
+	* m88k/m88k-protos.h (m88k_end_prologue, m88k_begin_epilogue): Delete.
+	* m88k/m88k.c (m88k_end_prologue, m88k_begin_epilogue): Rename
+	an use in target struct, make static.
+	* ia64/ia64.h (FUNCTION_END_PROLOGUE, FUNCTION_BEGIN_EPILOGUE): Delete.
+
+
 2001-07-08  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (emit_case_nodes): Convert modes properly in low+high test.

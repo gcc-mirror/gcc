@@ -973,9 +973,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_COMMENT_START  ";"
 
-#define ASM_OUTPUT_FUNNAM(FILE,NAME)	\
-	fprintf(FILE,"%s\n",NAME)
-
 #define ASM_OUTPUT_OPCODE(FILE,PTR)  do {		\
 	while (*(PTR) != '\0' && *(PTR) != ' ') {	\
 	    putc (*(PTR), FILE);			\
