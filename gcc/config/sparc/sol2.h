@@ -65,27 +65,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_IDENTIFY_GCC_AFTER_SOURCE(FILE)	\
  fputs ("\t.stabs\t\"gcc2_compiled.\", 0x3c, 0, 0, 0\n", FILE)
 
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
-
-#if 0 /* These seems unnecessary; the ones in sparc/sysv4.h look right.  */
-#undef TEXT_SECTION_ASM_OP
-#undef DATA_SECTION_ASM_OP
-#undef BSS_SECTION_ASM_OP
-#undef CONST_SECTION_ASM_OP
-#undef INIT_SECTION_ASM_OP
-
-#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
-#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
-#define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-
-#define CONST_SECTION_ASM_OP	"\t.section\t\".rodata\""
-#define INIT_SECTION_ASM_OP	"\t.section\t\".init\""
-#endif
-
-#define CTORS_SECTION_ASM_OP	"\t.section\t\".ctors\",#alloc,#execinstr\n"
-#define DTORS_SECTION_ASM_OP	"\t.section\t\".dtors\",#alloc,#execinstr\n"
-
 /* The Solaris 2 assembler uses .skip, not .zero, so put this back. */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
