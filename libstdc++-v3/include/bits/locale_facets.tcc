@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1346,7 +1346,7 @@ namespace std
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							   * __cs_size));
       __ctype.widen(__cs, __cs + __len, __ws);
-      string_type __digits(__ws);
+      const string_type __digits(__ws, __len);
       return this->do_put(__s, __intl, __io, __fill, __digits); 
     }
 
@@ -2178,76 +2178,51 @@ namespace std
 				   const streamsize __newlen, 
 				   const streamsize __oldlen, const bool __num)
     {
-      size_t __plen = static_cast<size_t>(__newlen - __oldlen);
-      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							     * __plen));
-      _Traits::assign(__pads, __plen, __fill); 
+      const size_t __plen = static_cast<size_t>(__newlen - __oldlen);
+      const ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
 
-      _CharT* __beg;
-      _CharT* __end;
-      size_t __mod = 0;
-      size_t __beglen; //either __plen or __oldlen
-      ios_base::fmtflags __adjust = __io.flags() & ios_base::adjustfield;
-
+      // Padding last.
       if (__adjust == ios_base::left)
 	{
-	  // Padding last.
-	  __beg = const_cast<_CharT*>(__olds);
-	  __beglen = __oldlen;
-	  __end = __pads;
+	  _Traits::copy(__news, const_cast<_CharT*>(__olds), __oldlen);
+	  _Traits::assign(__news + __oldlen, __plen, __fill);
+	  return;
 	}
-      else if (__adjust == ios_base::internal && __num)
+
+      size_t __mod = 0;
+      if (__adjust == ios_base::internal && __num)
 	{
 	  // Pad after the sign, if there is one.
 	  // Pad after 0[xX], if there is one.
 	  // Who came up with these rules, anyway? Jeeze.
-          locale __loc = __io.getloc();
+          const locale& __loc = __io.getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
 	  const _CharT __minus = __ctype.widen('-');
 	  const _CharT __plus = __ctype.widen('+');
-	  bool __testsign = _Traits::eq(__olds[0], __minus)
-	    		    || _Traits::eq(__olds[0], __plus);
+	  const bool __testsign = _Traits::eq(__olds[0], __minus)
+	                          || _Traits::eq(__olds[0], __plus);
 
-	  bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
-	    		   && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
-			       || _Traits::eq(__ctype.widen('X'), __olds[1]));
+	  const bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
+	                         && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
+				     || _Traits::eq(__ctype.widen('X'), __olds[1]));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0]; 
 	      __news[1] = __olds[1];
-	      __mod += 2;
+	      __mod = 2;
 	      __news += 2;
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
 	  else if (__testsign)
 	    {
-	      _Traits::eq((__news[0] = __olds[0]), __plus) ? __plus : __minus;
-	      ++__mod;
+	      __news[0] = __olds[0];
+	      __mod = 1;
 	      ++__news;
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
-	  else
-	    {
-	      // Padding first.
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds);
-	    }
+	  // else Padding first.
 	}
-      else
-	{
-	  // Padding first.
-	  __beg = __pads;
-	  __beglen = __plen;
-	  __end = const_cast<_CharT*>(__olds);
-	}
-      _Traits::copy(__news, __beg, __beglen);
-      _Traits::copy(__news + __beglen, __end, 
-			  __newlen - __beglen - __mod);
+      _Traits::assign(__news, __plen, __fill);
+      _Traits::copy(__news + __plen, const_cast<_CharT*>(__olds + __mod),
+		    __oldlen - __mod);
     }
 
   template<typename _CharT>
