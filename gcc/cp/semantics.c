@@ -1604,3 +1604,25 @@ check_multiple_declarators ()
     cp_error ("multiple declarators in template declaration");
 }
 
+tree
+finish_typeof (expr)
+     tree expr;
+{
+  if (processing_template_decl)
+    {
+      tree t;
+
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+
+      t = make_lang_type (TYPEOF_TYPE);
+      CLASSTYPE_GOT_SEMICOLON (t) = 1;
+      TYPE_FIELDS (t) = expr;
+
+      pop_obstacks ();
+
+      return t;
+    }
+
+  return TREE_TYPE (expr);
+}

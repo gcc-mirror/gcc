@@ -5760,7 +5760,7 @@ case 399:
     break;}
 case 400:
 #line 1792 "parse.y"
-{ yyval.ftype.t = TREE_TYPE (yyvsp[-1].ttype);
+{ yyval.ftype.t = finish_typeof (yyvsp[-1].ttype);
 		  yyval.ftype.new_type_flag = 0; ;
     break;}
 case 401:

@@ -5841,6 +5841,9 @@ tsubst (t, args, in_decl)
 	(TREE_CODE (t), tsubst (TREE_OPERAND (t, 0), args, in_decl),
 	 tsubst (TREE_OPERAND (t, 1), args, in_decl));
 
+    case TYPEOF_TYPE:
+      return TREE_TYPE (tsubst_expr (TYPE_FIELDS (t), args, in_decl));
+
     default:
       sorry ("use of `%s' in template",
 	     tree_code_name [(int) TREE_CODE (t)]);

@@ -149,6 +149,10 @@ DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", 't', 0)
    TREE_TYPE is a _TYPE from a baseclass of `T'.  */
 DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
 
+/* A type designated by `__typeof (expr)'.  TYPE_FIELDS is the
+   expression in question.  */
+DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
+
 /* A thunk is a stub function.
 
    Thunks are used to implement multiple inheritance:
