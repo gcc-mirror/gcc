@@ -1,5 +1,5 @@
 /* Generate code from machine description to perform peephole optimizations.
-   Copyright (C) 1987, 1989, 1992, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -329,13 +329,9 @@ match_rtx (x, path, fail_label)
 	      printf (";\n");
 	    }
 
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	  printf ("  if (XWINT (x, %d) != %d) goto L%d;\n",
-		  i, XWINT (x, i), fail_label);
-#else
-	  printf ("  if (XWINT (x, %d) != %ld) goto L%d;\n",
-		  i, XWINT (x, i), fail_label);
-#endif
+	  printf ("  if (XWINT (x, %d) != ", i);
+	  printf (HOST_WIDE_INT_PRINT_DEC, XWINT (x, i));
+	  printf (") goto L%d;\n", fail_label);
 	}
       else if (fmt[i] == 's')
 	{
