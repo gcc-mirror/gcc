@@ -1,3 +1,9 @@
+2003-10-08  Michael Koch  <konqueror@gmx.de>
+
+	* java/text/SimpleDateFormat.java
+	(compileFormat): Replace Character.isLetter() test with
+	Character.isLowerCase() || Character.isUpperCase().
+
 2003-10-08  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/StrictMath.java (toDegrees): Multiply before
