@@ -349,7 +349,6 @@ extern int flag_shared_data;
 extern int flag_schedule_insns;
 extern int flag_schedule_insns_after_reload;
 
-#ifdef HAIFA
 /* The following flags have effect only for scheduling before register
    allocation:
 
@@ -364,7 +363,6 @@ extern int flag_schedule_interblock;
 extern int flag_schedule_speculative;
 extern int flag_schedule_speculative_load;
 extern int flag_schedule_speculative_load_dangerous;
-#endif  /* HAIFA */
 
 /* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
    by a cheaper branch, on a count register. */

@@ -1,3 +1,12 @@
+Mon Aug 23 21:23:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Remove code to select/de-select the haifa
+	scheduler.  Every scheduled port gets haifa now.
+	* configure: Rebuilt.
+	* flags.h, genattrtab.c, rtl.h, toplev.c: Remove HAIFA ifdefs.
+	* sched.c Deleted.
+	* Makefile.in: Corresponding changes.
+
 Mon Aug 23 16:04:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* optabs.c (prepare_cmp_insn): Turn COMPARISON arg into a pointer.
