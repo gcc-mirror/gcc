@@ -1287,13 +1287,13 @@ Ln:					throw value;
         copy value onto heap
         jump throw (Ln, id, address of copy of value on heap)
 
-                                        try {
+                                        try @{
 +Lstart:	the start of the main EH region
 |...						...
 +Lend:		the end of the main EH region
-                                        } catch (T o) {
+                                        @} catch (T o) @{
 						...1
-                                        }
+                                        @}
 Lresume:
         nop	used to make sure there is something before
                 the next region ends, if there is one
@@ -1314,7 +1314,7 @@ Lover:
 [
  [
         call throw_type_match
-        if (eq) {
+        if (eq) @{
  ] these lines disappear when there is no catch condition
 +Lsregion2:
 |	...1
@@ -1322,7 +1322,7 @@ Lover:
 |Lhandler:	handler for the region Lsregion2-Leregion2
 |	rethrow (Lresume, same id, same obj);
 +Leregion2
-        }
+        @}
 ] there are zero or more of these sections, depending upon how many
   catch clauses there are
 ----------------------------- expand_end_all_catch --------------------------
@@ -1338,7 +1338,7 @@ Ldone:
 
 start_all_catch emits labels: Lresume, 
 
-#end example
+@end example
 
 The __unwind_function takes a pointer to the throw handler, and is
 expected to pop the stack frame that was built to call it, as well as
@@ -1348,7 +1348,7 @@ machine state as determined by the context in which we are unwinding
 into.  The way I normally start is to compile:
 
         void *g;
-        foo(void* a) { g = a; }
+        foo(void* a) @{ g = a; @}
 
 with -S, and change the thing that alters the PC (return, or ret
 usually) to not alter the PC, making sure to leave all other semantics
@@ -1455,7 +1455,7 @@ descriptor that refers to fully contained code that has been eliminated
 should also be removed, although not doing this is harmless in terms of
 semantics.
 
-#end itemize
+@end itemize
 
 The above is not meant to be exhaustive, but does include all things I
 have thought of so far.  I am sure other limitations exist.
@@ -1517,7 +1517,7 @@ pointer, frame pointer, arg pointer and so on.
 
 The eh archive (~mrs/eh) might be good reading for understanding the Ada
 perspective, and some of kenners mindset, and a detailed explanation
-(Message-Id: <9308301130.AA10543@vlsi1.ultra.nyu.edu>) of the concepts
+(Message-Id: <9308301130.AA10543@@vlsi1.ultra.nyu.edu>) of the concepts
 involved.
 
 Here is a guide to existing backend type code.  It is all in

@@ -114,3 +114,7 @@ DEFTREECODE (THUNK_DECL, "thunk_decl", "d", 0)
 
 /* A namespace declaration.  */
 DEFTREECODE (NAMESPACE_DECL, "namespace_decl", "d", 0)
+
+/* A using declaration.  DECL_INITIAL contains the specified scope.  
+   This is not an alias, but is later expanded into multiple aliases.  */
+DEFTREECODE (USING_DECL, "using_decl", "d", 0)

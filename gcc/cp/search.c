@@ -2034,13 +2034,13 @@ get_matching_virtual (binfo, fndecl, dtorp)
 			}
 		      if (TYPE_READONLY (d) > TYPE_READONLY (b))
 			{
-			  cp_error ("return type of `%#D' adds const", fndecl);
+			  cp_error_at ("return type of `%#D' adds const", fndecl);
 			  cp_error_at ("  overriding definition as `%#D'",
 				       tmp);
 			}
 		      else if (TYPE_VOLATILE (d) > TYPE_VOLATILE (b))
 			{
-			  cp_error ("return type of `%#D' adds volatile",
+			  cp_error_at ("return type of `%#D' adds volatile",
 				    fndecl);
 			  cp_error_at ("  overriding definition as `%#D'",
 				       tmp);
@@ -2051,11 +2051,11 @@ get_matching_virtual (binfo, fndecl, dtorp)
 		    {
 		      error ("invalid covariant return type (must use pointer or reference)");
 		      cp_error_at ("  overriding `%#D'", tmp);
-		      cp_error ("  with `%#D'", fndecl);
+		      cp_error_at ("  with `%#D'", fndecl);
 		    }
 		  else if (IDENTIFIER_ERROR_LOCUS (name) == NULL_TREE)
 		    {
-		      cp_error ("conflicting return type specified for virtual function `%#D'", fndecl);
+		      cp_error_at ("conflicting return type specified for virtual function `%#D'", fndecl);
 		      cp_error_at ("  overriding definition as `%#D'", tmp);
 		      SET_IDENTIFIER_ERROR_LOCUS (name, basetype);
 		    }

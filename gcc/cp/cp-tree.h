@@ -973,6 +973,14 @@ struct lang_decl
 #define TREE_READONLY_DECL_P(NODE) \
   (TREE_READONLY (NODE) && TREE_CODE_CLASS (TREE_CODE (NODE)) == 'd')
 
+/* Non-zero iff DECL is memory-based.  The DECL_RTL of
+   certain const variables might be a CONST_INT, or a REG
+   in some cases.  We cannot use `memory_operand' as a test
+   here because on most RISC machines, a variable's address
+   is not, by itself, a legitimate address.  */
+#define DECL_IN_MEMORY_P(NODE) \
+  (DECL_RTL (NODE) != NULL_RTX && GET_CODE (DECL_RTL (NODE)) == MEM)
+
 /* For FUNCTION_DECLs: return the language in which this decl
    was declared.  */
 #define DECL_LANGUAGE(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.language)
@@ -1302,12 +1310,6 @@ extern int flag_new_for_scope;
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 #define DECL_FRIENDLIST(NODE)		(DECL_INITIAL (NODE))
-#if 0
-#define DECL_UNDEFINED_FRIENDS(NODE)	((NODE)->decl.result)
-#endif
-#define DECL_WAITING_FRIENDS(NODE)	((tree)(NODE)->decl.rtl)
-#define SET_DECL_WAITING_FRIENDS(NODE,VALUE) \
-	((NODE)->decl.rtl=(struct rtx_def*)VALUE)
 
 /* The DECL_ACCESS is used to record under which context
    special access rules apply.  */
@@ -2124,7 +2126,6 @@ extern tree start_anon_func			PROTO((void));
 /* skip cplus_expand_expr */
 extern void init_cplus_expand			PROTO((void));
 extern void fixup_result_decl			PROTO((tree, struct rtx_def *));
-extern int decl_in_memory_p			PROTO((tree));
 extern tree unsave_expr_now			PROTO((tree));
 
 /* in rtti.c */
