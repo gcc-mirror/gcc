@@ -1,3 +1,9 @@
+2003-11-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* lib/libjava.exp: Add DYLD_LIBRARY_PATH for darwin. Look for
+	the right libgcc. Add -multiply_defined suppress and -bind_at_load
+	flags.
+
 2003-11-18  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/13026:
