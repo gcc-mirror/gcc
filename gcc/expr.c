@@ -6755,7 +6755,7 @@ expand_expr (exp, target, tmode, modifier)
 			 elem = TREE_CHAIN (elem))
 		      ;
 
-		    if (elem)
+		    if (elem && !TREE_SIDE_EFFECTS (elem))
 		      return expand_expr (fold (TREE_VALUE (elem)), target,
 					  tmode, ro_modifier);
 		  }
