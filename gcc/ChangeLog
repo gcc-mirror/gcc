@@ -1,3 +1,8 @@
+Tue Jul  7 21:23:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (emit_queue): If emitting a SEQUENCE, set QUEUED_INSN
+	to the first insn of the sequence.
+
 Tue Jul  7 21:05:25 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* cse (cse_insn): Don't make change without validation.
