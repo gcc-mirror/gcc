@@ -1,5 +1,5 @@
 /* Bytecode definitions for GNU C-compiler.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,7 +24,7 @@ extern int max_stack_depth;
 
 /* Emit DI constant according to target machine word ordering */
 
-#ifdef WORD_HIGH_ENDIAN
+#if WORDS_BIG_ENDIAN
 
 #define bc_emit_bytecode_DI_const(CST) 				\
 { int opcode;							\
