@@ -1,3 +1,8 @@
+2001-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* splay-tree.h (splay_tree_max): New function.
+	(splay_tree_min): Likewise.
+
 2001-04-15  Daniel Berlin  <dan@cgsoftware.com>
 
 	* ternary.c: New file - Ternary search tree implementation.

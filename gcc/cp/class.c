@@ -208,7 +208,7 @@ static tree dfs_get_primary_binfo PARAMS ((tree, void*));
 static int record_subobject_offset PARAMS ((tree, tree, splay_tree));
 static int check_subobject_offset PARAMS ((tree, tree, splay_tree));
 static int walk_subobject_offsets PARAMS ((tree, subobject_offset_fn,
-					   tree, splay_tree, int));
+					   tree, splay_tree, tree, int));
 static void record_subobject_offsets PARAMS ((tree, tree, splay_tree, int));
 static int layout_conflict_p PARAMS ((tree, tree, splay_tree, int));
 static int splay_tree_compare_integer_csts PARAMS ((splay_tree_key k1,
@@ -3822,19 +3822,29 @@ check_subobject_offset (type, offset, offsets)
 /* Walk through all the subobjects of TYPE (located at OFFSET).  Call
    F for every subobject, passing it the type, offset, and table of
    OFFSETS.  If VBASES_P is non-zero, then even virtual non-primary
-   bases should be traversed; otherwise, they are ignored.  If F
-   returns a non-zero value, the traversal ceases, and that value is
-   returned.  Otherwise, returns zero.  */
+   bases should be traversed; otherwise, they are ignored.  
+
+   If MAX_OFFSET is non-NULL, then subobjects with an offset greater
+   than MAX_OFFSET will not be walked.
+
+   If F returns a non-zero value, the traversal ceases, and that value
+   is returned.  Otherwise, returns zero.  */
 
 static int
-walk_subobject_offsets (type, f, offset, offsets, vbases_p)
+walk_subobject_offsets (type, f, offset, offsets, max_offset, vbases_p)
      tree type;
      subobject_offset_fn f;
      tree offset;
      splay_tree offsets;
+     tree max_offset;
      int vbases_p;
 {
   int r = 0;
+
+  /* If this OFFSET is bigger than the MAX_OFFSET, then we should
+     stop.  */
+  if (max_offset && INT_CST_LT (max_offset, offset))
+    return 0;
 
   if (CLASS_TYPE_P (type))
     {
@@ -3862,6 +3872,7 @@ walk_subobject_offsets (type, f, offset, offsets, vbases_p)
 						  offset,
 						  BINFO_OFFSET (binfo)),
 				      offsets,
+				      max_offset,
 				      vbases_p);
 	  if (r)
 	    return r;
@@ -3877,6 +3888,7 @@ walk_subobject_offsets (type, f, offset, offsets, vbases_p)
 						    offset,
 						    DECL_FIELD_OFFSET (field)),
 					offsets,
+					max_offset,
 					/*vbases_p=*/1);
 	    if (r)
 	      return r;
@@ -3896,11 +3908,17 @@ walk_subobject_offsets (type, f, offset, offsets, vbases_p)
 				      f,
 				      offset,
 				      offsets,
+				      max_offset,
 				      /*vbases_p=*/1);
 	  if (r)
 	    return r;
 	  offset = size_binop (PLUS_EXPR, offset, 
 			       TYPE_SIZE_UNIT (TREE_TYPE (type)));
+	  /* If this new OFFSET is bigger than the MAX_OFFSET, then
+	     there's no point in iterating through the remaining
+	     elements of the array.  */
+	  if (max_offset && INT_CST_LT (max_offset, offset))
+	    break;
 	}
     }
 
@@ -3919,7 +3937,7 @@ record_subobject_offsets (type, offset, offsets, vbases_p)
      int vbases_p;
 {
   walk_subobject_offsets (type, record_subobject_offset, offset,
-			  offsets, vbases_p);
+			  offsets, /*max_offset=*/NULL_TREE, vbases_p);
 }
 
 /* Returns non-zero if any of the empty subobjects of TYPE (located at
@@ -3933,8 +3951,19 @@ layout_conflict_p (type, offset, offsets, vbases_p)
      splay_tree offsets;
      int vbases_p;
 {
+  splay_tree_node max_node;
+
+  /* Get the node in OFFSETS that indicates the maximum offset where
+     an empty subobject is located.  */
+  max_node = splay_tree_max (offsets);
+  /* If there aren't any empty subobjects, then there's no point in
+     performing this check.  */
+  if (!max_node)
+    return 0;
+
   return walk_subobject_offsets (type, check_subobject_offset, offset,
-				 offsets, vbases_p);
+				 offsets, (tree) (max_node->key),
+				 vbases_p);
 }
 
 /* DECL is a FIELD_DECL corresponding either to a base subobject of a
