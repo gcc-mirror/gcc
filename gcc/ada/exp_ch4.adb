@@ -94,20 +94,21 @@ package body Exp_Ch4 is
 
    function Expand_Array_Equality
      (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      A_Typ  : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id;
+      Bodies : List_Id;
+      Typ    : Entity_Id) return Node_Id;
    --  Expand an array equality into a call to a function implementing this
    --  equality, and a call to it. Loc is the location for the generated
-   --  nodes. Typ is the type of the array, and Lhs, Rhs are the array
-   --  expressions to be compared. A_Typ is the type of the arguments,
-   --  which may be a private type, in which case Typ is its full view.
+   --  nodes. Lhs and Rhs are the array expressions to be compared.
    --  Bodies is a list on which to attach bodies of local functions that
-   --  are created in the process. This is the responsibility of the
+   --  are created in the process. It is the responsibility of the
    --  caller to insert those bodies at the right place. Nod provides
-   --  the Sloc value for the generated code.
+   --  the Sloc value for the generated code. Normally the types used
+   --  for the generated equality routine are taken from Lhs and Rhs.
+   --  However, in some situations of generated code, the Etype fields
+   --  of Lhs and Rhs are not set yet. In such cases, Typ supplies the
+   --  type to be used for the formal parameters.
 
    procedure Expand_Boolean_Operator (N : Node_Id);
    --  Common expansion processing for Boolean operators (And, Or, Xor)
@@ -124,7 +125,8 @@ package body Exp_Ch4 is
    --  is a list on which to attach bodies of local functions that are
    --  created in the process. This is the responsability of the caller
    --  to insert those bodies at the right place. Nod provides the Sloc
-   --  value for generated code.
+   --  value for generated code. Lhs and Rhs are the left and right sides
+   --  for the comparison, and Typ is the type of the arrays to compare.
 
    procedure Expand_Concatenate_Other (Cnode : Node_Id; Opnds : List_Id);
    --  This routine handles expansion of concatenation operations, where
@@ -570,7 +572,7 @@ package body Exp_Ch4 is
         and then Nkind (Exp) = N_Allocator
         and then Nkind (Expression (Exp)) /= N_Qualified_Expression
       then
-         --  Apply constraint to designated subtype indication.
+         --  Apply constraint to designated subtype indication
 
          Apply_Constraint_Check (Expression (Exp),
            Designated_Type (Designated_Type (PtrT)),
@@ -858,7 +860,7 @@ package body Exp_Ch4 is
    --  Expand an equality function for multi-dimensional arrays. Here is
    --  an example of such a function for Nb_Dimension = 2
 
-   --  function Enn (A : arr; B : arr) return boolean is
+   --  function Enn (A : atyp; B : btyp) return boolean is
    --  begin
    --     if (A'length (1) = 0 or else A'length (2) = 0)
    --          and then
@@ -866,50 +868,49 @@ package body Exp_Ch4 is
    --     then
    --        return True;    -- RM 4.5.2(22)
    --     end if;
-   --
+
    --     if A'length (1) /= B'length (1)
    --               or else
    --           A'length (2) /= B'length (2)
    --     then
    --        return False;   -- RM 4.5.2(23)
    --     end if;
-   --
+
    --     declare
-   --        A1 : Index_type_1 := A'first (1)
-   --        B1 : Index_Type_1 := B'first (1)
+   --        B1 : Index_T1 := B'first (1)
    --     begin
-   --        loop
+   --        for A1 in A'range (1) loop
    --           declare
-   --              A2 : Index_type_2 := A'first (2);
-   --              B2 : Index_type_2 := B'first (2)
+   --              B2 : Index_T2 := B'first (2)
    --           begin
-   --              loop
+   --              for A2 in A'range (2) loop
    --                 if A (A1, A2) /= B (B1, B2) then
    --                    return False;
    --                 end if;
-   --
-   --                 exit when A2 = A'last (2);
-   --                 A2 := Index_type2'succ (A2);
-   --                 B2 := Index_type2'succ (B2);
+
+   --                 B2 := Index_T2'succ (B2);
    --              end loop;
    --           end;
-   --
-   --           exit when A1 = A'last (1);
-   --           A1 := Index_type1'succ (A1);
-   --           B1 := Index_type1'succ (B1);
+
+   --           B1 := Index_T1'succ (B1);
    --        end loop;
    --     end;
-   --
+
    --     return true;
    --  end Enn;
 
+   --  Note on the formal types used (atyp and btyp). If either of the
+   --  arrays is of a private type, we use the underlying type, and
+   --  do an unchecked conversion of the actual. If either of the arrays
+   --  has a bound depending on a discriminant, then we use the base type
+   --  since otherwise we have an escaped discriminant in the function.
+
    function Expand_Array_Equality
      (Nod    : Node_Id;
-      Typ    : Entity_Id;
-      A_Typ  : Entity_Id;
       Lhs    : Node_Id;
       Rhs    : Node_Id;
-      Bodies : List_Id) return Node_Id
+      Bodies : List_Id;
+      Typ    : Entity_Id) return Node_Id
    is
       Loc         : constant Source_Ptr := Sloc (Nod);
       Decls       : constant List_Id    := New_List;
@@ -924,6 +925,10 @@ package body Exp_Ch4 is
       A : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
       B : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uB);
 
+      Ltyp : Entity_Id;
+      Rtyp : Entity_Id;
+      --  The parameter types to be used for the formals
+
       function Arr_Attr
         (Arr : Entity_Id;
          Nam : Name_Id;
@@ -934,28 +939,36 @@ package body Exp_Ch4 is
       --  Create one statement to compare corresponding components,
       --  designated by a full set of indices.
 
+      function Get_Arg_Type (N : Node_Id) return Entity_Id;
+      --  Given one of the arguments, computes the appropriate type to
+      --  be used for that argument in the corresponding function formal
+
       function Handle_One_Dimension
         (N     : Int;
          Index : Node_Id) return Node_Id;
-      --  This procedure returns a declare block:
+      --  This procedure returns the following code
       --
       --    declare
-      --       An : Index_Type_n := A'First (n);
-      --       Bn : Index_Type_n := B'First (n);
+      --       Bn : Index_T := B'First (n);
       --    begin
-      --       loop
+      --       for An in A'range (n) loop
       --          xxx
-      --          exit when An = A'Last (n);
-      --          An := Index_Type_n'Succ (An)
-      --          Bn := Index_Type_n'Succ (Bn)
+      --          Bn := Index_T'Succ (Bn)
       --       end loop;
       --    end;
       --
+      --  Note: we don't need Bn or the declare block when the index types
+      --  of the two arrays are constrained and identical.
+      --
       --  where N is the value of "n" in the above code. Index is the
       --  N'th index node, whose Etype is Index_Type_n in the above code.
-      --  The xxx statement is either the declare block for the next
+      --  The xxx statement is either the loop or declare for the next
       --  dimension or if this is the last dimension the comparison
       --  of corresponding components of the arrays.
+      --
+      --  Note: if the index types are identical and constrained, we
+      --  need only one index, so we generate only An and we do not
+      --  need the declare block.
       --
       --  The actual way the code works is to return the comparison
       --  of corresponding components for the N+1 call. That's neater!
@@ -1025,6 +1038,40 @@ package body Exp_Ch4 is
                  Expression => New_Occurrence_Of (Standard_False, Loc))));
       end Component_Equality;
 
+      ------------------
+      -- Get_Arg_Type --
+      ------------------
+
+      function Get_Arg_Type (N : Node_Id) return Entity_Id is
+         T : Entity_Id;
+         X : Node_Id;
+
+      begin
+         T := Etype (N);
+
+         if No (T) then
+            return Typ;
+
+         else
+            T := Underlying_Type (T);
+
+            X := First_Index (T);
+            while Present (X) loop
+               if Denotes_Discriminant (Type_Low_Bound (Etype (X)))
+                 or else
+                   Denotes_Discriminant (Type_High_Bound (Etype (X)))
+               then
+                  T := Base_Type (T);
+                  exit;
+               end if;
+
+               Next_Index (X);
+            end loop;
+
+            return T;
+         end if;
+      end Get_Arg_Type;
+
       --------------------------
       -- Handle_One_Dimension --
       ---------------------------
@@ -1033,70 +1080,85 @@ package body Exp_Ch4 is
         (N     : Int;
          Index : Node_Id) return Node_Id
       is
+         Need_Separate_Indexes : constant Boolean :=
+                                   Ltyp /= Rtyp
+                                     or else not Is_Constrained (Ltyp);
+         --  If the index types are identical, and we are working with
+         --  constrained types, then we can use the same index for both of
+         --  the arrays.
+
          An : constant Entity_Id := Make_Defining_Identifier (Loc,
                                       Chars => New_Internal_Name ('A'));
-         Bn : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                      Chars => New_Internal_Name ('B'));
-         Index_Type_n  : Entity_Id;
+
+         Bn       : Entity_Id;
+         Index_T  : Entity_Id;
+         Stm_List : List_Id;
+         Loop_Stm : Node_Id;
 
       begin
-         if N > Number_Dimensions (Typ) then
-            return Component_Equality (Typ);
+         if N > Number_Dimensions (Ltyp) then
+            return Component_Equality (Ltyp);
          end if;
 
-         --  Case where we generate a declare block
+         --  Case where we generate a loop
 
-         Index_Type_n := Base_Type (Etype (Index));
+         Index_T := Base_Type (Etype (Index));
+
+         if Need_Separate_Indexes then
+            Bn :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('B'));
+         else
+            Bn := An;
+         end if;
+
          Append (New_Reference_To (An, Loc), Index_List1);
          Append (New_Reference_To (Bn, Loc), Index_List2);
 
-         return
-            Make_Block_Statement (Loc,
-              Declarations => New_List (
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => An,
-                   Object_Definition   =>
-                     New_Reference_To (Index_Type_n, Loc),
-                   Expression => Arr_Attr (A, Name_First, N)),
+         Stm_List := New_List (
+           Handle_One_Dimension (N + 1, Next_Index (Index)));
 
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Bn,
-                   Object_Definition   =>
-                     New_Reference_To (Index_Type_n, Loc),
-                   Expression => Arr_Attr (B, Name_First, N))),
+         if Need_Separate_Indexes then
+            Append_To (Stm_List,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Reference_To (Bn, Loc),
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Reference_To (Index_T, Loc),
+                    Attribute_Name => Name_Succ,
+                    Expressions    => New_List (New_Reference_To (Bn, Loc)))));
+         end if;
 
-              Handled_Statement_Sequence =>
-                Make_Handled_Sequence_Of_Statements (Loc,
-                  Statements => New_List (
-                    Make_Implicit_Loop_Statement (Nod,
-                      Statements => New_List (
-                        Handle_One_Dimension (N + 1, Next_Index (Index)),
+         Loop_Stm :=
+           Make_Implicit_Loop_Statement (Nod,
+             Statements       => Stm_List,
+             Iteration_Scheme =>
+               Make_Iteration_Scheme (Loc,
+                 Loop_Parameter_Specification =>
+                   Make_Loop_Parameter_Specification (Loc,
+                     Defining_Identifier         => An,
+                     Discrete_Subtype_Definition =>
+                       Arr_Attr (A, Name_Range, N))));
 
-                        Make_Exit_Statement (Loc,
-                          Condition =>
-                            Make_Op_Eq (Loc,
-                              Left_Opnd  => New_Reference_To (An, Loc),
-                              Right_Opnd => Arr_Attr (A, Name_Last, N))),
+         --  If separate indexes, need a declare block to declare Bn
 
-                        Make_Assignment_Statement (Loc,
-                          Name => New_Reference_To (An, Loc),
-                          Expression =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix =>
-                                New_Reference_To (Index_Type_n, Loc),
-                              Attribute_Name => Name_Succ,
-                              Expressions => New_List (
-                                New_Reference_To (An, Loc)))),
+         if Need_Separate_Indexes then
+            return
+              Make_Block_Statement (Loc,
+                Declarations => New_List (
+                  Make_Object_Declaration (Loc,
+                    Defining_Identifier => Bn,
+                    Object_Definition   => New_Reference_To (Index_T, Loc),
+                    Expression          => Arr_Attr (B, Name_First, N))),
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => New_List (Loop_Stm)));
 
-                       Make_Assignment_Statement (Loc,
-                          Name => New_Reference_To (Bn, Loc),
-                          Expression =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix =>
-                                New_Reference_To (Index_Type_n, Loc),
-                              Attribute_Name => Name_Succ,
-                              Expressions => New_List (
-                                New_Reference_To (Bn, Loc)))))))));
+         --  If no separate indexes, return loop statement on its own
+
+         else
+            return Loop_Stm;
+         end if;
       end Handle_One_Dimension;
 
       -----------------------
@@ -1113,7 +1175,7 @@ package body Exp_Ch4 is
       begin
          Alist := Empty;
          Blist := Empty;
-         for J in 1 .. Number_Dimensions (Typ) loop
+         for J in 1 .. Number_Dimensions (Ltyp) loop
             Atest :=
               Make_Op_Eq (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
@@ -1157,7 +1219,7 @@ package body Exp_Ch4 is
 
       begin
          Result := Empty;
-         for J in 1 .. Number_Dimensions (Typ) loop
+         for J in 1 .. Number_Dimensions (Ltyp) loop
             Rtest :=
               Make_Op_Ne (Loc,
                 Left_Opnd  => Arr_Attr (A, Name_Length, J),
@@ -1179,14 +1241,29 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Array_Equality
 
    begin
+      Ltyp := Get_Arg_Type (Lhs);
+      Rtyp := Get_Arg_Type (Rhs);
+
+      --  For now, if the argument types are not the same, go to the
+      --  base type, since the code assumes that the formals have the
+      --  same type. This is fixable in future ???
+
+      if Ltyp /= Rtyp then
+         Ltyp := Base_Type (Ltyp);
+         Rtyp := Base_Type (Rtyp);
+         pragma Assert (Ltyp = Rtyp);
+      end if;
+
+      --  Build list of formals for function
+
       Formals := New_List (
         Make_Parameter_Specification (Loc,
           Defining_Identifier => A,
-          Parameter_Type      => New_Reference_To (Typ, Loc)),
+          Parameter_Type      => New_Reference_To (Ltyp, Loc)),
 
         Make_Parameter_Specification (Loc,
           Defining_Identifier => B,
-          Parameter_Type      => New_Reference_To (Typ, Loc)));
+          Parameter_Type      => New_Reference_To (Rtyp, Loc)));
 
       Func_Name := Make_Defining_Identifier (Loc,  New_Internal_Name ('E'));
 
@@ -1220,30 +1297,45 @@ package body Exp_Ch4 is
                       Expression =>
                         New_Occurrence_Of (Standard_False, Loc)))),
 
-                Handle_One_Dimension (1, First_Index (Typ)),
+                Handle_One_Dimension (1, First_Index (Ltyp)),
 
                 Make_Return_Statement (Loc,
                   Expression => New_Occurrence_Of (Standard_True, Loc)))));
 
          Set_Has_Completion (Func_Name, True);
+         Set_Is_Inlined (Func_Name);
 
          --  If the array type is distinct from the type of the arguments,
          --  it is the full view of a private type. Apply an unchecked
          --  conversion to insure that analysis of the call succeeds.
 
-         if Base_Type (A_Typ) /= Base_Type (Typ) then
-            Actuals := New_List (
-              OK_Convert_To (Typ, Lhs),
-              OK_Convert_To (Typ, Rhs));
-         else
-            Actuals := New_List (Lhs, Rhs);
-         end if;
+         declare
+            L, R : Node_Id;
+
+         begin
+            L := Lhs;
+            R := Rhs;
+
+            if No (Etype (Lhs))
+              or else Base_Type (Etype (Lhs)) /= Base_Type (Ltyp)
+            then
+               L := OK_Convert_To (Ltyp, Lhs);
+            end if;
+
+            if No (Etype (Rhs))
+              or else Base_Type (Etype (Rhs)) /= Base_Type (Rtyp)
+            then
+               R := OK_Convert_To (Rtyp, Rhs);
+            end if;
+
+            Actuals := New_List (L, R);
+         end;
 
          Append_To (Bodies, Func_Body);
 
          return
            Make_Function_Call (Loc,
-             Name => New_Reference_To (Func_Name, Loc),
+             Name                   => New_Reference_To (Func_Name, Loc),
              Parameter_Associations => Actuals);
    end Expand_Array_Equality;
 
@@ -1370,8 +1462,7 @@ package body Exp_Ch4 is
          --  case of any composite type recursively containing such fields.
 
          else
-            return Expand_Array_Equality
-                     (Nod, Full_Type, Typ, Lhs, Rhs, Bodies);
+            return Expand_Array_Equality (Nod, Lhs, Rhs, Bodies, Full_Type);
          end if;
 
       elsif Is_Tagged_Type (Full_Type) then
@@ -2101,6 +2192,7 @@ package body Exp_Ch4 is
 
    procedure Expand_N_Allocator (N : Node_Id) is
       PtrT  : constant Entity_Id  := Etype (N);
+      Dtyp  : constant Entity_Id  := Designated_Type (PtrT);
       Desig : Entity_Id;
       Loc   : constant Source_Ptr := Sloc (N);
       Temp  : Entity_Id;
@@ -2172,8 +2264,8 @@ package body Exp_Ch4 is
          --  so that the constant is not labelled as having a nomimally
          --  unconstrained subtype.
 
-         if Entity (Desig) = Base_Type (Designated_Type (PtrT)) then
-            Desig := New_Occurrence_Of (Designated_Type (PtrT), Loc);
+         if Entity (Desig) = Base_Type (Dtyp) then
+            Desig := New_Occurrence_Of (Dtyp, Loc);
          end if;
 
          Insert_Action (N,
@@ -2198,6 +2290,8 @@ package body Exp_Ch4 is
          return;
       end if;
 
+      --  Handle case of qualified expression (other than optimization above)
+
       if Nkind (Expression (N)) = N_Qualified_Expression then
          Expand_Allocator_Expression (N);
 
@@ -2219,19 +2313,19 @@ package body Exp_Ch4 is
 
       else
          declare
-            T         : constant Entity_Id  := Entity (Expression (N));
-            Init      : Entity_Id;
-            Arg1      : Node_Id;
-            Args      : List_Id;
-            Decls     : List_Id;
-            Decl      : Node_Id;
-            Discr     : Elmt_Id;
-            Flist     : Node_Id;
-            Temp_Decl : Node_Id;
-            Temp_Type : Entity_Id;
+            T            : constant Entity_Id  := Entity (Expression (N));
+            Init         : Entity_Id;
+            Arg1         : Node_Id;
+            Args         : List_Id;
+            Decls        : List_Id;
+            Decl         : Node_Id;
+            Discr        : Elmt_Id;
+            Flist        : Node_Id;
+            Temp_Decl    : Node_Id;
+            Temp_Type    : Entity_Id;
+            Attach_Level : Uint;
 
          begin
-
             if No_Initialization (N) then
                null;
 
@@ -2284,7 +2378,7 @@ package body Exp_Ch4 is
                   --  if the context is access to class wide, indicate that
                   --  the object being allocated has the right specific type.
 
-                  if Is_Class_Wide_Type (Designated_Type (PtrT)) then
+                  if Is_Class_Wide_Type (Dtyp) then
                      Arg1 := Unchecked_Convert_To (T, Arg1);
                   end if;
                end if;
@@ -2327,7 +2421,6 @@ package body Exp_Ch4 is
                --  part of the generated code for the allocator).
 
                if Has_Task (T) then
-
                   if No (Master_Id (Base_Type (PtrT))) then
 
                      --  The designated type was an incomplete type, and
@@ -2475,13 +2568,18 @@ package body Exp_Ch4 is
 
                if Controlled_Type (T) then
                   Flist := Get_Allocator_Final_List (N, Base_Type (T), PtrT);
-
+                  if Ekind (PtrT) = E_Anonymous_Access_Type then
+                     Attach_Level := Uint_1;
+                  else
+                     Attach_Level := Uint_2;
+                  end if;
                   Insert_Actions (N,
                     Make_Init_Call (
                       Ref          => New_Copy_Tree (Arg1),
                       Typ          => T,
                       Flist_Ref    => Flist,
-                      With_Attach  => Make_Integer_Literal (Loc, 2)));
+                      With_Attach  => Make_Integer_Literal (Loc,
+                        Attach_Level)));
                end if;
 
                if Is_CPP_Class (T) then
@@ -3283,7 +3381,6 @@ package body Exp_Ch4 is
    --  all three are available, False if any one of these is unavailable.
 
    procedure Expand_N_Op_Concat (N : Node_Id) is
-
       Opnds : List_Id;
       --  List of operands to be concatenated
 
@@ -3643,10 +3740,13 @@ package body Exp_Ch4 is
             begin
                Force_Validity_Checks := True;
                Rewrite (N,
-                 Expand_Array_Equality (N, Typl, A_Typ,
-                   Relocate_Node (Lhs), Relocate_Node (Rhs), Bodies));
-
-               Insert_Actions      (N, Bodies);
+                 Expand_Array_Equality
+                  (N,
+                   Relocate_Node (Lhs),
+                   Relocate_Node (Rhs),
+                   Bodies,
+                   Typl));
+               Insert_Actions (N, Bodies);
                Analyze_And_Resolve (N, Standard_Boolean);
                Force_Validity_Checks := Save_Force_Validity_Checks;
             end;
@@ -3672,9 +3772,12 @@ package body Exp_Ch4 is
 
          else
             Rewrite (N,
-              Expand_Array_Equality (N, Typl, A_Typ,
-                Relocate_Node (Lhs), Relocate_Node (Rhs), Bodies));
-
+              Expand_Array_Equality
+                (N,
+                 Relocate_Node (Lhs),
+                 Relocate_Node (Rhs),
+                 Bodies,
+                 Typl));
             Insert_Actions      (N, Bodies,           Suppress => All_Checks);
             Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
          end if;
@@ -6510,34 +6613,46 @@ package body Exp_Ch4 is
       PtrT : Entity_Id) return Entity_Id
    is
       Loc : constant Source_Ptr := Sloc (N);
-      Acc : Entity_Id;
+
+      Owner : Entity_Id := PtrT;
+      --  The entity whose finalisation list must be used to attach the
+      --  allocated object.
 
    begin
-      --  If the context is an access parameter, we need to create
-      --  a non-anonymous access type in order to have a usable
-      --  final list, because there is otherwise no pool to which
-      --  the allocated object can belong. We create both the type
-      --  and the finalization chain here, because freezing an
-      --  internal type does not create such a chain. The Final_Chain
-      --  that is thus created is shared by the access parameter.
-
       if Ekind (PtrT) = E_Anonymous_Access_Type then
-         Acc := Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
-         Insert_Action (N,
-           Make_Full_Type_Declaration (Loc,
-             Defining_Identifier => Acc,
-             Type_Definition =>
-                Make_Access_To_Object_Definition (Loc,
-                  Subtype_Indication =>
-                    New_Occurrence_Of (T, Loc))));
+         if Nkind (Associated_Node_For_Itype (PtrT))
+              in N_Subprogram_Specification
+         then
+            --  If the context is an access parameter, we need to create
+            --  a non-anonymous access type in order to have a usable
+            --  final list, because there is otherwise no pool to which
+            --  the allocated object can belong. We create both the type
+            --  and the finalization chain here, because freezing an
+            --  internal type does not create such a chain. The Final_Chain
+            --  that is thus created is shared by the access parameter.
 
-         Build_Final_List (N, Acc);
-         Set_Associated_Final_Chain (PtrT, Associated_Final_Chain (Acc));
-         return Find_Final_List (Acc);
+            Owner := Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
+            Insert_Action (N,
+              Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Owner,
+                Type_Definition =>
+                   Make_Access_To_Object_Definition (Loc,
+                     Subtype_Indication =>
+                       New_Occurrence_Of (T, Loc))));
 
-      else
-         return Find_Final_List (PtrT);
+            Build_Final_List (N, Owner);
+            Set_Associated_Final_Chain (PtrT, Associated_Final_Chain (Owner));
+
+         else
+            --  Case of an access discriminant, or (Ada 2005) of
+            --  an anonymous access component: find the final list
+            --  associated with the scope of the type.
+
+            Owner := Scope (PtrT);
+         end if;
       end if;
+
+      return Find_Final_List (Owner);
    end Get_Allocator_Final_List;
 
    -------------------------------

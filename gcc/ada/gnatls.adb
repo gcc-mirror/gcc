@@ -115,15 +115,11 @@ procedure Gnatls is
    -- Local Subprograms --
    -----------------------
 
-   procedure Add_Lib_Dir (Dir : String; And_Save : Boolean);
-   --  Add an object directory, using Osint.Add_Lib_Search_Dir
-   --  if And_Save is False or keeping in the list First_Lib_Dir,
-   --  Last_Lib_Dir if And_Save is True.
+   procedure Add_Lib_Dir (Dir : String);
+   --  Add an object directory in the list First_Lib_Dir-Last_Lib_Dir
 
-   procedure Add_Source_Dir (Dir : String; And_Save : Boolean);
-   --  Add a source directory, using Osint.Add_Src_Search_Dir
-   --  if And_Save is False or keeping in the list First_Source_Dir,
-   --  Last_Source_Dir if And_Save is True.
+   procedure Add_Source_Dir (Dir : String);
+   --  Add a source directory in the list First_Source_Dir-Last_Source_Dir
 
    procedure Find_General_Layout;
    --  Determine the structure of the output (multi columns or not, etc)
@@ -157,7 +153,7 @@ procedure Gnatls is
    procedure Reset_Print;
    --  Reset Print flags properly when selective output is chosen
 
-   procedure Scan_Ls_Arg (Argv : String; And_Save : Boolean);
+   procedure Scan_Ls_Arg (Argv : String);
    --  Scan and process lser specific arguments. Argv is a single argument
 
    procedure Usage;
@@ -170,26 +166,21 @@ procedure Gnatls is
    -- Add_Lib_Dir --
    -----------------
 
-   procedure Add_Lib_Dir (Dir : String; And_Save : Boolean) is
+   procedure Add_Lib_Dir (Dir : String) is
    begin
-      if And_Save then
-         if First_Lib_Dir = null then
-            First_Lib_Dir :=
-              new Dir_Data'
-                (Value => new String'(Dir),
-                 Next => null);
-            Last_Lib_Dir := First_Lib_Dir;
-
-         else
-            Last_Lib_Dir.Next :=
-              new Dir_Data'
-                (Value => new String'(Dir),
-                 Next => null);
-            Last_Lib_Dir := Last_Lib_Dir.Next;
-         end if;
+      if First_Lib_Dir = null then
+         First_Lib_Dir :=
+           new Dir_Data'
+             (Value => new String'(Dir),
+              Next  => null);
+         Last_Lib_Dir := First_Lib_Dir;
 
       else
-         Add_Lib_Search_Dir (Dir);
+         Last_Lib_Dir.Next :=
+           new Dir_Data'
+             (Value => new String'(Dir),
+              Next  => null);
+         Last_Lib_Dir := Last_Lib_Dir.Next;
       end if;
    end Add_Lib_Dir;
 
@@ -197,26 +188,21 @@ procedure Gnatls is
    -- Add_Source_Dir --
    --------------------
 
-   procedure Add_Source_Dir (Dir : String; And_Save : Boolean) is
+   procedure Add_Source_Dir (Dir : String) is
    begin
-      if And_Save then
-         if First_Source_Dir = null then
-            First_Source_Dir :=
-              new Dir_Data'
-                (Value => new String'(Dir),
-                 Next => null);
-            Last_Source_Dir := First_Source_Dir;
-
-         else
-            Last_Source_Dir.Next :=
-              new Dir_Data'
-                (Value => new String'(Dir),
-                 Next => null);
-            Last_Source_Dir := Last_Source_Dir.Next;
-         end if;
+      if First_Source_Dir = null then
+         First_Source_Dir :=
+           new Dir_Data'
+             (Value => new String'(Dir),
+              Next  => null);
+         Last_Source_Dir := First_Source_Dir;
 
       else
-         Add_Src_Search_Dir (Dir);
+         Last_Source_Dir.Next :=
+           new Dir_Data'
+             (Value => new String'(Dir),
+              Next  => null);
+         Last_Source_Dir := Last_Source_Dir.Next;
       end if;
    end Add_Source_Dir;
 
@@ -695,7 +681,9 @@ procedure Gnatls is
    -- Scan_Ls_Arg --
    -------------------
 
-   procedure Scan_Ls_Arg (Argv : String; And_Save : Boolean) is
+   procedure Scan_Ls_Arg (Argv : String) is
+      FD  : File_Descriptor;
+      Len : Integer;
    begin
       pragma Assert (Argv'First = 1);
 
@@ -723,23 +711,23 @@ procedure Gnatls is
          --  Processing for -Idir
 
          elsif Argv (2) = 'I' then
-            Add_Source_Dir (Argv (3 .. Argv'Last), And_Save);
-            Add_Lib_Dir (Argv (3 .. Argv'Last), And_Save);
+            Add_Source_Dir (Argv (3 .. Argv'Last));
+            Add_Lib_Dir (Argv (3 .. Argv'Last));
 
          --  Processing for -aIdir (to gcc this is like a -I switch)
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aI" then
-            Add_Source_Dir (Argv (4 .. Argv'Last), And_Save);
+            Add_Source_Dir (Argv (4 .. Argv'Last));
 
          --  Processing for -aOdir
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aO" then
-            Add_Lib_Dir (Argv (4 .. Argv'Last), And_Save);
+            Add_Lib_Dir (Argv (4 .. Argv'Last));
 
          --  Processing for -aLdir (to gnatbind this is like a -aO switch)
 
          elsif Argv'Length >= 3 and then Argv (2 .. 3) = "aL" then
-            Add_Lib_Dir (Argv (4 .. Argv'Last), And_Save);
+            Add_Lib_Dir (Argv (4 .. Argv'Last));
 
          --  Processing for -nostdinc
 
@@ -760,6 +748,62 @@ procedure Gnatls is
 
                when others => null;
             end case;
+
+         --  Processing for -files=file
+
+         elsif Argv'Length > 7 and then Argv (1 .. 7) = "-files=" then
+            FD := Open_Read (Argv (8 .. Argv'Last), GNAT.OS_Lib.Text);
+
+            if FD = Invalid_FD then
+               Osint.Fail ("could not find text file """ &
+                           Argv (8 .. Argv'Last) & '"');
+            end if;
+
+            Len := Integer (File_Length (FD));
+
+            declare
+               Buffer : String (1 .. Len + 1);
+               Index  : Positive := 1;
+               Last   : Positive;
+
+            begin
+               --  Read the file
+
+               Len := Read (FD, Buffer (1)'Address, Len);
+               Buffer (Buffer'Last) := ASCII.NUL;
+               Close (FD);
+
+               --  Scan the file line by line
+
+               while Index < Buffer'Last loop
+                  --  Find the end of line
+
+                  Last := Index;
+
+                  while Last <= Buffer'Last
+                    and then Buffer (Last) /= ASCII.LF
+                    and then Buffer (Last) /= ASCII.CR
+                  loop
+                     Last := Last + 1;
+                  end loop;
+
+                  --  Ignore empty lines
+
+                  if Last > Index then
+                     Add_File (Buffer (Index .. Last - 1));
+                  end if;
+
+                  Index := Last;
+
+                  --  Find the beginning of the next line
+
+                  while Buffer (Index) = ASCII.CR or else
+                        Buffer (Index) = ASCII.LF
+                  loop
+                     Index := Index + 1;
+                  end loop;
+               end loop;
+            end;
 
          --  Processing for --RTS=path
 
@@ -849,70 +893,77 @@ procedure Gnatls is
 
       --  Line for -a
 
-      Write_Str ("  -a        also output relevant predefined units");
+      Write_Str ("  -a         also output relevant predefined units");
       Write_Eol;
 
       --  Line for -u
 
-      Write_Str ("  -u        output only relevant unit names");
+      Write_Str ("  -u         output only relevant unit names");
       Write_Eol;
 
       --  Line for -h
 
-      Write_Str ("  -h        output this help message");
+      Write_Str ("  -h         output this help message");
       Write_Eol;
 
       --  Line for -s
 
-      Write_Str ("  -s        output only relevant source names");
+      Write_Str ("  -s         output only relevant source names");
       Write_Eol;
 
       --  Line for -o
 
-      Write_Str ("  -o        output only relevant object names");
+      Write_Str ("  -o         output only relevant object names");
       Write_Eol;
 
       --  Line for -d
 
-      Write_Str ("  -d        output sources on which specified units depend");
+      Write_Str ("  -d         output sources on which specified units " &
+                               "depend");
       Write_Eol;
 
       --  Line for -v
 
-      Write_Str ("  -v        verbose output, full path and unit information");
+      Write_Str ("  -v         verbose output, full path and unit " &
+                               "information");
       Write_Eol;
+      Write_Eol;
+
+      --  Line for -files=
+
+      Write_Str ("  -files=fil files are listed in text file 'fil'");
       Write_Eol;
 
       --  Line for -aI switch
 
-      Write_Str ("  -aIdir    specify source files search path");
+      Write_Str ("  -aIdir     specify source files search path");
       Write_Eol;
 
       --  Line for -aO switch
 
-      Write_Str ("  -aOdir    specify object files search path");
+      Write_Str ("  -aOdir     specify object files search path");
       Write_Eol;
 
       --  Line for -I switch
 
-      Write_Str ("  -Idir     like -aIdir -aOdir");
+      Write_Str ("  -Idir      like -aIdir -aOdir");
       Write_Eol;
 
       --  Line for -I- switch
 
-      Write_Str ("  -I-       do not look for sources & object files");
+      Write_Str ("  -I-        do not look for sources & object files");
       Write_Str (" in the default directory");
       Write_Eol;
 
       --  Line for -nostdinc
 
-      Write_Str ("  -nostdinc do not look for source files");
+      Write_Str ("  -nostdinc  do not look for source files");
       Write_Str (" in the system default directory");
       Write_Eol;
 
       --  Line for --RTS
 
-      Write_Str ("  --RTS=dir specify the default source and object search"
+      Write_Str ("  --RTS=dir  specify the default source and object search"
                  & " path");
       Write_Eol;
 
@@ -949,7 +1000,7 @@ begin
          Next_Argv : String (1 .. Len_Arg (Next_Arg));
       begin
          Fill_Arg (Next_Argv'Address, Next_Arg);
-         Scan_Ls_Arg (Next_Argv, And_Save => True);
+         Scan_Ls_Arg (Next_Argv);
       end;
 
       Next_Arg := Next_Arg + 1;

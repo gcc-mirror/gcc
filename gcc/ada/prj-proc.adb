@@ -63,6 +63,14 @@ package body Prj.Proc is
    --  Add all attributes, starting with First, with their default
    --  values to the package or project with declarations Decl.
 
+   procedure Check
+     (Project           : in out Project_Id;
+      Process_Languages : Languages_Processed;
+      Follow_Links      : Boolean);
+   --  Set all projects to not checked, then call Recursive_Check for the
+   --  main project Project. Project is set to No_Project if errors occurred.
+   --  See Prj.Nmsc.Ada_Check for information on Follow_Links.
+
    function Expression
      (Project           : Project_Id;
       From_Project_Node : Project_Node_Id;
@@ -101,14 +109,6 @@ package body Prj.Proc is
    --  Otherwise create a new project id, mark it as processed, call itself
    --  recursively for all imported projects and a extended project, if any.
    --  Then process the declarative items of the project.
-
-   procedure Check
-     (Project           : in out Project_Id;
-      Process_Languages : Languages_Processed;
-      Follow_Links      : Boolean);
-   --  Set all projects to not checked, then call Recursive_Check for the
-   --  main project Project. Project is set to No_Project if errors occurred.
-   --  See Prj.Nmsc.Ada_Check for information on Follow_Links.
 
    procedure Recursive_Check
      (Project           : Project_Id;
@@ -903,7 +903,13 @@ package body Prj.Proc is
                Extending2 := Extending;
 
                while Extending2 /= No_Project loop
-                  if Projects.Table (Extending2).Sources_Present
+                  if ((Process_Languages = Ada_Language
+                       and then
+                       Projects.Table (Extending2).Ada_Sources_Present)
+                      or else
+                       (Process_Languages = Other_Languages
+                        and then
+                        Projects.Table (Extending2).Other_Sources_Present))
                     and then
                       Projects.Table (Extending2).Object_Directory = Obj_Dir
                   then
@@ -1827,6 +1833,11 @@ package body Prj.Proc is
 
             when Other_Languages =>
                Prj.Nmsc.Other_Languages_Check (Project, Error_Report);
+
+            when All_Languages =>
+               Prj.Nmsc.Ada_Check (Project, Error_Report, Follow_Links);
+               Prj.Nmsc.Other_Languages_Check (Project, Error_Report);
+
          end case;
       end if;
    end Recursive_Check;

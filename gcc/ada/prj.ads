@@ -67,7 +67,7 @@ package Prj is
    Slash : Name_Id;
    --  "/", used as the path of locally removed files
 
-   type Languages_Processed is (Ada_Language, Other_Languages);
+   type Languages_Processed is (Ada_Language, Other_Languages, All_Languages);
    --  To specify how to process project files
 
    type Programming_Language is
@@ -521,11 +521,6 @@ package Prj is
       --  If a library project, internal name store inside the library
       --  Set by Prj.Nmsc.Language_Independent_Check.
 
-      Lib_Elaboration : Boolean := False;
-      --  If a library project, indicate if <lib>init and <lib>final
-      --  procedures need to be defined.
-      --  Set by Prj.Nmsc.Language_Independent_Check.
-
       Standalone_Library : Boolean := False;
       --  Indicate that this is a Standalone Library Project File.
       --  Set by Prj.Nmsc.Ada_Check.
@@ -542,16 +537,18 @@ package Prj is
       Symbol_Data : Symbol_Record := No_Symbols;
       --  Symbol file name, reference symbol file name, symbol policy
 
-      Sources_Present : Boolean := True;
-      --  A flag that indicates if there are sources in this project file.
+      Ada_Sources_Present : Boolean := True;
+      --  A flag that indicates if there are Ada sources in this project file.
       --  There are no sources if 1) Source_Dirs is specified as an
       --  empty list, 2) Source_Files is specified as an empty list, or
-      --  3) the current language is not in the list of the specified
-      --  Languages.
+      --  3) Ada is not in the list of the specified Languages.
+
+      Other_Sources_Present   : Boolean := True;
+      --  A flag that indicates that there are non-Ada sources in this project
 
       Sources : String_List_Id := Nil_String;
       --  The list of all the source file names.
-      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+      --  Set by Prj.Nmsc.Check_Ada_Naming_Scheme.
 
       First_Other_Source : Other_Source_Id := No_Other_Source;
       Last_Other_Source  : Other_Source_Id := No_Other_Source;
@@ -571,7 +568,7 @@ package Prj is
 
       Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories.
-      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+      --  Set by Prj.Nmsc.Language_Independent_Check.
 
       Known_Order_Of_Source_Dirs : Boolean := True;
       --  False, if there is any /** in the Source_Dirs, because in this case
@@ -580,14 +577,14 @@ package Prj is
 
       Object_Directory : Name_Id := No_Name;
       --  The object directory of this project file.
-      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+      --  Set by Prj.Nmsc.Language_Independent_Check.
 
       Display_Object_Dir : Name_Id := No_Name;
 
       Exec_Directory   : Name_Id := No_Name;
       --  The exec directory of this project file.
       --  Default is equal to Object_Directory.
-      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+      --  Set by Prj.Nmsc.Language_Independent_Check.
 
       Display_Exec_Dir : Name_Id := No_Name;
 
@@ -661,7 +658,7 @@ package Prj is
       Checked : Boolean := False;
       --  A flag to avoid checking repetitively the naming scheme of
       --  this project file.
-      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+      --  Set by Prj.Nmsc.Check_Ada_Naming_Scheme.
 
       Seen  : Boolean := False;
       Flag1 : Boolean := False;

@@ -1652,6 +1652,27 @@ package body Sem_Prag is
          K    : Node_Kind;
          Utyp : Entity_Id;
 
+         procedure Set_Atomic (E : Entity_Id);
+         --  Set given type as atomic, and if no explicit alignment was
+         --  given, set alignment to unknown, since back end knows what
+         --  the alignment requirements are for atomic arrays. Note that
+         --  this step is necessary for derived types.
+
+         ----------------
+         -- Set_Atomic --
+         ----------------
+
+         procedure Set_Atomic (E : Entity_Id) is
+         begin
+            Set_Is_Atomic (E);
+
+            if not Has_Alignment_Clause (E) then
+               Set_Alignment (E, Uint_0);
+            end if;
+         end Set_Atomic;
+
+      --  Start of processing for Process_Atomic_Shared_Volatile
+
       begin
          Check_Ada_83_Warning;
          Check_No_Identifiers;
@@ -1678,8 +1699,9 @@ package body Sem_Prag is
             end if;
 
             if Prag_Id /= Pragma_Volatile then
-               Set_Is_Atomic (E);
-               Set_Is_Atomic (Underlying_Type (E));
+               Set_Atomic (E);
+               Set_Atomic (Underlying_Type (E));
+               Set_Atomic (Base_Type (E));
             end if;
 
             --  Attribute belongs on the base type. If the
@@ -3902,7 +3924,7 @@ package body Sem_Prag is
       --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
       --      pragma Locking_Policy (Ceiling_Locking)
 
-      --    Set Detect_Blocking mode ???
+      --    Set Detect_Blocking mode
 
       --    Set required restrictions (see System.Rident for detailed list)
 
@@ -3948,7 +3970,9 @@ package body Sem_Prag is
             end if;
          end if;
 
-         --  ??? Detect_Blocking
+         --  pragma Detect_Blocking
+
+         Detect_Blocking := True;
 
          --  Set the corresponding restrictions
 
@@ -5238,6 +5262,18 @@ package body Sem_Prag is
                Expander_Mode_Restore;
             end if;
          end Debug;
+
+         ---------------------
+         -- Detect_Blocking --
+         ---------------------
+
+         --  pragma Detect_Blocking;
+
+         when Pragma_Detect_Blocking =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Detect_Blocking := True;
 
          -------------------
          -- Discard_Names --
@@ -10188,6 +10224,7 @@ package body Sem_Prag is
       Pragma_Convention                   =>  0,
       Pragma_Convention_Identifier        =>  0,
       Pragma_Debug                        => -1,
+      Pragma_Detect_Blocking              => -1,
       Pragma_Discard_Names                =>  0,
       Pragma_Elaborate                    => -1,
       Pragma_Elaborate_All                => -1,

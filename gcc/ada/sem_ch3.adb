@@ -762,7 +762,7 @@ package body Sem_Ch3 is
       Formal  : Entity_Id;
 
       Desig_Type : constant Entity_Id :=
-                   Create_Itype (E_Subprogram_Type, Parent (T_Def));
+                     Create_Itype (E_Subprogram_Type, Parent (T_Def));
 
    begin
       if Nkind (T_Def) = N_Access_Function_Definition then
@@ -5273,6 +5273,31 @@ package body Sem_Ch3 is
 
                Next_Discriminant (Discrim);
             end loop;
+
+            --  Check whether the constraints of the full view statically
+            --  match those imposed by the parent subtype [7.3(13)].
+
+            if Present (Stored_Constraint (Derived_Type)) then
+               declare
+                  C1, C2 : Elmt_Id;
+
+               begin
+                  C1 := First_Elmt (Discs);
+                  C2 := First_Elmt (Stored_Constraint (Derived_Type));
+                  while Present (C1) and then Present (C2) loop
+                     if not
+                       Fully_Conformant_Expressions (Node (C1), Node (C2))
+                     then
+                        Error_Msg_N (
+                          "not conformant with previous declaration",
+                             Node (C1));
+                     end if;
+
+                     Next_Elmt (C1);
+                     Next_Elmt (C2);
+                  end loop;
+               end;
+            end if;
          end if;
 
       --  STEP 2b: No new discriminants, inherit discriminants if any
@@ -5280,8 +5305,9 @@ package body Sem_Ch3 is
       else
          if Private_Extension then
             Set_Has_Unknown_Discriminants
-              (Derived_Type, Has_Unknown_Discriminants (Parent_Type)
-                             or else Unknown_Discriminants_Present (N));
+              (Derived_Type,
+               Has_Unknown_Discriminants (Parent_Type)
+                 or else Unknown_Discriminants_Present (N));
 
          --  The partial view of the parent may have unknown discriminants,
          --  but if the full view has discriminants and the parent type is
@@ -8480,8 +8506,7 @@ package body Sem_Ch3 is
       Is_Static   : Boolean := True;
 
       procedure Collect_Fixed_Components (Typ : Entity_Id);
-      --  Collect components of parent type that do not appear in a variant
-      --  part.
+      --  Collect parent type components that do not appear in a variant part
 
       procedure Create_All_Components;
       --  Iterate over Comp_List to create the components of the subtype.
@@ -8679,8 +8704,8 @@ package body Sem_Ch3 is
          --  If the tagged derivation has a type extension, collect all the
          --  new components therein.
 
-         if Present (
-           Record_Extension_Part (Type_Definition (Parent (Typ))))
+         if Present
+              (Record_Extension_Part (Type_Definition (Parent (Typ))))
          then
             Old_C := First_Component (Typ);
 
@@ -8894,9 +8919,6 @@ package body Sem_Ch3 is
    is
       Formal     : Entity_Id;
       New_Formal : Entity_Id;
-      Same_Subt  : constant Boolean :=
-        Is_Scalar_Type (Parent_Type)
-          and then Subtypes_Statically_Compatible (Parent_Type, Derived_Type);
       Visible_Subp : Entity_Id := Parent_Subp;
 
       function Is_Private_Overriding return Boolean;
@@ -8959,6 +8981,7 @@ package body Sem_Ch3 is
       procedure Replace_Type (Id, New_Id : Entity_Id) is
          Acc_Type : Entity_Id;
          IR       : Node_Id;
+         Par      : constant Node_Id := Parent (Derived_Type);
 
       begin
          --  When the type is an anonymous access type, create a new access
@@ -9001,7 +9024,7 @@ package body Sem_Ch3 is
                   Set_Etype (New_Id, Acc_Type);
                   Set_Scope (New_Id, New_Subp);
 
-                  --  Create a reference to it.
+                  --  Create a reference to it
 
                   IR := Make_Itype_Reference (Sloc (Parent (Derived_Type)));
                   Set_Itype (IR, Acc_Type);
@@ -9011,14 +9034,14 @@ package body Sem_Ch3 is
                   Set_Etype (New_Id, Etype (Id));
                end if;
             end;
+
          elsif Base_Type (Etype (Id)) = Base_Type (Parent_Type)
            or else
              (Ekind (Etype (Id)) = E_Record_Type_With_Private
                and then Present (Full_View (Etype (Id)))
-               and then Base_Type (Full_View (Etype (Id))) =
-                 Base_Type (Parent_Type))
+               and then
+                 Base_Type (Full_View (Etype (Id))) = Base_Type (Parent_Type))
          then
-
             --  Constraint checks on formals are generated during expansion,
             --  based on the signature of the original subprogram. The bounds
             --  of the derived type are not relevant, and thus we can use
@@ -9027,10 +9050,31 @@ package body Sem_Ch3 is
             --  be used (a case statement, for example)  and for those cases
             --  we must use the derived type (first subtype), not its base.
 
-            if Etype (Id) = Parent_Type
-              and then Same_Subt
-            then
-               Set_Etype (New_Id, Derived_Type);
+            --  If the derived_type_definition has no constraints, we know that
+            --  the derived type has the same constraints as the first subtype
+            --  of the parent, and we can also use it rather than its base,
+            --  which can lead to more efficient code.
+
+            if Etype (Id) = Parent_Type then
+               if Is_Scalar_Type (Parent_Type)
+                 and then
+                   Subtypes_Statically_Compatible (Parent_Type, Derived_Type)
+               then
+                  Set_Etype (New_Id, Derived_Type);
+
+               elsif Nkind (Par) = N_Full_Type_Declaration
+                 and then
+                   Nkind (Type_Definition (Par)) = N_Derived_Type_Definition
+                 and then
+                   Is_Entity_Name
+                     (Subtype_Indication (Type_Definition (Par)))
+               then
+                  Set_Etype (New_Id, Derived_Type);
+
+               else
+                  Set_Etype (New_Id, Base_Type (Derived_Type));
+               end if;
+
             else
                Set_Etype (New_Id, Base_Type (Derived_Type));
             end if;

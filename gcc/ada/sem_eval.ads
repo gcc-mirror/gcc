@@ -100,7 +100,7 @@ package Sem_Eval is
    --  When we are trying to perform compile time constant folding (for
    --  instance for expressions such as 'C + 1', Is_Static_Expression or
    --  Is_OK_Static_Expression are not the right functions to test to see
-   --  if folding is possible. Instead, we use Compile_Time_Know_Value.
+   --  if folding is possible. Instead, we use Compile_Time_Known_Value.
    --  All static expressions that do not raise constraint error (i.e.
    --  those for which Is_OK_Static_Expression is true) are known at
    --  compile time, but as shown by the above example, there are cases

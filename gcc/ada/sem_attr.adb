@@ -3803,11 +3803,14 @@ package body Sem_Attr is
    --  one attribute expression, and the check succeeds, we want to be able
    --  to proceed securely assuming that an expression is in fact present.
 
+   --  Note: we set the attribute analyzed in this case to prevent any
+   --  attempt at reanalysis which could generate spurious error msgs.
+
    exception
       when Bad_Attribute =>
+         Set_Analyzed (N);
          Set_Etype (N, Any_Type);
          return;
-
    end Analyze_Attribute;
 
    --------------------

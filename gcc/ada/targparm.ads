@@ -101,6 +101,9 @@ package Targparm is
    --  If a pragma Polling (On) appears, then the flag Opt.Polling_Required
    --  is set to True.
 
+   --  If a pragma Detect_Blocking appears, then the flag Opt.Detect_Blocking
+   --  is set to True.
+
    --  if a pragma Suppress_Exception_Locations appears, then the flag
    --  Opt.Exception_Locations_Suppressed is set to True.
 

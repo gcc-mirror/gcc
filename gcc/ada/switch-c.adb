@@ -446,6 +446,11 @@ package body Switch.C is
 
                   return;
 
+                  when 'z' =>
+                     Store_Switch := False;
+                     Disable_Switch_Storing;
+                     Ptr := Ptr + 1;
+
                   --  All other -gnate? switches are unassigned
 
                   when others =>

@@ -64,11 +64,6 @@ package MLib.Tgt is
    --  Returns the name of the program, if any, that generates an index
    --  to the contents of an archive, usually "ranlib".
 
-   function Default_DLL_Address return String;
-   --  Default address for non relocatable DLL.
-   --  For OSes where a dynamic library is always relocatable,
-   --  this function returns an empty string.
-
    function Dynamic_Option return String;
    --  gcc option to create a dynamic library.
    --  For Unix, returns "-shared", for Windows returns "-mdll".
@@ -96,7 +91,7 @@ package MLib.Tgt is
    --  Returns True iff Ext is an object file extension
 
    function Is_C_Ext (Ext : String) return Boolean;
-   --  Returns True iff Ext is a C file extension.
+   --  Returns True iff Ext is a C file extension
 
    function Is_Archive_Ext (Ext : String) return Boolean;
    --  Returns True iff Ext is an extension for a library
@@ -111,9 +106,7 @@ package MLib.Tgt is
       Lib_Dir      : String;
       Symbol_Data  : Symbol_Record;
       Driver_Name  : Name_Id := No_Name;
-      Lib_Address  : String  := "";
       Lib_Version  : String  := "";
-      Relocatable  : Boolean := False;
       Auto_Init    : Boolean := False);
    --  Build a dynamic/relocatable library
    --
@@ -135,19 +128,11 @@ package MLib.Tgt is
    --
    --  Lib_Dir is the directory path where the library will be located
    --
-   --  Lib_Address is the base address of the library for a non relocatable
-   --  library, given as an hexadecimal string.
-   --
    --  For OSes that support symbolic links, Lib_Version, if non null,
    --  is the actual file name of the library. For example on Unix, if
    --  Lib_Filename is "toto" and Lib_Version is "libtoto.so.2.1",
    --  "libtoto.so" will be a symbolic link to "libtoto.so.2.1" which
    --  will be the actual library file.
-   --
-   --  Relocatable indicates if the library should be relocatable or not,
-   --  for those OSes that actually support non relocatable dynamic libraries.
-   --  Relocatable indicates that automatic elaboration/finalization must be
-   --  indicated to the linker, if possible.
    --
    --  Symbol_Data is used for some patforms, including VMS, to generate
    --  the symbols to be exported by the library.

@@ -324,9 +324,6 @@ package body MLib.Prj is
 
       Project_Name : constant String := Get_Name_String (Data.Name);
 
-      DLL_Address  : constant String_Access :=
-                       new String'(Default_DLL_Address);
-
       Current_Dir  : constant String := Get_Current_Dir;
 
       Lib_Filename : String_Access;
@@ -1473,9 +1470,7 @@ package body MLib.Prj is
                   Lib_Dir       => Lib_Dirpath.all,
                   Symbol_Data   => Data.Symbol_Data,
                   Driver_Name   => Driver_Name,
-                  Lib_Address   => DLL_Address.all,
                   Lib_Version   => Lib_Version.all,
-                  Relocatable   => The_Build_Mode = Relocatable,
                   Auto_Init     => Data.Lib_Auto_Init);
 
             when Static =>

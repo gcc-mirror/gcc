@@ -1800,6 +1800,12 @@ package body Sem_Ch8 is
       if Form_Num > 2 then
          Error_Msg_N ("too many formals for attribute", N);
 
+      --  Error if the attribute reference has expressions that look
+      --  like formal parameters.
+
+      elsif Present (Expressions (Nam)) then
+         Error_Msg_N ("illegal expressions in attribute reference", Nam);
+
       elsif
         Aname = Name_Compose      or else
         Aname = Name_Exponent     or else
@@ -4794,7 +4800,10 @@ package body Sem_Ch8 is
    -- Install_Use_Clauses --
    -------------------------
 
-   procedure Install_Use_Clauses (Clause : Node_Id) is
+   procedure Install_Use_Clauses
+     (Clause             : Node_Id;
+      Force_Installation : Boolean := False)
+   is
       U  : Node_Id := Clause;
       P  : Node_Id;
       Id : Entity_Id;
@@ -4820,8 +4829,9 @@ package body Sem_Ch8 is
                   then
                      Set_Redundant_Use (P, True);
 
-                  else
+                  elsif Force_Installation or else Applicable_Use (P) then
                      Use_One_Package (Id, U);
+
                   end if;
                end if;
 

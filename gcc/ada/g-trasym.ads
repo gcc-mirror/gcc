@@ -40,6 +40,10 @@
 --  been compiled with debugging information turned on, since this information
 --  is used to build a symbolic traceback.
 
+--  It is also in some cases necessary to invoke the binder
+--  with -E switch (store the backtrace with exception occurence). Please
+--  refer to gnatbind documentation for more information.
+
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via
 --  Argument (0), so any path information needed to read the executable file

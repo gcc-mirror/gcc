@@ -1432,7 +1432,7 @@ package body Sem_Ch10 is
          for J in reverse 1 .. Num_Scopes loop
             U := Use_Clauses (J);
             Scope_Stack.Table (Scope_Stack.Last - J + 1).First_Use_Clause := U;
-            Install_Use_Clauses (U);
+            Install_Use_Clauses (U, Force_Installation => True);
          end loop;
       end Re_Install_Use_Clauses;
 

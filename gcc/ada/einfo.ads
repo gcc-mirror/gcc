@@ -2443,6 +2443,14 @@ package Einfo is
 --       case, this will be a power of 2, but if Non_Binary_Modulus is
 --       set, then it will not be a power of 2.
 
+--    Must_Be_On_Byte_Boundary (Flag183)
+--       Present in entities for types and subtypes. Set if objects of
+--       the type must always be allocated on a byte boundary (more
+--       accurately a storage unit boundary). The front end checks that
+--       component clauses respect this rule, and the back end ensures
+--       that record packing does not violate this rule. Currently the
+--       flag is set only for packed arrays longer than 64 bits.
+
 --    Needs_Debug_Info (Flag147)
 --       Present in all entities. Set if the entity requires debugging
 --       information to be generated. This is true of all entities that
@@ -3995,6 +4003,7 @@ package Einfo is
    --    Is_Tagged_Type                (Flag55)
    --    Is_Unsigned_Type              (Flag144)
    --    Is_Volatile                   (Flag16)
+   --    Must_Be_On_Byte_Boundary      (Flag183)
    --    Size_Depends_On_Discriminant  (Flag177)
    --    Size_Known_At_Compile_Time    (Flag92)
    --    Strict_Alignment              (Flag145)  (base type only)
@@ -5197,6 +5206,7 @@ package Einfo is
    function Materialize_Entity                 (Id : E) return B;
    function Mechanism                          (Id : E) return M;
    function Modulus                            (Id : E) return U;
+   function Must_Be_On_Byte_Boundary           (Id : E) return B;
    function Needs_Debug_Info                   (Id : E) return B;
    function Needs_No_Actuals                   (Id : E) return B;
    function Never_Set_In_Source                (Id : E) return B;
@@ -5671,6 +5681,7 @@ package Einfo is
    procedure Set_Materialize_Entity            (Id : E; V : B := True);
    procedure Set_Mechanism                     (Id : E; V : M);
    procedure Set_Modulus                       (Id : E; V : U);
+   procedure Set_Must_Be_On_Byte_Boundary      (Id : E; V : B := True);
    procedure Set_Needs_Debug_Info              (Id : E; V : B := True);
    procedure Set_Needs_No_Actuals              (Id : E; V : B := True);
    procedure Set_Never_Set_In_Source           (Id : E; V : B := True);
@@ -6197,6 +6208,7 @@ package Einfo is
    pragma Inline (Materialize_Entity);
    pragma Inline (Mechanism);
    pragma Inline (Modulus);
+   pragma Inline (Must_Be_On_Byte_Boundary);
    pragma Inline (Needs_Debug_Info);
    pragma Inline (Needs_No_Actuals);
    pragma Inline (Never_Set_In_Source);
@@ -6506,6 +6518,7 @@ package Einfo is
    pragma Inline (Set_Materialize_Entity);
    pragma Inline (Set_Mechanism);
    pragma Inline (Set_Modulus);
+   pragma Inline (Set_Must_Be_On_Byte_Boundary);
    pragma Inline (Set_Needs_Debug_Info);
    pragma Inline (Set_Needs_No_Actuals);
    pragma Inline (Set_Never_Set_In_Source);

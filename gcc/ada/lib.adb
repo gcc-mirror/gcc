@@ -50,6 +50,9 @@ with Uname;   use Uname;
 
 package body Lib is
 
+   Switch_Storing_Enabled : Boolean := True;
+   --  Set to False by Disable_Switch_Storing
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -402,6 +405,11 @@ package body Lib is
    begin
       return Compilation_Switches.Last;
    end Compilation_Switches_Last;
+
+   procedure Disable_Switch_Storing is
+   begin
+      Switch_Storing_Enabled := False;
+   end Disable_Switch_Storing;
 
    ------------------------------
    -- Earlier_In_Extended_Unit --
@@ -921,18 +929,20 @@ package body Lib is
 
    procedure Store_Compilation_Switch (Switch : String) is
    begin
-      Compilation_Switches.Increment_Last;
-      Compilation_Switches.Table (Compilation_Switches.Last) :=
-        new String'(Switch);
+      if Switch_Storing_Enabled then
+         Compilation_Switches.Increment_Last;
+         Compilation_Switches.Table (Compilation_Switches.Last) :=
+           new String'(Switch);
 
-      --  Fix up --RTS flag which has been transformed by the gcc driver
-      --  into -fRTS
+         --  Fix up --RTS flag which has been transformed by the gcc driver
+         --  into -fRTS
 
-      if Switch'Last >= Switch'First + 4
-        and then Switch (Switch'First .. Switch'First + 4) = "-fRTS"
-      then
-         Compilation_Switches.Table
-           (Compilation_Switches.Last) (Switch'First + 1) := '-';
+         if Switch'Last >= Switch'First + 4
+           and then Switch (Switch'First .. Switch'First + 4) = "-fRTS"
+         then
+            Compilation_Switches.Table
+              (Compilation_Switches.Last) (Switch'First + 1) := '-';
+         end if;
       end if;
    end Store_Compilation_Switch;
 

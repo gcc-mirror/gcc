@@ -249,17 +249,17 @@ package Opt is
 
    Create_Mapping_File : Boolean := False;
    --  GNATMAKE
-   --  Set to True (-C switch) to indicate that gnatmake
-   --  invokes the compiler with a mapping file (-gnatem compiler switch).
+   --  Set to True (-C switch) to indicate that gnatmake will invoke
+   --  the compiler with a mapping file (-gnatem compiler switch).
 
    subtype Debug_Level_Value is Nat range 0 .. 3;
    Debugger_Level : Debug_Level_Value := 0;
    --  GNATBIND
-   --  The value given to the -g parameter.
-   --  The default value for -g with no value is 2
-   --  This is usually ignored by GNATBIND, except in the VMS version
-   --  where it is passed as an argument to __gnat_initialize to trigger
-   --  the activation of the remote debugging interface (is this true???).
+   --  The value given to the -g parameter. The default value for -g with
+   --  no value is 2. This is usually ignored by GNATBIND, except in the
+   --  VMS version where it is passed as an argument to __gnat_initialize
+   --  to trigger the activation of the remote debugging interface.
+   --  Is this still true ???
 
    Debug_Generated_Code : Boolean := False;
    --  GNAT
@@ -274,11 +274,15 @@ package Opt is
    --  default was set by the binder, and that the default should be the
    --  initial value of System.Secondary_Stack.Default_Secondary_Stack_Size.
 
+   Detect_Blocking : Boolean := False;
+   --  GNAT
+   --  Set True to force the run time to raise Program_Error if calls to
+   --  potentially blocking operations are detected from protected actions.
+
    Display_Compilation_Progress : Boolean := False;
    --  GNATMAKE
    --  Set True (-d switch) to display information on progress while compiling
-   --  files. Internal flag to be used in conjunction with an IDE such as
-   --  Glide.
+   --  files. Internal flag to be used in conjunction with an IDE (e.g GPS).
 
    type Distribution_Stub_Mode_Type is
    --  GNAT
@@ -457,8 +461,6 @@ package Opt is
    GCC_Version : constant Nat := get_gcc_version;
    --  GNATMAKE
    --  Indicates which version of gcc is in use (2 = 2.8.1, 3 = 3.x).
-   --  Used in particular to decide if gcc switch -shared-libgcc should be
-   --  used (it cannot be used for 2.8.1).
 
    Global_Discard_Names : Boolean := False;
    --  GNAT, GNATBIND

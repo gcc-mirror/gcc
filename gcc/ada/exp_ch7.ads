@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,9 @@ package Exp_Ch7 is
    procedure Expand_N_Package_Body        (N : Node_Id);
    procedure Expand_N_Package_Declaration (N : Node_Id);
 
-   ------------------------------
-   --  Finalization Management --
-   ------------------------------
+   -----------------------------
+   -- Finalization Management --
+   -----------------------------
 
    function In_Finalization_Root (E : Entity_Id) return Boolean;
    --  True if current scope is in package System.Finalization_Root. Used
@@ -61,15 +61,14 @@ package Exp_Ch7 is
    --  True if T potentially needs finalization actions
 
    function Find_Final_List
-     (E    : Entity_Id;
-      Ref  : Node_Id := Empty)
-      return Node_Id;
-      --  E is an entity representing a controlled object, a controlled type
-      --  or a scope. If Ref is not empty, it is a reference to a controlled
-      --  record, the closest Final list is in the controller component of
-      --  the record containing Ref otherwise this function returns a
-      --  reference to the final list attached to the closest dynamic scope
-      --  (that can be E itself) creating this final list if necessary.
+     (E   : Entity_Id;
+      Ref : Node_Id := Empty) return Node_Id;
+   --  E is an entity representing a controlled object, a controlled type
+   --  or a scope. If Ref is not empty, it is a reference to a controlled
+   --  record, the closest Final list is in the controller component of
+   --  the record containing Ref otherwise this function returns a
+   --  reference to the final list attached to the closest dynamic scope
+   --  (that can be E itself) creating this final list if necessary.
 
    function Has_New_Controlled_Component (E : Entity_Id) return Boolean;
    --  E is a type entity. Give the same resul as Has_Controlled_Component
@@ -77,10 +76,9 @@ package Exp_Ch7 is
    --  latest extension contains a controlled component.
 
    function Make_Attach_Call
-     (Obj_Ref      : Node_Id;
-      Flist_Ref    : Node_Id;
-      With_Attach  : Node_Id)
-      return         Node_Id;
+     (Obj_Ref     : Node_Id;
+      Flist_Ref   : Node_Id;
+      With_Attach : Node_Id) return Node_Id;
    --  Attach the referenced object to the referenced Final Chain
    --  'Flist_Ref' With_Attach is an expression of type Short_Short_Integer
    --  which can be either '0' to signify no attachment, '1' for
@@ -88,11 +86,10 @@ package Exp_Ch7 is
    --  doubly linked list.
 
    function Make_Init_Call
-     (Ref          : Node_Id;
-      Typ          : Entity_Id;
-      Flist_Ref    : Node_Id;
-      With_Attach  : Node_Id)
-      return         List_Id;
+     (Ref         : Node_Id;
+      Typ         : Entity_Id;
+      Flist_Ref   : Node_Id;
+      With_Attach : Node_Id) return List_Id;
    --  Ref is an expression (with no-side effect and is not required to
    --  have been previously analyzed) that references the object to be
    --  initialized. Typ is the expected type of Ref, which is a controlled
@@ -108,11 +105,10 @@ package Exp_Ch7 is
    --  caller, the details are in the body.
 
    function Make_Adjust_Call
-     (Ref          : Node_Id;
-      Typ          : Entity_Id;
-      Flist_Ref    : Node_Id;
-      With_Attach  : Node_Id)
-      return         List_Id;
+     (Ref         : Node_Id;
+      Typ         : Entity_Id;
+      Flist_Ref   : Node_Id;
+      With_Attach : Node_Id) return List_Id;
    --  Ref is an expression (with no-side effect and is not required to
    --  have been previously analyzed) that references the object to be
    --  adjusted. Typ is the expected type of Ref, which is a controlled
@@ -132,8 +128,7 @@ package Exp_Ch7 is
    function Make_Final_Call
      (Ref         : Node_Id;
       Typ         : Entity_Id;
-      With_Detach : Node_Id)
-      return        List_Id;
+      With_Detach : Node_Id) return List_Id;
    --  Ref is an expression (with no-side effect and is not required
    --  to have been previously analyzed) that references the object to
    --  be Finalized. Typ is the expected type of Ref, which is a
@@ -161,31 +156,27 @@ package Exp_Ch7 is
    --------------------------------------------
 
    function Cleanup_Array
-     (N    : Node_Id;
-      Obj  : Node_Id;
-      Typ  : Entity_Id)
-      return List_Id;
+     (N   : Node_Id;
+      Obj : Node_Id;
+      Typ : Entity_Id) return List_Id;
    --  Generate loops to finalize any tasks or simple protected objects
    --  that are subcomponents of an array.
 
    function Cleanup_Protected_Object
-     (N    : Node_Id;
-      Ref  : Node_Id)
-      return Node_Id;
+     (N   : Node_Id;
+      Ref : Node_Id) return Node_Id;
    --  Generate code to finalize a protected object without entries.
 
    function Cleanup_Record
-     (N    : Node_Id;
-      Obj  : Node_Id;
-      Typ  : Entity_Id)
-      return List_Id;
+     (N   : Node_Id;
+      Obj : Node_Id;
+      Typ : Entity_Id) return List_Id;
    --  For each subcomponent of a record that contains tasks or simple
    --  protected objects, generate the appropriate finalization call.
 
    function Cleanup_Task
-     (N    : Node_Id;
-      Ref  : Node_Id)
-      return Node_Id;
+     (N   : Node_Id;
+      Ref : Node_Id) return Node_Id;
    --  Generate code to finalize a task.
 
    function Has_Simple_Protected_Object (T : Entity_Id) return Boolean;
