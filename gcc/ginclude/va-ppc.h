@@ -59,34 +59,13 @@ typedef struct {
   ((TYPE *) (void *) (&(((__va_regsave_t *)				\
 			 (AP)->reg_save_area)->__gp_save[(int)(AP)->gpr])))
 
-/* Common code for va_start for both varargs and stdarg.  This depends
-   on the format of rs6000_args in rs6000.h.  The fields used are:
+/* Common code for va_start for both varargs and stdarg.  We allow all
+   the work to be done by __builtin_saveregs.  It returns a pointer to
+   a va_list that was constructed on the stack; we must simply copy it
+   to the user's variable.  */
 
-   #0	WORDS			# words used for GP regs/stack values
-   #1	FREGNO			next available FP register
-   #2	NARGS_PROTOTYPE		# args left in the current prototype
-   #3	ORIG_NARGS		original value of NARGS_PROTOTYPE
-   #4	VARARGS_OFFSET		offset from frame pointer of varargs area */
-
-#define __va_words		__builtin_args_info (0)
-#define __va_fregno		__builtin_args_info (1)
-#define	__va_nargs		__builtin_args_info (2)
-#define __va_orig_nargs		__builtin_args_info (3)
-#define __va_varargs_offset	__builtin_args_info (4)
-
-#define __va_start_common(AP, FAKE)					\
-__extension__ ({							\
-   register int __words = __va_words - FAKE;				\
-									\
-   (AP)->gpr = (__words < 8) ? __words : 8;				\
-   (AP)->fpr = __va_fregno - 33;					\
-   (AP)->reg_save_area = (((char *) __builtin_frame_address (0))	\
-			  + __va_varargs_offset);			\
-   __va_overflow(AP) = ((char *)__builtin_saveregs ()			\
-			+ (((__words >= 8) ? __words - 8 : 0)		\
-			   * sizeof (long)));				\
-   (void)0;								\
-})
+#define __va_start_common(AP, FAKE) \
+  __builtin_memcpy ((AP), __builtin_saveregs (), sizeof(__gnuc_va_list))
 
 #ifdef _STDARG_H /* stdarg.h support */
 

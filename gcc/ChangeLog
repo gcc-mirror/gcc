@@ -1,3 +1,11 @@
+Fri Apr 30 13:55:43 1999  Richard Henderson  <rth@cygnus.com>
+
+	* va-ppc.h (__va_start_common): Let __builtin_saveregs do the work.
+	* rs6000.c (expand_builtin_saveregs): For V4, initialize a private
+	va_list struct, and return a pointer to it.
+	(setup_incoming_varargs): V4 save area based off virtual_stack_vars
+	instead of frame_pointer.
+
 Thu Apr 29 23:02:22 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (start_sequence): Expand comments.
