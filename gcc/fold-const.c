@@ -8027,7 +8027,7 @@ tree_expr_nonnegative_p (t)
 	       && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
 
       /* zero_extend(x) + zero_extend(y) is non-negative is x and y are
-	 both unsigned and at atleast 2 bits shorter than the result.  */
+	 both unsigned and at least 2 bits shorter than the result.  */
       if (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == NOP_EXPR
 	  && TREE_CODE (TREE_OPERAND (t, 1)) == NOP_EXPR)
