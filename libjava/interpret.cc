@@ -35,6 +35,7 @@ details.  */
 
 #ifdef INTERPRETER
 
+#include <stdlib.h>
 #if HAVE_ALLOCA_H
 #include <alloca.h>
 #endif
