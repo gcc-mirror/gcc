@@ -464,10 +464,10 @@ built with the GCC @option{-fprofile-arcs} option is executed.  A
 separate @file{.da} file is created for each source file compiled with
 this option, and the name of the @file{.da} file is stored as an
 absolute pathname in the resulting object file.  This path name is
-derived from the source file name by substituting a @file{.da} suffix.
+derived from the object file name by substituting a @file{.da} suffix.
 
-The @file{.da} consists of several blocks (one for each run) with the
-following structure:
+The @file{.da} consists of one or more blocks with the following
+structure:
 @smallexample
         "magic" number @minus{}123 (4-byte number)
 	number of functions (4-byte number)
@@ -484,7 +484,9 @@ following structure:
         checksum of function #1
 	@dots{}
 @end smallexample
-The current structure of the extension block is as follows:
+Multiple program runs might merge data into a single block, or might
+append a new block. The current structure of the extension block is as
+follows:
 @smallexample
         number of instrumented arcs in whole program (4-byte number)
         sum all of instrumented arcs in whole program (8-byte number)
