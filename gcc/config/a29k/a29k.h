@@ -54,31 +54,36 @@ extern int target_flags;
 
 #define TARGET_SMALL_MEMORY	(target_flags & 4)
 
+/* This means that we must always used on indirect call, even when
+   calling a function in the same file, since the file might be > 256KB.  */
+
+#define TARGET_LARGE_MEMORY	(target_flags & 8)
+
 /* This means that we are compiling for a 29050.  */
 
-#define TARGET_29050		(target_flags & 8)
+#define TARGET_29050		(target_flags & 16)
 
 /* This means that we are compiling for the kernel which means that we use
    gr64-gr95 instead of gr96-126.  */
 
-#define TARGET_KERNEL_REGISTERS	(target_flags & 16)
+#define TARGET_KERNEL_REGISTERS	(target_flags & 32)
 
 /* This means that a call to "__msp_check" should be inserted after each stack
    adjustment to check for stack overflow.  */
 
-#define TARGET_STACK_CHECK	(target_flags & 32)
+#define TARGET_STACK_CHECK	(target_flags & 64)
 
 /* This handles 29k processors which cannot handle the separation
    of a mtsrim insns and a storem insn (most 29000 chips to date, but
    not the 29050.  */
 
-#define TARGET_NO_STOREM_BUG	(target_flags & 64)
+#define TARGET_NO_STOREM_BUG	(target_flags & 128)
 
 /* This forces the compiler not to use incoming argument registers except
    for copying out arguments.  It helps detect problems when a function is
    called with fewer arguments than it is declared with.  */
 
-#define TARGET_NO_REUSE_ARGS	(target_flags & 128)
+#define TARGET_NO_REUSE_ARGS	(target_flags & 256)
 
 #define TARGET_SWITCHES			\
   { {"dw", 1},				\
@@ -86,17 +91,18 @@ extern int target_flags;
     {"bw", 2},				\
     {"nbw", - (1|2)},			\
     {"small", 4},			\
-    {"large", -4},			\
-    {"29050", 8+64},			\
-    {"29000", -8},			\
-    {"kernel-registers", 16},		\
-    {"user-registers", -16},		\
-    {"stack-check", 32},		\
-    {"no-stack-check", - 32},		\
-    {"storem-bug", -64},		\
-    {"no-storem-bug", 64},		\
-    {"reuse-arg-regs", -128},		\
-    {"no-reuse-arg-regs", 128},		\
+    {"normal", - (4|8)},		\
+    {"large", 8},			\
+    {"29050", 16+128},			\
+    {"29000", -16},			\
+    {"kernel-registers", 32},		\
+    {"user-registers", -32},		\
+    {"stack-check", 64},		\
+    {"no-stack-check", - 74},		\
+    {"storem-bug", -128},		\
+    {"no-storem-bug", 128},		\
+    {"reuse-arg-regs", -256},		\
+    {"no-reuse-arg-regs", 256},		\
     {"", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
@@ -237,10 +243,14 @@ extern int target_flags;
    Registers 200-203 are the four floating-point accumulator register in
    the 29050.
 
+   Registers 204-235 are the 32 global registers for kernel mode when
+   -mkernel-registers is not specified, and the 32 global user registers
+   when it is.
+
    When -mkernel-registers is specified, we still use the same register
    map but change the names so 0-31 print as gr64-gr95.  */
 
-#define FIRST_PSEUDO_REGISTER 204
+#define FIRST_PSEUDO_REGISTER 236
 
 /* Because of the large number of registers on the 29k, we define macros
    to refer to each group of registers and then define the number for some
@@ -250,6 +260,7 @@ extern int target_flags;
 #define R_LR(N)		((N) + 32)	/* lr0 is register number 32 */
 #define R_FP		176		/* frame pointer is register 176 */
 #define R_AR(N)		((N) + 160)	/* first incoming arg reg is 160 */
+#define R_KR(N)		((N) + 204)	/* kernel registers (gr64 to gr95) */
 
 /* Define the numbers of the special registers.  */
 #define R_BP	177
@@ -309,7 +320,9 @@ extern int target_flags;
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1,			  \
-  0, 0, 0, 0 }
+  0, 0, 0, 0,					  \
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -331,7 +344,9 @@ extern int target_flags;
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
   1, 1, 1, 1, 1, 1, 1, 1,			  \
-  1, 1, 1, 1 }
+  1, 1, 1, 1,					  \
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, \
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -382,7 +397,13 @@ extern int target_flags;
    R_FP, R_BP, R_FC, R_CR, R_Q,						\
    R_VAB, R_OPS, R_CPS, R_CFG, R_CHA, R_CHD, R_CHC, R_RBP, R_TMC,	\
    R_TMR, R_PC0, R_PC1, R_PC2, R_MMU, R_LRU, R_FPE, R_INT, R_FPS,	\
-   R_EXO }
+   R_EXO,								\
+   R_KR (0), R_KR (1), R_KR (2), R_KR (3), R_KR (4), R_KR (5), 		\
+   R_KR (6), R_KR (7), R_KR (8), R_KR (9), R_KR (10), R_KR (11),	\
+   R_KR (12), R_KR (13), R_KR (14), R_KR (15), R_KR (16), R_KR (17),	\
+   R_KR (18), R_KR (19), R_KR (20), R_KR (21), R_KR (22), R_KR (23),	\
+   R_KR (24), R_KR (25), R_KR (26), R_KR (27), R_KR (28), R_KR (29),	\
+   R_KR (30), R_KR (31) }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -390,7 +411,7 @@ extern int target_flags;
    but can be less for certain modes in special long registers.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((REGNO) >= R_ACC (0) ? 1		\
+  ((REGNO) >= R_ACC (0) && (REGNO) <= R_ACC (3)? 1		\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -407,7 +428,7 @@ extern int target_flags;
    (I'd like to use the "?:" syntax to make this more readable, but Sun's
    compiler doesn't seem to accept it.)  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)  				\
-  (((REGNO) >= R_ACC (0)						\
+(((REGNO) >= R_ACC (0) && (REGNO) <= R_ACC (3)				\
     && (GET_MODE_CLASS (MODE) == MODE_FLOAT				\
 	|| GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT))		\
    || ((REGNO) >= R_BP && (REGNO) <= R_CR				\
@@ -415,7 +436,7 @@ extern int target_flags;
    || ((REGNO) >= R_Q && (REGNO) < R_ACC (0)				\
        && GET_MODE_CLASS (MODE) != MODE_FLOAT				\
        && GET_MODE_CLASS (MODE) != MODE_COMPLEX_FLOAT)			\
-   || ((REGNO) < R_BP							\
+   || (((REGNO) < R_BP || (REGNO) >= R_KR (0))				 \
        && ((((REGNO) & 1) == 0)						\
 	   || GET_MODE_UNIT_SIZE (MODE) <= UNITS_PER_WORD)))
 
@@ -511,18 +532,18 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS	\
-  { {0, 0, 0, 0, 0, 0, 0}, 	\
-    {0, 1, 0, 0, 0, 0, 0},	\
-    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, 0},  \
-    {0, 0, 0, 0, 0, 0x20000, 0}, 	\
-    {0, 0, 0, 0, 0, 0x40000, 0}, 	\
-    {0, 0, 0, 0, 0, 0x80000, 0}, 	\
-    {0, 0, 0, 0, 0, 0x100000, 0}, 	\
-    {0, 0, 0, 0, 0, 0xfffe0000, 0xff},	\
-    {0, 0, 0, 0, 0, 0, 0x100},		\
-    {0, 0, 0, 0, 0, 0, 0xf00},		\
-    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, 0xf00}, \
-    {~0, ~0, ~0, ~0, ~0, ~0, ~0} }
+  { {0, 0, 0, 0, 0, 0, 0, 0}, 				   \
+    {0, 1, 0, 0, 0, 0, 0, 0},				   \
+    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xfff, 0xfffff},  \
+    {0, 0, 0, 0, 0, 0x20000, 0, 0}, 			   \
+    {0, 0, 0, 0, 0, 0x40000, 0, 0}, 			   \
+    {0, 0, 0, 0, 0, 0x80000, 0, 0}, 			   \
+    {0, 0, 0, 0, 0, 0x100000, 0, 0}, 			   \
+    {0, 0, 0, 0, 0, 0xfffe0000, 0xff, 0},		   \
+    {0, 0, 0, 0, 0, 0, 0x100, 0},			   \
+    {0, 0, 0, 0, 0, 0, 0xf00, 0},			   \
+    {~0, ~0, ~0, ~0, ~0, ~ 0xfffe0000, ~ 0xff, ~0}, 	   \
+    {~0, ~0, ~0, ~0, ~0, ~0, ~0, ~0} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -536,6 +557,7 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
    : (REGNO) == R_Q ? Q_REGS		\
    : (REGNO) > R_BP && (REGNO) <= R_EXO ? SPECIAL_REGS	\
    : (REGNO) == R_ACC (0) ? ACCUM0_REGS	\
+   : (REGNO) >= R_KR (0) ? GENERAL_REGS \
    : (REGNO) > R_ACC (0) ? ACCUM_REGS	\
    : (REGNO) == R_LR (0) ? LR0_REGS	\
    : GENERAL_REGS)
@@ -563,21 +585,18 @@ enum reg_class { NO_REGS, LR0_REGS, GENERAL_REGS, BP_REGS, FC_REGS, CR_REGS,
 
    On the 29k, we use this to change the register names for kernel mapping.  */
 
-#define CONDITIONAL_REGISTER_USAGE					\
-  {									\
-    static char *kernel_names[] = {"gr64", "gr65", "gr66", "gr67",	\
-				   "gr68", "gr69", "gr70", "gr71",	\
-				   "gr72", "gr73", "gr74", "gr75",	\
-				   "gr76", "gr77", "gr78", "gr79",	\
-				   "gr80", "gr81", "gr82", "gr83",	\
-				   "gr84", "gr85", "gr86", "gr87",	\
-				   "gr88", "gr89", "gr90", "gr91",	\
-				   "gr92", "gr93", "gr94", "gr95"};	\
-    int i;								\
-									\
-    if (TARGET_KERNEL_REGISTERS)					\
-      for (i = 0; i < 32; i++)						\
-	reg_names[i] = kernel_names[i];					\
+#define CONDITIONAL_REGISTER_USAGE		\
+  {						\
+    char *p;					\
+    int i;					\
+						\
+    if (TARGET_KERNEL_REGISTERS)		\
+      for (i = 0; i < 32; i++)			\
+	{					\
+	  p = reg_names[i];			\
+	  reg_names[i] = reg_names[R_KR (i)];	\
+	  reg_names[R_KR (i)] = p;		\
+	}					\
   }
 
 /* The letters I, J, K, L, M, N, O, and P in a register constraint string
@@ -1359,6 +1378,16 @@ literal_section ()						\
 
 #define READONLY_DATA_SECTION	literal_section
 
+/* If we are referencing a function that is static or is known to be
+   in this file, make the SYMBOL_REF special.  We can use this to indicate
+   that we can branch to this function without emitting a no-op after the
+   call.  */
+
+#define ENCODE_SECTION_INFO(DECL)  \
+  if (TREE_CODE (DECL) == FUNCTION_DECL			\
+      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
+
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
@@ -1387,7 +1416,11 @@ literal_section ()						\
   "bp", "fc", "cr", "q",						 \
   "vab", "ops", "cps", "cfg", "cha", "chd", "chc", "rbp", "tmc", "tmr",	 \
   "pc0", "pc1", "pc2", "mmu", "lru", "fpe", "int", "fps", "exo",	 \
-  "0", "1", "2", "3" }
+  "0", "1", "2", "3",							 \
+  "gr64", "gr65", "gr66", "gr67", "gr68", "gr69", "gr70", "gr71",	 \
+  "gr72", "gr73", "gr74", "gr75", "gr76", "gr77", "gr78", "gr79",	 \
+  "gr80", "gr81", "gr82", "gr83", "gr84", "gr85", "gr86", "gr87",	 \
+  "gr88", "gr89", "gr90", "gr91", "gr92", "gr93", "gr94", "gr95" }
 
 /* How to renumber registers for dbx and gdb.  */
 
