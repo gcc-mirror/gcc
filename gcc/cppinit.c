@@ -1175,9 +1175,11 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("H",                        0,      OPT_H)                          \
   DEF_OPT("I",                        no_dir, OPT_I)                          \
   DEF_OPT("M",                        0,      OPT_M)                          \
+  DEF_OPT("MD",                       no_fil, OPT_MD)                         \
   DEF_OPT("MF",                       no_fil, OPT_MF)                         \
   DEF_OPT("MG",                       0,      OPT_MG)                         \
   DEF_OPT("MM",                       0,      OPT_MM)                         \
+  DEF_OPT("MMD",                      no_fil, OPT_MMD)                        \
   DEF_OPT("MP",                       0,      OPT_MP)                         \
   DEF_OPT("MQ",                       no_tgt, OPT_MQ)                         \
   DEF_OPT("MT",                       no_tgt, OPT_MT)                         \
@@ -1585,6 +1587,21 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	case OPT_MT:
 	  /* Add a target.  -MQ quotes for Make.  */
 	  deps_add_target (pfile->deps, arg, opt_code == OPT_MQ);
+	  break;
+
+	  /* -MD and -MMD for cpp0 are deprecated and undocumented
+	     (use -M or -MM with -MF instead), and probably should be
+	     removed with the next major GCC version.  For the moment
+	     we allow these for the benefit of Automake 1.4, which
+	     uses these when dependency tracking is enabled.  Automake
+	     1.5 will fix this.  */
+	case OPT_MD:
+	  CPP_OPTION (pfile, print_deps) = 2;
+	  CPP_OPTION (pfile, deps_file) = arg;
+	  break;
+	case OPT_MMD:
+	  CPP_OPTION (pfile, print_deps) = 1;
+	  CPP_OPTION (pfile, deps_file) = arg;
 	  break;
 
 	case OPT_A:
