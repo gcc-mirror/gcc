@@ -135,10 +135,12 @@ static void mark_all_insn_unnecessary
   rtx INSN;							\
 								\
   for (INSN = get_insns (); INSN != NULL_RTX; INSN = NEXT_INSN (INSN))	\
-    if (INSN_DEAD_CODE_P (INSN)) {				\
-      CODE;							\
-    }								\
+    if (INSN_P (insn) && INSN_DEAD_CODE_P (INSN))		\
+      {								\
+        CODE;							\
+      }								\
 }
+
 /* Find the label beginning block BB.  */
 static rtx find_block_label
   PARAMS ((basic_block bb));
@@ -448,8 +450,11 @@ static void
 mark_all_insn_unnecessary ()
 {
   rtx insn;
-  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-    KILL_INSN (insn);
+  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn)) {
+    if (INSN_P (insn))
+      KILL_INSN (insn);
+  }
+  
 }
 
 /* Find the label beginning block BB, adding one if necessary.  */
@@ -522,7 +527,7 @@ ssa_eliminate_dead_code ()
 
   /* Find inherently necessary instructions.  */
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-    if (find_inherently_necessary (insn))
+    if (find_inherently_necessary (insn) && INSN_P (insn))
       {
 	RESURRECT_INSN (insn);
 	VARRAY_PUSH_RTX (unprocessed_instructions, insn);
@@ -725,8 +730,11 @@ ssa_eliminate_dead_code ()
 	}
     }
   /* Release allocated memory.  */
-  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
-    RESURRECT_INSN (insn);
+  for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn)) {
+    if (INSN_P (insn))
+      RESURRECT_INSN (insn);
+  }
+  
   if (VARRAY_ACTIVE_SIZE (unprocessed_instructions) != 0)
     abort ();
   control_dependent_block_to_edge_map_free (cdbte);
