@@ -1,3 +1,7 @@
+2002-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/dtor1.C: Make it tougher.
+
 2002-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/dtor1.C: New test.

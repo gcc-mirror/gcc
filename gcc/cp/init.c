@@ -3230,6 +3230,7 @@ perform_base_cleanups ()
   tree member;
   tree expr;
   tree member_destructions = NULL;
+  tree vbase_destructions = NULL;
 
   for (member = TYPE_FIELDS (current_class_type); member;
        member = TREE_CHAIN (member))
@@ -3262,7 +3263,7 @@ perform_base_cleanups ()
   n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
 
   /* Take care of the remaining baseclasses.  */
-  for (i = 0; i < n_baseclasses; i++)
+  for (i = n_baseclasses - 1; i >= 0; i--)
     {
       tree base_binfo = TREE_VEC_ELT (binfos, i);
       if (TYPE_HAS_TRIVIAL_DESTRUCTOR (BINFO_TYPE (base_binfo))
@@ -3313,10 +3314,18 @@ perform_base_cleanups ()
 					LOOKUP_NORMAL);
 	      expr = build (COND_EXPR, void_type_node, cond,
 			    expr, void_zero_node);
-	      finish_expr_stmt (expr);
+	      if (!vbase_destructions)
+		vbase_destructions = expr;
+	      else
+		vbase_destructions = build (COMPOUND_EXPR, 
+					    TREE_TYPE (vbase_destructions),
+					    expr,
+					    vbase_destructions);
 	    }
 	}
     }
+  if (vbase_destructions)
+    finish_expr_stmt (vbase_destructions);
 }
 
 /* For type TYPE, delete the virtual baseclass objects of DECL.  */

@@ -1,3 +1,8 @@
+2002-05-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (perform_base_cleanups): Correct order of base class
+	cleanups.
+
 2002-05-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6527
