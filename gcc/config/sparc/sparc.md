@@ -778,23 +778,8 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, SImode, NULL_RTX))
+  if (emit_move_sequence (operands, SImode))
     DONE;
-}")
-
-(define_expand "reload_insi"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(match_operand:SI 1 "general_operand" ""))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))]
-  ""
-  "
-{
-  if (emit_move_sequence (operands, SImode, operands[2]))
-    DONE;
-
-  /* We don't want the clobber emitted, so handle this ourselves.  */
-  emit_insn (gen_rtx (SET, VOIDmode, operands[0], operands[1]));
-  DONE;
 }")
 
 ;; We must support both 'r' and 'f' registers here, because combine may
@@ -952,7 +937,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, HImode, NULL_RTX))
+  if (emit_move_sequence (operands, HImode))
     DONE;
 }")
 
@@ -993,7 +978,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, QImode, NULL_RTX))
+  if (emit_move_sequence (operands, QImode))
     DONE;
 }")
 
@@ -1108,7 +1093,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, TFmode, NULL_RTX))
+  if (emit_move_sequence (operands, TFmode))
     DONE;
 }")
 
@@ -1192,7 +1177,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, DFmode, NULL_RTX))
+  if (emit_move_sequence (operands, DFmode))
     DONE;
 }")
 
@@ -1261,7 +1246,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, DImode, NULL_RTX))
+  if (emit_move_sequence (operands, DImode))
     DONE;
 }")
 
@@ -1310,7 +1295,7 @@
   ""
   "
 {
-  if (emit_move_sequence (operands, SFmode, NULL_RTX))
+  if (emit_move_sequence (operands, SFmode))
     DONE;
 }")
 
@@ -2949,7 +2934,7 @@
   "
 {
   operands[1] = legitimize_pic_address (operands[1], GET_MODE (operands[0]),
-					operands[3], 0);
+					operands[3]);
 }")
 
 (define_split
@@ -2962,7 +2947,7 @@
   "
 {
   operands[2] = legitimize_pic_address (operands[2], GET_MODE (operands[1]),
-					operands[0], 0);
+					operands[0]);
 }")
 
 ;; Sign- and Zero-extend operations can have symbolic memory operands.
@@ -2978,7 +2963,7 @@
   "
 {
   operands[3] = legitimize_pic_address (operands[3], GET_MODE (operands[2]),
-					operands[0], 0);
+					operands[0]);
 }")
 
 (define_split
@@ -3002,7 +2987,7 @@
   [(set (match_dup 0) (match_dup 1))]
   "
 {
-  operands[1] = legitimize_pic_address (operands[1], Pmode, operands[0], 0);
+  operands[1] = legitimize_pic_address (operands[1], Pmode, operands[0]);
 }")
 
 ;; These split sne/seq insns.  The forms of the resulting insns are 
