@@ -1,3 +1,7 @@
+Wed Apr  7 23:08:59 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* execute/920501-7.c (main): Delete __I960__ ifndef.
+
 Mon Mar 22 14:55:58 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* execute/bf-sign-2.c (main): Replace struct sizeof test with 4.
