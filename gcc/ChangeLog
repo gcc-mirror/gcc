@@ -1,5 +1,7 @@
 2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (gengtype-lex.c): Fix error in last change.
+
 	* alpha/freebsd.h (TARGET_OS_CPP_BUILTINS): Add missing
 	backslash.
 
