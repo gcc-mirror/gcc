@@ -1100,21 +1100,6 @@ c4x_preferred_reload_class (x, class)
      rtx x;
      enum reg_class class;
 {
-  if (GET_CODE (x) == MEM && class > ADDR_REGS && class != INDEX_REGS)
-    {
-      x = XEXP (x, 0);
-      if (GET_CODE (x) == PLUS)
-        {
-          rtx op0 = XEXP (x, 0);
-          rtx op1 = XEXP (x, 1);
-
-          if (REG_P (op0) 
-	      && IS_ADDR_REGNO (op0)
-	      && GET_CODE (op1) == CONST_INT
-	      && !IS_DISP8_CONST (INTVAL (op1)))
-	    class = ADDR_REGS;
-        }
-    }
   return class;
 }
 
