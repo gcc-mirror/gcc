@@ -48,14 +48,6 @@ typedef unsigned char U_CHAR;
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
-#if 0 /* We can't get ptrdiff_t, so I arranged not to need PTR_INT_TYPE.  */
-#ifdef __STDC__
-#define PTR_INT_TYPE ptrdiff_t
-#else
-#define PTR_INT_TYPE long
-#endif
-#endif /* 0 */
-
 #include "pcp.h"
 
 /* By default, colon separates directories in a path.  */
@@ -263,7 +255,8 @@ static void hack_vms_include_specification ();
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-/* Find the largest host integer type and set its size and type.  */
+/* Find the largest host integer type and set its size and type.
+   Don't blindly use `long'; on some crazy hosts it is shorter than `int'.  */
 
 #ifndef HOST_BITS_PER_WIDE_INT
 
@@ -332,8 +325,8 @@ char *strerror ();
 #else	/* VMS */
 char *strerror (int,...);
 #endif
-long parse_escape PROTO((char **, long));
-long parse_c_expression PROTO((char *));
+HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
+HOST_WIDE_INT parse_c_expression PROTO((char *));
 
 #ifndef errno
 extern int errno;
@@ -1147,7 +1140,7 @@ static void delete_assertion PROTO((ASSERTION_HASHNODE *));
 
 static void do_once PROTO((void));
 
-static long eval_if_expression PROTO((U_CHAR *, int));
+static HOST_WIDE_INT eval_if_expression PROTO((U_CHAR *, int));
 static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
 static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
 static void validate_else PROTO((U_CHAR *));
@@ -2422,7 +2415,8 @@ trigraph_pcp (buf)
   buf->length -= fptr - bptr;
   buf->buf[buf->length] = '\0';
   if (warn_trigraphs && fptr != bptr)
-    warning_with_line (0, "%d trigraph(s) encountered", (fptr - bptr) / 2);
+    warning_with_line (0, "%lu trigraph(s) encountered",
+		       (unsigned long) (fptr - bptr) / 2);
 }
 
 /* Move all backslash-newline pairs out of embarrassing places.
@@ -2512,7 +2506,7 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
      U_CHAR **argstart;		/* point to command arg */
      int *arglen, *cmdlen;	/* how long they are */
 {
-  long linsize;
+  HOST_WIDE_INT linsize;
   register U_CHAR *numptr;	/* temp for arg parsing */
 
   *arglen = 0;
@@ -6584,7 +6578,7 @@ do_line (buf, limit, op, keyword)
       case '\\':
 	{
 	  char *bpc = (char *) bp;
-	  long c = parse_escape (&bpc, (long) (U_CHAR) (-1));
+	  HOST_WIDE_INT c = parse_escape (&bpc, (HOST_WIDE_INT) (U_CHAR) (-1));
 	  bp = (U_CHAR *) bpc;
 	  if (c < 0)
 	    p--;
@@ -6906,7 +6900,7 @@ do_if (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  long value;
+  HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   value = eval_if_expression (buf, limit - buf);
@@ -6925,7 +6919,7 @@ do_elif (buf, limit, op, keyword)
      FILE_BUF *op;
      struct directive *keyword;
 {
-  long value;
+  HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
 
   if (if_stack == instack[indepth].if_stack) {
@@ -6961,14 +6955,14 @@ do_elif (buf, limit, op, keyword)
  * evaluate a #if expression in BUF, of length LENGTH,
  * then parse the result as a C expression and return the value as an int.
  */
-static long
+static HOST_WIDE_INT
 eval_if_expression (buf, length)
      U_CHAR *buf;
      int length;
 {
   FILE_BUF temp_obuf;
   HASHNODE *save_defined;
-  long value;
+  HOST_WIDE_INT value;
 
   save_defined = install ((U_CHAR *) "defined", -1, T_SPEC_DEFINED,
 			  NULL_PTR, -1);
