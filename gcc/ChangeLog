@@ -1,3 +1,9 @@
+2003-12-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/13037
+	* loop.c (update_giv_derive): Ignore redundant sets of a biv when
+	calculating how to derive a giv from a biv.
+
 2003-12-12  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/12935 preprocessor/12952 preprocessor/13046
