@@ -1635,12 +1635,10 @@ check_ivars (inter, imp)
     }
 }
 
-/*
- * 	struct objc_super {
- *		id self;
- *		struct objc_class *class;
- *	};
- */
+/* Set super_type to the data type node for struct objc_super *,
+   first defining struct objc_super itself.
+   This needs to be done just once per compilation.  */
+
 static tree
 build_super_template ()
 {
@@ -2695,7 +2693,8 @@ build_message_expr (mess)
 
   /* Determine operation return type.  */
 
-  if (TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (super_type))
+  if (super_type != 0
+      && TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (super_type))
     {
       tree iface;
 
