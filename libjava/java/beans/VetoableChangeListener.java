@@ -1,5 +1,5 @@
 /* java.beans.VetoableChangeListener
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -27,6 +27,8 @@ executable file might be covered by the GNU General Public License. */
 
 package java.beans;
 
+import java.util.EventListener;
+
 /**
  ** VetoableChangeListener allows a class to monitor
  ** proposed changes to properties of a Bean and, if
@@ -52,11 +54,13 @@ package java.beans;
  ** @see java.beans.VetoableChangeSupport
  **/
 
-public interface VetoableChangeListener {
-	/** Fired before a Bean's property changes.
-	 ** @param e the change (containing the old and new values)
-	 ** @exception PropertyChangeException if the listener
-	 **            does not desire the change to be made.
-	 **/
-	public abstract void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException;
+public interface VetoableChangeListener extends EventListener
+{
+  /** Fired before a Bean's property changes.
+   ** @param e the change (containing the old and new values)
+   ** @exception PropertyChangeException if the listener
+   **            does not desire the change to be made.
+   **/
+  public abstract void vetoableChange(PropertyChangeEvent e)
+    throws PropertyVetoException;
 }

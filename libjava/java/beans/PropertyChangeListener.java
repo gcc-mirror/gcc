@@ -1,5 +1,5 @@
 /* java.beans.PropertyChangeListener
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -27,6 +27,8 @@ executable file might be covered by the GNU General Public License. */
 
 package java.beans;
 
+import java.util.EventListener;
+
 /**
  ** PropertyChangeListener allows a class to monitor
  ** properties of a Bean for changes.<P>
@@ -40,9 +42,10 @@ package java.beans;
  ** @see java.beans.PropertyChangeSupport
  **/
 
-public interface PropertyChangeListener {
-	/** Fired after a Bean's property has changed.
-	 ** @param e the change (containing the old and new values)
-	 **/
-	public abstract void propertyChange(PropertyChangeEvent e);
+public interface PropertyChangeListener extends EventListener
+{
+  /** Fired after a Bean's property has changed.
+   ** @param e the change (containing the old and new values)
+   **/
+  public abstract void propertyChange(PropertyChangeEvent e);
 }
