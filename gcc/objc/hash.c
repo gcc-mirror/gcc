@@ -16,10 +16,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.3 1991/11/07 23:23:40 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.4 1991/11/19 12:34:41 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/07 23:23:40 $
+  $Date: 1991/11/19 12:34:41 $
   $Log: hash.c,v $
+ * Revision 0.4  1991/11/19  12:34:41  dennisg
+ * bug in hash_delete().  It was using void* to obtain nodes to
+ * pass to hash_remove().  The value passed to hash_removed() is a
+ * entry from the node structure rather than the node itself.  Using
+ * void* removed compiler checking.
+ * Modified to implement cache expansion.
+ *
  * Revision 0.3  1991/11/07  23:23:40  dennisg
  * implemented hash table expansion as suggested by rms.
  *
@@ -52,8 +59,19 @@
 #define	EXPANSION(cache) \
 	(((cache)->sizeOfHash * 175 ) / 100 )
 
-                                                /* Local forward decl. */
-  u_int hashValue( Cache_t, void* );
+
+static inline u_int hashValue( Cache_t theCache, void* aKey ) {
+
+  u_int hash = 0;
+  int   i;
+  
+  
+  assert( theCache->numberOfMaskBits );
+  for( i = 0; i < ( sizeof( aKey ) * 8 ); i += theCache->numberOfMaskBits )
+    hash ^= (( u_int )aKey ) >> i ;
+
+  return ( hash & theCache->mask ) % theCache->sizeOfHash;
+}
 
 
 Cache_t hash_new( u_int sizeOfHash ) {
@@ -298,17 +316,4 @@ CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
     return NULL;
 }
 
-
-u_int hashValue( Cache_t theCache, void* aKey ) {
-
-  u_int hash = 0;
-  int   i;
-  
-  
-  assert( theCache->numberOfMaskBits );
-  for( i = 0; i < ( sizeof( aKey ) * 8 ); i += theCache->numberOfMaskBits )
-    hash ^= (( u_int )aKey ) >> i ;
-
-  return ( hash & theCache->mask ) % theCache->sizeOfHash;
-}
 
