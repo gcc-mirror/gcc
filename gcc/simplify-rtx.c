@@ -600,7 +600,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	}
 
       x = CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
-      set_float_handler (NULL_PTR);
+      set_float_handler (NULL);
       return x;
     }
 
@@ -634,7 +634,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  abort ();
 	}
 
-      set_float_handler (NULL_PTR);
+      set_float_handler (NULL);
 
       val = trunc_int_for_mode (val, mode);
 
@@ -794,7 +794,7 @@ simplify_binary_operation (code, mode, op0, op1)
 #endif
 
       value = real_value_truncate (mode, value);
-      set_float_handler (NULL_PTR);
+      set_float_handler (NULL);
       return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
     }
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
@@ -1220,7 +1220,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	      REAL_VALUE_FROM_CONST_DOUBLE (d, op1);
 	      op1is2 = REAL_VALUES_EQUAL (d, dconst2);
 	      op1ism1 = REAL_VALUES_EQUAL (d, dconstm1);
-	      set_float_handler (NULL_PTR);
+	      set_float_handler (NULL);
 
 	      /* x*2 is x+x and x*(-1) is -x */
 	      if (op1is2 && GET_MODE (op0) == mode)

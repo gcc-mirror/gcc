@@ -661,7 +661,7 @@ expand_eh_region_start ()
 
   /* Create a note marking the start of this region.  */
   new_region->region_number = ++cfun->eh->last_region_number;
-  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
+  note = emit_note (NULL, NOTE_INSN_EH_REGION_BEG);
   NOTE_EH_HANDLER (note) = new_region->region_number;
 }
 
@@ -674,7 +674,7 @@ expand_eh_region_end ()
   rtx note;
 
   /* Create a nute marking the end of this region.  */
-  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
+  note = emit_note (NULL, NOTE_INSN_EH_REGION_END);
   NOTE_EH_HANDLER (note) = cur_region->region_number;
 
   /* Pop.  */

@@ -1257,7 +1257,7 @@ struct spec_list
 };
 
 #define INIT_STATIC_SPEC(NAME,PTR) \
-{ NAME, NULL_PTR, PTR, (struct spec_list *) 0, sizeof (NAME) - 1, 0 }
+{ NAME, NULL, PTR, (struct spec_list *) 0, sizeof (NAME) - 1, 0 }
 
 /* List of statically defined specs.  */
 static struct spec_list static_specs[] =
@@ -2160,7 +2160,7 @@ split_directories (name, ptr_num_dirs)
   if (p - 1 - q > 0)
     dirs[num_dirs++] = save_string (q, p - 1 - q);
 
-  dirs[num_dirs] = NULL_PTR;
+  dirs[num_dirs] = NULL;
   if (ptr_num_dirs)
     *ptr_num_dirs = num_dirs;
 
@@ -2175,7 +2175,7 @@ free_split_directories (dirs)
 {
   int i = 0;
 
-  while (dirs[i] != NULL_PTR)
+  while (dirs[i] != NULL)
     free (dirs[i++]);
 
   free ((char *) dirs);
@@ -2282,7 +2282,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
 	  free_split_directories (prog_dirs);
 	  free_split_directories (bin_dirs);
 	  prog_dirs = bin_dirs = (char **) 0;
-	  return NULL_PTR;
+	  return NULL;
 	}
     }
 
@@ -2302,7 +2302,7 @@ make_relative_prefix (progname, bin_prefix, prefix)
       free_split_directories (prog_dirs);
       free_split_directories (bin_dirs);
       free_split_directories (prefix_dirs);
-      return NULL_PTR;
+      return NULL;
     }
 
   /* Build up the pathnames in argv[0].  */
@@ -3115,7 +3115,7 @@ process_command (argc, argv)
 		}
 	      else
 		nstore[endp - startp] = 0;
-	      add_prefix (&startfile_prefixes, nstore, NULL_PTR,
+	      add_prefix (&startfile_prefixes, nstore, NULL,
 			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
@@ -3148,7 +3148,7 @@ process_command (argc, argv)
 		}
 	      else
 		nstore[endp - startp] = 0;
-	      add_prefix (&startfile_prefixes, nstore, NULL_PTR,
+	      add_prefix (&startfile_prefixes, nstore, NULL,
 			  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
@@ -3374,25 +3374,24 @@ process_command (argc, argv)
 		      && (IS_DIR_SEPARATOR (value[len - 1])))
 		    {
 		      if (len == 7)
-			add_prefix (&include_prefixes, "include", NULL_PTR,
+			add_prefix (&include_prefixes, "include", NULL,
 				    PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
 		      else
 			{
 			  char *string = xmalloc (len + 1);
 			  strncpy (string, value, len-7);
 			  strcpy (string+len-7, "include");
-			  add_prefix (&include_prefixes, string, NULL_PTR,
+			  add_prefix (&include_prefixes, string, NULL,
 				      PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
 			}
 		    }
 		}
-		add_prefix (&exec_prefixes, value, NULL_PTR,
+		add_prefix (&exec_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
-		add_prefix (&startfile_prefixes, value, NULL_PTR,
+		add_prefix (&startfile_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B);
 		add_prefix (&include_prefixes, concat (value, "include", NULL),
-			    NULL_PTR,
-			    PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
+			    NULL, PREFIX_PRIORITY_B_OPT, 0, NULL_PTR);
 		n_switches++;
 	      }
 	      break;
@@ -3598,11 +3597,11 @@ process_command (argc, argv)
 	  add_prefix (&exec_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "bin",
 			      dir_separator_str, NULL),
-		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
 		      concat (gcc_exec_tooldir_prefix, "lib",
 			      dir_separator_str, NULL),
-		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	}
 
       tooldir_prefix = concat (standard_exec_prefix, spec_machine,
@@ -3931,7 +3930,7 @@ do_spec (spec)
   input_from_pipe = 0;
   suffix_subst = NULL;
 
-  value = do_spec_1 (spec, 0, NULL_PTR);
+  value = do_spec_1 (spec, 0, NULL);
 
   /* Force out any unfinished command.
      If -pipe, this forces out the last command if it ended in `|'.  */
@@ -4118,28 +4117,28 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  strcat (buffer, machine_suffix);
 			  if (is_directory (buffer, multilib_dir, 1))
 			    {
-			      do_spec_1 ("-L", 0, NULL_PTR);
+			      do_spec_1 ("-L", 0, NULL);
 #ifdef SPACE_AFTER_L_OPTION
-			      do_spec_1 (" ", 0, NULL_PTR);
+			      do_spec_1 (" ", 0, NULL);
 #endif
-			      do_spec_1 (buffer, 1, NULL_PTR);
-			      do_spec_1 (multilib_dir, 1, NULL_PTR);
+			      do_spec_1 (buffer, 1, NULL);
+			      do_spec_1 (multilib_dir, 1, NULL);
 			      /* Make this a separate argument.  */
-			      do_spec_1 (" ", 0, NULL_PTR);
+			      do_spec_1 (" ", 0, NULL);
 			    }
 			}
 		      if (!pl->require_machine_suffix)
 			{
 			  if (is_directory (pl->prefix, multilib_dir, 1))
 			    {
-			      do_spec_1 ("-L", 0, NULL_PTR);
+			      do_spec_1 ("-L", 0, NULL);
 #ifdef SPACE_AFTER_L_OPTION
-			      do_spec_1 (" ", 0, NULL_PTR);
+			      do_spec_1 (" ", 0, NULL);
 #endif
-			      do_spec_1 (pl->prefix, 1, NULL_PTR);
-			      do_spec_1 (multilib_dir, 1, NULL_PTR);
+			      do_spec_1 (pl->prefix, 1, NULL);
+			      do_spec_1 (multilib_dir, 1, NULL);
 			      /* Make this a separate argument.  */
-			      do_spec_1 (" ", 0, NULL_PTR);
+			      do_spec_1 (" ", 0, NULL);
 			    }
 			}
 		    }
@@ -4147,11 +4146,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    {
 		      if (is_directory (pl->prefix, machine_suffix, 1))
 			{
-			  do_spec_1 ("-L", 0, NULL_PTR);
+			  do_spec_1 ("-L", 0, NULL);
 #ifdef SPACE_AFTER_L_OPTION
-			  do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL);
 #endif
-			  do_spec_1 (pl->prefix, 1, NULL_PTR);
+			  do_spec_1 (pl->prefix, 1, NULL);
 			  /* Remove slash from machine_suffix.  */
 			  if (strlen (machine_suffix) >= bufsize)
 			    bufsize = strlen (machine_suffix) * 2 + 1;
@@ -4160,18 +4159,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  idx = strlen (buffer);
 			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
 			    buffer[idx - 1] = 0;
-			  do_spec_1 (buffer, 1, NULL_PTR);
+			  do_spec_1 (buffer, 1, NULL);
 			  /* Make this a separate argument.  */
-			  do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL);
 			}
 		    }
 		  if (!pl->require_machine_suffix)
 		    {
 		      if (is_directory (pl->prefix, "", 1))
 			{
-			  do_spec_1 ("-L", 0, NULL_PTR);
+			  do_spec_1 ("-L", 0, NULL);
 #ifdef SPACE_AFTER_L_OPTION
-			  do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL);
 #endif
 			  /* Remove slash from pl->prefix.  */
 			  if (strlen (pl->prefix) >= bufsize)
@@ -4181,9 +4180,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			  idx = strlen (buffer);
 			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
 			    buffer[idx - 1] = 0;
-			  do_spec_1 (buffer, 1, NULL_PTR);
+			  do_spec_1 (buffer, 1, NULL);
 			  /* Make this a separate argument.  */
-			  do_spec_1 (" ", 0, NULL_PTR);
+			  do_spec_1 (" ", 0, NULL);
 			}
 		    }
 		}
@@ -4326,20 +4325,20 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      if (gcc_exec_prefix)
 		{
-		  do_spec_1 ("-iprefix", 1, NULL_PTR);
+		  do_spec_1 ("-iprefix", 1, NULL);
 		  /* Make this a separate argument.  */
-		  do_spec_1 (" ", 0, NULL_PTR);
-		  do_spec_1 (gcc_exec_prefix, 1, NULL_PTR);
-		  do_spec_1 (" ", 0, NULL_PTR);
+		  do_spec_1 (" ", 0, NULL);
+		  do_spec_1 (gcc_exec_prefix, 1, NULL);
+		  do_spec_1 (" ", 0, NULL);
 		}
 
 	      for (; pl; pl = pl->next)
 		{
-		  do_spec_1 ("-isystem", 1, NULL_PTR);
+		  do_spec_1 ("-isystem", 1, NULL);
 		  /* Make this a separate argument.  */
-		  do_spec_1 (" ", 0, NULL_PTR);
-		  do_spec_1 (pl->prefix, 1, NULL_PTR);
-		  do_spec_1 (" ", 0, NULL_PTR);
+		  do_spec_1 (" ", 0, NULL);
+		  do_spec_1 (pl->prefix, 1, NULL);
+		  do_spec_1 (" ", 0, NULL);
 		}
 	    }
 	    break;
@@ -4414,9 +4413,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'X':
 	    for (i = 0; i < n_linker_options; i++)
 	      {
-		do_spec_1 (linker_options[i], 1, NULL_PTR);
+		do_spec_1 (linker_options[i], 1, NULL);
 		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL_PTR);
+		do_spec_1 (" ", 0, NULL);
 	      }
 	    break;
 
@@ -4424,9 +4423,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'Y':
 	    for (i = 0; i < n_assembler_options; i++)
 	      {
-		do_spec_1 (assembler_options[i], 1, NULL_PTR);
+		do_spec_1 (assembler_options[i], 1, NULL);
 		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL_PTR);
+		do_spec_1 (" ", 0, NULL);
 	      }
 	    break;
 
@@ -4434,9 +4433,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'Z':
 	    for (i = 0; i < n_preprocessor_options; i++)
 	      {
-		do_spec_1 (preprocessor_options[i], 1, NULL_PTR);
+		do_spec_1 (preprocessor_options[i], 1, NULL);
 		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL_PTR);
+		do_spec_1 (" ", 0, NULL);
 	      }
 	    break;
 
@@ -4444,31 +4443,31 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       a certain constant string as a spec.  */
 
 	  case '1':
-	    value = do_spec_1 (cc1_spec, 0, NULL_PTR);
+	    value = do_spec_1 (cc1_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case '2':
-	    value = do_spec_1 (cc1plus_spec, 0, NULL_PTR);
+	    value = do_spec_1 (cc1plus_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'a':
-	    value = do_spec_1 (asm_spec, 0, NULL_PTR);
+	    value = do_spec_1 (asm_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'A':
-	    value = do_spec_1 (asm_final_spec, 0, NULL_PTR);
+	    value = do_spec_1 (asm_final_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'c':
-	    value = do_spec_1 (signed_char_spec, 0, NULL_PTR);
+	    value = do_spec_1 (signed_char_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
@@ -4479,32 +4478,32 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		= (input_file_compiler->cpp_spec 
 		   ? input_file_compiler->cpp_spec 
 		   : cpp_spec);
-	      value = do_spec_1 (spec, 0, NULL_PTR);
+	      value = do_spec_1 (spec, 0, NULL);
 	      if (value != 0)
 		return value;
 	    }
 	    break;
 
 	  case 'E':
-	    value = do_spec_1 (endfile_spec, 0, NULL_PTR);
+	    value = do_spec_1 (endfile_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'l':
-	    value = do_spec_1 (link_spec, 0, NULL_PTR);
+	    value = do_spec_1 (link_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'L':
-	    value = do_spec_1 (lib_spec, 0, NULL_PTR);
+	    value = do_spec_1 (lib_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
 
 	  case 'G':
-	    value = do_spec_1 (libgcc_spec, 0, NULL_PTR);
+	    value = do_spec_1 (libgcc_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
@@ -4550,7 +4549,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      value = do_spec_1 (buf, 0, NULL_PTR);
+	      value = do_spec_1 (buf, 0, NULL);
 	      if (value != 0)
 		return value;
 	    }
@@ -4681,14 +4680,14 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      value = do_spec_1 (buf, 0, NULL_PTR);
+	      value = do_spec_1 (buf, 0, NULL);
 	      if (value != 0)
 		return value;
 	    }
 	    break;
 
 	  case 'S':
-	    value = do_spec_1 (startfile_spec, 0, NULL_PTR);
+	    value = do_spec_1 (startfile_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
 	    break;
@@ -4719,8 +4718,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case '*':
 	    if (soft_matched_part)
 	      {
-		do_spec_1 (soft_matched_part, 1, NULL_PTR);
-		do_spec_1 (" ", 0, NULL_PTR);
+		do_spec_1 (soft_matched_part, 1, NULL);
+		do_spec_1 (" ", 0, NULL);
 	      }
 	    else
 	      /* Catch the case where a spec string contains something like
@@ -4763,7 +4762,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		{
 		  if (c == '(')
 		    {
-		      value = do_spec_1 (name, 0, NULL_PTR);
+		      value = do_spec_1 (name, 0, NULL);
 		      if (value != 0)
 			return value;
 		    }
@@ -4803,7 +4802,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			}
 		      *x = 0;
 
-		      value = do_spec_1 (buf, 0, NULL_PTR);
+		      value = do_spec_1 (buf, 0, NULL);
 		      if (value != 0)
 			return value;
 		    }
@@ -4874,7 +4873,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	  case '|':
 	    if (input_from_pipe)
-	      do_spec_1 ("-", 0, NULL_PTR);
+	      do_spec_1 ("-", 0, NULL);
 	    break;
 
 	  default:
@@ -5007,7 +5006,7 @@ next_member:
 	abort ();
 
       if (negate != found
-	  && do_spec_1 (save_string (body, endbody-body-1), 0, NULL_PTR) < 0)
+	  && do_spec_1 (save_string (body, endbody-body-1), 0, NULL) < 0)
 	return 0;
     }
   else if (p[-1] == '*' && (p[0] == '}' || p[0] == '&'))
@@ -5129,7 +5128,7 @@ next_member:
 	{
 	  /* Here if a %{|...} conditional fails: output a minus sign,
 	     which means "standard output" or "standard input".  */
-	  do_spec_1 ("-", 0, NULL_PTR);
+	  do_spec_1 ("-", 0, NULL);
 	  return endbody;
 	}
     }
@@ -5160,7 +5159,7 @@ next_member:
   else if (true_once)
     {
       if (do_spec_1 (save_string (body, endbody - body - 1),
-		     0, NULL_PTR) < 0)
+		     0, NULL) < 0)
 	return 0;
     }
 
@@ -5265,8 +5264,8 @@ give_switch (switchnum, omit_first_word, include_blanks)
 
   if (!omit_first_word)
     {
-      do_spec_1 ("-", 0, NULL_PTR);
-      do_spec_1 (switches[switchnum].part1, 1, NULL_PTR);
+      do_spec_1 ("-", 0, NULL);
+      do_spec_1 (switches[switchnum].part1, 1, NULL);
     }
 
   if (switches[switchnum].args != 0)
@@ -5277,7 +5276,7 @@ give_switch (switchnum, omit_first_word, include_blanks)
 	  const char *arg = *p;
 
 	  if (include_blanks)
-	    do_spec_1 (" ", 0, NULL_PTR);
+	    do_spec_1 (" ", 0, NULL);
 	  if (suffix_subst)
 	    {
 	      unsigned length = strlen (arg);
@@ -5288,19 +5287,19 @@ give_switch (switchnum, omit_first_word, include_blanks)
 		    ((char *)arg)[length] = 0;
 		    break;
 		  }
-	      do_spec_1 (arg, 1, NULL_PTR);
+	      do_spec_1 (arg, 1, NULL);
 	      if (!arg[length])
 		{
 		  ((char *)arg)[length] = '.';
-		  do_spec_1 (suffix_subst, 1, NULL_PTR);
+		  do_spec_1 (suffix_subst, 1, NULL);
 		}
 	    }
 	  else
-	    do_spec_1 (arg, 1, NULL_PTR);
+	    do_spec_1 (arg, 1, NULL);
 	}
     }
 
-  do_spec_1 (" ", 0, NULL_PTR);
+  do_spec_1 (" ", 0, NULL);
   switches[switchnum].validated = 1;
 }
 
@@ -5670,12 +5669,12 @@ main (argc, argv)
 	    add_prefix (&startfile_prefixes,
 			concat (gcc_exec_prefix, machine_suffix,
 				standard_startfile_prefix, NULL),
-			NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+			NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	  add_prefix (&startfile_prefixes,
 		      concat (standard_exec_prefix,
 			      machine_suffix,
 			      standard_startfile_prefix, NULL),
-		      NULL_PTR, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+		      NULL, PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 	}
 
       add_prefix (&startfile_prefixes, standard_startfile_prefix_1,
@@ -5683,7 +5682,7 @@ main (argc, argv)
       add_prefix (&startfile_prefixes, standard_startfile_prefix_2,
 		  "BINUTILS", PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 #if 0 /* Can cause surprises, and one can use -B./ instead.  */
-      add_prefix (&startfile_prefixes, "./", NULL_PTR,
+      add_prefix (&startfile_prefixes, "./", NULL,
 		  PREFIX_PRIORITY_LAST, 1, NULL_PTR);
 #endif
     }
@@ -6021,7 +6020,7 @@ lookup_compiler (name, length, language)
       /* An alias entry maps a suffix to a language.
 	 Search for the language; pass 0 for NAME and LENGTH
 	 to avoid infinite recursion if language not found.  */
-      return lookup_compiler (NULL_PTR, 0, cp->spec + 1);
+      return lookup_compiler (NULL, 0, cp->spec + 1);
     }
   return 0;
 }

@@ -5445,7 +5445,7 @@ rs6000_emit_eh_toc_restore (stacksize)
     abort();
   emit_move_insn (opcode, insn_after_throw);
   
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_BEG);
+  emit_note (NULL, NOTE_INSN_LOOP_BEG);
   emit_label (loop_start);
   
   do_compare_rtx_and_jump (opcode, tocompare, NE, 1,
@@ -5472,9 +5472,9 @@ rs6000_emit_eh_toc_restore (stacksize)
   emit_move_insn (opcode_addr, mem);
   emit_move_insn (opcode, gen_rtx_MEM (SImode, opcode_addr));
 
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_CONT);
+  emit_note (NULL, NOTE_INSN_LOOP_CONT);
   emit_jump (loop_start);
-  emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
+  emit_note (NULL, NOTE_INSN_LOOP_END);
   emit_label (loop_exit);
 }
 #endif /* TARGET_AIX */

@@ -690,7 +690,7 @@ reload (first, global)
 
   /* Make sure that the last insn in the chain
      is not something that needs reloading.  */
-  emit_note (NULL_PTR, NOTE_INSN_DELETED);
+  emit_note (NULL, NOTE_INSN_DELETED);
 
   /* Enable find_equiv_reg to distinguish insns made by reload.  */
   reload_first_uid = get_max_uid ();

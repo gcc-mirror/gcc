@@ -2893,14 +2893,14 @@ c_common_nodes_and_builtins ()
   tree va_list_arg_type_node;
 
   /* Define `int' and `char' first so that dbx will output them first.  */
-  record_builtin_type (RID_INT, NULL_PTR, integer_type_node);
+  record_builtin_type (RID_INT, NULL, integer_type_node);
   record_builtin_type (RID_CHAR, "char", char_type_node);
 
   /* `signed' is the same as `int'.  FIXME: the declarations of "signed",
      "unsigned long", "long long unsigned" and "unsigned short" were in C++
      but not C.  Are the conditionals here needed?  */
   if (c_language == clk_cplusplus)
-    record_builtin_type (RID_SIGNED, NULL_PTR, integer_type_node);
+    record_builtin_type (RID_SIGNED, NULL, integer_type_node);
   record_builtin_type (RID_LONG, "long int", long_integer_type_node);
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
   record_builtin_type (RID_MAX, "long unsigned int",
@@ -2964,8 +2964,8 @@ c_common_nodes_and_builtins ()
 
   build_common_tree_nodes_2 (flag_short_double);
 
-  record_builtin_type (RID_FLOAT, NULL_PTR, float_type_node);
-  record_builtin_type (RID_DOUBLE, NULL_PTR, double_type_node);
+  record_builtin_type (RID_FLOAT, NULL, float_type_node);
+  record_builtin_type (RID_DOUBLE, NULL, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex int"),
@@ -2977,7 +2977,7 @@ c_common_nodes_and_builtins ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("complex long double"),
 			complex_long_double_type_node));
 
-  record_builtin_type (RID_VOID, NULL_PTR, void_type_node);
+  record_builtin_type (RID_VOID, NULL, void_type_node);
 
   void_list_node = build_void_list_node ();
 
@@ -3288,17 +3288,17 @@ c_common_nodes_and_builtins ()
 						 NULL_TREE)));
 
   builtin_function ("__builtin_constant_p", default_function_type,
-		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL);
 
   builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
-		    BUILT_IN_RETURN_ADDRESS, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_RETURN_ADDRESS, BUILT_IN_NORMAL, NULL);
 
   builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
-		    BUILT_IN_FRAME_ADDRESS, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_FRAME_ADDRESS, BUILT_IN_NORMAL, NULL);
 
 #ifdef EH_RETURN_DATA_REGNO
   builtin_function ("__builtin_eh_return_data_regno", int_ftype_int,
-		    BUILT_IN_EH_RETURN_DATA_REGNO, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_EH_RETURN_DATA_REGNO, BUILT_IN_NORMAL, NULL);
 #endif
 
   builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
@@ -3308,13 +3308,13 @@ c_common_nodes_and_builtins ()
 		      BUILT_IN_FFS, BUILT_IN_NORMAL, 0, 1, 0);
   /* Define alloca as builtin, unless SMALL_STACK.  */
 #ifndef SMALL_STACK
-  builtin_function_2 (NULL_PTR, "alloca", NULL_TREE, ptr_ftype_sizetype,
+  builtin_function_2 (NULL, "alloca", NULL_TREE, ptr_ftype_sizetype,
 		      BUILT_IN_ALLOCA, BUILT_IN_NORMAL, 0, 1, 0);
 #endif
   /* Declare _exit and _Exit just to mark them as non-returning.  */
-  builtin_function_2 (NULL_PTR, "_exit", NULL_TREE, void_ftype_int,
+  builtin_function_2 (NULL, "_exit", NULL_TREE, void_ftype_int,
 		      0, NOT_BUILT_IN, 0, 1, 1);
-  builtin_function_2 (NULL_PTR, "_Exit", NULL_TREE, void_ftype_int,
+  builtin_function_2 (NULL, "_Exit", NULL_TREE, void_ftype_int,
 		      0, NOT_BUILT_IN, 0, !flag_isoc99, 1);
 
   builtin_function_2 ("__builtin_index", "index",
@@ -3357,43 +3357,43 @@ c_common_nodes_and_builtins ()
 		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
 
   builtin_function ("__builtin_saveregs", ptr_ftype, BUILT_IN_SAVEREGS,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_classify_type", default_function_type,
-		    BUILT_IN_CLASSIFY_TYPE, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_CLASSIFY_TYPE, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_next_arg", ptr_ftype, BUILT_IN_NEXT_ARG,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_args_info", int_ftype_int, BUILT_IN_ARGS_INFO,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_setjmp",
 		    build_function_type (integer_type_node,
 					 tree_cons (NULL_TREE, ptr_type_node,
 						    endlink)),
-		    BUILT_IN_SETJMP, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_SETJMP, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_longjmp",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE, ptr_type_node,
 						    int_endlink)),
-		    BUILT_IN_LONGJMP, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_LONGJMP, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_trap", void_ftype, BUILT_IN_TRAP,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
 
   /* ISO C99 IEEE Unordered compares.  */
   builtin_function ("__builtin_isgreater", default_function_type,
-		    BUILT_IN_ISGREATER, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISGREATER, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_isgreaterequal", default_function_type,
-		    BUILT_IN_ISGREATEREQUAL, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISGREATEREQUAL, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_isless", default_function_type,
-		    BUILT_IN_ISLESS, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISLESS, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_islessequal", default_function_type,
-		    BUILT_IN_ISLESSEQUAL, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISLESSEQUAL, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_islessgreater", default_function_type,
-		    BUILT_IN_ISLESSGREATER, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISLESSGREATER, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_isunordered", default_function_type,
-		    BUILT_IN_ISUNORDERED, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_ISUNORDERED, BUILT_IN_NORMAL, NULL);
 
   /* Untyped call and return.  */
   builtin_function ("__builtin_apply_args", ptr_ftype,
-		    BUILT_IN_APPLY_ARGS, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_APPLY_ARGS, BUILT_IN_NORMAL, NULL);
 
   temp = tree_cons (NULL_TREE,
 		    build_pointer_type (build_function_type (void_type_node,
@@ -3401,9 +3401,9 @@ c_common_nodes_and_builtins ()
 		    tree_cons (NULL_TREE, ptr_type_node, sizetype_endlink));
   builtin_function ("__builtin_apply",
 		    build_function_type (ptr_type_node, temp),
-		    BUILT_IN_APPLY, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_APPLY, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_return", void_ftype_ptr,
-		    BUILT_IN_RETURN, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_RETURN, BUILT_IN_NORMAL, NULL);
 
   /* Support for varargs.h and stdarg.h.  */
   builtin_function ("__builtin_varargs_start",
@@ -3411,21 +3411,21 @@ c_common_nodes_and_builtins ()
 					 tree_cons (NULL_TREE,
 						    va_list_ref_type_node,
 						    endlink)),
-		    BUILT_IN_VARARGS_START, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_VARARGS_START, BUILT_IN_NORMAL, NULL);
 
   builtin_function ("__builtin_stdarg_start",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
 						    va_list_ref_type_node,
 						    NULL_TREE)),
-		    BUILT_IN_STDARG_START, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_STDARG_START, BUILT_IN_NORMAL, NULL);
 
   builtin_function ("__builtin_va_end",
 		    build_function_type (void_type_node,
 					 tree_cons (NULL_TREE,
 						    va_list_ref_type_node,
 						    endlink)),
-		    BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL);
 
   builtin_function ("__builtin_va_copy",
 		    build_function_type (void_type_node,
@@ -3434,7 +3434,7 @@ c_common_nodes_and_builtins ()
 						    tree_cons (NULL_TREE,
 						      va_list_arg_type_node,
 						      endlink))),
-		    BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL);
 
   /* ??? Ought to be `T __builtin_expect(T, T)' for any type T.  */
   builtin_function ("__builtin_expect",
@@ -3444,7 +3444,7 @@ c_common_nodes_and_builtins ()
 						    tree_cons (NULL_TREE,
 							long_integer_type_node,
 							endlink))),
-		    BUILT_IN_EXPECT, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_EXPECT, BUILT_IN_NORMAL, NULL);
 
   /* Currently under experimentation.  */
   builtin_function_2 ("__builtin_memcpy", "memcpy",
@@ -3590,12 +3590,12 @@ c_common_nodes_and_builtins ()
 
   /* Declare these functions non-returning
      to avoid spurious "control drops through" warnings.  */
-  builtin_function_2 (NULL_PTR, "abort",
+  builtin_function_2 (NULL, "abort",
 		      NULL_TREE, ((c_language == clk_cplusplus)
 				  ? void_ftype : void_ftype_any),
 		      0, NOT_BUILT_IN, 0, 0, 1);
 
-  builtin_function_2 (NULL_PTR, "exit",
+  builtin_function_2 (NULL, "exit",
 		      NULL_TREE, ((c_language == clk_cplusplus)
 				  ? void_ftype_int : void_ftype_any),
 		      0, NOT_BUILT_IN, 0, 0, 1);
@@ -3604,21 +3604,21 @@ c_common_nodes_and_builtins ()
   /* Support for these has not been written in either expand_builtin
      or build_function_call.  */
   builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_fmod", double_ftype_double_double,
-		    BUILT_IN_FMOD, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_FMOD, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_frem", double_ftype_double_double,
-		    BUILT_IN_FREM, BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_FREM, BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
-		    BUILT_IN_NORMAL, NULL_PTR);
+		    BUILT_IN_NORMAL, NULL);
 #endif
 
   main_identifier_node = get_identifier ("main");
@@ -3669,7 +3669,7 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
   if (builtin_name != 0)
     {
       bdecl = builtin_function (builtin_name, builtin_type, function_code,
-				class, library_name_p ? name : NULL_PTR);
+				class, library_name_p ? name : NULL);
       if (noreturn_p)
 	{
 	  TREE_THIS_VOLATILE (bdecl) = 1;
@@ -3678,7 +3678,7 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
     }
   if (name != 0 && !flag_no_builtin && !(nonansi_p && flag_no_nonansi_builtin))
     {
-      decl = builtin_function (name, type, function_code, class, NULL_PTR);
+      decl = builtin_function (name, type, function_code, class, NULL);
       if (nonansi_p)
 	DECL_BUILT_IN_NONANSI (decl) = 1;
       if (noreturn_p)

@@ -673,6 +673,6 @@ bitmap_release_memory ()
   if (bitmap_obstack_init)
     {
       bitmap_obstack_init = FALSE;
-      obstack_free (&bitmap_obstack, NULL_PTR);
+      obstack_free (&bitmap_obstack, NULL);
     }
 }

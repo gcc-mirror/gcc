@@ -1768,7 +1768,7 @@ emit_block_move (x, y, size, align)
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
-	  make_decl_rtl (fn, NULL_PTR);
+	  make_decl_rtl (fn, NULL);
 	  assemble_external (fn);
 	}
 
@@ -2668,7 +2668,7 @@ clear_storage (object, size, align)
 	      DECL_EXTERNAL (fn) = 1;
 	      TREE_PUBLIC (fn) = 1;
 	      DECL_ARTIFICIAL (fn) = 1;
-	      make_decl_rtl (fn, NULL_PTR);
+	      make_decl_rtl (fn, NULL);
 	      assemble_external (fn);
 	    }
 

@@ -4602,7 +4602,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 
 	  record_giv (loop, v, p, src_reg, dest_reg, mult_val, add_val,
 		      ext_val, benefit, DEST_REG, not_every_iteration,
-		      maybe_multiple, NULL_PTR);
+		      maybe_multiple, (rtx*)0);
 
 	}
     }
@@ -8582,7 +8582,7 @@ get_condition_for_loop (loop, x)
      const struct loop *loop;
      rtx x;
 {
-  rtx comparison = get_condition (x, NULL_PTR);
+  rtx comparison = get_condition (x, (rtx*)0);
 
   if (comparison == 0
       || ! loop_invariant_p (loop, XEXP (comparison, 0))

@@ -1939,7 +1939,7 @@ assemble_real (d, mode)
       abort ();
     }
 
-  set_float_handler (NULL_PTR);
+  set_float_handler (NULL);
 }
 
 /* Here we combine duplicate floating constants to make
@@ -4804,7 +4804,7 @@ assemble_alias (decl, target)
 
   /* We must force creation of DECL_RTL for debug info generation, even though
      we don't use it here.  */
-  make_decl_rtl (decl, NULL_PTR);
+  make_decl_rtl (decl, NULL);
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
