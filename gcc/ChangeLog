@@ -1,5 +1,45 @@
 Thu Oct 29 23:55:43 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
+	* flow.c (XNMALLOC): New macro.
+	(flow_int_list_blocks, basic_block_succ, basic_block_pred): New
+	static variables.
+	(add_edge, add_edge_to_label): New static functions.
+	(free_bb_memory): New function.
+	(flow_delete_insn): Delete function.
+	(basic_block_drops_in): Delete variable.
+	(find_basic_blocks): Allocate and initialize basic_block_head,
+	basic_block_succ.  Don't allocate basic_block_drops_in.
+	Call free_bb_memory at the beginning.
+	(find_basic_blocks_1): Don't do multiple passes.
+	Delete code to compute basic_block_drops_in.
+	After calling make_edges, mark blocks reached by current block live.
+	Update test for unreachable live blocks.
+	(mark_label_ref): Delete args X, CHECKDUP.  Add PRED arg.  All callers
+	changed.
+	Simplify to call add_edge_to_label when a LABEL_REF is found.
+	(make_edges): Simplify to call add_edge_to_label instead of
+	mark_label_ref most of the time.
+	Compute here whether control drops into the next block.
+	(delete_unreachable_blocks): Return void.  All callers changed.
+	Delete unreachable blocks in reverse order.
+	After deleting all unreachable blocks, renumber the remaining ones
+	and update n_basic_blocks.
+	(delete_block): Speed up deletion a bit.
+	Don't set basic_block_drops_in for deleted blocks.
+	(free_basic_block_vars): Don't free basic_block_drops_in.
+	(life_analysis_1): Update to use new edge representation.
+	(dump_flow_info): Delete code to print basic block info; call
+	dump_bb_data instead.
+	(compute_preds_succs): Delete code to recompute basic_block_drops_in
+	and uid_block_number.
+	Simply copy the previously computed cfg.
+	(dump_bb_data): New arg LIVE_INFO.  All callers changed.
+	Print register lifetime information if LIVE_INFO is nonzero.
+	* basic-block.h (dump_bb_data): Adjust prototype.
+	* gcse.c (gcse_main): Update call to dump_bb_data.
+	* rtl.h (free_bb_memory): Declare.
+	* toplev.c (rest_of_compilation): Call free_bb_memory.
+
 	* reload1.c (struct elim_table): Delete MAX_OFFSET member.
 	(update_eliminable_offsets): Don't compute it.
 	(set_initial_elim_offsets): Don't initialize it.
