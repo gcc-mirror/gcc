@@ -1,3 +1,9 @@
+2003-05-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/xcoff.h (ASM_OUTPUT_SKIP): Accept HOST_WIDE_INT.
+	(ASM_OUTPUT_ALIGNED_COMMON): Same.
+	(ASM_OUTPUT_LOCAL): Same.
+
 Mon May 12 21:53:29 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (output_constant):  Fix underflow.
