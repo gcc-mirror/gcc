@@ -1,3 +1,11 @@
+Wed Dec 15 16:11:55 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* function.c (PREFERRED_STACK_BOUDNARY): Provide default value.
+	(assign_stack_local_1): Limit alignment to PREFERRED_STACK_BOUNDARY,
+	update stack_alignment_needed.
+	(prepare_function_start): Initialize stack_alignment_needed
+	* function.h (struct function): Add field stack_alignment_needed.
+
 Wed Dec 15 14:55:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* caller-save.c (insert_one_insn): Returns struct insn_chain *.
