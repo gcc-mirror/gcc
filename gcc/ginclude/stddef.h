@@ -118,7 +118,14 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef __WCHAR_TYPE__
 #define __WCHAR_TYPE__ int
 #endif
+#ifdef __GNUG__
+/* In C++, wchar_t is a distinct basic type,
+   and we can expect __wchar_t to be defined by cc1plus.  */
+typedef __wchar_t wchar_t;
+#else
+/* In C, cpp tells us which type to make an alias for.  */
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif
