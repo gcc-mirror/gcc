@@ -6937,7 +6937,7 @@ if test x$build != x$host
 then
     BUILD_PREFIX=build-
     BUILD_PREFIX_1=build-
-    BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
+    BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
 
     if test "x$TARGET_SYSTEM_ROOT" = x; then
 	STMP_FIXINC=

@@ -15,6 +15,10 @@
 	* config/m68k/m68k.c (m68k_output_mi_thunk): Use correct assembly
 	syntax for MIT / MOTOROLA.
 
+	PR other/10240
+	* configure.in: Removed $(XCFLAGS) from BUILD_CFLAGS for build != host.
+	* configure: Rebuilt.
+
 2003-06-27  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.c (mips_build_va_list): Make padding in
