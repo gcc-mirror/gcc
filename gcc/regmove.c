@@ -193,7 +193,7 @@ try_auto_increment (insn, inc_insn, inc_set, reg, increment, pre)
 
       REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_INC, reg, REG_NOTES (insn));
 
-      if (inc_insn_set == 0)
+      if (inc_set == 0)
 	{
 	  PUT_CODE (inc_insn, NOTE);
 	  NOTE_LINE_NUMBER (inc_insn) = NOTE_INSN_DELETED;
