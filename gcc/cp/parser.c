@@ -11699,8 +11699,12 @@ cp_parser_class_specifier (cp_parser* parser)
 	  /* Figure out which function we need to process.  */
 	  fn = TREE_VALUE (queue_entry);
 
+	  /* A hack to prevent garbage collection.  */
+	  function_depth++;
+
 	  /* Parse the function.  */
 	  cp_parser_late_parsing_for_member (parser, fn);
+	  function_depth--;
 	}
 
     }
