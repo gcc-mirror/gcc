@@ -55,13 +55,15 @@ extern int target_flags;
 
 #define MASK_A_STEP	0x00000020	/* Emit code for Itanium A step.  */
 
-#define MASK_REG_NAMES	0x00000040	/* Use in/loc/out register names.  */
+#define MASK_B_STEP	0x00000040	/* Emit code for Itanium B step.  */
 
-#define MASK_NO_SDATA   0x00000080	/* Disable sdata/scommon/sbss.  */
+#define MASK_REG_NAMES	0x00000080	/* Use in/loc/out register names.  */
 
-#define MASK_CONST_GP	0x00000100	/* treat gp as program-wide constant */
+#define MASK_NO_SDATA   0x00000100	/* Disable sdata/scommon/sbss.  */
 
-#define MASK_AUTO_PIC	0x00000200	/* generate automatically PIC */
+#define MASK_CONST_GP	0x00000200	/* treat gp as program-wide constant */
+
+#define MASK_AUTO_PIC	0x00000400	/* generate automatically PIC */
 
 #define MASK_INLINE_DIV_LAT 0x00000400	/* inline div, min latency.  */
 
@@ -80,6 +82,8 @@ extern int target_flags;
 #define TARGET_VOL_ASM_STOP	(target_flags & MASK_VOL_ASM_STOP)
 
 #define TARGET_A_STEP		(target_flags & MASK_A_STEP)
+
+#define TARGET_B_STEP		(target_flags & MASK_B_STEP)
 
 #define TARGET_REG_NAMES	(target_flags & MASK_REG_NAMES)
 
@@ -124,6 +128,8 @@ extern int target_flags;
       N_("Don't emit stop bits before and after volatile extended asms") }, \
   { "a-step",		MASK_A_STEP,					\
       N_("Emit code for Itanium (TM) processor A step")},		\
+  { "b-step",		MASK_B_STEP,					\
+      N_("Emit code for Itanium (TM) processor B step")},		\
   { "register-names",	MASK_REG_NAMES,					\
       N_("Use in/loc/out register names")},				\
   { "no-sdata",		MASK_NO_SDATA,					\
