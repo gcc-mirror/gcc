@@ -520,6 +520,8 @@ extern int x86_prefetch_sse;
 	  builtin_assert ("machine=x86_64");			\
 	  builtin_define ("__x86_64");				\
 	  builtin_define ("__x86_64__");			\
+	  builtin_define ("__amd64");				\
+	  builtin_define ("__amd64__");				\
 	}							\
       else							\
 	{							\
