@@ -175,7 +175,7 @@ public:
 
 // type_info for a general class.
 
-#include <limits.h>
+#include <climits>
 
 #if INT_MAX == 2147483647
 typedef int myint32;

@@ -37,7 +37,7 @@
 #define _CPP_BITS_LOCFACETS_H	1
 
 #include <bits/std_ctime.h>	// For struct tm
-#include <bits/std_typeinfo.h> 	// For bad_cast, which shouldn't be here.
+#include <typeinfo> 		// For bad_cast, which shouldn't be here.
 #include <bits/std_ios.h>	// For ios_base
 #include <bits/std_cwctype.h>	// For wctype_t
 

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.36 2000/10/07 18:54:08 bkoz Exp $
+## $Id: Makefile.am,v 1.37 2000/10/09 08:55:06 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -41,13 +41,12 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
 INCLUDES = \
-	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) \
-	-I$(top_builddir) -I$(GLIBCPP_INCLUDES) \
-	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ \
+	$(CSHADOW_INCLUDES) $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
+	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir) \
 	$(TOPLEVEL_INCLUDES)	
 
-headers = \
-	bits/std_cctype.h \
+base_headers = \
 	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h \
 	bits/basic_string.h bits/std_string.h  bits/string.tcc \
 	bits/generic_shadow.h bits/std_utility.h \
@@ -55,14 +54,7 @@ headers = \
 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h \
 	bits/std_valarray.h bits/mask_array.h bits/slice.h bits/slice_array.h \
 	bits/gslice.h bits/gslice_array.h bits/indirect_array.h \
-	bits/std_cassert.h bits/std_cwctype.h \
-	bits/std_cerrno.h bits/std_cfloat.h bits/std_climits.h \
-	bits/std_clocale.h bits/std_cmath.h \
-	bits/std_csetjmp.h bits/std_csignal.h bits/std_cstdarg.h \
-	bits/std_cstddef.h bits/std_cstdio.h bits/std_cstdlib.h \
-	bits/std_cstring.h bits/std_ctime.h bits/std_cwchar.h \
-	bits/std_typeinfo.h bits/std_new.h \
-	bits/std_exception.h bits/exception_support.h \
+	bits/exception_support.h \
 	bits/std_fstream.h bits/std_iomanip.h \
 	bits/ios_base.h bits/fpos.h bits/basic_ios.h bits/basic_ios.tcc \
 	bits/std_ios.h bits/std_iosfwd.h bits/std_iostream.h \
@@ -102,34 +94,38 @@ headers = \
 	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h \
 	ext/stl_hashtable.h ext/stl_hash_fun.h \
 	ext/hash_map ext/hash_set ext/rope ext/slist \
-	ext/tree ext/bvector \
-	shadow/assert.h shadow/ctype.h shadow/errno.h shadow/float.h \
-	shadow/fcntl.h shadow/libio.h shadow/iolibio.h shadow/libioP.h \
-	shadow/limits.h shadow/locale.h shadow/math.h shadow/setjmp.h \
-	shadow/signal.h shadow/stdarg.h shadow/stddef.h shadow/stdio.h \
-	shadow/stdlib.h shadow/string.h shadow/time.h \
-	shadow/pthread.h shadow/iconv.h shadow/wchar.h shadow/wctype.h \
-	shadow/bits/std_cassert.h shadow/bits/std_cctype.h \
-	shadow/bits/std_cerrno.h shadow/bits/std_cfloat.h \
-	shadow/bits/std_climits.h shadow/bits/std_clocale.h \
-	shadow/bits/std_cmath.h shadow/bits/std_csetjmp.h \
-	shadow/bits/std_csignal.h shadow/bits/std_cstdarg.h \
-	shadow/bits/std_cstddef.h shadow/bits/std_cstdio.h \
-	shadow/bits/std_cstdlib.h shadow/bits/std_cstring.h \
-	shadow/bits/std_ctime.h shadow/bits/std_cwchar.h \
-	shadow/bits/std_cwctype.h \
-	shadow/bits/wrap_libio.h shadow/bits/wrap_iolibio.h \
-	shadow/bits/wrap_libioP.h shadow/bits/wrap_iconv.h \
-	shadow/bits/wrap_fcntl.h shadow/bits/wrap_pthread.h \
-	shadow/sys/cdefs.h 
+	ext/tree ext/bvector 
+
+c_base_headers = \
+	bits/std_cassert.h bits/std_cctype.h bits/std_cerrno.h \
+	bits/std_cfloat.h bits/std_climits.h bits/std_clocale.h \
+	bits/std_cmath.h bits/std_csetjmp.h bits/std_csignal.h \
+	bits/std_cstdarg.h bits/std_cstddef.h bits/std_cstdio.h \
+	bits/std_cstdlib.h bits/std_cstring.h bits/std_ctime.h \
+	bits/std_cwchar.h bits/std_cwctype.h 
+
+c_shadow_headers = \
+	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h \
+	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h \
+	wctype.h fcntl.h libio.h iolibio.h libioP.h pthread.h iconv.h \
+	bits/wrap_libio.h bits/wrap_iolibio.h bits/wrap_libioP.h \
+	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h \
+	sys/cdefs.h 
+
+if GLIBCPP_USE_CSHADOW
+c_headers = $(c_base_headers) $(c_shadow_headers)
+else
+c_headers = $(c_base_headers)
+endif
 
 std_headers = \
-	algorithm bitset cassert cctype cerrno cfloat climits clocale ciso646 \
-	cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib \
-	cstring ctime cwchar cwctype deque exception fstream functional \
+	algorithm bitset complex deque fstream functional \
 	iomanip ios iosfwd iostream istream iterator limits list locale \
-	map memory new numeric ostream queue set sstream stack stdexcept \
-	streambuf string strstream typeinfo utility valarray vector 
+	map memory numeric ostream queue set sstream stack stdexcept \
+	streambuf string strstream utility valarray vector \
+	cassert cctype cerrno cfloat climits clocale ciso646 \
+	cmath csetjmp csignal cstdarg cstddef cstdio cstdlib \
+	cstring ctime cwchar cwctype
 
 if GLIBCPP_NEED_LIBIO 
 libio_headers = \
@@ -141,9 +137,12 @@ endif
 build_headers = \
 	$(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
 	$(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h \
-	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/ctype_base.h \
+	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/os_defines.h \
+	$(top_builddir)/bits/ctype_base.h \
 	$(top_builddir)/bits/ctype_noninline.h \
 	$(top_builddir)/bits/ctype_inline.h 
+
+headers = $(base_headers) $(c_headers)
 
 sources = \
 	limitsMEMBERS.cc \
@@ -158,8 +157,8 @@ wstring_sources = \
 	wstring-inst.cc
 
 VPATH += $(top_srcdir) $(top_srcdir)/src
-VPATH += $(GLIBCPP_INCLUDES) $(top_srcdir)/std
-
+VPATH += $(GLIBCPP_INCLUDE_DIR) 
+VPATH += $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
 
 # Actual sources for the distro, but don't build these.
 #EXTRA_sources = string-inst.cc 
@@ -208,8 +207,8 @@ install: myinstallheaders
 myinstallheaders: $(headers:%=$(myincludep)%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
-	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep)"; \
-	        $(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep); \
+	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep)";\
+	        $(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
 	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \

@@ -36,7 +36,7 @@
 #include <bits/cpp_type_traits.h>
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstring.h>
-#include <bits/std_new.h>
+#include <new>
 
 namespace std
 {

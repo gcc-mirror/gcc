@@ -35,7 +35,7 @@
 #define _CPP_IOS	1
 
 #include <bits/std_iosfwd.h>
-#include <bits/std_exception.h> // For ios_base::failure
+#include <exception> 		// For ios_base::failure
 #include <bits/char_traits.h> 	// For char_traits, streamoff, streamsize, fpos
 #include <bits/stl_string_fwd.h>// For string.
 #include <bits/std_cstdio.h> 	// For SEEK_SET, SEEK_CUR, SEEK_END

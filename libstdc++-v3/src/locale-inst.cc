@@ -35,7 +35,7 @@
 #include <bits/std_cstring.h>
 #include <bits/std_cassert.h>
 #include <bits/std_limits.h>
-#include <bits/std_exception.h>
+#include <exception>
 #include <bits/std_stdexcept.h>
 #include <bits/std_locale.h>
 #include <bits/locale_facets.tcc>

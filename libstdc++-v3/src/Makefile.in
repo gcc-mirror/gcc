@@ -96,6 +96,7 @@ USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
+c_include_dir = @c_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -109,26 +110,36 @@ MAINT_CHARSET = latin1
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
-INCLUDES =  	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) 	-I$(top_builddir) -I$(GLIBCPP_INCLUDES) 	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) 	$(TOPLEVEL_INCLUDES)	
+INCLUDES =  	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ 	$(CSHADOW_INCLUDES) $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) 	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir) 	$(TOPLEVEL_INCLUDES)	
 
 
-headers =  	bits/std_cctype.h 	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h 	bits/basic_string.h bits/std_string.h  bits/string.tcc 	bits/generic_shadow.h bits/std_utility.h 	bits/std_complex.h 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h 	bits/std_valarray.h bits/mask_array.h bits/slice.h bits/slice_array.h 	bits/gslice.h bits/gslice_array.h bits/indirect_array.h 	bits/std_cassert.h bits/std_cwctype.h 	bits/std_cerrno.h bits/std_cfloat.h bits/std_climits.h 	bits/std_clocale.h bits/std_cmath.h 	bits/std_csetjmp.h bits/std_csignal.h bits/std_cstdarg.h 	bits/std_cstddef.h bits/std_cstdio.h bits/std_cstdlib.h 	bits/std_cstring.h bits/std_ctime.h bits/std_cwchar.h 	bits/std_typeinfo.h bits/std_new.h 	bits/std_exception.h bits/exception_support.h 	bits/std_fstream.h bits/std_iomanip.h 	bits/ios_base.h bits/fpos.h bits/basic_ios.h bits/basic_ios.tcc 	bits/std_ios.h bits/std_iosfwd.h bits/std_iostream.h 	bits/std_istream.h bits/istream.tcc bits/std_locale.h 	bits/fstream.tcc bits/ostream.tcc bits/sbuf_iter.h bits/sstream.tcc 	bits/std_ostream.h bits/std_sstream.h bits/std_streambuf.h 	bits/streambuf.tcc bits/basic_file.h 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h 	bits/stl_threads.h bits/stl_iterator_base.h 	backward/algo.h backward/algobase.h backward/alloc.h 	backward/bvector.h backward/defalloc.h backward/deque.h 	backward/function.h backward/hash_map.h backward/hash_set.h 	backward/hashtable.h backward/heap.h backward/iterator.h 	backward/list.h backward/map.h backward/multimap.h backward/new.h 	backward/multiset.h backward/pair.h backward/iostream.h 	backward/rope.h backward/set.h backward/slist.h backward/stack.h 	backward/tempbuf.h backward/tree.h backward/vector.h 	backward/fstream.h 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h 	bits/std_iterator.h bits/std_list.h 	bits/std_map.h bits/std_memory.h bits/std_numeric.h 	bits/std_queue.h bits/std_set.h bits/std_stack.h 	bits/std_stdexcept.h bits/std_vector.h 	bits/stl_algo.h bits/stl_algobase.h bits/stl_alloc.h 	bits/stl_deque.h bits/stl_function.h 	bits/stl_heap.h bits/stl_iterator.h bits/stl_list.h bits/stl_map.h 	bits/stl_multimap.h bits/stl_multiset.h bits/stl_numeric.h 	bits/stl_pair.h bits/stl_queue.h bits/stl_raw_storage_iter.h 	bits/stl_relops.h bits/stl_set.h 	bits/stl_stack.h bits/stl_string_fwd.h bits/stl_tempbuf.h 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h 	bits/concept_checks.h bits/container_concepts.h 	bits/sequence_concepts.h bits/std_strstream.h 	ext/ropeimpl.h ext/stl_rope.h 	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h 	ext/stl_hashtable.h ext/stl_hash_fun.h 	ext/hash_map ext/hash_set ext/rope ext/slist 	ext/tree ext/bvector 	shadow/assert.h shadow/ctype.h shadow/errno.h shadow/float.h 	shadow/fcntl.h shadow/libio.h shadow/iolibio.h shadow/libioP.h 	shadow/limits.h shadow/locale.h shadow/math.h shadow/setjmp.h 	shadow/signal.h shadow/stdarg.h shadow/stddef.h shadow/stdio.h 	shadow/stdlib.h shadow/string.h shadow/time.h 	shadow/pthread.h shadow/iconv.h shadow/wchar.h shadow/wctype.h 	shadow/bits/std_cassert.h shadow/bits/std_cctype.h 	shadow/bits/std_cerrno.h shadow/bits/std_cfloat.h 	shadow/bits/std_climits.h shadow/bits/std_clocale.h 	shadow/bits/std_cmath.h shadow/bits/std_csetjmp.h 	shadow/bits/std_csignal.h shadow/bits/std_cstdarg.h 	shadow/bits/std_cstddef.h shadow/bits/std_cstdio.h 	shadow/bits/std_cstdlib.h shadow/bits/std_cstring.h 	shadow/bits/std_ctime.h shadow/bits/std_cwchar.h 	shadow/bits/std_cwctype.h 	shadow/bits/wrap_libio.h shadow/bits/wrap_iolibio.h 	shadow/bits/wrap_libioP.h shadow/bits/wrap_iconv.h 	shadow/bits/wrap_fcntl.h shadow/bits/wrap_pthread.h 	shadow/sys/cdefs.h 
+base_headers =  	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h 	bits/basic_string.h bits/std_string.h  bits/string.tcc 	bits/generic_shadow.h bits/std_utility.h 	bits/std_complex.h 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h 	bits/std_valarray.h bits/mask_array.h bits/slice.h bits/slice_array.h 	bits/gslice.h bits/gslice_array.h bits/indirect_array.h 	bits/exception_support.h 	bits/std_fstream.h bits/std_iomanip.h 	bits/ios_base.h bits/fpos.h bits/basic_ios.h bits/basic_ios.tcc 	bits/std_ios.h bits/std_iosfwd.h bits/std_iostream.h 	bits/std_istream.h bits/istream.tcc bits/std_locale.h 	bits/fstream.tcc bits/ostream.tcc bits/sbuf_iter.h bits/sstream.tcc 	bits/std_ostream.h bits/std_sstream.h bits/std_streambuf.h 	bits/streambuf.tcc bits/basic_file.h 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h 	bits/stl_pthread_alloc.h bits/pthread_allocimpl.h 	bits/stl_threads.h bits/stl_iterator_base.h 	backward/algo.h backward/algobase.h backward/alloc.h 	backward/bvector.h backward/defalloc.h backward/deque.h 	backward/function.h backward/hash_map.h backward/hash_set.h 	backward/hashtable.h backward/heap.h backward/iterator.h 	backward/list.h backward/map.h backward/multimap.h backward/new.h 	backward/multiset.h backward/pair.h backward/iostream.h 	backward/rope.h backward/set.h backward/slist.h backward/stack.h 	backward/tempbuf.h backward/tree.h backward/vector.h 	backward/fstream.h 	bits/std_bitset.h bits/std_deque.h bits/std_functional.h 	bits/std_iterator.h bits/std_list.h 	bits/std_map.h bits/std_memory.h bits/std_numeric.h 	bits/std_queue.h bits/std_set.h bits/std_stack.h 	bits/std_stdexcept.h bits/std_vector.h 	bits/stl_algo.h bits/stl_algobase.h bits/stl_alloc.h 	bits/stl_deque.h bits/stl_function.h 	bits/stl_heap.h bits/stl_iterator.h bits/stl_list.h bits/stl_map.h 	bits/stl_multimap.h bits/stl_multiset.h bits/stl_numeric.h 	bits/stl_pair.h bits/stl_queue.h bits/stl_raw_storage_iter.h 	bits/stl_relops.h bits/stl_set.h 	bits/stl_stack.h bits/stl_string_fwd.h bits/stl_tempbuf.h 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h 	bits/concept_checks.h bits/container_concepts.h 	bits/sequence_concepts.h bits/std_strstream.h 	ext/ropeimpl.h ext/stl_rope.h 	ext/stl_bvector.h bits/stl_config.h bits/stl_construct.h 	ext/stl_hashtable.h ext/stl_hash_fun.h 	ext/hash_map ext/hash_set ext/rope ext/slist 	ext/tree ext/bvector 
 
 
-std_headers =  	algorithm bitset cassert cctype cerrno cfloat climits clocale ciso646 	cmath complex csetjmp csignal cstdarg cstddef cstdio cstdlib 	cstring ctime cwchar cwctype deque exception fstream functional 	iomanip ios iosfwd iostream istream iterator limits list locale 	map memory new numeric ostream queue set sstream stack stdexcept 	streambuf string strstream typeinfo utility valarray vector 
+c_base_headers =  	bits/std_cassert.h bits/std_cctype.h bits/std_cerrno.h 	bits/std_cfloat.h bits/std_climits.h bits/std_clocale.h 	bits/std_cmath.h bits/std_csetjmp.h bits/std_csignal.h 	bits/std_cstdarg.h bits/std_cstddef.h bits/std_cstdio.h 	bits/std_cstdlib.h bits/std_cstring.h bits/std_ctime.h 	bits/std_cwchar.h bits/std_cwctype.h 
+
+
+c_shadow_headers =  	assert.h ctype.h errno.h float.h limits.h locale.h math.h setjmp.h 	signal.h stdarg.h stddef.h stdio.h stdlib.h string.h time.h wchar.h 	wctype.h fcntl.h libio.h iolibio.h libioP.h pthread.h iconv.h 	bits/wrap_libio.h bits/wrap_iolibio.h bits/wrap_libioP.h 	bits/wrap_iconv.h bits/wrap_fcntl.h bits/wrap_pthread.h 	sys/cdefs.h 
+
+@GLIBCPP_USE_CSHADOW_TRUE@c_headers = $(c_base_headers) $(c_shadow_headers)
+@GLIBCPP_USE_CSHADOW_FALSE@c_headers = $(c_base_headers)
+
+std_headers =  	algorithm bitset complex deque fstream functional 	iomanip ios iosfwd iostream istream iterator limits list locale 	map memory numeric ostream queue set sstream stack stdexcept 	streambuf string strstream utility valarray vector 	cassert cctype cerrno cfloat climits clocale ciso646 	cmath csetjmp csignal cstdarg cstddef cstdio cstdlib 	cstring ctime cwchar cwctype
 
 @GLIBCPP_NEED_LIBIO_TRUE@libio_headers = 	$(top_srcdir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
 @GLIBCPP_NEED_LIBIO_FALSE@libio_headers = 
 
-build_headers =  	$(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h 	$(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h 	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/ctype_base.h 	$(top_builddir)/bits/ctype_noninline.h 	$(top_builddir)/bits/ctype_inline.h 
+build_headers =  	$(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h 	$(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h 	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/os_defines.h 	$(top_builddir)/bits/ctype_base.h 	$(top_builddir)/bits/ctype_noninline.h 	$(top_builddir)/bits/ctype_inline.h 
 
+
+headers = $(base_headers) $(c_headers)
 
 sources =  	limitsMEMBERS.cc 	cmath.cc 	complex.cc complexf.cc complexl.cc complex_io.cc 	stdexcept.cc 	c++io.cc ios.cc stdstreams.cc strstream.cc 	locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
 
 wstring_sources =  	wstring-inst.cc
 
-VPATH =  $(top_srcdir) $(top_srcdir)/src $(GLIBCPP_INCLUDES) $(top_srcdir)/std
+VPATH =  $(top_srcdir) $(top_srcdir)/src $(GLIBCPP_INCLUDE_DIR)  $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
 
 # Actual sources for the distro, but don't build these.
 #EXTRA_sources = string-inst.cc 
@@ -439,8 +450,8 @@ install: myinstallheaders
 myinstallheaders: $(headers:%=$(myincludep)%)
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(std_headers); do \
-	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep)"; \
-	        $(INSTALL_DATA) $(GLIBCPP_INCLUDES)/std/$$i $(myincludep); \
+	  echo "$(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep)";\
+	        $(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
 	  echo "$(INSTALL_DATA) $$i $(myincludep)bits/"; \

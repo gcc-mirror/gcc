@@ -44,7 +44,7 @@
 #include <bits/std_climits.h>
 #include <bits/std_cstdlib.h>
 #include <bits/std_cstddef.h>
-#include <bits/std_new.h>
+#include <new>
 
 #ifdef __STL_USE_NEW_IOSTREAMS 
 #include <iosfwd>

@@ -96,6 +96,7 @@ USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
+c_include_dir = @c_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -113,12 +114,10 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 
-LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++/include
-
-INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDES) 	$(CONFIG_INCLUDES)	-I$(top_builddir)
+INCLUDES =  	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include 	$(CSHADOW_INCLUDES)  $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) 	$(CONFIG_INCLUDES) -I$(top_builddir)
 
 
-headers =  	include/cxxabi.h 	include/exception 	include/new 	include/new.h 	include/typeinfo
+headers =  	cxxabi.h exception new new.h typeinfo
 
 
 sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
@@ -126,6 +125,10 @@ sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	exception.cc 	new_
 
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
+
+# This insanely simple bit of install magic courtesy of Mr. Tromey.
+glibcppinstalldir = $(prefix)/include/g++-v3
+glibcppinstall_HEADERS = $(headers)
 
 # Flags to force separate libtool library to be static only.
 LIBTOOL = @LIBTOOL@ --tag disable-shared
@@ -177,6 +180,8 @@ exception.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
 new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 CXXFLAGS = @CXXFLAGS@
 CXXLD = $(CXX)
+HEADERS =  $(glibcppinstall_HEADERS)
+
 DIST_COMMON =  Makefile.am Makefile.in configure configure.in
 
 
@@ -288,6 +293,21 @@ libsupc++.la: $(libsupc___la_OBJECTS) $(libsupc___la_DEPENDENCIES)
 .cc.lo:
 	$(LTCXXCOMPILE) -c $<
 
+install-glibcppinstallHEADERS: $(glibcppinstall_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(glibcppinstalldir)
+	@list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(glibcppinstalldir)/$$p; \
+	done
+
+uninstall-glibcppinstallHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(glibcppinstall_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(glibcppinstalldir)/$$p; \
+	done
+
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -345,20 +365,22 @@ install-info: install-info-am
 install-exec-am: install-toolexeclibLTLIBRARIES
 install-exec: install-exec-am
 
-install-data-am:
+install-data-am: install-glibcppinstallHEADERS
 install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibLTLIBRARIES \
+		uninstall-glibcppinstallHEADERS
 uninstall: uninstall-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir)
+	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) \
+		$(DESTDIR)$(glibcppinstalldir)
 
 
 mostlyclean-generic:
@@ -408,12 +430,13 @@ clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
-clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-info-am \
-install-info install-exec-am install-exec install-data-am install-data \
-install-am install uninstall-am uninstall all-redirect all-am all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
+clean-libtool maintainer-clean-libtool uninstall-glibcppinstallHEADERS \
+install-glibcppinstallHEADERS tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-info-am install-info \
+install-exec-am install-exec install-data-am install-data install-am \
+install uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

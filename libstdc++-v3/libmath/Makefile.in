@@ -97,6 +97,7 @@ USE_COMPLEX_LONG_DOUBLE = @USE_COMPLEX_LONG_DOUBLE@
 VERSION = @VERSION@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
+c_include_dir = @c_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
 ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
@@ -121,7 +122,7 @@ libmath_la_SOURCES =  	signbit.c signbitf.c cabs.c cabsf.c
 
 LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
-INCLUDES = -I$(GLIBCPP_INCLUDES) $(TOPLEVEL_INCLUDES)
+INCLUDES = -I$(GLIBCPP_INCLUDE_DIR) $(TOPLEVEL_INCLUDES)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 

@@ -14,7 +14,7 @@
 #ifndef _CPP_STDEXCEPT
 #define _CPP_STDEXCEPT 1
 
-#include <bits/std_exception.h>
+#include <exception>
 
 #if defined(__STL_USE_EXCEPTIONS) || \
     !(defined(_MIPS_SIM) && defined(_ABIO32) && _MIPS_SIM == _ABIO32)

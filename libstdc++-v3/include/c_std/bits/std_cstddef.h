@@ -47,12 +47,8 @@ namespace _C_legacy {
 #   define _IN_C_LEGACY_
 #   pragma GCC system_header
 
-    // XXX
-    // glibc 2.1.x time.h is on crack
-#   define __need_wchar_t
-#   define __need_ptrdiff_t
-#   define __need_size_t
-
+//#   define __need_ptrdiff_t
+//#   define __need_size_t
 #   include_next <stddef.h>
   }
 } // namespace _C_legacy
@@ -64,7 +60,6 @@ namespace _C_legacy {
 namespace std {
   using _C_legacy::ptrdiff_t;
   using _C_legacy::size_t;
-  using _C_legacy::wchar_t;
 } // namespace std
   
 # undef _IN_C_LEGACY_
@@ -73,7 +68,11 @@ namespace std {
   // some names and types with the std:: C++ version.
   using std::ptrdiff_t;
   using std::size_t;
-  using std::wchar_t;
+
+  // 3.9.1 Fundamental Types
+  // p 5
+  // wchar_t is a fundamental type
+  // using std::wchar_t;
 
 # ifdef _STDDEF_NEED_C_LEGACY_
   // dive back into the "swamp"

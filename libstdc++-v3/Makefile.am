@@ -53,7 +53,12 @@ CONFIG_CXXFLAGS = \
 
 
 # Root level of the include sources.
-GLIBCPP_INCLUDES = $(top_srcdir)/include
+GLIBCPP_INCLUDE_DIR = $(top_srcdir)/include
+
+# Can either use include/c or include/c_std to grab "C" headers. This
+# variable is set to the include directory currently in use.
+C_INCLUDE_DIR = $(GLIBCPP_INCLUDE_DIR)/@c_include_dir@
+
 
 # Passed down for cross compilers, canadian crosses.
 TOPLEVEL_INCLUDES = -I$(includedir)
@@ -67,15 +72,12 @@ else
 LIBIO_INCLUDES = -I$(top_srcdir)/libio
 endif
 
-# XXX may need to add this in later to enabled shadow header includes
+LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++
+
+# XXX May need to add this in later to enabled shadow header includes
 #	-I$(top_builddir)/cshadow
-if GLIBCPP_USE_CSHADOW
 CSHADOW_INCLUDES = \
-	-I$(GLIBCPP_INCLUDES)/std -I$(GLIBCPP_INCLUDES)/c_std
-else
-CSHADOW_INCLUDES = \
-	-I$(GLIBCPP_INCLUDES)/std -I$(GLIBCPP_INCLUDES)/c
-endif
+	-I$(GLIBCPP_INCLUDE_DIR)/std -I$(C_INCLUDE_DIR)
 
 
 # Use $(blddir) instead of $(top_builddir) for arguments to "mkcheck"
@@ -176,9 +178,10 @@ AM_MAKEFLAGS = \
 	"OPTIMIZE_CXXFLAGS=$(OPTIMIZE_CXXFLAGS)" \
 	"WARN_CXXFLAGS=$(WARN_CXXFLAGS)" \
 	"CONFIG_CXXFLAGS=$(CONFIG_CXXFLAGS)" \
-	"GLIBCPP_INCLUDES=$(GLIBCPP_INCLUDES)" \
+	"GLIBCPP_INCLUDE_DIR=$(GLIBCPP_INCLUDE_DIR)" \
+	"C_INCLUDE_DIR=$(C_INCLUDE_DIR)" \
 	"TOPLEVEL_INCLUDES=$(TOPLEVEL_INCLUDES)" \
 	"LIBMATH_INCLUDES=$(LIBMATH_INCLUDES)" \
 	"LIBIO_INCLUDES=$(LIBIO_INCLUDES)" \
-	"CSHADOW_INCLUDES=$(CSHADOW_INCLUDES)"
-
+	"CSHADOW_INCLUDES=$(CSHADOW_INCLUDES)" \
+	"LIBSUPCXX_INCLUDES=$(LIBSUPCXX_INCLUDES)"

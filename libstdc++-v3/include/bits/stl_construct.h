@@ -31,7 +31,7 @@
 #ifndef _CPP_BITS_STL_CONSTRUCT_H
 #define _CPP_BITS_STL_CONSTRUCT_H 1
 
-#include <bits/std_new.h>
+#include <new>
 
 __STL_BEGIN_NAMESPACE
 

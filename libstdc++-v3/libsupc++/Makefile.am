@@ -42,19 +42,13 @@ toolexeclib_LTLIBRARIES = libsupc++.la
 noinst_LTLIBRARIES = libsupc++convenience.la
 
 
-LIBSUPCXX_INCLUDES = -I$(top_srcdir)/libsupc++/include
-
 INCLUDES = \
 	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include \
-	$(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDES) \
+	$(CSHADOW_INCLUDES)  $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
 	$(CONFIG_INCLUDES) -I$(top_builddir)
 
 headers = \
-	include/cxxabi.h \
-	include/exception \
-	include/new \
-	include/new.h \
-	include/typeinfo
+	cxxabi.h exception new new.h typeinfo
 
 sources = \
 	del_op.cc \
@@ -74,6 +68,10 @@ sources = \
 
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
+
+# This insanely simple bit of install magic courtesy of Mr. Tromey.
+glibcppinstalldir= $(prefix)/include/g++-v3
+glibcppinstall_HEADERS = $(headers)
 
 # Flags to force separate libtool library to be static only.
 LIBTOOL = @LIBTOOL@ --tag disable-shared
