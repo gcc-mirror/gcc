@@ -4497,9 +4497,17 @@ schedule_insns (dump_file)
 
   /* Schedule each basic block, block by block.  */
 
-  if (NEXT_INSN (basic_block_end[n_basic_blocks-1]) == 0
-      || (GET_CODE (basic_block_end[n_basic_blocks-1]) != NOTE
-	  && GET_CODE (basic_block_end[n_basic_blocks-1]) != CODE_LABEL))
+  /* ??? Add a NOTE after the last insn of the last basic block.  It is not
+     known why this is done.  */
+
+  insn = basic_block_end[n_basic_blocks-1];
+  if (NEXT_INSN (insn) == 0
+      || (GET_CODE (insn) != NOTE
+	  && GET_CODE (insn) != CODE_LABEL
+	  /* Don't emit a NOTE if it would end up between an unconditional
+	     jump and a BARRIER.  */
+	  && ! (GET_CODE (insn) == JUMP_INSN
+		&& GET_CODE (NEXT_INSN (insn)) == BARRIER)))
     emit_note_after (NOTE_INSN_DELETED, basic_block_end[n_basic_blocks-1]);
 
   for (b = 0; b < n_basic_blocks; b++)
