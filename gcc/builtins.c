@@ -6767,6 +6767,28 @@ fold_builtin_toascii (tree arglist)
     }
 }
 
+/* Fold a call to builtin isdigit.  */
+
+static tree
+fold_builtin_isdigit (tree arglist)
+{
+  if (! validate_arglist (arglist, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      /* Transform isdigit(c) -> (unsigned)(c) - '0' <= 9.  */
+      /* According to the C standard, isdigit is unaffected by locale.  */
+      tree arg = TREE_VALUE (arglist);
+      arg = build1 (NOP_EXPR, unsigned_type_node, arg);
+      arg = build (MINUS_EXPR, unsigned_type_node, arg,
+		   fold (build1 (NOP_EXPR, unsigned_type_node,
+				 build_int_2 (TARGET_DIGIT0, 0))));
+      arg = build (LE_EXPR, integer_type_node, arg,
+		   fold (build1 (NOP_EXPR, unsigned_type_node,
+				 build_int_2 (9, 0))));
+      return fold (arg);
+    }
+}
 
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
@@ -7256,6 +7278,9 @@ fold_builtin (tree exp)
 
     case BUILT_IN_TOASCII:
       return fold_builtin_toascii (arglist);
+
+    case BUILT_IN_ISDIGIT:
+      return fold_builtin_isdigit (arglist);
 
     default:
       break;

@@ -75,6 +75,29 @@ void test(int i)
   if (toascii(i) != (i & 0x7f))
     link_failure_var();
 
+  TEST_CTYPE_CST_TRUE (isdigit, '0');
+  TEST_CTYPE_CST_TRUE (isdigit, '1');
+  TEST_CTYPE_CST_TRUE (isdigit, '2');
+  TEST_CTYPE_CST_TRUE (isdigit, '3');
+  TEST_CTYPE_CST_TRUE (isdigit, '4');
+  TEST_CTYPE_CST_TRUE (isdigit, '5');
+  TEST_CTYPE_CST_TRUE (isdigit, '6');
+  TEST_CTYPE_CST_TRUE (isdigit, '7');
+  TEST_CTYPE_CST_TRUE (isdigit, '8');
+  TEST_CTYPE_CST_TRUE (isdigit, '9');
+
+  TEST_CTYPE_CST_FALSE (isdigit, '0'-1);
+  TEST_CTYPE_CST_FALSE (isdigit, '9'+1);
+  TEST_CTYPE_CST_FALSE (isdigit, -1);
+  TEST_CTYPE_CST_FALSE (isdigit, 0);
+  TEST_CTYPE_CST_FALSE (isdigit, 255);
+  TEST_CTYPE_CST_FALSE (isdigit, 256);
+  TEST_CTYPE_CST_FALSE (isdigit, 10000);
+  TEST_CTYPE_CST_FALSE (isdigit, __INT_MAX__);
+  
+  /* This ctype call should transform into another expression.  */
+  if (isdigit(i) != ((unsigned)i - '0' <= 9))
+    link_failure_var();
 #endif /* __OPTIMIZE__ */
 }
 
