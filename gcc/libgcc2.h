@@ -90,7 +90,7 @@ typedef unsigned int UHItype	__attribute__ ((mode (HI)));
 /* These typedefs are usually forbidden on dsp's with UNITS_PER_WORD 1 */
 typedef 	 int SItype	__attribute__ ((mode (SI)));
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
-#if MIN_UNITS_PER_WORD > 2
+#if LONG_LONG_TYPE_SIZE > 32
 /* These typedefs are usually forbidden on archs with UNITS_PER_WORD 2 */
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
@@ -163,7 +163,7 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define UDWtype	UTItype
 #define __NW(a,b)	__ ## a ## di ## b
 #define __NDW(a,b)	__ ## a ## ti ## b
-#elif MIN_UNITS_PER_WORD > 2
+#elif MIN_UNITS_PER_WORD > 2 || LONG_LONG_TYPE_SIZE > 32
 #define W_TYPE_SIZE (4 * BITS_PER_UNIT)
 #define Wtype	SItype
 #define UWtype	USItype
