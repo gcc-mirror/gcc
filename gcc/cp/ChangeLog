@@ -1,3 +1,8 @@
+Wed Dec  3 13:24:04 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* pt.c (tsubst): Remove tree_cons call (places redundant info into
+ 	DECL_TEMPLATE_INSTANTIATION). 	
+
 Wed Dec  3 11:44:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (is_overloaded_fn): Handle getting a fn template.
