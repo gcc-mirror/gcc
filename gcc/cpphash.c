@@ -599,7 +599,8 @@ collect_formal_parameters (pfile)
 	      continue;
 	    }
 	  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->c99
-	      && !strncmp (tok, "__VA_ARGS__", sizeof "__VA_ARGS__" - 1))
+	      && len == sizeof "__VA_ARGS__" - 1
+	      && !strncmp (tok, "__VA_ARGS__", len))
 	    cpp_pedwarn (pfile,
 	"C99 does not permit use of `__VA_ARGS__' as a macro argument name");
 	  namebuf = (U_CHAR *) xrealloc (namebuf, argslen + len + 1);
