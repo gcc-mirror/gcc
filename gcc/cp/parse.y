@@ -88,7 +88,8 @@ empty_parms ()
 {
   tree parms;
 
-  if (strict_prototype)
+  if (strict_prototype
+      || current_class_type != NULL)
     parms = void_list_node;
   else
     parms = NULL_TREE;
@@ -264,6 +265,8 @@ empty_parms ()
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
+
+%type <ttype> self_template_type
 
 %token NSNAME
 %type <ttype> NSNAME
@@ -595,6 +598,48 @@ constructor_declarator:
 		    }
 		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $5);
 		}
+	| nested_name_specifier self_template_type '(' 
+		{
+		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  if ($1 != current_class_type)
+		    {
+		      push_nested_class ($1, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		}
+	  parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $<ttype>4, $5, $7); }
+	| nested_name_specifier self_template_type LEFT_RIGHT type_quals
+		{
+		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  if ($1 != current_class_type)
+		    {
+		      push_nested_class ($1, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $4);
+		}
+	| global_scope nested_name_specifier self_template_type '(' 
+		{
+		  $$ = build_parse_node (SCOPE_REF, $2, $3);
+		  if ($2 != current_class_type)
+		    {
+		      push_nested_class ($2, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		}
+	 parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $<ttype>5, $6, $8); }
+	| global_scope nested_name_specifier self_template_type LEFT_RIGHT type_quals
+		{
+		  $$ = build_parse_node (SCOPE_REF, $2, $3);
+		  if ($2 != current_class_type)
+		    {
+		      push_nested_class ($2, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $5);
+		}
 	;
 
 fn.def1:
@@ -635,6 +680,10 @@ component_constructor_declarator:
 	  SELFNAME '(' parmlist ')' type_quals
 		{ $$ = build_parse_node (CALL_EXPR, $1, $3, $5); }
 	| SELFNAME LEFT_RIGHT type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $1, empty_parms (), $3); }
+	| self_template_type '(' parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $1, $3, $5); }
+	| self_template_type LEFT_RIGHT type_quals
 		{ $$ = build_parse_node (CALL_EXPR, $1, empty_parms (), $3); }
 	;
 
@@ -826,7 +875,11 @@ template_type:
 		  if ($$ != error_mark_node)
 		    $$ = TYPE_STUB_DECL ($$);
 		}
-	| SELFNAME  '<' template_arg_list template_close_bracket
+	| self_template_type
+	;
+
+self_template_type:
+	  SELFNAME  '<' template_arg_list template_close_bracket
 		{
 		  $$ = lookup_template_class ($1, $3, NULL_TREE);
 		  if ($$ != error_mark_node)

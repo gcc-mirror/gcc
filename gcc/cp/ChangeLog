@@ -1,3 +1,47 @@
+Wed Apr 24 00:36:21 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_expr, DECL_STMT): If we don't have an initializer,
+	don't pass LOOKUP_ONLYCONVERTING.
+
+Tue Apr 23 17:18:47 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* typeck.c (common_type): Fix the ARRAY_TYPE case so it
+	properly keeps track of const and volatile type modifiers.
+
+Tue Apr 23 10:52:56 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (cp_tree_equal): C++ version of simple_cst_equal.
+	* pt.c (comp_template_args): Use it.
+
+	* rtti.c (get_tinfo_fn, build_dynamic_cast, expand_*_desc): Call
+	assemble_external for artificial function decls.
+
+	* decl.c (cp_finish_decl): Oops.
+
+Mon Apr 22 17:28:27 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (import_export_decl): Put static data member templates
+ 	into common storage, or make them weak, depending on whether they
+ 	are dynamically or statically initialized.
+	(get_sentry): New function.
+	(finish_file): Do import_export_decl for static data members before
+	building the init/fini functions.  Don't init/fini a variable that's
+	EXTERNAL.  Use a sentry for variables in common.  Fix mismatching
+	push/pop_temp_slots.
+	* decl.c (cp_finish_decl): If DECL_NOT_REALLY_EXTERN, do the
+ 	expand_static_init thang.
+	* method.c (get_id_2): New function.
+
+Mon Apr 22 15:32:45 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* parse.y (empty_parms): Make sure we use C++-style prototypes
+ 	when we're declaring member functions.
+
+Sun Apr 21 10:08:22 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (CONFLICTS): 16 s/r conflicts.
+	* parse.y (self_template_type): New nonterminal.
+
 Thu Apr 18 08:56:54 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (make_typename_type): Handle getting a TYPE_DECL for a
