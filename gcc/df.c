@@ -182,7 +182,7 @@ static void df_reg_table_realloc PARAMS((struct df *, int));
 #if 0
 static void df_def_table_realloc PARAMS((struct df *, int));
 #endif
-static void df_insn_table_realloc PARAMS((struct df *, int));
+static void df_insn_table_realloc PARAMS((struct df *, unsigned int));
 static void df_bitmaps_alloc PARAMS((struct df *, int));
 static void df_bitmaps_free PARAMS((struct df *, int));
 static void df_free PARAMS((struct df *));
@@ -299,7 +299,7 @@ static inline bool read_modify_subreg_p PARAMS ((rtx));
 static void
 df_insn_table_realloc (df, size)
      struct df *df;
-     int size;
+     unsigned int size;
 {
   size++;
   if (size <= df->insn_size)

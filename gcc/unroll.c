@@ -343,8 +343,8 @@ unroll_loop (loop, insn_count, strength_reduce_p)
     }
   else if (loop_info->n_iterations > 0
 	   /* Avoid overflow in the next expression.  */
-	   && loop_info->n_iterations < MAX_UNROLLED_INSNS
-	   && loop_info->n_iterations * insn_count < MAX_UNROLLED_INSNS)
+	   && loop_info->n_iterations < (unsigned) MAX_UNROLLED_INSNS
+	   && loop_info->n_iterations * insn_count < (unsigned) MAX_UNROLLED_INSNS)
     {
       unroll_number = loop_info->n_iterations;
       unroll_type = UNROLL_COMPLETELY;
@@ -374,7 +374,7 @@ unroll_loop (loop, insn_count, strength_reduce_p)
       for (i = 3; i >= 0; i--)
 	while (factors[i].count--)
 	  {
-	    if (temp * factors[i].factor < MAX_UNROLLED_INSNS)
+	    if (temp * factors[i].factor < (unsigned) MAX_UNROLLED_INSNS)
 	      {
 		unroll_number *= factors[i].factor;
 		temp *= factors[i].factor;

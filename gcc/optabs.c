@@ -1219,7 +1219,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     {
       unsigned int i;
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
-      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+      const unsigned int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       rtx carry_in = NULL_RTX, carry_out = NULL_RTX;
       rtx xop0, xop1, xtarget;
 
