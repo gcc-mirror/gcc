@@ -112,7 +112,7 @@ static int output_maximum_width = 0;
 
 /* Used to control every diagnostic message formatting.  Front-ends should
    call set_message_prefixing_rule to set up their politics.  */
-static current_prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+static int current_prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
 
 /* Predicate. Return 1 if we're in automatic line wrapping mode.  */
 

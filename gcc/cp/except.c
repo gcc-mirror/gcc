@@ -54,6 +54,8 @@ static tree build_eh_type_type_ref PARAMS ((tree));
 static tree build_terminate_handler PARAMS ((void));
 static tree alloc_eh_object PARAMS ((tree));
 static int complete_ptr_ref_or_void_ptr_p PARAMS ((tree, tree));
+static int can_convert_eh PARAMS ((tree, tree));
+static void check_handlers_1 PARAMS ((tree, tree));
 static void initialize_handler_parm PARAMS ((tree));
 static tree expand_throw PARAMS ((tree));
 static int decl_is_java_type PARAMS ((tree decl, int err));

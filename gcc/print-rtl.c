@@ -39,9 +39,10 @@ Boston, MA 02111-1307, USA.  */
 /* Array containing all of the register names */
 
 #ifdef DEBUG_REGISTER_NAMES
-static const char * const reg_names[] = DEBUG_REGISTER_NAMES;
+static const char * const debug_reg_names[] = DEBUG_REGISTER_NAMES;
+#define reg_names debug_reg_names
 #else
-static const char * const reg_names[] = REGISTER_NAMES;
+const char * const reg_names[] = REGISTER_NAMES;
 #endif
 
 static FILE *outfile;

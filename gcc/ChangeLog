@@ -1,3 +1,25 @@
+2000-05-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* diagnostic.c: Eliminate implicit int.
+	* except.c, gcc.c: Add static prototypes.
+	* final.c (final_end_function): Mark file arg ATTRIBUTE_UNUSED.
+	* gensupport.c (process_rtx): Use XVEC to initialize vector
+	slot of 'split'.
+
+	* print-rtl.c: If DEBUG_REGISTER_NAMES, define static 
+	debug_reg_names instead of static reg_names.  If not, define
+	global reg_names.
+	* regclass.c: Don't define global reg_names unless
+	DEBUG_REGISTER_NAMES is defined.
+
+	* reload1.c (order_regs_for_reload): Remove unused variable.
+	* varasm.c: Include output.h after defaults.h.  Define
+	eh_frame_section as function of no args, not of unspecified args.
+
+	* gcc.c: Constify argbuf; arguments to store_arg,
+	process_command, main; elements of struct command and struct
+	switchstr; local variables in execute, process_command, main.
+
 2000-05-20  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def:  more applications of c_fix=format + tests

@@ -199,6 +199,8 @@ static char **split_directories	PARAMS ((const char *, int *));
 static void free_split_directories PARAMS ((char **));
 static char *make_relative_prefix PARAMS ((const char *, const char *, const char *));
 #endif /* VMS */
+static void store_arg		PARAMS ((const char *, int, int));
+static char *load_specs		PARAMS ((const char *));
 static void read_specs		PARAMS ((const char *, int));
 static void set_spec		PARAMS ((const char *, const char *));
 static struct compiler *lookup_compiler PARAMS ((const char *, size_t, const char *));
@@ -208,6 +210,7 @@ static int access_check		PARAMS ((const char *, int));
 static char *find_a_file	PARAMS ((struct path_prefix *, const char *, int));
 static void add_prefix		PARAMS ((struct path_prefix *, const char *,
 					 const char *, int, int, int *));
+static void translate_options	PARAMS ((int *, const char ***));
 static char *skip_whitespace	PARAMS ((char *));
 static void record_temp_file	PARAMS ((const char *, int, int));
 static void delete_if_ordinary	PARAMS ((const char *));
@@ -239,7 +242,7 @@ static void display_help 	PARAMS ((void));
 static void add_preprocessor_option	PARAMS ((const char *, int));
 static void add_assembler_option	PARAMS ((const char *, int));
 static void add_linker_option		PARAMS ((const char *, int));
-static void process_command		PARAMS ((int, char **));
+static void process_command		PARAMS ((int, const char **));
 static int execute			PARAMS ((void));
 static void unused_prefix_warnings	PARAMS ((struct path_prefix *));
 static void clear_args			PARAMS ((void));
@@ -1287,7 +1290,7 @@ set_spec (name, spec)
 
 /* Vector of pointers to arguments in the current line of specifications.  */
 
-static char **argbuf;
+static const char **argbuf;
 
 /* Number of elements allocated in argbuf.  */
 
@@ -1437,12 +1440,13 @@ clear_args ()
 
 static void
 store_arg (arg, delete_always, delete_failure)
-     char *arg;
+     const char *arg;
      int delete_always, delete_failure;
 {
   if (argbuf_index + 1 == argbuf_length)
     argbuf
-      = (char **) xrealloc (argbuf, (argbuf_length *= 2) * sizeof (char *));
+      = (const char **) xrealloc (argbuf,
+				  (argbuf_length *= 2) * sizeof (const char *));
 
   argbuf[argbuf_index++] = arg;
   argbuf[argbuf_index] = 0;
@@ -2504,7 +2508,7 @@ execute ()
   struct command
     {
       const char *prog;		/* program name.  */
-      char **argv;		/* vector of args.  */
+      const char **argv;	/* vector of args.  */
       int pid;			/* pid of process for this command.  */
     };
 
@@ -2558,7 +2562,7 @@ execute ()
       /* Print each piped command as a separate line.  */
       for (i = 0; i < n_commands ; i++)
 	{
-	  char **j;
+	  const char **j;
 
 	  for (j = commands[i].argv; *j; j++)
 	    fprintf (stderr, " %s", *j);
@@ -2587,7 +2591,7 @@ execute ()
   for (i = 0; i < n_commands; i++)
     {
       char *errmsg_fmt, *errmsg_arg;
-      char *string = commands[i].argv[0];
+      const char *string = commands[i].argv[0];
 
       commands[i].pid = pexecute (string, commands[i].argv,
 				  programname, temp_filename,
@@ -2602,7 +2606,7 @@ execute ()
 	pfatal_pexecute (errmsg_fmt, errmsg_arg);
 
       if (string != commands[i].prog)
-	free (string);
+	free ((PTR) string);
     }
 
   execution_count++;
@@ -2703,7 +2707,7 @@ execute ()
 struct switchstr
 {
   const char *part1;
-  char **args;
+  const char **args;
   int live_cond;
   int validated;
 };
@@ -2909,12 +2913,12 @@ add_linker_option (option, len)
 static void
 process_command (argc, argv)
      int argc;
-     char **argv;
+     const char **argv;
 {
   register int i;
   const char *temp;
   char *temp1;
-  char *spec_lang = 0;
+  const char *spec_lang = 0;
   int last_language_n_infiles;
   int have_c = 0;
   int have_o = 0;
@@ -3229,7 +3233,7 @@ process_command (argc, argv)
 	report_times = 1;
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
-	  register char *p = &argv[i][1];
+	  register const char *p = &argv[i][1];
 	  register int c = *p;
 
 	  switch (c)
@@ -3248,7 +3252,7 @@ process_command (argc, argv)
 
 	    case 'B':
 	      {
-		char *value;
+		const char *value;
 		if (p[1] == 0 && i + 1 == argc)
 		  fatal ("argument to `-B' is missing");
 		if (p[1] == 0)
@@ -3586,8 +3590,8 @@ process_command (argc, argv)
 	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
-	  register char *p = &argv[i][1];
-	  register int c = *p;
+	  const char *p = &argv[i][1];
+	  int c = *p;
 
 	  if (c == 'x')
 	    {
@@ -3622,7 +3626,7 @@ process_command (argc, argv)
 	      if (i + n_args >= argc)
 		fatal ("argument to `-%s' is missing", p);
 	      switches[n_switches].args
-		= (char **) xmalloc ((n_args + 1) * sizeof (char *));
+		= (const char **) xmalloc ((n_args + 1) * sizeof(const char *));
 	      while (j < n_args)
 		switches[n_switches].args[j++] = argv[++i];
 	      /* Null-terminate the vector.  */
@@ -3633,13 +3637,15 @@ process_command (argc, argv)
 	      /* On some systems, ld cannot handle some options without
 		 a space.  So split the option from its argument.  */
 	      char *part1 = (char *) xmalloc (2);
+	      char *tmp;
 	      part1[0] = c;
 	      part1[1] = '\0';
 	      
 	      switches[n_switches].part1 = part1;
-	      switches[n_switches].args = (char **) xmalloc (2 * sizeof (char *));
-	      switches[n_switches].args[0] = xmalloc (strlen (p));
-	      strcpy (switches[n_switches].args[0], &p[1]);
+	      switches[n_switches].args
+		= (const char **) xmalloc (2 * sizeof (const char *));
+	      switches[n_switches].args[0] = tmp = xmalloc (strlen (p));
+	      strcpy (tmp, &p[1]);
 	      switches[n_switches].args[1] = 0;
 	    }
 	  else
@@ -4982,7 +4988,7 @@ give_switch (switchnum, omit_first_word, include_blanks)
 
   if (switches[switchnum].args != 0)
     {
-      char **p;
+      const char **p;
       for (p = switches[switchnum].args; *p; p++)
 	{
 	  if (include_blanks)
@@ -5124,12 +5130,12 @@ fatal_error (signum)
   kill (getpid (), signum);
 }
 
-extern int main PARAMS ((int, char **));
+extern int main PARAMS ((int, const char **));
 
 int
 main (argc, argv)
      int argc;
-     char **argv;
+     const char **argv;
 {
   register size_t i;
   size_t j;
@@ -5165,7 +5171,7 @@ main (argc, argv)
 #endif
 
   argbuf_length = 10;
-  argbuf = (char **) xmalloc (argbuf_length * sizeof (char *));
+  argbuf = (const char **) xmalloc (argbuf_length * sizeof (const char *));
 
   obstack_init (&obstack);
 
@@ -5250,7 +5256,7 @@ main (argc, argv)
     first_time = TRUE;
     for (i = 0; (int)i < n_switches; i++)
       {
-	char **args;
+	const char **args;
 	const char *p, *q;
 	if (!first_time)
 	  obstack_grow (&collect_obstack, " ", 1);
