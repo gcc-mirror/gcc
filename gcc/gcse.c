@@ -3971,24 +3971,27 @@ try_replace_reg (from, to, insn)
   int success = 0;
   rtx set = single_set (insn);
 
-  success = validate_replace_src (from, to, insn);
-
-  /* If above failed and this is a single set, try to simplify the source of
-     the set given our substitution.  We could perhaps try this for multiple
-     SETs, but it probably won't buy us anything.  */
-  if (!success && set != 0)
+  if (reg_mentioned_p (from, PATTERN (insn)))
     {
+      success = validate_replace_src (from, to, insn);
+    }
+
+  if (!success && set && reg_mentioned_p (from, SET_SRC (set)))
+    {
+      /* If above failed and this is a single set, try to simplify the source of
+	 the set given our substitution.  We could perhaps try this for multiple
+	 SETs, but it probably won't buy us anything.  */
       src = simplify_replace_rtx (SET_SRC (set), from, to);
 
       if (!rtx_equal_p (src, SET_SRC (set))
 	  && validate_change (insn, &SET_SRC (set), src, 0))
 	success = 1;
-    }
 
-  /* If we've failed to do replacement, have a single SET, and don't already
-     have a note, add a REG_EQUAL note to not lose information.  */
-  if (!success && note == 0 && set != 0)
-    note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
+      /* If we've failed to do replacement, have a single SET, and don't already
+	 have a note, add a REG_EQUAL note to not lose information.  */
+      if (!success && note == 0 && set != 0)
+	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
+    }
 
   /* If there is already a NOTE, update the expression in it with our
      replacement.  */
@@ -5879,6 +5882,8 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
 
       if (pred->src == ENTRY_BLOCK_PTR)
 	break;
+      else if (pred_bb == expr_bb)
+	continue;
       else if (visited[pred_bb->index])
 	continue;
 

@@ -1,3 +1,9 @@
+Thu Jul 18 09:38:59 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (hoist_expr_reaches_here_p):  Stop once expr_bb is reached.
+
+	* gcse.c (try_replace_reg): Do not return false positives.
+
 2002-07-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* prefix.c: (update_path): Strip ".." components when prior dir
