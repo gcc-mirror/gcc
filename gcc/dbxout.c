@@ -590,6 +590,11 @@ dbxout_type_fields (type)
       /* Omit here local type decls until we know how to support them.  */
       else if (TREE_CODE (tem) == TYPE_DECL)
 	continue;
+      /* Omit fields whose position or size are variable.  */
+      else if (TREE_CODE (tem) == FIELD_DECL
+	       && (TREE_CODE (DECL_FIELD_BITPOS (tem)) != INTEGER_CST
+		   || TREE_CODE (DECL_SIZE (tem)) != INTEGER_CST))
+	continue;
       /* Omit here the nameless fields that are used to skip bits.  */
       else if (DECL_NAME (tem) != 0 && TREE_CODE (tem) != CONST_DECL)
 	{
@@ -656,9 +661,6 @@ dbxout_type_fields (type)
 		       TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem)),
 		       TREE_INT_CST_LOW (DECL_SIZE (tem)));
 	    }
-	  else
-	    /* This has yet to be implemented.  */
-	    abort ();
 	  CHARS (23);
 	}
     }
