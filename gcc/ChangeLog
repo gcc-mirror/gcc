@@ -1,3 +1,11 @@
+2001-01-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* tree.c, tree.h (build_parse_node): Remove; was identical to
+	build_nt.
+	* c-lang.c (start_cdtor), objc/objc-act.c
+	(build_module_descriptor): Use build_nt instead of
+	build_parse_node.
+
 2001-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (addqi_1_lea): Fix mode (QI instead of HI).

@@ -1624,7 +1624,7 @@ begin_constructor_declarator (scope, name)
      tree scope;
      tree name;
 {
-  tree result = build_parse_node (SCOPE_REF, scope, name);
+  tree result = build_nt (SCOPE_REF, scope, name);
   enter_scope_of (result);
   return result;
 }

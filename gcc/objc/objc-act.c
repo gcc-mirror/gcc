@@ -1855,12 +1855,12 @@ build_module_descriptor ()
     /* void _GLOBAL_$I$<gnyf> () {objc_execClass (&L_OBJC_MODULES);}  */
 
     start_function (void_list_node_1,
-		    build_parse_node (CALL_EXPR, init_function_name,
-				      /* This has the format of the output
-					 of get_parm_info.  */
-				      tree_cons (NULL_TREE, NULL_TREE,
-						 void_list_node_1),
-				      NULL_TREE),
+		    build_nt (CALL_EXPR, init_function_name,
+			      /* This has the format of the output
+				 of get_parm_info.  */
+			      tree_cons (NULL_TREE, NULL_TREE,
+					 void_list_node_1),
+			      NULL_TREE),
 		    NULL_TREE, NULL_TREE);
 #if 0 /* This should be turned back on later
 	 for the systems where collect is not needed.  */

@@ -6819,7 +6819,7 @@ tsubst (t, args, complain, in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return build_parse_node (ARRAY_REF, e1, e2, tsubst_expr);
+	return build_nt (ARRAY_REF, e1, e2, tsubst_expr);
       }
 
     case CALL_EXPR:
@@ -6846,7 +6846,7 @@ tsubst (t, args, complain, in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return build_parse_node (TREE_CODE (t), e1, e2);
+	return build_nt (TREE_CODE (t), e1, e2);
       }
 
     case TYPEOF_TYPE:
