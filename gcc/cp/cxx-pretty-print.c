@@ -41,6 +41,7 @@ static void pp_cxx_direct_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_parameter_declaration_clause (cxx_pretty_printer *, tree);
 static void pp_cxx_abstract_declarator (cxx_pretty_printer *, tree);
+static void pp_cxx_statement (cxx_pretty_printer *, tree);
 static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
 
 
@@ -1302,7 +1303,7 @@ pp_cxx_ctor_initializer (cxx_pretty_printer *pp, tree t)
       decl-specifier-seq(opt) declarator ctor-initializer(opt) function-body
       decl-specifier-seq(opt) declarator function-try-block  */
 
-void
+static void
 pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
 {
   tree saved_scope = pp->enclosing_scope;
@@ -1463,7 +1464,7 @@ pp_cxx_exception_declaration (cxx_pretty_printer *pp, tree t)
 
 /* Statements.  */
 
-void
+static void
 pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 {
   switch (TREE_CODE (t))

@@ -1,11 +1,17 @@
 2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
+	* cxx-pretty-print.c (pp_cxx_statement): Add prototype. Make static.
+	(pp_cxx_function_definition): Make static.
+	* cxx-pretty-print.h (pp_cxx_statement): Remove prototype.
+	(pp_cxx_function_definition): Likewise.
+
+2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
 	* name-lookup.c (print_binding_level): Make static.
 	(constructor_name_full): Make static inline.
 	(current_decl_namespace): Make static.
 	* name-lookup.h (constructor_name_full): Remove prototype.
 	(print_binding_level): Likewise.
-	(storetags): Likewise.
 	(current_decl_namespace): Likewise.
 
 2005-01-25  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
