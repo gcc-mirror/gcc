@@ -2878,7 +2878,7 @@ generate_classfile (clas, state)
 	&& FIELD_STATIC (part)
 	&& (TREE_CODE (DECL_INITIAL (part)) == STRING_CST
 	    || (TREE_CODE (DECL_INITIAL (part)) == INTEGER_CST
-		&& !TREE_TYPE (part) == string_type_node)
+		&& TREE_CODE (TREE_TYPE (DECL_INITIAL (part))) != POINTER_TYPE)
 	    || TREE_CODE (DECL_INITIAL (part)) == REAL_CST);
       if (have_value)
 	attr_count++;
