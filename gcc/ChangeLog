@@ -1,3 +1,83 @@
+2002-05-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc: Remove all stanzas for previously obsoleted
+	systems.  Where necessary, add explicit error stanzas to
+	prevent removed systems from being misidentified as something
+	else.  Begin a fresh obsoletions list, with the systems that
+	were reprieved last round.
+	* doc/install.texi: Remove all mention of dead targets.
+	* fixinc/mkfixinc.sh: Likewise.
+
+	* config/arm/arm.h: Bit 31 of target_flags is no longer
+	reserved.
+
+	* config/1750a/1750a-protos.h, config/1750a/1750a.c,
+	config/1750a/1750a.h, config/1750a/1750a.md, config/1750a/ms1750.inc,
+	config/a29k/a29k-protos.h, config/a29k/a29k.c, config/a29k/a29k.h,
+	config/a29k/a29k.md, config/a29k/rtems.h, config/a29k/t-a29kbare,
+	config/a29k/t-vx29k, config/a29k/unix.h, config/a29k/vx29k.h,
+	config/alpha/osf12.h, config/alpha/osf2or3.h,
+	config/arm/arm-wince-pe.h, config/arm/arm.h, config/arm/riscix.h,
+	config/arm/riscix1-1.h, config/arm/rix-gas.h, config/arm/t-riscix,
+	config/clipper/clipper-protos.h, config/clipper/clipper.c,
+	config/clipper/clipper.h, config/clipper/clipper.md,
+	config/clipper/clix.h, config/convex/convex-protos.h,
+	config/convex/convex.c, config/convex/convex.h,
+	config/convex/convex.md, config/convex/fixinc.convex,
+	config/convex/proto.h, config/elxsi/elxsi-protos.h,
+	config/elxsi/elxsi.c, config/elxsi/elxsi.h, config/elxsi/elxsi.md,
+	config/i386/386bsd.h, config/i386/aix386.h, config/i386/aix386ng.h,
+	config/i386/bsd386.h, config/i386/dgux.h, config/i386/djgpp-rtems.h,
+	config/i386/isc.h, config/i386/iscdbx.h, config/i386/linux-oldld.h,
+	config/i386/next.h, config/i386/osf1-ci.asm, config/i386/osf1-cn.asm,
+	config/i386/osf1elf.h, config/i386/osf1elfgdb.h, config/i386/osfelf.h,
+	config/i386/osfrose.h, config/i386/rtems.h, config/i386/seq-gas.h,
+	config/i386/seq-sysv3.h, config/i386/seq2-sysv3.h,
+	config/i386/sequent.h, config/i386/sun.h, config/i386/sun386.h,
+	config/i386/t-dgux, config/i386/t-next, config/i386/t-osf,
+	config/i386/t-osf1elf, config/i860/bsd-gas.h, config/i860/bsd.h,
+	config/i860/fx2800.h, config/i860/i860-protos.h, config/i860/i860.c,
+	config/i860/i860.h, config/i860/i860.md, config/i860/mach.h,
+	config/i860/paragon.h, config/i860/sysv3.h, config/i860/sysv4.h,
+	config/i860/t-fx2800, config/i860/varargs.asm, config/m68k/a-ux.h,
+	config/m68k/altos3068.h, config/m68k/apollo68.h,
+	config/m68k/aux-crt1.c, config/m68k/aux-crt2.asm,
+	config/m68k/aux-crtn.asm, config/m68k/aux-exit.c,
+	config/m68k/aux-low.gld, config/m68k/aux-mcount.c,
+	config/m68k/auxas.h, config/m68k/auxgas.h, config/m68k/auxgld.h,
+	config/m68k/auxld.h, config/m68k/ctix.h, config/m68k/dpx2.h,
+	config/m68k/dpx2.ifile, config/m68k/dpx2cdbx.h, config/m68k/dpx2g.h,
+	config/m68k/isi-nfp.h, config/m68k/isi.h, config/m68k/lynx-ng.h,
+	config/m68k/lynx.h, config/m68k/math-3300.h, config/m68k/news.h,
+	config/m68k/news3.h, config/m68k/news3gas.h, config/m68k/newsgas.h,
+	config/m68k/next.h, config/m68k/next21.h, config/m68k/rtems.h,
+	config/m68k/t-aux, config/m68k/t-lynx, config/m68k/t-next,
+	config/m68k/x-next, config/m88k/dgux.h, config/m88k/dgux.ld,
+	config/m88k/dguxbcs.h, config/m88k/dolph.h, config/m88k/dolphin.ld,
+	config/m88k/luna.h, config/m88k/m88k-coff.h, config/m88k/sysv3.h,
+	config/m88k/t-bug, config/m88k/t-dgux, config/m88k/t-dgux-gas,
+	config/m88k/t-dguxbcs, config/m88k/t-dolph, config/m88k/t-m88k-gas,
+	config/m88k/t-tekXD88, config/m88k/tekXD88.h, config/m88k/tekXD88.ld,
+	config/mips/bsd-4.h, config/mips/bsd-5.h, config/mips/dec-bsd.h,
+	config/mips/dec-osf1.h, config/mips/elflorion.h,
+	config/mips/iris4loser.h, config/mips/mips-5.h, config/mips/news4.h,
+	config/mips/news5.h, config/mips/nws3250v4.h, config/mips/osfrose.h,
+	config/mips/svr3-4.h, config/mips/svr3-5.h, config/mips/svr4-4.h,
+	config/mips/svr4-5.h, config/mips/svr4-t.h, config/mips/t-bsd,
+	config/mips/t-bsd-gas, config/mips/t-svr3, config/mips/t-svr3-gas,
+	config/mips/t-svr4, config/mips/t-svr4-gas, config/mips/t-ultrix,
+	config/mips/ultrix.h, config/nextstep-protos.h, config/nextstep.c,
+	config/nextstep.h, config/nextstep21.h, config/ns32k/encore.h,
+	config/ns32k/merlin.h, config/ns32k/pc532-mach.h,
+	config/ns32k/pc532-min.h, config/ns32k/pc532.h,
+	config/ns32k/sequent.h, config/ns32k/tek6000.h,
+	config/ns32k/tek6100.h, config/ns32k/tek6200.h, config/pj/lib1funcs.S,
+	config/pj/linux.h, config/pj/pj-protos.h, config/pj/pj.c,
+	config/pj/pj.h, config/pj/pj.md, config/pj/pjl.h, config/pj/t-pj,
+	config/sparc/rtems.h, config/we32k/we32k-protos.h,
+	config/we32k/we32k.c, config/we32k/we32k.h, config/we32k/we32k.md:
+	Delete file.
+
 2002-05-24  Richard Henderson  <rth@redhat.com>
 
 	* flags.h (TLS_MODEL_GLOBAL_DYNAMIC): Set to 1.
@@ -34,8 +114,8 @@
 
 2002-05-24  Richard Henderson  <rth@redhat.com>
 
-        * varasm.c (asm_output_bss): Always output one byte.
-        * config/alpha/elf.h (ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+	* varasm.c (asm_output_bss): Always output one byte.
+	* config/alpha/elf.h (ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
 
 2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
@@ -56,7 +136,7 @@
 	* config/i386/mingw32.h (CPP_SPEC): Remove -remap.
 
 2002-05-23  Gabriel Dos Reis  <gdr@codesourcery.com>
-            Zack Weinberg     <zack@codesourcery.com>
+	    Zack Weinberg     <zack@codesourcery.com>
 
 	* config/i386/mingw32.h (OUTPUT_QUOTED_STRING): Properly output
 	quoted strings.
@@ -430,7 +510,7 @@ Thu May 23 09:22:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	dynamic linker.
 	(STARTFILE_PREFIX_SPEC): Define.
 	(STARTFILE_LINUX_SPEC, ENDFILE_LINUX_SPEC): Rewrite without
-        absolute paths.
+	absolute paths.
 
 2002-05-22  Kazu Hirata  <kazu@cs.umass.edu>
 

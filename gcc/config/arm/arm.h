@@ -390,8 +390,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 				         ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE)	\
 				         : (target_flags & THUMB_FLAG_BACKTRACE))
 
-/* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
-   Bit 31 is reserved.  See riscix.h.  */
+/* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
 #ifndef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES
 #endif

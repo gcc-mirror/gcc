@@ -1,3 +1,0 @@
-# f771 is so big, we need to tell linker on m68k-next-nextstep* to
-# make enough room for it.
-BOOT_LDFLAGS=-segaddr __DATA 6000000
