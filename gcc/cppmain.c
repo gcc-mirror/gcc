@@ -25,7 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "intl.h"
 
 /* Encapsulates state used to convert the stream of tokens coming from
    cpp_get_token back into a text file.  */
@@ -72,6 +71,10 @@ cpp_preprocess_file (pfile)
      cpp_reader *pfile;
 {
   options = cpp_get_options (pfile);
+
+  /* Let preprocessor know if it's only preprocessing.  It would be
+     nice to lose this somehow.  */
+  options->preprocess_only = 1;
 
   /* Initialize the printer structure.  Setting print.line to -1 here
      is a trick to guarantee that the first token of the file will
@@ -221,20 +224,22 @@ check_multiline_token (str)
       print.line++;
 }
 
+/* Writes out a traditionally preprocessed file.  */
 static void
 scan_translation_unit_trad (pfile)
      cpp_reader *pfile;
 {
-  bool more;
-  size_t len;
-
-  do
+  for (;;)
     {
-      more = _cpp_read_logical_line_trad (pfile, false);
-      len = pfile->trad_out_cur - pfile->trad_out_base;
-      fwrite (pfile->trad_out_base, 1, len, print.outf);
+      size_t len;
+
+      if (!_cpp_read_logical_line_trad (pfile))
+	break;
+      len = pfile->out.cur - pfile->out.base;
+      maybe_print_line (print.map, pfile->out.first_line);
+      fwrite (pfile->out.base, 1, len, print.outf);
+      print.printed = 1;
     }
-  while (more);
 }
 
 /* If the token read on logical line LINE needs to be output on a

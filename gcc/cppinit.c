@@ -506,7 +506,7 @@ cpp_create_reader (lang)
   /* Initialise the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   init_line_maps (&pfile->line_maps);
-  pfile->trad_line = pfile->line = 1;
+  pfile->line = 1;
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -561,8 +561,8 @@ cpp_destroy (pfile)
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);
 
-  if (pfile->trad_out_base)
-    free (pfile->trad_out_base);
+  if (pfile->out.base)
+    free (pfile->out.base);
 
   if (pfile->macro_buffer)
     {
@@ -941,7 +941,8 @@ cpp_read_main_file (pfile, fname, table)
   if (CPP_OPTION (pfile, preprocessed))
     read_original_filename (pfile);
   /* Overlay an empty buffer to seed traditional preprocessing.  */
-  else if (CPP_OPTION (pfile, traditional))
+  else if (CPP_OPTION (pfile, traditional)
+	   && !CPP_OPTION (pfile, preprocess_only))
     _cpp_overlay_buffer (pfile, U"", 0);
 
   return pfile->map->to_file;

@@ -891,7 +891,16 @@ continue_after_nul (pfile)
 
   buffer->saved_flags = BOL;
   if (CPP_OPTION (pfile, traditional))
-    more = _cpp_read_logical_line_trad (pfile, true);
+    {
+      if (pfile->state.in_directive)
+	return false;
+
+      _cpp_remove_overlay (pfile);
+      more = _cpp_read_logical_line_trad (pfile);
+      _cpp_overlay_buffer (pfile, pfile->out.base,
+			   pfile->out.cur - pfile->out.base);
+      pfile->line = pfile->out.first_line;
+    }
   else
     {
       /* Stop parsing arguments with a CPP_EOF.  When we finally come

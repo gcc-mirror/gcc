@@ -406,10 +406,18 @@ struct cpp_reader
   /* Whether cpplib owns the hashtable.  */
   unsigned char our_hashtable;
 
-  /* Traditional preprocessing output buffer.  */
-  uchar *trad_out_base, *trad_out_limit;
-  uchar *trad_out_cur;
-  unsigned int trad_line;
+  /* Traditional preprocessing output buffer (a logical line).  */
+  struct
+  {
+    uchar *base;
+    uchar *limit;
+    uchar *cur;
+    unsigned int first_line;
+  } out;
+
+  /* Used to save the original line number during traditional
+     preprocessing.  */
+  unsigned int saved_line;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -510,9 +518,10 @@ extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum lc_reason,
 extern void _cpp_pop_buffer PARAMS ((cpp_reader *));
 
 /* In cpptrad.c.  */
-extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *, int));
+extern bool _cpp_read_logical_line_trad PARAMS ((cpp_reader *));
 extern void _cpp_overlay_buffer PARAMS ((cpp_reader *pfile, const uchar *,
 					 size_t));
+extern void _cpp_remove_overlay PARAMS ((cpp_reader *));
 extern cpp_hashnode *_cpp_lex_identifier_trad PARAMS ((cpp_reader *));
 extern void _cpp_set_trad_context PARAMS ((cpp_reader *));
 extern bool _cpp_create_trad_definition PARAMS ((cpp_reader *, cpp_macro *));
