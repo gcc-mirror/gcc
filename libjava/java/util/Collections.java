@@ -1713,11 +1713,11 @@ public class Collections
   {
     Object[] a = l.toArray();
     Arrays.sort(a, c);
-    ListIterator i = l.listIterator(a.length);
-    for (int pos = a.length; --pos >= 0; )
+    ListIterator i = l.listIterator();
+    for (int pos = 0, alen = a.length;  pos < alen;  pos++)
       {
-	i.previous();
-	i.set(a[pos]);
+        i.next();
+        i.set(a[pos]);
       }
   }
 
