@@ -1440,6 +1440,8 @@ build_functional_cast (exp, parms)
 	  type = TREE_TYPE (type);
 	}
     }
+  else if (TREE_CODE (exp) == TYPE_DECL)
+    type = TREE_TYPE (exp);
   else
     type = exp;
 
@@ -1447,20 +1449,6 @@ build_functional_cast (exp, parms)
     {
       error ("signature type not allowed in cast or constructor expression");
       return error_mark_node;
-    }
-
-  /* Prepare to evaluate as a call to a constructor.  If this expression
-     is actually used, for example,
-	 
-     return X (arg1, arg2, ...);
-	 
-     then the slot being initialized will be filled in.  */
-
-  if (name == NULL_TREE)
-    {
-      name = TYPE_NAME (type);
-      if (TREE_CODE (name) == TYPE_DECL)
-	name = DECL_NESTED_TYPENAME (name);
     }
 
   if (! IS_AGGR_TYPE (type))
@@ -1476,6 +1464,20 @@ build_functional_cast (exp, parms)
 	}
 
       return build_c_cast (type, parms, 1);
+    }
+
+  /* Prepare to evaluate as a call to a constructor.  If this expression
+     is actually used, for example,
+	 
+     return X (arg1, arg2, ...);
+	 
+     then the slot being initialized will be filled in.  */
+
+  if (name == NULL_TREE)
+    {
+      name = TYPE_NAME (type);
+      if (TREE_CODE (name) == TYPE_DECL)
+	name = DECL_NESTED_TYPENAME (name);
     }
 
   if (TYPE_SIZE (type) == NULL_TREE)

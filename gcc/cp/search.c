@@ -2663,7 +2663,10 @@ virtual_context (fndecl, t, vbase)
    they may upcast into a direct base, or
    they may upcast into a different vbase.
 
-   We only need to do fixups in case 2 and 3.
+   We only need to do fixups in case 2 and 3.  In case 2, we add in
+   the virtual base offset to effect an upcast, in case 3, we add in
+   the virtual base offset to effect an upcast, then subtract out the
+   offset for the other virtual base, to effect a downcast into it.
 
    This routine mirrors fixup_vtable_deltas in functionality, though
    this one is runtime based, and the other is compile time based.
@@ -2671,10 +2674,14 @@ virtual_context (fndecl, t, vbase)
    done at runtime.
 
    VBASE_OFFSETS is an association list of virtual bases that contains
-   offset information, so the offsets are only calculated once.  */
+   offset information for the virtual bases, so the offsets are only
+   calculated once.  The offsets are computed by where we think the
+   vbase should be (as noted by the CLASSTYPE_SEARCH_SLOT) minus where
+   the vbase really is. */
 static void
-expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
-     tree binfo, addr, orig_addr, vbase, t, *vbase_offsets;
+expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
+		      vbase_offsets)
+     tree binfo, addr, orig_addr, vbase, vbase_addr, t, *vbase_offsets;
 {
   tree virtuals = BINFO_VIRTUALS (binfo);
   tree vc;
@@ -2685,7 +2692,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
   if (! delta)
     {
       delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbase));
-      delta = build (MINUS_EXPR, ptrdiff_type_node, delta, addr);
+      delta = build (MINUS_EXPR, ptrdiff_type_node, delta, vbase_addr);
       delta = save_expr (delta);
       delta = tree_cons (vbase, delta, *vbase_offsets);
       *vbase_offsets = delta;
@@ -2739,26 +2746,32 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, t, vbase_offsets)
 	  naref = build_array_ref (nvtbl, idx);
 	  old_delta = build_component_ref (aref, delta_identifier, 0, 0);
 	  new_delta = build_component_ref (naref, delta_identifier, 0, 0);
+
+	  /* This is a upcast, so we have to add the offset for the
+	     virtual base.  */
 	  old_delta = build_binary_op (PLUS_EXPR, old_delta,
 				       TREE_VALUE (delta), 0);
 	  if (vc)
 	    {
-	      /* If this is set, we need to add in delta adjustments for
-		 the other virtual base.  */
+	      /* If this is set, we need to subtract out the delta
+		 adjustments for the other virtual base that we
+		 downcast into.  */
 	      tree vc_delta = purpose_member (vc, *vbase_offsets);
 	      if (! vc_delta)
 		{
 		  tree vc_addr = convert_pointer_to_real (vc, orig_addr);
 		  vc_delta = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vc));
 		  vc_delta = build (MINUS_EXPR, ptrdiff_type_node,
-				    vc_addr, vc_delta);
+				    vc_delta, vc_addr);
 		  vc_delta = save_expr (vc_delta);
 		  *vbase_offsets = tree_cons (vc, vc_delta, *vbase_offsets);
 		}
 	      else
 		vc_delta = TREE_VALUE (vc_delta);
    
-	      old_delta = build_binary_op (PLUS_EXPR, old_delta, vc_delta, 0);
+	      /* This is a downcast, so we have to subtract the offset
+		 for the virtual base.  */
+	      old_delta = build_binary_op (MINUS_EXPR, old_delta, vc_delta, 0);
 	    }
 
 	  TREE_READONLY (new_delta) = 0;
@@ -2800,8 +2813,9 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
     {
-      addr = convert_pointer_to_real (binfo, addr);
-      expand_upcast_fixups (real_binfo, addr, orig_addr, vbase, type, vbase_offsets);
+      tree new_addr = convert_pointer_to_real (binfo, addr);
+      expand_upcast_fixups (real_binfo, new_addr, orig_addr, vbase, addr,
+			    type, vbase_offsets);
     }
 }
 
@@ -3334,14 +3348,10 @@ dfs_compress_decls (binfo)
    lattice.  Where ambiguities result, we mark them
    with `error_mark_node' so that if they are encountered
    without explicit qualification, we can emit an error
-   message.
-
-   ONLY_TYPES is set when defining TYPE so that inherited types are visible
-   in the derived class.  */
+   message.  */
 void
-push_class_decls (type, only_types)
+push_class_decls (type)
      tree type;
-     int only_types;
 {
   tree id;
   struct obstack *ambient_obstack = current_obstack;
@@ -3396,12 +3406,7 @@ push_class_decls (type, only_types)
       /* Install the original class value in order to make
 	 pushdecl_class_level work correctly.  */
       IDENTIFIER_CLASS_VALUE (id) = TREE_VALUE (closed_envelopes);
-      if (only_types)
-	{
-	  if (TREE_CODE (new) == TYPE_DECL)
-	    set_identifier_type_value (id, TREE_TYPE (new));
-	} 
-      else if (TREE_CODE (new) == TREE_LIST)
+      if (TREE_CODE (new) == TREE_LIST)
 	push_class_level_binding (id, new);
       else
 	pushdecl_class_level (new);

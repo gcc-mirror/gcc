@@ -1,3 +1,60 @@
+Fri Jan 19 18:03:14 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_component_ref): Handle getting vbase pointers
+	out of complex multiple inheritance better.
+
+Fri Jan 19 16:27:40 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_object_ref): Make sure we use the real type, not
+	any reference type.
+
+Fri Jan 19 16:01:47 1996  Mike Stump  <mrs@cygnus.com>
+
+	* tree.c (build_exception_variant): Don't create new types if we
+	don't have to, also build new types on the right obstack.
+
+Fri Jan 19 14:09:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (store_bindings): Split out from push_to_top_level.
+  	(push_to_top_level): Call it for b->type_shadowed on class binding
+ 	levels.
+
+Fri Jan 19 13:53:14 1996  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (expand_upcast_fixups): Fix so that offsets stored in
+	vbase_offsets are always right.  Fixes a problem where virtual base
+	upcasting and downcasting could be wrong during conversions on this
+	during virtual function dispatch at ctor/dtor time when dynamic
+	vtable fixups for deltas are needed.  This only sounds easier than
+	it is.  :-)
+	(fixup_virtual_upcast_offsets): Change to reflect new calling
+	convention for expand_upcast_fixups.
+
+Fri Jan 19 12:23:08 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl2.c (grokbitfield): Strip the NOPs from WIDTH before we
+	check that it's usable as the bitfield width.
+
+Wed Jan 17 21:22:40 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl2.c (grokfield): Call cplus_decl_attributes with the attrlist.
+	Pass a null tree to grokdeclarator for its ATTRLIST arg, since it's
+	only ever used for functions in it.
+
+Wed Jan 17 12:10:38 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (qualified_type_name): Use the TYPE_DECL, not the type.
+	(nested_type): Ditto.
+	(nested_name_specifier): Use lastiddecl.
+
+	* decl.c (grokdeclarator): Adjust accordingly.
+	* init.c (expand_member_init): Ditto.
+	* parse.y (base_class): Ditto.
+	* typeck2.c (build_functional_cast): Ditto.
+
+	* typeck2.c (build_functional_cast): Fill in name after we've
+	checked for non-aggr type.
+
 Wed Jan 17 10:18:01 1996  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (warn_pointer_arith): Default to on.
@@ -53,9 +110,6 @@ Mon Jan 15 16:19:32 1996  Jason Merrill  <jason@yorick.cygnus.com>
 	* init.c (sort_base_init): Ditto.
 	(expand_member_init): Ditto.
 	* init.c (is_aggr_type): New function, like is_aggr_typedef.
-	* class.c (pushclass): If !modify and
- 	CLASSTYPE_LOCAL_TYPEDECLS (type)), do set up IDENTIFIER_TYPE_VALUE
-	for inherited types.
 
 Mon Jan 15 08:45:01 1996  Jeffrey A Law  (law@cygnus.com)
 

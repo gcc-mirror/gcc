@@ -930,10 +930,10 @@ expand_member_init (exp, name, init)
 
   type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
-  if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
+  if (TREE_CODE (name) == TYPE_DECL)
     {
-      basetype = name;
-      name = TYPE_IDENTIFIER (name);
+      basetype = TREE_TYPE (name);
+      name = DECL_NAME (name);
     }
 
   if (name == NULL_TREE && IS_AGGR_TYPE (type))
