@@ -103,189 +103,225 @@ namespace __gnu_test
   // Used to check if basic_streambuf::pubsync() has been called.
   // This is useful for checking if a function creates [io]stream::sentry
   // objects, since the sentry constructors call tie()->flush().
-  class sync_streambuf : public std::streambuf
-  {
-  private:
-    bool m_sync_called;
-    
-  public:
-    sync_streambuf()
-    : m_sync_called(false)
-    { }
-
-    bool sync_called() const
-    { return m_sync_called; }
-
-  protected:
-    int sync()
+  template<typename T>
+    class sync_buf
+    : public T
     {
-      m_sync_called = true;
-      return 0;
-    }
-  };
+    private:
+      bool m_sync_called;
+    
+    public:
+      sync_buf()
+      : m_sync_called(false)
+      { }
+      
+      bool sync_called() const
+      { return m_sync_called; }
+
+    protected:
+      int sync()
+      {
+	m_sync_called = true;
+	return 0;
+      }
+    };
+
+  typedef  sync_buf<std::streambuf>   sync_streambuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef  sync_buf<std::wstreambuf>  sync_wstreambuf;
+#endif
 
   // Throws on all overflow and underflow calls.
   struct underflow_error: std::exception { };
   struct overflow_error: std::exception { };
   struct positioning_error: std::exception { };
 
-  struct fail_streambuf : std::streambuf
-  {
-  private:
-    char p[2];
-
-  public:
-    fail_streambuf()
+  template<typename T>
+    struct fail_buf
+    : public T
     {
-      p[0] = 's';
-      p[1] = char();
-      setg(p, p, p + 1); 
-    }
+      typedef typename T::char_type   char_type;
+      typedef typename T::int_type    int_type;
+      typedef typename T::off_type    off_type;
+      typedef typename T::pos_type    pos_type;
 
-    virtual int_type underflow() 
-    {
-      throw underflow_error();
-      return -1;
-    }
-  
-    virtual int_type uflow() 
-    {
-      throw underflow_error();
-      return -1;
-    }
+    private:
+      char_type p[2];
 
-    virtual int_type
-    overflow(int_type)
-    {
-      throw overflow_error();
-      return -1;
-    }
+    public:
+      fail_buf()
+      {
+	p[0] = char_type('s');
+	p[1] = char_type();
+	setg(p, p, p + 1); 
+      }
 
-    virtual pos_type 
-    seekoff(off_type, std::ios_base::seekdir, std::ios_base::openmode)
-    { 
-      throw positioning_error();
-      return pos_type(off_type(-1)); 
-    } 
-    
-    virtual pos_type 
-    seekpos(pos_type, std::ios_base::openmode)
-    { 
-      throw positioning_error();
-      return pos_type(off_type(-1)); 
-    } 
+      virtual int_type underflow() 
+      {
+	throw underflow_error();
+	return -1;
+      }
+      
+      virtual int_type uflow() 
+      {
+	throw underflow_error();
+	return -1;
+      }
+      
+      virtual int_type
+      overflow(int_type)
+      {
+	throw overflow_error();
+	return -1;
+      }
+      
+      virtual pos_type 
+      seekoff(off_type, std::ios_base::seekdir, std::ios_base::openmode)
+      { 
+	throw positioning_error();
+	return pos_type(off_type(-1)); 
+      } 
+      
+      virtual pos_type 
+      seekpos(pos_type, std::ios_base::openmode)
+      { 
+	throw positioning_error();
+	return pos_type(off_type(-1)); 
+      } 
+      
+      virtual int 
+      sync() 
+      { 
+	throw positioning_error();
+	return 0; 
+      }
+    };
 
-    virtual int 
-    sync() 
-    { 
-      throw positioning_error();
-      return 0; 
-    }
-  };
+  typedef  fail_buf<std::streambuf>   fail_streambuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef  fail_buf<std::wstreambuf>  fail_wstreambuf;
+#endif
 
   // Facets that throw an exception for every virtual function.
   struct facet_error: std::exception { };
 
-  class fail_num_get : public std::num_get<char>
-  {
-    typedef std::ios_base ios_base;
+  template<typename T>
+    class fail_num_get
+    : public std::num_get<T>
+    {
+      typedef std::ios_base ios_base;
+      typedef typename std::num_get<T>::iter_type iter_type;
 
-  protected:
-    iter_type 
-    do_get(iter_type a, iter_type, ios_base&, ios_base::iostate&, bool&) const
-    { throw facet_error(); return iter_type(); }
+    protected:
+      iter_type 
+      do_get(iter_type a, iter_type, ios_base&, ios_base::iostate&, bool&) const
+      { throw facet_error(); return iter_type(); }
 
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   unsigned short&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   unsigned int&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   unsigned long&) const
-    { throw facet_error(); return iter_type(); }
-
-#ifdef _GLIBCXX_USE_LONG_LONG 
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   long long&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   unsigned long long&) const
-    { throw facet_error(); return iter_type(); }
-#endif
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   float&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   double&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   long double&) const
-    { throw facet_error(); return iter_type(); }
-
-    virtual iter_type 
-    do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
-	   void*&) const
-    { throw facet_error(); return iter_type(); }
-  };
-
-  class fail_num_put : public std::num_put<char>
-  {
-    typedef std::ios_base ios_base;
-
-  protected:
-    iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, bool __v) const
-    { throw facet_error(); return iter_type(NULL); }
-
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, long __v) const
-    { throw facet_error(); return iter_type(NULL); }
-
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, unsigned long) const
-    { throw facet_error(); return iter_type(NULL); }
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, long&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned short&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned int&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned long&) const
+      { throw facet_error(); return iter_type(); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG 
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, long long __v) const
-    { throw facet_error(); return iter_type(NULL); }
-
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const
-    { throw facet_error(); return iter_type(NULL); }
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     long long&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     unsigned long long&) const
+      { throw facet_error(); return iter_type(); }
 #endif
 
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, double __v) const
-    { throw facet_error(); return iter_type(NULL); }
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     float&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     double&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     long double&) const
+      { throw facet_error(); return iter_type(); }
+      
+      virtual iter_type 
+      do_get(iter_type, iter_type, ios_base&, ios_base::iostate& __err, 
+	     void*&) const
+      { throw facet_error(); return iter_type(); }
+    };
 
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, long double __v) const
-    { throw facet_error(); return iter_type(NULL); }
+  typedef  fail_num_get<char>     fail_num_get_char;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef  fail_num_get<wchar_t>  fail_num_get_wchar_t;
+#endif
 
-    virtual iter_type 
-    do_put(iter_type, ios_base&, char_type __fill, const void* __v) const
-    { throw facet_error(); return iter_type(NULL); }
-  };
+  template<typename T>
+    class fail_num_put
+    : public std::num_put<T>
+    {
+      typedef std::ios_base ios_base;
+      typedef typename std::num_put<T>::iter_type iter_type;
+      typedef typename std::num_put<T>::char_type char_type;
+
+    protected:
+      iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, bool __v) const
+      { throw facet_error(); return iter_type(NULL); }
+      
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long __v) const
+      { throw facet_error(); return iter_type(NULL); }
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, unsigned long) const
+      { throw facet_error(); return iter_type(NULL); }
+
+#ifdef _GLIBCXX_USE_LONG_LONG 
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long long __v) const
+      { throw facet_error(); return iter_type(NULL); }
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, unsigned long long) const
+      { throw facet_error(); return iter_type(NULL); }
+#endif
+      
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, double __v) const
+      { throw facet_error(); return iter_type(NULL); }
+
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, long double __v) const
+      { throw facet_error(); return iter_type(NULL); }
+      
+      virtual iter_type 
+      do_put(iter_type, ios_base&, char_type __fill, const void* __v) const
+      { throw facet_error(); return iter_type(NULL); }
+    };
+
+  typedef  fail_num_put<char>     fail_num_put_char;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  typedef  fail_num_put<wchar_t>  fail_num_put_wchar_t;
+#endif
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_IO_H

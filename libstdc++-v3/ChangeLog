@@ -1,3 +1,19 @@
+2004-12-02  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/testsuite_io.h (class sync_buf): New, templatized
+	version of sync_streambuf; add typedefs for streambuf/wstreambuf.
+	(class fail_buf): Likewise, for fail_streambuf.
+	(class fail_num_get): Templatize and add char/wchar_t typedefs.
+	(class fail_num_put): Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_badbit_throw.cc: Use the latter.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_badbit_throw.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_failbit_throw.cc: Likewise.
+
 2004-12-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istream/get/wchar_t/1.cc: New.
