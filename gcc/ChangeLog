@@ -1,3 +1,8 @@
+Sat Nov 24 17:04:10 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/xm-vms.h (FILE_TYPE): Remove undef and baggage.
+	(__UNIX_FOPEN): Define.
+
 Sat Nov 24 16:11:00 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (assign_stack_temp_for_type): Clear alias set before
