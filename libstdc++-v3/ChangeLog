@@ -1,5 +1,10 @@
 2003-02-20  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/html/faq/index.html (3.9):  New note, wchar_t on FreeBSD.
+	* docs/html/faq/index.txt:  Regenerate.
+
+2003-02-20  Phil Edwards  <pme@gcc.gnu.org>
+
 	* config/linker-map.gnu:  Also export locking symbols needed for the
 	generic atomicity.h case.
 
