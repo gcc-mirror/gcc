@@ -1,3 +1,8 @@
+2003-01027  David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.am (TARGET_SRC_POWERPC_AIX): Fix typo.
+	* Makefile.in: Regenerate.
+
 2003-01-22  Andrew Haley  <aph@redhat.com>
 
 	* src/powerpc/darwin.S (_ffi_call_AIX): Add Augmentation size to
