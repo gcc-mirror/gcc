@@ -1,3 +1,8 @@
+2004-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* libsupc++/new_op.cc: Update comments.
+	* libsupc++/del_op.cc: Likewise.
+
 2004-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/cxxabi.h: Make all declarations have default
