@@ -1,3 +1,9 @@
+2000-05-04  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Match `arm*-*-linux-*'.
+	From Chris Dornan <cdornan@arm.com>.
+
 2000-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (SUBDIRS): Define.
