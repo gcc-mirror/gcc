@@ -201,7 +201,8 @@ static tree build_string_concatenation PROTO ((tree, tree));
 static tree patch_string_cst PROTO ((tree));
 static tree patch_string PROTO ((tree));
 static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
-static tree build_try_statement PROTO ((int, tree, tree, tree));
+static tree build_try_statement PROTO ((int, tree, tree));
+static tree build_try_finally_statement PROTO ((int, tree, tree));
 static tree patch_try_statement PROTO ((tree));
 static tree patch_synchronized_statement PROTO ((tree, tree));
 static tree patch_throw_statement PROTO ((tree, tree));
@@ -1616,11 +1617,14 @@ synchronized:
 
 try_statement:
 	TRY_TK block catches
-		{ $$ = build_try_statement ($1.location, $2, $3, NULL_TREE); }
+		{ $$ = build_try_statement ($1.location, $2, $3); }
 |	TRY_TK block finally
-		{ $$ = build_try_statement ($1.location, $2, NULL_TREE, $3); }
+		{ $$ = build_try_finally_statement ($1.location, $2, $3); }
 |	TRY_TK block catches finally
-		{ $$ = build_try_statement ($1.location, $2, $3, $4); }
+		{ $$ = build_try_finally_statement ($1.location,
+						    build_try_statement ($1.location,
+									 $2, $3),
+						    $4); }
 |	TRY_TK error
 		{yyerror ("'{' expected"); DRECOVER (try_statement);}
 ;
@@ -1669,10 +1673,7 @@ catch_clause_parameter:
 
 finally:
 	FINALLY_TK block
-		{ 
-		  $$ = build (FINALLY_EXPR, NULL_TREE,
-			      create_label_decl (generate_name ()), $2);
-		}
+		{ $$ = $2; }
 |	FINALLY_TK error
 		{yyerror ("'{' expected"); RECOVER; }
 ;
@@ -7584,6 +7585,15 @@ java_complete_lhs (node)
     case TRY_EXPR:
       return patch_try_statement (node);
 
+    case TRY_FINALLY_EXPR:
+      COMPLETE_CHECK_OP_0 (node);
+      COMPLETE_CHECK_OP_1 (node);
+      CAN_COMPLETE_NORMALLY (node)
+	= (CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))
+	   && CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1)));
+      TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 0));
+      return node;
+
     case CLEANUP_POINT_EXPR:
       COMPLETE_CHECK_OP_0 (node);
       TREE_TYPE (node) = void_type_node;
@@ -10671,92 +10681,23 @@ build_jump_to_finally (block, decl, finally_label, type)
 }
 
 static tree
-build_try_statement (location, try_block, catches, finally)
+build_try_statement (location, try_block, catches)
      int location;
-     tree try_block, catches, finally;
+     tree try_block, catches;
 {
-  tree node, rff;
-
-  if (finally && ! flag_emit_class_files)
-    {
-      /* This block defines a scope for the entire try[-catch]-finally
-	 sequence. It hold a local variable used to return from the
-	 finally using a computed goto. We call it
-	 return_from_finally (RFF). */
-      rff = build_decl (VAR_DECL, generate_name (), return_address_type_node);
-
-      /* Modification of the try block. */
-      try_block = build_jump_to_finally (try_block, rff, 
-					 FINALLY_EXPR_LABEL (finally), 
-					 NULL_TREE);
-
-      /* To the finally block: add the computed goto */
-      add_stmt_to_block (FINALLY_EXPR_BLOCK (finally), NULL_TREE,
-			 build (GOTO_EXPR, void_type_node, rff));
-
-      /* Modification of each catch blocks, if any */
-      if (catches)
-	{
-	  tree catch, catch_decl, catch_block, stmt;
-
-	  for (catch = catches; catch; catch = TREE_CHAIN (catch))
-	    TREE_OPERAND (catch, 0) = 
-	      build_jump_to_finally (TREE_OPERAND (catch, 0), rff,
-				     FINALLY_EXPR_LABEL (finally),
-				     NULL_TREE);
-
-	  /* Plus, at the end of the list, we add the catch clause that
-	     will catch an uncaught exception, call finally and rethrow it:
-	       BLOCK
-	         void *exception_parameter; (catch_decl)
-		 LABELED_BLOCK
-		   BLOCK
-		     exception_parameter = _Jv_exception_info ();
-		     RFF = &LABEL_DECL;
-		     goto finally;
-		 LABEL_DECL;
-		 CALL_EXPR
-		   Jv_ReThrow
-		   exception_parameter */
-	  catch_decl = build_decl (VAR_DECL, generate_name (), ptr_type_node);
-	  BUILD_ASSIGN_EXCEPTION_INFO (stmt, catch_decl);
-	  catch_block = build_expr_block (stmt, NULL_TREE);
-	  catch_block = build_jump_to_finally (catch_block, rff, 
-					       FINALLY_EXPR_LABEL (finally), 
-					       void_type_node);
-	  BUILD_THROW (stmt, catch_decl);
-	  catch_block = build_expr_block (catch_block, catch_decl);
-	  add_stmt_to_block (catch_block, void_type_node, stmt);
-
-	  /* Link the new handler to the existing list as the first
-	     entry. It will be the last one to be generated. */
-	  catch = build1 (CATCH_EXPR, void_type_node, catch_block);
-	  TREE_CHAIN (catch) = catches;
-	  catches = catch;
-	}
-    }
-
-  node = build (TRY_EXPR, NULL_TREE, try_block, catches, finally);
+  tree node = build (TRY_EXPR, NULL_TREE, try_block, catches);
   EXPR_WFL_LINECOL (node) = location;
-  
-  /* If we have a finally, surround this whole thing by a block where
-     the RFF local variable is defined. */
-
-  return (finally && ! flag_emit_class_files ? build_expr_block (node, rff)
-	  : node);
+  return node;
 }
 
-/* Get the catch clause block from an element of the catch clause
-   list. If depends on whether a finally clause exists or node (in
-   which case the original catch clause was surrounded by a
-   LABELED_BLOCK_EXPR. */
-
-tree
-java_get_catch_block (node, finally_present_p)
-     tree node;
-     int finally_present_p;
+static tree
+build_try_finally_statement (location, try_block, finally)
+     int location;
+     tree try_block, finally;
 {
-  return (CATCH_EXPR_GET_EXPR (TREE_OPERAND (node, 0), finally_present_p));
+  tree node = build (TRY_FINALLY_EXPR, NULL_TREE, try_block, finally);
+  EXPR_WFL_LINECOL (node) = location;
+  return node;
 }
 
 static tree
@@ -10767,8 +10708,6 @@ patch_try_statement (node)
   tree try = TREE_OPERAND (node, 0);
   /* Exception handlers are considered in left to right order */
   tree catch = nreverse (TREE_OPERAND (node, 1));
-  tree finally = TREE_OPERAND (node, 2);
-  int finally_p = (finally ? 1 : 0);
   tree current, caught_type_list = NULL_TREE;
 
   /* Check catch clauses, if any. Every time we find an error, we try
@@ -10781,29 +10720,14 @@ patch_try_statement (node)
       tree sub_current, catch_block, catch_clause;
       int unreachable;
 
-      /* Always detect the last catch clause if a finally is
-         present. This is the catch-all handler and it just needs to
-         be walked. */
-      if (!TREE_CHAIN (current) && finally)
-	{
-	  TREE_OPERAND (current, 0) = 
-	    java_complete_tree (TREE_OPERAND (current, 0));
-	  continue;
-	}
-
       /* At this point, the structure of the catch clause is
-         LABELED_BLOCK_EXPR 	(if we have a finally)
 	   CATCH_EXPR		(catch node)
 	     BLOCK	        (with the decl of the parameter)
                COMPOUND_EXPR
                  MODIFY_EXPR   (assignment of the catch parameter)
 		 BLOCK	        (catch clause block)
-           LABEL_DECL		(where to return after finally (if any))
-
-	 Since the structure of the catch clause depends on the
-	 presence of a finally, we use a function call to get to the
-	 cath clause */
-      catch_clause = java_get_catch_block (current, finally_p);
+       */
+      catch_clause = TREE_OPERAND (current, 0);
       carg_decl = BLOCK_EXPR_DECLS (catch_clause);
       carg_type = TREE_TYPE (TREE_TYPE (carg_decl));
 
@@ -10837,7 +10761,7 @@ patch_try_statement (node)
 	   sub_current != current; sub_current = TREE_CHAIN (sub_current))
 	{
 	  tree sub_catch_clause, decl;
-	  sub_catch_clause = java_get_catch_block (sub_current, finally_p);
+	  sub_catch_clause = TREE_OPERAND (sub_current, 0);
 	  decl = BLOCK_EXPR_DECLS (sub_catch_clause);
 
 	  if (inherits_from_p (carg_type, TREE_TYPE (TREE_TYPE (decl))))
@@ -10877,24 +10801,12 @@ patch_try_statement (node)
     CAN_COMPLETE_NORMALLY (node) = 1;
   POP_EXCEPTIONS ();
 
-  /* Process finally */
-  if (finally)
-    {
-      current = java_complete_tree (FINALLY_EXPR_BLOCK (finally));
-      FINALLY_EXPR_BLOCK (finally) = current;
-      if (current == error_mark_node)
-	error_found = 1;
-      if (! CAN_COMPLETE_NORMALLY (current))
-	CAN_COMPLETE_NORMALLY (node) = 0;
-    }
-
   /* Verification ends here */
   if (error_found) 
     return error_mark_node;
 
   TREE_OPERAND (node, 0) = try;
   TREE_OPERAND (node, 1) = catch;
-  TREE_OPERAND (node, 2) = finally;
   TREE_TYPE (node) = void_type_node;
   return node;
 }

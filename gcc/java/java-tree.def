@@ -42,19 +42,13 @@ DEFTREECODE (DEFAULT_EXPR, "default", 'x', 0)
 
 /* Try expression
    Operand 0 is the tried block,
-   Operand 1 contains chained catch nodes
-   Operand 2 contains the finally clause.  */
-DEFTREECODE (TRY_EXPR, "try-catch-finally", 'e', 3)
+   Operand 1 contains chained catch nodes. */
+DEFTREECODE (TRY_EXPR, "try-catch-finally", 'e', 2)
 
 /* Catch clause.
    Operand 0 is the catch clause block, which contains the declaration of
    the catch clause parameter.  */
 DEFTREECODE (CATCH_EXPR, "catch", '1', 1)
-
-/* Finally clause.
-   Operand 0 is the finally label.
-   Operand 1 is the finally block.  */
-DEFTREECODE (FINALLY_EXPR, "finally", 'e', 2) 
 
 /* Synchronized statement.
    Operand 0 is the expression on which we whish to synchronize,

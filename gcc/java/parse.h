@@ -666,7 +666,6 @@ void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));
 char *java_get_line_col PROTO ((char *, int, int));
 void java_expand_switch PROTO ((tree));
-tree java_get_catch_block PROTO ((tree, int));
 int java_report_errors PROTO (());
 #endif
 
