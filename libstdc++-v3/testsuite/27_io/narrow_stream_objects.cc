@@ -96,6 +96,7 @@ test01()
 // libstdc++/2523
 void test02()
 {
+  using namespace std;
   int i;
   cin >> i;
   cout << "i == " << i << endl;
@@ -104,6 +105,7 @@ void test02()
 // libstdc++/2523
 void test03()
 {
+  using namespace std;
   ios_base::sync_with_stdio(false);
 
   int i;
