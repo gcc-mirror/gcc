@@ -1,3 +1,8 @@
+2000-08-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (cpp_register_pragma_space): Just return if the
+	namespace is already registered.
+
 2000-08-18  Ray Essick <essick@ddna.labs.mot.com> & Nick Clifton  <nickc@redhat.com>
 
 	* config/mcore/mcore.md (rotlsi3): Allow allow rotations by a
