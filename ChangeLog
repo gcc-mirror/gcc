@@ -1,3 +1,7 @@
+2001-01-02  Laurynas Biveinis  <lauras@softhome.net>
+
+	* configure.in: remove supported directories from $noconfigdirs for DJGPP.
+
 2000-12-30  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* MAINTAINERS: Add myself as avr port co-maintainer.
