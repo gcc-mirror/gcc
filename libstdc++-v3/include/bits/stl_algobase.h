@@ -226,88 +226,76 @@ namespace std
   // (2) If we're using random access iterators, then write the loop as
   // a for loop with an explicit count.
 
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy(_InputIterator __first, _InputIterator __last,
-	   _OutputIterator __result, input_iterator_tag)
+  template<bool, typename>
+    struct __copy
     {
-      for (; __first != __last; ++__result, ++__first)
-	*__result = *__first;
-      return __result;
-    }
-
-  template<typename _RandomAccessIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy(_RandomAccessIterator __first, _RandomAccessIterator __last,
-	   _OutputIterator __result, random_access_iterator_tag)
-    {
-      typedef typename iterator_traits<_RandomAccessIterator>::difference_type
-          _Distance;
-      for (_Distance __n = __last - __first; __n > 0; --__n)
-	{
-	  *__result = *__first;
-	  ++__first;
-	  ++__result;
+      template<typename _II, typename _OI>
+        static _OI
+        copy(_II __first, _II __last, _OI __result)
+        {
+	  for (; __first != __last; ++__result, ++__first)
+	    *__result = *__first;
+	  return __result;
 	}
-      return __result;
-    }
+    };
 
-  template<typename _Tp>
-    inline _Tp*
-    __copy_trivial(const _Tp* __first, const _Tp* __last, _Tp* __result)
+  template<bool _BoolType>
+    struct __copy<_BoolType, random_access_iterator_tag>
     {
-      std::memmove(__result, __first, sizeof(_Tp) * (__last - __first));
-      return __result + (__last - __first);
+      template<typename _II, typename _OI>
+        static _OI
+        copy(_II __first, _II __last, _OI __result)
+        { 
+	  typedef typename iterator_traits<_II>::difference_type _Distance;
+	  for(_Distance __n = __last - __first; __n > 0; --__n)
+	    {
+	      *__result = *__first;
+	      ++__first;
+	      ++__result;
+	    }
+	  return __result;
+	}
+    };
+
+  template<>
+    struct __copy<true, random_access_iterator_tag>
+    {
+      template<typename _Tp>
+        static _Tp*
+        copy(const _Tp* __first, const _Tp* __last, _Tp* __result)
+        { 
+	  std::memmove(__result, __first, sizeof(_Tp) * (__last - __first));
+	  return __result + (__last - __first);
+	}
+    };
+
+  template<typename _II, typename _OI>
+    inline _OI
+    __copy_aux(_II __first, _II __last, _OI __result)
+    {
+      typedef typename iterator_traits<_II>::value_type _ValueTypeI;
+      typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
+      typedef typename iterator_traits<_II>::iterator_category _Category;
+      const bool __simple = (__is_trivially_copyable<_ValueTypeO>::_M_type
+	                     && __is_pointer<_II>::_M_type
+	                     && __is_pointer<_OI>::_M_type
+			     && __are_same<_ValueTypeI, _ValueTypeO>::_M_type);
+
+      return std::__copy<__simple, _Category>::copy(__first, __last, __result);
     }
-
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_aux2(_InputIterator __first, _InputIterator __last,
-		_OutputIterator __result, __false_type)
-    { return std::__copy(__first, __last, __result,
-			 std::__iterator_category(__first)); }
-
-  template<typename _InputIterator, typename _OutputIterator>
-    inline _OutputIterator
-    __copy_aux2(_InputIterator __first, _InputIterator __last,
-		_OutputIterator __result, __true_type)
-    { return std::__copy(__first, __last, __result,
-			 std::__iterator_category(__first)); }
-
-  template<typename _Tp>
-    inline _Tp*
-    __copy_aux2(_Tp* __first, _Tp* __last, _Tp* __result, __true_type)
-    { return std::__copy_trivial(__first, __last, __result); }
-
-  template<typename _Tp>
-    inline _Tp*
-    __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result,
-		__true_type)
-    { return std::__copy_trivial(__first, __last, __result); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
     __copy_ni2(_InputIterator __first, _InputIterator __last,
 	       _OutputIterator __result, __true_type)
-    {
-      typedef typename iterator_traits<_InputIterator>::value_type
-	_ValueType;
-      typedef typename __type_traits<
-	_ValueType>::has_trivial_assignment_operator _Trivial;
-      return _OutputIterator(std::__copy_aux2(__first, __last, __result.base(),
-					      _Trivial()));
-    }
+    { return _OutputIterator(std::__copy_aux(__first, __last,
+					     __result.base())); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
     __copy_ni2(_InputIterator __first, _InputIterator __last,
 	       _OutputIterator __result, __false_type)
-    {
-      typedef typename iterator_traits<_InputIterator>::value_type _ValueType;
-      typedef typename __type_traits<
-	_ValueType>::has_trivial_assignment_operator _Trivial;
-      return std::__copy_aux2(__first, __last, __result, _Trivial());
-    }
+    { return std::__copy_aux(__first, __last, __result); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
@@ -403,14 +391,16 @@ namespace std
     inline _BI2
     __copy_backward_aux(_BI1 __first, _BI1 __last, _BI2 __result)
     {
-      typedef typename iterator_traits<_BI2>::value_type _ValueType;
+      typedef typename iterator_traits<_BI1>::value_type _ValueType1;
+      typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_trivially_copyable<_ValueType>::_M_type
+      const bool __simple = (__is_trivially_copyable<_ValueType2>::_M_type
 	                     && __is_pointer<_BI1>::_M_type
-	                     && __is_pointer<_BI2>::_M_type);
+	                     && __is_pointer<_BI2>::_M_type
+			     && __are_same<_ValueType1, _ValueType2>::_M_type);
 
-      return __copy_backward<__simple, _Category>::copy_b(__first, __last,
-							  __result);
+      return std::__copy_backward<__simple, _Category>::copy_b(__first, __last,
+							       __result);
     }
 
   template <typename _BI1, typename _BI2>

@@ -31,21 +31,29 @@ test01()
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   const int N = sizeof(A) / sizeof(int);
   
-  int s1[N];
-  copy(A, A + N, s1);
-  VERIFY( equal(s1, s1 + N, A) );
+  int i1[N];
+  copy(A, A + N, i1);
+  VERIFY( equal(i1, i1 + N, A) );
 
   vector<int> v1(N);
   copy(A, A + N, v1.begin());
   VERIFY( equal(v1.begin(), v1.end(), A) );
 
-  int s2[N];
-  copy_backward(A, A + N, s2 + N);
-  VERIFY( equal(s2, s2 + N, A) );
+  short s1[N];
+  copy(A, A + N, s1);
+  VERIFY( equal(s1, s1 + N, A) );
+
+  int i2[N];
+  copy_backward(A, A + N, i2 + N);
+  VERIFY( equal(i2, i2 + N, A) );
 
   vector<int> v2(N);
   copy_backward(A, A + N, v2.end());
   VERIFY( equal(v2.begin(), v2.end(), A) );
+
+  short s2[N];
+  copy_backward(A, A + N, s2 + N);
+  VERIFY( equal(s2, s2 + N, A) );
 }
 
 int

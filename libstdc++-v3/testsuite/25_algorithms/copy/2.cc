@@ -32,21 +32,29 @@ test01()
   const int N = sizeof(A) / sizeof(int);
   const vector<int> a(A, A + N);
 
-  int s1[N];
-  copy(a.begin(), a.end(), s1);
-  VERIFY( equal(s1, s1 + N, a.begin()) );
+  int i1[N];
+  copy(a.begin(), a.end(), i1);
+  VERIFY( equal(i1, i1 + N, a.begin()) );
 
   vector<int> v1(N);
   copy(a.begin(), a.end(), v1.begin());
   VERIFY( equal(v1.begin(), v1.end(), a.begin()) );
 
-  int s2[N];
-  copy_backward(a.begin(), a.end(), s2 + N);
-  VERIFY( equal(s2, s2 + N, a.begin()) );
+  short s1[N];
+  copy(a.begin(), a.end(), s1);
+  VERIFY( equal(s1, s1 + N, a.begin()) );
+
+  int i2[N];
+  copy_backward(a.begin(), a.end(), i2 + N);
+  VERIFY( equal(i2, i2 + N, a.begin()) );
 
   vector<int> v2(N);
   copy_backward(a.begin(), a.end(), v2.end());
   VERIFY( equal(v2.begin(), v2.end(), a.begin()) );
+
+  short s2[N];
+  copy_backward(a.begin(), a.end(), s2 + N);
+  VERIFY( equal(s2, s2 + N, a.begin()) );
 }
 
 int
