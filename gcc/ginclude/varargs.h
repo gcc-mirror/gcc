@@ -83,7 +83,7 @@ typedef char * __va___list;
 /*  In 4.3bsd-net2, it is said we must #undef this.
     I hope this successfully identifies that system.
     I don't know why this works--rms.  */
-#ifdef _ANSI_H
+#ifdef _ANSI_H_
 #undef _VA_LIST_
 #endif
 
@@ -107,4 +107,24 @@ typedef char * __va___list;
 #endif /* not spur */
 #endif /* not sparc */
 #endif /* not _VARARGS_H */
+
+#ifdef __GNUC_VA_LIST
+/* If an include file defined __GNUC_VA_LIST,
+   copy it into va_list.  */
+
+#ifdef _HIDDEN_VA_LIST  /* On OSF1, this means varargs.h is "half-loaded".  */
+#undef _VA_LIST
+#endif
+
+/* The macro _VA_LIST_ is the same thing used by this file in Ultrix.  */
+#ifndef _VA_LIST_
+/* The macro _VA_LIST is used in SCO Unix 3.2.  */
+#ifndef _VA_LIST
+#define _VA_LIST_
+#define _VA_LIST
+typedef __gnuc_va_list va_list;
+#endif /* _VA_LIST */
+#endif /* _VA_LIST_ */
+#endif /* __GNUC_VA_LIST */
+
 #endif /* __GNUC__ */
