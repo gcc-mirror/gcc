@@ -1,3 +1,8 @@
+2001-11-30 Alan Matsuoka <alanm@redhat.com>
+
+	* combine.c (combine_simplify_rtx) : Can't simplify 
+	cases that use mode class MODE_CC.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (expand_divmod): Ignore sdiv_pow2_cheap for modes in

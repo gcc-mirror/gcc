@@ -3796,6 +3796,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x))
 	return gen_lowpart_for_combine (mode, SUBREG_REG (x));
 
+      if (GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_CC)
+        break;
       {
 	rtx temp;
 	temp = simplify_subreg (mode, SUBREG_REG (x), op0_mode,
