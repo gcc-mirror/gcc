@@ -1,3 +1,12 @@
+Sat Feb 24 03:30:38 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (find_sub_basic_blocks): New function.
+	(split_block): Be ready for basic block introduced by CODE_LABEL.
+	(commit_one_edge_insertion): Call find_sub_basic_block.
+
+	* flow.c (make_edges): Add edge from entry for blocks starting with
+	label having ALTERNATE_NAME
+
 Sat Feb 24 03:19:42 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (epilogue_done): Be ready for first basic block not

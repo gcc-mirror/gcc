@@ -473,6 +473,7 @@ static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
 static void allocate_bb_life_data	PARAMS ((void));
+static void find_sub_basic_blocks	PARAMS ((basic_block));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -695,6 +696,106 @@ find_label_refs (f, lvl)
       }
 
   return lvl;
+}
+
+/* Assume that someone emitted code with control flow instructions to the
+   basic block.  Update the data structure.  */
+static void
+find_sub_basic_blocks (bb)
+     basic_block bb;
+{
+  rtx first_insn = bb->head, insn;
+  rtx end = bb->end;
+  edge succ_list = bb->succ;
+  rtx jump_insn = NULL_RTX;
+  int created = 0;
+  int barrier = 0;
+  edge falltru = 0;
+  basic_block first_bb = bb, last_bb;
+  int i;
+
+  if (GET_CODE (first_insn) == LABEL_REF)
+    first_insn = NEXT_INSN (first_insn);
+  first_insn = NEXT_INSN (first_insn);
+  bb->succ = NULL;
+
+  insn = first_insn;
+  /* Scan insn chain and try to find new basic block boundaries.  */
+  while (insn != end)
+    {
+      enum rtx_code code = GET_CODE (insn);
+      switch (code)
+	{
+	case JUMP_INSN:
+	  /* We need some special care for those expressions.  */
+	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
+	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
+	    abort();
+	  jump_insn = insn;
+	  break;
+	case BARRIER:
+	  if (!jump_insn)
+	    abort ();
+	  barrier = 1;
+	  break;
+	/* On code label, split current basic block.  */
+	case CODE_LABEL:
+	  falltru = split_block (bb, PREV_INSN (insn));
+	  if (jump_insn)
+	    bb->end = jump_insn;
+	  bb = falltru->dest;
+	  if (barrier)
+	    remove_edge (falltru);
+	  barrier = 0;
+	  jump_insn = 0;
+	  created = 1;
+	  if (LABEL_ALTERNATE_NAME (insn))
+	    make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
+	  break;
+	case INSN:
+	  /* In case we've previously split insn on the JUMP_INSN, move the
+	     block header to proper place.  */
+	  if (jump_insn)
+	    {
+	      falltru = split_block (bb, PREV_INSN (insn));
+	      bb->end = jump_insn;
+	      bb = falltru->dest;
+	      if (barrier)
+		abort ();
+	      jump_insn = 0;
+	    }
+	default:
+	  break;
+	}
+      insn = NEXT_INSN (insn);
+    }
+  /* Last basic block must end in the original BB end.  */
+  if (jump_insn)
+    abort ();
+
+  /* Wire in the original edges for last basic block.  */
+  if (created)
+    {
+      bb->succ = succ_list;
+      while (succ_list)
+	succ_list->src = bb, succ_list = succ_list->succ_next;
+    }
+  else
+    bb->succ = succ_list;
+
+  /* Now re-scan and wire in all edges.  This expect simple (conditional)
+     jumps at the end of each new basic blocks.  */
+  last_bb = bb;
+  for (i = first_bb->index; i < last_bb->index; i++)
+    {
+      bb = BASIC_BLOCK (i);
+      if (GET_CODE (bb->end) == JUMP_INSN)
+	{
+	  mark_jump_label (PATTERN (bb->end), bb->end, 0, 0);
+	  make_label_edge (NULL, bb, JUMP_LABEL (bb->end), 0);
+	}
+      insn = NEXT_INSN (insn);
+    }
 }
 
 /* Find all basic blocks of the function whose first insn is F.
@@ -1120,6 +1221,10 @@ make_edges (label_value_list)
       rtx insn, x;
       enum rtx_code code;
       int force_fallthru = 0;
+
+      if (GET_CODE (bb->head) == CODE_LABEL
+	  && LABEL_ALTERNATE_NAME (bb->head))
+	make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
 
       /* Examine the last instruction of the block, and discover the
 	 ways we can leave the block.  */
@@ -1589,11 +1694,21 @@ split_block (bb, insn)
   BASIC_BLOCK (i) = new_bb;
   new_bb->index = i;
 
-  /* Create the basic block note.  */
-  bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
-			      new_bb->head);
-  NOTE_BASIC_BLOCK (bb_note) = new_bb;
-  new_bb->head = bb_note;
+  if (GET_CODE (new_bb->head) == CODE_LABEL)
+    {
+      /* Create the basic block note.  */
+      bb_note = emit_note_after (NOTE_INSN_BASIC_BLOCK,
+				 new_bb->head);
+      NOTE_BASIC_BLOCK (bb_note) = new_bb;
+    }
+  else
+    {
+      /* Create the basic block note.  */
+      bb_note = emit_note_before (NOTE_INSN_BASIC_BLOCK,
+				  new_bb->head);
+      NOTE_BASIC_BLOCK (bb_note) = new_bb;
+      new_bb->head = bb_note;
+    }
 
   update_bb_for_insn (new_bb);
 
@@ -1995,6 +2110,7 @@ commit_one_edge_insertion (e)
     }
   else if (GET_CODE (last) == JUMP_INSN)
     abort ();
+  find_sub_basic_blocks (bb);
 }
 
 /* Update the CFG for all queued instructions.  */
