@@ -2508,7 +2508,14 @@ expand_assignment (to, from, want_value, suggest_reg)
       if (volatilep)
 	{
 	  if (GET_CODE (to_rtx) == MEM)
-	    MEM_VOLATILE_P (to_rtx) = 1;
+	    {
+	      /* When the offset is zero, to_rtx is the address of the
+		 structure we are storing into, and hence may be shared.
+		 We must make a new MEM before setting the volatile bit.  */
+	      if (offset == 0)
+		to_rtx = change_address (to_rtx, VOIDmode, XEXP (to_rtx, 0));
+	      MEM_VOLATILE_P (to_rtx) = 1;
+	    }
 #if 0  /* This was turned off because, when a field is volatile
 	  in an object which is not volatile, the object may be in a register,
 	  and then we would abort over here.  */
