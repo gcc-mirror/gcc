@@ -184,7 +184,7 @@ static int branch_dest (rtx);
 static void force_into (rtx, rtx);
 static void print_slot (rtx);
 static rtx add_constant (rtx, enum machine_mode, rtx);
-static void dump_table (rtx);
+static void dump_table (rtx, rtx);
 static int hi_const (rtx);
 static int broken_move (rtx);
 static int mova_p (rtx);
@@ -2663,11 +2663,16 @@ add_constant (rtx x, enum machine_mode mode, rtx last_value)
   return lab;
 }
 
-/* Output the literal table.  */
+/* Output the literal table.  START, if nonzero, is the first instruction
+   this table is needed for, and also indicates that there is at least one
+   casesi_worker_2 instruction; We have to emit the operand3 labels from
+   these insns at a 4-byte  aligned position.  BARRIER is the barrier
+   after which we are to place the table.  */
 
 static void
-dump_table (rtx scan)
+dump_table (rtx start, rtx barrier)
 {
+  rtx scan = barrier;
   int i;
   int need_align = 1;
   rtx lab, ref;
@@ -2702,6 +2707,20 @@ dump_table (rtx scan)
 
   need_align = 1;
 
+  if (start)
+    {
+      scan = emit_insn_after (gen_align_4 (), scan);
+      need_align = 0;
+      for (; start != barrier; start = NEXT_INSN (start))
+	if (GET_CODE (start) == INSN
+	    && recog_memoized (start) == CODE_FOR_casesi_worker_2)
+	  {
+	    rtx src = SET_SRC (XVECEXP (PATTERN (start), 0, 0));
+	    rtx lab = XEXP (XVECEXP (src, 0, 3), 0);
+
+	    scan = emit_label_after (lab, scan);
+	  }
+    }
   if (TARGET_FMOVD && TARGET_ALIGN_DOUBLE && have_df)
     {
       rtx align_insn = NULL_RTX;
@@ -2902,6 +2921,46 @@ mova_p (rtx insn)
 	  && GET_CODE (XVECEXP (SET_SRC (PATTERN (insn)), 0, 0)) == LABEL_REF);
 }
 
+/* Fix up a mova from a switch that went out of range.  */
+static void
+fixup_mova (rtx mova)
+{
+  if (! flag_pic)
+    {
+      SET_SRC (PATTERN (mova)) = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
+      INSN_CODE (mova) = -1;
+    }
+  else
+    {
+      rtx worker = mova;
+      rtx lab = gen_label_rtx ();
+      rtx wpat, wpat0, wpat1, wsrc, diff;
+
+      do
+	{
+	  worker = NEXT_INSN (worker);
+	  if (! worker
+	      || GET_CODE (worker) == CODE_LABEL
+	      || GET_CODE (worker) == JUMP_INSN)
+	    abort ();
+	} while (recog_memoized (worker) != CODE_FOR_casesi_worker_1);
+      wpat = PATTERN (worker);
+      wpat0 = XVECEXP (wpat, 0, 0);
+      wpat1 = XVECEXP (wpat, 0, 1);
+      wsrc = SET_SRC (wpat0);
+      PATTERN (worker) = (gen_casesi_worker_2
+			  (SET_DEST (wpat0), XVECEXP (wsrc, 0, 1),
+			   XEXP (XVECEXP (wsrc, 0, 2), 0), lab,
+			   XEXP (wpat1, 0)));
+      INSN_CODE (worker) = -1;
+      diff = gen_rtx_MINUS (Pmode, XVECEXP (SET_SRC (PATTERN (mova)), 0, 0),
+			    gen_rtx_LABEL_REF (Pmode, lab));
+      diff = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, diff), UNSPEC_PIC);
+      SET_SRC (PATTERN (mova)) = gen_rtx_CONST (Pmode, diff);
+      INSN_CODE (mova) = -1;
+    }
+}
+
 /* Find the last barrier from insn FROM which is close enough to hold the
    constant pool.  If we can't find one, then create one near the end of
    the range.  */
@@ -3093,8 +3152,7 @@ find_barrier (int num_mova, rtx mova, rtx from)
 	{
 	  /* Try as we might, the leading mova is out of range.  Change
 	     it into a load (which will become a pcload) and retry.  */
-	  SET_SRC (PATTERN (mova)) = XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
-	  INSN_CODE (mova) = -1;
+	  fixup_mova (mova);
 	  return find_barrier (0, 0, mova);
 	}
       else
@@ -4006,7 +4064,20 @@ sh_reorg (void)
     {
       if (mova_p (insn))
 	{
-	  if (! num_mova++)
+	  /* ??? basic block reordering can move a switch table dispatch
+	     below the switch table.  Check if that has happened.
+	     We only have the addresses available when optimizing; but then,
+	     this check shouldn't be needed when not optimizing.  */
+	  rtx label_ref = XVECEXP (SET_SRC (PATTERN (insn)), 0, 0);
+	  if (optimize
+	      && (INSN_ADDRESSES (INSN_UID (insn))
+		  > INSN_ADDRESSES (INSN_UID (XEXP (label_ref, 0)))))
+	    {
+	      /* Change the mova into a load.
+		 broken_move will then return true for it.  */
+	      fixup_mova (insn);
+	    }
+	  else if (! num_mova++)
 	    mova = insn;
 	}
       else if (GET_CODE (insn) == JUMP_INSN
@@ -4031,19 +4102,20 @@ sh_reorg (void)
 	    {
 	      /* Change the mova into a load, and restart scanning
 		 there.  broken_move will then return true for mova.  */
-	      SET_SRC (PATTERN (mova))
-		= XVECEXP (SET_SRC (PATTERN (mova)), 0, 0);
-	      INSN_CODE (mova) = -1;
+	      fixup_mova (mova);
 	      insn = mova;
 	    }
 	}
-      if (broken_move (insn))
+      if (broken_move (insn)
+	  || (GET_CODE (insn) == INSN
+	      && recog_memoized (insn) == CODE_FOR_casesi_worker_2))
 	{
 	  rtx scan;
 	  /* Scan ahead looking for a barrier to stick the constant table
 	     behind.  */
 	  rtx barrier = find_barrier (num_mova, mova, insn);
 	  rtx last_float_move = NULL_RTX, last_float = 0, *last_float_addr = NULL;
+	  int need_aligned_label = 0;
 
 	  if (num_mova && ! mova_p (mova))
 	    {
@@ -4057,6 +4129,9 @@ sh_reorg (void)
 	    {
 	      if (GET_CODE (scan) == CODE_LABEL)
 		last_float = 0;
+	      if (GET_CODE (scan) == INSN
+		  && recog_memoized (scan) == CODE_FOR_casesi_worker_2)
+		need_aligned_label = 1;
 	      if (broken_move (scan))
 		{
 		  rtx *patp = &PATTERN (scan), pat = *patp;
@@ -4087,7 +4162,6 @@ sh_reorg (void)
 			}
 		      dst = gen_rtx_REG (HImode, REGNO (dst) + offset);
 		    }
-
 		  if (GET_CODE (dst) == REG && FP_ANY_REGISTER_P (REGNO (dst)))
 		    {
 		      /* This must be an insn that clobbers r0.  */
@@ -4161,7 +4235,7 @@ sh_reorg (void)
 		  INSN_CODE (scan) = -1;
 		}
 	    }
-	  dump_table (barrier);
+	  dump_table (need_aligned_label ? insn : 0, barrier);
 	  insn = barrier;
 	}
     }

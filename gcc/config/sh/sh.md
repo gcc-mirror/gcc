@@ -7110,7 +7110,7 @@ mov.l\\t1f,r0\\n\\
 	      (clobber (match_dup 3))])]
   "if (GET_CODE (operands[2]) == CODE_LABEL) LABEL_NUSES (operands[2])++;")
 
-(define_insn "*casesi_worker"
+(define_insn "casesi_worker_1"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(unspec:SI [(reg:SI R0_REG)
 		    (match_operand:SI 1 "register_operand" "0,r")
@@ -7139,6 +7139,44 @@ mov.l\\t1f,r0\\n\\
     }
 }"
   [(set_attr "length" "4")])
+
+(define_insn "casesi_worker_2"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec:SI [(reg:SI R0_REG)
+		    (match_operand:SI 1 "register_operand" "0,r")
+		    (label_ref (match_operand 2 "" ""))
+		    (label_ref (match_operand 3 "" ""))] UNSPEC_CASESI))
+   (clobber (match_operand:SI 4 "" "=X,1"))]
+  "TARGET_SH2 && reload_completed && flag_pic"
+  "*
+{
+  rtx diff_vec = PATTERN (next_real_insn (operands[2]));
+  char *load;
+
+  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
+    abort ();
+
+  switch (GET_MODE (diff_vec))
+    {
+    case SImode:
+      output_asm_insn (\"shll2    %1\", operands);
+      load = \"mov.l	@(r0,%1),%0\"; break;
+    case HImode:
+      output_asm_insn (\"add	%1,%1\", operands);
+      load = \"mov.w	@(r0,%1),%0\"; break;
+    case QImode:
+      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
+	load = \"mov.b	@(r0,%1),%0\;extu.b	%0,%0\";
+      else
+	load = \"mov.b	@(r0,%1),%0\";
+      break;
+    default:
+      abort ();
+    }
+  output_asm_insn (\"add\tr0,%1\;mova\t%O3,r0\\n\", operands);
+  return load;
+}"
+  [(set_attr "length" "8")])
 
 (define_insn "casesi_shift_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
