@@ -2705,29 +2705,6 @@ invariant_p (x)
   return 1 + conditional;
 }
 
-/* Return 1 if OTHER (a mem ref) overlaps the area of memory
-   which is SIZE bytes starting at BASE.  */
-
-int
-addr_overlap_p (other, base, size)
-     rtx other;
-     rtx base;
-     HOST_WIDE_INT size;
-{
-  HOST_WIDE_INT start = 0, end;
-
-  if (GET_CODE (base) == CONST)
-    base = XEXP (base, 0);
-  if (GET_CODE (base) == PLUS
-      && GET_CODE (XEXP (base, 1)) == CONST_INT)
-    {
-      start = INTVAL (XEXP (base, 1));
-      base = XEXP (base, 0);
-    }
-
-  end = start + size;
-  return refers_to_mem_p (other, base, start, end);
-}
 
 /* Return nonzero if all the insns in the loop that set REG
    are INSN and the immediately following insns,
