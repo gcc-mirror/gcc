@@ -2998,12 +2998,8 @@ assign_parms (fndecl, second_time)
 	 for its ultimate type, don't use that slot after entry.
 	 We'll make another stack slot, if we need one.  */
       {
-#ifdef FUNCTION_ARG_BOUNDARY
 	int thisparm_boundary
 	  = FUNCTION_ARG_BOUNDARY (passed_mode, passed_type);
-#else
-	int thisparm_boundary = PARM_BOUNDARY;
-#endif
 
 	if (GET_MODE_ALIGNMENT (nominal_mode) > thisparm_boundary)
 	  stack_parm = 0;
