@@ -1,5 +1,23 @@
 2002-11-10  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Container.java (validate): Use tree lock.
+	(getComponent): Likewise.
+	(getComponents): Likewise.
+	(addImpl): Likewise.
+	(remove): Likewise.
+	(removeAll): Likewise.
+	(processEvent): Fixed indentation.
+	(getComponentAt): Use tree lock.
+	(findComponentAt): Likewise.
+	(removeNotify): Likewise.
+	(isAncestorOf): Likewise.
+	(list): Likewise.
+	(visitChildren): Likewise.
+	(findNextFocusComponent): Likewise.
+	(addNotifyContainerChildren): Likewise.
+	(getAccessibleChildrenCount): Likewise.
+	(getAccessibleChild): Likewise.
+
 	* java/awt/GridLayout.java (layoutContainer): Use tree lock.
 	(getSize): Likewise.
 	* java/awt/FlowLayout.java (layoutContainer): Use tree lock.
