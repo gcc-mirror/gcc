@@ -1,3 +1,7 @@
+2005-03-10  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/invoke.texi: Add 8540 to list of cpus in rs6000 cpu section.
+
 2005-03-10  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (MEMBER_TYPE_FORCES_BLK): Define.
