@@ -24,9 +24,20 @@ You should have received a copy of the GNU General Public License along with
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
+#include "../tconfig.h"
 #include "runtime.h"
 #include "sarray.h"
 #include "encoding.h"
+
+/* this is how we hack STRUCT_VALUE to be 1 or 0 */
+#define gen_rtx(args...) 1
+#define rtx int
+
+#if STRUCT_VALUE == 0
+#define INVISIBLE_STRUCT_RETURN 1
+#else
+#define INVISIBLE_STRUCT_RETURN 0
+#endif
 
 /* The uninstalled dispatch table */
 struct sarray* __objc_uninstalled_dtable = 0;
@@ -38,7 +49,14 @@ static void __objc_install_dispatch_table_for_class (Class*);
 
 /* Forward declare some functions */
 static void __objc_init_install_dtable(id, SEL);
-static id __objc_missing_method(id, SEL, ...);
+static id __objc_word_forward(id, SEL, ...);
+typedef struct { id many[8]; } __big;
+#if INVISIBLE_STRUCT_RETURN 
+static __big 
+#else
+static id
+#endif
+__objc_block_forward(id, SEL, ...);
 static Method_t search_for_method_in_hierarchy (Class* class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
@@ -53,16 +71,34 @@ nil_method(id receiver, SEL op, ...)
 __inline__ IMP
 get_imp (Class* class, SEL sel)
 {
-  void* res = sarray_get (class->dtable, (size_t) sel);
+  IMP impl;
+  void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
   if(res == __objc_init_install_dtable)
-    __objc_install_dispatch_table_for_class (class);
-  return sarray_get (class->dtable, (size_t) sel);
+    {
+      __objc_install_dispatch_table_for_class (class);
+      res = sarray_get (class->dtable, (size_t) sel->sel_id);
+    }
+  if (res == 0)
+    {
+      const char *t = sel->sel_types;
+      if (t && (*t == '[' || *t == '(' || *t == '{'))
+	res = (IMP)__objc_block_forward;
+      else
+	res = (IMP)__objc_word_forward;
+    }
+  return res;
 }
 
 __inline__ BOOL
 __objc_responds_to (id object, SEL sel)
 {
-  return get_imp (object->class_pointer, sel) != __objc_missing_method;
+  void* res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
+  if(res == __objc_init_install_dtable)
+    {
+      __objc_install_dispatch_table_for_class (object->class_pointer);
+      res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
+    }
+  return (res != 0);
 }
 
 /* This is the lookup function.  All entries in the table are either a 
@@ -72,8 +108,20 @@ __objc_responds_to (id object, SEL sel)
 __inline__ IMP
 objc_msg_lookup(id receiver, SEL op)
 {
+  IMP result;
   if(receiver)
-    return sarray_get(receiver->class_pointer->dtable, (sidx)op);
+    {
+      result = sarray_get(receiver->class_pointer->dtable, (sidx)op->sel_id);
+      if (result == 0)
+	{
+	  const char *t = op->sel_types;
+	  if (t && (*t == '[' || *t == '(' || *t == '{'))
+	    result = (IMP)__objc_block_forward;
+	  else
+	    result = (IMP)__objc_word_forward;
+	}
+      return result;
+    }
   else
     return nil_method;
 }
@@ -86,6 +134,8 @@ objc_msg_lookup_super (Super_t super, SEL sel)
   else
     return nil_method;
 }
+
+int method_get_sizeof_arguments (Method*);
 
 retval_t
 objc_msg_sendv(id object, SEL op, arglist_t arg_frame)
@@ -141,8 +191,8 @@ static void __objc_init_install_dtable(id receiver, SEL op)
 
       /* Install real dtable for factory methods */
       __objc_install_dispatch_table_for_class (receiver->class_pointer);
-      
-      if(op != sel_get_uid ("initialize"))
+
+      if (strcmp (sel_get_name (op), "initialize"))
 	__objc_send_initialize((Class*)receiver);
       else
 	CLS_SETINITIALIZED((Class*)receiver);
@@ -155,7 +205,10 @@ allready_initialized:
 
   args = __builtin_apply_args();
   result = __builtin_apply((apply_t)imp, args, 96);
-  __builtin_return (result);
+  if (result)
+    __builtin_return (result);
+  else
+    return;
   
 }
 
@@ -170,8 +223,6 @@ void __objc_install_premature_dtable(Class* class)
 /* Send +initialize to class if not already done */
 static void __objc_send_initialize(Class* class)
 {
-  Method_t m;
-
   /* This *must* be a class object */
   assert(CLS_ISCLASS(class));
   assert(!CLS_ISMETA(class));
@@ -199,7 +250,7 @@ static void __objc_send_initialize(Class* class)
 		Method_t method = &method_list->method_list[i];
 		
 		
-		if (method->method_name == op)
+		if (method->method_name->sel_id == op->sel_id)
 		  (*method->method_imp)((id) class, op);
 	      }
 
@@ -231,8 +282,7 @@ __objc_install_dispatch_table_for_class (Class* class)
   /* Allocate dtable if nessecary */
   if (super == 0)
     {
-      class->dtable = sarray_new (__objc_selector_max_index,
-				  __objc_missing_method);
+      class->dtable = sarray_new (__objc_selector_max_index, 0);
     }
   else
     class->dtable = sarray_lazy_copy (super->dtable);
@@ -244,7 +294,7 @@ __objc_install_dispatch_table_for_class (Class* class)
         {
           Method_t method = &(mlist->method_list[counter]);
 	  sarray_at_put_safe (class->dtable,
-			      (sidx) method->method_name,
+			      (sidx) method->method_name->sel_id,
 			      method->method_imp);
           counter -= 1;
         }
@@ -254,7 +304,6 @@ __objc_install_dispatch_table_for_class (Class* class)
 void __objc_update_dispatch_table_for_class (Class* class)
 {
   Class* next;
-  struct sarray* save;
 
   /* not yet installed -- skip it */
   if (class->dtable == __objc_uninstalled_dtable) 
@@ -297,10 +346,12 @@ class_add_method_list (Class* class, MethodList_t list)
       if (method->method_name)  /* Sometimes these are NULL */
 	{
 	  /* This is where selector names are transmogriffed to SEL's */
-	  method->method_name = sel_register_name ((char*)method->method_name);
+	  method->method_name = 
+	    sel_register_typed_name ((const char*)method->method_name,
+				     method->method_types);
 
 	  if (search_for_method_in_list (class->methods, method->method_name)
-	      && method->method_name != initialize_sel)
+	      && method->method_name->sel_id != initialize_sel->sel_id)
 	    {
 	      /* Duplication. Print a error message an change the method name
 		 to NULL. */
@@ -375,7 +426,7 @@ search_for_method_in_list (MethodList_t list, SEL op)
           Method_t method = &method_list->method_list[i];
 
           if (method->method_name)
-            if (method->method_name == op)
+            if (method->method_name->sel_id == op->sel_id)
               return method;
         }
 
@@ -387,40 +438,71 @@ search_for_method_in_list (MethodList_t list, SEL op)
   return NULL;
 }
 
+static retval_t __objc_forward (id object, SEL sel, arglist_t args);
+
+static id
+__objc_word_forward (id rcv, SEL op, ...)
+{
+  void *args, *res;
+
+  args = __builtin_apply_args ();
+  res = __objc_forward (rcv, op, args);
+  if (res)
+    __builtin_return (res);
+  else
+    return res;
+}
+
+#if INVISIBLE_STRUCT_RETURN
+static __big
+#else
+static id
+#endif
+__objc_block_forward (id rcv, SEL op, ...)
+{
+  void *args, *res;
+
+  args = __builtin_apply_args ();
+  res = __objc_forward (rcv, op, args);
+  if (res)
+    __builtin_return (res);
+}
+
 
 /* This fuction is installed in the dispatch table for all methods which are
    not implemented.  Thus, it is called when a selector is not recognized. */
-static id
-__objc_missing_method (id object, SEL sel, ...)
+static retval_t
+__objc_forward (id object, SEL sel, arglist_t args)
 {
   IMP imp;
-  SEL frwd_sel;
+  static SEL frwd_sel = 0;
   SEL err_sel;
 
   /* first try if the object understands forward:: */
-  frwd_sel = sel_get_uid("forward::");
-  imp = get_imp(object->class_pointer, frwd_sel);
-  if(imp != __objc_missing_method)
+  if (!frwd_sel)
+    frwd_sel = sel_get_any_uid("forward::");
+
+  if (__objc_responds_to (object, frwd_sel))
     {
-      void *result, *args = __builtin_apply_args();
-      result = (*imp)(object, frwd_sel, sel, args);
-      __builtin_return(result);
+      imp = get_imp(object->class_pointer, frwd_sel);
+      return (*imp)(object, frwd_sel, sel, args);
     }
 
   /* If the object recognizes the doesNotRecognize: method then we're going
      to send it. */
-  err_sel = sel_get_uid ("doesNotRecognize:");
-  imp = get_imp (object->class_pointer, err_sel);
-  if (imp != __objc_missing_method)
+  err_sel = sel_get_any_uid ("doesNotRecognize:");
+  if (__objc_responds_to (object, err_sel))
     {
+      imp = get_imp (object->class_pointer, err_sel);
       return (*imp) (object, err_sel, sel);
     }
   
   /* The object doesn't recognize the method.  Check for responding to
      error:.  If it does then sent it. */
   {
-    char msg[256 + strlen ((char*)sel_get_name (sel))
-             + strlen ((char*)object->class_pointer->name)];
+    size_t strlen (const char*);
+    char msg[256 + strlen ((const char*)sel_get_name (sel))
+             + strlen ((const char*)object->class_pointer->name)];
 
     sprintf (msg, "(%s) %s does not recognize %s",
 	     (CLS_ISMETA(object->class_pointer)
@@ -428,10 +510,12 @@ __objc_missing_method (id object, SEL sel, ...)
 	      : "instance" ),
              object->class_pointer->name, sel_get_name (sel));
 
-    err_sel = sel_get_uid ("error:");
-    imp = get_imp (object->class_pointer, err_sel);
-    if (imp != __objc_missing_method)
-      return (*imp) (object, sel_get_uid ("error:"), msg);
+    err_sel = sel_get_any_uid ("error:");
+    if (__objc_responds_to (object, err_sel))
+      {
+	imp = get_imp (object->class_pointer, err_sel);
+	return (*imp) (object, sel_get_any_uid ("error:"), msg);
+      }
 
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
@@ -451,12 +535,12 @@ void __objc_print_dtable_stats()
 #endif
 	 );
 
-  printf("arrays: %d = %d bytes\n", narrays, narrays*sizeof(struct sarray));
+  printf("arrays: %d = %ld bytes\n", narrays, (int)narrays*sizeof(struct sarray));
   total += narrays*sizeof(struct sarray);
-  printf("buckets: %d = %d bytes\n", nbuckets, nbuckets*sizeof(struct sbucket));
+  printf("buckets: %d = %ld bytes\n", nbuckets, (int)nbuckets*sizeof(struct sbucket));
   total += nbuckets*sizeof(struct sbucket);
 
-  printf("idxtables: %d = %d bytes\n", idxsize, idxsize*sizeof(void*));
+  printf("idxtables: %d = %ld bytes\n", idxsize, (int)idxsize*sizeof(void*));
   total += idxsize*sizeof(void*);
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);

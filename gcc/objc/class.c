@@ -132,6 +132,27 @@ objc_get_class (const char *name)
   abort();
 }
 
+/* This function provides a way to enumerate all the classes in the
+   executable.  Pass *ENUM_STATE == NULL to start the enumeration.  The
+   function will return 0 when there are no more classes.  
+   For example: 
+       id class; 
+       void *es = NULL;
+       while ((class = objc_next_class(&es)))
+         ... do something with class; 
+*/
+Class* 
+objc_next_class(void **enum_state)
+{
+  /* make sure the table is there */
+  assert(__objc_class_hash);
+
+  *(node_ptr*)enum_state = 
+    hash_next(__objc_class_hash, *(node_ptr*)enum_state);
+  if (*(node_ptr*)enum_state)
+    return (*(node_ptr*)enum_state)->value;
+  return (Class*)0;
+}
 
 /* Resolve super/subclass links for all classes.  The only thing we 
    can be sure of is that the class_pointer for class objects point 
@@ -217,6 +238,9 @@ void __objc_resolve_class_links()
 Class*
 class_pose_as (Class* impostor, Class* super_class)
 {
+  node_ptr node;
+  Class* class1;
+
   if (!CLS_ISRESOLV (impostor))
     __objc_resolve_class_links ();
 
@@ -230,19 +254,13 @@ class_pose_as (Class* impostor, Class* super_class)
 
   {
     Class **subclass = &(super_class->subclass_list);
-    BOOL super_is_base_class = NO;
 
     /* move subclasses of super_class to impostor */
     while (*subclass)
       {
 	Class *nextSub = (*subclass)->sibling_class;
 
-	/* this happens when super_class is a base class */
-	if (*subclass == CLASSOF (super_class))
-	  {
-	    super_is_base_class = YES;
-	  }
-	else if (*subclass != impostor)
+	if (*subclass != impostor)
 	  {
 	    Class *sub = *subclass;
 
@@ -250,11 +268,18 @@ class_pose_as (Class* impostor, Class* super_class)
 	    sub->sibling_class = impostor->subclass_list;
 	    sub->super_class = impostor;
 	    impostor->subclass_list = sub;
-	    
-	    /* meta classes */
-	    CLASSOF (sub)->sibling_class = CLASSOF (impostor)->subclass_list;
-	    CLASSOF (sub)->super_class = CLASSOF (impostor);
-	    CLASSOF (impostor)->subclass_list = CLASSOF (sub);
+
+	    /* It will happen that SUB is not a class object if it is 
+	       the top of the meta class hierachy chain.  (root
+	       meta-class objects inherit theit class object)  If that is
+	       the case... dont mess with the meta-meta class. */ 
+	    if (CLS_ISCLASS (sub))
+	      {
+		/* meta classes */
+		CLASSOF (sub)->sibling_class = CLASSOF (impostor)->subclass_list;
+		CLASSOF (sub)->super_class = CLASSOF (impostor);
+		CLASSOF (impostor)->subclass_list = CLASSOF (sub);
+	      }
 	  }
 
 	*subclass = nextSub;
@@ -267,66 +292,31 @@ class_pose_as (Class* impostor, Class* super_class)
     /* set impostor to have no sibling classes */
     impostor->sibling_class = 0;
     CLASSOF (impostor)->sibling_class = 0;
-
-    /* impostor has a sibling... */
-    if (super_is_base_class)
-      {
-	CLASSOF (super_class)->sibling_class = 0;
-	impostor->sibling_class = CLASSOF (super_class);
-      }
   }
   
-  /* check relationship of impostor and super_class */
+  /* check relationship of impostor and super_class is kept. */
   assert (impostor->super_class == super_class);
   assert (CLASSOF (impostor)->super_class == CLASSOF (super_class));
 
-  /* by now, the re-organization of the class hierachy 
-     is done.  We only need to update various tables. */
+  /* This is how to update the lookup table. Regardless of
+     what the keys of the hashtable is, change all values that are
+     suprecalss into impostor. */
 
-  /* First, we change the names in the hash table.
-     This will change the behavior of objc_get_class () */
-  {
-    char* buffer = (char*) __objc_xmalloc(strlen (super_class->name) + 2);
-
-    strcpy (buffer+1, super_class->name);
-    buffer[0] = '*';
-
-    /* keep on prepending '*' until the name is unique */
-    while (hash_value_for_key (__objc_class_hash, buffer))
-      {
-	char *bbuffer = (char*) __objc_xmalloc (strlen (buffer)+2);
-
-	strcpy (bbuffer+1, buffer);
-	bbuffer[0] = '*';
-	free (buffer);
-	buffer = bbuffer;
-      }
-
-    hash_remove (__objc_class_hash, super_class->name);
-    hash_add (&__objc_class_hash, buffer, super_class);
-    hash_add (&__objc_class_hash, super_class->name, impostor);
-
-    /* Note that -name and +name will still respond with
-       the same strings as before.  This way any
-       -isKindOfGivenName: will always work.         */
-  }
+  for (node = hash_next (__objc_class_hash, NULL); node;
+       node = hash_next (__objc_class_hash, node))
+    {
+      class1 = (Class*)node->value;
+      if (class1 == super_class)
+	{
+	  node->value = impostor; /* change hash table value */
+	}
+    }      
 
   /* next, we update the dispatch tables... */
-  {
-    Class *subclass;
-
-    for (subclass = impostor->subclass_list;
-	 subclass; subclass = subclass->sibling_class)
-      {
-	/* we use the opportunity to check what we did */
-	assert (subclass->super_class == impostor);
-	assert (CLASSOF (subclass)->super_class == CLASSOF (impostor));
-
-	__objc_update_dispatch_table_for_class (CLASSOF (subclass));
-	__objc_update_dispatch_table_for_class (subclass);
-      }
-  }
+  __objc_update_dispatch_table_for_class (CLASSOF (impostor));
+  __objc_update_dispatch_table_for_class (impostor);
 
   return impostor;
 }
   
+

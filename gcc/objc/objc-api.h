@@ -44,8 +44,6 @@ struct objc_method_description
     char *types;		/* type encoding */
 };
 
-
-
 /* Filer types used to describe Ivars and Methods.  */
 #define _C_ID       '@'
 #define _C_CLASS    '#'
@@ -92,7 +90,7 @@ extern BOOL objc_trace;
 */
 typedef struct objc_symtab {
   unsigned long sel_ref_cnt;                     /* Unknown. */
-  SEL       *refs;                              /* Unknown. */
+  SEL        refs;                              /* Unknown. */
   unsigned short cls_def_cnt;                   /* Number of classes compiled
                                                   (defined) in the module. */
   unsigned short cat_def_cnt;                   /* Number of categories 
@@ -146,7 +144,7 @@ typedef struct objc_ivar_list {
     const char* ivar_type;                      /* Description of the Ivar's
                                                   type.  Useful for 
                                                   debuggers. */
-    int         ivar_offset;                    /* Byte offset from the base 
+    int        ivar_offset;                    /* Byte offset from the base 
                                                   address of the instance 
                                                   structure to the variable. */
 
@@ -169,7 +167,7 @@ typedef struct objc_method_list {
   struct objc_method_list*  method_next;      /* This variable is used to link 
                                                 a method list to another.  It 
                                                 is a singly linked list. */
-  int             method_count;               /* Number of methods defined in 
+  int            method_count;               /* Number of methods defined in 
                                                 this structure. */
   struct objc_method {
     SEL         method_name;                  /* This variable is the method's 
@@ -303,11 +301,22 @@ Class* objc_get_class(const char *name);
 
 Class* objc_lookup_class(const char *name);
 
+Class* objc_next_class(void **enum_state);
+
 const char *sel_get_name(SEL selector);
+
+const char *sel_get_type(SEL selector);
 
 SEL sel_get_uid(const char *name);
 
+SEL sel_get_any_uid(const char *name);
+
+SEL sel_get_typed_uid(const char *name, const char*);
+
 SEL sel_register_name(const char *name);
+
+SEL sel_register_typed_name(const char *name, const char*type);
+
 
 BOOL sel_is_mapped (SEL aSel);
 

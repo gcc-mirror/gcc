@@ -35,6 +35,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   ({ typeof(X) __x = (X), __y = (Y); \
      (__x < __y ? __x : __y); })
 
+#define ROUND(V, A) \
+  ({ typeof(V) __v=(V); typeof(A) __a=(A); \
+     __a*((__v+__a-1)/__a); })
+
 
 static inline int
 atoi (const char* str)
@@ -121,8 +125,7 @@ objc_sizeof_type(const char* type)
       while (*type != _C_STRUCT_E);
 	{
 	  align = objc_alignof_type (type);       /* padd to alignment */
-	  if ((acc_size % align) != 0)
-	    acc_size += align - (acc_size % align);
+	  acc_size += ROUND (acc_size, align);
 	  acc_size += objc_sizeof_type (type);   /* add component size */
 	  type = objc_skip_typespec (type);	         /* skip component */
 	}
@@ -244,11 +247,7 @@ objc_aligned_size (const char* type)
 {
   int size = objc_sizeof_type (type);
   int align = objc_alignof_type (type);
-
-  if ((size % align) != 0)
-    return size + align - (size % align);
-  else
-    return size;
+  return ROUND (size, align);
 }
 
 /*
@@ -262,10 +261,7 @@ objc_promoted_size (const char* type)
   int size = objc_sizeof_type (type);
   int wordsize = sizeof (void*);
 
-  if ((size % wordsize) != 0)
-    return size + wordsize - (size % wordsize);
-  else
-    return size;
+  return ROUND (size, wordsize);
 }
 
 /*

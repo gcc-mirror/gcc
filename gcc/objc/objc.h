@@ -40,12 +40,24 @@ typedef char  BOOL;
 #define NO    (BOOL)0
 
 /*
-** Definition of a selector.  Selectors are really of type unsigned int.
-** The runtime does this mapping from SEL's to names internally in the
-** sel_... operations.  You should never use the fact that it is actually
-** an integer, since other Objective-C implementations use other conventions.
+** Definition of a selector.  Selectors themselves are not unique, but
+** the sel_id is a unique identifier.
 */
-typedef void* SEL;
+typedef const struct objc_selector 
+{
+  void *sel_id;
+  const char *sel_types;
+} *SEL;
+
+inline static BOOL
+sel_eq (SEL s1, SEL s2)
+{
+  if (s1 == 0 || s2 == 0)
+    return s1 == s2;
+  else
+    return s1->sel_id == s2->sel_id;
+}
+
 
 /*
 ** ObjC uses this typedef for untyped instances.
@@ -131,35 +143,7 @@ typedef union {
 } *arglist_t;			/* argument frame */
 
 
-#if defined(__OBJC__) 
-#include "objc/sarray.h"
-
-/*
-  This is the function called when messages are send to nil.  You may
-  set a breakpoint in your debugger at this function to catch messages
-  too nil.
-*/
-extern id nil_method(id rcv, SEL op, ...);
-
-/*
-  The messager is inlined, thus it is defined here directly.  The
-  inlining is quite time-consuming when optimizing.  This will be
-  taken care of later by hand-coding the messager in the compiler.
-*/
-extern __inline__ IMP
-objc_msg_lookup(id receiver, SEL op)
-{
-  if(receiver)
-    return sarray_get(receiver->class_pointer->dtable, (size_t)(op));
-  else
-    return nil_method;
-}
-
-#else
-
 IMP objc_msg_lookup(id receiver, SEL op);
-
-#endif
 
 #ifdef __cplusplus
 }

@@ -31,7 +31,8 @@ You should have received a copy of the GNU General Public License along with
 #define SELECTOR_HASH_SIZE 128
 
 /* Tables mapping selector names to uid and opposite */
-static struct sarray* __objc_selector_array = 0; /* uid -> name */
+static struct sarray* __objc_selector_array = 0; /* uid -> sel */
+static struct sarray* __objc_selector_names = 0; /* uid -> name */
 static cache_ptr      __objc_selector_hash  = 0; /* name -> uid */
 
 static void register_selectors_from_list(MethodList_t);
@@ -42,6 +43,7 @@ int __objc_selector_max_index = 0;
 void __objc_init_selector_tables()
 {
   __objc_selector_array = sarray_new (SELECTOR_HASH_SIZE, 0);
+  __objc_selector_names = sarray_new (SELECTOR_HASH_SIZE, 0);
   __objc_selector_hash
     = hash_new (SELECTOR_HASH_SIZE,
 		(hash_func_type) hash_string,
@@ -78,16 +80,67 @@ register_selectors_from_list (MethodList_t method_list)
   while (i < method_list->method_count)
     {
       Method_t method = &method_list->method_list[i];
-      method->method_name = sel_register_name ((char*)method->method_name);
+      method->method_name 
+	= sel_register_typed_name ((const char*)method->method_name, 
+				     method->method_types);
       i += 1;
     }
 }
 
 /* return selector representing name */
 SEL
+sel_get_typed_uid (const char *name, const char *types)
+{
+  struct objc_list *l;
+  sidx i;
+
+  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  if (i == 0)
+    return 0;
+
+  for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+       l; l = l->tail)
+    {
+      SEL s = (SEL)l->head;
+      if (types == 0 || s->sel_types == 0)
+	{
+	  if (s->sel_types == types)
+	    {
+	      return s;
+	    }
+	}
+      else if (! strcmp (s->sel_types, types))
+	{
+	  return s;
+	}
+    }
+
+  return 0;
+}
+
+/* return selector representing name */
+SEL
+sel_get_any_uid (const char *name)
+{
+  struct objc_list *l;
+  sidx i;
+
+  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  if (soffset_decode (i) == 0)
+    return 0;
+
+  l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+  if (l == 0)
+    return 0;
+
+  return (SEL)l->head;
+}
+
+/* return selector representing name */
+SEL
 sel_get_uid (const char *name)
 {
-  return (SEL) hash_value_for_key (__objc_selector_hash, name);
+  return sel_register_typed_name (name, 0);
 }
 
 /* Get name of selector.  If selector is unknown, the empty string "" 
@@ -95,18 +148,28 @@ sel_get_uid (const char *name)
 const char*
 sel_get_name (SEL selector)
 {
-  if ((soffset_decode((sidx)selector) > 0)
-      && (soffset_decode((sidx)selector) <= __objc_selector_max_index))
-    return sarray_get (__objc_selector_array, (sidx) selector);
+  if ((soffset_decode((sidx)selector->sel_id) > 0)
+      && (soffset_decode((sidx)selector->sel_id) <= __objc_selector_max_index))
+    return sarray_get (__objc_selector_array, (sidx) selector->sel_id);
   else
-    return NULL;
+    return 0;
 }
 
 BOOL
 sel_is_mapped (SEL selector)
 {
-  unsigned int idx = soffset_decode ((sidx)selector);
+  unsigned int idx = soffset_decode ((sidx)selector->sel_id);
   return ((idx > 0) && (idx <= __objc_selector_max_index));
+}
+
+
+const char*
+sel_get_type (SEL selector)
+{
+  if (selector)
+    return selector->sel_types;
+  else
+    return 0;
 }
 
 /* The uninstalled dispatch table */
@@ -115,25 +178,93 @@ extern struct sarray* __objc_uninstalled_dtable;
 /* Store the passed selector name in the selector record and return its
    selector value (value returned by sel_get_uid). */
 SEL
-sel_register_name (const char *sel)
+__sel_register_typed_name (const char *name, const char *types, 
+			   struct objc_selector *orig)
 {
-  SEL j;
+  struct objc_selector* j;
   sidx i;
+  struct objc_list *l;
 
-  if ((j = sel_get_uid ((const char *) sel)))
-    return j;
+  i = (sidx) hash_value_for_key (__objc_selector_hash, name);
+  if (soffset_decode (i) != 0)
+    {
+      for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+	   l; l = l->tail)
+	{
+	  SEL s = (SEL)l->head;
+	  if (types == 0 || s->sel_types == 0)
+	    {
+	      if (s->sel_types == types)
+		{
+		  if (orig)
+		    {
+		      orig->sel_id = (void*)i;
+		      return orig;
+		    }
+		  else
+		    return s;
+		}
+	    }
+	  else if (strcmp (s->sel_types, types))
+	    {
+	      if (orig)
+		{
+		  orig->sel_id = (void*)i;
+		  return orig;
+		}
+	      else
+		return s;
+	    }
+	}
+      if (orig)
+	j = orig;
+      else
+	j = __objc_xmalloc (sizeof (struct objc_selector));
 
-  /* Save the selector name.  */
-  __objc_selector_max_index += 1;
-  i = soffset_encode(__objc_selector_max_index);
+      j->sel_id = (void*)i;
+      j->sel_types = (const char*)types;
+      l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+    }
+  else
+    {
+      __objc_selector_max_index += 1;
+      i = soffset_encode(__objc_selector_max_index);
+      if (orig)
+	j = orig;
+      else
+	j = __objc_xmalloc (sizeof (struct objc_selector));
+	
+      j->sel_id = (void*)i;
+      j->sel_types = (const char*)types;
+      l = 0;
+    }
 
-  DEBUG_PRINTF ("Record selector %s as: %#x\n", sel, i);
-
-  sarray_at_put_safe (__objc_selector_array, i, (void *) sel);
-  hash_add (&__objc_selector_hash, (void *) sel, (void *) i);
+  DEBUG_PRINTF ("Record selector %s[%s] as: %ld\n", name, types, 
+		soffset_decode (i));
+  
+  {
+    int is_new = (l == 0);
+    l = list_cons ((void*)j, l);
+    sarray_at_put_safe (__objc_selector_names, i, (void *) name);
+    sarray_at_put_safe (__objc_selector_array, i, (void *) l);
+    if (is_new)
+      hash_add (&__objc_selector_hash, (void *) name, (void *) i);
+  }
 
   sarray_realloc(__objc_uninstalled_dtable, __objc_selector_max_index+1);
 
-  return (SEL) i;
+  return (SEL) j;
+}
+
+SEL
+sel_register_name (const char *name)
+{
+  return __sel_register_typed_name (name, 0, 0);
+}
+
+SEL
+sel_register_typed_name (const char *name, const char *type)
+{
+  return __sel_register_typed_name (name, type, 0);
 }
 

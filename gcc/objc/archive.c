@@ -24,14 +24,18 @@ You should have received a copy of the GNU General Public License along with
    however invalidate any other reasons why the executable file might be
    covered by the GNU General Public License.  */
 
-/*
-** Note: This version assumes that int and longs are both 32bit.
-*/
-
-#ifndef __alpha__
-
 #include "runtime.h"
 #include "typedstream.h"
+#include "encoding.h"
+
+extern int fflush(FILE*);
+
+#define ROUND(V, A) \
+  ({ typeof(V) __v=(V); typeof(A) __a=(A);  \
+     __a*((__v+__a-1)/__a); })
+
+#define PTR2LONG(P) (((char*)(P))-(char*)0)
+#define LONG2PTR(L) (((char*)0)+(L))
 
 #define __objc_fatal(format, args...) \
  { fprintf(stderr, "archiving: "); \
@@ -43,22 +47,20 @@ You should have received a copy of the GNU General Public License along with
 static int
 objc_read_class (struct objc_typed_stream* stream, Class** class);
 
-static int
-objc_sizeof_type(const char* type);
+int objc_sizeof_type(const char* type);
 
 static int
-objc_write_use_common (struct objc_typed_stream* stream, unsigned int key);
+objc_write_use_common (struct objc_typed_stream* stream, unsigned long key);
 
 static int
 objc_write_register_common (struct objc_typed_stream* stream,
-			    unsigned int key);
+			    unsigned long key);
 
 static int 
 objc_write_class (struct objc_typed_stream* stream,
 			 struct objc_class* class);
 
-static const char*
-__objc_skip_type (const char* type);
+const char* objc_skip_type (const char* type);
 
 static void __objc_finish_write_root_object(struct objc_typed_stream*);
 static void __objc_finish_read_root_object(struct objc_typed_stream*);
@@ -112,15 +114,29 @@ objc_write_char (struct objc_typed_stream* stream, char value)
 static __inline__ int
 __objc_code_unsigned_short (unsigned char* buf, unsigned short val)
 {
-  if (val <= 0xffU)
-    return __objc_code_unsigned_char (buf, val);
-
+  if ((val&_B_VALUE) == val)
+    {
+      buf[0] = val|_B_SINT;
+      return 1;
+    }
   else 
     {
-      buf[0] = _B_NINT|0x02;
-      buf[1] = val/0x100;
-      buf[2] = val%0x100;
-      return 3;
+      int c, b;
+
+      buf[0] = _B_NINT;
+
+      for (c= sizeof(short); c != 0; c -= 1)
+	if (((val>>(8*(c-1)))%0x100) != 0)
+	  break;
+
+      buf[0] |= c;
+
+      for (b = 1; c != 0; c--, b++)
+	{
+	  buf[b] = (val >> (8*(c-1)))%0x100;
+	}
+
+      return b;
     }
 }
 
@@ -135,18 +151,11 @@ objc_write_unsigned_short (struct objc_typed_stream* stream, unsigned short valu
 static __inline__ int
 __objc_code_short (unsigned char* buf, short val)
 {
-  if (val > 0)
-    return __objc_code_unsigned_short (buf, val);
-
-  if (val > -0x7f)		/* val > -128 */
-    return __objc_code_char (buf, val);
-
-  else 
-    {
-      int len = __objc_code_unsigned_short (buf, -val);
-      buf[0] |= _B_SIGN;
-      return len;
-    }
+  int sign = (val < 0);
+  int size = __objc_code_unsigned_short (buf, sign ? -val : val);
+  if (sign)
+    buf[0] |= _B_SIGN;
+  return size;
 }
 
 int
@@ -161,26 +170,29 @@ objc_write_short (struct objc_typed_stream* stream, short value)
 static __inline__ int
 __objc_code_unsigned_int (unsigned char* buf, unsigned int val)
 {
-  if (val < 0x10000)
-    return __objc_code_unsigned_short (buf, val%0x10000);
-
-  else if (val < 0x1000000)
+  if ((val&_B_VALUE) == val)
     {
-      buf[0] = _B_NINT|3;
-      buf[1] = val/0x10000;
-      buf[2] = (val%0x10000)/0x100;
-      buf[3] = val%0x100;
-      return 4;
+      buf[0] = val|_B_SINT;
+      return 1;
     }
-
   else 
     {
-      buf[0] = _B_NINT|4;
-      buf[1] = val/0x1000000;
-      buf[2] = (val%0x1000000)/0x10000;
-      buf[3] = (val%0x10000)/0x100;
-      buf[4] = val%0x100;
-      return 5;
+      int c, b;
+
+      buf[0] = _B_NINT;
+
+      for (c= sizeof(int); c != 0; c -= 1)
+	if (((val>>(8*(c-1)))%0x100) != 0)
+	  break;
+
+      buf[0] |= c;
+
+      for (b = 1; c != 0; c--, b++)
+	{
+	  buf[b] = (val >> (8*(c-1)))%0x100;
+	}
+
+      return b;
     }
 }
 
@@ -195,18 +207,11 @@ objc_write_unsigned_int (struct objc_typed_stream* stream, unsigned int value)
 static __inline__ int
 __objc_code_int (unsigned char* buf, int val)
 {
-  if (val >= 0)
-    return __objc_code_unsigned_int (buf, val);
-
-  if (val > -0x7f)
-    return __objc_code_char (buf, val);
-
-  else 
-    {
-      int len = __objc_code_unsigned_int (buf, -val);
-      buf[0] |= _B_SIGN;
-      return len;
-    }
+  int sign = (val < 0);
+  int size = __objc_code_unsigned_int (buf, sign ? -val : val);
+  if (sign)
+    buf[0] |= _B_SIGN;
+  return size;
 }
 
 int
@@ -216,6 +221,62 @@ objc_write_int (struct objc_typed_stream* stream, int value)
   int len = __objc_code_int (buf, value);
   return (*stream->write)(stream->physical, buf, len);
 }
+
+static __inline__ int
+__objc_code_unsigned_long (unsigned char* buf, unsigned long val)
+{
+  if ((val&_B_VALUE) == val)
+    {
+      buf[0] = val|_B_SINT;
+      return 1;
+    }
+  else 
+    {
+      int c, b;
+
+      buf[0] = _B_NINT;
+
+      for (c= sizeof(long); c != 0; c -= 1)
+	if (((val>>(8*(c-1)))%0x100) != 0)
+	  break;
+
+      buf[0] |= c;
+
+      for (b = 1; c != 0; c--, b++)
+	{
+	  buf[b] = (val >> (8*(c-1)))%0x100;
+	}
+
+      return b;
+    }
+}
+
+int
+objc_write_unsigned_long (struct objc_typed_stream* stream, unsigned long value)
+{
+  unsigned char buf[sizeof(unsigned long)+1];
+  int len = __objc_code_unsigned_long (buf, value);
+  return (*stream->write)(stream->physical, buf, len);
+}
+
+static __inline__ int
+__objc_code_long (unsigned char* buf, long val)
+{
+  int sign = (val < 0);
+  int size = __objc_code_unsigned_long (buf, sign ? -val : val);
+  if (sign)
+    buf[0] |= _B_SIGN;
+  return size;
+}
+
+int
+objc_write_long (struct objc_typed_stream* stream, long value)
+{
+  unsigned char buf[sizeof(long)+1];
+  int len = __objc_code_long (buf, value);
+  return (*stream->write)(stream->physical, buf, len);
+}
+
 
 int
 objc_write_string (struct objc_typed_stream* stream,
@@ -240,13 +301,13 @@ int
 objc_write_string_atomic (struct objc_typed_stream* stream,
 			  unsigned char* string, unsigned int nbytes)
 {
-  unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->stream_table, string)))
+  unsigned long key;
+  if ((key = PTR2LONG(hash_value_for_key (stream->stream_table, string))))
     return objc_write_use_common (stream, key);
   else
     {
       int length;
-      hash_add (&stream->stream_table, (void*)key=(unsigned int)string, string);
+      hash_add (&stream->stream_table, LONG2PTR(key=PTR2LONG(string)), string);
       if ((length = objc_write_register_common (stream, key)))
 	return objc_write_string (stream, string, nbytes);
       return length;
@@ -254,10 +315,10 @@ objc_write_string_atomic (struct objc_typed_stream* stream,
 }
 
 static int
-objc_write_register_common (struct objc_typed_stream* stream, unsigned int key)
+objc_write_register_common (struct objc_typed_stream* stream, unsigned long key)
 {
-  unsigned char buf[sizeof (unsigned int)+2];
-  int len = __objc_code_unsigned_int (buf+1, key);
+  unsigned char buf[sizeof (unsigned long)+2];
+  int len = __objc_code_unsigned_long (buf+1, key);
   if (len == 1)
     {
       buf[0] = _B_RCOMM|0x01;
@@ -272,10 +333,10 @@ objc_write_register_common (struct objc_typed_stream* stream, unsigned int key)
 }
 
 static int
-objc_write_use_common (struct objc_typed_stream* stream, unsigned int key)
+objc_write_use_common (struct objc_typed_stream* stream, unsigned long key)
 {
-  unsigned char buf[sizeof (unsigned int)+2];
-  int len = __objc_code_unsigned_int (buf+1, key);
+  unsigned char buf[sizeof (unsigned long)+2];
+  int len = __objc_code_unsigned_long (buf+1, key);
   if (len == 1)
     {
       buf[0] = _B_UCOMM|0x01;
@@ -305,7 +366,7 @@ __inline__ int
 __objc_write_object (struct objc_typed_stream* stream, id object)
 {
   unsigned char buf = '\0';
-  SEL write_sel = sel_get_uid ("write:");
+  SEL write_sel = sel_get_any_uid ("write:");
   if (object)
     {
       __objc_write_extension (stream, _BX_OBJECT);
@@ -320,12 +381,12 @@ __objc_write_object (struct objc_typed_stream* stream, id object)
 int 
 objc_write_object_reference (struct objc_typed_stream* stream, id object)
 {
-  unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->object_table, object)))
+  unsigned long key;
+  if ((key = PTR2LONG(hash_value_for_key (stream->object_table, object))))
     return objc_write_use_common (stream, key);
 
   __objc_write_extension (stream, _BX_OBJREF);
-  return objc_write_unsigned_int (stream, (unsigned int)object);
+  return objc_write_unsigned_long (stream, PTR2LONG (object));
 }
 
 int 
@@ -348,8 +409,8 @@ objc_write_root_object (struct objc_typed_stream* stream, id object)
 int 
 objc_write_object (struct objc_typed_stream* stream, id object)
 {
-  unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->object_table, object)))
+  unsigned long key;
+  if ((key = PTR2LONG(hash_value_for_key (stream->object_table, object))))
     return objc_write_use_common (stream, key);
 
   else if (object == nil)
@@ -358,12 +419,18 @@ objc_write_object (struct objc_typed_stream* stream, id object)
   else
     {
       int length;
-      hash_add (&stream->object_table, (void*)key=(unsigned int)object, object);
+      hash_add (&stream->object_table, LONG2PTR(key=PTR2LONG(object)), object);
       if ((length = objc_write_register_common (stream, key)))
 	return __objc_write_object (stream, object);
       return length;
     }
 }
+
+#ifdef __alpha__
+extern int atoi (const char*);
+extern size_t strlen(const char*);
+extern size_t strcpy(char*, const char*);
+#endif
 
 __inline__ int
 __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
@@ -371,7 +438,7 @@ __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
   __objc_write_extension (stream, _BX_CLASS);
   objc_write_string_atomic(stream, (char*)class->name,
 			   strlen((char*)class->name));
-  return objc_write_unsigned_int (stream, CLS_GETNUMBER(class));
+  return objc_write_unsigned_long (stream, CLS_GETNUMBER(class));
 }
 
 
@@ -379,13 +446,13 @@ static int
 objc_write_class (struct objc_typed_stream* stream,
 			 struct objc_class* class)
 {
-  unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->stream_table, class)))
+  unsigned long key;
+  if ((key = PTR2LONG(hash_value_for_key (stream->stream_table, class))))
     return objc_write_use_common (stream, key);
   else
     {
       int length;
-      hash_add (&stream->stream_table, (void*)key=(unsigned int)class, class);
+      hash_add (&stream->stream_table, LONG2PTR(key=PTR2LONG(class)), class);
       if ((length = objc_write_register_common (stream, key)))
 	return __objc_write_class (stream, class);
       return length;
@@ -405,13 +472,13 @@ int
 objc_write_selector (struct objc_typed_stream* stream, SEL selector)
 {
   const char* sel_name = sel_get_name (selector);
-  unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->stream_table, sel_name)))
+  unsigned long key;
+  if ((key = PTR2LONG(hash_value_for_key (stream->stream_table, sel_name))))
     return objc_write_use_common (stream, key);
   else
     {
       int length;
-      hash_add (&stream->stream_table, (void*)key=(unsigned int)sel_name, (char*)sel_name);
+      hash_add (&stream->stream_table, LONG2PTR(key=PTR2LONG(sel_name)), (char*)sel_name);
       if ((length = objc_write_register_common (stream, key)))
 	return __objc_write_selector (stream, selector);
       return length;
@@ -552,6 +619,33 @@ objc_read_int (struct objc_typed_stream* stream, int* value)
 }
 
 __inline__ int
+objc_read_long (struct objc_typed_stream* stream, long* value)
+{
+  unsigned char buf[sizeof(long)+1];
+  int len;
+  if ((len = (*stream->read)(stream->physical, buf, 1)))
+    {
+      if ((buf[0] & _B_CODE) == _B_SINT)
+	(*value) = (buf[0] & _B_VALUE);
+
+      else
+	{
+	  int pos = 1;
+	  int nbytes = buf[0] & _B_NUMBER;
+	  if (nbytes > sizeof (long))
+	    __objc_fatal("expected long, got bigger");
+	  len = (*stream->read)(stream->physical, buf+1, nbytes);
+	  (*value) = 0;
+	  while (pos <= nbytes)
+	    (*value) = ((*value)*0x100) + buf[pos++];
+	  if (buf[0] & _B_SIGN)
+	    (*value) = -(*value);
+	}
+    }
+  return len;
+}
+
+__inline__ int
 __objc_read_nbyte_uint (struct objc_typed_stream* stream,
 		       unsigned int nbytes, unsigned int* val)
 {
@@ -587,6 +681,42 @@ objc_read_unsigned_int (struct objc_typed_stream* stream,
   return len;
 }
 
+int
+__objc_read_nbyte_ulong (struct objc_typed_stream* stream,
+		       unsigned int nbytes, unsigned long* val)
+{
+  int len, pos = 0;
+  unsigned char buf[sizeof(unsigned long)+1];
+
+  if (nbytes > sizeof (long))
+    __objc_fatal("expected long, got bigger");
+
+  len = (*stream->read)(stream->physical, buf, nbytes);
+  (*val) = 0;
+  while (pos < nbytes)
+    (*val) = ((*val)*0x100) + buf[pos++];
+  return len;
+}
+  
+
+__inline__ int
+objc_read_unsigned_long (struct objc_typed_stream* stream,
+			unsigned long* value)
+{
+  unsigned char buf[sizeof(unsigned long)+1];
+  int len;
+  if ((len = (*stream->read)(stream->physical, buf, 1)))
+    {
+      if ((buf[0] & _B_CODE) == _B_SINT)
+	(*value) = (buf[0] & _B_VALUE);
+
+      else
+	len = __objc_read_nbyte_ulong (stream, (buf[0] & _B_VALUE), value);
+
+    }
+  return len;
+}
+
 __inline__ int
 objc_read_string (struct objc_typed_stream* stream,
 		  char** string)
@@ -595,11 +725,11 @@ objc_read_string (struct objc_typed_stream* stream,
   int len;
   if ((len = (*stream->read)(stream->physical, buf, 1)))
     {
-      unsigned int key = 0;
+      unsigned long key = 0;
 
       if ((buf[0]&_B_CODE) == _B_RCOMM)	/* register following */
 	{
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
 	  len = (*stream->read)(stream->physical, buf, 1);
 	}
 
@@ -609,7 +739,7 @@ objc_read_string (struct objc_typed_stream* stream,
 	  int length = buf[0]&_B_VALUE;
 	  (*string) = (char*)__objc_xmalloc(length+1);
 	  if (key)
-	    hash_add (&stream->stream_table, (void*)key, *string);
+	    hash_add (&stream->stream_table, LONG2PTR(key), *string);
 	  len = (*stream->read)(stream->physical, *string, length);
 	  (*string)[length] = '\0';
 	}
@@ -618,9 +748,9 @@ objc_read_string (struct objc_typed_stream* stream,
       case _B_UCOMM:
 	{
 	  char *tmp;
-	  len = __objc_read_nbyte_uint (stream, (buf[0] & _B_VALUE), &key);
-	  tmp = hash_value_for_key (stream->stream_table, (void*)key);
-	  *string = __objc_xmalloc (strlen (tmp) + 1);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
+	  tmp = hash_value_for_key (stream->stream_table, LONG2PTR (key));
+	  *string = __objc_xmalloc (strlen(tmp) + 1);
 	  strcpy (*string, tmp);
 	}
 	break;
@@ -632,7 +762,7 @@ objc_read_string (struct objc_typed_stream* stream,
 	  if (len) {
 	    (*string) = (char*)__objc_xmalloc(nbytes+1);
 	    if (key)
-	      hash_add (&stream->stream_table, (void*)key, *string);
+	      hash_add (&stream->stream_table, LONG2PTR(key), *string);
 	    len = (*stream->read)(stream->physical, *string, nbytes);
 	    (*string)[nbytes] = '\0';
 	  }
@@ -655,12 +785,12 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
   int len;
   if ((len = (*stream->read)(stream->physical, buf, 1)))
     {
-      SEL read_sel = sel_get_uid ("read:");
-      unsigned int key = 0;
+      SEL read_sel = sel_get_any_uid ("read:");
+      unsigned long key = 0;
 
       if ((buf[0]&_B_CODE) == _B_RCOMM)	/* register common */
 	{
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
 	  len = (*stream->read)(stream->physical, buf, 1);
 	}
 
@@ -676,7 +806,7 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 
 	  /* register? */
 	  if (key)
-	    hash_add (&stream->object_table, (void*)key, *object);
+	    hash_add (&stream->object_table, LONG2PTR(key), *object);
 
 	  /* send -read: */
 	  if (__objc_responds_to (*object, read_sel))
@@ -692,16 +822,16 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 	{
 	  if (key)
 	    __objc_fatal("cannot register use upcode...");
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
-	  (*object) = hash_value_for_key (stream->object_table, (void*)key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
+	  (*object) = hash_value_for_key (stream->object_table, LONG2PTR(key));
 	}
 
       else if (buf[0] == (_B_EXT | _BX_OBJREF))	/* a forward reference */
 	{
 	  struct objc_list* other;
-	  len = objc_read_unsigned_int (stream, &key);
-	  other = (struct objc_list*)hash_value_for_key (stream->object_refs, (void*)key);
-	  hash_add (&stream->object_refs, (void*)key, (void*)list_cons(object, other));
+	  len = objc_read_unsigned_long (stream, &key);
+	  other = (struct objc_list*)hash_value_for_key (stream->object_refs, LONG2PTR(key));
+	  hash_add (&stream->object_refs, LONG2PTR(key), (void*)list_cons(object, other));
 	}
 
       else if (buf[0] == (_B_EXT | _BX_OBJROOT)) /* a root object */
@@ -725,18 +855,18 @@ objc_read_class (struct objc_typed_stream* stream, Class** class)
   int len;
   if ((len = (*stream->read)(stream->physical, buf, 1)))
     {
-      unsigned int key = 0;
+      unsigned long key = 0;
 
       if ((buf[0]&_B_CODE) == _B_RCOMM)	/* register following */
 	{
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
 	  len = (*stream->read)(stream->physical, buf, 1);
 	}
 
       if (buf[0] == (_B_EXT | _BX_CLASS))
 	{
 	  char* class_name;
-	  int version;
+	  unsigned long version;
 
 	  /* get class */
 	  len = objc_read_string (stream, &class_name);
@@ -745,9 +875,9 @@ objc_read_class (struct objc_typed_stream* stream, Class** class)
 
 	  /* register */
 	  if (key)
-	    hash_add (&stream->stream_table, (void*)key, *class);
+	    hash_add (&stream->stream_table, LONG2PTR(key), *class);
 
-	  objc_read_unsigned_int(stream, &version);
+	  objc_read_unsigned_long(stream, &version);
 	  hash_add (&stream->class_table, (*class)->name, (void*)version);
 	}
 
@@ -755,10 +885,10 @@ objc_read_class (struct objc_typed_stream* stream, Class** class)
 	{
 	  if (key)
 	    __objc_fatal("cannot register use upcode...");
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
-	  (*class) = hash_value_for_key (stream->stream_table, (void*)key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
+	  (*class) = hash_value_for_key (stream->stream_table, LONG2PTR(key));
 	  if (!*class)
-	    __objc_fatal("cannot find class for key %x", key);
+	    __objc_fatal("cannot find class for key %lu", key);
 	}
 
       else
@@ -774,11 +904,11 @@ objc_read_selector (struct objc_typed_stream* stream, SEL* selector)
   int len;
   if ((len = (*stream->read)(stream->physical, buf, 1)))
     {
-      unsigned int key = 0;
+      unsigned long key = 0;
 
       if ((buf[0]&_B_CODE) == _B_RCOMM)	/* register following */
 	{
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
 	  len = (*stream->read)(stream->physical, buf, 1);
 	}
 
@@ -788,116 +918,26 @@ objc_read_selector (struct objc_typed_stream* stream, SEL* selector)
 
 	  /* get selector */
 	  len = objc_read_string (stream, &selector_name);
-	  (*selector) = sel_get_uid(selector_name);
+	  (*selector) = sel_get_any_uid(selector_name);
 	  free (selector_name);
 
 	  /* register */
 	  if (key)
-	    hash_add (&stream->stream_table, (void*)key, *selector);
+	    hash_add (&stream->stream_table, LONG2PTR(key), (void*)*selector);
 	}
 
       else if ((buf[0]&_B_CODE) == _B_UCOMM)
 	{
 	  if (key)
 	    __objc_fatal("cannot register use upcode...");
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
-	  (*selector) = hash_value_for_key (stream->stream_table, (void*)key);
+	  len = __objc_read_nbyte_ulong(stream, (buf[0] & _B_VALUE), &key);
+	  (*selector) = hash_value_for_key (stream->stream_table, LONG2PTR(key));
 	}
 
       else
 	__objc_fatal("expected selector, got opcode %c", buf[0]);
     }
   return len;
-}
-
-static int
-objc_sizeof_type(const char* type)
-{
-  switch(*type) {
-  case _C_ID: return sizeof(id);
-    break;
-
-  case _C_CLASS:
-    return sizeof(Class*);
-    break;
-
-  case _C_SEL:
-    return sizeof(SEL);
-    break;
-
-  case _C_CHR:
-    return sizeof(char);
-    break;
-    
-  case _C_UCHR:
-    return sizeof(unsigned char);
-    break;
-
-  case _C_SHT:
-    return sizeof(short);
-    break;
-
-  case _C_USHT:
-    return sizeof(unsigned short);
-    break;
-
-  case _C_INT:
-  case _C_LNG:
-    return sizeof(int);
-    break;
-
-  case _C_UINT:
-  case _C_ULNG:
-    return sizeof(unsigned int);
-    break;
-
-  case _C_ATOM:
-  case _C_CHARPTR:
-    return sizeof(char*);
-    break;
-
-  default:
-    fprintf(stderr, "objc_sizeof_type: cannot parse typespec: %s\n", type);
-    abort();
-  }
-}
-
-
-static const char*
-__objc_skip_type (const char* type)
-{
-  switch (*type) {
-  case _C_ID:
-  case _C_CLASS:
-  case _C_SEL:
-  case _C_CHR:
-  case _C_UCHR:
-  case _C_CHARPTR:
-  case _C_ATOM:
-  case _C_SHT:
-  case _C_USHT:
-  case _C_INT:
-  case _C_UINT:
-  case _C_LNG:
-  case _C_ULNG:
-  case _C_FLT:
-  case _C_DBL:
-    return ++type;
-    break;
-
-  case _C_ARY_B:
-    while(isdigit(*++type));
-    type = __objc_skip_type(type);
-    if (*type == _C_ARY_E)
-      return ++type;
-    else
-      __objc_fatal("cannot parse typespec: %s", type);
-    break;
-
-  default:
-    fprintf(stderr, "__objc_skip_type: cannot parse typespec: %s\n", type);
-    abort();
-  }
 }
 
 /*
@@ -942,13 +982,19 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     break;
 
   case _C_INT:
-  case _C_LNG:
     return objc_write_int(stream, *(int*)data);
     break;
 
   case _C_UINT:
-  case _C_ULNG:
     return objc_write_unsigned_int(stream, *(unsigned int*)data);
+    break;
+
+  case _C_LNG:
+    return objc_write_long(stream, *(long*)data);
+    break;
+
+  case _C_ULNG:
+    return objc_write_unsigned_long(stream, *(unsigned long*)data);
     break;
 
   case _C_CHARPTR:
@@ -966,6 +1012,22 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
       return objc_write_array (stream, type, len, data);
     }
     break; 
+
+  case _C_STRUCT_B:
+    {
+      int acc_size = 0;
+      int align;
+      while (*type != _C_STRUCT_E && *type++ != '='); /* skip "<name>=" */
+      while (*type != _C_STRUCT_E);
+	{
+	  align = objc_alignof_type (type);       /* padd to alignment */
+	  acc_size += ROUND (acc_size, align);
+	  objc_write_type (stream, type, ((char*)data)+acc_size);
+	  acc_size += objc_sizeof_type (type);   /* add component size */
+	  type = objc_skip_typespec (type);	 /* skip component */
+	}
+      return 1;
+    }
 
   default:
     fprintf(stderr, "objc_write_type: cannot parse typespec: %s\n", type);
@@ -1014,13 +1076,19 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
     break;
 
   case _C_INT:
-  case _C_LNG:
     return objc_read_int (stream, (int*)data);
     break;
 
   case _C_UINT:
-  case _C_ULNG:
     return objc_read_unsigned_int (stream, (unsigned int*)data);
+    break;
+
+  case _C_LNG:
+    return objc_read_long (stream, (long*)data);
+    break;
+
+  case _C_ULNG:
+    return objc_read_unsigned_long (stream, (unsigned long*)data);
     break;
 
   case _C_CHARPTR:
@@ -1035,6 +1103,22 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
       return objc_read_array (stream, type, len, data);
     }
     break; 
+
+  case _C_STRUCT_B:
+    {
+      int acc_size = 0;
+      int align;
+      while (*type != _C_STRUCT_E && *type++ != '='); /* skip "<name>=" */
+      while (*type != _C_STRUCT_E);
+	{
+	  align = objc_alignof_type (type);       /* padd to alignment */
+	  acc_size += ROUND (acc_size, align);
+	  objc_read_type (stream, type, ((char*)data)+acc_size);
+	  acc_size += objc_sizeof_type (type);   /* add component size */
+	  type = objc_skip_typespec (type);	 /* skip component */
+	}
+      return 1;
+    }
 
   default:
     fprintf(stderr, "objc_read_type: cannot parse typespec: %s\n", type);
@@ -1061,7 +1145,7 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 
   va_start(args, type);
 
-  for (c = type; *c; c = __objc_skip_type (c))
+  for (c = type; *c; c = objc_skip_typespec (c))
     {
       switch(*c) {
       case _C_ID:
@@ -1095,13 +1179,19 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	break;
 
       case _C_INT:
-      case _C_LNG:
 	res = objc_write_int(stream, *va_arg(args, int*));
 	break;
 	
       case _C_UINT:
-      case _C_ULNG:
 	res = objc_write_unsigned_int(stream, *va_arg(args, unsigned int*));
+	break;
+
+      case _C_LNG:
+	res = objc_write_long(stream, *va_arg(args, long*));
+	break;
+	
+      case _C_ULNG:
+	res = objc_write_unsigned_long(stream, *va_arg(args, unsigned long*));
 	break;
 
       case _C_CHARPTR:
@@ -1124,7 +1214,7 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	  const char* t = c;
 	  while (isdigit(*++t));
 	  res = objc_write_array (stream, t, len, va_arg(args, void*));
-	  t = __objc_skip_type (t);
+	  t = objc_skip_typespec (t);
 	  if (*t != _C_ARY_E)
 	    __objc_fatal("expected `]', got: %s", t);
 	}
@@ -1154,7 +1244,7 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 
   va_start(args, type);
 
-  for (c = type; *c; c = __objc_skip_type(c))
+  for (c = type; *c; c = objc_skip_typespec(c))
     {
       switch(*c) {
       case _C_ID:
@@ -1186,13 +1276,19 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	break;
 
       case _C_INT:
-      case _C_LNG:
 	res = objc_read_int(stream, va_arg(args, int*));
 	break;
 	
       case _C_UINT:
-      case _C_ULNG:
 	res = objc_read_unsigned_int(stream, va_arg(args, unsigned int*));
+	break;
+
+      case _C_LNG:
+	res = objc_read_long(stream, va_arg(args, long*));
+	break;
+	
+      case _C_ULNG:
+	res = objc_read_unsigned_long(stream, va_arg(args, unsigned long*));
 	break;
 
       case _C_CHARPTR:
@@ -1209,7 +1305,7 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	  const char* t = c;
 	  while (isdigit(*++t));
 	  res = objc_read_array (stream, t, len, va_arg(args, void*));
-	  t = __objc_skip_type (t);
+	  t = objc_skip_typespec (t);
 	  if (*t != _C_ARY_E)
 	    __objc_fatal("expected `]', got: %s", t);
 	}
@@ -1331,7 +1427,7 @@ static void __objc_finish_write_root_object(struct objc_typed_stream* stream)
 static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 {
   node_ptr node;
-  SEL awake_sel = sel_get_uid ("awake");
+  SEL awake_sel = sel_get_any_uid ("awake");
 
   /* resolve object forward references */
   for (node = hash_next (stream->object_refs, NULL); node;
@@ -1379,8 +1475,6 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 TypedStream* 
 objc_open_typed_stream (FILE* physical, int mode)
 {
-  int fflush(FILE*);
-
   TypedStream* s = (TypedStream*)__objc_xmalloc(sizeof(TypedStream));
 
   s->mode = mode;
@@ -1483,13 +1577,12 @@ objc_flush_typed_stream (TypedStream* stream)
   (*stream->flush)(stream->physical);
 }
 
-int 
+long
 objc_get_stream_class_version (TypedStream* stream, Class* class)
 {
   if (stream->class_table)
-    return (int) hash_value_for_key (stream->class_table, class->name);
+    return PTR2LONG(hash_value_for_key (stream->class_table, class->name));
   else
     return class_get_version (class);
 }
 
-#endif /* __alpha__ */
