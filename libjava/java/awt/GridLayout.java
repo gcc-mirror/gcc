@@ -245,7 +245,7 @@ public class GridLayout implements LayoutManager, Serializable
    */
   public void setColumns (int newCols)
   {
-    if (cols < 0)
+    if (newCols < 0)
       throw new IllegalArgumentException ("number of columns cannot be negative");
     if (newCols == 0 && rows == 0)
       throw new IllegalArgumentException ("number of rows is already 0");
@@ -271,7 +271,7 @@ public class GridLayout implements LayoutManager, Serializable
    */
   public void setRows (int newRows)
   {
-    if (rows < 0)
+    if (newRows < 0)
       throw new IllegalArgumentException ("number of rows cannot be negative");
     if (newRows == 0 && cols == 0)
       throw new IllegalArgumentException ("number of columns is already 0");
