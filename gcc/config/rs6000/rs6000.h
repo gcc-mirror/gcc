@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
+#define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 -D_LONG_LONG \
 -Asystem(unix) -Asystem(aix) -Acpu(rs6000) -Amachine(rs6000)"
 
 /* Print subsidiary information on the compiler version in use.  */
@@ -841,12 +841,15 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
    (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.
+   64-bit AIX reserves GPR13 for thread-private data.
    Conditionally disable FPRs.  */
 
 #define CONDITIONAL_REGISTER_USAGE	\
 {					\
   if (! TARGET_POWER)			\
     fixed_regs[64] = 1;			\
+  if (TARGET_64BIT)			\
+    fixed_regs[13] = call_used_regs[13] = 1; \
   if (TARGET_SOFT_FLOAT)		\
     for (i = 32; i < 64; i++)		\
       fixed_regs[i] = call_used_regs[i] = 1; \
