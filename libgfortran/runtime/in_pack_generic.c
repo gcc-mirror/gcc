@@ -120,4 +120,3 @@ internal_pack (gfc_array_char * source)
     }
   return destptr;
 }
-

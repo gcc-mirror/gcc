@@ -61,4 +61,3 @@ ishftc8 (GFC_INTEGER_8 i, GFC_INTEGER_8 shift, GFC_INTEGER_8 size)
   bits = i & ~mask;
   return (i & mask) | (bits >> (size - shift)) | ((i << shift) & ~mask);
 }
-

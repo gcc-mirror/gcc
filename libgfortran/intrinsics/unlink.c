@@ -63,9 +63,7 @@ void
 prefix(unlink_i8_sub) (char * name, GFC_INTEGER_8 * status,
 		               gfc_charlen_type name_len)
 {
-
   GFC_INTEGER_4 status4;
-
   prefix (unlink_i4_sub) (name, &status4, name_len);
   if (status)
     *status = status4;
@@ -82,4 +80,3 @@ prefix(unlink) (char * name, gfc_charlen_type name_len)
   prefix(unlink_i4_sub) (name, &status, name_len);
   return status;
 }
-

@@ -65,7 +65,6 @@ static malloc_t mem_root;
 void
 memory_init (void)
 {
-
   /* The root should never be used directly, so don't set the magic.  */
   mem_root.magic = 0;
   mem_root.next = &mem_root;
@@ -111,7 +110,6 @@ get_mem (size_t n)
 void
 free_mem (void *p)
 {
-
   free (p);
 }
 
@@ -250,7 +248,6 @@ allocate_size (void **mem, size_t size, GFC_INTEGER_4 * stat)
 void
 allocate (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 {
-
   if (size < 0)
     {
       runtime_error ("Attempt to allocate negative amount of memory.  "
@@ -265,7 +262,6 @@ allocate (void **mem, GFC_INTEGER_4 size, GFC_INTEGER_4 * stat)
 void
 allocate64 (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
 {
-
   if (size < 0)
     {
       runtime_error
@@ -283,7 +279,6 @@ allocate64 (void **mem, GFC_INTEGER_8 size, GFC_INTEGER_4 * stat)
 void
 deallocate (void **mem, GFC_INTEGER_4 * stat)
 {
-
   if (!mem)
     runtime_error ("Internal: NULL mem pointer in ALLOCATE.");
 
@@ -309,4 +304,3 @@ deallocate (void **mem, GFC_INTEGER_4 * stat)
   if (stat)
     *stat = 0;
 }
-

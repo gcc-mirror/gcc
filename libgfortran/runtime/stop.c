@@ -53,4 +53,3 @@ stop_string (const char *string, GFC_INTEGER_4 len)
 
   sys_exit (0);
 }
-

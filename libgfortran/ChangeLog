@@ -1,5 +1,21 @@
 2004-12-06  Richard Henderson  <rth@redhat.com>
 
+	* intrinsics/c99_functions.c, intrinsics/eoshift0.c,
+	intrinsics/eoshift2.c, intrinsics/exit.c, intrinsics/flush.c,
+	intrinsics/ishftc.c, intrinsics/mvbits.c, intrinsics/pack_generic.c,
+	intrinsics/random.c, intrinsics/reshape_generic.c, intrinsics/size.c,
+	intrinsics/spread_generic.c, intrinsics/stat.c,
+	intrinsics/string_intrinsics.c, intrinsics/system_clock.c,
+	intrinsics/transpose_generic.c, intrinsics/unlink.c,
+	intrinsics/unpack_generic.c, io/backspace.c, io/format.c,
+	io/list_read.c, io/lock.c, io/open.c, io/transfer.c, io/unix.c,
+	io/write.c, runtime/environ.c, runtime/error.c,
+	runtime/in_pack_generic.c, runtime/in_unpack_generic.c, runtime/main.c,
+	runtime/memory.c, runtime/pause.c, runtime/stop.c,
+	runtime/string.c: Whitespace fixes.
+
+2004-12-06  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.am: Generate all m4 output under $(srcdir).
 	* Makefile.in: Regenerate.
 

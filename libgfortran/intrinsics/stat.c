@@ -56,7 +56,6 @@ void
 prefix(stat_i4_sub) (char * name, gfc_array_i4 * sarray,
                      GFC_INTEGER_4 * status,  gfc_charlen_type name_len)
 {
- 
   int val;
   char *str;
   struct stat sb;
@@ -147,7 +146,6 @@ void
 prefix(stat_i8_sub) (char * name, gfc_array_i8 * sarray,
                      GFC_INTEGER_8 * status, gfc_charlen_type name_len)
 {
- 
   int val;
   char *str;
   struct stat sb;
@@ -250,7 +248,6 @@ GFC_INTEGER_8
 prefix(stat_i8) (char * name, gfc_array_i8 * sarray,
                  gfc_charlen_type name_len)
 {
-
   GFC_INTEGER_8 val;
   prefix(stat_i8_sub) (name, sarray, &val, name_len);
   return val;
@@ -271,7 +268,6 @@ void
 prefix(fstat_i4_sub) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray,
                      GFC_INTEGER_4 * status)
 {
- 
   int val;
   struct stat sb;
 
@@ -355,7 +351,6 @@ void
 prefix(fstat_i8_sub) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray,
                      GFC_INTEGER_8 * status)
 {
- 
   int val;
   struct stat sb;
 
@@ -439,7 +434,6 @@ prefix(fstat_i8_sub) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray,
 GFC_INTEGER_4
 prefix(fstat_i4) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray)
 {
-
   GFC_INTEGER_4 val;
   prefix(fstat_i4_sub) (unit, sarray, &val);
   return val;
@@ -449,7 +443,6 @@ prefix(fstat_i4) (GFC_INTEGER_4 * unit, gfc_array_i4 * sarray)
 GFC_INTEGER_8
 prefix(fstat_i8) (GFC_INTEGER_8 * unit, gfc_array_i8 * sarray)
 {
-
   GFC_INTEGER_8 val;
   prefix(fstat_i8_sub) (unit, sarray, &val);
   return val;

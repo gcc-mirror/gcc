@@ -107,7 +107,6 @@ push_char (char c)
 static void
 free_saved (void)
 {
-
   if (saved_string == NULL)
     return;
 
@@ -165,7 +164,6 @@ done:
 static void
 unget_char (char c)
 {
-
   last_char = c;
 }
 
@@ -253,7 +251,7 @@ finish_separator (void)
 {
   char c;
 
-restart:
+ restart:
   eat_spaces ();
 
   c = next_char ();
@@ -354,7 +352,7 @@ convert_integer (int length, int negative)
   free_saved ();
   return m;
 
-overflow:
+ overflow:
   if (length == -1)
     st_sprintf (message, "Repeat count overflow in item %d of list input",
 		g.item_count);
@@ -434,11 +432,11 @@ parse_repeat (void)
 	}
     }
 
-done:
+ done:
   repeat_count = repeat;
   return 0;
 
-bad_repeat:
+ bad_repeat:
   st_sprintf (message, "Bad repeat count in item %d of list input",
 	      g.item_count);
 
@@ -514,7 +512,7 @@ read_logical (int length)
 
   return;
 
-bad_logical:
+ bad_logical:
   st_sprintf (message, "Bad logical value while reading item %d",
 	      g.item_count);
 
@@ -582,7 +580,7 @@ read_integer (int length)
 	}
     }
 
-repeat:
+ repeat:
   if (convert_integer (-1, 0))
     return;
 
@@ -608,7 +606,7 @@ repeat:
       break;
     }
 
-get_integer:
+ get_integer:
   if (!isdigit (c))
     goto bad_integer;
   push_char (c);
@@ -630,7 +628,7 @@ get_integer:
 	}
     }
 
-bad_integer:
+ bad_integer:
   free_saved ();
 
   st_sprintf (message, "Bad integer for item %d in list input", g.item_count);
@@ -638,7 +636,7 @@ bad_integer:
 
   return;
 
-done:
+ done:
   unget_char (c);
   eat_separator ();
 
@@ -710,7 +708,7 @@ read_character (int length)
 	}
     }
 
-got_repeat:
+ got_repeat:
   if (convert_integer (-1, 0))
     return;
 
@@ -734,7 +732,7 @@ got_repeat:
       break;
     }
 
-get_string:
+ get_string:
   for (;;)
     {
       c = next_char ();
@@ -778,10 +776,9 @@ get_string:
 	}
     }
 
-/* At this point, we have to have a separator, or else the string is
-   invalid.  */
-
-done:
+  /* At this point, we have to have a separator, or else the string is
+     invalid.  */
+ done:
   c = next_char ();
   if (is_separator (c))
     {
@@ -861,7 +858,7 @@ parse_real (void *buffer, int length)
 	}
     }
 
-exp1:
+ exp1:
   c = next_char ();
   if (c != '-' && c != '+')
     push_char ('+');
@@ -871,7 +868,7 @@ exp1:
       c = next_char ();
     }
 
-exp2:
+ exp2:
   if (!isdigit (c))
     goto bad;
   push_char (c);
@@ -894,7 +891,7 @@ exp2:
 	}
     }
 
-done:
+ done:
   unget_char (c);
   push_char ('\0');
 
@@ -903,7 +900,7 @@ done:
 
   return m;
 
-bad:
+ bad:
   free_saved ();
   st_sprintf (message, "Bad floating point number for item %d", g.item_count);
   generate_error (ERROR_READ_VALUE, message);
@@ -966,7 +963,7 @@ read_complex (int length)
   saved_type = BT_COMPLEX;
   return;
 
-bad_complex:
+ bad_complex:
   st_sprintf (message, "Bad complex value in item %d of list input",
 	      g.item_count);
 
@@ -1055,7 +1052,7 @@ read_real (int length)
 	}
     }
 
-got_repeat:
+ got_repeat:
   if (convert_integer (-1, 0))
     return;
 
@@ -1091,7 +1088,7 @@ got_repeat:
 
   push_char (c);
 
-real_loop:
+ real_loop:
   for (;;)
     {
       c = next_char ();
@@ -1130,7 +1127,7 @@ real_loop:
 	}
     }
 
-exp1:
+ exp1:
   push_char ('e');
 
   c = next_char ();
@@ -1142,7 +1139,7 @@ exp1:
       c = next_char ();
     }
 
-exp2:
+ exp2:
   if (!isdigit (c))
     goto bad_real;
   push_char (c);
@@ -1167,7 +1164,7 @@ exp2:
 	}
     }
 
-done:
+ done:
   push_char ('\0');
   if (convert_real (value, saved_string, length))
     return;
@@ -1176,7 +1173,7 @@ done:
   saved_type = BT_REAL;
   return;
 
-bad_real:
+ bad_real:
   st_sprintf (message, "Bad real number in item %d of list input",
 	      g.item_count);
 
@@ -1281,7 +1278,6 @@ list_formatted_read (bt type, void *p, int len)
       repeat_count = 1;
     }
 
-
   switch (type)
     {
     case BT_INTEGER:
@@ -1309,7 +1305,7 @@ list_formatted_read (bt type, void *p, int len)
   if (ioparm.library_return != LIBRARY_OK)
     return;
 
-set_value:
+ set_value:
   switch (saved_type)
     {
     case BT_COMPLEX:
@@ -1345,7 +1341,7 @@ set_value:
 }
 
 void
-init_at_eol()
+init_at_eol(void)
 {
   at_eol = 0;
 }
@@ -1364,7 +1360,6 @@ finish_list_read (void)
       at_eol = 0;
       return;
     }
-
 
   do
     {
@@ -1440,7 +1435,7 @@ namelist_read (void)
       return;
     }
 
-restart:
+ restart:
   c = next_char ();
   switch (c)
     {

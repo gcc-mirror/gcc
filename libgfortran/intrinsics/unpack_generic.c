@@ -82,7 +82,6 @@ __unpack1 (const gfc_array_char * ret, const gfc_array_char * vector,
   mptr = mask->data;
   vptr = vector->data;
 
-
   /* Use the same loop for both logical types. */
   if (GFC_DESCRIPTOR_SIZE (mask) != 4)
     {
@@ -151,4 +150,3 @@ __unpack0 (const gfc_array_char * ret, const gfc_array_char * vector,
   tmp.data = field;
   __unpack1 (ret, vector, mask, &tmp);
 }
-

@@ -168,7 +168,8 @@ concat_string (GFC_INTEGER_4 destlen, char * dest,
 /* Return string with all trailing blanks removed.  */
 
 void
-string_trim (GFC_INTEGER_4 * len, void ** dest, GFC_INTEGER_4 slen, const char * src)
+string_trim (GFC_INTEGER_4 * len, void ** dest, GFC_INTEGER_4 slen,
+	     const char * src)
 {
   int i;
 
@@ -392,4 +393,3 @@ string_repeat (char * dest, GFC_INTEGER_4 slen,
       memmove (dest + (i * slen), src, slen);
     }
 }
-

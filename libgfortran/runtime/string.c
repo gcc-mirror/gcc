@@ -51,7 +51,6 @@ compare0 (const char *s1, int s1_len, const char *s2)
 int
 fstrlen (const char *string, int len)
 {
-
   for (len--; len >= 0; len--)
     if (string[len] != ' ')
       break;
@@ -60,11 +59,9 @@ fstrlen (const char *string, int len)
 }
 
 
-
 void
 fstrcpy (char *dest, int destlen, const char *src, int srclen)
 {
-
   if (srclen >= destlen)
     {
       /* This will truncate if too long.  */
@@ -108,7 +105,6 @@ int
 find_option (const char *s1, int s1_len, st_option * opts,
 	     const char *error_message)
 {
-
   for (; opts->name; opts++)
     if (compare0 (s1, s1_len, opts->name))
       return opts->value;
@@ -117,4 +113,3 @@ find_option (const char *s1, int s1_len, st_option * opts,
 
   return -1;
 }
-

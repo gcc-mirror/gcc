@@ -68,4 +68,3 @@ pause_string (char *string, GFC_INTEGER_4 len)
 
   do_pause ();
 }
-

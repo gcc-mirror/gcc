@@ -79,7 +79,6 @@ print_spaces (int n)
 static const char *
 var_source (variable * v)
 {
-
   if (getenv (v->name) == NULL)
     return "Default";
 
@@ -111,7 +110,7 @@ init_integer (variable * v)
   *v->var = atoi (p);
   return;
 
-set_default:
+ set_default:
   *v->var = v->value;
   return;
 }
@@ -122,7 +121,6 @@ set_default:
 static void
 show_integer (variable * v)
 {
-
   st_printf ("%s  %d\n", var_source (v), *v->var);
 }
 
@@ -164,7 +162,6 @@ set_default:
 static void
 show_boolean (variable * v)
 {
-
   st_printf ("%s  %s\n", var_source (v), *v->var ? "Yes" : "No");
 }
 
@@ -288,7 +285,6 @@ set_default:
 static void
 show_sep (variable * v)
 {
-
   st_printf ("%s  \"%s\"\n", var_source (v), options.separator);
 }
 
@@ -330,31 +326,21 @@ static choice rounding[] = {
   {"DOWN", FP_ROUND_DOWN},
   {"ZERO", FP_ROUND_ZERO},
   {NULL}
-}, precision[] =
-{
-  {
-  "24", 1}
-  ,
-  {
-  "53", 2}
-  ,
-  {
-  "64", 0}
-  ,
-  {
-  NULL}
-}
+};
 
-, signal_choices[] =
+static choice precision[] =
 {
-  {
-  "IGNORE", 1}
-  ,
-  {
-  "ABORT", 0}
-  ,
-  {
-  NULL}
+  { "24", 1},
+  { "53", 2},
+  { "64", 0},
+  { NULL}
+};
+
+static choice signal_choices[] =
+{
+  { "IGNORE", 1},
+  { "ABORT", 0},
+  { NULL}
 };
 
 
@@ -380,7 +366,7 @@ init_choice (variable * v, choice * c)
   *v->var = c->value;
   return;
 
-set_default:
+ set_default:
   *v->var = v->value;
 }
 
@@ -388,7 +374,6 @@ set_default:
 static void
 show_choice (variable * v, choice * c)
 {
-
   st_printf ("%s  ", var_source (v));
 
   for (; c->name; c++)
@@ -399,7 +384,6 @@ show_choice (variable * v, choice * c)
     st_printf ("%s\n", c->name);
   else
     st_printf ("(Unknown)\n");
-
 }
 
 
@@ -408,6 +392,7 @@ init_round (variable * v)
 {
   init_choice (v, rounding);
 }
+
 static void
 show_round (variable * v)
 {
@@ -419,6 +404,7 @@ init_precision (variable * v)
 {
   init_choice (v, precision);
 }
+
 static void
 show_precision (variable * v)
 {
@@ -430,6 +416,7 @@ init_signal (variable * v)
 {
   init_choice (v, signal_choices);
 }
+
 static void
 show_signal (variable * v)
 {
@@ -615,7 +602,8 @@ show_variables (void)
   char *p, **e;
   variable *v;
   int n;
-/* TODO: print version number.  */
+
+  /* TODO: print version number.  */
   st_printf ("GNU Fortran 95 runtime library version "
 	     "UNKNOWN" "\n\n");
 

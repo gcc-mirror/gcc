@@ -197,4 +197,3 @@ prefix(system_clock_8)(GFC_INTEGER_8 *count, GFC_INTEGER_8 *count_rate,
   if (count_max != NULL)
     *count_max = mx;
 }
-

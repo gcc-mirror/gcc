@@ -115,4 +115,3 @@ __spread (const gfc_array_char * ret, const gfc_array_char * source,
         }
     }
 }
-

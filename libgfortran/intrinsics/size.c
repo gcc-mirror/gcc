@@ -50,4 +50,3 @@ index_type size1 (const array_t * array, index_type dim)
     size = 0;
   return size;
 }
-

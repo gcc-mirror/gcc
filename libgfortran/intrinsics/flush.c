@@ -48,7 +48,6 @@ recursive_flush (gfc_unit *us)
 void
 prefix(flush_i4) (GFC_INTEGER_4 * unit)
 {
-
   gfc_unit *us;
 
   /* flush all streams */

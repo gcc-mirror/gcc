@@ -228,4 +228,3 @@ __reshape (parray * ret, parray * source, shape_type * shape,
         }
     }
 }
-

@@ -117,4 +117,3 @@ internal_unpack (gfc_array_char * d, const void * s)
         }
     }
 }
-
