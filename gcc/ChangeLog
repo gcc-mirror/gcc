@@ -1,3 +1,8 @@
+2003-03-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_variable_issue): Remove unnecessary
+	else clauses.
+
 2003-03-05  Michael Matz  <matz@suse.de>
 
 	* i386/i386.c (ix86_save_reg): Also test
