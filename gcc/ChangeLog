@@ -1,3 +1,7 @@
+Wed Dec  8 22:24:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (count_basic_blocks): Don't add (use (const_int 0)) insns.
+
 1999-12-08  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (insert_loop_mem): Don't hoist volatile mems out of loops.
