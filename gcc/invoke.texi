@@ -367,9 +367,8 @@ in the following sections.
 -mfix7000 -mno-crt0
 
 @emph{i386 Options}
--mcpu=@var{cpu type}
--march=@var{cpu type}
--mieee-fp  -mno-fancy-math-387
+-mcpu=@var{cpu type} -march=@var{cpu type}
+-mintel-syntax -mieee-fp  -mno-fancy-math-387
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib
 -mno-wide-multiply  -mrtd  -malign-double
 -mreg-alloc=@var{list}  -mregparm=@var{num}
@@ -6136,6 +6135,9 @@ specifying @samp{-march=@var{cpu type}} implies @samp{-mcpu=@var{cpu type}}.
 @itemx -mpentiumpro
 Synonyms for -mcpu=i386, -mcpu=i486, -mcpu=pentium, and -mcpu=pentiumpro
 respectively.  These synonyms are deprecated.
+
+@item -mintel-syntax
+Emit assembly using Intel syntax opcodes instead of AT&T syntax.
 
 @item -mieee-fp
 @itemx -mno-ieee-fp
