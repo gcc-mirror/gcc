@@ -5113,11 +5113,11 @@ else
   
 echo $ac_n "checking for .preinit_array/.init_array/.fini_array support""... $ac_c" 1>&6
 echo "configure:5116: checking for .preinit_array/.init_array/.fini_array support" >&5
-if eval "test \"`echo '$''{'gcc_cv_initfinit_array'+set}'`\" = set"; then
+if eval "test \"`echo '$''{'gcc_cv_initfini_array'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
     if test "$cross_compiling" = yes; then
-  gcc_cv_initfinit_array=no
+  gcc_cv_initfini_array=no
 else
   cat > conftest.$ac_ext <<EOF
 #line 5124 "configure"
@@ -5130,19 +5130,19 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 EOF
 if { (eval echo configure:5132: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
-  gcc_cv_initfinit_array=yes
+  gcc_cv_initfini_array=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -fr conftest*
-  gcc_cv_initfinit_array=no
+  gcc_cv_initfini_array=no
 fi
 rm -fr conftest*
 fi
 
 fi
 
-echo "$ac_t""$gcc_cv_initfinit_array" 1>&6
+echo "$ac_t""$gcc_cv_initfini_array" 1>&6
   enable_initfini_array=$gcc_cv_initfini_array
 
 fi

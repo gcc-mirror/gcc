@@ -1,3 +1,9 @@
+2003-01-08  Andreas Schwab  <schwab@suse.de>
+
+	* aclocal.m4 (gcc_AC_INITFINI_ARRAY): Fix spelling of cache
+	variable.
+	* configure: Regenerated.
+
 2003-01-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_logical_op): Replace byte/word

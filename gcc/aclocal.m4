@@ -1631,14 +1631,14 @@ AC_DEFUN(gcc_AC_INITFINI_ARRAY,
 	[  --enable-initfini-array	use .init_array/.fini_array sections],
 	[], [
 AC_CACHE_CHECK(for .preinit_array/.init_array/.fini_array support,
-		 gcc_cv_initfinit_array, [dnl
+		 gcc_cv_initfini_array, [dnl
   AC_TRY_RUN([
 static int x = -1;
 int main (void) { return x; }
 int foo (void) { x = 0; }
 int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;],
-	     [gcc_cv_initfinit_array=yes], [gcc_cv_initfinit_array=no],
-	     [gcc_cv_initfinit_array=no])])
+	     [gcc_cv_initfini_array=yes], [gcc_cv_initfini_array=no],
+	     [gcc_cv_initfini_array=no])])
   enable_initfini_array=$gcc_cv_initfini_array
 ])
 if test $enable_initfini_array = yes; then
