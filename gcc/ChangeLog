@@ -1,3 +1,9 @@
+2003-12-07  David Edelsohn  <edelsohn@gnu.org>
+	    Graham Reed <greed@pobox.com>
+
+	* collect2.c (GCC_OK_SYMBOL): Add support for AIX C_WEAKEXT.
+	(GCC_UNDEF_SYMBOL): Same.
+
 2003-12-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* final.c (final_scan_insn): Don't use FINAL_PRESCAN_LABEL.
