@@ -2057,9 +2057,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  && ! exceptions_via_longjmp)
 	{
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_BLOCK_NUMBER (insn));
-#ifndef NEW_EH_MODEL
-	  add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
-#endif
+          if (! flag_new_exceptions)
+            add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_BEG
 	  ASM_OUTPUT_EH_REGION_BEG (file, NOTE_BLOCK_NUMBER (insn));
 #endif
@@ -2070,9 +2069,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  && ! exceptions_via_longjmp)
 	{
 	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_BLOCK_NUMBER (insn));
-#ifdef NEW_EH_MODEL
-	  add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
-#endif
+          if (flag_new_exceptions)
+            add_eh_table_entry (NOTE_BLOCK_NUMBER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_END
 	  ASM_OUTPUT_EH_REGION_END (file, NOTE_BLOCK_NUMBER (insn));
 #endif

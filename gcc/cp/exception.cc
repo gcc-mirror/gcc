@@ -86,9 +86,7 @@ std::unexpected ()
 
 struct cp_eh_info
 {
-#ifdef NEW_EH_MODEL
   __eh_info eh_info;
-#endif
   void *value;
   void *type;
   void (*cleanup)(void *, int);
@@ -105,11 +103,23 @@ extern "C" cp_eh_info **__get_eh_info (); 	// actually void **
 
 extern bool __is_pointer (void *);
 
+
+/* OLD Compiler hook to return a pointer to the info for the current exception.
+   Used by get_eh_info ().  This fudges the actualy returned value to
+   point to the beginning of what USE to be the cp_eh_info structure.
+   THis is so that old code that dereferences this pointer will find
+   things where it expects it to be.*/
+extern "C" void *
+__cp_exception_info (void)
+{
+  return &((*__get_eh_info ())->value);
+}
+
 /* Compiler hook to return a pointer to the info for the current exception.
    Used by get_eh_info ().  */
 
 extern "C" cp_eh_info *
-__cp_exception_info (void)
+__cp_eh_info (void)
 {
   return *__get_eh_info ();
 }
@@ -138,8 +148,6 @@ __eh_free (void *p)
 }
 
 
-#ifdef NEW_EH_MODEL
-
 typedef void * (* rtimetype) (void);
 
 extern "C" void *
@@ -157,7 +165,6 @@ __cplus_type_matcher (cp_eh_info *info, exception_table *matching_info,
   ret = __throw_type_match_rtti (match_type, info->type, info->value);
   return ret;
 }
-#endif
 
 
 /* Compiler hook to push a new exception onto the stack.
@@ -174,12 +181,10 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
   p->handlers = 0;
   p->caught = false;
 
-#ifdef NEW_EH_MODEL
   p->eh_info.match_function = __cplus_type_matcher;
   p->eh_info.language = EH_LANG_C_plus_plus;
   p->eh_info.version = 1;
   p->eh_info.coerced_value = NULL;
-#endif
 
   cp_eh_info **q = __get_eh_info ();
 
@@ -227,7 +232,7 @@ __cp_pop_exception (cp_eh_info *p)
 extern "C" void
 __uncatch_exception (void)
 {
-  cp_eh_info *p = __cp_exception_info ();
+  cp_eh_info *p = __cp_eh_info ();
   if (p == 0)
     terminate ();
   p->caught = false;
@@ -248,7 +253,7 @@ __uncatch_exception (void)
 extern "C" void
 __check_eh_spec (int n, const void **spec)
 {
-  cp_eh_info *p = __cp_exception_info ();
+  cp_eh_info *p = __cp_eh_info ();
 
   for (int i = 0; i < n; ++i)
     {
@@ -301,7 +306,7 @@ __throw_bad_typeid (void)
 bool
 std::uncaught_exception ()
 {
-  cp_eh_info *p = __cp_exception_info ();
+  cp_eh_info *p = __cp_eh_info ();
   return p && ! p->caught;
 }
 

@@ -600,6 +600,11 @@ int flag_pic;
 
 int flag_exceptions;
 
+/* Nonzero means use the new model for exception handling. Replaces 
+   -DNEW_EH_MODEL as a compile option. */
+
+extern int flag_new_exceptions = 0;
+
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
 
@@ -759,6 +764,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
   {"exceptions", &flag_exceptions, 1},
+  {"new-exceptions", &flag_new_exceptions, 1},
   {"sjlj-exceptions", &exceptions_via_longjmp, 1},
   {"asynchronous-exceptions", &asynchronous_exceptions, 1},
   {"profile-arcs", &profile_arc_flag, 1},

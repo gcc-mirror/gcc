@@ -5,7 +5,7 @@
    independant exception handling model. Both the static compiler and
    the runtime library share this file. */
 
-/* The compiler flag NEW_EH_MODEL is used to determine whether the 
+/* The runtime flag flag_new_exceptions is used to determine whether the 
    compiler supports the new runtime typechecking mechanism or not. Under
    the new model, runtime info is contained in the exception table, and
    the __throw() library routine determines which handler to call based
@@ -17,17 +17,6 @@
 
 #include "gansidecl.h"
 
-
-#ifndef NEW_EH_MODEL
-
-struct eh_context
-{
-  void **dynamic_handler_chain;
-  /* This is language dependent part of the eh context. */
-  void *info;
-};
-
-#else
 
 /* The handler_label field MUST be the first field in this structure. The 
    __throw()  library routine expects uses __eh_stub() from except.c, which
@@ -41,23 +30,14 @@ struct eh_context
   void *info;
 };
 
-#endif
-
-
 #ifndef EH_TABLE_LOOKUP
 
-#ifndef NEW_EH_MODEL
-
-typedef struct exception_table 
+typedef struct old_exception_table 
 {
   void *start_region;
   void *end_region;
   void *exception_handler;
-} exception_table;
-
-typedef exception_table exception_descriptor;
-
-#else
+} old_exception_table;
 
 typedef struct exception_table 
 {
@@ -76,11 +56,18 @@ typedef struct exception_lang_info
   short version;  
 } exception_lang_info;
 
+/* This value in the first field of the exception descriptor 
+   identifies the descriptor as the new model format. This value would never
+   be present in this location under the old model */
+
+#define NEW_EH_RUNTIME  ((void *) -2)
+
 /* Each function has an exception_descriptor which contains the
    language info, and a table of exception ranges and handlers */
 
 typedef struct exception_descriptor 
 {
+  void *runtime_id_field;    
   exception_lang_info lang;
   exception_table table[1];
 } exception_descriptor;
@@ -125,8 +112,6 @@ enum exception_source_language
     EH_LANG_Java = 0x000b,
     EH_LANG_Mips_Assembler = 0x8001
   };
-
-#endif
 
 #endif  /* EH_TABLE_LOOKUP */
 

@@ -1,3 +1,34 @@
+Mon Jun  8 14:16:15 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* eh-common.h: Remove NEW_EH_MODEL compile time flag, and replace with
+	flag_new_exceptions runtime flag.
+	(struct old_exception_table): New struct which represents what
+	the exception table looks like without the new model.
+	(NEW_EH_RUNTIME): New value used as a tag in the exception table to
+	flag that this is a new style table.
+	* except.h: Remove compile time flag NEW_EH_MODEL.
+	(expand_builtin_eh_stub_old): New prototype.
+	* tree.h (enum built_in_function): Add BUILT_IN_EH_STUB_OLD.
+	* expr.c (expand_builtin): New builtin func BUILT_IN_EH_STUB_OLD.
+	* c-decl.c (init_decl_processing): Add new builtin function
+	__builtin_eh_stub_old.
+	* final.c (final_scan_insn): Replace compile time flag NEW_EH_MODEL.
+	* flags.h (flag_new_exceptions): New runtime flag.
+	* toplev.c (flag_new_exceptions): Initialize default to 0, 
+	-fnew-exceptions sets to 1.
+	* except.c (output_exception_table_entry): Output New style exception 
+	identifier into table, and replace compile time flag NEW_EH_MODEL
+	with runtime flag flag_new_exceptions.
+	(output_exception_table): Replace compile time flag NEW_EH_MODEL.
+	(expand_builtin_eh_stub_old): Duplicates original functionality of
+	expand_builtin_eh_stub.
+	(expand_builtin_eh_stub): Replace compile time flag NEW_EH_MODEL.
+	* libgcc2.c (find_exception_handler): Remove NEW_EH_MODEL #ifdefs.
+	(old_find_exception_handler): New func, same as find_exception_handler
+	except it works on the old style exception table.
+	(__throw): Replace NEW_EH_MODEL. Detect new model based on presence
+	of identifier in the exception table, and call appropriate routines.
+
 Mon Jun  8 01:21:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* function.c: Define current_function_cannot_inline.

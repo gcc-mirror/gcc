@@ -1842,22 +1842,19 @@ output_exception_table_entry (file, n)
       assemble_integer (handler->handler_label, 
                                          POINTER_SIZE / BITS_PER_UNIT, 1);
 
-#ifdef NEW_EH_MODEL
-    /* for now make sure the sizes match */
-      if (handler->type_info == NULL)
-        assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-      else
-        output_constant ((tree)(handler->type_info), 
+      if (flag_new_exceptions)
+        {
+          if (handler->type_info == NULL)
+            assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+          else
+            output_constant ((tree)(handler->type_info), 
                                                 POINTER_SIZE / BITS_PER_UNIT);
-#endif
-
+        }
       putc ('\n', file);		/* blank line */
     }
 }
 
 /* Output the exception table if we have and need one.  */
-
-#ifdef NEW_EH_MODEL
 
 static short language_code = 0;
 static short version_code = 0; 
@@ -1876,7 +1873,6 @@ void set_exception_version_code (code)
   version_code = code;
 }
 
-#endif
 
 void
 output_exception_table ()
@@ -1893,17 +1889,20 @@ output_exception_table ()
   assemble_align (GET_MODE_ALIGNMENT (ptr_mode));
   assemble_label ("__EXCEPTION_TABLE__");
 
-#ifdef NEW_EH_MODEL
-  assemble_integer (GEN_INT (language_code), 2 , 1); 
-  assemble_integer (GEN_INT (version_code), 2 , 1);
+  if (flag_new_exceptions)
+    {
+      assemble_integer (GEN_INT (NEW_EH_RUNTIME), 
+                                        POINTER_SIZE / BITS_PER_UNIT, 1);
+      assemble_integer (GEN_INT (language_code), 2 , 1); 
+      assemble_integer (GEN_INT (version_code), 2 , 1);
 
-  /* Add enough padding to make sure table aligns on a pointer boundry. */
-  i = GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT - 4;
-  for ( ; i < 0; i = i + GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT)
-    ;
-  if (i != 0)
-    assemble_integer (const0_rtx, i , 1);
-#endif
+      /* Add enough padding to make sure table aligns on a pointer boundry. */
+      i = GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT - 4;
+      for ( ; i < 0; i = i + GET_MODE_ALIGNMENT (ptr_mode) / BITS_PER_UNIT)
+        ;
+      if (i != 0)
+        assemble_integer (const0_rtx, i , 1);
+    }
 
   for (i = 0; i < eh_table_size; ++i)
     output_exception_table_entry (asm_out_file, eh_table[i]);
@@ -1913,11 +1912,12 @@ output_exception_table ()
 
   /* Ending marker for table.  */
   assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-#ifndef NEW_EH_MODEL
+
   /* for binary compatability, the old __throw checked the second
      position for a -1, so we should output at least 2 -1's */
-  assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
-#endif
+  if (! flag_new_exceptions)
+    assemble_integer (constm1_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+
   putc ('\n', asm_out_file);		/* blank line */
 }
 
@@ -2424,7 +2424,7 @@ get_reg_for_handler ()
    and then return to the stub.  */
 
 rtx
-expand_builtin_eh_stub ()
+expand_builtin_eh_stub_old ()
 {
   rtx stub_start = gen_label_rtx ();
   rtx after_stub = gen_label_rtx ();
@@ -2436,28 +2436,38 @@ expand_builtin_eh_stub ()
   eh_regs (&handler, &offset, 0);
 
   adjust_stack (offset);
-#ifdef NEW_EH_MODEL
+  emit_indirect_jump (handler);
+  emit_label (after_stub);
+  return gen_rtx_LABEL_REF (Pmode, stub_start);
+}
+
+rtx
+expand_builtin_eh_stub ()
+{
+  rtx stub_start = gen_label_rtx ();
+  rtx after_stub = gen_label_rtx ();
+  rtx handler, offset;
+  rtx jump_to, temp;
+
+  emit_jump (after_stub);
+  emit_label (stub_start);
+
+  eh_regs (&handler, &offset, 0);
+
+  adjust_stack (offset);
 
   /* Handler is in fact a pointer to the _eh_context structure, we need 
      to pick out the handler field (first element), and jump to there, 
      leaving the pointer to _eh_conext in the same hardware register. */
-  {
-    rtx jump_to, temp;
 
-    temp = gen_rtx_MEM (Pmode, handler);  
-    MEM_IN_STRUCT_P (temp) = 1;
-    RTX_UNCHANGING_P (temp) = 1;
-    emit_insn (gen_rtx_SET (Pmode, offset, temp));
-    emit_insn (gen_rtx_USE (Pmode, handler));
+  temp = gen_rtx_MEM (Pmode, handler);  
+  MEM_IN_STRUCT_P (temp) = 1;
+  RTX_UNCHANGING_P (temp) = 1;
+  emit_insn (gen_rtx_SET (Pmode, offset, temp));
+  emit_insn (gen_rtx_USE (Pmode, handler));
 
-    emit_indirect_jump (offset);
+  emit_indirect_jump (offset);
    
-  }
-
-#else
-  emit_indirect_jump (handler);
-
-#endif
   emit_label (after_stub);
   return gen_rtx_LABEL_REF (Pmode, stub_start);
 }
