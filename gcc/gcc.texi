@@ -2258,7 +2258,7 @@ for improvement of GCC are welcome in any case.
 @cindex bug report mailing lists
 @kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 Send bug reports for the GNU Compiler Collection to
-@samp{gcc-bugs@@gcc.gnu.org} or @samp{bug-gcc@gnu.org}.
+@samp{gcc-bugs@@gcc.gnu.org} or @samp{bug-gcc@@gnu.org}.
 
 Please read @samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>} for
 bug reporting instructions before you post a bug report.
@@ -2664,7 +2664,7 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{gcc-bugs@@gcc.gnu.org} or @code{bug-gcc@gnu.org}, and if that
+@code{gcc-bugs@@gcc.gnu.org} or @code{bug-gcc@@gnu.org}, and if that
 brings no response, try @code{gcc@@gcc.gnu.org}.
 
 @item
