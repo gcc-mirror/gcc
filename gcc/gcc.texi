@@ -652,11 +652,10 @@ cc1: warning: `-g1' option not supported on this version of GCC
 ./xgcc: Internal compiler error: program as got fatal signal 11
 @end smallexample
 
-A patched version of the assembler is available by anonymous ftp from
-@code{altdorf.ai.mit.edu} as the file
-@file{archive/cph/hpux-8.0-assembler}.  If you have HP software support,
-the patch can also be obtained directly from HP, as described in the
-following note:
+A patched version of the assembler is available as the file
+@uref{ftp://altdorf.ai.mit.edu/archive/cph/hpux-8.0-assembler}.  If you
+have HP software support, the patch can also be obtained directly from
+HP, as described in the following note:
 
 @quotation
 This is the patched assembler, to patch SR#1653-010439, where the
@@ -2236,7 +2235,7 @@ convention, in which bug reports for tool ``foo'' are sent
 to @samp{bug-foo@@gnu.org}, the address @samp{bug-gcc@@gnu.org}
 may also be used; it will forward to the address given above.
 
-Please read @samp{<URL:http://www.gnu.org/software/gcc/bugs.html>} for
+Please read @uref{http://www.gnu.org/software/gcc/bugs.html} for
 bug reporting instructions before you post a bug report.
 
 Often people think of posting bug reports to the newsgroup instead of
@@ -2260,7 +2259,7 @@ Boston, MA 02111-1307, USA
 @cindex compiler bugs, reporting
 
 You may find additional and/or more up-to-date instructions at
-@samp{<URL:http://www.gnu.org/software/gcc/bugs.html>}.
+@uref{http://www.gnu.org/software/gcc/bugs.html}.
 
 The fundamental principle of reporting bugs usefully is this:
 @strong{report all the facts}.  If you are not sure whether to state a

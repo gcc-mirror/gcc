@@ -852,7 +852,7 @@ MIL-STD-1750A processors.
 The MIL-STD-1750A cross configuration produces output for
 @code{as1750}, an assembler/linker available under the GNU Public
 License for the 1750A. @code{as1750} can be obtained at 
-@emph{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
+@uref{ftp://ftp.fta-berlin.de/pub/crossgcc/1750gals/}.
 A similarly licensed simulator for
 the 1750A is available from same address.
 
@@ -957,7 +957,7 @@ the @file{a.out} binary format.  This is an obsolete configuration.
 Any of the ARM-family processors running the Linux-based GNU system with
 the @file{ELF} binary format.  You must use version 2.9.1.0.22 or later
 of the GNU/Linux binutils, which you can download from
-@file{ftp.varesearch.com:/pub/support/hjl/binutils}.
+@uref{ftp://ftp.varesearch.com/pub/support/hjl/binutils/}.
 
 These two configurations differ only in the required version of GNU
 binutils.  For binutils 2.9.1.0.x, use @samp{arm-*-linux-gnuoldld}.  For 
@@ -970,7 +970,7 @@ specify the version number during configuration.  Note that the
 assembler shipped with RISC iX does not support stabs debugging
 information; a new version of the assembler, with stabs support
 included, is now available from Acorn and via ftp
-@file{ftp.acorn.com:/pub/riscix/as+xterm.tar.Z}.  To enable stabs
+@uref{ftp://ftp.acorn.com/pub/riscix/as+xterm.tar.Z}.  To enable stabs
 debugging, pass @samp{--with-gnu-as} to configure.
 
 You will need to install GNU @file{sed} before you can run configure.
@@ -1179,7 +1179,7 @@ systems.
 @item i[345]86-*-winnt3.5
 This version requires a GAS that has not yet been released.  Until it
 is, you can get a prebuilt binary version via anonymous ftp from
-@file{cs.washington.edu:pub/gnat} or @file{cs.nyu.edu:pub/gnat}. You
+@uref{ftp://cs.washington.edu/pub/gnat} or @uref{ftp://cs.nyu.edu/pub/gnat}. You
 must also use the Microsoft header files from the Windows NT 3.5 SDK.
 Find these on the CDROM in the @file{/mstools/h} directory dated 9/4/94.  You
 must use a fixed version of Microsoft linker made especially for NT 3.5,
@@ -1276,7 +1276,7 @@ AT&T 3b1, a.k.a. 7300 PC.  This version of GNU CC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
 bootstrap.  Binaries are available from the OSU-CIS archive, at
-@url{ftp://archive.cis.ohio-state.edu/pub/att7300/}.
+@uref{ftp://archive.cis.ohio-state.edu/pub/att7300/}.
 
 @item m68k-bull-sysv
 Bull DPX/2 series 200 and 300 with BOS-2.00.45 up to BOS-2.01. GNU CC works
