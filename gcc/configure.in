@@ -21,7 +21,7 @@
 #Boston, MA 02111-1307, USA.
 
 # Initialization and defaults
-AC_PREREQ(2.12.1)
+AC_PREREQ(2.13)
 AC_INIT(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
@@ -346,18 +346,9 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 # See if GNAT has been installed
 AC_CHECK_PROG(gnat, gnatbind, yes, no)
 
-# See if the system preprocessor understands the ANSI C preprocessor
-# stringification operator.
-AC_MSG_CHECKING(whether cpp understands the stringify operator)
-AC_CACHE_VAL(gcc_cv_c_have_stringify,
-[AC_TRY_COMPILE(,
-[#define S(x)   #x
-char *test = S(foo);],
-gcc_cv_c_have_stringify=yes, gcc_cv_c_have_stringify=no)])
-AC_MSG_RESULT($gcc_cv_c_have_stringify)
-if test $gcc_cv_c_have_stringify = yes; then
-  AC_DEFINE(HAVE_CPP_STRINGIFY)
-fi
+# See if the stage1 system preprocessor understands the ANSI C
+# preprocessor stringification operator.
+AC_C_STRINGIZE
 
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
