@@ -2069,16 +2069,6 @@ eligible_for_epilogue_delay (trial, slot)
   return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
 }
 
-rtx
-gen_scond_fp (code, operand0)
-     enum rtx_code code;
-     rtx operand0;
-{
-  return gen_rtx (SET, VOIDmode, operand0,
-		  gen_rtx (code, CCFPmode,
-			   gen_rtx (REG, CCFPmode, 0), const0_rtx));
-}
-
 void
 emit_bcond_fp (code, operand0)
      enum rtx_code code;
