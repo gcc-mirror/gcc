@@ -2532,7 +2532,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 	      /* ??? Even non-trapping memories such as stack frame
 		 references must be avoided.  For stores, we collect
 		 no lifetime info; for reads, we'd have to assert
-		 true_dependance false against every store in the
+		 true_dependence false against every store in the
 		 TEST range.  */
 	      if (for_each_rtx (&PATTERN (insn), find_memory, NULL))
 		return FALSE;

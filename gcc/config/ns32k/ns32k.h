@@ -855,7 +855,7 @@ __transfer_from_trampoline ()		\
    because registers of CLASS are needed for spill registers.
 
    The default definition won't do because class LONG_FLOAT_REG0 has two
-   registers which are always acessed as a pair */
+   registers which are always accessed as a pair */
 
 #define CLASS_LIKELY_SPILLED_P(CLASS) \
   (reg_class_size[(int) (CLASS)] == 1 || (CLASS) == LONG_FLOAT_REG0)

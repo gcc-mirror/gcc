@@ -1162,7 +1162,7 @@ _cpp_free_definition (h)
 }
 
 /* Save parameter NODE to the parameter list of macro MACRO.  Returns
-   zero on success, non-zero if the paramter is a duplicate.  */
+   zero on success, non-zero if the parameter is a duplicate.  */
 static int
 save_parameter (pfile, macro, node)
      cpp_reader *pfile;

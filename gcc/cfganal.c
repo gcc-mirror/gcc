@@ -76,7 +76,7 @@ forwarder_block_p (bb)
 	  || !active_insn_p (insn));
 }
 
-/* Return nonzero if we can reach target from src by falling trought.  */
+/* Return nonzero if we can reach target from src by falling through.  */
 bool
 can_fallthru (src, target)
      basic_block src, target;

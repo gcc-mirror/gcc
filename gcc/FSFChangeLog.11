@@ -5434,7 +5434,7 @@ Thu Jun  5 13:40:33 1997  Mike Meissner  <meissner@cygnus.com>
 	(life_analysis): Don't allocate the space to hold to vector of
 	regsets here.
 	(init_regset_vector): Add pointer parameter and delete space
-	paramter.  Use OBSTACK_ALLOC_REG_SET to allocate.  Change callers.
+	parameter.  Use OBSTACK_ALLOC_REG_SET to allocate.  Change callers.
 	(propagate_block): Use ALLOCA_REG_SET instead of bare alloca.
 
 	* sched.c (schedule_block): Fix typo in yesterday's changes.
@@ -8809,7 +8809,7 @@ Sun Nov 24 17:06:58 1996  Bernd Schmidt  (crux@Pool.Informatik.RWTH-Aachen.DE)
 Sun Nov 24 16:37:18 1996  Dave Love  <d.love@dl.ac.uk>
 
 	* configure (objc_thread_file): Set conditionally in each case so
-	may be overidden with `--enable-objcthreads=posix'.
+	may be overridden with `--enable-objcthreads=posix'.
 	Change GNU/Linux default to `single'.
 
 Fri Nov 22 17:53:15 1996  Jason Merrill  <jason@yorick.cygnus.com>

@@ -203,7 +203,7 @@ struct haifa_insn_data
   /* Some insns (e.g. call) are not allowed to move across blocks.  */
   unsigned int cant_move : 1;
 
-  /* Set if there's DEF-USE dependance between some speculatively
+  /* Set if there's DEF-USE dependence between some speculatively
      moved load insn and this one.  */
   unsigned int fed_by_spec_load : 1;
   unsigned int is_load_insn : 1;

@@ -1919,7 +1919,7 @@ purge_dead_edges (bb)
 
 /* Search all basic blocks for potentionally dead edges and purge them.
 
-   Return true ifif some edge has been elliminated.
+   Return true iff some edge has been eliminated.
  */
 
 bool

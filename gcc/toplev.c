@@ -2756,7 +2756,7 @@ rest_of_compilation (decl)
 	      cleanup_cfg (CLEANUP_PRE_SIBCALL | CLEANUP_PRE_LOOP);
 	      optimize = saved_optimize;
 
-	      /* CFG is no longer maitained up-to-date.  */
+	      /* CFG is no longer maintained up-to-date.  */
 	      free_bb_for_insn ();
 	    }
 
@@ -2867,7 +2867,7 @@ rest_of_compilation (decl)
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP);
 
-  /* CFG is no longer maitained up-to-date.  */
+  /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
   copy_loop_headers (insns);
   purge_line_number_notes (insns);
@@ -2946,7 +2946,7 @@ rest_of_compilation (decl)
       timevar_pop (TV_FROM_SSA);
 
       ggc_collect ();
-      /* CFG is no longer maitained up-to-date.  */
+      /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
     }
 
@@ -2965,7 +2965,7 @@ rest_of_compilation (decl)
       if_convert (0);
       timevar_pop (TV_IFCVT);
 
-      /* CFG is no longer maitained up-to-date.  */
+      /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
@@ -3016,7 +3016,7 @@ rest_of_compilation (decl)
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 	  timevar_pop (TV_JUMP);
-	  /* CFG is no longer maitained up-to-date.  */
+	  /* CFG is no longer maintained up-to-date.  */
 	  free_bb_for_insn ();
 	}
 
@@ -3033,7 +3033,7 @@ rest_of_compilation (decl)
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
 
 	  delete_null_pointer_checks (insns);
-	  /* CFG is no longer maitained up-to-date.  */
+	  /* CFG is no longer maintained up-to-date.  */
 	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 	}
@@ -3073,7 +3073,7 @@ rest_of_compilation (decl)
       save_cfj = flag_cse_follow_jumps;
       flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
 
-      /* CFG is no longer maitained up-to-date.  */
+      /* CFG is no longer maintained up-to-date.  */
       free_bb_for_insn ();
       /* If -fexpensive-optimizations, re-run CSE to clean up things done
 	 by gcse.  */
@@ -3096,7 +3096,7 @@ rest_of_compilation (decl)
 	  delete_trivially_dead_insns (insns, max_reg_num (), 0);
 	  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
-	  /* CFG is no longer maitained up-to-date.  */
+	  /* CFG is no longer maintained up-to-date.  */
 	  free_bb_for_insn ();
 	  timevar_pop (TV_JUMP);
 
@@ -3185,7 +3185,7 @@ rest_of_compilation (decl)
 
 	  timevar_pop (TV_JUMP);
 
-	  /* CFG is no longer maitained up-to-date.  */
+	  /* CFG is no longer maintained up-to-date.  */
 	  free_bb_for_insn ();
 	  reg_scan (insns, max_reg_num (), 0);
 	  tem = cse_main (insns, max_reg_num (), 1, rtl_dump_file);
@@ -3196,7 +3196,7 @@ rest_of_compilation (decl)
 	      rebuild_jump_labels (insns);
 	      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	      cleanup_cfg (CLEANUP_EXPENSIVE);
-	      /* CFG is no longer maitained up-to-date.  */
+	      /* CFG is no longer maintained up-to-date.  */
 	      free_bb_for_insn ();
 	      timevar_pop (TV_JUMP);
 	    }
@@ -3636,7 +3636,7 @@ rest_of_compilation (decl)
     }
   compute_alignments ();
 
-  /* CFG is no longer maitained up-to-date.  */
+  /* CFG is no longer maintained up-to-date.  */
   free_bb_for_insn ();
 
   /* If a machine dependent reorganization is needed, call it.  */

@@ -84,7 +84,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "type" "multi")])
 
 ;; Define the operand size an insn operates on.  Used primarily by mul
-;; and div operations that have size dependant timings.
+;; and div operations that have size dependent timings.
 
 (define_attr "opsize" "si,di,udi"
   (const_string "di"))
@@ -284,13 +284,13 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   (and (eq_attr "cpu" "ev5")
        (and (eq_attr "type" "fdiv")
 	    (eq_attr "opsize" "si")))
-  15 15)				; 15 to 31 data dependant
+  15 15)				; 15 to 31 data dependent
 
 (define_function_unit "fdiv" 1 0
   (and (eq_attr "cpu" "ev5")
        (and (eq_attr "type" "fdiv")
 	    (eq_attr "opsize" "di")))
-  22 22)				; 22 to 60 data dependant
+  22 22)				; 22 to 60 data dependent
 
 ;; EV6 scheduling.  EV6 can issue 4 insns per clock.
 ;;
@@ -433,7 +433,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; sign-extend.
 
 ;; Handle 32-64 bit extension from memory to a floating point register
-;; specially, since this ocurrs frequently in int->double conversions.
+;; specially, since this occurs frequently in int->double conversions.
 ;;
 ;; Note that while we must retain the =f case in the insn for reload's
 ;; benefit, it should be eliminated after reload, so we should never emit
@@ -6643,7 +6643,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   "trapb"
   [(set_attr "type" "misc")])
 
-;; No-op instructions used by machine-dependant reorg to preserve
+;; No-op instructions used by machine-dependent reorg to preserve
 ;; alignment for instruction issue.
 ;; The Unicos/Mk assembler does not support these opcodes.
 

@@ -167,7 +167,7 @@ extern int target_flags;
 #define TARGET_FLOAT_RETURNS_IN_80387 (target_flags & MASK_FLOAT_RETURNS)
 
 /* Long double is 128bit instead of 96bit, even when only 80bits are used.
-   This mode wastes cache, but avoid missaligned data accesses and simplifies
+   This mode wastes cache, but avoid misaligned data accesses and simplifies
    address calculations.  */
 #define TARGET_128BIT_LONG_DOUBLE (target_flags & MASK_128BIT_LONG_DOUBLE)
 

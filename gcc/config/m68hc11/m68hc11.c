@@ -4620,7 +4620,7 @@ m68hc11_z_replacement (insn)
     }
 
 
-  /* Replace all occurence of Z by replace_reg.
+  /* Replace all occurrence of Z by replace_reg.
      Stop when the last instruction to replace is reached.
      Also stop when we detect a change in the flow (but it's not
      necessary; just safeguard).  */

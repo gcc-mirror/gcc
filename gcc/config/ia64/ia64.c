@@ -1052,7 +1052,7 @@ ia64_split_timode (out, in, scratch)
 
    We got into problems in the first place by allowing a construct like
    (subreg:TF (reg:TI)), which we got from a union containing a long double.  
-   This solution attempts to prevent this situation from ocurring.  When
+   This solution attempts to prevent this situation from occurring.  When
    we see something like the above, we spill the inner register to memory.  */
 
 rtx

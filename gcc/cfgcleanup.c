@@ -26,7 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    - Edge forwarding (edge to the forwarder block is forwarded to it's
      succesor.  Simplification of the branch instruction is performed by
      underlying infrastructure so branch can be converted to simplejump or
-     elliminated).
+     eliminated).
    - Cross jumping (tail merging)
    - Conditional jump-around-simplejump simplification
    - Basic block merging.  */

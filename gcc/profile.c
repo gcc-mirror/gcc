@@ -768,7 +768,7 @@ branch_prob ()
 	        }
 	    }
 	}
-      /* Emit fake loopback edge for EXIT block to maitain compatibility with
+      /* Emit fake loopback edge for EXIT block to maintain compatibility with
          old gcov format.  */
       __write_long (1, bbg_file, 4);
       __write_long (0, bbg_file, 4);

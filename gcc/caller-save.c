@@ -406,7 +406,7 @@ save_call_clobbered_regs ()
 		else
 		  save_mode [regno] = VOIDmode;
 
-	      /* Look trought all live pseudos, mark their hard registers
+	      /* Look through all live pseudos, mark their hard registers
 		 and choose proper mode for saving.  */
 	      EXECUTE_IF_SET_IN_REG_SET
 		(&chain->live_throughout, FIRST_PSEUDO_REGISTER, regno,
