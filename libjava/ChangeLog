@@ -1,3 +1,10 @@
+2004-12-20  Tom Tromey  <tromey@redhat.com>
+
+	PR java/15001
+	* testsuite/libjava.jni/iface.c: New file.
+	* testsuite/libjava.jni/iface.out: New file.
+	* testsuite/libjava.jni/iface.java: New file.
+
 2004-12-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* include/config.h.in: Regenerate.
