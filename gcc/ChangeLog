@@ -7,6 +7,11 @@
 	(noce_process_if_block): Likewise.
 	For STRICT_LOW_PART, take mode from its SUBREG.
 
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (fold): Before optimizing unsigned comparison with
+	0x7fffffffU, make sure arg0 is integral type.
+
 2001-04-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-tree.texi: Document representation of wide strings.
