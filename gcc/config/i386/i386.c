@@ -5161,16 +5161,22 @@ ix86_expand_fp_compare (code, op0, op1, scratch, second_test, bypass_test)
 }
 
 rtx
-ix86_expand_compare (code)
+ix86_expand_compare (code, second_test, bypass_test)
      enum rtx_code code;
+     rtx *second_test, *bypass_test;
 {
   rtx op0, op1, ret;
   op0 = ix86_compare_op0;
   op1 = ix86_compare_op1;
 
+  if (second_test)
+    *second_test = NULL_RTX;
+  if (bypass_test)
+    *bypass_test = NULL_RTX;
+
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode),
-		    		  NULL, NULL);
+		    		  second_test, bypass_test);
   else
     ret = ix86_expand_int_compare (code, op0, op1);
 
@@ -5189,7 +5195,7 @@ ix86_expand_branch (code, label)
     case QImode:
     case HImode:
     case SImode:
-      tmp = ix86_expand_compare (code);
+      tmp = ix86_expand_compare (code, NULL, NULL);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
 				  pc_rtx);
@@ -5404,7 +5410,8 @@ ix86_expand_setcc (code, dest)
      enum rtx_code code;
      rtx dest;
 {
-  rtx ret, tmp;
+  rtx ret, tmp, tmpreg;
+  rtx second_test, bypass_test;
   int type;
 
   if (GET_MODE (ix86_compare_op0) == DImode)
@@ -5430,13 +5437,15 @@ ix86_expand_setcc (code, dest)
   if (type == 0)
     emit_move_insn (dest, const0_rtx);
 
-  ret = ix86_expand_compare (code);
+  ret = ix86_expand_compare (code, &second_test, &bypass_test);
   PUT_MODE (ret, QImode);
 
   tmp = dest;
+  tmpreg = dest;
   if (type == 0)
     {
       tmp = gen_lowpart (QImode, dest);
+      tmpreg = tmp;
       tmp = gen_rtx_STRICT_LOW_PART (VOIDmode, tmp);
     }
   else if (type == 1)
@@ -5445,9 +5454,31 @@ ix86_expand_setcc (code, dest)
 	tmp = gen_reg_rtx (QImode);
       else
         tmp = gen_lowpart (QImode, dest);
+      tmpreg = tmp;
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, tmp, ret));
+  if (bypass_test || second_test)
+    {
+      rtx test = second_test;
+      int bypass = 0;
+      rtx tmp2 = gen_reg_rtx (QImode);
+      if (bypass_test)
+	{
+	  if (second_test)
+	    abort();
+	  test = bypass_test;
+	  bypass = 1;
+	  PUT_CODE (test, reverse_condition_maybe_unordered (GET_CODE (test)));
+	}
+      PUT_MODE (test, QImode);
+      emit_insn (gen_rtx_SET (VOIDmode, tmp2, test));
+
+      if (bypass)
+	emit_insn (gen_andqi3 (tmp, tmpreg, tmp2));
+      else
+	emit_insn (gen_iorqi3 (tmp, tmpreg, tmp2));
+    }
 
   if (type == 1)
     {
@@ -5469,6 +5500,7 @@ ix86_expand_int_movcc (operands)
 {
   enum rtx_code code = GET_CODE (operands[1]), compare_code;
   rtx compare_seq, compare_op;
+  rtx second_test, bypass_test;
 
   /* When the compare code is not LTU or GEU, we can not use sbbl case.
      In case comparsion is done with immediate, we can convert it to LTU or
@@ -5489,7 +5521,7 @@ ix86_expand_int_movcc (operands)
     }
 
   start_sequence ();
-  compare_op = ix86_expand_compare (code);
+  compare_op = ix86_expand_compare (code, &second_test, &bypass_test);
   compare_seq = gen_sequence ();
   end_sequence ();
 
@@ -5507,7 +5539,8 @@ ix86_expand_int_movcc (operands)
       HOST_WIDE_INT cf = INTVAL (operands[3]);
       HOST_WIDE_INT diff;
 
-      if (compare_code == LTU || compare_code == GEU)
+      if ((compare_code == LTU || compare_code == GEU)
+	  && !second_test && !bypass_test)
 	{
 
 	  /* Detect overlap between destination and compare sources.  */
@@ -5796,11 +5829,36 @@ ix86_expand_int_movcc (operands)
   if (! nonimmediate_operand (operands[3], GET_MODE (operands[0])))
     operands[3] = force_reg (GET_MODE (operands[0]), operands[3]);
 
+  if (bypass_test && reg_overlap_mentioned_p (operands[0], operands[3]))
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (tmp, operands[3]);
+      operands[3] = tmp;
+    }
+  if (second_test && reg_overlap_mentioned_p (operands[0], operands[2]))
+    {
+      rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (tmp, operands[2]);
+      operands[2] = tmp;
+    }
+
   emit_insn (compare_seq);
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
 						compare_op, operands[2],
 						operands[3])));
+  if (bypass_test)
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+				  bypass_test,
+				  operands[3],
+				  operands[0])));
+  if (second_test)
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+				  second_test,
+				  operands[2],
+				  operands[0])));
 
   return 1; /* DONE */
 }
@@ -5811,25 +5869,39 @@ ix86_expand_fp_movcc (operands)
 {
   enum rtx_code code;
   rtx tmp;
-  rtx compare_op;
+  rtx compare_op, second_test, bypass_test;
 
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 
   code = GET_CODE (operands[1]);
-  compare_op = ix86_expand_compare (code);
+  compare_op = ix86_expand_compare (code, &second_test, &bypass_test);
 
   /* The floating point conditional move instructions don't directly
      support signed integer comparisons.  */
 
-  if (!fcmov_comparison_operator (compare_op, GET_MODE (XEXP (compare_op, 0))))
+  if (!fcmov_comparison_operator (compare_op, VOIDmode))
     {
+      if (second_test != NULL || bypass_test != NULL)
+	abort();
       tmp = gen_reg_rtx (QImode);
       ix86_expand_setcc (code, tmp);
       code = NE;
       ix86_compare_op0 = tmp;
       ix86_compare_op1 = const0_rtx;
-      compare_op = ix86_expand_compare (code);
+      compare_op = ix86_expand_compare (code,  &second_test, &bypass_test);
+    }
+  if (bypass_test && reg_overlap_mentioned_p (operands[0], operands[3]))
+    {
+      tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (tmp, operands[3]);
+      operands[3] = tmp;
+    }
+  if (second_test && reg_overlap_mentioned_p (operands[0], operands[2]))
+    {
+      tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      emit_move_insn (tmp, operands[2]);
+      operands[2] = tmp;
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
@@ -5837,6 +5909,18 @@ ix86_expand_fp_movcc (operands)
 				compare_op,
 				operands[2],
 				operands[3])));
+  if (bypass_test)
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+				  bypass_test,
+				  operands[3],
+				  operands[0])));
+  if (second_test)
+    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+				  second_test,
+				  operands[2],
+				  operands[0])));
 
   return 1;
 }
