@@ -1,3 +1,31 @@
+Thu Jan  7 03:08:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.h (PREFERRED_RELOAD_CLASS): Select GENERAL_REGS for 
+	integer data not destined for fp regs.
+	(LEGITIMIZE_RELOAD_ADDRESS): New.
+
+Thu Jan  7 03:03:42 1999  Stan Cox  <scox@cygnus.com>
+			  Richard Henderson  <rth@cygnus.com>
+
+	Support for Hypersparc and Sparclite86x:
+	* sparc.h (TARGET_CPU_hypersparc, TARGET_CPU_sparclite86x): New.
+	(CPP_CPU32_DEFAULT_SPEC): Fix up for the new targets.
+	(ASM_CPU32_DEFAULT_SPEC): Likewise.
+	(TARGET_CPU_DEFAULT): Likewise.
+	(enum processor_type): Likewise.
+	(CPP_ENDIAN_SPEC): Handle little endian data.
+	(LIBGCC2_WORDS_BIG_ENDIAN): Likewise.
+	(ADJUST_COST): Call sparc_adjust_cost.
+	* sparc.c (sparc_override_options): Fix up for the new targets.
+	(supersparc_adjust_cost): Make static.
+	(hypersparc_adjust_cost): New.
+	(ultrasparc_adjust_cost): Make static.
+	(sparc_adjust_cost): New.
+	* sparc.md (attr cpu): Add hypersparc and sparclite86x.
+	(function_unit): Add hypersparc scheduling rules.
+
+	* configure.in (with_cpu handler): Recognize hypersparc.
+
 Thu Jan  7 23:54:05 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c: Added space after negation operator.

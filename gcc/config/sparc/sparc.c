@@ -110,6 +110,11 @@ static void build_big_number	PROTO((FILE *, int, char *));
 static int function_arg_slotno	PROTO((const CUMULATIVE_ARGS *,
 				       enum machine_mode, tree, int, int,
 				       int *, int *));
+
+static int supersparc_adjust_cost PROTO((rtx, rtx, rtx, int));
+static int hypersparc_adjust_cost PROTO((rtx, rtx, rtx, int));
+static int ultrasparc_adjust_cost PROTO((rtx, rtx, rtx, int));
+
 static void sparc_output_addr_vec PROTO((rtx));
 static void sparc_output_addr_diff_vec PROTO((rtx));
 static void sparc_output_deferred_case_vectors PROTO((void));
@@ -176,6 +181,8 @@ sparc_override_options ()
     { TARGET_CPU_sparclet, "tsc701" },
     { TARGET_CPU_sparclite, "f930" },
     { TARGET_CPU_v8, "v8" },
+    { TARGET_CPU_hypersparc, "hypersparc" },
+    { TARGET_CPU_sparclite86x, "sparclite86x" },
     { TARGET_CPU_supersparc, "supersparc" },
     { TARGET_CPU_v9, "v9" },
     { TARGET_CPU_ultrasparc, "ultrasparc" },
@@ -199,6 +206,8 @@ sparc_override_options ()
        The Fujitsu MB86934 is the recent sparclite chip, with an fpu.  */
     { "f930",       PROCESSOR_F930, MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     { "f934",       PROCESSOR_F934, MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { "hypersparc", PROCESSOR_HYPERSPARC, MASK_ISA, MASK_V8|MASK_FPU },
+    { "sparclite86x",  PROCESSOR_SPARCLITE86X, MASK_ISA|MASK_FPU, MASK_V8 },
     { "sparclet",   PROCESSOR_SPARCLET, MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
     { "tsc701",     PROCESSOR_TSC701, MASK_ISA, MASK_SPARCLET },
@@ -6194,7 +6203,7 @@ sparc_flat_eligible_for_epilogue_delay (trial, slot)
 /* Adjust the cost of a scheduling dependency.  Return the new cost of
    a dependency LINK or INSN on DEP_INSN.  COST is the current cost.  */
 
-int
+static int
 supersparc_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
@@ -6256,6 +6265,261 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
 	return 0;
     }
 	
+  return cost;
+}
+
+static int
+hypersparc_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     int cost;
+{
+  enum attr_type insn_type, dep_type;
+  rtx pat = PATTERN(insn);
+  rtx dep_pat = PATTERN (dep_insn);
+
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
+
+  insn_type = get_attr_type (insn);
+  dep_type = get_attr_type (dep_insn);
+
+  switch (REG_NOTE_KIND (link))
+    {
+    case 0:
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */
+
+      switch (insn_type)
+	{
+	case TYPE_STORE:
+	case TYPE_FPSTORE:
+	  /* Get the delay iff the address of the store is the dependence. */
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    return cost;
+
+	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+	    return cost;
+	  return cost + 3;
+
+	case TYPE_LOAD:
+	case TYPE_SLOAD:
+	case TYPE_FPLOAD:
+	  /* If a load, then the dependence must be on the memory address.  If
+	     the addresses aren't equal, then it might be a false dependency */
+	  if (dep_type == TYPE_STORE || dep_type == TYPE_FPSTORE)
+	    {
+	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET
+		  || GET_CODE (SET_DEST (dep_pat)) != MEM        
+		  || GET_CODE (SET_SRC (pat)) != MEM
+		  || ! rtx_equal_p (XEXP (SET_DEST (dep_pat), 0),
+				    XEXP (SET_SRC (pat), 0)))
+		return cost + 2;
+
+	      return cost + 8;        
+	    }
+	  break;
+
+	case TYPE_BRANCH:
+	  /* Compare to branch latency is 0.  There is no benefit from
+	     separating compare and branch.  */
+	  if (dep_type == TYPE_COMPARE)
+	    return 0;
+	  /* Floating point compare to branch latency is less than
+	     compare to conditional move.  */
+	  if (dep_type == TYPE_FPCMP)
+	    return cost - 1;
+	  break;
+	}
+	break;
+
+    case REG_DEP_ANTI:
+      /* Anti-dependencies only penalize the fpu unit. */
+      if (insn_type == TYPE_IALU || insn_type == TYPE_SHIFT)
+        return 0;
+      break;
+
+    default:
+      break;
+    }    
+
+  return cost;
+}
+
+static int
+ultrasparc_adjust_cost (insn, link, dep_insn, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     int cost;
+{
+  enum attr_type insn_type, dep_type;
+  rtx pat = PATTERN(insn);
+  rtx dep_pat = PATTERN (dep_insn);
+
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
+
+  insn_type = get_attr_type (insn);
+  dep_type = get_attr_type (dep_insn);
+
+  /* Nothing issues in parallel with integer multiplies, so
+     mark as zero cost since the scheduler can not do anything
+     about it.  */
+  if (insn_type == TYPE_IMUL)
+    return 0;
+
+#define SLOW_FP(dep_type) \
+(dep_type == TYPE_FPSQRT || dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)
+
+  switch (REG_NOTE_KIND (link))
+    {
+    case 0:
+      /* Data dependency; DEP_INSN writes a register that INSN reads some
+	 cycles later.  */
+
+      if (dep_type == TYPE_CMOVE)
+	{
+	  /* Instructions that read the result of conditional moves cannot
+	     be in the same group or the following group.  */
+	  return cost + 1;
+	}
+
+      switch (insn_type)
+	{
+	  /* UltraSPARC can dual issue a store and an instruction setting
+	     the value stored, except for divide and square root.  */
+	case TYPE_FPSTORE:
+	  if (! SLOW_FP (dep_type))
+	    return 0;
+	  return cost;
+
+	case TYPE_STORE:
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    return cost;
+
+	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
+	    /* The dependency between the two instructions is on the data
+	       that is being stored.  Assume that the address of the store
+	       is not also dependent.  */
+	    return 0;
+	  return cost;
+
+	case TYPE_LOAD:
+	case TYPE_SLOAD:
+	case TYPE_FPLOAD:
+	  /* A load does not return data until at least 11 cycles after
+	     a store to the same location.  3 cycles are accounted for
+	     in the load latency; add the other 8 here.  */
+	  if (dep_type == TYPE_STORE || dep_type == TYPE_FPSTORE)
+	    {
+	      /* If the addresses are not equal this may be a false
+		 dependency because pointer aliasing could not be
+		 determined.  Add only 2 cycles in that case.  2 is
+		 an arbitrary compromise between 8, which would cause
+		 the scheduler to generate worse code elsewhere to
+		 compensate for a dependency which might not really
+		 exist, and 0.  */
+	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET
+		  || GET_CODE (SET_SRC (pat)) != MEM
+		  || GET_CODE (SET_DEST (dep_pat)) != MEM
+		  || ! rtx_equal_p (XEXP (SET_SRC (pat), 0),
+				    XEXP (SET_DEST (dep_pat), 0)))
+		return cost + 2;
+
+	      return cost + 8;
+	    }
+	  return cost;
+
+	case TYPE_BRANCH:
+	  /* Compare to branch latency is 0.  There is no benefit from
+	     separating compare and branch.  */
+	  if (dep_type == TYPE_COMPARE)
+	    return 0;
+	  /* Floating point compare to branch latency is less than
+	     compare to conditional move.  */
+	  if (dep_type == TYPE_FPCMP)
+	    return cost - 1;
+	  return cost;
+
+	case TYPE_FPCMOVE:
+	  /* FMOVR class instructions can not issue in the same cycle
+	     or the cycle after an instruction which writes any
+	     integer register.  Model this as cost 2 for dependent
+	     instructions.  */
+	  if ((dep_type == TYPE_IALU || dep_type == TYPE_UNARY
+	       || dep_type == TYPE_BINARY)
+	      && cost < 2)
+	    return 2;
+	  /* Otherwise check as for integer conditional moves. */
+
+	case TYPE_CMOVE:
+	  /* Conditional moves involving integer registers wait until
+	     3 cycles after loads return data.  The interlock applies
+	     to all loads, not just dependent loads, but that is hard
+	     to model.  */
+	  if (dep_type == TYPE_LOAD || dep_type == TYPE_SLOAD)
+	    return cost + 3;
+	  return cost;
+
+	default:
+	  break;
+	}
+      break;
+
+    case REG_DEP_ANTI:
+      /* Divide and square root lock destination registers for full latency. */
+      if (! SLOW_FP (dep_type))
+	return 0;
+      break;
+
+    case REG_DEP_OUTPUT:
+      /* IEU and FPU instruction that have the same destination
+	 register cannot be grouped together.  */
+      return cost + 1;
+
+    default:
+      break;
+    }
+
+  /* Other costs not accounted for:
+     - Single precision floating point loads lock the other half of
+       the even/odd register pair.
+     - Several hazards associated with ldd/std are ignored because these
+       instructions are rarely generated for V9.
+     - The floating point pipeline can not have both a single and double
+       precision operation active at the same time.  Format conversions
+       and graphics instructions are given honorary double precision status.
+     - call and jmpl are always the first instruction in a group.  */
+
+  return cost;
+
+#undef SLOW_FP
+}
+
+int
+sparc_adjust_cost(insn, link, dep, cost)
+     rtx insn;
+     rtx link;
+     rtx dep;
+     int cost;
+{
+  switch (sparc_cpu)
+    {
+    case PROCESSOR_SUPERSPARC:
+      cost = supersparc_adjust_cost (insn, link, dep, cost);
+      break;
+    case PROCESSOR_HYPERSPARC:
+    case PROCESSOR_SPARCLITE86X:
+      cost = hypersparc_adjust_cost (insn, link, dep, cost);
+      break;
+    case PROCESSOR_ULTRASPARC:
+      cost = ultrasparc_adjust_cost (insn, link, dep, cost);
+      break;
+    default:
+      break;
+    }
   return cost;
 }
 
@@ -6988,155 +7252,6 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	}
       fprintf (dump, "]\n");
     }
-}
-
-int
-ultrasparc_adjust_cost (insn, link, dep_insn, cost)
-     rtx insn;
-     rtx link;
-     rtx dep_insn;
-     int cost;
-{
-  enum attr_type insn_type, dep_type;
-  rtx pat = PATTERN(insn);
-  rtx dep_pat = PATTERN (dep_insn);
-
-  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
-    return cost;
-
-  insn_type = get_attr_type (insn);
-  dep_type = get_attr_type (dep_insn);
-
-  /* Nothing issues in parallel with integer multiplies, so
-     mark as zero cost since the scheduler can not do anything
-     about it.  */
-  if (insn_type == TYPE_IMUL)
-    return 0;
-
-#define SLOW_FP(dep_type) \
-(dep_type == TYPE_FPSQRT || dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)
-
-  switch (REG_NOTE_KIND (link))
-    {
-    case 0:
-      /* Data dependency; DEP_INSN writes a register that INSN reads some
-	 cycles later.  */
-
-      if (dep_type == TYPE_CMOVE)
-	{
-	  /* Instructions that read the result of conditional moves cannot
-	     be in the same group or the following group.  */
-	  return cost + 1;
-	}
-
-      switch (insn_type)
-	{
-	  /* UltraSPARC can dual issue a store and an instruction setting
-	     the value stored, except for divide and square root.  */
-	case TYPE_FPSTORE:
-	  if (! SLOW_FP (dep_type))
-	    return 0;
-	  return cost;
-
-	case TYPE_STORE:
-	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
-	    return cost;
-
-	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
-	    /* The dependency between the two instructions is on the data
-	       that is being stored.  Assume that the address of the store
-	       is not also dependent.  */
-	    return 0;
-	  return cost;
-
-	case TYPE_LOAD:
-	case TYPE_SLOAD:
-	case TYPE_FPLOAD:
-	  /* A load does not return data until at least 11 cycles after
-	     a store to the same location.  3 cycles are accounted for
-	     in the load latency; add the other 8 here.  */
-	  if (dep_type == TYPE_STORE || dep_type == TYPE_FPSTORE)
-	    {
-	      /* If the addresses are not equal this may be a false
-		 dependency because pointer aliasing could not be
-		 determined.  Add only 2 cycles in that case.  2 is
-		 an arbitrary compromise between 8, which would cause
-		 the scheduler to generate worse code elsewhere to
-		 compensate for a dependency which might not really
-		 exist, and 0.  */
-	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET
-		  || GET_CODE (SET_SRC (pat)) != MEM
-		  || GET_CODE (SET_DEST (dep_pat)) != MEM
-		  || ! rtx_equal_p (XEXP (SET_SRC (pat), 0),
-				    XEXP (SET_DEST (dep_pat), 0)))
-		return cost + 2;
-
-	      return cost + 8;
-	    }
-	  return cost;
-
-	case TYPE_BRANCH:
-	  /* Compare to branch latency is 0.  There is no benefit from
-	     separating compare and branch.  */
-	  if (dep_type == TYPE_COMPARE)
-	    return 0;
-	  /* Floating point compare to branch latency is less than
-	     compare to conditional move.  */
-	  if (dep_type == TYPE_FPCMP)
-	    return cost - 1;
-	  return cost;
-
-	case TYPE_FPCMOVE:
-	  /* FMOVR class instructions can not issue in the same cycle
-	     or the cycle after an instruction which writes any
-	     integer register.  Model this as cost 2 for dependent
-	     instructions.  */
-	  if ((dep_type == TYPE_IALU || dep_type == TYPE_UNARY
-	       || dep_type == TYPE_BINARY)
-	      && cost < 2)
-	    return 2;
-	  /* Otherwise check as for integer conditional moves. */
-
-	case TYPE_CMOVE:
-	  /* Conditional moves involving integer registers wait until
-	     3 cycles after loads return data.  The interlock applies
-	     to all loads, not just dependent loads, but that is hard
-	     to model.  */
-	  if (dep_type == TYPE_LOAD || dep_type == TYPE_SLOAD)
-	    return cost + 3;
-	  return cost;
-
-	default:
-	  break;
-	}
-      break;
-
-    case REG_DEP_ANTI:
-      /* Divide and square root lock destination registers for full latency. */
-      if (! SLOW_FP (dep_type))
-	return 0;
-      break;
-
-    case REG_DEP_OUTPUT:
-      /* IEU and FPU instruction that have the same destination
-	 register cannot be grouped together.  */
-      return cost + 1;
-
-    default:
-      break;
-    }
-
-  /* Other costs not accounted for:
-     - Single precision floating point loads lock the other half of
-       the even/odd register pair.
-     - Several hazards associated with ldd/std are ignored because these
-       instructions are rarely generated for V9.
-     - The floating point pipeline can not have both a single and double
-       precision operation active at the same time.  Format conversions
-       and graphics instructions are given honorary double precision status.
-     - call and jmpl are always the first instruction in a group.  */
-
-  return cost;
 }
 
 int                                                           

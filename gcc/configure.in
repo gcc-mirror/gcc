@@ -3347,7 +3347,7 @@ changequote([,])dnl
 			.)
 				target_cpu_default2=TARGET_CPU_"`echo $machine | sed 's/-.*$//'`"
 				;;
-			.supersparc | .ultrasparc | .v7 | .v8 | .v9)
+			.supersparc | .hypersparc | .ultrasparc | .v7 | .v8 | .v9)
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)

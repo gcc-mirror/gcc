@@ -65,7 +65,7 @@
 
 ;; Attribute for cpu type.
 ;; These must match the values for enum processor_type in sparc.h.
-(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,sparclet,tsc701,v9,ultrasparc"
+(define_attr "cpu" "v7,cypress,v8,supersparc,sparclite,f930,f934,hypersparc,sparclite86x,sparclet,tsc701,v9,ultrasparc"
   (const (symbol_ref "sparc_cpu_attr")))
 
 ;; Attribute for the instruction set.
@@ -344,6 +344,53 @@
   (and (eq_attr "cpu" "supersparc")
     (eq_attr "type" "imul"))
   4 4)
+
+;; ----- hypersparc/sparclite86x scheduling
+;; The Hypersparc can issue 1 - 2 insns per cycle.  The dual issue cases are:
+;; L-Ld/St I-Int F-Float B-Branch LI/LF/LB/II/IF/IB/FF/FB
+;; II/FF case is only when loading a 32 bit hi/lo constant
+;; Single issue insns include call, jmpl, u/smul, u/sdiv, lda, sta, fcmp
+;; Memory delivers its result in one cycle to IU
+
+(define_function_unit "memory" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "load,sload,fpload"))
+  1 1)
+
+(define_function_unit "memory" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "store,fpstore"))
+  2 1)
+
+(define_function_unit "fp_alu" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "fp,fpmove,fpcmp"))
+  1 1)
+
+(define_function_unit "fp_mds" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "fpmul"))
+  1 1)
+
+(define_function_unit "fp_mds" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "fpdivs"))
+  8 6)
+
+(define_function_unit "fp_mds" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "fpdivd"))
+  12 10)
+
+(define_function_unit "fp_mds" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "fpsqrt"))
+  17 15)
+
+(define_function_unit "fp_mds" 1 0
+  (and (ior (eq_attr "cpu" "hypersparc") (eq_attr "cpu" "sparclite86x"))
+    (eq_attr "type" "imul"))
+  17 15)
 
 ;; ----- sparclet tsc701 scheduling
 ;; The tsc701 issues 1 insn per cycle.
