@@ -979,8 +979,13 @@ extern union tree_node *current_function_decl;
 }
 
 /* Length in units of the trampoline for entering a nested function.
-   If this grows to > 32 bytes, then you must update the flushcache
-   pattern in pa.md.  */
+
+   Flush the cache entries corresponding to the first and last addresses
+   of the trampoline.  This is necessary as the trampoline may cross two
+   cache lines.  
+
+   If the trampoline ever grows to > 32 bytes, then it will become
+   necessary to hack on the cacheflush pattern in pa.md.  */
 
 #define TRAMPOLINE_SIZE (5 * 4)
 
@@ -993,16 +998,17 @@ extern union tree_node *current_function_decl;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
 {								\
-  rtx addr, mem;						\
+  rtx start_addr, end_addr, mem;				\
 								\
-  addr = memory_address (Pmode, plus_constant ((TRAMP), 12));	\
-  emit_move_insn (gen_rtx (MEM, Pmode, addr), (FNADDR));	\
-  addr = memory_address (Pmode, plus_constant ((TRAMP), 16));	\
-  emit_move_insn (gen_rtx (MEM, Pmode, addr), (CXT));		\
+  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 12));\
+  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (FNADDR));	\
+  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 16));\
+  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (CXT));	\
   /* fdc and fic only use registers for the address to flush,	\
      they do not accept integer displacements.  */ 		\
-  addr = force_reg (SImode, (TRAMP));				\
-  emit_insn (gen_cacheflush (addr));				\
+  start_addr = force_reg (SImode, (TRAMP));			\
+  end_addr = force_reg (SImode, plus_constant (start_addr, TRAMPOLINE_SIZE));\
+  emit_insn (gen_cacheflush (start_addr, end_addr));		\
 }
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
