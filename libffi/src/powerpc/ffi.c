@@ -376,11 +376,11 @@ void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
 	  words = ((*ptr)->size + 7) / 8;
 	  if (next_arg >= gpr_base && next_arg + words > gpr_end)
 	    {
-	      unsigned int first = (char *) gpr_end - (char *) next_arg;
+	      size_t first = (char *) gpr_end - (char *) next_arg;
 	      memcpy((char *) next_arg, (char *) *p_argv, first);
 	      memcpy((char *) rest, (char *) *p_argv + first,
 		     (*ptr)->size - first);
-	      next_arg = rest + words * 8 - first;
+	      next_arg = (unsigned long *) ((char *) rest + words * 8 - first);
 	    }
 	  else
 	    {
@@ -591,7 +591,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	  case FFI_TYPE_LONGDOUBLE:
 #endif
-	    intarg_count += ((*ptr)->size + 7) & ~7;
+	    intarg_count += ((*ptr)->size + 7) / 8;
 	    break;
 
 	  default:
