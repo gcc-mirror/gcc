@@ -1352,6 +1352,9 @@ struct cum_args {int regs;};
 
 /* Node: Data Output */
 
+#define OUTPUT_ADDR_CONST_EXTRA(STREAM, X, FAIL) \
+  do { if (!cris_output_addr_const_extra (STREAM, X)) goto FAIL; } while (0)
+
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) (C) == '@'
 
 /* Node: Uninitialized Data */
@@ -1421,6 +1424,12 @@ struct cum_args {int regs;};
 #define GLOBAL_ASM_OP "\t.global "
 
 #define SUPPORTS_WEAK 1
+
+#define ASM_OUTPUT_SYMBOL_REF(STREAM, SYM) \
+ cris_asm_output_symbol_ref (STREAM, SYM)
+
+#define ASM_OUTPUT_LABEL_REF(STREAM, BUF) \
+ cris_asm_output_label_ref (STREAM, BUF)
 
 /* Remove any previous definition (elfos.h).  */
 #undef ASM_GENERATE_INTERNAL_LABEL

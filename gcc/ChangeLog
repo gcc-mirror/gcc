@@ -1,3 +1,20 @@
+2005-02-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/19806
+	* config/cris/cris.c (in_code): New variable.
+	(cris_output_addr_const): Now a static function, a wrapper for
+	output_addr_const.
+	(cris_asm_output_symbol_ref): New function, broken out SYMBOL_REF
+	case from old cris_output_addr_const.
+	(cris_asm_output_label_ref): Similar for LABEL_REF.
+	(cris_output_addr_const_extra): Similar for UNSPEC.
+	* config/cris/cris.h (OUTPUT_ADDR_CONST_EXTRA)
+	(ASM_OUTPUT_SYMBOL_REF, ASM_OUTPUT_LABEL_REF): Define.
+	* config/cris/cris-protos.h (cris_output_addr_const): Remove
+	declaration.
+	(cris_asm_output_symbol_ref, cris_output_addr_const_extra)
+	(cris_asm_output_label_ref): Declare.
+
 2005-02-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR preprocessor/19801

@@ -83,12 +83,18 @@ static char cris_output_insn_is_bound = 0;
    just the "sym:GOTOFF" part.  */
 static int cris_pic_sympart_only = 0;
 
+/* In code for output macros, this is how we know whether e.g. constant
+   goes in code or in a static initializer.  */
+static int in_code = 0;
+
 /* Fix for reg_overlap_mentioned_p.  */
 static int cris_reg_overlap_mentioned_p (rtx, rtx);
 
 static void cris_print_base (rtx, FILE *);
 
 static void cris_print_index (rtx, FILE *);
+
+static void cris_output_addr_const (FILE *, rtx);
 
 static struct machine_function * cris_init_machine_status (void);
 
@@ -2972,178 +2978,120 @@ cris_split_movdx (rtx *operands)
   return val;
 }
 
-/* This is in essence a copy of output_addr_const altered to output
-   symbolic operands as PIC.
+/* Use from within code, from e.g. PRINT_OPERAND and
+   PRINT_OPERAND_ADDRESS.  Macros used in output_addr_const need to emit
+   different things depending on whether code operand or constant is
+   emitted.  */
 
-   FIXME: Add hooks similar to ASM_OUTPUT_SYMBOL_REF to get this effect in
-   the "real" output_addr_const.  All we need is one for LABEL_REF (and
-   one for CODE_LABEL?).  */
-
-void
+static void
 cris_output_addr_const (FILE *file, rtx x)
 {
-  int is_plt = 0;
+  in_code++;
+  output_addr_const (file, x);
+  in_code--;
+}
 
-restart:
+/* Worker function for ASM_OUTPUT_SYMBOL_REF.  */
+
+void
+cris_asm_output_symbol_ref (FILE *file, rtx x)
+{
+  if (flag_pic && in_code > 0)
+    {
+      const char *origstr = XSTR (x, 0);
+      const char *str;
+
+      str = (* targetm.strip_name_encoding) (origstr);
+
+      if (cris_gotless_symbol (x))
+	{
+	  if (! cris_pic_sympart_only)
+	    fprintf (file, "$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
+	  assemble_name (file, str);
+	  fprintf (file, ":GOTOFF");
+	}
+      else if (cris_got_symbol (x))
+	{
+	  if (cris_pic_sympart_only)
+	    abort ();
+	  fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
+	  assemble_name (file, XSTR (x, 0));
+
+	  if (flag_pic == 1)
+	    fprintf (file, ":GOT16]");
+	  else
+	    fprintf (file, ":GOT]");
+	}
+      else
+	LOSE_AND_RETURN ("unexpected PIC symbol", x);
+
+      /* Sanity check.  */
+      if (! current_function_uses_pic_offset_table)
+	output_operand_lossage ("PIC register isn't set up");
+    }
+  else
+    assemble_name (file, XSTR (x, 0));
+}
+
+/* Worker function for ASM_OUTPUT_LABEL_REF.  */
+
+void
+cris_asm_output_label_ref (FILE *file, char *buf)
+{
+  if (flag_pic && in_code > 0)
+    {
+      if (! cris_pic_sympart_only)
+	fprintf (file, "$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
+      assemble_name (file, buf);
+
+      fprintf (file, ":GOTOFF");
+
+      /* Sanity check.  */
+      if (! current_function_uses_pic_offset_table)
+	internal_error ("emitting PIC operand, but PIC register isn't set up");
+    }
+  else
+    assemble_name (file, buf);
+}
+
+/* Worker function for OUTPUT_ADDR_CONST_EXTRA.  */
+
+bool
+cris_output_addr_const_extra (FILE *file, rtx x)
+{
   switch (GET_CODE (x))
     {
+      const char *origstr;
+      const char *str;
+
     case UNSPEC:
       ASSERT_PLT_UNSPEC (x);
       x = XVECEXP (x, 0, 0);
-      is_plt = 1;
-
-      /* Fall through.  */
-    case SYMBOL_REF:
-      if (flag_pic)
+      origstr = XSTR (x, 0);
+      str = (* targetm.strip_name_encoding) (origstr);
+      if (cris_pic_sympart_only)
 	{
-	  const char *origstr = XSTR (x, 0);
-	  const char *str;
+	  assemble_name (file, str);
+	  fprintf (file, ":PLTG");
+	}
+      else
+	{
+	  if (TARGET_AVOID_GOTPLT)
+	    /* We shouldn't get here.  */
+	    abort ();
 
-	  str = (* targetm.strip_name_encoding) (origstr);
+	  fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
+	  assemble_name (file, XSTR (x, 0));
 
-	  if (is_plt)
-	    {
-	      if (cris_pic_sympart_only)
-		{
-		  assemble_name (file, str);
-		  fprintf (file, ":PLTG");
-		}
-	      else
-		{
-		  if (TARGET_AVOID_GOTPLT)
-		    /* We shouldn't get here.  */
-		    abort ();
-
-		  fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
-		  assemble_name (file, XSTR (x, 0));
-
-		  if (flag_pic == 1)
-		    fprintf (file, ":GOTPLT16]");
-		  else
-		    fprintf (file, ":GOTPLT]");
-		}
-	    }
-	  else if (cris_gotless_symbol (x))
-	    {
-	      if (! cris_pic_sympart_only)
-		fprintf (file, "$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
-	      assemble_name (file, str);
-	      fprintf (file, ":GOTOFF");
-	    }
-	  else if (cris_got_symbol (x))
-	    {
-	      if (cris_pic_sympart_only)
-		abort ();
-	      fprintf (file, "[$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
-	      assemble_name (file, XSTR (x, 0));
-
-	      if (flag_pic == 1)
-		fprintf (file, ":GOT16]");
-	      else
-		fprintf (file, ":GOT]");
-	    }
+	  if (flag_pic == 1)
+	    fprintf (file, ":GOTPLT16]");
 	  else
-	    LOSE_AND_RETURN ("unexpected PIC symbol", x);
-
-	  /* Sanity check.  */
-	  if (! current_function_uses_pic_offset_table)
-	    output_operand_lossage ("PIC register isn't set up");
+	    fprintf (file, ":GOTPLT]");
 	}
-      else
-	assemble_name (file, XSTR (x, 0));
-      break;
-
-    case LABEL_REF:
-      /* If we get one of those here, it should be dressed as PIC.  Branch
-	 labels are normally output with the 'l' specifier, which means it
-	 will go directly to output_asm_label and not end up here.  */
-      if (GET_CODE (XEXP (x, 0)) != CODE_LABEL
-	  && (GET_CODE (XEXP (x, 0)) != NOTE
-	      || NOTE_LINE_NUMBER (XEXP (x, 0)) != NOTE_INSN_DELETED_LABEL))
-	fatal_insn ("unexpected address expression", x);
-
-      if (flag_pic)
-	{
-	  if (cris_gotless_symbol (x))
-	    {
-	      if (! cris_pic_sympart_only)
-		fprintf (file, "$%s+", reg_names [PIC_OFFSET_TABLE_REGNUM]);
-	      cris_output_addr_const (file, XEXP (x, 0));
-
-	      fprintf (file, ":GOTOFF");
-	    }
-	  else
-	    /* Labels are never marked as global symbols.  */
-	    fatal_insn ("unexpected PIC symbol", x);
-
-	  /* Sanity check.  */
-	  if (! current_function_uses_pic_offset_table)
-	    internal_error ("emitting PIC operand, but PIC register isn't set up");
-	  break;
-	}
-
-      output_addr_const (file, x);
-      break;
-
-    case NOTE:
-      if (NOTE_LINE_NUMBER (x) != NOTE_INSN_DELETED_LABEL)
-	fatal_insn ("unexpected NOTE as addr_const:", x);
-    case CODE_LABEL:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:
-      output_addr_const (file, x);
-      break;
-
-    case CONST:
-      /* This used to output parentheses around the expression,
-	 but that does not work on the 386 (either ATT or BSD assembler).  */
-      cris_output_addr_const (file, XEXP (x, 0));
-      break;
-
-    case PLUS:
-      /* Some assemblers need integer constants to appear last (e.g. masm).  */
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	{
-	  cris_output_addr_const (file, XEXP (x, 1));
-	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    fprintf (file, "+");
-	  output_addr_const (file, XEXP (x, 0));
-	}
-      else
-	{
-	  cris_output_addr_const (file, XEXP (x, 0));
-	  if (GET_CODE (XEXP (x, 1)) != CONST_INT
-	      || INTVAL (XEXP (x, 1)) >= 0)
-	    fprintf (file, "+");
-	  cris_output_addr_const (file, XEXP (x, 1));
-	}
-      break;
-
-    case MINUS:
-      /* Avoid outputting things like x-x or x+5-x,
-	 since some assemblers can't handle that.  */
-      x = simplify_subtraction (x);
-      if (GET_CODE (x) != MINUS)
-	goto restart;
-
-      cris_output_addr_const (file, XEXP (x, 0));
-      fprintf (file, "-");
-      if ((GET_CODE (XEXP (x, 1)) == CONST_INT
-	   && INTVAL (XEXP (x, 1)) < 0)
-	  || GET_CODE (XEXP (x, 1)) != CONST_INT)
-	{
-	  fprintf (file, "%s", targetm.asm_out.open_paren);
-	  cris_output_addr_const (file, XEXP (x, 1));
-	  fprintf (file, "%s", targetm.asm_out.close_paren);
-	}
-      else
-	output_addr_const (file, XEXP (x, 1));
-      break;
+      return true;
 
     default:
-      LOSE_AND_RETURN ("unexpected address expression", x);
+      return false;
     }
 }
 
