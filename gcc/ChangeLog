@@ -1,3 +1,7 @@
+Tue Oct 26 13:09:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (zero_extendqihi2): Use SImode register name with andl.
+
 Tue Oct 26 12:35:38 1999  Richard Henderson  <rth@cygnus.com>
 
 	* integrate.c (function_cannot_inline_p): Don't allow inlining
