@@ -42,7 +42,7 @@ if [istarget "m68k-*-*"] then {
   lappend additional_flags "-ffloat-store"
 }
 if { [istarget "alpha*-*-*"] 
-     || [istarget "sh-*-*"] } then {
+     || [istarget "sh*-*-*"] } then {
   lappend additional_flags "-mieee"
 }
 

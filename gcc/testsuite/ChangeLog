@@ -1,3 +1,7 @@
+2001-10-19  NIIBE Yutaka  <gniibe@m17n.org>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Change sh-*-* to sh*-*-*.
+
 2001-10-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/attr-noinline.c, gcc.dg/attr-used.c: New tests.
