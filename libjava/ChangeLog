@@ -1,3 +1,9 @@
+2004-10-16  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/beans/ExplicitBeanInfo.java:
+	Explicitely import java.awt.Image.
+	(getIcon): Fixed off-by-one error.
+
 2004-10-15  Andrew Haley  <aph@redhat.com>
 
         * Makefile.am (nat_files, xlib_nat_files): New.

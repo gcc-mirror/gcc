@@ -1,5 +1,5 @@
-/* gnu.java.beans.ExplicitBeanInfo
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* ExplicitBeanInfo.java --
+   Copyright (C) 1998, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package gnu.java.beans;
 
+import java.awt.Image;
 import java.beans.BeanDescriptor;
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
@@ -84,7 +85,7 @@ public class ExplicitBeanInfo implements BeanInfo {
 	protected BeanInfo[] additionalBeanInfo;
 
 	/** The set of icons. **/
-	protected java.awt.Image[] icons;
+	protected Image[] icons;
 
 	public ExplicitBeanInfo(BeanDescriptor beanDescriptor,
 	                        BeanInfo[] additionalBeanInfo,
@@ -93,7 +94,7 @@ public class ExplicitBeanInfo implements BeanInfo {
 	                        EventSetDescriptor[] eventSetDescriptors,
 				int defaultEventIndex,
 	                        MethodDescriptor[] methodDescriptors,
-				java.awt.Image[] icons) {
+				Image[] icons) {
 		this.beanDescriptor = beanDescriptor;
 		this.additionalBeanInfo = additionalBeanInfo;
 		this.propertyDescriptors = propertyDescriptors;
@@ -142,7 +143,7 @@ public class ExplicitBeanInfo implements BeanInfo {
 	/** Get Bean icons.
 	 ** @param iconType the type of icon
 	 **/
-	public java.awt.Image getIcon(int iconType) {
-		return icons != null ? icons[iconType] : null;
+	public Image getIcon(int iconType) {
+		return icons != null ? icons[iconType - 1] : null;
 	}
 }
