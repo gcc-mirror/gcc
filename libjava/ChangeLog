@@ -1,3 +1,18 @@
+2001-04-01  Per Bothner  <per@bothner.com>
+
+	* DeflaterOutputStream.java (deflate):  Loop while def.needsInput.
+	(finish):  def.deflate needs to be called in a loop.
+	(inbuf, inbufLength):  New private fields.
+	(write(int)): Use inbuf.
+	(write(byte[],int,int):  Check if pending output in inbuf.
+	* ZipOutputStream.java:  Don't use Deflater if stored.
+	Use a Checksum object directly, not via a CheckedOutputStream.
+	(uncompressed_size):  New field,
+	(closeEntry):  Only write data_directory if needed.
+	(write):  If STORED, write directly.
+	Always update crc, and uncompressed_size.
+	(write_entry):  Fix lots of protocol erors.
+
 2001-04-01  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	1.3-Compliant Implementation of java.io.File.

@@ -47,35 +47,62 @@ public class ZipOutputStream extends DeflaterOutputStream
 
   public void closeEntry ()  throws IOException
   {
-    int uncompressed_size = def.getTotalIn();
-    int compressed_size = def.getTotalOut();
-    long crc = filter.getChecksum().getValue();
+    int compressed_size;
+    if (current.method == STORED)
+      {
+	compressed_size = uncompressed_size;
+      }
+    else
+      {
+	super.finish();
+	compressed_size = def.getTotalOut();
+      }
+    long crc = sum.getValue();
 
     bytes_written += compressed_size;
 
-    bytes_written += put4 (0x08074b50);
     if (current.getCrc() == -1 || current.getCompressedSize() == -1
 	|| current.getSize() == -1)
       {
 	current.setCrc(crc);
 	current.compressedSize = compressed_size;
 	current.setSize(uncompressed_size);
+	put4 (0x08074b50);
+	put4 ((int) (current.getCrc()));
+	put4 ((int) (current.getCompressedSize()));
+	put4 ((int) (current.getSize()));
+	bytes_written += 16;
       }
-    else
-      {
-	if (current.getCrc() != crc
-	    || current.getCompressedSize() != compressed_size
-	    || current.getSize() != uncompressed_size)
-	  throw new ZipException ("zip entry field incorrect");
-      }
-    bytes_written += put4 ((int) (current.getCrc()));
-    bytes_written += put4 ((int) (current.getCompressedSize()));
-    bytes_written += put4 ((int) (current.getSize()));
+    else if (current.getCrc() != crc
+	     || current.getCompressedSize() != compressed_size
+	     || current.getSize() != uncompressed_size)
+      throw new ZipException ("zip entry field incorrect");
 
     current.next = chain;
     chain = current;
     current = null;
-    filter = null;
+  }
+
+  public void write (int bval) throws IOException
+  {
+    if (current.method == STORED)
+      {
+	out.write(bval);
+      }
+    else
+      super.write(bval);
+    sum.update(bval);
+    uncompressed_size += 1;
+  }
+
+  public void write (byte[] buf, int off, int len) throws IOException
+  {
+    if (current.method == STORED)
+      out.write(buf, off, len);
+    else
+      super.write(buf, off, len);
+    sum.update(buf, off, len);
+    uncompressed_size += len;
   }
 
   public void finish () throws IOException
@@ -101,21 +128,19 @@ public class ZipOutputStream extends DeflaterOutputStream
     // Another disk number.
     put2 (0);
     put2 (count);
+    put2 (count);
     put4 (bytes);
     put4 ((int) offset);
 
     byte[] c = comment.getBytes("8859_1");
     put2 (c.length);
     out.write(c);
-    out.write((byte) 0);
   }
 
   // Helper for finish and putNextEntry.
   private int write_entry (ZipEntry entry, boolean is_local)
     throws IOException
   {
-    long offset = bytes_written;
-
     int bytes = put4 (is_local ? 0x04034b50 : 0x02014b50);
     if (! is_local)
       bytes += put_version ();
@@ -169,25 +194,22 @@ public class ZipOutputStream extends DeflaterOutputStream
 	// Internal file attributes.
 	bytes += put2 (0);
 	// External file attributes.
-	bytes += put2 (0);
+	bytes += put4 (0);
 	// Relative offset of local header.
-	bytes += put2 ((int) offset);
+	bytes += put4 ((int) entry.relativeOffset);
       }
 
     out.write (name);
-    out.write ((byte) 0);
-    bytes += name.length + 1;
+    bytes += name.length;
     if (entry.extra != null)
       {
 	out.write(entry.extra);
-	out.write((byte) 0);
-	bytes += entry.extra.length + 1;
+	bytes += entry.extra.length;
       }
     if (comment != null)
       {
 	out.write(comment);
-	out.write((byte) 0);
-	bytes += comment.length + 1;
+	bytes += comment.length;
       }
 
     bytes_written += bytes;
@@ -208,13 +230,13 @@ public class ZipOutputStream extends DeflaterOutputStream
 	// Just in case.
 	entry.compressedSize = entry.getSize();
       }
+    entry.relativeOffset = bytes_written;
     write_entry (entry, true);
     current = entry;
     int compr = (method == STORED) ? Deflater.NO_COMPRESSION : level;
     def.reset();
     def.setLevel(compr);
-    filter = new CheckedOutputStream (new DeflaterOutputStream (out, def),
-				      new CRC32 ());
+    sum.reset();
   }
 
   public void setLevel (int level)
@@ -240,18 +262,10 @@ public class ZipOutputStream extends DeflaterOutputStream
     this.comment = comment;
   }
 
-  public synchronized void write (byte[] buf, int off, int len)
-    throws IOException
-  {
-    if (filter == null)
-      throw new ZipException ("no open zip entry");
-    filter.write(buf, off, len);
-  }
-
   public ZipOutputStream (OutputStream out)
   {
-    super (out);
-    def = new Deflater (level, true);
+    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), 8192);
+    sum = new CRC32 ();
   }
 
   private int put2 (int i) throws IOException
@@ -282,14 +296,14 @@ public class ZipOutputStream extends DeflaterOutputStream
   private ZipEntry current;
   // The chain of entries which have been written to this file.
   private ZipEntry chain;
-  // The output stream to which data should be sent.
-  private CheckedOutputStream filter;
 
   private int method = DEFLATED;
   private int level = Deflater.DEFAULT_COMPRESSION;
   private String comment = "";
   private long bytes_written;
 
-  // The Deflater we use.
-  private Deflater def;
+  private int uncompressed_size;
+
+  /** The checksum object. */
+  private Checksum sum;
 }
