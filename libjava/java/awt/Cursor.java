@@ -36,6 +36,8 @@ public class Cursor implements java.io.Serializable
 
   public Cursor(int type)
   {
+    if (type < 0 || type >= PREDEFINED_COUNT)
+      throw new IllegalArgumentException ("invalid cursor " + type);
     this.type = type;
     // FIXME: lookup and set name?
   }
@@ -46,13 +48,13 @@ public class Cursor implements java.io.Serializable
   protected Cursor(String name)
   {
     this.name = name;
-    // FIXME
+    this.type = CUSTOM_CURSOR;
   }
 
   public static Cursor getPredefinedCursor(int type)
   {
-    if (type >= PREDEFINED_COUNT)
-      return null;
+    if (type < 0 || type >= PREDEFINED_COUNT)
+      throw new IllegalArgumentException ("invalid cursor " + type);
     if (predefined[type] == null)
       predefined[type] = new Cursor(type);
     return predefined[type];
