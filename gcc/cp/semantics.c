@@ -2940,7 +2940,7 @@ expand_or_defer_fn (tree fn)
     import_export_decl (fn);
 
   /* Expand or defer, at the whim of the compilation unit manager.  */
-  cgraph_finalize_function (fn);
+  cgraph_finalize_function (fn, function_depth > 1);
 }
 
 /* Helper function for walk_tree, used by finish_function to override all

@@ -6144,7 +6144,7 @@ finish_function ()
   /* ??? Objc emits functions after finalizing the compilation unit.
      This should be cleaned up later and this conditional removed.  */
   if (!cgraph_global_info_ready)
-    cgraph_finalize_function (fndecl);
+    cgraph_finalize_function (fndecl, false);
   else
     c_expand_body (fndecl);
   current_function_decl = NULL;

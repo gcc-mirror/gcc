@@ -1,3 +1,11 @@
+2003-09-11  Richard Henderson  <rth@redhat.com>
+
+	* cgraphunit.c (cgraph_finalize_function): Add nested arg.
+	Tweek tests for function already generated.
+	(cgraph_expand_function): Don't double announce in !unit-at-a-time.
+	* cgraph.h (cgraph_finalize_function): Update for extra arg.
+	* c-decl.c (finish_function): Likewise.
+
 2003-09-10  Joe Buck  <jbuck@welsh-buck.org>
 
 	* c-decl.c (poplevel): Eliminate use of |= in function_body assignment.

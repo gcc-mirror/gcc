@@ -7474,7 +7474,7 @@ source_end_java_method (void)
   /* In unit-at-a-time mode, don't expand the method yet.  */
   if (DECL_SAVED_TREE (fndecl) && flag_unit_at_a_time)
     {
-      cgraph_finalize_function (fndecl);
+      cgraph_finalize_function (fndecl, false);
       current_function_decl = NULL_TREE;
       java_parser_context_restore_global ();
       return;

@@ -106,7 +106,7 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   /* "extern inline" functions are never output locally.  */
   if (DECL_EXTERNAL (decl))
     return false;
-  /* We want to emit COMDAT functions only when they turns out to be neccesary.  */
+  /* We want to emit COMDAT functions only when absolutely neccesary.  */
   if (DECL_COMDAT (decl))
     return false;
   if (!DECL_INLINE (decl)
@@ -142,34 +142,39 @@ cgraph_assemble_pending_functions (void)
   return output;
 }
 
-/* Analyze function once it is parsed.  Set up the local information
-   available - create cgraph edges for function calls via BODY.  */
+/* DECL has been parsed.  Take it, queue it, compile it at the whim of the
+   logic in effect.  If NESTED is true, then our caller cannot stand to have
+   the garbage collector run at the moment.  We would need to either create
+   a new GC context, or just not compile right now.  */
 
 void
-cgraph_finalize_function (tree decl)
+cgraph_finalize_function (tree decl, bool nested)
 {
   struct cgraph_node *node = cgraph_node (decl);
 
   if (node->local.finalized)
     {
       /* As an GCC extension we allow redefinition of the function.  The
-	 semantics when both copies of bodies differ is not well defined.  We
-	 replace the old body with new body so in unit at a time mode we always
-	 use new body, while in normal mode we may end up with old body inlined
-	 into some functions and new body expanded and inlined in others.
+	 semantics when both copies of bodies differ is not well defined.
+	 We replace the old body with new body so in unit at a time mode
+	 we always use new body, while in normal mode we may end up with
+	 old body inlined into some functions and new body expanded and
+	 inlined in others.
 	 
-	 ??? It may make more sense to use one body for inlining and other body
-	 for expanding the function but this is dificult to do.  */
-      /* Reset our datastructures so we can analyze the function body
-	 again.  */
+	 ??? It may make more sense to use one body for inlining and other
+	 body for expanding the function but this is dificult to do.  */
+
+      if (TREE_ASM_WRITTEN (decl))
+	abort ();
+
+      /* Reset our datastructures so we can analyze the function again.  */
       memset (&node->local, 0, sizeof (node->local));
       memset (&node->global, 0, sizeof (node->global));
       memset (&node->rtl, 0, sizeof (node->rtl));
       node->analyzed = false;
-      if (node->output)
-	abort ();
       while (node->callees)
 	cgraph_remove_call (node->decl, node->callees->callee->decl);
+
       /* We may need to re-queue the node for assembling in case
          we already proceeded it and ignored as not needed.  */
       if (node->reachable && !flag_unit_at_a_time)
@@ -183,6 +188,7 @@ cgraph_finalize_function (tree decl)
 	    node->reachable = 0;
 	}
     }
+
   notice_global_symbol (decl);
   node->decl = decl;
   node->local.finalized = true;
@@ -195,13 +201,13 @@ cgraph_finalize_function (tree decl)
   if (decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
 
-  /* If not unit at a time, go ahead and emit everything we've
-     found to be reachable at this time.  Do this only at top-level.  */
-  if (!node->origin)
+  /* If not unit at a time, go ahead and emit everything we've found
+     to be reachable at this time.  */
+  if (!nested)
     cgraph_assemble_pending_functions ();
 
   /* If we've not yet emitted decl, tell the debug info about it.  */
-  if (flag_unit_at_a_time || !node->reachable)
+  if (!TREE_ASM_WRITTEN (decl))
     (*debug_hooks->deferred_inline_function) (decl);
 }
 
@@ -465,7 +471,8 @@ cgraph_expand_function (struct cgraph_node *node)
   tree decl = node->decl;
   struct cgraph_edge *e;
 
-  announce_function (decl);
+  if (flag_unit_at_a_time)
+    announce_function (decl);
 
   cgraph_optimize_function (node);
 
