@@ -2469,22 +2469,12 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
 	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
-	      /* If arg is sign-extended and then unsigned-shifted,
-		 we can simulate this with a signed shift in arg's type
-		 only if the extended result is at least twice as wide
-		 as the arg.  Otherwise, the shift could use up all the
-		 ones made by sign-extension and bring in zeros.
-		 We can't optimize that case at all, but in most machines
-		 it never happens because available widths are 2**N.  */
-	      && (!TREE_UNSIGNED (final_type)
-		  || unsigned_arg
-		  || (2 * TYPE_PRECISION (TREE_TYPE (arg0))
-		      <= TYPE_PRECISION (result_type))))
+	      /* We cannot drop an unsigned shift after sign-extension.  */
+	      && (!TREE_UNSIGNED (final_type) || unsigned_arg))
 	    {
 	      /* Do an unsigned shift if the operand was zero-extended.  */
 	      result_type
-		= signed_or_unsigned_type (unsigned_arg,
-					   TREE_TYPE (arg0));
+		= signed_or_unsigned_type (unsigned_arg, TREE_TYPE (arg0));
 	      /* Convert value-to-be-shifted to that type.  */
 	      if (TREE_TYPE (op0) != result_type)
 		op0 = convert (result_type, op0);
