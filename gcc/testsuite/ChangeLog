@@ -1,3 +1,7 @@
+2002-12-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/parse/parameter-declaration-1.C: Expect error on last line.
+
 2002-12-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++.dg/special/conpr-2.C: Expect failure on solaris2.
