@@ -1,5 +1,8 @@
 1998-10-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.pt/expr6.C: New test.  operator?: breaks
+	matching of template brackets.
+
 	* g++.old-deja/g++.other/using4.C: New test.  Test using
  	declarations of methods from base classes.
 
