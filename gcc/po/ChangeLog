@@ -13,8 +13,6 @@
 
 	* POTFILES.in: Remove c-gperf.h, c-iterate.c,
 	cp/hash.h, cp/input.c, c-parse.h and cppulp.c.
-	* gcc.pot: Regenerated.
-	* cat-id-tbl.c: Likewise.
 
 2000-07-13  Nick Clifton  <nickc@cygnus.com>
 

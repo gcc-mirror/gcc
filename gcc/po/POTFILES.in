@@ -59,13 +59,10 @@ c-common.c
 c-common.h
 c-convert.c
 c-decl.c
-c-gperf.h
-c-iterate.c
 c-lang.c
 c-lex.c
 c-lex.h
 c-parse.c
-c-parse.h
 c-pragma.c
 c-pragma.h
 c-semantics.c
@@ -569,10 +566,8 @@ cp/except.c
 cp/expr.c
 cp/friend.c
 cp/g++spec.c
-cp/hash.h
 cp/inc/new.h
 cp/init.c
-cp/input.c
 cp/lang-options.h
 cp/lang-specs.h
 cp/lex.c
@@ -605,7 +600,6 @@ cpplib.c
 cpplib.h
 cppmain.c
 cppspec.c
-cppulp.c
 #crtstuff.c is part of the GCC library
 cse.c
 cselib.h
