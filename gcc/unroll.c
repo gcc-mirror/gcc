@@ -3676,7 +3676,7 @@ loop_iterations (loop)
 
 	  if (find_common_reg_term (temp, reg2))
 	    initial_value = temp;
-	  else
+	  else if (loop_invariant_p (loop, reg2))
 	    {
 	      /* Find what reg2 is equivalent to.  Hopefully it will
 		 either be reg1 or reg1 plus a constant.  Let's ignore
