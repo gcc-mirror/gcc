@@ -1,3 +1,15 @@
+2002-02-19  Philip Blundell  <pb@nexus.co.uk>
+
+	PR 5185
+	* config/arm/arm.h (THUMB_LEGITIMATE_CONSTANT_P): Accept anything
+	if generating PIC.
+
+	PR 5054
+	* config/arm/arm.md (call_insn) [TARGET_THUMB]: Use
+	arm_is_longcall_p rather than inspecting call-type cookie
+	directly.
+	(call_value_insn) [TARGET_THUMB]: Likewise.
+
 2002-02-19  Graham Stott  <grahams@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_builtin): Fix typo.
