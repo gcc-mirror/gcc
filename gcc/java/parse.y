@@ -5422,13 +5422,7 @@ craft_constructor (tree class_decl, tree args)
   tree decl, ctor_name;
   char buffer [80];
 
-  /* The constructor name is <init> unless we're dealing with an
-     anonymous class, in which case the name will be fixed after having
-     be expanded. */
-  if (ANONYMOUS_CLASS_P (class_type))
-    ctor_name = DECL_NAME (class_decl);
-  else
-    ctor_name = init_identifier_node;
+  ctor_name = init_identifier_node;
 
   /* If we're dealing with an inner class constructor, we hide the
      this$<n> decl in the name field of its parameter declaration. */
@@ -10930,12 +10924,10 @@ lookup_method_invoke (int lc, tree cl, tree class, tree name, tree arg_list)
 
   if (lc && ANONYMOUS_CLASS_P (class))
     {
-      tree saved_current_class;
       tree mdecl = craft_constructor (TYPE_NAME (class), atl);
-      saved_current_class = current_class;
-      current_class = class;
-      fix_constructors (mdecl);
-      current_class = saved_current_class;
+      /* The anonymous class may have already been laid out, so make sure
+         the new constructor is laid out here.  */
+      layout_class_method (class, CLASSTYPE_SUPER (class), mdecl, NULL_TREE);
     }
 
   /* Find all candidates and then refine the list, searching for the
