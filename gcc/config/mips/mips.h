@@ -178,7 +178,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_DEBUG	0		/* unused */
 #define MASK_DEBUG_C	0		/* don't expand seq, etc.  */
 #define MASK_DEBUG_D	0		/* don't do define_split's */
-#define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
 
 					/* Dummy switches used only in specs */
 #define MASK_MIPS_TFILE	0		/* flag for mips-tfile usage */
@@ -200,7 +199,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
 #define TARGET_DEBUG_C_MODE	(target_flags & MASK_DEBUG_C)
 #define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
-#define TARGET_DEBUG_G_MODE	(target_flags & MASK_DEBUG_G)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
 #define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
@@ -677,8 +675,6 @@ extern const struct mips_cpu_info *mips_tune_info;
   {"debugc",		  MASK_DEBUG_C,					\
      NULL},								\
   {"debugd",		  MASK_DEBUG_D,					\
-     NULL},								\
-  {"debugg",		  MASK_DEBUG_G,					\
      NULL},								\
   {"",			  (TARGET_DEFAULT				\
 			   | TARGET_CPU_DEFAULT				\

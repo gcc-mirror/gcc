@@ -1,5 +1,22 @@
 2004-05-17  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.h (MASK_DEBUG_G, TARGET_DEBUG_G_MODE): Delete.
+	(TARGET_SWITCHES): Remove debugg.
+	* config/mips/mips.md (adddi3, ashldi3, ashrdi3, lshrdi3): Only handle
+	TARGET_64BIT.
+	(subdi3): Replace the define_expand with a define_insn, the latter
+	renamed from subdi3_internal_3.
+	(negdi2): Likewise negdi2_internal_2.
+	(adddi3_internal_[12], subdi3_internal, ashldi3_internal{,2,3})
+	(ashrdi3_internal{,2,3}, lshrdi3_internal{,2,3}): Remove patterns
+	and associated define_splits.
+	(adddi3_internal): Renamed from adddi3_internal_3.
+	(ashldi3_internal): Likewise ashldi3_internal4.
+	(ashrdi3_internal): Likewise ashrdi3_internal4.
+	(lshrdi3_internal): Likewise lshrdi3_internal4.
+
+2004-05-17  Richard Sandiford  <rsandifo@redhat.com>
+
 	* optabs.c (expand_unop): Try implementing negation using subtraction
 	from zero.
 
