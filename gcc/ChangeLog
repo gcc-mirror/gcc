@@ -1,3 +1,22 @@
+2003-03-12  Andreas Jaeger  <aj@suse.de>
+
+        * c-cppbuiltin.c (cb_register_builtins): Define LP64 builtins for
+        LP64 targets.
+
+        * doc/cpp.texi (Common Predefined Macros): Document __LP64__ and
+        _LP64.
+
+        * config/ia64/ia64.h (TARGET_CPU_CPP_BUILTINS): Do not define
+        _LP64 macros here.
+        * config/pa/pa.h (TARGET_CPU_CPP_BUILTINS): Likewise.
+
+        * config/alpha/netbsd.h (TARGET_OS_CPP_BUILTINS): Remove call to
+        NETBSD_OS_CPP_BUILTINS_LP64.
+        * config/sh/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
+        * config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Likewise.
+
+        * config/netbsd.h (NETBSD_OS_CPP_BUILTINS_LP64): Remove.
+
 Wed Mar 12 19:04:39 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_setup_incoming_varargs): Set stack_alignment_needed to 128.

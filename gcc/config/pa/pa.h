@@ -356,11 +356,6 @@ do {								\
      builtin_assert("machine=hppa");				\
      builtin_define("__hppa");					\
      builtin_define("__hppa__");				\
-     if (TARGET_64BIT)						\
-       {							\
-	 builtin_define("_LP64");				\
-	 builtin_define("__LP64__");				\
-       }							\
      if (TARGET_PA_20)						\
        builtin_define("_PA_RISC2_0");				\
      else if (TARGET_PA_11)					\

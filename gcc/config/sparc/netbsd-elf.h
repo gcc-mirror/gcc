@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ELF on NetBSD/sparc
    and NetBSD/sparc64.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Matthew Green (mrg@eterna.com.au).
 
 This file is part of GNU CC.
@@ -26,7 +26,6 @@ Boston, MA 02111-1307, USA.  */
       NETBSD_OS_CPP_BUILTINS_ELF();			\
       if (TARGET_ARCH64)				\
 	{						\
-	  NETBSD_OS_CPP_BUILTINS_LP64();		\
 	  builtin_define ("__sparc64__");		\
 	  builtin_define ("__sparc_v9__");		\
 	}						\

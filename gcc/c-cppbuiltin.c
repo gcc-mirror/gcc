@@ -339,6 +339,15 @@ cb_register_builtins (pfile)
   /* Misc.  */
   builtin_define_with_value ("__VERSION__", version_string, 1);
 
+  /* Definitions for LP64 model.  */
+  if (TYPE_PRECISION (long_integer_type_node) == 64
+      && POINTER_SIZE == 64
+      && TYPE_PRECISION (integer_type_node) == 32)
+    {
+      cpp_define (pfile, "_LP64");
+      cpp_define (pfile, "__LP64__");
+    }
+  
   /* Other target-independent built-ins determined by command-line
      options.  */
   if (optimize_size)

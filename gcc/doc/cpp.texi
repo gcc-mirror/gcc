@@ -2031,6 +2031,12 @@ This macro is defined, with value 1, if (and only if) the NeXT runtime
 (as in @option{-fnext-runtime}) is in use for Objective-C.  If the GNU
 runtime is used, this macro is not defined, so that you can use this
 macro to determine which runtime (NeXT or GNU) is being used.
+
+@item __LP64__
+@item _LP64
+These macros are defined, with value 1, if (and only if) the compilation
+is for a target where @code{long int} and pointer both use 64-bits and
+@code{int} uses 32-bit.
 @end table
 
 @node System-specific Predefined Macros
