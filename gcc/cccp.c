@@ -1149,16 +1149,19 @@ main (argc, argv)
 #ifdef VMS
   {
     /* Remove directories from PROGNAME.  */
-    char *s;
+    char *s = progname;
 
-    progname = savestring (argv[0]);
-
-    if (!(s = rindex (progname, ']')))
-      s = rindex (progname, ':');
-    if (s)
-      strcpy (progname, s+1);
-    if (s = rindex (progname, '.'))
-      *s = '\0';
+    if ((p = rindex (s, ':')) != 0) s = p + 1;	/* skip device */
+    if ((p = rindex (s, ']')) != 0) s = p + 1;	/* skip directory */
+    if ((p = rindex (s, '>')) != 0) s = p + 1;	/* alternate (int'n'l) dir */
+    s = progname = savestring (s);
+    if ((p = rindex (s, ';')) != 0) *p = '\0';	/* strip version number */
+    if ((p = rindex (s, '.')) != 0		/* strip type iff ".exe" */
+	&& (p[1] == 'e' || p[1] == 'E')
+	&& (p[2] == 'x' || p[2] == 'X')
+	&& (p[3] == 'e' || p[3] == 'E')
+	&& !p[4])
+      *p = '\0';
   }
 #endif
 
@@ -4178,8 +4181,9 @@ get_filename:
      * Support '#include xyz' like VAX-C to allow for easy use of all the
      * decwindow include files. It defaults to '#include <xyz.h>' (so the
      * code from case '<' is repeated here) and generates a warning.
+     * (Note: macro expansion of `xyz' takes precedence.)
      */
-    if (isalpha(*(--fbeg))) {
+    if (retried && isalpha(*(--fbeg))) {
       fend = fbeg;
       while (fend != limit && (!isspace(*fend))) fend++;
       warning ("VAX-C-style include specification found, use '#include <filename.h>' !");
