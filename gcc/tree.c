@@ -722,6 +722,17 @@ pop_momentary ()
   obstack_free (&momentary_obstack, tem);
 }
 
+/* Pop back to the previous level of momentary allocation,
+   but don't free any momentary data just yet.  */
+
+void
+pop_momentary_nofree ()
+{
+  struct momentary_level *tem = momentary_stack;
+  momentary_stack = tem->prev;
+  expression_obstack = tem->obstack;
+}
+
 /* Call when starting to parse a declaration:
    make expressions in the declaration last the length of the function.
    Returns an argument that should be passed to resume_momentary later.  */
