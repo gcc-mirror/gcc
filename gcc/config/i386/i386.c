@@ -10193,13 +10193,13 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       arg1 = TREE_VALUE (TREE_CHAIN (arglist));
       arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
       arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-      emit_move_insn (adjust_address (op0, SFmode, 0),
+      emit_move_insn (adjust_address (target, SFmode, 0),
 		      expand_expr (arg0, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adjust_address (op0, SFmode, 4),
+      emit_move_insn (adjust_address (target, SFmode, 4),
 		      expand_expr (arg1, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adjust_address (op0, SFmode, 8),
+      emit_move_insn (adjust_address (target, SFmode, 8),
 		      expand_expr (arg2, NULL_RTX, VOIDmode, 0));
-      emit_move_insn (adjust_address (op0, SFmode, 12),
+      emit_move_insn (adjust_address (target, SFmode, 12),
 		      expand_expr (arg3, NULL_RTX, VOIDmode, 0));
       op0 = gen_reg_rtx (V4SFmode);
       emit_insn (gen_sse_movaps (op0, target));
