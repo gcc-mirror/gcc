@@ -1,5 +1,8 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* jump.c (duplicate_loop_exit_test): Do not duplicate the loop exit
+	test if the exit code has an insn with ASM_OPERANDS.
+
 	* i386/cygwin32.h (STDIO_PROTO): Fix typo.
 	* m32r.h (STDIO_PROTO): Fix typo.
 
