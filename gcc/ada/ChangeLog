@@ -1,5 +1,12 @@
 2004-10-04  Robert Dewar  <dewar@gnat.com>
 
+	* sem_ch5.adb (Unblocked_Exit_Count): Now used for blocks as well as
+	IF and CASE.
+	(Analyze_Block_Statement): Add circuitry to detect following dead code
+	(Check_Unreachable_Code): Handle case of block exit
+
+2004-10-04  Robert Dewar  <dewar@gnat.com>
+
 	* g-spipat.adb: (XMatch): Avoid warning for Logic_Error call
 	(XMatchD): Avoid warning for Logic_Error call
 

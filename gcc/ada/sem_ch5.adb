@@ -54,13 +54,16 @@ with Uintp;    use Uintp;
 package body Sem_Ch5 is
 
    Unblocked_Exit_Count : Nat := 0;
-   --  This variable is used when processing if statements or case
-   --  statements, it counts the number of branches of the conditional
-   --  that are not blocked by unconditional transfer instructions. At
-   --  the end of processing, if the count is zero, it means that control
-   --  cannot fall through the conditional statement. This is used for
-   --  the generation of warning messages. This variable is recursively
-   --  saved on entry to processing an if or case, and restored on exit.
+   --  This variable is used when processing if statements, case statements,
+   --  and block statements. It counts the number of exit points that are
+   --  not blocked by unconditional transfer instructions (for IF and CASE,
+   --  these are the branches of the conditional, for a block, they are the
+   --  statement sequence of the block, and the statement sequences of any
+   --  exception handlers that are part of the block. When processing is
+   --  complete, if this count is zero, it means that control cannot fall
+   --  through the IF, CASE or block statement. This is used for the
+   --  generation of warning messages. This variable is recursively saved
+   --  on entry to processing the construct, and restored on exit.
 
    -----------------------
    -- Local Subprograms --
@@ -514,70 +517,92 @@ package body Sem_Ch5 is
    procedure Analyze_Block_Statement (N : Node_Id) is
       Decls : constant List_Id := Declarations (N);
       Id    : constant Node_Id := Identifier (N);
-      Ent   : Entity_Id        := Empty;
+      HSS   : constant Node_Id := Handled_Statement_Sequence (N);
 
    begin
-      --  If a label is present analyze it and mark it as referenced
+      --  If no handled statement sequence is present, things are really
+      --  messed up, and we just return immediately (this is a defence
+      --  against previous errors).
 
-      if Present (Id) then
-         Analyze (Id);
-         Ent := Entity (Id);
+      if No (HSS) then
+         return;
+      end if;
 
-         --  An error defense. If we have an identifier, but no entity, then
-         --  something is wrong. If we have previous errors, then just remove
-         --  the identifier and continue, otherwise raise an exception.
+      --  Normal processing with HSS present
 
-         if No (Ent) then
-            if Total_Errors_Detected /= 0 then
-               Set_Identifier (N, Empty);
+      declare
+         EH  : constant List_Id := Exception_Handlers (HSS);
+         Ent : Entity_Id        := Empty;
+         S   : Entity_Id;
+
+         Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
+         --  Recursively save value of this global, will be restored on exit
+
+      begin
+         --  Initialize unblocked exit count for statements of begin block
+         --  plus one for each excption handler that is present.
+
+         Unblocked_Exit_Count := 1;
+
+         if Present (EH) then
+            Unblocked_Exit_Count := Unblocked_Exit_Count + List_Length (EH);
+         end if;
+
+         --  If a label is present analyze it and mark it as referenced
+
+         if Present (Id) then
+            Analyze (Id);
+            Ent := Entity (Id);
+
+            --  An error defense. If we have an identifier, but no entity,
+            --  then something is wrong. If we have previous errors, then
+            --  just remove the identifier and continue, otherwise raise
+            --  an exception.
+
+            if No (Ent) then
+               if Total_Errors_Detected /= 0 then
+                  Set_Identifier (N, Empty);
+               else
+                  raise Program_Error;
+               end if;
+
             else
-               raise Program_Error;
-            end if;
+               Set_Ekind (Ent, E_Block);
+               Generate_Reference (Ent, N, ' ');
+               Generate_Definition (Ent);
 
-         else
-            Set_Ekind (Ent, E_Block);
-            Generate_Reference (Ent, N, ' ');
-            Generate_Definition (Ent);
-
-            if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
-               Set_Label_Construct (Parent (Ent), N);
+               if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
+                  Set_Label_Construct (Parent (Ent), N);
+               end if;
             end if;
          end if;
-      end if;
 
-      --  If no entity set, create a label entity
+         --  If no entity set, create a label entity
 
-      if No (Ent) then
-         Ent := New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
-         Set_Identifier (N, New_Occurrence_Of (Ent, Sloc (N)));
-         Set_Parent (Ent, N);
-      end if;
+         if No (Ent) then
+            Ent := New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
+            Set_Identifier (N, New_Occurrence_Of (Ent, Sloc (N)));
+            Set_Parent (Ent, N);
+         end if;
 
-      Set_Etype (Ent, Standard_Void_Type);
-      Set_Block_Node (Ent, Identifier (N));
-      New_Scope (Ent);
+         Set_Etype (Ent, Standard_Void_Type);
+         Set_Block_Node (Ent, Identifier (N));
+         New_Scope (Ent);
 
-      if Present (Decls) then
-         Analyze_Declarations (Decls);
-         Check_Completion;
-      end if;
+         if Present (Decls) then
+            Analyze_Declarations (Decls);
+            Check_Completion;
+         end if;
 
-      Analyze (Handled_Statement_Sequence (N));
-      Process_End_Label (Handled_Statement_Sequence (N), 'e', Ent);
+         Analyze (HSS);
+         Process_End_Label (HSS, 'e', Ent);
 
-      --  Analyze exception handlers if present. Note that the test for
-      --  HSS being present is an error defence against previous errors.
+         --  If exception handlers are present, then we indicate that
+         --  enclosing scopes contain a block with handlers. We only
+         --  need to mark non-generic scopes.
 
-      if Present (Handled_Statement_Sequence (N))
-        and then Present (Exception_Handlers (Handled_Statement_Sequence (N)))
-      then
-         declare
-            S : Entity_Id := Scope (Ent);
-
-         begin
-            --  Indicate that enclosing scopes contain a block with handlers.
-            --  Only non-generic scopes need to be marked.
-
+         if Present (EH) then
+            S := Scope (Ent);
             loop
                Set_Has_Nested_Block_With_Handler (S);
                exit when Is_Overloadable (S)
@@ -585,11 +610,18 @@ package body Sem_Ch5 is
                  or else Is_Generic_Unit (S);
                S := Scope (S);
             end loop;
-         end;
-      end if;
+         end if;
 
-      Check_References (Ent);
-      End_Scope;
+         Check_References (Ent);
+         End_Scope;
+
+         if Unblocked_Exit_Count = 0 then
+            Unblocked_Exit_Count := Save_Unblocked_Exit_Count;
+            Check_Unreachable_Code (N);
+         else
+            Unblocked_Exit_Count := Save_Unblocked_Exit_Count;
+         end if;
+      end;
    end Analyze_Block_Statement;
 
    ----------------------------
@@ -1557,7 +1589,15 @@ package body Sem_Ch5 is
          begin
             Nxt := Original_Node (Next (N));
 
-            if Present (Nxt)
+            --  If a label follows us, then we never have dead code, since
+            --  someone could branch to the label, so we just ignore it.
+
+            if Nkind (Nxt) = N_Label then
+               return;
+
+            --  Otherwise see if we have a real statement following us
+
+            elsif Present (Nxt)
               and then Comes_From_Source (Nxt)
               and then Is_Statement (Nxt)
             then
@@ -1613,27 +1653,52 @@ package body Sem_Ch5 is
 
             --  If the unconditional transfer of control instruction is
             --  the last statement of a sequence, then see if our parent
-            --  is an IF statement, and if so adjust the unblocked exit
-            --  count of the if statement to reflect the fact that this
-            --  branch of the if is indeed blocked by a transfer of control.
+            --  is one of the constructs for which we count unblocked exits,
+            --  and if so, adjust the count.
 
             else
                P := Parent (N);
 
+               --  Statements in THEN part or ELSE part of IF statement
+
                if Nkind (P) = N_If_Statement then
                   null;
+
+               --  Statements in ELSIF part of an IF statement
 
                elsif Nkind (P) = N_Elsif_Part then
                   P := Parent (P);
                   pragma Assert (Nkind (P) = N_If_Statement);
 
+               --  Statements in CASE statement alternative
+
                elsif Nkind (P) = N_Case_Statement_Alternative then
                   P := Parent (P);
                   pragma Assert (Nkind (P) = N_Case_Statement);
 
+               --  Statements in body of block
+
+               elsif Nkind (P) = N_Handled_Sequence_Of_Statements
+                 and then Nkind (Parent (P)) = N_Block_Statement
+               then
+                  null;
+
+               --  Statements in exception handler in a block
+
+               elsif Nkind (P) = N_Exception_Handler
+                 and then Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements
+                 and then Nkind (Parent (Parent (P))) = N_Block_Statement
+               then
+                  null;
+
+               --  None of these cases, so return
+
                else
                   return;
                end if;
+
+               --  This was one of the cases we are looking for (i.e. the
+               --  parent construct was IF, CASE or block) so decrement count.
 
                Unblocked_Exit_Count := Unblocked_Exit_Count - 1;
             end if;
