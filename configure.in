@@ -278,26 +278,26 @@ case "${host}" in
     noconfigdirs="$noconfigdirs byacc"
     ;;
   i[[3456789]]86-*-vsta)
-    noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix gnuserv gettext"
+    noconfigdirs="$noconfigdirs tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl itcl tix gnuserv gettext"
     ;;
   i[[3456789]]86-*-go32* | i[[3456789]]86-*-msdosdjgpp*)
-    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
+    noconfigdirs="$noconfigdirs tcl tk expect dejagnu send-pr uudecode guile itcl tix gnuserv libffi"
     ;;
   i[[3456789]]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl itcl tix gnuserv"
-    noconfigdirs="expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
+    noconfigdirs="$noconfigdirs expect dejagnu autoconf automake send-pr rcs guile perl texinfo libtool"
     ;;
   i[[3456789]]86-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb"
     ;;
   *-*-cygwin*)
-    noconfigdirs="autoconf automake send-pr rcs guile perl"
+    noconfigdirs="$noconfigdirs autoconf automake send-pr rcs guile perl"
     ;;
   *-*-netbsd*)
-    noconfigdirs="rcs"
+    noconfigdirs="$noconfigdirs rcs"
     ;;
   ppc*-*-pe)
-    noconfigdirs="patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
+    noconfigdirs="$noconfigdirs patch diff make tk tcl expect dejagnu autoconf automake texinfo bison send-pr gprof rcs guile perl itcl tix gnuserv"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"

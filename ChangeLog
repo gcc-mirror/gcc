@@ -1,3 +1,8 @@
+2004-02-11  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in (host): Add in missing $noconfigdirs to defines.
+	* configure: Regenerate.
+
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>,
 	    Nathanael Nerode  <neroden@gcc.gnu.org>
 
