@@ -125,12 +125,12 @@
 #else /* !LIBFFI_ASM */
 #ifdef FFI_MIPS_O32
 /* O32 stack frames have 32bit integer args */
-typedef UINT32                 ffi_arg;
-typedef SINT32                 ffi_sarg;
+typedef unsigned int     ffi_arg __attribute__((__mode__(__SI__)));
+typedef signed   int     ffi_sarg __attribute__((__mode__(__SI__)));
 #else
 /* N32 and N64 frames have 64bit integer args */
-typedef UINT64                 ffi_arg;
-typedef SINT64                 ffi_sarg;
+typedef unsigned int     ffi_arg __attribute__((__mode__(__DI__)));
+typedef signed   int     ffi_sarg __attribute__((__mode__(__DI__)));
 #endif
 
 typedef enum ffi_abi {

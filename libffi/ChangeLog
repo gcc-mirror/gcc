@@ -1,3 +1,8 @@
+2003-10-22  David Daney  <ddaney@avtrex.com>
+
+	* src/mips/ffitarget.h: Replace undefined UINT32 and friends with
+	__attribute__((__mode__(__SI__))) and friends.
+
 2003-10-22  Andreas Schwab  <schwab@suse.de>
 
 	* src/ia64/ffi.c: Replace FALSE/TRUE with false/true.
