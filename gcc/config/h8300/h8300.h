@@ -1304,7 +1304,7 @@ do { char dstr[30];					\
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, CH) handle_pragma (FILE, CH)
+#define HANDLE_PRAGMA(FILE, NODE) handle_pragma (FILE, NODE)
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 

@@ -240,8 +240,7 @@ Boston, MA 02111-1307, USA.  */
 /* How to parse #pragma's */
 
 #undef	HANDLE_PRAGMA
-#define HANDLE_PRAGMA(finput, ch) \
-  handle_pragma (finput, ch, &get_directive_line)
+#define HANDLE_PRAGMA(FINPUT, NODE) handle_pragma (FINPUT, NODE)
 
 /* Give methods pretty symbol names on NeXT. */
 
