@@ -1,3 +1,9 @@
+2000-11-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (AC_LC_MESSAGES): Check for locale.h.
+	* aclocal.m4: Regenerate.
+	* configure: Renerate.
+
 2000-11-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* mkcheck.in (explanation): Don't paste output of passing compiles
