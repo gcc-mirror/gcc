@@ -1,5 +1,13 @@
 2004-09-24  Tom Tromey  <tromey@redhat.com>
 
+	PR java/15656:
+	* parse.y (class_instance_creation_expression): Set `$$' to NULL
+	in error parts of rule.
+	(unary_expression): Don't call error_if_numeric_overflow when $1
+	is NULL.
+
+2004-09-24  Tom Tromey  <tromey@redhat.com>
+
 	PR java/16789:
 	* parse.y (resolve_qualified_expression_name): Set
 	CAN_COMPLETE_NORMALLY on first call when chaining static calls.

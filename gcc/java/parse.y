@@ -2016,17 +2016,22 @@ class_instance_creation_expression:
 		}
 |	something_dot_new identifier OP_TK argument_list CP_TK class_body
 |	NEW_TK error SC_TK
-		{yyerror ("'(' expected"); DRECOVER(new_1);}
+		{$$ = NULL_TREE; yyerror ("'(' expected"); DRECOVER(new_1);}
 |	NEW_TK class_type error
-		{yyerror ("'(' expected"); RECOVER;}
+		{$$ = NULL_TREE; yyerror ("'(' expected"); RECOVER;}
 |	NEW_TK class_type OP_TK error
-		{yyerror ("')' or term expected"); RECOVER;}
+		{$$ = NULL_TREE; yyerror ("')' or term expected"); RECOVER;}
 |	NEW_TK class_type OP_TK argument_list error
-		{yyerror ("')' expected"); RECOVER;}
+		{$$ = NULL_TREE; yyerror ("')' expected"); RECOVER;}
 |	something_dot_new error
-		{YYERROR_NOW; yyerror ("Identifier expected"); RECOVER;}
+		{
+		  $$ = NULL_TREE;
+		  YYERROR_NOW;
+		  yyerror ("Identifier expected");
+		  RECOVER;
+		}
 |	something_dot_new identifier error
-		{yyerror ("'(' expected"); RECOVER;}
+		{$$ = NULL_TREE; yyerror ("'(' expected"); RECOVER;}
 ;
 
 /* Created after JDK1.1 rules originally added to
@@ -2343,7 +2348,8 @@ trap_overflow_corner_case:
 unary_expression:
 	trap_overflow_corner_case
 		{
-		  error_if_numeric_overflow ($1);
+		  if ($1)
+		    error_if_numeric_overflow ($1);
 		  $$ = $1;
 		}
 |	MINUS_TK trap_overflow_corner_case
