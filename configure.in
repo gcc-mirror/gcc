@@ -83,7 +83,7 @@ if test -n "$PWD" ; then PWD=`${PWDCMD-pwd}`; fi
 
 # Export original configure arguments for use by sub-configures.
 TOPLEVEL_CONFIGURE_ARGUMENTS="$progname $@"
-export TOPLEVEL_CONFIGURE_ARGUMENTS
+AC_SUBST(TOPLEVEL_CONFIGURE_ARGUMENTS)
 
 moveifchange=${srcdir}/move-if-change
 
