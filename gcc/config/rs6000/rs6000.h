@@ -208,33 +208,33 @@ Boston, MA 02111-1307, USA.  */
 extern int target_flags;
 
 /* Use POWER architecture instructions and MQ register.  */
-#define MASK_POWER		0x01
+#define MASK_POWER		0x00000001
 
 /* Use POWER2 extensions to POWER architecture.  */
-#define MASK_POWER2		0x02
+#define MASK_POWER2		0x00000002
 
 /* Use PowerPC architecture instructions.  */
-#define MASK_POWERPC		0x04
+#define MASK_POWERPC		0x00000004
 
 /* Use PowerPC General Purpose group optional instructions, e.g. fsqrt.  */
-#define MASK_PPC_GPOPT		0x08
+#define MASK_PPC_GPOPT		0x00000008
 
 /* Use PowerPC Graphics group optional instructions, e.g. fsel.  */
-#define MASK_PPC_GFXOPT		0x10
+#define MASK_PPC_GFXOPT		0x00000010
 
 /* Use PowerPC-64 architecture instructions.  */
-#define MASK_POWERPC64		0x20
+#define MASK_POWERPC64		0x00000020
 
 /* Use revised mnemonic names defined for PowerPC architecture.  */
-#define MASK_NEW_MNEMONICS	0x40
+#define MASK_NEW_MNEMONICS	0x00000040
 
 /* Disable placing fp constants in the TOC; can be turned on when the
    TOC overflows.  */
-#define MASK_NO_FP_IN_TOC	0x80
+#define MASK_NO_FP_IN_TOC	0x00000080
 
 /* Disable placing symbol+offset constants in the TOC; can be turned on when
    the TOC overflows.  */
-#define MASK_NO_SUM_IN_TOC	0x100
+#define MASK_NO_SUM_IN_TOC	0x00000100
 
 /* Output only one TOC entry per module.  Normally linking fails if
    there are more than 16K unique variables/constants in an executable.  With
@@ -243,25 +243,27 @@ extern int target_flags;
 
    This is at the cost of having 2 extra loads and one extra store per
    function, and one less allocatable register.  */
-#define MASK_MINIMAL_TOC	0x200
+#define MASK_MINIMAL_TOC	0x00000200
 
 /* Nonzero for the 64bit model: ints, longs, and pointers are 64 bits.  */
-#define MASK_64BIT		0x400
+#define MASK_64BIT		0x00000400
 
 /* Disable use of FPRs.  */
-#define MASK_SOFT_FLOAT		0x800
+#define MASK_SOFT_FLOAT		0x00000800
 
 /* Enable load/store multiple, even on powerpc */
-#define	MASK_MULTIPLE		0x1000
-#define	MASK_MULTIPLE_SET	0x2000
+#define	MASK_MULTIPLE		0x00001000
+#define	MASK_MULTIPLE_SET	0x00002000
 
 /* Use string instructions for block moves */
-#define MASK_STRING		0x4000
-#define MASK_STRING_SET		0x8000
+#define MASK_STRING		0x00004000
+#define MASK_STRING_SET		0x00008000
 
-/* Temporary debug switches */
-#define MASK_DEBUG_STACK	0x10000
-#define MASK_DEBUG_ARG		0x20000
+/* Disable update form of load/store */
+#define MASK_NO_UPDATE		0x00010000
+
+/* Disable fused multiply/add operations */
+#define MASK_NO_FUSED_MADD	0x00020000
 
 #define TARGET_POWER		(target_flags & MASK_POWER)
 #define TARGET_POWER2		(target_flags & MASK_POWER2)
@@ -279,11 +281,13 @@ extern int target_flags;
 #define	TARGET_MULTIPLE_SET	(target_flags & MASK_MULTIPLE_SET)
 #define TARGET_STRING		(target_flags & MASK_STRING)
 #define TARGET_STRING_SET	(target_flags & MASK_STRING_SET)
-#define	TARGET_DEBUG_STACK	(target_flags & MASK_DEBUG_STACK)
-#define	TARGET_DEBUG_ARG	(target_flags & MASK_DEBUG_ARG)
+#define TARGET_NO_UPDATE	(target_flags & MASK_NO_UPDATE)
+#define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 
 #define TARGET_32BIT		(! TARGET_64BIT)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
+#define TARGET_UPDATE		(! TARGET_NO_UPDATE)
+#define TARGET_FUSED_MADD	(! TARGET_NO_FUSED_MADD)
 
 /* Pseudo target to indicate whether the object format is ELF
    (to get around not having conditional compilation in the md file)  */
@@ -366,8 +370,10 @@ extern int target_flags;
   {"string",		MASK_STRING | MASK_STRING_SET},			\
   {"no-string",		- MASK_STRING},					\
   {"no-string",		MASK_STRING_SET},				\
-  {"debug-stack",	MASK_DEBUG_STACK},				\
-  {"debug-arg",		MASK_DEBUG_ARG},				\
+  {"update",		- MASK_NO_UPDATE},				\
+  {"no-update",		MASK_NO_UPDATE},				\
+  {"fused-madd",	- MASK_NO_FUSED_MADD},				\
+  {"no-fused-madd",	MASK_NO_FUSED_MADD},				\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT}}
 
@@ -427,6 +433,8 @@ extern enum processor_type rs6000_cpu;
 {						\
    {"cpu=",  &rs6000_select[1].string},		\
    {"tune=", &rs6000_select[2].string},		\
+   {"debug-", &rs6000_debug_name},		\
+   {"debug=", &rs6000_debug_name},		\
    SUBTARGET_OPTIONS				\
 }
 
@@ -440,6 +448,14 @@ struct rs6000_cpu_select
 };
 
 extern struct rs6000_cpu_select rs6000_select[];
+
+/* Debug support */
+extern char *rs6000_debug_name;		/* Name for -mdebug-xxxx option */
+extern int rs6000_debug_stack;		/* debug stack applications */
+extern int rs6000_debug_arg;		/* debug argument handling */
+
+#define	TARGET_DEBUG_STACK	rs6000_debug_stack
+#define	TARGET_DEBUG_ARG	rs6000_debug_arg
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -1811,6 +1827,7 @@ typedef struct rs6000_args
 { if (LEGITIMATE_INDIRECT_ADDRESS_P (X))		\
     goto ADDR;						\
   if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC) \
+      && TARGET_UPDATE					\
       && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (X, 0)))	\
     goto ADDR;						\
   if (LEGITIMATE_SMALL_DATA_P (MODE, X))		\
@@ -1904,9 +1921,9 @@ typedef struct rs6000_args
       && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1),	\
 					 (TARGET_32BIT ? 4 : 8))) \
     goto LABEL;							\
-  if (GET_CODE (ADDR) == PRE_INC)				\
+  if (TARGET_UPDATE && GET_CODE (ADDR) == PRE_INC)		\
     goto LABEL;							\
-  if (GET_CODE (ADDR) == PRE_DEC)				\
+  if (TARGET_UPDATE && GET_CODE (ADDR) == PRE_DEC)		\
     goto LABEL;							\
   if (GET_CODE (ADDR) == LO_SUM)				\
     goto LABEL;							\
@@ -2096,59 +2113,74 @@ typedef struct rs6000_args
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
 
-#define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case MULT:						\
-  switch (rs6000_cpu)					\
-    {							\
-    case PROCESSOR_RIOS1:				\
-      return (GET_CODE (XEXP (X, 1)) != CONST_INT	\
-	      ? COSTS_N_INSNS (5)			\
-	      : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
-	      ? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));	\
-    case PROCESSOR_RIOS2:				\
-    case PROCESSOR_MPCCORE:				\
-      return COSTS_N_INSNS (2);				\
-    case PROCESSOR_PPC601:				\
-      return COSTS_N_INSNS (5);				\
-    case PROCESSOR_PPC603:				\
-      return (GET_CODE (XEXP (X, 1)) != CONST_INT	\
-	      ? COSTS_N_INSNS (5)			\
-	      : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
-	      ? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));	\
-    case PROCESSOR_PPC403:				\
-    case PROCESSOR_PPC604:				\
-    case PROCESSOR_PPC620:				\
-      return COSTS_N_INSNS (4);				\
-    }							\
-  case DIV:						\
-  case MOD:						\
-    if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
-	&& exact_log2 (INTVAL (XEXP (X, 1))) >= 0)	\
-      return COSTS_N_INSNS (2);				\
-    /* otherwise fall through to normal divide.  */	\
-  case UDIV:						\
-  case UMOD:						\
-  switch (rs6000_cpu)					\
-    {							\
-    case PROCESSOR_RIOS1:				\
-      return COSTS_N_INSNS (19);			\
-    case PROCESSOR_RIOS2:				\
-      return COSTS_N_INSNS (13);			\
-    case PROCESSOR_MPCCORE:				\
-      return COSTS_N_INSNS (6);				\
-    case PROCESSOR_PPC403:				\
-      return COSTS_N_INSNS (33);			\
-    case PROCESSOR_PPC601:				\
-      return COSTS_N_INSNS (36);			\
-    case PROCESSOR_PPC603:				\
-      return COSTS_N_INSNS (37);			\
-    case PROCESSOR_PPC604:				\
-    case PROCESSOR_PPC620:				\
-      return COSTS_N_INSNS (20);			\
-    }							\
-  case FFS:						\
-    return COSTS_N_INSNS (4);				\
-  case MEM:						\
+#define RTX_COSTS(X,CODE,OUTER_CODE)					\
+  case PLUS:								\
+    return ((GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	     && (unsigned HOST_WIDE_INT) ((INTVAL (XEXP (X, 1))		\
+					   + 0x8000) >= 0x10000))	\
+	    ? COSTS_N_INSNS (2)						\
+	    : COSTS_N_INSNS (1));					\
+  case AND:								\
+    return ((non_and_cint_operand (XEXP (X, 1), SImode))		\
+	    ? COSTS_N_INSNS (2)						\
+	    : COSTS_N_INSNS (1));					\
+  case IOR:								\
+  case XOR:								\
+    return ((non_logical_cint_operand (XEXP (X, 1), SImode))		\
+	    ? COSTS_N_INSNS (2)						\
+	    : COSTS_N_INSNS (1));					\
+  case MULT:								\
+    switch (rs6000_cpu)							\
+      {									\
+      case PROCESSOR_RIOS1:						\
+        return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
+		? COSTS_N_INSNS (5)					\
+		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
+		? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));		\
+      case PROCESSOR_RIOS2:						\
+      case PROCESSOR_MPCCORE:						\
+        return COSTS_N_INSNS (2);					\
+      case PROCESSOR_PPC601:						\
+        return COSTS_N_INSNS (5);					\
+      case PROCESSOR_PPC603:						\
+        return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
+		? COSTS_N_INSNS (5)					\
+		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
+		? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));		\
+      case PROCESSOR_PPC403:						\
+      case PROCESSOR_PPC604:						\
+      case PROCESSOR_PPC620:						\
+        return COSTS_N_INSNS (4);					\
+      }									\
+  case DIV:								\
+  case MOD:								\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT				\
+	&& exact_log2 (INTVAL (XEXP (X, 1))) >= 0)			\
+      return COSTS_N_INSNS (2);						\
+    /* otherwise fall through to normal divide.  */			\
+  case UDIV:								\
+  case UMOD:								\
+    switch (rs6000_cpu)							\
+      {									\
+      case PROCESSOR_RIOS1:						\
+	return COSTS_N_INSNS (19);					\
+      case PROCESSOR_RIOS2:						\
+	return COSTS_N_INSNS (13);					\
+      case PROCESSOR_MPCCORE:						\
+	return COSTS_N_INSNS (6);					\
+      case PROCESSOR_PPC403:						\
+	return COSTS_N_INSNS (33);					\
+      case PROCESSOR_PPC601:						\
+	return COSTS_N_INSNS (36);					\
+      case PROCESSOR_PPC603:						\
+	return COSTS_N_INSNS (37);					\
+      case PROCESSOR_PPC604:						\
+      case PROCESSOR_PPC620:						\
+	return COSTS_N_INSNS (20);					\
+      }									\
+  case FFS:								\
+    return COSTS_N_INSNS (4);						\
+  case MEM:								\
     /* MEM should be slightly more expensive than (plus (reg) (const)) */ \
     return 5;
 
@@ -2373,8 +2405,6 @@ toc_section ()						\
 {							\
   if (TARGET_MINIMAL_TOC)				\
     {							\
-      static int toc_initialized = 0;			\
-							\
       /* toc_section is always called at least once from ASM_FILE_START, \
 	 so this is guaranteed to always be defined once and only once   \
 	 in each file.  */						 \
@@ -2395,6 +2425,9 @@ toc_section ()						\
     }							\
   in_section = toc;					\
 }
+
+/* Flag to say the TOC is initialized */
+extern int toc_initialized;
 
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and
@@ -2998,6 +3031,7 @@ do {									\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},		\
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
+  {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
   {"reg_or_mem_operand", {SUBREG, MEM, REG}},			\
   {"lwa_operand", {SUBREG, MEM, REG}},				\
@@ -3058,6 +3092,7 @@ extern int reg_or_neg_short_operand ();
 extern int reg_or_u_short_operand ();
 extern int reg_or_cint_operand ();
 extern int got_operand ();
+extern int got_no_const_operand ();
 extern int num_insns_constant ();
 extern int easy_fp_constant ();
 extern int volatile_mem_operand ();
