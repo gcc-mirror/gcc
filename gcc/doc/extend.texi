@@ -2034,6 +2034,8 @@ typedef void voidfn ();
 volatile voidfn fatal;
 @end smallexample
 
+This approach does not work in GNU C++.
+
 @item nothrow
 @cindex @code{nothrow} function attribute
 The @code{nothrow} attribute is used to inform the compiler that a
