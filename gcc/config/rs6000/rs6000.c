@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 
-   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -15761,6 +15761,41 @@ rs6000_dwarf_register_span (rtx reg)
 		      : gen_rtvec (2,
 				   gen_rtx_REG (SImode, regno),
 				   gen_rtx_REG (SImode, regno + 1200)));
+}
+
+/* Map internal gcc register numbers to DWARF2 register numbers.  */
+
+unsigned int
+rs6000_dbx_register_number (unsigned int regno)
+{
+  if (regno <= 63 || write_symbols != DWARF2_DEBUG)
+    return regno;
+  if (regno == MQ_REGNO)
+    return 100;
+  if (regno == LINK_REGISTER_REGNUM)
+    return 108;
+  if (regno == COUNT_REGISTER_REGNUM)
+    return 109;
+  if (CR_REGNO_P (regno))
+    return regno - CR0_REGNO + 86;
+  if (regno == XER_REGNO)
+    return 101;
+  if (ALTIVEC_REGNO_P (regno))
+    return regno - FIRST_ALTIVEC_REGNO + 1124;
+  if (regno == VRSAVE_REGNO)
+    return 356;
+  if (regno == VSCR_REGNO)
+    return 67;
+  if (regno == SPE_ACC_REGNO)
+    return 99;
+  if (regno == SPEFSCR_REGNO)
+    return 612;
+  /* SPE high reg number.  We get these values of regno from
+     rs6000_dwarf_register_span.  */
+  if (regno >= 1200 && regno < 1232)
+    return regno;
+
+  abort ();
 }
 
 #include "gt-rs6000.h"

@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for PowerPC running System V.4
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
-   Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
+   2004 Free Software Foundation, Inc.
    Contributed by Cygnus Support.
 
    This file is part of GCC.
@@ -741,6 +741,8 @@ extern int fixuplabelno;
 
 /* Historically we have also supported stabs debugging.  */
 #define DBX_DEBUGGING_INFO 1
+
+#define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
 
 #define TARGET_ENCODE_SECTION_INFO  rs6000_elf_encode_section_info
 #define TARGET_IN_SMALL_DATA_P  rs6000_elf_in_small_data_p

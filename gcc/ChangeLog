@@ -1,3 +1,11 @@
+2004-01-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_dbx_register_number): New function.
+	* config/rs6000/rs6000-protos.h (rs6000_dbx_register_number): Declare.
+	* config/rs6000/rs6000.h (DWARF_FRAME_REGNUM): Define.
+	(DWARF_REG_TO_UNWIND_COLUMN): Correct column adjustment and comment.
+	* config/rs6000/sysv4.h (DBX_REGISTER_NUMBER): Define.
+
 2004-01-06  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h (MDEBUG_ASM_SPEC): Change for dwarf2 default.
