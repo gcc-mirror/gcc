@@ -74,7 +74,7 @@
    </p>
    <p>All normal disclaimers aside, multithreaded C++ application are
       only supported when libstdc++ and all user code was built with
-      compilers which report (via <em>gcc/g++ -v</em>) the same thread
+      compilers which report (via <code> gcc/g++ -v </code>) the same thread
       model and that model is not <em>single</em>.  As long as your
       final application is actually single-threaded, then it should be
       safe to mix user code built with a thread model of
@@ -89,7 +89,7 @@
    </p>
    <p>When you link a multithreaded application, you will probably
       need to add a library or flag to g++.  This is a very
-      non-standardized area of gcc across ports.  Some ports support a
+      non-standardized area of GCC across ports.  Some ports support a
       special flag (the spelling isn't even standardized yet) to add
       all required macros to a compilation (if any such flags are
       required then you must provide the flag for all compilations not
@@ -135,9 +135,6 @@
         This message</a> inspired a recent updating of issues with threading
         and the SGI STL library.  It also contains some example
         POSIX-multithreaded STL code.
-        <li><a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">
-        Here</a> is an early analysis of why __USE_MALLOC should be disabled
-        for the 3.0 release of libstdc++.</a>
       </ul>
       (A large selection of links to older messages has been removed; many
       of the messages from 1999 were lost in a disk crash, and the few
