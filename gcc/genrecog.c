@@ -374,7 +374,7 @@ add_to_sequence (pattern, last, position)
 		{
 		  new->code = preds[i].codes[0];
 		  if (! strcmp ("const_int_operand", new->tests))
-		    new->tests = 0;
+		    new->tests = 0, new->pred = -1;
 		}
 
 	      for (j = 0; j < NUM_RTX_CODE && preds[i].codes[j] != 0; j++)
@@ -1040,6 +1040,8 @@ write_tree_1 (tree, prevpos, afterward, type)
   for (p = tree; p; p = p->next)
     {
       enum machine_mode mode = p->enforce_mode ? p->mode : VOIDmode;
+      int need_bracket;
+      int wrote_bracket = 0;
       int inner_indent;
 
       if (p->success.first == 0 && p->insn_code_number < 0)
@@ -1296,12 +1298,19 @@ write_tree_1 (tree, prevpos, afterward, type)
       else
 	uncond = 1;
 
+      need_bracket = ! uncond;
+
       if (p->opno >= 0)
 	{
-	  printf ("%s{\n%sro[%d] = x%d;\n",
-		  indents[inner_indent], indents[inner_indent + 2],
-		  p->opno, depth);
-	  inner_indent += 2;
+	  if (need_bracket)
+	    {
+	      printf ("%s{\n", indents[inner_indent]);
+	      inner_indent += 2;
+	      wrote_bracket = 1;
+	      need_bracket = 0;
+	    }
+
+	  printf ("%sro[%d] = x%d;\n", indents[inner_indent], p->opno, depth);
 	}
 
       if (p->c_test)
@@ -1309,6 +1318,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 	  printf ("%sif (%s)\n", indents[inner_indent], p->c_test);
 	  inner_indent += 2;
 	  uncond = 0;
+	  need_bracket = 1;
 	}
 
       if (p->insn_code_number >= 0)
@@ -1320,7 +1330,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 	    {
 	      if (p->num_clobbers_to_add)
 		{
-		  if (p->opno < 0 || p->c_test)
+		  if (need_bracket)
 		    {
 		      printf ("%s{\n", indents[inner_indent]);
 		      inner_indent += 2;
@@ -1331,7 +1341,7 @@ write_tree_1 (tree, prevpos, afterward, type)
 		  printf ("%sreturn %d;\n",
 			  indents[inner_indent], p->insn_code_number);
 
-		  if (p->opno < 0 || p->c_test)
+		  if (need_bracket)
 		    {
 		      inner_indent -= 2;
 		      printf ("%s}\n", indents[inner_indent]);
@@ -1346,27 +1356,33 @@ write_tree_1 (tree, prevpos, afterward, type)
 	printf ("%sgoto L%d;\n", indents[inner_indent],
 		p->success.first->number);
 
-      if (p->opno >= 0)
+      if (wrote_bracket)
 	printf ("%s}\n", indents[inner_indent - 2]);
     }
 
   /* We have now tested all alternatives.  End any switches we have open
-     and branch to the alternative node.  */
+     and branch to the alternative node unless we know that we can't fall
+     through to the branch.  */
 
   if (switch_code != UNKNOWN)
     {
       printf ("%s}\n", indents[indent - 2]);
       indent -= 4;
+      uncond = 0;
     }
 
   if (switch_mode != VOIDmode)
     {
       printf ("%s}\n", indents[indent - 2]);
       indent -= 4;
+      uncond = 0;
     }
 
   if (indent != 2)
     abort ();
+
+  if (uncond)
+    return;
 
   if (afterward)
     {
@@ -1417,7 +1433,7 @@ same_modes (p, mode)
      register enum machine_mode mode;
 {
   for (; p; p = p->next)
-    if (p->mode != mode || p->tests)
+    if ((p->enforce_mode ? p->mode : VOIDmode) != mode)
       return 0;
 
   return 1;
