@@ -1,3 +1,10 @@
+2003-07-21  Doug Gregor  <dgregor@apple.com.>
+
+	* include/bits/boost_concept_check.h:
+	(_EqualityComparableConcept::__constraints): Remove != from the 
+        list of constraints; it is not listed in Table 28 of the C++98 
+        standard.
+
 2003-07-18  Andreas Jaeger  <aj@suse.de>
 
 	* config/abi/sparc-linux-gnu/baseline_symbols.txt: New file.

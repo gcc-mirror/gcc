@@ -213,7 +213,6 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
   {
     void __constraints() {
       __aux_require_boolean_expr(__a == __b);
-      __aux_require_boolean_expr(__a != __b);
     }
     _Tp __a, __b;
   };
