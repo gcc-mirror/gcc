@@ -48,15 +48,13 @@
 #ifndef _ALLOCATOR_H
 #define _ALLOCATOR_H 1
 
-#if 1
-# include <ext/new_allocator.h>
-# define __glibcxx_default_allocator  __gnu_cxx::new_allocator
-#endif
+// Define the base class to std::allocator.
 
-#if 0
-# include <ext/pool_allocator.h>
-# define __glibcxx_default_allocator  __gnu_cxx::__pool_alloc
-#endif
+#include <ext/new_allocator.h>
+#define __glibcxx_default_allocator  __gnu_cxx::new_allocator
+
+//#include <ext/mt_allocator.h>
+//#define __glibcxx_default_allocator  __gnu_cxx::__mt_alloc
 
 namespace std
 {
