@@ -74,14 +74,14 @@ namespace __gnu_norm
 	{
 	  const size_type __old_size = size();
 	  pointer __tmp = _M_allocate_and_copy(__n,
-					       this->_M_start,
-					       this->_M_finish);
-	  std::_Destroy(this->_M_start, this->_M_finish);
-	  _M_deallocate(this->_M_start,
-			this->_M_end_of_storage - this->_M_start);
-	  this->_M_start = __tmp;
-	  this->_M_finish = __tmp + __old_size;
-	  this->_M_end_of_storage = this->_M_start + __n;
+					       this->_M_impl._M_start,
+					       this->_M_impl._M_finish);
+	  std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);
+	  _M_deallocate(this->_M_impl._M_start,
+			this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+	  this->_M_impl._M_start = __tmp;
+	  this->_M_impl._M_finish = __tmp + __old_size;
+	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
 	}
     }
 
@@ -91,10 +91,10 @@ namespace __gnu_norm
     insert(iterator __position, const value_type& __x)
     {
       size_type __n = __position - begin();
-      if (this->_M_finish != this->_M_end_of_storage && __position == end())
+      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage && __position == end())
       {
-        std::_Construct(this->_M_finish, __x);
-        ++this->_M_finish;
+        std::_Construct(this->_M_impl._M_finish, __x);
+        ++this->_M_impl._M_finish;
       }
       else
         _M_insert_aux(__position, __x);
@@ -108,8 +108,8 @@ namespace __gnu_norm
     {
       if (__position + 1 != end())
         std::copy(__position + 1, end(), __position);
-      --this->_M_finish;
-      std::_Destroy(this->_M_finish);
+      --this->_M_impl._M_finish;
+      std::_Destroy(this->_M_impl._M_finish);
       return __position;
     }
 
@@ -120,7 +120,7 @@ namespace __gnu_norm
     {
       iterator __i(copy(__last, end(), __first));
       std::_Destroy(__i, end());
-      this->_M_finish = this->_M_finish - (__last - __first);
+      this->_M_impl._M_finish = this->_M_impl._M_finish - (__last - __first);
       return __first;
     }
 
@@ -135,11 +135,11 @@ namespace __gnu_norm
         if (__xlen > capacity())
         {
           pointer __tmp = _M_allocate_and_copy(__xlen, __x.begin(), __x.end());
-          std::_Destroy(this->_M_start, this->_M_finish);
-          _M_deallocate(this->_M_start,
-			this->_M_end_of_storage - this->_M_start);
-          this->_M_start = __tmp;
-          this->_M_end_of_storage = this->_M_start + __xlen;
+          std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);
+          _M_deallocate(this->_M_impl._M_start,
+			this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+          this->_M_impl._M_start = __tmp;
+          this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __xlen;
         }
         else if (size() >= __xlen)
         {
@@ -148,10 +148,10 @@ namespace __gnu_norm
         }
         else
         {
-          std::copy(__x.begin(), __x.begin() + size(), this->_M_start);
-          std::uninitialized_copy(__x.begin() + size(), __x.end(), this->_M_finish);
+          std::copy(__x.begin(), __x.begin() + size(), this->_M_impl._M_start);
+          std::uninitialized_copy(__x.begin() + size(), __x.end(), this->_M_impl._M_finish);
         }
-        this->_M_finish = this->_M_start + __xlen;
+        this->_M_impl._M_finish = this->_M_impl._M_start + __xlen;
       }
       return *this;
     }
@@ -169,8 +169,8 @@ namespace __gnu_norm
       else if (__n > size())
       {
         std::fill(begin(), end(), __val);
-        this->_M_finish
-	  = std::uninitialized_fill_n(this->_M_finish, __n - size(), __val);
+        this->_M_impl._M_finish
+	  = std::uninitialized_fill_n(this->_M_impl._M_finish, __n - size(), __val);
       }
       else
         erase(fill_n(begin(), __n, __val), end());
@@ -201,24 +201,24 @@ namespace __gnu_norm
       if (__len > capacity())
       {
         pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
-        std::_Destroy(this->_M_start, this->_M_finish);
-        _M_deallocate(this->_M_start,
-		      this->_M_end_of_storage - this->_M_start);
-        this->_M_start = __tmp;
-        this->_M_end_of_storage = this->_M_finish = this->_M_start + __len;
+        std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);
+        _M_deallocate(this->_M_impl._M_start,
+		      this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+        this->_M_impl._M_start = __tmp;
+        this->_M_impl._M_end_of_storage = this->_M_impl._M_finish = this->_M_impl._M_start + __len;
       }
       else if (size() >= __len)
       {
-        iterator __new_finish(copy(__first, __last, this->_M_start));
+        iterator __new_finish(copy(__first, __last, this->_M_impl._M_start));
         std::_Destroy(__new_finish, end());
-        this->_M_finish = __new_finish.base();
+        this->_M_impl._M_finish = __new_finish.base();
       }
       else
       {
         _ForwardIterator __mid = __first;
         std::advance(__mid, size());
-        std::copy(__first, __mid, this->_M_start);
-        this->_M_finish = std::uninitialized_copy(__mid, __last, this->_M_finish);
+        std::copy(__first, __mid, this->_M_impl._M_start);
+        this->_M_impl._M_finish = std::uninitialized_copy(__mid, __last, this->_M_impl._M_finish);
       }
     }
 
@@ -227,14 +227,14 @@ namespace __gnu_norm
     vector<_Tp,_Alloc>::
     _M_insert_aux(iterator __position, const _Tp& __x)
     {
-      if (this->_M_finish != this->_M_end_of_storage)
+      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
       {
-        std::_Construct(this->_M_finish, *(this->_M_finish - 1));
-        ++this->_M_finish;
+        std::_Construct(this->_M_impl._M_finish, *(this->_M_impl._M_finish - 1));
+        ++this->_M_impl._M_finish;
         _Tp __x_copy = __x;
         std::copy_backward(__position,
-			   iterator(this->_M_finish-2),
-			   iterator(this->_M_finish-1));
+			   iterator(this->_M_impl._M_finish-2),
+			   iterator(this->_M_impl._M_finish-1));
         *__position = __x_copy;
       }
       else
@@ -245,13 +245,13 @@ namespace __gnu_norm
         iterator __new_finish(__new_start);
         try
           {
-            __new_finish = std::uninitialized_copy(iterator(this->_M_start),
+            __new_finish = std::uninitialized_copy(iterator(this->_M_impl._M_start),
 						   __position,
 						   __new_start);
             std::_Construct(__new_finish.base(), __x);
             ++__new_finish;
             __new_finish = std::uninitialized_copy(__position,
-						   iterator(this->_M_finish),
+						   iterator(this->_M_impl._M_finish),
 						   __new_finish);
           }
         catch(...)
@@ -261,11 +261,11 @@ namespace __gnu_norm
             __throw_exception_again;
           }
         std::_Destroy(begin(), end());
-        _M_deallocate(this->_M_start,
-		      this->_M_end_of_storage - this->_M_start);
-        this->_M_start = __new_start.base();
-        this->_M_finish = __new_finish.base();
-        this->_M_end_of_storage = __new_start.base() + __len;
+        _M_deallocate(this->_M_impl._M_start,
+		      this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+        this->_M_impl._M_start = __new_start.base();
+        this->_M_impl._M_finish = __new_finish.base();
+        this->_M_impl._M_end_of_storage = __new_start.base() + __len;
       }
     }
 
@@ -276,28 +276,28 @@ namespace __gnu_norm
     {
       if (__n != 0)
       {
-        if (size_type(this->_M_end_of_storage - this->_M_finish) >= __n)
+        if (size_type(this->_M_impl._M_end_of_storage - this->_M_impl._M_finish) >= __n)
 	  {
            value_type __x_copy = __x;
 	   const size_type __elems_after = end() - __position;
-	   iterator __old_finish(this->_M_finish);
+	   iterator __old_finish(this->_M_impl._M_finish);
 	   if (__elems_after > __n)
 	     {
-	       std::uninitialized_copy(this->_M_finish - __n,
-				       this->_M_finish,
-				       this->_M_finish);
-	       this->_M_finish += __n;
+	       std::uninitialized_copy(this->_M_impl._M_finish - __n,
+				       this->_M_impl._M_finish,
+				       this->_M_impl._M_finish);
+	       this->_M_impl._M_finish += __n;
 	       std::copy_backward(__position, __old_finish - __n, __old_finish);
 	       std::fill(__position, __position + __n, __x_copy);
 	     }
 	   else
 	     {
-	       std::uninitialized_fill_n(this->_M_finish,
+	       std::uninitialized_fill_n(this->_M_impl._M_finish,
 					 __n - __elems_after,
 					 __x_copy);
-	       this->_M_finish += __n - __elems_after;
-	       std::uninitialized_copy(__position, __old_finish, this->_M_finish);
-	       this->_M_finish += __elems_after;
+	       this->_M_impl._M_finish += __n - __elems_after;
+	       std::uninitialized_copy(__position, __old_finish, this->_M_impl._M_finish);
+	       this->_M_impl._M_finish += __elems_after;
 	       std::fill(__position, __old_finish, __x_copy);
 	     }
 	  }
@@ -321,12 +321,12 @@ namespace __gnu_norm
 		_M_deallocate(__new_start.base(),__len);
 		__throw_exception_again;
 	      }
-	    std::_Destroy(this->_M_start, this->_M_finish);
-	    _M_deallocate(this->_M_start,
-			  this->_M_end_of_storage - this->_M_start);
-	    this->_M_start = __new_start.base();
-	    this->_M_finish = __new_finish.base();
-	    this->_M_end_of_storage = __new_start.base() + __len;
+	    std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);
+	    _M_deallocate(this->_M_impl._M_start,
+			  this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+	    this->_M_impl._M_start = __new_start.base();
+	    this->_M_impl._M_finish = __new_finish.base();
+	    this->_M_impl._M_end_of_storage = __new_start.base() + __len;
 	  }
       }
     }
@@ -354,16 +354,16 @@ namespace __gnu_norm
       if (__first != __last)
       {
         size_type __n = std::distance(__first, __last);
-        if (size_type(this->_M_end_of_storage - this->_M_finish) >= __n)
+        if (size_type(this->_M_impl._M_end_of_storage - this->_M_impl._M_finish) >= __n)
         {
           const size_type __elems_after = end() - __position;
-          iterator __old_finish(this->_M_finish);
+          iterator __old_finish(this->_M_impl._M_finish);
           if (__elems_after > __n)
           {
-            std::uninitialized_copy(this->_M_finish - __n,
-				    this->_M_finish,
-				    this->_M_finish);
-            this->_M_finish += __n;
+            std::uninitialized_copy(this->_M_impl._M_finish - __n,
+				    this->_M_impl._M_finish,
+				    this->_M_impl._M_finish);
+            this->_M_impl._M_finish += __n;
             std::copy_backward(__position, __old_finish - __n, __old_finish);
             std::copy(__first, __last, __position);
           }
@@ -371,10 +371,10 @@ namespace __gnu_norm
           {
             _ForwardIterator __mid = __first;
             std::advance(__mid, __elems_after);
-            std::uninitialized_copy(__mid, __last, this->_M_finish);
-            this->_M_finish += __n - __elems_after;
-            std::uninitialized_copy(__position, __old_finish, this->_M_finish);
-            this->_M_finish += __elems_after;
+            std::uninitialized_copy(__mid, __last, this->_M_impl._M_finish);
+            this->_M_impl._M_finish += __n - __elems_after;
+            std::uninitialized_copy(__position, __old_finish, this->_M_impl._M_finish);
+            this->_M_impl._M_finish += __elems_after;
             std::copy(__first, __mid, __position);
           }
         }
@@ -386,12 +386,12 @@ namespace __gnu_norm
           iterator __new_finish(__new_start);
           try
             {
-              __new_finish = std::uninitialized_copy(iterator(this->_M_start),
+              __new_finish = std::uninitialized_copy(iterator(this->_M_impl._M_start),
 						     __position, __new_start);
               __new_finish = std::uninitialized_copy(__first, __last,
 						     __new_finish);
               __new_finish = std::uninitialized_copy(__position,
-						     iterator(this->_M_finish),
+						     iterator(this->_M_impl._M_finish),
 						     __new_finish);
             }
           catch(...)
@@ -400,12 +400,12 @@ namespace __gnu_norm
               _M_deallocate(__new_start.base(), __len);
               __throw_exception_again;
             }
-          std::_Destroy(this->_M_start, this->_M_finish);
-          _M_deallocate(this->_M_start,
-			this->_M_end_of_storage - this->_M_start);
-          this->_M_start = __new_start.base();
-          this->_M_finish = __new_finish.base();
-          this->_M_end_of_storage = __new_start.base() + __len;
+          std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish);
+          _M_deallocate(this->_M_impl._M_start,
+			this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
+          this->_M_impl._M_start = __new_start.base();
+          this->_M_impl._M_finish = __new_finish.base();
+          this->_M_impl._M_end_of_storage = __new_start.base() + __len;
         }
       }
     }

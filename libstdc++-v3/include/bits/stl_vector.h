@@ -74,40 +74,47 @@ namespace __gnu_norm
   */
   template<typename _Tp, typename _Alloc>
     struct _Vector_base
-    : public _Alloc
     {
+      struct _Vector_impl 
+	: public _Alloc {
+	_Tp*           _M_start;
+	_Tp*           _M_finish;
+	_Tp*           _M_end_of_storage;
+	_Vector_impl (_Alloc const& __a)
+	  : _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
+	{ }
+      };
+      
     public:
       typedef _Alloc allocator_type;
 
       allocator_type
-      get_allocator() const { return *static_cast<const _Alloc*>(this); }
+      get_allocator() const { return *static_cast<const _Alloc*>(&this->_M_impl); }
 
-      _Vector_base(const allocator_type& __a)
-      : _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0) { }
+      _Vector_base(const allocator_type& __a) : _M_impl(__a)
+      { }
 
       _Vector_base(size_t __n, const allocator_type& __a)
-      : _Alloc(__a)
+	: _M_impl(__a)
       {
-	this->_M_start = this->_M_allocate(__n);
-	this->_M_finish = this->_M_start;
-	this->_M_end_of_storage = this->_M_start + __n;
+	this->_M_impl._M_start = this->_M_allocate(__n);
+	this->_M_impl._M_finish = this->_M_impl._M_start;
+	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
 
       ~_Vector_base()
-      { _M_deallocate(this->_M_start,
-		      this->_M_end_of_storage - this->_M_start); }
+      { _M_deallocate(this->_M_impl._M_start,
+		      this->_M_impl._M_end_of_storage - this->_M_impl._M_start); }
 
     public:
-      _Tp*           _M_start;
-      _Tp*           _M_finish;
-      _Tp*           _M_end_of_storage;
+      _Vector_impl _M_impl;
 
       _Tp*
-      _M_allocate(size_t __n) { return _Alloc::allocate(__n); }
+      _M_allocate(size_t __n) { return _M_impl.allocate(__n); }
 
       void
       _M_deallocate(_Tp* __p, size_t __n)
-      { if (__p) _Alloc::deallocate(__p, __n); }
+      { if (__p) _M_impl.deallocate(__p, __n); }
     };
 
 
@@ -162,9 +169,7 @@ namespace __gnu_norm
        */
       using _Base::_M_allocate;
       using _Base::_M_deallocate;
-      using _Base::_M_start;
-      using _Base::_M_finish;
-      using _Base::_M_end_of_storage;
+      using _Base::_M_impl;
 
     public:
       // [23.2.4.1] construct/copy/destroy
@@ -186,7 +191,7 @@ namespace __gnu_norm
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
-      { this->_M_finish = std::uninitialized_fill_n(this->_M_start,
+      { this->_M_impl._M_finish = std::uninitialized_fill_n(this->_M_impl._M_start,
 						    __n, __value); }
 
       /**
@@ -199,7 +204,7 @@ namespace __gnu_norm
       explicit
       vector(size_type __n)
       : _Base(__n, allocator_type())
-      { this->_M_finish = std::uninitialized_fill_n(this->_M_start,
+      { this->_M_impl._M_finish = std::uninitialized_fill_n(this->_M_impl._M_start,
 						    __n, value_type()); }
 
       /**
@@ -213,8 +218,8 @@ namespace __gnu_norm
        */
       vector(const vector& __x)
       : _Base(__x.size(), __x.get_allocator())
-      { this->_M_finish = std::uninitialized_copy(__x.begin(), __x.end(),
-						  this->_M_start);
+      { this->_M_impl._M_finish = std::uninitialized_copy(__x.begin(), __x.end(),
+						  this->_M_impl._M_start);
       }
 
       /**
@@ -248,7 +253,7 @@ namespace __gnu_norm
        *  not touched in any way.  Managing the pointer is the user's
        *  responsibilty.
        */
-      ~vector() { std::_Destroy(this->_M_start, this->_M_finish); }
+      ~vector() { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish); }
 
       /**
        *  @brief  %Vector assignment operator.
@@ -306,7 +311,7 @@ namespace __gnu_norm
        *  element order.
        */
       iterator
-      begin() { return iterator (this->_M_start); }
+      begin() { return iterator (this->_M_impl._M_start); }
 
       /**
        *  Returns a read-only (constant) iterator that points to the
@@ -314,7 +319,7 @@ namespace __gnu_norm
        *  element order.
        */
       const_iterator
-      begin() const { return const_iterator (this->_M_start); }
+      begin() const { return const_iterator (this->_M_impl._M_start); }
 
       /**
        *  Returns a read/write iterator that points one past the last
@@ -322,7 +327,7 @@ namespace __gnu_norm
        *  element order.
        */
       iterator
-      end() { return iterator (this->_M_finish); }
+      end() { return iterator (this->_M_impl._M_finish); }
 
       /**
        *  Returns a read-only (constant) iterator that points one past
@@ -330,7 +335,7 @@ namespace __gnu_norm
        *  ordinary element order.
        */
       const_iterator
-      end() const { return const_iterator (this->_M_finish); }
+      end() const { return const_iterator (this->_M_impl._M_finish); }
 
       /**
        *  Returns a read/write reverse iterator that points to the
@@ -412,7 +417,7 @@ namespace __gnu_norm
        */
       size_type
       capacity() const
-      { return size_type(const_iterator(this->_M_end_of_storage) - begin()); }
+      { return size_type(const_iterator(this->_M_impl._M_end_of_storage) - begin()); }
 
       /**
        *  Returns true if the %vector is empty.  (Thus begin() would
@@ -550,10 +555,10 @@ namespace __gnu_norm
       void
       push_back(const value_type& __x)
       {
-	if (this->_M_finish != this->_M_end_of_storage)
+	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  {
-	    std::_Construct(this->_M_finish, __x);
-	    ++this->_M_finish;
+	    std::_Construct(this->_M_impl._M_finish, __x);
+	    ++this->_M_impl._M_finish;
 	  }
 	else
 	  _M_insert_aux(end(), __x);
@@ -571,8 +576,8 @@ namespace __gnu_norm
       void
       pop_back()
       {
-	--this->_M_finish;
-	std::_Destroy(this->_M_finish);
+	--this->_M_impl._M_finish;
+	std::_Destroy(this->_M_impl._M_finish);
       }
 
       /**
@@ -681,9 +686,9 @@ namespace __gnu_norm
       void
       swap(vector& __x)
       {
-	std::swap(this->_M_start, __x._M_start);
-	std::swap(this->_M_finish, __x._M_finish);
-	std::swap(this->_M_end_of_storage, __x._M_end_of_storage);
+	std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
+	std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
+	std::swap(this->_M_impl._M_end_of_storage, __x._M_impl._M_end_of_storage);
       }
 
       /**
@@ -728,9 +733,9 @@ namespace __gnu_norm
         void
         _M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
         {
-	  this->_M_start = _M_allocate(__n);
-	  this->_M_end_of_storage = this->_M_start + __n;
-	  this->_M_finish = std::uninitialized_fill_n(this->_M_start,
+	  this->_M_impl._M_start = _M_allocate(__n);
+	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
+	  this->_M_impl._M_finish = std::uninitialized_fill_n(this->_M_impl._M_start,
 						      __n, __value);
 	}
 
@@ -762,10 +767,10 @@ namespace __gnu_norm
 			    _ForwardIterator __last, forward_iterator_tag)
         {
 	  size_type __n = std::distance(__first, __last);
-	  this->_M_start = this->_M_allocate(__n);
-	  this->_M_end_of_storage = this->_M_start + __n;
-	  this->_M_finish = std::uninitialized_copy(__first, __last,
-						    this->_M_start);
+	  this->_M_impl._M_start = this->_M_allocate(__n);
+	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
+	  this->_M_impl._M_finish = std::uninitialized_copy(__first, __last,
+						    this->_M_impl._M_start);
 	}
 
 

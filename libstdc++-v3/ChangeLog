@@ -1,3 +1,74 @@
+2004-03-25  Gawain Bolton  <gp.bolton@computer.org>
+
+	* include/bits/stl_tree.h (_Rb_tree_impl): Add _Node_allocator
+	default argument in constructors.
+	(_Rb_tree::_M_empty_initialize): Remove.
+	
+2004-03-25  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/23_containers/map/operators/1_neg.cc: Adjust line numbers.
+	* testsuite/23_containers/set/operators/1_neg.cc: Same.
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/cpp_type_traits.h: Changed __is_pod
+	completely. Now, it does not use any of the previous type_traits
+	to detect the pod types, and it also detects function pointers as
+	POD types.
+
+	* include/bits/stl_tree.h: Introduced a new class _Rb_tree_impl,
+	which encapsulates the internal implementation of an rb_tree. Made
+	the allocator a base class of this class instead of the rb_tree,
+	which was not conforming. This _Rb_tree_impl class is also
+	specialized on whether the _Compare parameter is a POD type or
+	not. If so, then it maintains the comparison function as a data
+	member, otherwise it makes the _Compare parameter a base class of
+	itself. Also, _M_key_compare is now a function instead of a data
+	member, so that the above trick can work properly. Delegated the
+	initialization of the other data members to this newly created
+	class. Also, now other member functions of rb_tree must refer to
+	_M_key_compare as _M_impl._M_key_compare(). The other data members
+	(*) can be referenced to as _M_impl.(*), where
+	(*) includes _M_header, and _M_node_count.
+	
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_list.h: Created a _List_impl class and made it
+	derive from the allocator, instead of the list deriving from the
+	allocator class, which was not conformant. Changed all references
+	from this->_M_node to this->_M_impl._M_node * bits/list.tcc: Same
+	as above (changed all references to the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_deque.h: Created a _Deque_impl class and made
+	it derive from the allocator, instead of the deque deriving from
+	the allocator class, which was not conformant. Changed all
+	references to the _M_start, _M_finish, _M_map, and _M_map_size to
+	_M_impl.*.
+	(_Deque_base<_Tp,_Alloc>::~_Deque_base()): Added this->
+	qualification in 2 places where it was missing.
+	(_Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t)): Same as
+	above.
+	* include/bits/deque.tcc: Same as above (changed all references to
+	the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/bits/stl_vector.h: Created a _Vector_impl class and made
+	it derive from the allocator, instead of the _Vector_base class,
+	deriving from the allocator which was not conformant. Changed all
+	references to the _M_start, _M_finish, and _M_end_of_storage to
+	_M_impl.*.
+	* include/bits/vector.tcc: Same as above (changed all references
+	to the concerned variables).
+
+2004-03-25  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* testsuite/23_containers/deque/cons/clear_allocator.cc: New.
+	* testsuite/23_containers/list/cons/clear_allocator.cc: New.
+	* testsuite/23_containers/vector/cons/clear_allocator.cc: New.
+
 2004-03-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h: Tweaks for 80 column.
