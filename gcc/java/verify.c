@@ -1137,7 +1137,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
 	case OPCODE_athrow:
 	  /* FIXME: athrow also empties the stack. */
-	  pop_type (throwable_type_node);
+	  POP_TYPE (throwable_type_node, "missing throwable at athrow" );
 	  INVALIDATE_PC;
 	  break;
 
@@ -1156,7 +1156,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  {
 	    jint low, high;
 
-	    pop_type (int_type_node);
+	    POP_TYPE (int_type_node, "missing int for tableswitch");
 	    while (PC%4)
 	      {
 	        if (byte_ops[PC++])
@@ -1179,7 +1179,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  {
 	    jint npairs, last = 0, not_registered = 1;
 
-	    pop_type (int_type_node);
+	    POP_TYPE (int_type_node, "missing int for lookupswitch");
 	    while (PC%4)
 	      {
 	        if (byte_ops[PC++])
