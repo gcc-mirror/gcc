@@ -230,6 +230,7 @@ dump_type (t, v)
       break;
 
     case TEMPLATE_TYPE_PARM:
+      dump_readonly_or_volatile (t, after);
       if (TYPE_IDENTIFIER (t))
 	OB_PUTID (TYPE_IDENTIFIER (t));
       else

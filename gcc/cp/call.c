@@ -5854,7 +5854,7 @@ joust (cand1, cand2)
 	      else
 		type1 = TREE_TYPE (t2), type2 = TREE_TYPE (t1);
 
-	      cp_warning ("`%T' promotes to `%T', not `%T'",
+	      cp_warning ("passing `%T' chooses `%T' over `%T'",
 			  type, type1, type2);
 	      cp_warning ("  in call to `%D'", DECL_NAME (cand1->fn));
 	    }
