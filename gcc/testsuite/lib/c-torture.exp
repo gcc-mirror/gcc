@@ -128,11 +128,9 @@ proc c-torture-compile { src option } {
 #
 # SRC is the full pathname of the testcase.
 #
-# If the testcase has an associated .cexp file, we source that to run the
-# test instead.  We use .cexp instead of .exp so that the testcase is still
-# controlled by the main .exp driver (this is useful when one wants to only
-# run the compile.exp tests for example - one need only pass compile.exp to
-# dejagnu, and not compile.exp, foo1.exp, foo2.exp, etc.).
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
 #
 proc c-torture-execute { src args } {
     global tmpdir tool srcdir output 
@@ -143,10 +141,10 @@ proc c-torture-execute { src args } {
 	set additional_flags "";
     }
     # Check for alternate driver.
-    if [file exists [file rootname $src].cexp] {
-	verbose "Using alternate driver [file rootname [file tail $src]].cexp" 2
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
-	catch "set done_p \[source [file rootname $src].cexp\]"
+	catch "set done_p \[source [file rootname $src].x\]"
 	if { $done_p } {
 	    return
 	}
@@ -181,7 +179,7 @@ proc c-torture-execute { src args } {
 	set execname "${executable}${count}";
 	incr count;
 
-	# torture_{compile,execute}_xfail are set by the .cexp script
+	# torture_{compile,execute}_xfail are set by the .x script
 	# (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
@@ -300,11 +298,9 @@ proc search_for { file pattern } {
 # SRC is the full pathname of the testcase, or just a file name in which case
 # we prepend $srcdir/$subdir.
 #
-# If the testcase has an associated .cexp file, we source that to run the
-# test instead.  We use .cexp instead of .exp so that the testcase is still
-# controlled by the main .exp driver (this is useful when one wants to only
-# run the compile.exp tests for example - one need only pass compile.exp to
-# dejagnu, and not compile.exp, foo1.exp, foo2.exp, etc.).
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
 #
 proc c-torture { args } {
     global srcdir subdir
@@ -322,10 +318,10 @@ proc c-torture { args } {
     }
 
     # Check for alternate driver.
-    if [file exists [file rootname $src].cexp] {
-	verbose "Using alternate driver [file rootname [file tail $src]].cexp" 2
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
-	catch "set done_p \[source [file rootname $src].cexp\]"
+	catch "set done_p \[source [file rootname $src].x\]"
 	if { $done_p } {
 	    return
 	}
@@ -342,7 +338,7 @@ proc c-torture { args } {
 
     # loop through all the options
     foreach option $option_list {
-	# torture_compile_xfail is set by the .cexp script (if present)
+	# torture_compile_xfail is set by the .x script (if present)
 	if [info exists torture_compile_xfail] {
 	    setup_xfail $torture_compile_xfail
 	}
