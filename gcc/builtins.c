@@ -91,7 +91,7 @@ static rtx expand_builtin_apply_args	PARAMS ((void));
 static rtx expand_builtin_apply_args_1	PARAMS ((void));
 static rtx expand_builtin_apply		PARAMS ((rtx, rtx, rtx));
 static void expand_builtin_return	PARAMS ((rtx));
-static int type_to_class		PARAMS ((tree));
+static enum type_class type_to_class	PARAMS ((tree));
 static rtx expand_builtin_classify_type	PARAMS ((tree));
 static rtx expand_builtin_mathfn	PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_constant_p	PARAMS ((tree));
