@@ -4,11 +4,13 @@ LIBGCC1 =
 CROSS_LIBGCC1 =
 LIBGCC1_TEST =
 
-MULTILIB_OPTIONS=mv8
-MULTILIB_DIRNAMES=v8
-MULTILIB_MATCHES=
+MULTILIB_OPTIONS = fpic/fPIC mcpu=v8
+MULTILIB_DIRNAMES = pic ucpic v8
+MULTILIB_MATCHES = mcpu?v8=mv8
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
-TARGET_LIBGCC2_CFLAGS = -fPIC
+# The native linker doesn't handle linking -fpic code with -fPIC code.  Ugh.
+# We cope by building both variants of libgcc.
+#TARGET_LIBGCC2_CFLAGS = -fPIC
