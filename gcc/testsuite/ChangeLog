@@ -1,3 +1,8 @@
+2004-01-30  Michael Matz  <matz@suse.de>
+
+	* g++.dg/ext/case-range1.C, g++.dg/ext/case-range2.C,
+	g++.dg/ext/case-range3.C: New tests.
+
 2004-01-31  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/12884
