@@ -106,8 +106,7 @@ static void update_cloned_parm PARAMS ((tree, tree));
    decisions about when a function is too big to inline.  */
 #define INSNS_PER_STMT (10)
 
-/* Remap DECL during the copying of the BLOCK tree for the function.
-   DATA is really an `inline_data *'.  */
+/* Remap DECL during the copying of the BLOCK tree for the function.  */
 
 static tree
 remap_decl (decl, id)
@@ -149,6 +148,26 @@ remap_decl (decl, id)
 		     copy_body_r, id, NULL);
 	}
 
+      if (!DECL_NAME (t) && TREE_TYPE (t)
+	  && ANON_AGGR_TYPE_P (TREE_TYPE ((t))))
+	{
+	  /* For a VAR_DECL of anonymous type, we must also copy the
+	     member VAR_DECLS here and rechain the
+	     DECL_ANON_UNION_ELEMS. */
+	  tree members = NULL;
+	  tree src;
+	  
+	  for (src = DECL_ANON_UNION_ELEMS (t); src;
+	       src = TREE_CHAIN (src))
+	    {
+	      tree member = remap_decl (TREE_VALUE (src), id);
+
+	      my_friendly_assert (!TREE_PURPOSE (src), 20010529);
+	      members = tree_cons (NULL, member, members);
+	    }
+	  DECL_ANON_UNION_ELEMS (t) = nreverse (members);
+	}
+      
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */
       n = splay_tree_insert (id->decl_map,
