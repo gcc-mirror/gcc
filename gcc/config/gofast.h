@@ -1,5 +1,5 @@
 /* US Software GOFAST floating point library support.
-   Copyright (C) 1994, 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1998, 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,91 +18,62 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is used by fp-bit.c.  */
-#define US_SOFTWARE_GOFAST
-
 /* The US Software GOFAST library requires special optabs support.
-   There is no negation libcall, and several others have names different
-   from gcc.  This file consolidates the support in one place.
+   This file is intended to be included by config/ARCH/ARCH.c.  It
+   defines one function, gofast_maybe_init_libfuncs, which should be
+   called from the TARGET_INIT_LIBFUNCS hook.  When tm.h has defined
+   US_SOFTWARE_GOFAST, this function will adjust all the optabs and
+   libfuncs appropriately.  Otherwise it will do nothing.  */
 
-   The basic plan is to leave gcc proper alone and via some hook fix things
-   after the optabs have been set up.  Our main entry point is
-   INIT_GOFAST_OPTABS.  */
+static void
+gofast_maybe_init_libfuncs (void)
+{
+#ifdef US_SOFTWARE_GOFAST
+  int mode;
 
-#define INIT_GOFAST_OPTABS \
-  do { \
-    GOFAST_CLEAR_NEG_FLOAT_OPTAB; \
-    GOFAST_RENAME_LIBCALLS; \
-  } while (0)
+  set_optab_libfunc (add_optab, SFmode, "fpadd");
+  set_optab_libfunc (add_optab, DFmode, "dpadd");
+  set_optab_libfunc (sub_optab, SFmode, "fpsub");
+  set_optab_libfunc (sub_optab, DFmode, "dpsub");
+  set_optab_libfunc (smul_optab, SFmode, "fpmul");
+  set_optab_libfunc (smul_optab, DFmode, "dpmul");
+  set_optab_libfunc (sdiv_optab, SFmode, "fpdiv");
+  set_optab_libfunc (sdiv_optab, DFmode, "dpdiv");
+  set_optab_libfunc (cmp_optab, SFmode, "fpcmp");
+  set_optab_libfunc (cmp_optab, DFmode, "dpcmp");
 
-#define GOFAST_CLEAR_NEG_FLOAT_OPTAB \
-  do { \
-    int mode; \
-    for (mode = SFmode; (int) mode <= (int) TFmode; \
-	 mode = (enum machine_mode) ((int) mode + 1)) \
-      neg_optab->handlers[(int) mode].libfunc = NULL_RTX; \
-  } while (0)
+  /* GOFAST does not provide libfuncs for negation, so we use the
+     standard names.  */
 
-/* GCC does not use fpcmp/dpcmp for gt or ge because its own
-   FP-emulation library returns +1 for both > and unord.  So we leave
-   gt and ge unset, such that, instead of fpcmp(a,b) >[=], we generate
-   fpcmp(b,a) <[=] 0, which is unambiguous.  For unord libfuncs, we
-   use our own functions, since GOFAST doesn't supply them.  */
-#define GOFAST_RENAME_LIBCALLS \
-  add_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpadd"); \
-  add_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpadd"); \
-  sub_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpsub"); \
-  sub_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpsub"); \
-  smul_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpmul"); \
-  smul_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpmul"); \
-  sdiv_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpdiv"); \
-  sdiv_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpdiv"); \
-  cmp_optab->handlers[(int) SFmode].libfunc = init_one_libfunc ("fpcmp"); \
-  cmp_optab->handlers[(int) DFmode].libfunc = init_one_libfunc ("dpcmp"); \
-\
-  extendsfdf2_libfunc = init_one_libfunc ("fptodp"); \
-  truncdfsf2_libfunc = init_one_libfunc ("dptofp"); \
-\
-  eqhf2_libfunc = NULL_RTX; \
-  nehf2_libfunc = NULL_RTX; \
-  gthf2_libfunc = NULL_RTX; \
-  gehf2_libfunc = NULL_RTX; \
-  lthf2_libfunc = NULL_RTX; \
-  lehf2_libfunc = NULL_RTX; \
-\
-  eqsf2_libfunc = init_one_libfunc ("fpcmp"); \
-  nesf2_libfunc = init_one_libfunc ("fpcmp"); \
-  gtsf2_libfunc = NULL_RTX; \
-  gesf2_libfunc = NULL_RTX; \
-  ltsf2_libfunc = init_one_libfunc ("fpcmp"); \
-  lesf2_libfunc = init_one_libfunc ("fpcmp"); \
-\
-  eqdf2_libfunc = init_one_libfunc ("dpcmp"); \
-  nedf2_libfunc = init_one_libfunc ("dpcmp"); \
-  gtdf2_libfunc = NULL_RTX; \
-  gedf2_libfunc = NULL_RTX; \
-  ltdf2_libfunc = init_one_libfunc ("dpcmp"); \
-  ledf2_libfunc = init_one_libfunc ("dpcmp"); \
-\
-  eqxf2_libfunc = NULL_RTX; \
-  nexf2_libfunc = NULL_RTX; \
-  gtxf2_libfunc = NULL_RTX; \
-  gexf2_libfunc = NULL_RTX; \
-  ltxf2_libfunc = NULL_RTX; \
-  lexf2_libfunc = NULL_RTX; \
-\
-  eqtf2_libfunc = NULL_RTX; \
-  netf2_libfunc = NULL_RTX; \
-  gttf2_libfunc = NULL_RTX; \
-  getf2_libfunc = NULL_RTX; \
-  lttf2_libfunc = NULL_RTX; \
-  letf2_libfunc = NULL_RTX; \
-\
-  floatsisf_libfunc = init_one_libfunc ("sitofp"); \
-  floatsidf_libfunc = init_one_libfunc ("litodp"); \
-  fixsfsi_libfunc = init_one_libfunc ("fptosi"); \
-  fixdfsi_libfunc = init_one_libfunc ("dptoli"); \
-  fixunssfsi_libfunc = init_one_libfunc ("fptoui"); \
-  fixunsdfsi_libfunc = init_one_libfunc ("dptoul"); \
+  /* GCC does not use fpcmp/dpcmp for gt or ge because its own
+     FP-emulation library returns +1 for both > and unord.  So we
+     leave gt and ge unset, such that, instead of fpcmp(a,b) >[=], we
+     generate fpcmp(b,a) <[=] 0, which is unambiguous.  For unord
+     libfuncs, we use our own functions, since GOFAST doesn't supply
+     them.  */
 
-/* End of GOFAST_RENAME_LIBCALLS */
+  eqsf2_libfunc = init_one_libfunc ("fpcmp");
+  nesf2_libfunc = init_one_libfunc ("fpcmp");
+  gtsf2_libfunc = NULL_RTX;
+  gesf2_libfunc = NULL_RTX;
+  ltsf2_libfunc = init_one_libfunc ("fpcmp");
+  lesf2_libfunc = init_one_libfunc ("fpcmp");
+
+  eqdf2_libfunc = init_one_libfunc ("dpcmp");
+  nedf2_libfunc = init_one_libfunc ("dpcmp");
+  gtdf2_libfunc = NULL_RTX;
+  gedf2_libfunc = NULL_RTX;
+  ltdf2_libfunc = init_one_libfunc ("dpcmp");
+  ledf2_libfunc = init_one_libfunc ("dpcmp");
+
+  extendsfdf2_libfunc = init_one_libfunc ("fptodp");
+  truncdfsf2_libfunc = init_one_libfunc ("dptofp");
+
+  floatsisf_libfunc = init_one_libfunc ("sitofp");
+  floatsidf_libfunc = init_one_libfunc ("litodp");
+  fixsfsi_libfunc = init_one_libfunc ("fptosi");
+  fixdfsi_libfunc = init_one_libfunc ("dptoli");
+  fixunssfsi_libfunc = init_one_libfunc ("fptoui");
+  fixunsdfsi_libfunc = init_one_libfunc ("dptoul");
+#endif
+}

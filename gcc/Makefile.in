@@ -1564,7 +1564,8 @@ explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_
    toplev.h function.h $(GGC_H) $(TM_P_H) gt-explow.h
 optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h insn-config.h $(EXPR_H) $(OPTABS_H) libfuncs.h $(RECOG_H) reload.h \
-   toplev.h $(GGC_H) real.h $(TM_P_H) except.h gt-optabs.h $(BASIC_BLOCK_H)
+   toplev.h $(GGC_H) real.h $(TM_P_H) except.h gt-optabs.h $(BASIC_BLOCK_H) \
+   target.h
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    flags.h $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) function.h langhooks.h \
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h \

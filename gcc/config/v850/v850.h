@@ -1323,23 +1323,6 @@ zbss_section ()								\
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-#define MULDI3_LIBCALL  "__muldi3"
-#define UCMPDI2_LIBCALL "__ucmpdi2"
-#define CMPDI2_LIBCALL  "__cmpdi2"
-#define NEGDI2_LIBCALL  "__negdi2"
-
-#define INIT_TARGET_OPTABS 				\
-  do							\
-    { 							\
-      cmp_optab->handlers[(int) DImode].libfunc		\
-	= init_one_libfunc (CMPDI2_LIBCALL);            \
-      ucmp_optab->handlers[(int) DImode].libfunc        \
-	= init_one_libfunc (UCMPDI2_LIBCALL);           \
-      neg_optab->handlers[(int) DImode].libfunc		\
-	= init_one_libfunc (NEGDI2_LIBCALL);		\
-    }							\
-  while (0)
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */

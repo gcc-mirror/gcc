@@ -180,6 +180,7 @@ static void emit_soft_tfmode_cvt (enum rtx_code, rtx *);
 static void emit_hard_tfmode_operation (enum rtx_code, rtx *);
 
 static bool sparc_function_ok_for_sibcall (tree, tree);
+static void sparc_init_libfuncs (void);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 				   HOST_WIDE_INT, tree);
 static struct machine_function * sparc_init_machine_status (void);
@@ -251,6 +252,9 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL sparc_function_ok_for_sibcall
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS sparc_init_libfuncs
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -8386,7 +8390,96 @@ sparc_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 	  && ! TARGET_FLAT
 	  && (TARGET_ARCH64 || ! current_function_returns_struct));
 }
+
+/* libfunc renaming.  */
+#include "config/gofast.h"
 
+static void
+sparc_init_libfuncs (void)
+{
+  if (TARGET_ARCH32)
+    {
+      /* Use the subroutines that Sun's library provides for integer
+	 multiply and divide.  The `*' prevents an underscore from
+	 being prepended by the compiler. .umul is a little faster
+	 than .mul. */
+      set_optab_libfunc (smul_optab, SImode, "*.umul");
+      set_optab_libfunc (sdiv_optab, SImode, "*.div");
+      set_optab_libfunc (udiv_optab, SImode, "*.udiv");
+      set_optab_libfunc (smod_optab, SImode, "*.rem");
+      set_optab_libfunc (umod_optab, SImode, "*.urem");
+
+      /* TFmode arithmetic.  These names are part of the SPARC 32bit ABI.  */
+      set_optab_libfunc (add_optab, TFmode, "_Q_add");
+      set_optab_libfunc (sub_optab, TFmode, "_Q_sub");
+      set_optab_libfunc (neg_optab, TFmode, "_Q_neg");
+      set_optab_libfunc (smul_optab, TFmode, "_Q_mul");
+      set_optab_libfunc (sdiv_optab, TFmode, "_Q_div");
+
+      /* We can define the TFmode sqrt optab only if TARGET_FPU.  This
+	 is because with soft-float, the SFmode and DFmode sqrt
+	 instructions will be absent, and the compiler will notice and
+	 try to use the TFmode sqrt instruction for calls to the
+	 builtin function sqrt, but this fails.  */
+      if (TARGET_FPU)
+	set_optab_libfunc (sqrt_optab, TFmode, "_Q_sqrt");
+
+      eqtf2_libfunc = init_one_libfunc ("_Q_feq");
+      netf2_libfunc = init_one_libfunc ("_Q_fne");
+      gttf2_libfunc = init_one_libfunc ("_Q_fgt");
+      getf2_libfunc = init_one_libfunc ("_Q_fge");
+      lttf2_libfunc = init_one_libfunc ("_Q_flt");
+      letf2_libfunc = init_one_libfunc ("_Q_fle");
+
+      trunctfsf2_libfunc = init_one_libfunc ("_Q_qtos");
+      trunctfdf2_libfunc = init_one_libfunc ("_Q_qtod");
+      extendsftf2_libfunc = init_one_libfunc ("_Q_stoq");
+      extenddftf2_libfunc = init_one_libfunc ("_Q_dtoq");
+      floatsitf_libfunc = init_one_libfunc ("_Q_itoq");
+      fixtfsi_libfunc = init_one_libfunc ("_Q_qtoi");
+      fixunstfsi_libfunc = init_one_libfunc ("_Q_qtou");
+
+      if (SUN_CONVERSION_LIBFUNCS)
+	{
+	  fixsfdi_libfunc = init_one_libfunc ("__ftoll");
+	  fixunssfdi_libfunc = init_one_libfunc ("__ftoull");
+	  fixdfdi_libfunc = init_one_libfunc ("__dtoll");
+	  fixunsdfdi_libfunc = init_one_libfunc ("__dtoull");
+	}
+    }
+  if (TARGET_ARCH64)
+    {
+      /* In the SPARC 64bit ABI, SImode multiply and divide functions
+	 do not exist in the library.  Make sure the compiler does not
+	 emit calls to them by accident.  (It should always use the
+         hardware instructions.)  */
+      set_optab_libfunc (smul_optab, SImode, 0);
+      set_optab_libfunc (sdiv_optab, SImode, 0);
+      set_optab_libfunc (udiv_optab, SImode, 0);
+      set_optab_libfunc (smod_optab, SImode, 0);
+      set_optab_libfunc (umod_optab, SImode, 0);
+
+      if (SUN_INTEGER_MULTIPLY_64)
+	{
+	  set_optab_libfunc (smul_optab, DImode, "__mul64");
+	  set_optab_libfunc (sdiv_optab, DImode, "__div64");
+	  set_optab_libfunc (udiv_optab, DImode, "__udiv64");
+	  set_optab_libfunc (smod_optab, DImode, "__rem64");
+	  set_optab_libfunc (umod_optab, DImode, "__urem64");
+	}
+
+      if (SUN_CONVERSION_LIBFUNCS)
+	{
+	  fixsfdi_libfunc = init_one_libfunc ("__ftol");
+	  fixunssfdi_libfunc = init_one_libfunc ("__ftoul");
+	  fixdfdi_libfunc = init_one_libfunc ("__dtol");
+	  fixunsdfdi_libfunc = init_one_libfunc ("__dtoul");
+	}
+    }
+
+  gofast_maybe_init_libfuncs ();
+}
+
 /* ??? Similar to the standard section selection, but force reloc-y-ness
    if SUNOS4_SHARED_LIBRARIES.  Unclear why this helps (as opposed to
    pretending PIC always on), but that's what the old code did.  */

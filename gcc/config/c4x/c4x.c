@@ -199,6 +199,7 @@ static int c4x_adjust_cost (rtx, rtx, rtx, int);
 static void c4x_globalize_label (FILE *, const char *);
 static bool c4x_rtx_costs (rtx, int, int, int *);
 static int c4x_address_cost (rtx);
+static void c4x_init_libfuncs (void);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -239,6 +240,9 @@ static int c4x_address_cost (rtx);
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG c4x_reorg
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS c4x_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4836,6 +4840,35 @@ c4x_expand_builtin (tree exp, rtx target,
       return target;
     }
   return NULL_RTX;
+}
+
+static void
+c4x_init_libfuncs (void)
+{
+  set_optab_libfunc (smul_optab, QImode, "__mulqi3");
+  set_optab_libfunc (sdiv_optab, QImode, "__divqi3");
+  set_optab_libfunc (udiv_optab, QImode, "__udivqi3");
+  set_optab_libfunc (smod_optab, QImode, "__modqi3");
+  set_optab_libfunc (umod_optab, QImode, "__umodqi3");
+  set_optab_libfunc (sdiv_optab, QFmode, "__divqf3");
+  set_optab_libfunc (smul_optab, HFmode, "__mulhf3");
+  set_optab_libfunc (sdiv_optab, HFmode, "__divhf3");
+  set_optab_libfunc (smul_optab, HImode, "__mulhi3");
+  set_optab_libfunc (sdiv_optab, HImode, "__divhi3");
+  set_optab_libfunc (udiv_optab, HImode, "__udivhi3");
+  set_optab_libfunc (smod_optab, HImode, "__modhi3");
+  set_optab_libfunc (umod_optab, HImode, "__umodhi3");
+  set_optab_libfunc (ffs_optab,  QImode, "__ffs");
+  smulhi3_libfunc           = init_one_libfunc ("__smulhi3_high");
+  umulhi3_libfunc           = init_one_libfunc ("__umulhi3_high");
+  fix_truncqfhi2_libfunc    = init_one_libfunc ("__fix_truncqfhi2");
+  fixuns_truncqfhi2_libfunc = init_one_libfunc ("__ufix_truncqfhi2");
+  fix_trunchfhi2_libfunc    = init_one_libfunc ("__fix_trunchfhi2");
+  fixuns_trunchfhi2_libfunc = init_one_libfunc ("__ufix_trunchfhi2");
+  floathiqf2_libfunc        = init_one_libfunc ("__floathiqf2");
+  floatunshiqf2_libfunc     = init_one_libfunc ("__ufloathiqf2");
+  floathihf2_libfunc        = init_one_libfunc ("__floathihf2");
+  floatunshihf2_libfunc     = init_one_libfunc ("__ufloathihf2");
 }
 
 static void

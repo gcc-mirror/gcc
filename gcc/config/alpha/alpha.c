@@ -10015,6 +10015,35 @@ unicosmk_need_dex (rtx x ATTRIBUTE_UNUSED)
 
 #endif /* TARGET_ABI_UNICOSMK */
 
+static void
+alpha_init_libfuncs (void)
+{
+  if (TARGET_ABI_UNICOSMK)
+    {
+      /* Prevent gcc from generating calls to __divsi3.  */
+      set_optab_libfunc (sdiv_optab, SImode, 0);
+      set_optab_libfunc (udiv_optab, SImode, 0);
+
+      /* Use the functions provided by the system library
+	 for DImode integer division.  */
+      set_optab_libfunc (sdiv_optab, DImode, "$sldiv");
+      set_optab_libfunc (udiv_optab, DImode, "$uldiv");
+    }
+  else if (TARGET_ABI_OPEN_VMS)
+    {
+      /* Use the VMS runtime library functions for division and
+	 remainder.  */
+      set_optab_libfunc (sdiv_optab, SImode, "OTS$DIV_I");
+      set_optab_libfunc (sdiv_optab, DImode, "OTS$DIV_L");
+      set_optab_libfunc (udiv_optab, SImode, "OTS$DIV_UI");
+      set_optab_libfunc (udiv_optab, DImode, "OTS$DIV_UL");
+      set_optab_libfunc (smod_optab, SImode, "OTS$REM_I");
+      set_optab_libfunc (smod_optab, DImode, "OTS$REM_L");
+      set_optab_libfunc (umod_optab, SImode, "OTS$REM_UI");
+      set_optab_libfunc (umod_optab, DImode, "OTS$REM_UL");
+    }
+}
+
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10061,6 +10090,9 @@ unicosmk_need_dex (rtx x ATTRIBUTE_UNUSED)
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
 #define TARGET_ASM_FUNCTION_END_PROLOGUE alpha_output_function_end_prologue
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS alpha_init_libfuncs
 
 #if TARGET_ABI_UNICOSMK
 #undef TARGET_ASM_FILE_START

@@ -198,33 +198,6 @@
 /* Define cutoff for using external functions to save floating point.  */
 #define FP_SAVE_INLINE(FIRST_REG) ((FIRST_REG) == 62 || (FIRST_REG) == 63)
 
-/* Optabs entries for the int->float routines and quad FP operations
-   using the standard AIX names.  */
-#define ADDTF3_LIBCALL "_xlqadd"
-#define DIVTF3_LIBCALL "_xlqdiv"
-#define MULTF3_LIBCALL "_xlqmul"
-#define SUBTF3_LIBCALL "_xlqsub"
-
-#define INIT_TARGET_OPTABS						\
-  do {									\
-    if (! TARGET_POWER2 && ! TARGET_POWERPC && TARGET_HARD_FLOAT)	\
-      {									\
-	fixdfsi_libfunc = init_one_libfunc (RS6000_ITRUNC);		\
-	fixunsdfsi_libfunc = init_one_libfunc (RS6000_UITRUNC);		\
-      }									\
-    if (TARGET_HARD_FLOAT)						\
-      {									\
-	add_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (ADDTF3_LIBCALL);				\
-	sub_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (SUBTF3_LIBCALL);				\
-	smul_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (MULTF3_LIBCALL);				\
-	sdiv_optab->handlers[(int) TFmode].libfunc			\
-	  = init_one_libfunc (DIVTF3_LIBCALL);				\
-      }									\
-  } while (0)
-
 /* __throw will restore its own return address to be the same as the
    return address of the function that the throw is being made to.
    This is unfortunate, because we want to check the original

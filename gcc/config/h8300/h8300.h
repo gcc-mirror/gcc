@@ -1197,30 +1197,6 @@ struct cum_arg
 
 #define TARGET_MEM_FUNCTIONS
 
-#define MULHI3_LIBCALL	"__mulhi3"
-#define DIVHI3_LIBCALL	"__divhi3"
-#define UDIVHI3_LIBCALL	"__udivhi3"
-#define MODHI3_LIBCALL	"__modhi3"
-#define UMODHI3_LIBCALL	"__umodhi3"
-
-/* Perform target dependent optabs initialization.  */
-
-#define INIT_TARGET_OPTABS					\
-  do								\
-    {								\
-      smul_optab->handlers[(int) HImode].libfunc		\
-	= init_one_libfunc (MULHI3_LIBCALL);			\
-      sdiv_optab->handlers[(int) HImode].libfunc		\
-	= init_one_libfunc (DIVHI3_LIBCALL);			\
-      udiv_optab->handlers[(int) HImode].libfunc		\
-	= init_one_libfunc (UDIVHI3_LIBCALL);			\
-      smod_optab->handlers[(int) HImode].libfunc		\
-	= init_one_libfunc (MODHI3_LIBCALL);			\
-      umod_optab->handlers[(int) HImode].libfunc		\
-	= init_one_libfunc (UMODHI3_LIBCALL);			\
-    }								\
-  while (0)
-
 #define MOVE_RATIO 3
 
 /* Define the codes that are matched by predicates in h8300.c.  */

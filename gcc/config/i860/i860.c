@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
@@ -2091,6 +2092,14 @@ i860_file_start (void)
   fprintf (asm_out_file, "\t.version\t\"01.01\"\n");
 }
 
+static void
+i860_init_libfuncs (void)
+{
+  set_optab_libfunc (sdiv_optab, SImode, "*.div");
+  set_optab_libfunc (udiv_optab, SImode, "*.udiv");
+  set_optab_libfunc (smod_optab, SImode, "*.rem");
+  set_optab_libfunc (umod_optab, SImode, "*.urem");
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_RTX_COSTS
@@ -2104,6 +2113,9 @@ i860_file_start (void)
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i860_output_function_epilogue
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS i860_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -37,6 +37,7 @@
 #include "tree.h"
 #include "expr.h"
 #include "optabs.h"
+#include "libfuncs.h"
 #include "except.h"
 #include "function.h"
 #include "output.h"
@@ -279,6 +280,7 @@ static rtx rs6000_expand_ternop_builtin (enum insn_code, tree, rtx);
 static rtx rs6000_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void altivec_init_builtins (void);
 static void rs6000_common_init_builtins (void);
+static void rs6000_init_libfuncs (void);
 
 static void enable_mask_for_builtins (struct builtin_description *,
 					      int, enum rs6000_builtins,
@@ -466,6 +468,9 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS rs6000_init_libfuncs
 
 #if TARGET_MACHO
 #undef TARGET_BINDS_LOCAL_P
@@ -6767,6 +6772,57 @@ rs6000_common_init_builtins (void)
       def_builtin (d->mask, d->name, type, d->code);
     }
 }
+
+static void
+rs6000_init_libfuncs (void)
+{
+  if (!TARGET_HARD_FLOAT)
+    return;
+
+  if (TARGET_AIX)
+    {
+      /* Optabs entries for the int->float routines and quad FP
+	 operations using the standard AIX names.  */
+      if (! TARGET_POWER2 && ! TARGET_POWERPC)
+	{
+	  fixdfsi_libfunc = init_one_libfunc ("__itrunc");
+	  fixunsdfsi_libfunc = init_one_libfunc ("__uitrunc");
+	}
+
+      set_optab_libfunc (add_optab, TFmode, "_xlqadd");
+      set_optab_libfunc (sub_optab, TFmode, "_xlqsub");
+      set_optab_libfunc (smul_optab, TFmode, "_xlqmul");
+      set_optab_libfunc (sdiv_optab, TFmode, "_xlqdiv");
+    }
+  else if (TARGET_ELF)
+    {
+      /* Define library calls for quad FP operations.  These are all
+	 part of the PowerPC 32bit ABI.  */
+
+      set_optab_libfunc (add_optab, TFmode, "_q_add");
+      set_optab_libfunc (sub_optab, TFmode, "_q_sub");
+      set_optab_libfunc (neg_optab, TFmode, "_q_neg");
+      set_optab_libfunc (smul_optab, TFmode, "_q_mul");
+      set_optab_libfunc (sdiv_optab, TFmode, "_q_div");
+      if (TARGET_PPC_GPOPT || TARGET_POWER2)
+	set_optab_libfunc (sqrt_optab, TFmode, "_q_sqrt");
+
+      eqtf2_libfunc = init_one_libfunc ("_q_feq");
+      netf2_libfunc = init_one_libfunc ("_q_fne");
+      gttf2_libfunc = init_one_libfunc ("_q_fgt");
+      getf2_libfunc = init_one_libfunc ("_q_fge");
+      lttf2_libfunc = init_one_libfunc ("_q_flt");
+      letf2_libfunc = init_one_libfunc ("_q_fle");
+      trunctfsf2_libfunc = init_one_libfunc ("_q_qtos");
+      trunctfdf2_libfunc = init_one_libfunc ("_q_qtod");
+      extendsftf2_libfunc = init_one_libfunc ("_q_stoq");
+      extenddftf2_libfunc = init_one_libfunc ("_q_dtoq");
+      floatsitf_libfunc = init_one_libfunc ("_q_itoq");
+      fixtfsi_libfunc = init_one_libfunc ("_q_qtoi");
+      fixunstfsi_libfunc = init_one_libfunc ("_q_qtou");
+    }
+}
+
 
 
 /* Expand a block move operation, and return 1 if successful.  Return 0

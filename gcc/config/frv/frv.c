@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "optabs.h"
+#include "libfuncs.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "tm_p.h"
@@ -277,6 +278,7 @@ static void frv_function_epilogue		PARAMS ((FILE *, HOST_WIDE_INT));
 static bool frv_assemble_integer		PARAMS ((rtx, unsigned, int));
 static void frv_init_builtins			PARAMS ((void));
 static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static void frv_init_libfuncs			PARAMS ((void));
 static bool frv_in_small_data_p			PARAMS ((tree));
 static void frv_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
@@ -295,6 +297,8 @@ static void frv_asm_out_destructor		PARAMS ((rtx, int));
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN frv_expand_builtin
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS frv_init_libfuncs
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
 #undef TARGET_RTX_COSTS
@@ -9081,6 +9085,51 @@ frv_init_builtins ()
 #undef UNARY
 #undef BINARY
 #undef TRINARY
+}
+
+/* Set the names for various arithmetic operations according to the
+   FRV ABI.  */
+static void
+frv_init_libfuncs (void)
+{
+  set_optab_libfunc (smod_optab,     SImode, "__modi");
+  set_optab_libfunc (umod_optab,     SImode, "__umodi");
+
+  set_optab_libfunc (add_optab,      DImode, "__addll");
+  set_optab_libfunc (sub_optab,      DImode, "__subll");
+  set_optab_libfunc (smul_optab,     DImode, "__mulll");
+  set_optab_libfunc (sdiv_optab,     DImode, "__divll");
+  set_optab_libfunc (smod_optab,     DImode, "__modll");
+  set_optab_libfunc (umod_optab,     DImode, "__umodll");
+  set_optab_libfunc (and_optab,      DImode, "__andll");
+  set_optab_libfunc (ior_optab,      DImode, "__orll");
+  set_optab_libfunc (xor_optab,      DImode, "__xorll");
+  set_optab_libfunc (one_cmpl_optab, DImode, "__notll");
+
+  set_optab_libfunc (add_optab,      SFmode, "__addf");
+  set_optab_libfunc (sub_optab,      SFmode, "__subf");
+  set_optab_libfunc (smul_optab,     SFmode, "__mulf");
+  set_optab_libfunc (sdiv_optab,     SFmode, "__divf");
+
+  set_optab_libfunc (add_optab,      DFmode, "__addd");
+  set_optab_libfunc (sub_optab,      DFmode, "__subd");
+  set_optab_libfunc (smul_optab,     DFmode, "__muld");
+  set_optab_libfunc (sdiv_optab,     DFmode, "__divd");
+
+  fixsfsi_libfunc     = init_one_libfunc ("__ftoi");
+  fixunssfsi_libfunc  = init_one_libfunc ("__ftoui");
+  fixsfdi_libfunc     = init_one_libfunc ("__ftoll");
+  fixunssfdi_libfunc  = init_one_libfunc ("__ftoull");
+  fixdfsi_libfunc     = init_one_libfunc ("__dtoi");
+  fixunsdfsi_libfunc  = init_one_libfunc ("__dtoui");
+  fixdfdi_libfunc     = init_one_libfunc ("__dtoll");
+  fixunsdfdi_libfunc  = init_one_libfunc ("__dtoull");
+  floatsisf_libfunc   = init_one_libfunc ("__itof");
+  floatdisf_libfunc   = init_one_libfunc ("__lltof");
+  floatsidf_libfunc   = init_one_libfunc ("__itod");
+  floatdidf_libfunc   = init_one_libfunc ("__lltod");
+  extendsfdf2_libfunc = init_one_libfunc ("__ftod");
+  truncdfsf2_libfunc  = init_one_libfunc ("__dtof");
 }
 
 /* Convert an integer constant to an accumulator register.  ICODE is the

@@ -334,7 +334,6 @@ extern rtx expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern void std_expand_builtin_va_start (tree, rtx);
 extern rtx std_expand_builtin_va_arg (tree, tree);
 extern rtx expand_builtin_va_arg (tree, tree);
-extern void default_init_builtins (void);
 extern rtx default_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);

@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "function.h"
+#include "optabs.h"
 #include "toplev.h"
 #include "c-pragma.h"
 #include "tm_p.h"
@@ -4507,6 +4508,17 @@ h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
    return 1;
 }
 
+/* Perform target dependent optabs initialization.  */
+static void
+h8300_init_libfuncs (void)
+{
+  set_optab_libfunc (smul_optab, HImode, "__mulhi3");
+  set_optab_libfunc (sdiv_optab, HImode, "__divhi3");
+  set_optab_libfunc (udiv_optab, HImode, "__udivhi3");
+  set_optab_libfunc (smod_optab, HImode, "__modhi3");
+  set_optab_libfunc (umod_optab, HImode, "__umodhi3");
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
@@ -4533,5 +4545,8 @@ h8300_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS h8300_rtx_costs
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS h8300_init_libfuncs
 
 struct gcc_target targetm = TARGET_INITIALIZER;

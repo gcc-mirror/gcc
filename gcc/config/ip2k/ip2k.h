@@ -863,21 +863,6 @@ extern int ip2k_reorg_merge_qimode;
 #define OUT_AS2(a,b,c) output_asm_insn (AS2 (a,b,c), operands)
 #define CR_TAB "\n\t"
 
-#define INIT_TARGET_OPTABS				\
-{							\
-  smul_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx_SYMBOL_REF (Pmode, "_mulsi3");		\
-							\
-  smul_optab->handlers[(int) DImode].libfunc		\
-    = gen_rtx_SYMBOL_REF (Pmode, "_muldi3");		\
-							\
-  cmp_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx_SYMBOL_REF (Pmode, "_cmphi2");		\
-							\
-  cmp_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx_SYMBOL_REF (Pmode, "_cmpsi2");		\
-}
-
 #define PREDICATE_CODES					\
   {"ip2k_ip_operand", {MEM}},				\
   {"ip2k_short_operand", {MEM}},			\

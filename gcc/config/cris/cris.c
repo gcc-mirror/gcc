@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "ggc.h"
+#include "optabs.h"
 
 /* Usable when we have an amount to add or subtract, and want the
    optimal size of the insn.  */
@@ -104,6 +105,7 @@ static void cris_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
 
 static void cris_file_start (void);
+static void cris_init_libfuncs (void);
 
 static bool cris_rtx_costs (rtx, int, int, int *);
 static int cris_address_cost (rtx);
@@ -164,6 +166,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START cris_file_start
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS cris_init_libfuncs
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS cris_rtx_costs
@@ -2718,6 +2723,17 @@ cris_file_start (void)
   targetm.file_start_file_directive = TARGET_ELF;
 
   default_file_start ();
+}
+
+/* Rename the function calls for integer multiply and divide.  */
+static void
+cris_init_libfuncs ()
+{
+  set_optab_libfunc (smul_optab, SImode, "__Mul");
+  set_optab_libfunc (sdiv_optab, SImode, "__Div");
+  set_optab_libfunc (udiv_optab, SImode, "__Udiv");
+  set_optab_libfunc (smod_optab, SImode, "__Mod");
+  set_optab_libfunc (umod_optab, SImode, "__Umod");
 }
 
 /* The EXPAND_BUILTIN_VA_ARG worker.  This is modified from the

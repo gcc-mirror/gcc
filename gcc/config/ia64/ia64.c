@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "expr.h"
 #include "optabs.h"
+#include "libfuncs.h"
 #include "except.h"
 #include "function.h"
 #include "ggc.h"
@@ -252,6 +253,8 @@ static unsigned int ia64_rwreloc_section_type_flags (tree, const char *, int)
 static void ia64_hpux_add_extern_decl (const char *name)
      ATTRIBUTE_UNUSED;
 static void ia64_hpux_file_end (void)
+     ATTRIBUTE_UNUSED;
+static void ia64_hpux_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
@@ -8304,6 +8307,36 @@ ia64_hpux_file_end (void)
     }
 }
 
+/* Rename all the TFmode libfuncs using the HPUX conventions.  */
+static void
+ia64_hpux_init_libfuncs (void)
+{
+  set_optab_libfunc (add_optab, TFmode, "_U_Qfadd");
+  set_optab_libfunc (sub_optab, TFmode, "_U_Qfsub");
+  set_optab_libfunc (smul_optab, TFmode, "_Q_Qfmpy");
+  set_optab_libfunc (sdiv_optab, TFmode, "_U_Qfdiv");
+  set_optab_libfunc (smin_optab, TFmode, "_U_Qfmin");
+  set_optab_libfunc (smax_optab, TFmode, "_U_Qfmax");
+  set_optab_libfunc (abs_optab, TFmode, "_U_Qfabs");
+  set_optab_libfunc (neg_optab, TFmode, "_U_Qfneg");
+
+  extendsftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_sgl_to_quad");
+  extenddftf2_libfunc = init_one_libfunc ("_U_Qfcnvff_dbl_to_quad");
+  trunctfsf2_libfunc = init_one_libfunc ("_U_Qfcnvff_quad_to_sgl");
+  trunctfdf2_libfunc = init_one_libfunc ("_U_Qfcnvff_quad_to_dbl");
+  floatsitf_libfunc = init_one_libfunc ("_U_Qfcnvxf_sgl_to_quad");
+  floatditf_libfunc = init_one_libfunc ("_U_Qfcnvxf_dbl_to_quad");
+  fixtfsi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_sgl");
+  fixtfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxt_quad_to_dbl");
+  fixunstfsi_libfunc = init_one_libfunc ("_U_Qfcnvfxut_quad_to_sgl");
+  fixunstfdi_libfunc = init_one_libfunc ("_U_Qfcnvfxut_quad_to_dbl");
+  eqtf2_libfunc = init_one_libfunc ("_U_Qfeq");
+  netf2_libfunc = init_one_libfunc ("_U_Qfne");
+  gttf2_libfunc = init_one_libfunc ("_U_Qfgt");
+  getf2_libfunc = init_one_libfunc ("_U_Qfge");
+  lttf2_libfunc = init_one_libfunc ("_U_Qflt");
+  letf2_libfunc = init_one_libfunc ("_U_Qfle");
+}
 
 /* Switch to the section to which we should output X.  The only thing
    special we do here is to honor small data.  */

@@ -1097,12 +1097,6 @@ struct cum_args {int regs;};
 
 /* Node: Library Calls */
 
-#define MULSI3_LIBCALL "__Mul"
-#define DIVSI3_LIBCALL "__Div"
-#define UDIVSI3_LIBCALL "__Udiv"
-#define MODSI3_LIBCALL "__Mod"
-#define UMODSI3_LIBCALL "__Umod"
-
 /* If you change this, you have to check whatever libraries and systems
    that use it.  */
 #define TARGET_EDOM 33

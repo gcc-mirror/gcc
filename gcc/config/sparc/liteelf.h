@@ -43,9 +43,8 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_APP_REGS
 
-/* US Software GOFAST library support.  */
-#undef INIT_SUBTARGET_OPTABS
-#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS      
+/* Enable US Software GOFAST library support.  */
+#define US_SOFTWARE_GOFAST
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crti.o%s crtbegin.o%s"

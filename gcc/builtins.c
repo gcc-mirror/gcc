@@ -6540,13 +6540,6 @@ validate_arglist (tree arglist, ...)
   return res;
 }
 
-/* Default version of target-specific builtin setup that does nothing.  */
-
-void
-default_init_builtins (void)
-{
-}
-
 /* Default target-specific builtin expander that does nothing.  */
 
 rtx

@@ -177,13 +177,6 @@ toc_section ()						\
 #undef  RS6000_MCOUNT
 #define RS6000_MCOUNT ".__mcount"
 
-/* Function names to call to do floating point truncation.  */
-
-#undef  RS6000_ITRUNC
-#define RS6000_ITRUNC "__itrunc"
-#undef  RS6000_UITRUNC
-#define RS6000_UITRUNC "__uitrunc"
-
 /* This outputs NAME to FILE up to the first null or '['.  */
 
 #define RS6000_OUTPUT_BASENAME(FILE, NAME) \

@@ -835,11 +835,6 @@ struct cumulative_args { int ints, floats; };
    Do not define this if the table should contain absolute addresses. */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
-#define DIVSI3_LIBCALL "*.div"
-#define UDIVSI3_LIBCALL "*.udiv"
-#define MODSI3_LIBCALL "*.rem"
-#define UMODSI3_LIBCALL "*.urem"
-
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
 
