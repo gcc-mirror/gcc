@@ -107,42 +107,114 @@ appdirs=""
 # Work in distributions that contain no compiler tools, like Autoconf.
 if [ -d ${srcdir}/config ]; then
 case "${host}" in
-  m68k-hp-hpux*)	  host_makefile_frag=config/mh-hp300 ;;
-  m68k-apollo-sysv*)      host_makefile_frag=config/mh-apollo68 ;;
-  m68k-apollo-bsd*)       host_makefile_frag=config/mh-a68bsd ;;
-  m88k-dg-dgux*)	  host_makefile_frag=config/mh-dgux ;;
-  m88k-harris-cxux*)	  host_makefile_frag=config/mh-cxux ;;
-  m88k-motorola-sysv*)    host_makefile_frag=config/mh-delta88;;
-  mips*-dec-ultrix*)      host_makefile_frag=config/mh-decstation ;;
-  mips*-nec-sysv4*)	  host_makefile_frag=config/mh-necv4 ;;
-  mips*-sgi-irix6*)	  host_makefile_frag=config/mh-irix6 ;;
-  mips*-sgi-irix5*)	  host_makefile_frag=config/mh-irix5 ;;
-  mips*-sgi-irix4*)       host_makefile_frag=config/mh-irix4 ;;
-  mips*-sgi-irix3*)       host_makefile_frag=config/mh-sysv ;;
-  mips*-*-sysv4*)	  host_makefile_frag=config/mh-sysv4 ;;
-  mips*-*-sysv*)	  host_makefile_frag=config/mh-riscos ;;
-  i[3456]86-*-dgux*)	  host_makefile_frag=config/mh-dgux386 ;;
-  i[3456]86-ncr-sysv4.3*) host_makefile_frag=config/mh-ncrsvr43 ;;
-  i[3456]86-ncr-sysv4*)   host_makefile_frag=config/mh-ncr3000 ;;
-  i[3456]86-*-sco3.2v5*)  host_makefile_frag=config/mh-sysv ;;
-  i[3456]86-*-sco*)       host_makefile_frag=config/mh-sco ;;
-  i[3456]86-*-isc*)	  host_makefile_frag=config/mh-sysv ;;
-  i[3456]86-*-solaris2*)  host_makefile_frag=config/mh-sysv4 ;;
-  i[3456]86-*-aix*)	  host_makefile_frag=config/mh-aix386 ;;
-  i[3456]86-*-go32*)	  host_makefile_frag=config/mh-go32 ;;
-  i[3456]86-*-msdosdjgpp*) host_makefile_frag=config/mh-go32 ;;
-  *-cygwin32*)	  	  host_makefile_frag=config/mh-cygwin32 ;;
-  *-windows*)	  	  host_makefile_frag=config/mh-windows ;;
-  vax-*-ultrix2*)         host_makefile_frag=config/mh-vaxult2 ;;
-  *-*-solaris2*)          host_makefile_frag=config/mh-solaris ;;
-  m68k-sun-sunos*)	  host_makefile_frag=config/mh-sun3 ;;
-  *-hp-hpux[78]*)         host_makefile_frag=config/mh-hpux8 ;;
-  *-hp-hpux*)             host_makefile_frag=config/mh-hpux ;;
-  *-*-hiux*)              host_makefile_frag=config/mh-hpux ;;
-  rs6000-*-lynxos*)	  host_makefile_frag=config/mh-lynxrs6k ;;
-  *-*-lynxos*)	  	  host_makefile_frag=config/mh-lynxos ;;
-  *-*-sysv4*)             host_makefile_frag=config/mh-sysv4 ;;
-  *-*-sysv*)              host_makefile_frag=config/mh-sysv ;;
+  m68k-hp-hpux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-hp300"
+    ;;
+  m68k-apollo-sysv*)
+    host_makefile_frag="${host_makefile_frag} config/mh-apollo68"
+    ;;
+  m68k-apollo-bsd*)
+    host_makefile_frag="${host_makefile_frag} config/mh-a68bsd"
+    ;;
+  m88k-dg-dgux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-dgux"
+    ;;
+  m88k-harris-cxux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-cxux"
+    ;;
+  m88k-motorola-sysv*)
+    host_makefile_frag="${host_makefile_frag} config/mh-delta88"
+    ;;
+  mips*-dec-ultrix*)
+    host_makefile_frag="${host_makefile_frag} config/mh-decstation"
+    ;;
+  mips*-nec-sysv4*)
+    host_makefile_frag="${host_makefile_frag} config/mh-necv4"
+    ;;
+  mips*-sgi-irix6*)
+    host_makefile_frag="${host_makefile_frag} config/mh-irix6"
+    ;;
+  mips*-sgi-irix5*)
+    host_makefile_frag="${host_makefile_frag} config/mh-irix5"
+    ;;
+  mips*-sgi-irix4*)
+    host_makefile_frag="${host_makefile_frag} config/mh-irix4"
+    ;;
+  mips*-sgi-irix3*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    ;;
+  mips*-*-sysv4*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    ;;
+  mips*-*-sysv*)
+    host_makefile_frag="${host_makefile_frag} config/mh-riscos"
+    ;;
+  i[3456]86-*-dgux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-dgux386"
+    ;;
+  i[3456]86-ncr-sysv4.3*)
+    host_makefile_frag="${host_makefile_frag} config/mh-ncrsvr43"
+    ;;
+  i[3456]86-ncr-sysv4*)
+    host_makefile_frag="${host_makefile_frag} config/mh-ncr3000"
+    ;;
+  i[3456]86-*-sco3.2v5*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    ;;
+  i[3456]86-*-sco*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sco"
+    ;;
+  i[3456]86-*-isc*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    ;;
+  i[3456]86-*-solaris2*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    ;;
+  i[3456]86-*-aix*)
+    host_makefile_frag="${host_makefile_frag} config/mh-aix386"
+    ;;
+  i[3456]86-*-go32*)
+    host_makefile_frag="${host_makefile_frag} config/mh-go32"
+    ;;
+  i[3456]86-*-msdosdjgpp*)
+    host_makefile_frag="${host_makefile_frag} config/mh-go32"
+    ;;
+  *-cygwin32*)
+    host_makefile_frag="${host_makefile_frag} config/mh-cygwin32"
+    ;;
+  *-windows*)
+    host_makefile_frag="${host_makefile_frag} config/mh-windows"
+    ;;
+  vax-*-ultrix2*)
+    host_makefile_frag="${host_makefile_frag} config/mh-vaxult2"
+    ;;
+  *-*-solaris2*)
+    host_makefile_frag="${host_makefile_frag} config/mh-solaris"
+    ;;
+  m68k-sun-sunos*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sun3"
+    ;;
+  *-hp-hpux[78]*)
+    host_makefile_frag="${host_makefile_frag} config/mh-hpux8"
+    ;;
+  *-hp-hpux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-hpux"
+    ;;
+  *-*-hiux*)
+    host_makefile_frag="${host_makefile_frag} config/mh-hpux"
+    ;;
+  rs6000-*-lynxos*)
+    host_makefile_frag="${host_makefile_frag} config/mh-lynxrs6k"
+    ;;
+  *-*-lynxos*)
+    host_makefile_frag="${host_makefile_frag} config/mh-lynxos"
+    ;;
+  *-*-sysv4*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv4"
+    ;;
+  *-*-sysv*)
+    host_makefile_frag="${host_makefile_frag} config/mh-sysv"
+    ;;
 esac
 fi
 
@@ -186,33 +258,52 @@ case "${enable_shared}" in
 esac
 
 if [ x${shared} = xyes ]; then
-  waugh=
   case "${host}" in
-    hppa*)		waugh=config/mh-papic ;;
-    i[3456]86-*)	waugh=config/mh-x86pic ;;
-    sparc64-*)		waugh=config/mh-sparcpic ;;
-    powerpc*-*)		waugh=config/mh-ppcpic ;;
-    alpha-*-linux*)     waugh=config/mh-elfalphapic ;;
-    *)			waugh=config/mh-${host_cpu}pic ;;
+    hppa*)
+      host_makefile_frag="${host_makefile_frag} config/mh-papic"
+      ;;
+    i[3456]86-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-x86pic"
+      ;;
+    sparc64-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-sparcpic"
+      ;;
+    powerpc*-*)
+      host_makefile_frag="${host_makefile_frag} config/mh-ppcpic"
+      ;;
+    alpha-*-linux*)
+      host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
+      ;;
+    *)
+      host_makefile_frag="${host_makefile_frag} config/mh-${host_cpu}pic"
+      ;;
   esac
-  if [ -f ${srcdir}/${waugh} ]; then
-    if [ -n "${host_makefile_frag}" ] ; then
-      cat ${srcdir}/${host_makefile_frag} > mh-frag
-      cat ${srcdir}/${waugh} >> mh-frag
-      host_makefile_frag=mh-frag
-    else
-      host_makefile_frag=${waugh}
-    fi
-  fi
+fi
+
+rm -f mh-frag
+if [ -n "${host_makefile_frag}" ] ; then
+  for f in ${host_makefile_frag}
+  do
+    cat ${srcdir}/$f >> mh-frag
+  done
+  host_makefile_frag=mh-frag
 fi
 
 # per-target:
 
 case "${target}" in
-  v810*)		target_makefile_frag=config/mt-v810 ;;
-  i[3456]86-*-netware*) target_makefile_frag=config/mt-netware ;;
-  powerpc-*-netware*)   target_makefile_frag=config/mt-netware ;;
-  *-*-linux-gnu)        target_makefile_frag=config/mt-linux ;;
+  v810*)
+    target_makefile_frag="${target_makefile_frag} config/mt-v810"
+    ;;
+  i[3456]86-*-netware*)
+    target_makefile_frag="${target_makefile_frag} config/mt-netware"
+    ;;
+  powerpc-*-netware*)
+    target_makefile_frag="${target_makefile_frag} config/mt-netware"
+    ;;
+  *-*-linux-gnu)
+    target_makefile_frag="${target_makefile_frag} config/mt-linux"
+    ;;
 esac
 
 skipdirs=
@@ -415,6 +506,12 @@ case "${target}" in
     ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss"
+    ;;
+  alpha-*-linux*)
+    # newlib is not 64 bit ready
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
@@ -762,12 +859,31 @@ fi
 
 if [ x${shared} = xyes ]; then
   case "${target}" in
-    hppa*)		target_makefile_frag=config/mt-papic ;;
-    i[3456]86-*)	target_makefile_frag=config/mt-x86pic ;;
-    powerpc*-*)		target_makefile_frag=config/mt-ppcpic ;;
-    alpha-*-linux*)	target_makefile_frag=config/mt-elfalphapic ;;
-    *)			target_makefile_frag=config/mt-${target_cpu}pic ;;
+    hppa*)
+      target_makefile_frag="${target_makefile_frag} config/mt-papic"
+      ;;
+    i[3456]86-*)
+      target_makefile_frag="${target_makefile_frag} config/mt-x86pic"
+      ;;
+    powerpc*-*)
+      target_makefile_frag="${target_makefile_frag} config/mt-ppcpic"
+      ;;
+    alpha-*-linux*)
+      target_makefile_frag="${target_makefile_frag} config/mt-elfalphapic"
+      ;;
+    *)
+      target_makefile_frag="${target_makefile_frag} config/mt-${target_cpu}pic"
+      ;;
   esac
+fi
+
+rm -f mt-frag
+if [ -n "${target_makefile_frag}" ] ; then
+  for f in ${target_makefile_frag}
+  do
+    cat ${srcdir}/$f >> mt-frag
+  done
+  target_makefile_frag=mt-frag
 fi
 
 # post-target:
