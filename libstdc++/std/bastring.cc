@@ -450,7 +450,7 @@ operator>> (istream &is, basic_string <charT, traits, Allocator> &s)
 	      sb->sungetc ();
 	      break;
 	    }
-	  s += static_cast<char> (ch);
+	  s += static_cast<charT> (ch);
 	  if (--w == 1)
 	    break;
 	}
@@ -496,7 +496,7 @@ getline (istream &is, basic_string <charT, traits, Allocator>& s, charT delim)
 	  if (ch == delim)
 	    break;
 
-	  s += static_cast<char> (ch);
+	  s += static_cast<charT> (ch);
 
 	  if (s.length () == s.npos - 1)
 	    {
