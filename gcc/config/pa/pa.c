@@ -3220,29 +3220,14 @@ output_mul_insn (unsignedp, insn)
      int unsignedp;
      rtx insn;
 {
-
-  if (unsignedp)
-    {
-      import_milli (mulU);
-      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$mulU"),
-			  gen_rtx (REG, SImode, 31));
-    }
-  else
-    {
-      import_milli (mulI);
-      return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$mulI"),
-			  gen_rtx (REG, SImode, 31));
-    }
+  import_milli (mulI);
+  return output_call (insn, gen_rtx (SYMBOL_REF, SImode, "$$mulI"),
+		      gen_rtx (REG, SImode, 31));
 }
-
-/* If operands isn't NULL, then it's a CONST_INT with which we can do
-   something */
-
 
 /* Emit the rtl for doing a division by a constant. */
 
- /* Do magic division millicodes exist for this value? */
-
+/* Do magic division millicodes exist for this value? */
 static int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
 			     1, 1};
 
