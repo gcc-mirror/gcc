@@ -1,3 +1,7 @@
+2004-05-22  Eric Christopher  <echristo@redhat.com>
+
+	* fix-header.c (read_scan_file): Update for add_path change.
+
 2004-05-22  Ben Elliston  <bje@au.ibm.com>
 
 	* c.opt (Wmissing-include-dirs): New.
@@ -61,7 +65,7 @@
 	make_bit_field_ref, optimize_bit_field_compare,
 	decode_field_reference, range_binop, make_range,
 	build_range_check, fold_range_test, fold_truthop,
-	optimize_minmax_comparison, extract_muldiv_1, 
+	optimize_minmax_comparison, extract_muldiv_1,
 	fold_binary_op_with_conditional_arg, fold_mathfn_compare,
 	fold_inf_compare, fold_single_bit_test, fold,
 	fold_relational_hi_lo, nondestructive_fold_binary_to_constant):
