@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
         %{!p:crt0%O%s}}} \
    %{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}"
 
-/* Provide an ENDFILE_SPEC approrpiate for NetBSD ELF targets.  Here we
+/* Provide an ENDFILE_SPEC appropriate for NetBSD ELF targets.  Here we
    add crtend.o, which provides part of the support for getting C++
    file-scope static objects deconstructed after exiting `main'.  */
 

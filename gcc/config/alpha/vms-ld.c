@@ -82,7 +82,7 @@ static char *search_dirs;
 /* Local function declarations.  */
 
 /* Add STR to the list of arguments to pass to the linker. Expand the list as
-   necessary to accomodate.  */
+   necessary to accommodate.  */
 static void addarg PARAMS ((const char *));
 
 /* Check to see if NAME is a regular file, i.e. not a directory */

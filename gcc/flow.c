@@ -1035,7 +1035,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   new_live_at_end = INITIALIZE_REG_SET (new_live_at_end_head);
   call_used = INITIALIZE_REG_SET (call_used_head);
 
-  /* Inconveniently, this is only redily available in hard reg set form.  */
+  /* Inconveniently, this is only readily available in hard reg set form.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
     if (call_used_regs[i])
       SET_REGNO_REG_SET (call_used, i);
@@ -1374,7 +1374,7 @@ initialize_uninitialized_subregs ()
 	     Its preferable to have an instance of the register's rtl since
 	     there may be various flags set which we need to duplicate.  
 	     If we can't find it, its probably an automatic whose initial
-	     value doesnt matter, or hopefully something we dont care about. */
+	     value doesn't matter, or hopefully something we don't care about. */
 	  for (i = get_insns (); i && INSN_UID (i) != uid; i = NEXT_INSN (i))
 	    ;
 	  if (i != NULL_RTX)
@@ -2797,7 +2797,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 
 	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 
-	  /* Not unconditionaly dead.  */
+	  /* Not unconditionally dead.  */
 	  return 0;
 	}
       else
@@ -2829,7 +2829,7 @@ mark_regno_cond_dead (pbi, regno, cond)
 
 	      SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond, 0)));
 
-	      /* Not unconditionaly dead.  */
+	      /* Not unconditionally dead.  */
 	      return 0;
 	    }
 	}

@@ -1751,7 +1751,7 @@ nonoverlapping_component_refs_p (x, y)
   do
     {
       /* The comparison has to be done at a common type, since we don't
-	 know how the inheritance heirarchy works.  */
+	 know how the inheritance hierarchy works.  */
       orig_y = y;
       do
 	{

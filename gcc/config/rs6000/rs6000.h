@@ -700,7 +700,7 @@ extern int rs6000_altivec_abi;
 
 #define FIRST_PSEUDO_REGISTER 110
 
-/* This must be included for pre gcc 3.0 glibc compatability.  */
+/* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
 /* 1 for registers that have pervasive standard uses

@@ -908,7 +908,7 @@ extern const char * structure_size_string;
 #if 0 /* FIXME: The ARM backend has special code to handle structure
 	 returns, and will reserve its own hidden first argument.  So
 	 if this macro is enabled a *second* hidden argument will be
-	 reserved, which will break binary compatability with old
+	 reserved, which will break binary compatibility with old
 	 toolchains and also thunk handling.  One day this should be
 	 fixed.  */
 /* RTX for structure returns.  NULL means use a hidden first argument.  */
@@ -1044,7 +1044,7 @@ extern const char * structure_size_string;
 /* Register and constant classes.  */
 
 /* Register classes: used to be simple, just all ARM regs or all FPU regs
-   Now that the Thumb is involved it has become more compilcated.  */
+   Now that the Thumb is involved it has become more complicated.  */
 enum reg_class
 {
   NO_REGS,
@@ -1626,7 +1626,7 @@ typedef struct
    pointer register.  Secondly, the pseudo frame pointer register can always
    be eliminated; it is replaced with either the stack or the real frame
    pointer.  Note we have to use {ARM|THUMB}_HARD_FRAME_POINTER_REGNUM
-   because the defintion of HARD_FRAME_POINTER_REGNUM is not a constant.  */
+   because the definition of HARD_FRAME_POINTER_REGNUM is not a constant.  */
 
 #define ELIMINABLE_REGS						\
 {{ ARG_POINTER_REGNUM,        STACK_POINTER_REGNUM            },\

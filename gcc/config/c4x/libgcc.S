@@ -1021,7 +1021,7 @@ mod3:
 #endif
 
 ;
-; double to signed long long converion
+; double to signed long long conversion
 ; input in r2
 ; result in r0,r1
 ;
@@ -1049,7 +1049,7 @@ ___fix_truncqfhi2:
 #endif
 
 ;
-; double to unsigned long long converion
+; double to unsigned long long conversion
 ; input in r2
 ; result in r0,r1
 ;
@@ -1095,7 +1095,7 @@ ufix1:
 #endif
 
 ;
-; signed long long to double converion
+; signed long long to double conversion
 ; input on stack
 ; result in r0
 ;
@@ -1116,7 +1116,7 @@ ___floathiqf2:
 #endif
 
 ;
-; unsigned long long to double converion
+; unsigned long long to double conversion
 ; input on stack
 ; result in r0
 ;
@@ -1166,7 +1166,7 @@ uflt2:
 #endif
 
 ;
-; long double to signed long long converion
+; long double to signed long long conversion
 ; input in r2
 ; result in r0,r1
 ;
@@ -1195,7 +1195,7 @@ ___fix_trunchfhi2:
 #endif
 
 ;
-; long double to unsigned long long converion
+; long double to unsigned long long conversion
 ; input in r2
 ; result in r0,r1
 ;
@@ -1242,7 +1242,7 @@ ufixh1:
 #endif
 
 ;
-; signed long long to long double converion
+; signed long long to long double conversion
 ; input on stack
 ; result in r0
 ;
@@ -1263,7 +1263,7 @@ ___floathihf2:
 #endif
 
 ;
-; unsigned long long to double converion
+; unsigned long long to double conversion
 ; input on stack
 ; result in r0
 ;

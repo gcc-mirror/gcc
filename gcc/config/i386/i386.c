@@ -1603,13 +1603,13 @@ classify_argument (mode, type, classes, bit_offset)
 	  if (classes[i] == X86_64_MEMORY_CLASS)
 	    return 0;
 
-	  /* The X86_64_SSEUP_CLASS should be always preceeded by
+	  /* The X86_64_SSEUP_CLASS should be always preceded by
 	     X86_64_SSE_CLASS.  */
 	  if (classes[i] == X86_64_SSEUP_CLASS
 	      && (i == 0 || classes[i - 1] != X86_64_SSE_CLASS))
 	    classes[i] = X86_64_SSE_CLASS;
 
-	  /*  X86_64_X87UP_CLASS should be preceeded by X86_64_X87_CLASS.  */
+	  /*  X86_64_X87UP_CLASS should be preceded by X86_64_X87_CLASS.  */
 	  if (classes[i] == X86_64_X87UP_CLASS
 	      && (i == 0 || classes[i - 1] != X86_64_X87_CLASS))
 	    classes[i] = X86_64_SSE_CLASS;
@@ -2579,7 +2579,7 @@ x86_64_general_operand (op, mode)
 }
 
 /* Return nonzero if OP is general operand representable on x86_64
-   as eighter sign extended or zero extended constant.  */
+   as either sign extended or zero extended constant.  */
 
 int
 x86_64_szext_general_operand (op, mode)
@@ -3475,7 +3475,7 @@ x86_64_sign_extended_value (value)
 		  /* For CM_KERNEL we know that all object resist in the
 		     negative half of 32bits address space.  We may not
 		     accept negative offsets, since they may be just off
-		     and we may accept pretty large possitive ones.  */
+		     and we may accept pretty large positive ones.  */
 		  if (ix86_cmodel == CM_KERNEL
 		      && offset > 0
 		      && trunc_int_for_mode (offset, SImode) == offset)
@@ -3545,7 +3545,7 @@ x86_64_zero_extended_value (value)
 	      {
 		case SYMBOL_REF:
 		    return 0;
-		  /* For small code model we may accept pretty large possitive
+		  /* For small code model we may accept pretty large positive
 		     offsets, since one bit is available for free.  Negative
 		     offsets are limited by the size of NULL pointer area
 		     specified by the ABI.  */
@@ -3557,7 +3557,7 @@ x86_64_zero_extended_value (value)
 		    return 1;
 	          /* ??? For the kernel, we may accept adjustment of
 		     -0x10000000, since we know that it will just convert
-		     negative address space to possitive, but perhaps this
+		     negative address space to positive, but perhaps this
 		     is not worthwhile.  */
 		  break;
 		case LABEL_REF:
@@ -6635,7 +6635,7 @@ ix86_binary_operator_ok (code, mode, operands)
 		&& rtx_equal_p (operands[0], operands[2]))))
     return 0;
   /* If the operation is not commutable and the source 1 is memory, we must
-     have a matching destionation.  */
+     have a matching destination.  */
   if (GET_CODE (operands[1]) == MEM
       && GET_RTX_CLASS (code) != 'c'
       && ! rtx_equal_p (operands[0], operands[1]))
@@ -7572,7 +7572,7 @@ ix86_split_fp_branch (code, op1, op2, target1, target2, tmp)
 	 for UNORDERED.  */
       probability = split_branch_probability;
 
-      /* Value of 1 is low enought to make no need for probability
+      /* Value of 1 is low enough to make no need for probability
 	 to be updated.  Later we may run some experiments and see
 	 if unordered values are more frequent in practice.  */
       if (bypass)

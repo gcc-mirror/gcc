@@ -1058,7 +1058,7 @@ extern int ix86_arch;
 /* Register to hold the addressing base for position independent
    code access to data items.
    We don't use PIC pointer for 64bit mode.  Define the regnum to
-   dummy value to prevent gcc from pesimizing code dealing with EBX.
+   dummy value to prevent gcc from pessimizing code dealing with EBX.
  */
 #define PIC_OFFSET_TABLE_REGNUM (TARGET_64BIT ? INVALID_REGNUM : 3)
 

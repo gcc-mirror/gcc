@@ -887,7 +887,7 @@ combine_temp_slots ()
     return;
 
   /* If there are a lot of temp slots, don't do anything unless
-     high levels of optimizaton.  */
+     high levels of optimization.  */
   if (! flag_expensive_optimizations)
     for (p = temp_slots, num_slots = 0; p; p = p->next, num_slots++)
       if (num_slots > 100 || (num_slots > 10 && optimize == 0))
@@ -3068,7 +3068,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		 example when the original insn was a MEM in a wider mode,
 		 and the note is part of a sign extension of a narrowed
 		 version of that MEM.  Gcc testcase compile/990829-1.c can
-		 generate an example of this siutation.  Rather than complain
+		 generate an example of this situation.  Rather than complain
 		 we return false, which will prompt our caller to remove the
 		 offending note.  */
 	      return false;
@@ -3245,7 +3245,7 @@ struct insns_for_mem_walk_info
      MEMs.  */
   struct hash_table *ht;
 
-  /* The INSN we are currently proessing.  */
+  /* The INSN we are currently processing.  */
   rtx insn;
 
   /* Zero if we are walking to find ADDRESSOFs, one if we are walking
@@ -3396,7 +3396,7 @@ purge_addressof (insns)
   unshare_all_rtl_again (get_insns ());
 }
 
-/* Convert a SET of a hard subreg to a set of the appropriet hard
+/* Convert a SET of a hard subreg to a set of the appropriate hard
    register.  A subroutine of purge_hard_subreg_sets.  */
 
 static void
@@ -3644,7 +3644,7 @@ instantiate_decl (x, size, valid_only)
 }
 
 /* Given a piece of RTX and a pointer to a HOST_WIDE_INT, if the RTX
-   is a virtual register, return the requivalent hard register and set the
+   is a virtual register, return the equivalent hard register and set the
    offset indirectly through the pointer.  Otherwise, return 0.  */
 
 static rtx
@@ -4927,7 +4927,7 @@ assign_parms (fndecl)
 	    {
 	      /* If we end up putting something into the stack,
 		 fixup_var_refs_insns will need to make a pass over
-		 all the instructions.  It looks throughs the pending
+		 all the instructions.  It looks through the pending
 		 sequences -- but it can't see the ones in the
 		 CONVERSION_INSNS, if they're not on the sequence
 		 stack.  So, we go back to that sequence, just so that
@@ -7095,7 +7095,7 @@ emit_return_into_block (bb, line_note)
 
 /* These functions convert the epilogue into a variant that does not modify the
    stack pointer.  This is used in cases where a function returns an object
-   whose size is not known until it is computed.  The called function leavs the
+   whose size is not known until it is computed.  The called function leaves the
    object on the stack, leaves the stack depressed, and returns a pointer to
    the object.
 
@@ -7308,7 +7308,7 @@ keep_stack_depressed (seq)
   return seq;
 }
 
-/* SET is a SET from an insn in the epilogue.  P is a pointr to the epi_info
+/* SET is a SET from an insn in the epilogue.  P is a pointer to the epi_info
    structure that contains information about what we've seen so far.  We
    process this SET by either updating that data or by emitting one or 
    more insns.  */
@@ -7428,7 +7428,7 @@ thread_prologue_and_epilogue_insns (f)
       seq = gen_sequence ();
       end_sequence ();
 
-      /* Can't deal with multiple successsors of the entry block
+      /* Can't deal with multiple successors of the entry block
          at the moment.  Function should always have at least one
          entry point.  */
       if (!ENTRY_BLOCK_PTR->succ || ENTRY_BLOCK_PTR->succ->succ_next)

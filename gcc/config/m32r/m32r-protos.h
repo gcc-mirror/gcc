@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Function prototypes that cannot exist in v850.h due to dependency
-   compilcations.  */
+   complications.  */
 #define Mmode enum machine_mode
 
 extern void   sbss_section			PARAMS ((void));

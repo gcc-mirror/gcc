@@ -1603,7 +1603,7 @@ struct cum_args {int regs;};
    tricks with the symbol type.  Not good if other tools than binutils
    are used on the object files.  Since ".global ... .lcomm ..." works, we
    use that.  Use .._ALIGNED_COMMON, since gcc whines when we only have
-   ..._COMMON, and we prefer to whine outselves; BIGGEST_ALIGNMENT is not
+   ..._COMMON, and we prefer to whine ourselves; BIGGEST_ALIGNMENT is not
    the one to check.  This done for a.out only.  */
 /* FIXME: I suspect a bug in gcc with alignment.  Do not warn until
    investigated; it mucks up the testsuite results.  */

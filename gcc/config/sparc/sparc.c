@@ -2868,7 +2868,7 @@ load_pic_register ()
   if (! flag_pic)
     abort ();
 
-  /* If we havn't emitted the special get_pc helper function, do so now.  */
+  /* If we haven't emitted the special get_pc helper function, do so now.  */
   if (get_pc_symbol_name[0] == 0)
     {
       int align;

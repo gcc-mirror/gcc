@@ -1924,7 +1924,7 @@ move_block_from_reg (regno, x, nregs, size)
 /* Emit code to move a block SRC to a block DST, where DST is non-consecutive
    registers represented by a PARALLEL.  SSIZE represents the total size of
    block SRC in bytes, or -1 if not known.  */
-/* ??? If SSIZE % UNITS_PER_WORD != 0, we make the blatent assumption that
+/* ??? If SSIZE % UNITS_PER_WORD != 0, we make the blatant assumption that
    the balance will be in what would be the low-order memory addresses, i.e.
    left justified for big endian, right justified for little endian.  This
    happens to be true for the targets currently using this support.  If this

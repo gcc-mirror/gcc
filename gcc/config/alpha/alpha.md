@@ -6633,7 +6633,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set_attr "length" "16")
    (set_attr "type" "multi")])
 
-;; Close the trap shadow of preceeding instructions.  This is generated
+;; Close the trap shadow of preceding instructions.  This is generated
 ;; by alpha_reorg.
 
 (define_insn "trapb"

@@ -475,7 +475,7 @@ int insn_current_address;
 /* Address of insn being processed in previous iteration.  */
 int insn_last_address;
 
-/* konwn invariant alignment of insn being processed.  */
+/* known invariant alignment of insn being processed.  */
 int insn_current_align;
 
 /* After shorten_branches, for any insn, uid_align[INSN_UID (insn)]
@@ -717,7 +717,7 @@ label_to_alignment (label)
    For casesi tables, we also want to know worst case minimum amounts of
    address difference, in case a machine description wants to introduce
    some common offset that is added to all offsets in a table.
-   For this purpose, align_fuzz with a growth argument of 0 comuptes the
+   For this purpose, align_fuzz with a growth argument of 0 computes the
    appropriate adjustment.  */
 
 /* Compute the maximum delta by which the difference of the addresses of
@@ -851,7 +851,7 @@ compute_alignments ()
 
       /* There are two purposes to align block with no fallthru incoming edge:
 	 1) to avoid fetch stalls when branch destination is near cache boundary
-	 2) to improve cache effciency in case the previous block is not executed
+	 2) to improve cache efficiency in case the previous block is not executed
 	    (so it does not need to be in the cache).
 
 	 We to catch first case, we align frequently executed blocks.
@@ -903,7 +903,7 @@ compute_alignments ()
    port splits out-of-range conditional branches in MACHINE_DEPENDENT_REORG.
    In order to do this, it needs proper length information, which it obtains
    by calling shorten_branches.  This cannot be collapsed with
-   shorten_branches itself into a single pass unless we also want to intergate
+   shorten_branches itself into a single pass unless we also want to integrate
    reorg.c, since the branch splitting exposes new instructions with delay
    slots.  */
 

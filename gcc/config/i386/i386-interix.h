@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define YES_UNDERSCORES
 
-/* YES_UNDERSCORES must preceed gas.h */
+/* YES_UNDERSCORES must precede gas.h */
 #include <i386/gas.h>
 /* The rest must follow.  */
 
