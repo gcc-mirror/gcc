@@ -1,3 +1,7 @@
+2003-06-12  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-21.c: New test case.
+
 2003-06-11  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* lib/gcc.exp (gcc_target_compile): Put TOOL_OPTIONS at front of

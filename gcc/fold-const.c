@@ -8014,9 +8014,29 @@ tree_expr_nonnegative_p (t)
 	 C[LT]Z_DEFINED_VALUE_AT_ZERO is set, since what we're
 	 computing here is a user-visible property.  */
       return 0;
-      
+
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
+
+    case REAL_CST:
+      return ! REAL_VALUE_NEGATIVE (TREE_REAL_CST (t));
+
+    case PLUS_EXPR:
+      return FLOAT_TYPE_P (TREE_TYPE (t))
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+	     && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+
+    case MULT_EXPR:
+      if (FLOAT_TYPE_P (TREE_TYPE (t)))
+	{
+	  /* x * x for floating point x is always non-negative.  */
+	  if (operand_equal_p (TREE_OPERAND (t, 0), TREE_OPERAND (t, 1), 0))
+	    return 1;
+	  return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+		 && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+	}
+      return 0;
+
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
     case FLOOR_DIV_EXPR:
