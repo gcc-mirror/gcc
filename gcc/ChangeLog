@@ -1,3 +1,8 @@
+Wed Sep  1 18:21:23 1999  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (init_emit_once): Don't use GET_MODE_WIDER_MODE
+	to step through CC modes.
+
 Wed Sep  1 20:18:06 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* regmove.c (fixup_match_1): Don't move INSN in front of P if
