@@ -1,3 +1,8 @@
+2003-01-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (libgcc_visibility): Force disabled on IRIX 6 too.
+	* configure: Rebuilt.
+
 2003-01-15  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.c (s390_safe_attr_type): New function.
