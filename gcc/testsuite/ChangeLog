@@ -1,5 +1,9 @@
 2003-12-28  Mark Mitchell  <mark@codesourcery.com>
 
+	* gcc.dg/const-elim-1.c: XFAIL on arm-*-*.
+
+2003-12-28  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13009
 	* g++.dg/init/assign1.C: New test.
 
