@@ -863,6 +863,12 @@ _Jv_RunMain (const char *class_name, int argc, const char **argv)
 
   main_init ();
 
+#ifdef HAVE_PROC_SELF_EXE
+  char exec_name[20];
+  sprintf (exec_name, "/proc/%d/exe", getpid ());
+  _Jv_ThisExecutable (exec_name);
+#endif
+
   arg_vec = JvConvertArgv (argc - 1, argv + 1);
   main_group = new java::lang::ThreadGroup (23);
   main_thread = new java::lang::FirstThread (main_group,
