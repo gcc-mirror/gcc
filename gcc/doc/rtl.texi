@@ -3175,6 +3175,6 @@ program is very dependent on the particular target machine.  And the RTL
 does not contain all the information about the program.
 
 The proper way to interface GNU CC to a new language front end is with
-the ``tree'' data structure.  There is no manual for this data
-structure, but it is described in the files @file{tree.h} and
-@file{tree.def}.
+the ``tree'' data structure, described in the files @file{tree.h} and
+@file{tree.def}.  The documentation for this structure (@pxref{Trees})
+is incomplete.
