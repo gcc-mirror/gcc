@@ -2770,11 +2770,11 @@ cat >> confdefs.h <<\EOF
 EOF
 
 cat >> confdefs.h <<\EOF
-#define NO_DEBUGGING 1
+#define JAVA_FINALIZATION 1
 EOF
 
 cat >> confdefs.h <<\EOF
-#define JAVA_FINALIZATION 1
+#define GC_GCJ_SUPPORT 1
 EOF
 
 
@@ -2789,6 +2789,10 @@ EOF
 
    cat >> confdefs.h <<\EOF
 #define SMALL_CONFIG 1
+EOF
+
+   cat >> confdefs.h <<\EOF
+#define NO_DEBUGGING 1
 EOF
 
 fi

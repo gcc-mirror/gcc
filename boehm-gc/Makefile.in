@@ -73,6 +73,8 @@ CXXCPP = @CXXCPP@
 CXXINCLUDES = @CXXINCLUDES@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
+GCJ = @GCJ@
+GCJFLAGS = @GCJFLAGS@
 INCLUDES = @INCLUDES@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -80,8 +82,10 @@ MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MY_CFLAGS = @MY_CFLAGS@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
 THREADLIB = @THREADLIB@
 VERSION = @VERSION@
 addobjs = @addobjs@
@@ -97,18 +101,15 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = $(target_all)
 EXTRA_LTLIBRARIES = libgcjgc.la
 libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c	\
 gcconfig.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
-gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h headers.c	\
+gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h gcj_mlc.c headers.c \
 hpux_irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
 real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
@@ -197,13 +198,13 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
-dbg_mlc.lo dyn_load.lo finalize.lo headers.lo hpux_irix_threads.lo \
-linux_threads.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
-new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
-real_malloc.lo reclaim.lo solaris_pthreads.lo solaris_threads.lo \
-stubborn.lo typd_mlc.lo
+dbg_mlc.lo dyn_load.lo finalize.lo gcj_mlc.lo headers.lo \
+hpux_irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
+mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
+ptr_chck.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
+solaris_threads.lo stubborn.lo typd_mlc.lo
 check_PROGRAMS =  gctest$(EXEEXT)
-gctest_OBJECTS =  test.o
+gctest_OBJECTS =  test.$(OBJEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
 gctest_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
@@ -227,7 +228,7 @@ OBJECTS = $(libgcjgc_la_OBJECTS) $(gctest_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .cc .lo .o .s
+.SUFFIXES: .S .c .cc .lo .o .obj .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --cygnus Makefile
 
@@ -271,6 +272,11 @@ uninstall-toolexeclibLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -279,6 +285,7 @@ uninstall-toolexeclibLTLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -320,6 +327,8 @@ gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES)
 	$(LINK) $(gctest_LDFLAGS) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
 .cc.o:
 	$(CXXCOMPILE) -c $<
+.cc.obj:
+	$(CXXCOMPILE) -c `cygpath -w $<`
 .cc.lo:
 	$(LTCXXCOMPILE) -c $<
 
@@ -393,7 +402,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

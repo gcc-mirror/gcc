@@ -193,8 +193,8 @@ dnl Define a few things to retarget the library towards
 dnl embedded Java.
 AC_DEFINE(SILENT)
 AC_DEFINE(NO_SIGNALS)
-AC_DEFINE(NO_DEBUGGING)
 AC_DEFINE(JAVA_FINALIZATION)
+AC_DEFINE(GC_GCJ_SUPPORT)
 
 dnl This is something of a hack.  When cross-compiling we turn off
 dnl some functionality.  We also enable the "small" configuration.
@@ -203,6 +203,7 @@ if test -n "${with_cross_host}"; then
    AC_DEFINE(NO_SIGSET)
    AC_DEFINE(NO_CLOCK)
    AC_DEFINE(SMALL_CONFIG)
+   AC_DEFINE(NO_DEBUGGING)
 fi
 
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
