@@ -1,3 +1,7 @@
+Sun Dec  6 07:45:33 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* invoke.texi (Warning Options): Soften the tone of -pedantic
+
 Sun Dec  6 00:20:44 1998  H.J. Lu  (hjl@gnu.org)
 
 	* print-rtl.c (print_rtx): Add prototype.

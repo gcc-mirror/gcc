@@ -1225,11 +1225,8 @@ ANSI C @emph{requires} a diagnostic.
 
 A feature to report any failure to conform to ANSI C might be useful in
 some instances, but would require considerable additional work and would
-be quite different from @samp{-pedantic}.  We recommend, rather, that
-users take advantage of the extensions of GNU C and disregard the
-limitations of other compilers.  Aside from certain supercomputers and
-obsolete small machines, there is less and less reason ever to use any
-other C compiler other than for bootstrapping GNU CC.
+be quite different from @samp{-pedantic}.  We don't have plans to
+support such a feature in the near future.
 
 @item -pedantic-errors
 Like @samp{-pedantic}, except that errors are produced rather than
