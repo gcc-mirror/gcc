@@ -4194,6 +4194,9 @@ init_function_start (subr, filename, line)
   /* Within function body, compute a type's size as soon it is laid out.  */
   immediate_size_expand++;
 
+  /* We haven't made any trampolines for this function yet.  */
+  trampoline_list = 0;
+
   init_pending_stack_adjust ();
   inhibit_defer_pop = 0;
 
@@ -4524,8 +4527,6 @@ expand_function_end (filename, line)
       /* Put those insns at entry to the containing function (this one).  */
       emit_insns_before (seq, tail_recursion_reentry);
     }
-  /* Clear the trampoline_list for the next function.  */
-  trampoline_list = 0;
 
 #if 0  /* I think unused parms are legitimate enough.  */
   /* Warn about unused parms.  */
