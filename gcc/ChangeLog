@@ -1,5 +1,8 @@
 Sat Jan  9 08:19:14 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* optabs.c (emit_conditional_move): Undo canonicalization previously
+	done by get_condition.
+
 	* jump.c (jump_optimize): Move simple optimizations in front
 	of complex ones.
 	Reset NEXT whenever deleting an insn in case NEXT was deleted.
