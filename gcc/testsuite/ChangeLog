@@ -1,3 +1,7 @@
+2003-02-13  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcc.dg/20030213-1.c: New test.
+
 2003-02-12  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/i386-387-1.c: Add new test for __builtin_atan2.
