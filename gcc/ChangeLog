@@ -1,3 +1,7 @@
+2001-06-11  Stan Shebs  <shebs@apple.com>
+
+	* darwin.h (ASM_FILE_END): Remove decl of language_string.
+
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber 
