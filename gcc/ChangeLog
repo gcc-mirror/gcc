@@ -1,3 +1,20 @@
+2004-08-10  Daniel Berlin <dberlin@dberlin.org>
+
+	* lambda.h: Add matrix type, and prototypes for remainder of
+	matrix and vector functions.
+	(lambda_vector_mult_const): New function.
+	(lambda_vector_negate): Ditto.
+	(lambda_vector_add): Ditto.
+	(lambda_vector_add_mc): Ditto.
+	(lambda_vector_copy): Ditto.
+	(lambda_vector_zerop): Ditto.
+	(lambda_vector_equal): Ditto.
+	(lambda_vector_min_nz): Ditto.
+	(lambda_vector_first_nz): Ditto.
+	(lambda_vector_matrix_mult): Ditto.
+	* lambda-mat.c: New file.
+	* Makefile.in (lambda-mat.o): New.
+
 2004-08-10  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-cfg.c (bsi_insert_before, bsi_insert_after): Call modify_stmt
