@@ -2820,8 +2820,10 @@ push_class_level_binding (tree name, tree x)
   if (!class_binding_level)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 
-  /* Make sure that this new member does not have the same name
-     as a template parameter.  */
+  /* Check for invalid member names, if the class is being defined.
+     This function is also used to restore IDENTIFIER_CLASS_VALUE,
+     when reentering the class scope, and there is no point in
+     checking again at that time.  */
   if (TYPE_BEING_DEFINED (current_class_type))
     {
       tree decl = x;
@@ -2834,40 +2836,41 @@ push_class_level_binding (tree name, tree x)
 	decl = TREE_VALUE (decl);
       
       check_template_shadow (decl);
-    }
 
-  /* [class.mem]
+      /* [class.mem]
 
-     If T is the name of a class, then each of the following shall
-     have a name different from T:
+	 If T is the name of a class, then each of the following shall
+	 have a name different from T:
 
-     -- every static data member of class T;
+	 -- every static data member of class T;
 
-     -- every member of class T that is itself a type;
+	 -- every member of class T that is itself a type;
 
-     -- every enumerator of every member of class T that is an
-	enumerated type;
+	 -- every enumerator of every member of class T that is an
+	    enumerated type;
 
-     -- every member of every anonymous union that is a member of
-	class T.
+	 -- every member of every anonymous union that is a member of
+	    class T.
 
-     (Non-static data members were also forbidden to have the same
-     name as T until TC1.)  */
-  if ((TREE_CODE (x) == VAR_DECL
-       || TREE_CODE (x) == CONST_DECL
-       || (TREE_CODE (x) == TYPE_DECL
-	   && !DECL_SELF_REFERENCE_P (x))
-       /* A data member of an anonymous union.  */
-       || (TREE_CODE (x) == FIELD_DECL
-	   && DECL_CONTEXT (x) != current_class_type))
-      && DECL_NAME (x) == constructor_name (current_class_type))
-    {
-      tree scope = context_for_name_lookup (x);
-      if (TYPE_P (scope) && same_type_p (scope, current_class_type))
+	 (Non-static data members were also forbidden to have the same
+	 name as T until TC1.)  */
+      if ((TREE_CODE (x) == VAR_DECL
+	   || TREE_CODE (x) == CONST_DECL
+	   || (TREE_CODE (x) == TYPE_DECL
+	       && !DECL_SELF_REFERENCE_P (x))
+	   /* A data member of an anonymous union.  */
+	   || (TREE_CODE (x) == FIELD_DECL
+	       && DECL_CONTEXT (x) != current_class_type))
+	  && DECL_NAME (x) == constructor_name (current_class_type))
 	{
-	  error ("`%D' has the same name as the class in which it is declared",
-		 x);
-	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+	  tree scope = context_for_name_lookup (x);
+	  if (TYPE_P (scope) && same_type_p (scope, current_class_type))
+	    {
+	      error ("`%D' has the same name as the class in which it is "
+		     "declared",
+		     x);
+	      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+	    }
 	}
     }
 
@@ -2906,27 +2909,21 @@ push_class_level_binding (tree name, tree x)
       else if (TREE_CODE (bval) == USING_DECL && is_overloaded_fn (x))
 	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 
-      if (old_decl)
+      if (old_decl
+	  && binding->scope == class_binding_level)
 	{
-	  cp_class_binding *cb;
-	  size_t i;
-
-	  /* Find the previous binding of name on the class-shadowed
-             list, and update it.  */
-	  for (i = 0; 
-	       (cb = VEC_iterate (cp_class_binding,
-				  class_binding_level->class_shadowed,
-				  i));
-	       ++i)
-	    if (cb->identifier == name
-		&& (cb->base.value == old_decl
-		    || cb->base.type == old_decl))
-	      {
-		binding->value = x;
-		INHERITED_VALUE_BINDING_P (binding) = 0;
-		IDENTIFIER_CLASS_VALUE (name) = x;
-		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
-	      }
+	  binding->value = x;
+	  /* It is always safe to clear INHERITED_VALUE_BINDING_P
+	     here.  That flag is only set when setup_class_bindings
+	     inserts a binding from a base class, and
+	     setup_class_bindings only inserts a binding once for
+	     every name declared in the class and its base classes.
+	     So, if we see a second binding for this name, it must be
+	     coming from a definition in the body of the class
+	     itself.  */
+	  INHERITED_VALUE_BINDING_P (binding) = 0;
+	  IDENTIFIER_CLASS_VALUE (name) = x;
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 	}
     }
 
