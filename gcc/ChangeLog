@@ -3,6 +3,10 @@
 	* reload.c (push_secondary_reload): Allow class == reload_class
 	if we're using a reload_in/out pattern.
 
+	* config/ia64/ia64.md (reload_inti): Use a TImode scratch.  Use
+	the half that does not conflict with the reload register.
+	(reload_outti): Likewise.
+
 2000-08-29  Kazu Hirata  <kazu@hxi.com>
 
 	* reload.c: Fix formatting.
@@ -763,13 +767,13 @@ Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
 2000-08-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* aix.h (ASM_DECLARE_FUNCTION_NAME): Call named_section() or
-        text_section() as appropriate instead of emitting text csect
+	text_section() as appropriate instead of emitting text csect
 	pseudo-op directly.
 	(TEXT_SECTION_ASM_OP): Only require default 32-bit alignment.
 	(UNIQUE_SECTION): Define macro.
 	(ASM_OUTPUT_SECTION_NAME): Define macro.
 	* rs6000.c (rs6000_override_options): Disable -ffunction-sections
-        on AIX if debugging and -fdata-sections always.
+	on AIX if debugging and -fdata-sections always.
 
 2000-08-22  Steven King  <sxking@uswest.net>
 
@@ -783,9 +787,9 @@ Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 2000-08-22  Stan Cox  <scox@redhat.com>
 
-        * Makefile.in (OBJS): Add dependence.o.
-        * dependence.c: New file.
-        
+	* Makefile.in (OBJS): Add dependence.o.
+	* dependence.c: New file.
+	
 2000-08-22  Alexandre Oliva  <aoliva@redhat.com>, John David Anglin  <dave.anglin@nrc.ca>
 
 	* calls.c (check_sibcall_argument_overlap_1): Adjust for
@@ -874,19 +878,19 @@ Tue Aug 22 02:31:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Remove dead comment.
 
 	* gcc.texi (The Configuration File): Document HOST_BIT_BUCKET.
-        * system.h (HOST_BIT_BUCKET): Default to "/dev/null".
-        * config/i386/xm-dos.h (HOST_BIT_BUCKET): Define as "NUL".
-        * config/i386/xm-os2.h, config/winnt/winnt.h: Likewise.
+	* system.h (HOST_BIT_BUCKET): Default to "/dev/null".
+	* config/i386/xm-dos.h (HOST_BIT_BUCKET): Define as "NUL".
+	* config/i386/xm-os2.h, config/winnt/winnt.h: Likewise.
 
-        * protoize.c (munge_compile_params): Use HOST_BIT_BUCKET (if
+	* protoize.c (munge_compile_params): Use HOST_BIT_BUCKET (if
 	writable) instead of hardcoded value.
 
 	* toplev.c (compile_file): Output to a file even if -fsyntax-only.
 
-        * gcc.c, config/i386/xm-dos.h, config/i386/xm-os2.h: Kill
-        MKTEMP_EACH_FILE.
+	* gcc.c, config/i386/xm-dos.h, config/i386/xm-os2.h: Kill
+	MKTEMP_EACH_FILE.
 
-        * gcc.c (cc1_options): Do not process -o or run the assembler if
+	* gcc.c (cc1_options): Do not process -o or run the assembler if
 	-fsyntax-only.
 	* objc/lang-spec.h: Likewise.
 
@@ -995,17 +999,17 @@ Mon Aug 21 07:41:12 2000  Jeffrey A Law  (law@cygnus.com)
 
 Sun Aug 20 01:41:35 2000  Dennis Chernoivanov  <cdi@sparc.spb.su>
 
-        * cpplex.c (cpp_scan_buffer): Move `output_line_command' just
-        before `process_directive' so that newlines won't be missed
-        for directives.
-        (cpp_printf): Increment `print->lineno' when newline is emitted.
+	* cpplex.c (cpp_scan_buffer): Move `output_line_command' just
+	before `process_directive' so that newlines won't be missed
+	for directives.
+	(cpp_printf): Increment `print->lineno' when newline is emitted.
 
-        * cppmain.c (cb_ident): Likewise.
-        (cb_define): Likewise.
-        (cb_undef): Likewise.
-        (cb_include): Likewise.
-        (cb_def_pragma): Likewise.
-        (dump_macros_helper): Likewise.
+	* cppmain.c (cb_ident): Likewise.
+	(cb_define): Likewise.
+	(cb_undef): Likewise.
+	(cb_include): Likewise.
+	(cb_def_pragma): Likewise.
+	(dump_macros_helper): Likewise.
 
 2000-08-20  Richard Henderson  <rth@cygnus.com>
 
@@ -1613,17 +1617,17 @@ Thu Aug 10 22:47:09 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2000-08-10  Kazu Hirata  <kazu@hxi.com>
 
-        * h8300.c (expand_a_rotate): New.
-        (emit_a_rotate): Likewise.
-        (h8300_adjust_insn_length): Add support for the rotate insns.
-        * h8300.md (rotlqi3): New.
-        (*rotlqi3_1): Likewise.
-        (rotlhi3): Likewise.
-        (*rotlhi3_1): Likewise.
-        (rotlhi3): Likewise.
-        (*rotlhi3_1): Likewise.
-        * h8300-proto.h: Add prototypes for expand_a_rotate and
-        emit_a_rotate.
+	* h8300.c (expand_a_rotate): New.
+	(emit_a_rotate): Likewise.
+	(h8300_adjust_insn_length): Add support for the rotate insns.
+	* h8300.md (rotlqi3): New.
+	(*rotlqi3_1): Likewise.
+	(rotlhi3): Likewise.
+	(*rotlhi3_1): Likewise.
+	(rotlhi3): Likewise.
+	(*rotlhi3_1): Likewise.
+	* h8300-proto.h: Add prototypes for expand_a_rotate and
+	emit_a_rotate.
 
 	* h8300.c: Fix comment typos.
 	(dosize): Declare the variable amount as unsigned.
@@ -2052,8 +2056,8 @@ Sun Aug  6 00:54:42 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 2000-08-05  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
-        * config/c4x/c4x.md (return_indirect_internal): New.
-        * config/c4x/c4x.c (c4x_expand_epilogue): Use it.
+	* config/c4x/c4x.md (return_indirect_internal): New.
+	* config/c4x/c4x.c (c4x_expand_epilogue): Use it.
 
 2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -2357,8 +2361,8 @@ Fri Aug  4 06:53:46 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 2000-08-03  Richard Henderson  <rth@cygnus.com>
 
-        * config/i386/i386.md (return_indirect_internal): New.
-        * config/i386/i386.c (ix86_expand_epilogue): Use it.
+	* config/i386/i386.md (return_indirect_internal): New.
+	* config/i386/i386.c (ix86_expand_epilogue): Use it.
 
 2000-08-03  Zack Weinberg  <zack@wolery.cumb.org>
 
