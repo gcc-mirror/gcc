@@ -33,7 +33,7 @@
    If you update this table, you must update the "tune" attribute in
    arm.md.
    
-   Some tools assume no writespace up to the first "," in each entry.  */
+   Some tools assume no whitespace up to the first "," in each entry.  */
 
 ARM_CORE(arm2,		2,	FL_CO_PROC | FL_MODE26, slowmul)
 ARM_CORE(arm250,	2,	FL_CO_PROC | FL_MODE26, slowmul)
