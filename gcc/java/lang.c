@@ -173,7 +173,8 @@ lang_f_options[] =
   {"hash-synchronization", &flag_hash_synchronization, 1},
   {"jni", &flag_jni, 1},
   {"check-references", &flag_check_references, 1},
-  {"force-classes-archive-check", &flag_force_classes_archive_check, 1}
+  {"force-classes-archive-check", &flag_force_classes_archive_check, 1},
+  {"optimize-static-class-initialization", &flag_optimize_sci, 1 }
 };
 
 static struct string_option
@@ -324,15 +325,6 @@ java_decode_option (argc, argv)
   if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
     {
       current_encoding = p + sizeof (ARG) - 1;
-      return 1;
-    }
-#undef ARG
-
-#undef ARG
-#define ARG "-fno-optimize-static-class-initialization"
-  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
-    {
-      flag_optimize_sci = 0;
       return 1;
     }
 #undef ARG
