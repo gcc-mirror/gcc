@@ -484,7 +484,7 @@ static tree start_decl (tree decl, bool is_top_level);
 static void start_function (tree name, tree type, int nested, int public);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 #if FFECOM_GCC_INCLUDE
-static void ffecom_file_ (char *name);
+static void ffecom_file_ (const char *name);
 static void ffecom_initialize_char_syntax_ (void);
 static void ffecom_close_include_ (FILE *f);
 static int ffecom_decode_include_option_ (char *spec);
@@ -1566,7 +1566,7 @@ ffecom_widest_expr_type_ (ffebld list)
    aliasing of arguments, it isn't a concern.  */
 
 static bool
-ffecom_possible_partial_overlap_ (ffebld expr1, ffebld expr2)
+ffecom_possible_partial_overlap_ (ffebld expr1, ffebld expr2 ATTRIBUTE_UNUSED)
 {
   ffesymbol sym;
   ffestorag st;
@@ -11581,7 +11581,7 @@ ffecom_init_0 ()
       double fl;
 
       name = bsearch ("foo", &names[0], ARRAY_SIZE (names), sizeof (names[0]),
-		      (int (*)()) strcmp);
+		      (int (*)(const void *, const void *)) strcmp);
       if (name != (char *) &names[2])
 	{
 	  assert ("bsearch doesn't work, #define FFEPROJ_BSEARCH 0 in proj.h"
@@ -12461,7 +12461,7 @@ ffecom_modify (tree newtype, tree lhs,
 /* Register source file name.  */
 
 void
-ffecom_file (char *name)
+ffecom_file (const char *name)
 {
 #if FFECOM_GCC_INCLUDE
   ffecom_file_ (name);
@@ -14304,9 +14304,8 @@ lang_printable_name (tree decl, int v)
    an error.  */
 
 #if BUILT_FOR_270
-void
-lang_print_error_function (file)
-     const char *file;
+static void
+lang_print_error_function (const char *file)
 {
   static ffeglobal last_g = NULL;
   static ffesymbol last_s = NULL;
@@ -15816,9 +15815,9 @@ static struct file_name_list *last_include = NULL;	/* Last in chain */
    and for expanding macro arguments.  */
 #define INPUT_STACK_MAX 400
 static struct file_buf {
-  char *fname;
+  const char *fname;
   /* Filename specified with #line command.  */
-  char *nominal_fname;
+  const char *nominal_fname;
   /* Record where in the search path this file was found.
      For #include_next.  */
   struct file_name_list *dir;
@@ -16160,7 +16159,7 @@ read_name_map (dirname)
 }
 
 static void
-ffecom_file_ (char *name)
+ffecom_file_ (const char *name)
 {
   FILE_BUF *fp;
 
@@ -16273,7 +16272,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
 	{
 	  int n;
 	  char *ep;
-	  char *nam;
+	  const char *nam;
 
 	  if ((nam = fp->nominal_fname) != NULL)
 	    {

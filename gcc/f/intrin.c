@@ -1165,9 +1165,9 @@ ffeintrin_check_any_ (ffebld arglist)
 static int
 ffeintrin_cmp_name_ (const void *name, const void *intrinsic)
 {
-  const char *uc = ((struct _ffeintrin_name_ *) intrinsic)->name_uc;
-  const char *lc = ((struct _ffeintrin_name_ *) intrinsic)->name_lc;
-  const char *ic = ((struct _ffeintrin_name_ *) intrinsic)->name_ic;
+  const char *uc = ((const struct _ffeintrin_name_ *) intrinsic)->name_uc;
+  const char *lc = ((const struct _ffeintrin_name_ *) intrinsic)->name_lc;
+  const char *ic = ((const struct _ffeintrin_name_ *) intrinsic)->name_ic;
 
   return ffesrc_strcmp_2c (ffe_case_intrin (), name, uc, lc, ic);
 }

@@ -304,7 +304,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   fprintf (stderr, "\n");
 #endif
 
-  real_g77_newargv = argv;
+  real_g77_newargv = *in_argv;
 
   g77_xargc = argc;
   g77_xargv = argv;

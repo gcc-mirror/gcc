@@ -319,7 +319,7 @@ tree ffecom_make_tempvar (const char *commentary, tree type,
 			  ffetargetCharacterSize size, int elements);
 tree ffecom_modify (tree newtype, tree lhs, tree rhs);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-void ffecom_file (char *name);
+void ffecom_file (const char *name);
 void ffecom_notify_init_storage (ffestorag st);
 void ffecom_notify_init_symbol (ffesymbol s);
 void ffecom_notify_primary_entry (ffesymbol fn);

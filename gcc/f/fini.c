@@ -267,7 +267,7 @@ main (int argc, char **argv)
   if (argc != 4)
     {
       fprintf (stderr, "Command form: fini input output-code output-include\n");
-      exit (1);
+      return (1);
     }
 
   input_name = argv[1];
@@ -278,21 +278,21 @@ main (int argc, char **argv)
   if (in == NULL)
     {
       fprintf (stderr, "Cannot open \"%s\"\n", input_name);
-      exit (1);
+      return (1);
     }
   out = fopen (output_name, "w");
   if (out == NULL)
     {
       fclose (in);
       fprintf (stderr, "Cannot open \"%s\"\n", output_name);
-      exit (1);
+      return (1);
     }
   incl = fopen (include_name, "w");
   if (incl == NULL)
     {
       fclose (in);
       fprintf (stderr, "Cannot open \"%s\"\n", include_name);
-      exit (1);
+      return (1);
     }
 
   /* Get past the initial block-style comment (man, this parsing code is just
@@ -316,7 +316,7 @@ main (int argc, char **argv)
       else
 	{
 	  assert ("EOF too soon!" == NULL);
-	  exit (1);
+	  return (1);
 	}
     }
 
@@ -441,7 +441,7 @@ main (int argc, char **argv)
 #endif
 
   if (do_exit)
-    exit (1);
+    return (1);
 
   /* First output the #include file. */
 
@@ -624,7 +624,7 @@ typedef enum %s_ %s;\n\
     fclose (incl);
   if (in != stdin)
     fclose (in);
-  exit (0);
+  return (0);
 }
 
 void
