@@ -715,8 +715,15 @@ move_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  /* Accept any general operand after reload has started; doing so
+     avoids losing if reload does an in-place replacement of a register
+     with a SYMBOL_REF or CONST.  */
   return (general_operand (op, mode)
-	  && ! (mips_split_addresses && mips_check_split (op, mode)));
+	  && (! (mips_split_addresses && mips_check_split (op, mode))
+	      || reload_in_progress
+	      || reload_completed));
+		
+	
 }
 
 /* Return true if OPERAND is valid as a source operand for movdi.
