@@ -1,3 +1,11 @@
+2001-07-24  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Add braces to get rid of
+	dangling else.
+
+	* config/sh/sh.h (INITIALIZE_TRAMPOLINE): Truncate operands
+	for SImode to prevent overflow.
+
 2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/irix6-libc-compat.c: New file.
