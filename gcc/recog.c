@@ -43,8 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* Import from final.c: */
 extern rtx alter_subreg ();
 
-int strict_memory_address_p ();
-int memory_address_p ();
+static rtx *find_single_use_1 PROTO((rtx, rtx *));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
