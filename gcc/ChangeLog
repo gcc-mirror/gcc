@@ -1,3 +1,12 @@
+2002-06-01  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_mcu_types): Remove devices that were once
+	expected, but don't really exist: atmega83, atmega85, attiny10.
+	* config/avr/avr.h (LINK_SPEC): Update to use the new avr[1-5] ld
+	emulations for all devices.
+	(CRT_BINUTILS_SPECS): Remove atmega83, atmega85, attiny10.
+	* config/avr/t-avr (MULTILIB_MATCHES): Remove atmega83, atmega85.
+
 2002-06-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
