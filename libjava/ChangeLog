@@ -1,3 +1,9 @@
+2000-06-15  Tom Tromey  <tromey@cygnus.com>
+
+	* gnu/gcj/convert/natIconv.cc (iconv_adapter): New function.
+	(read): Use it.
+	(write): Likewise.
+
 2000-06-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR java.lang/258:
