@@ -1110,6 +1110,7 @@ compute_record_mode (type)
 	  || (TYPE_MODE (TREE_TYPE (field)) == BLKmode
 	      && ! TYPE_NO_FORCE_BLK (TREE_TYPE (field)))
 	  || ! host_integerp (bit_position (field), 1)
+	  || DECL_SIZE (field) == 0
 	  || ! host_integerp (DECL_SIZE (field), 1))
 	return;
 

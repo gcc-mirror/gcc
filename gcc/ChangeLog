@@ -1,3 +1,7 @@
+2001-09-07  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* stor-layout.c (compute_record_mode): Check DECL_SIZE is set.
+
 2001-09-06  Ira Ruben  <ira@apple.com>
 
 	Remove OP_IDENTIFIER.
