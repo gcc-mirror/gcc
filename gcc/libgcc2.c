@@ -116,7 +116,9 @@ typedef union
   DItype ll;
 } DIunion;
 
-#if defined (L_udivmoddi4) || defined (L_muldi3) || defined (L_udiv_w_sdiv)
+#if (defined (L_udivmoddi4) || defined (L_muldi3) || defined (L_udiv_w_sdiv)\
+     || defined (L_divdi3) || defined (L_udivdi3) \
+     || defined (L_moddi3) || defined (L_umoddi3))
 
 #include "longlong.h"
 
@@ -388,6 +390,11 @@ __udiv_w_sdiv (rp, a1, a0, d)
 }
 #endif
 
+#if (defined (L_udivdi3) || defined (L_divdi3) || \
+     defined (L_umoddi3) || defined (L_moddi3))
+#define L_udivmoddi4
+#endif
+
 #ifdef L_udivmoddi4
 static const UQItype __clz_tab[] =
 {
@@ -401,6 +408,10 @@ static const UQItype __clz_tab[] =
   8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,
 };
 
+#if (defined (L_udivdi3) || defined (L_divdi3) || \
+     defined (L_umoddi3) || defined (L_moddi3))
+static inline
+#endif
 UDItype
 __udivmoddi4 (n, d, rp)
      UDItype n, d;
