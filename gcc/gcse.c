@@ -365,7 +365,8 @@ struct occr
    Someday I'll perform the computation and figure it out.  */
 
 /* Total size of the expression hash table, in elements.  */
-static int expr_hash_table_size;
+static unsigned int expr_hash_table_size;
+
 /* The table itself.
    This is an array of `expr_hash_table_size' elements.  */
 static struct expr **expr_hash_table;
@@ -560,7 +561,7 @@ static void compute_hash_table	PARAMS ((int));
 static void alloc_set_hash_table PARAMS ((int));
 static void free_set_hash_table PARAMS ((void));
 static void compute_set_hash_table PARAMS ((void));
-static void alloc_expr_hash_table PARAMS ((int));
+static void alloc_expr_hash_table PARAMS ((unsigned int));
 static void free_expr_hash_table PARAMS ((void));
 static void compute_expr_hash_table PARAMS ((void));
 static void dump_hash_table	PARAMS ((FILE *, const char *, struct expr **,
@@ -1011,7 +1012,7 @@ compute_local_properties (transp, comp, antloc, setp)
      sbitmap *antloc;
      int setp;
 {
-  int i, hash_table_size;
+  unsigned int i, hash_table_size;
   struct expr **hash_table;
   
   /* Initialize any bitmaps that were passed in.  */
@@ -2245,7 +2246,7 @@ compute_set_hash_table ()
 
 static void
 alloc_expr_hash_table (n_insns)
-     int n_insns;
+     unsigned int n_insns;
 {
   int n;
 
@@ -2691,7 +2692,7 @@ free_avail_expr_mem ()
 static void
 compute_ae_gen ()
 {
-  int i;
+  unsigned int i;
   struct expr *expr;
   struct occr *occr;
 
@@ -2773,7 +2774,8 @@ static void
 compute_ae_kill (ae_gen, ae_kill)
      sbitmap *ae_gen, *ae_kill;
 {
-  int bb, i;
+  int bb;
+  unsigned int i;
   struct expr *expr;
 
   for (bb = 0; bb < n_basic_blocks; bb++)
@@ -4522,7 +4524,7 @@ pre_insert_copy_insn (expr, insn)
 static void
 pre_insert_copies ()
 {
-  int i;
+  unsigned int i;
   struct expr *expr;
   struct occr *occr;
   struct occr *avail;
@@ -4584,7 +4586,8 @@ pre_insert_copies ()
 static int
 pre_delete ()
 {
-  int i, bb, changed;
+  unsigned int i;
+  int bb, changed;
   struct expr *expr;
   struct occr *occr;
 
@@ -4675,8 +4678,8 @@ pre_delete ()
 static int
 pre_gcse ()
 {
-  int i, did_insert;
-  int changed;
+  unsigned int i;
+  int did_insert, changed;
   struct expr **index_map;
   struct expr *expr;
 
@@ -4818,7 +4821,7 @@ static void
 compute_transpout ()
 {
   int bb;
-  int i;
+  unsigned int i;
   struct expr *expr;
 
   sbitmap_vector_ones (transpout, n_basic_blocks);
@@ -5051,7 +5054,7 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin, nonnull_avout, npi)
 
 void
 delete_null_pointer_checks (f)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
 {
   sbitmap *nonnull_avin, *nonnull_avout;
   unsigned int *block_reg;
@@ -5311,7 +5314,8 @@ hoist_expr_reaches_here_p (expr_bb, expr_index, bb, visited)
 static void
 hoist_code ()
 {
-  int bb, dominated, i;
+  int bb, dominated;
+  unsigned int i;
   struct expr **index_map;
   struct expr *expr;
 
