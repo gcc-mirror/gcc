@@ -3681,8 +3681,11 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 
   cand->cost = cost_step + cost_base / AVG_LOOP_NITER (current_loop);
 
-  /* Prefer the original iv unless we may gain something by replacing it.  */
-  if (cand->pos == IP_ORIGINAL)
+  /* Prefer the original iv unless we may gain something by replacing it;
+     this is not really relevant for artificial ivs created by other
+     passes.  */
+  if (cand->pos == IP_ORIGINAL
+      && !DECL_ARTIFICIAL (SSA_NAME_VAR (cand->var_before)))
     cand->cost--;
   
   /* Prefer not to insert statements into latch unless there are some
