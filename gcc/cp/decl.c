@@ -60,7 +60,6 @@ extern int static_labelno;
 extern tree current_namespace;
 extern tree global_namespace;
 
-extern void (*print_error_function) PROTO((char *));
 extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
 /* Obstack used for remembering local class declarations (like
@@ -169,7 +168,7 @@ static void record_unknown_type PROTO((tree, const char *));
 static int member_function_or_else PROTO((tree, tree, const char *));
 static void bad_specifiers PROTO((tree, const char *, int, int, int, int,
 				  int));
-static void lang_print_error_function PROTO((char *));
+static void lang_print_error_function PROTO((const char *));
 static tree maybe_process_template_type_declaration PROTO((tree, int, struct binding_level*));
 static void check_for_uninitialized_const_var PROTO((tree));
 static unsigned long typename_hash PROTO((hash_table_key));
@@ -6632,7 +6631,7 @@ init_decl_processing ()
 
 static void
 lang_print_error_function (file)
-     char *file;
+     const char *file;
 {
   default_print_error_function (file);
   maybe_print_template_context ();

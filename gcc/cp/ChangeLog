@@ -1,3 +1,10 @@
+1999-08-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * decl.c: Remove redundant prototype for `print_error_function'.
+        (lang_print_error_function): Constify a char*.
+
+        * lex.c (lang_identify): Likewise.
+
 1999-08-09  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* Makefile.in: Update dependencies.
