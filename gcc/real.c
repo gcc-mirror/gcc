@@ -1043,6 +1043,68 @@ real_value_truncate (mode, arg)
   return (r);
 }
 
+/* Try to change R into its exact multiplicative inverse in machine mode
+   MODE.  Return nonzero function value if successful.  */
+
+int
+exact_real_inverse (mode, r)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *r;
+{
+  unsigned EMUSHORT e[NE], einv[NE];
+  REAL_VALUE_TYPE rinv;
+  int i;
+
+  GET_REAL (r, e);
+
+  /* Test for input in range.  Don't transform IEEE special values.  */
+  if (eisinf (e) || eisnan (e) || (ecmp (e, ezero) == 0))
+    return 0;
+
+  /* Test for a power of 2: all significand bits zero except the MSB.
+     We are assuming the target has binary (or hex) arithmetic.  */
+  if (e[NE - 2] != 0x8000)
+    return 0;
+
+  for (i = 0; i < NE - 2; i++)
+    {
+      if (e[i] != 0)
+	return 0;
+    }
+
+  /* Compute the inverse and truncate it to the required mode.  */
+  ediv (e, eone, einv);
+  PUT_REAL (einv, &rinv);
+  rinv = real_value_truncate (mode, rinv);
+
+#ifdef CHECK_FLOAT_VALUE
+  /* This check is not redundant.  It may, for example, flush
+     a supposedly IEEE denormal value to zero.  */
+  i = 0;
+  if (CHECK_FLOAT_VALUE (mode, rinv, i))
+    return 0;
+#endif
+  GET_REAL (&rinv, einv);
+
+  /* Check the bits again, because the truncation might have
+     generated an arbitrary saturation value on overflow.  */
+  if (einv[NE - 2] != 0x8000)
+    return 0;
+
+  for (i = 0; i < NE - 2; i++)
+    {
+      if (einv[i] != 0)
+	return 0;
+    }
+
+  /* Fail if the computed inverse is out of range.  */
+  if (eisinf (einv) || eisnan (einv) || (ecmp (einv, ezero) == 0))
+    return 0;
+
+  /* Output the reciprocal and return success flag.  */
+  PUT_REAL (einv, r);
+  return 1;
+}
 #endif /* REAL_ARITHMETIC defined */
 
 /* Used for debugging--print the value of R in human-readable format
