@@ -643,6 +643,7 @@ enum reg_class {
    after execution of an instruction whose pattern is EXP.
    Do not alter them if the instruction would not alter the cc's.  */
 
+#define CC_OVERFLOW_UNUSABLE 0x200
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
 /* Compute the cost of computing a constant rtl expression RTX
