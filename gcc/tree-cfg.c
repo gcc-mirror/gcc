@@ -3610,7 +3610,7 @@ tree_verify_flow_info (void)
 	  if (prev_stmt && DECL_NONLOCAL (LABEL_EXPR_LABEL (stmt)))
 	    {
 	      error ("Nonlocal label %s is not first "
-		     "in a sequence of labels in bb %d"",
+		     "in a sequence of labels in bb %d",
 		     IDENTIFIER_POINTER (DECL_NAME (LABEL_EXPR_LABEL (stmt))),
 		     bb->index);
 	      err = 1;
