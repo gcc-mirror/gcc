@@ -286,7 +286,8 @@ grant.o: grant.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
 inout.o : inout.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h $(EXPR_H) $(RTL_H)
+	$(srcdir)/../system.h $(srcdir)/../toplev.h $(EXPR_H) $(RTL_H) \
+	$(srcdir)/../diagnostic.h
 lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h	\
 	$(srcdir)/../toplev.h lex.h $(srcdir)/../dwarfout.h hash.h
