@@ -2890,6 +2890,8 @@ delete_insn (insn)
 {
   register rtx next = NEXT_INSN (insn);
   register rtx prev = PREV_INSN (insn);
+  register int was_code_label = (GET_CODE (insn) == CODE_LABEL);
+  register int dont_really_delete = 0;
 
   while (next && INSN_DELETED_P (next))
     next = NEXT_INSN (next);
@@ -2898,9 +2900,18 @@ delete_insn (insn)
   if (INSN_DELETED_P (insn))
     return next;
 
-  /* Mark this insn as deleted.  */
-
-  INSN_DELETED_P (insn) = 1;
+  /* Don't delete user-declared labels.  Convert them to special NOTEs
+     instead.  */
+  if (was_code_label && LABEL_NAME (insn) != 0)
+    {
+      PUT_CODE (insn, NOTE);
+      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
+      NOTE_SOURCE_FILE (insn) = 0;
+      dont_really_delete = 1;
+    }
+  else
+    /* Mark this insn as deleted.  */
+    INSN_DELETED_P (insn) = 1;
 
   /* If this is an unconditional jump, delete it from the jump chain.  */
   if (simplejump_p (insn))
@@ -2917,7 +2928,7 @@ delete_insn (insn)
 
   /* Patch out INSN (and the barrier if any) */
 
-  if (optimize)
+  if (optimize && ! dont_really_delete)
     {
       if (prev)
 	{
@@ -2964,7 +2975,7 @@ delete_insn (insn)
      delete the dispatch table.  The tablejump must have gone already.
      It isn't useful to fall through into a table.  */
 
-  if (GET_CODE (insn) == CODE_LABEL
+  if (was_code_label
       && NEXT_INSN (insn) != 0
       && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
       && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
@@ -2973,8 +2984,7 @@ delete_insn (insn)
 
   /* If INSN was a label, delete insns following it if now unreachable.  */
 
-  if (GET_CODE (insn) == CODE_LABEL && prev
-      && GET_CODE (prev) == BARRIER)
+  if (was_code_label && prev && GET_CODE (prev) == BARRIER)
     {
       register RTX_CODE code;
       while (next != 0

@@ -396,7 +396,7 @@ dbxout_init (asm_file, input_file_name, syms)
   /* Put the current working directory in an N_SO symbol.  */
 #ifndef DBX_WORKING_DIRECTORY /* Only some versions of DBX want this,
 				 but GDB always does.  */
-  if (use_gdb_dbx_extensions)
+  if (use_gnu_debug_info_extensions)
 #endif
     {
       if (cwd || (cwd = getpwd ()))
@@ -552,7 +552,7 @@ dbxout_type_fields (type)
 	  if (tem != TYPE_FIELDS (type))
 	    CONTIN;
 
-	  if (use_gdb_dbx_extensions
+	  if (use_gnu_debug_info_extensions
 	      && flag_minimal_debug
 	      && TREE_CODE (tem) == FIELD_DECL
 	      && DECL_VIRTUAL_P (tem)
@@ -572,7 +572,7 @@ dbxout_type_fields (type)
 	  fprintf (asmfile, "%s:", IDENTIFIER_POINTER (DECL_NAME (tem)));
 	  CHARS (2 + IDENTIFIER_LENGTH (DECL_NAME (tem)));
 
-	  if (use_gdb_dbx_extensions
+	  if (use_gnu_debug_info_extensions
 	      && (TREE_PRIVATE (tem) || TREE_PROTECTED (tem)
 		  || TREE_CODE (tem) != FIELD_DECL))
 	    {
@@ -591,7 +591,7 @@ dbxout_type_fields (type)
 
 	  if (TREE_CODE (tem) == VAR_DECL)
 	    {
-	      if (TREE_STATIC (tem) && use_gdb_dbx_extensions)
+	      if (TREE_STATIC (tem) && use_gnu_debug_info_extensions)
 		{
 		  char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (tem));
 		  have_used_extensions = 1;
@@ -704,11 +704,10 @@ dbxout_type_methods (type)
 
   type_identifier_length = IDENTIFIER_LENGTH (type_encoding);
 
-  if (TREE_CODE (methods) == FUNCTION_DECL)
-    fndecl = methods;
-  else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
+  if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
     fndecl = TREE_VEC_ELT (methods, 0);
-  else fndecl = TREE_VEC_ELT (methods, 1);
+  else
+    fndecl = TREE_VEC_ELT (methods, 1);
 
   while (fndecl)
     {
@@ -1013,7 +1012,7 @@ dbxout_type (type, full, show_arg_types)
 	fprintf (asmfile, (TREE_CODE (type) == RECORD_TYPE) ? "s%d" : "u%d",
 		 TREE_INT_CST_LOW (tem));
 
-	if (use_gdb_dbx_extensions)
+	if (use_gnu_debug_info_extensions)
 	  {
 	    if (n_baseclasses)
 	      {
@@ -1025,7 +1024,7 @@ dbxout_type (type, full, show_arg_types)
 	for (i = 0; i < n_baseclasses; i++)
 	  {
 	    tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), i);
-	    if (use_gdb_dbx_extensions)
+	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
 		putc (TREE_VIA_VIRTUAL (child) ? '1'
@@ -1059,14 +1058,14 @@ dbxout_type (type, full, show_arg_types)
 
       /* Write out the field declarations.  */
       dbxout_type_fields (type);
-      if (use_gdb_dbx_extensions && TYPE_METHODS (type) != NULL_TREE)
+      if (use_gnu_debug_info_extensions && TYPE_METHODS (type) != NULL_TREE)
 	{
 	  have_used_extensions = 1;
 	  dbxout_type_methods (type);
 	}
       putc (';', asmfile);
 
-      if (use_gdb_dbx_extensions && TREE_CODE (type) == RECORD_TYPE
+      if (use_gnu_debug_info_extensions && TREE_CODE (type) == RECORD_TYPE
 	  /* Avoid the ~ if we don't really need it--it confuses dbx.  */
 	  && TYPE_VFIELD (type))
 	{
@@ -1127,7 +1126,7 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case METHOD_TYPE:
-      if (use_gdb_dbx_extensions)
+      if (use_gnu_debug_info_extensions)
 	{
 	  have_used_extensions = 1;
 	  putc ('#', asmfile);
@@ -1162,7 +1161,7 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case OFFSET_TYPE:
-      if (use_gdb_dbx_extensions)
+      if (use_gnu_debug_info_extensions)
 	{
 	  have_used_extensions = 1;
 	  putc ('@', asmfile);
@@ -1181,9 +1180,9 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case REFERENCE_TYPE:
-      if (use_gdb_dbx_extensions)
+      if (use_gnu_debug_info_extensions)
 	have_used_extensions = 1;
-      putc (use_gdb_dbx_extensions ? '&' : '*', asmfile);
+      putc (use_gnu_debug_info_extensions ? '&' : '*', asmfile);
       CHARS (1);
       dbxout_type (TREE_TYPE (type), 0, 0);
       break;
@@ -1380,7 +1379,7 @@ dbxout_symbol (decl, local)
 	    if ((TREE_CODE (type) == RECORD_TYPE
 		 || TREE_CODE (type) == UNION_TYPE)
 		&& TYPE_NAME (type) == decl
-		&& !(use_gdb_dbx_extensions && have_used_extensions)
+		&& !(use_gnu_debug_info_extensions && have_used_extensions)
 		&& !TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	      {
 		tree name = TYPE_NAME (type);
@@ -1407,7 +1406,7 @@ dbxout_symbol (decl, local)
 		 || TREE_CODE (type) == UNION_TYPE)
 		&& TYPE_NAME (type) == decl)
 	      {
-		if (use_gdb_dbx_extensions && have_used_extensions)
+		if (use_gnu_debug_info_extensions && have_used_extensions)
 		  {
 		    putc ('T', asmfile);
 		    TREE_ASM_WRITTEN (TYPE_NAME (type)) = 1;
