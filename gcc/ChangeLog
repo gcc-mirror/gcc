@@ -1,3 +1,8 @@
+2003-10-30  Richard Henderson  <rth@redhat.com>
+
+	* c-objc-common.c (c_tree_printer): Handle types correctly.
+	Factor code a bit.
+
 2003-10-30 Kelley Cook <kcook@gcc.gnu.org>
 
 	* value-prof.c, web.c: Update to C90.
