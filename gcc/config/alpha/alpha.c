@@ -1982,35 +1982,10 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 bool
 alpha_expand_mov (enum machine_mode mode, rtx *operands)
 {
-  /* Honor misaligned loads, for those we promised to do so.  */
-  if (GET_CODE (operands[1]) == MEM
-      && alpha_vector_mode_supported_p (mode)
-      && MEM_ALIGN (operands[1]) < GET_MODE_ALIGNMENT (mode))
-    {
-      rtx tmp;
-      if (register_operand (operands[0], mode))
-	tmp = operands[0];
-      else
-	tmp = gen_reg_rtx (mode);
-      alpha_expand_unaligned_load (tmp, operands[1], 8, 0, 0);
-      if (tmp == operands[0])
-	return true;
-      operands[1] = tmp;
-    }
-
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
-
-  /* Honor misaligned stores, for those we promised to do so.  */
-  if (GET_CODE (operands[0]) == MEM
-      && alpha_vector_mode_supported_p (mode)
-      && MEM_ALIGN (operands[0]) < GET_MODE_ALIGNMENT (mode))
-    {
-      alpha_expand_unaligned_store (operands[0], operands[1], 8, 0);
-      return true;
-    }
 
   /* Allow legitimize_address to perform some simplifications.  */
   if (mode == Pmode && symbolic_operand (operands[1], mode))
@@ -2209,6 +2184,36 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
     }
 
   return false;
+}
+
+/* Implement the movmisalign patterns.  One of the operands is a memory
+   that is not natually aligned.  Emit instructions to load it.  */
+
+void
+alpha_expand_movmisalign (enum machine_mode mode, rtx *operands)
+{
+  /* Honor misaligned loads, for those we promised to do so.  */
+  if (MEM_P (operands[1]))
+    {
+      rtx tmp;
+
+      if (register_operand (operands[0], mode))
+	tmp = operands[0];
+      else
+	tmp = gen_reg_rtx (mode);
+
+      alpha_expand_unaligned_load (tmp, operands[1], 8, 0, 0);
+      if (tmp != operands[0])
+	emit_move_insn (operands[0], tmp);
+    }
+  else if (MEM_P (operands[0]))
+    {
+      if (!reg_or_0_operand (operands[1], mode))
+	operands[1] = force_reg (mode, operands[1]);
+      alpha_expand_unaligned_store (operands[0], operands[1], 8, 0);
+    }
+  else
+    gcc_unreachable ();
 }
 
 /* Generate an unsigned DImode to FP conversion.  This is the same code
@@ -9456,9 +9461,6 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
-
-#undef TARGET_VECTORIZE_MISALIGNED_MEM_OK
-#define TARGET_VECTORIZE_MISALIGNED_MEM_OK alpha_vector_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
