@@ -1179,25 +1179,25 @@ generate_bytecode_conditional (tree exp,
       op = OPCODE_if_icmpne;
       goto compare;
 
-    case UNLT_EXPR:
+    case UNLE_EXPR:
       unordered = 1;
     case GT_EXPR:
       op = OPCODE_if_icmpgt;
       goto compare;
 
-    case UNGT_EXPR:
+    case UNGE_EXPR:
       unordered = 1;
     case LT_EXPR:
       op = OPCODE_if_icmplt;
       goto compare;
 
-    case UNLE_EXPR:
+    case UNLT_EXPR:
       unordered = 1;
     case GE_EXPR:
       op = OPCODE_if_icmpge;
       goto compare;
 
-    case UNGE_EXPR:
+    case UNGT_EXPR:
       unordered = 1;
     case LE_EXPR:
       op = OPCODE_if_icmple;
@@ -1206,6 +1206,9 @@ generate_bytecode_conditional (tree exp,
     compare:
       if (unordered)
         {
+	  /* UNLT_EXPR(a, b) means 'a < b || unordered(a, b)'.  This is 
+	  the same as the Java source expression '!(a >= b)', so handle 
+	  it that way.  */
 	  struct jcf_block *tmp = true_label;
 	  true_label = false_label;
 	  false_label = tmp;
