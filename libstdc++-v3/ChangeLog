@@ -1,3 +1,9 @@
+2004-04-04  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	* testsuite/performance/27_io/filebuf_sputn_unbuf.cc: New,
+	adapted from libstdc++/11378.
+
 2004-04-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::allocate): Factor out
