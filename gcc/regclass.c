@@ -46,7 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    reloads for psuedos auto-incremented since reload can't handle it.  */
 
 #ifdef AUTO_INC_DEC
-#if defined(SECONARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
+#if defined(SECONDARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
 #define FORBIDDEN_INC_DEC_CLASSES
 #endif
 #endif
@@ -1321,7 +1321,7 @@ copy_cost (x, mode, class, to_p)
     secondary_class = SECONDARY_INPUT_RELOAD_CLASS (class, mode, x);
 #endif
 
-#ifdef SECONARY_OUTPUT_RELOAD_CLASS
+#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
   if (! to_p)
     secondary_class = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, x);
 #endif
@@ -1329,7 +1329,7 @@ copy_cost (x, mode, class, to_p)
   if (secondary_class != NO_REGS)
     return (move_cost[(int) secondary_class][(int) class]
 	    + copy_cost (x, mode, secondary_class, 2));
-#endif  /* HAVE_SECONARY_RELOADS */
+#endif  /* HAVE_SECONDARY_RELOADS */
 
   /* For memory, use the memory move cost, for (hard) registers, use the
      cost to move between the register classes, and use 2 for everything
