@@ -178,7 +178,20 @@ compute_immediate_uses (int flags, bool (*calc_for)(tree))
       tree phi;
 
       for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
-	compute_immediate_uses_for_phi (phi, calc_for);
+	{
+	  if (is_gimple_reg (PHI_RESULT (phi)))
+	    {
+	      if (!(flags & TDFA_USE_OPS))
+		continue;
+	    }
+	  else
+	    {
+	      if (!(flags & TDFA_USE_VOPS))
+		continue;
+	    }
+
+	  compute_immediate_uses_for_phi (phi, calc_for);
+	}
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
         {

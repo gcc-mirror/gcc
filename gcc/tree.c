@@ -5650,6 +5650,34 @@ build_empty_stmt (void)
 }
 
 
+/* Returns true if it is possible to prove that the index of
+   an array access REF (an ARRAY_REF expression) falls into the
+   array bounds.  */
+
+bool
+in_array_bounds_p (tree ref)
+{
+  tree idx = TREE_OPERAND (ref, 1);
+  tree min, max;
+
+  if (TREE_CODE (idx) != INTEGER_CST)
+    return false;
+	    
+  min = array_ref_low_bound (ref);
+  max = array_ref_up_bound (ref);
+  if (!min
+      || !max
+      || TREE_CODE (min) != INTEGER_CST
+      || TREE_CODE (max) != INTEGER_CST)
+    return false;
+
+  if (tree_int_cst_lt (idx, min)
+      || tree_int_cst_lt (max, idx))
+    return false;
+
+  return true;
+}
+
 /* Return true if T (assumed to be a DECL) must be assigned a memory
    location.  */
 

@@ -313,6 +313,7 @@ in the following sections.
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
+-ftree-lim @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre @gol
 --param @var{name}=@var{value}
@@ -4401,6 +4402,14 @@ usually increases code size.
 Perform loop optimizations on trees.  This flag is enabled by default at -O
 and higher.
 
+@item -ftree-lim
+Perform loop invariant motion on trees.  This pass moves only invartiants that
+would be hard to handle on rtl level (function calls, operations that expand to
+nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
+operands of conditions that are invariant out of the loop, so that we can use
+just trivial invariantness analysis in loop unswitching.  The pass also includes
+store motion.
+
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
@@ -5173,6 +5182,9 @@ The maximum number of insns of an unswitched loop.
 
 @item max-unswitch-level
 The maximum number of branches unswitched in a single loop.
+
+@item lim-expensive
+The minimum cost of an expensive expression in the loop invariant motion.
 
 @item max-iterations-to-track
 

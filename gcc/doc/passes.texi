@@ -363,9 +363,20 @@ and is described by @code{pass_pre}.
 
 @item Loop optimization
 
-TODO: Presumably we're going to do something with loops here.  At
-present we don't, and this is a placeholder.  The pass is located
-in @file{tree-ssa-loop.c} and is described by @code{pass_loop}.
+The main driver of the pass is placed in @file{tree-ssa-loop.c}
+and described by @code{pass_loop}.
+
+The optimizations performed by this pass are:
+
+Loop invariant motion.  This pass moves only invariants that
+would be hard to handle on rtl level (function calls, operations that expand to
+nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
+operands of conditions that are invariant out of the loop, so that we can use
+just trivial invariantness analysis in loop unswitching.  The pass also includes
+store motion.  The pass is implemented in @file{tree-ssa-loop-im.c}.
+
+The optimizations also use various utility functions contained in
+@file{cfgloop.c}, @file{cfgloopanal.c} and @file{cfgloopmanip.c}.
 
 @item Conditional constant propagation
 

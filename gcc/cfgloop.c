@@ -101,6 +101,20 @@ flow_loop_nested_p (const struct loop *outer, const struct loop *loop)
 	 && loop->pred[outer->depth] == outer;
 }
 
+/* Returns superloop of LOOP at given DEPTH.  */
+
+struct loop *
+superloop_at_depth (struct loop *loop, unsigned depth)
+{
+  if (depth > (unsigned) loop->depth)
+    abort ();
+
+  if (depth == (unsigned) loop->depth)
+    return loop;
+
+  return loop->pred[depth];
+}
+
 /* Dump the loop information specified by LOOP to the stream FILE
    using auxiliary dump callback function LOOP_DUMP_AUX if non null.  */
 

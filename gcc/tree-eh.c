@@ -1705,7 +1705,7 @@ tree_could_trap_p (tree expr)
   bool honor_nans = false;
   bool honor_snans = false;
   bool fp_operation = false;
-  tree t;
+  tree t, base, idx;
 
   if (TREE_CODE_CLASS (code) == '<'
       || TREE_CODE_CLASS (code) == '1'
@@ -1722,14 +1722,32 @@ tree_could_trap_p (tree expr)
 
   switch (code)
     {
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case BIT_FIELD_REF:
-      t = get_base_address (expr);
-      return !t || tree_could_trap_p (t);
+      t = TREE_OPERAND (expr, 0);
+      return tree_could_trap_p (t);
+
+    case ARRAY_RANGE_REF:
+      /* Let us be conservative here for now.  We might be checking bounds of
+	 the access similarly to the case below.  */
+      if (!TREE_THIS_NOTRAP (expr))
+	return true;
+
+      base = TREE_OPERAND (expr, 0);
+      return tree_could_trap_p (base);
+
+    case ARRAY_REF:
+      base = TREE_OPERAND (expr, 0);
+      idx = TREE_OPERAND (expr, 1);
+      if (tree_could_trap_p (base))
+	return true;
+
+      if (TREE_THIS_NOTRAP (expr))
+	return false;
+
+      return !in_array_bounds_p (expr);
 
     case INDIRECT_REF:
       return !TREE_THIS_NOTRAP (expr);

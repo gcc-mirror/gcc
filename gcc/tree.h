@@ -303,7 +303,7 @@ struct tree_common GTY(())
 	   ..._TYPE
 
        TREE_THIS_NOTRAP in
-          INDIRECT_REF
+          INDIRECT_REF, ARRAY_REF, ARRAY_RANGE_REF
 
    deprecated_flag:
 
@@ -798,7 +798,12 @@ extern void tree_operand_check_failed (int, enum tree_code,
 /* Nonzero means this node will not trap.  In an INDIRECT_REF, means
    accessing the memory pointed to won't generate a trap.  However,
    this only applies to an object when used appropriately: it doesn't
-   mean that writing a READONLY mem won't trap.  */
+   mean that writing a READONLY mem won't trap.
+   
+   In ARRAY_REF and ARRAY_RANGE_REF means that we know that the index
+   (or slice of the array) always belongs to the range of the array.
+   I.e. that the access will not trap, provided that the access to
+   the base to the array will not trap.  */
 #define TREE_THIS_NOTRAP(NODE) ((NODE)->common.nothrow_flag)
 
 /* In a VAR_DECL, PARM_DECL or FIELD_DECL, or any kind of ..._REF node,
@@ -2722,6 +2727,7 @@ extern tree build_method_type (tree, tree);
 extern tree build_offset_type (tree, tree);
 extern tree build_complex_type (tree);
 extern tree array_type_nelts (tree);
+extern bool in_array_bounds_p (tree);
 
 extern tree value_member (tree, tree);
 extern tree purpose_member (tree, tree);
@@ -3255,6 +3261,11 @@ extern tree array_ref_element_size (tree);
    EXP, an ARRAY_REF.  */
 
 extern tree array_ref_low_bound (tree);
+
+/* Return a tree representing the upper bound of the array mentioned in
+   EXP, an ARRAY_REF.  */
+
+extern tree array_ref_up_bound (tree);
 
 /* Return a tree representing the offset, in bytes, of the field referenced
    by EXP.  This does not include any offset in DECL_FIELD_BIT_OFFSET.  */
