@@ -1,3 +1,10 @@
+Fri Apr  2 12:58:26 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (ashlhi3, lshrhi3, ashrhi3): Force operand 1
+	into a register if shift count not constant.
+	(ashlhi3_reg, lshrhi3_reg, ashrhi3_reg): Ensure that operand 1
+	is a register.
+
 Fri Apr  2 12:19:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*db): Enable pattern if TARGET_LOOP_UNSIGNED
