@@ -991,9 +991,6 @@ ssa_const_prop ()
   df_analyse (df_analyzer, 0,
 	      DF_RD_CHAIN | DF_RU_CHAIN | DF_REG_INFO | DF_HARD_REGS);
 
-  /* We need mappings from insn to its containing block.  */
-  compute_bb_for_insn ();
-
   /* Perform a quick and dirty dead code elimination pass.  This is not
      as aggressive as it could be, but it's good enough to clean up a
      lot of unwanted junk and it is fast.  */

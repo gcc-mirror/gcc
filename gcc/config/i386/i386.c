@@ -394,6 +394,7 @@ const int x86_accumulate_outgoing_args = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_prologue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_epilogue_using_move = m_ATHLON | m_PENT4 | m_PPRO;
 const int x86_decompose_lea = m_PENT4;
+const int x86_shift1 = ~m_486;
 const int x86_arch_always_fancy_math_387 = m_PENT | m_PPRO | m_ATHLON | m_PENT4;
 
 /* In case the avreage insn count for single function invocation is
@@ -1834,6 +1835,10 @@ classify_argument (mode, type, classes, bit_offset)
       return 1;
     case V4SFmode:
     case V4SImode:
+    case V16QImode:
+    case V8HImode:
+    case V2DFmode:
+    case V2DImode:
       classes[0] = X86_64_SSE_CLASS;
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;

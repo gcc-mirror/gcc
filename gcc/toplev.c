@@ -2642,6 +2642,7 @@ rest_of_compilation (decl)
   free_bb_for_insn ();
   copy_loop_headers (insns);
   purge_line_number_notes (insns);
+  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
   timevar_pop (TV_JUMP);
   close_dump_file (DFI_jump, print_rtl, insns);
@@ -2662,7 +2663,6 @@ rest_of_compilation (decl)
       timevar_push (TV_TO_SSA);
       open_dump_file (DFI_ssa, decl);
 
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
       convert_to_ssa ();
 
@@ -2717,8 +2717,6 @@ rest_of_compilation (decl)
       timevar_pop (TV_FROM_SSA);
 
       ggc_collect ();
-      /* CFG is no longer maintained up-to-date.  */
-      free_bb_for_insn ();
     }
 
   timevar_push (TV_JUMP);
@@ -2726,7 +2724,6 @@ rest_of_compilation (decl)
   if (flag_delete_null_pointer_checks || flag_if_conversion)
     {
       open_dump_file (DFI_null, decl);
-      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
       if (rtl_dump_file)
 	dump_flow_info (rtl_dump_file);
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
@@ -2745,8 +2742,6 @@ rest_of_compilation (decl)
      maximum instruction UID, so if we can reduce the maximum UID
      we'll save big on memory.  */
   renumber_insns (rtl_dump_file);
-  if (optimize)
-    compute_bb_for_insn ();
   timevar_pop (TV_JUMP);
 
   close_dump_file (DFI_jump, print_rtl_with_bb, insns);
@@ -2794,7 +2789,6 @@ rest_of_compilation (decl)
       /* The second pass of jump optimization is likely to have
          removed a bunch more instructions.  */
       renumber_insns (rtl_dump_file);
-      compute_bb_for_insn ();
 
       timevar_pop (TV_CSE);
       close_dump_file (DFI_cse, print_rtl_with_bb, insns);
@@ -2912,6 +2906,7 @@ rest_of_compilation (decl)
       delete_trivially_dead_insns (insns, max_reg_num ());
       close_dump_file (DFI_loop, print_rtl, insns);
       timevar_pop (TV_LOOP);
+      find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
       ggc_collect ();
     }
@@ -2921,8 +2916,6 @@ rest_of_compilation (decl)
 
   timevar_push (TV_FLOW);
   open_dump_file (DFI_cfg, decl);
-
-  find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
