@@ -6615,6 +6615,10 @@ mem_loc_descriptor (rtl)
       add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_deref, 0, 0));
       break;
 
+     case LABEL_REF:
+       /* Some ports can transform a symbol ref into a label ref, because
+ 	 the symbol ref is too far away and has to be dumped into a constant
+ 	 pool.  */
     case CONST:
     case SYMBOL_REF:
       mem_loc_result = new_loc_descr (DW_OP_addr, 0, 0);
