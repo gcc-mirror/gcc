@@ -1,6 +1,7 @@
 /* elfos.h  --  operating system specific defines to be used when
    targeting GCC for some generic ELF system
-   Copyright (C) 1991, 1994, 1995, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Based on svr4.h contributed by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
@@ -232,11 +233,17 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  This is the same for all known svr4
-   assemblers.  */
+/* This is the pseudo-op used to generate a reference to a specific
+   symbol in some section.  It is only used in machine-specific
+   configuration files, typically only in ASM_OUTPUT_CONSTRUCTOR and
+   ASM_OUTPUT_DESTRUCTOR.  This is the same for all known svr4
+   assemblers, except those in targets that don't use 32-bit pointers.
+   Those should override INT_ASM_OP.  Yes, the name of the macro is
+   misleading.  */
 
+#ifndef INT_ASM_OP
 #define INT_ASM_OP		"\t.long\t"
+#endif
 
 /* This is the pseudo-op used to generate a contiguous sequence of byte
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
