@@ -40,10 +40,6 @@
 namespace std 
 {
   template<typename _CharT, typename _Traits>
-    const size_t
-    basic_streambuf<_CharT, _Traits>::_S_pback_size;
-
-  template<typename _CharT, typename _Traits>
     typename basic_streambuf<_CharT, _Traits>::int_type
     basic_streambuf<_CharT, _Traits>::
     sbumpc()

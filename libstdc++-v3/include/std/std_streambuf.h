@@ -229,73 +229,12 @@ namespace std
       */
       locale 			_M_buf_locale;	
 
-      //@{
-      /**
-       *  @if maint
-       *  Necessary bits for putback buffer management. Only used in
-       *  the basic_filebuf class, as necessary for the standard
-       *  requirements.
-       *  
-       *  @note pbacks of over one character are not currently supported.
-       *  @endif
-      */
-      static const size_t   	_S_pback_size = 1; 
-      char_type			_M_pback[_S_pback_size]; 
-      char_type*		_M_pback_cur_save;
-      char_type*		_M_pback_end_save;
-      bool			_M_pback_init; 
-      //@}
-
       /**
        *  @if maint
        *  Yet unused.
        *  @endif
       */
       fpos<__state_type>	_M_pos;
-
-      // Initializes pback buffers, and moves normal buffers to safety.
-      // Assumptions:
-      // _M_in_cur has already been moved back
-      void
-      _M_pback_create()
-      {
-	if (!_M_pback_init)
-	  {
-	    size_t __dist = _M_in_end - _M_in_cur;
-	    size_t __len = std::min(_S_pback_size, __dist);
-	    traits_type::copy(_M_pback, _M_in_cur, __len);
-	    _M_pback_cur_save = _M_in_cur;
-	    _M_pback_end_save = _M_in_end;
-	    this->setg(_M_pback, _M_pback, _M_pback + __len);
-	    _M_pback_init = true;
-	  }
-      }
-
-      // Deactivates pback buffer contents, and restores normal buffer.
-      // Assumptions:
-      // The pback buffer has only moved forward.
-      void
-      _M_pback_destroy()
-      {
-	if (_M_pback_init)
-	  {
-	    // Length _M_in_cur moved in the pback buffer.
-	    size_t __off_cur = _M_in_cur - _M_pback;
-	    
-	    // For in | out buffers, the end can be pushed back...
-	    size_t __off_end = 0;
-	    size_t __pback_len = _M_in_end - _M_pback;
-	    size_t __save_len = _M_pback_end_save - _M_buf;
-	    if (__pback_len > __save_len)
-	      __off_end = __pback_len - __save_len;
-
-	    this->setg(_M_buf, _M_pback_cur_save + __off_cur, 
-		       _M_pback_end_save + __off_end);
-	    _M_pback_cur_save = NULL;
-	    _M_pback_end_save = NULL;
-	    _M_pback_init = false;
-	  }
-      }
 
       // Correctly sets the _M_in_cur pointer, and bumps the
       // _M_out_cur pointer as well if necessary.
@@ -541,9 +480,7 @@ namespace std
       : _M_buf(NULL), _M_buf_size(BUFSIZ), _M_buf_unified(false),
       _M_in_beg(0), _M_in_cur(0), _M_in_end(0), _M_out_beg(0),
       _M_out_cur(0), _M_out_end(0), _M_out_lim(0),
-      _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()), 
-      _M_pback_cur_save(0), _M_pback_end_save(0), 
-      _M_pback_init(false)
+      _M_mode(ios_base::openmode(0)), _M_buf_locale(locale()) 
       { }
 
       // [27.5.2.3.1] get area access

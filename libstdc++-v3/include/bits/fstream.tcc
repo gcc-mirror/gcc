@@ -40,6 +40,10 @@
 namespace std
 {
   template<typename _CharT, typename _Traits>
+    const size_t
+    basic_filebuf<_CharT, _Traits>::_S_pback_size;
+
+  template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_internal_buffer()
@@ -72,7 +76,8 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() : __streambuf_type(), _M_file(&_M_lock), 
     _M_state_cur(__state_type()), _M_state_beg(__state_type()), 
-    _M_buf_allocated(false), _M_last_overflowed(false)
+    _M_buf_allocated(false), _M_last_overflowed(false),
+    _M_pback_cur_save(0), _M_pback_end_save(0), _M_pback_init(false)
     { this->_M_buf_unified = true; }
 
   template<typename _CharT, typename _Traits>

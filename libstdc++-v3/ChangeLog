@@ -1,3 +1,19 @@
+2003-04-22  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (_S_pback_size, _M_pback,
+	_M_pback_cur_save, _M_pback_end_save, _M_pback_init,
+	_M_pback_create(), _M_pback_destroy()): Move to basic_filebuf.
+	(basic_streambuf::basic_streambuf()): Adjust.
+	* include/std/std_fstream.h (_S_pback_size, _M_pback,
+	_M_pback_cur_save, _M_pback_end_save, _M_pback_init,
+	_M_pback_create(), _M_pback_destroy()): Moved here
+	from basic_streambuf.
+	* include/bits/fstream.tcc (basic_filebuf::basic_filebuf()):
+	Adjust.
+	(basic_filebuf::_S_pback_size): Add declaration.
+	* include/bits/streambuf.tcc (basic_streambuf::_S_pback_size):
+	Remove declaration.
+
 2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	Consistently use _M_in_beg instead of eback(), _M_in_cur
