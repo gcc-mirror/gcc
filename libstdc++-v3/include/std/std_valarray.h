@@ -45,7 +45,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <numeric>
-#include <functional>
 #include <algorithm>
 
 namespace std
@@ -59,7 +58,7 @@ namespace std
   template<class _Oper, template<class, class> class _Meta, class _Dom>
     struct _UnClos;
 
-  template<template<class> class _Oper,
+  template<class _Oper,
         template<class, class> class _Meta1,
         template<class, class> class _Meta2,
         class _Dom1, class _Dom2> 
@@ -80,12 +79,6 @@ namespace std
   template<template<class, class> class _Meta, class _Dom> 
     class _RefFunClos;
 
-  template<class _Tp> struct _Bitwise_and;
-  template<class _Tp> struct _Bitwise_or;
-  template<class _Tp> struct _Bitwise_xor;  
-  template<class _Tp> struct _Shift_left;
-  template<class _Tp> struct _Shift_right;
-  
   template<class _Tp> class valarray;   // An array of type _Tp
   class slice;                          // BLAS-like slice out of an array
   template<class _Tp> class slice_array;
@@ -224,27 +217,6 @@ namespace std
       
       friend class _Array<_Tp>;
     };
-
-  template<typename _Tp> struct _Bitwise_and : binary_function<_Tp,_Tp,_Tp> {
-      _Tp operator() (_Tp __x, _Tp __y) const { return __x & __y; }
-  };
-
-  template<typename _Tp> struct _Bitwise_or : binary_function<_Tp,_Tp,_Tp> {
-      _Tp operator() (_Tp __x, _Tp __y) const { return __x | __y; }
-  };
-
-  template<typename _Tp> struct _Bitwise_xor : binary_function<_Tp,_Tp,_Tp> {
-      _Tp operator() (_Tp __x, _Tp __y) const { return __x ^ __y; }
-  };
-  
-  template<typename _Tp> struct _Shift_left : unary_function<_Tp,_Tp> {
-      _Tp operator() (_Tp __x, _Tp __y) const { return __x << __y; }
-  };
-
-  template<typename _Tp> struct _Shift_right : unary_function<_Tp,_Tp> {
-      _Tp operator() (_Tp __x, _Tp __y) const { return __x >> __y; }
-  };
-
   
   template<typename _Tp>
     inline const _Tp&
@@ -486,7 +458,7 @@ namespace std
     inline _Tp
     valarray<_Tp>::sum() const
     {
-	return __valarray_sum(_M_data, _M_data + _M_size);
+      return __valarray_sum(_M_data, _M_data + _M_size);
     }
 
 //   template<typename _Tp>
@@ -611,138 +583,107 @@ namespace std
 
 #define _DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(_Op, _Name)               \
   template<class _Tp>							\
-  inline valarray<_Tp> &						\
-  valarray<_Tp>::operator _Op##= (const _Tp &__t)			\
-  {									\
-      _Array_augmented_##_Name (_Array<_Tp>(_M_data), _M_size, __t);	\
+    inline valarray<_Tp>&						\
+    valarray<_Tp>::operator _Op##=(const _Tp &__t)			\
+    {									\
+      _Array_augmented_##_Name(_Array<_Tp>(_M_data), _M_size, __t);	\
       return *this;							\
-  }									\
+    }									\
 									\
   template<class _Tp>							\
-  inline valarray<_Tp> &						\
-  valarray<_Tp>::operator _Op##= (const valarray<_Tp> &__v)		\
-  {									\
-      _Array_augmented_##_Name (_Array<_Tp>(_M_data), _M_size, 		\
-                               _Array<_Tp>(__v._M_data));		\
+    inline valarray<_Tp>&						\
+    valarray<_Tp>::operator _Op##=(const valarray<_Tp> &__v)		\
+    {									\
+      _Array_augmented_##_Name(_Array<_Tp>(_M_data), _M_size, 		\
+			       _Array<_Tp>(__v._M_data));		\
       return *this;							\
-  }
+    }
 
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(+, plus)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(-, minus)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(*, multiplies)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(/, divides)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(%, modulus)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(^, xor)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(&, and)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(|, or)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(<<, shift_left)
-_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(>>, shift_right)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(+, __plus)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(-, __minus)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(*, __multiplies)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(/, __divides)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(%, __modulus)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(^, __bitwise_xor)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(&, __bitwise_and)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(|, __bitwise_or)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(<<, __shift_left)
+_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT
 
-
-} // std::
-  
-
-namespace std
-{
-
 #define _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(_Op, _Name)          \
   template<class _Tp> template<class _Dom>				\
-  inline valarray<_Tp> &						\
-  valarray<_Tp>::operator _Op##= (const _Expr<_Dom,_Tp> &__e)		\
-  {									\
-      _Array_augmented_##_Name (_Array<_Tp>(_M_data), __e, _M_size);	\
+    inline valarray<_Tp>&						\
+    valarray<_Tp>::operator _Op##=(const _Expr<_Dom,_Tp>& __e)		\
+    {									\
+      _Array_augmented_##_Name(_Array<_Tp>(_M_data), __e, _M_size);	\
       return *this;							\
-  }
+    }
 
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(+, plus)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(-, minus)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(*, multiplies)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(/, divides)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(%, modulus)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(^, xor)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(&, and)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(|, or)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(<<, shift_left)
-_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, shift_right)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(+, __plus)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(-, __minus)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(*, __multiplies)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(/, __divides)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(%, __modulus)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(^, __bitwise_xor)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(&, __bitwise_and)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(|, __bitwise_or)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(<<, __shift_left)
+_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT
     
 
 #define _DEFINE_BINARY_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
-  inline _Expr<_BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp>, _Tp>        \
-  operator _Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
-  {									\
+    inline _Expr<_BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp>,           \
+                 typename __fun<_Name, _Tp>::result_type>               \
+    operator _Op(const valarray<_Tp>& __v, const valarray<_Tp>& __w)	\
+    {									\
       typedef _BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp> _Closure;     \
-      return _Expr<_Closure, _Tp> (_Closure (__v, __w));		\
+      typedef typename __fun<_Name, _Tp>::result_type _Rt;              \
+      return _Expr<_Closure, _Rt>(_Closure(__v, __w));                  \
+    }									\
+									\
+  template<typename _Tp>						\
+  inline _Expr<_BinClos<_Name,_ValArray,_Constant,_Tp,_Tp>,             \
+               typename __fun<_Name, _Tp>::result_type>                 \
+  operator _Op(const valarray<_Tp>& __v, const _Tp& __t)		\
+  {									\
+    typedef _BinClos<_Name,_ValArray,_Constant,_Tp,_Tp> _Closure;	\
+    typedef typename __fun<_Name, _Tp>::result_type _Rt;                \
+    return _Expr<_Closure, _Rt>(_Closure(__v, __t));	                \
   }									\
 									\
   template<typename _Tp>						\
-  inline _Expr<_BinClos<_Name,_ValArray,_Constant,_Tp,_Tp>,_Tp>         \
-  operator _Op (const valarray<_Tp> &__v, const _Tp &__t)		\
+  inline _Expr<_BinClos<_Name,_Constant,_ValArray,_Tp,_Tp>,             \
+               typename __fun<_Name, _Tp>::result_type>                 \
+  operator _Op(const _Tp& __t, const valarray<_Tp>& __v)		\
   {									\
-      typedef _BinClos<_Name,_ValArray,_Constant,_Tp,_Tp> _Closure;	\
-      return _Expr<_Closure, _Tp> (_Closure (__v, __t));	        \
-  }									\
-									\
-  template<typename _Tp>						\
-  inline _Expr<_BinClos<_Name,_Constant,_ValArray,_Tp,_Tp>,_Tp>         \
-  operator _Op (const _Tp &__t, const valarray<_Tp> &__v)		\
-  {									\
-      typedef _BinClos<_Name,_Constant,_ValArray,_Tp,_Tp> _Closure;     \
-      return _Expr<_Closure, _Tp> (_Closure (__t, __v));        	\
+    typedef _BinClos<_Name,_Constant,_ValArray,_Tp,_Tp> _Closure;       \
+    typedef typename __fun<_Name, _Tp>::result_type _Rt;                \
+    return _Expr<_Closure, _Tp>(_Closure(__t, __v));        	        \
   }
 
-_DEFINE_BINARY_OPERATOR(+, plus)
-_DEFINE_BINARY_OPERATOR(-, minus)
-_DEFINE_BINARY_OPERATOR(*, multiplies)
-_DEFINE_BINARY_OPERATOR(/, divides)
-_DEFINE_BINARY_OPERATOR(%, modulus)
-_DEFINE_BINARY_OPERATOR(^, _Bitwise_xor)
-_DEFINE_BINARY_OPERATOR(&, _Bitwise_and)
-_DEFINE_BINARY_OPERATOR(|, _Bitwise_or)
-_DEFINE_BINARY_OPERATOR(<<, _Shift_left)
-_DEFINE_BINARY_OPERATOR(>>, _Shift_right)
-
-#undef _DEFINE_BINARY_OPERATOR
-
-#define _DEFINE_LOGICAL_OPERATOR(_Op, _Name)				\
-  template<typename _Tp>						\
-  inline _Expr<_BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp>,bool>        \
-  operator _Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
-  {									\
-      typedef _BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp> _Closure;     \
-      return _Expr<_Closure, bool> (_Closure (__v, __w));               \
-  }									\
-									\
-  template<class _Tp>							\
-  inline _Expr<_BinClos<_Name,_ValArray,_Constant,_Tp,_Tp>,bool>        \
-  operator _Op (const valarray<_Tp> &__v, const _Tp &__t)		\
-  {									\
-      typedef _BinClos<_Name,_ValArray,_Constant,_Tp,_Tp> _Closure;     \
-      return _Expr<_Closure, bool> (_Closure (__v, __t));       	\
-  }									\
-									\
-  template<class _Tp>							\
-  inline _Expr<_BinClos<_Name,_Constant,_ValArray,_Tp,_Tp>,bool>        \
-  operator _Op (const _Tp &__t, const valarray<_Tp> &__v)		\
-  {									\
-      typedef _BinClos<_Name,_Constant,_ValArray,_Tp,_Tp> _Closure;     \
-      return _Expr<_Closure, bool> (_Closure (__t, __v));	        \
-  }
-
-_DEFINE_LOGICAL_OPERATOR(&&, logical_and)
-_DEFINE_LOGICAL_OPERATOR(||, logical_or)
-_DEFINE_LOGICAL_OPERATOR(==, equal_to)
-_DEFINE_LOGICAL_OPERATOR(!=, not_equal_to)
-_DEFINE_LOGICAL_OPERATOR(<, less)
-_DEFINE_LOGICAL_OPERATOR(>, greater)
-_DEFINE_LOGICAL_OPERATOR(<=, less_equal)
-_DEFINE_LOGICAL_OPERATOR(>=, greater_equal)
-
-#undef _DEFINE_LOGICAL_OPERATOR
+_DEFINE_BINARY_OPERATOR(+, __plus)
+_DEFINE_BINARY_OPERATOR(-, __minus)
+_DEFINE_BINARY_OPERATOR(*, __multiplies)
+_DEFINE_BINARY_OPERATOR(/, __divides)
+_DEFINE_BINARY_OPERATOR(%, __modulus)
+_DEFINE_BINARY_OPERATOR(^, __bitwise_xor)
+_DEFINE_BINARY_OPERATOR(&, __bitwise_and)
+_DEFINE_BINARY_OPERATOR(|, __bitwise_or)
+_DEFINE_BINARY_OPERATOR(<<, __shift_left)
+_DEFINE_BINARY_OPERATOR(>>, __shift_right)
+_DEFINE_BINARY_OPERATOR(&&, __logical_and)
+_DEFINE_BINARY_OPERATOR(||, __logical_or)
+_DEFINE_BINARY_OPERATOR(==, __equal_to)
+_DEFINE_BINARY_OPERATOR(!=, __not_equal_to)
+_DEFINE_BINARY_OPERATOR(<, __less)
+_DEFINE_BINARY_OPERATOR(>, __greater)
+_DEFINE_BINARY_OPERATOR(<=, __less_equal)
+_DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 
 } // namespace std
 

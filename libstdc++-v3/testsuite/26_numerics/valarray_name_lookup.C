@@ -116,4 +116,27 @@ int main()
   v = log(u);
   v = log10(u);
   v = sqrt(u);  
+
+  Array w = u + v;
+  w = u - v;
+  w = u * v;
+  w = u / v;
+  w = u % v;
+
+  w = u ^ v;
+  w = u & v;
+  w = u | v;
+
+  w = u << v;
+  w = u >> v;
+
+  z = u == v;
+  z = u != v;
+  z = u < v;
+  z = u <= v;
+  z = u > v;
+  z = u >= v;
+
+  w = atan2(u, v);
+  w = pow(u, v);
 }

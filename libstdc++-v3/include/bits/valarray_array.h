@@ -603,16 +603,16 @@ _Array_augmented_##_Name (_Array<_Tp> __a, _Array<bool> __m,		\
     }									\
 }
 
-   _DEFINE_ARRAY_FUNCTION(+, plus)
-   _DEFINE_ARRAY_FUNCTION(-, minus)
-   _DEFINE_ARRAY_FUNCTION(*, multiplies)
-   _DEFINE_ARRAY_FUNCTION(/, divides)
-   _DEFINE_ARRAY_FUNCTION(%, modulus)
-   _DEFINE_ARRAY_FUNCTION(^, xor)
-   _DEFINE_ARRAY_FUNCTION(|, or)
-   _DEFINE_ARRAY_FUNCTION(&, and)    
-   _DEFINE_ARRAY_FUNCTION(<<, shift_left)
-   _DEFINE_ARRAY_FUNCTION(>>, shift_right)
+   _DEFINE_ARRAY_FUNCTION(+, __plus)
+   _DEFINE_ARRAY_FUNCTION(-, __minus)
+   _DEFINE_ARRAY_FUNCTION(*, __multiplies)
+   _DEFINE_ARRAY_FUNCTION(/, __divides)
+   _DEFINE_ARRAY_FUNCTION(%, __modulus)
+   _DEFINE_ARRAY_FUNCTION(^, __bitwise_xor)
+   _DEFINE_ARRAY_FUNCTION(|, __bitwise_or)
+   _DEFINE_ARRAY_FUNCTION(&, __bitwise_and)    
+   _DEFINE_ARRAY_FUNCTION(<<, __shift_left)
+   _DEFINE_ARRAY_FUNCTION(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_FUNCTION    
 
