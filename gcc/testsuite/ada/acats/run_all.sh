@@ -191,8 +191,15 @@ for chapter in $chapters; do
          extraflags="$extraflags -gnatE"
       fi
       test=$dir/tests/$chapter/$i
-      mkdir $test
-      cd $test
+      mkdir $test && cd $test >> $dir/acats.log 2>&1
+
+      if [ $? -ne 0 ]; then
+         display "FAIL:	$i"
+         failed="${failed}${i} "
+         clean_dir
+         continue
+      fi
+
       target_gnatchop -c -w `ls ${test}*.a ${test}*.ada ${test}*.adt ${test}*.am ${test}*.dep 2> /dev/null` >> $dir/acats.log 2>&1
       ls ${i}?.adb > ${i}.lst 2> /dev/null
       ls ${i}*m.adb >> ${i}.lst 2> /dev/null
