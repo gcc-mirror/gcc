@@ -1,3 +1,8 @@
+2004-11-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* passes.c (rest_of_handle_old_regalloc): Delete unreachable blocks
+	if local_alloc modified jumps.
+
 2004-11-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* varasm.c (default_encode_section_info): Don't set SYMBOL_FLAG_SMALL
