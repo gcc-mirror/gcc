@@ -1,3 +1,9 @@
+1998-07-24  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in (s-libe77, ${srcdir}/configure, g2c.h, Makefile,
+	config.status, rebuilt): Rely on VPATH, dropping explicit use of
+	$(srcdir) in various places.
+
 1998-07-19  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (all): Depend on s-libe77, not e77.
