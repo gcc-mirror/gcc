@@ -281,7 +281,7 @@ namespace __gnu_cxx
       typedef _Hashtable_node<_Val> _Node;
 
     public:
-      typedef _Alloc allocator_type;
+      typedef typename _Alloc::template rebind<value_type>::other allocator_type;
       allocator_type
       get_allocator() const
       { return _M_node_allocator; }
@@ -607,7 +607,7 @@ namespace __gnu_cxx
 	__n->_M_next = 0;
 	try
 	  {
-	    _Construct(&__n->_M_val, __obj);
+	    this->get_allocator().construct(&__n->_M_val, __obj);
 	    return __n;
 	  }
 	catch(...)
@@ -620,7 +620,7 @@ namespace __gnu_cxx
       void
       _M_delete_node(_Node* __n)
       {
-	_Destroy(&__n->_M_val);
+	this->get_allocator().destroy(&__n->_M_val);
 	_M_put_node(__n);
       }
       

@@ -1642,7 +1642,7 @@ protected:
 	  return 0;
 	_CharT* __buf = __a.allocate(_S_rounded_up_size(__size));
 	
-	uninitialized_copy_n(__s, __size, __buf);
+	__uninitialized_copy_n_a(__s, __size, __buf, __a);
 	_S_cond_store_eos(__buf[__size]);
 	try
 	  { return _S_new_RopeLeaf(__buf, __size, __a); }
@@ -1790,7 +1790,7 @@ protected:
       {
 	_CharT* __buf = this->_Data_allocate(_S_rounded_up_size(1));
 	
-	std::_Construct(__buf, __c);
+	get_allocator().construct(__buf, __c);
 	try
 	  { this->_M_tree_ptr = _S_new_RopeLeaf(__buf, 1, __a); }
 	catch(...)
@@ -1905,7 +1905,7 @@ protected:
       void
       copy(_CharT* __buffer) const
       {
-	_Destroy(__buffer, __buffer + size());
+	_Destroy(__buffer, __buffer + size(), get_allocator());
 	_S_flatten(this->_M_tree_ptr, __buffer);
       }
 
@@ -1920,7 +1920,7 @@ protected:
 	size_t __size = size();
 	size_t __len = (__pos + __n > __size? __size - __pos : __n);
 	
-	_Destroy(__buffer, __buffer + __len);
+	_Destroy(__buffer, __buffer + __len, get_allocator());
 	_S_flatten(this->_M_tree_ptr, __pos, __len, __buffer);
 	return __len;
       }

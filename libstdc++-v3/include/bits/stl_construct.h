@@ -154,6 +154,35 @@ namespace std
 
       std::__destroy_aux(__first, __last, _Has_trivial_destructor());
     }
+
+  /**
+   * @if maint
+   * Destroy a range of objects using the supplied allocator.  For
+   * nondefault allocators we do not optimize away invocation of 
+   * destroy() even if _Tp has a trivial destructor.
+   * @endif
+   */
+
+  template <typename _Tp> class allocator;
+
+  template<typename _ForwardIterator, typename _Allocator>
+    void
+    _Destroy(_ForwardIterator __first, _ForwardIterator __last,
+	     _Allocator __alloc)
+    {
+      for (; __first != __last; ++__first)
+	__alloc.destroy(&*__first);
+    }
+
+  template<typename _ForwardIterator, typename _Allocator, typename _Tp>
+    inline void
+    _Destroy(_ForwardIterator __first, _ForwardIterator __last,
+	     allocator<_Tp>)
+    {
+      _Destroy(__first, __last);
+    }
+   
+
 } // namespace std
 
 #endif /* _STL_CONSTRUCT_H */

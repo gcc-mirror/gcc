@@ -146,7 +146,8 @@ namespace _GLIBCXX_STD
 	    {
 	      std::copy_backward(this->_M_impl._M_start, __first, __last);
 	      iterator __new_start = this->_M_impl._M_start + __n;
-	      std::_Destroy(this->_M_impl._M_start, __new_start);
+	      std::_Destroy(this->_M_impl._M_start, __new_start,
+			    this->get_allocator());
 	      _M_destroy_nodes(this->_M_impl._M_start._M_node,
 			       __new_start._M_node);
 	      this->_M_impl._M_start = __new_start;
@@ -155,7 +156,8 @@ namespace _GLIBCXX_STD
 	    {
 	      std::copy(__last, this->_M_impl._M_finish, __first);
 	      iterator __new_finish = this->_M_impl._M_finish - __n;
-	      std::_Destroy(__new_finish, this->_M_impl._M_finish);
+	      std::_Destroy(__new_finish, this->_M_impl._M_finish,
+			    this->get_allocator());
 	      _M_destroy_nodes(__new_finish._M_node + 1,
 			       this->_M_impl._M_finish._M_node + 1);
 	      this->_M_impl._M_finish = __new_finish;
@@ -173,21 +175,25 @@ namespace _GLIBCXX_STD
            __node < this->_M_impl._M_finish._M_node;
            ++__node)
 	{
-	  std::_Destroy(*__node, *__node + _S_buffer_size());
+	  std::_Destroy(*__node, *__node + _S_buffer_size(),
+			this->get_allocator());
 	  _M_deallocate_node(*__node);
 	}
 
       if (this->_M_impl._M_start._M_node != this->_M_impl._M_finish._M_node)
 	{
 	  std::_Destroy(this->_M_impl._M_start._M_cur,
-			this->_M_impl._M_start._M_last);
+			this->_M_impl._M_start._M_last,
+			this->get_allocator());
 	  std::_Destroy(this->_M_impl._M_finish._M_first,
-			this->_M_impl._M_finish._M_cur);
+			this->_M_impl._M_finish._M_cur,
+			this->get_allocator());
 	  _M_deallocate_node(this->_M_impl._M_finish._M_first);
 	}
       else
         std::_Destroy(this->_M_impl._M_start._M_cur,
-		      this->_M_impl._M_finish._M_cur);
+		      this->_M_impl._M_finish._M_cur,
+		      this->get_allocator());
 
       this->_M_impl._M_finish = this->_M_impl._M_start;
     }
@@ -218,7 +224,9 @@ namespace _GLIBCXX_STD
 	  iterator __new_start = _M_reserve_elements_at_front(__n);
 	  try
 	    {
-	      std::uninitialized_fill(__new_start, this->_M_impl._M_start, __x);
+	      std::__uninitialized_fill_a(__new_start, this->_M_impl._M_start,
+					  __x,
+					  this->get_allocator());
 	      this->_M_impl._M_start = __new_start;
 	    }
 	  catch(...)
@@ -233,8 +241,9 @@ namespace _GLIBCXX_STD
 	  iterator __new_finish = _M_reserve_elements_at_back(__n);
 	  try
 	    {
-	      std::uninitialized_fill(this->_M_impl._M_finish,
-				      __new_finish, __x);
+	      std::__uninitialized_fill_a(this->_M_impl._M_finish,
+					  __new_finish, __x,
+					  this->get_allocator());
 	      this->_M_impl._M_finish = __new_finish;
 	    }
 	  catch(...)
@@ -259,14 +268,17 @@ namespace _GLIBCXX_STD
           for (__cur = this->_M_impl._M_start._M_node;
 	       __cur < this->_M_impl._M_finish._M_node;
 	       ++__cur)
-            std::uninitialized_fill(*__cur, *__cur + _S_buffer_size(), __value);
-          std::uninitialized_fill(this->_M_impl._M_finish._M_first,
-				  this->_M_impl._M_finish._M_cur,
-				  __value);
+            std::__uninitialized_fill_a(*__cur, *__cur + _S_buffer_size(), __value,
+					this->get_allocator());
+          std::__uninitialized_fill_a(this->_M_impl._M_finish._M_first,
+				      this->_M_impl._M_finish._M_cur,
+				      __value,
+				      this->get_allocator());
         }
       catch(...)
         {
-          std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur));
+          std::_Destroy(this->_M_impl._M_start, iterator(*__cur, __cur),
+			this->get_allocator());
           __throw_exception_again;
         }
     }
@@ -310,16 +322,19 @@ namespace _GLIBCXX_STD
             {
               _ForwardIterator __mid = __first;
               std::advance(__mid, _S_buffer_size());
-              std::uninitialized_copy(__first, __mid, *__cur_node);
+              std::__uninitialized_copy_a(__first, __mid, *__cur_node,
+					  this->get_allocator());
               __first = __mid;
             }
-            std::uninitialized_copy(__first, __last,
-				    this->_M_impl._M_finish._M_first);
+            std::__uninitialized_copy_a(__first, __last,
+					this->_M_impl._M_finish._M_first,
+					this->get_allocator());
           }
         catch(...)
           {
             std::_Destroy(this->_M_impl._M_start,
-			  iterator(*__cur_node, __cur_node));
+			  iterator(*__cur_node, __cur_node),
+			  this->get_allocator());
             __throw_exception_again;
           }
       }
@@ -335,7 +350,7 @@ namespace _GLIBCXX_STD
       *(this->_M_impl._M_finish._M_node + 1) = this->_M_allocate_node();
       try
         {
-          std::_Construct(this->_M_impl._M_finish._M_cur, __t_copy);
+          this->_M_impl.construct(this->_M_impl._M_finish._M_cur, __t_copy);
           this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node
 					      + 1);
           this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_first;
@@ -361,7 +376,7 @@ namespace _GLIBCXX_STD
           this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node
 					     - 1);
           this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_last - 1;
-          std::_Construct(this->_M_impl._M_start._M_cur, __t_copy);
+          this->_M_impl.construct(this->_M_impl._M_start._M_cur, __t_copy);
         }
       catch(...)
         {
@@ -379,7 +394,7 @@ namespace _GLIBCXX_STD
       _M_deallocate_node(this->_M_impl._M_finish._M_first);
       this->_M_impl._M_finish._M_set_node(this->_M_impl._M_finish._M_node - 1);
       this->_M_impl._M_finish._M_cur = this->_M_impl._M_finish._M_last - 1;
-      std::_Destroy(this->_M_impl._M_finish._M_cur);
+      this->_M_impl.destroy(this->_M_impl._M_finish._M_cur);
     }
 
   // Called only if _M_impl._M_start._M_cur == _M_impl._M_start._M_last - 1.
@@ -391,7 +406,7 @@ namespace _GLIBCXX_STD
     void deque<_Tp, _Alloc>::
     _M_pop_front_aux()
     {
-      std::_Destroy(this->_M_impl._M_start._M_cur);
+      this->_M_impl.destroy(this->_M_impl._M_start._M_cur);
       _M_deallocate_node(this->_M_impl._M_start._M_first);
       this->_M_impl._M_start._M_set_node(this->_M_impl._M_start._M_node + 1);
       this->_M_impl._M_start._M_cur = this->_M_impl._M_start._M_first;
@@ -420,7 +435,8 @@ namespace _GLIBCXX_STD
 	    iterator __new_start = _M_reserve_elements_at_front(__n);
 	    try
 	      {
-		std::uninitialized_copy(__first, __last, __new_start);
+		std::__uninitialized_copy_a(__first, __last, __new_start,
+					    this->get_allocator());
 		this->_M_impl._M_start = __new_start;
 	      }
 	    catch(...)
@@ -435,8 +451,9 @@ namespace _GLIBCXX_STD
 	    iterator __new_finish = _M_reserve_elements_at_back(__n);
 	    try
 	      {
-		std::uninitialized_copy(__first, __last,
-					this->_M_impl._M_finish);
+		std::__uninitialized_copy_a(__first, __last,
+					    this->_M_impl._M_finish,
+					    this->get_allocator());
 		this->_M_impl._M_finish = __new_finish;
 	      }
 	    catch(...)
@@ -502,8 +519,9 @@ namespace _GLIBCXX_STD
 		{
 		  iterator __start_n = (this->_M_impl._M_start
 					+ difference_type(__n));
-		  std::uninitialized_copy(this->_M_impl._M_start, __start_n,
-					  __new_start);
+		  std::__uninitialized_copy_a(this->_M_impl._M_start, __start_n,
+					      __new_start,
+					      this->get_allocator());
 		  this->_M_impl._M_start = __new_start;
 		  std::copy(__start_n, __pos, __old_start);
 		  fill(__pos - difference_type(__n), __pos, __x_copy);
@@ -513,7 +531,8 @@ namespace _GLIBCXX_STD
 		  std::__uninitialized_copy_fill(this->_M_impl._M_start,
 						 __pos, __new_start,
 						 this->_M_impl._M_start,
-						 __x_copy);
+						 __x_copy,
+						 this->get_allocator());
 		  this->_M_impl._M_start = __new_start;
 		  std::fill(__old_start, __pos, __x_copy);
 		}
@@ -538,8 +557,9 @@ namespace _GLIBCXX_STD
 		{
 		  iterator __finish_n = (this->_M_impl._M_finish
 					 - difference_type(__n));
-		  std::uninitialized_copy(__finish_n, this->_M_impl._M_finish,
-					  this->_M_impl._M_finish);
+		  std::__uninitialized_copy_a(__finish_n, this->_M_impl._M_finish,
+					      this->_M_impl._M_finish,
+					      this->get_allocator());
 		  this->_M_impl._M_finish = __new_finish;
 		  std::copy_backward(__pos, __finish_n, __old_finish);
 		  std::fill(__pos, __pos + difference_type(__n), __x_copy);
@@ -549,7 +569,8 @@ namespace _GLIBCXX_STD
 		  std::__uninitialized_fill_copy(this->_M_impl._M_finish,
 						 __pos + difference_type(__n),
 						 __x_copy, __pos,
-						 this->_M_impl._M_finish);
+						 this->_M_impl._M_finish,
+						 this->get_allocator());
 		  this->_M_impl._M_finish = __new_finish;
 		  std::fill(__pos, __old_finish, __x_copy);
 		}
@@ -584,8 +605,9 @@ namespace _GLIBCXX_STD
 		  {
 		    iterator __start_n = (this->_M_impl._M_start
 					  + difference_type(__n));
-		    std::uninitialized_copy(this->_M_impl._M_start, __start_n,
-					    __new_start);
+		    std::__uninitialized_copy_a(this->_M_impl._M_start, __start_n,
+						__new_start,
+						this->get_allocator());
 		    this->_M_impl._M_start = __new_start;
 		    std::copy(__start_n, __pos, __old_start);
 		    std::copy(__first, __last, __pos - difference_type(__n));
@@ -596,7 +618,8 @@ namespace _GLIBCXX_STD
 		    std::advance(__mid, difference_type(__n) - __elemsbefore);
 		    std::__uninitialized_copy_copy(this->_M_impl._M_start,
 						   __pos, __first, __mid,
-						   __new_start);
+						   __new_start,
+						   this->get_allocator());
 		    this->_M_impl._M_start = __new_start;
 		    std::copy(__mid, __last, __old_start);
 		  }
@@ -621,9 +644,10 @@ namespace _GLIBCXX_STD
 		{
 		  iterator __finish_n = (this->_M_impl._M_finish
 					 - difference_type(__n));
-		  std::uninitialized_copy(__finish_n,
-					  this->_M_impl._M_finish,
-					  this->_M_impl._M_finish);
+		  std::__uninitialized_copy_a(__finish_n,
+					      this->_M_impl._M_finish,
+					      this->_M_impl._M_finish,
+					      this->get_allocator());
 		  this->_M_impl._M_finish = __new_finish;
 		  std::copy_backward(__pos, __finish_n, __old_finish);
 		  std::copy(__first, __last, __pos);
@@ -634,7 +658,8 @@ namespace _GLIBCXX_STD
 		  std::advance(__mid, __elemsafter);
 		  std::__uninitialized_copy_copy(__mid, __last, __pos,
 						 this->_M_impl._M_finish,
-						 this->_M_impl._M_finish);
+						 this->_M_impl._M_finish,
+						 this->get_allocator());
 		  this->_M_impl._M_finish = __new_finish;
 		  std::copy(__first, __mid, __pos);
 		}

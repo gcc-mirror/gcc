@@ -169,6 +169,10 @@ namespace __gnu_test
     bool
     operator!=(const tracker_alloc<T1>&, const tracker_alloc<T2>&) throw()
     { return false; }
+
+   bool
+   check_construct_destroy(const char* tag, int expected_c, int expected_d);
+
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

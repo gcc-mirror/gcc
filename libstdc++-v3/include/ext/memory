@@ -128,6 +128,40 @@ namespace __gnu_cxx
     { return __uninitialized_copy_n(__first, __count, __result,
 				    __iterator_category(__first)); }
 
+
+  // An alternative version of uninitialized_copy_n that constructs
+  // and destroys objects with a user-provided allocator.
+  template<typename _InputIter, typename _Size, typename _ForwardIter,
+           typename _Allocator>
+    pair<_InputIter, _ForwardIter>
+    __uninitialized_copy_n_a(_InputIter __first, _Size __count,
+			     _ForwardIter __result,
+			     _Allocator __alloc)
+    {
+      _ForwardIter __cur = __result;
+      try
+	{
+	  for (; __count > 0 ; --__count, ++__first, ++__cur)
+	    __alloc.construct(&*__cur, *__first);
+	  return pair<_InputIter, _ForwardIter>(__first, __cur);
+	}
+      catch(...)
+	{
+	  std::_Destroy(__result, __cur, __alloc);
+	  __throw_exception_again;
+	}
+    }
+
+  template<typename _InputIter, typename _Size, typename _ForwardIter,
+           typename _Tp>
+    inline pair<_InputIter, _ForwardIter>
+    __uninitialized_copy_n_a(_InputIter __first, _Size __count,
+			     _ForwardIter __result,
+			     std::allocator<_Tp>)
+    {
+      return uninitialized_copy_n(__first, __count, __result);
+    }
+
   /**
    *  This class provides similar behavior and semantics of the standard
    *  functions get_temporary_buffer() and return_temporary_buffer(), but

@@ -362,7 +362,7 @@ namespace std
       {
 	_Link_type __tmp = _M_get_node();
 	try
-	  { std::_Construct(&__tmp->_M_value_field, __x); }
+	  { get_allocator().construct(&__tmp->_M_value_field, __x); }
 	catch(...)
 	  {
 	    _M_put_node(__tmp);
@@ -384,7 +384,7 @@ namespace std
       void
       destroy_node(_Link_type __p)
       {
-	std::_Destroy(&__p->_M_value_field);
+	get_allocator().destroy(&__p->_M_value_field);
 	_M_put_node(__p);
       }
 
