@@ -2971,6 +2971,14 @@
   "jmp %%o0+0\;restore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
+
+;; Special pattern for the FLUSH instruction.
+
+(define_insn "flush"
+  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  ""
+  "iflush %a0"
+  [(set_attr "type" "misc")])
 
 ;; find first set.
 
