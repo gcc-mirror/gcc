@@ -5573,6 +5573,9 @@ ffebld_new_item (ffebld head, ffebld trail)
   x->op = FFEBLD_opITEM;
   x->u.item.head = head;
   x->u.item.trail = trail;
+#ifdef FFECOM_itemHOOK
+  x->u.item.hook = FFECOM_itemNULL;
+#endif
   return x;
 }
 
@@ -5655,6 +5658,9 @@ ffebld_new_one (ffebldOp o, ffebld left)
 #endif
   x->op = o;
   x->u.nonter.left = left;
+#ifdef FFECOM_nonterHOOK
+  x->u.nonter.hook = FFECOM_nonterNULL;
+#endif
   return x;
 }
 
@@ -5703,6 +5709,9 @@ ffebld_new_two (ffebldOp o, ffebld left, ffebld right)
   x->op = o;
   x->u.nonter.left = left;
   x->u.nonter.right = right;
+#ifdef FFECOM_nonterHOOK
+  x->u.nonter.hook = FFECOM_nonterNULL;
+#endif
   return x;
 }
 

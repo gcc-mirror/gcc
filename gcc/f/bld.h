@@ -406,12 +406,18 @@ struct _ffebld_
 	  {
 	    ffebld left;
 	    ffebld right;
+#ifdef FFECOM_nonterHOOK
+	    ffecomNonter hook;	/* Whatever the compiler/backend wants! */
+#endif
 	  }
 	nonter;
 	struct
 	  {
 	    ffebld head;
 	    ffebld trail;
+#ifdef FFECOM_itemHOOK
+	    ffecomItem hook;	/* Whatever the compiler/backend wants! */
+#endif
 	  }
 	item;
 	struct
@@ -748,6 +754,7 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_arrter_set_pad(b,p) ((b)->u.arrter.pad = (p))
 #define ffebld_arrter_set_size(b,s) ((b)->u.arrter.size = (s))
 #define ffebld_arrter_size(b) ((b)->u.arrter.size)
+#define ffebld_basictype(b) (ffeinfo_basictype (ffebld_info ((b))))
 #if FFEBLD_whereconstCURRENT_ == FFEBLD_whereconstPROGUNIT_
 #define ffebld_constant_pool() ffe_pool_program_unit()
 #elif FFEBLD_whereconstCURRENT_ == FFEBLD_whereconstFILE_
@@ -944,6 +951,10 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_init_3()
 #define ffebld_init_4()
 #define ffebld_init_list(l,b) (*(l) = NULL, *(b) = (l))
+#define ffebld_item_hook(b) ((b)->u.item.hook)
+#define ffebld_item_set_hook(b,h) ((b)->u.item.hook = (h))
+#define ffebld_kind(b) (ffeinfo_kind (ffebld_info ((b))))
+#define ffebld_kindtype(b) (ffeinfo_kindtype (ffebld_info ((b))))
 #define ffebld_labter(b) ((b)->u.labter)
 #define ffebld_labtok(b) ((b)->u.labtok)
 #define ffebld_left(b) ((b)->u.nonter.left)
@@ -987,8 +998,11 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_new_arrayref(l,r) ffebld_new_two(FFEBLD_opARRAYREF,(l),(r))
 #define ffebld_new_substr(l,r) ffebld_new_two(FFEBLD_opSUBSTR,(l),(r))
 #define ffebld_new_impdo(l,r) ffebld_new_two(FFEBLD_opIMPDO,(l),(r))
+#define ffebld_nonter_hook(b) ((b)->u.nonter.hook)
+#define ffebld_nonter_set_hook(b,h) ((b)->u.nonter.hook = (h))
 #define ffebld_op(b) ((b)->op)
 #define ffebld_pool() (ffebld_pool_stack_.pool)
+#define ffebld_rank(b) (ffeinfo_rank (ffebld_info ((b))))
 #define ffebld_right(b) ((b)->u.nonter.right)
 #define ffebld_set_accter(b,a) ((b)->u.accter.array = (a))
 #define ffebld_set_arrter(b,a) ((b)->u.arrter.array = (a))
@@ -1000,8 +1014,8 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_set_left(b,l) ((b)->u.nonter.left = (l))
 #define ffebld_set_right(b,r) ((b)->u.nonter.right = (r))
 #define ffebld_set_trail(b,t) ((b)->u.item.trail = (t))
-#define ffebld_size(b) (ffeinfo_size((b)->info))
-#define ffebld_size_known(b) ffebld_size(b)
+#define ffebld_size(b) (ffeinfo_size (ffebld_info ((b))))
+#define ffebld_size_known(b) ffebld_size((b))
 #define ffebld_symter(b) ((b)->u.symter.symbol)
 #define ffebld_symter_generic(b) ((b)->u.symter.generic)
 #define ffebld_symter_doiter(b) ((b)->u.symter.do_iter)
@@ -1018,6 +1032,7 @@ ffetargetCharacterSize ffebld_size_max (ffebld b);
 #define ffebld_terminate_3()
 #define ffebld_terminate_4()
 #define ffebld_trail(b) ((b)->u.item.trail)
+#define ffebld_where(b) (ffeinfo_where (ffebld_info ((b))))
 
 /* End of #include file. */
 

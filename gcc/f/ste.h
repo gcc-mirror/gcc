@@ -62,10 +62,10 @@ void ffeste_end_R807 (void);
 void ffeste_labeldef_branch (ffelab label);
 void ffeste_labeldef_format (ffelab label);
 void ffeste_R737A (ffebld dest, ffebld source);
-void ffeste_R803 (ffebld expr);
-void ffeste_R804 (ffebld expr);
-void ffeste_R805 (void);
-void ffeste_R806 (void);
+void ffeste_R803 (ffestw block, ffebld expr);
+void ffeste_R804 (ffestw block, ffebld expr);
+void ffeste_R805 (ffestw block);
+void ffeste_R806 (ffestw block);
 void ffeste_R807 (ffebld expr);
 void ffeste_R809 (ffestw block, ffebld expr);
 void ffeste_R810 (ffestw block, unsigned long casenum);
@@ -159,7 +159,11 @@ void ffeste_V026 (ffestpFindStmt *info);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetFFE */
 #define ffeste_terminate_0()
 #define ffeste_terminate_1()
+#ifdef ENABLE_CHECKING
+void ffeste_terminate_2 (void);
+#else
 #define ffeste_terminate_2()
+#endif
 #define ffeste_terminate_3()
 #define ffeste_terminate_4()
 

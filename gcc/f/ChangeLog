@@ -1,3 +1,112 @@
+Sat Apr 17 13:53:43 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Rewrite to use block/scope structure of GBE and to ensure
+	variables (especially those going on stack/reg) are declared
+	before executable code generated:
+	* bld.c (ffebld_new_item, ffebld_new_one, ffebld_new_two):
+	Support new hooks.
+	* bld.h (ffebld_item_hook, ffebld_item_set_hook,
+	ffebld_nonter_hook, ffebld_nonter_set_hook): Ditto.
+	* bld.h (ffebld_basictype, ffebld_kind, ffebld_kindtype,
+	ffebld_rank, ffebld_where): New convenience macros (used
+	by rest of this patch).
+	* com.c, com.h (ffecom_push_calltemps, ffecom_pop_calltemps,
+	ffecom_push_tempvar, ffecom_pop_tempvar): Remove temp-var-
+	handling mechanism.
+	* com.c (ffecom_call_, ffecom_call_binop_, ffecom_tree_divide_,
+	ffecom_call_gfrt): Support passing hooks for temp-var info.
+	(ffecom_expr_power_integer_): Takes opPOWER expression, instead
+	of its left and right operands, so it can get at the hook.
+	(ffecom_prepare_let_char_, ffecom_prepare_arg_ptr_to_expr,
+	ffecom_prepare_end, ffecom_prepare_expr_, ffecom_prepare_expr_rw,
+	ffecom_prepare_expr_w, ffecom_prepare_return_expr,
+	ffecom_prepare_ptr_to_expr): New functions supporting expression
+	pre-scanning.
+	(bison_rule_compstmt_): Return the tree, as in the CFE.
+	(delete_block): New function, from CFE.
+	(kept_level_p): New function, from CFE, modified.
+	(ffecom_start_compstmt, ffecom_end_compstmt): New functions,
+	replacing ffecom_start_compstmt_ and ffecom_end_compstmt_ macros,
+	and they do real work.
+	(struct binding_level): Add prep_state member.  Initialize to 0.
+	(ffecom_get_invented_identifier): Now takes either or both a
+	string and an integer, using -1 to denote no integer.
+	(ffecom_do_entry_): Disallow temp-var generation via expressions
+	in body of function, since the exprs aren't prescanned.
+	(ffecom_expr_rw): Now takes destination tree.
+	(ffecom_expr_w): New function, now used in some places
+	ffecom_expr_rw had been used.
+	(ffecom_expr_intrinsic_): Move huge f2c-related comment to bottom
+	of source file, to avoid annoying problems editing com.c using
+	Emacs C-mode.
+	(ffecom_expr_power_integer_): Make a temp var for division, if
+	necessary.
+	Handle expanded statement expression as does CFE.
+	(ffecom_start_progunit_): Disallow temp-var generation in body
+	of function, since expressions are not prescanned at this level.
+	(ffecom_sym_transform_): Transform ASSIGN variables as well,
+	so these are all transformed up front, before code-generation
+	begins.
+	(ffecom_arg_ptr_to_const_expr, ffecom_const_expr,
+	ffecom_ptr_to_const_expr): New functions to transform expressions
+	only if the results will surely be constants.
+	(ffecom_arg_ptr_to_expr): Precompute size, for convenience
+	obtaining temp vars.
+	(ffecom_expand_let_stmt): Guess at usability of destination
+	pre-expansion, to provide better prescan preparation (fewer
+	spurious temp vars).
+	(ffecom_init_0): Disallow temp-var generation in global scope.
+	(ffecom_type_expr): New function, returns just the type tree
+	for the expression.
+	(start_function): Disallow temp-var generation in parm scope.
+	(incomplete_type_error): Fix introductory comment.
+	(poplevel): Update (somewhat) from CFE.
+	(pushlevel): Update (somewhat) from CFE.
+	* stc.c (ffestc_R838): Mark ASSIGNed variable as so.
+	* std.c (ffestd_stmt_pass_, ffestd_R803, ffestd_R804, ffestd_R805,
+	ffestd_R806): Remember and pass through the ffestw block info
+	for these (IFTHEN, ELSEIF, ELSE, and ENDIF) statements.
+	* ste.c (ffeste_end_iterdo_): Now takes ffestw block argument.
+	(ffeste_io_inlist_): Add prototype.
+	(ffeste_f2c_*): Macros rewritten, new ones added.
+	(ffeste_start_block_, ffeste_end_block_, ffeste_start_stmt_,
+	ffeste_end_stmt_): New macros/functions, depending on whether
+	checking is enabled, to keep track of symmetry of other ste.c code.
+	(ffeste_begin_iterdo_, ffeste_end_iterdo_, ffeste_io_impdo_,
+	ffeste_io_dofio_, ffeste_io_dolio_, ffeste_io_douio_,
+	ffeste_io_ialist_, ffeste_io_cilist_, ffeste_io_cllist_,
+	ffeste_icilist_, ffeste_io_inlist_, ffeste_io_olist_,
+	ffeste_subr_beru_, ffeste_do, ffeste_end_R807, ffeste_R737A,
+	ffeste_R803, ffeste_R804, ffeste_R805, ffeste_R806, ffeste_R807,
+	ffeste_R809, ffeste_R810, ffeste_R811, ffeste_R819A, ffeste_R819B,
+	ffeste_R837, ffeste_R838, ffeste_R839, ffeste_R840, ffeste_R904,
+	ffeste_R907, ffeste_R909_start, ffeste_R909_item, ffeste_R909_finish,
+	ffeste_R910_start, ffeste_R910_item, ffeste_R910_finish,
+	ffeste_R911_start, ffeste_R911_item, ffeste_R911_finish,
+	ffeste_R923A, ffeste_R1212, ffeste_R1227): Prescan/prepare
+	all pertinent expressions, update to new com.c interface, etc.
+	(ffeste_io_impdo_): Relocate.
+	(ffeste_R834, ffeste_R835, ffeste_R836, ffeste_R1226): Don't
+	bother calling clear_momentary, nothing was generated.
+	(ffeste_R842, ffeste_R843): Update to new com.c interface.
+	(ffeste_R1226): Don't try to stuff error_mark_node's DECL_INITIAL.
+	(ffeste_terminate_2): When checking enabled, make sure all blocks
+	and statements have been ended.
+	* ste.h (ffeste_R803, ffeste_R804, ffeste_R805, ffeste_R806):
+	These now take ffestw block argument.
+	(ffeste_terminate_2): When checking enabled, it's a function, not
+	a macro.
+	* stw.h (struct _ffestw_): New variable for IFTHEN.
+	(ffestw_ifthen_fake_else, ffestw_set_ifthen_fake_else): New
+	accessor macros.
+	* symbol.c, symbol.h: Support new ASSIGN'ed-to info.
+
+	* com.c: Clean up commentary per GNU coding standards.
+
+	* bld.h (ffebld_size, ffebld_size_known): Canonize.
+
+	* version.c: Bump version.
+
 Sun Apr 11 21:33:33 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* g77spec.c (lang_specific_driver): Check whether MATH_LIBRARY is
