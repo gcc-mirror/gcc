@@ -1,3 +1,7 @@
+2000-08-30  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* fixinc/gnu-regex.c: Don't define `const'.
+
 Tue Aug 29 22:09:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): Allow variable bounds of array type.
