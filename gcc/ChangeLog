@@ -1,3 +1,9 @@
+2004-12-02  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/18759
+	* config/i386/i386.c (override_options): If -fomit-frame-pointer has
+	already been specified, ignore the -momit-leaf-frame-pointer option.
+
 2004-12-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* varasm.c (make_decl_rtl): Add the missing `;'.
