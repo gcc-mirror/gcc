@@ -1,3 +1,14 @@
+Mon Nov 23 20:28:02 1998  Mike Stump  <mrs@wrs.com>
+
+	* libgcc2.c (top_elt): Remove top_elt, it isn't thread safe.
+	The strategy we now use is to pre allocate the top_elt along
+	with the EH context so that each thread has its own top_elt.
+	This is necessary as the dynmanic cleanup chain is used on the
+	top element of the stack and each thread MUST have its own.
+	(eh_context_static): Likewise.
+	(new_eh_context): Likewise.
+	(__sjthrow): Likewise.
+
 Mon Nov 23 20:25:03 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Wrap in do...while.
