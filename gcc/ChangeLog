@@ -1,3 +1,8 @@
+2003-06-29  Neil Booth  <neil@daikokuya.co.uk>
+
+	* toplev.c (flag_dummy): Remove.
+	(f_options): Restore flag pointers.
+
 2003-06-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Add 970.
