@@ -4163,14 +4163,12 @@ lookup_template_class (tree d1,
 	      tree ctx;
 	      
 	      for (ctx = current_class_type; 
-		   ctx; 
-		   ctx = TYPE_CONTEXT (ctx))
-		{
-		  if (TREE_CODE (ctx) == NAMESPACE_DECL)
-		    break;
-		  if (same_type_p (ctx, template_type))
-		    goto found_ctx;
-		}
+		   ctx && TREE_CODE (ctx) != NAMESPACE_DECL;
+		   ctx = (TYPE_P (ctx)
+			  ? TYPE_CONTEXT (ctx)
+			  : DECL_CONTEXT (ctx)))
+		if (TYPE_P (ctx) && same_type_p (ctx, template_type))
+		  goto found_ctx;
 	      
 	      /* We're not in the scope of the class, so the
 		 TEMPLATE_TYPE is not the type we want after all.  */
