@@ -2084,9 +2084,6 @@ save_restore_insns (int store_p)
 		       gen_rtx_PLUS (Pmode, base_reg_rtx,
 				GEN_INT (gp_offset - base_offset)));
 
-	  if (! current_function_calls_eh_return)
-	    RTX_UNCHANGING_P (mem_rtx) = 1;
-
 	  reg_rtx = gen_rtx_REG (gpr_mode, regno);
 
 	  if (store_p)

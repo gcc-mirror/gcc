@@ -1042,7 +1042,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	      emit_insn (gen_load_gbr (tmp2));
 	      tmp = gen_reg_rtx (Pmode);
 	      emit_insn (gen_symTPOFF2reg (tmp, op1));
-	      RTX_UNCHANGING_P (tmp) = 1;
+	      MEM_READONLY_P (tmp) = 1;
 
 	      if (register_operand (op0, Pmode))
 		op1 = op0;
@@ -4383,7 +4383,6 @@ sh_reorg (void)
 		      /* Remove the clobber of r0.  */
 		      *clobberp = gen_rtx_CLOBBER (GET_MODE (clobber),
 						   gen_rtx_SCRATCH (Pmode));
-		      RTX_UNCHANGING_P (newsrc) = 1;
 		    }
 		  /* This is a mova needing a label.  Create it.  */
 		  else if (GET_CODE (src) == UNSPEC
@@ -4401,7 +4400,7 @@ sh_reorg (void)
 		      lab = add_constant (src, mode, 0);
 		      newsrc = gen_rtx_MEM (mode,
 					    gen_rtx_LABEL_REF (VOIDmode, lab));
-		      RTX_UNCHANGING_P (newsrc) = 1;
+		      MEM_READONLY_P (newsrc) = 1;
 		    }
 		  *patp = gen_rtx_SET (VOIDmode, dst, newsrc);
 		  INSN_CODE (scan) = -1;

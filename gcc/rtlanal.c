@@ -81,7 +81,7 @@ rtx_unstable_p (rtx x)
   switch (code)
     {
     case MEM:
-      return ! RTX_UNCHANGING_P (x) || rtx_unstable_p (XEXP (x, 0));
+      return !MEM_READONLY_P (x) || rtx_unstable_p (XEXP (x, 0));
 
     case CONST:
     case CONST_INT:
@@ -95,8 +95,7 @@ rtx_unstable_p (rtx x)
       /* As in rtx_varies_p, we have to use the actual rtx, not reg number.  */
       if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
 	  /* The arg pointer varies if it is not a fixed register.  */
-	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM])
-	  || RTX_UNCHANGING_P (x))
+	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	return 0;
 #ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
       /* ??? When call-clobbered, the value is stable modulo the restore
@@ -156,7 +155,7 @@ rtx_varies_p (rtx x, int for_alias)
   switch (code)
     {
     case MEM:
-      return ! RTX_UNCHANGING_P (x) || rtx_varies_p (XEXP (x, 0), for_alias);
+      return !MEM_READONLY_P (x) || rtx_varies_p (XEXP (x, 0), for_alias);
 
     case CONST:
     case CONST_INT:
@@ -1027,7 +1026,7 @@ modified_between_p (rtx x, rtx start, rtx end)
       return 1;
 
     case MEM:
-      if (RTX_UNCHANGING_P (x))
+      if (MEM_READONLY_P (x))
 	return 0;
       if (modified_between_p (XEXP (x, 0), start, end))
 	return 1;
@@ -1085,7 +1084,7 @@ modified_in_p (rtx x, rtx insn)
       return 1;
 
     case MEM:
-      if (RTX_UNCHANGING_P (x))
+      if (MEM_READONLY_P (x))
 	return 0;
       if (modified_in_p (XEXP (x, 0), insn))
 	return 1;

@@ -256,7 +256,7 @@ mark_referenced_resources (rtx x, struct resources *res,
     case MEM:
       /* If this memory shouldn't change, it really isn't referencing
 	 memory.  */
-      if (RTX_UNCHANGING_P (x))
+      if (MEM_READONLY_P (x))
 	res->unch_memory = 1;
       else
 	res->memory = 1;
@@ -753,7 +753,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
       if (in_dest)
 	{
 	  res->memory = 1;
-	  res->unch_memory |= RTX_UNCHANGING_P (x);
+	  res->unch_memory |= MEM_READONLY_P (x);
 	  res->volatil |= MEM_VOLATILE_P (x);
 	}
 

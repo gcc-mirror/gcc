@@ -202,7 +202,6 @@ entry_register (struct web_entry *entry, struct ref *ref, char *used)
       REG_USERVAR_P (newreg) = REG_USERVAR_P (reg);
       REG_POINTER (newreg) = REG_POINTER (reg);
       REG_LOOP_TEST_P (newreg) = REG_LOOP_TEST_P (reg);
-      RTX_UNCHANGING_P (newreg) = RTX_UNCHANGING_P (reg);
       REG_ATTRS (newreg) = REG_ATTRS (reg);
       if (dump_file)
 	fprintf (dump_file, "Web oldreg=%i newreg=%i\n", REGNO (reg),

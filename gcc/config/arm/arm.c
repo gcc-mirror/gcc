@@ -2924,7 +2924,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  pic_ref = gen_rtx_MEM (Pmode,
 				 gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
 					       address));
-	  RTX_UNCHANGING_P (pic_ref) = 1;
+	  MEM_READONLY_P (pic_ref) = 1;
 	}
 
       insn = emit_move_insn (reg, pic_ref);
@@ -5939,7 +5939,7 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
       for (i = 0; i < count; i++)
 	{
 	  mem = gen_rtx_MEM (SImode, plus_constant (from, i * 4 * sign));
-	  RTX_UNCHANGING_P (mem) = unchanging_p;
+	  MEM_READONLY_P (mem) = unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = in_struct_p;
 	  MEM_SCALAR_P (mem) = scalar_p;
 	  emit_move_insn (gen_rtx_REG (SImode, base_regno + i), mem);
@@ -5968,7 +5968,7 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
   for (j = 0; i < count; i++, j++)
     {
       mem = gen_rtx_MEM (SImode, plus_constant (from, j * 4 * sign));
-      RTX_UNCHANGING_P (mem) = unchanging_p;
+      MEM_READONLY_P (mem) = unchanging_p;
       MEM_IN_STRUCT_P (mem) = in_struct_p;
       MEM_SCALAR_P (mem) = scalar_p;
       XVECEXP (result, 0, i)
@@ -5999,7 +5999,7 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
       for (i = 0; i < count; i++)
 	{
 	  mem = gen_rtx_MEM (SImode, plus_constant (to, i * 4 * sign));
-	  RTX_UNCHANGING_P (mem) = unchanging_p;
+	  MEM_READONLY_P (mem) = unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = in_struct_p;
 	  MEM_SCALAR_P (mem) = scalar_p;
 	  emit_move_insn (mem, gen_rtx_REG (SImode, base_regno + i));
@@ -6028,7 +6028,7 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
   for (j = 0; i < count; i++, j++)
     {
       mem = gen_rtx_MEM (SImode, plus_constant (to, j * 4 * sign));
-      RTX_UNCHANGING_P (mem) = unchanging_p;
+      MEM_READONLY_P (mem) = unchanging_p;
       MEM_IN_STRUCT_P (mem) = in_struct_p;
       MEM_SCALAR_P (mem) = scalar_p;
 
@@ -6060,10 +6060,10 @@ arm_gen_movmemqi (rtx *operands)
   st_dst = XEXP (operands[0], 0);
   st_src = XEXP (operands[1], 0);
 
-  dst_unchanging_p = RTX_UNCHANGING_P (operands[0]);
+  dst_unchanging_p = MEM_READONLY_P (operands[0]);
   dst_in_struct_p = MEM_IN_STRUCT_P (operands[0]);
   dst_scalar_p = MEM_SCALAR_P (operands[0]);
-  src_unchanging_p = RTX_UNCHANGING_P (operands[1]);
+  src_unchanging_p = MEM_READONLY_P (operands[1]);
   src_in_struct_p = MEM_IN_STRUCT_P (operands[1]);
   src_scalar_p = MEM_SCALAR_P (operands[1]);
 
@@ -6107,7 +6107,7 @@ arm_gen_movmemqi (rtx *operands)
 	  else
 	    {
 	      mem = gen_rtx_MEM (SImode, dst);
-	      RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+	      MEM_READONLY_P (mem) = dst_unchanging_p;
 	      MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	      MEM_SCALAR_P (mem) = dst_scalar_p;
 	      emit_move_insn (mem, gen_rtx_REG (SImode, 0));
@@ -6126,14 +6126,14 @@ arm_gen_movmemqi (rtx *operands)
       rtx sreg;
       
       mem = gen_rtx_MEM (SImode, src);
-      RTX_UNCHANGING_P (mem) = src_unchanging_p;
+      MEM_READONLY_P (mem) = src_unchanging_p;
       MEM_IN_STRUCT_P (mem) = src_in_struct_p;
       MEM_SCALAR_P (mem) = src_scalar_p;
       emit_move_insn (sreg = gen_reg_rtx (SImode), mem);
       emit_move_insn (fin_src = gen_reg_rtx (SImode), plus_constant (src, 4));
       
       mem = gen_rtx_MEM (SImode, dst);
-      RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+      MEM_READONLY_P (mem) = dst_unchanging_p;
       MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
       MEM_SCALAR_P (mem) = dst_scalar_p;
       emit_move_insn (mem, sreg);
@@ -6150,7 +6150,7 @@ arm_gen_movmemqi (rtx *operands)
 	abort ();
 
       mem = gen_rtx_MEM (SImode, src);
-      RTX_UNCHANGING_P (mem) = src_unchanging_p;
+      MEM_READONLY_P (mem) = src_unchanging_p;
       MEM_IN_STRUCT_P (mem) = src_in_struct_p;
       MEM_SCALAR_P (mem) = src_scalar_p;
       part_bytes_reg = copy_to_mode_reg (SImode, mem);
@@ -6171,7 +6171,7 @@ arm_gen_movmemqi (rtx *operands)
       while (last_bytes)
 	{
 	  mem = gen_rtx_MEM (QImode, plus_constant (dst, last_bytes - 1));
-	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+	  MEM_READONLY_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_lowpart (QImode, part_bytes_reg));
@@ -6190,7 +6190,7 @@ arm_gen_movmemqi (rtx *operands)
       if (last_bytes > 1)
 	{
 	  mem = gen_rtx_MEM (HImode, dst);
-	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+	  MEM_READONLY_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_lowpart (HImode, part_bytes_reg));
@@ -6208,7 +6208,7 @@ arm_gen_movmemqi (rtx *operands)
       if (last_bytes)
 	{
 	  mem = gen_rtx_MEM (QImode, dst);
-	  RTX_UNCHANGING_P (mem) = dst_unchanging_p;
+	  MEM_READONLY_P (mem) = dst_unchanging_p;
 	  MEM_IN_STRUCT_P (mem) = dst_in_struct_p;
 	  MEM_SCALAR_P (mem) = dst_scalar_p;
 	  emit_move_insn (mem, gen_lowpart (QImode, part_bytes_reg));

@@ -735,27 +735,18 @@ prologues.
 resulted from an in-line function call.
 Stored in the @code{integrated} field and printed as @samp{/i}.
 
-@findex RTX_UNCHANGING_P
-@cindex @code{reg} and @samp{/u}
+@findex MEM_READONLY_P
 @cindex @code{mem} and @samp{/u}
-@cindex @code{concat} and @samp{/u}
-@cindex @code{unchanging}, in @code{reg} and @code{mem}
-@item RTX_UNCHANGING_P (@var{x})
-Nonzero in a @code{reg}, @code{mem}, or @code{concat} if the register or
-memory is set at most once, anywhere.  This does not mean that it is
-function invariant.
+@cindex @code{unchanging}, in @code{mem}
+@item MEM_READONLY_P (@var{x})
+Nonzero in a @code{mem}, if the memory is statically allocated and read-only.
 
-GCC uses this flag to determine whether two references conflict.  As
-implemented by @code{true_dependence} in @file{alias.c} for memory
-references, unchanging memory can't conflict with non-unchanging memory;
-a non-unchanging read can conflict with a non-unchanging write; an
-unchanging read can conflict with an unchanging write (since there may
-be a single store to this address to initialize it); and an unchanging
-store can conflict with a non-unchanging read.  This means we must make
-conservative assumptions when choosing the value of this flag for a
-memory reference to an object containing both unchanging and
-non-unchanging fields: we must set the flag when writing to the object
-and clear it when reading from the object.
+Read-only in this context never modified during the lifetime of the
+program, not necessarily in ROM or in write-disabled pages.  A common
+example of the later is a shared library's global offset table.  This
+table is initialized by the runtime loader, so the memory is technically
+writable, but after control is transfered from the runtime loader to the
+application, this memory will never be subsequently modified.
 
 Stored in the @code{unchanging} field and printed as @samp{/u}.
 

@@ -1882,7 +1882,7 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 #endif
 			  gen_rtx_PLUS (Pmode, src, GEN_INT (offset_ld)));
 	  
-	  RTX_UNCHANGING_P (srcp) = RTX_UNCHANGING_P (src_mem);
+	  MEM_READONLY_P (srcp) = MEM_READONLY_P (src_mem);
 	  MEM_VOLATILE_P (srcp) = MEM_VOLATILE_P (src_mem);
 	  MEM_IN_STRUCT_P (srcp) = 1;
 	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], srcp));
@@ -1902,7 +1902,7 @@ block_move_sequence (rtx dest, rtx dst_mem, rtx src, rtx src_mem,
 #endif
 			  gen_rtx_PLUS (Pmode, dest, GEN_INT (offset_st)));
 	  
-	  RTX_UNCHANGING_P (dstp) = RTX_UNCHANGING_P (dst_mem);
+	  MEM_READONLY_P (dstp) = MEM_READONLY_P (dst_mem);
 	  MEM_VOLATILE_P (dstp) = MEM_VOLATILE_P (dst_mem);
 	  MEM_IN_STRUCT_P (dstp) = 1;
 	  emit_insn (gen_rtx_SET (VOIDmode, dstp, temp[phase]));

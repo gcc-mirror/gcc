@@ -7719,7 +7719,7 @@
 
   insn = emit_insn (gen_symGOT2reg_i (operands[0], operands[1], operands[2], operands[3]));
 
-  RTX_UNCHANGING_P (SET_SRC (PATTERN (insn))) = 1;
+  MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, operands[1],
 					REG_NOTES (insn));

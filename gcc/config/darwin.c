@@ -385,7 +385,7 @@ machopic_indirect_data_reference (rtx orig, rtx reg)
      SYMBOL_REF_DECL (ptr_ref) = SYMBOL_REF_DECL (orig);
 
       ptr_ref = gen_rtx_MEM (Pmode, ptr_ref);
-      RTX_UNCHANGING_P (ptr_ref) = 1;
+      MEM_READONLY_P (ptr_ref) = 1;
 
       return ptr_ref;
     }
@@ -469,7 +469,7 @@ machopic_indirect_call_target (rtx target)
       
       XEXP (target, 0) = gen_rtx_SYMBOL_REF (mode, stub_name);
       SYMBOL_REF_DECL (XEXP (target, 0)) = decl;
-      RTX_UNCHANGING_P (target) = 1;
+      MEM_READONLY_P (target) = 1;
     }
 
   return target;
@@ -532,7 +532,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      emit_insn (gen_macho_high (temp_reg, asym));
 	      mem = gen_rtx_MEM (GET_MODE (orig),
 				 gen_rtx_LO_SUM (Pmode, temp_reg, asym));
-	      RTX_UNCHANGING_P (mem) = 1;
+	      MEM_READONLY_P (mem) = 1;
 	      emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 #else
 	      /* Some other CPU -- WriteMe! but right now there are no other platform that can use dynamic-no-pic  */
@@ -565,7 +565,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	      mem = gen_rtx_MEM (GET_MODE (orig),
 				 gen_rtx_LO_SUM (Pmode, 
 						 hi_sum_reg, offset));
-	      RTX_UNCHANGING_P (mem) = 1;
+	      MEM_READONLY_P (mem) = 1;
 	      insn = emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
 	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, pic_ref, 
 						    REG_NOTES (insn));
@@ -614,7 +614,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  emit_move_insn (reg, pic_ref);
 	  pic_ref = gen_rtx_MEM (GET_MODE (orig), reg);
 #endif
-	  RTX_UNCHANGING_P (pic_ref) = 1;
+	  MEM_READONLY_P (pic_ref) = 1;
 	}
       else
 	{
@@ -650,7 +650,6 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 				      gen_rtx_LO_SUM (Pmode,
 						      hi_sum_reg, offset)));
 	      pic_ref = reg;
-	      RTX_UNCHANGING_P (pic_ref) = 1;
 #else
 	      emit_insn (gen_rtx_SET (VOIDmode, reg,
 				      gen_rtx_HIGH (Pmode, offset)));
@@ -658,7 +657,6 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 				      gen_rtx_LO_SUM (Pmode, reg, offset)));
 	      pic_ref = gen_rtx_PLUS (Pmode,
 				      pic_offset_table_rtx, reg);
-	      RTX_UNCHANGING_P (pic_ref) = 1;
 #endif
 	    }
 	  else
@@ -732,9 +730,6 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
       else
 	pic_ref = gen_rtx_PLUS (Pmode, base, orig);
 
-      if (RTX_UNCHANGING_P (base) && RTX_UNCHANGING_P (orig))
-	RTX_UNCHANGING_P (pic_ref) = 1;
-
       if (reg && is_complex)
 	{
 	  emit_move_insn (reg, pic_ref);
@@ -752,9 +747,7 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	   && GET_CODE (XEXP (orig, 0)) == SYMBOL_REF)
     {
       rtx addr = machopic_legitimize_pic_address (XEXP (orig, 0), Pmode, reg);
-
-      addr = gen_rtx_MEM (GET_MODE (orig), addr);
-      RTX_UNCHANGING_P (addr) = RTX_UNCHANGING_P (orig);
+      addr = replace_equiv_address (orig, addr);
       emit_move_insn (reg, addr);
       pic_ref = reg;
     }

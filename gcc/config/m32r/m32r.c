@@ -1995,7 +1995,7 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
       emit_insn (gen_addsi3 (address, address, pic_offset_table_rtx));
       pic_ref = gen_rtx_MEM (Pmode, address);
 
-      RTX_UNCHANGING_P (pic_ref) = 1;
+      MEM_READONLY_P (pic_ref) = 1;
       insn = emit_move_insn (reg, pic_ref);
       current_function_uses_pic_offset_table = 1;
 #if 0

@@ -758,7 +758,6 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
   if (REG_P (src)
       && REG_LIVE_LENGTH (REGNO (src)) > 0
       && REG_P (dest)
-      && !RTX_UNCHANGING_P (dest)
       && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
       && !reg_mentioned_p (dest, SET_SRC (set))
@@ -1262,7 +1261,6 @@ regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 	      if (!REG_P (dst)
 		  || REGNO (dst) < FIRST_PSEUDO_REGISTER
 		  || REG_LIVE_LENGTH (REGNO (dst)) < 0
-		  || RTX_UNCHANGING_P (dst)
 		  || GET_MODE (src) != GET_MODE (dst))
 		continue;
 
@@ -1657,12 +1655,6 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
   rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note = NULL_RTX;
   int length, s_length;
 
-  /* If SRC is marked as unchanging, we may not change it.
-     ??? Maybe we could get better code by removing the unchanging bit
-     instead, and changing it back if we don't succeed?  */
-  if (RTX_UNCHANGING_P (src))
-    return 0;
-
   if (! src_note)
     {
       /* Look for (set (regX) (op regA constX))
@@ -2039,10 +2031,7 @@ fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
    mentioning SRC or mentioning / changing DST .  If in doubt, presume
    it is unstable.
    The rationale is that we want to check if we can move an insn easily
-   while just paying attention to SRC and DST.  A register is considered
-   stable if it has the RTX_UNCHANGING_P bit set, but that would still
-   leave the burden to update REG_DEAD / REG_UNUSED notes, so we don't
-   want any registers but SRC and DST.  */
+   while just paying attention to SRC and DST.  */
 static int
 stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
 {

@@ -5258,8 +5258,8 @@
   operands[3]
     = arm_gen_load_multiple (REGNO (operands[0]), INTVAL (operands[2]),
 			     force_reg (SImode, XEXP (operands[1], 0)),
-			     TRUE, FALSE, RTX_UNCHANGING_P(operands[1]),
-			     MEM_IN_STRUCT_P(operands[1]),
+			     TRUE, FALSE, MEM_READONLY_P (operands[1]),
+			     MEM_IN_STRUCT_P (operands[1]),
 	                     MEM_SCALAR_P (operands[1]));
   "
 )
@@ -5380,8 +5380,8 @@
   operands[3]
     = arm_gen_store_multiple (REGNO (operands[1]), INTVAL (operands[2]),
 			      force_reg (SImode, XEXP (operands[0], 0)),
-			      TRUE, FALSE, RTX_UNCHANGING_P (operands[0]),
-			      MEM_IN_STRUCT_P(operands[0]), 
+			      TRUE, FALSE, MEM_READONLY_P (operands[0]),
+			      MEM_IN_STRUCT_P (operands[0]), 
 	                      MEM_SCALAR_P (operands[0]));
   "
 )

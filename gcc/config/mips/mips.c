@@ -2342,7 +2342,6 @@ mips_restore_gp (void)
 			     : stack_pointer_rtx,
 			     current_function_outgoing_args_size);
   slot = gen_rtx_MEM (Pmode, address);
-  RTX_UNCHANGING_P (slot) = 1;
 
   emit_move_insn (pic_offset_table_rtx, slot);
   if (!TARGET_EXPLICIT_RELOCS)
@@ -5801,8 +5800,6 @@ mips_save_restore_reg (enum machine_mode mode, int regno,
   rtx mem;
 
   mem = gen_rtx_MEM (mode, plus_constant (stack_pointer_rtx, offset));
-  if (!current_function_calls_eh_return)
-    RTX_UNCHANGING_P (mem) = 1;
 
   fn (gen_rtx_REG (mode, regno), mem);
 }
@@ -6980,7 +6977,6 @@ mips16_gp_pseudo_reg (void)
       rtx insn, scan;
 
       cfun->machine->mips16_gp_pseudo_rtx = gen_reg_rtx (Pmode);
-      RTX_UNCHANGING_P (cfun->machine->mips16_gp_pseudo_rtx) = 1;
 
       /* We want to initialize this to a value which gcc will believe
          is constant.  */

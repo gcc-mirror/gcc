@@ -1461,13 +1461,7 @@ insert (rtx x, struct table_elt *classp, unsigned int hash, enum machine_mode mo
   elt->related_value = 0;
   elt->in_memory = 0;
   elt->mode = mode;
-  elt->is_const = (CONSTANT_P (x)
-		   /* GNU C++ takes advantage of this for `this'
-		      (and other const values).  */
-		   || (REG_P (x)
-		       && RTX_UNCHANGING_P (x)
-		       && REGNO (x) >= FIRST_PSEUDO_REGISTER)
-		   || fixed_base_plus_p (x));
+  elt->is_const = (CONSTANT_P (x) || fixed_base_plus_p (x));
 
   if (table[hash])
     table[hash]->prev_same_hash = elt;
@@ -2094,7 +2088,7 @@ canon_hash_string (const char *ps)
    Store 1 in do_not_record if any subexpression is volatile.
 
    Store 1 in hash_arg_in_memory if X contains a MEM rtx
-   which does not have the RTX_UNCHANGING_P bit set.
+   which does not have the MEM_READONLY_P bit set.
 
    Note that cse_insn knows that the hash code of a MEM expression
    is just (int) MEM plus the hash code of the address.  */
@@ -2229,7 +2223,7 @@ canon_hash (rtx x, enum machine_mode mode)
 	  do_not_record = 1;
 	  return 0;
 	}
-      if (! RTX_UNCHANGING_P (x) || fixed_base_plus_p (XEXP (x, 0)))
+      if (!MEM_READONLY_P (x))
 	hash_arg_in_memory = 1;
 
       /* Now that we have already found this special case,
@@ -2249,7 +2243,7 @@ canon_hash (rtx x, enum machine_mode mode)
 	  hash += (unsigned) USE;
 	  x = XEXP (x, 0);
 
-	  if (! RTX_UNCHANGING_P (x) || fixed_base_plus_p (XEXP (x, 0)))
+	  if (!MEM_READONLY_P (x))
 	    hash_arg_in_memory = 1;
 
 	  /* Now that we have already found this special case,
@@ -5974,9 +5968,7 @@ cse_insn (rtx insn, rtx libcall_insn)
 		      sets[i].dest_hash, GET_MODE (dest));
 
 	elt->in_memory = (MEM_P (sets[i].inner_dest)
-			  && (! RTX_UNCHANGING_P (sets[i].inner_dest)
-			      || fixed_base_plus_p (XEXP (sets[i].inner_dest,
-							  0))));
+			  && !MEM_READONLY_P (sets[i].inner_dest));
 
 	/* If we have (set (subreg:m1 (reg:m2 foo) 0) (bar:m1)), M1 is no
 	   narrower than M2, and both M1 and M2 are the same number of words,

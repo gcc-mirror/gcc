@@ -1589,48 +1589,27 @@ secondary_reload_class (enum reg_class class, enum machine_mode mode,
 /* Subfunction of the following function.  Update the flags of any MEM
    found in part of X.  */
 
-static void
-alpha_set_memflags_1 (rtx x, int in_struct_p, int volatile_p, int unchanging_p)
+static int
+alpha_set_memflags_1 (rtx *xp, void *data)
 {
-  int i;
+  rtx x = *xp, orig = (rtx) data;
 
-  switch (GET_CODE (x))
-    {
-    case SEQUENCE:
-      abort ();
+  if (GET_CODE (x) != MEM)
+    return 0;
 
-    case PARALLEL:
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	alpha_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p,
-			      unchanging_p);
-      break;
+  MEM_VOLATILE_P (x) = MEM_VOLATILE_P (orig);
+  MEM_IN_STRUCT_P (x) = MEM_IN_STRUCT_P (orig);
+  MEM_SCALAR_P (x) = MEM_SCALAR_P (orig);
+  MEM_NOTRAP_P (x) = MEM_NOTRAP_P (orig);
+  MEM_READONLY_P (x) = MEM_READONLY_P (orig);
 
-    case INSN:
-      alpha_set_memflags_1 (PATTERN (x), in_struct_p, volatile_p,
-			    unchanging_p);
-      break;
+  /* Sadly, we cannot use alias sets because the extra aliasing
+     produced by the AND interferes.  Given that two-byte quantities
+     are the only thing we would be able to differentiate anyway,
+     there does not seem to be any point in convoluting the early
+     out of the alias check.  */
 
-    case SET:
-      alpha_set_memflags_1 (SET_DEST (x), in_struct_p, volatile_p,
-			    unchanging_p);
-      alpha_set_memflags_1 (SET_SRC (x), in_struct_p, volatile_p,
-			    unchanging_p);
-      break;
-
-    case MEM:
-      MEM_IN_STRUCT_P (x) = in_struct_p;
-      MEM_VOLATILE_P (x) = volatile_p;
-      RTX_UNCHANGING_P (x) = unchanging_p;
-      /* Sadly, we cannot use alias sets because the extra aliasing
-	 produced by the AND interferes.  Given that two-byte quantities
-	 are the only thing we would be able to differentiate anyway,
-	 there does not seem to be any point in convoluting the early
-	 out of the alias check.  */
-      break;
-
-    default:
-      break;
-    }
+  return -1;
 }
 
 /* Given INSN, which is an INSN list or the PATTERN of a single insn
@@ -1642,22 +1621,26 @@ alpha_set_memflags_1 (rtx x, int in_struct_p, int volatile_p, int unchanging_p)
 void
 alpha_set_memflags (rtx insn, rtx ref)
 {
-  int in_struct_p, volatile_p, unchanging_p;
+  rtx *base_ptr;
 
   if (GET_CODE (ref) != MEM)
     return;
 
-  in_struct_p = MEM_IN_STRUCT_P (ref);
-  volatile_p = MEM_VOLATILE_P (ref);
-  unchanging_p = RTX_UNCHANGING_P (ref);
-
   /* This is only called from alpha.md, after having had something 
      generated from one of the insn patterns.  So if everything is
      zero, the pattern is already up-to-date.  */
-  if (! in_struct_p && ! volatile_p && ! unchanging_p)
+  if (!MEM_VOLATILE_P (ref)
+      && !MEM_IN_STRUCT_P (ref)
+      && !MEM_SCALAR_P (ref)
+      && !MEM_NOTRAP_P (ref)
+      && !MEM_READONLY_P (ref))
     return;
 
-  alpha_set_memflags_1 (insn, in_struct_p, volatile_p, unchanging_p);
+  if (INSN_P (insn))
+    base_ptr = &PATTERN (insn);
+  else
+    base_ptr = &insn;
+  for_each_rtx (base_ptr, alpha_set_memflags_1, (void *) ref);
 }
 
 /* Internal routine for alpha_emit_set_const to check for N or below insns.  */
