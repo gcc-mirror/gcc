@@ -1812,7 +1812,11 @@ yylex ()
 
 	    type = flag_traditional ? traditional_type : ansi_type;
 
-	    if (warn_traditional && traditional_type != ansi_type)
+	    /* We assume that constants specified in a non-decimal
+	       base are bit patterns, and that the programmer really
+	       meant what they wrote.  */
+	    if (warn_traditional && base == 10
+		&& traditional_type != ansi_type)
 	      {
 		if (TYPE_PRECISION (traditional_type)
 		    != TYPE_PRECISION (ansi_type))

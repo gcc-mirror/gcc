@@ -1694,6 +1694,12 @@ A @code{switch} statement has an operand of type @code{long}.
 @item
 A non-@code{static} function declaration follows a @code{static} one.
 This construct is not accepted by some traditional C compilers.
+
+@item
+The ANSI type of an integer constant has a different width or signedness
+from its traditional type.  This warning is only issued if the base of
+the constant is ten.  I.e. hexadecimal or octal values, which typically
+represent bit patterns, are not warned about.
 @end itemize
 
 @item -Wundef

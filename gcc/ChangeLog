@@ -1,3 +1,12 @@
+Tue Mar 20 18:31:48 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	1999-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+        * c-lex.c (yylex): With -Wtraditional, when the ANSI type of an
+	integer constant does not match the traditional type, limit the
+	warnings to cases where the base of the type is ten.
+
+        * invoke.texi (-Wtraditional): Document it.
+
 2001-03-20  David O'Brien  <obrien@FreeBSD.org>
 
 	from 2000-07-12  Zack Weinberg  <zack@wolery.cumb.org>
