@@ -2921,17 +2921,42 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# rpc/xdr.h on SunOS needs prototypes for its XDR->xdr_ops function pointers.
-file=rpc/xdr.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
+# rpc/auth.h on SunOS needs prototypes for its AUTH->auth_ops function pointers
+# Similarly for 
+#   rpc/clnt.h CLIENT->clnt_ops
+#   rpc/svc.h SVCXPRT->xp_ops
+#   rpc/xdr.h XDR->xdr_ops
+for file in rpc/auth.h rpc/clnt.h rpc/svc.h rpc/xdr.h; do
+  # each file has a different name to replace, so if you add a file to
+  # that list please update the following case statement.
+  case "$file" in
+    rpc/auth.h)
+      prefix="ah_"
+      ;;
+    rpc/clnt.h)
+      prefix="cl_"
+      ;;
+    rpc/svc.h)
+      prefix="xp_"
+      ;;
+    rpc/xdr.h)
+      prefix="x_"
+      ;;
+    *)
+      # Oh Oh, we shouldn't be here
+      exit 1;
+      ;;
+  esac
 
-if [ -r ${LIB}/$file ]; then
-  echo "Checking for needed C++ prototype in $file"
-  sed -e 's/^\(.*\)\*\(x_.*\)();\(.*\)/\
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo "Checking for needed C++ prototype in $file"
+    sed -e 's/^\(.*\)\*\('$prefix'.*\)();\(.*\)/\
 #ifdef __cplusplus\
 \1*\2(...);\3\
 #else\
@@ -2939,17 +2964,18 @@ if [ -r ${LIB}/$file ]; then
 #endif/g' \
      $LIB/$file > ${LIB}/${file}.sed
 
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
-  else
-    # Find any include directives that use "file".
-    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    else
+      # Find any include directives that use "file".
+      for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
 	dir=`echo $file | sed -e s'|/[^/]*$||'`
 	required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
-    done
+      done
+    fi
   fi
-fi
+done
 
 # sys/lc_core.h on some versions of OSF1/4.x pollutes the namespace by
 # defining regex.h types.  This causes C++ library build and usage failures.
