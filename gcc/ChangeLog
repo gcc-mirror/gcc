@@ -1,3 +1,7 @@
+2004-01-15  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (MAINT): Make it an immediate assignment.
+
 2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.md: Remove useless calls to gen_lowpart.

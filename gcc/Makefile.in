@@ -166,7 +166,7 @@ STRICT2_WARN = -pedantic -Wno-long-long -Wold-style-definition @WERROR@
 NOCOMMON_FLAG = @nocommon_flag@
 
 # This is set by --disable-maintainer-mode (default) to "#"
-MAINT = @MAINT@
+MAINT := @MAINT@
 
 # These are set by --enable-checking=valgrind.
 RUN_GEN = @valgrind_command@
