@@ -78,3 +78,7 @@ extern void reinit_parse_for_function ();
 extern int yylex ();
 
 extern char *get_directive_line ();
+
+extern char C_alnum_array[];
+#define is_C_alnum(c) C_alnum_array[(c) - EOF]
+#define is_C_digit(c) ((unsigned) (c) - '0' <= 9)
