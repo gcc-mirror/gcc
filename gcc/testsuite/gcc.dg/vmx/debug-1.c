@@ -9,8 +9,8 @@ typedef union {
   signed char s8[16];
   unsigned short u16[8];
   signed short s16[8];
-  unsigned long u32[4];
-  signed long s32[4];
+  unsigned int u32[4];
+  signed int s32[4];
   float f32[4];
 } U;
 U u;
