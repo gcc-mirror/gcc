@@ -1,3 +1,8 @@
+2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/std_valarray.h (valarray::valarray): Fix thinko.
+	Use __valarray_copy_construct only where appropriate.
+
 2000-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (check): Don't make mkcheck executable.
