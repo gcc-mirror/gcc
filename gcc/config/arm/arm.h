@@ -903,7 +903,10 @@ extern const char * structure_size_string;
 #define LAST_ARG_REGNUM 	ARG_REGISTER (NUM_ARG_REGS)
 
 /* The number of the last "lo" register (thumb).  */
-#define LAST_LO_REGNUM  	 7
+#define LAST_LO_REGNUM  	7
+
+/* The register that holds the return address in exception handlers.  */
+#define EXCEPTION_LR_REGNUM	2
 
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
@@ -1394,9 +1397,44 @@ enum reg_class
 #define CALL_LONG		0x00000001	/* Always call indirect.  */
 #define CALL_SHORT		0x00000002	/* Never call indirect.  */
 
-/* A C structure for machine-specific, per-function data.  This is added
-   to the cfun structure.  */
-struct machine_function
+/* These bits describe the different types of function supported
+   by the ARM backend.  They are exclusive.  ie a function cannot be both a
+   normal function and an interworked function, for example.  Knowing the
+   type of a function is important for determining its prologue and
+   epilogue sequences.
+   Note value 7 is currently unassigned.  Also note that the interrupt
+   function types all have bit 2 set, so that they can be tested for easily.
+   Note that 0 is deliberately chosen for ARM_FT_UNKNOWN so that when the
+   machine_function structure is initialised (to zero) func_type will
+   default to unknown.  This will force the first use of arm_current_func_type
+   to call arm_compute_func_type.  */
+#define ARM_FT_UNKNOWN		 0 /* Type has not yet been determined.  */
+#define ARM_FT_NORMAL		 1 /* Your normal, straightforward function.  */
+#define ARM_FT_INTERWORKED	 2 /* A function that supports interworking.  */
+#define ARM_FT_EXCEPTION_HANDLER 3 /* A C++ exception handler.  */
+#define ARM_FT_ISR		 4 /* An interrupt service routine.  */
+#define ARM_FT_FIQ		 5 /* A fast interrupt service routine.  */
+#define ARM_FT_EXCEPTION	 6 /* An ARM exception handler (subcase of ISR).  */
+
+#define ARM_FT_TYPE_MASK	((1 << 3) - 1)
+
+/* In addition functions can have several type modifiers,
+   outlined by these bit masks:  */
+#define ARM_FT_INTERRUPT	(1 << 2) /* Note overlap with FT_ISR and above.  */
+#define ARM_FT_NAKED		(1 << 3) /* No prologue or epilogue.  */
+#define ARM_FT_VOLATILE		(1 << 4) /* Does not return.  */
+#define ARM_FT_NESTED		(1 << 5) /* Embedded inside another func. */
+
+/* Some macros to test these flags.  */
+#define ARM_FUNC_TYPE(t)	(t & ARM_FT_TYPE_MASK)
+#define IS_INTERRUPT(t)		(t & ARM_FT_INTERRUPT)
+#define IS_VOLATILE(t)     	(t & ARM_FT_VOLATILE)
+#define IS_NAKED(t)        	(t & ARM_FT_NAKED)
+#define IS_NESTED(t)       	(t & ARM_FT_NESTED)
+
+/* A C structure for machine-specific, per-function data.
+   This is added to the cfun structure.  */
+typedef struct machine_function
 {
   /* Records __builtin_return address.  */
   struct rtx_def *ra_rtx;
@@ -1406,7 +1444,10 @@ struct machine_function
   int far_jump_used;
   /* Records if ARG_POINTER was ever live.  */
   int arg_pointer_live;
-};
+  /* Records the type of the current function.  */
+  unsigned long func_type;
+}
+machine_function;
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the
@@ -1615,7 +1656,7 @@ typedef struct
    other its replacement, at the start of a routine.  */
 #define ARM_INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)		\
 {									\
-  int volatile_func = arm_volatile_func ();				\
+  int volatile_func = IS_VOLATILE (arm_current_func_type ());		\
   if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
     {									\
       if (! current_function_needs_context || ! frame_pointer_needed)	\

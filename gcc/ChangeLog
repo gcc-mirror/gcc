@@ -1,3 +1,58 @@
+2000-12-08  Nick Clifton  <nickc@redhat.com>
+
+	* extend.texi: Document ARM "interrupt" function attribute.
+	Mention that the ARM also support the "naked" function
+	attribute.
+
+	* config/arm/arm-protos.h (arm_current_func_type): Add
+	prototype.
+
+	* config/arm/arm.h (EXCEPTION_LR_REGNUM): Define.
+	(struct machine_function): Add 'func_type' field.
+	Define bit values for 'func_type' field.
+	(ARM_FUNC_TYPE): New macro.
+	(IS_INTERRUPT): New macro.
+	(IS_VOLATILE): New macro.
+	(IS_NAKED): New macro.
+	(IS_NESTED): New macro.
+	(ARM_INITIAL_ELIMINATION_OFFSET): Use IS_VOLATILE.
+
+	* config/arm/arm.c (isr_attribute_args): New Structure.  A
+	list of "interrupt" function attribute modifiers.
+	(arm_isr_value): New Function: Returns the type of the current
+	interrupt function.
+	(arm_compute_func_type): New Function: Computes the type of
+	the current function.
+	(arm_current_func_type): New Function: Returns the type of the
+	current function.
+	(use_return_insn): Use arm_current_func_type.
+	(arm_valid_type_attribute_p): Accept "interrupt" function
+	attribute.
+	(arm_comp_type_attributes): Check "interrupt" attributes.
+	(arm_valid_machine_decl): Accept "interrupt" function
+	attribute.
+	(arm_function_ok_for_sibcall): Do not allow interrupt
+	functions to use sibcalls.
+	(arm_naked_function_p): Delete.
+	(print_multi_reg): Remove redundant parameter 'hat'.
+	(arm_compute_save_reg_mask): New Function: Compute a bit mask
+	of registers saved during the current function's prologue.
+	(output_arm_return_instruction): Use arm_current_func_type.
+	Generate return instruction when LR is not poppsed off the
+	stack.
+	(arm_volatile_func): Delete.
+	(output_arm_prologue): Use arm_current_func_type and
+	arm_compute_save_reg_mask.
+	Note presernce of interrupt functions.
+	(arm_output_epilogue): Use arm_current_func_type and
+	arm_compute_save_reg_mask.
+	(arm_expand_prologue): Use arm_current_func_type and
+	arm_compute_save_reg_mask.
+	(arm_init_machine_status): Initialise func_type field, if
+	necessary.
+	(thumb_expand_prologue): Use arm_current_func_type.
+	(output_thumb_prologue): Use arm_current_func_type.
+
 2000-12-08  Brad Lucier <lucier@math.purdue.edu>
 
         * tradcpp.c (do_include): Make pointer differences 64-bit clean.
