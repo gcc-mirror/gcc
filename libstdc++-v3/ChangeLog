@@ -1,3 +1,23 @@
+2005-01-28  Geoffrey Keating  <geoffk@apple.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Search the path
+	for the compiler.  Don't set cxxflags.
+	(v3_target_compile): Search for libv3test.a relative to $objdir.
+	(lsearch_all_inline): New.
+	(lsearch_all_inline_not): New.
+	(v3-list-tests): Rewrite to not need generated files.
+	* testsuite/Makefile.am (IGNORE_WCHAR_T): New.
+	(IGNORE_THREAD): New.
+	(TESTS_TO_IGNORE): New.
+	(site.exp): Set tests_to_ignore, cxxflags.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Regenerate.
+	* libmath/Makefile.in: Likewise.
+	* libsupc++/Makefile.in: Likewise.
+	* po/Makefile.in: Likewise.
+	* src/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+
 2005-01-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_empty.
