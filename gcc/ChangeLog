@@ -1,3 +1,17 @@
+Tue Sep  9 02:18:06 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_varpool_finalize_decl): Sanity check duplicated
+	finalization.
+	* cgraphunit.c (decide_is_fnction_needed): Avoid special case of nested
+	functions, check for COMDAT.
+	(cgraph_assemble_pending_functions): Break out from...
+	(cgraph_finalize_function): ... here; allow redefinig of extern inline
+	functions.
+	(record_call_1): Record function references only in non-unit-at-a-time
+	mode.
+	(cgraph_analyze_function): Reset current_function_decl.
+	(cgraph_finalize_compilation_unit):  Assemble pending functions.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* mklibgcc.in (libcc.a): Depend on stmp-dirs.

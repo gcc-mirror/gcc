@@ -106,8 +106,8 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   /* "extern inline" functions are never output locally.  */
   if (DECL_EXTERNAL (decl))
     return false;
-  /* ??? */
-  if (node->origin)
+  /* We want to emit COMDAT functions only when they turns out to be neccesary.  */
+  if (DECL_COMDAT (decl))
     return false;
   if (!DECL_INLINE (decl)
       || (!node->local.disregard_inline_limits
@@ -120,6 +120,28 @@ decide_is_function_needed (struct cgraph_node *node, tree decl)
   return false;
 }
 
+/* When not doing unit-at-a-time, output all functions enqueued.
+   Return true when such a functions were found.  */
+static bool
+cgraph_assemble_pending_functions (void)
+{
+  bool output = false;
+
+  if (flag_unit_at_a_time)
+    return false;
+
+  while (cgraph_nodes_queue)
+    {
+      struct cgraph_node *n = cgraph_nodes_queue;
+
+      cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
+      if (!n->origin && !DECL_EXTERNAL (n->decl))
+	cgraph_expand_function (n);
+      output = true;
+    }
+  return output;
+}
+
 /* Analyze function once it is parsed.  Set up the local information
    available - create cgraph edges for function calls via BODY.  */
 
@@ -128,6 +150,38 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
 {
   struct cgraph_node *node = cgraph_node (decl);
 
+  if (node->local.finalized)
+    {
+      /* As an GCC extension we allow redefinition of the function.  The
+	 semantics when both copies of bodies differ is not well defined.  We
+	 replace the old body with new body so in unit at a time mode we always
+	 use new body, while in normal mode we may end up with old body inlined
+	 into some functions and new body expanded and inlined in others.
+	 
+	 ??? It may make more sense to use one body for inlining and other body
+	 for expanding the function but this is dificult to do.  */
+      if (!node->needed)
+	{
+	  /* Reset our datastructures so we can analyze the function body
+	     again.  */
+	  memset (&node->local, 0, sizeof (node->local));
+	  memset (&node->global, 0, sizeof (node->global));
+	  memset (&node->rtl, 0, sizeof (node->rtl));
+	  node->lowered = false;
+	  if (node->output)
+	    abort ();
+	  while (node->callees)
+	    cgraph_remove_call (node->decl, node->callees->callee->decl);
+	}
+      else
+      /* Frontend may call finalize_function twice when it is incorrectly
+         redefined.  */
+      if (errorcount || sorrycount)
+	return;
+      else
+        abort ();
+    }
+  notice_global_symbol (decl);
   node->decl = decl;
   node->local.finalized = true;
 
@@ -140,15 +194,9 @@ cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
     cgraph_mark_needed_node (node);
 
   /* If not unit at a time, go ahead and emit everything we've
-     found to be reachable at this time.  */
-  if (!flag_unit_at_a_time)
-    while (cgraph_nodes_queue)
-      {
-	 struct cgraph_node *n = cgraph_nodes_queue;
-	 cgraph_nodes_queue = cgraph_nodes_queue->next_needed;
-	 if (!n->origin)
-	   cgraph_expand_function (n);
-      }
+     found to be reachable at this time.  Do this only at top-level.  */
+  if (!node->origin)
+    cgraph_assemble_pending_functions ();
 
   /* If we've not yet emitted decl, tell the debug info about it.  */
   if (flag_unit_at_a_time || !node->reachable)
@@ -163,7 +211,7 @@ record_call_1 (tree *tp, int *walk_subtrees, void *data)
     cgraph_varpool_mark_needed_node (cgraph_varpool_node (*tp));
   /* Record dereferences to the functions.  This makes the functions
      reachable unconditionally.  */
-  else if (TREE_CODE (*tp) == ADDR_EXPR)
+  else if (TREE_CODE (*tp) == ADDR_EXPR && flag_unit_at_a_time)
     {
       tree decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -243,6 +291,7 @@ cgraph_analyze_function (struct cgraph_node *node)
     }
 
   node->lowered = true;
+  current_function_decl = NULL;
 }
 
 /* Analyze the whole compilation unit once it is parsed completely.  */
@@ -253,7 +302,10 @@ cgraph_finalize_compilation_unit (void)
   struct cgraph_node *node;
 
   if (!flag_unit_at_a_time)
-    return;
+    {
+      cgraph_assemble_pending_functions ();
+      return;
+    }
 
   cgraph_varpool_assemble_pending_decls ();
   if (!quiet_flag)
