@@ -26,24 +26,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 System V Release 4)");
 
-/* By default, target has a 80387.  */
-
-#define TARGET_DEFAULT 1
-
-/* Machines that use the AT&T assembler syntax
-   also return floating point values in an FP register.  */
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-
-#define VALUE_REGNO(MODE) \
-  (((MODE) == SFmode || (MODE) == DFmode) ? FIRST_FLOAT_REG : 0)
-
-/* 1 if N is a possible register number for a function value. */
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N)== FIRST_FLOAT_REG)
-
 /* The svr4 ABI for the i386 says that records and unions are returned
    in memory.  */
 
