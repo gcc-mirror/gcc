@@ -5,6 +5,8 @@ Sun Apr 12 10:03:51 1998  Noel Cragg  <noel@red-bean.com>
 
 Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* pa.md (casesi0): Add missing mode for operand 0.
+
 	* function.c (purge_addressof_1, case MEM): If BLKmode, put ADDRESSOF
 	into stack.
 
