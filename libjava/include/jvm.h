@@ -562,14 +562,17 @@ extern void _Jv_RegisterBootstrapPackages ();
 #define GCJ_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 10)
 #define GCJ_BINARYCOMPAT_ADDITION 5
 
+// At present we know we are compatible with the BC ABI as used in GCC
+// 4.0.
+#define GCJ_40_BC_ABI_VERSION (4 * 10000 + 0 * 10 + GCJ_BINARYCOMPAT_ADDITION)
+
 inline bool
 _Jv_CheckABIVersion (unsigned long value)
 {
-  // For this release, recognize just our defined C++ ABI and our
-  // defined BC ABI.  (In the future we may recognize past BC ABIs as
-  // well.)
+  // Recognize our defined C++ ABI.
   return (value == GCJ_VERSION
-	  || value == (GCJ_VERSION + GCJ_BINARYCOMPAT_ADDITION));
+	  // At the moment this is the only BC ABI we recognize.
+	  || value == GCJ_40_BC_ABI_VERSION);
 }
 
 // It makes the source cleaner if we simply always define this
