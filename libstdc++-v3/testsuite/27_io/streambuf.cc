@@ -197,6 +197,8 @@ template<typename charT, typename traits = std::char_traits<charT> >
   class basic_nullbuf : public std::basic_streambuf<charT, traits>
   {
   protected:
+    typedef typename
+      std::basic_streambuf<charT, traits>::int_type int_type;
     virtual int_type 
     overflow(int_type c) 
     {  return traits::not_eof(c); }

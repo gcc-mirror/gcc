@@ -1,3 +1,13 @@
+2001-12-12  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/ext/ropeimpl.h (rope::_S_leaf_concat_char_iter,
+	_S_destr_leaf_concat_char_iter, _S_tree_concat, _S_concat_char_iter,
+	_S_destr_concat_char_iter, _S_concat, _S_substring, _S_balance)
+	: Adjust implicit typename.
+	* include/ext/stl_rope.h (_Rope_iterator::operator=, rope::npos):
+	Adjust implicit typename.
+	* testsuite/27_io/streambuf.cc: Adjust implicit typename.
+
 2001-12-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Named locale support for ctype<char>.
