@@ -1005,12 +1005,19 @@ combine_temp_slots ()
 {
   struct temp_slot *p, *q;
   struct temp_slot *prev_p, *prev_q;
-  /* Determine where to free back to after this function.  */
-  rtx free_pointer = rtx_alloc (CONST_INT);
+  int num_slots;
+
+  /* If there are a lot of temp slots, don't do anything unless 
+     high levels of optimizaton.  */
+  if (! flag_expensive_optimizations)
+    for (p = temp_slots, num_slots = 0; p; p = p->next, num_slots++)
+      if (num_slots > 100 || (num_slots > 10 && optimize == 0))
+	return;
 
   for (p = temp_slots, prev_p = 0; p; p = prev_p ? prev_p->next : temp_slots)
     {
       int delete_p = 0;
+
       if (! p->in_use && GET_MODE (p->slot) == BLKmode)
 	for (q = p->next, prev_q = p; q; q = prev_q->next)
 	  {
@@ -1050,9 +1057,6 @@ combine_temp_slots ()
       else
 	prev_p = p;
     }
-
-  /* Free all the RTL made by plus_constant.  */ 
-  rtx_free (free_pointer);
 }
 
 /* Find the temp slot corresponding to the object at address X.  */
@@ -1068,6 +1072,7 @@ find_temp_slot_from_address (x)
     {
       if (! p->in_use)
 	continue;
+
       else if (XEXP (p->slot, 0) == x
 	       || p->address == x
 	       || (GET_CODE (x) == PLUS
@@ -1383,6 +1388,7 @@ put_var_into_stack (decl)
 
   can_use_addressof
     = (function == 0
+       && optimize > 0
        /* FIXME make it work for promoted modes too */
        && decl_mode == promoted_mode
 #ifdef NON_SAVING_SETJMP
