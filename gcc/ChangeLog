@@ -1,3 +1,7 @@
+2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* m68hc11.md (peepholes): Remove unused and wrong peepholes.
+
 2001-06-10  Mark Mitchell <mark@codesourcery.com>
 	    Gabriel Dos Reis  <gdr@codesourcery.com>
 
