@@ -1,5 +1,5 @@
 /* Definitions for Linux with ELF format
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 #define SET_ASM_OP	".set"
 
 /* Use stabs instead of DWARF debug format.  */
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 #include "svr4.h"
 
@@ -86,14 +87,20 @@ Boston, MA 02111-1307, USA.  */
 #define CC1_SPEC "%{profile:-p}"
 
 #undef	LIB_SPEC
-#if 1
 /* We no longer link with libc_p.a or libg.a by default. If you
  * want to profile or debug the Linux C library, please add
  * -profile or -ggdb to LDFLAGS at the link time, respectively.
  */
+#if 1
+#ifdef USE_GNULIBC_1
 #define LIB_SPEC \
   "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
      %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
+#else
+#define LIB_SPEC \
+  "%{!shared: %{mieee-fp:-lieee} %{pthread:-lpthread} \
+	%{profile:-lc_p} %{!profile: -lc}}"
+#endif
 #else
 #define LIB_SPEC \
   "%{!shared: \
