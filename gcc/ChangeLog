@@ -1,3 +1,10 @@
+2004-05-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (CPPLIBS): Renamed to CPPLIB.
+	(BACKEND): Reflect this.
+	(LIBDEPS): Move CPPLIB before LIBIBERTY.
+	(LIBS): Likewise.
+
 2004-05-24  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR tree-optimization/14197
