@@ -38,7 +38,11 @@ public final class String
 
   public String (StringBuffer buffer)
   {
-    init (buffer.value, 0, buffer.count, true);
+    synchronized (buffer)
+      {
+	buffer.shared = true;
+	init (buffer.value, 0, buffer.count, true);
+      }
   }
 
   public String (char[] data)
