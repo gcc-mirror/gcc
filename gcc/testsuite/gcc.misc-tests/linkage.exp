@@ -1,4 +1,4 @@
-# Copyright (C) 1988, 90-96, 1997, 2000 Free Software Foundation, Inc.
+# Copyright (C) 1988, 90-96, 1997, 2000, 2001 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,12 +24,21 @@ if [isnative] then {
 	fail "linkage.c"
     } else {
 	# This is a completely bogus test. Sorry.
+
+	# Need to ensure ABI for native compiler matches gcc
+	set native_cflags ""
+	if  [istarget "mips-sgi-irix6*"] {
+	    if [ string match "*64*" [exec file "linkage-x.o"] ] {
+		set native_cflags "-64"
+	    }
+	}
+
 	catch { exec rm -f linkage-y.o }
 	send_log "cc -c $srcdir/$subdir/linkage-y.c >&/dev/null\n"
-	catch { exec cc -c "$srcdir/$subdir/linkage-y.c" >&/dev/null }
+	catch { exec cc -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	if ![file exists "linkage-y.o"] then {
 	    send_log "c89 -c $srcdir/$subdir/linkage-y.c >&/dev/null\n"
-	    catch { exec c89 -c "$srcdir/$subdir/linkage-y.c" >&/dev/null }
+	    catch { exec c89 -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	}
 	if [file exists "linkage-y.o"] then {
 	    set lines [gcc_target_compile "linkage-y.o linkage-x.o" "x" executable ""]

@@ -1,3 +1,8 @@
+2001-05-23  David.Billinghurst <David.Billinghurst@riotinto.com>
+
+	* gcc.misc-tests/linkage.exp:  Pass appropriate flags to 
+	native compiler for irix6.5.
+
 Wed May 23 2001  Jeffrey D. Oldham  <oldham@codesourcery.com>
 
 	* lib/g++.exp (g++_include_flags): Use args to compute
