@@ -1,3 +1,31 @@
+2004-02-08  Per Bothner  <per@bothner.com>
+
+	* java/nio/ByteBuffer.java (shiftDown):  New helper method.
+	* java/nio/natDirectByteBufferImpl.cc (shiftDown):  New implementation.
+	* java/nio/ByteBufferImpl.java (compact):  Use new shiftDown method.
+	* sava/nio/ByteBufferHelper.java:  Remove redundant 'final' specifiers.
+	Pass ByteOrder parameter to most methods, since the underlying
+	ByteBuffer's order isn't always what we should use.
+	* java/nio/ByteBufferImpl.java:  Pass byte-order various places.
+	* java/nio/DirectByteBufferImpl.java:  Likewise.
+	Use ByteBufferHelper methods.
+	* java/nio/MappedByteBufferImpl.java:  Likewise.
+	(compact):  Use shiftDown.
+	* java/nio/CharViewBufferImpl.java (<init>):  Pass byte-order.
+	(get, put):  Use ByteBufferHelper.
+	(compact):  Use new shiftDown method.
+	(duplicate(boolean)):  New helper method.
+	(duplicate, asReadOnlyBuffer):  Use it.
+	(order):  Return endian field.
+	* java/nio/DoubleViewBufferImpl.java:  Likewise.
+	* java/nio/FloatViewBufferImpl.java:  Likewise.
+	* java/nio/IntViewBufferImpl.java:  Likewise.
+	* java/nio/LongViewBufferImpl.java:  Likewise.
+	* java/nio/ShortViewBufferImpl.java:  Likewise.
+	* java/nio/CharViewBufferImpl.java (subsequence):  Redundant test.
+	* java/nio/DirectByteBufferImpl.java (shiftDown):  New native method.
+	(compact):  Re-implement using shiftDown.
+
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/NIOServerSocket.java

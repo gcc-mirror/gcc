@@ -1,5 +1,5 @@
 /* ByteBuffer.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -382,8 +382,14 @@ public abstract class ByteBuffer extends Buffer
    */
   public abstract ByteBuffer compact ();
 
+  void shiftDown (int dst_offset, int src_offset, int count)
+  {
+    for (int i = 0; i < count; i++)
+      put(dst_offset + i, get(src_offset + i));
+  }
+
   /**
-   * Tells wether or not this buffer is direct.
+   * Tells whether or not this buffer is direct.
    */
   public abstract boolean isDirect ();
 

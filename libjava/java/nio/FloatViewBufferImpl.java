@@ -1,5 +1,5 @@
 /* FloatViewBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,54 +40,47 @@ package java.nio;
 
 class FloatViewBufferImpl extends FloatBuffer
 {
-  private boolean readOnly;
+  /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
   private ByteBuffer bb;
+  private boolean readOnly;
   private ByteOrder endian;
   
-  public FloatViewBufferImpl (ByteBuffer bb, boolean readOnly)
-  {
-    super (bb.remaining () >> 2, bb.remaining () >> 2, bb.position (), 0);
-    this.bb = bb;
-    this.readOnly = readOnly;
-    // FIXME: What if this is called from FloatByteBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
-  }
-
   public FloatViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-                               int limit, int position, int mark,
-                               boolean readOnly)
+			      int limit, int position, int mark,
+			      boolean readOnly, ByteOrder endian)
   {
     super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from FloatViewBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
+    this.endian = endian;
   }
 
   public float get ()
   {
-    float result = bb.getFloat ((position () << 2) + offset);
-    position (position () + 1);
+    int p = position();
+    float result = ByteBufferHelper.getFloat(bb, (p << 2) + offset, endian);
+    position(p + 1);
     return result;
   }
 
   public float get (int index)
   {
-    return bb.getFloat ((index << 2) + offset);
+    return ByteBufferHelper.getFloat(bb, (index << 2) + offset, endian);
   }
 
   public FloatBuffer put (float value)
   {
-    bb.putFloat ((position () << 2) + offset, value);
-    position (position () + 1);
+    int p = position();
+    ByteBufferHelper.putFloat(bb, (p << 2) + offset, value, endian);
+    position(p + 1);
     return this;
   }
   
   public FloatBuffer put (int index, float value)
   {
-    bb.putFloat ((index << 2) + offset, value);
+    ByteBufferHelper.putFloat(bb, (index << 2) + offset, value, endian);
     return this;
   }
 
@@ -95,48 +88,42 @@ class FloatViewBufferImpl extends FloatBuffer
   {
     if (position () > 0)
       {
-        // Copy all data from position() to limit() to the beginning of the
-        // buffer, set position to end of data and limit to capacity
-        // XXX: This can surely be optimized, for direct and non-direct buffers
-        
         int count = limit () - position ();
-              
-        for (int i = 0; i < count; i++)
-          {
-            bb.putFloat ((i >> 2) + offset,
-                          bb.getFloat (((i + position ()) >> 2) + offset));
-          }
-
+	bb.shiftDown(offset, offset + 4 * position(), 4 * count);
         position (count);
         limit (capacity ());
       }
-
     return this;
-  }
-  
-  public FloatBuffer duplicate ()
-  {
-    // Create a copy of this object that shares its content
-    // FIXME: mark is not correct
-    return new FloatViewBufferImpl (bb, offset, capacity (), limit (),
-                                     position (), -1, isReadOnly ());
   }
   
   public FloatBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
-                                      remaining (), remaining (), 0, -1,
-                                     isReadOnly ());
+				    remaining(), remaining(), 0, -1,
+				    readOnly, endian);
   }
   
+  FloatBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    return new FloatViewBufferImpl (bb, offset, capacity(), limit(),
+				    pos, mark, readOnly, endian);
+  }
+  
+  public FloatBuffer duplicate ()
+  {
+    return duplicate(readOnly);
+  }
+
   public FloatBuffer asReadOnlyBuffer ()
   {
-    // Create a copy of this object that shares its content and is read-only
-    return new FloatViewBufferImpl (bb, (position () >> 2) + offset,
-                                     remaining (), remaining (), 0, -1, true);
+    return duplicate(true);
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
@@ -149,6 +136,6 @@ class FloatViewBufferImpl extends FloatBuffer
   
   public ByteOrder order ()
   {
-    return ByteOrder.LITTLE_ENDIAN;
+    return endian;
   }
 }
