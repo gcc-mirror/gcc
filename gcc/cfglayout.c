@@ -1,22 +1,22 @@
 /* Basic block reordering routines for the GNU compiler.
    Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
-   This file is part of GCC.
+This file is part of GCC.
 
-   GCC is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-   GCC is distributed in the hope that it will be useful, but WITHOUT
-   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-   License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GCC; see the file COPYING.  If not, write to the Free
-   Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
@@ -30,9 +30,7 @@
 #include "cfglayout.h"
 
 /* The contents of the current function definition are allocated
-   in this obstack, and all are freed at the end of the function.
-   For top-level functions, this is temporary_obstack.
-   Separate obstacks are made for nested functions.  */
+   in this obstack, and all are freed at the end of the function.  */
 
 extern struct obstack flow_obstack;
 
@@ -126,7 +124,7 @@ skip_insns_after_block (bb)
   if (bb->index + 1 != n_basic_blocks)
     next_head = BASIC_BLOCK (bb->index + 1)->head;
 
-  for (last_insn = insn = bb->end; (insn = NEXT_INSN (insn)); )
+  for (last_insn = insn = bb->end; (insn = NEXT_INSN (insn)) != 0; )
     {
       if (insn == next_head)
 	break;
@@ -172,30 +170,30 @@ skip_insns_after_block (bb)
 
       break;
     }
-  /* It is possible to hit contradicting sequence.  For instance:
+
+  /* It is possible to hit contradictory sequence.  For instance:
     
      jump_insn
      NOTE_INSN_LOOP_BEG
      barrier
 
-     Where barrier belongs to jump_insn, but the note does not.
-     This can be created by removing the basic block originally
-     following NOTE_INSN_LOOP_BEG.
+     Where barrier belongs to jump_insn, but the note does not.  This can be
+     created by removing the basic block originally following
+     NOTE_INSN_LOOP_BEG.  In such case reorder the notes.  */
 
-     In such case reorder the notes.  */
   for (insn = last_insn; insn != bb->end; insn = prev)
     {
-    prev = PREV_INSN (insn);
-    if (GET_CODE (insn) == NOTE)
-      switch (NOTE_LINE_NUMBER (insn))
-        {
+      prev = PREV_INSN (insn);
+      if (GET_CODE (insn) == NOTE)
+	switch (NOTE_LINE_NUMBER (insn))
+	  {
           case NOTE_INSN_LOOP_END:
           case NOTE_INSN_BLOCK_END:
           case NOTE_INSN_DELETED:
           case NOTE_INSN_DELETED_LABEL:
-    	continue;
+	    continue;
           default:
-    	reorder_insns (insn, insn, last_insn);
+	    reorder_insns (insn, insn, last_insn);
         }
     }
 
@@ -213,8 +211,7 @@ label_for_bb (bb)
   if (GET_CODE (label) != CODE_LABEL)
     {
       if (rtl_dump_file)
-	fprintf (rtl_dump_file, "Emitting label for block %d\n",
-		 bb->index);
+	fprintf (rtl_dump_file, "Emitting label for block %d\n", bb->index);
 
       label = block_label (bb);
       if (bb->head == PREV_INSN (RBI (bb)->eff_head))
@@ -233,7 +230,7 @@ record_effective_endpoints ()
   rtx next_insn = get_insns ();
   int i;
   
-  for (i = 0; i < n_basic_blocks; ++i)
+  for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
       rtx end;
@@ -243,32 +240,33 @@ record_effective_endpoints ()
       RBI (bb)->eff_end = end;
       next_insn = NEXT_INSN (end);
     }
+
   function_tail_eff_head = next_insn;
 }
 
+/* Return the next NOTE_INSN_BASIC_BLOCK after X.  */
+
 static rtx
 get_next_bb_note (x)
      rtx x;
 {
-  while (x)
-    {
-      if (NOTE_INSN_BASIC_BLOCK_P (x))
-	return x;
-      x = NEXT_INSN (x);
-    }
+  for (; x; x = NEXT_INSN (x))
+    if (NOTE_INSN_BASIC_BLOCK_P (x))
+      return x;
+
   return NULL;
 }
+
+/* Return the fist NOTE_INSN_BASIC_BLOCK before X.  */
 
 static rtx
 get_prev_bb_note (x)
      rtx x;
 {
-  while (x)
-    {
-      if (NOTE_INSN_BASIC_BLOCK_P (x))
-	return x;
-      x = PREV_INSN (x);
-    }
+  for (; x; x = PREV_INSN (x))
+    if (NOTE_INSN_BASIC_BLOCK_P (x))
+      return x;
+
   return NULL;
 }
 
@@ -313,6 +311,7 @@ relate_bbs_with_scopes (s)
 	  bbnote = get_next_bb_note (s->note_beg);
 	  if (! bbnote)
 	    abort ();
+
 	  if (NOTE_BASIC_BLOCK (bbnote) == s->bb_end)
 	    {
 	      bbs_spanned = 0;
@@ -335,6 +334,7 @@ relate_bbs_with_scopes (s)
 	  bbnote = get_prev_bb_note (s->note_end);
 	  if (! bbnote)
 	    abort ();
+
 	  if (NOTE_BASIC_BLOCK (bbnote) == s->bb_beg)
 	    {
 	      bbs_spanned = 0;
@@ -357,16 +357,15 @@ relate_bbs_with_scopes (s)
 	bbs_spanned = 0;
       else
 	{
-          rtx x1, x2;
 	  /* Both notes are outside of any bbs. This implies that all the
 	     basic blocks spanned by the pair of notes are contained in
              this scope. 
 	     There is a degenerate case to consider. If the notes do not
 	     span any basic blocks, then it is an empty scope that can
 	     safely be deleted or ignored. Mark these with level = -1.  */
+	  rtx x1 = get_next_bb_note (s->note_beg);
+	  rtx x2 = get_prev_bb_note (s->note_end);
 
-	  x1 = get_next_bb_note (s->note_beg);
-	  x2 = get_prev_bb_note (s->note_end);
 	  if (! (x1 && x2))
 	    {
 	      s->level = -1; 
@@ -418,6 +417,7 @@ make_new_scope (level, note)
      rtx note;
 {
   scope new_scope = xcalloc (1, sizeof (struct scope_def));
+
   new_scope->level = level;
   new_scope->note_beg = note;
   return new_scope;
@@ -442,6 +442,7 @@ build_scope_forest (forest)
   root = NULL;
   curr_bb = NULL;
   bbi = 0;
+
   for (x = get_insns (); x; x = NEXT_INSN (x))
     {
       if (bbi < n_basic_blocks && x == BASIC_BLOCK (bbi)->head)
@@ -454,8 +455,10 @@ build_scope_forest (forest)
 	      if (root)
 		{
 		  scope new_scope;
+
 		  if (! curr_scope)
 		    abort();
+
 		  level++;
 		  new_scope = make_new_scope (level, x);
 		  new_scope->outer = curr_scope;
@@ -471,10 +474,12 @@ build_scope_forest (forest)
 		      curr_scope->inner_last = new_scope;
 		    }
 		  curr_scope = curr_scope->inner_last;
+
 		}
 	      else
 		{
 		  int ntrees = forest->num_trees;
+
 		  level++;
 	          curr_scope = make_new_scope (level, x);
 		  root = curr_scope;
@@ -482,6 +487,7 @@ build_scope_forest (forest)
 					    sizeof (scope) * (ntrees + 1));
 		  forest->trees[forest->num_trees++] = root;
 		}
+
 	      curr_scope->bb_beg = curr_bb;
 	    }
 	  else if (NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END)
@@ -493,22 +499,21 @@ build_scope_forest (forest)
 	      if (level == -1)
 		root = NULL;
 	    }
-	} /* if note */
+	}
 
       if (curr_bb && curr_bb->end == x)
 	{
 	  curr_bb = NULL;
 	  bbi++;
 	}
-
-    } /* for */
+    } 
 
   for (i = 0; i < forest->num_trees; i++)
     relate_bbs_with_scopes (forest->trees[i]);
 }
 
-/* Remove all the NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes from
-   the insn chain.  */
+/* Remove all NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes from the insn
+   chain.  */
 
 static void
 remove_scope_notes ()
@@ -572,7 +577,6 @@ insert_intra_1 (s, ip, bb)
     }
 }
 
-
 /* Insert NOTE_INSN_BLOCK_END notes and NOTE_INSN_BLOCK_BEG notes for
    scopes that are contained within BB.  */
 
@@ -598,7 +602,6 @@ insert_intra_bb_scope_notes (bb)
     }
 }
 
-
 /* Given two consecutive basic blocks BB1 and BB2 with different scopes,
    insert NOTE_INSN_BLOCK_END notes after BB1 and NOTE_INSN_BLOCK_BEG
    notes before BB2 such that the notes are correctly balanced. If BB1 or
@@ -619,8 +622,10 @@ insert_inter_bb_scope_notes (bb1, bb2)
     {
       scope s1 = RBI (bb1)->scope;
       scope s2 = RBI (bb2)->scope;
+
       if (! s1 && ! s2)
 	return;
+
       if (! s1)
 	bb1 = NULL;
       else if (! s2)
@@ -632,10 +637,9 @@ insert_inter_bb_scope_notes (bb1, bb2)
     {
       scope s1 = RBI (bb1)->scope;
       scope s2 = RBI (bb2)->scope;
+
       while (s1 != s2)
 	{
-          if (! (s1 && s2))
-	    abort ();
 	  if (s1->level > s2->level)
 	    s1 = s1->outer;
 	  else if (s2->level > s1->level)
@@ -646,6 +650,7 @@ insert_inter_bb_scope_notes (bb1, bb2)
 	      s2 = s2->outer;
 	    }
 	}
+
       com = s1;
     }
   else
@@ -655,18 +660,16 @@ insert_inter_bb_scope_notes (bb1, bb2)
   if (bb1)
     {
       rtx end = bb1->end;
+      scope s;
 
-      scope s = RBI (bb1)->scope;
       ip = RBI (bb1)->eff_end;
-      while (s != com)
-	{
-	  if (NOTE_BLOCK (s->note_beg))
-	    {  
-	      ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
-	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
-	    }
-	  s = s->outer;
-	}
+      for (s = RBI (bb1)->scope; s != com; s = s->outer)
+	if (NOTE_BLOCK (s->note_beg))
+	  {  
+	    ip = emit_note_after (NOTE_INSN_BLOCK_END, ip);
+	    NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_end);
+	  }
+
       /* Emitting note may move the end of basic block to unwanted place.  */
       bb1->end = end;
     }
@@ -674,17 +677,15 @@ insert_inter_bb_scope_notes (bb1, bb2)
   /* Open scopes.  */
   if (bb2)
     {
-      scope s = RBI (bb2)->scope;
+      scope s;
+
       ip = bb2->head;
-      while (s != com)
-	{
-	  if (NOTE_BLOCK (s->note_beg))
-	    {  
-	      ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
-	      NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
-	    }
-	  s = s->outer;
-	}
+      for (s = RBI (bb2)->scope; s != com; s = s->outer)
+	if (NOTE_BLOCK (s->note_beg))
+	  {  
+	    ip = emit_note_before (NOTE_INSN_BLOCK_BEG, ip);
+	    NOTE_BLOCK (ip) = NOTE_BLOCK (s->note_beg);
+	  }
     }
 }
 
@@ -709,6 +710,7 @@ rebuild_scope_notes (forest)
     {
       basic_block bb1 = BASIC_BLOCK (i);
       basic_block bb2 = BASIC_BLOCK (i + 1);
+
       if (RBI (bb1)->scope != RBI (bb2)->scope)
 	insert_inter_bb_scope_notes (bb1, bb2);
       insert_intra_bb_scope_notes (bb1);
@@ -745,6 +747,7 @@ free_scope_forest (forest)
     scope_forest_info *forest;
 {
   int i;
+
   for (i = 0; i < forest->num_trees; i++)
     free_scope_forest_1 (forest->trees[i]);
 }
@@ -755,15 +758,15 @@ void
 dump_scope_forest (forest)
     scope_forest_info *forest;
 {
+  int i;
+
   if (forest->num_trees == 0)
     fprintf (stderr, "\n< Empty scope forest >\n");
   else
-    {
-      int i;
-      fprintf (stderr, "\n< Scope forest >\n");
-      for (i = 0; i < forest->num_trees; i++)
-	dump_scope_forest_1 (forest->trees[i], 0);
-    }
+    fprintf (stderr, "\n< Scope forest >\n");
+
+  for (i = 0; i < forest->num_trees; i++)
+    dump_scope_forest_1 (forest->trees[i], 0);
 }
 
 /* Recursive portion of dump_scope_forest.  */
@@ -813,33 +816,28 @@ fixup_reorder_chain ()
   /* First do the bulk reordering -- rechain the blocks without regard to
      the needed changes to jumps and labels.  */
 
-  last_bb = BASIC_BLOCK (0);
-  bb = RBI (last_bb)->next;
-  index = 1;
-  while (bb)
+  for (last_bb = BASIC_BLOCK (0), bb = RBI (last_bb)->next, index = 1;
+       bb != 0;
+       last_bb = bb, bb = RBI (bb)->next, index++)
     {
       rtx last_e = RBI (last_bb)->eff_end;
       rtx curr_h = RBI (bb)->eff_head;
 
       NEXT_INSN (last_e) = curr_h;
       PREV_INSN (curr_h) = last_e;
-
-      last_bb = bb;
-      bb = RBI (bb)->next;
-      index++;
     }
 
   if (index != n_basic_blocks)
     abort ();
 
   insn = RBI (last_bb)->eff_end;
-
   NEXT_INSN (insn) = function_tail_eff_head;
   if (function_tail_eff_head)
     PREV_INSN (function_tail_eff_head) = insn;
 
   while (NEXT_INSN (insn))
     insn = NEXT_INSN (insn);
+
   set_last_insn (insn);
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
@@ -884,6 +882,7 @@ fixup_reorder_chain ()
 	      if (RBI (bb)->next != e_taken->dest)
 		{
 		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
+
 		  if (note
 		      && INTVAL (XEXP (note, 0)) < REG_BR_PROB_BASE / 2
 		      && invert_jump (bb_end_insn,
@@ -913,6 +912,7 @@ fixup_reorder_chain ()
 		 99% case, there should not have been a fallthru edge.  */
 	      if (! e_fall)
 		continue;
+
 #ifdef CASE_DROPS_THROUGH
 	      /* Except for VAX.  Since we didn't have predication for the
 		 tablejump, the fallthru block should not have moved.  */
@@ -936,15 +936,13 @@ fixup_reorder_chain ()
 	  if (RBI (bb)->next == e_fall->dest)
 	    continue;
 
-	  /* An fallthru to exit block.  */
+	  /* A fallthru to exit block.  */
 	  if (!RBI (bb)->next && e_fall->dest == EXIT_BLOCK_PTR)
 	    continue;
 	}
 
       /* We got here if we need to add a new jump insn.  */
-
       nb = force_nonfallthru (e_fall);
-
       if (nb)
 	{
 	  alloc_aux_for_block (nb, sizeof (struct reorder_block_def));
@@ -965,18 +963,17 @@ fixup_reorder_chain ()
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "Reordered sequence:\n");
-  while (bb)
+
+  for (; bb; bb = RBI (bb)->next, index++)
     {
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, " %i %sbb %i freq %i\n", index,
 		 bb->index >= old_n_basic_blocks ? "compensation " : "",
 		 bb->index,
 	   	 bb->frequency);
+
       bb->index = index;
       BASIC_BLOCK (index) = bb;
-
-      bb = RBI (bb)->next;
-      index++;
     }
 }
 
@@ -989,62 +986,31 @@ fixup_reorder_chain ()
 void
 verify_insn_chain ()
 {
-  rtx x,
-      prevx,
-      nextx;
-  int insn_cnt1,
-      insn_cnt2;
+  rtx x, prevx, nextx;
+  int insn_cnt1, insn_cnt2;
 
-  prevx = NULL;
-  insn_cnt1 = 1;
-  for (x = get_insns (); x; x = NEXT_INSN (x))
-    {
-      if (PREV_INSN (x) != prevx)
-	{
-	  fprintf (stderr, "Forward traversal: insn chain corrupt.\n");
-	  fprintf (stderr, "previous insn:\n");
-	  debug_rtx (prevx);
-	  fprintf (stderr, "current insn:\n");
-	  debug_rtx (x);
-	  abort ();
-	}
-      ++insn_cnt1;
-      prevx = x;
-    }
+  for (prevx = NULL, insn_cnt1 = 1, x = get_insns ();
+       x != 0;
+       prevx = x, insn_cnt1++, x = NEXT_INSN (x))
+    if (PREV_INSN (x) != prevx)
+      abort ();
 
   if (prevx != get_last_insn ())
-    {
-      fprintf (stderr, "last_insn corrupt.\n");
-      abort ();
-    }
+    abort ();
 
-  nextx = NULL;
-  insn_cnt2 = 1;
-  for (x = get_last_insn (); x; x = PREV_INSN (x))
-    {
-      if (NEXT_INSN (x) != nextx)
-	{
-	  fprintf (stderr, "Reverse traversal: insn chain corrupt.\n");
-	  fprintf (stderr, "current insn:\n");
-	  debug_rtx (x);
-	  fprintf (stderr, "next insn:\n");
-	  debug_rtx (nextx);
-	  abort ();
-	}
-      ++insn_cnt2;
-      nextx = x;
-    }
+  for (nextx = NULL, insn_cnt2 = 1, x = get_last_insn ();
+       x != 0;
+       nextx = x, insn_cnt2++, x = PREV_INSN (x))
+    if (NEXT_INSN (x) != nextx)
+      abort ();
 
   if (insn_cnt1 != insn_cnt2)
-    {
-      fprintf (stderr, "insn_cnt1 (%d) not equal to insn_cnt2 (%d).\n",
-	       insn_cnt1, insn_cnt2);
-      abort ();
-    }
+    abort ();
 }
 
-/* The block falling through to exit must be the last one in the
-   reordered chain.  Ensure that this condition is met.  */
+/* The block falling through to exit must be the last one in the reordered
+   chain.  Ensure it is.  */
+
 static void
 fixup_fallthru_exit_predecessor ()
 {
@@ -1054,21 +1020,25 @@ fixup_fallthru_exit_predecessor ()
   for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
     if (e->flags & EDGE_FALLTHRU)
       bb = e->src;
+
   if (bb && RBI (bb)->next)
     {
       basic_block c = BASIC_BLOCK (0);
+
       while (RBI (c)->next != bb)
 	c = RBI (c)->next;
+
       RBI (c)->next = RBI (bb)->next;
       while (RBI (c)->next)
 	c = RBI (c)->next;
+
       RBI (c)->next = bb;
       RBI (bb)->next = NULL;
     }
 }
 
-/* Main entry point to this module - initialize the datastructures for
-   CFG layout changes.  */
+/* Main entry point to this module: initialize the datastructures for CFG
+   layout changes.  */
 
 void
 cfg_layout_initialize ()
@@ -1081,14 +1051,15 @@ cfg_layout_initialize ()
   record_effective_endpoints ();
 }
 
-/* Finalize the changes - reorder insn list according to the sequence,
-   enter compensation code, rebuild scope forest.  */
+/* Finalize the changes: reorder insn list according to the sequence, enter
+   compensation code, rebuild scope forest.  */
 
 void
 cfg_layout_finalize ()
 {
   fixup_fallthru_exit_predecessor ();
   fixup_reorder_chain ();
+
 #ifdef ENABLE_CHECKING
   verify_insn_chain ();
 #endif

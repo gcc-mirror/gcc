@@ -1483,6 +1483,7 @@ typedef int (*rtx_function)             PARAMS ((rtx *, void *));
 extern int for_each_rtx                 PARAMS ((rtx *, rtx_function, void *));
 extern rtx regno_use_in			PARAMS ((unsigned int, rtx));
 extern int auto_inc_p			PARAMS ((rtx));
+extern int in_expr_list_p		PARAMS ((rtx, rtx));
 extern void remove_node_from_expr_list	PARAMS ((rtx, rtx *));
 extern int insns_safe_to_move_p         PARAMS ((rtx, rtx, rtx *));
 extern int loc_mentioned_in_p		PARAMS ((rtx *, rtx));

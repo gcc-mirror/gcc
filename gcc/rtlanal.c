@@ -1954,6 +1954,24 @@ remove_note (insn, note)
 }
 
 /* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
+   return 1 if it is found.  A simple equality test is used to determine if
+   NODE matches.  */
+
+int
+in_expr_list_p (listp, node)
+     rtx listp;
+     rtx node;
+{
+  rtx x;
+
+  for (x = listp; x; x = XEXP (x, 1))
+    if (node == XEXP (x, 0))
+      return 1;
+
+  return 0;
+}
+
+/* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
    remove that entry from the list if it is found.
 
    A simple equality test is used to determine if NODE matches.  */

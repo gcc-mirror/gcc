@@ -1,3 +1,10 @@
+Mon Dec 24 10:24:59 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.h (in_expr_list_p): New declaration.
+	* rtlanal.c (in_expr_list_p): New function.
+	* cfgcleanup.c: Reformatting and minor code rearrangement.
+	* cfglayout.c, cfgloop.c, cfgrtl.c: Likewise.
+
 2001-12-23  Richard Henderson  <rth@redhat.com>
 
 	PR c/5163:
