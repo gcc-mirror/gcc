@@ -1,3 +1,103 @@
+2003-01-31  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/Window.java (Window(Window,GraphicsConfiguration)):
+	Don't try to find graphics configuration.
+	* java/awt/Toolkit.java (default_toolkit_name): Use new
+	Configuration entry.
+	* gnu/classpath/Configuration.java.in (default_awt_peer_toolkit):
+	New global.
+	* configure: Rebuilt.
+	* configure.in (TOOLKIT): New subst.
+	(--enable-java-awt) [xlib, gtk]: Set TOOLKIT if required.
+	Do AWT tests much earlier.  Run Gtk tests.  Make jniinclude
+	directory.  Make output directories for .c files.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (lib_gnu_java_awt_peer_gtk_la_SOURCES): New macro.
+	(toolexeclib_LTLIBRARIES): Added cond_gtk_ltlibrary.
+	(all_java_source_files): Added new sources.
+	($(lib_gnu_java_awt_peer_gtk_la_OBJECTS)): New target.
+	(gtk_c_files): New macro.
+	(gtk_c_source_files): New macro.
+	(cond_gtk_ltlibrary): New macro.
+	($(gtk_c_files)): New target.
+	(lib_gnu_java_awt_peer_gtk_la_LIBADD): New macro.
+	(gtk_awt_peer_sources): New macro.
+	(gtk_c_headers): New macro.
+	($(gtk_c_headers)): New target.
+	(ACLOCAL_AMFLAGS): New macro.
+	* gtk.m4, glib.m4, libart.m4: New files.
+	* gnu/java/awt/peer/gtk/GdkFontMetrics.java,
+	gnu/java/awt/peer/gtk/GdkGraphics.java,
+	gnu/java/awt/peer/gtk/GtkArg.java,
+	gnu/java/awt/peer/gtk/GtkArgList.java,
+	gnu/java/awt/peer/gtk/GtkButtonPeer.java,
+	gnu/java/awt/peer/gtk/GtkCanvasPeer.java,
+	gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java,
+	gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java,
+	gnu/java/awt/peer/gtk/GtkCheckboxPeer.java,
+	gnu/java/awt/peer/gtk/GtkChoicePeer.java,
+	gnu/java/awt/peer/gtk/GtkClipboard.java,
+	gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkContainerPeer.java,
+	gnu/java/awt/peer/gtk/GtkDialogPeer.java,
+	gnu/java/awt/peer/gtk/GtkFileDialogPeer.java,
+	gnu/java/awt/peer/gtk/GtkFontPeer.java,
+	gnu/java/awt/peer/gtk/GtkFramePeer.java,
+	gnu/java/awt/peer/gtk/GtkGenericPeer.java,
+	gnu/java/awt/peer/gtk/GtkImage.java,
+	gnu/java/awt/peer/gtk/GtkImagePainter.java,
+	gnu/java/awt/peer/gtk/GtkLabelPeer.java,
+	gnu/java/awt/peer/gtk/GtkListPeer.java,
+	gnu/java/awt/peer/gtk/GtkMainThread.java,
+	gnu/java/awt/peer/gtk/GtkMenuBarPeer.java,
+	gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkMenuItemPeer.java,
+	gnu/java/awt/peer/gtk/GtkMenuPeer.java,
+	gnu/java/awt/peer/gtk/GtkOffScreenImage.java,
+	gnu/java/awt/peer/gtk/GtkPanelPeer.java,
+	gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java,
+	gnu/java/awt/peer/gtk/GtkScrollbarPeer.java,
+	gnu/java/awt/peer/gtk/GtkScrollPanePeer.java,
+	gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
+	gnu/java/awt/peer/gtk/GtkTextComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkTextFieldPeer.java,
+	gnu/java/awt/peer/gtk/GtkToolkit.java,
+	gnu/java/awt/peer/gtk/GtkWindowPeer.java,
+	gnu/java/awt/peer/gtk/TestAWT.java,
+	gnu/java/awt/peer/gtk/Test.java: New files from Classpath.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c,
+	jni/gtk-peer/gthread-jni.c, jni/gtk-peer/gthread-jni.h,
+	jni/gtk-peer/gtkpeer.h, jni/classpath/jcl.c, jni/classpath/jcl.h,
+	jni/classpath/jnilink.c, jni/classpath/jnilink.h,
+	jni/classpath/native_state.c, jni/classpath/native_state.h,
+	jni/classpath/primlib.c, jni/classpath/primlib.h: Likewise.
+
 2003-01-31  Julian Dolby  <dolby@us.ibm.com>
 
 	* java/util/Properties.java (load): Ignore backslash before EOF.

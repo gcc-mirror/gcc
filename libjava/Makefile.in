@@ -84,10 +84,19 @@ GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
+GLIB_CFLAGS = @GLIB_CFLAGS@
+GLIB_CONFIG = @GLIB_CONFIG@
+GLIB_LIBS = @GLIB_LIBS@
+GTK_CFLAGS = @GTK_CFLAGS@
+GTK_CONFIG = @GTK_CONFIG@
+GTK_LIBS = @GTK_LIBS@
 HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 INCLTDL = @INCLTDL@
 INTERPRETER = @INTERPRETER@
 JC1GCSPEC = @JC1GCSPEC@
+LIBART_CFLAGS = @LIBART_CFLAGS@
+LIBART_CONFIG = @LIBART_CONFIG@
+LIBART_LIBS = @LIBART_LIBS@
 LIBFFI = @LIBFFI@
 LIBGCJDEBUG = @LIBGCJDEBUG@
 LIBGCJTESTSPEC = @LIBGCJTESTSPEC@
@@ -116,6 +125,7 @@ THREADLDFLAGS = @THREADLDFLAGS@
 THREADLIBS = @THREADLIBS@
 THREADOBJS = @THREADOBJS@
 THREADSPEC = @THREADSPEC@
+TOOLKIT = @TOOLKIT@
 VERSION = @VERSION@
 ZINCS = @ZINCS@
 ZLIBS = @ZLIBS@
@@ -132,14 +142,20 @@ toolexeclibdir = @toolexeclibdir@
 toolexecmainlibdir = @toolexecmainlibdir@
 
 AUTOMAKE_OPTIONS = foreign
+
+ACLOCAL_AMFLAGS = -I .
 @TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
 @TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
 @XLIB_AWT_TRUE@cond_x_ltlibrary = @XLIB_AWT_TRUE@libgcjx.la
 @XLIB_AWT_FALSE@cond_x_ltlibrary = 
 @XLIB_AWT_TRUE@xlib_includes = @XLIB_AWT_TRUE@-I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
 @XLIB_AWT_FALSE@xlib_includes = 
+@GTK_AWT_TRUE@cond_gtk_ltlibrary = @GTK_AWT_TRUE@lib-gnu-java-awt-peer-gtk.la
+@GTK_AWT_FALSE@cond_gtk_ltlibrary = 
 
-toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
+toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la \
+    $(cond_gtk_ltlibrary) $(cond_x_ltlibrary)
+
 toolexecmainlib_DATA = libgcj.spec
 
 jardir = $(datadir)/java
@@ -191,6 +207,7 @@ INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
 nat_files = $(nat_source_files:.cc=.lo)
 x_nat_files = $(x_nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
+gtk_c_files = $(gtk_c_source_files:.c=.lo)
 javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
@@ -219,6 +236,96 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 libgcj_la_LINK = $(LIBLINK)
+
+gtk_c_source_files = \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.c	\
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c \
+jni/gtk-peer/gthread-jni.c \
+jni/classpath/jcl.c \
+jni/classpath/jnilink.c	\
+jni/classpath/native_state.c \
+jni/classpath/primlib.c
+
+
+gtk_awt_peer_sources = \
+gnu/java/awt/peer/gtk/GdkFontMetrics.java \
+gnu/java/awt/peer/gtk/GdkGraphics.java \
+gnu/java/awt/peer/gtk/GtkArg.java \
+gnu/java/awt/peer/gtk/GtkArgList.java \
+gnu/java/awt/peer/gtk/GtkButtonPeer.java \
+gnu/java/awt/peer/gtk/GtkCanvasPeer.java \
+gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.java	\
+gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.java \
+gnu/java/awt/peer/gtk/GtkCheckboxPeer.java \
+gnu/java/awt/peer/gtk/GtkChoicePeer.java \
+gnu/java/awt/peer/gtk/GtkClipboard.java	\
+gnu/java/awt/peer/gtk/GtkComponentPeer.java \
+gnu/java/awt/peer/gtk/GtkContainerPeer.java \
+gnu/java/awt/peer/gtk/GtkDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkFileDialogPeer.java \
+gnu/java/awt/peer/gtk/GtkFontPeer.java \
+gnu/java/awt/peer/gtk/GtkFramePeer.java	\
+gnu/java/awt/peer/gtk/GtkGenericPeer.java \
+gnu/java/awt/peer/gtk/GtkImage.java \
+gnu/java/awt/peer/gtk/GtkImagePainter.java \
+gnu/java/awt/peer/gtk/GtkLabelPeer.java	\
+gnu/java/awt/peer/gtk/GtkListPeer.java \
+gnu/java/awt/peer/gtk/GtkMainThread.java \
+gnu/java/awt/peer/gtk/GtkMenuBarPeer.java \
+gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java	\
+gnu/java/awt/peer/gtk/GtkMenuItemPeer.java \
+gnu/java/awt/peer/gtk/GtkMenuPeer.java \
+gnu/java/awt/peer/gtk/GtkOffScreenImage.java \
+gnu/java/awt/peer/gtk/GtkPanelPeer.java	\
+gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java \
+gnu/java/awt/peer/gtk/GtkScrollPanePeer.java \
+gnu/java/awt/peer/gtk/GtkScrollbarPeer.java \
+gnu/java/awt/peer/gtk/GtkTextAreaPeer.java \
+gnu/java/awt/peer/gtk/GtkTextComponentPeer.java	\
+gnu/java/awt/peer/gtk/GtkTextFieldPeer.java \
+gnu/java/awt/peer/gtk/GtkToolkit.java \
+gnu/java/awt/peer/gtk/GtkWindowPeer.java
+
+
+gtk_c_headers = $(patsubst %.java,jniinclude/%.h,$(subst /,_,$(gtk_awt_peer_sources)))
+
+lib_gnu_java_awt_peer_gtk_la_SOURCES = \
+$(gtk_awt_peer_sources) \
+$(gtk_c_source_files) \
+jni/gtk-peer/gthread-jni.h \
+jni/gtk-peer/gtkpeer.h \
+jni/classpath/jcl.h \
+jni/classpath/jnilink.h	\
+jni/classpath/native_state.h \
+jni/classpath/primlib.h
+
+
+lib_gnu_java_awt_peer_gtk_la_LIBADD = $(GTK_LIBS) $(GLIB_LIBS) $(LIBART_LIBS)
 
 lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
 org/w3c/dom/CDATASection.java \
@@ -294,6 +401,7 @@ all_java_source_files = \
     $(built_java_source_files) \
     $(lib_org_xml_sax_la_SOURCES) \
     $(lib_org_w3c_dom_la_SOURCES) \
+    $(gtk_awt_peer_sources) \
     $(x_java_source_files)
 
 
@@ -2309,6 +2417,75 @@ org/w3c/dom/traversal/DocumentTraversal.lo \
 org/w3c/dom/traversal/NodeFilter.lo \
 org/w3c/dom/traversal/NodeIterator.lo \
 org/w3c/dom/traversal/TreeWalker.lo
+lib_gnu_java_awt_peer_gtk_la_LDFLAGS = 
+lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES = 
+lib_gnu_java_awt_peer_gtk_la_OBJECTS =  \
+gnu/java/awt/peer/gtk/GdkFontMetrics.lo \
+gnu/java/awt/peer/gtk/GdkGraphics.lo gnu/java/awt/peer/gtk/GtkArg.lo \
+gnu/java/awt/peer/gtk/GtkArgList.lo \
+gnu/java/awt/peer/gtk/GtkButtonPeer.lo \
+gnu/java/awt/peer/gtk/GtkCanvasPeer.lo \
+gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.lo \
+gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.lo \
+gnu/java/awt/peer/gtk/GtkCheckboxPeer.lo \
+gnu/java/awt/peer/gtk/GtkChoicePeer.lo \
+gnu/java/awt/peer/gtk/GtkClipboard.lo \
+gnu/java/awt/peer/gtk/GtkComponentPeer.lo \
+gnu/java/awt/peer/gtk/GtkContainerPeer.lo \
+gnu/java/awt/peer/gtk/GtkDialogPeer.lo \
+gnu/java/awt/peer/gtk/GtkFileDialogPeer.lo \
+gnu/java/awt/peer/gtk/GtkFontPeer.lo \
+gnu/java/awt/peer/gtk/GtkFramePeer.lo \
+gnu/java/awt/peer/gtk/GtkGenericPeer.lo \
+gnu/java/awt/peer/gtk/GtkImage.lo \
+gnu/java/awt/peer/gtk/GtkImagePainter.lo \
+gnu/java/awt/peer/gtk/GtkLabelPeer.lo \
+gnu/java/awt/peer/gtk/GtkListPeer.lo \
+gnu/java/awt/peer/gtk/GtkMainThread.lo \
+gnu/java/awt/peer/gtk/GtkMenuBarPeer.lo \
+gnu/java/awt/peer/gtk/GtkMenuComponentPeer.lo \
+gnu/java/awt/peer/gtk/GtkMenuItemPeer.lo \
+gnu/java/awt/peer/gtk/GtkMenuPeer.lo \
+gnu/java/awt/peer/gtk/GtkOffScreenImage.lo \
+gnu/java/awt/peer/gtk/GtkPanelPeer.lo \
+gnu/java/awt/peer/gtk/GtkPopupMenuPeer.lo \
+gnu/java/awt/peer/gtk/GtkScrollPanePeer.lo \
+gnu/java/awt/peer/gtk/GtkScrollbarPeer.lo \
+gnu/java/awt/peer/gtk/GtkTextAreaPeer.lo \
+gnu/java/awt/peer/gtk/GtkTextComponentPeer.lo \
+gnu/java/awt/peer/gtk/GtkTextFieldPeer.lo \
+gnu/java/awt/peer/gtk/GtkToolkit.lo \
+gnu/java/awt/peer/gtk/GtkWindowPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.lo \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.lo \
+jni/gtk-peer/gthread-jni.lo jni/classpath/jcl.lo \
+jni/classpath/jnilink.lo jni/classpath/native_state.lo \
+jni/classpath/primlib.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -2346,9 +2523,8 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(jar_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-gcj/libgcj-config.h.in gcj/stamp-h2.in include/config.h.in \
-include/stamp-h1.in libgcj-test.spec.in libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -2448,6 +2624,43 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/awt/GLightweightPeer.P \
 .deps/gnu/java/awt/image/ImageDecoder.P \
 .deps/gnu/java/awt/image/XBMDecoder.P \
+.deps/gnu/java/awt/peer/gtk/GdkFontMetrics.P \
+.deps/gnu/java/awt/peer/gtk/GdkGraphics.P \
+.deps/gnu/java/awt/peer/gtk/GtkArg.P \
+.deps/gnu/java/awt/peer/gtk/GtkArgList.P \
+.deps/gnu/java/awt/peer/gtk/GtkButtonPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkCanvasPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkCheckboxGroupPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkCheckboxMenuItemPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkCheckboxPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkChoicePeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkClipboard.P \
+.deps/gnu/java/awt/peer/gtk/GtkComponentPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkContainerPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkDialogPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkFileDialogPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkFontPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkFramePeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkGenericPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkImage.P \
+.deps/gnu/java/awt/peer/gtk/GtkImagePainter.P \
+.deps/gnu/java/awt/peer/gtk/GtkLabelPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkListPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkMainThread.P \
+.deps/gnu/java/awt/peer/gtk/GtkMenuBarPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkMenuComponentPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkMenuItemPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkMenuPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkOffScreenImage.P \
+.deps/gnu/java/awt/peer/gtk/GtkPanelPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkPopupMenuPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkScrollPanePeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkScrollbarPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkTextAreaPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkTextComponentPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkTextFieldPeer.P \
+.deps/gnu/java/awt/peer/gtk/GtkToolkit.P \
+.deps/gnu/java/awt/peer/gtk/GtkWindowPeer.P \
 .deps/gnu/java/beans/BeanInfoEmbryo.P \
 .deps/gnu/java/beans/EmptyBeanInfo.P \
 .deps/gnu/java/beans/ExplicitBeanInfo.P \
@@ -3724,8 +3937,38 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/transaction/UserTransaction.P \
 .deps/javax/transaction/xa/XAException.P \
 .deps/javax/transaction/xa/XAResource.P \
-.deps/javax/transaction/xa/Xid.P .deps/jni.P .deps/no-threads.P \
-.deps/nogc.P .deps/org/w3c/dom/Attr.P .deps/org/w3c/dom/CDATASection.P \
+.deps/javax/transaction/xa/Xid.P .deps/jni.P .deps/jni/classpath/jcl.P \
+.deps/jni/classpath/jnilink.P .deps/jni/classpath/native_state.P \
+.deps/jni/classpath/primlib.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkFontMetrics.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCanvasPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxMenuItemPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkImagePainter.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPopupMenuPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkToolkit.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.P \
+.deps/jni/gtk-peer/gthread-jni.P .deps/no-threads.P .deps/nogc.P \
+.deps/org/w3c/dom/Attr.P .deps/org/w3c/dom/CDATASection.P \
 .deps/org/w3c/dom/CharacterData.P .deps/org/w3c/dom/Comment.P \
 .deps/org/w3c/dom/DOMException.P .deps/org/w3c/dom/DOMImplementation.P \
 .deps/org/w3c/dom/Document.P .deps/org/w3c/dom/DocumentFragment.P \
@@ -3765,8 +4008,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/org/xml/sax/helpers/XMLReaderFactory.P .deps/posix-threads.P \
 .deps/posix.P .deps/prims.P .deps/resolve.P .deps/verify.P \
 .deps/win32-threads.P .deps/win32.P
-SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(lib_org_xml_sax_la_SOURCES) $(lib_org_w3c_dom_la_SOURCES) $(libgcjx_la_SOURCES) $(EXTRA_libgcjx_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(rmic_SOURCES) $(EXTRA_rmic_SOURCES) $(rmiregistry_SOURCES) $(EXTRA_rmiregistry_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcj_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_w3c_dom_la_OBJECTS) $(libgcjx_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(rmic_OBJECTS) $(rmiregistry_OBJECTS) $(gen_from_JIS_OBJECTS)
+SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(lib_org_xml_sax_la_SOURCES) $(lib_org_w3c_dom_la_SOURCES) $(lib_gnu_java_awt_peer_gtk_la_SOURCES) $(libgcjx_la_SOURCES) $(EXTRA_libgcjx_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(rmic_SOURCES) $(EXTRA_rmic_SOURCES) $(rmiregistry_SOURCES) $(EXTRA_rmiregistry_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcj_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS) $(lib_org_w3c_dom_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(libgcjx_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(rmic_OBJECTS) $(rmiregistry_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -3778,60 +4021,15 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
-$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.in  acinclude.m4
-	cd $(srcdir) && $(ACLOCAL)
+$(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ configure.in  acinclude.m4 \
+		./acinclude.m4 ./aclocal.m4 ./glib.m4 ./gtk.m4 \
+		./libart.m4
+	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-include/config.h: include/stamp-h1
-	@if test ! -f $@; then \
-		rm -f include/stamp-h1; \
-		$(MAKE) include/stamp-h1; \
-	else :; fi
-include/stamp-h1: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > include/stamp-h1 2> /dev/null
-$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h1.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/include/stamp-h1.in; \
-		$(MAKE) $(srcdir)/include/stamp-h1.in; \
-	else :; fi
-$(srcdir)/include/stamp-h1.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/include/stamp-h1.in 2> /dev/null
-
-gcj/libgcj-config.h: gcj/stamp-h2
-	@if test ! -f $@; then \
-		rm -f gcj/stamp-h2; \
-		$(MAKE) gcj/stamp-h2; \
-	else :; fi
-gcj/stamp-h2: $(srcdir)/gcj/libgcj-config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=gcj/libgcj-config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > gcj/stamp-h2 2> /dev/null
-$(srcdir)/gcj/libgcj-config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/gcj/stamp-h2.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/gcj/stamp-h2.in; \
-		$(MAKE) $(srcdir)/gcj/stamp-h2.in; \
-	else :; fi
-$(srcdir)/gcj/stamp-h2.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/gcj/stamp-h2.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f include/config.h gcj/libgcj-config.h
-
-maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -3905,6 +4103,9 @@ lib-org-xml-sax.la: $(lib_org_xml_sax_la_OBJECTS) $(lib_org_xml_sax_la_DEPENDENC
 
 lib-org-w3c-dom.la: $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_w3c_dom_la_DEPENDENCIES)
 	$(LINK) -rpath $(toolexeclibdir) $(lib_org_w3c_dom_la_LDFLAGS) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_w3c_dom_la_LIBADD) $(LIBS)
+
+lib-gnu-java-awt-peer-gtk.la: $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES)
+	$(LINK) -rpath $(toolexeclibdir) $(lib_gnu_java_awt_peer_gtk_la_LDFLAGS) $(lib_gnu_java_awt_peer_gtk_la_OBJECTS) $(lib_gnu_java_awt_peer_gtk_la_LIBADD) $(LIBS)
 
 mostlyclean-binPROGRAMS:
 
@@ -4272,32 +4473,29 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLTLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-binPROGRAMS \
+		mostlyclean-noinstPROGRAMS mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
-		clean-libtool clean-binPROGRAMS clean-noinstPROGRAMS \
-		clean-tags clean-depend clean-generic mostlyclean-am \
-		clean-local
+clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
+		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
+		clean-depend clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-tags distclean-depend distclean-generic \
-		clean-am
+distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-binPROGRAMS \
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-toolexeclibLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
@@ -4309,9 +4507,9 @@ maintainer-clean-am:  maintainer-clean-hdr \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
-clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLTLIBRARIES \
+distclean-toolexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
+maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
@@ -4336,6 +4534,11 @@ uninstall-am uninstall all-redirect all-am all installdirs-am \
 installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+$(gtk_c_headers): $(gtk_awt_peer_sources)
+	@input=`echo $@ | sed -e 's,jniinclude,,' -e 's,_,.,g' -e 's,.h$$,,'`; \
+	echo "$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input"; \
+	$(GCJH) -jni -d jniinclude -classpath '' -bootclasspath $(top_builddir) $$input
 
 install-exec-hook:
 	cd $(DESTDIR)$(libdir) && \
@@ -4377,8 +4580,16 @@ $(c_files): %.lo: %.c
 
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
+$(gtk_c_files): %.lo: %.c
+	$(LTCOMPILE) -c -Ijniinclude -I$(srcdir)/jni/classpath -I$(srcdir)/jni/gtk-peer $(GTK_CFLAGS) $(LIBART_CFLAGS) -o $@ $<
+
+$(gtk_c_files): $(gtk_c_headers)
+
 $(javao_files) $(x_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
+
+$(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
+	$(GCJCOMPILE) -fjni -o $@ $<
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcj.objectlist || :) $(shell touch libgcj.objectlist) $(foreach object,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),$(shell echo $(object) >> libgcj.objectlist))

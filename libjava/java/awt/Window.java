@@ -1,5 +1,5 @@
 /* Window.java --
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -141,11 +141,12 @@ public class Window extends Container
         && gc.getDevice().getType() != GraphicsDevice.TYPE_RASTER_SCREEN)
       throw new IllegalArgumentException ("gc must be from a screen device");
 
-    if (gc == null)
-      graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
-        .getDefaultScreenDevice()
-        .getDefaultConfiguration();
-    else
+    // FIXME: until we implement this, it just causes AWT to crash.
+//     if (gc == null)
+//       graphicsConfiguration = GraphicsEnvironment.getLocalGraphicsEnvironment()
+//         .getDefaultScreenDevice()
+//         .getDefaultConfiguration();
+//     else
       graphicsConfiguration = gc;
   }
 

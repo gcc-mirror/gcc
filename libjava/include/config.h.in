@@ -1,4 +1,4 @@
-/* include/config.h.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* include/config.h.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -393,9 +393,6 @@
 
 /* Define if the compiler is configured for setjmp/longjmp exceptions. */
 #undef SJLJ_EXCEPTIONS
-
-/* Indicate that linker is not able to 8-byte align static data */
-#undef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
 
 /* Required define if using POSIX threads */
 #undef _REENTRANT
