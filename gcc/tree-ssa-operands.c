@@ -811,7 +811,7 @@ append_v_must_def (tree var)
           <* compare old_ops_copy and new_ops *>
        free_ssa_operands (old_ops);					*/
 
-void
+static void
 build_ssa_operands (tree stmt, stmt_ann_t ann, stmt_operands_p old_ops, 
 		    stmt_operands_p new_ops)
 {
