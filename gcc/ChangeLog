@@ -1,3 +1,9 @@
+2005-04-04  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/14812
+	* arm.c (arm_select_cc_mode): Return CC_Zmode when comparing against
+	a negated value.
+
 2005-04-04  Richard Henderson  <rth@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
