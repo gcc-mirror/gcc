@@ -1,3 +1,18 @@
+Sun Dec  7 02:32:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* iosfwd: New header.
+	* Makefile.in (HEADERS): Add it.
+
+Sun Dec  7 02:32:20 1997  Gregory L. Galloway (gregg@eoeml.gtri.gatech.edu)
+
+	* Makefile.in (HEADERS): Modified list of headers to 
+	install to include all of SGI STL headers especially hash_set and 
+	hash_map, and added ANSI C++ style wrappers for fstream, iomanip, 
+	iostream, and strstream.
+
+	* fstream, iomanip, iostream, strstream: New forwarding headers
+	added.
+
 Thu Nov 27 01:33:55 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (install): Change gxx_includedir to gxx_include_dir.
