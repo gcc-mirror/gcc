@@ -43,6 +43,7 @@ Boston, MA 02111-1307, USA.  */
 
 static int follows_p PARAMS ((rtx, rtx));
 static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
+static void vax_file_start PARAMS ((void));
 static void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, tree));
 static int vax_address_cost_1 PARAMS ((rtx));
@@ -56,6 +57,11 @@ static bool vax_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE vax_output_function_prologue
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START vax_file_start
+#undef TARGET_ASM_FILE_START_APP_OFF
+#define TARGET_ASM_FILE_START_APP_OFF true
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
@@ -124,6 +130,18 @@ vax_output_function_prologue (file, size)
     asm_fprintf (file, "\tmovab %wd(%Rsp),%Rsp\n", -size);
   else if (size)
     asm_fprintf (file, "\tsubl2 $%wd,%Rsp\n", size);
+}
+
+/* When debugging with stabs, we want to output an extra dummy label
+   so that gas can distinguish between D_float and G_float prior to
+   processing the .stabs directive identifying type double.  */
+static void
+vax_file_start ()
+{
+  default_file_start ();
+
+  if (write_symbols == DBX_DEBUG)
+    fprintf (asm_out_file, "___vax_%c_doubles:\n", ASM_DOUBLE_CHAR);
 }
 
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */

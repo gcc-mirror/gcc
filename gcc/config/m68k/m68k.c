@@ -59,6 +59,7 @@ static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
 #ifdef HPUX_ASM
 static void m68k_hp320_internal_label PARAMS ((FILE *, const char *, unsigned long));
+static void m68k_hp320_file_start PARAMS ((void));
 #endif
 static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
@@ -130,6 +131,9 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_ASM_FILE_START_APP_OFF
+#define TARGET_ASM_FILE_START_APP_OFF true
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m68k_rtx_costs
@@ -3662,6 +3666,16 @@ m68k_hp320_internal_label (stream, prefix, labelno)
     fprintf(stream, "\tset %s%ld,.+2\n", prefix, labelno);
   else
     fprintf (stream, "%s%ld:\n", prefix, labelno);
+}
+
+static void
+m68k_hp320_file_start ()
+{
+  /* version 1: 68010.
+             2: 68020 without FPU.
+	     3: 68020 with FPU.  */
+  fprintf (asm_out_file, "\tversion %d\n",
+	   TARGET_68020 ? (TARGET_68881 ? 3 : 2) : 1);
 }
 #endif
 

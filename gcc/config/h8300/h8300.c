@@ -655,29 +655,15 @@ h8300_current_function_interrupt_function_p (void)
 
 /* Output assembly code for the start of the file.  */
 
-void
-asm_file_start (FILE *file)
+static void
+h8300_file_start (void)
 {
-  fprintf (file, ";\tGCC For the Hitachi H8/300\n");
-  fprintf (file, ";\tBy Hitachi America Ltd and Cygnus Support\n");
+  default_file_start ();
 
-  if (optimize_size)
-    fprintf (file, "; -Os\n");
-  else if (optimize)
-    fprintf (file, "; -O%d\n", optimize);
   if (TARGET_H8300H)
-    if (TARGET_NORMAL_MODE)
-      fprintf (file, "\n\t.h8300hn\n");
-    else
-      fprintf (file, "\n\t.h8300h\n");
+    fputs (TARGET_NORMAL_MODE ? "\t.h8300hn\n" : "\t.h8300h\n", asm_out_file);
   else if (TARGET_H8300S)
-    if (TARGET_NORMAL_MODE)
-      fprintf (file, "\n\t.h8300sn\n");
-    else
-      fprintf (file, "\n\t.h8300s\n");
-  else
-    fprintf (file, "\n\n");
-  output_file_directive (file, main_input_filename);
+    fputs (TARGET_NORMAL_MODE ? "\t.h8300sn\n" : "\t.h8300s\n", asm_out_file);
 }
 
 /* Output assembly language code for the end of file.  */
@@ -4359,6 +4345,11 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START h8300_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END h8300_file_end

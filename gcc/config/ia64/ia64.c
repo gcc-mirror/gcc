@@ -241,6 +241,7 @@ static void bundling PARAMS ((FILE *, int, rtx, rtx));
 
 static void ia64_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
+static void ia64_file_start PARAMS ((void));
 
 static void ia64_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
@@ -355,6 +356,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START ia64_file_start
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ia64_rtx_costs
@@ -1608,9 +1612,15 @@ ia64_split_call (retval, addr, retaddr, scratch_r, scratch_b,
 
 /* Begin the assembly file.  */
 
+static void
+ia64_file_start ()
+{
+  default_file_start ();
+  emit_safe_across_calls ();
+}
+
 void
-emit_safe_across_calls (f)
-     FILE *f;
+emit_safe_across_calls ()
 {
   unsigned int rs, re;
   int out_state;
@@ -1627,19 +1637,19 @@ emit_safe_across_calls (f)
 	continue;
       if (out_state == 0)
 	{
-	  fputs ("\t.pred.safe_across_calls ", f);
+	  fputs ("\t.pred.safe_across_calls ", asm_out_file);
 	  out_state = 1;
 	}
       else
-	fputc (',', f);
+	fputc (',', asm_out_file);
       if (re == rs + 1)
-	fprintf (f, "p%u", rs);
+	fprintf (asm_out_file, "p%u", rs);
       else
-	fprintf (f, "p%u-p%u", rs, re - 1);
+	fprintf (asm_out_file, "p%u-p%u", rs, re - 1);
       rs = re + 1;
     }
   if (out_state)
-    fputc ('\n', f);
+    fputc ('\n', asm_out_file);
 }
 
 /* Helper function for ia64_compute_frame_size: find an appropriate general

@@ -242,21 +242,6 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 #undef STACK_CHECK_BUILTIN
 #define STACK_CHECK_BUILTIN 0
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)					\
-{								\
-  alpha_write_verstamp (FILE);					\
-  fprintf (FILE, "\t.set noreorder\n");				\
-  fprintf (FILE, "\t.set volatile\n");				\
-  if (TARGET_BWX | TARGET_MAX | TARGET_FIX | TARGET_CIX)	\
-    {								\
-      fprintf (FILE, "\t.arch %s\n",				\
-               (TARGET_CPU_EV6 ? "ev6"				\
-                : TARGET_MAX ? "pca56" : "ev56"));		\
-    }								\
-  ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
-}
-
 #define LINK_SECTION_ASM_OP "\t.link"
 #define READONLY_DATA_SECTION_ASM_OP "\t.rdata"
 #define LITERALS_SECTION_ASM_OP "\t.literals"

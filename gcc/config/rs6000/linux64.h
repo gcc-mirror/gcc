@@ -103,17 +103,6 @@
   rs6000_override_options (((TARGET_DEFAULT ^ target_flags) & MASK_64BIT) \
 			   ? (char *) 0 : TARGET_CPU_DEFAULT)
 
-#undef	ASM_FILE_START
-#define	ASM_FILE_START(FILE)						    \
-  do									    \
-    {                                                                       \
-      output_file_directive ((FILE), main_input_filename);		    \
-      rs6000_file_start (FILE, (((TARGET_DEFAULT ^ target_flags)	    \
-				 & MASK_64BIT)				    \
-				? (char *) 0 : TARGET_CPU_DEFAULT));	    \
-    }									    \
-  while (0)
-
 #endif
 
 #undef	ASM_DEFAULT_SPEC

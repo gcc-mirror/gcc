@@ -84,22 +84,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
 
-#define ASM_FILE_START(FILE)					\
-{								\
-  alpha_write_verstamp (FILE);					\
-  fprintf (FILE, "\t.set noreorder\n");				\
-  fprintf (FILE, "\t.set volatile\n");                          \
-  fprintf (FILE, "\t.set noat\n");				\
-  if (TARGET_SUPPORT_ARCH)					\
-    fprintf (FILE, "\t.arch %s\n",				\
-             TARGET_CPU_EV6 ? "ev6"				\
-	     : (TARGET_CPU_EV5					\
-		? (TARGET_MAX ? "pca56" : TARGET_BWX ? "ev56" : "ev5") \
-		: "ev4"));					\
-								\
-  ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
-}
-
 /* Tru64 UNIX V5.1 requires a special as flag.  Empty by default.  */
 
 #define ASM_OLDAS_SPEC ""

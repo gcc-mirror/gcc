@@ -20,24 +20,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#ifndef ARM_OS_NAME
-#define ARM_OS_NAME "(generic)"
-#endif
-
-/* The text to go at the start of the assembler file.  */
-#ifndef ASM_FILE_START
-#define ASM_FILE_START(STREAM)		    \
-{					    \
-  asm_fprintf (STREAM,"%Rrfp\t.req\t%Rr9\n"); \
-  asm_fprintf (STREAM,"%Rsl\t.req\t%Rr10\n"); \
-  asm_fprintf (STREAM,"%Rfp\t.req\t%Rr11\n"); \
-  asm_fprintf (STREAM,"%Rip\t.req\t%Rr12\n"); \
-  asm_fprintf (STREAM,"%Rsp\t.req\t%Rr13\n"); \
-  asm_fprintf (STREAM,"%Rlr\t.req\t%Rr14\n"); \
-  asm_fprintf (STREAM,"%Rpc\t.req\t%Rr15\n"); \
-}
-#endif
-
 #ifndef ASM_APP_ON
 #define ASM_APP_ON  		""
 #endif

@@ -96,6 +96,9 @@ static int ns32k_address_cost PARAMS ((rtx));
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ns32k_address_cost
 
+#undef TARGET_ASM_FILE_START_APP_OFF
+#define TARGET_ASM_FILE_START_APP_OFF true
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Generate the assembly code for function entry.  FILE is a stdio

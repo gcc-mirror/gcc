@@ -151,6 +151,7 @@ static const char *const lshift_right_asm_first[] =
 static int reg_save_size PARAMS ((void));
 static void dsp16xx_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void dsp16xx_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void dsp16xx_file_start PARAMS ((void));
 static bool dsp16xx_rtx_costs PARAMS ((rtx, int, int, int *));
 static int dsp16xx_address_cost PARAMS ((rtx));
 
@@ -167,6 +168,9 @@ static int dsp16xx_address_cost PARAMS ((rtx));
 #define TARGET_ASM_FUNCTION_PROLOGUE dsp16xx_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE dsp16xx_output_function_epilogue
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START dsp16xx_file_start
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS dsp16xx_rtx_costs
@@ -2373,49 +2377,10 @@ dsp16xx_function_arg_advance (cum, mode, type, named)
     }
 }
 
-void
-coff_dsp16xx_file_start (file)
-     FILE *file;
+static void
+dsp16xx_file_start ()
 {
-  fprintf (file, "#include <%s.h>\n", save_chip_name);
-}
-
-void
-luxworks_dsp16xx_file_start (file)
-     FILE *file;
-{
-  char *temp_filename;
-  int len, err_code;
-
-
-  fprintf (file, "\t.debug ");
-  err_code = (TARGET_DEBUG) ? fprintf (file, "yes, ") : fprintf (file, "no, ");
-  err_code = (TARGET_SAVE_TEMPS) ? fprintf (file, "asm, ") : fprintf (file, "temp, ");
-  len = strlen (main_input_filename);
-  temp_filename = (char *) xmalloc (len + 2);
-  strcpy (temp_filename, main_input_filename);
-#ifdef __CYGWIN32__
-    p = temp_filename;
-    while (*p != '\0') {
-    if (*p == '\\')
-        *p = '/';
-         p++;
-         }
-#endif
-    fprintf (file, "\"%s\"\n", temp_filename);
-
-  fprintf (file, "#include <%s.h>\n", save_chip_name);
-
-   /*
-    * Add dummy sections, so that they always exist in the 
-    * object code. These have been created so that the number and
-    * type of sections remain consistent with and without -g option. Note
-    * that the .data, .text, .const and .bss are always created when -g
-    * is provided as an option.  */
-   fprintf (file, "\t.rsect \".text\" , nodelete\n");
-   fprintf (file, "\t.rsect \".data\" , nodelete\n");
-   fprintf (file, "\t.rsect \".const\" , nodelete\n");
-   fprintf (file, "\t.rsect \".bss\" , nodelete\n");
+  fprintf (asm_out_file, "#include <%s.h>\n", save_chip_name);
 }
 
 rtx

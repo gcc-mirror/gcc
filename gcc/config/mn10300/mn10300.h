@@ -839,10 +839,6 @@ struct cum_arg {int nbytes; };
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP "\t.section .bss"
 
-/* Output at beginning/end of assembler file.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) asm_file_start(FILE)
-
 #define ASM_COMMENT_START "#"
 
 /* Output to assembler file text saying following lines

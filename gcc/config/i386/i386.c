@@ -829,6 +829,7 @@ static void x86_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, tree));
 static bool x86_can_output_mi_thunk PARAMS ((tree, HOST_WIDE_INT,
 					     HOST_WIDE_INT, tree));
+static void x86_file_start PARAMS ((void));
 static void ix86_reorg PARAMS ((void));
 bool ix86_expand_carry_flag_compare PARAMS ((enum rtx_code, rtx, rtx, rtx*));
 
@@ -1005,6 +1006,9 @@ static void init_ext_80387_constants PARAMS ((void));
 #define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK x86_can_output_mi_thunk
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START x86_file_start
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ix86_rtx_costs
@@ -15530,6 +15534,18 @@ x86_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	  output_asm_insn ("jmp\t{*}%1", xops);
 	}
     }
+}
+
+static void
+x86_file_start ()
+{
+  default_file_start ();
+  if (X86_FILE_START_VERSION_DIRECTIVE)
+    fputs ("\t.version\t\"01.01\"\n", asm_out_file);
+  if (X86_FILE_START_FLTUSED)
+    fputs ("\t.global\t__fltused\n", asm_out_file);
+  if (ix86_asm_dialect == ASM_INTEL)
+    fputs ("\t.intel_syntax\n", asm_out_file);
 }
 
 int

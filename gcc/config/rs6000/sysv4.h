@@ -710,16 +710,6 @@ do {									\
    || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V'			\
    || (CHAR) == 'B' || (CHAR) == 'b' || (CHAR) == 'G')
 
-/* Output .file.  */
-/* Override elfos.h definition.  */
-#undef	ASM_FILE_START
-#define	ASM_FILE_START(FILE)						\
-do {									\
-  output_file_directive ((FILE), main_input_filename);			\
-  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);				\
-} while (0)
-
-
 extern int fixuplabelno;
 
 /* Handle constructors specially for -mrelocatable.  */

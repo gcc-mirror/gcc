@@ -105,6 +105,8 @@ static void cris_operand_lossage PARAMS ((const char *, rtx));
 static void cris_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 
+static void cris_file_start PARAMS ((void));
+
 static bool cris_rtx_costs PARAMS ((rtx, int, int, int *));
 static int cris_address_cost PARAMS ((rtx));
 
@@ -161,6 +163,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_ASM_OUTPUT_MI_THUNK cris_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START cris_file_start
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS cris_rtx_costs
@@ -2759,6 +2764,24 @@ cris_asm_output_mi_thunk (stream, thunkdecl, delta, vcall_offset, funcdecl)
       assemble_name (stream, XSTR (XEXP (DECL_RTL (funcdecl), 0), 0));
       fprintf (stream, "\n");
     }
+}
+
+/* Boilerplate emitted at start of file.  
+
+   NO_APP *only at file start* means faster assembly.  It also means
+   comments are not allowed.  In some cases comments will be output
+   for debugging purposes.  Make sure they are allowed then.
+
+   We want a .file directive only if TARGET_ELF.  */
+static void
+cris_file_start ()
+{
+  /* These expressions can vary at run time, so we cannot put
+     them into TARGET_INITIALIZER.  */
+  targetm.file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
+  targetm.file_start_file_directive = TARGET_ELF;
+
+  default_file_start ();
 }
 
 /* The EXPAND_BUILTIN_VA_ARG worker.  This is modified from the

@@ -32,9 +32,8 @@ Boston, MA 02111-1307, USA.  */
    use the standard definition of LIB_SPEC.  */
 #undef LIB_SPEC
 
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) \
-  output_file_directive ((FILE), main_input_filename)
+/* Emit a .file directive.  */
+#define ASM_FILE_START_FILE_DIRECTIVE true
 
 /* Support the ctors and dtors sections for g++.  */
 

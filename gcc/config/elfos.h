@@ -96,16 +96,9 @@ Boston, MA 02111-1307, USA.  */
 #undef  SET_ASM_OP
 #define SET_ASM_OP	"\t.set\t"
 
-/* This is how to begin an assembly language file.  Most svr4 assemblers want
-   at least a .file directive to come first, and some want to see a .version
-   directive come right after that.  Here we just establish a default
-   which generates only the .file directive.  If you need a .version
-   directive for any specific target, you should override this definition
-   in the target-specific file which includes this one.  */
-
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE)                            \
-  output_file_directive ((FILE), main_input_filename)
+/* Most svr4 assemblers want a .file directive at the beginning of
+   their input file.  */
+#define ASM_FILE_START_FILE_DIRECTIVE true
 
 /* This is how to allocate empty space in some section.  The .zero
    pseudo-op is used for this on most svr4 assemblers.  */

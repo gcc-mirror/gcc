@@ -1456,11 +1456,6 @@ do {									\
 
 #define EH_USES(REGNO) ia64_eh_uses (REGNO)
 
-/* Output at beginning of assembler file.  */
-
-#define ASM_FILE_START(FILE) \
-  emit_safe_across_calls (FILE)
-
 /* Output part N of a function descriptor for DECL.  For ia64, both
    words are emitted with a single relocation, so ignore N > 0.  */
 #define ASM_OUTPUT_FDESC(FILE, DECL, PART)				\

@@ -1161,10 +1161,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 /* Control the assembler format that we output.  */
 
-/* Output at beginning of assembler file.  */
-
-#define ASM_FILE_START(file)
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

@@ -58,7 +58,6 @@ Note:
 #include "target.h"
 #include "target-def.h"
 
-static void print_options PARAMS ((FILE *));
 static void emit_move_after_reload PARAMS ((rtx, rtx, rtx));
 static rtx simplify_logical PARAMS ((enum machine_mode, int, rtx, rtx *));
 static void m68hc11_emit_logical PARAMS ((enum machine_mode, int, rtx *));
@@ -82,6 +81,7 @@ static void asm_print_register PARAMS ((FILE *, int));
 static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
 static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
+static void m68hc11_file_start PARAMS ((void));
 static void m68hc11_encode_section_info PARAMS((tree, rtx, int));
 static int autoinc_mode PARAMS((rtx));
 static int m68hc11_make_autoinc_notes PARAMS((rtx *, void *));
@@ -229,6 +229,11 @@ static int nb_soft_regs;
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m68hc11_output_function_epilogue
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START m68hc11_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  m68hc11_encode_section_info
@@ -5660,62 +5665,12 @@ m68hc11_rtx_costs (x, code, outer_code, total)
 }
 
 
-/* print_options - called at the start of the code generation for a
-   module.  */
-
-#include <time.h>
-#include <sys/types.h>
-
 static void
-print_options (out)
-     FILE *out;
+m68hc11_file_start ()
 {
-  const char *a_time;
-  long c_time;
-  int i;
-  extern int save_argc;
-  extern char **save_argv;
-
-  fprintf (out, ";;; Command:\t");
-  for (i = 0; i < save_argc; i++)
-    {
-      fprintf (out, "%s", save_argv[i]);
-      if (i + 1 < save_argc)
-	fprintf (out, " ");
-    }
-  fprintf (out, "\n");
-  c_time = time (0);
-  a_time = ctime (&c_time);
-  fprintf (out, ";;; Compiled:\t%s", a_time);
-#ifdef __GNUC__
-#ifndef __VERSION__
-#define __VERSION__ "[unknown]"
-#endif
-  fprintf (out, ";;; (META)compiled by GNU C version %s.\n", __VERSION__);
-#else
-  fprintf (out, ";;; (META)compiled by CC.\n");
-#endif
-}
-
-void
-m68hc11_asm_file_start (out, main_file)
-     FILE *out;
-     const char *main_file;
-{
-  fprintf (out, ";;;-----------------------------------------\n");
-  fprintf (out, ";;; Start %s gcc assembly output\n",
-           TARGET_M6811
-           ? "MC68HC11"
-           : TARGET_M68S12 ? "MC68HCS12" : "MC68HC12");
-  fprintf (out, ";;; gcc compiler %s\n", version_string);
-  print_options (out);
-  fprintf (out, ";;;-----------------------------------------\n");
-  output_file_directive (out, main_file);
-
-  if (TARGET_SHORT)
-    fprintf (out, "\t.mode mshort\n");
-  else
-    fprintf (out, "\t.mode mlong\n");
+  default_file_start ();
+  
+  fprintf (asm_out_file, "\t.mode %s\n", TARGET_SHORT ? "mshort" : "mlong");
 }
 
 

@@ -94,7 +94,6 @@ extern int h8300_can_use_return_insn_p (void);
 extern void h8300_expand_prologue (void);
 extern void h8300_expand_epilogue (void);
 extern int h8300_current_function_interrupt_function_p (void);
-extern void asm_file_start (FILE *);
 extern int h8300_initial_elimination_offset (int, int);
 
 struct cpp_reader;

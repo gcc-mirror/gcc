@@ -53,7 +53,6 @@ extern struct rtx_def *mn10300_va_arg PARAMS ((tree, tree));
 #endif /* TREE_CODE */
 
 extern struct rtx_def *mn10300_builtin_saveregs PARAMS ((void));
-extern void asm_file_start PARAMS ((FILE *));
 extern void expand_prologue PARAMS ((void));
 extern void expand_epilogue PARAMS ((void));
 extern int initial_offset PARAMS ((int, int));

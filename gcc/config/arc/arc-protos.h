@@ -66,7 +66,6 @@ extern void arc_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 
 
 extern void arc_init PARAMS ((void));
-extern void arc_asm_file_start PARAMS ((FILE *));
 extern unsigned int arc_compute_frame_size PARAMS ((int));
 extern void arc_save_restore PARAMS ((FILE *, const char *, unsigned int,
 				      unsigned int, const char *));

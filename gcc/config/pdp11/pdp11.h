@@ -990,20 +990,6 @@ extern struct rtx_def *cc0_reg_rtx;
 
 /* Control the assembler format that we output.  */
 
-/* Output at beginning of assembler file.  */
-
-#if 0
-#define ASM_FILE_START(FILE) \
-(								\
-fprintf (FILE, "\t.data\n"),					\
-fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
-/* do we need reg def's R0 = %0 etc ??? */			\
-)
-#else
-#define ASM_FILE_START(FILE)
-#endif
-
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

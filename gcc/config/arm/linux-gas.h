@@ -23,10 +23,6 @@
 /* This is how we tell the assembler that a symbol is weak.
    GAS always supports weak symbols.  */
 
-/* This is used in ASM_FILE_START.  */
-#undef  ARM_OS_NAME
-#define ARM_OS_NAME "Linux"
-
 /* Unsigned chars produces much better code than signed.  */
 #define DEFAULT_SIGNED_CHAR 0
 

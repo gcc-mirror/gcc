@@ -135,6 +135,15 @@ static void copy_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static int length_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel PARAMS ((const char *))
      ATTRIBUTE_UNUSED;
+static inline void pa_file_start_level PARAMS ((void)) ATTRIBUTE_UNUSED;
+static inline void pa_file_start_space PARAMS ((int)) ATTRIBUTE_UNUSED;
+static inline void pa_file_start_file PARAMS ((int)) ATTRIBUTE_UNUSED;
+static inline void pa_file_start_mcount PARAMS ((const char*)) ATTRIBUTE_UNUSED;
+static void pa_elf_file_start PARAMS ((void)) ATTRIBUTE_UNUSED;
+static void pa_som_file_start PARAMS ((void)) ATTRIBUTE_UNUSED;
+static void pa_linux_file_start PARAMS ((void)) ATTRIBUTE_UNUSED;
+static void pa_hpux64_gas_file_start PARAMS ((void)) ATTRIBUTE_UNUSED;
+static void pa_hpux64_hpas_file_start PARAMS ((void)) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels PARAMS ((void));
 
 /* Save the operands last given to a compare for use when we
@@ -4901,6 +4910,106 @@ output_global_address (file, x, round_constant)
   else
     output_addr_const (file, x);
 }
+
+/* Output boilerplate text to appear at the beginning of the file.
+   There are several possible versions.  */
+#define aputs(x) fputs(x, asm_out_file)
+static inline void
+pa_file_start_level ()
+{
+  if (TARGET_64BIT)
+    aputs ("\t.LEVEL 2.0w\n");
+  else if (TARGET_PA_20)
+    aputs ("\t.LEVEL 2.0\n");
+  else if (TARGET_PA_11)
+    aputs ("\t.LEVEL 1.1\n");
+  else
+    aputs ("\t.LEVEL 1.0\n");
+}
+
+static inline void
+pa_file_start_space (sortspace)
+     int sortspace;
+{
+  aputs ("\t.SPACE $PRIVATE$");
+  if (sortspace)
+    aputs (",SORT=16");
+  aputs ("\n\t.SUBSPA $DATA$,QUAD=1,ALIGN=8,ACCESS=31"
+         "\n\t.SUBSPA $BSS$,QUAD=1,ALIGN=8,ACCESS=31,ZERO,SORT=82"
+         "\n\t.SPACE $TEXT$");
+  if (sortspace)
+    aputs (",SORT=8");
+  aputs ("\n\t.SUBSPA $LIT$,QUAD=0,ALIGN=8,ACCESS=44"
+         "\n\t.SUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n");
+}
+
+static inline void
+pa_file_start_file (want_version)
+     int want_version;
+{
+  if (write_symbols != NO_DEBUG)
+    {
+      output_file_directive (asm_out_file, main_input_filename);
+      if (want_version)
+	aputs ("\t.version\t\"01.01\"\n");
+    }
+}
+
+static inline void
+pa_file_start_mcount (aswhat)
+     const char *aswhat;
+{
+  if (profile_flag)
+    fprintf (asm_out_file, "\t.IMPORT _mcount,%s\n", aswhat);
+}
+  
+static void
+pa_elf_file_start ()
+{
+  pa_file_start_level ();
+  pa_file_start_mcount ("ENTRY");
+  pa_file_start_file (0);
+}
+
+static void
+pa_som_file_start ()
+{
+  pa_file_start_level ();
+  pa_file_start_space (0);
+  aputs ("\t.IMPORT $global$,DATA\n"
+         "\t.IMPORT $$dyncall,MILLICODE\n");
+  pa_file_start_mcount ("CODE");
+  pa_file_start_file (0);
+}
+
+static void
+pa_linux_file_start ()
+{
+  pa_file_start_file (1);
+  pa_file_start_level ();
+  pa_file_start_mcount ("CODE");
+}
+
+static void
+pa_hpux64_gas_file_start ()
+{
+  pa_file_start_level ();
+#ifdef ASM_OUTPUT_TYPE_DIRECTIVE
+  if (profile_flag)
+    ASM_OUTPUT_TYPE_DIRECTIVE (asm_out_file, "_mcount", "function");
+#endif
+  pa_file_start_file (1);
+}
+
+static void
+pa_hpux64_hpas_file_start ()
+{
+  pa_file_start_level ();
+  pa_file_start_space (1);
+  pa_file_start_mcount ("CODE");
+  pa_file_start_file (0);
+}
+#undef aputs
 
 static struct deferred_plabel *
 get_plabel (fname)

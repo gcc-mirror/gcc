@@ -112,7 +112,6 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* default is -msoft-float */
 
-
 /* -m68000 requires special flags to the assembler.  */
 #define ASM_SPEC \
  "%{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"
@@ -168,7 +167,6 @@ Boston, MA 02111-1307, USA.  */
 #undef REGISTER_NAMES
 #undef ASM_OUTPUT_REG_PUSH
 #undef ASM_OUTPUT_REG_POP
-#undef ASM_FILE_START
 #undef ASM_APP_ON
 #undef ASM_APP_OFF
 #undef TEXT_SECTION_ASM_OP
@@ -211,16 +209,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "\tmov.l (%%sp)+,%s\n", reg_names[REGNO])
 
 /* For HPUX versions before 6.5, define this macro as empty.  */
-#define ASM_FILE_START(FILE)						\
-  if (TARGET_68020)							\
-    {									\
-      if (TARGET_68881)							\
-	 fprintf (FILE, "\tversion 3\n"); /* 68020 fp regs saved */	\
-      else								\
-	 fprintf (FILE, "\tversion 2\n"); /* 68020 no fp regs saved */	\
-    }									\
-  else									\
-    fprintf (FILE, "\tversion 1\n");	/* 68010 */
+#define TARGET_ASM_FILE_START m68k_hp320_file_start
 
 #define ASM_APP_ON ""
 

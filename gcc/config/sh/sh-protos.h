@@ -111,7 +111,6 @@ extern tree sh_build_va_list PARAMS ((void));
 extern const char *output_jump_label_table PARAMS ((void));
 extern int sh_handle_pragma PARAMS ((int (*)(void), void (*)(int), const char *));
 extern struct rtx_def *get_fpscr_rtx PARAMS ((void));
-extern void output_file_start PARAMS ((FILE *));
 extern int sh_media_register_for_return PARAMS ((void));
 extern void sh_expand_prologue PARAMS ((void));
 extern void sh_expand_epilogue PARAMS ((void));

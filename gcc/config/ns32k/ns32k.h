@@ -1256,10 +1256,6 @@ __transfer_from_trampoline ()		\
 
 /* Define the output Assembly Language */
 
-/* Output at beginning of assembler file.  */
-
-#define ASM_FILE_START(FILE) fprintf (FILE, "#NO_APP\n");
-
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 

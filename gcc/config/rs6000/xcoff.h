@@ -108,9 +108,10 @@ toc_section ()						\
 {							\
   if (TARGET_MINIMAL_TOC)				\
     {							\
-      /* toc_section is always called at least once from ASM_FILE_START, \
-	 so this is guaranteed to always be defined once and only once   \
-	 in each file.  */						 \
+      /* toc_section is always called at least once	\
+         from rs6000_xcoff_file_start, so this is	\
+	 guaranteed to always be defined once and	\
+	 only once in each file.  */			\
       if (! toc_initialized)				\
 	{						\
 	  fputs ("\t.toc\nLCTOC..1:\n", asm_out_file);	\
@@ -200,40 +201,11 @@ toc_section ()						\
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "
 
-/* Output at beginning of assembler file.
-
-   Initialize the section names for the RS/6000 at this point.
-
-   Specify filename, including full path, to assembler.
-
-   We want to go into the TOC section so at least one .toc will be emitted.
-   Also, in order to output proper .bs/.es pairs, we need at least one static
-   [RW] section emitted.
-
-   Finally, declare mcount when profiling to make the assembler happy.  */
-
-#define ASM_FILE_START(FILE)					\
-{								\
-  rs6000_gen_section_name (&xcoff_bss_section_name,		\
-			   main_input_filename, ".bss_");	\
-  rs6000_gen_section_name (&xcoff_private_data_section_name,	\
-			   main_input_filename, ".rw_");	\
-  rs6000_gen_section_name (&xcoff_read_only_section_name,	\
-			   main_input_filename, ".ro_");	\
-								\
-  fputs ("\t.file\t", FILE);                                    \
-  output_quoted_string (FILE, main_input_filename);             \
-  fputc ('\n', FILE);                                           \
-  toc_section ();						\
-  if (write_symbols != NO_DEBUG)				\
-    private_data_section ();					\
-  text_section ();						\
-  if (profile_flag)						\
-    fprintf (FILE, "\t.extern %s\n", RS6000_MCOUNT);		\
-  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
-}
-
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START rs6000_xcoff_file_start
 #define TARGET_ASM_FILE_END rs6000_xcoff_file_end
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE false
 
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and

@@ -105,6 +105,9 @@ static int v850_interrupt_p = FALSE;
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
 
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -158,15 +161,6 @@ override_options ()
     }
 }
 
-
-/* Output assembly code for the start of the file.  */
-
-void
-asm_file_start (file)
-     FILE *file;
-{
-  output_file_directive (file, main_input_filename);
-}
 
 
 /* Return an RTX to represent where a value with mode MODE will be returned

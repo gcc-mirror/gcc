@@ -47,8 +47,5 @@
 #undef  SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT	TARGET_CPU_strongarm
 
-#undef  ARM_OS_NAME
-#define ARM_OS_NAME "FreeBSD"
-
 #undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (FreeBSD/StrongARM ELF)");

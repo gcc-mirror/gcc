@@ -23,10 +23,6 @@
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (NetBSD/arm ELF)", stderr);
 
-/* This is used in ASM_FILE_START.  */
-#undef ARM_OS_NAME
-#define ARM_OS_NAME "NetBSD"
-
 /* arm.h defaults to ARM6 CPU.  */
 
 /* This defaults us to little-endian.  */

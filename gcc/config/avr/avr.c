@@ -63,6 +63,7 @@ static tree   avr_handle_progmem_attribute PARAMS ((tree *, tree, tree, int, boo
 static tree   avr_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec avr_attribute_table[];
 static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
+static void   avr_file_start PARAMS ((void));
 static void   avr_file_end PARAMS ((void));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -219,6 +220,10 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER avr_assemble_integer
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START avr_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END avr_file_end
 
@@ -4888,30 +4893,30 @@ avr_section_type_flags (decl, name, reloc)
   return flags;
 }
 
-/* Outputs to the stdio stream FILE some
-   appropriate text to go at the start of an assembler file.  */
+/* Outputs some appropriate text to go at the start of an assembler
+   file.  */
 
-void
-asm_file_start (file)
-     FILE *file;
+static void
+avr_file_start ()
 {
   if (avr_asm_only_p)
     error ("MCU `%s' supported for assembler only", avr_mcu_name);
 
-  output_file_directive (file, main_input_filename);
-  fprintf (file, "\t.arch %s\n", avr_mcu_name);
+  default_file_start ();
+
+  fprintf (asm_out_file, "\t.arch %s\n", avr_mcu_name);
   fputs ("__SREG__ = 0x3f\n"
 	 "__SP_H__ = 0x3e\n"
-	 "__SP_L__ = 0x3d\n", file);
+	 "__SP_L__ = 0x3d\n", asm_out_file);
   
   fputs ("__tmp_reg__ = 0\n" 
-         "__zero_reg__ = 1\n", file);
+         "__zero_reg__ = 1\n", asm_out_file);
 
   /* FIXME: output these only if there is anything in the .data / .bss
      sections - some code size could be saved by not linking in the
      initialization code from libgcc if one or both sections are empty.  */
-  fputs ("\t.global __do_copy_data\n", file);
-  fputs ("\t.global __do_clear_bss\n", file);
+  fputs ("\t.global __do_copy_data\n", asm_out_file);
+  fputs ("\t.global __do_clear_bss\n", asm_out_file);
 
   commands_in_file = 0;
   commands_in_prologues = 0;

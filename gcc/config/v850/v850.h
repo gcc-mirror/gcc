@@ -1144,10 +1144,6 @@ zbss_section ()								\
 #define ZCOMMON_ASM_OP 	       "\t.zcomm\t"
 #define TCOMMON_ASM_OP 	       "\t.tcomm\t"
 
-/* Output at beginning/end of assembler file.  */
-#undef ASM_FILE_START
-#define ASM_FILE_START(FILE) asm_file_start(FILE)
-
 #define ASM_COMMENT_START "#"
 
 /* Output to assembler file text saying following lines

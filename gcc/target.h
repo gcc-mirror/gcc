@@ -143,7 +143,12 @@ struct gcc_target
 				          HOST_WIDE_INT vcall_offset,
 				          tree function_decl));
 
-    /* Output any boilerplate text needed at the end of a translation unit.  */
+    /* Output any boilerplate text needed at the beginning of a
+       translation unit.  */
+    void (*file_start) PARAMS ((void));
+
+    /* Output any boilerplate text needed at the end of a
+       translation unit.  */
     void (*file_end) PARAMS ((void));
   } asm_out;
 
@@ -368,6 +373,14 @@ struct gcc_target
 
   /* True if EH frame info sections should be zero-terminated.  */
   bool terminate_dw2_eh_frame_info;
+
+  /* True if #NO_APP should be emitted at the beginning of
+     assembly output.  */
+  bool file_start_app_off;
+
+  /* True if output_file_directive should be called for main_input_filename
+     at the beginning of assembly output.  */
+  bool file_start_file_directive;
 };
 
 extern struct gcc_target targetm;

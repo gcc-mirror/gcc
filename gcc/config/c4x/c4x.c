@@ -185,6 +185,7 @@ static int c4x_valid_operands PARAMS ((enum rtx_code, rtx *,
 				       enum machine_mode, int));
 static int c4x_arn_reg_operand PARAMS ((rtx, enum machine_mode, unsigned int));
 static int c4x_arn_mem_operand PARAMS ((rtx, enum machine_mode, unsigned int));
+static void c4x_file_start PARAMS ((void));
 static void c4x_file_end PARAMS ((void));
 static void c4x_check_attribute PARAMS ((const char *, tree, tree, tree *));
 static int c4x_r11_set_p PARAMS ((rtx));
@@ -207,6 +208,10 @@ static int c4x_address_cost PARAMS ((rtx));
 #define TARGET_ASM_ALIGNED_HI_OP NULL
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START c4x_file_start
+#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END c4x_file_end
 
@@ -4561,6 +4566,26 @@ c4x_external_ref (name)
   p->next = extern_head;
   p->name = name;
   extern_head = p;
+}
+
+/* We need to have a data section we can identify so that we can set
+   the DP register back to a data pointer in the small memory model.
+   This is only required for ISRs if we are paranoid that someone
+   may have quietly changed this register on the sly.  */
+static void
+c4x_file_start ()
+{
+  int dspversion = 0;
+  if (TARGET_C30) dspversion = 30;
+  if (TARGET_C31) dspversion = 31;
+  if (TARGET_C32) dspversion = 32;
+  if (TARGET_C33) dspversion = 33;
+  if (TARGET_C40) dspversion = 40;
+  if (TARGET_C44) dspversion = 44;
+
+  default_file_start ();
+  fprintf (asm_out_file, "\t.version\t%d\n", dspversion);
+  fputs ("\n\t.data\ndata_sec:\n", asm_out_file);
 }
 
 

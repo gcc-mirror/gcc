@@ -23,10 +23,6 @@
 #undef  TARGET_VERSION
 #define TARGET_VERSION fputs (" (ARM/NetBSD)", stderr);
 
-/* This is used in ASM_FILE_START.  */
-#undef ARM_OS_NAME
-#define ARM_OS_NAME "NetBSD"
-
 /* Unsigned chars produces much better code than signed.  */
 #define DEFAULT_SIGNED_CHAR  0
 

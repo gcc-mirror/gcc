@@ -77,6 +77,8 @@ static tree  m32r_handle_model_attribute PARAMS ((tree *, tree, tree, int, bool 
 static void  m32r_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
+static void  m32r_file_start PARAMS ((void));
+
 static int    m32r_adjust_cost 	   PARAMS ((rtx, rtx, rtx, int));
 static int    m32r_adjust_priority PARAMS ((rtx, int));
 static void   m32r_sched_init	   PARAMS ((FILE *, int, int));
@@ -102,6 +104,9 @@ static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
 #define TARGET_ASM_FUNCTION_PROLOGUE m32r_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE m32r_output_function_epilogue
+
+#undef TARGET_ASM_FILE_START
+#define TARGET_ASM_FILE_START m32r_file_start
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST m32r_adjust_cost
@@ -2215,15 +2220,13 @@ m32r_initialize_trampoline (tramp, fnaddr, cxt)
 {
 }
 
-/* Set the cpu type and print out other fancy things,
-   at the top of the file.  */
-
-void
-m32r_asm_file_start (file)
-     FILE * file;
+static void
+m32r_file_start ()
 {
+  default_file_start ();
+
   if (flag_verbose_asm)
-    fprintf (file,
+    fprintf (asm_out_file,
 	     "%s M32R/D special options: -G " HOST_WIDE_INT_PRINT_UNSIGNED "\n",
 	     ASM_COMMENT_START, g_switch_value);
 }

@@ -35,7 +35,6 @@ extern void   zdata_section                 PARAMS ((void));
 extern void   rozdata_section               PARAMS ((void));
 extern void   zbss_section                  PARAMS ((void));
 extern int    v850_handle_pragma            PARAMS ((int (*)(void), void (*)(int), char *));
-extern void   asm_file_start                PARAMS ((FILE *));
 extern void   override_options              PARAMS ((void));
 extern int    compute_register_save_size    PARAMS ((long *));
 extern int    compute_frame_size            PARAMS ((int, long *));

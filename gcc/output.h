@@ -519,6 +519,7 @@ extern bool default_binds_local_p PARAMS ((tree));
 extern bool default_binds_local_p_1 PARAMS ((tree, int));
 extern void default_globalize_label PARAMS ((FILE *, const char *));
 extern void default_internal_label PARAMS ((FILE *, const char *, unsigned long));
+extern void default_file_start PARAMS ((void));
 extern void file_end_indicate_exec_stack PARAMS ((void));
 extern bool default_valid_pointer_mode PARAMS ((enum machine_mode));
 

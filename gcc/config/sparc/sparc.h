@@ -2668,10 +2668,6 @@ do {                                                                    \
 
 /* Control the assembler format that we output.  */
 
-/* Output at beginning of assembler file.  */
-
-#define ASM_FILE_START(file)
-
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will end at
    the end of the line.  */

@@ -30,7 +30,6 @@ extern unsigned m32r_compute_frame_size		PARAMS ((int));
 extern int    m32r_first_insn_address		PARAMS ((void));
 extern void   m32r_expand_prologue		PARAMS ((void));
 extern void   m32r_finalize_pic			PARAMS ((void));
-extern void   m32r_asm_file_start		PARAMS ((FILE *));
 extern int    direct_return 			PARAMS ((void));
 #ifdef TREE_CODE
 extern enum m32r_function_type m32r_compute_function_type PARAMS ((tree));
