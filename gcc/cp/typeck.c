@@ -5336,6 +5336,10 @@ build_modify_expr (lhs, modifycode, rhs)
 		    TREE_OPERAND (lhs, 0), newrhs);
 
     case MODIFY_EXPR:
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
+	lhs = build (TREE_CODE (lhs), TREE_TYPE (lhs),
+		     stabilize_reference (TREE_OPERAND (lhs, 0)),
+		     TREE_OPERAND (lhs, 1));
       newrhs = build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs);
       if (newrhs == error_mark_node)
 	return error_mark_node;
@@ -5539,14 +5543,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	  lhs = copy_node (lhs);
 	  TREE_TYPE (lhs) = lhstype;
 	}
-    }
-
-  if (TREE_CODE (lhstype) != REFERENCE_TYPE)
-    {
-      if (TREE_SIDE_EFFECTS (lhs))
-	lhs = stabilize_reference (lhs);
-      if (TREE_SIDE_EFFECTS (newrhs))
-	newrhs = stabilize_reference (newrhs);
     }
 
   /* Convert new value to destination type.  */
