@@ -4025,6 +4025,16 @@ simplify_if_then_else (x)
   if (rtx_equal_p (true, false) && ! side_effects_p (cond))
     return true;
 
+  /* Convert a == b ? b : a to "a".  */
+  if (true_code == EQ && ! side_effects_p (cond)
+      && rtx_equal_p (XEXP (cond, 0), false)
+      && rtx_equal_p (XEXP (cond, 1), true))
+    return false;
+  else if (true_code == NE && ! side_effects_p (cond)
+	   && rtx_equal_p (XEXP (cond, 0), true)
+	   && rtx_equal_p (XEXP (cond, 1), false))
+    return true;
+
   /* Look for cases where we have (abs x) or (neg (abs X)).  */
 
   if (GET_MODE_CLASS (mode) == MODE_INT
