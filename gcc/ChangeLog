@@ -1,3 +1,11 @@
+2001-05-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* integrate.h (struct inline_remap): Add leaf_reg_map table.
+	* integrate.c (expand_inline_function): Use xcalloc to allocate
+	memory.
+	(copy_rtx_and_substitute): Use the leaf_reg_map for leaf
+	registers.
+
 2001-05-02  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.md (ctrsi_internal1, ctrsi_internal2,
