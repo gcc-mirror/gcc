@@ -4118,7 +4118,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 			   && TREE_CODE (ttl) == FUNCTION_TYPE)
 			  ? ((TYPE_QUALS (ttl) | TYPE_QUALS (ttr))
 			     == TYPE_QUALS (ttr))
-			  : (TYPE_QUALS (ttl) | TYPE_QUALS (ttr)
+			  : ((TYPE_QUALS (ttl) | TYPE_QUALS (ttr))
 			     == TYPE_QUALS (ttl))))
 		    break;
 
