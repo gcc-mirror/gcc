@@ -71,7 +71,7 @@ struct lang_type GTY(()) {union lang_tree_node t; };
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this denotes
    a left-justified modular type (will only be true for RECORD_TYPE).  */
 #define TYPE_LEFT_JUSTIFIED_MODULAR_P(NODE) \
-  TYPE_LANG_FLAG_1 (REC_OR_UNION_CHECK (NODE))
+  TYPE_LANG_FLAG_1 (RECORD_OR_UNION_CHECK (NODE))
 
 /* Nonzero in an arithmetic subtype if this is a subtype not known to the
    front-end.  */
@@ -84,7 +84,7 @@ struct lang_type GTY(()) {union lang_tree_node t; };
    type for an object whose type includes its template in addition to
    its value (only true for RECORD_TYPE).  */
 #define TYPE_CONTAINS_TEMPLATE_P(NODE) \
-  TYPE_LANG_FLAG_3 (REC_OR_UNION_CHECK (NODE))
+  TYPE_LANG_FLAG_3 (RECORD_OR_UNION_CHECK (NODE))
 
 /* For INTEGER_TYPE, nonzero if this really represents a VAX
    floating-point type.  */

@@ -1,3 +1,9 @@
+2004-07-05  Andreas Schwab  <schwab@suse.de>
+
+	* ada-tree.h (TYPE_LEFT_JUSTIFIED_MODULAR_P): Use
+	RECORD_OR_UNION_CHECK.
+	(TYPE_CONTAINS_TEMPLATE_P): Likewise.
+
 2004-07-04  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (doc/gnat_ugn_unw.texi): Eliminate explicit
