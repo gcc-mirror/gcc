@@ -7798,8 +7798,8 @@ echo "configure:7738: checking whether linker eh_frame optimizations work proper
 .LEFDE3:
 	.4byte	0
 EOF
-      if $gcc_cv_as -o conftest.o conftest.s 1>&5 2>&1; then
-        if $gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o 1>&5 2>&1; then
+      if ($gcc_cv_as -o conftest.o conftest.s; exit $?) 1>&5 2>&1; then
+        if ($gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o; exit $?) 1>&5 2>&1; then
 	  if $gcc_cv_objdump -h conftest.so 2>&5 \
 	     | grep 'eh_frame_hdr[ 	]*0*[01][048cC][ 	]' 1>&5 2>&1; then
 	    gcc_cv_ld_eh_frame_hdr_works=yes; break

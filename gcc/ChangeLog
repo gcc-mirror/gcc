@@ -1,3 +1,8 @@
+2002-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in: If as or ld segfaults, don't clutter with it stdout.
+	* configure: Rebuilt.
+
 2002-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/6561

@@ -2064,8 +2064,8 @@ if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
 .LEFDE3:
 	.4byte	0
 EOF
-      if $gcc_cv_as -o conftest.o conftest.s 1>&AC_FD_CC 2>&1; then
-        if $gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o 1>&AC_FD_CC 2>&1; then
+      if ($gcc_cv_as -o conftest.o conftest.s; exit $?) 1>&AC_FD_CC 2>&1; then
+        if ($gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o; exit $?) 1>&AC_FD_CC 2>&1; then
 changequote(,)dnl
 	  if $gcc_cv_objdump -h conftest.so 2>&AC_FD_CC \
 	     | grep 'eh_frame_hdr[ 	]*0*[01][048cC][ 	]' 1>&AC_FD_CC 2>&1; then
