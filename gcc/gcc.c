@@ -610,6 +610,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
@@ -624,6 +625,8 @@ static struct compiler default_compilers[] =
 		  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
                   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 		  %{ffast-math:-D__FAST_MATH__}\
+		  %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
+		  %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
                   %{H} %C %{D*} %{U*} %{i*} %Z\
                   %{ftraditional:-traditional}\
                   %{traditional-cpp:-traditional}\
@@ -646,6 +649,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
@@ -674,6 +678,7 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
@@ -691,6 +696,8 @@ static struct compiler default_compilers[] =
 	%{!undef:%{!std=*:%p}%{std=gnu*:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\
@@ -720,6 +727,7 @@ static struct compiler default_compilers[] =
         -$ %{!undef:%p %P} -D__ASSEMBLER__ \
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
+	%{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{fleading-underscore} %{fno-leading-underscore}\

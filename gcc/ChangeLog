@@ -1,5 +1,14 @@
 Thu Sep 23 13:40:02 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* toplev.c (documented_lang_options): Add -fshort-wchar.
+	* c-decl.c (c_decode_option): Likewise.
+	(init_decl_processing): If -fshort-wchar, use 'short unsigned int'
+	for wchar_t.
+	* c-common.c, c-lex.c: Get WCHAR_TYPE_SIZE from wchar_type_node.
+	* gcc.c (default_compilers): If -fshort-wchar, 
+	override __WCHAR_TYPE__.
+	* tm.texi (C Dialect Options): Add -fshort-wchar.
+
 	* dwarf2out.c (output_aranges): Use DW_AT_location to find the
 	symbol for a variable.
 

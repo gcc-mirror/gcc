@@ -304,6 +304,10 @@ int flag_cond_mismatch;
 
 int flag_short_double;
 
+/* Nonzero means give `wchar_t' the same size as `short'.  */
+
+int flag_short_wchar;
+
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 int flag_no_asm;
@@ -580,6 +584,10 @@ c_decode_option (argc, argv)
     flag_short_enums = 1;
   else if (!strcmp (p, "-fno-short-enums"))
     flag_short_enums = 0;
+  else if (!strcmp (p, "-fshort-wchar"))
+    flag_short_wchar = 1;
+  else if (!strcmp (p, "-fno-short-wchar"))
+    flag_short_wchar = 0;
   else if (!strcmp (p, "-fcond-mismatch"))
     flag_cond_mismatch = 1;
   else if (!strcmp (p, "-fno-cond-mismatch"))
@@ -2984,8 +2992,10 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL,
 			ridpointers[(int) RID_VOID], void_type_node));
 
-  wchar_type_node
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WCHAR_TYPE)));
+  wchar_type_node = get_identifier (flag_short_wchar
+				    ? "short unsigned int"
+				    : WCHAR_TYPE);
+  wchar_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   signed_wchar_type_node = signed_type (wchar_type_node);
   unsigned_wchar_type_node = unsigned_type (wchar_type_node);

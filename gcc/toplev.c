@@ -1043,6 +1043,8 @@ documented_lang_options[] =
   { "-fno-short-double", "" },
   { "-fshort-enums", "Use the smallest fitting integer to hold enums"},
   { "-fno-short-enums", "" },
+  { "-fshort-wchar", "Override the underlying type for wchar_t to `unsigned short'" },
+  { "-fno-short-wchar", "" },
 
   { "-Wall", "Enable most warning messages" },
   { "-Wbad-function-cast",
