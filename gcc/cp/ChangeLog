@@ -1,3 +1,7 @@
+2000-09-20  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (get_guard): Check DECL_FUNCTION_SCOPE_P.
+
 2000-09-21  Andreas Jaeger  <aj@suse.de>
 
 	* errfn.c: Move declaration of cp_printer and cp_printers to ...

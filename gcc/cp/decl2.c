@@ -2868,7 +2868,7 @@ get_guard (decl)
 
   /* For a local variable, under the old ABI, we do not try to get a
      unique mangled name for the DECL.  */
-  if (!flag_new_abi && !DECL_NAMESPACE_SCOPE_P (decl))
+  if (!flag_new_abi && DECL_FUNCTION_SCOPE_P (decl))
     {
       guard = get_temp_name (integer_type_node);
       cp_finish_decl (guard, NULL_TREE, NULL_TREE, 0);
