@@ -3600,7 +3600,13 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fsub,dbl %%fr0,%1,%0"
+  "*
+{
+  if (TARGET_PA_20)
+    return \"fneg,dbl %1,%0\";
+  else
+    return \"fsub,dbl %%fr0,%1,%0\";
+}"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
@@ -3608,7 +3614,13 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
   "! TARGET_SOFT_FLOAT"
-  "fsub,sgl %%fr0,%1,%0"
+  "*
+{
+  if (TARGET_PA_20)
+    return \"fneg,sgl %1,%0\";
+  else
+    return \"fsub,sgl %%fr0,%1,%0\";
+}"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
 
