@@ -68,7 +68,7 @@ id __objc_object_dispose(id object)
 id __objc_object_copy(id object)
 {
   id copy = class_create_instance(object->class_pointer);
-  bcopy(object, copy, object->class_pointer->instance_size);
+  memcpy(copy, object, object->class_pointer->instance_size);
   return copy;
 }
 

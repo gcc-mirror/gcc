@@ -39,7 +39,7 @@ extern const char* __objc_sparse2_id;
 extern const char* __objc_sparse3_id;
 #endif
 
-#ifdef IN_OBJC
+#ifdef IN_GCC
 #include "gstddef.h"
 #else
 #include <stddef.h>

@@ -205,7 +205,6 @@ void __objc_install_premature_dtable(Class_t class)
 static void __objc_send_initialize(Class_t class)
 {
   Method_t m;
-  IMP imp;
 
   /* This *must* be a class object */
   assert(CLS_ISCLASS(class));
@@ -450,8 +449,8 @@ __objc_missing_method (id object, SEL sel, ...)
   /* The object doesn't recognize the method.  Check for responding to
      error:.  If it does then sent it. */
   {
-    char msg[256 + strlen (sel_get_name (sel))
-             + strlen (object->class_pointer->name)];
+    char msg[256 + strlen ((char*)sel_get_name (sel))
+             + strlen ((char*)object->class_pointer->name)];
 
     sprintf (msg, "(%s) %s does not recognize %s",
 	     (CLS_ISMETA(object->class_pointer)
@@ -471,7 +470,7 @@ __objc_missing_method (id object, SEL sel, ...)
   }
 }
 
-int __objc_print_dtable_stats()
+void __objc_print_dtable_stats()
 {
   int total = 0;
   printf("memory usage: (%s)\n",
@@ -504,7 +503,7 @@ int __objc_print_dtable_stats()
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);
   printf("===================================\n");
-  }
+}
 
 #ifdef OBJC_HASH_LOOKUP
 static Cache_t __objc_cache_insert(Cache_t cache, SEL op, IMP imp);

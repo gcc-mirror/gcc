@@ -27,7 +27,9 @@ You should have received a copy of the GNU General Public License along with
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
-#include <stdio.h>		/* argh! I hate this */
+#include <stdio.h>
+#include <memory.h>
+#include <ctype.h>
 
 #include "gstdarg.h"		/* for varargs and va_list's */
 #include "gstddef.h"		/* so noone else will get system versions */
@@ -47,6 +49,7 @@ extern void __objc_install_premature_dtable(Class_t); /* (objc-dispatch.c) */
 extern void __objc_resolve_class_links(); /* (objc-class.c) */
 extern void __objc_register_selectors_from_class(Class_t); /* (objc-sel.c) */
 extern void __objc_update_dispatch_table_for_class (Class_t);/* (objc-msg.c) */
+extern void class_add_method_list(Class_t, MethodList_t);
 
 /* True when class links has been resolved */     
 extern BOOL __objc_class_links_resolved;

@@ -29,7 +29,7 @@
 .SUFFIXES: .m
 
 OPTIMIZE= -O
-CFLAGS = $(GCC_CFLAGS) -DIN_OBJC
+CFLAGS = $(GCC_CFLAGS) 
 
 VPATH = $(srcdir)/objc
 

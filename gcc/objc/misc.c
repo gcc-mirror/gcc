@@ -43,7 +43,7 @@ objc_error(id object, const char* fmt, va_list ap)
 volatile void
 objc_fatal(const char* msg)
 {
-  write(2, msg, strlen(msg));
+  write(2, msg, (size_t)strlen((char*)msg));
   abort();
 }
 

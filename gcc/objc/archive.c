@@ -369,8 +369,8 @@ __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
 {
   __objc_write_extension (stream, _BX_CLASS);
   objc_write_string_atomic(stream, (char*)class->name,
-			   strlen(class->name));
-  objc_write_unsigned_int (stream, CLS_GETNUMBER(class));
+			   strlen((char*)class->name));
+  return objc_write_unsigned_int (stream, CLS_GETNUMBER(class));
 }
 
 
@@ -397,7 +397,7 @@ __objc_write_selector (struct objc_typed_stream* stream, SEL selector)
 {
   const char* sel_name = sel_get_name (selector);
   __objc_write_extension (stream, _BX_SEL);
-  return objc_write_string (stream, sel_name, strlen(sel_name));
+  return objc_write_string (stream, sel_name, strlen ((char*)sel_name));
 }
 
 int 
@@ -1303,6 +1303,7 @@ __objc_read_typed_stream_signature (TypedStream* stream)
   sscanf (buffer, "GNU TypedStream %d", &stream->version);
   if (stream->version != OBJC_TYPED_STREAM_VERSION)
     __objc_fatal ("cannot handle TypedStream version %d", stream->version);
+  return 1;
 }
 
 static int
@@ -1312,6 +1313,7 @@ __objc_write_typed_stream_signature (TypedStream* stream)
   sprintf(buffer, "GNU TypedStream %d", OBJC_TYPED_STREAM_VERSION);
   stream->version = OBJC_TYPED_STREAM_VERSION;
   (*stream->write)(stream->physical, buffer, strlen(buffer)+1);
+  return 1;
 }
 
 static void __objc_finish_write_root_object(struct objc_typed_stream* stream)

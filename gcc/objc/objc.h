@@ -26,6 +26,18 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __objc_INCLUDE_GNU
 #define __objc_INCLUDE_GNU
 
+#ifdef IN_GCC
+#include "config.h"
+#include "gstddef.h"
+#else
+#include <stddef.h>
+#endif
+
+extern size_t strlen(char*);
+extern void* malloc(size_t);
+extern void* calloc(size_t, size_t);
+extern void* realloc(const void*, size_t);
+extern void free(const void*);
 
 /*
 ** Hash-cache or sparse arrays?
@@ -43,7 +55,7 @@ extern const char* __objc_hash_lookup_id;
 
 
 #include <stdio.h>
-#ifdef IN_OBJC
+#ifdef IN_GCC
 #include <gstdarg.h>
 #else
 #include <stdarg.h>
@@ -290,7 +302,7 @@ struct objc_class {
                                                 Object. */
   const char*         name;                   /* Name of the class. */
   long                version;                /* Unknown. */
-  long                info;                   /* Bit mask.  See class masks 
+  unsigned long       info;                   /* Bit mask.  See class masks 
                                                 defined above. */
   long                instance_size;          /* Size in bytes of the class.  
                                                 The sum of the class definition 
@@ -388,7 +400,7 @@ struct objc_protocol_list {
 #define CLS_GETNUMBER(cls) (__CLS_INFO(cls) >> (HOST_BITS_PER_LONG/2))
 #define CLS_SETNUMBER(cls, num) \
   ({ assert(CLS_GETNUMBER(cls)==0); \
-     __CLS_SETINFO(cls, ((num) << (HOST_BITS_PER_LONG/2))); })
+     __CLS_SETINFO(cls, (((unsigned long)num) << (HOST_BITS_PER_LONG/2))); })
 
 /*
 ** The compiler generates one of these structures for each category.  A class
