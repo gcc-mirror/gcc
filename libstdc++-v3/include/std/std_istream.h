@@ -261,6 +261,16 @@ namespace std
       public basic_ostream<_CharT, _Traits>
     {
     public:
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+// 271. basic_iostream missing typedefs
+      // Types (inherited):
+      typedef _CharT                     		char_type;
+      typedef typename _Traits::int_type 		int_type;
+      typedef typename _Traits::pos_type 		pos_type;
+      typedef typename _Traits::off_type 		off_type;
+      typedef _Traits                    		traits_type;
+#endif
+
       // Non-standard Types:
       typedef basic_istream<_CharT, _Traits>		__istream_type;
       typedef basic_ostream<_CharT, _Traits>		__ostream_type;

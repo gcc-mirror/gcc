@@ -19,14 +19,25 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// NB: this test assumes that _M_buf_size == 40, and not the usual
-// buffer_size length of BUFSIZ (8192), so that overflow/underflow can be
-// simulated a bit more readily.
+// 27.8.1.1 - Template class basic_filebuf 
+// NB: This file is for testing basic_filebuf with NO OTHER INCLUDES.
 
 #include <fstream>
 #include <testsuite_hooks.h>
 
 // { dg-do compile }
+
+// libstdc++/7216
+void test01()
+{
+  // Check for required typedefs
+  typedef std::filebuf test_type;
+  typedef test_type::char_type char_type;
+  typedef test_type::traits_type traits_type;
+  typedef test_type::int_type int_type;
+  typedef test_type::pos_type pos_type;
+  typedef test_type::off_type off_type;
+}
 
 // test05
 // libstdc++/1886
@@ -35,6 +46,7 @@ template class std::basic_filebuf<short, std::char_traits<short> >;
 
 int main() 
 {
+  test01();
   return 0;
 }
 
