@@ -1,3 +1,7 @@
+2001-05-17  Per Bothner  <per@bothner.com>
+
+	* Makefile.am (ZIP):  The "fastjar" binary is now plain "jar".
+
 2001-05-16  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/SimpleDateFormat.java (parse): Handle non-dst time
