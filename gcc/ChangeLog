@@ -1,3 +1,9 @@
+2003-11-19  Scott Snyder  <snyder@fnal.gov>
+
+	PR target/13131
+	* dwarf2out.c (gen_array_type_die): DW_AT_declaration should be a
+	flag, not a constant.
+
 2003-11-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* config/arc/arc-protos.h: Update to C90 prototypes.

@@ -10200,7 +10200,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   /* The SGI compilers handle arrays of unknown bound by setting
      AT_declaration and not emitting any subrange DIEs.  */
   if (! TYPE_DOMAIN (type))
-    add_AT_unsigned (array_die, DW_AT_declaration, 1);
+    add_AT_flag (array_die, DW_AT_declaration, 1);
   else
 #endif
     add_subscript_info (array_die, type);
