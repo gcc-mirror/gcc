@@ -1043,7 +1043,7 @@ synth_module_prologue ()
       umsg_decl = build_decl (FUNCTION_DECL,
 			      get_identifier (TAG_MSGSEND), temp_type);
       DECL_EXTERNAL (umsg_decl) = 1;
-      TREE_PUBLIC (umsg_decl) = 0;
+      TREE_PUBLIC (umsg_decl) = 1;
       DECL_INLINE (umsg_decl) = 1;
 
       if (flag_traditional && TAG_MSGSEND[0] != '_')
@@ -7452,6 +7452,7 @@ handle_class_ref (chain)
     {
       tree decl;
       char *string = (char *) alloca (strlen (name) + 30);
+      tree exp;
 
       sprintf (string, "%sobjc_class_name_%s",
 	       (flag_next_runtime ? "." : "__"), name);
@@ -7467,12 +7468,16 @@ handle_class_ref (chain)
       /* Make following constant read-only (why not)?  */
       readonly_data_section ();
 
+      exp = build1 (ADDR_EXPR, string_type_node, decl);
+
+      /* Align the section properly.  */
+      assemble_constant_align (exp);
+
       /* Inform the assembler about this new external thing.  */
       assemble_external (decl);
 
       /* Output a constant to reference this address.  */
-      output_constant (build1 (ADDR_EXPR, string_type_node, decl),
-		       int_size_in_bytes (string_type_node));
+      output_constant (exp, int_size_in_bytes (string_type_node));
     }
   else
     {
