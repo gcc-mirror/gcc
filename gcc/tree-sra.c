@@ -1534,7 +1534,7 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
       tree t;
 
       gcc_assert (elt->is_scalar);
-      t = build_int_cst (elt->type, 0);
+      t = fold_convert (elt->type, integer_zero_node);
 
       t = build (MODIFY_EXPR, void_type_node, elt->replacement, t);
       append_to_statement_list (t, list_p);

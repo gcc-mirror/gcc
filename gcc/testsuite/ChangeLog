@@ -1,3 +1,8 @@
+2004-09-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17411
+	* g++.dg/opt/pr17411-1.C: New test case.
+
 2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/declspec-4.c, gcc.dg/declspec-5.c, gcc.dg/declspec-6.c,
