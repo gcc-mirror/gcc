@@ -714,7 +714,7 @@ alpha_comparison_operator (op, mode)
     return 0;
 
   return (code == EQ || code == LE || code == LT
-	  || (mode == DImode && (code == LEU || code == LTU)));
+	  || code == LEU || code == LTU);
 }
 
 /* Return 1 if OP is a valid Alpha swapped comparison operator.  */
@@ -732,7 +732,7 @@ alpha_swapped_comparison_operator (op, mode)
 
   code = swap_condition (code);
   return (code == EQ || code == LE || code == LT
-	  || (mode == DImode && (code == LEU || code == LTU)));
+	  || code == LEU || code == LTU);
 }
 
 /* Return 1 if OP is a signed comparison operation.  */

@@ -2495,36 +2495,74 @@
 ;; Next are all the integer comparisons, and conditional moves and branches
 ;; and some of the related define_expand's and define_split's.
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ne:DI (match_operand:DI 1 "reg_or_8bit_operand" "rI")
-	       (const_int 0)))]
-  ""
+(define_insn "*setne_internal"
+  [(set (match_operand 0 "register_operand" "=r")
+	(ne (match_operand:DI 1 "reg_or_8bit_operand" "rI")
+	    (const_int 0)))]
+  "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
+   && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
+   && GET_MODE (operands[0]) == GET_MODE (SET_SRC (PATTERN (insn)))"
   "cmpult $31,%1,%0"
   [(set_attr "type" "icmp")])
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(match_operator:DI 1 "alpha_comparison_operator"
+(define_insn "*setcc_internal"
+  [(set (match_operand 0 "register_operand" "=r")
+	(match_operator 1 "alpha_comparison_operator"
 			   [(match_operand:DI 2 "reg_or_0_operand" "rJ")
 			    (match_operand:DI 3 "reg_or_8bit_operand" "rI")]))]
-  ""
+  "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
+   && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
+   && GET_MODE (operands[0]) == GET_MODE (operands[1])"
   "cmp%C1 %r2,%3,%0"
   [(set_attr "type" "icmp")])
 
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (match_operator:DI 1 "alpha_swapped_comparison_operator"
+(define_insn "*setcc_swapped_internal"
+  [(set (match_operand 0 "register_operand" "=r")
+        (match_operator 1 "alpha_swapped_comparison_operator"
 			   [(match_operand:DI 2 "reg_or_8bit_operand" "rI")
 			    (match_operand:DI 3 "reg_or_0_operand" "rJ")]))]
-  ""
+  "GET_MODE_CLASS (GET_MODE (operands[0])) == MODE_INT
+   && GET_MODE_SIZE (GET_MODE (operands[0])) <= 8
+   && GET_MODE (operands[0]) == GET_MODE (operands[1])"
   "cmp%c1 %r3,%2,%0"
   [(set_attr "type" "icmp")])
 
-;; This pattern exists so conditional moves of SImode values are handled.
-;; Comparisons are still done in DImode though.
+;; The mode folding trick can't be used with const_int operands, since
+;; reload needs to know the proper mode.
 
-(define_insn ""
+(define_insn "*movqicc_internal"
+  [(set (match_operand:QI 0 "register_operand" "=r,r,r,r")
+	(if_then_else:QI
+	 (match_operator 2 "signed_comparison_operator"
+			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
+			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
+	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0,rI,0")
+	 (match_operand:QI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "@
+   cmov%C2 %r3,%1,%0
+   cmov%D2 %r3,%5,%0
+   cmov%c2 %r4,%1,%0
+   cmov%d2 %r4,%5,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movhicc_internal"
+  [(set (match_operand:HI 0 "register_operand" "=r,r,r,r")
+	(if_then_else:HI
+	 (match_operator 2 "signed_comparison_operator"
+			 [(match_operand:DI 3 "reg_or_0_operand" "rJ,rJ,J,J")
+			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
+	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0,rI,0")
+	 (match_operand:HI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
+  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "@
+   cmov%C2 %r3,%1,%0
+   cmov%D2 %r3,%5,%0
+   cmov%c2 %r4,%1,%0
+   cmov%d2 %r4,%5,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movsicc_internal"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 2 "signed_comparison_operator"
@@ -2532,7 +2570,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0,rI,0")
 	 (match_operand:SI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
-  "operands[3] == const0_rtx || operands[4] == const0_rtx"
+  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
@@ -2540,7 +2578,7 @@
    cmov%d2 %r4,%5,%0"
   [(set_attr "type" "icmov")])
 
-(define_insn ""
+(define_insn "*movdicc_internal"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:DI
 	 (match_operator 2 "signed_comparison_operator"
@@ -2548,7 +2586,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:DI 1 "reg_or_8bit_operand" "rI,0,rI,0")
 	 (match_operand:DI 5 "reg_or_8bit_operand" "0,rI,0,rI")))]
-  "operands[3] == const0_rtx || operands[4] == const0_rtx"
+  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
@@ -2556,7 +2594,52 @@
    cmov%d2 %r4,%5,%0"
   [(set_attr "type" "icmov")])
 
-(define_insn ""
+(define_insn "*movqicc_lbc"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(if_then_else:QI
+	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:QI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbc %r2,%1,%0
+   cmovlbs %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movhicc_lbc"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(if_then_else:HI
+	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:HI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbc %r2,%1,%0
+   cmovlbs %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movsicc_lbc"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(if_then_else:SI
+	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:SI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbc %r2,%1,%0
+   cmovlbs %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movdicc_lbc"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(if_then_else:DI
 	 (eq (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
@@ -2571,7 +2654,52 @@
    cmovlbs %r2,%3,%0"
   [(set_attr "type" "icmov")])
 
-(define_insn ""
+(define_insn "*movqicc_lbs"
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(if_then_else:QI
+	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:QI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:QI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbs %r2,%1,%0
+   cmovlbc %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movhicc_lbs"
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(if_then_else:HI
+	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:HI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:HI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbs %r2,%1,%0
+   cmovlbc %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movsicc_lbs"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(if_then_else:SI
+	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
+			      (const_int 1)
+			      (const_int 0))
+	     (const_int 0))
+	 (match_operand:SI 1 "reg_or_8bit_operand" "rI,0")
+	 (match_operand:SI 3 "reg_or_8bit_operand" "0,rI")))]
+  ""
+  "@
+   cmovlbs %r2,%1,%0
+   cmovlbc %r2,%3,%0"
+  [(set_attr "type" "icmov")])
+
+(define_insn "*movdicc_lbs"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(if_then_else:DI
 	 (ne (zero_extract:DI (match_operand:DI 2 "reg_or_0_operand" "rJ,rJ")
