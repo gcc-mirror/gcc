@@ -1,3 +1,9 @@
+2005-03-16  Andrew Haley  <aph@redhat.com>
+
+        * expr.c (expand_java_arrayload): Don't generate a
+        NullPointerException based on the type of the node.
+        (build_java_array_length_access): Likewise.
+
 2005-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-io.c (caching_stat): Use __extension__ to avoid pedantic
