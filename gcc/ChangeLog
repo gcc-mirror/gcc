@@ -1,3 +1,20 @@
+2003-04-17  DJ Delorie  <dj@redhat.com>
+
+	* toplev.c (target_options): Add value field.
+	(set_target_switch): Handle target options with	values.
+	* doc/tm.texi: Document how fixed vs variable target
+	options work.
+	* config/alpha/alpha.h, config/arc/arc.h, config/avr/avr.h,
+	config/c4x/c4x.h, config/cris/aout.h, config/cris/cris.h,
+	config/d30v/d30v.h, config/dsp16xx/dsp16xx.h,
+	config/frv/frv.h, config/i386/i386.h, config/ia64/ia64.h,
+	config/m32r/m32r.h, config/m68hc11/m68hc11.h,
+	config/m68k/m68k.h, config/m88k/m88k.h, config/mcore/mcore.h,
+	config/mips/mips.h, config/mmix/mmix.h, config/pa/pa.h,
+	config/rs6000/rs6000.h, config/rs6000/sysv4.h,
+	config/s390/s390.h, config/sparc/sparc.h, config/v850/v850.h:
+	Add value initializer to target options.
+
 2003-04-07  Loren James Rittle  <ljrittle@acm.org>
 
 	* cpppch.c (cpp_valid_state): Unconditionally initialize nl.

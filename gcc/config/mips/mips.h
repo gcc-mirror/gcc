@@ -756,21 +756,21 @@ extern void		sbss_section PARAMS ((void));
 {									\
   SUBTARGET_TARGET_OPTIONS						\
   { "tune=",    &mips_tune_string,			                \
-      N_("Specify CPU for scheduling purposes")},                       \
+      N_("Specify CPU for scheduling purposes"), 0},                    \
   { "arch=",    &mips_arch_string,                                      \
-      N_("Specify CPU for code generation purposes")},                  \
+      N_("Specify CPU for code generation purposes"), 0},               \
   { "abi=", &mips_abi_string,						\
-      N_("Specify an ABI")},						\
+      N_("Specify an ABI"), 0},						\
   { "ips",	&mips_isa_string,					\
-      N_("Specify a Standard MIPS ISA")},				\
+      N_("Specify a Standard MIPS ISA"), 0},				\
   { "entry",	&mips_entry_string,					\
-      N_("Use mips16 entry/exit psuedo ops")},				\
+      N_("Use mips16 entry/exit psuedo ops"), 0},			\
   { "no-mips16", &mips_no_mips16_string,				\
-      N_("Don't use MIPS16 instructions")},				\
+      N_("Don't use MIPS16 instructions"), 0},				\
   { "no-flush-func", &mips_cache_flush_func,				\
-      N_("Don't call any cache flush functions")},			\
+      N_("Don't call any cache flush functions"), 0},			\
   { "flush-func=", &mips_cache_flush_func,				\
-      N_("Specify cache flush function")},				\
+      N_("Specify cache flush function"), 0},				\
 }
 
 /* This is meant to be redefined in the host dependent files.  */

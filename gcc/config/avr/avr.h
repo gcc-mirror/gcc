@@ -105,8 +105,8 @@ extern int avr_asm_only_p;
 #define AVR_ENHANCED (avr_enhanced_p)
 
 #define TARGET_OPTIONS {						      \
- { "init-stack=", &avr_init_stack, N_("Specify the initial stack address") }, \
- { "mcu=", &avr_mcu_name, N_("Specify the MCU name") } }
+ { "init-stack=", &avr_init_stack, N_("Specify the initial stack address"), 0}, \
+ { "mcu=", &avr_mcu_name, N_("Specify the MCU name"), 0} }
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 /* This macro is a C statement to print on `stderr' a string

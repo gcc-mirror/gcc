@@ -112,7 +112,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CRIS_SUBTARGET_LONG_OPTIONS
 #define CRIS_SUBTARGET_LONG_OPTIONS \
   {"elinux-stacksize=", &cris_elinux_stacksize_str,			\
-   N_("For elinux, request a specified stack-size for this program")},	\
+   N_("For elinux, request a specified stack-size for this program"), 0},	\
 
 #undef CRIS_SUBTARGET_VERSION
 #define CRIS_SUBTARGET_VERSION " - a.out"

@@ -129,9 +129,9 @@ extern const char *mmix_cc1_ignored_option;
 
 #define TARGET_OPTIONS					\
    {{"set-program-start=", &mmix_cc1_ignored_option,	\
-  N_("Set start-address of the program") },		\
+  N_("Set start-address of the program"), 0},		\
     {"set-data-start=", &mmix_cc1_ignored_option,	\
-  N_("Set start-address of data")}}
+  N_("Set start-address of data"), 0} }
 
 /* FIXME: There's no provision for profiling here.  */
 #define STARTFILE_SPEC  \

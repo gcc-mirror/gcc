@@ -427,15 +427,15 @@ extern int target_flags;
 #define TARGET_HAS_MUL_INSNS (cris_cpu_version >= CRIS_CPU_NG)
 
 #define TARGET_OPTIONS							\
- {{"cpu=", &cris_cpu_str, ""},						\
+ {{"cpu=", &cris_cpu_str, "", 0},					\
   {"arch=", &cris_cpu_str,						\
-   N_("Generate code for the specified chip or CPU version")},		\
+   N_("Generate code for the specified chip or CPU version"), 0},	\
   {"tune=", &cris_tune_str,						\
-   N_("Tune alignment for the specified chip or CPU version")},		\
+   N_("Tune alignment for the specified chip or CPU version"), 0},	\
   {"max-stackframe=", &cris_max_stackframe_str,				\
-   N_("Warn when a stackframe is larger than the specified size")},	\
+   N_("Warn when a stackframe is larger than the specified size"), 0},	\
   CRIS_SUBTARGET_LONG_OPTIONS						\
-  {"ax-stackframe=", &cris_max_stackframe_str, ""}}
+  {"ax-stackframe=", &cris_max_stackframe_str, "", 0} }
 
 #define CRIS_SUBTARGET_LONG_OPTIONS
 

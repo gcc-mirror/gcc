@@ -146,10 +146,10 @@ extern int target_flags;
 #define TARGET_OPTIONS							\
 {									\
   {"branch-cost=",  &d30v_branch_cost_string,				\
-     N_("Change the branch costs within the compiler") },		\
+     N_("Change the branch costs within the compiler"), 0},		\
 									\
   {"cond-exec=",    &d30v_cond_exec_string,				\
-     N_("Change the threshold for conversion to conditional execution") }, \
+     N_("Change the threshold for conversion to conditional execution"), 0}, \
 }
 
 #define TARGET_VERSION fprintf (stderr, " d30v")

@@ -307,9 +307,9 @@ extern int target_flags;
 #define TARGET_OPTIONS							\
 {									\
   { "schedule=",		&pa_cpu_string,				\
-    N_("Specify CPU for scheduling purposes") },			\
+    N_("Specify CPU for scheduling purposes"), 0},			\
   { "arch=",			&pa_arch_string,			\
-    N_("Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later.") }\
+    N_("Specify architecture for code generation.  Values are 1.0, 1.1, and 2.0.  2.0 requires gas snapshot 19990413 or later."), 0}\
 }
 
 /* Specify the dialect of assembler to use.  New mnemonics is dialect one

@@ -632,11 +632,11 @@ extern enum processor_type sparc_cpu;
 #define TARGET_OPTIONS \
 {								\
   { "cpu=",  &sparc_select[1].string,				\
-    N_("Use features of and schedule code for given CPU") },	\
+    N_("Use features of and schedule code for given CPU"), 0},	\
   { "tune=", &sparc_select[2].string,				\
-    N_("Schedule code for given CPU") },			\
+    N_("Schedule code for given CPU"), 0},			\
   { "cmodel=", &sparc_cmodel_string,				\
-    N_("Use given SPARC code model") },				\
+    N_("Use given SPARC code model"), 0},			\
   SUBTARGET_OPTIONS 						\
 }
 
