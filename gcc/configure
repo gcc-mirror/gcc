@@ -3259,68 +3259,6 @@ _ACEOF
 
   fi
 
-echo "$as_me:$LINENO: checking for built-in _Bool" >&5
-echo $ECHO_N "checking for built-in _Bool... $ECHO_C" >&6
-if test "${gcc_cv_c__bool+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-int
-main ()
-{
-_Bool foo;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  gcc_cv_c__bool=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-gcc_cv_c__bool=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-echo "$as_me:$LINENO: result: $gcc_cv_c__bool" >&5
-echo "${ECHO_T}$gcc_cv_c__bool" >&6
-if test $gcc_cv_c__bool = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE__BOOL 1
-_ACEOF
-
-fi
-
 
 # sizeof(char) is 1 by definition.
 echo "$as_me:$LINENO: checking size of void *" >&5
@@ -5307,7 +5245,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5310: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5248: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
@@ -5796,6 +5734,67 @@ if test $ac_cv_header_stdbool_h = yes; then
 
 cat >>confdefs.h <<\_ACEOF
 #define HAVE_STDBOOL_H 1
+_ACEOF
+
+fi
+echo "$as_me:$LINENO: checking for built-in _Bool" >&5
+echo $ECHO_N "checking for built-in _Bool... $ECHO_C" >&6
+if test "${gcc_cv_c__bool+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+_Bool foo;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  gcc_cv_c__bool=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+gcc_cv_c__bool=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_c__bool" >&5
+echo "${ECHO_T}$gcc_cv_c__bool" >&6
+if test $gcc_cv_c__bool = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE__BOOL 1
 _ACEOF
 
 fi
@@ -8933,71 +8932,6 @@ _ACEOF
 
 fi
 
-echo "$as_me:$LINENO: checking for uchar" >&5
-echo $ECHO_N "checking for uchar... $ECHO_C" >&6
-if test "${gcc_cv_type_uchar+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-#include "ansidecl.h"
-#include "system.h"
-
-int
-main ()
-{
-if ((uchar *)0) return 0;
- if (sizeof(uchar)) return 0;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_type_uchar=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_type_uchar=no
-fi
-rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-echo "$as_me:$LINENO: result: $gcc_cv_type_uchar" >&5
-echo "${ECHO_T}$gcc_cv_type_uchar" >&6
-if test $ac_cv_type_uchar = yes; then
-
-cat >>confdefs.h <<\_ACEOF
-#define HAVE_UCHAR 1
-_ACEOF
-
-fi
-
 # Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"
 
@@ -10146,14 +10080,15 @@ gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
-elif test -x "$AS"; then
-	gcc_cv_as="$AS"
 elif test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in \
-     && test -f ../gas/Makefile; then
-  # Single tree build which includes gas.
+     && test -f ../gas/Makefile \
+     && test x$build = x$host; then
+  # Single tree build which includes gas.  We want to prefer it
+  # over whatever linker top-level may have detected, since
+  # we'll use what we're building after installation anyway.
   in_tree_gas=yes
   gcc_cv_as_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 for f in $gcc_cv_as_bfd_srcdir/configure \
@@ -10184,6 +10119,10 @@ gcc_cv_gas_vers=`expr \( \( $gcc_cv_gas_major_version \* 1000 \) \
   then
     in_tree_gas_is_elf=yes
   fi
+elif test -x "$AS_FOR_TARGET"; then
+        gcc_cv_as="$AS_FOR_TARGET"
+elif test -x "$AS" && test x$host = x$target; then
+	gcc_cv_as="$AS"
 fi
 
 if test "x$gcc_cv_as" = x; then
@@ -10273,16 +10212,15 @@ gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
-elif test -x "$LD_FOR_TARGET"; then
-        gcc_cv_ld="$LD_FOR_TARGET"
-elif test -x "$LD" && test x$host = x$target; then
-	gcc_cv_ld="$LD"
 elif test -x collect-ld$host_exeext; then
 	# Build using linker in the current directory.
 	gcc_cv_ld=./collect-ld$host_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
-     && test -f ../ld/Makefile; then
-	# Single tree build which includes ld.
+     && test -f ../ld/Makefile \
+     && test x$build = x$host; then
+	# Single tree build which includes ld.  We want to prefer it
+	# over whatever linker top-level may have detected, since
+	# we'll use what we're building after installation anyway.
 	in_tree_ld=yes
 	in_tree_ld_is_elf=no
 	if (grep 'EMUL = .*elf' ../ld/Makefile \
@@ -10301,6 +10239,10 @@ elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
 	rm -f collect-ld$host_exeext
 	$symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext \
 		2>/dev/null
+elif test -x "$LD_FOR_TARGET"; then
+        gcc_cv_ld="$LD_FOR_TARGET"
+elif test -x "$LD" && test x$host = x$target; then
+	gcc_cv_ld="$LD"
 fi
 
 if test "x$gcc_cv_ld" = x; then

@@ -1689,14 +1689,15 @@ gcc_cv_gas_minor_version=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
 if test -x "$DEFAULT_ASSEMBLER"; then
 	gcc_cv_as="$DEFAULT_ASSEMBLER"
-elif test -x "$AS"; then
-	gcc_cv_as="$AS"
 elif test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
 elif test -f $gcc_cv_as_gas_srcdir/configure.in \
-     && test -f ../gas/Makefile; then
-  # Single tree build which includes gas.
+     && test -f ../gas/Makefile \
+     && test x$build = x$host; then
+  # Single tree build which includes gas.  We want to prefer it
+  # over whatever linker top-level may have detected, since
+  # we'll use what we're building after installation anyway.
   in_tree_gas=yes
   _gcc_COMPUTE_GAS_VERSION
   rm -f as$host_exeext
@@ -1708,6 +1709,11 @@ elif test -f $gcc_cv_as_gas_srcdir/configure.in \
   then
     in_tree_gas_is_elf=yes
   fi
+m4_pattern_allow([AS_FOR_TARGET])dnl
+elif test -x "$AS_FOR_TARGET"; then
+        gcc_cv_as="$AS_FOR_TARGET"
+elif test -x "$AS" && test x$host = x$target; then
+	gcc_cv_as="$AS"
 fi
 
 if test "x$gcc_cv_as" = x; then
@@ -1794,16 +1800,15 @@ gcc_cv_ld_gld_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/ld
 gcc_cv_ld_bfd_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/bfd
 if test -x "$DEFAULT_LINKER"; then
 	gcc_cv_ld="$DEFAULT_LINKER"
-elif test -x "$LD_FOR_TARGET"; then
-        gcc_cv_ld="$LD_FOR_TARGET"
-elif test -x "$LD" && test x$host = x$target; then
-	gcc_cv_ld="$LD"
 elif test -x collect-ld$host_exeext; then
 	# Build using linker in the current directory.
 	gcc_cv_ld=./collect-ld$host_exeext
 elif test -f $gcc_cv_ld_gld_srcdir/configure.in \
-     && test -f ../ld/Makefile; then
-	# Single tree build which includes ld.
+     && test -f ../ld/Makefile \
+     && test x$build = x$host; then
+	# Single tree build which includes ld.  We want to prefer it
+	# over whatever linker top-level may have detected, since
+	# we'll use what we're building after installation anyway.
 	in_tree_ld=yes
 	in_tree_ld_is_elf=no
 	if (grep 'EMUL = .*elf' ../ld/Makefile \
@@ -1826,6 +1831,10 @@ changequote([,])dnl
 	rm -f collect-ld$host_exeext
 	$symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext \
 		2>/dev/null
+elif test -x "$LD_FOR_TARGET"; then
+        gcc_cv_ld="$LD_FOR_TARGET"
+elif test -x "$LD" && test x$host = x$target; then
+	gcc_cv_ld="$LD"
 fi
 
 if test "x$gcc_cv_ld" = x; then
