@@ -1,3 +1,12 @@
+2002-06-12  Eric Christopher  <echristo@redhat.com>
+
+	* config.gcc: Consolidate little endian handling and
+	little/big endian targets.
+	* config/mips/elfl.h: Remove file.
+	* config/mips/elfl64.h: Ditto.
+	* config/mips/ecoffl.h: Ditto.
+	* config/mips/r3900.h (SUBTARGET_CPP_SPEC): Remove.
+
 2002-06-12  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gengtype.h (xvasprintf): New prototype.
@@ -26,7 +35,7 @@
 2002-06-12  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/vax/vax.h (MASK_UNIX_ASM, MASK_VAXC_ALIGNMENT)
-	(MASK_G_FLOAT): Define. 
+	(MASK_G_FLOAT): Define.
 	(TARGET_UNIX_ASM, TARGET_VAXC_ALIGNMENT, TARGET_G_FLOAT): Use them.
 	(TARGET_SWITCHES): Likewise.
 	(TARGET_DEFAULT): Likewise.
