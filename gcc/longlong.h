@@ -1024,13 +1024,13 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "=r" ((USItype) (w0))					\
 	   : "r" ((USItype) (u)),					\
 	     "r" ((USItype) (v)))
-#define udiv_qrnnd(q, r, n1, n0, d) \
+#define udiv_qrnnd(__q, __r, __n1, __n0, __d) \
   __asm__ ("mov %2,%%y;nop;nop;nop;udiv %3,%4,%0;umul %0,%4,%1;sub %3,%1,%1"\
-	   : "=&r" ((USItype) (q)),					\
-	     "=&r" ((USItype) (r))					\
-	   : "r" ((USItype) (n1)),					\
-	     "r" ((USItype) (n0)),					\
-	     "r" ((USItype) (d)))
+	   : "=&r" ((USItype) (__q)),					\
+	     "=&r" ((USItype) (__r))					\
+	   : "r" ((USItype) (__n1)),					\
+	     "r" ((USItype) (__n0)),					\
+	     "r" ((USItype) (__d)))
 #else
 #if defined (__sparclite__)
 /* This has hardware multiply but not divide.  It also has two additional
@@ -1149,7 +1149,7 @@ UDItype __umulsidi3 (USItype, USItype);
 #define UMUL_TIME 39		/* 39 instructions */
 /* It's quite necessary to add this much assembler for the sparc.
    The default udiv_qrnnd (in C) is more than 10 times slower!  */
-#define udiv_qrnnd(q, r, n1, n0, d) \
+#define udiv_qrnnd(__q, __r, __n1, __n0, __d) \
   __asm__ ("! Inlined udiv_qrnnd
 	mov	32,%%g1
 	subcc	%1,%2,%%g0
@@ -1174,11 +1174,11 @@ UDItype __umulsidi3 (USItype, USItype);
 	sub	%1,%2,%1
 3:	xnor	%0,0,%0
 	! End of inline udiv_qrnnd"					\
-	   : "=&r" ((USItype) (q)),					\
-	     "=&r" ((USItype) (r))					\
-	   : "r" ((USItype) (d)),					\
-	     "1" ((USItype) (n1)),					\
-	     "0" ((USItype) (n0)) : "g1" __AND_CLOBBER_CC)
+	   : "=&r" ((USItype) (__q)),					\
+	     "=&r" ((USItype) (__r))					\
+	   : "r" ((USItype) (__d)),					\
+	     "1" ((USItype) (__n1)),					\
+	     "0" ((USItype) (__n0)) : "g1" __AND_CLOBBER_CC)
 #define UDIV_TIME (3+7*32)	/* 7 instructions/iteration. 32 iterations. */
 #endif /* __sparclite__ */
 #endif /* __sparc_v8__ */
