@@ -1,3 +1,7 @@
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* loop-unroll.c: Fix comment typos.
+
 2004-10-18  Revital Eres  <eres@il.ibm.com>
 
 	* Makefile.in (loop-unroll.o): Add VARRAY_H dependency.

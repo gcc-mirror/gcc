@@ -1861,8 +1861,7 @@ split_iv (struct iv_to_split *ivts, rtx insn, unsigned delta)
 }
 
 
-/* Return one expansion of the accumulator recoreded 
-   in struct VE.  */
+/* Return one expansion of the accumulator recorded in struct VE.  */
 
 static rtx
 get_expansion (struct var_to_expand *ve)
@@ -1919,7 +1918,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
 
 /* Initialize the variable expansions in loop preheader.  
    Callbacks for htab_traverse.  PLACE_P is the loop-preheader 
-   basic block where the initializtion of the expansions 
+   basic block where the initialization of the expansions 
    should take place.  */
 
 static int
