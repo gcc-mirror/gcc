@@ -1,3 +1,9 @@
+2004-04-23  Daniel Jacobowitz  <drow@mvista.com>
+
+	PR libstdc++/15047, libstdc++/11610
+	* testsuite/lib/libstdc++.exp (v3-copy-files): Use remote_download.
+	(libstdc++_init): Don't pass outdir to v3-copy-files.
+
 2004-04-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/deque.tcc: Trivial formatting fixes.
