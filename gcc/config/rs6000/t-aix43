@@ -46,17 +46,20 @@ SHLIB_EXT = .a
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,-bE:@shlib_map_file@ -o @multilib_dir@/shr.o \
 	@multilib_flags@ @shlib_objs@ -lc \
-	`case @shlib_base_name@ in \
+	`case @multilib_dir@ in \
 	*pthread*) echo -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a ;; \
 	*) echo -lc ;; esac` ; \
-	rm -f tmp-@shlib_base_name@.a ; \
-	$(AR_CREATE_FOR_TARGET) tmp-@shlib_base_name@.a @multilib_dir@/shr.o ; \
-	mv tmp-@shlib_base_name@.a @shlib_base_name@.a ; \
+	rm -f @multilib_dir@/tmp-@shlib_base_name@.a ; \
+	$(AR_CREATE_FOR_TARGET) @multilib_dir@/tmp-@shlib_base_name@.a \
+	@multilib_dir@/shr.o ; \
+	mv @multilib_dir@/tmp-@shlib_base_name@.a \
+	   @multilib_dir@/@shlib_base_name@.a ; \
 	rm -f @multilib_dir@/shr.o
 # $(slibdir) double quoted to protect it from expansion while building
 # libgcc.mk.  We want this delayed until actual install time.
-SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.a $$(DESTDIR)$$(slibdir)/
-SHLIB_LIBS = -lc `case @shlib_base_name@ in *pthread*) echo -lpthread ;; esac`
+SHLIB_INSTALL = $(INSTALL_DATA) @multilib_dir@/@shlib_base_name@.a \
+		$$(DESTDIR)$$(slibdir)@shlib_slibdir_qual@/
+SHLIB_LIBS = -lc `case @multilib_dir@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver $(srcdir)/config/rs6000/libgcc-ppc64.ver
 SHLIB_NM_FLAGS = -Bpg -X32_64

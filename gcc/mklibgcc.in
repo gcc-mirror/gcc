@@ -33,7 +33,6 @@
 # EXTRA_MULTILIB_PARTS
 # SHLIB_EXT
 # SHLIB_LINK
-# SHLIB_MULTILIB
 # SHLIB_MKMAP
 # SHLIB_MKMAP_OPTS
 # SHLIB_MAPFILES
@@ -158,79 +157,29 @@ for ml in $MULTILIBS; do
   # Work out relevant parameters that depend only on the multilib.
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
-  shlib_dir=
-  shlib_dir_qual=
+  shlib_slibdir_qual=
   libgcc_a=$dir/libgcc.a
   libgcov_a=$dir/libgcov.a
   libgcc_eh_a=
   libgcc_s_so=
   libunwind_a=
   libunwind_so=
-  if [ "$dir" = . ]; then
-    suffix=
-  else
-    suffix=`echo $dir | sed s,/,_,g`
-  fi
 
   if [ "$LIBUNWIND" ]; then
     libunwind_a=$dir/libunwind.a
   fi
   if [ "$SHLIB_LINK" ]; then
-    if [ -z "$SHLIB_MULTILIB" ]; then
-      if [ "$dir" = . ]; then
-	libgcc_eh_a=$dir/libgcc_eh.a
-	libgcc_s_so_base=libgcc_s
-	libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
-	libgcc_s_soname=libgcc_s
-	if [ "$LIBUNWIND" ]; then
-	  libunwind_so_base=libunwind
-	  libunwind_so=${libunwind_so_base}${SHLIB_EXT}
-	  libunwind_soname=libunwind
-	fi
-      else
-	libgcc_eh_a=$dir/libgcc_eh.a
-	libgcc_s_so_base=libgcc_s_${suffix}
-	libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
-	libgcc_s_soname=libgcc_s_${suffix}
-	if [ "$LIBUNWIND" ]; then
-	  libunwind_so_base=libunwind_${suffix}
-	  libunwind_so=${libunwind_so_base}${SHLIB_EXT}
-	fi
-      fi
-
-      if [ -n "$MULTILIB_OSDIRNAMES" ]; then
-	if [ "$dir" != . ]; then
-	  gcc_multilib_dir=`./xgcc -B./ $flags --print-multi-directory`
-	  os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
-	  shlib_dir="$dir"/
-	  gcc_multilib_sup=`echo $gcc_multilib_dir | sed 's~^[^/]*/~~'`
-	  os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
-	  if [ -z "$os_multilib_base" ]; then
-	    libgcc_s_soname=libgcc_s
-	    libunwind_soname=libunwind
-	    if [ "$os_multilib_dir" != "." ]; then
-	      shlib_dir_qual="/$os_multilib_dir"
-	    fi
-	  else
-	    libgcc_s_soname=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
-	    libunwind_soname=libunwind_`echo $gcc_multilib_sup | sed s,/,_,g`
-	    shlib_dir_qual="/$os_multilib_base"
-	  fi
-	fi
-      fi
-
-    elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
-      libgcc_eh_a=$dir/libgcc_eh.a
-      libgcc_s_so_base=libgcc_s
-      libgcc_s_so=${libgcc_s_so_base}${SHLIB_EXT}
-      libgcc_s_soname=libgcc_s
-      if [ "$LIBUNWIND" ]; then
-	libunwind_so_base=libunwind
-	libunwind_so=${libunwind_so_base}${SHLIB_EXT}
-	libunwind_soname=libunwind
-      fi
+    libgcc_eh_a=$dir/libgcc_eh.a
+    libgcc_s_so=$dir/libgcc_s${SHLIB_EXT}
+    if [ "$LIBUNWIND" ]; then
+      libunwind_so=$dir/libunwind${SHLIB_EXT}
+    fi
+    os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
+    if [ "$os_multilib_dir" != . ]; then
+      shlib_slibdir_qual="/$os_multilib_dir"
     fi
   fi
+
   libgcc_s_so_extra=
   libunwind_so_extra=
 
@@ -244,20 +193,9 @@ for ml in $MULTILIBS; do
   echo \# libgcc_eh_a: $libgcc_eh_a
   echo \# libunwind_a: $libunwind_a
   echo \#
-  echo \# gcc_multilib_dir: $gcc_multilib_dir
-  echo \# gcc_multilib_sup: $gcc_multilib_sup
-  echo \# os_multilib_dir: $os_multilib_dir
-  echo \# os_multilib_base: $os_multilib_base
-  echo \# shlib_dir: $shlib_dir
-  echo \# shlib_dir_qual: $shlib_dir_qual
-  echo \#
+  echo \# shlib_slibdir_qual: $shlib_slibdir_qual
   echo \# libgcc_s_so: $libgcc_s_so
-  echo \# libgcc_s_so_base: $libgcc_s_so_base
-  echo \# libgcc_s_soname: $libgcc_s_soname
-  echo \# 
   echo \# libunwind_so: $libunwind_so
-  echo \# libunwind_so_base: $libunwind_so_base
-  echo \# libunwind_soname: $libunwind_soname
   echo \#
   echo
 
@@ -687,6 +625,11 @@ for ml in $MULTILIBS; do
       extra="$extra $targ"
     done
 
+    if [ "$dir" = . ]; then
+      suffix=
+    else
+      suffix=`echo $dir | sed s,/,_,g`
+    fi
     echo extra$suffix: stmp-dirs
     echo "	$make_compile" \\
     echo '	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)' $flags '" ' \\
@@ -777,8 +720,7 @@ EOF
 	 | sed -e "s%@multilib_flags@%$flags%g" \
 	       -e "s%@multilib_dir@%$dir%g" \
 	       -e "s%@shlib_objs@%\$(objects)%g" \
-	       -e "s%@shlib_base_name@%$libgcc_s_so_base%g" \
-	       -e "s%@shlib_so_name@%$libgcc_s_soname%g" \
+	       -e "s%@shlib_base_name@%libgcc_s%g" \
 	       -e "s%@shlib_map_file@%$mapfile%g" \
 	       -e "s%@shlib_slibdir_qual@%$shlib_dir_qual%g"
     echo "all: $libgcc_s_so"
@@ -791,8 +733,7 @@ EOF
 	   | sed -e "s%@multilib_flags@%$flags%g" \
 		 -e "s%@multilib_dir@%$dir%g" \
 		 -e "s%@shlib_objs@%\$(objects)%g" \
-		 -e "s%@shlib_base_name@%$libunwind_so_base%g" \
-		 -e "s%@shlib_so_name@%$libunwind_soname%g" \
+		 -e "s%@shlib_base_name@%libunwind%g" \
 		 -e "s%@shlib_slibdir_qual@%$shlib_dir_qual%g"
     echo "all: $libunwind_so"
   fi
@@ -839,66 +780,23 @@ for ml in $MULTILIBS; do
     echo '	$(INSTALL_DATA)' ${dir}/libgcc_eh.a ${ldir}/
     echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc_eh.a
 
-    if [ -z "$SHLIB_MULTILIB" ]; then
-      if [ "$dir" = . ]; then
-	shlib_base_name=libgcc_s
-	shlibunwind_base_name=libunwind
-      else
-	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
-	shlibunwind_base_name=libunwind_`echo $dir | sed s,/,_,g`
-      fi
-      shlib_so_name="$shlib_base_name"
-      shlibunwind_so_name="$shlibunwind_base_name"
-      shlib_dir=
-      shlib_slibdir_qual=
-      if [ -n "$MULTILIB_OSDIRNAMES" ]; then
-	gcc_multilib_dir=`./xgcc -B./ $flags --print-multi-directory`
-	os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
-	if [ "$dir" != . ]; then
-	  shlib_dir="$dir"/
-	fi
-	gcc_multilib_sup=`echo $gcc_multilib_dir | sed 's~^[^/]*/~~'`
-	os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
-	if [ -z "$os_multilib_base" ]; then
-	  shlib_so_name=libgcc_s
-	  shlibunwind_so_name=libunwind
-	  if [ "$os_multilib_dir" != "." ]; then
-	    shlib_slibdir_qual="/$os_multilib_dir"
-	  fi
-	else
-	  shlib_so_name=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
-	  shlibunwind_so_name=libunwind_`echo $gcc_multilib_sup | sed s,/,_,g`
-	  shlib_slibdir_qual="/$os_multilib_base"
-	fi
-      fi
-      echo "	$SHLIB_INSTALL" \
-	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
-	      -e "s%@shlib_so_name@%$shlib_so_name%g" \
+    shlib_slibdir_qual=
+    os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
+    if [ "$os_multilib_dir" != . ]; then
+      shlib_slibdir_qual="/$os_multilib_dir"
+    fi
+    echo "	$SHLIB_INSTALL" \
+      | sed -e "s%@multilib_dir@%$dir%g" \
+	    -e "s%@shlib_base_name@%libgcc_s%g" \
+	    -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
+    if [ "$LIBUNWIND" ]; then
+      echo "	$SHLIBUNWIND_INSTALL" \
+	| sed -e "s%@multilib_dir@%$dir%g" \
+	      -e "s%@shlib_base_name@%libunwind%g" \
 	      -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
-      if [ "$LIBUNWIND" ]; then
-	echo "	$SHLIBUNWIND_INSTALL" \
-	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
-		 -e "s%@shlib_so_name@%$shlibunwind_so_name%g" \
-		 -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
-	libunwinddir='$(DESTDIR)$(slibdir)$(shlib_slibdir_qual)/$(shlib_dir)'
-	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
-	echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
-      fi
-    elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
-      shlib_base_name="libgcc_s";
-      echo "	$SHLIB_INSTALL" \
-	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
-	      -e "s%@shlib_so_name@%$shlib_base_name%g" \
-	      -e "s%@shlib_slibdir_qual@%%g"
-      if [ "$LIBUNWIND" ]; then
-	echo "	$SHLIBUNWIND_INSTALL" \
-	   | sed -e "s%@shlib_base_name@%$shlibunwind_base_name%g" \
-		 -e "s%@shlib_so_name@%$shlibunwind_base_name%g" \
-		 -e "s%@shlib_slibdir_qual@%%g"
-	libunwinddir='$(DESTDIR)$(slibdir)'
-	echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
-	echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
-      fi
+      libunwinddir='$(DESTDIR)$(slibdir)$(shlib_slibdir_qual)/$(shlib_dir)'
+      echo '	$(INSTALL_DATA)' ${dir}/libunwind.a ${libunwinddir}/
+      echo '	$(RANLIB_FOR_TARGET)' ${libunwinddir}/libunwind.a
     fi
   fi
 done

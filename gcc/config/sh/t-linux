@@ -23,21 +23,23 @@ SHLIB_MAPFILES = \
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	-Wl,--soname=$(SHLIB_SONAME) \
 	-Wl,--version-script=$(SHLIB_MAP) \
-	-o $(SHLIB_NAME).tmp @multilib_flags@ $(SHLIB_OBJS) $(SHLIB_LC) && \
-	rm -f $(SHLIB_SOLINK) && \
-	if [ -f $(SHLIB_NAME) ]; then \
-	  mv -f $(SHLIB_NAME) $(SHLIB_NAME).backup; \
+	-o $(SHLIB_DIR)/$(SHLIB_SONAME).tmp @multilib_flags@ \
+	$(SHLIB_OBJS) $(SHLIB_LC) && \
+	rm -f $(SHLIB_DIR)/$(SHLIB_SOLINK) && \
+	if [ -f $(SHLIB_DIR)/$(SHLIB_SONAME) ]; then \
+	  mv -f $(SHLIB_DIR)/$(SHLIB_SONAME) \
+		$(SHLIB_DIR)/$(SHLIB_SONAME).backup; \
 	else true; fi && \
-	mv $(SHLIB_NAME).tmp $(SHLIB_NAME) && \
+	mv $(SHLIB_DIR)/$(SHLIB_SONAME).tmp $(SHLIB_DIR)/$(SHLIB_SONAME) && \
 	(echo "/* GNU ld script"; \
 	 echo "   Use the shared library, but some functions are only in"; \
 	 echo "   the static library.  */"; \
 	 echo "GROUP ( $(SHLIB_SONAME) libgcc.a )" \
-	) > $(SHLIB_SOLINK)
+	) > $(SHLIB_DIR)/$(SHLIB_SOLINK)
 SHLIB_INSTALL = \
 	$$(mkinstalldirs) $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
-	$(INSTALL_DATA) $(SHLIB_NAME) \
+	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME); \
 	rm -f $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
-	$(INSTALL_DATA) $(SHLIB_SOLINK) \
+	$(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_SOLINK) \
 	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)

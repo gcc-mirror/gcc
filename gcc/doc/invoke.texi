@@ -6373,11 +6373,6 @@ Dump out a @option{-L} option for each directory that GCC believes might
 contain startup files.  If the target supports multilibs then the
 current multilib directory will be prepended to each of these paths.
 
-@item %M
-Output the multilib directory with directory separators replaced with
-@samp{_}.  If multilib directories are not set, or the multilib directory is
-@file{.} then this option emits nothing.
-
 @item %L
 Process the @code{lib} spec.  This is a spec string for deciding which
 libraries should be included on the command line to the linker.

@@ -473,8 +473,6 @@ or with constant text in a single argument.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
  %G     process LIBGCC_SPEC as a spec.
- %M     output multilib_dir with directory separators replaced with "_";
-	if multilib_dir is not set or is ".", output "".
  %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
  %E     process ENDFILE_SPEC as a spec.  A capital E is actually used here.
  %C     process CPP_SPEC as a spec.
@@ -1704,11 +1702,7 @@ init_spec (void)
 	if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
 	  {
 	    init_gcc_specs (&obstack,
-#ifdef NO_SHARED_LIBGCC_MULTILIB
 			    "-lgcc_s"
-#else
-			    "-lgcc_s%M"
-#endif
 #ifdef USE_LIBUNWIND_EXCEPTIONS
 			    " -lunwind"
 #endif
@@ -1732,12 +1726,7 @@ init_spec (void)
 	    /* Ug.  We don't know shared library extensions.  Hope that
 	       systems that use this form don't do shared libraries.  */
 	    init_gcc_specs (&obstack,
-#ifdef NO_SHARED_LIBGCC_MULTILIB
-			    "-lgcc_s"
-#else
-			    "-lgcc_s%M"
-#endif
-			    ,
+			    "-lgcc_s",
 			    "libgcc.a%s",
 			    "libgcc_eh.a%s"
 #ifdef USE_LIBUNWIND_EXCEPTIONS
@@ -5076,23 +5065,6 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    value = do_spec_1 (libgcc_spec, 0, NULL);
 	    if (value != 0)
 	      return value;
-	    break;
-
-	  case 'M':
-	    if (multilib_dir && strcmp (multilib_dir, ".") != 0)
-	      {
-		char *p;
-		const char *q;
-		size_t len;
-
-		len = strlen (multilib_dir);
-		obstack_blank (&obstack, len + 1);
-		p = obstack_next_free (&obstack) - (len + 1);
-
-		*p++ = '_';
-		for (q = multilib_dir; *q ; ++q, ++p)
-		  *p = (IS_DIR_SEPARATOR (*q) ? '_' : *q);
-	      }
 	    break;
 
 	  case 'R':

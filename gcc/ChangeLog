@@ -1,3 +1,49 @@
+2005-02-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR other/19525
+	* doc/invoke.texi: Remove documentation of %M spec.
+	* gcc.c: Likewise.
+	(init_spec): Remove %M suffix from -lgcc_s.
+	(do_spec_1): Remove 'M' case.
+	* mklibgcc.in: Remove SHLIB_MULTILIB handling.  Expect SHLIB_LINK
+	to put shared libraries in the multilib directory.  Remove the
+	shlib_so_soname substitution variable.  Don't add a multilib encoding
+	to shlib_base_name.  Set shlib_slibdir_qual to the full pathname
+	reported by -print-multi-os-directory.  Pass @multilib_dir@ to
+	SHLIB_INSTALL as well as SHLIB_LINK.
+	* config/t-slibgcc-elf-ver (SHLIB_SONAME): Use @shlib_base_name@.
+	(SHLIB_NAME): Delete.
+	(SHLIB_DIR): New macro.
+	(SHLIB_LINK): Put $(SHLIB_SONAME) and $(SHLIB_SOLINK) in $(SHLIB_DIR).
+	(SHLIB_INSTALL): Adjust accordingly.
+	* config/t-slibgcc-darwin: As for t-slibgcc-elf-ver.
+	* config/t-slibgcc-sld: Likewise.
+	* config/t-libunwind-elf (SHLIBUNWIND_NAME): Delete.
+	(SHLIBUNWIND_SONAME): Use @shlib_base_name@.
+	(SHLIBUNWIND_LINK): Put $(SHLIBUNWIND_SONAME) and $(SHLIB_SOLINK)
+	in $(SHLIB_DIR).
+	(SHLIBUNWIND_INSTALL): Adjust accordingly.
+	* config/i386/t-nwld (SHLIB_SONAME): Delete.
+	(SHLIB_LINK, SHLIB_INSTALL): Use SHLIB_NAME instead of SHLIB_SONAME.
+	Use @shlib_base_name@ instead of @shlib_so_name@.
+	* config/ia64/t-hpux (SHLIB_LINK): Put @shlib_base_name@.so.0
+	and @shlib_base_name@.so in @multilib_dir@.
+	(SHLIB_INSTALL): Adjust accordingly.  Add @shlib_slibdir_qual@
+	to the install path.
+	* config/mips/t-slibgcc-irix: As for t-slibgcc-elf-ver.
+	(SHLIB_LINK): Remove previous workaround.
+	* config/pa/t-hpux-shlib (SHLIB_DIR, SHLIB_SLIBDIR_QUAL): New macros.
+	(SHLIB_LINK): Put $(SHLIB_SONAME) and $(SHLIB_NAME) in $(SHLIB_DIR).
+	(SHLIB_INSTALL): Adjust accordingly.  Add $(SHLIB_SLIBDIR_QUAL) to
+	the install path.
+	* config/rs6000/t-aix43 (SHLIB_LINK): Put @shlib_base_name@.a in
+	@multilib_dir@.  Use @multilib_dir@ to check for threading libraries.
+	(SHLIB_INSTALL): Adjust accordingly.
+	(SHLIB_LIBS): Use @multilib_dir@ to check for threading libraries.
+	* config/rs6000/t-aix52: As for config/rs6000/t-aix43.
+	* config/sh/t-linux (SHLIB_LINK, SHLIB_INSTALL): As for
+	config/t-slibgcc-elf-ver.
+
 2005-02-19  Zdenek Dvorak  <dvorakz@suse.cz>
 	    Jakub Jelinek  <jakub@redhat.com>
 
