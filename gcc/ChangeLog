@@ -1,3 +1,10 @@
+2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/stormy16/stormy16.h (PREDICATE_CODES): Add SUBREG to
+	xstormy16_below100_or_register,
+	xstormy16_splittable_below100_or_register, and
+	nonimmediate_nonstack_operand.
+
 2005-04-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/iq2000/iq2000.c (uns_arith_operand, arith_operand,

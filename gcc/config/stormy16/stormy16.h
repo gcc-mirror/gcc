@@ -816,11 +816,11 @@ do  {						\
   {"inequality_operator", {GE, GT, LE, LT, GEU, GTU, LEU, LTU }}, \
   {"xstormy16_ineqsi_operator", {LT, GE, LTU, GEU }}, \
   {"xstormy16_below100_operand", {MEM }}, \
-  {"xstormy16_below100_or_register", {MEM, REG }}, \
-  {"xstormy16_splittable_below100_or_register", {MEM, REG }}, \
+  {"xstormy16_below100_or_register", {MEM, REG, SUBREG }}, \
+  {"xstormy16_splittable_below100_or_register", {MEM, REG, SUBREG }}, \
   {"xstormy16_onebit_clr_operand", {CONST_INT }}, \
   {"xstormy16_onebit_set_operand", {CONST_INT }}, \
-  {"nonimmediate_nonstack_operand", {REG, MEM}},
+  {"nonimmediate_nonstack_operand", {REG, MEM, SUBREG }},
 
 #define CASE_VECTOR_MODE SImode
 
