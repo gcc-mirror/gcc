@@ -1,3 +1,20 @@
+2004-09-29  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree.h (INDIRECT_REF_P): New macro.
+	* alias.c (get_alias_set): Use it
+	(nonoverlapping_memrefs_p): Ditto.
+	* emit-rtl.c (mem_expr_equal_p): Ditto.
+	(set_mem_attributes_minus_bitpos): Ditto.
+	(is_gimple_addressable): Ditto.
+	(get_base_address): Ditto.
+	* tree-ssa-alias.c (find_ptr_derefernece): Ditto.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Ditto.
+	* tree-ssa-dom.c (record_equivalences_from_stmt): Ditto.
+	* tree-ssa-loop-im.c (is_call_clobbered_ref): Ditto.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Ditto.
+	(add_address_candidates): Ditto.
+	(rewrite_address_base): Ditto.
+
 2004-09-30  Ben Elliston  <bje@au.ibm.com>
 
 	* tree-flow.h (struct bb_ann_d): Remove num_preds member.

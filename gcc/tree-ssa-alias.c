@@ -503,9 +503,7 @@ find_ptr_dereference (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 {
   tree ptr = (tree) data;
 
-  if ((TREE_CODE (*tp) == INDIRECT_REF
-       || TREE_CODE (*tp) == ALIGN_INDIRECT_REF
-       || TREE_CODE (*tp) == MISALIGNED_INDIRECT_REF)
+  if (INDIRECT_REF_P (*tp)
       && TREE_OPERAND (*tp, 0) == ptr)
     return *tp;
 

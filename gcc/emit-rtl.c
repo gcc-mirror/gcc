@@ -1485,9 +1485,7 @@ mem_expr_equal_p (tree expr1, tree expr2)
       && mem_expr_equal_p (TREE_OPERAND (expr1, 1), /* field decl */
 			   TREE_OPERAND (expr2, 1));
   
-  if (TREE_CODE (expr1) == INDIRECT_REF
-      || TREE_CODE (expr1) == ALIGN_INDIRECT_REF
-      || TREE_CODE (expr1) == MISALIGNED_INDIRECT_REF)
+  if (INDIRECT_REF_P (expr1))
     return mem_expr_equal_p (TREE_OPERAND (expr1, 0),
 			     TREE_OPERAND (expr2, 0));
 
@@ -1685,9 +1683,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 the size we got from the type?  */
 	    }
 	  else if (flag_argument_noalias > 1
-		   && (TREE_CODE (t2) == INDIRECT_REF 
-		       || TREE_CODE (t2) == ALIGN_INDIRECT_REF
-		       || TREE_CODE (t2) == MISALIGNED_INDIRECT_REF)	
+		   && (INDIRECT_REF_P (t2))
 		   && TREE_CODE (TREE_OPERAND (t2, 0)) == PARM_DECL)
 	    {
 	      expr = t2;
@@ -1698,9 +1694,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       /* If this is a Fortran indirect argument reference, record the
 	 parameter decl.  */
       else if (flag_argument_noalias > 1
-	       && (TREE_CODE (t) == INDIRECT_REF
-		   || TREE_CODE (t) == ALIGN_INDIRECT_REF
-		   || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
+	       && (INDIRECT_REF_P (t))
 	       && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
 	{
 	  expr = t;
