@@ -1,3 +1,8 @@
+2002-04-29  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Testing): Provide additional information, and
+	a stronger encouragement, for running the testsuites.
+
 2002-04-29  DJ Delorie  <dj@redhat.com>
 
 	* config/mips/mips.c (mips_parse_cpu): Warn if the CPU name is
