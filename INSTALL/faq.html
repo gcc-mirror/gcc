@@ -6,7 +6,7 @@
 <h1 align="center">egcs Frequently Asked Questions</h1>
 
 <ol>
-  <li><a href="#gcc-2-diff">How is egcs be different from gcc2?</a>
+  <li><a href="#gcc-2-diff">How is egcs different from gcc2?</a>
   <li><a href="#open-development">What is an open development model?</a>
   <li><a href="#release-fork">Releases and Forking</a>
   <li><a href="#libc-lock">bits/libc-lock.h:  No such file or directory</a>
@@ -28,9 +28,15 @@
   <li><a href="#rh5.0">egcs does not work on Red Hat 5.0</a>
   <li><a href="#x86solaris">Unable to bootstrap on x86 Solaris2.{5,6}</a>
   <li><a href="#windows">EGCS with Windows</a>
-  <li><a href="#environ">cpp: Usage:... Error<a>
-  <li><a href="#kde">EGCS will not build KDE<a>
-
+  <li><a href="#os2">EGCS with OS/2</a>
+  <li><a href="#environ">cpp: Usage:... Error</a>
+  <li><a href="#kde">EGCS will not build KDE</a>
+  <li><a href="#friend">Friend Templates</a>
+  <li><a href="#libg++">Where to find libg++</a>
+  <li><a href="#autoconf/bison++">Why do I need autoconf & bison</a>
+  <li><a href="#aix">EGCS does not work on AIX 4.3</a>
+  <li><a href="#gdb">Problems debugging egcs code</a>
+  <li><a href="#conflicts">Conflicts when using cvs update </a>
 </ol>
 
 <hr>
@@ -44,8 +50,7 @@ development efforts on gcc1 stopped and we all concentrated on making
 gcc2 better than gcc1 could ever be.  This is the kind of step forward
 we want to make with egcs.
 
-<p>In brief, the three biggest differences between egcs and gcc2 are
-these:  
+<p>In brief, the three biggest differences between egcs and gcc2 are:  
 
 <ul>
   <li>More rexamination of basic architectual decisions of
@@ -242,11 +247,11 @@ exception handling is not working correctly, then odds are you're using a
 buggy assembler.
 
 <p>We recommend binutils-2.8.1.0.15 or newer.
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.tar.gz"> binutils-2.8.1.0.15 source</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.bin.tar.gz"> binutils-2.8.1.0.15 x86 binary for libc5</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.glibc.bin.tar.gz"> binutils-2.8.1.0.15 x86 binary for glibc2</a>
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.tar.gz"> binutils-2.8.1.0.20 source</a>
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.bin.tar.gz"> binutils-2.8.1.0.20 x86 binary for libc5</a>
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.glibc.bin.tar.gz"> binutils-2.8.1.0.20 x86 binary for glibc2</a>
 Or, you can try a
-<a href="ftp://ftp.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz"> binutils snapshot</a>; however, be aware that the binutils snapshot is untested
+<a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz"> binutils snapshot</a>; however, be aware that the binutils snapshot is untested
 and may not work (or even build).  Use it at your own risk.
 
 <hr>
@@ -301,7 +306,7 @@ not recreate it.
 <p>If you get a message about unable to find "standard.exp" when trying to
 run the egcs testsuites, then your dejagnu is too old to run the egcs tests.
 You will need to get a newer version of dejagnu; we've made a
-<a href="ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz">
+<a href="ftp://egcs.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz">
 dejagnu snapshot</a> available until a new version of dejagnu can be released.
 
 <hr>
@@ -465,6 +470,12 @@ support.
 <a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32">GNU Win32 related projects</a>
 
 <hr>
+<h2> <a name="os2">EGCS with OS/2</a></h2>
+<p>egcs does not currently support OS/2.  However, Andrew Zabolotny has been
+working on a generic os/2 port with pgcc.  The current code code can be found
+at <a href="http://www.goof.com/pcg/os2">http://www.goof.com/pcg/os2</a>.
+
+<hr>
 <h2> <a name="environ">cpp: Usage:... Error</a></h2>
 <p>If you get an error like this when building egcs (particularly when building
 __mulsi3), then you likely have a problem with your environment variables.
@@ -495,12 +506,78 @@ is no longer accepted by g++.
 <p> KDE uses such constructs and therefore will not build with egcs; note
 patches are available to fix KDE.
 
+<hr>
+<h2> <a name="friend">Friend Templates<a></h2>
+<p>In order to make a specialization of a template function a friend of a
+(possibly template) class, you must explicitly state that the friend
+function is a template, by appending angle brackets to its name, and
+this template function must have been declared already.  An error in
+the last public comment draft of the ANSI/ISO C++ Standard has led
+people to believe that was not necessary, but it is, and it was fixed
+in the final version of the Standard.
 
+<hr>
+<h2> <a name="libg++">Where to find libg++<a></h2>
+<p>Many folks have been asking where to find libg++ for egcs.  First we
+should point out that few programs actually need libg++; most only need
+libstdc++/libio which are included in the egcs distribution.
 
+<p>If you do need libg++ you can get a libg++ snapshot  which works with egcs
+from <a href="ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1-980119.tar.gz">
+ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1-980119.tar.gz</a>
+
+<hr>
+<h2> <a name="autoconf/bison++">Why do I need autoconf/bison<a></h2>
+<p>If you're using diffs up dated from one snapshot to the next, or
+if you're using the CVS repository, you may need autoconf, bison, or
+possibly other tools to rebuild egcs.
+
+<p>This is necessary because neither diff nor cvs keep timestamps
+correct.  So it is possible for "make" to think a generated file is
+out of date.
+
+<p>If you do not have autoconf, bison, etc, then you can issue the
+following commands to touch all the generated files.
+
+<pre>
+touch `find egcs -name configure -print`
+touch egcs/gcc/c-parse.y
+touch egcs/gcc/objc/objc-parse.y
+touch egcs/gcc/{cstamp-h.in,c-gperf.h,c-parse.c,c-parse.h,cexp.c}
+touch egcs/gcc/cp/{parse.c,parse.h}
+touch egcs/gcc/objc/objc-parse.c
+</pre>
+
+<hr>
+<h2> <a name="aix">EGCS does not work on AIX 4.3<a></h2>
+<p>EGCS does not currently support AIX4.3; however, if you want to try
+and make it work with AIX 4.3 we highly recommend you get the
+fix for APAR IX74254 (64BIT DISASSEMBLED OUPUT FROM COMPILER FAILS TO
+ASSEMBLE/BIND) which is available from IBM Customer Support and IBM's
+service.boulder.ibm.com website.
+
+<hr>
+<h2><a name="gdb">Problems debugging egcs code</a></h2>
+<p>On some systems egcs will produce dwarf debug records by default; however
+the current gdb-4.16 release may not be able to read such debug records.
+
+<p>You can either use the argument "-gstabs" instead of "-g" or pick up
+the current beta copy of gdb-4.17 to work around the problem.
+
+<hr>
+<h2><a name="conflicts">Conflicts when using cvs update</a></h2>
+<p>It is not uncommon to get cvs conflict messages for some generated files
+when updating your local sources from the CVS repository.  Typically such
+conflicts occur with bison or autoconf generated files.
+
+<p>As long as you haven't been making modifications to the generated files
+or the generator files, it is safe to delete the offending file, then run
+cvs update again to get a new copy.
 
 <hr>
 <p><a href="index.html">Return to the egcs home page</a>
-<p><i>Last modified:  Jan 2, 1998</i>
+<p><i>Last modified:  March 04, 1998</i>
 
+<!--#include virtual="/glimpsebox.html"-->
 </body>
 </html>

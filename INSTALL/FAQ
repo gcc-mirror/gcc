@@ -1,7 +1,7 @@
 
                       egcs Frequently Asked Questions
                                       
-    1. [1]How is egcs be different from gcc2?
+    1. [1]How is egcs different from gcc2?
     2. [2]What is an open development model?
     3. [3]Releases and Forking
     4. [4]bits/libc-lock.h: No such file or directory
@@ -23,87 +23,101 @@
    20. [20]egcs does not work on Red Hat 5.0
    21. [21]Unable to bootstrap on x86 Solaris2.{5,6}
    22. [22]EGCS with Windows
-   23. [23]cpp: Usage:... Error
-     [24]EGCS will not build KDE 
-         _____________________________________________________________
-                                        
+   23. [23]EGCS with OS/2
+   24. [24]cpp: Usage:... Error
+   25. [25]EGCS will not build KDE
+   26. [26]Friend Templates
+   27. [27]Where to find libg++
+   28. [28]Why do I need autoconf & bison
+   29. [29]EGCS does not work on AIX 4.3
+   30. [30]Problems debugging egcs code
+   31. [31]Conflicts when using cvs update 
+       
+     _________________________________________________________________
+                                      
 How is egcs be different from gcc2?
 
-       Six years ago, gcc version 1 had reached a point of stability. For
-       the targets it could support, it worked well. It had limitations
-       inherent in its design that would be difficult to resolve, so a
-       major effort was made and gcc version 2 was the result. When we
-       had gcc2 in a useful state, development efforts on gcc1 stopped
-       and we all concentrated on making gcc2 better than gcc1 could ever
-       be. This is the kind of step forward we want to make with egcs.
-       In brief, the three biggest differences between egcs and gcc2 are
-       these:
-          + More rexamination of basic architectual decisions of gcc and
-            an interest in adding new optimizations;
-          + working with the groups who have fractured out from gcc2
-            (like the Linux folks, the Intel optimizations folks, Fortran
-            folks) including more front-ends; and finally
-          + An open development model ([25]see below) for the development
-            process.
-       These three differences will work together to result in a more
-       useful compiler, a more stable compiler, a central compiler that
-       works for more people, a compiler that generates better code.
-       There are a lot of exciting compiler optimizations that have come
-       out. We want them in gcc. There are a lot of front ends out there
-       for gcc for languages like Fortran or Pascal. We want them easily
-       installable by users. After six years of working on gcc2, we've
-       come to see problems and limitations in the way gcc is
-       architected; it is time to address these again.
-         _____________________________________________________________
-                                        
+   Six years ago, gcc version 1 had reached a point of stability. For the
+   targets it could support, it worked well. It had limitations inherent
+   in its design that would be difficult to resolve, so a major effort
+   was made and gcc version 2 was the result. When we had gcc2 in a
+   useful state, development efforts on gcc1 stopped and we all
+   concentrated on making gcc2 better than gcc1 could ever be. This is
+   the kind of step forward we want to make with egcs.
+   
+   In brief, the three biggest differences between egcs and gcc2 are:
+     * More rexamination of basic architectual decisions of gcc and an
+       interest in adding new optimizations;
+     * working with the groups who have fractured out from gcc2 (like the
+       Linux folks, the Intel optimizations folks, Fortran folks)
+       including more front-ends; and finally
+     * An open development model ([32]see below) for the development
+       process.
+       
+   These three differences will work together to result in a more useful
+   compiler, a more stable compiler, a central compiler that works for
+   more people, a compiler that generates better code.
+   
+   There are a lot of exciting compiler optimizations that have come out.
+   We want them in gcc. There are a lot of front ends out there for gcc
+   for languages like Fortran or Pascal. We want them easily installable
+   by users. After six years of working on gcc2, we've come to see
+   problems and limitations in the way gcc is architected; it is time to
+   address these again.
+     _________________________________________________________________
+                                      
 What is an open development model?
 
-       With egcs, we are going to try a bazaar style[26][1] approach to
-       its development: We're going to be making snapshots publicly
-       available to anyone who wants to try them; we're going to welcome
-       anyone to join the development mailing list. All of the
-       discussions on the development mailing list are available via the
-       web. We're going to be making releases with a much higher
-       frequency than they have been made in the past: We're shooting for
-       three by the end of 1997.
-       In addition to weekly snapshots of the egcs development sources,
-       we are going to look at making the sources readable from a CVS
-       server by anyone. We want to make it so external maintainers of
-       parts of egcs are able to commit changes to their part of egcs
-       directly into the sources without going through an intermediary.
-       There have been many potential gcc developers who were not able to
-       participate in gcc development in the past. We these people to
-       help in any way they can; we ultimately want gcc to be the best
-       compiler in the world.
-       A compiler is a complicated piece of software, there will still be
-       strong central maintainers who will reject patches, who will
-       demand documentation of implementations, and who will keep the
-       level of quality as high as it is today. Code that could use wider
-       testing may be intergrated--code that is simply ill-conceived
-       won't be.
-       egcs is not the first piece of software to use this open
-       development process; FreeBSD, the Emacs lisp repository, and Linux
-       are a few examples of the bazaar style of development.
-       With egcs, we will be adding new features and optimizations at a
-       rate that has not been done since the creation of gcc2; these
-       additions will inevitably have a temporarily destabilizing effect.
-       With the help of developers working together with this bazaar
-       style development, the resulting stability and quality levels will
-       be better than we've had before.
-       
+   With egcs, we are going to try a bazaar style[33][1] approach to its
+   development: We're going to be making snapshots publicly available to
+   anyone who wants to try them; we're going to welcome anyone to join
+   the development mailing list. All of the discussions on the
+   development mailing list are available via the web. We're going to be
+   making releases with a much higher frequency than they have been made
+   in the past: We're shooting for three by the end of 1997.
+   
+   In addition to weekly snapshots of the egcs development sources, we
+   are going to look at making the sources readable from a CVS server by
+   anyone. We want to make it so external maintainers of parts of egcs
+   are able to commit changes to their part of egcs directly into the
+   sources without going through an intermediary.
+   
+   There have been many potential gcc developers who were not able to
+   participate in gcc development in the past. We these people to help in
+   any way they can; we ultimately want gcc to be the best compiler in
+   the world.
+   
+   A compiler is a complicated piece of software, there will still be
+   strong central maintainers who will reject patches, who will demand
+   documentation of implementations, and who will keep the level of
+   quality as high as it is today. Code that could use wider testing may
+   be intergrated--code that is simply ill-conceived won't be.
+   
+   egcs is not the first piece of software to use this open development
+   process; FreeBSD, the Emacs lisp repository, and Linux are a few
+   examples of the bazaar style of development.
+   
+   With egcs, we will be adding new features and optimizations at a rate
+   that has not been done since the creation of gcc2; these additions
+   will inevitably have a temporarily destabilizing effect. With the help
+   of developers working together with this bazaar style development, the
+   resulting stability and quality levels will be better than we've had
+   before.
+   
      [1] We've been discussing different development models a lot over
      the past few months. The paper which started all of this introduced
      two terms: A cathedral development model versus a bazaar
      development model. The paper is written by Eric S. Raymond, it is
-     called ``[27]The Cathedral and the Bazaar''. The paper is a useful
+     called ``[34]The Cathedral and the Bazaar''. The paper is a useful
      starting point for discussions.
-         _____________________________________________________________
-                                        
+     
+     _________________________________________________________________
+                                      
 Releases and Forking?
 
-       Some folks have questioned whether or not making releases is
-       consistent with the goals of the egcs project and whether or not
-       making releases is a fork from gcc2.
+   Some folks have questioned whether or not making releases is
+   consistent with the goals of the egcs project and whether or not
+   making releases is a fork from gcc2.
 
 The egcs project has several goals, including:
 
@@ -139,262 +153,286 @@ We don't see this situation as significantly different than other projects
 that make releases based on some version of the gcc sources (Cygnus, g77,
 etc).  All the code is still available for inclusion in gcc at the discretion
 of the gcc maintainers.
-       _____________________________________________________________
-                                        
+
+     _________________________________________________________________
+                                      
 bits/libc-lock.h: No such file or directory
 
-       This entry should be obsolete, egcs should handle these beta
-       versions of glibc2 correctly.
-       egcs includes a tightly integrated libio and libstdc++
-       implementation which can cause problems on hosts which have libio
-       integrated into their C library (most notably Linux).
-       We believe that we've solved the major technical problems for the
-       most common versions of libc found on Linux systems. However, some
-       versions of Linux use pre-release versions of glibc2, which egcs
-       has trouble detecting and correctly handling.
-       If you're using one of these pre-release versions of glibc2, you
-       may get a message "bits/libc-lock.h: No such file or directory"
-       when building egcs. Unfortunately, to fix this problem you will
-       need to update your C library to glibc2.0.5c.
-         _____________________________________________________________
-                                        
+   This entry should be obsolete, egcs should handle these beta versions
+   of glibc2 correctly.
+   
+   egcs includes a tightly integrated libio and libstdc++ implementation
+   which can cause problems on hosts which have libio integrated into
+   their C library (most notably Linux).
+   
+   We believe that we've solved the major technical problems for the most
+   common versions of libc found on Linux systems. However, some versions
+   of Linux use pre-release versions of glibc2, which egcs has trouble
+   detecting and correctly handling.
+   
+   If you're using one of these pre-release versions of glibc2, you may
+   get a message "bits/libc-lock.h: No such file or directory" when
+   building egcs. Unfortunately, to fix this problem you will need to
+   update your C library to glibc2.0.5c.
+     _________________________________________________________________
+                                      
 `_IO_stdfile_0_lock' was not declared in this scope
 
-       If you get this error, it means either egcs incorrectly guessed
-       what version of libc is installed on your linux system, or you
-       incorrectly specified a version of glibc when configuring egcs.
-       If you did not provide a target name when configuring egcs, then
-       you've found a bug which needs to be reported. If you did provide
-       a target name at configure time, then you should reconfigure
-       without specifying a target name.
-         _____________________________________________________________
-                                        
+   If you get this error, it means either egcs incorrectly guessed what
+   version of libc is installed on your linux system, or you incorrectly
+   specified a version of glibc when configuring egcs.
+   
+   If you did not provide a target name when configuring egcs, then
+   you've found a bug which needs to be reported. If you did provide a
+   target name at configure time, then you should reconfigure without
+   specifying a target name.
+     _________________________________________________________________
+                                      
 Problems building the Fortran compiler
 
-       The Fortran front end can not be built with most vendor compilers;
-       it must be built with gcc. As a result, you may get an error if
-       you do not follow the install instructions carefully.
-       In particular, instead of using "make" to build egcs, you should
-       use "make bootstrap" if you are building a native compiler or
-       "make cross" if you are building a cross compiler.
-       It has also been reported that the Fortran compiler can not be
-       built on Red Hat 4.X linux for the Alpha. Fixing this may require
-       upgrading binutils or to Red Hat 5.0; we'll provide more
-       information as it becomes available.
-         _____________________________________________________________
-                                        
+   The Fortran front end can not be built with most vendor compilers; it
+   must be built with gcc. As a result, you may get an error if you do
+   not follow the install instructions carefully.
+   
+   In particular, instead of using "make" to build egcs, you should use
+   "make bootstrap" if you are building a native compiler or "make cross"
+   if you are building a cross compiler.
+   
+   It has also been reported that the Fortran compiler can not be built
+   on Red Hat 4.X linux for the Alpha. Fixing this may require upgrading
+   binutils or to Red Hat 5.0; we'll provide more information as it
+   becomes available.
+     _________________________________________________________________
+                                      
 Problems building on MIPS platforms
 
-       egcs requires the use of GAS on all versions of Irix, except Irix
-       6 due to limitations in older Irix assemblers.
-       Either of these messages indicates that you are using the MIPS
-       assembler when instead you should be using GAS.
+   egcs requires the use of GAS on all versions of Irix, except Irix 6
+   due to limitations in older Irix assemblers.
+   
+   Either of these messages indicates that you are using the MIPS
+   assembler when instead you should be using GAS.
 
     as0: Error: ./libgcc2.c, line 1:Badly delimited numeric literal
           .4byte $LECIE1-$LSCIE1
     as0: Error: ./libgcc2.c, line 1:malformed statement
-       _____________________________________________________________
-                                        
+
+     _________________________________________________________________
+                                      
     as0: Error: /home/law/egcs_release/gcc/libgcc2.c, line 1:undefined symbol i
 n expression
     .word $LECIE1-$LSCIE1
 
-       For Irix 6, you should use the native assembler as GAS is not
-       supported on Irix 6.
-         _____________________________________________________________
-                                        
+   For Irix 6, you should use the native assembler as GAS is not
+   supported on Irix 6.
+     _________________________________________________________________
+                                      
 Problems with exception handling on x86 platforms
 
-       If you are using the GNU assembler (aka gas) on an x86 platform
-       and exception handling is not working correctly, then odds are
-       you're using a buggy assembler.
-       We recommend binutils-2.8.1.0.15 or newer.
-       [28]binutils-2.8.1.0.15 source
-       [29]binutils-2.8.1.0.15 x86 binary for libc5
-       [30]binutils-2.8.1.0.15 x86 binary for glibc2 Or, you can try a
-       [31]binutils snapshot; however, be aware that the binutils
-       snapshot is untested and may not work (or even build). Use it at
-       your own risk.
-         _____________________________________________________________
-                                        
+   If you are using the GNU assembler (aka gas) on an x86 platform and
+   exception handling is not working correctly, then odds are you're
+   using a buggy assembler.
+   
+   We recommend binutils-2.8.1.0.15 or newer.
+   [35]binutils-2.8.1.0.20 source
+   [36]binutils-2.8.1.0.20 x86 binary for libc5
+   [37]binutils-2.8.1.0.20 x86 binary for glibc2 Or, you can try a
+   [38]binutils snapshot; however, be aware that the binutils snapshot is
+   untested and may not work (or even build). Use it at your own risk.
+     _________________________________________________________________
+                                      
 Bootstrap comparison failures on HPs
 
-       If you bootstrap the compiler on hpux10 using the HP assembler
-       instead of gas, every file will fail the comparison test.
-       The HP asembler inserts timestamps into object files it creates,
-       causing every file to be different. The location of the timestamp
-       varies for each object file, so there's no real way to work around
-       this mis-feature.
-       Odds are your compiler is fine, but there's no way to be certain.
-       If you use GAS on HPs, then you will not run into this problem
-       because GAS never inserts timestamps into object files. For this
-       and various other reasons we highly recommend using GAS on HPs.
-         _____________________________________________________________
-                                        
+   If you bootstrap the compiler on hpux10 using the HP assembler instead
+   of gas, every file will fail the comparison test.
+   
+   The HP asembler inserts timestamps into object files it creates,
+   causing every file to be different. The location of the timestamp
+   varies for each object file, so there's no real way to work around
+   this mis-feature.
+   
+   Odds are your compiler is fine, but there's no way to be certain.
+   
+   If you use GAS on HPs, then you will not run into this problem because
+   GAS never inserts timestamps into object files. For this and various
+   other reasons we highly recommend using GAS on HPs.
+     _________________________________________________________________
+                                      
 Bootstrap loops rebuilding cc1 over and over
 
-       When building egcs, the build process loops rebuilding cc1 over
-       and over again. This happens on mips-sgi-irix5.2, and possibly
-       other platforms.
-       This is probably a bug somewhere in the egcs Makefile. Until we
-       find and fix this bug we recommend you use GNU make instead of
-       vendor supplied make programs.
-         _____________________________________________________________
-                                        
+   When building egcs, the build process loops rebuilding cc1 over and
+   over again. This happens on mips-sgi-irix5.2, and possibly other
+   platforms.
+   
+   This is probably a bug somewhere in the egcs Makefile. Until we find
+   and fix this bug we recommend you use GNU make instead of vendor
+   supplied make programs.
+     _________________________________________________________________
+                                      
 Dynamic linker is unable to find GCC libraries
 
-       This problem manifests itself by programs not finding shared
-       libraries they depend on when the programs are started. Note this
-       problem often manifests itself with failures in the
-       libio/libstdc++ tests after configuring with --enable-shared and
-       building egcs.
-       GCC does not specify a runpath so that the dynamic linker can find
-       dynamic libraries at runtime.
-       The short explaination is that if you always pass a -R option to
-       the linker, then your programs become dependent on directories
-       which may be NFS mounted, and programs may hang unnecessarily when
-       an NFS server goes down.
-       The problem is not programs that do require the directories; those
-       programs are going to hang no matter what you do. The problem is
-       programs that do not require the directories.
-       SunOS effectively always passed a -R option for every -L option;
-       this was a bad idea, and so it was removed for Solaris. We should
-       not recreate it.
-         _____________________________________________________________
-                                        
+   This problem manifests itself by programs not finding shared libraries
+   they depend on when the programs are started. Note this problem often
+   manifests itself with failures in the libio/libstdc++ tests after
+   configuring with --enable-shared and building egcs.
+   
+   GCC does not specify a runpath so that the dynamic linker can find
+   dynamic libraries at runtime.
+   
+   The short explaination is that if you always pass a -R option to the
+   linker, then your programs become dependent on directories which may
+   be NFS mounted, and programs may hang unnecessarily when an NFS server
+   goes down.
+   
+   The problem is not programs that do require the directories; those
+   programs are going to hang no matter what you do. The problem is
+   programs that do not require the directories.
+   
+   SunOS effectively always passed a -R option for every -L option; this
+   was a bad idea, and so it was removed for Solaris. We should not
+   recreate it.
+     _________________________________________________________________
+                                      
 Unable to run the testsuite
 
-       If you get a message about unable to find "standard.exp" when
-       trying to run the egcs testsuites, then your dejagnu is too old to
-       run the egcs tests. You will need to get a newer version of
-       dejagnu; we've made a [32]dejagnu snapshot available until a new
-       version of dejagnu can be released.
-         _____________________________________________________________
-                                        
+   If you get a message about unable to find "standard.exp" when trying
+   to run the egcs testsuites, then your dejagnu is too old to run the
+   egcs tests. You will need to get a newer version of dejagnu; we've
+   made a [39]dejagnu snapshot available until a new version of dejagnu
+   can be released.
+     _________________________________________________________________
+                                      
 How to build a cross compiler
 
-       Building cross compilers is a rather complex undertaking because
-       they usually need additional software (cross assembler, cross
-       linker, target libraries, target include files, etc).
-       We recommend reading the [33]crossgcc FAQ for information about
-       building cross compilers.
-       If you have all the pieces available, then `make cross' should
-       build a cross compiler. `make LANGUAGES="c c++" install'will
-       install the cross compiler.
-       Note that if you're trying to build a cross compiler in a tree
-       which includes binutils-2.8 in addition to egcs, then you're going
-       to need to make a couple minor tweaks so that the cross assembler,
-       linker and nm utilities will be found.
-       binutils-2.8 builds those files as gas.new, ld.new and nm.new;
-       egcs gcc looks for them using gas-new, ld-new and nm-new, so you
-       may have to arrange for any symlinks which point to &ltfile>.new
-       to be changed to &ltfile>-new.
-         _____________________________________________________________
-                                        
+   Building cross compilers is a rather complex undertaking because they
+   usually need additional software (cross assembler, cross linker,
+   target libraries, target include files, etc).
+   
+   We recommend reading the [40]crossgcc FAQ for information about
+   building cross compilers.
+   
+   If you have all the pieces available, then `make cross' should build a
+   cross compiler. `make LANGUAGES="c c++" install'will install the cross
+   compiler.
+   
+   Note that if you're trying to build a cross compiler in a tree which
+   includes binutils-2.8 in addition to egcs, then you're going to need
+   to make a couple minor tweaks so that the cross assembler, linker and
+   nm utilities will be found.
+   
+   binutils-2.8 builds those files as gas.new, ld.new and nm.new; egcs
+   gcc looks for them using gas-new, ld-new and nm-new, so you may have
+   to arrange for any symlinks which point to &ltfile>.new to be changed
+   to &ltfile>-new.
+     _________________________________________________________________
+                                      
 Snapshots, how, when, why
 
-       We make snapshots of the egcs sources about once a week; there is
-       no predetermined schedule. These snapshots are intended to give
-       everyone access to work in progress. Any given snapshot may
-       generate incorrect code or even fail to build.
-       If you plan on downloading and using snapshots, we highly
-       recommend you subscribe to the egcs mailing lists. See [34]mailing
-       lists on the main egcs page for instructions on how to subscribe.
-       When using the diff files to update from older snapshots to newer
-       snapshots, make sure to use "-E" and "-p" arguments to patch so
-       that empty files are deleted and full pathnames are provided to
-       patch. If your version of patch does not support "-E", you'll need
-       to get a newer version. Also note that you may need autoconf,
-       autoheader and various other programs if you use diff files to
-       update from one snapshot to the next.
-         _____________________________________________________________
-                                        
+   We make snapshots of the egcs sources about once a week; there is no
+   predetermined schedule. These snapshots are intended to give everyone
+   access to work in progress. Any given snapshot may generate incorrect
+   code or even fail to build.
+   
+   If you plan on downloading and using snapshots, we highly recommend
+   you subscribe to the egcs mailing lists. See [41]mailing lists on the
+   main egcs page for instructions on how to subscribe.
+   
+   When using the diff files to update from older snapshots to newer
+   snapshots, make sure to use "-E" and "-p" arguments to patch so that
+   empty files are deleted and full pathnames are provided to patch. If
+   your version of patch does not support "-E", you'll need to get a
+   newer version. Also note that you may need autoconf, autoheader and
+   various other programs if you use diff files to update from one
+   snapshot to the next.
+     _________________________________________________________________
+                                      
 How to install both egcs and gcc2
 
-       It may be desirable to install both egcs and gcc2 on the same
-       system. This can be done by using different prefix paths at
-       configure time and a few symlinks.
-       Basically, configure the two compilers with different --prefix
-       options, then build and install each compiler. Assume you want
-       "gcc" to be the egcs compiler and available in /usr/local/bin;
-       also assume that you want "gcc2" to be the gcc2 compiler and also
-       available in /usr/local/bin.
-       The easiest way to do this is to configure egcs with
-       --prefix=/usr/local/egcs and gcc2 with --prefix=/usr/local/gcc2.
-       Build and install both compilers. Then make a symlink from
-       /usr/local/bin/gcc to /usr/local/egcs/bin/gcc and from
-       /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc. Create similar
-       links for the "g++", "c++" and "g77" compiler drivers.
-         _____________________________________________________________
-                                        
+   It may be desirable to install both egcs and gcc2 on the same system.
+   This can be done by using different prefix paths at configure time and
+   a few symlinks.
+   
+   Basically, configure the two compilers with different --prefix
+   options, then build and install each compiler. Assume you want "gcc"
+   to be the egcs compiler and available in /usr/local/bin; also assume
+   that you want "gcc2" to be the gcc2 compiler and also available in
+   /usr/local/bin.
+   
+   The easiest way to do this is to configure egcs with
+   --prefix=/usr/local/egcs and gcc2 with --prefix=/usr/local/gcc2. Build
+   and install both compilers. Then make a symlink from
+   /usr/local/bin/gcc to /usr/local/egcs/bin/gcc and from
+   /usr/local/bin/gcc2 to /usr/local/gcc2/bin/gcc. Create similar links
+   for the "g++", "c++" and "g77" compiler drivers.
+     _________________________________________________________________
+                                      
 Problems building Linux kernels
 
-       If you installed a recent binutils/gas snapshot on your Linux
-       system, you may not be able to build the kernel because objdump
-       does not understand the "-k" switch. The solution for this problem
-       is to remove /usr/bin/encaps.
-       The reason you must remove /usr/bin/encaps is because it is an
-       obsolete program that was part of older binutils distributions;
-       the Linux kernel's Makefile looks for this program to decide if
-       you have an old or a new binutils. Problems occur if you installed
-       a new binutils but haven't removed encaps, because the Makefile
-       thinks you have the old one. So zap it; trust us, you won't miss
-       it.
-       You may get an internal compiler error compiling process.c in
-       newer versions of the Linux kernel on x86 machines. This is a bug
-       in an asm statement in process.c, not a bug in egcs. XXX How to
-       fix?!?
-       You may get errors with the X driver of the form
-
+   If you installed a recent binutils/gas snapshot on your Linux system,
+   you may not be able to build the kernel because objdump does not
+   understand the "-k" switch. The solution for this problem is to remove
+   /usr/bin/encaps.
+   
+   The reason you must remove /usr/bin/encaps is because it is an
+   obsolete program that was part of older binutils distributions; the
+   Linux kernel's Makefile looks for this program to decide if you have
+   an old or a new binutils. Problems occur if you installed a new
+   binutils but haven't removed encaps, because the Makefile thinks you
+   have the old one. So zap it; trust us, you won't miss it.
+   
+   You may get an internal compiler error compiling process.c in newer
+   versions of the Linux kernel on x86 machines. This is a bug in an asm
+   statement in process.c, not a bug in egcs. XXX How to fix?!?
+   
+   You may get errors with the X driver of the form
 _X11TransSocketUNIXConnect: Can't connect: errno = 111
-       It's a kernel bug. The function sys_iopl in
-       arch/i386/kernel/ioport.c does an illegal hack which used to work
-       but is now broken since GCC optimizes more aggressively . The
-       newer 2.1.x kernels already have a fix which should also work in
-       2.0.32.
-         _____________________________________________________________
-                                        
+
+   It's a kernel bug. The function sys_iopl in arch/i386/kernel/ioport.c
+   does an illegal hack which used to work but is now broken since GCC
+   optimizes more aggressively . The newer 2.1.x kernels already have a
+   fix which should also work in 2.0.32.
+     _________________________________________________________________
+                                      
 Virtual memory exhausted error
 
-       This error means your system ran out of memory; this can happen
-       for large files, particularly when optimizing. If you're getting
-       this error you should consider trying to simplify your files or
-       reducing the optimization level.
-       Note that using -pedantic or -Wreturn-type can cause an explosion
-       in the amount of memory needed for template-heavy C++ code, such
-       as code that uses STL. Also note that -Wall includes
-       -Wreturn-type, so if you use -Wall you will need to specify
-       -Wno-return-type to turn it off.
-         _____________________________________________________________
-                                        
+   This error means your system ran out of memory; this can happen for
+   large files, particularly when optimizing. If you're getting this
+   error you should consider trying to simplify your files or reducing
+   the optimization level.
+   
+   Note that using -pedantic or -Wreturn-type can cause an explosion in
+   the amount of memory needed for template-heavy C++ code, such as code
+   that uses STL. Also note that -Wall includes -Wreturn-type, so if you
+   use -Wall you will need to specify -Wno-return-type to turn it off.
+     _________________________________________________________________
+                                      
 GCC can not find GAS
 
-       Some configurations like irix4, irix5, hpux* require the use of
-       the GNU assembler intead of the system assembler. To ensure that
-       egcs finds the GNU assembler, you should configure the GNU
-       assembler with the same --prefix option as you used for egcs. Then
-       build & install the GNU assembler. After the GNU assembler has
-       been installed, proceed with building egcs.
-         _____________________________________________________________
-                                        
+   Some configurations like irix4, irix5, hpux* require the use of the
+   GNU assembler intead of the system assembler. To ensure that egcs
+   finds the GNU assembler, you should configure the GNU assembler with
+   the same --prefix option as you used for egcs. Then build & install
+   the GNU assembler. After the GNU assembler has been installed, proceed
+   with building egcs.
+     _________________________________________________________________
+                                      
 egcs does not work on Red Hat 5.0
 
-       This entry is obsolete with the release of egcs-1.0.1 which should
-       handle Red Hat 5.0 correctly.
-       egcs-1.0 does not currently work with Red Hat 5.0 on some
-       platforms; we'll update this entry with more information as it
-       becomes available.
-       You may want to try this [35]proposed patch for Red Hat 5.0.
-       Please let us know if you use this patch and whether or not it
-       works.
-         _____________________________________________________________
-                                        
+   This entry is obsolete with the release of egcs-1.0.1 which should
+   handle Red Hat 5.0 correctly.
+   
+   egcs-1.0 does not currently work with Red Hat 5.0 on some platforms;
+   we'll update this entry with more information as it becomes available.
+   
+   You may want to try this [42]proposed patch for Red Hat 5.0. Please
+   let us know if you use this patch and whether or not it works.
+     _________________________________________________________________
+                                      
 Unable to bootstrap on x86 Solaris 2.{5,6}
 
-       This entry is obsolete with the release of egcs-1.0.1 which should
-       handle x86 Solaris systems correctly.
-       This patch should fix the problem
-
+   This entry is obsolete with the release of egcs-1.0.1 which should
+   handle x86 Solaris systems correctly.
+   
+   This patch should fix the problem
 Index: t-sol2
 ===================================================================
 RCS file: /cvs/cvsfiles/egcs/gcc/config/i386/t-sol2,v
@@ -421,86 +459,175 @@ diff -c -3 -p -r1.2 t-sol2
 
 ! CRTSTUFF_T_CFLAGS = -fPIC -O2
   TARGET_LIBGCC2_CFLAGS = -fPIC
-       _____________________________________________________________
-                                        
+
+     _________________________________________________________________
+                                      
 EGCS with Windows
 
-       egcs does not currently support windows, either natively or with
-       the cygwin32 dll. However Mumit Khan has been working on
-       supporting Windows with egcs. You should check out his site if
-       you're interested in Windows support. [36]GNU Win32 related
-       projects
-         _____________________________________________________________
-                                        
+   egcs does not currently support windows, either natively or with the
+   cygwin32 dll. However Mumit Khan has been working on supporting
+   Windows with egcs. You should check out his site if you're interested
+   in Windows support. [43]GNU Win32 related projects
+     _________________________________________________________________
+                                      
+EGCS with OS/2
+
+   egcs does not currently support OS/2. However, Andrew Zabolotny has
+   been working on a generic os/2 port with pgcc. The current code code
+   can be found at [44]http://www.goof.com/pcg/os2.
+     _________________________________________________________________
+                                      
 cpp: Usage:... Error
 
-       If you get an error like this when building egcs (particularly
-       when building __mulsi3), then you likely have a problem with your
-       environment variables.
+   If you get an error like this when building egcs (particularly when
+   building __mulsi3), then you likely have a problem with your
+   environment variables.
 
 cpp: Usage: /usr/lib/gcc-lib/i586-unknown-linux-gnulibc1/2.7.2.3/cpp
 [switches] input output
-       First look for an explicit '.' in either LIBRARY_PATH or
-       GCC_EXEC_PREFIX from your environment. If you do not find an
-       explicit '.', look for an empty pathname in those variables. Note
-       that ':' at either the start or end of these variables is an
-       implicit '.' and will cause problems.
-         _____________________________________________________________
-                                        
+
+   First look for an explicit '.' in either LIBRARY_PATH or
+   GCC_EXEC_PREFIX from your environment. If you do not find an explicit
+   '.', look for an empty pathname in those variables. Note that ':' at
+   either the start or end of these variables is an implicit '.' and will
+   cause problems.
+     _________________________________________________________________
+                                      
 EGCS will not build KDE
 
-       Previous versions of g++ accepted (as a GNU extension)
-       constructor-arguments for the objects in an array of objects
-       dynamically allocated with new. Here's an example of this
-       construct:
+   Previous versions of g++ accepted (as a GNU extension)
+   constructor-arguments for the objects in an array of objects
+   dynamically allocated with new. Here's an example of this construct:
 
     struct S { S(int); }
     void f() { new S[3](6); }
-       However, this construct is not allowed by the ANSI/ISO Standard,
-       and is no longer accepted by g++.
-       KDE uses such constructs and therefore will not build with egcs;
-       note patches are available to fix KDE.
-         _____________________________________________________________
-                                        
-       [37]Return to the egcs home page
-       Last modified: Jan 2, 1998
+
+   However, this construct is not allowed by the ANSI/ISO Standard, and
+   is no longer accepted by g++.
+   
+   KDE uses such constructs and therefore will not build with egcs; note
+   patches are available to fix KDE.
+     _________________________________________________________________
+                                      
+Friend Templates
+
+In order to make a specialization of a template function a friend of a
+(possibly template) class, you must explicitly state that the friend function
+is a template, by appending angle brackets to its name, and this template
+function must have been declared already. An error in the last public comment
+draft of the ANSI/ISO C++ Standard has led people to believe that was not
+necessary, but it is, and it was fixed in the final version of the Standard.
+  __________________________________________________________________________
+                                       
+Where to find libg++
+
+Many folks have been asking where to find libg++ for egcs. First we should
+point out that few programs actually need libg++; most only need
+libstdc++/libio which are included in the egcs distribution.
+
+If you do need libg++ you can get a libg++ snapshot which works with egcs from
+[45]ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1-980119.tar.gz
+  __________________________________________________________________________
+                                       
+Why do I need autoconf/bison
+
+If you're using diffs up dated from one snapshot to the next, or if you're
+using the CVS repository, you may need autoconf, bison, or possibly other tools
+to rebuild egcs.
+
+This is necessary because neither diff nor cvs keep timestamps correct. So it
+is possible for "make" to think a generated file is out of date.
+
+If you do not have autoconf, bison, etc, then you can issue the following
+commands to touch all the generated files.
+
+
+touch `find egcs -name configure -print`
+touch egcs/gcc/c-parse.y
+touch egcs/gcc/objc/objc-parse.y
+touch egcs/gcc/{cstamp-h.in,c-gperf.h,c-parse.c,c-parse.h,cexp.c}
+touch egcs/gcc/cp/{parse.c,parse.h}
+touch egcs/gcc/objc/objc-parse.c
+
+  __________________________________________________________________________
+                                       
+EGCS does not work on AIX 4.3
+
+EGCS does not currently support AIX4.3; however, if you want to try and make it
+work with AIX 4.3 we highly recommend you get the fix for APAR IX74254 (64BIT
+DISASSEMBLED OUPUT FROM COMPILER FAILS TO ASSEMBLE/BIND) which is available
+from IBM Customer Support and IBM's service.boulder.ibm.com website.
+  __________________________________________________________________________
+                                       
+Problems debugging egcs code
+
+On some systems egcs will produce dwarf debug records by default; however the
+current gdb-4.16 release may not be able to read such debug records.
+
+You can either use the argument "-gstabs" instead of "-g" or pick up the
+current beta copy of gdb-4.17 to work around the problem.
+  __________________________________________________________________________
+                                       
+Conflicts when using cvs update
+
+It is not uncommon to get cvs conflict messages for some generated files when
+updating your local sources from the CVS repository. Typically such conflicts
+occur with bison or autoconf generated files.
+
+As long as you haven't been making modifications to the generated files or the
+generator files, it is safe to delete the offending file, then run cvs update
+again to get a new copy.
+  __________________________________________________________________________
+                                       
+[46]Return to the egcs home page
+
+Last modified: March 04, 1998
 
 References
 
-   1. file://localhost/home/law/INSTALL/faq.html#gcc-2-diff
-   2. file://localhost/home/law/INSTALL/faq.html#open-development
-   3. file://localhost/home/law/INSTALL/faq.html#release-fork
-   4. file://localhost/home/law/INSTALL/faq.html#libc-lock
-   5. file://localhost/home/law/INSTALL/faq.html#morelibc
-   6. file://localhost/home/law/INSTALL/faq.html#fortran
-   7. file://localhost/home/law/INSTALL/faq.html#mips
-   8. file://localhost/home/law/INSTALL/faq.html#x86eh
-   9. file://localhost/home/law/INSTALL/faq.html#hpcompare
-  10. file://localhost/home/law/INSTALL/faq.html#makebugs
-  11. file://localhost/home/law/INSTALL/faq.html#rpath
-  12. file://localhost/home/law/INSTALL/faq.html#rpath
-  13. file://localhost/home/law/INSTALL/faq.html#dejagnu
-  14. file://localhost/home/law/INSTALL/faq.html#cross
-  15. file://localhost/home/law/INSTALL/faq.html#multiple
-  16. file://localhost/home/law/INSTALL/faq.html#snapshot
-  17. file://localhost/home/law/INSTALL/faq.html#linuxkernel
-  18. file://localhost/home/law/INSTALL/faq.html#memexhausted
-  19. file://localhost/home/law/INSTALL/faq.html#gas
-  20. file://localhost/home/law/INSTALL/faq.html#rh5.0
-  21. file://localhost/home/law/INSTALL/faq.html#x86solaris
-  22. file://localhost/home/law/INSTALL/faq.html#windows
-  23. file://localhost/home/law/INSTALL/faq.html#environ
-  24. file://localhost/home/law/INSTALL/faq.html#kde
-  25. file://localhost/home/law/INSTALL/faq.html#open-development
-  26. file://localhost/home/law/INSTALL/faq.html#cathedral-vs-bazaar
-  27. http://locke.ccil.org/~esr/writings/cathedral.html
-  28. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.tar.gz
-  29. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.bin.tar.gz
-  30. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.glibc.bin.tar.gz
-  31. ftp://ftp.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz
-  32. ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz
-  33. ftp://ftp.cygnus.com/pub/embedded/crossgcc/FAQ-0.8.1
-  34. file://localhost/home/law/INSTALL/index.html#mailinglists
-  35. http://www.cygnus.com/ml/egcs/1997-Dec/0594.html
-  36. http://www.xraylith.wisc.edu/~khan/software/gnu-win32
-  37. file://localhost/home/law/INSTALL/index.html
+   1. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#gcc-2-diff
+   2. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#open-development
+   3. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#release-fork
+   4. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#libc-lock
+   5. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#morelibc
+   6. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#fortran
+   7. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#mips
+   8. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#x86eh
+   9. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#hpcompare
+  10. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#makebugs
+  11. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#rpath
+  12. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#rpath
+  13. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#dejagnu
+  14. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#cross
+  15. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#multiple
+  16. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#snapshot
+  17. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#linuxkernel
+  18. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#memexhausted
+  19. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#gas
+  20. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#rh5.0
+  21. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#x86solaris
+  22. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#windows
+  23. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#os2
+  24. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#environ
+  25. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#kde
+  26. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#friend
+  27. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#libg++
+  28. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#autoconf/bison++
+  29. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#aix
+  30. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#gdb
+  31. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#conflicts
+  32. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#open-development
+  33. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html#cathedral-vs-bazaar
+  34. http://locke.ccil.org/~esr/writings/cathedral.html
+  35. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.tar.gz
+  36. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.bin.tar.gz
+  37. ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.20.glibc.bin.tar.gz
+  38. ftp://egcs.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz
+  39. ftp://egcs.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz
+  40. ftp://ftp.cygnus.com/pub/embedded/crossgcc/FAQ-0.8.1
+  41. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/index.html#mailinglists
+  42. http://www.cygnus.com/ml/egcs/1997-Dec/0594.html
+  43. http://www.xraylith.wisc.edu/~khan/software/gnu-win32
+  44. http://www.goof.com/pcg/os2
+  45. ftp://ftp.yggdrasil.com/private/hjl/libg++-2.8.1-980119.tar.gz
+  46. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/index.html

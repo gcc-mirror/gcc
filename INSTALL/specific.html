@@ -1,9 +1,9 @@
 <html>
 <head>
-<title>Host/Target specific installation notes for egcs-1.0.1 </title>
+<title>Host/Target specific installation notes for egcs-1.0.2 </title>
 </head>
 <body bgcolor="white">
-<h1 align="center">Host/Target specific installation notes for egcs-1.0.1</h1>
+<h1 align="center">Host/Target specific installation notes for egcs-1.0.2</h1>
 
 <p><b>alpha*-*-*</b><br>
 No specific installation needs/instructions.
@@ -23,11 +23,13 @@ the two object file formats.     ELF is now the default.
 <br>Look in gcc/config/i386/sco5.h (search for "messy") for additional
 OpenServer-specific flags.
 
+<br>Systems based on OpenServer before 5.0.4 (<code>uname -X</code> will
+tell you what you're running) require TLS597 from ftp.sco.com/TLS for
+C++ constructors and destructors to work right.
+
 <p><b>i?86-pc-solaris*</b><br>
 You'll need a patch to fix an egcs bug on this platform.
-<a href="http://www.cygnus.com/egcs/faq.html#x86solaris"> x86 solaris patch</a>
-
-
+<a href="http://www-egcs.cygnus.com/faq.html#x86solaris"> x86 solaris patch</a>
 
 <p><b>hppa*-hp-hpux*</b><br>
 We <b>highly</b> recommend using gas/binutils-2.8 on all hppa platforms; you
@@ -107,21 +109,22 @@ this platform.  make-3.76 is reported to work correctly.
 
 <p><b>powerpc-*-linux-gnu*</b><br>
 You will need
-<a href="ftp://ftp.yggdrasil.com/private/hjl">binutils-2.8.1.0.17</a> for
+<a href="ftp://ftp.yggdrasil.com/private/hjl">binutils-2.8.1.0.20</a> for
 a working egcs. It is strongly recommended to recompile binutils with egcs
 if you initially built it with gcc-2.7.2.*.
 
 <p><b>sparc-unkonwn-linux-gnulibc1</b><br>
-It has been reported that you might need binutils-2.8.1.0.17 for this
+It has been reported that you might need binutils-2.8.1.0.20 for this
 platform too.
-<a href="ftp://ftp.yggdrasil.com/private/hjl">binutils-2.8.1.0.17</a>
+<a href="ftp://ftp.yggdrasil.com/private/hjl">binutils-2.8.1.0.20</a>
 
 <p>
 exception handling 
 <p>XXX Linux stuff
 -k encaps stuff
 <hr>
-<i>Last modified on Jan 2, 1998.</i>
+<i>Last modified on February 7, 1998.</i>
 
+<!--#include virtual="/glimpsebox.html"-->
 </body>
 </html>

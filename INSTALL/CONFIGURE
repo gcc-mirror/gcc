@@ -1,5 +1,5 @@
 
-                           Configuring egcs-1.0.1
+                           Configuring egcs-1.0.2
                                       
    Like most GNU software, egcs must be configured before it can be
    built. This document attempts to describe the recommended

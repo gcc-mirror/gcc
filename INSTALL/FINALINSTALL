@@ -1,5 +1,5 @@
 
-                          Final install egcs-1.0.1
+                          Final install egcs-1.0.2
                                       
    Now that egcs has been built and tested, you can install it with `cd
    objdir; make install' for a native compiler or `cd objdir; make

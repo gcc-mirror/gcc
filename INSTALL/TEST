@@ -1,5 +1,5 @@
 
-                             Testing egcs-1.0.1
+                             Testing egcs-1.0.2
                                       
    Before you install egcs, you might wish to run the egcs testsuite;
    this step is optional and may require you to download additional
@@ -13,7 +13,7 @@
    
    Second, you must have a new version of dejagnu on your system;
    dejagnu-1.3 will not work. We have made a [1]dejagnu snapshot
-   available in ftp.cygnus.com:/pub/egcs/infrastructure until a new
+   available in egcs.cygnus.com:/pub/egcs/infrastructure until a new
    version of dejagnu can be released.
    
    Assuming you've got the testsuites unpacked and have installed an
@@ -24,11 +24,11 @@
    distrubution as possible, including the C, C++ and Fortran compiler as
    well as the C++ runtime libraries.
    
-   How to interpret test results XXX.
+   How to interpret test results TBD.
      _________________________________________________________________
                                       
    Last modified on Jan 2, 1998.
 
 References
 
-   1. ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz
+   1. ftp://egcs.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz

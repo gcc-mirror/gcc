@@ -1,5 +1,5 @@
 
-                           Installing egcs-1.0.1
+                           Installing egcs-1.0.2
                                       
    This document describes the generic installation procedure for egcs as
    well as detailing some target specific installation instructions for
@@ -37,10 +37,10 @@
 
 References
 
-   1. file://localhost/home/law/INSTALL/faq.html
-   2. file://localhost/home/law/INSTALL/configure.html
-   3. file://localhost/home/law/INSTALL/build.html
-   4. file://localhost/home/law/INSTALL/test.html
-   5. file://localhost/home/law/INSTALL/finalinstall.html
-   6. file://localhost/home/law/INSTALL/specific.html
-   7. file://localhost/home/law/index.html
+   1. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/faq.html
+   2. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/configure.html
+   3. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/build.html
+   4. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/test.html
+   5. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/finalinstall.html
+   6. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/INSTALL/specific.html
+   7. file://localhost/.automount/hurl/root/puke/law/egcs-1.0.1/index.html

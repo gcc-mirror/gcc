@@ -1,5 +1,5 @@
 
-                            Building egcs-1.0.1
+                            Building egcs-1.0.2
                                       
    Now that egcs is configured, you are ready to build the compiler and
    runtime libraries.
