@@ -32,10 +32,15 @@ Boston, MA 02111-1307, USA.  */
 /* TODO: convert include to ${tm_file} list in config.gcc.  */
 #include "i370/i370.h"
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DGCC -Dgcc -D__ELF__ -Dunix -D__gnu_linux__ -Dlinux -Asystem=posix -Acpu=i370 -Amachine=i370"
+/* Target OS preprocessor built-ins.  */	\
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("linux");		\
+	builtin_define ("__gnu_linux__");	\
+	builtin_define ("__ELF__");		\
+	builtin_assert ("system=posix");	\
+    } while (0)
 
 /* Options for this target machine.  */
 

@@ -24,6 +24,18 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef GCC_I370_H
 #define GCC_I370_H
+
+/* Target CPU builtins.  */			\
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("GCC");		\
+      builtin_define_std ("gcc");		\
+      builtin_assert ("machine=i370");		\
+      builtin_assert ("cpu=i370");		\
+    }						\
+  while (0)
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
