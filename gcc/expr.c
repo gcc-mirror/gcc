@@ -147,6 +147,7 @@ static void move_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
 static void store_constructor	PROTO((tree, rtx));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
+static int get_inner_unaligned_p PROTO((tree));
 static tree save_noncopied_parts PROTO((tree, tree));
 static tree init_noncopied_parts PROTO((tree, tree));
 static int safe_from_p		PROTO((rtx, tree));
@@ -2353,14 +2354,16 @@ expand_assignment (to, from, want_value, suggest_reg)
 
   /* Assignment of a structure component needs special treatment
      if the structure component's rtx is not simply a MEM.
-     Assignment of an array element at a constant index
-     has the same problem.  */
+     Assignment of an array element at a constant index, and assignment of
+     an array element in an unaligned packed structure field, has the same
+     problem.  */
 
   if (TREE_CODE (to) == COMPONENT_REF
       || TREE_CODE (to) == BIT_FIELD_REF
       || (TREE_CODE (to) == ARRAY_REF
-	  && TREE_CODE (TREE_OPERAND (to, 1)) == INTEGER_CST
-	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (to))) == INTEGER_CST))
+	  && ((TREE_CODE (TREE_OPERAND (to, 1)) == INTEGER_CST
+	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (to))) == INTEGER_CST)
+	      || (STRICT_ALIGNMENT && get_inner_unaligned_p (to)))))
     {
       enum machine_mode mode1;
       int bitsize;
@@ -3126,6 +3129,37 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
     }
 }
 
+/* Return true if any object containing the innermost array is an unaligned
+   packed structure field.  */
+
+static int
+get_inner_unaligned_p (exp)
+     tree exp;
+{
+  int needed_alignment = TYPE_ALIGN (TREE_TYPE (exp));
+
+  while (1)
+    {
+      if (TREE_CODE (exp) == COMPONENT_REF || TREE_CODE (exp) == BIT_FIELD_REF)
+	{
+	  if (TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	      < needed_alignment)
+	    return 1;
+	}
+      else if (TREE_CODE (exp) != ARRAY_REF
+	       && TREE_CODE (exp) != NON_LVALUE_EXPR
+	       && ! ((TREE_CODE (exp) == NOP_EXPR
+		      || TREE_CODE (exp) == CONVERT_EXPR)
+		     && (TYPE_MODE (TREE_TYPE (exp))
+			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
+	break;
+
+      exp = TREE_OPERAND (exp, 0);
+    }
+
+  return 0;
+}
+
 /* Given an expression EXP that may be a COMPONENT_REF, a BIT_FIELD_REF,
    or an ARRAY_REF, look for nested COMPONENT_REFs, BIT_FIELD_REFs, or
    ARRAY_REFs and find the ultimate containing object, which we return.
@@ -4232,10 +4266,12 @@ expand_expr (exp, target, tmode, modifier)
 	  index = fold (build (MINUS_EXPR, index_type, index,
 			       convert (sizetype, low_bound)));
 
-	if (TREE_CODE (index) != INTEGER_CST
-	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	if ((TREE_CODE (index) != INTEGER_CST
+	     || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	    && (! STRICT_ALIGNMENT || ! get_inner_unaligned_p (exp)))
 	  {
-	    /* Nonconstant array index or nonconstant element size.
+	    /* Nonconstant array index or nonconstant element size, and
+	       not an array in an unaligned (packed) structure field.
 	       Generate the tree for *(&array+index) and expand that,
 	       except do it in a language-independent way
 	       and don't complain about non-lvalue arrays.
