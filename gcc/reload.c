@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4162,6 +4162,29 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 				     SUBREG_WORD (x), 0,
 				     GET_MODE (SUBREG_REG (x)))) != 0)
 	return tem;
+
+      /* If the SUBREG is wider than a word, the above test will fail.
+	 For example, we might have a SImode SUBREG of a DImode SUBREG_REG
+	 for a 16 bit target, or a DImode SUBREG of a TImode SUBREG_REG for
+	 a 32 bit target.  We still can - and have to - handle this
+	 for non-paradoxical subregs of CONST_INTs.  */
+      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
+	  && reg_equiv_constant[regno] != 0
+	  && GET_CODE (reg_equiv_constant[regno]) == CONST_INT
+	  && (GET_MODE_SIZE (GET_MODE (x))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	  {
+	    int shift = SUBREG_WORD (x) * BITS_PER_WORD;
+	    if (WORDS_BIG_ENDIAN)
+	      shift = (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x)))
+		       - GET_MODE_BITSIZE (GET_MODE (x))
+		       - shift);
+	    /* Here we use the knowledge that CONST_INTs have a
+	       HOST_WIDE_INT field.  */
+	    if (shift >= HOST_BITS_PER_WIDE_INT)
+	      shift = HOST_BITS_PER_WIDE_INT - 1;
+	    return GEN_INT (INTVAL (reg_equiv_constant[regno]) >> shift);
+	  }
 
       if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] < 0
 	  && reg_equiv_constant[regno] != 0

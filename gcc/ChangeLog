@@ -1,3 +1,8 @@
+Tue Feb 10 03:35:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads_toplev): Handle arbitrary non-paradoxical
+	SUBREGs of CONST_INTs.
+
 Mon Feb  9 17:52:36 1998  John Carr  <jfc@mit.edu>
 
 	* mips.c (print_operand, function_prologue): Make printf format
