@@ -4598,6 +4598,9 @@ v4si f (v4si a, v4si b, v4si c)
 @findex atanl
 @findex bcmp
 @findex bzero
+@findex cabs
+@findex cabsf
+@findex cabsl
 @findex calloc
 @findex ceil
 @findex ceilf
@@ -4726,8 +4729,11 @@ All these functions have corresponding versions
 prefixed with @code{__builtin_}, which may be used even in strict C89
 mode.
 
-The ISO C99 functions @code{conj}, @code{conjf}, @code{conjl}, @code{creal},
-@code{crealf}, @code{creall}, @code{cimag}, @code{cimagf}, @code{cimagl},
+The ISO C99 functions
+@code{cabs}, @code{cabsf}, @code{cabsl},
+@code{conj}, @code{conjf}, @code{conjl},
+@code{creal}, @code{crealf}, @code{creall},
+@code{cimag}, @code{cimagf}, @code{cimagl},
 @code{_Exit}, @code{imaxabs}, @code{llabs},
 @code{nearbyint}, @code{nearbyintf}, @code{nearbyintl},
 @code{round}, @code{roundf}, @code{roundl}, @code{snprintf},

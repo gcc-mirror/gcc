@@ -169,6 +169,8 @@ static tree fold_builtin_nan		PARAMS ((tree, tree, int));
 static int validate_arglist		PARAMS ((tree, ...));
 static tree fold_trunc_transparent_mathfn PARAMS ((tree));
 static bool readonly_data_expr		PARAMS ((tree));
+static rtx expand_builtin_fabs		PARAMS ((tree, rtx, rtx));
+static rtx expand_builtin_cabs		PARAMS ((tree, rtx));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -4306,6 +4308,57 @@ expand_builtin_trap ()
     emit_library_call (abort_libfunc, LCT_NORETURN, VOIDmode, 0);
   emit_barrier ();
 }
+
+/* Expand a call to fabs, fabsf or fabsl with arguments ARGLIST.
+   Return 0 if a normal call should be emitted rather than expanding
+   the function inline.  If convenient, the result should be placed
+   in TARGET.  SUBTARGET may be used as the target for computing
+   the operand.  */
+
+static rtx
+expand_builtin_fabs (arglist, target, subtarget)
+     tree arglist;
+     rtx target, subtarget;
+{
+  enum machine_mode mode;
+  tree arg;
+  rtx op0;
+
+  if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  mode = TYPE_MODE (TREE_TYPE (arg));
+  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+  return expand_abs (mode, op0, target, 0, safe_from_p (target, arg, 1));
+}
+
+/* Expand a call to cabs, cabsf or cabsl with arguments ARGLIST.
+   Return 0 if a normal call should be emitted rather than expanding
+   the function inline.  If convenient, the result should be placed
+   in target.  */
+
+static rtx
+expand_builtin_cabs (arglist, target)
+     tree arglist;
+     rtx target;
+{
+  enum machine_mode mode;
+  tree arg;
+  rtx op0;
+
+  if (arglist == 0 || TREE_CHAIN (arglist))
+    return 0;
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (TREE_TYPE (arg)) != COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
+    return 0;
+
+  mode = TYPE_MODE (TREE_TYPE (arg));
+  op0 = expand_expr (arg, NULL_RTX, VOIDmode, 0);
+  return expand_complex_abs (mode, op0, target, 0);
+}
+
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -4458,11 +4511,27 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_LABS:
     case BUILT_IN_LLABS:
     case BUILT_IN_IMAXABS:
+      /* build_function_call changes these into ABS_EXPR.  */
+      abort ();
+
     case BUILT_IN_FABS:
     case BUILT_IN_FABSF:
     case BUILT_IN_FABSL:
-      /* build_function_call changes these into ABS_EXPR.  */
-      abort ();
+      target = expand_builtin_fabs (arglist, target, subtarget);
+      if (target)
+        return target;
+      break;
+
+    case BUILT_IN_CABS:
+    case BUILT_IN_CABSF:
+    case BUILT_IN_CABSL:
+      if (flag_unsafe_math_optimizations)
+	{
+	  target = expand_builtin_cabs (arglist, target);
+	  if (target)
+	    return target;
+	}
+      break;
 
     case BUILT_IN_CONJ:
     case BUILT_IN_CONJF:

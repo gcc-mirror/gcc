@@ -285,6 +285,18 @@ DEF_C99_BUILTIN(BUILT_IN_CIMAGL,
 		"__builtin_cimagl",
 		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE,
 		ATTR_CONST_NOTHROW_LIST)
+DEF_C99_BUILTIN(BUILT_IN_CABS,
+		"__builtin_cabs",
+		BT_FN_DOUBLE_COMPLEX_DOUBLE,
+		ATTR_CONST_NOTHROW_LIST)
+DEF_C99_BUILTIN(BUILT_IN_CABSF,
+		"__builtin_cabsf",
+		BT_FN_FLOAT_COMPLEX_FLOAT,
+		ATTR_CONST_NOTHROW_LIST)
+DEF_C99_BUILTIN(BUILT_IN_CABSL,
+		"__builtin_cabsl",
+		BT_FN_LONG_DOUBLE_COMPLEX_LONG_DOUBLE,
+		ATTR_CONST_NOTHROW_LIST)
 
 /* The system prototypes for `bzero', 'bcopy' and `bcmp' functions
    have many variations, so don't specify parameters to avoid

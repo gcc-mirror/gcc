@@ -1,3 +1,14 @@
+2003-06-03  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.def (BUILT_IN_CABS, BUILT_IN_CABSF, BUILT_IN_CABSL):
+	New builtins representing ISO C99's cabs, cabsf and cabsl.
+	* builtins.c (expand_builtin_fabs): New function.
+	(expand_builtin_cabs): New function.
+	(expand_builtin): Expand BUILT_IN_FABS{,F,L} and BUILT_IN_CABS{,F,L}
+	using expand_builtin_fabs and expand_builtin_cabs respectively.
+
+	* doc/extend.texi: Document new cabs, cabsf and cabsl builtins.
+
 2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * function.c (assign_parms): Split complex arguments.
