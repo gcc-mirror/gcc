@@ -184,6 +184,10 @@ struct gcc_target
   /* True if "native" constructors and destructors are supported,
      false if we're using collect2 for the job.  */
   bool have_ctors_dtors;
+
+  /* True if new jumps cannot be created, to replace existing ones or
+     not, at the current point in the compilation.  */
+  bool (* cannot_modify_jumps_p) PARAMS ((void));
 };
 
 extern struct gcc_target targetm;

@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -89,6 +89,7 @@
 #include "flags.h"
 #include "output.h"
 #include "cfglayout.h"
+#include "target.h"
 
 /* Local function prototypes.  */
 static void make_reorder_chain		PARAMS ((void));
@@ -258,6 +259,9 @@ void
 reorder_basic_blocks ()
 {
   if (n_basic_blocks <= 1)
+    return;
+
+  if ((* targetm.cannot_modify_jumps_p) ())
     return;
 
   cfg_layout_initialize ();

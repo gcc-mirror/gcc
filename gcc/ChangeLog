@@ -1,3 +1,21 @@
+2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
+
+	* hooks.c: New file.
+	* hooks.h: New file.
+	* Makefile.in (HOOKS_H): New.
+	(TARGET_DEF_H): Added $(HOOKS_H).
+	(OBJS): Added hooks.o.
+	(cfgcleanup.o, bb-reorder.o): Added target.h.
+	(hooks.o): Added dependencies.
+	* target-def.h (TARGET_CANNOT_MODIFY_JUMPS_P): New, added to...
+	(TARGET_INITIALIZER): this.
+	* doc/tm.texi (TARGET_CANNOT_MODIFY_JUMPS_P): Document.
+	* target.h (struct gcc_target): Added cannot_modify_jumps_p.
+	* bb-reorder.c: Include target.h.
+	(reorder_basic_blocks): Skip if cannot modify jumps.
+	* cfgcleanup.c: Include target.h.
+	(try_optimize_cfg): Skip merge blocking if cannot modify jumps.
+
 2002-02-08  Chris Demetriou  <cgd@broadcom.com>
 
         * config/mips/mips.md (casesi_internal, casesi_internal_di):

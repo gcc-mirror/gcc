@@ -8616,3 +8616,18 @@ object files that are not referenced from @code{main} and uses export
 lists.
 
 @end table
+
+@deftypefn {Target Hook} bool TARGET_CANNOT_MODIFY_JUMPS_P (void)
+This target hook returns @code{true} past the point in which new jump
+instructions could be created.  On machines that require a register for
+every jump such as the SHmedia ISA of SH5, this point would typically be
+reload, so this target hook should be defined to a function such as:
+
+@smallexample
+static bool
+cannot_modify_jumps_past_reload_p ()
+@{
+  return (reload_completed || reload_in_progress);
+@}
+@end smallexample
+@end deftypefn
