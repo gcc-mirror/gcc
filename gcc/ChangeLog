@@ -1,3 +1,8 @@
+2001-04-11  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
+
+	* reload.c (push_reload): Add condition missed in SUBREG byte
+	offset patch.
+
 Wed Apr  4 00:28:23 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sparc/sol2-sld-64.h (STARTFILE_SPEC): Added missing blank.
