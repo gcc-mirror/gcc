@@ -75,6 +75,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    * Adjusts this channel's blocking mode.
    */
   public final SelectableChannel configureBlocking (boolean block)
+    throws IOException
   {
     synchronized (LOCK)
       {
@@ -90,7 +91,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
    *
    * @exception IOException If an error occurs
    */
-  protected final void implCloseChannel ()
+  protected final void implCloseChannel () throws IOException
   {
     implCloseSelectableChannel ();
   }
@@ -98,12 +99,13 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   /**
    * Closes this selectable channel.
    */
-  protected abstract void implCloseSelectableChannel ();
+  protected abstract void implCloseSelectableChannel () throws IOException;
   
   /**
    * Adjusts this channel's blocking mode.
    */
-  protected abstract void implConfigureBlocking (boolean block);
+  protected abstract void implConfigureBlocking (boolean block)
+    throws IOException;
 
   /**
    * Tells whether or not every I/O operation on this channel will block

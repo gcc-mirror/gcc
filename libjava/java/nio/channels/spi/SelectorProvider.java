@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.nio.channels.spi;
 
 /* import gnu.java.nio.channels.SelectorProviderImpl; */
+import java.io.IOException;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.Pipe;
 import java.nio.channels.ServerSocketChannel;
@@ -67,27 +68,28 @@ public abstract class SelectorProvider
   /**
    * Opens a datagram channel.
    */
-  public abstract DatagramChannel openDatagramChannel ();
+  public abstract DatagramChannel openDatagramChannel () throws IOException;
   
   /**
    * Opens a pipe.
    */
-  public abstract Pipe openPipe ();
+  public abstract Pipe openPipe () throws IOException;
   
   /**
    * Opens a selector.
    */
-  public abstract AbstractSelector openSelector ();
+  public abstract AbstractSelector openSelector () throws IOException;
   
   /**
    * Opens a server socket channel.
    */
-  public abstract ServerSocketChannel openServerSocketChannel ();
+  public abstract ServerSocketChannel openServerSocketChannel ()
+    throws IOException;
   
   /**
    * Opens a socket channel.
    */
-  public abstract SocketChannel openSocketChannel ();
+  public abstract SocketChannel openSocketChannel () throws IOException;
     
   /**
    * Returns the system-wide default selector provider for this invocation
