@@ -472,10 +472,6 @@ if [ -z "${RELEASE_MAJOR}" ] || [ -z "${RELEASE_MINOR}" ]; then
   error "Release number \`${RELEASE}' is invalid"
 fi
 
-if [ -n "${RELEASE_REVISION}" ]; then
-  error "Revision releases are unsupported"
-fi
-
 # Compute the full name of the release.
 if [ -z "${RELEASE_REVISION}" ]; then
   RELEASE="${RELEASE_MAJOR}.${RELEASE_MINOR}"
@@ -484,7 +480,7 @@ else
 fi
 
 # Compute the name of the branch, which is based solely on the major
-# release number.
+# and minor release numbers.
 BRANCH="gcc-${RELEASE_MAJOR}_${RELEASE_MINOR}-branch"
 
 # If this is not a final release, set various parameters acordingly.
