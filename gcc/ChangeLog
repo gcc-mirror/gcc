@@ -1,5 +1,16 @@
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (out_of_line_prologue_epilogue): Delete.
+	(override_options): Remove -mspace related code.
+	(hppa_expand_prologue, hppa_expand_epilogue): Likewise.
+	(compute_frame_size): Only allocate space for register that
+	actually need to be saved.
+	* pa.h (MASK_SPACE, TARGET_SPACE): Delete.
+	(TARGET_SWITCHES): Remove -mspace, -mno-space
+	* pa/t-pa (LIB2FUNCS_EXTRA): Remove ee.asm and ee_fp.asm
+	* pa/t-pro (LIB2FUNCS_EXTRA): Likewise.  Remove -mspace multilib.
+	* pa/ee.asm, pa/ee_fp.asm: Delete.
+
 	* pa/elf.h (ASM_OUTPUT_DOUBLE_INT): Define.
 
 	* config/svr4.h (CONST_SECTION_ASM_OP): Do not emit assembler
