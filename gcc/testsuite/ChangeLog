@@ -1,3 +1,14 @@
+2001-11-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-array-lval-1.c, gcc.dg/c90-array-lval-2.c,
+	gcc.dg/c99-array-lval-1.c, gcc.dg/c99-array-lval-2.c: Remove
+	XFAILs.  Adjust expected error texts.
+	* gcc.c-torture/compile/20011106-1.c,
+	gcc.c-torture/compile/20011106-2.c, gcc.dg/c90-array-lval-3.c,
+	gcc.dg/c90-array-lval-4.c, gcc.dg/c90-array-lval-5.c,
+	gcc.dg/c99-array-lval-3.c, gcc.dg/c99-array-lval-4.c,
+	gcc.dg/c99-array-lval-5.c: New tests.
+
 2001-11-05  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/defined.c: Update.

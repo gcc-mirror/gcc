@@ -15,4 +15,4 @@ ASSERT (p, sizeof (x.c) == 17);
 ASSERT (q, sizeof (0, x.c) == sizeof (char *));
 ASSERT (r, sizeof ((foo ()).c) == 17);
 /* The non-lvalue array decays to a pointer in C99.  */
-ASSERT (s, sizeof (0, (foo ()).c) == sizeof (char *)); /* { dg-bogus "array" "bad non-lvalue array handling" { xfail *-*-* } } */
+ASSERT (s, sizeof (0, (foo ()).c) == sizeof (char *)); /* { dg-bogus "array" "bad non-lvalue array handling" } */

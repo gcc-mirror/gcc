@@ -1181,7 +1181,8 @@ c_expand_expr_stmt (expr)
 {
   /* Do default conversion if safe and possibly important,
      in case within ({...}).  */
-  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE && lvalue_p (expr))
+  if ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
+       && (flag_isoc99 || lvalue_p (expr)))
       || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE)
     expr = default_conversion (expr);
 
