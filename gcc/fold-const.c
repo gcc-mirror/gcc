@@ -47,37 +47,45 @@ Boston, MA 02111-1307, USA.  */
 /* Handle floating overflow for `const_binop'.  */
 static jmp_buf float_error;
 
-static void encode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT, HOST_WIDE_INT));
-static void decode	PROTO((HOST_WIDE_INT *, HOST_WIDE_INT *, HOST_WIDE_INT *));
-int div_and_round_double PROTO((enum tree_code, int, HOST_WIDE_INT,
+static void encode		PROTO((HOST_WIDE_INT *,
+				       HOST_WIDE_INT, HOST_WIDE_INT));
+static void decode		PROTO((HOST_WIDE_INT *,
+				       HOST_WIDE_INT *, HOST_WIDE_INT *));
+int div_and_round_double	PROTO((enum tree_code, int, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT,
 				       HOST_WIDE_INT, HOST_WIDE_INT *,
 				       HOST_WIDE_INT *, HOST_WIDE_INT *,
 				       HOST_WIDE_INT *));
-static int split_tree	PROTO((tree, enum tree_code, tree *, tree *, int *));
-static tree const_binop PROTO((enum tree_code, tree, tree, int));
-static tree fold_convert PROTO((tree, tree));
+static int split_tree		PROTO((tree, enum tree_code, tree *,
+				       tree *, int *));
+static tree const_binop		PROTO((enum tree_code, tree, tree, int));
+static tree fold_convert	PROTO((tree, tree));
 static enum tree_code invert_tree_comparison PROTO((enum tree_code));
 static enum tree_code swap_tree_comparison PROTO((enum tree_code));
-static int truth_value_p PROTO((enum tree_code));
+static int truth_value_p	PROTO((enum tree_code));
 static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
-static int twoval_comparison_p PROTO((tree, tree *, tree *, int *));
-static tree eval_subst	PROTO((tree, tree, tree, tree, tree));
-static tree omit_one_operand PROTO((tree, tree, tree));
+static int twoval_comparison_p	PROTO((tree, tree *, tree *, int *));
+static tree eval_subst		PROTO((tree, tree, tree, tree, tree));
+static tree omit_one_operand	PROTO((tree, tree, tree));
 static tree pedantic_omit_one_operand PROTO((tree, tree, tree));
 static tree distribute_bit_expr PROTO((enum tree_code, tree, tree, tree));
-static tree make_bit_field_ref PROTO((tree, tree, int, int, int));
+static tree make_bit_field_ref	PROTO((tree, tree, int, int, int));
 static tree optimize_bit_field_compare PROTO((enum tree_code, tree,
 					      tree, tree));
 static tree decode_field_reference PROTO((tree, int *, int *,
 					  enum machine_mode *, int *,
 					  int *, tree *, tree *));
-static int all_ones_mask_p PROTO((tree, int));
-static int simple_operand_p PROTO((tree));
-static tree range_test	PROTO((enum tree_code, tree, enum tree_code,
-			       enum tree_code, tree, tree, tree));
-static tree unextend	PROTO((tree, int, int, tree));
-static tree fold_truthop PROTO((enum tree_code, tree, tree, tree));
+static int all_ones_mask_p	PROTO((tree, int));
+static int simple_operand_p	PROTO((tree));
+static tree range_binop		PROTO((enum tree_code, tree, tree, int,
+				       tree, int));
+static tree make_range		PROTO((tree, int *, tree *, tree *));
+static tree build_range_check	PROTO((tree, tree, int, tree, tree));
+static int merge_ranges		PROTO((int *, tree *, tree *, int, tree, tree,
+				       int, tree, tree));
+static tree fold_range_test	PROTO((tree));
+static tree unextend		PROTO((tree, int, int, tree));
+static tree fold_truthop	PROTO((enum tree_code, tree, tree, tree));
 static tree strip_compound_expr PROTO((tree, tree));
 
 #ifndef BRANCH_COST
@@ -2509,134 +2517,460 @@ simple_operand_p (exp)
 	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
 }
 
-/* Subroutine for fold_truthop: try to optimize a range test.
+/* The following functions are subroutines to fold_range_test and allow it to
+   try to change a logical combination of comparisons into a range test.
 
-   For example, "i >= 2 && i =< 9" can be done as "(unsigned) (i - 2) <= 7".
+   For example, both
+   	X == 2 && X == 3 && X == 4 && X == 5
+   and
+   	X >= 2 && X <= 5
+   are converted to
+	(unsigned) (X - 2) <= 3
 
-   JCODE is the logical combination of the two terms.  It is TRUTH_AND_EXPR
-   (representing TRUTH_ANDIF_EXPR and TRUTH_AND_EXPR) or TRUTH_OR_EXPR
-   (representing TRUTH_ORIF_EXPR and TRUTH_OR_EXPR).  TYPE is the type of
-   the result.
+   We decribe each set of comparisons as being either inside or outside
+   a range, using a variable named like IN_P, and then describe the
+   range with a lower and upper bound.  If one of the bounds is omitted,
+   it represents either the highest or lowest value of the type.
 
-   VAR is the value being tested.  LO_CODE and HI_CODE are the comparison
-   operators comparing VAR to LO_CST and HI_CST.  LO_CST is known to be no
-   larger than HI_CST (they may be equal).
+   In the comments below, we represent a range by two numbers in brackets
+   preceeded by a "+" to designate being inside that range, or a "-" to
+   designate being outside that range, so the condition can be inverted by
+   flipping the prefix.  An omitted bound is represented by a "-".  For
+   example, "- [-, 10]" means being outside the range starting at the lowest
+   possible value and ending at 10, in other words, being greater than 10.
+   The range "+ [-, -]" is always true and hence the range "- [-, -]" is
+   always false.
 
-   We return the simplified tree or 0 if no optimization is possible.  */
+   We set up things so that the missing bounds are handled in a consistent
+   manner so neither a missing bound nor "true" and "false" need to be
+   handled using a special case.  */
+
+/* Return the result of applying CODE to ARG0 and ARG1, but handle the case
+   of ARG0 and/or ARG1 being omitted, meaning an unlimited range. UPPER0_P
+   and UPPER1_P are nonzero if the respective argument is an upper bound
+   and zero for a lower.  TYPE, if nonzero, is the type of the result; it
+   must be specified for a comparison.  ARG1 will be converted to ARG0's
+   type if both are specified.  */
 
 static tree
-range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
-     enum tree_code jcode, lo_code, hi_code;
-     tree type, var, lo_cst, hi_cst;
+range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
+     enum tree_code code;
+     tree type;
+     tree arg0, arg1;
+     int upper0_p, upper1_p;
 {
-  tree utype;
-  enum tree_code rcode;
+  int result;
+  int sgn0, sgn1;
 
-  /* See if this is a range test and normalize the constant terms.  */
+  /* If neither arg represents infinity, do the normal operation.
+     Else, if not a comparison, return infinity.  Else handle the special
+     comparison rules. Note that most of the cases below won't occur, but
+     are handled for consistency.  */
 
-  if (jcode == TRUTH_AND_EXPR)
+  if (arg0 != 0 && arg1 != 0)
+    return fold (build (code, type != 0 ? type : TREE_TYPE (arg0),
+			arg0, convert (TREE_TYPE (arg0), arg1)));
+
+  if (TREE_CODE_CLASS (code) != '<')
+    return 0;
+
+  /* Set SGN[01] to -1 if ARG[01] is a lower bound, 1 for upper, and 0
+     for neither.  Then compute our result treating them as never equal
+     and comparing bounds to non-bounds as above.  */
+  sgn0 = arg0 != 0 ? 0 : (upper0_p ? 1 : -1);
+  sgn1 = arg1 != 0 ? 1 : (upper1_p ? 1 : -1);
+  switch (code)
     {
-      switch (lo_code)
+    case EQ_EXPR:  case NE_EXPR:
+      result = (code == NE_EXPR);
+      break;
+    case LT_EXPR:  case LE_EXPR:
+      result = sgn0 < sgn1;
+      break;
+    case GT_EXPR:  case GE_EXPR:
+      result = sgn0 > sgn1;
+      break;
+    }
+
+  return convert (type, result ? integer_one_node : integer_zero_node);
+}
+      
+/* Given EXP, a logical expression, set the range it is testing into
+   variables denoted by PIN_P, PLOW, and PHIGH.  Return the expression
+   actually being tested.  *PLOW and *PHIGH will have be made the same type
+   as the returned expression.  If EXP is not a comparison, we will most
+   likely not be returning a useful value and range.  */
+
+static tree
+make_range (exp, pin_p, plow, phigh)
+     tree exp;
+     int *pin_p;
+     tree *plow, *phigh;
+{
+  enum tree_code code;
+  tree arg0, arg1, type;
+  int in_p, n_in_p;
+  tree low, high, n_low, n_high;
+
+  /* Start with simply saying "EXP != 0" and then look at the code of EXP
+     and see if we can refine the range.  Some of the cases below may not
+     happen, but it doesn't seem worth worrying about this.  We "continue"
+     the outer loop when we've changed something; otherwise we "break"
+     the switch, which will "break" the while.  */
+
+  in_p = 0, low = high = convert (TREE_TYPE (exp), integer_zero_node);
+
+  while (1)
+    {
+      code = TREE_CODE (exp);
+      arg0 = TREE_OPERAND (exp, 0), arg1 = TREE_OPERAND (exp, 1);
+      if (tree_code_length[(int) code] > 0)
+	type = TREE_TYPE (arg0);
+
+      switch (code)
 	{
-	case NE_EXPR:
-	  /* See if we have VAR != CST && VAR != CST+1.  */
-	  if (! (hi_code == NE_EXPR
-		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
-		 && tree_int_cst_equal (integer_one_node,
-					const_binop (MINUS_EXPR,
-						     hi_cst, lo_cst, 0))))
+	case TRUTH_NOT_EXPR:
+	  in_p = ! in_p, exp = arg0;
+	  continue;
+
+	case EQ_EXPR: case NE_EXPR:
+	case LT_EXPR: case LE_EXPR: case GE_EXPR: case GT_EXPR:
+	  /* We can only do something if the range is testing for zero
+	     and if the second operand is an integer constant.  Note that
+	     saying something is "in" the range we make is done by
+	     complementing IN_P since it will set in the initial case of
+	     being not equal to zero; "out" is leaving it alone.  */
+	  if (low == 0 || high == 0
+	      || ! integer_zerop (low) || ! integer_zerop (high)
+	      || TREE_CODE (arg1) != INTEGER_CST)
+	    break;
+
+	  switch (code)
+	    {
+	    case NE_EXPR:  /* - [c, c]  */
+	      low = high = arg1;
+	      break;
+	    case EQ_EXPR:  /* + [c, c]  */
+	      in_p = ! in_p, low = high = arg1;
+	      break;
+	    case GT_EXPR:  /* - [-, c] */
+	      low = 0, high = arg1;
+	      break;
+	    case GE_EXPR:  /* + [c, -] */
+	      in_p = ! in_p, low = arg1, high = 0;
+	      break;
+	    case LT_EXPR:  /* - [c, -] */
+	      low = arg1, high = 0;
+	      break;
+	    case LE_EXPR:  /* + [-, c] */
+	      in_p = ! in_p, low = 0, high = arg1;
+	      break;
+	    }
+
+	  exp = arg0;
+
+	  /* If this is an unsigned comparison, we also know that EXP
+	     is greater than or equal to zero.  We base the range tests
+	     we make on that fact, so we record it here so we can parse
+	     existing range tests.  */
+	  if (TREE_UNSIGNED (type))
+	    {
+	      if (! merge_ranges (&n_in_p, &n_low, &n_high, in_p, low, high,
+				  1, convert (type, integer_zero_node),
+				  NULL_TREE))
+		break;
+
+	      in_p = n_in_p, low = n_low, high = n_high;
+	    }
+	  continue;
+
+	case NEGATE_EXPR:
+	  /* (-x) IN [a,b] -> x in [-b, -a]  */
+	  n_low = range_binop (MINUS_EXPR, type,
+			       convert (type, integer_zero_node), 0, high, 1);
+	  n_high = range_binop (MINUS_EXPR, type,
+				convert (type, integer_zero_node), 0, low, 0);
+	  low = n_low, high = n_high;
+	  exp = arg0;
+	  continue;
+
+	case BIT_NOT_EXPR:
+	  /* ~ X -> -X - 1  */
+	  exp = build (MINUS_EXPR, type, build1 (NEGATE_EXPR, type, arg0),
+		       convert (type, integer_zero_node));
+	  continue;
+
+	case PLUS_EXPR:  case MINUS_EXPR:
+	  if (TREE_CODE (arg1) != INTEGER_CST)
+	    break;
+
+	  /* If EXP is signed, any overflow in the computation is undefined,
+	     so we don't worry about it so long as our computations on
+	     the bounds don't overflow.  For unsigned, overflow is defined
+	     and this is exactly the right thing.  */
+	  n_low = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
+			       type, low, 0, arg1, 0);
+	  n_high = range_binop (code == MINUS_EXPR ? PLUS_EXPR : MINUS_EXPR,
+				type, high, 1, arg1, 0);
+	  if ((n_low != 0 && TREE_OVERFLOW (n_low))
+	      || (n_high != 0 && TREE_OVERFLOW (n_high)))
+	    break;
+
+	  low = n_low, high = n_high;
+	  exp = arg0;
+	  continue;
+
+	case NOP_EXPR:  case NON_LVALUE_EXPR:  case CONVERT_EXPR:
+	  if (! INTEGRAL_TYPE_P (type)
+	      || (low != 0 && ! int_fits_type_p (low, type))
+	      || (high != 0 && ! int_fits_type_p (high, type)))
+	    break;
+
+	  if (low != 0)
+	    low = convert (type, low);
+
+	  if (high != 0)
+	    high = convert (type, high);
+
+	  exp = arg0;
+	  continue;
+	}
+
+      break;
+    }
+
+  *pin_p = in_p, *plow = low, *phigh = high;
+  return exp;
+}
+
+/* Given a range, LOW, HIGH, and IN_P, an expression, EXP, and a result
+   type, TYPE, return an expression to test if EXP is in (or out of, depending
+   on IN_P) the range.  */
+
+static tree
+build_range_check (type, exp, in_p, low, high)
+     tree type;
+     tree exp;
+     int in_p;
+     tree low, high;
+{
+  tree etype = TREE_TYPE (exp);
+  tree utype, value;
+
+  if (! in_p
+      && (0 != (value = build_range_check (type, exp, 1, low, high))))
+    return invert_truthvalue (value);
+
+  else if (low == 0 && high == 0)
+    return convert (type, integer_one_node);
+
+  else if (low == 0)
+    return fold (build (LE_EXPR, type, exp, high));
+
+  else if (high == 0)
+    return fold (build (GE_EXPR, type, exp, low));
+
+  else if (operand_equal_p (low, high, 0))
+    return fold (build (EQ_EXPR, type, exp, low));
+
+  else if (TREE_UNSIGNED (etype) && integer_zerop (low))
+    return build_range_check (type, exp, 1, 0, high);
+
+  else if (integer_zerop (low))
+    {
+      utype = unsigned_type (etype);
+      return build_range_check (type, convert (utype, exp), 1, 0,
+				convert (utype, high));
+    }
+
+  else if (0 != (value = const_binop (MINUS_EXPR, high, low, 0))
+	   && ! TREE_OVERFLOW (value))
+    return build_range_check (type,
+			      fold (build (MINUS_EXPR, etype, exp, low)),
+			      1, convert (etype, integer_zero_node), value);
+  else
+    return 0;
+}
+
+/* Given two ranges, see if we can merge them into one.  Return 1 if we 
+   can, 0 if we can't.  Set the output range into the specified parameters.  */
+
+static int
+merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
+     int *pin_p;
+     tree *plow, *phigh;
+     int in0_p, in1_p;
+     tree low0, high0, low1, high1;
+{
+  int no_overlap;
+  int subset;
+  int temp;
+  tree tem;
+  int in_p;
+  tree low, high;
+
+  /* Make range 0 be the range that starts first.  Swap them if it isn't.  */
+  if (integer_onep (range_binop (GT_EXPR, integer_type_node, 
+				 low0, 0, low1, 0))
+      || (((low0 == 0 && low1 == 0)
+	   || integer_onep (range_binop (EQ_EXPR, integer_type_node,
+					 low0, 0, low1, 0)))
+	  && integer_onep (range_binop (GT_EXPR, integer_type_node,
+					high0, 1, high1, 1))))
+    {
+      temp = in0_p, in0_p = in1_p, in1_p = temp;
+      tem = low0, low0 = low1, low1 = tem;
+      tem = high0, high0 = high1, high1 = tem;
+    }
+
+  /* Now flag two cases, whether the ranges are disjoint or whether the
+     second range is totally subsumed in the first.  Note that the tests
+     below are simplified by the ones above.  */
+  no_overlap = integer_onep (range_binop (LT_EXPR, integer_type_node,
+					  high0, 1, low1, 0));
+  subset = integer_onep (range_binop (LT_EXPR, integer_type_node,
+				      high1, 1, high0, 1));
+
+  /* We now have four cases, depending on whether we are including or
+     excluding the two ranges.  */
+  if (in0_p && in1_p)
+    {
+      /* If they don't overlap, the result is false.  If the second range
+	 is a subset it is the result.  Otherwise, the range is from the start
+	 of the second to the end of the first.  */
+      if (no_overlap)
+	in_p = 0, low = high = 0;
+      else if (subset)
+	in_p = 1, low = low1, high = high1;
+      else
+	in_p = 1, low = low1, high = high0;
+    }
+
+  else if (in0_p && ! in1_p)
+    {
+      /* If they don't overlap, the result is the first range.  If the
+	 second range is a subset of the first, we can't describe this as
+	 a single range.  Otherwise, we go from the start of the first
+	 range to just before the start of the second.  */
+      if (no_overlap)
+	in_p = 1, low = low0, high = high0;
+      else if (subset)
+	return 0;
+      else
+	{
+	  in_p = 1, low = low0;
+	  high = range_binop (MINUS_EXPR, NULL_TREE, low1, 0,
+			      integer_zero_node, 0);
+	}
+    }
+
+  else if (! in0_p && in1_p)
+    {
+      /* If they don't overlap, the result is the second range.  If the second
+	 is a subset of the first, the result is false.  Otherwise,
+	 the range starts just after the first range and ends at the
+	 end of the second.  */
+      if (no_overlap)
+	in_p = 1, low = low1, high = high1;
+      else if (subset)
+	in_p = 0, low = high = 0;
+      else
+	{
+	  in_p = 1, high = high1;
+	  low = range_binop (PLUS_EXPR, NULL_TREE, high0, 1,
+			     integer_one_node, 0);
+	}
+    }
+
+  else
+    {
+      /* The case where we are excluding both ranges.  Here the complex case
+	 is if they don't overlap.  In that case, the only time we have a
+	 range is if they are adjacent.  If the second is a subset of the
+	 first, the result is the first.  Otherwise, the range to exclude
+	 starts at the beginning of the first range and ends at the end of the
+	 second.  */
+      if (no_overlap)
+	{
+	  if (integer_onep (range_binop (EQ_EXPR, integer_type_node,
+					 range_binop (PLUS_EXPR, NULL_TREE,
+						      high0, 1,
+						      integer_one_node, 1),
+					 1, low1, 0)))
+	    in_p = 0, low = low0, high = high1;
+	  else
 	    return 0;
+	}
+      else if (subset)
+	in_p = 0, low = low0, high = high0;
+      else
+	in_p = 0, low = low0, high = high1;
+    }
 
-	  rcode = GT_EXPR;
-	  break;
+  *pin_p = in_p, *plow = low, *phigh = high;
+  return 1;
+}
+
+/* EXP is some logical combination of boolean tests.  See if we can
+   merge it into some range test.  Return the new tree if so.  */
 
-	case GT_EXPR:
-	case GE_EXPR:
-	  if (hi_code == LT_EXPR)
-	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node, 0);
-	  else if (hi_code != LE_EXPR)
-	    return 0;
+static tree
+fold_range_test (exp)
+     tree exp;
+{
+  int or_op = (TREE_CODE (exp) == TRUTH_ORIF_EXPR
+	       || TREE_CODE (exp) == TRUTH_OR_EXPR);
+  int in0_p, in1_p, in_p;
+  tree low0, low1, low, high0, high1, high;
+  tree lhs = make_range (TREE_OPERAND (exp, 0), &in0_p, &low0, &high0);
+  tree rhs = make_range (TREE_OPERAND (exp, 1), &in1_p, &low1, &high1);
+  tree tem;
 
-	  if (lo_code == GT_EXPR)
-	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node, 0);
+  /* If this is an OR operation, invert both sides; we will invert
+     again at the end.  */
+  if (or_op)
+    in0_p = ! in0_p, in1_p = ! in1_p;
 
-	  /* We now have VAR >= LO_CST && VAR <= HI_CST.  */
-	  rcode = LE_EXPR;
-	  break;
+  /* If both expressions are the same, if we can merge the ranges, and we
+     can build the range test, return it or it inverted.  */
+  if (operand_equal_p (lhs, rhs, 0)
+      && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
+		       in1_p, low1, high1)
+      && 0 != (tem = (build_range_check (TREE_TYPE (exp), lhs,
+					 in_p, low, high))))
+    return or_op ? invert_truthvalue (tem) : tem;
 
-	default:
-	  return 0;
+  /* On machines where the branch cost is expensive, if this is a
+     short-circuited branch and the underlying object on both sides
+     is the same, make a non-short-circuit operation.  */
+  else if (BRANCH_COST >= 2
+	   && (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
+	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)
+	   && operand_equal_p (lhs, rhs, 0))
+    {
+      /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR.  */
+      if (simple_operand_p (lhs))
+	return build (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
+		      ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
+		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
+		      TREE_OPERAND (exp, 1));
+      else
+	{
+	  tree common = save_expr (lhs);
+
+	  if (0 != (lhs = build_range_check (TREE_TYPE (exp), common,
+					     or_op ? ! in0_p : in0_p,
+					     low0, high0))
+	      && (0 != (rhs = build_range_check (TREE_TYPE (exp), common,
+						 or_op ? ! in1_p : in1_p,
+						 low1, high1))))
+	    return build (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
+			  ? TRUTH_AND_EXPR : TRUTH_OR_EXPR,
+			  TREE_TYPE (exp), lhs, rhs);
 	}
     }
   else
-    {
-      switch (lo_code)
-	{
-	case EQ_EXPR:
-	  /* See if we have VAR == CST || VAR == CST+1.  */
-	  if (! (hi_code == EQ_EXPR
-		 && TREE_INT_CST_LOW (hi_cst) - TREE_INT_CST_LOW (lo_cst) == 1
-		 && tree_int_cst_equal (integer_one_node,
-					const_binop (MINUS_EXPR,
-						     hi_cst, lo_cst, 0))))
-	    return 0;
-
-	  rcode = LE_EXPR;
-	  break;
-
-	case LE_EXPR:
-	case LT_EXPR:
-	  if (hi_code == GE_EXPR)
-	    hi_cst = const_binop (MINUS_EXPR, hi_cst, integer_one_node, 0);
-	  else if (hi_code != GT_EXPR)
-	    return 0;
-
-	  if (lo_code == LE_EXPR)
-	    lo_cst = const_binop (PLUS_EXPR, lo_cst, integer_one_node, 0);
-
-	  /* We now have VAR < LO_CST || VAR > HI_CST.  */
-	  rcode = GT_EXPR;
-	  break;
-
-	default:
-	  return 0;
-	}
-    }
-
-  /* When normalizing, it is possible to both increment the smaller constant
-     and decrement the larger constant.  See if they are still ordered.  */
-  if (tree_int_cst_lt (hi_cst, lo_cst))
     return 0;
-
-  /* Fail if VAR isn't an integer.  */
-  utype = TREE_TYPE (var);
-  if (! INTEGRAL_TYPE_P (utype))
-    return 0;
-
-  /* The range test is invalid if subtracting the two constants results
-     in overflow.  This can happen in traditional mode.  */
-  if (! int_fits_type_p (hi_cst, TREE_TYPE (var))
-      || ! int_fits_type_p (lo_cst, TREE_TYPE (var)))
-    return 0;
-
-  if (! TREE_UNSIGNED (utype))
-    {
-      utype = unsigned_type (utype);
-      return fold (convert (type,
-			    build (rcode, utype,
-				   convert (utype,
-					    build (MINUS_EXPR, TREE_TYPE (var),
-						   var, lo_cst)),
-				   convert (utype,
-					    const_binop (MINUS_EXPR, hi_cst,
-							 lo_cst, 0)))));
-    }
-  else
-      return fold (convert (type,
-			    build (rcode, utype,
-				   build (MINUS_EXPR, utype, var, lo_cst),
-				   const_binop (MINUS_EXPR, hi_cst,
-						lo_cst, 0))));
 }
 
 /* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
@@ -2730,13 +3064,11 @@ fold_truthop (code, truth_type, lhs, rhs)
   int first_bit, end_bit;
   int volatilep;
 
-  /* Start by getting the comparison codes and seeing if this looks like
-     a range test.  Fail if anything is volatile.  If one operand is a
-     BIT_AND_EXPR with the constant one, treat it as if it were surrounded
-     with a NE_EXPR.  */
+  /* Start by getting the comparison codes.  Fail if anything is volatile.
+     If one operand is a BIT_AND_EXPR with the constant one, treat it as if
+     it were surrounded with a NE_EXPR.  */
 
-  if (TREE_SIDE_EFFECTS (lhs)
-      || TREE_SIDE_EFFECTS (rhs))
+  if (TREE_SIDE_EFFECTS (lhs) || TREE_SIDE_EFFECTS (rhs))
     return 0;
 
   lcode = TREE_CODE (lhs);
@@ -2748,8 +3080,7 @@ fold_truthop (code, truth_type, lhs, rhs)
   if (rcode == BIT_AND_EXPR && integer_onep (TREE_OPERAND (rhs, 1)))
     rcode = NE_EXPR, rhs = build (NE_EXPR, truth_type, rhs, integer_zero_node);
 
-  if (TREE_CODE_CLASS (lcode) != '<'
-      || TREE_CODE_CLASS (rcode) != '<')
+  if (TREE_CODE_CLASS (lcode) != '<' || TREE_CODE_CLASS (rcode) != '<')
     return 0;
 
   code = ((code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR)
@@ -2760,36 +3091,6 @@ fold_truthop (code, truth_type, lhs, rhs)
   rl_arg = TREE_OPERAND (rhs, 0);
   rr_arg = TREE_OPERAND (rhs, 1);
   
-  if (TREE_CODE (lr_arg) == INTEGER_CST
-      && TREE_CODE (rr_arg) == INTEGER_CST
-      && operand_equal_p (ll_arg, rl_arg, 0))
-    {
-      if (tree_int_cst_lt (lr_arg, rr_arg))
-	result = range_test (code, truth_type, lcode, rcode,
-			     ll_arg, lr_arg, rr_arg);
-      else
-	result = range_test (code, truth_type, rcode, lcode,
-			     ll_arg, rr_arg, lr_arg);
-
-      /* If this isn't a range test, it also isn't a comparison that
-	 can be merged.  However, it wins to evaluate the RHS unconditionally
-	 on machines with expensive branches.   */
-
-      if (result == 0 && BRANCH_COST >= 2)
-	{
-	  if (TREE_CODE (ll_arg) != VAR_DECL
-	      && TREE_CODE (ll_arg) != PARM_DECL)
-	    {
-	      /* Avoid evaluating the variable part twice.  */
-	      ll_arg = save_expr (ll_arg);
-	      lhs = build (lcode, TREE_TYPE (lhs), ll_arg, lr_arg);
-	      rhs = build (rcode, TREE_TYPE (rhs), ll_arg, rr_arg);
-	    }
-	  return build (code, truth_type, lhs, rhs);
-	}
-      return result;
-    }
-
   /* If the RHS can be evaluated unconditionally and its operands are
      simple, it wins to evaluate the RHS unconditionally on machines
      with expensive branches.  In this case, this isn't a comparison
@@ -4344,6 +4645,10 @@ fold (expr)
 				a01));
 	}
 
+      /* See if we can build a range comparison.  */
+      if (0 != (tem = fold_range_test (t)))
+	return tem;
+
       /* Check for the possibility of merging component references.  If our
 	 lhs is another similar operation, try to merge its rhs with our
 	 rhs.  Then try to merge our lhs and rhs.  */
@@ -4768,11 +5073,11 @@ fold (expr)
 
       /* If this is a comparison of a field, we may be able to simplify it.  */
       if ((TREE_CODE (arg0) == COMPONENT_REF
-		|| TREE_CODE (arg0) == BIT_FIELD_REF)
-	       && (code == EQ_EXPR || code == NE_EXPR)
-	       /* Handle the constant case even without -O
-		  to make sure the warnings are given.  */
-	       && (optimize || TREE_CODE (arg1) == INTEGER_CST))
+	   || TREE_CODE (arg0) == BIT_FIELD_REF)
+	  && (code == EQ_EXPR || code == NE_EXPR)
+	  /* Handle the constant case even without -O
+	     to make sure the warnings are given.  */
+	  && (optimize || TREE_CODE (arg1) == INTEGER_CST))
 	{
 	  t1 = optimize_bit_field_compare (code, type, arg0, arg1);
 	  return t1 ? t1 : t;
