@@ -4251,6 +4251,15 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	      tree a = coerce_template_parms (TREE_VALUE (t),
 					      arglist, template,
 	                                      complain, /*require_all_args=*/1);
+
+	      /* Don't process further if one of the levels fails.  */
+	      if (a == error_mark_node)
+		{
+		  /* Restore the ARGLIST to its full size.  */
+		  TREE_VEC_LENGTH (arglist) = saved_depth;
+		  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+		}
+	      
 	      SET_TMPL_ARGS_LEVEL (bound_args, i, a);
 
 	      /* We temporarily reduce the length of the ARGLIST so

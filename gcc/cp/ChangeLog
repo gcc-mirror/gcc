@@ -1,3 +1,10 @@
+2003-05-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10555, c++/10576
+	* pt.c (lookup_template_class): Handle class template with
+	multiple levels of parameters when one of the levels contain
+	errors.
+
 2003-05-08  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_new_1): Don't reuse a TARGET_EXPR in an
