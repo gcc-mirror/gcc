@@ -948,7 +948,7 @@ group_case_labels (void)
 	     Ignore the last element of the label vector because it
 	     must be the default case.  */
           i = 0;
-	  while (i < old_size - 2)
+	  while (i < old_size - 1)
 	    {
 	      tree base_case, base_label, base_high, type;
 	      base_case = TREE_VEC_ELT (labels, i);
@@ -969,13 +969,13 @@ group_case_labels (void)
 	      type = TREE_TYPE (CASE_LOW (base_case));
 	      base_high = CASE_HIGH (base_case) ?
 		CASE_HIGH (base_case) : CASE_LOW (base_case);
-
+	      i++;
 	      /* Try to merge case labels.  Break out when we reach the end
 		 of the label vector or when we cannot merge the next case
 		 label with the current one.  */
-	      while (i < old_size - 2)
+	      while (i < old_size - 1)
 		{
-		  tree merge_case = TREE_VEC_ELT (labels, ++i);
+		  tree merge_case = TREE_VEC_ELT (labels, i);
 	          tree merge_label = CASE_LABEL (merge_case);
 		  tree t = int_const_binop (PLUS_EXPR, base_high,
 					    integer_one_node, 1);
@@ -990,6 +990,7 @@ group_case_labels (void)
 		      CASE_HIGH (base_case) = base_high;
 		      TREE_VEC_ELT (labels, i) = NULL_TREE;
 		      new_size--;
+		      i++;
 		    }
 		  else
 		    break;
