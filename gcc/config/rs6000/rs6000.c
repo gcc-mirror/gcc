@@ -4819,6 +4819,16 @@ debug_stack_info (info)
   fprintf (stderr, "\n");
 }
 
+/* Add a REG_MAYBE_DEAD note to the insn.  */
+static void
+rs6000_maybe_dead (insn)
+     rtx insn;
+{
+  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+					const0_rtx,
+					REG_NOTES (insn));
+}
+
 /* Emit instructions needed to load the TOC register.
    This is only needed when TARGET_TOC, TARGET_MINIMAL_TOC, and there is
    a constant pool; or for SVR4 -fpic.  */
@@ -4839,10 +4849,10 @@ rs6000_emit_load_toc_table (fromprolog)
 		      ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 		      : gen_reg_rtx (Pmode));
 	  if (TARGET_32BIT)
-	    emit_insn (gen_load_toc_v4_pic_si (temp));
+	    rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
 	  else
-	    emit_insn (gen_load_toc_v4_pic_di (temp));
-	  emit_move_insn (dest, temp);
+	    rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_di (temp)));
+	  rs6000_maybe_dead (emit_move_insn (dest, temp));
 	}
       else if (flag_pic == 2)
         {
@@ -4872,9 +4882,12 @@ rs6000_emit_load_toc_table (fromprolog)
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCL", rs6000_pic_labelno);
 	      symL = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
 
-	      emit_insn (gen_load_toc_v4_PIC_1 (tempLR, symF));
-	      emit_move_insn (dest, tempLR);
-	      emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest, symL, symF));
+	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1 (tempLR, 
+								   symF)));
+	      rs6000_maybe_dead (emit_move_insn (dest, tempLR));
+	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_2 (temp0, dest,
+								   symL,
+								   symF)));
 	    }
 	  else
 	    {
@@ -4887,11 +4900,14 @@ rs6000_emit_load_toc_table (fromprolog)
 	      ASM_GENERATE_INTERNAL_LABEL (buf, "LCG", reload_toc_labelno++);
 	      symF = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
 
-	      emit_insn (gen_load_toc_v4_PIC_1b (tempLR, symF, tocsym));
-	      emit_move_insn (dest, tempLR);
-	      emit_move_insn (temp0, gen_rtx_MEM (Pmode, dest));
+	      rs6000_maybe_dead (emit_insn (gen_load_toc_v4_PIC_1b (tempLR, 
+								    symF, 
+								    tocsym)));
+	      rs6000_maybe_dead (emit_move_insn (dest, tempLR));
+	      rs6000_maybe_dead (emit_move_insn (temp0, 
+						 gen_rtx_MEM (Pmode, dest)));
 	    }
-	  emit_insn (gen_addsi3 (dest, temp0, dest));
+	  rs6000_maybe_dead (emit_insn (gen_addsi3 (dest, temp0, dest)));
 	}
       else if (flag_pic == 0 && TARGET_MINIMAL_TOC)
         {
@@ -4901,8 +4917,8 @@ rs6000_emit_load_toc_table (fromprolog)
 	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);
 	  realsym = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (buf, -1));
 	  
-	  emit_insn (gen_elf_high (dest, realsym));
-	  emit_insn (gen_elf_low (dest, dest, realsym));
+	  rs6000_maybe_dead (emit_insn (gen_elf_high (dest, realsym)));
+	  rs6000_maybe_dead (emit_insn (gen_elf_low (dest, dest, realsym)));
 	}
       else
         abort();
@@ -4910,9 +4926,9 @@ rs6000_emit_load_toc_table (fromprolog)
   else
     {
       if (TARGET_32BIT)
-        emit_insn (gen_load_toc_aix_si (dest));
+        rs6000_maybe_dead (emit_insn (gen_load_toc_aix_si (dest)));
       else
-        emit_insn (gen_load_toc_aix_di (dest));
+        rs6000_maybe_dead (emit_insn (gen_load_toc_aix_di (dest)));
     }
 }
 
@@ -4939,7 +4955,7 @@ uses_TOC ()
 	  rtx pat = PATTERN (insn);
 	  int i;
 
-	  if (GET_CODE(pat) == PARALLEL) 
+	  if (GET_CODE (pat) == PARALLEL) 
 	    for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	      if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == UNSPEC 
 		 && XINT (XVECEXP (PATTERN (insn), 0, i), 1) == 7)

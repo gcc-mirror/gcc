@@ -3428,7 +3428,8 @@ propagate_one_insn (pbi, insn)
       && (((HAVE_epilogue || HAVE_prologue)
 	   && prologue_epilogue_contains (insn))
 	  || (HAVE_sibcall_epilogue
-	      && sibcall_epilogue_contains (insn))))
+	      && sibcall_epilogue_contains (insn)))
+      && find_reg_note (insn, REG_MAYBE_DEAD, NULL_RTX) == 0)
     {
       if (flags & PROP_KILL_DEAD_CODE)
 	{ 
