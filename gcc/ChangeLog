@@ -1,3 +1,7 @@
+Fri Feb 11 02:51:56 2000  Pavel Roskin <pavel_roskin@geocities.com>
+
+	* invoke.texi (PPC Options): -mno-new-mnenomics -> -mold-mnemonics.
+
 Fri Feb 11 02:48:30 2000  Brad Lucier  (lucier@math.purdue.edu)
 
 	* sbitmap.h: Make SBITMAP_ELT_BITS unsigned.
