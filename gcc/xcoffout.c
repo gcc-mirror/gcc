@@ -61,14 +61,14 @@ static int xcoff_inlining = 0;
 
 /* Name of the current include file.  */
 
-char *xcoff_current_include_file;
+const char *xcoff_current_include_file;
 
 /* Name of the current function file.  This is the file the `.bf' is
    emitted from.  In case a line is emitted from a different file,
    (by including that file of course), then the line number will be
    absolute.  */
 
-static char *xcoff_current_function_file;
+static const char *xcoff_current_function_file;
 
 /* Names of bss and data sections.  These should be unique names for each
    compilation unit.  */
@@ -79,7 +79,7 @@ char *xcoff_read_only_section_name;
 
 /* Last source file name mentioned in a NOTE insn.  */
 
-char *xcoff_lastfile;
+const char *xcoff_lastfile;
 
 /* Macro definitions used below.  */
 
@@ -329,7 +329,7 @@ stab_to_sclass (stab)
 void
 xcoffout_source_file (file, filename, inline_p)
      FILE *file;
-     char *filename;
+     const char *filename;
      int inline_p;
 {
   if (filename
@@ -354,7 +354,7 @@ xcoffout_source_file (file, filename, inline_p)
 	}
       
       if (!xcoff_lastfile)
-	ggc_add_string_root (&xcoff_lastfile, 1);
+	ggc_add_string_root ((char **) &xcoff_lastfile, 1);
 
       xcoff_lastfile = filename;
     }
@@ -366,7 +366,7 @@ xcoffout_source_file (file, filename, inline_p)
 void
 xcoffout_source_line (file, filename, note)
      FILE *file;
-     char *filename;
+     const char *filename;
      rtx note;
 {
   xcoffout_source_file (file, filename, RTX_INTEGRATED_P (note));
@@ -460,9 +460,9 @@ void
 xcoffout_declare_function (file, decl, name)
      FILE *file;
      tree decl;
-     char *name;
+     const char *name;
 {
-  char *n = name;
+  char *n = (char *) name;
   int i;
 
   if (*n == '*')
@@ -537,7 +537,7 @@ xcoffout_end_epilogue (file)
      aux entry.  So, we emit a label after the last instruction which can
      be used by the .function pseudo op to calculate the function size.  */
 
-  char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
+  const char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   if (*fname == '*')
     ++fname;
   fprintf (file, "FE..");

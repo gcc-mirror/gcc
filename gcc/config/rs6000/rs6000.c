@@ -3491,7 +3491,7 @@ print_operand (file, x, code)
 	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) != SYMBOL_REF
 		  && GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
 	      || GET_CODE (XEXP (XEXP (x, 0), 1)) != CONST_INT)
-	    output_operand_lossage ("invalid %%l value");
+	    output_operand_lossage ("invalid %%K value");
 	  print_operand_address (file, XEXP (XEXP (x, 0), 0));
 	  fputs ("@l", file);
 	  print_operand (file, XEXP (XEXP (x, 0), 1), 0);
@@ -4073,7 +4073,7 @@ output_cbranch (op, label, reversed, insn)
   else
     s += sprintf (s, "b%s%s ", ccode, pred);
 
-  s += sprintf (s, "cr%d", cc_regno);
+  s += sprintf (s, "%d", cc_regno);
 
   if (label != NULL)
     {
