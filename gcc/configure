@@ -2952,7 +2952,9 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		;;
-	i[34567]86-*-netbsd*)
+	# We are hoping OpenBSD is still close enough to NetBSD that we can
+	# share the configurations.
+	i[34567]86-*-netbsd* | i[34567]86-*-openbsd*)
 		tm_file=i386/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.wrap
@@ -5472,7 +5474,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5476: checking assembler alignment features" >&5
+echo "configure:5478: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
@@ -5541,7 +5543,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:5545: checking assembler subsection support" >&5
+echo "configure:5547: checking assembler subsection support" >&5
 gcc_cv_as_subsections=
 if test x$gcc_cv_as != x; then
 	# Check if we have .subsection
@@ -5777,7 +5779,7 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:5781: checking whether to enable init_priority by default" >&5
+echo "configure:5783: checking whether to enable init_priority by default" >&5
 if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi
