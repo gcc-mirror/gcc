@@ -278,7 +278,7 @@ EOF
     hp3[0-9][05]:NetBSD:*:*)
 	echo m68k-hp-netbsd${UNAME_RELEASE}
 	exit 0 ;;
-    i[34]86:BSD/386:*:*)
+    i[34]86:BSD/386:*:* | *:BSD/OS:*:*)
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
