@@ -45,7 +45,7 @@ static void ht_expand PARAMS ((hash_table *));
 #define OBSTACK_CHUNK_FREE free
 #endif
 
-/* Initialise an obstack.  */
+/* Initialize an obstack.  */
 void
 gcc_obstack_init (obstack)
      struct obstack *obstack;

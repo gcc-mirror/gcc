@@ -6300,7 +6300,7 @@ cse_insn (insn, libcall_insn)
 
 	     This section previously turned the REG_EQUIV into a REG_EQUAL
 	     note.  We cannot do that because REG_EQUIV may provide an
-	     uninitialised stack slot when REG_PARM_STACK_SPACE is used.  */
+	     uninitialized stack slot when REG_PARM_STACK_SPACE is used.  */
 
 	  if (prev != 0 && GET_CODE (prev) == INSN
 	      && GET_CODE (PATTERN (prev)) == SET

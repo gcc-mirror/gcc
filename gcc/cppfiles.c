@@ -353,7 +353,7 @@ stack_include_file (pfile, inc)
   fp->inc = inc;
   fp->inc->refcnt++;
 
-  /* Initialise controlling macro state.  */
+  /* Initialize controlling macro state.  */
   pfile->mi_valid = true;
   pfile->mi_cmacro = 0;
 

@@ -12393,7 +12393,7 @@ rs6000_elf_select_section (decl, reloc, align)
    link-time relocations.  If you do not define this macro, GCC will use
    the symbol name prefixed by `.' as the section name.  Note - this
    macro can now be called for uninitialized data items as well as
-   initialised data and functions.  */
+   initialized data and functions.  */
 
 static void
 rs6000_elf_unique_section (decl, reloc)

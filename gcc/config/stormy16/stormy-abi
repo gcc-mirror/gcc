@@ -105,7 +105,7 @@ count->	r2
 	...
 	last procedure parameter word
 
-and initialises 'count' to be the number of bytes of non-variable
+and initializes 'count' to be the number of bytes of non-variable
 arguments to the function.
 
 ELF File Format

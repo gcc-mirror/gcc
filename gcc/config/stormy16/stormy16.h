@@ -1194,7 +1194,7 @@ enum reg_class
    variable number of bytes is passed, it is zero, and argument popping will
    always be the responsibility of the calling function.
 
-   On the Vax, all functions always pop their arguments, so the definition of
+   On the VAX, all functions always pop their arguments, so the definition of
    this macro is STACK-SIZE.  On the 68000, using the standard calling
    convention, no functions pop their arguments, so the value of the macro is
    always 0 in this case.  But an alternative calling convention is available
@@ -1231,7 +1231,7 @@ enum reg_class
    register in which to pass the argument, or zero to pass the argument on the
    stack.
 
-   For machines like the Vax and 68000, where normally all arguments are
+   For machines like the VAX and 68000, where normally all arguments are
    pushed, zero suffices as a definition.
 
    The usual way to make the ANSI library `stdarg.h' work on a machine where

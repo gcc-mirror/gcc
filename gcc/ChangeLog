@@ -1,5 +1,37 @@
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.3: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.5: Likewise.
+	* ChangeLog.6: Likewise.
+	* cppfiles.c: Likewise.
+	* cppinit.c: Likewise.
+	* cpplib.h: Likewise.
+	* cse.c: Likewise.
+	* debug.h: Likewise.
+	* df.c: Likewise.
+	* dominance.c: Likewise.
+	* hashtable.c: Likewise.
+	* hashtable.h: Likewise.
+	* loop.c: Likewise.
+	* config/arm/README-interworking: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/dsp16xx/dsp16xx.h: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/stormy16/stormy-abi: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/v850/v850.c: Likewise.
+
+2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* loop.c: Fix a comment typo.
 
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
@@ -3068,7 +3100,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* Makefile.in (sdbout.o): Doesn't need $(OBSTACK_H).
 	* collect2.h (permanent_obstack): Delete declaration.
 	* collect2.c (permanent_obstack): Delete definition.
-	(main): Don't initialise permanent_obstack.  Use xstrdup instead.
+	(main): Don't initialize permanent_obstack.  Use xstrdup instead.
 	* expr.c: Don't include obstack.h.
 	(permanent_obstack): Delete declaration.
 	* function.c: Don't include obstack.h.
@@ -9168,7 +9200,7 @@ Wed Jun  5 15:20:58 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config.gcc (powerpc-*-darwin*): Set config_gtfiles.
 	* configure.in (config_gtfiles): New variable.
-	(all_gtfiles): Initialise from config_gtfiles.
+	(all_gtfiles): Initialize from config_gtfiles.
 	* configure: Regenerate.
 
 2002-06-04  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -9842,8 +9874,8 @@ Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* gcse.c: Use gengtype for roots.
 	* gengtype-lex.l: Handle typedefs of function types.
 	Allow for empty array bounds.
-	Allow processing to stop on initialisers.
-	* gengtype-yacc.y (externstatic): Stop processing on initialisers.
+	Allow processing to stop on initializers.
+	* gengtype-yacc.y (externstatic): Stop processing on initializers.
 	(semiequal): New rule.
 	* gengtype.c (create_file): Tidy output files.
 	(get_output_file_with_visibility): Fix paren warning.  Fix bug
