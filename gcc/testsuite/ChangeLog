@@ -1,3 +1,7 @@
+2002-05-19  Mark Mitchell  <mitchell@doubledemon.codesourcery.com>
+
+	* g++.dg/warn/Wshadow-1.C: Remove unncessary dg-error line.
+
 2002-05-19  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.c-torture/execute/loop-2c.x: Remove, the test should pass
