@@ -102,6 +102,7 @@ cpplib			Zack Weinberg		zack@codesourcery.com
 cpplib			Neil Booth		neil@daikokuya.co.uk
 java			Per Bothner		per@bothner.com
 java			Alexandre Petit-Bianco	apbianco@redhat.com
+java			Andrew Haley		aph@redhat.com
 libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		bryce@gcc.gnu.org
 mercury			Fergus Henderson	fjh@cs.mu.oz.au

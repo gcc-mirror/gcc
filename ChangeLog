@@ -1,3 +1,7 @@
+2002-09-25  Andrew Haley  <aph@redhat.com>
+
+	* MAINTAINERS: Add aph@redhat.com as Java maintainer.
+
 2002-09-22  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.def: New file.
