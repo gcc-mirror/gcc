@@ -1,3 +1,8 @@
+2002-05-13  Scott Marks <SMarks@mobile-mind.com>
+
+	* config/fr30/fr30.md: Only allow splits of immediate loads
+	if the destination is a register.
+
 2002-05-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (c-common.o, cppinit.o): Update.
