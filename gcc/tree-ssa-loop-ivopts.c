@@ -228,7 +228,7 @@ struct ivopts_data
 #define CONSIDER_ALL_CANDIDATES_BOUND \
   ((unsigned) PARAM_VALUE (PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND))
 
-/* If there are more iv occurences, we just give up (it is quite unlikely that
+/* If there are more iv occurrences, we just give up (it is quite unlikely that
    optimizing such a loop would help, and it would take ages).  */
 
 #define MAX_CONSIDERED_USES \

@@ -30,7 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    interoperate with the GTY machinery.
 
    Because of the different behaviour of objects and of pointers to
-   objects, there are two flavours.  One to deal with a vector of
+   objects, there are two flavors.  One to deal with a vector of
    pointers to objects, and one to deal with a vector of objects
    themselves.  Both of these pass pointers to objects around -- in
    the former case the pointers are stored into the vector and in the
@@ -277,7 +277,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    void VEC_T_ordered_remove (VEC(T) *v, unsigned ix); // Object
    
    Remove an element from the IXth position of V. Ordering of
-   remaining elements is preserverd.  For pointer vectors returns the
+   remaining elements is preserved.  For pointer vectors returns the
    removed object.  This is an O(N) operation due to a memmove.  */
 
 #define VEC_ordered_remove(TDEF,V,I)	\

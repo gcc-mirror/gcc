@@ -62,7 +62,7 @@ static struct value_prof_hooks *value_prof_hooks;
    -- list of counters starting from the first one.  */
 
 /* For speculative prefetching, the range in that we do not prefetch (because
-   we assume that it will be in cache anyway).  The assymetry between min and
+   we assume that it will be in cache anyway).  The asymmetry between min and
    max range is trying to reflect the fact that the sequential prefetching
    of the data is commonly done directly by hardware.  Nevertheless, these
    values are just a guess and should of course be target-specific.  */
@@ -971,7 +971,7 @@ speculative_prefetching_transform (rtx insn)
 
   /* We require that count is at least half of all; this means
      that for the transformation to fire the value must be constant
-     at least 50% of time (and 75% gives the garantee of usage).  */
+     at least 50% of time (and 75% gives the guarantee of usage).  */
   if (!rtx_equal_p (address, value) || 2 * count < all)
     return false;
 

@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the same format as a HARD_REG_SET.  To help make sure this is true,
    we only try the widest fast integer mode (HOST_WIDEST_FAST_INT)
    instead of all the smaller types.  This approach loses only if
-   there are avery few registers and then only in the few cases where
+   there are very few registers and then only in the few cases where
    we have an array of HARD_REG_SETs, so it needn't be as complex as
    it used to be.  */
 

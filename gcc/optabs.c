@@ -532,7 +532,7 @@ expand_doubleword_shift_condmove (enum machine_mode op1_mode, optab binoptab,
    masked by it and shifts in the range [BITS_PER_WORD, SHIFT_MASK) will
    fill with zeros or sign bits as appropriate.
 
-   If SHIFT_MASK is BITS_PER_WORD - 1, this routine will synthesise
+   If SHIFT_MASK is BITS_PER_WORD - 1, this routine will synthesize
    a doubleword shift whose equivalent mask is BITS_PER_WORD * 2 - 1.
    Doing this preserves semantics required by SHIFT_COUNT_TRUNCATED.
    In all other cases, shifts by values outside [0, BITS_PER_UNIT * 2)

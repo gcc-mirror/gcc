@@ -1922,7 +1922,7 @@ walk_type_fields (tree type, walk_tree_fn func, void *data, void *htab)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       /* We have to worry about mutually recursive pointers.  These can't
-	 be written in C.  They can in Ada.  It's pathlogical, but
+	 be written in C.  They can in Ada.  It's pathological, but
 	 there's an ACATS test (c38102a) that checks it.  Deal with this
 	 by checking if we're pointing to another pointer, that one
 	 points to another pointer, that one does too, and we have no htab.

@@ -1444,7 +1444,7 @@ check_case_value (tree value)
    type (ie. before the default conversion to int) of the switch testing
    expression.
    TYPE is the promoted type of the testing expression, and ORIG_TYPE is
-   the type before promiting it.  CASE_LOW_P is a pointer to the lower
+   the type before promoting it.  CASE_LOW_P is a pointer to the lower
    bound of the case label, and CASE_HIGH_P is the upper bound or NULL
    if the case is not a case range.
    The caller has to make sure that we are not called with NULL for

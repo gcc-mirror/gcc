@@ -44,7 +44,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
        - polyhedron dependence
      or with the chains of recurrences based representation,
      
-   - to define a knowledge base for storing the data dependeces 
+   - to define a knowledge base for storing the data dependences 
      information,
      
    - to define an interface to access this data.

@@ -605,7 +605,7 @@ struct tree_niter_desc
 			   to false, then the other fields in this structure
 			   should not be used; there is no guarantee that they
 			   will be correct.  */
-  tree may_be_zero;	/* The booleand expression.  If it evaluates to true,
+  tree may_be_zero;	/* The boolean expression.  If it evaluates to true,
 			   the loop will exit in the first iteration (i.e.
 			   its latch will not be executed), even if the niter
 			   field says otherwise.  */

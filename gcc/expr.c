@@ -3596,7 +3596,7 @@ expand_assignment (tree to, tree from, int want_value)
 	  if (bitsize >= GET_MODE_BITSIZE (GET_MODE (str_rtx)))
 	    break;
 
-	  /* We can't handle fields split accross multiple entities.  */
+	  /* We can't handle fields split across multiple entities.  */
 	  if (bitpos1 + bitsize > GET_MODE_BITSIZE (GET_MODE (str_rtx)))
 	    break;
 
@@ -6120,7 +6120,7 @@ expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
 
     case IMAGPART_EXPR:
       /* The imaginary part of the complex number is always second.
-	 The expresion is therefore always offset by the size of the
+	 The expression is therefore always offset by the size of the
 	 scalar type.  */
       offset = 0;
       bitpos = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp)));
