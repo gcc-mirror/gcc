@@ -700,6 +700,16 @@ noce_emit_move_insn (rtx x, rtx y)
 		   GET_MODE_BITSIZE (inmode));
 }
 
+/* Unshare sequence SEQ produced by if conversion.  We care to mark
+   all arguments that may be shared with outer instruction stream.  */
+static void
+unshare_ifcvt_sequence (struct noce_if_info *if_info, rtx seq)
+{
+  set_used_flags (if_info->x);
+  set_used_flags (if_info->cond);
+  unshare_all_rtl_in_chain (seq);
+}
+
 /* Convert "if (a != b) x = a; else x = b" into "x = a" and
    "if (a == b) x = a; else x = b" into "x = b".  */
 
@@ -734,6 +744,7 @@ noce_try_move (struct noce_if_info *if_info)
 	  start_sequence ();
 	  noce_emit_move_insn (if_info->x, y);
 	  seq = get_insns ();
+	  unshare_ifcvt_sequence (if_info, seq);
 	  end_sequence ();
 	  emit_insn_before_setloc (seq, if_info->jump,
 				   INSN_LOCATOR (if_info->insn_a));
@@ -777,6 +788,7 @@ noce_try_store_flag (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = get_insns ();
+      unshare_ifcvt_sequence (if_info, seq);
       end_sequence ();
       emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATOR (if_info->insn_a));
 
@@ -907,6 +919,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = get_insns ();
+      unshare_ifcvt_sequence (if_info, seq);
       end_sequence ();
 
       if (seq_contains_jump (seq))
@@ -944,9 +957,11 @@ noce_try_addcc (struct noce_if_info *if_info)
 	{
 	  start_sequence ();
 	  target = emit_conditional_add (if_info->x, code,
-					 XEXP (cond, 0), XEXP (cond, 1),
+					 XEXP (cond, 0),
+					 XEXP (cond, 1),
 					 VOIDmode,
-					 if_info->b, XEXP (if_info->a, 1),
+					 if_info->b,
+					 XEXP (if_info->a, 1),
 					 GET_MODE (if_info->x),
 					 (code == LTU || code == GEU
 					  || code == LEU || code == GTU));
@@ -956,6 +971,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = get_insns ();
+	      unshare_ifcvt_sequence (if_info, seq);
 	      end_sequence ();
 	      emit_insn_before_setloc (seq, if_info->jump,
 				      INSN_LOCATOR (if_info->insn_a));
@@ -994,6 +1010,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = get_insns ();
+	      unshare_ifcvt_sequence (if_info, seq);
 	      end_sequence ();
 
 	      if (seq_contains_jump (seq))
@@ -1037,7 +1054,8 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 				     reversep, -1);
       if (target)
         target = expand_simple_binop (GET_MODE (if_info->x), AND,
-				      if_info->x, target, if_info->x, 0,
+				      if_info->x,
+				      target, if_info->x, 0,
 				      OPTAB_WIDEN);
 
       if (target)
@@ -1046,6 +1064,7 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = get_insns ();
+	  unshare_ifcvt_sequence (if_info, seq);
 	  end_sequence ();
 
 	  if (seq_contains_jump (seq))
@@ -1143,6 +1162,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = get_insns ();
+	  unshare_ifcvt_sequence (if_info, seq);
 	  end_sequence ();
 	  emit_insn_before_setloc (seq, if_info->jump,
 				  INSN_LOCATOR (if_info->insn_a));
@@ -1260,7 +1280,9 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
       if (is_mem)
 	{
           tmp = gen_reg_rtx (GET_MODE (b));
-	  tmp = emit_insn (gen_rtx_SET (VOIDmode, tmp, b));
+	  tmp = emit_insn (gen_rtx_SET (VOIDmode,
+				  	tmp,
+					b));
 	}
       else if (! insn_b)
 	goto end_seq_and_fail;
@@ -1305,6 +1327,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     noce_emit_move_insn (x, target);
 
   tmp = get_insns ();
+  unshare_ifcvt_sequence (if_info, tmp);
   end_sequence ();
   emit_insn_before_setloc (tmp, if_info->jump, INSN_LOCATOR (if_info->insn_a));
   return TRUE;
@@ -1550,6 +1573,7 @@ noce_try_minmax (struct noce_if_info *if_info)
     noce_emit_move_insn (if_info->x, target);
 
   seq = get_insns ();
+  unshare_ifcvt_sequence (if_info, seq);
   end_sequence ();
 
   if (seq_contains_jump (seq))
@@ -1667,6 +1691,7 @@ noce_try_abs (struct noce_if_info *if_info)
     noce_emit_move_insn (if_info->x, target);
 
   seq = get_insns ();
+  unshare_ifcvt_sequence (if_info, seq);
   end_sequence ();
 
   if (seq_contains_jump (seq))
@@ -1988,8 +2013,10 @@ noce_process_if_block (struct ce_if_block * ce_info)
   if (orig_x != x)
     {
       start_sequence ();
-      noce_emit_move_insn (copy_rtx (orig_x), x);
+      noce_emit_move_insn (orig_x, x);
       insn_b = get_insns ();
+      set_used_flags (orig_x);
+      unshare_all_rtl_in_chain (insn_b);
       end_sequence ();
 
       emit_insn_after_setloc (insn_b, test_bb->end, INSN_LOCATOR (insn_a));
@@ -2585,7 +2612,8 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     }
 
   /* Attempt to generate the conditional trap.  */
-  seq = gen_cond_trap (code, XEXP (cond, 0), XEXP (cond, 1),
+  seq = gen_cond_trap (code, XEXP (cond, 0),
+		       XEXP (cond, 1),
 		       TRAP_CODE (PATTERN (trap)));
   if (seq == NULL)
     return FALSE;

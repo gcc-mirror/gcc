@@ -1,3 +1,18 @@
+2003-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (set_used_flags): New.
+	(verify_rtx_sharing, verify_rtl_sharing): New.
+	(unshare_all_rtl_1): Rename to....
+	(unshare_all_rtl_in_chain): ... this one; make static.
+	(copy_rtx_if_shared): LABEL_REF chan be shared.
+	* ifcvt.c (unshare_ifcvt_sequence): New.
+	(noce_try_move, noce_try_store_flag, noce_try_store_flag_constants,
+	noce_try_addcc, noce_try_addcc, noce_try_store_flag_mask,
+	noce_try_cmove, noce_try_store_flag_mask, noce_try_minmax,
+	noce_try_abs, noce_process_if_block, find_cond_trap
+	* rtl.h (verify_rtl_sharing, set_used_flags, unshare_all_rtl_in_chain):
+	Declare.
+
 2003-11-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Fix a comment typo.
@@ -204,8 +219,8 @@
 
 2003-11-24  Jan Hubicka  <jh@suse.cz>
 
-	* fold-const.c (fold):  Do not return early when optimizing COMPONENT_REF
-	and constant.
+	* fold-const.c (fold):  Do not return early when optimizing
+	COMPONENT_REF and constant.
 
 2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
