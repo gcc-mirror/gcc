@@ -1,3 +1,13 @@
+2001-04-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (find_final_overrider_data): Add `candidates'.
+	(dfs_find_final_overrider): Don't issue error messages
+	prematurely.
+	(find_final_overrider): Issue error messages here.
+	(build_base_field): Don't warn about amgibuous direct bases here.
+	(warn_about_ambiguous_direct_bases): New function.
+	(layout_class_type): Use it.
+
 2001-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_THIS_INLINE): Rename to DECL_DECLARED_INLINE_P.

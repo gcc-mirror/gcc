@@ -212,7 +212,7 @@ static void record_subobject_offsets PARAMS ((tree, tree, splay_tree, int));
 static int layout_conflict_p PARAMS ((tree, tree, splay_tree, int));
 static int splay_tree_compare_integer_csts PARAMS ((splay_tree_key k1,
 						    splay_tree_key k2));
-
+static void warn_about_ambiguous_direct_bases PARAMS ((tree));
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -2496,6 +2496,9 @@ typedef struct find_final_overrider_data_s {
   tree most_derived_type;
   /* The final overriding function.  */
   tree overriding_fn;
+  /* The functions that we thought might be final overriders, but
+     aren't.  */
+  tree candidates;
   /* The BINFO for the class in which the final overriding function
      appears.  */
   tree overriding_base;
@@ -2554,49 +2557,79 @@ dfs_find_final_overrider (binfo, data)
 		break;
 	      }
 
-	  if (ffod->overriding_fn && ffod->overriding_fn != method)
-	    {
-	      /* We've found a different overrider along a different
-		 path.  That can be OK if the new one overrides the
-		 old one.  Consider:
-	      
-	           struct S { virtual void f(); };
-	           struct T : public virtual S { virtual void f(); };
-	           struct U : public virtual S, public virtual T {};
-	      
-	         Here `T::f' is the final overrider for `S::f'.  */
-	      if (strictly_overrides (method, ffod->overriding_fn))
-		{
-		  ffod->overriding_fn = method;
-		  ffod->overriding_base = TREE_VALUE (path);
-		}
-	      else if (!strictly_overrides (ffod->overriding_fn, method))
-		{
-		  cp_error ("no unique final overrider for `%D' in `%T'", 
-			    ffod->most_derived_type,
-			    ffod->fn);
-		  cp_error ("candidates are: `%#D'", ffod->overriding_fn);
-		  cp_error ("                `%#D'", method);
-		  return error_mark_node;
-		}
-	    }
-	  else if (ffod->overriding_base
-		   && (!tree_int_cst_equal 
-		       (BINFO_OFFSET (TREE_VALUE (path)),
-			BINFO_OFFSET (ffod->overriding_base))))
-	    {
-	      /* We've found two instances of the same base that
-		 provide overriders.  */
-	      cp_error ("no unique final overrider for `%D' since there two instances of `%T' in `%T'", 
-			ffod->fn,
-			BINFO_TYPE (ffod->overriding_base),
-			ffod->most_derived_type);
-	      return error_mark_node;
-	    }
-	  else
+	  /* If we didn't already have an overrider, or any
+	     candidates, then this function is the best candidate so
+	     far.  */
+	  if (!ffod->overriding_fn && !ffod->candidates)
 	    {
 	      ffod->overriding_fn = method;
 	      ffod->overriding_base = TREE_VALUE (path);
+	    }
+	  /* If we found the same overrider we already have, then
+	     we just need to check that we're finding it in the same
+	     place.  */
+	  else if (ffod->overriding_fn == method)
+	    {
+	      if (ffod->overriding_base
+		  && (!tree_int_cst_equal 
+		      (BINFO_OFFSET (TREE_VALUE (path)),
+		       BINFO_OFFSET (ffod->overriding_base))))
+		{
+		  ffod->candidates 
+		    = build_tree_list (NULL_TREE,
+				       ffod->overriding_fn);
+		  ffod->overriding_fn = NULL_TREE;
+		  ffod->overriding_base = NULL_TREE;
+		}
+	    }
+	  /* If there was already an overrider, and it overrides this
+	     function, then the old overrider is still the best
+	     candidate.  */
+	  else if (ffod->overriding_fn
+		   && strictly_overrides (ffod->overriding_fn,
+					  method))
+	    ;
+	  else
+	    {
+	      tree candidates;
+	      bool incomparable = false;
+
+	      /* If there were previous candidates, and this function
+		 overrides all of them, then it is the new best
+		 candidate.  */
+	      for (candidates = ffod->candidates;
+		   candidates;
+		   candidates = TREE_CHAIN (candidates))
+		{
+		  /* If the candidate overrides the METHOD, then we
+		     needn't worry about it any further.  */
+		  if (strictly_overrides (TREE_VALUE (candidates),
+					  method))
+		    {
+		      method = NULL_TREE;
+		      break;
+		    }
+
+		  /* If the METHOD doesn't override the candidate,
+		     then it is incomporable.  */
+		  if (!strictly_overrides (method,
+					   TREE_VALUE (candidates)))
+		    incomparable = true;
+		}
+
+	      /* If METHOD overrode all the candidates, then it is the
+		 new best candidate.  */
+	      if (!candidates && !incomparable)
+		{
+		  ffod->overriding_fn = method;
+		  ffod->overriding_base = TREE_VALUE (path);
+		  ffod->candidates = NULL_TREE;
+		}
+	      /* If METHOD didn't override all the candidates, then it
+		 is another candidate.  */
+	      else if (method && incomparable)
+		ffod->candidates 
+		  = tree_cons (NULL_TREE, method, ffod->candidates);
 	    }
 	}
     }
@@ -2640,12 +2673,16 @@ find_final_overrider (t, binfo, fn)
   ffod.most_derived_type = t;
   ffod.overriding_fn = NULL_TREE;
   ffod.overriding_base = NULL_TREE;
+  ffod.candidates = NULL_TREE;
 
-  if (dfs_walk (TYPE_BINFO (t),
-		dfs_find_final_overrider,
-		NULL,
-		&ffod))
-    return error_mark_node;
+  dfs_walk (TYPE_BINFO (t),
+	    dfs_find_final_overrider,
+	    NULL,
+	    &ffod);
+
+  /* If there was no winner, issue an error message.  */
+  if (!ffod.overriding_fn)
+    cp_error ("no unique final overrider for `%D' in `%T'", fn, t);
 
   return build_tree_list (ffod.overriding_fn, ffod.overriding_base);
 }
@@ -4042,13 +4079,6 @@ build_base_field (rli, binfo, empty_p, offsets)
       layout_empty_base (binfo, size_int (eoc), offsets);
     }
 
-  /* Check for inaccessible base classes.  If the same base class
-     appears more than once in the hierarchy, but isn't virtual, then
-     it's ambiguous.  */
-  if (get_base_distance (basetype, rli->t, 0, NULL) == -2)
-    cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
-		basetype, rli->t);
-  
   /* Record the offsets of BINFO and its base subobjects.  */
   record_subobject_offsets (BINFO_TYPE (binfo), 
 			    BINFO_OFFSET (binfo),
@@ -4831,6 +4861,32 @@ end_of_class (t, include_virtuals_p)
   return result;
 }
 
+/* Warn about direct bases of T that are inaccessible because they are
+   ambiguous.  For example:
+
+     struct S {};
+     struct T : public S {};
+     struct U : public S, public T {};
+
+   Here, `(S*) new U' is not allowed because there are two `S'
+   subobjects of U.  */
+
+static void
+warn_about_ambiguous_direct_bases (t)
+     tree t;
+{
+  int i;
+
+  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+    {
+      tree basetype = TYPE_BINFO_BASETYPE (t, i);
+
+      if (get_base_distance (basetype, t, 0, NULL) == -2)
+	cp_warning ("direct base `%T' inaccessible in `%T' due to ambiguity",
+		    basetype, t);
+    }
+}
+
 /* Compare two INTEGER_CSTs K1 and K2.  */
 
 static int
@@ -5035,6 +5091,10 @@ layout_class_type (t, empty_p, vfuns_p,
      virtual function table.  As a side-effect, this will remove the
      base subobject fields.  */
   layout_virtual_bases (t, empty_base_offsets);
+
+  /* Warn about direct bases that can't be talked about due to
+     ambiguity.  */
+  warn_about_ambiguous_direct_bases (t);
 
   /* Clean up.  */
   splay_tree_delete (empty_base_offsets);
