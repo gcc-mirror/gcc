@@ -112,6 +112,8 @@ do {								\
 #define DATA_SECTION_ASM_OP	"\t.data"
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
+#define JCR_SECTION_NAME	".jcr"
+
 #define HP_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init"
 #define GNU_INIT_ARRAY_SECTION_ASM_OP	"\t.section\t.init_array"
 #define HP_FINI_ARRAY_SECTION_ASM_OP	"\t.section\t.fini"
@@ -350,9 +352,9 @@ _Jv_RegisterClasses (void *p __attribute__((unused))) {}
 #define PA_JV_REGISTERCLASSES_STUB
 #endif
 
-/* We need to add frame_dummy to the initializer list if USE_EH_FRAME_REGISTRY
+/* We need to add frame_dummy to the initializer list if EH_FRAME_SECTION_NAME
    or JCR_SECTION_NAME is defined.  */
-#if defined(USE_EH_FRAME_REGISTRY) || defined(JCR_SECTION_NAME)
+#if defined(EH_FRAME_SECTION_NAME) || defined(JCR_SECTION_NAME)
 #define PA_INIT_FRAME_DUMMY_ASM_OP ".dword P%frame_dummy"
 #else
 #define PA_INIT_FRAME_DUMMY_ASM_OP ""

@@ -1,3 +1,9 @@
+2003-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa64-hpux.h (JCR_SECTION_NAME): Define.
+	(PA_INIT_FRAME_DUMMY_ASM_OP): Check EH_FRAME_SECTION_NAME instead of
+	USE_EH_FRAME_REGISTRY when defining.
+
 2002-01-04  John David Anglin  <dave.anglin@nrc.ca>
 
 	* config.gcc (hppa*64*-*-hpux11*): Define extra_parts.  Don't use
