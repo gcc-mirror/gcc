@@ -20,10 +20,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.    */
 
 /* This is used on Alpha platforms that use the ELF format.
-Currently only Linux uses this. */
+   Currently only GNU/Linux uses this. */
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Alpha Linux/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (Alpha GNU/Linux with ELF)");
 
 #undef OBJECT_FORMAT_COFF
 #undef EXTENDED_COFF
@@ -484,8 +484,8 @@ do {									 \
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
-   the Linux magical crtbegin.o file (see crtstuff.c) which
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'. */
    
@@ -495,11 +495,11 @@ do {									 \
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-/* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
-   the Linux magical crtend.o file (see crtstuff.c) which
+/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
+   the GNU/Linux magical crtend.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main', followed by a normal
-   Linux "finalizer" file, `crtn.o'.  */
+   GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \

@@ -1,4 +1,5 @@
-/* Definitions for Motorola 68k running Linux with ELF format.
+/* Definitions for Motorola 68k running Linux-based GNU systems with
+   ELF format.
    Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -26,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include <linux.h>		/* some common stuff */
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (68k Linux/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (68k GNU/Linux with ELF)");
 
 /* 68020 with 68881 */
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
@@ -131,7 +132,7 @@ Boston, MA 02111-1307, USA.  */
   "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{m68040} %{m68060:-m68040}"
 
-/* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
+/* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
    combinations of options at link-time.  We like to support here for

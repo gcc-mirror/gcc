@@ -1,4 +1,4 @@
-/* Definitions for SPARC running Linux with ELF
+/* Definitions for SPARC running Linux-based GNU systems with ELF.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #undef HAVE_ATEXIT
 #define HAVE_ATEXIT
 
-/* Linux uses ctype from glibc.a. I am not sure how complete it is.
+/* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */
 
 #if 0
@@ -52,8 +52,8 @@ Boston, MA 02111-1307, USA.  */
         fprintf (FILE, "\t.version\t\"01.01\"\n");                      \
   } while (0)
 
-/* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
-   the Linux magical crtbegin.o file (see crtstuff.c) which
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'. */
    
@@ -63,11 +63,11 @@ Boston, MA 02111-1307, USA.  */
      %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}}\
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-/* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
-   the Linux magical crtend.o file (see crtstuff.c) which
+/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
+   the GNU/Linux magical crtend.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main', followed by a normal
-   Linux "finalizer" file, `crtn.o'.  */
+   GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -83,7 +83,7 @@ Boston, MA 02111-1307, USA.  */
 "
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (sparc Linux/ELF)");
+#define TARGET_VERSION fprintf (stderr, " (sparc GNU/Linux with ELF)");
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -111,9 +111,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 /* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the Linux C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
- */
+   want to profile or debug the GNU/Linux C library, please add
+   -lc_p or -ggdb to LDFLAGS at the link time, respectively.  */
 #if 1
 #ifdef USE_GNULIBC_1
 #define LIB_SPEC \
@@ -131,7 +130,7 @@ Boston, MA 02111-1307, USA.  */
        %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}"
 #endif
 
-/* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
+/* Provide a LINK_SPEC appropriate for GNU/Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
    combinations of options at link-time. We like to support here for
@@ -229,7 +228,7 @@ do {									\
 
 #if 0
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
-   Sparc ABI says that long double is 4 words. Linux does not support
+   Sparc ABI says that long double is 4 words. GNU/Linux does not support
    long double yet.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 #endif
