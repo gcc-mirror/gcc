@@ -2294,40 +2294,41 @@ struct exception;
   fi
 fi
 
-# assert.h on HP/UX is not C++ ready, even though NO_IMPLICIT_EXTERN_C
-# is defined on HP/UX.
-file=assert.h
-if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
-  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
-  chmod +w ${LIB}/$file 2>/dev/null
-  chmod a+r ${LIB}/$file 2>/dev/null
-fi
+# assert.h and sys/mman.h on HP/UX are not C++ ready, even though
+# NO_IMPLICIT_EXTERN_C is defined on HP/UX.
+for file in assert.h sys/mman.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
 
-if [ -r ${LIB}/$file ]; then
-  if egrep '"C"' ${LIB}/$file >/dev/null 2>&1 \
-     || egrep '__BEGIN_DECLS' ${LIB}/$file >/dev/null 2>&1; then
-    true
-  else
-    echo Fixing $file
-    echo '#ifdef __cplusplus
+  if [ -r ${LIB}/$file ]; then
+    if egrep '"C"' ${LIB}/$file >/dev/null 2>&1 \
+       || egrep '__BEGIN_DECLS' ${LIB}/$file >/dev/null 2>&1; then
+      true
+    else
+      echo Fixing $file
+      echo '#ifdef __cplusplus
 extern "C" {
 #endif' > ${LIB}/${file}.sed
-    cat ${LIB}/${file} >> ${LIB}/${file}.sed
-    echo '#ifdef __cplusplus
+      cat ${LIB}/${file} >> ${LIB}/${file}.sed
+      echo '#ifdef __cplusplus
 }
 #endif' >> ${LIB}/${file}.sed 
-    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+      rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    fi
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
       rm -f ${LIB}/$file
     else
       # Find any include directives that use "file".
       for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
-        dir=`echo $file | sed -e s'|/[^/]*$||'`
-        required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+	dir=`echo $file | sed -e s'|/[^/]*$||'`
+	required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
       done
     fi
   fi
-fi
+done
 
 # check for broken assert.h that needs stdio.h or stdlib.h
 file=assert.h
