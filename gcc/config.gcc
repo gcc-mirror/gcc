@@ -2645,7 +2645,7 @@ powerpc*-*-freebsd*)
 	tm_file="${tm_file} elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
 	xm_file=rs6000/xm-sysv4.h
 	out_file=rs6000/rs6000.c
-	tmake_file="rs6000/t-ppcos t-freebsd rs6000/t-ppccomm"
+	tmake_file="rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	extra_headers=ppc-asm.h
 	;;
 powerpc-*-sysv*)
