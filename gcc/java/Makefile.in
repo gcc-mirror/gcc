@@ -240,7 +240,7 @@ $(PARSE_SCAN_C):  $(srcdir)/parse-scan.y $(srcdir)/lex.c $(PARSE_H) \
 lex.c: keyword.h lex.h
 
 keyword.h: keyword.gperf
-	gperf -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
+	gperf -L KR-C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
 	keyword.gperf > keyword.h
 
 # These exist for maintenance purposes.
