@@ -79,16 +79,16 @@ $(GCJ)-cross$(exeext): $(GCJ)$(exeext)
 	-rm -f $(GCJ)-cross$(exeext)
 	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
 
-po-generated: $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
+po-generated: $(parsedir)/java/parse.c $(parsedir)/java/parse-scan.c
 
-$(srcdir)/java/parse.c: $(srcdir)/java/parse.y
+$(parsedir)/java/parse.c: $(srcdir)/java/parse.y
 	$(BISON) -t --name-prefix=java_ $(BISONFLAGS) \
 	    -o p$$$$.c $(srcdir)/java/parse.y && \
-	mv -f p$$$$.c $(srcdir)/java/parse.c
+	mv -f p$$$$.c $(parsedir)/java/parse.c
 
-$(srcdir)/java/parse-scan.c:  $(srcdir)/java/parse-scan.y
+$(parsedir)/java/parse-scan.c:  $(srcdir)/java/parse-scan.y
 	$(BISON) -t $(BISONFLAGS) -o ps$$$$.c $(srcdir)/java/parse-scan.y && \
-	mv -f ps$$$$.c $(srcdir)/java/parse-scan.c
+	mv -f ps$$$$.c $(parsedir)/java/parse-scan.c
 
 $(srcdir)/java/keyword.h: $(srcdir)/java/keyword.gperf
 	(cd $(srcdir)/java || exit 1; \
@@ -239,7 +239,7 @@ java.distclean:
 	-rm -f java/parse.output
 java.extraclean:
 java.maintainer-clean:
-	-rm -f java/parse.c java/parse-scan.c java/parse.output java/y.tab.c
+	-rm -f $(parsedir)/java/parse.c $(parsedir)/java/parse-scan.c java/parse.output java/y.tab.c
 	-rm -f $(srcdir)/java/gcj.1 $(srcdir)/java/gcjh.1
 	-rm -f $(srcdir)/java/jv-scan.1 $(srcdir)/java/jcf-dump.1
 	-rm -f $(srcdir)/java/gij.1
@@ -264,7 +264,7 @@ java.stage4: stage4-start
 JAVA_TREE_H = $(TREE_H) $(HASHTAB_H) java/java-tree.h java/java-tree.def
 JAVA_LEX_C = java/lex.c java/keyword.h java/chartables.h
 
-java/parse.o: java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
+java/parse.o: $(parsedir)/java/parse.c java/jcf-reader.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) function.h $(JAVA_TREE_H) $(JAVA_LEX_C) java/parse.h \
   java/lex.h $(GGC_H) debug.h gt-java-parse.h gtype-java.h
 java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(JAVA_TREE_H) \
@@ -322,7 +322,7 @@ java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(GGC_H)
-java/parse-scan.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
+java/parse-scan.o: $(parsedir)/java/parse-scan.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h \
   $(JAVA_LEX_C) java/parse.h java/lex.h
 java/resource.o: java/resource.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(RTL_H) java/jcf.h java/parse.h toplev.h output.h $(GGC_H) \
