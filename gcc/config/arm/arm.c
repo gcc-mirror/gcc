@@ -2213,8 +2213,12 @@ fpu_rhs_operand (op, mode)
 {
   if (s_register_operand (op, mode))
     return TRUE;
-  else if (GET_CODE (op) == CONST_DOUBLE)
-    return (const_double_rtx_ok_for_fpu (op));
+
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return FALSE;
+
+  if (GET_CODE (op) == CONST_DOUBLE)
+    return const_double_rtx_ok_for_fpu (op);
 
   return FALSE;
 }
@@ -2226,7 +2230,11 @@ fpu_add_operand (op, mode)
 {
   if (s_register_operand (op, mode))
     return TRUE;
-  else if (GET_CODE (op) == CONST_DOUBLE)
+
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return FALSE;
+
+  if (GET_CODE (op) == CONST_DOUBLE)
     return (const_double_rtx_ok_for_fpu (op) 
 	    || neg_const_double_rtx_ok_for_fpu (op));
 
@@ -2261,6 +2269,9 @@ di_operand (op, mode)
   if (s_register_operand (op, mode))
     return TRUE;
 
+  if (mode != VOIDmode && GET_MODE (op) != VOIDmode && GET_MODE (op) != DImode)
+    return FALSE;
+
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
@@ -2291,9 +2302,12 @@ soft_df_operand (op, mode)
   if (s_register_operand (op, mode))
     return TRUE;
 
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return FALSE;
+
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-
+  
   switch (GET_CODE (op))
     {
     case CONST_DOUBLE:

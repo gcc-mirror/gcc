@@ -1,3 +1,10 @@
+Tue Oct 19 18:42:58 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* arm.c (fpu_rhs_operand): Verify modes.
+	(fpu_add_operand): Likewise.
+	(di_operand): Likewise.
+	(soft_df_operand): Likewise.
+
 Tue Oct 19 15:26:11 1999  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (arm_return_in_memory): APCS rules state that the elements
