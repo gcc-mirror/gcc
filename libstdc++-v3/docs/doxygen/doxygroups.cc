@@ -13,14 +13,17 @@
  *  @brief Everything defined by the ISO C++ Standard is within namespace std.
 */
 /** @namespace __gnu_cxx
- *  @brief Non-standard things.
+ *  @brief This namespace serves two purposes.
  *
- *  This namespace is used for
+ *  This namespace is used for two things:
  *  -  sequestering internal (implementation-only) names away from the
- *     global namespace
- *  -  GNU extensions
+ *     global namespace; these are details of the implementation and should
+ *     not be touched by users
+ *  -  GNU extensions for public use
  *
- *  This is still fluid and changing rapidly.
+ *  This is still fluid and changing rapidly.  Currently the rule is:  if an
+ *  entitity is found in the user-level documentation, it falls into the
+ *  second category.
 */
 
 // // // // // // // // // // // // // // // // // // // // // // // //
