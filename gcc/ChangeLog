@@ -1,3 +1,7 @@
+2001-04-12  Kelley Cook <kelley.cook@home.com>
+
+	* config-lang.in (lang_dirs): Add in zlib.
+
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (modified_type_die): Don't create new types here.
