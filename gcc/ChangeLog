@@ -1,3 +1,9 @@
+2002-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR opt/8794
+	* combine.c (force_to_mode) [MINUS]: Only replace with (not Y) if all
+	bits in fuller_mask (not just mask) are set in C.
+
 2002-12-12  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (BIGGEST_ALIGNMENT): Change 32-bit value to 64 bits.
