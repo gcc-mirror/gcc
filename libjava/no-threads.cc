@@ -20,7 +20,10 @@ void
 _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *,
 		 _Jv_ThreadStartFunc *meth)
 {
-  JvAssert (! _Jv_OnlyThread);
+  // Don't use JvAssert, since we want this to fail even when compiled
+  // without assertions.
+  if (_Jv_OnlyThread)
+    JvFail ("only thread already running");
   _Jv_OnlyThread = thread;
   (*meth) (thread);
 }

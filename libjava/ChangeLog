@@ -1,5 +1,7 @@
 1999-11-18  Tom Tromey  <tromey@cygnus.com>
 
+	* no-threads.cc (_Jv_ThreadStart): Use JvFail and not JvAssert.
+
 	* java/lang/natClass.cc (MCACHE_SIZE): Define as a power of 2
 	minus 1.
 	(method_cache): Made larger.
