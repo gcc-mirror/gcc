@@ -28,11 +28,10 @@
 // the GNU General Public License.
 
 // { dg-do compile }
-// { dg-excess-errors "" }
 
 #include <math.h>
 
-void fpclassify() { }  // { dg-error "parse error" "" { xfail *-*-* } }
+void fpclassify() { }
 
 void isfinite() { }
 
