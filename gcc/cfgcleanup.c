@@ -1938,7 +1938,9 @@ try_optimize_cfg (int mode)
 			   && (GET_CODE (BB_END (b)) != JUMP_INSN
 			       || (reload_completed
 				   ? simplejump_p (BB_END (b))
-				   : onlyjump_p (BB_END (b))))
+				   : (onlyjump_p (BB_END (b))
+				      && !tablejump_p (BB_END (b),
+						       NULL, NULL))))
 			   && (next = merge_blocks_move (s, b, c, mode)))
 		      {
 			b = next;
