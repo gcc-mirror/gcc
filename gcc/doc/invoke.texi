@@ -1009,8 +1009,8 @@ affected.
 @item -std=
 @opindex std
 Determine the language standard.  This option is currently only
-supported when compiling C@.  A value for this option must be provided;
-possible values are
+supported when compiling C or C++.  A value for this option must be
+provided; possible values are
 
 @table @samp
 @item c89
@@ -1036,6 +1036,12 @@ Default, ISO C90 plus GNU extensions (including some C99 features).
 ISO C99 plus GNU extensions.  When ISO C99 is fully implemented in GCC,
 this will become the default.  The name @samp{gnu9x} is deprecated.
 
+@item c++98
+The 1998 ISO C++ standard plus amendments.
+
+@item gnu++98
+The same as @option{-std=c++98} plus GNU extensions.  This is the
+default for C++ code.
 @end table
 
 Even when this option is not specified, you can still use some of the

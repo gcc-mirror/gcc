@@ -504,6 +504,10 @@ struct cpp_hashnode
 /* Call this first to get a handle to pass to other functions.  */
 extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
 
+/* Call this to change the selected language standard (e.g. because of
+   command line options).  */
+extern void cpp_set_lang PARAMS ((cpp_reader *, enum c_lang));
+
 /* Call these to get pointers to the options and callback structures
    for a given reader.  These pointers are good until you call
    cpp_finish on that reader.  You can either edit the callbacks

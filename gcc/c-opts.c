@@ -40,6 +40,8 @@ static void complain_wrong_lang PARAMS ((size_t));
 static void write_langs PARAMS ((char *, int));
 static void print_help PARAMS ((void));
 static void handle_OPT_d PARAMS ((const char *));
+static void set_std_cxx98 PARAMS ((int));
+static void set_std_c89 PARAMS ((int, int));
 
 #define CL_C_ONLY	(1 << 0) /* Only C.  */
 #define CL_OBJC_ONLY	(1 << 1) /* Only ObjC.  */
@@ -210,6 +212,8 @@ static void handle_OPT_d PARAMS ((const char *));
   OPT("fweak",			CL_CXX,   OPT_fweak)			     \
   OPT("fxref",			CL_CXX,   OPT_fxref)			     \
   OPT("gen-decls",		CL_OBJC,  OPT_gen_decls)		     \
+  OPT("lang-asm",		CL_C_ONLY, OPT_lang_asm)		     \
+  OPT("lang-objc",              CL_ALL,   OPT_lang_objc)		     \
   OPT("nostdinc",               CL_ALL,   OPT_nostdinc)			     \
   OPT("nostdinc++",             CL_ALL,   OPT_nostdincplusplus)		     \
   OPT("pedantic",		CL_ALL,   OPT_pedantic)			     \
@@ -220,6 +224,7 @@ static void handle_OPT_d PARAMS ((const char *));
   OPT("std=c89",		CL_C,     OPT_std_c89)			     \
   OPT("std=c99",		CL_C,     OPT_std_c99)			     \
   OPT("std=c9x",		CL_C,     OPT_std_c9x)			     \
+  OPT("std=gnu++98",		CL_CXX,	  OPT_std_gnuplusplus98)	     \
   OPT("std=gnu89",		CL_C,     OPT_std_gnu89)		     \
   OPT("std=gnu99",		CL_C,     OPT_std_gnu99)		     \
   OPT("std=gnu9x",		CL_C,     OPT_std_gnu9x)		     \
@@ -230,8 +235,8 @@ static void handle_OPT_d PARAMS ((const char *));
   OPT("traditional-cpp",	CL_ALL,   OPT_traditional_cpp)		     \
   OPT("trigraphs",              CL_ALL,   OPT_trigraphs)		     \
   OPT("undef",			CL_ALL,   OPT_undef)			     \
-  OPT("v",                      CL_ALL,      OPT_v)			     \
-  OPT("w",                      CL_ALL,      OPT_w)
+  OPT("v",                      CL_ALL,   OPT_v)			     \
+  OPT("w",                      CL_ALL,   OPT_w)
 
 #define OPT(text, flags, code) code,
 enum opt_code
@@ -823,6 +828,13 @@ c_common_decode_option (argc, argv)
       else
 	warn_write_strings = on;
       break;
+      
+    case OPT_ansi:
+      if (c_language == clk_c)
+	set_std_c89 (false, true);
+      else
+	set_std_cxx98 (true);
+      break;
 
     case OPT_d:
       handle_OPT_d (arg);
@@ -1071,6 +1083,14 @@ c_common_decode_option (argc, argv)
       flag_gen_declaration = 1;
       break;
 
+    case OPT_lang_asm:
+      cpp_set_lang (parse_in, CLK_ASM);
+      break;
+
+    case OPT_lang_objc:
+      cpp_opts->objc = 1;
+      break;
+
     case OPT_nostdinc:
       /* No default include directories.  You must specify all
 	 include-file directories with -I.  */
@@ -1112,30 +1132,25 @@ c_common_decode_option (argc, argv)
       */
 
     case OPT_std_cplusplus98:
+    case OPT_std_gnuplusplus98:
+      set_std_cxx98 (code == OPT_std_cplusplus98);
       break;
 
+    case OPT_std_iso9899_199409:
     case OPT_std_c89:
     case OPT_std_iso9899_1990:
-    case OPT_std_iso9899_199409:
-    case OPT_ansi:
-      /* Note: -ansi is used by both the C and C++ front ends.  */
-      if (c_language == clk_c)
-	{
-	  flag_no_asm = 1;
-	  flag_writable_strings = 0;
-	}
-      flag_isoc94 = (code == OPT_std_iso9899_199409);
-      flag_no_gnu_keywords = 1;
-      flag_no_nonansi_builtin = 1;
-      flag_noniso_default_format_attributes = 0;
-      flag_isoc99 = 0;
-      flag_iso = 1;
+      set_std_c89 (code == OPT_std_iso9899_199409, true);
+      break;
+
+    case OPT_std_gnu89:
+      set_std_c89 (false /* c94 */, false /* ISO */);
       break;
 
     case OPT_std_c99:
     case OPT_std_c9x:
     case OPT_std_iso9899_1999:
     case OPT_std_iso9899_199x:
+      cpp_set_lang (parse_in, CLK_STDC99);
       flag_writable_strings = 0;
       flag_no_asm = 1;
       flag_no_nonansi_builtin = 1;
@@ -1145,17 +1160,9 @@ c_common_decode_option (argc, argv)
       flag_iso = 1;
       break;
 
-    case OPT_std_gnu89:
-      flag_writable_strings = 0;
-      flag_no_asm = 0;
-      flag_no_nonansi_builtin = 0;
-      flag_noniso_default_format_attributes = 1;
-      flag_isoc99 = 0;
-      flag_isoc94 = 0;
-      break;
-
     case OPT_std_gnu99:
     case OPT_std_gnu9x:
+      cpp_set_lang (parse_in, CLK_GNUC99);
       flag_writable_strings = 0;
       flag_no_asm = 0;
       flag_no_nonansi_builtin = 0;
@@ -1236,6 +1243,35 @@ c_common_post_options ()
   errorcount += cpp_errors (parse_in);
 
   return flag_preprocess_only;
+}
+
+/* Set the C 89 standard (with 1994 amendments if C94, without GNU
+   extensions if ISO).  */
+static void
+set_std_c89 (c94, iso)
+     int c94, iso;
+{
+  cpp_set_lang (parse_in, c94 ? CLK_STDC94: iso ? CLK_STDC89: CLK_GNUC89);
+  flag_iso = iso;
+  flag_no_asm = iso;
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_noniso_default_format_attributes = !iso;
+  flag_isoc94 = c94;
+  flag_isoc99 = 0;
+  flag_writable_strings = 0;
+}
+
+/* Set the C++ 98 standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx98 (iso)
+     int iso;
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX98: CLK_GNUCXX);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_noniso_default_format_attributes = !iso;
+  flag_iso = iso;
 }
 
 /* Handle setting implicit to ON.  */
