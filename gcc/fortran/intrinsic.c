@@ -2241,7 +2241,7 @@ gfc_intrinsic_init_1 (void)
   nargs = nfunc = nsub = nconv = 0;
 
   /* Create a namespace to hold the resolved intrinsic symbols.  */
-  gfc_intrinsic_namespace = gfc_get_namespace (NULL);
+  gfc_intrinsic_namespace = gfc_get_namespace (NULL, 0);
 
   sizing = SZ_FUNCS;
   add_functions ();

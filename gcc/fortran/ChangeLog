@@ -1,3 +1,16 @@
+2005-02-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_get_namespace): Add second argument to prototype.
+	* intrinsic.c (gfc_intrinsic_init_1): Pass second argument to
+	gfc_get_namespace.
+	* module.c (mio_namespace_ref, load_needed): Likewise.
+	* parse.c (parse_interface, parse_contained): Likewise.  Here the
+	correct second argument matters.
+	* symbol.c (gfc_get_namespace): Add parent_types argument, only copy
+	parent's implicit types if this is set.
+	(gfc_symbol_init_2): Pass second argument to gfc_get_namespace.
+	* trans-common.c (build_common_decl): Likewise.
+
 2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intrinsic.h, st.c: Update copyright.

@@ -1,3 +1,7 @@
+2005-02-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/implicit_3.f90: New test.
+
 2005-02-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/lookup/anon2.C: Don't let access checks make it look like
