@@ -1,3 +1,10 @@
+2000-02-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.h (cpp_reader): Add new flag, no_directives.
+	* cpphash.c (macarg): Set it.
+	* cpplib.c (handle_directive): If no_directives is on and we
+	find a directive, issue an error and discard the line.
+
 Wed Feb  2 13:07:10 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/sparc/sparc.h (PREFERRED_RELOAD_CLASS): Delete 'E' check for

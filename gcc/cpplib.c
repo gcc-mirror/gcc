@@ -568,7 +568,15 @@ handle_directive (pfile)
     }
 
   CPP_SET_WRITTEN (pfile, old_written);
-  (*kt->func) (pfile, kt);
+
+  if (pfile->no_directives)
+    {
+      cpp_error (pfile, "`#%s' may not be used inside a macro argument",
+		 kt->name);
+      skip_rest_of_line (pfile);
+    }
+  else
+    (*kt->func) (pfile, kt);
 
   return 1;
 }
