@@ -1,3 +1,7 @@
+2000-08-18  Manfred Hollstein  <manfredh@redhat.com>
+
+	* gcc.c-torture/execute/20000818-1.c: New test.
+
 2000-08-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-va-1.c: New test.
