@@ -6472,6 +6472,21 @@ print_operand (file, x, code)
       output_address (XEXP (x, 0));
       return;
 
+    case 's':
+      {
+	/* Print a sign-extended 32-bit value.  */
+	HOST_WIDE_INT i;
+	if (GET_CODE(x) == CONST_INT)
+	  i = INTVAL (x);
+	else if (GET_CODE(x) == CONST_DOUBLE)
+	  i = CONST_DOUBLE_LOW (x);
+	else
+	  output_operand_lossage ("invalid %%s operand");
+	i = trunc_int_for_mode (i, SImode);
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, i);
+	return;
+      }
+
     case 0:
       /* Do nothing special.  */
       break;
