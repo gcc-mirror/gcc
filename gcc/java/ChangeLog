@@ -1,3 +1,20 @@
+2003-11-25  Jeff Sturm  <jsturm@one-point.com>
+
+	Fix PR java/13183.
+	* constants.c (cpool_for_class): New function.
+	(outgoing_cpool): Remove global variable.
+	(alloc_name_constant): Use cpool_for_class.
+	(build_constants_constructor): Likewise.
+	* decl.c (java_expand_body): Set current_class.
+	* java-tree.h (outgoing_cpool) Remove declaration.
+	(init_outgoing_cpool): Likewise.
+	* jcf-parse.c (init_outgoing_cpool): Remove function.
+	(parse_class_file): Don't call init_outgoing_cpool.
+	* parse.y (java_complete_expand_methods): Don't call
+	init_outgoing_cpool.  Don't save outgoing_cpool.
+	(java_expand_classes): Don't restore outgoing_cpool.
+	(java_finish_classes): Likewise.
+
 2003-11-24  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* Make-lang.in: (java.install-common) Add

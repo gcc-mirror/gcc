@@ -7689,9 +7689,6 @@ java_complete_expand_methods (tree class_decl)
 
   current_class = TREE_TYPE (class_decl);
 
-  /* Initialize a new constant pool */
-  init_outgoing_cpool ();
-
   /* Pre-expand <clinit> to figure whether we really need it or
      not. If we do need it, we pre-expand the static fields so they're
      ready to be used somewhere else. <clinit> will be fully expanded
@@ -7775,9 +7772,6 @@ java_complete_expand_methods (tree class_decl)
       if (DECL_CONSTRUCTOR_P (decl)
 	  && verify_constructor_circularity (decl, decl))
 	break;
-
-  /* Save the constant pool. We'll need to restore it later. */
-  TYPE_CPOOL (current_class) = outgoing_cpool;
 }
 
 /* Attempt to create <clinit>. Pre-expand static fields so they can be
@@ -9157,7 +9151,6 @@ java_expand_classes (void)
 	   current = TREE_CHAIN (current))
 	{
 	  current_class = TREE_TYPE (TREE_VALUE (current));
-	  outgoing_cpool = TYPE_CPOOL (current_class);
 	  if (flag_emit_class_files)
 	    write_classfile (current_class);
 	  if (flag_emit_xref)
@@ -9179,7 +9172,6 @@ java_finish_classes (void)
       for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
 	{
 	  current_class = TREE_TYPE (current);
-	  outgoing_cpool = TYPE_CPOOL (current_class);
 	  finish_class ();
 	}
     }
