@@ -1,3 +1,57 @@
+2004-05-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_current_locus, gfc_set_locus): Remove.
+	(gfc_current_locus): Declare new global variable.
+	* scanner.c (gfc_current_locus, gfc_set_locus): Remove.
+	(gfc_current_locus1): Rename ...
+	(gfc_current_locus): ... to this.
+	(gfc_at_eof, gfc_at_bol, gfc_at_eol, gfc_advance_line, next_char,
+	skip_fixed_comments, skip_free_comments, gfc_next_char_literal,
+	gfc_peek_char, gfc_gobble_whitespace, gfc_new_file): Use
+	gfc_current_locus instead of gfc_current_locus1, gfc_set_locus()
+	and gfc_current_locus(), respectively.
+	* array.c (match_subscript, gfc_match_array_ref, match_array_list,
+	match_array_cons_element, gfc_match_array_constructor):
+	Read/modify gfc_current_locus instead of calling gfc_set_locus()
+	and gfc_current_locus().
+	* decl.c (gfc_match_null, variable_decl, gfc_match_kind_spec,
+	match_attr_spec, gfc_match_function_decl, gfc_match_end,
+	attr_decl1, gfc_match_save): Likewise.
+	* error.c (error_print, gfc_internal_error): Likewise.
+	* expr.c (gfc_int_expr, gfc_default_logical_kind): Likewise.
+	* interface.c (gfc_add_interface): Likewise.
+	* io.c (gfc_match_format, match_dt_format, match_dt_element,
+	match_io_iterator, match_io): Likewise.
+	* match.c (gfc_match_space, gfc_match_eos,
+	gfc_match_small_literal_int, gfc_match_st_label,
+	gfc_match_strings, gfc_match_name, gfc_match_iterator,
+	gfc_match_char, gfc_match, gfc_match_assignment,
+	gfc_match_pointer_assignment, gfc_match_if, gfc_match_do,
+	gfc_match_nullify, gfc_match_call, match_implicit_range,
+	gfc_match_implicit, gfc_match_data, match_case_selector,
+	gfc_match_case, match_forall_iterator): Likewise.
+	* matchexp.c (gfc_match_defined_op_name, next_operator,
+	match_level_1, match_mult_operand, match_ext_mult_operand,
+	match_add_operand, match_ext_add_operand, match_level_2,
+	match_level_3, match_level_4, match_and_operand, match_or_operand,
+	match_equiv_operand, match_level_5, gfc_match_expr): Likewise.
+	* module.c (gfc_match_use, mio_array_ref, mio_expr): Likewise.
+	* parse.c (match_word, decode_statement, next_free, next_fixed,
+	add_statement, verify_st_order, parse_if_block, gfc_parse_file):
+	Likewise.
+	* primary.c (match_digits, match_integer_constant,
+	match_boz_constant, match_real_constant, match_substring,
+	next_string_char, match_charkind_name, match_string_constant,
+	match_logical_constant, match_const_complex_part,
+	match_complex_constant, match_actual_arg, match_keyword_arg,
+	gfc_match_actual_arglist, gfc_match_structure_constructor,
+	gfc_match_rvalue, gfc_match_variable): Likewise.
+	* st.c (gfc_get_code): Likewise.
+	* symbol.c (check_conflict, check_used, check_done,
+	duplicate_attr, add_flavor, gfc_add_procedure, gfc_add_intent,
+	gfc_add_access, gfc_add_explicit_interface, gfc_add_type,
+	gfc_add_component, gfc_reference_st_label, gfc_new_symbol): Likewise.
+
 2004-05-26  Roger Sayle  <roger@eyesopen.com>
 
 	* io.c (format_asterisk): Silence compiler warnings by correcting

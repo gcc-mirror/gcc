@@ -46,7 +46,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
   match m;
   int i;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   m = gfc_match (" . %n .", name);
   if (m != MATCH_YES)
@@ -59,7 +59,7 @@ gfc_match_defined_op_name (char *result, int error_flag)
     {
       if (error_flag)
 	goto error;
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       return MATCH_NO;
     }
 
@@ -81,7 +81,7 @@ error:
   gfc_error ("The name '%s' cannot be used as a defined operator at %C",
 	     name);
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
 
@@ -113,11 +113,11 @@ next_operator (gfc_intrinsic_op t)
   gfc_intrinsic_op u;
   locus old_loc;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
   if (gfc_match_intrinsic_op (&u) == MATCH_YES && t == u)
     return 1;
 
-  gfc_set_locus (&old_loc);
+  gfc_current_locus = old_loc;
   return 0;
 }
 
@@ -199,7 +199,7 @@ match_level_1 (gfc_expr ** result)
   locus where;
   match m;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   uop = NULL;
   m = match_defined_operator (&uop);
   if (m == MATCH_ERROR)
@@ -271,7 +271,7 @@ match_mult_operand (gfc_expr ** result)
       return MATCH_YES;
     }
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   m = match_ext_mult_operand (&exp);
   if (m == MATCH_NO)
@@ -305,7 +305,7 @@ match_ext_mult_operand (gfc_expr ** result)
   match m;
   int i;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   i = match_add_op ();
 
   if (i == 0)
@@ -353,7 +353,7 @@ match_add_operand (gfc_expr ** result)
     {
       /* Build up a string of products or quotients.  */
 
-      old_loc = *gfc_current_locus ();
+      old_loc = gfc_current_locus;
 
       if (next_operator (INTRINSIC_TIMES))
 	i = INTRINSIC_TIMES;
@@ -365,12 +365,12 @@ match_add_operand (gfc_expr ** result)
 	    break;
 	}
 
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_ext_mult_operand (&e);
       if (m == MATCH_NO)
 	{
-	  gfc_set_locus (&old_loc);
+	  gfc_current_locus = old_loc;
 	  break;
 	}
 
@@ -409,7 +409,7 @@ match_ext_add_operand (gfc_expr ** result)
   match m;
   int i;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   i = match_add_op ();
 
   if (i == 0)
@@ -451,7 +451,7 @@ match_level_2 (gfc_expr ** result)
   match m;
   int i;
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
   i = match_add_op ();
 
   if (i != 0)
@@ -491,7 +491,7 @@ match_level_2 (gfc_expr ** result)
 
   for (;;)
     {
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
       i = match_add_op ();
       if (i == 0)
 	break;
@@ -544,7 +544,7 @@ match_level_3 (gfc_expr ** result)
       if (!next_operator (INTRINSIC_CONCAT))
 	break;
 
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_level_2 (&e);
       if (m == MATCH_NO)
@@ -587,7 +587,7 @@ match_level_4 (gfc_expr ** result)
   if (m != MATCH_YES)
     return m;
 
-  old_loc = *gfc_current_locus ();
+  old_loc = gfc_current_locus;
 
   if (gfc_match_intrinsic_op (&i) != MATCH_YES)
     {
@@ -598,12 +598,12 @@ match_level_4 (gfc_expr ** result)
   if (i != INTRINSIC_EQ && i != INTRINSIC_NE && i != INTRINSIC_GE
       && i != INTRINSIC_LE && i != INTRINSIC_LT && i != INTRINSIC_GT)
     {
-      gfc_set_locus (&old_loc);
+      gfc_current_locus = old_loc;
       *result = left;
       return MATCH_YES;
     }
 
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   m = match_level_3 (&right);
   if (m == MATCH_NO)
@@ -667,7 +667,7 @@ match_and_operand (gfc_expr ** result)
   int i;
 
   i = next_operator (INTRINSIC_NOT);
-  where = *gfc_current_locus ();
+  where = gfc_current_locus;
 
   m = match_level_4 (&e);
   if (m != MATCH_YES)
@@ -706,7 +706,7 @@ match_or_operand (gfc_expr ** result)
     {
       if (!next_operator (INTRINSIC_AND))
 	break;
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_and_operand (&e);
       if (m == MATCH_NO)
@@ -749,7 +749,7 @@ match_equiv_operand (gfc_expr ** result)
     {
       if (!next_operator (INTRINSIC_OR))
 	break;
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_or_operand (&e);
       if (m == MATCH_NO)
@@ -803,7 +803,7 @@ match_level_5 (gfc_expr ** result)
 	    break;
 	}
 
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_equiv_operand (&e);
       if (m == MATCH_NO)
@@ -861,7 +861,7 @@ gfc_match_expr (gfc_expr ** result)
 	  return MATCH_ERROR;
 	}
 
-      where = *gfc_current_locus ();
+      where = gfc_current_locus;
 
       m = match_level_5 (&e);
       if (m == MATCH_NO)

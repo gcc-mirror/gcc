@@ -477,7 +477,7 @@ gfc_int_expr (int i)
   p->ts.type = BT_INTEGER;
   p->ts.kind = gfc_default_integer_kind ();
 
-  p->where = *gfc_current_locus ();
+  p->where = gfc_current_locus;
   mpz_init_set_si (p->value.integer, i);
 
   return p;
@@ -498,7 +498,7 @@ gfc_logical_expr (int i, locus * where)
   p->ts.kind = gfc_default_logical_kind ();
 
   if (where == NULL)
-    where = gfc_current_locus ();
+    where = &gfc_current_locus;
   p->where = *where;
   p->value.logical = i;
 

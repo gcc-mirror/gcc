@@ -66,7 +66,7 @@ match_word (const char *str, match (*subr) (void), locus * old_locus)
 
   if (m != MATCH_YES)
     {
-      gfc_set_locus (old_locus);
+      gfc_current_locus = *old_locus;
       reject_statement ();
     }
 
@@ -101,7 +101,7 @@ decode_statement (void)
   if (gfc_match_eos () == MATCH_YES)
     return ST_NONE;
 
-  old_locus = *gfc_current_locus ();
+  old_locus = gfc_current_locus;
 
   /* Try matching a data declaration or function declaration. The
       input "REALFUNCTIONA(N)" can mean several things in different
@@ -118,7 +118,7 @@ decode_statement (void)
 	reject_statement ();
 
       gfc_undo_symbols ();
-      gfc_set_locus (&old_locus);
+      gfc_current_locus = old_locus;
     }
 
   /* Match statements whose error messages are meant to be overwritten
@@ -136,7 +136,7 @@ decode_statement (void)
   if (gfc_match_subroutine () == MATCH_YES)
     return ST_SUBROUTINE;
   gfc_undo_symbols ();
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
 
   /* Check for the IF, DO, SELECT, WHERE and FORALL statements, which
      might begin with a block label.  The match functions for these
@@ -146,17 +146,17 @@ decode_statement (void)
   if (gfc_match_if (&st) == MATCH_YES)
     return st;
   gfc_undo_symbols ();
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
 
   if (gfc_match_where (&st) == MATCH_YES)
     return st;
   gfc_undo_symbols ();
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
 
   if (gfc_match_forall (&st) == MATCH_YES)
     return st;
   gfc_undo_symbols ();
-  gfc_set_locus (&old_locus);
+  gfc_current_locus = old_locus;
 
   match (NULL, gfc_match_do, ST_DO);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
@@ -327,7 +327,7 @@ next_free (void)
 	}
       else
 	{
-	  label_locus = *gfc_current_locus ();
+	  label_locus = gfc_current_locus;
 
 	  if (gfc_statement_label->value == 0)
 	    {
@@ -394,7 +394,7 @@ next_fixed (void)
 	case '8':
 	case '9':
 	  label = label * 10 + c - '0';
-	  label_locus = *gfc_current_locus ();
+	  label_locus = gfc_current_locus;
 	  digit_flag = 1;
 	  break;
 
@@ -440,14 +440,14 @@ next_fixed (void)
 
   do
     {
-      loc = *gfc_current_locus ();
+      loc = gfc_current_locus;
       c = gfc_next_char_literal (0);
     }
   while (gfc_is_whitespace (c));
 
   if (c == '!')
     goto blank_line;
-  gfc_set_locus (&loc);
+  gfc_current_locus = loc;
 
   if (gfc_match_eos () == MATCH_YES)
     goto blank_line;
@@ -606,7 +606,7 @@ add_statement (void)
   p = gfc_get_code ();
   *p = new_st;
 
-  p->loc = *gfc_current_locus ();
+  p->loc = gfc_current_locus;
 
   if (gfc_state_stack->head == NULL)
     gfc_state_stack->head = p;
@@ -1237,7 +1237,7 @@ verify_st_order (st_state * p, gfc_statement st)
     }
 
   /* All is well, record the statement in case we need it next time.  */
-  p->where = *gfc_current_locus ();
+  p->where = gfc_current_locus;
   p->last_statement = st;
   return SUCCESS;
 
@@ -1811,7 +1811,7 @@ parse_if_block (void)
 	    }
 
 	  seen_else = 1;
-	  else_locus = *gfc_current_locus ();
+	  else_locus = gfc_current_locus;
 
 	  d = new_level (gfc_state_stack->head);
 	  d->op = EXEC_IF;
@@ -2411,7 +2411,7 @@ loop:
       if (seen_program)
 	goto duplicate_main;
       seen_program = 1;
-      prog_locus = *gfc_current_locus ();
+      prog_locus = gfc_current_locus;
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
       accept_statement (st);
@@ -2449,7 +2449,7 @@ loop:
       if (seen_program)
 	goto duplicate_main;
       seen_program = 1;
-      prog_locus = *gfc_current_locus ();
+      prog_locus = gfc_current_locus;
 
       push_state (&s, COMP_PROGRAM, gfc_new_block);
       parse_progunit (st);

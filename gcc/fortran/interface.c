@@ -1833,7 +1833,7 @@ gfc_add_interface (gfc_symbol * new)
 
   intr = gfc_get_interface ();
   intr->sym = new;
-  intr->where = *gfc_current_locus ();
+  intr->where = gfc_current_locus;
 
   intr->next = *head;
   *head = intr;
