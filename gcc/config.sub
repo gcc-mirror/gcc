@@ -596,7 +596,7 @@ case $os in
 		;;
 	*)
 		# Get rid of the `-' at the beginning of $os.
-		os=`echo $1 | sed 's/[^-]*-//'`
+		os=`echo $os | sed 's/[^-]*-//'`
 		echo Invalid configuration \`$1\': system \`$os\' not recognized 1>&2
 		exit 1
 		;;
