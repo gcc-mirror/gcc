@@ -1,3 +1,9 @@
+2003-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (readonly_data_expr): New function.
+	(expand_builtin_memmove): Optimize any rodata source, not just
+	strings.
+
 2003-05-07  David Mosberger <davidm@hpl.hp.com>
 
         * unwind-libunwind.c (_Unwind_FindEnclosingFunction): New.

@@ -13,10 +13,61 @@ extern int memcmp (const void *, const void *, size_t);
 const char s1[] = "123";
 char p[32] = "";
 
+static const struct foo
+{
+  char *s;
+  double d;
+  long l;
+} foo[] =
+{
+  { "hello world1", 3.14159, 101L },
+  { "hello world2", 3.14159, 102L },
+  { "hello world3", 3.14159, 103L },
+  { "hello world4", 3.14159, 104L },
+  { "hello world5", 3.14159, 105L },
+  { "hello world6", 3.14159, 106L }
+};
+
+static const struct bar
+{
+  char *s;
+  const struct foo f[3];
+} bar[] =
+{
+  {
+    "hello world10",
+    {
+      { "hello1", 3.14159, 201L },
+      { "hello2", 3.14159, 202L },
+      { "hello3", 3.14159, 203L },
+    }
+  },
+  {
+    "hello world11",
+    {
+      { "hello4", 3.14159, 204L },
+      { "hello5", 3.14159, 205L },
+      { "hello6", 3.14159, 206L },
+    }
+  }
+};
+
+static const int baz[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
+
 int main()
 {
-  int i;
   const char *s;
+  struct foo f1[sizeof foo/sizeof*foo];
+  struct bar b1[sizeof bar/sizeof*bar];
+  int bz[sizeof baz/sizeof*baz];
+
+  if (memmove (f1, foo, sizeof (foo)) != f1 || memcmp (f1, foo, sizeof(foo)))
+    abort();
+  if (memmove (b1, bar, sizeof (bar)) != b1 || memcmp (b1, bar, sizeof(bar)))
+    abort();
+  bcopy (baz, bz, sizeof (baz));
+  if (memcmp (bz, baz, sizeof(baz)))
+    abort();
 
   if (memmove (p, "abcde", 6) != p || memcmp (p, "abcde", 6))
     abort ();
@@ -70,20 +121,5 @@ __attribute__ ((noinline))
 static void
 bcopy (const void *s, void *d, size_t n)
 {
-#ifdef __OPTIMIZE__
-  abort ();
-#else
-  char *dst = (char *) d;
-  const char *src = (const char *) s;
-  if (src < dst)
-    {
-      dst += n;
-      src += n;
-      while (n--)
-        *--dst = *--src;
-    }
-  else
-    while (n--)
-      *dst++ = *src++;
-#endif
+  memmove (d, s, n);
 }

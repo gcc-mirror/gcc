@@ -168,6 +168,7 @@ static tree fold_builtin_inf		PARAMS ((tree, int));
 static tree fold_builtin_nan		PARAMS ((tree, tree, int));
 static int validate_arglist		PARAMS ((tree, ...));
 static tree fold_trunc_transparent_mathfn PARAMS ((tree));
+static bool readonly_data_expr		PARAMS ((tree));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -2423,10 +2424,16 @@ expand_builtin_memmove (arglist, target, mode)
       if (src_align == 0)
 	return 0;
 
-      /* If src is a string constant and strings are not writable,
-	 we can use normal memcpy.  */
-      if (!flag_writable_strings && c_getstr (src))
-	return expand_builtin_memcpy (arglist, target, mode, 0);
+      /* If src is categorized for a readonly section we can use
+	 normal memcpy.  */
+      if (readonly_data_expr (src))
+        {
+	  tree const fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	  if (!fn)
+	    return 0;
+	  return expand_expr (build_function_call_expr (fn, arglist),
+			      target, mode, EXPAND_NORMAL);
+	}
 
       /* Otherwise, call the normal function.  */
       return 0;
@@ -5449,3 +5456,16 @@ purge_builtin_constant_p ()
       }
 }
 
+/* Returns true is EXP represents data that would potentially reside
+   in a readonly section.  */
+
+static bool
+readonly_data_expr (tree exp)
+{
+  STRIP_NOPS (exp);
+
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    return decl_readonly_section (TREE_OPERAND (exp, 0), 0);
+  else
+    return false;
+}
