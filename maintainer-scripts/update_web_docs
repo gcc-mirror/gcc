@@ -83,25 +83,27 @@ WORKDIR=/tmp/gcc-doc-update.$$
 cd $WORKDIR
 
 # Find all the texi files in the repository, except those in directories
-# we do not care about (Attic, texinfo, etc).
-find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc_exclude | sed -e s#$CVSROOT/##g -e s#,v##g > FILES
+# we do not care about (texinfo, etc).
+find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc_exclude | sed -e s#$CVSROOT/##g -e s#,v##g -e s#Attic/##g > FILES
 
 
 # Checkout all the texi files and get them into a single directory.
 # If we ever have texi files with the same name we'll have to do this
 # differently.
-cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html
+cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/texinfo.tex gcc/gcc/doc/texinfo.tex
 mv `find . -name \*.texi -print` .
+mv `find . -name \*.tex -print` .
 
-# Now convert the relevant files from texi to html.
-for file in c-tree cpp chill cppinternals gcc gcj g77 objc-features porting; do
+# Now convert the relevant files from texi to HTML and PostScript.
+for file in cpp chill cppinternals gcc gcj g77 objc-features porting; do
   if [ -e ${file}.texi ]; then
     /usr/local/bin/texi2html -glossary -menu -split_chapter ${file}.texi
+    texi2dvi ${file}.texi </dev/null && dvips -o ${file}.ps ${file}.dvi
   fi
 done
 
-# Then build a gzipped copy of each of the resulting .html files
-for file in *.html; do
+# Then build a gzipped copy of each of the resulting .html and .ps files
+for file in *.html *.ps; do
   cat $file | gzip --best > $file.gz
 done
 
@@ -113,13 +115,15 @@ if test $today = 15; then
 fi
 
 # And copy the resulting html files to the web server
-for file in *.html; do
+for file in *.html *.ps; do
   cat $DOCSDIR/$file | 
     sed -e '/^<!-- Created on/d' \
-        -e '/^by <I>GCC Administrator<\/I> on/d' > file1
+        -e '/^by <I>GCC Administrator<\/I> on/d' \
+        -e '/^%DVIPSSource:/d' > file1
   cat $file |
     sed -e '/^<!-- Created on/d' \
-        -e '/^by <I>GCC Administrator<\/I> on/d' > file2
+        -e '/^by <I>GCC Administrator<\/I> on/d' \
+        -e '/^%DVIPSSource:/d' > file2
   if cmp -s file1 file2; then
     :
   else
