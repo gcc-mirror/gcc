@@ -2258,6 +2258,8 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
+extern rtx get_reg_known_value		PARAMS ((unsigned int));
+extern bool get_reg_known_equiv_p	PARAMS ((unsigned int));
 
 /* In sibcall.c */
 typedef enum {
