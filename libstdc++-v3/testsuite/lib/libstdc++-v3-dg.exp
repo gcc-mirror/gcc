@@ -176,3 +176,38 @@ proc libstdc++-v3_target_compile { source dest type options } {
     return [target_compile $source $dest $type $options]
 }
 
+
+# A bit sloppy...  Returns a list of source files (full pathnames) to
+# compile.  We mimic the mkcheck script in that the first time this is run,
+# all existing files are listed in "testsuite_files" in the output
+# directory.  Subsequent runs pull the list from that file, allowing users
+# to trim the list down to problematic tests.
+### This is supposed to be done via RUNTESTFLAGS, but that doesn't work.
+proc libstdc++-v3-list-sourcefiles { } {
+    global srcdir
+    global outdir
+
+    set files_file "${outdir}/testsuite_files"
+    set sfiles ""
+    if { [file exists $files_file] } {
+	set f [open $files_file]
+	while { ! [eof $f] } {
+	    set t [gets $f]
+	    if { [string length "$t"] != 0 } {
+		lappend sfiles ${srcdir}/${t}
+	    }
+	}
+    } else {
+	set f [open $files_file "w"]
+	set where_we_were [pwd]
+	cd $srcdir
+	foreach s [lsort [glob -nocomplain */*.cc]] {
+	    lappend sfiles ${srcdir}/${s}
+	    puts $f $s
+	}
+	cd $where_we_were
+    }
+    close $f
+    return $sfiles
+}
+
