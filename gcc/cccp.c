@@ -3377,6 +3377,17 @@ handle_directive (ip, op)
 	  check_expand (op, len);
 	  bcopy (buf, op->bufp, len);
 	  op->bufp += len;
+	} else if (kt->type == T_DEFINE && dump_macros == dump_names) {
+	  U_CHAR *xp = buf;
+	  U_CHAR *yp;
+	  SKIP_WHITE_SPACE (xp);
+	  yp = xp;
+	  while (is_idchar[*xp]) xp++;
+	  len = (xp - yp);
+	  check_expand (op, len + 1);
+	  *op->bufp++ = ' ';
+	  bcopy (yp, op->bufp, len);
+	  op->bufp += len;
 	}
       }				/* Don't we need a newline or #line? */
 
