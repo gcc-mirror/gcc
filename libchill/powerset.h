@@ -29,22 +29,14 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _POWERSET_H
 #define _POWERSET_H
 
-#define USE_CHARS
+/* Do not set these to anything other than character types without fixing
+   their uses in andps.c and other files which implement bit sets operations.
 
-#ifdef USE_CHARS
-
+   The uses in those files will violate ANSI/ISO C aliasing rules as they
+   are currently written.  */
 #define SET_WORD unsigned char
 #define SET_CHAR  unsigned char
 #define SET_SHORT unsigned char
-
-#else
-
-#ifndef SET_WORD
-#define SET_WORD unsigned int
-#endif
-#define SET_CHAR  unsigned char
-#define SET_SHORT unsigned short
-#endif
 
 #define SET_WORD_SIZE (sizeof (char) * sizeof (SET_WORD))
 #define SET_SHORT_SIZE (sizeof (char) * sizeof (SET_SHORT))

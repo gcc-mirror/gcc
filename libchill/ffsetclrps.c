@@ -56,23 +56,6 @@ __ffsetclrpowerset (ps, bitlength, first_bit)
   if (first_bit >= bitlength)
     return -1;
 
-#ifndef USE_CHARS
-  if (bitlength <= SET_CHAR_SIZE)
-    {
-      for (bitno = first_bit; bitno < bitlength; bitno++)
-	if (GET_BIT_IN_CHAR (*((SET_CHAR *)ps), bitno))
-	  break;
-      return bitno == bitlength ? -1 : bitno;
-    }
-  else if (bitlength <= SET_SHORT_SIZE)
-    {
-      for (bitno = first_bit; bitno < bitlength; bitno++)
-	if (GET_BIT_IN_SHORT (*((SET_SHORT *)ps), bitno))
-	  break;
-      return bitno == bitlength ? -1 : bitno;
-    }
-  else
-#endif
     {
       unsigned int words_to_skip = (unsigned) first_bit / SET_WORD_SIZE;
       unsigned long cnt = words_to_skip * SET_WORD_SIZE;
