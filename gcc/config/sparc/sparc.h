@@ -32,6 +32,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC " %{pipe:-} %{fpic:-k} %{fPIC:-k}"
 
+/* Define macros to distinguish architectures.  */
+#define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparcv8__}"
+
 /* Prevent error on `-sun4' and `-target sun4' options.  */
 /* This used to translate -dalign to -malign, but that is no good
    because it can't turn off the usual meaning of making debugging dumps.  */
@@ -101,6 +104,12 @@ extern int target_flags;
    seem worth trying to fix.  */
 #define TARGET_FORCE_ALIGN (target_flags & 32)
 
+/* Nonzero means that we should generate code for a v8 sparc.  */
+#define TARGET_V8 (target_flags & 64)
+
+/* Nonzero means that we should generate code for a sparclite.  */
+#define TARGET_SPARCLITE (target_flags & 128)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -114,6 +123,10 @@ extern int target_flags;
     {"no-epilogue", -2},	\
     {"hope-align", 16},		\
     {"force-align", 48},	\
+    {"v8", 64},			\
+    {"no-v8", -64},		\
+    {"sparclite", 128},		\
+    {"no-sparclite", -128},	\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 3
