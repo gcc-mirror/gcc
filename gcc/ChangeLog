@@ -1,3 +1,7 @@
+2000-09-06 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+        * flow.c (insn_dead_p): Detect dead memory stores with auto increments.
+
 2000-09-06  Kazu Hirata  <kazu@hxi.com>
 
 	* calls.c: Fix formatting.
