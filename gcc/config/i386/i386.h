@@ -2660,9 +2660,7 @@ do {							\
 
 /* A C expression whose value is reversed condition code of the CODE for
    comparison done in CC_MODE mode.  */
-#define REVERSE_CONDITION(CODE, MODE) \
-  ((MODE) != CCFPmode && (MODE) != CCFPUmode ? reverse_condition (CODE) \
-   : reverse_condition_maybe_unordered (CODE))
+#define REVERSE_CONDITION(CODE, MODE) ix86_reverse_condition ((CODE), (MODE))
 
 
 /* Control the assembler format that we output, to the extent
