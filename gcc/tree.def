@@ -630,7 +630,7 @@ DEFTREECODE (ABS_EXPR, "abs_expr", tcc_unary, 1)
    The second operand is the number of bits to
    shift by; it need not be the same type as the first operand and result.
    Note that the result is undefined if the second operand is larger
-   than the first operand's type size.  */
+   than or equal to the first operand's type size.  */
 DEFTREECODE (LSHIFT_EXPR, "lshift_expr", tcc_binary, 2)
 DEFTREECODE (RSHIFT_EXPR, "rshift_expr", tcc_binary, 2)
 DEFTREECODE (LROTATE_EXPR, "lrotate_expr", tcc_binary, 2)

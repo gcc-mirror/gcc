@@ -2011,7 +2011,7 @@ shift.  Right shift should be treated as arithmetic, i.e., the
 high-order bits should be zero-filled when the expression has unsigned
 type and filled with the sign bit when the expression has signed type.
 Note that the result is undefined if the second operand is larger
-than the first operand's type size.
+than or equal to the first operand's type size.
 
 
 @item BIT_IOR_EXPR
