@@ -358,8 +358,9 @@ get_tinfo_decl (tree type)
       TREE_READONLY (d) = 1;
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
-      SET_DECL_ASSEMBLER_NAME (d, name);
       DECL_COMDAT (d) = 1;
+      TREE_PUBLIC (d) = 1;
+      SET_DECL_ASSEMBLER_NAME (d, name);
 
       pushdecl_top_level_and_finish (d, NULL_TREE);
 
