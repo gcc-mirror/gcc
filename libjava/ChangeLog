@@ -1,3 +1,16 @@
+2005-03-30  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libjava.exp (libjava_init): Use the same target
+	check for Darwin.
+	(libjava_arguments): Likewise.
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_compile_c_to_so): Likewise.
+	(gcj_jni_test_one): Likewise.
+	(gcj_jni_invocation_compile_c_to_binary): Likewise.
+	Add flags to keep the Darwin linker quiet.
+	(gcj_jni_invocation_test_one): Use the same target check for Darwin.
+	Add -liconv and lgcc_s for Darwin.
+
 2005-03-26  Chris Burdess  <dog@gnu.org>
 
 	* gnu/xml/dom/DomNode.java (notifyNode): grow listener array as

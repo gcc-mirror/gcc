@@ -14,7 +14,7 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 # so we check against powerpc-apple-darwin and set them to
 # dylib, else we assume it's .so
 
-  if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+  if { [istarget "*-*-darwin*"] } {
       set so_extension "dylib"
       set so_flag "-dynamiclib"
   } else {
@@ -77,10 +77,10 @@ proc gcj_jni_test_one {file} {
   global INTERPRETER
 
 # apple uses a different extension for shared/dynamic libraries
-# so we check against powerpc-apple-darwin and set them to 
+# so we check against powerpc-apple-darwin and set them to
 # dylib, else we assume it's .so
 
-  if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+  if { [istarget "*-*-darwin*"] } {
       set so_extension "dylib"
   } else {
       set so_extension "so"
@@ -134,12 +134,12 @@ proc gcj_jni_test_one {file} {
     # Darwin does not yet have a libgcc_s.dylib library.
     # So we add it here. If the libgcc_s is installed, the libstdc++
     # would pick it up.
-    if { [ regexp {powerpc-apple-darwin} $host_triplet] } {
+    if { [istarget "*-*-darwin*"] } {
 	lappend cxxflaglist "-lgcc_s -lstdc++"
     } else {
 	lappend cxxflaglist "-lstdc++"
     }
-  
+
     set cxxflags [join $cxxflaglist]
   }
 
@@ -194,6 +194,10 @@ proc gcj_jni_invocation_compile_c_to_binary {file {options {}}} {
   set filename [file tail $file]
   set name [file rootname $filename]
 
+  # Set some darwin specific options
+  if { [istarget "*-*-darwin*"] } {
+      lappend options "additional_flags=-multiply_defined suppress"
+  }
   # Find the generated header.
   lappend options "additional_flags=-I. -I.."
 
@@ -238,7 +242,14 @@ proc gcj_jni_invocation_test_one {file} {
   pass "bytecompile $file"
 
   set cfile [file rootname $file].c
-  set cxxflags "-L../.libs -lgcj"
+  # Darwin needs -liconv linked, otherwise we get some unresolved.
+  # Also, like in the cxxtest we need to add -lgcc_s since Darwin
+  # has no libgcc_s.dylib installed yet.
+  if { [istarget "*-*-darwin*"] } {
+      set cxxflags "-L../.libs -lgcc_s -lgcj -liconv"
+  } else {
+      set cxxflags "-L../.libs -lgcj"
+  }
 
   if { [istarget "*-*-solaris*"] } {
     lappend cxxflags "-lsocket"
