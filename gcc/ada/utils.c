@@ -1835,7 +1835,7 @@ gnat_type_for_mode (enum machine_mode mode, int unsignedp)
   else if (SCALAR_INT_MODE_P (mode))
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
   else
-    gcc_unreachable ();
+    return NULL_TREE;
 }
 
 /* Return the unsigned version of a TYPE_NODE, a scalar type.  */

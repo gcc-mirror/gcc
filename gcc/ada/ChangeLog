@@ -1,3 +1,9 @@
+2005-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR ada/19942
+	* utils.c (gnat_type_for_mode): Return null instead of ICE because we asked
+	for an unknown mode.
+
 2005-02-12  Richard Henderson  <rth@redhat.com>
 
 	* utils.c (gnat_type_for_mode): Return NULL for COMPLEX modes;
