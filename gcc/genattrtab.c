@@ -396,7 +396,7 @@ attr_rtx (va_alist)
     {
       rtx arg0 = va_arg (p, rtx);
 
-      hashcode = (code + RTL_HASH (arg0));
+      hashcode = ((int) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -416,7 +416,7 @@ attr_rtx (va_alist)
       rtx arg0 = va_arg (p, rtx);
       rtx arg1 = va_arg (p, rtx);
 
-      hashcode = (code + RTL_HASH (arg0) + RTL_HASH (arg1));
+      hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -436,7 +436,7 @@ attr_rtx (va_alist)
     {
       char * arg0 = va_arg (p, char *);
 
-      hashcode = (code + RTL_HASH (arg0));
+      hashcode = ((int) code + RTL_HASH (arg0));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
@@ -456,7 +456,7 @@ attr_rtx (va_alist)
       char * arg0 = va_arg (p, char *);
       char * arg1 = va_arg (p, char *);
 
-      hashcode = (code + RTL_HASH (arg0) + RTL_HASH (arg1));
+      hashcode = ((int) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code

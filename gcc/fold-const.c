@@ -3680,7 +3680,7 @@ fold (expr)
 	  /* If this is A != 0 ? A : 0, this is simply A.  For ==, it is
 	     always zero.  */
 
-	  if (integer_zerop (arg2))
+	  if (integer_zerop (TREE_OPERAND (arg0, 1)) && integer_zerop (arg2))
 	    {
 	      if (comp_code == NE_EXPR)
 		return arg1;
