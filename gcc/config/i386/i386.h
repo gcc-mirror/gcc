@@ -33,10 +33,6 @@ Boston, MA 02111-1307, USA. */
    ADDR_BEG, ADDR_END, PRINT_IREG, PRINT_SCALE, PRINT_B_I_S, and many
    that start with ASM_ or end in ASM_OP.  */
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define I386 1
-
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 
 #ifndef HALF_PIC_P
