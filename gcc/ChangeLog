@@ -11,6 +11,8 @@ Wed Mar 22 13:11:54 2000  David Edelsohn  <edelsohn@gnu.org>
 	(movdi_64): Bracket code intended for 64-bit hosts.  Create
 	CONST_DOUBLE for 32-bit values.
 
+	* glimits.h (__LONG_MAX__): Recognize 64-bit AIX too.
+
 Wed Mar 22 13:11:54 2000  Gabriel Paubert  <paubert@iram.es>
 
 	* rs6000.md: Correct instructions length attributes and
