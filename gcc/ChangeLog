@@ -1,3 +1,7 @@
+Sun Mar 15 05:10:49 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sparc.c (sparc_type_code): Fix error in previous change.
+
 Sat Mar 14 05:45:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* i386/xm-aix.h, i386/xm-osf.h (i386/xm-i386.h): Don't include.
