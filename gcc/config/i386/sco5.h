@@ -909,8 +909,8 @@ dtors_section ()							\
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES 		\
-	{ "coff", MASK_COFF }, 		\
-	{ "elf", -MASK_COFF },
+	{ "coff", MASK_COFF, "Generate COFF output" }, 		\
+	{ "elf", -MASK_COFF, "Generate ELF output"  },
 
 #define NO_DOLLAR_IN_LABEL
 
