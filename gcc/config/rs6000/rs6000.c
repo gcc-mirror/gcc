@@ -3787,7 +3787,7 @@ rs6000_allocate_stack_space (file, size, copy_r12)
     {
       fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
       if (size < 32767)
-	fprintf (file, "\t{cal|la} %s,%d(%s)\n",
+	asm_fprintf (file, "\t{cal|la} %s,%d(%s)\n",
 		 reg_names[1], neg_size, reg_names[1]);
       else
 	{
