@@ -1441,8 +1441,11 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
   PUT_CODE (reg, MEM);
 
   /* If this is a memory ref that contains aggregate components,
-     mark it as such for cse and loop optimize.  */
-  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type);
+     mark it as such for cse and loop optimize.  If we are reusing a
+     previously generated stack slot, then we need to copy the bit in
+     case it was set for other reasons.  For instance, it is set for
+     __builtin_va_alist.  */
+  MEM_IN_STRUCT_P (reg) = AGGREGATE_TYPE_P (type) | MEM_IN_STRUCT_P (new);
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
@@ -3650,6 +3653,12 @@ assign_parms (fndecl, second_time)
 #else
       int named_arg = ! last_named;
 #endif
+      /* If this is a varargs function, then we want to treat the last named
+	 argument as if it was an aggregate, because it might be accessed as
+	 one by the va_arg macros.  This is necessary to make the aliasing
+	 code handle this parm correctly.  */
+      if (hide_last_arg && last_named)
+	aggregate = 1;
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors

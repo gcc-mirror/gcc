@@ -1,3 +1,8 @@
+Mon Mar  9 12:02:23 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* function.c (put_reg_into_stack): Copy MEM_IN_STRUCT_P from new.
+	(assign_parms): Set aggregate if hide_last_arg and last_named.
+
 Mon Mar  9 19:57:56 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Initialize insn_addresses.
