@@ -1453,14 +1453,6 @@ CUMULATIVE_ARGS;
    When generating pic allow anything.  */
 #define LEGITIMATE_CONSTANT_P(X)	(flag_pic || ! label_mentioned_p (X))
 
-/* If we are referencing a function that is static or is known to be 
-   in this file, make the SYMBOL_REF special.  We can use this to indicate
-   that we can do direct call to that function.  */
-#define ARM_MARK_NEARBY_FUNCTION(decl)					\
-  if (TREE_CODE (decl) == FUNCTION_DECL			                \
-      && (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl)))             \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;                    \
-
 /* Symbols in the text segment can be accessed without indirecting via the
    constant pool; it may take an extra binary operation, but this is still
    faster than indirecting via memory.  Don't do this when not optimizing,
@@ -1478,13 +1470,6 @@ CUMULATIVE_ARGS;
                  ? TREE_CST_RTL (decl) : DECL_RTL (decl));		\
       SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;				\
     }									\
-									\
-  ARM_MARK_NEARBY_FUNCTION (decl)					\
-}
-#else
-#define ENCODE_SECTION_INFO(decl)					\
-{									\
-  ARM_MARK_NEARBY_FUNCTION (decl)					\
 }
 #endif
 
