@@ -7,7 +7,6 @@ JDK1.1
 java.lang.Character.classify12
 java.lang.String.hash
 !java.math
-!java.net
 !java.rmi
 !java.security
 !java.sql
