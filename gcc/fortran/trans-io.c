@@ -816,7 +816,7 @@ gfc_trans_inquire (gfc_code * code)
 
 
 static gfc_expr *
-gfc_new_nml_name_expr (const char * name)
+gfc_new_nml_name_expr (char * name)
 {
    gfc_expr * nml_name;
    nml_name = gfc_get_expr();
@@ -825,8 +825,7 @@ gfc_new_nml_name_expr (const char * name)
    nml_name->ts.kind = gfc_default_character_kind;
    nml_name->ts.type = BT_CHARACTER;
    nml_name->value.character.length = strlen(name);
-   nml_name->value.character.string = gfc_getmem (strlen (name) + 1);
-   strcpy (nml_name->value.character.string, name);
+   nml_name->value.character.string = name;
 
    return nml_name;
 }

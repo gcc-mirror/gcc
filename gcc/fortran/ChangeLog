@@ -1,3 +1,11 @@
+2005-02-24  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	Revert yesterday's patch:
+	2005-02-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+		* gfortran.h (gfc_component, gfc_actual_arglist, ...
+		... argument.  Copy string instead of pointing to it.
+
 2005-02-23  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h (gfc_get_namespace): Add second argument to prototype.
@@ -38,6 +46,7 @@
 	* trans-expr.c (gfc_conv_unary_op, gfc_conv_power_op,
 	gfc_conv_concat_op, gfc_conv_expr_op): Likewise.
 
+	[ Reverted ]
 	* gfortran.h (gfc_component, gfc_actual_arglist, gfc_user_op): Make
 	'name' a 'const char *'.
 	(gfc_symbol): Likewise, also for 'module'.
