@@ -774,6 +774,11 @@ extern char leaf_reg_backmap[];
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 8 || (N) == 32)
 
+/* Define the size of space to allocate for the return value of an
+   untyped_call.  */
+
+#define APPLY_RESULT_SIZE 16
+
 /* 1 if N is a possible register number for function argument passing.
    On SPARC, these are the "output" registers.  */
 
