@@ -233,7 +233,14 @@ rtx_alloc (code)
   ob->next_free += length;
   ob->object_base = ob->next_free;
 
-  * (int *) rt = 0;
+  /* We want to clear everything up to the FLD array.  Normally, this is
+     one int, but we don't want to assume that and it isn't very portable
+     anyway; this is.  */
+
+  length = (sizeof (struct rtx_def) - sizeof (rtunion) - 1) / sizeof (int);
+  for (; length >= 0; length--)
+    ((int *) rt)[length] = 0;
+
   PUT_CODE (rt, code);
 
   return rt;
