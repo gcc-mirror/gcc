@@ -11837,6 +11837,35 @@ cp_parser_class_head (cp_parser* parser,
   else if (invalid_nested_name_p)
     cp_parser_error (parser,
 		     "qualified name does not name a class");
+  else if (nested_name_specifier)
+    {
+      tree scope;
+      /* Figure out in what scope the declaration is being placed.  */
+      scope = current_scope ();
+      if (!scope)
+	scope = current_namespace;
+      /* If that scope does not contain the scope in which the
+	 class was originally declared, the program is invalid.  */
+      if (scope && !is_ancestor (scope, nested_name_specifier))
+	{
+	  error ("declaration of `%D' in `%D' which does not "
+		 "enclose `%D'", type, scope, nested_name_specifier);
+	  type = NULL_TREE;
+	  goto done;
+	}
+      /* [dcl.meaning]
+
+         A declarator-id shall not be qualified exception of the
+	 definition of a ... nested class outside of its class
+	 ... [or] a the definition or explicit instantiation of a
+	 class member of a namespace outside of its namespace.  */
+      if (scope == nested_name_specifier)
+	{
+	  pedwarn ("extra qualification ignored");
+	  nested_name_specifier = NULL_TREE;
+	  num_templates = 0;
+	}
+    }
   /* An explicit-specialization must be preceded by "template <>".  If
      it is not, try to recover gracefully.  */
   if (at_namespace_scope_p () 
@@ -11880,7 +11909,6 @@ cp_parser_class_head (cp_parser* parser,
   else
     {
       tree class_type;
-      tree scope;
 
       /* Given:
 
@@ -11901,31 +11929,6 @@ cp_parser_class_head (cp_parser* parser,
 	      cp_parser_error (parser, "could not resolve typename type");
 	      type = error_mark_node;
 	    }
-	}
-
-      /* Figure out in what scope the declaration is being placed.  */
-      scope = current_scope ();
-      if (!scope)
-	scope = current_namespace;
-      /* If that scope does not contain the scope in which the
-	 class was originally declared, the program is invalid.  */
-      if (scope && !is_ancestor (scope, CP_DECL_CONTEXT (type)))
-	{
-	  error ("declaration of `%D' in `%D' which does not "
-		 "enclose `%D'", type, scope, nested_name_specifier);
-	  type = NULL_TREE;
-	  goto done;
-	}
-      /* [dcl.meaning]
-
-         A declarator-id shall not be qualified exception of the
-	 definition of a ... nested class outside of its class
-	 ... [or] a the definition or explicit instantiation of a
-	 class member of a namespace outside of its namespace.  */
-      if (scope == CP_DECL_CONTEXT (type))
-	{
-	  pedwarn ("extra qualification ignored");
-	  nested_name_specifier = NULL_TREE;
 	}
 
       maybe_process_partial_specialization (TREE_TYPE (type));
