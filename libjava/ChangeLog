@@ -1,3 +1,13 @@
+2002-06-18  Jeff Sturm  <jsturm@one-point.com>
+
+	* java/net/natPlainDatagramSocketImpl.cc (receive):
+	Check bounds of argument to FD_SET.
+	(setOption): Throw exception if socket is closed.
+
+	* java/net/natPlainSocketImpl.cc (accept, read):
+	Check bounds of argument to FD_SET.
+	(setOption): Throw exception if socket is closed.
+
 2002-06-18  Tom Tromey  <tromey@redhat.com>
 
 	* gcj/javaprims.h: Updated class declaration list.
