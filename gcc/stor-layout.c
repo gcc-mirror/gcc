@@ -162,7 +162,7 @@ variable_size (size)
      constant sizes.  */
   if (TREE_CONSTANT (size)
       || (*lang_hooks.decls.global_bindings_p) () < 0
-      || contains_placeholder_p (size))
+      || CONTAINS_PLACEHOLDER_P (size))
     return size;
 
   if (TREE_CODE (size) == MINUS_EXPR && integer_onep (TREE_OPERAND (size, 1)))
