@@ -1727,7 +1727,7 @@ while (0)
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode SImode
+#define Pmode word_mode
 
 /* Add any extra modes needed to represent the condition code.
 
