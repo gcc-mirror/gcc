@@ -1,3 +1,8 @@
+2003-04-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.pt/instantiate12.C: Explicit instantiate
+	initialized static data members.
+
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10471
