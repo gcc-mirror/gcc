@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
    The macro SUBTARGET_OVERRIDE_OPTIONS is provided for subtargets, to
    get control.  */
 
-#define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2 | MASK_STRING)
+#define NON_POWERPC_MASKS (MASK_POWER | MASK_POWER2)
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
   if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\

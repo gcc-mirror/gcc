@@ -1,3 +1,14 @@
+2001-12-08  Tom Rix  <trix@redhat.com>
+
+	* config/rs6000/aix43.h (NON_POWERPC_MASKS): Delete MASK_STRING.
+	* config/rs6000/aix51.h (NON_POWERPC_MASKS): Same.
+ 	* config/rs6000/rs6000.md (load_multiple, store_multiple): Do not use 
+ 	for powerpc64.
+ 	* config/rs6000/rs6000.md (movstrsi_8reg, movstrsi_6reg, 
+ 	movstrsi_4reg, movstrsi_1_reg): Add powerpc64.
+	* config/rs6000/rs6000.c (expand_block_move): Do not use 
+	gen_movstrsi_2reg and powerpc64.
+
 2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.h (rid): Add RID_CHOOSE_EXPR and
