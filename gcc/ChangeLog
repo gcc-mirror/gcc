@@ -1,3 +1,8 @@
+1999-10-13  Brendan Kehoe  <brendan@cygnus.com>
+
+	* regmove.c (optimize_reg_copy_3): Make sure P is non-nil as we
+	climb up the chain of insns.
+
 Wed Oct 13 10:20:58 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (write_subroutine): Careful for null trees.
