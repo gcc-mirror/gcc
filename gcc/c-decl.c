@@ -377,7 +377,8 @@ static bool next_is_function_body;
 
 /* Functions called automatically at the beginning and end of execution.  */
 
-tree static_ctors, static_dtors;
+static GTY(()) tree static_ctors;
+static GTY(()) tree static_dtors;
 
 /* Forward declarations.  */
 static tree lookup_name_in_scope (tree, struct c_scope *);
@@ -853,17 +854,19 @@ pop_file_scope (void)
      still works without it.  */
   finish_fname_decls ();
 
-  /* Kludge: don't actually pop the file scope if generating a
-     precompiled header, so that macros and local symbols are still
-     visible to the PCH generator.  */
+  /* This is the point to write out a PCH if we're doing that.
+     In that case we do not want to do anything else.  */
   if (pch_file)
-    return;
+    {
+      c_common_write_pch ();
+      return;
+    }
 
-  /* And pop off the file scope.  */
+  /* Pop off the file scope and close this translation unit.  */
   pop_scope ();
   file_scope = 0;
-
   cpp_undef_all (parse_in);
+  cgraph_finalize_compilation_unit ();
 }
 
 /* Insert BLOCK at the end of the list of subblocks of the current
@@ -6580,7 +6583,26 @@ make_pointer_declarator (tree type_quals_attrs, tree target)
   return build1 (INDIRECT_REF, quals, itarget);
 }
 
-/* Perform final processing on file-scope data.  */
+/* Synthesize a function which calls all the global ctors or global
+   dtors in this file.  This is only used for targets which do not
+   support .ctors/.dtors sections.  FIXME: Migrate into cgraph.  */
+static void
+build_cdtor (int method_type, tree cdtors)
+{
+  tree body = 0;
+
+  if (!cdtors)
+    return;
+
+  for (; cdtors; cdtors = TREE_CHAIN (cdtors))
+    append_to_statement_list (build_function_call (TREE_VALUE (cdtors), 0),
+			      &body);
+
+  cgraph_build_static_cdtor (method_type, body);
+}
+
+/* Perform final processing on one file scope's declarations (or the
+   external scope's declarations), GLOBALS.  */
 static void
 c_write_global_declarations_1 (tree globals)
 {
@@ -6602,20 +6624,38 @@ c_write_global_declarations_1 (tree globals)
 void
 c_write_global_declarations (void)
 {
-  tree t;
+  tree ext_block, t;
 
   /* We don't want to do this if generating a PCH.  */
   if (pch_file)
     return;
 
-  /* Process all file scopes in this compilation.  */
+  /* Close the external scope.  */
+  ext_block = pop_scope ();
+  external_scope = 0;
+  if (current_scope)
+    abort ();
+
+  /* Process all file scopes in this compilation, and the external_scope,
+     through wrapup_global_declarations and check_global_declarations.  */
   for (t = all_translation_units; t; t = TREE_CHAIN (t))
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
+  c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
-  /* Now do the same for the externals scope.  */
-  t = pop_scope ();
-  if (t)
-    c_write_global_declarations_1 (BLOCK_VARS (t));
+  /* Generate functions to call static constructors and destructors
+     for targets that do not support .ctors/.dtors sections.  These
+     functions have magic names which are detected by collect2.  */
+  build_cdtor ('I', static_ctors); static_ctors = 0;
+  build_cdtor ('D', static_dtors); static_dtors = 0;
+
+  /* We're done parsing; proceed to optimize and emit assembly.
+     FIXME: shouldn't be the front end's responsibility to call this.  */
+  cgraph_optimize ();
+
+  /* Presently this has to happen after cgraph_optimize.
+     FIXME: shouldn't be the front end's responsibility to call this.  */
+  if (flag_mudflap)
+    mudflap_finish_file ();
 }
 
 #include "gt-c-decl.h"

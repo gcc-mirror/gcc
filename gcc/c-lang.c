@@ -197,10 +197,11 @@ const char *const tree_code_name[] = {
 };
 #undef DEFTREECODE
 
+/* Final processing of file-scope data.  The Objective-C version of
+   this function still does something.  */
 void
 finish_file (void)
 {
-  c_objc_common_finish_file ();
 }
 
 int

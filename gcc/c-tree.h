@@ -197,7 +197,6 @@ extern int c_cannot_inline_tree_fn (tree *);
 extern bool c_objc_common_init (void);
 extern bool c_missing_noreturn_ok_p (tree);
 extern tree c_objc_common_truthvalue_conversion (tree expr);
-extern void c_objc_common_finish_file (void);
 extern int defer_fn (tree);
 extern bool c_warn_unused_global_decl (tree);
 extern void c_initialize_diagnostics (diagnostic_context *);
@@ -297,9 +296,6 @@ extern void c_finish_incomplete_decl (tree);
 extern void *get_current_scope (void);
 extern void objc_mark_locals_volatile (void *);
 extern void c_write_global_declarations (void);
-
-extern GTY(()) tree static_ctors;
-extern GTY(()) tree static_dtors;
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before
