@@ -1,3 +1,28 @@
+2001-11-30  Daniel Berlin  <dan@cgsoftware.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_builtin): add 
+	ALTIVEC_BUILTIN_LD_INTERNAL_4sf and ALTIVEC_BUILTIN_ST_INTERNAL_4sf, 
+	*_16qi,_8hi, rename existing V4SI ones to *_4si.
+	(altivec_init_builtins): Ditto.
+	(bdesc_2arg): Rename CODE_FOR_* to match changes in MD file.
+	
+	* config/rs6000/rs6000.md: Add attribute types vecsimple,
+	veccomplex, vecfloat, and vecperm, for altivec instructions.  
+	Modify altivec patterns to use approriate attribute type.
+	Modify altivec patterns to match RTL operations where approriate
+	(IE no unspec where we can avoid it).
+	Add vector unit scheduling for ppc7450.
+	Rename patterns to what they are where approriate 
+	(altivec_vaddfp->addv4sf3, etc)
+
+	* config/rs6000/rs6000.h (enum rs6000_builtins): Change VRS->VSR.
+	Pass -mppc, and define _ARCH_PPC, if -mcpu=7450 is used.
+
+	* config/rs6000/sysv4.h: Add -mcpu=7450.
+
+	* testsuite/gcc.dg/altivec-1.c: Update test to take into account renamed 
+	_builtin_altivec_ld_interal function.
+
 2001-11-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_FUNCS): Delete strtoul, bsearch, popen,
