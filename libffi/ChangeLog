@@ -1,3 +1,7 @@
+2002-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/sparc/v8.S: Make .eh_frame dependent on target word size.
+
 2002-04-04  Jeff Sturm  <jsturm@one-point.com>
 
 	* src/sparc/v8.S: Add unwind info.
