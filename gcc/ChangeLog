@@ -1,3 +1,12 @@
+Fri Jan 29 15:00:39 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.c (notice, fnotice): Check ANSI_PROTOTYPES, not __STDC__,
+ 	when declaring arguments and calling va_arg() to initialize them.
+
+	* collect2.c (notice): Likewise.
+
+	* loop.c (find_life_end): Use PROTO() macro in the prototype.
+
 Fri Jan 29 14:36:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (error): Fix typo in declaration.
