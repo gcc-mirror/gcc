@@ -22,14 +22,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifdef FIXINC_BROKEN
-/* The fixincl program is known to not run properly on this particular
-   system.  Instead of producing a probably broken executable, we force
-   a compilation error and let the mkfixinc.sh script install the
-   inclhack.sh shell script instead.  */
-# include "The fixincl program does not work properly on this system!"
-#endif
-
 #include "auto-host.h"
 
 #include <sys/types.h>
@@ -147,10 +139,10 @@ pid_t process_chain_head = (pid_t) -1;
 const char incl_quote_pat[] = "^[ \t]*#[ \t]*include[ \t]*\"[^/]";
 regex_t incl_quote_re;
 
-char *load_file (const char *);
-void process (char *, const char *);
+char *load_file  _P_((const char *));
+void process  _P_((char *, const char *));
 void run_compiles ();
-void wait_for_pid( pid_t, int );
+void wait_for_pid _P_(( pid_t ));
 void initialize ();
 
 #include "fixincl.x"
@@ -253,6 +245,9 @@ main (argc, argv)
       if (file_name_ct == 0)
         return EXIT_SUCCESS;
 
+      fflush (stdout);
+      fflush (stderr);
+
       {
         pid_t child = fork ();
         if (child == NULLPROCESS)
@@ -264,6 +259,11 @@ main (argc, argv)
                      errno, strerror (errno));
             exit (EXIT_FAILURE);
           }
+
+#ifdef DEBUG
+        fprintf (stderr, "Waiting for %d to complete %d files\n",
+                 child, file_name_ct);
+#endif
 
         wait_for_pid( child, file_name_ct );
       }
@@ -278,11 +278,6 @@ main (argc, argv)
      our children.  */
 
   signal (SIGCLD,  SIG_IGN);
-
-#ifdef DEBUG
-  fprintf (stderr, "Child start  --  processing %d files\n",
-           file_name_ct);
-#endif
 
   /*  For every file specified in stdandard in
       (except as throttled for bogus reasons)...
@@ -389,11 +384,6 @@ initialize()
 void
 wait_for_pid( pid_t child, int file_name_ct )
 {
-#ifdef DEBUG
-  fprintf (stderr, "Waiting for %d to complete %d files\n",
-           child, file_name_ct);
-#endif
-
   for (;;) {
     int status;
     pid_t dead_kid = wait (&status);
@@ -412,10 +402,6 @@ wait_for_pid( pid_t child, int file_name_ct )
                      child, WEXITSTATUS( status ));
             exit (EXIT_FAILURE);
           }
-#ifdef DEBUG
-        fprintf (stderr, "child finished %d files %s\n", file_name_ct,
-                 status ? strerror (status & 0xFF) : "ok");
-#endif
         break; /* normal child completion */
       }
 
@@ -530,8 +516,8 @@ load_file (pz_file_name)
 void
 run_compiles ()
 {
-  tSCC z_bad_comp[] = "fixincl ERROR:  cannot compile %s regex for %s\n"
-    "\texpr = `%s'\n" "\terror %s\n";
+  tSCC z_bad_comp[] = "fixincl ERROR:  cannot compile %s regex for %s\n\
+\texpr = `%s'\n\terror %s\n";
   tFixDesc *p_fixd = fixDescList;
   int fix_ct = FIX_COUNT;
   tTestDesc *p_test;
@@ -771,16 +757,17 @@ test_test (p_test, pz_file_name)
      tTestDesc *p_test;
      char*      pz_file_name;
 {
+  tSCC cmd_fmt[] =
+"file=%s\n\
+if ( test %s ) > /dev/null 2>&1\n\
+then echo TRUE\n\
+else echo FALSE\n\
+fi";
+
   char *pz_res;
   t_success res = FAILURE;
 
   static char cmd_buf[4096];
-  tSCC cmd_fmt[] =
-    "file=%s\n"
-    "if ( test %s ) > /dev/null 2>&1\n"
-    "then echo TRUE\n"
-    "else echo FALSE\n"
-    "fi";
 
   sprintf (cmd_buf, cmd_fmt, pz_file_name, p_test->pz_test_text);
   pz_res = run_shell (cmd_buf);
@@ -820,6 +807,41 @@ egrep_test (pz_data, p_test)
 
 
 /* * * * * * * * * * * * *
+
+  quoted_file_exists  Make sure that a file exists before we emit
+  the file name.  If we emit the name, our invoking shell will try
+  to copy a non-existing file into the destination directory.  */
+
+int
+quoted_file_exists (pz_src_path, pz_file_path, pz_file)
+     char* pz_src_path;
+     char* pz_file_path;
+     char* pz_file;
+{
+  char z[ MAXPATHLEN ];
+  char* pz;
+  sprintf (z, "%s/%s/", pz_src_path, pz_file_path);
+  pz = z + strlen ( z );
+
+  for (;;) {
+    char ch = *pz_file++;
+    if (! isgraph( ch ))
+      return 0;
+    if (ch == '"')
+      break;
+    *pz++ = ch;
+  }
+  *pz = '\0';
+  {
+    struct stat s;
+    if (stat (z, &s) != 0)
+      return 0;
+    return S_ISREG( s.st_mode );
+  }
+}
+
+
+/* * * * * * * * * * * * *
  *
    extract_quoted_files
   
@@ -840,6 +862,7 @@ egrep_test (pz_data, p_test)
    Result: internally nothing.  The results are written to stdout
            for interpretation by the invoking shell  */
 
+
 void
 extract_quoted_files (pz_data, pz_file_name, p_re_match)
      char *pz_data;
@@ -852,7 +875,7 @@ extract_quoted_files (pz_data, pz_file_name, p_re_match)
   fprintf (stderr, "Quoted includes in %s\n", pz_file_name);
 
   /*  Set "pz_file_name" to point to the containing subdirectory of the source
-      If there is none, then it is in our current direcory, ".".   */
+      If there is none, then it is in our current directory, ".".   */
 
   if (pz_dir_end == (char *) NULL)
     pz_file_name = ".";
@@ -872,23 +895,26 @@ extract_quoted_files (pz_data, pz_file_name, p_re_match)
       while (*pz_incl_quot++ != '"')
         ;
 
-      /* Print the source directory and the subdirectory of the file
-         in question.  */
-      printf ("%s  %s/", pz_src_dir, pz_file_name);
-      pz_dir_end = pz_incl_quot;
+      if (quoted_file_exists (pz_src_dir, pz_file_name, pz_incl_quot))
+        {
+          /* Print the source directory and the subdirectory
+             of the file in question.  */
+          printf ("%s  %s/", pz_src_dir, pz_file_name);
+          pz_dir_end = pz_incl_quot;
 
-      /* Append to the directory the relative path of the desired file */
-      while (*pz_incl_quot != '"')
-        putc (*pz_incl_quot++, stdout);
+          /* Append to the directory the relative path of the desired file */
+          while (*pz_incl_quot != '"')
+            putc (*pz_incl_quot++, stdout);
 
-      /* Now print the destination directory appended with the
-         relative path of the desired file */
-      printf ("  %s/%s/", pz_dest_dir, pz_file_name);
-      while (*pz_dir_end != '"')
-        putc (*pz_dir_end++, stdout);
+          /* Now print the destination directory appended with the
+             relative path of the desired file */
+          printf ("  %s/%s/", pz_dest_dir, pz_file_name);
+          while (*pz_dir_end != '"')
+            putc (*pz_dir_end++, stdout);
 
-      /* End of entry */
-      putc ('\n', stdout);
+          /* End of entry */
+          putc ('\n', stdout);
+        }
 
       /* Find the next entry */
       if (regexec (&incl_quote_re, pz_incl_quot, 1, p_re_match, 0) != 0)
@@ -936,7 +962,7 @@ process (pz_data, pz_file_name)
    */
   strcpy (env_current_file + 5, pz_file_name);
   process_chain_head = NOPROCESS;
-
+  fprintf (stderr, "%-50s   \r", pz_file_name );
   /* For every fix in our fix list, ...  */
   for (; todo_ct > 0; p_fixd++, todo_ct--)
     {
@@ -982,7 +1008,7 @@ process (pz_data, pz_file_name)
            test_ct-- > 0;
            p_test++)
         {
-#ifdef DEBUG
+#ifdef DEBUG_TEST
           static const char z_test_fail[] =
             "%16s test %2d failed for %s\n";
 #endif
@@ -991,7 +1017,7 @@ process (pz_data, pz_file_name)
             case TT_TEST:
               if (!SUCCESSFUL (test_test (p_test, pz_file_name)))
                 {
-#ifdef DEBUG
+#ifdef DEBUG_TEST
                   fprintf (stderr, z_test_fail, p_fixd->fix_name,
                            p_fixd->test_ct - test_ct, pz_file_name);
 #endif
@@ -1002,7 +1028,7 @@ process (pz_data, pz_file_name)
             case TT_EGREP:
               if (!SUCCESSFUL (egrep_test (pz_data, p_test)))
                 {
-#ifdef DEBUG
+#ifdef DEBUG_TEST
                   fprintf (stderr, z_test_fail, p_fixd->fix_name,
                            p_fixd->test_ct - test_ct, pz_file_name);
 #endif
@@ -1013,7 +1039,7 @@ process (pz_data, pz_file_name)
             case TT_NEGREP:
               if (SUCCESSFUL (egrep_test (pz_data, p_test)))
                 {
-#ifdef DEBUG
+#ifdef DEBUG_TEST
                   fprintf (stderr, z_test_fail, p_fixd->fix_name,
                            p_fixd->test_ct - test_ct, pz_file_name);
 #endif
@@ -1050,6 +1076,7 @@ process (pz_data, pz_file_name)
 
       for (;;)
         {
+          tSCC z_err[] = "Error %d (%s) starting filter process for %s\n";
           static int failCt = 0;
           int fd = chain_open (fdp.read_fd,
                                (t_pchar *) p_fixd->patch_args,
@@ -1062,8 +1089,7 @@ process (pz_data, pz_file_name)
               break;
             }
 
-          fprintf (stderr, "Error %d (%s) starting filter process "
-                   "for %s\n", errno, strerror (errno),
+          fprintf (stderr, z_err, errno, strerror (errno),
                    p_fixd->fix_name);
 
           if ((errno != EAGAIN) || (++failCt > 10))
