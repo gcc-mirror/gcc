@@ -760,7 +760,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb"
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
@@ -820,13 +820,13 @@ case "${target}" in
      noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
      ;;
   m68k-*-elf*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   m68k-*-coff*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
@@ -945,7 +945,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc-*-sunos4*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
            noconfigdirs="$noconfigdirs gdb gdbtest target-newlib target-libgloss"
     else
@@ -988,10 +988,10 @@ case "${target}" in
   *-*-mpw*)
     # Macs want a resource compiler.
     configdirs="$configdirs grez"
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;    
   *-*-*)
-    noconfigdirs="${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
 esac
 
