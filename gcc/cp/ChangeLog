@@ -1,3 +1,8 @@
+2001-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (build_delete): Create a SAVE_EXPR for the address if
+	we're going to use it more than once.
+
 2001-04-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DELTA2_FROM_PTRMEMFUNC): Remove.
