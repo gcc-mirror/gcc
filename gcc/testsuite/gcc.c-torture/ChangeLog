@@ -1,3 +1,7 @@
+Wed May  3 13:02:10 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* execute/20000503-1.c: New test for extract_muldiv bug.
+
 Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* compile/20000427-1.c: New test for loop hoisting code
