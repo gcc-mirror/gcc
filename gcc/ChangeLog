@@ -1,3 +1,8 @@
+2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/netbsd.h (SUBTARGET_ASM_SPEC): Always pass -KPIC
+	unless -fno-pic or -fno-PIC is specified.
+
 2002-09-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* c-common.c (preprocessing_trad_p): Define.
