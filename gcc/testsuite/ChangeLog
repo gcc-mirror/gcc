@@ -1,3 +1,8 @@
+2000-11-10  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/20001108-1.c: Add test of unsigned long
+	long multuiple and accumulate.
+
 2000-11-09  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/sequence-pt-1.c: Cast from pointer to integer
