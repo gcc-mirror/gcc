@@ -329,6 +329,8 @@ extern void (*lang_expand_function_end) (void);
    noreturn attribute.  */
 extern int (*lang_missing_noreturn_ok_p) (tree);
 
+extern void push_file_scope (void);
+extern void pop_file_scope (void);
 extern int yyparse (void);
 extern stmt_tree current_stmt_tree (void);
 extern tree *current_scope_stmt_stack (void);
@@ -950,9 +952,6 @@ extern int self_promoting_args_p (tree);
 extern tree strip_array_types (tree);
 extern tree strip_pointer_operator (tree);
 
-/* This function resets the parsers' state in preparation for parsing
-   a new file.  */
-extern void c_reset_state (void);
 /* This is the basic parsing function.  */
 extern void c_parse_file (void);
 /* This is misnamed, it actually performs end-of-compilation processing.  */

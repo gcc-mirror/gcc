@@ -388,13 +388,6 @@ cp_var_mod_type_p (tree type)
   return false;
 }
 
-/* Stub routine to tell people that this doesn't work yet.  */
-void
-c_reset_state (void)
-{
-  sorry ("inter-module optimisations not implemented yet");
-}
-
 /* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed
    that CONTEXT->printer is an already constructed basic pretty_printer.  */
 static void
@@ -408,4 +401,15 @@ cxx_initialize_diagnostics (diagnostic_context *context)
 
   /* It is safe to free this object because it was previously malloc()'d.  */
   free (base);
+}
+
+/* Stubs to keep c-opts.c happy.  */
+void
+push_file_scope (void)
+{
+}
+
+void
+pop_file_scope (void)
+{
 }

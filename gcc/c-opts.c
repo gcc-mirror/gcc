@@ -1216,41 +1216,24 @@ c_common_init (void)
 /* Initialize the integrated preprocessor after debug output has been
    initialized; loop over each input file.  */
 void
-c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
+c_common_parse_file (int set_yydebug)
 {
-  unsigned file_index;
-  
 #if YYDEBUG != 0
   yydebug = set_yydebug;
 #else
-  warning ("YYDEBUG not defined");
+  if (set_yydebug)
+    warning ("YYDEBUG not defined");
 #endif
 
-  file_index = 0;
-  
-  do
-    {
-      if (file_index > 0)
-	{
-	  /* Reset the state of the parser.  */
-	  c_reset_state();
+  if (num_in_fnames > 1)
+    fatal_error ("sorry, inter-module analysis temporarily out of commission");
 
-	  /* Reset cpplib's macros and start a new file.  */
-	  cpp_undef_all (parse_in);
-	  main_input_filename = this_input_filename
-	    = cpp_read_main_file (parse_in, in_fnames[file_index]);
-	  if (this_input_filename == NULL)
-	    break;
-	}
-      finish_options ();
-      if (file_index == 0)
-	pch_init();
-      c_parse_file ();
-
-      file_index++;
-    } while (file_index < num_in_fnames);
-  
+  finish_options ();
+  pch_init ();
+  push_file_scope ();
+  c_parse_file ();
   finish_file ();
+  pop_file_scope ();
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */

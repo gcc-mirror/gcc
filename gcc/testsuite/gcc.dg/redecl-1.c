@@ -64,7 +64,7 @@ void test4(void)
 
 void prime5(void)
 {
-  extern double bar5(double);	/* { dg-error "previous" "" { xfail *-*-* } } */
+  extern double bar5(double);	/* { dg-error "previous" "" } */
 }
 
 void test5(void)

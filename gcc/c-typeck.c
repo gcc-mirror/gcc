@@ -51,7 +51,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static int missing_braces_mentioned;
 
 static tree qualify_type (tree, tree);
-static int same_translation_unit_p (tree, tree);
 static int tagged_types_tu_compatible_p (tree, tree, int);
 static int comp_target_types (tree, tree, int);
 static int function_types_compatible_p (tree, tree, int);
@@ -369,9 +368,9 @@ common_type (tree t1, tree t2)
 
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
-
-	pushlevel (0);
-	declare_parm_level ();
+	/* Tell global_bindings_p to return false so that variable_size
+	   doesn't abort on VLAs in parameter types.  */
+	c_override_global_bindings_to_false = true;
 
 	len = list_length (p1);
 	newargs = 0;
@@ -434,8 +433,7 @@ common_type (tree t1, tree t2)
 	  parm_done: ;
 	  }
 
-	poplevel (0, 0, 0);
-
+	c_override_global_bindings_to_false = false;
 	t1 = build_function_type (valtype, newargs);
 	/* ... falls through ...  */
       }
@@ -614,11 +612,11 @@ comp_target_types (tree ttl, tree ttr, int reflexive)
 
 /* Subroutines of `comptypes'.  */
 
-/* Determine whether two types derive from the same translation unit.
-   If the CONTEXT chain ends in a null, that type's context is still
-   being parsed, so if two types have context chains ending in null,
+/* Determine whether two trees derive from the same translation unit.
+   If the CONTEXT chain ends in a null, that tree's context is still
+   being parsed, so if two trees have context chains ending in null,
    they're in the same translation unit.  */
-static int
+int
 same_translation_unit_p (tree t1, tree t2)
 {
   while (t1 && TREE_CODE (t1) != TRANSLATION_UNIT_DECL)

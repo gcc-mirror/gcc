@@ -216,7 +216,7 @@ void
 lhd_clear_binding_stack (void)
 {
   while (! lang_hooks.decls.global_bindings_p ())
-    poplevel (0, 0, 0);
+    lang_hooks.decls.poplevel (0, 0, 0);
 }
 
 /* Type promotion for variable arguments.  */

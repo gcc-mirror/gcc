@@ -7,20 +7,20 @@ extern double strtod (const char *, char **);
 /* A built-in function may be overridden by an old-style definition
    specifying too few arguments... */
 double cos ()
-{  /* { dg-warning "shadowing built-in" } */
+{  /* { dg-warning "shadows a built-in" } */
   return strtod ("nan", 0);
 }
 
 /* the right number, but the wrong type, arguments... */
 double sin (foo)
-     int foo UNUSED;  /* { dg-warning "shadowing built-in" } */
+     int foo UNUSED;  /* { dg-warning "shadows a built-in" } */
 {
   return strtod ("nan", 0);
 }
 
 /* or too many arguments.  */
 long double cosl (foo, bar)
-     long double foo UNUSED;  /* { dg-warning "shadowing built-in" } */
+     const char *foo UNUSED;  /* { dg-warning "shadows a built-in" } */
      int bar UNUSED;
 {
   return strtod ("nan", 0);

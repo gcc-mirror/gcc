@@ -10,7 +10,7 @@ void a()
 {
   void c();
   c();
-} /* { dg-bogus "error" "PR c/14114" { xfail *-*-* } } */
+}
 
 void b()
 {

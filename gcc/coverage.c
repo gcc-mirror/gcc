@@ -902,7 +902,6 @@ create_coverage (void)
   DECL_RESULT (ctor) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
   DECL_UNINLINABLE (ctor) = 1;
 
-  ctor = lang_hooks.decls.pushdecl (ctor);
   rest_of_decl_compilation (ctor, 0, 1, 0);
   announce_function (ctor);
   current_function_decl = ctor;
