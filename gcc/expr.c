@@ -5239,10 +5239,29 @@ expand_expr (exp, target, tmode, modifier)
       /* Convert A - const to A + (-const).  */
       if (TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST)
 	{
-	  exp = build (PLUS_EXPR, type, TREE_OPERAND (exp, 0),
-		       fold (build1 (NEGATE_EXPR, type,
-				     TREE_OPERAND (exp, 1))));
-	  goto plus_expr;
+	  tree negated = fold (build1 (NEGATE_EXPR, type,
+				       TREE_OPERAND (exp, 1)));
+
+	  /* Deal with the case where we can't negate the constant
+	     in TYPE.  */
+	  if (TREE_UNSIGNED (type) || TREE_OVERFLOW (negated))
+	    {
+	      tree newtype = signed_type (type);
+	      tree newop0 = convert (newtype, TREE_OPERAND (exp, 0));
+	      tree newop1 = convert (newtype, TREE_OPERAND (exp, 1));
+	      tree newneg = fold (build1 (NEGATE_EXPR, newtype, newop1));
+
+	      if (! TREE_OVERFLOW (newneg))
+		return expand_expr (convert (type, 
+					     build (PLUS_EXPR, newtype,
+						    newop0, newneg)),
+				    target, tmode, modifier);
+	    }
+	  else
+	    {
+	      exp = build (PLUS_EXPR, type, TREE_OPERAND (exp, 0), negated);
+	      goto plus_expr;
+	    }
 	}
       this_optab = sub_optab;
       goto binop;
