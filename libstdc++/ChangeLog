@@ -1,3 +1,10 @@
+1999-11-05  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* std/valarray_meta.h (_DEFINE_EXPR_UNARY_FUNCTION):  When
+	building meta-expressions don't forget to take the contained
+        closures.
+	
+
 1999-10-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/valarray_meta.h: (_BinClos::_BinClos): Fix typo.
