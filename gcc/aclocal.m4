@@ -503,7 +503,6 @@ AC_DEFUN(AM_GNU_GETTEXT,
    AC_REQUIRE([AC_TYPE_OFF_T])dnl
    AC_REQUIRE([AC_TYPE_SIZE_T])dnl
    AC_REQUIRE([AC_FUNC_ALLOCA])dnl
-   AC_REQUIRE([AC_FUNC_MMAP])dnl
 
    AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h \
 unistd.h sys/param.h])
@@ -760,5 +759,57 @@ ac_cv_func_mmap_anywhere=no)])
 if test $ac_cv_func_mmap_anywhere = yes; then
   AC_DEFINE(HAVE_MMAP_ANYWHERE, 1,
 	    [Define if mmap can get us zeroed pages from /dev/zero.])
+fi
+])
+
+# Check whether mmap can map a plain file, without MAP_FIXED.
+AC_DEFUN([AC_FUNC_MMAP_FILE], 
+[AC_REQUIRE([AC_FUNC_MMAP_ANYWHERE])dnl
+AC_CACHE_CHECK(for working mmap of a file, ac_cv_func_mmap_file,
+[# Create a file one thousand bytes long.
+for i in 1 2 3 4 5 6 7 8 9 0
+do for j in 1 2 3 4 5 6 7 8 9 0
+do echo $i $j xxxxx
+done
+done > conftestdata$$
+
+AC_TRY_RUN([
+/* Test by Zack Weinberg.  Modified from MMAP_ANYWHERE test by
+   Richard Henderson and Alexandre Oliva.
+   Check whether read-only mmap of a plain file works. */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
+int main()
+{
+  char *x;
+  int fd;
+  struct stat st;
+
+  fd = open("conftestdata$$", O_RDONLY);
+  if (fd < 0)
+    exit(1);
+
+  if (fstat (fd, &st))
+    exit(2);
+
+  x = (char*)mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+  if (x == (char *) -1)
+    exit(3);
+
+  if (x[0] != '1' || x[1] != ' ' || x[2] != '1' || x[3] != ' ')
+    exit(4);
+
+  if (munmap(x, st.st_size) < 0)
+    exit(5);
+
+  exit(0);
+}], ac_cv_func_mmap_file=yes, ac_cv_func_mmap_file=no,
+ac_cv_func_mmap_file=no)])
+if test $ac_cv_func_mmap_file = yes; then
+  AC_DEFINE(HAVE_MMAP_FILE, 1,
+	    [Define if read-only mmap of a plain file works.])
 fi
 ])

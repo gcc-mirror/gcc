@@ -398,6 +398,7 @@ case "${host}" in
 esac
 AC_FUNC_VFORK
 AC_FUNC_MMAP_ANYWHERE
+AC_FUNC_MMAP_FILE
 
 GCC_NEED_DECLARATIONS(bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof getcwd getwd \

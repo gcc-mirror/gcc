@@ -1,3 +1,15 @@
+2000-04-17  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* aclocal.m4 (AM_GNU_GETTEXT): Don't AC_REQUIRE([AC_FUNC_MMAP]).
+	(AC_FUNC_MMAP_FILE): New macro, tests read-only private map of
+	a plain file.
+	* configure.in: Call AC_FUNC_MMAP_FILE.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+	* intl/loadmsgcat.c: Test HAVE_MMAP_FILE not HAVE_MMAP.
+	* fixinc/fixincl.c: Likewise.
+
 2000-04-17  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_expect): New.
