@@ -1,3 +1,10 @@
+2004-09-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.c (tree_code_size): New function, bulk of code from tree_size.
+	(tree_size, make_node): Use it.
+	* tree-ssa-pre.c (init_pre): Use it.
+	* tree.h: Prototype it.
+
 2004-09-11  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-cfg.c (set_bb_for_stmt): Use PHI_BB.
@@ -91,11 +98,11 @@
 	* tree-pretty-print.c (dump_decl_name): Print unnamed decls as
 	D.xxx rather than <Dxxx>.
 
-2004-09-10  Adam Nemet  <anemet@lnxw.com>  
+2004-09-10  Adam Nemet  <anemet@lnxw.com>
 
 	* configure.ac (AC_MSG_CHECKING(what linker to use)):
 	in_tree_ld_is_elf should be true for LynxOS.
-	* configure: Regenerate.  
+	* configure: Regenerate.
 
 2004-09-10  Adam Nemet  <anemet@lnxw.com>
 

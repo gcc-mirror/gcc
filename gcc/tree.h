@@ -2650,6 +2650,11 @@ extern tree decl_assembler_name (tree);
 
 extern size_t tree_size (tree);
 
+/* Compute the number of bytes occupied by a tree with code CODE.  This
+   function cannot be used for TREE_VEC or PHI_NODE codes, which are of
+   variable length.  */
+extern size_t tree_code_size (enum tree_code);
+
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
