@@ -3168,7 +3168,20 @@ do									\
     if (TARGET_MIPS16)							\
       {									\
 	if (TREE_CODE (DECL) == STRING_CST				\
-	    && ! flag_writable_strings)					\
+	    && ! flag_writable_strings					\
+	    /* If this string is from a function, and the function will	\
+	       go in a gnu linkonce section, then we can't directly	\
+	       access the string.  This gets an assembler error		\
+	       "unsupported PC relative reference to different section".\
+	       If we modify SELECT_SECTION to put it in function_section\
+	       instead of text_section, it still fails because		\
+	       DECL_SECTION_NAME isn't set until assemble_start_function.\
+	       If we fix that, it still fails because strings are shared\
+	       among multiple functions, and we have cross section	\
+	       references again.  We force it to work by putting string	\
+	       addresses in the constant pool and indirecting.  */	\
+	    && (! current_function_decl					\
+		|| ! UNIQUE_SECTION_P (current_function_decl)))		\
 	  {								\
 	    SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (DECL), 0)) = 1;	\
 	    mips_string_length += TREE_STRING_LENGTH (DECL);		\
