@@ -1,3 +1,8 @@
+2004-01-09   James E Wilson  <wilson@specifixinc.com>
+
+	* gcc.c (init_spec): Remove -lunwind from shared case.
+	* conifg/ia64/t-hpux (SHLIB_LINK): Add -lunwind.
+
 2004-01-09  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure.ac: (gcc_cv_ld_hidden) Set to true for ia64*-*-hpux*.
@@ -40,7 +45,7 @@
 	(expand_end_bindings): Save and restor last_expr_alt_rtl.
 	* tree.def (RTL_EXPR): Give it an additional operand.
 	* tree.h (RTL_EXPR_ALT_RTL): New macro.
-	
+
 2004-01-09  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (TARGET_CPU_CPP_BUILTINS): Add __m32r__.
@@ -86,10 +91,10 @@
 
 	PR opt/12441
 	Revert: Sat Mar 30 14:08:55 CET 2002  Jan Hubicka  <jh@suse.cz>
-        * i386.c (aligned_operand): Be prepared for SUBREGed registers.
-        (ix86_decompose_address): Use REG_P instead of GET_CODE (...) == REG.
-        (ix86_address_cost): Be prepared for SUBREGed registers.
-        (legitimate_address_p): Accept SUBREGed registers.
+	* i386.c (aligned_operand): Be prepared for SUBREGed registers.
+	(ix86_decompose_address): Use REG_P instead of GET_CODE (...) == REG.
+	(ix86_address_cost): Be prepared for SUBREGed registers.
+	(legitimate_address_p): Accept SUBREGed registers.
 
 2004-01-08  Kelley Cook  <kcook@gcc.gnu.org>
 
