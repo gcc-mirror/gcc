@@ -48,16 +48,18 @@ package body Ada.Strings.Unbounded.Aux is
 
             U_Ptr : constant Unbounded_String_Access := U'Unrestricted_Access;
             --  Unbounded_String is a controlled type which is always passed
-            --  by copy it is always safe to take the pointer to such object
-            --  here. This pointer is used to set the U.Reference value which
-            --  would not be possible otherwise as U is read-only.
+            --  by reference.  It is always safe to take the pointer to such
+            --  object here.  This pointer is used to set the U.Reference
+            --  value which would not be possible otherwise as U is read-only.
 
             Old : String_Access := U.Reference;
+            Ret : String_Access;
 
          begin
-            U_Ptr.Reference := new String'(U.Reference (1 .. U.Last));
+            Ret := new String'(U.Reference (1 .. U.Last));
+            U_Ptr.Reference := Ret;
             Free (Old);
-            return U.Reference;
+            return Ret;
          end;
       end if;
    end Get_String;

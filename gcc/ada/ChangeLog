@@ -1,3 +1,9 @@
+2005-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/13470
+	* a-stunau.adb (Get_String): Don't return U.Reference, but Ret that is
+	set to the new string.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.
