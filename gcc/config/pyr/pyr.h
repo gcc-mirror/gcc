@@ -1029,10 +1029,9 @@ extern int current_function_calls_alloca;
 /* 1 if byte access requires more than one instruction */
 #define SLOW_BYTE_ACCESS 0
 
-/* Define if shifts truncate the shift count
-   which implies one can omit a sign-extension or zero-extension
-   of a shift count.  */
-#define SHIFT_COUNT_TRUNCATED
+/* Define this to be nonzero if shift instructions ignore all but the low-order
+   few bits. */
+#define SHIFT_COUNT_TRUNCATED 1
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
