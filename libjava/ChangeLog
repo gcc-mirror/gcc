@@ -1,3 +1,9 @@
+2005-04-01  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (db_pathtail): Use $(gcc_version), not
+	@gcc_version@.
+
 2005-04-01  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/util/Timer.java

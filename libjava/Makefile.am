@@ -131,7 +131,7 @@ dbexecdir = $(libdir)/gcj-$(gcc_version)
 ## Name of the default .db.
 db_name = classmap.db
 ## Compiler specific component of the .db file
-db_pathtail = gcj-@gcc_version@/$(db_name)
+db_pathtail = gcj-$(gcc_version)/$(db_name)
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
