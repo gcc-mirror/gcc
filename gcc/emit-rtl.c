@@ -1135,6 +1135,13 @@ gen_highpart (mode, x)
 
   result = simplify_gen_subreg (mode, x, GET_MODE (x),
 				subreg_highpart_offset (mode, GET_MODE (x)));
+
+  /* simplify_gen_subreg is not guaranteed to return a valid operand for
+     the target if we have a MEM.  gen_highpart must return a valid operand,
+     emitting code if necessary to do so.  */
+  if (GET_CODE (result) == MEM)
+    result = validize_mem (result);
+
   if (!result)
     abort ();
   return result;
