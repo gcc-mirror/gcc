@@ -1,3 +1,11 @@
+2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config/alpha/freebsd.h, config/alpha/lib1funcs.asm,
+	config/i386/i386elf.h, config/i386/netbsd-elf.h,
+	config/i386/netware.h, config/mcore/gfloat.h,
+	config/mcore/mcore.c, config/mcore/mcore.h, config/mcore/mcore.md,
+	config/netware.h, gccbug.in: Update FSF address.
+
 2001-10-09  Kazu Hirata  <kazu@hxi.com>
 
 	* c-common.c: Fix comment typos.

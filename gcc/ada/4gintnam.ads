@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.5 $                             --
+--                             $Revision: 1.1 $                             --
 --                                                                          --
 --             Copyright (C) 1997-2001, Florida State University            --
 --                                                                          --
@@ -18,8 +18,8 @@
 -- MERCHANTABILITY  or  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Gen- --
 -- eral Library Public License  for more details.  You should have received --
 -- a  copy of the GNU Library General Public License along with GNARL;  see --
--- file COPYING.LIB.  If not,  write to the  Free Software Foundation,  675 --
--- Mass Ave, Cambridge, MA 02139, USA.                                      --
+-- file COPYING.LIB.  If not,  write to the  Free Software Foundation,   59 --
+-- Temple Place - Suite 330, Boston, MA 02111-1307, USA.                    --
 --                                                                          --
 -- As a special exception,  if other files  instantiate  generics from this --
 -- unit, or you link  this unit with other files  to produce an executable, --
