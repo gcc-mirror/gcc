@@ -1,3 +1,8 @@
+2000-01-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* toplev.c (rest_of_compilation): Initialize cse_not_expected as
+	in prepare_function_start().
+
 Sat Jan  8 12:12:46 2000  Nick Clifton  <nickc@cygnus.com>
 
 	* config/v850/v850.c (expand_epilogue): Interrupt functions no

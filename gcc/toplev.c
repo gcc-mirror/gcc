@@ -2777,6 +2777,10 @@ rest_of_compilation (decl)
   int failure = 0;
   int rebuild_label_notes_after_reload;
 
+  /* When processing delayed functions, prepare_function_start() won't
+     have been run to re-initialize it.  */
+  cse_not_expected = ! optimize;
+
   /* First, remove any notes we don't need.  That will make iterating
      over the instruction sequence faster, and allow the garbage
      collector to reclaim the memory used by the notes.  */
