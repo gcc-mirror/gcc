@@ -1,4 +1,7 @@
 2004-02-28  Andrew Pinski  <pinskia@physics.uc.edu>
+	
+	* c-typeck.c (tagged_types_tu_compatible_p): Fix pasto in
+	my previous patch.
 
 	* config/darwin.h (machopic_finish): Output stub even if the
 	symbol is already defined.
