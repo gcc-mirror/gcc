@@ -2646,7 +2646,7 @@ finish_id_expression (tree id_expression,
 	    mark_used (first_fn);
 
 	  if (TREE_CODE (first_fn) == FUNCTION_DECL
-	      && DECL_FUNCTION_MEMBER_P (first_fn))
+	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (first_fn))
 	    {
 	      /* A set of member functions.  */
 	      decl = maybe_dummy_object (DECL_CONTEXT (first_fn), 0);
