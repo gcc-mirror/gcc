@@ -1,3 +1,12 @@
+Mon Dec 22 09:55:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* verison.c: Bump for beta release of egcs-1.0.1.
+
+	* haifa-sched.c (create_reg_dead_note): Detect and handle another
+	case where we kill more regs after sched than were killed before
+	sched.
+	* sched.c (create_reg_dead_note): Similarly.
+
 Sun Dec 21 21:47:38 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (emit_move_sequence): Handle a function label source

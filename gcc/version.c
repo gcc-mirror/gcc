@@ -1,1 +1,1 @@
-char *version_string = "egcs-2.90.21 971202 (egcs-1.00 release)";
+char *version_string = "egcs-2.90.22 971220 (egcs-1.01 beta)";
