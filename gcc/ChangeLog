@@ -1,3 +1,9 @@
+2004-07-29  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/implement-c.texi: Add C90 subclause references.  Point to
+	preprocessor documentation instead of duplicating it.  Add points
+	only present in C90.  Fill in documentation for all points.
+
 2004-07-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_movb): Correct typo.
