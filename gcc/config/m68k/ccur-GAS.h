@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Concurrent 68k version.
-   Copyright (C) 1987, 1988 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -76,8 +76,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Allocation boundry in bits for the code of a function */
-#undef  FUNCTION_BOUNDRY
-#define FUNCTION_BOUNDRY 32
+#undef  FUNCTION_BOUNDARY
+#define FUNCTION_BOUNDARY 32
 
 /* Make strings long-word aligned so dhrystones will run faster. */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN) \
