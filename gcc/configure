@@ -4370,15 +4370,15 @@ fi
 
 # If we have gas in the build tree, make a link to it.
 if [ -f ../gas/Makefile ]; then
-	rm -f as; $symbolic_link ../gas/as.new as 2>/dev/null
+	rm -f as; $symbolic_link ../gas/as-new as 2>/dev/null
 fi
 
 # If we have ld in the build tree, make a link to it.
 if [ -f ../ld/Makefile ]; then
 #	if [[ x$use_collect2 = x ]]; then
-#		rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
+#		rm -f ld; $symbolic_link ../ld/ld-new ld 2>/dev/null
 #	else
-		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
+		rm -f collect-ld; $symbolic_link ../ld/ld-new collect-ld 2>/dev/null
 #	fi
 fi
 
