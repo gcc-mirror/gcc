@@ -2419,27 +2419,24 @@ expand_case (tree exp)
               }
 	}
 
-      /* Compute span of values.  */
-      if (count != 0)
-	range = fold (build2 (MINUS_EXPR, index_type, maxval, minval));
+      /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
+	 destination, such as one with a default case only.  */
+      gcc_assert (count != 0);
 
-      if (count == 0)
-	{
-	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
-	  emit_jump (default_label);
-	}
+      /* Compute span of values.  */
+      range = fold (build2 (MINUS_EXPR, index_type, maxval, minval));
 
       /* Try implementing this switch statement by a short sequence of
 	 bit-wise comparisons.  However, we let the binary-tree case
 	 below handle constant index expressions.  */
-      else if (CASE_USE_BIT_TESTS
-	       && ! TREE_CONSTANT (index_expr)
-	       && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
-	       && compare_tree_int (range, 0) > 0
-	       && lshift_cheap_p ()
-	       && ((uniq == 1 && count >= 3)
-		   || (uniq == 2 && count >= 5)
-		   || (uniq == 3 && count >= 6)))
+      if (CASE_USE_BIT_TESTS
+	  && ! TREE_CONSTANT (index_expr)
+	  && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	  && compare_tree_int (range, 0) > 0
+	  && lshift_cheap_p ()
+	  && ((uniq == 1 && count >= 3)
+	      || (uniq == 2 && count >= 5)
+	      || (uniq == 3 && count >= 6)))
 	{
 	  /* Optimize the case where all the case values fit in a
 	     word without having to subtract MINVAL.  In this case,
