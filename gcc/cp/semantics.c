@@ -2250,14 +2250,9 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   TREE_SIDE_EFFECTS (call_expr) = 1;
 
   if (style == arg)
-    {
-      /* Tell the backend that we've added our return slot to the argument
-	 list.  */
-      CALL_EXPR_HAS_RETURN_SLOT_ADDR (call_expr) = 1;
-      /* And don't let anyone use the value of the call directly in a
-	 larger expression.  */
-      TREE_TYPE (call_expr) = void_type_node;
-    }
+    /* Tell the backend that we've added our return slot to the argument
+       list.  */
+    CALL_EXPR_HAS_RETURN_SLOT_ADDR (call_expr) = 1;
   else if (style == pcc)
     {
       /* If we're using the non-reentrant PCC calling convention, then we

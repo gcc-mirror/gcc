@@ -1,5 +1,8 @@
 2002-12-16  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (simplify_aggr_init_exprs_r): Don't change the type
+	of the CALL_EXPR.
+
 	* semantics.c (do_pushlevel): Call pushlevel after adding the
 	SCOPE_STMT.
 	(do_poplevel): Call poplevel before adding the SCOPE_STMT.
