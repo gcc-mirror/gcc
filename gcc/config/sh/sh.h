@@ -1117,7 +1117,6 @@ extern int current_function_anonymous_args;
 #define DATA_SECTION_ASM_OP  		"\t.data"
 #define CTORS_SECTION_ASM_OP 		"\t.section\t.ctors\n"
 #define DTORS_SECTION_ASM_OP 		"\t.section\t.dtors\n"
-#define INIT_SECTION_ASM_OP  		"\t.section\t.init\n"
 #define EXTRA_SECTIONS 			in_ctors, in_dtors
 #define EXTRA_SECTION_FUNCTIONS					\
 void								\
@@ -1444,3 +1443,6 @@ extern int pragma_interrupt;
    compatibility problems.  */
 
 /* ??? Define ADJUST_COSTS?  */
+
+/* For the sake of libgcc2.c, indicate target supports atexit.  */
+#define HAVE_ATEXIT
