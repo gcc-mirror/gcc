@@ -1,3 +1,17 @@
+Sat Oct 19 15:49:14 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* mmintrin.h (__m64): typedef it to v2si.
+	(_mm_cvtsi32_si64, _mm_cvtsi32_si64_mm_sll_pi16,
+	_mm_sll_pi32, _mm_sll_pi64, _mm_slli_pi64, _mm_sra_pi16,
+	_mm_sra_pi32, _mm_srl_pi16, _mm_srl_pi32, _mm_srl_pi64,
+	_mm_srli_pi64, _mm_and_si64, _mm_andnot_si64,
+	_mm_or_si64, _mm_xor_si64): Add neccesary casts.
+	* xmmintrin.h (_mm_setzero_si64): Likewise.
+
+	PR target/7693
+	Patch by Shawn Wagner
+	* mmintrin.h: Replace pi64 by si64.
+
 2002-10-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (start_decl): Point users of the old initialized-
