@@ -2185,9 +2185,11 @@ invert_truthvalue (arg)
 	break;
       return build (EQ_EXPR, type, arg, convert (type, integer_zero_node));
 
+    case SAVE_EXPR:
+      return build1 (TRUTH_NOT_EXPR, type, arg);
     }
   if (TREE_CODE (TREE_TYPE (arg)) != BOOLEAN_TYPE)
-    abort();
+    abort ();
   return build1 (TRUTH_NOT_EXPR, type, arg);
 }
 
