@@ -782,7 +782,7 @@ expand_call (exp, target, ignore)
   push_temp_slots ();
 
   /* Start updating where the next arg would go.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_PTR);
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX);
 
   /* If struct_value_rtx is 0, it means pass the address
      as if it were an extra parameter.  */
