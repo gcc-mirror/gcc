@@ -34,8 +34,6 @@
 #ifndef _CPP_CLOCALE
 #define _CPP_CLOCALE 1
 
-#include <bits/c++config.h>
-
 #pragma GCC system_header
 #include_next <locale.h>
 

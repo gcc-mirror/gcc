@@ -315,6 +315,9 @@
 /* Define if you have the fabsl function.  */
 #undef HAVE_FABSL
 
+/* Define if you have the fgetwc function.  */
+#undef HAVE_FGETWC
+
 /* Define if you have the finite function.  */
 #undef HAVE_FINITE
 

@@ -32,8 +32,8 @@
 #ifndef _CPP_IO_STDIO_H
 #define _CPP_IO_STDIO_H 1
 
-#include <stdio.h>
-#include <stddef.h>
+#include <cstdio>
+#include <cstddef>
 #include <bits/gthr.h>
 
 namespace std 

@@ -89,7 +89,7 @@ __cxa_end_catch ()
     }
   else if (count < 0)
     // A bug in the exception handling library or compiler.
-    abort ();
+    std::abort ();
 
   header->handlerCount = count;
 }
