@@ -1,4 +1,4 @@
-2003-11-23  Waldek Hebisch <hebisch@math.uni.wroc.pl>
+2003-11-24  Waldek Hebisch <hebisch@math.uni.wroc.pl>
 
 	* function.c: Make outer_function-chain external.
 	* function.h: Likewise.
