@@ -3546,8 +3546,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	       are doing a call, pass that target to the call.  */
 	    if (TYPE_RETURNS_BY_TARGET_PTR_P (gnu_subprog_type)
 		&& Nkind (Expression (gnat_node)) == N_Function_Call)
-	      gnu_result = call_to_gnu (Expression (gnat_node),
-					&gnu_result_type, gnu_lhs);
+	      gnu_ret_val = call_to_gnu (Expression (gnat_node),
+					 &gnu_result_type, gnu_lhs);
 
 	    else
 	      {
