@@ -1,6 +1,6 @@
 // String based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -90,7 +90,7 @@ namespace std
       // In virtue of DR 169 (TC) we are allowed to grow more than
       // one char the first time and also...
       __size_type __len =
-	std::max(_M_string.capacity() + 1, this->_M_buf_size_opt);
+	std::max(__size_type(_M_string.capacity() + 1), this->_M_buf_size_opt);
 
       bool __testwrite = this->_M_out_cur < this->_M_out_end;
       if (__builtin_expect(!__testwrite && __len > _M_string.max_size(), false))

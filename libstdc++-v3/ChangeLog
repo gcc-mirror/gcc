@@ -1,3 +1,8 @@
+2003-04-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* include/bits/sstream.tcc (overflow): Make sure operands of min
+	and max have the same type.
+
 2003-04-04  Jerry Quinn  <jlquinn@optonline.net>
 
 	PR libstdc++/10276
