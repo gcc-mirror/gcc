@@ -1,5 +1,5 @@
 /* Signature.java --- Signature Class
-   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -368,10 +368,7 @@ public abstract class Signature extends SignatureSpi
   public final byte[] sign() throws SignatureException
   {
     if (state == SIGN)
-      {
-        state = UNINITIALIZED;
-        return engineSign();
-      }
+      return engineSign();
     else
       throw new SignatureException();
   }
@@ -398,10 +395,7 @@ public abstract class Signature extends SignatureSpi
     throws SignatureException
   {
     if (state == SIGN)
-      {
-        state = UNINITIALIZED;
-        return engineSign(outbuf, offset, len);
-      }
+      return engineSign(outbuf, offset, len);
     else
       throw new SignatureException();
   }
@@ -425,10 +419,7 @@ public abstract class Signature extends SignatureSpi
   public final boolean verify(byte[]signature) throws SignatureException
   {
     if (state == VERIFY)
-      {
-        state = UNINITIALIZED;
-        return engineVerify(signature);
-      }
+      return engineVerify(signature);
     else
       throw new SignatureException();
   }
@@ -464,7 +455,7 @@ public abstract class Signature extends SignatureSpi
       throw new SignatureException("illegal state");
 
     if (signature == null)
-      throw new IllegalArgumentException("signaure is null");
+      throw new IllegalArgumentException("signature is null");
     if (offset < 0)
       throw new IllegalArgumentException("offset is less than 0");
     if (length < 0)
@@ -472,7 +463,6 @@ public abstract class Signature extends SignatureSpi
     if (offset + length < signature.length)
       throw new IllegalArgumentException("range is out of bounds");
 
-    state = UNINITIALIZED;
     return engineVerify(signature, offset, length);
   }
 

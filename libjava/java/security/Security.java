@@ -1,5 +1,5 @@
 /* Security.java --- Java base security class implementation
-   Copyright (C) 1999, 2001, 2002, 2003, 2004, Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -237,7 +237,7 @@ public final class Security
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
-	if (((Provider) providers.elementAt(i)).getName() == provider.getName())
+	if (((Provider) providers.elementAt(i)).getName().equals(provider.getName()))
 	  return -1;
       }
 
@@ -312,7 +312,7 @@ public final class Security
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
-	if (((Provider) providers.elementAt(i)).getName() == name)
+	if (((Provider) providers.elementAt(i)).getName().equals(name))
 	  {
 	    providers.remove(i);
 	    break;
@@ -349,7 +349,7 @@ public final class Security
     for (int i = 0; i < max; i++)
       {
 	p = (Provider) providers.elementAt(i);
-	if (p.getName() == name)
+	if (p.getName().equals(name))
 	  return p;
       }
     return null;
