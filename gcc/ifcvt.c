@@ -2037,7 +2037,9 @@ if_convert (life_data_ok)
 	  SET_BIT (update_life_blocks, block_num);
 
       count_or_remove_death_notes (update_life_blocks, 1);
-      update_life_info (update_life_blocks, UPDATE_LIFE_LOCAL,
+      /* ??? See about adding a mode that verifies that the initial
+	set of blocks don't let registers come live.  */
+      update_life_info (update_life_blocks, UPDATE_LIFE_GLOBAL,
 			PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
 			| PROP_KILL_DEAD_CODE);
 
