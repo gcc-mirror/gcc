@@ -21,8 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
-#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg} \
-  %{a:/usr/lib/bb_link.o}"
+#define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}"
 
 /* Provide required defaults for linker -e and -d switches.  */
 
@@ -388,6 +387,13 @@ do								\
 	reg_names[FRAME_POINTER_REGNUM] = "%i7";		\
 	/* ??? This is a hack to disable leaf functions.  */	\
 	global_regs[7] = 1;					\
+      }								\
+    if (profile_block_flag)					\
+      {								\
+	/* %g1 and %g2 must be fixed, because BLOCK_PROFILER	\
+	    uses them.  */					\
+	fixed_regs[1] = 1;					\
+	fixed_regs[2] = 1;					\
       }								\
   }								\
 while (0)
