@@ -56,7 +56,7 @@ static size_t deferred_count, deferred_size;
 static void missing_arg PARAMS ((size_t));
 static size_t find_opt PARAMS ((const char *, int));
 static void set_Wimplicit PARAMS ((int));
-static void complain_wrong_lang PARAMS ((size_t));
+static void complain_wrong_lang PARAMS ((size_t, int));
 static void write_langs PARAMS ((char *, int));
 static void print_help PARAMS ((void));
 static void handle_OPT_d PARAMS ((const char *));
@@ -614,7 +614,7 @@ c_common_decode_option (argc, argv)
      after the call to find_opt, and return argc.  */
   if (!(cl_options[opt_index].flags & lang_flag))
     {
-      complain_wrong_lang (opt_index);
+      complain_wrong_lang (opt_index, on);
       goto done;
     }
 
@@ -1703,16 +1703,18 @@ write_langs (buf, flags)
 
 /* Complain that switch OPT_INDEX does not apply to this front end.  */
 static void
-complain_wrong_lang (opt_index)
+complain_wrong_lang (opt_index, on)
      size_t opt_index;
+     int on;
 {
   char ok_langs[60], bad_langs[60];
   int ok_flags = cl_options[opt_index].flags;
 
   write_langs (ok_langs, ok_flags);
   write_langs (bad_langs, ~ok_flags);
-  warning ("\"-%s\" is valid for %s but not for %s",
-	   cl_options[opt_index].opt_text, ok_langs, bad_langs);
+  warning ("\"-%c%s%s\" is valid for %s but not for %s",
+	   cl_options[opt_index].opt_text[0], on ? "" : "no-",
+	   cl_options[opt_index].opt_text + 1, ok_langs, bad_langs);
 }
 
 /* Handle --help output.  */
