@@ -739,7 +739,7 @@ namespace std
 	  else if (__flags & ios_base::showpos)
 	    *__buf-- = __lit[__num_base::_S_oplus];
 	}
-	else if (__basefield == ios_base::oct)
+      else if (__basefield == ios_base::oct)
 	{
 	  // Octal.
 	  do 
@@ -793,13 +793,13 @@ namespace std
 	if (__basefield == ios_base::oct)
 	  {
 	    __off = 1;
-	    *__new = *__cs;
+	    __new[0] = __cs[0];
 	  }
 	else if (__basefield == ios_base::hex)
 	  {
 	    __off = 2;
-	    *__new = *__cs;
-	    *(__new + 1) = *(__cs + 1);
+	    __new[0] = __cs[0];
+	    __new[1] = __cs[1];
 	  }
       _CharT* __p;
       __p = std::__add_grouping(__new + __off, __sep, __grouping.c_str(), 
@@ -987,13 +987,13 @@ namespace std
       _CharT* __ws2;
       if (__lc->_M_use_grouping)
 	{
-	    // Grouping can add (almost) as many separators as the
-	    // number of digits, but no more.
-	    __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							  * __len * 2));
-	    _M_group_float(__lc->_M_grouping, __lc->_M_thousands_sep, __p,
-			   __ws2, __ws, __len);
-	    __ws = __ws2;
+	  // Grouping can add (almost) as many separators as the
+	  // number of digits, but no more.
+	  __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+							* __len * 2));
+	  _M_group_float(__lc->_M_grouping, __lc->_M_thousands_sep, __p,
+			 __ws2, __ws, __len);
+	  __ws = __ws2;
 	}
 
       // Pad.
@@ -1031,10 +1031,7 @@ namespace std
 	  const __cache_type* __lc = __uc(__loc);
 
 	  const _CharT* __name;
-          if (__v)
-	    __name = __lc->_M_truename;
-          else
-	    __name = __lc->_M_falsename;
+	  __name = __v ? __lc->_M_truename : __lc->_M_falsename;
 	  int __len = char_traits<_CharT>::length(__name);
 
 	  _CharT* __cs;
@@ -1813,8 +1810,8 @@ namespace std
 	  // Find smallest matching string.
 	  size_t __minlen = 10;
 	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
-	    __minlen = min(__minlen, 
-			   __traits_type::length(__names[__matches[__i2]]));
+	    __minlen = std::min(__minlen, 
+				__traits_type::length(__names[__matches[__i2]]));
 	  
 	  if (__pos < __minlen && __beg != __end)
 	    {
@@ -2237,38 +2234,30 @@ namespace std
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
 	  const _CharT __minus = __ctype.widen('-');
 	  const _CharT __plus = __ctype.widen('+');
-	  bool __testsign = _Traits::eq(__olds[0], __minus)
-	    		    || _Traits::eq(__olds[0], __plus);
+	  const bool __testsign = _Traits::eq(__olds[0], __minus)
+	                          || _Traits::eq(__olds[0], __plus);
 
-	  bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
-	    		   && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
-			       || _Traits::eq(__ctype.widen('X'), __olds[1]));
+	  const bool __testhex = _Traits::eq(__ctype.widen('0'), __olds[0]) 
+	                         && (_Traits::eq(__ctype.widen('x'), __olds[1]) 
+				     || _Traits::eq(__ctype.widen('X'), __olds[1]));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0]; 
 	      __news[1] = __olds[1];
-	      __mod += 2;
+	      __mod = 2;
 	      __news += 2;
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
 	  else if (__testsign)
 	    {
 	      __news[0] = __olds[0];
-	      ++__mod;
+	      __mod = 1;
 	      ++__news;
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds + __mod);
 	    }
-	  else
-	    {
-	      // Padding first.
-	      __beg = __pads;
-	      __beglen = __plen;
-	      __end = const_cast<_CharT*>(__olds);
-	    }
+	  // else Padding first.
+	  
+	  __beg = __pads;
+	  __beglen = __plen;
+	  __end = const_cast<_CharT*>(__olds + __mod);
 	}
       else
 	{
