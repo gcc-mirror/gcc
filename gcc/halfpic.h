@@ -31,12 +31,12 @@ int (*ptr_half_pic_address_p) ();	/* ptr to half_pic_address_p () */
 
 extern int  half_pic_number_ptrs;	/* # distinct pointers found */
 extern int  half_pic_number_refs;	/* # half-pic references */
-extern void half_pic_encode ();		/* encode whether half-pic */
-extern void half_pic_declare ();	/* declare object local */
-extern void half_pic_init ();		/* half_pic initialization */
-extern void half_pic_finish ();		/* half_pic termination */
-extern int  half_pic_address_p ();	/* true if an address is half-pic */
-extern struct rtx_def *half_pic_ptr ();	/* return RTX for half-pic pointer */
+extern void half_pic_encode PROTO((tree));	/* encode whether half-pic */
+extern void half_pic_declare PROTO((char *));	/* declare object local */
+extern void half_pic_init PROTO((void));	/* half_pic initialization */
+extern void half_pic_finish PROTO((FILE *));	/* half_pic termination */
+extern int  half_pic_address_p PROTO((rtx));	/* true if an address is half-pic */
+extern struct rtx_def *half_pic_ptr PROTO((rtx));	/* return RTX for half-pic pointer */
 
 /* Macros to provide access to the half-pic stuff (so they can easily
    be stubbed out.  */

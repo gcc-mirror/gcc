@@ -153,17 +153,17 @@ extern struct iv_class *loop_iv_list;
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
-int invariant_p ();
-rtx get_condition_for_loop ();
-void emit_iv_add_mult ();
+int invariant_p PROTO((rtx));
+rtx get_condition_for_loop PROTO((rtx));
+void emit_iv_add_mult PROTO((rtx, rtx, rtx, rtx, rtx));
 
 /* Forward declarations for non-static functions declared in stmt.c.  */
-void find_loop_tree_blocks ();
-void unroll_block_trees ();
+void find_loop_tree_blocks PROTO((void));
+void unroll_block_trees PROTO((void));
 
-void unroll_loop ();
-rtx biv_total_increment ();
-unsigned HOST_WIDE_INT loop_iterations ();
-rtx final_biv_value ();
-rtx final_giv_value ();
-void emit_unrolled_add ();
+void unroll_loop PROTO((rtx, int, rtx, rtx, int));
+rtx biv_total_increment PROTO((struct iv_class *, rtx, rtx));
+unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx));
+rtx final_biv_value PROTO((struct iv_class *, rtx, rtx));
+rtx final_giv_value PROTO((struct induction *, rtx, rtx));
+void emit_unrolled_add PROTO((rtx, rtx, rtx));

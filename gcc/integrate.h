@@ -107,15 +107,10 @@ struct inline_remap
 
 /* Return a copy of an rtx (as needed), substituting pseudo-register,
    labels, and frame-pointer offsets as necessary.  */
-extern rtx copy_rtx_and_substitute ();
+extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *));
 
-extern void try_constants ();
+extern void try_constants PROTO((rtx, struct inline_remap *));
 
-extern void mark_stores ();
-
-/* We do some simple constant folding optimization.  This optimization
-   really exists primarily to save time inlining a function.  It
-   also helps users who ask for inline functions without -O.  */
-extern rtx try_fold_condition ();
+extern void mark_stores PROTO((rtx, rtx));
 
 extern rtx *global_const_equiv_map;

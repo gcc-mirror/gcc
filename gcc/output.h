@@ -20,23 +20,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Output a string of assembler code, substituting insn operands.
    Defined in final.c.  */
-extern void output_asm_insn ();
+extern void output_asm_insn PROTO((char *, rtx *));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
 extern void asm_fprintf ();
 
+#ifdef FILE
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
    that may appear in these expressions.  */
-extern void output_addr_const ();
+extern void output_addr_const PROTO((FILE *, rtx));
 
 /* Output a name (as found inside a symbol_ref) in assembler syntax.  */
-extern void assemble_name ();
+extern void assemble_name PROTO((FILE *, char *));
+#endif
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
-extern rtx alter_subreg ();
+extern rtx alter_subreg PROTO((rtx));
 
 /* When outputting assembler code, indicates which alternative
    of the constraints was actually satisfied.  */

@@ -18,6 +18,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
 /* If secondary reloads are the same for inputs and outputs, define those
    macros here.  */
 
@@ -106,10 +115,10 @@ extern enum insn_code reload_in_optab[];
 extern enum insn_code reload_out_optab[];
 #endif
 
-extern void init_reload ();
-extern void find_reloads ();
-extern void subst_reloads ();
-extern rtx get_secondary_mem ();
-extern rtx eliminate_regs ();
-extern rtx gen_input_reload ();
-extern rtx find_replacement ();
+extern void init_reload PROTO((void));
+extern void find_reloads PROTO((rtx, int, int, int, short *));
+extern void subst_reloads PROTO((void));
+extern rtx get_secondary_mem PROTO((rtx, enum machine_mode));
+extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx));
+extern rtx gen_input_reload PROTO((rtx, rtx, rtx));
+extern rtx find_replacement PROTO((rtx *));
