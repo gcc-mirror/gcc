@@ -224,6 +224,7 @@ FLEXFLAGS =
 AR = ar
 AR_FLAGS = rc
 RANLIB = @RANLIB@
+RANLIB_FLAGS = @ranlib_flags@
 
 # -------------------------------------------
 # Programs which operate on the build machine
@@ -1147,7 +1148,7 @@ compilations: $(BACKEND)
 libbackend.a: $(OBJS@onestep@)
 	-rm -rf libbackend.a
 	$(AR) $(AR_FLAGS) libbackend.a $(OBJS@onestep@)
-	-$(RANLIB) libbackend.a
+	-$(RANLIB) $(RANLIB_FLAGS) libbackend.a
 
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
