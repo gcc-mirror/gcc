@@ -1,3 +1,8 @@
+2004-10-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-tailcall.c (tree_optimize_tail_calls_1): Use fold_convert,
+	reverting my 2004-09-07 patch to use build_int_cst.
+
 2004-10-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/17245
