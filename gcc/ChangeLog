@@ -1,3 +1,12 @@
+2002-09-08  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (try_combine): Handle the case that undobuf.other_insn
+	has been turned into a return or unconditional jump, by inserting
+	a BARRIER if necessary.
+	(simplify_set):  Test if a condition code setter has a constant
+	comparison at compile time, if so convert this insn to a no-op move
+	and update/simplify the condition code user (undobuf.other_insn).
+
 2002-09-08  Krister Walfridsson  <cato@df.lth.se>
 
 	* config/arm/netbsd.h (INITIALIZE_TRAMPOLINE): Redefine.

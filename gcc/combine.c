@@ -2823,7 +2823,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        BARRIER following it since it may have initially been a
        conditional jump.  It may also be the last nonnote insn.  */
 
-    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3))
+    if (returnjump_p (i3) || any_uncondjump_p (i3))
       {
 	*new_direct_jump_p = 1;
 
@@ -2831,6 +2831,18 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    || GET_CODE (temp) != BARRIER)
 	  emit_barrier_after (i3);
       }
+
+    if (undobuf.other_insn != NULL_RTX
+	&& (returnjump_p (undobuf.other_insn)
+	    || any_uncondjump_p (undobuf.other_insn)))
+      {
+	*new_direct_jump_p = 1;
+
+	if ((temp = next_nonnote_insn (undobuf.other_insn)) == NULL_RTX
+	    || GET_CODE (temp) != BARRIER)
+	  emit_barrier_after (undobuf.other_insn);
+      }
+	
     /* An NOOP jump does not need barrier, but it does need cleaning up
        of CFG.  */
     if (GET_CODE (newpat) == SET
@@ -5014,14 +5026,43 @@ simplify_set (x)
     {
       enum rtx_code old_code = GET_CODE (*cc_use);
       enum rtx_code new_code;
-      rtx op0, op1;
+      rtx op0, op1, tmp;
       int other_changed = 0;
       enum machine_mode compare_mode = GET_MODE (dest);
+      enum machine_mode tmp_mode;
 
       if (GET_CODE (src) == COMPARE)
 	op0 = XEXP (src, 0), op1 = XEXP (src, 1);
       else
 	op0 = src, op1 = const0_rtx;
+
+      /* Check whether the comparison is known at compile time.  */
+      if (GET_MODE (op0) != VOIDmode)
+	tmp_mode = GET_MODE (op0);
+      else if (GET_MODE (op1) != VOIDmode)
+	tmp_mode = GET_MODE (op1);
+      else
+	tmp_mode = compare_mode;
+      tmp = simplify_relational_operation (old_code, tmp_mode, op0, op1);
+      if (tmp != NULL_RTX)
+	{
+	  rtx pat = PATTERN (other_insn);
+	  undobuf.other_insn = other_insn;
+	  SUBST (*cc_use, tmp);
+
+	  /* Attempt to simplify CC user.  */
+	  if (GET_CODE (pat) == SET)
+	    {
+	      rtx new = simplify_rtx (SET_SRC (pat));
+	      if (new != NULL_RTX)
+		SUBST (SET_SRC (pat), new);
+	    }
+
+	  /* Convert X into a no-op move.  */
+	  SUBST (SET_DEST (x), pc_rtx);
+	  SUBST (SET_SRC (x), pc_rtx);
+	  return x;
+	}
 
       /* Simplify our comparison, if possible.  */
       new_code = simplify_comparison (old_code, &op0, &op1);
