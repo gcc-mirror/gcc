@@ -1,3 +1,14 @@
+2005-04-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/iq2000/iq2000.c (uns_arith_operand, arith_operand,
+	small_int, large_int, reg_or_0_operand, simple_memory_operand,
+	equality_op, cmp_op, pc_or_label_operand, call_insn_operand,
+	move_operand, power_of_2_operand): Move to predicates.md.
+	* config/iq2000/iq2000.h (SPECIAL_MODE_PREDICATES,
+	PREDICATE_CODE): Remove.
+	* config/iq2000/iq2000.md: Include predicates.md.
+	* config/iq2000/predicates.md: New.
+
 2005-04-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/m68hc11/m68hc11.h (target_flags, MASK_SHORT)
