@@ -170,7 +170,7 @@ gnattools: @default_gnattools_target@
 $(GCC_DIR)/stamp-gnatlib:
 	@if [ ! -f $(GCC_DIR)/stamp-gnatlib ] ; \
         then \
-          echo Can't build gnattools while gnatlib is out of date or unbuilt ; \
+          echo "Cannot build gnattools while gnatlib is out of date or unbuilt" ; \
           false; \
         else \
           true; \

@@ -1,3 +1,7 @@
+2005-03-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* Makefile.in: Fix incorrect use of ' in shell command
+
 2005-02-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
         * Makefile.in: Remove use of cc_set_by_configure; just use
