@@ -433,9 +433,7 @@ life_analysis (f, file, flags)
 
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
-  if (flags & PROP_REG_INFO)
-    for (i=0; i < NUM_MACHINE_MODES; ++i)
-      INIT_REG_SET (&subregs_of_mode[i]);
+  bitmap_initialize (&subregs_of_mode, 1);
 #endif
 
   if (! optimize)
@@ -3823,8 +3821,9 @@ mark_used_regs (pbi, x, cond, insn)
 #ifdef CANNOT_CHANGE_MODE_CLASS
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
-	SET_REGNO_REG_SET (&subregs_of_mode[GET_MODE (x)],
-			   REGNO (SUBREG_REG (x)));
+	bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (x))
+					  * MAX_MACHINE_MODE
+					  + GET_MODE (x));
 #endif
 
       /* While we're here, optimize this case.  */
@@ -3872,8 +3871,9 @@ mark_used_regs (pbi, x, cond, insn)
 	    if (GET_CODE (testreg) == SUBREG
 		&& GET_CODE (SUBREG_REG (testreg)) == REG
 		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER)
-	      SET_REGNO_REG_SET (&subregs_of_mode[GET_MODE (testreg)],
-				 REGNO (SUBREG_REG (testreg)));
+	      bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (testreg))
+						* MAX_MACHINE_MODE
+						+ GET_MODE (testreg));
 #endif
 
 	    /* Modifying a single register in an alternate mode

@@ -66,7 +66,7 @@ typedef struct reg_info_def
 
 extern varray_type reg_n_info;
 
-extern regset_head subregs_of_mode [NUM_MACHINE_MODES];
+extern bitmap_head subregs_of_mode;
 
 /* Indexed by n, gives number of times (REG n) is used or set.  */
 

@@ -10129,8 +10129,9 @@ gen_lowpart_for_combine (mode, x)
       && GET_CODE (result) == SUBREG
       && GET_CODE (SUBREG_REG (result)) == REG
       && REGNO (SUBREG_REG (result)) >= FIRST_PSEUDO_REGISTER)
-    SET_REGNO_REG_SET (&subregs_of_mode[GET_MODE (result)],
-		       REGNO (SUBREG_REG (result)));
+    bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (result))
+				      * MAX_MACHINE_MODE
+				      + GET_MODE (result));
 #endif
 
   if (result)

@@ -1,3 +1,17 @@
+Fri Feb 28 12:38:46 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (gen_lowpart_for_combine): Update handling of subregs_of_mode
+	* flow.c (life_analysis, mark_used_regs): Likewise.
+	* regclass.c (subregs_of_mode): Turn into single bitmap.
+	(cannot_change-mode_set_regs, invalid_mode_change_p): Update
+	dealing with subregs_of_mode
+	* regs.h (subregs_of_mode): Update prototype.
+
+Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Rearrange insn splitting
+	* reg-stack.c (reg_to_stack): Do not split insns.
+
 2003-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc-common.c (ggc_rlimit_bound): Cast RLIM_INFINITY to avoid
