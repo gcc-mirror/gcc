@@ -2242,7 +2242,7 @@ find_a_file (pprefix, name, mode)
   int len = pprefix->max_len + strlen (name) + strlen (file_suffix) + 1;
 
 #ifdef DEFAULT_ASSEMBLER
-  if (! strcmp(name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
+  if (! strcmp (name, "as") && access (DEFAULT_ASSEMBLER, mode) == 0)
     return xstrdup (DEFAULT_ASSEMBLER);
 #endif
 
@@ -2258,12 +2258,7 @@ find_a_file (pprefix, name, mode)
 
   /* Determine the filename to execute (special case for absolute paths).  */
 
-  if (IS_DIR_SEPARATOR (*name)
-#ifdef HAVE_DOS_BASED_FILE_SYSTEM
-      /* Check for disk name on MS-DOS-based systems.  */
-      || (name[0] && name[1] == ':' && IS_DIR_SEPARATOR (name[2]))
-#endif
-      )
+  if (IS_ABSOLUTE_PATHNAME (name))
     {
       if (access (name, mode) == 0)
 	{
@@ -2918,6 +2913,7 @@ process_command (argc, argv)
   if (gcc_exec_prefix)
     {
       int len = strlen (gcc_exec_prefix);
+
       if (len > (int) sizeof ("/lib/gcc-lib/") - 1
 	  && (IS_DIR_SEPARATOR (gcc_exec_prefix[len-1])))
 	{
@@ -3460,7 +3456,7 @@ process_command (argc, argv)
      directories, so that we can search both the user specified directory
      and the standard place.  */
 
-  if (!IS_DIR_SEPARATOR (*tooldir_prefix))
+  if (!IS_ABSOLUTE_PATHNAME (tooldir_prefix))
     {
       if (gcc_exec_prefix)
 	{
@@ -3957,7 +3953,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  /* Relative directories always come from -B,
 		     and it is better not to use them for searching
 		     at run time.  In particular, stage1 loses.  */
-		  if (!IS_DIR_SEPARATOR (pl->prefix[0]))
+		  if (!IS_ABSOLUTE_PATHNAME (pl->prefix))
 		    continue;
 #endif
 		  /* Try subdirectory if there is one.  */
@@ -5405,14 +5401,7 @@ main (argc, argv)
 	 standard_exec_prefix.  This lets us move the installed tree
 	 as a unit.  If GCC_EXEC_PREFIX is defined, base
 	 standard_startfile_prefix on that as well.  */
-      if (IS_DIR_SEPARATOR (*standard_startfile_prefix)
-	    || *standard_startfile_prefix == '$'
-#ifdef HAVE_DOS_BASED_FILE_SYSTEM
-  	    /* Check for disk name on MS-DOS-based systems.  */
-          || (standard_startfile_prefix[1] == ':'
-	      && (IS_DIR_SEPARATOR (standard_startfile_prefix[2])))
-#endif
-	  )
+      if (IS_ABSOLUTE_PATHNAME (standard_startfile_prefix))
 	add_prefix (&startfile_prefixes, standard_startfile_prefix, "BINUTILS",
 		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
       else
@@ -5440,7 +5429,8 @@ main (argc, argv)
     }
   else
     {
-      if (!IS_DIR_SEPARATOR (*standard_startfile_prefix) && gcc_exec_prefix)
+      if (!IS_ABSOLUTE_PATHNAME (standard_startfile_prefix)
+	  && gcc_exec_prefix)
 	add_prefix (&startfile_prefixes,
 		    concat (gcc_exec_prefix, machine_suffix,
 			    standard_startfile_prefix, NULL_PTR),
