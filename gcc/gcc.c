@@ -392,7 +392,8 @@ static char *switches_need_spaces = SWITCHES_NEED_SPACES;
 
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR)			\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "include")	\
+ (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
+  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info"))
 #endif
 
