@@ -1,7 +1,4 @@
 /* config.in.  Generated from configure.ac by autoheader.  */
-/* Define to `unsigned long' if <sys/types.h> doesn't define.  */
-#undef uintptr_t
-
 
 /* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
 #undef BYTEORDER
@@ -362,9 +359,11 @@
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
