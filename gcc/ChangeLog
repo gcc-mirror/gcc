@@ -1,4 +1,20 @@
-Wed Feb 28 17:19:28 CET 2001  Jan Hubicka  <jh@suse.cz.
+Wed Feb 28 17:22:35 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* caller-save.c (reg_save_code, reg_restore_code):  Index by mode, not
+	NREGS.
+	(insert_save, insert_restore): New parameter save_mode.
+	(init_caller_save): Update initialization of reg_save_code
+	and reg_restore_code.
+	(save_call_clobbered_regs):  Compute save_modes and update calls to
+	reg_save_code and reg_restore_code.
+	(insert_restore):  Unsignetize numbers; use save_modes to choose mode
+	of spill; update use of reg_restore_code.
+	(insert_save):  Likewise.
+	* i386.h (HARD_REGNO_CALLER_SAVE_MODE): Update.
+	* c4x.h (HARD_REGNO_CALLER_SAVE_MODE): Update.
+	* regs.h (HARD_REGNO_CALLER_SAVE_MODE): Likewise.
+
+Wed Feb 28 17:19:28 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* ifcvt.c (noce_emit_store_flag, noce_try_store_flag_constants,
 	noce_try_store_flag_inc, noce_try_store_flag_mask,
