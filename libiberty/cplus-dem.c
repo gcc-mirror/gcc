@@ -1064,7 +1064,7 @@ ada_demangle (mangled, option)
 /* This function performs most of what cplus_demangle use to do, but
    to be able to demangle a name with a B, K or n code, we need to
    have a longer term memory of what types have been seen. The original
-   now intializes and cleans up the squangle code info, while internal
+   now initializes and cleans up the squangle code info, while internal
    calls go directly to this routine to avoid resetting that info. */
 
 static char *

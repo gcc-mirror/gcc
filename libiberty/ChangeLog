@@ -1,3 +1,7 @@
+2003-02-20  jmc  <jmc@prioris.mini.pw.edu.pl>
+
+	* cplus_dem.c: Fix typo: intializes -> initializes.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
