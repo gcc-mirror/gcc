@@ -104,18 +104,8 @@ int can_reach_end;
 static int cross_jump_death_matters = 0;
 
 static int duplicate_loop_exit_test ();
-rtx delete_insn ();
-int redirect_jump ();
-static int redirect_exp ();
 void redirect_tablejump ();
 static int delete_labelref_insn ();
-int invert_jump ();
-static int invert_exp ();
-int condjump_p ();
-int simplejump_p ();
-
-extern rtx gen_jump ();
-
 static void mark_jump_label ();
 void delete_jump ();
 static void delete_from_jump_chain ();
@@ -123,6 +113,8 @@ static int tension_vector_labels ();
 static void find_cross_jump ();
 static void do_cross_jump ();
 static int jump_back_p ();
+
+extern rtx gen_jump ();
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -3150,7 +3142,7 @@ invert_jump (jump, nlabel)
    Return 1 if we can do so, 0 if we cannot find a way to do so that
    matches a pattern.  */
 
-static int
+int
 invert_exp (x, insn)
      rtx x;
      rtx insn;
@@ -3298,7 +3290,7 @@ delete_from_jump_chain (jump)
    Return 0 if we found a change we would like to make but it is invalid.
    Otherwise, return 1.  */
 
-static int
+int
 redirect_exp (loc, olabel, nlabel, insn)
      rtx *loc;
      rtx olabel, nlabel;
