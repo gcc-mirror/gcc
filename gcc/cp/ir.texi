@@ -442,7 +442,8 @@ double} types.  The number of bits in the floating-point representation
 is given by @code{TYPE_PRECISION}, as in the @code{INTEGER_TYPE} case.
 
 @item COMPLEX_TYPE
-FIXME: The __complex__ extension is supported in G++.  Document.
+Used to represent GCC builtin @code{__complex__} data types.  The 
+@code{TREE_TYPE} is the type of the real and imaginary parts.
 
 @item ENUMERAL_TYPE
 Used to represent an enumeration type.  The @code{TYPE_PRECISION} gives
@@ -1459,6 +1460,7 @@ The @code{WHILE_BODY} is the body of the loop.
 @findex tree_int_cst_lt
 @findex tree_int_cst_equal
 @tindex REAL_CST
+@tindex COMPLEX_CST
 @tindex STRING_CST
 @findex TREE_STRING_LENGTH
 @findex TREE_STRING_POINTER
@@ -1473,6 +1475,10 @@ The @code{WHILE_BODY} is the body of the loop.
 @tindex INDIRECT_REF
 @tindex FIX_TRUNC_EXPR
 @tindex FLOAT_EXPR
+@tindex COMPLEX_EXPR
+@tindex CONJ_EXPR
+@tindex REALPART_EXPR
+@tindex IMAGPART_EXPR
 @tindex NOP_EXPR
 @tindex CONVERT_EXPR
 @tindex THROW_EXPR
@@ -1591,6 +1597,12 @@ its bit-pattern.
 FIXME: Talk about how to obtain representations of this constant, do
 comparisons, and so forth.
 
+@item COMPLEX_CST
+These nodes are used to represent complex number constants, that is a
+@code{__complex__} whose parts are constant nodes.  The 
+@code{TREE_REALPART} and @code@TREE_IMAGPART} return the real and the
+imaginary parts respectively.
+
 @item STRING_CST
 These nodes represent string-constants.  The @code{TREE_STRING_LENGTH}
 returns the length of the string, as an @code{int}.  The
@@ -1681,6 +1693,19 @@ the complete expression will have a floating-point type.
 
 FIXME: How is the operand supposed to be rounded?  Is this dependent on
 -mieee?
+
+@item COMPLEX_EXPR
+These nodes are used to represent complex numbers constructed from two
+expressions of the same (integer or real) type.  The first operand is the
+real part and the second operand is the imaginary part.
+
+@item CONJ_EXPR
+These nodes represent the conjugate of their operand.
+
+@item REALPART_EXPR
+@item IMAGPART_EXPR
+These nodes represent respectively the real and the imaginary parts
+of complex numbers (their sole argument).
 
 @item NON_LVALUE_EXPR
 These nodes indicate that their one and only operand is not an lvalue.
