@@ -73,8 +73,8 @@ static sreal real_zero, real_one, real_almost_one, real_br_prob_base,
 
 static void combine_predictions_for_insn (rtx, basic_block);
 static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
-static void estimate_loops_at_level (struct loop *loop);
-static void propagate_freq (struct loop *);
+static void estimate_loops_at_level (struct loop *, bitmap);
+static void propagate_freq (struct loop *, bitmap);
 static void estimate_bb_frequencies (struct loops *);
 static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
 static bool last_basic_block_p (basic_block);
@@ -1530,9 +1530,6 @@ typedef struct block_info_def
   /* To keep queue of basic blocks to process.  */
   basic_block next;
 
-  /* True if block needs to be visited in propagate_freq.  */
-  unsigned int tovisit:1;
-
   /* Number of predecessors we need to visit first.  */
   int npredecessors;
 } *block_info;
@@ -1555,31 +1552,43 @@ typedef struct edge_info_def
    Propagate the frequencies for LOOP.  */
 
 static void
-propagate_freq (struct loop *loop)
+propagate_freq (struct loop *loop, bitmap tovisit)
 {
   basic_block head = loop->header;
   basic_block bb;
   basic_block last;
+  int i;
   edge e;
   basic_block nextbb;
+  bitmap_iterator bi;
 
   /* For each basic block we need to visit count number of his predecessors
      we need to visit first.  */
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+  EXECUTE_IF_SET_IN_BITMAP (tovisit, 0, i, bi)
     {
-      if (BLOCK_INFO (bb)->tovisit)
-	{
-	  edge_iterator ei;
-	  int count = 0;
+      edge_iterator ei;
+      int count = 0;
 
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
-	      count++;
-	    else if (BLOCK_INFO (e->src)->tovisit
-		     && dump_file && !EDGE_INFO (e)->back_edge)
-	      fprintf (dump_file,
-		       "Irreducible region hit, ignoring edge to %i->%i\n",
-		       e->src->index, bb->index);
+      /* The outermost "loop" includes the exit block, which we can not
+	 look up via BASIC_BLOCK.  Detect this and use EXIT_BLOCK_PTR
+	 directly.  Do the same for the entry block just to be safe.  */
+      if (i == ENTRY_BLOCK)
+	bb = ENTRY_BLOCK_PTR;
+      else if (i == EXIT_BLOCK)
+	bb = EXIT_BLOCK_PTR;
+      else
+	bb = BASIC_BLOCK (i);
+
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  bool visit = bitmap_bit_p (tovisit, e->src->index);
+
+	  if (visit && !(e->flags & EDGE_DFS_BACK))
+	    count++;
+	  else if (visit && dump_file && !EDGE_INFO (e)->back_edge)
+	    fprintf (dump_file,
+		     "Irreducible region hit, ignoring edge to %i->%i\n",
+		     e->src->index, bb->index);
 	  BLOCK_INFO (bb)->npredecessors = count;
 	}
     }
@@ -1602,7 +1611,8 @@ propagate_freq (struct loop *loop)
 	{
 #ifdef ENABLE_CHECKING
 	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    if (BLOCK_INFO (e->src)->tovisit && !(e->flags & EDGE_DFS_BACK))
+	    if (bitmap_bit_p (tovisit, e->src->index)
+		&& !(e->flags & EDGE_DFS_BACK))
 	      abort ();
 #endif
 
@@ -1648,7 +1658,7 @@ propagate_freq (struct loop *loop)
 	    }
 	}
 
-      BLOCK_INFO (bb)->tovisit = 0;
+      bitmap_clear_bit (tovisit, bb->index);
 
       /* Compute back edge frequencies.  */
       FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1688,7 +1698,7 @@ propagate_freq (struct loop *loop)
 /* Estimate probabilities of loopback edges in loops at same nest level.  */
 
 static void
-estimate_loops_at_level (struct loop *first_loop)
+estimate_loops_at_level (struct loop *first_loop, bitmap tovisit)
 {
   struct loop *loop;
 
@@ -1698,7 +1708,7 @@ estimate_loops_at_level (struct loop *first_loop)
       basic_block *bbs;
       unsigned i;
 
-      estimate_loops_at_level (loop->inner);
+      estimate_loops_at_level (loop->inner, tovisit);
 
       /* Do not do this for dummy function loop.  */
       if (EDGE_COUNT (loop->latch->succs) > 0)
@@ -1710,9 +1720,9 @@ estimate_loops_at_level (struct loop *first_loop)
 
       bbs = get_loop_body (loop);
       for (i = 0; i < loop->num_nodes; i++)
-	BLOCK_INFO (bbs[i])->tovisit = 1;
+	bitmap_set_bit (tovisit, bbs[i]->index);
       free (bbs);
-      propagate_freq (loop);
+      propagate_freq (loop, tovisit);
     }
 }
 
@@ -1787,6 +1797,7 @@ estimate_bb_frequencies (struct loops *loops)
   if (!flag_branch_probabilities || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
+      bitmap tovisit;
 
       if (!real_values_initialized)
         {
@@ -1805,6 +1816,7 @@ estimate_bb_frequencies (struct loops *loops)
       EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->probability = REG_BR_PROB_BASE;
 
       /* Set up block info for each basic block.  */
+      tovisit = BITMAP_XMALLOC ();
       alloc_aux_for_blocks (sizeof (struct block_info_def));
       alloc_aux_for_edges (sizeof (struct edge_info_def));
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
@@ -1812,7 +1824,6 @@ estimate_bb_frequencies (struct loops *loops)
 	  edge e;
 	  edge_iterator ei;
 
-	  BLOCK_INFO (bb)->tovisit = 0;
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      sreal_init (&EDGE_INFO (e)->back_edge_prob, e->probability, 0);
@@ -1824,7 +1835,7 @@ estimate_bb_frequencies (struct loops *loops)
 
       /* First compute probabilities locally for each loop from innermost
          to outermost to examine probabilities for back edges.  */
-      estimate_loops_at_level (loops->tree_root);
+      estimate_loops_at_level (loops->tree_root, tovisit);
 
       memcpy (&freq_max, &real_zero, sizeof (real_zero));
       FOR_EACH_BB (bb)
@@ -1843,6 +1854,7 @@ estimate_bb_frequencies (struct loops *loops)
 
       free_aux_for_blocks ();
       free_aux_for_edges ();
+      BITMAP_XFREE (tovisit);
     }
   compute_function_frequency ();
   if (flag_reorder_functions)

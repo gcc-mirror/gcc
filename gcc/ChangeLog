@@ -65,6 +65,13 @@
 
 2004-11-03 Jeff Law  <law@redhat.com>
 
+	* predict.c (struct block_info_def): Kill "tovisit" field.
+	(propagate_freq): Accept new "tovisit" parameter.  Change
+	read/write access methods for "tovisit" to check the "tovisit"
+	bitmap instead of a bit in block_info_def.
+	(estimate_loops_at_level): Allocate "tovisit" bitmap.  Pass
+	it to propagate_freq.
+
 	* stmt.c (expand_case): Speed up code to detect duplicate case
 	label targets and count unique case label targets.
 
