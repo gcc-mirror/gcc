@@ -1569,14 +1569,16 @@ dnl @version 1.1 #### replaced Id string now that Id is for lib-v3; pme
 dnl
 dnl #### Changes for libstdc++-v3:  reformatting and linewrapping; prepending
 dnl #### GLIBCPP_ to the macro name; adding the :-make fallback in the
-dnl #### conditional's subshell (" --version" is not a command).
+dnl #### conditional's subshell (" --version" is not a command), using a
+dnl #### different option to grep(1).
 dnl #### -pme
 AC_DEFUN(
   GLIBCPP_CHECK_GNU_MAKE, [AC_CACHE_CHECK( for GNU make,_cv_gnu_make_command,
           _cv_gnu_make_command='' ;
 dnl Search all the common names for GNU make
           for a in "${MAKE:-make}" make gmake gnumake ; do
-                  if  ( $a --version 2> /dev/null | grep  -q GNU  ) ;  then
+                  if [ "`$a --version 2> /dev/null | grep -c GNU`" != "0" ]
+                  then
                           _cv_gnu_make_command=$a ;
                           break;
                   fi
