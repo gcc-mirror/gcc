@@ -1,3 +1,13 @@
+2003-03-19  Kevin Buettner  <kevinb@redhat.com>
+
+	* dwarf2out.c (DWARF_INITIAL_LENGTH_SIZE): Define.
+	(DWARF_COMPILE_UNIT_HEADER_SIZE): Take into account
+	DWARF_INITIAL_LENGTH_SIZE.
+	(output_compilation_unit_header, output_pubnames, output_aranges)
+	(output_line_info): Output 0xffffffff escape value for 64-bit
+	DWARF extension.
+	* config/mips/iris6.h (DWARF_INITIAL_LENGTH_SIZE): Define.
+
 2003-03-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_preferred_reload_class): Do not
