@@ -1,5 +1,9 @@
 1999-09-21  Tom Tromey  <tromey@cygnus.com>
 
+	* java/io/OutputStreamWriter.java (OutputStreamWriter): Reverted
+	previous patch; it too was incorrect.
+	* java/io/PrintStream.java (PrintStream): Likewise.
+
 	* java/io/OutputStreamWriter.java (OutputStreamWriter): Don't
 	refer to `this' before calling superclass constructor.
 	* java/io/PrintStream.java (PrintStream): Don't refer to `this'

@@ -32,11 +32,9 @@ public class OutputStreamWriter extends Writer
 
   private OutputStreamWriter(OutputStream out, UnicodeToBytes encoder)
   {
-    BufferedOutputStream buf = (out instanceof BufferedOutputStream
-				? (BufferedOutputStream) out
-				: new BufferedOutputStream(out, 250));
-    super (buf);
-    this.out = buf;
+    super((this.out = (out instanceof BufferedOutputStream
+		       ? (BufferedOutputStream) out
+		       : new BufferedOutputStream(out, 250))));
     this.converter = encoder;
   } 
 
