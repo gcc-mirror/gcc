@@ -1,3 +1,7 @@
+2003-08-25  Richard Henderson  <rth@redhat.com>
+
+	* cxx-pretty-print.c (pp_cxx_class_name): Remove unused function.
+
 2003-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (pp_cxx_flag_default_argument): New flag.

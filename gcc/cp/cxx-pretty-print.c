@@ -123,12 +123,6 @@ pp_cxx_template_id (cxx_pretty_printer *pp, tree t)
   pp_cxx_end_template_argument_list (pp);
 }
 
-static void
-pp_cxx_class_name (cxx_pretty_printer *pp, tree t)
-{
-  pp_cxx_unqualified_id (pp, TYPE_NAME (t));
-}
-
 /* unqualified-id:
      identifier
      operator-function-id
