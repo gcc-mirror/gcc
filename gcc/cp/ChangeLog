@@ -1,3 +1,10 @@
+2003-06-21  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PC c++/10864
+	* call.c (op_error): Tidy.
+	* error.c (dump_expr): Properly format 'T()' when T is an
+	aggregate type.
+
 2003-06-21  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	PR c++/10915
