@@ -3,6 +3,9 @@
 	* config/ia64/ia64.c (rws_update): If !pred, set write_count
 	instead of incrementing it.
 
+	* config/ia64/ia64.c (ia64_sched_reorder): When there's more than one
+	asm ready, don't try to move them all into the same array element.
+
 Thu Aug 23 17:21:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* function.c (thread_prologue_and_epilogue_insns): Avoid

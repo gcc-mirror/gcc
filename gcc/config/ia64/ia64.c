@@ -6153,8 +6153,8 @@ ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
 	    if (GET_CODE (PATTERN (insn)) == ASM_INPUT
 		|| asm_noperands (PATTERN (insn)) >= 0)
 	      {
-		rtx lowest = ready[0];
-		ready[0] = insn;
+		rtx lowest = ready[n_asms];
+		ready[n_asms] = insn;
 		*insnp = lowest;
 		n_asms++;
 	      }
