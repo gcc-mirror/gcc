@@ -1,3 +1,7 @@
+2001-09-14  Marc Espie <espie@openbsd.org>
+	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK):  Generate reference to GOT
+	correctly.
+
 2001-09-14  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* config/alpha/alpha.md (unaligned_extendhidi_be): Fix.
