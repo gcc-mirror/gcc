@@ -1,3 +1,24 @@
+2004-09-03  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-common.h (objc_is_id, objc_declare_alias, objc_declare_class,
+	objc_declare_protocols, objc_build_message_expr,
+	objc_finish_message_expr, objc_build_selector_expr,
+	objc_build_protocol_expr, objc_build_encode_expr,
+	objc_build_string_object, objc_get_protocol_qualified_type,
+	objc_get_class_reference, objc_get_class_ivars,
+	objc_start_class_interface, objc_start_category_interface,
+	objc_start_protocol, objc_continue_interface, objc_finish_interface,
+	objc_start_class_implementation, objc_start_category_implementation,
+	objc_continue_implementation, objc_finish_implementation,
+	objc_set_visibility, objc_set_method_type, objc_build_method_signature,
+	objc_add_method_declaration, objc_start_method_definition,
+	objc_finish_method_definition, objc_add_instance_variable,
+	objc_build_keyword_decl, objc_build_throw_stmt, objc_begin_try_stmt,
+	objc_finish_try_stmt, objc_begin_catch_clause,
+	objc_finish_catch_clause, objc_build_finally_clause,
+	objc_build_synchronized, objc_static_init_needed_p,
+	objc_generate_static_init_call): New prototypes.
+
 2004-09-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.c (ia64_function_arg): Use PARALLEL even if there
