@@ -1749,7 +1749,7 @@ extern void schedule_insns		PARAMS ((FILE *));
 extern void fix_sched_param		PARAMS ((const char *, const char *));
 
 /* In print-rtl.c */
-extern char *print_rtx_head;
+extern const char *print_rtx_head;
 extern void debug_rtx			PARAMS ((rtx));
 extern void debug_rtx_list		PARAMS ((rtx, int));
 extern void debug_rtx_range		PARAMS ((rtx, rtx));

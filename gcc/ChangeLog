@@ -1,5 +1,8 @@
 2000-10-16  Rodney Brown  <RodneyBrown@mynd.com>
 
+	* print-rtl.c (print_rtx_head): Constify.
+	* rtl.h (print_rtx_head): Similarly.
+
 	* config/pa/pa/pa-protos.h (output_64bit_and, output_64bit_ior):
 	Constify char * return value.
 	* config/pa/pa/pa.c
