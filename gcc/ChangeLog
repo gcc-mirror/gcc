@@ -1,3 +1,9 @@
+2000-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (reload_outdi+1): Handle
+	HOST_BITS_PER_WIDE_INT == 64 case correctly.
+	(adddi3_insn_sp32+1, adddi3_insn_sp32+2, andsi3+2): Likewise.
+
 2000-06-23  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* alias.c (fixed_scalar_and_varying_struct_p): Don't examine
