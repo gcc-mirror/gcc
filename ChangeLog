@@ -1,5 +1,9 @@
 2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
+	* ltcf-cxx.sh: Replace $linker_flags with $compiler_flags wherever
+	it is used as argument to $CC.
+	* ltcf-gcj.sh: Likewise.
+
 	* configure.in: Introduce --enable-maintainer-mode.
 	* configure: Rebuilt.
 	* Makefile.tpl (Makefile.in, configure): Enable dependencies only
