@@ -1,3 +1,7 @@
+2002-01-03  Roland McGrath  <roland@frob.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mcall-gnu.
+
 2002-01-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (expand_expr_stmt_value): Add maybe_last argument.
