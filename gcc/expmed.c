@@ -3188,7 +3188,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	   or remainder to get floor rounding, once we have the remainder.
 	   Notice that we compute also the final remainder value here,
 	   and return the result right away.  */
-	if (target == 0)
+	if (target == 0 || GET_MODE (target) != compute_mode)
 	  target = gen_reg_rtx (compute_mode);
 
 	if (rem_flag)
@@ -3315,7 +3315,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	       quotient or remainder to get ceiling rounding, once we have the
 	       remainder.  Notice that we compute also the final remainder
 	       value here, and return the result right away.  */
-	    if (target == 0)
+	    if (target == 0 || GET_MODE (target) != compute_mode)
 	      target = gen_reg_rtx (compute_mode);
 
 	    if (rem_flag)
@@ -3417,7 +3417,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	       quotient or remainder to get ceiling rounding, once we have the
 	       remainder.  Notice that we compute also the final remainder
 	       value here, and return the result right away.  */
-	    if (target == 0)
+	    if (target == 0 || GET_MODE (target) != compute_mode)
 	      target = gen_reg_rtx (compute_mode);
 	    if (rem_flag)
 	      {
@@ -3601,6 +3601,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
   if (quotient == 0)
     {
+      if (target && GET_MODE (target) != compute_mode)
+	target = 0;
+
       if (rem_flag)
 	{
 	  /* Try to produce the remainder directly without a library call.  */
@@ -3652,6 +3655,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 
   if (rem_flag)
     {
+      if (target && GET_MODE (target) != compute_mode)
+	target = 0;
+
       if (quotient == 0)
 	/* No divide instruction either.  Use library for remainder.  */
 	remainder = sign_expand_binop (compute_mode, umod_optab, smod_optab,
