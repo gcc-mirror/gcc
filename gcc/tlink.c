@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -629,6 +629,20 @@ scan_linker_output (fname)
       end = ! *q;
       *q = 0;
       sym = symbol_hash_lookup (p, false);
+
+      /* Some SVR4 linkers produce messages like
+	 ld: 0711-317 ERROR: Undefined symbol: .g__t3foo1Zi
+	 */
+      if (! sym && ! end && strstr (q+1, "Undefined symbol: "))
+	{
+	  char *p = strrchr (q+1, ' ');
+	  p++;
+	  if (*p == '.')
+	    p++;
+	  if (*p == '_' && prepends_underscore)
+	    p++;
+	  sym = symbol_hash_lookup (p, false);
+	}
 
       if (! sym && ! end)
 	/* Try a mangled name in quotes.  */
