@@ -1,3 +1,7 @@
+2002-05-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/rs6000/rs6000.h: Revert previous patch. 
+
 2002-05-09	Joel Sherrill <joel@OARcorp.com>
 
 	* config/rs6000/rs6000.h CPP_CPU_SPEC): Correct 
