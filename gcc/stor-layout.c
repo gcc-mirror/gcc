@@ -305,6 +305,29 @@ int_mode_for_mode (mode)
   return mode;
 }
 
+/* Return the alignment of MODE. This will be bounded by 1 and
+   BIGGEST_ALIGNMENT.  */
+
+unsigned int
+get_mode_alignment (mode)
+     enum machine_mode mode;
+{
+  unsigned int alignment;
+
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    alignment = GET_MODE_UNIT_SIZE (mode);
+  else
+    alignment = GET_MODE_SIZE (mode);
+
+  /* Extract the LSB of the size.  */
+  alignment = alignment & -alignment;
+  alignment *= BITS_PER_UNIT;
+
+  alignment = MIN (BIGGEST_ALIGNMENT, MAX (1, alignment));
+  return alignment;
+}
+
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR.
    This can only be applied to objects of a sizetype.  */
 
