@@ -1,5 +1,24 @@
 2005-04-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* local-alloc.c (update_equiv_regs): Use gcc_assert, gcc_unreachable.
+	(block_alloc, find_free_reg): Likewise.
+	* loop-doloop.c (doloop_modify): Likewise.
+	* loop-invariant.c (record_use): Likewise.
+	* loop-iv.c (get_biv_step_1, get_biv_step, iv_analyze,
+	get_iv_value, canon_condition, eliminate_implied_condition,
+	eliminate_implied_condition, simplify_using_initial_values,
+	shorten_into_mode, canonicalize_iv_subregs,
+	iv_number_of_iterations): Likewise.
+	* loop-unroll.c (expand_var_during_unrolling): Likewise.
+	* loop-unswitch.c (compare_and_jump_seq, unswitch_single_loop,
+	unswitch_loop): Likewise.
+	* loop.c (INSN_LUID, loop_optimize, rtx_equal_for_loop_p,
+	move_movables, replace_call_address, find_and_verify_loops,
+	rtx_equal_for_prefetch_p, fold_rtx_mult_add, loop_iterations,
+	record_giv, final_giv_value, general_induction_var,
+	simplify_giv_expr, extension_within_bounds_p, try_copy_prop,
+	loop_giv_dump): Likewise.
+
 	* gcov-io.h (GCOV_CHECK, GCOV_CHECK_READING,
 	GCOV_CHECK_WRITING): Remove.
 	(gcov_position, gcov_rewrite): Use gcc_assert.

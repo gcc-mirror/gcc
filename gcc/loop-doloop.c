@@ -299,21 +299,17 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     {
     case NE:
       /* Currently only NE tests against zero and one are supported.  */
-      if (XEXP (condition, 1) == const1_rtx)
+      noloop = XEXP (condition, 1);
+      if (noloop != const0_rtx)
 	{
+	  gcc_assert (noloop == const1_rtx);
 	  increment_count = true;
-	  noloop = const1_rtx;
 	}
-      else if (XEXP (condition, 1) == const0_rtx)
-       	noloop = const0_rtx;
-      else
-	abort ();
       break;
 
     case GE:
       /* Currently only GE tests against zero are supported.  */
-      if (XEXP (condition, 1) != const0_rtx)
-	abort ();
+      gcc_assert (XEXP (condition, 1) == const0_rtx);
 
       noloop = constm1_rtx;
 
@@ -330,7 +326,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
 
       /* Abort if an invalid doloop pattern has been generated.  */
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (increment_count)

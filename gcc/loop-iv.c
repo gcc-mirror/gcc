@@ -793,16 +793,15 @@ get_biv_step_1 (rtx insn, rtx reg,
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      if (GET_MODE (op0) != *inner_mode
-	  || *extend != UNKNOWN
-	  || *outer_step != const0_rtx)
-	abort ();
+      gcc_assert (GET_MODE (op0) == *inner_mode
+		  && *extend == UNKNOWN
+		  && *outer_step == const0_rtx);
 
       *extend = code;
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return true;
@@ -826,17 +825,8 @@ get_biv_step (rtx reg, rtx *inner_step, enum machine_mode *inner_mode,
 		       outer_step))
     return false;
 
-  if (*inner_mode != *outer_mode
-      && *extend == UNKNOWN)
-    abort ();
-
-  if (*inner_mode == *outer_mode
-      && *extend != UNKNOWN)
-    abort ();
-
-  if (*inner_mode == *outer_mode
-      && *outer_step != const0_rtx)
-    abort ();
+  gcc_assert ((*inner_mode == *outer_mode) != (*extend != UNKNOWN));
+  gcc_assert (*inner_mode != *outer_mode || *outer_step == const0_rtx);
 
   return true;
 }
@@ -1085,8 +1075,7 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 	  mby = XEXP (rhs, 1);
 	  if (!CONSTANT_P (mby))
 	    {
-	      if (!CONSTANT_P (op0))
-		abort ();
+	      gcc_assert (CONSTANT_P (op0));
 	      tmp = op0;
 	      op0 = mby;
 	      mby = tmp;
@@ -1094,14 +1083,13 @@ iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
 	  break;
 
 	case ASHIFT:
-	  if (CONSTANT_P (XEXP (rhs, 0)))
-	    abort ();
+	  gcc_assert (!CONSTANT_P (XEXP (rhs, 0)));
 	  op0 = XEXP (rhs, 0);
 	  mby = XEXP (rhs, 1);
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       amode = GET_MODE (rhs);
@@ -1210,8 +1198,7 @@ get_iv_value (struct rtx_iv *iv, rtx iteration)
 
   /* We would need to generate some if_then_else patterns, and so far
      it is not needed anywhere.  */
-  if (iv->first_special)
-    abort ();
+  gcc_assert (!iv->first_special);
 
   if (iv->step != const0_rtx && iteration != const0_rtx)
     val = simplify_gen_binary (PLUS, iv->extend_mode, iv->base,
@@ -1547,8 +1534,7 @@ canon_condition (rtx cond)
   mode = GET_MODE (op0);
   if (mode == VOIDmode)
     mode = GET_MODE (op1);
-  if (mode == VOIDmode)
-    abort ();
+  gcc_assert (mode != VOIDmode);
 
   if (GET_CODE (op1) == CONST_INT
       && GET_MODE_CLASS (mode) != MODE_CC
@@ -1677,20 +1663,23 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
 static void
 eliminate_implied_condition (enum rtx_code op, rtx a, rtx *b)
 {
-  if (op == AND)
+  switch (op)
     {
+    case AND:
       /* If A implies *B, we may replace *B by true.  */
       if (implies_p (a, *b))
 	*b = const_true_rtx;
-    }
-  else if (op == IOR)
-    {
+      break;
+
+    case IOR:
       /* If *B implies A, we may replace *B by false.  */
       if (implies_p (*b, a))
 	*b = const0_rtx;
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 }
 
 /* Eliminates the conditions in TAIL that are implied by HEAD.  OP is the
@@ -1731,19 +1720,22 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
       eliminate_implied_conditions (op, &head, tail);
 
-      if (op == AND)
+      switch (op)
 	{
+	case AND:
 	  neutral = const_true_rtx;
 	  aggr = const0_rtx;
-	}
-      else if (op == IOR)
-	{
+	  break;
+
+	case IOR:
 	  neutral = const0_rtx;
 	  aggr = const_true_rtx;
-	}
-      else
-	abort ();
+	  break;
 
+	default:
+	  gcc_unreachable ();
+	}
+      
       simplify_using_initial_values (loop, UNKNOWN, &head);
       if (head == aggr)
 	{
@@ -1770,8 +1762,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
       return;
     }
 
-  if (op != UNKNOWN)
-    abort ();
+  gcc_assert (op == UNKNOWN);
 
   e = loop_preheader_edge (loop);
   if (e->src == ENTRY_BLOCK_PTR)
@@ -1873,7 +1864,7 @@ shorten_into_mode (struct rtx_iv *iv, enum machine_mode mode,
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
 
   iv->mode = mode;
@@ -1931,7 +1922,7 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
 	break;
 
       default:
-	abort ();
+	gcc_unreachable ();
     }
 
   /* Values of both variables should be computed in the same mode.  These
@@ -2031,15 +2022,13 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   desc->niter_max = 0;
 
   cond = GET_CODE (condition);
-  if (!COMPARISON_P (condition))
-    abort ();
+  gcc_assert (COMPARISON_P (condition));
 
   mode = GET_MODE (XEXP (condition, 0));
   if (mode == VOIDmode)
     mode = GET_MODE (XEXP (condition, 1));
   /* The constant comparisons should be folded.  */
-  if (mode == VOIDmode)
-    abort ();
+  gcc_assert (mode != VOIDmode);
 
   /* We only handle integers or pointers.  */
   if (GET_MODE_CLASS (mode) != MODE_INT

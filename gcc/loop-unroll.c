@@ -1891,8 +1891,7 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
   bool really_new_expansion = false;
   
   set = single_set (insn);
-  if (!set)
-    abort ();
+  gcc_assert (set);
   
   /* Generate a new register only if the expansion limit has not been
      reached.  Else reuse an already existing expansion.  */
