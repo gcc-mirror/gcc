@@ -134,7 +134,7 @@ static int calls_function	PARAMS ((tree, int));
 static int calls_function_1	PARAMS ((tree, int));
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
-					 rtx, int, rtx, int));
+					 rtx, int, rtx, int, int));
 static void precompute_register_parameters	PARAMS ((int,
 							 struct arg_data *,
 							 int *));
@@ -163,6 +163,7 @@ static void compute_argument_addresses		PARAMS ((struct arg_data *,
 static rtx rtx_for_function_call		PARAMS ((tree, tree));
 static void load_register_parameters		PARAMS ((struct arg_data *,
 							 int, rtx *));
+static int libfunc_nothrow			PARAMS ((rtx));
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 static rtx save_fixed_argument_area	PARAMS ((int, rtx, int *, int *));
@@ -383,7 +384,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
 static void
 emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	     struct_value_size, next_arg_reg, valreg, old_inhibit_defer_pop,
-	     call_fusage, is_const)
+	     call_fusage, is_const, nothrow)
      rtx funexp;
      tree fndecl ATTRIBUTE_UNUSED;
      tree funtype ATTRIBUTE_UNUSED;
@@ -394,7 +395,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
      rtx valreg;
      int old_inhibit_defer_pop;
      rtx call_fusage;
-     int is_const;
+     int is_const, nothrow;
 {
   rtx rounded_stack_size_rtx = GEN_INT (rounded_stack_size);
 #if defined (HAVE_call) && defined (HAVE_call_value)
@@ -490,6 +491,12 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
   /* If this is a const call, then set the insn's unchanging bit.  */
   if (is_const)
     CONST_CALL_P (call_insn) = 1;
+
+  /* If this call can't throw, attach a REG_EH_REGION reg note to that
+     effect.  */
+  if (nothrow)
+    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_EH_REGION, GEN_INT (-1),
+					       REG_NOTES (call_insn));
 
   /* Restore this now, so that we do defer pops for this call's args
      if the context of the call as a whole permits.  */
@@ -1682,6 +1689,8 @@ expand_call (exp, target, ignore)
   int is_const = 0;
   /* Nonzero if this is a call to a `volatile' function.  */
   int is_volatile = 0;
+  /* Nonzero if this is a call to a function that won't throw an exception.  */
+  int nothrow = TREE_NOTHROW (exp);
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
@@ -1756,6 +1765,9 @@ expand_call (exp, target, ignore)
 
 	  if (TREE_THIS_VOLATILE (fndecl))
 	    is_volatile = 1;
+
+	  if (TREE_NOTHROW (fndecl))
+	    nothrow = 1;
 	}
     }
 
@@ -2418,7 +2430,7 @@ expand_call (exp, target, ignore)
   emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
 	       args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-	       valreg, old_inhibit_defer_pop, call_fusage, is_const);
+	       valreg, old_inhibit_defer_pop, call_fusage, is_const, nothrow);
 
   /* If call is cse'able, make appropriate pair of reg-notes around it.
      Test valreg so we don't crash; may safely ignore `const'
@@ -2666,6 +2678,22 @@ expand_call (exp, target, ignore)
   return target;
 }
 
+/* Returns nonzero if FUN is the symbol for a library function which can
+   not throw.  */
+
+static int
+libfunc_nothrow (fun)
+     rtx fun;
+{
+  if (fun == throw_libfunc
+      || fun == rethrow_libfunc
+      || fun == sjthrow_libfunc
+      || fun == sjpopnthrow_libfunc)
+    return 0;
+
+  return 1;
+}
+
 /* Output a library call to function FUN (a SYMBOL_REF rtx)
    (emitting the queue unless NO_QUEUE is nonzero),
    for a value of mode OUTMODE,
@@ -2714,6 +2742,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
   int old_inhibit_defer_pop = inhibit_defer_pop;
   rtx call_fusage = 0;
   int reg_parm_stack_space = 0;
+  int nothrow;
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
   /* Define the boundary of the register parm stack space that needs to be
      save, if any.  */
@@ -2746,6 +2775,8 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 #endif
 
   fun = orgfun;
+
+  nothrow = libfunc_nothrow (fun);
 
   /* Copy all the libcall-arguments out of the varargs data
      and into a vector ARGVEC.
@@ -3139,7 +3170,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 	       original_args_size.constant, args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
-	       old_inhibit_defer_pop + 1, call_fusage, no_queue);
+	       old_inhibit_defer_pop + 1, call_fusage, no_queue, nothrow);
 
   pop_temp_slots ();
 
@@ -3234,6 +3265,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
   int struct_value_size = 0;
   int is_const;
   int reg_parm_stack_space = 0;
+  int nothrow;
 #ifdef ACCUMULATE_OUTGOING_ARGS
   int needed;
 #endif
@@ -3271,6 +3303,8 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 
   is_const = no_queue;
   fun = orgfun;
+
+  nothrow = libfunc_nothrow (fun);
 
 #ifdef PREFERRED_STACK_BOUNDARY
   /* Ensure current function's preferred stack boundary is at least
@@ -3737,7 +3771,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       mem_value == 0 ? hard_libcall_value (outmode) : NULL_RTX,
-	       old_inhibit_defer_pop + 1, call_fusage, is_const);
+	       old_inhibit_defer_pop + 1, call_fusage, is_const, nothrow);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;

@@ -3679,6 +3679,10 @@ rest_of_compilation (decl)
 #endif
 
   current_function_nothrow = nothrow_function_p ();
+  if (current_function_nothrow)
+    /* Now we know that this can't throw; set the flag for the benefit
+       of other functions later in this translation unit.  */
+    TREE_NOTHROW (current_function_decl) = 1;
 
   /* Now turn the rtl into assembler code.  */
 

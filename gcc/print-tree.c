@@ -301,8 +301,8 @@ print_node (file, prefix, node, indent)
     fputs (" asm_written", file);
   if (TREE_USED (node))
     fputs (" used", file);
-  if (TREE_RAISES (node))
-    fputs (" raises", file);
+  if (TREE_NOTHROW (node))
+    fputs (" nothrow", file);
   if (!ggc_p && TREE_PERMANENT (node))
     fputs (" permanent", file);
   if (TREE_PUBLIC (node))

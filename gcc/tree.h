@@ -206,7 +206,7 @@ struct tree_common
   unsigned asm_written_flag: 1;
 
   unsigned used_flag : 1;
-  unsigned raises_flag : 1;
+  unsigned nothrow_flag : 1;
   unsigned static_flag : 1;
   unsigned public_flag : 1;
   unsigned private_flag : 1;
@@ -322,10 +322,10 @@ struct tree_common
        TREE_USED in
            expressions, IDENTIFIER_NODE
 
-   raises_flag:
+   nothrow_flag:
 
-       TREE_RAISES in
-           expressions
+       TREE_NOTHROW in
+           CALL_EXPR, FUNCTION_DECL
 
 							  */
 /* Define accessors for the fields that all tree nodes have
@@ -599,9 +599,9 @@ extern void tree_class_check_failed PARAMS ((const tree, char,
    was used.  */
 #define TREE_USED(NODE) ((NODE)->common.used_flag)
 
-/* Nonzero for a tree node whose evaluation could result
-   in the raising of an exception.  Not implemented yet.  */
-#define TREE_RAISES(NODE) ((NODE)->common.raises_flag)
+/* In a FUNCTION_DECL, nonzero means a call to the function cannot throw
+   an exception.  In a CALL_EXPR, nonzero means the call cannot throw.  */
+#define TREE_NOTHROW(NODE) ((NODE)->common.nothrow_flag)
 
 /* Used in classes in C++.  */
 #define TREE_PRIVATE(NODE) ((NODE)->common.private_flag)
@@ -1300,14 +1300,16 @@ struct tree_type
    contour that restored a stack level and which is now exited.  */
 #define DECL_TOO_LATE(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
 
-/* In a FUNCTION_DECL, nonzero means a built in function.  */
-#define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
-/* For a builtin function, identify which part of the compiler defined it.  */
-#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.built_in_class)
+/* Unused in FUNCTION_DECL.  */
 
 /* In a VAR_DECL that's static,
    nonzero if the space is in the text section.  */
 #define DECL_IN_TEXT_SECTION(NODE) (DECL_CHECK (NODE)->decl.bit_field_flag)
+
+/* In a FUNCTION_DECL, nonzero means a built in function.  */
+#define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
+/* For a builtin function, identify which part of the compiler defined it.  */
+#define DECL_BUILT_IN_CLASS(NODE) (DECL_CHECK (NODE)->decl.built_in_class)
 
 /* Used in VAR_DECLs to indicate that the variable is a vtable.
    Used in FIELD_DECLs for vtable pointers.

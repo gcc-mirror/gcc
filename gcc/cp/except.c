@@ -258,6 +258,7 @@ call_eh_info ()
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -805,6 +806,7 @@ alloc_eh_object (type)
       DECL_EXTERNAL (fn) = 1;
       TREE_PUBLIC (fn) = 1;
       DECL_ARTIFICIAL (fn) = 1;
+      TREE_NOTHROW (fn) = 1;
       pushdecl_top_level (fn);
       make_function_rtl (fn);
     }
@@ -857,6 +859,7 @@ expand_throw (exp)
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
+	  TREE_THIS_VOLATILE (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
 	}
@@ -976,6 +979,7 @@ expand_throw (exp)
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
+	  TREE_NOTHROW (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
 	}
@@ -1005,6 +1009,7 @@ expand_throw (exp)
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
+	  TREE_NOTHROW (fn) = 1;
 	  pushdecl_top_level (fn);
 	  make_function_rtl (fn);
 	}
