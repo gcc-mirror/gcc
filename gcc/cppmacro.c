@@ -1,6 +1,6 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1568,7 +1568,10 @@ cpp_macro_definition (pfile, node)
     }
 
   if (len > pfile->macro_buffer_len)
-    pfile->macro_buffer = (U_CHAR *) xrealloc (pfile->macro_buffer, len);
+    {
+      pfile->macro_buffer = (U_CHAR *) xrealloc (pfile->macro_buffer, len);
+      pfile->macro_buffer_len = len;
+    }
   buffer = pfile->macro_buffer;
 
   /* Parameter names.  */

@@ -570,7 +570,11 @@ cpp_cleanup (pfile)
     cpp_pop_buffer (pfile);
 
   if (pfile->macro_buffer)
-    free ((PTR) pfile->macro_buffer);
+    {
+      free ((PTR) pfile->macro_buffer);
+      pfile->macro_buffer = NULL;
+      pfile->macro_buffer_len = 0;
+    }
 
   deps_free (pfile->deps);
 

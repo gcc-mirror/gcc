@@ -1,5 +1,10 @@
 2001-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* cppinit.c (cpp_cleanup): NULLify macro_buffer and zero
+	macro_buffer_len.
+	* cppmacro.c (cpp_macro_definition): Reset macro_buffer_len when
+	realloc()ing macro_buffer.
+
 	* hwint.h (HOST_BITS_PER_WIDE_INT, HOST_WIDE_INT): Use long long
 	if it's wider than long and the target's long is wider than the
 	host's.
