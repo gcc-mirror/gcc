@@ -133,7 +133,7 @@ __cxa_allocate_exception(std::size_t thrown_size)
 	std::terminate ();
     }
 
-  memset (ret, 0, sizeof (__cxa_exception));
+  std::memset (ret, 0, sizeof (__cxa_exception));
 
   return (void *)((char *)ret + sizeof (__cxa_exception));
 }
