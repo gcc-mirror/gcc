@@ -4536,8 +4536,8 @@ static tTestDesc aStdio_Va_ListTests[] = {
  *  Fix Command Arguments for Stdio_Va_List
  */
 static const char* apzStdio_Va_ListPatch[] = { "sed",
-    "-e", "s@ va_list @ __gnuc_va_list @\n\
-s@ va_list)@ __gnuc_va_list)@\n\
+    "-e", "s@[ \t]va_list @ __gnuc_va_list @\n\
+s@[ \t]va_list)@ __gnuc_va_list)@\n\
 s@(va_list)&@(__gnuc_va_list)\\&@\n\
 s@ _VA_LIST_));@ __gnuc_va_list));@\n\
 s@ __VA_LIST__));@ __gnuc_va_list));@\n\

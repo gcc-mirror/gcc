@@ -1,3 +1,10 @@
+2003-11-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (stdio_va_list): Allow tab before va_list.
+	Merge two substitutions.
+	* fixinc/fixincl.x: Regenerate.
+	Fixes PR bootstrap/12666.
+
 2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR target/11598
