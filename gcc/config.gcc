@@ -1866,7 +1866,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	tmake_file="${tmake_file} mips/t-netbsd"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
-        tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h mips/linux.h"
+        tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"
 	case $machine in
         mipsisa32*-*)
                 target_cpu_default="MASK_SOFT_FLOAT"

@@ -4408,9 +4408,10 @@ do {									\
 #define TEXT_SECTION_ASM_OP	"\t.text"	/* instructions */
 #define DATA_SECTION_ASM_OP	"\t.data"	/* large data */
 #define SDATA_SECTION_ASM_OP	"\t.sdata"	/* small data */
-#ifndef READONLY_DATA_SECTION_ASM_OP
+
+#undef READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION_ASM_OP	"\t.rdata"	/* read-only data */
-#endif
+
 #define SMALL_DATA_SECTION	sdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
@@ -4609,4 +4610,4 @@ while (0)
 	unsigned short SFlittlenan[2] = {0xffff, 0xffbf}
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
-#define TARGET_MEM_FUNCTIONS 1
+#define TARGET_MEM_FUNCTIONS
