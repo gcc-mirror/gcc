@@ -1,3 +1,8 @@
+2003-08-12  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (libjava_find_lib): Search for .so file first.
+	(libjava_arguments): Don't add libraries to link line explictly.
+
 2003-08-05  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/11600:
