@@ -1,3 +1,7 @@
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+ 
+        * config/c4x/c4x.h (LEGITIMIZE_RELOAD_ADDRESS):  Handle symref.
+ 
 2003-04-25  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (ISA_HAS_HILO_INTERLOCKS): MIPS32, MIPS32r2,
