@@ -1,3 +1,7 @@
+2003-12-08  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (cmpstr expander): Obey TARGET_INLINE_ALL_STRINGOPS
+
 2003-12-08  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/13324, PR ada/12614
