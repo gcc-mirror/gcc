@@ -1,3 +1,23 @@
+Fri Mar 20 10:42:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (complete_template_args): Rewrite.
+	(tsubst, FUNCTION_DECL): Use it.
+
+Fri Mar 20 08:12:43 1998  H.J. Lu  (hjl@gnu.org)
+
+	* semantics.c (finish_asm_stmt): Fix combine strings. Call
+	c_expand_asm_operands () if output_operands, input_operands or
+	clobbers is not NULL_TREE.
+
+Fri Mar 20 00:10:19 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
+
+	* pt.c (complete_template_args): New function.
+	(get_bindings): Deal with specializations of function templates
+	with return type containing parameters from outer class 
+	templates.
+	(tsubst, TEMPLATE_TEMPLATE_PARM): When reducing parameter level,
+	substitute arguments and compose a new type.
+
 Thu Mar 19 19:01:48 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst): Clear DECL_PENDING_INLINE_INFO for new

@@ -81,6 +81,7 @@ static tree get_class_bindings PROTO((tree, tree, tree, tree));
 static tree coerce_template_parms PROTO((tree, tree, tree, int, int, int));
 static tree tsubst_enum	PROTO((tree, tree, tree *));
 static tree add_to_template_args PROTO((tree, tree));
+static tree complete_template_args PROTO((tree, tree, int));
 static int  type_unification_real PROTO((tree, tree *, tree, tree,
 					 int, int, int));
 static void note_template_header PROTO((int));
@@ -338,6 +339,103 @@ is_member_template (t)
     }
 
   return 0;
+}
+
+/* Return a new template argument vector which contains all of ARGS
+   for all outer templates TYPE is contained in, but has as its 
+   innermost set of arguments the EXTRA_ARGS.  If UNBOUND_ONLY, we
+   are only interested in unbound template arguments, not arguments from
+   enclosing templates that have been instantiated already.  */
+
+static tree
+complete_template_args (tmpl, extra_args, unbound_only)
+     tree tmpl, extra_args;
+     int unbound_only;
+{
+  /* depth is the number of levels of enclosing args we're adding.  */
+  int depth, i;
+  tree args, new_args, spec_args = NULL_TREE;
+  
+  my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
+  my_friendly_assert (TREE_CODE (extra_args) == TREE_VEC, 0);
+
+  if (DECL_TEMPLATE_INFO (tmpl) && !unbound_only)
+    {
+      /* A specialization of a member template of a template class shows up
+	 as a TEMPLATE_DECL with DECL_TEMPLATE_SPECIALIZATION set.
+	 DECL_TI_ARGS is the specialization args, and DECL_TI_TEMPLATE
+	 is the template being specialized.  */
+      if (DECL_TEMPLATE_SPECIALIZATION (tmpl))
+	{
+	  spec_args = DECL_TI_ARGS (tmpl);
+	  tmpl = DECL_TI_TEMPLATE (tmpl);
+	}
+
+      if (DECL_TEMPLATE_INFO (tmpl))
+	{
+	  /* A partial instantiation of a member template shows up as a
+	     TEMPLATE_DECL with DECL_TEMPLATE_INFO.  DECL_TI_ARGS is
+	     all the bound template arguments.  */
+	  args = DECL_TI_ARGS (tmpl);
+	  if (TREE_CODE (TREE_VEC_ELT (args, 0)) != TREE_VEC)
+	    depth = 1;
+	  else
+	    depth = TREE_VEC_LENGTH (args);
+	}
+      else
+	/* If we are a specialization, we might have no previously bound
+	   template args.  */
+	depth = 0;
+
+      new_args = make_tree_vec (depth + 1 + (!!spec_args));
+
+      if (depth == 1)
+	TREE_VEC_ELT (new_args, 0) = args;
+      else
+	for (i = 0; i < depth; ++i)
+	  TREE_VEC_ELT (new_args, i) = TREE_VEC_ELT (args, i);
+    }
+  else
+    {
+      tree type;
+      int skip;
+
+      /* For unbound args, we have to do more work.  We are getting bindings
+	 for the innermost args from extra_args, so we start from our
+	 context and work out until we've seen all the args.  We need to
+	 do it this way to handle partial specialization.  */
+
+      depth = list_length (DECL_TEMPLATE_PARMS (tmpl)) - 1;
+      if (depth == 0)
+	return extra_args;
+
+      new_args = make_tree_vec (depth + 1);
+
+      if (! is_member_template (tmpl))
+	/* If this isn't a member template, extra_args is for the innermost
+	   template class, so skip over it.  */
+	skip = 1;
+
+      type = DECL_REAL_CONTEXT (tmpl);
+      for (i = depth; i; type = TYPE_CONTEXT (type))
+	if (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (type)))
+	  {
+	    if (skip)
+	      skip = 0;
+	    else
+	      {
+		--i;
+		TREE_VEC_ELT (new_args, i) = CLASSTYPE_TI_ARGS (type);
+	      }
+	  }
+    }
+
+  TREE_VEC_ELT (new_args, depth) = extra_args;
+
+  if (spec_args)
+    TREE_VEC_ELT (new_args, depth + 1) = spec_args;
+
+  return new_args;
 }
 
 /* Return a new template argument vector which contains all of ARGS,
@@ -3591,7 +3689,20 @@ tsubst (t, args, in_decl)
 	  {
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
-	    r = copy_node (t);
+
+	    if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
+		&& CLASSTYPE_TEMPLATE_INFO (t))
+	      {
+		tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
+				      args, in_decl);
+		r = lookup_template_class (TYPE_NAME (t), argvec, in_decl, 
+					   DECL_CONTEXT (TYPE_NAME (t)));
+		r = cp_build_type_variant (r, TYPE_READONLY (t),
+					   TYPE_VOLATILE (t));
+	      }
+	    else
+	      r = copy_node (t);
+
 	    TEMPLATE_TYPE_PARM_INDEX (r)
 	      = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
 					    r, levels);
@@ -3804,21 +3915,8 @@ tsubst (t, args, in_decl)
 	    /* Start by getting the innermost args.  */
 	    argvec = tsubst (DECL_TI_ARGS (t), args, in_decl);
 
-	    /* If tmpl is an instantiation of a member template, tack on
-	       the args for the enclosing class.  NOTE: this will change
-	       for member class templates.  The generalized procedure
-	       is to grab the outer args, then tack on the current args,
-	       then any specialized args.  */
-	    if (DECL_TEMPLATE_INFO (tmpl) && DECL_TI_ARGS (tmpl))
-	      {
-		if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
-		  argvec = add_to_template_args (DECL_TI_ARGS (tmpl), argvec);
-		else
-		  /* In this case, we are instantiating a
-		     specialization.  The innermost template args are
-		     already given by the specialization.  */
-		  argvec = add_to_template_args (argvec, DECL_TI_ARGS (tmpl));
-	      }
+	    if (DECL_TEMPLATE_INFO (tmpl))
+	      argvec = complete_template_args (tmpl, argvec, 0);
 
 	    /* Do we already have this instantiation?  */
 	    spec = retrieve_specialization (tmpl, argvec);
@@ -5701,7 +5799,9 @@ get_bindings_real (fn, decl, explicit_args, check_rettype)
   if (check_rettype)
     {
       /* Check to see that the resulting return type is also OK.  */
-      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)), targs, NULL_TREE);
+      tree t = tsubst (TREE_TYPE (TREE_TYPE (fn)),
+		       complete_template_args (fn, targs, 1),
+		       NULL_TREE);
 
       if (!comptypes (t, TREE_TYPE (TREE_TYPE (decl)), 1))
 	return NULL_TREE;
