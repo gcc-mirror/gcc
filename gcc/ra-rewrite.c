@@ -1653,8 +1653,7 @@ static bitmap regnos_coalesced_to_hardregs;
    use those pseudos and set up ra_reg_renumber.  */
 
 void
-emit_colors (df)
-     struct df *df;
+emit_colors (struct df *df)
 {
   unsigned int i;
   int si;

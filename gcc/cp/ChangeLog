@@ -1,3 +1,13 @@
+2003-09-28  Andreas Jaeger  <aj@suse.de>
+
+	* decl.c (cxx_builtin_type_decls): Convert to ISO C90 function
+	definition.
+	* init.c (push_base_cleanups): Likewise.
+	* decl2.c (finish_file): Likewise.
+	* mangle.c (init_mangle): Likewise.
+	(dump_substitution_candidates): Likewise.
+	* search.c: Likewise.
+
 2003-09-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* name-lookup.h (get_global_value_if_present): New function.

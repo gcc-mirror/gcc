@@ -1,3 +1,9 @@
+2003-09-28  Andreas Jaeger  <aj@suse.de>
+
+	* c-decl.c (finish_function): Convert definition to ISO C90.
+	* ifcvt.c (mark_loop_exit_edges): Likewise.
+	* ra-rewrite.c (emit_colors): Likewise.
+
 2003-09-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (alpha*-dec-osf[45]*): Disable fixproto.
@@ -79,7 +85,7 @@
 	config/mips/mips.h, config/mips/mips.md, config/mips/netbsd.h,
 	config/mips/openbsd.h, config/mips/r3900.h, config/mips/rtems.h,
 	config/mips/vr.h, config/mn10300/linux.h,
-	config/mn10300/mn10300-protos.h, config/mn10300/mn10300.c, 	
+	config/mn10300/mn10300-protos.h, config/mn10300/mn10300.c,
 	config/mn10300/mn10300.h, config/mn10300/mn10300.md,
 	config/ns32k/__unorddf2.c, config/ns32k/__unordsf2.c,
 	config/ns32k/netbsd.h, config/ns32k/ns32k-protos.h,
@@ -140,7 +146,7 @@
 
 	* config/s390/s390.md ("builtin_setjmp_setup"): Insn deleted.
 	("builtin_longjmp"): Insn deleted.
-	("save_stack_nonlocal"): Save literal pool base pointer behind 
+	("save_stack_nonlocal"): Save literal pool base pointer behind
 	backchain and stack pointer.
 	("restore_stack_nonlocal"): Restore literal pool base pointer.
 	* config/s390/s390.h (STACK_SAVEAREA_MODE): Double size of
@@ -180,8 +186,8 @@
 	config/i386/xm-cygwin.h, config/i386/xm-djgpp.h,
 	config/i386/xm-mingw32.h, config/i386/xmmintrin.h: Replace
 	"GNU CC", "GNU compiler", and "GNU C-compiler" with "GCC".
-	* config/i386/i386-aout.h, config/i386/i386-coff.h, 
-	config/i386/i386-interix.h, config/i386/i386-interix3.h, 
+	* config/i386/i386-aout.h, config/i386/i386-coff.h,
+	config/i386/i386-interix.h, config/i386/i386-interix3.h,
 	config/i386/i386-modes.def, config/i386/i386-protos.h,
 	config/i386/i386.c, config/i386/i386.h, config/i386/i386.md,
 	config/i386/i386elf.h, config/i386/k6.md, config/i386/kaos-i386.h,
@@ -277,7 +283,7 @@
 	* gcc/cppfiles.c (pch_open_file): Return based on combined
         result of all files.
 	(validate_pch): Return validate flag for current file.
-	
+
 2003-09-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR bootstrap/12358
@@ -512,7 +518,7 @@
 	objc_catch_type): New ObjC/ObjC++ roots.
 	* objc/objc-tree.def (MESSAGE_SEND_EXPR, CLASS_REFERENCE_EXPR): New
 	ObjC/ObjC++ tree node codes.
- 
+
 2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cpplib.c (do_pragma): Reintroduce cb_line_change call in the
@@ -595,7 +601,7 @@
 
 2003-09-23  Kelley Cook  <kelleycook@wideopenwest.com>
 
-	* cgraphunit.c (cgraph_expand_all_functions): Renamed from 
+	* cgraphunit.c (cgraph_expand_all_functions): Renamed from
 	cgraph_expand_functions.
 
 2003-09-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -611,7 +617,7 @@
 
 	* targhooks.c: Include output.h.
 	* Makefile.in (targhooks.o): Add output.h to dependency list.
-	
+
 2003-09-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.host: Removed superfluous newline.
@@ -647,7 +653,7 @@
 	* configure: Regenerate.
 	* config.in: Likewise.
 	* dwarf2out.c (DEBUG_STR_SECTION_FLAGS): Test for
-	HAVE_GAS_SHF_MERGE value. 
+	HAVE_GAS_SHF_MERGE value.
 	* varasm.c (mergeable_string_section): Likewise.
 	(mergeable_constant_section): Likewise.
 
@@ -691,18 +697,18 @@
 	xtensa/t-xtensa: Remove setting of STMP_FIXPROTO.
 	* config/i370/t-oe, config/i386/t-netware, config/pa/t-bsd,
 	t-interix, t-linux-aout:  Delete files consisting only of
-	setting of STMP_FIXPROTO.	
+	setting of STMP_FIXPROTO.
 
 	* config.host: Allow unknown hosts (not targets).  Allow
 	ns32k-*-netbsdelf* as a host (not a target).  Remove redundant
 	empty clauses.  Remove useless obsolete-configuration clause.
-	Prune unsupported configuration list.  Collapse identical 
+	Prune unsupported configuration list.  Collapse identical
 	clauses for closely related systems.  Rewrite comment for
 	unsupported hosts list.  Reorganize a little.
 
 2003-09-22  Richard Henderson  <rth@redhat.com>
 
-	* c-common.c (c_common_signed_or_unsigned_type): Examine mode, 
+	* c-common.c (c_common_signed_or_unsigned_type): Examine mode,
 	not precision.
 
 2003-09-22  David Edelsohn  <edelsohn@gnu.org>
@@ -710,7 +716,7 @@
 	    Segher Boessenkool  <boessen@de.ibm.com>
 
 	* config/rs6000/rs6000.c (altivec_in_gprs_p): Rename to ...
-	(gpr_or_gpr_p): Test INT_REGNO_P and convert to boolean.  
+	(gpr_or_gpr_p): Test INT_REGNO_P and convert to boolean.
 	(rs6000_split_altivec_in_gprs): Rename to ...
 	(rs6000_split_multireg_move): Add support for update addressing.
 	* config/rs6000/rs6000-protos.h: Same.
@@ -764,7 +770,7 @@
 
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
-	* tree.h c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c, 
+	* tree.h c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c,
 	diagnostic.c, dwarf2out.c, dwarfout.c, function.c, integrate.c,
 	print-tree.c, stmt.c, toplev.c, tree-dump.c, tree-inline.c,
 	tree-optimize.c, tree.c, tree.def, xcoffout.c, config/alpha/alpha.c,
@@ -776,7 +782,7 @@
 	(TREE_FILENAME, TREE_LINENO): Likewise.
 	(set_tree_locus, copy_tree_locus, set_tree_file_line): New.
 	(TREE_LOCUS_SET_P): New.
-	* c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c, 
+	* c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c,
 	diagnostic.c, dwarf2out.c, dwarfout.c, function.c, integrate.c,
 	print-tree.c, stmt.c, toplev.c, tree-dump.c, tree-inline.c,
 	tree-optimize.c, tree.c, tree.def, xcoffout.c, config/alpha/alpha.c,
@@ -850,7 +856,7 @@
 	* doc/install.texi (Specific): Add the specific versions of GCC
 	where support for FreeBSD 1, HP-UX version 9 and older, and AIX
 	version 3 and older was discontinued.
-	
+
 2003-09-19	Joel Sherrill <joel@oarcorp.com>
 
 	* config/m68k/t-m68kbare, config/m68k/t-rtems: Change 68681 to
@@ -913,7 +919,7 @@
 	PR target/11184
 	* builtins.c (expand_builtin_apply): Use convert_memory_address
 	before returning the value.
-	
+
 	* alias.c (find_base_value): Simplify use of
 	convert_memory_address.
 	(find_base_term): Likewise.
@@ -1142,7 +1148,7 @@
 	function in a different section than the current one.
 
 2003-09-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
-        
+
         * doc/invoke.texi (Warning Options): Add missing hyphen before
         "Wimport".  Change "-Wno-endif-labels" to "-Wendif-labels".
         Move "-Wold-style-definition" to the C-only section.
@@ -1215,7 +1221,7 @@
 	* langhooks-def.h (lhd_do_nothing_iii_return_null_tree): New
 	function.
 	* langhooks.c (lhd_do_nothing_iii_return_null_tree): Define it.
-	
+
 2003-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (simplify_comparison): Convert
@@ -1300,7 +1306,7 @@
 	* tree-inline.c (inline_forbidden_p_1): Cast the 3rd arg to tree.
 
 2003-09-12  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/elf.h (ASM_SPEC): Remove no-density option.  Reformat.
 	* config/xtensa/linux.h (ASM_SPEC): Likewise.
 	* config/xtensa/xtensa.h (TARGET_SWITCHES): Remove -mbig-endian,
@@ -1313,11 +1319,11 @@
 	xtensa-config.h header.
 	* doc/invoke.texi (Option Summary, Xtensa Options): Remove documention
 	for the options listed above.
-	
+
 2003-09-12  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000-protos.h:  Use C90 prototypes.
-	* config/rs6000/rs6000-c.c:  Ditto. 
+	* config/rs6000/rs6000-c.c:  Ditto.
 	* config/rs6000/rs6000.c:  Ditto.
 	* config/rs6000/ sysv4.h:  Ditto.
 
@@ -1432,7 +1438,7 @@
 	* cgraphunit.c: Update to match.
 	(record_call_1): Rearrange.  Call lang hook for language nodes.
 	(cgraph_analyze_function): Don't call lower_function.
-	* langhooks.h (struct lang_hooks_for_callgraph): Replace 
+	* langhooks.h (struct lang_hooks_for_callgraph): Replace
 	lower_function with analyze_expr.
 	* langhooks-def.h: Update to match.
 	* langhooks.c (lhd_callgraph_analyze_expr): New.
@@ -1457,7 +1463,7 @@
 
 	* config/darwin.h (LINK_SPEC): Pass -nofixprebinding to linker.
 	* doc/invoke.texi: Document new Darwin linker option -nofixprebinding.
-	
+
 2003-09-09  Eric Christopher  <echristo@redhat.com>
 
 	* configure.in: Change usage of 'head' to 'sed 1q'.

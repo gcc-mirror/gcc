@@ -287,7 +287,7 @@ decl_is_template_id (const tree decl, tree* const template_info)
 /* Produce debugging output of current substitution candidates.  */
 
 static void
-dump_substitution_candidates ()
+dump_substitution_candidates (void)
 {
   unsigned i;
 
@@ -2324,7 +2324,7 @@ finish_mangling (const bool warn)
 /* Initialize data structures for mangling.  */
 
 void
-init_mangle ()
+init_mangle (void)
 {
   gcc_obstack_init (&G.name_obstack);
 
