@@ -266,7 +266,6 @@ finish_then_clause (if_stmt)
      tree if_stmt;
 {
   RECHAIN_STMTS (if_stmt, THEN_CLAUSE (if_stmt));
-  last_tree = if_stmt;
   return if_stmt;
 }
 
@@ -292,21 +291,8 @@ finish_else_clause (if_stmt)
 void 
 finish_if_stmt ()
 {
-  do_poplevel ();
   finish_stmt ();
-}
-
-void
-clear_out_block ()
-{
-  /* If COND wasn't a declaration, clear out the
-     block we made for it and start a new one here so the
-     optimization in expand_end_loop will work.  */
-  if (getdecls () == NULL_TREE)
-    {
-      do_poplevel ();
-      do_pushlevel ();
-    }
+  do_poplevel ();
 }
 
 /* Begin a while-statement.  Returns a newly created WHILE_STMT if
@@ -331,8 +317,26 @@ finish_while_stmt_cond (cond, while_stmt)
      tree while_stmt;
 {
   cond = maybe_convert_cond (cond);
-  FINISH_COND (cond, while_stmt, WHILE_COND (while_stmt));
-  clear_out_block ();
+  if (getdecls () == NULL_TREE)
+    /* It was a simple condition; install it.  */
+    WHILE_COND (while_stmt) = cond;
+  else
+    {
+      /* If there was a declaration in the condition, we can't leave it
+	 there; transform
+	    while (A x = 42) { }
+	 to
+	    while (true) { A x = 42; if (!x) break; }  */
+      tree if_stmt;
+      WHILE_COND (while_stmt) = boolean_true_node;
+
+      if_stmt = begin_if_stmt ();
+      cond = build_unary_op (TRUTH_NOT_EXPR, cond, 0);
+      finish_if_stmt_cond (cond, if_stmt);
+      finish_break_stmt ();
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+    }
 }
 
 /* Finish a while-statement, which may be given by WHILE_STMT.  */
@@ -448,8 +452,26 @@ finish_for_cond (cond, for_stmt)
      tree for_stmt;
 {
   cond = maybe_convert_cond (cond);
-  FINISH_COND (cond, for_stmt, FOR_COND (for_stmt));
-  clear_out_block ();
+  if (getdecls () == NULL_TREE)
+    /* It was a simple condition; install it.  */
+    FOR_COND (for_stmt) = cond;
+  else
+    {
+      /* If there was a declaration in the condition, we can't leave it
+	 there; transform
+	    for (; A x = 42;) { }
+	 to
+	    for (;;) { A x = 42; if (!x) break; }  */
+      tree if_stmt;
+      FOR_COND (for_stmt) = NULL_TREE;
+
+      if_stmt = begin_if_stmt ();
+      cond = build_unary_op (TRUTH_NOT_EXPR, cond, 0);
+      finish_if_stmt_cond (cond, if_stmt);
+      finish_break_stmt ();
+      finish_then_clause (if_stmt);
+      finish_if_stmt ();
+    }
 }
 
 /* Finish the increment-EXPRESSION in a for-statement, which may be
@@ -502,9 +524,9 @@ tree
 begin_switch_stmt ()
 {
   tree r;
+  do_pushlevel ();
   r = build_stmt (SWITCH_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   add_stmt (r);
-  do_pushlevel ();
   return r;
 }
 
@@ -560,8 +582,8 @@ finish_switch_stmt (switch_stmt)
 {
   RECHAIN_STMTS (switch_stmt, SWITCH_BODY (switch_stmt));
   pop_switch (); 
-  do_poplevel ();
   finish_stmt ();
+  do_poplevel ();
 }
 
 /* Generate the RTL for T, which is a TRY_BLOCK. */
