@@ -1470,6 +1470,16 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, ">");
       break;
       
+    case VEC_COND_EXPR:
+      pp_string (buffer, " VEC_COND_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, " , ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, " , ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
     default:
       NIY;
     }
@@ -1969,16 +1979,6 @@ print_call_name (pretty_printer *buffer, tree node)
     case SSA_NAME:
     case OBJ_TYPE_REF:
       dump_generic_node (buffer, op0, 0, 0, false);
-      break;
-
-    case VEC_COND_EXPR:
-      pp_string (buffer, " VEC_COND_EXPR < ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
-      pp_string (buffer, " , ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_string (buffer, " , ");
-      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
-      pp_string (buffer, " > ");
       break;
 
     default:

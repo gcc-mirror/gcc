@@ -1,6 +1,12 @@
 2004-09-27  Devang Patel  <dpatel@apple.com>
 
 	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.
+	(print_call_name): Do not print VEC_COND_EXPR.
+	
+
+2004-09-27  Devang Patel  <dpatel@apple.com>
+
+	* tree-pretty-print.c (dump_generic_node): Print VEC_COND_EXPR.
 	
 2004-09-27  Jan Hubicka  <jh@suse.cz>
 
