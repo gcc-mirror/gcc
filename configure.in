@@ -243,8 +243,8 @@ fi
 # Well, we don't yet, but we will.
 if false && [ "${host}" = "${target}" ] && [ x${enable_shared} = x ]; then
   case "${target}" in
-    alpha-dec-osf*)	enable_shared=yes ;;
-    alpha-*-linux*)	enable_shared=yes ;;
+    alpha*-dec-osf*)	enable_shared=yes ;;
+    alpha*-*-linux*)	enable_shared=yes ;;
     mips-sgi-irix5*)	enable_shared=yes ;;
     *)			enable_shared=no ;;
   esac
@@ -271,7 +271,7 @@ if [ x${shared} = xyes ]; then
     powerpc*-*)
       host_makefile_frag="${host_makefile_frag} config/mh-ppcpic"
       ;;
-    alpha-*-linux*)
+    alpha*-*-linux*)
       host_makefile_frag="${host_makefile_frag} config/mh-elfalphapic"
       ;;
     *)
@@ -498,7 +498,7 @@ case "${target}" in
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
-  alpha-dec-osf*)
+  alpha*-dec-osf*)
     # ld works, but does not support shared libraries.  emacs doesn't
     # work.  newlib is not 64 bit ready.  I'm not sure about fileutils.
     # gas doesn't generate exception information.
@@ -507,7 +507,7 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss"
     ;;
-  alpha-*-linux*)
+  alpha*-*-linux*)
     # newlib is not 64 bit ready
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     # linux has rx in libc
@@ -868,7 +868,7 @@ if [ x${shared} = xyes ]; then
     powerpc*-*)
       target_makefile_frag="${target_makefile_frag} config/mt-ppcpic"
       ;;
-    alpha-*-linux*)
+    alpha*-*-linux*)
       target_makefile_frag="${target_makefile_frag} config/mt-elfalphapic"
       ;;
     *)
