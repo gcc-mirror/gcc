@@ -8890,65 +8890,36 @@ tree_expr_nonnegative_p (tree t)
 	    && DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_MD)
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
-	    case BUILT_IN_CABS:
-	    case BUILT_IN_CABSL:
-	    case BUILT_IN_CABSF:
-	    case BUILT_IN_EXP:
-	    case BUILT_IN_EXPF:
-	    case BUILT_IN_EXPL:
-	    case BUILT_IN_EXP2:
-	    case BUILT_IN_EXP2F:
-	    case BUILT_IN_EXP2L:
-	    case BUILT_IN_EXP10:
-	    case BUILT_IN_EXP10F:
-	    case BUILT_IN_EXP10L:
-	    case BUILT_IN_FABS:
-	    case BUILT_IN_FABSF:
-	    case BUILT_IN_FABSL:
-	    case BUILT_IN_FFS:
-	    case BUILT_IN_FFSL:
-	    case BUILT_IN_FFSLL:
-	    case BUILT_IN_PARITY:
-	    case BUILT_IN_PARITYL:
-	    case BUILT_IN_PARITYLL:
-	    case BUILT_IN_POPCOUNT:
-	    case BUILT_IN_POPCOUNTL:
-	    case BUILT_IN_POPCOUNTLL:
-	    case BUILT_IN_POW10:
-	    case BUILT_IN_POW10F:
-	    case BUILT_IN_POW10L:
-	    case BUILT_IN_SQRT:
-	    case BUILT_IN_SQRTF:
-	    case BUILT_IN_SQRTL:
+#define CASE_BUILTIN_F(BUILT_IN_FN) \
+  case BUILT_IN_FN: case BUILT_IN_FN##F: case BUILT_IN_FN##L:
+#define CASE_BUILTIN_I(BUILT_IN_FN) \
+  case BUILT_IN_FN: case BUILT_IN_FN##L: case BUILT_IN_FN##LL:
+
+	    CASE_BUILTIN_F (BUILT_IN_CABS)
+	    CASE_BUILTIN_F (BUILT_IN_EXP)
+	    CASE_BUILTIN_F (BUILT_IN_EXP10)
+	    CASE_BUILTIN_F (BUILT_IN_EXP2)
+	    CASE_BUILTIN_F (BUILT_IN_FABS)
+	    CASE_BUILTIN_F (BUILT_IN_POW10)
+	    CASE_BUILTIN_F (BUILT_IN_SQRT)
+	    CASE_BUILTIN_I (BUILT_IN_FFS)
+	    CASE_BUILTIN_I (BUILT_IN_PARITY)
+	    CASE_BUILTIN_I (BUILT_IN_POPCOUNT)
 	      return 1;
 
-	    case BUILT_IN_ATAN:
-	    case BUILT_IN_ATANF:
-	    case BUILT_IN_ATANL:
-	    case BUILT_IN_CEIL:
-	    case BUILT_IN_CEILF:
-	    case BUILT_IN_CEILL:
-	    case BUILT_IN_FLOOR:
-	    case BUILT_IN_FLOORF:
-	    case BUILT_IN_FLOORL:
-	    case BUILT_IN_NEARBYINT:
-	    case BUILT_IN_NEARBYINTF:
-	    case BUILT_IN_NEARBYINTL:
-	    case BUILT_IN_ROUND:
-	    case BUILT_IN_ROUNDF:
-	    case BUILT_IN_ROUNDL:
-	    case BUILT_IN_TRUNC:
-	    case BUILT_IN_TRUNCF:
-	    case BUILT_IN_TRUNCL:
-	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
-
-	    case BUILT_IN_POW:
-	    case BUILT_IN_POWF:
-	    case BUILT_IN_POWL:
+	    CASE_BUILTIN_F (BUILT_IN_ATAN)
+	    CASE_BUILTIN_F (BUILT_IN_CEIL)
+	    CASE_BUILTIN_F (BUILT_IN_FLOOR)
+	    CASE_BUILTIN_F (BUILT_IN_NEARBYINT)
+	    CASE_BUILTIN_F (BUILT_IN_POW)
+	    CASE_BUILTIN_F (BUILT_IN_ROUND)
+	    CASE_BUILTIN_F (BUILT_IN_TRUNC)
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
 	    default:
 	      break;
+#undef CASE_BUILTIN_F
+#undef CASE_BUILTIN_I
 	    }
       }
 
