@@ -1,3 +1,9 @@
+Mon Jun 14 17:26:40 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (output_prolog): RS6000_CALL_GLUE must be
+	asm_fprintf format string by itself.
+	(output_function_profiler): Likewise.
+
 Mon Jun 14 12:57:38 1999  David Mosberger  <davidm@hpl.hp.com>
 
         * combine.c (simplify_logical, case AND): Only call
