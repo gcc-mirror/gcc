@@ -945,55 +945,56 @@ package body Makegpr is
             Pkg := Value_Of (Name_Compiler, Data.Decl.Packages);
       end case;
 
-      --  Get the Switches ("file name"), if they exist
+      if Pkg /= No_Package then
+         --  Get the Switches ("file name"), if they exist
 
-      Switches_Array := Prj.Util.Value_Of
-        (Name      => Name_Switches,
-         In_Arrays =>
-           Packages.Table (Pkg).Decl.Arrays);
-
-      Switches :=
-        Prj.Util.Value_Of
-          (Index     => File_Name,
-           Src_Index => 0,
-           In_Array  => Switches_Array);
-
-      --  Otherwise, get the Default_Switches ("language"), if they exist
-
-      if Switches = Nil_Variable_Value then
-         Defaults := Prj.Util.Value_Of
-           (Name      => Name_Default_Switches,
+         Switches_Array := Prj.Util.Value_Of
+           (Name      => Name_Switches,
             In_Arrays => Packages.Table (Pkg).Decl.Arrays);
-         Switches := Prj.Util.Value_Of
-           (Index     => Language_Names.Table (Language),
-            Src_Index => 0,
-            In_Array  => Defaults);
-      end if;
 
-      --  If there are switches, add them to Arguments
+         Switches :=
+           Prj.Util.Value_Of
+             (Index     => File_Name,
+              Src_Index => 0,
+              In_Array  => Switches_Array);
 
-      if Switches /= Nil_Variable_Value then
-         Element_Id := Switches.Values;
-         while Element_Id /= Nil_String loop
-            Element := String_Elements.Table (Element_Id);
+         --  Otherwise, get the Default_Switches ("language"), if they exist
 
-            if Element.Value /= No_Name then
-               Get_Name_String (Element.Value);
+         if Switches = Nil_Variable_Value then
+            Defaults := Prj.Util.Value_Of
+              (Name      => Name_Default_Switches,
+               In_Arrays => Packages.Table (Pkg).Decl.Arrays);
+            Switches := Prj.Util.Value_Of
+              (Index     => Language_Names.Table (Language),
+               Src_Index => 0,
+               In_Array  => Defaults);
+         end if;
 
-               if not Quiet_Output then
+         --  If there are switches, add them to Arguments
 
-                  --  When not in quiet output (no -q), check that the switch
-                  --  is not the concatenation of several valid switches,
-                  --  such as "-g -v". If it is, issue a warning.
+         if Switches /= Nil_Variable_Value then
+            Element_Id := Switches.Values;
+            while Element_Id /= Nil_String loop
+               Element := String_Elements.Table (Element_Id);
 
-                  Check (Option => Name_Buffer (1 .. Name_Len));
+               if Element.Value /= No_Name then
+                  Get_Name_String (Element.Value);
+
+                  if not Quiet_Output then
+
+                     --  When not in quiet output (no -q), check that the
+                     --  switch is not the concatenation of several valid
+                     --  switches, such as "-g -v". If it is, issue a warning.
+
+                     Check (Option => Name_Buffer (1 .. Name_Len));
+                  end if;
+
+                  Add_Argument (Name_Buffer (1 .. Name_Len), True);
                end if;
 
-               Add_Argument (Name_Buffer (1 .. Name_Len), True);
-            end if;
-
-            Element_Id := Element.Next;
-         end loop;
+               Element_Id := Element.Next;
+            end loop;
+         end if;
       end if;
    end Add_Switches;
 
