@@ -1,4 +1,5 @@
 // Test that we can use mixins with COM classes.
+// Special g++ Options: -fvtable-thunks
 
 struct A
 {
