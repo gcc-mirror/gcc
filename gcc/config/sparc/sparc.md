@@ -1893,11 +1893,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[0], 1, 0,
+  return output_cbranch (operands[0], operands[1], 1, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "noov_compare64_op" "")
+		      (if_then_else (lt (pc) (match_dup 1))
+				    (if_then_else (lt (minus (match_dup 1) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 1))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))
+		      (const_int 1)))])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_branch"
@@ -1909,11 +1921,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[0], 1, 1,
+  return output_cbranch (operands[0], operands[1], 1, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "noov_compare64_op" "")
+		      (if_then_else (lt (pc) (match_dup 1))
+				    (if_then_else (lt (minus (match_dup 1) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 1))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))
+		      (const_int 1)))])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*normal_fp_branch"
@@ -1926,11 +1950,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[1], 2, 0,
+  return output_cbranch (operands[1], operands[2], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
+		      (const_int 1)
+		      (if_then_else (lt (pc) (match_dup 2))
+				    (if_then_else (lt (minus (match_dup 2) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 2))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))))])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_fp_branch"
@@ -1943,11 +1979,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[1], 2, 1,
+  return output_cbranch (operands[1], operands[2], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
+		      (const_int 1)
+		      (if_then_else (lt (pc) (match_dup 2))
+				    (if_then_else (lt (minus (match_dup 2) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 2))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))))])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*normal_fpe_branch"
@@ -1960,11 +2008,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[1], 2, 0,
+  return output_cbranch (operands[1], operands[2], 2, 0,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
+		      (const_int 1)
+		      (if_then_else (lt (pc) (match_dup 2))
+				    (if_then_else (lt (minus (match_dup 2) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 2))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))))])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_fpe_branch"
@@ -1977,11 +2037,23 @@
   ""
   "*
 {
-  return output_cbranch (operands[1], 2, 1,
+  return output_cbranch (operands[1], operands[2], 2, 1,
 			 final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			 ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
+		      (const_int 1)
+		      (if_then_else (lt (pc) (match_dup 2))
+				    (if_then_else (lt (minus (match_dup 2) (pc))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3))
+				    (if_then_else (lt (minus (pc) (match_dup 2))
+						      (const_int 260000))
+						  (const_int 1)
+						  (const_int 3)))))])
 
 ;; Sparc V9-specific jump insns.  None of these are guaranteed to be
 ;; in the architecture.
@@ -1999,11 +2071,21 @@
   "TARGET_ARCH64"
   "*
 {
-  return output_v9branch (operands[0], 1, 2, 0,
+  return output_v9branch (operands[0], operands[2], 1, 2, 0,
 			  final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			  ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+        (if_then_else (lt (pc) (match_dup 2))
+		      (if_then_else (lt (minus (match_dup 2) (pc))
+					(const_int 32000))
+				    (const_int 1)
+				    (const_int 3))
+		      (if_then_else (lt (minus (pc) (match_dup 2))
+					(const_int 32000))
+				    (const_int 1)
+				    (const_int 3))))])
 
 ;; XXX
 (define_insn "*inverted_int_branch_sp64"
@@ -2016,11 +2098,21 @@
   "TARGET_ARCH64"
   "*
 {
-  return output_v9branch (operands[0], 1, 2, 1,
+  return output_v9branch (operands[0], operands[2], 1, 2, 1,
 			  final_sequence && INSN_ANNULLED_BRANCH_P (insn),
 			  ! final_sequence, insn);
 }"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set (attr "length")
+        (if_then_else (lt (pc) (match_dup 2))
+		      (if_then_else (lt (minus (match_dup 2) (pc))
+					(const_int 32000))
+				    (const_int 1)
+				    (const_int 3))
+		      (if_then_else (lt (minus (pc) (match_dup 2))
+					(const_int 32000))
+				    (const_int 1)
+				    (const_int 3))))])
 
 ;; Load program counter insns.
 
