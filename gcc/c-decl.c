@@ -3655,7 +3655,7 @@ void
 push_parm_decl (parm)
      tree parm;
 {
-  tree decl, olddecl;
+  tree decl;
   int old_immediate_size_expand = immediate_size_expand;
   /* Don't try computing parm sizes now -- wait till fn is called.  */
   immediate_size_expand = 0;
@@ -3668,6 +3668,7 @@ push_parm_decl (parm)
 #if 0
   if (DECL_NAME (decl))
     {
+      tree olddecl;
       olddecl = lookup_name (DECL_NAME (decl));
       if (pedantic && olddecl != 0 && TREE_CODE (olddecl) == TYPE_DECL)
 	pedwarn_with_decl (decl, "ANSI C forbids parameter `%s' shadowing typedef");
@@ -5564,10 +5565,8 @@ finish_enum (enumtype, values)
   tree minnode = 0, maxnode = 0;
   register HOST_WIDE_INT maxvalue = 0;
   register HOST_WIDE_INT minvalue = 0;
-  register int i;
   unsigned precision = 0;
   int toplevel = global_binding_level == current_binding_level;
-  int temporary = allocation_temporary_p ();
 
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
