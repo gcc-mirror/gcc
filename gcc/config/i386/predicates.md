@@ -499,8 +499,12 @@
 
 ;; Match exactly zero.
 (define_predicate "const0_operand"
-  (and (match_code "const_int,const_double,const_vector")
-       (match_test "op == CONST0_RTX (mode)")))
+  (match_code "const_int,const_double,const_vector")
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+  return op == CONST0_RTX (mode);
+})
 
 ;; Match exactly one.
 (define_predicate "const1_operand"
