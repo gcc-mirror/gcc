@@ -188,7 +188,7 @@ if test x${gcc_gxx_include_dir} = x; then
   else
     topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
 changequote(<<, >>)dnl
-    gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/g++"-${libstdcxx_interface}
+    gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/"${libstdcxx_incdir}
 changequote([, ])dnl
   fi
 fi
@@ -1820,6 +1820,7 @@ AC_SUBST(extra_programs)
 AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
+AC_SUBST(libstdcxx_incdir)
 AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_full)
 AC_SUBST(gcc_version_trigger)

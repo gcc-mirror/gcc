@@ -32,8 +32,12 @@ const struct default_include cpp_include_defaults[]
 #else
 = {
 #ifdef GPLUSPLUS_INCLUDE_DIR
-    /* Pick up GNU C++ specific include files.  */
+    /* Pick up GNU C++ generic include files.  */
     { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
+#endif
+#ifdef GPLUSPLUS_TOOL_INCLUDE_DIR
+    /* Pick up GNU C++ target-dependent include files.  */
+    { GPLUSPLUS_TOOL_INCLUDE_DIR, "G++", 1, 1 },
 #endif
 #ifdef LOCAL_INCLUDE_DIR
     /* /usr/local/include comes before the fixincluded header files.  */
