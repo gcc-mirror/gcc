@@ -1,3 +1,7 @@
+2004-04-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/unused-6.c: New test.
+
 2004-04-24  Laurent GUERBY  <laurent@guerby.net>
             Ulrich Weigand  <uweigand@de.ibm.com>
 

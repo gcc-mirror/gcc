@@ -183,6 +183,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "fibheap.h"
 #include "c-common.h"
 #include "intl.h"
+#include "function.h"
 
 #define INSNS_PER_CALL 10
 
@@ -377,6 +378,10 @@ cgraph_finalize_function (tree decl, bool nested)
      early then.  */
   if (DECL_EXTERNAL (decl))
     DECL_STRUCT_FUNCTION (decl) = NULL;
+
+  /* Possibly warn about unused parameters.  */
+  if (warn_unused_parameter)
+    do_warn_unused_parameter (decl);
 }
 
 /* Walk tree and record all calls.  Called via walk_tree.  */
