@@ -1,3 +1,8 @@
+2000-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (member_function_or_else): Change third arg from a format
+	specifier to an `enum overload_flags'.  Callers changed.
+
 2000-01-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* typeck.c (composite_pointer_type, c_sizeof, expr_sizeof,
