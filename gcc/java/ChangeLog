@@ -1,3 +1,8 @@
+2000-08-31  Mike Stump  <mrs@wrs.com>
+
+	* Make-lang.in (jc1$(exeext), gcjh$(exeext), jv-scan$(exeext),
+	jcf-dump$(exeext)): Make parallel safe.
+
 2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* jcf-parse.c (set_source_filename): Constify a char *.
