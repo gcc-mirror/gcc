@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.43 2000/10/18 23:26:22 bkoz Exp $
+## $Id: Makefile.am,v 1.44 2000/10/24 17:00:59 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -29,16 +29,16 @@ MAINT_CHARSET = latin1
 # Cross compiler and multilib support.
 # Install a library built with a cross compiler in tooldir, not libdir.
 if USE_LIBDIR
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-else
 if VERSION_SPECIFIC_LIBS
 gcc_version = @gcc_version@
 toolexecdir = $(libdir)/gcc-lib/$(target_alias)
 toolexeclibdir = $(toolexecdir)/$(gcc_version)
 else
+toolexeclibdir = $(libdir)$(MULTISUBDIR)
+endif
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
 endif
 
 toolexeclib_LTLIBRARIES = libstdc++.la
@@ -71,7 +71,7 @@ CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 INCLUDES = \
 	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ \
 	$(CSHADOW_INCLUDES) $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
-	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir) \
+	$(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) -I$(top_builddir)/include \
 	$(TOPLEVEL_INCLUDES)	
 
 base_headers = \
@@ -165,12 +165,9 @@ libio_headers =
 endif
 
 build_headers = \
-	$(top_builddir)/bits/std_limits.h $(top_builddir)/bits/c++config.h \
-	$(top_builddir)/bits/c++io.h $(top_builddir)/bits/c++threads.h \
-	$(top_builddir)/bits/atomicity.h $(top_builddir)/bits/os_defines.h \
-	$(top_builddir)/bits/ctype_base.h \
-	$(top_builddir)/bits/ctype_noninline.h \
-	$(top_builddir)/bits/ctype_inline.h 
+	bits/std_limits.h bits/c++config.h bits/c++io.h bits/c++threads.h \
+	bits/atomicity.h bits/os_defines.h \
+	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
 
 headers = $(base_headers) $(c_headers)
 
@@ -250,8 +247,8 @@ myinstallheaders: $(headers:%=$(myincludep)/%)
 	        $(INSTALL_DATA) $(GLIBCPP_INCLUDE_DIR)/std/$$i $(myincludep); \
 	done; \
 	for i in $(build_headers); do \
-	  echo "$(INSTALL_DATA) $$i $(myincludep)/bits/"; \
-	        $(INSTALL_DATA) $$i $(myincludep)/bits/; \
+          echo "$(INSTALL_DATA) $(top_builddir)/include/$$i $(myincludep)/bits/"; \
+	     $(INSTALL_DATA) $(top_builddir)/include/$$i $(myincludep)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
@@ -341,3 +338,12 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # which of course is problematic at this point.
 CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+
+
+
+
+
+
+
+
+

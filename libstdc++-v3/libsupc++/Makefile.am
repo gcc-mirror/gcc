@@ -27,16 +27,16 @@ MAINT_CHARSET = latin1
 # Cross compiler and multilib support.
 # Install a library built with a cross compiler in tooldir, not libdir.
 if USE_LIBDIR
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-else
 if VERSION_SPECIFIC_LIBS
 gcc_version = @gcc_version@
 toolexecdir = $(libdir)/gcc-lib/$(target_alias)
 toolexeclibdir = $(toolexecdir)/$(gcc_version)
 else
+toolexeclibdir = $(libdir)$(MULTISUBDIR)
+endif
+else
 toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
 endif
 
 
@@ -74,7 +74,7 @@ CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 INCLUDES = \
 	-I$(top_srcdir)/../gcc -I$(top_srcdir)/../include \
 	$(CSHADOW_INCLUDES)  $(LIBSUPCXX_INCLUDES) -I$(GLIBCPP_INCLUDE_DIR) \
-	$(CONFIG_INCLUDES) -I$(top_builddir)
+	$(CONFIG_INCLUDES) -I$(top_builddir)/include
 
 headers = \
 	cxxabi.h exception new new.h typeinfo
