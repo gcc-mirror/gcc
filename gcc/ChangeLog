@@ -1,3 +1,8 @@
+Thu Feb 19 09:41:23 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* i386/x-cygwin32 (USE_COLLECT2): Disable collect2 for now on
+	i386-{cygwin32,mingw32}.
+
 Sun Feb 22 09:45:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (scan_prog_file): Completely cover uses of variable
