@@ -1309,27 +1309,39 @@ enum reg_class
    `S' means any symbol that has the SYMBOL_REF_FLAG set or a CONSTANT_POOL
    address.  This means that the symbol is in the text segment and can be
    accessed without using a load.
+   'D' Prefixes a number of const_double operands where:
+   'Da' is a constant that takes two ARM insns to load.
+   'Db' takes three ARM insns.
+   'Dc' takes four ARM insns, if we allow that in this compilation.
    'U' Prefixes an extended memory constraint where:
    'Uv' is an address valid for VFP load/store insns.
    'Uy' is an address valid for iwmmxt load/store insns.
    'Uq' is an address valid for ldrsb.  */
 
-#define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)			\
-  (((C) == 'Q') ? (GET_CODE (OP) == MEM				\
-		 && GET_CODE (XEXP (OP, 0)) == REG) :		\
-   ((C) == 'R') ? (GET_CODE (OP) == MEM				\
-		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF	\
-		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0))) :	\
-   ((C) == 'S') ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) :	\
-   ((C) == 'T') ? cirrus_memory_offset (OP) :			\
+#define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)				\
+  (((C) == 'D') ? (GET_CODE (OP) == CONST_DOUBLE			\
+		   && (((STR)[1] == 'a'					\
+			&& arm_const_double_inline_cost (OP) == 2)	\
+		       || ((STR)[1] == 'b'				\
+			   && arm_const_double_inline_cost (OP) == 3)	\
+		       || ((STR)[1] == 'c'				\
+			   && arm_const_double_inline_cost (OP) == 4	\
+			   && !(optimize_size || arm_ld_sched)))) :	\
+   ((C) == 'Q') ? (GET_CODE (OP) == MEM					\
+		 && GET_CODE (XEXP (OP, 0)) == REG) :			\
+   ((C) == 'R') ? (GET_CODE (OP) == MEM					\
+		   && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF		\
+		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0))) :		\
+   ((C) == 'S') ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) :		\
+   ((C) == 'T') ? cirrus_memory_offset (OP) :				\
    ((C) == 'U' && (STR)[1] == 'v') ? arm_coproc_mem_operand (OP, FALSE) : \
    ((C) == 'U' && (STR)[1] == 'y') ? arm_coproc_mem_operand (OP, TRUE) : \
-   ((C) == 'U' && (STR)[1] == 'q')				\
-    ? arm_extendqisi_mem_op (OP, GET_MODE (OP))			\
-      : 0)
+   ((C) == 'U' && (STR)[1] == 'q')					\
+    ? arm_extendqisi_mem_op (OP, GET_MODE (OP))				\
+   : 0)
 
 #define CONSTRAINT_LEN(C,STR)				\
-  ((C) == 'U' ? 2 : DEFAULT_CONSTRAINT_LEN (C, STR))
+  (((C) == 'U' || (C) == 'D') ? 2 : DEFAULT_CONSTRAINT_LEN (C, STR))
 
 #define EXTRA_CONSTRAINT_THUMB(X, C)					\
   ((C) == 'Q' ? (GET_CODE (X) == MEM					\
