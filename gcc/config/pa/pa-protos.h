@@ -158,6 +158,7 @@ extern int reloc_needed PARAMS ((tree));
 #ifdef RTX_CODE
 extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 				 tree, int, int));
+extern rtx function_value PARAMS ((tree, tree));
 #endif
 extern int function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
 					       enum machine_mode,

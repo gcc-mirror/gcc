@@ -730,19 +730,7 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 
-/* On the HP-PA the value is found in register(s) 28(-29), unless
-   the mode is SF or DF. Then the value is returned in fr4 (32).  */
-
-/* This must perform the same promotions as PROMOTE_MODE, else
-   PROMOTE_FUNCTION_RETURN will not work correctly.  */
-#define FUNCTION_VALUE(VALTYPE, FUNC)					\
-  gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)				\
-		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)		\
-		|| POINTER_TYPE_P (VALTYPE))				\
-	        ? word_mode : TYPE_MODE (VALTYPE),			\
-	       (TREE_CODE (VALTYPE) == REAL_TYPE			\
-		&& TYPE_MODE (VALTYPE) != TFmode			\
-		&& !TARGET_SOFT_FLOAT) ? 32 : 28)
+#define FUNCTION_VALUE(VALTYPE, FUNC) function_value (VALTYPE, FUNC)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */

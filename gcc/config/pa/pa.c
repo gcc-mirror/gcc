@@ -7677,6 +7677,57 @@ insn_refs_are_delayed (insn)
 	   && get_attr_type (insn) == TYPE_MILLI));
 }
 
+/* On the HP-PA the value is found in register(s) 28(-29), unless
+   the mode is SF or DF. Then the value is returned in fr4 (32).
+
+   This must perform the same promotions as PROMOTE_MODE, else
+   PROMOTE_FUNCTION_RETURN will not work correctly.
+
+   Small structures must be returned in a PARALLEL on PA64 in order
+   to match the HP Compiler ABI.  */
+
+rtx
+function_value (valtype, func)
+    tree valtype;
+    tree func ATTRIBUTE_UNUSED;
+{
+  enum machine_mode valmode;
+
+  /* Aggregates with a size less than or equal to 128 bits are returned
+     in GR 28(-29).  They are left justified.  The pad bits are undefined.
+     Larger aggregates are returned in memory.  */
+  if (TARGET_64BIT && AGGREGATE_TYPE_P (valtype))
+    {
+      rtx loc[2];
+      int i, offset = 0;
+      int ub = int_size_in_bytes (valtype) <= UNITS_PER_WORD ? 1 : 2;
+
+      for (i = 0; i < ub; i++)
+	{
+	  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (DImode, 28 + i),
+				      GEN_INT (offset));
+	  offset += 8;
+	}
+
+      return gen_rtx_PARALLEL (BLKmode, gen_rtvec_v (ub, loc));
+    }
+
+  if ((INTEGRAL_TYPE_P (valtype)
+       && TYPE_PRECISION (valtype) < BITS_PER_WORD)
+      || POINTER_TYPE_P (valtype))
+    valmode = word_mode;
+  else
+    valmode = TYPE_MODE (valtype);
+
+  if (TREE_CODE (valtype) == REAL_TYPE
+      && TYPE_MODE (valtype) != TFmode
+      && !TARGET_SOFT_FLOAT)
+    return gen_rtx_REG (valmode, 32);
+
+  return gen_rtx_REG (valmode, 28);
+}
+
 /* Return the location of a parameter that is passed in a register or NULL
    if the parameter has any component that is passed in memory.
 
@@ -7813,12 +7864,10 @@ function_arg (cum, mode, type, named, incoming)
 	     or returning a DImode REG results in left justified data.  */
 	  if (mode == BLKmode)
 	    {
-	      rtx loc[1];
-
-	      loc[0] = gen_rtx_EXPR_LIST (VOIDmode,
-					  gen_rtx_REG (DImode, gpr_reg_base),
-					  const0_rtx);
-	      return gen_rtx_PARALLEL (mode, gen_rtvec_v (1, loc));
+	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_REG (DImode, gpr_reg_base),
+					   const0_rtx);
+	      return gen_rtx_PARALLEL (mode, gen_rtvec (1, loc));
 	    }
 	}
       else

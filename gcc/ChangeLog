@@ -1,5 +1,16 @@
 2002-11-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* pa-protos.h (function_value): New prototype.
+	* pa.c (function_value): Use a PARALLEL to return small aggregates on
+	TARGET_64BIT.
+	* pa.h (FUNCTION_VALUE): Use function_value.
+	* pa.md (call_value_internal_symref, call_value_internal_reg_64bit,
+	call_value_internal_reg, sibcall_value_internal_symref,
+	sibcall_value_internal_symref_64bit): Remove =rf constraint on return
+	value.
+
+2002-11-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* expr.c (gen_group_rtx, emit_group_move): New functions.
 	* expr.h (gen_group_rtx, emit_group_move): Prototype.
 	* function.c (expand_function_start): Use gen_group_rtx to create a
