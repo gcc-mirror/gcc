@@ -86,25 +86,28 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "g300", 1},				\
-    { "g200", 2},				\
-    { "g100", 4},				\
-    { "fpu", 8},				\
-    { "soft-float", -8},			\
-    { "rtd", 0x10},				\
-    { "no-rtd", -0x10},				\
-    { "regparm", 0x20},				\
-    { "no-regparm", -0x20},			\
+  { { "g300", 1, _("Compile for Gmicro/300")},			\
+    { "g200", 2, _("Compile for Gmicro/200")},			\
+    { "g100", 4, _("Compile for Gmicro/100")},			\
+    { "fpu", 8, _("Use floating point co-processor")},		\
+    { "soft-float", -8,						\
+      _("Do not use floating point co-processor")},		\
+    { "rtd", 0x10, _("Alternate calling convention")},		\
+    { "no-rtd", -0x10, _("Use normal calling convention")},	\
+    { "regparm", 0x20, NULL},					\
+    { "no-regparm", -0x20, NULL},				\
 #if 0 /* Since we don't define PCC_BITFIELD_TYPE_MATTERS or use a large
 	 STRUCTURE_SIZE_BOUNDARY, we must have bitfield instructions.  */
-    { "bitfield", 0x40},			\
-    { "no-bitfield", -0x40},			\
+    { "bitfield", 0x40, _("Use bitfield instructions")},	\
+    { "no-bitfield", -0x40,					\
+      _("Do not use bitfield instructions")},			\
 #endif
-    { "newreturn", 0x80},			\
-    { "no-newreturn", -0x80},			\
-    { "force-smov", 0x100},			\
-    { "no-force-smov", -0x100},			\
-    { "", TARGET_DEFAULT}}
+    { "newreturn", 0x80, _("Use alternative return sequence")},	\
+    { "no-newreturn", -0x80, _("Use normal return sequence")},	\
+    { "force-smov", 0x100, _("Always use string instruction")},	\
+    { "no-force-smov", -0x100,					\
+      _("Use string instruction when appropriate")},		\
+    { "", TARGET_DEFAULT, NULL}}
 
 
 /* Blow away G100 flag silently off TARGET_fpu (since we can't clear
