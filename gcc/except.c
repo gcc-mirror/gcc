@@ -2742,6 +2742,20 @@ for_each_eh_label_1 (void **pentry, void *data)
   (*callback) (entry->label);
   return 1;
 }
+
+/* Invoke CALLBACK for every exception region in the current function.  */
+
+void
+for_each_eh_region (void (*callback) (struct eh_region *))
+{
+  int i, n = cfun->eh->last_region_number;
+  for (i = 1; i <= n; ++i)
+    {
+      struct eh_region *region = cfun->eh->region_array[i];
+      if (region)
+	(*callback) (region);
+    }
+}
 
 /* This section describes CFG exception edges for flow.  */
 

@@ -90,6 +90,9 @@ extern void note_current_region_may_contain_throw (void);
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
 
+/* Invokes CALLBACK for every exception region in the current function.  */
+extern void for_each_eh_region (void (*) (struct eh_region *));
+
 /* Determine if the given INSN can throw an exception.  */
 extern bool can_throw_internal_1 (int);
 extern bool can_throw_internal (rtx);

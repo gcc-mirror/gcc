@@ -762,13 +762,38 @@ cleanup_tree_cfg (void)
 }
 
 
-/* Cleanup useless labels from the flow graph.  */
+/* Cleanup useless labels in basic blocks.  This is something we wish
+   to do early because it allows us to group case labels before creating
+   the edges for the CFG, and it speeds up block statement iterators in
+   all passes later on.
+   We only run this pass once, running it more than once is probably not
+   profitable.  */
+
+/* A map from basic block index to the leading label of that block.  */
+static tree *label_for_bb;
+
+/* Callback for for_each_eh_region.  Helper for cleanup_dead_labels.  */
+static void
+update_eh_label (struct eh_region *region)
+{
+  tree old_label = get_eh_region_tree_label (region);
+  if (old_label)
+    {
+      tree new_label = label_for_bb[label_to_block (old_label)->index];
+      set_eh_region_tree_label (region, new_label);
+    }
+}
+
+/* Cleanup redundant labels.  This is a three-steo process:
+     1) Find the leading label for each block.
+     2) Redirect all references to labels to the leading labels.
+     3) Cleanup all useless labels.  */
 
 static void
 cleanup_dead_labels (void)
 {
   basic_block bb;
-  tree *label_for_bb = xcalloc (last_basic_block, sizeof (tree));
+  label_for_bb = xcalloc (last_basic_block, sizeof (tree));
 
   /* Find a suitable label for each block.  We use the first user-defined
      label is there is one, or otherwise just the first label we see.  */
@@ -805,7 +830,8 @@ cleanup_dead_labels (void)
 	}
     }
 
-  /* Now redirect all jumps/branches to the selected label for each block.  */
+  /* Now redirect all jumps/branches to the selected label.
+     First do so for each block ending in a control statement.  */
   FOR_EACH_BB (bb)
     {
       tree stmt = last_stmt (bb);
@@ -863,6 +889,8 @@ cleanup_dead_labels (void)
 	  break;
       }
     }
+
+  for_each_eh_region (update_eh_label);
 
   /* Finally, purge dead labels.  All user-defined labels and labels that
      can be the target of non-local gotos are preserved.  */
