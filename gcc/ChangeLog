@@ -1,3 +1,16 @@
+2002-09-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Remove STRICT parameter
+	and register validity checks.
+	(general_s_operand): Adapt to s390_decompose_address interface change.
+	(q_constraint): Likewise.
+	(s390_expand_plus_operand): Likewise.
+	(legitimiate_address_p): Likewise.
+	(legitimate_la_operand_p): Likewise.
+	(legitimize_la_operand): Likewise.
+	(print_operand_address): Likewise.
+	(print_operand): Likewise.
+
 Tue Sep  3 11:32:14 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/5956:

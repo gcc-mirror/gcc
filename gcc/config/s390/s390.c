@@ -126,7 +126,7 @@ static int s390_branch_condition_mask PARAMS ((rtx));
 static const char *s390_branch_condition_mnemonic PARAMS ((rtx, int));
 static int check_mode PARAMS ((rtx, enum machine_mode *));
 static int general_s_operand PARAMS ((rtx, enum machine_mode, int));
-static int s390_decompose_address PARAMS ((rtx, struct s390_address *, int));
+static int s390_decompose_address PARAMS ((rtx, struct s390_address *));
 static int reg_used_in_mem_p PARAMS ((int, rtx));
 static int addr_generation_dependency_p PARAMS ((rtx, rtx));
 static void s390_split_branches PARAMS ((void));
@@ -949,7 +949,7 @@ general_s_operand (op, mode, allow_immediate)
       case MEM:
 	if (GET_CODE (XEXP (op, 0)) == ADDRESSOF)
 	  return 1;
-	if (s390_decompose_address (XEXP (op, 0), &addr, FALSE) 
+	if (s390_decompose_address (XEXP (op, 0), &addr) 
 	    && !addr.indx)
 	  return 1;
 	break;
@@ -1000,7 +1000,7 @@ q_constraint (op)
   if (GET_CODE (op) != MEM)
     return 0;
 
-  if (!s390_decompose_address (XEXP (op, 0), &addr, FALSE))
+  if (!s390_decompose_address (XEXP (op, 0), &addr))
     return 0;
 
   if (addr.indx)
@@ -1371,6 +1371,7 @@ s390_expand_plus_operand (target, src, scratch_in)
      register rtx scratch_in;
 {
   rtx sum1, sum2, scratch;
+  struct s390_address ad;
 
   /* ??? reload apparently does not ensure that the scratch register
      and the target do not overlap.  We absolutely require this to be
@@ -1391,9 +1392,11 @@ s390_expand_plus_operand (target, src, scratch_in)
   sum1 = find_replacement (&XEXP (src, 0));
   sum2 = find_replacement (&XEXP (src, 1));
 
-  /* Accept already valid addresses.  */
+  /* Accept already strictly valid addresses.  */
   src = gen_rtx_PLUS (Pmode, sum1, sum2);
-  if (s390_decompose_address (src, NULL, 1))
+  if (s390_decompose_address (src, &ad)
+      && (!ad.base || REG_OK_FOR_BASE_STRICT_P (ad.base))
+      && (!ad.indx || REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
     {
       src = legitimize_la_operand (src);
       emit_insn (gen_rtx_SET (VOIDmode, target, src));
@@ -1449,8 +1452,8 @@ s390_expand_plus_operand (target, src, scratch_in)
 
 
 /* Decompose a RTL expression ADDR for a memory address into
-   its components, returned in OUT.  The boolean STRICT 
-   specifies whether strict register checking applies.
+   its components, returned in OUT.
+
    Returns 0 if ADDR is not a valid memory address, nonzero
    otherwise.  If OUT is NULL, don't return the components,
    but check for validity only.
@@ -1460,10 +1463,9 @@ s390_expand_plus_operand (target, src, scratch_in)
    canonical form so that they will be recognized.  */
 
 static int
-s390_decompose_address (addr, out, strict)
+s390_decompose_address (addr, out)
      register rtx addr;
      struct s390_address *out;
-     int strict;
 {
   rtx base = NULL_RTX;
   rtx indx = NULL_RTX;
@@ -1528,10 +1530,6 @@ s390_decompose_address (addr, out, strict)
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
 	  return FALSE;
 
-      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (base))
-	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (base)))
-	  return FALSE;
-    
       if (REGNO (base) == BASE_REGISTER
 	  || REGNO (base) == STACK_POINTER_REGNUM
 	  || REGNO (base) == FRAME_POINTER_REGNUM
@@ -1557,10 +1555,6 @@ s390_decompose_address (addr, out, strict)
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
 	  return FALSE;
 
-      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (indx))
-	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (indx)))
-	  return FALSE;
-    
       if (REGNO (indx) == BASE_REGISTER
 	  || REGNO (indx) == STACK_POINTER_REGNUM
 	  || REGNO (indx) == FRAME_POINTER_REGNUM
@@ -1691,7 +1685,26 @@ legitimate_address_p (mode, addr, strict)
      register rtx addr;
      int strict;
 {
-  return s390_decompose_address (addr, NULL, strict);
+  struct s390_address ad;
+  if (!s390_decompose_address (addr, &ad))
+    return FALSE;
+
+  if (strict)
+    {
+      if (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
+	return FALSE;
+      if (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx))
+	return FALSE;
+    }
+  else
+    {
+      if (ad.base && !REG_OK_FOR_BASE_NONSTRICT_P (ad.base))
+	return FALSE;
+      if (ad.indx && !REG_OK_FOR_INDEX_NONSTRICT_P (ad.indx))
+	return FALSE;
+    }
+
+  return TRUE;
 }
 
 /* Return 1 if OP is a valid operand for the LA instruction.
@@ -1703,7 +1716,7 @@ legitimate_la_operand_p (op)
      register rtx op;
 {
   struct s390_address addr;
-  if (!s390_decompose_address (op, &addr, FALSE))
+  if (!s390_decompose_address (op, &addr))
     return FALSE;
 
   if (TARGET_64BIT || addr.pointer)
@@ -1720,7 +1733,7 @@ legitimize_la_operand (op)
      register rtx op;
 {
   struct s390_address addr;
-  if (!s390_decompose_address (op, &addr, FALSE))
+  if (!s390_decompose_address (op, &addr))
     abort ();
 
   if (TARGET_64BIT || addr.pointer)
@@ -2247,7 +2260,9 @@ print_operand_address (file, addr)
 {
   struct s390_address ad;
 
-  if (!s390_decompose_address (addr, &ad, TRUE))
+  if (!s390_decompose_address (addr, &ad)
+      || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
+      || (ad.indx && !REG_OK_FOR_INDEX_STRICT_P (ad.indx)))
     output_operand_lossage ("Cannot decompose address.");
  
   if (ad.disp)
@@ -2298,7 +2313,8 @@ print_operand (file, x, code)
         struct s390_address ad;
 
         if (GET_CODE (x) != MEM
-            || !s390_decompose_address (XEXP (x, 0), &ad, TRUE)
+            || !s390_decompose_address (XEXP (x, 0), &ad)
+	    || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
             || ad.indx)
           abort ();
 
@@ -2314,7 +2330,8 @@ print_operand (file, x, code)
         struct s390_address ad;
 
         if (GET_CODE (x) != MEM
-            || !s390_decompose_address (XEXP (x, 0), &ad, TRUE)
+            || !s390_decompose_address (XEXP (x, 0), &ad)
+	    || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
             || ad.indx)
           abort ();
 
