@@ -70,25 +70,6 @@ enum decl_context
 #define WCHAR_TYPE "int"
 #endif
 
-#ifndef WINT_TYPE
-#define WINT_TYPE "unsigned int"
-#endif
-
-#ifndef INTMAX_TYPE
-#define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-		     ? "int"					\
-		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-			? "long int"				\
-			: "long long int"))
-#endif
-
-#ifndef UINTMAX_TYPE
-#define UINTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-		     ? "unsigned int"				\
-		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-			? "long unsigned int"			\
-			: "long long unsigned int"))
-#endif
 
 /* Nonzero if we have seen an invalid cross reference
    to a struct, union, or enum, but not yet printed the message.  */
@@ -3081,14 +3062,6 @@ init_decl_processing ()
   signed_wchar_type_node = signed_type (wchar_type_node);
   unsigned_wchar_type_node = unsigned_type (wchar_type_node);
 
-  wint_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WINT_TYPE)));
-
-  intmax_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (INTMAX_TYPE)));
-  uintmax_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (UINTMAX_TYPE)));
-
   boolean_type_node = integer_type_node;
   boolean_true_node = integer_one_node;
   boolean_false_node = integer_zero_node;
@@ -3105,10 +3078,6 @@ init_decl_processing ()
   TREE_TYPE (c_bool_false_node) = c_bool_type_node;
   c_bool_true_node = build_int_2 (1, 0);
   TREE_TYPE (c_bool_true_node) = c_bool_type_node;
-
-  string_type_node = build_pointer_type (char_type_node);
-  const_string_type_node
-    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
 
   /* Make a type to be the domain of a few array types
      whose domains don't really matter.
@@ -3131,11 +3100,6 @@ init_decl_processing ()
     = build_array_type (wchar_type_node, array_domain_type);
 
   void_list_node = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-
-  default_function_type = build_function_type (integer_type_node, NULL_TREE);
-  ptrdiff_type_node
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
-  unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
   c_common_nodes_and_builtins ();
 
@@ -7202,4 +7166,14 @@ c_expand_decl_stmt (t)
       && DECL_CONTEXT (decl) == current_function_decl
       && DECL_SAVED_TREE (decl))
     c_expand_body (decl, /*nested_p=*/1);
+}
+
+/* Return the IDENTIFIER_GLOBAL_VALUE of T, for use in common code, since
+   the definition of IDENTIFIER_GLOBAL_VALUE is different for C and C++.  */
+
+tree
+identifier_global_value	(t)
+     tree t;
+{
+  return IDENTIFIER_GLOBAL_VALUE (t);
 }

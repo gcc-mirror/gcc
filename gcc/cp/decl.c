@@ -80,26 +80,6 @@ extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 #define WCHAR_TYPE "int"
 #endif
 
-#ifndef WINT_TYPE
-#define WINT_TYPE "unsigned int"
-#endif
-
-#ifndef INTMAX_TYPE
-#define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-		     ? "int"					\
-		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-			? "long int"				\
-			: "long long int"))
-#endif
-
-#ifndef UINTMAX_TYPE
-#define UINTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-		     ? "unsigned int"				\
-		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
-			? "long unsigned int"			\
-			: "long long unsigned int"))
-#endif
-
 static tree grokparms				PARAMS ((tree));
 static const char *redeclaration_error_message	PARAMS ((tree, tree));
 
@@ -6398,10 +6378,6 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, "unsigned short",
 		       short_unsigned_type_node);
 
-  ptrdiff_type_node
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (PTRDIFF_TYPE)));
-  unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
-
   /* Define both `signed char' and `unsigned char'.  */
   record_builtin_type (RID_MAX, "signed char", signed_char_type_node);
   record_builtin_type (RID_MAX, "unsigned char", unsigned_char_type_node);
@@ -6486,15 +6462,7 @@ init_decl_processing ()
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
   TREE_PARMLIST (void_list_node) = 1;
 
-  string_type_node = build_pointer_type (char_type_node);
-  const_string_type_node
-    = build_pointer_type (build_qualified_type (char_type_node,
-						TYPE_QUAL_CONST));
   empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
-#if 0
-  record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
-#endif
-
   /* Make a type to be the domain of a few array types
      whose domains don't really matter.
      200 is small enough that it always fits in size_t.  */
@@ -6510,6 +6478,12 @@ init_decl_processing ()
   int_array_type_node
     = build_array_type (integer_type_node, array_domain_type);
 
+  c_common_nodes_and_builtins ();
+
+#if 0
+  record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
+#endif
+
   if (flag_new_abi)
     delta_type_node = ptrdiff_type_node;
   else if (flag_huge_objects)
@@ -6522,15 +6496,7 @@ init_decl_processing ()
   else
     vtable_index_type = delta_type_node;
 
-  default_function_type
-    = build_function_type (integer_type_node, NULL_TREE);
-
-  ptr_type_node = build_pointer_type (void_type_node);
-  const_ptr_type_node
-    = build_pointer_type (build_qualified_type (void_type_node,
-						TYPE_QUAL_CONST));
   vtt_parm_type = build_pointer_type (const_ptr_type_node);
-  c_common_nodes_and_builtins ();
   lang_type_promotes_to = convert_type_from_ellipsis;
 
   void_ftype_ptr
@@ -6570,14 +6536,6 @@ init_decl_processing ()
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
-
-  wint_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WINT_TYPE)));
-
-  intmax_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (INTMAX_TYPE)));
-  uintmax_type_node =
-    TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (UINTMAX_TYPE)));
 
   if (flag_vtable_thunks)
     {
@@ -14671,4 +14629,14 @@ lang_mark_tree (t)
 	   TYPE_LANG_SPECIFIC is really just a tree.  */
 	ggc_mark_tree ((tree) lt);
     }
+}
+
+/* Return the IDENTIFIER_GLOBAL_VALUE of T, for use in common code, since
+   the definition of IDENTIFIER_GLOBAL_VALUE is different for C and C++.  */
+
+tree
+identifier_global_value	(t)
+     tree t;
+{
+  return IDENTIFIER_GLOBAL_VALUE (t);
 }

@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "expr.h"
 #include "c-common.h"
+#include "defaults.h"
 #include "tm_p.h"
 #include "intl.h"
 #include "diagnostic.h"
@@ -39,6 +40,26 @@ cpp_reader  parse_in;
 
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
+
+#ifndef WINT_TYPE
+#define WINT_TYPE "unsigned int"
+#endif
+
+#ifndef INTMAX_TYPE
+#define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "int"					\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long int"				\
+			: "long long int"))
+#endif
+
+#ifndef UINTMAX_TYPE
+#define UINTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "unsigned int"				\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long unsigned int"			\
+			: "long long unsigned int"))
+#endif
 
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes.
@@ -4898,6 +4919,23 @@ c_common_nodes_and_builtins ()
   tree traditional_len_endlink;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
+
+  string_type_node = build_pointer_type (char_type_node);
+  const_string_type_node
+    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
+
+  wint_type_node =
+    TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
+
+  intmax_type_node =
+    TREE_TYPE (identifier_global_value (get_identifier (INTMAX_TYPE)));
+  uintmax_type_node =
+    TREE_TYPE (identifier_global_value (get_identifier (UINTMAX_TYPE)));
+
+  default_function_type = build_function_type (integer_type_node, NULL_TREE);
+  ptrdiff_type_node
+    = TREE_TYPE (identifier_global_value (get_identifier (PTRDIFF_TYPE)));
+  unsigned_ptrdiff_type_node = unsigned_type (ptrdiff_type_node);
 
   pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
 			va_list_type_node));
