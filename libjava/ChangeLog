@@ -1,5 +1,7 @@
 2000-02-01  Tom Tromey  <tromey@cygnus.com>
 
+	* include/jni.h (class _Jv_JNIEnv): Added all C++ inline methods.
+
 	* jni.cc (_Jv_JNI_PopLocalFrame): Leave loop when `n == NULL'.
 	(_Jv_JNI_conversion_call): _Jv_JNI_PopLocalFrame will never leave
 	`locals == NULL'.
