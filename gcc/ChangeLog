@@ -1,3 +1,7 @@
+2003-07-07  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md: Correct check-in of incorrect version.
+
 2003-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bitmap.c (debug_bitmap_file): Merge uses of HOST_PTR_PRINTF with
