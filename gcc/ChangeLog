@@ -1,3 +1,10 @@
+2002-03-06  Richard Henderson  <rth@redhat.com>
+
+	* genemit.c (gen_exp): New argument used.  Invoke copy_rtx
+	if used indicates we've already emitted one copy of an operand.
+	(gen_insn, gen_expand, output_add_clobbers): Supply a null used.
+	(gen_split): Supply a non-null used.
+
 2002-03-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
         * reload1.c (reload): Unshare all rtl after reload is done.
