@@ -1,3 +1,9 @@
+Wed Mar  3 19:09:11 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* sparc/elf.h (MULDI3_LIBCALL, DIVDI3_LIBCALL, UDIVDI3_LIBCALL,
+	MODDI3_LIBCALL, UMODDI3_LIBCALL, STDC_0_IN_SYSTEM_HEADERS): Undef.
+	(INIT_SUBTARGET_OPTABS): Define to empty.	
+
 Wed Mar  3 00:00:37 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (force_into): New function.
