@@ -144,6 +144,10 @@ extern int target_flags;
 
 /* Let's keep the stack somewhat aligned.  */
 #define STACK_BOUNDARY 32
+
+/* The table of an ADDR_DIFF_VEC must be contiguous with the case
+   opcode, it is part of the case instruction.  */
+#define ADDR_VEC_ALIGN(ADDR_VEC) 0
 
 /* Standard register usage.  */
 
