@@ -1,6 +1,14 @@
+2002 07-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* g++.dg/opt/pr6713.C: Add template instantiation.
+
 2002-07-18  Alan Modra  <amodra@bigpond.net.au>
 
-	* gcc.dg/nest.c: New.
+	* gcc.dg/nest.c: New test.
+
+2002-07-17  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/opt/pr6713.C: New test.
 
 2002-07-17  Eric Botcazou  <ebotcazou@multimania.com>
 
