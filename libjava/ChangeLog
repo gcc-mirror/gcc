@@ -1,3 +1,13 @@
+2002-11-10  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/natClass.cc (initializeClass): Throw NoClassDefFoundError
+	with getName() as message.
+	(_Jv_CheckArrayStore): Throw ArrayStoreException with object and array
+	type as message.
+
+	* java/lang/natVMThrowable.cc: Don't declare parameter t, it is
+	unused.
+
 2002-11-08  Ranjit Mathew <rmathew@hotmail.com>
 
 	* include/jni.h (JNIIMPORT, JNIEXPORT, JNICALL): Linker defines

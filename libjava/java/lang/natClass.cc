@@ -751,7 +751,7 @@ java::lang::Class::initializeClass (void)
   if (state == JV_STATE_ERROR)
     {
       _Jv_MonitorExit (this);
-      throw new java::lang::NoClassDefFoundError;
+      throw new java::lang::NoClassDefFoundError (getName());
     }
 
   // Step 6.
@@ -1043,7 +1043,12 @@ _Jv_CheckArrayStore (jobject arr, jobject obj)
       jclass obj_class = JV_CLASS (obj);
       if (__builtin_expect 
           (! _Jv_IsAssignableFrom (elt_class, obj_class), false))
-	throw new java::lang::ArrayStoreException;
+	throw new java::lang::ArrayStoreException
+		((new java::lang::StringBuffer
+		 (JvNewStringUTF("Cannot store ")))->append
+		 (obj_class->getName())->append
+		 (JvNewStringUTF(" in array of type "))->append
+		 (elt_class->getName())->toString());
     }
 }
 
