@@ -2545,6 +2545,18 @@ c_make_fname_decl (id, type_dep)
   DECL_INITIAL (decl) = init;
 
   TREE_USED (decl) = 1;
+
+  if (current_function_decl)
+    {
+      /* Add the decls to the outermost block.  */
+      struct binding_level *b = current_binding_level;
+      struct binding_level *old = b;
+      while (b->level_chain->parm_flag == 0)
+	b = b->level_chain;
+      current_binding_level = b;
+      pushdecl (decl);
+      current_binding_level = old;
+    }	
   
   finish_decl (decl, init, NULL_TREE);
 

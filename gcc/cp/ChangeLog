@@ -1,3 +1,8 @@
+2003-01-02  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (cp_make_fname_decl): Push the decls inside the
+	outermost scope.
+
 2003-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/45, c++/3784
