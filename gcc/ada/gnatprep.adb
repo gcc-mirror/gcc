@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,9 +24,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Gnatvsn;
 with GPrep;
 
 procedure GNATprep is
+   pragma Ident (Gnatvsn.Gnat_Static_Version_String);
 begin
    --  Everything is done in GPrep
 

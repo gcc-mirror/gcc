@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,11 +33,14 @@
 --  integer and floating point sizes.
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Gnatvsn;
 with Ttypef;      use Ttypef;
 with Ttypes;      use Ttypes;
 with Types;       use Types;
 
 procedure GnatPsta is
+   pragma Ident (Gnatvsn.Gnat_Static_Version_String);
+
    procedure P (Item : String) renames Ada.Text_IO.Put_Line;
 
    procedure P_Int_Range   (Size : Pos; Put_First : Boolean := True);
