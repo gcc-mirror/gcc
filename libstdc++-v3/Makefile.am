@@ -52,6 +52,10 @@ doxygen-man:
 
 .PHONY: doxygen doxygen-maint doxygen-man
 
+# Handy forwarding targets.
+check-%:
+	cd testsuite && $(MAKE) $@
+
 # Multilib support.
 MAKEOVERRIDES=
 

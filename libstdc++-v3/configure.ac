@@ -56,8 +56,9 @@ fi
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  no-dependencies:  turns off auto dependency generation (just for now)
-#  -Wall:  turns on all automake warnings
-AM_INIT_AUTOMAKE([1.7.6 no-define foreign no-dependencies -Wall])
+#  -Wall:  turns on all automake warnings...
+#  -Wno-portability:  ...except this one, since GNU make is now required.
+AM_INIT_AUTOMAKE([1.7.6 no-define foreign no-dependencies -Wall -Wno-portability])
 
 # Runs configure.host, finds CC, CXX, and assorted other critical bits.  Sets
 # up critical shell variables.
