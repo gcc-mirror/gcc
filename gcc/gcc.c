@@ -647,6 +647,26 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}"},
+  {".ch",   "@chill" },
+  {".chi",  "@chill" },
+  {"@chill",
+   "cpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+	%{C:%{!E:%eGNU CHILL does not support -C without using -E}}\
+        -undef -D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2\
+        %c %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
+        %{traditional-cpp:-traditional} %{!undef:%{!ansi:%p} %P} %{trigraphs}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
+        %i %{!E:%g.i}%{E:%W{o*}} \n",
+   "%{!E:cc1chill %g.i %1 \
+		   %{!Q:-quiet} -dumpbase %b.ch %{d*} %{m*} %{a}\
+		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{itu} \
+		   %{v:-version} %{pg:-p} %{p} %{f*} %{I*} \
+		   %{aux-info*} %X \
+		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+              %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y %{keep-local-as-symbols:-L} \
+		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+                      %{!pipe:%g.s} %A\n }}"},
   {".cc", "@c++"},
   {".cxx", "@c++"},
   {".cpp", "@c++"},
