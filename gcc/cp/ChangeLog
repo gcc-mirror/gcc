@@ -1,3 +1,13 @@
+2003-03-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (merge_conversion_sequences): New function.
+	(build_conv): Set ICS_USER_FLAG for USER_CONVs.
+	(convert_class_to_reference): Correct handling of second
+	standard conversion sequence in a user-defined conversion
+	sequence.
+	(build_user_type_conversion_1): Use merge_conversion_sequences.
+	* cp-tree.def: Add comments for CONV nodes.
+
 2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (init_error): Use C90 prototype style.

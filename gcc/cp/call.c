@@ -1,6 +1,6 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -106,6 +106,7 @@ static tree call_builtin_trap (void);
 static tree prep_operand (tree);
 static void add_candidates (tree, tree, tree, tree,
 			    int, struct z_candidate **);
+static tree merge_conversion_sequences (tree, tree);
 
 tree
 build_vfield_ref (tree datum, tree type)
@@ -560,7 +561,12 @@ struct z_candidate GTY(()) {
   tree fn;
   /* The arguments to use when calling this function.  */
   tree args;
+  /* The implicit conversion sequences for each of the arguments to
+     FN.  */
   tree convs;
+  /* If FN is a user-defined conversion, the standard conversion
+     sequence from the type returned by FN to the desired destination
+     type.  */
   tree second_conv;
   int viable;
   /* If FN is a member function, the binfo indicating the path used to
@@ -667,7 +673,7 @@ build_conv (enum tree_code code, tree type, tree from)
       break;
     }
   ICS_STD_RANK (t) = rank;
-  ICS_USER_FLAG (t) = ICS_USER_FLAG (from);
+  ICS_USER_FLAG (t) = (code == USER_CONV || ICS_USER_FLAG (from));
   ICS_BAD_FLAG (t) = ICS_BAD_FLAG (from);
   return t;
 }
@@ -1034,15 +1040,15 @@ convert_class_to_reference (tree t, tree s, tree expr)
 					   LOOKUP_NORMAL);
 	  
 	  if (cand)
-	    {
-	      conv = build1 (IDENTITY_CONV, s, expr);
-	      conv = build_conv (USER_CONV, TREE_TYPE (TREE_TYPE (cand->fn)),
-				 conv);
-	      TREE_OPERAND (conv, 1) = build_zc_wrapper (cand);
-	      ICS_USER_FLAG (conv) = 1;
-	      cand->second_conv
-		= direct_reference_binding (reference_type, conv);
-	    }
+	    /* Build a standard conversion sequence indicating the
+	       binding from the reference type returned by the
+	       function to the desired REFERENCE_TYPE.  */
+	    cand->second_conv
+	      = (direct_reference_binding 
+		 (reference_type, 
+		  build1 (IDENTITY_CONV, 
+			  TREE_TYPE (TREE_TYPE (TREE_TYPE (cand->fn))),
+			  NULL_TREE)));
 	}
       conversions = TREE_CHAIN (conversions);
     }
@@ -1063,11 +1069,21 @@ convert_class_to_reference (tree t, tree s, tree expr)
 			  build_this (expr),
 			  TREE_CHAIN (cand->args));
 
-  conv = cand->second_conv;
+  /* Build a user-defined conversion sequence representing the
+     conversion.  */
+  conv = build_conv (USER_CONV,
+		     TREE_TYPE (TREE_TYPE (cand->fn)),
+		     build1 (IDENTITY_CONV, TREE_TYPE (expr), expr));
+  TREE_OPERAND (conv, 1) = build_zc_wrapper (cand);
+
+  /* Merge it with the standard conversion sequence from the
+     conversion function's return type to the desired type.  */
+  cand->second_conv = merge_conversion_sequences (conv, cand->second_conv);
+
   if (cand->viable == -1)
     ICS_BAD_FLAG (conv) = 1;
   
-  return conv;
+  return cand->second_conv;
 }
 
 /* A reference of the indicated TYPE is being bound directly to the
@@ -1077,7 +1093,13 @@ convert_class_to_reference (tree t, tree s, tree expr)
 static tree
 direct_reference_binding (tree type, tree conv)
 {
-  tree t = TREE_TYPE (type);
+  tree t;
+
+  my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 20030306);
+  my_friendly_assert (TREE_CODE (TREE_TYPE (conv)) != REFERENCE_TYPE,
+		      20030306);
+
+  t = TREE_TYPE (type);
 
   /* [over.ics.rank] 
      
@@ -2428,6 +2450,35 @@ print_z_candidates (struct z_candidate *candidates)
     }
 }
 
+/* USER_SEQ is a user-defined conversion sequence, beginning with a
+   USER_CONV.  STD_SEQ is the standard conversion sequence applied to
+   the result of the conversion function to convert it to the final
+   desired type.  Merge the the two sequences into a single sequence,
+   and return the merged sequence.  */
+
+static tree
+merge_conversion_sequences (tree user_seq, tree std_seq)
+{
+  tree *t;
+
+  my_friendly_assert (TREE_CODE (user_seq) == USER_CONV,
+		      20030306);
+
+  /* Find the end of the second conversion sequence.  */
+  t = &(std_seq); 
+  while (TREE_CODE (*t) != IDENTITY_CONV)
+    t = &TREE_OPERAND (*t, 0);
+
+  /* Replace the identity conversion with the user conversion
+     sequence.  */
+  *t = user_seq;
+
+  /* The entire sequence is a user-conversion sequence.  */
+  ICS_USER_FLAG (std_seq) = 1;
+
+  return std_seq;
+}
+
 /* Returns the best overload candidate to perform the requested
    conversion.  This function is used for three the overloading situations
    described in [over.match.copy], [over.match.conv], and [over.match.ref].
@@ -2439,7 +2490,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
 {
   struct z_candidate *candidates, *cand;
   tree fromtype = TREE_TYPE (expr);
-  tree ctors = NULL_TREE, convs = NULL_TREE, *p;
+  tree ctors = NULL_TREE, convs = NULL_TREE;
   tree args = NULL_TREE;
 
   /* We represent conversion within a hierarchy using RVALUE_CONV and
@@ -2583,18 +2634,20 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       return cand;
     }
 
-  for (p = &(cand->second_conv); TREE_CODE (*p) != IDENTITY_CONV; )
-    p = &(TREE_OPERAND (*p, 0));
-
-  *p = build
+  /* Build the user conversion sequence.  */
+  convs = build_conv
     (USER_CONV,
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
-     expr, build_zc_wrapper (cand));
-  
-  ICS_USER_FLAG (cand->second_conv) = ICS_USER_FLAG (*p) = 1;
+     build1 (IDENTITY_CONV, TREE_TYPE (expr), expr));
+  TREE_OPERAND (convs, 1) = build_zc_wrapper (cand);
+
+  /* Combine it with the second conversion sequence.  */
+  cand->second_conv = merge_conversion_sequences (convs,
+						  cand->second_conv);
+
   if (cand->viable == -1)
-    ICS_BAD_FLAG (cand->second_conv) = ICS_BAD_FLAG (*p) = 1;
+    ICS_BAD_FLAG (cand->second_conv) = 1;
 
   return cand;
 }

@@ -1,8 +1,8 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998, 2003, 
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -270,7 +270,13 @@ DEFTREECODE (MUST_NOT_THROW_EXPR, "must_not_throw_expr", 'e', 1)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
 
-/* And some codes for expressing conversions for overload resolution.  */
+/* The following codes are used to represent implicit conversion
+   sequences, in the sense of [over.best.ics].  The conversion
+   sequences are connected through their first operands, with the
+   first conversion to be performed at the end of the chain.
+
+   The innermost conversion (i.e, the one at the end of the chain) is
+   always an IDENTITY_CONV, corresponding to the identity conversion.  */
 
 DEFTREECODE (IDENTITY_CONV, "identity_conv", 'e', 1)
 DEFTREECODE (LVALUE_CONV, "lvalue_conv", 'e', 1)
