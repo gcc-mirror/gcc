@@ -3670,6 +3670,11 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define same_type_p(type1, type2) \
   comptypes ((type1), (type2), COMPARE_STRICT)
 
+/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
+   top-level qualifiers.  */
+#define same_type_ignoring_top_level_qualifiers_p(type1, type2) \
+  same_type_p (TYPE_MAIN_VARIANT (type1), TYPE_MAIN_VARIANT (type2))
+
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, or if TYPE2
    is derived from TYPE1, or if TYPE2 is a pointer (reference) to a
    class derived from the type pointed to (referred to) by TYPE1.  */

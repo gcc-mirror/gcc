@@ -1,3 +1,24 @@
+2000-05-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (same_type_ignoring_top_level_qualifiers_p): New
+	macro.
+	* call.c (standard_conversion): Use it.
+	(direct_reference_binding): Likewise.
+	(build_over_call): Likewise.
+	(is_properly_derived_from): Likewise.
+	(compare_ics): Likewise.
+	* class.c (resolves_to_fixed_type_p): Likewise.
+	* optimize.c (declare_return_variable): Likewise.
+	* pt.c (is_specialization_of): Likewise.
+	(unify): Likewise.
+	* typeck.c (comp_target_parms): Likeiwse.
+	(build_static_cast): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(build_const_cast): Likewise.
+	(comp_ptr_ttypes_real): Likewise.
+	(comp_ptr_ttypes_const): Likewise.
+	* typeck2.c (process_init_constructor): Likewise.
+
 2000-04-30  Scott Snyder <snyder@fnal.gov>
 
 	* decl.c (finish_destructor_body): Use the base destructor when
