@@ -1,3 +1,8 @@
+2002-06-20  Tim Josling  <tej@melbpc.org.au>
+
+	* Makefile.in: Clean up code to check for misspecified languages
+	in enable-languages.
+
 2002-06-19  Andrew Pinski <pinskia@physics.uc.edu>
 
         * cpptrad.c (_cpp_replacement_text_len): initialize len.

@@ -1,3 +1,8 @@
+2002-06-19  Paolo Bonzini <bonzini@gnu.org> 
+
+	* lex.l (yyparse) Return AUTOMATIC for 'automatic' token rather
+	than STATIC.
+
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
         Cleanup 
@@ -25,7 +30,7 @@
 	* tree1.c (main): Remove include of "output.h".
 	(symbol_table): Add GTY details.
 	(symbol_table_ggc): Remove.
-	(treelang_init): Remove root definitions for garage collection.
+	(treelang_init): Remove root definitions for garbage collection.
 	(mark_production_used): Remove.
 	(mark_token_used): Remove.
 	(main, at end): include generated garage collection routines.

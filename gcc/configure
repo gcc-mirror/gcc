@@ -2244,7 +2244,7 @@ EOF
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -7929,7 +7929,8 @@ if test x"${enable_languages+set}" != xset; then
 		enable_languages=all
 	fi
 else
-	if test x"${enable_languages}" = x;
+	if test x"${enable_languages}" = x \
+        || test x"${enable_languages}" = xyes;
 	then
 		{ echo "configure: error: --enable-languages needs at least one language argument" 1>&2; exit 1; }
 	fi
@@ -7967,7 +7968,8 @@ do
    esac
 done
 
-remaining_languages=${enable_languages}
+expected_languages=`echo ,${enable_languages}, | sed -e 's:,: :g' -e 's:  *: :g' -e 's:  *: :g' -e 's:^ ::' -e 's: $::'`
+found_languages=
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
 do
@@ -7991,8 +7993,8 @@ do
 	  *,all,*) add_this_lang=yes ;;
 	  *) add_this_lang=no ;;
 	  esac
+          found_languages="${found_languages} ${lang_alias}"
 	  if test x"${add_this_lang}" = xyes; then
-                remaining_languages=`echo $remaining_languages | sed -e s/${lang_alias}//g`
 		case $lang in
 		    ${srcdir}/ada/config-lang.in)
 			if test x$have_gnat = xyes ; then
@@ -8008,12 +8010,33 @@ do
 	esac
 done
 
-remaining_languages_check=`echo $remaining_languages | sed -e 's/,//g' -e 's/^c$//'g`
-if test "xxx$remaining_languages_check" != "xxx" -a "xxx$remaining_languages_check" != "xxxall" ; then
-    remaining_languages_clean=`echo $remaining_languages | sed -e 's/^c,//' -e 's/,c,/,/' -e 's/,c$//'  -e 's/^c$//' -e 's/,,*/,/g' -e 's/^,//g' -e 's/,$//g' `
-    echo "Language alias(es) not found: $remaining_languages_clean" 
-    echo "Refer to the configure instructions in the doc directory"
-    exit 1
+missing_languages=
+for expected_language in ${expected_languages} ..
+do 
+    if test "${expected_language}" != ..; then
+        missing_language="${expected_language}"
+        if test "${expected_language}" = "c" \
+           || test "${expected_language}" = "all"; then
+                missing_language=
+        fi
+        for found_language in ${found_languages} ..
+        do 
+            if test "${found_language}" != ..; then
+                if test "${expected_language}" = "${found_language}"; then
+                    missing_language=
+                fi
+            fi
+        done
+        if test "x${missing_language}" != x; then
+           missing_languages="${missing_languages} ${missing_language}"
+        fi
+    fi
+done
+
+if test "x$missing_languages" != x; then
+  { echo "configure: error: 
+The following requested languages were not found:${missing_languages}
+The following languages were available: c${found_languages}" 1>&2; exit 1; }
 fi
 
 # Make gthr-default.h if we have a thread file.
@@ -8060,7 +8083,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8064: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8087: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

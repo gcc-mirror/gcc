@@ -166,7 +166,7 @@ static void dump_lex_value (int lexret);
   
 "automatic" {
   update_lineno_charno ();
-  SAVE_RETURN (STATIC);
+  SAVE_RETURN (AUTOMATIC);
 }
   
 "int" {

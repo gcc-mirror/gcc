@@ -11,6 +11,9 @@ the GCC back end 'tree' interface in syntax.
 Thanks to Richard Kenner, Joachim Nadler and many others for helping
 me to understand enough of GCC to do this.
 
+Please note, the documentation is not a good model to use for GCC
+front end documentation. 
+
 Tim Josling
-May 2001
+19 June 2002
 
