@@ -2093,6 +2093,7 @@ duplicate_tag_error (t)
       TYPE_REDEFINED (t) = 1;
       CLASSTYPE_TEMPLATE_INFO (t) = template_info;
       CLASSTYPE_USE_TEMPLATE (t) = use_template;
+      CLASSTYPE_DECL_LIST (t) = NULL_TREE;
     }
   TYPE_SIZE (t) = NULL_TREE;
   TYPE_MODE (t) = VOIDmode;
@@ -2744,6 +2745,29 @@ finish_struct_anon (t)
     }
 }
 
+/* Add T to CLASSTYPE_DECL_LIST of current_class_type which
+   will be used later during class template instantiation.
+   When FRIEND_P is zero, T can be a static member data (VAR_DECL),
+   a non-static member data (FIELD_DECL), a member function
+   (FUNCTION_DECL), a nested type (RECORD_TYPE, ENUM_TYPE), 
+   a typedef (TYPE_DECL) or a member class template (TEMPLATE_DECL)
+   When FRIEND_P is nonzero, T is either a friend class
+   (RECORD_TYPE, TEMPLATE_DECL) or a friend function
+   (FUNCTION_DECL, TEMPLATE_DECL).  */
+
+void
+maybe_add_class_template_decl_list (type, t, friend_p)
+     tree type;
+     tree t;
+     int friend_p;
+{
+  /* Save some memory by not creating TREE_LIST if TYPE is not template.  */
+  if (CLASSTYPE_TEMPLATE_INFO (type))
+    CLASSTYPE_DECL_LIST (type)
+      = tree_cons (friend_p ? NULL_TREE : type,
+		   t, CLASSTYPE_DECL_LIST (type));
+}
+
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.
    CANT_HAVE_DEFAULT_CTOR, CANT_HAVE_CONST_CTOR, and
@@ -2824,7 +2848,10 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   /* Now, hook all of the new functions on to TYPE_METHODS,
      and add them to the CLASSTYPE_METHOD_VEC.  */
   for (f = &implicit_fns; *f; f = &TREE_CHAIN (*f))
-    add_method (t, *f, /*error_p=*/0);
+    {
+      add_method (t, *f, /*error_p=*/0);
+      maybe_add_class_template_decl_list (current_class_type, *f, /*friend_p=*/0);
+    }
   *f = TYPE_METHODS (t);
   TYPE_METHODS (t) = implicit_fns;
 
@@ -5305,10 +5332,11 @@ unreverse_member_declarations (t)
   tree prev;
   tree x;
 
-  /* The TYPE_FIELDS, TYPE_METHODS, and CLASSTYPE_TAGS are all in
-     reverse order.  Put them in declaration order now.  */
+  /* The following lists are all in reverse order.  Put them in
+     declaration order now.  */
   TYPE_METHODS (t) = nreverse (TYPE_METHODS (t));
   CLASSTYPE_TAGS (t) = nreverse (CLASSTYPE_TAGS (t));
+  CLASSTYPE_DECL_LIST (t) = nreverse (CLASSTYPE_DECL_LIST (t));
 
   /* Actually, for the TYPE_FIELDS, only the non TYPE_DECLs are in
      reverse order, so we can't just use nreverse.  */

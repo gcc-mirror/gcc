@@ -1754,6 +1754,7 @@ begin_class_definition (t)
 	  TYPE_BINFO_BASETYPES (t) = NULL_TREE;
 	  TYPE_FIELDS (t) = NULL_TREE;
 	  TYPE_METHODS (t) = NULL_TREE;
+	  CLASSTYPE_DECL_LIST (t) = NULL_TREE;
 	  CLASSTYPE_TAGS (t) = NULL_TREE;
 	  CLASSTYPE_VBASECLASSES (t) = NULL_TREE;
 	  TYPE_SIZE (t) = NULL_TREE;
@@ -1834,6 +1835,8 @@ finish_member_declaration (decl)
      and the member function type of class member functions.  */
   if (DECL_LANG_SPECIFIC (decl) && DECL_LANGUAGE (decl) == lang_c)
     SET_DECL_LANGUAGE (decl, lang_cplusplus);
+
+  maybe_add_class_template_decl_list (current_class_type, decl, /*friend_p=*/0);
 
   /* Put functions on the TYPE_METHODS list and everything else on the
      TYPE_FIELDS list.  Note that these are built up in reverse order.

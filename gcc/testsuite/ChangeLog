@@ -1,3 +1,12 @@
+2002-10-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Core issue 287, PR c++/7639
+	* g++.dg/template/instantiate1.C: Adjust error location.
+	* g++.dg/template/instantiate3.C: New test.
+	* g++.old-deja/g++.pt/crash10.C: Adjust error location.
+	* g++.old-deja/g++.pt/derived3.C: Adjust error location.
+	* g++.old-deja/g++.pt/spec28.C: Reorder declaration.
+
 2002-10-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* lib/compat.exp (compat-execute): Don't clean out a gluefile.

@@ -1,3 +1,22 @@
+2002-10-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Core issue 287, PR c++/7639
+	* cp-tree.h (lang_type_class): Add decl_list field.
+	(CLASSTYPE_DECL_LIST): New macro.
+	(maybe_add_class_template_decl_list): Add declaration.
+	* class.c (duplicate_tag_error): Initialize CLASSTYPE_DECL_LIST.
+	(unreverse_member_declarations): Reverse CLASSTYPE_DECL_LIST.
+	(maybe_add_class_template_decl_list): New function.
+	(add_implicitly_declared_members): Use it.
+	* decl.c (maybe_process_template_type_declaration): Likewise.
+	(pushtag): Likewise.
+	* friend.c (add_friend): Likewise.
+	(make_friend_class): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+	(begin_class_definition): Initialize CLASSTYPE_DECL_LIST.
+	* pt.c (instantiate_class_template): Use CLASSTYPE_DECL_LIST
+	to process members and friends in the order of declaration.
+
 2002-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8287

@@ -4975,7 +4975,7 @@ tree
 instantiate_class_template (type)
      tree type;
 {
-  tree template, args, pattern, t;
+  tree template, args, pattern, t, member;
   tree typedecl;
 
   if (type == error_mark_node)
@@ -5070,6 +5070,7 @@ instantiate_class_template (type)
       TYPE_BINFO_BASETYPES (type) = TYPE_BINFO_BASETYPES (pattern);
       TYPE_FIELDS (type) = TYPE_FIELDS (pattern);
       TYPE_METHODS (type) = TYPE_METHODS (pattern);
+      CLASSTYPE_DECL_LIST (type) = CLASSTYPE_DECL_LIST (pattern);
       CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
       CLASSTYPE_VBASECLASSES (type) = CLASSTYPE_VBASECLASSES (pattern);
       
@@ -5223,175 +5224,174 @@ instantiate_class_template (type)
      class.  */
   pushclass (type, 1);
 
-  for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
+  /* Now members are processed in the order of declaration.  */
+  for (member = CLASSTYPE_DECL_LIST (pattern); member; member = TREE_CHAIN (member))
     {
-      tree tag = TREE_VALUE (t);
-      tree name = TYPE_IDENTIFIER (tag);
-      tree newtag;
+      tree t = TREE_VALUE (member);
 
-      newtag = tsubst (tag, args, tf_error, NULL_TREE);
-      my_friendly_assert (newtag != error_mark_node, 20010206);
-      if (TREE_CODE (newtag) != ENUMERAL_TYPE)
+      if (TREE_PURPOSE (member))
 	{
-	  if (TYPE_LANG_SPECIFIC (tag) && CLASSTYPE_IS_TEMPLATE (tag))
-	    /* Unfortunately, lookup_template_class sets
-	       CLASSTYPE_IMPLICIT_INSTANTIATION for a partial
-	       instantiation (i.e., for the type of a member template
-	       class nested within a template class.)  This behavior is
-	       required for maybe_process_partial_specialization to work
-	       correctly, but is not accurate in this case; the TAG is not
-	       an instantiation of anything.  (The corresponding
-	       TEMPLATE_DECL is an instantiation, but the TYPE is not.) */
-	    CLASSTYPE_USE_TEMPLATE (newtag) = 0;
+	  if (TYPE_P (t))
+	    {
+	      /* Build new CLASSTYPE_TAGS.  */
 
-	  /* Now, we call pushtag to put this NEWTAG into the scope of
-	     TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
-	     pushtag calling push_template_decl.  We don't have to do
-	     this for enums because it will already have been done in
-	     tsubst_enum.  */
-	  if (name)
-	    SET_IDENTIFIER_TYPE_VALUE (name, newtag);
-	  pushtag (name, newtag, /*globalize=*/0);
+	      tree tag = t;
+	      tree name = TYPE_IDENTIFIER (tag);
+	      tree newtag;
+
+	      newtag = tsubst (tag, args, tf_error, NULL_TREE);
+	      my_friendly_assert (newtag != error_mark_node, 20010206);
+	      if (TREE_CODE (newtag) != ENUMERAL_TYPE)
+		{
+		  if (TYPE_LANG_SPECIFIC (tag) && CLASSTYPE_IS_TEMPLATE (tag))
+		    /* Unfortunately, lookup_template_class sets
+		       CLASSTYPE_IMPLICIT_INSTANTIATION for a partial
+		       instantiation (i.e., for the type of a member template
+		       class nested within a template class.)  This behavior is
+		       required for maybe_process_partial_specialization to work
+		       correctly, but is not accurate in this case; the TAG is not
+		       an instantiation of anything.  (The corresponding
+		       TEMPLATE_DECL is an instantiation, but the TYPE is not.) */
+		    CLASSTYPE_USE_TEMPLATE (newtag) = 0;
+
+		  /* Now, we call pushtag to put this NEWTAG into the scope of
+		     TYPE.  We first set up the IDENTIFIER_TYPE_VALUE to avoid
+		     pushtag calling push_template_decl.  We don't have to do
+		     this for enums because it will already have been done in
+		     tsubst_enum.  */
+		  if (name)
+		    SET_IDENTIFIER_TYPE_VALUE (name, newtag);
+		  pushtag (name, newtag, /*globalize=*/0);
+		}
+	    }
+	  else if (TREE_CODE (t) == FUNCTION_DECL 
+		   || DECL_FUNCTION_TEMPLATE_P (t))
+	    {
+	      /* Build new TYPE_METHODS.  */
+
+	      tree r = tsubst (t, args, tf_error, NULL_TREE);
+	      set_current_access_from_decl (r);
+	      grok_special_member_properties (r);
+	      finish_member_declaration (r);
+	    }
+	  else
+	    {
+	      /* Build new TYPE_FIELDS.  */
+
+	      if (TREE_CODE (t) != CONST_DECL)
+		{
+		  tree r;
+
+		  /* The the file and line for this declaration, to assist
+		     in error message reporting.  Since we called 
+		     push_tinst_level above, we don't need to restore these.  */
+		  lineno = DECL_SOURCE_LINE (t);
+		  input_filename = DECL_SOURCE_FILE (t);
+
+		  r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
+		  if (TREE_CODE (r) == VAR_DECL)
+		    {
+		      tree init;
+
+		      if (DECL_INITIALIZED_IN_CLASS_P (r))
+			init = tsubst_expr (DECL_INITIAL (t), args,
+					    tf_error | tf_warning, NULL_TREE);
+		      else
+			init = NULL_TREE;
+
+		      finish_static_data_member_decl (r, init,
+						      /*asmspec_tree=*/NULL_TREE, 
+						      /*flags=*/0);
+
+		      if (DECL_INITIALIZED_IN_CLASS_P (r))
+			check_static_variable_definition (r, TREE_TYPE (r));
+		    }
+		  else if (TREE_CODE (r) == FIELD_DECL)
+		    {
+		      /* Determine whether R has a valid type and can be
+			 completed later.  If R is invalid, then it is
+			 replaced by error_mark_node so that it will not be
+			 added to TYPE_FIELDS.  */
+		      tree rtype = TREE_TYPE (r);
+		      if (can_complete_type_without_circularity (rtype))
+			complete_type (rtype);
+
+		      if (!COMPLETE_TYPE_P (rtype))
+			{
+			  cxx_incomplete_type_error (r, rtype);
+		  	  r = error_mark_node;
+			}
+		    }
+
+		  /* If it is a TYPE_DECL for a class-scoped ENUMERAL_TYPE,
+		     such a thing will already have been added to the field
+		     list by tsubst_enum in finish_member_declaration in the
+		     CLASSTYPE_TAGS case above.  */
+		  if (!(TREE_CODE (r) == TYPE_DECL
+			&& TREE_CODE (TREE_TYPE (r)) == ENUMERAL_TYPE
+			&& TYPE_CONTEXT (TREE_TYPE (r)) == type))
+		    {
+		      set_current_access_from_decl (r);
+		      finish_member_declaration (r);
+		    }
+	        }
+	    }
+	}
+      else
+	{
+	  if (TYPE_P (t) || DECL_CLASS_TEMPLATE_P (t))
+	    {
+	      /* Build new CLASSTYPE_FRIEND_CLASSES.  */
+
+	      tree friend_type = t;
+	      tree new_friend_type;
+
+	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+		new_friend_type = tsubst_friend_class (friend_type, args);
+	      else if (uses_template_parms (friend_type))
+		new_friend_type = tsubst (friend_type, args,
+					  tf_error | tf_warning, NULL_TREE);
+	      else 
+		{
+		  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
+
+		  /* The call to xref_tag_from_type does injection for friend
+		     classes.  */
+		  push_nested_namespace (ns);
+		  new_friend_type = 
+		    xref_tag_from_type (friend_type, NULL_TREE, 1);
+		  pop_nested_namespace (ns);
+		}
+
+	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+		/* Trick make_friend_class into realizing that the friend
+		   we're adding is a template, not an ordinary class.  It's
+		   important that we use make_friend_class since it will
+		   perform some error-checking and output cross-reference
+		   information.  */
+		++processing_template_decl;
+
+	      if (new_friend_type != error_mark_node)
+	        make_friend_class (type, new_friend_type);
+
+	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
+		--processing_template_decl;
+	    }
+	  else
+	    {
+	      /* Build new DECL_FRIENDLIST.  */
+
+	      add_friend (type, 
+			  tsubst_friend_function (t, args));
+	    }
 	}
     }
-
-  /* Don't replace enum constants here.  */
-  for (t = TYPE_FIELDS (pattern); t; t = TREE_CHAIN (t))
-    if (TREE_CODE (t) != CONST_DECL)
-      {
-	tree r;
-
-	/* The the file and line for this declaration, to assist in
-	   error message reporting.  Since we called push_tinst_level
-	   above, we don't need to restore these.  */
-	lineno = DECL_SOURCE_LINE (t);
-	input_filename = DECL_SOURCE_FILE (t);
-
-	r = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
-	if (TREE_CODE (r) == VAR_DECL)
-	  {
-	    tree init;
-
-	    if (DECL_INITIALIZED_IN_CLASS_P (r))
-	      init = tsubst_expr (DECL_INITIAL (t), args,
-				  tf_error | tf_warning, NULL_TREE);
-	    else
-	      init = NULL_TREE;
-
-	    finish_static_data_member_decl (r, init,
-					    /*asmspec_tree=*/NULL_TREE, 
-					    /*flags=*/0);
-
-	    if (DECL_INITIALIZED_IN_CLASS_P (r))
-	      check_static_variable_definition (r, TREE_TYPE (r));
-	  }
-	else if (TREE_CODE (r) == FIELD_DECL)
-	  {
-	    /* Determine whether R has a valid type and can be
-	       completed later.  If R is invalid, then it is replaced
-	       by error_mark_node so that it will not be added to
-	       TYPE_FIELDS.  */
-	    tree rtype = TREE_TYPE (r);
-	    if (!can_complete_type_without_circularity (rtype))
-	      {
-		cxx_incomplete_type_error (r, rtype);
-		r = error_mark_node;
-	      }
-	  }
-
-	/* R will have a TREE_CHAIN if and only if it has already been
-	   processed by finish_member_declaration.  This can happen
-	   if, for example, it is a TYPE_DECL for a class-scoped
-	   ENUMERAL_TYPE; such a thing will already have been added to
-	   the field list by tsubst_enum above.  */
-	if (!TREE_CHAIN (r))
-	  {
-	    set_current_access_from_decl (r);
-	    finish_member_declaration (r);
-	  }
-      }
-
-  /* Set up the list (TYPE_METHODS) and vector (CLASSTYPE_METHOD_VEC)
-     for this instantiation.  */
-  for (t = TYPE_METHODS (pattern); t; t = TREE_CHAIN (t))
-    {
-      tree r = tsubst (t, args, tf_error, NULL_TREE);
-      set_current_access_from_decl (r);
-      grok_special_member_properties (r);
-      finish_member_declaration (r);
-    }
-
-  /* Construct the DECL_FRIENDLIST for the new class type.  */
-  typedecl = TYPE_MAIN_DECL (type);
-  for (t = DECL_FRIENDLIST (TYPE_MAIN_DECL (pattern));
-       t != NULL_TREE;
-       t = TREE_CHAIN (t))
-    {
-      tree friends;
-
-      for (friends = TREE_VALUE (t);
-	   friends != NULL_TREE;
-	   friends = TREE_CHAIN (friends))
-	if (TREE_PURPOSE (friends) == error_mark_node)
-	  add_friend (type, 
-		      tsubst_friend_function (TREE_VALUE (friends),
-					      args));
-	else
-	  abort ();
-    }
-
-  for (t = CLASSTYPE_FRIEND_CLASSES (pattern);
-       t != NULL_TREE;
-       t = TREE_CHAIN (t))
-    {
-      tree friend_type = TREE_VALUE (t);
-      tree new_friend_type;
-
-      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
-	new_friend_type = tsubst_friend_class (friend_type, args);
-      else if (uses_template_parms (friend_type))
-	new_friend_type = tsubst (friend_type, args,
-				  tf_error | tf_warning, NULL_TREE);
-      else 
-	{
-	  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
-
-	  /* The call to xref_tag_from_type does injection for friend
-	     classes.  */
-	  push_nested_namespace (ns);
-	  new_friend_type = 
-	    xref_tag_from_type (friend_type, NULL_TREE, 1);
-	  pop_nested_namespace (ns);
-	}
-
-      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
-	/* Trick make_friend_class into realizing that the friend
-	   we're adding is a template, not an ordinary class.  It's
-	   important that we use make_friend_class since it will
-	   perform some error-checking and output cross-reference
-	   information.  */
-	++processing_template_decl;
-
-      if (new_friend_type != error_mark_node)
-        make_friend_class (type, new_friend_type);
-
-      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
-	--processing_template_decl;
-    }
-
-  /* Now that TYPE_FIELDS and TYPE_METHODS are set up.  We can
-     instantiate templates used by this class.  */
-  for (t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
-    if (TREE_CODE (t) == FIELD_DECL)
-      {
-	TREE_TYPE (t) = complete_type (TREE_TYPE (t));
-	require_complete_type (t);
-      }
 
   /* Set the file and line number information to whatever is given for
      the class itself.  This puts error messages involving generated
      implicit functions at a predictable point, and the same point
      that would be used for non-template classes.  */
+  typedecl = TYPE_MAIN_DECL (type);
   lineno = DECL_SOURCE_LINE (typedecl);
   input_filename = DECL_SOURCE_FILE (typedecl);
 
