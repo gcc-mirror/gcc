@@ -100,6 +100,7 @@ CXXABI_1 {
   global:
     __cxa_*;
     __gxx_personality_v0;
+    __gxx_personality_sj0;
     __dynamic_cast;
 
     # __gnu_cxx::_verbose_terminate_handler()
