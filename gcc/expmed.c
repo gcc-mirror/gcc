@@ -398,6 +398,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
 #ifdef HAVE_insv
   if (HAVE_insv
+      && GET_MODE (value) != BLKmode
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
       && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3])
@@ -776,7 +777,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 	  /* We must do an endian conversion exactly the same way as it is
 	     done in extract_bit_field, so that the two calls to
 	     extract_fixed_bit_field will have comparable arguments.  */
-	  if (GET_CODE (value) != MEM)
+	  if (GET_CODE (value) != MEM || GET_MODE (value) == BLKmode)
 	    total_bits = BITS_PER_WORD;
 	  else
 	    total_bits = GET_MODE_BITSIZE (GET_MODE (value));
