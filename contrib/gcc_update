@@ -129,12 +129,15 @@ touch_files () {
     echo '	touch $@' >> Makefile.$$
     files_and_dependencies | sed 's,[^ ]* ,,;s,$, :,' >> Makefile.$$
 
-    # We need to explicitly shut off the "Entering... Leaving..."
+    # We would have to explicitly shut off the "Entering... Leaving..."
     # messages through "--no-print-directory" to handle the case when
     # we were called from a recursive invocation (i.e. "$(MAKE)" in a
     # Makefile, not just make).  Passing only "-s" doesn't help then,
     # because make has helpfully added "-w" to MAKEFLAGS automatically.
-    while ${MAKE-make} -s --no-print-directory -f Makefile.$$ all | grep . > /dev/null; do
+    # Unfortunately we do not require GNU make other than for building
+    # and testing, so let's just grep known text explicitly echoed by
+    # the rule.
+    while ${MAKE-make} -s -f Makefile.$$ all | grep Touching > /dev/null; do
       sleep 1
     done 2>&1
     rm -f Makefile.$$
