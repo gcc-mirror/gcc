@@ -1,3 +1,7 @@
+2004-10-18  Ziemowit Laski  <zlaski@apple.com>
+
+	* c-parse.in (reservedwords): Add OBJC_TYPE_QUAL as alternative.
+
 2004-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Roger Sayle  <roger@eyesopen.com>
 
