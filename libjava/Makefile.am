@@ -1956,6 +1956,8 @@ java/net/URLStreamHandler.java \
 java/net/URLStreamHandlerFactory.java \
 java/net/UnknownHostException.java \
 java/net/UnknownServiceException.java \
+java/nio/ByteBuffer.java \
+java/nio/MappedByteBuffer.java \
 java/nio/channels/AlreadyConnectedException.java \
 java/nio/channels/ByteChannel.java \
 java/nio/channels/Channel.java \
