@@ -776,6 +776,12 @@ _cpp_lex_direct (pfile)
       if (!_cpp_get_fresh_line (pfile))
 	{
 	  result->type = CPP_EOF;
+	  if (!pfile->state.in_directive)
+	    {
+	      /* Tell the compiler the line number of the EOF token.  */
+	      result->line = pfile->line;
+	      result->flags = BOL;
+	    }
 	  return result;
 	}
       if (!pfile->keep_tokens)
