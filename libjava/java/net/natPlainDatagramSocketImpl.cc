@@ -8,11 +8,22 @@ details.  */
 
 #include <config.h>
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
 #include <sys/time.h>
+#ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -319,6 +330,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
       opname = join ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
       memcpy (&u.mreq.imr_multiaddr, bytes, len);
       // FIXME:  If a non-default interface is set, use it; see Stevens p. 501.
+      // Maybe not, see note in last paragraph at bottom of Stevens p. 497.
       u.mreq.imr_interface.s_addr = htonl (INADDR_ANY); 
       len = sizeof (struct ip_mreq);
       ptr = (const char *) &u.mreq;
@@ -330,6 +342,7 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
       opname = join ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
       memcpy (&u.mreq6.ipv6mr_multiaddr, bytes, len);
       // FIXME:  If a non-default interface is set, use it; see Stevens p. 501.
+      // Maybe not, see note in last paragraph at bottom of Stevens p. 497.
       u.mreq6.ipv6mr_interface = 0;
       len = sizeof (struct ipv6_mreq);
       ptr = (const char *) &u.mreq6;
@@ -431,7 +444,7 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
 	    level = IPPROTO_IPV6;
 	    opname = IPV6_MULTICAST_IF;
 	    memcpy (&u.addr6, bytes, len);
-	    len = sizeof (struct in_addr6);
+	    len = sizeof (struct in6_addr);
 	    ptr = (const char *) &u.addr6;
 	  }
 #endif
@@ -524,9 +537,23 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 #endif 
 	break;
       case _Jv_IP_MULTICAST_IF_ :
-	// FIXME: TODO - Implement IP_MULTICAST_IF.
-	JvThrow (new java::lang::InternalError (
-	  JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+#ifdef HAVE_INET_NTOA
+	struct in_addr inaddr;
+  	socklen_t inaddr_len;
+	char *bytes;
+
+  	inaddr_len = sizeof(inaddr);
+	if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_IF, (char *) &inaddr,
+	    &inaddr_len) != 0)
+	  goto error;
+
+	bytes = inet_ntoa (inaddr);
+
+	return java::net::InetAddress::getByName (JvNewStringLatin1 (bytes));
+#else
+	JvThrow (new java::net::SocketException (
+	  JvNewStringUTF ("IP_MULTICAST_IF: not available - no inet_ntoa()")));
+#endif
 	break;
       case _Jv_SO_TIMEOUT_ :
 	return new java::lang::Integer (timeout);
