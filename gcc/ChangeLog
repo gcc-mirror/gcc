@@ -1,3 +1,20 @@
+2003-10-17  Mostafa Hagog  <mustafa@il.ibm.com>
+
+	* common.opt: Add description of the new -fgcse-las flag.
+	* flags.h (flag_gcse_las): Declaration of global flag_gcse_las.
+	* gcse.c (hash_scan_set): Handle the case of store expression and
+	insert the memory expression to the hash table, this way we make it
+	possible to discover redundant loads after stores and remove them.
+	(pre_insert_copy_insn): moved the call to update_ld_motion_stores,
+	to pre_insert_copies, it is not the correct place to call it after
+	adding stores to be in the available expression hash table.
+	(pre_insert_copies): Added the call to update_ld_motion_stores when
+	one or more copies were inserted.
+	* opts.c (common_handle_option): Handle the -fgcse-las flag.
+	* toplev.c (flag_gcse_las): Initialization of flag_gcse_las.
+
+	* doc/invoke.tex: Document new -fgcse-las flag.
+
 2003-10-18  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/crtsavres.asm: Correct alignment of powerpc64 code

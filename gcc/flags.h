@@ -675,6 +675,11 @@ extern int flag_gcse_lm;
 
 extern int flag_gcse_sm;
 
+/* Nonzero if we want to perform redundant load-after-store elimination
+   in gcse.  */
+
+extern int flag_gcse_las;
+
 /* Perform branch target register optimization before prologue / epilogue
    threading.  */
 

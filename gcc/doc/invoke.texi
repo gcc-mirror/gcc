@@ -270,8 +270,8 @@ in the following sections.
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
--fgcse  -fgcse-lm  -fgcse-sm  -floop-optimize  -fcrossjumping @gol
--fif-conversion  -fif-conversion2 @gol
+-fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las  -floop-optimize @gol
+-fcrossjumping  -fif-conversion  -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
 -fmove-all-movables  -fnew-ra  -fno-branch-count-reg @gol
@@ -3677,10 +3677,10 @@ also turns on the following optimization flags:
 -fstrength-reduce @gol
 -fcse-follow-jumps  -fcse-skip-blocks @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
--fgcse   -fgcse-lm   -fgcse-sm @gol
+-fgcse  -fgcse-lm  -fgcse-sm  -fgcse-las @gol
 -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations @gol
--fregmove -@gol
+-fregmove @gol
 -fschedule-insns  -fschedule-insns2 @gol
 -fsched-interblock  -fsched-spec @gol
 -fcaller-saves @gol
@@ -3996,10 +3996,19 @@ Enabled by default when gcse is enabled.
 
 @item -fgcse-sm
 @opindex fgcse-sm
-When @option{-fgcse-sm} is enabled, A store motion pass is run after global common
-subexpression elimination.  This pass will attempt to move stores out of loops.
-When used in conjunction with @option{-fgcse-lm}, loops containing a load/store sequence
-can be changed to a load before the loop and a store after the loop.
+When @option{-fgcse-sm} is enabled, a store motion pass is run after
+global common subexpression elimination.  This pass will attempt to move
+stores out of loops.  When used in conjunction with @option{-fgcse-lm},
+loops containing a load/store sequence can be changed to a load before
+the loop and a store after the loop.
+
+Enabled by default when gcse is enabled.
+
+@item -fgcse-las
+@opindex fgcse-las
+When @option{-fgcse-las} is enabled, the global common subexpression
+elimination pass eliminates redundant loads that come after stores to the
+same memory location (both partial and full redundacies).
 
 Enabled by default when gcse is enabled.
 

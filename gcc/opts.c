@@ -1019,6 +1019,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_gcse_sm = value;
       break;
 
+    case OPT_fgcse_las:
+      flag_gcse_las = value;
+      break;
+
     case OPT_fgnu_linker:
       flag_gnu_linker = value;
       break;

@@ -362,6 +362,10 @@ fgcse-sm
 Common
 Perform store motion after global common subexpression elimination
 
+fgcse-las
+Common
+Perform redundant load after store elimination in global common subexpression elimination
+
 fgnu-linker
 Common
 Output GNU ld formatted global initializers

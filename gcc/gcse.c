@@ -2205,6 +2205,49 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 		       && oprs_available_p (pat, tmp))))
 	insert_set_in_table (pat, insn, table);
     }
+  /* In case of store we want to consider the memory value as avaiable in
+     the REG stored in that memory. This makes it possible to remove
+     redundant loads from due to stores to the same location.  */
+  else if (flag_gcse_las && GET_CODE (src) == REG && GET_CODE (dest) == MEM)
+      {
+        unsigned int regno = REGNO (src);
+
+        /* Do not do this for constant/copy propagation.  */
+        if (! table->set_p
+            /* Only record sets of pseudo-regs in the hash table.  */
+	    && regno >= FIRST_PSEUDO_REGISTER
+	   /* Don't GCSE something if we can't do a reg/reg copy.  */
+	   && can_copy_p (GET_MODE (src))
+	   /* GCSE commonly inserts instruction after the insn.  We can't
+	      do that easily for EH_REGION notes so disable GCSE on these
+	      for now.  */
+	   && ! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
+	   /* Is SET_DEST something we want to gcse?  */
+	   && want_to_gcse_p (dest)
+	   /* Don't CSE a nop.  */
+	   && ! set_noop_p (pat)
+	   /* Don't GCSE if it has attached REG_EQUIV note.
+	      At this point this only function parameters should have
+	      REG_EQUIV notes and if the argument slot is used somewhere
+	      explicitly, it means address of parameter has been taken,
+	      so we should not extend the lifetime of the pseudo.  */
+	   && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
+	       || GET_CODE (XEXP (note, 0)) != MEM))
+             {
+               /* Stores are never anticipatable.  */
+               int antic_p = 0;
+	       /* An expression is not available if its operands are
+	          subsequently modified, including this insn.  It's also not
+	          available if this is a branch, because we can't insert
+	          a set after the branch.  */
+               int avail_p = oprs_available_p (dest, insn)
+			     && ! JUMP_P (insn);
+
+	       /* Record the memory expression (DEST) in the hash table.  */
+	       insert_expr_in_table (dest, GET_MODE (dest), insn,
+				     antic_p, avail_p, table);
+             }
+      }
 }
 
 static void
@@ -5360,7 +5403,13 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
      reaching_reg <- expr
      old_reg      <- reaching_reg
    because this way copy propagation can discover additional PRE
-   opportunities.  But if this fails, we try the old way.  */
+   opportunities.  But if this fails, we try the old way.
+   When "expr" is a store, i.e.
+   given "MEM <- old_reg", instead of adding after it
+     reaching_reg <- old_reg
+   it's better to add it before as follows:
+     reaching_reg <- old_reg
+     MEM          <- reaching_reg.  */
 
 static void
 pre_insert_copy_insn (struct expr *expr, rtx insn)
@@ -5395,22 +5444,38 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
   else
     abort ();
 
-  old_reg = SET_DEST (set);
-
-  /* Check if we can modify the set destination in the original insn.  */
-  if (validate_change (insn, &SET_DEST (set), reg, 0))
+  if (GET_CODE (SET_DEST (set)) == REG)
     {
-      new_insn = gen_move_insn (old_reg, reg);
-      new_insn = emit_insn_after (new_insn, insn);
+      old_reg = SET_DEST (set);
+      /* Check if we can modify the set destination in the original insn.  */
+      if (validate_change (insn, &SET_DEST (set), reg, 0))
+        {
+          new_insn = gen_move_insn (old_reg, reg);
+          new_insn = emit_insn_after (new_insn, insn);
 
-      /* Keep register set table up to date.  */
-      replace_one_set (REGNO (old_reg), insn, new_insn);
-      record_one_set (regno, insn);
+          /* Keep register set table up to date.  */
+          replace_one_set (REGNO (old_reg), insn, new_insn);
+          record_one_set (regno, insn);
+        }
+      else
+        {
+          new_insn = gen_move_insn (reg, old_reg);
+          new_insn = emit_insn_after (new_insn, insn);
+
+          /* Keep register set table up to date.  */
+          record_one_set (regno, new_insn);
+        }
     }
-  else
+  else /* This is possible only in case of a store to memory.  */
     {
+      old_reg = SET_SRC (set);
       new_insn = gen_move_insn (reg, old_reg);
-      new_insn = emit_insn_after (new_insn, insn);
+
+      /* Check if we can modify the set source in the original insn.  */
+      if (validate_change (insn, &SET_SRC (set), reg, 0))
+        new_insn = emit_insn_before (new_insn, insn);
+      else
+        new_insn = emit_insn_after (new_insn, insn);
 
       /* Keep register set table up to date.  */
       record_one_set (regno, new_insn);
@@ -5423,7 +5488,6 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
 	     "PRE: bb %d, insn %d, copy expression %d in insn %d to reg %d\n",
 	      BLOCK_NUM (insn), INSN_UID (new_insn), indx,
 	      INSN_UID (insn), regno);
-  update_ld_motion_stores (expr);
 }
 
 /* Copy available expressions that reach the redundant expression
@@ -5432,7 +5496,7 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
 static void
 pre_insert_copies (void)
 {
-  unsigned int i;
+  unsigned int i, added_copy;
   struct expr *expr;
   struct occr *occr;
   struct occr *avail;
@@ -5453,6 +5517,9 @@ pre_insert_copies (void)
 	   expression wasn't deleted anywhere.  */
 	if (expr->reaching_reg == NULL)
 	  continue;
+	
+	/* Set when we add a copy for that expression.  */
+	added_copy = 0; 
 
 	for (occr = expr->antic_occr; occr != NULL; occr = occr->next)
 	  {
@@ -5477,11 +5544,16 @@ pre_insert_copies (void)
 					       BLOCK_FOR_INSN (occr->insn)))
 		  continue;
 
+                added_copy = 1;
+
 		/* Copy the result of avail to reaching_reg.  */
 		pre_insert_copy_insn (expr, insn);
 		avail->copied_p = 1;
 	      }
 	  }
+
+ 	  if (added_copy)
+            update_ld_motion_stores (expr);
       }
 }
 

@@ -697,6 +697,11 @@ int flag_gcse_lm = 1;
 
 int flag_gcse_sm = 1;
 
+/* Nonzero if we want to perfrom redundant load after store elimination
+   in gcse.  */
+
+int flag_gcse_las = 1;
+
 /* Perform target register optimization before prologue / epilogue
    threading.  */
 
@@ -1075,6 +1080,7 @@ static const lang_independent_options f_options[] =
   {"gcse", &flag_gcse, 1 },
   {"gcse-lm", &flag_gcse_lm, 1 },
   {"gcse-sm", &flag_gcse_sm, 1 },
+  {"gcse-las", &flag_gcse_las, 1 },
   {"branch-target-load-optimize", &flag_branch_target_load_optimize, 1 },
   {"branch-target-load-optimize2", &flag_branch_target_load_optimize2, 1 },
   {"loop-optimize", &flag_loop_optimize, 1 },
