@@ -162,7 +162,7 @@ INCLUDES = \
 
 
 noinst_LIBRARIES = libv3test.a
-libv3test_a_SOURCES = testsuite_hooks.cc
+libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 @GLIBCPP_BUILD_ABI_CHECK_TRUE@noinst_PROGRAMS = @GLIBCPP_BUILD_ABI_CHECK_TRUE@abi_check
 @GLIBCPP_BUILD_ABI_CHECK_FALSE@noinst_PROGRAMS = 
 abi_check_SOURCES = abi_check.cc
@@ -177,7 +177,8 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libv3test_a_LIBADD = 
-libv3test_a_OBJECTS =  testsuite_hooks.$(OBJEXT)
+libv3test_a_OBJECTS =  testsuite_hooks.$(OBJEXT) \
+testsuite_allocator.$(OBJEXT)
 @GLIBCPP_BUILD_ABI_CHECK_FALSE@noinst_PROGRAMS = 
 PROGRAMS =  $(noinst_PROGRAMS)
 

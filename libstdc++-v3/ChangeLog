@@ -1,3 +1,15 @@
+2002-11-25  Stephen M. Webb  <stephen@bregmasoft.com>
+
+  	* testsuite/testsuite_allocator.h: New file.
+	* testsuite/testsuite_allocator.cc: New file.
+	* testsuite/Makefile.am: Added testsuite_allocator to test library.
+	* testsuite/testsuite_hooks.h: Added more detailed tracker objects
+	gnu_copy_constructor, gnu_assignment_operator, and gnu_destructor.
+	* testsuite/testsuite_hooks.cc: Added new static objects definitions.
+	* testsuite/23_containers/vector_capacity.cc: Added reserve() tests.
+	* testsuite/23_containers/vector_ctor.cc: Added a plethora of tests.
+	* testsuite/23_containers/deque_ctor.cc: Added a slew of new tests.
+
 2002-11-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* libsupc++/Makefile.am (sources): Add guard.cc.

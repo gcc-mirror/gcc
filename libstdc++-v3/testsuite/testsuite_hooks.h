@@ -100,57 +100,176 @@ struct gnu_counting_struct
 
 #define assert_count(n)   VERIFY(gnu_counting_struct::count == n)
 
+// A (static) class for counting copy constructors and possibly throwing an
+// exception on a desired count.
+class gnu_copy_constructor
+{
+public:
+  static unsigned int
+  count()
+  { return count_; }
 
+  static void
+  mark_call()
+  {
+    count_++;
+    if (count_ == throw_on_)
+    {
+      __throw_exception_again "copy constructor exception";
+    }
+  }
+
+  static void
+  reset()
+  {
+    count_ = 0;
+    throw_on_ = 0;
+  }
+
+  static void
+  throw_on(unsigned int count)
+  { throw_on_ = count; }
+
+private:
+  static unsigned int count_;
+  static unsigned int throw_on_;
+};
+
+// A (static) class for counting assignment operator calls and possibly
+// throwing an exception on a desired count.
+class gnu_assignment_operator
+{
+public:
+  static unsigned int
+  count()
+  { return count_; }
+
+  static void
+  mark_call()
+  {
+    count_++;
+    if (count_ == throw_on_)
+    {
+      __throw_exception_again "assignment operator exception";
+    }
+  }
+
+  static void
+  reset()
+  {
+    count_ = 0;
+    throw_on_ = 0;
+  }
+
+  static void
+  throw_on(unsigned int count)
+  { throw_on_ = count; }
+
+private:
+  static unsigned int count_;
+  static unsigned int throw_on_;
+};
+
+// A (static) class for tracking calls to an object's destructor.
+class gnu_destructor
+{
+public:
+  static unsigned int
+  count()
+  { return count_; }
+
+  static void
+  mark_call()
+  { count_++; }
+
+  static void
+  reset()
+  { count_ = 0; }
+
+private:
+  static unsigned int count_;
+};
+
+// An class of objects that can be used for validating various behaviours and
+// guarantees of containers and algorithms defined in the standard library.
 class gnu_copy_tracker
 {
   public:
-    // Cannot be explicit.  Conversion ctor used by list_modifiers.cc's
-    // test03(), "range fill at beginning".
-    gnu_copy_tracker (int anId, bool throwOnDemand = false)
-    : itsId(anId), willThrow(throwOnDemand)
-    {}
-
-    gnu_copy_tracker (const gnu_copy_tracker& rhs)
-    : itsId(rhs.id()), willThrow(rhs.willThrow)
+    // Creates a copy-tracking object with the given ID number.
+    // If "throw_on_copy" is set, an exception will be thrown if
+    // an attempt is made to copy this object.
+    gnu_copy_tracker(int id = next_id_--, bool throw_on_copy = false)
+    : id_(id)
+    , throw_on_copy_(throw_on_copy)
     {
-      ++itsCopyCount;
-      if (willThrow) 
-	__throw_exception_again "copy tracker exception";
     }
 
-    gnu_copy_tracker& operator=(const gnu_copy_tracker& rhs)
+    // Copy-constructs the object, marking a call to the copy
+    // constructor and forcing an exception if indicated.
+    gnu_copy_tracker(const gnu_copy_tracker& rhs)
+    : id_(rhs.id()), throw_on_copy_(rhs.throw_on_copy_)
     {
-      itsId = rhs.id();
-      // willThrow must obviously already be false to get this far
+      int kkk = throw_on_copy_;
+      if (throw_on_copy_)
+      {
+        gnu_copy_constructor::throw_on(gnu_copy_constructor::count() + 1);
+      }
+      gnu_copy_constructor::mark_call();
     }
 
-    ~gnu_copy_tracker() { ++itsDtorCount; }
+    // Assigns the value of another object to this one, tracking the
+    // number of times this member function has been called and if the
+    // other object is supposed to throw an exception when it is
+    // copied, well, make it so.
+    gnu_copy_tracker&
+    operator=(const gnu_copy_tracker& rhs)
+    { 
+      id_ = rhs.id();
+      if (rhs.throw_on_copy_)
+      {
+        gnu_assignment_operator::throw_on(gnu_assignment_operator::count() 
+					  + 1);
+      }
+      gnu_assignment_operator::mark_call();
+    }
+
+    ~gnu_copy_tracker()
+    { gnu_destructor::mark_call(); }
 
     int
     id() const
-    { return itsId; }
+    { return id_; }
 
   private:
-          int   itsId;
-    const bool  willThrow;
+    int   id_;
+    const bool  throw_on_copy_;
 
   public:
     static void
     reset()
-    { itsCopyCount = 0; itsDtorCount = 0; }
+    {
+      gnu_copy_constructor::reset();
+      gnu_assignment_operator::reset();
+      gnu_destructor::reset();
+    }
 
+    // for backwards-compatibility
     static int
     copyCount() 
-    { return itsCopyCount; }
+    { return gnu_copy_constructor::count(); }
 
+    // for backwards-compatibility
     static int
     dtorCount() 
-    { return itsDtorCount; }
+    { return gnu_destructor::count(); }
 
   private:
-    static int itsCopyCount;
-    static int itsDtorCount;
+    static int next_id_;
 };
+
+inline bool
+operator==(const gnu_copy_tracker& lhs, const gnu_copy_tracker& rhs)
+{ return lhs.id() == rhs.id(); }
 
 struct gnu_char
 {
