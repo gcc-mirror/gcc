@@ -1,12 +1,9 @@
 /* PR 5967, PR 7114 */
 /* { dg-do run } */
-/* { dg-require-profiling "" } */
+/* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
 /* { dg-options "-O2 -pg -static" { target hppa*-*-hpux* } } */
 /* { dg-error "profiler" "No profiler support" { target xstormy16-*-* } 0 } */
-/* Support for -pg on irix relies on gcrt1.o which doesn't exist yet.
-   See: http://gcc.gnu.org/ml/gcc/2002-10/msg00169.html */
-/* { dg-error "gcrt1.o" "Profiler support missing" { target mips*-*-irix* } 0 } */
 /* { dg-error "-pg not supported" "Profiler support missing" { target *-*-sco3.2v5* } 0 } */
 
 long foo (long x)
