@@ -1,5 +1,13 @@
 2003-12-15  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/basic_string.h: Change _*_references to _*_refcount.
+	* include/bits/locale_classes.h: Same.
+	* src/locale.cc: Same.
+	* src/locale_name.cc: Same.	
+	* src/locale_init.cc: Same.	
+	
+2003-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/12855	
 	* include/bits/ios_base.h (Init::_S_ios_base_init): Change to
 	_S_refcount, make atomic.
