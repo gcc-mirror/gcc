@@ -5,6 +5,18 @@ Tue Apr 28 09:23:10 1998  Craig Burley  <burley@gnu.org>
 	from EXT to FUNC, discard hook, since the decl, if any, is
 	probably wrong.
 
+Sun Apr 26 09:05:50 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_char_enhance_arg_): Wrap the upper bound
+	(the PARM_DECL specifying the length of the CHARACTER*(*)
+	dummy arg) in a variable_size invocation, to prevent
+	dwarf2out.c crashing when compiling code with -g.
+
+Sat Apr 18 05:03:21 1998  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_check_size_overflow_): Ignore overflow
+	as well if dummy argument.
+
 Tue Apr 14 14:40:40 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_start_progunit_): Mark function decl
