@@ -25,7 +25,7 @@
 # configure script.  Putting it in a separate shell file lets us skip
 # running autoconf when modifying target-specific information.
 
-# This file switches on the shell variable ${machine}, and also uses the
+# This file switches on the shell variable ${target}, and also uses the
 # following shell variables:
 #
 #  with_*		Various variables as set by configure.
@@ -47,7 +47,8 @@
 # This file sets the following shell variables for use by the
 # autoconf-generated configure script:
 #
-#  cpu_type		The name of the cpu, if different from machine.
+#  cpu_type		The name of the cpu, if different from the first
+#			chunk of the canonical target name.
 #
 #  tm_defines		List of target macros to define for all compilations.
 #
@@ -179,10 +180,10 @@ xm_file=
 md_file=
 
 # Obsolete configurations.
-case $machine in
+case ${target} in
  dummy)
     if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration $machine is obsolete." >&2
+      echo "*** Configuration ${target} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
       echo "*** Support will be REMOVED in the next major release of GCC," >&2
       echo "*** unless a maintainer comes forward." >&2
@@ -193,7 +194,7 @@ esac
 # Unsupported targets list.  Do not put an entry in this list unless
 # it would otherwise be caught by a more permissive pattern.  The list
 # should be in alphabetical order.
-case $machine in
+case ${target} in
    alpha*-*-linux*libc1*		\
  | i[34567]86-sequent-sysv		\
  | i[34567]86-sequent-sysv[123]*	\
@@ -212,7 +213,7 @@ case $machine in
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
  )
-	echo "*** Configuration $machine not supported" 1>&2
+	echo "*** Configuration ${target} not supported" 1>&2
 	exit 1
 	;;
 esac
@@ -221,8 +222,8 @@ esac
 # updated in each machine entry.  Also set default extra_headers for some
 # machines.
 tm_p_file=
-cpu_type=`echo $machine | sed 's/-.*$//'`
-case $machine in
+cpu_type=`echo ${target} | sed 's/-.*$//'`
+case ${target} in
 alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
@@ -310,23 +311,23 @@ then
 	extra_modes=${cpu_type}/${cpu_type}-modes.def
 fi
 
-case $machine in
+case ${target} in
 x86_64-*-*)
 	tm_file="i386/biarch64.h ${tm_file}"
 	;;
 esac
 
 # On a.out targets, we need to use collect2.
-case $machine in
+case ${target} in
 *-*-*aout*)
 	use_collect2=yes
 	;;
 esac
 
 # Common parts for widely ported systems.
-case $machine in
+case ${target} in
 *-*-linux*)
-	case $machine in
+	case ${target} in
 	 *-*-linux*libc1* | *-*-linux*aout*)
 		;;
 	*)
@@ -351,7 +352,7 @@ case $machine in
 	# These details are the same as for Linux.
 	# But here we need a little extra magic.
 	tmake_file="t-slibgcc-elf-ver t-linux t-gnu"
-	case $machine in
+	case ${target} in
 	alpha*)
 		tm_file="${cpu_type}/${cpu_type}.h alpha/elf.h alpha/linux.h alpha/linux-elf.h gnu.h ${tm_file}"
 		;;
@@ -377,7 +378,7 @@ case $machine in
 	# Allow them to be explicitly enabled on any other version.
 	case x${enable_threads} in
 	x)
-		case $machine in
+		case ${target} in
 		*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
 			thread_file='posix'
 			tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
@@ -393,7 +394,7 @@ case $machine in
 	# NetBSD 1.7 and later are set up to use GCC's crtstuff for
 	# ELF configurations.  We will clear extra_parts in the
 	# a.out configurations.
-	case $machine in
+	case ${target} in
 	*-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
 		;;
@@ -401,7 +402,7 @@ case $machine in
 
 	# NetBSD 2.0 and later provide __cxa_atexit(), which we use by
 	# default (unless overridden by --disable-__cxa_atexit).
-	case $machine in
+	case ${target} in
 	*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
 		default_use_cxa_atexit=yes
 		;;
@@ -436,7 +437,7 @@ case $machine in
 	gas=yes
 	gnu_ld=yes
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	case $machine in
+	case ${target} in
 	*-*-freebsd3 | *-*-freebsd[3].*) fbsd_tm_file="freebsd3.h";;
 	*-*-freebsd4 | *-*-freebsd[4].*) fbsd_tm_file="freebsd4.h";;
 	*-*-freebsd5 | *-*-freebsd[5].*) fbsd_tm_file="freebsd5.h";;
@@ -451,7 +452,7 @@ case $machine in
 		tmake_file="${tmake_file} t-freebsd-thread"
 		# Before 5.0, FreeBSD can't bind shared libraries to -lc
 		# when "optionally" threaded via weak pthread_* checks.
-		case $machine in
+		case ${target} in
 		*-*-freebsd[34] | *-*-freebsd[34].*)
 			tmake_file="${tmake_file} t-slibgcc-nolc-override";;
 		esac
@@ -484,10 +485,10 @@ case $machine in
 	;;
 esac
 
-case $machine in
+case ${target} in
 # Support site-specific machine types.
 *local*)
-	rest=`echo $machine | sed -e "s/$cpu_type-//"`
+	rest=`echo ${target} | sed -e "s/$cpu_type-//"`
 	tm_file=${cpu_type}/$rest.h
 	if test -f $srcdir/config/${cpu_type}/xm-$rest.h
 	then xm_file=${cpu_type}/xm-$rest.h
@@ -548,10 +549,10 @@ alpha*-dec-osf[45]*)
 	tmake_file="alpha/t-alpha alpha/t-ieee alpha/t-crtfm alpha/t-osf4"
 	tm_file="${tm_file} alpha/osf.h"
 	extra_headers=va_list.h
-	case $machine in
+	case ${target} in
 	  *-*-osf4*)
 	    # Set target_cpu_default except on 4.0a.
-	    case $machine in
+	    case ${target} in
 		*-*-osf4.0a) ;;
 		*) target_cpu_default=MASK_SUPPORT_ARCH
 	    esac
@@ -1115,7 +1116,7 @@ i[34567]86-*-mingw32*)
 	if test x$enable_threads = xyes; then
 		thread_file='win32'
 	fi
-	case $machine in
+	case ${target} in
 		*mingw32crt*)
 			tm_file="${tm_file} i386/crtdll.h"
 			;;
@@ -1306,7 +1307,7 @@ m68020-*-elf* | m68k-*-elf*)
 	;;
 m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
-	case $machine in
+	case ${target} in
 	m68010*)
 		target_cpu_default="0"
 		;;
@@ -1461,7 +1462,7 @@ mips64*-*-linux*)
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h"
-	case $machine in
+	case ${target} in
         mipsisa32*-*)
                 target_cpu_default="MASK_SOFT_FLOAT"
 		tm_defines="MIPS_ISA_DEFAULT=32"
@@ -1474,7 +1475,7 @@ mips*-*-openbsd*)
 	tm_defines="OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_OBJECT OBSD_HAS_CORRECT_SPECS"
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="mips/mips.h openbsd.h mips/openbsd.h mips/sdb.h"
-	case $machine in
+	case ${target} in
 	mips*el-*-openbsd*) 
 	    tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=0";;
 	*)  tm_defines="${tm_defines} TARGET_ENDIAN_DEFAULT=MASK_BIG_ENDIAN";;
@@ -1554,7 +1555,7 @@ mn10300-*-*)
 	use_collect2=no
 	;;
 ns32k-*-netbsdelf*)
-	echo "GCC does not yet support the ${machine} target"; exit 1
+	echo "GCC does not yet support the ${target} target"; exit 1
 	;;
 ns32k-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
@@ -1766,14 +1767,14 @@ s390x-*-linux*)
 	;;
 sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	tmake_file="sh/t-sh sh/t-elf"
-	case $machine in
+	case ${target} in
 	shl* | sh64l*)
 		tm_file="sh/little.h ${tm_file}"
 		tmake_file="${tmake_file} sh/t-le"
 		;;
 	esac
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h"
-	case $machine in
+	case ${target} in
 	sh64*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
@@ -1786,10 +1787,10 @@ sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	sh2e*) target_cpu_default="SELECT_SH2E" ;;
 	sh2*)  target_cpu_default="SELECT_SH2" ;;
 	esac
-	case $machine in
+	case ${target} in
 	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
 	esac
-	case $machine in
+	case ${target} in
 	sh*-*-kaos*) tm_file="${tm_file} kaos.h sh/kaos-sh.h" ;;
 	esac
 	;;
@@ -1811,7 +1812,7 @@ sh-*-rtems*)
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
 	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
-	case $machine in
+	case ${target} in
 	sh*be-*-* | sh*eb-*-*) ;;
 	*)
 		tm_file="sh/little.h ${tm_file}"
@@ -1820,7 +1821,7 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 	esac
 	tmake_file="${tmake_file} sh/t-linux"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
-	case $machine in
+	case ${target} in
 	sh64*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
@@ -1837,7 +1838,7 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 	sh2e*) target_cpu_default="SELECT_SH2E" ;;
 	sh2*) target_cpu_default="SELECT_SH2" ;;
 	esac
-	case $machine in
+	case ${target} in
 	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
 	esac
 	use_fixproto=no
@@ -1846,7 +1847,7 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
   sh64-*-netbsd* | sh64l*-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h netbsd.h netbsd-elf.h sh/netbsd-elf.h"
 	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
-	case $machine in
+	case ${target} in
 	sh*l*-*)
 		tm_file="sh/little.h ${tm_file}"
 		tmake_file="${tmake_file} sh/t-le"
@@ -1855,7 +1856,7 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 		tmake_file="${tmake_file} sh/t-be"
 		;;
 	esac
-	case $machine in
+	case ${target} in
 	sh5*-*)
 		# SHmedia, 32-bit ABI
 		target_cpu_default="SH5_BIT|SH4_BIT|SH3_BIT|SH_E_BIT"
@@ -1956,7 +1957,7 @@ sparc-*-solaris2*)
 	else
 		tmake_file="$tmake_file t-slibgcc-sld"
 	fi
-	case $machine in
+	case ${target} in
 	*-*-solaris2.[0-6] | *-*-solaris2.[0-6].*)
 		if test x$gnu_ld = xno; then
 			tm_file="${tm_file} sparc/sol26-sld.h"
@@ -2125,7 +2126,7 @@ vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
 	;;
 vax-*-vms*)			# VAXen running VMS
-	echo "Configuration $machine no longer supported" 1>&2
+	echo "Configuration ${target} no longer supported" 1>&2
 	exit 1
 	;;
 vax-*-*)			# VAX default entry
@@ -2175,7 +2176,7 @@ am33_2.0-*-linux*)
 	use_fixproto=no
 	;;
 *)
-	echo "*** Configuration $machine not supported" 1>&2
+	echo "*** Configuration ${target} not supported" 1>&2
 	exit 1
 	;;
 esac
@@ -2189,11 +2190,11 @@ esac
 		;;
 	esac
 
-	# If there is no $with_cpu option, try to infer one from ${machine}.
+	# If there is no $with_cpu option, try to infer one from ${target}.
 	# This block sets nothing except for with_cpu.
 	if test x$with_cpu = x
 	then
-		case $machine in
+		case ${target} in
 		ep9312-*-*)
 			# A Cirrus ARM variant.
 			with_cpu="ep9312"
@@ -2249,7 +2250,7 @@ esac
 			with_cpu=k8
 			;;
 		alpha*-*-*)
-			case $machine in
+			case ${target} in
 			alphaev6[78]*)
 				with_cpu=ev67
 				;;
@@ -2268,7 +2269,7 @@ esac
 			esac
 			;;
 		sparc*-*-*)
-			with_cpu="`echo $machine | sed 's/-.*$//'`"
+			with_cpu="`echo ${target} | sed 's/-.*$//'`"
 			if [ x$with_cpu = xsparc64 ]; then
 				with_cpu=v9
 			fi
@@ -2278,7 +2279,7 @@ esac
 
 	# Similarly for --with-schedule.
 	if test x$with_schedule = x; then
-		case $machine in
+		case ${target} in
 		hppa1* | parisc1*)
 			# Override default PA8000 scheduling model.
 			with_schedule=7100LC
@@ -2293,7 +2294,7 @@ esac
 	# supported_defaults.
 
 	supported_defaults=
-	case "$machine" in
+	case "${target}" in
 	alpha*-*-*)
 		supported_defaults="cpu tune"
 		for which in cpu tune; do
@@ -2540,7 +2541,7 @@ esac
 
 	# Set some miscellaneous flags for particular targets.
 	target_cpu_default2=
-	case $machine in
+	case ${target} in
 	alpha*-*-*)
 		if test x$gas = xyes
 		then
@@ -2569,7 +2570,7 @@ esac
 		;;
 
 	mips*-*-*)
-		case $machine in
+		case ${target} in
 		mips*-*-ecoff* | mips*-*-elf*)
 			if test x$gas = xyes
 			then
@@ -2588,7 +2589,7 @@ esac
 			fi
 			;;
 		esac
-		case $machine in
+		case ${target} in
 			mips*el-*-*)
 				tm_defines="TARGET_ENDIAN_DEFAULT=0 $tm_defines"
 				;;
