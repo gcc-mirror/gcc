@@ -421,13 +421,19 @@ fix = {
      *  match '#endif / * foo * /', but it also wont match
      *  '#endif / done' either.
      *
+     *  We have a second regexp in the selector to detect
+     *  #endif followed by a / followed by anything other
+     *  than a *.  For example "#endif / * foo * /" or 
+     *  "#endif /% blah %/ which appear on OSF4.0A and AIX4.2
+     *  repsectively.
+     * 
      *  We use the pattern [!-.0-z{|}~] instead of [^/ \t] to match a noncomment
      *  following #else or #endif because some buggy egreps think [^/] matches
      *  newline, and they thus think `#else ' matches
      *  `#e[ndiflse]*[ \t]+[^/ \t]'.
      *  [!-.0-~] does not work properly on AIX 4.1.
      */
-    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z\{\|\}\~]";
+    select   = "^[ \t]*#[ \t]*endif[ \t]+[!-.0-z\{\|\}\~]|^[ \t]*#[ \t]*endif[ \t]+/[^\*]";
 
     /*
      *  First, join the continued input lines.
