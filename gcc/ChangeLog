@@ -1,3 +1,20 @@
+Mon Mar 26 14:35:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (struct machine_function): Add save_varrargs_registers.
+	(ix86_save_varrargs_registers): New macro.
+	(ix86_frame_layout): Support 64bit; support red zones and varrargs area.
+	(ix86_expand_prologue): Likewise.
+	(ix86_emit_epilogue_esp_adjustement): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	* i386.md (pro_epilogue_adjust_stack): Turn to expander; support 64bit.
+	(pro_epilogue_adjust_stack_1): New insn.
+	(pro_epilogue_adjust_stack_rex64): Likewise.
+	* i386.h (MASK_NO_RED_ZONE): New constant.
+	(TARGET_RED_ZONE): New macro.
+	(TARGET_OPTIONS): Add "red-zone" and "no-red-zone"
+	(RED_ZONE_SIZE): New constant.
+	(RED_ZONE_RESERVE): New constant.
+
 2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (set_float_handler): Use memcpy, not bcopy.
