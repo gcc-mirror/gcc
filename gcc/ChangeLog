@@ -1,3 +1,8 @@
+2004-01-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.h (REG_ALLOC_ORDER): Reorder fp regs after
+	integer regs of the same call-savedness.
+
 2004-01-15  Andreas Schwab  <schwab@suse.de>
 
 	PR bootstrap/13562
