@@ -6152,29 +6152,15 @@ basereg_operand (op, mode)
   if (TARGET_NO_SPACE_REGS)
     return (GET_CODE (op) == REG);
 
-  /* Once reload has started any register with REG_POINTER set
-     is considered valid.  Reload should only create indexed addresses
-     using the stack/frame pointer.  All others are checked for
-     validity when they are created by the combine pass.  */
-  if (reload_in_progress || reload_completed)
-    return (GET_CODE (op) == REG && REG_POINTER (op));
-
-  /* Stack is always OK for indexing.  */
-  if (op == stack_pointer_rtx)
-    return 1;
-
   /* While it's always safe to index off the frame pointer, it's not
      always profitable, particularly when the frame pointer is being
      eliminated.  */
   if (! flag_omit_frame_pointer && op == frame_pointer_rtx)
     return 1;
 
-  /* The only other valid OPs are pseudo registers with
-     REG_POINTER set.  */
   return (GET_CODE (op) == REG
-          && REGNO (op) >= FIRST_PSEUDO_REGISTER
-          && register_operand (op, mode)
-          && REG_POINTER (op));
+          && REG_POINTER (op)
+          && register_operand (op, mode));
 }
 
 /* Return 1 if this operand is anything other than a hard register.  */
