@@ -1,3 +1,35 @@
+Thu Jun 22 01:50:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (start_function): For pre-parsed functions, layout all of
+	the parm decls again.
+	(grokvardecl): TREE_PUBLIC depends on DECL_THIS_EXTERN, not
+	DECL_EXTERNAL.
+
+Mon Jun 19 10:28:14 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (finish_function): Clear current_class_decl.
+
+	* typeck.c (build_conditional_expr): Use convert (boolean_type_node
+	instead of truthvalue_conversion.
+
+	* class.c (finish_struct): A data member with the same name as the
+	class doesn't suppress constructors.
+
+Fri Jun 16 18:11:39 1995  Gerald Baumgartner  (gb@alexander.cs.purdue.edu)
+
+	* decl.c (start_function): If current_class_decl is a signature
+	pointer, don't dereference it but set C_C_D to current_class_decl.
+
+Fri Jun 16 17:06:28 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (duplicate_decls): Complain about virtual functions
+	redeclared to be inline.
+
+Fri Jun 16 13:20:38 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (get_unique_name): New routine to name unnamed namespaces.
+	(push_namespace): Use get_unique_name for naming unnamed namespaces.
+
 Fri Jun 16 15:07:29 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* Make-lang.in (DEMANGLER_PROG): Add LIBS.
@@ -5,6 +37,50 @@ Fri Jun 16 15:07:29 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 Thu Jun 15 15:00:41 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* decl.c (define_function): Don't set DECL_INTERFACE_KNOWN.
+
+	* parse.y: Call cplus_decl_attributes with prefix_attributes where
+        appropriate.
+
+Wed Jun 14 19:24:49 1995  Mike Stump  <mrs@cygnus.com>
+
+	* search.c (get_vbase): New routine to switch hierarchies from the
+	CLASSTYPE_VBASECLASSES to the normal one.
+	(expand_indirect_vtbls_init): Use get_vbase to figure out how we
+	want to convert to a vbase pointer.
+
+Mon Jun 12 17:50:30 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* pt.c (instantiate_class_template): Add the new instantiation to
+        template_classes.
+	(do_pending_expansions): Call instantiate_member_templates on all of
+	the classes in template_classes.
+
+Mon Jun 12 12:36:59 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (complete_array_type): Fill in the TYPE_DOMAIN of our
+	TYPE_MAIN_VARIANT if it is not filled in.
+	* init.c (build_delete): If the TYPE_DOMAIN is not set, give an
+	error instead of core dumping.
+
+Mon Jun 12 10:41:40 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (can_convert): Also check for distance > 0.
+	(can_convert_arg): Ditto.
+	(user_harshness): Ditto.
+
+Fri Jun  9 19:17:21 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* g++.c (MATH_LIBRARY): Provide default.
+	(main): Always link with the math library if we link with libstdc++.
+
+	* decl.c (start_function): Complain about redefinition of a function
+	even when the pending_inline version is compiled after the other
+	version.
+
+Thu Jun  8 15:44:38 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* gc.c (build_dynamic_cast): Build up a reference to a parameter of
+	aggregate type.
 
 Wed Jun  7 20:00:31 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -23,10 +99,114 @@ Wed Jun  7 19:02:50 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 	(push_cp_function_context): Save C_C_D.
 	(pop_cp_function_context): Restore C_C_D.
 
+Wed Jun  7 15:31:57 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* init.c (build_vec_delete): Resolve an offset ref before we try to
+	use it.
+
+Wed Jun  7 14:19:32 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_modify_expr): If the class lacks a constructor or
+	assignment operator, return error_mark_node.
+	(common_type): Use build_cplus_array_type.
+
+Tue Jun  6 09:41:27 1995  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (dont_allow_type_definitions): New variable set when types
+	cannot be defined.
+	(finish_struct): Use it.
+	* cp-tree.h (dont_allow_type_definitions): Define it.
+	* parse.y (primary, handler_seq): Set it.
+
+Mon Jun  5 18:49:38 1995  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (build_opfncall): Use DECL_CHAIN, not TREE_CHAIN for
+	results from lookup_fnfields.  Always give warning/error on bad
+	code.
+
+Mon Jun  5 11:39:37 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* init.c (member_init_ok_or_else): Don't allow initialization of
+	an ancestor's member from within a constructor.
+
+Mon Jun  5 11:20:34 1995  Gerald Baumgartner  (gb@alexander.cs.purdue.edu)
+
+	* sig.c (build_signature_table_constructor): Use DECL_CONTEXT
+	instead of DECL_CLASS_CONTEXT for calculating the vfield offset so
+	abstract virtual functions are handled correctly.
+
+	* sig.c (build_signature_table_constructor): Store the correct
+	delta in signature table entries.  It does not yet work for
+	classes with virtual base classes as implementations of signatures.
+	(build_signature_method_call): Add the delta to the object_ptr
+	before generating the function call.
+
+	* call.c (build_method_call): Make instance_ptr the signature
+	pointer itself instead of dereferencing the optr.
+	* sig.c (build_signature_method_call): Dereference the optr for the
+	direct and virtual calls.
+
+	* sig.c (build_signature_table_constructor): Make the tag for
+	default implementations -1 instead of 2.
+	(build_signature_method_call): Change the generated conditional
+	expression correspondingly.
+
+	* sig.c (build_signature_pointer_constructor): Deleted the sorry
+	message that said we can't handle multiple inheritance for
+	implementations of signatures
+	(build_signature_method_call): Use the offset from the sigtable
+	entry instead of the vptr field from the signature pointer for
+	building a virtual function call.
+
+	* class.c (build_vfn_ref): Deleted signature specific code, we don't
+	call this function anymore from build_signature_method_call.
+
+	* cp-tree.h (SIGNATURE_VPTR_NAME): Deleted.  We use the right vptr
+	field in the object now instead of in the signature pointer/ref. 
+	(build_vptr_ref): Deleted extern declaration.
+	* sig.c (build_vptr_ref): Deleted.
+	(build_signature_pointer_or_reference_type): Deleted construction of
+	the vptr field.
+	(build_signature_pointer_constructor): Deleted initialization of/
+	assignment to the vptr field.
+
+	* sig.c (build_signature_table_constructor): Convert the signature
+	table entry fields to their correct types.
+
+	* sig.c (build_signature_table_constructor): Don't call digest_init
+	for the fields of a sigtable entry, it's wasted time.
+
+	* sig.c (build_signature_table_constructor): Correctly set the
+	offset and index fields of a sigtable entry.  Build the constructor
+	the way digest_init does, digest_init can't handle initializing an
+	anonymous union inside a struct.
+	(build_signature_method_call): Use the index field instead of the
+	delta field to get the vtable index.
+
+	* decl.c (init_decl_processing): Fix number of fields for building
+	sigtable_entry_type.
+
+	* cp-tree.h (tag_identifier, offset_identifier): Added extern decls.
+	(SIGTABLE_CODE_NAME): Renamed to SIGTABLE_TAG_NAME.
+	(SIGTABLE_PFN_NAME): Deleted, we'll use VTABLE_PFN_NAME instead.
+	* decl.c (tag_identifier, offset_identifier): New variables to
+	hold the identifiers for the sigtable fields tag and offset.
+	(init_decl_processing): Initialize these variables.
+	(init_decl_processing): Use these variables to build the
+	sigtable_entry_type structure.  Rename the code and offset fields
+	to tag and delta, respectively; add offset and index fields. Changed
+	types of fields from short_integer_type_node to delta_type_node.
+	* sig.c (build_signature_table_constructor): Rename code and offset
+	to tag and delta, respectively.
+	(build_signature_method_call): Ditto.  Use above variables.
+
 Fri Jun  2 11:05:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
-	* decl.c (set_C_C_D): New function.
-	(pop_from_top_level, start_function, pop_cp_function_context): Call it.
+	* decl.c (set_C_C_D): New function.  suspend_momentary before
+	building C_C_D.
+	(pop_from_top_level): Call it.
+	(start_function): Ditto.
+	(pop_cp_function_context): Ditto.
 
 	* class.c, cp-tree.h, decl.c, decl2.c, parse.y: Lose all references
 	to current_vtable_decl, CLASSTYPE_INST_VAR and CLASSTYPE_VTBL_PTR.
@@ -42,6 +222,37 @@ Fri Jun  2 11:05:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 on May 29 12:45:10 1995  Paul Eggert  <eggert@twinsun.com>
 
 	* Make-lang.in (c++.mostlyclean): Remove $(DEMANGLER_PROG).
+
+Thu Jun  1 17:03:51 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (lookup_name_real): Don't try to look anything up in an
+	erroneous object.
+
+Fri Jun  2 10:30:14 1995  Mike Stump  <mrs@cygnus.com>
+
+	* method.c (build_overload_int): New routine.  Break out
+	functionality from build_overload_value so we can reuse it.
+	(build_overload_value): Handle pointer to member functions as value
+	parameters for templates.
+	(build_overload_identifier): Since template parameters are shared
+	among all instantiations, we have to substitute in the real types
+	in TREE_TYPE (parm).
+	pt.c (coerce_template_parms): Ditto.
+	(push_template_decls): Ditto.
+	(grok_template_type): Deleted as template parameters are shared
+	among all instantiations.
+
+Wed May 31 19:10:32 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (grokdeclarator): Always give errors on constant overflow
+	for array indices.
+
+Wed May 31 11:39:43 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (commonparms): Don't abort if simple_cst_equal returns < 0.
+	(build_c_cast): Don't tack on a NON_LVALUE_EXPR when casting to
+	reference type.
+	(build_indirect_ref): Fix check for *&.
 
 Wed May 24 15:55:18 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -105,14 +316,13 @@ Wed May 17 16:57:53 1995  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (convert_to_reference): Only complain, if complaints are
 	wanted.
-	typeck.c (build_function_call_real): Ditto.  If LOOKUP_SPECULATIVELY
+	* typeck.c (build_function_call_real): Ditto.  If LOOKUP_SPECULATIVELY
 	is set and something won't work, return NULL_TREE.
-	cvt.c (cp_convert): Ditto.  Pass flags down to build_method_call.
+	* cvt.c (cp_convert): Ditto.  Pass flags down to build_method_call.
 	(convert): Pass LOOKUP_NORMAL to cp_convert.
-	typeck.c (convert_for_assignment): Ditto.
+	* typeck.c (convert_for_assignment): Ditto.
 	(convert_force): Pass LOOKUP_COMPLAIN to cp_convert.
-	typeck.c (convert_arguments): Get out early if we get an
-	error_mark_node.
+	(convert_arguments): Get out early if we get an error_mark_node.
 	(convert_for_initialization): Use cp_convert instead of convert so
 	that we can pass flags down.
 	* cp-tree.h (LOOKUP_SPECULATIVELY): Added documentation.
