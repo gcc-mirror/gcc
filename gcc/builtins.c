@@ -871,8 +871,6 @@ expand_builtin_apply (function, arguments, argsize)
   /* Create a block where the return registers can be saved.  */
   result = assign_stack_local (BLKmode, apply_result_size (), -1);
 
-  /* ??? The argsize value should be adjusted here.  */
-
   /* Fetch the arg pointer from the ARGUMENTS block.  */
   incoming_args = gen_reg_rtx (Pmode);
   emit_move_insn (incoming_args,
@@ -901,7 +899,7 @@ expand_builtin_apply (function, arguments, argsize)
      haven't figured out how the calling convention macros effect this,
      but it's likely that the source and/or destination addresses in
      the block copy will need updating in machine specific ways.  */
-  dest = allocate_dynamic_stack_space (argsize, 0, 0);
+  dest = allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT);
   emit_block_move (gen_rtx_MEM (BLKmode, dest),
 		   gen_rtx_MEM (BLKmode, incoming_args),
 		   argsize, PARM_BOUNDARY);

@@ -852,6 +852,11 @@ adjust_stack (adjust)
   if (adjust == const0_rtx)
     return;
 
+  /* We expect all variable sized adjustments to be multiple of
+     PREFERRED_STACK_BOUNDARY.  */
+  if (GET_CODE (adjust) == CONST_INT)
+    stack_pointer_delta -= INTVAL (adjust);
+
   temp = expand_binop (Pmode,
 #ifdef STACK_GROWS_DOWNWARD
 		       add_optab,
@@ -877,6 +882,11 @@ anti_adjust_stack (adjust)
 
   if (adjust == const0_rtx)
     return;
+
+  /* We expect all variable sized adjustments to be multiple of
+     PREFERRED_STACK_BOUNDARY.  */
+  if (GET_CODE (adjust) == CONST_INT)
+    stack_pointer_delta += INTVAL (adjust);
 
   temp = expand_binop (Pmode,
 #ifdef STACK_GROWS_DOWNWARD
@@ -1294,6 +1304,13 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif
 
   do_pending_stack_adjust ();
+
+ /* We ought to be called always on the toplevel and stack ought to be aligned
+    propertly.  */
+#ifdef PREFERRED_STACK_BOUNDARY
+  if (stack_pointer_delta % (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT))
+    abort ();
+#endif
 
   /* If needed, check that we have the required amount of stack.  Take into
      account what has already been checked.  */
