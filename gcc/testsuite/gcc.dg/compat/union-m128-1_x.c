@@ -23,4 +23,7 @@ union_m128_1_x ()
   foo(un);
   foo(st);
 }
+#else
+int dummy_x;
 #endif
+

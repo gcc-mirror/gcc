@@ -1,3 +1,10 @@
+2004-06-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/compat/struct-complex-1_x.c: Add dummy symbol.
+	* gcc.dg/compat/struct-complex-1_y.c: Likewise.
+	* gcc.dg/compat/union-m128-1_x.c: Likewise.
+	* gcc.dg/compat/union-m128-1_y.c: Likewise.
+
 2004-06-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.dg/expr/enum1.C, g++.dg/opt/const3.C: Declare abort with
