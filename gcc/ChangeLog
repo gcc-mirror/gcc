@@ -1,3 +1,7 @@
+Mon May 11 17:26:06 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* dwarf2out.c: Undo most recent change.
+
 Sun May 10 17:09:20 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold_range_test, fold): If need to make SAVE_EXPR
