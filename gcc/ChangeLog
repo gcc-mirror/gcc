@@ -1,3 +1,15 @@
+2003-07-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c: Search-and-replace change 'binding level' to
+	'scope' in commentary.
+	(struct binding_level): Now struct c_scope.
+	(current_binding_level): Now current_scope.
+	(free_binding_level): Now scope_freelist.
+	(current_function_level): Now current_function_scope.
+	(global_binding_level): Now global_scope.
+	(make_binding_level): Now make_scope.
+	(pop_binding_level): Now pop_scope.
+
 2003-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (libgcc_visibility): Add missing whitespace.
@@ -6,7 +18,7 @@
 
 	* libgcc-std.ver (GCC_3.3.1): Export __gcc_personality_sj0,
 	__gcc_personality_v0.
-	
+
 2003-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Makefile.in: Replace pwd by ${PWD_COMMAND}.
