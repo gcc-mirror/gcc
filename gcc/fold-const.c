@@ -8895,26 +8895,65 @@ tree_expr_nonnegative_p (tree t)
 #define CASE_BUILTIN_I(BUILT_IN_FN) \
   case BUILT_IN_FN: case BUILT_IN_FN##L: case BUILT_IN_FN##LL:
 
+	    CASE_BUILTIN_F (BUILT_IN_ACOS)
+	    CASE_BUILTIN_F (BUILT_IN_ACOSH)
 	    CASE_BUILTIN_F (BUILT_IN_CABS)
+	    CASE_BUILTIN_F (BUILT_IN_COSH)
+	    CASE_BUILTIN_F (BUILT_IN_ERFC)
 	    CASE_BUILTIN_F (BUILT_IN_EXP)
 	    CASE_BUILTIN_F (BUILT_IN_EXP10)
 	    CASE_BUILTIN_F (BUILT_IN_EXP2)
 	    CASE_BUILTIN_F (BUILT_IN_FABS)
+	    CASE_BUILTIN_F (BUILT_IN_FDIM)
+	    CASE_BUILTIN_F (BUILT_IN_FREXP)
+	    CASE_BUILTIN_F (BUILT_IN_HYPOT)
 	    CASE_BUILTIN_F (BUILT_IN_POW10)
 	    CASE_BUILTIN_F (BUILT_IN_SQRT)
 	    CASE_BUILTIN_I (BUILT_IN_FFS)
 	    CASE_BUILTIN_I (BUILT_IN_PARITY)
 	    CASE_BUILTIN_I (BUILT_IN_POPCOUNT)
+	      /* Always true.  */
 	      return 1;
 
+	    CASE_BUILTIN_F (BUILT_IN_ASINH)
 	    CASE_BUILTIN_F (BUILT_IN_ATAN)
+	    CASE_BUILTIN_F (BUILT_IN_ATANH)
+	    CASE_BUILTIN_F (BUILT_IN_CBRT)
 	    CASE_BUILTIN_F (BUILT_IN_CEIL)
+	    CASE_BUILTIN_F (BUILT_IN_ERF)
+	    CASE_BUILTIN_F (BUILT_IN_EXPM1)
 	    CASE_BUILTIN_F (BUILT_IN_FLOOR)
+	    CASE_BUILTIN_F (BUILT_IN_FMOD)
+	    CASE_BUILTIN_F (BUILT_IN_LDEXP)
+	    CASE_BUILTIN_F (BUILT_IN_LLRINT)
+	    CASE_BUILTIN_F (BUILT_IN_LLROUND)
+	    CASE_BUILTIN_F (BUILT_IN_LRINT)
+	    CASE_BUILTIN_F (BUILT_IN_LROUND)
+	    CASE_BUILTIN_F (BUILT_IN_MODF)
 	    CASE_BUILTIN_F (BUILT_IN_NEARBYINT)
 	    CASE_BUILTIN_F (BUILT_IN_POW)
+	    CASE_BUILTIN_F (BUILT_IN_RINT)
 	    CASE_BUILTIN_F (BUILT_IN_ROUND)
+	    CASE_BUILTIN_F (BUILT_IN_SIGNBIT)
+	    CASE_BUILTIN_F (BUILT_IN_SINH)
+	    CASE_BUILTIN_F (BUILT_IN_TANH)
 	    CASE_BUILTIN_F (BUILT_IN_TRUNC)
+	      /* True if the 1st argument is nonnegative.  */
 	      return tree_expr_nonnegative_p (TREE_VALUE (arglist));
+
+	    CASE_BUILTIN_F(BUILT_IN_FMAX)
+	      /* True if the 1st OR 2nd arguments are nonnegative.  */
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
+	        || tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
+
+	    CASE_BUILTIN_F(BUILT_IN_FMIN)
+	      /* True if the 1st AND 2nd arguments are nonnegative.  */
+	      return tree_expr_nonnegative_p (TREE_VALUE (arglist))
+	        && tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
+
+	    CASE_BUILTIN_F(BUILT_IN_COPYSIGN)
+	      /* True if the 2nd argument is nonnegative.  */
+	      return tree_expr_nonnegative_p (TREE_VALUE (TREE_CHAIN (arglist)));
 
 	    default:
 	      break;
