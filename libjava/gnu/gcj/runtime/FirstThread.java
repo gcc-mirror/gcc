@@ -89,8 +89,10 @@ final class FirstThread extends Thread
   // classes are linked in.  Otherwise bootstrapping fails.  These
   // classes are only referred to via Class.forName(), so we add an
   // explicit mention of them here.
-  static final Class Kcert = java.security.cert.Certificate.class;
-  static final Class Kfile = gnu.java.net.protocol.file.Handler.class;
-  static final Class Khttp = gnu.java.net.protocol.http.Handler.class;
-  static final Class Kjar  = gnu.java.net.protocol.jar.Handler.class;
+  static final Class Kcert     = java.security.cert.Certificate.class;
+  static final Class Kfile     = gnu.java.net.protocol.file.Handler.class;
+  static final Class Khttp     = gnu.java.net.protocol.http.Handler.class;
+  static final Class Kjar      = gnu.java.net.protocol.jar.Handler.class;
+  static final Class Klocale   = gnu.java.locale.LocaleInformation.class;
+  static final Class Kcalendar = gnu.java.locale.Calendar.class;
 }
