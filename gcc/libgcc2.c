@@ -40,6 +40,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef abort
 #endif
 
+/* Permit the tm.h file to select the endianness to use just for this
+   file.  This is used when the endianness is determined when the
+   compiler is run.  */
+
+#ifndef LIBGCC2_WORDS_BIG_ENDIAN
+#define LIBGCC2_WORDS_BIG_ENDIAN WORDS_BIG_ENDIAN
+#endif
+
 /* In the first part of this file, we are interfacing to calls generated
    by the compiler itself.  These calls pass values into these routines
    which have very specific modes (rather than very specific types), and
@@ -90,9 +98,9 @@ typedef int word_type __attribute__ ((mode (DI)));
 #define SI_TYPE_SIZE (sizeof (SItype) * BITS_PER_UNIT)
 
 /* DIstructs are pairs of SItype values in the order determined by
-   WORDS_BIG_ENDIAN.  */
+   LIBGCC2_WORDS_BIG_ENDIAN.  */
 
-#if WORDS_BIG_ENDIAN
+#if LIBGCC2_WORDS_BIG_ENDIAN
   struct DIstruct {SItype high, low;};
 #else
   struct DIstruct {SItype low, high;};

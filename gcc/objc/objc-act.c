@@ -2462,11 +2462,9 @@ forwarding_offset (parm)
       with the variable's declared type, and adjust the address
       if the least significant bytes (which we are using) are not
       the first ones.  */
-#if BYTES_BIG_ENDIAN
-  if (TREE_TYPE (parm) != DECL_ARG_TYPE (parm))
+  if (BYTES_BIG_ENDIAN && TREE_TYPE (parm) != DECL_ARG_TYPE (parm))
     offset_in_bytes += (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parm)))
 			- GET_MODE_SIZE (GET_MODE (DECL_RTL (parm))));
-#endif
 
   return offset_in_bytes;
 }

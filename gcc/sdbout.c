@@ -1252,12 +1252,12 @@ sdbout_parms (parms)
 		   the parm with the variable's declared type, and adjust
 		   the address if the least significant bytes (which we are
 		   using) are not the first ones.  */
-#if BYTES_BIG_ENDIAN
-		if (TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
+		if (BYTES_BIG_ENDIAN
+		    && TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
 		  current_sym_value +=
 		    (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parms)))
 		     - GET_MODE_SIZE (GET_MODE (DECL_RTL (parms))));
-#endif
+
 		if (GET_CODE (DECL_RTL (parms)) == MEM
 		    && GET_CODE (XEXP (DECL_RTL (parms), 0)) == PLUS
 		    && (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 1))
@@ -1374,11 +1374,11 @@ sdbout_reg_parms (parms)
 	    /* A parm declared char is really passed as an int,
 	       so it occupies the least significant bytes.
 	       On a big-endian machine those are not the low-numbered ones.  */
-#if BYTES_BIG_ENDIAN
-	    if (offset != -1 && TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
+	    if (BYTES_BIG_ENDIAN
+		&& offset != -1
+		&& TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
 	      offset += (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parms)))
 			 - GET_MODE_SIZE (GET_MODE (DECL_RTL (parms))));
-#endif
 	    if (INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1)) != offset) {...}
 #endif
 	      {

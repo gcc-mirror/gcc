@@ -682,10 +682,8 @@ assign_stack_local (mode, size, align)
 
   /* On a big-endian machine, if we are allocating more space than we will use,
      use the least significant bytes of those that are allocated.  */
-#if BYTES_BIG_ENDIAN
-  if (mode != BLKmode)
+  if (BYTES_BIG_ENDIAN && mode != BLKmode)
     bigend_correction = size - GET_MODE_SIZE (mode);
-#endif
 
 #ifdef FRAME_GROWS_DOWNWARD
   frame_offset -= size;
@@ -755,10 +753,8 @@ assign_outer_stack_local (mode, size, align, function)
 
   /* On a big-endian machine, if we are allocating more space than we will use,
      use the least significant bytes of those that are allocated.  */
-#if BYTES_BIG_ENDIAN
-  if (mode != BLKmode)
+  if (BYTES_BIG_ENDIAN && mode != BLKmode)
     bigend_correction = size - GET_MODE_SIZE (mode);
-#endif
 
 #ifdef FRAME_GROWS_DOWNWARD
   function->frame_offset -= size;
@@ -1703,10 +1699,9 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 		  /* If the bytes and bits are counted differently, we
 		     must adjust the offset.  */
-#if BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
-		  offset = (GET_MODE_SIZE (is_mode)
-			    - GET_MODE_SIZE (wanted_mode) - offset);
-#endif
+		  if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN)
+		    offset = (GET_MODE_SIZE (is_mode)
+			      - GET_MODE_SIZE (wanted_mode) - offset);
 
 		  pos %= GET_MODE_BITSIZE (wanted_mode);
 
@@ -1876,10 +1871,9 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    rtx old_pos = XEXP (outerdest, 2);
 		    rtx newmem;
 
-#if BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
-		    offset = (GET_MODE_SIZE (is_mode)
-			      - GET_MODE_SIZE (wanted_mode) - offset);
-#endif
+		    if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN)
+		      offset = (GET_MODE_SIZE (is_mode)
+				- GET_MODE_SIZE (wanted_mode) - offset);
 
 		    pos %= GET_MODE_BITSIZE (wanted_mode);
 
@@ -2088,10 +2082,9 @@ fixup_memory_subreg (x, insn, uncritical)
       && ! uncritical)
     abort ();
 
-#if BYTES_BIG_ENDIAN
-  offset += (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
-#endif
+  if (BYTES_BIG_ENDIAN)
+    offset += (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+	       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
   addr = plus_constant (addr, offset);
   if (!flag_force_addr && memory_address_p (mode, addr))
     /* Shortcut if no insns need be emitted.  */
@@ -2271,21 +2264,20 @@ optimize_bit_field (body, insn, equiv_mem)
 	  rtx insns;
 
 	  /* Adjust OFFSET to count bits from low-address byte.  */
-#if BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN
-	  offset = (GET_MODE_BITSIZE (GET_MODE (XEXP (bitfield, 0)))
-		    - offset - INTVAL (XEXP (bitfield, 1)));
-#endif
+	  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+	    offset = (GET_MODE_BITSIZE (GET_MODE (XEXP (bitfield, 0)))
+		      - offset - INTVAL (XEXP (bitfield, 1)));
+
 	  /* Adjust OFFSET to count bytes from low-address byte.  */
 	  offset /= BITS_PER_UNIT;
 	  if (GET_CODE (XEXP (bitfield, 0)) == SUBREG)
 	    {
 	      offset += SUBREG_WORD (XEXP (bitfield, 0)) * UNITS_PER_WORD;
-#if BYTES_BIG_ENDIAN
-	      offset -= (MIN (UNITS_PER_WORD,
-			      GET_MODE_SIZE (GET_MODE (XEXP (bitfield, 0))))
-			 - MIN (UNITS_PER_WORD,
-				GET_MODE_SIZE (GET_MODE (memref))));
-#endif
+	      if (BYTES_BIG_ENDIAN)
+		offset -= (MIN (UNITS_PER_WORD,
+				GET_MODE_SIZE (GET_MODE (XEXP (bitfield, 0))))
+			   - MIN (UNITS_PER_WORD,
+				  GET_MODE_SIZE (GET_MODE (memref))));
 	    }
 
 	  start_sequence ();
@@ -3454,11 +3446,10 @@ assign_parms (fndecl, second_time)
 	{
 	  rtx offset_rtx;
 
-#if BYTES_BIG_ENDIAN
-	  if (GET_MODE_SIZE (nominal_mode) < UNITS_PER_WORD)
+	  if (BYTES_BIG_ENDIAN
+	      && GET_MODE_SIZE (nominal_mode) < UNITS_PER_WORD)
 	    stack_offset.constant += (GET_MODE_SIZE (passed_mode)
 				      - GET_MODE_SIZE (nominal_mode));
-#endif
 
 	  offset_rtx = ARGS_SIZE_RTX (stack_offset);
 	  if (offset_rtx == const0_rtx)

@@ -221,13 +221,13 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       op0 = SUBREG_REG (op0);
     }
 
-#if BYTES_BIG_ENDIAN
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
-  if (GET_CODE (op0) != MEM && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
+  if (BYTES_BIG_ENDIAN
+      && GET_CODE (op0) != MEM
+      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-#endif
 
   value = protect_from_queue (value, 0);
 
@@ -261,11 +261,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      can be done with a movestrict instruction.  */
 
   if (GET_CODE (op0) != MEM
-#if BYTES_BIG_ENDIAN
-      && bitpos + bitsize == unit
-#else
-      && bitpos == 0
-#endif
+      && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (GET_MODE (op0) == fieldmode
 	  || (movstrict_optab->handlers[(int) fieldmode].insn_code
@@ -450,15 +446,14 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       /* On big-endian machines, we count bits from the most significant.
 	 If the bit field insn does not, we must invert.  */
 
-#if BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN
-      xbitpos = unit - bitsize - xbitpos;
-#endif
+      if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+	xbitpos = unit - bitsize - xbitpos;
+
       /* We have been counting XBITPOS within UNIT.
 	 Count instead within the size of the register.  */
-#if BITS_BIG_ENDIAN
-      if (GET_CODE (xop0) != MEM)
+      if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
 	xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
-#endif
+
       unit = GET_MODE_BITSIZE (maxmode);
 
       /* Convert VALUE to maxmode (which insv insn wants) in VALUE1.  */
@@ -606,13 +601,12 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
      BITPOS is the starting bit number within OP0.
      (OP0's mode may actually be narrower than MODE.)  */
 
-#if BYTES_BIG_ENDIAN
-  /* BITPOS is the distance between our msb
-     and that of the containing datum.
-     Convert it to the distance from the lsb.  */
+  if (BYTES_BIG_ENDIAN)
+      /* BITPOS is the distance between our msb
+	 and that of the containing datum.
+	 Convert it to the distance from the lsb.  */
+      bitpos = total_bits - bitsize - bitpos;
 
-  bitpos = total_bits - bitsize - bitpos;
-#endif
   /* Now BITPOS is always the distance between our lsb
      and that of OP0.  */
 
@@ -740,29 +734,33 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
       thissize = MIN (bitsize - bitsdone, BITS_PER_WORD);
       thissize = MIN (thissize, unit - thispos);
 
-#if BYTES_BIG_ENDIAN
-      /* Fetch successively less significant portions.  */
-      if (GET_CODE (value) == CONST_INT)
-	part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
-			 >> (bitsize - bitsdone - thissize))
-			& (((HOST_WIDE_INT) 1 << thissize) - 1));
+      if (BYTES_BIG_ENDIAN)
+	{
+	  /* Fetch successively less significant portions.  */
+	  if (GET_CODE (value) == CONST_INT)
+	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
+			     >> (bitsize - bitsdone - thissize))
+			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
+	  else
+	    /* The args are chosen so that the last part includes the
+	       lsb.  Give extract_bit_field the value it needs (with
+	       endianness compensation) to fetch the piece we want.  */
+	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+					    GET_MODE_BITSIZE (GET_MODE (value))
+					    - bitsize + bitsdone,
+					    NULL_RTX, 1, align);
+	}
       else
-	/* The args are chosen so that the last part includes the lsb.
-	   Give extract_bit_field the value it needs (with endianness
-	   compensation) to fetch the piece we want.  */
-	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					GET_MODE_BITSIZE (GET_MODE (value))
-					- bitsize + bitsdone,
-					NULL_RTX, 1, align);
-#else
-      /* Fetch successively more significant portions.  */
-      if (GET_CODE (value) == CONST_INT)
-	part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value)) >> bitsdone)
-			& (((HOST_WIDE_INT) 1 << thissize) - 1));
-      else
-	part = extract_fixed_bit_field (word_mode, value, 0, thissize,
-					bitsdone, NULL_RTX, 1, align);
-#endif
+	{
+	  /* Fetch successively more significant portions.  */
+	  if (GET_CODE (value) == CONST_INT)
+	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
+			     >> bitsdone)
+			    & (((HOST_WIDE_INT) 1 << thissize) - 1));
+	  else
+	    part = extract_fixed_bit_field (word_mode, value, 0, thissize,
+					    bitsdone, NULL_RTX, 1, align);
+	}
 
       /* If OP0 is a register, then handle OFFSET here.
 
@@ -850,13 +848,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       op0 = SUBREG_REG (op0);
     }
   
-#if BYTES_BIG_ENDIAN
   /* If OP0 is a register, BITPOS must count within a word.
      But as we have it, it counts within whatever size OP0 now has.
      On a bigendian machine, these are not the same, so convert.  */
-  if (GET_CODE (op0) != MEM && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
+  if (BYTES_BIG_ENDIAN &&
+      GET_CODE (op0) != MEM
+      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
     bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-#endif
 
   /* Extracting a full-word or multi-word value
      from a structure in a register or aligned memory.
@@ -872,12 +870,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       && ((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	   && bitpos % BITS_PER_WORD == 0)
 	  || (mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0) != BLKmode
-#if BYTES_BIG_ENDIAN
-	      && bitpos + bitsize == BITS_PER_WORD
-#else
-	      && bitpos == 0
-#endif
-	      )))
+	      && (BYTES_BIG_ENDIAN
+		  ? bitpos + bitsize == BITS_PER_WORD
+		  : bitpos == 0))))
     {
       enum machine_mode mode1
 	= mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0);
@@ -1050,14 +1045,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 	  /* On big-endian machines, we count bits from the most significant.
 	     If the bit field insn does not, we must invert.  */
-#if BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN
-	  xbitpos = unit - bitsize - xbitpos;
-#endif
+	  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+	    xbitpos = unit - bitsize - xbitpos;
+
 	  /* Now convert from counting within UNIT to counting in MAXMODE.  */
-#if BITS_BIG_ENDIAN
-	  if (GET_CODE (xop0) != MEM)
+	  if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
 	    xbitpos += GET_MODE_BITSIZE (maxmode) - unit;
-#endif
+
 	  unit = GET_MODE_BITSIZE (maxmode);
 
 	  if (xtarget == 0
@@ -1185,15 +1179,14 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 	  /* On big-endian machines, we count bits from the most significant.
 	     If the bit field insn does not, we must invert.  */
-#if BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN
-	  xbitpos = unit - bitsize - xbitpos;
-#endif
+	  if (BITS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
+	    xbitpos = unit - bitsize - xbitpos;
+
 	  /* XBITPOS counts within a size of UNIT.
 	     Adjust to count within a size of MAXMODE.  */
-#if BITS_BIG_ENDIAN
-	  if (GET_CODE (xop0) != MEM)
+	  if (BITS_BIG_ENDIAN && GET_CODE (xop0) != MEM)
 	    xbitpos += (GET_MODE_BITSIZE (maxmode) - unit);
-#endif
+
 	  unit = GET_MODE_BITSIZE (maxmode);
 
 	  if (xtarget == 0
@@ -1347,12 +1340,14 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 
   mode = GET_MODE (op0);
 
-#if BYTES_BIG_ENDIAN
-  /* BITPOS is the distance between our msb and that of OP0.
-     Convert it to the distance from the lsb.  */
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* BITPOS is the distance between our msb and that of OP0.
+	 Convert it to the distance from the lsb.  */
 
-  bitpos = total_bits - bitsize - bitpos;
-#endif
+      bitpos = total_bits - bitsize - bitpos;
+    }
+
   /* Now BITPOS is always the distance between the field's lsb and that of OP0.
      We have reduced the big-endian case to the little-endian case.  */
 
@@ -1570,15 +1565,18 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
       bitsdone += thissize;
 
       /* Shift this part into place for the result.  */
-#if BYTES_BIG_ENDIAN
-      if (bitsize != bitsdone)
-	part = expand_shift (LSHIFT_EXPR, word_mode, part,
-			     build_int_2 (bitsize - bitsdone, 0), 0, 1);
-#else
-      if (bitsdone != thissize)
-	part = expand_shift (LSHIFT_EXPR, word_mode, part,
-			     build_int_2 (bitsdone - thissize, 0), 0, 1);
-#endif
+      if (BYTES_BIG_ENDIAN)
+	{
+	  if (bitsize != bitsdone)
+	    part = expand_shift (LSHIFT_EXPR, word_mode, part,
+				 build_int_2 (bitsize - bitsdone, 0), 0, 1);
+	}
+      else
+	{
+	  if (bitsdone != thissize)
+	    part = expand_shift (LSHIFT_EXPR, word_mode, part,
+				 build_int_2 (bitsdone - thissize, 0), 0, 1);
+	}
 
       if (first)
 	result = part;

@@ -1159,7 +1159,7 @@ static efdr_t init_file =
     langC,		/* lang:	language for this file */
     1,			/* fMerge:	whether this file can be merged */
     0,			/* fReadin:	true if read in (not just created) */
-#if BYTES_BIG_ENDIAN
+#ifdef HOST_WORDS_BIG_ENDIAN
     1,			/* fBigendian:	if 1, compiled on big endian machine */
 #else
     0,			/* fBigendian:	if 1, compiled on big endian machine */

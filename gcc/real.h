@@ -260,19 +260,19 @@ do { float f = (float) (IN);						\
    values which is its bitwise equivalent, but put the two words into
    proper word order for the target.  */
 #ifndef REAL_VALUE_TO_TARGET_DOUBLE
-#if HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
 do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
-     (OUT)[0] = ((long *) &in)[0];					\
-     (OUT)[1] = ((long *) &in)[1];					\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN)		\
+       {								\
+	 (OUT)[0] = ((long *) &in)[0];					\
+	 (OUT)[1] = ((long *) &in)[1];					\
+       }								\
+     else								\
+       {								\
+	 (OUT)[1] = ((long *) &in)[0];					\
+	 (OUT)[0] = ((long *) &in)[1];					\
+       }								\
    } while (0)
-#else
-#define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT)				\
-do { REAL_VALUE_TYPE in = (IN);  /* Make sure it's not in a register.  */\
-     (OUT)[1] = ((long *) &in)[0];					\
-     (OUT)[0] = ((long *) &in)[1];					\
-   } while (0)
-#endif
 #endif
 #endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
 

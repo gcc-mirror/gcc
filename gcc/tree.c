@@ -4094,11 +4094,10 @@ get_set_constructor_words (init, buffer, wd_size)
     {
       if (bit_buffer[i])
 	{
-#if BITS_BIG_ENDIAN
-	  *wordp |= (1 << (set_word_size - 1 - bit_pos));
-#else
-	  *wordp |= 1 << bit_pos;
-#endif
+	  if (BITS_BIG_ENDIAN)
+	    *wordp |= (1 << (set_word_size - 1 - bit_pos));
+	  else
+	    *wordp |= 1 << bit_pos;
 	}
       bit_pos++;
       if (bit_pos >= set_word_size)
