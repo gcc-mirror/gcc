@@ -1,5 +1,12 @@
 2001-12-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c-lex.c (lex_number): Use ISXDIGIT/hex_value.
+	* vax/xm-vms.h (FILE_NAME_NONDIRECTORY): Use ISUPPER/TOLOWER.
+	* fold-const.c (real_hex_to_f): Use hex_value.
+	* real.c (asctoeg): Use hex_value & ISXDIGIT.
+	* toplev.c (toplev_main): Call hex_init.
+	* tradcpp.c (main): Call hex_init.
+
 	* nextstep-protos.h: New file.
 	* nextstep.c: Include "rtl.h", "output.h" & "tm_p.h".
 	* nextstep.h (INCLUDE_DEFAULTS): Delete LOCAL_INCLUDE_DIR and

@@ -5154,6 +5154,8 @@ toplev_main (argc, argv)
      int argc;
      char **argv;
 {
+  hex_init ();
+
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv [0]);
 

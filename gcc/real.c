@@ -5190,12 +5190,7 @@ asctoeg (ss, y, oprec)
   trail = 0;
 
  nxtcom:
-  if (ISDIGIT (*s))
-    k = *s - '0';
-  else if (*s >= 'a' && *s <= 'f')
-    k = 10 + *s - 'a';
-  else
-    k = 10 + *s - 'A';
+  k = hex_value(*s);
   if ((k >= 0) && (k < base))
     {
       /* Ignore leading zeros */
@@ -5205,9 +5200,7 @@ asctoeg (ss, y, oprec)
       if ((trail == 0) && (decflg != 0))
 	{
 	  sp = s;
-	  while (ISDIGIT (*sp)
-		 || (base == 16 && ((*sp >= 'a' && *sp <= 'f')
-				    || (*sp >= 'A' && *sp <= 'F'))))
+	  while (ISDIGIT (*sp) || (base == 16 && ISXDIGIT (*sp)))
 	    ++sp;
 	  /* Check for syntax error */
 	  c = *sp & CHARMASK;

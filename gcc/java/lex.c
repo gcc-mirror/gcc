@@ -567,10 +567,8 @@ java_read_unicode (lex, unicode_escape_p)
 	    {
 	      if ((c = java_read_char (lex)) == UEOF)
 	        return UEOF;
-	      if (ISDIGIT (c))
-		unicode |= (unicode_t)((c-'0') << shift);
-	      else if ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))
-	        unicode |= (unicode_t)((10+(c | 0x20)-'a') << shift);
+	      if (hex_p (c))
+		unicode |= (unicode_t)(hex_value (c) << shift);
 	      else
 		java_lex_error ("Non hex digit in Unicode escape sequence", 0);
 	    }
@@ -1064,7 +1062,7 @@ java_lex (java_lval)
 	{
 	  /* We store in a string (in case it turns out to be a FP) and in
 	     PARTS if we have to process a integer literal.  */
-	  int numeric = (ISDIGIT (c) ? c-'0' : 10 +(c|0x20)-'a');
+	  int numeric = hex_value (c);
 	  int count;
 
 	  /* Remember when we find a valid hexadecimal digit */

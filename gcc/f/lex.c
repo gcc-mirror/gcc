@@ -396,13 +396,7 @@ ffelex_backslash_ (int c, ffewhereColumnNumber col)
     case 2:
       if (ISXDIGIT (c))
 	{
-	  code *= 16;
-	  if (c >= 'a' && c <= 'f')
-	    code += c - 'a' + 10;
-	  if (c >= 'A' && c <= 'F')
-	    code += c - 'A' + 10;
-	  if (ISDIGIT (c))
-	    code += c - '0';
+	  code = (code * 16) + hex_value (c);
 	  if (code != 0 || count != 0)
 	    {
 	      if (count == 0)
@@ -603,13 +597,7 @@ ffelex_cfebackslash_ (int *use_d, int *d, FILE *finput)
 	      *d = c;
 	      break;
 	    }
-	  code *= 16;
-	  if (c >= 'a' && c <= 'f')
-	    code += c - 'a' + 10;
-	  if (c >= 'A' && c <= 'F')
-	    code += c - 'A' + 10;
-	  if (ISDIGIT (c))
-	    code += c - '0';
+	  code = (code * 16) + hex_value (c);
 	  if (code != 0 || count != 0)
 	    {
 	      if (count == 0)

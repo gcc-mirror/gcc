@@ -1447,12 +1447,8 @@ ffetarget_integerhex (ffetargetIntegerDefault *val, ffelexToken integer)
   bad_digit = FALSE;
   while (c != '\0')
     {
-      if ((c >= 'A') && (c <= 'F'))
-	c = c - 'A' + 10;
-      else if ((c >= 'a') && (c <= 'f'))
-	c = c - 'a' + 10;
-      else if (ISDIGIT (c))
-	c -= '0';
+      if (hex_p (c))
+	c = hex_value (c);
       else
 	{
 	  bad_digit = TRUE;
@@ -2482,12 +2478,8 @@ ffetarget_typeless_hex (ffetargetTypeless *xvalue, ffelexToken token)
       new_value <<= 4;
       if ((new_value >> 4) != value)
 	overflow = TRUE;
-      if (ISDIGIT (c))
-	new_value += c - '0';
-      else if ((c >= 'A') && (c <= 'F'))
-	new_value += c - 'A' + 10;
-      else if ((c >= 'a') && (c <= 'f'))
-	new_value += c - 'a' + 10;
+      if (hex_p (c))
+	new_value += hex_value (c);
       else
 	bad_digit = TRUE;
       value = new_value;
