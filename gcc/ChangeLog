@@ -1,3 +1,7 @@
+Tue Jun 22 20:23:43 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* md.texi (smul@var{m}3_highpart): Add missing 's' prefix.
+
 1999-06-22  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (store_expr): When target is a promoted subreg, return a
