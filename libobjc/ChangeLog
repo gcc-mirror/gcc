@@ -1,3 +1,7 @@
+2004-09-16  Andrew Pinski  <apinski@apple.com>
+
+	* encoding.c (ALTIVEC_VECTOR_MODE): Define a bogus macro.
+
 2004-08-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Switch from _GCC_TOPLEV_NONCANONICAL_TARGET to
