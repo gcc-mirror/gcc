@@ -652,6 +652,17 @@ gen_lowpart_common (mode, x)
 	    : gen_rtx_SUBREG (mode, SUBREG_REG (x), SUBREG_WORD (x) + word));
   else if (GET_CODE (x) == REG)
     {
+      /* Let the backend decide how many registers to skip.  This is needed
+         in particular for Sparc64 where fp regs are smaller than a word.  */
+      /* ??? Note that subregs are now ambiguous, in that those against
+	 pseudos are sized by the Word Size, while those against hard
+	 regs are sized by the underlying register size.  Better would be
+	 to always interpret the subreg offset parameter as bytes or bits.  */
+
+      if (WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
+		- HARD_REGNO_NREGS (REGNO (x), mode));
+
       /* If the register is not valid for MODE, return 0.  If we don't
 	 do this, there is no way to fix up the resulting REG later.  
 	 But we do do this if the current REG is not valid for its
@@ -1002,17 +1013,16 @@ gen_highpart (mode, x)
     {
       int word = 0;
 
-      if (! WORDS_BIG_ENDIAN
-	  && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
-	word = ((GET_MODE_SIZE (GET_MODE (x))
-		 - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD))
-		/ UNITS_PER_WORD);
+      /* Let the backend decide how many registers to skip.  This is needed
+         in particular for sparc64 where fp regs are smaller than a word.  */
+      /* ??? Note that subregs are now ambiguous, in that those against
+	 pseudos are sized by the Word Size, while those against hard
+	 regs are sized by the underlying register size.  Better would be
+	 to always interpret the subreg offset parameter as bytes or bits.  */
 
-      /*
-       * ??? This fails miserably for complex values being passed in registers
-       * where the sizeof the real and imaginary part are not equal to the
-       * sizeof SImode.  FIXME
-       */
+      if (! WORDS_BIG_ENDIAN && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	word = (HARD_REGNO_NREGS (REGNO (x), GET_MODE (x))
+		- HARD_REGNO_NREGS (REGNO (x), mode));
 
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	  /* integrate.c can't handle parts of a return value register.  */
