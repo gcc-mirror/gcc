@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running the Dolphin UNIX System V/88 Release 3.2,
-   Version 3.5/5.60.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Version 3.8/7.83 and 3.6/5.86
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,16 +21,33 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "m88k/sysv3.h"
 
-/* Don't output structure tag names when it causes a forward reference.
-   Symptom:
-   Error messages like
-   as: "/usr/tmp/cca22733.s": cannot reduce symbol table, unused symbols remain
-   when compiling some programs.
-   example program (C++): struct bad { bad(); }; bad::bad() {}
+#define SDB_ALLOW_FORWARD_REFERENCES
+#define SDB_ALLOW_UNKNOWN_REFERENCES
 
-   This problem seems to have gone away, perhaps with release 3.6 of the O/S
-   from Dolphin.  */
-/* #undef SDB_ALLOW_FORWARD_REFERENCES */
+/* Override m88k/sysv3.h */
 
-/* Use T_ARG as T_VOID.  T_VOID is not defined in <syms.h> as it should be.  */
-#define T_VOID T_ARG
+#undef	CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dm88000 -Dm88k -DOCS88 -DDOLPHIN -Dunix -DsysV88 -D__CLASSIFY_TYPE__=2 -Asystem(unix) -Asystem(svr3) -Acpu(m88k) -Amachine(m88k)" 
+
+/* 
+  If you want to detect dereferencing of NULL pointers, uncomment the
+  following two lines. Alternatively, edit the appropriate specs file.
+  
+  #undef LINK_SPEC
+  #define LINK_SPEC "gcc.ld%s"
+  
+  */
+
+#undef CPU_DEFAULT
+#define CPU_DEFAULT MASK_88000
+
+#undef INITIALIZE_TRAMPOLINE 
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
+  emit_call_insn (gen_call( gen_rtx (MEM, SImode,			\
+				     gen_rtx(SYMBOL_REF,Pmode,		\
+					     "__enable_execute_stack")), \
+			   const0_rtx));				\
+}
