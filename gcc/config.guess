@@ -173,8 +173,11 @@ EOF
     *:AIX:*:*)
 	echo rs6000-ibm-aix
 	exit 0 ;;
-    ibmrt:*BSD:*|romp-ibm:BSD:*)          # covers RT/PC NetBSD and 4.4BSD
-	echo romp-ibm-bsd${UNAME_RELEASE}   # and 4.3 with uname added to 
+    ibmrt:4.4BSD:*|romp-ibm:BSD:*)
+	echo romp-ibm-bsd4.4
+	exit 0 ;;
+    ibmrt:*BSD:*|romp-ibm:BSD:*)            # covers RT/PC NetBSD and
+	echo romp-ibm-bsd${UNAME_RELEASE}   # 4.3 with uname added to 
 	exit 0 ;;                           # report: romp-ibm BSD 4.3
     *:BOSX:*:*)
 	echo rs6000-bull-bosx
