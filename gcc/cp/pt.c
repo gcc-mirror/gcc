@@ -1483,7 +1483,7 @@ tsubst (t, args, nargs, in_decl)
 	/* We do NOT check for matching decls pushed separately at this
            point, as they may not represent instantiations of this
            template, and in any case are considered separate under the
-           discrete model.  */
+           discrete model.  Instead, see add_maybe_template.  */
 
 	r = copy_node (t);
 	copy_lang_decl (r);
@@ -1542,7 +1542,7 @@ tsubst (t, args, nargs, in_decl)
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
 
 	/* Look for matching decls for the moment.  */
-	if (! member)
+	if (! member && ! flag_ansi_overloading)
 	  {
 	    tree decls = lookup_name_nonclass (DECL_NAME (t));
 	    tree d = NULL_TREE;
@@ -2747,31 +2747,16 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
     case TEMPLATE_CONST_PARM:
       (*nsubsts)++;
       idx = TEMPLATE_CONST_IDX (parm);
-      if (targs[idx] == arg)
-	return 0;
-      else if (targs[idx])
+      if (targs[idx])
 	{
-	  tree t = targs[idx];
-	  if (TREE_CODE (t) == TREE_CODE (arg))
-	    switch (TREE_CODE (arg))
-	      {
-	      case INTEGER_CST:
-		if (tree_int_cst_equal (t, arg))
-		  return 0;
-		break;
-	      case REAL_CST:
-		if (REAL_VALUES_EQUAL (TREE_REAL_CST (t), TREE_REAL_CST (arg)))
-		  return 0;
-		break;
-	      /* STRING_CST values are not valid template const parms.  */
-	      default:
-		;
-	      }
-	  /* else we get two different bindings, so deduction fails.  */
-	  return 1;
+	  int i = cp_tree_equal (targs[idx], arg);
+	  if (i == 1)
+	    return 0;
+	  else if (i == 0)
+	    return 1;
+	  else
+	    my_friendly_abort (42);
 	}
-/*	else if (typeof arg != tparms[idx])
-	return 1;*/
 
       targs[idx] = copy_to_permanent (arg);
       return 0;
