@@ -2,7 +2,7 @@
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GCC will search.
 
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,6 +22,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
+
+#include <sys/stat.h>
 
 #if defined( HAVE_MMAP_FILE )
 #include <sys/mman.h>
@@ -48,12 +50,6 @@ static const char z_std_preamble[] =
 \t\"%s/%s\"\n\n\
     This had to be done to correct non-standard usages in the\n\
     original, manufacturer supplied header file.  */\n\n";
-
-/*  Working environment strings.  Essentially, invocation 'options'.  */
-
-#define _ENV_(v,m,n,t)   tCC* v = NULL;
-ENV_TABLE
-#undef _ENV_
 
 int find_base_len = 0;
 
@@ -214,18 +210,6 @@ do_version (void)
 void
 initialize ( int argc, char** argv )
 {
-  static const char var_not_found[] =
-#ifndef __STDC__
-    "fixincl ERROR:  %s environment variable not defined\n"
-#else
-    "fixincl ERROR:  %s environment variable not defined\n"
-    "each of these must be defined:\n"
-# define _ENV_(vv,mm,nn,tt) "\t" nn "  - " tt "\n"
-  ENV_TABLE
-# undef _ENV_
-#endif
-    ;
-
   xmalloc_set_program_name (argv[0]);
 
   switch (argc)
@@ -255,14 +239,7 @@ initialize ( int argc, char** argv )
   signal (SIGCHLD, SIG_DFL);
 #endif
 
-#define _ENV_(v,m,n,t)   { tSCC var[] = n;  \
-  v = getenv (var); if (m && (v == NULL)) { \
-  fprintf (stderr, var_not_found, var);     \
-  exit (EXIT_FAILURE); } }
-
-ENV_TABLE
-
-#undef _ENV_
+  initialize_opts ();
 
   if (ISDIGIT ( *pz_verbose ))
     verbose_level = (te_verbose)atoi( pz_verbose );
@@ -877,32 +854,41 @@ fix_with_system (tFixDesc* p_fixd,
   char*  pz_cmd;
   char*  pz_scan;
   size_t argsize;
+  int i;
+  tSCC z_applyfix_prog[2] = {
+    "/../fixincludes/applyfix" EXE_EXT,
+    "/../../fixincludes/applyfix" EXE_EXT };
 
   if (p_fixd->fd_flags & FD_SUBROUTINE)
-    {
-      tSCC z_applyfix_prog[] = "/fixinc/applyfix";
+    for (i = 0; i < 2; i++)
+      { 
+	struct stat buf;
 
-      argsize = 32
-              + strlen( pz_orig_dir )
-              + sizeof( z_applyfix_prog )
-              + strlen( pz_fix_file )
-              + strlen( pz_file_source )
-              + strlen( pz_temp_file );
+        argsize = 32
+                + strlen( pz_orig_dir )
+                + sizeof( z_applyfix_prog )
+                + strlen( pz_fix_file )
+                + strlen( pz_file_source )
+                + strlen( pz_temp_file );
 
-      pz_cmd = xmalloc (argsize);
+        pz_cmd = xmalloc (argsize);
 
-      strcpy( pz_cmd, pz_orig_dir );
-      pz_scan = pz_cmd + strlen( pz_orig_dir );
-      strcpy( pz_scan, z_applyfix_prog );
-      pz_scan += sizeof( z_applyfix_prog ) - 1;
-      *(pz_scan++) = ' ';
+        strcpy( pz_cmd, pz_orig_dir );
+        pz_scan = pz_cmd + strlen( pz_orig_dir );
+        strcpy( pz_scan, z_applyfix_prog );
+        pz_scan += sizeof( z_applyfix_prog ) - 1;
 
-      /*
-       *  Now add the fix number and file names that may be needed
-       */
-      sprintf (pz_scan, "%ld \'%s\' \'%s\' \'%s\'", p_fixd - fixDescList,
-	       pz_fix_file, pz_file_source, pz_temp_file);
-    }
+	if (stat (pz_scan, &buf) != -1)
+	  {
+            *(pz_scan++) = ' ';
+            /*
+             *  Now add the fix number and file names that may be needed
+             */
+            sprintf (pz_scan, "%ld \'%s\' \'%s\' \'%s\'", p_fixd - fixDescList,
+	             pz_fix_file, pz_file_source, pz_temp_file);
+	    break;
+	  }
+      }
   else /* NOT an "internal" fix: */
     {
       size_t parg_size;

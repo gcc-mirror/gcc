@@ -1,3 +1,20 @@
+2004-08-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR other/17991
+
+	* Makefile.in (ALLOBJ, TESTOBJ, FIXOBJ): Add fixopts.o.
+	Update copyright year.
+	* fixfixes.c (main): Call initialize_opts from fixopts.c.
+	* fixincl.c (initialize): Call initialize_opts from fixopts.c,
+	do not include code for parsing options (environment vars).
+	(fix_with_system): Use a search path for applyfix, so that you
+	can run the test suite with two-process fixincludes.
+	* fixopts.c: New file.
+	* configure.ac: Add --enable-twoprocess.  Export ac_exeext
+	to config.h.  Default to --enable-twoprocess for MinGW32.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2004-10-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* tests/base/sys/cdefs.h: Update from test area.

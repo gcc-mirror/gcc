@@ -3,7 +3,7 @@
 
    Test to see if a particular fix should be applied to a header file.
 
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
 = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -748,6 +748,8 @@ main( int argc, char** argv )
       fputs (z_usage, stderr);
       return EXIT_FAILURE;
     }
+
+  initialize_opts ();
 
   {
     char* pz = argv[1];

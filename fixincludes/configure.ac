@@ -9,24 +9,40 @@ AC_PROG_CC
 # Choose one or two-process fix methodology.  Systems that cannot handle
 # bi-directional pipes must use the two process method.
 #
-case $host in
+AC_ARG_ENABLE([twoprocess],
+[  --enable-twoprocess       Use a separate process to apply the fixes],
+[if test "x$enable_twoprocess" = yes; then
+	TARGET=twoprocess
+else
+	TARGET=oneprocess
+fi],
+[case $host in
 	i?86-*-msdosdjgpp* | \
+	i?86-*-mingw32* | \
 	*-*-beos* )
 		TARGET=twoprocess
-		AC_DEFINE(SEPARATE_FIX_PROC, 1, [Define if testing and fixing are done by separate process])
-		;;
-
-	vax-dec-bsd* )
-		TARGET=oneprocess
-		AC_DEFINE(exit, xexit, [Define to xexit if the host system does not support atexit])
-		AC_DEFINE(atexit, xatexit, [Define to xatexit if the host system does not support atexit])
 		;;
 
 	* )
 		TARGET=oneprocess
 		;;
-esac
+esac])
 AC_SUBST(TARGET)
+
+if test $TARGET = twoprocess; then
+	AC_DEFINE(SEPARATE_FIX_PROC, 1,
+		  [Define if testing and fixing are done by separate process])
+fi
+
+case $host in
+	vax-dec-bsd* )
+		AC_DEFINE(exit, xexit, [Define to xexit if the host system does not support atexit])
+		AC_DEFINE(atexit, xatexit, [Define to xatexit if the host system does not support atexit])
+		;;
+esac
+
+AC_DEFINE_UNQUOTED([EXE_EXT], "$ac_exeext",
+  [Defined to the executable file extension on the host system])
 
 # Checks for header files.
 AC_HEADER_STDC

@@ -847,6 +847,7 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-twoprocess       Use a separate process to apply the fixes
   --enable-maintainer-mode enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
 
@@ -2343,19 +2344,39 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # Choose one or two-process fix methodology.  Systems that cannot handle
 # bi-directional pipes must use the two process method.
 #
-case $host in
+# Check whether --enable-twoprocess or --disable-twoprocess was given.
+if test "${enable_twoprocess+set}" = set; then
+  enableval="$enable_twoprocess"
+  if test "x$enable_twoprocess" = yes; then
+	TARGET=twoprocess
+else
+	TARGET=oneprocess
+fi
+else
+  case $host in
 	i?86-*-msdosdjgpp* | \
+	i?86-*-mingw32* | \
 	*-*-beos* )
 		TARGET=twoprocess
+		;;
+
+	* )
+		TARGET=oneprocess
+		;;
+esac
+fi;
+
+
+if test $TARGET = twoprocess; then
 
 cat >>confdefs.h <<\_ACEOF
 #define SEPARATE_FIX_PROC 1
 _ACEOF
 
-		;;
+fi
 
+case $host in
 	vax-dec-bsd* )
-		TARGET=oneprocess
 
 cat >>confdefs.h <<\_ACEOF
 #define exit xexit
@@ -2367,11 +2388,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 		;;
-
-	* )
-		TARGET=oneprocess
-		;;
 esac
+
+
+cat >>confdefs.h <<_ACEOF
+#define EXE_EXT "$ac_exeext"
+_ACEOF
 
 
 # Checks for header files.
