@@ -184,19 +184,18 @@ ht_expand (hash_table *table)
 	unsigned int index, hash, hash2;
 
 	hash = (*p)->hash_value;
-	hash2 = ((hash * 17) & sizemask) | 1;
 	index = hash & sizemask;
 
-	for (;;)
+	if (nentries[index])
 	  {
-	    if (! nentries[index])
+	    hash2 = ((hash * 17) & sizemask) | 1;
+	    do
 	      {
-		nentries[index] = *p;
-		break;
+		index = (index + hash2) & sizemask;
 	      }
-
-	    index = (index + hash2) & sizemask;
+	    while (nentries[index]);
 	  }
+	nentries[index] = *p;
       }
   while (++p < limit);
 
