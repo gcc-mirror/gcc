@@ -26,10 +26,20 @@ Boston, MA 02111-1307, USA.  */
    single way is available for all host systems, nor are there reliable
    ways to find out which way is correct for a given host. */
 
-#include <time.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  ifdef HAVE_TIME_H
+#   include <time.h>
+#  endif
+# endif
+#endif
 
 #if defined (HAVE_GETRUSAGE) && defined (HAVE_SYS_RESOURCE_H)
-#include <sys/time.h>
 #include <sys/resource.h>
 #endif
 

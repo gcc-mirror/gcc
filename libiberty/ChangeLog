@@ -7,6 +7,11 @@
 2000-07-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 	    Jeff Law <law@cygnus.com>
 
+	* configure.in (AC_CHECK_HEADERS): Add time.h.
+	(AC_HEADER_TIME): Add check.
+	* configure, config.in: Regenerate.
+	* getruntime.c: Portably #include <sys/time.h> and/or <time.h>.
+
 	* configure.in (AC_CHECK_HEADERS): Add limits.h.
 	* configure, config.in: Regenerate.
 	* sort.c: Portably #include <limits.h> and/or <sys/param.h>.
