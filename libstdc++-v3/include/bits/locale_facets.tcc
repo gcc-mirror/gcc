@@ -1879,19 +1879,18 @@ namespace std
     collate<_CharT>::
     do_transform(const _CharT* __lo, const _CharT* __hi) const
     {
-      string_type __orig(__lo, __hi);
-      string_type __trans(__orig.size(), char_type());
-      size_t __res = _M_transform_helper(__trans.begin().base(), 
-					 __orig.c_str(), __trans.size());
-      while (__res >= __trans.size())
+      size_t __len = __hi - __lo;
+      _CharT* __c = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len));
+      size_t __res = _M_transform_helper(__c, __lo, __len);
+      if (__res >= __len)
 	{
-	  // Increment size of translated string.
-	  typename string_type::size_type __newsize = __trans.size() * 2;
-	  __trans.resize(__newsize);
-	  __res = _M_transform_helper(__trans.begin().base(), __orig.c_str(), 
-				      __trans.size());
+	  // Try to increment size of translated string.
+	  size_t __len2 = __len * 2;
+	  _CharT* __c2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __len2));
+	  __res = _M_transform_helper(__c2, __lo, __len);
+	  // XXX Throw exception if still indeterminate?
 	}
-      return __trans;
+      return string_type(__c);
     }
 
  template<typename _CharT>
