@@ -3364,12 +3364,14 @@ Define the macros @var{__GNUC__}, @var{__GNUC_MINOR__} and
 @var{__GNUC_PATCHLEVEL__}. These are defined automatically when you use
 @samp{gcc -E}; you can turn them off in that case with @samp{-no-gcc}.
 
-@item -A @var{predicate}(@var{answer})
+@item -A @var{predicate}=@var{answer}
 @findex -A
 Make an assertion with the predicate @var{predicate} and answer
-@var{answer}.  @xref{Assertions}.
+@var{answer}.  This form is preferred to the older form @samp{-A
+@var{predicate}(@var{answer})}, which is still supported, because
+it does not use shell special characters.  @xref{Assertions}.
 
-@item -A -@var{predicate}(@var{answer})
+@item -A -@var{predicate}=@var{answer}
 Disable an assertion with the predicate @var{predicate} and answer
 @var{answer}.  Specifying no predicate, by @samp{-A-} or @samp{-A -},
 disables all predefined assertions and all assertions preceding it on
