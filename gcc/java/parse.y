@@ -11148,7 +11148,8 @@ java_complete_lhs (node)
 		  (type == string_ptr_type_node && ! flag_emit_class_files))
 		return empty_stmt_node;
 	    }
-	  DECL_INITIAL (nn) = NULL_TREE;
+	  if (! flag_emit_class_files)
+	    DECL_INITIAL (nn) = NULL_TREE;
 	}
       wfl_op2 = TREE_OPERAND (node, 1);
 
