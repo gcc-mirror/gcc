@@ -2737,6 +2737,15 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	return temp;
     }
 
+  /* If there is no negation pattern, try subtracting from zero.  */
+  if (unoptab == neg_optab && class == MODE_INT)
+    {
+      temp = expand_binop (mode, sub_optab, CONST0_RTX (mode), op0,
+                           target, unsignedp, OPTAB_DIRECT);
+      if (temp)
+	return temp;
+    }
+
  try_libcall:
   /* Now try a library call in this mode.  */
   if (unoptab->handlers[(int) mode].libfunc)
