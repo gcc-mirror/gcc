@@ -1,3 +1,7 @@
+2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* java-tree.h: Protect against multiple inclusion.
+
 2003-01-07  Tom Tromey  <tromey@redhat.com>
 
 	* class.c (add_assume_compiled): Don't adjust parent if we're

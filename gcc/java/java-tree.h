@@ -26,6 +26,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 /* Hacked by Per Bothner <bothner@cygnus.com> February 1996. */
 
+#ifndef GCC_JAVA_TREE_H
+#define GCC_JAVA_TREE_H
+
 #include "hashtab.h"
 
 /* Java language-specific tree codes.  */
@@ -1753,3 +1756,4 @@ enum
 };
 
 #undef DEBUG_JAVA_BINDING_LEVELS
+#endif /* ! GCC_JAVA_TREE_H */
