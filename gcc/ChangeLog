@@ -1,3 +1,9 @@
+2004-06-08  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/15228
+	* function.c (assign_parms): Always set_mem_align with the computed
+	FUNCTION_ARG_BOUNDARY.  Don't clear stack_parm if !STRICT_ALIGNMENT.
+
 2004-06-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/15598
