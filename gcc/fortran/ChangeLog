@@ -1,5 +1,14 @@
 2005-01-22  Paul Brook  <paul@codesourcery.com>
 
+	* gfortran.h (gfc_check_access): Add prototype.
+	* match.c (gfc_match_namelist): Remove TODO.
+	* module.c (check_access): Rename ...
+	(gfc_check_access): ... to this.  Boolify.  Update callers.
+	* resolve.c (resolve_symbol): Check for private objects in public
+	namelists.
+
+2005-01-22  Paul Brook  <paul@codesourcery.com>
+
 	* primary.c (gfc_match_rvalue): Only apply implicit type if variable
 	does not have an explicit type.
 	(gfc_match_variable): Resolve implicit derived types in all cases.
