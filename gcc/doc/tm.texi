@@ -7829,6 +7829,10 @@ decimal and hexadecimal floating point constants, using the syntax
 defined by the C language for both.
 @end deftypefn
 
+@deftypefn Macro int REAL_VALUE_NEGATIVE (REAL_VALUE_TYPE @var{x})
+Returns 1 if @var{x} is negative (including negative zero), 0 otherwise.  
+@end deftypefn
+
 @deftypefn Macro int REAL_VALUE_ISINF (REAL_VALUE_TYPE @var{x})
 Determines whether @var{x} represents infinity (positive or negative).
 @end deftypefn
@@ -7854,6 +7858,10 @@ target's floating point format cannot represent infinity, it will call
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_NEGATE (REAL_VALUE_TYPE @var{x})
 Returns the negative of the floating point value @var{x}.
+@end deftypefn
+
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ABS (REAL_VALUE_TYPE @var{x})
+Returns the absolute value of @var{x}.
 @end deftypefn
 
 @deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_TRUNCATE (REAL_VALUE_TYPE @var{mode}, enum machine_mode @var{x})

@@ -161,6 +161,10 @@ extern REAL_VALUE_TYPE real_value_truncate PARAMS ((enum machine_mode,
 
 #define REAL_VALUE_NEGATE ereal_negate
 
+/* Compute the absolute value of a floating-point value X.  */
+#define REAL_VALUE_ABS(x) \
+   (REAL_VALUE_NEGATIVE (x) ? REAL_VALUE_NEGATE (x) : (x))
+
 /* Determine whether a floating-point value X is infinite.  */
 #define REAL_VALUE_ISINF(x) (target_isinf (x))
 

@@ -65,11 +65,9 @@ static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
 					 int));
 static tree associate_trees	PARAMS ((tree, tree, enum tree_code, tree));
 static tree int_const_binop	PARAMS ((enum tree_code, tree, tree, int));
-static void const_binop_1	PARAMS ((PTR));
 static tree const_binop		PARAMS ((enum tree_code, tree, tree, int));
 static hashval_t size_htab_hash	PARAMS ((const void *));
 static int size_htab_eq		PARAMS ((const void *, const void *));
-static void fold_convert_1	PARAMS ((PTR));
 static tree fold_convert	PARAMS ((tree, tree));
 static enum tree_code invert_tree_comparison PARAMS ((enum tree_code));
 static enum tree_code swap_tree_comparison PARAMS ((enum tree_code));
@@ -1199,32 +1197,6 @@ int_const_binop (code, arg1, arg2, notrunc)
   return t;
 }
 
-/* Define input and output argument for const_binop_1.  */
-struct cb_args
-{
-  enum tree_code code;		/* Input: tree code for operation.  */
-  tree type;			/* Input: tree type for operation.  */
-  REAL_VALUE_TYPE d1, d2;	/* Input: floating point operands.  */
-  tree t;			/* Output: constant for result.  */
-};
-
-/* Do the real arithmetic for const_binop while protected by a
-   float overflow handler.  */
-
-static void
-const_binop_1 (data)
-     PTR data;
-{
-  struct cb_args *args = (struct cb_args *) data;
-  REAL_VALUE_TYPE value;
-
-  REAL_ARITHMETIC (value, args->code, args->d1, args->d2);
-
-  args->t
-    = build_real (args->type,
-		  real_value_truncate (TYPE_MODE (args->type), value));
-}
-
 /* Combine two constants ARG1 and ARG2 under operation CODE to produce a new
    constant.  We assume ARG1 and ARG2 have the same data type, or at least
    are the same kind of constant and the same machine mode.
@@ -1247,9 +1219,8 @@ const_binop (code, arg1, arg2, notrunc)
     {
       REAL_VALUE_TYPE d1;
       REAL_VALUE_TYPE d2;
-      int overflow = 0;
+      REAL_VALUE_TYPE value;
       tree t;
-      struct cb_args args;
 
       d1 = TREE_REAL_CST (arg1);
       d2 = TREE_REAL_CST (arg2);
@@ -1261,24 +1232,14 @@ const_binop (code, arg1, arg2, notrunc)
       else if (REAL_VALUE_ISNAN (d2))
 	return arg2;
 
-      /* Setup input for const_binop_1() */
-      args.type = TREE_TYPE (arg1);
-      args.d1 = d1;
-      args.d2 = d2;
-      args.code = code;
+      REAL_ARITHMETIC (value, code, d1, d2);
 
-      if (do_float_handler (const_binop_1, (PTR) &args))
-	/* Receive output from const_binop_1.  */
-	t = args.t;
-      else
-	{
-	  /* We got an exception from const_binop_1.  */
-	  t = copy_node (arg1);
-	  overflow = 1;
-	}
+      t = build_real (TREE_TYPE (arg1),
+		      real_value_truncate (TYPE_MODE (TREE_TYPE (arg1)),
+					   value));
 
       TREE_OVERFLOW (t)
-	= (force_fit_type (t, overflow)
+	= (force_fit_type (t, 0)
 	   | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
       TREE_CONSTANT_OVERFLOW (t)
 	= TREE_OVERFLOW (t)
@@ -1530,27 +1491,6 @@ size_diffop (arg0, arg1)
 		       convert (ctype, size_binop (MINUS_EXPR, arg1, arg0)));
 }
 
-/* This structure is used to communicate arguments to fold_convert_1.  */
-struct fc_args
-{
-  tree arg1;			/* Input: value to convert.  */
-  tree type;			/* Input: type to convert value to.  */
-  tree t;			/* Output: result of conversion.  */
-};
-
-/* Function to convert floating-point constants, protected by floating
-   point exception handler.  */
-
-static void
-fold_convert_1 (data)
-     PTR data;
-{
-  struct fc_args *args = (struct fc_args *) data;
-
-  args->t = build_real (args->type,
-			real_value_truncate (TYPE_MODE (args->type),
-					     TREE_REAL_CST (args->arg1)));
-}
 
 /* Given T, a tree representing type conversion of ARG1, a constant,
    return a constant tree representing the result of conversion.  */
@@ -1650,8 +1590,6 @@ fold_convert (t, arg1)
 	return build_real_from_int_cst (type, arg1);
       if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  struct fc_args args;
-
 	  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
 	    {
 	      t = arg1;
@@ -1659,24 +1597,12 @@ fold_convert (t, arg1)
 	      return t;
 	    }
 
-	  /* Setup input for fold_convert_1() */
-	  args.arg1 = arg1;
-	  args.type = type;
-
-	  if (do_float_handler (fold_convert_1, (PTR) &args))
-	    {
-	      /* Receive output from fold_convert_1() */
-	      t = args.t;
-	    }
-	  else
-	    {
-	      /* We got an exception from fold_convert_1() */
-	      overflow = 1;
-	      t = copy_node (arg1);
-	    }
+	  t = build_real (type,
+			  real_value_truncate (TYPE_MODE (type),
+					       TREE_REAL_CST (arg1)));
 
 	  TREE_OVERFLOW (t)
-	    = TREE_OVERFLOW (arg1) | force_fit_type (t, overflow);
+	    = TREE_OVERFLOW (arg1) | force_fit_type (t, 0);
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	  return t;

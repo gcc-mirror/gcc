@@ -1065,11 +1065,8 @@ __floatdidf (DWtype u)
 #define WORD_SIZE (sizeof (Wtype) * BITS_PER_UNIT)
 #define HIGH_HALFWORD_COEFF (((UDWtype) 1) << (WORD_SIZE / 2))
 #define HIGH_WORD_COEFF (((UDWtype) 1) << WORD_SIZE)
+
 #define DI_SIZE (sizeof (DWtype) * BITS_PER_UNIT)
-
-/* GCC guarantees this header exists at this point.  */
-#include <float.h>
-
 #define DF_SIZE DBL_MANT_DIG
 #define SF_SIZE FLT_MANT_DIG
 

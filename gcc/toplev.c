@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
 #include <signal.h>
-#include <setjmp.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -109,9 +108,7 @@ static void finalize PARAMS ((void));
 
 static void set_target_switch PARAMS ((const char *));
 
-static void float_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
 static void crash_signal PARAMS ((int)) ATTRIBUTE_NORETURN;
-static void set_float_handler PARAMS ((jmp_buf));
 static void compile_file PARAMS ((void));
 static void display_help PARAMS ((void));
 static void display_target_options PARAMS ((void));
@@ -1624,73 +1621,6 @@ floor_log2_wide (x)
     log++,
     x >>= 1;
   return log;
-}
-
-static int float_handler_set;
-int float_handled;
-jmp_buf float_handler;
-
-/* Signals actually come here.  */
-
-static void
-float_signal (signo)
-     /* If this is missing, some compilers complain.  */
-     int signo ATTRIBUTE_UNUSED;
-{
-  if (float_handled == 0)
-    crash_signal (signo);
-  float_handled = 0;
-
-  /* On System-V derived systems, we must reinstall the signal handler.
-     This is harmless on BSD-derived systems.  */
-  signal (SIGFPE, float_signal);
-  longjmp (float_handler, 1);
-}
-
-/* Specify where to longjmp to when a floating arithmetic error happens.
-   If HANDLER is 0, it means don't handle the errors any more.  */
-
-static void
-set_float_handler (handler)
-     jmp_buf handler;
-{
-  float_handled = (handler != 0);
-  if (handler)
-    memcpy (float_handler, handler, sizeof (float_handler));
-
-  if (float_handled && ! float_handler_set)
-    {
-      signal (SIGFPE, float_signal);
-      float_handler_set = 1;
-    }
-}
-
-/* This is a wrapper function for code which might elicit an
-   arithmetic exception.  That code should be passed in as a function
-   pointer FN, and one argument DATA.  DATA is usually a struct which
-   contains the real input and output for function FN.  This function
-   returns 0 (failure) if longjmp was called (i.e. an exception
-   occurred.)  It returns 1 (success) otherwise.  */
-
-int
-do_float_handler (fn, data)
-     void (*fn) PARAMS ((PTR));
-     PTR data;
-{
-  jmp_buf buf;
-
-  if (setjmp (buf))
-    {
-      /* We got here via longjmp () caused by an exception in function
-         fn ().  */
-      set_float_handler (NULL);
-      return 0;
-    }
-
-  set_float_handler (buf);
-  (*fn)(data);
-  set_float_handler (NULL);
-  return 1;
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
@@ -4565,10 +4495,6 @@ general_init (argv0)
 
   gcc_init_libintl ();
 
-  /* Install handler for SIGFPE, which may be received while we do
-     compile-time floating point arithmetic.  */
-  signal (SIGFPE, float_signal);
-
   /* Trap fatal signals, e.g. SIGSEGV, and convert them to ICE messages.  */
 #ifdef SIGSEGV
   signal (SIGSEGV, crash_signal);
@@ -4584,6 +4510,9 @@ general_init (argv0)
 #endif
 #if defined SIGIOT && (!defined SIGABRT || SIGABRT != SIGIOT)
   signal (SIGIOT, crash_signal);
+#endif
+#ifdef SIGFPE
+  signal (SIGFPE, crash_signal);
 #endif
 
   /* Initialize the diagnostics reporting machinery, so option parsing

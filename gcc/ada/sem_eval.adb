@@ -921,20 +921,28 @@ package body Sem_Eval is
          declare
             Arr : constant Node_Id := Constant_Value (Entity (Prefix (Op)));
             Sub : constant Node_Id := First (Expressions (Op));
-            Ind : constant Node_Id := First_Index (Etype (Arr));
-            Lbd : constant Node_Id := Type_Low_Bound (Etype (Ind));
+            Aty : constant Node_Id := Etype (Arr);
 
             Lin : Nat;
             --  Linear one's origin subscript value for array reference
+
+            Lbd : Node_Id;
+            --  Lower bound of the first array index
 
             Elm : Node_Id;
             --  Value from constant array
 
          begin
+            if Ekind (Aty) = E_String_Literal_Subtype then
+               Lbd := String_Literal_Low_Bound (Aty);
+            else
+               Lbd := Type_Low_Bound (Etype (First_Index (Aty)));
+            end if;
+
             if Compile_Time_Known_Value (Sub)
               and then Nkind (Arr) = N_Aggregate
               and then Compile_Time_Known_Value (Lbd)
-              and then Is_Discrete_Type (Component_Type (Etype (Arr)))
+              and then Is_Discrete_Type (Component_Type (Aty))
             then
                Lin := UI_To_Int (Expr_Value (Sub) - Expr_Value (Lbd)) + 1;
 
