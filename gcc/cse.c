@@ -605,6 +605,12 @@ rtx_cost (x)
       /* Used in loop.c and combine.c as a marker.  */
       total = 0;
       break;
+    case ASM_OPERANDS:
+      /* We don't want these to be used in substitutions because
+	 we have no way of validating the resulting insn.  So assign
+	 anything containing an ASM_OPERANDS a very high cost.  */
+      total = 1000;
+      break;
     default:
       total = 2;
     }
@@ -1528,7 +1534,7 @@ rehash_using_reg (x)
       {
 	next = p->next_same_hash;
 	if (GET_CODE (p->exp) != REG && reg_mentioned_p (x, p->exp)
-	    && exp_equiv_p (p->exp, p->exp, 1)
+	    && exp_equiv_p (p->exp, p->exp, 1, 0)
 	    && i != (hash = safe_hash (p->exp, p->mode) % NBUCKETS))
 	  {
 	    if (p->next_same_hash)
@@ -3650,11 +3656,11 @@ simplify_binary_operation (code, mode, op0, op1)
   switch (code)
     {
     case PLUS:
-      val = arg0 + arg1;
+      val = arg0s + arg1s;
       break;
 
     case MINUS:
-      val = arg0 - arg1;
+      val = arg0s - arg1s;
       break;
 
     case MULT:
@@ -5956,7 +5962,8 @@ cse_insn (insn, in_libcall_block)
 	  /* We might have two BARRIERs separated by notes.  Delete the second
 	     one if so.  */
 
-	  if (p != insn && GET_CODE (NEXT_INSN (p)) == BARRIER)
+	  if (p != insn && NEXT_INSN (p) != 0
+	      && GET_CODE (NEXT_INSN (p)) == BARRIER)
 	    delete_insn (NEXT_INSN (p));
 
 	  cse_jumps_altered = 1;
