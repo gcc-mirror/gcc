@@ -73,6 +73,9 @@
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
+#undef TYPE_ASM_OP
+#undef SIZE_ASM_OP
+#undef WEAK_ASM_OP
 #define TYPE_ASM_OP	".type"
 #define SIZE_ASM_OP	".size"
 #define WEAK_ASM_OP	".weak"
@@ -83,6 +86,7 @@
    is just a default.  You may need to override it in your machine-
    specific tm.h file (depending upon the particulars of your assembler).  */
 
+#undef TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"@%s"
 
 /* Write the extra assembler code needed to declare a function's result.
@@ -102,6 +106,7 @@
    Some svr4 assemblers need to also have something extra said about the
    function's return value.  We allow for that here.  */
 
+#undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
@@ -115,6 +120,7 @@
 
 /* Write the extra assembler code needed to declare an object properly.  */
 
+#undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
     fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
@@ -139,6 +145,7 @@
    size_directive_output was set
    by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
 
+#undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);			 \
@@ -156,6 +163,7 @@ do {									 \
 
 /* This is how to declare the size of a function.  */
 
+#undef ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
     if (!flag_inhibit_size_directive)					\
