@@ -622,7 +622,7 @@
 ;; register.  Trying to reload it will always fail catastrophically,
 ;; so never allow those alternatives to match if reloading is needed.
 (define_insn "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=l,l,l,*r,*h,l,!k")
+  [(set (match_operand:SI          0 "register_operand" "=l,l,l,*r,*h,l,!k")
 	(plus:SI (match_operand:SI 1 "register_operand" "%0,0,l,*0,*0,!k,!k")
 		 (match_operand:SI 2 "nonmemory_operand" "I,J,lL,*h,*r,!M,!O")))]
   ""
@@ -1107,14 +1107,17 @@
 ")
 
 (define_expand "epilogue"
-  [(unspec_volatile [(const_int 0)] 1)]
+  [(unspec_volatile [(return)] 1)]
   "! thumb_trivial_epilogue ()"
   "
   thumb_expand_epilogue ();
+  emit_jump_insn (gen_rtx_UNSPEC_VOLATILE (VOIDmode,
+	gen_rtvec (1, gen_rtx_RETURN (VOIDmode)), 1));
+  DONE;
 ")
 
 (define_insn "*epilogue_insns"
-  [(unspec_volatile [(const_int 0)] 1)]
+  [(unspec_volatile [(return)] 1)]
   ""
   "*
   return thumb_unexpanded_epilogue ();
