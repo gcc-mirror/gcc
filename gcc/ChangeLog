@@ -1,3 +1,32 @@
+Sat Jan 13 09:53:32 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_fp_comparison_arithmetics_cost,
+	ix86_fp_comparison_fcomi_cost, ix86_fp_comparison_sahf_cost,
+	ix86_fp_comparison_cost): New functions.
+	(ix86_expand_fp_compare): Use the costs to choose best bethod; add
+	two new parameters SECOND_TEST and BYPASS_TEST; allow generating
+	two-branch sequences; make static.
+	(ix86_use_fcomi_compare): Do decision according to the costs.
+	(split_fp_branch): New.
+	* i386.md (compare-and-branch patterns): Use split_fp_branch.
+	* i386-protos.h (ix86_expand_fp_compare): Remove
+	(ix86_split_fp_branch): Declare.
+
+	* i386.h (PREDICATE_CODES): Update codes from fcmov_comparison_operand
+	and ix86_comparison_operator.
+
+	* i386.c (ix86_prepare_fp_compare_args): Try to rearange the comparison
+	to make it cheaper.
+
+	* i386.c (put_condition_code): Output properly the unordered/ordered
+	compares in fp case.
+	(ix86_expand_fp_movcc): Use ix86_expand_compare infrastructure.
+
+	* tm.texi (REVERSE_CONDITION): Document.
+	* i386.c (ix86_fp_compare_mode): Simplify; return always CCFPmode
+	in -ffast-math mode.
+	* i386.h (REVERSE_CONDITION, REVERSIBLE_CC_MODE): New macro.
+
 2001-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (sh_expand_epilogue): Use PR explicitly.

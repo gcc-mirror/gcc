@@ -101,7 +101,6 @@ extern void ix86_expand_unary_operator PARAMS ((enum rtx_code, enum machine_mode
 extern int ix86_unary_operator_ok PARAMS ((enum rtx_code, enum machine_mode,
 					 rtx[]));
 extern int ix86_match_ccmode PARAMS ((rtx, enum machine_mode));
-extern rtx ix86_expand_fp_compare PARAMS ((enum rtx_code, rtx, rtx, rtx));
 extern rtx ix86_expand_compare PARAMS ((enum rtx_code));
 extern int ix86_use_fcomi_compare PARAMS ((enum rtx_code));
 extern void ix86_expand_branch PARAMS ((enum rtx_code, rtx));
@@ -129,6 +128,7 @@ extern enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 
 extern rtx ix86_force_to_memory PARAMS ((enum machine_mode, rtx));
 extern void ix86_free_from_memory PARAMS ((enum machine_mode));
+extern void ix86_split_fp_branch PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
 
 #ifdef TREE_CODE
 extern void init_cumulative_args PARAMS ((CUMULATIVE_ARGS *, tree, rtx));
