@@ -126,6 +126,11 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
+#ifdef DWARF2_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+#endif
+
 extern int rtx_equal_function_value_matters;
 
 #if ! (defined (VMS) || defined (OS2))
@@ -238,6 +243,7 @@ extern int target_flags;
 int rtl_dump = 0;
 int rtl_dump_and_exit = 0;
 int jump_opt_dump = 0;
+int addressof_dump = 0;
 int cse_dump = 0;
 int loop_dump = 0;
 int cse2_dump = 0;
@@ -851,6 +857,7 @@ FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file;
 FILE *jump_opt_dump_file;
+FILE *addressof_dump_file;
 FILE *cse_dump_file;
 FILE *loop_dump_file;
 FILE *cse2_dump_file;
@@ -1015,6 +1022,8 @@ fatal_insn (message, insn)
     fflush (rtl_dump_file);
   if (jump_opt_dump_file)
     fflush (jump_opt_dump_file);
+  if (addressof_dump_file)
+    fflush (addressof_dump_file);
   if (cse_dump_file)
     fflush (cse_dump_file);
   if (loop_dump_file)
@@ -2171,6 +2180,10 @@ compile_file (name)
   if (jump_opt_dump)
     jump_opt_dump_file = open_dump_file (dump_base_name, ".jump");
 
+  /* If addressof dump desired, open the output file.  */
+  if (addressof_dump)
+    addressof_dump_file = open_dump_file (dump_base_name, ".addressof");
+
   /* If cse dump desired, open the output file.  */
   if (cse_dump)
     cse_dump_file = open_dump_file (dump_base_name, ".cse");
@@ -2486,6 +2499,7 @@ compile_file (name)
 		&& DECL_INITIAL (decl) != 0
 		&& DECL_SAVED_INSNS (decl) != 0
 		&& (flag_keep_inline_functions
+		    || TREE_PUBLIC (decl)
 		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
 	      {
 		reconsider = 1;
@@ -2656,6 +2670,9 @@ compile_file (name)
 
   if (jump_opt_dump)
     fclose (jump_opt_dump_file);
+
+  if (addressof_dump)
+    fclose (addressof_dump_file);
 
   if (cse_dump)
     fclose (cse_dump_file);
@@ -2901,7 +2918,7 @@ rest_of_compilation (decl)
 	TIMEVAR (dump_time,
 		 {
 		   fprintf (rtl_dump_file, "\n;; Function %s\n\n",
-			    IDENTIFIER_POINTER (DECL_NAME (decl)));
+			    (*decl_printable_name) (decl, 2));
 		   if (DECL_SAVED_INSNS (decl))
 		     fprintf (rtl_dump_file, ";; (integrable)\n\n");
 		   print_rtl (rtl_dump_file, insns);
@@ -2915,6 +2932,18 @@ rest_of_compilation (decl)
 	 functions that we are supposed to defer.  We cannot defer
 	 functions containing nested functions since the nested function
 	 data is in our non-saved obstack.  */
+
+      /* If this is a nested inline, remove ADDRESSOF now so we can
+	 finish compiling ourselves.  Otherwise, wait until EOF.
+	 We have to do this because the purge_addressof transformation
+	 changes the DECL_RTL for many variables, which confuses integrate.  */
+      if (DECL_INLINE (decl))
+	{
+	  if (decl_function_context (decl))
+	    purge_addressof (insns);
+	  else
+	    DECL_DEFER_OUTPUT (decl) = 1;
+	}
 
       if (! current_function_contains_functions
 	  && (DECL_DEFER_OUTPUT (decl)
@@ -3066,7 +3095,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (jump_opt_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	       print_rtl (jump_opt_dump_file, insns);
 	       fflush (jump_opt_dump_file);
 	     });
@@ -3080,7 +3109,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (cse_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   if (optimize > 0)
@@ -3108,11 +3137,23 @@ rest_of_compilation (decl)
 	       fflush (cse_dump_file);
 	     });
 
+  purge_addressof (insns);
+  reg_scan (insns, max_reg_num (), 1);
+
+  if (addressof_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
+			(*decl_printable_name) (decl, 2));
+	       print_rtl (addressof_dump_file, insns);
+	       fflush (addressof_dump_file);
+	     });
+
   if (loop_dump)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (loop_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   /* Move constant computations out of loops.  */
@@ -3138,7 +3179,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (cse2_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   if (optimize > 0 && flag_rerun_cse_after_loop)
@@ -3178,7 +3219,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (branch_prob_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
@@ -3213,7 +3254,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (flow_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   if (obey_regdecls)
@@ -3259,7 +3300,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (combine_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	       dump_combine_stats (combine_dump_file);
 	       print_rtl (combine_dump_file, insns);
 	       fflush (combine_dump_file);
@@ -3272,7 +3313,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (sched_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	     });
 
   if (optimize > 0 && flag_schedule_insns)
@@ -3308,7 +3349,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (local_reg_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	       dump_flow_info (local_reg_dump_file);
 	       dump_local_alloc (local_reg_dump_file);
 	       print_rtl (local_reg_dump_file, insns);
@@ -3318,7 +3359,7 @@ rest_of_compilation (decl)
   if (global_reg_dump)
     TIMEVAR (dump_time,
 	     fprintf (global_reg_dump_file, "\n;; Function %s\n\n",
-		      IDENTIFIER_POINTER (DECL_NAME (decl))));
+		      (*decl_printable_name) (decl, 2)));
 
   /* Save the last label number used so far, so reorg can tell
      when it's safe to kill spill regs.  */
@@ -3366,7 +3407,7 @@ rest_of_compilation (decl)
 	TIMEVAR (dump_time,
 		 {
 		   fprintf (sched2_dump_file, "\n;; Function %s\n\n",
-			    IDENTIFIER_POINTER (DECL_NAME (decl)));
+			    (*decl_printable_name) (decl, 2));
 		 });
 
       /* Do control and data sched analysis again,
@@ -3406,7 +3447,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       fprintf (jump2_opt_dump_file, "\n;; Function %s\n\n",
-			IDENTIFIER_POINTER (DECL_NAME (decl)));
+			(*decl_printable_name) (decl, 2));
 	       print_rtl (jump2_opt_dump_file, insns);
 	       fflush (jump2_opt_dump_file);
 	     });
@@ -3428,7 +3469,7 @@ rest_of_compilation (decl)
 	  TIMEVAR (dump_time,
 		 {
 		   fprintf (dbr_sched_dump_file, "\n;; Function %s\n\n",
-			    IDENTIFIER_POINTER (DECL_NAME (decl)));
+			    (*decl_printable_name) (decl, 2));
 		   print_rtl (dbr_sched_dump_file, insns);
 		   fflush (dbr_sched_dump_file);
 		 });
@@ -3449,7 +3490,7 @@ rest_of_compilation (decl)
       TIMEVAR (dump_time,
 	       {
 		 fprintf (stack_reg_dump_file, "\n;; Function %s\n\n",
-			  IDENTIFIER_POINTER (DECL_NAME (decl)));
+		          (*decl_printable_name) (decl, 2));
 		 print_rtl (stack_reg_dump_file, insns);
 		 fflush (stack_reg_dump_file);
 	       });
@@ -3721,6 +3762,7 @@ main (argc, argv, envp)
  		    flow_dump = 1;
  		    global_reg_dump = 1;
  		    jump_opt_dump = 1;
+ 		    addressof_dump = 1;
  		    jump2_opt_dump = 1;
  		    local_reg_dump = 1;
  		    loop_dump = 1;
@@ -3750,6 +3792,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'j':
 		    jump_opt_dump = 1;
+		    break;
+		  case 'D':
+		    addressof_dump = 1;
 		    break;
 		  case 'J':
 		    jump2_opt_dump = 1;
