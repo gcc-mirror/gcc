@@ -1,5 +1,5 @@
 /* data.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -977,6 +977,8 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
 
   while (subscripts != NULL)
     {
+      ffeinfoKindtype sub_kind, low_kind, hi_kind;
+
       ++rank;
       assert (dims != NULL);
 
@@ -984,7 +986,15 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
       dim = ffebld_head (dims);
 
       assert (ffeinfo_basictype (ffebld_info (subscript)) == FFEINFO_basictypeINTEGER);
-      assert (ffeinfo_kindtype (ffebld_info (subscript)) == FFEINFO_kindtypeINTEGER1);
+      /* Force to default - it's a constant expression !  */
+      sub_kind = ffeinfo_kindtype (ffebld_info (subscript));
+      if (sub_kind == FFEINFO_kindtypeINTEGER2)
+	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer2;
+      else if (sub_kind == FFEINFO_kindtypeINTEGER3)
+	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer3;
+      else if (sub_kind == FFEINFO_kindtypeINTEGER4)
+	subscript->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) subscript->u.conter.expr->u.integer4;
+      ffeinfo_kindtype (ffebld_info (subscript)) = FFEINFO_kindtypeINTEGERDEFAULT;
       value = ffedata_eval_integer1_ (subscript);
 
       assert (ffebld_op (dim) == FFEBLD_opBOUNDS);
@@ -996,12 +1006,28 @@ ffedata_eval_offset_ (ffebld subscripts, ffebld dims)
       else
 	{
 	  assert (ffeinfo_basictype (ffebld_info (low)) == FFEINFO_basictypeINTEGER);
-	  assert (ffeinfo_kindtype (ffebld_info (low)) == FFEINFO_kindtypeINTEGERDEFAULT);
+	  /* Force to default - it's a constant expression !  */
+	  low_kind = ffeinfo_kindtype (ffebld_info (low));
+	  if (low_kind == FFEINFO_kindtypeINTEGER2)
+	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer2;
+	  else if (low_kind == FFEINFO_kindtypeINTEGER3)
+	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer3;
+	  else if (low_kind == FFEINFO_kindtypeINTEGER4)
+	    low->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) low->u.conter.expr->u.integer4;
+	  ffeinfo_kindtype (ffebld_info (low)) = FFEINFO_kindtypeINTEGERDEFAULT;
 	  lowbound = ffedata_eval_integer1_ (low);
 	}
 
       assert (ffeinfo_basictype (ffebld_info (high)) == FFEINFO_basictypeINTEGER);
-      assert (ffeinfo_kindtype (ffebld_info (high)) == FFEINFO_kindtypeINTEGERDEFAULT);
+      /* Force to default - it's a constant expression !  */
+      hi_kind = ffeinfo_kindtype (ffebld_info (high));
+      if (hi_kind == FFEINFO_kindtypeINTEGER2)
+	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer2;
+      else if (hi_kind == FFEINFO_kindtypeINTEGER3)
+	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer3;
+      else if (hi_kind == FFEINFO_kindtypeINTEGER4)
+	high->u.conter.expr->u.integer1 = (ffetargetIntegerDefault) high->u.conter.expr->u.integer4;
+      ffeinfo_kindtype (ffebld_info (high)) = FFEINFO_kindtypeINTEGERDEFAULT;
       highbound = ffedata_eval_integer1_ (high);
 
       if ((value < lowbound) || (value > highbound))

@@ -1,5 +1,10 @@
 2002-02-09  Toon Moene  <toon@moene.indiv.nluug.nl>
 
+	* data.c (ffedata_eval_offset_): Convert non-default integer
+	constants to default integer kind if necessary.
+
+2002-02-09  Toon Moene  <toon@moene.indiv.nlug.nl>
+
 	* invoke.texi: Add a short debugging session
 	as an example to the documentation of -g.
 
