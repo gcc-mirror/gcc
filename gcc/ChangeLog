@@ -1,3 +1,7 @@
+2004-12-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/tm.texi (Misc): Document TARGET_FOLD_BUILTIN.
+
 2004-12-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* mklibgcc.in: Put back the default set of EXTRA_MULTILIB_PART.
