@@ -1,3 +1,7 @@
+2001-09-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/File.java (toURL): Use getAbsolutePath and `file://'.
+
 2001-09-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/Properties.java (load): Correctly read \u sequences.
