@@ -1,3 +1,8 @@
+2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* src/s390/ffi.c (ffi_prep_args): Fix C aliasing violation.
+	(ffi_check_float_struct): Remove unused prototype.
+
 2004-06-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* src/powerpc/ffi_darwin.c (flush_icache): ';' is a comment

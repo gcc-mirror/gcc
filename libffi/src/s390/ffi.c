@@ -69,7 +69,6 @@
 /*====================================================================*/
  
 static void ffi_prep_args (unsigned char *, extended_cif *);
-static int ffi_check_float_struct (ffi_type *);
 void
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 __attribute__ ((visibility ("hidden")))
@@ -222,15 +221,7 @@ ffi_prep_args (unsigned char *stack, extended_cif *ecif)
 	    }
 	}
 
-      /* Pointers are passed like UINTs of the same size.  */
-      if (type == FFI_TYPE_POINTER)
-#ifdef __s390x__
-	type = FFI_TYPE_UINT64;
-#else
-	type = FFI_TYPE_UINT32;
-#endif
-
-      /* Now handle all primitive int/float data types.  */
+      /* Now handle all primitive int/pointer/float data types.  */
       switch (type) 
 	{
 	  case FFI_TYPE_DOUBLE:
@@ -250,6 +241,13 @@ ffi_prep_args (unsigned char *stack, extended_cif *ecif)
 	      p_fpr[n_fpr++] = (long long) *(unsigned int *) arg << 32;
 	    else
 	      p_ov[n_ov++] = *(unsigned int *) arg;
+	    break;
+
+	  case FFI_TYPE_POINTER:
+	    if (n_gpr < MAX_GPRARGS)
+	      p_gpr[n_gpr++] = (unsigned long)*(unsigned char **) arg;
+	    else
+	      p_ov[n_ov++] = (unsigned long)*(unsigned char **) arg;
 	    break;
  
 	  case FFI_TYPE_UINT64:
