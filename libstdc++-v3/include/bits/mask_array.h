@@ -63,6 +63,15 @@ namespace std {
     public:
       typedef _Tp value_type;
 
+      // this constructor needs to be implemented.
+      ///  Copy constructor.  Both slices refer to the same underlying array.
+      mask_array (const mask_array&);
+      
+      // This operator must be public.  See DR-253.
+      ///  Assignment operator.  Assigns elements to corresponding elements
+      ///  of @a a.
+      mask_array& operator=(const mask_array&);
+
       void operator=(const valarray<_Tp>&) const;
       ///  Multiply slice elements by corresponding elements of @a v.
       void operator*=(const valarray<_Tp>&) const;
@@ -120,15 +129,8 @@ namespace std {
       const _Array<bool> _M_mask;
       const _Array<_Tp>   _M_array;
 
-      ///  Copy constructor.  Both slices refer to the same underlying array.
-      mask_array (const mask_array&);
-
       // not implemented
       mask_array();
-
-      ///  Assignment operator.  Assigns elements to corresponding elements
-      ///  of @a a.
-      mask_array& operator=(const mask_array&);
     };
 
 
@@ -140,6 +142,15 @@ namespace std {
     inline
     mask_array<_Tp>::mask_array(_Array<_Tp> __a, size_t __s, _Array<bool> __m)
       : _M_sz(__s), _M_mask(__m), _M_array(__a) {}
+
+  template<typename _Tp>
+    inline mask_array<_Tp>&
+    mask_array<_Tp>::operator=(const mask_array<_Tp>& __a)
+    {
+      std::__valarray_copy(__a._M_array, __a._M_mask,
+			   _M_sz, _M_array, _M_mask);
+      return *this;
+    }
 
   template<typename _Tp>
     inline void

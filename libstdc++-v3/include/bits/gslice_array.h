@@ -61,6 +61,15 @@ namespace std {
     public:
       typedef _Tp value_type;
 
+      // this constructor needs to be implemented.
+      ///  Copy constructor.  Both slices refer to the same underlying array.
+      gslice_array(const gslice_array&);
+
+      // This operator must be public.  See DR-253.
+      ///  Assignment operator.  Assigns slice elements to corresponding
+      ///  elements of @a a.
+      gslice_array& operator=(const gslice_array&);
+
       ///  Assign slice elements to corresponding elements of @a v.
       void operator=(const valarray<_Tp>&) const;
       ///  Multiply slice elements by corresponding elements of @a v.
@@ -117,16 +126,8 @@ namespace std {
 
       gslice_array(_Array<_Tp>, const valarray<size_t>&);
 
-      // this constructor needs to be implemented.
-      ///  Copy constructor.  Both slices refer to the same underlying array.
-      gslice_array(const gslice_array&);
-
       // not implemented
       gslice_array();
-
-      ///  Assignment operator.  Assigns slice elements to corresponding
-      ///  elements of @a a.
-      gslice_array& operator= (const gslice_array&);
     };
 
   template<typename _Tp>
@@ -141,6 +142,16 @@ namespace std {
     gslice_array<_Tp>::gslice_array(const gslice_array<_Tp>& __a)
       : _M_array(__a._M_array), _M_index(__a._M_index) {}
 
+
+  template<typename _Tp>
+    inline gslice_array<_Tp>&
+    gslice_array<_Tp>::operator=(const gslice_array<_Tp>& __a)
+    {
+      std::__valarray_copy(_Array<_Tp>(__a._M_array),
+			   _Array<size_t>(__a._M_index), _M_index.size(),
+			   _M_array, _Array<size_t>(_M_index));
+      return *this;
+    }
 
   template<typename _Tp>
     inline void

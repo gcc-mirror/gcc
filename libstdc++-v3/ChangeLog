@@ -1,3 +1,15 @@
+2004-03-10  Jerry Quinn  <jlquinn@optonline.net>
+
+	PR 3247
+	* include/bits/gslice_array.h (gslice_array()): Make public.
+	(operator=(gslice_array)): Make public.  Implement.
+	* include/bits/indirect_array.h (indirect_array()): Make public.
+	* include/bits/mask_array.h (mask_array()): Make public.
+	(operator=(mask_array)): Make public.  Implement.
+	* include/bits/valarray_array.tcc (__valarray_copy):
+	Comment.  Add versions for gslice_array and mask_array.
+	* testsuite/26_numerics/valarray_subset_assignment.cc:  New test.
+
 2004-03-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/23_containers/deque/modifiers/swap.cc: Add in bits for
