@@ -393,6 +393,18 @@
 	java/awt/Shape.java, java/awt/SystemColor.java, java/awt/Toolkit.java,
 	java/awt/Transparency.java, java/awt/Window.java: Merge from classpath.
 
+	* java/awt/im/spi/InputMethod.java,
+	java/awt/im/spi/InputMethodContext.java,
+	java/awt/im/spi/InputMethodDescriptor.java,
+	java/awt/image/renderable/ContextualRenderedImageFactory.java,
+	java/awt/image/renderable/ParameterBlock.java,
+	java/awt/image/renderable/RenderContext.java,
+	java/awt/image/renderable/RenderableImage.java,
+	java/awt/image/renderable/RenderableImageOp.java,
+	java/awt/image/renderable/RenderableImageProducer.java,
+	java/awt/image/renderable/RenderedImageFactory.java: New files from
+	classpath.
+
 	* Makefile.am: Add new files.
 	* Makefile.in: Rebuilt.
 
