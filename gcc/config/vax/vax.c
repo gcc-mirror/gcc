@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -593,12 +593,12 @@ static REAL_VALUE_TYPE float_values[4];
 static int inited_float_values = 0;
 
 
-void
-check_float_value (mode, d)
+int
+check_float_value (mode, d, overflow)
      enum machine_mode mode;
      REAL_VALUE_TYPE *d;
+     int overflow;
 {
-
   if (inited_float_values == 0)
     {
       int i;
@@ -606,7 +606,14 @@ check_float_value (mode, d)
 	{
 	  float_values[i] = REAL_VALUE_ATOF (float_strings[i], DFmode);
 	}
-    inited_float_values = 1;
+
+      inited_float_values = 1;
+    }
+
+  if (overflow)
+    {
+      bcopy (&float_values[0], d, sizeof (REAL_VALUE_TYPE));
+      return 1;
     }
 
   if ((mode) == SFmode)
@@ -615,27 +622,29 @@ check_float_value (mode, d)
       bcopy (d, &r, sizeof (REAL_VALUE_TYPE));
       if (REAL_VALUES_LESS (float_values[0], r))
 	{
-	  error ("magnitude of constant too large for `float'");
 	  bcopy (&float_values[0], d, sizeof (REAL_VALUE_TYPE));
+	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, float_values[1]))
 	{
-	  error ("magnitude of constant too large for `float'");
 	  bcopy (&float_values[1], d, sizeof (REAL_VALUE_TYPE));
+	  return 1;
 	}
       else if (REAL_VALUES_LESS (dconst0, r)
 		&& REAL_VALUES_LESS (r, float_values[2]))
 	{
-	  warning ("`float' constant truncated to zero");
 	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, dconst0)
 		&& REAL_VALUES_LESS (float_values[3], r))
 	{
-	  warning ("`float' constant truncated to zero");
 	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	  return 1;
 	}
     }
+
+  return 0;
 }
 
 /* Linked list of all externals that are to be emitted when optimizing

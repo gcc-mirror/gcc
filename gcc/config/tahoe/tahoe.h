@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Tahoe version.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -135,21 +135,19 @@ extern int target_flags;
 /* this section is borrowed from the vax version since the */
 /* formats are the same in both of the architectures	   */
 
-#define CHECK_FLOAT_VALUE(mode, d) \
-  if ((mode) == SFmode) \
-    { \
-      if ((d) > 1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = 1.7014117331926443e+38; } \
-      else if ((d) < -1.7014117331926443e+38) \
-	{ error ("magnitude of constant too large for `float'"); \
-	  (d) = -1.7014117331926443e+38; } \
-      else if (((d) > 0) && ((d) < 2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
-      else if (((d) < 0) && ((d) > -2.9387358770557188e-39)) \
-	{ warning ("`float' constant truncated to zero"); \
-	  (d) = 0.0; } \
+#define CHECK_FLOAT_VALUE(MODE, D, OVEFLOW) \
+  if (OVERFLOW)								\
+    (D) = 1.7014117331926443e+38;					\
+  else if ((MODE) == SFmode)						\
+    {									\
+      if ((D) > 1.7014117331926443e+38)					\
+	(OVERFLOW) = 1, (D) = 1.7014117331926443e+38;			\
+      else if ((D) < -1.7014117331926443e+38)				\
+	(OVERFLOW) = 1, (D) = -1.7014117331926443e+38;			\
+      else if (((D) > 0) && ((D) < 2.9387358770557188e-39))		\
+	(OVERFLOW) = 1, (D) = 0.0;					\
+      else if (((D) < 0) && ((D) > -2.9387358770557188e-39))		\
+	(OVERFLOW) = 1, (D) = 0.0;					\
     }
 
 

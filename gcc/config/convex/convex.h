@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1180,8 +1180,8 @@ enum reg_class {
 extern double atof();
 
 /* Check a `double' value for validity for a particular machine mode.  */
-#define CHECK_FLOAT_VALUE(mode, d) \
-    check_float_value ((mode), &(d))
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
+   overflow = check_float_value (MODE, &D, OVERFLOW)
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

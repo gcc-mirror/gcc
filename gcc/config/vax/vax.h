@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vax version.
-   Copyright (C) 1987, 1988, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -912,7 +912,8 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 /* note that it is very hard to accidentally create a number that fits in a
    double but not in a float, since their ranges are almost the same */
 
-#define CHECK_FLOAT_VALUE(mode, d) (check_float_value (mode, &d))
+#define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW)
+  ((OVERFLOW) = check_float_value (MODE, &D, OVERFLOW))
 
 /* For future reference:
    D Float: 9 bit, sign magnitude, excess 128 binary exponent
