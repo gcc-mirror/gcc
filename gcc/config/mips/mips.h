@@ -526,7 +526,7 @@ extern void		sbss_section PARAMS ((void));
 #if TARGET_ENDIAN_DEFAULT == 0
 #define LINKER_ENDIAN_SPEC "%{!EB:%{!meb:-EL}}"
 #else
-#define LINKER_ENDIAN_SPEC ""
+#define LINKER_ENDIAN_SPEC "%{!EL:%{!mel:-EB}}"
 #endif
 #endif
 
