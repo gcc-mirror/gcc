@@ -893,9 +893,9 @@ output_move_dconst (n, s)
     strcpy (r, "movzbd ");
   else if (n > 0 && n < 65536)
     strcpy (r, "movzwd ");
-  else if (n < 0 && n > -257)
+  else if (n < 0 && n > -129)
     strcpy (r, "movxbd ");
-  else if (n < 0 && n > -65537)
+  else if (n < 0 && n > -32769)
     strcpy (r, "movxwd ");
   else
     strcpy (r, "movd ");
