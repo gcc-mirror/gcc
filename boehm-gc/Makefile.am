@@ -45,7 +45,7 @@ AM_CFLAGS = @BOEHM_GC_CFLAGS@
 
 check_PROGRAMS = gctest
 gctest_SOURCES = test.c
-gctest_LDADD = ./libgcjgc.la $(THREADLIB)
+gctest_LDADD = ./libgcjgc.la $(THREADLIB) $(EXTRA_TEST_LIBS)
 
 TESTS = gctest
 
