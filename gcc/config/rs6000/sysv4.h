@@ -1020,7 +1020,7 @@ do {						\
 #undef	LINK_SPEC
 #define	LINK_SPEC "\
 %{h*} %{v:-V} %{G*} \
-%{Wl,*:%*} %{YP,*} %{R*} \
+%{YP,*} %{R*} \
 %{Qy:} %{!Qn:-Qy} \
 %(link_shlib) \
 %{!Wl,-T*: %{!T*: %(link_start) }} \
