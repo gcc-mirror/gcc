@@ -31,6 +31,7 @@ Written by Per Bothner (bothner@cygnus.com). */
 #include "editbuf.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* NOTE: Some of the code here is taken from GNU emacs */
 /* Hence this file falls under the GNU License! */
