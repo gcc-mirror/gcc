@@ -7130,6 +7130,76 @@
    (set_attr "length" "8")]
 )
 
+(define_insn "*cmp_and"
+  [(set (match_operand 6 "dominant_cc_register" "")
+	(compare
+	 (and:SI
+	  (match_operator 4 "arm_comparison_operator"
+	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	  (match_operator:SI 5 "arm_comparison_operator"
+	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")]))
+	 (const_int 0)))]
+  "TARGET_ARM"
+  "*
+  {
+    const char * opcodes[4][2] =
+    {
+      {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",
+       \"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
+      {\"cmp\\t%2, %3\;cmn%d5\\t%0, #%n1\",
+       \"cmn\\t%0, #%n1\;cmp%d4\\t%2, %3\"},
+      {\"cmn\\t%2, #%n3\;cmp%d5\\t%0, %1\",
+       \"cmp\\t%0, %1\;cmn%d4\\t%2, #%n3\"},
+      {\"cmn\\t%2, #%n3\;cmn%d5\\t%0, #%n1\",
+       \"cmn\\t%0, #%n1\;cmn%d4\\t%2, #%n3\"}
+    };
+    int swap =
+      comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
+
+    return opcodes[which_alternative][swap];
+  }"
+  [(set_attr "conds" "set")
+   (set_attr "predicable" "no")
+   (set_attr "length" "8")]
+)
+
+(define_insn "*cmp_ior"
+  [(set (match_operand 6 "dominant_cc_register" "")
+	(compare
+	 (ior:SI
+	  (match_operator 4 "arm_comparison_operator"
+	   [(match_operand:SI 0 "s_register_operand" "r,r,r,r")
+	    (match_operand:SI 1 "arm_add_operand" "rI,L,rI,L")])
+	  (match_operator:SI 5 "arm_comparison_operator"
+	   [(match_operand:SI 2 "s_register_operand" "r,r,r,r")
+	    (match_operand:SI 3 "arm_add_operand" "rI,rI,L,L")]))
+	 (const_int 0)))]
+  "TARGET_ARM"
+  "*
+{
+  const char * opcodes[4][2] =
+  {
+    {\"cmp\\t%0, %1\;cmp%D4\\t%2, %3\",
+     \"cmp\\t%2, %3\;cmp%D5\\t%0, %1\"},
+    {\"cmn\\t%0, #%n1\;cmp%D4\\t%2, %3\",
+     \"cmp\\t%2, %3\;cmn%D5\\t%0, #%n1\"},
+    {\"cmp\\t%0, %1\;cmn%D4\\t%2, #%n3\",
+     \"cmn\\t%2, #%n3\;cmp%D5\\t%0, %1\"},
+    {\"cmn\\t%0, #%n1\;cmn%D4\\t%2, #%n3\",
+     \"cmn\\t%2, #%n3\;cmn%D5\\t%0, #%n1\"}
+  };
+  int swap =
+    comparison_dominates_p (GET_CODE (operands[5]), GET_CODE (operands[4]));
+
+  return opcodes[which_alternative][swap];
+}
+"
+  [(set_attr "conds" "set")
+   (set_attr "length" "8")]
+)
+
 (define_insn "*negscc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(neg:SI (match_operator 3 "arm_comparison_operator"
@@ -8598,29 +8668,6 @@
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
-			  [(match_operand 2 "" "") (match_operand 3 "" "")])
-			 (match_operand 4 "" "")
-			 (match_operand 5 "" "")))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed && 0"
-  [(set (match_dup 6) (match_dup 7))
-   (set (match_dup 0) 
-	(if_then_else:SI (match_op_dup 1 [(match_dup 6) (const_int 0)])
-			 (match_dup 4)
-			 (match_dup 5)))]
-  "
-  {
-    enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
-					     operands[2], operands[3]);
-
-    operands[6] = gen_rtx_REG (mode, CC_REGNUM);
-    operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
-  }"
-)
-
-(define_split
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(if_then_else:SI (match_operator 1 "arm_comparison_operator"
 			  [(match_operand:SI 2 "s_register_operand" "")
 			   (match_operand:SI 3 "arm_add_operand" "")])
 			 (match_operand:SI 4 "arm_rhs_operand" "")
@@ -8629,17 +8676,24 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM && reload_completed"
   [(set (match_dup 6) (match_dup 7))
-   (set (match_dup 0) 
-	(if_then_else:SI (match_op_dup 1 [(match_dup 6) (const_int 0)])
-			 (match_dup 4)
-			 (not:SI (match_dup 5))))]
+   (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
+	      (set (match_dup 0) (match_dup 4)))
+   (cond_exec (match_dup 8)
+	      (set (match_dup 0) (not:SI (match_dup 5))))]
   "
   {
     enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
 					     operands[2], operands[3]);
+    enum rtx_code rc = GET_CODE (operands[1]);
 
     operands[6] = gen_rtx_REG (mode, CC_REGNUM);
     operands[7] = gen_rtx (COMPARE, mode, operands[2], operands[3]);
+    if (mode == CCFPmode || mode == CCFPEmode)
+      rc = reverse_condition_maybe_unordered (rc);
+    else
+      rc = reverse_condition (rc);
+
+    operands[8] = gen_rtx_fmt_ee (rc, VOIDmode, operands[6], const0_rtx);
   }"
 )
 
