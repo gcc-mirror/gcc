@@ -1,3 +1,8 @@
+2005-03-08  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20030728-1.c: Update to account for recent
+	PHI-OPT changes.
+
 2005-03-08  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/pr20122.c: New test.

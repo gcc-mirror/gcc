@@ -41,7 +41,7 @@ objects_must_conflict_p (t1, t2)
   return foo (t2 ? get_alias_set (t2) : 0);
 }
 
-/* There should be three assignments of variables to the value zero.  */
-/* { dg-final { scan-tree-dump-times " = 0" 3 "optimized"} } */
+/* There should be two assignments of variables to the value zero.  */
+/* { dg-final { scan-tree-dump-times " = 0" 2 "optimized"} } */
  
 
