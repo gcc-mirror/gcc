@@ -2403,6 +2403,8 @@ typedef struct record_layout_info_s
   /* The static variables (i.e., class variables, as opposed to
      instance variables) encountered in T.  */
   tree pending_statics;
+  /* Bits remaining in the current alignment group */
+  int remaining_in_alignment;
   int packed_maybe_necessary;
 } *record_layout_info;
 

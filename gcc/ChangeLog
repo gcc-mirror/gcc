@@ -1,3 +1,17 @@
+2002-09-18  Douglas Rupp  <rupp@gnat.com>
+	    Donn Terry  <donnte@microsoft.com>
+
+	* stor-layout.c (place_field): Handle alignment of whole
+	structures when MSVC compatible bitfields are involved.
+	Change method of computing location of MS bitfields to
+	be compatible with #pragma pack(n).
+
+	* tree.h (record_layout_info): Add new field
+	remaining_in_alignment.
+
+	* doc/tm.texi: (TARGET_MS_BITFIELD_LAYOUT_P): Update.
+	(pragma pack): Add paragraph on MSVC bitfield packing.
+
 2002-09-18  Richard Earnshaw  (reanrsha@arm.com)
 
 	PR optimization/7967
