@@ -42,7 +42,7 @@ public final class FileDescriptor
   static final int CUR = 1;
 
   // Open a file.  MODE is a combination of the above mode flags.
-  FileDescriptor (String path, int mode) throws IOException
+  FileDescriptor (String path, int mode) throws FileNotFoundException
   {
     fd = open (path, mode);
   }
@@ -52,7 +52,7 @@ public final class FileDescriptor
     fd = -1;
   }
 
-  native int open (String path, int mode) throws IOException;
+  native int open (String path, int mode) throws FileNotFoundException;
   native void write (int b) throws IOException;
   native void write (byte[] b, int offset, int len)
     throws IOException, NullPointerException, IndexOutOfBoundsException;

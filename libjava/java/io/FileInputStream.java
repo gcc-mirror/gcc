@@ -23,7 +23,7 @@ public class FileInputStream extends InputStream
   /* Contains the file descriptor for referencing the actual file. */
   private FileDescriptor fd;
 
-  public FileInputStream(String name) throws FileNotFoundException, IOException
+  public FileInputStream(String name) throws FileNotFoundException
   {
     SecurityManager s = System.getSecurityManager();
     if (s != null)
@@ -31,7 +31,7 @@ public class FileInputStream extends InputStream
     fd = new FileDescriptor(name, FileDescriptor.READ);
   }
 
-  public FileInputStream(File file) throws FileNotFoundException, IOException
+  public FileInputStream(File file) throws FileNotFoundException
   {
     this(file.getPath());
   }
