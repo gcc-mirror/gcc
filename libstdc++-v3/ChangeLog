@@ -1,3 +1,9 @@
+2005-02-26  Earl Chew  <earl_chew@agilent.com>
+	    Christopher Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_tree.h (_Rb_tree<>::_M_insert): Don't leak
+	memory if _M_key_compare throws.
+
 2005-02-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Add the trivial is_union and is_class;
