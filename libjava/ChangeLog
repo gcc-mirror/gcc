@@ -1,3 +1,8 @@
+2002-04-04  Adam Megacz <adam@xwt.org>
+
+	* include/win32.h (_Jv_platform_close_on_exec): added inline
+	modifier.
+
 2002-04-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.host: Add case statement to support generic port
