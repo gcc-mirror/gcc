@@ -193,14 +193,14 @@ get_vbase_1 (parent, binfo, depth)
   tree binfos;
   int i, n_baselinks;
   tree rval = NULL_TREE;
+  int virtualp = TREE_VIA_VIRTUAL (binfo) != 0;
 
-  if (BINFO_TYPE (binfo) == parent && TREE_VIA_VIRTUAL (binfo))
+  *depth -= virtualp;
+  if (virtualp && BINFO_TYPE (binfo) == parent)
     {
       *depth = 0;
       return binfo;
     }
-
-  *depth = *depth - 1;
 
   binfos = BINFO_BASETYPES (binfo);
   n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
@@ -218,7 +218,7 @@ get_vbase_1 (parent, binfo, depth)
       if (nrval)
 	rval = nrval;
     }
-  *depth = *depth+1;
+  *depth += virtualp;
   return rval;
 }
 
