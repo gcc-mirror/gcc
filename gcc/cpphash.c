@@ -154,7 +154,7 @@ install (name, len, type, ivalue, value, hash)
 {
   register HASHNODE *hp;
   register int i, bucket;
-  register U_CHAR *p, *q;
+  register U_CHAR *p;
 
   if (len < 0) {
     p = name;
@@ -182,10 +182,7 @@ install (name, len, type, ivalue, value, hash)
   else
     hp->value.cpval = value;
   hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
-  p = hp->name;
-  q = name;
-  for (i = 0; i < len; i++)
-    *p++ = *q++;
+  bcopy (name, hp->name, len);
   hp->name[len] = 0;
   return hp;
 }
