@@ -69,14 +69,6 @@
 		(const_string "yes")
 		(const_string "no")))
 
-;; Attribute to indicate if an instruction is 'safe' to fill a load
-;; delay slot because the first real instruction geneated is something
-;; like load of $1 or a clobbered register.  Logical operations (&, |, ^)
-;; which have operand[2] being a large integer constant fall into
-;; this category.
-
-(define_attr "safe" "no,yes" (const_string "no"))
-
 ;; Attribute describing the processor.  This attribute must match exactly
 ;; with the processor_type enumeration in mips.h.
 
@@ -1161,98 +1153,19 @@ move\\t%0,%z4\\n\\
 ;; the optimizer can fold things together, at the expense of not moving the
 ;; constant out of loops.
 
-(define_expand "andsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(and:SI (match_operand:SI 1 "arith32_operand" "dKIM")
-		(match_operand:SI 2 "arith32_operand" "dKIM")))]
-  ""
-  "
-{
-  extern rtx gen_andsi3_internal2 ();
-
-  /* Canonlicalize */
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      rtx temp;
-
-      if (GET_CODE (operands[2]) == CONST_INT)
-	{
-	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode,
-				   INTVAL (operands[1]) & INTVAL (operands[2])));
-	  DONE;
-	}
-
-      temp = operands[1];
-      operands[1] = operands[2];
-      operands[2] = temp;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && !SMALL_INT_UNSIGNED (operands[2]))
-    {
-      emit_insn (gen_andsi3_internal2 (operands[0],
-				       operands[1],
-				       operands[2],
-				       gen_reg_rtx (SImode)));
-      DONE;
-    }
-}")
-
-(define_insn "andsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(and:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
-  ""
-  "@
-   and\\t%0,%1,%2
-   andi\\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "andsi3_internal2"
-  [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
+(define_insn "andsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d,d,?d,?d")
 	(and:SI (match_operand:SI 1 "arith32_operand" "%d,d,d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))
-   (clobber (match_operand:SI 3 "register_operand" "=d,d,d,d"))]
+		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))]
   ""
   "@
    and\\t%0,%1,%2
    andi\\t%0,%1,%x2
-   lui\\t%3,(%X2)>>16\;and\\t%0,%1,%3
-   li\\t%3,%X2\;and\\t%0,%1,%3"
+   %[li\\t%@,%X2\;and\\t%0,%1,%@%]
+   %[li\\t%@,%X2\;and\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,1,2,3")
-   (set_attr "safe"	"no,no,yes,yes")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(and:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "lui_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 2))
-   (set (match_dup 0) (and:SI (match_dup 1) (match_dup 3)))]
-  "")
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(and:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "large_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 3) (ior:SI (match_dup 3) (match_dup 5)))
-   (set (match_dup 0) (and:SI (match_dup 1) (match_dup 3)))]
-  "
-{
-  int val = INTVAL (operands[2]);
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, val & 0xffff0000);
-  operands[5] = gen_rtx (CONST_INT, VOIDmode, val & 0x0000ffff);
-}")
+   (set_attr "length"	"1,1,2,3")])
 
 (define_insn "anddi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
@@ -1277,98 +1190,19 @@ move\\t%0,%z4\\n\\
    (set (subreg:SI (match_dup 0) 1) (and:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1)))]
   "")
 
-(define_expand "iorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(ior:SI (match_operand:SI 1 "arith32_operand" "dKIM")
-		(match_operand:SI 2 "arith32_operand" "dKIM")))]
-  ""
-  "
-{
-  extern rtx gen_iorsi3_internal2 ();
-
-  /* Canonlicalize */
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      rtx temp;
-
-      if (GET_CODE (operands[2]) == CONST_INT)
-	{
-	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode,
-				   INTVAL (operands[1]) | INTVAL (operands[2])));
-	  DONE;
-	}
-
-      temp = operands[1];
-      operands[1] = operands[2];
-      operands[2] = temp;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && !SMALL_INT_UNSIGNED (operands[2]))
-    {
-      emit_insn (gen_iorsi3_internal2 (operands[0],
-				       operands[1],
-				       operands[2],
-				       gen_reg_rtx (SImode)));
-      DONE;
-    }
-}")
-
-(define_insn "iorsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(ior:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
-  ""
-  "@
-   or\\t%0,%1,%2
-   ori\\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "iorsi3_internal2"
-  [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
+(define_insn "iorsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d,d,?d,?d")
 	(ior:SI (match_operand:SI 1 "arith32_operand" "%d,d,d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))
-   (clobber (match_operand:SI 3 "register_operand" "=d,d,d,d"))]
+		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))]
   ""
   "@
    or\\t%0,%1,%2
    ori\\t%0,%1,%x2
-   lui\\t%3,(%X2)>>16\;or\\t%0,%1,%3
-   li\\t%3,%X2\;or\\t%0,%1,%3"
+   %[li\\t%@,%X2\;or\\t%0,%1,%@%]
+   %[li\\t%@,%X2\;or\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,1,2,3")
-   (set_attr "safe"	"no,no,yes,yes")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "lui_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 2))
-   (set (match_dup 0) (ior:SI (match_dup 1) (match_dup 3)))]
-  "")
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ior:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "large_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 3) (ior:SI (match_dup 3) (match_dup 5)))
-   (set (match_dup 0) (ior:SI (match_dup 1) (match_dup 3)))]
-  "
-{
-  int val = INTVAL (operands[2]);
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, val & 0xffff0000);
-  operands[5] = gen_rtx (CONST_INT, VOIDmode, val & 0x0000ffff);
-}")
+   (set_attr "length"	"1,1,2,3")])
 
 (define_insn "iordi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
@@ -1393,99 +1227,19 @@ move\\t%0,%z4\\n\\
    (set (subreg:SI (match_dup 0) 1) (ior:SI (subreg:SI (match_dup 1) 1) (subreg:SI (match_dup 2) 1)))]
   "")
 
-(define_expand "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(xor:SI (match_operand:SI 1 "arith32_operand" "dKIM")
-		(match_operand:SI 2 "arith32_operand" "dKIM")))]
-  ""
-  "
-{
-  extern rtx gen_xorsi3_internal2 ();
-
-  /* Canonlicalize */
-  if (GET_CODE (operands[1]) == CONST_INT)
-    {
-      rtx temp;
-
-      if (GET_CODE (operands[2]) == CONST_INT)
-	{
-	  emit_move_insn (operands[0],
-			  gen_rtx (CONST_INT, VOIDmode,
-				   INTVAL (operands[1]) ^ INTVAL (operands[2])));
-	  DONE;
-	}
-
-      temp = operands[1];
-      operands[1] = operands[2];
-      operands[2] = temp;
-    }
-
-  if (GET_CODE (operands[2]) == CONST_INT && !SMALL_INT_UNSIGNED (operands[2]))
-    {
-      emit_insn (gen_xorsi3_internal2 (operands[0],
-				       operands[1],
-				       operands[2],
-				       gen_reg_rtx (SImode)));
-      DONE;
-    }
-}")
-
-(define_insn "xorsi3_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-	(xor:SI (match_operand:SI 1 "arith32_operand" "%d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K")))]
-  ""
-  "@
-   xor\\t%0,%1,%2
-   xori\\t%0,%1,%x2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"1")])
-
-(define_insn "xorsi3_internal2"
-  [(set (match_operand:SI 0 "register_operand" "=d,d,d,d")
+(define_insn "xorsi3"
+  [(set (match_operand:SI 0 "register_operand" "=d,d,?d,?d")
 	(xor:SI (match_operand:SI 1 "arith32_operand" "%d,d,d,d")
-		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))
-   (clobber (match_operand:SI 3 "register_operand" "=d,d,d,d"))]
+		(match_operand:SI 2 "arith32_operand" "d,K,I,M")))]
   ""
   "@
    xor\\t%0,%1,%2
    xori\\t%0,%1,%x2
-   lui\\t%3,(%X2)>>16\;xor\\t%0,%1,%3
-   li\\t%3,%X2\;xor\\t%0,%1,%3"
+   %[li\\t%@,%X2\;xor\\t%0,%1,%@%]
+   %[li\\t%@,%X2\;xor\\t%0,%1,%@%]"
   [(set_attr "type"	"arith,arith,multi,multi")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"1,1,2,3")
-   (set_attr "safe"	"no,no,yes,yes")])
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "lui_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 2))
-   (set (match_dup 0) (xor:SI (match_dup 1) (match_dup 3)))]
-  "")
-
-(define_split
-  [(set (match_operand:SI 0 "register_operand" "")
-	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "large_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" ""))]
-  "reload_completed && !TARGET_DEBUG_D_MODE"
-
-  [(set (match_dup 3) (match_dup 4))
-   (set (match_dup 3) (ior:SI (match_dup 3) (match_dup 5)))
-   (set (match_dup 0) (xor:SI (match_dup 1) (match_dup 3)))]
-  "
-{
-  int val = INTVAL (operands[2]);
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, val & 0xffff0000);
-  operands[5] = gen_rtx (CONST_INT, VOIDmode, val & 0x0000ffff);
-}")
-
+   (set_attr "length"	"1,1,2,3")])
 
 (define_insn "xordi3"
   [(set (match_operand:DI 0 "register_operand" "=d")
@@ -4239,3 +3993,4 @@ move\\t%0,%z4\\n\\
 ;; eval: (modify-syntax-entry ?{ "(}")
 ;; eval: (modify-syntax-entry ?} "){")
 ;; End:
+
