@@ -52,13 +52,13 @@ struct buffer bytecode = NULL_BUFFER;
 /* Like OP1, but I is a 2-byte big endian integer. */
 
 #define OP2(I) \
-  do { int _I = (I);  OP1 (_I >> 8);  OP1 (_I); } while (0)
+  do { int _i = (I);  OP1 (_i >> 8);  OP1 (_i); } while (0)
 
 /* Like OP1, but I is a 4-byte big endian integer. */
 
 #define OP4(I) \
-  do { int _I = (I);  OP1 (_I >> 24);  OP1 (_I >> 16); \
-       OP1 (_I >> 8); OP1 (_I); } while (0)
+  do { int _i = (I);  OP1 (_i >> 24);  OP1 (_i >> 16); \
+       OP1 (_i >> 8); OP1 (_i); } while (0)
 
 /* The current stack size (stack pointer) in the current method. */
 
