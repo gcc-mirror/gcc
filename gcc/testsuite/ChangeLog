@@ -1,3 +1,7 @@
+2001-03-28  Philip Blundell  <philb@gnu.org>
+
+	* gcc.c-torture/compile/20010328-1.c: New test.
+
 2001-03-28  Loren J. Rittle  <ljrittle@acm.org>
 
 	* g++.old-deja/g++.other/eh4.C: Fix typo.
