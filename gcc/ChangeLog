@@ -1,3 +1,18 @@
+2004-02-08  Andreas Schwab  <schwab@suse.de>
+            Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h (REGISTER_NAMES): Prefix each name with
+	REGISTER_PREFIX.
+	* (M68K_FP_REG_NAME): New macro to specify an alternate name for the
+	frame pointer register, overridable by OS targets.
+	* (M68K_REGNAME): Macro to obtain register name for asm output,
+	eventually replacing %a6 with M68K_FP_REG_NAME.
+	* config/m68k/coff.h (REGISTER_NAMES): Don't redefine.
+	* config/m68k/linux.h (REGISTER_NAMES): Likewise.
+	* config/m68k/m68kelf.h (REGISTER_NAMES): Likewise.
+	* config/m68k/netbsd-elf.h (REGISTER_NAMES): Likewise.
+	* config/m68k/m68k.c: Use M68K_REGNAME(x) in place of reg_names[x].
+
 2004-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* target-def.h (TARGET_STRUCT_VALUE_RTX): Define as

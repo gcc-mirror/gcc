@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler.
-   Sun 68000/68020 version.
+/* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
    2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 

@@ -175,19 +175,6 @@ while (0)
 #define ASM_COMMENT_START "|"
 
 
-/* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number.
-   Motorola format uses different register names than defined in m68k.h.
-   We also take this chance to convert 'a6' to 'fp' */
-
-#undef REGISTER_NAMES
-
-#define REGISTER_NAMES							\
-{"%d0",   "%d1",   "%d2",   "%d3",   "%d4",   "%d5",   "%d6",   "%d7",	\
- "%a0",   "%a1",   "%a2",   "%a3",   "%a4",   "%a5",   "%fp",   "%sp",	\
- "%fp0",  "%fp1",  "%fp2",  "%fp3",  "%fp4",  "%fp5",  "%fp6",  "%fp7", "argptr" }
-
-
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to
    keep switch tables in the text section.  */
 
