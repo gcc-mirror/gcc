@@ -45,6 +45,9 @@ details.  */
 #include <java/io/PrintStream.h>
 #include <java/io/InputStream.h>
 
+#define SystemClass _CL_Q34java4lang6System
+extern java::lang::Class SystemClass;
+
 
 
 #if defined (ECOS)
@@ -175,9 +178,13 @@ java::lang::System::identityHashCode (jobject obj)
 void
 java::lang::System::init_properties (void)
 {
-  if (prop_init)
-    return;
-  prop_init = true;
+  {
+    // We only need to synchronize around this gatekeeper.
+    JvSynchronize sync (&SystemClass);
+    if (prop_init)
+      return;
+    prop_init = true;
+  }
 
   properties = new java::util::Properties ();
   // A convenience define.

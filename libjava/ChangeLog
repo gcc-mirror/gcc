@@ -1,3 +1,8 @@
+1999-04-12  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natSystem.cc (SystemClass): New define.
+	(init_properties): Synchronize.
+
 1999-04-08  Geoff Berry  <gcb@gnu.org>
 
 	* natInetAddress.cc (lookup): Fix typo (AF_INET16 -> AF_INET6).
