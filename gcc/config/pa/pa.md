@@ -1168,8 +1168,8 @@
 ;; only after reload.
 (define_insn "add_high_const"
   [(set (match_operand:SI 0 "register_operand" "=!a,*r")
-	(plus (match_operand:SI 1 "register_operand" "r,r")
-	      (high:SI (match_operand 2 "const_int_operand" ""))))]
+	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
+		 (high:SI (match_operand 2 "const_int_operand" ""))))]
   "reload_completed"
   "@
    addil L'%G2,%1
