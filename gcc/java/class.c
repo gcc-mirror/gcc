@@ -1497,7 +1497,8 @@ make_class_data (tree type)
   super = CLASSTYPE_SUPER (type);
   if (super == NULL_TREE)
     super = null_pointer_node;
-  else if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl))))
+  else if (assume_compiled (IDENTIFIER_POINTER (DECL_NAME (type_decl)))
+	   && assume_compiled (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (super)))))
     super = build_class_ref (super);
   else
     {
