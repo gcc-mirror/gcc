@@ -1,3 +1,7 @@
+2002-09-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/execute/loop-15.c: New.
+
 2002-09-26  Janis Johnson  <janis187@us.ibm.com>
 
 	* README.QMTEST: Fix typo.
