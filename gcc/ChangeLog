@@ -1,5 +1,8 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (LCT_NORETURN): New.
+	* calls.c (emit_library_call_value_1): Handle it.
+
 	* function.c (expand_function_start): Set DECL_REGISTER on
 	a pseudo used for DECL_RESULT.
 
