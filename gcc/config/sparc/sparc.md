@@ -7758,9 +7758,17 @@
   [(unspec:SI [(match_operand:SI 0 "register_operand" "r")
 	       (match_operand:SI 1 "register_operand" "r")] UNSPEC_UPDATE_RETURN)]
   "! TARGET_ARCH64"
-  "cmp\t%1, 0\;be,a\t.+8\;add\t%0, 4, %0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "3")])
+{
+  if (flag_delayed_branch)
+    return "cmp\t%1, 0\n\tbe,a\t.+8\n\t add\t%0, 4, %0";
+  else
+    return "cmp\t%1, 0\n\tbne\t.+12\n\t nop\n\tadd\t%0, 4, %0";
+}
+  [(set (attr "type") (const_string "multi"))
+   (set (attr "length")
+	(if_then_else (eq_attr "delayed_branch" "true")
+		      (const_int 3)
+		      (const_int 4)))])
 
 (define_insn "nop"
   [(const_int 0)]

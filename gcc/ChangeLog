@@ -1,3 +1,8 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/10567
+	* config/sparc/sparc.md (update_return): Honor flag_delayed_branch.
+
 2004-07-08  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-operands.c (get_asm_expr_operands): Fix thinkos in
