@@ -338,7 +338,7 @@ f/expr.o: f/expr.c f/proj.h $(ASSERT_H) f/expr.h f/bld.h f/bld-op.def f/bit.h \
   f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def f/info-k.def \
   f/info-w.def f/target.h f/bad.h f/bad.def f/where.h $(GLIMITS_H) f/top.h f/lex.h \
   f/type.h f/lab.h f/storag.h f/symbol.h f/symbol.def f/equiv.h f/global.h \
-  f/name.h f/intrin.h f/intrin.def f/implic.h f/src.h f/st.h
+  f/name.h f/intrin.h f/intrin.def f/implic.h f/src.h f/st.h f/stamp-str
 f/fini.o: f/fini.c f/proj.h $(ASSERT_H) f/malloc.h
 f/g77.o: f/g77.c $(CONFIG_H)
 f/global.o: f/global.c f/proj.h $(ASSERT_H) f/global.h f/lex.h f/top.h f/malloc.h \
