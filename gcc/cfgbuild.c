@@ -267,6 +267,7 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
       rtx insn, x;
       enum rtx_code code;
       int force_fallthru = 0;
+      edge e;
 
       if (GET_CODE (BB_HEAD (bb)) == CODE_LABEL
 	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
@@ -389,6 +390,12 @@ make_edges (rtx label_value_list, basic_block min, basic_block max, int update_p
 
       /* Find out if we can drop through to the next block.  */
       insn = NEXT_INSN (insn);
+      for (e = bb->succ; e; e = e->succ_next)
+	if (e->dest == EXIT_BLOCK_PTR && e->flags & EDGE_FALLTHRU)
+	  {
+	    insn = 0;
+	    break;
+	  }
       while (insn
 	     && GET_CODE (insn) == NOTE
 	     && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)

@@ -629,6 +629,7 @@ extern void find_sub_basic_blocks (basic_block);
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap *, basic_block, rtx);
 extern bool can_fallthru (basic_block, basic_block);
+extern bool could_fall_through (basic_block, basic_block);
 extern void flow_nodes_print (const char *, const sbitmap, FILE *);
 extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
 extern void alloc_aux_for_block (basic_block, int);

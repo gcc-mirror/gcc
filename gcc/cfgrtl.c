@@ -1336,7 +1336,19 @@ rtl_split_edge (edge edge_in)
   else
     before = NULL_RTX;
 
-  bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
+  /* If this is a fall through edge to the exit block, the blocks might be
+     not adjacent, and the right place is the after the source.  */
+  if (edge_in->flags & EDGE_FALLTHRU && edge_in->dest == EXIT_BLOCK_PTR)
+    {
+      before = NEXT_INSN (BB_END (edge_in->src));
+      if (before
+	  && GET_CODE (before) == NOTE
+	  && NOTE_LINE_NUMBER (before) == NOTE_INSN_LOOP_END)
+	before = NEXT_INSN (before);
+      bb = create_basic_block (before, NULL, edge_in->src);
+    }
+  else
+    bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
 
   /* ??? This info is likely going to be out of date very soon.  */
   if (edge_in->dest->global_live_at_start)
