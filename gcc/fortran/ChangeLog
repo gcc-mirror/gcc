@@ -1,3 +1,7 @@
+2004-05-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-types.c: Fix spelling & layout in comments.
+
 2004-05-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/14067
