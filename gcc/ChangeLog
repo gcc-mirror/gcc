@@ -2,6 +2,10 @@
 
 	* cfg.c (dump_flow_info): Print bb->index, not i, for block number.
 
+	* flow.c (calculate_global_regs_live): Rename call_used to
+	invalidated_by_call.  Initialize from regs_invalidated_by_call
+	instead of call_used_regs.
+
 2002-05-28  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.h: Forward-declare struct realvaluetype.
