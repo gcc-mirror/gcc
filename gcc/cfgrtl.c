@@ -1470,6 +1470,16 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   for (x = insn; x; x = NEXT_INSN (x))
     if (INSN_P (x))
       note_stores (PATTERN (x), mark_killed_regs, killed);
+
+  /* Mark all hard registers as killed.  Register allocator/reload cannot
+     cope with the situation when life range of hard register spans operation
+     for that the appropriate register is needed, i.e. it would be unsafe to
+     extend the life ranges of hard registers.  */
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (!fixed_regs[regno]
+	&& !REGNO_PTR_FRAME_P (regno))
+      SET_REGNO_REG_SET (killed, regno);
+
   bitmap_and_into (killed, e->dest->global_live_at_start);
 
   EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno, rsi)
@@ -1515,6 +1525,7 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   insert_insn_on_edge (insn, e);
   
   FREE_REG_SET (killed);
+
   return true;
 }
 

@@ -245,7 +245,8 @@ insn_prefetch_values_to_profile (rtx insn, histogram_values *values)
   int write;
   histogram_value hist;
 
-  if (!INSN_P (insn))
+  /* It only makes sense to look for memory references in ordinary insns.  */
+  if (GET_CODE (insn) != INSN)
     return false;
 
   if (!find_mem_reference (insn, &mem, &write))
@@ -288,13 +289,30 @@ static void
 rtl_find_values_to_profile (histogram_values *values)
 {
   rtx insn;
-  unsigned i;
+  unsigned i, libcall_level;
 
   life_analysis (NULL, PROP_DEATH_NOTES);
 
   *values = VEC_alloc (histogram_value, 0);
+  libcall_level = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    insn_values_to_profile (insn, values);
+    {
+      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	libcall_level++;
+
+      /* Do not instrument values inside libcalls (we are going to split block
+	 due to instrumentation, and libcall blocks should be local to a single
+	 basic block).  */
+      if (!libcall_level)
+	insn_values_to_profile (insn, values);
+
+      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+	{
+	  gcc_assert (libcall_level > 0);
+	  libcall_level--;
+	}
+    }
+  gcc_assert (libcall_level == 0);
 
   for (i = 0; i < VEC_length (histogram_value, *values); i++)
     {
