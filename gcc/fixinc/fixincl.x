@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 142 fixup descriptions.
+ * This file contains 143 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3017,6 +3017,43 @@ static const char* apzNested_Sys_LimitsPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Netbsd_Extra_Semicolon fix
+ */
+tSCC zNetbsd_Extra_SemicolonName[] =
+     "netbsd_extra_semicolon";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zNetbsd_Extra_SemicolonList[] =
+  "|sys/cdefs.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzNetbsd_Extra_SemicolonMachs[] = {
+        "*-*-netbsd*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zNetbsd_Extra_SemicolonSelect0[] =
+       "#define[ \t]*__END_DECLS[ \t]*};";
+
+#define    NETBSD_EXTRA_SEMICOLON_TEST_CT  1
+static tTestDesc aNetbsd_Extra_SemicolonTests[] = {
+  { TT_EGREP,    zNetbsd_Extra_SemicolonSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Netbsd_Extra_Semicolon
+ */
+static const char* apzNetbsd_Extra_SemicolonPatch[] = {
+    "format",
+    "#define __END_DECLS }",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Next_Math_Prefix fix
  */
 tSCC zNext_Math_PrefixName[] =
@@ -5608,9 +5645,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          154
+#define REGEX_COUNT          155
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            142
+#define FIX_COUNT            143
 
 /*
  *  Enumerate the fixes
@@ -5690,6 +5727,7 @@ typedef enum {
     NESTED_AUTH_DES_FIXIDX,
     NESTED_MOTOROLA_FIXIDX,
     NESTED_SYS_LIMITS_FIXIDX,
+    NETBSD_EXTRA_SEMICOLON_FIXIDX,
     NEXT_MATH_PREFIX_FIXIDX,
     NEXT_TEMPLATE_FIXIDX,
     NEXT_VOLITILE_FIXIDX,
@@ -6130,6 +6168,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzNested_Sys_LimitsMachs,
      NESTED_SYS_LIMITS_TEST_CT, FD_MACH_ONLY,
      aNested_Sys_LimitsTests,   apzNested_Sys_LimitsPatch, 0 },
+
+  {  zNetbsd_Extra_SemicolonName,    zNetbsd_Extra_SemicolonList,
+     apzNetbsd_Extra_SemicolonMachs,
+     NETBSD_EXTRA_SEMICOLON_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aNetbsd_Extra_SemicolonTests,   apzNetbsd_Extra_SemicolonPatch, 0 },
 
   {  zNext_Math_PrefixName,    zNext_Math_PrefixList,
      apzNext_Math_PrefixMachs,
