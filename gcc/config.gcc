@@ -1239,7 +1239,7 @@ i860-*-sysv4*)
         tm_file="${tm_file} elfos.h svr4.h i860/sysv4.h"
         xm_defines="USG SVR3"
         xmake_file=i860/x-sysv4
-        tmake_file=t-svr4
+        tmake_file="i860/t-i860 i860/t-svr4"
         extra_parts="crtbegin.o crtend.o"
         ;;
 i960-*-coff*)

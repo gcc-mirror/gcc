@@ -1,0 +1,5 @@
+LIB2FUNCS_EXTRA = varargs.asm
+
+varargs.asm: $(srcdir)/config/i860/varargs.asm
+	cp $(srcdir)/config/i860/varargs.asm .
+

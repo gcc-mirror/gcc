@@ -1,3 +1,8 @@
+2003-08-23  Jason Eckhardt  <jle@rice.edu>
+
+	* config/i860/t-i860: New.
+	* config.gcc (i860-*-sysv4*): Add t-i860 to tmake_file.
+
 2003-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (pushdecl): Only put decls which finish_struct will do
