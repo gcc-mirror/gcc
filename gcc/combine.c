@@ -4015,7 +4015,8 @@ simplify_rtx (x, op0_mode, last, in_dest)
 			 gen_binary (MULT, mode,
 				     XEXP (XEXP (x, 0), 0), XEXP (x, 1)),
 			 gen_binary (MULT, mode,
-				     XEXP (XEXP (x, 0), 1), XEXP (x, 1))));
+				     XEXP (XEXP (x, 0), 1),
+				     copy_rtx (XEXP (x, 1)))));
 
 	  if (GET_CODE (x) != MULT)
 	    return x;
@@ -4954,7 +4955,8 @@ simplify_logical (x, last)
 	  x = apply_distributive_law
 	    (gen_binary (GET_CODE (op0), mode,
 			 gen_binary (AND, mode, XEXP (op0, 0), op1),
-			 gen_binary (AND, mode, XEXP (op0, 1), op1)));
+			 gen_binary (AND, mode, XEXP (op0, 1),
+				     copy_rtx (op1))));
 	  if (GET_CODE (x) != AND)
 	    return x;
 	}
@@ -4963,7 +4965,8 @@ simplify_logical (x, last)
 	return apply_distributive_law
 	  (gen_binary (GET_CODE (op1), mode,
 		       gen_binary (AND, mode, XEXP (op1, 0), op0),
-		       gen_binary (AND, mode, XEXP (op1, 1), op0)));
+		       gen_binary (AND, mode, XEXP (op1, 1),
+				   copy_rtx (op0))));
 
       /* Similarly, taking advantage of the fact that
 	 (and (not A) (xor B C)) == (xor (ior A B) (ior A C))  */
@@ -4972,13 +4975,14 @@ simplify_logical (x, last)
 	return apply_distributive_law
 	  (gen_binary (XOR, mode,
 		       gen_binary (IOR, mode, XEXP (op0, 0), XEXP (op1, 0)),
-		       gen_binary (IOR, mode, XEXP (op0, 0), XEXP (op1, 1))));
+		       gen_binary (IOR, mode, copy_rtx (XEXP (op0, 0)),
+				   XEXP (op1, 1))));
 							    
       else if (GET_CODE (op1) == NOT && GET_CODE (op0) == XOR)
 	return apply_distributive_law
 	  (gen_binary (XOR, mode,
 		       gen_binary (IOR, mode, XEXP (op1, 0), XEXP (op0, 0)),
-		       gen_binary (IOR, mode, XEXP (op1, 0), XEXP (op0, 1))));
+		       gen_binary (IOR, mode, copy_rtx (XEXP (op1, 0)), XEXP (op0, 1))));
       break;
 
     case IOR:
@@ -5004,7 +5008,8 @@ simplify_logical (x, last)
 	  x = apply_distributive_law
 	    (gen_binary (AND, mode,
 			 gen_binary (IOR, mode, XEXP (op0, 0), op1),
-			 gen_binary (IOR, mode, XEXP (op0, 1), op1)));
+			 gen_binary (IOR, mode, XEXP (op0, 1),
+				     copy_rtx (op1))));
 
 	  if (GET_CODE (x) != IOR)
 	    return x;
@@ -5015,7 +5020,8 @@ simplify_logical (x, last)
 	  x = apply_distributive_law
 	    (gen_binary (AND, mode,
 			 gen_binary (IOR, mode, XEXP (op1, 0), op0),
-			 gen_binary (IOR, mode, XEXP (op1, 1), op0)));
+			 gen_binary (IOR, mode, XEXP (op1, 1),
+				     copy_rtx (op0))));
 
 	  if (GET_CODE (x) != IOR)
 	    return x;
