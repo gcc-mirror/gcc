@@ -4376,7 +4376,9 @@ The ISO C89 functions @code{abs}, @code{cos}, @code{fabs},
 @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
 @code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr} are all
 recognized as built-in functions unless @option{-fno-builtin} is
-specified.  All of these functions have corresponding versions prefixed
+specified (or @option{-fno-builtin-@var{function}} is specified for an
+individual function).  All of these functions have
+corresponding versions prefixed
 with @code{__builtin_}, except that the version for @code{sqrt} is
 called @code{__builtin_fsqrt}.
 

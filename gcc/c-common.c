@@ -2703,6 +2703,53 @@ build_va_arg (expr, type)
 }
 
 
+/* Linked list of disabled built-in functions.  */
+
+typedef struct disabled_builtin
+{
+  const char *name;
+  struct disabled_builtin *next;
+} disabled_builtin;
+static disabled_builtin *disabled_builtins = NULL;
+
+static bool builtin_function_disabled_p PARAMS ((const char *));
+
+/* Disable a built-in function specified by -fno-builtin-NAME.  If NAME
+   begins with "__builtin_", give an error.  */
+
+void
+disable_builtin_function (name)
+     const char *name;
+{
+  if (strncmp (name, "__builtin_", strlen ("__builtin_")) == 0)
+    error ("cannot disable built-in function `%s'", name);
+  else
+    {
+      disabled_builtin *new = xmalloc (sizeof (disabled_builtin));
+      new->name = name;
+      new->next = disabled_builtins;
+      disabled_builtins = new;
+    }
+}
+
+
+/* Return true if the built-in function NAME has been disabled, false
+   otherwise.  */
+
+static bool
+builtin_function_disabled_p (name)
+     const char *name;
+{
+  disabled_builtin *p;
+  for (p = disabled_builtins; p != NULL; p = p->next)
+    {
+      if (strcmp (name, p->name) == 0)
+	return true;
+    }
+  return false;
+}
+
+
 /* Possibly define a builtin function with one or two names.  BUILTIN_NAME
    is an __builtin_-prefixed name; NAME is the ordinary name; one or both
    of these may be NULL (though both being NULL is useless).
@@ -2743,7 +2790,8 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
 	  TREE_SIDE_EFFECTS (bdecl) = 1;
 	}
     }
-  if (name != 0 && !flag_no_builtin && !(nonansi_p && flag_no_nonansi_builtin))
+  if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
+      && !(nonansi_p && flag_no_nonansi_builtin))
     {
       decl = builtin_function (name, type, function_code, class, NULL);
       if (nonansi_p)

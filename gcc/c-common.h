@@ -538,6 +538,8 @@ extern tree c_build_qualified_type              PARAMS ((tree, int));
    frontends.  */
 extern void c_common_nodes_and_builtins		PARAMS ((void));
 
+extern void disable_builtin_function		PARAMS ((const char *));
+
 extern tree build_va_arg			PARAMS ((tree, tree));
 
 extern const char *c_common_lang_init		PARAMS ((const char *));
