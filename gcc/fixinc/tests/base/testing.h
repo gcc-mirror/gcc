@@ -1,7 +1,6 @@
 
 
 #if defined( CTRL_QUOTES_DEF_CHECK )
-#define BSD43_CTRL(n, x) ((n<<8)+x)
 #define _CTRL(c) (c&037)
 #endif  /* CTRL_QUOTES_DEF_CHECK */
 
@@ -12,9 +11,7 @@
 
 
 #if defined( IO_QUOTES_DEF_CHECK )
-#define BSD43__IOWR(n, x) ((n<<8)+x)
-#define _IOWN(x,y,t)  (_IOC_IN|(((t)&_IOCPARM_MASK)<<16)|(x<<8)|y)
-#define _IO(x,y)      (x<<8|y)
+#define XX_IO(x)        (x<<8|256)
 #endif  /* IO_QUOTES_DEF_CHECK */
 
 

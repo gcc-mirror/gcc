@@ -95,7 +95,8 @@ extern int matherr();
 
 
 #if defined( ULTRIX_ATOF_PARAM_CHECK )
-extern double atof( const char *);
+extern double atof(const char *__nptr);
+
 #endif  /* ULTRIX_ATOF_PARAM_CHECK */
 #ifdef __cplusplus
 #undef exception

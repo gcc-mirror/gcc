@@ -6,7 +6,7 @@ extern void foo(struct file *, ...); /* HPUX_SOURCE - bad varargs */
 
 
 #if defined( ULTRIX_IFDEF_CHECK )
-#if defined(KERNEL)	&& defined( mumbojumbo )
+#if defined(KERNEL) && defined( mumbojumbo )
 int oops;
 #endif
 #endif  /* ULTRIX_IFDEF_CHECK */

@@ -39,6 +39,19 @@ static int	stat(__f, __p)
 #endif  /* SCO_STATIC_FUNC_CHECK */
 
 
+#if defined( ULTRIX_STAT_CHECK )
+@(#)stat.h      6.1     (ULTRIX)
+#define S_IFPORT S_IFIFO
+
+/* macro to test for symbolic link */
+#define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)
+
+	fstat(),
+	lstat(),
+
+#endif  /* ULTRIX_STAT_CHECK */
+
+
 #if defined( VXWORKS_NEEDS_VXWORKS_CHECK )
 #include </dev/null> /* ULONG */
 # define	__INCstath <sys/stat.h>
