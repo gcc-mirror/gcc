@@ -1,3 +1,11 @@
+2002-10-23  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/761
+	* doc/invoke.texi: Fix some overfull hboxes in "make dvi".
+	Document --version, -fno-sched-interblock, -fno-sched-spec,
+	-fsched-spec-load, -fsched-spec-load-dangerous,
+	-fsched-verbose=n, -fno-branch-count-reg and -fbounds-check.
+
 2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*movdi_64"): Fix op_type attribute.

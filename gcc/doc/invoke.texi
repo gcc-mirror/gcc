@@ -157,7 +157,7 @@ in the following sections.
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @gccoptlist{
 -c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -x @var{language} @gol
--v  -###  --target-help  --help}
+-v  -###  --help  --target-help  --version}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -236,8 +236,9 @@ in the following sections.
 
 @item C-only Warning Options
 @gccoptlist{
--Wbad-function-cast  -Wmissing-declarations  -Wmissing-prototypes @gol
--Wnested-externs  -Wstrict-prototypes  -Wtraditional}
+-Wbad-function-cast  -Wmissing-declarations @gol
+-Wmissing-prototypes  -Wnested-externs @gol
+-Wstrict-prototypes  -Wtraditional}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program or GCC}.
@@ -248,7 +249,8 @@ in the following sections.
 -fdump-tree-original@r{[}-@var{n}@r{]} -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
 -fdump-tree-inlined@r{[}-@var{n}@r{]} @gol
 -fmem-report  -fpretend-float @gol
--fprofile-arcs  -ftest-coverage  -ftime-report @gol
+-fprofile-arcs  -fsched-verbose=@var{n} @gol
+-ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name @gol
@@ -261,6 +263,7 @@ in the following sections.
 @gccoptlist{
 -falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
+-fbounds-check @gol
 -fbranch-probabilities  -fcaller-saves -fcprop-registers @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
@@ -269,7 +272,8 @@ in the following sections.
 -fgcse  -fgcse-lm  -fgcse-sm @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmove-all-movables  -fno-default-inline  -fno-defer-pop @gol
+-fmove-all-movables  -fno-branch-count-reg @gol
+-fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
@@ -278,6 +282,8 @@ in the following sections.
 -freduce-all-givs -fregmove  -frename-registers @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 @gol
+-fno-sched-interblock  -fno-sched-spec @gol
+-fsched-spec-load  -fsched-spec-load-dangerous @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
 -fstrength-reduce  -fstrict-aliasing  -fthread-jumps @gol
 -ftrapv -funroll-all-loops  -funroll-loops  @gol
@@ -915,6 +921,10 @@ be displayed.
 @opindex target-help
 Print (on the standard output) a description of target specific command
 line options for each tool.
+
+@item --version
+@opindex version
+Display the version number and copyrights of the invoked GCC.
 @end table
 
 @node Invoking G++
@@ -3180,6 +3190,23 @@ Dump after all tree based optimization, to @file{@var{file}.optimized}.
 Dump after function inlining, to @file{@var{file}.inlined}.
 @end table
 
+@item -fsched-verbose=@var{n}
+@opindex fsched-verbose
+On targets that use instruction scheduling, this option controls the
+amount of debugging output the scheduler prints.  This information is
+written to standard error, unless @option{-dS} or @option{-dR} is
+specified, in which case it is output to the usual dump
+listing file, @file{.sched} or @file{.sched2} respectively.  However
+for @var{n} greater than nine, the output is always printed to standard
+error.
+
+For @var{n} greater than zero, @option{-fsched-verbose} outputs the
+same information as @option{-dRS}.  For @var{n} greater than one, it
+also output basic block probabilities, detailed ready list information
+and unit/insn info.  For @var{n} greater than two, it includes RTL
+at abort point, control-flow and regions info.  And for @var{n} over
+four, @option{-fsched-verbose} also includes dependence info.
+
 @item -fpretend-float
 @opindex fpretend-float
 When running a cross-compiler, pretend that the target machine uses the
@@ -3484,6 +3511,14 @@ types.  Languages like C or C++ require each non-automatic variable to
 have distinct location, so using this option will result in non-conforming
 behavior.
 
+@item -fno-branch-count-reg
+@opindex fno-branch-count-reg
+Do not use ``decrement and branch'' instructions on a count register,
+but instead generate a sequence of instructions that decrement a
+register, compare it against zero, then branch based upon the result.
+This option is only meaningful on architectures that support such
+instructions, which include x86, PowerPC, IA-64 and S/390.
+
 @item -fno-function-cse
 @opindex fno-function-cse
 Do not put function addresses in registers; make each instruction that
@@ -3546,6 +3581,14 @@ an exact implementation of IEEE or ISO rules/specifications for
 math functions.
 
 The default is @option{-ftrapping-math}.
+
+@item -fbounds-check
+@opindex fbounds-check
+For front-ends that support it, generate additional code to check that
+indices used to access arrays are within the declared range.  This is
+currenly only supported by the Java and Fortran 77 front-ends, where
+this option defaults to true and false respectively.
+
 @end table
 
 The following options control specific optimizations.  The @option{-O2}
@@ -3672,6 +3715,30 @@ Similar to @option{-fschedule-insns}, but requests an additional pass of
 instruction scheduling after register allocation has been done.  This is
 especially useful on machines with a relatively small number of
 registers and where memory load instructions take more than one cycle.
+
+@item -fno-sched-interblock
+@opindex fno-sched-interblock
+Don't schedule instructions across basic blocks.  This is normally
+enabled by default when scheduling before register allocation, i.e.@:
+with @option{-fschedule-insns} or at @option{-O2} or higher.
+
+@item -fno-sched-spec
+@opindex fno-sched-spec
+Don't allow speculative motion of non-load instructions.  This is normally
+enabled by default when scheduling before register allocation, i.e.@:
+with @option{-fschedule-insns} or at @option{-O2} or higher.
+
+@item -fsched-spec-load
+@opindex fsched-spec-load
+Allow speculative motion of some load instructions.  This only makes
+sense when scheduling before register allocation, i.e.@: with
+@option{-fschedule-insns} or at @option{-O2} or higher.
+
+@item -fsched-spec-load-dangerous
+@opindex fsched-spec-load-dangerous
+Allow speculative motion of more load instructions.  This only makes
+sense when scheduling before register allocation, i.e.@: with
+@option{-fschedule-insns} or at @option{-O2} or higher.
 
 @item -ffunction-sections
 @itemx -fdata-sections
