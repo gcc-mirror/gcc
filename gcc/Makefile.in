@@ -1968,8 +1968,8 @@ $(srcdir)/cpp.dvi: cpp.texi
 	$(TEXI2DVI) $<
 
 $(srcdir)/INSTALL: install1.texi install.texi
-	$(MAKEINFO) -D INSTALLONLY --no-header --no-split \
-	  `echo $(srcdir)/install1.texi | sed 's,^\./,,'`
+	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY --no-header \
+		--no-split install1.texi -o INSTALL
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
