@@ -1,6 +1,19 @@
+Fri Oct  9 00:02:03 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Merge devo and egcs include directories.
+
 Sat Sep  5 12:16:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* getopt.h, obstack.h: Updated from gcc.
+
+1998-08-03  Jason Molenda  (jsm@bugshack.cygnus.com)
+
+	* libiberty.h (xexit): Change decl to use modern GCC attribute
+	to indicate exit does not return.
+
+Mon Jun  1 13:48:32 1998  Jason Molenda  (crash@bugshack.cygnus.com)
+
+	* obstack.h: Update to latest FSF version.
 
 Tue Feb 24 13:05:02 1998  Doug Evans  <devans@canuck.cygnus.com>
 
