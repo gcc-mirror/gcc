@@ -10692,14 +10692,10 @@ patch_invoke (patch, method, args)
       func = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (method)), func);
     }
 
-  if (TREE_CODE (patch) == CALL_EXPR)
-    patch = build_call_or_builtin (method, func, args);
-  else
-    {
-      TREE_TYPE (patch) = TREE_TYPE (TREE_TYPE (method));
-      TREE_OPERAND (patch, 0) = func;
-      TREE_OPERAND (patch, 1) = args;
-    }
+  TREE_TYPE (patch) = TREE_TYPE (TREE_TYPE (method));
+  TREE_OPERAND (patch, 0) = func;
+  TREE_OPERAND (patch, 1) = args;
+  patch = check_for_builtin (method, patch);
   original_call = patch;
 
   /* We're processing a `new TYPE ()' form. New is called and its
