@@ -1,3 +1,20 @@
+Tue Aug 22 17:20:07 1995  Per Bothner  <bothner@kalessin.cygnus.com>
+
+	* decl2.c (flag_new_for_scope):  Add a new mode that follows ANSI
+	for-scoping, but supports (and warns about) old programs.
+	Make the new mode (with value 1) the default.
+	(lang_f_options):  The on-value for flag_new_for_scope is now 2.
+	* cp-tree.h (DECL_DEAD_FOR_LOCAL, DECL_ERROR_REPORTED): New macros
+	(DECL_SHADOWED_FOR_VAR):  Likewise.
+	* decl.c (struct binding_level):  New fields dead_vars_from_for
+	and is_for_scope.
+	(note_level_for_for):  New function.
+	(poplevel):  Special processing if is_for_scope.
+	(pushdecl):  Warn if for-scope variable shadows local.
+	* lex.c (do_identifier):  Handle old (non-ANSI) for scoping,
+	and warn if conflicts.
+	* parse.y (FOR):  Call note_level_for_for.
+
 Wed Jul 19 11:49:57 1995  Gerald Baumgartner  <gb@alexander.cs.purdue.edu>
 
 	* cp-tree.h (SIGTABLE_VT_OFF_NAME): Renamed from SIGTABLE_OFFSET_NAME.
