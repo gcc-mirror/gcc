@@ -57,11 +57,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
    optimizing, -O1 if we are not.  Pass -shared, -non_shared or
-   -call_shared as appropriate.  Also pass -pg.  */
+   -call_shared as appropriate.  Pass -hidden_symbol so that our
+   constructor and call-frame data structures are not accidentally
+   overridden.  */
 #define LINK_SPEC  \
   "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
-   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
-   %{rpath*}"
+   %{!static:%{shared:-shared -hidden_symbol _GLOBAL_*} \
+   %{!shared:-call_shared}} %{pg} %{taso} %{rpath*}"
 
 #define STARTFILE_SPEC  \
   "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
