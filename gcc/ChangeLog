@@ -1,3 +1,8 @@
+2001-01-29  DJ Delorie  <dj@redhat.com>
+
+	* combine.c (if_then_else_cond): Pass the correct mode to
+	operand_subword() for constants.
+
 Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Add w32api to include search.  Search different
