@@ -10,10 +10,16 @@ compute many host parameters.
 A new project, egcs (pronounced ``eggs''), is maintaining an
 experimental version of the GNU C compiler.  The egcs compiler
 contains features that are candidates for inclusion in future versions
-of GCC.  The standard gcc distribution is intended to contain a mature
-compiler that is stable and reliable; egcs aims at a faster
-development process and is allowed to be more experimental.  Please
-see <http://www.cygnus.com/egcs/> for more information about egcs.
+of GCC.  The standard GCC distribution is intended to contain a mature
+compiler that is stable and reliable; egcs aims at making experimental
+changes available to interested users at an earlier stage in their
+development process than would be appropriate for a production
+compiler.  Please see <http://www.cygnus.com/egcs/> for more
+information about egcs.  A major motivation for the egcs project was
+the long release cycle for GCC 2.8.0.  This was due to changes for
+exception handling that took a long time to complete.  In the future,
+changes of this nature can be developed in the egcs framework and not
+interfere with the frequent releases of the standard GCC distribution.
 
 Due to a bug fix related to exception handling, if you have previously
 built a sharable library with some recent unofficial versions of GCC
