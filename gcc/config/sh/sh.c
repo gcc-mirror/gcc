@@ -1015,7 +1015,6 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	{
 	  rtx tga_op1, tga_ret, tmp, tmp2;
 
-
 	  switch (tls_kind)
 	    {
 	    case TLS_MODEL_GLOBAL_DYNAMIC:
@@ -1043,7 +1042,7 @@ prepare_move_operands (rtx operands[], enum machine_mode mode)
 	    case TLS_MODEL_INITIAL_EXEC:
 	      if (! flag_pic)
 		emit_insn (gen_GOTaddr2picreg ());
-	      tga_op1 = gen_reg_rtx (Pmode);
+	      tga_op1 = no_new_pseudos ? op0 : gen_reg_rtx (Pmode);
 	      tmp = gen_sym2GOTTPOFF (op1);
 	      emit_insn (gen_tls_initial_exec (tga_op1, tmp));
 	      op1 = tga_op1;
