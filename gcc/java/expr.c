@@ -2251,6 +2251,33 @@ case_identity (t, v)
   return v;
 }
 
+/* Return the name of the vtable for an array of a given primitive
+   type.  */
+static tree
+get_primitive_array_vtable (tree elt)
+{
+  tree r;
+  if (elt == boolean_type_node)
+    r = boolean_array_vtable;
+  else if (elt == byte_type_node)
+    r = byte_array_vtable;
+  else if (elt == char_type_node)
+    r = char_array_vtable;
+  else if (elt == short_type_node)
+    r = short_array_vtable;
+  else if (elt == int_type_node)
+    r = int_array_vtable;
+  else if (elt == long_type_node)
+    r = long_array_vtable;
+  else if (elt == float_type_node)
+    r = float_array_vtable;
+  else if (elt == double_type_node)
+    r = double_array_vtable;
+  else
+    abort ();
+  return build_address_of (r);
+}
+
 struct rtx_def *
 java_lang_expand_expr (exp, target, tmode, modifier)
      register tree exp;
@@ -2272,22 +2299,25 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	tree length = build_int_2 (ilength, 0);
 	tree init = TREE_OPERAND (exp, 0);
 	tree array_decl;
-#if 0
-	/* Enable this once we can set the vtable field statically.  FIXME */
+
+	/* See if we can generate the array statically.  */
 	if (TREE_CONSTANT (init) && TREE_STATIC (exp)
 	    && JPRIMITIVE_TYPE_P (element_type))
 	  {
 	    tree temp, value, init_decl;
+	    struct rtx_def *r;
+	    push_obstacks (&permanent_obstack, &permanent_obstack);
 	    START_RECORD_CONSTRUCTOR (temp, object_type_node);
 	    PUSH_FIELD_VALUE (temp, "vtable",
-			      null_pointer_node /* FIXME */
-			      );
+			      get_primitive_array_vtable (element_type));
 	    if (! flag_hash_synchronization)
 	      PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
 	    FINISH_RECORD_CONSTRUCTOR (temp);
 	    START_RECORD_CONSTRUCTOR (value, array_type);
 	    PUSH_SUPER_VALUE (value, temp);
-	    PUSH_FIELD_VALUE (value, "length", length);
+	    /* FIXME: build a new `length' here to get it on the right
+	       obstack.  */
+	    PUSH_FIELD_VALUE (value, "length", build_int_2 (ilength, 0));
 	    PUSH_FIELD_VALUE (value, "data", init);
 	    FINISH_RECORD_CONSTRUCTOR (value);
 
@@ -2299,9 +2329,11 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    TREE_READONLY (init_decl) = 1;
 	    make_decl_rtl (init_decl, NULL, 1);
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
-	    return expand_expr (init, target, tmode, modifier);
+	    r = expand_expr (init, target, tmode, modifier);
+	    pop_obstacks ();
+	    return r;
 	  }
-#endif
+
 	array_decl = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
 	expand_decl (array_decl);
 	tmp = expand_assignment (array_decl,

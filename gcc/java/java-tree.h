@@ -241,6 +241,14 @@ extern tree float_array_type_node;
 extern tree array_array_type_node;
 extern tree object_array_type_node;
 extern tree string_array_type_node;
+extern tree boolean_array_vtable;
+extern tree byte_array_vtable;
+extern tree char_array_vtable;
+extern tree short_array_vtable;
+extern tree int_array_vtable;
+extern tree long_array_vtable;
+extern tree float_array_vtable;
+extern tree double_array_vtable;
 extern tree TYPE_identifier_node;      /* "TYPE" */
 extern tree init_identifier_node;      /* "<init>" */
 extern tree clinit_identifier_node;      /* "<clinit>" */

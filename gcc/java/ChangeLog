@@ -1,3 +1,18 @@
+2000-05-31  Tom Tromey  <tromey@cygnus.com>
+
+	* java-tree.h (boolean_array_vtable, byte_array_vtable,
+	char_array_vtable, short_array_vtable, int_array_vtable,
+	long_array_vtable, float_array_vtable, double_array_vtable):
+	Declare.
+	* expr.c (get_primitive_array_vtable): New function.
+	(create_primitive_vtable): New function.
+	(java_lang_expand_expr): Enable code to statically generate
+	arrays.
+	* decl.c (init_decl_processing): Create primitive vtables.
+	(boolean_array_vtable, byte_array_vtable, char_array_vtable,
+	short_array_vtable, int_array_vtable, long_array_vtable,
+	float_array_vtable, double_array_vtable): Define.
+
 2000-05-26  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* java/parse.y (find_applicable_accessible_methods_list):
