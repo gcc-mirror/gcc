@@ -1,3 +1,8 @@
+2000-11-01  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (dump_template_decl): Separate template hearders with
+	space not comma.
+
 2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c: Move TFF_ macros into cp-tree.h.  Throughout, replace

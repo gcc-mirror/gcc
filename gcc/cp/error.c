@@ -1142,7 +1142,7 @@ dump_template_decl (t, flags)
               dump_template_parameter (TREE_VEC_ELT (inner_parms, i), flags);
             }
           print_template_argument_list_end (scratch_buffer);
-          separate_with_comma (scratch_buffer);
+          output_add_space (scratch_buffer);
         }
       nreverse(orig_parms);
       /* If we've shown the template<args> prefix, we'd better show the
