@@ -1,3 +1,30 @@
+2003-07-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11667
+	* call.c (standard_conversion): Allow all integral->enumeral
+	conversions, after marking them as bad.
+	* decl.c (finish_enum): Make sure that all enumerators are
+	properly converted to the underlying type.
+	(build_enumerator): Set DECL_CONTEXT for namespace-scope
+	enumeration types.
+	* pt.c (tsubst_copy): Adjust handling of CONST_DECLs accordingly.
+	(tsubst_enum): Tidy.
+
+	* Make-lang.in (typeck.o): Depend on convert.h.
+	(class.o): Likewise.
+	(rtti.o): Likewise.
+	* call.c: Include convert.h.
+	(convert_arg_to_ellipsis): Use convert_to_real.
+	* class.c: Include convert.h.
+	(build_base_path): Use convert_to_integer.
+	* rtti.c: Include convert.h.
+	(build_headof): Use convert_to_integer.
+	* typeck.c: Include convert.h.
+	(decay_conversion): Use convert_to_integer.
+	(build_unary_op): Use build_nop.
+	(get_delta_difference): Use convert_to_integer.
+	(build_ptrmemfunc): Avoid unncessary conversions.
+
 Mon Jul 28 23:55:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (mark_member_pointers): Verify that member pointer points to

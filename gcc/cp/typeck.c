@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "diagnostic.h"
 #include "target.h"
+#include "convert.h"
 
 static tree convert_for_assignment (tree, tree, const char *, tree, int);
 static tree cp_pointer_int_sum (enum tree_code, tree, tree);
@@ -1291,20 +1292,8 @@ decay_conversion (tree exp)
       tree ptrtype;
 
       if (TREE_CODE (exp) == INDIRECT_REF)
-	{
-	  /* Stripping away the INDIRECT_REF is not the right
-	     thing to do for references...  */
-	  tree inner = TREE_OPERAND (exp, 0);
-	  if (TREE_CODE (TREE_TYPE (inner)) == REFERENCE_TYPE)
-	    {
-	      inner = build1 (CONVERT_EXPR,
-			      build_pointer_type (TREE_TYPE
-						  (TREE_TYPE (inner))),
-			      inner);
-	      TREE_CONSTANT (inner) = TREE_CONSTANT (TREE_OPERAND (inner, 0));
-	    }
-	  return cp_convert (build_pointer_type (TREE_TYPE (type)), inner);
-	}
+	return build_nop (build_pointer_type (TREE_TYPE (type)), 
+			  TREE_OPERAND (exp, 0));
 
       if (TREE_CODE (exp) == COMPOUND_EXPR)
 	{
@@ -4007,8 +3996,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 				      ba_check, NULL);
 	    
 	    rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
-	    rval = build1 (NOP_EXPR, argtype, rval);
-	    TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
+	    rval = build_nop (argtype, rval);
 	    addr = fold (build (PLUS_EXPR, argtype, rval,
 				cp_convert (argtype, byte_position (field))));
 	  }
@@ -5192,8 +5180,9 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 
 
 /* Get difference in deltas for different pointer to member function
-   types.  Return integer_zero_node, if FROM cannot be converted to a
-   TO type.  If FORCE is true, then allow reverse conversions as well.
+   types.  Returns an integer constant of type PTRDIFF_TYPE_NODE.  If
+   the conversion is invalid, the constant is zero.  If FORCE is true,
+   then allow reverse conversions as well.
 
    Note that the naming of FROM and TO is kind of backwards; the return
    value is what we add to a TO in order to get a FROM.  They are named
@@ -5203,7 +5192,6 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 static tree
 get_delta_difference (tree from, tree to, int force)
 {
-  tree delta = integer_zero_node;
   tree binfo;
   tree virt_binfo;
   base_kind kind;
@@ -5212,7 +5200,7 @@ get_delta_difference (tree from, tree to, int force)
   if (kind == bk_inaccessible || kind == bk_ambig)
     {
       error ("   in pointer to member function conversion");
-      return delta;
+      goto error;
     }
   if (!binfo)
     {
@@ -5220,44 +5208,38 @@ get_delta_difference (tree from, tree to, int force)
 	{
 	  error_not_base_type (from, to);
 	  error ("   in pointer to member conversion");
-	  return delta;
+	  goto error;
 	}
       binfo = lookup_base (from, to, ba_check, &kind);
-      if (binfo == 0)
-	return delta;
+      if (!binfo)
+	goto error;
       virt_binfo = binfo_from_vbase (binfo);
-      
       if (virt_binfo)
         {
           /* This is a reinterpret cast, we choose to do nothing.  */
           warning ("pointer to member cast via virtual base `%T'",
 		   BINFO_TYPE (virt_binfo));
-          return delta;
+	  goto error;
         }
-      delta = BINFO_OFFSET (binfo);
-      delta = cp_convert (ptrdiff_type_node, delta);
-      delta = cp_build_binary_op (MINUS_EXPR,
-				 integer_zero_node,
-				 delta);
-
-      return delta;
+      return convert_to_integer (ptrdiff_type_node, 
+				 size_diffop (size_zero_node,
+					      BINFO_OFFSET (binfo)));
     }
 
   virt_binfo = binfo_from_vbase (binfo);
-  if (virt_binfo)
-    {
-      /* This is a reinterpret cast, we choose to do nothing.  */
-      if (force)
-        warning ("pointer to member cast via virtual base `%T'",
-		 BINFO_TYPE (virt_binfo));
-      else
-	error ("pointer to member conversion via virtual base `%T'",
-	       BINFO_TYPE (virt_binfo));
-      return delta;
-    }
-  delta = BINFO_OFFSET (binfo);
+  if (!virt_binfo)
+    return convert_to_integer (ptrdiff_type_node, BINFO_OFFSET (binfo));
 
-  return cp_convert (ptrdiff_type_node, delta);
+  /* This is a reinterpret cast, we choose to do nothing.  */
+  if (force)
+    warning ("pointer to member cast via virtual base `%T'",
+	     BINFO_TYPE (virt_binfo));
+  else
+    error ("pointer to member conversion via virtual base `%T'",
+	   BINFO_TYPE (virt_binfo));
+
+ error:
+  return convert_to_integer(ptrdiff_type_node, integer_zero_node);
 }
 
 /* Return a constructor for the pointer-to-member-function TYPE using
@@ -5355,7 +5337,7 @@ build_ptrmemfunc (tree type, tree pfn, int force)
 	}
 
       /* Just adjust the DELTA field.  */
-      delta = cp_convert (ptrdiff_type_node, delta);
+      my_friendly_assert (TREE_TYPE (delta) == ptrdiff_type_node, 20030727);
       if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
 	n = cp_build_binary_op (LSHIFT_EXPR, n, integer_one_node);
       delta = cp_build_binary_op (PLUS_EXPR, delta, n);

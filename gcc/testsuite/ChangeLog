@@ -1,3 +1,9 @@
+2003-07-28  Alexandre Oliva <aoliva@redhat.com>
+
+	PR c++/11667
+	* g++.dg/init/enum2.C: New test.
+	* g++.dg/template/overload1.C: Add "-w" option.
+	
 2003-07-28    <hp@bitrange.com>
 
 	* gcc.dg/Wdeclaration-after-statement-1.c,

@@ -1,3 +1,4 @@
+// { dg-options "-w" }
 // PR c++/9420
 // Bug: We were instantiating B<int> during overload resolution for E<0.
 // This is wrong; the contents of B<int> are not relevant, since we can't

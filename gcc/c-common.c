@@ -2214,10 +2214,12 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       type = c_common_signed_or_unsigned_type (unsignedp0,
 					       TREE_TYPE (primop0));
 
-      /* If TYPE is an enumeration, then we need to get its min/max
-	 values from it's underlying integral type, not the enumerated
-	 type itself.  */
-      if (TREE_CODE (type) == ENUMERAL_TYPE)
+      /* In C, if TYPE is an enumeration, then we need to get its
+	 min/max values from it's underlying integral type, not the
+	 enumerated type itself.  In C++, TYPE_MAX_VALUE and
+	 TYPE_MIN_VALUE have already been set correctly on the
+	 enumeration type.  */
+      if (!c_dialect_cxx() && TREE_CODE (type) == ENUMERAL_TYPE)
 	type = c_common_type_for_size (TYPE_PRECISION (type), unsignedp0);
 
       maxval = TYPE_MAX_VALUE (type);
