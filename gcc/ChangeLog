@@ -1,3 +1,10 @@
+2003-10-06  Devang Patel  <dpatel@apple.com>
+
+	* dwarf2out.c (is_main_source): Remove variable.
+	(dwarf2out_start_source_file): Do not check is_main_source.
+	Do not reset is_main_source.
+	(dwarf2out_init): Do not initialize is_main_source.
+	
 2003-10-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Removed _ap fix.

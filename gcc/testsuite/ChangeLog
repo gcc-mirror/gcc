@@ -1,3 +1,8 @@
+2003-10-06  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/debug/dwarf2-3.h: New test.
+	* gcc.dg/debug/dwarf2-3.c: New test case for -feliminate-dwarf2-dups.
+	
 2003-10-06  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* g++.dg/opt/cfg2.C: New test.
