@@ -518,7 +518,7 @@ assign_stack_local_1 (mode, size, align, function)
 			   + STARTING_FRAME_OFFSET));
   else
     addr = plus_constant (virtual_stack_vars_rtx,
-			  frame_offset + bigend_correction);
+			  function->x_frame_offset + bigend_correction);
 
 #ifndef FRAME_GROWS_DOWNWARD
   function->x_frame_offset += size;
