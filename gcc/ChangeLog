@@ -1,3 +1,10 @@
+Wed Dec 16 16:33:04 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* objc/lang-specs.h: Pass -MD, -MMD and -MG to cc1obj if configured with
+	cpplib.
+	* cpplib.c (cpp_start_read): If in_fname is not initialized, try to
+	initialize it using fname.
+
 1998-12-16  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cpplib.c (do_include): Treat #include_next in the
