@@ -480,6 +480,9 @@ case $os in
 	-osf*)
 		os=-osf
 		;;
+	-utek*)
+		os=-bsd
+		;;
 	-dynix*)
 		os=-bsd
 		;;
