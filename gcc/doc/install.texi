@@ -2428,11 +2428,12 @@ does not provide a definition that will confuse @command{configure}.
 If this error occurs during stage2 or later, then the problem most likely
 is the version of Make (see above).
 
-The GNU Assembler incorrectly reports that it supports WEAK symbols on
-AIX which causes GCC to try to utilize weak symbol functionality although
-it is not supported on the platform.  The native @command{as} and
-@command{ld} still are recommended.  The native AIX tools do
-interoperate with GCC@.
+The native @command{as} and @command{ld} are recommended for bootstrapping
+on AIX 4 and required for bootstrapping on AIX 5L.  The GNU Assembler
+reports that it supports WEAK symbols on AIX 4, which causes GCC to try to
+utilize weak symbol functionality although it is not supported.  The GNU
+Assembler and Linker do not support AIX 5L sufficiently to bootstrap GCC.
+The native AIX tools do interoperate with GCC@.
 
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).
