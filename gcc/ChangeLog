@@ -1,3 +1,8 @@
+2004-08-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (MAX_FIXED_MODE_SIZE): Define.
+	(MOVE_MAX_PIECES): Define.
+
 2004-08-12  Devang patel  <dpatel@apple.com>
 
 	* dbxout.c (dbxout_begin_prologue): New function.
