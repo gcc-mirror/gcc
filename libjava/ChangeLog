@@ -1,3 +1,8 @@
+2003-06-11  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/ClassLoader.java (loadClass): Not deprecated.
+	* java/io/PrintStream.java: Not deprecated.
+
 2003-06-11  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/awt/j2d/IntegerGraphicsState.java (drawOval): implemented.

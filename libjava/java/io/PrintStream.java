@@ -51,13 +51,7 @@ package java.io;
  * created so that any writes are automatically flushed to the underlying
  * output sink when the current line is terminated.
  * <p>
- * <b>Note that this class is deprecated</b>.  It exists for backward  
- * compatibility only.  New code should be written to use 
- * <code>PrintWriter</code> instead.  
- * <p>
  * This class converts char's into byte's using the system default encoding.
- *
- * @deprecated
  *
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Tom Tromey <tromey@cygnus.com>
@@ -65,13 +59,14 @@ package java.io;
 public class PrintStream extends FilterOutputStream
 {
   /*
-   * Ok, why is this class deprecated?  It could easily have been extended
-   * to support character encodings.  In fact, PrintWriter is basically a
-   * superset of this except for the write() methods.  So let's do something
-   * tricky here and just redirect calls in this class to a hidden PrintWriter
-   * instance.  All the functionality goes there since that is the 'real'
-   * class.  The big win of doing this way is that the default character 
-   * encoding is done automagicially by the PrintWriter tree!
+   * This class could easily have been extended to support character
+   * encodings.  In fact, PrintWriter is basically a superset of this
+   * except for the write() methods.  So let's do something tricky
+   * here and just redirect calls in this class to a hidden
+   * PrintWriter instance.  All the functionality goes there since
+   * that is the 'real' class.  The big win of doing this way is that
+   * the default character encoding is done automagicially by the
+   * PrintWriter tree!
    */
 
   /**
@@ -98,12 +93,9 @@ public class PrintStream extends FilterOutputStream
 
   /**
    * This method intializes a new <code>PrintStream</code> object to write
-   * to the specified output sink.  Note that this class is deprecated in
-   * favor of <code>PrintWriter</code>.
+   * to the specified output sink.
    *
    * @param out The <code>OutputStream</code> to write to.
-   *
-   * @deprecated
    */
   public PrintStream (OutputStream out)
   {
@@ -116,13 +108,10 @@ public class PrintStream extends FilterOutputStream
    * functionality to be specified where the stream will be flushed after
    * every line is terminated or newline character is written.
    * <p>
-   * Note that this class is deprecated in favor of <code>PrintWriter</code>.
    *
    * @param out The <code>OutputStream</code> to write to.
    * @param auto_flush <code>true</code> to flush the stream after every 
    * line, <code>false</code> otherwise
-   *
-   * @deprecated
    */
   public PrintStream (OutputStream out, boolean auto_flush)
   {
@@ -138,15 +127,12 @@ public class PrintStream extends FilterOutputStream
    * functionality to be specified where the stream will be flushed after
    * every line is terminated or newline character is written.
    * <p>
-   * Note that this class is deprecated in favor of <code>PrintWriter</code>.
    *
    * @param out The <code>OutputStream</code> to write to.
    * @param auto_flush <code>true</code> to flush the stream after every 
    * line, <code>false</code> otherwise
    * @param encoding The name of the character encoding to use for this
    * object.
-   *
-   * @deprecated
    */
   public PrintStream (OutputStream out, boolean auto_flush, String encoding)
     throws UnsupportedEncodingException
