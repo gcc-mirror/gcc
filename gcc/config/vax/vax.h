@@ -963,7 +963,8 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 { if (GET_CODE (EXP) == SET)					\
     { if (GET_CODE (SET_SRC (EXP)) == CALL)			\
 	CC_STATUS_INIT;						\
-      else if (GET_CODE (SET_DEST (EXP)) != PC)			\
+      else if (GET_CODE (SET_DEST (EXP)) != ZERO_EXTRACT	\
+	       && GET_CODE (SET_DEST (EXP)) != PC)		\
 	{ cc_status.flags = 0;					\
 	  cc_status.value1 = SET_DEST (EXP);			\
 	  cc_status.value2 = SET_SRC (EXP); } }			\
