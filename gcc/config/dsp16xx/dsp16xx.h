@@ -41,7 +41,6 @@ extern GTY(()) rtx dsp16xx_cmphf3_libcall;
 extern GTY(()) rtx dsp16xx_fixhfhi2_libcall;
 extern GTY(()) rtx dsp16xx_floathihf2_libcall;
 extern GTY(()) rtx dsp16xx_neghf2_libcall;
-extern GTY(()) rtx dsp16xx_umulhi3_libcall;
 extern GTY(()) rtx dsp16xx_mulhi3_libcall;
 extern GTY(()) rtx dsp16xx_udivqi3_libcall;
 extern GTY(()) rtx dsp16xx_udivhi3_libcall;
