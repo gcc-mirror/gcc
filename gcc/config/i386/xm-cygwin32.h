@@ -31,5 +31,7 @@ Boston, MA 02111-1307, USA. */
 /* Even though we support "/", allow "\" since everybody tests both.  */
 #define DIR_SEPARATOR '\\'
 
+#define PATH_SEPARATOR ';'
+
 /* This is needed so that protoize will compile.  */
 #define POSIX
