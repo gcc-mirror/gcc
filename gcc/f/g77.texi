@@ -14,8 +14,8 @@
 @c %**start of header 
 @setfilename g77.info
 
-@set last-up-date 1998-07-13
-@set version-g77 0.5.23
+@set last-up-date 1998-08-23
+@set version-g77 0.5.24
 @set email-general egcs@@cygnus.com
 @set email-bugs egcs-bugs@@cygnus.com
 @set path-g77 egcs/gcc/f
@@ -2789,7 +2789,7 @@ contains preprocessor directives.
 These options affect how the @code{cpp} preprocessor searches
 for files specified via the @code{#include} directive.
 Therefore, when compiling Fortran programs, they are meaningful
-when the preproecssor is used.
+when the preprocessor is used.
 
 @cindex INCLUDE directive
 @cindex directive, INCLUDE
@@ -4092,7 +4092,7 @@ As such, GNU users rarely need consider just what kind of underlying
 hardware (or, in many cases, operating system) they are using at any
 particular time.
 They can use and write software designed for a general-purpose,
-widely portable, heteregenous environment---the GNU environment.
+widely portable, heterogenous environment---the GNU environment.
 
 In line with this philosophy, GNU Fortran must evolve into a product
 that is widely ported and portable not only in the sense that it can
@@ -9989,7 +9989,7 @@ of floating-point constants under certain circumstances.
 @node Surprising Interpretations of Code
 @subsection Surprising Interpretations of Code
 
-The @samp{-Wsuprising} option can help find bugs involving
+The @samp{-Wsurprising} option can help find bugs involving
 expression evaluation or in
 the way @code{DO} loops with non-integral iteration variables
 are handled.
@@ -11011,7 +11011,7 @@ power of two (in Fortran, by @samp{2**N}) that typically is between
 is negative.
 
 So, a value like 0.2 is exactly represented in decimal---since
-it is a fraction, @samp{2/10}, with a denomenator that is compatible
+it is a fraction, @samp{2/10}, with a denominator that is compatible
 with the base of the number system (base 10).
 However, @samp{2/10} cannot be represented by any finite number
 of sums of any of 1.0, 0.5, 0.25, and so on, so 0.2 cannot
@@ -12667,7 +12667,7 @@ If your code works with any of these combinations, that is not
 proof that the bug isn't in @code{g77}---a @code{g77} bug exposed
 by your code might simply be avoided, or have a different, more subtle
 effect, when different options are used---but it can be a
-strong indicator that your code is making unawarranted assumptions
+strong indicator that your code is making unwarranted assumptions
 about the Fortran dialect and/or underlying machine it is
 being compiled and run on.
 
@@ -12677,10 +12677,10 @@ for information on the @samp{-fno-automatic} and
 their use into selective changes in your own code.
 
 @item
-@pindex ftncheck
+@pindex ftnchek
 Validate your code with @code{ftnchek} or a similar code-checking
 tool.
-@code{ftncheck} can be found at @uref{ftp://ftp.netlib.org/fortran}
+@code{ftnchek} can be found at @uref{ftp://ftp.netlib.org/fortran}
 or @uref{ftp://ftp.dsm.fordham.edu}.
 
 @pindex make
