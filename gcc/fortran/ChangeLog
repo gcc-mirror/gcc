@@ -19,7 +19,12 @@
 	gfc_conv_intrinsic_trim, gfc_conv_intrinsic_iargc): Use
 	'build_int_cst' instead of converting 'integer_zero_node' or
 	'integer_one_node' respectively.
-	
+
+	* trans-intrinsic.c (gfc_conv_intrinsic_index,
+	gfc_conv_intrinsic_scan, gfc_conv_intrinsic_verify): Remove
+	'gfc'-prefix from local variable, remove dead code, use correct
+	type when inserting argument.
+
 2005-01-16  Steven G. Kargl  <kargls@comcast.net>
 
 	PR 19168

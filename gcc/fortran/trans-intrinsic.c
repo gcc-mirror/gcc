@@ -1959,7 +1959,7 @@ gfc_conv_intrinsic_len_trim (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_index (gfc_se * se, gfc_expr * expr)
 {
-  tree gfc_logical4_type_node = gfc_get_logical_type (4);
+  tree logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -1970,14 +1970,14 @@ gfc_conv_intrinsic_index (gfc_se * se, gfc_expr * expr)
   tmp = gfc_advance_chain (args, 3);
   if (TREE_CHAIN (tmp) == NULL_TREE)
     {
-      back = convert (gfc_logical4_type_node, integer_one_node);
-      back = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+      back = tree_cons (NULL_TREE, build_int_cst (logical4_type_node, 0),
+			NULL_TREE);
       TREE_CHAIN (tmp) = back;
     }
   else
     {
       back = TREE_CHAIN (tmp);
-      TREE_VALUE (back) = convert (gfc_logical4_type_node, TREE_VALUE (back));
+      TREE_VALUE (back) = convert (logical4_type_node, TREE_VALUE (back));
     }
 
   se->expr = gfc_build_function_call (gfor_fndecl_string_index, args);
@@ -2276,7 +2276,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 static void
 gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
 {
-  tree gfc_logical4_type_node = gfc_get_logical_type (4);
+  tree logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -2287,14 +2287,14 @@ gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
   tmp = gfc_advance_chain (args, 3);
   if (TREE_CHAIN (tmp) == NULL_TREE)
     {
-      back = convert (gfc_logical4_type_node, integer_one_node);
-      back = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+      back = tree_cons (NULL_TREE, build_int_cst (logical4_type_node, 0),
+			NULL_TREE);
       TREE_CHAIN (tmp) = back;
     }
   else
     {
       back = TREE_CHAIN (tmp);
-      TREE_VALUE (back) = convert (gfc_logical4_type_node, TREE_VALUE (back));
+      TREE_VALUE (back) = convert (logical4_type_node, TREE_VALUE (back));
     }
 
   se->expr = gfc_build_function_call (gfor_fndecl_string_scan, args);
@@ -2309,7 +2309,7 @@ gfc_conv_intrinsic_scan (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
 {
-  tree gfc_logical4_type_node = gfc_get_logical_type (4);
+  tree logical4_type_node = gfc_get_logical_type (4);
   tree args;
   tree back;
   tree type;
@@ -2320,14 +2320,14 @@ gfc_conv_intrinsic_verify (gfc_se * se, gfc_expr * expr)
   tmp = gfc_advance_chain (args, 3);
   if (TREE_CHAIN (tmp) == NULL_TREE)
     {
-      back = convert (gfc_logical4_type_node, integer_one_node);
-      back = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
+      back = tree_cons (NULL_TREE, build_int_cst (logical4_type_node, 0),
+			NULL_TREE);
       TREE_CHAIN (tmp) = back;
     }
   else
     {
       back = TREE_CHAIN (tmp);
-      TREE_VALUE (back) = convert (gfc_logical4_type_node, TREE_VALUE (back));
+      TREE_VALUE (back) = convert (logical4_type_node, TREE_VALUE (back));
     }
 
   se->expr = gfc_build_function_call (gfor_fndecl_string_verify, args);
