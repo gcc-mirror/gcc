@@ -2656,6 +2656,13 @@ mark_jump_label (x, insn, cross_jump)
     case CALL:
       return;
 
+    case MEM:
+      /* If this is a constant-pool reference, see if it is a label.  */
+      if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+	mark_jump_label (get_pool_constant (XEXP (x, 0)), insn, cross_jump);
+      break;
+
     case LABEL_REF:
       {
 	register rtx label = XEXP (x, 0);
