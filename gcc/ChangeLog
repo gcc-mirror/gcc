@@ -1,3 +1,7 @@
+2003-08-10  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-typeck.c (digest_init): Add conversion for VECTOR_TYPEs.
+
 2003-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_no_mips16_string): Remove.
