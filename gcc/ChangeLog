@@ -1,3 +1,8 @@
+2004-01-09  Steve Ellcey  <sje@cup.hp.com>
+
+	* configure.ac: (gcc_cv_ld_hidden) Set to true for ia64*-*-hpux*.
+	* configure: Regenerate
+
 2004-01-09  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/11234
