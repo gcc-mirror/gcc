@@ -1,3 +1,7 @@
+2001-07-13  Geoffrey Keating  <geoffk@redhat.com>
+
+	Revert H.J. Lu's UNIQUE_SECTION patch of 2001-07-13.
+
 2001-07-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (decl_attributes): Take a pointer to the node to
