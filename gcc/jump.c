@@ -207,7 +207,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
   int first = 1;
   int max_uid = 0;
   rtx last_insn;
+#ifdef HAVE_trap
   enum rtx_code reversed_code;
+#endif
 
   cross_jump_death_matters = (cross_jump == 2);
   max_uid = init_label_info (f) + 1;
