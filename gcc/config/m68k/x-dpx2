@@ -5,7 +5,7 @@ ALLOCA_FLAGS=-S
 ALLOCA_FINISH = $(AS) -o alloca.o alloca.s
 # be sure not to confuse ./as with /bin/as
 AS=`if [ x$(OLDCC) = x$(CC) ] ; then echo /bin/as; else echo $(GAS); fi`
-GAS = $(libsubdir)/as
+GAS = gas
 #
 # as of gcc-2.2.1 gcc -g produces too many .stabd's for /bin/ld
 # to link cc1plus, so use -g with /bin/cc, but -O with gcc
