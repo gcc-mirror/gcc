@@ -1,5 +1,18 @@
 2001-12-08  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/reflect/Method.h): ObjectInputStream now
+	a friend.
+	* java/lang/natClass.cc (getSignature): Only look at elements of
+	non-null parameters.
+	(getPrivateMethod): Removed old FIXME comment.
+	* java/io/natObjectInputStream.cc (allocateObject): Removed old
+	FIXME comment.
+	(callConstructor): Simply use `NULL' for value of parameters.
+	(ObjectClass): Removed.
+	(ClassClass): Likewise.
+	* java/io/ObjectInputStream.java (readObject): Fixed typo.
+
 	* verify.cc (_Jv_BytecodeVerifier::is_assignable_from_slow):
 	Handle case of array whose component type is not prepared.
 

@@ -313,6 +313,7 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'class java::lang::Class;' \
+	    -friend 'class java::io::ObjectInputStream;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 

@@ -1,5 +1,5 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -225,13 +225,13 @@ public class ObjectInputStream extends InputStream
       {
 	dumpElementln ("ARRAY");
 	ObjectStreamClass osc = (ObjectStreamClass)readObject ();
-	Class componenetType = osc.forClass ().getComponentType ();
+	Class componentType = osc.forClass ().getComponentType ();
 	dumpElement ("ARRAY LENGTH=");
 	int length = this.realInputStream.readInt ();
-	dumpElementln (length + "; COMPONENT TYPE=" + componenetType);
-	Object array = Array.newInstance (componenetType, length);
+	dumpElementln (length + "; COMPONENT TYPE=" + componentType);
+	Object array = Array.newInstance (componentType, length);
 	int handle = assignNewHandle (array);
-	readArrayElements (array, componenetType);
+	readArrayElements (array, componentType);
 	for (int i=0, len=Array.getLength(array); i < len; i++)
 	  dumpElementln ("  ELEMENT[" + i + "]=" + Array.get(array, i).toString());
 	ret_val = processResolution (array, handle);
@@ -1295,7 +1295,7 @@ public class ObjectInputStream extends InputStream
 
 
   // returns a new instance of REAL_CLASS that has been constructed
-  // only to th level of CONSTRUCTOR_CLASS (a super class of REAL_CLASS)
+  // only to the level of CONSTRUCTOR_CLASS (a super class of REAL_CLASS)
   private Object newObject (Class real_class, Class constructor_class)
   {
     try
