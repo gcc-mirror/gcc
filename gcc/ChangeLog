@@ -1,3 +1,7 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/ip2k/ip2k.h: Replace "GNU CC" and "GNU compiler" with "GCC".
+
 2003-06-16  Aldy Hernandez  <aldyh@redhat.com>
 
 	* simplify-rtx.c (simplify_subreg): Do not over-extend vector
