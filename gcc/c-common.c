@@ -1064,9 +1064,16 @@ truthvalue_conversion (expr)
 	return truthvalue_conversion (TREE_OPERAND (expr, 0));
       break;
 
-    case BIT_XOR_EXPR:
     case MINUS_EXPR:
-      /* These can be changed into a comparison of the two objects.  */
+      /* With IEEE arithmetic, x - x may not equal 0, so we can't optimize
+	 this case.  */
+      if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE)
+	break;
+      /* fall through... */
+    case BIT_XOR_EXPR:
+      /* This and MINUR_EXPR can be changed into a comparison of the
+	 two objects.  */
       if (TREE_TYPE (TREE_OPERAND (expr, 0))
 	  == TREE_TYPE (TREE_OPERAND (expr, 1)))
 	return build_binary_op (NE_EXPR, TREE_OPERAND (expr, 0),
