@@ -1,5 +1,12 @@
 2002-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/alpha/alpha.c (some_small_symbolic_mem_operand): Look into
+	(and:DI () (const_int -8)).
+	(split_small_symbolic_mem_operand): Split
+	(mem (and:DI () (const_int -8)).
+
+2002-01-16  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/5309:
         * config/sparc/sparc.c (ultrasparc_adjust_cost): Handle TYPE_IDIV the
 	same way as TYPE_IMUL.

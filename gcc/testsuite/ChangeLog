@@ -1,10 +1,10 @@
 2002-01-16  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/20020116-2.c: New test.
+
 	* gcc.dg/ultrasp4.c: New test.
 
-2002-01-16  Jakub Jelinek  <jakub@redhat.com>
-
-	* gcc.dg/20020116-2.c: New test.
+	* gcc.dg/20020116-1.c: New test.
 
 2002-01-15  Geoffrey Keating  <geoffk@redhat.com>
 
