@@ -1,3 +1,8 @@
+2002-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8287
+	* g++.dg/init/dtor2.C: New test.
+
 2002-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/20021014-1.c: Bypass errors on solaris2 and irix6.
