@@ -1,3 +1,7 @@
+2001-11-26  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (unop): Add 0 offset for some gas versions.
+
 2001-11-26  DJ Delorie  <dj@redhat.com>
 
 	* expr.c (store_constructor): Actually use the value computed
