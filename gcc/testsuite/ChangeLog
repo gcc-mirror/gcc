@@ -1,3 +1,8 @@
+2004-04-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3518
+	* g++.dg/template/unify7.C: New.
+
 2004-04-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* g++.dg/README: Bring up to date with new subdirectories; remove
