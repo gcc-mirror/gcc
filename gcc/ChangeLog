@@ -1,3 +1,15 @@
+2003-10-10  Eric Christopher  <echristo@redhat.com>
+
+        * lcm.c (optimize_mode_switching): Change NORMAL_MODE
+        to MODE_ENTRY and MODE_EXIT. Add MODE_AFTER for insns
+        that set mode.
+        * config/sh/sh.h (MODE_ENTRY): New macro.
+        (MODE_EXIT): Ditto.
+        (MODE_AFTER): Ditto.
+        * config/sh/sh.md: Change for MODE_AFTER. Add
+        fp_set attribute.
+        * doc/tm.texi: Document MODE_AFTER, MODE_ENTRY, and MODE_EXIT.
+
 2003-10-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* genmodes.c, mode-classes.def: New files.
