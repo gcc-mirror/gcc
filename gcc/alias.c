@@ -759,6 +759,10 @@ find_base_value (src)
 	return find_base_value (XEXP (src, 0));
       return 0;
 
+    case TRUNCATE:
+      if (GET_MODE_SIZE (GET_MODE (src)) < GET_MODE_SIZE (Pmode))
+	break;
+      /* Fall through.  */
     case ZERO_EXTEND:
     case SIGN_EXTEND:	/* used for NT/Alpha pointers */
     case HIGH:
@@ -832,11 +836,26 @@ record_set (dest, set, data)
     switch (GET_CODE (src))
       {
       case LO_SUM:
-      case PLUS:
       case MINUS:
 	if (XEXP (src, 0) != dest && XEXP (src, 1) != dest)
 	  new_reg_base_value[regno] = 0;
 	break;
+      case PLUS:
+	/* If the value we add in the PLUS is also a valid base value,
+	   this might be the actual base value, and the original value
+	   an index.  */
+	{
+	  rtx other = NULL_RTX;
+
+	  if (XEXP (src, 0) == dest)
+	    other = XEXP (src, 1);
+	  else if (XEXP (src, 1) == dest)
+	    other = XEXP (src, 0);
+
+	  if (! other || find_base_value (other))
+	    new_reg_base_value[regno] = 0;
+	  break;
+	}
       case AND:
 	if (XEXP (src, 0) != dest || GET_CODE (XEXP (src, 1)) != CONST_INT)
 	  new_reg_base_value[regno] = 0;
