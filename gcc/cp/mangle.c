@@ -52,6 +52,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "cp-tree.h"
 #include "real.h"
 #include "obstack.h"
