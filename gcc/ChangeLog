@@ -1,3 +1,10 @@
+2003-03-09  Roger Sayle  <roger@eyesopen.com>
+	    Joern Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c (do_spec_1) ['{']: Revert 2003-02-24 patch.  Don't handle
+	pending argument upon return from handle_braces here.
+	(do_spec_2): Instead handle it upon return from do_spec_1 here.
+
 2003-03-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* varasm.c (make_decl_one_only): Use declare_weak().

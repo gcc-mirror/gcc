@@ -4248,6 +4248,9 @@ static int
 do_spec_2 (spec)
      const char *spec;
 {
+  const char *string;
+  int result;
+
   clear_args ();
   arg_going = 0;
   delete_this_arg = 0;
@@ -4256,7 +4259,22 @@ do_spec_2 (spec)
   input_from_pipe = 0;
   suffix_subst = NULL;
 
-  return do_spec_1 (spec, 0, NULL);
+  result = do_spec_1 (spec, 0, NULL);
+
+  /* End any pending argument.  */
+  if (arg_going)
+    {
+      obstack_1grow (&obstack, 0);
+      string = obstack_finish (&obstack);
+      if (this_is_library_file)
+	string = find_file (string);
+      store_arg (string, delete_this_arg, this_is_output_file);
+      if (this_is_output_file)
+	outfiles[input_file_number] = string;
+      arg_going = 0;
+    }
+
+  return result;
 }
 
 
@@ -5159,18 +5177,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    p = handle_braces (p);
 	    if (p == 0)
 	      return -1;
-	    /* End any pending argument.  */
-	    if (arg_going)
-	      {
-		obstack_1grow (&obstack, 0);
-		string = obstack_finish (&obstack);
-		if (this_is_library_file)
-		  string = find_file (string);
-		store_arg (string, delete_this_arg, this_is_output_file);
-		if (this_is_output_file)
-		  outfiles[input_file_number] = string;
-		arg_going = 0;
-	      }
 	    break;
 
 	  case ':':
