@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.3 $
+ *                             $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -952,6 +952,14 @@ lang_get_alias_set (type)
     return get_alias_set (TREE_TYPE (TYPE_FIELDS (type)));
 
   return -1;
+}
+
+/* Set default attributes for functions.  We do nothing.  */
+
+void
+insert_default_attributes (decl)
+     tree decl ATTRIBUTE_UNUSED;
+{
 }
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
