@@ -1,3 +1,22 @@
+Sun Feb 28 15:10:17 1999  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (elf_high, movsi_got, *movsi_got_internal,
+	*movsi_got_internal_mem, GOT splitter, movdf_hardfloat32,
+	movdf_softfloat32, movdf_hardfloat64, movdf_softfloat64,
+	load_multiple, allocate_stack, call_indirect_aix32,
+	call_indirect_aix64, call_value_indirect_aix32,
+	call_value_indirect_aix64, call_indirect_nt,
+	call_value_indirect_nt): Use gpc_reg_operand instead of
+	register_operand. 
+
+Sun Feb 28 15:10:17 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.md (one_cmplsi2, andsi3, iorsi3, xorsi3, *eqvsi3,
+	*andcsi3, *iorcsi3, *nandsi3, *norsi3): Add alternatives to use CR
+	other than cr0.
+	* rs6000.c (and{,64}_operand): If the user did -ffixed-cr0, don't
+	allow andi. or andis. which always set cr0.
+
 Sun Feb 28 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
