@@ -84,6 +84,12 @@ static void v_fatal (const char *, va_list)
      ATTRIBUTE_PRINTF (1,0) ATTRIBUTE_NORETURN;
 static void fatal (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
+#ifdef TARGET_EXTRA_INCLUDES
+static void hook_void_int(int u ATTRIBUTE_UNUSED) { }
+
+struct target_c_incpath_s target_c_incpath = { hook_void_int };
+#endif
+
 struct line_maps line_table;
 
 sstring buf;

@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "c-pragma.h"
 #include "c-tree.h"
+#include "c-incpath.h"
 #include "toplev.h"
 #include "tm_p.h"
 
@@ -34,11 +35,16 @@ Boston, MA 02111-1307, USA.  */
 
 #define BAD(msgid) do { warning (msgid); return; } while (0)
 
+static bool using_frameworks = false;
+
 /* Maintain a small stack of alignments.  This is similar to pragma
    pack's stack, but simpler.  */
 
 static void push_field_alignment (int);
 static void pop_field_alignment (void);
+static const char *find_subframework_file (const char *, const char *);
+static void add_system_framework_path (char *);
+static const char *find_subframework_header (cpp_reader *pfile, const char *header);
 
 typedef struct align_stack
 {
@@ -147,3 +153,314 @@ darwin_pragma_unused (cpp_reader *pfile ATTRIBUTE_UNUSED)
   if (c_lex (&x) != CPP_EOF)
     warning ("junk at end of '#pragma unused'");
 }
+
+static struct {
+  size_t len;
+  const char *name;
+  cpp_dir* dir;
+} *frameworks_in_use;
+static int num_frameworks = 0;
+static int max_frameworks = 0;
+
+
+/* Remember which frameworks have been seen, so that we can ensure
+   that all uses of that framework come from the same framework.  DIR
+   is the place where the named framework NAME, which is of length
+   LEN, was found.  */
+
+static void
+add_framework (const char *name, size_t len, cpp_dir *dir)
+{
+  int i;
+  for (i = 0; i < num_frameworks; ++i)
+    {
+      if (len == frameworks_in_use[i].len
+	  && strncmp (name, frameworks_in_use[i].name, len) == 0)
+	{
+	  return;
+	}
+    }
+  if (i >= max_frameworks)
+    {
+      max_frameworks = i*2;
+      frameworks_in_use = xrealloc (frameworks_in_use,
+				    max_frameworks*sizeof(*frameworks_in_use));
+    }
+  frameworks_in_use[num_frameworks].name = name;
+  frameworks_in_use[num_frameworks].len = len;
+  frameworks_in_use[num_frameworks].dir = dir;
+  ++num_frameworks;
+}
+
+/* Recall if we have seen the named framework NAME, before, and where
+   we saw it.  NAME is LEN bytes long.  The return value is the place
+   where it was seen before.  */
+
+static struct cpp_dir*
+find_framework (const char *name, size_t len)
+{
+  int i;
+  for (i = 0; i < num_frameworks; ++i)
+    {
+      if (len == frameworks_in_use[i].len
+	  && strncmp (name, frameworks_in_use[i].name, len) == 0)
+	{
+	  return frameworks_in_use[i].dir;
+	}
+    }
+  return 0;
+}
+
+/* There are two directories in a framework that contain header files,
+   Headers and PrivateHeaders.  We search Headers first as it is more
+   common to upgrade a header from PrivateHeaders to Headers and when
+   that is done, the old one might hang around and be out of data,
+   causing grief.  */
+
+struct framework_header {const char * dirName; int dirNameLen; };
+static struct framework_header framework_header_dirs[] = {
+  { "Headers", 7 },
+  { "PrivateHeaders", 14 },
+  { NULL, 0 }
+};
+
+/* Returns a pointer to a malloced string that contains the real pathname
+   to the file, given the base name and the name.  */
+
+static char *
+framework_construct_pathname (const char *fname, cpp_dir *dir)
+{
+  char *buf;
+  size_t fname_len, frname_len;
+  cpp_dir *fast_dir;
+  char *frname;
+  struct stat st;
+  int i;
+
+  /* Framework names must have a / in them.  */
+  buf = strchr (fname, '/');
+  if (buf)
+    fname_len = buf - fname;
+  else
+    return 0;
+
+  fast_dir = find_framework (fname, fname_len);
+
+  /* Framework includes must all come from one framework.  */
+  if (fast_dir && dir != fast_dir)
+    return 0;
+
+  frname = xmalloc (strlen (fname) + dir->len + 2
+		    + strlen(".framework/") + strlen("PrivateHeaders"));
+  strncpy (&frname[0], dir->name, dir->len);
+  frname_len = dir->len;
+  if (frname_len && frname[frname_len-1] != '/')
+    frname[frname_len++] = '/';
+  strncpy (&frname[frname_len], fname, fname_len);
+  frname_len += fname_len;
+  strncpy (&frname[frname_len], ".framework/", strlen (".framework/"));
+  frname_len += strlen (".framework/");
+
+  /* Append framework_header_dirs and header file name */
+  for (i = 0; framework_header_dirs[i].dirName; i++)
+    {
+      strncpy (&frname[frname_len], 
+	       framework_header_dirs[i].dirName,
+	       framework_header_dirs[i].dirNameLen);
+      strcpy (&frname[frname_len + framework_header_dirs[i].dirNameLen],
+	      &fname[fname_len]);
+
+      if (stat (frname, &st) == 0)
+	{
+	  add_framework (fname, fname_len, dir);
+	  return frname;
+	}
+    }
+
+  free (frname);
+  return 0;
+}
+
+/* Search for FNAME in sub-frameworks.  pname is the context that we
+   wish to search in.  Return the path the file was found at,
+   otherwise return 0.  */
+
+static const char*
+find_subframework_file (const char *fname, const char *pname)
+{
+  char *sfrname;
+  const char *dot_framework = ".framework/";
+  char *bufptr; 
+  int sfrname_len, i, fname_len; 
+  struct cpp_dir *fast_dir;
+  static struct cpp_dir subframe_dir;
+  struct stat st;
+
+  bufptr = strchr (fname, '/');
+
+  /* Subframework files must have / in the name.  */
+  if (bufptr == 0)
+    return 0;
+    
+  fname_len = bufptr - fname;
+  fast_dir = find_framework (fname, fname_len);
+
+  /* Sub framework header filename includes parent framework name and
+     header name in the "CarbonCore/OSUtils.h" form. If it does not
+     include slash it is not a sub framework include.  */
+  bufptr = strstr (pname, dot_framework);
+
+  /* If the parent header is not of any framework, then this header
+     can not be part of any subframework.  */
+  if (!bufptr)
+    return 0;
+
+  /* Now translate. For example,                  +- bufptr
+     fname = CarbonCore/OSUtils.h                 | 
+     pname = /System/Library/Frameworks/Foundation.framework/Headers/Foundation.h
+     into
+     sfrname = /System/Library/Frameworks/Foundation.framework/Frameworks/CarbonCore.framework/Headers/OSUtils.h */
+
+  sfrname = (char *) xmalloc (strlen (pname) + strlen (fname) + 2 +
+			      strlen ("Frameworks/") + strlen (".framework/")
+			      + strlen ("PrivateHeaders"));
+ 
+  bufptr += strlen (dot_framework);
+
+  sfrname_len = bufptr - pname; 
+
+  strncpy (&sfrname[0], pname, sfrname_len);
+
+  strncpy (&sfrname[sfrname_len], "Frameworks/", strlen ("Frameworks/"));
+  sfrname_len += strlen("Frameworks/");
+
+  strncpy (&sfrname[sfrname_len], fname, fname_len);
+  sfrname_len += fname_len;
+
+  strncpy (&sfrname[sfrname_len], ".framework/", strlen (".framework/"));
+  sfrname_len += strlen (".framework/");
+
+  /* Append framework_header_dirs and header file name */
+  for (i = 0; framework_header_dirs[i].dirName; i++)
+    {
+      strncpy (&sfrname[sfrname_len], 
+	       framework_header_dirs[i].dirName,
+	       framework_header_dirs[i].dirNameLen);
+      strcpy (&sfrname[sfrname_len + framework_header_dirs[i].dirNameLen],
+	      &fname[fname_len]);
+    
+      if (stat (sfrname, &st) == 0)
+	{
+	  if (fast_dir != &subframe_dir)
+	    {
+	      if (fast_dir)
+		warning ("subframework include %s conflicts with framework include",
+			 fname);
+	      else
+		add_framework (fname, fname_len, &subframe_dir);
+	    }
+
+	  return sfrname;
+	}
+    }
+  free (sfrname);
+
+  return 0;
+}
+
+/* Add PATH to the system includes. PATH must be malloc-ed and
+   NUL-terminated.  System framework paths are C++ aware.  */
+
+static void
+add_system_framework_path (char *path)
+{
+  int cxx_aware = 1;
+  cpp_dir *p;
+
+  p = xmalloc (sizeof (cpp_dir));
+  p->next = NULL;
+  p->name = path;
+  p->sysp = 1 + !cxx_aware;
+  p->construct = framework_construct_pathname;
+  using_frameworks = 1;
+
+  add_cpp_dir_path (p, SYSTEM);
+}
+
+/* Add PATH to the bracket includes. PATH must be malloc-ed and
+   NUL-terminated.  */
+
+void
+add_framework_path (char *path)
+{
+  cpp_dir *p;
+
+  p = xmalloc (sizeof (cpp_dir));
+  p->next = NULL;
+  p->name = path;
+  p->sysp = 0;
+  p->construct = framework_construct_pathname;
+  using_frameworks = 1;
+
+  add_cpp_dir_path (p, BRACKET);
+}
+
+static const char *framework_defaults [] = 
+  {
+    "/System/Library/Frameworks",
+    "/Library/Frameworks",
+    "/Local/Library/Frameworks",
+  };
+
+
+/* Register all the system framework paths if STDINC is true and setup
+   the missing_header callback for subframework searching if any
+   frameworks had been registered.  */
+
+void
+darwin_register_frameworks (int stdinc)
+{
+  if (stdinc)
+    {
+      size_t i;
+
+      /* Setup default search path for frameworks.  */
+      for (i=0; i<sizeof (framework_defaults)/sizeof(const char *); ++i)
+	{
+	  /* System Framework headers are cxx aware.  */
+	  add_system_framework_path (xstrdup (framework_defaults[i]));
+	}
+    }
+
+  if (using_frameworks)
+    cpp_get_callbacks (parse_in)->missing_header = find_subframework_header;
+}
+
+/* Search for HEADER in context dependent way.  The return value is
+   the malloced name of a header to try and open, if any, or NULL
+   otherwise.  This is called after normal header lookup processing
+   fails to find a header.  We search each file in the include stack,
+   using FUNC, starting from the most deeply nested include and
+   finishing with the main input file.  We stop searching when FUNC
+   returns non-zero.  */
+
+static const char*
+find_subframework_header (cpp_reader *pfile, const char *header)
+{
+  const char *fname = header;
+  struct cpp_buffer *b;
+  const char *n;
+
+  for (b = cpp_get_buffer (pfile);
+       b && cpp_get_file (b) && cpp_get_path (cpp_get_file (b));
+       b = cpp_get_prev (b))
+    {
+      n = find_subframework_file (fname, cpp_get_path (cpp_get_file (b)));
+      if (n)
+	return n;
+    }
+
+  return 0;
+}
+
+struct target_c_incpath_s target_c_incpath = C_INCPATH_INIT;

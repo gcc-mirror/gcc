@@ -119,6 +119,7 @@ Boston, MA 02111-1307, USA.  */
   { "-exported_symbols_list", "-Zexported_symbols_list" },  \
   { "-seg_addr_table_filename", "-Zseg_addr_table_filename" }, \
   { "-filelist", "-Xlinker -filelist -Xlinker" },  \
+  { "-framework", "-Xlinker -framework -Xlinker" },  \
   { "-flat_namespace", "-Zflat_namespace" },  \
   { "-force_cpusubtype_ALL", "-Zforce_cpusubtype_ALL" },  \
   { "-force_flat_namespace", "-Zforce_flat_namespace" },  \
@@ -175,10 +176,13 @@ Boston, MA 02111-1307, USA.  */
    !strcmp (STR, "dylinker_install_name") ? 1 : \
    0)
 
-/* Machine dependent cpp options.  */
+/* Machine dependent cpp options.  __APPLE_CC__ is defined as the
+   Apple include files expect it to be defined and won't work if it
+   isn't.  */
 
 #undef	CPP_SPEC
-#define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}"
+#define CPP_SPEC "%{static:%{!dynamic:-D__STATIC__}}%{!static:-D__DYNAMIC__}\
+    -D__APPLE_CC__=1"
 
 /* This is mostly a clone of the standard LINK_COMMAND_SPEC, plus
    precomp, libtool, and fat build additions.  Also we
@@ -833,6 +837,12 @@ enum machopic_addr_class {
 #define ASM_APP_ON ""
 #undef ASM_APP_OFF
 #define ASM_APP_OFF ""
+
+void darwin_register_frameworks (int);
+#define TARGET_EXTRA_INCLUDES darwin_register_frameworks
+
+void add_framework_path (char *);
+#define TARGET_OPTF add_framework_path
 
 #define TARGET_HAS_F_SETLKW
 

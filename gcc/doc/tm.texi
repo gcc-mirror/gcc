@@ -9109,3 +9109,16 @@ more than this number of multiplications is implemented by calling the
 system library's @code{pow}, @code{powf} or @code{powl} routines.
 The default value places no upper bound on the multiplication count.
 @end defmac
+
+@deftypefn Macro void TARGET_EXTRA_INCLUDES (int @var{stdinc})
+This target hook should register any extra include files for the
+target.  The parameter @var{stdinc} indicates if normal include files
+are present.
+@end deftypefn
+
+@deftypefn Macro void TARGET_OPTF (char *@var{path})
+This target hook should register special include paths for the target.
+The parameter @var{path} is the include to register.  On Darwin
+systems, this is used for Framework includes, which have semantics
+that are different from @option{-I}.
+@end deftypefn

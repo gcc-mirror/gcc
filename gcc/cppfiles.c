@@ -319,23 +319,58 @@ find_file_in_dir (cpp_reader *pfile, _cpp_file *file, bool *invalid_pch)
   if (CPP_OPTION (pfile, remap) && (path = remap_filename (pfile, file)))
     ;
   else
-    path = append_file_to_dir (file->name, file->dir);
+    if (file->dir->construct)
+      path = file->dir->construct (file->name, file->dir);
+    else
+      path = append_file_to_dir (file->name, file->dir);
 
-  file->path = path;
-  if (pch_open_file (pfile, file, invalid_pch))
-    return true;
-
-  if (open_file (file))
-    return true;
-
-  if (file->err_no != ENOENT)
+  if (path)
     {
-      open_file_failed (pfile, file);
-      return true;
+      file->path = path;
+      if (pch_open_file (pfile, file, invalid_pch))
+	return true;
+
+      if (open_file (file))
+	return true;
+
+      if (file->err_no != ENOENT)
+	{
+	  open_file_failed (pfile, file);
+	  return true;
+	}
+
+      free (path);
+      file->path = file->name;
+    }
+  else
+    {
+      file->err_no = ENOENT; 
+      file->path = NULL;
     }
 
-  free (path);
-  file->path = file->name;
+  return false;
+}
+
+/* Return tue iff the missing_header callback found the given HEADER.  */
+static bool
+search_path_exhausted (cpp_reader *pfile, const char *header, _cpp_file *file)
+{
+  missing_header_cb func = pfile->cb.missing_header;
+
+  /* When the regular search path doesn't work, try context dependent
+     headers search paths.  */
+  if (func
+      && file->dir == NULL)
+    {
+      if ((file->path = func (pfile, header)) != NULL)
+	{
+	  if (open_file (file))
+	    return true;
+	  free ((void *)file->path);
+	}
+      file->path = file->name;
+    }
+
   return false;
 }
 
@@ -391,6 +426,9 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       file->dir = file->dir->next;
       if (file->dir == NULL)
 	{
+	  if (search_path_exhausted (pfile, fname, file))
+	    return file;
+
 	  open_file_failed (pfile, file);
 	  if (invalid_pch)
 	    {
@@ -839,6 +877,7 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
   dir->name = (char *) dir_name;
   dir->len = strlen (dir_name);
   dir->sysp = sysp;
+  dir->construct = 0;
 
   /* Store this new result in the hash table.  */
   entry = new_file_hash_entry (pfile);
@@ -1264,6 +1303,42 @@ validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
 
   file->path = saved_path;
   return valid;
+}
+
+/* Get the path associated with the _cpp_file F.  The path includes
+   the base name from the include directive and the directory it was
+   found in via the search path.  */
+
+const char *
+cpp_get_path (struct _cpp_file *f)
+{
+  return f->path;
+}
+
+/* Get the cpp_buffer currently associated with the cpp_reader
+   PFILE.  */
+
+cpp_buffer *
+cpp_get_buffer (cpp_reader *pfile)
+{
+  return pfile->buffer;
+}
+
+/* Get the _cpp_file associated with the cpp_buffer B.  */
+
+_cpp_file *
+cpp_get_file (cpp_buffer *b)
+{
+  return b->file;
+}
+
+/* Get the previous cpp_buffer given a cpp_buffer B.  The previous
+   buffer is the buffer that included the given buffer.  */
+
+cpp_buffer *
+cpp_get_prev (cpp_buffer *b)
+{
+  return b->prev;
 }
 
 /* This datastructure holds the list of header files that were seen
