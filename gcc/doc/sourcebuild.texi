@@ -594,7 +594,7 @@ This should be done using @code{$(TEXI2DVI)}, with appropriate
 @option{-I} arguments pointing to directories of included files.
 This hook is a double-colon hook.
 @item html
-Build HTML documentation for the front end, in the source directory.
+Build HTML documentation for the front end, in the build directory.
 @item man
 Build generated man pages for the front end from Texinfo manuals
 (@pxref{Man Page Generation}), in the build directory.  This target
