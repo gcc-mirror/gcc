@@ -9,6 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
+#include <platform.h>
 
 #ifdef WIN32
 
@@ -27,9 +28,6 @@ details.  */
 
 #include <sys/param.h>
 #include <sys/types.h>
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -83,7 +81,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
   if_data.ifc_buf = NULL;
 
   // Open a (random) socket to have a file descriptor for the ioctl calls.
-  fd = ::socket (PF_INET, SOCK_DGRAM, htons (IPPROTO_IP));
+  fd = _Jv_socket (PF_INET, SOCK_DGRAM, htons (IPPROTO_IP));
 
   if (fd < 0)
     throw new ::java::net::SocketException;
@@ -96,7 +94,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
       
       if_data.ifc_len = sizeof (struct ifreq) * num_interfaces;
       if_data.ifc_buf =
-	(char*) _Jv_Realloc (if_data.ifc_buf, if_data.ifc_len);
+        (char*) _Jv_Realloc (if_data.ifc_buf, if_data.ifc_len);
 
       // Try to get all local interfaces.
       if (::ioctl (fd, SIOCGIFCONF, &if_data) < 0)
@@ -106,6 +104,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
 
   // Get addresses of all interfaces.
   if_record = if_data.ifc_req;
+
   for (int n = 0; n < if_data.ifc_len; n += sizeof (struct ifreq))
     {
       struct ifreq ifr;
@@ -115,7 +114,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
 
       // Try to get the IPv4-address of the local interface
       if (::ioctl (fd, SIOCGIFADDR, &ifr) < 0)
-	throw new java::net::SocketException;
+        throw new java::net::SocketException;
 
       int len = 4;
       struct sockaddr_in sa = *((sockaddr_in*) &(ifr.ifr_addr));
@@ -136,7 +135,7 @@ java::net::NetworkInterface::getRealNetworkInterfaces ()
   _Jv_Free (if_data.ifc_buf);
   
   if (fd >= 0)
-    ::close (fd);
+    _Jv_close (fd);
   
   return ht;
 #endif /* WIN32 */

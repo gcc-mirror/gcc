@@ -27,6 +27,10 @@ details.  */
 #include <sys/select.h>
 #endif
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -41,11 +45,61 @@ extern jlong _Jv_platform_gettimeofday ();
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 
+static inline int
+_Jv_socket (int domain, int type, int protocol)
+{
+  return ::socket (domain, type, protocol);
+}
+
+inline int
+_Jv_connect (jint fd, sockaddr *ptr, int len)
+{
+   return ::connect (fd, ptr, len);
+}
+
+inline int
+_Jv_close (jint fd)
+{
+  return ::close (fd);
+}
+
 inline void
 _Jv_platform_close_on_exec (jint fd)
 {
   // Ignore errors.
-  fcntl (fd, F_SETFD, FD_CLOEXEC);
+  ::fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
 
+// Avoid macro definitions of bind from system headers, e.g. on
+// Solaris 7 with _XOPEN_SOURCE.  FIXME
+inline int
+_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
+{
+  return ::bind (fd, addr, addrlen);
+}
+
+// Same problem with accept on Tru64 UNIX with _POSIX_PII_SOCKET
+inline int
+_Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
+{
+  return ::accept (fd, addr, addrlen);
+}
+
+inline int
+_Jv_listen (int fd, int backlog)
+{
+  return ::listen (fd, backlog);
+}
+
+inline int
+_Jv_write(int s, void *buf, int len)
+{
+  return ::write (s, buf, len);
+}
+
+inline int
+_Jv_read(int s, void *buf, int len)
+{
+  return ::read (s, buf, len);
+}
 #endif

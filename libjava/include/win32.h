@@ -22,9 +22,35 @@ details.  */
 
 #include <io.h>
 
+// these errors cannot occur on Win32
+#define ENOTCONN 0
+#define ECONNRESET 0
+
+#ifndef ENOPROTOOPT
+#define ENOPROTOOPT 109
+#endif
+
 extern void _Jv_platform_initialize (void);
 extern void _Jv_platform_initProperties (java::util::Properties*);
 extern jlong _Jv_platform_gettimeofday ();
+
+static inline int
+_Jv_socket (int domain, int type, int protocol)
+{
+  return ::socket (domain, type, protocol);
+}
+
+inline int
+_Jv_connect (jint fd, sockaddr *ptr, int len)
+{
+   return ::connect (fd, ptr, len);
+}
+
+inline int
+_Jv_close (jint fd)
+{
+  return ::closesocket (fd);
+}
 
 inline void
 _Jv_platform_close_on_exec (jint)
@@ -32,6 +58,35 @@ _Jv_platform_close_on_exec (jint)
   // Ignore.
 }
 
+inline int
+_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
+{
+  return ::bind (fd, addr, addrlen);
+}
+
+inline int
+_Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
+{
+  return ::accept (fd, addr, addrlen);
+}
+
+inline int
+_Jv_listen (int fd, int backlog)
+{
+  return ::listen (fd, backlog);
+}
+
+inline int
+_Jv_write(int s, void *buf, int len)
+{
+  return ::send (s, (char*) buf, len, 0);
+}
+
+inline int
+_Jv_read(int s, void *buf, int len)
+{
+  return ::recv (s, (char*) buf, len, 0);
+}
 #define HAVE_BACKTRACE
 
 /* Store up to SIZE return address of the current program state in
