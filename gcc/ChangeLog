@@ -1,3 +1,10 @@
+2001-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (parse_output_constraint): New function, split out 
+	from ...
+	(expand_asm_operands): ... here.  Use parse_output_constraint.
+	* tree.h (parse_output_constraint): Declare it.
+
 2001-07-10  Kazu Hirata  <kazu@hxi.com>
 
 	* calls.c (emit_library_call_value_1): Fix a comment typo.

@@ -2861,6 +2861,9 @@ extern int div_and_round_double		PARAMS ((enum tree_code, int,
 extern void emit_nop			PARAMS ((void));
 extern void expand_computed_goto	PARAMS ((tree));
 extern struct rtx_def *label_rtx	PARAMS ((tree));
+extern bool parse_output_constraint     PARAMS ((const char **,
+						 int, int, int,
+						 bool *, bool *, bool *));
 extern void expand_asm_operands		PARAMS ((tree, tree, tree, tree, int,
 						 const char *, int));
 extern int any_pending_cleanups		PARAMS ((int));

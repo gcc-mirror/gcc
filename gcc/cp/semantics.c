@@ -922,8 +922,50 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
     }
 
   if (!processing_template_decl)
-    for (t = input_operands; t; t = TREE_CHAIN (t))
-      TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
+    {
+      int i;
+      int ninputs;
+      int noutputs;
+
+      for (t = input_operands; t; t = TREE_CHAIN (t))
+	TREE_VALUE (t) = decay_conversion (TREE_VALUE (t));
+
+      ninputs = list_length (input_operands);
+      noutputs = list_length (output_operands);
+
+      for (i = 0, t = output_operands; t; t = TREE_CHAIN (t), ++i)
+	{
+	  bool allows_mem;
+	  bool allows_reg;
+	  bool is_inout;
+	  const char *constraint;
+	  tree operand;
+
+	  constraint = TREE_STRING_POINTER (TREE_PURPOSE (t));
+	  operand = TREE_VALUE (output_operands);
+
+	  if (!parse_output_constraint (&constraint,
+					i, ninputs, noutputs,
+					&allows_mem,
+					&allows_reg,
+					&is_inout))
+	    {
+	      /* By marking the type as erroneous, we will not try to
+		 process this operand again in expand_asm_operands.  */
+	      TREE_TYPE (operand) = error_mark_node;
+	      continue;
+	    }
+
+	  /* If the operand is a DECL that is going to end up in
+	     memory, assume it is addressable.  This is a bit more
+	     conservative than it would ideally be; the exact test is
+	     buried deep in expand_asm_operands and depends on the
+	     DECL_RTL for the OPERAND -- which we don't have at this
+	     point.  */
+	  if (!allows_reg && DECL_P (operand))
+	    mark_addressable (operand);
+	}
+    }
 
   r = build_stmt (ASM_STMT, cv_qualifier, string,
 		  output_operands, input_operands,

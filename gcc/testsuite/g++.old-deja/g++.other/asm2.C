@@ -1,12 +1,11 @@
 // Build don't link:
-// Origin: Mark Mitchell <mark@codesourcery.com>
+// Skip if not target: i?86-*-*
+// Special g++ Options: -O2
 
-struct C
+typedef unsigned long long uint64;
+uint64 fstps(void)
 {
-  void f ();
-};
-
-void C::f ()
-{
-  asm ("" : : "m" (f)); // ERROR - type could not be determined
+  uint64 ret;
+  asm volatile("fstps %0" : "=m" (ret));
+  return ret;
 }
