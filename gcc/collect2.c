@@ -45,11 +45,7 @@ extern int errno;
 #endif
 
 #ifndef HAVE_STRERROR
-#if defined(bsd4_4) 
-extern const char *const sys_errlist[];
-#else
 extern char *sys_errlist[];
-#endif
 extern int sys_nerr;
 #else
 char *strerror();
