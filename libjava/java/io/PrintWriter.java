@@ -9,9 +9,22 @@ details.  */
 package java.io;
 
 /**
- * @author Per Bothner <bothner@cygnus.com>
- * @date April 17, 1998.  
- */
+  * This class prints Java primitive values and objects to a stream as
+  * text.  None of the methods in this class throw an exception.  However,
+  * errors can be detected by calling the <code>checkError()</code> method.
+  * Additionally, this stream can be designated as "autoflush" when 
+  * created so that any writes are automatically flushed to the underlying
+  * output sink whenever one of the <code>println</code> methods is
+  * called.  (Note that this differs from the <code>PrintStream</code>
+  * class which also auto-flushes when it encounters a newline character
+  * in the chars written).
+  *
+  * @version 0.0
+  *
+  * @author Per Bothner <bothner@cygnus.com>
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @date April 17, 1998.  
+  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
@@ -20,16 +33,45 @@ package java.io;
 
 public class PrintWriter extends Writer
 {
+  /**
+   * <code>true</code> if auto-flush is enabled, <code>false</code> otherwise
+   */
   private boolean autoflush;
-  private boolean error;
-  Writer out;
 
+  /**
+   * This boolean indicates whether or not an error has ever occured
+   * on this stream.
+   */
+  private boolean error;
+
+  /**
+   * This is the underlying <code>Writer</code> we are sending output
+   * to
+   */
+  protected Writer out;
+
+  /**
+   * This method intializes a new <code>PrintWriter</code> object to write
+   * to the specified output sink.  The form of the constructor does not
+   * enable auto-flush functionality.
+   *
+   * @param wr The <code>Writer</code> to write to.
+   */
   public PrintWriter(Writer wr)
   {
     super(wr);
     this.out = wr;
   }
 
+  /**
+   * This method intializes a new <code>PrintWriter</code> object to write
+   * to the specified output sink.  This constructor also allows "auto-flush"
+   * functionality to be specified where the stream will be flushed after
+   * every line is terminated or newline character is written.
+   *
+   * @param wr The <code>Writer</code> to write to.
+   * @param autoflush <code>true</code> to flush the stream after every line, <code>false</code> otherwise
+   */
   public PrintWriter(Writer wr, boolean autoflush)
   {
     super(wr);
@@ -37,6 +79,14 @@ public class PrintWriter extends Writer
     this.autoflush = autoflush;
   }
 
+  /**
+   * This method initializes a new <code>PrintWriter</code> object to write
+   * to the specified <code>OutputStream</code>.  Characters will be converted
+   * to chars using the system default encoding.  Auto-flush functionality
+   * will not be enabled.
+   *
+   * @param out The <code>OutputStream</code> to write to
+   */
   public PrintWriter(OutputStream out)
   {
     super();
@@ -44,19 +94,48 @@ public class PrintWriter extends Writer
     this.lock = this.out;
   }
 
+  /**
+   * This method initializes a new <code>PrintWriter</code> object to write
+   * to the specified <code>OutputStream</code>.  Characters will be converted
+   * to chars using the system default encoding.  This form of the 
+   * constructor allows auto-flush functionality to be enabled if desired
+   *
+   * @param out The <code>OutputStream</code> to write to
+   * @param autoflush <code>true</code> to flush the stream after every <code>println</code> call, <code>false</code> otherwise.
+   */
   public PrintWriter(OutputStream out, boolean autoflush)
   {
     this(out);
     this.autoflush = autoflush;
   }
-  protected void setError() { error = true; }
 
+  /**
+   * This method can be called by subclasses to indicate that an error
+   * has occurred and should be reported by <code>checkError</code>.
+   */
+  protected void setError()
+  {
+    error = true;
+  }
+
+  /**
+   * This method checks to see if an error has occurred on this stream.  Note
+   * that once an error has occurred, this method will continue to report
+   * <code>true</code> forever for this stream.  Before checking for an
+   * error condition, this method flushes the stream.
+   *
+   * @return <code>true</code> if an error has occurred, <code>false</code> otherwise
+   */
   public boolean checkError()
   {
     flush();
     return error;
   }
 
+  /**
+   * This method flushes any buffered chars to the underlying stream and
+   * then flushes that stream as well.
+   */
   public void flush()
   {
     try
@@ -69,6 +148,9 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method closes this stream and all underlying streams.
+   */
   public void close()
   {
     try
@@ -81,6 +163,12 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method prints a <code>String</code> to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * @param str The <code>String</code> to print.
+   */
   public void print(String str)
   {
     try
@@ -93,16 +181,35 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method prints a char to the stream.  The actual value printed is
+   * determined by the character encoding in use.
+   *
+   * @param ch The <code>char</code> value to be printed
+   */
   public void print(char ch)
   {
     write((int) ch);
   }
 
+  /**
+   * This method prints an array of characters to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * @param charArray The array of characters to print.
+   */
   public void print(char[] charArray)
   {
     write(charArray, 0, charArray.length);
   }
 
+  /**
+   * This methods prints a boolean value to the stream.  <code>true</code>
+   * values are printed as "true" and <code>false</code> values are printed
+   * as "false".
+   *
+   * @param bool The <code>boolean</code> value to print
+   */
   public void print(boolean bool)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -110,6 +217,12 @@ public class PrintWriter extends Writer
     write (bool ? "true" : "false");
   }
 
+  /**
+   * This method prints an integer to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param inum The <code>int</code> value to be printed
+   */
   public void print(int inum)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -117,6 +230,12 @@ public class PrintWriter extends Writer
     write(Integer.toString(inum));
   }
 
+  /**
+   * This method prints a long to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param lnum The <code>long</code> value to be printed
+   */
   public void print(long lnum)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -124,6 +243,12 @@ public class PrintWriter extends Writer
     write(Long.toString(lnum));
   }
 
+  /**
+   * This method prints a float to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param fnum The <code>float</code> value to be printed
+   */
   public void print(float fnum)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -131,6 +256,12 @@ public class PrintWriter extends Writer
     write(Float.toString(fnum));
   }
 
+  /**
+   * This method prints a double to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * @param dnum The <code>double</code> value to be printed
+   */
   public void print(double dnum)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -138,6 +269,13 @@ public class PrintWriter extends Writer
     write(Double.toString(dnum));
   }
 
+  /**
+   * This method prints an <code>Object</code> to the stream.  The actual
+   * value printed is determined by calling the <code>String.valueOf()</code>
+   * method.
+   *
+   * @param obj The <code>Object</code> to print.
+   */
   public void print(Object obj)
   {
     // We purposely call write() and not print() here.  This preserves
@@ -145,111 +283,194 @@ public class PrintWriter extends Writer
     write(obj == null ? "null" : obj.toString());
   }
 
+  /**
+   * This is the system dependent line separator
+   */
   private static final char[] line_separator
   = System.getProperty("line.separator").toCharArray();
 
+  /**
+   * This method prints a line separator sequence to the stream.  The value
+   * printed is determined by the system property <xmp>line.separator</xmp>
+   * and is not necessarily the Unix '\n' newline character.
+   */
   public void println()
   {
     synchronized (lock)
       {
-	printlnUnsynchronized();
+	try
+	  {
+	    write(line_separator, 0, line_separator.length);
+	    if (autoflush)
+	      out.flush();
+	  }
+	catch (IOException ex)
+	  {
+	    error = true;
+	  }
       }
   }
 
-  private void printlnUnsynchronized()
-  {
-    try
-      {
-	write(line_separator, 0, line_separator.length);
-	if (autoflush)
-	  out.flush();
-      }
-    catch (IOException ex)
-      {
-	error = true;
-      }
-  }
-
+  /**
+   * This methods prints a boolean value to the stream.  <code>true</code>
+   * values are printed as "true" and <code>false</code> values are printed
+   * as "false".
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param bool The <code>boolean</code> value to print
+   */
   public void println(boolean bool)
   {
     synchronized (lock)
       {
 	print(bool);
-	printlnUnsynchronized();
+	println();
       }
   }
+
+  /**
+   * This method prints an integer to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param inum The <code>int</code> value to be printed
+   */
   public void println(int inum)
   {
     synchronized (lock)
       {
 	print(inum);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints a long to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param lnum The <code>long</code> value to be printed
+   */
   public void println(long lnum)
   {
     synchronized (lock)
       {
 	print(lnum);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints a float to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param fnum The <code>float</code> value to be printed
+   */
   public void println(float fnum)
   {
     synchronized (lock)
       {
 	print(fnum);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints a double to the stream.  The value printed is
+   * determined using the <code>String.valueOf()</code> method.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param dnum The <code>double</code> value to be printed
+   */
   public void println(double dnum)
   {
     synchronized (lock)
       {
 	print(dnum);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints an <code>Object</code> to the stream.  The actual
+   * value printed is determined by calling the <code>String.valueOf()</code>
+   * method.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param obj The <code>Object</code> to print.
+   */
   public void println(Object obj)
   {
     synchronized (lock)
       {
 	print(obj);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints a <code>String</code> to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param str The <code>String</code> to print.
+   */
   public void println(String str)
   {
     synchronized (lock)
       {
 	print(str);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints a char to the stream.  The actual value printed is
+   * determined by the character encoding in use.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param ch The <code>char</code> value to be printed
+   */
   public void println(char ch)
   {
     synchronized (lock)
       {
 	print(ch);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method prints an array of characters to the stream.  The actual
+   * value printed depends on the system default encoding.
+   *
+   * This method prints a line termination sequence after printing the value.
+   *
+   * @param charArray The array of characters to print.
+   */
   public void println(char[] charArray)
   {
     synchronized (lock)
       {
 	print(charArray);
-	printlnUnsynchronized();
+	println();
       }
   }
 
+  /**
+   * This method writes a single char to the stream. 
+   * 
+   * @param ch The char to be written, passed as a int
+   */
   public void write(int ch)
   {
     try
@@ -262,6 +483,14 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method writes <code>count</code> chars from the specified array 
+   * starting at index <code>offset</code> into the array.
+   *
+   * @param charArray The array of chars to write
+   * @param offset The index into the array to start writing from
+   * @param count The number of chars to write
+  */
   public void write(char[] charArray, int offset, int count)
   {
     try
@@ -274,6 +503,15 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method writes <code>count</code> chars from the specified
+   * <code>String</code> to the output starting at character position
+   * <code>offset</code> into the <code>String</code>
+   *
+   * @param str The <code>String</code> to write chars from
+   * @param offset The offset into the <code>String</code> to start writing from
+   * @param count The number of chars to write.
+   */
   public void write(String str, int offset, int count)
   {
     try
@@ -286,11 +524,22 @@ public class PrintWriter extends Writer
       }
   }
 
+  /**
+   * This method write all the chars in the specified array to the output.
+   *
+   * @param charArray The array of characters to write
+   */
   public void write(char[] charArray)
   {
     write(charArray, 0, charArray.length);
   }  
 
+  /**
+   * This method writes the contents of the specified <code>String</code>
+   * to the underlying stream.
+   *
+   * @param str The <code>String</code> to write
+   */
   public void write(String str)
   {
     write(str, 0, str.length());
