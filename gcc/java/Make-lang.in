@@ -74,7 +74,7 @@ JAVA_SRCS = $(srcdir)/java/parse.y $(srcdir)/java/class.c \
   $(srcdir)/java/verify.c $(srcdir)/java/zextract.c $(srcdir)/java/jcf-io.c \
   $(srcdir)/java/jcf-parse.c $(srcdir)/java/mangle.c \
   $(srcdir)/java/jcf-write.c $(srcdir)/java/buffer.c \
-  $(srcdir)/java/check-init.c \
+  $(srcdir)/java/check-init.c $(srcdir)/java/lex.c $(srcdir)/java/boehm.c \
   $(srcdir)/java/jcf-depend.c  $(srcdir)/java/jcf-path.c
 
 jc1$(exeext): $(P) $(JAVA_SRCS) $(LIBDEPS) stamp-objlist ggc-callbacks.o
