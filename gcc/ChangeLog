@@ -1,5 +1,9 @@
 2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcc.c (add_sysrooted_prefix, execute, do_self_spec, do_spec_1,
+	handle_braces, process_brace_body, main, used_arg,
+	set_multilib_dir, print_multilib_info): Use fatal, not abort.
+
 	* tree-nested.c (create_tmp_var_for): Correct missinverted assert.
 
 	* tree-outof-ssa.c (free_temp_expr_table): Add missed assert.
