@@ -211,7 +211,7 @@ static void vect_enhance_data_refs_alignment (loop_vec_info);
 static bool vect_is_simple_use (tree , struct loop *, tree *);
 static bool exist_non_indexing_operands_for_use_p (tree, tree);
 static bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *, bool);
-static void vect_mark_relevant (varray_type, tree);
+static void vect_mark_relevant (varray_type *, tree);
 static bool vect_stmt_relevant_p (tree, loop_vec_info);
 static tree vect_get_loop_niters (struct loop *, tree *);
 static bool vect_compute_data_ref_alignment 
@@ -5086,7 +5086,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
    Mark STMT as "relevant for vectorization" and add it to WORKLIST.  */
 
 static void
-vect_mark_relevant (varray_type worklist, tree stmt)
+vect_mark_relevant (varray_type *worklist, tree stmt)
 {
   stmt_vec_info stmt_info;
 
@@ -5095,7 +5095,7 @@ vect_mark_relevant (varray_type worklist, tree stmt)
 
   if (TREE_CODE (stmt) == PHI_NODE)
     {
-      VARRAY_PUSH_TREE (worklist, stmt);
+      VARRAY_PUSH_TREE (*worklist, stmt);
       return;
     }
 
@@ -5119,7 +5119,7 @@ vect_mark_relevant (varray_type worklist, tree stmt)
     }
 
   STMT_VINFO_RELEVANT_P (stmt_info) = 1;
-  VARRAY_PUSH_TREE (worklist, stmt);
+  VARRAY_PUSH_TREE (*worklist, stmt);
 }
 
 
@@ -5233,7 +5233,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	  STMT_VINFO_RELEVANT_P (stmt_info) = 0;
 
 	  if (vect_stmt_relevant_p (stmt, loop_vinfo))
-	    vect_mark_relevant (worklist, stmt);
+	    vect_mark_relevant (&worklist, stmt);
 	}
     }
 
@@ -5281,7 +5281,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 	      bb = bb_for_stmt (def_stmt);
 	      if (flow_bb_inside_loop_p (loop, bb))
-	        vect_mark_relevant (worklist, def_stmt);
+	        vect_mark_relevant (&worklist, def_stmt);
 	    }
 	} 
 
@@ -5318,7 +5318,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
 	      bb = bb_for_stmt (def_stmt);
 	      if (flow_bb_inside_loop_p (loop, bb))
-		vect_mark_relevant (worklist, def_stmt);
+		vect_mark_relevant (&worklist, def_stmt);
 	    }
 	}
     }				/* while worklist */
