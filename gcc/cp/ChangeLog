@@ -1,8 +1,14 @@
+2001-12-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* mangle.c (write_expression): Handle CAST_EXPR, STATIC_CAST_EXPR,
+	CONST_CAST_EXPR.
+	* operators.def: Add CAST_EXPR, STATIC_CAST_EXPR, CONST_CAST_EXPR.
+
 2001-12-03  Mumit Khan  <khan@nanotech.wisc.edu>
 
 	PR c++/3394
-	*  decl.c (xref_basetypes): Handle attributes between 
-	  'class' and name.
+	* decl.c (xref_basetypes): Handle attributes between 
+	'class' and name.
 
 2001-12-03  Jason Merrill  <jason@redhat.com>
 

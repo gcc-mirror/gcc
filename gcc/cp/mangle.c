@@ -1817,18 +1817,32 @@ write_expression (expr)
       /* If it wasn't any of those, recursively expand the expression.  */
       write_string (operator_name_info[(int) code].mangled_name);
 
-      /* Handle pointers-to-members specially.  */
-      if (code == SCOPE_REF)
+      switch (code)
 	{
+	case CAST_EXPR:
+	  write_type (TREE_TYPE (expr));
+	  write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
+	  break;
+
+	case STATIC_CAST_EXPR:
+	case CONST_CAST_EXPR:
+	  write_type (TREE_TYPE (expr));
+	  write_expression (TREE_OPERAND (expr, 0));
+	  break;
+
+	/* Handle pointers-to-members specially.  */
+	case SCOPE_REF:
 	  write_type (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == IDENTIFIER_NODE)
 	    write_source_name (TREE_OPERAND (expr, 1));
 	  else
 	    write_encoding (TREE_OPERAND (expr, 1));
+	  break;
+
+	default:
+	  for (i = 0; i < TREE_CODE_LENGTH (code); ++i)
+	    write_expression (TREE_OPERAND (expr, i));
 	}
-      else
-	for (i = 0; i < TREE_CODE_LENGTH (code); ++i)
-	  write_expression (TREE_OPERAND (expr, i));
     }
 }
 
