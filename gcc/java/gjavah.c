@@ -149,12 +149,16 @@ static int
 java_float_finite (f)
      jfloat f;
 {
-  int32 *ip = (int32 *) &f;
+  union {
+    jfloat f;
+    int32 i;
+  } u;
+  u.f = f;
 
   /* We happen to know that F_NAN_MASK will match all NaN values, and
      also positive and negative infinity.  That's why we only need one
      test here.  See The Java Language Specification, section 20.9.  */
-  return (*ip & F_NAN_MASK) != F_NAN_MASK;
+  return (u.i & F_NAN_MASK) != F_NAN_MASK;
 }
 
 /* Return 1 if D is not Inf or NaN.  */
@@ -162,10 +166,14 @@ static int
 java_double_finite (d)
      jdouble d;
 {
-  int64 *ip = (int64 *) &d;
+  union {
+    jdouble d;
+    int64 i;
+  } u;
+  u.d = d;
 
   /* Now check for all NaNs.  */
-  return (*ip & D_NAN_MASK) != D_NAN_MASK;
+  return (u.i & D_NAN_MASK) != D_NAN_MASK;
 }
 
 void

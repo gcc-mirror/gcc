@@ -1,3 +1,8 @@
+Sun Jan 10 13:36:14 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gjavah.c (java_float_finite): Use a union to do type punning.
+	(java_double_finite): Likewise.
+
 Sat Jan  9 11:25:00 1999  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (build_new_array_init):  Don't set EXPR_WFL_LINECOL
