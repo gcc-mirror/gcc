@@ -2260,6 +2260,23 @@ symbol_ref_operand (rtx op, enum machine_mode mode)
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
 
+#if TARGET_MACHO
+  if (GET_CODE (op) == SYMBOL_REF && TARGET_MACHO && MACHOPIC_INDIRECT)
+    {
+      /* Macho says it has to go through a stub or be local 
+         when indirect mode.  Stubs are considered local.  */
+      const char *t = XSTR (op, 0);
+      /* "&" means that it is it a local defined symbol
+          so it is okay to call to.  */
+      if (t[0] == '&')
+        return true;
+     
+      /* "!T" means that the function is local defined.  */ 
+      return (t[0] == '!' && t[1] == 'T');
+    }
+#endif
+
+
   return (GET_CODE (op) == SYMBOL_REF
 	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op)));
 }
