@@ -2684,28 +2684,28 @@ instantiate_decl (x, size, valid_only)
 
   instantiate_virtual_regs_1 (&addr, NULL_RTX, 0);
 
-  if (! valid_only)
-    return;
+  if (valid_only)
+    {
+      /* Now verify that the resulting address is valid for every integer or
+	 floating-point mode up to and including SIZE bytes long.  We do this
+	 since the object might be accessed in any mode and frame addresses
+	 are shared.  */
 
-  /* Now verify that the resulting address is valid for every integer or
-     floating-point mode up to and including SIZE bytes long.  We do this
-     since the object might be accessed in any mode and frame addresses
-     are shared.  */
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	if (! memory_address_p (mode, addr))
+	  return;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-       mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (! memory_address_p (mode, addr))
-      return;
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
+	   mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	if (! memory_address_p (mode, addr))
+	  return;
+    }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-       mode != VOIDmode && GET_MODE_SIZE (mode) <= size;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (! memory_address_p (mode, addr))
-      return;
-
-  /* Otherwise, put back the address, now that we have updated it and we
-     know it is valid.  */
+  /* Put back the address now that we have updated it and we either know
+     it is valid or we don't care whether it is valid.  */
 
   XEXP (x, 0) = addr;
 }
