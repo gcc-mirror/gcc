@@ -56,9 +56,9 @@ set_Wformat (setting)
 
 /* This must be in the same order as format_types, with format_type_error
    last.  */
-enum format_type { printf_format_type, scanf_format_type,
-		   strftime_format_type, strfmon_format_type,
-		   format_type_error };
+enum format_type { printf_format_type, asm_fprintf_format_type,
+		   scanf_format_type, strftime_format_type,
+		   strfmon_format_type, format_type_error };
 
 typedef struct function_format_info
 {
@@ -71,74 +71,6 @@ static bool decode_format_attr		PARAMS ((tree,
 						 function_format_info *, int));
 static enum format_type decode_format_type	PARAMS ((const char *));
 
-/* Handle a "format" attribute; arguments as in
-   struct attribute_spec.handler.  */
-tree
-handle_format_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
-     tree name ATTRIBUTE_UNUSED;
-     tree args;
-     int flags;
-     bool *no_add_attrs;
-{
-  tree type = *node;
-  function_format_info info;
-  tree argument;
-  unsigned HOST_WIDE_INT arg_num;
-
-  if (!decode_format_attr (args, &info, 0))
-    {
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-
-  /* If a parameter list is specified, verify that the format_num
-     argument is actually a string, in case the format attribute
-     is in error.  */
-  argument = TYPE_ARG_TYPES (type);
-  if (argument)
-    {
-      for (arg_num = 1; argument != 0 && arg_num != info.format_num;
-	   ++arg_num, argument = TREE_CHAIN (argument))
-	;
-
-      if (! argument
-	  || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-	      != char_type_node))
-	{
-	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	    error ("format string arg not a string type");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
-
-      else if (info.first_arg_num != 0)
-	{
-	  /* Verify that first_arg_num points to the last arg,
-	     the ...  */
-	  while (argument)
-	    arg_num++, argument = TREE_CHAIN (argument);
-
-	  if (arg_num != info.first_arg_num)
-	    {
-	      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-		error ("args to be formatted is not '...'");
-	      *no_add_attrs = true;
-	      return NULL_TREE;
-	    }
-	}
-    }
-
-  if (info.format_type == strftime_format_type && info.first_arg_num != 0)
-    {
-      error ("strftime formats cannot format arguments");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-
-  return NULL_TREE;
-}
 
 
 /* Handle a "format_arg" attribute; arguments as in
@@ -402,6 +334,7 @@ typedef struct
 
 
 /* Macros to fill out tables of these.  */
+#define NOARGUMENTS	{ T89_V, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
 #define BADLEN	{ 0, NULL, NULL }
 #define NOLENGTHS	{ BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN, BADLEN }
 
@@ -574,6 +507,13 @@ static const format_length_info printf_length_specs[] =
   { NULL, 0, 0, NULL, 0, 0 }
 };
 
+/* Length specifiers valid for asm_fprintf.  */
+static const format_length_info asm_fprintf_length_specs[] =
+{
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
+  { "w", FMT_LEN_none, STD_C89, NULL, 0, 0 },
+  { NULL, 0, 0, NULL, 0, 0 }
+};
 
 /* This differs from printf_length_specs only in that "Z" is not accepted.  */
 static const format_length_info scanf_length_specs[] =
@@ -622,6 +562,26 @@ static const format_flag_pair printf_flag_pairs[] =
   { 0, 0, 0, 0 }
 };
 
+static const format_flag_spec asm_fprintf_flag_specs[] =
+{
+  { ' ',  0, 0, N_("` ' flag"),        N_("the ` ' printf flag"),              STD_C89 },
+  { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
+  { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
+  { '0',  0, 0, N_("`0' flag"),        N_("the `0' printf flag"),              STD_C89 },
+  { '-',  0, 0, N_("`-' flag"),        N_("the `-' printf flag"),              STD_C89 },
+  { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
+  { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
+  { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
+  { 0, 0, 0, NULL, NULL, 0 }
+};
+
+static const format_flag_pair asm_fprintf_flag_pairs[] =
+{
+  { ' ', '+', 1, 0   },
+  { '0', '-', 1, 0   },
+  { '0', 'p', 1, 'i' },
+  { 0, 0, 0, 0 }
+};
 
 static const format_flag_spec scanf_flag_specs[] =
 {
@@ -767,6 +727,26 @@ static const format_char_info print_char_table[] =
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
+static const format_char_info asm_fprintf_char_table[] =
+{
+  /* C89 conversion specifiers.  */
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +",  "i" },
+  { "oxX", 0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp0#",   "i" },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp0",    "i" },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "" },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",    "cR" },
+
+  /* asm_fprintf conversion specifiers.  */
+  { "O",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "R",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "I",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "L",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "U",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "r",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  "" },
+  { "@",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL }
+};
+
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
@@ -822,11 +802,17 @@ static const format_char_info monetary_char_table[] =
 
 
 /* This must be in the same order as enum format_type.  */
-static const format_kind_info format_types[] =
+static const format_kind_info format_types_orig[] =
 {
   { "printf",   printf_length_specs,  print_char_table, " +#0-'I", NULL, 
     printf_flag_specs, printf_flag_pairs,
     FMT_FLAG_ARG_CONVERT|FMT_FLAG_DOLLAR_MULTIPLE|FMT_FLAG_USE_DOLLAR|FMT_FLAG_EMPTY_PREC_OK,
+    'w', 0, 'p', 0, 'L',
+    &integer_type_node, &integer_type_node
+  },
+  { "asm_fprintf",   asm_fprintf_length_specs,  asm_fprintf_char_table, " +#0-", NULL, 
+    asm_fprintf_flag_specs, asm_fprintf_flag_pairs,
+    FMT_FLAG_ARG_CONVERT|FMT_FLAG_EMPTY_PREC_OK,
     'w', 0, 'p', 0, 'L',
     &integer_type_node, &integer_type_node
   },
@@ -848,6 +834,10 @@ static const format_kind_info format_types[] =
   }
 };
 
+/* This layer of indirection allows GCC to reassign format_types with
+   new data if necessary, while still allowing the original data to be
+   const.  */
+static const format_kind_info *format_types = format_types_orig;
 
 /* Structure detailing the results of checking a format function call
    where the format expression may be a conditional expression with
@@ -2358,4 +2348,117 @@ check_format_types (status, types)
 	  }
       }
     }
+}
+
+/* Handle a "format" attribute; arguments as in
+   struct attribute_spec.handler.  */
+tree
+handle_format_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name ATTRIBUTE_UNUSED;
+     tree args;
+     int flags;
+     bool *no_add_attrs;
+{
+  tree type = *node;
+  function_format_info info;
+  tree argument;
+  unsigned HOST_WIDE_INT arg_num;
+
+  if (!decode_format_attr (args, &info, 0))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* If a parameter list is specified, verify that the format_num
+     argument is actually a string, in case the format attribute
+     is in error.  */
+  argument = TYPE_ARG_TYPES (type);
+  if (argument)
+    {
+      for (arg_num = 1; argument != 0 && arg_num != info.format_num;
+	   ++arg_num, argument = TREE_CHAIN (argument))
+	;
+
+      if (! argument
+	  || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+	  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+	      != char_type_node))
+	{
+	  if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+	    error ("format string arg not a string type");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      else if (info.first_arg_num != 0)
+	{
+	  /* Verify that first_arg_num points to the last arg,
+	     the ...  */
+	  while (argument)
+	    arg_num++, argument = TREE_CHAIN (argument);
+
+	  if (arg_num != info.first_arg_num)
+	    {
+	      if (!(flags & (int) ATTR_FLAG_BUILT_IN))
+		error ("args to be formatted is not '...'");
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+	}
+    }
+
+  if (info.format_type == strftime_format_type && info.first_arg_num != 0)
+    {
+      error ("strftime formats cannot format arguments");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* If this is format type __asm_fprintf__, we have to initialize
+     GCC's notion of HOST_WIDE_INT for checking %wd.  */
+  if (info.format_type == asm_fprintf_format_type)
+    {
+      static tree hwi;
+      tree orig;
+      
+      /* For this custom check to work, one must have issued:
+	 "typedef HOST_WIDE_INT __gcc_host_wide_int__;"
+	 in your source code prior to using this attribute.  */
+      if (!hwi)
+        {
+	  format_kind_info *new_format_types;
+	  format_length_info *new_asm_fprintf_length_specs;
+	  
+	  if (!(hwi = maybe_get_identifier ("__gcc_host_wide_int__")))
+	    abort ();
+
+	  /* Create a new (writable) copy of asm_fprintf_length_specs.  */
+	  new_asm_fprintf_length_specs =
+	    xmalloc (sizeof (asm_fprintf_length_specs));
+	  memcpy (new_asm_fprintf_length_specs, asm_fprintf_length_specs,
+		  sizeof (asm_fprintf_length_specs));
+
+	  /* Create a new (writable) copy of format_types.  */
+	  new_format_types = xmalloc (sizeof (format_types_orig));
+	  memcpy (new_format_types, format_types_orig, sizeof (format_types_orig));
+	  
+	  /* Find the underlying type for HOST_WIDE_INT.  */
+	  orig = DECL_ORIGINAL_TYPE (identifier_global_value (hwi));
+	  if (orig == long_integer_type_node)
+	    new_asm_fprintf_length_specs[1].index = FMT_LEN_l;
+	  else if (orig == long_long_integer_type_node)
+	    new_asm_fprintf_length_specs[1].index = FMT_LEN_ll;
+	  else
+	    abort ();
+
+	  /* Assign the new data for use.  */
+	  new_format_types[asm_fprintf_format_type].length_char_specs =
+	    new_asm_fprintf_length_specs;
+	  format_types = new_format_types;
+	}
+    }
+
+  return NULL_TREE;
 }

@@ -1,3 +1,16 @@
+2003-06-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-attrs.def (ATTR_ASM_FPRINTF): New.
+	* c-format.c (enum format_type): Add asm_fprintf_format_type.
+	(NOARGUMENTS, asm_fprintf_length_specs, asm_fprintf_flag_specs,
+	asm_fprintf_flag_pairs, asm_fprintf_char_table): New.
+	(format_types_orig): Renamed from format_types.  Add new data.
+	(format_types): Declare as pointer.
+	(handle_format_attribute): Move later in file so we have all
+	necessary declarations.  Add section to capture HOST_WIDE_INT.
+	* output.h (ATTRIBUTE_ASM_FPRINTF, __gcc_host_wide_int__): New.
+	(asm_fprintf): Mark with ATTRIBUTE_ASM_FPRINTF.
+
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* doc/tm.texi (Storage Layout): Remove ROUND_TYPE_SIZE and
