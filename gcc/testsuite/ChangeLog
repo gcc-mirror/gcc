@@ -1,3 +1,7 @@
+2002-06-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/20020620-1.c: New test.
+
 2002-06-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* g++.dg/template/ttp4.C: New test.
