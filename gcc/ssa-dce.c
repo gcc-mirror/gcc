@@ -373,6 +373,7 @@ find_inherently_necessary (x)
       {  
       case CALL_INSN:
       case BARRIER:
+      case PREFETCH:
 	return !0;
       case CODE_LABEL:
       case NOTE:

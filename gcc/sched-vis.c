@@ -474,6 +474,12 @@ print_exp (buf, x, verbose)
       fun = "trap_if";
       op[0] = TRAP_CONDITION (x);
       break;
+    case PREFETCH:
+      fun = "prefetch";
+      op[0] = XEXP (x, 0);
+      op[1] = XEXP (x, 1);
+      op[2] = XEXP (x, 2);
+      break;
     case UNSPEC:
     case UNSPEC_VOLATILE:
       {

@@ -514,6 +514,17 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", 'x')
      
 DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEee0", 'x')
 
+/* Memory prefetch, with attributes supported on some targets.
+   Operand 1 is the address of the memory to fetch.
+   Operand 2 is 1 for a write access, 0 otherwise.
+   Operand 3 is the level of temporal locality; 0 means there is no
+   temporal locality and 1, 2, and 3 are for increasing levels of temporal
+   locality.
+
+   The attributes specified by operands 2 and 3 are ignored for targets
+   whose prefetch instructions do not support them.  */
+DEF_RTL_EXPR(PREFETCH, "prefetch", "eee", 'x')
+
 /* ----------------------------------------------------------------------
    At the top level of an instruction (perhaps under PARALLEL).
    ---------------------------------------------------------------------- */

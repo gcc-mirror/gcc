@@ -3979,6 +3979,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	}
 
       /* Fall through to generic unary operation case.  */
+    case PREFETCH:
     case SUBREG:
     case STRICT_LOW_PART:
     case NEG:          case NOT:

@@ -569,6 +569,9 @@ reg_referenced_p (x, body)
     case TRAP_IF:
       return reg_overlap_mentioned_p (x, TRAP_CONDITION (body));
 
+    case PREFETCH:
+      return reg_overlap_mentioned_p (x, XEXP (body, 0));
+
     case UNSPEC:
     case UNSPEC_VOLATILE:
       for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
@@ -1454,6 +1457,10 @@ note_uses (pbody, fun, data)
 
     case TRAP_IF:
       (*fun) (&TRAP_CONDITION (body), data);
+      return;
+
+    case PREFETCH:
+      (*fun) (&XEXP (body, 0), data);
       return;
 
     case UNSPEC:
