@@ -1,8 +1,12 @@
-Sat 16-Sep-2000 19:14:00 BST Laurynas Biveinis <lauras@softhome.net>
+Sat Sep 16 14:35:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* cppfiles.c (purge_cache): use munmap() only if MMAP_THRESHOLD
-	 defined.
-	 (read_include_file): Ensure inc->mmaped is initialized.
+	* stor-layout.c (place_field): Don't do anything if field or
+	its type are ERROR_MARK.
+
+Sat Sep 16 19:14:00 2000  Laurynas Biveinis <lauras@softhome.net>
+
+	* cppfiles.c (purge_cache): Use munmap only if MMAP_THRESHOLD defined.
+	(read_include_file): Ensure inc->mmaped is initialized.
 
 2000-09-16  Richard Henderson  <rth@cygnus.com>
 
