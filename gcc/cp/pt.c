@@ -2166,8 +2166,8 @@ push_template_decl_real (decl, is_friend)
     }
   else
     {
-      tree t;
-      tree a;
+      tree a, t, current, parms;
+      int mem, i;
 
       if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	cp_error ("must specialize `%#T' before defining member `%#D'",
@@ -2193,75 +2193,68 @@ push_template_decl_real (decl, is_friend)
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
       
-      if (is_member_template (tmpl) || is_member_template_class (tmpl))
+      if (is_member_template (tmpl)
+	  && DECL_FUNCTION_TEMPLATE_P (tmpl)
+	  && DECL_TEMPLATE_INFO (decl) && DECL_TI_ARGS (decl) 
+	  && DECL_TEMPLATE_SPECIALIZATION (decl))
 	{
-	  if (DECL_FUNCTION_TEMPLATE_P (tmpl)
-	      && DECL_TEMPLATE_INFO (decl) && DECL_TI_ARGS (decl) 
-	      && DECL_TEMPLATE_SPECIALIZATION (decl))
-	    {
-	      tree new_tmpl;
+	  tree new_tmpl;
 
-	      /* The declaration is a specialization of a member
-		 template, declared outside the class.  Therefore, the
-		 innermost template arguments will be NULL, so we
-		 replace them with the arguments determined by the
-		 earlier call to check_explicit_specialization.  */
-	      args = DECL_TI_ARGS (decl);
+	  /* The declaration is a specialization of a member
+	     template, declared outside the class.  Therefore, the
+	     innermost template arguments will be NULL, so we
+	     replace them with the arguments determined by the
+	     earlier call to check_explicit_specialization.  */
+	  args = DECL_TI_ARGS (decl);
 
-	      new_tmpl 
-		= build_template_decl (decl, current_template_parms);
-	      DECL_TEMPLATE_RESULT (new_tmpl) = decl;
-	      TREE_TYPE (new_tmpl) = TREE_TYPE (decl);
-	      DECL_TI_TEMPLATE (decl) = new_tmpl;
-	      SET_DECL_TEMPLATE_SPECIALIZATION (new_tmpl);
-	      DECL_TEMPLATE_INFO (new_tmpl) = 
-		perm_tree_cons (tmpl, args, NULL_TREE);
+	  new_tmpl 
+	    = build_template_decl (decl, current_template_parms);
+	  DECL_TEMPLATE_RESULT (new_tmpl) = decl;
+	  TREE_TYPE (new_tmpl) = TREE_TYPE (decl);
+	  DECL_TI_TEMPLATE (decl) = new_tmpl;
+	  SET_DECL_TEMPLATE_SPECIALIZATION (new_tmpl);
+	  DECL_TEMPLATE_INFO (new_tmpl) = 
+	    perm_tree_cons (tmpl, args, NULL_TREE);
 
-	      register_specialization (new_tmpl, tmpl, args);
-	      return decl;
-	    }
-	  
-	  a = innermost_args (args);
-	  t = DECL_INNERMOST_TEMPLATE_PARMS (tmpl);
-	  if (TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (a))
-	    {
-	      cp_error ("got %d template parameters for `%#D'",
-			TREE_VEC_LENGTH (a), decl);
-	      cp_error ("  but %d required", TREE_VEC_LENGTH (t));
-	    }
-	  if (TMPL_ARGS_DEPTH (args) > 1)
-	    /* Get the template parameters for the enclosing template
-	       class.  */ 
-	    a = TMPL_ARGS_LEVEL (args, TMPL_ARGS_DEPTH (args) - 1);
-	  else
-	    a = NULL_TREE;
+	  register_specialization (new_tmpl, tmpl, args);
+	  return decl;
 	}
-      else 
-	a = innermost_args (args);
 
-      t = NULL_TREE;
+      /* Make sure the template headers we got make sense.  */
 
-      if (CLASSTYPE_TEMPLATE_SPECIALIZATION (ctx))
+      mem = (is_member_template (tmpl) || is_member_template_class (tmpl));
+      parms = DECL_TEMPLATE_PARMS (tmpl);
+      i = TMPL_PARMS_DEPTH (parms);
+      if (TMPL_ARGS_DEPTH (args) != i)
 	{
-	  /* When processing an inline member template of a
-	     specialized class, there is no CLASSTYPE_TI_SPEC_INFO.  */
-	  if (CLASSTYPE_TI_SPEC_INFO (ctx))
-	    t = TREE_VALUE (CLASSTYPE_TI_SPEC_INFO (ctx));
+	  cp_error ("expected %d levels of template parms for `%#D', got %d",
+		    i, decl, TMPL_ARGS_DEPTH (args));
 	}
-      else if (CLASSTYPE_TEMPLATE_INFO (ctx))
-	t = DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (ctx));
+      else
+	for (current = decl; i > 0; --i, parms = TREE_CHAIN (parms))
+	  {
+	    a = TMPL_ARGS_LEVEL (args, i);
+	    t = INNERMOST_TEMPLATE_PARMS (parms);
 
-      /* There should be template arguments if and only if there is a
-	 template class.  */
-      my_friendly_assert((a != NULL_TREE) == (t != NULL_TREE), 0);
+	    if (TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (a))
+	      {
+		if (current == decl)
+		  cp_error ("got %d template parameters for `%#D'",
+			    TREE_VEC_LENGTH (a), decl);
+		else
+		  cp_error ("got %d template parameters for `%#T'",
+			    TREE_VEC_LENGTH (a), current);
+		cp_error ("  but %d required", TREE_VEC_LENGTH (t));
+	      }
 
-      if (t != NULL_TREE 
-	  && TREE_VEC_LENGTH (t) != TREE_VEC_LENGTH (a))
-	{
-	  cp_error ("got %d template parameters for `%#D'",
-		    TREE_VEC_LENGTH (a), decl);
-	  cp_error ("  but `%#T' has %d", ctx, TREE_VEC_LENGTH (t));
-	}
+	    /* Perhaps we should also check that the parms are used in the
+               appropriate qualifying scopes in the declarator?  */
+
+	    if (current == decl)
+	      current = ctx;
+	    else
+	      current = TYPE_CONTEXT (current);
+	  }
     }
 
   DECL_TEMPLATE_RESULT (tmpl) = decl;
