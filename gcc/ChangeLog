@@ -1,3 +1,7 @@
+2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gccbug.in: Update for new categories.
+
 2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Reorder some patterns.
