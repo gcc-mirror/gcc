@@ -80,13 +80,4 @@ public class GtkDialogPeer extends GtkWindowPeer
     args.add ("allow_shrink", dialog.isResizable ());
     args.add ("allow_grow", dialog.isResizable ());
   }
-
-  public void handleEvent (AWTEvent event)
-  {
-//     int id = event.getID();
-    
-//     if (id == WindowEvent.WINDOW_CLOSING)
-//       System.out.println ("got a closing event");
-  }
-
 }

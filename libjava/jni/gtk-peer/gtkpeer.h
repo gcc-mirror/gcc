@@ -347,6 +347,23 @@ struct graphics
 #define AWT_FOCUS_LOST 1004
 #define AWT_FOCUS_GAINED 1005
 
+#define AWT_WINDOW_OPENED 200
+#define AWT_WINDOW_CLOSING 201
+#define AWT_WINDOW_CLOSED 202
+#define AWT_WINDOW_ICONIFIED 203
+#define AWT_WINDOW_DEICONIFIED 204
+#define AWT_WINDOW_ACTIVATED 205
+#define AWT_WINDOW_DEACTIVATED 206
+#define AWT_WINDOW_GAINED_FOCUS 207
+#define AWT_WINDOW_LOST_FOCUS 208
+#define AWT_WINDOW_STATE_CHANGED 209
+
+#define AWT_FRAME_STATE_NORMAL 0
+#define AWT_FRAME_STATE_ICONIFIED 1
+#define AWT_FRAME_STATE_MAXIMIZED_HORIZ 2
+#define AWT_FRAME_STATE_MAXIMIZED_VERT 4
+#define AWT_FRAME_STATE_MAXIMIZED_BOTH 6
+
 #define AWT_STYLE_PLAIN  0
 #define AWT_STYLE_BOLD   1
 #define AWT_STYLE_ITALIC 2
@@ -364,6 +381,8 @@ extern jmethodID postAdjustmentEventID;
 extern jmethodID postItemEventID;
 extern jmethodID postListItemEventID;
 extern jmethodID postTextEventID;
+extern jmethodID postWindowEventID;
+
 extern jmethodID syncAttrsID;
 extern jclass gdkColor;
 extern jmethodID gdkColorID;
