@@ -17,7 +17,7 @@
 
 2003-05-23  Roger Sayle  <roger@eyesopen.com>
 
-	* builtins.def: Defome atan, atanf, atanl, tan, tanf and tanl
+	* builtins.def: Define atan, atanf, atanl, tan, tanf and tanl
 	builtin functions (and their __builtin_* variants).
 	* builtins.c (mathfn_built_in): Handle tan{,f,l} and atan{,f,l}.
 	(expand_builtin): Don't expand tan{,f,l} or atan{,f,l} when not
