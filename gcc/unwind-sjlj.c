@@ -202,20 +202,20 @@ _Unwind_GetLanguageSpecificData (struct _Unwind_Context *context)
 }
 
 _Unwind_Ptr
-_Unwind_GetRegionStart (struct _Unwind_Context *context)
+_Unwind_GetRegionStart (struct _Unwind_Context *context __attribute__((unused)) )
 {
   return 0;
 }
 
 #ifndef __ia64__
 _Unwind_Ptr
-_Unwind_GetDataRelBase (struct _Unwind_Context *context)
+_Unwind_GetDataRelBase (struct _Unwind_Context *context __attribute__((unused)) )
 {
   return 0;
 }
 
 _Unwind_Ptr
-_Unwind_GetTextRelBase (struct _Unwind_Context *context)
+_Unwind_GetTextRelBase (struct _Unwind_Context *context __attribute__((unused)) )
 {
   return 0;
 }

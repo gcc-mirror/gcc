@@ -1,3 +1,8 @@
+2001-10-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* unwind-sjlj.c (_Unwind_GetRegionStart, _Unwind_GetDataRelBase,
+	_Unwind_GetTextRelBase): Argument is unused.
+
 Mon Oct  1 19:20:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): Try to replace PLACEHOLDER_EXPR.
