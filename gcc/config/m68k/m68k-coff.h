@@ -20,6 +20,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define MOTOROLA	/* Use Motorola syntax rather than MIT.  */
+#ifndef  USE_GAS  /* forces jsbr instead of jsr.  */
+#define  USE_GAS
+#endif
 
 #include "m68k/m68k-none.h"
 #include "m68k/m68kemb.h"

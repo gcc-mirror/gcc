@@ -1,3 +1,9 @@
+Fri Sep  3 18:09:24 1999  Andrew Haley  <aph@cygnus.com>
+
+	* config/m68k/m68kelf.h: Set USE_GAS; this makes gcc generate jbsr
+	(relative) rather than jsr (absolute) subroutine call insns.  
+	* config/m68k/m68k-coff.h: Ditto.
+
 Fri Sep  3 17:24:31 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.c (note_invalid_constants): No need to ignore ASMs, we can
