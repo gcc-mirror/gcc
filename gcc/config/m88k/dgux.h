@@ -31,6 +31,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifndef NO_BUGS
 #define AS_BUG_IMMEDIATE_LABEL
+/* The DG/UX 4.30 assembler doesn't accept the symbol `fcr63'.  */
+#define AS_BUG_FLDCR
 #endif
 
 #include "svr4.h"
@@ -84,7 +86,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.13\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.14\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
