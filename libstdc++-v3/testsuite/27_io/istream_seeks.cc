@@ -24,9 +24,7 @@
 #include <istream>
 #include <sstream>
 #include <fstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 
 bool test01()
@@ -45,7 +43,7 @@ bool test01()
   ifstream ifs1;
   pos_type p4 = ifs1.tellg();
 
-  test &= p3 == p4;
+  VERIFY( p3 == p4 );
 
   // in
   // test ctors leave things in the same positions...
@@ -55,7 +53,7 @@ bool test01()
   ifstream ifs2(str_lit01);
   p4 = ifs2.tellg();
 
-  test &= p3 == p4;
+  VERIFY( p3 == p4 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -75,9 +73,9 @@ void test04(void)
   std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
   std::ifstream if02(str_lit01, std::ios_base::in);
   std::ifstream if03(str_lit02, std::ios_base::out | std::ios_base::trunc); 
-  test &= if01.good();
-  test &= if02.good();
-  test &= if03.good();
+  VERIFY( if01.good() );
+  VERIFY( if02.good() );
+  VERIFY( if03.good() );
 
   std::istream is01(if01.rdbuf());
   std::istream is02(if02.rdbuf());
@@ -87,20 +85,20 @@ void test04(void)
   // in | out
   pos01 = is01.tellg();
   pos02 = is01.tellg();
-  test &= pos01 == pos02;
-  //  test &= istream::pos_type(0) != pos01; //depricated
+  VERIFY( pos01 == pos02 );
+  //  VERIFY( istream::pos_type(0) != pos01 ); //depricated
 
   // in
   pos03 = is02.tellg();
   pos04 = is02.tellg();
-  test &= pos03 == pos04;
-  //  test &= istream::pos_type(0) != pos03; //depricated
+  VERIFY( pos03 == pos04 );
+  //  VERIFY( istream::pos_type(0) != pos03 ); //depricated
 
   // out
   pos05 = is03.tellg();
   pos06 = is03.tellg();
-  test &= pos05 == pos06;
-  //  test &= istream::pos_type(0) != pos01; //depricated
+  VERIFY( pos05 == pos06 );
+  //  VERIFY( istream::pos_type(0) != pos01 ); //depricated
 
   // istream& seekg(pos_type)
   // istream& seekg(off_type, ios_base::seekdir)
@@ -114,56 +112,56 @@ void test04(void)
   is01.seekg(10, std::ios_base::cur);
   state02 = is01.rdstate();
   pos01 = is01.tellg(); 
-  test &= pos01 == pos02 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos01 == pos02 + 10 ); 
+  VERIFY( state01 == state02 );
   pos02 = is01.tellg(); 
-  test &= pos02 == pos01; 
+  VERIFY( pos02 == pos01 ); 
 
   state01 = is02.rdstate();
   is02.seekg(10, std::ios_base::cur);
   state02 = is02.rdstate();
   pos03 = is02.tellg(); 
-  test &= pos03 == pos04 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos03 == pos04 + 10 ); 
+  VERIFY( state01 == state02 );
   pos04 = is02.tellg(); 
-  test &= pos03 == pos04; 
+  VERIFY( pos03 == pos04 ); 
 
   state01 = is03.rdstate();
   is03.seekg(10, std::ios_base::cur);
   state02 = is03.rdstate();
   pos05 = is03.tellg(); 
-  test &= pos05 == pos06 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos05 == pos06 + 10 ); 
+  VERIFY( state01 == state02 );
   pos06 = is03.tellg(); 
-  test &= pos05 == pos06; 
+  VERIFY( pos05 == pos06 ); 
 
   // beg
   state01 = is01.rdstate();
   is01.seekg(20, std::ios_base::beg);
   state02 = is01.rdstate();
   pos01 = is01.tellg(); 
-  test &= pos01 == pos02 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos01 == pos02 + 10 ); 
+  VERIFY( state01 == state02 );
   pos02 = is01.tellg(); 
-  test &= pos02 == pos01; 
+  VERIFY( pos02 == pos01 ); 
 
   state01 = is02.rdstate();
   is02.seekg(20, std::ios_base::beg);
   state02 = is02.rdstate();
   pos03 = is02.tellg(); 
-  test &= pos03 == pos04 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos03 == pos04 + 10 ); 
+  VERIFY( state01 == state02 );
   pos04 = is02.tellg(); 
-  test &= pos03 == pos04; 
+  VERIFY( pos03 == pos04 ); 
 
   state01 = is03.rdstate();
   is03.seekg(20, std::ios_base::beg);
   state02 = is03.rdstate();
   pos05 = is03.tellg(); 
-  test &= pos05 == pos06 + 10;
-  test &= state01 == state02;
+  VERIFY( pos05 == pos06 + 10 );
+  VERIFY( state01 == state02 );
   pos06 = is03.tellg(); 
-  test &= pos05 == pos06; 
+  VERIFY( pos05 == pos06 ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -180,9 +178,9 @@ void test05(void)
   std::ifstream if01(str_lit01);
   std::ifstream if02(str_lit01);
   std::ifstream if03(str_lit01);
-  test &= if01.good();
-  test &= if02.good();
-  test &= if03.good();
+  VERIFY( if01.good() );
+  VERIFY( if02.good() );
+  VERIFY( if03.good() );
 
   std::stringbuf strbuf01(std::ios_base::in | std::ios_base::out);
   if01 >> &strbuf01; 
@@ -199,20 +197,20 @@ void test05(void)
   // in | out
   pos01 = is01.tellg();
   pos02 = is01.tellg();
-  test &= pos01 == pos02;
-  // test &= istream::pos_type(0) != pos01; // deprecated
+  VERIFY( pos01 == pos02 );
+  // VERIFY( istream::pos_type(0) != pos01 ); // deprecated
 
   // in
   pos03 = is02.tellg();
   pos04 = is02.tellg();
-  test &= pos03 == pos04;
-  //  test &= istream::pos_type(0) != pos03; // deprecated
+  VERIFY( pos03 == pos04 );
+  //  VERIFY( istream::pos_type(0) != pos03 ); // deprecated
 
   // out
   pos05 = is03.tellg();
   pos06 = is03.tellg();
-  test &= pos05 == pos06;
-  //  test &= istream::pos_type(0) != pos01; //deprecated
+  VERIFY( pos05 == pos06 );
+  //  VERIFY( istream::pos_type(0) != pos01 ); //deprecated
 
   // istream& seekg(pos_type)
   // istream& seekg(off_type, ios_base::seekdir)
@@ -226,56 +224,56 @@ void test05(void)
   is01.seekg(10, std::ios_base::cur);
   state02 = is01.rdstate();
   pos01 = is01.tellg(); 
-  test &= pos01 == pos02 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos01 == pos02 + 10 ); 
+  VERIFY( state01 == state02 );
   pos02 = is01.tellg(); 
-  test &= pos02 == pos01; 
+  VERIFY( pos02 == pos01 ); 
 
   state01 = is02.rdstate();
   is02.seekg(10, std::ios_base::cur);
   state02 = is02.rdstate();
   pos03 = is02.tellg(); 
-  test &= pos03 == pos04 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos03 == pos04 + 10 ); 
+  VERIFY( state01 == state02 );
   pos04 = is02.tellg(); 
-  test &= pos03 == pos04; 
+  VERIFY( pos03 == pos04 ); 
 
   state01 = is03.rdstate();
   is03.seekg(10, std::ios_base::cur);
   state02 = is03.rdstate();
   pos05 = is03.tellg(); 
-  test &= pos05 == pos06; // as only out buffer 
-  test &= state01 == state02;
+  VERIFY( pos05 == pos06 ); // as only out buffer 
+  VERIFY( state01 == state02 );
   pos06 = is03.tellg(); 
-  test &= pos05 == pos06; 
+  VERIFY( pos05 == pos06 ); 
 
   // beg
   state01 = is01.rdstate();
   is01.seekg(20, std::ios_base::beg);
   state02 = is01.rdstate();
   pos01 = is01.tellg(); 
-  test &= pos01 == pos02 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos01 == pos02 + 10 ); 
+  VERIFY( state01 == state02 );
   pos02 = is01.tellg(); 
-  test &= pos02 == pos01; 
+  VERIFY( pos02 == pos01 ); 
 
   state01 = is02.rdstate();
   is02.seekg(20, std::ios_base::beg);
   state02 = is02.rdstate();
   pos03 = is02.tellg(); 
-  test &= pos03 == pos04 + 10; 
-  test &= state01 == state02;
+  VERIFY( pos03 == pos04 + 10 ); 
+  VERIFY( state01 == state02 );
   pos04 = is02.tellg(); 
-  test &= pos03 == pos04; 
+  VERIFY( pos03 == pos04 ); 
 
   state01 = is03.rdstate();
   is03.seekg(20, std::ios_base::beg);
   state02 = is03.rdstate();
   pos05 = is03.tellg(); 
-  test &= pos05 == pos06; // as only out buffer 
-  test &= state01 == state02;
+  VERIFY( pos05 == pos06 ); // as only out buffer 
+  VERIFY( state01 == state02 );
   pos06 = is03.tellg(); 
-  test &= pos05 == pos06; 
+  VERIFY( pos05 == pos06 ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);

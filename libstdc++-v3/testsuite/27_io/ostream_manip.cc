@@ -23,9 +23,7 @@
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -47,33 +45,33 @@ bool test01(void)
 
   oss01 << std::endl;
   str04 = oss01.str();
-  test &= str04.size() == str01.size();
+  VERIFY( str04.size() == str01.size() );
 
   oss02 << std::endl;
   str05 = oss02.str();
-  test &= str05.size() == 1;
+  VERIFY( str05.size() == 1 );
 
   // template<_CharT, _Traits>
   //  basic_ostream<_CharT, _Traits>& ends(basic_ostream<_Char, _Traits>& os)
   oss01 << std::ends;
   str04 = oss01.str();
-  test &= str04.size() == str01.size();
-  test &= str04[1] == char();
+  VERIFY( str04.size() == str01.size() );
+  VERIFY( str04[1] == char() );
 
   oss02 << std::ends;
   str05 = oss02.str();
-  test &= str05.size() == 2;
-  test &= str05[1] == char();
+  VERIFY( str05.size() == 2 );
+  VERIFY( str05[1] == char() );
 
   // template<_CharT, _Traits>
   //  basic_ostream<_CharT, _Traits>& flush(basic_ostream<_Char, _Traits>& os)
   oss01.flush();
   str04 = oss01.str();
-  test &= str04.size() == str01.size();
+  VERIFY( str04.size() == str01.size() );
 
   oss02.flush();
   str05 = oss02.str();
-  test &= str05.size() == 2;
+  VERIFY( str05.size() == 2 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -94,7 +92,7 @@ bool test02()
   const string str_00("herbie_hancock");
   int_type len1 = str_00.size();
   osst_01 << str_00;
-  test &= osst_01.str().size() == len1;
+  VERIFY( osst_01.str().size() == len1 );
 
   osst_01 << ends;
 
@@ -102,8 +100,8 @@ bool test02()
   int_type len2 = str_01.size();
   osst_01 << str_01;
   int_type len3 = osst_01.str().size();
-  test &= len1 < len3;
-  test &= len3 == len1 + len2 + 1;
+  VERIFY( len1 < len3 );
+  VERIFY( len3 == len1 + len2 + 1 );
 
   osst_01 << ends;
 
@@ -111,8 +109,8 @@ bool test02()
   int_type len4 = str_02.size();
   osst_01 << str_02;
   int_type len5 = osst_01.str().size();
-  test &= len3 < len5;
-  test &= len5 == len3 + len4 + 1;
+  VERIFY( len3 < len5 );
+  VERIFY( len5 == len3 + len4 + 1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

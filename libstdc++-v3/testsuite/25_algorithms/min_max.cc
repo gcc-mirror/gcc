@@ -19,22 +19,20 @@
 // USA.
 
 #include <algorithm>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 void test01()
 {
   bool test = true;
   const int& x = std::max(1, 2);
   const int& y = std::max(3, 4);
-  test &= x == 2;
-  test &= y == 4;
+  VERIFY( x == 2 );
+  VERIFY( y == 4 );
 
   const int& z = std::min(1, 2);
   const int& w = std::min(3, 4);
-  test &= z == 1;
-  test &= w == 3;
+  VERIFY( z == 1 );
+  VERIFY( w == 3 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

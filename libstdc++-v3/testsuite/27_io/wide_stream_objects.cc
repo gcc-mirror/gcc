@@ -71,13 +71,15 @@
   #include <cwchar>
   #include <cwctype>
 #endif
+#include <debug_assert.h>
 
 // Include iostream last, just to make is as difficult as possible to
 // properly initialize the standard iostream objects.
 #include <iostream>
 
 // Make sure all the standard streams are defined.
-bool test01()
+int
+test01()
 {
   bool test = true;
 
@@ -88,18 +90,20 @@ bool test01()
   wtraits_type::copy(array2, L"testing istream", wi);
   std::wcout << L"testing wcout" << std::endl;
   std::wcerr << L"testing wcerr" << std::endl;
-  test &= std::wcerr.flags() & std::ios_base::unitbuf;
+  VERIFY( std::wcerr.flags() & std::ios_base::unitbuf );
   std::wclog << L"testing wclog" << std::endl;
   // std::wcin >> array2; // requires somebody to type something in.
-  test &= std::wcin.tie() == &std::wcout;
+  VERIFY( std::wcin.tie() == &std::wcout );
 #endif
 
-  return test;
+  return 0;
 }
 
 
-int main(void)
+int 
+main()
 {
   test01();
+  
   return 0;
 }

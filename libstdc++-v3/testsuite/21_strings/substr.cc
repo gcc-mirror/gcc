@@ -22,9 +22,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01(void)
 {
@@ -43,30 +41,30 @@ bool test01(void)
   //  substr(size_type pos = 0, size_type n = npos) const;
   csz01 = str01.size();
   str02 = str01.substr(0, 1);
-  test &= str02 == "r";
+  VERIFY( str02 == "r" );
   str02 = str01.substr(10);
-  test &= str02 == "pacifica";
+  VERIFY( str02 == "pacifica" );
 
   try {
     str02 = str01.substr(csz01 + 1);
-    test &= false; 
+    VERIFY( false ); 
   }
   catch(std::out_of_range& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
  try {
     str02 = str01.substr(csz01);
-    test &= str02.size() == 0;
+    VERIFY( str02.size() == 0 );
   }
   catch(std::out_of_range& fail) {
-    test &= false;
+    VERIFY( false );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 #ifdef DEBUG_ASSERT

@@ -22,9 +22,7 @@
 
 #include <string>
 #include <sstream>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 const std::string str01("the nubians of plutonia");
 std::string str02;
@@ -52,7 +50,7 @@ bool test01()
   ios01.register_callback(callb02, 1);
   ios01.register_callback(callb01, 1);
   ios01.imbue(locco);
-  test &= str01 == str02;
+  VERIFY( str01 == str02 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

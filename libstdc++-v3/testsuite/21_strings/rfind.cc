@@ -20,9 +20,7 @@
 
 #include <string>
 #include <stdexcept>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 // 21.3.6.2 basic_string rfind
 bool test01(void)
@@ -42,50 +40,50 @@ bool test01(void)
 
   // size_type rfind(const string&, size_type pos = 0) const;
   csz01 = str01.rfind(str01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str01, 4);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str02,3);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str02);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str03);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
   csz01 = str01.rfind(str03, 3);
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
   csz01 = str01.rfind(str03, 12);
-  test &= csz01 == 8;
+  VERIFY( csz01 == 8 );
 
   // An empty string consists of no characters
   // therefore it should be found at every point in a string,
   // except beyond the end
   csz01 = str01.rfind(str04, 0);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str04, 5);
-  test &= csz01 == 5;
+  VERIFY( csz01 == 5 );
   csz01 = str01.rfind(str04, str01.size());
-  test &= csz01 == str01.size();
+  VERIFY( csz01 == str01.size() );
   csz01 = str01.rfind(str04, str01.size()+1);
-  test &= csz01 == str01.size();
+  VERIFY( csz01 == str01.size() );
 
   // size_type rfind(const char* s, size_type pos, size_type n) const;
   csz01 = str01.rfind(str_lit01, 0, 3);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str_lit01, 3, 0);
-  test &= csz01 == 3;
+  VERIFY( csz01 == 3 );
 
   // size_type rfind(const char* s, size_type pos = 0) const;
   csz01 = str01.rfind(str_lit01);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
   csz01 = str01.rfind(str_lit01, 3);
-  test &= csz01 == 0;
+  VERIFY( csz01 == 0 );
 
   // size_type rfind(char c, size_type pos = 0) const;
   csz01 = str01.rfind('z');
   csz02 = str01.size() - 1;
-  test &= csz01 == csz02;
+  VERIFY( csz01 == csz02 );
   csz01 = str01.rfind('/');
-  test &= csz01 == npos;
+  VERIFY( csz01 == npos );
 
 #ifdef DEBUG_ASSERT
   assert(test);

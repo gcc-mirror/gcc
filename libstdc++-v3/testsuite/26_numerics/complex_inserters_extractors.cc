@@ -24,9 +24,7 @@
 #include <string>
 #include <sstream>
 #include <complex>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 #include <cmath>
 
 template<typename R>
@@ -37,25 +35,28 @@ inline bool flteq(R x, R y)
 }
 
 template<typename R>
-void test_good(std::string str, R x, R y)
+int
+test_good(std::string str, R x, R y)
 {
   bool test = true;
   std::complex<R> z;
   char ch;
   std::istringstream iss(str);
   iss >> z >> ch;
-  test &= iss.good();
-  test &= flteq(z.real(), x);
-  test &= flteq(z.imag(), y);
-  test &= ch == '#';
+  VERIFY( iss.good() );
+  VERIFY( flteq(z.real(), x) );
+  VERIFY( flteq(z.imag(), y) );
+  VERIFY( ch == '#' );
   
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
+  return 0;
 }
 
 template<typename R>
-void test_fail(std::string str)
+int
+test_fail(std::string str)
 {
   std::complex<R> z;
   std::istringstream iss(str);
@@ -63,10 +64,12 @@ void test_fail(std::string str)
 #ifdef DEBUG_ASSERT
   assert(iss.fail() && !iss.bad());
 #endif
+  return 0;
 }
 
 template<typename R>
-void testall()
+int
+testall()
 {
   test_good<R>("(-1.1,3.7)#", -1.1, 3.7);
   test_good<R>("(  .7e6  ,  \n-3.1)#", .7e6, -3.1);
@@ -82,15 +85,15 @@ void testall()
   test_fail<R>("|1,1)");
   test_fail<R>("(1|1)");
   test_fail<R>("(1,1|");
+  return 0;
 }
 
-int main()
+int
+main()
 {
   testall<float>();
   testall<double>();
   testall<long double>();
   return 0;
 }
-
-
 

@@ -22,9 +22,7 @@
 #include <set>
 #include <bitset>
 
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 static char original_bits[1024];
 static char left_shifted[1024];
@@ -78,13 +76,13 @@ template <size_t size>
       shifted <<= shift_step;
       //correct = std::string(left_shifted);
       correct = std::bitset<size> (std::string(left_shifted));
-      test &= shifted == correct;
+      VERIFY( shifted == correct );
 
       shifted = original;
       shifted >>= shift_step;
       //correct = std::string(right_shifted);
       correct = std::bitset<size> (std::string(right_shifted));
-      test &= shifted == correct;
+      VERIFY( shifted == correct );
     }
 
     return test;
@@ -94,13 +92,13 @@ bool
 test01() {
   bool test = true;
 
-  test &= do_test<32>();
-  test &= do_test<48>();
-  test &= do_test<64>();
+  VERIFY( do_test<32>() );
+  VERIFY( do_test<48>() );
+  VERIFY( do_test<64>() );
 
-  test &= do_test<511>();
-  test &= do_test<513>();
-  test &= do_test<997>();
+  VERIFY( do_test<511>() );
+  VERIFY( do_test<513>() );
+  VERIFY( do_test<997>() );
 
 #ifdef DEBUG_ASSERT
   assert(test);

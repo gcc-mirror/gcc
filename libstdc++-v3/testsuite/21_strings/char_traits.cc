@@ -21,9 +21,7 @@
 // 21.1 Characher traits
 
 #include <string>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 int test01(void)
 {
@@ -47,9 +45,9 @@ int test01(void)
   // assigns c = d;
   char c1 = 'z';
   char c2 = 'u';
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   std::char_traits<char>::assign(c1,c2);
-  test &= c1 == 'u';
+  VERIFY( c1 == 'u' );
 
   // char* X::move(char* s, const char* p, size_t n)
   // for each i in [0,n) performs X::assign(s[i], p[i]). Copies
@@ -59,35 +57,35 @@ int test01(void)
   int len = sizeof(str_lit1) + sizeof(array1) - 1; // two terminating chars
   char array2[len];
 
-  test &= str_lit1[0] == 'm';
+  VERIFY( str_lit1[0] == 'm' );
   c1 = array2[0];
   c2 = str_lit1[0];
   char c3 = array2[1];
   char c4 = str_lit1[1];
   std::char_traits<char>::move(array2, str_lit1, 0);
-  test &= array2[0] == c1;
-  test &= str_lit1[0] == c2;
+  VERIFY( array2[0] == c1 );
+  VERIFY( str_lit1[0] == c2 );
   std::char_traits<char>::move(array2, str_lit1, 1);
-  test &= array2[0] == c2;
-  test &= str_lit1[0] == c2;
-  test &= array2[1] == c3;
-  test &= str_lit1[1] == c4;
+  VERIFY( array2[0] == c2 );
+  VERIFY( str_lit1[0] == c2 );
+  VERIFY( array2[1] == c3 );
+  VERIFY( str_lit1[1] == c4 );
   std::char_traits<char>::move(array2, str_lit1, 2);
-  test &= array2[0] == c2;
-  test &= str_lit1[0] == c2;
-  test &= array2[1] == c4;
-  test &= str_lit1[1] == c4;
+  VERIFY( array2[0] == c2 );
+  VERIFY( str_lit1[0] == c2 );
+  VERIFY( array2[1] == c4 );
+  VERIFY( str_lit1[1] == c4 );
 
   char* pc1 = array1 + 1;
   c1 = pc1[0];
   c2 = array1[0];
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   char* pc2 = std::char_traits<char>::move(array1, pc1, 0);
   c3 = pc1[0];
   c4 = array1[0];
-  test &= c1 == c3;
-  test &= c2 == c4;
-  test &= pc2 == array1;
+  VERIFY( c1 == c3 );
+  VERIFY( c2 == c4 );
+  VERIFY( pc2 == array1 );
 
   c1 = pc1[0];
   c2 = array1[0];
@@ -95,13 +93,13 @@ int test01(void)
   pc2 = std::char_traits<char>::move(array1, pc1, 10);
   c3 = pc1[0];
   c4 = array1[0];
-  test &= c1 != c3; // underlying char array changed.
-  test &= c4 != c3;
-  test &= pc2 == array1;
-  test &= pc3 == pc1; // but pointers o-tay
+  VERIFY( c1 != c3 ); // underlying char array changed.
+  VERIFY( c4 != c3 );
+  VERIFY( pc2 == array1 );
+  VERIFY( pc3 == pc1 ); // but pointers o-tay
   c1 = *(str_01.data());
   c2 = array1[0];
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -132,9 +130,9 @@ int test02(void)
   // assigns c = d;
   wchar_t c1 = L'z';
   wchar_t c2 = L'u';
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   std::char_traits<wchar_t>::assign(c1,c2);
-  test &= c1 == L'u';
+  VERIFY( c1 == L'u' );
 
   // char* X::move(char* s, const char* p, size_t n)
   // for each i in [0,n) performs X::assign(s[i], p[i]). Copies
@@ -144,35 +142,35 @@ int test02(void)
   int len = sizeof(str_lit1) + sizeof(array1) - 1; // two terminating chars
   wchar_t array2[len];
 
-  test &= str_lit1[0] == 'm';
+  VERIFY( str_lit1[0] == 'm' );
   c1 = array2[0];
   c2 = str_lit1[0];
   wchar_t c3 = array2[1];
   wchar_t c4 = str_lit1[1];
   std::char_traits<wchar_t>::move(array2, str_lit1, 0);
-  test &= array2[0] == c1;
-  test &= str_lit1[0] == c2;
+  VERIFY( array2[0] == c1 );
+  VERIFY( str_lit1[0] == c2 );
   std::char_traits<wchar_t>::move(array2, str_lit1, 1);
-  test &= array2[0] == c2;
-  test &= str_lit1[0] == c2;
-  test &= array2[1] == c3;
-  test &= str_lit1[1] == c4;
+  VERIFY( array2[0] == c2 );
+  VERIFY( str_lit1[0] == c2 );
+  VERIFY( array2[1] == c3 );
+  VERIFY( str_lit1[1] == c4 );
   std::char_traits<wchar_t>::move(array2, str_lit1, 2);
-  test &= array2[0] == c2;
-  test &= str_lit1[0] == c2;
-  test &= array2[1] == c4;
-  test &= str_lit1[1] == c4;
+  VERIFY( array2[0] == c2 );
+  VERIFY( str_lit1[0] == c2 );
+  VERIFY( array2[1] == c4 );
+  VERIFY( str_lit1[1] == c4 );
  
   wchar_t* pc1 = array1 + 1;
   c1 = pc1[0];
   c2 = array1[0];
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
   wchar_t* pc2 = std::char_traits<wchar_t>::move(array1, pc1, 0);
   c3 = pc1[0];
   c4 = array1[0];
-  test &= c1 == c3;
-  test &= c2 == c4;
-  test &= pc2 == array1;
+  VERIFY( c1 == c3 );
+  VERIFY( c2 == c4 );
+  VERIFY( pc2 == array1 );
 
   c1 = pc1[0];
   c2 = array1[0];
@@ -180,13 +178,13 @@ int test02(void)
   pc2 = std::char_traits<wchar_t>::move(array1, pc1, 10);
   c3 = pc1[0];
   c4 = array1[0];
-  test &= c1 != c3; // underlying wchar_t array changed.
-  test &= c4 != c3;
-  test &= pc2 == array1;
-  test &= pc3 == pc1; // but pointers o-tay
+  VERIFY( c1 != c3 ); // underlying wchar_t array changed.
+  VERIFY( c4 != c3 );
+  VERIFY( pc2 == array1 );
+  VERIFY( pc3 == pc1 ); // but pointers o-tay
   c1 = *(str_01.data());
   c2 = array1[0];
-  test &= c1 != c2;
+  VERIFY( c1 != c2 );
  
 #ifdef DEBUG_ASSERT
   assert(test);

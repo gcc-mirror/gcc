@@ -24,7 +24,7 @@
 #include <locale>
 #include <sstream>
 #include <limits>
-#include <assert.h>
+#include <debug_assert.h>
 
 using namespace std;
 
@@ -187,8 +187,10 @@ void apply_formatting(const _TestCase & tc, basic_ostream<_CharT> & os)
     os.setf(ios::right);
 }
 
-void test01()
+int
+test01()
 {
+  bool test = true;
   for (int j=0; j<sizeof(testcases)/sizeof(testcases[0]); j++)
     {
       _TestCase & tc = testcases[j];
@@ -206,7 +208,7 @@ void test01()
 #ifdef TEST_NUMPUT_VERBOSE
         cout << "result: " << os.str() << endl;
 #endif
-        assert(os && os.str() == tc.result);
+        VERIFY( os && os.str() == tc.result );
       }
       // test long double with char type
       {
@@ -219,7 +221,7 @@ void test01()
 #ifdef TEST_NUMPUT_VERBOSE
         cout << "result: " << os.str() << endl;
 #endif
-        assert(os && os.str() == tc.result);
+        VERIFY( os && os.str() == tc.result );
       }
 #if _GLIBCPP_USE_WCHAR_T
       // test double with wchar_t type
@@ -230,7 +232,7 @@ void test01()
         os.imbue(__loc);
         apply_formatting(tc, os);
         os << tc.val;
-        assert(os && os.str() == tc.wresult);
+        VERIFY( os && os.str() == tc.wresult );
       }
       // test long double with wchar_t type
       {
@@ -240,14 +242,18 @@ void test01()
         os.imbue(__loc);
         apply_formatting(tc, os);
         os << (long double)tc.val;
-        assert(os && os.str() == tc.wresult);
+        VERIFY( os && os.str() == tc.wresult );
       }
 #endif
     }
+    
+  return 0;
 }
 
-void test02()
+int
+test02()
 {
+  bool test = true;
   // make sure we can output a very long float
   long double val = 1.2345678901234567890123456789e+1000L;
   int prec = numeric_limits<long double>::digits10;
@@ -263,10 +269,13 @@ void test02()
   cout << "expect: " << largebuf << endl;
   cout << "result: " << os.str() << endl;
 #endif
-  assert(os && os.str() == largebuf);
+  VERIFY(os && os.str() == largebuf);
+
+  return 0;
 }
 
-void test03()
+int 
+test03()
 {
   short s = -1;
   int i = -1;
@@ -279,24 +288,27 @@ void test03()
   ostream o(&strbuf);
 
   o << oct << s << ' ' << hex << s; 
-  test &= strbuf.str() == "177777 ffff"; // Assuming 2byte-shorts
+  VERIFY( strbuf.str() == "177777 ffff" ); // Assuming 2byte-shorts
   strbuf.str(str_blank);
 
   o << oct << i << ' ' << hex << i; 
-  test &= strbuf.str() == "37777777777 ffffffff";
+  VERIFY( strbuf.str() == "37777777777 ffffffff" );
   strbuf.str(str_blank);
 
   o << oct << l << ' ' << hex << l; 
-  test &= strbuf.str() == "37777777777 ffffffff";
+  VERIFY( strbuf.str() == "37777777777 ffffffff" );
   strbuf.str(str_blank);
 
   o << showpos << hex << showbase << 11;
-  test &= strbuf.str() == "0xb";
+  VERIFY( strbuf.str() == "0xb" );
   
-  assert(test);
+  VERIFY(test);
+  
+  return 0;
 }
 
-int main()
+int 
+main()
 {
   test01();
   test02();

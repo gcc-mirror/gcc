@@ -111,9 +111,7 @@ template<class charT, class traits, class Allocator>
 */
 
 #include <string>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 int test01(void)
 {
@@ -126,114 +124,114 @@ int test01(void)
   
   str_4 = str_0;
   //comparisons between string objects
-  test &= !(str_0 == str_1);
-  test &= !(str_0 == str_2);
-  test &= !(str_0 == str_3);
-  test &= !(str_1 == str_0);
-  test &= !(str_2 == str_0);
-  test &= !(str_3 == str_0);
-  test &= str_4 == str_0;
-  test &= str_0 == str_4;
+  VERIFY( !(str_0 == str_1) );
+  VERIFY( !(str_0 == str_2) );
+  VERIFY( !(str_0 == str_3) );
+  VERIFY( !(str_1 == str_0) );
+  VERIFY( !(str_2 == str_0) );
+  VERIFY( !(str_3 == str_0) );
+  VERIFY( str_4 == str_0 );
+  VERIFY( str_0 == str_4 );
 
-  test &= str_0 != str_1;
-  test &= str_0 != str_2;
-  test &= str_0 != str_3;
-  test &= str_1 != str_0;
-  test &= str_2 != str_0;
-  test &= str_3 != str_0;
-  test &= !(str_0 != str_4);
-  test &= !(str_4 != str_0);
+  VERIFY( str_0 != str_1 );
+  VERIFY( str_0 != str_2 );
+  VERIFY( str_0 != str_3 );
+  VERIFY( str_1 != str_0 );
+  VERIFY( str_2 != str_0 );
+  VERIFY( str_3 != str_0 );
+  VERIFY( !(str_0 != str_4) );
+  VERIFY( !(str_4 != str_0) );
    
-  test &= str_0 > str_1; //true cuz r>m
-  test &= str_0 > str_2;
-  test &= !(str_0 > str_3);
-  test &= !(str_1 > str_0); //false cuz m<r
-  test &= !(str_2 > str_0);
-  test &= str_3 > str_0;
-  test &= !(str_0 > str_4);
-  test &= !(str_4 > str_0);
+  VERIFY( str_0 > str_1 ); //true cuz r>m
+  VERIFY( str_0 > str_2 );
+  VERIFY( !(str_0 > str_3) );
+  VERIFY( !(str_1 > str_0) ); //false cuz m<r
+  VERIFY( !(str_2 > str_0) );
+  VERIFY( str_3 > str_0 );
+  VERIFY( !(str_0 > str_4) );
+  VERIFY( !(str_4 > str_0) );
 
-  test &= !(str_0 < str_1); //false cuz r>m
-  test &= !(str_0 < str_2);
-  test &= str_0 < str_3;
-  test &= str_1 < str_0; //true cuz m<r
-  test &= str_2 < str_0;
-  test &= !(str_3 < str_0);
-  test &= !(str_0 < str_4);
-  test &= !(str_4 < str_0);
+  VERIFY( !(str_0 < str_1) ); //false cuz r>m
+  VERIFY( !(str_0 < str_2) );
+  VERIFY( str_0 < str_3 );
+  VERIFY( str_1 < str_0 ); //true cuz m<r
+  VERIFY( str_2 < str_0 );
+  VERIFY( !(str_3 < str_0) );
+  VERIFY( !(str_0 < str_4) );
+  VERIFY( !(str_4 < str_0) );
 
-  test &= str_0 >= str_1; //true cuz r>m
-  test &= str_0 >= str_2;
-  test &= !(str_0 >= str_3);
-  test &= !(str_1 >= str_0);//false cuz m<r
-  test &= !(str_2 >= str_0);
-  test &= str_3 >= str_0;
-  test &= str_0 >= str_4;
-  test &= str_4 >= str_0;
+  VERIFY( str_0 >= str_1 ); //true cuz r>m
+  VERIFY( str_0 >= str_2 );
+  VERIFY( !(str_0 >= str_3) );
+  VERIFY( !(str_1 >= str_0) );//false cuz m<r
+  VERIFY( !(str_2 >= str_0) );
+  VERIFY( str_3 >= str_0 );
+  VERIFY( str_0 >= str_4 );
+  VERIFY( str_4 >= str_0 );
 
-  test &= !(str_0 <= str_1);//false cuz r>m
-  test &= !(str_0 <= str_2);
-  test &= str_0 <= str_3;
-  test &= str_1 <= str_0;//true cuz m<r
-  test &= str_2 <= str_0;
-  test &= !(str_3 <= str_0);
-  test &= str_0 <= str_4;
-  test &= str_4 <= str_0;
+  VERIFY( !(str_0 <= str_1) );//false cuz r>m
+  VERIFY( !(str_0 <= str_2) );
+  VERIFY( str_0 <= str_3 );
+  VERIFY( str_1 <= str_0 );//true cuz m<r
+  VERIFY( str_2 <= str_0 );
+  VERIFY( !(str_3 <= str_0) );
+  VERIFY( str_0 <= str_4 );
+  VERIFY( str_4 <= str_0 );
 
   //comparisons between string object and string literal
-  test &= !(str_0 == "costa marbella");
-  test &= !(str_0 == "cost");
-  test &= !(str_0 == "costa ricans");
-  test &= !("costa marbella" == str_0);
-  test &= !("cost" == str_0);
-  test &= !("costa ricans" == str_0);
-  test &= "costa rica" == str_0;
-  test &= str_0 == "costa rica";
+  VERIFY( !(str_0 == "costa marbella") );
+  VERIFY( !(str_0 == "cost") );
+  VERIFY( !(str_0 == "costa ricans") );
+  VERIFY( !("costa marbella" == str_0) );
+  VERIFY( !("cost" == str_0) );
+  VERIFY( !("costa ricans" == str_0) );
+  VERIFY( "costa rica" == str_0 );
+  VERIFY( str_0 == "costa rica" );
 
-  test &= str_0 != "costa marbella";
-  test &= str_0 != "cost";
-  test &= str_0 != "costa ricans";
-  test &= "costa marbella" != str_0;
-  test &= "cost" != str_0;
-  test &= "costa ricans" != str_0;
-  test &= !("costa rica" != str_0);
-  test &= !(str_0 != "costa rica");
+  VERIFY( str_0 != "costa marbella" );
+  VERIFY( str_0 != "cost" );
+  VERIFY( str_0 != "costa ricans" );
+  VERIFY( "costa marbella" != str_0 );
+  VERIFY( "cost" != str_0 );
+  VERIFY( "costa ricans" != str_0 );
+  VERIFY( !("costa rica" != str_0) );
+  VERIFY( !(str_0 != "costa rica") );
 
-  test &= str_0 > "costa marbella"; //true cuz r>m
-  test &= str_0 > "cost";
-  test &= !(str_0 > "costa ricans");
-  test &= !("costa marbella" > str_0);//false cuz m<r
-  test &= !("cost" > str_0);
-  test &= "costa ricans" > str_0;
-  test &= !("costa rica" > str_0);
-  test &= !(str_0 > "costa rica");
+  VERIFY( str_0 > "costa marbella" ); //true cuz r>m
+  VERIFY( str_0 > "cost" );
+  VERIFY( !(str_0 > "costa ricans") );
+  VERIFY( !("costa marbella" > str_0) );//false cuz m<r
+  VERIFY( !("cost" > str_0) );
+  VERIFY( "costa ricans" > str_0 );
+  VERIFY( !("costa rica" > str_0) );
+  VERIFY( !(str_0 > "costa rica") );
 
-  test &= !(str_0 < "costa marbella");//false cuz r>m
-  test &= !(str_0 < "cost");
-  test &= str_0 < "costa ricans";
-  test &= "costa marbella" < str_0;//true cuz m<r
-  test &= "cost" < str_0;
-  test &= !("costa ricans" < str_0);
-  test &= !("costa rica" < str_0);
-  test &= !(str_0 < "costa rica");
+  VERIFY( !(str_0 < "costa marbella") );//false cuz r>m
+  VERIFY( !(str_0 < "cost") );
+  VERIFY( str_0 < "costa ricans" );
+  VERIFY( "costa marbella" < str_0 );//true cuz m<r
+  VERIFY( "cost" < str_0 );
+  VERIFY( !("costa ricans" < str_0) );
+  VERIFY( !("costa rica" < str_0) );
+  VERIFY( !(str_0 < "costa rica") );
 
-  test &= str_0 >= "costa marbella";//true cuz r>m
-  test &= str_0 >= "cost";
-  test &= !(str_0 >= "costa ricans");
-  test &= !("costa marbella" >= str_0);//false cuz m<r
-  test &= !("cost" >= str_0);
-  test &= "costa ricans" >= str_0;
-  test &= "costa rica" >= str_0;
-  test &= str_0 >= "costa rica";
+  VERIFY( str_0 >= "costa marbella" );//true cuz r>m
+  VERIFY( str_0 >= "cost" );
+  VERIFY( !(str_0 >= "costa ricans") );
+  VERIFY( !("costa marbella" >= str_0) );//false cuz m<r
+  VERIFY( !("cost" >= str_0) );
+  VERIFY( "costa ricans" >= str_0 );
+  VERIFY( "costa rica" >= str_0 );
+  VERIFY( str_0 >= "costa rica" );
 
-  test &= !(str_0 <= "costa marbella");//false cuz r>m
-  test &= !(str_0 <= "cost");
-  test &= str_0 <= "costa ricans";
-  test &= "costa marbella" <= str_0;//true cuz m<r
-  test &= "cost" <= str_0;
-  test &= !("costa ricans" <= str_0);
-  test &= "costa rica" <= str_0;
-  test &= str_0 <= "costa rica";
+  VERIFY( !(str_0 <= "costa marbella") );//false cuz r>m
+  VERIFY( !(str_0 <= "cost") );
+  VERIFY( str_0 <= "costa ricans" );
+  VERIFY( "costa marbella" <= str_0 );//true cuz m<r
+  VERIFY( "cost" <= str_0 );
+  VERIFY( !("costa ricans" <= str_0) );
+  VERIFY( "costa rica" <= str_0 );
+  VERIFY( str_0 <= "costa rica" );
 
   // 21.3.7.1 operator+
 /*
@@ -262,19 +260,19 @@ template<class charT, class traits, class Allocator>
 */
 
   str_4 = str_0 + "ns";
-  test &= str_4 == str_3;
+  VERIFY( str_4 == str_3 );
 
   const std::string str_5(" marbella");
   str_4 = "costa" + str_5;
-  test &= str_4 == str_1;
+  VERIFY( str_4 == str_1 );
 
   std::string str_6("ns");
   str_4 = str_0 + str_6;
-  test &= str_4 == str_3;
+  VERIFY( str_4 == str_3 );
 
   str_4 = str_0 + 'n';
   str_4 = str_4 + 's';
-  test &= str_4 == str_3;
+  VERIFY( str_4 == str_3 );
 
   str_4 = 'a' + str_6;
   str_4 = 'c' + str_4;
@@ -286,7 +284,7 @@ template<class charT, class traits, class Allocator>
   str_4 = 's' + str_4;
   str_4 = 'o' + str_4;
   str_4 = 'c' + str_4;
-  test &= str_4 == str_3;
+  VERIFY( str_4 == str_3 );
 
 #ifdef DEBUG_ASSERT
   assert(test);

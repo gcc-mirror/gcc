@@ -25,7 +25,7 @@
 #include <cassert>
 #include <unistd.h>
 #include <fcntl.h>
-
+#include <debug_assert.h>
 
 // verify that std::filebuf doesn't close files that it didn't open
 // when using the following std::filebuf ctor:
@@ -48,29 +48,29 @@ test_01()
 
   // read (ext)
   int fd = open(name_01, O_RDONLY);
-  test &= fd >= 0;
+  VERIFY( fd >= 0 );
 
   {
     std::filebuf fb(fd, "double_read", std::ios_base::in);
   }
   
   close_num = close(fd);
-  test &= close_num == 0;
+  VERIFY( close_num == 0 );
 
 
   // read (standard)
   FILE* f = fopen(name_01, "r");
-  test &= f != NULL;
+  VERIFY( f != NULL );
 
   {
     std::ifstream ifstream1(name_01);
-    test &= ifstream1.is_open();
+    VERIFY( ifstream1.is_open() );
     std::ios_base::iostate st01 = ifstream1.rdstate();
-    test &= st01 == std::ios_base::goodbit;
+    VERIFY( st01 == std::ios_base::goodbit );
   }
   
   close_num = fclose(f);
-  test &= close_num == 0;
+  VERIFY( close_num == 0 );
 
   
 #ifdef DEBUG_ASSERT

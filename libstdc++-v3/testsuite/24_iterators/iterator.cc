@@ -21,11 +21,10 @@
 
 #include <string>
 #include <vector>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
-int string_stuff()
+int 
+string_stuff()
 {
    int failures(0);
 
@@ -250,7 +249,8 @@ int string_stuff()
    return failures;
 }
 
-int vector_stuff()
+int 
+vector_stuff()
 {
    int failures(0);
 
@@ -487,7 +487,8 @@ int vector_stuff()
    return failures;
 }
 
-int reverse_stuff()
+int 
+reverse_stuff()
 {
    int failures(0);
 
@@ -512,7 +513,8 @@ int reverse_stuff()
 
 // the following should be compiler errors
 // flag runtime errors in case they slip through the compiler
-int wrong_stuff()
+int 
+wrong_stuff()
 {
    int failures(0);
 
@@ -575,7 +577,8 @@ int wrong_stuff()
    return failures;
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
    int failures(0);
 
@@ -593,7 +596,4 @@ int main(int argc, char **argv)
 
    return failures ? 1 : 0;
 }
-
-
-
 

@@ -23,15 +23,11 @@
 #include <istream>
 #include <sstream>
 #include <fstream>
-#ifdef DEBUG_ASSERT
-#include <cassert>
-#  define VERIFY(fn) assert(fn)
-#else
-#  define VERIFY(fn) 
-#endif
+#include <debug_assert.h>
 
-bool test01() {
-
+int
+test01()
+{
   typedef std::ios::traits_type traits_type;
 
   bool test = true;
@@ -54,78 +50,78 @@ bool test01() {
   state1 = is_04.rdstate();
   is_04.read(carray, 0);
   state2 = is_04.rdstate();
-  test &= state1 == state2;
+  VERIFY( state1 == state2 );
 
   state1 = is_04.rdstate();
   is_04.read(carray, 9);
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= !strncmp(carray, "soul eyes", 9);
-  test &= is_04.peek() == ':';
+  VERIFY( state1 == state2 );
+  VERIFY( !strncmp(carray, "soul eyes", 9) );
+  VERIFY( is_04.peek() == ':' );
 
   state1 = is_03.rdstate();
   is_03.read(carray, 60);
   state2 = is_03.rdstate();
-  test &= state1 != state2;
-  test &= static_cast<bool>(state2 & stateeof); 
-  test &= static_cast<bool>(state2 & statefail); 
-  test &= !strncmp(carray, "soul eyes: john coltrane quartet", 35);
+  VERIFY( state1 != state2 );
+  VERIFY( static_cast<bool>(state2 & stateeof) ); 
+  VERIFY( static_cast<bool>(state2 & statefail) ); 
+  VERIFY( !strncmp(carray, "soul eyes: john coltrane quartet", 35) );
 
 
   // istream& ignore(streamsize n = 1, int_type delim = traits::eof())
   state1 = is_04.rdstate();
   is_04.ignore();
-  test &= is_04.gcount() == 1;
+  VERIFY( is_04.gcount() == 1 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= is_04.peek() == ' ';
+  VERIFY( state1 == state2 );
+  VERIFY( is_04.peek() == ' ' );
 
   state1 = is_04.rdstate();
   is_04.ignore(0);
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= is_04.peek() == ' ';
+  VERIFY( state1 == state2 );
+  VERIFY( is_04.peek() == ' ' );
 
   state1 = is_04.rdstate();
   is_04.ignore(5, traits_type::to_int_type(' '));
-  test &= is_04.gcount() == 1;
+  VERIFY( is_04.gcount() == 1 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= is_04.peek() == 'j';
+  VERIFY( state1 == state2 );
+  VERIFY( is_04.peek() == 'j' );
 
   // int_type peek()
   state1 = is_04.rdstate();
-  test &= is_04.peek() == 'j';
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.peek() == 'j' );
+  VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
+  VERIFY( state1 == state2 );
 
   is_04.ignore(30);
   state1 = is_04.rdstate();
-  test &= is_04.peek() == traits_type::eof();
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.peek() == traits_type::eof() );
+  VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
+  VERIFY( state1 == state2 );
 
 
   // istream& putback(char c)
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.putback('|');
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= is_04.peek() == '|';
+  VERIFY( state1 == state2 );
+  VERIFY( is_04.peek() == '|' );
 
   // istream& unget()
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.unget();
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  test &= state1 == state2;
-  test &= is_04.peek() == 'e';
+  VERIFY( state1 == state2 );
+  VERIFY( is_04.peek() == 'e' );
   
   // int sync()
   int i = is_00.sync();
@@ -134,10 +130,11 @@ bool test01() {
   assert(test);
 #endif
  
-  return test;
+  return 0;
 }
 
-bool test02(void)
+int
+test02()
 {
   typedef std::char_traits<char>	traits_type;
 
@@ -166,67 +163,68 @@ bool test02(void)
   state2 = is_00.rdstate();
   // make sure failbit was set, since we couldn't extract
   // from the NULL streambuf...
-  test &= state1 != state2;
-  test &= static_cast<bool>(state2 & statefail);
+  VERIFY( state1 != state2 );
+  VERIFY( static_cast<bool>(state2 & statefail) );
   
-  test &= is_04.gcount() == 0;
+  VERIFY( is_04.gcount() == 0 );
   state1 = is_04.rdstate();
   is_04.getline(carray1, 1, '\t'); // extracts, throws away
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 1;
-  test &= state1 == state2;
-  test &= state1 == 0;
-  test &= !traits_type::compare("", carray1, 1);
+  VERIFY( is_04.gcount() == 1 );
+  VERIFY( state1 == state2 );
+  VERIFY( state1 == 0 );
+  VERIFY( !traits_type::compare("", carray1, 1) );
 
   state1 = is_04.rdstate();
   is_04.getline(carray1, 20, '*');
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 10;
-  test &= state1 == state2;
-  test &= state1 == 0;
-  test &= !traits_type::compare("\t\t    sun", carray1, 10);
+  VERIFY( is_04.gcount() == 10 );
+  VERIFY( state1 == state2 );
+  VERIFY( state1 == 0 );
+  VERIFY( !traits_type::compare("\t\t    sun", carray1, 10) );
 
   state1 = is_04.rdstate();
   is_04.getline(carray1, 20);
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 4;
-  test &= state1 == state2;
-  test &= state1 == 0;
-  test &= !traits_type::compare("ra ", carray1, 4);
+  VERIFY( is_04.gcount() == 4 );
+  VERIFY( state1 == state2 );
+  VERIFY( state1 == 0 );
+  VERIFY( !traits_type::compare("ra ", carray1, 4) );
 
   state1 = is_04.rdstate();
   is_04.getline(carray1, 65);
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 64;
-  test &= state1 != state2;
-  test &= state2 == statefail;
-  test &= !traits_type::compare("                            and his myth science arkestra presen", carray1, 65);
+  VERIFY( is_04.gcount() == 64 );
+  VERIFY( state1 != state2 );
+  VERIFY( state2 == statefail );
+  VERIFY( !traits_type::compare("                            and his myth science arkestra presen", carray1, 65) );
 
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.getline(carray1, 120, '|');
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 106;
-  test &= state1 != state2;
-  test &= state2 == stateeof;
+  VERIFY( is_04.gcount() == 106 );
+  VERIFY( state1 != state2 );
+  VERIFY( state2 == stateeof );
 
   is_04.clear();
   state1 = is_04.rdstate();
   is_04.getline(carray1, 100, '|');
   state2 = is_04.rdstate();  
-  test &= is_04.gcount() == 0; 
-  test &= state1 != state2;
-  test &= static_cast<bool>(state2 & stateeof);
-  test &= static_cast<bool>(state2 & statefail);
+  VERIFY( is_04.gcount() == 0 ); 
+  VERIFY( state1 != state2 );
+  VERIFY( static_cast<bool>(state2 & stateeof) );
+  VERIFY( static_cast<bool>(state2 & statefail) );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
  
-  return test;
+  return 0;
 }
 
-bool test03(void)
+int
+test03()
 {
   typedef std::char_traits<char>	traits_type;
 
@@ -256,73 +254,74 @@ bool test03(void)
   // istream& get(streambuf&, char delim)
   // istream& get(streambuf&)
   is_00.get(carray1, 2);
-  test &= static_cast<bool>(is_00.rdstate() & statefail); 
-  test &= is_00.gcount() == 0;
+  VERIFY( static_cast<bool>(is_00.rdstate() & statefail) ); 
+  VERIFY( is_00.gcount() == 0 );
 
   is_04.get(carray1, 4);
-  test &= !(is_04.rdstate() & statefail);
-  test &= !traits_type::compare(carray1, "   ", 4);
-  test &= is_04.gcount() == 3;
+  VERIFY( !(is_04.rdstate() & statefail) );
+  VERIFY( !traits_type::compare(carray1, "   ", 4) );
+  VERIFY( is_04.gcount() == 3 );
 
   is_04.clear();
   is_04.get(carray1 + 3, 200);
-  test &= !(is_04.rdstate() & statefail);
-  test &= !(is_04.rdstate() & stateeof);
-  test &= !traits_type::compare(carray1, str_lit01, 10);
-  test &= is_04.gcount() == 7;
+  VERIFY( !(is_04.rdstate() & statefail) );
+  VERIFY( !(is_04.rdstate() & stateeof) );
+  VERIFY( !traits_type::compare(carray1, str_lit01, 10) );
+  VERIFY( is_04.gcount() == 7 );
 
   is_04.clear();
   is_04.get(carray1, 200);
-  test &= !(is_04.rdstate() & stateeof);
-  test &= static_cast<bool>(is_04.rdstate() & statefail); // delimiter
-  test &= is_04.gcount() == 0;
+  VERIFY( !(is_04.rdstate() & stateeof) );
+  VERIFY( static_cast<bool>(is_04.rdstate() & statefail) ); // delimiter
+  VERIFY( is_04.gcount() == 0 );
   is_04.clear();
   is_04.get(carray1, 200, '[');
-  test &= static_cast<bool>(is_04.rdstate() & stateeof);
-  test &= !(is_04.rdstate() & statefail);
-  test &= is_04.gcount() == 125;
+  VERIFY( static_cast<bool>(is_04.rdstate() & stateeof) );
+  VERIFY( !(is_04.rdstate() & statefail) );
+  VERIFY( is_04.gcount() == 125 );
   is_04.clear();  
   is_04.get(carray1, 200);
-  test &= static_cast<bool>(is_04.rdstate() & stateeof);
-  test &= static_cast<bool>(is_04.rdstate() & statefail); 
-  test &= is_04.gcount() == 0;
+  VERIFY( static_cast<bool>(is_04.rdstate() & stateeof) );
+  VERIFY( static_cast<bool>(is_04.rdstate() & statefail) ); 
+  VERIFY( is_04.gcount() == 0 );
 
   std::stringbuf sbuf_02(std::ios_base::in);
   is_05.clear();
   is_05.get(sbuf_02);
-  test &= is_05.gcount() == 0;
-  test &= static_cast<bool>(is_05.rdstate() & statefail); 
-  test &= !(is_05.rdstate() & stateeof); 
+  VERIFY( is_05.gcount() == 0 );
+  VERIFY( static_cast<bool>(is_05.rdstate() & statefail) ); 
+  VERIFY( !(is_05.rdstate() & stateeof) ); 
 
   is_05.clear();
   is_05.get(sbuf_03);
-  test &= is_05.gcount() == 10;
-  test &= sbuf_03.str() == "   sun*ra ";
-  test &= !(is_05.rdstate() & statefail); 
-  test &= !(is_05.rdstate() & stateeof); 
+  VERIFY( is_05.gcount() == 10 );
+  VERIFY( sbuf_03.str() == "   sun*ra " );
+  VERIFY( !(is_05.rdstate() & statefail) ); 
+  VERIFY( !(is_05.rdstate() & stateeof) ); 
 
   is_05.clear();
   is_05.get(sbuf_03, '|');
-  test &= is_05.gcount() == 125;
-  test &= sbuf_03.str() == str_lit01;
-  test &= !(is_05.rdstate() & statefail); 
-  test &= static_cast<bool>(is_05.rdstate() & stateeof); 
+  VERIFY( is_05.gcount() == 125 );
+  VERIFY( sbuf_03.str() == str_lit01 );
+  VERIFY( !(is_05.rdstate() & statefail) ); 
+  VERIFY( static_cast<bool>(is_05.rdstate() & stateeof) ); 
 
   is_05.clear();
   is_05.get(sbuf_03, '|');
-  test &= is_05.gcount() == 0;
-  test &= static_cast<bool>(is_05.rdstate() & stateeof); 
-  test &= static_cast<bool>(is_05.rdstate() & statefail); 
+  VERIFY( is_05.gcount() == 0 );
+  VERIFY( static_cast<bool>(is_05.rdstate() & stateeof) ); 
+  VERIFY( static_cast<bool>(is_05.rdstate() & statefail) ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
  
-  return test;
+  return 0;
 }
 
 // http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00177.html
-void test04()
+int
+test04()
 {
   bool test = true;
 
@@ -337,21 +336,23 @@ void test04()
   stateeof = std::ios_base::eofbit;
 
   state1 = stateeof | statefail;
-  test &= is_00.gcount() == 0;
+  VERIFY( is_00.gcount() == 0 );
   is_00.read(c_array, str_00.size() + 1);
-  test &= is_00.gcount() == str_00.size();
-  test &= is_00.rdstate() == state1;
+  VERIFY( is_00.gcount() == str_00.size() );
+  VERIFY( is_00.rdstate() == state1 );
 
   is_00.read(c_array, str_00.size());
-  test &= is_00.rdstate() == state1;
+  VERIFY( is_00.rdstate() == state1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
+  return 0;
 }
 
 // http://sourceware.cygnus.com/ml/libstdc++/2000-07/msg00003.html
-bool test05()
+int
+test05()
 {
   const char* charray = "
 a
@@ -420,7 +421,7 @@ aaaaaaaaaaaaaa
 
 
 // http://sources.redhat.com/ml/libstdc++/2000-07/msg00126.html
-bool
+int
 test06()
 {
   using namespace std;
@@ -434,24 +435,26 @@ test06()
   istream istr(&strbuf);
   
   istr.getline(tmp,it); 
-  test &= istr.gcount() == it;  // extracted whole string
-  test &= strlen(tmp) == 4;     // stored all but '\n'
-  test &= !istr.eof();          // extracted up to but not eof
-  test &= !istr.fail();         // failbit not set
+  VERIFY( istr.gcount() == it );  // extracted whole string
+  VERIFY( strlen(tmp) == 4 );     // stored all but '\n'
+  VERIFY( !istr.eof() );          // extracted up to but not eof
+  VERIFY( !istr.fail() );         // failbit not set
   
   char c = 'z';
   istr.get(c);
-  test &= c == 'z';
-  test &= istr.eof();
+  VERIFY( c == 'z' );
+  VERIFY( istr.eof() );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
-  return test;
+  
+  return 0;
 }
 
 
-int main()
+int 
+main()
 {
   test01();
   test02();
@@ -459,6 +462,7 @@ int main()
   test04();
   test05();
   test06();
+  
   return 0;
 }
 

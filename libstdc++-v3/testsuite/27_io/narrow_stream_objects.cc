@@ -66,13 +66,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <debug_assert.h>
 
 // Include iostream last, just to make is as difficult as possible to
 // properly initialize the standard iostream objects.
 #include <iostream>
 
 // Make sure all the standard streams are defined.
-bool test01()
+int
+test01()
 {
   bool test = true;
 
@@ -83,17 +85,19 @@ bool test01()
   array1[i] = '\0';
   std::cout << "testing cout" << std::endl;
   std::cerr << "testing cerr" << std::endl;
-  test &= std::cerr.flags() & std::ios_base::unitbuf;
+  VERIFY( std::cerr.flags() & std::ios_base::unitbuf );
   std::clog << "testing clog" << std::endl;
   // std::cin >> array1; // requires somebody to type something in.
-  test &= std::cin.tie() == &std::cout;
+  VERIFY( std::cin.tie() == &std::cout );
 
-  return test;
+  return 0;
 }
 
 
-int main(void)
+int 
+main()
 {
   test01();
   return 0;
 }
+

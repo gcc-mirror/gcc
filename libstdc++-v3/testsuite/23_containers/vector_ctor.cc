@@ -22,9 +22,7 @@
 // 23.2.4.1 vector constructors, copy, and assignment
 
 #include <vector>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 template<typename T>
   struct A { };

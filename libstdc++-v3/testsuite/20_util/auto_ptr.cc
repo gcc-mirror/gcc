@@ -19,10 +19,7 @@
 // 20.4.5 Template class auto_ptr [lib.auto.ptr]
 
 #include <memory>
-#ifdef DEBUG_ASSERT
-#  include <assert.h>
-#endif
-
+#include <debug_assert.h>
 
 struct A
 {
@@ -60,41 +57,43 @@ struct reset_count_struct
 // 20.4.5.1 auto_ptr constructors [lib.auto.ptr.cons]
 
 // Construction from pointer
-bool test01()
+int
+test01()
 {
   reset_count_struct reset;
   bool test = true;
 
   std::auto_ptr<A> A_default;
-  test &= A_default.get() == 0;
-  test &= A::ctor_count == 0;
-  test &= A::dtor_count == 0;
-  test &= B::ctor_count == 0;
-  test &= B::dtor_count == 0;
+  VERIFY( A_default.get() == 0 );
+  VERIFY( A::ctor_count == 0 );
+  VERIFY( A::dtor_count == 0 );
+  VERIFY( B::ctor_count == 0 );
+  VERIFY( B::dtor_count == 0 );
 
   std::auto_ptr<A> A_from_A(new A);
-  test &= A_from_A.get() != 0;
-  test &= A::ctor_count == 1;
-  test &= A::dtor_count == 0;
-  test &= B::ctor_count == 0;
-  test &= B::dtor_count == 0;
+  VERIFY( A_from_A.get() != 0 );
+  VERIFY( A::ctor_count == 1 );
+  VERIFY( A::dtor_count == 0 );
+  VERIFY( B::ctor_count == 0 );
+  VERIFY( B::dtor_count == 0 );
 
   std::auto_ptr<A> A_from_B(new B);
-  test &= A_from_B.get() != 0;
-  test &= A::ctor_count == 2;
-  test &= A::dtor_count == 0;
-  test &= B::ctor_count == 1;
-  test &= B::dtor_count == 0;
+  VERIFY( A_from_B.get() != 0 );
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 0 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 0 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 // Construction from std::auto_ptr
-bool test02()
+int
+test02()
 {
   reset_count_struct reset;
   bool test = true;
@@ -104,24 +103,25 @@ bool test02()
 
   std::auto_ptr<A> A_from_ptr_A(A_from_A);
   std::auto_ptr<A> A_from_ptr_B(B_from_B);
-  test &= A_from_A.get() == 0;
-  test &= B_from_B.get() == 0;
-  test &= A_from_ptr_A.get() != 0;
-  test &= A_from_ptr_B.get() != 0;
-  test &= A::ctor_count == 2;
-  test &= A::dtor_count == 0;
-  test &= B::ctor_count == 1;
-  test &= B::dtor_count == 0;
+  VERIFY( A_from_A.get() == 0 );
+  VERIFY( B_from_B.get() == 0 );
+  VERIFY( A_from_ptr_A.get() != 0 );
+  VERIFY( A_from_ptr_B.get() != 0 );
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 0 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 0 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 // Assignment from std::auto_ptr
-bool test03()
+int
+test03()
 {
   reset_count_struct reset;
   bool test = true;
@@ -133,24 +133,25 @@ bool test03()
 
   A_from_ptr_A = A_from_A;
   A_from_ptr_B = B_from_B;
-  test &= A_from_A.get() == 0;
-  test &= B_from_B.get() == 0;
-  test &= A_from_ptr_A.get() != 0;
-  test &= A_from_ptr_B.get() != 0;
-  test &= A::ctor_count == 2;
-  test &= A::dtor_count == 0;
-  test &= B::ctor_count == 1;
-  test &= B::dtor_count == 0;
+  VERIFY( A_from_A.get() == 0 );
+  VERIFY( B_from_B.get() == 0 );
+  VERIFY( A_from_ptr_A.get() != 0 );
+  VERIFY( A_from_ptr_B.get() != 0 );
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 0 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 0 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 // Destruction
-bool test04()
+int
+test04()
 {
   reset_count_struct reset;
   bool test = true;
@@ -161,16 +162,16 @@ bool test04()
     std::auto_ptr<B> B_from_B(new B);
   }/*destructors called here*/
 
-  test &= A::ctor_count == 3;
-  test &= A::dtor_count == 3;
-  test &= B::ctor_count == 2;
-  test &= B::dtor_count == 2;
+  VERIFY( A::ctor_count == 3 );
+  VERIFY( A::dtor_count == 3 );
+  VERIFY( B::ctor_count == 2 );
+  VERIFY( B::dtor_count == 2 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 // Class member construction/destruction
@@ -183,58 +184,60 @@ private:
   std::auto_ptr<T> p_impl;
 };
 
-bool test05()
+int 
+test05()
 {
   bool test = true;
   reset_count_struct reset;
 
   pimpl<A>();
   pimpl<B>();
-  test &= A::ctor_count == 2;
-  test &= A::dtor_count == 2;
-  test &= B::ctor_count == 1;
-  test &= B::dtor_count == 1;
+  VERIFY( A::ctor_count == 2 );
+  VERIFY( A::dtor_count == 2 );
+  VERIFY( B::ctor_count == 1 );
+  VERIFY( B::dtor_count == 1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 
 // 20.4.5.2 auto_ptr members [lib.auto.ptr.members]
 
 // Member access
-bool test06()
+int
+test06()
 {
   reset_count_struct reset;
   bool test = true;
 
   std::auto_ptr<A> A_from_A(new A);
   std::auto_ptr<A> A_from_A_ptr(A_from_A.release());
-  test &= A_from_A.get() == 0;
-  test &= A_from_A_ptr.get() != 0;
-  test &= A_from_A->ctor_count == 1;
-  test &= (*A_from_A).dtor_count == 0;
+  VERIFY( A_from_A.get() == 0 );
+  VERIFY( A_from_A_ptr.get() != 0 );
+  VERIFY( A_from_A->ctor_count == 1 );
+  VERIFY( (*A_from_A).dtor_count == 0 );
 
   A* A_ptr = A_from_A_ptr.get();
 
   A_from_A_ptr.reset(A_ptr);
-  test &= A_from_A_ptr.get() == A_ptr;
-  test &= A_from_A_ptr->ctor_count == 1;
-  test &= (*A_from_A_ptr).dtor_count == 0;
+  VERIFY( A_from_A_ptr.get() == A_ptr );
+  VERIFY( A_from_A_ptr->ctor_count == 1 );
+  VERIFY( (*A_from_A_ptr).dtor_count == 0 );
 
   A_from_A_ptr.reset(new A);
-  test &= A_from_A_ptr.get() != A_ptr;
-  test &= A_from_A_ptr->ctor_count == 2;
-  test &= (*A_from_A_ptr).dtor_count == 1;
+  VERIFY( A_from_A_ptr.get() != A_ptr );
+  VERIFY( A_from_A_ptr->ctor_count == 2 );
+  VERIFY( (*A_from_A_ptr).dtor_count == 1 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
 
@@ -251,7 +254,8 @@ template <typename T>
 static void drain(std::auto_ptr<T>)
 {}
 
-bool test07()
+int
+test07()
 {
   bool test = true;
   reset_count_struct reset;
@@ -259,30 +263,29 @@ bool test07()
   drain(source<A>());
   drain<A>(source<B>());
   drain(source<B>());
-  test &= A::ctor_count == 3;
-  test &= A::dtor_count == 3;
-  test &= B::ctor_count == 2;
-  test &= B::dtor_count == 2;
+  VERIFY( A::ctor_count == 3 );
+  VERIFY( A::dtor_count == 3 );
+  VERIFY( B::ctor_count == 2 );
+  VERIFY( B::dtor_count == 2 );
 
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
 
-  return test;
+  return 0;
 }
 
-
-int main()
+int 
+main()
 {
-  bool test = true;
+  test01();
+  test02();
+  test03();
+  test04();
+  test05();
+  test06();
+  test07();
 
-  test &= test01();
-  test &= test02();
-  test &= test03();
-  test &= test04();
-  test &= test05();
-  test &= test06();
-  test &= test07();
-
-  return test ? 0 : 1;
+  return 0;
 }
+

@@ -31,9 +31,7 @@
 
 #include <ios>
 // NB: Don't include any other headers in this file.
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 void test01()
 {
@@ -54,11 +52,11 @@ void test01()
 
   // char narrow(char_type c, char dfault) const;
   char c1 = ios_01.narrow(ct02, 0);
-  test &= c1 == 'x';
+  VERIFY( c1 == 'x' );
 
   // char_type widen(char c) const;
   ct01 = ios_01.widen('c');
-  test &= ct01 == 'c';
+  VERIFY( ct01 == 'c' );
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -85,57 +83,57 @@ void test02()
   std::ios::char_type ct02('x');;
 
   // bool fail() const
-  test &= ios_01.fail();
+  VERIFY( ios_01.fail() );
 
   // bool operator!() const
-  test &= !ios_01;
+  VERIFY( !ios_01 );
   
   // iostate rdstate() const
   iostate03 = ios_01.rdstate();
-  test &= static_cast<bool>(iostate03 & std::ios_base::badbit);
+  VERIFY( static_cast<bool>(iostate03 & std::ios_base::badbit) );
 
   // void clear(iostate state = goodbit)
   try {
     ios_01.clear(std::ios_base::eofbit);
     iostate02 = ios_01.rdstate();
-    test &= static_cast<bool>(iostate02 & iostate01);
+    VERIFY( static_cast<bool>(iostate02 & iostate01) );
   }		 
   catch(std::ios_base::failure& fail) {
-    test &= false;
+    VERIFY( false );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   // iostate exceptions() const
-  test &= ios_01.exceptions() == std::ios_base::goodbit;
+  VERIFY( ios_01.exceptions() == std::ios_base::goodbit );
 
   // void exceptions(iostate except)
   try {
     ios_01.exceptions(std::ios_base::eofbit);
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::ios_base::failure& fail) {
     iostate02 = ios_01.exceptions();
-    test &= static_cast<bool>(iostate02 & std::ios_base::eofbit);
+    VERIFY( static_cast<bool>(iostate02 & std::ios_base::eofbit) );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
   // basic_ios& copyfmt(const basic_ios& rhs)
   std::ios ios_02(NULL);  
   ios_02.exceptions(std::ios_base::eofbit);
-  test &= static_cast<bool>(ios_02.exceptions() & std::ios_base::eofbit);
+  VERIFY( static_cast<bool>(ios_02.exceptions() & std::ios_base::eofbit) );
   try {
     ios_01.copyfmt(ios_02);
-    test &= false;
+    VERIFY( false );
   }		 
   catch(std::ios_base::failure& fail) {
-    test &= true;
+    VERIFY( true );
   }
   catch(...) {
-    test &= false;
+    VERIFY( false );
   }
 
 #ifdef DEBUG_ASSERT

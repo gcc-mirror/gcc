@@ -20,9 +20,7 @@
 
 #include <istream>
 #include <fstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 const char name_01[] = "testsuite/ifstream_members-1.tst";
 const char name_02[] = "testsuite/ifstream_members-1.txt";
@@ -35,15 +33,15 @@ bool test00()
   ifs1.close();
   
   // false as expected:
-  test &= !ifs1.is_open();
+  VERIFY( !ifs1.is_open() );
    // this is now true:
-  test &= !(ifs1);
+  VERIFY( !(ifs1) );
   
   ifs1.open(name_01);
-  test &= ifs1.is_open();
+  VERIFY( ifs1.is_open() );
   // fail bit still true
-  test &= !(ifs1);
-  test &= ifs1.rdstate() == std::ios_base::failbit;
+  VERIFY( !(ifs1) );
+  VERIFY( ifs1.rdstate() == std::ios_base::failbit );
 
   ifs1.close();
 
@@ -63,7 +61,7 @@ bool test01()
   for(int i = 0; ++i < more_than_max_open_files;)
     {
       std::ifstream ifs(name_01);
-      test &= static_cast<bool>(ifs);
+      VERIFY( static_cast<bool>(ifs) );
     }
 
 #ifdef DEBUG_ASSERT

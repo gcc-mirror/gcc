@@ -31,14 +31,16 @@
 // things would be sorted in a dictionary.
 
 #include <string>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 enum want_value {lt=0, z=1, gt=2};
 
-void test_value(int result, want_value expected);
-void test_value(int result, want_value expected) {
+int
+test_value(int result, want_value expected);
+
+int
+test_value(int result, want_value expected)
+{
   bool pass = false;
 
   switch (expected) {
@@ -61,11 +63,14 @@ void test_value(int result, want_value expected) {
 #ifdef DEBUG_ASSERT
   assert(pass);
 #endif
+  
+  return 0;
 }
  
 
-int test01(void) {
-
+int 
+test01()
+{
   std::string 	str_0("costa rica");
   std::string 	str_1("costa marbella");
   std::string 	str_2;
@@ -121,8 +126,12 @@ int test01(void) {
 }
 
 
-int main() {
+int 
+main() 
+{
   test01();
+  
+  return 0;
 }
 
 

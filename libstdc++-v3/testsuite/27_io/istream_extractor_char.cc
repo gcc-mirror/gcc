@@ -22,9 +22,7 @@
 
 #include <istream>
 #include <sstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 bool test01() {
 
@@ -53,28 +51,28 @@ bool test01() {
   is_01 >> array1;   // should snake 0 characters, not alter stream state
   i2 = ctraits_type::length(array1);
   state2 = is_01.rdstate();
-  test &= i1 == i2;
-  test &= state1 != state2;
-  test &= static_cast<bool>(state2 & statefail);
+  VERIFY( i1 == i2 );
+  VERIFY( state1 != state2 );
+  VERIFY( static_cast<bool>(state2 & statefail) );
 
   state1 = is_02.rdstate();
   is_02 >> array1;   // should snake "coltrane"
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= !static_cast<bool>(state2 & statefail);
-  test &= array1[str_03.size() - 1] == 'e';
+  VERIFY( state1 == state2 );
+  VERIFY( !static_cast<bool>(state2 & statefail) );
+  VERIFY( array1[str_03.size() - 1] == 'e' );
   array1[str_03.size()] = '\0';
-  test &= !str_03.compare(0, str_03.size(), array1);
+  VERIFY( !str_03.compare(0, str_03.size(), array1) );
   std::istream::int_type int1 = is_02.peek(); // should be ' '
-  test &= int1 == ' ';
+  VERIFY( int1 == ' ' );
 
   state1 = is_02.rdstate();
   is_02 >> array1;   // should snake "playing" as sentry "eats" ws
   state2 = is_02.rdstate();
   int1 = is_02.peek(); // should be ' '
-  test &= int1 == ' ';
-  test &= state1 == state2;
-  test &= !static_cast<bool>(state2 & statefail);
+  VERIFY( int1 == ' ' );
+  VERIFY( state1 == state2 );
+  VERIFY( !static_cast<bool>(state2 & statefail) );
 
 
   // template<_CharT, _Traits>
@@ -83,13 +81,13 @@ bool test01() {
   state1 = is_02.rdstate();
   is_02 >> array2;   // should snake 'softly
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= !static_cast<bool>(state2 & statefail);
-  test &= array2[0] == '\'';
-  test &= array2[1] == 's';
-  test &= array2[6] == 'y';
+  VERIFY( state1 == state2 );
+  VERIFY( !static_cast<bool>(state2 & statefail) );
+  VERIFY( array2[0] == '\'' );
+  VERIFY( array2[1] == 's' );
+  VERIFY( array2[6] == 'y' );
   int1 = is_02.peek(); // should be ' '
-  test &= int1 == ' ';
+  VERIFY( int1 == ' ' );
 
 
    // template<_CharT, _Traits>
@@ -98,12 +96,12 @@ bool test01() {
   state1 = is_02.rdstate();
   is_02 >> array3;   // should snake "as"
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= !static_cast<bool>(state2 & statefail);
-  test &= array3[0] == 'a';
-  test &= array3[1] == 's';
+  VERIFY( state1 == state2 );
+  VERIFY( !static_cast<bool>(state2 & statefail) );
+  VERIFY( array3[0] == 'a' );
+  VERIFY( array3[1] == 's' );
   int1 = is_02.peek(); // should be ' '
-  test &= int1 == ' ';
+  VERIFY( int1 == ' ' );
  
 
   // testing with width() control enabled.
@@ -111,25 +109,25 @@ bool test01() {
   state1 = is_02.rdstate();
   is_02 >> array1;   // should snake a
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= !ctraits_type::compare(array1, "a", 2);
+  VERIFY( state1 == state2 );
+  VERIFY( !ctraits_type::compare(array1, "a", 2) );
 
   is_02.width(1);
   state1 = is_02.rdstate();
   is_02 >> array1;   // should snake nothing, set failbit
   state2 = is_02.rdstate();
-  test &= state1 != state2;
-  test &= state2 == statefail;
-  test &= array1[0] == '\0';
+  VERIFY( state1 != state2 );
+  VERIFY( state2 == statefail );
+  VERIFY( array1[0] == '\0' );
 
   is_02.width(8);
   is_02.clear();
   state1 = is_02.rdstate();
-  test &= !state1;
+  VERIFY( !state1 );
   is_02 >> array1;   // should snake "morning"
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= !ctraits_type::compare(array1, "morning", 8);
+  VERIFY( state1 == state2 );
+  VERIFY( !ctraits_type::compare(array1, "morning", 8) );
 
   // testing for correct exception setting
   const std::string str_04("   impulse!!");
@@ -139,13 +137,13 @@ bool test01() {
   std::istream is_04(&isbuf_04);
 
   is_03 >> array1;
-  test &=  !ctraits_type::compare(array1,"impulse!!", 10);
-  test &= is_03.rdstate() == std::ios_base::eofbit;
+  VERIFY( !ctraits_type::compare(array1,"impulse!!", 10) );
+  VERIFY( is_03.rdstate() == std::ios_base::eofbit );
 
   is_04.width(9);
   is_04 >> array1;
-  test &=  ! std::ios::traits_type::compare(array1,"impulse!", 9);
-  test &= !is_04.rdstate(); 
+  VERIFY( ! std::ios::traits_type::compare(array1,"impulse!", 9) );
+  VERIFY( !is_04.rdstate() ); 
 
 #ifdef DEBUG_ASSERT
   assert(test);
@@ -176,19 +174,19 @@ bool test02() {
   state1 = is_01.rdstate();
   is_01 >> c1;   
   state2 = is_01.rdstate();
-  test &= state1 != state2;
-  test &= c1 == c2;
-  test &= static_cast<bool>(state2 & statefail);
+  VERIFY( state1 != state2 );
+  VERIFY( c1 == c2 );
+  VERIFY( static_cast<bool>(state2 & statefail) );
 
   state1 = is_02.rdstate();
   is_02 >> c1;   
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= c1 == 'o';
+  VERIFY( state1 == state2 );
+  VERIFY( c1 == 'o' );
   is_02 >> c1;   
   is_02 >> c1;   
-  test &= c1 == 'c';
-  test &= !static_cast<bool>(state2 & statefail);
+  VERIFY( c1 == 'c' );
+  VERIFY( !static_cast<bool>(state2 & statefail) );
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(istream&, unsigned char&)
@@ -196,11 +194,11 @@ bool test02() {
   state1 = is_02.rdstate();
   is_02 >> uc1;   
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= uc1 == 'o';
+  VERIFY( state1 == state2 );
+  VERIFY( uc1 == 'o' );
   is_02 >> uc1;   
   is_02 >> uc1;   
-  test &= uc1 == 't';
+  VERIFY( uc1 == 't' );
 
   // template<_CharT, _Traits>
   //  basic_istream& operator>>(istream&, signed char&)
@@ -208,11 +206,11 @@ bool test02() {
   state1 = is_02.rdstate();
   is_02 >> sc1;   
   state2 = is_02.rdstate();
-  test &= state1 == state2;
-  test &= sc1 == 'r';
+  VERIFY( state1 == state2 );
+  VERIFY( sc1 == 'r' );
   is_02 >> sc1;   
   is_02 >> sc1;   
-  test &= sc1 == 'n';
+  VERIFY( sc1 == 'n' );
 
 #ifdef DEBUG_ASSERT
   assert(test);

@@ -17,9 +17,7 @@
 // USA.
 
 #include <algorithm>
-#ifdef DEBUG_ASSERT
-#include <assert.h>
-#endif
+#include <debug_assert.h>
 
 // http://sourceware.cygnus.com/ml/libstdc++/2000-06/msg00316.html
 struct foo { };

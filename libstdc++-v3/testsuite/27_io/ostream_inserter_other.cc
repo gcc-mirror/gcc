@@ -24,9 +24,7 @@
 #include <ostream>
 #include <sstream>
 #include <fstream>
-#ifdef DEBUG_ASSERT
-  #include <assert.h>
-#endif
+#include <debug_assert.h>
 
 const int size = 1000;
 const char name_01[] = "testsuite/ostream_inserter_other-1.tst";
@@ -36,16 +34,20 @@ const char name_04[] = "testsuite/ostream_inserter_other-2.txt";
 
 
 // stringstream
-bool test01() {
+int 
+test01() 
+{
   bool test = true;
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
-  return test;
+  return 0;
 }
 
 // fstream
-bool test02() {
+int
+test02() 
+{
   typedef std::ios_base::iostate iostate;
   bool test = true;
 
@@ -57,13 +59,13 @@ bool test02() {
   iostate state01 = f_in1.rdstate();
   f_in1 >> strbuf01;
   iostate state02 = f_in1.rdstate();
-  test &= state01 != state02;
-  test &= (state02 & std::ios_base::failbit) != 0;
+  VERIFY( state01 != state02 );
+  VERIFY( (state02 & std::ios_base::failbit) != 0 );
   state01 = f_out1.rdstate();
   f_out1 << strbuf01;
   state02 = f_out1.rdstate();
-  test &= state01 != state02;
-  test &= (state02 & std::ios_base::failbit) != 0;
+  VERIFY( state01 != state02 );
+  VERIFY( (state02 & std::ios_base::failbit) != 0 );
 
   // filebuf->filebuf
   std::ifstream f_in(name_01);
@@ -86,8 +88,8 @@ bool test02() {
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
- 
-  return test;
+  
+  return 0;
 }
 
 // via Brent Verner <brent@rcfile.org>
@@ -130,7 +132,8 @@ test03(void)
   return 0;
 }
 
-int main()
+int 
+main()
 {
   test01();
   test02();
