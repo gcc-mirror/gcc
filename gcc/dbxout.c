@@ -499,6 +499,24 @@ dbxout_source_file (file, filename)
     }
 }
 
+/* Output a line number symbol entry into output stream FILE, 
+   for source file FILENAME and line number LINENO.  */
+
+void
+dbxout_source_line (file, filename, lineno)
+     FILE *file;
+     char *filename;
+     int lineno;
+{
+  dbxout_source_file (file, filename);
+
+#ifdef ASM_OUTPUT_SOURCE_LINE
+  ASM_OUTPUT_SOURCE_LINE (file, lineno);
+#else
+  fprintf (file, "\t%s %d,0,%d\n", ASM_STABD_OP, N_SLINE, lineno);
+#endif
+}
+
 /* At the end of compilation, finish writing the symbol table.
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is
    to do nothing. */
