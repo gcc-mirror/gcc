@@ -1,3 +1,8 @@
+Wed Jun 16 20:29:00 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* cse.c (cse_insn): Don't put hard register source into tables for
+	last insn of a libcall.
+
 Wed Jun 16 19:44:33 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (strength_reduce): Insert sets of derived givs at every
