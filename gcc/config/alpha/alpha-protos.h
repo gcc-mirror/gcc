@@ -37,6 +37,7 @@ extern void alpha_output_lineno PARAMS ((FILE *, int));
 extern int reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_6bit_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_8bit_operand PARAMS ((rtx, enum machine_mode));
+extern int reg_or_const_int_operand PARAMS ((rtx, enum machine_mode));
 extern int cint8_operand PARAMS ((rtx, enum machine_mode));
 extern int add_operand PARAMS ((rtx, enum machine_mode));
 extern int sext_add_operand PARAMS ((rtx, enum machine_mode));
@@ -122,6 +123,10 @@ extern void alpha_expand_unaligned_store PARAMS ((rtx, rtx, HOST_WIDE_INT,
 						 HOST_WIDE_INT));
 extern int alpha_expand_block_move PARAMS ((rtx []));
 extern int alpha_expand_block_clear PARAMS ((rtx []));
+extern rtx alpha_expand_zap_mask PARAMS ((HOST_WIDE_INT));
+extern void alpha_expand_builtin_vector_binop PARAMS ((rtx (*)(rtx, rtx, rtx),
+						       enum machine_mode,
+						       rtx, rtx, rtx));
 extern rtx alpha_return_addr PARAMS ((int, rtx));
 extern rtx alpha_gp_save_rtx PARAMS ((void));
 extern void print_operand PARAMS ((FILE *, rtx, int));

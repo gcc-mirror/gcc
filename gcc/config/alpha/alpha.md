@@ -49,6 +49,13 @@
    (UNSPEC_DTPREL	19)
    (UNSPEC_TPREL	20)
    (UNSPEC_TP		21)
+
+   ;; Builtins
+   (UNSPEC_CMPBGE	22)
+   (UNSPEC_ZAP		23)
+   (UNSPEC_AMASK	24)
+   (UNSPEC_IMPLVER	25)
+   (UNSPEC_PERR		26)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -67,6 +74,7 @@
    (UNSPECV_LDGP1	10)
    (UNSPECV_PLDGP2	11)	; prologue ldgp
    (UNSPECV_SET_TP	12)
+   (UNSPECV_RPCC	13)
   ])
 
 ;; Where necessary, the suffixes _le and _be are used to distinguish between
@@ -6111,6 +6119,195 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   DONE;
 })
 
+;; Vector operations
+
+(define_expand "movv8qi"
+  [(set (match_operand:V8QI 0 "nonimmediate_operand" "")
+        (match_operand:V8QI 1 "general_operand" ""))]
+  ""
+{
+  if (alpha_expand_mov (V8QImode, operands))
+    DONE;
+})
+
+(define_insn "*movv8qi_fix"
+  [(set (match_operand:V8QI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m,r,*f")
+	(match_operand:V8QI 1 "input_operand" "rW,m,rW,*fW,m,*f,*f,r"))]
+  "TARGET_FIX
+   && (register_operand (operands[0], V8QImode)
+       || reg_or_0_operand (operands[1], V8QImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0
+   ftoit %1,%0
+   itoft %1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,ftoi,itof")])
+
+(define_insn "*movv8qi_nofix"
+  [(set (match_operand:V8QI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m")
+	(match_operand:V8QI 1 "input_operand" "rW,m,rW,*fW,m,*f"))]
+  "! TARGET_FIX
+   && (register_operand (operands[0], V8QImode)
+       || reg_or_0_operand (operands[1], V8QImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
+
+(define_expand "movv4hi"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "")
+        (match_operand:V4HI 1 "general_operand" ""))]
+  ""
+{
+  if (alpha_expand_mov (V4HImode, operands))
+    DONE;
+})
+
+(define_insn "*movv4hi_fix"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m,r,*f")
+	(match_operand:V4HI 1 "input_operand" "rW,m,rW,*fW,m,*f,*f,r"))]
+  "TARGET_FIX
+   && (register_operand (operands[0], V4HImode)
+       || reg_or_0_operand (operands[1], V4HImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0
+   ftoit %1,%0
+   itoft %1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,ftoi,itof")])
+
+(define_insn "*movv4hi_nofix"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m")
+	(match_operand:V4HI 1 "input_operand" "rW,m,rW,*fW,m,*f"))]
+  "! TARGET_FIX
+   && (register_operand (operands[0], V4HImode)
+       || reg_or_0_operand (operands[1], V4HImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
+
+(define_expand "movv2si"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "")
+        (match_operand:V2SI 1 "general_operand" ""))]
+  ""
+{
+  if (alpha_expand_mov (V2SImode, operands))
+    DONE;
+})
+
+(define_insn "*movv2si_fix"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m,r,*f")
+	(match_operand:V2SI 1 "input_operand" "rW,m,rW,*fW,m,*f,*f,r"))]
+  "TARGET_FIX
+   && (register_operand (operands[0], V2SImode)
+       || reg_or_0_operand (operands[1], V2SImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0
+   ftoit %1,%0
+   itoft %1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,ftoi,itof")])
+
+(define_insn "*movv2si_nofix"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "=r,r,m,*f,*f,m")
+	(match_operand:V2SI 1 "input_operand" "rW,m,rW,*fW,m,*f"))]
+  "! TARGET_FIX
+   && (register_operand (operands[0], V2SImode)
+       || reg_or_0_operand (operands[1], V2SImode))"
+  "@
+   bis $31,%r1,%0
+   ldq %0,%1
+   stq %r1,%0
+   cpys %R1,%R1,%0
+   ldt %0,%1
+   stt %R1,%0"
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
+
+(define_insn "uminv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(umin:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "minub8 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "sminv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(smin:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "minsb8 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "uminv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(umin:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "minuw4 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "sminv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(smin:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "minsw4 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "umaxv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(umax:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "maxub8 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "smaxv8qi3"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(smax:V8QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V8QI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "maxsb8 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "umaxv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(umax:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "maxuw4 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_insn "smaxv4hi3"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(smax:V4HI (match_operand:V4HI 1 "reg_or_0_operand" "rW")
+		   (match_operand:V4HI 2 "reg_or_0_operand" "rW")))]
+  "TARGET_MAX"
+  "maxsw4 %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
 ;; Bit field extract patterns which use ext[wlq][lh]
 
 (define_expand "extv"
@@ -6779,7 +6976,397 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   else
     return ".align %0 #realign";
 })
+
+;; Instructions to be emitted from __builtins.
 
+(define_insn "builtin_cmpbge"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "rJ")
+		    (match_operand:DI 2 "reg_or_8bit_operand" "rI")]
+		   UNSPEC_CMPBGE))]
+  ""
+  "cmpbge %r1,%2,%0"
+  ;; The EV6 data sheets list this as ILOG.  OTOH, EV6 doesn't 
+  ;; actually differentiate between ILOG and ICMP in the schedule.
+  [(set_attr "type" "icmp")])
+
+(define_expand "builtin_extql"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_8bit_operand" "")]
+  ""
+{
+  rtx (*gen) PARAMS ((rtx, rtx, rtx, rtx));
+  if (WORDS_BIG_ENDIAN)
+    gen = gen_extxl_be;
+  else
+    gen = gen_extxl_le;
+  emit_insn ((*gen) (operands[0], operands[1], GEN_INT (64), operands[2]));
+  DONE;
+})
+
+(define_expand "builtin_extqh"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_8bit_operand" "")]
+  ""
+{
+  rtx (*gen) PARAMS ((rtx, rtx, rtx));
+  if (WORDS_BIG_ENDIAN)
+    gen = gen_extqh_be;
+  else
+    gen = gen_extqh_le;
+  emit_insn ((*gen) (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "builtin_zap"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (unspec:DI
+		  [(match_operand:DI 2 "reg_or_const_int_operand" "")]
+		  UNSPEC_ZAP)
+		(match_operand:DI 1 "reg_or_const_int_operand" "")))]
+  ""
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      rtx mask = alpha_expand_zap_mask (INTVAL (operands[2]));
+
+      if (operands[1] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], const0_rtx);
+	  DONE;
+	}
+      if (operands[1] == constm1_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+
+      operands[1] = force_reg (DImode, operands[1]);
+      emit_insn (gen_anddi3 (operands[0], operands[1], mask));
+      DONE;
+    }
+
+  operands[1] = force_reg (DImode, operands[1]);
+  operands[2] = gen_lowpart (QImode, operands[2]);
+})
+
+(define_insn "*builtin_zap_1"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
+	(and:DI (unspec:DI
+		  [(match_operand:QI 2 "reg_or_const_int_operand" "n,n,r,r")]
+		  UNSPEC_ZAP)
+		(match_operand:DI 1 "reg_or_const_int_operand" "n,r,J,r")))]
+  ""
+  "@
+   #
+   #
+   bis $31,$31,%0
+   zap %r1,%2,%0"
+  [(set_attr "type" "shift,shift,ilog,shift")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (unspec:DI
+		  [(match_operand:QI 2 "const_int_operand" "")]
+		  UNSPEC_ZAP)
+		(match_operand:DI 1 "const_int_operand" "")))]
+  ""
+  [(const_int 0)]
+{
+  rtx mask = alpha_expand_zap_mask (INTVAL (operands[2]));
+  if (HOST_BITS_PER_WIDE_INT >= 64 || GET_CODE (mask) == CONST_INT)
+    operands[1] = gen_int_mode (INTVAL (operands[1]) & INTVAL (mask), DImode);
+  else
+    {
+      HOST_WIDE_INT c_lo = INTVAL (operands[1]);
+      HOST_WIDE_INT c_hi = (c_lo < 0 ? -1 : 0);
+      operands[1] = immed_double_const (c_lo & CONST_DOUBLE_LOW (mask),
+					c_hi & CONST_DOUBLE_HIGH (mask),
+					DImode);
+    }
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (unspec:DI
+		  [(match_operand:QI 2 "const_int_operand" "")]
+		  UNSPEC_ZAP)
+		(match_operand:DI 1 "register_operand" "")))]
+  ""
+  [(set (match_dup 0)
+	(and:DI (match_dup 1) (match_dup 2)))]
+{
+  operands[2] = alpha_expand_zap_mask (INTVAL (operands[2]));
+  if (operands[2] == const0_rtx)
+    {
+      emit_move_insn (operands[0], const0_rtx);
+      DONE;
+    }
+  if (operands[2] == constm1_rtx)
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+})
+
+(define_expand "builtin_zapnot"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(and:DI (unspec:DI
+		  [(not:QI (match_operand:QI 2 "reg_or_const_int_operand" ""))]
+		  UNSPEC_ZAP)
+		(match_operand:DI 1 "reg_or_const_int_operand" "")))]
+  ""
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      rtx mask = alpha_expand_zap_mask (~ INTVAL (operands[2]));
+
+      if (operands[1] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], const0_rtx);
+	  DONE;
+	}
+      if (operands[1] == constm1_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+
+      operands[1] = force_reg (DImode, operands[1]);
+      emit_insn (gen_anddi3 (operands[0], operands[1], mask));
+      DONE;
+    }
+
+  operands[1] = force_reg (DImode, operands[1]);
+  operands[2] = gen_lowpart (QImode, operands[2]);
+})
+
+(define_insn "*builtin_zapnot_1"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (unspec:DI
+                  [(not:QI (match_operand:QI 2 "register_operand" "r"))]
+                  UNSPEC_ZAP)
+		(match_operand:DI 1 "reg_or_0_operand" "rJ")))]
+  ""
+  "zapnot %r1,%2,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn "builtin_amask"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "reg_or_8bit_operand" "rI")]
+		   UNSPEC_AMASK))]
+  ""
+  "amask %1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "builtin_implver"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+  	(unspec:DI [(const_int 0)] UNSPEC_IMPLVER))]
+  ""
+  "implver %0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "builtin_rpcc"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+  	(unspec_volatile:DI [(const_int 0)] UNSPECV_RPCC))]
+  ""
+  "rpcc %0"
+  [(set_attr "type" "ilog")])
+
+(define_expand "builtin_minub8"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_uminv8qi3, V8QImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_minsb8"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_sminv8qi3, V8QImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_minuw4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_uminv4hi3, V4HImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_minsw4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_sminv4hi3, V4HImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_maxub8"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_umaxv8qi3, V8QImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_maxsb8"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_smaxv8qi3, V8QImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_maxuw4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_umaxv4hi3, V4HImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "builtin_maxsw4"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 2 "reg_or_0_operand" "")]
+  "TARGET_MAX"
+{
+  alpha_expand_builtin_vector_binop (gen_smaxv4hi3, V4HImode, operands[0],
+				     operands[1], operands[2]);
+  DONE;
+})
+
+(define_insn "builtin_perr"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec:DI [(match_operand:DI 1 "reg_or_0_operand" "%rJ")
+		    (match_operand:DI 2 "reg_or_8bit_operand" "rJ")]
+		   UNSPEC_PERR))]
+  "TARGET_MAX"
+  "perr %r1,%r2,%0"
+  [(set_attr "type" "mvi")])
+
+(define_expand "builtin_pklb"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(vec_concat:V8QI
+	  (vec_concat:V4QI
+	    (truncate:V2QI (match_operand:DI 1 "register_operand" ""))
+	    (match_dup 2))
+	  (match_dup 3)))]
+  "TARGET_MAX"
+{
+  operands[0] = gen_lowpart (V8QImode, operands[0]);
+  operands[1] = gen_lowpart (V2SImode, operands[1]);
+  operands[2] = CONST0_RTX (V2QImode);
+  operands[3] = CONST0_RTX (V4QImode);
+})
+
+(define_insn "*pklb"
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
+	(vec_concat:V8QI
+	  (vec_concat:V4QI
+	    (truncate:V2QI (match_operand:V2SI 1 "register_operand" "r"))
+	    (match_operand:V2QI 2 "const0_operand" ""))
+	  (match_operand:V4QI 3 "const0_operand" "")))]
+  "TARGET_MAX"
+  "pklb %r1,%0"
+  [(set_attr "type" "mvi")])
+
+(define_expand "builtin_pkwb"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(vec_concat:V8QI
+	  (truncate:V4QI (match_operand:DI 1 "register_operand" ""))
+	  (match_dup 2)))]
+  "TARGET_MAX"
+{
+  operands[0] = gen_lowpart (V8QImode, operands[0]);
+  operands[1] = gen_lowpart (V4HImode, operands[1]);
+  operands[2] = CONST0_RTX (V4QImode);
+})
+
+(define_insn "*pkwb"
+  [(set (match_operand:V8QI 0 "register_operand" "")
+	(vec_concat:V8QI
+	  (truncate:V4QI (match_operand:V4HI 1 "register_operand" ""))
+	  (match_operand:V4QI 2 "const0_operand" "")))]
+  "TARGET_MAX"
+  "pkwb %r1,%0"
+  [(set_attr "type" "mvi")])
+
+(define_expand "builtin_unpkbl"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:V2SI
+	  (vec_select:V2QI (match_operand:DI 1 "register_operand" "")
+			   (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_MAX"
+{
+  operands[0] = gen_lowpart (V2SImode, operands[0]);
+  operands[1] = gen_lowpart (V8QImode, operands[1]);
+})
+
+(define_insn "*unpkbl"
+  [(set (match_operand:V2SI 0 "register_operand" "=r")
+	(zero_extend:V2SI
+	  (vec_select:V2QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+			   (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_MAX"
+  "unpkbl %r1,%0"
+  [(set_attr "type" "mvi")])
+
+(define_expand "builtin_unpkbw"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:V4HI
+	  (vec_select:V4QI (match_operand:DI 1 "register_operand" "")
+			   (parallel [(const_int 0)
+				      (const_int 1)
+				      (const_int 2)
+				      (const_int 3)]))))]
+  "TARGET_MAX"
+{
+  operands[0] = gen_lowpart (V4HImode, operands[0]);
+  operands[1] = gen_lowpart (V8QImode, operands[1]);
+})
+
+(define_insn "*unpkbw"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(zero_extend:V4HI
+	  (vec_select:V4QI (match_operand:V8QI 1 "reg_or_0_operand" "rW")
+			   (parallel [(const_int 0)
+				      (const_int 1)
+				      (const_int 2)
+				      (const_int 3)]))))]
+  "TARGET_MAX"
+  "unpkbw %r1,%0"
+  [(set_attr "type" "mvi")])
+
 ;; The call patterns are at the end of the file because their
 ;; wildcard operand0 interferes with nice recognition.
 

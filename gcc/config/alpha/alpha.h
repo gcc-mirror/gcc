@@ -615,6 +615,12 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
    ? GET_MODE_UNIT_SIZE (MODE) == 8 || GET_MODE_UNIT_SIZE (MODE) == 4	\
    : 1)
 
+/* Value is 1 if MODE is a supported vector mode.  */
+
+#define VECTOR_MODE_SUPPORTED_P(MODE) \
+  (TARGET_MAX \
+   && ((MODE) == V8QImode || (MODE) == V4HImode || (MODE) == V2SImode))
+
 /* A C expression that is nonzero if a value of mode
    MODE1 is accessible in mode MODE2 without copying.
 
@@ -789,7 +795,9 @@ enum reg_class {
 
    'T' is a HIGH.
 
-   'U' is a symbolic operand.  */
+   'U' is a symbolic operand.
+
+   'W' is a vector zero.   */
 
 #define EXTRA_CONSTRAINT  alpha_extra_constraint
 
@@ -1923,6 +1931,7 @@ do {						\
 			CONST_VECTOR}},					\
   {"reg_or_6bit_operand", {SUBREG, REG, CONST_INT}},			\
   {"reg_or_8bit_operand", {SUBREG, REG, CONST_INT}},			\
+  {"reg_or_const_int_operand", {SUBREG, REG, CONST_INT}},		\
   {"cint8_operand", {CONST_INT}},					\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}},			\
   {"add_operand", {SUBREG, REG, CONST_INT}},				\
@@ -1953,9 +1962,9 @@ do {						\
   {"gottp_symbolic_operand", {CONST}},					\
   {"call_operand", {REG, SYMBOL_REF}},					\
   {"input_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		     SYMBOL_REF, CONST, LABEL_REF, HIGH}},		\
+		     CONST_VECTOR, SYMBOL_REF, CONST, LABEL_REF, HIGH}},\
   {"some_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\
-		    SYMBOL_REF, CONST, LABEL_REF, HIGH}},		\
+		    CONST_VECTOR, SYMBOL_REF, CONST, LABEL_REF, HIGH}},	\
   {"some_ni_operand", {SUBREG, REG, MEM}},				\
   {"aligned_memory_operand", {MEM}},					\
   {"unaligned_memory_operand", {MEM}},					\
