@@ -485,6 +485,12 @@ toc_section ()								\
 	    }								\
 	}								\
     }									\
+}									\
+									\
+extern int in_toc_section PARAMS ((void));				\
+int in_toc_section ()							\
+{									\
+  return in_section == in_toc;						\
 }
 
 #define	SDATA_SECTION_FUNCTION						\
@@ -787,59 +793,6 @@ extern int fixuplabelno;
 /* Handle constructors specially for -mrelocatable.  */
 #define TARGET_ASM_CONSTRUCTOR  rs6000_elf_asm_out_constructor
 #define TARGET_ASM_DESTRUCTOR   rs6000_elf_asm_out_destructor
-
-/* This is how to output an assembler line defining an `int' constant.
-   For -mrelocatable, we mark all addresses that need to be fixed up
-   in the .fixup section.  */
-/* Override rs6000.h definition.  */
-#undef	ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE,VALUE)					\
-do {									\
-  static int recurse = 0;						\
-  if (TARGET_RELOCATABLE						\
-      && in_section != in_toc						\
-      && in_section != in_text						\
-      && !recurse							\
-      && GET_CODE (VALUE) != CONST_INT					\
-      && GET_CODE (VALUE) != CONST_DOUBLE				\
-      && CONSTANT_P (VALUE))						\
-    {									\
-      char buf[256];							\
-									\
-      recurse = 1;							\
-      ASM_GENERATE_INTERNAL_LABEL (buf, "LCP", fixuplabelno);		\
-      fixuplabelno++;							\
-      ASM_OUTPUT_LABEL (FILE, buf);					\
-      fprintf (FILE, "\t.long (");					\
-      output_addr_const (FILE, (VALUE));				\
-      fprintf (FILE, ")@fixup\n");					\
-      fprintf (FILE, "\t.section\t\".fixup\",\"aw\"\n");		\
-      ASM_OUTPUT_ALIGN (FILE, 2);					\
-      fprintf (FILE, "\t.long\t");					\
-      assemble_name (FILE, buf);					\
-      fprintf (FILE, "\n\t.previous\n");				\
-      recurse = 0;							\
-    }									\
-  /* Remove initial .'s to turn a -mcall-aixdesc function		\
-     address into the address of the descriptor, not the function	\
-     itself.  */							\
-  else if (GET_CODE (VALUE) == SYMBOL_REF				\
-	   && XSTR (VALUE, 0)[0] == '.'					\
-	   && DEFAULT_ABI == ABI_AIX)					\
-    {									\
-      const char *name = XSTR (VALUE, 0);				\
-      while (*name == '.')						\
-	name++;								\
-									\
-      fprintf (FILE, "\t.long %s\n", name);				\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\t.long ");					\
-      output_addr_const (FILE, (VALUE));				\
-      fprintf (FILE, "\n");						\
-    }									\
-} while (0)
 
 /* This is the end of what might become sysv4.h.  */
 
@@ -1497,3 +1450,6 @@ ncrtn.o%s"
 #define TARGET_ASM_EXCEPTION_SECTION readonly_data_section
 
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
+
+/* Generate entries in .fixup for relocatable addresses.  */
+#define RELOCATABLE_NEEDS_FIXUP

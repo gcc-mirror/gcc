@@ -289,29 +289,12 @@ Boston, MA 02111-1307, USA.  */
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s_%%%d", (NAME), (LABELNO)))
 
+#undef INT_OP_GROUP
 #ifdef USE_GAS
-#undef ASM_LONG
-#define ASM_LONG	".long"
-#undef ASM_SHORT
-#define ASM_SHORT	".short"
-#undef ASM_CHAR
-#define ASM_CHAR	".byte"
-#undef ASM_BYTE
-#define ASM_BYTE	".byte"
-#undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\t.byte\t"
+#define INT_OP_GROUP INT_OP_STANDARD
 #else
-#undef ASM_LONG
-#define ASM_LONG	"long"
-#undef ASM_SHORT
-#define ASM_SHORT	"short"
-#undef ASM_CHAR
-#define ASM_CHAR	"byte"
-#undef ASM_BYTE
-#define ASM_BYTE	"byte"
-#undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\tbyte\t"
-#endif /* USE_GAS */
+#define INT_OP_GROUP INT_OP_NO_DOT
+#endif
 
 /* The sysV68 as doesn't know about double's and float's.  */
 /* This is how to output an assembler line defining a `double' constant.  */
@@ -320,14 +303,16 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
 do { long l[2];						\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\t%s 0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]); \
+     fprintf ((FILE), "%s0x%lx,0x%lx\n",		\
+	      integer_asm_op (4, TRUE), l[0], l[1]);	\
    } while (0)
 
 #undef ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\t%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
+     fprintf (FILE, "%s 0x%lx,0x%lx,0x%lx\n",				\
+	      integer_asm_op (4, TRUE), l[0], l[1], l[2]);		\
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -336,36 +321,8 @@ do { long l[3];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
 do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\t%s 0x%lx\n", ASM_LONG, l);	\
+     assemble_aligned_integer (4, GEN_INT (l));	\
    } while (0)
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#undef ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t%s ", ASM_LONG),		\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#undef ASM_OUTPUT_SHORT
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t%s ", ASM_SHORT),		\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#undef ASM_OUTPUT_CHAR
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t%s ", ASM_CHAR),		\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#undef ASM_OUTPUT_BYTE
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t%s 0x%x\n", ASM_BYTE, (int)(VALUE))
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -419,7 +376,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register size_t sp = 0, lp = 0, limit = (LEN);		\
-    fprintf ((FILE), "%s", ASM_BYTE_OP);			\
+    fputs (integer_asm_op (1, TRUE), (FILE));			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
       { lp += 3;						\
@@ -490,13 +447,14 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)	\
-    asm_fprintf (FILE, "\t%s %LL%d\n", ASM_LONG, (VALUE))
+    asm_fprintf (FILE, "%s%LL%d\n", integer_asm_op (4, TRUE), (VALUE))
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
-    asm_fprintf (FILE, "\t%s %LL%d-%LL%d\n", ASM_SHORT, (VALUE), (REL))
+    asm_fprintf (FILE, "\t%s %LL%d-%LL%d\n",			\
+		 integer_asm_op (2, TRUE), (VALUE), (REL))
 
 #ifndef USE_GAS
 

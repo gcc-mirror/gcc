@@ -18,10 +18,5 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* gas supports unaligned data.  */
-#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.uaxword\t"
-#define UNALIGNED_INT_ASM_OP	"\t.uaword\t"
-#define UNALIGNED_SHORT_ASM_OP	"\t.uahalf\t"
-
 /* defaults.h will define DWARF2_UNWIND_INFO for us.  */
 #undef DWARF2_UNWIND_INFO

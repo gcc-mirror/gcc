@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "rtl.h"
 #include "output.h"
+#include "target.h"
 #include "dwarf2asm.h"
 #include "dwarf2.h"
 #include "splay-tree.h"
@@ -37,50 +38,29 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* We don't have unaligned support, let's hope the normal output works for
-   .debug_frame.  But we know it won't work for .debug_info.  */
-#if !defined(UNALIGNED_INT_ASM_OP) && defined(DWARF2_DEBUGGING_INFO)
- #error DWARF2_DEBUGGING_INFO requires UNALIGNED_INT_ASM_OP.
-#endif
-
 
-/* Despite the fact that assemble_integer handles unaligned data,
-   continue emitting things by hand when possible, since that makes
-   the assembler commentary come out prettier.  */
-#ifdef UNALIGNED_INT_ASM_OP
-static const char * unaligned_integer_asm_op  PARAMS ((int));
+/* Output an unaligned integer with the given value and size.  Prefer not
+   to print a newline, since the caller may want to add a comment.  */
 
-static inline const char *
-unaligned_integer_asm_op (size)
+void
+dw2_assemble_integer (size, x)
      int size;
+     rtx x;
 {
-  const char *op = NULL;
-  switch (size)
+  const char *op = integer_asm_op (size, FALSE);
+
+  if (op)
     {
-    case 1:
-      op = ASM_BYTE_OP;
-      break;
-    case 2:
-      op = UNALIGNED_SHORT_ASM_OP;
-      break;
-    case 4:
-      op = UNALIGNED_INT_ASM_OP;
-      break;
-    case 8:
-#ifdef UNALIGNED_DOUBLE_INT_ASM_OP
-      op = UNALIGNED_DOUBLE_INT_ASM_OP;
-      break;
-#endif
-    default:
-      abort ();
+      fputs (op, asm_out_file);
+      if (GET_CODE (x) == CONST_INT)
+	fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
+      else
+	output_addr_const (asm_out_file, x);
     }
-
-  if (! op)
-    abort ();
-
-  return op;
+  else
+    assemble_integer (x, size, BITS_PER_UNIT, 1);
 }
-#endif /* UNALIGNED_INT_ASM_OP */
+     
 
 /* Output an immediate constant in a given size.  */
 
@@ -96,12 +76,7 @@ dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
   if (size * 8 < HOST_BITS_PER_WIDE_INT)
     value &= ~(~(unsigned HOST_WIDE_INT)0 << (size * 8));
 
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_HEX, value);
-#else
-  assemble_integer (GEN_INT (value), size, BITS_PER_UNIT, 1);
-#endif
+  dw2_assemble_integer (size, GEN_INT (value));
 
   if (flag_debug_asm && comment)
     {
@@ -129,16 +104,10 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
   VA_FIXEDARG (ap, const char *, lab2);
   VA_FIXEDARG (ap, const char *, comment);
 
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  assemble_name (asm_out_file, lab1);
-  fputc ('-', asm_out_file);
-  assemble_name (asm_out_file, lab2);
-#else
-  assemble_integer (gen_rtx_MINUS (Pmode, gen_rtx_SYMBOL_REF (Pmode, lab1),
-				   gen_rtx_SYMBOL_REF (Pmode, lab2)),
-		    size, BITS_PER_UNIT, 1);
-#endif
+  dw2_assemble_integer (size,
+			gen_rtx_MINUS (Pmode,
+				       gen_rtx_SYMBOL_REF (Pmode, lab1),
+				       gen_rtx_SYMBOL_REF (Pmode, lab2)));
 
   if (flag_debug_asm && comment)
     {
@@ -168,12 +137,7 @@ dw2_asm_output_offset VPARAMS ((int size, const char *label,
 #ifdef ASM_OUTPUT_DWARF_OFFSET
   ASM_OUTPUT_DWARF_OFFSET (asm_out_file, size, label);
 #else
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  assemble_name (asm_out_file, label);
-#else
-  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, BITS_PER_UNIT, 1);
-#endif
+  dw2_assemble_integer (size, gen_rtx_SYMBOL_REF (Pmode, label));
 #endif
 
   if (flag_debug_asm && comment)
@@ -202,14 +166,10 @@ dw2_asm_output_pcrel VPARAMS ((int size ATTRIBUTE_UNUSED,
 #ifdef ASM_OUTPUT_DWARF_PCREL
   ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, label);
 #else
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  assemble_name (asm_out_file, label);
-  fputc ('-', asm_out_file);
-  fputc ('.', asm_out_file);
-#else
-  abort ();
-#endif
+  dw2_assemble_integer (size,
+			gen_rtx_MINUS (Pmode,
+				       gen_rtx_SYMBOL_REF (Pmode, label),
+				       pc_rtx));
 #endif
 
   if (flag_debug_asm && comment)
@@ -233,12 +193,7 @@ dw2_asm_output_addr VPARAMS ((int size, const char *label,
   VA_FIXEDARG (ap, const char *, label);
   VA_FIXEDARG (ap, const char *, comment);
 
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  assemble_name (asm_out_file, label);
-#else
-  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, label), size, BITS_PER_UNIT, 1);
-#endif
+  dw2_assemble_integer (size, gen_rtx_SYMBOL_REF (Pmode, label));
 
   if (flag_debug_asm && comment)
     {
@@ -261,12 +216,7 @@ dw2_asm_output_addr_rtx VPARAMS ((int size, rtx addr,
   VA_FIXEDARG (ap, rtx, addr);
   VA_FIXEDARG (ap, const char *, comment);
 
-#ifdef UNALIGNED_INT_ASM_OP
-  fputs (unaligned_integer_asm_op (size), asm_out_file);
-  output_addr_const (asm_out_file, addr);
-#else
-  assemble_integer (addr, size, BITS_PER_UNIT, 1);
-#endif
+  dw2_assemble_integer (size, addr);
 
   if (flag_debug_asm && comment)
     {
@@ -319,7 +269,7 @@ dw2_asm_output_nstring VPARAMS ((const char *str, size_t orig_len,
 	len += 1;
       ASM_OUTPUT_ASCII (asm_out_file, str, len);
       if (orig_len != (size_t) -1)
-	fprintf (asm_out_file, "%s0\n", ASM_BYTE_OP);
+	assemble_integer (const0_rtx, 1, BITS_PER_UNIT, 1);
     }
 
   VA_CLOSE (ap);
@@ -571,8 +521,10 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 #else
   {
     unsigned HOST_WIDE_INT work = value;
+    const char *byte_op = targetm.asm_out.byte_op;
 
-    fputs (ASM_BYTE_OP, asm_out_file);
+    if (byte_op)
+      fputs (byte_op, asm_out_file);
     do
       {
 	int byte = (work & 0x7f);
@@ -581,9 +533,14 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 	  /* More bytes to follow.  */
 	  byte |= 0x80;
 
-	fprintf (asm_out_file, "0x%x", byte);
-	if (work != 0)
-	  fputc (',', asm_out_file);
+	if (byte_op)
+	  {
+	    fprintf (asm_out_file, "0x%x", byte);
+	    if (work != 0)
+	      fputc (',', asm_out_file);
+	  }
+	else
+	  assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
       }
     while (work != 0);
 
@@ -627,8 +584,10 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
   {
     HOST_WIDE_INT work = value;
     int more, byte;
+    const char *byte_op = targetm.asm_out.byte_op;
 
-    fputs (ASM_BYTE_OP, asm_out_file);
+    if (byte_op)
+      fputs (byte_op, asm_out_file);
     do
       {
 	byte = (work & 0x7f);
@@ -639,9 +598,14 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
 	if (more)
 	  byte |= 0x80;
 
-	fprintf (asm_out_file, "0x%x", byte);
-	if (more)
-	  fputc (',', asm_out_file);
+	if (byte_op)
+	  {
+	    fprintf (asm_out_file, "0x%x", byte);
+	    if (more)
+	      fputc (',', asm_out_file);
+	  }
+	else
+	  assemble_integer (GEN_INT (byte), 1, BITS_PER_UNIT, 1);
       }
     while (more);
 
@@ -905,12 +869,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
       switch (encoding & 0xF0)
 	{
 	case DW_EH_PE_absptr:
-#ifdef UNALIGNED_INT_ASM_OP
-	  fputs (unaligned_integer_asm_op (size), asm_out_file);
-	  output_addr_const (asm_out_file, addr);
-#else
-	  assemble_integer (addr, size, BITS_PER_UNIT, 1);
-#endif
+	  dw2_assemble_integer (size, addr);
 	  break;
 
 	case DW_EH_PE_pcrel:
@@ -919,14 +878,7 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 #ifdef ASM_OUTPUT_DWARF_PCREL
 	  ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, XSTR (addr, 0));
 #else
-#ifdef UNALIGNED_INT_ASM_OP
-	  fputs (unaligned_integer_asm_op (size), asm_out_file);
-	  assemble_name (asm_out_file, XSTR (addr, 0));
-	  fputc ('-', asm_out_file);
-	  fputc ('.', asm_out_file);
-#else
-	  abort ();
-#endif
+	  dw2_assemble_integer (size, gen_rtx_MINUS (Pmode, addr, pc_rtx));
 #endif
 	  break;
 

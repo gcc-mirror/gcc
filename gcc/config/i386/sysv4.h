@@ -170,7 +170,7 @@ do { long value[3];							\
   do {									\
     if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_datarel)		\
       {									\
-        fputs (UNALIGNED_INT_ASM_OP, FILE);				\
+        fputs (ASM_LONG, FILE);						\
         assemble_name (FILE, XSTR (ADDR, 0));				\
 	fputs (((ENCODING) & DW_EH_PE_indirect ? "@GOT" : "@GOTOFF"), FILE); \
         goto DONE;							\

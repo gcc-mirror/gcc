@@ -151,6 +151,7 @@ static void sparc_add_gc_roots    PARAMS ((void));
 static void mark_ultrasparc_pipeline_state PARAMS ((void *));
 static int check_return_regs PARAMS ((rtx));
 static int epilogue_renumber PARAMS ((rtx *, int));
+static bool sparc_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int ultra_cmove_results_ready_p PARAMS ((rtx));
 static int ultra_fpmode_conflict_exists PARAMS ((enum machine_mode));
 static rtx *ultra_find_type PARAMS ((int, rtx *, int));
@@ -202,6 +203,27 @@ struct sparc_cpu_select sparc_select[] =
 enum processor_type sparc_cpu;
 
 /* Initialize the GCC target structure.  */
+
+/* The sparc default is to use .half rather than .short for aligned
+   HI objects.  Use .word instead of .long on non-ELF systems.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
+#ifndef OBJECT_FORMAT_ELF
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+#endif
+
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.uahalf\t"
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.uaword\t"
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP "\t.uaxword\t"
+
+/* The target hook has to handle DI-mode values.  */
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER sparc_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE sparc_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -400,6 +422,10 @@ sparc_override_options ()
   /* Validate PCC_STRUCT_RETURN.  */
   if (flag_pcc_struct_return == DEFAULT_PCC_STRUCT_RETURN)
     flag_pcc_struct_return = (TARGET_ARCH64 ? 0 : 1);
+
+  /* Only use .uaxword when compiling for a 64-bit target.  */
+  if (!TARGET_ARCH64)
+    targetm.asm_out.unaligned_op.di = NULL;
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
@@ -6008,65 +6034,33 @@ print_operand (file, x, code)
   else { output_addr_const (file, x); }
 }
 
-/* This function outputs assembler code for VALUE to FILE, where VALUE is
-   a 64 bit (DImode) value.  */
+/* Target hook for assembling integer objects.  The sparc version has
+   special handling for aligned DI-mode objects.  */
 
-/* ??? If there is a 64 bit counterpart to .word that the assembler
-   understands, then using that would simply this code greatly.  */
-/* ??? We only output .xword's for symbols and only then in environments
-   where the assembler can handle them.  */
-
-void
-output_double_int (file, value)
-     FILE *file;
-     rtx value;
+static bool
+sparc_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
 {
-  if (GET_CODE (value) == CONST_INT)
+  /* ??? We only output .xword's for symbols and only then in environments
+     where the assembler can handle them.  */
+  if (aligned_p && size == 8
+      && (GET_CODE (x) != CONST_INT && GET_CODE (x) != CONST_DOUBLE))
     {
-      /* ??? This has endianness issues.  */
-#if HOST_BITS_PER_WIDE_INT == 64
-      HOST_WIDE_INT xword = INTVAL (value);
-      HOST_WIDE_INT high, low;
-
-      high = (xword >> 32) & 0xffffffff;
-      low  = xword & 0xffffffff;
-      ASM_OUTPUT_INT (file, GEN_INT (high));
-      ASM_OUTPUT_INT (file, GEN_INT (low));
-#else
-      if (INTVAL (value) < 0)
-	ASM_OUTPUT_INT (file, constm1_rtx);
-      else
-	ASM_OUTPUT_INT (file, const0_rtx);
-      ASM_OUTPUT_INT (file, value);
-#endif
-    }
-  else if (GET_CODE (value) == CONST_DOUBLE)
-    {
-      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_HIGH (value)));
-      ASM_OUTPUT_INT (file, GEN_INT (CONST_DOUBLE_LOW (value)));
-    }
-  else if (GET_CODE (value) == SYMBOL_REF
-	   || GET_CODE (value) == CONST
-	   || GET_CODE (value) == PLUS
-	   || (TARGET_ARCH64 &&
-	       (GET_CODE (value) == LABEL_REF
-		|| GET_CODE (value) == CODE_LABEL
-		|| GET_CODE (value) == MINUS)))
-    {
-      if (! TARGET_V9)
+      if (TARGET_V9)
 	{
-	  ASM_OUTPUT_INT (file, const0_rtx);
-	  ASM_OUTPUT_INT (file, value);
+	  assemble_integer_with_op ("\t.xword\t", x);
+	  return true;
 	}
       else
 	{
-	  fprintf (file, "\t%s\t", ASM_LONGLONG);
-	  output_addr_const (file, value);
-	  fprintf (file, "\n");
+	  assemble_aligned_integer (4, const0_rtx);
+	  assemble_aligned_integer (4, x);
+	  return true;
 	}
     }
-  else
-    abort ();
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 /* Return the value of a code used in the .proc pseudo-op that says

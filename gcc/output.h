@@ -315,12 +315,34 @@ extern void assemble_eh_label		PARAMS ((const char *));
    Many macros in the tm file are defined to call this function.  */
 extern void assemble_name		PARAMS ((FILE *, const char *));
 
+/* Return the assembler directive for creating a given kind of integer
+   object.  SIZE is the number of bytes in the object and ALIGNED_P
+   indicates whether it is known to be aligned.  Return NULL if the
+   assembly dialect has no such directive.
+
+   The returned string should be printed at the start of a new line and
+   be followed immediately by the object's initial value.  */
+extern const char *integer_asm_op	PARAMS ((int, int));
+
 #ifdef RTX_CODE
+/* Use directive OP to assemble an integer object X.  Print OP at the
+   start of the line, followed immediately by the value of X.  */
+extern void assemble_integer_with_op	PARAMS ((const char *, rtx));
+
+/* The default implementation of the asm_out.integer target hook.  */
+extern bool default_assemble_integer	PARAMS ((rtx, unsigned int, int));
+
 /* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
    the alignment of the integer in bits.  Return 1 if we were able to output
    the constant, otherwise 0.  If FORCE is non-zero, abort if we can't output
    the constant.  */
-extern int assemble_integer		PARAMS ((rtx, unsigned, unsigned, int));
+extern bool assemble_integer		PARAMS ((rtx, unsigned, unsigned, int));
+
+/* An interface to assemble_integer for the common case in which a value is
+   fully aligned and must be printed.  VALUE is the value of the integer
+   object and SIZE is the number of bytes it contains.  */
+#define assemble_aligned_integer(SIZE, VALUE) \
+  assemble_integer (VALUE, SIZE, (SIZE) * BITS_PER_UNIT, 1)
 
 #ifdef REAL_VALUE_TYPE
 /* Assemble the floating-point constant D into an object of size MODE.  */

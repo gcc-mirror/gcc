@@ -52,6 +52,23 @@ struct gcc_target
     /* Opening and closing parentheses for asm expression grouping.  */
     const char *open_paren, *close_paren;
 
+    /* Assembler instructions for creating various kinds of integer object.  */
+    const char *byte_op;
+    struct asm_int_op
+    {
+      const char *hi;
+      const char *si;
+      const char *di;
+      const char *ti;
+    } aligned_op, unaligned_op;
+
+    /* Try to output the assembler code for an integer object whose
+       value is given by X.  SIZE is the size of the object in bytes and
+       ALIGNED_P indicates whether it is aligned.  Return true if
+       successful.  Only handles cases for which BYTE_OP, ALIGNED_OP
+       and UNALIGNED_OP are NULL.  */
+    bool (* integer) PARAMS ((rtx x, unsigned int size, int aligned_p));
+
     /* Output the assembler code for entry to a function.  */
     void (* function_prologue) PARAMS ((FILE *, HOST_WIDE_INT));
 

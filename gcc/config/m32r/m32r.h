@@ -1719,37 +1719,6 @@ do {							\
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF ""
 
-/* This is how to output an assembler line defining a `char' constant.  */
-#define ASM_OUTPUT_CHAR(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.byte\t");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
-/* This is how to output an assembler line defining a `short' constant.  */
-#define ASM_OUTPUT_SHORT(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.hword\t");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
-/* This is how to output an assembler line defining an `int' constant.
-   We also handle symbol output here.  */
-#define ASM_OUTPUT_INT(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.word\t");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
 /* This is how to output an assembler line defining a `float' constant.  */
 #define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
   do							\
@@ -1775,10 +1744,6 @@ do {							\
 	       t[0], ASM_COMMENT_START, str, t[1]);		\
     }								\
   while (0)
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_BYTE(FILE, VALUE)				\
-  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

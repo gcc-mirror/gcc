@@ -1413,7 +1413,7 @@ extern int s390_nr_constants;
 	      || GET_CODE (EXP) == SYMBOL_REF				    \
 	      || GET_CODE (EXP) == LABEL_REF ))				    \
         {								    \
-          fprintf (FILE, "%s\t",TARGET_64BIT ? ASM_QUAD : ASM_LONG);	    \
+	  fputs (integer_asm_op (UNITS_PER_WORD, TRUE), FILE);		    \
           s390_output_symbolic_const (FILE, EXP);			    \
           fputc ('\n', (FILE));						    \
 	}								    \

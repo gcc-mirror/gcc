@@ -1537,55 +1537,7 @@ struct cum_args {int regs;};
  ASM_OUTPUT_LONG_DOUBLE (FILE, VALUE)
 
 
-/* This is a kludge for a.out+ELF support: For non-ELF prioritized
-   [cd]tors, globalize the function so collect2 can collect it.  This is
-   due to short-sightedness guided by defined (ASM_OUTPUT_SECTION_NAME)
-   && defined (ASM_OUTPUT_CONSTRUCTOR).  */
-
-#define ASM_OUTPUT_INT(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.dword ");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
-#define ASM_OUTPUT_SHORT(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.word ");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
-#define ASM_OUTPUT_CHAR(FILE, VALUE)		\
-  do						\
-    {						\
-      fprintf (FILE, "\t.byte ");		\
-      output_addr_const (FILE, (VALUE));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
-#define ASM_OUTPUT_BYTE(FILE, VALUE)  \
- fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
-
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) (C) == '@'
-
-/* FIXME: These are undocumented.  */
-/* We need to define these, since the 2byte, 4byte, 8byte op:s are only
-   available in ELF.  These "normal" pseudos do not have any alignment
-   constraints or side-effects.  */
-#undef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP "\t.word\t"
-
-#undef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP "\t.dword\t"
-
-#undef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.quad\t"
 
 /* Node: Uninitialized Data */
 

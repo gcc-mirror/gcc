@@ -70,7 +70,6 @@ do {							\
   fprintf(FILE, "\t.align %d\n", 1 << (LOG))
 
 
-#define ASM_LONG ".long"
 #define BSS_SECTION_ASM_OP  "\t.bss"
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP "\t.section .init,\"x\""

@@ -68,6 +68,10 @@ static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
 static rtx	 emit_sfm			PARAMS ((int, int));
+#ifndef AOF_ASSEMBLER
+static bool	 arm_assemble_integer		PARAMS ((rtx, unsigned int,
+							 int));
+#endif
 static Ccstar    fp_const_from_val		PARAMS ((REAL_VALUE_TYPE *));
 static arm_cc    get_arm_condition_code		PARAMS ((rtx));
 static void      init_fpa_table			PARAMS ((void));
@@ -133,6 +137,20 @@ static int	 arm_adjust_cost		PARAMS ((rtx, rtx, rtx, int));
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE arm_attribute_table
+
+#ifdef AOF_ASSEMBLER
+#undef TARGET_ASM_BYTE_OP
+#define TARGET_ASM_BYTE_OP "\tDCB\t"
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\tDCW\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\tDCD\t"
+#else
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP NULL
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER arm_assemble_integer
+#endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
@@ -7320,7 +7338,7 @@ arm_poke_function_name (stream, name)
   ASM_OUTPUT_ASCII (stream, name, length);
   ASM_OUTPUT_ALIGN (stream, 2);
   x = GEN_INT ((unsigned HOST_WIDE_INT) 0xff000000 + alignlength);
-  ASM_OUTPUT_INT (stream, x);
+  assemble_aligned_integer (UNITS_PER_WORD, x);
 }
 
 /* Place some comments into the assembler stream
@@ -8508,6 +8526,40 @@ arm_print_operand (stream, x, code)
 	}
     }
 }
+
+#ifndef AOF_ASSEMBLER
+/* Target hook for assembling integer objects.  The ARM version needs to
+   handle word-sized values specially.  */
+
+static bool
+arm_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (size == UNITS_PER_WORD && aligned_p)
+    {
+      fputs ("\t.word\t", asm_out_file);
+      output_addr_const (asm_out_file, x);
+
+      /* Mark symbols as position independent.  We only do this in the
+	 .text segment, not in the .data segment. */
+      if (NEED_GOT_RELOC && flag_pic && making_const_table &&
+	  (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF))
+	{
+	  if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
+	    fputs ("(GOTOFF)", asm_out_file);
+	  else if (GET_CODE (x) == LABEL_REF)
+	    fputs ("(GOTOFF)", asm_out_file);
+	  else
+	    fputs ("(GOT)", asm_out_file);
+	}
+      fputc ('\n', asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
+}
+#endif
 
 /* A finite state machine takes care of noticing whether or not instructions
    can be conditionally executed, and thus decrease execution time and code

@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_ALIGN
 #undef ASM_OUTPUT_ASCII
 #undef ASM_OUTPUT_DOUBLE
-#undef ASM_OUTPUT_INT
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #undef ASM_OUTPUT_LOCAL
 #undef CPP_PREDEFINES
@@ -97,11 +96,6 @@ output_file_directive ((FILE), main_input_filename)
  *  Different syntax for integer constants, double constants, and
  *  uninitialized locals.
  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)				\
-( fprintf (FILE, "\t.double "),					\
-  output_addr_const (FILE, (VALUE)),				\
-  fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_LABELREF_AS_INT(STREAM, NAME)			\
 do {									\

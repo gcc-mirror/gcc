@@ -74,6 +74,14 @@ static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ns32k_attribute_table
 
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+
+#ifdef ENCORE_ASM
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.double\t"
+#endif
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ns32k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

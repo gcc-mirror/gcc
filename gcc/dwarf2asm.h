@@ -23,6 +23,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the way these routines are signaled that there is no associated
    debug information.  So the attributes are commented out.  */
 
+extern void dw2_assemble_integer	PARAMS ((int, rtx));
+
 extern void dw2_asm_output_data		PARAMS ((int, unsigned HOST_WIDE_INT,
 						 const char *, ...))
      /* ATTRIBUTE_PRINTF_3 */;

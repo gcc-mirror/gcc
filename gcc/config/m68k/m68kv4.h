@@ -217,7 +217,7 @@ do {									\
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
   register size_t sp = 0, limit = (LEN);			\
-  fprintf ((FILE), "%s", BYTE_ASM_OP);				\
+  fputs (integer_asm_op (1, TRUE), (FILE));			\
   do {								\
     int ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -232,7 +232,7 @@ do {								\
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n%s", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n%s", integer_asm_op (1, TRUE));	\
 	  }							\
 	else							\
 	  {							\
@@ -308,13 +308,13 @@ int switch_table_difference_label_flag;
 #undef TRAMPOLINE_TEMPLATE
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x227a));	\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));		\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x2f3a));	\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (8));		\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x4e75));	\
-  ASM_OUTPUT_INT (FILE, const0_rtx);		\
-  ASM_OUTPUT_INT (FILE, const0_rtx);		\
+  assemble_aligned_integer (2, GEN_INT (0x227a));			\
+  assemble_aligned_integer (2, GEN_INT (8));				\
+  assemble_aligned_integer (2, GEN_INT (0x2f3a));			\
+  assemble_aligned_integer (2, GEN_INT (8));				\
+  assemble_aligned_integer (2, GEN_INT (0x4e75));			\
+  assemble_aligned_integer (4, const0_rtx);				\
+  assemble_aligned_integer (4, const0_rtx);				\
 }
 
 /* Redefine since we are using a different trampoline */

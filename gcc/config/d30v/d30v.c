@@ -85,6 +85,11 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 enum reg_class reg_class_from_letter[256];
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE d30v_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

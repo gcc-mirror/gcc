@@ -1118,46 +1118,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	fprintf(FILE,"\n");						\
   } while (0)
 
-/* This is how to output an assembler line defining a `char', `short', or
-  `int' constant.
-   1750 NOTE: The reason why this macro also outputs `short' and `int'
-   constants is that for the 1750, BITS_PER_UNIT is 16 (as opposed to the
-   usual 8.) This behavior is different from the usual, where
-   ASM_OUTPUT_CHAR only outputs character constants. The name
-   of this macro should perhaps be `ASM_OUTPUT_QUARTER_INT' or so.
- */
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  do {	  \
-	if (label_pending) 						\
-	   label_pending = 0;						\
-	datalbl[datalbl_ndx].size++;					\
-	fprintf(FILE, "\tdata\t");					\
-	output_addr_const(FILE, VALUE); 				\
-	fprintf(FILE, "\n");						\
-  } while (0)
-
-/* This is how to output an assembler line defining a `long int' constant.
-   1750 NOTE: The reason why this macro outputs `long' instead of `short'
-   constants is that for the 1750, BITS_PER_UNIT is 16 (as opposed to the
-   usual 8.) The name of this macro should perhaps be `ASM_OUTPUT_HALF_INT'.
- */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE) do {	  \
-	if (label_pending)						\
-	   label_pending = 0;						\
-	datalbl[datalbl_ndx].size += 2;					\
-	fprintf(FILE, "\tdatal\t%d\n",INTVAL(VALUE));			\
-  } while (0)
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE) do {	  \
-	if (label_pending)						\
-	   label_pending = 0;						\
-	datalbl[datalbl_ndx].size++;					\
-	fprintf(FILE, "\tdata\t#%x\n", VALUE);				\
-  } while (0)
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

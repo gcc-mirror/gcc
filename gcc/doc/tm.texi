@@ -5810,8 +5810,39 @@ set via @code{__attribute__}.
 @node Data Output
 @subsection Output of Data
 
-@c prevent bad page break with this line
-This describes data output.
+
+@deftypevr {Target Hook} {const char *} TARGET_ASM_BYTE_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_HI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_SI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_DI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_TI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_HI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_SI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_DI_OP
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_TI_OP
+These hooks specify assembly directives for creating certain kinds
+of integer object.  The @code{TARGET_ASM_BYTE_OP} directive creates a
+byte-sized object, the @code{TARGET_ASM_ALIGNED_HI_OP} one creates an
+aligned two-byte object, and so on.  Any of the hooks may be
+@code{NULL}, indicating that no suitable directive is available.
+
+The compiler will print these strings at the start of a new line,
+followed immediately by the object's initial value.  In most cases,
+the string should contain a tab, a pseudo-op, and then another tab.
+@end deftypevr
+
+@deftypefn {Target Hook} bool TARGET_ASM_INTEGER (rtx @var{x}, unsigned int @var{size}, int @var{aligned_p})
+The @code{assemble_integer} function uses this hook to output an
+integer object.  @var{x} is the object's value, @var{size} is its size
+in bytes and @var{aligned_p} indicates whether it is aligned.  The
+function should return @code{true} if it was able to output the
+object.  If it returns false, @code{assemble_integer} will try to
+split the object into smaller parts.
+
+The default implementation of this hook will use the
+@code{TARGET_ASM_BYTE_OP} family of strings, returning @code{false}
+when the relevant string is @code{NULL}.
+@end deftypefn
 
 @table @code
 @findex ASM_OUTPUT_LONG_DOUBLE
@@ -5831,29 +5862,6 @@ will be a C expression of type @code{REAL_VALUE_TYPE}.  Macros such as
 @code{REAL_VALUE_TO_TARGET_DOUBLE} are useful for writing these
 definitions.
 
-@findex ASM_OUTPUT_QUADRUPLE_INT
-@findex ASM_OUTPUT_DOUBLE_INT
-@findex ASM_OUTPUT_INT
-@findex ASM_OUTPUT_SHORT
-@findex ASM_OUTPUT_CHAR
-@findex output_addr_const
-@item ASM_OUTPUT_QUADRUPLE_INT (@var{stream}, @var{exp})
-@itemx ASM_OUTPUT_DOUBLE_INT (@var{stream}, @var{exp})
-@itemx ASM_OUTPUT_INT (@var{stream}, @var{exp})
-@itemx ASM_OUTPUT_SHORT (@var{stream}, @var{exp})
-@itemx ASM_OUTPUT_CHAR (@var{stream}, @var{exp})
-A C statement to output to the stdio stream @var{stream} an assembler
-instruction to assemble an integer of 16, 8, 4, 2 or 1 bytes,
-respectively, whose value is @var{value}.  The argument @var{exp} will
-be an RTL expression which represents a constant value.  Use
-@samp{output_addr_const (@var{stream}, @var{exp})} to output this value
-as an assembler expression.
-
-For sizes larger than @code{UNITS_PER_WORD}, if the action of a macro
-would be identical to repeatedly calling the macro corresponding to
-a size of @code{UNITS_PER_WORD}, once for each word, you need not define
-the macro.
-
 @findex OUTPUT_ADDR_CONST_EXTRA
 @item OUTPUT_ADDR_CONST_EXTRA (@var{stream}, @var{x}, @var{fail})
 A C statement to recognize @var{rtx} patterns that
@@ -5865,29 +5873,6 @@ If @code{OUTPUT_ADDR_CONST_EXTRA} fails to recognize a pattern, it must
 @code{goto fail}, so that a standard error message is printed.  If it
 prints an error message itself, by calling, for example,
 @code{output_operand_lossage}, it may just complete normally.
-
-@findex ASM_OUTPUT_BYTE
-@item ASM_OUTPUT_BYTE (@var{stream}, @var{value})
-A C statement to output to the stdio stream @var{stream} an assembler
-instruction to assemble a single byte containing the number @var{value}.
-
-@findex ASM_BYTE_OP
-@item ASM_BYTE_OP
-A C string constant, including spacing, giving the pseudo-op to use for a
-sequence of single-byte constants.  If this macro is not defined, the
-default is @code{"\t.byte\t"}.
-
-@findex UNALIGNED_SHORT_ASM_OP
-@findex UNALIGNED_INT_ASM_OP
-@findex UNALIGNED_DOUBLE_INT_ASM_OP
-@item UNALIGNED_SHORT_ASM_OP
-@itemx UNALIGNED_INT_ASM_OP
-@itemx UNALIGNED_DOUBLE_INT_ASM_OP
-A C string constant, including spacing, giving the pseudo-op to use
-to assemble 16-, 32-, and 64-bit integers respectively @emph{without}
-adding implicit padding or alignment.  These macros are required if
-DWARF 2 frame unwind is used.  On ELF systems, these will default
-to @code{.2byte}, @code{.4byte}, and @code{.8byte}.
 
 @findex ASM_OUTPUT_ASCII
 @item ASM_OUTPUT_ASCII (@var{stream}, @var{ptr}, @var{len})

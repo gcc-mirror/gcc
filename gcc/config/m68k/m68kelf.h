@@ -183,7 +183,7 @@ do {								\
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
   register int sp = 0, ch;					\
-  fprintf ((FILE), "%s", BYTE_ASM_OP);				\
+  fputs (integer_asm_op (1, TRUE), (FILE));			\
   do {								\
     ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -198,7 +198,7 @@ do {								\
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n%s", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n%s", integer_asm_op (1, TRUE));	\
 	  }							\
 	else							\
 	  {							\

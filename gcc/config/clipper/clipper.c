@@ -54,6 +54,9 @@ extern int frame_pointer_needed;
 static int frame_size;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE clipper_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

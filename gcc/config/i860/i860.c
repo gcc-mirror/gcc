@@ -2003,6 +2003,9 @@ i860_output_function_epilogue (asm_file, local_bytes)
   register unsigned mask;
   unsigned intflags=0;
   register TDESC_flags *flags = (TDESC_flags *) &intflags;
+#ifdef	OUTPUT_TDESC	/* Output an ABI-compliant TDESC entry */
+  const char *long_op = integer_asm_op (4, TRUE);
+#endif
 
   flags->version = 4;
   flags->reg_packing = 1;
@@ -2092,23 +2095,23 @@ i860_output_function_epilogue (asm_file, local_bytes)
   }
   assemble_name(asm_file,current_function_original_name);
   fputs(".TDESC:\n", asm_file);
-  fprintf(asm_file, "%s 0x%0x\n", ASM_LONG, intflags);
-  fprintf(asm_file, "%s %d\n", ASM_LONG,
+  fprintf(asm_file, "%s 0x%0x\n", long_op, intflags);
+  fprintf(asm_file, "%s %d\n", long_op,
 	int_restored ? must_preserve_bytes : 0);
   if (flags->version > 1) {
-    fprintf(asm_file, "%s %d\n", ASM_LONG,
+    fprintf(asm_file, "%s %d\n", long_op,
 	(restored_so_far == int_restored) ? 0 : must_preserve_bytes +
 	  (4 * int_restored));
     if (flags->version > 2) {
-      fprintf(asm_file, "%s %d\n", ASM_LONG, frame_upper_bytes);
+      fprintf(asm_file, "%s %d\n", long_op, frame_upper_bytes);
       if (flags->version > 3)
-	fprintf(asm_file, "%s %d\n", ASM_LONG, frame_lower_bytes);
+	fprintf(asm_file, "%s %d\n", long_op, frame_lower_bytes);
     }
   }
   tdesc_section();
-  fprintf(asm_file, "%s ", ASM_LONG);
+  fprintf(asm_file, "%s ", long_op);
   assemble_name(asm_file, current_function_original_name);
-  fprintf(asm_file, "\n%s ", ASM_LONG);
+  fprintf(asm_file, "\n%s ", long_op);
   assemble_name(asm_file, current_function_original_name);
   fputs(".TDESC\n", asm_file);
   text_section();

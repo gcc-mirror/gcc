@@ -40,11 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF_DEBUGGING_INFO 1
 #endif
 
-/* MCore defines .long and .short to NOT force any alignment.
-   This lets you misalign as much as you wish.  */
-#define	UNALIGNED_INT_ASM_OP	"\t.long\t"
-#define	UNALIGNED_SHORT_ASM_OP	"\t.short\t"
-
 #define EXPORTS_SECTION_ASM_OP	"\t.section .exports"
 
 #define SUBTARGET_EXTRA_SECTIONS in_const, in_exports

@@ -67,6 +67,8 @@ static void count_tst_insns PARAMS ((int *));
 static int out_of_line_epilogue;
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

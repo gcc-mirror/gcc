@@ -59,6 +59,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/m68k.h"
 
+#undef INT_OP_GROUP
+#define INT_OP_GROUP INT_OP_NO_DOT
+
 /* See m68k.h.  7 means 68020 with 68881.  */
 
 #ifndef TARGET_DEFAULT
@@ -164,10 +167,6 @@ Boston, MA 02111-1307, USA.  */
 #undef READONLY_DATA_SECTION
 #undef ASM_OUTPUT_DOUBLE
 #undef ASM_OUTPUT_FLOAT
-#undef ASM_OUTPUT_INT
-#undef ASM_OUTPUT_SHORT
-#undef ASM_OUTPUT_CHAR
-#undef ASM_OUTPUT_BYTE
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #undef ASM_OUTPUT_ALIGN
@@ -286,30 +285,6 @@ do { long l[3];								\
      fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
    } while (0)
   
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\tlong "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\tshort "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\tbyte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tbyte 0x%x\n", (int)(VALUE))
-
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%d\n", VALUE)
 

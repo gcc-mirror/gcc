@@ -624,12 +624,6 @@ do {									\
 /* We support #pragma.  */
 #define HANDLE_SYSV_PRAGMA
 
-/* Undo the auto-alignment stuff from alpha.h.  ELF has unaligned data
-   pseudos natively.  */
-#undef UNALIGNED_SHORT_ASM_OP
-#undef UNALIGNED_INT_ASM_OP
-#undef UNALIGNED_DOUBLE_INT_ASM_OP
-
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.

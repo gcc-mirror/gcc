@@ -1099,25 +1099,6 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
   fprintf (FILE, "\tfloat %.12e\n", (VALUE))
 
-/* Likewise for `short' and `char' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, TARGET_UNIX_ASM ? "\t" : "\t.word "),	\
-  output_addr_const_pdp11 (FILE, (VALUE)),		\
-  fprintf (FILE, " /*short*/\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const_pdp11 (FILE, (VALUE)),		\
-  fprintf (FILE, " /* char */\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.
-   This won't actually be used since we define ASM_OUTPUT_CHAR.
-*/
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte %o\n", (VALUE))
-
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, P, SIZE)
 
@@ -1228,10 +1209,10 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
   if (TARGET_SPLIT)			\
     abort();				\
 					\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT (0x9400+STATIC_CHAIN_REGNUM)); \
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);				\
-  ASM_OUTPUT_SHORT (FILE, GEN_INT(0x0058));			\
-  ASM_OUTPUT_SHORT (FILE, const0_rtx);				\
+  assemble_aligned_integer (2, GEN_INT (0x9400+STATIC_CHAIN_REGNUM));	\
+  assemble_aligned_integer (2, const0_rtx);				\
+  assemble_aligned_integer (2, GEN_INT(0x0058));			\
+  assemble_aligned_integer (2, const0_rtx);				\
 }
 
 #define TRAMPOLINE_SIZE 8

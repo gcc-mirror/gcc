@@ -159,8 +159,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_UNDEF_FUNCTION
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 #undef ASM_DECLARE_FUNCTION_SIZE
-#undef UNALIGNED_SHORT_ASM_OP
-#undef UNALIGNED_INT_ASM_OP
 
 /* Stuff we need for Irix 6 that isn't in Irix 5.  */
 

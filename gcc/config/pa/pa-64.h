@@ -91,20 +91,6 @@ Boston, MA 02111-1307, USA.  */
 #undef STATIC_CHAIN_REGNUM
 #define STATIC_CHAIN_REGNUM 31
 
-/* This is not needed for correct operation in 32bit mode, and since
-   older versions of gas and the hpux assembler do not accept .dword
-   we put this here instead of the more logical location, pa.h.  */
-#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE) \
-  do								\
-    {								\
-      fputs ("\t.dword ", FILE);				\
-      if (function_label_operand (VALUE, VOIDmode))		\
-	fputs ("P%", FILE);					\
-      output_addr_const (FILE, (VALUE));			\
-      fputs ("\n", FILE);					\
-    }								\
-  while (0)
-
 /* Nonzero if we do not know how to pass TYPE solely in registers.  */
 #define MUST_PASS_IN_STACK(MODE,TYPE) \
   ((TYPE) != 0							\

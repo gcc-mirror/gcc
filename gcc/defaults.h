@@ -62,7 +62,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
-do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
+do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
      ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", (VALUE));			\
      fputc ('\n', FILE);						\
    } while (0)
@@ -398,23 +398,6 @@ do {								\
 
 #ifndef TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER
 #define TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER true
-#endif
-
-/* GAS and SYSV4 assemblers accept these.  */
-#if defined (OBJECT_FORMAT_ELF) || defined (OBJECT_FORMAT_ROSE)
-#ifndef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP		"\t.2byte\t"
-#endif
-#ifndef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP		"\t.4byte\t"
-#endif
-#ifndef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.8byte\t"
-#endif
-#endif /* OBJECT_FORMAT_ELF || OBJECT_FORMAT_ROSE */
-
-#ifndef ASM_BYTE_OP
-#define ASM_BYTE_OP			"\t.byte\t"
 #endif
 
 #ifndef DEFAULT_GDB_EXTENSIONS

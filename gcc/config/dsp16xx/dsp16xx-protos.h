@@ -78,7 +78,6 @@ extern int initial_frame_pointer_offset PARAMS ((void));
 extern void asm_output_common PARAMS ((FILE *, const char *, int, int));
 extern void asm_output_local PARAMS ((FILE *, const char *, int, int));
 extern void asm_output_float PARAMS ((FILE *, double));
-extern void asm_output_long PARAMS ((FILE *, long));
 extern void dsp16xx_file_start PARAMS ((void));
 extern void coff_dsp16xx_file_start PARAMS ((FILE *));
 extern void luxworks_dsp16xx_file_start PARAMS ((FILE *));

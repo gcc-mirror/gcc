@@ -1401,30 +1401,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  i960_output_float(FILE, VALUE)
 
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.short "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)	\
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
-
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
   fprintf (FILE, "\tst\t%s,(sp)\n\taddo\t4,sp,sp\n", reg_names[REGNO])
 
@@ -1558,11 +1534,11 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 
 #define TRAMPOLINE_TEMPLATE(FILE)					\
 {									\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x8C203000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x8CE03000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x00000000));	\
-  ASM_OUTPUT_INT (FILE, GEN_INT (0x84212000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x8C203000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x00000000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x8CE03000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x00000000));	\
+  assemble_aligned_integer (UNITS_PER_WORD, GEN_INT (0x84212000));	\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */

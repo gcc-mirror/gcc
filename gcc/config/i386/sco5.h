@@ -35,9 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP		"\t.ascii\t"
 
-#undef ASM_BYTE_OP
-#define ASM_BYTE_OP			"\t.byte\t"
-
 #undef IDENT_ASM_OP
 #define IDENT_ASM_OP			"\t.ident\t"
 
@@ -57,7 +54,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_LONG			"\t.long\t"
 
 #undef ASM_QUAD
-#undef ASM_OUTPUT_DOUBLE_INT
 
 #undef TYPE_ASM_OP
 #define TYPE_ASM_OP			"\t.type\t"
@@ -349,7 +345,7 @@ do {									\
 	  else								\
 	    {								\
 	      if (bytes_in_chunk == 0)					\
-		fprintf ((FILE), "%s", ASM_BYTE_OP);			\
+		fputs ("\t.byte\t", (FILE));				\
 	      else							\
 		fputc (',', (FILE));					\
 	      fprintf ((FILE), "0x%02x", *_ascii_bytes);		\
@@ -846,7 +842,7 @@ do {									\
   do {									\
     if ((SIZE) == 4 && ((ENCODING) & 0x70) == DW_EH_PE_datarel)		\
       {									\
-        fputs (UNALIGNED_INT_ASM_OP, FILE);				\
+        fputs (ASM_LONG, FILE);						\
         assemble_name (FILE, XSTR (ADDR, 0));				\
 	fputs (((ENCODING) & DW_EH_PE_indirect ? "@GOT" : "@GOTOFF"), FILE); \
         goto DONE;							\

@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_BYTE_OP "\t.byte\t"
 #define ASM_SHORT "\t.value\t"
 #define ASM_LONG "\t.long\t"
 #define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
@@ -46,7 +45,7 @@ do								\
 { size_t i = 0, limit = (SIZE); 				\
   while (i < limit)						\
     { if (i%10 == 0) { if (i!=0) fprintf ((FILE), "\n");	\
-		       fprintf ((FILE), "%s", ASM_BYTE_OP); }	\
+		       fputs ("\t.byte\t", (FILE)); }		\
       else fprintf ((FILE), ",");				\
       fprintf ((FILE), "0x%x", ((PTR)[i++] & 0377)) ;}		\
       fprintf ((FILE), "\n");					\

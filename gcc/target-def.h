@@ -32,6 +32,28 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* Assembler output.  */
 #define TARGET_ASM_OPEN_PAREN "("
 #define TARGET_ASM_CLOSE_PAREN ")"
+#define TARGET_ASM_BYTE_OP "\t.byte\t"
+
+#define TARGET_ASM_ALIGNED_HI_OP "\t.short\t"
+#define TARGET_ASM_ALIGNED_SI_OP "\t.long\t"
+#define TARGET_ASM_ALIGNED_DI_OP NULL
+#define TARGET_ASM_ALIGNED_TI_OP NULL
+
+/* GAS and SYSV4 assemblers accept these.  */
+#if defined (OBJECT_FORMAT_ELF) || defined (OBJECT_FORMAT_ROSE)
+#define TARGET_ASM_UNALIGNED_HI_OP "\t.2byte\t"
+#define TARGET_ASM_UNALIGNED_SI_OP "\t.4byte\t"
+#define TARGET_ASM_UNALIGNED_DI_OP "\t.8byte\t"
+#define TARGET_ASM_UNALIGNED_TI_OP NULL
+#else
+#define TARGET_ASM_UNALIGNED_HI_OP NULL
+#define TARGET_ASM_UNALIGNED_SI_OP NULL
+#define TARGET_ASM_UNALIGNED_DI_OP NULL
+#define TARGET_ASM_UNALIGNED_TI_OP NULL
+#endif /* OBJECT_FORMAT_ELF || OBJECT_FORMAT_ROSE */
+
+#define TARGET_ASM_INTEGER default_assemble_integer
+
 #define TARGET_ASM_FUNCTION_PROLOGUE default_function_pro_epilogue
 #define TARGET_ASM_FUNCTION_EPILOGUE default_function_pro_epilogue
 #define TARGET_ASM_FUNCTION_END_PROLOGUE no_asm_to_stream
@@ -84,8 +106,24 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_EH_FRAME_SECTION default_eh_frame_section
 #endif
 
+#define TARGET_ASM_ALIGNED_INT_OP				\
+		       {TARGET_ASM_ALIGNED_HI_OP,		\
+			TARGET_ASM_ALIGNED_SI_OP,		\
+			TARGET_ASM_ALIGNED_DI_OP,		\
+			TARGET_ASM_ALIGNED_TI_OP}
+
+#define TARGET_ASM_UNALIGNED_INT_OP				\
+		       {TARGET_ASM_UNALIGNED_HI_OP,		\
+			TARGET_ASM_UNALIGNED_SI_OP,		\
+			TARGET_ASM_UNALIGNED_DI_OP,		\
+			TARGET_ASM_UNALIGNED_TI_OP}
+
 #define TARGET_ASM_OUT {TARGET_ASM_OPEN_PAREN,			\
 			TARGET_ASM_CLOSE_PAREN,			\
+			TARGET_ASM_BYTE_OP,			\
+			TARGET_ASM_ALIGNED_INT_OP,		\
+			TARGET_ASM_UNALIGNED_INT_OP,		\
+			TARGET_ASM_INTEGER,			\
 			TARGET_ASM_FUNCTION_PROLOGUE,		\
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\

@@ -113,7 +113,7 @@ extern const char *current_function_original_name;
 	          fprintf ((FILE), "\"\n");				\
 	          bytes_in_chunk = 0;					\
 	        }							\
-	      fprintf ((FILE), "%s%d\n", ASM_BYTE_OP, ch);		\
+	      assemble_aligned_integer (1, GEN_INT (ch));		\
 	    }								\
           else								\
 	    {								\

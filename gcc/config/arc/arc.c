@@ -89,10 +89,18 @@ static void arc_init_reg_tables PARAMS ((void));
 static int get_arc_condition_code PARAMS ((rtx));
 const struct attribute_spec arc_attribute_table[];
 static tree arc_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static bool arc_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void arc_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void arc_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER arc_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arc_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -1105,6 +1113,28 @@ arc_save_restore (file, base_reg, offset, gmask, op)
 	  offset += UNITS_PER_WORD;
 	}
     }
+}
+
+/* Target hook to assemble an integer object.  The ARC version needs to
+   emit a special directive for references to labels and function
+   symbols.  */
+
+static bool
+arc_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (size == UNITS_PER_WORD && aligned_p
+      && ((GET_CODE (x) == SYMBOL_REF && SYMBOL_REF_FLAG (x))
+	  || GET_CODE (x) == LABEL_REF))
+    {
+      fputs ("\t.word\t%st(", asm_out_file);
+      output_addr_const (asm_out_file, x);
+      fputs (")\n", asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 /* Set up the stack and frame pointer (if desired) for the function.  */

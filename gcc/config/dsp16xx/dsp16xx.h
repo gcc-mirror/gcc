@@ -1648,21 +1648,6 @@ const_section ()                                                   \
    size HFmode.  */
 #define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE)  asm_output_float (FILE, VALUE)
 
-/* This is how to output an assembler line defining an `char' constant.  */
-#define ASM_OUTPUT_CHAR(FILE,VALUE)              \
-( fprintf (FILE, "\tint "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line defining an `short' constant.  */
-#define ASM_OUTPUT_SHORT(FILE,EXP)   asm_output_long(FILE,INTVAL(EXP))
-
-/* This is how to output an assembler line defining a 'int' constant.  */
-#define ASM_OUTPUT_INT(FILE, EXP)    asm_output_long(FILE,INTVAL(EXP))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_BYTE(FILE,VALUE)    ASM_OUTPUT_CHAR(FILE,GEN_INT(VALUE))
-
 /* This is how we output a 'c' character string. For the 16xx
    assembler we have to do it one letter at a time */
 

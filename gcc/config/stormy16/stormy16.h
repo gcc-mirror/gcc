@@ -3572,57 +3572,6 @@ do { char dstr[30];                                     \
 /* #define ASM_OUTPUT_BYTE_FLOAT(STREAM, VALUE) */
 
 /* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble an integer of 16, 8, 4, 2 or 1 bytes, respectively, whose value
-   is VALUE.  The argument EXP will be an RTL expression which represents a
-   constant value.  Use `output_addr_const (STREAM, EXP)' to output this value
-   as an assembler expression.
-
-   For sizes larger than `UNITS_PER_WORD', if the action of a macro would be
-   identical to repeatedly calling the macro corresponding to a size of
-   `UNITS_PER_WORD', once for each word, you need not define the macro.  */
-/* #define ASM_OUTPUT_QUADRUPLE_INT(STREAM, EXP) */
-/* #define ASM_OUTPUT_DOUBLE_INT(STREAM, EXP) */
-
-/* This is how to output an assembler line defining a `char' constant.  */
-#define ASM_OUTPUT_CHAR(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "\t.byte\t");						\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining a `short' constant.  */
-#define ASM_OUTPUT_SHORT(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "\t.hword\t");						\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining an `int' constant.
-   We also handle symbol output here.  */
-#define ASM_OUTPUT_INT(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "\t.word\t");						\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a single byte containing the number VALUE.
-
-   This declaration must be present.  */
-#define ASM_OUTPUT_BYTE(STREAM, VALUE) \
-  fprintf (STREAM, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
-
-/* A C string constant giving the pseudo-op to use for a sequence of
-   single-byte constants.  If this macro is not defined, the default
-   is `"byte"'.
-
-   Defined in svr4.h.  */
-/* #define ASM_BYTE_OP */
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
    to assemble a string constant containing the LEN bytes at PTR.  PTR will be
    a C expression of type `char *' and LEN a C expression of type `int'.
 
@@ -4397,8 +4346,7 @@ do {									\
 /* Define this macro to 0 if your target supports DWARF 2 frame unwind
    information, but it does not yet work with exception handling.  Otherwise,
    if your target supports this information (if it defines
-   `INCOMING_RETURN_ADDR_RTX' and either `UNALIGNED_INT_ASM_OP' or
-   `OBJECT_FORMAT_ELF'), GCC will provide a default definition of 1.
+   `INCOMING_RETURN_ADDR_RTX'), GCC will provide a default definition of 1.
 
    If this macro is defined to 1, the DWARF 2 unwinder will be the default
    exception handling mechanism; otherwise, setjmp/longjmp will be used by

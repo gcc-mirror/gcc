@@ -1579,7 +1579,8 @@ do {                                                                    \
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
 do { long l[2];								\
      REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
-     fprintf (FILE, "\t%s\t0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);	\
+     fprintf (FILE, "\t%s\t0x%lx,0x%lx\n",				\
+	      integer_asm_op (4, TRUE), l[0], l[1]);			\
    } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
@@ -1587,29 +1588,8 @@ do { long l[2];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     fprintf ((FILE), "\t%s\t0x%lx\n", ASM_LONG, l);	\
+     assemble_aligned_integer (4, GEN_INT (l));		\
    } while (0)
-
-/* This is how to output an assembler line defining a `long' constant.  */
-#define ASM_OUTPUT_INT(FILE,VALUE)		        \
-( fprintf (FILE, "\t%s\t", ASM_LONG),			\
-  output_addr_const (FILE, (VALUE)),			\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-#define ASM_OUTPUT_SHORT(FILE,VALUE)			\
-( fprintf (FILE, "\t%s\t", ASM_SHORT),			\
-  output_addr_const (FILE, (VALUE)),			\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_CHAR(FILE,VALUE)			\
-( fprintf (FILE, "%s", ASM_BYTE_OP),			\
-  output_addr_const (FILE, (VALUE)),			\
-  putc ('\n', FILE))
-
-#define ASM_OUTPUT_BYTE(FILE,VALUE)			\
-  fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -1700,11 +1680,11 @@ do { long l;						\
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  asm_fprintf (FILE, "\t%s\tL%d-L%d\n", ASM_SHORT, VALUE, REL)
+  asm_fprintf (FILE, "\t%s\tL%d-L%d\n", integer_asm_op (2, TRUE), VALUE, REL)
 
 /* This is how to output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  asm_fprintf (FILE, "\t%s\t.L%d\n", ASM_SHORT, VALUE)
+  asm_fprintf (FILE, "\t%s\t.L%d\n", integer_asm_op (2, TRUE), VALUE)
 
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */
@@ -1733,8 +1713,6 @@ do { long l;						\
 /* The prefix for immediate operands.  */
 #define IMMEDIATE_PREFIX "#"
 #define GLOBAL_ASM_OP   "\t.globl\t"
-#define ASM_LONG        ".long"
-#define ASM_SHORT       ".word"
 
 
 /* Miscellaneous Parameters.  */

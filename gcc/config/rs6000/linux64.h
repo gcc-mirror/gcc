@@ -274,29 +274,8 @@ do {						\
 	       || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT		\
 		   && ! TARGET_NO_FP_IN_TOC)))))
 
-/* This is how to output an assembler line defining an `int'
-   constant.  */
-#undef  ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE, VALUE)            \
-  do                                           \
-    {                                          \
-      fputs ("\t.long ", (FILE));              \
-      output_addr_const ((FILE), (VALUE));     \
-      putc ('\n', (FILE));                     \
-    }                                          \
-  while (0)
-
-/* This is how to output an assembler line defining a `double int'
-   constant.  */
-#undef  ASM_OUTPUT_DOUBLE_INT
-#define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)     \
-  do                                           \
-    {                                          \
-      fputs (DOUBLE_INT_ASM_OP, (FILE));       \
-      output_addr_const ((FILE), (VALUE));     \
-      putc ('\n', (FILE));                     \
-    }                                          \
-  while (0)
-
 #undef  ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc64"
+
+/* We don't need to generate entries in .fixup.  */
+#undef RELOCATABLE_NEEDS_FIXUP

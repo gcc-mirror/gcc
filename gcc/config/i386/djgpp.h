@@ -62,18 +62,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TEXT_SECTION_ASM_OP
 #define TEXT_SECTION_ASM_OP "\t.section .text"
 
-/* How to output an unaligned integer.  */
-#undef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP "\t.long\t"
-
-/* How to output an unaligned double length integer.  */
-#undef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP "\t.quad\t"
-
-/* How to output an unaligned half length intenger.  */
-#undef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP "\t.short\t"
-
 /* Define standard DJGPP installation paths.                             */
 /* We override default /usr or /usr/local part with /dev/env/DJDIR which */
 /* points to actual DJGPP instalation directory.                         */

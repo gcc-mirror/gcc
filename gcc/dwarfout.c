@@ -574,6 +574,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
+#include "dwarf2asm.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "debug.h"
@@ -928,7 +929,8 @@ static void shuffle_filename_entry	PARAMS ((filename_entry *));
 static void generate_new_sfname_entry	PARAMS ((void));
 static unsigned lookup_filename		PARAMS ((const char *));
 static void generate_srcinfo_entry	PARAMS ((unsigned, unsigned));
-static void generate_macinfo_entry	PARAMS ((const char *, const char *));
+static void generate_macinfo_entry	PARAMS ((unsigned int, rtx,
+						 const char *));
 static int is_pseudo_reg		PARAMS ((rtx));
 static tree type_main_variant		PARAMS ((tree));
 static int is_tagged_type		PARAMS ((tree));
@@ -1207,147 +1209,77 @@ static void retry_incomplete_types	PARAMS ((void));
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "%s", UNALIGNED_SHORT_ASM_OP);			\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "-");						\
-	assemble_name (FILE, LABEL2);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+  dw2_asm_output_delta (2, LABEL1, LABEL2, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DELTA4
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
-	assemble_name (FILE, LABEL1);					\
-	fprintf (FILE, "-");						\
-	assemble_name (FILE, LABEL2);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+  dw2_asm_output_delta (4, LABEL1, LABEL2, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_TAG
 #define ASM_OUTPUT_DWARF_TAG(FILE,TAG)					\
-  do {									\
-    fprintf ((FILE), "%s0x%x",						\
-		     UNALIGNED_SHORT_ASM_OP, (unsigned) TAG);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_tag_name (TAG));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (2, TAG, "%s", dwarf_tag_name (TAG));
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ATTRIBUTE
 #define ASM_OUTPUT_DWARF_ATTRIBUTE(FILE,ATTR)				\
-  do {									\
-    fprintf ((FILE), "%s0x%x",						\
-		     UNALIGNED_SHORT_ASM_OP, (unsigned) ATTR);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_attr_name (ATTR));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (2, ATTR, "%s", dwarf_attr_name (ATTR))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_STACK_OP
 #define ASM_OUTPUT_DWARF_STACK_OP(FILE,OP)				\
-  do {									\
-    fprintf ((FILE), "%s0x%x", ASM_BYTE_OP, (unsigned) OP);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_stack_op_name (OP));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (1, OP, "%s", dwarf_stack_op_name (OP))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_FUND_TYPE
 #define ASM_OUTPUT_DWARF_FUND_TYPE(FILE,FT)				\
-  do {									\
-    fprintf ((FILE), "%s0x%x",						\
-		     UNALIGNED_SHORT_ASM_OP, (unsigned) FT);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_fund_type_name (FT));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (2, FT, "%s", dwarf_fund_type_name (FT))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_FMT_BYTE
 #define ASM_OUTPUT_DWARF_FMT_BYTE(FILE,FMT)				\
-  do {									\
-    fprintf ((FILE), "%s0x%x", ASM_BYTE_OP, (unsigned) FMT);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_fmt_byte_name (FMT));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (1, FMT, "%s", dwarf_fmt_byte_name (FMT));
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_TYPE_MODIFIER
 #define ASM_OUTPUT_DWARF_TYPE_MODIFIER(FILE,MOD)			\
-  do {									\
-    fprintf ((FILE), "%s0x%x", ASM_BYTE_OP, (unsigned) MOD);		\
-    if (flag_debug_asm)							\
-      fprintf ((FILE), "\t%s %s",					\
-		       ASM_COMMENT_START, dwarf_typemod_name (MOD));	\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_data (1, MOD, "%s", dwarf_typemod_name (MOD));
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
-	assemble_name (FILE, LABEL);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+  dw2_asm_output_addr (4, LABEL, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
-  do {									\
-    fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
-    output_addr_const ((FILE), (RTX));					\
-    fputc ('\n', (FILE));						\
-  } while (0)
+  dw2_asm_output_addr_rtx (4, RTX, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_REF
 #define ASM_OUTPUT_DWARF_REF(FILE,LABEL)				\
- do {	fprintf ((FILE), "%s", UNALIGNED_INT_ASM_OP);			\
-	assemble_name (FILE, LABEL);					\
-	fprintf (FILE, "\n");						\
-  } while (0)
+  dw2_asm_output_addr (4, LABEL, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA1
 #define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, VALUE)
+  dw2_asm_output_data (1, VALUE, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "%s0x%x\n", UNALIGNED_SHORT_ASM_OP, (unsigned) VALUE)
+  dw2_asm_output_data (2, VALUE, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "%s0x%x\n", UNALIGNED_INT_ASM_OP, (unsigned) VALUE)
+  dw2_asm_output_data (4, VALUE, NULL)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA8
 #define ASM_OUTPUT_DWARF_DATA8(FILE,HIGH_VALUE,LOW_VALUE)		\
-  do {									\
-    if (WORDS_BIG_ENDIAN)						\
-      {									\
-	fprintf ((FILE), "%s0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
-	fprintf ((FILE), "%s0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);	\
-      }									\
-    else								\
-      {									\
-	fprintf ((FILE), "%s0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);	\
-	fprintf ((FILE), "%s0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
-      }									\
-  } while (0)
+  dw2_asm_output_data (8, VALUE, NULL)
 #endif
 
 /* ASM_OUTPUT_DWARF_STRING is defined to output an ascii string, but to
@@ -1757,11 +1689,8 @@ output_unsigned_leb128 (value)
       value >>= 7;
       if (value != 0)	/* more bytes to follow */
 	byte |= 0x80;
-      fprintf (asm_out_file, "%s0x%x", ASM_BYTE_OP, (unsigned) byte);
-      if (flag_debug_asm && value == 0)
-	fprintf (asm_out_file, "\t%s ULEB128 number - value = %lu",
-		 ASM_COMMENT_START, orig_value);
-      fputc ('\n', asm_out_file);
+      dw2_asm_output_data (1, byte, "\t%s ULEB128 number - value = %lu",
+			   orig_value);
     }
   while (value != 0);
 }
@@ -1789,11 +1718,8 @@ output_signed_leb128 (value)
 	  byte |= 0x80;
 	  more = 1;
 	}
-      fprintf (asm_out_file, "%s0x%x", ASM_BYTE_OP, (unsigned) byte);
-      if (flag_debug_asm && more == 0)
-	fprintf (asm_out_file, "\t%s SLEB128 number - value = %ld",
-		 ASM_COMMENT_START, orig_value);
-      fputc ('\n', asm_out_file);
+      dw2_asm_output_data (1, byte, "\t%s SLEB128 number - value = %ld",
+			   orig_value);
     }
   while (more);
 }
@@ -2168,8 +2094,7 @@ output_reg_number (rtl)
 			 regno);
       regno = 0;
     }
-  fprintf (asm_out_file, "%s0x%x",
-	   UNALIGNED_INT_ASM_OP, DBX_REGISTER_NUMBER (regno));
+  dw2_assemble_integer (4, GEN_INT (DBX_REGISTER_NUMBER (regno)));
   if (flag_debug_asm)
     {
       fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
@@ -6160,9 +6085,7 @@ dwarfout_source_line (line, filename)
           filename = tail;
       }
 
-      fprintf (asm_out_file, "%s%u\t%s %s:%u\n",
-	       UNALIGNED_INT_ASM_OP, line, ASM_COMMENT_START,
-	       filename, line);
+      dw2_asm_output_data (4, line, "%s:%u", filename, line);
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0xffff);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, label, TEXT_BEGIN_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
@@ -6176,8 +6099,9 @@ dwarfout_source_line (line, filename)
 /* Generate an entry in the .debug_macinfo section.  */
 
 static void
-generate_macinfo_entry (type_and_offset, string)
-     const char *type_and_offset;
+generate_macinfo_entry (type, offset, string)
+     unsigned int type;
+     rtx offset;
      const char *string;
 {
   if (! use_gnu_debug_info_extensions)
@@ -6185,7 +6109,8 @@ generate_macinfo_entry (type_and_offset, string)
 
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
-  fprintf (asm_out_file, "%s%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
+  assemble_integer (gen_rtx_PLUS (SImode, GEN_INT (type << 24), offset),
+		    4, BITS_PER_UNIT, 1);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, string);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 }
@@ -6206,15 +6131,16 @@ dwarfout_start_source_file (line, filename)
      const char *filename;
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*3];
+  const char *label1, *label2;
 
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, lookup_filename (filename));
-  sprintf (type_and_offset, "0x%08x+%s-%s",
-	   ((unsigned) MACINFO_start << 24),
-	   /* Hack: skip leading '*' .  */
-	   (*label == '*') + label,
-	   (*SFNAMES_BEGIN_LABEL == '*') + SFNAMES_BEGIN_LABEL);
-  generate_macinfo_entry (type_and_offset, "");
+  label1 = (*label == '*') + label;
+  label2 = (*SFNAMES_BEGIN_LABEL == '*') + SFNAMES_BEGIN_LABEL;
+  generate_macinfo_entry (MACINFO_start,
+			  gen_rtx_MINUS (Pmode,
+					 gen_rtx_SYMBOL_REF (Pmode, label1),
+					 gen_rtx_SYMBOL_REF (Pmode, label2)),
+			  "");
 }
 
 /* Wrapper for toplev.c callback to check debug info level.  */
@@ -6230,11 +6156,7 @@ static void
 dwarfout_end_source_file (lineno)
      unsigned lineno;
 {
-  char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
-
-  sprintf (type_and_offset, "0x%08x+%u",
-	   ((unsigned) MACINFO_resume << 24), lineno);
-  generate_macinfo_entry (type_and_offset, "");
+  generate_macinfo_entry (MACINFO_resume, GEN_INT (lineno), "");
 }
 
 /* Called from check_newline in c-parse.y.  The `buffer' parameter
@@ -6248,16 +6170,13 @@ dwarfout_define (lineno, buffer)
      const char *buffer;
 {
   static int initialized = 0;
-  char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
 
   if (!initialized)
     {
       dwarfout_start_source_file (0, primary_filename);
       initialized = 1;
     }
-  sprintf (type_and_offset, "0x%08x+%u",
-	   ((unsigned) MACINFO_define << 24), lineno);
-  generate_macinfo_entry (type_and_offset, buffer);
+  generate_macinfo_entry (MACINFO_define, GEN_INT (lineno), buffer);
 }
 
 /* Called from check_newline in c-parse.y.  The `buffer' parameter
@@ -6270,11 +6189,7 @@ dwarfout_undef (lineno, buffer)
      unsigned lineno;
      const char *buffer;
 {
-  char type_and_offset[MAX_ARTIFICIAL_LABEL_BYTES*2];
-
-  sprintf (type_and_offset, "0x%08x+%u",
-	   ((unsigned) MACINFO_undef << 24), lineno);
-  generate_macinfo_entry (type_and_offset, buffer);
+  generate_macinfo_entry (MACINFO_undef, GEN_INT (lineno), buffer);
 }
 
 /* Set up for Dwarf output at the start of compilation.	 */

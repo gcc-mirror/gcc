@@ -2087,28 +2087,6 @@ do { char dstr[30];					\
      fprintf ((FILE), "\t.float %s\n", dstr);		\
    } while (0)
 
-#define ASM_OUTPUT_INT(STREAM, EXP)		\
-  (fprintf ((STREAM), "\t.long\t"),      	\
-   output_addr_const ((STREAM), (EXP)),  	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_SHORT(STREAM, EXP)	\
-  (fprintf ((STREAM), "\t.short\t"),	\
-   output_addr_const ((STREAM), (EXP)),	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_CHAR(STREAM, EXP)		\
-  (fprintf ((STREAM), "\t.byte\t"),      	\
-   output_addr_const ((STREAM), (EXP)),  	\
-   fputc ('\n', (STREAM)))
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
-  fprintf ((STREAM), "\t.byte\t%d\n", (VALUE)) 	\
-
-/* The next two are used for debug info when compiling with -gdwarf.  */
-#define UNALIGNED_SHORT_ASM_OP	"\t.uaword\t"
-#define UNALIGNED_INT_ASM_OP	"\t.ualong\t"
-
 /* Loop alignment is now done in machine_dependent_reorg, so that
    branch shortening can know about it.  */
 

@@ -63,6 +63,9 @@ Boston, MA 02111-1307, USA.  */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 #define SGS_NO_LI		/* Suppress jump table label usage */
 
+#undef INT_OP_GROUP
+#define INT_OP_GROUP INT_OP_NO_DOT
+
 /* Turn on SDB debugging info.  */
 
 #define SDB_DEBUGGING_INFO
@@ -275,34 +278,6 @@ do { long l;					\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
      fprintf ((FILE), "\tlong 0x%lx\n", l);	\
    } while (0)
-
-/* This is how to output an assembler line defining an `int' constant.  */
-
-#undef ASM_OUTPUT_INT
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\tlong "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* Likewise for `char' and `short' constants.  */
-
-#undef ASM_OUTPUT_SHORT
-#define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\tshort "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-#undef ASM_OUTPUT_CHAR
-#define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\tbyte "),			\
-  output_addr_const (FILE, (VALUE)),		\
-  fprintf (FILE, "\n"))
-
-/* This is how to output an assembler line for a numeric constant byte.  */
-
-#undef ASM_OUTPUT_BYTE
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\tbyte 0x%x\n", (int)(VALUE))
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
@@ -585,7 +560,6 @@ do { fprintf (asm_out_file, "\ttag\t");	\
    and CTOR_LIST_END to contribute to the .init section an instruction to
    push a word containing 0 (or some equivalent of that).  */
 
-#define ASM_LONG	"\tlong"
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP	"\tsection\t~init"
 #undef FINI_SECTION_ASM_OP

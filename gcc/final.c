@@ -3465,16 +3465,16 @@ output_addr_const (file, x)
 
       output_addr_const (file, XEXP (x, 0));
       fprintf (file, "-");
-      if ((GET_CODE (XEXP (x, 1)) == CONST_INT
-	   && INTVAL (XEXP (x, 1)) < 0)
-	  || GET_CODE (XEXP (x, 1)) != CONST_INT)
+      if ((GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) >= 0)
+	  || GET_CODE (XEXP (x, 1)) == PC
+	  || GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+	output_addr_const (file, XEXP (x, 1));
+      else
 	{
 	  fputs (targetm.asm_out.open_paren, file);
 	  output_addr_const (file, XEXP (x, 1));
 	  fputs (targetm.asm_out.close_paren, file);
 	}
-      else
-	output_addr_const (file, XEXP (x, 1));
       break;
 
     case ZERO_EXTEND:

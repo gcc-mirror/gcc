@@ -106,6 +106,9 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
 
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE h8300_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

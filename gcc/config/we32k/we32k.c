@@ -40,6 +40,11 @@ static void we32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void we32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
 /* Initialize the GCC target structure.  */
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE we32k_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE

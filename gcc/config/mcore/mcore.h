@@ -1266,24 +1266,6 @@ extern long mcore_current_compilation_timestamp;
     }							\
   while (0)
 
-#define ASM_OUTPUT_INT(STREAM, EXP)  	\
-  (fprintf (STREAM, "\t.long\t"),      	\
-   output_addr_const (STREAM, (EXP)),  	\
-   fputc ('\n', STREAM))		
-
-#define ASM_OUTPUT_SHORT(STREAM, EXP)  \
-  (fprintf (STREAM, "\t.short\t"),     \
-   output_addr_const (STREAM, (EXP)),  \
-   fputc ('\n', STREAM))		
-
-#define ASM_OUTPUT_CHAR(STREAM, EXP)  	\
-  (fprintf (STREAM, "\t.byte\t"),      	\
-   output_addr_const (STREAM, (EXP)),  	\
-   fputc ('\n', STREAM))
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE)  	\
-  fprintf (STREAM, "\t.byte\t%d\n", VALUE)  	\
-
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 #undef  ASM_OUTPUT_SKIP

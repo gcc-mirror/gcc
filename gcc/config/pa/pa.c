@@ -64,6 +64,7 @@ static void pa_add_gc_roots PARAMS ((void));
 static void mark_deferred_plabels PARAMS ((void *));
 static void compute_zdepwi_operands PARAMS ((unsigned HOST_WIDE_INT, unsigned *));
 static int compute_movstrsi_length PARAMS ((rtx));
+static bool pa_assemble_integer PARAMS ((rtx, unsigned int, int));
 static void remove_useless_addtr_insns PARAMS ((rtx, int));
 static rtx store_reg PARAMS ((int, int, int));
 static rtx load_reg PARAMS ((int, int, int));
@@ -113,6 +114,22 @@ struct deferred_plabel
 int n_deferred_plabels = 0;
 
 /* Initialize the GCC target structure.  */
+
+#undef TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
+#undef TARGET_ASM_ALIGNED_SI_OP
+#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+#undef TARGET_ASM_ALIGNED_DI_OP
+#define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
+#undef TARGET_ASM_UNALIGNED_HI_OP
+#define TARGET_ASM_UNALIGNED_HI_OP TARGET_ASM_ALIGNED_HI_OP
+#undef TARGET_ASM_UNALIGNED_SI_OP
+#define TARGET_ASM_UNALIGNED_SI_OP TARGET_ASM_ALIGNED_SI_OP
+#undef TARGET_ASM_UNALIGNED_DI_OP
+#define TARGET_ASM_UNALIGNED_DI_OP TARGET_ASM_ALIGNED_DI_OP
+#undef TARGET_ASM_INTEGER
+#define TARGET_ASM_INTEGER pa_assemble_integer
+
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE pa_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
@@ -208,6 +225,18 @@ override_options ()
      code when in 64bit mode.  */
   if (flag_pic == 1 || TARGET_64BIT)
     flag_pic = 2;
+
+  /* We can't guarantee that .dword is available for 32-bit targets.  */
+  if (UNITS_PER_WORD == 4)
+    targetm.asm_out.aligned_op.di = NULL;
+
+  /* The unaligned ops are only available when using GAS.  */
+  if (!TARGET_GAS)
+    {
+      targetm.asm_out.unaligned_op.hi = NULL;
+      targetm.asm_out.unaligned_op.si = NULL;
+      targetm.asm_out.unaligned_op.di = NULL;
+    }
 
   /* Register global variables with the garbage collector.  */
   pa_add_gc_roots ();
@@ -2511,6 +2540,27 @@ output_64bit_ior (operands)
   operands[2] = GEN_INT (p);
   operands[3] = GEN_INT (len);
   return "depdi -1,%2,%3,%0";
+}
+
+/* Target hook for assembling integer objects.  This code handles
+   aligned SI and DI integers specially, since function references must
+   be preceded by P%.  */
+
+static bool
+pa_assemble_integer (x, size, aligned_p)
+     rtx x;
+     unsigned int size;
+     int aligned_p;
+{
+  if (size == UNITS_PER_WORD && aligned_p
+      && function_label_operand (x, VOIDmode))
+    {
+      fputs (size == 8? "\t.dword\tP%" : "\t.word\tP%", asm_out_file);
+      output_addr_const (asm_out_file, x);
+      fputc ('\n', asm_out_file);
+      return true;
+    }
+  return default_assemble_integer (x, size, aligned_p);
 }
 
 /* Output an ascii string.  */

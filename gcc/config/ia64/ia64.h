@@ -1944,54 +1944,6 @@ do {								\
     fprintf (FILE, "\tdata4 0x%lx\n", t & 0xffffffff);		\
 } while (0)
   
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble an integer of 1, 2, 4, or 8 bytes, respectively, whose value
-   is VALUE.  */
-
-/* This is how to output an assembler line defining a `char' constant.  */
-
-#define ASM_OUTPUT_CHAR(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "%s", ASM_BYTE_OP);					\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining a `short' constant.  */
-
-#define ASM_OUTPUT_SHORT(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "\tdata2\t");						\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining an `int' constant.
-   We also handle symbol output here.  */
-
-/* ??? For ILP32, also need to handle function addresses here.  */
-
-#define ASM_OUTPUT_INT(FILE, VALUE)					\
-do {									\
-  fprintf (FILE, "\tdata4\t");						\
-  output_addr_const (FILE, (VALUE));					\
-  fprintf (FILE, "\n");							\
-} while (0)
-
-/* This is how to output an assembler line defining a `long' constant.
-   We also handle symbol output here.  */
-
-#define ASM_OUTPUT_DOUBLE_INT(FILE, VALUE)				\
-do {									\
-  fprintf (FILE, "\tdata8\t");						\
-  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC) && SYMBOL_REF_FLAG (VALUE))	\
-    fprintf (FILE, "@fptr(");						\
-  output_addr_const (FILE, (VALUE));					\
-  if (!(TARGET_NO_PIC || TARGET_AUTO_PIC) && SYMBOL_REF_FLAG (VALUE))	\
-    fprintf (FILE, ")");						\
-  fprintf (FILE, "\n");							\
-} while (0)
-
 /* This is how to output an assembler line defining a `char' constant
    to an xdata segment.  */
 
@@ -2043,12 +1995,6 @@ do {									\
   fprintf (FILE, "\n");							\
 } while (0)
 
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a single byte containing the number VALUE.  */
-
-#define ASM_OUTPUT_BYTE(STREAM, VALUE) \
-  fprintf (STREAM, "%s0x%x\n", ASM_BYTE_OP, (int)(VALUE) & 0xff)
 
 
 /* Output of Uninitialized Variables.  */
@@ -2361,9 +2307,7 @@ do {									\
       reltag = "@gprel(";						\
     if (reltag)								\
       {									\
-	fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP			\
-	        : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP		\
-		: (abort (), "")), FILE);				\
+	fputs (integer_asm_op (SIZE, FALSE), FILE);			\
 	fputs (reltag, FILE);						\
 	assemble_name (FILE, XSTR (ADDR, 0));				\
 	fputc (')', FILE);						\
@@ -2425,13 +2369,6 @@ do {									\
 
 #define DWARF2_DEBUGGING_INFO
 
-/* C string constants giving the pseudo-op to use for a sequence of
-   2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */
-
-#define UNALIGNED_SHORT_ASM_OP		"\tdata2.ua\t"
-#define UNALIGNED_INT_ASM_OP		"\tdata4.ua\t"
-#define UNALIGNED_DOUBLE_INT_ASM_OP	"\tdata8.ua\t"
-
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 
 /* Use tags for debug info labels, so that they don't break instruction
@@ -2447,9 +2384,7 @@ do {									\
    proper relocations for them.  */
 #define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)	\
   do {							\
-    fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP		\
-	    : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP	\
-	    : (abort (), "")), FILE);			\
+    fputs (integer_asm_op (SIZE, FALSE), FILE);		\
     fputs ("@secrel(", FILE);				\
     assemble_name (FILE, LABEL);			\
     fputc (')', FILE);					\
@@ -2458,9 +2393,7 @@ do {									\
 /* Emit a PC-relative relocation.  */
 #define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
   do {							\
-    fputs (((SIZE) == 4 ? UNALIGNED_INT_ASM_OP		\
-	    : (SIZE) == 8 ? UNALIGNED_DOUBLE_INT_ASM_OP	\
-	    : (abort (), "")), FILE);			\
+    fputs (integer_asm_op (SIZE, FALSE), FILE);		\
     fputs ("@pcrel(", FILE);				\
     assemble_name (FILE, LABEL);			\
     fputc (')', FILE);					\
