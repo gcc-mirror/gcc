@@ -2090,10 +2090,18 @@ hppa_expand_prologue()
 				    size_rtx, tmpreg));
 	else
 	  {
-	    store_reg (1, 0, FRAME_POINTER_REGNUM);
+	    /* It is incorrect to store the saved frame pointer at *sp,
+	       then increment sp (writes beyond the current stack boundary).
+
+	       So instead use stwm to store at *sp and post-increment the
+	       stack pointer as an atomic operation.  Then increment sp to
+	       finish allocating the new frame.  */
+	    emit_insn (gen_post_stwm (stack_pointer_rtx,
+				      stack_pointer_rtx,
+				      GEN_INT (64), tmpreg));
 	    set_reg_plus_d (STACK_POINTER_REGNUM,
 			    STACK_POINTER_REGNUM,
-			    actual_fsize);
+			    actual_fsize - 64);
 	  }
       }
     /* no frame pointer needed.  */
