@@ -751,8 +751,8 @@ find_end_label ()
       if (HAVE_return)
 	{
 	  /* The return we make may have delay slots too.  */
-	  rtx insn = gen_return();
-	  emit_jump_insn (insn);
+	  rtx insn = gen_return ();
+	  insn = emit_jump_insn (insn);
 	  emit_barrier ();
           if (num_delay_slots (insn) > 0)
 	    obstack_ptr_grow (&unfilled_slots_obstack, insn);
