@@ -1,3 +1,10 @@
+1999-04-06  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* pdp11.c (simple_memory_operand): Add default case in switch.
+	* pdp11.h (TARGET_SWITCHES): Add help strings.
+	(NOTICE_UPDATE_CC): Don't include excess argument to format.
+	(ASM_OUTPUT_DOUBLE_INT): Remove.
+
 Tue Apr  6 22:09:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (expand_builtin_setjmp): Put setjmp return label on

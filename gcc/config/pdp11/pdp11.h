@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -61,50 +61,51 @@ int simple_memory_operand ();
 extern int target_flags;
 
 /* Macro to define tables used to set the flags.
-   This is a list in braces of pairs in braces,
-   each pair being { "NAME", VALUE }
-   where VALUE is the bits to set or minus the bits to clear.
+   This is a list in braces of triplets in braces,
+   each triplet being { "NAME", VALUE, DOC }
+   where VALUE is the bits to set or minus the bits to clear and DOC
+   is the documentation for --help (NULL if intentionally undocumented).
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-{   { "fpu", 1},		\
-    { "soft-float", -1},       	\
-/* return float result in ac0 */\
-    { "ac0", 2},		\
-    { "no-ac0", -2},		\
-/* is 11/40 */			\
-    { "40", 4},			\
-    { "no-40", -4},		\
-/* is 11/45 */			\
-    { "45", 8},			\
-    { "no-45", -8},		\
-/* is 11/10 */			\
-    { "10", -12},		\
-/* use movstrhi for bcopy */	\
-    { "bcopy", 16},		\
-    { "bcopy-builtin", -16},	\
-/* use 32 bit for int */	\
-    { "int32", 32},		\
-    { "no-int16", 32},		\
-    { "int16", -32},		\
-    { "no-int32", -32},		\
-/* use 32 bit for float */	\
-    { "float32", 64},		\
-    { "no-float64", 64},	\
-    { "float64", -64},		\
-    { "no-float32", -64},	\
+{   { "fpu", 1, "Use hardware floating point" },		\
+    { "soft-float", -1, "Do not use hardware floating point" }, \
+/* return float result in ac0 */				\
+    { "ac0", 2, "Return floating point results in ac0" },	\
+    { "no-ac0", -2, "Return floating point results in memory" },\
+/* is 11/40 */							\
+    { "40", 4, "Generate code for an 11/40" },			\
+    { "no-40", -4, "" },					\
+/* is 11/45 */							\
+    { "45", 8, "Generate code for an 11/45" },			\
+    { "no-45", -8, "" },					\
+/* is 11/10 */							\
+    { "10", -12, "Generate code for an 11/10" },		\
+/* use movstrhi for bcopy */					\
+    { "bcopy", 16, NULL },					\
+    { "bcopy-builtin", -16, NULL },				\
+/* use 32 bit for int */					\
+    { "int32", 32, "Use 32 bit int" },				\
+    { "no-int16", 32, "Use 32 bit int" },			\
+    { "int16", -32, "Use 16 bit int" },				\
+    { "no-int32", -32, "Use 16 bit int" },			\
+/* use 32 bit for float */					\
+    { "float32", 64, "Use 32 bit float" },			\
+    { "no-float64", 64, "Use 32 bit float" },			\
+    { "float64", -64, "Use 64 bit float" },			\
+    { "no-float32", -64, "Use 64 bit float" },			\
 /* allow abshi pattern? - can trigger "optimizations" which make code SLOW! */\
-    { "abshi", 128},		\
-    { "no-abshi", -128},	\
+    { "abshi", 128, NULL },					\
+    { "no-abshi", -128, NULL },					\
 /* is branching expensive - on a PDP, it's actually really cheap */ \
 /* this is just to play around and check what code gcc generates */ \
-    { "branch-expensive", 256}, \
-    { "branch-cheap", -256},	\
-/* split instruction and data memory? */ \
-    { "split", 1024 },		\
-    { "no-split", -1024 },	\
+    { "branch-expensive", 256, NULL }, 				\
+    { "branch-cheap", -256, NULL },				\
+/* split instruction and data memory? */ 			\
+    { "split", 1024, "Target has split I&D" },			\
+    { "no-split", -1024, "Target does not have split I&D" },	\
 /* default */			\
-    { "", TARGET_DEFAULT}	\
+    { "", TARGET_DEFAULT, NULL}	\
 }
 
 #define TARGET_DEFAULT (1 | 8 | 128)
@@ -398,7 +399,7 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00aa, 0x00ff, 0x0f00, 0x3000, 0x3f00, 0x3fff}
+#define REG_CLASS_CONTENTS {{0}, {0x00aa}, {0x00ff}, {0x0f00}, {0x3000}, {0x3f00}, {0x3fff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1024,8 +1025,11 @@ extern struct rtx_def *cc0_reg_rtx;
     { /* all bets are off */ CC_STATUS_INIT; }			\
   if (cc_status.value1 && GET_CODE (cc_status.value1) == REG	\
       && cc_status.value2					\
-      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))	\
-    printf ("here!\n", cc_status.value2 = 0);			\
+      && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2)) \
+    { 								\
+      printf ("here!\n");					\
+      cc_status.value2 = 0;					\
+    }								\
 }
 
 /* Control the assembler format that we output.  */
@@ -1249,8 +1253,6 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 
 #define ASM_IDENTIFY_GCC(FILE)			\
     fprintf(FILE, "gcc_compiled:\n")
-
-#define ASM_OUTPUT_DOUBLE_INT(a,b)	fprintf(a,"%d", b)
 
 /* trampoline - how should i do it in separate i+d ? 
    have some allocate_trampoline magic??? 

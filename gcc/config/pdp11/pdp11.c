@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -1089,6 +1089,9 @@ int simple_memory_operand(op, mode)
       case PLUS:
 	/* X(R0) - extra cost */
 	return 0;
+
+      default:
+	break;
     }
     
     return FALSE;
