@@ -1,3 +1,7 @@
+2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gcc_release: Add libada as part of ADA_DIRS.
+
 2004-01-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Make 3.4 snapshots from the new 3.4 release branch.
