@@ -867,13 +867,15 @@ static void
 delete_reg_equiv (reg)
      register int reg;
 {
-  register int n = reg_next_eqv[reg];
-  register int p = reg_prev_eqv[reg];
   register int q = reg_qty[reg];
+  register int p, n;
 
-  /* If invalid, do nothing.  N and P above are undefined in that case.  */
+  /* If invalid, do nothing.  */
   if (q == reg)
     return;
+
+  p = reg_prev_eqv[reg];
+  n = reg_next_eqv[reg];
 
   if (n != -1)
     reg_prev_eqv[n] = p;
