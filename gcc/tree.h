@@ -1357,19 +1357,12 @@ struct tree_type GTY(())
 
 /* For a BINFO record describing a virtual base class, i.e., one where
    TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
-   base.  The actual contents are language-dependent.  Under the old
-   ABI, the C++ front-end uses a FIELD_DECL whose contents are a
-   pointer to the virtual base; under the new ABI this field is
-   instead an INTEGER_CST giving an offset into the vtable where the
-   offset to the virtual base can be found.  */
+   base.  The actual contents are language-dependent.  In the C++
+   front-end this field is an INTEGER_CST giving an offset into the
+   vtable where the offset to the virtual base can be found.  */
 #define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT (NODE, 5)
 
-/* The size of a base class subobject of this type.  Not all frontends
-   currently allocate the space for these fields.  */
-#define BINFO_SIZE(NODE) TREE_VEC_ELT (NODE, 6)
-#define BINFO_SIZE_UNIT(NODE) TREE_VEC_ELT (NODE, 7)
-#define TYPE_BINFO_SIZE(NODE) BINFO_SIZE (TYPE_BINFO (NODE))
-#define TYPE_BINFO_SIZE_UNIT(NODE) BINFO_SIZE_UNIT (TYPE_BINFO (NODE))
+#define BINFO_ELTS 6
 
 /* Slot used to build a chain that represents a use of inheritance.
    For example, if X is derived from Y, and Y is derived from Z,

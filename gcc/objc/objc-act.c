@@ -6146,7 +6146,7 @@ start_class (code, class_name, super_name, protocol_list)
     }
 
   class = make_node (code);
-  TYPE_BINFO (class) = make_tree_vec (6);
+  TYPE_BINFO (class) = make_tree_vec (BINFO_ELTS);
 
   CLASS_NAME (class) = class_name;
   CLASS_SUPER_NAME (class) = super_name;

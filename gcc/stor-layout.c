@@ -1254,15 +1254,7 @@ finalize_record_size (rli)
     unpadded_size_unit
       = size_binop (PLUS_EXPR, unpadded_size_unit, size_one_node);
 
-  /* Record the un-rounded size in the binfo node.  But first we check
-     the size of TYPE_BINFO to make sure that BINFO_SIZE is available.  */
-  if (TYPE_BINFO (rli->t) && TREE_VEC_LENGTH (TYPE_BINFO (rli->t)) > 6)
-    {
-      TYPE_BINFO_SIZE (rli->t) = unpadded_size;
-      TYPE_BINFO_SIZE_UNIT (rli->t) = unpadded_size_unit;
-    }
-
-    /* Round the size up to be a multiple of the required alignment */
+  /* Round the size up to be a multiple of the required alignment */
 #ifdef ROUND_TYPE_SIZE
   TYPE_SIZE (rli->t) = ROUND_TYPE_SIZE (rli->t, unpadded_size,
 					TYPE_ALIGN (rli->t));
