@@ -1,3 +1,9 @@
+2004-01-27  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/peer/gtk/GdkClasspathFontPeer.java,
+	* gnu/java/awt/peer/gtk/GdkGlyphVector.java:
+	Reindented to merge with classpath.
+
 2004-01-27  David Jee  <djee@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
