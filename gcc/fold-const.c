@@ -75,6 +75,7 @@ static int all_ones_mask_p PROTO((tree, int));
 static int simple_operand_p PROTO((tree));
 static tree range_test	PROTO((enum tree_code, tree, enum tree_code,
 			       enum tree_code, tree, tree, tree));
+static tree unextend	PROTO((tree, int, int));
 static tree fold_truthop PROTO((enum tree_code, tree, tree, tree));
 static tree strip_compound_expr PROTO((tree, tree));
 
@@ -2435,13 +2436,11 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
 	return 0;
     }
 
-  if (TREE_CODE (exp) != COMPONENT_REF && TREE_CODE (exp) != ARRAY_REF
-      && TREE_CODE (exp) != BIT_FIELD_REF)
-    return 0;
 
   inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
 			       punsignedp, pvolatilep);
-  if (inner == exp || *pbitsize < 0 || offset != 0)
+  if ((inner == exp && and_mask == 0)
+      || *pbitsize < 0 || offset != 0)
     return 0;
   
   /* Compute the mask to access the bitfield.  */
@@ -2479,12 +2478,12 @@ all_ones_mask_p (mask, size)
   TREE_TYPE (tmask) = signed_type (type);
   force_fit_type (tmask, 0);
   return
-    operand_equal_p (mask, 
-		     const_binop (RSHIFT_EXPR,
-				  const_binop (LSHIFT_EXPR, tmask,
-					       size_int (precision - size), 0),
-				  size_int (precision - size), 0),
-		     0);
+    tree_int_cst_equal (mask, 
+			const_binop (RSHIFT_EXPR,
+				     const_binop (LSHIFT_EXPR, tmask,
+						  size_int (precision - size),
+						  0),
+				     size_int (precision - size), 0));
 }
 
 /* Subroutine for fold_truthop: determine if an operand is simple enough
@@ -2638,6 +2637,36 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
 			build (rcode, utype,
 			       build (MINUS_EXPR, utype, var, lo_cst),
 			       const_binop (MINUS_EXPR, hi_cst, lo_cst, 0))));
+}
+
+/* Subroutine for fold_truthop: C is an INTEGER_CST interpreted as a P
+   bit value.  Arrange things so the extra bits will be set to zero if and]
+   only if C is signed-extended to its full width.  */
+
+static tree
+unextend (c, p, unsignedp)
+     tree c;
+     int p;
+     int unsignedp;
+{
+  tree type = TREE_TYPE (c);
+  int modesize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  tree temp;
+
+  if (p == modesize || unsignedp)
+    return c;
+
+  if (TREE_UNSIGNED (type))
+    c = convert (signed_type (type), c);
+
+  /* We work by getting just the sign bit into the low-order bit, then
+     into the high-order bit, then sign-extened.  We then XOR that value
+     with C.  */
+  temp = const_binop (RSHIFT_EXPR, c, size_int (p - 1), 0);
+  temp = const_binop (BIT_AND_EXPR, temp, size_int (1), 0);
+  temp = const_binop (LSHIFT_EXPR, temp, size_int (modesize - 1), 0);
+  temp = const_binop (RSHIFT_EXPR, temp, size_int (modesize - p - 1), 0);
+  return convert (type, const_binop (BIT_XOR_EXPR, c, temp, 0));
 }
 
 /* Find ways of folding logical expressions of LHS and RHS:
@@ -2855,20 +2884,39 @@ fold_truthop (code, truth_type, lhs, rhs)
   rl_mask = const_binop (LSHIFT_EXPR, convert (type, rl_mask),
 			 size_int (xrl_bitpos), 0);
 
-  /* Make sure the constants are interpreted as unsigned, so we
-     don't have sign bits outside the range of their type.  */
-
   if (l_const)
     {
-      l_const = convert (unsigned_type (TREE_TYPE (l_const)), l_const);
-      l_const = const_binop (LSHIFT_EXPR, convert (type, l_const),
-			     size_int (xll_bitpos), 0);
+      l_const = convert (type, unextend (l_const, ll_bitsize, ll_unsignedp));
+      l_const = const_binop (LSHIFT_EXPR, l_const, size_int (xll_bitpos), 0);
+      if (! integer_zerop (const_binop (BIT_AND_EXPR, l_const,
+					fold (build1 (BIT_NOT_EXPR,
+						      type, ll_mask)),
+					0)))
+	{
+	  warning ("comparison is always %s",
+		   wanted_code == NE_EXPR ? "one" : "zero");
+	  
+	  return convert (truth_type,
+			  wanted_code == NE_EXPR
+			  ? integer_one_node : integer_zero_node);
+	}
     }
   if (r_const)
     {
-      r_const = convert (unsigned_type (TREE_TYPE (r_const)), r_const);
-      r_const = const_binop (LSHIFT_EXPR, convert (type, r_const),
-			     size_int (xrl_bitpos), 0);
+      r_const = convert (type, unextend (r_const, rl_bitsize, rl_unsignedp));
+      r_const = const_binop (LSHIFT_EXPR, r_const, size_int (xrl_bitpos), 0);
+      if (! integer_zerop (const_binop (BIT_AND_EXPR, r_const,
+					fold (build1 (BIT_NOT_EXPR,
+						      type, rl_mask)),
+					0)))
+	{
+	  warning ("comparison is always %s",
+		   wanted_code == NE_EXPR ? "one" : "zero");
+	  
+	  return convert (truth_type,
+			  wanted_code == NE_EXPR
+			  ? integer_one_node : integer_zero_node);
+	}
     }
 
   /* If the right sides are not constant, do the same for it.  Also,
