@@ -4068,7 +4068,8 @@ convert_like_real (tree convs, tree expr, tree fn, int argnum, int inner,
 	   conversion, but is not considered during overload resolution.
 
 	   If the target is a class, that means call a ctor.  */
-	if (IS_AGGR_TYPE (totype) && inner >= 0)
+	if (IS_AGGR_TYPE (totype)
+	    && (inner >= 0 || !lvalue_p (expr)))
 	  {
 	    expr = (build_temp 
 		    (expr, totype, 
@@ -6250,7 +6251,10 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
       else
 	base_conv_type = NULL_TREE;
       /* Perform the remainder of the conversion.  */
-      expr = convert_like (conv, expr);
+      expr = convert_like_real (conv, expr,
+				/*fn=*/NULL_TREE, /*argnum=*/0,
+				/*inner=*/-1,
+				/*issue_conversion_warnings=*/true);
       if (!real_lvalue_p (expr))
 	{
 	  tree init;
