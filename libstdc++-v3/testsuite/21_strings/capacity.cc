@@ -169,9 +169,30 @@ bool test01()
   return test;
 }
 
+// libstdc++/4548
+// http://gcc.gnu.org/ml/libstdc++/2001-11/msg00150.html
+bool test02()
+{
+  bool test = true;
+
+  std::string str01 = "twelve chars";
+  // str01 becomes shared
+  std::string str02 = str01;
+  str01.reserve(1);
+  VERIFY( str01.capacity() == 12 );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+
+  return test;
+}
+
+
 int main()
 {
   test01();
+  test02();
 
   return 0;
 }
