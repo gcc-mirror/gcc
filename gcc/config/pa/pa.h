@@ -1016,7 +1016,10 @@ extern enum cmp_type hppa_branch_type;
 
 #define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
   if (!TARGET_PORTABLE_RUNTIME && TARGET_GAS && in_section == in_text) \
-    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE);
+    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
+  else if (TARGET_PORTABLE_RUNTIME && TARGET_GAS)			\
+    fprintf (FILE,							\
+	     "\t.SUBSPA $%s$\n", NAME);
     
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
@@ -1814,6 +1817,34 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
 #else
 #define EXTRA_SECTIONS in_bss, in_readonly_data, in_ctors, in_dtors
 #endif
+
+/* Switch into a generic section.
+   This is currently only used to support section attributes.
+
+   We make the section read-only and executable for a function decl,
+   read-only for a const data decl, and writable for a non-const data decl.  */
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
+  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)		\
+    {								\
+      fputs ("\t.SPACE $TEXT$\n", FILE);			\
+      fprintf (FILE,						\
+	       "\t.SUBSPA $%s$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", \
+	       NAME);						\
+    }								\
+  else if (DECL && TREE_READONLY (DECL))			\
+    {								\
+      fputs ("\t.SPACE $TEXT$\n", FILE);			\
+      fprintf (FILE,						\
+	       "\t.SUBSPA $%s$,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
+	       NAME);						\
+    }								\
+  else								\
+    {								\
+      fputs ("\t.SPACE $PRIVATE$\n", FILE);			\
+      fprintf (FILE,						\
+	       "\t.SUBSPA $%s$,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
+	       NAME);						\
+    }
 
 /* FIXME: HPUX ld generates incorrect GOT entries for "T" fixups
    which reference data within the $TEXT$ space (for example constant
