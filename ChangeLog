@@ -1,3 +1,7 @@
+1998-07-29  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure: Fix --without/--disable cases for gxx-include-dir.
+
 Sat Jul 18 14:32:43 CDT 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: (*-pc-sco3.2v5) Add detection for Pentium II.
