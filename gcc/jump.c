@@ -2275,44 +2275,22 @@ find_cross_jump (e1, e2, minimum, f1, f2)
       p1 = PATTERN (i1);
       p2 = PATTERN (i2);
 	
+      /* If this is a CALL_INSN, compare register usage information.
+	 If we don't check this on stack register machines, the two
+	 CALL_INSNs might be merged leaving reg-stack.c with mismatching
+	 numbers of stack registers in the same basic block.
+	 If we don't check this on machines with delay slots, a delay slot may
+	 be filled that clobbers a parameter expected by the subroutine.
+
+	 ??? We take the simple route for now and assume that if they're
+	 equal, they were constructed identically.  */
+
+      if (GET_CODE (i1) == CALL_INSN
+	  && ! rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
+			    CALL_INSN_FUNCTION_USAGE (i2)))
+	lose = 1;
+
 #ifdef STACK_REGS
-      if (GET_CODE (i1) == CALL_INSN)
-	{
-	  /* Compare register usage information for the stack registers.
-	     Two CALL_INSNs are only equal if they receive the same
-	     (amount of) stack registers as parameters.  If we don't
-	     check this the two CALL_INSNs might be merged leaving
-	     reg-stack.c with mismatching numbers of stack registers
-	     in the same basic block.  */
-
-	  register rtx link, op;
-	  HARD_REG_SET i1_regset, i2_regset;
-
-	  CLEAR_HARD_REG_SET (i1_regset);
-	  CLEAR_HARD_REG_SET (i2_regset);
-
-	  for (link = CALL_INSN_FUNCTION_USAGE (i1);
-	       link;
-	       link = XEXP (link, 1))
-	    if (GET_CODE (op = XEXP (link, 0)) == USE
-		&& STACK_REG_P (SET_DEST (op)))
-	      SET_HARD_REG_BIT (i1_regset, REGNO (SET_DEST (op)));
-
-	  for (link = CALL_INSN_FUNCTION_USAGE (i2);
-	       link;
-	       link = XEXP (link, 1))
-	    if (GET_CODE (op = XEXP (link, 0)) == USE
-		&& STACK_REG_P (SET_DEST (op)))
-	      SET_HARD_REG_BIT (i2_regset, REGNO (SET_DEST (op)));
-
-	  GO_IF_HARD_REG_EQUAL (i1_regset, i2_regset, usedmatch);
-
-	  lose = 1;
-
-	usedmatch:
-	  ;
-	}
-
       /* If cross_jump_death_matters is not 0, the insn's mode
 	 indicates whether or not the insn contains any stack-like
 	 regs. */
