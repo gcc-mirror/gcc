@@ -52,13 +52,13 @@ struct gcc_target
   /* Given two types, merge their attributes and return the result.  */
   tree (* merge_type_attributes) PARAMS ((tree, tree));
 
-  /* Nonzero if IDENTIFIER with arguments ARGS is a valid machine
+  /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
      specific attribute for DECL.  The attributes in ATTRIBUTES have
      previously been assigned to DECL.  */
   int (* valid_decl_attribute) PARAMS ((tree decl, tree attributes,
 					tree identifier, tree args));
 
-  /* Nonzero if IDENTIFIER with arguments ARGS is a valid machine
+  /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine
      specific attribute for TYPE.  The attributes in ATTRIBUTES have
      previously been assigned to TYPE.  */
   int (* valid_type_attribute) PARAMS ((tree type, tree attributes,

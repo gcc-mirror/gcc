@@ -20,13 +20,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  what you give them.   Help stamp out software-hoarding!  */
 
 /* See target.h for a desciption of what this file contains and how to
-   use it.  */
+   use it.
 
-/* Both in tree.c.  */
+   We want to have non-NULL default definitions of all hook functions,
+   even if they do nothing.  */
+
+/* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
-#define TARGET_VALID_DECL_ATTRIBUTE 0
-#define TARGET_VALID_TYPE_ATTRIBUTE 0
+#define TARGET_VALID_DECL_ATTRIBUTE default_valid_attribute_p
+#define TARGET_VALID_TYPE_ATTRIBUTE default_valid_attribute_p
 
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
