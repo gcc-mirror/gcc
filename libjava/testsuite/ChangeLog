@@ -1,3 +1,8 @@
+2000-05-10  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.lang/StringBuffer_1.java: New file.
+	* libjava.lang/StringBuffer_1.out: New file.
+
 2000-05-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Test for PR gcj/224:
