@@ -1,5 +1,10 @@
 2004-01-19  Paolo Carlini  <pcarlini@suse.de>
 
+	* src/debug.cc: Make sure all the names are prefixed with
+	double (or single) underscore.
+
+2004-01-19  Paolo Carlini  <pcarlini@suse.de>
+
 	* src/debug.cc: Trivial formatting change.
 
 2004-01-19  Paolo Carlini  <pcarlini@suse.de>
