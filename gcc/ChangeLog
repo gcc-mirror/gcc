@@ -6,6 +6,8 @@
 	(rs6000_function_value): Widen integral return value to mode based
 	on TARGET_32BIT, not word_mode.
 	* config/rs6000/rs6000.h (PROMOTE_MODE): Likewise.
+	(UNITS_PER_ARG): New.
+	(RS6000_ARG_SIZE): Use it.
 
 2003-10-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
