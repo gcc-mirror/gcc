@@ -1,3 +1,14 @@
+Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* langhooks.h (LANG_HOOKS_HONOR_READONLY): New macro.
+	* toplev.h (struct lang_hooks): New field HONOR_READONLY.
+	* emit-rtl.c (set_mem_attributes): Set RTX_UNCHANGING_P from
+	TREE_READONLY and TYPE_READONLY if lang_hooks.honor_readonly.
+	Set alignment from type if INDIRECT_REF.
+	(adjust_address_1, offset_address): Simplify alignment compuitation.
+	* expr.c (expand_expr, case INDIRECT_REF): Don't set RTX_UNCHANGING_P
+	here; done by set_mem_attributes.
+
 2001-10-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (rtlanal.o): Depend on $(TM_P_H).

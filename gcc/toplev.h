@@ -166,6 +166,9 @@ struct lang_hooks
   /* Called when all command line options have been processed.  */
   void (*post_options) PARAMS ((void));
 
+  /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
+  int honor_readonly;
+
   struct lang_hooks_for_tree_inlining tree_inlining;
 
   /* Whenever you add entries here, make sure you adjust langhooks.h
