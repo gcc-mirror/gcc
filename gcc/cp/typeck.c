@@ -4931,7 +4931,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 	     pointer-to-void regardless, so that one may convert
 	     back again without warning.  Such conversions are not
 	     permitted when we are recursively called to deal with
-	     reinterpretting reference casts. */
+	     reinterpreting reference casts.  */
 	  if (!for_reinterpret_ref_p && VOID_TYPE_P (TREE_TYPE (type)))
 	    {
 	      if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
