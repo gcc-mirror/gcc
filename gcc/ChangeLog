@@ -1,3 +1,8 @@
+2000-12-12  Brad Lucier <lucier@math.purdue.edu>
+
+        * tradcpp.c (do_error): Cast difference of pointers to int
+        for error message.
+
 2000-12-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Move from here...

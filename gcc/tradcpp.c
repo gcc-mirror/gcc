@@ -3184,7 +3184,7 @@ do_error (buf, limit, op)
      U_CHAR *limit;
      FILE_BUF *op ATTRIBUTE_UNUSED;
 {
-  error ("#error%.*s", limit - buf, buf);
+  error ("#error%.*s", (int) (limit - buf), buf);
 }
 
 /* Handle a #assert directive.  */
