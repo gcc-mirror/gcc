@@ -36,13 +36,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
 
 import java.io.FileDescriptor;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
 
 /* Written using on-line Java Platform 1.2 API Specification.
  * Believed complete and correct.
@@ -113,7 +113,8 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void connect(String host, int port) throws IOException;
+  protected abstract void connect(String host, int port)
+    throws IOException;
 
   /**
    * Connects to the remote address and port specified as arguments.
@@ -153,7 +154,8 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException If an error occurs
    */
-  protected abstract void bind(InetAddress host, int port) throws IOException;
+  protected abstract void bind(InetAddress host, int port)
+    throws IOException;
 
   /**
    * Starts listening for connections on a socket. The backlog parameter
@@ -220,25 +222,37 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @return A FileDescriptor for this socket.
    */
-  protected FileDescriptor getFileDescriptor() { return fd; }
+  protected FileDescriptor getFileDescriptor()
+  {
+    return fd;
+  }
 
   /**
    * Returns the remote address this socket is connected to
    *
    * @return The remote address
    */
-  protected InetAddress getInetAddress() { return address; }
+  protected InetAddress getInetAddress()
+  {
+    return address;
+  }
 
   /**
    * Returns the remote port this socket is connected to
    *
    * @return The remote port
    */
-  protected int getPort() { return port; }
+  protected int getPort()
+  {
+    return port;
+  }
 
   /**
    * Returns true or false when this socket supports sending urgent data
    * or not.
+   *
+   * @return true if the socket implementation supports sending urgent data,
+   * false otherwise
    *
    * @since 1.4
    */
@@ -248,7 +262,7 @@ public abstract class SocketImpl implements SocketOptions
     // sending urgend data.
     return false;
   }
-  
+
   /**
    * Sends one byte of urgent data to the socket.
    *
@@ -258,15 +272,17 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @since 1.4
    */
-  protected abstract void sendUrgentData(int data)
-    throws IOException;
-  
+  protected abstract void sendUrgentData(int data) throws IOException;
+
   /**
    * Returns the local port this socket is bound to
    *
    * @return The local port
    */
-  protected int getLocalPort() { return localport; }
+  protected int getLocalPort()
+  {
+    return localport;
+  }
 
   /**
    * Returns a <code>String</code> representing the remote host and port of
@@ -276,10 +292,9 @@ public abstract class SocketImpl implements SocketOptions
    */
   public String toString()
   {
-    return "[addr=" + ((address == null) ? "0.0.0.0/0.0.0.0" :
- 		       address.toString())
-	    + ",port=" + port
-	    + ",localport=" + localport + "]";
+    return "[addr="
+           + ((address == null) ? "0.0.0.0/0.0.0.0" : address.toString())
+           + ",port=" + port + ",localport=" + localport + "]";
   }
 
   /**
@@ -288,9 +303,9 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  protected void shutdownInput () throws IOException
+  protected void shutdownInput() throws IOException
   {
-    throw new IOException ("Not implemented in this socket class");
+    throw new IOException("Not implemented in this socket class");
   }
 
   /**
@@ -299,8 +314,8 @@ public abstract class SocketImpl implements SocketOptions
    *
    * @exception IOException if an error occurs
    */
-  protected void shutdownOutput () throws IOException
+  protected void shutdownOutput() throws IOException
   {
-    throw new IOException ("Not implemented in this socket class");
+    throw new IOException("Not implemented in this socket class");
   }
 }

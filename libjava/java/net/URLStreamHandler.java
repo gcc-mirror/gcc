@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,11 +35,11 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+
 
 /*
  * Written using on-line Java Platform 1.2 API Specification, as well
@@ -57,7 +57,7 @@ import java.io.File;
  * A protocol handler implementation should override the openConnection()
  * method, and optionally override the parseURL() and toExternalForm()
  * methods if necessary. (The default implementations will parse/write all
- * URL's in the same form as http URL's).  A protocol  specific subclass 
+ * URL's in the same form as http URL's).  A protocol  specific subclass
  * of URLConnection will most likely need to be created as well.
  * <p>
  * Note that the instance methods in this class are called as if they
@@ -71,7 +71,7 @@ import java.io.File;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Warren Levy (warrenl@cygnus.com)
- * 
+ *
  * @see URL
  */
 public abstract class URLStreamHandler
@@ -79,7 +79,7 @@ public abstract class URLStreamHandler
   /**
    * Creates a URLStreamHander
    */
-  public URLStreamHandler ()
+  public URLStreamHandler()
   {
   }
 
@@ -96,7 +96,7 @@ public abstract class URLStreamHandler
    *
    * @exception IOException If an error occurs
    */
-  protected abstract URLConnection openConnection(URL u)
+  protected abstract URLConnection openConnection(URL url)
     throws IOException;
 
   /**
@@ -109,8 +109,8 @@ public abstract class URLStreamHandler
    * position of the "#" character, which separates the "file" portion of
    * the URL from the "anchor" portion.
    * <p>
-   * This method assumes URL's are formatted like http protocol URL's, so 
-   * subclasses that implement protocols with URL's the follow a different 
+   * This method assumes URL's are formatted like http protocol URL's, so
+   * subclasses that implement protocols with URL's the follow a different
    * syntax should override this method.  The lone exception is that if
    * the protocol name set in the URL is "file", this method will accept
    * an empty hostname (i.e., "file:///"), which is legal for that protocol
@@ -126,28 +126,29 @@ public abstract class URLStreamHandler
     int port = url.getPort();
     String file = url.getFile();
     String ref = url.getRef();
-    
-    if (spec.regionMatches (start, "//", 0, 2))
+
+    if (spec.regionMatches(start, "//", 0, 2))
       {
 	String genuineHost;
 	int hostEnd;
-	int colon, at_host;
+	int colon;
+	int at_host;
 
 	start += 2;
-	int slash = spec.indexOf ('/', start);
-	if (slash >= 0) 
+	int slash = spec.indexOf('/', start);
+	if (slash >= 0)
 	  hostEnd = slash;
-        else
+	else
 	  hostEnd = end;
 
-	host = spec.substring (start, hostEnd);
-	
+	host = spec.substring(start, hostEnd);
+
 	// We first need a genuine host name (with userinfo).
 	// So we check for '@': if it's present check the port in the
 	// section after '@' in the other case check it in the full string.
 	// P.S.: We don't care having '@' at the beginning of the string.
-	if ((at_host = host.indexOf ('@')) >= 0)
-	  genuineHost = host.substring (at_host);
+	if ((at_host = host.indexOf('@')) >= 0)
+	  genuineHost = host.substring(at_host);
 	else
 	  genuineHost = host;
 
@@ -157,70 +158,70 @@ public abstract class URLStreamHandler
 	// this is undocumented and likely an unintended side effect in 1.2
 	// so we'll be simple here and stick with "". Note that
 	// "http://" or "http:///" produce a "" host in JDK 1.2.
-	if ((colon = genuineHost.indexOf (':')) >= 0)
+	if ((colon = genuineHost.indexOf(':')) >= 0)
 	  {
 	    try
 	      {
-		port = Integer.parseInt (genuineHost.substring (colon + 1));
+		port = Integer.parseInt(genuineHost.substring(colon + 1));
 	      }
 	    catch (NumberFormatException e)
 	      {
 		; // Ignore invalid port values; port is already set to u's
 		  // port.
 	      }
+
 	    // Now we must cut the port number in the original string.
 	    if (at_host >= 0)
-	      host = host.substring (0, at_host + colon);
+	      host = host.substring(0, at_host + colon);
 	    else
-	      host = host.substring (0, colon);
+	      host = host.substring(0, colon);
 	  }
 	file = null;
 	start = hostEnd;
-      } 
-    else if (host == null) 
+      }
+    else if (host == null)
       host = "";
 
     if (file == null || file.length() == 0
-	|| (start < end && spec.charAt(start) == '/')) 
+        || (start < end && spec.charAt(start) == '/'))
       {
 	// No file context available; just spec for file.
 	// Or this is an absolute path name; ignore any file context.
 	file = spec.substring(start, end);
 	ref = null;
-      } 
+      }
     else if (start < end)
       {
-        // Context is available, but only override it if there is a new file.
-        char sepChar = '/';
-        int lastSlash = file.lastIndexOf (sepChar);
-        if (lastSlash < 0 && File.separatorChar != sepChar
-            && url.getProtocol ().equals ("file"))
-          {
-            // On Windows, even '\' is allowed in a "file" URL.
-            sepChar = File.separatorChar;
-            lastSlash = file.lastIndexOf (sepChar);
-          }
-        
-        file = file.substring(0, lastSlash)
-                + sepChar + spec.substring (start, end);
+	// Context is available, but only override it if there is a new file.
+	char sepChar = '/';
+	int lastSlash = file.lastIndexOf(sepChar);
+	if (lastSlash < 0 && File.separatorChar != sepChar
+	    && url.getProtocol().equals("file"))
+	  {
+	    // On Windows, even '\' is allowed in a "file" URL.
+	    sepChar = File.separatorChar;
+	    lastSlash = file.lastIndexOf(sepChar);
+	  }
 
-        if (url.getProtocol ().equals ("file"))
-          {
-            // For "file" URLs constructed relative to a context, we
-            // need to canonicalise the file path.
-            try
-              {
+	file =
+	  file.substring(0, lastSlash) + sepChar + spec.substring(start, end);
+
+	if (url.getProtocol().equals("file"))
+	  {
+	    // For "file" URLs constructed relative to a context, we
+	    // need to canonicalise the file path.
+	    try
+	      {
 		boolean endsWithSlash = file.charAt(file.length() - 1) == '/';
-                file = new File (file).getCanonicalPath ();
-		if (endsWithSlash
-		    && file.charAt(file.length() - 1) != '/')
+		file = new File(file).getCanonicalPath();
+		if (endsWithSlash && file.charAt(file.length() - 1) != '/')
 		  file += '/';
-              }
-            catch (IOException e)
-              {
+	      }
+	    catch (IOException e)
+	      {
 		// Do nothing.
-              }
-          }
+	      }
+	  }
 
 	ref = null;
       }
@@ -240,10 +241,9 @@ public abstract class URLStreamHandler
     // XXX - Classpath used to call PlatformHelper.toCanonicalForm() on
     // the file part. It seems like overhead, but supposedly there is some
     // benefit in windows based systems (it also lowercased the string).
-
     setURL(url, url.getProtocol(), host, port, file, ref);
   }
-  
+
   /*
    * Canonicalize a filename.
    */
@@ -251,7 +251,6 @@ public abstract class URLStreamHandler
   {
     // XXX - GNU Classpath has an implementation that might be more appropriate
     // for Windows based systems (gnu.java.io.PlatformHelper.toCanonicalForm)
-
     int index;
 
     // Replace "/./" with "/".  This probably isn't very efficient in
@@ -270,7 +269,7 @@ public abstract class URLStreamHandler
 	else
 	  break;
       }
-    return file; 
+    return file;
   }
 
   /**
@@ -278,7 +277,7 @@ public abstract class URLStreamHandler
    *
    * @param url1 The first url
    * @param url2 The second url to compare with the first
-   * 
+   *
    * @return True if both URLs point to the same file, false otherwise.
    *
    * @specnote Now protected
@@ -287,19 +286,21 @@ public abstract class URLStreamHandler
   {
     if (url1 == url2)
       return true;
+
     // This comparison is very conservative.  It assumes that any
     // field can be null.
     if (url1 == null || url2 == null)
       return false;
-    int p1 = url1.getPort ();
+    int p1 = url1.getPort();
     if (p1 == -1)
-      p1 = url1.ph.getDefaultPort ();
-    int p2 = url2.getPort ();
+      p1 = url1.ph.getDefaultPort();
+    int p2 = url2.getPort();
     if (p2 == -1)
-      p2 = url2.ph.getDefaultPort ();
+      p2 = url2.ph.getDefaultPort();
     if (p1 != p2)
       return false;
-    String s1, s2;
+    String s1;
+    String s2;
     s1 = url1.getProtocol();
     s2 = url2.getProtocol();
     if (s1 != s2 && (s1 == null || ! s1.equals(s2)))
@@ -333,7 +334,7 @@ public abstract class URLStreamHandler
    * #setURL(URL,String,String,int,String,String,String,String);
    */
   protected void setURL(URL u, String protocol, String host, int port,
-			String file, String ref)
+                        String file, String ref)
   {
     u.set(protocol, host, port, file, ref);
   }
@@ -355,8 +356,8 @@ public abstract class URLStreamHandler
    * different from this one
    */
   protected void setURL(URL u, String protocol, String host, int port,
-			String authority, String userInfo, String path,
-			String query, String ref)
+                        String authority, String userInfo, String path,
+                        String query, String ref)
   {
     u.set(protocol, host, port, authority, userInfo, path, query, ref);
   }
@@ -372,32 +373,29 @@ public abstract class URLStreamHandler
    *
    * @return True if both given URLs are equal, false otherwise.
    */
-  protected boolean equals (URL url1, URL url2)
+  protected boolean equals(URL url1, URL url2)
   {
     // This comparison is very conservative.  It assumes that any
     // field can be null.
-    return (url1.getPort () == url2.getPort ()
-	    && ((url1.getProtocol () == null && url2.getProtocol () == null)
-		|| (url1.getProtocol () != null
-			&& url1.getProtocol ().equals (url2.getProtocol ())))
-	    && ((url1.getUserInfo () == null && url2.getUserInfo () == null)
-                || (url1.getUserInfo () != null
-			&& url1.getUserInfo ().equals(url2.getUserInfo ())))
-	    && ((url1.getAuthority () == null && url2.getAuthority () == null)
-                || (url1.getAuthority () != null
-			&& url1.getAuthority ().equals(url2.getAuthority ())))
-	    && ((url1.getHost () == null && url2.getHost () == null)
-		|| (url1.getHost () != null
-			&& url1.getHost ().equals(url2.getHost ())))
-	    && ((url1.getPath () == null && url2.getPath () == null)
-		|| (url1.getPath () != null
-			&& url1.getPath ().equals (url2.getPath ())))
-	    && ((url1.getQuery () == null && url2.getQuery () == null)
-                || (url1.getQuery () != null
-			&& url1.getQuery ().equals(url2.getQuery ())))
-	    && ((url1.getRef () == null && url2.getRef () == null)
-		|| (url1.getRef () != null
-			&& url1.getRef ().equals(url2.getRef ()))));
+    return (url1.getPort() == url2.getPort()
+           && ((url1.getProtocol() == null && url2.getProtocol() == null)
+           || (url1.getProtocol() != null
+           && url1.getProtocol().equals(url2.getProtocol())))
+           && ((url1.getUserInfo() == null && url2.getUserInfo() == null)
+           || (url1.getUserInfo() != null
+           && url1.getUserInfo().equals(url2.getUserInfo())))
+           && ((url1.getAuthority() == null && url2.getAuthority() == null)
+           || (url1.getAuthority() != null
+           && url1.getAuthority().equals(url2.getAuthority())))
+           && ((url1.getHost() == null && url2.getHost() == null)
+           || (url1.getHost() != null && url1.getHost().equals(url2.getHost())))
+           && ((url1.getPath() == null && url2.getPath() == null)
+           || (url1.getPath() != null && url1.getPath().equals(url2.getPath())))
+           && ((url1.getQuery() == null && url2.getQuery() == null)
+           || (url1.getQuery() != null
+           && url1.getQuery().equals(url2.getQuery())))
+           && ((url1.getRef() == null && url2.getRef() == null)
+           || (url1.getRef() != null && url1.getRef().equals(url2.getRef()))));
   }
 
   /**
@@ -410,19 +408,19 @@ public abstract class URLStreamHandler
    *
    * @exception UnknownHostException If an unknown host is found
    */
-  protected boolean hostsEqual (URL url1, URL url2)
+  protected boolean hostsEqual(URL url1, URL url2)
   {
-    InetAddress addr1 = getHostAddress (url1);
-    InetAddress addr2 = getHostAddress (url2);
+    InetAddress addr1 = getHostAddress(url1);
+    InetAddress addr2 = getHostAddress(url2);
 
     if (addr1 != null && addr2 != null)
-      return addr1.equals (addr2);
+      return addr1.equals(addr2);
 
     String host1 = url1.getHost();
     String host2 = url2.getHost();
-    
+
     if (host1 != null && host2 != null)
-      return host1.equalsIgnoreCase (host2);
+      return host1.equalsIgnoreCase(host2);
 
     return host1 == null && host2 == null;
   }
@@ -435,16 +433,16 @@ public abstract class URLStreamHandler
    *
    * @return The address of the hostname in url.
    */
-  protected InetAddress getHostAddress (URL url)
+  protected InetAddress getHostAddress(URL url)
   {
-    String hostname = url.getHost ();
+    String hostname = url.getHost();
 
     if (hostname.equals(""))
       return null;
-    
+
     try
       {
-        return InetAddress.getByName (hostname);
+	return InetAddress.getByName(hostname);
       }
     catch (UnknownHostException e)
       {
@@ -458,7 +456,7 @@ public abstract class URLStreamHandler
    *
    * @return The default port number.
    */
-  protected int getDefaultPort ()
+  protected int getDefaultPort()
   {
     return -1;
   }
@@ -468,15 +466,14 @@ public abstract class URLStreamHandler
    * other protocols that have different requirements for hashCode calculation.
    *
    * @param url The URL to calc the hashcode for.
-   * 
+   *
    * @return The hashcode for the given URL.
    */
-  protected int hashCode (URL url)
+  protected int hashCode(URL url)
   {
-    return url.getProtocol ().hashCode () +
-           ((url.getHost () == null) ? 0 : url.getHost ().hashCode ()) +
-	   url.getFile ().hashCode() +
-	   url.getPort ();
+    return url.getProtocol().hashCode()
+           + ((url.getHost() == null) ? 0 : url.getHost().hashCode())
+           + url.getFile().hashCode() + url.getPort();
   }
 
   /**
@@ -488,23 +485,27 @@ public abstract class URLStreamHandler
    *
    * @return A string representation of the url
    */
-  protected String toExternalForm(URL u)
+  protected String toExternalForm(URL url)
   {
-    String protocol, host, file, ref, user;
+    String protocol;
+    String host;
+    String file;
+    String ref;
+    String user;
     int port;
 
-    protocol = u.getProtocol();
+    protocol = url.getProtocol();
 
     // JDK 1.2 online doc infers that host could be null because it
     // explicitly states that file cannot be null, but is silent on host.
-    host = u.getHost();
+    host = url.getHost();
     if (host == null)
       host = "";
 
-    port = u.getPort();
-    file = u.getFile();
-    ref = u.getRef();
-    user = u.getUserInfo();
+    port = url.getPort();
+    file = url.getFile();
+    ref = url.getRef();
+    user = url.getUserInfo();
 
     // Guess a reasonable size for the string buffer so we have to resize
     // at most once.
@@ -520,13 +521,13 @@ public abstract class URLStreamHandler
     if (host.length() != 0)
       {
 	sb.append("//");
-	if (user != null && !"".equals(user))
+	if (user != null && ! "".equals(user))
 	  sb.append(user).append('@');
 	sb.append(host);
 
-        // Append port if port was in URL spec.
-        if (port >= 0)
-          sb.append(':').append(port);
+	// Append port if port was in URL spec.
+	if (port >= 0)
+	  sb.append(':').append(port);
       }
 
     sb.append(file);

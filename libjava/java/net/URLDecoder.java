@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,8 +39,9 @@ package java.net;
 
 import java.io.UnsupportedEncodingException;
 
+
 /**
- * This utility class contains static methods that converts a 
+ * This utility class contains static methods that converts a
  * string encoded in the x-www-form-urlencoded format to the original
  * text.  The x-www-form-urlencoded format replaces certain disallowed
  * characters with encoded equivalents.  All upper case and lower case
@@ -65,7 +66,7 @@ public class URLDecoder
   /**
    * Public contructor. Note that this class has only static methods.
    */
-  public URLDecoder ()
+  public URLDecoder()
   {
   }
 
@@ -84,12 +85,12 @@ public class URLDecoder
   {
     try
       {
-        return decode(s, "UTF-8");
+	return decode(s, "UTF-8");
       }
     catch (UnsupportedEncodingException uee)
       {
-        // Should never happen since UTF-8 encoding should always be supported
-        return s;
+	// Should never happen since UTF-8 encoding should always be supported
+	return s;
       }
   }
 
@@ -120,7 +121,7 @@ public class URLDecoder
   {
     // First convert all '+' characters to spaces.
     String str = s.replace('+', ' ');
-    
+
     // Then go through the whole string looking for byte encoded characters
     int i;
     int start = 0;
@@ -134,12 +135,12 @@ public class URLDecoder
 	start = i;
 
 	// Get all consecutive encoded bytes
-	while ((i+2 < length) && (str.charAt(i) == '%'))
+	while ((i + 2 < length) && (str.charAt(i) == '%'))
 	  i += 3;
 
 	// Decode all these bytes
-	if ((bytes == null) || (bytes.length < ((i-start)/3)))
-	  bytes = new byte[((i-start)/3)];
+	if ((bytes == null) || (bytes.length < ((i - start) / 3)))
+	  bytes = new byte[((i - start) / 3)];
 
 	int index = 0;
 	try
@@ -147,7 +148,7 @@ public class URLDecoder
 	    while (start < i)
 	      {
 		String sub = str.substring(start + 1, start + 3);
-		bytes[index] = (byte)Integer.parseInt(sub, 16);
+		bytes[index] = (byte) Integer.parseInt(sub, 16);
 		index++;
 		start += 3;
 	      }
@@ -176,5 +177,4 @@ public class URLDecoder
 
     return result.toString();
   }
-
 } // class URLDecoder

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,24 +35,24 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
 
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
-import java.security.cert.Certificate;
+
 
 /**
  * This abstract class represents a common superclass for implementations
  * of jar URL's.  A jar URL is a special type of URL that allows JAR
  * files on remote systems to be accessed.  It has the form:
  * <p>
- * jar:<standard URL pointing to jar file>!/file/within/jarfile
+ * jar:&lt;standard URL pointing to jar filei&gt;!/file/within/jarfile
  * <p> for example:
  * <p>
  * jar:http://www.urbanophile.com/java/foo.jar!/com/urbanophile/bar.class
@@ -96,30 +96,29 @@ public abstract class JarURLConnection extends URLConnection
   /**
    * Creates a JarURLConnection from an URL object
    *
-   * @param URL url The URL object for this connection.
+   * @param url The URL object for this connection.
    *
    * @exception MalformedURLException If url is invalid
    *
    * @specnote This constructor is protected since JDK 1.4
    */
-  protected JarURLConnection (URL url)
-    throws MalformedURLException
+  protected JarURLConnection(URL url) throws MalformedURLException
   {
-    super (url);
+    super(url);
 
-    if (!url.getProtocol().equals ("jar"))
-      throw new MalformedURLException (url + ": Not jar protocol.");
+    if (! url.getProtocol().equals("jar"))
+      throw new MalformedURLException(url + ": Not jar protocol.");
 
     String spec = url.getFile();
-    int bang = spec.indexOf ("!/");
+    int bang = spec.indexOf("!/");
     if (bang == -1)
-      throw new MalformedURLException (url + ": No `!/' in spec.");
+      throw new MalformedURLException(url + ": No `!/' in spec.");
 
     // Extract the url for the jar itself.
-    jarFileURL = new URL (spec.substring (0, bang));
+    jarFileURL = new URL(spec.substring(0, bang));
 
     // Get the name of the entry, if any.
-    entryName = spec.length() == (bang + 2) ? null : spec.substring (bang + 2);
+    entryName = spec.length() == (bang + 2) ? null : spec.substring(bang + 2);
   }
 
   /**
@@ -128,7 +127,7 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @return The remote URL
    */
-  public URL getJarFileURL ()
+  public URL getJarFileURL()
   {
     return jarFileURL;
   }
@@ -140,19 +139,19 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @return The entry name.
    */
-  public String getEntryName ()
+  public String getEntryName()
   {
     return entryName;
   }
 
   /**
-   * Returns the entry in this jar file specified by the URL.  
-   * 
+   * Returns the entry in this jar file specified by the URL.
+   *
    * @return The jar entry
    *
    * @exception IOException If an error occurs
    */
-  public JarEntry getJarEntry () throws IOException
+  public JarEntry getJarEntry() throws IOException
   {
     JarFile jarfile = null;
 
@@ -203,7 +202,7 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public abstract JarFile getJarFile () throws IOException;
+  public abstract JarFile getJarFile() throws IOException;
 
   /**
    * Returns an array of Certificate objects for the jar file entry specified
@@ -213,10 +212,10 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public Certificate[] getCertificates () throws IOException
+  public Certificate[] getCertificates() throws IOException
   {
     JarEntry entry = getJarEntry();
-    
+
     return entry != null ? entry.getCertificates() : null;
   }
 
@@ -228,10 +227,10 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public Attributes getMainAttributes () throws IOException
+  public Attributes getMainAttributes() throws IOException
   {
     Manifest manifest = getManifest();
-    
+
     return manifest != null ? manifest.getMainAttributes() : null;
   }
 
@@ -244,7 +243,7 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public Attributes getAttributes () throws IOException
+  public Attributes getAttributes() throws IOException
   {
     JarEntry entry = getJarEntry();
 
@@ -259,7 +258,7 @@ public abstract class JarURLConnection extends URLConnection
    *
    * @exception IOException If an error occurs
    */
-  public Manifest getManifest () throws IOException
+  public Manifest getManifest() throws IOException
   {
     JarFile file = getJarFile();
 

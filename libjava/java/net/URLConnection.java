@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -35,11 +35,10 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package java.net;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.AllPermission;
 import java.security.Permission;
@@ -53,13 +52,13 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import gnu.gcj.io.MimeTypes;
 
+
 /**
  * Written using on-line Java Platform 1.2 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  One guessContentTypeFrom... methods not implemented.
  *    getContent method assumes content type from response; see comment there.
  */
-
 /**
  * This class models a connection that retrieves the information pointed
  * to by a URL object.  This is typically a connection to a remote node
@@ -99,18 +98,18 @@ public abstract class URLConnection
    * instance and store it here.
    */
   private static FileNameMap fileNameMap;
- 
+
   /**
    * This is the ContentHandlerFactory set by the caller, if any
    */
   private static ContentHandlerFactory factory;
-  
+
   /**
    * This is the default value that will be used to determine whether or
    * not user interaction should be allowed.
    */
   private static boolean defaultAllowUserInteraction = false;
-  
+
   /**
    * This is the default flag indicating whether or not to use caches to
    * store the data returned from a server
@@ -128,17 +127,17 @@ public abstract class URLConnection
    * destination specified in the URL
    */
   protected boolean connected = false;
-  
+
   /**
    * Indicates whether or not input can be read from this URL
    */
   protected boolean doInput = true;
-  
+
   /**
    * Indicates whether or not output can be sent to this URL
    */
   protected boolean doOutput = false;
-  
+
   /**
    * If this flag is set, the protocol is allowed to cache data whenever
    * it can (caching is not guaranteed). If it is not set, the protocol
@@ -188,6 +187,8 @@ public abstract class URLConnection
   /**
    * Establishes the actual connection to the URL associated with this
    * connection object
+   *
+   * @exception IOException if an error occurs
    */
   public abstract void connect() throws IOException;
 
@@ -230,7 +231,7 @@ public abstract class URLConnection
   /**
    * Returns the value of the content-encoding field or null if it is not
    * known or not present.
-   * 
+   *
    * @return The content-encoding field
    */
   public String getContentEncoding()
@@ -295,7 +296,7 @@ public abstract class URLConnection
    * Returns a String representing the value of the header field having
    * the named key.  Returns null if the header field does not exist.
    *
-   * @param The key of the header field
+   * @param name The key of the header field
    *
    * @return The value of the header field as a String
    */
@@ -307,7 +308,9 @@ public abstract class URLConnection
 
   /**
    * Returns a map of all sent header fields
-   * 
+   *
+   * @return all header fields
+   *
    * @since 1.4
    */
   public Map getHeaderFields()
@@ -330,18 +333,18 @@ public abstract class URLConnection
    */
   public int getHeaderFieldInt(String name, int defaultValue)
   {
-    String value = getHeaderField (name);
-    
+    String value = getHeaderField(name);
+
     if (value == null)
       return defaultValue;
 
     try
       {
-        return Integer.parseInt (value);
+	return Integer.parseInt(value);
       }
-    catch (NumberFormatException e) 
-      { 
-        return defaultValue;
+    catch (NumberFormatException e)
+      {
+	return defaultValue;
       }
   }
 
@@ -357,25 +360,25 @@ public abstract class URLConnection
    * @return Returns the date value of the header filed or the default value
    * if the field is missing or malformed
    */
-  public long getHeaderFieldDate (String name, long defaultValue)
+  public long getHeaderFieldDate(String name, long defaultValue)
   {
     if (! dateformats_initialized)
-      initializeDateFormats ();
-    
+      initializeDateFormats();
+
     long result = defaultValue;
-    String str = getHeaderField (name);
-    
+    String str = getHeaderField(name);
+
     if (str != null)
       {
 	Date date;
-	if ((date = dateFormat1.parse (str, new ParsePosition (0))) != null)
-	  result = date.getTime ();
-	else if ((date = dateFormat2.parse (str, new ParsePosition (0))) != null)
-	  result = date.getTime ();
-	else if ((date = dateFormat3.parse (str, new ParsePosition (0))) != null)
-	  result = date.getTime ();
+	if ((date = dateFormat1.parse(str, new ParsePosition(0))) != null)
+	  result = date.getTime();
+	else if ((date = dateFormat2.parse(str, new ParsePosition(0))) != null)
+	  result = date.getTime();
+	else if ((date = dateFormat3.parse(str, new ParsePosition(0))) != null)
+	  result = date.getTime();
       }
-    
+
     return result;
   }
 
@@ -385,12 +388,12 @@ public abstract class URLConnection
    * getHeaderField(int) method allows access to the corresponding value for
    * this tag.
    *
-   * @param index The index into the header field list to retrieve the key for. 
+   * @param index The index into the header field list to retrieve the key for.
    *
    * @return The header field key or null if index is past the end
    * of the headers.
    */
-  public String getHeaderFieldKey (int index)
+  public String getHeaderFieldKey(int index)
   {
     // Subclasses for specific protocols override this.
     return null;
@@ -407,7 +410,7 @@ public abstract class URLConnection
    * This class first determines the MIME type of the content, then creates
    * a ContentHandler object to process the input.  If the ContentHandlerFactory
    * is set, then that object is called to load a content handler, otherwise
-   * a class called gnu.java.net.content.<content_type> is tried.
+   * a class called gnu.java.net.content.&lt;content_type&gt; is tried.
    * The default class will also be used if the content handler factory returns
    * a null content handler.
    *
@@ -436,6 +439,8 @@ public abstract class URLConnection
   /**
    * Retrieves the content of this URLConnection
    *
+   * @param classes The allowed classes for the content
+   *
    * @exception IOException If an error occurs
    * @exception UnknownServiceException If the protocol does not support the
    * content type
@@ -443,7 +448,7 @@ public abstract class URLConnection
   public Object getContent(Class[] classes) throws IOException
   {
     // FIXME: implement this
-    return getContent ();
+    return getContent();
   }
 
   /**
@@ -480,8 +485,8 @@ public abstract class URLConnection
   public InputStream getInputStream() throws IOException
   {
     // Subclasses for specific protocols override this.
-    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-			" does not support input.");
+    throw new UnknownServiceException("Protocol " + url.getProtocol()
+                                      + " does not support input.");
   }
 
   /**
@@ -496,14 +501,14 @@ public abstract class URLConnection
   public OutputStream getOutputStream() throws IOException
   {
     // Subclasses for specific protocols override this.
-    throw new UnknownServiceException("Protocol " + url.getProtocol() +
-			" does not support output.");
+    throw new UnknownServiceException("Protocol " + url.getProtocol()
+                                      + " does not support output.");
   }
 
   /**
    * The methods prints the value of this object as a String by calling the
    * toString() method of its associated URL.  Overrides Object.toString()
-   * 
+   *
    * @return A String representation of this object
    */
   public String toString()
@@ -515,7 +520,7 @@ public abstract class URLConnection
    * Returns the value of a flag indicating whether or not input is going
    * to be done for this connection.  This default to true unless the
    * doOutput flag is set to false, in which case this defaults to false.
-   * 
+   *
    * @param input <code>true</code> if input is to be done,
    * <code>false</code> otherwise
    *
@@ -524,7 +529,7 @@ public abstract class URLConnection
   public void setDoInput(boolean input)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     doInput = input;
   }
@@ -553,7 +558,7 @@ public abstract class URLConnection
   public void setDoOutput(boolean output)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     doOutput = output;
   }
@@ -628,7 +633,7 @@ public abstract class URLConnection
   public void setUseCaches(boolean usecaches)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     useCaches = usecaches;
   }
@@ -659,7 +664,7 @@ public abstract class URLConnection
   public void setIfModifiedSince(long ifmodifiedsince)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     ifModifiedSince = ifmodifiedsince;
   }
@@ -695,9 +700,9 @@ public abstract class URLConnection
    *
    * @param use true to use caches if possible by default, false otherwise
    */
-  public void setDefaultUseCaches(boolean defaultusecaches)
+  public void setDefaultUseCaches(boolean use)
   {
-    defaultUseCaches = defaultusecaches;
+    defaultUseCaches = use;
   }
 
   /**
@@ -705,23 +710,23 @@ public abstract class URLConnection
    *
    * @param key The name of the property
    * @param value The value of the property
-   * 
+   *
    * @exception IllegalStateException If already connected
    * @exception NullPointerException If key is null
    *
    * @see URLConnection#getRequestProperty(String key)
    * @see URLConnection#addRequestProperty(String key, String value)
-   * 
+   *
    * @since 1.4
    */
   public void setRequestProperty(String key, String value)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     if (key == null)
-      throw new NullPointerException ("key is null");
-    
+      throw new NullPointerException("key is null");
+
     // Do nothing unless overridden by subclasses that support setting
     // header fields in the request.
   }
@@ -735,20 +740,20 @@ public abstract class URLConnection
    *
    * @exception IllegalStateException If already connected
    * @exception NullPointerException If key is null
-   * 
+   *
    * @see URLConnection#getRequestProperty(String key)
    * @see URLConnection#setRequestProperty(String key, String value)
-   * 
+   *
    * @since 1.4
    */
   public void addRequestProperty(String key, String value)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     if (key == null)
-      throw new NullPointerException ("key is null");
-    
+      throw new NullPointerException("key is null");
+
     // Do nothing unless overridden by subclasses that support adding
     // header fields in the request.
   }
@@ -768,7 +773,7 @@ public abstract class URLConnection
   public String getRequestProperty(String key)
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     // Overridden by subclasses that support reading header fields from the
     // request.
@@ -787,7 +792,7 @@ public abstract class URLConnection
   public Map getRequestProperties()
   {
     if (connected)
-      throw new IllegalStateException ("Already connected");
+      throw new IllegalStateException("Already connected");
 
     // Overridden by subclasses that support reading header fields from the
     // request.
@@ -807,7 +812,7 @@ public abstract class URLConnection
    *
    * @see URLConnection#setRequestProperty(String key, String value)
    */
-  public static void setDefaultRequestProperty (String key, String value)
+  public static void setDefaultRequestProperty(String key, String value)
   {
     // This method does nothing since JDK 1.3.
   }
@@ -820,7 +825,7 @@ public abstract class URLConnection
    * @param key The request property to return the default value of
    *
    * @return The value of the default property or null if not available
-   * 
+   *
    * @deprecated 1.3 The method getRequestProperty should be used instead.
    * This method does nothing now.
    *
@@ -844,10 +849,9 @@ public abstract class URLConnection
    * @exception SecurityException If a security manager exists and its
    * checkSetFactory method doesn't allow the operation
    */
-  public static synchronized void setContentHandlerFactory
-                                    (ContentHandlerFactory fac)
+  public static synchronized void setContentHandlerFactory(ContentHandlerFactory factory)
   {
-    if (factory != null)
+    if (URLConnection.factory != null)
       throw new Error("ContentHandlerFactory already set");
 
     // Throw an exception if an extant security mgr precludes
@@ -856,7 +860,7 @@ public abstract class URLConnection
     if (s != null)
       s.checkSetFactory();
 
-    factory = fac;
+    URLConnection.factory = factory;
   }
 
   /**
@@ -895,7 +899,7 @@ public abstract class URLConnection
    * Returns the MIME type of a stream based on the first few characters
    * at the beginning of the stream.  This routine can be used to determine
    * the MIME type if a server is believed to be returning an incorrect
-   * MIME type.  This method returns "application/octet-stream" if it 
+   * MIME type.  This method returns "application/octet-stream" if it
    * cannot determine the MIME type.
    * <p>
    * NOTE: Overriding MIME types sent from the server can be obnoxious
@@ -937,7 +941,7 @@ public abstract class URLConnection
    *
    * @exception SecurityException If a security manager exists and its
    * checkSetFactory method doesn't allow the operation
-   * 
+   *
    * @since 1.2
    */
   public static void setFileNameMap(FileNameMap map)
@@ -1040,10 +1044,10 @@ public abstract class URLConnection
       return;
 
     Locale locale = new Locale("En", "Us", "Unix");
-    dateFormat1 = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", 
-                                       locale);
-    dateFormat2 = new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", 
-                                       locale);
+    dateFormat1 =
+      new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss 'GMT'", locale);
+    dateFormat2 =
+      new SimpleDateFormat("EEEE, dd-MMM-yy hh:mm:ss 'GMT'", locale);
     dateFormat3 = new SimpleDateFormat("EEE MMM d hh:mm:ss yyyy", locale);
     dateformats_initialized = true;
   }

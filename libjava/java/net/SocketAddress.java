@@ -1,4 +1,4 @@
-/* SocketAddress.java -- 
+/* SocketAddress.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -39,7 +39,8 @@ package java.net;
 
 import java.io.Serializable;
 
-/** 
+
+/**
  * Abstract base class for InetSocketAddress.
  * InetSocketAddress is to my knowledge the only derived
  * class. [Ronald]

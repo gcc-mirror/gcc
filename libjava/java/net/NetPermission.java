@@ -39,22 +39,23 @@ package java.net;
 
 import java.security.BasicPermission;
 
+
 /**
  * This class is used to model miscellaneous network permissions.  It is
- * a subclass of <code>BasicPermission</code>.  This means that it models a 
- * "boolean" permission.  One that you either have or do not have.  Thus 
- * there is no permitted action list associated with this object. 
+ * a subclass of <code>BasicPermission</code>.  This means that it models a
+ * "boolean" permission.  One that you either have or do not have.  Thus
+ * there is no permitted action list associated with this object.
  *
  * The following permission names are defined for this class:
- * 
+ *
  * <ul>
  * <li>setDefaultAuthenticator - Grants the ability to install a facility
- * to collect username and password information when requested by a 
- * web site or proxy server.
+ * to collect username and password information when requested by a
+ * web site or proxy server.</li>
  * <li>requestPasswordAuthentication - Grants the ability to ask the
- * authentication facility for the user's password.
- * <li>specifyStreamHandler - Grants the permission to specify the 
- * stream handler class used when loading from a URL.
+ * authentication facility for the user's password.</li>
+ * <li>specifyStreamHandler - Grants the permission to specify the
+ * stream handler class used when loading from a URL.</li>
  * </ul>
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -75,8 +76,8 @@ public final class NetPermission extends BasicPermission
   }
 
   /**
-   * Initializes a new instance of <code>NetPermission</code> with the 
-   * specified name and perms.  Note that the perms field is irrelevant and is 
+   * Initializes a new instance of <code>NetPermission</code> with the
+   * specified name and perms.  Note that the perms field is irrelevant and is
    * ignored.  This constructor should never need to be used.
    *
    * @param name The name of this permission

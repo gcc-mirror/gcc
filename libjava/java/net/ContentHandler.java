@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -47,11 +47,11 @@ import java.io.IOException;
 
 /**
   * This is an abstract class that is the superclass for classes that read
-  * objects from URL's.  Calling the <code>getContent()</code> method in the 
-  * <code>URL</code> class or the <code>URLConnection</code> class will cause 
-  * an instance of a subclass of <code>ContentHandler</code> to be created for 
-  * the MIME type of the object being downloaded from the URL.  Thus, this 
-  * class is seldom needed by applications/applets directly, but only 
+  * objects from URL's.  Calling the <code>getContent()</code> method in the
+  * <code>URL</code> class or the <code>URLConnection</code> class will cause
+  * an instance of a subclass of <code>ContentHandler</code> to be created for
+  * the MIME type of the object being downloaded from the URL.  Thus, this
+  * class is seldom needed by applications/applets directly, but only
   * indirectly through methods in other classes.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
@@ -66,8 +66,8 @@ public abstract class ContentHandler
   /**
     * Default, no-argument constructor.
     */
-  public ContentHandler() 
-  { 
+  public ContentHandler()
+  {
   }
 
   /*
@@ -75,10 +75,10 @@ public abstract class ContentHandler
    */
 
   /**
-    * This method reads from the <code>InputStream</code> of the passed in URL 
-    * connection and uses the data downloaded to create an <code>Object</code> 
-    * represening the content.  For example, if the URL is pointing to a GIF 
-    * file, this method might return an <code>Image</code> object.  This method 
+    * This method reads from the <code>InputStream</code> of the passed in URL
+    * connection and uses the data downloaded to create an <code>Object</code>
+    * represening the content.  For example, if the URL is pointing to a GIF
+    * file, this method might return an <code>Image</code> object.  This method
     * must be implemented by subclasses.
     *
     * @param urlc A <code>URLConnection</code> object to read data from.
@@ -87,16 +87,16 @@ public abstract class ContentHandler
     *
     * @exception IOException If an error occurs
     */
-  public abstract Object getContent(URLConnection urlc) 
+  public abstract Object getContent(URLConnection urlc)
     throws IOException;
 
   /**
     * This method reads from the <code>InputStream</code> of the passed in URL
     * connection and uses the data downloaded to create an <code>Object</code>
-    * represening the content.  For example, if the URL is pointing to a GIF 
-    * file, this method might return an <code>Image</code> object.  This method 
+    * represening the content.  For example, if the URL is pointing to a GIF
+    * file, this method might return an <code>Image</code> object.  This method
     * must be implemented by subclasses.  This method uses the list of
-    * supplied classes as candidate types.  If the data read doesn't match 
+    * supplied classes as candidate types.  If the data read doesn't match
     * any of the supplied type, <code>null</code> is returned.
     *
     * @param urlc A <code>URLConnection</code> object to read data from.
@@ -113,15 +113,14 @@ public abstract class ContentHandler
   public Object getContent(URLConnection urlc, Class[] classes)
     throws IOException
   {
-    Object obj = getContent (urlc);
+    Object obj = getContent(urlc);
 
     for (int i = 0; i < classes.length; i++)
       {
-        if (classes [i].isInstance (obj))
-          return obj;
+	if (classes[i].isInstance(obj))
+	  return obj;
       }
 
     return null;
   }
-
 } // class ContentHandler
