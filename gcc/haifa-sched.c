@@ -2246,7 +2246,7 @@ schedule_block (int b, int rgn_n_insns)
 	      if (ready.n_ready == 0 || !can_issue_more
 		  || !(*current_sched_info->schedule_more_p) ())
 		break;
-	      insn = choose_ready (&ready);
+	      insn = ready_remove_first (&ready);
 	      cost = actual_hazard (insn_unit (insn), insn, clock_var, 0);
 	    }
 	  else

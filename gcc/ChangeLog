@@ -1,3 +1,8 @@
+2003-09-15  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* haifa-sched.c (schedule_block): Use ready_remove_first instead
+	of choose_ready for non-dfa insn scheduling.
+
 2003-09-15  Andreas Jaeger  <aj@suse.de>
             Kaveh R. Ghazi <ghazi@caip.rutgers.edu>
 
