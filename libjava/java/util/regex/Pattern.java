@@ -38,8 +38,8 @@ exception statement from your version. */
 package java.util.regex;
 
 import gnu.regexp.RE;
-import gnu.regexp.RESyntax;
 import gnu.regexp.REException;
+import gnu.regexp.RESyntax;
 
 import java.io.Serializable;
 import java.util.ArrayList;

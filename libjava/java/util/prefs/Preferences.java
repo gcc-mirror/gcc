@@ -37,15 +37,14 @@ exception statement from your version. */
 
 package java.util.prefs;
 
+import gnu.java.util.prefs.NodeReader;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.IOException;
-
 import java.security.AccessController;
 import java.security.Permission;
 import java.security.PrivilegedAction;
-
-import gnu.java.util.prefs.NodeReader;
 
 /**
  * Preference node containing key value entries and subnodes.
