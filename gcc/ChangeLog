@@ -1,3 +1,7 @@
+2003-03-07  James E Wilson  <wilson@tuliptree.org>
+
+        * config/sh/sh.h (HARD_REGNO_NREGS): Round up the XD register count.
+
 2003-03-07  Geoffrey Keating  <geoffk@apple.com>
 
 	* objc/lang-specs.h (objective-c-header): Use .gch not .pch;
