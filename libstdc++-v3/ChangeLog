@@ -1,3 +1,7 @@
+2001-03-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/misc-inst.cc (__copy_streambufs): Fix typo for alpha.
+
 2001-03-02  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/bits/istream.tcc: change type of __extracted to __size_type 
