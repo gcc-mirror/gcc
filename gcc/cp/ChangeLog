@@ -1,4 +1,12 @@
-Fri Nov  3 17:58:52 1995  Mike Stump  <mrs@cygnus.com>
+Mon Nov 20 14:06:28 1995  Mike Stump  <mrs@cygnus.com>
+
+	* Version 2.7.2 released.
+
+Mon Nov 20 14:05:00 1995  Mike Stump  <mrs@cygnus.com>
+
+	* g++.c (pfatal_with_name): Add missing third argument to concat.
+
+Sun Nov 12 18:09:35 1995  Mike Stump  <mrs@cygnus.com>
 
 	* Version 2.7.1 released.
 
