@@ -981,7 +981,7 @@ copy_node (node)
     ((int *) t)[i] = ((int *) node)[i];
   /* Clear any extra bytes.  */
   for (i = length / sizeof (int) * sizeof (int); i < length; i++)
-    ((char *) t)[i] = 0;
+    ((char *) t)[i] = ((char *) node)[i];
 
   TREE_CHAIN (t) = 0;
 
