@@ -1,3 +1,7 @@
+Mon Feb  2 01:38:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (get_condition): Handle sign-extended constants.
+
 Mon Feb  2 01:22:46 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* expr.c (emit_push_insn): Add code to use movstrti if present.
