@@ -580,6 +580,8 @@ char *lang_options[] =
   "-Wno-trigraphs",
   "-Wimport",
   "-Wno-import",
+  "-Wmissing-braces",
+  "-Wno-missing-braces",
   "-Wall",
 
   /* These are for C++.  */
