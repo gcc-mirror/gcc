@@ -2595,12 +2595,17 @@ notice_update_cc (rtx exp, rtx insn)
   if (cc_status.value2 != 0)
     switch (GET_CODE (cc_status.value2))
       {
-      case PLUS: case MINUS: case MULT:
-      case DIV: case UDIV: case MOD: case UMOD: case NEG:
-#if 0 /* These instructions always clear the overflow bit */
       case ASHIFT: case ASHIFTRT: case LSHIFTRT:
       case ROTATE: case ROTATERT:
-#endif
+	/* These instructions always clear the overflow bit, and set
+	   the carry to the bit shifted out.  */
+	/* ??? We don't currently have a way to signal carry not valid,
+	   nor do we check for it in the branch insns.  */
+	CC_STATUS_INIT;
+	break;
+
+      case PLUS: case MINUS: case MULT:
+      case DIV: case UDIV: case MOD: case UMOD: case NEG:
 	if (GET_MODE (cc_status.value2) != VOIDmode)
 	  cc_status.flags |= CC_NO_OVERFLOW;
 	break;
