@@ -1,9 +1,9 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Contributed by   A. Lichnewsky,	lich@inria.inria.fr
-   Changed by Michael Meissner,		meissner@osf.org
-   64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
-   Brendan Eich, brendan@microunity.com.
    Copyright (C) 1989, 90-5, 1996 Free Software Foundation, Inc.
+   Contributed by A. Lichnewsky (lich@inria.inria.fr).
+   Changed by Michael Meissner	(meissner@osf.org).
+   64 bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
+   Brendan Eich (brendan@microunity.com).
 
 This file is part of GNU CC.
 
@@ -3542,12 +3542,6 @@ while (0)
 									\
   HALF_PIC_DECLARE (NAME);						\
 }
-
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-
-#define ASM_OUTPUT_LABELREF(STREAM,NAME) 				\
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
