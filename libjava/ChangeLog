@@ -1,5 +1,6 @@
 2001-04-01  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	1.3-Compliant Implementation of java.io.File.
 	* java/lang/natSystem.cc (init_properties): Get "file.separator",
 	"path.separator", and "java.io.tmpdir" from the File class, instead
 	of setting them explicitly. 
