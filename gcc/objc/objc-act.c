@@ -5794,17 +5794,17 @@ encode_type_qualifiers (declspecs)
 
   for (spec = declspecs; spec; spec = TREE_CHAIN (spec))
     {
-      if (ridpointers[RID_CONST] == TREE_VALUE (spec))
+      if (ridpointers[(int) RID_CONST] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'r');
-      else if (ridpointers[RID_IN] == TREE_VALUE (spec))
+      else if (ridpointers[(int) RID_IN] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'n');
-      else if (ridpointers[RID_INOUT] == TREE_VALUE (spec))
+      else if (ridpointers[(int) RID_INOUT] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'N');
-      else if (ridpointers[RID_OUT] == TREE_VALUE (spec))
+      else if (ridpointers[(int) RID_OUT] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'o');
-      else if (ridpointers[RID_BYCOPY] == TREE_VALUE (spec))
+      else if (ridpointers[(int) RID_BYCOPY] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'O');
-      else if (ridpointers[RID_ONEWAY] == TREE_VALUE (spec))
+      else if (ridpointers[(int) RID_ONEWAY] == TREE_VALUE (spec))
 	obstack_1grow (&util_obstack, 'V');
     }
 }
