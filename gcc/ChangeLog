@@ -1,3 +1,10 @@
+2004-02-12  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Don't kill
+	previous MEM_VOLATILE in REF.
+	* function.c (fixup_var_refs): Save volatile_ok and set to 1.
+	* expr.c (emit_block_move_via_movstr): Save and restore volatile_ok.
+
 2004-02-12  Gunther Nikl  <gni@gecko.de>
 
 	* config.gcc: Restore support for m68k-openbsd.
