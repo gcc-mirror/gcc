@@ -1,3 +1,7 @@
+2001-11-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (java.generated-manpages): New dummy target.
+
 2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* jvspec.c (jvgenmain_spec): Cannot use %umain, breaks

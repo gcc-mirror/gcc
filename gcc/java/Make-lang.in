@@ -149,6 +149,7 @@ java.rest.encap:
 
 java.info: $(srcdir)/java/gcj.info
 java.dvi: java/gcj.dvi
+java.generated-manpages:
 
 # Install hooks:
 # jc1, gcj, jvgenmain, and gcjh are installed elsewhere as part

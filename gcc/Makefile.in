@@ -2361,7 +2361,8 @@ cppinternals.dvi: $(docdir)/cppinternals.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
 
 generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1 \
-	 $(docdir)/gfdl.7 $(docdir)/gpl.7 $(docdir)/fsf-funding.7
+	 $(docdir)/gfdl.7 $(docdir)/gpl.7 $(docdir)/fsf-funding.7 \
+	 lang.generated-manpages
 
 $(docdir)/gcov.1: $(docdir)/gcov.texi
 	$(STAMP) $(docdir)/gcov.1
