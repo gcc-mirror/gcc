@@ -1,3 +1,7 @@
+2003-07-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* lex.c: Remove error block #ifdef MAP_CHARACTER.
+
 Mon Jul  7 18:13:22 2003  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* com.c (bison_rule_pushlevel_, bison_rule_compstmt_): Adjust

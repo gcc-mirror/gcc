@@ -137,17 +137,6 @@ extern size_t mvs_function_name_length;
 
 #define TARGET_FLOAT_FORMAT IBM_FLOAT_FORMAT
 
-/* Define character mapping for cross-compiling.  */
-/* but only define it if really needed, since otherwise it will break builds */
-
-#ifdef TARGET_EBCDIC
-#if HOST_CHARSET == HOST_CHARSET_EBCDIC
-#define MAP_CHARACTER(c) ((char)(c))
-#else
-#define MAP_CHARACTER(c) ((char)mvs_map_char (c))
-#endif
-#endif
-
 #ifdef TARGET_HLASM
 /* HLASM requires #pragma map.  */
 #define REGISTER_TARGET_PRAGMAS() c_register_pragma (0, "map", i370_pr_map)
@@ -1131,7 +1120,6 @@ enum reg_class
 	  if (j % MVS_ASCII_TEXT_LENGTH != 0 )				\
 	    fprintf (FILE, "'\n");					\
 	  j = -1;							\
-	  if (c == '&') c = MAP_CHARACTER (c);				\
 	  fprintf (FILE, "\tDC\tX'%X'\n", c );				\
 	}								\
       else								\

@@ -1,3 +1,11 @@
+2003-07-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* system.h: Poison MAP_CHARACTER.
+	* config/i370/i370-protos.h (mvs_map_char): Delete.
+	* config/i370/i370.c (ascebc, ebcasc, mvs_map_char): Delete.
+	* config/i370/i370.h (MAP_CHARACTER): Delete definition.
+	(ASM_OUTPUT_ASCII): Don't use MAP_CHARACTER.
+
 2003-07-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* toplev.c (randomize): Correct call to time().
