@@ -2041,7 +2041,7 @@
 	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m,f")))]
   "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
   "@
-   cpys %1,%1,%0
+   fmov %1,%0
    ld%, %0,%1
    st%- %1,%0"
   [(set_attr "type" "fcpys,fld,fst")
@@ -3749,7 +3749,7 @@
    (clobber (reg:DI 27))]
   "TARGET_OPEN_VMS"
   "@
-   bis %2,%2,$27\;jsr $26,0\;ldq $27,0($29)
+   mov %2,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
@@ -3791,7 +3791,7 @@
    (clobber (reg:DI 27))]
   "TARGET_OPEN_VMS"
   "@
-   bis %3,%3,$27\;jsr $26,0\;ldq $27,0($29)
+   mov %3,$27\;jsr $26,0\;ldq $27,0($29)
    ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
@@ -4032,72 +4032,68 @@
 ;; they are simpler.
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
-	(match_operand:SF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,m")
+	(match_operand:SF 1 "input_operand" "rG,m,r,fG,m,fG"))]
   "! TARGET_CIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
-   bis %r1,%r1,%0
+   mov %r1,%0
    ldl %0,%1
    stl %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m,f,*r")
-	(match_operand:SF 1 "input_operand" "rG,m,rG,f,G,m,fG,r,*f"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m,f,f,m,f,*r")
+	(match_operand:SF 1 "input_operand" "rG,m,r,fG,m,fG,r,*f"))]
   "TARGET_CIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
-   bis %r1,%r1,%0
+   mov %r1,%0
    ldl %0,%1
    stl %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%, %0,%1
    st%, %R1,%0
    itofs %1,%0
    ftois %1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst,itof,ftoi")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,itof,ftoi")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m")
-	(match_operand:DF 1 "input_operand" "rG,m,rG,f,G,m,fG"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,m")
+	(match_operand:DF 1 "input_operand" "rG,m,r,fG,m,fG"))]
   "! TARGET_CIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
-   bis %r1,%r1,%0
+   mov %r1,%0
    ldq %0,%1
    stq %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%- %0,%1
    st%- %R1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,f,m,f,*r")
-	(match_operand:DF 1 "input_operand" "rG,m,rG,f,G,m,fG,r,*f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r,m,f,f,m,f,*r")
+	(match_operand:DF 1 "input_operand" "rG,m,r,fG,m,fG,r,*f"))]
   "TARGET_CIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
-   bis %r1,%r1,%0
+   mov %r1,%0
    ldq %0,%1
    stq %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%- %0,%1
    st%- %R1,%0
    itoft %1,%0
    ftoit %1,%0"
-  [(set_attr "type" "ilog,ild,ist,fcpys,fcpys,fld,fst,itof,ftoi")])
+  [(set_attr "type" "ilog,ild,ist,fcpys,fld,fst,itof,ftoi")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "nonimmediate_operand" "")
@@ -4122,131 +4118,110 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m")
-	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && ! TARGET_CIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%1
    ldah %0,%h1
    ldl %0,%1
    stl %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ild,ist,fcpys,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,m,f,f,f,m,r,*f")
-	(match_operand:SI 1 "input_operand" "r,J,I,K,L,m,rJ,f,J,m,fG,f,*r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m,r,*f")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f,f,*r"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_CIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%1
    ldah %0,%h1
    ldl %0,%1
    stl %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%, %0,%1
    st%, %R1,%0
    ftois %1,%0
    itofs %1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ild,ist,fcpys,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
-	(match_operand:SI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,m,fG"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,m")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,m,f"))]
   "(TARGET_WINDOWS_NT || TARGET_OPEN_VMS)
     && (register_operand (operands[0], SImode)
         || reg_or_0_operand (operands[1], SImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %1,%0
    lda %0,%1
    ldah %0,%h1
    lda %0,%1
    ldl %0,%1
    stl %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ld%, %0,%1
    st%, %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:HI 1 "input_operand" "r,J,I,n,f,J"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,f")
+	(match_operand:HI 1 "input_operand" "rJ,n,fJ"))]
   "! TARGET_BWX
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%L1
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+   fmov %R1,%0"
+  [(set_attr "type" "ilog,iadd,fcpys")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
-	(match_operand:HI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,f")
+	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ,fJ"))]
   "TARGET_BWX
    && (register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%L1
    ldwu %0,%1
    stw %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,ild,ist,fcpys,fcpys")])
+   fmov %R1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist,fcpys")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:QI 1 "input_operand" "r,J,I,n,f,J"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,f")
+	(match_operand:QI 1 "input_operand" "rJ,n,fJ"))]
   "! TARGET_BWX
    && (register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%L1
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+   fmov %R1,%0"
+  [(set_attr "type" "ilog,iadd,fcpys")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
-	(match_operand:QI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m,f")
+	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ,fJ"))]
   "TARGET_BWX
    && (register_operand (operands[0], QImode)
        || reg_or_0_operand (operands[1], QImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%L1
    ldbu %0,%1
    stb %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,ild,ist,fcpys,fcpys")])
+   fmov %R1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist,fcpys")])
 
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
@@ -4292,48 +4267,42 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,Q")
-	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,Q,fG"))]
+  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f"))]
   "! TARGET_CIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%1
    ldah %0,%h1
    lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ldt %0,%1
    stt %R1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst")])
+  [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,Q,r,*f")
-	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,Q,fG,f,*r"))]
+  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q,r,*f")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f,f,*r"))]
   "TARGET_CIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
-   bis %1,%1,%0
-   bis $31,$31,%0
-   bis $31,%1,%0
+   mov %r1,%0
    lda %0,%1
    ldah %0,%h1
    lda %0,%1
    ldq%A1 %0,%1
    stq%A0 %r1,%0
-   cpys %1,%1,%0
-   cpys $f31,$f31,%0
+   fmov %R1,%0
    ldt %0,%1
    stt %R1,%0
    ftoit %1,%0
    itoft %1,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ild,ist,fcpys,fcpys,fld,fst,ftoi,itof")])
+  [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
 ;; We do three major things here: handle mem->mem, put 64-bit constants in
 ;; memory, and construct long 32-bit constants.
@@ -5151,7 +5120,7 @@
         (match_operand:DI 1 "register_operand" "r"))
    (clobber (mem:BLK (match_operand:DI 2 "register_operand" "r")))]
   ""
-  "bis %1,%1,%0")
+  "mov %1,%0")
 
 (define_expand "epilogue"
   [(clobber (const_int 0))]
