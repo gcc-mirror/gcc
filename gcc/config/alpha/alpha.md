@@ -495,6 +495,95 @@
    (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
   "")
 
+;;  Here we have the same for (plus (minus ..) ..).
+
+(define_insn ""
+  [(set (match_operand:DI 0 "some_operand" "=&r")
+	(plus:DI (minus:DI (match_operand:DI 1 "some_operand" "r")
+			   (match_operand:DI 2 "some_operand" "r"))
+		 (match_operand:DI 3 "some_operand" "rIOKL")))]
+  "reload_in_progress"
+  "#")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (minus:DI (match_operand:DI 1 "register_operand" "")
+			   (match_operand:DI 2 "register_operand" ""))
+		 (match_operand:DI 3 "add_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0) (minus:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 3)))]
+  "")
+					   
+(define_insn ""
+  [(set (match_operand:SI 0 "some_operand" "=&r")
+	(plus:SI (minus:SI (mult:SI (match_operand:SI 1 "some_operand" "rJ")
+				    (match_operand:SI 2 "const48_operand" "I"))
+			   (match_operand:SI 3 "some_operand" "r"))
+		 (match_operand:SI 4 "some_operand" "rIOKL")))]
+  "reload_in_progress"
+  "#")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "r")
+	(plus:SI (minus:SI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "")
+				    (match_operand:SI 2 "const48_operand" ""))
+			  (match_operand:SI 3 "register_operand" ""))
+		 (match_operand:SI 4 "add_operand" "rIOKL")))]
+  "reload_completed"
+  [(set (match_dup 0)
+	(minus:SI (mult:SI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 4)))]
+  "")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "some_operand" "=&r")
+	(sign_extend:DI
+	 (plus:SI (minus:SI
+		   (mult:SI (match_operand:SI 1 "some_operand" "rJ")
+			    (match_operand:SI 2 "const48_operand" "I"))
+		   (match_operand:SI 3 "some_operand" "r"))
+		  (match_operand:SI 4 "some_operand" "rIOKL"))))]
+  "reload_in_progress"
+  "#")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(sign_extend:DI
+	 (plus:SI (minus:SI
+		   (mult:SI (match_operand:SI 1 "reg_or_0_operand" "")
+			    (match_operand:SI 2 "const48_operand" ""))
+		   (match_operand:SI 3 "register_operand" ""))
+		  (match_operand:SI 4 "add_operand" ""))))]
+  "reload_completed"
+  [(set (match_dup 5)
+	(minus:SI (mult:SI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (sign_extend:DI (plus:SI (match_dup 5) (match_dup 4))))]
+  "
+{ operands[5] = gen_lowpart (SImode, operands[0]);
+}")
+
+(define_insn ""
+  [(set (match_operand:DI 0 "some_operand" "=&r")
+	(plus:DI (minus:DI (mult:DI (match_operand:DI 1 "some_operand" "rJ")
+				    (match_operand:DI 2 "const48_operand" "I"))
+			  (match_operand:DI 3 "some_operand" "r"))
+		 (match_operand:DI 4 "some_operand" "rIOKL")))]
+  "reload_in_progress"
+  "#")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "=")
+	(plus:DI (minus:DI (mult:DI (match_operand:DI 1 "reg_or_0_operand" "")
+				    (match_operand:DI 2 "const48_operand" ""))
+			   (match_operand:DI 3 "register_operand" ""))
+		 (match_operand:DI 4 "add_operand" "")))]
+  "reload_completed"
+  [(set (match_dup 0)
+	(minus:DI (mult:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
+  "")
+
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(neg:SI (match_operand:SI 1 "reg_or_8bit_operand" "rI")))]
