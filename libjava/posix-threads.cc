@@ -85,12 +85,11 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
     r = pthread_cond_wait (cv, pmu);
   else
     {
-      struct timespec ts;
-      unsigned long m = millis + java::lang::System::currentTimeMillis ();
-
-      ts.tv_sec = m / 1000;
-      ts.tv_nsec = (m % 1000) * 1000 * 1000 + nanos;
-
+      struct timespec ts; 
+      jlong m = millis + java::lang::System::currentTimeMillis (); 
+      ts.tv_sec = m / 1000; 
+      ts.tv_nsec = ((m % 1000) * 1000000) + nanos; 
+             
       r = pthread_cond_timedwait (cv, pmu, &ts);
     }
   return r;

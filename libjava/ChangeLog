@@ -1,8 +1,13 @@
+1999-06-14  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* posix-threads.cc (_Jv_CondWait): Fix currentTimeMillis() overflow.
+
 1999-06-11  Warren Levy  <warrenl@cygnus.com>
 
 	* mauve-libgcj: Activated java.net Mauve tests.
 
 1999-06-10  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* java/net/natInetAddress.cc (aton): Fix typos.
 	(lookup): Use a bigger buffer size for gethostbyname_r on all
 	versions of glibc. Updated FIXME comment explaining this.
@@ -22,7 +27,7 @@
 	* java/text/DecimalFormat.java: Throw IllegalArgumentException
 	throughout rather than ParseException.
 
-1999-06-09  Bryce McKinlay <bryce@albatross.co.nz>
+1999-06-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Runtime.java (exec): Convert prog name and arguments
 	to string array.
