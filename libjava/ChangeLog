@@ -1,5 +1,17 @@
 2001-10-01  Tom Tromey  <tromey@redhat.com>
 
+	* gcj/javaprims.h: Rebuilt class list.
+	* boehm.cc (_Jv_GCRegisterDisappearingLink): New function.
+	(_Jv_GCCanReclaimSoftReference): New function.
+	* include/jvm.h (_Jv_GCRegisterDisappearingLink): Declare.
+	(_Jv_GCCanReclaimSoftReference): Declare.
+	* java/lang/ref/Reference.java (referent): Now a RawData.
+	(create): Renamed from `created'.  Added object argument.
+	(Reference): Don't initialize `referent' here.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added new file.
+	* java/lang/ref/natReference.cc: New file.
+
 	* prims.cc (_Jv_NewMultiArrayUnchecked): New method.
 	(_Jv_NewMultiArray): Use it.  Check each array dimension.
 	(_Jv_NewMultiArray): Likewise.

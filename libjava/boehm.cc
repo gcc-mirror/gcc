@@ -543,6 +543,19 @@ _Jv_AllocTraceOne (jsize size /* includes vtable slot */)
 
 #endif /* JV_HASH_SYNCHRONIZATION */
 
+void
+_Jv_GCRegisterDisappearingLink (jobject *objp)
+{
+  GC_general_register_disappearing_link ((GC_PTR *) objp, (GC_PTR) *objp);
+}
+
+jboolean
+_Jv_GCCanReclaimSoftReference (jobject obj)
+{
+  // For now, always reclaim soft references.  FIXME.
+  return true;
+}
+
 #if 0
 void
 _Jv_InitGC (void)

@@ -192,6 +192,7 @@ extern "Java"
       class Short;
       class StackOverflowError;
       class String;
+      class String$CaseInsensitiveComparator;
       class StringBuffer;
       class StringIndexOutOfBoundsException;
       class System;
