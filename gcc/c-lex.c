@@ -1014,7 +1014,6 @@ c_lex (value)
 
     case CPP_STRING:
     case CPP_WSTRING:
-    case CPP_OSTRING:
       *value = lex_string ((const char *)tok.val.str.text,
 			   tok.val.str.len, tok.type == CPP_WSTRING);
       break;

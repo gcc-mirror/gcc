@@ -1241,29 +1241,8 @@ _cpp_lex_token (pfile, result)
     case '}': result->type = CPP_CLOSE_BRACE; break;
     case ';': result->type = CPP_SEMICOLON; break;
 
-    case '@':
-      if (CPP_OPTION (pfile, objc))
-	{
-	  /* In Objective C, '@' may begin keywords or strings, like
-	     @keyword or @"string".  It would be nice to call
-	     get_effective_char here and test the result.  However, we
-	     would then need to pass 2 characters to parse_identifier,
-	     making it ugly and slowing down its main loop.  Instead,
-	     we assume we have an identifier, and recover if not.  */
-	  result->type = CPP_NAME;
-	  result->val.node = parse_identifier (pfile, c);
-	  if (result->val.node->length != 1)
-	    break;
-
-	  /* OK, so it wasn't an identifier.  Maybe a string?  */
-	  if (buffer->read_ahead == '"')
-	    {
-	      c = '"';
-	      ACCEPT_CHAR (CPP_OSTRING);
-	      goto make_string;
-	    }
-	}
-      goto random_char;
+      /* @ is a punctuator in Objective C.  */
+    case '@': result->type = CPP_ATSIGN; break;
 
     random_char:
     default:
@@ -1341,7 +1320,6 @@ cpp_spell_token (pfile, token, buffer)
 	  {
 	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
 	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
-	  case CPP_OSTRING:	left = '"';  right = '"';  tag = '@';  break;
 	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
     	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
 	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
@@ -1432,7 +1410,6 @@ cpp_output_token (token, fp)
 	  {
 	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
 	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
-	  case CPP_OSTRING:	left = '"';  right = '"';  tag = '@';  break;
 	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
     	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
 	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
@@ -1579,13 +1556,6 @@ cpp_can_paste (pfile, token1, token2, digraph)
 	  && VALID_SIGN ('+', token1->val.str.text[token1->val.str.len - 1]))
 	return CPP_NUMBER;
       break;
-
-    case CPP_OTHER:
-      if (CPP_OPTION (pfile, objc) && token1->val.c == '@')
-	{
-	  if (b == CPP_NAME)	return CPP_NAME;
-	  if (b == CPP_STRING)	return CPP_OSTRING;
-	}
 
     default:
       break;

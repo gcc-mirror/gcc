@@ -1,3 +1,18 @@
+2001-03-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* c-parse.in (yylexname): New function, split out of _yylex.
+	(objc_rid_sans_at): New table.
+	(init_reswords): Initialize it.
+	(_yylex): Give labels clearer names.  Handle CPP_ATSIGN by
+	retrieving the next token and checking it for significance as
+	an ObjC keyword or string constant.
+
+	* cpplex.c (_cpp_lex_token): Just return CPP_ATSIGN for '@'.
+	* cpplib.h (TTYPE_TABLE): Add CPP_ATSIGN, drop CPP_OSTRING.
+
+	* c-lex.c, c-parse.in, cppmacro.c, cpplex.c: Remove references
+	to CPP_OSTRING.
+
 2001-03-06  Stephen L Moshier  <moshier@mediaone.net>
 
 	* config/m68k/m68k.c (const_uint32_operand): Accept any

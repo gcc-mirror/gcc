@@ -263,6 +263,7 @@ end ifobjc
 
 static void yyprint	  PARAMS ((FILE *, int, YYSTYPE));
 static void yyerror	  PARAMS ((const char *));
+static int yylexname	  PARAMS ((void));
 static inline int _yylex  PARAMS ((void));
 static int  yylex	  PARAMS ((void));
 static void init_reswords PARAMS ((void));
@@ -3114,6 +3115,13 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_AT_IMPLEMENTATION */	IMPLEMENTATION
 };
 
+ifobjc
+/* Lookup table for ObjC keywords beginning with '@'.  Crude but
+   hopefully effective.  */
+#define N_at_reswords ((int) RID_AT_IMPLEMENTATION - (int)RID_AT_ENCODE + 1)
+static tree objc_rid_sans_at[N_at_reswords];
+end ifobjc
+
 static void
 init_reswords ()
 {
@@ -3139,6 +3147,16 @@ init_reswords ()
       C_RID_CODE (id) = reswords[i].rid;
       C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
+
+ifobjc
+      /* Enter ObjC @-prefixed keywords into the "sans" table
+	 _without_ their leading at-sign.  Again, all these
+	 identifiers are reachable by the get_identifer table, so it's
+	 not necessary to make objc_rid_sans_at a GC root.  */
+      if (reswords[i].word[0] == '@')
+	objc_rid_sans_at[(int) reswords[i].rid - (int) RID_AT_ENCODE]
+	  = get_identifier (reswords[i].word + 1);
+end ifobjc
     }
 ifobjc
   save_and_forget_protocol_qualifiers ();
@@ -3188,8 +3206,7 @@ yyerror (msgid)
 	error ("%s before %s'\\x%x'", string, ell, val);
     }
   else if (last_token == CPP_STRING
-	   || last_token == CPP_WSTRING
-	   || last_token == CPP_OSTRING)
+	   || last_token == CPP_WSTRING)
     error ("%s before string constant", string);
   else if (last_token == CPP_NUMBER
 	   || last_token == CPP_INT
@@ -3201,12 +3218,65 @@ yyerror (msgid)
     error ("%s before '%s' token", string, NAME(last_token));
 }
 
+static int
+yylexname ()
+{
+  tree decl;
+
+  if (C_IS_RESERVED_WORD (yylval.ttype))
+    {
+      enum rid rid_code = C_RID_CODE (yylval.ttype);
+      /* Return the canonical spelling for this keyword.  */
+      yylval.ttype = ridpointers[(int) rid_code];
+      return rid_to_yy[(int) rid_code];
+    }
+
+  decl = lookup_name (yylval.ttype);
+  if (decl)
+    {
+      if (TREE_CODE (decl) == TYPE_DECL)
+	return TYPENAME;
+      /* A user-invisible read-only initialized variable
+	 should be replaced by its value.
+	 We handle only strings since that's the only case used in C.  */
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && DECL_IGNORED_P (decl)
+	       && TREE_READONLY (decl)
+	       && DECL_INITIAL (decl) != 0
+	       && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
+	{
+	  tree stringval = DECL_INITIAL (decl);
+
+	  /* Copy the string value so that we won't clobber anything
+	     if we put something in the TREE_CHAIN of this one.  */
+	  yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
+				       TREE_STRING_POINTER (stringval));
+	  return STRING;
+	}
+    }
+  else if (doing_objc_thang)
+    {
+      tree objc_interface_decl = is_class_name (yylval.ttype);
+
+      if (objc_interface_decl)
+	{
+	  yylval.ttype = objc_interface_decl;
+	  return CLASSNAME;
+	}
+    }
+
+  return IDENTIFIER;
+}
+
+
 static inline int
 _yylex ()
 {
- retry:
+ get_next:
   last_token = c_lex (&yylval.ttype);
-
+ifobjc
+ reconsider:
+end ifobjc
   switch (last_token)
     {
     case CPP_EQ:					return '=';
@@ -3263,63 +3333,10 @@ _yylex ()
     case CPP_EOF:
       if (cpp_pop_buffer (parse_in) == 0)
 	return 0;
-      goto retry;
+      goto get_next;
 
     case CPP_NAME:
-      if (C_IS_RESERVED_WORD (yylval.ttype))
-	{
-	  enum rid rid_code = C_RID_CODE (yylval.ttype);
-	  /* Return the canonical spelling for this keyword.  */
-	  yylval.ttype = ridpointers[(int) rid_code];
-	  return rid_to_yy[(int) rid_code];
-	}
-
-      if (IDENTIFIER_POINTER (yylval.ttype)[0] == '@')
-	{
-	  error ("invalid identifier `%s'", IDENTIFIER_POINTER (yylval.ttype));
-	  return IDENTIFIER;
-	}
-
-      {
-	tree decl;
-
-	decl = lookup_name (yylval.ttype);
-
-	if (decl)
-	  {
-	    if (TREE_CODE (decl) == TYPE_DECL)
-	      return TYPENAME;
-	    /* A user-invisible read-only initialized variable
-	       should be replaced by its value.
-	       We handle only strings since that's the only case used in C.  */
-	    else if (TREE_CODE (decl) == VAR_DECL
-		     && DECL_IGNORED_P (decl)
-		     && TREE_READONLY (decl)
-		     && DECL_INITIAL (decl) != 0
-		     && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
-	      {
-		tree stringval = DECL_INITIAL (decl);
-
-		/* Copy the string value so that we won't clobber anything
-		   if we put something in the TREE_CHAIN of this one.  */
-		yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-					     TREE_STRING_POINTER (stringval));
-		return STRING;
-	      }
-	  }
-	else if (doing_objc_thang)
-	  {
-	    tree objc_interface_decl = is_class_name (yylval.ttype);
-
-	    if (objc_interface_decl)
-	      {
-		yylval.ttype = objc_interface_decl;
-		return CLASSNAME;
-	      }
-	  }
-
-	return IDENTIFIER;
-      }
+      return yylexname ();
 
     case CPP_INT:
     case CPP_FLOAT:
@@ -3332,9 +3349,27 @@ _yylex ()
     case CPP_WSTRING:
       return STRING;
       
-    case CPP_OSTRING:
-      return OBJC_STRING;
-
+      /* This token is Objective-C specific.  It gives the next
+	 token special significance.  */
+    case CPP_ATSIGN:
+ifobjc
+      last_token = c_lex (&yylval.ttype);
+      if (last_token == CPP_STRING)
+	return OBJC_STRING;
+      else if (last_token == CPP_NAME)
+	{
+	  int i;
+	  for (i = 0; i < N_at_reswords; i++)
+	    if (objc_rid_sans_at[i] == yylval.ttype)
+	      {
+		int rid_code = i + (int) RID_AT_ENCODE;
+		yylval.ttype = ridpointers[rid_code];
+		return rid_to_yy[rid_code];
+	      }
+	}
+      error ("syntax error at '@' token");
+      goto reconsider;
+end ifobjc
       /* These tokens are C++ specific (and will not be generated
          in C mode, but let's be cautious).  */
     case CPP_SCOPE:
@@ -3347,13 +3382,12 @@ _yylex ()
       /* These tokens should not survive translation phase 4.  */
     case CPP_HASH:
     case CPP_PASTE:
-      error ("syntax error before '%s' token", NAME(last_token));
-      goto retry;
+      error ("syntax error at '%s' token", NAME(last_token));
+      goto get_next;
 
     default:
       abort ();
     }
-
   /* NOTREACHED */
 }
 
