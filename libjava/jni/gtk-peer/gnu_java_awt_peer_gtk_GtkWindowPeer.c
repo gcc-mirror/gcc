@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkWindowPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkFramePeer.h"
 #include <gdk/gdkprivate.h>
@@ -116,7 +117,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_create
   NSA_SET_PTR (env, obj, window_widget);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetVisible
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetVisible
   (JNIEnv *env, jobject obj, jboolean visible)
 {
   void *ptr;
@@ -135,7 +137,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_nativeSetVisible
   gdk_threads_leave ();
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -169,6 +172,21 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
 
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_widget_realize (ptr);
+
   /* Connect signals for window event support. */
   g_signal_connect (G_OBJECT (ptr), "delete-event",
 		    G_CALLBACK (window_delete_cb), obj);
@@ -189,6 +207,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectHooks
 		    G_CALLBACK (window_window_state_cb), obj);
 
   gdk_threads_leave ();
+
+  /* Connect the superclass signals.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
 }
 
 /*

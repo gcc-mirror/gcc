@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkScrollbarPeer.h"
 
 struct range_scrollbar
@@ -120,7 +121,24 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectHooks
+Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectJObject
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+  connect_awt_hook (env, obj, 1, GTK_SCROLLBAR (ptr)->range);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -136,17 +154,19 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectHooks
   rs->range = GTK_RANGE (ptr);
   rs->scrollbar = (jobject *) malloc (sizeof (jobject));
   *(rs->scrollbar) = (*env)->NewGlobalRef (env, obj);
-  gtk_signal_connect (GTK_OBJECT (GTK_RANGE (ptr)), 
+
+  g_signal_connect (G_OBJECT (GTK_RANGE (ptr)), 
 		      "move-slider", 
 		      GTK_SIGNAL_FUNC (post_adjustment_event), rs);
 
-  gtk_signal_connect (GTK_OBJECT (GTK_RANGE (ptr)), 
+  g_signal_connect (G_OBJECT (GTK_RANGE (ptr)), 
 		      "value-changed", 
 		      GTK_SIGNAL_FUNC (post_change_event), rs);
 
-
-  connect_awt_hook (env, obj, 1, GTK_SCROLLBAR (ptr)->range);
   gdk_threads_leave ();
+
+  /* Connect the superclass signals.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
 }
 
 

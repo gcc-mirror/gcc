@@ -109,6 +109,6 @@ connect_activate_hook (JNIEnv *env, jobject peer_obj, GtkMenuItem *item)
   obj = (jobject *) malloc (sizeof (jobject));
   *obj = (*env)->NewGlobalRef (env, peer_obj);
 
-  gtk_signal_connect (GTK_OBJECT (item), "activate", 
+  g_signal_connect (G_OBJECT (item), "activate", 
 		      GTK_SIGNAL_FUNC (item_activate), obj);
 }

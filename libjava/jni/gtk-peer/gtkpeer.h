@@ -392,6 +392,10 @@ extern GtkWindowGroup *global_gtk_window_group;
 
 void awt_event_handler (GdkEvent *event);
 
+gboolean pre_event_handler (GtkWidget *widget,
+                               GdkEvent *event,
+			       jobject peer);
+
 void connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...);
 
 void set_visible (GtkWidget *widget, jboolean visible);

@@ -37,9 +37,11 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkButtonPeer.h"
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
   (JNIEnv *env, jobject obj)
 {
   GtkWidget *button;
@@ -49,6 +51,33 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
   gtk_widget_show (button);
   gdk_threads_leave ();
   NSA_SET_PTR (env, obj, button);
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectJObject
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+  connect_awt_hook (env, obj, 1, GTK_BUTTON(ptr)->event_window);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_connectSignals
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr = NSA_GET_PTR (env, obj);
+
+  /* Connect the superclass signals.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
 }
 
 JNIEXPORT void JNICALL 

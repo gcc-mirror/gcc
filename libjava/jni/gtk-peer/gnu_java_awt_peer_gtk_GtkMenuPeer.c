@@ -66,7 +66,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkMenuPeer_setupAccelGroup
       if (GTK_WIDGET_REALIZED (GTK_WIDGET (ptr1)))
 	accel_attach (GTK_MENU_ITEM (ptr1), NULL);
       else
-	gtk_signal_connect (GTK_OBJECT (ptr1),
+	g_signal_connect (G_OBJECT (ptr1),
 			    "realize",
 			    GTK_SIGNAL_FUNC (accel_attach), 
 			    NULL);

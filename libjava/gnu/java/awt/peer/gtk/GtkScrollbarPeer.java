@@ -60,7 +60,8 @@ public class GtkScrollbarPeer extends GtkComponentPeer
 		      int min, int max, int stepIncr, int pageIncr,
 		      int visibleAmount);
 
-  native void connectHooks ();
+  native void connectJObject ();
+  native void connectSignals ();
 
   public GtkScrollbarPeer (Scrollbar s)
   {

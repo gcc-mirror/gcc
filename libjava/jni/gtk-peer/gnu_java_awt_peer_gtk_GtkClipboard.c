@@ -75,16 +75,16 @@ Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState (JNIEnv *env,
   gdk_threads_enter ();
   clipboard = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 
-  gtk_signal_connect (GTK_OBJECT(clipboard), "selection_received",
+  g_signal_connect (G_OBJECT(clipboard), "selection_received",
 		      GTK_SIGNAL_FUNC (selection_received), NULL);
 
-  gtk_signal_connect (GTK_OBJECT(clipboard), "selection_clear_event",
+  g_signal_connect (G_OBJECT(clipboard), "selection_clear_event",
 		      GTK_SIGNAL_FUNC (selection_clear), NULL);
 
   gtk_selection_add_target (clipboard, GDK_SELECTION_PRIMARY, 
 			    GDK_TARGET_STRING, 0);
 
-  gtk_signal_connect (GTK_OBJECT(clipboard), "selection_get",
+  g_signal_connect (G_OBJECT(clipboard), "selection_get",
                       GTK_SIGNAL_FUNC (selection_get), NULL);
 
   gdk_threads_leave ();

@@ -37,6 +37,7 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkPanelPeer.h"
 
 JNIEXPORT void JNICALL 
@@ -61,7 +62,7 @@ struct _GtkLayoutChild {
 };
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectHooks
+Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectJObject
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -72,9 +73,26 @@ Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectHooks
   gtk_widget_realize (GTK_WIDGET (ptr));
   connect_awt_hook (env, obj, 1, GTK_LAYOUT (ptr)->bin_window);
 
-/*    gtk_signal_connect (GTK_OBJECT (ptr), "size_request", GTK_SIGNAL_FUNC (sr), */
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkPanelPeer_connectSignals
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+/*    g_signal_connect (G_OBJECT (ptr), "size_request", GTK_SIGNAL_FUNC (sr), */
 /*  		      NULL); */
   gdk_threads_leave ();
+
+  /* Connect the superclass signals.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
 }
 
 /*

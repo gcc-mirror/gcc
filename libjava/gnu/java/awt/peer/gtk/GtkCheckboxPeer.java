@@ -54,7 +54,7 @@ public class GtkCheckboxPeer extends GtkComponentPeer
   public native void nativeCreate (GtkCheckboxGroupPeer group,
                                    boolean state);
   public native void nativeSetCheckboxGroup (GtkCheckboxGroupPeer group);
-  public native void connectHooks ();
+  public native void connectSignals ();
 
   public GtkCheckboxPeer (Checkbox c)
   {
