@@ -353,13 +353,6 @@ static void flow_loop_tree_node_add	PARAMS ((struct loop *, struct loop *));
 static void flow_loops_tree_build	PARAMS ((struct loops *));
 static int flow_loop_level_compute	PARAMS ((struct loop *, int));
 static int flow_loops_level_compute	PARAMS ((struct loops *));
-
-/* This function is always defined so it can be called from the
-   debugger, and it is declared extern so we don't get warnings about
-   it being unused. */
-void verify_flow_info			PARAMS ((void));
-int flow_loop_outside_edge_p		PARAMS ((const struct loop *, edge));
-void clear_log_links                    PARAMS ((rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register

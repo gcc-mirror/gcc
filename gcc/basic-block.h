@@ -453,5 +453,11 @@ extern void debug_bb_n			PARAMS ((int));
 extern void dump_regset			PARAMS ((regset, FILE *));
 extern void debug_regset		PARAMS ((regset));
 
+/* This function is always defined so it can be called from the
+   debugger, and it is declared extern so we don't get warnings about
+   it being unused. */
+extern void verify_flow_info		PARAMS ((void));
+extern int flow_loop_outside_edge_p	PARAMS ((const struct loop *, edge));
+
 
 #endif /* _BASIC_BLOCK_H */
