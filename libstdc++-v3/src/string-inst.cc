@@ -71,6 +71,9 @@ namespace std
     S::_S_construct<S::iterator>
     (S::iterator, S::iterator, const allocator<C>&, forward_iterator_tag);
 
+  template
+    S::basic_string(C*, C*, const allocator<C>&);
+
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
@@ -87,6 +90,15 @@ namespace std
     C*
     S::_S_construct(const C*, const C*, const allocator<C>&, 
 		    forward_iterator_tag);
+
+  template
+    C*
+    S::_S_construct (C*, C*, const allocator<C>&, 
+		     forward_iterator_tag);
+
+  template
+    void
+    __destroy_aux<S*>(S*, S*, _Bool<false>);
 } // namespace std
 
 

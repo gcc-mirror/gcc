@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,7 @@
 #include <bits/basic_ios.tcc>
 #include <bits/std_istream.h>
 #include <bits/std_ostream.h>
+#include <bits/std_string.h>
 
 // NB: unnecessary if the .h headers include these
 #ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
@@ -239,6 +240,69 @@ namespace std {
     (vector<string>::const_iterator, vector<string>::const_iterator, 
      string*, _Bool<false>);
 
+  template
+    void 
+    __sink_unused_warning<char>(char);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    void 
+    __sink_unused_warning<wchar_t>(wchar_t);
+#endif
+
+  template
+    void
+    __sink_unused_warning<ostreambuf_iterator<char> > 
+    (ostreambuf_iterator<char>);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    void
+    __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
+    (ostreambuf_iterator<wchar_t>);
+#endif
+
+  template
+    void 
+    _S_pad_char (basic_ios<char>&, char*, const char*, int, int);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    void 
+    _S_pad_char (basic_ios<wchar_t>&, wchar_t*, const wchar_t*, int, int);
+#endif
+
+  template
+    ostreambuf_iterator<char>
+    _S_pad_numeric (ostreambuf_iterator<char>, _Ios_Fmtflags, char, int,
+		    const char*, const char*, const char*);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    ostreambuf_iterator<wchar_t>
+    _S_pad_numeric (ostreambuf_iterator<wchar_t>, _Ios_Fmtflags, wchar_t, int,
+		    const wchar_t*, const wchar_t*, const wchar_t*);
+#endif
+
+  template
+    ostreambuf_iterator<char>
+    _S_output_float (ostreambuf_iterator<char>, ios_base&, char, 
+		     const char*, unsigned);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    ostreambuf_iterator<wchar_t>
+    _S_output_float (ostreambuf_iterator<wchar_t>, ios_base&, wchar_t, 
+		     const wchar_t*, unsigned);
+#endif
+
+  template
+    int
+    _S_copy_streambufs(basic_ios<char>&, 
+		       basic_streambuf<char>*,
+		       basic_streambuf<char>*); 
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    int
+    _S_copy_streambufs(basic_ios<wchar_t>&, 
+		       basic_streambuf<wchar_t>*,
+		       basic_streambuf<wchar_t>*); 
+#endif
 } //std
 
 

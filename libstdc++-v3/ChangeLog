@@ -1,3 +1,14 @@
+2001-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/bits/locale_facets.tcc: Remove `static' keyword on
+	function definitions.
+	* include/bits/std_streambuf.h: Likewise.
+	* src/Makefile.am: Remove use of -fimplicit-templates.
+	* src/Makefile.in: Regenerated.
+	* src/locale-inst.cc: Explicitly instantiate more functions.
+	* src/msic-inst.cc: Likewise.
+	* src/string-inst.cc: Likewise.
+	
 2001-02-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): New
