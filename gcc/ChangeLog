@@ -1,3 +1,12 @@
+Wed Nov 10 11:47:54 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x-protos.h: New file.  Prototypes for functions defined
+	in c4x.c.
+	* config/c4x/c4x.h: Moved prototypes to c4x.h.
+	* config/c4x/c4x.c (c4x_preferred_reload_class, c4x_limit_reload_class,
+	c4x_secondary_memory_needed) Delete.
+	(fp_zero_operand): Add mode argument.
+
 Thu Nov  4 15:52:35 1999  Andrew Haley  <aph@cygnus.com>
 
 	* reload1.c (reload_reg_free_for_value_p): Don't use a register
