@@ -1,3 +1,10 @@
+2002-05-19  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* gcc.dg/weak-2.c:  xfail warnings for platforms that don't
+	support weak symbols.
+	* gcc.dg/weak-4.c: Likewise
+	* gcc.dg/weak-6.c: Likewise
+
 2002-05-16  David.Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/weak-3.c: Add dg-excess-error comment for
