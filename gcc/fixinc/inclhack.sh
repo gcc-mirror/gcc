@@ -563,7 +563,7 @@ _EOF_
    for older versions of the Linux kernel. */
 #ifndef _POSIX_TYPES_H_WRAPPER
 #include <features.h>
-#include_next <asm/posix_types.h>
+ #include_next <asm/posix_types.h>
 
 #if defined(__FD_ZERO) && !defined(__GLIBC__)
 #undef __FD_ZERO
@@ -600,7 +600,7 @@ _EOF_
 /* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */
 #ifndef _TYPES_H_WRAPPER
 #include <features.h>
-#include_next <gnu/types.h>
+ #include_next <gnu/types.h>
 
 #if defined(__FD_ZERO) && !defined(__GLIBC__)
 #undef __FD_ZERO
@@ -636,7 +636,7 @@ _EOF_
 /* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */
 #ifndef _SELECTBITS_H_WRAPPER
 #include <features.h>
-#include_next <selectbits.h>
+ #include_next <selectbits.h>
 
 #if defined(__FD_ZERO) && defined(__GLIBC__) \
 	&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \

@@ -394,7 +394,7 @@ do
 #ifdef __cplusplus
 # define bool __curses_bool_t
 #endif
-#include_next <$file>
+ #include_next <$file>
 #ifdef __cplusplus
 # undef bool
 #endif

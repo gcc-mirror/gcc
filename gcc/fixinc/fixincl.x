@@ -352,7 +352,7 @@ const char* apzAab_Fd_Zero_Asm_Posix_Types_HPatch[] = {
    for older versions of the Linux kernel. */\n\
 #ifndef _POSIX_TYPES_H_WRAPPER\n\
 #include <features.h>\n\
-#include_next <asm/posix_types.h>\n\
+ #include_next <asm/posix_types.h>\n\
 \n\
 #if defined(__FD_ZERO) && !defined(__GLIBC__)\n\
 #undef __FD_ZERO\n\
@@ -399,7 +399,7 @@ const char* apzAab_Fd_Zero_Gnu_Types_HPatch[] = {
 "/* This file fixes a bug in the __FD_ZERO macro present in glibc 1.x. */\n\
 #ifndef _TYPES_H_WRAPPER\n\
 #include <features.h>\n\
-#include_next <gnu/types.h>\n\
+ #include_next <gnu/types.h>\n\
 \n\
 #if defined(__FD_ZERO) && !defined(__GLIBC__)\n\
 #undef __FD_ZERO\n\
@@ -446,7 +446,7 @@ const char* apzAab_Fd_Zero_Selectbits_HPatch[] = {
 "/* This file fixes a bug in the __FD_ZERO macro present in glibc 2.0.x. */\n\
 #ifndef _SELECTBITS_H_WRAPPER\n\
 #include <features.h>\n\
-#include_next <selectbits.h>\n\
+ #include_next <selectbits.h>\n\
 \n\
 #if defined(__FD_ZERO) && defined(__GLIBC__) \\\n\
 \t&& defined(__GLIBC_MINOR__) && __GLIBC__ == 2 \\\n\

@@ -852,6 +852,10 @@ cpp_start_read (pfile, fname)
       CPP_OPTION (pfile, trigraphs) = 0;
     }
 
+  /* -Wtraditional is not useful in C++ mode.  */
+  if (CPP_OPTION (pfile, cplusplus))
+    CPP_OPTION (pfile, warn_traditional) = 0;
+
   /* Set this if it hasn't been set already. */
   if (user_label_prefix == NULL)
     user_label_prefix = USER_LABEL_PREFIX;

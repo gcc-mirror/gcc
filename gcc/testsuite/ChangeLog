@@ -1,3 +1,12 @@
+2000-04-02  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.c-torture/compile/981211-1.c: Move to...
+	* gcc.dg/cpp-as1.c: ...here.
+	* gcc.dg/cpp-as2.c: New file.
+
+	* gcc.dg/cpp-tradwarn1.c: Change warning regexps to match the
+	compiler.
+
 2000-04-02  Neil Booth  <NeilB@earthling.net>
 
 	* gcc.dg/cpp-cond.c  New tests.
