@@ -1,3 +1,9 @@
+Sat Jul 29 00:10:21 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* sarray.c, Object.m: Removed the explicit prototypes for strlen
+	and memcpy on 64-bit platforms (Suggested by Rodney Brown
+	<rdb@cup.hp.com>).
+
 2000-05-12  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (GTHREAD_FLAGS): New.
