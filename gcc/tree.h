@@ -2773,6 +2773,7 @@ extern void set_yydebug			PARAMS ((int));
 
 /* In stor-layout.c */
 extern void fixup_signed_type		PARAMS ((tree));
+extern void internal_reference_types 	PARAMS ((void));
 
 /* varasm.c */
 extern void make_decl_rtl		PARAMS ((tree, const char *));
