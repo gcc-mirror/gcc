@@ -46,9 +46,12 @@ namespace std
     {
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, _M_name_timepunct);
-      strftime(__s, __maxlen, __format, __tm);
+      const size_t __len = strftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
       free(__old);
+      // Make sure __s is null terminated.
+      if (__len == 0)
+	__s[0] = '\0';
     }
 
   template<> 
@@ -125,9 +128,12 @@ namespace std
     {
       char* __old = strdup(setlocale(LC_ALL, NULL));
       setlocale(LC_ALL, _M_name_timepunct);
-      wcsftime(__s, __maxlen, __format, __tm);
+      const size_t __len = wcsftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
       free(__old);
+      // Make sure __s is null terminated.
+      if (__len == 0)
+	__s[0] = L'\0';      
     }
 
   template<> 
