@@ -1,6 +1,6 @@
 /* Output VMS debug format symbol table information from GCC.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (rupp@gnat.com).
 
 This file is part of GCC.
@@ -128,44 +128,43 @@ static unsigned int line_info_table_in_use;
 #define LINE_INFO_TABLE_INCREMENT 1024
 
 /* Forward declarations for functions defined in this file.  */
-static char *full_name 		PARAMS ((const char *));
-static unsigned int lookup_filename PARAMS ((const char *));
-static void addr_const_to_string PARAMS ((char *, rtx));
-static int write_debug_header	PARAMS ((DST_HEADER *, const char *, int));
-static int write_debug_addr	PARAMS ((char *, const char *, int));
-static int write_debug_data1	PARAMS ((unsigned int, const char *, int));
-static int write_debug_data2	PARAMS ((unsigned int, const char *, int));
-static int write_debug_data4	PARAMS ((unsigned long, const char *, int));
-static int write_debug_data8	PARAMS ((unsigned long long, const char *,
-					 int));
-static int write_debug_delta4	PARAMS ((char *, char *, const char *, int));
-static int write_debug_string	PARAMS ((char *, const char *, int));
-static int write_modbeg		PARAMS ((int));
-static int write_modend		PARAMS ((int));
-static int write_rtnbeg		PARAMS ((int, int));
-static int write_rtnend		PARAMS ((int, int));
-static int write_pclines	PARAMS ((int));
-static int write_srccorr	PARAMS ((int, dst_file_info_entry, int));
-static int write_srccorrs	PARAMS ((int));
+static char *full_name (const char *);
+static unsigned int lookup_filename (const char *);
+static void addr_const_to_string (char *, rtx);
+static int write_debug_header (DST_HEADER *, const char *, int);
+static int write_debug_addr (char *, const char *, int);
+static int write_debug_data1 (unsigned int, const char *, int);
+static int write_debug_data2 (unsigned int, const char *, int);
+static int write_debug_data4 (unsigned long, const char *, int);
+static int write_debug_data8 (unsigned long long, const char *, int);
+static int write_debug_delta4 (char *, char *, const char *, int);
+static int write_debug_string (char *, const char *, int);
+static int write_modbeg (int);
+static int write_modend (int);
+static int write_rtnbeg (int, int);
+static int write_rtnend (int, int);
+static int write_pclines (int);
+static int write_srccorr (int, dst_file_info_entry, int);
+static int write_srccorrs (int);
 
-static void vmsdbgout_init		PARAMS ((const char *));
-static void vmsdbgout_finish		PARAMS ((const char *));
-static void vmsdbgout_define		PARAMS ((unsigned int, const char *));
-static void vmsdbgout_undef		PARAMS ((unsigned int, const char *));
-static void vmsdbgout_start_source_file PARAMS ((unsigned int, const char *));
-static void vmsdbgout_end_source_file	PARAMS ((unsigned int));
-static void vmsdbgout_begin_block	PARAMS ((unsigned int, unsigned int));
-static void vmsdbgout_end_block		PARAMS ((unsigned int, unsigned int));
-static bool vmsdbgout_ignore_block	PARAMS ((tree));
-static void vmsdbgout_source_line	PARAMS ((unsigned int, const char *));
-static void vmsdbgout_begin_prologue	PARAMS ((unsigned int, const char *));
-static void vmsdbgout_end_prologue	PARAMS ((unsigned int, const char *));
-static void vmsdbgout_end_function	PARAMS ((unsigned int));
-static void vmsdbgout_end_epilogue	PARAMS ((unsigned int, const char *));
-static void vmsdbgout_begin_function	PARAMS ((tree));
-static void vmsdbgout_decl		PARAMS ((tree));
-static void vmsdbgout_global_decl	PARAMS ((tree));
-static void vmsdbgout_abstract_function PARAMS ((tree));
+static void vmsdbgout_init (const char *);
+static void vmsdbgout_finish (const char *);
+static void vmsdbgout_define (unsigned int, const char *);
+static void vmsdbgout_undef (unsigned int, const char *);
+static void vmsdbgout_start_source_file (unsigned int, const char *);
+static void vmsdbgout_end_source_file (unsigned int);
+static void vmsdbgout_begin_block (unsigned int, unsigned int);
+static void vmsdbgout_end_block (unsigned int, unsigned int);
+static bool vmsdbgout_ignore_block (tree);
+static void vmsdbgout_source_line (unsigned int, const char *);
+static void vmsdbgout_begin_prologue (unsigned int, const char *);
+static void vmsdbgout_end_prologue (unsigned int, const char *);
+static void vmsdbgout_end_function (unsigned int);
+static void vmsdbgout_end_epilogue (unsigned int, const char *);
+static void vmsdbgout_begin_function (tree);
+static void vmsdbgout_decl (tree);
+static void vmsdbgout_global_decl (tree);
+static void vmsdbgout_abstract_function (tree);
 
 /* The debug hooks structure.  */
 
@@ -382,7 +381,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
    macro has the same effect as ASM_OUTPUT_LABELREF, but copies to
    a string rather than writing to a file.  */
 #ifndef ASM_NAME_TO_STRING
-#define ASM_NAME_TO_STRING(STR, NAME) 		\
+#define ASM_NAME_TO_STRING(STR, NAME)		\
   do						\
     {						\
       if ((NAME)[0] == '*')			\
@@ -403,9 +402,7 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
    directly, because it writes to a file.  */
 
 static void
-addr_const_to_string (str, x)
-     char *str;
-     rtx x;
+addr_const_to_string (char *str, rtx x)
 {
   char buf1[256];
   char buf2[256];
@@ -533,10 +530,7 @@ restart:
    nonzero.  */
 
 static int
-write_debug_header (header, comment, dosizeonly)
-     DST_HEADER *header;
-     const char *comment;
-     int dosizeonly;
+write_debug_header (DST_HEADER *header, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -565,10 +559,7 @@ write_debug_header (header, comment, dosizeonly)
    nonzero.  */
 
 static int
-write_debug_addr (symbol, comment, dosizeonly)
-     char *symbol;
-     const char *comment;
-     int dosizeonly;
+write_debug_addr (char *symbol, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -586,10 +577,7 @@ write_debug_addr (symbol, comment, dosizeonly)
    nonzero.  */
 
 static int
-write_debug_data1 (data1, comment, dosizeonly)
-     unsigned int data1;
-     const char *comment;
-     int dosizeonly;
+write_debug_data1 (unsigned int data1, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -607,10 +595,7 @@ write_debug_data1 (data1, comment, dosizeonly)
    nonzero.  */
 
 static int
-write_debug_data2 (data2, comment, dosizeonly)
-     unsigned int data2;
-     const char *comment;
-     int dosizeonly;
+write_debug_data2 (unsigned int data2, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -627,10 +612,7 @@ write_debug_data2 (data2, comment, dosizeonly)
    Return the data size.  Just return the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_debug_data4 (data4, comment, dosizeonly)
-     unsigned long data4;
-     const char *comment;
-     int dosizeonly;
+write_debug_data4 (unsigned long data4, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -647,10 +629,8 @@ write_debug_data4 (data4, comment, dosizeonly)
    Return the data size.  Just return the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_debug_data8 (data8, comment, dosizeonly)
-     unsigned long long data8;
-     const char *comment;
-     int dosizeonly;
+write_debug_data8 (unsigned long long data8, const char *comment,
+		   int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -668,11 +648,8 @@ write_debug_data8 (data8, comment, dosizeonly)
    DOSIZEONLY is nonzero.  */
 
 static int
-write_debug_delta4 (label1, label2, comment, dosizeonly)
-     char *label1;
-     char *label2;
-     const char *comment;
-     int dosizeonly;
+write_debug_delta4 (char *label1, char *label2, const char *comment,
+		    int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -690,10 +667,7 @@ write_debug_delta4 (label1, label2, comment, dosizeonly)
    nonzero.  */
 
 static int
-write_debug_string (string, comment, dosizeonly)
-     char *string;
-     const char *comment;
-     int dosizeonly;
+write_debug_string (char *string, const char *comment, int dosizeonly)
 {
   if (!dosizeonly)
     {
@@ -710,8 +684,7 @@ write_debug_string (string, comment, dosizeonly)
    size if DOSIZEONLY is nonzero.  */
 
 static int
-write_modbeg (dosizeonly)
-     int dosizeonly;
+write_modbeg (int dosizeonly)
 {
   DST_MODULE_BEGIN modbeg;
   DST_MB_TRLR mb_trlr;
@@ -774,8 +747,7 @@ write_modbeg (dosizeonly)
    the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_modend (dosizeonly)
-     int dosizeonly;
+write_modend (int dosizeonly)
 {
   DST_MODULE_END modend;
   int totsize = 0;
@@ -794,9 +766,7 @@ write_modend (dosizeonly)
    Just return the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_rtnbeg (rtnnum, dosizeonly)
-     int rtnnum;
-     int dosizeonly;
+write_rtnbeg (int rtnnum, int dosizeonly)
 {
   char *rtnname;
   int rtnnamelen;
@@ -889,9 +859,7 @@ write_rtnbeg (rtnnum, dosizeonly)
    Just return the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_rtnend (rtnnum, dosizeonly)
-     int rtnnum;
-     int dosizeonly;
+write_rtnend (int rtnnum, int dosizeonly)
 {
   DST_ROUTINE_END rtnend;
   char label1[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -933,8 +901,7 @@ write_rtnend (rtnnum, dosizeonly)
    the size if DOSIZEONLY is nonzero */
 
 static int
-write_pclines (dosizeonly)
-     int dosizeonly;
+write_pclines (int dosizeonly)
 {
   unsigned i;
   int fn;
@@ -1064,10 +1031,8 @@ write_pclines (dosizeonly)
    nonzero.  */
 
 static int
-write_srccorr (fileid, file_info_entry, dosizeonly)
-     int fileid;
-     dst_file_info_entry file_info_entry;
-     int dosizeonly;
+write_srccorr (int fileid, dst_file_info_entry file_info_entry,
+	       int dosizeonly)
 {
   int src_command_size;
   int linesleft = file_info_entry.max_line;
@@ -1259,8 +1224,7 @@ write_srccorr (fileid, file_info_entry, dosizeonly)
    the size if DOSIZEONLY is nonzero.  */
 
 static int
-write_srccorrs (dosizeonly)
-     int dosizeonly;
+write_srccorrs (int dosizeonly)
 {
   unsigned int i;
   int totsize = 0;
@@ -1275,9 +1239,7 @@ write_srccorrs (dosizeonly)
    the prologue.  */
 
 static void
-vmsdbgout_begin_prologue (line, file)
-     unsigned int line;
-     const char *file;
+vmsdbgout_begin_prologue (unsigned int line, const char *file)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -1296,9 +1258,7 @@ vmsdbgout_begin_prologue (line, file)
    the prologue.  */
 
 static void
-vmsdbgout_end_prologue (line, file)
-     unsigned int line;
-     const char *file;
+vmsdbgout_end_prologue (unsigned int line, const char *file)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -1319,8 +1279,7 @@ vmsdbgout_end_prologue (line, file)
 /* No output for VMS debug, but make obligatory call to Dwarf2 debug */
 
 static void
-vmsdbgout_end_function (line)
-     unsigned int line;
+vmsdbgout_end_function (unsigned int line)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.end_function) (line);
@@ -1331,9 +1290,7 @@ vmsdbgout_end_function (line)
    been generated.  */
 
 static void
-vmsdbgout_end_epilogue (line, file)
-     unsigned int line;
-     const char *file;
+vmsdbgout_end_epilogue (unsigned int line, const char *file)
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
@@ -1357,9 +1314,7 @@ vmsdbgout_end_epilogue (line, file)
    a lexical block.  */
 
 static void
-vmsdbgout_begin_block (line, blocknum)
-     register unsigned line;
-     register unsigned blocknum;
+vmsdbgout_begin_block (register unsigned line, register unsigned blocknum)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_block) (line, blocknum);
@@ -1372,9 +1327,7 @@ vmsdbgout_begin_block (line, blocknum)
    lexical block.  */
 
 static void
-vmsdbgout_end_block (line, blocknum)
-     register unsigned line;
-     register unsigned blocknum;
+vmsdbgout_end_block (register unsigned line, register unsigned blocknum)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.end_block) (line, blocknum);
@@ -1386,8 +1339,7 @@ vmsdbgout_end_block (line, blocknum)
 /* Not implemented in VMS Debug.  */
 
 static bool
-vmsdbgout_ignore_block (block)
-     tree block;
+vmsdbgout_ignore_block (tree block)
 {
   bool retval = 0;
 
@@ -1400,8 +1352,7 @@ vmsdbgout_ignore_block (block)
 /* Add an entry for function DECL into the func_table.  */
 
 static void
-vmsdbgout_begin_function (decl)
-     tree decl;
+vmsdbgout_begin_function (tree decl)
 {
   const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
@@ -1425,8 +1376,7 @@ static char fullname_buff [4096];
    in VMS syntax in order to be processed by VMS Debug.  */
 
 static char *
-full_name (filename)
-     const char *filename;
+full_name (const char *filename)
 {
 #ifdef VMS
   FILE *fp = fopen (filename, "r");
@@ -1457,8 +1407,7 @@ full_name (filename)
    all searches.  */
 
 static unsigned int
-lookup_filename (file_name)
-     const char *file_name;
+lookup_filename (const char *file_name)
 {
   static unsigned int last_file_lookup_index = 0;
   register char *fn;
@@ -1556,9 +1505,7 @@ lookup_filename (file_name)
    'line_info_table' for later output of the .debug_line section.  */
 
 static void
-vmsdbgout_source_line (line, filename)
-     register unsigned line;
-     register const char *filename;
+vmsdbgout_source_line (register unsigned line, register const char *filename)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.source_line) (line, filename);
@@ -1593,9 +1540,7 @@ vmsdbgout_source_line (line, filename)
    At present, unimplemented.  */
 
 static void
-vmsdbgout_start_source_file (lineno, filename)
-     unsigned int lineno;
-     const char *filename;
+vmsdbgout_start_source_file (unsigned int lineno, const char *filename)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.start_source_file) (lineno, filename);
@@ -1605,8 +1550,7 @@ vmsdbgout_start_source_file (lineno, filename)
    At present, unimplemented.  */
 
 static void
-vmsdbgout_end_source_file (lineno)
-     unsigned int lineno ATTRIBUTE_UNUSED;
+vmsdbgout_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.end_source_file) (lineno);
@@ -1615,8 +1559,7 @@ vmsdbgout_end_source_file (lineno)
 /* Set up for Debug output at the start of compilation.  */
 
 static void
-vmsdbgout_init (main_input_filename)
-     const char *main_input_filename;
+vmsdbgout_init (const char *main_input_filename)
 {
   const char *language_string = lang_hooks.name;
 
@@ -1672,9 +1615,7 @@ vmsdbgout_init (main_input_filename)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_define (lineno, buffer)
-     unsigned int lineno;
-     const char *buffer;
+vmsdbgout_define (unsigned int lineno, const char *buffer)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.define) (lineno, buffer);
@@ -1683,9 +1624,7 @@ vmsdbgout_define (lineno, buffer)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_undef (lineno, buffer)
-     unsigned int lineno;
-     const char *buffer;
+vmsdbgout_undef (unsigned int lineno, const char *buffer)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.undef) (lineno, buffer);
@@ -1694,8 +1633,7 @@ vmsdbgout_undef (lineno, buffer)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_decl (decl)
-     tree decl;
+vmsdbgout_decl (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.function_decl) (decl);
@@ -1704,8 +1642,7 @@ vmsdbgout_decl (decl)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_global_decl (decl)
-     tree decl;
+vmsdbgout_global_decl (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.global_decl) (decl);
@@ -1714,8 +1651,7 @@ vmsdbgout_global_decl (decl)
 /* Not implemented in VMS Debug.  */
 
 static void
-vmsdbgout_abstract_function (decl)
-     tree decl;
+vmsdbgout_abstract_function (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.outlining_inline_function) (decl);
@@ -1725,8 +1661,7 @@ vmsdbgout_abstract_function (decl)
    VMS Debug debugging info.  */
 
 static void
-vmsdbgout_finish (main_input_filename)
-     const char *main_input_filename ATTRIBUTE_UNUSED;
+vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 {
   unsigned int i;
   int totsize;

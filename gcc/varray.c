@@ -1,5 +1,6 @@
 /* Virtual array support.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -61,10 +62,8 @@ static const struct {
 /* Allocate a virtual array with NUM_ELEMENT elements, each of which is
    ELEMENT_SIZE bytes long, named NAME.  Array elements are zeroed.  */
 varray_type
-varray_init (num_elements, element_kind, name)
-     size_t num_elements;
-     enum varray_data_enum element_kind;
-     const char *name;
+varray_init (size_t num_elements, enum varray_data_enum element_kind,
+	     const char *name)
 {
   size_t data_size = num_elements * element[element_kind].size;
   varray_type ptr;
@@ -83,9 +82,7 @@ varray_init (num_elements, element_kind, name)
 /* Grow/shrink the virtual array VA to N elements.  Zero any new elements
    allocated.  */
 varray_type
-varray_grow (va, n)
-     varray_type va;
-     size_t n;
+varray_grow (varray_type va, size_t n)
 {
   size_t old_elements = va->num_elements;
 
@@ -109,8 +106,7 @@ varray_grow (va, n)
 
 /* Reset a varray to its original state.  */
 void
-varray_clear (va)
-     varray_type va;
+varray_clear (varray_type va)
 {
   size_t data_size = element[va->type].size * va->num_elements;
 
@@ -122,19 +118,15 @@ varray_clear (va)
 
 #if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
-extern void error PARAMS ((const char *, ...))	ATTRIBUTE_PRINTF_1;
+extern void error (const char *, ...)	ATTRIBUTE_PRINTF_1;
 
 void
-varray_check_failed (va, n, file, line, function)
-     varray_type va;
-     size_t n;
-     const char *file;
-     int line;
-     const char *function;
+varray_check_failed (varray_type va, size_t n, const char *file, int line,
+		     const char *function)
 {
   internal_error ("virtual array %s[%lu]: element %lu out of bounds in %s, at %s:%d",
 		  va->name, (unsigned long) va->num_elements, (unsigned long) n,
-		  function, trim_filename (file), line);
+		  function, trim_filename (file), line;
 }
 
 #endif
