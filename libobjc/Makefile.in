@@ -117,6 +117,7 @@ FLAGS_TO_PASS = \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC=$(CC)" \
 	"CFLAGS=$(CFLAGS)" \
+	"DESTDIR=$(DESTDIR)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"EXTRA_OFILES=$(EXTRA_OFILES)" \
 	"HDEFINES=$(HDEFINES)" \
@@ -317,21 +318,21 @@ ${srcdir}/configure: configure.in
 install: install-libs install-headers
 
 install-libs: installdirs
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(glibcpp_toolexeclibdir)
-	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(glibcpp_toolexeclibdir);
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(glibcpp_toolexeclibdir)
+	$(LIBTOOL_INSTALL) $(INSTALL) libobjc.la $(DESTDIR)$(glibcpp_toolexeclibdir);
 	if [ "$(OBJC_BOEHM_GC)" ]; then \
 	  $(LIBTOOL_INSTALL) $(INSTALL) libobjc_gc.la \
-				$(glibcpp_toolexeclibdir);\
+				$(DESTDIR)$(glibcpp_toolexeclibdir);\
 	fi
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
-	@-$(LIBTOOL) --mode=finish $(glibcpp_toolexeclibdir)
+	@-$(LIBTOOL) --mode=finish $(DESTDIR)$(glibcpp_toolexeclibdir)
 
 # Copy Objective C headers to installation include directory.
 install-headers:
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(libsubdir)/include/objc
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(libsubdir)/include/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
-	  $(INSTALL_DATA) $${realfile} $(libsubdir)/include/objc; \
+	  $(INSTALL_DATA) $${realfile} $(DESTDIR)$(libsubdir)/include/objc; \
 	done
 
 check uninstall install-strip dist installcheck installdirs:
