@@ -1,3 +1,14 @@
+1998-10-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tinfo2.cc (fast_compare): Remove.
+	(before): Just use strcmp.
+	* tinfo.cc (operator==): Just use strcmp.
+
+1998-10-13  Klaus-Georg Adams  <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
+
+	* decl.c (grokfndecl): Don't check for linkage in `extern "C"'
+	declarations.
+
 1998-10-13  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (specializations_of_same_template_p): Remove.

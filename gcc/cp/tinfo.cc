@@ -28,6 +28,7 @@
 #pragma implementation "typeinfo"
 
 #include <stddef.h>
+#include <string.h>
 #include "tinfo.h"
 #include "new"			// for placement new
 
@@ -43,7 +44,7 @@ std::type_info::
 bool type_info::
 operator== (const type_info& arg) const
 {
-  return (&arg == this) || (fast_compare (name (), arg.name ()) == 0);
+  return (&arg == this) || (strcmp (name (), arg.name ()) == 0);
 }
 
 extern "C" void

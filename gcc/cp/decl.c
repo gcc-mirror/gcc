@@ -8024,7 +8024,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
       t = no_linkage_check (TREE_TYPE (decl));
       if (t)
 	{
-	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	  if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+	      && DECL_LANGUAGE (decl) != lang_c)
 	    cp_pedwarn ("non-local function `%#D' uses anonymous type", decl);
 	  else
 	    cp_pedwarn ("non-local function `%#D' uses local type `%T'",

@@ -26,27 +26,16 @@
 // the executable file might be covered by the GNU General Public License.
 
 #include <stddef.h>
+#include <string.h>
 #include "tinfo.h"
 #include "new"			// for placement new
 
 using std::type_info;
-// service function for comparing types by name.
-
-static inline int
-fast_compare (const char *n1, const char *n2) {
-  int c;
-  if (n1 == n2) return 0;
-  if (n1 == 0) return *n2;
-  else if (n2 == 0) return *n1;
-
-  c = (int)*n1++ - (int)*n2++;
-  return c == 0 ? strcmp (n1, n2) : c;
-};
 
 bool
 type_info::before (const type_info &arg) const
 {
-  return fast_compare (name (), arg.name ()) < 0;
+  return strcmp (name (), arg.name ()) < 0;
 }
 
 // type info for pointer type.
