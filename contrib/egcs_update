@@ -58,10 +58,18 @@ do
     fi
 done`
 cvs -q update $X
+if [ $? -ne 0 ]; then 
+    echo "CVS update of generated files failed." >&2
+    exit 1
+fi
 
 
 echo "Pass 2: Updating full tree"
 cvs -q update ${1+"$@"}
+if [ $? -ne 0 ]; then 
+    echo "CVS update of full tree failed." >&2
+    exit 1
+fi
 
 echo "Pass 3: Fixing local tree"
 # Please also update the FAQ accordingly if you change the list of
