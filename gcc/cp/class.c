@@ -3009,9 +3009,9 @@ dfs_modify_vtables (binfo, data)
 
       t = (tree) data;
 
-      /* If we're support RTTI then we always need a new vtable to point
-	 to the RTTI information.  Under the new ABI we may need a new
-	 vtable to contain vcall and vbase offsets.  */
+      /* If we're supporting RTTI then we always need a new vtable to
+	 point to the RTTI information.  Under the new ABI we may need
+	 a new vtable to contain vcall and vbase offsets.  */
       if (flag_rtti || flag_new_abi)
 	make_new_vtable (t, binfo);
       
@@ -3031,6 +3031,7 @@ dfs_modify_vtables (binfo, data)
 	  tree overrider;
 	  tree vindex;
 	  tree delta;
+	  int i;
 
 	  /* Find the function which originally caused this vtable
 	     entry to be present.  */
@@ -3039,9 +3040,12 @@ dfs_modify_vtables (binfo, data)
 	  b = dfs_walk (binfo, dfs_find_base, NULL, DECL_VIRTUAL_CONTEXT (fn));
 	  fn = skip_rtti_stuff (TYPE_BINFO (BINFO_TYPE (b)),
 				BINFO_TYPE (b),
-				NULL);
-	  while (!tree_int_cst_equal (DECL_VINDEX (BV_FN (fn)), vindex))
-	    fn = TREE_CHAIN (fn);
+				&i);
+	  while (i < TREE_INT_CST_LOW (vindex))
+	    {
+	      fn = TREE_CHAIN (fn);
+	      ++i;
+	    }
 	  fn = BV_FN (fn);
 
 	  /* Handle the case of a virtual function defined in BINFO

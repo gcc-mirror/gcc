@@ -1,3 +1,8 @@
+2000-02-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (dfs_modify_vtables): Tweak calculation of functions to
+	override.
+
 2000-02-08  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (strip_all_pointer_quals): Use TYPE_MAIN_VARIANT, to
