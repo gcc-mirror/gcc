@@ -38,6 +38,43 @@ Boston, MA 02111-1307, USA.  */
 
 static rtx break_out_memory_refs	PROTO((rtx));
 static void emit_stack_probe		PROTO((rtx));
+
+
+/* Truncate and perhaps sign-extend C as appropriate for MODE.  */
+
+HOST_WIDE_INT
+trunc_int_for_mode (c, mode)
+     HOST_WIDE_INT c;
+     enum machine_mode mode;
+{
+  int width = GET_MODE_BITSIZE (mode);
+
+  /* We clear out all bits that don't belong in MODE, unless they and our
+     sign bit are all one.  So we get either a reasonable negative
+     value or a reasonable unsigned value.  */
+
+  if (width < HOST_BITS_PER_WIDE_INT
+      && ((c & ((HOST_WIDE_INT) (-1) << (width - 1)))
+           != ((HOST_WIDE_INT) (-1) << (width - 1))))
+    c &= ((HOST_WIDE_INT) 1 << width) - 1;
+
+  /* If this would be an entire word for the target, but is not for
+     the host, then sign-extend on the host so that the number will look
+     the same way on the host that it would on the target.
+
+     For example, when building a 64 bit alpha hosted 32 bit sparc
+     targeted compiler, then we want the 32 bit unsigned value -1 to be
+     represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+     The later confuses the sparc backend.  */
+
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT
+      && BITS_PER_WORD == width
+      && (c & ((HOST_WIDE_INT) 1 << (width - 1))))
+    c |= ((HOST_WIDE_INT) (-1) << width);
+
+  return c;
+}
+
 /* Return an rtx for the sum of X and the integer C.
 
    This function should be used via the `plus_constant' macro.  */
@@ -126,6 +163,10 @@ plus_constant_wide (x, c)
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  c += INTVAL (XEXP (x, 1));
+
+	  if (GET_MODE (x) != VOIDmode)
+	    c = trunc_int_for_mode (c, GET_MODE (x));
+
 	  x = XEXP (x, 0);
 	  goto restart;
 	}

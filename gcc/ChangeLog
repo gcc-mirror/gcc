@@ -1,3 +1,15 @@
+Thu Jul 22 18:21:04 1999  Richard Henderson  <rth@cygnus.com>
+
+	* explow.c (trunc_int_for_mode): New function.
+	(plus_constant_wide): Use it.
+	* combine.c (simplify_and_const_int): Likewise.
+	(merge_outer_ops): Likewise.
+	(simplify_shift_const): Likewise.
+	* cse.c (simplify_unary_operation): Likewise.
+	(simplify_binary_operation): Likewise.
+	* emit-rtl.c (operand_subword): Likewise.
+	* rtl.h: Declare it.
+
 Thu Jul 22 14:34:59 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* config/arm/arm.c (arm_print_operand): Fix typo in 'M' case
