@@ -306,7 +306,7 @@ private:
         char _M_client_data[1];    /* The client sees this.        */
   };
 
-  static _Obj* __STL_VOLATILE _S_free_list[]; 
+  static _Obj* volatile _S_free_list[]; 
         // Specifying a size results in duplicate def for 4.1
   static  size_t _S_freelist_index(size_t __bytes) {
         return (((__bytes) + (size_t)_ALIGN-1)/(size_t)_ALIGN - 1);
@@ -349,7 +349,7 @@ public:
       __ret = __mem_interface::allocate(__n);
     else 
       {
-	_Obj* __STL_VOLATILE* __my_free_list = _S_free_list + _S_freelist_index(__n);
+	_Obj* volatile* __my_free_list = _S_free_list + _S_freelist_index(__n);
 	// Acquire the lock here with a constructor call.
 	// This ensures that it is released in exit or during stack
 	// unwinding.
@@ -377,7 +377,7 @@ public:
       __mem_interface::deallocate(__p, __n);
     else 
       {
-	_Obj* __STL_VOLATILE*  __my_free_list
+	_Obj* volatile*  __my_free_list
           = _S_free_list + _S_freelist_index(__n);
 	_Obj* __q = (_Obj*)__p;
 	
@@ -448,7 +448,7 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
         // Try to make use of the left-over piece.
         if (__bytes_left > 0) 
 	  {
-	    _Obj* __STL_VOLATILE* __my_free_list =
+	    _Obj* volatile* __my_free_list =
 	      _S_free_list + _S_freelist_index(__bytes_left);
 	    
 	    ((_Obj*)_S_start_free) -> _M_free_list_link = *__my_free_list;
@@ -458,7 +458,7 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
         if (0 == _S_start_free) 
 	  {
             size_t __i;
-            _Obj* __STL_VOLATILE* __my_free_list;
+            _Obj* volatile* __my_free_list;
 	    _Obj* __p;
             // Try to make do with what we have.  That can't hurt.  We
             // do not try smaller requests, since that tends to result
@@ -500,7 +500,7 @@ __default_alloc_template<__threads, __inst>::_S_refill(size_t __n)
 {
     int __nobjs = 20;
     char* __chunk = _S_chunk_alloc(__n, __nobjs);
-    _Obj* __STL_VOLATILE* __my_free_list;
+    _Obj* volatile* __my_free_list;
     _Obj* __result;
     _Obj* __current_obj;
     _Obj* __next_obj;
@@ -563,7 +563,7 @@ template <bool __threads, int __inst>
 size_t __default_alloc_template<__threads, __inst>::_S_heap_size = 0;
 
 template <bool __threads, int __inst>
-typename __default_alloc_template<__threads, __inst>::_Obj* __STL_VOLATILE
+typename __default_alloc_template<__threads, __inst>::_Obj* volatile
 __default_alloc_template<__threads, __inst> ::_S_free_list[
     __default_alloc_template<__threads, __inst>::_NFREELISTS
 ] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
@@ -597,10 +597,10 @@ public:
     typedef allocator<_Tp1> other;
   };
 
-  allocator() __STL_NOTHROW {}
-  allocator(const allocator&) __STL_NOTHROW {}
-  template <class _Tp1> allocator(const allocator<_Tp1>&) __STL_NOTHROW {}
-  ~allocator() __STL_NOTHROW {}
+  allocator() throw() {}
+  allocator(const allocator&) throw() {}
+  template <class _Tp1> allocator(const allocator<_Tp1>&) throw() {}
+  ~allocator() throw() {}
 
   pointer address(reference __x) const { return &__x; }
   const_pointer address(const_reference __x) const { return &__x; }
@@ -616,7 +616,7 @@ public:
   void deallocate(pointer __p, size_type __n)
     { _Alloc::deallocate(__p, __n * sizeof(_Tp)); }
 
-  size_type max_size() const __STL_NOTHROW 
+  size_type max_size() const throw() 
     { return size_t(-1) / sizeof(_Tp); }
 
   void construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }
@@ -673,13 +673,13 @@ struct __allocator {
     typedef __allocator<_Tp1, _Alloc> other;
   };
 
-  __allocator() __STL_NOTHROW {}
-  __allocator(const __allocator& __a) __STL_NOTHROW
+  __allocator() throw() {}
+  __allocator(const __allocator& __a) throw()
     : __underlying_alloc(__a.__underlying_alloc) {}
   template <class _Tp1> 
-  __allocator(const __allocator<_Tp1, _Alloc>& __a) __STL_NOTHROW
+  __allocator(const __allocator<_Tp1, _Alloc>& __a) throw()
     : __underlying_alloc(__a.__underlying_alloc) {}
-  ~__allocator() __STL_NOTHROW {}
+  ~__allocator() throw() {}
 
   pointer address(reference __x) const { return &__x; }
   const_pointer address(const_reference __x) const { return &__x; }
@@ -695,7 +695,7 @@ struct __allocator {
   void deallocate(pointer __p, size_type __n)
     { __underlying_alloc.deallocate(__p, __n * sizeof(_Tp)); }
 
-  size_type max_size() const __STL_NOTHROW 
+  size_type max_size() const throw() 
     { return size_t(-1) / sizeof(_Tp); }
 
   void construct(pointer __p, const _Tp& __val) { new(__p) _Tp(__val); }

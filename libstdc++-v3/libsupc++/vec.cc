@@ -34,7 +34,6 @@
 #include <new>
 #include <exception>
 #include <exception_defines.h>
-
 #include "unwind-cxx.h"
 
 namespace __cxxabiv1

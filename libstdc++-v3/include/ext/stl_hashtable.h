@@ -516,11 +516,15 @@ private:
   {
     _Node* __n = _M_get_node();
     __n->_M_next = 0;
-    __STL_TRY {
+    try {
       _Construct(&__n->_M_val, __obj);
       return __n;
     }
-    __STL_UNWIND(_M_put_node(__n));
+    catch(...)
+      {
+	_M_put_node(__n);
+	__throw_exception_again;
+      }
   }
   
   void _M_delete_node(_Node* __n)
@@ -849,7 +853,7 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
     if (__n > __old_n) {
       vector<_Node*, _All> __tmp(__n, (_Node*)(0),
                                  _M_buckets.get_allocator());
-      __STL_TRY {
+      try {
         for (size_type __bucket = 0; __bucket < __old_n; ++__bucket) {
           _Node* __first = _M_buckets[__bucket];
           while (__first) {
@@ -862,7 +866,6 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
         }
         _M_buckets.swap(__tmp);
       }
-#         ifdef __STL_USE_EXCEPTIONS
       catch(...) {
         for (size_type __bucket = 0; __bucket < __tmp.size(); ++__bucket) {
           while (__tmp[__bucket]) {
@@ -871,9 +874,8 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
             __tmp[__bucket] = __next;
           }
         }
-        throw;
+        __throw_exception_again;
       }
-#         endif /* __STL_USE_EXCEPTIONS */
     }
   }
 }
@@ -937,7 +939,7 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
   _M_buckets.clear();
   _M_buckets.reserve(__ht._M_buckets.size());
   _M_buckets.insert(_M_buckets.end(), __ht._M_buckets.size(), (_Node*) 0);
-  __STL_TRY {
+  try {
     for (size_type __i = 0; __i < __ht._M_buckets.size(); ++__i) {
       const _Node* __cur = __ht._M_buckets[__i];
       if (__cur) {
@@ -954,7 +956,11 @@ void hashtable<_Val,_Key,_HF,_Ex,_Eq,_All>
     }
     _M_num_elements = __ht._M_num_elements;
   }
-  __STL_UNWIND(clear());
+  catch(...)
+    {
+      clear();
+      __throw_exception_again;
+    }
 }
 
 } // namespace std

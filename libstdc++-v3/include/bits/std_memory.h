@@ -69,19 +69,19 @@ private:
 public:
   typedef _Tp element_type;
 
-  explicit auto_ptr(_Tp* __p = 0) __STL_NOTHROW : _M_ptr(__p) {}
-  auto_ptr(auto_ptr& __a) __STL_NOTHROW : _M_ptr(__a.release()) {}
+  explicit auto_ptr(_Tp* __p = 0) throw() : _M_ptr(__p) {}
+  auto_ptr(auto_ptr& __a) throw() : _M_ptr(__a.release()) {}
 
-  template <class _Tp1> auto_ptr(auto_ptr<_Tp1>& __a) __STL_NOTHROW
+  template <class _Tp1> auto_ptr(auto_ptr<_Tp1>& __a) throw()
     : _M_ptr(__a.release()) {}
 
-  auto_ptr& operator=(auto_ptr& __a) __STL_NOTHROW {
+  auto_ptr& operator=(auto_ptr& __a) throw() {
     reset(__a.release());
     return *this;
   }
 
   template <class _Tp1>
-  auto_ptr& operator=(auto_ptr<_Tp1>& __a) __STL_NOTHROW {
+  auto_ptr& operator=(auto_ptr<_Tp1>& __a) throw() {
     reset(__a.release());
     return *this;
   }
@@ -92,21 +92,21 @@ public:
   // this is prohibited.
   ~auto_ptr() { delete _M_ptr; }
  
-  _Tp& operator*() const __STL_NOTHROW {
+  _Tp& operator*() const throw() {
     return *_M_ptr;
   }
-  _Tp* operator->() const __STL_NOTHROW {
+  _Tp* operator->() const throw() {
     return _M_ptr;
   }
-  _Tp* get() const __STL_NOTHROW {
+  _Tp* get() const throw() {
     return _M_ptr;
   }
-  _Tp* release() __STL_NOTHROW {
+  _Tp* release() throw() {
     _Tp* __tmp = _M_ptr;
     _M_ptr = 0;
     return __tmp;
   }
-  void reset(_Tp* __p = 0) __STL_NOTHROW {
+  void reset(_Tp* __p = 0) throw() {
     if (__p != _M_ptr) {
       delete _M_ptr;
       _M_ptr = __p;
@@ -118,10 +118,10 @@ public:
   // in fact, most present-day compilers do not support the language 
   // features that these conversions rely on.
 public:
-  auto_ptr(auto_ptr_ref<_Tp> __ref) __STL_NOTHROW
+  auto_ptr(auto_ptr_ref<_Tp> __ref) throw()
     : _M_ptr(__ref._M_ptr) {}
 
-  auto_ptr& operator=(auto_ptr_ref<_Tp> __ref) __STL_NOTHROW {
+  auto_ptr& operator=(auto_ptr_ref<_Tp> __ref) throw() {
     if (__ref._M_ptr != this->get()) {
       delete _M_ptr;
       _M_ptr = __ref._M_ptr;
@@ -129,9 +129,9 @@ public:
     return *this;
   }
 
-  template <class _Tp1> operator auto_ptr_ref<_Tp1>() __STL_NOTHROW 
+  template <class _Tp1> operator auto_ptr_ref<_Tp1>() throw() 
     { return auto_ptr_ref<_Tp>(this->release()); }
-  template <class _Tp1> operator auto_ptr<_Tp1>() __STL_NOTHROW
+  template <class _Tp1> operator auto_ptr<_Tp1>() throw()
     { return auto_ptr<_Tp1>(this->release()); }
 };
 

@@ -200,19 +200,35 @@ public:
   bool empty() const { return c.empty(); }
   size_type size() const { return c.size(); }
   const_reference top() const { return c.front(); }
-  void push(const value_type& __x) {
-    __STL_TRY {
-      c.push_back(__x); 
-      push_heap(c.begin(), c.end(), comp);
-    }
-    __STL_UNWIND(c.clear());
+
+  void 
+  push(const value_type& __x) 
+  {
+    try 
+      {
+	c.push_back(__x); 
+	push_heap(c.begin(), c.end(), comp);
+      }
+    catch(...)
+      {
+	c.clear();
+	__throw_exception_again; 
+      }
   }
-  void pop() {
-    __STL_TRY {
-      pop_heap(c.begin(), c.end(), comp);
-      c.pop_back();
-    }
-    __STL_UNWIND(c.clear());
+
+  void 
+  pop() 
+  {
+    try 
+      {
+	pop_heap(c.begin(), c.end(), comp);
+	c.pop_back();
+      }
+    catch(...)
+      {
+	c.clear();
+	__throw_exception_again; 
+      }
   }
 };
 

@@ -265,20 +265,28 @@ protected:
   _Node* _M_create_node(const _Tp& __x)
   {
     _Node* __p = _M_get_node();
-    __STL_TRY {
+    try {
       _Construct(&__p->_M_data, __x);
     }
-    __STL_UNWIND(_M_put_node(__p));
+    catch(...)
+      { 
+	_M_put_node(__p);
+	__throw_exception_again; 
+      }
     return __p;
   }
 
   _Node* _M_create_node()
   {
     _Node* __p = _M_get_node();
-    __STL_TRY {
+    try {
       _Construct(&__p->_M_data);
     }
-    __STL_UNWIND(_M_put_node(__p));
+    catch(...)
+      { 
+	_M_put_node(__p);
+	__throw_exception_again; 
+      }
     return __p;
   }
 

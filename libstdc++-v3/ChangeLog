@@ -1,3 +1,40 @@
+2001-10-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Make -fno-exceptions work.
+	* config/locale/c_locale_gnu.cc: Use functexcept.
+	* include/bits/c++config (__stl_assert): Remove.
+	(__STL_USE_EXCEPTIONS): Same.
+	(__STL_TRY): Same.
+	(__STL_CATCH_ALL): Same.
+	(__STL_THROW): Same.
+	(__STL_RETHROW): Same.
+	(__STL_NOTHROW): Same.
+	(__STL_UNWIND): Same.
+	* include/bits/pthread_allocimpl.h: Fix.
+	* include/bits/std_bitset.h: Same.
+	* include/bits/std_list.h: Same.
+	* include/bits/std_memory.h: Same.
+	* include/bits/std_queue.h: Same.
+	* include/bits/stl_alloc.h: Same.
+	* include/bits/stl_deque.h: Same.
+	* include/bits/stl_list.h: Same.
+	* include/bits/stl_queue.h: Same.
+	* include/bits/stl_tempbuf.h: Same.
+	* include/bits/stl_tree.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/stl_vector.h: Same.
+	* include/ext/ropeimpl.h: Same.
+	* include/ext/slist: Same.
+	* include/ext/stl_hashtable.h: Same.
+	* include/ext/stl_rope.h: Same.
+	* libsupc++/new_op.cc: Include cstdlib.
+	* libsupc++/eh_personality.cc: Add exception_defines include. Use
+	__throw_exception_again, tweak.
+	* libsupc++/eh_aux_runtime.cc: Include stdlib for abort.
+	* libsupc++/vec.cc: Tweak.
+	* src/functexcept.cc: Remove unused arguments.
+	* testsuite/23_containers/bitset_members.cc: Tweak.
+
 2001-10-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/cpu/i386/bits/limits.h: Move to...

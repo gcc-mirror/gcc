@@ -23,15 +23,13 @@
 #include <bitset>
 #include <testsuite_hooks.h>
 
-bool test01(void)
+void 
+test01(void)
 {
   bool test = true;
   const size_t n1 = 5;
 
-// the other 22 member functions should be in here too...
-
-
-  // test()
+  // the other 22 member functions should be in here too...
   try {
     std::bitset<n1> five_bits;
     bool unused = five_bits.test(n1);   // should throw
@@ -43,12 +41,7 @@ bool test01(void)
   catch(...) {
     VERIFY( false );
   }
-  
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-  return test;
+  VERIFY( test );
 }
 
 int main()

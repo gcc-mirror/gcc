@@ -30,6 +30,7 @@
 
 #include <bits/c++config.h>
 #include <cstdlib>
+#include <exception_defines.h>
 #include "unwind-cxx.h"
 
 using namespace __cxxabiv1;
@@ -412,31 +413,33 @@ __cxa_call_unexpected (_Unwind_Exception *exc_obj)
 
   __cxa_exception *xh = __get_exception_header_from_ue (exc_obj);
 
-  try {
-    __unexpected (xh->unexpectedHandler);
-  } catch (...) {
-    // Get the exception thrown from unexpected.
-    // ??? Foreign exceptions can't be stacked this way.
-
-    __cxa_eh_globals *globals = __cxa_get_globals_fast ();
-    __cxa_exception *new_xh = globals->caughtExceptions;
-
-    // We don't quite have enough stuff cached; re-parse the LSDA.
-    lsda_header_info info;
-    parse_lsda_header (0, xh->languageSpecificData, &info);
-    info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
-
-    // If this new exception meets the exception spec, allow it.
-    if (check_exception_spec (&info, new_xh->exceptionType,
-			      xh->handlerSwitchValue))
-      throw;
-
-    // If the exception spec allows std::bad_exception, throw that.
-    const std::type_info &bad_exc = typeid (std::bad_exception);
-    if (check_exception_spec (&info, &bad_exc, xh->handlerSwitchValue))
-      throw std::bad_exception ();
-
-    // Otherwise, die.
-    __terminate(xh->terminateHandler);
-  }
+  try 
+    { __unexpected (xh->unexpectedHandler); } 
+  catch(...) 
+    {
+      // Get the exception thrown from unexpected.
+      // ??? Foreign exceptions can't be stacked this way.
+      
+      __cxa_eh_globals *globals = __cxa_get_globals_fast ();
+      __cxa_exception *new_xh = globals->caughtExceptions;
+      
+      // We don't quite have enough stuff cached; re-parse the LSDA.
+      lsda_header_info info;
+      parse_lsda_header (0, xh->languageSpecificData, &info);
+      info.ttype_base = (_Unwind_Ptr) xh->catchTemp;
+      
+      // If this new exception meets the exception spec, allow it.
+      if (check_exception_spec (&info, new_xh->exceptionType,
+				xh->handlerSwitchValue))
+	__throw_exception_again;
+      
+      // If the exception spec allows std::bad_exception, throw that.
+#ifdef __EXCEPTIONS  
+      const std::type_info &bad_exc = typeid (std::bad_exception);
+      if (check_exception_spec (&info, &bad_exc, xh->handlerSwitchValue))
+	throw std::bad_exception();
+#endif   
+      // Otherwise, die.
+      __terminate(xh->terminateHandler);
+    }
 }
