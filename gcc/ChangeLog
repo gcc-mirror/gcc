@@ -1,3 +1,9 @@
+1999-08-02  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.c (rs6000_va_list): Type is an array.
+	(rs6000_va_start): Don't doubly adjust for varargs.
+	(rs6000_va_arg): Evaluate long long GPR adjustment.
+
 Mon Aug  2 16:15:57 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/aix43.h (SUBTARGET_SWITCHES): Use -m64 and -m32 instead of

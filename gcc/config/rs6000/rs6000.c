@@ -31,9 +31,9 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "expr.h"
 #include "except.h"
 #include "function.h"
 #include "output.h"
@@ -1678,8 +1678,8 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 {
   CUMULATIVE_ARGS next_cum;
   int reg_size = TARGET_32BIT ? 4 : 8;
-  rtx save_area;
-  int first_reg_offset;
+  rtx save_area, mem;
+  int first_reg_offset, set;
 
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
@@ -1717,12 +1717,16 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type, 1);
     }
 
+  set = get_varargs_alias_set ();
   if (!no_rtl && first_reg_offset < GP_ARG_NUM_REG)
     {
+      mem = gen_rtx_MEM (BLKmode,
+		         plus_constant (save_area,
+					first_reg_offset * reg_size)),
+      MEM_ALIAS_SET (mem) = set;
+
       move_block_from_reg
-	(GP_ARG_MIN_REG + first_reg_offset,
-	 gen_rtx_MEM (BLKmode,
-		      plus_constant (save_area, first_reg_offset * reg_size)),
+	(GP_ARG_MIN_REG + first_reg_offset, mem,
 	 GP_ARG_NUM_REG - first_reg_offset,
 	 (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
 
@@ -1750,8 +1754,9 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
       while (fregno <= FP_ARG_V4_MAX_REG)
 	{
-	  emit_move_insn (gen_rtx_MEM (DFmode, plus_constant (save_area, off)),
-			  gen_rtx_REG (DFmode, fregno));
+	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
+          MEM_ALIAS_SET (mem) = set;
+	  emit_move_insn (mem, gen_rtx_REG (DFmode, fregno));
 	  fregno++;
 	  off += 8;
 	}
@@ -1759,97 +1764,255 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       emit_label (lab);
     }
 }
-
-/* If defined, is a C expression that produces the machine-specific
-   code for a call to `__builtin_saveregs'.  This code will be moved
-   to the very beginning of the function, before any parameter access
-   are made.  The return value of this function should be an RTX that
-   contains the value to use as the return of `__builtin_saveregs'.
 
-   On the Power/PowerPC return the address of the area on the stack
-   used to hold arguments.  Under AIX, this includes the 8 word register
-   save area. 
+/* Create the va_list data type.  */
 
-   Under V.4, things are more complicated.  We do not have access to
-   all of the virtual registers required for va_start to do its job,
-   so we construct the va_list in its entirity here, and reduce va_start
-   to a block copy.  This is similar to the way we do things on Alpha.  */
-
-struct rtx_def *
-rs6000_expand_builtin_saveregs ()
+tree
+rs6000_build_va_list ()
 {
-  rtx block, mem_gpr_fpr, mem_reg_save_area, mem_overflow, tmp;
-  tree fntype;
-  int stdarg_p;
-  HOST_WIDE_INT words, gpr, fpr;
+  tree f_gpr, f_fpr, f_ovf, f_sav, record;
+  tree uchar_type_node;
 
+  /* Only SVR4 needs something special.  */
   if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
-    return virtual_incoming_args_rtx;
+    return ptr_type_node;
 
-  fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node));
+  record = make_node (RECORD_TYPE);
+  uchar_type_node = make_unsigned_type (CHAR_TYPE_SIZE);
+  
+  f_gpr = build_decl (FIELD_DECL, get_identifier ("gpr"), uchar_type_node);
+  f_fpr = build_decl (FIELD_DECL, get_identifier ("fpr"), uchar_type_node);
+  f_ovf = build_decl (FIELD_DECL, get_identifier ("overflow_arg_area"),
+		      ptr_type_node);
+  f_sav = build_decl (FIELD_DECL, get_identifier ("reg_save_area"),
+		      ptr_type_node);
 
-  /* Allocate the va_list constructor.  */
-  block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
-  RTX_UNCHANGING_P (block) = 1;
-  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
+  DECL_FIELD_CONTEXT (f_gpr) = record;
+  DECL_FIELD_CONTEXT (f_fpr) = record;
+  DECL_FIELD_CONTEXT (f_ovf) = record;
+  DECL_FIELD_CONTEXT (f_sav) = record;
 
-  mem_gpr_fpr = change_address (block, word_mode, XEXP (block, 0));
-  mem_overflow = change_address (block, ptr_mode, 
-			         plus_constant (XEXP (block, 0),
-						UNITS_PER_WORD));
-  mem_reg_save_area = change_address (block, ptr_mode, 
-				      plus_constant (XEXP (block, 0),
-						     2 * UNITS_PER_WORD));
+  TYPE_FIELDS (record) = f_gpr;
+  TREE_CHAIN (f_gpr) = f_fpr;
+  TREE_CHAIN (f_fpr) = f_ovf;
+  TREE_CHAIN (f_ovf) = f_sav;
 
-  /* Construct the two characters of `gpr' and `fpr' as a unit.  */
+  layout_type (record);
+
+  /* The correct type is an array type of one element.  */
+  return build_array_type (record, build_index_type (size_zero_node));
+}
+
+/* Implement va_start.  */
+
+void
+rs6000_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  HOST_WIDE_INT words, n_gpr, n_fpr;
+  tree f_gpr, f_fpr, f_ovf, f_sav;
+  tree gpr, fpr, ovf, sav, t;
+
+  /* Only SVR4 needs something special.  */
+  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+    {
+      std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+      return;
+    }
+
+  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_ovf = TREE_CHAIN (f_fpr);
+  f_sav = TREE_CHAIN (f_ovf);
+
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+
+  /* Count number of gp and fp argument registers used.  */
   words = current_function_args_info.words;
-  gpr = current_function_args_info.sysv_gregno - GP_ARG_MIN_REG;
-  fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
+  n_gpr = current_function_args_info.sysv_gregno - GP_ARG_MIN_REG;
+  n_fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
 
-  /* Varargs has the va_dcl argument, but we don't count it.  */
-  if (!stdarg_p)
-    {
-      if (gpr > GP_ARG_NUM_REG)
-        words -= 1;
-      else
-        gpr -= 1;
-    }
+  if (TARGET_DEBUG_ARG)
+    fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
+	     words, n_gpr, n_fpr);
 
-  if (BYTES_BIG_ENDIAN)
-    {
-      HOST_WIDE_INT bits = gpr << 8 | fpr;
-      if (HOST_BITS_PER_WIDE_INT >= BITS_PER_WORD)
-        tmp = GEN_INT (bits << (BITS_PER_WORD - 16));
-      else
-	{
-	  bits <<= BITS_PER_WORD - HOST_BITS_PER_WIDE_INT - 16;
-	  tmp = immed_double_const (0, bits, word_mode);
-	}
-    }
-  else
-    tmp = GEN_INT (fpr << 8 | gpr);
+  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, build_int_2 (n_gpr, 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  emit_move_insn (mem_gpr_fpr, tmp);
+  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr, build_int_2 (n_fpr, 0));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the overflow area.  */
-  tmp = expand_binop (Pmode, add_optab, virtual_incoming_args_rtx,
-		      GEN_INT (words * UNITS_PER_WORD),
-		      mem_overflow, 0, OPTAB_WIDEN);
-  if (tmp != mem_overflow)
-    emit_move_insn (mem_overflow, tmp);
+  t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
+  if (words != 0)
+    t = build (PLUS_EXPR, TREE_TYPE (ovf), t,
+	       build_int_2 (words * UNITS_PER_WORD, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the register save area.  */
-  tmp = expand_binop (Pmode, add_optab, virtual_stack_vars_rtx,
-		      GEN_INT (-RS6000_VARARGS_SIZE),
-		      mem_reg_save_area, 0, OPTAB_WIDEN);
-  if (tmp != mem_reg_save_area)
-    emit_move_insn (mem_reg_save_area, tmp);
+  t = make_tree (TREE_TYPE (sav), virtual_stack_vars_rtx);
+  t = build (PLUS_EXPR, TREE_TYPE (sav), t,
+	     build_int_2 (-RS6000_VARARGS_SIZE, -1));
+  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
 
-  /* Return the address of the va_list constructor.  */
-  return XEXP (block, 0);
+/* Implement va_arg.  */
+
+rtx
+rs6000_va_arg (valist, type)
+     tree valist, type;
+{
+  tree f_gpr, f_fpr, f_ovf, f_sav;
+  tree gpr, fpr, ovf, sav, reg, t, u;
+  int indirect_p, size, rsize, n_reg, sav_ofs, sav_scale;
+  rtx lab_false, lab_over, addr_rtx, r;
+
+  /* Only SVR4 needs something special.  */
+  if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
+    return std_expand_builtin_va_arg (valist, type);
+
+  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_fpr = TREE_CHAIN (f_gpr);
+  f_ovf = TREE_CHAIN (f_fpr);
+  f_sav = TREE_CHAIN (f_ovf);
+
+  gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr);
+  fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr);
+  ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf);
+  sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav);
+
+  size = int_size_in_bytes (type);
+  rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  if (AGGREGATE_TYPE_P (type) || TYPE_MODE (type) == TFmode)
+    {
+      /* Aggregates and long doubles are passed by reference.  */
+      indirect_p = 1;
+      reg = gpr;
+      n_reg = 1;
+      sav_ofs = 0;
+      sav_scale = 4;
+      size = rsize = UNITS_PER_WORD;
+    }
+  else if (FLOAT_TYPE_P (type) && ! TARGET_SOFT_FLOAT)
+    {
+      /* FP args go in FP registers, if present.  */
+      indirect_p = 0;
+      reg = fpr;
+      n_reg = 1;
+      sav_ofs = 8*4;
+      sav_scale = 8;
+    }
+  else
+    {
+      /* Otherwise into GP registers.  */
+      indirect_p = 0;
+      reg = gpr;
+      n_reg = rsize;
+      sav_ofs = 0;
+      sav_scale = 4;
+    }
+
+  /*
+   * Pull the value out of the saved registers ...
+   */
+
+  lab_false = gen_label_rtx ();
+  lab_over = gen_label_rtx ();
+  addr_rtx = gen_reg_rtx (Pmode);
+
+  emit_cmp_and_jump_insns (expand_expr (reg, NULL_RTX, QImode, EXPAND_NORMAL),
+			   GEN_INT (8 - n_reg + 1),
+			   GE, const1_rtx, QImode, 1, 1, lab_false);
+
+  /* Long long is aligned in the registers.  */
+  if (n_reg > 1)
+    {
+      u = build (BIT_AND_EXPR, TREE_TYPE (reg), reg,
+		 build_int_2 (n_reg - 1, 0));
+      u = build (PLUS_EXPR, TREE_TYPE (reg), reg, u);
+      u = build (MODIFY_EXPR, TREE_TYPE (reg), reg, u);
+      TREE_SIDE_EFFECTS (u) = 1;
+      expand_expr (u, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+
+  if (sav_ofs)
+    t = build (PLUS_EXPR, ptr_type_node, sav, build_int_2 (sav_ofs, 0));
+  else
+    t = sav;
+
+  u = build (POSTINCREMENT_EXPR, TREE_TYPE (reg), reg, build_int_2 (n_reg, 0));
+  TREE_SIDE_EFFECTS (u) = 1;
+
+  u = build1 (CONVERT_EXPR, integer_type_node, u);
+  TREE_SIDE_EFFECTS (u) = 1;
+
+  u = build (MULT_EXPR, integer_type_node, u, build_int_2 (sav_scale, 0));
+  TREE_SIDE_EFFECTS (u) = 1;
+
+  t = build (PLUS_EXPR, ptr_type_node, t, u);
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (r != addr_rtx)
+    emit_move_insn (addr_rtx, r);
+
+  emit_jump_insn (gen_jump (lab_over));
+  emit_barrier ();
+  emit_label (lab_false);
+
+  /*
+   * ... otherwise out of the overflow area.
+   */
+
+  /* Make sure we don't find reg 7 for the next int arg.  */
+  if (n_reg > 1)
+    {
+      t = build (MODIFY_EXPR, TREE_TYPE (reg), reg, build_int_2 (8, 0));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+
+  /* Care for on-stack alignment if needed.  */
+  if (rsize <= 1)
+    t = ovf;
+  else
+    {
+      t = build (PLUS_EXPR, TREE_TYPE (ovf), ovf, build_int_2 (7, 0));
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, build_int_2 (-8, -1));
+    }
+  t = save_expr (t);
+
+  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
+  if (r != addr_rtx)
+    emit_move_insn (addr_rtx, r);
+
+  t = build (PLUS_EXPR, TREE_TYPE (t), t, build_int_2 (size, 0));
+  t = build (MODIFY_EXPR, TREE_TYPE (ovf), ovf, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  emit_label (lab_over);
+
+  if (indirect_p)
+    {
+      r = gen_rtx_MEM (Pmode, addr_rtx);
+      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+      emit_move_insn (addr_rtx, r);
+    }
+
+  return addr_rtx;
 }
 
 /* Generate a memory reference for expand_block_move, copying volatile,
