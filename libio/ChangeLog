@@ -40,6 +40,12 @@ Sun May 30 14:25:02 1999  Eric Raskin (ehr@listworks.com)
 
 	* libioP.h: Only include libc-lock.h if _IO_MTSAFE_IO is defined.
 
+1999-05-14  Ulrich Drepper  <drepper@cygnus.com>
+
+	* configure.in: Recognize target *vxworks* and add fragment vxworks.mt.
+	* config/vxworks.mt: New file.
+	* gen-params: Let configure override HAVE_PRINTF_FP.
+
 1999-05-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in (compiler_name): Don't do the skip-this-dir thing
