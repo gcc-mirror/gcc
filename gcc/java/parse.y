@@ -2785,7 +2785,7 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
 	   f != input_filename && f[0] != '/' && f[0] != DIR_SEPARATOR;
 	   f--)
 	;
-      if (f[0] == '/')
+      if (f[0] == '/' || f[0] == DIR_SEPARATOR)
 	f++;
       if (strncmp (IDENTIFIER_POINTER (raw_name), 
 		   f , IDENTIFIER_LENGTH (raw_name)) ||
