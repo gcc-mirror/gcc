@@ -403,21 +403,8 @@ namespace std
       streamsize 
       in_avail() 
       { 
-	streamsize __ret;
-	if (_M_in_cur && _M_in_cur < _M_in_end)
-	  {
-	    if (_M_pback_init)
-	      {
-		size_t __save_len =  _M_pback_end_save - _M_pback_cur_save;
-		size_t __pback_len = _M_in_cur - _M_pback;
-		__ret = __save_len - __pback_len;
-	      }
-	    else
-	      __ret = this->egptr() - this->gptr();
-	  }
-	else
-	  __ret = this->showmanyc();
-	return __ret;
+	streamsize __ret = _M_in_end - _M_in_cur;
+	return __ret ? __ret : this->showmanyc();
       }
 
       /**
