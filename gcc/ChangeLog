@@ -1,5 +1,11 @@
 2003-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	PR optimization/12799
+	* postreload.c (reload_cse_move2add): Generate the add2
+	patterns manually.
+
+2003-11-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* config/sparc/sparc.c (function_arg_partial_nregs) [TARGET_ARCH64]:
 	Return 0 for all complex modes whose size is lesser or equal to
 	a word.  Add a ??? comment for the condition used with 16-byte
