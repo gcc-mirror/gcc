@@ -613,6 +613,211 @@ static char **linker_options;
 static int n_assembler_options;
 static char **assembler_options;
 
+/* Define how to map long options into short ones.  */
+
+/* This structure describes one mapping.  */
+struct option_map
+{
+  /* The long option's name.  */
+  char *name;
+  /* The equivalent short option.  */
+  char *equivalent;
+  /* Argument info.  A string of flag chars; NULL equals no options.
+     a => argument required.
+     o => argument optional.
+     j => join argument to equivalent, making one word.
+     * => allow other text after NAME as an argument.  */
+  char *arg_info;
+};
+
+/* This is the table of mappings.  Mappings are tried sequentially
+   for each option encountered; the first one that matches, wins.  */
+
+struct option_map option_map[] =
+ {
+   {"--profile-blocks", "-a", 0},
+   {"--target", "-b", "a"},
+   {"--compile", "-c", 0},
+   {"--dump", "-d", "a"},
+   {"--entry", "-e", 0},
+   {"--debug", "-g", "oj"},
+   {"--include", "-include", "a"},
+   {"--imacros", "-imacros", "a"},
+   {"--include-prefix", "-iprefix", "a"},
+   {"--include-directory-after", "-idirafter", "a"},
+   {"--include-with-prefix", "-iwithprefix", "a"},
+   {"--machine-", "-m", "*j"},
+   {"--machine", "-m", "aj"},
+   {"--no-standard-includes", "-nostdinc", 0},
+   {"--no-standard-libraries", "-nostdlib", 0},
+   {"--no-precompiled-includes", "-noprecomp", 0},
+   {"--output", "-o", "a"},
+   {"--profile", "-p", 0},
+   {"--quiet", "-q", 0},
+   {"--silent", "-q", 0},
+   {"--force-link", "-u", "a"},
+   {"--verbose", "-v", 0},
+   {"--no-warnings", "-w", 0},
+   {"--language", "-x", "a"},
+
+   {"--assert", "-A", "a"},
+   {"--prefix", "-B", "a"},
+   {"--comments", "-C", 0},
+   {"--define-macro", "-D", "a"},
+   {"--preprocess", "-E", 0},
+   {"--trace-includes", "-H", 0},
+   {"--include-directory", "-I", "a"},
+   {"--include-barrier", "-I-", 0},
+   {"--library-directory", "-L", "a"},
+   {"--dependencies", "-M", 0},
+   {"--user-dependencies", "-MM", 0},
+   {"--write-dependencies", "-MD", 0},
+   {"--write-user-dependencies", "-MMD", 0},
+   {"--optimize", "-O", "oj"},
+   {"--no-line-commands", "-P", 0},
+   {"--assemble", "-S", 0},
+   {"--undefine-macro", "-U", "a"},
+   {"--version", "-V", "a"},
+   {"--for-assembler", "-Wa", "a"},
+   {"--extra-warnings", "-W", 0},
+   {"--all-warnings", "-Wall", 0},
+   {"--warn-", "-W", "*j"},
+   {"--for-linker", "-Xlinker", "a"},
+
+   {"--ansi", "-ansi", 0},
+   {"--traditional", "-traditional", 0},
+   {"--traditional-cpp", "-traditional-cpp", 0},
+   {"--trigraphs", "-trigraphs", 0},
+   {"--pipe", "-pipe", 0},
+   {"--dumpbase", "-dumpbase", "a"},
+   {"--pedantic", "-pedantic", 0},
+   {"--pedantic-errors", "-pedantic-errors", 0},
+   {"--save-temps", "-save-temps", 0},
+   {"--print-libgcc-file-name", "-print-libgcc-file-name", 0},
+   {"--static", "-static", 0},
+   {"--shared", "-shared", 0},
+   {"--symbolic", "-symbolic", 0},
+   {"--", "-f", "*j"}
+ };
+
+/* Translate the options described by *ARGCP and *ARGVP.
+   Make a new vector and store it back in *ARGVP,
+   and store its length in *ARGVC.  */
+
+static void
+translate_options (argcp, argvp)
+     int *argcp;
+     char ***argvp;
+{
+  int i, j;
+  int argc = *argcp;
+  char **argv = *argvp;
+  char **newv = (char **) xmalloc ((argc + 2) * 2 * sizeof (char *));
+  int newindex = 0;
+
+  i = 0;
+  newv[newindex++] = argv[i++];
+
+  while (i < argc)
+    {
+      /* Translate -- options.  */
+      if (argv[i][0] == '-' && argv[i][1] == '-')
+	{
+	  /* Find a mapping that applies to this option.  */
+	  for (j = 0; j < sizeof (option_map) / sizeof (option_map[0]); j++)
+	    {
+	      int optlen = strlen (option_map[j].name);
+	      int complen = strlen (argv[i]);
+	      if (complen > optlen)
+		complen = optlen;
+	      if (!strncmp (argv[i], option_map[j].name, complen))
+		{
+		  int extra = strlen (argv[i]) > optlen;
+		  char *arg = 0;
+
+		  if (extra)
+		    {
+		      /* If the option has an argument, accept that.  */
+		      if (argv[i][optlen] == '=')
+			arg = argv[i] + optlen + 1;
+		      /* If this mapping allows extra text at end of name,
+			 accept that as "argument".  */
+		      else if (index (option_map[j].arg_info, '*') != 0)
+			arg = argv[i] + optlen;
+		      /* Otherwise, extra text at end means mismatch.
+			 Try other mappings.  */
+		      else
+			continue;
+		    }
+		  else if (index (option_map[j].arg_info, '*') != 0)
+		    error ("Incomplete `%s' option", option_map[j].name);
+
+		  /* Handle arguments.  */
+		  if (index (option_map[j].arg_info, 'o') != 0)
+		    {
+		      if (arg == 0)
+			{
+			  if (i + 1 == argc)
+			    error ("Missing argument to `%s' option",
+				   option_map[j].name);
+			  arg = argv[++i];
+			}
+		    }
+		  else if (index (option_map[j].arg_info, 'a') == 0)
+		    {
+		      if (arg != 0)
+			error ("Extraneous argument to `%s' option",
+			       option_map[j].name);
+		      arg = 0;
+		    }
+
+		  /* Store the translation as one argv elt or as two.  */
+		  if (arg != 0 && index (option_map[j].arg_info, 'j') != 0)
+		    newv[newindex++] = concat (option_map[j].equivalent,
+					       arg, "");
+		  else if (arg != 0)
+		    {
+		      newv[newindex++] = option_map[j].equivalent;
+		      newv[newindex++] = arg;
+		    }
+		  else
+		    newv[newindex++] = option_map[j].equivalent;
+
+		  break;
+		}
+	    }
+	  i++;
+	}
+      /* Handle old-fashioned options--just copy them through,
+	 with their arguments.  */
+      else if (argv[i][0] == '-')
+	{
+	  char *p = argv[i] + 1;
+	  int c = *p;
+	  int nskip = 1;
+
+	  if (SWITCH_TAKES_ARG (c) > (p[1] != 0))
+	    nskip += SWITCH_TAKES_ARG (c) - (p[1] != 0);
+	  else if (WORD_SWITCH_TAKES_ARG (p))
+	    nskip += WORD_SWITCH_TAKES_ARG (p);
+
+	  while (nskip > 0)
+	    {
+	      newv[newindex++] = argv[i++];
+	      nskip--;
+	    }
+	}
+      else
+	/* Ordinary operands, or +e options.  */
+	newv[newindex++] = argv[i++];
+    }
+
+  newv[newindex] = 0;
+
+  *argvp = newv;
+  *argcp = newindex;
+}
+
 /* Read compilation specs from a file named FILENAME,
    replacing the default ones.
 
@@ -1962,6 +2167,9 @@ process_command (argc, argv)
 	}
     }
 
+  /* Convert new-style -- options to old-style.  */
+  translate_options (&argc, &argv);
+
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
      Here we also parse the switches that cc itself uses (e.g. -v).  */
@@ -2074,7 +2282,7 @@ process_command (argc, argv)
 	  assembler_options[n_assembler_options - 1] = argv[i] + prev;
 	}
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
-	/* Compensate for the +e options to the C++ front-end.  */
+	/* The +e options to the C++ front-end.  */
 	n_switches++;
       else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
 	{
