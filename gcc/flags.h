@@ -436,6 +436,9 @@ extern int flag_argument_noalias;
 /* Emit code to check for stack overflow; also may cause large objects
    to be allocated dynamically.  */
 extern int flag_stack_check;
+
+/* Do the full regmove optimization pass.  */
+extern int flag_regmove;
 
 /* Other basic status info about current function.  */
 

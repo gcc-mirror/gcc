@@ -1,3 +1,13 @@
+Fri Feb  6 00:27:36 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+        * regmove.c: Update.
+        * flags.h (flag_regmove): Declare.
+	* rtl.h (optimize_reg_copy_1, optimize_reg_copy_2): Don't declare.
+        * local-alloc.c (optimize_reg_copy_1, optimize_reg_copy_2):
+        Moved into regmove; changed caller.
+        * toplev.c (rest_of_compilation): Call regmove_optimize also for
+        expensive_optimizations.
+
 Thu Feb 5 13:38:42 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

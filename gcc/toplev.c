@@ -3408,7 +3408,7 @@ rest_of_compilation (decl)
 
   /* Register allocation pre-pass, to reduce number of moves
      necessary for two-address machines.  */
-  if (optimize > 0 && flag_regmove)
+  if (optimize > 0 && (flag_regmove || flag_expensive_optimizations))
     {
       if (regmove_dump)
 	open_dump_file (".regmove", decl_printable_name (decl, 2));

@@ -1373,8 +1373,4 @@ extern void init_alias_once		PROTO ((void));
 extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
-/* In local-alloc.c */
-extern int optimize_reg_copy_1  	PROTO((rtx, rtx, rtx));
-extern void optimize_reg_copy_2 	PROTO((rtx, rtx, rtx));
-
 #endif /* _RTL_H */
