@@ -288,8 +288,6 @@ static void set_spec_fed PARAMS ((rtx));
 static int is_pfree PARAMS ((rtx, int, int));
 static int find_conditional_protection PARAMS ((rtx, int));
 static int is_conditionally_protected PARAMS ((rtx, int, int));
-static int may_trap_exp PARAMS ((rtx, int));
-static int haifa_classify_insn PARAMS ((rtx));
 static int is_prisky PARAMS ((rtx, int, int));
 static int is_exception_free PARAMS ((rtx, int, int));
 
@@ -1490,90 +1488,12 @@ update_live (insn, src)
     }
 }
 
-/* Exception Free Loads:
-
-   We define five classes of speculative loads: IFREE, IRISKY,
-   PFREE, PRISKY, and MFREE.
-
-   IFREE loads are loads that are proved to be exception-free, just
-   by examining the load insn.  Examples for such loads are loads
-   from TOC and loads of global data.
-
-   IRISKY loads are loads that are proved to be exception-risky,
-   just by examining the load insn.  Examples for such loads are
-   volatile loads and loads from shared memory.
-
-   PFREE loads are loads for which we can prove, by examining other
-   insns, that they are exception-free.  Currently, this class consists
-   of loads for which we are able to find a "similar load", either in
-   the target block, or, if only one split-block exists, in that split
-   block.  Load2 is similar to load1 if both have same single base
-   register.  We identify only part of the similar loads, by finding
-   an insn upon which both load1 and load2 have a DEF-USE dependence.
-
-   PRISKY loads are loads for which we can prove, by examining other
-   insns, that they are exception-risky.  Currently we have two proofs for
-   such loads.  The first proof detects loads that are probably guarded by a
-   test on the memory address.  This proof is based on the
-   backward and forward data dependence information for the region.
-   Let load-insn be the examined load.
-   Load-insn is PRISKY iff ALL the following hold:
-
-   - insn1 is not in the same block as load-insn
-   - there is a DEF-USE dependence chain (insn1, ..., load-insn)
-   - test-insn is either a compare or a branch, not in the same block
-     as load-insn
-   - load-insn is reachable from test-insn
-   - there is a DEF-USE dependence chain (insn1, ..., test-insn)
-
-   This proof might fail when the compare and the load are fed
-   by an insn not in the region.  To solve this, we will add to this
-   group all loads that have no input DEF-USE dependence.
-
-   The second proof detects loads that are directly or indirectly
-   fed by a speculative load.  This proof is affected by the
-   scheduling process.  We will use the flag  fed_by_spec_load.
-   Initially, all insns have this flag reset.  After a speculative
-   motion of an insn, if insn is either a load, or marked as
-   fed_by_spec_load, we will also mark as fed_by_spec_load every
-   insn1 for which a DEF-USE dependence (insn, insn1) exists.  A
-   load which is fed_by_spec_load is also PRISKY.
-
-   MFREE (maybe-free) loads are all the remaining loads. They may be
-   exception-free, but we cannot prove it.
-
-   Now, all loads in IFREE and PFREE classes are considered
-   exception-free, while all loads in IRISKY and PRISKY classes are
-   considered exception-risky.  As for loads in the MFREE class,
-   these are considered either exception-free or exception-risky,
-   depending on whether we are pessimistic or optimistic.  We have
-   to take the pessimistic approach to assure the safety of
-   speculative scheduling, but we can take the optimistic approach
-   by invoking the -fsched_spec_load_dangerous option.  */
-
-enum INSN_TRAP_CLASS
-{
-  TRAP_FREE = 0, IFREE = 1, PFREE_CANDIDATE = 2,
-  PRISKY_CANDIDATE = 3, IRISKY = 4, TRAP_RISKY = 5
-};
-
-#define WORST_CLASS(class1, class2) \
-((class1 > class2) ? class1 : class2)
-
 /* Nonzero if block bb_to is equal to, or reachable from block bb_from.  */
 #define IS_REACHABLE(bb_from, bb_to)					\
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
    || (TEST_BIT (ancestor_edges[bb_to],					\
 		 EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
-
-/* Nonzero iff the address is comprised from at most 1 register.  */
-#define CONST_BASED_ADDRESS_P(x)			\
-  (GET_CODE (x) == REG					\
-   || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS	\
-	|| (GET_CODE (x) == LO_SUM))			\
-       && (CONSTANT_P (XEXP (x, 0))			\
-	   || CONSTANT_P (XEXP (x, 1)))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
@@ -1728,160 +1648,6 @@ is_pfree (load_insn, bb_src, bb_trg)
   /* Couldn't find a similar load.  */
   return 0;
 }				/* is_pfree */
-
-/* Returns a class that insn with GET_DEST(insn)=x may belong to,
-   as found by analyzing insn's expression.  */
-
-static int
-may_trap_exp (x, is_store)
-     rtx x;
-     int is_store;
-{
-  enum rtx_code code;
-
-  if (x == 0)
-    return TRAP_FREE;
-  code = GET_CODE (x);
-  if (is_store)
-    {
-      if (code == MEM && may_trap_p (x))
-	return TRAP_RISKY;
-      else
-	return TRAP_FREE;
-    }
-  if (code == MEM)
-    {
-      /* The insn uses memory:  a volatile load.  */
-      if (MEM_VOLATILE_P (x))
-	return IRISKY;
-      /* An exception-free load.  */
-      if (!may_trap_p (x))
-	return IFREE;
-      /* A load with 1 base register, to be further checked.  */
-      if (CONST_BASED_ADDRESS_P (XEXP (x, 0)))
-	return PFREE_CANDIDATE;
-      /* No info on the load, to be further checked.  */
-      return PRISKY_CANDIDATE;
-    }
-  else
-    {
-      const char *fmt;
-      int i, insn_class = TRAP_FREE;
-
-      /* Neither store nor load, check if it may cause a trap.  */
-      if (may_trap_p (x))
-	return TRAP_RISKY;
-      /* Recursive step: walk the insn...  */
-      fmt = GET_RTX_FORMAT (code);
-      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	{
-	  if (fmt[i] == 'e')
-	    {
-	      int tmp_class = may_trap_exp (XEXP (x, i), is_store);
-	      insn_class = WORST_CLASS (insn_class, tmp_class);
-	    }
-	  else if (fmt[i] == 'E')
-	    {
-	      int j;
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		{
-		  int tmp_class = may_trap_exp (XVECEXP (x, i, j), is_store);
-		  insn_class = WORST_CLASS (insn_class, tmp_class);
-		  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
-		    break;
-		}
-	    }
-	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
-	    break;
-	}
-      return insn_class;
-    }
-}
-
-/* Classifies insn for the purpose of verifying that it can be
-   moved speculatively, by examining it's patterns, returning:
-   TRAP_RISKY: store, or risky non-load insn (e.g. division by variable).
-   TRAP_FREE: non-load insn.
-   IFREE: load from a globaly safe location.
-   IRISKY: volatile load.
-   PFREE_CANDIDATE, PRISKY_CANDIDATE: load that need to be checked for
-   being either PFREE or PRISKY.  */
-
-static int
-haifa_classify_insn (insn)
-     rtx insn;
-{
-  rtx pat = PATTERN (insn);
-  int tmp_class = TRAP_FREE;
-  int insn_class = TRAP_FREE;
-  enum rtx_code code;
-
-  if (GET_CODE (pat) == PARALLEL)
-    {
-      int i, len = XVECLEN (pat, 0);
-
-      for (i = len - 1; i >= 0; i--)
-	{
-	  code = GET_CODE (XVECEXP (pat, 0, i));
-	  switch (code)
-	    {
-	    case CLOBBER:
-	      /* Test if it is a 'store'.  */
-	      tmp_class = may_trap_exp (XEXP (XVECEXP (pat, 0, i), 0), 1);
-	      break;
-	    case SET:
-	      /* Test if it is a store.  */
-	      tmp_class = may_trap_exp (SET_DEST (XVECEXP (pat, 0, i)), 1);
-	      if (tmp_class == TRAP_RISKY)
-		break;
-	      /* Test if it is a load.  */
-	      tmp_class
-		= WORST_CLASS (tmp_class,
-			       may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)),
-					     0));
-	      break;
-	    case COND_EXEC:
-	    case TRAP_IF:
-	      tmp_class = TRAP_RISKY;
-	      break;
-	    default:
-	      ;
-	    }
-	  insn_class = WORST_CLASS (insn_class, tmp_class);
-	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
-	    break;
-	}
-    }
-  else
-    {
-      code = GET_CODE (pat);
-      switch (code)
-	{
-	case CLOBBER:
-	  /* Test if it is a 'store'.  */
-	  tmp_class = may_trap_exp (XEXP (pat, 0), 1);
-	  break;
-	case SET:
-	  /* Test if it is a store.  */
-	  tmp_class = may_trap_exp (SET_DEST (pat), 1);
-	  if (tmp_class == TRAP_RISKY)
-	    break;
-	  /* Test if it is a load.  */
-	  tmp_class =
-	    WORST_CLASS (tmp_class,
-			 may_trap_exp (SET_SRC (pat), 0));
-	  break;
-	case COND_EXEC:
-	case TRAP_IF:
-	  tmp_class = TRAP_RISKY;
-	  break;
-	default:;
-	}
-      insn_class = tmp_class;
-    }
-
-  return insn_class;
-}
 
 /* Return 1 if load_insn is prisky (i.e. if load_insn is fed by
    a load moved speculatively, or if load_insn is protected by

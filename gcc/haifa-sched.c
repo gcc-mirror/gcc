@@ -305,6 +305,170 @@ struct ready_list
   int n_ready;
 };
 
+static int may_trap_exp PARAMS ((rtx, int));
+
+/* Nonzero iff the address is comprised from at most 1 register.  */
+#define CONST_BASED_ADDRESS_P(x)			\
+  (GET_CODE (x) == REG					\
+   || ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS	\
+	|| (GET_CODE (x) == LO_SUM))			\
+       && (CONSTANT_P (XEXP (x, 0))			\
+	   || CONSTANT_P (XEXP (x, 1)))))
+
+/* Returns a class that insn with GET_DEST(insn)=x may belong to,
+   as found by analyzing insn's expression.  */
+
+static int
+may_trap_exp (x, is_store)
+     rtx x;
+     int is_store;
+{
+  enum rtx_code code;
+
+  if (x == 0)
+    return TRAP_FREE;
+  code = GET_CODE (x);
+  if (is_store)
+    {
+      if (code == MEM && may_trap_p (x))
+	return TRAP_RISKY;
+      else
+	return TRAP_FREE;
+    }
+  if (code == MEM)
+    {
+      /* The insn uses memory:  a volatile load.  */
+      if (MEM_VOLATILE_P (x))
+	return IRISKY;
+      /* An exception-free load.  */
+      if (!may_trap_p (x))
+	return IFREE;
+      /* A load with 1 base register, to be further checked.  */
+      if (CONST_BASED_ADDRESS_P (XEXP (x, 0)))
+	return PFREE_CANDIDATE;
+      /* No info on the load, to be further checked.  */
+      return PRISKY_CANDIDATE;
+    }
+  else
+    {
+      const char *fmt;
+      int i, insn_class = TRAP_FREE;
+
+      /* Neither store nor load, check if it may cause a trap.  */
+      if (may_trap_p (x))
+	return TRAP_RISKY;
+      /* Recursive step: walk the insn...  */
+      fmt = GET_RTX_FORMAT (code);
+      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+	{
+	  if (fmt[i] == 'e')
+	    {
+	      int tmp_class = may_trap_exp (XEXP (x, i), is_store);
+	      insn_class = WORST_CLASS (insn_class, tmp_class);
+	    }
+	  else if (fmt[i] == 'E')
+	    {
+	      int j;
+	      for (j = 0; j < XVECLEN (x, i); j++)
+		{
+		  int tmp_class = may_trap_exp (XVECEXP (x, i, j), is_store);
+		  insn_class = WORST_CLASS (insn_class, tmp_class);
+		  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
+		    break;
+		}
+	    }
+	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
+	    break;
+	}
+      return insn_class;
+    }
+}
+
+/* Classifies insn for the purpose of verifying that it can be
+   moved speculatively, by examining it's patterns, returning:
+   TRAP_RISKY: store, or risky non-load insn (e.g. division by variable).
+   TRAP_FREE: non-load insn.
+   IFREE: load from a globaly safe location.
+   IRISKY: volatile load.
+   PFREE_CANDIDATE, PRISKY_CANDIDATE: load that need to be checked for
+   being either PFREE or PRISKY.  */
+
+int
+haifa_classify_insn (insn)
+     rtx insn;
+{
+  rtx pat = PATTERN (insn);
+  int tmp_class = TRAP_FREE;
+  int insn_class = TRAP_FREE;
+  enum rtx_code code;
+
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int i, len = XVECLEN (pat, 0);
+
+      for (i = len - 1; i >= 0; i--)
+	{
+	  code = GET_CODE (XVECEXP (pat, 0, i));
+	  switch (code)
+	    {
+	    case CLOBBER:
+	      /* Test if it is a 'store'.  */
+	      tmp_class = may_trap_exp (XEXP (XVECEXP (pat, 0, i), 0), 1);
+	      break;
+	    case SET:
+	      /* Test if it is a store.  */
+	      tmp_class = may_trap_exp (SET_DEST (XVECEXP (pat, 0, i)), 1);
+	      if (tmp_class == TRAP_RISKY)
+		break;
+	      /* Test if it is a load.  */
+	      tmp_class
+		= WORST_CLASS (tmp_class,
+			       may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)),
+					     0));
+	      break;
+	    case COND_EXEC:
+	    case TRAP_IF:
+	      tmp_class = TRAP_RISKY;
+	      break;
+	    default:
+	      ;
+	    }
+	  insn_class = WORST_CLASS (insn_class, tmp_class);
+	  if (insn_class == TRAP_RISKY || insn_class == IRISKY)
+	    break;
+	}
+    }
+  else
+    {
+      code = GET_CODE (pat);
+      switch (code)
+	{
+	case CLOBBER:
+	  /* Test if it is a 'store'.  */
+	  tmp_class = may_trap_exp (XEXP (pat, 0), 1);
+	  break;
+	case SET:
+	  /* Test if it is a store.  */
+	  tmp_class = may_trap_exp (SET_DEST (pat), 1);
+	  if (tmp_class == TRAP_RISKY)
+	    break;
+	  /* Test if it is a load.  */
+	  tmp_class =
+	    WORST_CLASS (tmp_class,
+			 may_trap_exp (SET_SRC (pat), 0));
+	  break;
+	case COND_EXEC:
+	case TRAP_IF:
+	  tmp_class = TRAP_RISKY;
+	  break;
+	default:;
+	}
+      insn_class = tmp_class;
+    }
+
+  return insn_class;
+}
+
 /* Forward declarations.  */
 
 /* The scheduler using only DFA description should never use the

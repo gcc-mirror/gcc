@@ -56,6 +56,9 @@ static const char *ebb_print_insn PARAMS ((rtx, int));
 static int rank PARAMS ((rtx, rtx));
 static int contributes_to_priority PARAMS ((rtx, rtx));
 static void compute_jump_reg_dependencies PARAMS ((rtx, regset));
+static basic_block earliest_block_with_similiar_load PARAMS ((basic_block,
+							      rtx));
+static void add_deps_for_risky_insns PARAMS ((rtx, rtx));
 static basic_block schedule_ebb PARAMS ((rtx, rtx));
 static basic_block fix_basic_block_boundaries PARAMS ((basic_block, basic_block, rtx, rtx));
 static void add_missing_bbs PARAMS ((rtx, basic_block, basic_block));
@@ -339,6 +342,137 @@ fix_basic_block_boundaries (bb, last, head, tail)
   return bb->prev_bb;
 }
 
+/* Returns the earliest block in EBB currently being processed where a
+   "similar load" 'insn2' is found, and hence LOAD_INSN can move
+   speculatively into the found block.  All the following must hold:
+
+   (1) both loads have 1 base register (PFREE_CANDIDATEs).
+   (2) load_insn and load2 have a def-use dependence upon
+   the same insn 'insn1'.
+
+   From all these we can conclude that the two loads access memory
+   addresses that differ at most by a constant, and hence if moving
+   load_insn would cause an exception, it would have been caused by
+   load2 anyhow.
+
+   The function uses list (given by LAST_BLOCK) of already processed
+   blocks in EBB.  The list is formed in `add_deps_for_risky_insns'.  */
+
+static basic_block
+earliest_block_with_similiar_load (last_block, load_insn)
+     basic_block last_block;
+     rtx load_insn;
+{
+  rtx back_link;
+  basic_block bb, earliest_block = NULL;
+
+  for (back_link = LOG_LINKS (load_insn);
+       back_link;
+       back_link = XEXP (back_link, 1))
+    {
+      rtx insn1 = XEXP (back_link, 0);
+
+      if (GET_MODE (back_link) == VOIDmode)
+	{
+	  /* Found a DEF-USE dependence (insn1, load_insn).  */
+	  rtx fore_link;
+
+	  for (fore_link = INSN_DEPEND (insn1);
+	       fore_link;
+	       fore_link = XEXP (fore_link, 1))
+	    {
+	      rtx insn2 = XEXP (fore_link, 0);
+	      basic_block insn2_block = BLOCK_FOR_INSN (insn2);
+
+	      if (GET_MODE (fore_link) == VOIDmode)
+		{
+		  if (earliest_block != NULL
+		      && earliest_block->index < insn2_block->index)
+		    continue;
+
+		  /* Found a DEF-USE dependence (insn1, insn2).  */
+		  if (haifa_classify_insn (insn2) != PFREE_CANDIDATE)
+		    /* insn2 not guaranteed to be a 1 base reg load.  */
+		    continue;
+		  
+		  for (bb = last_block; bb; bb = bb->aux)
+		    if (insn2_block == bb)
+		      break;
+
+		  if (!bb)
+		    /* insn2 is the similar load.  */
+		    earliest_block = insn2_block;
+		}
+	    }
+	}
+    }
+
+  return earliest_block;
+}
+
+/* The following function adds dependecies between jumps and risky
+   insns in given ebb.  */
+
+static void
+add_deps_for_risky_insns (head, tail)
+     rtx head, tail;
+{
+  rtx insn, prev;
+  int class;
+  rtx last_jump = NULL_RTX;
+  rtx next_tail = NEXT_INSN (tail);
+  basic_block last_block = NULL, bb;
+  
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    if (GET_CODE (insn) == JUMP_INSN)
+      {
+	bb = BLOCK_FOR_INSN (insn);
+	bb->aux = last_block;
+	last_block = bb;
+	last_jump = insn;
+      }
+    else if (INSN_P (insn) && last_jump != NULL_RTX)
+      {
+	class = haifa_classify_insn (insn);
+	prev = last_jump;
+	switch (class)
+	  {
+	  case PFREE_CANDIDATE:
+	    if (flag_schedule_speculative_load)
+	      {
+		bb = earliest_block_with_similiar_load (last_block, insn);
+		if (bb)
+		  bb = bb->aux;
+		if (!bb)
+		  break;
+		prev = bb->end;
+	      }
+	    /* FALLTHRU */
+	  case TRAP_RISKY:
+	  case IRISKY:
+	  case PRISKY_CANDIDATE:
+	    /* ??? We could implement better checking PRISKY_CANDIATEs
+	       analogous to sched-rgn.c.  */
+	    /* We can not change the mode of the backward
+	       dependency because REG_DEP_ANTI has the lowest
+	       rank.  */
+	    if (add_dependence (insn, prev, REG_DEP_ANTI))
+	      add_forward_dependence (prev, insn, REG_DEP_ANTI);
+            break;
+	    
+          default:
+            break;
+	  }
+      }
+  /* Maintain the invariant that bb->aux is clear after use.  */
+  while (last_block)
+    {
+      bb = last_block->aux;
+      last_block->aux = NULL;
+      last_block = bb;
+    }
+}
+
 /* Schedule a single extended basic block, defined by the boundaries HEAD
    and TAIL.  */
 
@@ -364,6 +498,8 @@ schedule_ebb (head, tail)
 
   /* Compute INSN_DEPEND.  */
   compute_forward_dependences (head, tail);
+
+  add_deps_for_risky_insns (head, tail);
 
   if (targetm.sched.dependencies_evaluation_hook)
     targetm.sched.dependencies_evaluation_hook (head, tail);
