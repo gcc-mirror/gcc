@@ -2630,7 +2630,7 @@ TEXI_GCCINT_FILES = $(docdir)/gccint.texi \
 	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
 	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi \
 	 $(docdir)/languages.texi $(docdir)/sourcebuild.texi \
-	 $(docdir)/gty.texi
+	 $(docdir)/gty.texi $(docdir)/libgcc.texi
 
 TEXI_GCCINSTALL_FILES = $(docdir)/install.texi $(docdir)/install-old.texi \
 	 $(docdir)/include/fdl.texi
