@@ -6496,7 +6496,7 @@ move\\t%0,%z4\\n\\
 
       /* Handle Irix6 function calls that have multiple non-contiguous
 	 results.  */
-      if (GET_CODE (operands[0]) == PARALLEL)
+      if (GET_CODE (operands[0]) == PARALLEL && XVECLEN (operands[0], 0) > 1)
 	{
 	  emit_call_insn (gen_call_value_multiple_internal0
 			  (XEXP (XVECEXP (operands[0], 0, 0), 0),
@@ -6505,6 +6505,11 @@ move\\t%0,%z4\\n\\
 			   gen_rtx (REG, SImode, GP_REG_FIRST + 31)));
 	  DONE;
 	}
+
+      /* We have a call returning a DImode structure in an FP reg.
+	 Strip off the now unnecessary PARALLEL.  */
+      if (GET_CODE (operands[0]) == PARALLEL)
+	operands[0] = XEXP (XVECEXP (operands[0], 0, 0), 0);
 
       emit_call_insn (gen_call_value_internal0 (operands[0], operands[1], operands[2],
 					        gen_rtx (REG, SImode, GP_REG_FIRST + 31)));
