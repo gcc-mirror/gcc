@@ -83,7 +83,14 @@ top_builddir = .
 # It's normally the absolute path to the current directory.
 objdir = @objdir@
 
+host_subdir=@host_subdir@
 build_subdir=@build_subdir@
+
+ifeq ($(host_subdir),.)
+build_objdir := ../$(build_subdir)
+else
+build_objdir := ../../$(build_subdir)
+endif
 
 # --------
 # Defined vpaths
@@ -756,7 +763,7 @@ ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
-BUILD_LIBIBERTY = ../$(build_subdir)/libiberty/libiberty.a
+BUILD_LIBIBERTY = $(build_objdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
 LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP)
@@ -2829,8 +2836,8 @@ s-macro_list : $(GCC_PASSES)
 
 # Build fixed copies of system files.
 stmp-fixinc: gsyslimits.h macro_list \
-  ../$(build_subdir)/fixincludes/fixincl \
-  ../$(build_subdir)/fixincludes/fixinc.sh
+  $(build_objdir)/fixincludes/fixincl \
+  $(build_objdir)/fixincludes/fixinc.sh
 	@if test ! -d ${SYSTEM_HEADER_DIR}; then \
 	  echo The directory that should contain system headers does not exist: >&2 ; \
 	  echo "  ${SYSTEM_HEADER_DIR}" >&2 ; \
@@ -2842,7 +2849,7 @@ stmp-fixinc: gsyslimits.h macro_list \
 	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); ${PWD_COMMAND}`; \
 	  SHELL='$(SHELL)'; MACRO_LIST=`${PWD_COMMAND}`/macro_list ; \
 	  export TARGET_MACHINE srcdir SHELL MACRO_LIST && \
-	  cd ../$(build_subdir)/fixincludes && \
+	  cd $(build_objdir)/fixincludes && \
 	  $(SHELL) ./fixinc.sh ../../gcc/include \
 	    $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS) )
 	rm -f include/syslimits.h

@@ -152,6 +152,9 @@ SUBDIRS = @configdirs@
 # This is set by the configure script to the arguments to use when configuring
 # directories built for the host system.
 HOST_CONFIGARGS = @host_configargs@
+# Host programs are put under this directory, which is . except if building
+# with srcdir=..
+HOST_SUBDIR = @host_subdir@
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the host system.
 HOST_EXPORTS = \
@@ -181,8 +184,12 @@ HOST_EXPORTS = \
 # Similar, for later GCC stages.
 STAGE_HOST_EXPORTS = \
 	$(HOST_EXPORTS) \
-	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
-	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
+	CC="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
+	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
+	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) \
+	  $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
+	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
+	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
@@ -305,8 +312,9 @@ MAKEINFO = `if [ -f $$r/$(BUILD_SUBDIR)/texinfo/makeinfo/Makefile ] ; \
 # (Default to avoid splitting info files by setting the threshold high.)
 MAKEINFOFLAGS = --split-size=5000000
 
-EXPECT = `if [ -f $$r/expect/expect ] ; \
-	then echo $$r/expect/expect ; \
+# FIXME: expect may become a build tool?
+EXPECT = `if [ -f $$r/$(HOST_SUBDIR)/expect/expect ] ; \
+	then echo $$r/$(HOST_SUBDIR)/expect/expect ; \
 	else echo expect ; fi`
 
 RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
@@ -319,7 +327,7 @@ RUNTEST = `if [ -f $$s/dejagnu/runtest ] ; \
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $$r/bfd:$$r/opcodes
+HOST_LIB_PATH = $$r/$(HOST_SUBDIR)/bfd:$$r/$(HOST_SUBDIR)/opcodes
 
 AS = @AS@
 
@@ -360,8 +368,8 @@ FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
 AR_FOR_TARGET=@AR_FOR_TARGET@
 CONFIGURED_AR_FOR_TARGET=@CONFIGURED_AR_FOR_TARGET@
 USUAL_AR_FOR_TARGET = ` \
-  if [ -f $$r/binutils/ar ] ; then \
-    echo $$r/binutils/ar ; \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/ar ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/ar ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
       echo $(AR); \
@@ -373,9 +381,9 @@ USUAL_AR_FOR_TARGET = ` \
 AS_FOR_TARGET=@AS_FOR_TARGET@
 CONFIGURED_AS_FOR_TARGET=@CONFIGURED_AS_FOR_TARGET@
 USUAL_AS_FOR_TARGET = ` \
-  if [ -f $$r/gas/as-new ] ; then \
-    echo $$r/gas/as-new ; \
-  elif [ -f $$r/gcc/xgcc ]; then \
+  if [ -f $$r/$(HOST_SUBDIR)/gas/as-new ] ; then \
+    echo $$r/$(HOST_SUBDIR)/gas/as-new ; \
+  elif [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=as ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
@@ -396,7 +404,8 @@ CFLAGS_FOR_TARGET = -O2 $(CFLAGS)
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
 GCC_FOR_TARGET=@GCC_FOR_TARGET@
-USUAL_GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) $$r/gcc/xgcc -B$$r/gcc/ $(FLAGS_FOR_TARGET)
+USUAL_GCC_FOR_TARGET = $(STAGE_CC_WRAPPER) \
+  $$r/$(HOST_SUBDIR)/gcc/xgcc -B$$r/$(HOST_SUBDIR)/gcc/ $(FLAGS_FOR_TARGET)
 LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 
 CXX_FOR_TARGET = @CXX_FOR_TARGET@
@@ -409,8 +418,8 @@ LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
 CONFIGURED_DLLTOOL_FOR_TARGET=@CONFIGURED_DLLTOOL_FOR_TARGET@
 USUAL_DLLTOOL_FOR_TARGET = ` \
-  if [ -f $$r/binutils/dlltool ] ; then \
-    echo $$r/binutils/dlltool ; \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/dlltool ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/dlltool ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
       echo $(DLLTOOL); \
@@ -425,9 +434,9 @@ GFORTRAN_FOR_TARGET = @GFORTRAN_FOR_TARGET@
 LD_FOR_TARGET=@LD_FOR_TARGET@
 CONFIGURED_LD_FOR_TARGET=@CONFIGURED_LD_FOR_TARGET@
 USUAL_LD_FOR_TARGET = ` \
-  if [ -f $$r/ld/ld-new ] ; then \
-    echo $$r/ld/ld-new ; \
-  elif [ -f $$r/gcc/xgcc ]; then \
+  if [ -f $$r/$(HOST_SUBDIR)/ld/ld-new ] ; then \
+    echo $$r/$(HOST_SUBDIR)/ld/ld-new ; \
+  elif [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=ld ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
@@ -442,9 +451,9 @@ LDFLAGS_FOR_TARGET =
 NM_FOR_TARGET=@NM_FOR_TARGET@
 CONFIGURED_NM_FOR_TARGET=@CONFIGURED_NM_FOR_TARGET@
 USUAL_NM_FOR_TARGET = ` \
-  if [ -f $$r/binutils/nm-new ] ; then \
-    echo $$r/binutils/nm-new ; \
-  elif [ -f $$r/gcc/xgcc ]; then \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/nm-new ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/nm-new ; \
+  elif [ -f $$r/$(HOST_SUBDIR)/gcc/xgcc ]; then \
     $(CC_FOR_TARGET) -print-prog-name=nm ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
@@ -457,8 +466,8 @@ USUAL_NM_FOR_TARGET = ` \
 RANLIB_FOR_TARGET=@RANLIB_FOR_TARGET@
 CONFIGURED_RANLIB_FOR_TARGET=@CONFIGURED_RANLIB_FOR_TARGET@
 USUAL_RANLIB_FOR_TARGET = ` \
-  if [ -f $$r/binutils/ranlib ] ; then \
-    echo $$r/binutils/ranlib ; \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/ranlib ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/ranlib ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
       if [ x'$(RANLIB)' != x ]; then \
@@ -474,8 +483,8 @@ USUAL_RANLIB_FOR_TARGET = ` \
 WINDRES_FOR_TARGET=@WINDRES_FOR_TARGET@
 CONFIGURED_WINDRES_FOR_TARGET=@CONFIGURED_WINDRES_FOR_TARGET@
 USUAL_WINDRES_FOR_TARGET = ` \
-  if [ -f $$r/binutils/windres ] ; then \
-    echo $$r/binutils/windres ; \
+  if [ -f $$r/$(HOST_SUBDIR)/binutils/windres ] ; then \
+    echo $$r/$(HOST_SUBDIR)/binutils/windres ; \
   else \
     if [ '$(host)' = '$(target)' ] ; then \
       echo $(WINDRES); \
@@ -670,6 +679,9 @@ local-distclean:
 	  rm -rf $(TARGET_SUBDIR); \
 	else true; fi
 	-rm -rf $(BUILD_SUBDIR)
+	-if [ "$(HOST_SUBDIR)" != "." ]; then \
+	  rm -rf $(HOST_SUBDIR); \
+	else true; fi
 	-rm -f texinfo/po/Makefile texinfo/po/Makefile.in texinfo/info/Makefile
 	-rm -f texinfo/doc/Makefile texinfo/po/POTFILES
 	-rmdir texinfo/doc texinfo/info texinfo/intl texinfo/lib 2>/dev/null
@@ -822,38 +834,12 @@ configure-build-[+module+]:
 	echo Configuring in $(BUILD_SUBDIR)/[+module+]; \
 	cd "$(BUILD_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(BUILD_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(BUILD_SUBDIR)/[+module+]/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(BUILD_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \
-	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	  libsrcdir="$$s/[+module+]"; \
-	fi; \
+	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	libsrcdir="$$s/[+module+]"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(BUILD_CONFIGARGS) $${srcdiroption} \
@@ -885,24 +871,20 @@ maybe-configure-[+module+]:
 maybe-configure-[+module+]: configure-[+module+]
 configure-[+module+]:
 	@[+ IF bootstrap +]test -f stage_last && exit 0; \
-	[+ ENDIF bootstrap +]test ! -f [+module+]/Makefile || exit 0; \
-	[ -d [+module+] ] || mkdir [+module+]; \
+	[+ ENDIF bootstrap +]test ! -f $(HOST_SUBDIR)/[+module+]/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/[+module+] ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	echo Configuring in [+module+]; \
-	cd [+module+] || exit 1; \
+	cd $(HOST_SUBDIR)/[+module+] || exit 1; \
 	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/[+module+]"; \
-	    libsrcdir="$$s/[+module+]";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/[+module+]"; \
-	    libsrcdir="$$s/[+module+]";; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/[+module+]/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
+	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	libsrcdir="$$s/[+module+]"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} [+extra_configure_flags+] \
 	  || exit 1
@@ -919,8 +901,8 @@ all-[+module+]: configure-[+module+]
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] \
-	  $(TARGET-[+module+]))
+	(cd $(HOST_SUBDIR)/[+module+] && \
+	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] $(TARGET-[+module+]))
 @endif [+module+]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
@@ -937,8 +919,8 @@ check-[+module+]:
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  $(HOST_EXPORTS) \
-	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS) [+ 
-	    extra_make_flags+] check); \
+	  (cd $(HOST_SUBDIR)/[+module+] && \
+	    $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check)
 	fi
 [+ ELSE check +]
 check-[+module+]:
@@ -946,8 +928,8 @@ check-[+module+]:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	  extra_make_flags+] check)
+	(cd $(HOST_SUBDIR)/[+module+] && \
+	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check)
 [+ ENDIF no_check +]
 @endif [+module+]
 
@@ -963,8 +945,8 @@ install-[+module+]: installdirs
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	$(HOST_EXPORTS) \
-	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
-	  extra_make_flags+] install)
+	(cd $(HOST_SUBDIR)/[+module+] && \
+	  $(MAKE) $(FLAGS_TO_PASS) [+extra_make_flags+] check)
 [+ ENDIF no_install +]
 @endif [+module+]
 
@@ -991,7 +973,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
 	echo "Doing [+make_target+] in [+module+]" ; \
-	(cd [+module+] && \
+	(cd $(HOST_SUBDIR)/[+module+] && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -1032,38 +1014,12 @@ ENDIF raw_cxx +]
 	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
 	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) \
-	    topdir=$(srcdir) ;; \
-	  *) \
-	    case "$(TARGET_SUBDIR)" in \
-	      .) topdir="../$(srcdir)" ;; \
-	      *) topdir="../../$(srcdir)" ;; \
-	    esac ;; \
-	esac; \[+ IF stage +]
-	if [ "$(srcdir)" = "." ] ; then \
-	  if [ "$(TARGET_SUBDIR)" != "." ] ; then \
-	    if $(SHELL) $$s/symlink-tree $${topdir}/[+module+] "no-such-file" ; then \
-	      if [ -f Makefile ]; then \
-	        if $(MAKE) distclean; then \
-	          true; \
-	        else \
-	          exit 1; \
-	        fi; \
-	      else \
-	        true; \
-	      fi; \
-	    else \
-	      exit 1; \
-	    fi; \
-	  else \
-	    true; \
-	  fi; \
-	  srcdiroption="--srcdir=."; \
-	  libsrcdir="."; \
-	else \[+ ENDIF stage +]
-	  srcdiroption="--srcdir=$${topdir}/[+module+]"; \
-	  libsrcdir="$$s/[+module+]"; \[+ IF stage +]
-	fi; \[+ ENDIF stage +]
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/[+module+]/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	libsrcdir="$$s/[+module+]"; \
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
@@ -1378,18 +1334,25 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 stage[+id+]-start::
 	@[ -f stage_current ] && $(MAKE) `cat stage_current`-end || : ; \
 	echo stage[+id+] > stage_current ; \
-	echo stage[+id+] > stage_last[+ FOR host_modules +][+ IF bootstrap +]
+	echo stage[+id+] > stage_last; \
+	$(mkinstalldirs) $(HOST_SUBDIR)[+
+   FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
-	@[ -d stage[+id+]-[+module+] ] || mkdir stage[+id+]-[+module+]; \
-	set stage[+id+]-[+module+] [+module+] ; @CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
-	set stage[+prev+]-[+module+] prev-[+module+] ; @CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
+	@cd $(HOST_SUBDIR); [ -d stage[+id+]-[+module+] ] || \
+	  mkdir stage[+id+]-[+module+]; \
+	set stage[+id+]-[+module+] [+module+] ; \
+	@CREATE_LINK_TO_DIR@ [+ IF prev +] ; \
+	set stage[+prev+]-[+module+] prev-[+module+] ; \
+	@CREATE_LINK_TO_DIR@ [+ ENDIF prev +]
 @endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 stage[+id+]-end::
 	@rm -f stage_current[+ FOR host_modules +][+ IF bootstrap +]
 @if [+ module +]
-	@set [+module+] stage[+id+]-[+module+] ; @UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
-	set prev-[+module+] stage[+prev+]-[+module+] ; @UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
+	@cd $(HOST_SUBDIR); set [+module+] stage[+id+]-[+module+] ; \
+	@UNDO_LINK_TO_DIR@ [+ IF prev +] ; \
+	set prev-[+module+] stage[+prev+]-[+module+] ; \
+	@UNDO_LINK_TO_DIR@ [+ ENDIF prev +]
 @endif [+ module +][+ ENDIF bootstrap +][+ ENDFOR host_modules +]
 
 # Bubble a bugfix through all the stages up to stage [+id+].  They
@@ -1434,18 +1397,14 @@ configure-stage[+id+]-[+module+]:
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
 	$(HOST_EXPORTS) [+ ENDIF prev +] \
 	echo Configuring stage [+id+] in [+module+] ; \
-	cd [+module+] || exit 1; \
+	cd $(HOST_SUBDIR)/[+module+] || exit 1; \
 	case $(srcdir) in \
-	  \.) \
-	    srcdiroption="--srcdir=."; \
-	    libsrcdir=".";; \
-	  /* | [A-Za-z]:[\\/]*) \
-	    srcdiroption="--srcdir=$(srcdir)/[+module+]"; \
-	    libsrcdir="$$s/[+module+]";; \
-	  *) \
-	    srcdiroption="--srcdir=../$(srcdir)/[+module+]"; \
-	    libsrcdir="$$s/[+module+]";; \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/[+module+]/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
+	srcdiroption="--srcdir=$${topdir}/[+module+]"; \
+	libsrcdir="$$s/[+module+]"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) $${srcdiroption} \
 	  [+stage_configure_flags+] [+extra_configure_flags+]
@@ -1457,7 +1416,7 @@ all-stage[+id+]-[+module+]: configure-stage[+id+]-[+module+]
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
 	$(HOST_EXPORTS) [+ ENDIF prev +] \
-	cd [+module+] && \
+	cd $(HOST_SUBDIR)/[+module+] && \
 	$(MAKE) $(FLAGS_TO_PASS) [+ IF prev +] \
 		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
 		[+stage_make_flags+] [+extra_make_flags+]
@@ -1467,7 +1426,7 @@ clean-stage[+id+]-[+module+]:
 	@[ -f [+module+]/Makefile ] || [ -f stage[+id+]-[+module+]/Makefile ] \
 	  || exit 0 ; \
 	[ -f [+module+]/Makefile ] || $(MAKE) stage[+id+]-start ; \
-	cd [+module+] && \
+	cd $(HOST_SUBDIR)/[+module+] && \
 	$(MAKE) $(FLAGS_TO_PASS) [+ IF prev +] \
 		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
 		[+stage_make_flags+] [+extra_make_flags+] clean

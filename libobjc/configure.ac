@@ -23,6 +23,7 @@
 AC_PREREQ(2.59)
 AC_INIT(package-unused, version-unused,, libobjc)
 AC_CONFIG_SRCDIR([objc/objc.h])
+GCC_TOPLEV_SUBDIRS
 
 # We need the following definitions because AC_PROG_LIBTOOL relies on them
 PACKAGE=libobjc
@@ -218,12 +219,12 @@ AC_CHECK_HEADERS(sched.h)
 # -----------
 
 # Determine CFLAGS for gthread.
-# FIXME: the current implementation is dependent on the 'r' variable
-# passed down from the top level
 AC_CACHE_CHECK([for gthread cflags],objc_cv_gthread_flags,
-[if test -f "$r"/gcc/Makefile
+[# we know we are compiled as a target library, so the toplevel build directory
+# is ../..
+if test -f ../../$host_subdir/gcc/Makefile
 then
-  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS ../../$host_subdir/gcc/Makefile | awk -F= '{ print $2 }'`
 else
   AC_MSG_ERROR([not found])
 fi])

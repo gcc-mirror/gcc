@@ -1,3 +1,23 @@
+2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/17383
+	* Makefile.def (target_modules): Remove "stage", now unnecessary.
+	* Makefile.tpl (HOST_SUBDIR): New substitution.
+	(STAGE_HOST_EXPORTS, EXPECT, HOST_LIB_PATH, USUAL_AR_FOR_TARGET,
+	USUAL_AS_FOR_TARGET, USUAL_DLLTOOL_FOR_TARGET, USUAL_GCC_FOR_TARGET,
+	USUAL_LD_FOR_TARGET, USUAL_NM_FOR_TARGET, USUAL_OBJDUMP_FOR_TARGET,
+	USUAL_RANLIB_FOR_TARGET, USUAL_WINDRES_FOR_TARGET): Use it.
+	(Host modules, Bootstrapped modules): Use it.
+	(Build modules, Target modules): Do not create symlink trees,
+	always configure out-of-srcdir.
+	(distclean): Try removing $(host_subdir) with rm before using rm -rf.
+	* configure.in (FLAGS_FOR_TARGET, CC_FOR_TARGET, GCJ_FOR_TARGET,
+	GFORTRAN_FOR_TARGET, CXX_FOR_TARGET, RAW_CXX_FOR_TARGET): Use
+	$(HOST_SUBDIR).  Create a symlink for host_subdir.
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2005-02-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	Merged from libada-gnattools-branch:

@@ -76,8 +76,13 @@ AC_DEFUN([GCC_TOPLEV_SUBDIRS],
 AC_REQUIRE([_GCC_TOPLEV_NONCANONICAL_BUILD]) []dnl
 # Prefix 'build-' so this never conflicts with target_subdir.
 build_subdir="build-${build_noncanonical}"
-# Not really a subdirectory, but here for completeness.
-host_subdir=.
+# --srcdir=. covers the toplevel, while "test -d" covers the subdirectories
+if ( test $srcdir = . && test -d gcc ) \
+   || test -d $srcdir/../host-${host_noncanonical}; then
+  host_subdir="host-${host_noncanonical}"
+else
+  host_subdir=.
+fi
 # No prefix.
 target_subdir=${target_noncanonical}
 AC_SUBST([build_subdir]) []dnl
