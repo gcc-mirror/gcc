@@ -1,3 +1,7 @@
+2004-07-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* name-lookup.c (push_class_level_binding): Simplify.
+
 2004-07-12  Andrew Pinski  <apinski@apple.com>
 
 	PR c++/16475
