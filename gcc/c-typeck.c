@@ -1033,11 +1033,16 @@ default_conversion (exp)
   return exp;
 }
 
-/* Look up component name in the structure type definition.  */
+/* Look up component name in the structure type definition.
+
+   If this component name is found indirectly within an anonymous union,
+   store in *INDIRECT the component which directly contains
+   that anonymous union.  Otherwise, set *INDIRECT to 0.  */
      
 static tree
-lookup_field (type, component)
+lookup_field (type, component, indirect)
      tree type, component;
+     tree *indirect;
 {
   tree field;
 
@@ -1066,11 +1071,15 @@ lookup_field (type, component)
 	      /* Step through all anon unions in linear fashion.  */
 	      while (DECL_NAME (field_array[bot]) == NULL_TREE)
 		{
-		  tree anon;
+		  tree anon, junk;
+
 		  field = field_array[bot++];
-		  anon = lookup_field (TREE_TYPE (field), component);
+		  anon = lookup_field (TREE_TYPE (field), component, &junk);
 		  if (anon != NULL_TREE)
-		    return anon;
+		    {
+		      *indirect = field;
+		      return anon;
+		    }
 		}
 
 	      /* Entire record is only anon unions.  */
@@ -1101,9 +1110,13 @@ lookup_field (type, component)
 	{
 	  if (DECL_NAME (field) == NULL_TREE)
 	    {
-	      tree anon = lookup_field (TREE_TYPE (field), component);
+	      tree junk;
+	      tree anon = lookup_field (TREE_TYPE (field), component, &junk);
 	      if (anon != NULL_TREE)
-		return anon;
+		{
+		  *indirect = field;
+		  return anon;
+		}
 	    }
 
 	  if (DECL_NAME (field) == component)
@@ -1111,6 +1124,7 @@ lookup_field (type, component)
 	}
     }
 
+  *indirect = NULL_TREE;
   return field;
 }
 
@@ -1147,13 +1161,15 @@ build_component_ref (datum, component)
 
   if (code == RECORD_TYPE || code == UNION_TYPE)
     {
+      tree indirect = 0;
+
       if (TYPE_SIZE (type) == 0)
 	{
 	  incomplete_type_error (NULL_TREE, type);
 	  return error_mark_node;
 	}
 
-      field = lookup_field (type, component);
+      field = lookup_field (type, component, &indirect);
 
       if (!field)
 	{
@@ -1165,6 +1181,19 @@ build_component_ref (datum, component)
 	}
       if (TREE_TYPE (field) == error_mark_node)
 	return error_mark_node;
+
+      /* If FIELD was found buried within an anonymous union,
+	 make one COMPONENT_REF to get that anonymous union,
+	 then fall thru to make a second COMPONENT_REF to get FIELD.  */
+      if (indirect != 0)
+	{
+	  ref = build (COMPONENT_REF, TREE_TYPE (indirect), datum, indirect);
+	  if (TREE_READONLY (datum) || TREE_READONLY (indirect))
+	    TREE_READONLY (ref) = 1;
+	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (indirect))
+	    TREE_THIS_VOLATILE (ref) = 1;
+	  datum = ref;
+	}
 
       ref = build (COMPONENT_REF, TREE_TYPE (field), datum, field);
 
