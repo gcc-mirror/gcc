@@ -1,3 +1,7 @@
+2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/19_diagnostics/stdexceptions.cc (test03): Fix.
+
 2001-02-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/1972
