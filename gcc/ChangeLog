@@ -1,5 +1,10 @@
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/tm.texi: Update some places for the rename of target to
+	targetm.  Fix typo.
+
+2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* target.h (struct gcc_target): Add insert_attributes.
 	* target-def.h (TARGET_INSERT_ATTRIBUTES): Define.
 	(TARGET_INITIALIZER): Update.

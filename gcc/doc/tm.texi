@@ -18,14 +18,14 @@ about the target machine that does not fit into the scheme of the
 @file{.md} file.  The file @file{tm.h} should be a link to
 @file{@var{machine}.h}.  The header file @file{config.h} includes
 @file{tm.h} and most compiler source files include @file{config.h}.  The
-source file defines a variable @code{target}, which is a structure
+source file defines a variable @code{targetm}, which is a structure
 containing pointers to functions and data relating to the target
 machine.  @file{@var{machine}.c} should also contain their definitions,
 if they are not defined elsewhere in GCC, and other functions called
 through the macros defined in the @file{.h} file.
 
 @menu
-* Target Structure::    The @code{target} variable.
+* Target Structure::    The @code{targetm} variable.
 * Driver::              Controlling how the driver runs the compilation passes.
 * Run-time Target::     Defining @samp{-m} options like @option{-m68000} and @option{-m68020}.
 * Per-Function Data::   Defining data structures for per-function information.
@@ -51,7 +51,7 @@ through the macros defined in the @file{.h} file.
 @end menu
 
 @node Target Structure
-@section The Global @code{target} Variable
+@section The Global @code{targetm} Variable
 @cindex target hooks
 @cindex target functions
 
@@ -77,10 +77,10 @@ struct gcc_target targetm = TARGET_INITIALIZER;
 @end deftypevar
 
 Where a macro should be defined in the @file{.c} file in this manner to
-form part of the @code{target} structure, it is documented below as a
+form part of the @code{targetm} structure, it is documented below as a
 ``Target Hook'' with a prototype.  Many macros will change in future
 from being defined in the @file{.h} file to being part of the
-@code{target} structure.
+@code{targetm} structure.
 
 @node Driver
 @section Controlling the Compilation Driver, @file{gcc}
@@ -5669,7 +5669,7 @@ position independent code.
 @section Defining the Output Assembler Language
 
 This section describes macros whose principal purpose is to describe how
-to write instructions in assembler language--rather than what the
+to write instructions in assembler language---rather than what the
 instructions do.
 
 @menu
