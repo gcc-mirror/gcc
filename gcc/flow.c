@@ -3930,7 +3930,21 @@ init_propagate_block_info (bb, live, local_set, flags)
 		|| (GET_CODE (XEXP (mem, 0)) == PLUS
 		    && XEXP (XEXP (mem, 0), 0) == frame_pointer_rtx
 		    && GET_CODE (XEXP (XEXP (mem, 0), 1)) == CONST_INT))
-	      pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
+	      {
+#ifdef AUTO_INC_DEC
+		/* Store a copy of mem, otherwise the address may be scrogged
+		   by find_auto_inc.  This matters because insn_dead_p uses
+		   an rtx_equal_p check to determine if two addresses are
+		   the same.  This works before find_auto_inc, but fails
+		   after find_auto_inc, causing discrepencies between the
+		   set of live registers calculated during the
+		   calculate_global_regs_live phase and what actually exists
+		   after flow completes, leading to aborts.  */
+		if (flags & PROP_AUTOINC)
+		  mem = shallow_copy_rtx (mem);
+#endif
+		pbi->mem_set_list = alloc_EXPR_LIST (0, mem, pbi->mem_set_list);
+	      }
 	  }
     }
 
@@ -4561,7 +4575,15 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	     everything that invalidates it.  To be safe, don't eliminate any
 	     stores though SP; none of them should be redundant anyway.  */
 	  && ! reg_mentioned_p (stack_pointer_rtx, reg))
-	pbi->mem_set_list = alloc_EXPR_LIST (0, reg, pbi->mem_set_list);
+	{
+#ifdef AUTO_INC_DEC
+	  /* Store a copy of mem, otherwise the address may be
+	     scrogged by find_auto_inc.  */
+	  if (flags & PROP_AUTOINC)
+	    reg = shallow_copy_rtx (reg);
+#endif
+	  pbi->mem_set_list = alloc_EXPR_LIST (0, reg, pbi->mem_set_list);
+	}
     }
 
   if (GET_CODE (reg) == REG

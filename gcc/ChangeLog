@@ -1,3 +1,9 @@
+2000-11-08  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (init_propagate_block_info): Protect the rtx stored in
+	mem_set_list from modification by find_auto_inc.
+	(mark_set_1): Likewise.
+
 2000-11-08  Neil Booth  <neilb@earthling.net>
 
         Move directive handling into the lexer itself.
