@@ -865,7 +865,7 @@ extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
 extern enum cmp_type hppa_branch_type;
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
-  pa_asm_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION);
+  pa_asm_output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
    as assembly via FUNCTION_PROFILER.  Just output a local label.
