@@ -80,10 +80,10 @@ by the file it has been asked to compile.  Like other compilers for the
 Java language, @code{gcj} has a notion of a @dfn{class path}.  There are
 several options and environment variables which can be used to
 manipulate the class path.  When @code{gcj} looks for a given class, it
-searches the class path looking for the corresponding @file{.class}
-file.  @code{gcj} comes with a built-in class path which points at the
-installed @file{libgcj.jar}, a file which contains all the standard
-classes.
+searches the class path looking for matching @file{.class} or
+@file{.java} file.  @code{gcj} comes with a built-in class path which
+points at the installed @file{libgcj.jar}, a file which contains all the
+standard classes.
 
 In the below, a directory or path component can refer either to an
 actual directory on the filesystem, or to a @file{.zip} or @file{.jar}
