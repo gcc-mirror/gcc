@@ -641,6 +641,7 @@ config/rs6000/eabisim.h
 config/rs6000/linux.h
 config/rs6000/lynx.h
 config/rs6000/mach.h
+config/rs6000/netbsd.h
 config/rs6000/rs6000-protos.h
 config/rs6000/rs6000.c
 config/rs6000/rs6000.h
@@ -666,6 +667,13 @@ config/sh/sh-protos.h
 config/sh/sh.c
 config/sh/sh.h
 config/sh/xm-sh.h
+config/s390/linux.h
+config/s390/linux64.h
+config/s390/s390-protos.h
+config/s390/s390.c
+config/s390/s390.h
+config/s390/xm-s390.h
+config/s390/xm-s390x.h
 config/sparc/aout.h
 config/sparc/bsd.h
 config/sparc/chorus.h
