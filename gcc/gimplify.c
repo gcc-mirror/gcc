@@ -946,6 +946,13 @@ gimplify_return_expr (tree stmt, tree *pre_p)
   else
     {
       result = create_tmp_var (TREE_TYPE (result_decl), NULL);
+
+      /* ??? With complex control flow (usually involving abnormal edges),
+	 we can wind up warning about an uninitialized value for this.  Due
+	 to how this variable is constructed and initialized, this is never
+	 true.  Give up and never warn.  */
+      TREE_NO_WARNING (result) = 1;
+
       gimplify_ctxp->return_temp = result;
     }
 
