@@ -1,3 +1,11 @@
+2004-06-28  Steven Bosscher  <stevenb@suse.de>
+
+	* config/m32r/m32r.c (m32r_sched_odd_word_p, m32r_adjust_cost,
+	m32r_sched_init, m32r_sched_reorder, m32r_variable_issue): Remove.
+	(TARGET_SCHED_ADJUST_COST, TARGET_SCHED_VARIABLE_ISSUE,
+	TARGET_SCHED_INIT, TARGET_SCHED_REORDER): Don't define.
+	* config/m32r/m32r.md: Rewrite the pipeline description as a DFA.
+
 2004-06-28  Richard Henderson  <rth@redhat.com>
 
 	* tree.def (REALPART_EXPR, IMAGPART_EXPR): Change class to 'r'.
