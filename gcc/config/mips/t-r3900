@@ -25,6 +25,7 @@ CRTSTUFF_T_CFLAGS = -G 0
 
 MULTILIB_OPTIONS = msoft-float EL/EB
 MULTILIB_DIRNAMES = soft-float el eb
+MULTILIB_MATCHES = EL=mel EB=meb
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib

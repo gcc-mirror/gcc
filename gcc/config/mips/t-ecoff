@@ -21,6 +21,7 @@ TARGET_LIBGCC2_CFLAGS = -G 0
 
 MULTILIB_OPTIONS = msoft-float/msingle-float EL/EB mips1/mips3
 MULTILIB_DIRNAMES = soft-float single el eb mips1 mips3
+MULTILIB_MATCHES = EL=mel EB=meb
 MULTILIB_MATCHES = msingle-float=m4650
 
 LIBGCC = stmp-multilib
