@@ -1,3 +1,7 @@
+2004-11-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/intmax_t-1.c: XFAIL on Solaris 2.5.1.
+
 2004-11-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.c-torture/execute/20041114-1.c: New test.
