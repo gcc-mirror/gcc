@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel X86.
-   Copyright (C) 1988, 92, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5208,12 +5208,6 @@ output_fp_conditional_move (which_alternative, operands)
       output_asm_insn (AS2 (fcmov%f1,%3,%0), operands);
       break;
 
-    case 2:
-      /* r <- cond ? r : arg */
-      output_asm_insn (AS2 (fcmov%F1,%2,%0), operands);
-      output_asm_insn (AS2 (fcmov%f1,%3,%0), operands);
-      break;
-
     default:
       abort ();
     }
@@ -5271,17 +5265,6 @@ output_int_conditional_move (which_alternative, operands)
       output_asm_insn (AS2 (cmov%c1,%3,%0), operands);
       if (mode == DImode)
 	output_asm_insn (AS2 (cmov%c1,%3,%0), xops);
-      break;
-
-    case 2:
-      /* rm <- cond ? arg1 : arg2 */
-      output_asm_insn (AS2 (cmov%C1,%2,%0), operands);
-      output_asm_insn (AS2 (cmov%c1,%3,%0), operands);
-      if (mode == DImode)
-	{
-	  output_asm_insn (AS2 (cmov%C1,%2,%0), xops);
-	  output_asm_insn (AS2 (cmov%c1,%3,%0), xops);
-	}
       break;
 
     default:

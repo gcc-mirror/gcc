@@ -1,5 +1,11 @@
 Sat Feb 13 11:53:12 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Sun Jan 31 13:22:02 1999  John Wehle  (john@feith.com)
+	* i386.md (movsicc, movhicc, movsfcc, movdfcc,
+	movxfcc, movdicc): Delete unconstrained alternatives.
+	* i386.c (output_fp_conditional_move,
+	output_int_conditional_move): Delete unused case.
+
 	Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 	* expr.c (emit_block_move): Do not call memcpy as a libcall
 	instead build up a CALL_EXPR and call it like any other
