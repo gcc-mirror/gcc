@@ -2704,8 +2704,21 @@ purge_addressof_1 (loc, insn, force)
 
   if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
     {
-      *loc = XEXP (XEXP (x, 0), 0);
-      goto restart;
+      rtx insns;
+
+      if (validate_change (insn, loc, XEXP (XEXP (x, 0), 0), 0))
+	return;
+
+      start_sequence ();
+      if (! validate_change (insn, loc,
+			     force_operand (XEXP (XEXP (x, 0), 0), NULL_RTX),
+			     0))
+	abort ();
+
+      insns = get_insns ();
+      end_sequence ();
+      emit_insns_before (insns, insn);
+      return;
     }
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
@@ -3029,7 +3042,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	  emit_insns_before (seq, object);
 	  SET_DEST (x) = new;
 
-	  if (!validate_change (object, &SET_SRC (x), temp, 0)
+	  if (! validate_change (object, &SET_SRC (x), temp, 0)
 	      || ! extra_insns)
 	    abort ();
 
@@ -3314,8 +3327,11 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 
       else if (GET_CODE (XEXP (x, 0)) == MEM)
 	{
-	  *loc = XEXP (XEXP (x, 0), 0);
-	  goto restart;
+	  /* If we have a (addressof (mem ..)), do any instantiation inside
+	     since we know we'll be making the inside valid when we finally
+	     remove the ADDRESSOF.  */
+	  instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 0), NULL_RTX, 0);
+	  return 1;
 	}
       break;
       
