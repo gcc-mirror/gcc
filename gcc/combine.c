@@ -2931,7 +2931,8 @@ subst (x, from, to, in_dest, unique_copy)
     x = temp, code = GET_CODE (temp);
 
   /* First see if we can apply the inverse distributive law.  */
-  if (code == PLUS || code == MINUS || code == IOR || code == XOR)
+  if (code == PLUS || code == MINUS
+      || code == AND || code == IOR || code == XOR)
     {
       x = apply_distributive_law (x);
       code = GET_CODE (x);
@@ -3814,6 +3815,27 @@ subst (x, from, to, in_dest, unique_copy)
 	      return temp;
 	    }
 	}
+
+      /* If we have (if_then_else (ne A 0) C1 0) and either A is known to 
+	 be 0 or 1 and C1 is a single bit or A is known to be 0 or -1 and
+	 C1 is the negation of a single bit, we can convert this operation
+	 to a shift.  We can actually do this in more general cases, but it
+	 doesn't seem worth it.  */
+
+      if (GET_CODE (XEXP (x, 0)) == NE && XEXP (XEXP (x, 0), 1) == const0_rtx
+	  && XEXP (x, 2) == const0_rtx && GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && ((1 == nonzero_bits (XEXP (XEXP (x, 0), 0),
+				  GET_MODE (XEXP (XEXP (x, 0), 0)))
+	       && (i = exact_log2 (INTVAL (XEXP (x, 1)))) >= 0)
+	      || ((num_sign_bit_copies (XEXP (XEXP (x, 0), 0),
+					GET_MODE (XEXP (XEXP (x, 0), 0)))
+		   == GET_MODE_BITSIZE (GET_MODE (XEXP (XEXP (x, 0), 0))))
+		  && (i = exact_log2 (- INTVAL (XEXP (x, 1)))) >= 0)))
+	return
+	  simplify_shift_const (NULL_RTX, ASHIFT, mode,
+				gen_lowpart_for_combine (mode,
+							 XEXP (XEXP (x, 0), 0)),
+				i);
       break;
 	  
     case ZERO_EXTRACT:
@@ -7614,6 +7636,16 @@ simplify_shift_const (x, code, result_mode, varop, count)
       SUBST (XEXP (x, 0), varop);
       SUBST (XEXP (x, 1), const_rtx);
     }
+
+  /* If we have an outer operation and we just made a shift, it is
+     possible that we could have simplified the shift were it not
+     for the outer operation.  So try to do the simplification
+     recursively.  */
+
+  if (outer_op != NIL && GET_CODE (x) == code
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+    x = simplify_shift_const (x, code, shift_mode, XEXP (x, 0),
+			      INTVAL (XEXP (x, 1)));
 
   /* If we were doing a LSHIFTRT in a wider mode than it was originally,
      turn off all the bits that the shift would have turned off.  */
