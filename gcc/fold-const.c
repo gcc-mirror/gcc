@@ -3156,8 +3156,12 @@ make_range (exp, pin_p, plow, phigh)
 	     have already verified that LOW and HIGH are both positive.
 
 	     So we have to make sure that the original unsigned value will
-	     be interpreted as positive.  */
-	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp)))
+	     be interpreted as positive.  If the precision of the signed
+	     type is greater than that of the unsigned type, it always
+	     will be and trying to execute this code will cause overflow
+	     in the computation below.  */
+	  if (TREE_UNSIGNED (type) && ! TREE_UNSIGNED (TREE_TYPE (exp))
+	      && TYPE_PRECISION (TREE_TYPE (exp)) <= TYPE_PRECISION (type))
 	    {
 	      tree equiv_type = type_for_mode (TYPE_MODE (type), 1);
 	      tree high_positive
