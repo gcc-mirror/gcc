@@ -5338,12 +5338,17 @@ really_start_incremental_init (type)
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
-      constructor_index = copy_node (integer_zero_node);
       constructor_range_end = 0;
-      constructor_unfilled_index = copy_node (integer_zero_node);
       if (TYPE_DOMAIN (constructor_type))
-	constructor_max_index
-	  = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+	{
+	  constructor_max_index
+	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+	  constructor_index
+	    = copy_node (TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
+	}
+      else
+	constructor_index = copy_node (integer_zero_node);
+      constructor_unfilled_index = copy_node (constructor_index);
     }
   else
     {
@@ -5447,12 +5452,17 @@ push_init_level (implicit)
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
-      constructor_index = copy_node (integer_zero_node);
       constructor_range_end = 0;
-      constructor_unfilled_index = copy_node (integer_zero_node);
       if (TYPE_DOMAIN (constructor_type))
-	constructor_max_index
-	  = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+	{
+	  constructor_max_index
+	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+	  constructor_index
+	    = copy_node (TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
+	}
+      else
+	constructor_index = copy_node (integer_zero_node);
+      constructor_unfilled_index = copy_node (constructor_index);
     }
   else
     {
