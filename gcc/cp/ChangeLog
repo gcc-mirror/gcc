@@ -1,3 +1,8 @@
+1998-11-25  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* lex.c (make_lang_type): Clear the whole struct lang_type, not
+	only the first multiple of sizeof (int).
+
 1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_decl): An explicit specialization of a static data
