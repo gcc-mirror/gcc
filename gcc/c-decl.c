@@ -3519,7 +3519,10 @@ finish_decl (decl, init, asmspec_tree)
 
   /* ??? After 2.3, test (init != 0) instead of TREE_CODE.  */
   if (!(TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))
-      && temporary && TREE_PERMANENT (decl))
+      && temporary && TREE_PERMANENT (decl)
+      /* DECL_INITIAL is not defined in PARM_DECLs, since it shares
+	 space with DECL_ARG_TYPE.  */
+      && TREE_CODE (decl) != PARM_DECL)
     {
       /* We need to remember that this array HAD an initialization,
 	 but discard the actual temporary nodes,
