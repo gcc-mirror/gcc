@@ -28,9 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_xscale
 #endif
 
-#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mxscale}"
+#define SUBTARGET_EXTRA_ASM_SPEC "%{!mcpu=*:-mxscale} %{!mhard-float:-mno-fpu}"
 
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
-  { "mlittle-endian", "mno-thumb-interwork", "marm" }
+  { "mlittle-endian", "mno-thumb-interwork", "marm", "msoft-float" }
 #endif
