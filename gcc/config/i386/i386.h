@@ -330,7 +330,7 @@ extern const int x86_epilogue_using_move;
     N_("Do not use push instructions to save outgoing arguments") },	      \
   { "accumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS,		      \
     N_("Use push instructions to save outgoing arguments") },		      \
-  { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS,	      \
+  { "no-accumulate-outgoing-args",MASK_NO_ACCUMULATE_OUTGOING_ARGS,	      \
     N_("Do not use push instructions to save outgoing arguments") },	      \
   { "mmx",			 MASK_MMX, N_("Support MMX builtins") },      \
   { "no-mmx",			-MASK_MMX,				      \

@@ -1,3 +1,7 @@
+Sat Aug 25 15:46:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (no-accumulate-outgoing-args): Use proper mask.
+
 2001-08-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_initialize_trampoline): Function
