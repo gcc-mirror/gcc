@@ -530,7 +530,7 @@ expand_builtin_setjmp_receiver (receiver_label)
     {
 #ifdef ELIMINABLE_REGS
       size_t i;
-      static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+      static const struct elims {const int from, to;} elim_regs[] = ELIMINABLE_REGS;
 
       for (i = 0; i < ARRAY_SIZE (elim_regs); i++)
 	if (elim_regs[i].from == ARG_POINTER_REGNUM

@@ -14147,7 +14147,7 @@ build_incdec (op_token, op_location, op1, is_post_p)
      tree op1;
      int is_post_p;
 {
-  static enum tree_code lookup [2][2] = 
+  static const enum tree_code lookup [2][2] = 
     {
       { PREDECREMENT_EXPR, PREINCREMENT_EXPR, },
       { POSTDECREMENT_EXPR, POSTINCREMENT_EXPR, },

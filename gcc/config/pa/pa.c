@@ -4457,7 +4457,7 @@ enum millicodes { remI, remU, divI, divU, mulI, mulU, end1000 };
 static void import_milli			PARAMS ((enum millicodes));
 static char imported[(int) end1000];
 static const char * const milli_names[] = {"remI", "remU", "divI", "divU", "mulI", "mulU"};
-static char import_string[] = ".IMPORT $$....,MILLICODE";
+static const char import_string[] = ".IMPORT $$....,MILLICODE";
 #define MILLI_START 10
 
 static void
@@ -4490,8 +4490,8 @@ output_mul_insn (unsignedp, insn)
 /* Emit the rtl for doing a division by a constant. */
 
 /* Do magic division millicodes exist for this value? */
-static int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
-			     1, 1};
+static const int magic_milli[]= {0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0,
+				 1, 1};
 
 /* We'll use an array to keep track of the magic millicodes and
    whether or not we've used them already. [n][0] is signed, [n][1] is

@@ -197,8 +197,9 @@ do {									 \
 #define UNIQUE_SECTION(DECL,RELOC)					   \
 do {									   \
   int len, size, sec;							   \
-  char *name, *string, *prefix;						   \
-  static char *prefixes[4][2] = {					   \
+  const char *name, *prefix;						   \
+  char *string;								   \
+  static const char *const prefixes[4][2] = {				   \
     { ".text.", ".gnu.linkonce.t." },					   \
     { ".rodata.", ".gnu.linkonce.r." },					   \
     { ".data.", ".gnu.linkonce.d." },					   \

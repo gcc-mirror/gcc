@@ -286,13 +286,13 @@ static const char *const arm_condition_codes[] =
 
 struct processors
 {
-  const char * name;
-  unsigned int flags;
+  const char *const name;
+  const unsigned int flags;
 };
 
 /* Not all of these give usefully different compilation alternatives,
    but there is no simple way of generalizing them.  */
-static struct processors all_cores[] =
+static const struct processors all_cores[] =
 {
   /* ARM Cores */
   
@@ -345,7 +345,7 @@ static struct processors all_cores[] =
   {NULL, 0}
 };
 
-static struct processors all_architectures[] =
+static const struct processors all_architectures[] =
 {
   /* ARM Architectures */
   
@@ -436,12 +436,12 @@ arm_override_options ()
   /* If the user did not specify a processor, choose one for them.  */
   if (insn_flags == 0)
     {
-      struct processors * sel;
+      const struct processors * sel;
       unsigned int        sought;
-      static struct cpu_default
+      static const struct cpu_default
       {
-	int          cpu;
-	const char * name;
+	const int cpu;
+	const char *const name;
       }
       cpu_defaults[] =
       {
@@ -460,7 +460,7 @@ arm_override_options ()
 	{ TARGET_CPU_generic,   "arm" },
 	{ 0, 0 }
       };
-      struct cpu_default * def;
+      const struct cpu_default * def;
 	  
       /* Find the default.  */
       for (def = cpu_defaults; def->name; def++)
@@ -513,7 +513,7 @@ arm_override_options ()
 	  if (sel->name == NULL)
 	    {
 	      unsigned int        current_bit_count = 0;
-	      struct processors * best_fit = NULL;
+	      const struct processors * best_fit = NULL;
 	      
 	      /* Ideally we would like to issue an error message here
 		 saying that it was not possible to find a CPU compatible
@@ -760,12 +760,12 @@ arm_add_gc_roots ()
 
 typedef struct
 {
-  const char * 	arg;
-  unsigned long	return_value;
+  const char *const arg;
+  const unsigned long return_value;
 }
 isr_attribute_arg;
 
-static isr_attribute_arg isr_attribute_args [] =
+static const isr_attribute_arg isr_attribute_args [] =
 {
   { "IRQ",   ARM_FT_ISR },
   { "irq",   ARM_FT_ISR },
@@ -789,7 +789,7 @@ static unsigned long
 arm_isr_value (argument)
      tree argument;
 {
-  isr_attribute_arg * ptr;
+  const isr_attribute_arg * ptr;
   const char *        arg;
 
   /* No argument - default to IRQ.  */

@@ -2006,8 +2006,8 @@ enum shift_mode
 
 struct shift_insn
 {
-  const char *assembler;
-  int cc_valid;
+  const char *const assembler;
+  const int cc_valid;
 };
 
 /* Assembler instruction shift table.

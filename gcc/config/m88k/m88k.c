@@ -485,15 +485,15 @@ legitimize_address (pic, orig, reg, scratch)
 #define MOVSTR_SI_LIMIT_88110   72
 #define MOVSTR_DI_LIMIT_88110   72
 
-static enum machine_mode mode_from_align[] =
+static const enum machine_mode mode_from_align[] =
 			      {VOIDmode, QImode, HImode, VOIDmode, SImode,
 			       VOIDmode, VOIDmode, VOIDmode, DImode};
-static int max_from_align[] = {0, MOVSTR_QI, MOVSTR_HI, 0, MOVSTR_SI,
-			       0, 0, 0, MOVSTR_DI};
-static int all_from_align[] = {0, MOVSTR_QI, MOVSTR_ODD_HI, 0, MOVSTR_ODD_SI,
-			       0, 0, 0, MOVSTR_ODD_DI};
+static const int max_from_align[] = {0, MOVSTR_QI, MOVSTR_HI, 0, MOVSTR_SI,
+				     0, 0, 0, MOVSTR_DI};
+static const int all_from_align[] = {0, MOVSTR_QI, MOVSTR_ODD_HI, 0,
+				     MOVSTR_ODD_SI, 0, 0, 0, MOVSTR_ODD_DI};
 
-static int best_from_align[3][9] = {
+static const int best_from_align[3][9] = {
   {0, MOVSTR_QI_LIMIT_88100, MOVSTR_HI_LIMIT_88100, 0, MOVSTR_SI_LIMIT_88100,
    0, 0, 0, MOVSTR_DI_LIMIT_88100},
   {0, MOVSTR_QI_LIMIT_88110, MOVSTR_HI_LIMIT_88110, 0, MOVSTR_SI_LIMIT_88110,
@@ -1534,7 +1534,8 @@ output_option (file, sep, type, name, indent, pos, max)
   return pos + fprintf (file, "%s%s%s", sep, type, name);
 }
 
-static struct { const char *const name; int value; } m_options[] = TARGET_SWITCHES;
+static const struct { const char *const name; const int value; } m_options[] =
+TARGET_SWITCHES;
 
 static void
 output_options (file, f_options, f_len, W_options, W_len,

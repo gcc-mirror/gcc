@@ -1,3 +1,10 @@
+2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-io.c (format_uint): Const-ify.
+	* lang.c (java_tree_code_type, java_tree_code_length): Likewise.
+	* lex.c (java_get_line_col): Likewise.
+	* parse.y (build_incdec): Likewise.
+
 2001-10-03  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_assignment): Use lvalue's original TYPE when

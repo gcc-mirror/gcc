@@ -215,15 +215,15 @@ typedef rtx (*insn_gen_fn) PARAMS ((rtx, ...));
 
 struct insn_operand_data
 {
-  insn_operand_predicate_fn predicate;
+  const insn_operand_predicate_fn predicate;
 
-  const char *constraint;
+  const char *const constraint;
 
-  ENUM_BITFIELD(machine_mode) mode : 16;
+  const ENUM_BITFIELD(machine_mode) mode : 16;
 
-  char strict_low;
+  const char strict_low;
 
-  char eliminable;
+  const char eliminable;
 };
 
 /* Legal values for insn_data.output_format.  Indicate what type of data
@@ -235,15 +235,15 @@ struct insn_operand_data
 
 struct insn_data
 {
-  const char *name;
+  const char *const name;
   const PTR output;
-  insn_gen_fn genfun;
-  const struct insn_operand_data *operand;
+  const insn_gen_fn genfun;
+  const struct insn_operand_data *const operand;
 
-  char n_operands;
-  char n_dups;
-  char n_alternatives;
-  char output_format;
+  const char n_operands;
+  const char n_dups;
+  const char n_alternatives;
+  const char output_format;
 };
 
 extern const struct insn_data insn_data[];

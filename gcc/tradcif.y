@@ -285,15 +285,15 @@ parse_number (olen)
 }
 
 struct token {
-  const char *operator;
-  int token;
+  const char *const operator;
+  const int token;
 };
 
 #ifndef NULL
 #define NULL 0
 #endif
 
-static struct token tokentab2[] = {
+static const struct token tokentab2[] = {
   {"&&", AND},
   {"||", OR},
   {"<<", LSH},
@@ -313,7 +313,7 @@ yylex ()
   register int c;
   register int namelen;
   register const char *tokstart;
-  register struct token *toktab;
+  register const struct token *toktab;
 
  retry:
 

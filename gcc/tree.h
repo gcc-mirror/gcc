@@ -2099,12 +2099,12 @@ struct attribute_spec
 {
   /* The name of the attribute (without any leading or trailing __),
      or NULL to mark the end of a table of attributes.  */
-  const char *name;
+  const char *const name;
   /* The minimum length of the list of arguments of the attribute.  */
-  int min_length;
+  const int min_length;
   /* The maximum length of the list of arguments of the attribute
      (-1 for no maximum).  */
-  int max_length;
+  const int max_length;
   /* Whether this attribute requires a DECL.  If it does, it will be passed
      from types of DECLs, function return types and array element types to
      the DECLs, function types and array types respectively; but when
@@ -2112,15 +2112,15 @@ struct attribute_spec
      a warning.  (If greater control is desired for a given attribute,
      this should be false, and the flags argument to the handler may be
      used to gain greater control in that case.)  */
-  bool decl_required;
+  const bool decl_required;
   /* Whether this attribute requires a type.  If it does, it will be passed
      from a DECL to the type of that DECL.  */
-  bool type_required;
+  const bool type_required;
   /* Whether this attribute requires a function (or method) type.  If it does,
      it will be passed from a function pointer type to the target type,
      and from a function return type (which is not itself a function
      pointer type) to the function type.  */
-  bool function_type_required;
+  const bool function_type_required;
   /* Function to handle this attribute.  NODE points to the node to which
      the attribute is to be applied.  If a DECL, it should be modified in
      place; if a TYPE, a copy should be created.  NAME is the name of the
@@ -2135,8 +2135,8 @@ struct attribute_spec
      otherwise the return value should be NULL_TREE.  This pointer may be
      NULL if no special handling is required beyond the checks implied
      by the rest of this structure.  */
-  tree (*handler) PARAMS ((tree *node, tree name, tree args,
-			   int flags, bool *no_add_attrs));
+  tree (*const handler) PARAMS ((tree *node, tree name, tree args,
+				 int flags, bool *no_add_attrs));
 };
 
 extern const struct attribute_spec default_target_attribute_table[];

@@ -1195,7 +1195,7 @@ print_operand_address (file, addr)
      register FILE *file;
      register rtx addr;
 {
-  static char scales[] = { 'b', 'w', 'd', 0, 'q', };
+  static const char scales[] = { 'b', 'w', 'd', 0, 'q', };
   rtx offset, base, indexexp, tmp;
   int scale;
   extern int flag_pic;

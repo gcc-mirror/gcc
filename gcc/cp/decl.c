@@ -6227,11 +6227,11 @@ record_unknown_type (type, name)
 typedef struct predefined_identifier
 {
   /* The name of the identifier.  */
-  const char *name;
+  const char *const name;
   /* The place where the IDENTIFIER_NODE should be stored.  */
-  tree *node;
+  tree *const node;
   /* Non-zero if this is the name of a constructor or destructor.  */
-  int ctor_or_dtor_p;
+  const int ctor_or_dtor_p;
 } predefined_identifier;
 
 /* Create all the predefined identifiers.  */
@@ -6239,10 +6239,10 @@ typedef struct predefined_identifier
 static void
 initialize_predefined_identifiers ()
 {
-  struct predefined_identifier *pid;
+  const predefined_identifier *pid;
 
   /* A table of identifiers to create at startup.  */
-  static predefined_identifier predefined_identifiers[] = {
+  static const predefined_identifier predefined_identifiers[] = {
     { "C++", &lang_name_cplusplus, 0 },
     { "C", &lang_name_c, 0 },
     { "Java", &lang_name_java, 0 },

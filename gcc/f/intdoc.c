@@ -70,39 +70,39 @@ Usage: intdoc > intdoc.texi\n\
 
 struct _ffeintrin_name_
   {
-    const char *name_uc;
-    const char *name_lc;
-    const char *name_ic;
-    ffeintrinGen generic;
-    ffeintrinSpec specific;
+    const char *const name_uc;
+    const char *const name_lc;
+    const char *const name_ic;
+    const ffeintrinGen generic;
+    const ffeintrinSpec specific;
   };
 
 struct _ffeintrin_gen_
   {
-    const char *name;		/* Name as seen in program. */
-    ffeintrinSpec specs[2];
+    const char *const name;		/* Name as seen in program. */
+    const ffeintrinSpec specs[2];
   };
 
 struct _ffeintrin_spec_
   {
-    const char *name;		/* Uppercase name as seen in source code,
+    const char *const name;	/* Uppercase name as seen in source code,
 				   lowercase if no source name, "none" if no
 				   name at all (NONE case). */
-    bool is_actualarg;		/* Ok to pass as actual arg if -pedantic. */
-    ffeintrinFamily family;
-    ffeintrinImp implementation;
+    const bool is_actualarg;	/* Ok to pass as actual arg if -pedantic. */
+    const ffeintrinFamily family;
+    const ffeintrinImp implementation;
   };
 
 struct _ffeintrin_imp_
   {
-    const char *name;			/* Name of implementation. */
+    const char *const name;		/* Name of implementation. */
 #if 0	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-    ffecomGfrt gfrt;		/* gfrt index in library. */
+    const ffecomGfrt gfrt;		/* gfrt index in library. */
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-    const char *control;
+    const char *const control;
   };
 
-static struct _ffeintrin_name_ names[] = {
+static const struct _ffeintrin_name_ names[] = {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC) \
   { UPPER, LOWER, MIXED, FFEINTRIN_ ## GEN, FFEINTRIN_ ## SPEC },
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
@@ -117,7 +117,7 @@ static struct _ffeintrin_name_ names[] = {
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_gen_ gens[] = {
+static const struct _ffeintrin_gen_ gens[] = {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2) \
   { NAME, { SPEC1, SPEC2, }, },
@@ -132,7 +132,7 @@ static struct _ffeintrin_gen_ gens[] = {
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_imp_ imps[] = {
+static const struct _ffeintrin_imp_ imps[] = {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
@@ -157,7 +157,7 @@ static struct _ffeintrin_imp_ imps[] = {
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_spec_ specs[] = {
+static const struct _ffeintrin_spec_ specs[] = {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP) \
@@ -171,17 +171,17 @@ static struct _ffeintrin_spec_ specs[] = {
 #undef DEFIMPY
 };
 
-struct cc_pair { ffeintrinImp imp; const char *text; };
+struct cc_pair { const ffeintrinImp imp; const char *const text; };
 
 static const char *descriptions[FFEINTRIN_imp] = { 0 };
-static struct cc_pair cc_descriptions[] = {
+static const struct cc_pair cc_descriptions[] = {
 #define DEFDOC(IMP,SUMMARY,DESCRIPTION) { FFEINTRIN_imp ## IMP, DESCRIPTION },
 #include "intdoc.h0"
 #undef DEFDOC
 };
 
 static const char *summaries[FFEINTRIN_imp] = { 0 };
-static struct cc_pair cc_summaries[] = {
+static const struct cc_pair cc_summaries[] = {
 #define DEFDOC(IMP,SUMMARY,DESCRIPTION) { FFEINTRIN_imp ## IMP, SUMMARY },
 #include "intdoc.h0"
 #undef DEFDOC

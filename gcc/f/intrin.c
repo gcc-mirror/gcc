@@ -32,39 +32,39 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct _ffeintrin_name_
   {
-    const char *name_uc;
-    const char *name_lc;
-    const char *name_ic;
-    ffeintrinGen generic;
-    ffeintrinSpec specific;
+    const char *const name_uc;
+    const char *const name_lc;
+    const char *const name_ic;
+    const ffeintrinGen generic;
+    const ffeintrinSpec specific;
   };
 
 struct _ffeintrin_gen_
   {
-    const char *name;			/* Name as seen in program. */
-    ffeintrinSpec specs[2];
+    const char *const name;			/* Name as seen in program. */
+    const ffeintrinSpec specs[2];
   };
 
 struct _ffeintrin_spec_
   {
-    const char *name;		/* Uppercase name as seen in source code,
+    const char *const name;	/* Uppercase name as seen in source code,
 				   lowercase if no source name, "none" if no
 				   name at all (NONE case). */
-    bool is_actualarg;		/* Ok to pass as actual arg if -pedantic. */
-    ffeintrinFamily family;
-    ffeintrinImp implementation;
+    const bool is_actualarg;	/* Ok to pass as actual arg if -pedantic. */
+    const ffeintrinFamily family;
+    const ffeintrinImp implementation;
   };
 
 struct _ffeintrin_imp_
   {
-    const char *name;		/* Name of implementation. */
+    const char *const name;	/* Name of implementation. */
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-    ffecomGfrt gfrt_direct;	/* library routine, direct-callable form. */
-    ffecomGfrt gfrt_f2c;	/* library routine, f2c-callable form. */
-    ffecomGfrt gfrt_gnu;	/* library routine, gnu-callable form. */
+    const ffecomGfrt gfrt_direct;/* library routine, direct-callable form. */
+    const ffecomGfrt gfrt_f2c;	/* library routine, f2c-callable form. */
+    const ffecomGfrt gfrt_gnu;	/* library routine, gnu-callable form. */
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-    const char *control;
-    char y2kbad;
+    const char *const control;
+    const char y2kbad;
   };
 
 static ffebad ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
@@ -77,7 +77,7 @@ static ffebad ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 static bool ffeintrin_check_any_ (ffebld arglist);
 static int ffeintrin_cmp_name_ (const void *name, const void *intrinsic);
 
-static struct _ffeintrin_name_ ffeintrin_names_[]
+static const struct _ffeintrin_name_ ffeintrin_names_[]
 =
 {				/* Alpha order. */
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC) \
@@ -94,7 +94,7 @@ static struct _ffeintrin_name_ ffeintrin_names_[]
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_gen_ ffeintrin_gens_[]
+static const struct _ffeintrin_gen_ ffeintrin_gens_[]
 =
 {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
@@ -111,7 +111,7 @@ static struct _ffeintrin_gen_ ffeintrin_gens_[]
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_imp_ ffeintrin_imps_[]
+static const struct _ffeintrin_imp_ ffeintrin_imps_[]
 =
 {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
@@ -140,7 +140,7 @@ static struct _ffeintrin_imp_ ffeintrin_imps_[]
 #undef DEFIMPY
 };
 
-static struct _ffeintrin_spec_ ffeintrin_specs_[]
+static const struct _ffeintrin_spec_ ffeintrin_specs_[]
 =
 {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)

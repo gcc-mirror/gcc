@@ -2152,7 +2152,7 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
 #endif
     HARD_REG_SET used, first_used;
 #ifdef ELIMINABLE_REGS
-  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
+  static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 
   /* Validate our parameters.  */

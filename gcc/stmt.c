@@ -3478,7 +3478,7 @@ expand_nl_goto_receiver ()
 	 that if such an elimination is present, it can always be used.
 	 This is the case on all known machines; if we don't make this
 	 assumption, we do unnecessary saving on many machines.  */
-      static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+      static const struct elims {const int from, to;} elim_regs[] = ELIMINABLE_REGS;
       size_t i;
 
       for (i = 0; i < ARRAY_SIZE (elim_regs); i++)

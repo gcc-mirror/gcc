@@ -1751,7 +1751,7 @@ java_get_line_col (filename, line, col)
       c = getc (fp);
       if (c == EOF)
 	{
-	  static char msg[] = "<<file too short - unexpected EOF>>";
+	  static const char msg[] = "<<file too short - unexpected EOF>>";
 	  obstack_grow (&temporary_obstack, msg, sizeof(msg)-1);
 	  goto have_line;
 	}

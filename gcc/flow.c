@@ -417,7 +417,7 @@ life_analysis (f, file, flags)
 {
 #ifdef ELIMINABLE_REGS
   register int i;
-  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
+  static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 
   /* Record which registers will be eliminated.  We use this in

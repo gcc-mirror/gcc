@@ -1982,7 +1982,7 @@ enum reg_class
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
 
-extern enum reg_class mips_regno_to_class[];
+extern const enum reg_class mips_regno_to_class[];
 
 #define REGNO_REG_CLASS(REGNO) mips_regno_to_class[ (REGNO) ]
 

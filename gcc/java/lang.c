@@ -67,7 +67,7 @@ static int process_option_with_no PARAMS ((char *,
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char java_tree_code_type[] = {
+static const char java_tree_code_type[] = {
   'x',
 #include "java-tree.def"
 };
@@ -79,7 +79,7 @@ char java_tree_code_type[] = {
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
 
-int java_tree_code_length[] = {
+static const int java_tree_code_length[] = {
   0,
 #include "java-tree.def"
 };

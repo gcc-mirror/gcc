@@ -326,7 +326,7 @@ global_alloc (file)
 {
   int retval;
 #ifdef ELIMINABLE_REGS
-  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
+  static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
   int need_fp
     = (! flag_omit_frame_pointer

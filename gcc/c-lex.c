@@ -685,10 +685,10 @@ utf8_extend_token (c)
 #if 0
 struct try_type
 {
-  tree *node_var;
-  char unsigned_flag;
-  char long_flag;
-  char long_long_flag;
+  tree *const node_var;
+  const char unsigned_flag;
+  const char long_flag;
+  const char long_long_flag;
 };
 
 struct try_type type_sequence[] =

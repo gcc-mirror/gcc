@@ -345,7 +345,7 @@ char mips_reg_names[][8] =
 /* Mips software names for the registers, used to overwrite the
    mips_reg_names array.  */
 
-char mips_sw_reg_names[][8] =
+static const char mips_sw_reg_names[][8] =
 {
   "$zero","$at",  "$v0",  "$v1",  "$a0",  "$a1",  "$a2",  "$a3",
   "$t0",  "$t1",  "$t2",  "$t3",  "$t4",  "$t5",  "$t6",  "$t7",
@@ -360,7 +360,7 @@ char mips_sw_reg_names[][8] =
 };
 
 /* Map hard register number to register class */
-enum reg_class mips_regno_to_class[] =
+const enum reg_class mips_regno_to_class[] =
 {
   GR_REGS,	GR_REGS,	M16_NA_REGS,	M16_NA_REGS,
   M16_REGS,	M16_REGS,	M16_REGS,	M16_REGS,

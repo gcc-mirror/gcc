@@ -3049,7 +3049,7 @@ static const char *const strings_68881[7] = {
   "1e16"
   };
 
-int codes_68881[7] = {
+static const int codes_68881[7] = {
   0x0f,
   0x32,
   0x33,
@@ -3216,7 +3216,7 @@ static const char *const strings_FPA[38] = {
 };
 
 
-int codes_FPA[38] = {
+static const int codes_FPA[38] = {
 /* small rationals */
   0x200,
   0xe,

@@ -5536,7 +5536,7 @@ read_expnt:
 /* Return Y = largest integer not greater than X (truncated toward minus
    infinity).  */
 
-static UEMUSHORT bmask[] =
+static const UEMUSHORT bmask[] =
 {
   0xffff,
   0xfffe,

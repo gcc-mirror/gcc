@@ -557,7 +557,8 @@ static int
 is_ctor_dtor (s)
      const char *s;
 {
-  struct names { const char *const name; int len; int ret; int two_underscores; };
+  struct names { const char *const name; const int len; const int ret;
+    const int two_underscores; };
 
   register struct names *p;
   register int ch;

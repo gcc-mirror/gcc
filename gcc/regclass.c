@@ -74,7 +74,7 @@ HARD_REG_SET fixed_reg_set;
 
 /* Data for initializing the above.  */
 
-static char initial_fixed_regs[] = FIXED_REGISTERS;
+static const char initial_fixed_regs[] = FIXED_REGISTERS;
 
 /* Indexed by hard register number, contains 1 for registers
    that are fixed use or are clobbered by function calls.
@@ -93,7 +93,7 @@ HARD_REG_SET losing_caller_save_reg_set;
 
 /* Data for initializing the above.  */
 
-static char initial_call_used_regs[] = CALL_USED_REGISTERS;
+static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 
 /* This is much like call_used_regs, except it doesn't have to
    be a superset of FIXED_REGISTERS. This vector indicates

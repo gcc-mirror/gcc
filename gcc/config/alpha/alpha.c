@@ -221,10 +221,10 @@ void
 override_options ()
 {
   int i;
-  static struct cpu_table {
-    const char *name;
-    enum processor_type processor;
-    int flags;
+  static const struct cpu_table {
+    const char *const name;
+    const enum processor_type processor;
+    const int flags;
   } cpu_table[] = {
 #define EV5_MASK (MASK_CPU_EV5)
 #define EV6_MASK (MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX)
@@ -2985,8 +2985,8 @@ alpha_lookup_xfloating_lib_func (code)
 {
   struct xfloating_op
     {
-      enum rtx_code code;
-      const char *func;
+      const enum rtx_code code;
+      const char *const func;
     };
 
   static const struct xfloating_op vms_xfloating_ops[] = 

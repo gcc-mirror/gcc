@@ -1,3 +1,12 @@
+2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (build_vtable_entry_ref): Const-ify.
+	* decl.c (predefined_identifier,
+	initialize_predefined_identifiers): Likewise. 
+	* init.c (build_new_1): Likewise.
+	* lex.c (cplus_tree_code_type, cplus_tree_code_length, resword):
+	Likewise.
+
 2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* optimize.c (struct inline_data): Moved to ../tree-inline.c.
