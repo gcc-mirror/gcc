@@ -2139,6 +2139,7 @@ pushdecl (x)
 	      DECL_ORIGINAL_TYPE (x) = tt;
               tt = build_type_copy (tt);
               TYPE_NAME (tt) = x;
+	      TREE_USED (tt) = TREE_USED (x);
               TREE_TYPE (x) = tt;
             }
         }
