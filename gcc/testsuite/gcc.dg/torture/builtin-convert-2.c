@@ -8,7 +8,7 @@
 /* { dg-do link } */
 /* { dg-options "-ffast-math" } */
 
-#include "./builtins-config.h"
+#include "../builtins-config.h"
 
 #define PROTOTYPE(FN) extern double FN(double); \
   extern float FN##f(float); \
