@@ -134,7 +134,8 @@ main (int argc, const char **argv)
 
   /* At this point every element of ARGV from 1 to LAST_ARG is a `-D'
      option.  Process them appropriately.  */
-  fprintf (stream, "const char *_Jv_Compiler_Properties[] =\n{\n");
+  fprintf (stream, "extern const char **_Jv_Compiler_Properties;\n");
+  fprintf (stream, "static const char *props[] =\n{\n");
   for (i = 1; i < last_arg; ++i)
     {
       const char *p;
@@ -156,6 +157,7 @@ main (int argc, const char **argv)
 	   class_mangling_prefix, mangled_classname);
   fprintf (stream, "int main (int argc, const char **argv)\n");
   fprintf (stream, "{\n");
+  fprintf (stream, "   _Jv_Compiler_Properties = props;\n");
   fprintf (stream, "   JvRunMain (&%s%s, argc, argv);\n",
 	   class_mangling_prefix, mangled_classname);
   fprintf (stream, "}\n");
