@@ -1,3 +1,8 @@
+2004-10-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-maltivec in same style as other ISA options.
+
 2004-10-15  Jon Grimm <jgrimm2@us.ibm.com>
 
 	* config/host-linux.c (TRY_EMPTY_VM_SPACE): Add __powerpc__

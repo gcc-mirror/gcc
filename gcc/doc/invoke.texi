@@ -10246,8 +10246,9 @@ scheduling parameters set by @option{-mtune}.
 @itemx -mno-altivec
 @opindex maltivec
 @opindex mno-altivec
-These switches enable or disable the use of built-in functions that
-allow access to the AltiVec instruction set.  You may also need to set
+Generate code that uses (does not use) AltiVec instructions, and also
+enable the use of built-in functions that allow more direct access to
+the AltiVec instruction set.  You may also need to set
 @option{-mabi=altivec} to adjust the current ABI with AltiVec ABI
 enhancements.
 
