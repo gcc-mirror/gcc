@@ -1,5 +1,13 @@
 2002-12-09  Tom Tromey  <tromey@redhat.com>
 
+	* include/win32.h (_Jv_platform_solib_prefix): New define.
+	(_Jv_platform_solib_suffix): Likewise.
+	* include/posix.h (_Jv_platform_solib_prefix): New define.
+	(_Jv_platform_solib_suffix): Likewise.
+	* java/lang/natRuntime.cc: Include StackTrace.h.
+	(_load): Use findLibrary and new platform defines.
+	(nativeGetLibname): Use new platform defines.
+
 	* java/util/natResourceBundle.cc (getCallingClassLoader): Assume
 	`t' won't be null.
 
