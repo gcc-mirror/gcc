@@ -1,3 +1,8 @@
+2005-03-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (TRAMPOLINE_TEMPLATE): Use "no-transform"
+	assembly directive instead of deprecated "no-generics".
+
 2005-03-09  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_secondary_output_reload_class): Adapt check
