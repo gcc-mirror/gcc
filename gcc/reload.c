@@ -2090,6 +2090,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    c -= '0';
 	    operands_match[c][i]
 	      = operands_match_p (recog_operand[c], recog_operand[i]);
+
+	    /* An operand may not match itself.  */
+	    if (c == i)
+	      {
+		if (this_insn_is_asm)
+		  warning_for_asm (this_insn,
+				   "operand %d has constraint %d", i, c);
+		else
+		  abort ();
+	      }
+
 	    /* If C can be commuted with C+1, and C might need to match I,
 	       then C+1 might also need to match I.  */
 	    if (commutative >= 0)
