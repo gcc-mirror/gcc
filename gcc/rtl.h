@@ -1712,6 +1712,7 @@ extern GTY(()) rtx return_address_pointer_rtx;
    should also modify gen_rtx to use the special function.  */
 
 extern rtx gen_rtx_CONST_INT PARAMS ((enum machine_mode, HOST_WIDE_INT));
+extern rtx gen_rtx_CONST_VECTOR PARAMS ((enum machine_mode, rtvec));
 extern rtx gen_raw_REG PARAMS ((enum machine_mode, int));
 extern rtx gen_rtx_REG PARAMS ((enum machine_mode, unsigned));
 extern rtx gen_rtx_SUBREG PARAMS ((enum machine_mode, rtx, int));

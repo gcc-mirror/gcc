@@ -5188,8 +5188,24 @@ gen_const_vector_0 (mode)
   for (i = 0; i < units; ++i)
     RTVEC_ELT (v, i) = CONST0_RTX (inner);
 
-  tem = gen_rtx_CONST_VECTOR (mode, v);
+  tem = gen_rtx_raw_CONST_VECTOR (mode, v);
   return tem;
+}
+
+/* Generate a vector like gen_rtx_raw_CONST_VEC, but use the zero vector when
+   all elements are zero.  */
+rtx
+gen_rtx_CONST_VECTOR (mode, v)
+     enum machine_mode mode;
+     rtvec v;
+{
+  rtx inner_zero = CONST0_RTX (GET_MODE_INNER (mode));
+  int i;
+
+  for (i = GET_MODE_NUNITS (mode) - 1; i >= 0; i--)
+    if (RTVEC_ELT (v, i) != inner_zero)
+      return gen_rtx_raw_CONST_VECTOR (mode, v);
+  return CONST0_RTX (mode);
 }
 
 /* Create some permanent unique rtl objects shared between all functions.
