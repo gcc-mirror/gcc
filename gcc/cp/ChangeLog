@@ -1,3 +1,7 @@
+2003-03-04  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config-lang.in: Replace ${libstdcxx_version} by its value.
+
 2003-03-04  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
         * cp-tree.h (cxx_saved_binding): Declare.
