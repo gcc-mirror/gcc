@@ -31,6 +31,21 @@ enum cmp_type				/* comparison type */
 /* For long call handling.  */
 extern unsigned int total_code_bytes;
 
+/* Which processor to schedule for.  */
+
+enum processor_type
+{
+  PROCESSOR_700,
+  PROCESSOR_7100,
+  PROCESSOR_7100LC,
+};
+
+#define pa_cpu_attr ((enum attr_cpu)pa_cpu)
+
+/* For -mschedule= option.  */
+extern char *pa_cpu_string;
+extern enum processor_type pa_cpu;
+
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (hppa)");
@@ -122,6 +137,13 @@ extern int target_flags;
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0x88		/* TARGET_GAS + TARGET_JUMP_IN_DELAY */
 #endif
+
+#define TARGET_OPTIONS			\
+{					\
+  { "schedule=",	&pa_cpu_string }\
+}
+
+#define OVERRIDE_OPTIONS override_options ()
 
 #define DBX_DEBUGGING_INFO
 #define DEFAULT_GDB_EXTENSIONS 1
