@@ -3865,6 +3865,7 @@ m68hc11_check_z_replacement (insn, info)
   int this_insn_uses_ix;
   int this_insn_uses_iy;
   int this_insn_uses_z;
+  int this_insn_uses_z_in_dst;
   int this_insn_uses_d;
   rtx body;
   int z_dies_here;
@@ -3968,10 +3969,13 @@ m68hc11_check_z_replacement (insn, info)
 	{
 	  if (!reg_mentioned_p (z_reg, src))
 	    {
-	      if (insn == info->first)
+              /* Z reg is used before being set.  Treat this as
+                 a new sequence of Z register replacement.  */
+	      if (insn != info->first)
 		{
-		  info->must_load_z = 0;
+                  return 0;
 		}
+              info->must_load_z = 0;
 	    }
 	  info->z_set_count++;
 	  info->z_value = src;
@@ -3991,9 +3995,23 @@ m68hc11_check_z_replacement (insn, info)
 
       /* If z is used as an address operand (like (MEM (reg z))),
          we can't replace it with d.  */
-      if (this_insn_uses_z && !Z_REG_P (src))
+      if (this_insn_uses_z && !Z_REG_P (src)
+          && !(m68hc11_arith_operator (src, GET_MODE (src))
+               && Z_REG_P (XEXP (src, 0))
+               && !reg_mentioned_p (z_reg, XEXP (src, 1))
+               && insn == info->first
+               && dead_register_here (insn, d_reg)))
 	info->can_use_d = 0;
-      this_insn_uses_z |= reg_mentioned_p (z_reg, dst);
+
+      this_insn_uses_z_in_dst = reg_mentioned_p (z_reg, dst);
+      if (TARGET_M6812 && !z_dies_here
+          && ((this_insn_uses_z && side_effects_p (src))
+              || (this_insn_uses_z_in_dst && side_effects_p (dst))))
+        {
+          info->need_save_z = 1;
+          info->z_set_count++;
+        }
+      this_insn_uses_z |= this_insn_uses_z_in_dst;
 
       if (this_insn_uses_z && this_insn_uses_ix && this_insn_uses_iy)
 	{
@@ -4009,6 +4027,9 @@ m68hc11_check_z_replacement (insn, info)
 	{
 	  return 0;
 	}
+
+      if (this_insn_uses_ix && X_REG_P (dst) && GET_MODE (dst) == SImode)
+        info->can_use_d = 0;
 
       if (info->x_used == 0 && this_insn_uses_ix)
 	{
@@ -4072,7 +4093,7 @@ m68hc11_check_z_replacement (insn, info)
 	      return 0;
 	    }
 	  info->x_used = 1;
-	  if (z_dies_here && !reg_mentioned_p (src, ix_reg)
+	  if (z_dies_here && !reg_mentioned_p (ix_reg, src)
 	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_X_REGNUM)
 	    {
 	      info->need_save_z = 0;
@@ -4083,6 +4104,13 @@ m68hc11_check_z_replacement (insn, info)
 	      info->must_restore_reg = 0;
 	      return 0;
 	    }
+          if (rtx_equal_p (src, z_reg) && rtx_equal_p (dst, ix_reg))
+            {
+              info->regno = HARD_X_REGNUM;
+              info->must_restore_reg = 0;
+              info->must_save_reg = 0;
+              return 0;
+            }
 	}
       if (info->y_used == 0 && this_insn_uses_iy)
 	{
@@ -4143,7 +4171,7 @@ m68hc11_check_z_replacement (insn, info)
 	      return 0;
 	    }
 	  info->y_used = 1;
-	  if (z_dies_here && !reg_mentioned_p (src, iy_reg)
+	  if (z_dies_here && !reg_mentioned_p (iy_reg, src)
 	      && GET_CODE (dst) == REG && REGNO (dst) == HARD_Y_REGNUM)
 	    {
 	      info->need_save_z = 0;
@@ -4154,6 +4182,13 @@ m68hc11_check_z_replacement (insn, info)
 	      info->must_restore_reg = 0;
 	      return 0;
 	    }
+          if (rtx_equal_p (src, z_reg) && rtx_equal_p (dst, iy_reg))
+            {
+              info->regno = HARD_Y_REGNUM;
+              info->must_restore_reg = 0;
+              info->must_save_reg = 0;
+              return 0;
+            }
 	}
       if (z_dies_here)
 	{
@@ -4207,6 +4242,9 @@ m68hc11_check_z_replacement (insn, info)
 	      if (Z_REG_P (dst))
 		info->z_set_count++;
 	    }
+          if (TARGET_M6812 && uses_z && side_effects_p (x))
+            info->need_save_z = 1;
+
 	  if (z_clobber)
 	    info->need_save_z = 0;
 	}
