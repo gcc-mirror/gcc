@@ -687,6 +687,7 @@ unshare_base_binfos (binfo)
       TREE_VIA_PROTECTED (new_binfo) = TREE_VIA_PROTECTED (base_binfo);
       TREE_VIA_VIRTUAL (new_binfo) = TREE_VIA_VIRTUAL (base_binfo);
       BINFO_INHERITANCE_CHAIN (new_binfo) = binfo;
+      BINFO_PRIMARY_BASE_OF (new_binfo) = NULL_TREE;
       unshare_base_binfos (new_binfo);
     }
 }
@@ -851,7 +852,7 @@ make_binfo (offset, binfo, vtable, virtuals)
      tree offset, binfo;
      tree vtable, virtuals;
 {
-  tree new_binfo = make_tree_vec (10);
+  tree new_binfo = make_tree_vec (11);
   tree type;
 
   if (TREE_CODE (binfo) == TREE_VEC)
