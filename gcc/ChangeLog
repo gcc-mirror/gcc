@@ -1,3 +1,8 @@
+2003-09-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_va_arg): Handle arguments that must be
+	passed on the stack.
+
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (widely ported systems section): Mostly alphabetize
