@@ -1,3 +1,9 @@
+1999-09-16  Bryce McKinlay  <bryce@albatross.co.nz>
+	* java/text/MessageFormat.java (MessageFormat(String)): Set the
+	default locale.
+	* java/text/NumberFormat.java: Check that object is a Number. If
+	not, throw IllegialArgumentException.
+
 1999-09-21  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/convert/Output_UTF8.java (write): Don't exit loop unless
