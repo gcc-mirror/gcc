@@ -1380,8 +1380,12 @@ maybe_fix_stack_asms ()
 		  break;
 
 		default:
-		  cls = (int) reg_class_subunion[cls][(int) REG_CLASS_FROM_LETTER (c)];
-
+		  if (EXTRA_ADDRESS_CONSTRAINT (c))
+		    cls = (int) reg_class_subunion[cls]
+		      [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		  else
+		    cls = (int) reg_class_subunion[cls]
+		      [(int) REG_CLASS_FROM_LETTER (c)];
 		}
 	    }
 	}

@@ -1848,6 +1848,18 @@ asm_operand_ok (op, constraint)
 #ifdef EXTRA_CONSTRAINT
 	  if (EXTRA_CONSTRAINT (op, c))
 	    return 1;
+	  if (EXTRA_MEMORY_CONSTRAINT (c))
+	    {
+	      /* Every memory operand can be reloaded to fit.  */
+	      if (memory_operand (op, VOIDmode))
+	        return 1;
+	    }
+	  if (EXTRA_ADDRESS_CONSTRAINT (c))
+	    {
+	      /* Every address operand can be reloaded to fit.  */
+	      if (address_operand (op, VOIDmode))
+	        return 1;
+	    }
 #endif
 	  break;
 	}
@@ -2287,6 +2299,19 @@ preprocess_constraints ()
 		  break;
 
 		default:
+		  if (EXTRA_MEMORY_CONSTRAINT (c))
+		    {
+		      op_alt[j].memory_ok = 1;
+		      break;
+		    }
+		  if (EXTRA_ADDRESS_CONSTRAINT (c))
+		    {
+		      op_alt[j].is_address = 1;
+		      op_alt[j].class = reg_class_subunion[(int) op_alt[j].class]
+		        [(int) MODE_BASE_REG_CLASS (VOIDmode)];
+		      break;
+		    }
+
 		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) REG_CLASS_FROM_LETTER ((unsigned char) c)];
 		  break;
 		}
@@ -2600,6 +2625,28 @@ constrain_operands (strict)
 #ifdef EXTRA_CONSTRAINT
 		  else if (EXTRA_CONSTRAINT (op, c))
 		    win = 1;
+
+		  if (EXTRA_MEMORY_CONSTRAINT (c))
+		    {
+		      /* Every memory operand can be reloaded to fit,
+			 so copy the condition from the 'm' case.  */
+		      if (GET_CODE (op) == MEM
+		          /* Before reload, accept what reload can turn into mem.  */
+		          || (strict < 0 && CONSTANT_P (op))
+		          /* During reload, accept a pseudo  */
+		          || (reload_in_progress && GET_CODE (op) == REG
+			      && REGNO (op) >= FIRST_PSEUDO_REGISTER))
+			win = 1;
+		    }
+		  if (EXTRA_ADDRESS_CONSTRAINT (c))
+		    {
+		      /* Every address operand can be reloaded to fit,
+			 so copy the condition from the 'p' case.  */
+		      if (strict <= 0
+		          || (strict_memory_address_p (recog_data.operand_mode[opno],
+						       op)))
+		        win = 1;
+		    }
 #endif
 		  break;
 		}

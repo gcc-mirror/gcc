@@ -2614,6 +2614,44 @@ letter @samp{Q} is defined as representing a memory address that does
 a @samp{Q} constraint on the input and @samp{r} on the output.  The next
 alternative specifies @samp{m} on the input and a register class that
 does not include r0 on the output.
+
+@findex EXTRA_MEMORY_CONSTRAINT
+@item EXTRA_MEMORY_CONSTRAINT (@var{c})
+A C expression that defines the optional machine-dependent constraint
+letters, amongst those accepted by @code{EXTRA_CONSTRAINT}, that should
+be treated like memory constraints by the reload pass.
+
+It should return 1 if the operand type represented by the constraint 
+letter @var{c} comprises a subset of all memory references including
+all those whose address is simply a base register.  This allows the reload 
+pass to reload an operand, if it does not directly correspond to the operand 
+type of @var{c}, by copying its address into a base register.
+
+For example, on the S/390, some instructions do not accept arbitrary
+memory references, but only those that do not make use of an index
+register.  The constraint letter @samp{Q} is defined via
+@code{EXTRA_CONSTRAINT} as representing a memory address of this type.
+If the letter @samp{Q} is marked as @code{EXTRA_MEMORY_CONSTRAINT},
+a @samp{Q} constraint can handle any memory operand, because the
+reload pass knows it can be reloaded by copying the memory address
+into a base register if required.  This is analogous to the way
+a @samp{o} constraint can handle any memory operand.
+
+@findex EXTRA_ADDRESS_CONSTRAINT
+@item EXTRA_ADDRESS_CONSTRAINT (@var{c})
+A C expression that defines the optional machine-dependent constraint
+letters, amongst those accepted by @code{EXTRA_CONSTRAINT}, that should
+be treated like address constraints by the reload pass.
+
+It should return 1 if the operand type represented by the constraint 
+letter @var{c} comprises a subset of all memory addresses including
+all those that consist of just a base register.  This allows the reload 
+pass to reload an operand, if it does not directly correspond to the operand 
+type of @var{c}, by copying it into a base register.
+
+Any constraint marked as @code{EXTRA_ADDRESS_CONSTRAINT} can only
+be used with the @code{address_operand} predicate.  It is treated 
+analogously to the @samp{p} constraint.
 @end table
 
 @node Stack and Calling

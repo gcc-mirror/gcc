@@ -1,3 +1,30 @@
+2002-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* reload.c (find_reloads): Handle constraint letters marked by 
+	EXTRA_ADDRESS_CONSTRAINT and EXTRA_MEMORY_CONSTRAINT.
+	(alternative_allows_memconst): Likewise.
+	* reload1.c (maybe_fix_stack_asms): Likewise.
+	* recog.c (asm_operand_ok, preprocess_constraints, 
+	constrain_operands): Likewise.
+	* regclass.c (record_operand_costs, record_reg_classes): Likewise.
+	* local-alloc.c (block_alloc, requires_inout): Likewise.
+	* stmt.c (parse_output_constraint, parse_input_constraint): Likewise.
+
+	* defaults.h (EXTRA_MEMORY_CONSTRAINT): Provide a default.
+	(EXTRA_ADDRESS_CONSTRAINT): Likewise.
+	* doc/tm.texi: Document these two new target macros.
+
+	* config/s390/s390.c (s390_expand_plus_operand): Accept already
+	valid operands.
+	(q_constraint): New function.
+	config/s390/s390-protos.h (q_constraint): Declare it.
+	config/s390/s390.h (EXTRA_CONSTRAINT): Use it.
+	(EXTRA_MEMORY_CONSTRAINT): New macro.
+
+	* config/s390/s390.md: Throughout the machine description,
+	replace all instances of the constraint combinations 'Qo'
+	or 'oQ' with simply 'Q'.
+
 2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (LINK_SPEC): Support -mrelax.

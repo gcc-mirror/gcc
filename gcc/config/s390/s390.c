@@ -995,6 +995,28 @@ s_imm_operand (op, mode)
   return general_s_operand (op, mode, 1);
 }
 
+/* Return true if OP is a valid operand for a 'Q' constraint.
+   This differs from s_operand in that only memory operands
+   without index register are accepted, nothing else.  */
+
+int
+q_constraint (op)
+     register rtx op;
+{
+  struct s390_address addr;
+
+  if (GET_CODE (op) != MEM)
+    return 0;
+
+  if (!s390_decompose_address (XEXP (op, 0), &addr, FALSE))
+    return 0;
+
+  if (addr.indx)
+    return 0;
+
+  return 1;
+}
+
 /* Return true if OP is a valid operand for the BRAS instruction.
    OP is the current operation.
    MODE is the current operation mode.  */
@@ -1385,6 +1407,15 @@ s390_expand_plus_operand (target, src, scratch_in)
      float registers occur in an address.  */
   sum1 = find_replacement (&XEXP (src, 0));
   sum2 = find_replacement (&XEXP (src, 1));
+
+  /* Accept already valid addresses.  */
+  src = gen_rtx_PLUS (Pmode, sum1, sum2);
+  if (s390_decompose_address (src, NULL, 1))
+    {
+      src = legitimize_la_operand (src);
+      emit_insn (gen_rtx_SET (VOIDmode, target, src));
+      return;
+    }
 
   /* If one of the two operands is equal to the target,
      make it the first one.  If one is a constant, make
