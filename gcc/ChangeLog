@@ -1,3 +1,8 @@
+2003-01-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_parse_abi_options): Make sure
+	spe ABI is configured, if requested.
+
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/passes.texi: Fix typo.

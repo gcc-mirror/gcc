@@ -777,7 +777,12 @@ rs6000_parse_abi_options ()
   else if (! strcmp (rs6000_abi_string, "no-altivec"))
     rs6000_altivec_abi = 0;
   else if (! strcmp (rs6000_abi_string, "spe"))
-    rs6000_spe_abi = 1;
+    {
+      rs6000_spe_abi = 1;
+      if (!TARGET_SPE_ABI)
+	error ("not configured for ABI: '%s'", rs6000_abi_string);
+    }
+  
   else if (! strcmp (rs6000_abi_string, "no-spe"))
     rs6000_spe_abi = 0;
   else
