@@ -6588,7 +6588,6 @@ expand_expr (exp, target, tmode, modifier)
 
     case TARGET_EXPR:
       {
-	int need_exception_region = 0;
 	/* Something needs to be initialized, but we didn't know
 	   where that thing was when building the tree.  For example,
 	   it could be the return value of a function, or a parameter
@@ -6599,6 +6598,7 @@ expand_expr (exp, target, tmode, modifier)
 	   or copied into our original target.  */
 
 	tree slot = TREE_OPERAND (exp, 0);
+	tree cleanups = NULL_TREE;
 	tree exp1;
 	rtx temp;
 
@@ -6634,13 +6634,7 @@ expand_expr (exp, target, tmode, modifier)
 
 		if (TREE_OPERAND (exp, 2) == 0)
 		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
-		if (TREE_OPERAND (exp, 2))
-		  {
-		    cleanups_this_call = tree_cons (NULL_TREE,
-						    TREE_OPERAND (exp, 2),
-						    cleanups_this_call);
-		    need_exception_region = 1;
-		  }
+		cleanups = TREE_OPERAND (exp, 2);
 	      }
 	  }
 	else
@@ -6671,8 +6665,13 @@ expand_expr (exp, target, tmode, modifier)
 
 	store_expr (exp1, target, 0);
 
-	if (need_exception_region)
-	  (*interim_eh_hook) (NULL_TREE);
+	if (cleanups)
+	  {
+	    cleanups_this_call = tree_cons (NULL_TREE,
+					    cleanups,
+					    cleanups_this_call);
+	    (*interim_eh_hook) (NULL_TREE);
+	  }
 	
 	return target;
       }
