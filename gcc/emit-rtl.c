@@ -3167,8 +3167,7 @@ emit_line_note (file, line)
      char *file;
      int line;
 {
-  emit_filename = file;
-  emit_lineno = line;
+  set_file_and_line_for_stmt (file, line);
 
 #if 0
   if (no_line_numbers)

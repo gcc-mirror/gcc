@@ -1,3 +1,9 @@
+1999-08-01  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* decl.c (finish_stmt): Don't declare and test cond_stack, loop_stack,
+	case_stack; use in_control_zone_p.
+	* typeck.c (c_expand_return): Likewise.
+
 1999-07-31  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* except.c (catch_clauses): Delete declaration.

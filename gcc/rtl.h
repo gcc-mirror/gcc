@@ -1464,6 +1464,7 @@ extern int operands_match_p		PROTO ((rtx, rtx));
 extern int safe_from_earlyclobber	PROTO ((rtx, rtx));
 
 /* In stmt.c */
+extern void set_file_and_line_for_stmt	PROTO ((char *, int));
 extern void expand_null_return		PROTO((void));
 extern void emit_jump			PROTO ((rtx));
 extern int preserve_subexpressions_p	PROTO ((void));

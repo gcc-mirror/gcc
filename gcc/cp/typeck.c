@@ -6735,7 +6735,6 @@ void
 c_expand_return (retval)
      tree retval;
 {
-  extern struct nesting *cond_stack, *loop_stack, *case_stack;
   extern tree dtor_label, ctor_label;
   tree result = DECL_RESULT (current_function_decl);
   tree valtype = TREE_TYPE (result);
@@ -6925,7 +6924,7 @@ c_expand_return (retval)
 
   if (retval != NULL_TREE
       && TREE_CODE_CLASS (TREE_CODE (retval)) == 'd'
-      && cond_stack == 0 && loop_stack == 0 && case_stack == 0)
+      && ! in_control_zone_p ())
     current_function_return_value = retval;
 
   if (ctor_label && TREE_CODE (ctor_label) != ERROR_MARK)
