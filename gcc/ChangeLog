@@ -1,5 +1,11 @@
 2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* reload1.c (ior_hard_reg_set): Remove.
+	(finish_spills): Use IOR_HARD_REG_SET instead of
+	ior_hard_reg_set.
+
+2004-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* sbitmap.h (EXECUTE_IF_SET_IN_SBITMAP): Speed up by shifting
 	the currently visited word to right.
 
