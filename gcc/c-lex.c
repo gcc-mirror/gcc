@@ -90,6 +90,8 @@ struct putback_buffer {
 
 static struct putback_buffer putback = {NULL, 0, -1};
 
+static inline int getch PROTO ((void));
+
 static inline int
 getch ()
 {
@@ -101,6 +103,8 @@ getch ()
     }
   return getc (finput);
 }
+
+static inline void put_back PROTO ((int));
 
 static inline void
 put_back (ch)
@@ -162,6 +166,8 @@ static int skip_white_space		PROTO((int));
 static char *extend_token_buffer	PROTO((const char *));
 static int readescape			PROTO((int *));
 static void parse_float			PROTO((PTR));
+static void extend_token_buffer_to	PROTO((int));
+static int read_line_number		PROTO((int *));
 
 /* Do not insert generated code into the source, instead, include it.
    This allows us to build gcc automatically even for targets that
@@ -1197,7 +1203,9 @@ parse_float (data)
    next token, which screws up feed_input.  So just return a null
    character.  */
 
-inline int
+static inline int token_getch PROTO ((void));
+
+static inline int
 token_getch ()
 {
 #if USE_CPPLIB
@@ -1207,7 +1215,9 @@ token_getch ()
   return GETC ();
 }
 
-inline void
+static inline void token_put_back PROTO ((int));
+
+static inline void
 token_put_back (ch)
      int ch;
 {

@@ -1,3 +1,21 @@
+Sun Oct  3 12:05:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (nonlocal_reference_p): Add static prototype.
+
+	* bitmap.c (bitmap_element_allocate): Prototype args in function
+	pointer cast.
+
+	* builtins.c (stabilize_va_list): Add static prototype.
+	(expand_builtin_va_arg): Constify a char*.
+	
+	* c-lex.c (getch, put_back, extend_token_buffer_to,
+	read_line_number, token_getch, token_put_back): Add static
+	prototypes.
+
+	* c-parse.gperf (hash, is_reserved_word): Likewise.
+
+	* cccp.c (is_dir_separator): Likewise.
+
 Sat Oct  2 16:07:56 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* graph.h: New file to prototype functions exported by graph.c.

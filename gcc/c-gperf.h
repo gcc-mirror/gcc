@@ -1,7 +1,15 @@
 /* C code produced by gperf version 2.7.1 (19981006 egcs) */
-/* Command-line: gperf -L C -F , 0, 0 -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ /home/law/egcs/egcs/gcc/c-parse.gperf  */
-/* Command-line: gperf -L KR-C -F ', 0, 0' -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
+/* Command-line: gperf -L C -F , 0, 0 -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ ./c-parse.gperf  */
+/* Command-line: gperf -L C -F ', 0, 0' -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
 struct resword { const char *name; short token; enum rid rid; };
+#ifdef __GNUC__
+__inline
+#endif
+static unsigned int hash PARAMS ((const char *, unsigned int));
+#ifdef __GNUC__
+__inline
+#endif
+struct resword *is_reserved_word PARAMS ((const char *, unsigned int));
 
 #define TOTAL_KEYWORDS 84
 #define MIN_WORD_LENGTH 2

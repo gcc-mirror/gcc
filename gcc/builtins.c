@@ -84,6 +84,7 @@ static rtx expand_builtin_strlen	PROTO((tree, rtx, enum machine_mode));
 static rtx expand_builtin_alloca	PROTO((tree, rtx));
 static rtx expand_builtin_ffs		PROTO((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PROTO((tree));
+static tree stabilize_va_list		PROTO((tree, int));
 
 /* Return the alignment in bits of EXP, a pointer valued expression.
    But don't return more than MAX_ALIGN no matter what.
@@ -2028,7 +2029,7 @@ expand_builtin_va_arg (valist, type)
      be passed through `...' due to type promotion at the call site.  */
   else if ((promoted_type = (*lang_type_promotes_to) (type)) != NULL_TREE)
     {
-      const char *name = "<anonymous type>", *pname;
+      const char *name = "<anonymous type>", *pname = 0;
       static int gave_help;
 
       if (TYPE_NAME (type))

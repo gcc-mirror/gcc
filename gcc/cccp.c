@@ -4850,6 +4850,8 @@ absolute_filename (filename)
 
 /* Returns whether or not a given character is a directory separator.
    Used by simplify_filename.  */
+static inline int is_dir_separator PROTO ((int));
+
 static inline
 int
 is_dir_separator(ch)

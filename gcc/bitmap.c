@@ -118,8 +118,8 @@ bitmap_element_allocate ()
 
 	  obstack_specify_allocation (&bitmap_obstack, OBSTACK_CHUNK_SIZE,
 				      __alignof__ (bitmap_element),
-				      (void *(*) ()) OBSTACK_CHUNK_ALLOC,
-				      (void (*) ()) OBSTACK_CHUNK_FREE);
+				      (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
+				      (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
 	}
 
       element = (bitmap_element *) obstack_alloc (&bitmap_obstack,
