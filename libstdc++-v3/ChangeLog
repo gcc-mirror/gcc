@@ -1,3 +1,21 @@
+2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.host:  Delete file.
+	* configure.target:  More documentation.  Factor out common parts of
+	script into "intelligent" settings about defaults.  Remove redundancy.
+
+	* acinclude.m4:  Update comments.  Do not call configure.host.
+	(GLIBCPP_ENABLE_SYMVERS):  If disabled, do not bother checking for
+	libgcc_s.
+	* configure.in:  Slight reformatting, more comments.  Factor out
+	"config/" from all the directories.
+	* docs/html/17_intro/porting.texi:  Update and expand.
+	* testsuite/Makefile.am (AM_RUNTESTFLAGS):  Move empty setting
+	from configure.host.
+
+	* aclocal.m4, configure, docs/html/17_intro/porting.html,
+	testsuite/Makefile.in:  Regenerate.
+
 2002-06-16  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/TODO:  Update.

@@ -1,25 +1,29 @@
-<html lang="en"><head>
+<html lang="en">
+<head>
 <title>Porting libstdc++-v3</title>
 <meta http-equiv="Content-Type" content="text/html">
 <meta name=description content="Porting libstdc++-v3">
-<meta name=generator content="makeinfo 4.0">
+<meta name=generator content="makeinfo 4.1">
 <link href="http://texinfo.org/" rel=generator-home>
-</head><body>
-
+</head>
+<body>
+<h1>Porting libstdc++-v3</h1>
 <p><hr>
 Node:<a name="Top">Top</a>,
 Next:<a rel=next href="#Operating%20system">Operating system</a>,
-Up:<a rel=up href="#(dir)">(dir)</a>
+Up:<a rel=up href="#dir">(dir)</a>
 <br>
 
-<h1>Porting libstdc++-v3</h1>
+<h2>Porting libstdc++-v3</h2>
 
 <p>This document explains how to port libstdc++-v3 (the GNU C++ library) to
 a new target.
 
 <p>In order to make the GNU C++ library (libstdc++-v3) work with a new
 target, you must edit some configuration files and provide some new
-header files.
+header files.  Unless this is done, libstdc++-v3 will use generic
+settings which may not be correct for your target; even if they are
+correct, they will likely be inefficient.
 
 <p>Before you get started, make sure that you have a working C library on
 your target.  The C library need not precisely comply with any
@@ -34,6 +38,7 @@ library, but you should at least try some minimal test cases.
 
 <ul>
 <li><a href="#Operating%20system">Operating system</a>:     Configuring for your operating system. 
+<li><a href="#CPU">CPU</a>:                  Configuring for your processor chip. 
 <li><a href="#Character%20types">Character types</a>:      Implementing character classification. 
 <li><a href="#Thread%20safety">Thread safety</a>:        Implementing atomic operations. 
 <li><a href="#Numeric%20limits">Numeric limits</a>: 	Implementing numeric limits. 
@@ -43,14 +48,14 @@ library, but you should at least try some minimal test cases.
 
 <p><hr>
 Node:<a name="Operating%20system">Operating system</a>,
-Next:<a rel=next href="#Character%20types">Character types</a>,
+Next:<a rel=next href="#CPU">CPU</a>,
 Previous:<a rel=previous href="#Top">Top</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>Operating system</h1>
+<h2>Operating system</h2>
 
-<p>If you are porting to a new operating-system (as opposed to a new chip
+<p>If you are porting to a new operating system (as opposed to a new chip
 using an existing operating system), you will need to create a new
 directory in the <code>config/os</code> hierarchy.  For example, the IRIX
 configuration files are all in <code>config/os/irix</code>.  There is no set
@@ -77,7 +82,7 @@ This file should provide macro definitions for <code>__off_t</code>,
 <code>__off64_t</code>, and <code>__ssize_t</code>.  Typically, this just looks
 like:
 
-<pre>#define __off_t off_t
+<br><pre>#define __off_t off_t
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 </pre>
@@ -113,7 +118,7 @@ invalidates the assumption that some ports don't use thunks).
 <p>Finally, you should bracket the entire file in an include-guard, like
 this:
 
-<pre>#ifndef _GLIBCPP_OS_DEFINES
+<br><pre>#ifndef _GLIBCPP_OS_DEFINES
 #define _GLIBCPP_OS_DEFINES
 ...
 #endif
@@ -123,13 +128,44 @@ this:
 starting point.
 
 <p><hr>
-Node:<a name="Character%20types">Character types</a>,
-Next:<a rel=next href="#Thread%20safety">Thread safety</a>,
+Node:<a name="CPU">CPU</a>,
+Next:<a rel=next href="#Character%20types">Character types</a>,
 Previous:<a rel=previous href="#Operating%20system">Operating system</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>Character types</h1>
+<h2>CPU</h2>
+
+<p>If you are porting to a new chip (as opposed to a new operating system
+running on an existing chip), you will need to create a new directory in the
+<code>config/cpu</code> hierarchy.  Much like the <a href="#Operating%20system">Operating system</a> setup,
+there are no strict rules on how to organize the CPU configuration
+directory, but careful naming choices will allow the configury to find your
+setup files without explicit help.
+
+<p>We recommend that for a target triplet <code>&lt;CPU&gt;-&lt;vendor&gt;-&lt;OS&gt;</code>, you
+name your configuration directory <code>config/cpu/&lt;CPU&gt;</code>.  If you do this,
+the configury will find the directory itself.  Otherwise you will need to
+edit the <code>configure.target</code> file and, in the switch statement that sets
+<code>cpu_include_dir</code>, add a pattern to handle your chip.
+
+<p>Note that some chip families share a single configuration directory, for
+example, <code>alpha</code>, <code>alphaev5</code>, and <code>alphaev6</code> all use the
+<code>config/cpu/alpha</code> directory, and there is an entry in the
+<code>configure.target</code> switch statement to handle this.
+
+<p>The <code>cpu_include_dir</code> sets default locations for the files controlling
+<a href="#Thread%20safety">Thread safety</a> and <a href="#Numeric%20limits">Numeric limits</a>, if the defaults are not
+appropriate for your chip.
+
+<p><hr>
+Node:<a name="Character%20types">Character types</a>,
+Next:<a rel=next href="#Thread%20safety">Thread safety</a>,
+Previous:<a rel=previous href="#CPU">CPU</a>,
+Up:<a rel=up href="#Top">Top</a>
+<br>
+
+<h2>Character types</h2>
 
 <p>The library requires that you provide three header files to implement
 character classification, analogous to that provided by the C libraries
@@ -153,7 +189,7 @@ It should contain a single <code>struct</code> definition called
 declarations, and one enumeration declaration, like this example, taken
 from the IRIX configuration:
 
-<pre>struct ctype_base
+<br><pre>struct ctype_base
 {
   typedef unsigned int 	mask;
   typedef int* 		__to_type;
@@ -195,7 +231,7 @@ that will be included in <code>include/bits/locale_facets.h</code>.  The first
 function that must be written is the <code>ctype&lt;char&gt;::ctype</code>
 constructor.  Here is the IRIX example:
 
-<pre>ctype&lt;char&gt;::ctype(const mask* __table = 0, bool __del = false,
+<br><pre>ctype&lt;char&gt;::ctype(const mask* __table = 0, bool __del = false,
       size_t __refs = 0)
   : _Ctype_nois&lt;char&gt;(__refs), _M_del(__table != 0 &amp;&amp; __del),
     _M_toupper(NULL),
@@ -219,7 +255,7 @@ vice versa, you should initialize <code>_M_toupper</code> and
 <p>Now, you have to write two functions to convert from upper-case to
 lower-case, and vice versa.  Here are the IRIX versions:
 
-<pre>char
+<br><pre>char
 ctype&lt;char&gt;::do_toupper(char __c) const
 { return _toupper(__c); }
 
@@ -237,7 +273,7 @@ of characters.  The versions provided here will always work - but you
 could use specialized routines for greater performance if you have
 machinery to do that on your system:
 
-<pre>const char*
+<br><pre>const char*
 ctype&lt;char&gt;::do_toupper(char* __low, const char* __high) const
 {
   while (__low &lt; __high)
@@ -270,7 +306,7 @@ properties; they are analogous to the functions like <code>isalpha</code> and
 
 <p>The first function is implemented like this on IRIX:
 
-<pre>bool
+<br><pre>bool
 ctype&lt;char&gt;::
 is(mask __m, char __c) const throw()
 { return (_M_table)[(unsigned char)(__c)] &amp; __m; }
@@ -282,7 +318,7 @@ implementation here should work on all systems.
 
 <p>The next function is:
 
-<pre>const char*
+<br><pre>const char*
 ctype&lt;char&gt;::
 is(const char* __low, const char* __high, mask* __vec) const throw()
 {
@@ -298,7 +334,7 @@ from <code>__low</code> up until <code>__high</code> into the vector given by
 
 <p>The last two functions again are entirely generic:
 
-<pre>const char*
+<br><pre>const char*
 ctype&lt;char&gt;::
 scan_is(mask __m, const char* __low, const char* __high) const throw()
 {
@@ -324,7 +360,7 @@ Previous:<a rel=previous href="#Character%20types">Character types</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>Thread safety</h1>
+<h2>Thread safety</h2>
 
 <p>The C++ library string functionality requires a couple of atomic
 operations to provide thread-safety.  If you don't take any special
@@ -336,14 +372,26 @@ multi-threaded.
 are two distinct approaches.  One is to provide a version for your CPU,
 using assembly language constructs.  The other is to use the
 thread-safety primitives in your operating system.  In either case, you
-make a file called <code>bits/atomicity.h</code>.
+make a file called <code>bits/atomicity.h</code>, and the variable
+<code>ATOMICITYH</code> must point to this file.
 
 <p>If you are using the assembly-language approach, put this code in
 <code>config/cpu/&lt;chip&gt;/bits/atomicity.h</code>, where chip is the name of
-your processor.  In that case, edit the switch statement in
-<code>configure.target</code> to set the <code>cpu_include_dir</code>.  In either
-case, set the switch statement that sets <code>ATOMICITYH</code> to be the
-directory containing <code>bits/atomicity.h</code>.
+your processor (see <a href="#CPU">CPU</a>).  No additional changes are necessary to
+locate the file in this case; <code>ATOMICITYH</code> will be set by default.
+
+<p>If you are using the operating system thread-safety primitives approach,
+you can also put this code in the same CPU directory, in which case no more
+work is needed to locate the file.  For examples of this approach,
+see the <code>atomicity.h</code> file for IRIX or IA64.
+
+<p>Alternatively, if the primitives are more closely related to the OS
+than they are to the CPU, you can put the <code>atomicity.h</code> file in
+the <a href="#Operating%20system">Operating system</a> directory instead.  In this case, you must
+edit <code>configure.target</code>, and in the switch statement that handles
+operating systems, override the <code>ATOMICITYH</code> variable to point to
+the appropriate <code>os_include_dir</code>.  For examples of this approach,
+see the <code>atomicity.h</code> file for AIX.
 
 <p>With those bits out of the way, you have to actually write
 <code>bits/atomicity.h</code> itself.  This file should be wrapped in an
@@ -352,7 +400,7 @@ type, and two functions.
 
 <p>The type is <code>_Atomic_word</code>.  Here is the version used on IRIX:
 
-<pre>typedef long _Atomic_word;
+<br><pre>typedef long _Atomic_word;
 </pre>
 
 <p>This type must be a signed integral type supporting atomic operations. 
@@ -363,7 +411,7 @@ primitives.
 <p>Then, you must provide two functions.  The bodies of these functions
 must be equivalent to those provided here, but using atomic operations:
 
-<pre>static inline _Atomic_word
+<br><pre>static inline _Atomic_word
 __attribute__ ((__unused__))
 __exchange_and_add (_Atomic_word* __mem, int __val)
 {
@@ -387,7 +435,7 @@ Previous:<a rel=previous href="#Thread%20safety">Thread safety</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>Numeric limits</h1>
+<h2>Numeric limits</h2>
 
 <p>The C++ library requires information about the fundamental data types,
 such as the minimum and maximum representable values of each type. 
@@ -396,16 +444,12 @@ easiest just to indicate how many bits are used in each of the data
 types and let the library do the rest.  For information about the
 macros to define, see the top of <code>include/bits/std_limits.h</code>.
 
-<p>If you need to define any macros, you can do so in
-<code>os_defines.h</code>.  However, if all operating systems for your CPU
-are likely to use the same values, you can provide a CPU-specific file
-instead so that you do not have to provide the same definitions for
-each operating system.  To take that approach, create a new file
-called <code>limits.h</code> in your CPU configuration directory (e.g.,
-<code>config/cpu/i386/bits</code>) and then modify <code>configure.target</code>
-so that <code>LIMITSH</code> is set to the CPU directory (e.g.,
-<code>config/cpu/i386</code>).  Note that <code>LIMITSH</code> should not include
-the <code>bits</code> part of the directory name.
+<p>If you need to define any macros, you can do so in <code>os_defines.h</code>. 
+However, if all operating systems for your CPU are likely to use the
+same values, you can provide a CPU-specific file instead so that you
+do not have to provide the same definitions for each operating system. 
+To take that approach, create a new file called <code>cpu_limits.h</code> in
+your CPU configuration directory (see <a href="#CPU">CPU</a>).
 
 <p><hr>
 Node:<a name="Libtool">Libtool</a>,
@@ -414,7 +458,7 @@ Previous:<a rel=previous href="#Numeric%20limits">Numeric limits</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>Libtool</h1>
+<h2>Libtool</h2>
 
 <p>The C++ library is compiled, archived and linked with libtool. 
 Explaining the full workings of libtool is beyond the scope of this
@@ -433,10 +477,10 @@ run as the library is loaded.  Often, that requires linking in special
 object files when the C++ library is built as a shared library, or
 taking other system-specific actions.
 
-<p>The libstdc++-v3 library is linked with the C version of libtool, even though it
-is a C++ library.  Therefore, the C version of libtool needs to ensure
-that the run-time library initializers are run.  The usual way to do
-this is to build the library using <code>gcc -shared</code>.
+<p>The libstdc++-v3 library is linked with the C version of libtool, even
+though it is a C++ library.  Therefore, the C version of libtool needs to
+ensure that the run-time library initializers are run.  The usual way to
+do this is to build the library using <code>gcc -shared</code>.
 
 <p>If you need to change how the library is linked, look at
 <code>ltcf-c.sh</code> in the top-level directory.  Find the switch statement
@@ -449,11 +493,10 @@ Previous:<a rel=previous href="#Libtool">Libtool</a>,
 Up:<a rel=up href="#Top">Top</a>
 <br>
 
-<h1>GNU Free Documentation License</h1>
+<h2>GNU Free Documentation License</h2>
 
-<p align="center">Version 1.1, March 2000</p>
-
-<pre>Copyright &copy; 2000 Free Software Foundation, Inc.
+<div align="center">Version 1.1, March 2000</div>
+<br><pre>Copyright &copy; 2000 Free Software Foundation, Inc.
 59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
 
 Everyone is permitted to copy and distribute verbatim copies
@@ -789,13 +832,13 @@ number of this License, you may choose any version ever published (not
 as a draft) by the Free Software Foundation.
 </ol>
 
-<h2>ADDENDUM: How to use this License for your documents</h2>
+<h3>ADDENDUM: How to use this License for your documents</h3>
 
 <p>To use this License in a document you have written, include a copy of
 the License in the document and put the following copyright and
 license notices just after the title page:
 
-<pre>  Copyright (C)  <var>year</var>  <var>your name</var>.
+<br><pre>  Copyright (C)  <var>year</var>  <var>your name</var>.
   Permission is granted to copy, distribute and/or modify this document
   under the terms of the GNU Free Documentation License, Version 1.1
   or any later version published by the Free Software Foundation;
@@ -816,15 +859,24 @@ free software license, such as the GNU General Public License,
 to permit their use in free software.
 
 
-<h1>Table of Contents</h1>
+<h2>Table of Contents</h2>
 <ul>
-<li><a href="#Top">Porting libstdc++-v3</a>
-<li><a href="#Operating%20system">Operating system</a>
-<li><a href="#Character%20types">Character types</a>
-<li><a href="#Thread%20safety">Thread safety</a>
-<li><a href="#Numeric%20limits">Numeric limits</a>
-<li><a href="#Libtool">Libtool</a>
-<li><a href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>
+<li><a name="toc_Top"></a>
+    <a href="#Top">Porting libstdc++-v3</a>
+<li><a name="toc_Operating%20system"></a>
+    <a href="#Operating%20system">Operating system</a>
+<li><a name="toc_CPU"></a>
+    <a href="#CPU">CPU</a>
+<li><a name="toc_Character%20types"></a>
+    <a href="#Character%20types">Character types</a>
+<li><a name="toc_Thread%20safety"></a>
+    <a href="#Thread%20safety">Thread safety</a>
+<li><a name="toc_Numeric%20limits"></a>
+    <a href="#Numeric%20limits">Numeric limits</a>
+<li><a name="toc_Libtool"></a>
+    <a href="#Libtool">Libtool</a>
+<li><a name="toc_GNU%20Free%20Documentation%20License"></a>
+    <a href="#GNU%20Free%20Documentation%20License">GNU Free Documentation License</a>
 <ul>
 <li><a href="#GNU%20Free%20Documentation%20License">ADDENDUM: How to use this License for your documents</a>
 </ul>
