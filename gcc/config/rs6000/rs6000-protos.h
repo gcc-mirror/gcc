@@ -57,6 +57,7 @@ extern int got_no_const_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int easy_fp_constant (rtx, enum machine_mode);
 extern int easy_vector_constant (rtx, enum machine_mode);
+extern rtx gen_easy_vector_constant_add_self (rtx);
 extern const char *output_vec_const_move (rtx *);
 extern int zero_fp_constant (rtx, enum machine_mode);
 extern int zero_constant (rtx, enum machine_mode);
