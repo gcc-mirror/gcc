@@ -2409,8 +2409,9 @@
   ""
   "
   if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && ((GET_CODE (operands[0]) == REG
-	   && REGNO (operands[0]) < 16)
+      && (TARGET_SOFT_FLOAT
+	  || (GET_CODE (operands[0]) == REG
+	      && REGNO (operands[0]) < 16)
 	  || ! (const_double_rtx_ok_for_fpu (operands[1])
 		|| neg_const_double_rtx_ok_for_fpu (operands[1]))))
     {
@@ -2476,8 +2477,9 @@
   ""
   "
   if (GET_CODE (operands[1]) == CONST_DOUBLE
-      && ((GET_CODE (operands[0]) == REG
-	   && REGNO (operands[0]) < 16)
+      && (TARGET_SOFT_FLOAT
+	  || (GET_CODE (operands[0]) == REG
+	      && REGNO (operands[0]) < 16)
 	  || ! (const_double_rtx_ok_for_fpu (operands[1])
 		|| neg_const_double_rtx_ok_for_fpu (operands[1]))))
     {
