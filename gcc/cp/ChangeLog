@@ -1,5 +1,13 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (setup_vtbl_ptr): Move prototype to semantics.c
+	section.
+	* init.c (emit_base_init): Remove incorrect comment about
+	virtual bases.
+	* method.c (make_thunk): Fix comment alignment.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	Kill remnants of this is variable.
 	* cp-tree.h (flag_this_is_variable): Remove.
 	* decl2.c (flag_this_is_variable): Remove.
