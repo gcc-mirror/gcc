@@ -1,3 +1,8 @@
+Fri Jan 28 17:13:20 2000  Anthony Green  <green@cygnus.com>
+
+	* gcconfig.h (DATASTART): Add missing extern declaration
+	for data_start on powerpc.
+
 1999-12-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* linux_threads.c: Don't block SIGINT, SIGQUIT, SIGTERM in the
