@@ -71,6 +71,9 @@ set_Wformat (setting)
       warn_format_nonliteral = setting;
       warn_format_security = setting;
     }
+  /* Make sure not to disable -Wnonnull if -Wformat=0 is specified.  */
+  if (setting)
+    warn_nonnull = setting;
 }
 
 
@@ -900,10 +903,16 @@ typedef struct
   int number_other;
 } format_check_results;
 
+typedef struct
+{
+  format_check_results *res;
+  function_format_info *info;
+  tree params;
+  int *status;
+} format_check_context;
+
 static void check_format_info	PARAMS ((int *, function_format_info *, tree));
-static void check_format_info_recurse PARAMS ((int *, format_check_results *,
-					       function_format_info *, tree,
-					       tree, unsigned HOST_WIDE_INT));
+static void check_format_arg	PARAMS ((void *, tree, unsigned HOST_WIDE_INT));
 static void check_format_info_main PARAMS ((int *, format_check_results *,
 					    function_format_info *,
 					    const char *, int, tree,
@@ -1294,6 +1303,7 @@ check_format_info (status, info, params)
      function_format_info *info;
      tree params;
 {
+  format_check_context format_ctx;
   unsigned HOST_WIDE_INT arg_num;
   tree format_tree;
   format_check_results res;
@@ -1320,7 +1330,13 @@ check_format_info (status, info, params)
   res.number_unterminated = 0;
   res.number_other = 0;
 
-  check_format_info_recurse (status, &res, info, format_tree, params, arg_num);
+  format_ctx.res = &res;
+  format_ctx.info = info;
+  format_ctx.params = params;
+  format_ctx.status = status;
+
+  check_function_arguments_recurse (check_format_arg, &format_ctx,
+				    format_tree, arg_num);
 
   if (res.number_non_literal > 0)
     {
@@ -1377,110 +1393,34 @@ check_format_info (status, info, params)
     status_warning (status, "unterminated format string");
 }
 
-
-/* Recursively check a call to a format function.  FORMAT_TREE is the
-   format parameter, which may be a conditional expression in which
-   both halves should be checked.  ARG_NUM is the number of the
-   format argument; PARAMS points just after it in the argument list.  */
+/* Callback from check_function_arguments_recurse to check a
+   format string.  FORMAT_TREE is the format parameter.  ARG_NUM
+   is the number of the format argument.  CTX points to a
+   format_check_context.  */
 
 static void
-check_format_info_recurse (status, res, info, format_tree, params, arg_num)
-     int *status;
-     format_check_results *res;
-     function_format_info *info;
+check_format_arg (ctx, format_tree, arg_num)
+     void *ctx;
      tree format_tree;
-     tree params;
      unsigned HOST_WIDE_INT arg_num;
 {
+  format_check_context *format_ctx = ctx;
+  format_check_results *res = format_ctx->res;
+  function_format_info *info = format_ctx->info;
+  tree params = format_ctx->params;
+  int *status = format_ctx->status;
+
   int format_length;
   HOST_WIDE_INT offset;
   const char *format_chars;
   tree array_size = 0;
   tree array_init;
 
-  if (TREE_CODE (format_tree) == NOP_EXPR)
-    {
-      /* Strip coercion.  */
-      check_format_info_recurse (status, res, info,
-				 TREE_OPERAND (format_tree, 0), params,
-				 arg_num);
-      return;
-    }
-
-  if (TREE_CODE (format_tree) == CALL_EXPR)
-    {
-      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (format_tree, 0)));
-      tree attrs;
-      bool found_format_arg = false;
-
-      /* See if this is a call to a known internationalization function
-	 that modifies the format arg.  Such a function may have multiple
-	 format_arg attributes (for example, ngettext).  */
-
-      for (attrs = TYPE_ATTRIBUTES (type);
-	   attrs;
-	   attrs = TREE_CHAIN (attrs))
-	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
-	  {
-	    tree inner_args;
-	    tree format_num_expr;
-	    int format_num;
-	    int i;
-
-	    /* Extract the argument number, which was previously checked
-	       to be valid.  */
-	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
-	    while (TREE_CODE (format_num_expr) == NOP_EXPR
-		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
-		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
-
-	    if (TREE_CODE (format_num_expr) != INTEGER_CST
-		|| TREE_INT_CST_HIGH (format_num_expr) != 0)
-	      abort ();
-
-	    format_num = TREE_INT_CST_LOW (format_num_expr);
-
-	    for (inner_args = TREE_OPERAND (format_tree, 1), i = 1;
-		 inner_args != 0;
-		 inner_args = TREE_CHAIN (inner_args), i++)
-	      if (i == format_num)
-		{
-		  check_format_info_recurse (status, res, info,
-					     TREE_VALUE (inner_args), params,
-					     arg_num);
-		  found_format_arg = true;
-		  break;
-		}
-	  }
-
-      /* If we found a format_arg attribute and did a recursive check,
-	 we are done with checking this format string.  Otherwise, we
-	 continue and this will count as a non-literal format string.  */
-      if (found_format_arg)
-	return;
-    }
-
-  if (TREE_CODE (format_tree) == COND_EXPR)
-    {
-      /* Check both halves of the conditional expression.  */
-      check_format_info_recurse (status, res, info,
-				 TREE_OPERAND (format_tree, 1), params,
-				 arg_num);
-      check_format_info_recurse (status, res, info,
-				 TREE_OPERAND (format_tree, 2), params,
-				 arg_num);
-      return;
-    }
-
   if (integer_zerop (format_tree))
     {
-      /* FIXME: this warning should go away once Marc Espie's
-	 __attribute__((nonnull)) patch is in.  Instead, checking for
-	 nonnull attributes should probably change this function to act
-	 specially if info == NULL and add a res->number_null entry for
-	 that case, or maybe add a function pointer to be called at
-	 the end instead of hardcoding check_format_info_main.  */
+      /* FIXME: instead of warning about a null format string here,
+	 functions for which we want to perform this check should be
+	 marked with the "nonnull" attribute on the appropriate arguments.  */
       status_warning (status, "null format string");
 
       /* Skip to first argument to check, so we can see if this format

@@ -1869,6 +1869,7 @@ the enclosing block.
 @cindex @code{volatile} applied to function
 @cindex @code{const} applied to function
 @cindex functions with @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style arguments
+@cindex functions with non-null pointer arguments
 @cindex functions that are passed arguments in registers on the 386
 @cindex functions that pop the argument stack on the 386
 @cindex functions that do not pop the argument stack on the 386
@@ -1885,11 +1886,11 @@ attributes are currently defined for functions on all targets:
 @code{pure}, @code{const},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
-@code{unused}, @code{deprecated}, @code{weak}, @code{malloc}, and
-@code{alias}.  Several other attributes are defined for functions on
-particular target systems.  Other attributes, including @code{section}
-are supported for variables declarations (@pxref{Variable Attributes})
-and for types (@pxref{Type Attributes}).
+@code{unused}, @code{deprecated}, @code{weak}, @code{malloc},
+@code{alias}, and @code{nonnull}.  Several other attributes are defined
+for functions on particular target systems.  Other attributes, including
+@code{section} are supported for variables declarations
+(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -2100,6 +2101,35 @@ The compiler always treats @code{gettext}, @code{dgettext}, and
 requested by @option{-ansi} or an appropriate @option{-std} option, or
 @option{-ffreestanding} is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
+
+@item nonnull (@var{arg-index,...})
+@cindex @code{nonnull} function attribute
+The @code{nonnull} attribute specifies that some function parameters should
+be non-null pointers.  For instance, the declaration:
+
+@smallexample
+extern void *
+my_memcpy (void *dest, const void *src, size_t len)
+	__attribute__((nonnull (1, 2)));
+@end smallexample
+
+@noindent
+causes the compiler to check that, in calls to @code{my_memcpy},
+arguments @var{dest} and @var{src} are non-null.  If the compiler
+determines that a null pointer is passed in an argument slot marked
+as non-null, and the @option{-Wnonnull} option is enabled, a warning
+is issued.  The compiler may also choose to make optimizations based
+on the knowledge that certain function arguments will not be null.
+
+If no argument index list is given to the @code{nonnull} attribute,
+all pointer arguments are marked as non-null.  To illustrate, the
+following declaration is equivalent to the previous example:
+
+@smallexample
+extern void *
+my_memcpy (void *dest, const void *src, size_t len)
+	__attribute__((nonnull));
+@end smallexample
 
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute

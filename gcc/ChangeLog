@@ -1,3 +1,27 @@
+2002-05-23  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* c-common.c (warn_nonnull): Declare.
+	(c_common_attribute_table): Add "nonnull" attribute.
+	(handle_nonnull_attribute, check_function_nonnull, nonnull_check_p,
+	check_nonnull_arg, get_nonnull_operand, check_function_arguments,
+	check_function_arguments_recurse): New functions.
+	* c-common.h (warn_nonnull): Declare extern.
+	(check_function_arguments, check_function_arguments_recurse): New
+	prototypes.
+	* c-decl.c (c_decode_option): Add -Wnonnull option.
+	* c-format.c (set_Wformat): Set warn_nonnull if enabling
+	format checking.
+	(format_check_context): New structure.
+	(check_format_info_recurse): Remove recursion and rename to...
+	(check_format_arg): ...this.  Update comment.
+	(check_format_info): Use check_function_arguments_recurse.
+	* c-typeck.c (build_function_call): Call check_function_arguments
+	instead of check_function_format.
+	* doc/extend.texi: Document "nonnull" attribute.
+	* doc/invoke.texi: Docuemnt -Wnonnull option.
+	* testsuite/gcc.dg/nonnull-1.c: New test.
+	* testsuite/gcc.dg/nonnull-2.c: New test.
+
 2002-05-23  David S. Miller  <davem@redhat.com>
 
 	* basic-block.h (CLEANUP_NO_INSN_DEL): Define it.

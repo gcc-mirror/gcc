@@ -225,7 +225,7 @@ in the following sections.
 -Wmain  -Wmissing-braces  -Wmissing-declarations @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
 -Wno-multichar  -Wno-format-extra-args  -Wno-format-y2k @gol
--Wno-import  -Wpacked  -Wpadded @gol
+-Wno-import  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wswitch  -Wswitch-default -Wswitch-enum @gol
@@ -1842,6 +1842,9 @@ in the selected standard version (but not for @code{strfmon} formats,
 since those are not in any version of the C standard).  @xref{C Dialect
 Options,,Options Controlling C Dialect}.
 
+Since @option{-Wformat} also checks for null format arguments for
+several functions, @option{-Wformat} also implies @option{-Wnonnull}.
+
 @option{-Wformat} is included in @option{-Wall}.  For more control over some
 aspects of format checking, the options @option{-Wno-format-y2k},
 @option{-Wno-format-extra-args}, @option{-Wno-format-zero-length},
@@ -1895,6 +1898,14 @@ included in @option{-Wformat-nonliteral}.)
 Enable @option{-Wformat} plus format checks not included in
 @option{-Wformat}.  Currently equivalent to @samp{-Wformat
 -Wformat-nonliteral -Wformat-security}.
+
+@item -Wnonnull
+@opindex Wnonnull
+Enable warning about passing a null pointer for arguments marked as
+requiring a non-null value by the @code{nonnull} function attribute.
+
+@option{-Wnonnull} is included in @option{-Wall} and @option{-Wformat}.  It
+can be disabled with the @option{-Wno-nonnull} option.
 
 @item -Wimplicit-int
 @opindex Wimplicit-int

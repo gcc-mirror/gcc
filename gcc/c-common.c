@@ -230,6 +230,11 @@ int warn_sequence_point;
 /* Nonzero means to warn about compile-time division by zero.  */
 int warn_div_by_zero = 1;
 
+/* Warn about NULL being passed to argument slots marked as requiring
+   non-NULL.  */ 
+      
+int warn_nonnull;
+
 /* The elements of `ridpointers' are identifier nodes for the reserved
    type names and storage classes.  It is indexed by a RID_... value.  */
 tree *ridpointers;
@@ -344,7 +349,16 @@ static tree handle_deprecated_attribute	PARAMS ((tree *, tree, tree, int,
 						 bool *));
 static tree handle_vector_size_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
+static tree handle_nonnull_attribute	PARAMS ((tree *, tree, tree, int,
+						 bool *));
 static tree vector_size_helper PARAMS ((tree, tree));
+
+static void check_function_nonnull	PARAMS ((tree, tree));
+static void check_nonnull_arg		PARAMS ((void *, tree,
+						 unsigned HOST_WIDE_INT));
+static bool nonnull_check_p		PARAMS ((tree, unsigned HOST_WIDE_INT));
+static bool get_nonnull_operand		PARAMS ((tree,
+						 unsigned HOST_WIDE_INT *));
 
 /* Table of machine-independent attributes common to all C-like languages.  */
 const struct attribute_spec c_common_attribute_table[] =
@@ -406,6 +420,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_vector_size_attribute },
   { "visibility",	      1, 1, true,  false, false,
 			      handle_visibility_attribute },
+  { "nonnull",                0, -1, false, true, true,
+			      handle_nonnull_attribute },
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
@@ -5598,4 +5614,281 @@ vector_size_helper (type, bottom)
   TREE_THIS_VOLATILE (outer) = TREE_THIS_VOLATILE (type);
 
   return outer;
+}
+
+/* Handle the "nonnull" attribute.  */
+static tree
+handle_nonnull_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name ATTRIBUTE_UNUSED;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree type = *node;
+  unsigned HOST_WIDE_INT attr_arg_num;
+
+  /* If no arguments are specified, all pointer arguments should be
+     non-null.  Veryify a full prototype is given so that the arguments
+     will have the correct types when we actually check them later.  */
+  if (! args)
+    {
+      if (! TYPE_ARG_TYPES (type))
+	{
+	  error ("nonnull attribute without arguments on a non-prototype");
+          *no_add_attrs = true;
+	}
+      return NULL_TREE;
+    }
+
+  /* Argument list specified.  Verify that each argument number references
+     a pointer argument.  */
+  for (attr_arg_num = 1; args; args = TREE_CHAIN (args))
+    {
+      tree argument;
+      unsigned HOST_WIDE_INT arg_num, ck_num;
+
+      if (! get_nonnull_operand (TREE_VALUE (args), &arg_num))
+	{
+	  error ("nonnull argument has invalid operand number (arg %lu)",
+		 (unsigned long) attr_arg_num);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      argument = TYPE_ARG_TYPES (type);
+      if (argument)
+	{
+	  for (ck_num = 1; ; ck_num++)
+	    {
+	      if (! argument || ck_num == arg_num)
+		break;
+	      argument = TREE_CHAIN (argument);
+	    }
+
+          if (! argument
+	      || TREE_CODE (TREE_VALUE (argument)) == VOID_TYPE)
+	    {
+	      error ("nonnull argument with out-of-range operand number (arg %lu, operand %lu)",
+		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+          if (TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE)
+	    {
+	      error ("nonnull argument references non-pointer operand (arg %lu, operand %lu)",
+		   (unsigned long) attr_arg_num, (unsigned long) arg_num);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Check the argument list of a function call for null in argument slots
+   that are marked as requiring a non-null pointer argument.  */
+
+static void
+check_function_nonnull (attrs, params)
+     tree attrs;
+     tree params;
+{
+  tree a, args, param;
+  int param_num;
+
+  for (a = attrs; a; a = TREE_CHAIN (a))
+    {
+      if (is_attribute_p ("nonnull", TREE_PURPOSE (a)))
+	{
+          args = TREE_VALUE (a);
+
+          /* Walk the argument list.  If we encounter an argument number we
+             should check for non-null, do it.  If the attribute has no args,
+             then every pointer argument is checked (in which case the check
+	     for pointer type is done in check_nonnull_arg).  */
+          for (param = params, param_num = 1; ;
+               param_num++, param = TREE_CHAIN (param))
+            {
+              if (! param)
+        	break;
+              if (! args || nonnull_check_p (args, param_num))
+        	check_function_arguments_recurse (check_nonnull_arg, NULL,
+        					  TREE_VALUE (param),
+        					  param_num);
+            }
+	}
+    }
+}
+
+/* Helper for check_function_nonnull; given a list of operands which
+   must be non-null in ARGS, determine if operand PARAM_NUM should be
+   checked.  */
+
+static bool
+nonnull_check_p (args, param_num)
+     tree args;
+     unsigned HOST_WIDE_INT param_num;
+{
+  unsigned HOST_WIDE_INT arg_num;
+
+  for (; args; args = TREE_CHAIN (args))
+    {
+      if (! get_nonnull_operand (TREE_VALUE (args), &arg_num))
+        abort ();
+
+      if (arg_num == param_num)
+	return true;
+    }
+  return false;
+}
+
+/* Check that the function argument PARAM (which is operand number
+   PARAM_NUM) is non-null.  This is called by check_function_nonnull
+   via check_function_arguments_recurse.  */
+
+static void
+check_nonnull_arg (ctx, param, param_num)
+     void *ctx ATTRIBUTE_UNUSED;
+     tree param;
+     unsigned HOST_WIDE_INT param_num;
+{
+  /* Just skip checking the argument if it's not a pointer.  This can
+     happen if the "nonnull" attribute was given without an operand
+     list (which means to check every pointer argument).  */
+
+  if (TREE_CODE (TREE_TYPE (param)) != POINTER_TYPE)
+    return;
+
+  if (integer_zerop (param))
+    warning ("null argument where non-null required (arg %lu)",
+             (unsigned long) param_num);
+}
+
+/* Helper for nonnull attribute handling; fetch the operand number
+   from the attribute argument list.  */
+
+static bool
+get_nonnull_operand (arg_num_expr, valp)
+     tree arg_num_expr;
+     unsigned HOST_WIDE_INT *valp;
+{
+  /* Strip any conversions from the arg number and verify they
+     are constants.  */
+  while (TREE_CODE (arg_num_expr) == NOP_EXPR
+	 || TREE_CODE (arg_num_expr) == CONVERT_EXPR
+	 || TREE_CODE (arg_num_expr) == NON_LVALUE_EXPR)
+    arg_num_expr = TREE_OPERAND (arg_num_expr, 0);
+
+  if (TREE_CODE (arg_num_expr) != INTEGER_CST
+      || TREE_INT_CST_HIGH (arg_num_expr) != 0)
+    return false;
+
+  *valp = TREE_INT_CST_LOW (arg_num_expr);
+  return true;
+}
+
+/* Check for valid arguments being passed to a function.  */
+void
+check_function_arguments (attrs, params)
+     tree attrs;
+     tree params;
+{
+  /* Check for null being passed in a pointer argument that must be
+     non-null.  We also need to do this if format checking is enabled.  */
+
+  if (warn_nonnull)
+    check_function_nonnull (attrs, params);
+
+  /* Check for errors in format strings.  */
+
+  if (warn_format)
+    check_function_format (NULL, attrs, params);
+}
+
+/* Generic argument checking recursion routine.  PARAM is the argument to
+   be checked.  PARAM_NUM is the number of the argument.  CALLBACK is invoked
+   once the argument is resolved.  CTX is context for the callback.  */
+void
+check_function_arguments_recurse (callback, ctx, param, param_num)
+     void (*callback) PARAMS ((void *, tree, unsigned HOST_WIDE_INT));
+     void *ctx;
+     tree param;
+     unsigned HOST_WIDE_INT param_num;
+{
+  if (TREE_CODE (param) == NOP_EXPR)
+    {
+      /* Strip coercion.  */
+      check_function_arguments_recurse (callback, ctx,
+				        TREE_OPERAND (param, 0), param_num);
+      return;
+    }
+
+  if (TREE_CODE (param) == CALL_EXPR)
+    {
+      tree type = TREE_TYPE (TREE_TYPE (TREE_OPERAND (param, 0)));
+      tree attrs;
+      bool found_format_arg = false;
+
+      /* See if this is a call to a known internationalization function
+	 that modifies a format arg.  Such a function may have multiple
+	 format_arg attributes (for example, ngettext).  */
+
+      for (attrs = TYPE_ATTRIBUTES (type);
+	   attrs;
+	   attrs = TREE_CHAIN (attrs))
+	if (is_attribute_p ("format_arg", TREE_PURPOSE (attrs)))
+	  {
+	    tree inner_args;
+	    tree format_num_expr;
+	    int format_num;
+	    int i;
+
+	    /* Extract the argument number, which was previously checked
+	       to be valid.  */
+	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
+	    while (TREE_CODE (format_num_expr) == NOP_EXPR
+		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
+		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+	    if (TREE_CODE (format_num_expr) != INTEGER_CST
+		|| TREE_INT_CST_HIGH (format_num_expr) != 0)
+	      abort ();
+
+	    format_num = TREE_INT_CST_LOW (format_num_expr);
+
+	    for (inner_args = TREE_OPERAND (param, 1), i = 1;
+		 inner_args != 0;
+		 inner_args = TREE_CHAIN (inner_args), i++)
+	      if (i == format_num)
+		{
+		  check_function_arguments_recurse (callback, ctx,
+						    TREE_VALUE (inner_args),
+						    param_num);
+		  found_format_arg = true;
+		  break;
+		}
+	  }
+
+      /* If we found a format_arg attribute and did a recursive check,
+	 we are done with checking this argument.  Otherwise, we continue
+	 and this will be considered a non-literal.  */
+      if (found_format_arg)
+	return;
+    }
+
+  if (TREE_CODE (param) == COND_EXPR)
+    {
+      /* Check both halves of the conditional expression.  */
+      check_function_arguments_recurse (callback, ctx,
+				        TREE_OPERAND (param, 1), param_num);
+      check_function_arguments_recurse (callback, ctx,
+				        TREE_OPERAND (param, 2), param_num);
+      return;
+    }
+
+  (*callback) (ctx, param, param_num);
 }
