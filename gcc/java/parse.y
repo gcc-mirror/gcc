@@ -266,6 +266,7 @@ static tree search_loop PROTO ((tree));
 static int labeled_block_contains_loop_p PROTO ((tree, tree));
 static void check_abstract_method_definitions PROTO ((int, tree, tree));
 static void java_check_abstract_method_definitions PROTO ((tree));
+static void java_debug_context_do PROTO ((int));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -325,6 +326,9 @@ static tree java_lang_cloneable = NULL_TREE;
 
 /* Context and flag for static blocks */
 static tree current_static_block = NULL_TREE;
+
+/* The list of all packages we've seen so far */
+static tree package_list = NULL_TREE;
 
 %}
 
@@ -591,7 +595,10 @@ type_declarations:
 
 package_declaration:
 	PACKAGE_TK name SC_TK
-		{ ctxp->package = EXPR_WFL_NODE ($2); }
+		{ 
+		  ctxp->package = EXPR_WFL_NODE ($2);
+		  package_list = tree_cons (ctxp->package, NULL, package_list);
+		}
 |	PACKAGE_TK error
 		{yyerror ("Missing name"); RECOVER;}
 |	PACKAGE_TK name error
@@ -2368,25 +2375,30 @@ java_push_parser_context ()
     }
 }  
 
-/* If the first file of a file list was a class file, no context
-   exists for a source file to be parsed. This boolean remembers that
-   java_parser_context_save_global might have created a dummy one, so
-   that java_parser_context_restore_global can pop it.  */
-static int extra_ctxp_pushed_p = 0;
-
 void
 java_parser_context_save_global ()
 {
   if (!ctxp)
     {
       java_push_parser_context ();
-      extra_ctxp_pushed_p = 1;
+      ctxp->saved_data_ctx = 1;
+    }
+  else if (ctxp->saved_data)
+    {
+      struct parser_ctxt *new = 
+	(struct parser_ctxt *)xmalloc(sizeof (struct parser_ctxt));
+      bzero ((PTR)new, sizeof (struct parser_ctxt));
+      memcpy ((PTR)new, (PTR)ctxp, sizeof (struct parser_ctxt));
+      new->next = ctxp;
+      ctxp = new;
+      ctxp->saved_data_ctx = 1;
     }
   ctxp->finput = finput;
   ctxp->lineno = lineno;
   ctxp->current_class = current_class;
   ctxp->filename = input_filename;
   ctxp->current_function_decl = current_function_decl;
+  ctxp->saved_data = 1;
 }
 
 void
@@ -2396,12 +2408,10 @@ java_parser_context_restore_global ()
   lineno = ctxp->lineno;
   current_class = ctxp->current_class;
   input_filename = ctxp->filename;
+  ctxp->saved_data = 0;
   current_function_decl = ctxp->current_function_decl;
-  if (!ctxp->next && extra_ctxp_pushed_p)
-    {
-      java_pop_parser_context (0);
-      extra_ctxp_pushed_p = 0;
-    }
+  if (ctxp->saved_data_ctx)
+    java_pop_parser_context (0);
 }
 
 void 
@@ -2443,6 +2453,44 @@ java_pop_parser_context (generate)
   else
     free (toFree);
 }
+
+/* Dump the stacked up parser contexts. Intended to be called from a
+   debugger.  */
+
+static void
+java_debug_context_do (tab)
+     int tab;
+{
+#define JAVA_TAB_CONTEXT(C) \
+  {int i; for (i = 0; i < (C); i++) fputc (' ', stderr);}
+
+  struct parser_ctxt *copy = ctxp;
+  while (copy)
+    {
+      JAVA_TAB_CONTEXT (tab);
+      fprintf (stderr, "ctxt: 0x%0lX\n", (unsigned long)copy);
+      JAVA_TAB_CONTEXT (tab);
+      fprintf (stderr, "filename: %s\n", copy->filename);
+      JAVA_TAB_CONTEXT (tab);
+      fprintf (stderr, "package: %s\n",
+	       (copy->package ? 
+		IDENTIFIER_POINTER (copy->package) : "<none>"));
+      JAVA_TAB_CONTEXT (tab);
+      fprintf (stderr, "context for saving: %d\n", copy->saved_data_ctx);
+      JAVA_TAB_CONTEXT (tab);
+      fprintf (stderr, "saved data: %d\n", copy->saved_data);
+      copy = copy->next;
+      tab += 2;
+    }
+#undef JAVA_TAB_CONTEXT
+}
+
+void
+java_debug_context ()
+{
+  java_debug_context_do (0);
+}
+
 
 /* Reporting an constructor invocation error.  */
 static void
@@ -4311,7 +4359,7 @@ do_resolve_class (class_type, decl, cl)
     return NULL_TREE;
 
   /* 2- And check for the type in the current compilation unit. If it fails,
-     try with a name qualified with the package name if appropriate. */
+     try with a name qualified with the package name we've seen so far */
   if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
     {
       if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)) &&
@@ -4321,40 +4369,29 @@ do_resolve_class (class_type, decl, cl)
     }
 
   original_name = TYPE_NAME (class_type);
-  if (!QUALIFIED_P (TYPE_NAME (class_type)) && ctxp->package)
-    TYPE_NAME (class_type) = merge_qualified_name (ctxp->package, 
-						   TYPE_NAME (class_type));
-#if 1
-  if (!(new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
-    load_class (TYPE_NAME (class_type), 0);
-  if ((new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type))))
+  if (!QUALIFIED_P (TYPE_NAME (class_type)))
     {
-      if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)) &&
-	  !CLASS_FROM_SOURCE_P (TREE_TYPE (new_class_decl)))
-	load_class (TYPE_NAME (class_type), 0);
-      return IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
-    }
-#else
-  new_name = TYPE_NAME (class_type);
-  if ((new_class_decl = IDENTIFIER_CLASS_VALUE (new_name)) != NULL_TREE)
-    {
-      if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)) &&
-          !CLASS_FROM_SOURCE_P (TREE_TYPE (new_class_decl)))
-        load_class (new_name, 0);
-      return IDENTIFIER_CLASS_VALUE (new_name);
-    }
-  else
-    {
-      tree class = read_class (new_name);
-      if (class != NULL_TREE)
+      tree package;
+      for (package = package_list; package; package = TREE_CHAIN (package))
 	{
-	  tree decl = IDENTIFIER_CLASS_VALUE (new_name);
-	  if (decl == NULL_TREE)
-	    decl = push_class (class, new_name);
-	  return decl;
+	  tree new_qualified;
+	  
+	  new_qualified = merge_qualified_name (TREE_PURPOSE (package),
+						original_name);
+	  TYPE_NAME (class_type) = new_qualified;
+	  new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
+	  if (!new_class_decl)
+	    load_class (TYPE_NAME (class_type), 0);
+	  new_class_decl = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
+	  if (new_class_decl)
+	    {
+	      if (!CLASS_LOADED_P (TREE_TYPE (new_class_decl)) &&
+		  !CLASS_FROM_SOURCE_P (TREE_TYPE (new_class_decl)))
+		load_class (TYPE_NAME (class_type), 0);
+	      return IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
+	    }
 	}
     }
-#endif
   TYPE_NAME (class_type) = original_name;
 
   /* 3- Check an other compilation unit that bears the name of type */
@@ -6079,7 +6116,6 @@ java_pre_expand_clinit (decl)
      tree decl;
 {
   tree fbody = DECL_FUNCTION_BODY (decl);
-  tree list;
   int to_return = 1;
 
   if (fbody != NULL_TREE)

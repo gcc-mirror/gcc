@@ -92,8 +92,6 @@ typedef struct JCF {
   unsigned char *read_end;
   int seen_in_zip;
   int java_source;
-  int  outofsynch;		/* Found a class file out of synch
-				   with the matching source file. */
   long zip_offset;    
   jcf_filbuf_t filbuf;
   void *read_state;
@@ -226,7 +224,6 @@ typedef struct JCF {
 extern const char *find_class PROTO ((const char *, int, JCF*, int));
 extern const char *find_classfile PROTO ((char *, JCF*, const char *));
 extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
-extern void jcf_out_of_synch PROTO((JCF *));
 extern int jcf_unexpected_eof PROTO ((JCF*, int)) ATTRIBUTE_NORETURN;
 
 /* Extract a character from a Java-style Utf8 string.

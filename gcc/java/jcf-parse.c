@@ -440,22 +440,6 @@ get_class_constant (JCF *jcf , int i)
   return type;
 }
 
-void
-DEFUN(jcf_out_of_synch, (jcf),
-      JCF *jcf)
-{
-  char *source = xstrdup (jcf->filename);
-  int i = strlen (source);
-
-  while (source[i] != '.')
-    i--;
-
-  source [i] = '\0';
-  warning ("Class file `%s' out of synch with `%s.java'", 
-	   jcf->filename, source);
-  free (source);
-}
-
 /* Read a class with the fully qualified-name NAME.
    Return 1 iff we read the requested file.
    (It is still possible we failed if the file did not
@@ -488,8 +472,6 @@ read_class (name)
 	{
 	  this_jcf.seen_in_zip = 0;
 	  current_jcf = &this_jcf;
-	  if (this_jcf.outofsynch)
-	    jcf_out_of_synch (current_jcf);
 	}
     }
   else

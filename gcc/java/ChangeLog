@@ -54,6 +54,39 @@
 	fixes PR gcj/119.
 	(process_file): Use `\n\' at end of each line in string.
 
+Fri Dec 24 00:25:29 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.in (LIBDEPS): Added gcc's errors.o
+	(../jcf-dump$(exeext):): Link with gcc's errors.o
+	(../gcjh$(exeext):): Likewise.
+	* expr.c (expand_java_NEW): Layout the entire target type instead of
+ 	laying out its methods only.
+	(lookup_field): Layout the class after having loaded it.
+	* java-tree.h (java_debug_context): Declared.
+	* jcf-io.c (toplev.h): Included.
+	(find_class): Removed assignment to jcf's outofsynch
+ 	field. Force source file to be read if newer than its matching
+ 	class file. Tweaked debug messages.
+	* jcf-parse.c (jcf_out_of_synch): Deleted.
+	(read_class): Call to jcf_out_of_synch removed.
+	* jcf.h (typedef struct JCF): Field `outofsynch' deleted.
+	(jcf_out_of_synch): Prototype deleted.
+	* parse.h (struct parser_ctxt): `minus_seen', `java_error_flag',
+ 	`deprecated' and `class_err': integer turned into bit fields.
+	New bit fields `saved_data_ctx' and `saved_data'. Fixed comments.
+	* parse.y (package_list): New global.
+	(package_declaration:): Record newly parsed package name.
+	(extra_ctxp_pushed_p): Static global deleted.
+	(java_parser_context_save_global): Create buffer context for the
+ 	purpose of saving globals, if necessary.
+	(java_parser_context_restore_global): Pop context pushed for the
+ 	purpose of saving globals, if necessary.
+	(java_debug_context_do): New prototype and function.
+	(java_debug_context): Likewise.
+	(do_resolve_class): Use already parsed package names to qualify
+ 	and lookup class candidate. 
+	(java_pre_expand_clinit): Removed unnecessary local variable.	
+
 Thu Dec 16 00:09:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* expr.c (expand_invoke): Layout the loaded class before

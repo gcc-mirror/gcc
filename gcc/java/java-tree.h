@@ -637,6 +637,7 @@ extern char* open_class PROTO ((char *, struct JCF *, FILE *, const char *));
 extern char* open_class PROTO ((char *, struct JCF *, int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
+void java_debug_context PROTO ((void));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */

@@ -1010,7 +1010,7 @@ expand_java_NEW (type)
 {
   if (! CLASS_LOADED_P (type))
     load_class (type, 1);
-  layout_class_methods (type);
+  safe_layout_class (type);
   push_value (build (CALL_EXPR, promote_type (type),
 		     build_address_of (alloc_object_node),
 		     tree_cons (NULL_TREE, build_class_ref (type),
@@ -1230,6 +1230,7 @@ lookup_field (typep, name)
   if (CLASS_P (*typep) && !CLASS_LOADED_P (*typep))
     {
       load_class (*typep, 1);
+      safe_layout_class (*typep);
       if (!TYPE_SIZE (*typep) || TREE_CODE (TYPE_SIZE (*typep)) == ERROR_MARK)
 	return error_mark_node;
     }
