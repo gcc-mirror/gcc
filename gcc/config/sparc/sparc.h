@@ -2982,7 +2982,17 @@ do {									\
   int big_delta = (DELTA) >= 4096 || (DELTA) < -4096;			\
   if (big_delta)							\
     fprintf (FILE, "\tset %d,%%g1\n\tadd %%o0,%%g1,%%o0\n", (DELTA));	\
-  if (TARGET_MEDANY || TARGET_FULLANY)					\
+  if (flag_pic)								\
+    {									\
+      if (! big_delta)							\
+	fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
+      fprintf (FILE, "\tsave %%sp,-112,%%sp\n");			\
+      fprintf (FILE, "\tcall ");					\
+      assemble_name							\
+	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
+      fprintf (FILE, ",0\n");						\
+    }									\
+  else if (TARGET_MEDANY || TARGET_FULLANY)				\
     {									\
       fprintf (FILE, "\tsetx ");					\
       assemble_name							\
@@ -2999,8 +3009,12 @@ do {									\
 	(FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION)));	\
       fprintf (FILE, ")\n");						\
     }									\
-  if (big_delta) fprintf (FILE, "\tnop\n");				\
-  else fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
+  if (big_delta)							\
+    fprintf (FILE, "\tnop\n");						\
+  else if (flag_pic)							\
+    fprintf (FILE, "\trestore\n");					\
+  else									\
+    fprintf (FILE, "\tadd %%o0,%d,%%o0\n", DELTA);			\
 } while (0)
 
 /* Define the parentheses used to group arithmetic operations
