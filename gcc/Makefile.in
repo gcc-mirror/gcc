@@ -1838,7 +1838,7 @@ intl.o: intl.c intl.h gansidecl.h Makefile
 $(top_builddir)/intl/libintl.a: intl.all
 
 # Make sure all the headers are there for xgettext to scan.
-$(INTL_TARGETS): $(srcdir)/c-parse.c
+$(INTL_TARGETS): $(CONFIG_H) $(srcdir)/c-parse.c
 
 intl.all intl.install intl.uninstall \
   intl.mostlyclean intl.clean intl.distclean intl.maintainer-clean:
