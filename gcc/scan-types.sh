@@ -15,8 +15,8 @@ SED=sed
 
 cat >dummy.c <<!EOF!
 #include <sys/types.h>
-#include "gstddef.h"
-#include "gstdarg.h"
+#include <stddef.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
 #include <signal.h>
