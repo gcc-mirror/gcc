@@ -519,6 +519,23 @@ alpha*-*-vxworks*)
 	use_collect2=yes
 	thread_file='vxworks'
 	;;
+alpha64-dec-*vms*)
+	xm_defines=POSIX
+	tm_file="alpha/vms.h alpha/vms64.h"
+	xm_file="alpha/xm-vms.h alpha/xm-vms64.h"
+	tmake_file="alpha/t-alpha alpha/t-vms alpha/t-vms64 alpha/t-ieee"
+	xmake_file=alpha/x-vms
+	exeext=.exe
+	# This removes the cpu type and manufacturer components and
+	#  replaces "." with "_" in the operating system version.
+	case $host in *-*-*vms*)
+		target_alias=`echo $host \
+		  | sed 's/.*-.*-\(.*\)$/\1/' | sed 's/\./_/g'`
+		;;
+	esac
+	prefix=/gnu
+	local_prefix=/gnu
+	;;
 alpha*-dec-*vms*)
 	xm_defines=POSIX
 	tm_file=alpha/vms.h

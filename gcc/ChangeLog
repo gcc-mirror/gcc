@@ -1,5 +1,10 @@
 Fri Dec 14 07:29:52 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* config.gcc (alpha64-dec-*vms*): New case.
+	* config/alpha/t-vms64, config/alpha/vms-crt0-64.c: New files.
+	* config/alpha/vms-psxcrt0-64.c, config/alpha/vms64.h: Likewise.
+	* config/alpha/xm-vms64.h: Likewise.
+
 	* config/alpha/alpha.c (vms_attribute_table): Add new attributes.
 	(alpha_write_linkage): Test for null alpha_links.
 	(SECTION_VMS_GLOBAL, SECTION_VMS_INITIALIZE): New section attributes.
