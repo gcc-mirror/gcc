@@ -2,12 +2,13 @@
 
 	* java/net/natPlainDatagramSocketImpl.cc: Change various `JvThrow'
 	calls to `throw'.
-	(send): Undo last patch. 
-	Remove the label only.
+	(send): Undo last patch. Remove the label only.
 	(mcastGrp): Ditto.
 	* java/net/natPlainSocketImpl.cc: Change various `JvThrow' calls to 
 	`throw'.
 	* java/net/natInetAdress.cc: Ditto.
+	
+	* java/net/natPlainDatagramSocketImpl.cc (mcastGrp): Fix typo.
 
 2000-09-05  Tom Tromey  <tromey@cygnus.com>
 
