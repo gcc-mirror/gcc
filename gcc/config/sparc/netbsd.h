@@ -3,6 +3,9 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Dsparc -D__NetBSD__ -Asystem=unix -Asystem=NetBSD -Acpu=sparc -Amachine=sparc"
 
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #undef SIZE_TYPE

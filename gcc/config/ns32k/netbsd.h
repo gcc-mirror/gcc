@@ -73,6 +73,9 @@ Boston, MA 02111-1307, USA.
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dns32k -Dns32000 -Dns32532 -D__NetBSD__ -Dpc532 -D__ns32k__ -D__KPRINTF_ATTRIBUTE__ -Asystem=unix -Asystem=NetBSD -Acpu=ns32k -Amachine=ns32k"
 
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #undef SIZE_TYPE

@@ -35,13 +35,6 @@
 #endif /* NETBSD_NATIVE */
 
 
-/* Provide a CPP_SPEC appropriate for NetBSD.  Currently we just deal with
-   the GCC option `-posix'.  */
-
-#undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
-
-
 /* Provide a LIB_SPEC appropriate for NetBSD.  Just select the appropriate
    libc, depending on whether we're doing profiling; if `-posix' is specified,
    link against the appropriate libposix first.  Don't include libc when

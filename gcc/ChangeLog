@@ -1,3 +1,13 @@
+2002-05-09  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/netbsd.h (CPP_SPEC): Remove.
+	* config/i386/netbsd-elf.h (CPP_SPEC): Define.
+	* config/i386/netbsd.h (CPP_SPEC): Define.
+	* config/ns32k/netbsd.h (CPP_SPEC): Define.
+	* config/sparc/netbsd-elf.h (CPP_SPEC): Remove.
+	* config/sparc/netbsd.h (CPP_SPEC): Define.
+	* config/vax/netbsd.h (CPP_SPEC): Define.
+
 2002-05-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* read-rtl.c: Fix formatting.

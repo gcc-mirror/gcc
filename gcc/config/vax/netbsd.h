@@ -1,6 +1,9 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Dvax -D__NetBSD__ -Asystem=unix -Asystem=NetBSD -Acpu=vax -Amachine=vax"
 
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE}"
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #undef SIZE_TYPE
