@@ -3623,7 +3623,7 @@ const struct real_format mips_quad_format =
 
 /* Descriptions of VAX floating point formats can be found beginning at
 
-   http://www.openvms.compaq.com:8000/73final/4515/4515pro_013.html#f_floating_point_format
+   http://h71000.www7.hp.com/doc/73FINAL/4515/4515pro_013.html#f_floating_point_format
 
    The thing to remember is that they're almost IEEE, except for word
    order, exponent bias, and the lack of infinities, nans, and denormals.
@@ -3768,7 +3768,7 @@ decode_vax_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
   image0 &= 0xffffffff;
   image1 &= 0xffffffff;
 
-  exp = (image0 >> 7) & 0x7f;
+  exp = (image0 >> 7) & 0xff;
 
   memset (r, 0, sizeof (*r));
 
