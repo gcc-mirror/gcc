@@ -21,6 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
+#define MOTOROLA_BSR		/* Use Span-dependent optimized bsr */
 #define SGS			/* Uses SGS assembler */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 #define SGS_SWAP_W		/* Use swap.w rather than just plain swap */
