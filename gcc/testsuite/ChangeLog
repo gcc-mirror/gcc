@@ -1,3 +1,8 @@
+2004-07-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/16175
+	* g++.dg/template/ttp10.C: New test.
+
 2004-07-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/pr12625-1.c: New test.
