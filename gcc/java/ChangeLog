@@ -1,3 +1,9 @@
+2002-12-20  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-write.c (generate_bytecode_insns) [SWITCH_EXPR]: Handle case
+	where minimum case value is Integer.MIN_VALUE.
+	Fixes PR java/8955.
+
 2002-12-18  Andrew Haley  <aph@redhat.com>
 
 	* parse.y (patch_invoke): Force evaluation order when `check' is
