@@ -1,3 +1,8 @@
+2004-06-12  Bud Davis  <bdavis9659@comcast.net>
+
+	PR gfortran/12839
+	* gfortran.fortran-torture/execute/nan_inf_fmt.f90: New test.
+
 2004-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15862
