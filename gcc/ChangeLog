@@ -1,5 +1,9 @@
 2003-08-01  Geoffrey Keating  <geoffk@apple.com>
 
+	PR 11709 (partial fix)
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue): Don't
+	insert a label at the end of an function under Mach-O.
+
 	PR 11313
 	* c-pragma.c (maybe_apply_pragma_weak): Don't get DECL_ASSEMBLER_NAME
 	when it's not needed.

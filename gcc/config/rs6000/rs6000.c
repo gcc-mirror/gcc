@@ -11110,6 +11110,23 @@ rs6000_output_function_epilogue (file, size)
 	}
     }
 
+#if TARGET_OBJECT_FORMAT == OBJECT_MACHO
+  /* Mach-O doesn't support labels at the end of objects, so if
+     it looks like we might want one, insert a NOP.  */
+  {
+    rtx insn = get_last_insn ();
+    while (insn
+	   && NOTE_P (insn)
+	   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL)
+      insn = PREV_INSN (insn);
+    if (insn 
+	&& (LABEL_P (insn) 
+	    || (NOTE_P (insn)
+		&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL)))
+      fputs ("\tnop\n", file);
+  }
+#endif
+
   /* Output a traceback table here.  See /usr/include/sys/debug.h for info
      on its format.
 
