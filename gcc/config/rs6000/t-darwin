@@ -1,6 +1,5 @@
 LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-tramp.asm \
-	$(srcdir)/config/rs6000/darwin-ldouble.c \
-	$(srcdir)/config/rs6000/darwin-fallback.c
+	$(srcdir)/config/rs6000/darwin-ldouble.c
 
 LIB2FUNCS_STATIC_EXTRA = \
 	$(srcdir)/config/rs6000/darwin-fpsave.asm  \
@@ -14,3 +13,5 @@ TARGET_LIBGCC2_CFLAGS = -Wa,-force_cpusubtype_ALL
 
 # Export the _xlq* symbols from darwin-ldouble.c.
 SHLIB_MAPFILES += $(srcdir)/config/rs6000/libgcc-ppc64.ver
+
+LIB2ADDEH += $(srcdir)/config/rs6000/darwin-fallback.c

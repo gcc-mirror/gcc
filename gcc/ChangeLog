@@ -1,3 +1,9 @@
+2004-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/18217
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Move darwin-fallback.c to
+	(LIB2ADDEH): Here.
+
 2004-11-22  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-opt/18544
