@@ -1,5 +1,44 @@
 2004-06-10  Alan Modra  <amodra@bigpond.net.au>
 
+	PR target/15191
+	2004-05-15  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (rs6000_va_arg <ABI_V4>): Don't use
+	UNITS_PER_WORD to calculate gpr size.  Re-instate code to set reg
+	count to 8 to handle n_reg > 2.
+	2004-05-10  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (function_arg_boundary): Always align
+	AltiVec vectors.
+	(function_arg_advance): Pass TARGET_32BIT -mabi=no-altivec AltiVec
+	vectors by refererence.  Align the same for TARGET_64BIT to a 16
+	byte boundary.  Remove useless code.  Add function comment.
+	(function_arg): Similarly.  Move gpr rs6000_mixed_function_arg
+	call to where it belongs.
+	(function_arg_partial_nregs): Return true for all TARGET_32BIT
+	-mabi=no-altivec AltiVec vectors.  Fix debug output.
+	(rs6000_va_arg): Adjust for AltiVec change.
+	2004-05-10  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (function_arg_boundary): Align for ABI_V4
+	when size is 8 bytes.
+	(function_arg_advance): Account for stack space used by AltiVec
+	args when -mabi=altivec.  Simplify alignment calculations.  For 
+	ABI_V4, pass AltiVec vectors by reference when -mabi=no-altivec.
+	(function_arg): Similarly.
+	(function_arg_pass_by_reference): True for ABI_V4 AltiVec when
+	not AltiVec ABI.
+	(rs6000_va_arg): Correct fp arg test.  Adjust for AltiVec change.
+	Correct alignment, and align before testing reg count.  Remove
+	TREE_THIS_VOLATILE from reg.  Don't emit unused labels.
+	(rs6000_complex_function_value): Check TARGET_HARD_FLOAT and
+	TARGET_FPRS here..
+	(rs6000_function_value): .. not here before call.
+	2004-05-07  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.h (STACK_BOUNDARY): Use 128 bit for either
+	TARGET_ALTIVEC or TARGET_ALTIVEC_ABI.
+	* config/rs6000/sysv4.h (ABI_STACK_BOUNDARY): Likewise.
+	(STACK_BOUNDARY): Delete.
+
+2004-06-10  Alan Modra  <amodra@bigpond.net.au>
+
 	PR target/14960
 	2004-04-24  Alan Modra  <amodra@bigpond.net.au>
 	* config/rs6000/rs6000.c (rs6000_stack_info): Rename total_raw_size
