@@ -216,8 +216,9 @@ SUFFIXES = .class .java .h
 ## is a bug in automake), and it also won't put the .o files into
 ## subdirs.  FIXME.
 $(nat_files) $(x_nat_files): %.lo: %.cc
-	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -MD -MT $@ -MF $*.d -c -o $@ $<
+	@echo '$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<'; \
+	$(LTCXXCOMPILE) -MD -MT $@ -MF $(@:.lo=.pp) -c -o $@ $<
+	@-mv $(@:.lo=.pp) $(@:.lo=.d)
 
 ## FIXME: GNU make.
 $(c_files): %.lo: %.c
