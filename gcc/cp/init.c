@@ -904,11 +904,8 @@ void
 expand_member_init (exp, name, init)
      tree exp, name, init;
 {
-  extern tree ptr_type_node;	/* should be in tree.h */
-
   tree basetype = NULL_TREE, field;
-  tree parm;
-  tree rval = NULL_TREE, type;
+  tree type;
 
   if (exp == NULL_TREE)
     return;			/* complain about this later */

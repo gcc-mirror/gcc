@@ -286,8 +286,10 @@ GNU_xref_end_scope (id,inid,prm,keep)
   else if (keep == 2 || inid != 0) stype = "INTERN";
   else stype = "EXTERN";
 
-  fprintf (xref_file,"SCP %s %d %d %d %d %s\n",
-	   filename (xf), xs->start, lineno,xs->lid, inid, stype);
+  fprintf (xref_file, "SCP %s %d %d %d ",
+	   filename (xf), xs->start, lineno,xs->lid);
+  fprintf (xref_file, HOST_WIDE_INT_PRINT_DEC, inid);
+  fprintf (xref_file, " %s\n", stype);
 
   if (lxs == NULL) cur_scope = xs->outer;
   else lxs->outer = xs->outer;
@@ -601,7 +603,7 @@ GNU_xref_member(cls, fld)
     pure = 1;
 
   d = IDENTIFIER_POINTER(cls);
-  sprintf(buf, "%d%s", strlen(d), d);
+  sprintf(buf, "%d%s", (int) strlen(d), d);
 #ifdef XREF_SHORT_MEMBER_NAMES
   i = strlen(buf);
 #endif

@@ -2236,6 +2236,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 extern char **opname_tab, **assignop_tab;
 
 /* in call.c */
+extern int check_dtor_name			PROTO((tree, tree));
 extern int get_arglist_len_in_bytes		PROTO((tree));
 
 extern tree build_vfield_ref			PROTO((tree, tree));
