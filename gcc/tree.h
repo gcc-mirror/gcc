@@ -1930,6 +1930,10 @@ extern tree nreverse			PARAMS ((tree));
 
 extern int list_length			PARAMS ((tree));
 
+/* Returns the number of FIELD_DECLs in a type.  */
+
+extern int fields_length		PARAMS ((tree));
+
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0 */
 
 extern int integer_zerop		PARAMS ((tree));

@@ -2004,6 +2004,22 @@ list_length (t)
   return len;
 }
 
+/* Returns the number of FIELD_DECLs in TYPE.  */
+
+int
+fields_length (type)
+     tree type;
+{
+  tree t = TYPE_FIELDS (type);
+  int count = 0;
+
+  for (; t; t = TREE_CHAIN (t))
+    if (TREE_CODE (t) == FIELD_DECL)
+      ++count;
+
+  return count;
+}
+
 /* Concatenate two chains of nodes (chained through TREE_CHAIN)
    by modifying the last node in chain 1 to point to chain 2.
    This is the Lisp primitive `nconc'.  */
