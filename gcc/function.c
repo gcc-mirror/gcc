@@ -2663,7 +2663,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	    {
 	      rtx tem, x;
 	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
-	      rtx reg = gen_lowpart (word_mode, entry_parm);
+	      rtx reg = gen_rtx_REG (word_mode, REGNO (entry_parm));
 
 	      x = expand_shift (LSHIFT_EXPR, word_mode, reg,
 				build_int_cst (NULL_TREE, by),
