@@ -82,8 +82,7 @@ extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int small_data_operand PARAMS ((rtx, enum machine_mode));
 extern int s8bit_cint_operand PARAMS ((rtx, enum machine_mode));
-extern int constant_pool_expr_p PARAMS ((rtx));
-extern int toc_relative_expr_p PARAMS ((rtx));
+extern bool legitimate_constant_pool_address_p PARAMS ((rtx));
 extern int expand_block_move PARAMS ((rtx[]));
 extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern const char * rs6000_output_load_multiple PARAMS ((rtx[]));
@@ -131,6 +130,7 @@ extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_reload_address PARAMS ((rtx, enum machine_mode,
 			    int, int, int, int *));
 extern int rs6000_legitimate_address PARAMS ((enum machine_mode, rtx, int));
+extern bool rs6000_mode_dependent_address PARAMS ((rtx));
 extern rtx rs6000_return_addr PARAMS ((int, rtx));
 extern void rs6000_output_symbol_ref PARAMS ((FILE*, rtx));
 

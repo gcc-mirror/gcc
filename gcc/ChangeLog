@@ -1,3 +1,26 @@
+2003-05-03  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (constant_pool_expr_p): Make static and
+	return bool.
+	(toc_relative_expr_p): Likewise.
+	(SPE_CONST_OFFSET_OK): Move from rs6000.h.
+	(legitimate_constant_pool_address_p): Move from rs6000.h, change
+	into a function, downcase all users.
+	(legitimate_small_data_p): Likewise.
+	(legitimate_offset_address_p): Likewise.
+	(legitimate_indexed_address_p): Likewise.
+	(legitimate_indirect_address_p): Likewise.
+	(legitimate_lo_sum_address_p): Likewise.
+	(rs6000_mode_dependent_address): Likewise.
+	* rs6000.h (CONSTANT_POOL_EXPR_P, TOC_RELATIVE_EXPR_P): Remove.
+	(SPE_CONST_OFFSET_OK, LEGITIMATE_CONSTANT_POOL_ADDRESS_P,
+	LEGITIMATE_SMALL_DATA_P, LEGITIMATE_OFFSET_ADDRESS_P,
+	LEGITIMATE_INDEXED_ADDRESS_P, LEGITIMATE_INDIRECT_ADDRESS_P,
+	LEGITIMATE_LO_SUM_ADDRESS_P): Move into rs6000.c.
+	(LEGITIMATE_ADDRESS_INTEGER_P): Remove.
+	(GO_IF_MODE_DEPENDENT_ADDRESS): Use rs6000_mode_dependent_address.
+	* config/rs6000/rs6000-protos.h: Update.
+
 2003-05-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.h (REVERSIBLE_CC_MODE): Define.
@@ -24,7 +47,7 @@
 
 2003-05-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/spe.h: Remove unecessary casts.  Misc cleanups.
+	* config/rs6000/spe.h: Remove unecessary casts.  Misc cleanups.
 
 2003-05-03  Zack Weinberg  <zack@codesourcery.com>
 

@@ -204,6 +204,13 @@ static unsigned rs6000_hash_constant PARAMS ((rtx));
 static unsigned toc_hash_function PARAMS ((const void *));
 static int toc_hash_eq PARAMS ((const void *, const void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
+static bool constant_pool_expr_p PARAMS ((rtx));
+static bool toc_relative_expr_p PARAMS ((rtx));
+static bool legitimate_small_data_p PARAMS ((enum machine_mode, rtx));
+static bool legitimate_offset_address_p PARAMS ((enum machine_mode, rtx, int));
+static bool legitimate_indexed_address_p PARAMS ((rtx, int));
+static bool legitimate_indirect_address_p PARAMS ((rtx, int));
+static bool legitimate_lo_sum_address_p PARAMS ((enum machine_mode, rtx, int));
 static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
 #ifdef HAVE_GAS_HIDDEN
@@ -2154,11 +2161,11 @@ input_operand (op, mode)
     return 1;
 
   /* A SYMBOL_REF referring to the TOC is valid.  */
-  if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (op))
+  if (legitimate_constant_pool_address_p (op))
     return 1;
 
   /* A constant pool expression (relative to the TOC) is valid */
-  if (TOC_RELATIVE_EXPR_P (op))
+  if (toc_relative_expr_p (op))
     return 1;
 
   /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
@@ -2216,6 +2223,8 @@ small_data_operand (op, mode)
 #endif
 }
 
+/* Subroutines of rs6000_legitimize_address and rs6000_legitimate_address.  */
+
 static int 
 constant_pool_expr_1 (op, have_sym, have_toc) 
     rtx op;
@@ -2255,7 +2264,7 @@ constant_pool_expr_1 (op, have_sym, have_toc)
     }
 }
 
-int
+static bool
 constant_pool_expr_p (op)
     rtx op;
 {
@@ -2264,14 +2273,163 @@ constant_pool_expr_p (op)
   return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_sym;
 }
 
-int
+static bool
 toc_relative_expr_p (op)
     rtx op;
 {
-    int have_sym = 0;
-    int have_toc = 0;
-    return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_toc;
+  int have_sym = 0;
+  int have_toc = 0;
+  return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_toc;
 }
+
+/* SPE offset addressing is limited to 5-bits worth of double words.  */
+#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
+
+bool
+legitimate_constant_pool_address_p (x)
+     rtx x;
+{
+  return (TARGET_TOC
+	  && GET_CODE (x) == PLUS
+	  && GET_CODE (XEXP (x, 0)) == REG
+	  && (TARGET_MINIMAL_TOC || REGNO (XEXP (x, 0)) == TOC_REGISTER)
+	  && constant_pool_expr_p (XEXP (x, 1)));
+}
+
+static bool
+legitimate_small_data_p (mode, x)
+     enum machine_mode mode;
+     rtx x;
+{
+  return (DEFAULT_ABI == ABI_V4
+	  && !flag_pic && !TARGET_TOC
+	  && (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == CONST)
+	  && small_data_operand (x, mode));
+}
+
+static bool
+legitimate_offset_address_p (mode, x, strict)
+     enum machine_mode mode;
+     rtx x;
+     int strict;
+{
+  unsigned HOST_WIDE_INT offset, extra;
+
+  if (GET_CODE (x) != PLUS)
+    return false;
+  if (GET_CODE (XEXP (x, 0)) != REG)
+    return false;
+  if (!INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict))
+    return false;
+  if (GET_CODE (XEXP (x, 1)) != CONST_INT)
+    return false;
+
+  offset = INTVAL (XEXP (x, 1));
+  extra = 0;
+  switch (mode)
+    {
+    case V16QImode:
+    case V8HImode:
+    case V4SFmode:
+    case V4SImode:
+      /* AltiVec vector modes.  Only reg+reg addressing is valid here,
+	 which leaves the only valid constant offset of zero, which by
+	 canonicalization rules is also invalid.  */
+      return false;
+
+    case V4HImode:
+    case V2SImode:
+    case V1DImode:
+    case V2SFmode:
+      /* SPE vector modes.  */
+      return SPE_CONST_OFFSET_OK (offset);
+
+    case DFmode:
+    case DImode:
+      if (TARGET_32BIT)
+	extra = 4;
+      else if (offset & 3)
+	return false;
+      break;
+
+    case TFmode:
+    case TImode:
+      if (TARGET_32BIT)
+	extra = 12;
+      else if (offset & 3)
+	return false;
+      else
+	extra = 8;
+      break;
+
+    default:
+      break;
+    }
+
+  return (offset + extra >= offset) && (offset + extra + 0x8000 < 0x10000);
+}
+
+static bool
+legitimate_indexed_address_p (x, strict)
+     rtx x;
+     int strict;
+{
+  rtx op0, op1;
+
+  if (GET_CODE (x) != PLUS)
+    return false;
+  op0 = XEXP (x, 0);
+  op1 = XEXP (x, 1);
+
+  if (!REG_P (op0) || !REG_P (op1))
+    return false;
+
+  return ((INT_REG_OK_FOR_BASE_P (op0, strict)
+	   && INT_REG_OK_FOR_INDEX_P (op1, strict))
+	  || (INT_REG_OK_FOR_BASE_P (op1, strict)
+	      && INT_REG_OK_FOR_INDEX_P (op0, strict)));
+}
+
+static inline bool
+legitimate_indirect_address_p (x, strict)
+     rtx x;
+     int strict;
+{
+  return GET_CODE (x) == REG && INT_REG_OK_FOR_BASE_P (x, strict);
+}
+
+static bool
+legitimate_lo_sum_address_p (mode, x, strict)
+     enum machine_mode mode;
+     rtx x;
+     int strict;
+{
+  if (GET_CODE (x) != LO_SUM)
+    return false;
+  if (GET_CODE (XEXP (x, 0)) != REG)
+    return false;
+  if (!INT_REG_OK_FOR_BASE_P (XEXP (x, 0), strict))
+    return false;
+  x = XEXP (x, 1);
+
+  if (TARGET_ELF)
+    {
+      if (DEFAULT_ABI != ABI_AIX && flag_pic)
+	return false;
+      if (TARGET_TOC)
+	return false;
+      if (GET_MODE_NUNITS (mode) != 1)
+	return false;
+      if (GET_MODE_BITSIZE (mode) > 32
+	  && !(TARGET_HARD_FLOAT && TARGET_FPRS && mode == DFmode))
+	return false;
+
+      return CONSTANT_P (x);
+    }
+
+  return false;
+}
+
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
@@ -2295,6 +2453,7 @@ toc_relative_expr_p (op)
 
    Then check for the sum of a register and something not constant, try to
    load the other things into a register and return the sum.  */
+
 rtx
 rs6000_legitimize_address (x, oldx, mode)
      rtx x;
@@ -2392,7 +2551,7 @@ rs6000_legitimize_address (x, oldx, mode)
       return gen_rtx_LO_SUM (Pmode, reg, (x));
     }
   else if (TARGET_TOC 
-	   && CONSTANT_POOL_EXPR_P (x)
+	   && constant_pool_expr_p (x)
 	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), Pmode))
     {
       return create_TOC_reference (x);
@@ -2535,7 +2694,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
      }
 #endif
   if (TARGET_TOC
-      && CONSTANT_POOL_EXPR_P (x)
+      && constant_pool_expr_p (x)
       && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), mode))
     {
       (x) = create_TOC_reference (x);
@@ -2569,17 +2728,17 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
     rtx x;
     int reg_ok_strict;
 {
-  if (LEGITIMATE_INDIRECT_ADDRESS_P (x, reg_ok_strict))
+  if (legitimate_indirect_address_p (x, reg_ok_strict))
     return 1;
   if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == PRE_DEC)
       && !ALTIVEC_VECTOR_MODE (mode)
       && !SPE_VECTOR_MODE (mode)
       && TARGET_UPDATE
-      && LEGITIMATE_INDIRECT_ADDRESS_P (XEXP (x, 0), reg_ok_strict))
+      && legitimate_indirect_address_p (XEXP (x, 0), reg_ok_strict))
     return 1;
-  if (LEGITIMATE_SMALL_DATA_P (mode, x))
+  if (legitimate_small_data_p (mode, x))
     return 1;
-  if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (x))
+  if (legitimate_constant_pool_address_p (x))
     return 1;
   /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
   if (! reg_ok_strict
@@ -2588,18 +2747,57 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
       && XEXP (x, 0) == virtual_stack_vars_rtx
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     return 1;
-  if (LEGITIMATE_OFFSET_ADDRESS_P (mode, x, reg_ok_strict))
+  if (legitimate_offset_address_p (mode, x, reg_ok_strict))
     return 1;
   if (mode != TImode
       && ((TARGET_HARD_FLOAT && TARGET_FPRS)
 	  || TARGET_POWERPC64
 	  || (mode != DFmode && mode != TFmode))
       && (TARGET_POWERPC64 || mode != DImode)
-      && LEGITIMATE_INDEXED_ADDRESS_P (x, reg_ok_strict))
+      && legitimate_indexed_address_p (x, reg_ok_strict))
     return 1;
-  if (LEGITIMATE_LO_SUM_ADDRESS_P (mode, x, reg_ok_strict))
+  if (legitimate_lo_sum_address_p (mode, x, reg_ok_strict))
     return 1;
   return 0;
+}
+
+/* Go to LABEL if ADDR (a legitimate address expression)
+   has an effect that depends on the machine mode it is used for.
+
+   On the RS/6000 this is true of all integral offsets (since AltiVec
+   modes don't allow them) or is a pre-increment or decrement.
+
+   ??? Except that due to conceptual problems in offsettable_address_p
+   we can't really report the problems of integral offsets.  So leave
+   this assuming that the adjustable offset must be valid for the 
+   sub-words of a TFmode operand, which is what we had before.  */
+
+bool
+rs6000_mode_dependent_address (addr)
+     rtx addr;
+{
+  switch (GET_CODE (addr))
+    {
+    case PLUS:
+      if (GET_CODE (XEXP (addr, 1)) == CONST_INT)
+	{
+	  unsigned HOST_WIDE_INT val = INTVAL (XEXP (addr, 1));
+	  return val + 12 + 0x8000 >= 0x10000;
+	}
+      break;
+
+    case LO_SUM:
+      return true;
+
+    case PRE_INC:
+    case PRE_DEC:
+      return TARGET_UPDATE;
+
+    default:
+      break;
+    }
+
+  return false;
 }
 
 /* Try to output insns to set TARGET equal to the constant C if it can
@@ -2974,7 +3172,7 @@ rs6000_emit_move (dest, source, mode)
 	 reference to it.  */
       if (TARGET_TOC
 	  && GET_CODE (operands[1]) == SYMBOL_REF
-	  && CONSTANT_POOL_EXPR_P (operands[1])
+	  && constant_pool_expr_p (operands[1])
 	  && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (operands[1]),
 					      get_pool_mode (operands[1])))
 	{
@@ -2989,8 +3187,8 @@ rs6000_emit_move (dest, source, mode)
 		   || (GET_CODE (operands[0]) == REG
 		       && FP_REGNO_P (REGNO (operands[0]))))
 	       && GET_CODE (operands[1]) != HIGH
-	       && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
-	       && ! TOC_RELATIVE_EXPR_P (operands[1]))
+	       && ! legitimate_constant_pool_address_p (operands[1])
+	       && ! toc_relative_expr_p (operands[1]))
 	{
 	  /* Emit a USE operation so that the constant isn't deleted if
 	     expensive optimizations are turned on because nobody
@@ -3041,7 +3239,7 @@ rs6000_emit_move (dest, source, mode)
 	  operands[1] = force_const_mem (mode, operands[1]);
 
 	  if (TARGET_TOC 
-	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
+	      && constant_pool_expr_p (XEXP (operands[1], 0))
 	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (
 			get_pool_constant (XEXP (operands[1], 0)),
 			get_pool_mode (XEXP (operands[1], 0))))
@@ -6832,14 +7030,14 @@ lmw_operation (op, mode)
       || count != 32 - (int) dest_regno)
     return 0;
 
-  if (LEGITIMATE_INDIRECT_ADDRESS_P (src_addr, 0))
+  if (legitimate_indirect_address_p (src_addr, 0))
     {
       offset = 0;
       base_regno = REGNO (src_addr);
       if (base_regno == 0)
 	return 0;
     }
-  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, src_addr, 0))
+  else if (legitimate_offset_address_p (SImode, src_addr, 0))
     {
       offset = INTVAL (XEXP (src_addr, 1));
       base_regno = REGNO (XEXP (src_addr, 0));
@@ -6862,12 +7060,12 @@ lmw_operation (op, mode)
 	  || GET_MODE (SET_SRC (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_SRC (elt), 0);
-      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr, 0))
+      if (legitimate_indirect_address_p (newaddr, 0))
 	{
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr, 0))
+      else if (legitimate_offset_address_p (SImode, newaddr, 0))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
@@ -6910,14 +7108,14 @@ stmw_operation (op, mode)
       || count != 32 - (int) src_regno)
     return 0;
 
-  if (LEGITIMATE_INDIRECT_ADDRESS_P (dest_addr, 0))
+  if (legitimate_indirect_address_p (dest_addr, 0))
     {
       offset = 0;
       base_regno = REGNO (dest_addr);
       if (base_regno == 0)
 	return 0;
     }
-  else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, dest_addr, 0))
+  else if (legitimate_offset_address_p (SImode, dest_addr, 0))
     {
       offset = INTVAL (XEXP (dest_addr, 1));
       base_regno = REGNO (XEXP (dest_addr, 0));
@@ -6940,12 +7138,12 @@ stmw_operation (op, mode)
 	  || GET_MODE (SET_DEST (elt)) != SImode)
 	return 0;
       newaddr = XEXP (SET_DEST (elt), 0);
-      if (LEGITIMATE_INDIRECT_ADDRESS_P (newaddr, 0))
+      if (legitimate_indirect_address_p (newaddr, 0))
 	{
 	  newoffset = 0;
 	  addr_reg = newaddr;
 	}
-      else if (LEGITIMATE_OFFSET_ADDRESS_P (SImode, newaddr, 0))
+      else if (legitimate_offset_address_p (SImode, newaddr, 0))
 	{
 	  addr_reg = XEXP (newaddr, 0);
 	  newoffset = INTVAL (XEXP (newaddr, 1));
@@ -8099,7 +8297,7 @@ print_operand (file, x, code)
 
     case 'X':
       if (GET_CODE (x) == MEM
-	  && LEGITIMATE_INDEXED_ADDRESS_P (XEXP (x, 0), 0))
+	  && legitimate_indexed_address_p (XEXP (x, 0), 0))
 	putc ('x', file);
       return;
 
@@ -8294,7 +8492,7 @@ print_operand_address (file, x)
       fprintf (file, ")(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
 #endif
-  else if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (x))
+  else if (legitimate_constant_pool_address_p (x))
     {
       if (TARGET_AIX && (!TARGET_ELF || !TARGET_MINIMAL_TOC))
 	{

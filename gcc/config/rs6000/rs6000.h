@@ -1308,7 +1308,7 @@ enum reg_class
 
 #define EXTRA_CONSTRAINT(OP, C)						\
   ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
-   : (C) == 'R' ? LEGITIMATE_CONSTANT_POOL_ADDRESS_P (OP)		\
+   : (C) == 'R' ? legitimate_constant_pool_address_p (OP)		\
    : (C) == 'S' ? mask64_operand (OP, DImode)				\
    : (C) == 'T' ? mask_operand (OP, SImode)				\
    : (C) == 'U' ? (DEFAULT_ABI == ABI_V4				\
@@ -2068,74 +2068,6 @@ typedef struct rs6000_args
    adjacent memory cells are accessed by adding word-sized offsets
    during assembly output.  */
 
-#define CONSTANT_POOL_EXPR_P(X) (constant_pool_expr_p (X))
-
-#define TOC_RELATIVE_EXPR_P(X) (toc_relative_expr_p (X))
-
-/* SPE offset addressing is limited to 5-bits worth of double words.  */
-#define SPE_CONST_OFFSET_OK(x) (((x) & ~0xf8) == 0)
-
-#define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
-  (TARGET_TOC								\
-  && GET_CODE (X) == PLUS						\
-  && GET_CODE (XEXP (X, 0)) == REG					\
-  && (TARGET_MINIMAL_TOC || REGNO (XEXP (X, 0)) == TOC_REGISTER)	\
-  && CONSTANT_POOL_EXPR_P (XEXP (X, 1)))
-
-#define LEGITIMATE_SMALL_DATA_P(MODE, X)				\
-  (DEFAULT_ABI == ABI_V4						\
-   && !flag_pic && !TARGET_TOC						\
-   && (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST)		\
-   && small_data_operand (X, MODE))
-
-#define LEGITIMATE_ADDRESS_INTEGER_P(X, OFFSET)				\
- (GET_CODE (X) == CONST_INT						\
-  && (unsigned HOST_WIDE_INT) (INTVAL (X) + (OFFSET) + 0x8000) < 0x10000)
-
-#define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X, STRICT)		\
- (GET_CODE (X) == PLUS						\
-  && GET_CODE (XEXP (X, 0)) == REG				\
-  && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
-  && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)		\
-  && (! ALTIVEC_VECTOR_MODE (MODE)                            \
-      || (GET_CODE (XEXP (X,1)) == CONST_INT && INTVAL (XEXP (X,1)) == 0)) \
-  && (! SPE_VECTOR_MODE (MODE)					\
-      || (GET_CODE (XEXP (X, 1)) == CONST_INT			\
-	  && SPE_CONST_OFFSET_OK (INTVAL (XEXP (X, 1)))))	\
-  && (((MODE) != DFmode && (MODE) != DImode)			\
-      || (TARGET_32BIT						\
-	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
-	  : ! (INTVAL (XEXP (X, 1)) & 3)))			\
-  && (((MODE) != TFmode && (MODE) != TImode)			\
-      || (TARGET_32BIT						\
-	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 12) 	\
-	  : (LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8) 	\
-	     && ! (INTVAL (XEXP (X, 1)) & 3)))))
-
-#define LEGITIMATE_INDEXED_ADDRESS_P(X, STRICT)			\
- (GET_CODE (X) == PLUS						\
-  && GET_CODE (XEXP (X, 0)) == REG				\
-  && GET_CODE (XEXP (X, 1)) == REG				\
-  && ((INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))		\
-       && INT_REG_OK_FOR_INDEX_P (XEXP (X, 1), (STRICT)))	\
-      || (INT_REG_OK_FOR_BASE_P (XEXP (X, 1), (STRICT))		\
-	  && INT_REG_OK_FOR_INDEX_P (XEXP (X, 0), (STRICT)))))
-
-#define LEGITIMATE_INDIRECT_ADDRESS_P(X, STRICT)		\
-  (GET_CODE (X) == REG && INT_REG_OK_FOR_BASE_P (X, (STRICT)))
-
-#define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X, STRICT)	\
-  (TARGET_ELF						\
-   && (DEFAULT_ABI == ABI_AIX || ! flag_pic)		\
-   && ! TARGET_TOC					\
-   && GET_MODE_NUNITS (MODE) == 1			\
-   && (GET_MODE_BITSIZE (MODE) <= 32 			\
-       || (TARGET_HARD_FLOAT && TARGET_FPRS && (MODE) == DFmode))	\
-   && GET_CODE (X) == LO_SUM				\
-   && GET_CODE (XEXP (X, 0)) == REG			\
-   && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))	\
-   && CONSTANT_P (XEXP (X, 1)))
-
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
 { if (rs6000_legitimate_address (MODE, X, REG_OK_STRICT_FLAG))	\
     goto ADDR;							\
@@ -2190,27 +2122,13 @@ do {									     \
 } while (0)
 
 /* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-
-   On the RS/6000 this is true if the address is valid with a zero offset
-   but not with an offset of four (this means it cannot be used as an
-   address for DImode or DFmode) or is a pre-increment or decrement.  Since
-   we know it is valid, we just check for an address that is not valid with
-   an offset of four.  */
+   has an effect that depends on the machine mode it is used for.  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)		\
-{ if (GET_CODE (ADDR) == PLUS					\
-      && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1), 0)	\
-      && ! LEGITIMATE_ADDRESS_INTEGER_P (XEXP (ADDR, 1),	\
-					 (TARGET_32BIT ? 4 : 8))) \
+do {								\
+  if (rs6000_mode_dependent_address (ADDR))			\
     goto LABEL;							\
-  if (TARGET_UPDATE && GET_CODE (ADDR) == PRE_INC)		\
-    goto LABEL;							\
-  if (TARGET_UPDATE && GET_CODE (ADDR) == PRE_DEC)		\
-    goto LABEL;							\
-  if (GET_CODE (ADDR) == LO_SUM)				\
-    goto LABEL;							\
-}
+} while (0)
 
 /* The register number of the register used to address a table of
    static data addresses in memory.  In some cases this register is
