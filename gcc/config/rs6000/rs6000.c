@@ -3044,9 +3044,8 @@ rs6000_special_round_type_align (tree type, int computed, int specified)
 {
   tree field = TYPE_FIELDS (type);
 
-  /* Skip all the static variables only if ABI is greater than
-     1 or equal to 0.  */
-  while (field != NULL && TREE_CODE (field) == VAR_DECL)
+  /* Skip all non field decls */ 
+  while (field != NULL && TREE_CODE (field) != FIELD_DECL)
     field = TREE_CHAIN (field);
 
   if (field == NULL || field == type || DECL_MODE (field) != DFmode)
