@@ -1,3 +1,35 @@
+Sat Sep  6 12:05:18 1998  John Carr  <jfc@mit.edu>
+
+	* final.c (final): If a label is reached only from a single jump,
+	call NOTICE_UPDATE_CC on the jump and its predecessor before
+	emitting the insn after the label.
+	
+	* i386.h: Add AMD K6 support.
+	Change TARGET_* macros to use table lookup.
+	(INITIALIZE_TRAMPOLINE): Improve trampoline code.
+	(ADJUST_COST): Change definition to call function in i386.c.
+	(ISSUE_RATE): Define as 2 for anything newer than an 80486.
+	* i386.c: Add AMD K6 support.
+	Add constants for feature tests used by TARGET_* macros.
+	(split_di): If before reload, call gen_lowpart and gen_highpart.
+	(x86_adjust_cost): New function.
+	(put_jump_code): New function.
+	(print_operand): New codes 'D' and 'd'.
+	* i386.md: New insn types.  New insn attribute "memory".
+	Redefine scheduling parameters to use new types and add AMD K6
+	support.  Explicitly set type of most insns.
+	(move insns): K6 prefers movl $0,reg to xorl reg,reg.  Pentium
+	Pro and K6 prefer movl $1,reg to incl reg.
+	(adddi3, subdi3): Set cc_status.
+	(DImode shift patterns): Change label counters from HOST_WIDE_INT
+	to int; x86 can't have more than 2^31 DImode shifts per	file.
+	(setcc): Combine all setcc patterns.  Allow writing memory.
+	Combine all jump patterns using match_operator.
+	(*bzero): Name pattern.  Emit mutliple stos instructions when that
+	is faster than rep stos.
+	(xordi3, anddi3, iordi3): Simplify DImode logical patterns and
+	add define_split.
+
 Sun Sep  6 11:17:20 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* config/m68k/x-next (BOOT_LDFLAGS): Define suitably for f771
