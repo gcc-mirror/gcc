@@ -3333,6 +3333,10 @@ start_decl (declarator, declspecs, initialized)
      TEM may equal DECL or it may be a previous decl of the same name.  */
   tem = pushdecl (decl);
 
+  /* For C and Obective-C, we by default put things in .common when
+     possible.  */
+  DECL_COMMON (tem) = 1;
+
   /* For a local variable, define the RTL now.  */
   if (current_binding_level != global_binding_level
       /* But not if this is a duplicate decl

@@ -646,6 +646,10 @@ char *lang_options[] =
   "-fno-external-templates",
   "-fansi-overloading",
   "-fno-ansi-overloading",
+  "-fhuge-objects",
+  "-fno-huge-objects",
+  "-fconserve-space",
+  "-fno-conserve-space",
 
   "-Wreturn-type",
   "-Wno-return-type",

@@ -979,6 +979,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      -fno-common gives strict ANSI behavior.  Usually you don't want it.
      This matters only for variables with external linkage.  */
   if ((! flag_no_common || ! TREE_PUBLIC (decl))
+      && DECL_COMMON (decl)
       && ! dont_output_data
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     {
