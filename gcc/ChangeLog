@@ -1,3 +1,11 @@
+2000-01-31  Chandra Chavva <cchavva@cygnus.com>
+
+	* combine.c (try_combine) [HAVE_cc0]: Trying to check the missed
+	case 3->2 combining (combining with splitting) in which 2 is CC0
+	setter/user and 3 is user. The rest of cases 2->1 and 3->2 are 
+	checked at the begining of the function with the aid of calling 
+	function 'can_combine_p'. 
+
 2000-01-31  Dave Brolley  <brolley@redhat.com>
 
 	* cccp.c (struct argdata): Redeclare 'newlines' field as 'int'.
