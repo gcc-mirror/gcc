@@ -2803,6 +2803,18 @@ init_fixtab ()
        p++)
     *p = CODE_FOR_nothing;
 
+#ifdef HAVE_fixqfqi2
+  if (HAVE_fixqfqi2)
+    fixtab[(int) QFmode][(int) QImode][0] = CODE_FOR_fixqfqi2;
+#endif
+#ifdef HAVE_fixhfqi2
+  if (HAVE_fixhfqi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixhfqi2;
+#endif
+#ifdef HAVE_fixhfhi2
+  if (HAVE_fixhfhi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixhfhi2;
+#endif
 #ifdef HAVE_fixsfqi2
   if (HAVE_fixsfqi2)
     fixtab[(int) SFmode][(int) QImode][0] = CODE_FOR_fixsfqi2;
@@ -2881,6 +2893,19 @@ init_fixtab ()
 #ifdef HAVE_fixtfti2
   if (HAVE_fixtfti2)
     fixtab[(int) TFmode][(int) TImode][0] = CODE_FOR_fixtfti2;
+#endif
+
+#ifdef HAVE_fixunsqfqi2
+  if (HAVE_fixunsqfqi2)
+    fixtab[(int) QFmode][(int) QImode][0] = CODE_FOR_fixunsqfqi2;
+#endif
+#ifdef HAVE_fixunshfqi2
+  if (HAVE_fixunshfqi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixunshfqi2;
+#endif
+#ifdef HAVE_fixunshfhi2
+  if (HAVE_fixunshfhi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixunshfhi2;
 #endif
 
 #ifdef HAVE_fixunssfqi2
@@ -2963,6 +2988,18 @@ init_fixtab ()
     fixtab[(int) TFmode][(int) TImode][1] = CODE_FOR_fixunstfti2;
 #endif
 
+#ifdef HAVE_fix_truncqfqi2
+  if (HAVE_fix_truncqfqi2)
+    fixtab[(int) QFmode][(int) QImode][0] = CODE_FOR_fix_truncqfqi2;
+#endif
+#ifdef HAVE_fix_trunchfqi2
+  if (HAVE_fix_trunchfqi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fix_trunchfqi2;
+#endif
+#ifdef HAVE_fixhfhi2
+  if (HAVE_fixhfhi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixhfhi2;
+#endif
 #ifdef HAVE_fix_truncsfqi2
   if (HAVE_fix_truncsfqi2)
     fixtrunctab[(int) SFmode][(int) QImode][0] = CODE_FOR_fix_truncsfqi2;
@@ -3043,6 +3080,18 @@ init_fixtab ()
     fixtrunctab[(int) TFmode][(int) TImode][0] = CODE_FOR_fix_trunctfti2;
 #endif
 
+#ifdef HAVE_fixuns_truncqfqi2
+  if (HAVE_fixuns_truncqfqi2)
+    fixtab[(int) QFmode][(int) QImode][0] = CODE_FOR_fixuns_truncqfqi2;
+#endif
+#ifdef HAVE_fixuns_trunchfqi2
+  if (HAVE_fixuns_trunchfqi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixuns_trunchfqi2;
+#endif
+#ifdef HAVE_fixhfhi2
+  if (HAVE_fixhfhi2)
+    fixtab[(int) HFmode][(int) QImode][0] = CODE_FOR_fixhfhi2;
+#endif
 #ifdef HAVE_fixuns_truncsfqi2
   if (HAVE_fixuns_truncsfqi2)
     fixtrunctab[(int) SFmode][(int) QImode][1] = CODE_FOR_fixuns_truncsfqi2;
@@ -3145,6 +3194,48 @@ init_floattab ()
        p++)
     *p = CODE_FOR_nothing;
 
+#ifdef HAVE_floatqiqf2
+  if (HAVE_floatqiqf2)
+    floattab[(int) QFmode][(int) QImode][0] = CODE_FOR_floatqiqf2;
+#endif
+#ifdef HAVE_floathiqf2
+  if (HAVE_floathiqf2)
+    floattab[(int) QFmode][(int) HImode][0] = CODE_FOR_floathiqf2;
+#endif
+#ifdef HAVE_floatsiqf2
+  if (HAVE_floatsiqf2)
+    floattab[(int) QFmode][(int) SImode][0] = CODE_FOR_floatsiqf2;
+#endif
+#ifdef HAVE_floatdiqf2
+  if (HAVE_floatdiqf2)
+    floattab[(int) QFmode][(int) DImode][0] = CODE_FOR_floatdiqf2;
+#endif
+#ifdef HAVE_floattiqf2
+  if (HAVE_floattiqf2)
+    floattab[(int) QFmode][(int) TImode][0] = CODE_FOR_floattiqf2;
+#endif
+
+#ifdef HAVE_floatqihf2
+  if (HAVE_floatqihf2)
+    floattab[(int) HFmode][(int) QImode][0] = CODE_FOR_floatqihf2;
+#endif
+#ifdef HAVE_floathihf2
+  if (HAVE_floathihf2)
+    floattab[(int) HFmode][(int) HImode][0] = CODE_FOR_floathihf2;
+#endif
+#ifdef HAVE_floatsihf2
+  if (HAVE_floatsihf2)
+    floattab[(int) HFmode][(int) SImode][0] = CODE_FOR_floatsihf2;
+#endif
+#ifdef HAVE_floatdihf2
+  if (HAVE_floatdihf2)
+    floattab[(int) HFmode][(int) DImode][0] = CODE_FOR_floatdihf2;
+#endif
+#ifdef HAVE_floattihf2
+  if (HAVE_floattihf2)
+    floattab[(int) HFmode][(int) TImode][0] = CODE_FOR_floattihf2;
+#endif
+
 #ifdef HAVE_floatqisf2
   if (HAVE_floatqisf2)
     floattab[(int) SFmode][(int) QImode][0] = CODE_FOR_floatqisf2;
@@ -3229,7 +3320,49 @@ init_floattab ()
     floattab[(int) TFmode][(int) TImode][0] = CODE_FOR_floattitf2;
 #endif
 
-#ifdef HAVE_floatunsqisf2
+#ifdef HAVE_floatunsqiqf2
+  if (HAVE_floatunsqiqf2)
+    floattab[(int) QFmode][(int) QImode][0] = CODE_FOR_floatunsqiqf2;
+#endif
+#ifdef HAVE_floatunshiqf2
+  if (HAVE_floatunshiqf2)
+    floattab[(int) QFmode][(int) HImode][0] = CODE_FOR_floatunshiqf2;
+#endif
+#ifdef HAVE_floatunssiqf2
+  if (HAVE_floatunsqsiqf2)
+    floattab[(int) QFmode][(int) SImode][0] = CODE_FOR_floatunssiqf2;
+#endif
+#ifdef HAVE_floatunsdiqf2
+  if (HAVE_floatunsdiqf2)
+    floattab[(int) QFmode][(int) DImode][0] = CODE_FOR_floatunsdiqf2;
+#endif
+#ifdef HAVE_floatunstiqf2
+  if (HAVE_floatunstiqf2)
+    floattab[(int) QFmode][(int) TImode][0] = CODE_FOR_floatunstiqf2;
+#endif
+
+#ifdef HAVE_floatunsqihf2
+  if (HAVE_floatunsqihf2)
+    floattab[(int) HFmode][(int) QImode][0] = CODE_FOR_floatunsqihf2;
+#endif
+#ifdef HAVE_floatunshihf2
+  if (HAVE_floatunshihf2)
+    floattab[(int) HFmode][(int) HImode][0] = CODE_FOR_floatunshihf2;
+#endif
+#ifdef HAVE_floatunssihf2
+  if (HAVE_floatunssihf2)
+    floattab[(int) HFmode][(int) SImode][0] = CODE_FOR_floatunssihf2;
+#endif
+#ifdef HAVE_floatunsdihf2
+  if (HAVE_floatunsdihf2)
+    floattab[(int) HFmode][(int) DImode][0] = CODE_FOR_floatunsdihf2;
+#endif
+#ifdef HAVE_floatunstihf2
+  if (HAVE_floatunstihf2)
+    floattab[(int) HFmode][(int) TImode][0] = CODE_FOR_floatunstihf2;
+#endif
+
+#ifdef HAVE_floatqunsqisf2
   if (HAVE_floatunsqisf2)
     floattab[(int) SFmode][(int) QImode][1] = CODE_FOR_floatunsqisf2;
 #endif
@@ -3901,6 +4034,14 @@ init_optabs ()
   if (HAVE_addti3)
     add_optab->handlers[(int) TImode].insn_code = CODE_FOR_addti3;
 #endif
+#ifdef HAVE_addqf3
+  if (HAVE_addqf3)
+    add_optab->handlers[(int) QFmode].insn_code = CODE_FOR_addqf3;
+#endif
+#ifdef HAVE_addhf3
+  if (HAVE_addhf3)
+    add_optab->handlers[(int) HFmode].insn_code = CODE_FOR_addhf3;
+#endif
 #ifdef HAVE_addsf3
   if (HAVE_addsf3)
     add_optab->handlers[(int) SFmode].insn_code = CODE_FOR_addsf3;
@@ -3944,6 +4085,14 @@ init_optabs ()
   if (HAVE_subti3)
     sub_optab->handlers[(int) TImode].insn_code = CODE_FOR_subti3;
 #endif
+#ifdef HAVE_subqf3
+  if (HAVE_subqf3)
+    sub_optab->handlers[(int) QFmode].insn_code = CODE_FOR_subqf3;
+#endif
+#ifdef HAVE_subhf3
+  if (HAVE_subhf3)
+    sub_optab->handlers[(int) HFmode].insn_code = CODE_FOR_subhf3;
+#endif
 #ifdef HAVE_subsf3
   if (HAVE_subsf3)
     sub_optab->handlers[(int) SFmode].insn_code = CODE_FOR_subsf3;
@@ -3986,6 +4135,14 @@ init_optabs ()
 #ifdef HAVE_multi3
   if (HAVE_multi3)
     smul_optab->handlers[(int) TImode].insn_code = CODE_FOR_multi3;
+#endif
+#ifdef HAVE_mulqf3
+  if (HAVE_mulqf3)
+    smul_optab->handlers[(int) QFmode].insn_code = CODE_FOR_mulqf3;
+#endif
+#ifdef HAVE_mulhf3
+  if (HAVE_mulhf3)
+    smul_optab->handlers[(int) HFmode].insn_code = CODE_FOR_mulhf3;
 #endif
 #ifdef HAVE_mulsf3
   if (HAVE_mulsf3)
@@ -4253,6 +4410,14 @@ init_optabs ()
     = gen_rtx (SYMBOL_REF, Pmode, UMODTI3_LIBCALL);
 #endif
 
+#ifdef HAVE_divqf3
+  if (HAVE_divqf3)
+    flodiv_optab->handlers[(int) QFmode].insn_code = CODE_FOR_divqf3;
+#endif
+#ifdef HAVE_divhf3
+  if (HAVE_divhf3)
+    flodiv_optab->handlers[(int) HFmode].insn_code = CODE_FOR_divhf3;
+#endif
 #ifdef HAVE_divsf3
   if (HAVE_divsf3)
     flodiv_optab->handlers[(int) SFmode].insn_code = CODE_FOR_divsf3;
@@ -4271,6 +4436,14 @@ init_optabs ()
 #endif
   init_floating_libfuncs (flodiv_optab, "div", '3');
 
+#ifdef HAVE_ftruncqf2
+  if (HAVE_ftruncqf2)
+    ftrunc_optab->handlers[(int) QFmode].insn_code = CODE_FOR_ftruncqf2;
+#endif
+#ifdef HAVE_ftrunchf2
+  if (HAVE_ftrunchf2)
+    ftrunc_optab->handlers[(int) HFmode].insn_code = CODE_FOR_ftrunchf3;
+#endif
 #ifdef HAVE_ftruncsf2
   if (HAVE_ftruncsf2)
     ftrunc_optab->handlers[(int) SFmode].insn_code = CODE_FOR_ftruncsf2;
@@ -4543,6 +4716,14 @@ init_optabs ()
   if (HAVE_sminti3)
     smin_optab->handlers[(int) TImode].insn_code = CODE_FOR_sminti3;
 #endif
+#ifdef HAVE_minqf3
+  if (HAVE_minqf3)
+    smin_optab->handlers[(int) QFmode].insn_code = CODE_FOR_minqf3;
+#endif
+#ifdef HAVE_minhf3
+  if (HAVE_minhf3)
+    smin_optab->handlers[(int) HFmode].insn_code = CODE_FOR_minhf3;
+#endif
 #ifdef HAVE_minsf3
   if (HAVE_minsf3)
     smin_optab->handlers[(int) SFmode].insn_code = CODE_FOR_minsf3;
@@ -4581,6 +4762,14 @@ init_optabs ()
 #ifdef HAVE_smaxti3
   if (HAVE_smaxti3)
     smax_optab->handlers[(int) TImode].insn_code = CODE_FOR_smaxti3;
+#endif
+#ifdef HAVE_maxqf3
+  if (HAVE_maxqf3)
+    smax_optab->handlers[(int) QFmode].insn_code = CODE_FOR_maxqf3;
+#endif
+#ifdef HAVE_maxhf3
+  if (HAVE_maxhf3)
+    smax_optab->handlers[(int) HFmode].insn_code = CODE_FOR_maxhf3;
 #endif
 #ifdef HAVE_maxsf3
   if (HAVE_maxsf3)
@@ -4669,6 +4858,14 @@ init_optabs ()
   if (HAVE_negti2)
     neg_optab->handlers[(int) TImode].insn_code = CODE_FOR_negti2;
 #endif
+#ifdef HAVE_negqf2
+  if (HAVE_negqf2)
+    neg_optab->handlers[(int) QFmode].insn_code = CODE_FOR_negqf2;
+#endif
+#ifdef HAVE_neghf2
+  if (HAVE_neghf2)
+    neg_optab->handlers[(int) HFmode].insn_code = CODE_FOR_neghf2;
+#endif
 #ifdef HAVE_negsf2
   if (HAVE_negsf2)
     neg_optab->handlers[(int) SFmode].insn_code = CODE_FOR_negsf2;
@@ -4711,6 +4908,14 @@ init_optabs ()
 #ifdef HAVE_absti2
   if (HAVE_absti2)
     abs_optab->handlers[(int) TImode].insn_code = CODE_FOR_absti2;
+#endif
+#ifdef HAVE_absqf2
+  if (HAVE_absqf2)
+    abs_optab->handlers[(int) QFmode].insn_code = CODE_FOR_absqf2;
+#endif
+#ifdef HAVE_abshf2
+  if (HAVE_abshf2)
+    abs_optab->handlers[(int) HFmode].insn_code = CODE_FOR_abshf22;
 #endif
 #ifdef HAVE_abssf2
   if (HAVE_abssf2)
@@ -4758,6 +4963,14 @@ init_optabs ()
   if (HAVE_sqrtti2)
     sqrt_optab->handlers[(int) TImode].insn_code = CODE_FOR_sqrtti2;
 #endif
+#ifdef HAVE_sqrtqf2
+  if (HAVE_sqrtqf2)
+    sqrt_optab->handlers[(int) QFmode].insn_code = CODE_FOR_sqrtqf2;
+#endif
+#ifdef HAVE_sqrthf2
+  if (HAVE_sqrthf2)
+    sqrt_optab->handlers[(int) HFmode].insn_code = CODE_FOR_sqrthf2;
+#endif
 #ifdef HAVE_sqrtsf2
   if (HAVE_sqrtsf2)
     sqrt_optab->handlers[(int) SFmode].insn_code = CODE_FOR_sqrtsf2;
@@ -4773,6 +4986,14 @@ init_optabs ()
   /* No library calls here!  If there is no sqrt instruction expand_builtin
      should force the library call.  */
 
+#ifdef HAVE_sinqf2
+  if (HAVE_sinqf2)
+    sin_optab->handlers[(int) QFmode].insn_code = CODE_FOR_sinqf2;
+#endif
+#ifdef HAVE_sinhf2
+  if (HAVE_sinhf2)
+    sin_optab->handlers[(int) HFmode].insn_code = CODE_FOR_sinhf2;
+#endif
 #ifdef HAVE_sinsf2
   if (HAVE_sinsf2)
     sin_optab->handlers[(int) SFmode].insn_code = CODE_FOR_sinsf2;
@@ -4788,6 +5009,14 @@ init_optabs ()
   /* No library calls here!  If there is no sin instruction expand_builtin
      should force the library call.  */
 
+#ifdef HAVE_cosqf2
+  if (HAVE_cosqf2)
+    cos_optab->handlers[(int) QFmode].insn_code = CODE_FOR_cosqf2;
+#endif
+#ifdef HAVE_coshf2
+  if (HAVE_coshf2)
+    cos_optab->handlers[(int) HFmode].insn_code = CODE_FOR_coshf2;
+#endif
 #ifdef HAVE_cossf2
   if (HAVE_cossf2)
     cos_optab->handlers[(int) SFmode].insn_code = CODE_FOR_cossf2;
@@ -4906,6 +5135,14 @@ init_optabs ()
   if (HAVE_movti)
     mov_optab->handlers[(int) TImode].insn_code = CODE_FOR_movti;
 #endif
+#ifdef HAVE_movqf
+  if (HAVE_movqf)
+    mov_optab->handlers[(int) QFmode].insn_code = CODE_FOR_movqf;
+#endif
+#ifdef HAVE_movhf
+  if (HAVE_movhf)
+    mov_optab->handlers[(int) HFmode].insn_code = CODE_FOR_movhf;
+#endif
 #ifdef HAVE_movsf
   if (HAVE_movsf)
     mov_optab->handlers[(int) SFmode].insn_code = CODE_FOR_movsf;
@@ -4980,6 +5217,14 @@ init_optabs ()
   if (HAVE_cmpti)
     cmp_optab->handlers[(int) TImode].insn_code = CODE_FOR_cmpti;
 #endif
+#ifdef HAVE_cmpqf
+  if (HAVE_cmpqf)
+    cmp_optab->handlers[(int) QFmode].insn_code = CODE_FOR_cmpqf;
+#endif
+#ifdef HAVE_cmphf
+  if (HAVE_cmphf)
+    cmp_optab->handlers[(int) HFmode].insn_code = CODE_FOR_cmphf;
+#endif
 #ifdef HAVE_cmpsf
   if (HAVE_cmpsf)
     cmp_optab->handlers[(int) SFmode].insn_code = CODE_FOR_cmpsf;
@@ -5024,6 +5269,14 @@ init_optabs ()
 #ifdef HAVE_tstti
   if (HAVE_tstti)
     tst_optab->handlers[(int) TImode].insn_code = CODE_FOR_tstti;
+#endif
+#ifdef HAVE_tstqf
+  if (HAVE_tstqf)
+    tst_optab->handlers[(int) QFmode].insn_code = CODE_FOR_tstqf;
+#endif
+#ifdef HAVE_tsthf
+  if (HAVE_tsthf)
+    tst_optab->handlers[(int) HFmode].insn_code = CODE_FOR_tsthf;
 #endif
 #ifdef HAVE_tstsf
   if (HAVE_tstsf)
