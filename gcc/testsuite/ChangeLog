@@ -1,3 +1,7 @@
+2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20000516-1.c: New test.
+
 2000-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/eh.C: New test.
