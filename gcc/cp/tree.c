@@ -437,10 +437,7 @@ break_out_calls (exp)
 
 }
 
-extern struct obstack *current_obstack;
 extern struct obstack permanent_obstack;
-extern struct obstack *saveable_obstack;
-extern struct obstack *expression_obstack;
 
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  MUST BE CONSISTENT WITH tree.c !!! */
@@ -1406,21 +1403,6 @@ ovl_cons (decl, chain)
   return result;
 }
 
-/* Same as ovl_cons, but on the scratch_obstack. */
-
-tree
-scratch_ovl_cons (value, chain)
-     tree value, chain;
-{
-  register tree node;
-  register struct obstack *ambient_obstack = current_obstack;
-  extern struct obstack *expression_obstack;
-  current_obstack = expression_obstack;
-  node = ovl_cons (value, chain);
-  current_obstack = ambient_obstack;
-  return node;
-}
-
 /* Build a new overloaded function. If this is the first one,
    just return it; otherwise, ovl_cons the _DECLs */
 
@@ -2023,8 +2005,8 @@ break_out_target_exprs (t)
 /* Obstack used for allocating nodes in template function and variable
    definitions.  */
 
-/* Similar to `build_nt', except we build
-   on the permanent_obstack, regardless.  */
+/* Similar to `build_nt', except that we set TREE_COMPLEXITY to be the
+   current line number.  */
 
 tree
 build_min_nt VPROTO((enum tree_code code, ...))
@@ -2032,7 +2014,6 @@ build_min_nt VPROTO((enum tree_code code, ...))
 #ifndef ANSI_PROTOTYPES
   enum tree_code code;
 #endif
-  register struct obstack *ambient_obstack = expression_obstack;
   va_list p;
   register tree t;
   register int length;
@@ -2043,8 +2024,6 @@ build_min_nt VPROTO((enum tree_code code, ...))
 #ifndef ANSI_PROTOTYPES
   code = va_arg (p, enum tree_code);
 #endif
-
-  expression_obstack = &permanent_obstack;
 
   t = make_node (code);
   length = tree_code_length[(int) code];
@@ -2057,12 +2036,11 @@ build_min_nt VPROTO((enum tree_code code, ...))
     }
 
   va_end (p);
-  expression_obstack = ambient_obstack;
   return t;
 }
 
-/* Similar to `build', except we build
-   on the permanent_obstack, regardless.  */
+/* Similar to `build', except we set TREE_COMPLEXITY to the current
+   line-number.  */
 
 tree
 build_min VPROTO((enum tree_code code, tree tt, ...))
@@ -2071,7 +2049,6 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
   enum tree_code code;
   tree tt;
 #endif
-  register struct obstack *ambient_obstack = expression_obstack;
   va_list p;
   register tree t;
   register int length;
@@ -2083,8 +2060,6 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
   code = va_arg (p, enum tree_code);
   tt = va_arg (p, tree);
 #endif
-
-  expression_obstack = &permanent_obstack;
 
   t = make_node (code);
   length = tree_code_length[(int) code];
@@ -2098,24 +2073,7 @@ build_min VPROTO((enum tree_code code, tree tt, ...))
     }
 
   va_end (p);
-  expression_obstack = ambient_obstack;
   return t;
-}
-
-/* Same as `tree_cons' but make a permanent object.  */
-
-tree
-min_tree_cons (purpose, value, chain)
-     tree purpose, value, chain;
-{
-  register tree node;
-  register struct obstack *ambient_obstack = current_obstack;
-  current_obstack = &permanent_obstack;
-
-  node = tree_cons (purpose, value, chain);
-
-  current_obstack = ambient_obstack;
-  return node;
 }
 
 tree

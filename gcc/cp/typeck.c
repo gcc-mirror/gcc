@@ -2159,7 +2159,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			 unknown_type_node to be really overloaded, so
 			 let's oblige.  */
 		      TREE_VALUE (fndecls)
-			= scratch_ovl_cons (TREE_VALUE (fndecls), NULL_TREE);
+			= ovl_cons (TREE_VALUE (fndecls), NULL_TREE);
 		    }
 		}
 
@@ -2600,7 +2600,7 @@ build_x_function_call (function, params, decl)
 
   /* A friend template.  Make it look like a toplevel declaration.  */
   if (! is_method && TREE_CODE (function) == TEMPLATE_DECL)
-    function = scratch_ovl_cons (function, NULL_TREE);
+    function = ovl_cons (function, NULL_TREE);
 
   /* Handle methods, friends, and overloaded functions, respectively.  */
   if (is_method)
@@ -5447,7 +5447,7 @@ build_c_cast (type, expr)
   if (processing_template_decl)
     {
       tree t = build_min (CAST_EXPR, type,
-			  min_tree_cons (NULL_TREE, value, NULL_TREE));
+			  tree_cons (NULL_TREE, value, NULL_TREE));
       return t;
     }
 

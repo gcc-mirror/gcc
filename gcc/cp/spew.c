@@ -205,7 +205,6 @@ extern int looking_for_typename;
 int looking_for_template;
 extern int do_snarf_defarg;
 
-extern struct obstack *current_obstack, *saveable_obstack;
 tree got_scope;
 tree got_object;
 

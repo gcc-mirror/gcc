@@ -49,7 +49,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 extern struct obstack permanent_obstack;
-extern struct obstack* saveable_obstack;
 
 extern int current_class_depth;
 
@@ -3318,7 +3317,7 @@ duplicate_decls (newdecl, olddecl)
 	    {
 	      cp_error ("declaration of `%F' throws different exceptions",
 			newdecl);
-	      cp_error_at ("to previous declaration `%F'", olddecl);
+	      cp_error_at ("than previous declaration `%F'", olddecl);
 	    }
 	}
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
@@ -7488,7 +7487,7 @@ initialize_local_var (decl, init, flags)
 
 /* Generate code to destroy DECL (a local variable).  */
 
-void 
+static void 
 destroy_local_var (decl)
      tree decl;
 {
@@ -13792,6 +13791,9 @@ finish_function (lineno, flags)
          function.  For a nested function, this value is used in
          pop_cp_function_context and then reset via pop_function_context.  */
       current_function_decl = NULL_TREE;
+      /* We don't really care about obstacks, but the middle-end
+	 sometimes cares on what obstck things are located.  */
+      permanent_allocation (1);
     }
 
   return fndecl;
@@ -14201,7 +14203,7 @@ mark_lang_function (p)
 
 /* Mark the language-specific data in F for GC.  */
 
-void
+static void
 mark_cp_function_context (f)
      struct function *f;
 {
