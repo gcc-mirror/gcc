@@ -1,4 +1,9 @@
 2002-07-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Runtime.java (loadLibrary): Pass `true' as search
+	argument to _load.
+
+2002-07-24  Tom Tromey  <tromey@redhat.com>
             Tony Kimball <alk@pobox.com>
 
 	* java/io/natFileDescriptorWin32.cc (setLength): New method.
