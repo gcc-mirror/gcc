@@ -267,6 +267,7 @@ private:
 
   friend jobject _Jv_AllocObject (jclass, jint);
   friend void *_Jv_AllocObj (jint, jclass);
+  friend void *_Jv_AllocPtrFreeObj (jint, jclass);
   friend void *_Jv_AllocArray (jint, jclass);
 
   friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,

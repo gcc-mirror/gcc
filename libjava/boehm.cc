@@ -1,6 +1,6 @@
 // boehm.cc - interface between libjava and Boehm GC.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -97,10 +97,13 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
   if (__builtin_expect (! dt || !(dt -> get_finalizer()), false))
     return mark_stack_ptr;
   jclass klass = dt->clas;
+  ptr_t p;
 
-  // Every object has a sync_info pointer.
-  ptr_t p = (ptr_t) obj->sync_info;
-  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o1label);
+# ifndef JV_HASH_SYNCHRONIZATION
+    // Every object has a sync_info pointer.
+    p = (ptr_t) obj->sync_info;
+    MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o1label);
+# endif
   // Mark the object's class.
   p = (ptr_t) klass;
   MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o2label);
@@ -300,10 +303,13 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
   if (__builtin_expect (! dt || !(dt -> get_finalizer()), false))
     return mark_stack_ptr;
   jclass klass = dt->clas;
+  ptr_t p;
 
-  // Every object has a sync_info pointer.
-  ptr_t p = (ptr_t) array->sync_info;
-  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, array, e1label);
+# ifndef JV_HASH_SYNCHRONIZATION
+    // Every object has a sync_info pointer.
+    p = (ptr_t) array->sync_info;
+    MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, array, e1label);
+# endif
   // Mark the object's class.
   p = (ptr_t) klass;
   MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, obj, o2label);
@@ -326,18 +332,24 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
 // knows this, so in that case everything else will break, too.
 #define GCJ_DEFAULT_DESCR GC_MAKE_PROC(GC_GCJ_RESERVED_MARK_PROC_INDEX,0)
 void *
-_Jv_BuildGCDescr(jclass klass)
+_Jv_BuildGCDescr(jclass)
 {
   /* FIXME: We should really look at the class and build the descriptor. */
   return (void *)(GCJ_DEFAULT_DESCR);
 }
 #endif
 
-// Allocate space for a new Java object.
+// Allocate some space that is known to be pointer-free.
 void *
-_Jv_AllocObj (jsize size, jclass klass)
+_Jv_AllocBytes (jsize size)
 {
-  return GC_GCJ_MALLOC (size, klass->vtable);
+  void *r = GC_MALLOC_ATOMIC (size);
+  // We have to explicitly zero memory here, as the GC doesn't
+  // guarantee that PTRFREE allocations are zeroed.  Note that we
+  // don't have to do this for other allocation types because we set
+  // the `ok_init' flag in the type descriptor.
+  memset (r, 0, size);
+  return r;
 }
 
 // Allocate space for a new Java array.
@@ -366,20 +378,6 @@ _Jv_AllocArray (jsize size, jclass klass)
 #endif
   *((_Jv_VTable **) obj) = klass->vtable;
   return obj;
-}
-
-// Allocate some space that is known to be pointer-free.
-void *
-_Jv_AllocBytes (jsize size)
-{
-  void *r = GC_MALLOC_ATOMIC (size);
-  // We have to explicitly zero memory here, as the GC doesn't
-  // guarantee that PTRFREE allocations are zeroed.  Note that we
-  // don't have to do this for other allocation types because we set
-  // the `ok_init' flag in the type descriptor.
-  if (__builtin_expect (r != NULL, !NULL))
-    memset (r, 0, size);
-  return r;
 }
 
 static void
@@ -462,6 +460,11 @@ _Jv_EnableGC (void)
   _Jv_MutexUnlock (&disable_gc_mutex); 
 }
 
+static void * handle_out_of_memory(size_t)
+{
+  _Jv_ThrowNoMemory();
+}
+
 void
 _Jv_InitGC (void)
 {
@@ -483,6 +486,10 @@ _Jv_InitGC (void)
   // Configure the collector to use the bitmap marking descriptors that we
   // stash in the class vtable.
   GC_init_gcj_malloc (0, (void *) _Jv_MarkObj);  
+
+  // Cause an out of memory error to be thrown from the allocators,
+  // instead of returning 0.  This is cheaper than checking on allocation.
+  GC_oom_fn = handle_out_of_memory;
 
   LOCK ();
   GC_java_finalization = 1;
@@ -510,6 +517,28 @@ _Jv_InitGC (void)
   UNLOCK ();
   ENABLE_SIGNALS ();
 }
+
+#ifdef JV_HASH_SYNCHRONIZATION
+// Allocate an object with a fake vtable pointer, which causes only
+// the first field (beyond the fake vtable pointer) to be traced.
+// Eventually this should probably be generalized.
+
+static _Jv_VTable trace_one_vtable = {
+    0, 			// class pointer
+    (void *)(2 * sizeof(void *)),
+			// descriptor; scan 2 words incl. vtable ptr.
+			// Least significant bits must be zero to
+			// identify this as a lenght descriptor
+    {0}			// First method
+};
+
+void *
+_Jv_AllocTraceOne (jsize size /* includes vtable slot */) 
+{
+  return GC_GCJ_MALLOC (size, &trace_one_vtable);
+}
+
+#endif /* JV_HASH_SYNCHRONIZATION */
 
 #if 0
 void

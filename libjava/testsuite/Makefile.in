@@ -85,6 +85,7 @@ GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
+HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 INCLTDL = @INCLTDL@
 JC1GCSPEC = @JC1GCSPEC@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
@@ -123,15 +124,19 @@ libgcj_basedir = @libgcj_basedir@
 AUTOMAKE_OPTIONS = foreign dejagnu
 
 # Setup the testing framework, if you have one
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then             echo $(top_builddir)/../expect/expect ;           else echo expect ; fi`
+EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
+            echo $(top_builddir)/../expect/expect ; \
+          else echo expect ; fi`
 
 
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then 	       echo $(top_srcdir)/../dejagnu/runtest ; 	    else echo runtest; fi`
+RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
+	       echo $(top_srcdir)/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
 
 RUNTESTFLAGS = @AM_RUNTESTFLAGS@
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = ../include/config.h
+CONFIG_HEADER = ../include/config.h ../gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = 
 DIST_COMMON =  ChangeLog Makefile.am Makefile.in
 

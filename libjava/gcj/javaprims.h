@@ -1,6 +1,6 @@
 // javaprims.h - Main external header file for libgcj.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,8 @@ details.  */
 
 // Force C++ compiler to use Java-style exceptions.
 #pragma GCC java_exceptions
+
+#include <gcj/libgcj-config.h>
 
 // FIXME: this is a hack until we get a proper gcjh.
 // It is needed to work around system header files that define TRUE
@@ -367,14 +369,24 @@ typedef struct _Jv_Field *jfieldID;
 typedef struct _Jv_Method *jmethodID;
 
 extern "C" jobject _Jv_AllocObject (jclass, jint) __attribute__((__malloc__));
+#ifdef JV_HASH_SYNCHRONIZATION
+  extern "C" jobject _Jv_AllocPtrFreeObject (jclass, jint)
+  			    __attribute__((__malloc__));
+#else
+  // Collector still needs to scan sync_info
+  static inline jobject _Jv_AllocPtrFreeObject (jclass klass, jint sz)
+  {
+    return _Jv_AllocObject(klass, sz);
+  }
+#endif
 extern "C" jboolean _Jv_IsInstanceOf(jobject, jclass);
 extern "C" jstring _Jv_AllocString(jsize) __attribute__((__malloc__));
 extern "C" jstring _Jv_NewString (const jchar*, jsize)
   __attribute__((__malloc__));
 extern jint _Jv_FormatInt (jchar* bufend, jint num);
 extern "C" jchar* _Jv_GetStringChars (jstring str);
-extern "C" jint _Jv_MonitorEnter (jobject);
-extern "C" jint _Jv_MonitorExit (jobject);
+extern "C" void _Jv_MonitorEnter (jobject);
+extern "C" void _Jv_MonitorExit (jobject);
 extern "C" jstring _Jv_NewStringLatin1(const char*, jsize)
   __attribute__((__malloc__));
 extern "C" jsize _Jv_GetStringUTFLength (jstring);
@@ -399,5 +411,6 @@ struct _Jv_Utf8Const
   _Jv_ushort length;	/* In bytes, of data portion, without final '\0'. */
   char data[1];		/* In Utf8 format, with final '\0'. */
 };
+
 
 #endif /* __JAVAPRIMS_H__ */

@@ -583,7 +583,7 @@ _Jv_PrepareClass(jclass klass)
   // allocate static memory
   if (static_size != 0)
     {
-      char *static_data = (char*)_Jv_AllocBytesChecked (static_size);
+      char *static_data = (char*)_Jv_AllocBytes (static_size);
 
       memset (static_data, 0, static_size);
 
@@ -697,7 +697,7 @@ _Jv_PrepareClass(jclass klass)
 
   /* allocate vtable structure */
   _Jv_VTable *vtable = (_Jv_VTable*) 
-    _Jv_AllocBytesChecked (sizeof (_Jv_VTable) 
+    _Jv_AllocBytes (sizeof (_Jv_VTable) 
 			   + (sizeof (void*) * (vtable_count)));
   vtable->clas = clz;
   vtable->gc_descr = _Jv_BuildGCDescr(clz);
@@ -1076,7 +1076,7 @@ _Jv_InterpMethod::ncode ()
   int arg_count = count_arguments (self->signature, staticp);
 
   ncode_closure *closure =
-    (ncode_closure*)_Jv_AllocBytesChecked (sizeof (ncode_closure)
+    (ncode_closure*)_Jv_AllocBytes (sizeof (ncode_closure)
 					+ arg_count * sizeof (ffi_type*));
 
   init_cif (self->signature,
@@ -1126,8 +1126,8 @@ _Jv_JNIMethod::ncode ()
   int arg_count = count_arguments (self->signature, staticp);
 
   ncode_closure *closure =
-    (ncode_closure*)_Jv_AllocBytesChecked (sizeof (ncode_closure)
-					+ arg_count * sizeof (ffi_type*));
+    (ncode_closure*)_Jv_AllocBytes (sizeof (ncode_closure)
+				    + arg_count * sizeof (ffi_type*));
 
   ffi_type *rtype;
   init_cif (self->signature,
@@ -1187,8 +1187,8 @@ _Jv_BuildResolvedMethod (_Jv_Method* method,
   int arg_count = count_arguments (method->signature, staticp);
 
   _Jv_ResolvedMethod* result = (_Jv_ResolvedMethod*)
-    _Jv_AllocBytesChecked (sizeof (_Jv_ResolvedMethod)
-			   + arg_count*sizeof (ffi_type*));
+    _Jv_AllocBytes (sizeof (_Jv_ResolvedMethod)
+		    + arg_count*sizeof (ffi_type*));
 
   result->stack_item_count
     = init_cif (method->signature,

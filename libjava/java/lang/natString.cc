@@ -121,8 +121,7 @@ java::lang::String::rehash()
   if (strhash == NULL)
     {
       strhash_size = 1024;
-      strhash = (jstring *) _Jv_AllocBytesChecked (strhash_size
-						   * sizeof (jstring));
+      strhash = (jstring *) _Jv_AllocBytes (strhash_size * sizeof (jstring));
       memset (strhash, 0, strhash_size * sizeof (jstring));
     }
   else
@@ -130,8 +129,7 @@ java::lang::String::rehash()
       int i = strhash_size;
       jstring* ptr = strhash + i;
       int nsize = strhash_size * 2;
-      jstring *next = (jstring *) _Jv_AllocBytesChecked (nsize
-							 * sizeof (jstring));
+      jstring *next = (jstring *) _Jv_AllocBytes (nsize * sizeof (jstring));
       memset (next, 0, nsize * sizeof (jstring));
 
       while (--i >= 0)
@@ -392,8 +390,18 @@ _Jv_AllocString(jsize len)
 {
   jsize sz = sizeof(java::lang::String) + len * sizeof(jchar);
 
-  jstring obj = (jstring) JvAllocObject(&StringClass, sz);
-
+  // We assert that for strings allocated this way, the data field
+  // will always point to the object itself.  Thus there is no reason
+  // for the garbage collector to scan any of it.
+  // Furthermore, we're about to overwrite the string data, so
+  // initialization of the object is not an issue.
+#ifdef ENABLE_JVMPI
+  jstring obj = (jstring) _Jv_AllocPtrFreeObject(&StringClass, sz);
+#else
+  // Class needs no initialization, and there is no finalizer, so
+  // we can go directly to the collector's allocator interface.
+  jstring obj = (jstring) _Jv_AllocPtrFreeObj(&StringClass, sz);
+#endif
   obj->data = obj;
   obj->boffset = sizeof(java::lang::String);
   obj->count = len;

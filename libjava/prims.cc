@@ -221,11 +221,11 @@ _Jv_strLengthUtf8(char* str, int len)
   ptr = (unsigned char*) str;
   limit = ptr + len;
   str_length = 0;
-  for (; ptr < limit; str_length++) {
-    if (UTF8_GET (ptr, limit) < 0) {
-      return (-1);
+  for (; ptr < limit; str_length++)
+    {
+      if (UTF8_GET (ptr, limit) < 0)
+	return (-1);
     }
-  }
   return (str_length);
 }
 
@@ -271,7 +271,7 @@ _Jv_makeUtf8Const (jstring string)
   jint len = _Jv_GetStringUTFLength (string);
 
   Utf8Const* m = (Utf8Const*)
-    _Jv_AllocBytesChecked (sizeof(Utf8Const) + len + 1);
+    _Jv_AllocBytes (sizeof(Utf8Const) + len + 1);
 
   m->hash = hash;
   m->length = len;
@@ -331,14 +331,11 @@ _Jv_ThrowNullPointerException ()
   throw new java::lang::NullPointerException;
 }
 
-// Allocate some unscanned memory and throw an exception if no memory.
-void *
-_Jv_AllocBytesChecked (jsize size)
+// Explicitly throw a no memory exception.
+// The collector calls this when it encounters an out-of-memory condition.
+void _Jv_ThrowNoMemory()
 {
-  void *r = _Jv_AllocBytes (size);
-  if (! r)
-    throw no_memory;
-  return r;
+  _Jv_Throw (no_memory);
 }
 
 // Allocate a new object of class KLASS.  SIZE is the size of the object
@@ -350,8 +347,6 @@ _Jv_AllocObject (jclass klass, jint size)
   _Jv_InitClass (klass);
 
   jobject obj = (jobject) _Jv_AllocObj (size, klass);
-  if (__builtin_expect (! obj, false))
-    throw no_memory;
 
   // If this class has inherited finalize from Object, then don't
   // bother registering a finalizer.  We know that finalize() is the
@@ -379,6 +374,14 @@ _Jv_AllocObject (jclass klass, jint size)
       event.u.obj_alloc.size = size;
       event.u.obj_alloc.obj_id = (jobjectID) obj;
 
+      // FIXME:  This doesn't look right for the Boehm GC.  A GC may
+      // already be in progress.  _Jv_DisableGC () doesn't wait for it.
+      // More importantly, I don't see the need for disabling GC, since we
+      // blatantly have a pointer to obj on our stack, ensuring that the
+      // object can't be collected.  Even for a nonconservative collector,
+      // it appears to me that this must be true, since we are about to
+      // return obj. Isn't this whole approach way too intrusive for
+      // a useful profiling interface?			- HB
       _Jv_DisableGC ();
       (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (&event);
       _Jv_EnableGC ();
@@ -387,6 +390,43 @@ _Jv_AllocObject (jclass klass, jint size)
 
   return obj;
 }
+
+// A version of the above that assumes the object contains no pointers,
+// and requires no finalization.  This can't happen if we need pointers
+// to locks.
+#ifdef JV_HASH_SYNCHRONIZATION
+jobject
+_Jv_AllocPtrFreeObject (jclass klass, jint size)
+{
+  _Jv_InitClass (klass);
+
+  jobject obj = (jobject) _Jv_AllocPtrFreeObj (size, klass);
+
+#ifdef ENABLE_JVMPI
+  // Service JVMPI request.
+
+  if (__builtin_expect (_Jv_JVMPI_Notify_OBJECT_ALLOC != 0, false))
+    {
+      JVMPI_Event event;
+
+      event.event_type = JVMPI_EVENT_OBJECT_ALLOC;
+      event.env_id = NULL;
+      event.u.obj_alloc.arena_id = 0;
+      event.u.obj_alloc.class_id = (jobjectID) klass;
+      event.u.obj_alloc.is_array = 0;
+      event.u.obj_alloc.size = size;
+      event.u.obj_alloc.obj_id = (jobjectID) obj;
+
+      _Jv_DisableGC ();
+      (*_Jv_JVMPI_Notify_OBJECT_ALLOC) (&event);
+      _Jv_EnableGC ();
+    }
+#endif
+
+  return obj;
+}
+#endif /* JV_HASH_SYNCHRONIZATION */
+
 
 // Allocate a new array of Java objects.  Each object is of type
 // `elementClass'.  `init' is used to initialize each slot in the
@@ -408,8 +448,6 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   jclass klass = _Jv_GetArrayClass (elementClass, 0);
 
   obj = (jobjectArray) _Jv_AllocArray (size, klass);
-  if (__builtin_expect (! obj, false))
-    throw no_memory;
   // Cast away const.
   jsize *lp = const_cast<jsize *> (&obj->length);
   *lp = count;
@@ -444,13 +482,19 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 
   jclass klass = _Jv_GetArrayClass (eltype, 0);
 
+# ifdef JV_HASH_SYNCHRONIZATION
+  // Since the vtable is always statically allocated,
+  // these are completely pointerfree!  Make sure the GC doesn't touch them.
+  __JArray *arr =
+    (__JArray*) _Jv_AllocPtrFreeObj (size + elsize * count, klass);
+  memset((char *)arr + size, 0, elsize * count);
+# else
   __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count, klass);
-  if (__builtin_expect (! arr, false))
-    throw no_memory;
+  // Note that we assume we are given zeroed memory by the allocator.
+# endif
   // Cast away const.
   jsize *lp = const_cast<jsize *> (&arr->length);
   *lp = count;
-  // Note that we assume we are given zeroed memory by the allocator.
 
   return arr;
 }

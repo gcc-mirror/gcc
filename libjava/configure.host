@@ -24,6 +24,8 @@ libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 libgcj_interpreter=
+enable_java_net_default=yes
+enable_hash_synchronization_default=no
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -63,6 +65,7 @@ case "${host}" in
 	libgcj_cxxflags="-D__NO_MATH_INLINES"
 	libgcj_cflags="-D__NO_MATH_INLINES"
 	DIVIDESPEC=-fno-use-divide-subroutine
+	enable_hash_synchronization_default=yes
 	;;
   alpha*-*)
 	libgcj_flags="${libgcj_flags} -mieee"
@@ -76,6 +79,7 @@ case "${host}" in
   ia64-*)
         libgcj_flags="${libgcj_flags} -funwind-tables"
 	libgcj_interpreter=yes
+	enable_hash_synchronization_default=yes
 	;;
 esac
 

@@ -85,6 +85,7 @@ GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
 GCTESTSPEC = @GCTESTSPEC@
+HASH_SYNC_SPEC = @HASH_SYNC_SPEC@
 INCLTDL = @INCLTDL@
 JC1GCSPEC = @JC1GCSPEC@
 LIBDATASTARTSPEC = @LIBDATASTARTSPEC@
@@ -124,11 +125,11 @@ AUTOMAKE_OPTIONS = foreign
 
 include_HEADERS = jni.h jvmpi.h
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = config.h
+CONFIG_HEADER = config.h ../gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(include_HEADERS)
 
-DIST_COMMON =  ./stamp-h.in Makefile.am Makefile.in config.h.in
+DIST_COMMON =  ./stamp-h1.in Makefile.am Makefile.in config.h.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -145,24 +146,24 @@ Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-config.h: stamp-h
+config.h: stamp-h1
 	@if test ! -f $@; then \
-		rm -f stamp-h; \
-		$(MAKE) stamp-h; \
+		rm -f stamp-h1; \
+		$(MAKE) stamp-h1; \
 	else :; fi
-stamp-h: $(srcdir)/config.h.in $(top_builddir)/config.status
+stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
 	     $(SHELL) ./config.status
-	@echo timestamp > stamp-h 2> /dev/null
-$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/stamp-h.in
+	@echo timestamp > stamp-h1 2> /dev/null
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/stamp-h1.in
 	@if test ! -f $@; then \
-		rm -f $(srcdir)/stamp-h.in; \
-		$(MAKE) $(srcdir)/stamp-h.in; \
+		rm -f $(srcdir)/stamp-h1.in; \
+		$(MAKE) $(srcdir)/stamp-h1.in; \
 	else :; fi
-$(srcdir)/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+$(srcdir)/stamp-h1.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/stamp-h.in 2> /dev/null
+	@echo timestamp > $(srcdir)/stamp-h1.in 2> /dev/null
 
 mostlyclean-hdr:
 
