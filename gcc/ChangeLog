@@ -1,3 +1,12 @@
+2003-10-21  Gunther Nikl  <gni@gecko.de>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): Move front
+	comment from here to...
+	(m68k_save_reg): ...here. Fix comment formatting.
+	(m68k_output_function_prologue): Fix comment formatting.
+	(m68k_output_function_epilogue): Likewise.
+	(const_method): Likewise.
+
 2003-10-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* toplev.c (default_get_pch_validity): Guard the use of
