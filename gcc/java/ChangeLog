@@ -1,3 +1,24 @@
+2002-06-11  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-write.c (generate_classfile): Use FIELD_SYNTHETIC.
+	* parse-scan.y (statement_without_trailing_substatement): Added
+	assert_statement.
+	(assert_statement): New rule.
+	* java-tree.h (struct lang_type) [assertions]: New field.
+	(TYPE_USES_ASSERTIONS): New macro.
+	(CLASS_USES_ASSERTIONS): Likewise.
+	(FIELD_SYNTHETIC): New define.
+	* lex.c (java_lval;): Added ASSERT_TK.
+	* parse.y (ASSERT_TK): Added.
+	(statement_without_trailing_substatement): Added assert_statement.
+	(assert_statement): New rule.
+	(build_assertion): New function.
+	(maybe_generate_pre_expand_clinit): Create and initialize
+	$assertionsDisabled.
+	(lookup_package_type): Removed decl.
+	* keyword.h: Rebuilt.
+	* keyword.gperf (assert): New token.
+
 2002-06-10  Akim Demaille  <akim@epita.fr>
 
 	* parse.y (interface_type_list, class_member_declaration)

@@ -87,3 +87,4 @@ strictfp, STRICT_TK
 true, TRUE_TK
 false, FALSE_TK
 null, NULL_TK
+assert, ASSERT_TK

@@ -180,6 +180,7 @@ void report PARAMS ((void));
 %token   SWITCH_TK       CONST_TK           TRY_TK
 %token   FOR_TK          NEW_TK             CONTINUE_TK
 %token   GOTO_TK         PACKAGE_TK         THIS_TK
+%token   ASSERT_TK
 
 %token   BYTE_TK         SHORT_TK           INT_TK            LONG_TK
 %token   CHAR_TK         INTEGRAL_TK
@@ -717,6 +718,7 @@ statement_without_trailing_substatement:
 |	synchronized_statement
 |	throw_statement
 |	try_statement
+|	assert_statement
 ;
 
 empty_statement:
@@ -870,6 +872,14 @@ throw_statement:
 	THROW_TK expression SC_TK { ++complexity; }
 ;
 
+assert_statement:
+	ASSERT_TK expression REL_CL_TK expression SC_TK
+|	ASSERT_TK expression SC_TK
+|	ASSERT_TK error
+		{yyerror ("Missing term"); RECOVER;}
+|	ASSERT_TK expression error
+		{yyerror ("';' expected"); RECOVER;}
+;
 synchronized_statement:
 	synchronized OP_TK expression CP_TK block
 |	synchronized OP_TK expression CP_TK error

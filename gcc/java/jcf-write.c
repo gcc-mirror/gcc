@@ -2962,7 +2962,7 @@ generate_classfile (clas, state)
       if (have_value)
 	attr_count++;
 
-      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part))
+      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part) || FIELD_SYNTHETIC (part))
 	attr_count++;
 
       PUT2 (attr_count);  /* attributes_count */
@@ -2980,8 +2980,10 @@ generate_classfile (clas, state)
 	  PUT4 (2); /* attribute_length */
 	  i = find_constant_index (init, state);  PUT2 (i);
 	}
-      /* Emit the "Synthetic" attribute for val$<x> and this$<n> fields. */
-      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part))
+      /* Emit the "Synthetic" attribute for val$<x> and this$<n>
+	 fields and other fields which need it.  */
+      if (FIELD_THISN (part) || FIELD_LOCAL_ALIAS (part)
+	  || FIELD_SYNTHETIC (part))
 	ptr = append_synthetic_attribute (state);
       fields_count++;
     }
