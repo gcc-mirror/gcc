@@ -2138,6 +2138,7 @@ back_branch_in_range_p (insn, loop_start, loop_end)
      rtx loop_start, loop_end;
 {
   rtx p, q, target_insn;
+  rtx orig_loop_end = loop_end;
 
   /* Stop before we get to the backward branch at the end of the loop.  */
   loop_end = prev_nonnote_insn (loop_end);
@@ -2149,8 +2150,10 @@ back_branch_in_range_p (insn, loop_start, loop_end)
   while (INSN_DELETED_P (insn))
     insn = NEXT_INSN (insn);
 
-  /* Check for the case where insn is the last insn in the loop.  */
-  if (insn == loop_end)
+  /* Check for the case where insn is the last insn in the loop.  Deal
+     with the case where INSN was a deleted loop test insn, in which case
+     it will now be the NOTE_LOOP_END.  */
+  if (insn == loop_end || insn == orig_loop_end)
     return 0;
 
   for (p = NEXT_INSN (insn); p != loop_end; p = NEXT_INSN (p))
