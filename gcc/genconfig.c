@@ -277,7 +277,7 @@ main (argc, argv)
   if (argc <= 1)
     fatal ("No input file name.");
 
-  if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
+  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 
   puts ("/* Generated automatically by the program `genconfig'");
