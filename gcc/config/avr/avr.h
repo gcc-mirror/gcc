@@ -1896,6 +1896,14 @@ do {									    \
    between two registers, you should define this macro to express the
    relative cost.  */
 
+#define BRANCH_COST 0
+/* A C expression for the cost of a branch instruction.  A value of 1
+   is the default; other values are interpreted relative to that.
+
+   Here are additional macros which do not specify precise relative
+   costs, but only that certain actions are more expensive than GCC would
+   ordinarily expect.  */
+
 #define SLOW_BYTE_ACCESS 0
 /* Define this macro as a C expression which is nonzero if accessing
    less than a word of memory (i.e. a `char' or a `short') is no
