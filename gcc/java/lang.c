@@ -55,7 +55,7 @@ struct string_option
 
 static bool java_init (void);
 static void java_finish (void);
-static void java_init_options (void);
+static int java_init_options (void);
 static bool java_post_options (const char **);
 
 static int java_decode_option (int, char **);
@@ -731,7 +731,7 @@ void lang_init_source (int level)
   inhibit_error_function_printing = (level == 1);
 }
 
-static void
+static int
 java_init_options (void)
 {
   flag_bounds_check = 1;
@@ -743,6 +743,8 @@ java_init_options (void)
 
   /* In Java arithmetic overflow always wraps around.  */
   flag_wrapv = 1;
+
+  return 0;
 }
 
 static bool

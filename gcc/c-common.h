@@ -901,7 +901,7 @@ extern tree handle_format_attribute		PARAMS ((tree *, tree, tree,
 extern tree handle_format_arg_attribute		PARAMS ((tree *, tree, tree,
 							 int, bool *));
 extern void c_common_insert_default_attributes	PARAMS ((tree));
-extern int c_common_decode_option		PARAMS ((int, char **));
+extern int c_common_handle_option (size_t code, const char *arg, int value);
 extern tree c_common_type_for_mode		PARAMS ((enum machine_mode,
 							 int));
 extern tree c_common_type_for_size		PARAMS ((unsigned int, int));
@@ -959,7 +959,7 @@ extern void disable_builtin_function		PARAMS ((const char *));
 
 extern tree build_va_arg			PARAMS ((tree, tree));
 
-extern void c_common_init_options		PARAMS ((enum c_language_kind));
+extern int c_common_init_options		PARAMS ((enum c_language_kind));
 extern bool c_common_post_options		PARAMS ((const char **));
 extern bool c_common_init			PARAMS ((void));
 extern void c_common_finish			PARAMS ((void));

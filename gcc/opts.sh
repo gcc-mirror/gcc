@@ -65,9 +65,12 @@ cat "$@" | ${AWK} '
 	print "  const char *opt_text;"			>> h_file
 	print "  unsigned char opt_len;"		>> h_file
 	print "  unsigned char flags;"			>> h_file
-	print "};\n"					>> h_file
+	print "};\n\n"					>> h_file
+	print "extern const struct cl_option cl_options[];\n" >> h_file
 	print "enum opt_code\n{"			>> h_file
-	print "static const struct cl_option cl_options[] =\n{" >> c_file
+	print "#include \"options.h\""			>> c_file
+	print "#include \"opts.h\"\n"			>> c_file
+	print "const struct cl_option cl_options[] =\n{" >> c_file
     }
 
     {

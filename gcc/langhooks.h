@@ -199,8 +199,9 @@ struct lang_hooks
   size_t (*tree_size) PARAMS ((enum tree_code));
 
   /* The first callback made to the front end, for simple
-     initialization needed before any calls to decode_option.  */
-  void (*init_options) PARAMS ((void));
+     initialization needed before any calls to handle_option.  Return
+     the language mask to filter the switch array with.  */
+  int (*init_options) PARAMS ((void));
 
   /* Function called with an option vector as argument, to decode a
      single option (typically starting with -f or -W or +).  It should
@@ -209,8 +210,19 @@ struct lang_hooks
      option.  If this function returns a negative number, then its
      absolute value is the number of command-line arguments used, but,
      in addition, no language-independent option processing should be
-     done for this option.  */
+     done for this option.  Obsoleted by handle_option.  */
   int (*decode_option) PARAMS ((int, char **));
+
+  /* Handle the switch CODE, which has real type enum opt_code from
+     options.h.  If the switch takes an argument, it is passed in ARG
+     which points to permanent storage.  The handler is resonsible for
+     checking whether ARG is NULL, which indicates that no argument
+     was in fact supplied.  For -f and -W switches, VALUE is 1 or 0
+     for the positive and negative forms respectively.
+
+     Return 1 if the switch is valid, 0 if invalid, and -1 if it's
+     valid and should not be treated as language-independent too.  */
+  int (*handle_option) (size_t code, const char *arg, int value);
 
   /* Called when all command line options have been parsed to allow
      further processing and initialization

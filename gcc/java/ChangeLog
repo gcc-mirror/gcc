@@ -1,3 +1,7 @@
+2003-06-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (java_init_options): Update.
+
 Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
