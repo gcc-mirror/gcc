@@ -362,7 +362,7 @@ gencode ()
   puts ("#define obstack_alloc_rtx(n)					\\");
   puts ("    ((rtx) obstack_alloc (rtl_obstack,				\\");
   puts ("			  sizeof (struct rtx_def)		\\");
-  puts ("			  + ((n) - 2) * sizeof (rtunion)))\n");
+  puts ("			  + ((n) - 1) * sizeof (rtunion)))\n");
 
   for (fmt = formats; *fmt != 0; fmt++)
     gendef (*fmt);

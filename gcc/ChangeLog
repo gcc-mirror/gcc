@@ -1,3 +1,7 @@
+2000-06-12  H.J. Lu  <hjl@gnu.org>
+
+	* gengenrtl.c (obstack_alloc_rtx): Correct the allocated size.
+
 2000-06-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* aix41.h (SUBTARGET_SWITCHES): Delete threads.
