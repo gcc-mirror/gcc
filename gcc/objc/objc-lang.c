@@ -35,6 +35,8 @@ enum c_language_kind c_language = clk_objc;
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU Objective-C"
+#undef LANG_HOOKS_IDENTIFIER_SIZE
+#define LANG_HOOKS_IDENTIFIER_SIZE C_SIZEOF_STRUCT_LANG_IDENTIFIER
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
 #undef LANG_HOOKS_FINISH

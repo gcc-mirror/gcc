@@ -160,7 +160,7 @@ bool c_override_global_bindings_to_false;
    suppress further errors about that identifier in the current
    function.  */
 
-struct c_binding GTY(())
+struct c_binding GTY((chain_next ("%h.prev")))
 {
   tree decl;			/* the decl bound */
   tree id;			/* the identifier it's bound to */
@@ -183,6 +183,34 @@ struct c_binding GTY(())
   (((struct lang_identifier *)IDENTIFIER_NODE_CHECK(node))->label_binding)
 #define I_LABEL_DECL(node) \
  (I_LABEL_BINDING(node) ? I_LABEL_BINDING(node)->decl : 0)
+
+/* Each C symbol points to three linked lists of c_binding structures.
+   These describe the values of the identifier in the three different
+   namespaces defined by the language.  */
+
+struct lang_identifier GTY(())
+{
+  struct c_common_identifier common_id;
+  struct c_binding *symbol_binding; /* vars, funcs, constants, typedefs */
+  struct c_binding *tag_binding;    /* struct/union/enum tags */
+  struct c_binding *label_binding;  /* labels */
+};
+
+/* Validate c-lang.c's assumptions.  */
+extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
+[(sizeof(struct lang_identifier) == C_SIZEOF_STRUCT_LANG_IDENTIFIER) ? 1 : -1];
+
+/* The resulting tree type.  */
+
+union lang_tree_node
+  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *)TYPE_NEXT_VARIANT (&%h.generic) : (union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
+{
+  union tree_node GTY ((tag ("0"),
+			desc ("tree_node_structure (&%h)")))
+    generic;
+  struct lang_identifier GTY ((tag ("1"))) identifier;
+};
 
 /* Each c_scope structure describes the complete contents of one
    scope.  Four scopes are distinguished specially: the innermost or
@@ -229,7 +257,7 @@ struct c_binding GTY(())
    pop_scope relies on this.  */
 
 
-struct c_scope GTY(())
+struct c_scope GTY((chain_next ("%h.outer")))
 {
   /* The scope containing this one.  */
   struct c_scope *outer;
@@ -4811,6 +4839,13 @@ get_parm_info (bool ellipsis)
 	     and TYPE_DECLs appear here when we have an embedded struct
 	     or union.  No warnings for this - we already warned about the
 	     type itself.  */
+	  TREE_CHAIN (decl) = others;
+	  others = decl;
+	  /* fall through */
+
+	case ERROR_MARK:
+	  /* error_mark_node appears here when we have an undeclared
+	     variable.  Just throw it away.  */
 	  if (b->id)
 	    {
 #ifdef ENABLE_CHECKING
@@ -4818,16 +4853,12 @@ get_parm_info (bool ellipsis)
 #endif
 	      I_SYMBOL_BINDING (b->id) = b->shadowed;
 	    }
-
-	  TREE_CHAIN (decl) = others;
-	  others = decl;
 	  break;
 
 	  /* Other things that might be encountered.  */
 	case LABEL_DECL:
 	case FUNCTION_DECL:
 	case VAR_DECL:
-	case ERROR_MARK:
 	default:
 	  abort ();
 	}

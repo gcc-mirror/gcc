@@ -1,8 +1,24 @@
-2004-03-28  Olga Golovonevsky <olga@il.ibm.com>
-            Dorit Naishlos <dorit@il.ibm.com>
+2004-03-28  Zack Weinberg  <zack@codesourcery.com>
 
-        * config/rs6000/altivec.md: (andvv16qi3, andv8hi3, one_cmplv16qi2,
-        one_cmplv8hi2, one_cmplv4si2, iorv16qi3, iorv8hi3,): New modelling.
+	* c-decl.c: Verify that C_SIZEOF_STRUCT_LANG_IDENTIFIER is correct.
+	(struct c_binding, struct c_scope): Add chain_next
+	attributes to GTY markers.
+	(struct lang_identifier, struct lang_tree_node): Define
+	here...
+	* c-tree.h: ... not here.  No longer need to declare struct
+	c_binding either.  Do define C_SIZEOF_STRUCT_LANG_IDENTIFIER.
+	* c-lang.c, objc/objc-lang.c: Set LANG_HOOKS_IDENTIFIER_SIZE
+	to C_SIZEOF_STRUCT_LANG_IDENTIFIER.
+
+	PR 14734, 11944
+	* c-decl.c (get_parm_info): If error_mark_node is encountered
+	in the bindings chain, unbind and discard it; don't abort.
+
+2004-03-28  Olga Golovonevsky <olga@il.ibm.com>
+	    Dorit Naishlos <dorit@il.ibm.com>
+
+	* config/rs6000/altivec.md: (andvv16qi3, andv8hi3, one_cmplv16qi2,
+	one_cmplv8hi2, one_cmplv4si2, iorv16qi3, iorv8hi3,): New modelling.
 
 2004-03-28  Stephane Carrez  <stcarrez@nerim.fr>
 
@@ -63,10 +79,10 @@
 	  with TYPE_ORIG_SIZE_TYPE.
 
 2004-03-25  Aldy Hernandez  <aldyh@redhat.com>
- 
-        PR 14219
-        * c-typeck.c (build_binary_op): Do not allow comparisons of
-        vectors.
+
+	PR 14219
+	* c-typeck.c (build_binary_op): Do not allow comparisons of
+	vectors.
 
 2004-03-26  James A. Morrison  <ja2morri@uwaterloo.ca>
 
@@ -90,8 +106,8 @@
 2004-03-25  Richard Henderson  <rth@redhat.com>
 
 	PR 11527
-        * c-typeck.c (pop_init_level): Emit pending init elements earlier
-        rather than later.
+	* c-typeck.c (pop_init_level): Emit pending init elements earlier
+	rather than later.
 
 2004-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
