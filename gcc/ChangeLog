@@ -1,3 +1,7 @@
+2000-09-04  Craig Newell  <CraigN@ieee.org>
+
+	* gcc.c: Undefine "__WCHAR_TYPE__" before redefining it.
+
 2000-09-04  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (STAGESTUFF): Remove libgcc.
