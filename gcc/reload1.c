@@ -2894,7 +2894,6 @@ eliminate_regs (x, mem_mode, insn)
 	  }
 
       /* Fall through to generic unary operation case.  */
-    case USE:
     case STRICT_LOW_PART:
     case NEG:          case NOT:
     case SIGN_EXTEND:  case ZERO_EXTEND:
@@ -2981,6 +2980,19 @@ eliminate_regs (x, mem_mode, insn)
 	    return gen_rtx (SUBREG, GET_MODE (x), new, SUBREG_WORD (x));
 	}
 
+      return x;
+
+    case USE:
+      /* If using a register that is the source of an eliminate we still
+	 think can be performed, note it cannot be performed since we don't
+	 know how this register is used.  */
+      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+	if (ep->from_rtx == XEXP (x, 0))
+	  ep->can_eliminate = 0;
+
+      new = eliminate_regs (XEXP (x, 0), mem_mode, insn);
+      if (new != XEXP (x, 0))
+	return gen_rtx (code, GET_MODE (x), new);
       return x;
 
     case CLOBBER:
