@@ -19,11 +19,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
-#include "tree.h"
-#include "ch-tree.h"
-#include "rtl.h"
 #include "system.h"
-#include "toplev.h"
 
 /* On Suns this can get you to the right definition if you
    set the right value for TARGET.  */
@@ -51,6 +47,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SETJMP_LIBRARY_NAME "setjmp"
 #endif
 #endif
+
+#include "tree.h"
+#include "ch-tree.h"
+#include "rtl.h"
+#include "toplev.h"
 
 extern int  expand_exit_needed;
 
