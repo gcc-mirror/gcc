@@ -1,3 +1,7 @@
+2005-01-20  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/tree-ssa/loop-1.c:  Fix target names on xfail.
+
 2005-01-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/tree-ssa/loop-1.c: Fix missing "-" in dg-final
