@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -955,7 +955,7 @@ break_out_subroutines (head, type, initial)
      int initial;
 {
   int size = 0;
-  struct decision *node, *sub;
+  struct decision *sub;
 
   for (sub = head.first; sub; sub = sub->next)
     size += 1 + break_out_subroutines (sub->success, type, 0);
