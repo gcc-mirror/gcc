@@ -1,3 +1,9 @@
+Thu Oct 17 17:14:07 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/7630
+	* reload.c (reload_inner_reg_of_subreg): New argument output;
+	(push_reload): Update call.
+
 Wed Apr 24 23:45:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* calls.c (expand_call): Take current_function_pretend_args_size
