@@ -3589,6 +3589,23 @@ finish_decl (decl, init, asmspec_tree)
 	}
     }
 
+  /* If requested, warn about definitions of large data objects.  */
+
+  if (warn_larger_than
+      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+      && !DECL_EXTERNAL (decl))
+    {
+      register tree decl_size = DECL_SIZE (decl);
+
+      if (decl_size && TREE_CODE (decl_size) == INTEGER_CST)
+	{
+	   unsigned units = TREE_INT_CST_LOW(decl_size) / BITS_PER_UNIT;
+
+	  if (units > larger_than_size)
+	    warning_with_decl (decl, "size of `%s' is %u bytes", units);
+	}
+    }
+
 #if 0
   /* Resume permanent allocation, if not within a function.  */
   /* The corresponding push_obstacks_nochange is in start_decl,
@@ -6498,6 +6515,31 @@ finish_function (nested)
   else if (extra_warnings
 	   && current_function_returns_value && current_function_returns_null)
     warning ("this function may return with or without a value");
+
+  /* If requested, warn about function definitions where the function will
+     return a value (usually of some struct or union type) which itself will
+     take up a lot of stack space.  */
+
+  if (warn_larger_than && !DECL_EXTERNAL (fndecl) && TREE_TYPE (fndecl))
+    {
+      register tree ret_type = TREE_TYPE (TREE_TYPE (fndecl));
+
+      if (ret_type)
+	{
+	  register tree ret_type_size = TYPE_SIZE (ret_type);
+
+	  if (TREE_CODE (ret_type_size) == INTEGER_CST)
+	    {
+	      unsigned units
+		= TREE_INT_CST_LOW (ret_type_size) / BITS_PER_UNIT;
+
+	      if (units > larger_than_size)
+		warning_with_decl (fndecl,
+				   "size of return value of `%s' is %u bytes",
+				   units);
+	    }
+	}
+    }
 
   /* Free all the tree nodes making up this function.  */
   /* Switch back to allocating nodes permanently
