@@ -702,7 +702,8 @@ c_common_decode_option (argc, argv)
       warn_sequence_point = on;	/* Was C only.  */
       warn_sign_compare = on;	/* Was C++ only.  */
       warn_switch = on;
-
+      warn_strict_aliasing = on;
+      
       /* Only warn about unknown pragmas that are not in system
 	 headers.  */                                        
       warn_unknown_pragmas = on;

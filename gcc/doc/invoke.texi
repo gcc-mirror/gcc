@@ -228,7 +228,7 @@ in the following sections.
 -Wno-import  -Wnonnull  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wswitch  -Wswitch-default -Wswitch-enum @gol
+-Wsign-compare  -Wstrict-aliasing -Wswitch  -Wswitch-default -Wswitch-enum @gol
 -Wsystem-headers -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
@@ -2340,6 +2340,14 @@ Warn when a #pragma directive is encountered which is not understood by
 GCC@.  If this command line option is used, warnings will even be issued
 for unknown pragmas in system header files.  This is not the case if
 the warnings were only enabled by the @option{-Wall} command line option.
+
+@item -Wstrict-aliasing
+@opindex Wstrict-aliasing
+This option is only active when @option{-fstrict-aliasing} is active.
+It warns about code which might break the strict aliasing rules that the
+compiler is using for optimization. The warning does not catch all
+cases, but does attempt to catch the more common pitfalls. It is
+included in @option{-Wall}.
 
 @item -Wall
 @opindex Wall
