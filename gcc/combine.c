@@ -692,8 +692,31 @@ set_nonzero_bits_and_sign_copies (x, set)
 		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (set)))))
 	      && SUBREG_REG (SET_DEST (set)) == x))
 	{
+	  rtx src = SET_SRC (set);
+
+#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
+	  /* If X is narrower than a word and SRC is a non-negative
+	     constant that would appear negative in the mode of X,
+	     sign-extend it for use in reg_nonzero_bits because some
+	     machines (maybe most) will actually do the sign-extension
+	     and this is the conservative approach. 
+
+	     ??? For 2.5, try to tighten up the MD files in this regard
+	     instead of this kludge.  */
+
+	  if (GET_MODE_BITSIZE (GET_MODE (x)) < BITS_PER_WORD
+	      && GET_CODE (src) == CONST_INT
+	      && INTVAL (src) > 0
+	      && 0 != (INTVAL (src)
+		       & ((HOST_WIDE_INT) 1
+			  << GET_MODE_BITSIZE (GET_MODE (x)))))
+	    src = GEN_INT (INTVAL (src)
+			   | ((HOST_WIDE_INT) (-1)
+			      << GET_MODE_BITSIZE (GET_MODE (x))));
+#endif
+
 	  reg_nonzero_bits[REGNO (x)]
-	    |= nonzero_bits (SET_SRC (set), nonzero_bits_mode);
+	    |= nonzero_bits (src, nonzero_bits_mode);
 	  num = num_sign_bit_copies (SET_SRC (set), GET_MODE (x));
 	  if (reg_sign_bit_copies[REGNO (x)] == 0
 	      || reg_sign_bit_copies[REGNO (x)] > num)
@@ -6222,14 +6245,46 @@ nonzero_bits (x, mode)
 	return reg_last_set_nonzero_bits[REGNO (x)];
 
       tem = get_last_value (x);
+
       if (tem)
-	return nonzero_bits (tem, mode);
+	{
+#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
+	  /* If X is narrower than MODE and TEM is a non-negative
+	     constant that would appear negative in the mode of X,
+	     sign-extend it for use in reg_nonzero_bits because some
+	     machines (maybe most) will actually do the sign-extension
+	     and this is the conservative approach. 
+
+	     ??? For 2.5, try to tighten up the MD files in this regard
+	     instead of this kludge.  */
+
+	  if (GET_MODE_BITSIZE (GET_MODE (x)) < mode_width
+	      && GET_CODE (tem) == CONST_INT
+	      && INTVAL (tem) > 0
+	      && 0 != (INTVAL (tem)
+		       & ((HOST_WIDE_INT) 1
+			  << GET_MODE_BITSIZE (GET_MODE (x)))))
+	    tem = GEN_INT (INTVAL (tem)
+			   | ((HOST_WIDE_INT) (-1)
+			      << GET_MODE_BITSIZE (GET_MODE (x))));
+#endif
+	  return nonzero_bits (tem, mode);
+	}
       else if (nonzero_sign_valid && reg_nonzero_bits[REGNO (x)])
 	return reg_nonzero_bits[REGNO (x)] & nonzero;
       else
 	return nonzero;
 
     case CONST_INT:
+#ifdef SHORT_IMMEDIATES_SIGN_EXTEND
+      /* If X is negative in MODE, sign-extend the value.  */
+      if (INTVAL (x) > 0
+	  && 0 != (INTVAL (x)
+		   & ((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (GET_MODE (x)))))
+	return (INTVAL (x)
+		| ((HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (GET_MODE (x))));
+#endif
+
       return INTVAL (x);
 
 #ifdef BYTE_LOADS_ZERO_EXTEND
