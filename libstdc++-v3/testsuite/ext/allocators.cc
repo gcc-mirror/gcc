@@ -24,17 +24,17 @@
 #include <cstdlib>
 #include <testsuite_hooks.h>
 
-typedef std::__malloc_alloc_template<3>             weird_alloc;
-template class std::__malloc_alloc_template<3>;
+typedef std::__malloc_alloc<3>             weird_alloc;
+template class std::__malloc_alloc<3>;
 
 typedef std::__debug_alloc<weird_alloc>             debug_weird_alloc;
 template class std::__debug_alloc<weird_alloc>;
 
-typedef std::__default_alloc_template<true, 3>      unshared_normal_alloc;
-template class std::__default_alloc_template<true, 3>;
+typedef std::__pool_alloc<true, 3>      unshared_normal_alloc;
+template class std::__pool_alloc<true, 3>;
 
-typedef std::__default_alloc_template<false, 3>     unshared_singlethreaded;
-template class std::__default_alloc_template<false, 3>;
+typedef std::__pool_alloc<false, 3>     unshared_singlethreaded;
+template class std::__pool_alloc<false, 3>;
 
 //std::malloc_alloc test_malloc_alloc;
 

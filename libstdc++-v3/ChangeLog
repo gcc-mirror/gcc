@@ -1,3 +1,24 @@
+2003-01-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libtool_VERSION): To 6:0:0.
+	* configure: Regenerated.
+	* config/linker-map.gnu: Clean.
+	
+	* src/misc-inst.cc: Remove instantiations.
+
+	* include/bits/stl_alloc.h (__malloc_alloc_template): 
+	To __malloc_alloc.
+	(__default_alloc_template): To __pool_alloc.
+	* src/stl-inst.cc: Same.
+	* include/backward/alloc.h: Update.
+	* testsuite/ext/allocators.cc: Update.
+	
+	* src/globals.cc (__gnu_cxx): Remove _GLIBCPP_ASM_SYMVER. Should
+	really try to remove these if possible.
+	* src/locale.cc (std): Same.
+
+	* testsuite/abi_check.cc (check_version): Add.
+
 2003-01-22  Benjamin Kosnik  <bkoz@redhat.com>
 	    Sysoltsev Slawa  <Vyatcheslav.Sysoltsev@intel.com>
 	    Mark Mitchell  <mark@codesourcery.com>

@@ -1,6 +1,6 @@
 // Utility for libstdc++ ABI analysis -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,38 @@ namespace __gnu_cxx
 typedef std::deque<std::string>				symbol_names;
 typedef __gnu_cxx::hash_map<std::string, symbol_info> 	symbol_infos;
 
+
+bool
+check_version(const symbol_info& test)
+{
+  bool ret = true;
+
+  typedef std::vector<std::string> compat_list;
+  static compat_list known;
+  if (known.empty())
+    {
+      known.push_back("GLIBCPP_3.2");
+      known.push_back("GLIBCPP_3.2.1");
+      known.push_back("GLIBCPP_3.2.2");
+      known.push_back("GLIBCPP_3.4");
+      known.push_back("CXXABI_1.2");
+      known.push_back("CXXABI_1.2.1");
+      known.push_back("CXXABI_1.3");
+    }
+
+  compat_list::iterator end = known.end();
+
+  // Check version names for compatibility...
+  compat_list::iterator it1 = find(known.begin(), end, test.version_name);
+  
+  // Check for weak label.
+  compat_list::iterator it2 = find(known.begin(), end, test.name);
+  if (it1 != end || it2 != end)
+    ret = true;
+
+  return ret;
+}
+
 bool 
 check_compatible(const symbol_info& lhs, const symbol_info& rhs, 
 		 bool verbose = false)
@@ -113,7 +145,8 @@ check_compatible(const symbol_info& lhs, const symbol_info& rhs,
 	}
     }
 
-  if (lhs.version_name != rhs.version_name)
+  if (lhs.version_name != rhs.version_name 
+      && !check_version(lhs) && !check_version(rhs))
     {
       ret = false;
       if (verbose)
@@ -363,23 +396,8 @@ main(int argc, char** argv)
   // Check added names for compatibility.
   for (size_t i = 0; i < added_names.size(); ++i)
     {
-      vector<string> compatible_versions;
-      compatible_versions.push_back("GLIBCPP_3.2.1");
-      compatible_versions.push_back("GLIBCPP_3.2.2");
-      compatible_versions.push_back("CXXABI_1.2.1");
-
       symbol_info test = test_symbols[added_names[i]];
-      vector<string>::iterator end = compatible_versions.end();
-
-      // Check version names for compatibility...
-      vector<string>::iterator it1 = find(compatible_versions.begin(), end, 
-					  test.version_name);
-
-      // Check for weak label.
-      vector<string>::iterator it2 = find(compatible_versions.begin(), end, 
-					  test.name);
-
-      if (it1 == end && it2 == end)
+      if (!check_version(test))
 	{
 	  incompatible.push_back(symbol_pair(test, test));
 	  cout << test.version_name << endl;

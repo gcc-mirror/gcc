@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -113,15 +113,15 @@ namespace std
   /**
    *  @if maint
    *  A malloc-based allocator.  Typically slower than the
-   *  __default_alloc_template (below).  Typically thread-safe and more
+   *  __pool_alloc (below).  Typically thread-safe and more
    *  storage efficient.  The template argument is unused and is only present
-   *  to permit multiple instantiations (but see __default_alloc_template
+   *  to permit multiple instantiations (but see __pool_alloc
    *  for caveats).  "SGI" style, plus __set_malloc_handler for OOM conditions.
    *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
    */
   template<int __inst>
-    class __malloc_alloc_template
+    class __malloc_alloc
     {
     private:
       static void* _S_oom_malloc(size_t);
@@ -151,11 +151,11 @@ namespace std
 
   // malloc_alloc out-of-memory handling
   template<int __inst>
-    void (* __malloc_alloc_template<__inst>::__malloc_alloc_oom_handler)() = 0;
+    void (* __malloc_alloc<__inst>::__malloc_alloc_oom_handler)() = 0;
 
   template<int __inst>
     void*
-    __malloc_alloc_template<__inst>::
+    __malloc_alloc<__inst>::
     _S_oom_malloc(size_t __n)
     {
       void (* __my_malloc_handler)();
@@ -286,7 +286,7 @@ namespace std
    *  (See @link Allocators allocators info @endlink for more.)
    */
   template<bool __threads, int __inst>
-    class __default_alloc_template
+    class __pool_alloc
     {
     private:
       enum {_ALIGN = 8};
@@ -306,7 +306,8 @@ namespace std
       static char*                  _S_end_free;
       static size_t                 _S_heap_size;
 
-      static _STL_mutex_lock        _S_node_allocator_lock;
+      static _STL_mutex_lock        _S_lock;
+      static _Atomic_word 	    _S_force_new;
 
       static size_t
       _S_round_up(size_t __bytes)
@@ -330,12 +331,10 @@ namespace std
       // test whether threads are in use.
       struct _Lock
       {
-        _Lock() { if (__threads) _S_node_allocator_lock._M_acquire_lock(); }
-        ~_Lock() { if (__threads) _S_node_allocator_lock._M_release_lock(); }
+        _Lock() { if (__threads) _S_lock._M_acquire_lock(); }
+        ~_Lock() { if (__threads) _S_lock._M_release_lock(); }
       } __attribute__ ((__unused__));
       friend struct _Lock;
-
-      static _Atomic_word _S_force_new;
 
     public:
       // __n must be > 0
@@ -404,18 +403,18 @@ namespace std
     };
 
   template<bool __threads, int __inst> _Atomic_word
-  __default_alloc_template<__threads, __inst>::_S_force_new = 0;
+  __pool_alloc<__threads, __inst>::_S_force_new = 0;
 
   template<bool __threads, int __inst>
     inline bool
-    operator==(const __default_alloc_template<__threads,__inst>&,
-               const __default_alloc_template<__threads,__inst>&)
+    operator==(const __pool_alloc<__threads,__inst>&, 
+	       const __pool_alloc<__threads,__inst>&)
     { return true; }
 
   template<bool __threads, int __inst>
     inline bool
-    operator!=(const __default_alloc_template<__threads,__inst>&,
-               const __default_alloc_template<__threads,__inst>&)
+    operator!=(const __pool_alloc<__threads,__inst>&,
+               const __pool_alloc<__threads,__inst>&)
     { return false; }
 
 
@@ -424,7 +423,7 @@ namespace std
   // the allocation lock.
   template<bool __threads, int __inst>
     char*
-    __default_alloc_template<__threads, __inst>::
+    __pool_alloc<__threads, __inst>::
     _S_chunk_alloc(size_t __size, int& __nobjs)
     {
       char* __result;
@@ -499,7 +498,7 @@ namespace std
   // hold the allocation lock.
   template<bool __threads, int __inst>
     void*
-    __default_alloc_template<__threads, __inst>::_S_refill(size_t __n)
+    __pool_alloc<__threads, __inst>::_S_refill(size_t __n)
     {
       int __nobjs = 20;
       char* __chunk = _S_chunk_alloc(__n, __nobjs);
@@ -534,24 +533,23 @@ namespace std
 
   template<bool __threads, int __inst>
     _STL_mutex_lock
-    __default_alloc_template<__threads,__inst>::_S_node_allocator_lock
-    __STL_MUTEX_INITIALIZER;
+    __pool_alloc<__threads,__inst>::_S_lock __STL_MUTEX_INITIALIZER;
 
   template<bool __threads, int __inst>
-    char* __default_alloc_template<__threads,__inst>::_S_start_free = 0;
+    char* __pool_alloc<__threads,__inst>::_S_start_free = 0;
 
   template<bool __threads, int __inst>
-    char* __default_alloc_template<__threads,__inst>::_S_end_free = 0;
+    char* __pool_alloc<__threads,__inst>::_S_end_free = 0;
 
   template<bool __threads, int __inst>
-    size_t __default_alloc_template<__threads,__inst>::_S_heap_size = 0;
+    size_t __pool_alloc<__threads,__inst>::_S_heap_size = 0;
 
   template<bool __threads, int __inst>
-    typename __default_alloc_template<__threads,__inst>::_Obj* volatile
-    __default_alloc_template<__threads,__inst>::_S_free_list[_NFREELISTS];
+    typename __pool_alloc<__threads,__inst>::_Obj* volatile
+    __pool_alloc<__threads,__inst>::_S_free_list[_NFREELISTS];
 
-  typedef __default_alloc_template<true,0>    __alloc;
-  typedef __default_alloc_template<false,0>   __single_client_alloc;
+  typedef __pool_alloc<true,0>    __alloc;
+  typedef __pool_alloc<false,0>   __single_client_alloc;
 
 
   /**
@@ -561,7 +559,7 @@ namespace std
    *  of stl_alloc.h.)
    *
    *  The underlying allocator behaves as follows.
-   *    - __default_alloc_template is used via two typedefs
+   *    - __pool_alloc is used via two typedefs
    *    - "__single_client_alloc" typedef does no locking for threads
    *    - "__alloc" typedef is threadsafe via the locks
    *    - __new_alloc is used for memory requests
@@ -655,7 +653,7 @@ namespace std
   /**
    *  @if maint
    *  Allocator adaptor to turn an "SGI" style allocator (e.g.,
-   *  __alloc, __malloc_alloc_template) into a "standard" conforming
+   *  __alloc, __malloc_alloc) into a "standard" conforming
    *  allocator.  Note that this adaptor does *not* assume that all
    *  objects of the underlying alloc class are identical, nor does it
    *  assume that all of the underlying alloc's member functions are
@@ -757,14 +755,14 @@ namespace std
    */
   template<int inst>
     inline bool
-    operator==(const __malloc_alloc_template<inst>&,
-               const __malloc_alloc_template<inst>&)
+    operator==(const __malloc_alloc<inst>&,
+               const __malloc_alloc<inst>&)
     { return true; }
 
   template<int __inst>
     inline bool
-    operator!=(const __malloc_alloc_template<__inst>&,
-               const __malloc_alloc_template<__inst>&)
+    operator!=(const __malloc_alloc<__inst>&,
+               const __malloc_alloc<__inst>&)
     { return false; }
 
   template<typename _Alloc>
@@ -840,20 +838,20 @@ namespace std
   //@{
   /// Versions for the predefined "SGI" style allocators.
   template<typename _Tp, int __inst>
-    struct _Alloc_traits<_Tp, __malloc_alloc_template<__inst> >
+    struct _Alloc_traits<_Tp, __malloc_alloc<__inst> >
     {
       static const bool _S_instanceless = true;
-      typedef __simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
-      typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
+      typedef __simple_alloc<_Tp, __malloc_alloc<__inst> > _Alloc_type;
+      typedef __allocator<_Tp, __malloc_alloc<__inst> > allocator_type;
     };
 
   template<typename _Tp, bool __threads, int __inst>
-    struct _Alloc_traits<_Tp, __default_alloc_template<__threads, __inst> >
+    struct _Alloc_traits<_Tp, __pool_alloc<__threads, __inst> >
     {
       static const bool _S_instanceless = true;
-      typedef __simple_alloc<_Tp, __default_alloc_template<__threads, __inst> >
+      typedef __simple_alloc<_Tp, __pool_alloc<__threads, __inst> >
       _Alloc_type;
-      typedef __allocator<_Tp, __default_alloc_template<__threads, __inst> >
+      typedef __allocator<_Tp, __pool_alloc<__threads, __inst> >
       allocator_type;
     };
 
@@ -871,20 +869,20 @@ namespace std
   /// "SGI" style allocators.
   template<typename _Tp, typename _Tp1, int __inst>
     struct _Alloc_traits<_Tp,
-                         __allocator<_Tp1, __malloc_alloc_template<__inst> > >
+                         __allocator<_Tp1, __malloc_alloc<__inst> > >
     {
       static const bool _S_instanceless = true;
-      typedef __simple_alloc<_Tp, __malloc_alloc_template<__inst> > _Alloc_type;
-      typedef __allocator<_Tp, __malloc_alloc_template<__inst> > allocator_type;
+      typedef __simple_alloc<_Tp, __malloc_alloc<__inst> > _Alloc_type;
+      typedef __allocator<_Tp, __malloc_alloc<__inst> > allocator_type;
     };
 
   template<typename _Tp, typename _Tp1, bool __thr, int __inst>
-    struct _Alloc_traits<_Tp, __allocator<_Tp1, __default_alloc_template<__thr, __inst> > >
+    struct _Alloc_traits<_Tp, __allocator<_Tp1, __pool_alloc<__thr, __inst> > >
     {
       static const bool _S_instanceless = true;
-      typedef __simple_alloc<_Tp, __default_alloc_template<__thr,__inst> >
+      typedef __simple_alloc<_Tp, __pool_alloc<__thr,__inst> >
       _Alloc_type;
-      typedef __allocator<_Tp, __default_alloc_template<__thr,__inst> >
+      typedef __allocator<_Tp, __pool_alloc<__thr,__inst> >
       allocator_type;
     };
 
@@ -902,7 +900,7 @@ namespace std
   // NB: This syntax is a GNU extension.
   extern template class allocator<char>;
   extern template class allocator<wchar_t>;
-  extern template class __default_alloc_template<true,0>;
+  extern template class __pool_alloc<true,0>;
 } // namespace std
 
 #endif

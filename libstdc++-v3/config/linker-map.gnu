@@ -1,6 +1,6 @@
 ## Linker script for GNU ld 2.11.94+ only.
 ##
-## Copyright (C) 2002 Free Software Foundation, Inc.
+## Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ##
@@ -20,7 +20,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-GLIBCPP_3.2 {
+GLIBCPP_3.4 {
 
   global:
 
@@ -37,31 +37,24 @@ GLIBCPP_3.2 {
       std::basic_[t-z]*;
       std::ba[t-z]*;
       std::b[b-z]*;
-      std::c[a-n]*;
-      std::co[a-c]*;
-      std::codecvt_byname*;
-      std::codecvt::[A-Za-b]*;
-      std::codecvt::[A-Zd-z]*;
-      std::codecvt_c;
-      std::codecvt_w;
-      std::co[e-z]*;
-      std::c[p-z]*;
-      std::c_[a-z]*;	
-      std::[A-Zd-k]*;
+      std::[A-Zc-k]*;
       std::length_error*;
       std::logic_error*;
       std::locale::[A-Za-e]*;
       std::locale::facet::[A-Za-z]*;
       std::locale::facet::_M*;
-      std::locale::facet::_S_c_locale;
+      std::locale::facet::_S_c_locale;	
       std::locale::facet::_S_clone_c_locale*;
       std::locale::facet::_S_create_c_locale*;
       std::locale::facet::_S_destroy_c_locale*;
-      std::locale::[A-Zg-z]*;
-      std::locale::_[A-Ra-z]*;
-      std::locale::_S_classic;
-      std::locale::_S_global;
-      std::locale::_S_num_categories;
+      std::locale::[A-Zg-h]*;
+      std::locale::id::[A-Za-z]*;
+      std::locale::id::_S_highwater;
+      std::locale::[A-Zj-z]*;
+      std::locale::_[A-Ha-z]*;
+      std::locale::_Impl::[A-Za-z]*;
+      std::locale::_Impl::_M_[A-Za-z]*;
+      std::locale::_[J-Ra-z]*;
       std::locale::_S_normalize_category*;
       std::locale::_[T-Za-z]*;
       std::[A-Zm-z]*;
@@ -70,39 +63,10 @@ GLIBCPP_3.2 {
       std::__num_base*;
       std::__timepunct*;
       std::__numeric_limits_base*;
-      std::_S_bit_count;
-      std::_S_first_one
+      std::_S_bit_count
     };
 
     # Names not in an 'extern' block are mangled names.
-
-    # std::string minus binary operator plus
-    _ZNKSs*;
-    _ZNKSb*;
-    _ZNSs[A-Za-z]*;
-    _ZNSs[0-9][A-Za-z]*;
-    _ZNSs[0-9][0-9][A-Za-z]*;
-    _ZNSs[0-9]_[A-Ra-z]*;
-    _ZNSs[0-9][0-9]_[A-Ra-z]*;
-    _ZNSs12_S_empty_repEv;
-    _ZNSs20_S_empty_rep_storageE;
-    _ZNSbIwSt11char_traitsIwESaIwEE20_S_empty_rep_storageE;
-    _ZNSs12_S_constructE*;
-    _ZNSs13_S_copy_charsE*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[A-Ra-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][A-Ra-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9][A-Ra-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9]_[A-Ra-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_[A-Ra-z]*;
-    _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructE[jm]wRKS1_;
-    _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
-    _ZSt24__uninitialized_copy_auxIN9*;
-    _ZSt26__uninitialized_fill_n_aux*;
-    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_EPKS3_RKS6_;
-    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ES3_RKS6_;
-    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_EPKS3_RKS6_;
-    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ES3_RKS6_;
 
     # std::locale destructors
     _ZNSt6localeD*;
@@ -110,70 +74,49 @@ GLIBCPP_3.2 {
     # std::locale::facet destructors
     _ZNSt6locale5facetD*;
 	 
-    # std::codecvt<char> members.
-    _ZNKSt7codecvtIcc11__mbstate_tE*;
-    # std::codecvt<char>::~codecvt
-    _ZNSt7codecvtIcc11__mbstate_tED*;
-    # std::codecvt<char>::codecvt(size_t), where size_t variable.
-    _ZNSt7codecvtIcc11__mbstate_tEC[12]E[jm];
-    # std::codecvt<char>::id
-    _ZNSt7codecvtIcc11__mbstate_tE2idE;
+    # std::locale::_Impl constructors, destrutors
+    _ZNSt6locale5_ImplC*;
+    _ZNSt6locale5_ImplD*;
 
-    # std::codecvt<wchar_t> members.
-    _ZNKSt7codecvtIwc11__mbstate_tE*;
-    # std::codecvt<wchar_t>::~codecvt
-    _ZNSt7codecvtIwc11__mbstate_tED*;
-    # std::codecvt<wchar_t>::codecvt(size_t), where size_t variable.
-    _ZNSt7codecvtIwc11__mbstate_tEC[12]E[jm];
-    # std::codecvt<wchar_t>::id
-    _ZNSt7codecvtIwc11__mbstate_tE2idE;
-
-     # std::use_facet<codecvt>
-    _ZSt9use_facetISt7codecvtIcc11__mbstate_tEERKT_RKSt6locale;
-    _ZSt9use_facetISt7codecvtIwc11__mbstate_tEERKT_RKSt6locale;
-
-    # std::has_facet*
+    # bool has_facet 
     _ZSt9has_facet*;
 
-    # std::__default_alloc_template
-    _ZNSt24__default_alloc_templateILb1ELi0EE10deallocate*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE8allocate*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_free_listE;
-    _ZNSt24__default_alloc_templateILb1ELi0EE22_S_node_allocator_lockE;
-    _ZNSt24__default_alloc_templateILb1ELi0EE9_S_refillE*;
+    # std::string, std::wstring minus static data members
+    _ZNKS[sb]*;
+    _ZNS[sb]D*;
+    _ZNS[sb]C*;
+    _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EESbIT_T0_T1_EPKS3_RKS6_;
+    _ZStplI[cw]St11char_traitsI[cw]ESaI[cw]EESbIT_T0_T1_ES3_RKS6_;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[A-Ra-z]*;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][A-Ra-z]*;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9][A-Ra-z]*;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9]_[A-Ra-z]*;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE[0-9][0-9]_[A-Ra-z]*;
+    _ZNS[sb]I[cw]St11char_traitsI[cw]ESaI[cw]EE20_S_empty_rep_storageE;
 
-    # std::__default_alloc_template to be removed in the future
-    _ZNSt24__default_alloc_templateILb1ELi0EE10reallocateEPv*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_round_upE*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE14_S_chunk_allocE*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE17_S_freelist_indexE*;
-    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_end_freeE;
-    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_heap_sizeE;
-    _ZNSt24__default_alloc_templateILb1ELi0EE13_S_start_freeE;
-    _ZNSt24__default_alloc_templateILb1ELi0EE5_Lock*;
+    # std::__pool_alloc
+    _ZNSt12__pool_allocILb1ELi0EE10deallocateEPvj*;
+    _ZNSt12__pool_allocILb1ELi0EE8allocateEj*;
+    _ZNSt12__pool_allocILb1ELi0EE5_Lock*;
+    _ZNSt12__pool_allocILb1ELi0EE12_S_force_newE;
+    _ZNSt12__pool_allocILb1ELi0EE12_S_free_listE;
+    _ZNSt12__pool_allocILb1ELi0EE7_S_lockE;
+    _ZNSt12__pool_allocILb1ELi0EE9_S_refillE[jm];
 
-    # operator new(unsigned)
-    _Znwj;
-    # operator new(unsigned, std::nothrow_t const&)
-    _ZnwjRKSt9nothrow_t;
-    # operator new(unsigned long)
-    _Znwm;
-    # operator new(unsigned long, std::nothrow_t const&)
-    _ZnwmRKSt9nothrow_t;
+    # operator new(size_t)
+    _Znw[jm];
+    # operator new(size_t, std::nothrow_t const&)
+    _Znw[jm]RKSt9nothrow_t;
 
     # operator delete(void*)
     _ZdlPv;
     # operator delete(void*, std::nothrow_t const&)
     _ZdlPvRKSt9nothrow_t;
 
-    # operator new[](unsigned)
-    _Znaj;
-    # operator new[](unsigned, std::nothrow_t const&)
-    _ZnajRKSt9nothrow_t;
-    # operator new[](unsigned long)
-    _Znam;
-    # operator new[](unsigned long, std::nothrow_t const&)
-    _ZnamRKSt9nothrow_t;
+    # operator new[](size_t)
+    _Zna[jm];
+    # operator new[](size_t, std::nothrow_t const&)
+    _Zna[jm]RKSt9nothrow_t;
 
     # operator delete[](void*)
     _ZdaPv;
@@ -199,66 +142,47 @@ GLIBCPP_3.2 {
     # std::__convert_to_v
     _ZSt14__convert_to_v*;
 
+    # stub functions from libmath
+    sinf;
+    sinl;
+    sinhf;
+    sinhl;
+    cosf;
+    cosl;
+    coshf;
+    coshl;
+    tanf;
+    tanl;
+    tanhf;
+    tanhl;
+    atan2f;
+    atan2l;
+    expf;
+    expl;
+    hypotf;
+    hypotl;
+    hypot;
+    logf;
+    logl;
+    log10f;
+    log10l;
+    powf;
+    powl;
+    sqrtf;
+    sqrtl;
+    copysignf;
+    nan;
+    __signbit;
+    __signbitf;
+    __signbitl;
+
   local:
     *;
 };
 
-# Symbols added after GLIBCPP_3.2
-GLIBCPP_3.2.1 {
-
-  _ZNSt7codecvtIcc11__mbstate_tEC1EP15__locale_structj;
-  _ZNSt7codecvtIcc11__mbstate_tEC2EP15__locale_structj;
-  _ZNSt7codecvtIwc11__mbstate_tEC1EP15__locale_structj;
-  _ZNSt7codecvtIwc11__mbstate_tEC2EP15__locale_structj;
-
-  _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_;
-  _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ERKS6_S8_;
-
-  # stub functions from libmath
-  sinf;
-  sinl;
-  sinhf;
-  sinhl;
-  cosf;
-  cosl;
-  coshf;
-  coshl;
-  tanf;
-  tanl;
-  tanhf;
-  tanhl;
-  atan2f;
-  atan2l;
-  expf;
-  expl;
-  hypotf;
-  hypotl;
-  hypot;
-  logf;
-  logl;
-  log10f;
-  log10l;
-  powf;
-  powl;
-  sqrtf;
-  sqrtl;
-  copysignf;
-  nan;
-  __signbit;
-  __signbitf;
-  __signbitl;
-
-} GLIBCPP_3.2;
-
-
-GLIBCPP_3.2.2 {
-
-  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
-
-} GLIBCPP_3.2.1;
 
 # Symbols in the support library (libsupc++) have their own tag.
-CXXABI_1.2 {
+CXXABI_1.3 {
 
   global:
     __cxa_allocate_exception;
@@ -272,6 +196,9 @@ CXXABI_1.2 {
     __cxa_free_exception;
     __cxa_get_globals;
     __cxa_get_globals_fast;
+    __cxa_guard_abort;
+    __cxa_guard_acquire;
+    __cxa_guard_release;
     __cxa_pure_virtual;
     __cxa_rethrow;
     __cxa_throw;
@@ -292,35 +219,6 @@ CXXABI_1.2 {
     # __gnu_cxx::_verbose_terminate_handler()
     _ZN9__gnu_cxx27__verbose_terminate_handlerEv;
 
-    # XXX Should not be exported.
-    __cxa_dyn_string_append_char;
-    __cxa_dyn_string_append_cstr;
-    __cxa_dyn_string_append;
-    __cxa_dyn_string_clear;
-    __cxa_dyn_string_copy_cstr;
-    __cxa_dyn_string_copy;
-    __cxa_dyn_string_delete;
-    __cxa_dyn_string_eq;
-    __cxa_dyn_string_init;
-    __cxa_dyn_string_insert_char;
-    __cxa_dyn_string_insert_cstr;
-    __cxa_dyn_string_insert;
-    __cxa_dyn_string_new;
-    __cxa_dyn_string_prepend_cstr;
-    __cxa_dyn_string_prepend;
-    __cxa_dyn_string_release;
-    __cxa_dyn_string_resize;
-    __cxa_dyn_string_substring;
-
   local:
     *;
 };
-
-# Symbols added after CXXABI_1.2
-CXXABI_1.2.1 {
-
-    __cxa_guard_acquire;
-    __cxa_guard_release;
-    __cxa_guard_abort;
-
-} CXXABI_1.2;
