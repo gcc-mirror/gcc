@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.66 2001/01/30 09:18:51 bkoz Exp $
+## $Id: Makefile.am,v 1.67 2001/02/03 09:01:44 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -227,18 +227,8 @@ $(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
 
 
 # Check for various configure bits that change where the headers get installed.
-if GXX_INCLUDE_DIR
-myincludep = @gxx_include_dir@
-targetincludep = @gxx_include_dir@
-else
-if VERSION_SPECIFIC_LIBS
-myincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-targetincludep = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-else
-myincludep = $(prefix)/include/g++-@libstdcxx_interface@
-targetincludep = @gxx_target_include_dir@
-endif
-endif
+gxx_include_dir = @gxx_include_dir@
+gxx_target_include_dir = $(gxx_include_dir)/$(target_alias)
 
 # We have our own special, ridiculously complicated installation routine
 # here, as automake/autoconf is currently brain-damaged when it comes
@@ -258,9 +248,9 @@ install-data-local: myinstalldirs myinstallheaders
 # NB: installation of shadow header directories is not attempted.
 myinstalldirs:
 	if test -z "$(MULTISUBDIR)"; then \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/bits; \
-	$(mkinstalldirs) $(DESTDIR)$(myincludep)/ext; \
-	$(mkinstalldirs) $(DESTDIR)$(targetincludep)/bits; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/bits; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_include_dir)/ext; \
+	$(mkinstalldirs) $(DESTDIR)$(gxx_target_include_dir)/bits; \
 	fi
 
 # NB: As libio_headers may be empty, need this to make sure bash doesn't
@@ -272,33 +262,33 @@ c_incdir = @C_INCLUDE_DIR@
 myinstallheaders: 
 	if test -z "$(MULTISUBDIR)"; then \
 	for i in $(base_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(ext_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)/ext/; \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)/ext/; \
 	done; \
 	for i in $(backward_headers); do \
-        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(myincludep)"; \
-	  $(INSTALL_DATA) $(src_incdir)/$$i $(myincludep); \
+        echo "$(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir)"; \
+	  $(INSTALL_DATA) $(src_incdir)/$$i $(gxx_include_dir); \
 	done; \
 	for i in $(c_base_headers); do \
-        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/"; \
-	  $(INSTALL_DATA) $(c_incdir)/$$i $(myincludep)/bits/; \
+        echo "$(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(c_incdir)/$$i $(gxx_include_dir)/bits/; \
 	done; \
 	for i in $(std_headers); do \
-	echo "$(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep)";\
-	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(myincludep); \
+	echo "$(INSTALL_DATA) $(src_incdir)/std/$$i $(gxx_include_dir)";\
+	  $(INSTALL_DATA) $(src_incdir)/std/$$i $(gxx_include_dir); \
 	done; \
 	for i in $(build_headers); do \
-        echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/"; \
-	  $(INSTALL_DATA) $(bld_incdir)/$$i $(targetincludep)/bits/; \
+    echo "$(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/"; \
+	  $(INSTALL_DATA) $(bld_incdir)/$$i $(gxx_target_include_dir)/bits/; \
 	done; \
 	libio_headers_install='$(libio_headers)'; \
 	for i in $$libio_headers_install; do \
-        echo "$(INSTALL_DATA) $$i $(myincludep)"; \
-          $(INSTALL_DATA) $$i $(myincludep); \
+        echo "$(INSTALL_DATA) $$i $(gxx_include_dir)"; \
+          $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
 

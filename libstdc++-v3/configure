@@ -15603,21 +15603,20 @@ fi
 
 # Generate the various Makefiles, include files, and scripts.
 
-# This helps subvert libstdcxx_interface, as calculated by devo/config.if
 # Needed so that g++ can find the correct include subdir automatically.
 INTERFACE=v3
 
-# Check for the interface version number for specifying where header
-# files are installed, if a version number is provided.
+# Export all the install information
+
+
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
 echo "configure:15614: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
-
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:15621: checking for --with-gxx-include-dir" >&5
+echo "configure:15620: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -15639,19 +15638,9 @@ fi
 
 echo "$ac_t""$gxx_include_dir" 1>&6
 
-
-
-if test x${gxx_include_dir} != xno; then
-  GXX_INCLUDE_DIR_TRUE=
-  GXX_INCLUDE_DIR_FALSE='#'
-else
-  GXX_INCLUDE_DIR_TRUE='#'
-  GXX_INCLUDE_DIR_FALSE=
-fi
-
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:15655: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:15644: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -15659,37 +15648,36 @@ if test "${enable_version_specific_runtime_libs+set}" = set; then
 # Need the gcc compiler version to know where to install libraries
 # and header files if --enable-version-specific-runtime-libs option
 # is selected.
-gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $6}'`
+gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print }'`
 gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
-#gcc_date=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $7}'`
+#gcc_date=`grep version_string ${srcdir}/../gcc/version.c | awk '{print }'`
 #gcc_version=$gcc_num-$gcc_date
 gcc_version=$gcc_num
+gxx_include_dir=$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++
 
 
-else
-  version_specific_libs=no
-fi
 
-echo "$ac_t""$version_specific_libs" 1>&6
-if test x${version_specific_libs} = xyes; then
-  
-
-if test x${version_specific_libs} = xyes; then
+if test x"$version_specific_libs" = x"yes"; then
   VERSION_SPECIFIC_LIBS_TRUE=
   VERSION_SPECIFIC_LIBS_FALSE='#'
 else
   VERSION_SPECIFIC_LIBS_TRUE='#'
   VERSION_SPECIFIC_LIBS_FALSE=
 fi
-  echo "configure: warning: version specific directory is: $gcc_version" 1>&2
+
+else
+  version_specific_libs=no
 fi
 
-# We have to install all the generated or linked includes files
-# specified as build_headers in src/Makefile.am in a target-dependent
-# place, or else multiple installs for different compilers will
-# overwrite these files.
-# NB: Keep this and gcc/Makefile.in's -DGPLUSPLUS_TOOL_INCLUDE_DIR in sync.
-gxx_target_include_dir='$(exec_prefix)/$(target_alias)/include/g++-$(libstdcxx_interface)'
+echo "$ac_t""$version_specific_libs" 1>&6
+
+echo $ac_n "checking for install location""... $ac_c" 1>&6
+echo "configure:15676: checking for install location" >&5
+if test x"$version_specific_libs" = x"no" \
+   && test x"$gxx_include_dir"=x"no"; then
+  gxx_include_dir=${prefix}/include/g++-${libstdcxx_interface}
+fi
+echo "$ac_t""$gxx_include_dir" 1>&6
 
 
 
@@ -15967,14 +15955,10 @@ s%@USE_LIBDIR_TRUE@%$USE_LIBDIR_TRUE%g
 s%@USE_LIBDIR_FALSE@%$USE_LIBDIR_FALSE%g
 s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g
-s%@libstdcxx_interface@%$libstdcxx_interface%g
-s%@gxx_include_dir@%$gxx_include_dir%g
-s%@GXX_INCLUDE_DIR_TRUE@%$GXX_INCLUDE_DIR_TRUE%g
-s%@GXX_INCLUDE_DIR_FALSE@%$GXX_INCLUDE_DIR_FALSE%g
 s%@gcc_version@%$gcc_version%g
 s%@VERSION_SPECIFIC_LIBS_TRUE@%$VERSION_SPECIFIC_LIBS_TRUE%g
 s%@VERSION_SPECIFIC_LIBS_FALSE@%$VERSION_SPECIFIC_LIBS_FALSE%g
-s%@gxx_target_include_dir@%$gxx_target_include_dir%g
+s%@gxx_include_dir@%$gxx_include_dir%g
 s%@GLIBCPP_INCLUDE_DIR@%$GLIBCPP_INCLUDE_DIR%g
 s%@TOPLEVEL_INCLUDES@%$TOPLEVEL_INCLUDES%g
 s%@LIBMATH_INCLUDES@%$LIBMATH_INCLUDES%g

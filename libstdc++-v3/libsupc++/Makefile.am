@@ -100,17 +100,7 @@ sources = \
 libsupc___la_SOURCES = $(sources)
 libsupc__convenience_la_SOURCES = $(sources)
 
-# Check for various configure bits that change where the headers get installed.
-if GXX_INCLUDE_DIR
 glibcppinstalldir = @gxx_include_dir@
-else
-if VERSION_SPECIFIC_LIBS
-glibcppinstalldir = $(libdir)/gcc-lib/$(target_alias)/@gcc_version@/include/g++
-else
-glibcppinstalldir = $(prefix)/include/g++-@libstdcxx_interface@
-endif
-endif
-
 glibcppinstall_HEADERS = $(headers)
 
 # Flags to force separate libtool library to be static only.
