@@ -730,7 +730,7 @@ main (argc, argv)
   last_file_name = getenv ("COLLECT_NAME");
 
   p = (char *) xcalloc (sizeof (char *),
-			sizeof (our_file_name) + strlen ("COLLECT_NAME=") + 1);
+			strlen (our_file_name) + strlen ("COLLECT_NAME=") + 1);
   sprintf (p, "COLLECT_NAME=%s", our_file_name);
   putenv (p);
 
