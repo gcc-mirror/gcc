@@ -895,7 +895,7 @@ extern int sparc_mode_class[];
 #define FRAME_POINTER_REGNUM 30
 
 #if 0
-/* Register that is used for the return address.  */
+/* Register that is used for the return address for the flat model.  */
 #define RETURN_ADDR_REGNUM 15
 #endif
 
@@ -2168,6 +2168,8 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    ? gen_rtx (REG, Pmode, 31)			\
    : gen_rtx (MEM, Pmode,			\
 	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
+
+#define DOESNT_NEED_UNWINDER (! TARGET_FLAT)
 
 /* Addressing modes, and classification of registers for them.  */
 

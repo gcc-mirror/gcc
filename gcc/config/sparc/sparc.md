@@ -5392,7 +5392,8 @@
   [(set_attr "type" "multi")])
 
 (define_insn "return"
-  [(return)]
+  [(return)
+   (use (reg:SI 31))]
   "! TARGET_EPILOGUE"
   "* return output_return (operands);"
   [(set_attr "type" "multi")])

@@ -2310,6 +2310,13 @@ extern int rs6000_trunc_used;
 
 #define READONLY_DATA_SECTION read_only_data_section
 
+
+/* Define the name of the section to use for the exception tables.
+   TODO: test and see if we can use read_only_data_section, if so,
+   remove this.  */
+
+#define EXCEPTION_SECTION data_section
+
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
    that we can branch to this function without emitting a no-op after the
