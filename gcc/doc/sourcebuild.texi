@@ -450,6 +450,9 @@ Details of source file suffixes for that language and @option{-x
 Entries in @code{default_compilers} in @file{gcc.c} for source file
 suffixes for that language.
 @item
+A bitmask in @file{opts.h} that flags each switch accepted by
+the front end, for example @code{CL_JAVA}.
+@item
 Preferably test suites, which may be under @file{gcc/testsuite} or
 runtime library directories.  FIXME: document somewhere how to write
 test suite harnesses.
@@ -600,6 +603,11 @@ Move to the stage directory files not included in @code{stagestuff} in
 @file{config-lang.in} or otherwise moved by the main @file{Makefile}.
 @end table
 
+@item lang.opt
+This file registers the set of switches that the front end accepts on
+the command line.  The file format is documented in each
+@file{lang.opt} file in the GCC tree.  @file{lang.opt} is processed
+by the script @file{opts.sh}.
 @item lang-options.h
 This file provides entries for @code{documented_lang_options} in
 @file{toplev.c} describing command-line options the front end accepts
