@@ -955,7 +955,18 @@ directory_specified_p (name)
   for (p = directory_list; p; p = p->next)
     if (!strncmp (name, p->name, strlen (p->name))
 	&& name[strlen (p->name)] == '/')
-      return 1;
+      {
+	const char *q = name + strlen (p->name) + 1;
+
+	/* If there are more slashes, it's in a subdir, so
+	   this match doesn't count.  */
+	while (*q)
+	  if (*q++ == '/')
+	    goto lose;
+	return 1;
+
+      lose: ;
+      }
 
   return 0;
 }
