@@ -1,3 +1,8 @@
+2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	* configure.in: Set insn=nop for DWARF-2 tests on ARM.
+	* configure: Regenerated.
+
 2002-11-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (compute_a_shift_length): Fix the insn
