@@ -1136,21 +1136,6 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
 }
 
-/* Defer the compilation of the FN until the end of compilation.  */
-
-void
-defer_fn (tree fn)
-{
-  if (DECL_DEFERRED_FN (fn))
-    return;
-  DECL_DEFERRED_FN (fn) = 1;
-  DECL_DEFER_OUTPUT (fn) = 1;
-  if (!deferred_fns)
-    VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
-
-  VARRAY_PUSH_TREE (deferred_fns, fn);
-}
-
 /* Walks through the namespace- or function-scope anonymous union OBJECT,
    building appropriate ALIAS_DECLs.  Returns one of the fields for use in
    the mangled name.  */
@@ -2753,6 +2738,9 @@ finish_file (void)
 	{
 	  tree decl = VARRAY_TREE (deferred_fns, i);
 
+	  if (! DECL_DECLARED_INLINE_P (decl) || ! TREE_USED (decl))
+	    abort ();
+
 	  /* Does it need synthesizing?  */
 	  if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
 	      && TREE_USED (decl)
@@ -2769,19 +2757,8 @@ finish_file (void)
 	      reconsider = true;
 	    }
 
-	  /* If the function has no body, avoid calling
-	     import_export_decl.  On a system without weak symbols,
-	     calling import_export_decl will make an inline template
-	     instantiation "static", which will result in errors about
-	     the use of undefined functions if there is no body for
-	     the function.  In fact, all the functions in this list
-	     *should* have a body.  */
 	  if (!DECL_SAVED_TREE (decl))
-	    {
-	      if (! DECL_DECLARED_INLINE_P (decl) || ! TREE_USED (decl))
-		abort ();
-	      continue;
-	    }
+	    continue;
 
 	  import_export_decl (decl);
 
@@ -2853,12 +2830,11 @@ finish_file (void)
     {
       tree decl = VARRAY_TREE (deferred_fns, i);
 
-      if (TREE_USED (decl) && DECL_DECLARED_INLINE_P (decl)
-	  && !(TREE_ASM_WRITTEN (decl) || DECL_SAVED_TREE (decl)
-	       /* An explicit instantiation can be used to specify
-	          that the body is in another unit. It will have
-	          already verified there was a definition.  */
-	       || DECL_EXPLICIT_INSTANTIATION (decl)))
+      if (!TREE_ASM_WRITTEN (decl) && !DECL_SAVED_TREE (decl)
+	  /* An explicit instantiation can be used to specify
+	     that the body is in another unit. It will have
+	     already verified there was a definition.  */
+	  && !DECL_EXPLICIT_INSTANTIATION (decl))
 	{
 	  cp_warning_at ("inline function `%D' used but never defined", decl);
 	  /* This symbol is effectively an "extern" declaration now.
@@ -3032,8 +3008,17 @@ mark_used (tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl)
       && !TREE_ASM_WRITTEN (decl))
     /* Remember it, so we can check it was defined.  */
-    defer_fn (decl);
-
+    {
+      if (DECL_DEFERRED_FN (decl))
+	return;
+      DECL_DEFERRED_FN (decl) = 1;
+      DECL_DEFER_OUTPUT (decl) = 1;
+      if (!deferred_fns)
+	VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
+      
+      VARRAY_PUSH_TREE (deferred_fns, decl);
+    }
+  
   assemble_external (decl);
 
   /* Is it a synthesized method that needs to be synthesized?  */
