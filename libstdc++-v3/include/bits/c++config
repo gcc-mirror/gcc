@@ -61,7 +61,6 @@ namespace __gnu_debug_def { }
 
 namespace __gnu_debug 
 { 
-  using namespace std; 
   using namespace __gnu_debug_def __attribute__ ((strong));
 }
 
