@@ -636,7 +636,7 @@ scan_linker_output (fname)
 	    /* Then try entire line.  */
 	    q = strchr (oldq, 0);
 	    if (q != oldq)
-	      p = oldq;
+	      p = (char *)oldq;
 	  }
 
 	  if (p)
