@@ -1,3 +1,21 @@
+Mon Jan  4 15:37:30 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (skip_if_group): Split out the logic that handles
+	directive recognition to its own function.  Don't use
+	parse markers; use a bare pointer into the buffer.  Use
+	copy/skip_rest_of_line instead of doing it by hand.  Remove
+	`return on any directive' mode which was never used, and take
+	only one argument.
+	(consider_directive_while_skipping): New function, subroutine
+	of skip_if_group.  Logic streamlined a bit.
+	(conditional_skip, do_elif, do_else): Call skip_if_group with
+	only one argument.
+
+Mon Jan  4 15:27:30 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (do_undef): EOF immediately after '#undef FOO' is not an
+	error.
+
 Mon Jan  4 11:55:51 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* extend.texi (Bound member functions): Document.
@@ -198,11 +216,6 @@ Thu Dec 24 10:39:57 1998  Stan Cox  <scox@cygnus.com>
 
 	* gcc.c (execute): Enable -pipe with win32.
 
-Wed Dec 23 17:30:18 1998  Zack Weinberg  <zack@rabi.phys.columbia.edu>
-
-	* cpplib.c (do_undef): EOF immediately after '#undef FOO' is not an
-	error.
-
 Wed Dec 23 10:27:44 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/t-arm-elf: Add multiplib option for leading
@@ -298,19 +311,6 @@ Tue Dec 22 13:02:22 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* toplev.c (main): Delete handling of -dM as a preprocessor
 	option.
-
-1998-12-21 18:03 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
-
-	* cpplib.c (skip_if_group): Split out the logic that handles
-	directive recognition to its own function.  Don't use
-	parse markers; use a bare pointer into the buffer.  Use
-	copy/skip_rest_of_line instead of doing it by hand.  Remove
-	`return on any directive' mode which was never used, and take
-	only one argument.
-	(consider_directive_while_skipping): New function, subroutine
-	of skip_if_group.  Logic streamlined a bit.
-	(conditional_skip, do_elif, do_else): Call skip_if_group with
-	only one argument.
 
 Mon Dec 21 17:39:38 1998  Michael Meissner  <meissner@cygnus.com>
 
