@@ -1212,7 +1212,7 @@ c-parse.o : $(parsedir)/c-parse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(
     $(GGC_H) intl.h $(C_TREE_H) input.h flags.h toplev.h output.h $(CPPLIB_H) \
     varray.h gt-c-parse.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	       -c $(srcdir)/c-parse.c $(OUTPUT_OPTION)
+	       -c $(parsedir)/c-parse.c $(OUTPUT_OPTION)
 
 $(parsedir)/c-parse.c: $(parsedir)/c-parse.y
 	cd $(parsedir) && \
