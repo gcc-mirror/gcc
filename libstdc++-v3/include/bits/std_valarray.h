@@ -281,7 +281,7 @@ namespace std {
   inline valarray<_Tp>::valarray (const slice_array<_Tp>& __sa)
     : _M_size(__sa._M_sz), _M_data(__valarray_get_storage<_Tp>(__sa._M_sz))
   {
-    __valarray_copy_construct
+    __valarray_copy
       (__sa._M_array, __sa._M_sz, __sa._M_stride, _Array<_Tp>(_M_data));
   }
 
@@ -290,7 +290,7 @@ namespace std {
     : _M_size(__ga._M_index.size()),
       _M_data(__valarray_get_storage<_Tp>(_M_size))
   {
-    __valarray_copy_construct
+    __valarray_copy
       (__ga._M_array, _Array<size_t>(__ga._M_index),
        _Array<_Tp>(_M_data), _M_size);
   }
@@ -299,7 +299,7 @@ namespace std {
   inline valarray<_Tp>::valarray (const mask_array<_Tp>& __ma)
     : _M_size(__ma._M_sz), _M_data(__valarray_get_storage<_Tp>(__ma._M_sz))
   {
-    __valarray_copy_construct
+    __valarray_copy
       (__ma._M_array, __ma._M_mask, _Array<_Tp>(_M_data), _M_size);
   }
 
@@ -307,14 +307,14 @@ namespace std {
   inline valarray<_Tp>::valarray (const indirect_array<_Tp>& __ia)
     : _M_size(__ia._M_sz), _M_data(__valarray_get_storage<_Tp>(__ia._M_sz))
   {
-    __valarray_copy_construct
+    __valarray_copy
       (__ia._M_array, __ia._M_index, _Array<_Tp>(_M_data), _M_size);
   }
 
   template<typename _Tp> template<class _Dom>
   inline valarray<_Tp>::valarray (const _Expr<_Dom, _Tp>& __e)
     : _M_size(__e.size ()), _M_data(__valarray_get_storage<_Tp>(_M_size))
-  { __valarray_copy_construct (__e, _M_size, _Array<_Tp>(_M_data)); }
+  { __valarray_copy (__e, _M_size, _Array<_Tp>(_M_data)); }
 
   template<typename _Tp>
   inline valarray<_Tp>::~valarray ()
