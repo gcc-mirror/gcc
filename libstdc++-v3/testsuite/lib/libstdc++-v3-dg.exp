@@ -44,7 +44,9 @@ proc libstdc++-v3-init { args } {
     global cxxflags
     global objdir
     global gluefile wrap_flags
+    global env
     global ld_library_path
+    global original_ld_library_path
     global tool_root_dir
 
     set blddir [lookfor_file [get_multilibs] libstdc++-v3]
@@ -57,15 +59,32 @@ proc libstdc++-v3-init { args } {
     libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.tst"] $outdir
     libstdc++-v3-copy-files [glob -nocomplain "$srcdir/{,*/}*/*.txt"] $outdir
 
-    # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
-    # locate libgcc.a so we don't need to account for different values of
+
+    # Setup LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
+    # Find the existing LD_LIBRARY_PATH.
+    if [info exists env(LD_LIBRARY_PATH)] {
+	set original_ld_library_path $env(LD_LIBRARY_PATH)
+    } else {
+	if [info exists env(SHLIB_PATH)] {
+	    set original_ld_library_path $env(SHLIB_PATH)
+	} else {
+	    if [info exists env(DYLD_LIBRARY_PATH)] {
+		set original_ld_library_path $env(DYLD_LIBRARY_PATH)
+	    } else {
+		set original_ld_library_path ""
+	    }
+	}
+    }
+
+    # Locate libgcc.a so we don't need to account for different values of
     # SHLIB_EXT on different platforms
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
 	set gccdir [file dirname $gccdir]
     }
 
-    set ld_library_path "."
+    # Compute what needs to be added to the existing LD_LIBRARY_PATH.
+    set ld_library_path ""
     append ld_library_path ":${gccdir}"
     set compiler ${gccdir}/g++
     if { [is_remote host] == 0 && [which $compiler] != 0 } {
@@ -89,10 +108,14 @@ proc libstdc++-v3-init { args } {
     # unix.exp -- but that's not an option since it's part of DejaGNU
     # proper, so we do it here.  We really only need to do 
     # this on IRIX, but it shouldn't hurt to do it anywhere else.
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
+    setenv  LD_LIBRARY_PATH     "$ld_library_path:$original_ld_library_path"
+    setenv  SHLIB_PATH          "$ld_library_path:$original_ld_library_path"
+    setenv  LD_LIBRARYN32_PATH  "$ld_library_path:$original_ld_library_path"
+    setenv  LD_LIBRARY64_PATH   "$ld_library_path:$original_ld_library_path"
+    setenv  LD_RUN_PATH         "$ld_library_path:$original_ld_library_path"
+    setenv  LD_LIBRARY_PATH_64  "$ld_library_path:$original_ld_library_path"
+    setenv  DYLD_LIBRARY_PATH   "$ld_library_path:$original_ld_library_path"
+    verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
 
     # Do a bunch of handstands and backflips for cross compiling and
     # finding simulators...
