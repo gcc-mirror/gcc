@@ -4833,23 +4833,28 @@ tsubst_friend_class (friend_tmpl, args)
   tree tmpl;
 
   /* First, we look for a class template.  */
-  tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/0); 
-  
-  /* But, if we don't find one, it might be because we're in a
-     situation like this:
-
-       template <class T>
-       struct S {
-         template <class U>
-	 friend struct S;
-       };
-
-     Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
-     for `S<int>', not the TEMPLATE_DECL.  */
-  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
+  if (DECL_CONTEXT (friend_tmpl))
+    tmpl = friend_tmpl;
+  else
     {
-      tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
-      tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+      tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/0); 
+
+      /* But, if we don't find one, it might be because we're in a
+	 situation like this:
+
+	   template <class T>
+	   struct S {
+	     template <class U>
+	     friend struct S;
+	   };
+
+	 Here, in the scope of (say) S<int>, `S' is bound to a TYPE_DECL
+	 for `S<int>', not the TEMPLATE_DECL.  */
+      if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
+	{
+	  tmpl = lookup_name (DECL_NAME (friend_tmpl), /*prefer_type=*/1);
+	  tmpl = maybe_get_template_decl_from_type_decl (tmpl);
+	}
     }
 
   if (tmpl && DECL_CLASS_TEMPLATE_P (tmpl))
