@@ -1,3 +1,8 @@
+2003-05-15  Wolfgang Bangerth <bangerth@dealii.org>
+
+	* doc/bugreport.texi: Remove most of the bug reporting
+	instructions and merge them into bugs.html.
+
 2003-05-14  Eric Christopher  <echristo@redhat.com>
 
 	* combine.c: Fix header comments.
