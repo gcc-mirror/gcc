@@ -1923,17 +1923,33 @@ expand_end_loop ()
 
   do_pending_stack_adjust ();
 
-  /* If optimizing, perhaps reorder the loop.  If the loop
-     starts with a conditional exit, roll that to the end
-     where it will optimize together with the jump back.
+  /* If optimizing, perhaps reorder the loop.  If the loop starts with
+     a loop exit, roll that to the end where it will optimize together
+     with the jump back.
 
-     We look for the last conditional branch to the exit that we encounter
-     before hitting 30 insns or a CALL_INSN.  If we see an unconditional
-     branch to the exit first, use it.
+     We look for the conditional branch to the exit, except that once
+     we find such a branch, we don't look past 30 instructions.
 
-     We must also stop at NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes
-     because moving them is not valid.  */
+     In more detail, if the loop presently looks like this (in pseudo-C):
 
+         start_label:
+         if (test) goto end_label;
+	 body;
+	 goto start_label;
+	 end_label;
+	 
+     transform it to look like:
+
+         goto start_label;
+         newstart_label:
+	 body;
+	 start_label:
+	 if (test) goto end_label;
+	 goto newstart_label;
+	 end_label;
+
+     Here, the `test' may actually consist of some reasonably complex
+     code, terminating in a test.  */
   if (optimize
       &&
       ! (GET_CODE (insn) == JUMP_INSN
@@ -1941,24 +1957,82 @@ expand_end_loop ()
 	 && SET_DEST (PATTERN (insn)) == pc_rtx
 	 && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE))
     {
+      int eh_regions = 0;
+
       /* Scan insns from the top of the loop looking for a qualified
 	 conditional exit.  */
       for (insn = NEXT_INSN (loop_stack->data.loop.start_label); insn;
 	   insn = NEXT_INSN (insn))
 	{
-	  if (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == CODE_LABEL)
-	    break;
+	  if (GET_CODE (insn) == NOTE) 
+	    {
+	      if (optimize < 2
+		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
+		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
+		/* The code that actually moves the exit test will
+		   carefully leave BLOCK notes in their original
+		   location.  That means, however, that we can't debug
+		   the exit test itself.  So, we refuse to move code
+		   containing BLOCK notes at low optimization levels.  */
+		break;
 
-	  if (GET_CODE (insn) == NOTE
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-		  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-	    break;
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+		++eh_regions;
+	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+		{
+		  --eh_regions;
+		  if (eh_regions < 0) 
+		    /* We've come to the end of an EH region, but
+		       never saw the beginning of that region.  That
+		       means that an EH region begins before the top
+		       of the loop, and ends in the middle of it.  The
+		       existence of such a situation violates a basic
+		       assumption in this code, since that would imply
+		       that even when EH_REGIONS is zero, we might
+		       move code out of an exception region.  */
+		    abort ();
+		}
+
+	      /* We already know this INSN is a NOTE, so there's no
+		 point in looking at it to see if it's a JUMP.  */
+	      continue;
+	    }
 
 	  if (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == INSN)
 	    num_insns++;
 
 	  if (last_test_insn && num_insns > 30)
 	    break;
+
+	  if (eh_regions > 0) 
+	    /* We don't want to move a partial EH region.  Consider:
+
+		  while ( ( { try {
+				if (cond ()) 0;	
+				else {
+				  bar();
+				  1;
+				}
+			      } catch (...) { 
+				1;
+			      } )) {
+		     body;
+		  } 
+
+	        This isn't legal C++, but here's what it's supposed to
+	        mean: if cond() is true, stop looping.  Otherwise,
+	        call bar, and keep looping.  In addition, if cond
+	        throws an exception, catch it and keep looping. Such
+	        constructs are certainy legal in LISP.  
+
+		We should not move the `if (cond()) 0' test since then
+		the EH-region for the try-block would be broken up.
+		(In this case we would the EH_BEG note for the `try'
+		and `if cond()' but not the call to bar() or the
+		EH_END note.)  
+
+	        So we don't look for tests within an EH region.  */
+	    continue;
 
 	  if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) == SET
 	      && SET_DEST (PATTERN (insn)) == pc_rtx
@@ -1994,6 +2068,7 @@ expand_end_loop ()
 	     to jump to there.  */
 	  register rtx newstart_label = gen_label_rtx ();
 	  register rtx start_move = start_label;
+	  rtx next_insn;
 
 	  /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
 	     then we want to move this note also.  */
@@ -2003,7 +2078,38 @@ expand_end_loop ()
 	    start_move = PREV_INSN (start_move);
 
 	  emit_label_after (newstart_label, PREV_INSN (start_move));
-	  reorder_insns (start_move, last_test_insn, get_last_insn ());
+
+	  /* Actually move the insns.  Start at the beginning, and
+	     keep copying insns until we've copied the
+	     last_test_insn.  */
+	  for (insn = start_move; insn; insn = next_insn)
+	    {
+	      /* Figure out which insn comes after this one.  We have
+		 to do this before we move INSN.  */
+	      if (insn == last_test_insn)
+		/* We've moved all the insns.  */
+		next_insn = NULL_RTX;
+	      else
+		next_insn = NEXT_INSN (insn);
+
+	      if (GET_CODE (insn) == NOTE
+		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
+		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
+		/* We don't want to move NOTE_INSN_BLOCK_BEGs or
+		   NOTE_INSN_BLOCK_ENDs because the correct generation
+		   of debugging information depends on these appearing
+		   in the same order in the RTL and in the tree
+		   structure, where they are represented as BLOCKs.
+		   So, we don't move block notes.  Of course, moving
+		   the code inside the block is likely to make it
+		   impossible to debug the instructions in the exit
+		   test, but such is the price of optimization.  */
+		continue;
+
+	      /* Move the INSN.  */
+	      reorder_insns (insn, insn, get_last_insn ());
+	    }
+
 	  emit_jump_insn_after (gen_jump (start_label),
 				PREV_INSN (newstart_label));
 	  emit_barrier_after (PREV_INSN (newstart_label));

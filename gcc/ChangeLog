@@ -1,3 +1,12 @@
+Mon Jul  6 10:42:05 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* jump.c (duplicate_loop_exit_test): Don't refuse to copy a
+	section of code just because it contains
+	NOTE_INSN_BLOCK_{BEG,END}.
+	* stmt.c (expand_end_loop): Likewise.  Also, don't refuse to 
+	move CALL_INSNs or CODE_LABELs.  When moving code, don't move
+	NOTE_INSN_BLOCK_{BEG,END}.
+
 Mon Jul  6 09:38:15 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cse.c (CSE_ADDRESS_COST): New macro, based on ADDRESS_COST, but 
