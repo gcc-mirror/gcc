@@ -1,3 +1,8 @@
+2002-01-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/image/ColorModel.java (getAlpha(Object)): Call
+	getAlpha, not getBlue.
+
 2002-01-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natObject.cc (X86 compare_and_swap): Use +m constraint.
