@@ -1,3 +1,8 @@
+1999-02-27 13:34 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* lib/g++.exp: Don't add incdir=$base_dir/../include to
+        ALWAYS_CXXFLAGS.
+
 1999-02-24  Craig Burley  <craig@jcb-sc.com>
 
 	* gcc.f-torture/noncompile/19981216-0.f: Renamed from...

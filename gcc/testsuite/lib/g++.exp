@@ -125,7 +125,6 @@ proc g++_init { args } {
     if ![is_remote host] {
 	lappend ALWAYS_CXXFLAGS "additional_flags=[g++_include_flags]";
 	lappend ALWAYS_CXXFLAGS "ldflags=[g++_link_flags]";
-	lappend ALWAYS_CXXFLAGS "incdir=$base_dir/../include"
     }
 
     if [info exists TOOL_OPTIONS] {
