@@ -91,8 +91,8 @@ typedef complex double GFC_COMPLEX_8;
    by the compiler.  */
 /* The type used of array indices, amongst other things.  */
 typedef size_t index_type;
-/* The type used for string lengths.  Nothing to do with strlen(3).  */
-typedef GFC_INTEGER_4 gfc_strlen_type;
+/* The type used for the lengths of character variables.  */
+typedef GFC_INTEGER_4 gfc_charlen_type;
 
 /* This will be 0 on little-endian machines and one on big-endian machines.  */
 #define l8_to_l4_offset prefix(l8_to_l4_offset)

@@ -1,3 +1,10 @@
+2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* libgfortran.h: Replace 'gfc_strlen_type' by
+	'gfc_charlen_type'. Update comment accordingly.
+	* intrinsics/args.c, intrinsics/env.c, io/io.h, io/transfer.c:
+	Replace all occurences of 'gfc_strlen_type' by 'gfc_charlen_type'.
+
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
 	* libgfortran.h: Add comments.

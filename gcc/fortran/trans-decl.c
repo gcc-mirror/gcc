@@ -670,7 +670,7 @@ gfc_create_string_length (gfc_symbol * sym)
       strcpy (&name[1], sym->name);
       name[0] = '.';
       length = build_decl (VAR_DECL, get_identifier (name),
-			   gfc_strlen_type_node);
+			   gfc_charlen_type_node);
       DECL_ARTIFICIAL (length) = 1;
       TREE_USED (length) = 1;
       gfc_defer_symbol_init (sym);
@@ -781,7 +781,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       gfc_allocate_lang_decl (decl);
       GFC_DECL_ASSIGN (decl) = 1;
-      length = gfc_create_var (gfc_strlen_type_node, sym->name);
+      length = gfc_create_var (gfc_charlen_type_node, sym->name);
       GFC_DECL_STRING_LEN (decl) = length;
       GFC_DECL_ASSIGN_ADDR (decl) = gfc_create_var (pvoid_type_node, sym->name);
       /* TODO: Need to check we don't change TREE_STATIC (decl) later.  */
@@ -1130,7 +1130,7 @@ create_function_arglist (gfc_symbol * sym)
 
 	  /* Length of character result.  */
 	  type = TREE_VALUE (typelist);
-	  assert (type == gfc_strlen_type_node);
+	  assert (type == gfc_charlen_type_node);
 
 	  length = build_decl (PARM_DECL,
 			       get_identifier (".__result"),
@@ -1192,7 +1192,7 @@ create_function_arglist (gfc_symbol * sym)
 
       parm = f->sym->backend_decl;
       type = TREE_VALUE (typelist);
-      assert (type == gfc_strlen_type_node);
+      assert (type == gfc_charlen_type_node);
 
       strcpy (&name[1], f->sym->name);
       name[0] = '_';
@@ -1383,7 +1383,7 @@ build_entry_thunks (gfc_namespace * ns)
 	      args = tree_cons (NULL_TREE, null_pointer_node, args);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
-		  tmp = convert (gfc_strlen_type_node, integer_zero_node);
+		  tmp = convert (gfc_charlen_type_node, integer_zero_node);
 		  string_args = tree_cons (NULL_TREE, tmp, string_args);
 		}
 	    }
@@ -1572,58 +1572,58 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX("copy_string")),
 				     void_type_node,
 				     4,
-				     gfc_strlen_type_node, pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node);
+				     gfc_charlen_type_node, pchar_type_node,
+				     gfc_charlen_type_node, pchar_type_node);
 
   gfor_fndecl_compare_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("compare_string")),
 				     gfc_int4_type_node,
 				     4,
-				     gfc_strlen_type_node, pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node);
+				     gfc_charlen_type_node, pchar_type_node,
+				     gfc_charlen_type_node, pchar_type_node);
 
   gfor_fndecl_concat_string =
     gfc_build_library_function_decl (get_identifier (PREFIX("concat_string")),
 				     void_type_node,
 				     6,
-				     gfc_strlen_type_node, pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node);
+				     gfc_charlen_type_node, pchar_type_node,
+				     gfc_charlen_type_node, pchar_type_node,
+				     gfc_charlen_type_node, pchar_type_node);
 
   gfor_fndecl_string_len_trim =
     gfc_build_library_function_decl (get_identifier (PREFIX("string_len_trim")),
 				     gfc_int4_type_node,
-				     2, gfc_strlen_type_node,
+				     2, gfc_charlen_type_node,
 				     pchar_type_node);
 
   gfor_fndecl_string_index =
     gfc_build_library_function_decl (get_identifier (PREFIX("string_index")),
 				     gfc_int4_type_node,
-				     5, gfc_strlen_type_node, pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node,
+				     5, gfc_charlen_type_node, pchar_type_node,
+				     gfc_charlen_type_node, pchar_type_node,
                                      gfc_logical4_type_node);
 
   gfor_fndecl_string_scan =
     gfc_build_library_function_decl (get_identifier (PREFIX("string_scan")),
                                      gfc_int4_type_node,
-                                     5, gfc_strlen_type_node, pchar_type_node,
-                                     gfc_strlen_type_node, pchar_type_node,
+                                     5, gfc_charlen_type_node, pchar_type_node,
+                                     gfc_charlen_type_node, pchar_type_node,
                                      gfc_logical4_type_node);
 
   gfor_fndecl_string_verify =
     gfc_build_library_function_decl (get_identifier (PREFIX("string_verify")),
                                      gfc_int4_type_node,
-                                     5, gfc_strlen_type_node, pchar_type_node,
-                                     gfc_strlen_type_node, pchar_type_node,
+                                     5, gfc_charlen_type_node, pchar_type_node,
+                                     gfc_charlen_type_node, pchar_type_node,
                                      gfc_logical4_type_node);
 
   gfor_fndecl_string_trim = 
     gfc_build_library_function_decl (get_identifier (PREFIX("string_trim")),
                                      void_type_node,
                                      4,
-                                     build_pointer_type (gfc_strlen_type_node),
+                                     build_pointer_type (gfc_charlen_type_node),
                                      ppvoid_type_node,
-                                     gfc_strlen_type_node,
+                                     gfc_charlen_type_node,
                                      pchar_type_node);
 
   gfor_fndecl_string_repeat =
@@ -1631,7 +1631,7 @@ gfc_build_intrinsic_function_decls (void)
                                      void_type_node,
                                      4,
                                      pchar_type_node,
-                                     gfc_strlen_type_node,
+                                     gfc_charlen_type_node,
                                      pchar_type_node,
                                      gfc_int4_type_node);
 
@@ -1640,14 +1640,14 @@ gfc_build_intrinsic_function_decls (void)
 				     void_type_node,
 				     3,
 				     pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node);
+				     gfc_charlen_type_node, pchar_type_node);
 
   gfor_fndecl_adjustr =
     gfc_build_library_function_decl (get_identifier (PREFIX("adjustr")),
 				     void_type_node,
 				     3,
 				     pchar_type_node,
-				     gfc_strlen_type_node, pchar_type_node);
+				     gfc_charlen_type_node, pchar_type_node);
 
   gfor_fndecl_si_kind =
     gfc_build_library_function_decl (get_identifier ("selected_int_kind"),

@@ -151,7 +151,7 @@ gfc_trans_init_string_length (gfc_charlen * cl, stmtblock_t * pblock)
   tree tmp;
 
   gfc_init_se (&se, NULL);
-  gfc_conv_expr_type (&se, cl->length, gfc_strlen_type_node);
+  gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
   gfc_add_block_to_block (pblock, &se.pre);
 
   tmp = cl->backend_decl;
@@ -173,7 +173,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
 
   var = NULL_TREE;
   gfc_init_se (&start, se);
-  gfc_conv_expr_type (&start, ref->u.ss.start, gfc_strlen_type_node);
+  gfc_conv_expr_type (&start, ref->u.ss.start, gfc_charlen_type_node);
   gfc_add_block_to_block (&se->pre, &start.pre);
 
   if (integer_onep (start.expr))
@@ -195,14 +195,14 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind)
     end.expr = se->string_length;
   else
     {
-      gfc_conv_expr_type (&end, ref->u.ss.end, gfc_strlen_type_node);
+      gfc_conv_expr_type (&end, ref->u.ss.end, gfc_charlen_type_node);
       gfc_add_block_to_block (&se->pre, &end.pre);
     }
   tmp =
-    build2 (MINUS_EXPR, gfc_strlen_type_node,
-	    fold_convert (gfc_strlen_type_node, integer_one_node),
+    build2 (MINUS_EXPR, gfc_charlen_type_node,
+	    fold_convert (gfc_charlen_type_node, integer_one_node),
 	    start.expr);
-  tmp = build2 (PLUS_EXPR, gfc_strlen_type_node, end.expr, tmp);
+  tmp = build2 (PLUS_EXPR, gfc_charlen_type_node, end.expr, tmp);
   se->string_length = fold (tmp);
 }
 
@@ -688,14 +688,14 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
   tree tmp;
   tree args;
 
-  if (TREE_TYPE (len) != gfc_strlen_type_node)
+  if (TREE_TYPE (len) != gfc_charlen_type_node)
     abort ();
 
   if (gfc_can_put_var_on_stack (len))
     {
       /* Create a temporary variable to hold the result.  */
-      tmp = fold (build2 (MINUS_EXPR, gfc_strlen_type_node, len,
-			  convert (gfc_strlen_type_node,
+      tmp = fold (build2 (MINUS_EXPR, gfc_charlen_type_node, len,
+			  convert (gfc_charlen_type_node,
 				   integer_one_node)));
       tmp = build_range_type (gfc_array_index_type, gfc_index_zero_node, tmp);
       tmp = build_array_type (gfc_character1_type_node, tmp);
@@ -1067,8 +1067,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
 	  var = gfc_conv_string_tmp (se, type, len);
 	  arglist = gfc_chainon_list (arglist, var);
-	  arglist = gfc_chainon_list (arglist, convert (gfc_strlen_type_node,
-							len));
+	  arglist = gfc_chainon_list (arglist, 
+				      convert (gfc_charlen_type_node, len));
 	}
       else      /* TODO: derived type function return values.  */
 	abort ();
@@ -1101,7 +1101,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
                 {
                   stringargs =
 		    gfc_chainon_list (stringargs,
-				      convert (gfc_strlen_type_node,
+				      convert (gfc_charlen_type_node,
 					       integer_zero_node));
                 }
 	    }

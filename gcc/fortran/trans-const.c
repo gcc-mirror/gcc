@@ -85,7 +85,7 @@ gfc_build_string_const (int length, const char *s)
   len = build_int_cst (NULL_TREE, length);
   TREE_TYPE (str) =
     build_array_type (gfc_character1_type_node,
-		      build_range_type (gfc_strlen_type_node,
+		      build_range_type (gfc_charlen_type_node,
 					integer_one_node, len));
   return str;
 }
