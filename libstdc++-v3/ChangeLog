@@ -1,3 +1,22 @@
+2004-04-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* acconfig.h: Remove _GLIBCXX_USE_LONG_DOUBLE entry, not
+	used anymore.
+	* config.h.in: Regenerate.
+
+2004-04-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/monetary_members.cc
+	(moneypunct<wchar_t>::_M_initialize_moneypunct): Avoid calling
+	btowc unnecessarily, just cast to wchar_t (the concerned chars
+	all belong to the basic character set).
+	* config/locale/generic/numeric_members.cc
+	(numpunct<wchar_t>::_M_initialize_numpunct): Likewise.
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<wchar_t>::_M_initialize_moneypunct): Likewise.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<wchar_t>::_M_initialize_numpunct): Likewise.
+
 2004-04-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale.cc (locale::operator==): When _M_impl == __rhs._M_impl
