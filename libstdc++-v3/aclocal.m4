@@ -327,7 +327,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
        catch (...) { };
        return 0;
      }
-    ], [ac_sectionLDflags=yes],[ac_sectionLFflags=no], [ac_sectionLDflags=yes])
+    ], [ac_sectionLDflags=yes],[ac_sectionLDflags=no], [ac_sectionLDflags=yes])
     if test "$ac_test_CFLAGS" = set; then
       CFLAGS="$ac_save_CFLAGS"
     else
