@@ -1,3 +1,8 @@
+2004-06-05  Steven Bosscher  <stevenb@suse.de>
+
+	* config/v850/v850.c (v850_use_dfa_pipeline_interface): New.
+	* config/v850/v850.md: Convert to DFA scheduler description.
+
 2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15478

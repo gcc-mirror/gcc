@@ -64,6 +64,7 @@ static void v850_insert_attributes   (tree, tree *);
 static void v850_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void v850_encode_data_area    (tree, rtx);
 static void v850_encode_section_info (tree, rtx, int);
+static int  v850_use_dfa_pipeline_interface (void);
 static bool v850_return_in_memory    (tree, tree);
 static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
@@ -113,8 +114,12 @@ static int v850_interrupt_p = FALSE;
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS v850_rtx_costs
+
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_0
+
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE v850_use_dfa_pipeline_interface
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
@@ -2338,6 +2343,12 @@ v850_encode_section_info (tree decl, rtx rtl, int first)
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
     v850_encode_data_area (decl, XEXP (rtl, 0));
+}
+
+static int
+v850_use_dfa_pipeline_interface (void)
+{
+  return 1;
 }
 
 /* Return true if the given RTX is a register which can be restored
