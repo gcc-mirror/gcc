@@ -1,3 +1,8 @@
+2004-04-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("casesi"): Mark jump table access as
+	non-trapping and unchanging.
+
 2004-04-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR debug/14829
