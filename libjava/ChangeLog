@@ -1,3 +1,8 @@
+2004-11-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/Object.java: Added javadocs all over (merged from GNU
+	classpath).
+
 2004-11-16  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/security/Security.java (Security): Silence the warning about no
