@@ -1,3 +1,7 @@
+Mon Apr 17 17:11:16 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* method.c (make_thunk): Set DECL_CONTEXT for a THUNK_DECL.
+
 2000-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vtable_entry): Don't build thunks for type-info
