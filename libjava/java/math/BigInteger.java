@@ -1113,6 +1113,9 @@ public class BigInteger extends Number implements Comparable
 	BigInteger rem = new BigInteger();
 	BigInteger quot = new BigInteger();
 	divide(a, b, quot, rem, FLOOR);
+        // quot and rem may not be in canonical form. ensure
+        rem.canonicalize();
+        quot.canonicalize();
         xy = euclidInv(b, rem, quot);
       }
 
@@ -1192,6 +1195,9 @@ public class BigInteger extends Number implements Comparable
 	BigInteger rem = new BigInteger();
 	BigInteger quot = new BigInteger();
 	divide(x, y, quot, rem, FLOOR);
+        // quot and rem may not be in canonical form. ensure
+        rem.canonicalize();
+        quot.canonicalize();
 	result = euclidInv(y, rem, quot)[swapped ? 0 : 1];
 
 	// Result can't be negative, so make it positive by adding the
