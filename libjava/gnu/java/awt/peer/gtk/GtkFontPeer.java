@@ -43,6 +43,7 @@ import java.awt.geom.*;
 import java.awt.font.*;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.MissingResourceException;
 import java.text.*;
 import gnu.java.awt.peer.ClasspathFontPeer;
 
@@ -74,9 +75,20 @@ public class GtkFontPeer extends ClasspathFontPeer
   {
     super(name, style, size);
 
+    String Xname = null;
     if (bundle != null)
-      Xname = bundle.getString (name.toLowerCase () + "." + style);
-    else
+      {
+	try
+	  {
+	    Xname = bundle.getString (name.toLowerCase () + "." + style);
+	  }
+	catch (MissingResourceException mre)
+	  {
+	    // ignored
+	  }
+      }
+
+    if (Xname == null)
       {
 	String weight;
 	String slant;
@@ -98,6 +110,8 @@ public class GtkFontPeer extends ClasspathFontPeer
 
         Xname = "-*-*-" + weight + "-" + slant + "-normal-*-*-" + size + "-*-*-" + spacing + "-*-*-*";
       }
+
+    this.Xname = Xname;
   }
 
   public String getXLFD ()
