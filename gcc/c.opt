@@ -238,6 +238,10 @@ C ObjC
 Wformat=
 C ObjC C++ ObjC++ Joined
 
+Winit-self
+C ObjC C++ ObjC++
+Warn about variables which are initialized to themselves.
+
 Wimplicit
 C ObjC C++ ObjC++
 
