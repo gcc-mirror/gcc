@@ -1,3 +1,9 @@
+Thu Nov 30 01:12:52 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (conditional moves): Avoid holes in operand list.
+	(mod, umod patterns): Similarly.
+	(variable extract/shift patterns): Similarly.
+
 2000-11-30  Neil Booth  <neilb@earthling.net>
 
         * objc/objc-act.c (lang_init, finish_file, maybe_objc_comptypes,
