@@ -1536,10 +1536,11 @@ frv_frame_access_standard_regs (enum frv_stack_op op, frv_stack_t *info)
 
 /* Called after register allocation to add any instructions needed for the
    prologue.  Using a prologue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.
+   instructions in the TARGET_ASM_FUNCTION_PROLOGUE target hook, since
+   it allows the scheduler to intermix instructions with the saves of
+   the caller saved registers.  In some cases, it might be necessary
+   to emit a barrier instruction as the last insn to prevent such
+   scheduling.
 
    Also any insns generated here should have RTX_FRAME_RELATED_P(insn) = 1
    so that the debug info generation code can handle them properly.  */
@@ -1672,10 +1673,11 @@ frv_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
 
 /* Called after register allocation to add any instructions needed for the
    epilogue.  Using an epilogue insn is favored compared to putting all of the
-   instructions in the FUNCTION_PROLOGUE macro, since it allows the scheduler
-   to intermix instructions with the saves of the caller saved registers.  In
-   some cases, it might be necessary to emit a barrier instruction as the last
-   insn to prevent such scheduling.
+   instructions in the TARGET_ASM_FUNCTION_PROLOGUE target hook, since
+   it allows the scheduler to intermix instructions with the saves of
+   the caller saved registers.  In some cases, it might be necessary
+   to emit a barrier instruction as the last insn to prevent such
+   scheduling.
 
    If SIBCALL_P is true, the final branch back to the calling function is
    omitted, and is used for sibling call (aka tail call) sites.  For sibcalls,
@@ -1753,35 +1755,7 @@ frv_expand_epilogue (int sibcall_p)
 }
 
 
-/* A C compound statement that outputs the assembler code for a thunk function,
-   used to implement C++ virtual function calls with multiple inheritance.  The
-   thunk acts as a wrapper around a virtual function, adjusting the implicit
-   object parameter before handing control off to the real function.
-
-   First, emit code to add the integer DELTA to the location that contains the
-   incoming first argument.  Assume that this argument contains a pointer, and
-   is the one used to pass the `this' pointer in C++.  This is the incoming
-   argument *before* the function prologue, e.g. `%o0' on a sparc.  The
-   addition must preserve the values of all other incoming arguments.
-
-   After the addition, emit code to jump to FUNCTION, which is a
-   `FUNCTION_DECL'.  This is a direct pure jump, not a call, and does not touch
-   the return address.  Hence returning from FUNCTION will return to whoever
-   called the current `thunk'.
-
-   The effect must be as if FUNCTION had been called directly with the adjusted
-   first argument.  This macro is responsible for emitting all of the code for
-   a thunk function; `FUNCTION_PROLOGUE' and `FUNCTION_EPILOGUE' are not
-   invoked.
-
-   The THUNK_FNDECL is redundant.  (DELTA and FUNCTION have already been
-   extracted from it.)  It might possibly be useful on some targets, but
-   probably not.
-
-   If you do not define this macro, the target-independent code in the C++
-   frontend will generate a less efficient heavyweight thunk that calls
-   FUNCTION instead of jumping to it.  The generic approach does not support
-   varargs.  */
+/* Worker function for TARGET_ASM_OUTPUT_MI_THUNK.  */
 
 static void
 frv_asm_output_mi_thunk (FILE *file,
@@ -1932,34 +1906,7 @@ frv_initial_elimination_offset (int from, int to)
 }
 
 
-/* This macro offers an alternative to using `__builtin_saveregs' and defining
-   the macro `EXPAND_BUILTIN_SAVEREGS'.  Use it to store the anonymous register
-   arguments into the stack so that all the arguments appear to have been
-   passed consecutively on the stack.  Once this is done, you can use the
-   standard implementation of varargs that works for machines that pass all
-   their arguments on the stack.
-
-   The argument ARGS_SO_FAR is the `CUMULATIVE_ARGS' data structure, containing
-   the values that obtain after processing of the named arguments.  The
-   arguments MODE and TYPE describe the last named argument--its machine mode
-   and its data type as a tree node.
-
-   The macro implementation should do two things: first, push onto the stack
-   all the argument registers *not* used for the named arguments, and second,
-   store the size of the data thus pushed into the `int'-valued variable whose
-   name is supplied as the argument PRETEND_ARGS_SIZE.  The value that you
-   store here will serve as additional offset for setting up the stack frame.
-
-   Because you must generate code to push the anonymous arguments at compile
-   time without knowing their data types, `SETUP_INCOMING_VARARGS' is only
-   useful on machines that have just a single category of argument register and
-   use it uniformly for all data types.
-
-   If the argument SECOND_TIME is nonzero, it means that the arguments of the
-   function are being analyzed for the second time.  This happens for an inline
-   function, which is not actually compiled until the end of the source file.
-   The macro `SETUP_INCOMING_VARARGS' should not generate any instructions in
-   this case.  */
+/* Worker function for SETUP_INCOMING_VARARGS.  */
 
 void
 frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
@@ -1975,14 +1922,7 @@ frv_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
 }
 
 
-/* If defined, is a C expression that produces the machine-specific code for a
-   call to `__builtin_saveregs'.  This code will be moved to the very beginning
-   of the function, before any parameter access are made.  The return value of
-   this function should be an RTX that contains the value to use as the return
-   of `__builtin_saveregs'.
-
-   If this macro is not defined, the compiler will output an ordinary call to
-   the library function `__builtin_saveregs'.  */
+/* Worker function for TARGET_EXPAND_BUILTIN_SAVEREGS.  */
 
 static rtx
 frv_expand_builtin_saveregs (void)
