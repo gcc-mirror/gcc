@@ -1740,6 +1740,8 @@ call_ ## FUNC (void)						\
   {ZERO_EXTEND, SIGN_EXTEND}},				\
  {"cris_plus_or_bound_operator",			\
   {PLUS, UMIN}},					\
+ {"cris_mem_op",					\
+  {MEM}},						\
  {"cris_bdap_operand",					\
   {SUBREG, REG, LABEL_REF, SYMBOL_REF, MEM, CONST_INT,	\
    CONST_DOUBLE, CONST, SIGN_EXTEND}},			\

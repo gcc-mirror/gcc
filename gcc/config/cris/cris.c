@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -375,6 +375,19 @@ cris_plus_or_bound_operator (x, mode)
 
   return
     (GET_MODE (x) == mode && (code == UMIN || code == PLUS));
+}
+
+/* Used as an operator to get a handle on a already-known-valid MEM rtx:es
+   (no need to validate the address), where some address expression parts
+   have their own match_operand.  */
+
+int
+cris_mem_op (rtx x, enum machine_mode mode)
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (x);
+
+  return GET_MODE (x) == mode && GET_CODE (x) == MEM;
 }
 
 /* Since with -fPIC, not all symbols are valid PIC symbols or indeed
@@ -1994,8 +2007,8 @@ cris_notice_update_cc (exp, insn)
 		     value1=rz and value2=[rx] */
 		  cc_status.value1 = XEXP (XVECEXP (exp, 0, 0), 0);
 		  cc_status.value2
-		    = gen_rtx_MEM (GET_MODE (XEXP (XVECEXP (exp, 0, 0), 0)),
-				   XEXP (XVECEXP (exp, 0, 1), 0));
+		    = replace_equiv_address (XEXP (XVECEXP (exp, 0, 0), 1),
+					     XEXP (XVECEXP (exp, 0, 1), 0));
 		  cc_status.flags = 0;
 
 		  /* Huh?  A side-effect cannot change the destination
