@@ -9977,6 +9977,9 @@ thumb_unexpanded_epilogue ()
   if (return_used_this_function)
     return "";
 
+  if (IS_NAKED (arm_current_func_type ()))
+    return "";
+
   for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
     if (THUMB_REG_PUSHED_P (regno))
       live_regs_mask |= 1 << regno;
