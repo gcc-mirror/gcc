@@ -407,14 +407,14 @@ init_alias_analysis ()
   reg_known_value
     = (rtx *) oballoc ((maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx))
       - FIRST_PSEUDO_REGISTER;
-  bzero (reg_known_value+FIRST_PSEUDO_REGISTER,
+  bzero ((char *) (reg_known_value + FIRST_PSEUDO_REGISTER),
 	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (rtx));
 
   reg_known_equiv_p
-    = (char *) oballoc ((maxreg-FIRST_PSEUDO_REGISTER) * sizeof (char))
+    = (char *) oballoc ((maxreg -FIRST_PSEUDO_REGISTER) * sizeof (char))
       - FIRST_PSEUDO_REGISTER;
-  bzero (reg_known_equiv_p+FIRST_PSEUDO_REGISTER,
-	 (maxreg-FIRST_PSEUDO_REGISTER) * sizeof (char));
+  bzero (reg_known_equiv_p + FIRST_PSEUDO_REGISTER,
+	 (maxreg - FIRST_PSEUDO_REGISTER) * sizeof (char));
 
   /* Fill in the entries with known constant values.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -1170,9 +1170,9 @@ static int unit_n_insns[FUNCTION_UNITS_SIZE];
 static void
 clear_units ()
 {
-  bzero (unit_last_insn, sizeof (unit_last_insn));
-  bzero (unit_tick, sizeof (unit_tick));
-  bzero (unit_n_insns, sizeof (unit_n_insns));
+  bzero ((char *) unit_last_insn, sizeof (unit_last_insn));
+  bzero ((char *) unit_tick, sizeof (unit_tick));
+  bzero ((char *) unit_n_insns, sizeof (unit_n_insns));
 }
 
 /* Record an insn as one that will use the units encoded by UNIT.  */
@@ -3088,11 +3088,11 @@ schedule_block (b, file)
 
   i = max_reg_num ();
   reg_last_uses = (rtx *) alloca (i * sizeof (rtx));
-  bzero (reg_last_uses, i * sizeof (rtx));
+  bzero ((char *) reg_last_uses, i * sizeof (rtx));
   reg_last_sets = (rtx *) alloca (i * sizeof (rtx));
-  bzero (reg_last_sets, i * sizeof (rtx));
+  bzero ((char *) reg_last_sets, i * sizeof (rtx));
   reg_pending_sets = (regset) alloca (regset_bytes);
-  bzero (reg_pending_sets, regset_bytes);
+  bzero ((char *) reg_pending_sets, regset_bytes);
   reg_pending_sets_all = 0;
   clear_units ();
 
@@ -3327,8 +3327,9 @@ schedule_block (b, file)
 
   if (reload_completed == 0)
     {
-      bcopy (basic_block_live_at_start[b], bb_live_regs, regset_bytes);
-      bzero (bb_dead_regs, regset_bytes);
+      bcopy ((char *) basic_block_live_at_start[b], (char *) bb_live_regs,
+	     regset_bytes);
+      bzero ((char *) bb_dead_regs, regset_bytes);
 
       if (b == 0)
 	{
@@ -3568,7 +3569,7 @@ schedule_block (b, file)
 
   /* Q_SIZE will always be zero here.  */
   q_ptr = 0; clock = 0;
-  bzero (insn_queue, sizeof (insn_queue));
+  bzero ((char *) insn_queue, sizeof (insn_queue));
 
   /* Now, perform list scheduling.  */
 
@@ -4627,9 +4628,10 @@ schedule_insns (dump_file)
       sched_reg_live_length = (int *) alloca (max_regno * sizeof (int));
       bb_dead_regs = (regset) alloca (regset_bytes);
       bb_live_regs = (regset) alloca (regset_bytes);
-      bzero (sched_reg_n_calls_crossed, max_regno * sizeof (int));
-      bzero (sched_reg_live_length, max_regno * sizeof (int));
-      bcopy (reg_n_deaths, sched_reg_n_deaths, max_regno * sizeof (short));
+      bzero ((char *) sched_reg_n_calls_crossed, max_regno * sizeof (int));
+      bzero ((char *) sched_reg_live_length, max_regno * sizeof (int));
+      bcopy ((char *) reg_n_deaths, (char *) sched_reg_n_deaths,
+	     max_regno * sizeof (short));
       init_alias_analysis ();
     }
   else
@@ -4648,9 +4650,9 @@ schedule_insns (dump_file)
       rtx line;
 
       line_note = (rtx *) alloca (max_uid * sizeof (rtx));
-      bzero (line_note, max_uid * sizeof (rtx));
+      bzero ((char *) line_note, max_uid * sizeof (rtx));
       line_note_head = (rtx *) alloca (n_basic_blocks * sizeof (rtx));
-      bzero (line_note_head, n_basic_blocks * sizeof (rtx));
+      bzero ((char *) line_note_head, n_basic_blocks * sizeof (rtx));
 
       /* Determine the line-number at the start of each basic block.
 	 This must be computed and saved now, because after a basic block's
@@ -4666,13 +4668,13 @@ schedule_insns (dump_file)
 	    }
     }
 
-  bzero (insn_luid, max_uid * sizeof (int));
-  bzero (insn_priority, max_uid * sizeof (int));
-  bzero (insn_tick, max_uid * sizeof (int));
-  bzero (insn_costs, max_uid * sizeof (short));
-  bzero (insn_units, max_uid * sizeof (short));
-  bzero (insn_blockage, max_uid * sizeof (unsigned int));
-  bzero (insn_ref_count, max_uid * sizeof (int));
+  bzero ((char *) insn_luid, max_uid * sizeof (int));
+  bzero ((char *) insn_priority, max_uid * sizeof (int));
+  bzero ((char *) insn_tick, max_uid * sizeof (int));
+  bzero ((char *) insn_costs, max_uid * sizeof (short));
+  bzero ((char *) insn_units, max_uid * sizeof (short));
+  bzero ((char *) insn_blockage, max_uid * sizeof (unsigned int));
+  bzero ((char *) insn_ref_count, max_uid * sizeof (int));
 
   /* Schedule each basic block, block by block.  */
 

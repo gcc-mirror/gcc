@@ -1798,7 +1798,7 @@ set_float_handler (handler)
 {
   float_handled = (handler != 0);
   if (handler)
-    bcopy (handler, float_handler, sizeof (float_handler));
+    bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
 }
 
 /* Specify, in HANDLER, where to longjmp to when a floating arithmetic
@@ -1813,8 +1813,10 @@ push_float_handler (handler, old_handler)
 
   float_handled = 1;
   if (was_handled)
-    bcopy (float_handler, old_handler, sizeof (float_handler));
-  bcopy (handler, float_handler, sizeof (float_handler));
+    bcopy ((char *) float_handler, (char *) old_handler,
+	   sizeof (float_handler));
+
+  bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
   return was_handled;
 }
 
@@ -1828,7 +1830,7 @@ pop_float_handler (handled, handler)
 {
   float_handled = handled;
   if (handled)
-    bcopy (handler, float_handler, sizeof (float_handler));
+    bcopy ((char *) handler, (char *) float_handler, sizeof (float_handler));
 }
 
 /* Signals actually come here.  */
@@ -3877,6 +3879,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #ifndef VMS
   if (flag_print_mem)
     {
+#ifdef __alpha
+      char *sbrk ();
+#endif
       char *lim = (char *) sbrk (0);
 
       fprintf (stderr, "Data size %d.\n",

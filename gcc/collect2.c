@@ -552,7 +552,9 @@ putenv (str)
   /* Add a new environment variable */
   environ = (char **) xmalloc (sizeof (char *) * (num_envs+2));
   *environ = str;
-  bcopy (old_environ, environ+1, sizeof (char *) * (num_envs+1));
+  bcopy ((char *) old_environ, (char *) (environ + 1),
+	 sizeof (char *) * (num_envs+1));
+
   return 0;
 #endif	/* VMS */
 }
@@ -1828,7 +1830,7 @@ scan_prog_file (prog_name, which_pass)
       if (rw)
 	{
 	  load_union_t *ptr = (load_union_t *) xmalloc (load_hdr->hdr.ldci_cmd_size);
-	  bcopy ((generic *)load_hdr, (generic *)ptr, load_hdr->hdr.ldci_cmd_size);
+	  bcopy ((char *)load_hdr, (char *)ptr, load_hdr->hdr.ldci_cmd_size);
 	  load_hdr = ptr;
 
 	  /* null out old command map, because we will rewrite at the end.  */
@@ -2013,7 +2015,7 @@ scan_prog_file (prog_name, which_pass)
 	  if (debug)
 	    print_load_command (load_hdr, offset, i);
 
-	  bcopy ((generic *)load_hdr, (generic *)(obj + offset), size);
+	  bcopy ((char *)load_hdr, (char *)(obj + offset), size);
 	  offset += size;
 	}
     }

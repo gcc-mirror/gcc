@@ -465,7 +465,7 @@ combine_instructions (f, nregs)
     = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
   reg_sign_bit_copies = (char *) alloca (nregs * sizeof (char));
 
-  bzero (reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
+  bzero ((char *) reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
   bzero (reg_sign_bit_copies, nregs * sizeof (char));
 
   reg_last_death = (rtx *) alloca (nregs * sizeof (rtx));
@@ -658,14 +658,14 @@ init_reg_last_arrays ()
 {
   int nregs = combine_max_regno;
 
-  bzero (reg_last_death, nregs * sizeof (rtx));
-  bzero (reg_last_set, nregs * sizeof (rtx));
-  bzero (reg_last_set_value, nregs * sizeof (rtx));
-  bzero (reg_last_set_table_tick, nregs * sizeof (int));
-  bzero (reg_last_set_label, nregs * sizeof (int));
+  bzero ((char *) reg_last_death, nregs * sizeof (rtx));
+  bzero ((char *) reg_last_set, nregs * sizeof (rtx));
+  bzero ((char *) reg_last_set_value, nregs * sizeof (rtx));
+  bzero ((char *) reg_last_set_table_tick, nregs * sizeof (int));
+  bzero ((char *) reg_last_set_label, nregs * sizeof (int));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
-  bzero (reg_last_set_mode, nregs * sizeof (enum machine_mode));
-  bzero (reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
+  bzero ((char *) reg_last_set_mode, nregs * sizeof (enum machine_mode));
+  bzero ((char *) reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
   bzero (reg_last_set_sign_bit_copies, nregs * sizeof (char));
 }
 
@@ -1629,7 +1629,7 @@ try_combine (i3, i2, i1)
 	  rtvec old = XVEC (newpat, 0);
 	  total_sets = XVECLEN (newpat, 0) + added_sets_1 + added_sets_2;
 	  newpat = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (total_sets));
-	  bcopy (&old->elem[0], &XVECEXP (newpat, 0, 0),
+	  bcopy ((char *) &old->elem[0], (char *) &XVECEXP (newpat, 0, 0),
 		 sizeof (old->elem[0]) * old->num_elem);
 	}
       else

@@ -949,7 +949,7 @@ expand_call (exp, target, ignore)
 
   /* Make a vector to hold all the information about each arg.  */
   args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
-  bzero (args, num_actuals * sizeof (struct arg_data));
+  bzero ((char *) args, num_actuals * sizeof (struct arg_data));
 
   args_size.constant = 0;
   args_size.var = 0;

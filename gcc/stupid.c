@@ -149,13 +149,13 @@ stupid_life_analysis (f, nregs, file)
   /* Allocate tables to record info about regs.  */
 
   reg_where_dead = (int *) alloca (nregs * sizeof (int));
-  bzero (reg_where_dead, nregs * sizeof (int));
+  bzero ((char *) reg_where_dead, nregs * sizeof (int));
 
   reg_where_born = (int *) alloca (nregs * sizeof (int));
-  bzero (reg_where_born, nregs * sizeof (int));
+  bzero ((char *) reg_where_born, nregs * sizeof (int));
 
   reg_order = (int *) alloca (nregs * sizeof (int));
-  bzero (reg_order, nregs * sizeof (int));
+  bzero ((char *) reg_order, nregs * sizeof (int));
 
   reg_renumber = (short *) oballoc (nregs * sizeof (short));
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -167,7 +167,7 @@ stupid_life_analysis (f, nregs, file)
   after_insn_hard_regs
     = (HARD_REG_SET *) alloca (max_suid * sizeof (HARD_REG_SET));
 
-  bzero (after_insn_hard_regs, max_suid * sizeof (HARD_REG_SET));
+  bzero ((char *) after_insn_hard_regs, max_suid * sizeof (HARD_REG_SET));
 
   /* Allocate and zero out many data structures
      that will record the data from lifetime analysis.  */

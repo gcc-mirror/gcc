@@ -415,13 +415,14 @@ local_alloc ()
 
   scratch_list_length = max_qty;
   scratch_list = (rtx *) xmalloc (scratch_list_length * sizeof (rtx));
-  bzero (scratch_list, scratch_list_length * sizeof (rtx));
+  bzero ((char *) scratch_list, scratch_list_length * sizeof (rtx));
   scratch_block = (int *) xmalloc (scratch_list_length * sizeof (int));
-  bzero (scratch_block, scratch_list_length * sizeof (int));
+  bzero ((char *) scratch_block, scratch_list_length * sizeof (int));
   scratch_index = 0;
 
   qty_phys_reg = (short *) alloca (max_qty * sizeof (short));
-  qty_phys_copy_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
+  qty_phys_copy_sugg
+    = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
   qty_phys_num_copy_sugg = (short *) alloca (max_qty * sizeof (short));
   qty_phys_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
   qty_phys_num_sugg = (short *) alloca (max_qty * sizeof (short));
@@ -430,10 +431,13 @@ local_alloc ()
   qty_scratch_rtx = (rtx *) alloca (max_qty * sizeof (rtx));
   qty_first_reg = (int *) alloca (max_qty * sizeof (int));
   qty_size = (int *) alloca (max_qty * sizeof (int));
-  qty_mode = (enum machine_mode *) alloca (max_qty * sizeof (enum machine_mode));
+  qty_mode
+    = (enum machine_mode *) alloca (max_qty * sizeof (enum machine_mode));
   qty_n_calls_crossed = (int *) alloca (max_qty * sizeof (int));
-  qty_min_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
-  qty_alternate_class = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
+  qty_min_class
+    = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
+  qty_alternate_class
+    = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
   qty_n_refs = (int *) alloca (max_qty * sizeof (int));
 
   reg_qty = (int *) alloca (max_regno * sizeof (int));
@@ -492,7 +496,7 @@ local_alloc ()
       else
 	{
 #define CLEAR(vector)  \
-	  bzero ((vector), (sizeof (*(vector))) * next_qty);
+	  bzero ((char *) (vector), (sizeof (*(vector))) * next_qty);
 
 	  CLEAR (qty_scratch_rtx);
 	  CLEAR (qty_phys_copy_sugg);
@@ -937,8 +941,8 @@ update_equiv_regs ()
   rtx *reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx *));
   rtx insn;
 
-  bzero (reg_equiv_init_insn, max_regno * sizeof (rtx *));
-  bzero (reg_equiv_replacement, max_regno * sizeof (rtx *));
+  bzero ((char *) reg_equiv_init_insn, max_regno * sizeof (rtx *));
+  bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx *));
 
   init_alias_analysis ();
 
@@ -1139,7 +1143,7 @@ block_alloc (b)
      the birth of a CLOBBER in the first insn.  */
   regs_live_at = (HARD_REG_SET *) alloca ((2 * insn_count + 2)
 					  * sizeof (HARD_REG_SET));
-  bzero (regs_live_at, (2 * insn_count + 2) * sizeof (HARD_REG_SET));
+  bzero ((char *) regs_live_at, (2 * insn_count + 2) * sizeof (HARD_REG_SET));
 
   /* Initialize table of hardware registers currently live.  */
 

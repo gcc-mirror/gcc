@@ -417,7 +417,7 @@ REAL_VALUE_TYPE real_value_from_int_cst ();
 
 #define REAL_VALUE_FROM_CONST_DOUBLE(to, from)		\
 do { union real_extract u;				\
-     bcopy (&CONST_DOUBLE_LOW ((from)), &u, sizeof u);	\
+     bcopy ((char *) &CONST_DOUBLE_LOW ((from)), (char *) &u, sizeof u); \
      to = u.d; } while (0)
 
 /* Return a CONST_DOUBLE with value R and mode M.  */

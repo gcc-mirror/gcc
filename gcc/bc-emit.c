@@ -361,7 +361,7 @@ bc_seg_write (seg, file)
 	  if (i % 8 != 0)
 	    putc ('\n', file);
 
-	  bcopy (seg->data + i, &offset, sizeof (int));
+	  bcopy (seg->data + i, (char *) &offset, sizeof (int));
 	  i += sizeof (int) - 1;
 
 	  BC_WRITE_RELOC_ENTRY (segreloc, file, offset);
@@ -603,7 +603,7 @@ bc_end_function ()
     if (ref->label->defined)
       {
 	addr = ref->label->offset;
-	bcopy (&addr, bytecode->data + ref->offset, sizeof addr);
+	bcopy ((char *) &addr, bytecode->data + ref->offset, sizeof addr);
       }
 
   /* Free the chains of labelrefs and labeldefs. */

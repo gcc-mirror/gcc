@@ -361,8 +361,8 @@ loop_optimize (f, dumpfile)
   uid_luid = (int *) alloca (max_uid_for_loop * sizeof (int));
   uid_loop_num = (int *) alloca (max_uid_for_loop * sizeof (int));
 
-  bzero (uid_luid, max_uid_for_loop * sizeof (int));
-  bzero (uid_loop_num, max_uid_for_loop * sizeof (int));
+  bzero ((char *) uid_luid, max_uid_for_loop * sizeof (int));
+  bzero ((char *) uid_loop_num, max_uid_for_loop * sizeof (int));
 
   /* Allocate tables for recording each loop.  We set each entry, so they need
      not be zeroed.  */
@@ -573,13 +573,13 @@ scan_loop (loop_start, end, nregs)
      the setting of register I.  If this loop has calls, set
      reg_single_usage[I].  */
 
-  bzero (n_times_set, nregs * sizeof (short));
+  bzero ((char *) n_times_set, nregs * sizeof (short));
   bzero (may_not_optimize, nregs);
 
   if (loop_has_call)
     {
       reg_single_usage = (rtx *) alloca (nregs * sizeof (rtx));
-      bzero (reg_single_usage, nregs * sizeof (rtx));
+      bzero ((char *) reg_single_usage, nregs * sizeof (rtx));
     }
 
   count_loop_regs_set (loop_top ? loop_top : loop_start, end,
@@ -587,7 +587,7 @@ scan_loop (loop_start, end, nregs)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     may_not_optimize[i] = 1, n_times_set[i] = 1;
-  bcopy (n_times_set, n_times_used, nregs * sizeof (short));
+  bcopy ((char *) n_times_set, (char *) n_times_used, nregs * sizeof (short));
 
   if (loop_dump_stream)
     {
@@ -1535,7 +1535,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
   char *already_moved = (char *) alloca (nregs);
 
   bzero (already_moved, nregs);
-  bzero (reg_map, nregs * sizeof (rtx));
+  bzero ((char *) reg_map, nregs * sizeof (rtx));
 
   num_movables = 0;
 
@@ -2917,7 +2917,7 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
   register int count = 0;
   register rtx dest;
 
-  bzero (last_set, nregs * sizeof (rtx));
+  bzero ((char *) last_set, nregs * sizeof (rtx));
   for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -3004,8 +3004,9 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 		}
 	    }
 	}
+
       if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
-	bzero (last_set, nregs * sizeof (rtx));
+	bzero ((char *) last_set, nregs * sizeof (rtx));
     }
   *count_ptr = count;
 }

@@ -671,7 +671,7 @@ get_secondary_mem (x, mode, opnum, type)
 void
 clear_secondary_mem ()
 {
-  bzero (secondary_memlocs, sizeof secondary_memlocs);
+  bzero ((char *) secondary_memlocs, sizeof secondary_memlocs);
 }
 #endif /* SECONDARY_MEMORY_NEEDED */
 
@@ -2180,7 +2180,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   /* The eliminated forms of any secondary memory locations are per-insn, so
      clear them out here.  */
 
-  bzero (secondary_memlocs_elim, sizeof secondary_memlocs_elim);
+  bzero ((char *) secondary_memlocs_elim, sizeof secondary_memlocs_elim);
 #endif
 
   /* Find what kind of insn this is.  NOPERANDS gets number of operands.
@@ -2231,7 +2231,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			       constraints, operand_mode);
 	  if (noperands > 0)
 	    {
-	      bcopy (constraints, constraints1, noperands * sizeof (char *));
+	      bcopy ((char *) constraints, (char *) constraints1,
+		     noperands * sizeof (char *));
 	      n_alternatives = n_occurrences (',', constraints[0]) + 1;
 	      for (i = 1; i < noperands; i++)
 		if (n_alternatives != n_occurrences (',', constraints[i]) + 1)
@@ -3186,7 +3187,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
 	  pref_or_nothing[commutative + 1] = t;
 
-	  bcopy (constraints1, constraints, noperands * sizeof (char *));
+	  bcopy ((char *) constraints1, (char *) constraints,
+		 noperands * sizeof (char *));
 	  goto try_swapped;
 	}
       else

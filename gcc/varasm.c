@@ -1694,7 +1694,7 @@ assemble_real (d, mode)
     {
       error ("floating point trap outputting a constant");
 #ifdef REAL_IS_NOT_DOUBLE
-      bzero (&d, sizeof d);
+      bzero ((char *) &d, sizeof d);
       d = dconst0;
 #else
       d = 0;
@@ -1885,7 +1885,7 @@ immed_real_const_1 (d, mode)
   /* Detect special cases.  */
 
   /* Avoid REAL_VALUES_EQUAL here in order to distinguish minus zero.  */
-  if (!bcmp (&dconst0, &d, sizeof d))
+  if (!bcmp ((char *) &dconst0, (char *) &d, sizeof d))
     return CONST0_RTX (mode);
   /* Check for NaN first, because some ports (specifically the i386) do not
      emit correct ieee-fp code by default, and thus will generate a core
@@ -1905,7 +1905,7 @@ immed_real_const_1 (d, mode)
      If one is found, return it.  */
 
   for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-    if (! bcmp (&CONST_DOUBLE_LOW (r), &u, sizeof u)
+    if (! bcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
 	&& GET_MODE (r) == mode)
       return r;
 
@@ -1921,7 +1921,7 @@ immed_real_const_1 (d, mode)
   rtl_in_saveable_obstack ();
   r = rtx_alloc (CONST_DOUBLE);
   PUT_MODE (r, mode);
-  bcopy (&u, &CONST_DOUBLE_LOW (r), sizeof u);
+  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (r), sizeof u);
   pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function; see force_const_mem.
@@ -2214,7 +2214,7 @@ compare_constant_1 (exp, p)
 	return 0;
       strp = TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
-      if (bcmp (&TREE_STRING_LENGTH (exp), p,
+      if (bcmp ((char *) &TREE_STRING_LENGTH (exp), p,
 		sizeof TREE_STRING_LENGTH (exp)))
 	return 0;
       p += sizeof TREE_STRING_LENGTH (exp);
@@ -2232,7 +2232,7 @@ compare_constant_1 (exp, p)
       int length = list_length (CONSTRUCTOR_ELTS (exp));
       tree type;
 
-      if (bcmp (&length, p, sizeof length))
+      if (bcmp ((char *) &length, p, sizeof length))
 	return 0;
       p += sizeof length;
 
@@ -2242,7 +2242,7 @@ compare_constant_1 (exp, p)
 	type = TREE_TYPE (exp);
       else
 	type = 0;
-      if (bcmp (&type, p, sizeof type))
+      if (bcmp ((char *) &type, p, sizeof type))
 	return 0;
       p += sizeof type;
 
@@ -2250,7 +2250,7 @@ compare_constant_1 (exp, p)
       if (TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)
 	{
 	  int size = int_size_in_bytes (TREE_TYPE (exp));
-	  if (bcmp (&size, p, sizeof size))
+	  if (bcmp ((char *) &size, p, sizeof size))
 	    return 0;
 	  p += sizeof size;
 	}
@@ -2266,7 +2266,7 @@ compare_constant_1 (exp, p)
 	    {
 	      tree zero = 0;
 
-	      if (bcmp (&zero, p, sizeof zero))
+	      if (bcmp ((char *) &zero, p, sizeof zero))
 		return 0;
 	      p += sizeof zero;
 	    }
@@ -2774,9 +2774,9 @@ init_const_rtx_hash_table ()
   const_rtx_sym_hash_table
     = ((struct pool_sym **)
        oballoc (MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *)));
-  bzero (const_rtx_hash_table,
+  bzero ((char *) const_rtx_hash_table,
 	 MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *));
-  bzero (const_rtx_sym_hash_table,
+  bzero ((char *) const_rtx_sym_hash_table,
 	 MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *));
 
   first_pool = last_pool = 0;
@@ -2852,7 +2852,8 @@ decode_rtx_const (mode, x, value)
       value->kind = RTX_DOUBLE;
       if (GET_MODE (x) != VOIDmode)
 	value->mode = GET_MODE (x);
-      bcopy (&CONST_DOUBLE_LOW (x), &value->un.du, sizeof value->un.du);
+      bcopy ((char *) &CONST_DOUBLE_LOW (x),
+	     (char *) &value->un.du, sizeof value->un.du);
       break;
 
     case CONST_INT:
@@ -3226,7 +3227,7 @@ output_constant_pool (fnname, fndecl)
 	  if (GET_CODE (x) != CONST_DOUBLE)
 	    abort ();
 
-	  bcopy (&CONST_DOUBLE_LOW (x), &u, sizeof u);
+	  bcopy ((char *) &CONST_DOUBLE_LOW (x), (char *) &u, sizeof u);
 	  assemble_real (u.d, pool->mode);
 	  break;
 

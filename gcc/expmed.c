@@ -2116,8 +2116,10 @@ synth_mult (alg_out, t, cost_limit)
      best_alg is normally undefined, and this is a critical function.  */
   alg_out->ops = best_alg->ops + 1;
   alg_out->cost = cost_limit;
-  bcopy (best_alg->op, alg_out->op, alg_out->ops * sizeof *alg_out->op);
-  bcopy (best_alg->log, alg_out->log, alg_out->ops * sizeof *alg_out->log);
+  bcopy ((char *) best_alg->op, (char *) alg_out->op,
+	 alg_out->ops * sizeof *alg_out->op);
+  bcopy ((char *) best_alg->log, (char *) alg_out->log,
+	 alg_out->ops * sizeof *alg_out->log);
 }
 
 /* Perform a multiplication and return an rtx for the result.

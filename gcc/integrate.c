@@ -242,7 +242,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
        + current_function_uses_pic_offset_table * FUNCTION_FLAGS_USES_PIC_OFFSET_TABLE);
 
   /* Clear out PARMDECL_MAP.  It was allocated in the caller's frame.  */
-  bzero (parmdecl_map, max_parm_reg * sizeof (tree));
+  bzero ((char *) parmdecl_map, max_parm_reg * sizeof (tree));
   arg_vector = rtvec_alloc (list_length (DECL_ARGUMENTS (fndecl)));
 
   for (parms = DECL_ARGUMENTS (fndecl), i = 0;
@@ -465,8 +465,8 @@ save_for_inline_copying (fndecl)
     reg_map[i] = (rtx)obstack_copy (function_maybepermanent_obstack,
 				    regno_reg_rtx[i], len);
 
-  bcopy (reg_map + LAST_VIRTUAL_REGISTER + 1,
-	 regno_reg_rtx + LAST_VIRTUAL_REGISTER + 1,
+  bcopy ((char *) (reg_map + LAST_VIRTUAL_REGISTER + 1),
+	 (char *) (regno_reg_rtx + LAST_VIRTUAL_REGISTER + 1),
 	 (max_reg - (LAST_VIRTUAL_REGISTER + 1)) * sizeof (rtx));
 
   /* Likewise each label rtx must have a unique rtx as its copy.  */
@@ -480,7 +480,7 @@ save_for_inline_copying (fndecl)
   /* Record the mapping of old insns to copied insns.  */
 
   insn_map = (rtx *) alloca (max_uid * sizeof (rtx));
-  bzero (insn_map, max_uid * sizeof (rtx));
+  bzero ((char *) insn_map, max_uid * sizeof (rtx));
 
   /* Get the insn which signals the end of parameter setup code.  */
   first_nonparm_insn = get_first_nonparm_insn ();
@@ -1060,8 +1060,9 @@ copy_for_inline (orig)
   /* Replace this rtx with a copy of itself.  */
 
   x = rtx_alloc (code);
-  bcopy (orig, x, (sizeof (*x) - sizeof (x->fld)
-		   + sizeof (x->fld[0]) * GET_RTX_LENGTH (code)));
+  bcopy ((char *) orig, (char *) x,
+	 (sizeof (*x) - sizeof (x->fld)
+	  + sizeof (x->fld[0]) * GET_RTX_LENGTH (code)));
 
   /* Now scan the subexpressions recursively.
      We can store any replaced subexpressions directly into X
@@ -1306,13 +1307,13 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   map->fndecl = fndecl;
 
   map->reg_map = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero (map->reg_map, max_regno * sizeof (rtx));
+  bzero ((char *) map->reg_map, max_regno * sizeof (rtx));
 
   map->label_map = (rtx *)alloca ((max_labelno - min_labelno) * sizeof (rtx));
   map->label_map -= min_labelno;
 
   map->insn_map = (rtx *) alloca (INSN_UID (header) * sizeof (rtx));
-  bzero (map->insn_map, INSN_UID (header) * sizeof (rtx));
+  bzero ((char *) map->insn_map, INSN_UID (header) * sizeof (rtx));
   map->min_insnno = 0;
   map->max_insnno = INSN_UID (header);
 
@@ -1335,11 +1336,13 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
 
   map->const_equiv_map
     = (rtx *)alloca (map->const_equiv_map_size * sizeof (rtx));
-  bzero (map->const_equiv_map, map->const_equiv_map_size * sizeof (rtx));
+  bzero ((char *) map->const_equiv_map,
+	 map->const_equiv_map_size * sizeof (rtx));
 
   map->const_age_map
     = (unsigned *)alloca (map->const_equiv_map_size * sizeof (unsigned));
-  bzero (map->const_age_map, map->const_equiv_map_size * sizeof (unsigned));
+  bzero ((char *) map->const_age_map,
+	 map->const_equiv_map_size * sizeof (unsigned));
   map->const_age = 0;
 
   /* Record the current insn in case we have to set up pointers to frame
