@@ -68,6 +68,10 @@ case "${target_cpu}" in
   m68k | m680[246]0)
     cpu_include_dir="cpu/m68k"
     ;;
+  mips)
+    # This is only until the mips routines are fixed.
+    cpu_include_dir="cpu/generic"
+    ;;
   mmix)
     ATOMICITYH="cpu/generic"
     ;;
