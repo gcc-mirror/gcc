@@ -1,5 +1,9 @@
 2003-08-12  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.jacks/jacks.xfail: Updated to account for new passes.
+	* libjava.compile/abstr.xfail: Now can compile from bytecode.
+	* libjava.compile/PR5641.xfail: Now can compile from bytecode.
+
 	* libjava.mauve/mauve.exp (test_mauve_sim): Don't find
 	DejaGNUTestHarness in gnu/testlet.
 	(test_mauve): Use correct object extension.
