@@ -1405,6 +1405,10 @@ int warn_padded;
 
 int warn_disabled_optimization;
 
+/* Warn about functions which might be candidates for attribute noreturn.  */
+
+int warn_missing_noreturn;
+
 /* Likewise for -W.  */
 
 lang_independent_options W_options[] =
@@ -3209,6 +3213,7 @@ rest_of_compilation (decl)
 
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
   cleanup_cfg (insns);
+  check_function_return_warnings ();
 
   close_dump_file (DFI_cfg, print_rtl_with_bb, insns);
 

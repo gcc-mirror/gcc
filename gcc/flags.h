@@ -132,6 +132,10 @@ extern int warn_switch;
 
 extern int warn_return_type;
 
+/* Warn about functions which might be candidates for attribute noreturn. */
+
+extern int warn_missing_noreturn;
+
 /* Nonzero means warn about pointer casts that increase the required
    alignment of the target type (and might therefore lead to a crash
    due to a misaligned access).  */
@@ -546,11 +550,6 @@ extern int flag_renumber_insns;
    Set in reload1.c if anything is allocated on the stack there.  */
 
 extern int frame_pointer_needed;
-
-/* Set nonzero if jump_optimize finds that control falls through
-   at the end of the function.  */
-
-extern int can_reach_end;
 
 /* Nonzero if GCC must add code to check memory access (used by Checker).  */
 

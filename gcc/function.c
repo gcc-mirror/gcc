@@ -6658,12 +6658,20 @@ expand_function_end (filename, line, end_bindings)
 
   if (return_label)
     {
+      rtx before, after;
+
       /* Before the return label, clobber the return registers so that
          they are not propogated live to the rest of the function.  This
 	 can only happen with functions that drop through; if there had
 	 been a return statement, there would have either been a return
 	 rtx, or a jump to the return label.  */
+
+      before = get_last_insn ();
       clobber_return_register ();
+      after = get_last_insn ();
+
+      if (before != after)
+	cfun->x_clobber_return_insn = after;
 
       emit_label (return_label);
     }
@@ -7429,6 +7437,7 @@ mark_function_status (p)
   ggc_mark_tree (p->x_context_display);
   ggc_mark_tree (p->x_trampoline_list);
   ggc_mark_rtx (p->epilogue_delay_list);
+  ggc_mark_rtx (p->x_clobber_return_insn);
 
   mark_temp_slot (p->x_temp_slots);
 
