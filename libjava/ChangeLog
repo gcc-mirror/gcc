@@ -18,7 +18,6 @@ Sun Aug 20 21:02:48 2000  Anthony Green  <green@redhat.com>
 	* gij.cc (main): Add -jar option to execute jar files.
 	(help): Describe -jar option.
 	* prims.cc (_Jv_RunMain): Add support for jar execution mode.
-	* gnu/gcj/tools/Gij.java: New file.
 	* include/jvm.h: Add is_jar argument to _Jv_RunMain.
 	* gnu/gcj/runtime/FirstThread.java (main): New method.
 
