@@ -1,5 +1,5 @@
-# Top level configure fragment for the GNU Objective-C Runtime Library.
-#   Copyright (C) 1997, 1998, 2000 Free Software Foundation, Inc.
+# Top level configure fragment for GNU Objective-C
+#   Copyright (C) 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 

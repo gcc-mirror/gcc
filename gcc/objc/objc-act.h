@@ -18,8 +18,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_OBJC_ACT_H
+#define GCC_OBJC_ACT_H
 
 /*** Public Interface (procedures) ***/
+
+const char *objc_init				PARAMS ((const char *));
+int objc_decode_option				PARAMS ((int, char **));
 
 /* used by yyparse */
 
@@ -353,3 +358,4 @@ extern tree objc_global_trees[OCTI_MAX];
 #define string_class_decl	objc_global_trees[OCTI_STRING_CLASS_DECL]
 #define UOBJC_SUPER_decl	objc_global_trees[OCTI_SUPER_DECL]
 
+#endif /* GCC_OBJC_ACT_H */

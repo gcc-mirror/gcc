@@ -59,8 +59,6 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "target.h"
 #include "varray.h"
-#include "langhooks.h"
-#include "langhooks-def.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -157,10 +155,6 @@ char *util_firstobj;
 
 static void init_objc				PARAMS ((void));
 static void finish_objc				PARAMS ((void));
-static const char *objc_init			PARAMS ((const char *));
-static void objc_init_options			PARAMS ((void));
-static int objc_decode_option			PARAMS ((int, char **));
-static void objc_post_options			PARAMS ((void));
 
 /* Code generation.  */
 
@@ -214,6 +208,7 @@ static void objc_expand_function_end            PARAMS ((void));
 hash *nst_method_hash_list = 0;
 hash *cls_method_hash_list = 0;
 
+static size_t hash_func				PARAMS ((tree));
 static void hash_init				PARAMS ((void));
 static void hash_enter				PARAMS ((hash *, tree));
 static hash hash_lookup				PARAMS ((hash *, tree));
@@ -276,6 +271,7 @@ static void dump_interface			PARAMS ((FILE *, tree));
 
 /* Everything else.  */
 
+static void add_objc_tree_codes			PARAMS ((void));
 static tree define_decl				PARAMS ((tree, tree));
 static tree lookup_method_in_protocol_list	PARAMS ((tree, tree, int));
 static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
@@ -452,44 +448,7 @@ static int generating_instance_variables = 0;
 
 static int print_struct_values = 0;
 
-#undef LANG_HOOKS_NAME
-#define LANG_HOOKS_NAME "GNU Objective-C"
-#undef LANG_HOOKS_INIT
-#define LANG_HOOKS_INIT objc_init
-#undef LANG_HOOKS_FINISH
-#define LANG_HOOKS_FINISH c_common_finish
-#undef LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS objc_init_options
-#undef LANG_HOOKS_DECODE_OPTION
-#define LANG_HOOKS_DECODE_OPTION objc_decode_option
-#undef LANG_HOOKS_POST_OPTIONS
-#define LANG_HOOKS_POST_OPTIONS objc_post_options
-#undef LANG_HOOKS_PRINT_IDENTIFIER
-#define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
-#undef LANG_HOOKS_SET_YYDEBUG
-#define LANG_HOOKS_SET_YYDEBUG c_set_yydebug
-/* Inlining hooks same as the C front end.  */
-#undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
-#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
-  c_cannot_inline_tree_fn
-#undef LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS
-#define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
-  c_disregard_inline_limits
-#undef LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P
-#define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
-  anon_aggr_type_p
-
-/* Each front end provides its own.  */
-const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
-
 static varray_type deferred_fns;
-
-/* Post-switch processing.  */
-static void
-objc_post_options ()
-{
-  c_common_post_options ();
-}
 
 /* Some platforms pass small structures through registers versus through
    an invisible pointer.  Determine at what size structure is the 
@@ -554,17 +513,12 @@ generate_struct_by_value_array ()
   exit (0);
 }
 
-static void
-objc_init_options ()
-{
-  c_common_init_options (clk_objective_c);
-}
-
-static const char *
+const char *
 objc_init (filename)
      const char *filename;
 {
   filename = c_objc_common_init (filename);
+  add_objc_tree_codes ();
 
   decl_printable_name = objc_printable_name;
 
@@ -647,7 +601,7 @@ finish_file ()
     fclose (gen_declaration_file);
 }
 
-static int
+int
 objc_decode_option (argc, argv)
      int argc;
      char **argv;
@@ -5314,9 +5268,22 @@ build_ivar_reference (id)
 
   return build_component_ref (build_indirect_ref (self_decl, "->"), id);
 }
-/* Make the hash value positive.  */
-#define HASHFUNCTION(key)	((size_t) key & 0x7fffffff)
+
+/* Compute a hash value for a given method SEL_NAME.  */
 
+static size_t
+hash_func (sel_name)
+     tree sel_name;
+{
+  const unsigned char *s 
+    = (const unsigned char *)IDENTIFIER_POINTER (sel_name);
+  size_t h = 0;
+  
+  while (*s)
+    h = h * 67 + *s++ - 113;
+  return h;  
+}
+     
 static void
 hash_init ()
 {
@@ -5337,7 +5304,7 @@ hash_enter (hashlist, method)
   static hash 	hash_alloc_list = 0;
   static int	hash_alloc_index = 0;
   hash obj;
-  int slot = HASHFUNCTION (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
+  int slot = hash_func (METHOD_SEL_NAME (method)) % SIZEHASHTABLE;
 
   if (! hash_alloc_list || hash_alloc_index >= HASH_ALLOC_LIST_SIZE)
     {
@@ -5360,7 +5327,7 @@ hash_lookup (hashlist, sel_name)
 {
   hash target;
 
-  target = hashlist[HASHFUNCTION (sel_name) % SIZEHASHTABLE];
+  target = hashlist[hash_func (sel_name) % SIZEHASHTABLE];
 
   while (target)
     {
@@ -8074,23 +8041,27 @@ objc_printable_name (decl, kind)
   return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
 }
 
+/* Adds the tree codes specific to the ObjC/ObjC++ front end to the
+   list of all tree codes.  */
+
+static void
+add_objc_tree_codes ()
+{
+  int add = (int) LAST_OBJC_TREE_CODE - (int) LAST_BASE_TREE_CODE;
+
+  memcpy (tree_code_type + (int) LAST_BASE_TREE_CODE,
+	  objc_tree_code_type, add);
+  memcpy (tree_code_length + (int) LAST_BASE_TREE_CODE,
+	  objc_tree_code_length, add * sizeof (int));
+  memcpy (tree_code_name + (int) LAST_BASE_TREE_CODE,
+	  objc_tree_code_name, add * sizeof (char *));
+}
+
 static void
 init_objc ()
 {
-  /* Add the special tree codes of Objective C to the tables.  */
-
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
-
-  memcpy (tree_code_type + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_type,
-	  (int) LAST_OBJC_TREE_CODE - (int) LAST_BASE_TREE_CODE);
-  memcpy (tree_code_length + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_length,
-	  (((int) LAST_OBJC_TREE_CODE - (int) LAST_BASE_TREE_CODE) * sizeof (int)));
-  memcpy (tree_code_name + (int) LAST_BASE_TREE_CODE,
-	  objc_tree_code_name,
-	  (((int) LAST_OBJC_TREE_CODE - (int) LAST_BASE_TREE_CODE) * sizeof (char *)));
 
   errbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
