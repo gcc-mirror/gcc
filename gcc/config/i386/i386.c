@@ -3109,12 +3109,10 @@ print_operand (file, x, code)
 	  /* this is the size of op from size of operand */
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
 	    {
-	    case 1:
-	      putc ('b', file);
-	      return;
-
 	    case 2:
-	      putc ('w', file);
+#ifdef HAVE_GAS_FILDS_FISTS
+	      putc ('s', file);
+#endif
 	      return;
 
 	    case 4:
@@ -3144,6 +3142,9 @@ print_operand (file, x, code)
 	      else
 	        putc ('l', file);
 	      return;
+
+	    default:
+	      abort ();
 	    }
 
 	case 'b':
