@@ -424,11 +424,6 @@ build_java_array_type (element_type, length)
   FIELD_FINAL (fld) = 1;
   TREE_READONLY (fld) = 1;
 
-  /* Add clone method.  This is different from Object.clone because it
-     is public.  */
-  add_method (t, ACC_PUBLIC | ACC_FINAL, get_identifier ("clone"),
-             get_identifier ("()Ljava/lang/Object;"));
-
   atype = build_prim_array_type (element_type, length);
   arfld = build_decl (FIELD_DECL, get_identifier ("data"), atype);
   DECL_CONTEXT (arfld) = t;
