@@ -3047,7 +3047,7 @@ decode_rtx_const (mode, x, value)
 	}
     }
 
-  if (value->kind > RTX_DOUBLE && value->un.addr.base != 0)
+  if (value->kind > RTX_VECTOR && value->un.addr.base != 0)
     switch (GET_CODE (value->un.addr.base))
       {
 #if 0
