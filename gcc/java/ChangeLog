@@ -1,3 +1,27 @@
+2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lex.h (lineno): Rename to ...
+	(input_line): ... here
+	* parse-scan.y (lineno): Rename to ...
+	(input_line): ... here.
+	(reset_report): Rename lineno to input_line.
+	* check-init.c (check_init): Likewise.
+	* class.c (push_class): Likewise.
+	* decl.c (complete_start_java_method, end_java_method): Likewise.
+	* expr.c (expand_byte_code): Likewise.
+	* jcf-parse.c (give_name_to_class, parse_class_file): Likewise.
+	* jcf-write.c (generate_bytecode_insns): Likewise.
+	* lex.c (java_init_lex, java_allocate_new_line,
+	do_java_lex): Likewise.
+	* parse.h (YYNOT_TWICE): Likewise.
+	* parse.y (empty_statement, expression_statement,
+	java_pop_parser_context, java_parser_context_save_global,
+	yyerror, register_fields, method_header, safe_layout_class,
+	find_in_imports_on_demand, create_artificial_method,
+	source_end_java_method, start_complete_expand_method,
+	build_thisn_assign, java_complete_lhs,
+	maybe_absorb_scoping_block): Likewise.
+
 2003-04-20  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* jcf-io.c (find_class): use DIR_SEPARATOR instead of
