@@ -167,11 +167,17 @@ proc test_mauve {} {
   set link_args [concat [libjava_arguments link] \
 		   [list "additional_flags=--main=DejaGNUTestHarness"]]
 
+  if {[string match "*libtool*" $compile_args]} {
+    set objext lo
+  } else {
+    set objext o
+  }
+
   set ok 1
   set objlist {}
   foreach base [mauve_find_harness_files] {
     set file $base.class
-    set obj $base.o
+    set obj $base.$objext
     set x [libjava_prune_warnings \
 	     [target_compile [pwd]/$file $obj object $compile_args]]
     if {$x != ""} then {
@@ -194,7 +200,10 @@ proc test_mauve {} {
     regsub -all -- / $class . class
 
     set ok 1
+    set this_olist {}
     foreach obj $uses($file) {
+      set obj [file rootname $obj].$objext
+      lappend this_olist $obj
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	# The .class file does contain a $, but we can quote it between "'"s.
@@ -216,7 +225,7 @@ proc test_mauve {} {
     }
 
     set x [libjava_prune_warnings \
-	     [libjava_tcompile [concat $uses($file) $objlist] \
+	     [libjava_tcompile [concat $this_olist $objlist] \
 		$Executable executable $link_args]]
     if {$x != ""} then {
       set proc_ok 0
@@ -325,8 +334,6 @@ proc test_mauve_sim {} {
     return 0
   }
 
-  lappend objlist gnu/testlet/DejaGNUTestHarness.o
-
   set proc_ok 1
   set Executable DejaGNUTestHarness
   foreach file $choices {
@@ -377,8 +384,8 @@ proc test_mauve_sim {} {
     }
 
     set x [libjava_prune_warnings \
-	     [target_compile gnu/testlet/DejaGNUTestHarness.class \
-		gnu/testlet/DejaGNUTestHarness.o object $compile_args]]
+	     [target_compile DejaGNUTestHarness.class \
+		DejaGNUTestHarness.o object $compile_args]]
     if {$x != ""} then {
 	fail "Compile DejaGNUTestHarness.java"
         set proc_ok 0
