@@ -15,7 +15,6 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/NullPointerException.h>
-#include <gnu/gcj/runtime/MethodRef.h> 
 #include <gnu/gcj/RawData.h> 
 #include <gcj/cni.h>
 #include <jvm.h>

@@ -54,7 +54,6 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/lang/VMClassLoader.h>
 #include <gcj/method.h>
-#include <gnu/gcj/runtime/MethodRef.h>
 #include <gnu/gcj/RawData.h>
 #include <java/lang/VerifyError.h>
 
