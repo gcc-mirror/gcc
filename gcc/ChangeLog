@@ -1,3 +1,8 @@
+Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (force_fit_type): Unsigned values can overflow
+	if they are sizetype.
+	(int_const_binop): Don't use cache if overflows.
 2000-10-20  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (locate_and_pad_parm): Zero alignment_pad.

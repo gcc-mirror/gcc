@@ -216,8 +216,11 @@ force_fit_type (t, overflow)
 	TREE_INT_CST_LOW (t) &= ~((unsigned HOST_WIDE_INT) (-1) << prec);
     }
 
-  /* Unsigned types do not suffer sign extension or overflow.  */
-  if (TREE_UNSIGNED (TREE_TYPE (t)))
+  /* Unsigned types do not suffer sign extension or overflow unless they
+     are a sizetype.  */
+  if (TREE_UNSIGNED (TREE_TYPE (t))
+      && ! (TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	    && TYPE_IS_SIZETYPE (TREE_TYPE (t))))
     return overflow;
 
   /* If the value's sign bit is set, extend the sign.  */
@@ -1604,7 +1607,8 @@ int_const_binop (code, arg1, arg2, notrunc, forsize)
       abort ();
     }
 
-  if (forsize && hi == 0 && low < 10000)
+  if (forsize && hi == 0 && low < 10000
+      && overflow == 0 && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
     return size_int_type_wide (low, TREE_TYPE (arg1));
   else
     {

@@ -6353,7 +6353,16 @@ dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
 	    cp_warning ("%s of negative value `%E' to `%T'",
 			errtype, expr, type);
 	}
-      overflow_warning (expr);
+
+      /* Suppress warning for a sizetype since we never used to issue it.
+	 ??? This needs to be looked at more carefully someday.  */
+      if (TREE_CODE (expr) == INTEGER_CST
+	  && TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
+	  && TYPE_IS_SIZETYPE (TREE_TYPE (expr)))
+	TREE_OVERFLOW (expr) = TREE_CONSTANT_OVERFLOW (expr) = 0;
+      else
+	overflow_warning (expr);
+
       if (TREE_CONSTANT (expr))
 	expr = fold (expr);
     }
