@@ -1,5 +1,5 @@
 #  GNU Objective C Runtime Makefile
-#  Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+#  Copyright (C) 1993 Free Software Foundation, Inc.
 #
 #  This file is part of GNU CC.
 #
@@ -36,7 +36,7 @@ AR = ar
 AR_FLAGS = rc
 
 # Always search these dirs when compiling.
-SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config -I$(srcdir)/include
+SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 
 .c.o:
 	$(GCC_FOR_TARGET) $(OPTIMIZE) \
