@@ -377,17 +377,6 @@ loop_optimize (f, dumpfile)
   loop_invalid = (char *) alloca (max_loop_num * sizeof (char));
   loop_number_exit_labels = (rtx *) alloca (max_loop_num * sizeof (rtx));
 
-  if (flag_unroll_loops && write_symbols != NO_DEBUG)
-    {
-      loop_number_first_block
-	= (union tree_node **) alloca (max_loop_num
-				       * sizeof (union tree_node *));
-      loop_number_last_block
-	= (union tree_node **) alloca (max_loop_num
-				       * sizeof (union tree_node *));
-      loop_number_block_level = (int *) alloca (max_loop_num * sizeof (int));
-    }
-
   /* Find and process each loop.
      First, find them, and record them in order of their beginnings.  */
   find_and_verify_loops (f);
@@ -433,7 +422,7 @@ loop_optimize (f, dumpfile)
 
   /* Create a mapping from loops to BLOCK tree nodes.  */
   if (flag_unroll_loops && write_symbols != NO_DEBUG)
-    find_loop_tree_blocks (f);
+    find_loop_tree_blocks ();
 
   /* Now scan the loops, last ones first, since this means inner ones are done
      before outer ones.  */
@@ -441,6 +430,12 @@ loop_optimize (f, dumpfile)
     if (! loop_invalid[i] && loop_number_loop_ends[i])
       scan_loop (loop_number_loop_starts[i], loop_number_loop_ends[i],
 		 max_reg_num ());
+
+  /* If debugging and unrolling loops, we must replicate the tree nodes
+     corresponding to the blocks inside the loop, so that the original one
+     to one mapping will remain.  */
+  if (flag_unroll_loops && write_symbols != NO_DEBUG)
+    unroll_block_trees ();
 }
 
 /* Optimize one loop whose start is LOOP_START and end is END.
