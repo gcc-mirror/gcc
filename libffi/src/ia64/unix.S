@@ -94,11 +94,11 @@ fp_done:
 	ld8	out4=[loc2],16
 	ld8	out5=[loc3],16
 	;;
-	ld8	out6=[loc2],16
+	ld8	out6=[loc2]
 	ld8	out7=[loc3]
-	/* loc2 points at first stack parameter.  Set sp to 16 bytes	*/
-	/* below that.							*/
-	add	sp=-16,loc2
+        /* Set sp to 16 bytes below the first stack parameter.  This    */
+        /* is the value currently in loc2.                              */
+	mov	sp=loc2
 	
 	ld8 	r8=[fn],8
 	;;
