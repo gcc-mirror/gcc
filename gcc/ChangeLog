@@ -1,3 +1,7 @@
+Mon Dec  8 23:53:26 1997  Jay Sachs <sachs@bull.cs.williams.edu>
+
+	* Makefile.in (compare*): Handle losing behavior from 4.4bsd make.
+
 Mon Dec  8 21:03:28 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (REG_RA, alpha_return_addr, output_epilog):
