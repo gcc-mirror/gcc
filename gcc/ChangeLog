@@ -1,3 +1,8 @@
+2001-11-01  Richard Sandiford  <rsandifo@redhat.com>
+
+ 	* config/mips/mips.c (save_restore_insns): Don't mark any register
+	save slots as unchanging if current_function_calls_eh_return.
+
 2001-11-01  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (h8300_encode_label): Compute a string
