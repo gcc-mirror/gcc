@@ -1,3 +1,8 @@
+2002-06-11  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (distclean): Delete junk left in testsuite
+	directory, too.
+
 2002-06-11  Jeffrey Law <law@redhat.com>
 
 	* mips.c (function_arg_advance): gen_ashldi3 returns an INSN now,
