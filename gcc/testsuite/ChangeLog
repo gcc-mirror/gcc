@@ -1,3 +1,8 @@
+2003-05-24  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* gcc.c-torture/execute/builtins/builtins.exp: Add -multiply_defined
+	suppress option for powerpc-*-darwin*.
+	
 2003-05-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-1.c: Add tests for tan and atan.
