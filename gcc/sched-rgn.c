@@ -291,7 +291,6 @@ is_cfg_nonregular (void)
 {
   basic_block b;
   rtx insn;
-  RTX_CODE code;
 
   /* If we have a label that could be the target of a nonlocal goto, then
      the cfg is not well structured.  */
@@ -302,11 +301,6 @@ is_cfg_nonregular (void)
   if (forced_labels)
     return 1;
 
-  /* If this function has a computed jump, then we consider the cfg
-     not well structured.  */
-  if (current_function_has_computed_jump)
-    return 1;
-
   /* If we have exception handlers, then we consider the cfg not well
      structured.  ?!?  We should be able to handle this now that flow.c
      computes an accurate cfg for EH.  */
@@ -315,24 +309,23 @@ is_cfg_nonregular (void)
 
   /* If we have non-jumping insns which refer to labels, then we consider
      the cfg not well structured.  */
-  /* Check for labels referred to other thn by jumps.  */
   FOR_EACH_BB (b)
-    for (insn = BB_HEAD (b); ; insn = NEXT_INSN (insn))
+    FOR_BB_INSNS (b, insn)
       {
-	code = GET_CODE (insn);
-	if (INSN_P (insn) && code != JUMP_INSN)
+	/* Check for labels referred by non-jump insns.  */
+	if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	  {
 	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
-
 	    if (note
 		&& ! (JUMP_P (NEXT_INSN (insn))
 		      && find_reg_note (NEXT_INSN (insn), REG_LABEL,
 					XEXP (note, 0))))
 	      return 1;
 	  }
-
-	if (insn == BB_END (b))
-	  break;
+	/* If this function has a computed jump, then we consider the cfg
+	   not well structured.  */
+	else if (JUMP_P (insn) && computed_jump_p (insn))
+	  return 1;
       }
 
   /* Unreachable loops with more than one basic block are detected

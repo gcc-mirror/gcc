@@ -227,18 +227,6 @@ make_edges (basic_block min, basic_block max, int update_p)
   basic_block bb;
   sbitmap *edge_cache = NULL;
 
-  /* Assume no computed jump; revise as we create edges.  */
-  current_function_has_computed_jump = 0;
-
-  /* If we are partitioning hot and cold basic blocks into separate
-     sections, we cannot assume there is no computed jump (partitioning
-     sometimes requires the use of indirect jumps; see comments about
-     partitioning at the top of bb-reorder.c:partition_hot_cold_basic_blocks 
-     for complete details).  */
-
-  if (flag_reorder_blocks_and_partition)
-    current_function_has_computed_jump = 1;
-
   /* Heavy use of computed goto in machine-generated code can lead to
      nearly fully-connected CFGs.  In that case we spend a significant
      amount of time searching the edge lists for duplicates.  */
@@ -325,8 +313,6 @@ make_edges (basic_block min, basic_block max, int update_p)
 	     everything on the forced_labels list.  */
 	  else if (computed_jump_p (insn))
 	    {
-	      current_function_has_computed_jump = 1;
-
 	      for (x = forced_labels; x; x = XEXP (x, 1))
 		make_label_edge (edge_cache, bb, XEXP (x, 0), EDGE_ABNORMAL);
 	    }
