@@ -183,7 +183,7 @@ static int pic_label_no = 0;
 #define ix86_stack_locals (current_function->machine->stack_locals)
 
 /* which cpu are we scheduling for */
-enum processor_type ix86_cpu;
+extern enum processor_type ix86_cpu;
 
 /* which instruction set architecture to use.  */
 int ix86_arch;
