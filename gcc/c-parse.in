@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 written by AT&T, but I have never seen it.  */
 
 ifobjc
-%expect 36
+%expect 56
 end ifobjc
 ifc
 %expect 8
