@@ -613,6 +613,7 @@ extern void fixup_abnormal_edges	PARAMS ((void));
 extern bool can_hoist_insn_p		PARAMS ((rtx, rtx, regset));
 extern rtx hoist_insn_after		PARAMS ((rtx, rtx, rtx, rtx));
 extern rtx hoist_insn_to_edge		PARAMS ((rtx, edge, rtx, rtx));
+extern bool inside_basic_block_p	PARAMS ((rtx));
 extern bool control_flow_insn_p		PARAMS ((rtx));
 
 /* In dominance.c */

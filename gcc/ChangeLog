@@ -1,3 +1,27 @@
+Thu Feb  6 00:18:38 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_inter_unit_moves): New variable.
+	(ix86_secondary_memory_needed): Fix 64bit case, honor
+	TARGET_INTER_UNIT_MOVES
+	* i386.h (x86_inter_unit_moves): Declare.
+	(TARGET_INTER_UNIT_MOVES): New macro.
+	* i386.md (movsi_1): Cleanup constraints; disable
+	when not doing inter-unit moves.
+	(movsi_1_nointernunit): New.
+	(movdi_1_rex64): Fix constraints; deal with SSE->GPR moves.
+	(movdi_1_rex64_nointerunit): New.
+	(mivsf_1): disable when not doing inter-unit moves.
+	(movsf_1_nointerunit): New.
+
+	* basic-block.h (inside_basic_block_p):  Declare.
+	* cfgbuild.c (inside_basic_block_p): Make global.
+	* haifa-sched.c (unlink_other_notes0: Deal with NOT_INSN_BASIC_BLOCK.
+	* scheudle-ebb.c  (schedule_ebb): Return last basic block of trace;
+	update CFG.
+	(fix_basic_block_boundaries, add_missing_bbs): New.
+	(rank): Use profile.
+	(scheudle_ebbs): Rely on CFG; update coments.
+
 2003-02-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (host_hook_obj): New.

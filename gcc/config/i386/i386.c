@@ -521,6 +521,7 @@ const int x86_sse_typeless_stores = m_ATHLON_K8;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4;
 const int x86_use_ffreep = m_ATHLON_K8;
 const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6;
+const int x86_inter_unit_moves = ~(m_ATHLON_K8);
 
 /* In case the average insn count for single function invocation is
    lower than this constant, emit fast (but longer) prologue and
@@ -14386,10 +14387,10 @@ ix86_secondary_memory_needed (class1, class2, mode, strict)
 	return 1;
     }
   return (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2)
-	  || (SSE_CLASS_P (class1) != SSE_CLASS_P (class2)
-	      && (mode) != SImode)
-	  || (MMX_CLASS_P (class1) != MMX_CLASS_P (class2)
-	      && (mode) != SImode));
+	  || ((SSE_CLASS_P (class1) != SSE_CLASS_P (class2)
+	       || MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
+	      && ((mode != SImode && (mode != DImode || !TARGET_64BIT))
+		  || (!TARGET_INTER_UNIT_MOVES && !optimize_size))));
 }
 /* Return the cost of moving data from a register in class CLASS1 to
    one in class CLASS2.
