@@ -1,3 +1,7 @@
+Tue Dec 22 23:58:31 1998  Richard Henderson  <rth@cygnus.com>
+
+	* reload1.c (emit_reload_insns): Check `set' not null before use.
+
 Tue Dec 22 15:15:45 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* rtlanal.c (multiple_sets): Change type of 'found' from 'rtx' to

@@ -7507,7 +7507,7 @@ emit_reload_insns (chain)
 	      if (! src_reg)
 		{
 		  rtx set = single_set (insn);
-		  if (SET_DEST (set) == reload_out[r])
+		  if (set && SET_DEST (set) == reload_out[r])
 		    {
 		      int k;
 
