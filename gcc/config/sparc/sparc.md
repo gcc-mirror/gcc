@@ -9362,7 +9362,8 @@
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
+   && sparc_cpu != PROCESSOR_ULTRASPARC"
   "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
 
 (define_peephole
@@ -9371,28 +9372,8 @@
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
   "short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
-  "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
-
-(define_peephole
-  [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:SI (match_operand:DI 1 "call_operand_address" "ps"))
-			 (match_operand 2 "" "")))
-	      (clobber (reg:DI 15))])
-   (set (pc) (label_ref (match_operand 3 "" "")))]
-  "TARGET_ARCH64
-   && short_branch (INSN_UID (insn), INSN_UID (operands[3]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
-  "call\\t%a1, %2\\n\\tadd\\t%%o7, (%l3-.-4), %%o7")
-
-(define_peephole
-  [(parallel [(call (mem:SI (match_operand:DI 0 "call_operand_address" "ps"))
-		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 15))])
-   (set (pc) (label_ref (match_operand 2 "" "")))]
-  "TARGET_ARCH64
-   && short_branch (INSN_UID (insn), INSN_UID (operands[2]))
-   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))"
+   && (USING_SJLJ_EXCEPTIONS || ! can_throw_internal (ins1))
+   && sparc_cpu != PROCESSOR_ULTRASPARC"
   "call\\t%a0, %1\\n\\tadd\\t%%o7, (%l2-.-4), %%o7")
 
 (define_insn "prefetch"
