@@ -1369,6 +1369,34 @@ in @file{@var{libdir}} (normally @file{@var{prefix}/lib}); internal
 parts of the compiler in @file{@var{libdir}/gcc-lib}; documentation in
 info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 
+When installing cross-compilers, GCC's executables
+are not only installed into @file{@var{bindir}}, that
+is, @file{@var{exec-prefix}/bin}, but additionally into
+@file{@var{exec-prefix}/@var{target-alias}/bin}, if that directory
+exists.  Typically, such @dfn{tooldirs} hold target-specific
+binutils, including assembler and linker.
+
+Installation into a temporary staging area or into a @command{chroot}
+jail can be achieved with the command
+
+@example
+make DESTDIR=@var{path-to-rootdir} install
+@end example
+
+@noindent where @var{path-to-rootdir} is the absolute path of
+a directory relative to which all installation paths will be
+interpreted.  Note that the directory specified by @code{DESTDIR}
+need not exist yet; it will be created if necessary.
+
+There is a subtle point with tooldirs and @code{DESTDIR}:
+If you relocate a cross-compiler installation with
+e.g.@: @samp{DESTDIR=@var{rootdir}}, then the directory
+@file{@var{rootdir}/@var{exec-prefix}/@var{target-alias}/bin} will
+be filled with duplicated GCC executables only if it already exists,
+it will not be created otherwise.  This is regarded as a feature,
+not as a bug, because it gives slightly more control to the packagers
+using the @code{DESTDIR} feature.
+
 If you built a released version of GCC using @samp{make bootstrap} then please
 quickly review the build status page for your release, available from
 @uref{http://gcc.gnu.org/buildstat.html}.
