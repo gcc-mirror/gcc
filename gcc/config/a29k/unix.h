@@ -37,10 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_SPEC "%{!m29000:-Dam29050 -D__am29050__}"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-c /usr/lib/default.ld"
-
-/* We can't say "-lgcc" due to a bug in gld for now.  */
-#define LINK_LIBGCC_SPECIAL
+#define LINK_SPEC "-c default.ld%s"
 
 /* For some systems, it is best if double-word objects are aligned on a 
    doubleword boundary.  We want to maintain compatibility with MetaWare in
@@ -48,6 +45,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 64
+
+/* Add shared data as a kludge for now.  */
+
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)					\
+{ char *p, *after_dir = main_input_filename;			\
+  if (TARGET_29050)						\
+    fprintf (FILE, "\t.cputype 29050\n");			\
+  for (p = main_input_filename; *p; p++)			\
+    if (*p == '/')						\
+      after_dir = p + 1;					\
+  fprintf (FILE, "\t.file \"%s\"\n", after_dir);		\
+  if (flag_shared_data)						\
+    fprintf (FILE, "\t.sect .shdata,data\n");			\
+  fprintf (FILE, "\t.sect .lit,lit\n");  }
+
+/* Output before shared  data.  */
+
+#define SHARED_SECTION_ASM_OP "\t.use .shdata"
+
+/* If we want shared data, we have to turn off commons.  */
+
+#define OVERRIDE_OPTIONS if (flag_shared_data) flag_no_common = 1;
 
 #if 0 /* This would be needed except that the 29k doesn't have strict
 	 alignment requirements.  */
