@@ -1,3 +1,8 @@
+2002-08-11  Andreas Jaeger  <aj@suse.de>
+
+	PR target/7531:
+	* doc/invoke.texi (i386 and x86-64 Options): Document -mcmodel.
+
 2002-08-10  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/alpha/alpha.h (TARGET_CPU_CPP_BUILTINS): Replace
@@ -57,7 +62,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(finish_struct): Likewise.
 	* c-lang.c (maybe_objc_check_decl): Rename to objc_check_decl.
 	(maybe_objc_comptypes): Rename to objc_comptypes.
-	(maybe_building_objc_message_expr): Rename to 
+	(maybe_building_objc_message_expr): Rename to
 	objc_message_selector.
 	* c-lex.c (lex_charconst): Remove uses of clk_objective_c,
 	replace with flag_objc as needed.
@@ -66,7 +71,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* c-parse.in (init_reswords): Likewise.
 	* c-tree.h (maybe_objc_check_decl): Rename to objc_check_decl.
 	(maybe_objc_comptypes): Rename to objc_comptypes.
-	(maybe_building_objc_message_expr): Rename to       
+	(maybe_building_objc_message_expr): Rename to
 	objc_message_selector.
 	* c-typeck.c (comptypes): Call objc_comptypes instead of
 	maybe_objc_comptypes, and/or objc_message_selector instead of
@@ -78,7 +83,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	independently of those for other languages.
 	* objc/objc-act.c (maybe_objc_comptypes): Delete.
 	(maybe_objc_check_decl): Delete.
-	(maybe_building_objc_message_expr): Rename to 
+	(maybe_building_objc_message_expr): Rename to
 	objc_message_selector.
 	* objc/objc-lang.c (objc_init_options): Use clk_c instead of
 	clk_objective_c; set flag_objc flag.
@@ -135,15 +140,15 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-08-08  Devang Patel  <dpatel@apple.com>
 
-	* objc/objc-act.c (build_selector_translation_table): Issue warning, 
-	when  -Wselector is used,if method for which selector is being 
+	* objc/objc-act.c (build_selector_translation_table): Issue warning,
+	when  -Wselector is used,if method for which selector is being
 	created does not exist.
-	
+
 2002-08-08  Stephen Clarke <stephen.clarke@superh.com>
 
 	* config/sh/sh.c (prepare_move_operands): Only call
 	target_reg_operand if TARGET_SHMEDIA.
-	
+
 2002-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.h, config/rs6000/aix.h,
@@ -190,7 +195,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* objc/Make-lang.in (objc.mostlyclean): Remove coverage files.
 	* treelang/Make-lang.in (treelang.mostlyclean): Remove coverage
 	files.
-	
+
 2002-08-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (cpp_opts): New.
@@ -513,7 +518,7 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	OBJECT_DIRECTORY. Use format_hwint. Adjust gcov file name
 	mangling. Adjust output format to make it more machine readable.
 	* doc/gcov.texi: Document & clarify semantics.
-	
+
 2002-08-04  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/gcc-common.texi (version-GCC): Increase to 3.3.
@@ -540,10 +545,10 @@ Sat Aug 10 19:59:43 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	of TARGET_ALIGN_DOUBLE.
 
 2002-08-04  Gabriel Dos Reis  <gdr@nerim.net>
-	
+
 	* diagnostic.c (inform): New function.
 	* diagnostic.h (inform): Declare.
-	
+
 2002-08-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (movsi_internal1): Add nop mnemonic.
