@@ -14,4 +14,5 @@ int main () {
   /* i =  1; */ asm ("" : "=r" (i) : "0" (i ? 1 : 2));
   if (i != 1)
     abort();
+  return 0;
 }
