@@ -1034,6 +1034,9 @@ mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H)
 
+# Build file to support OSF/rose half-pic format.
+halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H)
+
 # Normally this target is not used; but it is used if you
 # define ALLOCA=alloca.o.  In that case, you must get a suitable alloca.c
 # from the GNU Emacs distribution.
