@@ -1,3 +1,14 @@
+2004-09-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.c, c-decl.c, c-lex.c, c-objc-common.c, c-opts.c,
+	c-parse.in, c-pragma.c, c-typeck.c: Use %q, %< and %> for quoting
+	in diagnostics.  Use %' for English apostrophes.
+	* c-tree.h (ATTRIBUTE_GCC_CDIAG): Define.
+	(pedwarn_c90, pedwarn_c99): Use it.
+	* c-decl.c (lookup_label): Quote label name in diagnostic.
+	* c-parse.in (yyprint): Use ' instead of ` for left quote.
+	* c-typeck.c (warn_for_assignment): Likewise.
+
 2004-09-13  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_schedule): New global variable.

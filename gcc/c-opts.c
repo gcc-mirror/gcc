@@ -144,16 +144,16 @@ c_common_missing_argument (const char *opt, size_t code)
       return false;
 
     case OPT_fconstant_string_class_:
-      error ("no class name specified with \"%s\"", opt);
+      error ("no class name specified with %qs", opt);
       break;
 
     case OPT_A:
-      error ("assertion missing after \"%s\"", opt);
+      error ("assertion missing after %qs", opt);
       break;
 
     case OPT_D:
     case OPT_U:
-      error ("macro name missing after \"%s\"", opt);
+      error ("macro name missing after %qs", opt);
       break;
 
     case OPT_F:
@@ -162,7 +162,7 @@ c_common_missing_argument (const char *opt, size_t code)
     case OPT_isysroot:
     case OPT_isystem:
     case OPT_iquote:
-      error ("missing path after \"%s\"", opt);
+      error ("missing path after %qs", opt);
       break;
 
     case OPT_MF:
@@ -171,12 +171,12 @@ c_common_missing_argument (const char *opt, size_t code)
     case OPT_include:
     case OPT_imacros:
     case OPT_o:
-      error ("missing filename after \"%s\"", opt);
+      error ("missing filename after %qs", opt);
       break;
 
     case OPT_MQ:
     case OPT_MT:
-      error ("missing makefile target after \"%s\"", opt);
+      error ("missing makefile target after %qs", opt);
       break;
     }
 
@@ -539,7 +539,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_fvtable_thunks:
     case OPT_fxref:
     case OPT_fvtable_gc:
-      warning ("switch \"%s\" is no longer supported", option->opt_text);
+      warning ("switch %qs is no longer supported", option->opt_text);
       break;
 
     case OPT_faccess_control:

@@ -425,7 +425,7 @@ datadef:
 	| error '}'
 	| ';'
 		{ if (pedantic)
-		    pedwarn ("ISO C does not allow extra `;' outside of a function"); }
+		    pedwarn ("ISO C does not allow extra %<;%> outside of a function"); }
 	;
 
 fndef:
@@ -541,7 +541,7 @@ unary_expr:
 		  in_sizeof--;
 		  if (TREE_CODE ($2.value) == COMPONENT_REF
 		      && DECL_C_BIT_FIELD (TREE_OPERAND ($2.value, 1)))
-		    error ("`sizeof' applied to a bit-field");
+		    error ("%<sizeof%> applied to a bit-field");
 		  $$ = c_expr_sizeof_expr ($2); }
 	| sizeof '(' typename ')'  %prec HYPERUNARY
 		{ skip_evaluation--;
@@ -1286,7 +1286,7 @@ typespec_nonreserved_nonattr:
 		  in_typeof--;
 		  if (TREE_CODE ($3.value) == COMPONENT_REF
 		      && DECL_C_BIT_FIELD (TREE_OPERAND ($3.value, 1)))
-		    error ("`typeof' applied to a bit-field");
+		    error ("%<typeof%> applied to a bit-field");
 		  $$ = TREE_TYPE ($3.value);
 		  pop_maybe_used (variably_modified_type_p ($$, NULL_TREE)); }
 	| typeof '(' typename ')'
@@ -1431,11 +1431,11 @@ initelt:
 		    pedwarn ("ISO C90 forbids specifying subobject to initialize"); }
 	| designator initval
 		{ if (pedantic)
-		    pedwarn ("obsolete use of designated initializer without `='"); }
+		    pedwarn ("obsolete use of designated initializer without %<=%>"); }
 	| identifier ':'
 		{ set_init_label ($1);
 		  if (pedantic)
-		    pedwarn ("obsolete use of designated initializer with `:'"); }
+		    pedwarn ("obsolete use of designated initializer with %<:%>"); }
 	  initval
 		{}
 	| initval
@@ -1675,7 +1675,7 @@ structsp_nonattr:
 		  /* In ISO C, enumerated types can be referred to
 		     only if already defined.  */
 		  if (pedantic && !COMPLETE_TYPE_P ($$))
-		    pedwarn ("ISO C forbids forward references to `enum' types"); }
+		    pedwarn ("ISO C forbids forward references to %<enum%> types"); }
 	;
 
 maybecomma:
@@ -2448,7 +2448,7 @@ parmlist_2:  /* empty */
 		  $$->others = 0;
 		  /* Suppress -Wold-style-definition for this case.  */
 		  $$->types = error_mark_node;
-		  error ("ISO C requires a named argument before `...'");
+		  error ("ISO C requires a named argument before %<...%>");
 		}
 	| parms
 		{ $$ = get_parm_info (/*ellipsis=*/false); }
@@ -3480,7 +3480,7 @@ _yylex (void)
       /* These tokens should not survive translation phase 4.  */
     case CPP_HASH:
     case CPP_PASTE:
-      error ("syntax error at '%s' token", NAME(last_token));
+      error ("syntax error at %qs token", NAME(last_token));
       goto get_next;
 
     default:
@@ -3518,7 +3518,7 @@ yyprint (FILE *file, int yychar, YYSTYPE yyl)
     case SCSPEC:
     case STATIC:
       if (IDENTIFIER_POINTER (t))
-	fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
+	fprintf (file, " '%s'", IDENTIFIER_POINTER (t));
       break;
 
     case CONSTANT:

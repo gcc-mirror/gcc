@@ -23,8 +23,8 @@ testfunc1 ()
   foo_i (cd); /* { dg-warning "as integer rather than complex" "prototype conversion warning" } */
 
   foo_f (i); /* { dg-warning "as floating rather than integer" "prototype conversion warning" } */
-  foo_f (f); /* { dg-warning "as `float' rather than `double'" "prototype conversion warning" } */
-  foo_f (ld); /* { dg-warning "as `float' rather than `double'" "prototype conversion warning" } */
+  foo_f (f); /* { dg-warning "as 'float' rather than 'double'" "prototype conversion warning" } */
+  foo_f (ld); /* { dg-warning "as 'float' rather than 'double'" "prototype conversion warning" } */
   foo_f (cd); /* { dg-warning "as floating rather than complex" "prototype conversion warning" } */
 
   foo_ld (i); /* { dg-warning "as floating rather than integer" "prototype conversion warning" } */

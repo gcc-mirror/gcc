@@ -15,31 +15,31 @@ void f5 (register int);
 void f6 (static int); /* { dg-error "error: storage class specified for parameter 'type name'" } */
 void f7 (typedef int); /* { dg-error "error: storage class specified for parameter 'type name'" } */
 
-auto int x; /* { dg-error "error: file-scope declaration of `x' specifies `auto'" } */
+auto int x; /* { dg-error "error: file-scope declaration of 'x' specifies 'auto'" } */
 register int y; /* { dg-warning "warning: file-scope declaration of 'y' specifies 'register'" } */
 
-void h (void) { extern void x (void) {} } /* { dg-error "error: nested function `x' declared `extern'" } */
+void h (void) { extern void x (void) {} } /* { dg-error "error: nested function 'x' declared 'extern'" } */
 /* { dg-warning "warning: ISO C forbids nested functions" "nested" { target *-*-* } 21 } */
 
 void
 g (void)
 {
-  void a; /* { dg-error "error: variable or field `a' declared void" } */
-  const void b; /* { dg-error "error: variable or field `b' declared void" } */
-  static void c; /* { dg-error "error: variable or field `c' declared void" } */
+  void a; /* { dg-error "error: variable or field 'a' declared void" } */
+  const void b; /* { dg-error "error: variable or field 'b' declared void" } */
+  static void c; /* { dg-error "error: variable or field 'c' declared void" } */
 }
 
 void p;
 const void p1;
 extern void q;
 extern const void q1;
-static void r; /* { dg-error "error: variable or field `r' declared void" } */
-static const void r1; /* { dg-error "error: variable or field `r1' declared void" } */
+static void r; /* { dg-error "error: variable or field 'r' declared void" } */
+static const void r1; /* { dg-error "error: variable or field 'r1' declared void" } */
 
-register void f8 (void); /* { dg-error "error: invalid storage class for function `f8'" } */
+register void f8 (void); /* { dg-error "error: invalid storage class for function 'f8'" } */
 /* { dg-warning "warning: file-scope declaration of 'f8' specifies 'register'" "register function" { target *-*-* } 39 } */
 
 void i (void) { auto void y (void) {} } /* { dg-warning "warning: ISO C forbids nested functions" } */
 /* { dg-warning "warning: function definition declared 'auto'" "nested" { target *-*-* } 42 } */
 
-inline int main (void) { return 0; } /* { dg-warning "warning: cannot inline function `main'" } */
+inline int main (void) { return 0; } /* { dg-warning "warning: cannot inline function 'main'" } */
