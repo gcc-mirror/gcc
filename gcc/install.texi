@@ -1038,31 +1038,7 @@ link with GNU malloc instead of the malloc that comes with the system.
 Use this configuration for SCO release 3.2 version 4.
 
 @item i386-*-sco3.2v5*
-Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2, 
-5.0.4, 5.0.5, Internet FastStart 1.0, and Internet FastStart 1.1.
-
-GNU CC can generate COFF binaries if you specify @samp{-mcoff} or ELF
-binaries, the default.    A full @samp{make bootstrap} is recommended
-so that an ELF compiler that builds ELF is generated.                   
-
-You must have TLS597 from @uref{ftp://ftp.sco.com/TLS} installed for ELF
-C++ binaries to work correctly on releases before 5.0.4. 
-
-The native SCO assembler that is provided with the OS at no charge
-is normally required.  If, however, you must be able to use the GNU
-assembler (perhaps you have complex asms) you must configure this
-package @samp{--with-gnu-as}.  To do this, install (cp or symlink)
-gcc/as to your copy of the GNU assembler.  You must use a recent version
-of GNU binutils; version 2.9.1 seems to work well.  If you select this
-option, you will be unable to build COFF images.  Trying to do so will
-result in non-obvious failures.  In general, the "--with-gnu-as" option
-isn't as well tested as the native assembler.
-
-@emph{NOTE:} If you are building C++, you must follow the instructions
-about invoking @samp{make bootstrap} because the native OpenServer
-compiler may build a @file{cc1plus} that will not correctly parse many
-valid C++ programs.  You must do a @samp{make bootstrap} if you are
-building with the native compiler.
+Use this for the SCO OpenServer Release 5 family of operating systems.
 
 @item i386-*-isc
 It may be a good idea to link with GNU malloc instead of the malloc that
