@@ -29,7 +29,8 @@ extern const char empty_string[];	/* empty string */
 extern const char digit_vector[];	/* "0" .. "9" */
 #define digit_string(d) (digit_vector + ((d) * 2))
 
-/* Manipulate global roots that are needed between calls to gc.  */
+/* Manipulate global roots that are needed between calls to gc.  
+   THIS ROUTINE IS OBSOLETE, do not use it for new code.  */
 extern void ggc_add_root		PARAMS ((void *base, int nelt,
 						 int size, void (*)(void *)));
 

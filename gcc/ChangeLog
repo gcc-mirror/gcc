@@ -1,3 +1,7 @@
+2002-07-04  Geoffrey Keating  <geoffk@redhat.com>
+
+	* ggc.h (ggc_add_root): Document as obsolete.
+
 Thu Jul  4 07:58:01 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.md (mshfhi_b, mshflo_b, mshfhi_l, mshflo_l, mshfhi_w): Add DONE.
@@ -676,6 +680,7 @@ Mon Jun 24 21:05:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* doc/tm.texi (Frame Layout): Likewise.
 
 2002-06-20  Steve Ellcey  <sje@cup.hp.com>
+
 	* gcc/config.gcc (ia64*-*-hpux*): Set use_collect2 to no.
 	Set float_format to i128.
 
