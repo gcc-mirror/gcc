@@ -1,3 +1,38 @@
+2000-04-12  Dave Pitts  <dpitts@cozx.com>
+
+	* Makefile.in ($(srcdir)/c-parse.y: c-parse.in): Enclose the whole
+	message in quotes. Otherwise, IBM's make program treats the '#' as the
+	start of a comment and ignores the remainder of the line.
+
+	* c-lex.c (yylex): Change for EBCDIC, lower case characters preceed
+	upper case.
+	* cccp.c (initialize_char_syntax): Allow for holes in EBCDIC.
+	* cexp.y (initialize_random_junk): Likewise.
+	* cppfiles.c (find_include_file): Cast alloca return value.
+	* cppinit.c (initialize_standard_includes): Likewise.
+	* cpplib.c (cpp_define, cpp_undef): Likewise.
+	* defaults.h (ASM_OUTPUT_ASCII): Use ISPRINT.
+	* final.c (output_asm_insn): Allow for holes in EBCDIC.
+	* fold-const.c (CHARMASK): New.
+	(real_hex_to_f): Use it.
+	* real.c (CHARMASK): New.
+	(etoasc, asctoeg): Use it.
+	(asctoeg): EBCDIC lower case characters preceed upper case.
+
+	* i370.c (mvs_add_label): Change spacing for coding conventions.
+	* i370.h (ASM_OUTPUT_CASE_LABEL): Change to the data CSECT for the
+	outputing case vectors.
+	(ASM_OUTPUT_CASE_END): New, put assembler back into code CSECT.
+	(ASM_OUTPUT_ADDR_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Remove page check,
+	since vector in in the data CSECT.
+	(ASM_OUTPUT_REG_POP, ASM_OUTPUT_REG_PUSH): Restore to correct operation.        * i370.md (Many patterns): Put the length in the XL directives.
+	(movdi): Put back STM and MVC in definition.
+	(floatsidf2): Correct TARGET_ELF_ABI pattern and add back the LE370
+	pattern using the TCA.
+	* oe.h (CPP_SPEC): Added to allow trigraphs.
+	* xm-oe.h (HOST_BITS_PER_LONGLONG): Change to 32. IBM's compiler does
+	not support the "long long" type.
+
 2000-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/mips/mips-protos.h (mips_legitimate_address_p): New
@@ -39,9 +74,9 @@
 
 2004-04-16  Neil Booth  <NeilB@earthling.net>
 
-        * cpphash.h (SYNTAX_INCLUDE, SYNTAX_ASSERT, directive_handler): new.
-        * cpplib.c: Add new syntax flags to directive table, and
-        supporting macros.
+	* cpphash.h (SYNTAX_INCLUDE, SYNTAX_ASSERT, directive_handler): new.
+	* cpplib.c: Add new syntax flags to directive table, and
+	supporting macros.
 
 2000-04-15  Ulrich Drepper  <drepper@redhat.com>
 
@@ -225,8 +260,8 @@ Fri Apr 14 10:54:22 2000  Jim Wilson  <wilson@cygnus.com>
 
 2000-04-14  Richard Henderson  <rth@cygnus.com>
 
-        * fold-const.c (extract_muldiv): Don't distribute and widen
-        multiply across plus for non-sizetype unsigned types.
+	* fold-const.c (extract_muldiv): Don't distribute and widen
+	multiply across plus for non-sizetype unsigned types.
 
 2000-04-14  Richard Henderson  <rth@cygnus.com>
 
@@ -254,7 +289,7 @@ Thu Apr 13 19:39:56 2000  Clinton Popetz  <cpopetz@cygnus.com>
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
 	* config/mips/mips.c (expand_block_move): Pass alignment
-        argument to move_by_pieces in bits, not bytes.
+	argument to move_by_pieces in bits, not bytes.
 
 	* config/mips/linux.h (CPP_PREDEFINES): Also define __PIC__ and
 	__pic__ for little endian.
@@ -357,8 +392,8 @@ Wed Apr 12 15:54:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Wed Apr 12 07:51:54 2000  Catherine Moore  <clm@cygnus.com>
  
-        * calls.c (emit_library_call_value_1): Change 3rd arg to
-        locate_and_pad_parm to disregard the setting of partial.
+	* calls.c (emit_library_call_value_1): Change 3rd arg to
+	locate_and_pad_parm to disregard the setting of partial.
 
 Wed Apr 12 08:47:38 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -3889,11 +3924,11 @@ Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	2000-01-27  Clinton Popetz  <cpopetz@cygnus.com>
 
-        * rs6000.c (rs6000_emit_load_toc_table): Use "LCG" and
-        reload_toc_labelno for non-prologue TOC reloads.  Also, don't
-        increment rs6000_pic_labelno here.
-        (rs6000_emit_prologue): Pass TRUE to rs6000_emit_load_toc_table,
-        and increment rs6000_pic_labelno here.
+	* rs6000.c (rs6000_emit_load_toc_table): Use "LCG" and
+	reload_toc_labelno for non-prologue TOC reloads.  Also, don't
+	increment rs6000_pic_labelno here.
+	(rs6000_emit_prologue): Pass TRUE to rs6000_emit_load_toc_table,
+	and increment rs6000_pic_labelno here.
 
 	2000-01-24  Geoffrey Keating  <geoffk@cygnus.com>
 
@@ -4072,29 +4107,29 @@ Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	2000-01-07  David Edelsohn  <edelsohn@gnu.org>
 
-        * rs6000.c (processor_target_table): Add power3 as alias for 630.
-        * aix43.h: Revert Aug 2 change.
-        (HAS_INIT_SECTION): Define, not visible yet.
-        (LD_INIT_SWITCH): Define, not visible yet.
-        * t-aix43 (MULTILIB_OPTIONS): Revert Aug 2 change.
+	* rs6000.c (processor_target_table): Add power3 as alias for 630.
+	* aix43.h: Revert Aug 2 change.
+	(HAS_INIT_SECTION): Define, not visible yet.
+	(LD_INIT_SWITCH): Define, not visible yet.
+	* t-aix43 (MULTILIB_OPTIONS): Revert Aug 2 change.
 
 	2000-01-04  Joel Sherrill (joel@OARcorp.com>
 
-        * config/rs6000/rtems.h: Include config/rtems.h.
+	* config/rs6000/rtems.h: Include config/rtems.h.
 
 	2000-01-04  David Edelsohn  <edelsohn@gnu.org>
 
-        * rs6000.h (HANDLE_PRAGMA_PACK): Define.
-        (SLOW_UNALIGNED_ACCESS): Define.
-        (CASE_VECTOR_MODE): Always use 32-bit offsets.
-        (ASM_FILE_END): Generate 64-bit symbol in 64-bit mode.
-        (EXTRA_SECTOIN_FUNCTIONS): Indent .csect pseudo-op.
-        (toc_section): Likewise and .toc pseudo-op.
-        (ASM_DECLARE_FUNCTION): Likewise.  Align text more strictly in
-        64-bit mode.
-        (TEXT_SECTION_ASM_OP): Likewise.
-        (ASM_OUTPUT_ADD_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Always use
-        32-bit offsets.
+	* rs6000.h (HANDLE_PRAGMA_PACK): Define.
+	(SLOW_UNALIGNED_ACCESS): Define.
+	(CASE_VECTOR_MODE): Always use 32-bit offsets.
+	(ASM_FILE_END): Generate 64-bit symbol in 64-bit mode.
+	(EXTRA_SECTOIN_FUNCTIONS): Indent .csect pseudo-op.
+	(toc_section): Likewise and .toc pseudo-op.
+	(ASM_DECLARE_FUNCTION): Likewise.  Align text more strictly in
+	64-bit mode.
+	(TEXT_SECTION_ASM_OP): Likewise.
+	(ASM_OUTPUT_ADD_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Always use
+	32-bit offsets.
 
 	1999-12-17  Jakub Jelinek  <jakub@redhat.com>
 
@@ -4111,7 +4146,7 @@ Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	2000-01-05  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 
-        * rs6000.h: Continue cleanup.
+	* rs6000.h: Continue cleanup.
 	* aix.h: Likewise.
 	* lynx.h: Likewise.
 	* netware.h: Likewise.

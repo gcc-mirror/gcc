@@ -1360,7 +1360,7 @@ $(srcdir)/c-parse.y: c-parse.in
 $(srcdir)/c-gperf.h: c-parse.gperf
 	gperf -L C -F ', 0, 0' -p -j1 -i 1 -g -o -t -G -N is_reserved_word \
 	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h || ( \
-	echo "See " $(website)/cvs.html#generated_files >&2 ; \
+	echo "See $(website)/cvs.html#generated_files" >&2 ; \
 	exit 1 )
 	 $(SHELL) $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 

@@ -337,6 +337,13 @@ do {									\
 /* The exponent of 1.0 */
 #define EXONE (0x3fff)
 
+#if defined(HOST_EBCDIC)
+/* bit 8 is significant in EBCDIC */
+#define CHARMASK 0xff
+#else
+#define CHARMASK 0x7f
+#endif
+
 extern int extra_warnings;
 extern unsigned EMUSHORT ezero[], ehalf[], eone[], etwo[];
 extern unsigned EMUSHORT elog2[], esqrt2[];
@@ -4981,7 +4988,7 @@ etoasc (x, string, ndigs)
       /* Round up and propagate carry-outs */
     roun:
       --s;
-      k = *s & 0x7f;
+      k = *s & CHARMASK;
       /* Carry out to most significant digit? */
       if (k == '.')
 	{
@@ -5142,7 +5149,7 @@ asctoeg (ss, y, oprec)
  nxtcom:
   if (*s >= '0' && *s <= '9')
     k = *s - '0';
-  else if (*s >= 'a')
+  else if (*s >= 'a' && *s <= 'f')
     k = 10 + *s - 'a';
   else
     k = 10 + *s - 'A';
@@ -5160,7 +5167,7 @@ asctoeg (ss, y, oprec)
 				    || (*sp >= 'A' && *sp <= 'F'))))
 	    ++sp;
 	  /* Check for syntax error */
-	  c = *sp & 0x7f;
+	  c = *sp & CHARMASK;
 	  if ((base != 10 || ((c != 'e') && (c != 'E')))
 	      && (base != 16 || ((c != 'p') && (c != 'P')))
 	      && (c != '\0')

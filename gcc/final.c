@@ -3457,8 +3457,7 @@ output_asm_insn (template, operands)
 	   Letters `acln' are implemented directly.
 	   Other letters are passed to `output_operand' so that
 	   the PRINT_OPERAND macro can define them.  */
-	else if ((*p >= 'a' && *p <= 'z')
-		 || (*p >= 'A' && *p <= 'Z'))
+	else if (ISLOWER(*p) || ISUPPER(*p))
 	  {
 	    int letter = *p++;
 	    c = atoi (p);

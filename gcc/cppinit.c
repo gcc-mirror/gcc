@@ -795,7 +795,7 @@ initialize_standard_includes (pfile)
      These have /usr/local/lib/gcc... replaced by specd_prefix.  */
   if (specd_prefix != 0)
     {
-      char *default_prefix = alloca (sizeof GCC_INCLUDE_DIR - 7);
+      char *default_prefix = (char *) alloca (sizeof GCC_INCLUDE_DIR - 7);
       /* Remove the `include' from /usr/local/lib/gcc.../include.
 	 GCC_INCLUDE_DIR will always end in /include. */
       int default_len = sizeof GCC_INCLUDE_DIR - 8;

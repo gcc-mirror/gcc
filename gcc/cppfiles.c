@@ -284,7 +284,7 @@ find_include_file (pfile, fname, search_start, ihash, before)
   else
     {
       /* Search directory path, trying to open the file.  */
-      name = alloca (strlen (fname) + pfile->max_include_len
+      name = (char *) alloca (strlen (fname) + pfile->max_include_len
 		     + 2 + INCLUDE_LEN_FUDGE);
       do
 	{
