@@ -8430,8 +8430,14 @@
   "
 )
 
+;; Note - although unspec_volatile's USE all hard registers,
+;; USEs are ignored after relaod has completed.  Thus we need
+;; to add an unspec of the link register to ensure that flow
+;; does not think that it is unused by the sibcall branch that
+;; will replace the standard function epilogue.
 (define_insn "sibcall_epilogue"
-  [(unspec_volatile [(const_int 0)] VUNSPEC_EPILOGUE)]
+  [(parallel [(unspec:SI [(reg:SI LR_REGNUM)] UNSPEC_PROLOGUE_USE)
+              (unspec_volatile [(return)] VUNSPEC_EPILOGUE)])]
   "TARGET_ARM"
   "*
   if (USE_RETURN_INSN (FALSE))

@@ -1,3 +1,8 @@
+2003-01-20  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/20030117-1.c: New test case.  Exposes
+	problem with ARM sibcall code generation.
+
 2003-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcc.c-torture/execute/20030120-1.c: New.
