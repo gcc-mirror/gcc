@@ -1,4 +1,4 @@
-/* Verify wehther math functions are simplified.  */
+/* Verify whether math functions are simplified.  */
 double sin(double);
 double floor(double);
 float 

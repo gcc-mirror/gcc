@@ -15034,12 +15034,12 @@ Tue Aug  7 14:56:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-05  Jan Hubicka  <jh@suse.cz>
 
-	* Makefile.in (reload1.o): Add dedendancy on except.h
+	* Makefile.in (reload1.o): Add dependency on except.h
 	* basic-block.h (purge_all_dead_edges, purge_dead_edges): Update
 	prototypes.
 	* flow.c (purge_dead_edges, purge_all_dead_edges): Return bool
-	indicating wehther edges has been cleaned up.
-	* reload1.c: Inlucde except.h
+	indicating whether edges has been cleaned up.
+	* reload1.c: Include except.h.
 	(fixup_abnormal_edges): Accept deleted insns.
 	* toplev.c (rest_of_compilation): Purge dead edges unconditionally
 	after combine.
