@@ -1,3 +1,39 @@
+2003-07-24  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/7482:
+	* verify.cc (ref_intersection): New class.
+	(type_val): Removed unresolved_reference_type,
+	uninitialized_unresolved_reference_type.
+	(is_assignable_from_slow): Rewrote.
+	(type::data): Removed.
+	(type::klass): New field.
+	(type::type): Added verifier argument.
+	(type::resolve): Removed.
+	(type::set_uninitialized): Updated for change to type_val.
+	(type::set_initialized): Likewise.
+	(type::isinitialized): Likewise.
+	(type::print): Likewise.
+	(construct_primitive_array_type): Likewise.
+	(type::compatible): Updated for change to type_val and to use
+	ref_intersection.
+	(type::isarray): Updated to use ref_intersection.
+	(type::isinterface): Likewise.
+	(type::element_type): Likewise.
+	(type::to_array): Likewise.
+	(type::verify_dimensions): Rewrote.
+	(type::merge): Likewise.
+	(check_class_constant): Updated for type constructor change.
+	(check_constant): Likewise.
+	(check_field_constant): Likewise.
+	(get_one_type): Likewise.
+	(initialize_stack): Likewise.
+	(verify_instructions_0): Likewise.
+	(verify_instructions_0) [op_invokeinterface]: Removed special
+	case.
+	(isect_list): New field.
+	(_Jv_BytecodeVerifier): Initialize it.
+	(~_Jv_BytecodeVerifier): Destroy ref_intersection objects. 
+
 2003-07-24  H. Väisänen  <hvaisane@joyx.joensuu.fi>
 
 	* java/text/SimpleDateFormat.java (format) [YEAR_FIELD]: Zero pad
