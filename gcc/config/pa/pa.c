@@ -2155,14 +2155,36 @@ output_function_epilogue (file, size)
      FILE *file;
      int size;
 {
+
+  rtx insn = get_last_insn ();
+
   /* hppa_expand_epilogue does the dirty work now.  We just need
      to output the assembler directives which denote the end
-     of a function.  */
+     of a function.
+
+     To make debuggers happy, emit a nop if the epilogue was completely
+     eliminated due to a volatile call as the last insn in the
+     current function.  That way the return address (in %r2) will 
+     always point to a valid instruction in the current function.  */
+
+  /* Get the last real insn.  */
+  if (GET_CODE (insn) == NOTE)
+    insn = prev_real_insn (insn);
+
+  /* If it is a sequence, then look inside.  */
+  if (insn && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    insn = XVECEXP (PATTERN (insn), 0, 0);
+
+  /* If insn is a CALL_INSN, then it must be a call to a volatile 
+     function (otherwise there would be epilogue insns).  */
+  if (insn && GET_CODE (insn) == CALL_INSN)
+    fprintf (file, "\tnop\n");
+  
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");
 }
 
 void
-hppa_expand_epilogue()
+hppa_expand_epilogue ()
 {
   rtx tmpreg; 
   int offset,i;
