@@ -179,7 +179,7 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define FUNCTION_ARG_PADDING(MODE, TYPE)				\
   (((MODE) == BLKmode							\
     ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-       && int_size_in_bytes (TYPE) < PARM_BOUNDARY / BITS_PER_UNIT)	\
+       && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))	\
     : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
    ? downward : upward)
 #else
@@ -211,11 +211,6 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    So a value padded in memory at the upper end can't go in a register.
    For a little-endian machine, the reverse is true.  */
 
-/* ??? Perhaps later rename this to FUNCTION_ARG_MUST_PASS_IN_STACK?
-   (although it is a little long).  */
-
-#ifndef MUST_PASS_IN_STACK
-
 #if BYTES_BIG_ENDIAN
 #define MUST_PASS_IN_STACK_BAD_PADDING	upward
 #else
@@ -227,9 +222,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
        || TREE_ADDRESSABLE (TYPE)			\
        || ((MODE) == BLKmode 				\
+	   && ! ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST \
+		 && 0 == (int_size_in_bytes (TYPE)	\
+			  % (PARM_BOUNDARY / BITS_PER_UNIT))) \
 	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
 	       == MUST_PASS_IN_STACK_BAD_PADDING))))
-#endif
 
 /* Nonzero if type TYPE should be returned in memory.
    Most machines can use the following default definition.  */
