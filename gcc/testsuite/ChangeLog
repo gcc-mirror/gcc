@@ -1,3 +1,7 @@
+2005-04-05  Feng Wang  <fengwang@nudt.edu.cn>
+
+	* gfortran.dg/pr18025.f90: Change {dg-do run} to { dg-do run }.
+
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20040323-1.c (_rtld_global): Set to 1.
