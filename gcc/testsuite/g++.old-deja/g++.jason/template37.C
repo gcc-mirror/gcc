@@ -1,6 +1,6 @@
 // PRMS Id: 9930
 // Test of -fexternal-templates hackery in new template code
-// Special g++ options: -fexternal-templates
+// Special g++ options: -Wno-deprecated -fexternal-templates
 
   #pragma implementation "foo.hh"
   #pragma interface "foo.hh"

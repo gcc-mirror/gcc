@@ -7,7 +7,7 @@
 // Such errors should probably not be issued when the -traditional option is
 // used.
 
-// Special g++ Options: -fthis-is-variable
+// Special g++ Options: -Wno-deprecated -fthis-is-variable
 // Special CC Options:
 
 // Cfront only flags errors for such usage whin the +p (pure language)
