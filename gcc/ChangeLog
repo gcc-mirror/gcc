@@ -1,3 +1,20 @@
+Tue Dec  1 16:45:49 1998  Stan Cox  <scox@cygnus.com>
+
+	* mips.md (divmodsi4*, divmoddi4*, udivmodsi4*, udivmoddi4): Add
+	-mcheck-range-division/-mcheck-zero-division checking.  Avoid as macro
+	expansion.  Use hi/lo as destination register.
+	(div_trap): New.
+	(divsi3*, divdi3*, modsi3*, moddi3*, udivsi3*, udivdi3*, umodsi3*,
+	umoddi3*): Add -mcheck-range-division/-mcheck-zero-division checking.
+	Avoid as macro expansion.  Use hi/lo as destination register. 
+
+	* mips.h (MASK_CHECK_RANGE_DIV): New.
+	(MASK_NO_CHECK_ZERO_DIV): New.
+	(ELIMINABLE_REGS): Added GP_REG_FIRST + 31.
+	(CAN_ELIMINATE, INITIAL_ELIMINATION_OFFSET): Allow for getting
+	return address for leaf functions out of r31 to support
+	builtin_return_address. 
+	
 Tue Dec  1 15:03:30 1998  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* jump.c (jump_optimize): Call regs_set_between_p with PREV_INSN(x),
