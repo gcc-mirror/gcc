@@ -1,3 +1,20 @@
+Tue Nov  4 14:12:30 1997  Richard Henderson  (rth@cygnus.com)
+			  Jim Wilson  (wilson@cygnus.com)
+
+	* alpha.c (summarize_insn): Handle ASM_OPERANDS.  Don't recurse
+	for SUBREG, just fall through.
+
+	* alpha.c (alpha_handle_trap_shadows): Init sum.defd to zero.
+
+	* alpha.md (attr trap): Make TRAP_YES non-zero for sanity's sake.
+
+	* combine.c (try_combine): When setting elim_i1, check if newi2pat
+	sets i1dest.
+
+        * combine.c (try_combine): When setting elim_i2, check whether newi2pat
+        sets i2dest.  When calling distribute_notes for i3dest_killed, pass
+        elim_i2 and elim_i1.
+
 Mon Nov  3 14:36:50 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (sco5): Use cpio to install header files.
