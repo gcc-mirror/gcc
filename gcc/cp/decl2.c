@@ -2409,12 +2409,13 @@ mark_vtable_entries (decl)
       tree fnaddr;
       tree fn;
 
-      if (TREE_CODE (TREE_VALUE (entries)) == NOP_EXPR)
+      fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
+		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
+
+      if (TREE_CODE (fnaddr) == NOP_EXPR)
 	/* RTTI offset.  */
 	continue;
 
-      fnaddr = (flag_vtable_thunks ? TREE_VALUE (entries) 
-		: FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (entries)));
       fn = TREE_OPERAND (fnaddr, 0);
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
