@@ -1,3 +1,8 @@
+2001-09-28  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR c++/4095
+	* rtti.c (create_pseudo_type_info): Fix parameter.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* class.c (set_vindex): Mind TARGET_VTABLE_USES_DESCRIPTORS.
