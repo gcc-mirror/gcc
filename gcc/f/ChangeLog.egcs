@@ -1,3 +1,8 @@
+Thu Apr 30 18:59:43 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Make-lang.in (g77.info, g77.dvi, BUGS, INSTALL, NEWS): Put -o
+	option before input file.
+
 Sat Apr 18 15:26:57 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* g77spec.c (lang_specific_driver): New argument in_added_libraries.
