@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Fri Mar  5 01:13:45 1999  H.J. Lu  (hjl@gnu.org)
 
 	* config/linuxlibc1.mt (MT_CFLAGS): Add -D_G_STDIO_USES_LIBIO

@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Sun Mar 14 03:23:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* README, gcc.1, gcc.texi, version.c: Update for egcs-1.1.2 release.

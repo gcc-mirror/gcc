@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Thu Oct  3 15:31:09 1996  Jason Molenda  (crash@godzilla.cygnus.co.jp)
 
 	* Makefile.in (clean): Move config.log to distclean.

@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Sun Jun 28 00:00:10 1998   Carlo Wood  <carlo@runaway.xs4all.nl>
 
         * lib/libstdc++.exp: Use global variable ld_library_path (not local)

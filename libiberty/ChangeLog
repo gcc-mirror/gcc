@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Mon Nov 23 09:49:49 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	*cplus-dem.c (demangle_prefix): Use the last "__"

@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tmap.cc: Use less<int>.

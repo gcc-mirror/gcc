@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Fri Jul 10 15:20:09 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
 	* stl_tempbuf.h (temporary_buffer): Add missing typename.

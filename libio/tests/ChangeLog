@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* tFile.cc (t4): Cast TMPFILE to char* in the call to unlink, to

@@ -1,3 +1,7 @@
+Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* egcs-1.1.2 Released.
+
 Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* execute/980618-{1,2}.c: New tests that showed up m32r bugs.
