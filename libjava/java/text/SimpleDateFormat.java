@@ -547,9 +547,8 @@ public class SimpleDateFormat extends DateFormat
   {
     int fmt_index = 0;
     int fmt_max = pattern.length();
-    Calendar loc_calendar = (Calendar)calendar.clone();
 
-    loc_calendar.clear();
+    calendar.clear();
     boolean saw_timezone = false;
     int quote_start = -1;
     boolean is2DigitYear = false;
@@ -697,8 +696,7 @@ public class SimpleDateFormat extends DateFormat
 		    found_zone = true;
 		    saw_timezone = true;
 		    TimeZone tz = TimeZone.getTimeZone (strings[0]);
-		    loc_calendar.setTimeZone (tz);
-		    loc_calendar.set (Calendar.ZONE_OFFSET, tz.getRawOffset ());
+		    calendar.set (Calendar.ZONE_OFFSET, tz.getRawOffset ());
 		    offset = 0;
 		    if (k > 2 && tz instanceof SimpleTimeZone)
 		      {
@@ -765,17 +763,17 @@ public class SimpleDateFormat extends DateFormat
 	  }
 
 	// Assign the value and move on.
-	loc_calendar.set(calendar_field, value);
+	calendar.set(calendar_field, value);
       }
     
     if (is2DigitYear)
       {
 	// Apply the 80-20 heuristic to dermine the full year based on 
 	// defaultCenturyStart. 
-	int year = defaultCentury + loc_calendar.get(Calendar.YEAR);
-	loc_calendar.set(Calendar.YEAR, year);
-	if (loc_calendar.getTime().compareTo(defaultCenturyStart) < 0)
-	  loc_calendar.set(Calendar.YEAR, year + 100);      
+	int year = defaultCentury + calendar.get(Calendar.YEAR);
+	calendar.set(Calendar.YEAR, year);
+	if (calendar.getTime().compareTo(defaultCenturyStart) < 0)
+	  calendar.set(Calendar.YEAR, year + 100);      
       }
 
     try
@@ -784,10 +782,10 @@ public class SimpleDateFormat extends DateFormat
 	  {
 	    // Use the real rules to determine whether or not this
 	    // particular time is in daylight savings.
-	    loc_calendar.clear (Calendar.DST_OFFSET);
-	    loc_calendar.clear (Calendar.ZONE_OFFSET);
+	    calendar.clear (Calendar.DST_OFFSET);
+	    calendar.clear (Calendar.ZONE_OFFSET);
 	  }
-        return loc_calendar.getTime();
+        return calendar.getTime();
       }
     catch (IllegalArgumentException x)
       {
