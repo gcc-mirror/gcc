@@ -1,3 +1,12 @@
+2003-12-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/10060
+	* emit-rtl.c (copy_rtx_if_shared): Split out into ...
+	(copy_rtx_if_shared_1): here and optimize the last one
+	in the sequence into tail-recursion.
+	(reset_used_flags): Optimize the last one
+	in the sequence into tail-recursion.
+
 2003-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md: New split to transform ((X << y) - 1) into ~(~(X-1) << y)
