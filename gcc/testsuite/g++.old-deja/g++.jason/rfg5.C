@@ -6,5 +6,5 @@ int *func () { return 0; }
 void
 test ()
 {
-  *func;			// gets bogus error - improper overloading
+  int *(*p)() = *func;			// gets bogus error - improper overloading
 }

@@ -8,5 +8,6 @@ void f2(double) { }
 void
 test ()
 {
-    i ? f1 : f2;		// gets bogus error - improper overloading
+  void (*ptr) (double);
+  ptr = i ? f1 : f2;		// gets bogus error - improper overloading
 }
