@@ -415,9 +415,9 @@ package body Sem_Util is
 
       if Ekind (Deaccessed_T) = E_Array_Subtype then
          Id := First_Index (Deaccessed_T);
-         Indx_Type := Underlying_Type (Etype (Id));
 
          while Present (Id) loop
+            Indx_Type := Underlying_Type (Etype (Id));
 
             if Denotes_Discriminant (Type_Low_Bound  (Indx_Type)) or else
                Denotes_Discriminant (Type_High_Bound (Indx_Type))
@@ -2697,7 +2697,13 @@ package body Sem_Util is
 
    function Get_Task_Body_Procedure (E : Entity_Id) return Node_Id is
    begin
-      return Task_Body_Procedure (Declaration_Node (Root_Type (E)));
+      --  Note: A task type may be the completion of a private type with
+      --  discriminants. when performing elaboration checks on a task
+      --  declaration, the current view of the type may be the private one,
+      --  and the procedure that holds the body of the task is held in its
+      --  underlying type.
+
+      return Task_Body_Procedure (Underlying_Type (Root_Type (E)));
    end Get_Task_Body_Procedure;
 
    -----------------------
@@ -3136,6 +3142,7 @@ package body Sem_Util is
    procedure Insert_Explicit_Dereference (N : Node_Id) is
       New_Prefix : constant Node_Id := Relocate_Node (N);
       Ent        : Entity_Id := Empty;
+      Pref       : Node_Id;
       I          : Interp_Index;
       It         : Interp;
       T          : Entity_Id;
@@ -3174,8 +3181,26 @@ package body Sem_Util is
 
          if Is_Entity_Name (New_Prefix) then
             Ent := Entity (New_Prefix);
-         elsif Nkind (New_Prefix) = N_Selected_Component then
-            Ent := Entity (Selector_Name (New_Prefix));
+
+         --  For a retrieval of a subcomponent of some composite object,
+         --  retrieve the ultimate entity if there is one.
+
+         elsif Nkind (New_Prefix) = N_Selected_Component
+           or else Nkind (New_Prefix) = N_Indexed_Component
+         then
+            Pref := Prefix (New_Prefix);
+
+            while Present (Pref)
+              and then
+                (Nkind (Pref) = N_Selected_Component
+                  or else Nkind (Pref) = N_Indexed_Component)
+            loop
+               Pref := Prefix (Pref);
+            end loop;
+
+            if Present (Pref) and then Is_Entity_Name (Pref) then
+               Ent := Entity (Pref);
+            end if;
          end if;
 
          if Present (Ent) then
@@ -3532,7 +3557,6 @@ package body Sem_Util is
 
    function Is_Dereferenced (N : Node_Id) return Boolean is
       P : constant Node_Id := Parent (N);
-
    begin
       return
          (Nkind (P) = N_Selected_Component
@@ -3916,7 +3940,6 @@ package body Sem_Util is
 
    function Is_Inherited_Operation (E : Entity_Id) return Boolean is
       Kind : constant Node_Kind := Nkind (Parent (E));
-
    begin
       pragma Assert (Is_Overloadable (E));
       return Kind = N_Full_Type_Declaration
@@ -4325,8 +4348,7 @@ package body Sem_Util is
       D : Entity_Id;
 
       function Comes_From_Limited_Private_Type_Declaration
-        (E    : Entity_Id)
-         return Boolean;
+        (E : Entity_Id) return Boolean;
       --  Check that the type is declared by a limited type declaration,
       --  or else is derived from a Remote_Type ancestor through private
       --  extensions.
@@ -4335,10 +4357,11 @@ package body Sem_Util is
       -- Comes_From_Limited_Private_Type_Declaration --
       -------------------------------------------------
 
-      function Comes_From_Limited_Private_Type_Declaration (E : in Entity_Id)
-        return Boolean
+      function Comes_From_Limited_Private_Type_Declaration
+        (E : Entity_Id) return Boolean
       is
          N : constant Node_Id := Declaration_Node (E);
+
       begin
          if Nkind (N) = N_Private_Type_Declaration
            and then Limited_Present (N)
@@ -4415,7 +4438,7 @@ package body Sem_Util is
 
       elsif Nkind (Name (N)) = N_Explicit_Dereference
         and then Is_Remote_Access_To_Subprogram_Type
-          (Etype (Prefix (Name (N))))
+                   (Etype (Prefix (Name (N))))
       then
          --  The dereference of a RAS is a remote call
 
@@ -4441,13 +4464,11 @@ package body Sem_Util is
    ----------------------
 
    function Is_Selector_Name (N : Node_Id) return Boolean is
-
    begin
       if not Is_List_Member (N) then
          declare
             P : constant Node_Id   := Parent (N);
             K : constant Node_Kind := Nkind (P);
-
          begin
             return
               (K = N_Expanded_Name          or else
@@ -4461,7 +4482,6 @@ package body Sem_Util is
          declare
             L : constant List_Id := List_Containing (N);
             P : constant Node_Id := Parent (L);
-
          begin
             return (Nkind (P) = N_Discriminant_Association
                      and then Selector_Names (P) = L)
@@ -4566,9 +4586,7 @@ package body Sem_Util is
             return False;
          else
             S := Current_Scope;
-
             while Present (S) and then S /= Prot loop
-
                if Ekind (S) = E_Function
                  and then Scope (S) = Prot
                then
@@ -4629,6 +4647,11 @@ package body Sem_Util is
       then
          return Is_Variable_Prefix (Original_Node (Prefix (N)));
 
+      --  A function call is never a variable
+
+      elsif Nkind (N) = N_Function_Call then
+         return False;
+
       --  All remaining checks use the original node
 
       elsif Is_Entity_Name (Orig_Node) then
@@ -4667,7 +4690,6 @@ package body Sem_Util is
             when N_Explicit_Dereference =>
                declare
                   Typ : constant Entity_Id := Etype (Prefix (Orig_Node));
-
                begin
                   return Is_Access_Type (Typ)
                     and then not Is_Access_Constant (Root_Type (Typ))
@@ -5277,6 +5299,13 @@ package body Sem_Util is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
+            --  If the entity is missing, it is an undeclared identifier,
+            --  and there is nothing to annotate.
+
+            if No (Ent) then
+               return;
+            end if;
+
          elsif Nkind (Exp) = N_Explicit_Dereference then
             declare
                P : constant Node_Id := Prefix (Exp);
@@ -5883,7 +5912,9 @@ package body Sem_Util is
             begin
                Comp := First_Entity (Typ);
                while Present (Comp) loop
-                  if Requires_Transient_Scope (Etype (Comp)) then
+                  if Ekind (Comp) = E_Component
+                     and then Requires_Transient_Scope (Etype (Comp))
+                  then
                      return True;
                   else
                      Next_Entity (Comp);
@@ -6334,7 +6365,6 @@ package body Sem_Util is
    function Statically_Different (E1, E2 : Node_Id) return Boolean is
       R1 : constant Node_Id := Get_Referenced_Object (E1);
       R2 : constant Node_Id := Get_Referenced_Object (E2);
-
    begin
       return     Is_Entity_Name (R1)
         and then Is_Entity_Name (R2)
@@ -6571,10 +6601,13 @@ package body Sem_Util is
       Expec_Type : constant Entity_Id := First_Subtype (Expected_Type);
 
       function Has_One_Matching_Field return Boolean;
-      --  Determines whether Expec_Type is a record type with a single
-      --  component or discriminant whose type matches the found type or
-      --  is a one dimensional array whose component type matches the
-      --  found type.
+      --  Determines if Expec_Type is a record type with a single component or
+      --  discriminant whose type matches the found type or is one dimensional
+      --  array whose component type matches the found type.
+
+      ----------------------------
+      -- Has_One_Matching_Field --
+      ----------------------------
 
       function Has_One_Matching_Field return Boolean is
          E : Entity_Id;
@@ -6592,7 +6625,6 @@ package body Sem_Util is
 
          else
             E := First_Entity (Expec_Type);
-
             loop
                if No (E) then
                   return False;
@@ -6773,9 +6805,9 @@ package body Sem_Util is
            and then Etype (Designated_Type (Expec_Type)) = Etype (Expr)
            and then No (Parameter_Associations (Expr))
          then
-               Error_Msg_N
-                 ("found function name, possibly missing Access attribute!",
-                   Expr);
+            Error_Msg_N
+              ("found function name, possibly missing Access attribute!",
+               Expr);
 
          --  Catch common error: a prefix or infix operator which is not
          --  directly visible because the type isn't.
@@ -6787,8 +6819,8 @@ package body Sem_Util is
             and then not In_Use (Expec_Type)
             and then Has_Compatible_Type (Right_Opnd (Expr), Expec_Type)
          then
-            Error_Msg_N (
-              "operator of the type is not directly visible!", Expr);
+            Error_Msg_N
+              ("operator of the type is not directly visible!", Expr);
 
          elsif Ekind (Found_Type) = E_Void
            and then Present (Parent (Found_Type))
