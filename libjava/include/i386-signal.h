@@ -33,6 +33,11 @@ do									\
   register unsigned long _ebp = _regs->ebp;				\
   register unsigned char *_eip = (unsigned char *)_regs->eip;		\
 									\
+  /* Advance the program counter so that it is after the start of the	\
+     instruction:  the x86 exception handler expects			\
+     the PC to point to the instruction after a call. */		\
+  _eip += 2;								\
+									\
   asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"			\
 		: : "r"(_ebp), "r"(_eip));				\
 }									\
@@ -57,7 +62,7 @@ do									\
    * As the instructions are variable length it is necessary to do a	\
    * little calculation to figure out where the following instruction	\
    * actually is.							\
-									\
+  									\
    */									\
 									\
   if (_eip[0] == 0xf7)							\
@@ -99,6 +104,14 @@ do									\
 	  _eip = (unsigned char *)_ebp[1];				\
 	  _ebp = (unsigned long *)_ebp[0];				\
 	}								\
+      else								\
+	{								\
+	  /* Advance the program counter so that it is after the start	\
+	     of the instruction: this is because the x86 exception	\
+	     handler expects the PC to point to the instruction after a	\
+	     call. */							\
+	  _eip += 2;							\
+	}								\
     }									\
 									\
   asm volatile ("mov %0, (%%ebp); mov %1, 4(%%ebp)"			\
@@ -118,9 +131,9 @@ do								\
   }								\
 while (0)  
 
-#define INIT_FPE                                                \
+#define INIT_FPE						\
 do								\
-  {								\
+  { 								\
     arithexception = new java::lang::ArithmeticException 	\
       (JvNewStringLatin1 ("/ by zero"));			\
     struct sigaction act;					\
