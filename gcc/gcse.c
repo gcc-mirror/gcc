@@ -2071,7 +2071,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
   rtx dest = SET_DEST (pat);
   rtx note;
 
-  if (CALL_P (src))
+  if (GET_CODE (src) == CALL)
     hash_scan_call (src, insn, table);
 
   else if (REG_P (dest))
@@ -2231,13 +2231,13 @@ hash_scan_insn (rtx insn, struct hash_table *table, int in_libcall_block)
 	  hash_scan_set (x, insn, table);
 	else if (GET_CODE (x) == CLOBBER)
 	  hash_scan_clobber (x, insn, table);
-	else if (CALL_P (x))
+	else if (GET_CODE (x) == CALL)
 	  hash_scan_call (x, insn, table);
       }
 
   else if (GET_CODE (pat) == CLOBBER)
     hash_scan_clobber (pat, insn, table);
-  else if (CALL_P (pat))
+  else if (GET_CODE (pat) == CALL)
     hash_scan_call (pat, insn, table);
 }
 
@@ -2745,7 +2745,7 @@ mark_set (rtx pat, rtx insn)
   else if (MEM_P (dest))
     record_last_mem_set_info (insn);
 
-  if (CALL_P (SET_SRC (pat)))
+  if (GET_CODE (SET_SRC (pat)) == CALL)
     mark_call (insn);
 }
 
@@ -2785,13 +2785,13 @@ mark_oprs_set (rtx insn)
 	  mark_set (x, insn);
 	else if (GET_CODE (x) == CLOBBER)
 	  mark_clobber (x, insn);
-	else if (CALL_P (x))
+	else if (GET_CODE (x) == CALL)
 	  mark_call (insn);
       }
 
   else if (GET_CODE (pat) == CLOBBER)
     mark_clobber (pat, insn);
-  else if (CALL_P (pat))
+  else if (GET_CODE (pat) == CALL)
     mark_call (insn);
 }
 
