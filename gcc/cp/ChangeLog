@@ -1,3 +1,7 @@
+2004-07-27  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* pt.c, typeck.c: Remove spurious carriage returns.
+
 2004-07-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14429
