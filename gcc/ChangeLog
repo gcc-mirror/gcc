@@ -1,3 +1,8 @@
+2002-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR preprocessor/5899
+	* cppinit.c (init_dependency_output): Don't ignore -dM etc.
+
 2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* combine.c (make_extraction): Fix error in last change.

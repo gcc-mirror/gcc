@@ -1882,15 +1882,13 @@ init_dependency_output (pfile)
       CPP_OPTION (pfile, print_deps_append) = 1;
     }
   else if (CPP_OPTION (pfile, deps_file) == 0)
-    /* If -M or -MM was seen, default output to wherever was specified
-       with -o.  out_fname is non-NULL here.  */
+    /* If -M or -MM was seen without -MF, default output to wherever
+       was specified with -o.  out_fname is non-NULL here.  */
     CPP_OPTION (pfile, deps_file) = CPP_OPTION (pfile, out_fname);
 
-  /* When doing dependencies, we should suppress all output, including
-     -dM, -dI etc.  */
+  /* When doing dependencies, suppress normal preprocessed output.
+     Still do -dM, -dI etc. as e.g. glibc depends on this.  */
   CPP_OPTION (pfile, no_output) = 1;
-  CPP_OPTION (pfile, dump_macros) = 0;
-  CPP_OPTION (pfile, dump_includes) = 0;
 }
 
 /* Handle --help output.  */
