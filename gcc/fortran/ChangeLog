@@ -1,3 +1,9 @@
+2004-10-07  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/17678
+	* trans-array.c (gfc_trans_deferred_array): Leave use associated
+	variables alone.
+
 2004-10-06  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17568
