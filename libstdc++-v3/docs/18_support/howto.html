@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/18_support/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.5 1999/12/15 16:57:06 pme Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -46,7 +46,48 @@
       macro is <EM>not</EM> allowed to be <TT>(void*)0</TT>, which is
       often used in C.
    </P>
-   <P>
+   <P>In g++, NULL is #define'd to be <TT>__null</TT>, a magic keyword
+      extension of g++.
+   </P>
+   <P>The biggest problem of #defining NULL to be something like
+      &quot;0L&quot; is that the compiler will view that as a long integer
+      before it views it as a pointer, so overloading won't do what you
+      expect.  (This is why g++ has a magic extension, so that NULL is
+      always a pointer.)
+   </P>
+   <P>In his book
+      <A HREF="http://cseng.aw.com/bookdetail.qry?ISBN=0-201-92488-9&ptype=0"><EM>Effective C++</EM></A>,
+      Scott Meyers points out that the best way to solve this problem is to
+      not overload on pointer-vs-integer types to begin with.  He also
+      offers a way to make your own magic NULL that will match pointers
+      before it matches integers:
+      <PRE>
+   const                             // this is a const object...
+   class {
+   public:
+     template&lt;class T&gt;               // convertible to any type
+       operator T*() const           // of null non-member
+       { return 0; }                 // pointer...
+
+     template&lt;class C, class T&gt;      // or any type of null
+       operator T C::*() const       // member pointer...
+       { return 0; }
+
+   private:
+     void operator&amp;() const;         // whose address can't be
+                                     // taken (see Item 27)...
+
+   } NULL;                           // and whose name is NULL
+      </PRE>(Cribbed from the published version of
+      <A HREF="http://www.awlonline.com/cseng/meyerscddemo/">the
+      Effective C++ CD</A>, reproduced here with permission.)
+   </P>
+   <P>If you aren't using g++ (why?), but you do have a compiler which
+      supports member function templates, then you can use this definition
+      of NULL (be sure to #undef any existing versions).  It only helps if
+      you actually use NULL in function calls, though; if you make a call of
+      <TT>foo(0);</TT> instead of <TT>foo(NULL);</TT>, then you're back
+      where you started.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -209,7 +250,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.5 1999/12/15 16:57:06 pme Exp $
+<BR> $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $
 </EM></P>
 
 

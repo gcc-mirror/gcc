@@ -9,13 +9,13 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 25</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/25_algorithms/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
 <H1 CLASS="centered"><A NAME="top">Chapter 25:  Algorithms</A></H1>
 
-<P>Chapter 25 deals with the FORTRAN subroutines for automatically
+<P>Chapter 25 deals with the generalized subroutines for automatically
    transforming lemmings into gold.
 </P>
 
@@ -24,7 +24,7 @@
 <HR>
 <H1>Contents</H1>
 <UL>
-   <LI><A HREF="#1">Topic</A>
+   <LI><A HREF="#1">Prerequisites</A>
    <LI><A HREF="#2">Topic</A>
 </UL>
 
@@ -32,8 +32,40 @@
 
 <!-- ####################################################### -->
 
-<H2><A NAME="1">Topic</A></H2>
-   <P>Blah.
+<H2><A NAME="1">Prerequisites</A></H2>
+   <P>The neatest accomplishment of the algorithms chapter is that all the
+      work is done via iterators, not containers directly.  This means two
+      important things:
+      <OL>
+        <LI>Anything that behaves like an iterator can be used in one of
+	    these algorithms.  Raw pointers make great candidates, thus
+	    built-in arrays are fine containers.  So do your own iterators.
+        <LI>The algorithms do not (and cannot) affect the container as a
+	    whole; only the things between the two iterator endpoints.  If
+	    you pass a range of iterators only enclosing the middle third of
+	    a container, then anything outside that range is inviolate.
+      </OL>
+   </P>
+   <P>Even strings can be fed through the algorithms here, although the
+      string class has specialized versions of many of these functions (for
+      example, <TT>string::find()</TT>).  Most of the examples on this
+      page will use simple arrays of integers as a playground for
+      algorithms, just to keep things simple.
+      <A NAME="Nsize">The use of <B>N</B></A> as a size in the examples is
+      to keep things easy to read but probably won't be legal code.  You can
+      use wrappers such as those described in the
+      <A HREF="../23_containers/howto.html">containers chapter</A> to keep
+      real code readable.
+   </P>
+   <P>The single thing that trips people up the most is the definition of 
+      <EM>range</EM> used with iterators; the famous
+      &quot;past-the-end&quot; rule that everybody loves to hate.  The
+      <A HREF="../24_iterators/howto.html">iterators chapter</A> of this
+      document has a complete explanation of this simple rule that seems to
+      cause so much confusion.  Once you get <EM>range</EM> into your head
+      (it's not that hard, honest!), then the algorithms are a cakewalk.
+   </P>
+   <P>
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -57,7 +89,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $
+<BR> $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $
 </EM></P>
 
 

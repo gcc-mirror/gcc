@@ -1,3 +1,15 @@
+2000-07-07  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* docs/download.html:  Mention gcc_update.
+	* docs/configopts.html:  Minor updates.
+	* docs/gccrebuild.html:  Ditto.
+	* docs/18_support/howto.html:  More tips, explanations, and reminders.
+	* docs/19_diagnostics/howto.html:  Ditto.
+	* docs/21_strings/howto.html:  Ditto.
+	* docs/24_iterators/howto.html:  Ditto.
+	* docs/25_algorithms/howto.html:  Ditto.
+	* docs/26_numerics/howto.html:  Ditto.
+
 2000-07-05  brent verner  <brent@rcfile.org> 
 
 	* testsuite/27_io/ifstream_members.cc (test01): Add tests.
