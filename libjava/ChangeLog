@@ -1,3 +1,16 @@
+2004-05-07  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/util/SimpleTimeZone.java (startTimeMode, endTimeMode,
+        WALL_TIME, STANDARD_TIME, UTC_TIME): New members.
+	(SimpleTimeZone): Tweak docs.  Add new variation.
+	(setStartRule,setEndRule): Add new variations.  Use
+        startTimeMode and endTimeMode.
+
+2004-05-07  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/util/Calendar.java (getActualMinimum,
+        getActualMaximum):  Remove abstract.  Implement.
+
 2004-05-06  Bryce McKinlay  <mckinlay@redhat.com>
 
 	Run the jni tests using the interpreter.
