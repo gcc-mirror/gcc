@@ -7245,18 +7245,13 @@
       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
+  if (operands[2] == const1_rtx)
+    return \"add\\t%1, %1, %0\";
   return \"sll\\t%1, %2, %0\";
 }"
-  [(set_attr "type" "shift")])
-
-;; We special case multiplication by two, as add can be done
-;; in both ALUs, while shift only in IEU0 on UltraSPARC.
-(define_insn "*ashlsi3_const1"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-        (ashift:SI (match_operand:SI 1 "register_operand" "r")
-                   (const_int 1)))]
-  ""
-  "add\\t%1, %1, %0")
+  [(set (attr "type")
+	(if_then_else (match_operand 2 "const1_operand" "")
+		      (const_string "ialu") (const_string "shift")))])
 
 (define_expand "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -7274,15 +7269,6 @@
     }
 }")
 
-;; We special case multiplication by two, as add can be done
-;; in both ALUs, while shift only in IEU0 on UltraSPARC.
-(define_insn "*ashldi3_const1"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (match_operand:DI 1 "register_operand" "r")
-		   (const_int 1)))]
-  "TARGET_ARCH64"
-  "add\\t%1, %1, %0")
-
 (define_insn "*ashldi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashift:DI (match_operand:DI 1 "register_operand" "r")
@@ -7294,9 +7280,13 @@
       && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
+  if (operands[2] == const1_rtx)
+    return \"add\\t%1, %1, %0\";
   return \"sllx\\t%1, %2, %0\";
 }"
-  [(set_attr "type" "shift")])
+  [(set (attr "type")
+	(if_then_else (match_operand 2 "const1_operand" "")
+		      (const_string "ialu") (const_string "shift")))])
 
 ;; XXX UGH!
 (define_insn "ashldi3_v8plus"

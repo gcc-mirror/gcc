@@ -1,3 +1,12 @@
+2002-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (ashlsi3): If shift count is const1_rtx,
+	use add instead of shift.
+	(ashldi3_sp64): Likewise.
+	(ashlsi3_const1, ashldi3_const1): Remove.
+	* config/sparc/sparc.h (PREDICATE_CODES): Add const1_operand.
+	* config/sparc/sparc.c (const1_operand): New.
+
 2002-05-05  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (alpha*-*-netbsd*): Don't use crtstuff.
