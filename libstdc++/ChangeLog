@@ -1,3 +1,8 @@
+Wed Jun  2 00:21:54 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* std/bastring.h (class basic_string:Rep): Encode xlock opcode
+	as .bytes instead of mnemonics.
+
 1999-05-20  Angela Marie Thomas <angela@cygnus.com>
 
 	* configure.in: Test for ${compiler_name}.exe as well.
