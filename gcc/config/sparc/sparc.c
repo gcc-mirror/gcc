@@ -3252,6 +3252,11 @@ struct sparc_frame_info zero_frame_info;
   || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)	\
   || (regno == 15 && regs_ever_live[15]))
 
+#ifndef SPARC_STACK_ALIGN
+#define STACK_BYTES (STACK_BOUNDARY / 8)
+#define SPARC_STACK_ALIGN(X) (((X) + STACK_BYTES -  1) & -STACK_BYTES)
+#endif
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
 
