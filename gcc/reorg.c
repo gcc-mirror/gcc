@@ -618,7 +618,8 @@ delete_from_delay_slot (insn)
   if (delay_list)
     trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2);
   else if (GET_CODE (trial) == JUMP_INSN
-	   || GET_CODE (trial) == CALL_INSN)
+	   || GET_CODE (trial) == CALL_INSN
+	   || GET_CODE (trial) == INSN)
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
   INSN_FROM_TARGET_P (insn) = 0;
@@ -3630,7 +3631,8 @@ dbr_schedule (first, file)
       rtx target;
 
       if (GET_CODE (insn) == JUMP_INSN
-	  || GET_CODE (insn) == CALL_INSN)
+	  || GET_CODE (insn) == CALL_INSN
+	  || GET_CODE (insn) == INSN)
 	INSN_ANNULLED_BRANCH_P (insn) = 0;
       INSN_FROM_TARGET_P (insn) = 0;
 
