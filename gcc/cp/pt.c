@@ -3893,7 +3893,12 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
       return error_mark_node;
     }
 
-  if (TREE_CODE (template) != TEMPLATE_DECL)
+  if (TREE_CODE (template) != TEMPLATE_DECL
+         /* If we're called from the parser, make sure it's a user visible
+            template.  */
+      || ((!arglist || TREE_CODE (arglist) == TREE_LIST)
+          && !DECL_TEMPLATE_PARM_P (template)
+          && !PRIMARY_TEMPLATE_P (template)))
     {
       if (complain)
         {
@@ -5109,6 +5114,7 @@ instantiate_class_template (type)
       tree newtag;
 
       newtag = tsubst (tag, args, /*complain=*/1, NULL_TREE);
+      my_friendly_assert (newtag != error_mark_node, 20010206);
       if (TREE_CODE (newtag) != ENUMERAL_TYPE)
 	{
 	  if (TYPE_LANG_SPECIFIC (tag) && CLASSTYPE_IS_TEMPLATE (tag))
