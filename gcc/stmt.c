@@ -145,8 +145,8 @@ static tree empty_cleanup_list;
    The alternative to the use of a branch table is to generate a series
    of compare and jump insns.  When that is done, we use the LEFT, RIGHT,
    and PARENT fields to hold a binary tree.  Initially the tree is
-   totally unbalanced, with everything on the right.  The tree is the
-   balanced, with nodes on the left having lower case values than the parent
+   totally unbalanced, with everything on the right.  We balance the tree
+   with nodes on the left having lower case values than the parent
    and nodes on the right having higher values.  We then output the tree
    in order.  */
 
@@ -535,6 +535,7 @@ expand_computed_goto (exp)
      tree exp;
 {
   rtx x = expand_expr (exp, 0, VOIDmode, 0);
+  emit_queue ();
   emit_indirect_jump (x);
   emit_barrier ();
 }
@@ -3547,6 +3548,7 @@ expand_end_case (orig_index)
 	       || TREE_CODE (index_expr) == INTEGER_CST
 	       /* This will reduce to a constant.  */
 	       || (TREE_CODE (index_expr) == CALL_EXPR
+		   && TREE_CODE (TREE_OPERAND (index_expr, 0)) == ADDR_EXPR
 		   && TREE_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == FUNCTION_DECL
 		   && DECL_FUNCTION_CODE (TREE_OPERAND (TREE_OPERAND (index_expr, 0), 0)) == BUILT_IN_CLASSIFY_TYPE))
 	{
@@ -4245,7 +4247,7 @@ emit_case_nodes (index, node, default_label, index_type)
 	     Omit the conditional branch to default if we it avoid only one
 	     right child; it costs too much space to save so little time.  */
 
-	  if (node->right->right
+	  if (node->right->right || node->right->left
 	      || !tree_int_cst_equal (node->right->low, node->right->high))
 	    {
 	      if (!node_has_low_bound (node, index_type))
@@ -4270,15 +4272,20 @@ emit_case_nodes (index, node, default_label, index_type)
 	{
 	  /* Just one subtree, on the left.  */
 
-	  /* If our "most probably entry" is less probable
+#if 0 /* The following code and comment were formerly part
+	 of the condition here, but they didn't work
+	 and I don't understand what the idea was.  -- rms.  */
+	  /* If our "most probable entry" is less probable
 	     than the default label, emit a jump to
 	     the default label using condition codes
 	     already lying around.  With no right branch,
 	     a branch-greater-than will get us to the default
 	     label correctly.  */
-	  if ((use_cost_table
-	       ? cost_table[TREE_INT_CST_LOW (node->high)] < 12
-	       : node->left->left != 0)
+	  if (use_cost_table
+	       && cost_table[TREE_INT_CST_LOW (node->high)] < 12)
+	    ;
+#endif /* 0 */
+ 	  if (node->left->left || node->left->right
 	      || !tree_int_cst_equal (node->left->low, node->left->high))
 	    {
 	      if (!node_has_high_bound (node, index_type))
