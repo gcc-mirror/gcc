@@ -1,5 +1,19 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* system.h (PROMOTE_FUNCTION_ARGS, STRUCT_VALUE_INCOMING, and
+	STRICT_ARGUMENT_NAMING): Poison.
+	* target-def.h (TARGET_PROMOTE_FUNCTION_ARGS): Define as
+	hook_bool_tree_false.
+	* targhooks.c (default_promote_function_args): Remove.
+	(default_struct_value_rtx): Don't use STRUCT_VALUE_INCOMING.
+	Don't check incoming.
+	(default_strict_argument_naming): Don't use
+	STRICT_ARGUMENT_NAMING.
+	* targhooks.h: Remove the prototype for
+	default_promote_function_args.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/i386-protos.h: Remove the prototype for
 	ix86_setup_incoming_varargs.
 	* config/i386/i386.c (TARGET_SETUP_INCOMING_VARARGS): New.
