@@ -1,3 +1,15 @@
+Thu Jul  9 00:45:59 1998  Craig Burley  <burley@gnu.org>
+
+	Fix debugging of CHARACTER*(*), etc., which requires
+	emitting debug info on types like `ftnlen':
+	* com.c (ffecom_start_progunit_): Don't bother
+	resetting "invented" flag for identifier.
+	(ffecom_transform_equiv_): Don't bother zeroing
+	"ignored" flag for decl.
+	(pushdecl): No longer set "ignored", "used", or
+	"suppressed debug" flags for decls having "invented"
+	identifiers.
+
 1998-07-06  Dave Love  <d.love@dl.ac.uk>
 
 	* intdoc.in (HOSTNM_func, HOSTNM_subr): Note possible need for
