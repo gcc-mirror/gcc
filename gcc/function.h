@@ -161,6 +161,12 @@ struct function
 
   /* For reorg.  */
   rtx epilogue_delay_list;
+
+  /* For varasm.  */
+  struct constant_descriptor **const_rtx_hash_table;
+  struct pool_sym **const_rtx_sym_hash_table;
+  struct pool_constant *first_pool, *last_pool;
+  int pool_offset;
 };
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
