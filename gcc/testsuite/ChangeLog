@@ -1,3 +1,8 @@
+2002-12-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8615
+	* g++.dg/template/char1.C: New test.
+
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5919
