@@ -1,3 +1,10 @@
+1999-10-15  Greg McGary  <gkm@gnu.org>
+
+	* java-tree.h (flag_bounds_check): Remove extern decl.
+	* lang.c (flag_bounds_check): Remove global variable.
+	(lang_f_options): Remove "bounds-check" entry.
+	(lang_init_options): Default flag_bounds_check to "on".
+
 1999-10-14  Tom Tromey  <tromey@cygnus.com>
 
 	* jvgenmain.c (usage): New function.

@@ -115,11 +115,6 @@ extern tree current_class;
 /* List of all class DECLs seen so far.  */
 extern tree all_class_list;
 
-/* Nonzero if we want to automatically do array bounds checking;
-   on by default.  Use -fno-bounds-check to disable.  */
-
-extern int flag_bounds_check;
-
 /* Nonzero if we should make is_compiled_class always return 1 for
    appropriate classes that we're referencing.  */
 
