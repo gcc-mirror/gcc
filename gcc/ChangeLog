@@ -1,3 +1,19 @@
+2002-01-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (movstrsico, movstrdix_64, 
+	movstrsix_31): Remove, replace by ...
+	(movstrdi_short, movstrsi_short, movstrdi_long, 
+	movstrsi_long): ... these.  New.
+	(movstrdi, movstrsi): Adapt.
+
+	(rotldi3, rotlsi3, ashldi3, *ashldi3_31, *ashldi3_64,
+	ashlsi3, lshrdi3, *lshrdi3_31, *lshrdi3_64, lshrsi3): 
+	Remove unnecessary CC clobber.
+	(*ashrdi3_cc_31, *ashrdi3_cconly_31, *ashrdi3_cc_64,
+	*ashrdi3_cconly_64, *ashrsi3_cc, *ashrsi3_cconly): New.
+
+	(divmoddi4): Don't partially initialize TImode register.
+
 2002-01-29  Geoffrey Keating  <geoffk@redhat.com>
 
 	* doc/sourcebuild.texi (C Tests): Document gcc.dg/debug directory.
