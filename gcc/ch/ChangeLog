@@ -1,3 +1,8 @@
+2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
+
+	* ch-tree.h: Remove prototype for combine_parm_decls, unused
+	function.
+
 2001-06-28  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* lang.c: #include diagnostic.h
@@ -206,7 +211,7 @@ Sat May 27 11:24:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* decl.c (c_decode_option): Update -Wall unused flags by
- 	calling set_Wunused.
+	calling set_Wunused.
 	(poplevel): Replace warn_unused with warn_unused_label.
 
 2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
@@ -398,7 +403,7 @@ Fri Sep 24 10:48:10 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* ch-tree.h (builtin_function): Don't declare.
 	* decl.c (builtin_function): New arg CLASS.  Arg FUNCTION_CODE now of
- 	type int.  All callers changed.
+	type int.  All callers changed.
 	Set the builtin's DECL_BUILT_IN_CLASS.
 
 1999-09-20  Nick Clifton  <nickc@cygnus.com>
@@ -851,7 +856,7 @@ Wed Sep 30 19:41:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Wed Sep 30 19:24:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* actions.c (id_cmp): Do pointer arithmetic as `long' not `int' to
- 	ensure enough bits for calculation.
+	ensure enough bits for calculation.
 
 	* ch-tree.h (check_text_length): Remove unused parameter.
 
@@ -919,23 +924,23 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(grant.o): Depend on system.h, toplev.h and output.h.
 
 	* actions.c: Include system.h and toplev.h.  Remove redundant
- 	prototypes.
+	prototypes.
 	(build_cause_exception): Add default case in switch.
 	(update_else_range_for_range): Add parentheses around && within ||.
 	(chill_handle_multi_case_label_list): Remove unused variable
 	`selector_value'.
 	(print_missing_cases): Reconcile format specifiers vs arguments in
- 	calls to sprintf.
+	calls to sprintf.
 
 	* ch-tree.h: Don't include stdio.h.  Wrap prototypes using FILE*
- 	with macro BUFSIZ.  Add missing prototypes.
+	with macro BUFSIZ.  Add missing prototypes.
 
 	* convert.c: Include system.h and toplev.h.  Remove redundant
 	prototypes.
-  	(convert): Remove unused variable `errstr'.
+	(convert): Remove unused variable `errstr'.
 
 	* decl.c: Include system.h and toplev.h.  Remove redundant
- 	prototypes.
+	prototypes.
 	(builtin_scope): Add missing initializers.
 	(clear_scope): Likewise.
 	(allocate_lang_decl): Mark parameter `t' with ATTRIBUTE_UNUSED.
@@ -949,7 +954,7 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(finish_decl): Remove unused variable `type'.
 	(maybe_build_cleanup): Mark parameter `decl' with ATTRIBUTE_UNUSED.
 	(complete_array_type): Mark parameters `type', `initial_value' and
- 	`do_default' with ATTRIBUTE_UNUSED.
+	`do_default' with ATTRIBUTE_UNUSED.
 	(start_struct): Mark parameter `name' with ATTRIBUTE_UNUSED.
 	(start_enum): Likewise.
 	(shadow_record_fields): Remove unused variables `type' and `parent'.
@@ -957,7 +962,7 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* except.c: Include toplev.h.  Remove redundant prototypes.
 
 	* expr.c: Include system.h and toplev.h.  Don't define NULL.
-  	Remove redundant prototypes.
+	Remove redundant prototypes.
 	(internal_build_compound_expr): Mark parameter `first_p' with
 	ATTRIBUTE_UNUSED.
 	(build_allocate_getstack): Remove unused variable `init'.
@@ -971,19 +976,19 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	(powersetlen): Remove unused variables `domain' and `temp'.
 
 	* grant.c: Include system.h, toplev.h and output.h.  Don't handle
- 	strchr/strrchr.  Remove redundant prototypes.
-  	(decode_constant_selective): Remove unused variables `op' and `wrk'.
+	strchr/strrchr.  Remove redundant prototypes.
+	(decode_constant_selective): Remove unused variables `op' and `wrk'.
 	(push_granted): Mark parameters `name' and `decl' with
- 	ATTRIBUTE_UNUSED.
+	ATTRIBUTE_UNUSED.
 
 	* inout.c: Include system.h and toplev.h.  Remove redundant
- 	prototypes.
+	prototypes.
 	(textlocation_mode): Use &&, not &, when comparing two truth
 	values.
 	(scanformcont): Remove unused label `do_the_action'.
 
 	* lang.c: Include system.h and toplev.h.  Remove redundant
- 	prototypes.
+	prototypes.
 	(lookup_interface): Mark parameter `arg' with ATTRIBUTE_UNUSED.
 	(maybe_objc_comptypes): Likewise for parameters `lhs' and `rhs'.
 	(lang_print_xnode): Likewise for parameters `file', `node' and
@@ -993,7 +998,7 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	ATTRIBUTE_UNUSED.
 
 	* lex.c: Include system.h and toplev.h.  Remove redundant
- 	prototypes.  Don't handle strchr/strrchr.  Use CAPITALIZED
+	prototypes.  Don't handle strchr/strrchr.  Use CAPITALIZED
 	versions of ctype macros from system.h.  Cast ctype arguments to
 	unsigned char when necessary.
 	(last_token, RETURN_TOKEN): Hide definition.
@@ -1049,7 +1054,7 @@ Sun Sep 20 09:25:13 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	* typeck.c: Include system.h and toplev.h.  Remove redundant
 	prototypes.
 	(extract_constant_from_buffer): Make function static.  Add
- 	explicit braces to avoid ambiguous `else'.
+	explicit braces to avoid ambiguous `else'.
 	(expand_constant_to_buffer): Likewise.
 	(build_chill_slice): remove unused variable `is_static'.
 	(chill_compatible): Add explicit braces to avoid ambiguous `else'.
@@ -1063,7 +1068,7 @@ Mon Sep 14 16:46:36 1998  Dave Brolley  <brolley@cygnus.com>
 	domain type of the array.
 
 	* expr.c (build_chill_function_call): Remove redundant call to
- 	chill_convert_to_assignment
+	chill_convert_to_assignment
 
 Thu Sep 10 17:52:36 1998  Dave Brolley  <brolley@cygnus.com>
 
@@ -1129,7 +1134,7 @@ Wed Jun 10 12:08:09 1998  Dave Brolley  <brolley@cygnus.com>
 Wed May 27 10:33:41 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* actions.c (chill_handle_multi_case_label): Arguments 1 and 2 to
- 	chill_handle_multi_case_label_range were reversed.
+	chill_handle_multi_case_label_range were reversed.
 
 	* Make-lang.in (chill): Use the correct gcc in the driver script.
 
@@ -1245,13 +1250,13 @@ Fri Mar 20 16:06:41 1998  Dave Brolley  <brolley@cygnus.com>
 Thu Mar 19 13:42:33 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* typeck.c (apply_chill_array_layout): Use
- 	TYPE_PRECISION (chill_integer_type_node) in stead of BITS_PER_WORD for
+	TYPE_PRECISION (chill_integer_type_node) in stead of BITS_PER_WORD for
 	the word size.
 
 Wed Mar 18 16:25:48 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* typeck.c (apply_chill_field_layout): Only set DECL_BIT_FIELD for discrete
- 	fields.
+	fields.
 
 	* parse.c (parse_multi_dimension_case_action): Call emit_line_note at the
 	proper places.
@@ -1323,7 +1328,7 @@ Wed Mar  4 16:08:26 1998  Dave Brolley  <brolley@cygnus.com>
 	(build_simple_array_type): Attach array layout to TYPE_ATTRIBUTES.
 	(apply_chill_array_layout): New function to implement array layout.
 	(layout_chill_array_type): Call apply_chill_array_layout and reset
- 	TYPE_ATTRIBUTES to NULL_TREE.
+	TYPE_ATTRIBUTES to NULL_TREE.
 	(build_chill_array_type): Extend to handle one array layout per index mode.
 	(smash_dummy_type): Call build_simple_array_type with new argument.
 
@@ -1396,7 +1401,7 @@ Thu Feb 12 15:44:50 1998  Dave Brolley  <brolley@cygnus.com>
 	* parse.c (parse_case_action): Implement multi-dimension CASE action.
 	(parse_multi_dimension_case_action): Added.
 	(parse_single_dimension_case_action): Added based on code moved from
- 	parse_case_action.
+	parse_case_action.
 
 	* expr.c (check_case_selector_list): Added.
 
@@ -1418,7 +1423,7 @@ Fri Feb  6 16:43:41 1998  Dave Brolley  <brolley@cygnus.com>
 Thu Feb  5 14:03:00 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* decl.c (chill_tree_code_type):  Change this to be an array of char like
- 	the tree_code_type in the rest of gcc.
+	the tree_code_type in the rest of gcc.
 
 	* ch-tree.def (chill_tree_code_type): See decl.c.
 
@@ -1616,7 +1621,7 @@ Tue Mar  5 22:31:20 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* tree.c (build_string_type):  Generalize to also create bitstrings.
 	Return error_mark_node if an argument is an ERROR_MARK.
- 	(build_bitstring_type):  Simplify - just call build_string_type.
+	(build_bitstring_type):  Simplify - just call build_string_type.
 
 Tue Mar  5 03:48:32 1996  Wilfried Moser  <moser@blues.cygnus.com>
 
@@ -1634,7 +1639,7 @@ Thu Feb 29 23:39:54 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	Simplify NOVELTY representation.
 	* ch-tree.h (CH_NOVELTY):  Re-implement as plain TYPE_CONTEXT.
- 	(CH_NOVELTY_FLAG):  Removed.  (Just use CH_NOVELTY.)
+	(CH_NOVELTY_FLAG):  Removed.  (Just use CH_NOVELTY.)
 	* decl.c (push_modedef):  Make copy even for SYNMODE.
 	but not for internal typedefs (indicated by make_newmode==-1).
 	* tasking.c:  Call push_modedef with make_newmode==-1.
@@ -1723,7 +1728,7 @@ Mon Feb  5 22:17:13 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 	* tree.c (discrete_count), ch-tree.h:  New function.
 	* expr.c (build_concate_expr, build_chill_repetition_op,
 	chill_expand_expr):  Use discrete_count;  make sure arguments
- 	to size_binop are sizetype.
+	to size_binop are sizetype.
 	(powersetlen):  Trvialize using discrete_count.
 
 	* inout.c (process_io_list):  Use new assign_temp function.
@@ -1792,7 +1797,7 @@ Mon Dec 11 17:36:44 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* inout.c (build_chill_associate, assoc_call, build_chill_readrecord,
 	build_chill_getassociation, build_chill_getusage,
- 	build_chill_gettextrecord,  build_chill_gettextaccess:  Simplify
+	build_chill_gettextrecord,  build_chill_gettextaccess:  Simplify
 	- modify TREE_TYPE of CALL_EXPR, instead of building a CONVERT_EXPR.
 
 	* parse.c (parse_action):  Minor simplification.
@@ -3262,7 +3267,7 @@ Wed Nov  2 05:33:03 1994  Wilfried Moser  (moser@rtl.cygnus.com)
 	build_receive_signal_case_label, build_receive_buffer_case_label,
 	build_delay_case_start, build_delay_action, expand_send_buffer):
 	Add processing of timesupervision.
-	(tasking_init): Change definitions of runtime 	functions.
+	(tasking_init): Change definitions of runtime	functions.
 
 	* timing.c (timing_init): New function for initialisation of
 	timing related stuff.
@@ -7023,7 +7028,7 @@ Wed Oct 27 08:25:56 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 Tue Oct 26 00:12:19 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* ch-typeck.c (build_chill_array_ref): 	Check for and complain
+	* ch-typeck.c (build_chill_array_ref):	Check for and complain
 	if there are more index expressions than the array rank.
 
 	* ch-actions.c (chill_expand_assignment):  Emit appropriate
@@ -7580,7 +7585,7 @@ Fri Sep 24 15:27:13 1993  Bill Cox  (bill@cygnus.com)
 	* ch-decl.c (lookup_remembered_names): Removed.  It was being
 	  misused in ch-lex.l.
 	* ch-lex.l (name_type_signal): Revert last change.  Basically,
-  	  we cannot use the C typedef/variable name trick in CHILL, due
+	  we cannot use the C typedef/variable name trick in CHILL, due
 	  due to the language's 2-pass nature.
 	* ch-parse.y (arrayindex): Rewrite for correctness, and to avoid
 	  a seg fault.
@@ -7955,7 +7960,7 @@ Sun Sep 12 18:06:23 1993  Bill Cox  (bill@rtl.cygnus.com)
 	* ch-parse.y (rccase_label_flag): Renamed from rccase_ifs.
 	  All uses renamed also.
 	  (end_function): Always poplevel, not just in pass 2.
- 	  (quasi_pdef): Check for end-label matching.
+	  (quasi_pdef): Check for end-label matching.
 	  (quasi_formparlist): Write more clearly.
 	  (rcaltlist, optelsercvcase, optstartset): Add ignore_actions
 	  guards.
@@ -8289,7 +8294,7 @@ Wed Aug 18 17:36:53 1993  Bill Cox  (bill@cygnus.com)
 	  'with' variables seen (both passes), and always pop that
 	  number of levels.
 	  (structured_variable_list): Always chain variables into a list.
-  	  (structured_variable): Put pushlevel here (from shadow_record_fields).
+	  (structured_variable): Put pushlevel here (from shadow_record_fields).
 	* ch-tasking.c: Indentation fixes.
 	* ch-tree.h: Change proto.
 	* chill.texi: Add Blue Book section numbers to unimplemented
@@ -8350,7 +8355,7 @@ Mon Aug 16 14:41:29 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* ch-decl.c (temp_pushdecl, struct shadowing):  Removed.
 	* ch-decl.c (bind_saved_names):  Remove blevel parameter;
 	use current_scope global instead.  Do some other cleanups.
- 	* ch-decl.c (save_expr_under_name):  Create an ALIAS_DECL.
+	* ch-decl.c (save_expr_under_name):  Create an ALIAS_DECL.
 	* ch-decl.c (pushdecllist, save_expr_under_name):  Use proclaim_decl.
 	* ch-satisfy.c (satisfy, safe_satisfy_decl):  Be more careful
 	to not do inappropriate things (e.g. type layout) if LOOKUP_ONLY.
@@ -8361,7 +8366,7 @@ Mon Aug 16 14:41:29 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 Mon Aug 16 11:13:07 1993  Bill Cox  (bill@rtl.cygnus.com)
 
 	* ch-actions.c (chill_comptypes): Correct handling reference
- 	  of type 1.
+	  of type 1.
 	  (build_chill_length, build_chill_num,
 	   build_chill_sizeof): Convert result to CHILL integer.
 	  (build_chill_function_call): Clean up INOUT and OUT
@@ -10527,7 +10532,7 @@ Fri Apr  2 21:55:14 1993  Per Bothner  (bothner@rtl.cygnus.com)
 
 	* ch-lex.l (struct input_state, current_input_state,
 	push_input_file, pop_input_file):  New (type, variable,
-	function*2).  Used to save and 	restore state on an input file.
+	function*2).  Used to save and	restore state on an input file.
 	* ch-lex.l:  Clean up to handle nested input seizefiles
 	(needed by new grant/seize mechanism.
 	* ch-lex.l (skip_to_end_of_directive):  New function.
@@ -10592,7 +10597,7 @@ Fri Apr  2 21:55:14 1993  Per Bothner  (bothner@rtl.cygnus.com)
 	"-f[no-]local-loop-counter".
 	* toplev.c (lang_options):  Add Chill flags -f[no-]local-loop-counter.
 
- 	* varasm.c (make_function_rtl):  Due to problems with forward
+	* varasm.c (make_function_rtl):  Due to problems with forward
 	references, don't rename nested functions in Chill.  (Kudge!)
 
 Sun Mar 28 10:12:45 1993  Ken Raeburn  (raeburn@kr-pc.cygnus.com)
@@ -12234,4 +12239,3 @@ Tue Nov 10 16:30:55 1992  Per Bothner  (bothner@rtl.cygnus.com)
 	range_check_disabled into global variable range_checking.
 	* ch-tree.h:  Better definitions of CH_CLASS_IS_VALUE
 	CH_CLASS_IS_DERIVED.
-
