@@ -1,5 +1,13 @@
 1999-12-31  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (VF_NORMAL_VALUE): Remove.
+	* class.c (struct base_info): Remove vfield, vfields, and rtti.
+	(set_primary_base): New function, split out from ...
+	(finish_base_struct): ... here.  Rename to ...
+	(determine_primary_base): ... this.  Simplify.
+	(create_vtable_ptr): Tweak accordingly.
+	(finish_struct_1): Simplify.
+	
 	* cp-tree.h (CLASSTYPE_VBASECLASSES): Update documentation.
 	(CLASSTYPE_N_BASECLASSES): Likewise.
 	(BINFO_FOR_VBASE): New macro.

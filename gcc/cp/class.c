@@ -107,7 +107,7 @@ static void modify_one_vtable PROTO((tree, tree, tree));
 static void modify_all_vtables PROTO((tree, tree));
 static void modify_all_direct_vtables PROTO((tree, int, tree, tree));
 static void modify_all_indirect_vtables PROTO((tree, int, int, tree, tree));
-static int finish_base_struct PROTO((tree, struct base_info *));
+static void determine_primary_base PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
 static int field_decl_cmp PROTO ((const tree *, const tree *));
@@ -137,6 +137,7 @@ static void create_vtable_ptr PROTO((tree, int *, int *, int *, tree *, tree *))
 static void layout_class_type PROTO((tree, int *, int *, int *, tree *, tree *));
 static void fixup_pending_inline PROTO((struct pending_inline *));
 static void fixup_inline_methods PROTO((tree));
+static void set_primary_base PROTO((tree, int, int *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -1490,9 +1491,6 @@ struct base_info
 {
   int has_virtual;
   int max_has_virtual;
-  tree vfield;
-  tree vfields;
-  tree rtti;
 };
 
 /* Run through the base clases of T, updating
@@ -1619,136 +1617,87 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
     }
 }
 
-/* Record information about type T derived from its base classes.
-   Store most of that information in T itself, and place the
-   remaining information in the struct BASE_INFO.
+/* Make the Ith baseclass of T its primary base.  */
 
-   Propagate basetype offsets throughout the lattice.  Note that the
-   lattice topped by T is really a pair: it's a DAG that gives the
-   structure of the derivation hierarchy, and it's a list of the
-   virtual baseclasses that appear anywhere in the DAG.  When a vbase
-   type appears in the DAG, it's offset is 0, and it's children start
-   their offsets from that point.  When a vbase type appears in the list,
-   its offset is the offset it has in the hierarchy, and its children's
-   offsets include that offset in theirs.
+static void
+set_primary_base (t, i, has_virtual_p)
+     tree t;
+     int i;
+     int *has_virtual_p;
+{
+  tree basetype;
 
-   Returns the index of the first base class to have virtual functions,
-   or -1 if no such base class.  */
+  CLASSTYPE_VFIELD_PARENT (t) = i;
+  basetype = BINFO_TYPE (CLASSTYPE_PRIMARY_BINFO (t));
+  TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
+  TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
+  TYPE_VFIELD (t) = TYPE_VFIELD (basetype);
+  CLASSTYPE_RTTI (t) = CLASSTYPE_RTTI (basetype);
+  *has_virtual_p = CLASSTYPE_VSIZE (basetype);
+}
 
-static int
-finish_base_struct (t, b)
+/* Determine the primary class for T.  */
+
+static void
+determine_primary_base (t, b)
      tree t;
      struct base_info *b;
 {
-  tree binfos = TYPE_BINFO_BASETYPES (t);
   int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
-  int first_vfn_base_index = -1;
   bzero ((char *) b, sizeof (struct base_info));
 
   for (i = 0; i < n_baseclasses; i++)
     {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      tree base_binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
       tree basetype = BINFO_TYPE (base_binfo);
 
       if (TYPE_POLYMORPHIC_P (basetype))
 	{
-	  /* Ensure that this is set from at least a virtual base
-             class.  */
-	  if (b->rtti == NULL_TREE)
-	    b->rtti = CLASSTYPE_RTTI (basetype);
+	  /* Even a virtual baseclass can contain our RTTI
+	     information.  But, we prefer a non-virtual polymorphic
+	     baseclass.  */
+	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+	    CLASSTYPE_RTTI (t) = CLASSTYPE_RTTI (basetype);
 
-	  /* Don't borrow virtuals from virtual baseclasses.  */
+	  /* A virtual baseclass can't be the primary base.  */
 	  if (TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
-	  if (first_vfn_base_index < 0)
+	  if (!CLASSTYPE_HAS_PRIMARY_BASE_P (t))
 	    {
-	      tree vfields;
-	      first_vfn_base_index = i;
-
-	      /* Update these two, now that we know what vtable we are
-		 going to extend.  This is so that we can add virtual
-		 functions, and override them properly.  */
-	      TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
-	      TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
-	      b->has_virtual = CLASSTYPE_VSIZE (basetype);
-	      b->vfield = TYPE_VFIELD (basetype);
-	      b->vfields = copy_list (CLASSTYPE_VFIELDS (basetype));
-	      vfields = b->vfields;
-	      while (vfields)
-		{
-		  if (VF_BINFO_VALUE (vfields) == NULL_TREE
-		      || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields)))
-		    {
-		      tree value = VF_BASETYPE_VALUE (vfields);
-		      if (DECL_NAME (TYPE_VFIELD (value))
-			  == DECL_NAME (TYPE_VFIELD (basetype)))
-			VF_NORMAL_VALUE (b->vfields) = basetype;
-		      else
-			VF_NORMAL_VALUE (b->vfields) = VF_NORMAL_VALUE (vfields);
-		    }
-		  vfields = TREE_CHAIN (vfields);
-		}
-	      TYPE_VFIELD (t) = b->vfield;
+	      set_primary_base (t, i, &b->has_virtual);
+	      CLASSTYPE_VFIELDS (t) = copy_list (CLASSTYPE_VFIELDS (basetype));
 	    }
 	  else
 	    {
+	      tree vfields;
+
 	      /* Only add unique vfields, and flatten them out as we go.  */
-	      tree vfields = CLASSTYPE_VFIELDS (basetype);
-	      while (vfields)
-		{
-		  if (VF_BINFO_VALUE (vfields) == NULL_TREE
-		      || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields)))
-		    {
-		      tree value = VF_BASETYPE_VALUE (vfields);
-		      b->vfields = tree_cons (base_binfo, value, b->vfields);
-		      if (DECL_NAME (TYPE_VFIELD (value))
-			  == DECL_NAME (TYPE_VFIELD (basetype)))
-			VF_NORMAL_VALUE (b->vfields) = basetype;
-		      else
-			VF_NORMAL_VALUE (b->vfields) = VF_NORMAL_VALUE (vfields);
-		    }
-		  vfields = TREE_CHAIN (vfields);
-		}
+	      for (vfields = CLASSTYPE_VFIELDS (basetype);
+		   vfields;
+		   vfields = TREE_CHAIN (vfields))
+		if (VF_BINFO_VALUE (vfields) == NULL_TREE
+		    || ! TREE_VIA_VIRTUAL (VF_BINFO_VALUE (vfields)))
+		  CLASSTYPE_VFIELDS (t) 
+		    = tree_cons (base_binfo, 
+				 VF_BASETYPE_VALUE (vfields),
+				 CLASSTYPE_VFIELDS (t));
 
 	      if (b->has_virtual == 0)
-		{
-		  first_vfn_base_index = i;
-
-		  /* Update these two, now that we know what vtable we are
-		     going to extend.  This is so that we can add virtual
-		     functions, and override them properly.  */
-		  TYPE_BINFO_VTABLE (t) = TYPE_BINFO_VTABLE (basetype);
-		  TYPE_BINFO_VIRTUALS (t) = TYPE_BINFO_VIRTUALS (basetype);
-		  b->has_virtual = CLASSTYPE_VSIZE (basetype);
-		  b->vfield = TYPE_VFIELD (basetype);
-		  TYPE_VFIELD (t) = b->vfield;
-		  /* When we install the first one, set the VF_NORMAL_VALUE
-		     to be the current class, as this it is the most derived
-		     class.  Hopefully, this is not set to something else
-		     later.  (mrs) */
-		  vfields = b->vfields;
-		  while (vfields)
-		    {
-		      if (DECL_NAME (TYPE_VFIELD (t))
-			  == DECL_NAME (TYPE_VFIELD (basetype)))
-			{
-			  VF_NORMAL_VALUE (vfields) = t;
-			  /* There should only be one of them!  And it should
-			     always be found, if we get into here.  (mrs)  */
-			  break;
-			}
-		      vfields = TREE_CHAIN (vfields);
-		    }
-		}
+		set_primary_base (t, i, &b->has_virtual);
 	    }
 	}
     }
 
+  if (!TYPE_VFIELD (t))
+    CLASSTYPE_VFIELD_PARENT (t) = -1;
+
   {
     tree vfields;
     /* Find the base class with the largest number of virtual functions.  */
-    for (vfields = b->vfields; vfields; vfields = TREE_CHAIN (vfields))
+    for (vfields = CLASSTYPE_VFIELDS (t); 
+	 vfields; 
+	 vfields = TREE_CHAIN (vfields))
       {
 	if (CLASSTYPE_VSIZE (VF_BASETYPE_VALUE (vfields)) > b->max_has_virtual)
 	  b->max_has_virtual = CLASSTYPE_VSIZE (VF_BASETYPE_VALUE (vfields));
@@ -1757,16 +1706,6 @@ finish_base_struct (t, b)
 	  b->max_has_virtual = CLASSTYPE_VSIZE (VF_DERIVED_VALUE (vfields));
       }
   }
-
-  if (b->vfield == 0)
-    /* If all virtual functions come only from virtual baseclasses.  */
-    return -1;
-
-  /* Update the rtti base if we have a non-virtual base class version
-     of it.  */
-  b->rtti = CLASSTYPE_RTTI (BINFO_TYPE (TREE_VEC_ELT (binfos, first_vfn_base_index)));
-
-  return first_vfn_base_index;
 }
 
 /* Set memoizing fields and bits of T (and its variants) for later use.
@@ -4084,12 +4023,9 @@ create_vtable_ptr (t, empty_p, has_virtual_p, max_has_virtual_p,
       struct base_info base_info;
 
       /* Remember where we got our vfield from.  */
-      CLASSTYPE_VFIELD_PARENT (t) = finish_base_struct (t, &base_info);
+      determine_primary_base (t, &base_info);
       *has_virtual_p = base_info.has_virtual;
       *max_has_virtual_p = base_info.max_has_virtual;
-      TYPE_VFIELD (t) = base_info.vfield;
-      CLASSTYPE_VFIELDS (t) = base_info.vfields;
-      CLASSTYPE_RTTI (t) = base_info.rtti;
     }
 
   /* Loop over the virtual functions, adding them to our various
@@ -4330,7 +4266,6 @@ finish_struct_1 (t)
   tree pending_hard_virtuals = NULL_TREE;
   int n_fields = 0;
   tree vfield;
-  int n_baseclasses;
   int empty = 1;
 
   if (TYPE_SIZE (t))
@@ -4350,15 +4285,13 @@ finish_struct_1 (t)
 
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
-
   CLASSTYPE_VFIELD_PARENT (t) = -1;
   has_virtual = 0;
   max_has_virtual = 0;
   CLASSTYPE_RTTI (t) = NULL_TREE;
-  n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
   /* Do end-of-class semantic processing: checking the validity of the
-     bases and members and adding implicitly generated methods.  */
+     bases and members and add implicitly generated methods.  */
   check_bases_and_members (t, &empty);
 
   /* Layout the class itself.  */
