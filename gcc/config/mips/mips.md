@@ -9771,6 +9771,8 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16
    && GET_CODE (operands[0]) == REG
    && REGNO (operands[0]) == 24
+;; ??? This is WRONG, dead_or_set_p cannot be used after reload
+;; because the REG_DEAD notes are not maintained after reload.
    && dead_or_set_p (insn, operands[0])
    && GET_CODE (operands[1]) == REG
    && M16_REG_P (REGNO (operands[1]))"
@@ -9796,6 +9798,8 @@ move\\t%0,%z4\\n\\
   "TARGET_MIPS16 && TARGET_64BIT
    && GET_CODE (operands[0]) == REG
    && REGNO (operands[0]) == 24
+;; ??? This is WRONG, dead_or_set_p cannot be used after reload
+;; because the REG_DEAD notes are not maintained after reload.
    && dead_or_set_p (insn, operands[0])
    && GET_CODE (operands[1]) == REG
    && M16_REG_P (REGNO (operands[1]))"
@@ -9827,6 +9831,8 @@ move\\t%0,%z4\\n\\
    && REGNO (operands[1]) == 24
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
+;; ??? This is WRONG, dead_or_set_p cannot be used after reload
+;; because the REG_DEAD notes are not maintained after reload.
    && dead_or_set_p (insn, operands[0])"
   "*
 {
@@ -9852,6 +9858,8 @@ move\\t%0,%z4\\n\\
    && REGNO (operands[1]) == 24
    && GET_CODE (operands[0]) == REG
    && M16_REG_P (REGNO (operands[0]))
+;; ??? This is WRONG, dead_or_set_p cannot be used after reload
+;; because the REG_DEAD notes are not maintained after reload.
    && dead_or_set_p (insn, operands[0])"
   "*
 {

@@ -1,3 +1,8 @@
+Tue Jan 27 23:01:55 1998  Mike Stump  (mrs@wrs.com)
+
+	* m32r.md, mips.md, mn10200.md, mn10300.md, pyr.md: Add
+	some comments regarding use of dead_or_set_p.
+
 Tue Jan 27 22:14:48 1998  Todd Vierling <tv@pobox.com>
 
 	* fixincludes: Tweak fix for struct exception in math.h
