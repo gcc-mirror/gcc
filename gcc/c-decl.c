@@ -5607,7 +5607,10 @@ build_enumerator (name, value)
   if (value != 0)
     {
       if (TREE_CODE (value) == INTEGER_CST)
-	constant_expression_warning (value);
+	{
+	  value = default_conversion (value);
+	  constant_expression_warning (value);
+	}
       else
 	{
 	  error ("enumerator value for `%s' not integer constant",
