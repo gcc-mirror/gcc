@@ -250,7 +250,7 @@ bugs.  It corresponds to GCC version 3.1.
 * Installation::    How to configure, compile and install GCC.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
-* Objective C::     GNU Objective-C runtime features.
+* Objective-C::     GNU Objective-C runtime features.
 * Gcov::	    gcov: a GCC test coverage program.
 * Trouble::         If you have trouble installing GCC.
 * Bugs::            How, why and where to report bugs.
@@ -285,13 +285,13 @@ bugs.  It corresponds to GCC version 3.1.
 
 @ifset USING
 @node G++ and GCC
-@chapter Compile C, C++, Objective C, Fortran, Java or CHILL
+@chapter Compile C, C++, Objective-C, Fortran, Java or CHILL
 
-@cindex Objective C
+@cindex Objective-C
 @cindex Fortran
 @cindex Java
 @cindex CHILL
-Several versions of the compiler (C, C++, Objective C, Fortran, Java
+Several versions of the compiler (C, C++, Objective-C, Fortran, Java
 and CHILL) are integrated; this is why we use the name
 ``GNU Compiler Collection''. GCC can compile programs written in any of these
 languages. The Fortran, CHILL, and Java compilers are described in
@@ -319,7 +319,7 @@ Front ends for other languages, such as Ada 95 and Pascal exist but
 have not yet been integrated into GCC. These front ends, like that for C++,
 are built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
-Objective C, or any of the languages for which you have installed front
+Objective-C, or any of the languages for which you have installed front
 ends.
 
 In this manual, we only discuss the options for the C, Objective-C, and
@@ -340,7 +340,7 @@ GNU debugger, GDB, works with this information in the object code to
 give you comprehensive C++ source-level editing capabilities
 (@pxref{C,,C and C++,gdb.info, Debugging with GDB}).
 
-@c FIXME!  Someone who knows something about Objective C ought to put in
+@c FIXME!  Someone who knows something about Objective-C ought to put in
 @c a paragraph or two about it here, and move the index entry down when
 @c there is more to point to than the general mention in the 1st par.
 
@@ -628,7 +628,7 @@ libraries and debuggers on certain systems.
 
 @itemize @bullet
 @item
-Objective C does not work on the RS/6000.
+Objective-C does not work on the RS/6000.
 
 @item
 GNU C++ does not do name mangling in the same way as other C++
@@ -3215,7 +3215,7 @@ They are @file{parse.y},
 @file{typeck.c}, along with header files @file{cp-tree.def},
 @file{cp-tree.h}, and @file{decl.h}.
 
-The special source files for parsing Objective C are in @file{objc/}.
+The special source files for parsing Objective-C are in @file{objc/}.
 They are @file{objc-parse.y}, @file{objc-act.c}, @file{objc-tree.def}, and
 @file{objc-act.h}.  Certain C-specific files are used for this as
 well.

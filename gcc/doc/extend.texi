@@ -14,7 +14,7 @@ any of these features is used.)  To test for the availability of these
 features in conditional compilation, check for a predefined macro
 @code{__GNUC__}, which is always defined under GNU CC.
 
-These extensions are available in C and Objective C.  Most of them are
+These extensions are available in C and Objective-C.  Most of them are
 also available in C++.  @xref{C++ Extensions,,Extensions to the
 C++ Language}, for extensions that apply @emph{only} to C++.
 
@@ -1797,7 +1797,7 @@ been called.  Functions with these attributes are useful for
 initializing data that will be used implicitly during the execution of
 the program.
 
-These attributes are not currently implemented for Objective C.
+These attributes are not currently implemented for Objective-C.
 
 @item unused
 This attribute, attached to a function, means that the function is meant
@@ -2072,7 +2072,7 @@ Preprocessing Directives, cpp, The C Preprocessor}.
 
 This section describes the syntax with which @code{__attribute__} may be
 used, and the constructs to which attribute specifiers bind, for the C
-language.  Some details may vary for C++ and Objective C.  Because of
+language.  Some details may vary for C++ and Objective-C.  Because of
 infelicities in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
 
@@ -2866,7 +2866,7 @@ and nested functions (@pxref{Nested Functions}).  Using @option{-Winline}
 will warn when a function marked @code{inline} could not be substituted,
 and will give the reason for the failure.
 
-Note that in C and Objective C, unlike C++, the @code{inline} keyword
+Note that in C and Objective-C, unlike C++, the @code{inline} keyword
 does not affect the linkage of the function.
 
 @cindex automatic @code{inline} for C++ member fns

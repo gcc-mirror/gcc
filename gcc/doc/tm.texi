@@ -4523,7 +4523,7 @@ differently, such as the i860.
 
 @findex NEXT_OBJC_RUNTIME
 @item NEXT_OBJC_RUNTIME
-Define this macro to generate code for Objective C message sending using
+Define this macro to generate code for Objective-C message sending using
 the calling convention of the NeXT system.  This calling convention
 involves passing the object, the selector and the method arguments all
 at once to the method-lookup library function.
@@ -5645,8 +5645,8 @@ When this macro is undefined, section attributes are disabled.
 @findex OBJC_PROLOGUE
 @item OBJC_PROLOGUE
 A C statement to output any assembler statements which are required to
-precede any Objective C object definitions or message sending.  The
-statement is executed only when compiling an Objective C program.
+precede any Objective-C object definitions or message sending.  The
+statement is executed only when compiling an Objective-C program.
 @end table
 
 @need 2000
@@ -6276,7 +6276,7 @@ ASM_OUTPUT_DEF instead if possible.
 @findex OBJC_GEN_METHOD_LABEL
 @item OBJC_GEN_METHOD_LABEL (@var{buf}, @var{is_inst}, @var{class_name}, @var{cat_name}, @var{sel_name})
 Define this macro to override the default assembler names used for
-Objective C methods.
+Objective-C methods.
 
 The default name is a unique method number followed by the name of the
 class (e.g.@: @samp{_1_Foo}).  For methods in categories, the name of
