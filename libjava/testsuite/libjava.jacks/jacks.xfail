@@ -420,6 +420,11 @@
 16.5-runtime-4
 16.5-runtime-5
 16.8-constructor-8
+201-enhanced-for-final
+201-enhanced-for-int-array
+201-enhanced-for-Iterable
+201-enhanced-for-object
+201-enhanced-for-with-generics
 3.10.1-invalid-3
 3.10.1-invalid-4
 3.10.2-double-13
