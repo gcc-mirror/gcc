@@ -312,6 +312,10 @@ merge_argument_lists (gfc_symbol *proc, gfc_formal_arglist *new_args)
       /* Add a new argument.  Argument order is not important.  */
       new_arglist = gfc_get_formal_arglist ();
       new_arglist->sym = new_sym;
+      /* We mark all arguments as optional, since in the common case
+	 only a subset of the arguments will be present. This avoids
+	 having to special case arguments of master functions later on.  */
+      new_arglist->sym->attr.optional = 1;
       new_arglist->next = proc->formal;
       proc->formal  = new_arglist;
     }
@@ -344,7 +348,7 @@ resolve_entries (gfc_namespace * ns)
   if (ns->proc_name->attr.entry_master)
     return;
 
-  /* If this isn't a procedure something as gone horribly wrong.   */
+  /* If this isn't a procedure something has gone horribly wrong.   */
   assert (ns->proc_name->attr.flavor == FL_PROCEDURE);
   
   /* Remember the current namespace.  */
@@ -369,8 +373,8 @@ resolve_entries (gfc_namespace * ns)
 
   /* Create a new symbol for the master function.  */
   /* Give the internal function a unique name (within this file).
-     Also include teh function name so the user has some hope of figuring
-     out whats going on.  */
+     Also include the function name so the user has some hope of figuring
+     out what is going on.  */
   snprintf (name, GFC_MAX_SYMBOL_LEN, "master.%d.%s",
 	    master_count++, ns->proc_name->name);
   name[GFC_MAX_SYMBOL_LEN] = '\0';
@@ -392,10 +396,10 @@ resolve_entries (gfc_namespace * ns)
   for (el = ns->entries; el; el = el->next)
     merge_argument_lists (proc, el->sym->formal);
 
-  /* And use it for the function body.  */
+  /* Use the master function for the function body.  */
   ns->proc_name = proc;
 
-  /* FInalize the new symbols.  */
+  /* Finalize the new symbols.  */
   gfc_commit_symbols ();
 
   /* Restore the original namespace.  */

@@ -1,3 +1,11 @@
+2004-08-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-decl.c (build_function_decl): Fix spelling in comment.
+	(build_entry_thunks): Remove code with no function.
+	(gfc_build_intrinsic_function_decls): Remove empty line.
+
+	* resolve.c (resolve_entries): Fix a bunch of comment typos.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* fortran/f95-lang.c (gfc_init_decl_processing): Adjust
