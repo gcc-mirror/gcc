@@ -1,3 +1,12 @@
+2000-03-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* config/arm/arm.md (return peepholes): Update to reflect the new
+	call insn patterns.
+	* config/arm/arm.c (arm_volatile_func): Also check
+	current_function_nothrow.
+	(output_return_instruction, output_func_prologue): Use it.
+	(arm_output_epilogue, arm_expand_prologue): Likewise.
+
 2000-03-27  Tom Tromey  <tromey@cygnus.com>
 
 	* gcc.c (handle_braces): In {x*...} case, break out of loop if
