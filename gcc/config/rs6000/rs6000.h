@@ -2244,6 +2244,7 @@ extern int rs6000_trunc_used;
   text_section ();						\
   if (profile_flag)						\
     fputs ("\t.extern .mcount\n", FILE);			\
+  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
 }
 
 /* Output at end of assembler file.
@@ -3012,6 +3013,7 @@ extern int flag_expensive_optimizations;
 /* Declare functions in rs6000.c */
 extern void output_options ();
 extern void rs6000_override_options ();
+extern void rs6000_file_start ();
 extern struct rtx_def *rs6000_float_const ();
 extern struct rtx_def *rs6000_immed_double_const ();
 extern int direct_return ();

@@ -691,6 +691,7 @@ do {									\
 #define ASM_FILE_START(FILE)						\
 do {									\
   output_file_directive ((FILE), main_input_filename);			\
+  rs6000_file_start (FILE, TARGET_CPU_DEFAULT);				\
 } while (0)
 
 
@@ -919,7 +920,7 @@ do {									\
 
 #undef	CPP_SYSV_SPEC
 #define CPP_SYSV_SPEC \
-"%{mrelocatable: -D_RELOCATABLE} \
+"%{mrelocatable*: -D_RELOCATABLE} \
 %{mcall-sysv: -D_CALL_SYSV} %{mcall-nt: -D_CALL_NT} \
 %{mcall-aix: -D_CALL_AIX} %{mcall-aixdesc: -D_CALL_AIX -D_CALL_AIXDESC} \
 %{!mcall-sysv: %{!mcall-aix: %{!mcall-aixdesc: %{!mcall-nt: %(cpp_sysv_default) }}}} \

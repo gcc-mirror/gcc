@@ -105,10 +105,18 @@
 	.long	0
 
 	.text
+#ifdef _RELOCATABLE
 .Lptr:
 	.long	.LCTOC1-.Laddr			/* PC relative pointer to .got2 */
+#endif
 
 FUNC_START(__eabi)
+
+/* Eliminate -mrelocatable code if not -mrelocatable, so that this file can
+   be assembled with other assemblers than GAS, such as the Solaris PowerPC
+   assembler.  */
+
+#ifdef _RELOCATABLE
 	mflr	0
 	bl	.Laddr				/* get current address */
 .Laddr:
@@ -120,6 +128,13 @@ FUNC_START(__eabi)
 	subf.	12,12,11			/* calculate difference */
 	mtlr	0				/* restore link register */
 	lwzx	9,10,12				/* done flag */
+
+#else /* !-mrelocatable */
+	addis	11,0,.LCTOC1@ha			/* load address of .LCTOC1 */
+	addi	11,11,.LCTOC1@l
+	lwz	10,.Linit(11)			/* init flag */
+#endif /* !-mrelocatable */
+
 	cmplwi	2,9,0				/* init flag != 0? */
 	bnelr	2				/* return now, if we've been called already */
 	stwx	1,10,12				/* store a non-zero value in the done flag */
@@ -145,9 +160,11 @@ FUNC_START(__eabi)
 	lwz	2,.Lsda2(11)			/* load r2 with _SDA2_BASE address */
 	b	FUNC_NAME(__do_global_ctors)	/* do any C++ global constructors (which returns to caller) */
 
+.Lreloc:
+
+#ifdef _RELOCATABLE
 /* We need to relocate the .got2 pointers.  Don't load registers 2 or 13 */
 
-.Lreloc:
 	lwz	3,.Lgot2s(11)			/* GOT pointers start */
 	lwz	4,.Lgot2e(11)			/* GOT pointers end */
 	add	3,12,3				/* adjust pointers */
@@ -237,6 +254,7 @@ FUNC_START(__eabi)
 	addi	3,3,4				/* bump to next word */
 	cmpw	1,3,4				/* more pointers to adjust? */
 	bc	4,6,.Lfloop
+#endif /* _RELOCATABLE */
 
 /* Done adjusting pointers, return */
 
