@@ -1,3 +1,7 @@
+2002-03-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/wchar-1.c: Fix test.
+
 2002-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/conj1.C: New test.

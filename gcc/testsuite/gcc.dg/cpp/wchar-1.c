@@ -1,6 +1,7 @@
 /* Copyright (C) 2002 Free Software Foundation, Inc.  */
 
 /* { dg-do run } */
+/* { dg-options "-w" } */
 
 /* Source: Neil Booth, 24 Feb 2002.
 
