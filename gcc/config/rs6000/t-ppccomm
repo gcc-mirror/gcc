@@ -25,7 +25,13 @@ tramp.S: $(srcdir)/config/rs6000/tramp.asm
 	cat $(srcdir)/config/rs6000/tramp.asm > tramp.S
 
 # Switch synonyms
-MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?403 msoft-float=mcpu?821 msoft-float=mcpu?860
+MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
+			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?ec603e \
+			  msoft-float=mcpu?801 \
+			  msoft-float=mcpu?821 \
+			  msoft-float=mcpu?823 \
+			  msoft-float=mcpu?860
 MULTILIB_MATCHES_ENDIAN	= mlittle=mlittle-endian mbig=mbig-endian
 MULTILIB_MATCHES_SYSV	= mcall-sysv=mcall-sysv-eabi mcall-sysv=mcall-sysv-noeabi
 

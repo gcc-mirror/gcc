@@ -1,3 +1,10 @@
+Mon Sep  7 22:41:46 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.c (rs6000_override_options): Fix name for ec603e, to add
+	missing 'c'.
+	* t-ppccomm (MULTILIB_MATCHES_FLOAT): Add support for -mcpu=xxx
+	for all targets that set -msoft-float.
+
 Mon Sep  7 23:30:07 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (print_switch_values): Make static to match prototype.
