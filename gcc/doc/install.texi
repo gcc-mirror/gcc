@@ -1913,6 +1913,8 @@ This configuration is intended for embedded systems.
 <hr />
 @end html
 @heading @anchor{arm-*-aout}arm-*-aout
+This configuration is obsoleted in GCC 3.3.
+
 Advanced RISC Machines ARM-family processors.  These are often used in
 embedded applications.  There are no standard Unix configurations.
 This configuration corresponds to the basic instruction sequences and will
@@ -2127,6 +2129,7 @@ longer a multiple of 2 bytes.
 <hr />
 @end html
 @heading @anchor{hppa*-hp-hpux*}hppa*-hp-hpux*
+Support for HP-UX versions 7, 8, and 9 is obsoleted in GCC 3.3.
 
 We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP
@@ -2161,6 +2164,7 @@ More specific information to @samp{hppa*-hp-hpux*} targets follows.
 <hr />
 @end html
 @heading @anchor{hppa*-hp-hpux9}hppa*-hp-hpux9
+Support for this system is obsoleted in GCC 3.3.
 
 The HP assembler has major problems on this platform.  We've tried to work
 around the worst of the problems.  However, those workarounds may be causing
@@ -2468,6 +2472,8 @@ ABI changes are expected.
 <hr />
 @end html
 @heading @anchor{*-lynx-lynxos}*-lynx-lynxos
+Support for SPARC LynxOS is obsoleted in GCC 3.3.
+
 LynxOS 2.2 and earlier comes with GCC 1.x already installed as
 @file{/bin/gcc}.  You should compile with this instead of @file{/bin/cc}.
 You can tell GCC to use the GNU assembler and linker, by specifying
@@ -2480,6 +2486,7 @@ installed tools, which produce @file{a.out} format executables.
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
 @end html
 @heading @anchor{*-ibm-aix*}*-ibm-aix*
+Support for AIX versions 1, 2, and 3 is obsoleted in GCC 3.3.
 
 AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
 newer is recommended to build on this platform.
@@ -2605,6 +2612,8 @@ This configuration is intended for embedded systems.
 <hr />
 @end html
 @heading @anchor{m68000-hp-bsd}m68000-hp-bsd
+Support for this system is obsoleted in GCC 3.3.
+
 HP 9000 series 200 running BSD@.  Note that the C compiler that comes
 with this system cannot compile GCC; contact @email{law@@cygnus.com}
 to get binaries of GCC for bootstrapping.
@@ -2627,6 +2636,8 @@ applications.  There are no standard Unix configurations.
 <hr />
 @end html
 @heading @anchor{m68k-att-sysv}m68k-att-sysv
+Support for this system is obsoleted in GCC 3.3.
+
 AT&T 3b1, a.k.a.@: 7300 PC@.  This version of GCC cannot
 be compiled with the system C compiler, which is too buggy.
 You will need to get a previous version of GCC and use it to
@@ -2637,6 +2648,8 @@ bootstrap.  Binaries are available from the OSU-CIS archive, at
 <hr />
 @end html
 @heading @anchor{m68k-crds-unos}m68k-crds-unos
+Support for this system is obsoleted in GCC 3.3.
+
 Use @samp{configure unos} for building on Unos.
 
 The Unos assembler is named @command{casm} instead of @command{as}.  For some
@@ -2734,6 +2747,8 @@ to look like:
 <hr />
 @end html
 @heading @anchor{m68k-ncr-*}m68k-ncr-*
+Support for this system is obsoleted in GCC 3.3.
+
 On the Tower models 4@var{n}0 and 6@var{n}0, by default a process is not
 allowed to have more than one megabyte of memory.  GCC cannot compile
 itself (or many other programs) with @option{-O} in that much memory.
@@ -2750,6 +2765,8 @@ MAXUMEM = 4096
 <hr />
 @end html
 @heading @anchor{m68k-sun}m68k-sun
+Support for this system is obsoleted in GCC 3.3.
+
 Sun 3.  We do not provide a configuration file to use the Sun FPA by
 default, because programs that establish signal handlers for floating
 point traps inherently cannot work with the FPA@.
@@ -2758,6 +2775,8 @@ point traps inherently cannot work with the FPA@.
 <hr />
 @end html
 @heading @anchor{m68k-sun-sunos4.1.1}m68k-sun-sunos4.1.1
+Support for this system is obsoleted in GCC 3.3.
+
 
 It is reported that you may need the GNU assembler on this platform.
 
@@ -3155,6 +3174,7 @@ the Solaris 7 Recommended Patch Cluster.
 <hr />
 @end html
 @heading @anchor{sparc-sun-sunos4*}sparc-sun-sunos4*
+Support for this system is obsoleted in GCC 3.3.
 
 A bug in the SunOS 4 linker will cause it to crash when linking
 @option{-fPIC} compiled objects (and will therefore not allow you to build
@@ -3174,6 +3194,7 @@ be due to a bug in @command{sh}.  You can probably get around it by running
 <hr />
 @end html
 @heading @anchor{sparc-unknown-linux-gnulibc1}sparc-unknown-linux-gnulibc1
+Support for this system is obsoleted in GCC 3.3.
 
 It has been reported that you might need
 @uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils 2.8.1.0.23}

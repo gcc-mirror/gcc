@@ -1,5 +1,11 @@
 2003-04-29  Zack Weinberg  <zack@codesourcery.com>
 
+	* config.gcc: Install obsolete target list for GCC 3.3.
+	* doc/install.texi: Mention in specific-target instructions
+	that certain configurations are deprecated.
+
+2003-04-29  Zack Weinberg  <zack@codesourcery.com>
+
 	* tree.h: Delete no-checking definition of CST_OR_CONSTRUCTOR_CHECK.
 
 2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>

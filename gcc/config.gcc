@@ -226,13 +226,61 @@ need_64bit_hwint=
 
 # Obsolete configurations.
 case $machine in
-   m88k-*-aout*     \
- | m88k-*-openbsd*  \
- | m88k-*-sysv4*    \
- | mips-sni-sysv4   \
- | mn10200-*-*      \
- | ns32k-*-openbsd* \
- | romp-*-openbsd*  \
+   m88k-*-*			\
+ | mn10200-*-*			\
+ | romp-*-*			\
+ | alpha*-*-interix*		\
+ | alpha*-*-linux*libc1*	\
+ | alpha*-*-linux*ecoff*	\
+ | arm*-*-aout*			\
+ | arm*-*-conix*		\
+ | arm*-*-oabi			\
+ | strongarm-*-coff*		\
+ | hppa1.0-*-osf*		\
+ | hppa1.0-*-bsd*		\
+ | hppa1.[01]-*-hpux[789]*	\
+ | hppa*-*-hiux*		\
+ | hppa*-*-lites*		\
+ | i?86-*-win32			\
+ | m68000-hp-bsd*		\
+ | m68000-sun-sunos*		\
+ | m68000-att-sysv*		\
+ | m68k-atari-sysv*		\
+ | m68k-motorola-sysv*		\
+ | m68k-ncr-sysv*		\
+ | m68k-plexus-sysv*		\
+ | m68k-tti-*			\
+ | m68k-crds-unos*		\
+ | m68k-cbm-sysv*		\
+ | m68k-ccur-rtu*		\
+ | m68k-hp-bsd*			\
+ | m68k-sun-mach*		\
+ | m68k-sun-sunos*		\
+ | m68k-*-linux*aout*		\
+ | m68k-*-linux*libc1*		\
+ | m68k-*-psos*			\
+ | mips*-*-ecoff*		\
+ | mips-sni-sysv4		\
+ | mips64orion-*-rtems*		\
+ | ns32k-*-openbsd*		\
+ | powerpc*-*-sysv*		\
+ | powerpc*-*-linux*libc1*	\
+ | rs6000-ibm-aix[123]*		\
+ | rs6000-bull-bosx		\
+ | rs6000-*-mach*		\
+ | sparc-*-aout*		\
+ | sparc-*-netbsd*aout*		\
+ | sparc-*-bsd*			\
+ | sparc-*-chorusos*		\
+ | sparc-*-linux*aout*		\
+ | sparc-*-linux*libc1*		\
+ | sparc-*-lynxos*		\
+ | sparc-hal-solaris2*		\
+ | sparc-*-sunos[34]*		\
+ | sparclet-*-aout*		\
+ | sparclite-*-aout*		\
+ | sparc86x-*-aout*		\
+ | v850-*-rtems*		\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration $machine is obsolete." >&2
