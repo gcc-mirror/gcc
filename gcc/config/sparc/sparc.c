@@ -45,9 +45,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Global variables for machine-dependent things.  */
 
-/* Says what architecture we're compiling for.  */
-enum arch_type sparc_arch_type;
-
 /* Size of frame.  Need to know this to emit return insns from leaf procedures.
    ACTUAL_FSIZE is set by compute_frame_size() which is called during the
    reload pass.  This is important as the value is later used in insn
@@ -1913,13 +1910,14 @@ output_move_quad (operands)
 	     the register number.  */
 	  || (TARGET_V9 && REGNO (reg) >= 64))
 	{
-	  if (TARGET_V9 && FP_REG_P (reg))
+	  if (TARGET_V9 && FP_REG_P (reg) && TARGET_HARD_QUAD)
 	    {
 	      if ((REGNO (reg) & 3) != 0)
 		abort ();
 	      return (mem == op1 ? "ldq %1,%0" : "stq %1,%0");
 	    }
 	  operands[2] = adj_offsettable_operand (mem, 8);
+	  /* ??? In arch64 case, shouldn't we use ldd/std for fp regs.  */
 	  if (mem == op1)
 	    return TARGET_ARCH64 ? "ldx %1,%0;ldx %2,%R0" : "ldd %1,%0;ldd %2,%S0";
 	  else
@@ -2640,8 +2638,6 @@ static void
 sparc_init_modes ()
 {
   int i;
-
-  sparc_arch_type = TARGET_ARCH64 ? ARCH_64BIT : ARCH_32BIT;
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {

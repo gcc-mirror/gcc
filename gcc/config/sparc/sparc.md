@@ -29,12 +29,22 @@
 ;; constraint letter is 'e'.  To avoid any confusion, 'e' is used instead of
 ;; 'f' for all DF/TFmode values, including those that are specific to the v8.
 
-;; Architecture type.  Arch32bit includes v7, sparclite, v8.
-;; ??? Delete and use `TARGET_ARCH64' instead.
-(define_attr "arch" "arch32bit,arch64bit"
-  (const (symbol_ref "sparc_arch_type")))
+;; Attribute for the instruction set.
+;; At present we only need to distinguish v9/!v9, but for clarity we
+;; test TARGET_V8 too.
+(define_attr "isa" "v6,v8,v9"
+ (const
+  (cond [(symbol_ref "TARGET_V9") (const_string "v9")
+	 (symbol_ref "TARGET_V8") (const_string "v8")]
+	(const_string "v6"))))
 
-;; CPU type. This is only used for instruction scheduling
+;; Architecture size.
+(define_attr "arch" "arch32bit,arch64bit"
+ (const
+  (cond [(symbol_ref "TARGET_ARCH64") (const_string "arch64bit")]
+	(const_string "arch32bit"))))
+
+;; CPU type.  This is only used for instruction scheduling.
 (define_attr "cpu" "cypress,supersparc"
  (const
   (cond [(symbol_ref "TARGET_SUPERSPARC") (const_string "supersparc")]
@@ -3580,15 +3590,18 @@
 	(minus:DI (match_dup 1) (match_dup 2)))]
   "TARGET_ARCH64"
   "subcc %1,%2,%0")
+
+;; Integer Multiply/Divide.
 
-;; This is anachronistic, and should not be used in v9 software.
-;; The v9 compiler will widen the args and use muldi3.
+;; The 32 bit multiply/divide instructions are deprecated on v9 and shouldn't
+;; we used.  We still use them in 32 bit v9 compilers.
+;; The 64 bit v9 compiler will (/should) widen the args and use muldi3.
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%0"
   [(set_attr "type" "imul")])
 
@@ -3608,7 +3621,7 @@
    (set (reg:CC_NOOV 0)
 	(compare:CC_NOOV (mult:SI (match_dup 1) (match_dup 2))
 			 (const_int 0)))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smulcc %1,%2,%0"
   [(set_attr "type" "imul")])
 
@@ -3616,7 +3629,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (sign_extend:DI (match_operand:SI 2 "arith_operand" ""))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3630,7 +3643,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3640,7 +3653,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "small_int" "I")))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3650,7 +3663,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" ""))
 			       (sign_extend:DI (match_operand:SI 2 "arith_operand" "")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3666,7 +3679,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (sign_extend:DI (match_operand:SI 2 "register_operand" "r")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3676,7 +3689,7 @@
 	 (lshiftrt:DI (mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (match_operand:SI 2 "register_operand" "r"))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "smul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3684,7 +3697,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" ""))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3698,7 +3711,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3708,7 +3721,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "uns_small_int" "")))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%R0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3718,7 +3731,7 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 			       (zero_extend:DI (match_operand:SI 2 "uns_arith_operand" "")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "
 {
   if (CONSTANT_P (operands[2]))
@@ -3734,7 +3747,7 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (zero_extend:DI (match_operand:SI 2 "register_operand" "r")))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
@@ -3744,11 +3757,11 @@
 	 (lshiftrt:DI (mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
 			       (match_operand:SI 2 "uns_small_int" ""))
 		      (const_int 32))))]
-  "TARGET_V8 || TARGET_SPARCLITE"
+  "TARGET_V8 || TARGET_SPARCLITE || TARGET_DEPRECATED_V8_INSNS"
   "umul %1,%2,%%g0\;rd %%y,%0"
   [(set_attr "length" "2")])
 
-;; The architecture specifies that there must be 3 instructions between
+;; The v8 architecture specifies that there must be 3 instructions between
 ;; a y register write and a use of it for correct results.
 
 (define_insn "divsi3"
@@ -3756,9 +3769,17 @@
 	(div:SI (match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2 "arith_operand" "rI")))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_V8"
-  "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdiv %1,%2,%0"
-  [(set_attr "length" "6")])
+  "TARGET_V8 || TARGET_DEPRECATED_V8_INSNS"
+  "*
+{
+  if (TARGET_V9)
+    return \"sra %1,31,%3\;wr %%g0,%3,%%y\;sdiv %1,%2,%0\";
+  else
+    return \"sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdiv %1,%2,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "v9")
+		      (const_int 3) (const_int 6)))])
 
 (define_insn "divdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3777,17 +3798,33 @@
 	(compare:CC (div:SI (match_dup 1) (match_dup 2))
 		    (const_int 0)))
    (clobber (match_scratch:SI 3 "=&r"))]
-  "TARGET_V8"
-  "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdivcc %1,%2,%0"
-  [(set_attr "length" "6")])
+  "TARGET_V8 || TARGET_DEPRECATED_V8_INSNS"
+  "*
+{
+  if (TARGET_V9)
+    return \"sra %1,31,%3\;wr %%g0,%3,%%y\;sdivcc %1,%2,%0\";
+  else
+    return \"sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdivcc %1,%2,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "v9")
+		      (const_int 3) (const_int 6)))])
 
 (define_insn "udivsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(udiv:SI (match_operand:SI 1 "register_operand" "r")
-		(match_operand:SI 2 "arith_operand" "rI")))]
-  "TARGET_V8"
-  "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udiv %1,%2,%0"
-  [(set_attr "length" "5")])
+		 (match_operand:SI 2 "arith_operand" "rI")))]
+  "TARGET_V8 || TARGET_DEPRECATED_V8_INSNS"
+  "*
+{
+  if (TARGET_V9)
+    return \"wr %%g0,%%g0,%%y\;udiv %1,%2,%0\";
+  else
+    return \"wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udiv %1,%2,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "v9")
+		      (const_int 2) (const_int 5)))])
 
 (define_insn "udivdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3805,9 +3842,17 @@
    (set (reg:CC 0)
 	(compare:CC (udiv:SI (match_dup 1) (match_dup 2))
 		    (const_int 0)))]
-  "TARGET_V8"
-  "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udivcc %1,%2,%0"
-  [(set_attr "length" "5")])
+  "TARGET_V8 || TARGET_DEPRECATED_V8_INSNS"
+  "*
+{
+  if (TARGET_V9)
+    return \"wr %%g0,%%g0,%%y\;udivcc %1,%2,%0\";
+  else
+    return \"wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udivcc %1,%2,%0\";
+}"
+  [(set (attr "length")
+	(if_then_else (eq_attr "isa" "v9")
+		      (const_int 2) (const_int 5)))])
 
 ;;- Boolean instructions
 ;; We define DImode `and` so with DImode `not` we can get
