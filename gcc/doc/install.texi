@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.16 2001/06/04 22:59:22 ljrittle Exp $
+@comment $Id: install.texi,v 1.1.2.17 2001/06/11 00:58:00 aoliva Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -185,8 +185,10 @@ for information on how to obtain GCC.
 
 The full distribution includes the C, C++, Objective-C, Fortran, Java,
 and Chill compilers.  The full distribution also includes runtime libraries
-for C++, Objective-C and Fortran.  In the future the GNU compiler testsuites
-will be included in the full distribution.
+for C++, Objective-C, Fortran, Java and Chill.  (GCC 3.0 does not
+include Chill.  Releases before 3.0 do not include the Java runtime
+library.)  In GCC 3.0 and later versions, GNU compiler testsuites
+are also included in the full distribution.
 
 If you choose to download specific components, you must download the core
 gcc distribution plus any language specific distributions you wish to
@@ -310,8 +312,8 @@ are installed.  Normally you should not need to use these options.
 @item --with-gxx-include-dir=@var{dirname}
 Specify
 the installation directory for g++ header files.  The default is
-@file{/usr/local/include/g++}.
-  
+@file{@var{prefix}/include/g++-v3}.
+
 @end table
 
 @item --with-local-prefix=@var{dirname}
@@ -461,13 +463,6 @@ This is the default for the m32r platform.
 @item --enable-cpp
 Specify that a shell script which
 emulates traditional cpp functionality should be installed.
-
-@item --enable-cpplib
-Specify that the functionality of
-CPP should be integrated into the compiler itself.  This option is
-not supported by snapshots since November 2000.  In snapshots where
-it is supported, it is not enabled by default, except for snapshots
-very close to November 2000.
 
 @item --enable-maintainer-mode
 The build rules that
@@ -835,12 +830,13 @@ Now you may need specific preparations:
 
 @itemize @bullet
 @item
-In order to run the libio tests on targets which do not fully
+In order to run the libio tests in GCC 2.95 and earlier versions of GCC
+on targets which do not fully
 support Unix/POSIX commands (e.g. Cygwin), the references to the dbz
 directory have to be deleted from @code{libio/configure.in}.
 
 @item
-The following environment variables must be set appropriately, as in
+The following environment variables may need to be set appropriately, as in
 the following example (which assumes that DejaGnu has been installed
 under @code{/usr/local}):
 
@@ -853,6 +849,10 @@ On systems such as Cygwin, these paths are required to be actual
 paths, not mounts or links; presumably this is due to some lack of
 portability in the DejaGnu code.
 
+If the directories where @command{runtest} and @command{expect} were
+installed are in the @env{PATH}, it should not be necessary to set these
+environment variables.
+
 @end itemize
 
 Finally, you can run the testsuite (which may take a long time):
@@ -861,8 +861,8 @@ Finally, you can run the testsuite (which may take a long time):
 @end example
 
 The testing process will try to test as many components in the GCC
-distribution as possible, including the C, C++ and Fortran compilers as
-well as the C++ runtime libraries.
+distribution as possible, including the C, C++, Objective C and Fortran
+compilers as well as the C++ and Java runtime libraries.
 
 @section How can I run the test suite on selected tests?
 

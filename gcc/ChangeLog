@@ -1,5 +1,13 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/install.texi: Update details of what components are included
+	in the GCC distribution.  Update default directory for g++
+	includes.  Update documentation relating to old libio.  Adjust
+	documentation on DejaGnu environment variables.  Remove
+	documentation of --enable-cpplib.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/contrib.texi: Fix alphabetical order.  Fix typos.  Improve
 	markup.
 
