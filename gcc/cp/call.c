@@ -2977,10 +2977,23 @@ build_conditional_expr (arg1, arg2, arg3)
 
      Lvalue-to-rvalue (_conv.lval_), array-to-pointer (_conv.array_),
      and function-to-pointer (_conv.func_) standard conversions are
-     performed on the second and third operands.  */
-  arg2 = decay_conversion (arg2);
+     performed on the second and third operands.
+
+     We need to force the lvalue-to-rvalue conversion here for class types,
+     so we get TARGET_EXPRs; trying to deal with a COND_EXPR of class rvalues
+     that isn't wrapped with a TARGET_EXPR plays havoc with exception
+     regions.  */
+
+  if (IS_AGGR_TYPE (TREE_TYPE (arg2)) && real_lvalue_p (arg2))
+    arg2 = build_user_type_conversion (TREE_TYPE (arg2), arg2, LOOKUP_NORMAL);
+  else
+    arg2 = decay_conversion (arg2);
   arg2_type = TREE_TYPE (arg2);
-  arg3 = decay_conversion (arg3);
+
+  if (IS_AGGR_TYPE (TREE_TYPE (arg3)) && real_lvalue_p (arg3))
+    arg3 = build_user_type_conversion (TREE_TYPE (arg3), arg3, LOOKUP_NORMAL);
+  else
+    arg3 = decay_conversion (arg3);
   arg3_type = TREE_TYPE (arg3);
 
   /* [expr.cond]
@@ -3061,8 +3074,9 @@ build_conditional_expr (arg1, arg2, arg3)
  valid_operands:
   result = fold (build (COND_EXPR, result_type, arg1, arg2, arg3));
   /* Expand both sides into the same slot, hopefully the target of the
-     ?: expression.  */
-  if (TREE_CODE (arg2) == TARGET_EXPR && TREE_CODE (arg3) == TARGET_EXPR)
+     ?: expression.  We used to check for TARGET_EXPRs here, but now we
+     sometimes wrap them in NOP_EXPRs so the test would fail.  */
+  if (!lvalue_p && IS_AGGR_TYPE (result_type))
     {
       tree slot = build (VAR_DECL, result_type);
       layout_decl (slot, 0);

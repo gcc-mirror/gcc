@@ -1,3 +1,8 @@
+1999-09-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_conditional_expr): Always use a TARGET_EXPR for
+	class rvalues again.
+
 Sun Sep 12 23:29:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (g++spec.o): Depend on system.h and gcc.h.
