@@ -294,10 +294,10 @@ extern int target_flags;
 #define REG_ALLOC_ORDER \
   { 2, 3, 0, 1, 4, 5, 6, 8, 7, 9, 10}
 
-#define CONDITIONAL_REGISTER_USAGE		\
-{						\
-  if (!TARGET_MAC)				\
-    fixed_regs[8] = call_used_regs[8] = 1;	\
+#define CONDITIONAL_REGISTER_USAGE			\
+{							\
+  if (!TARGET_MAC)					\
+    fixed_regs[MAC_REG] = call_used_regs[MAC_REG] = 1;	\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -322,7 +322,7 @@ extern int target_flags;
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   (TARGET_H8300								\
    ? ((((REGNO) & 1) == 0) || ((MODE) == HImode) || ((MODE) == QImode))	\
-   : (REGNO) == 8 ? (MODE) == SImode : 1)
+   : (REGNO) == MAC_REG ? (MODE) == SImode : 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -355,14 +355,14 @@ extern int target_flags;
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 9
+#define ARG_POINTER_REGNUM AP_REG
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM 3
+#define STATIC_CHAIN_REGNUM SC_REG
 
 /* Fake register that holds the address on the stack of the
    current function's return address.  */
-#define RETURN_ADDRESS_POINTER_REGNUM 10
+#define RETURN_ADDRESS_POINTER_REGNUM RAP_REG
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.

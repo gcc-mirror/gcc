@@ -1,3 +1,14 @@
+2002-02-17  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.h (CONDITIONAL_REGISTER_USAGE): Replace a
+	hard coded register number with an appropriate macro.
+	(HARD_REGNO_MODE_OK): Likewise.
+	(ARG_POINTER_REGNUM): Likewise.
+	(STATIC_CHAIN_REGNUM): Likewise.
+	(RETURN_ADDRESS_POINTER_REGNUM): Likewise.
+	* config/h8300/h8300.md (define_constants): Define more
+	register numbers.
+
 2002-02-17  Philipp Thomas  <pthomas@suse.de>
 
 	* config/i386/i386.h: Don't mark empty strings for translation.
