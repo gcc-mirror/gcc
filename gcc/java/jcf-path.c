@@ -69,7 +69,7 @@ static void add_path PARAMS ((struct entry **, const char *, int));
 
 /* We support several different ways to set the class path.
 
-   built-in system directory (only libgcj.zip)
+   built-in system directory (only libgcj.jar)
    CLASSPATH environment variable
    -CLASSPATH overrides CLASSPATH
    -classpath option - overrides CLASSPATH, -CLASSPATH, and built-in
@@ -155,7 +155,7 @@ add_entry (entp, filename, is_system)
     {
       n->flags |= FLAG_ZIP;
       /* If the user uses -classpath then he'll have to include
-	 libgcj.zip in the value.  We check for this in a simplistic
+	 libgcj.jar in the value.  We check for this in a simplistic
 	 way.  Symlinks will fool this test.  This is only used for
 	 -MM and -MMD, so it probably isn't terribly important.  */
       if (! strcmp (filename, LIBGCJ_ZIP_FILE))
@@ -254,7 +254,7 @@ jcf_path_init ()
 
       strcpy (try + len, "share");
       strcat (try, sep);
-      strcat (try, "libgcj.zip");
+      strcat (try, "libgcj.jar");
       if (! stat (try, &stat_b))
 	{
 	  add_entry (&sys_dirs, try, 1);
@@ -266,7 +266,7 @@ jcf_path_init ()
 	  strcat (try, sep);
 	  strcat (try, "share");
 	  strcat (try, sep);
-	  strcat (try, "libgcj.zip");
+	  strcat (try, "libgcj.jar");
 	  if (! stat (try, &stat_b))
 	    {
 	      add_entry (&sys_dirs, try, 1);

@@ -1,5 +1,11 @@
 2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* libjava: Imported from /cvs/java.
+	* libffi: Likewise.
+	* Boehm-gc: Likewise.
+
+2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* configure.in (target_libs): Revert 2000-12-08 patch.
 	(noconfigdirs): Added target-libjava.
 

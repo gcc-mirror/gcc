@@ -1,3 +1,25 @@
+2000-12-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Makefile.am (data_DATA): libgcj.jar replaces libgcj.zip.
+	(ZIP): Points at fastjar instead of zip.
+	(libgcj_la_DEPENDENCIES): libgcj.jar replaces libgcj.zip.
+	(libgcj_la_LDFLAGS): Correctly point at libsupc++.
+	(libgcjx_la_DEPENDENCIES): libgcj.jar replaces libgcj.zip.
+	(libgcjx_la_LDFLAGS): Correctly point at libsupc++.
+	($(java_source_files:.java=.class):): libgcj.jar replaces libgcj.zip.
+	($(x_java_source_files:.java=.class):): Likewise.
+	(libgcj.jar:): Replaces libgcj.zip:, builds libgcj.jar and uses
+	fastar's flags.
+	(CLEANFILES): libgcj.jar replaces libgcj.zip.
+	(java/lang/ClassLoader.h:): Depends on libgcj.jar.
+	(gnu/gcj/runtime/FirstThread.h:, java/lang/Thread.h:,
+	java/lang/String.h:, java/lang/reflect/Constructor.h:,
+	java/lang/reflect/Field.h:, java/lang/reflect/Method.h:,
+	gnu/gcj/runtime/VMClassLoader.h:,
+	java/io/ObjectInputStream$$GetField.h:, 
+	java/io/ObjectOutputStream$$PutField.h:, header-check:): Likewise.
+	(Makefile.in): Rebuilt.
+	
 2000-12-08  Tom Tromey  <tromey@redhat.com>
 
 	From Phil Edwards:

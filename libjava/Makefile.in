@@ -136,7 +136,7 @@ AUTOMAKE_OPTIONS = foreign no-installinfo
 
 toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
-data_DATA = libgcj.zip
+data_DATA = libgcj.jar
 
 @NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
 @NEEDS_DATA_START_TRUE@libgcjdata.a
@@ -148,11 +148,11 @@ data_DATA = libgcj.zip
 
 bin_SCRIPTS = addr2name.awk
 @CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
 @CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@fastjar
 @CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/fastjar$(EXEEXT)
 @CANADIAN_TRUE@GCJH = \
 @CANADIAN_TRUE@gcjh
 @CANADIAN_FALSE@GCJH = \
@@ -203,29 +203,31 @@ libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
-libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) \
+libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
 libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 
-libgcj_la_LDFLAGS = -lsupc++ -rpath $(toolexeclibdir) \
+libgcj_la_LDFLAGS = -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
+	-rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 libgcj_la_LINK = $(LIBLINK)
 
 libgcjx_la_SOURCES = $(x_nat_source_files)
 EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
-libgcjx_la_DEPENDENCIES = libgcj.zip $(x_javao_files)
+libgcjx_la_DEPENDENCIES = libgcj.jar $(x_javao_files)
 libgcjx_la_LIBADD = $(x_javao_files)
 libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
-        -lsupc++ -rpath $(toolexeclibdir) \
+        -L$(here)/../libstdc++-v3/libsupc++ -lsupc++ \
+        -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 libgcjx_la_LINK = $(LIBLINK)
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
-CLEANFILES = tmp-list libgcj.zip
+CLEANFILES = tmp-list libgcj.jar
 
 SUFFIXES = .class .java .h
 
@@ -2296,9 +2298,9 @@ install-exec-hook:
 	  $(LN_S) libgcjx.la gnu-awt-xlib.la; \
 	fi
 
-$(java_source_files:.java=.class): libgcj.zip
+$(java_source_files:.java=.class): libgcj.jar
 
-$(x_java_source_files:.java=.class): libgcj.zip
+$(x_java_source_files:.java=.class): libgcj.jar
 
 $(built_java_source_files:.java=.class): $(built_java_source_files)
 	@javac="$(JAVAC)"; \
@@ -2308,7 +2310,7 @@ $(built_java_source_files:.java=.class): $(built_java_source_files)
 	  -d $(here) $$f; \
 	done
 
-libgcj.zip: $(java_source_files) $(x_java_source_files)
+libgcj.jar: $(java_source_files) $(x_java_source_files)
 	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$(subst $(srcdir)/,,$?),$(shell echo $(source) >> tmp-list))
 	$(MAKE) $(built_java_source_files:.java=.class)
 	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
@@ -2319,10 +2321,10 @@ libgcj.zip: $(java_source_files) $(x_java_source_files)
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \
 	test "$$fail" = no
-	-@rm -f tmp-list libgcj.zip
+	-@rm -f tmp-list libgcj.jar
 	find java gnu -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
-	  $(ZIP) libgcj -@ -n .class
+	  $(ZIP) cfM0E@ $@
 
 clean-local:
 	find . -name '*.class' -print | xargs rm -f
@@ -2354,19 +2356,19 @@ $(javao_files) $(x_javao_files): %.lo: %.java
 .class.h:
 	$(GCJH) -classpath $(top_builddir) $(basename $<)
 
-java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.zip
+java/lang/ClassLoader.h: java/lang/ClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void _Jv_RunMain (const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
-gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.zip
+gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-friend 'void JvRunMain (jclass, int, const char **);' \
 		-friend 'void _Jv_RunMain (const char*, int, const char **);' \
 		$(basename $<)
 
-java/lang/Thread.h: java/lang/Thread.class libgcj.zip
+java/lang/Thread.h: java/lang/Thread.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend 'extern "Java" { namespace gnu { namespace gcj { namespace jni { class NativeThread; } } } };' \
@@ -2377,7 +2379,7 @@ java/lang/Thread.h: java/lang/Thread.class libgcj.zip
 		-friend 'class gnu::gcj::jni::NativeThread;' \
 		$(basename $<)
 
-java/lang/String.h: java/lang/String.class libgcj.zip
+java/lang/String.h: java/lang/String.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -friend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
@@ -2387,37 +2389,37 @@ java/lang/String.h: java/lang/String.class libgcj.zip
 	    -friend 'jstring _Jv_AllocString (jsize);' \
 	    $(basename $<)
 
-java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.zip
+java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.zip
+java/lang/reflect/Field.h: java/lang/reflect/Field.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
 	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
-java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
+java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
-gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.zip
+gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'class java::lang::ClassLoader;' \
 	    $(basename $<)
 
-java/io/ObjectInputStream$$GetField.h: libgcj.zip
+java/io/ObjectInputStream$$GetField.h: libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectInputStream$$GetField'
 
-java/io/ObjectOutputStream$$PutField.h: libgcj.zip
+java/io/ObjectOutputStream$$PutField.h: libgcj.jar
 	$(GCJH) -classpath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
@@ -2437,7 +2439,7 @@ maintainer-check: libgcj.la
 	  | grep -v 'Jv' \
 	  | grep -v 'terminate__Fv' | grep -v 'unexpected__Fv'
 
-header-check: libgcj.zip $(nat_headers)
+header-check: libgcj.jar $(nat_headers)
 	rm -f htest.cc; \
 	for h in $(nat_headers); do \
 	  echo "#include \"$$h\"" >> htest.cc; \
