@@ -491,8 +491,9 @@ eligible_for_epilogue_delay (trial, slot)
   if (get_attr_length (trial) != 1)
     return 0;
 
-  /* In the case of a true leaf function, anything can
-     go into the delay slot.  */
+  /* In the case of a true leaf function, anything can go into the delay slot.
+     A delay slot only exists however if the frame size is zero, otherwise
+     we will put an insn to adjust the stack after the return.  */
   if (leaf_function)
     {
       if (leaf_return_peephole_ok ())
@@ -505,13 +506,10 @@ eligible_for_epilogue_delay (trial, slot)
   pat = PATTERN (trial);
   if (GET_CODE (SET_DEST (pat)) != REG
       || REGNO (SET_DEST (pat)) == 0
-      || (leaf_function
-	  && REGNO (SET_DEST (pat)) < 32
-	  && REGNO (SET_DEST (pat)) >= 16)
-      || (! leaf_function
-	  && (REGNO (SET_DEST (pat)) >= 32
-	      || REGNO (SET_DEST (pat)) < 24)))
+      || REGNO (SET_DEST (pat)) >= 32
+      || REGNO (SET_DEST (pat)) < 24)
     return 0;
+
   src = SET_SRC (pat);
   if (arith_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
@@ -946,9 +944,9 @@ singlemove_string (operands)
     {
       int i = INTVAL (operands[1]);
 
-      /* If all low order 12 bits are clear, then we only need a single
+      /* If all low order 10 bits are clear, then we only need a single
 	 sethi insn to load the constant.  */
-      if (i & 0x00000FFF)
+      if ((i & 0x000003FF) != 0)
 	return "sethi %%hi(%a1),%0\n\tor %0,%%lo(%a1),%0";
       else
 	return "sethi %%hi(%a1),%0";
@@ -1841,48 +1839,63 @@ compute_last_arg_offset ()
   return 4096;
 }
 
+/* Output code for the function prologue.  */
+
 void
 output_function_prologue (file, size, leaf_function)
      FILE *file;
      int size;
+     int leaf_function;
 {
   if (leaf_function)
     frame_base_name = "%sp+80";
   else
     frame_base_name = "%fp";
 
+  /* Need to use actual_fsize, since we are also allocating
+     space for our callee (and our own register save area).  */
   actual_fsize = compute_frame_size (size, leaf_function);
 
   fprintf (file, "\t!#PROLOGUE# 0\n");
-  if (actual_fsize == 0) /* do nothing.  */ ;
-  else if (actual_fsize < 4096)
+  if (actual_fsize == 0)
+    /* do nothing.  */ ;
+  else if (actual_fsize <= 4096)
     {
       if (! leaf_function)
 	fprintf (file, "\tsave %%sp,-%d,%%sp\n", actual_fsize);
       else
 	fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize);
     }
-  else if (! leaf_function)
+  else if (actual_fsize <= 8192)
     {
-      /* Need to use actual_fsize, since we are also allocating space for
-	 our callee (and our own register save area).  */
-      fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n",
-	       -actual_fsize, -actual_fsize);
-      fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
+      /* For frames in the range 4097..8192, we can use just two insns.  */
+      if (! leaf_function)
+	{
+	  fprintf (file, "\tsave %%sp,-4096,%%sp\n");
+	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	}
+      else
+	{
+	  fprintf (file, "\tadd %%sp,-4096,%%sp\n");
+	  fprintf (file, "\tadd %%sp,-%d,%%sp\n", actual_fsize - 4096);
+	}
     }
   else
     {
-      /* The rest of the support for this case hasn't been implemented,
-	 but FRAME_POINTER_REQUIRED is supposed to prevent it from arising,
-	 by checking the frame size.  */
-      abort ();
-
-      /* Put pointer to parameters into %g4, and allocate
-	 frame space using result computed into %g1.  actual_fsize
-	 used instead of apparent_fsize for reasons stated above.  */
-      fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n",
-	       -actual_fsize, -actual_fsize);
-      fprintf (file, "\tadd %%sp,64,%%g4\n\tadd %%sp,%%g1,%%sp\n");
+      if (! leaf_function)
+	{
+	  fprintf (file, "\tsethi %%hi(-%d),%%g1\n", actual_fsize);
+	  if ((actual_fsize & 0x3ff) != 0)
+	    fprintf (file, "\tor %%g1,%%lo(-%d),%%g1\n", actual_fsize);
+	  fprintf (file, "\tsave %%sp,%%g1,%%sp\n");
+	}
+      else
+	{
+	  fprintf (file, "\tsethi %%hi(-%d),%%g1\n", actual_fsize);
+	  if ((actual_fsize & 0x3ff) != 0)
+	    fprintf (file, "\tor %%g1,%%lo(-%d),%%g1\n", actual_fsize);
+	  fprintf (file, "\tadd %%sp,%%g1,%%sp\n");
+	}
     }
 
   /* If doing anything with PIC, do it now.  */
@@ -1921,6 +1934,8 @@ output_function_prologue (file, size, leaf_function)
 	leaf_label = gen_label_rtx ();
     }
 }
+
+/* Output code for the function epilogue.  */
 
 void
 output_function_epilogue (file, size, leaf_function)
@@ -1982,24 +1997,30 @@ output_function_epilogue (file, size, leaf_function)
 	  else
 	    fprintf (file, "\t%s\n\trestore\n", ret);
 	}
-      else if (actual_fsize < 4096)
+      /* All of the following cases are for leaf functions.  */
+      else if (current_function_epilogue_delay_list)
 	{
-	  if (current_function_epilogue_delay_list)
-	    {
-	      fprintf (file, "\t%s\n", ret);
-	      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-			       file, 1, 0, 1);
-	    }
-	  else
-	    fprintf (file, "\t%s\n\tadd %%sp,%d,%%sp\n", ret, actual_fsize);
-	}
-      else
-	{
-	  if (current_function_epilogue_delay_list)
+	  /* eligible_for_epilogue_delay_slot ensures that if this is a
+	     leaf function, then we will only have insn in the delay slot
+	     if the frame size is zero, thus no adjust for the stack is
+	     needed here.  */
+	  if (actual_fsize != 0)
 	    abort ();
-	  fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
-		   actual_fsize, actual_fsize, ret);
+	  fprintf (file, "\t%s\n", ret);
+	  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
+			   file, 1, 0, 1);
 	}
+      else if (actual_fsize <= 4096)
+	fprintf (file, "\t%s\n\tsub %%sp,-%d,%%sp\n", ret, actual_fsize);
+      else if (actual_fsize <= 8192)
+	fprintf (file, "\tsub %%sp,-4096,%%sp\n\t%s\n\tsub %%sp,-%d,%%sp\n",
+		 ret, actual_fsize - 4096);
+      else if ((actual_fsize & 0x3ff) == 0)
+	fprintf (file, "\tsethi %%hi(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
+		 actual_fsize, ret);
+      else		 
+	fprintf (file, "\tsethi %%hi(%d),%%g1\n\tor %%g1,%%lo(%d),%%g1\n\t%s\n\tadd %%sp,%%g1,%%sp\n",
+		 actual_fsize, actual_fsize, ret);
       target_flags |= old_target_epilogue;
     }
 }
@@ -2146,20 +2167,43 @@ output_return (operands)
     }
   else if (leaf_function)
     {
+      /* If we didn't allocate a frame pointer for the current function,
+	 the stack pointer might have been adjusted.  Output code to
+	 restore it now.  */
+
       operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize);
-      if (actual_fsize < 4096)
+
+      /* Use sub of negated value in first two cases instead of add to
+	 allow actual_fsize == 4096.  */
+
+      if (actual_fsize <= 4096)
 	{
 	  if (current_function_returns_struct)
-	    return "jmp %%o7+12\n\tadd %%sp,%0,%%sp";
+	    return "jmp %%o7+12\n\tsub %%sp,-%0,%%sp";
 	  else
-	    return "retl\n\tadd %%sp,%0,%%sp";
+	    return "retl\n\tsub %%sp,-%0,%%sp";
+	}
+      else if (actual_fsize <= 8192)
+	{
+	  operands[0] = gen_rtx (CONST_INT, VOIDmode, actual_fsize - 4096);
+	  if (current_function_returns_struct)
+	    return "sub %%sp,-4096,%%sp\n\tjmp %%o7+12\n\tsub %%sp,-%0,%%sp";
+	  else
+	    return "sub %%sp,-4096,%%sp\n\tretl\n\tsub %%sp,-%0,%%sp";
+	}
+      else if (current_function_returns_struct)
+	{
+	  if ((actual_fsize & 0x3ff) != 0)
+	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
+	  else
+	    return "sethi %%hi(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
 	}
       else
 	{
-	  if (current_function_returns_struct)
-	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tjmp %%o7+12\n\tadd %%sp,%%g1,%%sp";
-	  else
+	  if ((actual_fsize & 0x3ff) != 0)
 	    return "sethi %%hi(%a0),%%g1\n\tor %%g1,%%lo(%a0),%%g1\n\tretl\n\tadd %%sp,%%g1,%%sp";
+	  else
+	    return "sethi %%hi(%a0),%%g1\n\tretl\n\tadd %%sp,%%g1,%%sp";
 	}
     }
   else

@@ -116,7 +116,6 @@ int simplejump_p ();
 
 extern rtx gen_jump ();
 
-void squeeze_notes ();
 static void mark_jump_label ();
 void delete_jump ();
 static void delete_from_jump_chain ();
@@ -1429,8 +1428,8 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 			/* Don't move NOTEs for blocks or loops; shift them
 			   outside the ranges, where they'll stay put.  */
-			squeeze_notes (range1beg, range1end);
-			squeeze_notes (range2beg, range2end);
+			range1beg = squeeze_notes (range1beg, range1end);
+			range2beg = squeeze_notes (range2beg, range2end);
 
 			/* Get current surrounds of the 2 ranges.  */
 			range1before = PREV_INSN (range1beg);
@@ -1824,10 +1823,12 @@ duplicate_loop_exit_test (loop_start)
 }
 
 /* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, and
-   loop-end notes between START and END out before START.  Assume neither
-   START nor END is such a note.  */
+   loop-end notes between START and END out before START.  Assume that
+   END is not such a note.  START may be such a note.  Returns the value
+   of the new starting insn, which may be different if the original start
+   was such a note.  */
 
-void
+rtx
 squeeze_notes (start, end)
      rtx start, end;
 {
@@ -1845,15 +1846,22 @@ squeeze_notes (start, end)
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP))
 	{
-	  rtx prev = PREV_INSN (insn);
-	  PREV_INSN (insn) = PREV_INSN (start);
-	  NEXT_INSN (insn) = start;
-	  NEXT_INSN (PREV_INSN (insn)) = insn;
-	  PREV_INSN (NEXT_INSN (insn)) = insn;
-	  NEXT_INSN (prev) = next;
-	  PREV_INSN (next) = prev;
+	  if (insn == start)
+	    start = next;
+	  else
+	    {
+	      rtx prev = PREV_INSN (insn);
+	      PREV_INSN (insn) = PREV_INSN (start);
+	      NEXT_INSN (insn) = start;
+	      NEXT_INSN (PREV_INSN (insn)) = insn;
+	      PREV_INSN (NEXT_INSN (insn)) = insn;
+	      NEXT_INSN (prev) = next;
+	      PREV_INSN (next) = prev;
+	    }
 	}
     }
+
+  return start;
 }
 
 /* Compare the instructions before insn E1 with those before E2

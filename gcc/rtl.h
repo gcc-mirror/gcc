@@ -617,6 +617,7 @@ extern enum rtx_code unsigned_condition ();
 extern enum rtx_code signed_condition ();
 extern rtx plus_constant (), plus_constant_for_output ();
 extern rtx find_equiv_reg ();
+extern rtx squeeze_notes ();
 extern rtx delete_insn ();
 extern void delete_jump ();
 extern rtx get_label_before ();

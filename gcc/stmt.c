@@ -3752,7 +3752,8 @@ expand_end_case (orig_index)
 #endif
 	}
 
-      reorder_insns (NEXT_INSN (before_case), get_last_insn (),
+      before_case = squeeze_notes (NEXT_INSN (before_case), get_last_insn ());
+      reorder_insns (before_case, get_last_insn (),
 		     thiscase->data.case_stmt.start);
     }
   if (thiscase->exit_label)
