@@ -271,13 +271,38 @@ void
 finish_file ()
 {
   unsigned int i;
+  bool reconsider;
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
-    /* Don't output the same function twice.  We may run into such
-       situations when an extern inline function is later given a
-       non-extern-inline definition.  */
-    if (! TREE_ASM_WRITTEN (VARRAY_TREE (deferred_fns, i)))
-      c_expand_deferred_function (VARRAY_TREE (deferred_fns, i));
+    {
+      tree decl = VARRAY_TREE (deferred_fns, i);
+
+      if (! TREE_ASM_WRITTEN (decl) && TREE_PUBLIC (decl))
+	{
+	  c_expand_deferred_function (decl);
+	  VARRAY_TREE (deferred_fns, i) = NULL;
+	}
+    }
+
+  do
+    {
+      reconsider = false;
+      for (i = 0; i < VARRAY_ACTIVE_SIZE (deferred_fns); i++)
+	{
+	  tree decl = VARRAY_TREE (deferred_fns, i);
+
+	  if (decl
+	      && ! TREE_ASM_WRITTEN (decl)
+	      && (flag_keep_inline_functions
+		  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	    {
+	      c_expand_deferred_function (decl);
+	      VARRAY_TREE (deferred_fns, i) = NULL;
+	      reconsider = true;
+	    }
+	}
+    } while (reconsider);
+
   VARRAY_FREE (deferred_fns);
 
 #ifndef ASM_OUTPUT_CONSTRUCTOR
