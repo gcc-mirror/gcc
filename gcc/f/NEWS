@@ -57,6 +57,14 @@ In `egcs' 1.2:
      recognized by `g77' as if they ended in `.for' and `.fpp',
      respectively.
 
+   * `g77' now warns about a reference to an intrinsic that has an
+     interface that is not Year 2000 (Y2K) compliant.  Also, the
+     `libg2c' has been changed to increase the likelihood of catching
+     references to the implementations of these intrinsics using the
+     `EXTERNAL' mechanism (which would avoid the new warnings).
+
+     *Note Year 2000 (Y2K) Problems::, for more information.
+
    * `g77' now warns about a reference to a function when the
      corresponding *subsequent* function program unit disagrees with
      the reference concerning the type of the function.
