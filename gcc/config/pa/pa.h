@@ -1891,27 +1891,24 @@ readonly_data ()							\
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.blockz %d\n", (SIZE))
 
-/* This says how to output an assembler line
-   to define a global common symbol.  */
+/* This says how to output an assembler line to define a global common symbol
+   with size SIZE (in bytes) and alignment ALIGN (in bits).  */
 
-/* Supposedly the assembler rejects the command if there is no tab!  */
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGNED)  		\
+{ bss_section ();							\
+  assemble_name ((FILE), (NAME));					\
+  fputs ("\t.comm ", (FILE));						\
+  fprintf ((FILE), "%d\n", MAX ((SIZE), ((ALIGNED) / BITS_PER_UNIT)));}
 
+/* This says how to output an assembler line to define a local common symbol
+   with size SIZE (in bytes) and alignment ALIGN (in bits).  */
 
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-{ bss_section ();					\
-  assemble_name ((FILE), (NAME));			\
-  fputs ("\t.comm ", (FILE));				\
-  fprintf ((FILE), "%d\n", (ROUNDED));}
-
-/* This says how to output an assembler line
-   to define a local common symbol.  */
-
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-{ bss_section ();						\
-  fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8);	\
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGNED)		\
+{ bss_section ();							\
+  fprintf ((FILE), "\t.align %d\n", ((ALIGNED) / BITS_PER_UNIT));	\
   assemble_name ((FILE), (NAME));				\
-  fprintf ((FILE), "\n\t.block %d\n", (ROUNDED));}
-
+  fprintf ((FILE), "\n\t.block %d\n", (SIZE));}
+  
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */
