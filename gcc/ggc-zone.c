@@ -1386,9 +1386,6 @@ ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 	 fatal_error ("can't write PCH file: %m");
        d->written += size;
      }
-  if (d->written == d->d.total
-      && fseek (f, ROUND_UP_VALUE (d->d.total, G.pagesize), SEEK_CUR) != 0)
-    fatal_error ("can't write PCH file: %m");
 }
 
 void
