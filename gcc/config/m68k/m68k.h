@@ -1020,69 +1020,102 @@ while(0)
 #define FUNCTION_BLOCK_PROFILER_EXIT(FILE)		\
   asm_fprintf (FILE, "\tjsr %U__bb_trace_ret\n");
 
-/* Save all registers which may be clobbered by a function call. */
+/* Save all registers which may be clobbered by a function call.
+   MACHINE_STATE_SAVE and MACHINE_STATE_RESTORE are target-code macros,
+   used in libgcc2.c.  They may not refer to TARGET_* macros !!! */
+#if defined (__mc68010__) || defined(mc68010) \
+	|| defined(__mc68020__) || defined(mc68020) \
+	|| defined(__mc68030__) || defined(mc68030) \
+	|| defined(__mc68040__) || defined(mc68040) \
+	|| defined(__mc68332__) || defined(mc68332)
+#define MACHINE_STATE_m68010_up
+#endif
 
 #ifdef MOTOROLA
+#if defined(__mcf5200__)
 #define MACHINE_STATE_SAVE(id)		\
-  if (TARGET_5200)			\
     {					\
       asm ("sub.l 20,%sp");		\
       asm ("movm.l &0x0303,4(%sp)");	\
       asm ("move.w %ccr,%d0");		\
       asm ("movm.l &0x0001,(%sp)");	\
-    }					\
-  else					\
+    }
+#else /* !__mcf5200__ */
+#if defined(MACHINE_STATE_m68010_up)
+#define MACHINE_STATE_SAVE(id)		\
     {					\
       asm ("move.w %ccr,-(%sp)");	\
       asm ("movm.l &0xc0c0,-(%sp)");	\
     }
-#else
+#else /* !MACHINE_STATE_m68010_up */
 #define MACHINE_STATE_SAVE(id)		\
-  if (TARGET_5200)			\
+    {					\
+      asm ("move.w %sr,-(%sp)");	\
+      asm ("movm.l &0xc0c0,-(%sp)");	\
+    }
+#endif /* MACHINE_STATE_m68010_up */
+#endif /* __mcf5200__ */
+#else /* !MOTOROLA */
+#if defined(__mcf5200__)
+#define MACHINE_STATE_SAVE(id)		\
     {					\
       asm ("subl 20,sp");		\
       asm ("movml d0/d1/a0/a1,sp@(4)");	\
       asm ("movew cc,d0");		\
       asm ("movml d0,sp@");		\
-    }					\
-  else					\
+    }
+#else /* !__mcf5200__ */
+#if defined(MACHINE_STATE_m68010_up)
+#define MACHINE_STATE_SAVE(id)		\
     {					\
       asm ("movew cc,sp@-");		\
       asm ("moveml d0/d1/a0/a1,sp@-");	\
     }
-#endif
+#else /* !MACHINE_STATE_m68010_up */
+#define MACHINE_STATE_SAVE(id)		\
+    {					\
+      asm ("movew sr,sp@-");		\
+      asm ("moveml d0/d1/a0/a1,sp@-");	\
+    }
+#endif /* MACHINE_STATE_m68010_up */
+#endif /* __mcf5200__ */
+#endif /* MOTOROLA */
 
 /* Restore all registers saved by MACHINE_STATE_SAVE. */
 
 #ifdef MOTOROLA
+#if defined(__mcf5200__)
 #define MACHINE_STATE_RESTORE(id)	\
-  if (TARGET_5200)			\
     {					\
       asm ("movm.l (%sp),&0x0001");	\
       asm ("move.w %d0,%ccr");		\
       asm ("movm.l 4(%sp),&0x0303");	\
       asm ("add.l 20,%sp");		\
-    }					\
-  else					\
+    }
+#else /* !__mcf5200__ */
+#define MACHINE_STATE_RESTORE(id)	\
     {					\
       asm ("movm.l (%sp)+,&0x0303");	\
       asm ("move.w (%sp)+,%ccr");	\
     }
-#else
+#endif /* __mcf5200__ */
+#else /* !MOTOROLA */
+#if defined(__mcf5200__)
 #define MACHINE_STATE_RESTORE(id)	\
-  if (TARGET_5200)			\
     {					\
       asm ("movml sp@,d0");		\
       asm ("movew d0,cc");		\
       asm ("movml sp@(4),d0/d1/a0/a1");	\
       asm ("addl 20,sp");		\
-    }					\
-  else					\
+    }
+#else /* !__mcf5200__ */
+#define MACHINE_STATE_RESTORE(id)	\
     {					\
       asm ("moveml sp@+,d0/d1/a0/a1");	\
       asm ("movew sp@+,cc");		\
     }
-#endif
+#endif /* __mcf5200__ */
+#endif /* MOTOROLA */
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
