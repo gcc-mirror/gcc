@@ -1,3 +1,16 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES): Make sure this is undefined.
+	(CPP_SPEC): Place -D__mips=1 at the beginning of the spec,
+	since it is no longer in CPP_PREDEFINES.  Don't -U__MIPSEL__
+	or -U__MIPSEB__ before defining one or the other.  Instead,
+	use %(subtarget_endian_default) if neither -EB nor -EL are
+	specified.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	(SUBTARGET_CPP_SPEC): Remove __LONG64 handling.  Use
+	%(netbsd_cpp_spec).
+
 2002-05-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (Patterns): Note pattern condition pitfall
