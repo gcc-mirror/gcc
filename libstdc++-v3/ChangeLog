@@ -1,3 +1,10 @@
+2003-10-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc: Remove some unnecessary
+	includes.
+	* config/locale/generic/c_locale.cc: Include <cerrno> here.
+	* config/locale/gnu/c_locale.cc: Likewise.
+
 2003-10-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc
