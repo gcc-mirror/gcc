@@ -1,3 +1,8 @@
+Tue Mar 10 07:32:36 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl2.c (import_export_decl): Mark tinfo functions for
+	cv-qualified versions of class types as DECL_NOT_REALLY_EXTERN.
+
 Fri Mar  6 23:27:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* method.c: Fix typo.

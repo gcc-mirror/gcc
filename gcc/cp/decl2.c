@@ -2702,9 +2702,16 @@ import_export_decl (decl)
       if (IS_AGGR_TYPE (ctype) && CLASSTYPE_INTERFACE_KNOWN (ctype)
 	  && TYPE_VIRTUAL_P (ctype))
 	{
+	  /* If the type is a cv-qualified variant of a type, then we
+	     must emit the tinfo function in this translation unit
+	     since it will not be emitted when the vtable for the type
+	     is output (which is when the unqualified version is
+	     generated).  */
 	  DECL_NOT_REALLY_EXTERN (decl)
-	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+	    = TYPE_READONLY (ctype) 
+	    || TYPE_VOLATILE (ctype)
+	    || ! (CLASSTYPE_INTERFACE_ONLY (ctype)
+		  || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 
 	  /* For WIN32 we also want to put explicit instantiations in
 	     linkonce sections.  */
