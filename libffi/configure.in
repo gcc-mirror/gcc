@@ -27,6 +27,7 @@ i*86-*-beos*) TARGET=X86; TARGETDIR=x86;;
 sparc-sun-4*) TARGET=SPARC; TARGETDIR=sparc;;
 sparc-sun-*) TARGET=SPARC; TARGETDIR=sparc;;
 alpha*-*-linux* | alpha*-*-osf*) TARGET=ALPHA; TARGETDIR=alpha;;
+ia64*-*-*) TARGET=IA64; TARGETDIR=ia64;;
 m68k-*-linux*) TARGET=M68K; TARGETDIR=m68k;;
 powerpc-*-linux* | powerpc-*-sysv*) TARGET=POWERPC; TARGETDIR=powerpc;;
 powerpc-*-beos*) TARGET=POWERPC; TARGETDIR=powerpc;;
@@ -42,6 +43,7 @@ AM_CONDITIONAL(MIPS_SGI, test ${TARGET}${ac_cv_prog_gcc} = MIPSno)
 AM_CONDITIONAL(SPARC, test x$TARGET = xSPARC)
 AM_CONDITIONAL(X86, test x$TARGET = xX86)
 AM_CONDITIONAL(ALPHA, test x$TARGET = xALPHA)
+AM_CONDITIONAL(IA64, test x$TARGET = xIA64)
 AM_CONDITIONAL(M68K, test x$TARGET = xM68K)
 AM_CONDITIONAL(POWERPC, test x$TARGET = xPOWERPC)
 AM_CONDITIONAL(ARM, test x$TARGET = xARM)

@@ -42,13 +42,15 @@ TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
 TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
+TARGET_SRC_IA64 = src/alpha/ffi.c src/alpha/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
 TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S
 TARGET_SRC_ARM =  src/arm/sysv.S src/arm/ffi.c
 
 ##libffi_la_SOURCES = src/debug.c src/prep_cif.c src/types.c $(TARGET_SRC_@TARGET@)
 ## Work around automake deficiency
-libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c src/raw_api.c 
+libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
+		src/raw_api.c src/java_raw_api.c
 if MIPS_GCC
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 endif
@@ -63,6 +65,9 @@ libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
 endif
 if ALPHA
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
+endif
+if IA64
+libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
 endif
 if M68K
 libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)

@@ -196,6 +196,16 @@ static test_structure_5 struct5(test_structure_5 ts1, test_structure_5 ts2)
   return ts1;
 }
 
+/* Take an int and a float argument, together with int userdata, and 	*/
+/* return the sum.							*/
+static void closure_test_fn(ffi_cif* cif,void* resp,void** args, void* userdata)
+{
+    *(int*)resp =
+	 *(int *)args[0] + (int)(*(float *)args[1]) + (int)(long)userdata;
+}
+
+typedef int (*closure_test_type)(int, float);
+
 int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 {
   ffi_cif cif;
@@ -214,7 +224,7 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
   signed int si1;
   signed int si2;
 
-#if defined(ALPHA) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
+#if defined(ALPHA) || defined(IA64) || (defined(MIPS) && (_MIPS_SIM == _ABIN32))
   long long rint;
 #else
   int rint;
@@ -690,6 +700,27 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 
     free (ts5_result);
   }
+
+# if FFI_CLOSURES
+  /* A simple closure test */
+    {
+      ffi_closure cl;
+      ffi_type * cl_arg_types[3];
+
+      cl_arg_types[0] = &ffi_type_sint;
+      cl_arg_types[1] = &ffi_type_float;
+      cl_arg_types[2] = NULL;
+      
+      /* Initialize the cif */
+      CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 2, 
+	    	         &ffi_type_sint, cl_arg_types) == FFI_OK);
+
+      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn,
+			     (void *) 3 /* userdata */)
+	    == FFI_OK);
+      CHECK((*((closure_test_type)(&cl)))(1, 2.0) == 6);
+    }
+# endif
 
   /* If we arrived here, all is good */
   (void) puts("\nLooks good. No surprises.\n");
