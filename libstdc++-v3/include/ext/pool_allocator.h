@@ -47,6 +47,7 @@
 #ifndef _POOL_ALLOCATOR_H
 #define _POOL_ALLOCATOR_H 1
 
+#include <bits/c++config.h>
 #include <new>
 #include <bits/functexcept.h>
 #include <bits/stl_threads.h>

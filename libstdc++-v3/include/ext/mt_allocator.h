@@ -35,6 +35,7 @@
 #ifndef _MT_ALLOCATOR_H
 #define _MT_ALLOCATOR_H 1
 
+#include <bits/c++config.h>
 #include <new>
 #include <memory>
 #include <cstdlib>
