@@ -1,3 +1,9 @@
+2004-10-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.ac (libtool_VERSION): To 6:3:0.
+	* configure: Regnerate.
+	* testsuite/testsuite_abi.cc (check_version): Add 3.4.3.
+
 2004-10-03  Roger Sayle  <roger@eyesopen.com>
 
 	* config/locale/generic/c_locale.cc (__convert_to_v): Use
