@@ -837,13 +837,7 @@ scan_loop (loop_start, end, unroll_p, bct_p)
 	     We don't know its life-span, so we can't compute the benefit.  */
 	  if (REGNO (SET_DEST (set)) >= max_reg_before_loop)
 	    ;
-	  else if (/* The set is a user-variable or it is used in
-		      the exit test (this can cause the variable to be
-		      used before it is set just like a
-		      user-variable)...  */
-		   (REG_USERVAR_P (SET_DEST (set))
-		    || REG_LOOP_TEST_P (SET_DEST (set)))
-		   /* And the set is not guaranteed to be executed one
+	  else if (/* The set is not guaranteed to be executed one
 		      the loop starts, or the value before the set is
 		      needed before the set occurs... */
 		   && (maybe_never
@@ -854,14 +848,11 @@ scan_loop (loop_start, end, unroll_p, bct_p)
 		      something after this point in the loop might
 		      depend on its value before the set).  */
 		   && !reg_in_basic_block_p (p, SET_DEST (set)))
-	    /* It is unsafe to move the set.  The fact that these
-	       three conditions are considered in conjunction means
-	       that we are assuming various conditions, such as:
+	    /* It is unsafe to move the set.  
 
-	         o It's OK to move a set of a variable which was not
-	           created by the user and is not used in an exit test
-	           even if that point in the set would not be reached
-		   during execution of the loop.  */
+	       This code used to consider it OK to move a set of a variable
+	       which was not created by the user and not used in an exit test.
+	       That behavior is incorrect and was removed.  */
 	    ;
 	  else if ((tem = invariant_p (src))
 		   && (dependencies == 0

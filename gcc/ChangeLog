@@ -1,3 +1,8 @@
+Mon Oct 19 11:40:56 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (scan_loop): Be more selective about what invariants are
+	moved out of a loop.
+
 Mon Oct 19 10:46:58 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
