@@ -108,12 +108,6 @@ extern int target_flags;
 
 #define DEFAULT_SIGNED_CHAR 1
 
-/* #define DEFAULT_SHORT_ENUMS	1
-   This was the default for the IP2k but gcc has a bug (as of 17th May
-   2001) in the way that library calls to the memory checker functions
-   are issues that screws things up if an enum is not equivalent to
-   an int.  */
-
 #define SIZE_TYPE "unsigned int"
 
 #define PTRDIFF_TYPE "int"
