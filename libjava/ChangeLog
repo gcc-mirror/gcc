@@ -1,5 +1,8 @@
 2001-05-23  Tom Tromey  <tromey@redhat.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (AM_CXXFLAGS): Remove -fvtable-thunks.
+
 	Revert patch of 2001-05-21:
 	* Makefile.am (libgcj_la_DEPENDENCIES): Removed nat_files.
 	(libgcj_la_LIBADD): Likewise.
