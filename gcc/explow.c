@@ -865,7 +865,11 @@ allocate_dynamic_stack_space (size, target, known_align)
 
 #ifdef MUST_ALIGN
 
+#if !defined (STACK_DYNAMIC_OFFSET) && !defined (STACK_POINTER_OFFSET)
+  /* If we have to round the address up regardless of known_align,
+     make extra space regardless, also.  */
   if (known_align % BIGGEST_ALIGNMENT != 0)
+#endif
     {
       if (GET_CODE (size) == CONST_INT)
 	size = GEN_INT (INTVAL (size)
@@ -875,6 +879,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
+
 #endif
 
 #ifdef SETJMP_VIA_SAVE_AREA
@@ -952,7 +957,11 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif
 
 #ifdef MUST_ALIGN
+  /* If virtual_stack_dynamic_rtx might not share the alignment of
+     the stack pointer register, we must always realign the stack address.  */
+#if !defined (STACK_DYNAMIC_OFFSET) && !defined (STACK_POINTER_OFFSET)
   if (known_align % BIGGEST_ALIGNMENT != 0)
+#endif
     {
       target = expand_divmod (0, CEIL_DIV_EXPR, Pmode, target,
 			      GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT),
