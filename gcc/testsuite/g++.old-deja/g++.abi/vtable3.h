@@ -2,7 +2,7 @@
 // Contributed by Nathan Sidwell 4 February 2001 <nathan@codesourcery.com>
 
 // Check constructor vtables work. This is included from numerous test
-// files, which set the #defines necessary to specify the heirarchy.
+// files, which set the #defines necessary to specify the hierarchy.
 
 #include <typeinfo>
 #include <stdio.h>

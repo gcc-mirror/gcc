@@ -2,7 +2,7 @@
 
 /* { dg-do compile } */
 
-/* Test we output a warning for concatenation of artifical strings.
+/* Test we output a warning for concatenation of artificial strings.
 
    Neil Booth, 10 Dec 2001.  */
 

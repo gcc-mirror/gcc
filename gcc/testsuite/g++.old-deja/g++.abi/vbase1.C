@@ -2,7 +2,7 @@
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 16 Jan 2001 <nathan@codesourcery.com>
 
-// Bug 1611. Under the new ABI, the vtable can be clobered during dtoring our
+// Bug 1611. Under the new ABI, the vtable can be clobbered during dtoring our
 // primary vbase. We mustn't use the vtable after that to locate our vbases.
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100

@@ -19,7 +19,7 @@ long *c;
 */
 #define ASSERT_NPC(n)	(b = *(1 ? a : (n)))
 /* Assertion that n is not a null pointer constant: so the conditional
-   expresions has type 'void *' instead of 'int *'.
+   expressions has type 'void *' instead of 'int *'.
 */
 #define ASSERT_NOT_NPC(n)	(c = (1 ? a : (n)))
 
