@@ -1578,8 +1578,11 @@ gen-protos: gen-protos.o scan.o
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
 	  gen-protos.o scan.o
 
-gen-protos.o: gen-protos.c scan.h
-scan.o: scan.c scan.h
+gen-protos.o: gen-protos.c scan.h hconfig.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
+
+scan.o: scan.c scan.h hconfig.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
@@ -1592,8 +1595,11 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o fix-header \
 	  fix-header.o scan-decls.o scan.o $(HOST_OBSTACK)
 
-fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h
-scan-decls.o: scan-decls.c scan.h
+fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h hconfig.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
+
+scan-decls.o: scan-decls.c scan.h hconfig.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan-decls.c
 
 # stmp-fixproto depends on this, not on fix-header directly.
 # The idea is to make sure fix-header gets built,
