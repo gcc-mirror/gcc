@@ -1,3 +1,12 @@
+Wed Aug 19 21:33:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.c (rs6000_output_load_toc_table): Use ld for 64-bit.
+	(output_toc): Use single TOC slot or llong minimal-toc for DFmode
+	and DImode 64-bit.  Use llong for minimal-toc SFmode and
+	SYMBOL_REF / LABEL_REF 64-bit.
+	(output_function_profiler): Use llong for profiler label and ld to
+	load 64-bit label address.
+
 Tue Aug 18 23:48:30 1998  Richard Henderson <rth@cygnus.com>
 
 	* c-common.c (decl_attributes): Issue an error if the argument
