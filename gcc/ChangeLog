@@ -1,3 +1,9 @@
+2000-09-07  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/lib1funcs.asm (__divsi3): Use .s1 for frcpa.
+	(__modsi3, __umodsi3): Likewise.
+	(__udivsi3): Likewise.  Normalize the TFmode values.
+
 2000-09-07  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/sol-c0.c (_start): Declare `termfunc' parameter
