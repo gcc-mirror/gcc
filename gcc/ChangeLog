@@ -1,3 +1,9 @@
+2002-03-13  Jason Merrill  <jason@redhat.com>
+
+	* gthr-posix.h (__gthread_active_p): Move __gthread_active_ptr
+	into the function and constify it.
+	* gthr-dce.h, gthr-solaris.h: Likewise.
+
 2002-03-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_print_operand): Avoid
