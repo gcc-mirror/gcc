@@ -3246,7 +3246,7 @@ sparc_frw_save_restore (file, word_op, doubleword_op)
 	  if ((mask & (1L << regno)) != 0
 	      || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed))
 	    {
-	      if ((regno & 0x1) == 0 && ((mask & (1L << regno+1)) != 0))
+	      if ((regno & 0x1) == 0 && ((mask & (1L << (regno+1))) != 0))
 		{
 		  if (gp_offset % 8 != 0)
 		    gp_offset += UNITS_PER_WORD;
