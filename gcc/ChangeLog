@@ -1,3 +1,10 @@
+2003-05-17  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.c (m68k_output_function_prologue): Use
+	HOST_WIDE_INT_PRINT_DEC for fprintf and %wd for asm_fprintf when
+	formatting a HOST_WIDE_INT.
+	(m68k_output_function_epilogue): Likewise.
+
 2003-05-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* doc/install.texi: Remove information about desupported targets.
