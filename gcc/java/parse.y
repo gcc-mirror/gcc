@@ -10793,7 +10793,11 @@ patch_invoke (patch, method, args)
      is NULL.  */
   if (check != NULL_TREE)
     {
-      patch = build (COMPOUND_EXPR, TREE_TYPE (patch), check, patch);
+      /* We have to call force_evaluation_order now because creating a
+ 	 COMPOUND_EXPR wraps the arg list in a way that makes it
+ 	 unrecognizable by force_evaluation_order later.  Yuk.  */
+      patch = build (COMPOUND_EXPR, TREE_TYPE (patch), check, 
+ 		     force_evaluation_order (patch));
       TREE_SIDE_EFFECTS (patch) = 1;
     }
 
