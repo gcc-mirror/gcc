@@ -1,3 +1,8 @@
+2005-01-18  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* system-linux-ppc.ads: Set ZCX_By_Default and GCC_ZCX_Support
+	to True.
+
 2005-01-18  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (LIBGNAT_TARGET_PAIRS, TOOLS_TARGET_PAIRS, MISCLIB,
