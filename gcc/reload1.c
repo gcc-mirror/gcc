@@ -7085,7 +7085,35 @@ emit_reload_insns (insn)
 			  SET_HARD_REG_BIT (reg_reloaded_died, src);
 		      }
 		    if (reload_spill_index[j] >= 0)
-		      new_spill_reg_store[reload_spill_index[j]] = p;
+		      {
+			int s = reload_secondary_out_reload[j];
+			rtx set = single_set (p);
+			/* If this reload copies only to the secondary reload
+			   register, the secondary reload does the actual
+			   store.  */
+			if (s >= 0 && set == NULL_RTX)
+			  ; /* We can't tell what function the secondary reload
+			       has and where the actual store to the pseudo is
+			       made; leave new_spill_reg_store alone.  */
+			else if (s >= 0
+			    && SET_SRC (set) == reload_reg_rtx[j]
+			    && SET_DEST (set) == reload_reg_rtx[s])
+			  {
+			    /* Usually the next instruction will be the
+			       secondary reload insn;  if we can confirm
+			       that it is, setting new_spill_reg_store to
+			       that insn will allow an extra optimization.  */
+			    rtx s_reg = reload_reg_rtx[s];
+			    rtx next = NEXT_INSN (p);
+			    reload_out[s] = reload_out[j];
+			    set = single_set (next);
+			    if (set && SET_SRC (set) == s_reg
+				&& ! new_spill_reg_store[REGNO (s_reg)])
+			      new_spill_reg_store[REGNO (s_reg)] = next;
+			  }
+			else
+			  new_spill_reg_store[reload_spill_index[j]] = p;
+		      }
 		  }
 	      }
 
