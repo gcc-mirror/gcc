@@ -1308,11 +1308,9 @@ try_crossjump_to_edge (mode, e1, e2)
 {
   int nmatch;
   basic_block src1 = e1->src, src2 = e2->src;
-  basic_block redirect_to;
+  basic_block redirect_to, redirect_from, to_remove;
   rtx newpos1, newpos2;
   edge s;
-  rtx last;
-  rtx label;
 
   /* Search backward through forwarder blocks.  We don't need to worry
      about multiple entry or chained forwarders, as they will be optimized
@@ -1440,28 +1438,14 @@ try_crossjump_to_edge (mode, e1, e2)
 
   if (GET_CODE (newpos1) == NOTE)
     newpos1 = NEXT_INSN (newpos1);
-  last = src1->end;
 
-  /* Emit the jump insn.  */
-  label = block_label (redirect_to);
-  emit_jump_insn_after (gen_jump (label), src1->end);
-  JUMP_LABEL (src1->end) = label;
-  LABEL_NUSES (label)++;
+  redirect_from = split_block (src1, PREV_INSN (newpos1))->src;
+  to_remove = redirect_from->succ->dest;
 
-  /* Delete the now unreachable instructions.  */
-  delete_insn_chain (newpos1, last);
+  redirect_edge_and_branch_force (redirect_from->succ, redirect_to);
+  flow_delete_block (to_remove);
 
-  /* Make sure there is a barrier after the new jump.  */
-  last = next_nonnote_insn (src1->end);
-  if (!last || GET_CODE (last) != BARRIER)
-    emit_barrier_after (src1->end);
-
-  /* Update CFG.  */
-  while (src1->succ)
-    remove_edge (src1->succ);
-  make_single_succ_edge (src1, redirect_to, 0);
-
-  update_forwarder_flag (src1);
+  update_forwarder_flag (redirect_from);
 
   return true;
 }
