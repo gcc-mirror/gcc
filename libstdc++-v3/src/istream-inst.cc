@@ -67,4 +67,4 @@ namespace std
   template wistream& operator>>(wistream&, _Setprecision);
   template wistream& operator>>(wistream&, _Setw);
 #endif
-} //std
+} // namespace std

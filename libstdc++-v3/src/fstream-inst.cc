@@ -59,4 +59,4 @@ namespace std
 #ifdef _GLIBCPP_USE_WCHAR_T
   template class basic_fstream<wchar_t>;
 #endif
-} //std
+} // namespace std

@@ -1,5 +1,23 @@
 2002-07-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/backward/strstream: Remove namespace std. Transfer to...
+	* include/backward/strstream.h: ...here. Qualify std names.
+	* src/strstream.cc: Remove namespace std.
+	* include/Makefile.am (backward_headers): Remove strstream.h.
+	* include/Makefile.in: Regenerate.
+	* config/linker-map.gnu: Export strstream bits.
+	
+	* src/fstream-inst.cc: Tweak.
+	* src/io-inst.cc: Same.
+	* src/istream-inst.cc: Same.
+	* src/misc-inst.cc: Same.
+	* src/ostream-inst.cc: Same.
+	* src/sstream-inst.cc: Same.
+	* src/valarray-inst.cc: Same.
+	* src/misc-inst.cc: Remove unused instantiations.
+
+2002-07-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* configure.in (libtool_VERSION): Bump to 5:0:0.
 	* configure: Regenerate.
 	
