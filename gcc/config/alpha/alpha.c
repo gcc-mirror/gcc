@@ -112,6 +112,17 @@ reg_or_8bit_operand (op, mode)
 	  || register_operand (op, mode));
 }
 
+/* Return 1 if OP is an 8-bit constant.  */
+
+int
+cint8_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && (unsigned HOST_WIDE_INT) INTVAL (op) < 0x100);
+}
+
 /* Return 1 if the operand is a valid second operand to an add insn.  */
 
 int
