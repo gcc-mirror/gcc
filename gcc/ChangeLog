@@ -1,3 +1,11 @@
+2004-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
+	    Dimitri Papadopoulos-Orfanos  <papadopo@shfj.cea.fr>
+	    Dave Korn  <dk@artimi.com>
+
+	* doc/install.texi (Building): Avoid duplicate reference to GNU
+	make requirement.
+	(*-*-solaris2*): Do not recommend GNU make any longer.  Simplify.
+
 2004-08-14  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.h (PROMOTE_MODE): Don't promote vector types.
