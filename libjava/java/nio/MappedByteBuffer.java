@@ -44,6 +44,8 @@ package java.nio;
  */
 public abstract class MappedByteBuffer extends ByteBuffer
 {
+  private boolean loaded = false;
+  
   MappedByteBuffer (int capacity, int limit, int position, int mark)
   {
     super (capacity, limit, position, mark);
@@ -51,16 +53,19 @@ public abstract class MappedByteBuffer extends ByteBuffer
   
   public final MappedByteBuffer force ()
   {
+    // FIXME: Flush to disk here.
     return this;
   }
     
   public final boolean isLoaded ()
   {
-    return true;
+    return loaded;
   }
     
   public final MappedByteBuffer load ()
   {
+    // FIXME: Try to load all pages into memory.
+    loaded = true;
     return this;
   }
 }
