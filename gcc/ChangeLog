@@ -1,3 +1,8 @@
+2002-02-05  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_cmove):  Fix mode of
+	if_then_else to match result, not operands.
+
 2002-02-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in (leb128 support):  Test as versions more carefully.

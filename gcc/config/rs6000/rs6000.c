@@ -4962,7 +4962,7 @@ rs6000_emit_cmove (dest, op, true_cond, false_cond)
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, dest,
-			  gen_rtx_IF_THEN_ELSE (mode, 
+			  gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 						gen_rtx_GE (VOIDmode,
 							    op0, op1),
 						true_cond, false_cond)));
