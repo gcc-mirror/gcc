@@ -34,6 +34,14 @@ gcc_version_trigger = @gcc_version_trigger@
 libdir = $(exec_prefix)/lib
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 
+# Multilib support variables.
+MULTISRCTOP =
+MULTIBUILDTOP =
+MULTIDIRS =
+MULTISUBDIR =
+MULTIDO = true
+MULTICLEAN = true
+
 # Not configured per top-level version, since that doesn't get passed
 # down at configure time, but overrridden by the top-level install
 # target.
@@ -78,7 +86,7 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 # targets update stamp files which the $(LIBG2C) target checks in the
 # sub-make.  (Probably only one stamp file is really needed.)
 all: i77 f77 u77 s-libe77
-	$(MAKE) $(FLAGS_TO_PASS) $(LIBG2C)
+	$(MULTIDO) $(FLAGS_TO_PASS) $(LIBG2C) multi-do DO="all $(LIBG2C)"
 
 i77 f77 u77: g2c.h
 
@@ -143,9 +151,9 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install: all
-	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(LIBG2C).n
-	( cd $(libsubdir) ; $(RANLIB) $(LIBG2C).n )
-	mv -f $(libsubdir)/$(LIBG2C).n $(libsubdir)/$(LIBG2C)
+	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C).n
+	( cd $(libsubdir)/$(MULTISUBDIR) ; $(RANLIB) $(LIBG2C).n )
+	mv -f $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C).n $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C)
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
 	@if [ -f f2c-install-ok -o -f $(srcdir)/f2c-install-ok ]; then \
 	  echo ''; \
@@ -156,25 +164,30 @@ install: all
 	  echo '         f2c-install-ok in the source or build directory.)'; \
 	  echo ''; \
 	else true; fi
+	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall:
-	rm -f $(libsubdir)/include/g2c.h $(libsubdir)/$(LIBG2C)
+	rm -f $(libsubdir)/$(MULTISUBDIR)/include/g2c.h $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C)
+	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
 mostlyclean:
 	rm -f $(LIBG2C)
-	for i in $(SUBDIRS); do (cd $$i && $(MAKE) mostlyclean); done
-	rm -fr libE77
+	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
+	$(MULTICLEAN) multi-clean DO=$@
+	rm -fr libE77 s-libe77
 
 clean: mostlyclean
 	rm -f config.log
-	for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean); done
+	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
+	$(MULTICLEAN) multi-clean DO=$@
 
 distclean: clean
 	rm -f Makefile config.cache config.status g2c.h s-libe77
-	for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean); done
+	$(MAKE) DO=$@ DODIRS="$(SUBDIRS)" $(FLAGS_TO_PASS) subdir_do; \
+	@$(MULTICLEAN) multi-clean DO=distclean
 
 maintainer-clean:
 
@@ -183,3 +196,19 @@ rebuilt: configure
 .PHONY: rebuilt mostlyclean clean distclean maintainer-clean all \
         i77 f77 u77 check uninstall install-strip dist \
         installcheck installdirs
+
+subdir_do:
+	@rootpre=`pwd`/; export rootpre; \
+	srcrootpre=`cd $(srcdir); pwd`/; export srcrootpre; \
+	for i in .. $(DODIRS); do \
+	  if [ x$$i != x.. ]; then \
+	    if [ -f ./$$i/Makefile ]; then \
+	      if (cd ./$$i; $(MAKE) $(FLAGS_TO_PASS) $(DO)); then \
+		true; \
+	      else \
+		exit 1; \
+	      fi; \
+	    else true; fi; \
+	  else true; fi; \
+	done
+

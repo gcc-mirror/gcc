@@ -146,7 +146,7 @@ mostlyclean:
 	rm -f *.o
 
 clean: mostlyclean
-	rm -f config.log
+	rm -f config.log ../s-libi77
 
 distclean: clean
 	rm -f config.cache config.status Makefile ../s-libi77 configure

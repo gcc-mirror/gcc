@@ -114,6 +114,7 @@ mostlyclean:
 
 clean: mostlyclean
 	rm -f config.log
+	rm -f ../s-libf77
 
 distclean: clean
 	rm -f config.cache config.status Makefile ../s-libf77 configure

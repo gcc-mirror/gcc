@@ -21,6 +21,16 @@
 
 AC_INIT(libF77/Version.c)
 
+if test "${srcdir}" = "."  ; then
+  if test "${with_target_subdir}" != "." ; then
+    topsrcdir=${with_multisrctop}../..
+  else
+    topsrcdir=${with_multisrctop}..
+  fi
+else
+  topsrcdir=${srcdir}/..
+fi
+
 dnl Checks for programs.
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
@@ -163,9 +173,26 @@ AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_trigger)
 AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
-
 AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
-AC_OUTPUT(Makefile g2c.h:g2c.hin)
+AC_OUTPUT(g2c.h:g2c.hin Makefile,
+ [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+if test -n "$CONFIG_FILES"; then
+  if test -n "${with_target_subdir}"; then
+    # FIXME: We shouldn't need to set ac_file
+    ac_file=Makefile
+    . ${topsrcdir}/config-ml.in
+  fi
+fi],
+srcdir=${srcdir}
+host=${host}
+target=${target}
+with_target_subdir=${with_target_subdir}
+with_multisubdir=${with_multisubdir}
+ac_configure_args="--enable-multilib ${ac_configure_args}"
+CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+topsrcdir=${topsrcdir}
+)
+
 
 dnl Local Variables:
 dnl comment-start: "dnl "

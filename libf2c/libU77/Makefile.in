@@ -180,7 +180,7 @@ mostlyclean:
 	rm -f *.o a.out
 
 clean: mostlyclean
-	rm -f config.log
+	rm -f config.log ../s-libu77
 
 distclean: clean
 	rm -f config.cache config.status Makefile config.h stamp.h \

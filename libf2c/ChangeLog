@@ -1,3 +1,12 @@
+Mon Sep 21 12:27:27 1998  Robert Lipe  <robertl@dgii.com>
+
+	* Makefile.in (distclean, clean, uninstall, install, all): Add 
+	multilib support.
+	configure.in: Likewise.
+	configure: Regenerate.
+	* libF77/Makefile.in, libU77/Makefile.in, libI77/Makefile.in (clean): 
+	Explictly remove stamp in parent's directory.
+
 1998-09-20  Dave Love  <d.love@dl.ac.uk>
 
 	* libI77/sfe.c (e_wdfe): Set f__init to avoid spurious recursive
