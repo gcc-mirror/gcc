@@ -1,3 +1,8 @@
+2003-03-08  Roger Sayle  <roger@eyesopen.com>
+
+	* emit-rtl.c (gen_lowpart): Don't attempt to load a part of
+	a complex or vector type, using a load in the original mode.
+
 Sat Mar  8 19:22:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cgraph.o): Depend on gt-cgraph.h and varray.h.
