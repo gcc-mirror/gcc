@@ -1,3 +1,9 @@
+2002-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/7622
+	* c-semantics (genrtl_scope_stmt): Do not output inlined
+	nested functions that contain no code.
+
 Wed Dec  4 15:20:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect):  Allow abnormal edge
@@ -702,7 +708,7 @@ Thu Nov 21 23:52:04 CET 2002  Jan Hubicka  <jH@suse.cz>
 	* reload.c (find_reloads): Always reload EXTRA_ADDRESS_CONSTRAINT
 	operands in Pmode.
 
-2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8518
 	* c-decl.c (duplicate_decls): Outline the second definition
@@ -1138,7 +1144,7 @@ Mon Nov 11 12:06:08 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(crtn.o): Use this...
 	($(T)crtn.o): ... instead.
 
-2002-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8439
 	* recog.c (validate_replace_rtx_1) [PLUS]: Simplify only
@@ -3263,7 +3269,7 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(call): Add register indirect case.
 	(mod): Fix wrong subreg.
 
-2002-09-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 	    Volker Reichelt <reichelt@igpm.rwth-aachen.de>
 
 	PR c/7411
@@ -5517,7 +5523,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	replace_equiv_address to generate proper aliasing info.
 	Move common code out of conditionals.  Localize vars.
 
-2002-09-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-09-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* optabs.c (expand_binop): Minor cleanup.
 	(expand_twoval_binop): Convert CONST_INTs like in expand_binop.
@@ -10306,7 +10312,7 @@ Wed Jul 17 19:23:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* config/i386/i386.c (ix86_expand_int_movcc): In the general case
 	suppress addition when either ct or cf are zero.
 
-2002-06-17  Eric Botcazou <ebotcazou@multimania.com>
+2002-07-17  Eric Botcazou <ebotcazou@multimania.com>
 	    Glen Nakamura <glen@imodulo.com>
 
 	PR optimization/6713

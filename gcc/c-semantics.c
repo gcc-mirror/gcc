@@ -617,6 +617,7 @@ genrtl_scope_stmt (t)
 	{
 	  if (TREE_CODE (fn) == FUNCTION_DECL 
 	      && DECL_CONTEXT (fn) == current_function_decl
+	      && DECL_SAVED_INSNS (fn)
 	      && !TREE_ASM_WRITTEN (fn)
 	      && TREE_ADDRESSABLE (fn))
 	    {
