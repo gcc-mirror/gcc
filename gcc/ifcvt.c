@@ -1855,6 +1855,15 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 {
   rtx head, end, jump, earliest, old_dest;
 
+  /* No code movement can occur if we'd be scrogging EH regions.
+     Within MERGE_BB, ensure that we've not got stray EH_BEG or EH_END
+     notes within the block.  Between the blocks, checking that the end
+     region numbers match ensures that we won't disrupt the nesting
+     between regions.  */
+  if (merge_bb->eh_beg != merge_bb->eh_end
+      || merge_bb->eh_end != test_bb->eh_end)
+    return FALSE;
+
   jump = test_bb->end;
 
   /* Find the extent of the real code in the merge block.  */
