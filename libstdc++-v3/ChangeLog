@@ -1,5 +1,12 @@
 2003-02-18  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/std/std_sstream.h (str()): the size of the
+	current string may be different from the initial one
+	whenever _M_out_end > _M_out_beg.
+	* testsuite/27_io/stringbuf_members.cc (test07): Add.
+
+2003-02-18  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9582
 	* include/bits/stl_alloc.h (__pool_alloc::allocate): Remove assert.
 

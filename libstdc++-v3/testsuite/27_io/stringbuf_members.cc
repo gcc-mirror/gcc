@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -473,6 +473,32 @@ bool test06()
   return test;
 }
 
+// http://gcc.gnu.org/ml/libstdc++/2003-02/msg00269.html
+// Growing and then seeking to ios_base::beg triggered a bug in str(),
+// which didn't notice the grow.
+bool test07()
+{
+  bool test = true;
+
+  std::stringbuf strb_01;
+  strb_01.sputc('s');
+  strb_01.pubseekoff(0, std::ios_base::beg);
+  VERIFY( strb_01.str() == "s" );
+
+  std::string str("strivi,");
+  std::stringbuf strb_02(str);
+  strb_02.pubseekoff(0, std::ios_base::end);
+  strb_02.sputn(" no better!", 11);
+  strb_02.pubseekoff(0, std::ios_base::beg);
+  VERIFY( strb_02.str() == "strivi, no better!" );
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+
+  return test;
+}
+
 int main()
 {
   test01();
@@ -481,6 +507,7 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 
   return 0;
 }
