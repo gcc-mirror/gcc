@@ -1,3 +1,8 @@
+2003-04-10  Andrew Haley  <aph@redhat.com>
+
+	* tree-inline.c (inlinable_function_p): Disable inlining for
+	synchronized methods.
+
 2003-04-09  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-common.h (lang_statement_code_p): Remove declaration.

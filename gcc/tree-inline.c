@@ -981,6 +981,11 @@ inlinable_function_p (fn, id, nolimit)
      DECL_INLINE set.  */
   else if (! DECL_INLINE (fn) && !nolimit)
     ;
+#ifdef INLINER_FOR_JAVA
+  /* Synchronized methods can't be inlined.  This is a bug.  */
+  else if (METHOD_SYNCHRONIZED (fn))
+    ;
+#endif /* INLINER_FOR_JAVA */
   /* We can't inline functions that are too big.  Only allow a single
      function to be of MAX_INLINE_INSNS_SINGLE size.  Make special
      allowance for extern inline functions, though.  */
