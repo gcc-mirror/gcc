@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
-   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 1999 Free Software Foundation, Inc.
    Based upon original work of Ron Guilmette (rfg@monkeys.com).
    Contributed by Andy Pfiffer (andyp@ssd.intel.com).
    Partially inspired by
@@ -22,9 +22,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT
 
 #undef TARGET_SWITCHES
 #define TARGET_SWITCHES  \

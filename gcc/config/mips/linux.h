@@ -1,5 +1,5 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Required to keep collect2.c happy */
 #undef OBJECT_FORMAT_COFF 
-
-#define HAVE_ATEXIT
 
 /* If we don't set MASK_ABICALLS, we can't default to PIC. */
 #undef TARGET_DEFAULT

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Bull DPX/2 200 and 300 systems (m68k, SysVr3).
-   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996, 1999 Free Software Foundation, Inc.
    Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
 This file is part of GNU CC.
@@ -66,7 +66,6 @@ Boston, MA 02111-1307, USA.  */
 # define __HAVE_68881__ 1
 # define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ }"
 
-#define HAVE_ATEXIT
 #undef DO_GLOBAL_CTORS_BODY		/* don't use svr3.h version */
 #undef DO_GLOBAL_DTORS_BODY
 

@@ -299,10 +299,6 @@ dtors_section ()						\
     }						\
   while (0)
 
-/* The ARM development system has atexit and doesn't have _exit,
-   so define this for now.  */
-#define HAVE_ATEXIT
-
 /* The ARM development system defines __main.  */
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain

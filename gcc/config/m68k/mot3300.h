@@ -800,7 +800,6 @@ do {(CUM).offset = 0;\
    so take that from libgcc2.c */
 
 #define NEED_ATEXIT 1
-#define HAVE_ATEXIT 1
 
 #define EXIT_BODY	\
   do								\

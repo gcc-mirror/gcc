@@ -1609,12 +1609,6 @@ extern void arc_set_default_type_attributes ();
 #define SET_DEFAULT_TYPE_ATTRIBUTES(TYPE) \
 arc_set_default_type_attributes (TYPE)
 
-/* Define this if the target system supports the function
-   atexit from the ANSI C standard.  If this is not defined,
-   and INIT_SECTION_ASM_OP is not defined, a default
-   exit function will be provided to support C++.  */
-#define HAVE_ATEXIT
-
 /* alloca should avoid clobbering the old register save area.  */
 /* ??? Not defined in tm.texi.  */
 #define SETJMP_VIA_SAVE_AREA

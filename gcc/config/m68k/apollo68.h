@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Apollo 680X0 version.
-   Copyright (C) 1989, 1992, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -116,12 +116,9 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_DEBUGGING_INFO
 #undef SDB_DEBUGGING_INFO
 
-/* We have atexit(2).  So C++ can use it for global destructors.  */
-
-#if 0 /* troy@cbme.unsw.edu.au says people are still using sr10.2
-	 and it does not support atexit.  */
-#define HAVE_ATEXIT
-#endif
+/* troy@cbme.unsw.edu.au says people are still using sr10.2
+   and it does not support atexit.  */
+#define NEED_ATEXIT
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 

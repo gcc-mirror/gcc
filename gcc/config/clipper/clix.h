@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper/Clix version.
-   Copyright (C) 1988, 1993, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,9 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #undef LIB_SPEC
 
 #define TARGET_MEM_FUNCTIONS
-
-#undef HAVE_ATEXIT
-#define HAVE_ATEXIT
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
 do {							\

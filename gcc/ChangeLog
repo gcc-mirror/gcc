@@ -1,3 +1,13 @@
+Wed Sep 15 14:39:35 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* gbl-ctors.h: Lose HAVE_ATEXIT.  Don't define ON_EXIT.
+	* libgcc2.c: Lose obsolete defn of WEAK_ALIAS.
+	(__bb_init_func, __bb_init_prg): Use atexit instead of ON_EXIT.
+	(__do_global_dtors): Likewise.  Don't mess with _exit_dummy_decl.
+	(atexit, exit): Simplify.
+	* tm.texi: Document NEED_ATEXIT and ON_EXIT.  Remove HAVE_ATEXIT.
+	* config/lots: Remove defns of HAVE_ATEXIT.
+
 Wed Sep 15 10:25:12 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* calls.c (precompute_arguments): Fix typo in comment.

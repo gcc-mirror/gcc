@@ -53,10 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #undef abort
 #endif
 
-#if (SUPPORTS_WEAK == 1) && (defined (ASM_OUTPUT_DEF) || defined (ASM_OUTPUT_WEAK_ALIAS))
-#define WEAK_ALIAS
-#endif
-
 /* In a cross-compilation situation, default to inhibiting compilation
    of routines that use libc.  */
 
@@ -1709,11 +1705,9 @@ __bb_init_func (struct bb *blocks)
   if (blocks->zero_word)
     return;
 
-#ifdef ON_EXIT
   /* Initialize destructor.  */
   if (!bb_head)
-    ON_EXIT (__bb_exit_func, 0);
-#endif
+    atexit (__bb_exit_func);
 
   /* Set up linked list.  */
   blocks->zero_word = 1;
@@ -2084,10 +2078,8 @@ __bb_init_prg ()
   enum bb_func_mode m;
   int i;
 
-#ifdef ON_EXIT
   /* Initialize destructor.  */
-  ON_EXIT (__bb_exit_func, 0);
-#endif
+  atexit (__bb_exit_func);
 
   if (!(file = fopen ("bb.in", "r")))
     return;
@@ -2176,11 +2168,8 @@ __bb_init_prg ()
       bb_stack = (unsigned long *) malloc (bb_stacksize * sizeof (*bb_stack));
     }
 
-#ifdef ON_EXIT
-      /* Initialize destructor.  */
-      ON_EXIT (__bb_exit_trace_func, 0);
-#endif
-
+  /* Initialize destructor.  */
+  atexit (__bb_exit_trace_func);
 }
 
 /* Called upon entering a basic block.  */
@@ -2869,17 +2858,6 @@ __do_global_dtors ()
 #ifndef HAS_INIT_SECTION
 /* Run all the global constructors on entry to the program.  */
 
-#ifndef ON_EXIT
-#define ON_EXIT(a, b)
-#else
-/* Make sure the exit routine is pulled in to define the globals as
-   bss symbols, just in case the linker does not automatically pull
-   bss definitions from the library.  */
-
-extern int _exit_dummy_decl;
-int *_exit_dummy_ref = &_exit_dummy_decl;
-#endif /* ON_EXIT */
-
 void
 __do_global_ctors ()
 {
@@ -2890,7 +2868,7 @@ __do_global_ctors ()
   }
 #endif
   DO_GLOBAL_CTORS_BODY;
-  ON_EXIT (__do_global_dtors, 0);
+  atexit (__do_global_dtors, 0);
 }
 #endif /* no HAS_INIT_SECTION */
 
@@ -2952,22 +2930,17 @@ func_ptr __DTOR_LIST__[2];
 #include "gbl-ctors.h"
 
 #ifdef NEED_ATEXIT
-# ifdef ON_EXIT
-#  undef ON_EXIT
-# endif
-int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
-#endif
 
-#ifndef ON_EXIT
+#ifndef HAVE_ON_EXIT
 
-#ifdef NEED_ATEXIT
 # include <errno.h>
 
 static func_ptr *atexit_chain = 0;
 static long atexit_chain_length = 0;
 static volatile long last_atexit_chain_slot = -1;
 
-int atexit (func_ptr func)
+int
+atexit (func_ptr func)
 {
   if (++last_atexit_chain_slot == atexit_chain_length)
     {
@@ -2989,22 +2962,13 @@ int atexit (func_ptr func)
   atexit_chain[last_atexit_chain_slot] = func;
   return (0);
 }
-#endif /* NEED_ATEXIT */
 
-/* If we have no known way of registering our own __do_global_dtors
-   routine so that it will be invoked at program exit time, then we
-   have to define our own exit routine which will get this to happen.  */
-
-extern void __do_global_dtors ();
-extern void __bb_exit_func ();
 extern void _cleanup ();
 extern void _exit () __attribute__ ((noreturn));
 
 void 
 exit (int status)
 {
-#if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
-#ifdef NEED_ATEXIT
   if (atexit_chain)
     {
       for ( ; last_atexit_chain_slot-- >= 0; )
@@ -3015,19 +2979,6 @@ exit (int status)
       free (atexit_chain);
       atexit_chain = 0;
     }
-#else /* No NEED_ATEXIT */
-  __do_global_dtors ();
-#endif /* No NEED_ATEXIT */
-#endif /* !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF) */
-/* In gbl-ctors.h, ON_EXIT is defined if HAVE_ATEXIT is defined.  In
-   __bb_init_func and _bb_init_prg, __bb_exit_func is registered with
-   ON_EXIT if ON_EXIT is defined.  Thus we must not call __bb_exit_func here
-   if HAVE_ATEXIT is defined. */
-#ifndef HAVE_ATEXIT
-#ifndef inhibit_libc
-  __bb_exit_func ();
-#endif
-#endif /* !HAVE_ATEXIT */
 #ifdef EXIT_BODY
   EXIT_BODY;
 #else
@@ -3036,17 +2987,17 @@ exit (int status)
   _exit (status);
 }
 
-#else /* ON_EXIT defined */
-int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
+#else /* HAVE_ON_EXIT */
 
-# ifndef HAVE_ATEXIT
-/* Provide a fake for atexit() using ON_EXIT.  */
-int atexit (func_ptr func)
+/* Simple; we just need a wrapper for ON_EXIT.  */
+int
+atexit (func_ptr func)
 {
-  return ON_EXIT (func, NULL);
+  return ON_EXIT (func);
 }
-# endif /* HAVE_ATEXIT */
-#endif /* ON_EXIT defined */
+
+#endif /* HAVE_ON_EXIT */
+#endif /* NEED_ATEXIT */
 
 #endif /* L_exit */
 

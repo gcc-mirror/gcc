@@ -66,10 +66,6 @@
   (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
    || (CHAR) == 'R')
 
-/* We have atexit(3).  */
-
-#define HAVE_ATEXIT
-
 /* Implicit library calls should use memcpy, not bcopy, etc.  */
 
 #define TARGET_MEM_FUNCTIONS

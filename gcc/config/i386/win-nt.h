@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA. */
 #define WCHAR_TYPE "short unsigned int"
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-#define HAVE_ATEXIT 1
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_ctor, in_dtor

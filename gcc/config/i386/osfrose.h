@@ -850,10 +850,6 @@ while (0)
 #define REAL_NM_FILE_NAME	"/usr/ccs/gcc/bfd-nm"
 #define REAL_STRIP_FILE_NAME	"/usr/ccs/bin/strip"
 
-/* Use atexit for static constructors/destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
-
 /* Define this macro meaning that gcc should find the library 'libgcc.a'
    by hand, rather than passing the argument '-lgcc' to tell the linker
    to do the search */

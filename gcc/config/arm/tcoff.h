@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Thumb with COFF obj format.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
    Derived from arm/coff.h originally by Doug Evans (dje@cygnus.com).
    
 This file is part of GNU CC.
@@ -182,10 +182,6 @@ do {						\
 
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
-
-/* The ARM development system has atexit and doesn't have _exit,
-   so define this for now.  */
-#define HAVE_ATEXIT
 
 /* The ARM development system defines __main.  */
 #define NAME__MAIN "__gccmain"

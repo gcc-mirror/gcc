@@ -67,7 +67,7 @@ crt2.o%s "
 #define NO_SYS_SIGLIST
 
 /* We provide atexit(), A/UX does not have it */
-#define HAVE_ATEXIT
+#define NEED_ATEXIT
 
 /* Generate calls to memcpy, memcmp and memset, as opposed to bcopy, bcmp,
    and bzero */

@@ -127,8 +127,6 @@ Boston, MA 02111-1307, USA. */
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
 
-#define HAVE_ATEXIT 1
-
 
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1

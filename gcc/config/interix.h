@@ -102,6 +102,3 @@ for windows/multi thread */
 #define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
-
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT

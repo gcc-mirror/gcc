@@ -70,10 +70,6 @@ Boston, MA 02111-1307, USA.  */
 /* Although the .init section is used, it is not automatically invoked.  */
 #define INVOKE__main
 
-/* State that atexit exists so __do_global_ctors will register
-   __do_global_dtors.  */
-#define HAVE_ATEXIT
-
 #define CTOR_LIST_BEGIN	    		\
   asm (INIT_SECTION_ASM_OP);		\
   asm ("\tsubu\t r31,r31,16");	/* (STACK_BOUNDARY / BITS_PER_UNIT) == 16 */ \

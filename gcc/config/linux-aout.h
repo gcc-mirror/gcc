@@ -1,5 +1,5 @@
 /* Definitions for Linux-based GNU systems.
-   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997, 1999 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.
@@ -21,9 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Don't assume anything about the header files. */
 #define NO_IMPLICIT_EXTERN_C
-
-#undef HAVE_ATEXIT
-#define HAVE_ATEXIT
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */

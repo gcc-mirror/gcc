@@ -1,5 +1,5 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -297,9 +297,6 @@ const_section ()					\
   assemble_name ((FILE), (NAME));					\
   fputc ('\n', (FILE));							\
 }
-
-/* True for VMS V4.6 and later.  */
-#define HAVE_ATEXIT
 
 /* The following definitions are used in libgcc2.c with the __main
    function.  The _SHR symbol is used when the sharable image library

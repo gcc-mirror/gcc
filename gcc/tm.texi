@@ -7660,12 +7660,21 @@ The definition should be a C statement (sans semicolon) to generate the
 appropriate rtl instructions.  It is used only when compiling the end of
 @code{main}.
 
-@item HAVE_ATEXIT
-@findex HAVE_ATEXIT
-Define this if the target system supports the function
-@code{atexit} from the ANSI C standard.  If this is not defined,
-and @code{INIT_SECTION_ASM_OP} is not defined, a default
-@code{exit} function will be provided to support C++.
+@item NEED_ATEXIT
+@findex NEED_ATEXIT
+Define this if the target system lacks the function @code{atexit}
+from the ANSI C standard.  If this macro is defined, a default definition
+will be provided to support C++.  If @code{ON_EXIT} is not defined,
+a default @code{exit} function will also be provided.
+
+@item ON_EXIT
+@findex ON_EXIT
+Define this macro if the target has another way to implement atexit
+functionality without replacing @code{exit}.  For instance, SunOS 4 has
+a similar @code{on_exit} library function.
+
+The definition should be a functional macro which can be used just like
+the @code{atexit} function.
 
 @item EXIT_BODY
 @findex EXIT_BODY

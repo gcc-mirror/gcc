@@ -57,9 +57,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_LOAD_ADDR(loc, reg)   "     leal " #loc "," #reg "\n"
 
-/* For the sake of libgcc2.c, indicate target supports atexit.  */
-#define HAVE_ATEXIT
-
 /* cpp handles __STDC__ */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES " \

@@ -8,7 +8,7 @@
 
    GNU CC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 1, or (at your option)
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    GNU CC is distributed in the hope that it will be useful,
@@ -1893,9 +1893,6 @@ do {								\
   while (p != beg)						\
     (*--p) ();							\
 } while (0)
-
-/* The TI tooling uses atexit.  */
-#define	HAVE_ATEXIT
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_init, in_fini, in_ctors, in_dtors

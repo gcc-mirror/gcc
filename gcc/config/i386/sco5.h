@@ -940,7 +940,6 @@ compiler at the end of the day. Onward we go ...
 
 #if defined(CRT_BEGIN) || defined(CRT_END) || defined(IN_LIBGCC2)
 # undef OBJECT_FORMAT_ELF
-# undef HAVE_ATEXIT
 # undef INIT_SECTION_ASM_OP
 # undef FINI_SECTION_ASM_OP
 # undef CTORS_SECTION_ASM_OP
@@ -952,7 +951,6 @@ compiler at the end of the day. Onward we go ...
 
 # if defined (_SCO_ELF)
 #  define OBJECT_FORMAT_ELF
-#  define HAVE_ATEXIT 1
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_ELF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
