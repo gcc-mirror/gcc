@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # SYNOPSIS
-#	fixproto TARGET-DIR [ SOURCE-DIR ... ]
+#	fixproto TARGET-DIR SOURCE-DIR-ALL SOURCE-DIR-STD
 #
 # COPYRIGHT
 #	Copyright (C) 1993 Free Software Foundation, Inc.
@@ -25,7 +25,9 @@
 #	Adjunct script for GNU CC to populate a directory with ANSI,
 #	Posix.1, and C++ compatible header files.
 #
-#	Each file found under each SOURCE-DIR is analized and "fixed."
+#	Each file found under SOURCE-DIR-ALL is analyzed and "fixed."
+#       Only standard ANSI/POSIX files found under SOURCE-DIR-STD
+#       are analyzed and "fixed."
 #	The SOURCE-DIRs are searched in order; a file found
 #	under multiple SOURCE-DIRs is only handled for the first one.
 #
@@ -60,8 +62,16 @@ if [ `echo $1 | wc -w` = 0 ] ; then
   echo $progname\: usage\: $progname target-dir \[ source-dir \.\.\. \]
   exit 1
 fi
+
+std_files="ctype.h dirent.h errno.h curses.h fcntl.h grp.h locale.h math.h pwd.h setjmp.h signal.h stdio.h stdlib.h string.h sys/stat.h sys/times.h sys/resource.h sys/utsname.h sys/wait.h tar.h termios.h time.h unistd.h"
+
 rel_target_dir=$1
-shift
+# All files in $src_dir_all (normally same as $rel_target_dir) are
+# processed.
+src_dir_all=$2
+# In $src_dir_std (normally same as /usr/include), only the
+# "standard" ANSI/POSIX files listed in $std_files are processed.
+src_dir_std=$3
 
 if [ `expr $rel_target_dir : '\(.\)'` != '/' ] ; then
   abs_target_dir=$original_dir/$rel_target_dir
@@ -90,7 +100,7 @@ echo $progname\: populating \`$rel_target_dir\'
 include_path=""
 
 if [ `echo $* | wc -w` != 0 ] ; then
-  for rel_source_dir in $*; do
+  for rel_source_dir in $src_dir_all $src_dir_std; do
     if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
       abs_source_dir=$original_dir/$rel_source_dir
     else
@@ -109,43 +119,53 @@ required_unistd_h="_exit access alarm chdir chown close ctermid cuserid dup dup2
 done_dirs=""
 echo "" >fixproto.list
 
-if [ `echo $* | wc -w` != 0 ] ; then
-  for rel_source_dir in $* ; do
-    if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
-      abs_source_dir=$original_dir/$rel_source_dir
-    else
-      abs_source_dir=$rel_source_dir
-    fi
-    if [ \! -d $abs_source_dir ] ; then
-      echo $progname\: warning\: no such directory\: \`$rel_source_dir\'
-      continue
-    fi
+for code in ALL STD ; do
 
-    dirs="."
-    levels=2
-    subdirs="."
-    while $LINKS && test -n "$dirs" -a $levels -gt 0
-    do
-      levels=`expr $levels - 1`
-      newdirs=
-      for d in $dirs ; do
-	# Find all directories under $d, relative to $d, excluding $d itself.
-        subdirs="$subdirs "`cd $abs_source_dir/$d; find . -type d -print | \
-		       sed -e '/^\.$/d' -e "s|^\./|${d}/|" -e 's|^\./||'`
-	links=
-	links=`cd $abs_source_dir; find $d/. -type l -print | \
+  subdirs="."
+
+  case $code in
+    ALL)
+      rel_source_dir=$src_dir_all
+
+      dirs="."
+      levels=2
+      while $LINKS && test -n "$dirs" -a $levels -gt 0
+      do
+        levels=`expr $levels - 1`
+	newdirs=
+	for d in $dirs ; do
+	  # Find all directories under $d, relative to $d, excluding $d itself.
+	  subdirs="$subdirs "`cd $rel_source_dir/$d; find . -type d -print | \
+	           sed -e '/^\.$/d' -e "s|^\./|${d}/|" -e 's|^\./||'`
+	  links=
+	  links=`cd $rel_source_dir; find $d/. -type l -print | \
 		       sed -e "s|$d/./|$d/|" -e 's|^\./||'`
-	for link in $links --dummy-- ; do
-	  if test -d $abs_source_dir/$link/. ; then
-	    newdirs="$newdirs $link"
-	  fi
+	  for link in $links --dummy-- ; do
+	    test -d $rel_source_dir/$link/. && newdirs="$newdirs $link"
+	  done
 	done
+	dirs="$newdirs"
+	subdirs="$subdirs $newdirs"
       done
-      dirs="$newdirs"
-      subdirs="$subdirs $newdirs"
-    done
+      ;;
+    STD)
+      rel_source_dir=$src_dir_std
+      ;;
+  esac
 
-    for rel_source_subdir in $subdirs; do
+  if [ `expr $rel_source_dir : '\(.\)'` != '/' ] ; then
+    abs_source_dir=$original_dir/$rel_source_dir
+  else
+    abs_source_dir=$rel_source_dir
+  fi
+
+  if [ \! -d $abs_source_dir ] ; then
+    echo $progname\: warning\: no such directory\: \`$rel_source_dir\'
+    continue
+  fi
+
+  for rel_source_subdir in $subdirs; do
+
       abs_target_subdir=${abs_target_dir}/${rel_source_subdir}
       if [ \! -d $abs_target_subdir ] ; then
         mkdir $abs_target_subdir
@@ -153,9 +173,41 @@ if [ `echo $* | wc -w` != 0 ] ; then
       # Append "/"; remove initial "./". Hence "." -> "" and "sys" -> "sys/".
       rel_source_prefix=`echo $rel_source_subdir | sed -e 's|$|/|' -e 's|^./||'`
 
-      # The 'sed' is in case the *.h matches nothing, which yields "*.h"
-      # which would then get re-globbed in the current directory.  Sigh.
-      rel_source_files=`cd ${abs_source_dir}/${rel_source_subdir}; echo *.h | sed -e 's|[*].h|NONE|'`
+      case $code in
+	ALL)
+	  # The 'sed' is in case the *.h matches nothing, which yields "*.h"
+	  # which would then get re-globbed in the current directory.  Sigh.
+	  rel_source_files=`cd ${abs_source_dir}/${rel_source_subdir}; echo *.h | sed -e 's|[*].h|NONE|'`
+	  ;;
+
+	STD)
+	  files_to_check="$std_files"
+	  rel_source_files=""
+
+	  # Also process files #included by the $std_files.
+	  while [ -n "${files_to_check}" ]
+	  do
+	    new_files_to_check=""
+	    for file in $files_to_check ; do
+	      case " $rel_source_files " in
+	        *" ${file} "*)
+		  # Already seen $file; nothing to do
+		  ;;
+		*)
+	          new_files_to_check="$new_files_to_check `sed -n \
+			-e 's@	@ @g' \
+			-e 's@^ *# *include *<\([^>]*\)>.*$@\1@p' \
+			-e 's@^ *# *include *\"\([^\"]*\)\".*$@\1@p' \
+			<$src_dir_std/$file`"
+	          rel_source_files="$rel_source_files $file"
+		  ;;
+	      esac
+	    done
+	    files_to_check="$new_files_to_check"
+	  done
+	  rel_source_files="$rel_source_files"
+	  ;;
+      esac
 
       for filename in $rel_source_files ; do
 	rel_source_file=${rel_source_prefix}${filename}
@@ -169,7 +221,6 @@ if [ `echo $* | wc -w` != 0 ] ; then
 	elif test -f $abs_target_file -a -n "$done_dirs" \
 	  && grep "$rel_source_file" fixproto.list >/dev/null
 	then true
-#	  echo $abs_target_file exists, $abs_source_file is ignored
 	else
 	  # echo doing $rel_source_file from $abs_source_dir
 	  required_list=
@@ -246,11 +297,7 @@ if [ `echo $* | wc -w` != 0 ] ; then
 	  done
 	  if ${CPP} -D__STDC__ -D__cplusplus -D_POSIX_SOURCE $include_path fixtmp.c >fixtmp.i 2>/dev/null
 	  then
-	    cat $abs_source_file >fixtmp.c
-#	    echo Doing: "$original_dir/scan-decls <fixtmp.i | $original_dir/patch-header $rel_source_file fixtmp.c $abs_target_file \"$required_list\""
-
-	    $original_dir/scan-decls <fixtmp.i | \
-	     $original_dir/patch-header $rel_source_file fixtmp.c $abs_target_file "$required_list"
+	   $original_dir/patch-header $rel_source_file $abs_source_file $abs_target_file "$required_list" <fixtmp.i
 	  else
 	    echo "${progname}: cpp could not parse ${abs_source_file} (ignored)"
 	  fi
@@ -272,8 +319,7 @@ if [ `echo $* | wc -w` != 0 ] ; then
       fi
     fi
     done_dirs="$done_dir $rel_source_dir"
-  done
-fi
+done
 
 # This might be more cleanly moved into the main loop, by adding
 # a <dummy> source directory at the end.  FIXME!
