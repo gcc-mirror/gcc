@@ -141,6 +141,8 @@ bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
+# Directory for header file assert.h.
+includedir = $(libdir)/include
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 # Directory in which to put man pages.
@@ -390,7 +392,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 
 # Header files that are made available under the same name
 # to programs compiled with GCC.
-USER_H = assert.h va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
+USER_H = va-alpha.h va-i860.h va-i960.h va-mips.h va-m88k.h \
     va-pa.h va-pyr.h va-sparc.h va-spur.h proto.h syslimits.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
@@ -1484,6 +1486,9 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	   $(INSTALL_DATA) `basename $$file` $$shelllibsubdir/include/`basename $$file`; \
 	   chmod a-x $$shelllibsubdir/include/`basename $$file`; \
 	done
+	-rm -f $(includedir)/assert.h
+	$(INSTALL_DATA) $(srcdir)/assert.h $(includedir)/assert.h
+	chmod a-x $(libsubdir)/include/assert.h
 	-rm -f $(libsubdir)/include/varargs.h
 	$(INSTALL_DATA) $(srcdir)/gvarargs.h $(libsubdir)/include/varargs.h
 	chmod a-x $(libsubdir)/include/varargs.h
