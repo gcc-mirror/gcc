@@ -1,3 +1,9 @@
+1999-09-09  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Fixed typo; variable is THREADSPEC and not
+	THREADSPECS.
+
 1999-09-08  Tom Tromey  <tromey@cygnus.com>
 
 	* include/posix-threads.h (_Jv_PthreadCheckMonitor): Reverted
