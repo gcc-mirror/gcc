@@ -1,3 +1,11 @@
+2005-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR other/20564
+	* gcov.c (output_lines): Only output function block summary when
+	outputting branch information.
+	* doc/gcov.texi: Document format of preamble and additional block
+	information lines.
+
 2005-03-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* libgcc2.h (LIBGCC2_HAS_SF_MODE): New macro.
