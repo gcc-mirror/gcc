@@ -1,3 +1,12 @@
+2003-01-26  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (save_fixed_argument_area): Tidy.
+	(restore_fixed_argument_area): Tidy.  Set alignment of stack_area.
+	(expand_call): Comment typo fixes.  Don't init low_to_save.  Start
+	call chain loop at 1 if !try_tail_call.  Formatting.
+	(emit_library_call_value_1): Don't init low_to_save or high_to_save.
+	Use save_fixed_argument_area and restore_fixed_argument_area.
+
 2003-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* df.c (df_uses_record): Handle CC0.
