@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2875,8 +2875,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	       build_function_type (type_for_mode (outmode, 0), NULL_TREE),
                args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-	       (outmode != VOIDmode && mem_value == 0
-		? hard_libcall_value (outmode) : NULL_RTX),
+	       mem_value == 0 ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, is_const);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
