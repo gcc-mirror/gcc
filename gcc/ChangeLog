@@ -1,3 +1,7 @@
+2004-07-02  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (make_tree): Don't use SET_DECL_RTL.
+
 2004-07-02  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-flow.h (bb_ann_d): Remove ephi_nodes field.
@@ -17,14 +21,14 @@
 
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
-        * gimple-low.c (lower_function_body): Don't reset_block_changes here.
-        * cfgexpand.c (tree_expand_cfg): Do it here.
-        * config/alpha/alpha.c (alpha_output_mi_thunk_osf): And here.
-        * config/ia64/ia64.c (ia64_output_mi_thunk): And here.
-        * config/mips/mips.c (mips_output_mi_thunk): And here.
-        * config/rs6000/rs6000.c (rs6000_output_mi_thunk): And here.
-        * config/sh/sh.c (sh_output_mi_thunk): And here.
-        * config/sparc/sparc.c (sparc_output_mi_thunk): And here.
+	* gimple-low.c (lower_function_body): Don't reset_block_changes here.
+	* cfgexpand.c (tree_expand_cfg): Do it here.
+	* config/alpha/alpha.c (alpha_output_mi_thunk_osf): And here.
+	* config/ia64/ia64.c (ia64_output_mi_thunk): And here.
+	* config/mips/mips.c (mips_output_mi_thunk): And here.
+	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): And here.
+	* config/sh/sh.c (sh_output_mi_thunk): And here.
+	* config/sparc/sparc.c (sparc_output_mi_thunk): And here.
 
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
@@ -98,9 +102,9 @@
 
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
-        * tree-sra.c (sra_walk_expr): Don't maybe_lookup_element_for_expr
-        in order to disable scalarization.  Instead set a flag and wait
-        for a candidate decl.
+	* tree-sra.c (sra_walk_expr): Don't maybe_lookup_element_for_expr
+	in order to disable scalarization.  Instead set a flag and wait
+	for a candidate decl.
 
 2004-07-01  Joseph S. Myers  <jsm@polyomino.org.uk>
 
@@ -305,10 +309,10 @@
 
 	* target.h (struct gcc_target): Add new field to struct cxx:
 	import_export_class.
-        * target-def.h (TARGET_CXX): Initialise the new field.
-        (TARGET_CXX_IMPORT_EXPORT_CLASS): Provide a default value for
+	* target-def.h (TARGET_CXX): Initialise the new field.
+	(TARGET_CXX_IMPORT_EXPORT_CLASS): Provide a default value for
 	the new field.  
-        * doc/tm.texi: Document the new target hook.
+	* doc/tm.texi: Document the new target hook.
 
 2004-07-01  Paolo Bonzini  <bonzini@gnu.org>
 
