@@ -1,8 +1,9 @@
 /* getopt_long and getopt_long_only entry points for GNU getopt.
-   Copyright (C) 1987,88,89,90,91,92,93,94,96,97 Free Software Foundation, Inc.
+   Copyright (C) 1987,88,89,90,91,92,93,94,96,97,98
+     Free Software Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.
-   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   Bugs can be reported to bug-glibc@gnu.org.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -25,7 +26,7 @@
 
 #include "getopt.h"
 
-#if !defined (__STDC__) || !__STDC__
+#if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems
    reject `defined (const)'.  */
 #ifndef const
@@ -44,7 +45,7 @@
    it is simpler to just do this in the source for each such file.  */
 
 #define GETOPT_INTERFACE_VERSION 2
-#if !defined (_LIBC) && defined (__GLIBC__) && __GLIBC__ >= 2
+#if !defined _LIBC && defined __GLIBC__ && __GLIBC__ >= 2
 #include <gnu-versions.h>
 #if _GNU_GETOPT_INTERFACE_VERSION == GETOPT_INTERFACE_VERSION
 #define ELIDE_CODE
