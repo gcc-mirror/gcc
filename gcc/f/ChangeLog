@@ -1,3 +1,8 @@
+2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g77spec.c (lookup_option): Handle -fversion.
+	(lang_specific_driver): Update copyright date in --version output.
+
 Mon Jan  7 00:03:42 2002  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* invoke.texi: Markup g77 as @command.  Remove reference to

@@ -982,7 +982,6 @@ static const struct option_map option_map[] =
    {"--use-version", "-V", "a"},
    {"--user-dependencies", "-MM", 0},
    {"--verbose", "-v", 0},
-   {"--version", "-dumpversion", 0},
    {"--warn-", "-W", "*j"},
    {"--write-dependencies", "-MD", 0},
    {"--write-user-dependencies", "-MMD", 0},
@@ -3348,6 +3347,17 @@ process_command (argc, argv)
       else if (! strcmp (argv[i], "-dumpmachine"))
 	{
 	  printf ("%s\n", spec_machine);
+	  exit (0);
+	}
+      else if (strcmp (argv[i], "-fversion") == 0)
+	{
+	  /* translate_options () has turned --version into -fversion.  */
+	  printf (_("%s (GCC) %s\n"), programname, version_string);
+	  fputs (_("Copyright (C) 2002 Free Software Foundation, Inc.\n"),
+		 stdout);
+	  fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
+		 stdout);
 	  exit (0);
 	}
       else if (strcmp (argv[i], "-fhelp") == 0)

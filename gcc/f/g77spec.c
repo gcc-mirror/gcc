@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -194,6 +194,8 @@ lookup_option (xopt, xskip, xarg, text)
 	opt = OPTION_syntax_only;
       else if (! strcmp (text, "-dumpversion"))
 	opt = OPTION_version;
+      else if (! strcmp (text, "-fversion"))  /* Really --version!! */
+	opt = OPTION_version;
       else if (! strcmp (text, "-Xlinker")
 	       || ! strcmp (text, "-specs"))
 	skip = 1;
@@ -373,7 +375,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	case OPTION_version:
 	  printf ("\
 GNU Fortran %s (Fortran Frontend version %s)\n\
-Copyright (C) 2001 Free Software Foundation, Inc.\n\
+Copyright (C) 2002 Free Software Foundation, Inc.\n\
 \n\
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\
