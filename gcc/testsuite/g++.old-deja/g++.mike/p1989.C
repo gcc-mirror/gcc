@@ -472,14 +472,14 @@ Graph<T>::V1(Pix vx, Pix x) const
 
 class STRLIdentifier;
 
-extern x(List_DL<STRLIdentifier *>);
-extern x(List_DLS<STRLIdentifier *>);
+extern int x(List_DL<STRLIdentifier *>);
+extern int x(List_DLS<STRLIdentifier *>);
 
-extern x(Set<STRLIdentifier *>);
-extern x(Set_DL<STRLIdentifier *>);
-extern x(Set_DLp<STRLIdentifier *>);
+extern int x(Set<STRLIdentifier *>);
+extern int x(Set_DL<STRLIdentifier *>);
+extern int x(Set_DLp<STRLIdentifier *>);
 
-extern x(Graph<STRLIdentifier *>);
+extern int x(Graph<STRLIdentifier *>);
 
 class STRLIdentifier {
     char buf[10];
@@ -488,7 +488,7 @@ class STRLIdentifier {
 extern int operator==(vertex<STRLIdentifier*>&, vertex<STRLIdentifier*>&); // ERROR - const subversion
 extern int operator==(STRLIdentifier&, STRLIdentifier&); // ERROR - fn ref in err msg
 
-extern x(List_DLSp<STRLIdentifier *>);
+extern int x(List_DLSp<STRLIdentifier *>);
 
 template class Graph<STRLIdentifier *>;
 template class List_DLS<vertex<STRLIdentifier *> >;

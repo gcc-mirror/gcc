@@ -1,5 +1,5 @@
 // GROUPS passed
-extern "C" printf(...);
+extern "C" int printf(...);
 extern "C" void exit(int);
 
 class A {

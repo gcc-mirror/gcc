@@ -7,7 +7,7 @@ struct A {
 };
 
 struct B {
-  friend operator== (B, int);
+  friend int operator== (B, int);
 };
 
 int foo (A& a) {

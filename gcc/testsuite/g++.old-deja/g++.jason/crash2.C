@@ -3,7 +3,7 @@
 // Build don't link:
 
 class PhysicalPageId {
-  const maximum_block_numbers = 2;
+  const int maximum_block_numbers = 2;
   long block_number[maximum_block_numbers];
 };
 

@@ -1,6 +1,6 @@
 // PRMS id: 6863
 
-extern "C" printf(const char *, ...);
+extern "C" int printf(const char *, ...);
 extern "C" void abort();
 
 enum ENUM {E1=0, E2 };
