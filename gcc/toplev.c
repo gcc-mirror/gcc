@@ -4238,11 +4238,14 @@ rest_of_compilation (decl)
 #ifdef DELAY_SLOTS
   if (optimize > 0 && flag_delayed_branch)
     {
+      if (dbr_sched_dump)
+	open_dump_file (".dbr", decl_printable_name (decl, 2));
+
       TIMEVAR (dbr_sched_time, dbr_schedule (insns, rtl_dump_file));
 
       if (dbr_sched_dump)
 	{
-	  dump_rtl (".dbr", decl, print_rtl_with_bb, insns);
+	  close_dump_file (print_rtl_with_bb, insns);
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".dbr", insns);
 	}

@@ -1,3 +1,8 @@
+Wed Mar 31 17:20:11 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (rest_of_compilation): Allow dbr_schedule to write to
+	the dump file too.
+
 Wed Mar 31 12:32:43 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (find_basic_blocks): New argument `do_cleanup'.
