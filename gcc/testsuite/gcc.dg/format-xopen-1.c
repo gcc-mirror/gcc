@@ -1,6 +1,6 @@
 /* Test for X/Open format extensions, as found in the
    Single Unix Specification and in Austin Group draft 4, subject to some
-   Aardvark problem reports submitted.
+   Aardvark problem reports approved as changes.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
@@ -81,9 +81,6 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   */
   scanf ("%aS", fp);
   /* The printf flag character ' is an X/Open extension.  */
-  /* Allowing %'F here presumes acceptance of the corresponding Aardvark
-     report.
-  */
   printf ("%'d%'i%'u%'f%'F%'g%'G", i, i, u, d, d, d, d);
   printf ("%'o", u); /* { dg-warning "flag" "bad use of ' flag" } */
   printf ("%'x", u); /* { dg-warning "flag" "bad use of ' flag" } */
@@ -97,9 +94,9 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%'p", p); /* { dg-warning "flag" "bad use of ' flag" } */
   printf ("%'n", n); /* { dg-warning "flag" "bad use of ' flag" } */
   /* The use of operand number $ formats is an X/Open extension.  */
-  /* Banning gaps in the arguments used with scanf, and not objecting to
-     multiple use of an argument with scanf, presumes acceptance of the
-     corresponding Aardvark reports.
+  /* Banning gaps in the arguments used with scanf was covered in Aardvark
+     report XSHd4 ERN 164, which was rejected, but implementation without
+     such a ban still isn't possible within ISO C.
   */
   scanf ("%1$d", ip);
   printf ("%1$d", i);
@@ -119,5 +116,7 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%3$d%1$d", i, i, i); /* { dg-warning "before used" "unused $ operand" } */
   printf ("%2$d%1$d", i, i, i); /* { dg-warning "unused" "unused $ operand" } */
   vprintf ("%3$d%1$d", va); /* { dg-warning "before used" "unused $ operand" } */
-  scanf ("%1$*d%1$d", ip); /* { dg-warning "operand" "operand number with suppression" } */
+  scanf ("%2$*d%1$d", ip, ip); /* { dg-warning "operand" "operand number with suppression" } */
+  printf ("%1$d%1$d", i);
+  scanf ("%1$d%1$d", ip); /* { dg-warning "more than once" "multiple use of scanf argument" } */
 }

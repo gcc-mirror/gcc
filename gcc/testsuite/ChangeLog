@@ -1,3 +1,9 @@
+2000-10-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format-xopen-1.c: Update comments; adjust for checking
+	for multiple use of arguments with scanf formats; add tests for
+	multiple use of arguments.
+
 2000-10-17  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* gcc.dg/sequence-pt-1.c: Several new tests; remove xfail from some old tests.
