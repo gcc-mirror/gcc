@@ -2384,7 +2384,6 @@ gnu/gcj/runtime/natVMClassLoader.lo gnu/java/nio/natByteBufferImpl.lo \
 gnu/java/nio/natCharBufferImpl.lo gnu/java/nio/natDoubleBufferImpl.lo \
 gnu/java/nio/natFloatBufferImpl.lo gnu/java/nio/natIntBufferImpl.lo \
 gnu/java/nio/natLongBufferImpl.lo \
-gnu/java/nio/natSelectorImpl.lo \
 gnu/java/nio/natShortBufferImpl.lo \
 java/io/natFile.lo java/io/natFileDescriptor.lo \
 java/io/natObjectInputStream.lo \
