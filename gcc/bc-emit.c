@@ -27,7 +27,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "obstack.h"
 #include "bytecode.h"
+#ifdef __GNUC__
 #include "bytetypes.h"
+#endif
 #include "bc-emit.h"
 #include "bc-opcode.h"
 #include "bc-typecd.h"
@@ -408,10 +410,10 @@ bc_initialize ()
   bc_text_seg = seg_create ();
   bc_data_seg = seg_create ();
 
-  dconst0 = REAL_VALUE_ATOF ("0");
-  dconst1 = REAL_VALUE_ATOF ("1");
-  dconst2 = REAL_VALUE_ATOF ("2");
-  dconstm1 = REAL_VALUE_ATOF ("-1");
+  dconst0 = REAL_VALUE_ATOF ("0", DFmode);
+  dconst1 = REAL_VALUE_ATOF ("1", DFmode);
+  dconst2 = REAL_VALUE_ATOF ("2", DFmode);
+  dconstm1 = REAL_VALUE_ATOF ("-1", DFmode);
 
   /* Find the narrowest mode for each class and compute the word and byte
      modes.  */
