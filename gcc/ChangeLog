@@ -1,5 +1,6 @@
 2002-03-18  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/4863
 	* arm.md (tablejump): Make this a define_expand.  For PIC add the
 	offset to the base of the table.
 	(thumb_tablejump): Matcher for Thumb tablejump insn.
