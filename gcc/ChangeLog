@@ -2308,7 +2308,7 @@ Tue Sep 17 13:40:13 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	replace_equiv_address to generate proper aliasing info.
 	Move common code out of conditionals.  Localize vars.
 
-2002-09-09  Eric Botcazou  ebotcazou@libertysurf.fr
+2002-09-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* optabs.c (expand_binop): Minor cleanup.
 	(expand_twoval_binop): Convert CONST_INTs like in expand_binop.
