@@ -193,7 +193,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 int
 _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 {
-  if (_Jv_PthreadCheckMonitor (mu))
+  if (_Jv_MutexCheckMonitor (mu))
     return _JV_NOT_OWNER;
 
   _Jv_Thread_t *target;
@@ -232,7 +232,7 @@ _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 int
 _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 {
-  if (_Jv_PthreadCheckMonitor (mu))
+  if (_Jv_MutexCheckMonitor (mu))
     return _JV_NOT_OWNER;
 
   _Jv_Thread_t *target;

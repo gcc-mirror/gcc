@@ -1,3 +1,18 @@
+2003-10-21  Jerry Quinn  <jlquinn@optonline.net>
+
+        * posix-threads.cc (_Jv_CondNotify,_Jv_CondNotifyAll): Rename
+        _Jv_PthreadCheckMonitor to _Jv_MutexCheckMonitor.
+	* include/no-threads.h (_Jv_MutexCheckMonitor): New.
+	* include/posix-threads.h (_Jv_MutexCheckMonitor): Rename from
+        _Jv_PthreadCheckMonitor.  Simplify code.
+	(_Jv_MutexUnlock): Use _Jv_MutexCheckMonitor.
+	* include/win32-threads.h (_Jv_MutexCheckMonitor): New.
+	* java/lang/Object.h (_Jv_ObjectCheckMonitor): Declare.
+	* java/lang/Thread.java (holdsLock): New.
+	* java/lang/natObject.cc (_Jv_ObjectCheckMonitor): New, with and
+        without JV_HASH_SYNCHRONIZATION.
+	* java/lang/natThread.cc (java::lang::Thread::holdsLock): New.
+
 2003-10-20  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/RuleBasedCollator.java

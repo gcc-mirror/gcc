@@ -264,6 +264,13 @@ _Jv_MonitorExit (jobject obj)
     throw new java::lang::IllegalMonitorStateException;
 }
 
+bool
+_Jv_ObjectCheckMonitor (jobject obj)
+{
+  _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;
+  return _Jv_MutexCheckMonitor (&si->mutex);
+}
+
 #else /* JV_HASH_SYNCHRONIZATION */
 
 // FIXME: We shouldn't be calling GC_register_finalizer directly.
@@ -1086,6 +1093,46 @@ retry:
     }
   keep_live(addr);
 }     
+
+// Return false if obj's monitor is held by the current thread
+bool
+_Jv_ObjectCheckMonitor (jobject obj)
+{
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)obj & ~((obj_addr_t)FLAGS);
+#else
+  obj_addr_t addr = (obj_addr_t)obj;
+#endif
+  obj_addr_t address;
+  unsigned hash = JV_SYNC_HASH(addr);
+  hash_entry * he = light_locks + hash;
+  _Jv_ThreadId_t self = _Jv_ThreadSelf();
+
+  JvAssert(!(addr & FLAGS));
+retry:
+  // Acquire the hash table entry lock
+  address = ((he -> address) & ~LOCKED);
+  if (!compare_and_swap(&(he -> address), address, address | LOCKED))
+    {
+      wait_unlocked(he);
+      goto retry;
+    }
+
+  bool not_mine;
+
+  if (!(address & ~FLAGS))
+    not_mine = true;
+  else if ((address & ~FLAGS) == addr)
+    not_mine = (he -> light_thr_id != self);
+  else
+    {
+      heavy_lock* hl = find_heavy(addr, he);
+      not_mine = hl ? (hl->si.mutex.owner != self) : true;
+    }
+
+  release_set(&(he -> address), address);	// unlock hash entry
+  return not_mine;
+}
 
 // The rest of these are moderately thin veneers on _Jv_Cond ops.
 // The current version of Notify might be able to make the pthread

@@ -107,6 +107,14 @@ java::lang::Thread::destroy (void)
     (JvNewStringLatin1 ("Thread.destroy unimplemented"));
 }
 
+jboolean
+java::lang::Thread::holdsLock (jobject obj)
+{
+  if (!obj)
+    throw new NullPointerException;
+  return !_Jv_ObjectCheckMonitor (obj);
+}
+
 void
 java::lang::Thread::interrupt (void)
 {
