@@ -2173,7 +2173,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 			&& (DECL_INITIAL (decl) == 0
 			    || DECL_INITIAL (decl) == error_mark_node
 			    || DECL_IGNORED_P (decl))))
-		   assemble_variable (decl, top_level, at_end);
+		   assemble_variable (decl, top_level, at_end, 0);
 	     });
   else if (DECL_REGISTER (decl) && asmspec != 0)
     {
