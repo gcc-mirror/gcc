@@ -1676,17 +1676,18 @@ extern int leaf_function;
 
 #define FUNCTION_PROFILER(FILE, LABELNO)  			\
   do {								\
+    char buf[20];						\
+    ASM_GENERATE_INTERNAL_LABEL (buf, "LP", (LABELNO));		\
     if (! TARGET_ARCH64)					\
       fputs ("\tst %g2,[%fp-4]\n", FILE);			\
-    fputs ("\tsethi %hi(", (FILE));				\
-    ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
-    fputs ("),%o0\n", (FILE));					\
+    fputs ("\tsethi %hi(", FILE);				\
+    assemble_name (FILE, buf);					\
+    fputs ("),%o0\n", FILE);					\
     if (TARGET_MEDANY)						\
-      fprintf (FILE, "\tadd %%o0,%s,%%o0\n",			\
-	       MEDANY_BASE_REG);				\
-    fputs ("\tcall mcount\n\tadd %lo(", (FILE));		\
-    ASM_OUTPUT_INTERNAL_LABELREF (FILE, "LP", LABELNO);		\
-    fputs ("),%o0,%o0\n", (FILE));				\
+      fprintf (FILE, "\tadd %o0,%s,%o0\n", MEDANY_BASE_REG);	\
+    fputs ("\tcall mcount\n\tadd %o0,%lo(", FILE);		\
+    assemble_name (FILE, buf);					\
+    fputs ("),%o0\n", FILE);					\
     if (! TARGET_ARCH64)					\
       fputs ("\tld [%fp-4],%g2\n", FILE);			\
   } while (0)
@@ -2802,15 +2803,6 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
-
-/* This is how to output a reference to an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
-/* FIXME:  This should be used throughout gcc, and documented in the texinfo
-   files.  There is no reason you should have to allocate a buffer and
-   `sprintf' to reference an internal label (as opposed to defining it).  */
-
-#define ASM_OUTPUT_INTERNAL_LABELREF(FILE,PREFIX,NUM)	\
-  fprintf (FILE, "%s%d", PREFIX, NUM)
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
