@@ -1,4 +1,8 @@
 2004-11-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (dg-target-list): New.
+
+2004-11-11  Janis Johnson  <janis187@us.ibm.com>
 	    Richard Sandiford  <rsandifo@redhat.com>
 
 	* lib/target-supports.exp (get-compiler_messages): New.
