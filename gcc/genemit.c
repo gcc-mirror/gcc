@@ -58,7 +58,7 @@ struct clobber_ent
 static void max_operand_1		PARAMS ((rtx));
 static int max_operand_vec		PARAMS ((rtx, int));
 static void print_code			PARAMS ((RTX_CODE));
-static void gen_exp			PARAMS ((rtx, enum rtx_code));
+static void gen_exp			PARAMS ((rtx, enum rtx_code, char *));
 static void gen_insn			PARAMS ((rtx));
 static void gen_expand			PARAMS ((rtx));
 static void gen_split			PARAMS ((rtx));
@@ -155,9 +155,10 @@ gen_rtx_scratch (x, subroutine_type)
    substituting any operand references appearing within.  */
 
 static void
-gen_exp (x, subroutine_type)
+gen_exp (x, subroutine_type, used)
      rtx x;
      enum rtx_code subroutine_type;
+     char *used;
 {
   RTX_CODE code;
   int i;
@@ -176,6 +177,15 @@ gen_exp (x, subroutine_type)
     {
     case MATCH_OPERAND:
     case MATCH_DUP:
+      if (used)
+	{
+	  if (used[XINT (x, 0)])
+	    {
+	      printf ("copy_rtx (operand%d)", XINT (x, 0));
+	      return;
+	    }
+	  used[XINT (x, 0)] = 1;
+	}
       printf ("operand%d", XINT (x, 0));
       return;
 
@@ -188,7 +198,7 @@ gen_exp (x, subroutine_type)
       for (i = 0; i < XVECLEN (x, 1); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (x, 1, i), subroutine_type);
+	  gen_exp (XVECEXP (x, 1, i), subroutine_type, used);
 	}
       printf (")");
       return;
@@ -199,7 +209,7 @@ gen_exp (x, subroutine_type)
       for (i = 0; i < XVECLEN (x, 2); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (x, 2, i), subroutine_type);
+	  gen_exp (XVECEXP (x, 2, i), subroutine_type, used);
 	}
       printf (")");
       return;
@@ -262,7 +272,7 @@ gen_exp (x, subroutine_type)
 	break;
       printf (",\n\t");
       if (fmt[i] == 'e' || fmt[i] == 'u')
-	gen_exp (XEXP (x, i), subroutine_type);
+	gen_exp (XEXP (x, i), subroutine_type, used);
       else if (fmt[i] == 'i')
 	printf ("%u", XINT (x, i));
       else if (fmt[i] == 's')
@@ -274,7 +284,7 @@ gen_exp (x, subroutine_type)
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    {
 	      printf (",\n\t\t");
-	      gen_exp (XVECEXP (x, i, j), subroutine_type);
+	      gen_exp (XVECEXP (x, i, j), subroutine_type, used);
 	    }
 	  printf (")");
 	}
@@ -397,7 +407,7 @@ gen_insn (insn)
   if (XVECLEN (insn, 1) == 1)
     {
       printf ("  return ");
-      gen_exp (XVECEXP (insn, 1, 0), DEFINE_INSN);
+      gen_exp (XVECEXP (insn, 1, 0), DEFINE_INSN, NULL);
       printf (";\n}\n\n");
     }
   else
@@ -408,7 +418,7 @@ gen_insn (insn)
       for (i = 0; i < XVECLEN (insn, 1); i++)
 	{
 	  printf (",\n\t\t");
-	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN);
+	  gen_exp (XVECEXP (insn, 1, i), DEFINE_INSN, NULL);
 	}
       printf ("));\n}\n\n");
     }
@@ -454,7 +464,7 @@ gen_expand (expand)
       && XVECLEN (expand, 1) == 1)
     {
       printf ("  return ");
-      gen_exp (XVECEXP (expand, 1, 0), DEFINE_EXPAND);
+      gen_exp (XVECEXP (expand, 1, 0), DEFINE_EXPAND, NULL);
       printf (";\n}\n\n");
       return;
     }
@@ -535,7 +545,7 @@ gen_expand (expand)
 	printf ("  emit (");
       else
 	printf ("  emit_insn (");
-      gen_exp (next, DEFINE_EXPAND);
+      gen_exp (next, DEFINE_EXPAND, NULL);
       printf (");\n");
       if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
 	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
@@ -561,6 +571,7 @@ gen_split (split)
   const char *const name =
     ((GET_CODE (split) == DEFINE_PEEPHOLE2) ? "peephole2" : "split");
   const char *unused;
+  char *used;
 
   if (XVEC (split, 0) == 0)
     fatal ("define_%s (definition %d) lacks a pattern", name,
@@ -574,6 +585,7 @@ gen_split (split)
   max_operand_vec (split, 2);
   operands = MAX (max_opno, MAX (max_dup_opno, max_scratch_opno)) + 1;
   unused = (operands == 0 ? " ATTRIBUTE_UNUSED" : "");
+  used = xcalloc (1, operands);
 
   /* Output the prototype, function name and argument declarations.  */
   if (GET_CODE (split) == DEFINE_PEEPHOLE2)
@@ -645,7 +657,7 @@ gen_split (split)
 	printf ("  emit (");
       else
 	printf ("  emit_insn (");
-      gen_exp (next, GET_CODE (split));
+      gen_exp (next, GET_CODE (split), used);
       printf (");\n");
       if (GET_CODE (next) == SET && GET_CODE (SET_DEST (next)) == PC
 	  && GET_CODE (SET_SRC (next)) == LABEL_REF)
@@ -658,6 +670,8 @@ gen_split (split)
   printf ("  _val = gen_sequence ();\n");
   printf ("  end_sequence ();\n");
   printf ("  return _val;\n}\n\n");
+
+  free (used);
 }
 
 /* Write a function, `add_clobbers', that is given a PARALLEL of sufficient
@@ -686,7 +700,7 @@ output_add_clobbers ()
 	{
 	  printf ("      XVECEXP (pattern, 0, %d) = ", i);
 	  gen_exp (XVECEXP (clobber->pattern, 1, i),
-		   GET_CODE (clobber->pattern));
+		   GET_CODE (clobber->pattern), NULL);
 	  printf (";\n");
 	}
 
