@@ -150,7 +150,7 @@ end ifc
 %token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
 
 /* Objective-C string constants in raw form.
-   yylval is an OBJC_STRING_CST node.  */
+   yylval is an STRING_CST node.  */
 %token OBJC_STRING
 
 
@@ -753,8 +753,8 @@ end ifc
 	;
 
 ifobjc
-/* Produces an OBJC_STRING_CST with perhaps more OBJC_STRING_CSTs chained
-   onto it.  */
+/* Produces an STRING_CST with perhaps more STRING_CSTs chained
+   onto it, which is to be read as an ObjC string object.  */
 objc_string:
 	  OBJC_STRING
 	| objc_string OBJC_STRING

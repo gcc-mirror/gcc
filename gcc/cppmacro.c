@@ -55,12 +55,14 @@ static cpp_toklist * alloc_macro PARAMS ((cpp_reader *, struct macro_info *));
 
 /* These are all the tokens that can have something pasted after them.
    Comma is included in the list only to support the GNU varargs extension
-   (where you write a ## b and a disappears if b is an empty rest argument).  */
+   (where you write a ## b and a disappears if b is an empty rest argument).
+   CPP_OTHER is included because of Objective C's use of '@'.  */
 #define CAN_PASTE_AFTER(type) \
 ((type) <= CPP_LAST_EQ || (type) == CPP_COLON || (type) == CPP_HASH \
  || (type) == CPP_DEREF || (type) == CPP_DOT || (type) == CPP_NAME \
  || (type) == CPP_INT || (type) == CPP_FLOAT || (type) == CPP_NUMBER \
- || (type) == CPP_MACRO_ARG || (type) == CPP_PLACEMARKER || (type) == CPP_COMMA)
+ || (type) == CPP_MACRO_ARG || (type) == CPP_PLACEMARKER \
+ || (type) == CPP_COMMA || (type) == CPP_OTHER)
 
 /* Scans for a given token, returning the parameter number if found,
    or 0 if not found.  Scans from FIRST to TOKEN - 1 or the first

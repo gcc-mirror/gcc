@@ -1,3 +1,25 @@
+2000-08-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplex.c (parse_name): Might have to glue a CPP_OTHER token
+	before the name.
+	(lex_line): Glue @ onto the beginning of identifiers and
+	string constants, in Objective-C mode.
+	(output_token, spell_token): Handle CPP_OSTRING.
+	(can_paste, maybe_paste_with_next): Handle pasting @ onto the
+	beginning of a NAME or a STRING, in objc mode.
+
+	* cpplib.c (get_define_node): Do not permit identifiers that
+	begin with @ to be #defined.
+	* cppmacro.c (CAN_PASTE_AFTER): Add CPP_OTHER.
+	* cpplib.h (TTYPE_TABLE): Add CPP_OSTRING.
+
+	* c-lang.c, objc/objc-act.c (build_objc_string): Delete.
+	* c-tree.h (build_objc_string): Delete prototype.
+	* objc/objc-tree.def: Delete OBJC_STRING_CST.
+	* c-lex.c (yylex): Use build_string for all three kinds of strings.
+
+	* c-parse.in, objc/objc-act.c: Update commentary.
+
 2000-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* extend.texi: Fix typo in last change.
@@ -33,8 +55,8 @@ Thu Aug  3 10:05:53 2000  Akiko Matsushita <matusita@sra.co.jp>
 
 2000-08-03  Michael Poole  <poole@troilus.org>
 
-        * tm.texi (Register Classes): Clarify order of sub-initializers
-        in REG_CLASS_CONTENTS.
+	* tm.texi (Register Classes): Clarify order of sub-initializers
+	in REG_CLASS_CONTENTS.
 
 Thu Aug  3 15:53:03 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
@@ -125,7 +147,7 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* cppmain.c (cb_define, cb_undef): Don't generate any output
 	if not done_initializing.
-	* cpplex.c (maybe_paste_with_next): When the token after a ## 
+	* cpplex.c (maybe_paste_with_next): When the token after a ##
 	is an omitted rest argument, only delete the token before it
 	if that token is a comma.  Do not warn about bogus token
 	pastes for , ## rest_arg.
@@ -141,7 +163,7 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/beos-elf.h (INCLUDE_DEFAULTS): Add additional
 	Be directories to search path.
-	
+
 	Remove support for __declspec(dllimport) and __declspec(dllexport).
 	This is leftover cruft from the earlier BeOS gcc port when BeOS
 	used Microsoft's PE object file format.
@@ -159,15 +181,15 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Remove.
 	(ASM_OUTPUT_ALIGNED_LOCAL): Remove.
 	(STRIP_NAME_ENCODING): Remove.
-	
+
 	Remove support for obsolete version of BeOS that is no longer
 	supported by Be.
 	* configure.in (i*86-*-beospe*): Remove.
 	* config/i386/beos-pe.h: Remove.
-	
+
 2000-08-01  Jeffrey Oldham  <oldham@codesourcery.com>
-            Mark Mitchell <mark@codesourcery.com>
-	
+	    Mark Mitchell <mark@codesourcery.com>
+
 	* Makefile.in (OBJS): Added dce.o.
 	(ssa.o): Updated target to include ssa.h.
 	(flow.o): Likewise.
@@ -176,7 +198,7 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* basic-block.h: Added comments.
 	(INVALID_BLOCK): Added definition.
 	(connect_infinite_loops_to_exit): Added declaration.
-	Moved SSA declarations to ssa.h.	
+	Moved SSA declarations to ssa.h.
 	* flow.c: Added inclusion of ssa.h.
 	(struct depth_first_search_dsS, depth_first_search_ds):
 	Added definitions.
@@ -205,9 +227,9 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	Defined flag_ssa.
 	(f_options): Added dce entry.
 	* invoke.texi: Document -fdce.  Emphasize experimental status of
-	-fssa. 
+	-fssa.
 	* dce: New file.
-	
+
 2000-08-01  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpperror.c (v_message): Split into _cpp_begin_message and
@@ -619,7 +641,7 @@ Sun Jul 30 20:27:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Sun Jul 30 20:25:21 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	* function.c (assign_stack_local_1, assign_stack_temp_for_type): 
+	* function.c (assign_stack_local_1, assign_stack_temp_for_type):
 	Do not call gen_mode_alignment when mode is BLKmode.
 
 Sun Jul 30 20:21:54 MET DST 2000  Jan Hubicka  <jh@suse.cz>
@@ -655,7 +677,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(c4x_valid_type_attribute_p): Likewise.
 	* config/c4x/c4x.h (FUNCTION_PROLOGUE, FUNCTION_EPILOGUE): Delete.
 	(FUNCTION_BLOCK_PROFILER_EXIT): Convert to emit RTL.
-	
+
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_emit_move_sequence): Use loadqi_big_constant
@@ -672,7 +694,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* config/c4x/c4x.h (ASM_FORMAT_PRIVATE_NAME): Output $ in label.
 
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
-	
+
 	* config/c4x/c4x.h (IS_XXX_REGNO): Rewrite to avoid unsigned warnings.
 
 2000-07-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
@@ -699,7 +721,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(make_equivalent_phi_alternatives_equivalent): Likewise.
 	(for_each_successor_phi): Likewise.
 	(convert_from_ssa): Modify phi-node deletion algorithm.
-	
+
 2000-07-29  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in (mips*-*-linux*): Use mips*el to check for little
@@ -771,7 +793,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(__do_global_ctors): Prototype.
 
 	* gcse.c (record_one_set, pre_delete): Remove unused variables.
-	
+
 	* rs6000.c (rs6000_maybe_dead): Delete unused prototype.
 	(print_operand): Initialize variable `t'.
 
@@ -791,7 +813,7 @@ Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(--with-included-gettext): Likewise.
 	(--enable-maintainer-mode): New description added.
 	* extend.texi (-fstrict-prototype): Add missing '.'.
-	
+
 2000-07-27  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (gen_decl_die): Don't call gen_abstract_function if
@@ -860,7 +882,7 @@ Thu Jul 27 09:25:17 2000  Akiko Matsushita  <matusita@sra.co.jp>
 
 	* pa/x-pa-hpux: Add -D_HIUX_SOURCE to FIXPROTO_DEFINES
 	for HI-UX/WE2 systems.
-	
+
 2000-07-24  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl/fixfixes.c(emit_gnu_type): rewrote to *rely* on GCC
@@ -873,9 +895,9 @@ Thu Jul 27 11:54:17 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* cpp.texi: Append a trailing full-stop to xrefs where needed.
 
-2000-07-26  Dave Pitts  <dpitts@cozx.com>	
+2000-07-26  Dave Pitts  <dpitts@cozx.com>
 
-	* i370.c: Remove LONGEXTERNAL ifdef from alias_number. Added hash 
+	* i370.c: Remove LONGEXTERNAL ifdef from alias_number. Added hash
 	routine constants.
 	(mvs_hash_alias): New function.
 	(mvs_add_alias): Change argument spacing.
@@ -1037,7 +1059,7 @@ Tue Jul 25 23:08:33 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	UNALIGNED_INT_ASM_OP.
 	(def_cfa_1): Don't emit def_cfa_register or def_cfa_offset to adjust
 	a location expression.
-	(dwarf2out_frame_debug_expr): Lose cfa_old_reg stuff.  Don't 
+	(dwarf2out_frame_debug_expr): Lose cfa_old_reg stuff.  Don't
 	assume indirect access if we're saving the CFA address exactly.
 
 	* Makefile.in (bootstrap): Move -BstageN/ to the end.
@@ -1074,9 +1096,9 @@ Mon Jul 24 02:04:52 2000  Jeffrey A Law  (law@cygnus.com)
 	* c-semantics.c (make_rtl_for_local_static): Use TREE_ASM_WRITTEN
 	to figure out whether or not a variable has already been emitted.
 
-Sun Jul 23 14:49:12 2000  Jason Eckhardt  <jle@cygnus.com> 
+Sun Jul 23 14:49:12 2000  Jason Eckhardt  <jle@cygnus.com>
 
-	* config/i860/i860.md (untyped_call expander): Use GEN_CALL 
+	* config/i860/i860.md (untyped_call expander): Use GEN_CALL
 	instead of gen_call.
 
 Sun Jul 23 11:52:03 2000  George Helffrich (george@gly.bris.ac.uk)

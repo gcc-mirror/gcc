@@ -123,6 +123,7 @@ typedef struct cpp_hashnode cpp_hashnode;
 \
   TK(CPP_STRING,	SPELL_STRING)	/* "string" */			\
   TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
+  TK(CPP_OSTRING,	SPELL_STRING)	/* @"string" - Objective C */	\
   TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
 \
   TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \

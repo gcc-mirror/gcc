@@ -2268,25 +2268,19 @@ yylex ()
 	/* We have read the entire constant.
 	   Construct a STRING_CST for the result.  */
 
+	yylval.ttype = build_string (p - (token_buffer + 1), token_buffer + 1);
 	if (wide_flag)
 	  {
-	    yylval.ttype = build_string (p - (token_buffer + 1),
-					 token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
 	    value = STRING;
 	  }
 	else if (objc_flag)
 	  {
-	    /* Return an Objective-C @"..." constant string object.  */
-	    yylval.ttype = build_objc_string (p - (token_buffer + 1),
-					      token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	    value = OBJC_STRING;
 	  }
 	else
 	  {
-	    yylval.ttype = build_string (p - (token_buffer + 1),
-					 token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
 	    value = STRING;
 	  }

@@ -1008,15 +1008,27 @@ parse_name (pfile, tok, cur, rlimit)
     }
   len = cur - name;
 
-  if (tok->val.node == 0)
+  if (tok->type == CPP_NAME && tok->val.node == 0)
     tok->val.node = _cpp_lookup_with_hash (pfile, name, len, r);
   else
     {
-      unsigned int oldlen = tok->val.node->length;
-      U_CHAR *newname = alloca (oldlen + len);
-      memcpy (newname, tok->val.node->name, oldlen);
+      unsigned int oldlen;
+      U_CHAR *newname;
+
+      if (tok->type == CPP_NAME)
+	oldlen = tok->val.node->length;
+      else
+	oldlen = 1;
+
+      newname = alloca (oldlen + len);
+
+      if (tok->type == CPP_NAME)
+	memcpy (newname, tok->val.node->name, oldlen);
+      else
+	newname[0] = tok->val.aux;
       memcpy (newname + oldlen, name, len);
       tok->val.node = cpp_lookup (pfile, newname, len + oldlen);
+      tok->type = CPP_NAME;
     }
 
   return cur;
@@ -1373,8 +1385,16 @@ lex_line (pfile, list)
 	case 'S': case 'T': case 'U': case 'V': case 'W': case 'X':
 	case 'Y': case 'Z':
 	  cur--;		     /* Backup character.  */
-	  cur_token->val.node = 0;
-	  cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
+
+	  /* In Objective C, '@' may begin certain keywords.  */
+	  if (CPP_OPTION (pfile, objc) && cur_token[-1].type == CPP_OTHER
+	      && cur_token[-1].val.aux == '@' && IMMED_TOKEN ())
+	    cur_token--;
+	  else
+	    {
+	      cur_token->val.node = 0;
+	      cur_token->type = CPP_NAME; /* Identifier, macro etc.  */
+	    }
 
 	continue_name:
 	  cur = parse_name (pfile, cur_token, cur, buffer->rlimit);
@@ -1394,12 +1414,21 @@ lex_line (pfile, list)
 	  break;
 
 	case '\'':
-	case '\"':
-	  cur_token->type = c == '\'' ? CPP_CHAR : CPP_STRING;
-	  /* Do we have a wide string?  */
+	  cur_token->type = CPP_CHAR;
 	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
 	      && cur_token[-1].val.node == pfile->spec_nodes->n_L)
-	    BACKUP_TOKEN (c == '\'' ? CPP_WCHAR : CPP_WSTRING);
+	    BACKUP_TOKEN (CPP_WCHAR);
+	  goto do_parse_string;
+	  
+	case '\"':
+	  cur_token->type = CPP_STRING;
+	  if (cur_token[-1].type == CPP_NAME && IMMED_TOKEN ()
+	      && cur_token[-1].val.node == pfile->spec_nodes->n_L)
+	    BACKUP_TOKEN (CPP_WSTRING);
+	  else if (CPP_OPTION (pfile, objc)
+		   && cur_token[-1].type == CPP_OTHER && IMMED_TOKEN ()
+		   && cur_token[-1].val.aux == '@')
+	    BACKUP_TOKEN (CPP_OSTRING);
 
 	do_parse_string:
 	  /* Here c is one of ' " or >.  */
@@ -1883,20 +1912,21 @@ output_token (pfile, fp, token, prev, white)
 
     case SPELL_STRING:
       {
-	if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
-	  putc ('L', fp);
-
-	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
-	  putc ('"', fp);
-	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
-	  putc ('\'', fp);
-
+	int left, right, tag;
+	switch (token->type)
+	  {
+	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
+	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
+	  case CPP_OSTRING:	left = '"';  right = '"';  tag = '@';  break;
+	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
+    	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
+	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
+	  default:		left = '\0'; right = '\0'; tag = '\0'; break;
+	  }
+	if (tag) putc (tag, fp);
+	if (left) putc (left, fp);
 	fwrite (token->val.str.text, 1, token->val.str.len, fp);
-	
-	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
-	  putc ('"', fp);
-	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
-	  putc ('\'', fp);
+	if (right) putc (right, fp);
       }
       break;
 
@@ -1999,21 +2029,22 @@ spell_token (pfile, token, buffer)
 
     case SPELL_STRING:
       {
-	if (token->type == CPP_WSTRING || token->type == CPP_WCHAR)
-	  *buffer++ = 'L';
-
-	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
-	  *buffer++ = '"';
-	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
-	  *buffer++ = '\'';
-
+	int left, right, tag;
+	switch (token->type)
+	  {
+	  case CPP_STRING:	left = '"';  right = '"';  tag = '\0'; break;
+	  case CPP_WSTRING:	left = '"';  right = '"';  tag = 'L';  break;
+	  case CPP_OSTRING:	left = '"';  right = '"';  tag = '@';  break;
+	  case CPP_CHAR:	left = '\''; right = '\''; tag = '\0'; break;
+    	  case CPP_WCHAR:	left = '\''; right = '\''; tag = 'L';  break;
+	  case CPP_HEADER_NAME:	left = '<';  right = '>';  tag = '\0'; break;
+	  default:		left = '\0'; right = '\0'; tag = '\0'; break;
+	  }
+	if (tag) *buffer++ = tag;
+	if (left) *buffer++ = left;
 	memcpy (buffer, token->val.str.text, token->val.str.len);
 	buffer += token->val.str.len;
-	
-	if (token->type == CPP_STRING || token->type == CPP_WSTRING)
-	  *buffer++ = '"';
-	if (token->type == CPP_CHAR || token->type == CPP_WCHAR)
-	  *buffer++ = '\'';
+	if (right) *buffer++ = right;
       }
       break;
 
@@ -2700,6 +2731,13 @@ can_paste (pfile, token1, token2, digraph)
 	return CPP_NUMBER;
       break;
 
+    case CPP_OTHER:
+      if (CPP_OPTION (pfile, objc) && token1->val.aux == '@')
+	{
+	  if (b == CPP_NAME)	return CPP_NAME;
+	  if (b == CPP_STRING)	return CPP_OSTRING;
+	}
+
     default:
       break;
     }
@@ -2789,7 +2827,8 @@ maybe_paste_with_next (pfile, token)
 		  pasted->val.str.len = end - buf;
 		}
 	    }
-	  else if (type == CPP_WCHAR || type == CPP_WSTRING)
+	  else if (type == CPP_WCHAR || type == CPP_WSTRING
+		   || type == CPP_OSTRING)
 	    pasted = duplicate_token (pfile, second);
 	  else
 	    {
