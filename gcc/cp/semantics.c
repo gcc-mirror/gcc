@@ -401,7 +401,7 @@ anon_aggr_type_p (tree node)
 
 /* Finish a scope.  */
 
-tree
+static tree
 do_poplevel (tree stmt_list)
 {
   tree block = NULL;
@@ -2292,31 +2292,6 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
     }
 
   return result;
-}
-
-/* Called when multiple declarators are processed.  If that is not
-   permitted in this context, an error is issued.  */
-
-void
-check_multiple_declarators (void)
-{
-  /* [temp]
-     
-     In a template-declaration, explicit specialization, or explicit
-     instantiation the init-declarator-list in the declaration shall
-     contain at most one declarator.  
-
-     We don't just use PROCESSING_TEMPLATE_DECL for the first
-     condition since that would disallow the perfectly valid code, 
-     like `template <class T> struct S { int i, j; };'.  */
-  if (at_function_scope_p ())
-    /* It's OK to write `template <class T> void f() { int i, j;}'.  */
-    return;
-     
-  if (PROCESSING_REAL_TEMPLATE_DECL_P () 
-      || processing_explicit_instantiation
-      || processing_specialization)
-    error ("multiple declarators in template declaration");
 }
 
 /* Issue a diagnostic that NAME cannot be found in SCOPE.  DECL is

@@ -796,20 +796,3 @@ make_aggr_type (enum tree_code code)
 
   return t;
 }
-
-/* Return the type-qualifier corresponding to the identifier given by
-   RID.  */
-
-int
-cp_type_qual_from_rid (tree rid)
-{
-  if (rid == ridpointers[(int) RID_CONST])
-    return TYPE_QUAL_CONST;
-  else if (rid == ridpointers[(int) RID_VOLATILE])
-    return TYPE_QUAL_VOLATILE;
-  else if (rid == ridpointers[(int) RID_RESTRICT])
-    return TYPE_QUAL_RESTRICT;
-
-  gcc_unreachable ();
-  return TYPE_UNQUALIFIED;
-}

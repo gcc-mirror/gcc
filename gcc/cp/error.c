@@ -1919,14 +1919,6 @@ decl_as_string (tree decl, int flags)
   return pp_formatted_text (cxx_pp);
 }
 
-const char *
-context_as_string (tree context, int flags)
-{
-  reinit_cxx_pp ();
-  dump_scope (context, flags);
-  return pp_formatted_text (cxx_pp);
-}
-
 /* Generate the three forms of printable names for cxx_printable_name.  */
 
 const char *
