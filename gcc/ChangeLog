@@ -1,3 +1,25 @@
+Fri Apr  9 10:40:10 1999  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+
+	* rs6000.c (rs6000_override_options, ptt, rs6000_file_start,
+	rs6000_float_const, rs6000_replace_regno, debug_stack_info,
+	rs6000_output_load_toc_table, output_prolog, output_epilog):
+	Const-ify a char*.
+	(output_mi_thunk): Likewise.  Mark parameter `thunk_fndecl' with
+	ATTRIBUTE_UNUSED.  Hide unused variables `r0', `sp', `toc',
+	`schain', `r12', `buf' and `labelno'.
+	(output_ascii): Const-ify a char*.
+	(rs6000_gen_section_name): Initialize variable `last_period'.
+	(rs6000_adjust_priority): Mark parameter `insn' with
+	ATTRIBUTE_UNUSED.
+	(rs6000_trampoline_template, rs6000_dll_import_ref,
+	rs6000_longcall_ref, rs6000_encode_section_info): Const-ify a char*.
+
+	* rs6000.h (offsettable_mem_operand, optimization_options): Add
+	prototypes.
+
+	* rs6000.md (movdi, define_split): Cast a value to HOST_WIDE_INT
+	when comparing against one.
+
 Thu Apr  8 19:20:18 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr, case ARRAY_REF, COMPONENT_REF, BIT_FIELD_REF):
