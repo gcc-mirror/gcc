@@ -48,6 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    (vfork, getrusage), so use USG.  The Omron Luna/88k is BSD though.  */
 #ifndef luna88k
 #define USG
+#define NO_SYS_SIGLIST
 #endif
 
 /* Define HAVE_VPRINTF if it is available on host system.  */
