@@ -1,3 +1,7 @@
+2003-01-18  Roger Sayle  <roger@eyesopen.com>
+
+	* config/pa/pa.md (muldi3): Avoid invalid sharing of SUBREG RTXs.
+
 2003-01-10  Geoffrey Keating  <geoffk@apple.com>
 
 	* varasm.c (struct constant_descriptor_rtx): Remove unused
