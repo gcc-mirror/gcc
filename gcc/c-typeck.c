@@ -6253,7 +6253,7 @@ process_init_element (value)
 
   /* If the (lexically) previous elments are not now saved,
      we can discard the storage for them.  */
-  if (constructor_incremental && constructor_pending_elts == 0)
+  if (constructor_incremental && constructor_pending_elts == 0 && value != 0)
     clear_momentary ();
 }
 
