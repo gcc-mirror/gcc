@@ -69,11 +69,11 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=620: -mppc}"
+%{mcpu=602: -d_ARCH_PPC} \
+%{mcpu=603: -D_ARCH_PPC} \
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC}"
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
@@ -758,16 +758,11 @@ extern struct rs6000_cpu_select rs6000_select[];
    So make a class for registers valid as base registers.
 
    Also, cr0 is the only condition code register that can be used in
-   arithmetic insns, so make a separate class for it.  Common mode
-   needs to clobber cr1, so add a class for that as well.  */
+   arithmetic insns, so make a separate class for it. */
 
 enum reg_class
 {
   NO_REGS,
-  R0_REGS,
-  R3_REGS,
-  R4_REGS,
-  R34_REGS,
   BASE_REGS,
   GENERAL_REGS,
   FLOAT_REGS,
@@ -779,7 +774,6 @@ enum reg_class
   SPECIAL_REGS,
   SPEC_OR_GEN_REGS,
   CR0_REGS,
-  CR1_REGS,
   CR_REGS,
   NON_FLOAT_REGS,
   ALL_REGS,
@@ -793,10 +787,6 @@ enum reg_class
 #define REG_CLASS_NAMES							\
 {									\
   "NO_REGS",								\
-  "R0_REGS",								\
-  "R3_REGS",								\
-  "R4_REGS",								\
-  "R34_REGS",								\
   "BASE_REGS",								\
   "GENERAL_REGS",							\
   "FLOAT_REGS",								\
@@ -808,7 +798,6 @@ enum reg_class
   "SPECIAL_REGS",							\
   "SPEC_OR_GEN_REGS",							\
   "CR0_REGS",								\
-  "CR1_REGS",								\
   "CR_REGS",								\
   "NON_FLOAT_REGS",							\
   "ALL_REGS"								\
@@ -821,10 +810,6 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0x00000001, 0x00000000, 0x00000000 },	/* R0_REGS */		\
-  { 0x00000008, 0x00000000, 0x00000000 },	/* R3_REGS */		\
-  { 0x00000010, 0x00000000, 0x00000000 },	/* R4_REGS */		\
-  { 0x00000018, 0x00000000, 0x00000000 },	/* R34_REGS */		\
   { 0xfffffffe, 0x00000000, 0x00000008 },	/* BASE_REGS */		\
   { 0xffffffff, 0x00000000, 0x00000008 },	/* GENERAL_REGS */	\
   { 0x00000000, 0xffffffff, 0x00000000 },	/* FLOAT_REGS */	\
@@ -836,7 +821,6 @@ enum reg_class
   { 0x00000000, 0x00000000, 0x00000007 },	/* SPECIAL_REGS */	\
   { 0xffffffff, 0x00000000, 0x0000000f },	/* SPEC_OR_GEN_REGS */	\
   { 0x00000000, 0x00000000, 0x00000010 },	/* CR0_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000020 },	/* CR1_REGS */		\
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* CR_REGS */		\
   { 0xffffffff, 0x00000000, 0x0000ffff },	/* NON_FLOAT_REGS */	\
   { 0xffffffff, 0xffffffff, 0x0000ffff }	/* ALL_REGS */		\
@@ -848,13 +832,10 @@ enum reg_class
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO)	\
- ((REGNO) == 0 ? R0_REGS	\
-  : (REGNO) == 3 ? R3_REGS	\
-  : (REGNO) == 4 ? R4_REGS	\
+ ((REGNO) == 0 ? GENERAL_REGS	\
   : (REGNO) < 32 ? BASE_REGS	\
   : FP_REGNO_P (REGNO) ? FLOAT_REGS \
   : (REGNO) == 68 ? CR0_REGS	\
-  : (REGNO) == 69 ? CR1_REGS	\
   : CR_REGNO_P (REGNO) ? CR_REGS \
   : (REGNO) == 64 ? MQ_REGS	\
   : (REGNO) == 65 ? LINK_REGS	\
@@ -875,13 +856,8 @@ enum reg_class
    : (C) == 'q' ? MQ_REGS	\
    : (C) == 'c' ? CTR_REGS	\
    : (C) == 'l' ? LINK_REGS	\
-   : (C) == 't' ? CR1_REGS	\
-   : (C) == 'u' ? R3_REGS	\
-   : (C) == 'v' ? R4_REGS	\
-   : (C) == 'w' ? R34_REGS	\
    : (C) == 'x' ? CR0_REGS	\
    : (C) == 'y' ? CR_REGS	\
-   : (C) == 'z' ? R0_REGS	\
    : NO_REGS)
 
 /* The letters I, J, K, L, M, N, and P in a register constraint string
@@ -2597,11 +2573,6 @@ do {									\
   {"u_short_cint_operand", {CONST_INT}},			\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
-  {"gpc_reg0_operand", {SUBREG, REG}},				\
-  {"gpc_reg3_operand", {SUBREG, REG}},				\
-  {"gpc_reg4_operand", {SUBREG, REG}},				\
-  {"cc_reg0_operand", {SUBREG, REG}},				\
-  {"cc_reg1_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
@@ -2652,12 +2623,7 @@ extern int any_operand ();
 extern int short_cint_operand ();
 extern int u_short_cint_operand ();
 extern int non_short_cint_operand ();
-extern int gpc_reg0_operand ();
-extern int gpc_reg3_operand ();
-extern int gpc_reg4_operand ();
 extern int gpc_reg_operand ();
-extern int cc_reg0_operand ();
-extern int cc_reg1_operand ();
 extern int cc_reg_operand ();
 extern int reg_or_short_operand ();
 extern int reg_or_neg_short_operand ();
