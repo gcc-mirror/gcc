@@ -1111,8 +1111,8 @@ convert_to_mode (mode, x, unsignedp)
 	  && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
 	  && (GET_CODE (x) == CONST_DOUBLE
 	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (x))
-		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x))
-		      && direct_load[(int) mode]
+		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
+		       && direct_load[(int) mode])
 		      || GET_CODE (x) == REG)))))
     return gen_lowpart (mode, x);
 
