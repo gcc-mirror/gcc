@@ -57,7 +57,7 @@ namespace std {
         void operator|= (const valarray<_Tp>&) const;
         void operator<<=(const valarray<_Tp>&) const;
         void operator>>=(const valarray<_Tp>&) const;
-        void operator=(const _Tp&);
+        void operator=(const _Tp&) const;
 
         template<class _Dom>
         void operator= (const _Expr<_Dom,_Tp>&) const;
@@ -113,7 +113,7 @@ namespace std {
     
     template<typename _Tp>
     inline void
-    gslice_array<_Tp>::operator= (const _Tp& __t) 
+    gslice_array<_Tp>::operator= (const _Tp& __t) const
     { 
         __valarray_fill (_M_array, _Array<size_t>(_M_index),
                          _M_index.size(), __t); 

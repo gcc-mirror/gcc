@@ -57,7 +57,7 @@ namespace std {
         void operator|= (const valarray<_Tp>&) const;
         void operator<<=(const valarray<_Tp>&) const;  
         void operator>>=(const valarray<_Tp>&) const; 
-        void operator= (const _Tp&);
+        void operator= (const _Tp&) const;
     
         //        ~mask_array ();
         
@@ -114,7 +114,7 @@ namespace std {
     
     template<typename _Tp>
     inline void
-    mask_array<_Tp>::operator= (const _Tp& __t)
+    mask_array<_Tp>::operator= (const _Tp& __t) const
     { __valarray_fill (_M_array, _M_sz, _M_mask, __t); }
     
     template<typename _Tp>

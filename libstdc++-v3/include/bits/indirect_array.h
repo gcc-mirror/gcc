@@ -61,7 +61,7 @@ namespace std
        void operator|= (const valarray<_Tp>&) const;
        void operator<<= (const valarray<_Tp>&) const;
        void operator>>= (const valarray<_Tp>&) const; 
-       void operator= (const _Tp&);
+       void operator= (const _Tp&) const;
        //    ~indirect_array();
 
        template<class _Dom>
@@ -124,7 +124,7 @@ namespace std
 
   template<typename _Tp>
      inline void
-     indirect_array<_Tp>::operator= (const _Tp& __t)
+     indirect_array<_Tp>::operator= (const _Tp& __t) const
      { __valarray_fill(_M_array, _M_index, _M_sz, __t); }
 
   template<typename _Tp>

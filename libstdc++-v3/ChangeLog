@@ -1,3 +1,15 @@
+2002-07-19  Gabriel Dos Reis  <gdr@nerim.net>
+
+	DR/123
+	* include/bits/slice_array.h 
+	(slice_array<T>::operator=(const T&)): Constify.
+	* include/bits/gslice_array.h 
+	(gslice_array<T>::operator=(const T&)):  Likewise.
+	* include/bits/mask_array.h 
+	(mask_array<T>::operator=(const T&)): Likewise.
+	* include/bits/indirect_array.h
+	(indirect_array<T>::operator=(const T&): Likewise.
+
 2002-07-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/run_doxygen:  Remove template parameter names from
