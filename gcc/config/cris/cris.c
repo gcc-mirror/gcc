@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -2128,10 +2128,12 @@ cris_rtx_costs (x, code, outer_code, total)
 	 and the PIC register.  For a global PIC symbol, we also
 	 need a read of the GOT.  */
       if (flag_pic)
-	if (cris_got_symbol (x))
-	  *total = 2 + 4 + 6;
-	else
-	  *total = 2 + 6;
+	{
+	  if (cris_got_symbol (x))
+	    *total = 2 + 4 + 6;
+	  else
+	    *total = 2 + 6;
+	}
       else
 	*total = 6;
       return true;
@@ -2169,7 +2171,7 @@ cris_rtx_costs (x, code, outer_code, total)
     case UMOD:
     case DIV:
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
-          || exact_log2 (INTVAL (XEXP (X, 1)) < 0))
+          || exact_log2 (INTVAL (XEXP (x, 1)) < 0))
 	{
 	  /* Estimate this as 4 + 8 * #of bits.  */
 	  *total = COSTS_N_INSNS (260);

@@ -1,5 +1,8 @@
 2003-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/cris.c (cris_rtx_costs): Blockify dangling else.
+	Fix functionalization typo.
+
 	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
 	in an asm.
 
