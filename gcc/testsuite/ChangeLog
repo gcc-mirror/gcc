@@ -1,3 +1,8 @@
+2004-10-12  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17301
+	* gcc.dg/pr17301-2.c: New test.
+
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15876

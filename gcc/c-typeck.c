@@ -1987,6 +1987,9 @@ build_function_call (tree function, tree params)
   coerced_params
     = convert_arguments (TYPE_ARG_TYPES (fntype), params, function, fundecl);
 
+  if (coerced_params == error_mark_node)
+    return error_mark_node;
+
   /* Check that the arguments to the function are valid.  */
 
   check_function_arguments (TYPE_ATTRIBUTES (fntype), coerced_params);
@@ -2014,7 +2017,8 @@ build_function_call (tree function, tree params)
 
 /* Convert the argument expressions in the list VALUES
    to the types in the list TYPELIST.  The result is a list of converted
-   argument expressions.
+   argument expressions, unless there are too few arguments in which
+   case it is error_mark_node.
 
    If TYPELIST is exhausted, or when an element has NULL as its type,
    perform the default conversions.
@@ -2219,7 +2223,10 @@ convert_arguments (tree typelist, tree values, tree function, tree fundecl)
     }
 
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
-    error ("too few arguments to function %qE", function);
+    {
+      error ("too few arguments to function %qE", function);
+      return error_mark_node;
+    }
 
   return nreverse (result);
 }

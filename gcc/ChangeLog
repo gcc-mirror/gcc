@@ -1,3 +1,11 @@
+2004-10-12  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/17301
+	* c-typeck.c (convert_arguments): Return error_mark_node if there
+	are too few arguments.
+	(build_function_call): Handle error_mark_node return from
+	convert_arguments.
+
 2004-10-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac (symbolic_link): Replace with $LN_S.
