@@ -638,6 +638,8 @@ char *lang_options[] =
   "-+e0",			/* gcc.c tacks the `-' on the front.  */
   "-+e1",
   "-+e2",
+  "-faccess-control",
+  "-fno-access-control",
   "-fall-virtual",
   "-fno-all-virtual",
   "-falt-external-templates",
