@@ -1,3 +1,8 @@
+2004-08-01  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (expand_expr_real_1) <normal_inner_ref>: Fix crash with
+	variable sized types.
+
 2004-08-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: In the MIPS options section, remove the passage
