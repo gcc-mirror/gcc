@@ -5538,9 +5538,12 @@ ix86_expand_setcc (code, dest)
           emit subreg setcc, zero extend.
      2 -- destination is in QImode:
           emit setcc only.
-  */
 
-  type = 0;
+     We don't use mode 0 early in compilation because it confuses CSE.
+     There are peepholes to turn mode 1 into mode 0 if things work out
+     nicely after reload.  */
+
+  type = cse_not_expected ? 0 : 1;
 
   if (GET_MODE (dest) == QImode)
     type = 2;

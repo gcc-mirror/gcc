@@ -1,3 +1,9 @@
+2001-07-23  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_setcc): Don't use method 0
+	before CSE.
+	* config/i386/i386.md: New setcc+movzbl peephole2.
+
 2001-07-23  lars brinkhoff  <lars@nocrew.org>
 
 	* tm.texi (TARGET_FLOAT_FORMAT): Document IBM_FLOAT_FORMAT
