@@ -587,7 +587,7 @@ extern int ix86_arch;
 %{march=pentiumpro|march=i686|march=pentium2|march=pentium3:-D__i686 -D__i686__ \
   -D__pentiumpro -D__pentiumpro__ \
   %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
-%{march=march=pentium2|march=pentium3: -D__pentium2 -D__pentium2__\
+%{march=pentium2|march=pentium3: -D__pentium2 -D__pentium2__\
   %{!mcpu*:-D__tune_pentium2__ }}\
 %{march=pentium3: -D__pentium3 -D__pentium3__\
   %{!mcpu*:-D__tune_pentium3__ }}\

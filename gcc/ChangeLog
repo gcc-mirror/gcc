@@ -1,3 +1,8 @@
+2003-02-20  BAN Nobuhiro  <ban@ipl.t.u-tokyo.ac.jp>
+
+	PR c/9678
+	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Fix typo.
+
 2003-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* real.c (asctoeg): Handle denormals in hexadecimal notation.
@@ -6,9 +11,9 @@
            Richard Henderson  <rth@redhat.com>
 
 	PR c/8068
-        * fold-const.c (extract_muldiv_1): Rename from extract_muldiv;
-        rearrange mult arguments for less recursion.
-        (extract_muldiv): New.  Prevent runaway recursion.
+	* fold-const.c (extract_muldiv_1): Rename from extract_muldiv;
+	rearrange mult arguments for less recursion.
+	(extract_muldiv): New.  Prevent runaway recursion.
 
 2003-02-14  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
 
