@@ -1,3 +1,18 @@
+2003-09-12  Bob Wilson  <bob.wilson@acm.org>
+	
+	* config/xtensa/elf.h (ASM_SPEC): Remove no-density option.  Reformat.
+	* config/xtensa/linux.h (ASM_SPEC): Likewise.
+	* config/xtensa/xtensa.h (TARGET_SWITCHES): Remove -mbig-endian,
+	-mlittle-endian, -m[no-]density, -m[no-]abs, -m[no-]addx, -m[no-]mac16,
+	-m[no-]mul16, -m[no-]mul32, -m[no-]nsa, -m[no-]minmax, -m[no-]sext,
+	-m[no-]booleans, -mhard-float, -msoft-float, -m[no-]hard-float-div,
+	-m[no-]hard-float-recip, -m[no-]hard-float-sqrt, and
+	-m[no-]hard-float-rsqrt options.  Delete corresponding MASK_* macros
+	and redefine corresponding TARGET_* macros with constants from the
+	xtensa-config.h header.
+	* doc/invoke.texi (Option Summary, Xtensa Options): Remove documention
+	for the options listed above.
+	
 2003-09-12  Dale Johannesen  <dale@apple.com>
 	* config/rs6000/rs6000-protos.h:  Use C90 prototypes.
 	* config/rs6000/rs6000-c.c:  Ditto. 

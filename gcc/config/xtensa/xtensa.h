@@ -42,148 +42,43 @@ extern struct rtx_def * branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern unsigned xtensa_current_frame_size;
 
-/* Run-time compilation parameters selecting different hardware subsets.  */
+/* Masks for the -m switches */
+#define MASK_NO_FUSED_MADD	0x00000001	/* avoid f-p mul/add */
+#define MASK_CONST16		0x00000002	/* use CONST16 instruction */
 
-#define MASK_BIG_ENDIAN		0x00000001	/* big or little endian */
-#define MASK_DENSITY		0x00000002	/* code density option */
-#define MASK_MAC16		0x00000004	/* MAC16 option */
-#define MASK_MUL16		0x00000008	/* 16-bit integer multiply */
-#define MASK_MUL32		0x00000010	/* integer multiply/divide */
-#define MASK_DIV32		0x00000020	/* integer multiply/divide */
-#define MASK_NSA		0x00000040	/* nsa instruction option */
-#define MASK_MINMAX		0x00000080	/* min/max instructions */
-#define MASK_SEXT		0x00000100	/* sign extend insn option */
-#define MASK_BOOLEANS		0x00000200	/* boolean register option */
-#define MASK_HARD_FLOAT		0x00000400	/* floating-point option */
-#define MASK_HARD_FLOAT_DIV	0x00000800	/* floating-point divide */
-#define MASK_HARD_FLOAT_RECIP	0x00001000	/* floating-point reciprocal */
-#define MASK_HARD_FLOAT_SQRT	0x00002000	/* floating-point sqrt */
-#define MASK_HARD_FLOAT_RSQRT	0x00004000	/* floating-point recip sqrt */
-#define MASK_NO_FUSED_MADD	0x00008000	/* avoid f-p mul/add */
-#define MASK_CONST16		0x00010000	/* use CONST16 instruction */
-#define MASK_ABS		0x00020000	/* use ABS instruction */
-#define MASK_ADDX		0x00040000	/* use ADDX* and SUBX* */
+/* Macros used in the machine description to select various Xtensa
+   configuration options.  */
+#define TARGET_BIG_ENDIAN	XCHAL_HAVE_BE
+#define TARGET_DENSITY		XCHAL_HAVE_DENSITY
+#define TARGET_MAC16		XCHAL_HAVE_MAC16
+#define TARGET_MUL16		XCHAL_HAVE_MUL16
+#define TARGET_MUL32		XCHAL_HAVE_MUL32
+#define TARGET_DIV32		XCHAL_HAVE_DIV32
+#define TARGET_NSA		XCHAL_HAVE_NSA
+#define TARGET_MINMAX		XCHAL_HAVE_MINMAX
+#define TARGET_SEXT		XCHAL_HAVE_SEXT
+#define TARGET_BOOLEANS		XCHAL_HAVE_BOOLEANS
+#define TARGET_HARD_FLOAT	XCHAL_HAVE_FP
+#define TARGET_HARD_FLOAT_DIV	XCHAL_HAVE_FP_DIV
+#define TARGET_HARD_FLOAT_RECIP	XCHAL_HAVE_FP_RECIP
+#define TARGET_HARD_FLOAT_SQRT	XCHAL_HAVE_FP_SQRT
+#define TARGET_HARD_FLOAT_RSQRT	XCHAL_HAVE_FP_RSQRT
+#define TARGET_ABS		XCHAL_HAVE_ABS
+#define TARGET_ADDX		XCHAL_HAVE_ADDX
 
-/* Macros used in the machine description to test the flags.  */
-
-#define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
-#define TARGET_DENSITY		(target_flags & MASK_DENSITY)
-#define TARGET_MAC16		(target_flags & MASK_MAC16)
-#define TARGET_MUL16		(target_flags & MASK_MUL16)
-#define TARGET_MUL32		(target_flags & MASK_MUL32)
-#define TARGET_DIV32		(target_flags & MASK_DIV32)
-#define TARGET_NSA		(target_flags & MASK_NSA)
-#define TARGET_MINMAX		(target_flags & MASK_MINMAX)
-#define TARGET_SEXT		(target_flags & MASK_SEXT)
-#define TARGET_BOOLEANS		(target_flags & MASK_BOOLEANS)
-#define TARGET_HARD_FLOAT	(target_flags & MASK_HARD_FLOAT)
-#define TARGET_HARD_FLOAT_DIV	(target_flags & MASK_HARD_FLOAT_DIV)
-#define TARGET_HARD_FLOAT_RECIP	(target_flags & MASK_HARD_FLOAT_RECIP)
-#define TARGET_HARD_FLOAT_SQRT	(target_flags & MASK_HARD_FLOAT_SQRT)
-#define TARGET_HARD_FLOAT_RSQRT	(target_flags & MASK_HARD_FLOAT_RSQRT)
+/* Macros controlled by command-line options.  */
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_CONST16		(target_flags & MASK_CONST16)
-#define TARGET_ABS		(target_flags & MASK_ABS)
-#define TARGET_ADDX		(target_flags & MASK_ADDX)
-
-/* Default target_flags if no switches are specified  */
 
 #define TARGET_DEFAULT (						\
-  (XCHAL_HAVE_BE	? MASK_BIG_ENDIAN : 0) |			\
-  (XCHAL_HAVE_DENSITY	? MASK_DENSITY : 0) |				\
-  (XCHAL_HAVE_L32R	? 0 : MASK_CONST16) |				\
-  (XCHAL_HAVE_ABS	? MASK_ABS : 0) |				\
-  (XCHAL_HAVE_ADDX	? MASK_ADDX : 0) |				\
-  (XCHAL_HAVE_MAC16	? MASK_MAC16 : 0) |				\
-  (XCHAL_HAVE_MUL16	? MASK_MUL16 : 0) |				\
-  (XCHAL_HAVE_MUL32	? MASK_MUL32 : 0) |				\
-  (XCHAL_HAVE_DIV32	? MASK_DIV32 : 0) |				\
-  (XCHAL_HAVE_NSA	? MASK_NSA : 0) |				\
-  (XCHAL_HAVE_MINMAX	? MASK_MINMAX : 0) |				\
-  (XCHAL_HAVE_SEXT	? MASK_SEXT : 0) |				\
-  (XCHAL_HAVE_BOOLEANS	? MASK_BOOLEANS : 0) |				\
-  (XCHAL_HAVE_FP	? MASK_HARD_FLOAT : 0) |			\
-  (XCHAL_HAVE_FP_DIV	? MASK_HARD_FLOAT_DIV : 0) |			\
-  (XCHAL_HAVE_FP_RECIP	? MASK_HARD_FLOAT_RECIP : 0) |			\
-  (XCHAL_HAVE_FP_SQRT	? MASK_HARD_FLOAT_SQRT : 0) |			\
-  (XCHAL_HAVE_FP_RSQRT	? MASK_HARD_FLOAT_RSQRT : 0))
-
-/* Macro to define tables used to set the flags.  */
+  (XCHAL_HAVE_L32R	? 0 : MASK_CONST16))
 
 #define TARGET_SWITCHES							\
 {									\
-  {"big-endian",		MASK_BIG_ENDIAN,			\
-    N_("Use big-endian byte order")},					\
-  {"little-endian",		-MASK_BIG_ENDIAN,			\
-    N_("Use little-endian byte order")},				\
-  {"density",			MASK_DENSITY,				\
-    N_("Use the Xtensa code density option")},				\
-  {"no-density",		-MASK_DENSITY,				\
-    N_("Do not use the Xtensa code density option")},			\
   {"const16",			MASK_CONST16,				\
     N_("Use CONST16 instruction to load constants")},			\
   {"no-const16",		-MASK_CONST16,				\
     N_("Use PC-relative L32R instruction to load constants")},		\
-  {"abs",			MASK_ABS,				\
-    N_("Use the Xtensa ABS instruction")},				\
-  {"no-abs",			-MASK_ABS,				\
-    N_("Do not use the Xtensa ABS instruction")},			\
-  {"addx",			MASK_ADDX,				\
-    N_("Use the Xtensa ADDX and SUBX instructions")},			\
-  {"no-addx",			-MASK_ADDX,				\
-    N_("Do not use the Xtensa ADDX and SUBX instructions")},		\
-  {"mac16",			MASK_MAC16,				\
-    N_("Use the Xtensa MAC16 option")},					\
-  {"no-mac16",			-MASK_MAC16,				\
-    N_("Do not use the Xtensa MAC16 option")},				\
-  {"mul16",			MASK_MUL16,				\
-    N_("Use the Xtensa MUL16 option")},					\
-  {"no-mul16",			-MASK_MUL16,				\
-    N_("Do not use the Xtensa MUL16 option")},				\
-  {"mul32",			MASK_MUL32,				\
-    N_("Use the Xtensa MUL32 option")},					\
-  {"no-mul32",			-MASK_MUL32,				\
-    N_("Do not use the Xtensa MUL32 option")},				\
-  {"div32",			MASK_DIV32,				\
-    0 /* undocumented */},						\
-  {"no-div32",			-MASK_DIV32,				\
-    0 /* undocumented */},						\
-  {"nsa",			MASK_NSA,				\
-    N_("Use the Xtensa NSA option")},					\
-  {"no-nsa",			-MASK_NSA,				\
-    N_("Do not use the Xtensa NSA option")},				\
-  {"minmax",			MASK_MINMAX,				\
-    N_("Use the Xtensa MIN/MAX option")},				\
-  {"no-minmax",			-MASK_MINMAX,				\
-    N_("Do not use the Xtensa MIN/MAX option")},			\
-  {"sext",			MASK_SEXT,				\
-    N_("Use the Xtensa SEXT option")},					\
-  {"no-sext",			-MASK_SEXT,				\
-    N_("Do not use the Xtensa SEXT option")},				\
-  {"booleans",			MASK_BOOLEANS,				\
-    N_("Use the Xtensa boolean register option")},			\
-  {"no-booleans",		-MASK_BOOLEANS,				\
-    N_("Do not use the Xtensa boolean register option")},		\
-  {"hard-float",		MASK_HARD_FLOAT,			\
-    N_("Use the Xtensa floating-point unit")},				\
-  {"soft-float",		-MASK_HARD_FLOAT,			\
-    N_("Do not use the Xtensa floating-point unit")},			\
-  {"hard-float-div",		MASK_HARD_FLOAT_DIV,			\
-    0 /* undocumented */},						\
-  {"no-hard-float-div",		-MASK_HARD_FLOAT_DIV,			\
-    0 /* undocumented */},						\
-  {"hard-float-recip",		MASK_HARD_FLOAT_RECIP,			\
-    0 /* undocumented */},						\
-  {"no-hard-float-recip",	-MASK_HARD_FLOAT_RECIP,			\
-    0 /* undocumented */},						\
-  {"hard-float-sqrt",		MASK_HARD_FLOAT_SQRT,			\
-    0 /* undocumented */},						\
-  {"no-hard-float-sqrt",	-MASK_HARD_FLOAT_SQRT,			\
-    0 /* undocumented */},						\
-  {"hard-float-rsqrt",		MASK_HARD_FLOAT_RSQRT,			\
-    0 /* undocumented */},						\
-  {"no-hard-float-rsqrt",	-MASK_HARD_FLOAT_RSQRT,			\
-    0 /* undocumented */},						\
   {"no-fused-madd",		MASK_NO_FUSED_MADD,			\
     N_("Disable fused multiply/add and multiply/subtract FP instructions")}, \
   {"fused-madd",		-MASK_NO_FUSED_MADD,			\

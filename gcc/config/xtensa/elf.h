@@ -43,13 +43,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define WCHAR_TYPE_SIZE 16
 
 #undef ASM_SPEC
-#define ASM_SPEC "%{v} %{mno-density:--no-density} \
-                  %{mtext-section-literals:--text-section-literals} \
-                  %{mno-text-section-literals:--no-text-section-literals} \
-		  %{mtarget-align:--target-align} \
-		  %{mno-target-align:--no-target-align} \
-		  %{mlongcalls:--longcalls} \
-		  %{mno-longcalls:--no-longcalls}"
+#define ASM_SPEC \
+ "%{v} \
+  %{mtext-section-literals:--text-section-literals} \
+  %{mno-text-section-literals:--no-text-section-literals} \
+  %{mtarget-align:--target-align} \
+  %{mno-target-align:--no-target-align} \
+  %{mlongcalls:--longcalls} \
+  %{mno-longcalls:--no-longcalls}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "-lc -lsim -lc -lhandlers-sim -lhal"
