@@ -3558,26 +3558,26 @@ static int file_info_cmp		PARAMS ((const void *, const void *));
 #ifndef DEBUG_INFO_SECTION
 #define DEBUG_INFO_SECTION	".debug_info"
 #endif
-#ifndef ABBREV_SECTION
-#define ABBREV_SECTION		".debug_abbrev"
+#ifndef DEBUG_ABBREV_SECTION
+#define DEBUG_ABBREV_SECTION	".debug_abbrev"
 #endif
-#ifndef ARANGES_SECTION
-#define ARANGES_SECTION		".debug_aranges"
+#ifndef DEBUG_ARANGES_SECTION
+#define DEBUG_ARANGES_SECTION	".debug_aranges"
 #endif
-#ifndef DW_MACINFO_SECTION
-#define DW_MACINFO_SECTION	".debug_macinfo"
+#ifndef DEBUG_MACINFO_SECTION
+#define DEBUG_MACINFO_SECTION	".debug_macinfo"
 #endif
 #ifndef DEBUG_LINE_SECTION
 #define DEBUG_LINE_SECTION	".debug_line"
 #endif
-#ifndef LOC_SECTION
-#define LOC_SECTION		".debug_loc"
+#ifndef DEBUG_LOC_SECTION
+#define DEBUG_LOC_SECTION	".debug_loc"
 #endif
-#ifndef PUBNAMES_SECTION
-#define PUBNAMES_SECTION	".debug_pubnames"
+#ifndef DEBUG_PUBNAMES_SECTION
+#define DEBUG_PUBNAMES_SECTION	".debug_pubnames"
 #endif
-#ifndef STR_SECTION
-#define STR_SECTION		".debug_str"
+#ifndef DEBUG_STR_SECTION
+#define DEBUG_STR_SECTION	".debug_str"
 #endif
 
 /* Standard ELF section names for compiled code and data.  */
@@ -3595,19 +3595,19 @@ static int file_info_cmp		PARAMS ((const void *, const void *));
    the section names themselves.  */
 
 #ifndef TEXT_SECTION_LABEL
-#define TEXT_SECTION_LABEL	 "Ltext"
+#define TEXT_SECTION_LABEL		"Ltext"
 #endif
 #ifndef DEBUG_LINE_SECTION_LABEL
-#define DEBUG_LINE_SECTION_LABEL "Ldebug_line"
+#define DEBUG_LINE_SECTION_LABEL	"Ldebug_line"
 #endif
 #ifndef DEBUG_INFO_SECTION_LABEL
-#define DEBUG_INFO_SECTION_LABEL "Ldebug_info"
+#define DEBUG_INFO_SECTION_LABEL	"Ldebug_info"
 #endif
-#ifndef ABBREV_SECTION_LABEL
-#define ABBREV_SECTION_LABEL     "Ldebug_abbrev"
+#ifndef DEBUG_ABBREV_SECTION_LABEL
+#define DEBUG_ABBREV_SECTION_LABEL	"Ldebug_abbrev"
 #endif
-#ifndef LOC_SECTION_LABEL
-#define LOC_SECTION_LABEL	 "Ldebug_loc"
+#ifndef DEBUG_LOC_SECTION_LABEL
+#define DEBUG_LOC_SECTION_LABEL		"Ldebug_loc"
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -5771,7 +5771,9 @@ value_format (a)
     case dw_val_class_addr:
       return DW_FORM_addr;
     case dw_val_class_loc_list:
-	return DW_FORM_data4; /* FIXME: Could be DW_FORM_data8, with a > 32 bit size .debug_loc section */
+      /* FIXME: Could be DW_FORM_data8, with a > 32 bit size
+	 .debug_loc section */
+      return DW_FORM_data4;
     case dw_val_class_loc:
       switch (constant_size (size_of_locs (AT_loc (a))))
 	{
@@ -11332,7 +11334,8 @@ dwarf2out_init (asm_out_file, main_input_filename)
   ggc_add_rtx_varray_root (&used_rtx_varray, 1);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label, ABBREV_SECTION_LABEL, 0);
+  ASM_GENERATE_INTERNAL_LABEL (abbrev_section_label,
+			       DEBUG_ABBREV_SECTION_LABEL, 0);
   if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
     ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
   else
@@ -11341,10 +11344,10 @@ dwarf2out_init (asm_out_file, main_input_filename)
 			       DEBUG_INFO_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, LOC_SECTION_LABEL, 0);
-  ASM_OUTPUT_SECTION (asm_out_file, LOC_SECTION);
+  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LOC_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
-  ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ABBREV_SECTION);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
   if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
     {
@@ -11457,13 +11460,13 @@ dwarf2out_finish ()
   output_comp_unit (comp_unit_die);
 
   /* Output the abbreviation table.  */
-  ASM_OUTPUT_SECTION (asm_out_file, ABBREV_SECTION);
+  ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ABBREV_SECTION);
   output_abbrev_section ();
 
   if (pubname_table_in_use)
     {
       /* Output public names table.  */
-      ASM_OUTPUT_SECTION (asm_out_file, PUBNAMES_SECTION);
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
       output_pubnames ();
     }
 
@@ -11472,14 +11475,14 @@ dwarf2out_finish ()
   if (fde_table_in_use)
     {
       /* Output the address range information.  */
-      ASM_OUTPUT_SECTION (asm_out_file, ARANGES_SECTION);
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
       output_aranges ();
     }
   /* Output location list section if necessary */
   if (have_location_lists)
     {
       /* Output the location lists info. */
-      ASM_OUTPUT_SECTION (asm_out_file, LOC_SECTION);
+      ASM_OUTPUT_SECTION (asm_out_file, DEBUG_LOC_SECTION);
       output_location_lists (die);
       have_location_lists = 0;
     }
