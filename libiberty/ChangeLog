@@ -1,3 +1,10 @@
+2002-01-30  Phil Edwards  <pme@gcc.gnu.org>
+
+	* cp-demangle.c (cp_demangle_type):  Do not protect with IN_LIBGCC2.
+	(cplus_demangle_v3):  Mimic __cxa_demangle and fall back on
+	cp_demangle_type.
+	* testsuite/demangle-expected:  New gnu-v3 test.
+
 2002-01-22  Momchil Velikov  <velco@fadata.bg>
 
 	* configure.in (variable detection): Use arrays of unspecified
