@@ -877,7 +877,7 @@ poplevel (keep, reverse, functionbody)
 	{
 	  /* If the ident. was used or addressed via a local extern decl,
 	     don't forget that fact.  */
-	  if (TREE_EXTERNAL (link))
+	  if (DECL_EXTERNAL (link))
 	    {
 	      if (TREE_USED (link))
 		TREE_USED (DECL_NAME (link)) = 1;
@@ -1386,12 +1386,12 @@ duplicate_decls (newdecl, olddecl)
 	  /* Warn if function is now inline
 	     but was previously declared not inline and has been called.  */
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && ! TREE_INLINE (olddecl) && TREE_INLINE (newdecl)
+	      && ! DECL_INLINE (olddecl) && DECL_INLINE (newdecl)
 	      && TREE_USED (olddecl))
 	    warning_with_decl (newdecl,
 			       "`%s' declared inline after being called");
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && ! TREE_INLINE (olddecl) && TREE_INLINE (newdecl)
+	      && ! DECL_INLINE (olddecl) && DECL_INLINE (newdecl)
 	      && DECL_INITIAL (olddecl) != 0)
 	    warning_with_decl (newdecl,
 			       "`%s' declared inline after its definition");
@@ -1500,23 +1500,23 @@ duplicate_decls (newdecl, olddecl)
       if (! TREE_PUBLIC (olddecl))
 	TREE_PUBLIC (DECL_NAME (olddecl)) = 0;
     }
-  if (TREE_EXTERNAL (newdecl))
+  if (DECL_EXTERNAL (newdecl))
     {
       TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
-      TREE_EXTERNAL (newdecl) = TREE_EXTERNAL (olddecl);
+      DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
       /* An extern decl does not override previous storage class.  */
       TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
     }
   else
     {
       TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
-      TREE_EXTERNAL (olddecl) = 0;
+      DECL_EXTERNAL (olddecl) = 0;
       TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
     }
   /* If either decl says `inline', this fn is inline,
      unless its definition was passed already.  */
-  if (TREE_INLINE (newdecl) && DECL_INITIAL (olddecl) == 0)
-    TREE_INLINE (olddecl) = 1;
+  if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == 0)
+    DECL_INLINE (olddecl) = 1;
 
   /* Get rid of any built-in function if new arg types don't match it
      or if we have a function definition.  */
@@ -1575,7 +1575,7 @@ pushdecl (x)
   if (TREE_CODE (x) == FUNCTION_DECL && DECL_INITIAL (x) == 0)
     DECL_CONTEXT (x) = 0;
 
-  if (warn_nested_externs && TREE_EXTERNAL (x) && b != global_binding_level
+  if (warn_nested_externs && DECL_EXTERNAL (x) && b != global_binding_level
       && x != IDENTIFIER_IMPLICIT_DECL (name))
     warning ("nested extern declaration of `%s'", IDENTIFIER_POINTER (name));
 
@@ -1611,7 +1611,7 @@ pushdecl (x)
 	     warn.  But don't complain if -traditional,
 	     since traditional compilers don't complain.  */
 	  if (!flag_traditional && TREE_PUBLIC (name)
-	      && ! TREE_PUBLIC (x) && ! TREE_EXTERNAL (x)
+	      && ! TREE_PUBLIC (x) && ! DECL_EXTERNAL (x)
 	      /* We used to warn also for explicit extern followed by static,
 		 but sometimes you need to do it that way.  */
 	      && IDENTIFIER_IMPLICIT_DECL (name) != 0)
@@ -1695,12 +1695,12 @@ pushdecl (x)
 
       /* Multiple external decls of the same identifier ought to match.  */
 
-      if (TREE_EXTERNAL (x) && IDENTIFIER_GLOBAL_VALUE (name) != 0
-	  && (TREE_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
+      if (DECL_EXTERNAL (x) && IDENTIFIER_GLOBAL_VALUE (name) != 0
+	  && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
 	      || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name)))
 	  /* We get warnings about inline functions where they are defined.
 	     Avoid duplicate warnings where they are used.  */
-	  && !TREE_INLINE (x))
+	  && !DECL_INLINE (x))
 	{
 	  if (! comptypes (TREE_TYPE (x),
 			   TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (name))))
@@ -1728,7 +1728,7 @@ pushdecl (x)
 
       /* In PCC-compatibility mode, extern decls of vars with no current decl
 	 take effect at top level no matter where they are.  */
-      if (flag_traditional && TREE_EXTERNAL (x)
+      if (flag_traditional && DECL_EXTERNAL (x)
 	  && lookup_name (name) == 0)
 	{
 	  tree type = TREE_TYPE (x);
@@ -1793,11 +1793,11 @@ pushdecl (x)
 	  /* If this decl is `static' and an `extern' was seen previously,
 	     that is erroneous.  */
 	  if (TREE_PUBLIC (name)
-	      && ! TREE_PUBLIC (x) && ! TREE_EXTERNAL (x))
+	      && ! TREE_PUBLIC (x) && ! DECL_EXTERNAL (x))
 	    {
 	      /* Okay to declare an ANSI built-in as inline static.  */
 	      if (t != 0 && DECL_BUILT_IN (t)
-		  && TREE_INLINE (x))
+		  && DECL_INLINE (x))
 		;
 	      /* Okay to declare a non-ANSI built-in as anything.  */
 	      else if (t != 0 && DECL_BUILT_IN_NONANSI (t))
@@ -1820,7 +1820,7 @@ pushdecl (x)
 	  /* If this is an extern function declaration, see if we
 	     have a global definition for the function.  */
 	  if (oldlocal == 0
-	      && TREE_EXTERNAL (x) && !TREE_INLINE (x)
+	      && DECL_EXTERNAL (x) && !DECL_INLINE (x)
 	      && oldglobal != 0
 	      && TREE_CODE (x) == FUNCTION_DECL
 	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
@@ -1830,7 +1830,7 @@ pushdecl (x)
 			       TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (name))))
 		pedwarn_with_decl (x, "local declaration of `%s' doesn't match global one");
 	      /* If the global one is inline, make the local one inline.  */
-	      else if (TREE_INLINE (oldglobal)
+	      else if (DECL_INLINE (oldglobal)
 		       || DECL_BUILT_IN (oldglobal)
 		       || (TYPE_ARG_TYPES (TREE_TYPE (oldglobal)) != 0
 			   && TYPE_ARG_TYPES (TREE_TYPE (x)) == 0))
@@ -1843,7 +1843,7 @@ pushdecl (x)
 	     have been static.  */
 	  if (oldlocal == 0 && oldglobal != 0
 	      && !TREE_PUBLIC (oldglobal)
-	      && TREE_EXTERNAL (x) && TREE_PUBLIC (x))
+	      && DECL_EXTERNAL (x) && TREE_PUBLIC (x))
 	    warning ("`%s' locally external but globally static",
 		     IDENTIFIER_POINTER (name));
 #endif
@@ -1853,14 +1853,14 @@ pushdecl (x)
 	     then if we later have a file-scope decl it must not be static.  */
 	  if (oldlocal == 0
 	      && oldglobal == 0
-	      && TREE_EXTERNAL (x)
+	      && DECL_EXTERNAL (x)
 	      && TREE_PUBLIC (x))
 	    {
 	      TREE_PUBLIC (name) = 1;
 	    }
 
 	  /* Warn if shadowing an argument at the top level of the body.  */
-	  if (oldlocal != 0 && !TREE_EXTERNAL (x)
+	  if (oldlocal != 0 && !DECL_EXTERNAL (x)
 	      /* This warning doesn't apply to the parms of a nested fcn.  */
 	      && ! current_binding_level->parm_flag
 	      /* Check that this is one level down from the parms.  */
@@ -1878,7 +1878,7 @@ pushdecl (x)
 	    }
 
 	  /* Maybe warn if shadowing something else.  */
-	  else if (warn_shadow && !TREE_EXTERNAL (x)
+	  else if (warn_shadow && !DECL_EXTERNAL (x)
 		   /* No shadow warnings for internally generated vars.  */
 		   && !DECL_IGNORED_P (x)
 		   /* No shadow warnings for vars made for inlining.  */
@@ -1968,7 +1968,7 @@ implicitly_declare (functionid)
   /* Warn once of an implicit declaration.  */
   implicit_warning = (IDENTIFIER_IMPLICIT_DECL (functionid) == 0);
 
-  TREE_EXTERNAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
 
   /* Record that we have an implicit decl and this is it.  */
@@ -2026,8 +2026,8 @@ redeclaration_error_message (newdecl, olddecl)
       if (DECL_INITIAL (olddecl) != 0 && DECL_INITIAL (newdecl) != 0
 	  /* However, defining once as extern inline and a second
 	     time in another way is ok.  */
-	  && !(TREE_INLINE (olddecl) && TREE_EXTERNAL (olddecl)
-	       && !(TREE_INLINE (newdecl) && TREE_EXTERNAL (newdecl))))
+	  && !(DECL_INLINE (olddecl) && DECL_EXTERNAL (olddecl)
+	       && !(DECL_INLINE (newdecl) && DECL_EXTERNAL (newdecl))))
 	return "redefinition of `%s'";
       return 0;
     }
@@ -2035,7 +2035,7 @@ redeclaration_error_message (newdecl, olddecl)
     {
       /* Objects declared at top level:  */
       /* If at least one is a reference, it's ok.  */
-      if (TREE_EXTERNAL (newdecl) || TREE_EXTERNAL (olddecl))
+      if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
 	return 0;
       /* Reject two definitions.  */
       if (DECL_INITIAL (olddecl) != 0 && DECL_INITIAL (newdecl) != 0)
@@ -2054,7 +2054,7 @@ redeclaration_error_message (newdecl, olddecl)
       /* Objects declared with block scope:  */
       /* Reject two definitions, and reject a definition
 	 together with an external reference.  */
-      if (!(TREE_EXTERNAL (newdecl) && TREE_EXTERNAL (olddecl)))
+      if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)))
 	return "redeclaration of `%s'";
       return 0;
     }
@@ -2754,7 +2754,7 @@ builtin_function (name, type, function_code, library_name)
      char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
-  TREE_EXTERNAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   /* If -traditional, permit redefining a builtin function any way you like.
      (Though really, if the program redefines these functions,
@@ -2967,12 +2967,12 @@ start_decl (declarator, declspecs, initialized)
     {
 #if 0  /* Seems redundant with grokdeclarator.  */
       if (current_binding_level != global_binding_level
-	  && TREE_EXTERNAL (decl)
+	  && DECL_EXTERNAL (decl)
 	  && TREE_CODE (decl) != FUNCTION_DECL)
 	warning ("declaration of `%s' has `extern' and is initialized",
 		 IDENTIFIER_POINTER (DECL_NAME (decl)));
 #endif
-      TREE_EXTERNAL (decl) = 0;
+      DECL_EXTERNAL (decl) = 0;
       if (current_binding_level == global_binding_level)
 	TREE_STATIC (decl) = 1;
 
@@ -3074,7 +3074,7 @@ finish_decl (decl, init, asmspec_tree)
 	   /* Even if pedantic, an external linkage array
 	      may have incomplete type at first.  */
 	   ? pedantic && !TREE_PUBLIC (decl)
-	   : !TREE_EXTERNAL (decl));
+	   : !DECL_EXTERNAL (decl));
       int failure
 	= complete_array_type (type, DECL_INITIAL (decl), do_default);
 
@@ -3089,7 +3089,7 @@ finish_decl (decl, init, asmspec_tree)
 	  if (do_default)
 	    error_with_decl (decl, "array size missing in `%s'");
 	  else if (!pedantic && TREE_STATIC (decl))
-	    TREE_EXTERNAL (decl) = 1;
+	    DECL_EXTERNAL (decl) = 1;
 	}
 
       if (pedantic && TYPE_DOMAIN (type) != 0
@@ -3111,7 +3111,7 @@ finish_decl (decl, init, asmspec_tree)
 	  if (! (TREE_PUBLIC (decl) && DECL_INITIAL (decl) == 0))
 	    error_with_decl (decl, "storage size of `%s' isn't known");
 	}
-      else if (!TREE_EXTERNAL (decl) && DECL_SIZE (decl) == 0)
+      else if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == 0)
 	{
 	  /* An automatic variable with an incomplete type:
 	     that is an error.  */
@@ -3119,7 +3119,7 @@ finish_decl (decl, init, asmspec_tree)
 	  TREE_TYPE (decl) = error_mark_node;
 	}
 
-      if ((TREE_EXTERNAL (decl) || TREE_STATIC (decl))
+      if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != 0
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	error_with_decl (decl, "storage size of `%s' isn't constant");
@@ -3155,7 +3155,7 @@ finish_decl (decl, init, asmspec_tree)
 	  /* Recompute the RTL of a local array now
 	     if it used to be an incomplete type.  */
 	  if (was_incomplete
-	      && ! TREE_STATIC (decl) && ! TREE_EXTERNAL (decl))
+	      && ! TREE_STATIC (decl) && ! DECL_EXTERNAL (decl))
 	    {
 	      /* If we used it already as memory, it must stay in memory.  */
 	      TREE_ADDRESSABLE (decl) = TREE_USED (decl);
@@ -4118,7 +4118,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	   and we use it for forward declarations for nested functions.  */
 	if (!(specbits & (1 << (int) RID_AUTO))
 	    || current_binding_level == global_binding_level)
-	  TREE_EXTERNAL (decl) = 1;
+	  DECL_EXTERNAL (decl) = 1;
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
@@ -4133,7 +4133,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      warning ("inline declaration ignored for function with `...'");
 	    else
 	      /* Assume that otherwise the function can be inlined.  */
-	      TREE_INLINE (decl) = 1;
+	      DECL_INLINE (decl) = 1;
 
 	    if (specbits & (1 << (int) RID_EXTERN))
 	      current_extern_inline = 1;
@@ -4162,7 +4162,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  pedwarn_with_decl (decl, "variable `%s' declared `inline'");
 
 	/* An uninitialized decl with `extern' is a reference.  */
-	TREE_EXTERNAL (decl)
+	DECL_EXTERNAL (decl)
 	  = !initialized && (specbits & (1 << (int) RID_EXTERN));
 	/* At top level, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers
@@ -4173,13 +4173,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    TREE_PUBLIC (decl)
 	      = !(specbits
 		  & ((1 << (int) RID_STATIC) | (1 << (int) RID_REGISTER)));
-	    TREE_STATIC (decl) = ! TREE_EXTERNAL (decl);
+	    TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
 	  }
 	/* Not at top level, only `static' makes a static definition.  */
 	else
 	  {
 	    TREE_STATIC (decl) = (specbits & (1 << (int) RID_STATIC)) != 0;
-	    TREE_PUBLIC (decl) = TREE_EXTERNAL (decl);
+	    TREE_PUBLIC (decl) = DECL_EXTERNAL (decl);
 	  }
       }
 
@@ -4187,7 +4187,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
        and in case doing stupid register allocation.  */
 
     if (specbits & (1 << (int) RID_REGISTER))
-      TREE_REGDECL (decl) = 1;
+      DECL_REGISTER (decl) = 1;
 
     /* Record constancy and volatility.  */
 
@@ -5177,10 +5177,10 @@ start_function (declspecs, declarator, nested)
     warning_with_decl (decl1, "`%s' was used with no prototype before its definition");
 
   /* This is a definition, not a reference.
-     So normally clear TREE_EXTERNAL.
+     So normally clear DECL_EXTERNAL.
      However, `extern inline' acts like a declaration
-     except for defining how to inline.  So set TREE_EXTERNAL in that case.  */
-  TREE_EXTERNAL (decl1) = current_extern_inline;
+     except for defining how to inline.  So set DECL_EXTERNAL in that case.  */
+  DECL_EXTERNAL (decl1) = current_extern_inline;
 
   /* This function exists in static storage.
      (This does not mean `static' in the C sense!)  */

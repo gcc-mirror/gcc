@@ -767,12 +767,12 @@ struct tree_type
 /* In a VAR_DECL or FUNCTION_DECL,
    nonzero means external reference:
    do not allocate storage, and refer to a definition elsewhere.  */
-#define TREE_EXTERNAL(NODE) ((NODE)->decl.external_flag)
+#define DECL_EXTERNAL(NODE) ((NODE)->decl.external_flag)
 
 /* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.
    In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
-#define TREE_REGDECL(NODE) ((NODE)->decl.regdecl_flag)
+#define DECL_REGISTER(NODE) ((NODE)->decl.regdecl_flag)
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) ((NODE)->decl.regdecl_flag)
 
@@ -783,11 +783,11 @@ struct tree_type
 
    Also set in some languages for variables, etc., outside the normal
    lexical scope, such as class instance variables.  */
-#define TREE_NONLOCAL(NODE) ((NODE)->decl.nonlocal_flag)
+#define DECL_NONLOCAL(NODE) ((NODE)->decl.nonlocal_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function can be substituted
    where it is called.  */
-#define TREE_INLINE(NODE) ((NODE)->decl.inline_flag)
+#define DECL_INLINE(NODE) ((NODE)->decl.inline_flag)
 
 /* Nonzero in a FUNCTION_DECL means this is a built-in function
    that is not specified by ansi C and that users are supposed to be allowed
