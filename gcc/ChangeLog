@@ -1,3 +1,10 @@
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (grokdeclarator): If pedantic, warn about arrays with
+	incomplete element type.
+	(grokparms): Before checking for incomplete parameter type, check
+	the type isn't error_mark_node.
+
 2000-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (target_char_cast): New function.
