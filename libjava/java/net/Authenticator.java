@@ -38,10 +38,10 @@ exception statement from your version. */
 package java.net;
 
 /**
-  * Sometimes a network operation (such as hitting a password protected
-  * web site) will require authentication information in the form of a
-  * username and password.  This abstract class provides a model for 
-  * obtaining that information.
+  * This abstract class provides a model for obtaining authentication
+  * information (in the form of a username and password) required by
+  * some network operations (such as hitting a password protected
+  * web site).
   * <p>
   * To make use of this feature, a programmer must create a subclass of
   * Authenticator that knows how to obtain the necessary info.  An example
