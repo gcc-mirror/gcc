@@ -5474,6 +5474,8 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       explicit_targs = TREE_OPERAND (name, 1);
       name = TREE_OPERAND (name, 0);
+      if (TREE_CODE (name) == TEMPLATE_DECL)
+	name = DECL_NAME (name);
       template_only = 1;
     }
 
@@ -5526,10 +5528,13 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       instance_ptr = build_this (instance);
 
-      /* XXX this should be handled before we get here.  */
-      fns = build_field_call (basetype_path, instance_ptr, name, args);
-      if (fns)
-	return fns;
+      if (! template_only)
+	{
+	  /* XXX this should be handled before we get here.  */
+	  fns = build_field_call (basetype_path, instance_ptr, name, args);
+	  if (fns)
+	    return fns;
+	}
     }
   else
     {

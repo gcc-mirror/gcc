@@ -3406,10 +3406,9 @@ build_expr_from_tree (t)
 	return do_identifier (TREE_OPERAND (t, 0), 0);
 
     case TEMPLATE_ID_EXPR:
-      return lookup_template_function (build_expr_from_tree
-				       (TREE_OPERAND (t, 0)),
-				       build_expr_from_tree
-				       (TREE_OPERAND (t, 1)));
+      return (lookup_template_function
+	      (build_expr_from_tree (TREE_OPERAND (t, 0)),
+	       build_expr_from_tree (TREE_OPERAND (t, 1))));
 
     case INDIRECT_REF:
       return build_x_indirect_ref
@@ -3568,7 +3567,8 @@ build_expr_from_tree (t)
       else
 	{
 	  tree name = TREE_OPERAND (t, 0);
-	  if (! really_overloaded_fn (name))
+	  if (TREE_CODE (name) == TEMPLATE_ID_EXPR
+	      || ! really_overloaded_fn (name))
 	    name = build_expr_from_tree (name);
 	  return build_x_function_call
 	    (name, build_expr_from_tree (TREE_OPERAND (t, 1)),
