@@ -3348,7 +3348,6 @@ extern void expand_end_bindings (tree, int, int);
 extern void warn_about_unused_variables (tree);
 extern int is_body_block (tree);
 
-extern int conditional_context (void);
 extern struct nesting * current_nesting_level (void);
 extern void expand_start_case (int, tree, tree, const char *);
 extern void expand_end_case_type (tree, tree);

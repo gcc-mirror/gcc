@@ -5536,10 +5536,15 @@ instruction scheduler has to have an adequate description of the
 processor parallelism (or @dfn{pipeline description}).  Currently GCC
 provides two alternative ways to describe processor parallelism,
 both described below.  The first method is outlined in the next section;
-it was once the only method provided by GCC, and thus is used in a number
-of exiting ports.  The second, and preferred method, specifies functional
-unit reservations for groups of instructions with the aid of @dfn{regular
-expressions}.  This is called the @dfn{automaton based description}.
+it specifies functional unit reservations for groups of instructions
+with the aid of @dfn{regular expressions}.  This is called the
+@dfn{automaton based description}.  The second method is called the
+@dfn{old pipeline description}.  This method specifies usage of
+function units for classes of insns.  This description is not as
+powerful or accurate as the automaton based description, because it
+is impossible to model instructions that use more than one function
+unit.  The second method is deprecated; new ports should use the
+automaton based description.
 
 The GCC instruction scheduler uses a @dfn{pipeline hazard recognizer} to
 figure out the possibility of the instruction issue by the processor
@@ -5551,20 +5556,6 @@ state automaton (@acronym{DFA}) and therefore faster than one
 generated from the old description.  Furthermore, its speed is not dependent
 on processor complexity.  The instruction issue is possible if there is
 a transition from one automaton state to another one.
-
-You can use either model to describe processor pipeline
-characteristics or even mix them.  You could use the old description
-for some processor submodels and the @acronym{DFA}-based one for other
-processor submodels.
-
-In general, using the automaton based description is preferred.  Its
-model is richer and makes it possible to more accurately describe
-pipeline characteristics of processors, which results in improved
-code quality (although sometimes only marginally).  It will also be
-used as an infrastructure to implement sophisticated and practical
-instruction scheduling which will try many instruction sequences to
-choose the best one.
-
 
 @menu
 * Old pipeline description:: Specifying information for insn scheduling.
@@ -5578,6 +5569,8 @@ choose the best one.
 @subsubsection Specifying Function Units
 @cindex old pipeline description
 @cindex function units, for scheduling
+
+@emph{Note:}The old pipeline description is deprecated.
 
 On most @acronym{RISC} machines, there are instructions whose results
 are not available for a specific number of cycles.  Common cases are

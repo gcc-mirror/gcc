@@ -258,18 +258,6 @@ struct gcc_target
        the previous insn has been issued and the current processor
        cycle.  */
     int (* dfa_new_cycle) (FILE *, int, rtx, int, int, int *);
-    /* The values of the following members are pointers to functions
-       used to improve the first cycle multipass scheduling by
-       inserting nop insns.  dfa_scheduler_bubble gives a function
-       returning a nop insn with given index.  The indexes start with
-       zero.  The function should return NULL if there are no more nop
-       insns with indexes greater than given index.  To initialize the
-       nop insn the function given by member
-       init_dfa_scheduler_bubbles is used.  The default values of the
-       members result in not inserting nop insns during the multipass
-       scheduling.  */
-    void (* init_dfa_bubbles) (void);
-    rtx (* dfa_bubble) (int);
     /* The following member value is a pointer to a function called
        by the insn scheduler.  It should return true if there exists a
        dependence which is considered costly by the target, between 

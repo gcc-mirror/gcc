@@ -5746,41 +5746,6 @@ correspondingly processor cycle on which the previous insn has been
 issued and the current processor cycle.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_SCHED_INIT_DFA_BUBBLES (void)
-The @acronym{DFA}-based scheduler could take the insertion of nop
-operations for better insn scheduling into account.  It can be done
-only if the multi-pass insn scheduling works (see hook
-@samp{TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD}).
-
-Let us consider a @acronym{VLIW} processor insn with 3 slots.  Each
-insn can be placed only in one of the three slots.  We have 3 ready
-insns @var{A}, @var{B}, and @var{C}.  @var{A} and @var{C} can be
-placed only in the 1st slot, @var{B} can be placed only in the 3rd
-slot.  We described the automaton which does not permit empty slot
-gaps between insns (usually such description is simpler).  Without
-this code the scheduler would place each insn in 3 separate
-@acronym{VLIW} insns.  If the scheduler places a nop insn into the 2nd
-slot, it could place the 3 insns into 2 @acronym{VLIW} insns.  What is
-the nop insn is returned by hook @samp{TARGET_SCHED_DFA_BUBBLE}.  Hook
-@samp{TARGET_SCHED_INIT_DFA_BUBBLES} can be used to initialize or
-create the nop insns.
-
-You should remember that the scheduler does not insert the nop insns.
-It is not wise because of the following optimizations.  The scheduler
-only considers such possibility to improve the result schedule.  The
-nop insns should be inserted lately, e.g. on the final phase.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_SCHED_DFA_BUBBLE (int @var{index})
-This hook @samp{FIRST_CYCLE_MULTIPASS_SCHEDULING} is used to insert
-nop operations for better insn scheduling when @acronym{DFA}-based
-scheduler makes multipass insn scheduling (see also description of
-hook @samp{TARGET_SCHED_INIT_DFA_BUBBLES}).  This hook
-returns a nop insn with given @var{index}.  The indexes start with
-zero.  The hook should return @code{NULL} if there are no more nop
-insns with indexes greater than given index.
-@end deftypefn
-
 @deftypefn {Target Hook} bool TARGET_SCHED_IS_COSTLY_DEPENDENCE (rtx @var{insn1}, rtx @var{insn2}, rtx @var{dep_link}, int @var{dep_cost}, int @var{distance})
 This hook is used to define which dependences are considered costly by
 the target, so costly that it is not advisable to schedule the insns that

@@ -798,8 +798,6 @@ extern tree build_case_label (tree, tree, tree);
 extern tree build_continue_stmt (void);
 extern tree build_break_stmt (void);
 
-extern void c_expand_asm_operands (tree, tree, tree, tree, int, location_t);
-
 /* These functions must be defined by each front-end which implements
    a variant of the C language.  They are used in c-common.c.  */
 

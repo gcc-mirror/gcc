@@ -1,3 +1,7 @@
+2004-07-09  Steven Bosscher  <stevenb@suse.de>
+
+	* typeck.c (c_expand_asm_operands): Remove.
+
 2004-07-09  Mike Stump  <mrs@apple.com>
 
 	* typeck.c (build_class_member_access_expr): Skip null deref

@@ -3038,27 +3038,6 @@ bsi_insert_on_edge (edge e, tree stmt)
 }
 
 
-/* Specialized edge insertion for SSA-PRE.  FIXME: This should
-   probably disappear.  The only reason it's here is because PRE needs
-   the call to tree_find_edge_insert_loc().  */
-
-void pre_insert_on_edge (edge e, tree stmt);
-
-void
-pre_insert_on_edge (edge e, tree stmt)
-{
-  block_stmt_iterator bsi;
-
-  if (PENDING_STMT (e))
-    abort ();
-
-  if (tree_find_edge_insert_loc (e, &bsi))
-    bsi_insert_after (&bsi, stmt, BSI_NEW_STMT);
-  else
-    bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
-}
-
-
 /*---------------------------------------------------------------------------
 	     Tree specific functions for CFG manipulation
 ---------------------------------------------------------------------------*/
