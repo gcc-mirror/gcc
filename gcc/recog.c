@@ -2883,18 +2883,7 @@ split_all_insns (upd_life)
       find_many_sub_basic_blocks (blocks);
 
       if (old_last_basic_block != last_basic_block && upd_life)
-	{
-	  sbitmap new_blocks = sbitmap_alloc (last_basic_block);
-
-	  sbitmap_copy (new_blocks, blocks);
-	  while (old_last_basic_block < last_basic_block)
-	    {
-	      SET_BIT (new_blocks, old_last_basic_block);
-	      old_last_basic_block++;
-	    }
-	  sbitmap_free (blocks);
-	  new_blocks = blocks;
-	}
+	blocks = sbitmap_resize (blocks, last_basic_block, 1);
     }
 
   if (changed && upd_life)

@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -125,6 +125,7 @@ extern void dump_sbitmap_vector 	PARAMS ((FILE *, const char *,
 						 int));
 extern sbitmap sbitmap_alloc		PARAMS ((unsigned int));
 extern sbitmap *sbitmap_vector_alloc	PARAMS ((unsigned int, unsigned int));
+extern sbitmap sbitmap_resize		PARAMS ((sbitmap, unsigned int, int));
 extern void sbitmap_copy 		PARAMS ((sbitmap, sbitmap));
 extern int sbitmap_equal                PARAMS ((sbitmap, sbitmap));
 extern void sbitmap_zero		PARAMS ((sbitmap));
