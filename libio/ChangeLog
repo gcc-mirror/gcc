@@ -1,3 +1,9 @@
+1997-12-12  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	Don't make gperf depend upon libg++.
+	* config.shared (TOLIBGCXX) [DOING_GPERF]: Delete.
+	(LIBS) [DOING_GPERF]: Make it just `-L../libstdc++ -lstdc++'. 
+
 Thu Dec 11 11:20:59 1997  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (target frags): Add *-linux-gnu.
