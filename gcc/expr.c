@@ -6832,9 +6832,6 @@ expand_expr (exp, target, tmode, modifier)
 	return temp;
       }
 
-      /* We can't find the object or there was a missing WITH_RECORD_EXPR.  */
-      abort ();
-
     case WITH_RECORD_EXPR:
       /* Put the object on the placeholder list, expand our first operand,
 	 and pop the list.  */
