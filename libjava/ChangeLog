@@ -1,3 +1,14 @@
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/awt/EmbeddedWindow.java
+	(static): Removed.
+	(addNotify): Set peer via reflection.
+	(setWindowPeer): Removed.
+	* gnu/java/awt/natEmbeddedWindow.cc: Removed.
+	* Makefile.am (nat_source_files):
+	Removed gnu/java/awt/natEmbeddedWindow.cc.
+	* Makefile.in: Regenerated.
+
 2004-07-17  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.in(ZIP, GCJH): Remove white space around '=' in variable

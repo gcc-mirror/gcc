@@ -40,23 +40,20 @@ package gnu.java.awt;
 
 import gnu.classpath.Configuration;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
+
+import java.awt.Component;
 import java.awt.Frame;
 import java.awt.Toolkit;
+import java.lang.reflect.Field;
 
 /**
  * Represents an AWT window that can be embedded into another
  * application.
  * 
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public class EmbeddedWindow extends Frame
 {
-  static
-  {
-    if (Configuration.INIT_LOAD_LIBRARY)
-      System.loadLibrary("javaawt");
-  }
-  
   private long handle;
   
   /**
@@ -93,13 +90,24 @@ public class EmbeddedWindow extends Frame
       throw new UnsupportedOperationException
         ("Embedded windows are not supported by the current peers: " + tk.getClass());
 
-    setWindowPeer (((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
+    // Circumvent the package-privateness of the AWT internal
+    // java.awt.Component.peer member variable.
+    try
+      {
+	Field peerField = Component.class.getDeclaredField("peer");
+	peerField.set(this, ((EmbeddedWindowSupport) tk).createEmbeddedWindow (this));
+      }
+    catch (IllegalAccessException e)
+      {
+	// This should never happen.
+      }
+    catch (NoSuchFieldException e)
+      {
+	// This should never happen.
+      }
+
     super.addNotify();
   }
-
-  // This method is only made native to circumvent the package-privateness of
-  // an AWT internal java.awt.Component.peer member variable.
-  native void setWindowPeer (EmbeddedWindowPeer peer);
 
   /**
    * If the native peer for this embedded window has been created,
