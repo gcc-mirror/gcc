@@ -797,8 +797,8 @@ find_a_file (pprefix, name)
 
   if (*name == '/'
 #ifdef DIR_SEPARATOR
-      DIR_SEPARATOR == '\\' && name[1] == ':'
-      && (name[2] == DIR_SEPARATOR || name[2] == '/')
+      || (DIR_SEPARATOR == '\\' && name[1] == ':'
+      && (name[2] == DIR_SEPARATOR || name[2] == '/'))
 #endif
       )
     {
