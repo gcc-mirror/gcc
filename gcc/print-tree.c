@@ -384,7 +384,7 @@ print_node (file, prefix, node, indent)
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
       print_node (file, "unit size", DECL_SIZE_UNIT (node), indent + 4);
-      
+
       if (TREE_CODE (node) != FUNCTION_DECL
 	  || DECL_INLINE (node) || DECL_BUILT_IN (node))
 	indent_to (file, indent + 3);
@@ -415,7 +415,7 @@ print_node (file, prefix, node, indent)
       if (DECL_POINTER_ALIAS_SET_KNOWN_P (node))
 	{
 	  fprintf (file, " alias set ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, 
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		   DECL_POINTER_ALIAS_SET (node));
 	}
 
@@ -633,7 +633,7 @@ print_node (file, prefix, node, indent)
       if (TREE_CODE (node) == EXPR_WITH_FILE_LOCATION)
 	{
 	  indent_to (file, indent+4);
-          fprintf (file, "%s:%d:%d", 
+	  fprintf (file, "%s:%d:%d",
 		   (EXPR_WFL_FILENAME_NODE (node ) ?
 		    EXPR_WFL_FILENAME (node) : "(no file info)"),
 		   EXPR_WFL_LINENO (node), EXPR_WFL_COLNO (node));

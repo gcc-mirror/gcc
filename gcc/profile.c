@@ -209,7 +209,7 @@ output_gcov_string (string, delimiter)
 }
 
 
-/* Computes hybrid profile for all matching entries in da_file. 
+/* Computes hybrid profile for all matching entries in da_file.
    Sets max_counter_in_program as a side effect.  */
 
 static gcov_type *
@@ -244,7 +244,7 @@ get_exec_counts ()
 	  }
     }
 
-  /* now read and combine all matching profiles. */
+  /* now read and combine all matching profiles.  */
 
   profile = xmalloc (sizeof (gcov_type) * num_edges);
   rewind (da_file);
@@ -698,7 +698,7 @@ compute_checksum ()
   long chsum = 0;
   int i;
 
-  
+
   for (i = 0; i < n_basic_blocks ; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
@@ -741,9 +741,9 @@ branch_prob ()
   profile_info.current_function_cfg_checksum = compute_checksum ();
 
   if (rtl_dump_file)
-    fprintf (rtl_dump_file, "CFG checksum is %ld\n", 
+    fprintf (rtl_dump_file, "CFG checksum is %ld\n",
 	profile_info.current_function_cfg_checksum);
-  
+
   /* Start of a function.  */
   if (flag_test_coverage)
     output_gcov_string (current_function_name, (long) -2);
@@ -820,14 +820,14 @@ branch_prob ()
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Adding fake exit edge to bb %i\n",
 		     bb->index);
-          make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+	  make_edge (bb, EXIT_BLOCK_PTR, EDGE_FAKE);
 	}
       if (need_entry_edge && !have_entry_edge)
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Adding fake entry edge to bb %i\n",
 		     bb->index);
-          make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
+	  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FAKE);
 	}
     }
 
@@ -844,10 +844,10 @@ branch_prob ()
       /* Mark edges we've replaced by fake edges above as ignored.  */
       if ((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL))
 	  && e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR)
-        {
+	{
 	  EDGE_INFO (e)->ignore = 1;
 	  ignored_edges++;
-        }
+	}
     }
 
 #ifdef ENABLE_CHECKING
@@ -860,10 +860,10 @@ branch_prob ()
     {
       int i = 0;
       for (i = 0 ; i < n_basic_blocks; i++)
-        {
+	{
 	  basic_block bb = BASIC_BLOCK (i);
 	  rtx insn = bb->head;
-          static int ignore_next_note = 0;
+	  static int ignore_next_note = 0;
 
 	  /* We are looking for line number notes.  Search backward before
 	     basic block to find correct ones.  */
@@ -916,7 +916,7 @@ branch_prob ()
 		}
 	      insn = NEXT_INSN (insn);
 	    }
-        }
+	}
       __write_long (0, bb_file, 4);
     }
 
@@ -933,10 +933,10 @@ branch_prob ()
       edge e = INDEX_EDGE (el, i);
       struct edge_info *inf = EDGE_INFO (e);
       if ((e->flags & EDGE_FAKE) && !inf->ignore && !inf->on_tree)
-        {
-          inf->ignore = 1;
-          ignored_edges++;
-        }
+	{
+	  inf->ignore = 1;
+	  ignored_edges++;
+	}
     }
 
   total_num_blocks += n_basic_blocks + 2;
@@ -965,7 +965,7 @@ branch_prob ()
 
       /* write checksum.  */
       __write_long (profile_info.current_function_cfg_checksum, bbg_file, 4);
-      
+
       /* The plus 2 stands for entry and exit block.  */
       __write_long (n_basic_blocks + 2, bbg_file, 4);
       __write_long (num_edges - ignored_edges + 1, bbg_file, 4);
@@ -1099,14 +1099,14 @@ find_spanning_tree (el)
     {
       edge e = INDEX_EDGE (el, i);
       if (((e->flags & (EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_FAKE))
-           || e->dest == EXIT_BLOCK_PTR
-          )
+	   || e->dest == EXIT_BLOCK_PTR
+	   )
 	  && !EDGE_INFO (e)->ignore
 	  && (find_group (e->src) != find_group (e->dest)))
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Abnormal edge %d to %d put to tree\n",
-                     e->src->index, e->dest->index);
+		     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
@@ -1122,7 +1122,7 @@ find_spanning_tree (el)
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Critical edge %d to %d put to tree\n",
-                     e->src->index, e->dest->index);
+		     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
@@ -1137,7 +1137,7 @@ find_spanning_tree (el)
 	{
 	  if (rtl_dump_file)
 	    fprintf (rtl_dump_file, "Normal edge %d to %d put to tree\n",
-                     e->src->index, e->dest->index);
+		     e->src->index, e->dest->index);
 	  EDGE_INFO (e)->on_tree = 1;
 	  union_groups (e->src, e->dest);
 	}
