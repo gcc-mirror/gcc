@@ -1,3 +1,35 @@
+Mon Jan 18 09:05:37 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* loop.c (insert_bct): Hide the definition of variables
+	`increment_direction', `compare_direction', `add_iteration' and
+	`loop_var_mode'.
+
+	* recog.c (mode_dependent_address_p): Mark parameter `addr' with
+	ATTRIBUTE_UNUSED.  Mark label `win' with ATTRIBUTE_UNUSED_LABEL.
+	(mode_independent_operand): Mark label `lose' with
+	ATTRIBUTE_UNUSED_LABEL.
+
+	* regclass.c (n_occurrences): Remove prototype and definition.
+
+	* reload.c (find_reloads_address_1): Mark variable `tem' with
+	ATTRIBUTE_UNUSED.
+
+	* reload1.c (reload): Cast the first two arguments of `bcopy' to PTR.
+
+	* sbitmap.c (sbitmap_copy): Likewise.
+
+	* scan-decls.c (scan_decls): Hide label `handle_comma'.
+
+	* toplev.c (output_lang_identify): Mark prototype with
+	ATTRIBUTE_UNUSED.
+
+	* tree.c (make_node): Cast the first argument of `bzero' to PTR.
+	(make_tree_vec): Likewise.
+	(build1): Likewise.
+
+	* varasm.c (assemble_static_space): Mark variable `tem' with
+ 	ATTRIBUTE_UNUSED.
+
 Mon Jan 18 04:28:36 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* Makefile.in (GCOV_INSTALL_NAME): New macro.

@@ -662,7 +662,7 @@ reload (first, global, dumpfile)
   reg_max_ref_width = (int *) xmalloc (max_regno * sizeof (int));
   bzero ((char *) reg_max_ref_width, max_regno * sizeof (int));
   reg_old_renumber = (short *) xmalloc (max_regno * sizeof (short));
-  bcopy (reg_renumber, reg_old_renumber, max_regno * sizeof (short));
+  bcopy ((PTR) reg_renumber, (PTR) reg_old_renumber, max_regno * sizeof (short));
   pseudo_forbidden_regs
     = (HARD_REG_SET *) xmalloc (max_regno * sizeof (HARD_REG_SET));
   pseudo_previous_regs
