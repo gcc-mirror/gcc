@@ -130,6 +130,15 @@ extern int target_flags;
 
 /* target machine storage layout */
 
+/* Define for XFmode extended real floating point support.
+   This will automatically cause REAL_ARITHMETIC to be defined.  */
+#define LONG_DOUBLE_TYPE_SIZE 96
+
+/* Define if you don't want extended real, but do want to use the
+   software floating point emulator for REAL_ARITHMETIC and
+   decimal <-> binary conversion. */
+/* #define REAL_ARITHMETIC */
+
 /* Define this if most significant byte of a word is the lowest numbered.  */
 /* That is true on the 80386.  */
 
@@ -229,9 +238,18 @@ extern int target_flags;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    On the 80386, the stack pointer is such, as is the arg pointer. */
+#if LONG_DOUBLE_TYPE_SIZE == 96
+/* In XFmode, operands have to be loaded into an fp register.
+ * The easy way to handle this is to declare one register not
+ * available.  */
+#define FIXED_REGISTERS \
+/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/       \
+{  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  1,  1 }
+#else
 #define FIXED_REGISTERS \
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/       \
 {  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,  1 }
+#endif
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -288,7 +306,7 @@ extern int target_flags;
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) < 2 ? 1						\
    : (REGNO) < 4 ? 1						\
-   : FP_REGNO_P ((REGNO))					\
+   : FP_REGNO_P (REGNO)						\
    ? (((int) GET_MODE_CLASS (MODE) == (int) MODE_FLOAT		\
        || (int) GET_MODE_CLASS (MODE) == (int) MODE_COMPLEX_FLOAT)	\
       && GET_MODE_UNIT_SIZE (MODE) <= 12)			\
@@ -1372,18 +1390,37 @@ number as al, and ax.
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "%s %.22e\n", ASM_DOUBLE, (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
+do { long l[2];								\
+     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);				\
+     if (sizeof (int) == sizeof (long))					\
+       fprintf (FILE, "%s 0x%x,0x%x\n", ASM_LONG, l[0], l[1]);		\
+     else								\
+       fprintf (FILE, "%s 0x%lx,0x%lx\n", ASM_LONG, l[0], l[1]);	\
+   } while (0)
 
+/* This is how to output a `long double' extended real constant. */
+
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  		\
+do { long l[3];						\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
+     if (sizeof (int) == sizeof (long))			\
+       fprintf (FILE, "%s 0x%x,0x%x,0x%x\n", ASM_LONG, l[0], l[1], l[2]); \
+     else						\
+       fprintf (FILE, "%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG, l[0], l[1], l[2]); \
+   } while (0)
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { union { float f; long l;} tem;			\
-     tem.f = (VALUE);					\
-     fprintf((FILE), "%s 0x%x\n", ASM_LONG, tem.l);	\
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
+do { long l;						\
+     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
+     if (sizeof (int) == sizeof (long))			\
+       fprintf ((FILE), "%s 0x%x\n", ASM_LONG, l);	\
+     else						\
+       fprintf ((FILE), "%s 0x%lx\n", ASM_LONG, l);	\
    } while (0)
-
 
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
@@ -1478,7 +1515,7 @@ do { union { float f; long l;} tem;			\
 
    On the 80386, we use several such letters:
    f -- float insn (print a CONST_DOUBLE as a float rather than in hex).
-   L,W,B,Q,S -- print the opcode suffix for specified size of operand.
+   L,W,B,Q,S,T -- print the opcode suffix for specified size of operand.
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
@@ -1519,6 +1556,7 @@ extern char *qi_high_reg_name[];
 	     }						\
 	 case 4:					\
 	 case 8:					\
+	 case 12:					\
 	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
 	 case 2:					\
 	   fputs (hi_reg_name[REGNO (X)], FILE);	\
@@ -1553,6 +1591,7 @@ extern char *qi_high_reg_name[];
 	 { fputs ("st(0)", FILE); break; }		\
        switch (GET_MODE_SIZE (GET_MODE (X)))		\
 	 {						\
+	 case 12:					\
 	 case 8:					\
 	 case 4:					\
 	   if (! FP_REG_P (X)) fputs ("e", FILE);	\
