@@ -122,7 +122,7 @@ proc check_alias_available { } {
 proc check_gc_sections_available { } {
     global gc_sections_available_saved
 
-    if {![info exists alias_available_saved]} {
+    if {![info exists gc_sections_available_saved]} {
 	# Check if the ld used by gcc supports --gc-sections.
 	set gcc_ld [lindex [gcc_target_compile "-print-prog-name=ld" "" "none" ""] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]

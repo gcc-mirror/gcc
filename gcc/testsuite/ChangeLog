@@ -1,3 +1,10 @@
+2003-06-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-dg.exp (dg-require-weak): Fix typo.
+	(dg-require-alias): Likewise.
+	(dg-require-gc-sections): Likewise.
+	* lib/target-supports.exp (check_gc_sections_available): Likewise.
+
 2003-06-08  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/20011029-2.c: Fix the array reference.
