@@ -1947,8 +1947,16 @@ may_trap_p (x)
 	 certainly may trap.  */
       return 1;
 
+    case GE:
+    case GT:
+    case LE:
+    case LT:
     case COMPARE:
-      /* Any floating comparison may trap.  */
+      /* Some floating point comparisons may trap.  */
+      /* ??? There is no machine independent way to check for tests that trap
+	 when COMPARE is used, though many targets do make this distinction.
+	 For instance, sparc uses CCFPE for compares which generate exceptions
+	 and CCFP for compares which do not generate exceptions.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	return 1;
       /* But often the compare has some CC mode, so check operand
