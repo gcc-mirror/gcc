@@ -152,3 +152,5 @@ DEFTREECODE (REF_BIND, "ref_bind", "e", 1)
 DEFTREECODE (USER_CONV, "user_conv", "e", 4)
 DEFTREECODE (AMBIG_CONV, "ambig_conv", "e", 1)
 DEFTREECODE (RVALUE_CONV, "rvalue_conv", "e", 1)
+
+DEFTREECODE (TAG_DEFN, "tag_defn", "e", 0)

@@ -1674,10 +1674,9 @@ make_thunk (function, delta)
      int delta;
 {
   char buffer[250];
-  tree thunk_fndecl, thunk_id;
+  tree thunk_id;
   tree thunk;
   char *func_name;
-  static int thunk_number = 0;
   tree func_decl;
   if (TREE_CODE (function) != ADDR_EXPR)
     abort ();
@@ -1739,10 +1738,12 @@ emit_thunk (thunk_fndecl)
 #ifdef ASM_OUTPUT_MI_THUNK
     char *fnname;
     current_function_decl = thunk_fndecl;
+    /* Make sure we build up its RTL before we go onto the
+       temporary obstack.  */
+    make_function_rtl (thunk_fndecl);
     temporary_allocation ();
     DECL_RESULT (thunk_fndecl)
       = build_decl (RESULT_DECL, 0, integer_type_node);
-    make_function_rtl (thunk_fndecl);
     fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
     assemble_start_function (thunk_fndecl, fnname);
     ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
