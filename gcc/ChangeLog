@@ -1,3 +1,9 @@
+Sun Apr  9 15:16:14 EDT 2000  John Wehle  (john@feith.com)
+
+	* i386.md (fix_truncsfhi2, fix_truncdfhi2,
+	fix_truncxfhi2): New patterns.
+	* i386.c (output_fix_trunc): Handle converting to HImode.
+
 2000-04-08  Alex Samuel  <samuel@codesourcery.com>
 
 	* ssa.c (convert_to_ssa): Eliminate dead code when calling
