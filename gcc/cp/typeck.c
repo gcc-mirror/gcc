@@ -4806,9 +4806,6 @@ mark_addressable (exp)
 {
   register tree x = exp;
 
-  if (TREE_ADDRESSABLE (x) == 1)
-    return 1;
-
   while (1)
     switch (TREE_CODE (x))
       {
@@ -4827,6 +4824,8 @@ mark_addressable (exp)
 	    TREE_ADDRESSABLE (x) = 1; /* so compiler doesn't die later */
 	    return 1;
 	  }
+	/* FALLTHRU */
+
       case VAR_DECL:
 	/* Caller should not be trying to mark initialized
 	   constant fields addressable.  */
@@ -4834,6 +4833,7 @@ mark_addressable (exp)
 			    || DECL_IN_AGGR_P (x) == 0
 			    || TREE_STATIC (x)
 			    || DECL_EXTERNAL (x), 314);
+	/* FALLTHRU */
 
       case CONST_DECL:
       case RESULT_DECL:
@@ -4842,6 +4842,7 @@ mark_addressable (exp)
 	  warning ("address requested for `%D', which is declared `register'",
 		      x);
 	TREE_ADDRESSABLE (x) = 1;
+	put_var_into_stack (x);
 	return 1;
 
       case FUNCTION_DECL:
