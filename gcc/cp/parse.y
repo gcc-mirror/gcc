@@ -4177,6 +4177,12 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 		    name = DECL_NAME (get_first_fn (name));
 		  fn = lookup_member (scope, name, /*protect=*/1, 
 				      /*prefer_type=*/0);
+		  if (!fn)
+		    {
+		      error ("'%D' has no member named '%E'", scope, name);
+		      return error_mark_node;
+		    }
+		  
 		  if (BASELINK_P (fn) && template_id)
 		    BASELINK_FUNCTIONS (fn) 
 		      = build_nt (TEMPLATE_ID_EXPR,

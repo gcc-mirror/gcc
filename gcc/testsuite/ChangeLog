@@ -1,5 +1,7 @@
 2002-09-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/lookup/scoped2.C: New test.
+
 	* g++.dg/ext/asm3.C: New test.
 
 2002-09-16  Richard Earnshaw  <rearnsha@arm.com>
