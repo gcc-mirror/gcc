@@ -319,7 +319,7 @@ stack_include_file (pfile, inc)
 	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
   /* For -M, add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, print_deps) > !!sysp && !inc->include_count)
+  if (CPP_OPTION (pfile, deps.style) > !!sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
   /* Not in cache?  */
@@ -663,9 +663,10 @@ handle_missing_header (pfile, fname, angle_brackets)
      const char *fname;
      int angle_brackets;
 {
-  int print_dep = CPP_PRINT_DEPS(pfile) > (angle_brackets || pfile->map->sysp);
-
-  if (CPP_OPTION (pfile, print_deps_missing_files) && print_dep)
+  bool print_dep
+    = CPP_OPTION (pfile, deps.style) > (angle_brackets || pfile->map->sysp);
+ 
+  if (CPP_OPTION (pfile, deps.missing_files) && print_dep)
     deps_add_dep (pfile->deps, fname);
   /* If -M was specified, then don't count this as an error, because
      we can still produce correct output.  Otherwise, we can't produce
@@ -673,7 +674,7 @@ handle_missing_header (pfile, fname, angle_brackets)
      the missing file, and we don't know what directory this missing
      file exists in.  */
   else
-    cpp_errno (pfile, CPP_PRINT_DEPS (pfile) && ! print_dep
+    cpp_errno (pfile, CPP_OPTION (pfile, deps.style) && ! print_dep
 	       ? DL_WARNING: DL_ERROR, fname);
 }
 

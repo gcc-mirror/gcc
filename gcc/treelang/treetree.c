@@ -955,14 +955,6 @@ cpp_create_reader (enum c_lang lang ATTRIBUTE_UNUSED)
 /* Should not be called for treelang.   */
 
 void
-cpp_post_options (cpp_reader *pfile ATTRIBUTE_UNUSED)
-{
-  abort ();
-}
-
-/* Should not be called for treelang.   */
-
-void
 cpp_preprocess_file (cpp_reader *pfile ATTRIBUTE_UNUSED)
 {
   abort ();
