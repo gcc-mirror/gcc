@@ -1,3 +1,8 @@
+2003-08-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11766
+	* g++.dg/expr/ptrmem1.C: New test.
+
 2003-08-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9453
