@@ -1,3 +1,20 @@
+Mon Nov  3 05:45:32 1997  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k.c: Include tree.h for dwarf2out_cfi_label.
+
+	* gcc.c (process_command): Do not take address of function fatal when
+	calling lang_specific_driver.
+
+Sat Dec  6 01:02:38 1997  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* config/i386/cygwin32.h (DWARF2_UNWIND): Exception handling 
+	doesn't work with it yet, so set it to 0.
+	* config/i386/xm-cygwin32.h (NO_SYS_SIGLIST): Define.
+
+Sat Dec  6 01:01:02 1997  Christian Iseli  <Christian.Iseli@lslsun.epfl.ch>
+
+	* cse.c (cse_insn): Check for invalid entries when taking references.
+
 Fri Dec  5 18:26:25 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (invariant_p): Don't test flag_rerun_loop_opt.

@@ -7463,6 +7463,11 @@ cse_insn (insn, in_libcall_block)
 		  merge_equiv_classes (src_elt, classp);
 
 		classp = src_elt->first_same_value;
+		/* Ignore invalid entries.  */
+		while (classp
+		       && GET_CODE (classp->exp) != REG
+		       && ! exp_equiv_p (classp->exp, classp->exp, 1, 0))
+		  classp = classp->next_same_value;
 	      }
 	  }
       }
