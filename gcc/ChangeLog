@@ -1,3 +1,29 @@
+Mon Nov 19 18:06:21 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (try_replace_reg): Copy RTX before creating note.
+
+	* df.h (df_ref_flags): New uenum.
+	(DF_REF_FLAGS): New macro.
+	(struct ref): Add field "flags".
+	* df.c (HANDLE_SUBREG): Remove.
+	(df_ref_create): Likewise; set flags field of ref.
+	(df_def_record_1): Strip down read_write subreg; remove
+	commented out code; set READ_WRITE flag.
+	(read_modify_subreg_p): New static function.
+	(df_uses_record): Cleanup SET handling; set READ_WRITE flag;
+	new argument "flags".
+	(df_insn_refs_record): Update call of df_uses_record.
+	(df_insn_modify): Avoid #if 0 around comment.
+	(df_dump): Dump the read/write flag.
+
+	* predict.c (propagate_freq): Make cyclic_probability and frequency
+	volatile
+
+	* i386.c (ix86_cc_mode): Accept USE.
+
+	* cfgrtl.c (purge_dead_edges):  Cleanup EDGE_ABNORMAL flag if computed
+	jump is turned into simplejump.
+
 2001-11-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/fragments.texi, doc/trouble.texi: Remove links to old

@@ -602,7 +602,7 @@ expected_value_to_br_prob ()
 typedef struct block_info_def
 {
   /* Estimated frequency of execution of basic_block.  */
-  double frequency;
+  volatile double frequency;
 
   /* To keep queue of basic blocks to process.  */
   basic_block next;
@@ -619,8 +619,11 @@ typedef struct edge_info_def
 {
   /* In case edge is an loopback edge, the probability edge will be reached
      in case header is.  Estimated number of iterations of the loop can be
-     then computed as 1 / (1 - back_edge_prob).  */
-  double back_edge_prob;
+     then computed as 1 / (1 - back_edge_prob).
+
+     Volatile is needed to avoid differences in the optimized and unoptimized
+     builds on machines where FP registers are wider than double.  */
+  volatile double back_edge_prob;
   /* True if the edge is an loopback edge in the natural loop.  */
   int back_edge:1;
 } *edge_info;
@@ -663,7 +666,7 @@ propagate_freq (head)
   BLOCK_INFO (head)->frequency = 1;
   for (; bb; bb = nextbb)
     {
-      double cyclic_probability = 0, frequency = 0;
+      volatile double cyclic_probability = 0, frequency = 0;
 
       nextbb = BLOCK_INFO (bb)->next;
       BLOCK_INFO (bb)->next = NULL;

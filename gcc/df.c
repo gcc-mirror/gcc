@@ -227,15 +227,18 @@ static void df_refs_unlink PARAMS ((struct df *, bitmap));
 
 static struct ref *df_ref_create PARAMS((struct df *,
 					 rtx, rtx *, basic_block, rtx,
-					 enum df_ref_type));
+					 enum df_ref_type, enum df_ref_flags));
 static void df_ref_record_1 PARAMS((struct df *, rtx, rtx *,
-				    basic_block, rtx, enum df_ref_type));
+				    basic_block, rtx, enum df_ref_type,
+				    enum df_ref_flags));
 static void df_ref_record PARAMS((struct df *, rtx, rtx *,
-				  basic_block bb, rtx, enum df_ref_type));
+				  basic_block bb, rtx, enum df_ref_type,
+				  enum df_ref_flags));
 static void df_def_record_1 PARAMS((struct df *, rtx, basic_block, rtx));
 static void df_defs_record PARAMS((struct df *, rtx, basic_block, rtx));
 static void df_uses_record PARAMS((struct df *, rtx *,
-				   enum df_ref_type, basic_block, rtx));
+				   enum df_ref_type, basic_block, rtx,
+				   enum df_ref_flags));
 static void df_insn_refs_record PARAMS((struct df *, basic_block, rtx));
 static void df_bb_refs_record PARAMS((struct df *, basic_block));
 static void df_refs_record PARAMS((struct df *, bitmap));
@@ -298,6 +301,7 @@ static void df_ru_transfer_function PARAMS ((int, int *, bitmap, bitmap,
 					     bitmap, bitmap, void *));
 static void df_lr_transfer_function PARAMS ((int, int *, bitmap, bitmap, 
 					     bitmap, bitmap, void *));
+static inline bool read_modify_subreg_p PARAMS ((rtx));
 
 
 /* Local memory allocation/deallocation routines.  */
@@ -780,13 +784,14 @@ df_use_unlink (df, use)
 /* Create a new ref of type DF_REF_TYPE for register REG at address
    LOC within INSN of BB.  */
 static struct ref *
-df_ref_create (df, reg, loc, bb, insn, ref_type)
+df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
      basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
+     enum df_ref_flags ref_flags;
 {
   struct ref *this_ref;
   unsigned int uid;
@@ -799,6 +804,7 @@ df_ref_create (df, reg, loc, bb, insn, ref_type)
   DF_REF_INSN (this_ref) = insn;
   DF_REF_CHAIN (this_ref) = 0;
   DF_REF_TYPE (this_ref) = ref_type;
+  DF_REF_FLAGS (this_ref) = ref_flags;
   uid = INSN_UID (insn);
 
   if (ref_type == DF_REF_REG_DEF)
@@ -832,28 +838,30 @@ df_ref_create (df, reg, loc, bb, insn, ref_type)
 /* Create a new reference of type DF_REF_TYPE for a single register REG,
    used inside the LOC rtx of INSN.  */
 static void
-df_ref_record_1 (df, reg, loc, bb, insn, ref_type)
+df_ref_record_1 (df, reg, loc, bb, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
      basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
+     enum df_ref_flags ref_flags;
 {
-  df_ref_create (df, reg, loc, bb, insn, ref_type);
+  df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags);
 }
 
 
 /* Create new references of type DF_REF_TYPE for each part of register REG
    at address LOC within INSN of BB.  */
 static void
-df_ref_record (df, reg, loc, bb, insn, ref_type)
+df_ref_record (df, reg, loc, bb, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
      basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
+     enum df_ref_flags ref_flags;
 {
   unsigned int regno;
 
@@ -892,12 +900,28 @@ df_ref_record (df, reg, loc, bb, insn, ref_type)
 
       for (i = regno; i < endregno; i++)
 	df_ref_record_1 (df, gen_rtx_REG (reg_raw_mode[i], i),
-			 loc, bb, insn, ref_type);
+			 loc, bb, insn, ref_type, ref_flags);
     }
   else
     {
-      df_ref_record_1 (df, reg, loc, bb, insn, ref_type);
+      df_ref_record_1 (df, reg, loc, bb, insn, ref_type, ref_flags);
     }
+}
+
+/* Writes to SUBREG of inndermode wider than word and outermode shorter than
+   word are read-modify-write.  */
+
+static inline bool
+read_modify_subreg_p (x)
+     rtx x;
+{
+  if (GET_CODE (x) != SUBREG)
+    return false;
+  if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) <= UNITS_PER_WORD)
+    return false;
+  if (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD)
+    return false;
+  return true;
 }
 
 /* Process all the registers defined in the rtx, X.  */
@@ -910,6 +934,7 @@ df_def_record_1 (df, x, bb, insn)
 {
   rtx *loc = &SET_DEST (x);
   rtx dst = *loc;
+  enum df_ref_flags flags = 0;
 
   /* Some targets place small structures in registers for
      return values of functions.  */
@@ -924,38 +949,26 @@ df_def_record_1 (df, x, bb, insn)
 
   /* May be, we should flag the use of strict_low_part somehow.  Might be
      handy for the reg allocator.  */
-#ifdef HANDLE_SUBREG
   while (GET_CODE (dst) == STRICT_LOW_PART
          || GET_CODE (dst) == ZERO_EXTRACT
-	 || GET_CODE (dst) == SIGN_EXTRACT)
-    {
-      loc = &XEXP (dst, 0);
-      dst = *loc;
-    }
-  /* For the reg allocator we are interested in exact register references.
-     This means, we want to know, if only a part of a register is
-     used/defd.  */
-/*
-  if (GET_CODE (dst) == SUBREG)
-    {
-      loc = &XEXP (dst, 0);
-      dst = *loc;
-    } */
-#else
-
-  while (GET_CODE (dst) == SUBREG
-	 || GET_CODE (dst) == ZERO_EXTRACT
 	 || GET_CODE (dst) == SIGN_EXTRACT
-	 || GET_CODE (dst) == STRICT_LOW_PART)
+	 || read_modify_subreg_p (dst))
     {
+      /* Strict low part allways contains SUBREG, but we don't want to make
+	 it appear outside, as whole register is allways considered.  */
+      if (GET_CODE (dst) == STRICT_LOW_PART)
+	{
+	  loc = &XEXP (dst, 0);
+	  dst = *loc;
+	}
       loc = &XEXP (dst, 0);
       dst = *loc;
+      flags |= DF_REF_READ_WRITE;
     }
-#endif
   
     if (GET_CODE (dst) == REG
         || (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG))
-      df_ref_record (df, dst, loc, bb, insn, DF_REF_REG_DEF);
+      df_ref_record (df, dst, loc, bb, insn, DF_REF_REG_DEF, flags);
 }
 
 
@@ -991,18 +1004,21 @@ df_defs_record (df, x, bb, insn)
 
 /* Process all the registers used in the rtx at address LOC.  */
 static void
-df_uses_record (df, loc, ref_type, bb, insn)
+df_uses_record (df, loc, ref_type, bb, insn, flags)
      struct df *df;
      rtx *loc;
      enum df_ref_type ref_type;
      basic_block bb;
      rtx insn;
+     enum df_ref_flags flags;
 {
   RTX_CODE code;
   rtx x;
 
  retry:
   x = *loc;
+  if (!x)
+    return;
   code = GET_CODE (x);
   switch (code)
     {
@@ -1021,120 +1037,78 @@ df_uses_record (df, loc, ref_type, bb, insn)
 	 as being used.  */
       if (GET_CODE (XEXP (x, 0)) == MEM)
 	df_uses_record (df, &XEXP (XEXP (x, 0), 0),
-			DF_REF_REG_MEM_STORE, bb, insn);
+			DF_REF_REG_MEM_STORE, bb, insn, flags);
 
       /* If we're clobbering a REG then we have a def so ignore.  */
       return;
 
     case MEM:
-      df_uses_record (df, &XEXP (x, 0), DF_REF_REG_MEM_LOAD, bb, insn);
+      df_uses_record (df, &XEXP (x, 0), DF_REF_REG_MEM_LOAD, bb, insn, flags);
       return;
 
     case SUBREG:
       /* While we're here, optimize this case.  */
-#if defined(HANDLE_SUBREG)
 
       /* In case the SUBREG is not of a register, don't optimize.  */
       if (GET_CODE (SUBREG_REG (x)) != REG)
 	{
 	  loc = &SUBREG_REG (x);
-	  df_uses_record (df, loc, ref_type, bb, insn);
+	  df_uses_record (df, loc, ref_type, bb, insn, flags);
 	  return;
 	}
 
-#else
-      loc = &SUBREG_REG (x);
-      x = *loc;
-      if (GET_CODE (x) != REG)
-	{
-	  df_uses_record (df, loc, ref_type, bb, insn);
-	  return;
-	}
-#endif
       /* ... Fall through ...  */
 
     case REG:
       /* See a register (or subreg) other than being set.  */
-      df_ref_record (df, x, loc, bb, insn, ref_type);
+      df_ref_record (df, x, loc, bb, insn, ref_type, flags);
       return;
 
     case SET:
       {
 	rtx dst = SET_DEST (x);
-	int use_dst = 0;
 
-	/* If storing into MEM, don't show it as being used.  But do
-	   show the address as being used.  */
-	if (GET_CODE (dst) == MEM)
-	  {
-	    df_uses_record (df, &XEXP (dst, 0),
-			    DF_REF_REG_MEM_STORE,
-			    bb, insn);
-	    df_uses_record (df, &SET_SRC (x), DF_REF_REG_USE, bb, insn);
-	    return;
-	  }
+	df_uses_record (df, &SET_SRC (x), DF_REF_REG_USE, bb, insn, 0);
 
-#if 1 && defined(HANDLE_SUBREG)
-	/* Look for sets that perform a read-modify-write.  */
-	while (GET_CODE (dst) == STRICT_LOW_PART
-	       || GET_CODE (dst) == ZERO_EXTRACT
-	       || GET_CODE (dst) == SIGN_EXTRACT)
+	switch (GET_CODE (dst))
 	  {
-	    if (GET_CODE (dst) == STRICT_LOW_PART)
-	      {
-		dst = XEXP (dst, 0);
-		if (GET_CODE (dst) != SUBREG)
-		  abort ();
-		/* A strict_low_part uses the whole reg not only the subreg.  */
-		df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb, insn);
-	      }
-	    else
-	      {
-	        df_uses_record (df, &XEXP (dst, 0), DF_REF_REG_USE, bb, insn);
-		dst = XEXP (dst, 0);
-	      }
+	    case SUBREG:
+	      if (read_modify_subreg_p (dst))
+		{
+		  df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
+				  insn, DF_REF_READ_WRITE);
+		  break;
+		}
+	      /* ... FALLTHRU ... */
+	    case REG:
+	    case PC:
+	      break;
+	    case MEM:
+	      df_uses_record (df, &XEXP (dst, 0), 
+			      DF_REF_REG_MEM_STORE,
+			      bb, insn, 0);
+	      break;
+	    case STRICT_LOW_PART:
+	      /* A strict_low_part uses the whole reg not only the subreg.  */
+	      dst = XEXP (dst, 0);
+	      if (GET_CODE (dst) != SUBREG)
+		abort ();
+	      df_uses_record (df, &SUBREG_REG (dst), DF_REF_REG_USE, bb,
+			     insn, DF_REF_READ_WRITE);
+	      break;
+	    case ZERO_EXTRACT:
+	    case SIGN_EXTRACT:
+	      df_uses_record (df, &XEXP (dst, 0), DF_REF_REG_USE, bb, insn,
+			      DF_REF_READ_WRITE);
+	      df_uses_record (df, &XEXP (dst, 1), DF_REF_REG_USE, bb, insn, 0);
+	      df_uses_record (df, &XEXP (dst, 2), DF_REF_REG_USE, bb, insn, 0);
+	      dst = XEXP (dst, 0);
+	      break;
+	    default:
+	      abort ();
 	  }
-	if (GET_CODE (dst) == SUBREG)
-	  {
-	    /* Paradoxical or too small subreg's are read-mod-write.  */
-            if (GET_MODE_SIZE (GET_MODE (dst)) < GET_MODE_SIZE (word_mode)
-                || GET_MODE_SIZE (GET_MODE (dst))
-	           >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dst))))
-	      use_dst = 1;
-	  }
-	/* In the original code also some SUBREG rtx's were considered
-	   read-modify-write (those with
-	     REG_SIZE(SUBREG_REG(dst)) > REG_SIZE(dst) )
-	   e.g. a (subreg:QI (reg:SI A) 0).  I can't see this.  The only
-	   reason for a read cycle for reg A would be to somehow preserve
-	   the bits outside of the subreg:QI.  But for this a strict_low_part
-	   was necessary anyway, and this we handled already.  */
-#else
-	while (GET_CODE (dst) == STRICT_LOW_PART
-	       || GET_CODE (dst) == ZERO_EXTRACT
-	       || GET_CODE (dst) == SIGN_EXTRACT
-	       || GET_CODE (dst) == SUBREG)
-	  {
-	    /* A SUBREG of a smaller size does not use the old value.  */
-	    if (GET_CODE (dst) != SUBREG
-		|| (REG_SIZE (SUBREG_REG (dst)) > REG_SIZE (dst)))
-	      use_dst = 1;
-	    dst = XEXP (dst, 0);
-	  }
-#endif
-
-	if ((GET_CODE (dst) == PARALLEL && GET_MODE (dst) == BLKmode)
-	    || GET_CODE (dst) == REG || GET_CODE (dst) == SUBREG)
-	  {
-#if 1 || !defined(HANDLE_SUBREG)
-            if (use_dst)
-	      df_uses_record (df, &SET_DEST (x), DF_REF_REG_USE, bb, insn);
-#endif
-	    df_uses_record (df, &SET_SRC (x), DF_REF_REG_USE, bb, insn);
-	    return;
-	  }
+	return;
       }
-      break;
 
     case RETURN:
       break;
@@ -1165,7 +1139,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
 
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
 	      df_uses_record (df, &ASM_OPERANDS_INPUT (x, j),
-			      DF_REF_REG_USE, bb, insn);
+			      DF_REF_REG_USE, bb, insn, 0);
 	    return;
 	  }
 	break;
@@ -1178,7 +1152,7 @@ df_uses_record (df, loc, ref_type, bb, insn)
     case PRE_MODIFY:
     case POST_MODIFY:
       /* Catch the def of the register being modified.  */
-      df_ref_record (df, XEXP (x, 0), &XEXP (x, 0), bb, insn, DF_REF_REG_DEF);
+      df_ref_record (df, XEXP (x, 0), &XEXP (x, 0), bb, insn, DF_REF_REG_DEF, DF_REF_READ_WRITE);
 
       /* ... Fall through to handle uses ...  */
 
@@ -1201,14 +1175,14 @@ df_uses_record (df, loc, ref_type, bb, insn)
 		loc = &XEXP (x, 0);
 		goto retry;
 	      }
-	    df_uses_record (df, &XEXP (x, i), ref_type, bb, insn);
+	    df_uses_record (df, &XEXP (x, i), ref_type, bb, insn, flags);
 	  }
 	else if (fmt[i] == 'E')
 	  {
 	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
 	      df_uses_record (df, &XVECEXP (x, i, j), ref_type,
-			      bb, insn);
+			      bb, insn, flags);
 	  }
       }
   }
@@ -1240,7 +1214,7 @@ df_insn_refs_record (df, bb, insn)
 		case REG_EQUIV:
 		case REG_EQUAL:
 		  df_uses_record (df, &XEXP (note, 0), DF_REF_REG_USE,
-				  bb, insn);
+				  bb, insn, 0);
 		default:
 		  break;
 	      }
@@ -1257,12 +1231,12 @@ df_insn_refs_record (df, bb, insn)
 	    {
 	      if (GET_CODE (XEXP (note, 0)) == USE)
 		df_uses_record (df, &SET_DEST (XEXP (note, 0)), DF_REF_REG_USE,
-				bb, insn);
+				bb, insn, 0);
 	    }
 
 	  /* The stack ptr is used (honorarily) by a CALL insn.  */
 	  x = df_reg_use_gen (STACK_POINTER_REGNUM);
-	  df_uses_record (df, &SET_DEST (x), DF_REF_REG_USE, bb, insn);
+	  df_uses_record (df, &SET_DEST (x), DF_REF_REG_USE, bb, insn, 0);
 
 	  if (df->flags & DF_HARD_REGS)
 	    {
@@ -1273,14 +1247,14 @@ df_insn_refs_record (df, bb, insn)
 		  {
 		    x = df_reg_use_gen (i);
 		    df_uses_record (df, &SET_DEST (x),
-				    DF_REF_REG_USE, bb, insn);
+ 				    DF_REF_REG_USE, bb, insn, 0);
 		  }
 	    }
 	}
 
       /* Record the register uses.  */
       df_uses_record (df, &PATTERN (insn),
-		      DF_REF_REG_USE, bb, insn);
+		      DF_REF_REG_USE, bb, insn, 0);
 
 
       if (GET_CODE (insn) == CALL_INSN)
@@ -3339,6 +3313,8 @@ df_dump (df, flags, file)
 		       DF_INSN_LUID (df, DF_REF_INSN (df->defs[j])),
 		       DF_REF_INSN_UID (df->defs[j]),
 		       DF_REF_REGNO (df->defs[j]));
+	      if (df->defs[j]->flags & DF_REF_READ_WRITE)
+		fprintf (file, "read/write ");
 	      df_chain_dump (DF_REF_CHAIN (df->defs[j]), file);
 	      fprintf (file, "\n");
 	    }
@@ -3379,6 +3355,8 @@ df_dump (df, flags, file)
 		       DF_INSN_LUID (df, DF_REF_INSN (df->uses[j])),
 		       DF_REF_INSN_UID (df->uses[j]),
 		       DF_REF_REGNO (df->uses[j]));
+	      if (df->uses[j]->flags & DF_REF_READ_WRITE)
+		fprintf (file, "read/write ");
 	      df_chain_dump (DF_REF_CHAIN (df->uses[j]), file);
 	      fprintf (file, "\n");
 	    }

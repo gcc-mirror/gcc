@@ -48,6 +48,10 @@ struct df_link
   struct ref *ref;
 };
 
+enum df_ref_flags
+  {
+    DF_REF_READ_WRITE = 1
+  };
 
 /* Define a register reference structure.  */
 struct ref
@@ -59,6 +63,7 @@ struct ref
   struct df_link *chain;	/* Head of def-use or use-def chain.  */
   enum df_ref_type type;	/* Type of ref.  */
   int id;			/* Ref index.  */
+  enum df_ref_flags flags;	/* Various flags.  */
 };
 
 
@@ -177,6 +182,7 @@ struct df_map
 #define DF_REF_TYPE(REF) ((REF)->type)
 #define DF_REF_CHAIN(REF) ((REF)->chain)
 #define DF_REF_ID(REF) ((REF)->id)
+#define DF_REF_FLAGS(REF) ((REF)->flags)
 
 /* Macros to determine the reference type.  */
 
