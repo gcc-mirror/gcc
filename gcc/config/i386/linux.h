@@ -90,25 +90,6 @@
 
 #endif
 
-/* The following macros are copied from i386bsd.h.  */
-
-/* Redefine this to use %eax instead of %edx.  */
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *_mcount@GOT(%%ebx)\n");			\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall _mcount\n");				\
-    }									\
-}
-
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
 #undef COMMENT_BEGIN
@@ -120,23 +101,12 @@
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-/* The following macros are copied from i386v4.h.  */
-
-/* These have to be defined to get PIC code correct */
-
-/* This is how to output an element of a case-vector that is relative.
-   This is only used for PIC code.  See comments by the `casesi' insn in
-   i386.md for an explanation of the expression this outputs. */
-
-#undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
-
-/* Indicate that jump tables go in the text section.  This is
-   necessary when compiling PIC code.  */
-
-#define JUMP_TABLES_IN_TEXT_SECTION
+#undef LINK_SPEC
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
-   we want to retain compatibility with older gcc versions.  */
+#if TARGET_CPU_DEFAULT == 2
+#define LINK_SPEC	"%{v:-dll-verbose} %{!m386:-m486}"
+#else
+#define LINK_SPEC	"%{v:-dll-verbose} %{m486:-m486}"
+#endif
 #define DEFAULT_PCC_STRUCT_RETURN 0
