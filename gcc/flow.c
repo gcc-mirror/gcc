@@ -466,7 +466,7 @@ count_basic_blocks (f)
       if (code == CALL_INSN)
 	{
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? INTVAL (XEXP (note, 0), 0) : 1);
+	  int region = (note ? INTVAL (XEXP (note, 0)) : 1);
 	  prev_call = insn;
 	  call_had_abnormal_edge = 0;
 
@@ -540,7 +540,7 @@ find_basic_blocks_1 (f)
 	{
 	  /* Record whether this call created an edge.  */
 	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	  int region = (note ? INTVAL (XEXP (note, 0), 0) : 1);
+	  int region = (note ? INTVAL (XEXP (note, 0)) : 1);
 	  call_has_abnormal_edge = 0;
 
 	  /* If there is an EH region or rethrow, we have an edge.  */
