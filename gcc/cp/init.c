@@ -872,7 +872,8 @@ expand_virtual_init (binfo, decl)
 	 the vtt_parm in the case of the non-subobject constructor.  */
       vtbl = build (COND_EXPR, 
 		    TREE_TYPE (vtbl), 
-		    DECL_USE_VTT_PARM (current_function_decl),
+		    build (EQ_EXPR, boolean_type_node,
+			   current_in_charge_parm, integer_zero_node),
 		    vtbl2, 
 		    vtbl);
     }

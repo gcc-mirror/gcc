@@ -990,9 +990,6 @@ maybe_clone_body (fn)
 		  splay_tree_insert (id.decl_map,
 				     (splay_tree_key) DECL_VTT_PARM (fn),
 				     (splay_tree_value) clone_parm);
-		  splay_tree_insert (id.decl_map,
-				     (splay_tree_key) DECL_USE_VTT_PARM (fn),
-				     (splay_tree_value) boolean_true_node);
 		  clone_parm = TREE_CHAIN (clone_parm);
 		}
 	      /* Otherwise, map the VTT parameter to `NULL'.  */
@@ -1001,9 +998,6 @@ maybe_clone_body (fn)
 		  splay_tree_insert (id.decl_map,
 				     (splay_tree_key) DECL_VTT_PARM (fn),
 				     (splay_tree_value) null_pointer_node);
-		  splay_tree_insert (id.decl_map,
-				     (splay_tree_key) DECL_USE_VTT_PARM (fn),
-				     (splay_tree_value) boolean_false_node);
 		}
 	    }
 	  /* Map other parameters to their equivalents in the cloned
