@@ -1,3 +1,22 @@
+2000-06-22  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_decl, case FUNCTION_DECL): Clear DECL_SAVED_TREE.
+	(tsubst_friend_function): Copy it here.
+
+	* decl.c (grok_op_properties): Fix typo.
+
+	* decl2.c (delete_sanity): Clarify warning, avoid failure on
+	deleting void*.
+
+	* pt.c (check_explicit_specialization): Clarify error.
+
+	* decl.c (pushdecl): Also pull out one of the FUNCTION_DECLs from
+	an old OVERLOAD when we're declaring a non-function.
+	(pushdecl, destroy_local_var): Check for error_mark_node.
+	(warn_extern_redeclared_static): Also bail early if 
+	we're a CONST_DECL.
+	(push_overloaded_decl): Ignore an old error_mark_node.
+
 2000-06-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (build_x_va_arg): Check if in a template decl.

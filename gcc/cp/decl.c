@@ -3092,7 +3092,8 @@ warn_extern_redeclared_static (newdecl, olddecl)
   tree name;
 
   if (TREE_CODE (newdecl) == TYPE_DECL
-      || TREE_CODE (newdecl) == TEMPLATE_DECL)
+      || TREE_CODE (newdecl) == TEMPLATE_DECL
+      || TREE_CODE (newdecl) == CONST_DECL)
     return;
 
   /* Don't get confused by static member functions; that's a different
@@ -3863,14 +3864,20 @@ pushdecl (x)
 	 actually the same as the function we are declaring.  (If
 	 there is one, we have to merge our declaration with the
 	 previous declaration.)  */
-      if (t && TREE_CODE (t) == OVERLOAD && TREE_CODE (x) == FUNCTION_DECL)
+      if (t && TREE_CODE (t) == OVERLOAD)
 	{
 	  tree match;
 
-	  for (match = t; match; match = OVL_NEXT (match))
-	    if (DECL_ASSEMBLER_NAME (OVL_CURRENT (t))
-		== DECL_ASSEMBLER_NAME (x))
-	      break;
+	  if (TREE_CODE (x) == FUNCTION_DECL)
+	    for (match = t; match; match = OVL_NEXT (match))
+	      {
+		if (DECL_ASSEMBLER_NAME (OVL_CURRENT (t))
+		    == DECL_ASSEMBLER_NAME (x))
+		  break;
+	      }
+	  else
+	    /* Just choose one.  */
+	    match = t;
 
 	  if (match)
 	    t = OVL_CURRENT (match);
@@ -3972,7 +3979,7 @@ pushdecl (x)
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  tree type = TREE_TYPE (x);
-          if (DECL_SOURCE_LINE (x) == 0)
+	  if (DECL_SOURCE_LINE (x) == 0)
             {
 	      if (TYPE_NAME (type) == 0)
 	        TYPE_NAME (type) = x;
@@ -4010,6 +4017,7 @@ pushdecl (x)
 	  tree decl;
 
 	  if (IDENTIFIER_NAMESPACE_VALUE (name) != NULL_TREE
+	      && IDENTIFIER_NAMESPACE_VALUE (name) != error_mark_node
 	      && (DECL_EXTERNAL (IDENTIFIER_NAMESPACE_VALUE (name))
 		  || TREE_PUBLIC (IDENTIFIER_NAMESPACE_VALUE (name))))
 	    decl = IDENTIFIER_NAMESPACE_VALUE (name);
@@ -4577,6 +4585,9 @@ push_overloaded_decl (decl, flags)
 		return fn;
 	    }
 	}
+      else if (old == error_mark_node)
+	/* Ignore the undefined symbol marker.  */
+	old = NULL_TREE;
       else
 	{
 	  cp_error_at ("previous non-function declaration `%#D'", old);
@@ -8022,7 +8033,8 @@ destroy_local_var (decl)
     return;
 
   /* And only things with destructors need cleaning up.  */
-  if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
+  if (type == error_mark_node
+      || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     return;
 
   if (TREE_CODE (decl) == VAR_DECL &&
@@ -12583,7 +12595,7 @@ grok_op_properties (decl, virtualp, friendp)
 		  break;
 
 		case PREDECREMENT_EXPR:
-		  operator_code = PREDECREMENT_EXPR;
+		  operator_code = POSTDECREMENT_EXPR;
 		  break;
 
 		default:
