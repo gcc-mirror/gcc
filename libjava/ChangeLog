@@ -1,3 +1,23 @@
+2003-10-22  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/QuadCurve2D.java (subdivide): Added documentation.
+	java/awt/geom/doc-files/QuadCurve2D-3.png: New illustration.
+
+2003-10-22  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/QuadCurve2D.java: Reformatted, wrote Javadoc.
+	* java/awt/geom/doc-files: New directory.
+	* java/awt/geom/doc-files/QuadCurve2D-1.png,
+	java/awt/geom/doc-files/QuadCurve2D-2.png: New illustrations.
+	
+2003-10-22  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/QuadCurve2D.java (subdivide): Implement.
+
+2003-10-22  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/geom/QuadCurve2D.java (getFlatness, getFlatnessSq): Implement.
+
 2003-10-22  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/File.java
