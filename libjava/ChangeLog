@@ -1,3 +1,9 @@
+2002-06-05  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.am (libgcj_convenience.la): Revert the last change.
+	(libgcj.la): Likewise.
+	* Makefile.in: Regenerated.
+
 2002-06-04  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.am (libgcj_convenience.la): New target.
