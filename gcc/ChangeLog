@@ -1,3 +1,8 @@
+2003-06-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c: Fix comment typos.
+	* fold-const.c: Likewise.
+
 2003-06-13  Doug Evans  <dje@sebabeach.org>
 	    Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
