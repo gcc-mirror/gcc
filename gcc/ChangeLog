@@ -1,5 +1,9 @@
 2001-03-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* cselib.c (hash_rtx): Cast enums to unsigned int.
+
+2001-03-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* print-rtl.c (print_rtx): Cast enums to int for comparison.
 	* c-decl.c (grokdeclarator): Cast enums to int for comparison and
 	shifts.
