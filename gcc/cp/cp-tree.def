@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987,88,90,93,97-8,1999 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -125,12 +125,15 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
    the types of things; the ORIG_LEVEL is the level when we are
    worrying about instantiating things.  */
 DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'x', 
-	     /* The addition of (sizeof(char*) - 1) in the next
-		expression is to ensure against the case where
-		sizeof(char*) does not evenly divide
-		sizeof(HOST_WIDE_INT).  */
-	     1 + ((3 * sizeof (HOST_WIDE_INT) + sizeof(char*) - 1)
-		  / sizeof (char*)))
+	     /* The addition of (sizeof(tree) - 1) in the next expression
+		is to handle the case when padding pushes us past an even
+		multiple of sizeof(tree).  */
+	     /* We used to try to calculate this using
+		1+3*sizeof(HOST_WIDE_INT), but that fails if alignment
+		makes it bigger.  */
+	     ((sizeof (template_parm_index) - sizeof (struct tree_common))
+	      + sizeof (tree) - 1)
+	     / sizeof (tree))
 
 /* Index into a template parameter list.  This parameter must be a type.
    The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
