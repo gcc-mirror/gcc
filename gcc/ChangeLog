@@ -1,3 +1,7 @@
+2000-02-12  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* basic-block.h (FLOW_LOOP_FIRST_BLOCK, FLOW_LOOP_LAST_BLOCK): Delete.
+
 2000-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* crtstuff.c (__do_global_ctors_aux, __reg_frame_ctor,
