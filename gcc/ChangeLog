@@ -1,3 +1,7 @@
+Wed May 20 22:28:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcse.c (current_function_calls_longjmp): Declare.
+
 1998-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (base_type_die): Use int_size_in_bytes.
