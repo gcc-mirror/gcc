@@ -59,16 +59,12 @@ OBJECTIVE-C objective-c: cc1obj objc-runtime
 # The Objective C thread file
 OBJC_THREAD_FILE=thr-$(GCC_THREAD_FILE)
 
-# C common object files required by Objective C.
-OBJC_CCOMMON = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
-  c-aux-info.o c-common.o c-iterate.o
-
 # Language-specific object files for Objective C.
-OBJC_OBJS = objc-parse.o objc-act.o
+OBJC_OBJS = objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
 
-cc1obj: $(P) $(OBJC_OBJS) $(OBJC_CCOMMON) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(OBJS) \
-		$(OBJC_CCOMMON) $(BC_OBJS) $(LIBS)
+		$(BC_OBJS) $(LIBS)
 
 # Objective C language specific files.
 
