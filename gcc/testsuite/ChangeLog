@@ -1,3 +1,7 @@
+1998-11-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.pt/friend37.C: New test.
+
 1998-11-25  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/u77-test.f (main): Avoid testing [f]statb
