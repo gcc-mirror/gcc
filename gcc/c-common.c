@@ -321,6 +321,8 @@ check_case_value (value)
     /* Promote char or short to int.  */
     value = default_conversion (value);
 
+  constant_expression_warning (value);
+
   return value;
 }
 
