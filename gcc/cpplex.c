@@ -201,6 +201,10 @@ TOKEN_LEN (token)
 
 #define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
+#define ON_REST_ARG(c) \
+ (((c)->flags & VAR_ARGS) \
+  && (c)->u.list->tokens[(c)->posn].val.aux \
+      == (unsigned int) ((c)->u.list->paramc - 1))
 
 #define ASSIGN_FLAGS_AND_POS(d, s) \
   do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
@@ -990,7 +994,7 @@ parse_name (pfile, tok, cur, rlimit)
     {
       if (! is_idchar (*cur))
 	break;
-      /* $ is not a legal identifier character in the standard, but is
+      /* $ is not a identifier character in the standard, but is
 	 commonly accepted as an extension.  Don't warn about it in
 	 skipped conditional blocks. */
       if (*cur == '$' && CPP_PEDANTIC (pfile) && ! pfile->skipping)
@@ -2732,10 +2736,11 @@ maybe_paste_with_next (pfile, token)
 	pasted = duplicate_token (pfile, second);
       else if (second->type == CPP_PLACEMARKER)
 	{
-	  /* GCC has special extended semantics for a ## b where b is
-	     a varargs parameter: a disappears if b was given no actual
-	     arguments (not merely if b is an empty argument).  */
-	  if (second->flags & VOID_REST)
+	  /* GCC has special extended semantics for , ## b where b is
+	     a varargs parameter: the comma disappears if b was given
+	     no actual arguments (not merely if b is an empty
+	     argument).  */
+	  if (token->type == CPP_COMMA && second->flags & VOID_REST)
 	    pasted = duplicate_token (pfile, second);
 	  else
 	    pasted = duplicate_token (pfile, token);
@@ -2748,8 +2753,19 @@ maybe_paste_with_next (pfile, token)
 	  if (type == CPP_EOF)
 	    {
 	      if (CPP_OPTION (pfile, warn_paste))
-		cpp_warning (pfile,
+		{
+		  /* Do not complain about , ## <whatever> if
+		     <whatever> came from a variable argument, because
+		     the author probably intended the ## to trigger
+		     the special extended semantics (see above).  */
+		  if (token->type == CPP_COMMA
+		      && IS_ARG_CONTEXT (CURRENT_CONTEXT (pfile))
+		      && ON_REST_ARG (CURRENT_CONTEXT (pfile) - 1))
+		    /* no warning */;
+		  else
+		    cpp_warning (pfile,
 			"pasting would not give a valid preprocessing token");
+		}
 	      _cpp_push_token (pfile, second);
 	      return token;
 	    }
@@ -3287,7 +3303,7 @@ lex_next (pfile, clear)
 
 /* Pops a context off the context stack.  If we're at the bottom, lexes
    the next logical line.  Returns EOF if we're at the end of the
-   argument list to the # operator, or if it is illegal to "overflow"
+   argument list to the # operator, or we should not "overflow"
    into the rest of the file (e.g. 6.10.3.1.1).  */
 static int
 pop_context (pfile)

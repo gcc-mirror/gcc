@@ -145,11 +145,14 @@ cb_define (pfile, hash)
      cpp_reader *pfile;
      cpp_hashnode *hash;
 {
-  cpp_printf (pfile, &parse_out, "#define %s", hash->name);
-  if (CPP_OPTION (pfile, debug_output)
-      || CPP_OPTION (pfile, dump_macros) == dump_definitions)
-    cpp_dump_definition (pfile, parse_out.outf, hash);
-  putc ('\n', parse_out.outf);
+  if (pfile->done_initializing)
+    {
+      cpp_printf (pfile, &parse_out, "#define %s", hash->name);
+      if (CPP_OPTION (pfile, debug_output)
+	  || CPP_OPTION (pfile, dump_macros) == dump_definitions)
+	cpp_dump_definition (pfile, parse_out.outf, hash);
+      putc ('\n', parse_out.outf);
+    }
 }
 
 static void
@@ -157,7 +160,8 @@ cb_undef (pfile, hash)
      cpp_reader *pfile;
      cpp_hashnode *hash;
 {
-  cpp_printf (pfile, &parse_out, "#undef %s\n", hash->name);
+  if (pfile->done_initializing)
+    cpp_printf (pfile, &parse_out, "#undef %s\n", hash->name);
 }
 
 static void

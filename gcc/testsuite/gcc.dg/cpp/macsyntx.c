@@ -28,7 +28,7 @@
 #define foo(, X)		/* { dg-error "parameter name" } */
 #define foo(X, X)		/* { dg-error "duplicate" } */
 #define foo(X Y)		/* { dg-error "comma" } */
-#define foo(()			/* { dg-error "illegal token" } */
+#define foo(()			/* { dg-error "token may not appear" } */
 #define foo(..., X)		/* { dg-error "missing" } */
 #define foo \
 __VA_ARGS__			/* { dg-warning "__VA_ARGS__" } */

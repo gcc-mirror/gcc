@@ -193,7 +193,7 @@ parse_number (pfile, tok)
     {
       /* Check for a floating point constant.  Note that float constants
 	 with an exponent or suffix but no decimal point are technically
-	 illegal (C99 6.4.4.2) but accepted elsewhere.  */
+	 invalid (C99 6.4.4.2) but accepted elsewhere.  */
       if ((c == '.' || c == 'F' || c == 'f')
 	  || (base == 10 && (c == 'E' || c == 'e')
 	      && p+1 < end && (p[1] == '+' || p[1] == '-'))

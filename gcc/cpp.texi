@@ -116,13 +116,13 @@ C preprocessors vary in some details.  This manual discusses the GNU C
 preprocessor, which provides a small superset of the features of ISO
 Standard C@.
 
-ISO Standard C requires the rejection of many harmless constructs
-commonly used by today's C programs.  Such incompatibility would be
-inconvenient for users, so the GNU C preprocessor is configured to
-accept these constructs by default.  Strictly speaking, to get ISO
-Standard C, you must use the options @samp{-trigraphs}, @samp{-undef}
-and @samp{-pedantic}, but in practice the consequences of having strict
-ISO Standard C make it undesirable to do this.  @xref{Invocation}.
+In its default mode, the GNU C preprocessor does not do a few things
+required by the standard.  These are features which are rarely, if ever,
+used, and may cause surprising changes to the meaning of a program which
+does not expect them.  To get strict ISO Standard C, you should use the
+@samp{-std=c89} or @samp{-std=c99} options, depending on which version
+of the standard you want.  To get all the mandatory diagnostics, you
+must also use @samp{-pedantic}.  @xref{Invocation}.
 
 @c man end
 
@@ -172,11 +172,10 @@ Predefined macro names are replaced with their expansions
 (@pxref{Predefined}).
 @end itemize
 
-The first three transformations are done @emph{before} nearly all other
-parsing and before preprocessing directives are recognized.  Thus, for
-example, you can split a line cosmetically with backslash-newline
-anywhere (except within trigraphs since they are replaced first; see
-below).
+The first three transformations are done @emph{before} all other parsing
+and before preprocessing directives are recognized.  Thus, for example,
+you can split a line mechanically with backslash-newline anywhere
+(except within trigraphs since they are replaced first; see below).
 
 @example
 /*
@@ -188,39 +187,44 @@ O 10\
 @end example
 
 @noindent
-is equivalent into @samp{#define FOO 1020}.  You can split even an
-escape sequence with backslash-newline.  For example, you can split
-@code{"foo\bar"} between the @samp{\} and the @samp{b} to get
+is equivalent into @samp{#define FOO 1020}.
+
+There is no way to prevent a backslash at the end of a line from being
+interpreted as a backslash-newline.  For example,
 
 @example
 "foo\\
 bar"
 @end example
 
-@noindent
-This behavior can be confusing: in all other contexts, a backslash can
-be inserted in a string constant as an ordinary character by writing a
-double backslash.  This is an exception, but the ISO C standard requires
-it.  (Strict ISO C does not allow string constants to extend to more
-than one logical line, so they do not consider this a problem.)
+is equivalent to @code{"foo\bar"}, not to @code{"foo\\bar"}.  To avoid
+having to worry about this, do not use the GNU extension which permits
+multiline strings.  Instead, use string constant concatenation:
+
+@example
+   "foo\\"
+   "bar"
+@end example
+
+Your program will be more portable this way, too.
 
 There are a few exceptions to all three transformations.
 
 @itemize @bullet
 @item
-C comments and predefined macro names are not recognized inside a
-@samp{#include} directive in which the file name is delimited with
-@samp{<} and @samp{>}.  What lies in-between is read literally.
+Comments and predefined macro names (or any macro names, for that
+matter) are not recognized inside the argument of an @samp{#include}
+directive, whether it is delimited with quotes or with @samp{<} and
+@samp{>}.
 
 @item
-C comments and predefined macro names are never recognized within a
+Comments and predefined macro names are never recognized within a
 character or string constant.  (Strictly speaking, this is the rule,
 not an exception, but it is worth noting here anyway.)
 
 @item
-Backslash-newline may not safely be used within an ISO ``trigraph'',
-since trigraphs are converted before backslash-newlines are deleted.  If
-you write what looks like a trigraph with a backslash-newline inside,
+ISO ``trigraphs'' are converted before backslash-newlines are deleted.
+If you write what looks like a trigraph with a backslash-newline inside,
 the backslash-newline is deleted as usual, but it is then too late to
 recognize the trigraph.
 
@@ -234,7 +238,7 @@ are referring not to the two-character escape sequence "\0", but to the
 single character ASCII NUL.
 
 There are three different contexts in which a null character may
-appear:-
+appear:
 
 @itemize @bullet
 @item
@@ -367,13 +371,6 @@ for header files with the command option @samp{-I} (@pxref{Invocation}).
 The option @samp{-nostdinc} inhibits searching the standard system
 directories; in this case only the directories you specify are searched.
 
-The parsing of this form of @samp{#include} is slightly special because
-comments are not recognized within the @samp{<@dots{}>}.  Thus, in
-@samp{#include <x/*y>} the @samp{/*} does not start a comment and the
-directive specifies inclusion of a system header file named @file{x/*y}.
-Of course, a header file with such a name is unlikely to exist on Unix,
-where shell wildcard features would make it hard to manipulate.@refill
-
 The first @samp{>} character terminates the file name.  The file name
 may contain a @samp{<} character.
 
@@ -384,14 +381,21 @@ same directories used for system header files.  The current directory is
 the directory of the current input file.  It is tried first because it
 is presumed to be the location of the files that the current input file
 refers to.  (If the @samp{-I-} option is used, the special treatment of
-the current directory is inhibited.)
+the current directory is inhibited. @xref{Invocation}.)
 
-The first @samp{"} character terminates the file name.  If backslashes
-occur within @var{file}, they are considered ordinary text characters,
-not escape characters.  None of the character escape sequences
-appropriate to string constants in C are processed.  Thus,
-@samp{#include "x\n\\y"} specifies a filename containing three
-backslashes.
+The first @samp{"} character terminates the file name.
+
+In both these variants, the argument behaves like a string constant in
+that comments are not recognized, and macro names are not expanded.
+Thus, in @samp{#include <x/*y>} the @samp{/*} does not start a comment
+and the directive specifies inclusion of a system header file named
+@file{x/*y}.
+
+However, in either variant, if backslashes occur within @var{file}, they
+are considered ordinary text characters, not escape characters.  None of
+the character escape sequences appropriate to string constants in C are
+processed.  Thus, @samp{#include "x\n\\y"} specifies a filename
+containing three backslashes.
 
 @item #include @var{anything else}
 @cindex computed @samp{#include}
@@ -915,22 +919,44 @@ eprintf ("%s:%d: ", input_file_name, line_number)
 fprintf (stderr, "%s:%d: " , input_file_name, line_number)
 @end example
 
-We might instead have defined eprintf as follows:-
+Within a @samp{#define} directive, ISO C mandates that the only place
+the identifier @code{__VA_ARGS__} can appear is in the replacement list
+of a variable-argument macro.  It may not be used as a macro name, macro
+argument name, or within a different type of macro.  It may also be
+forbidden in open text; the standard is ambiguous.  We recommend you
+avoid using it except for its defined purpose.
+
+If your macro is complicated, you may want a more descriptive name for
+the variable argument than @code{__VA_ARGS__}.  GNU CPP permits this, as
+an extension.  You may write an argument name immediately before the
+@samp{@dots{}}; that name is used for the variable argument.  The
+@code{eprintf} macro above could be written
+
+@example
+#define eprintf(args...) fprintf (stderr, args)
+@end example
+
+@noindent
+using this extension.  You cannot use @code{__VA_ARGS__} and this
+extension in the same macro.
+
+We might instead have defined eprintf as follows:
 
 @example
 #define eprintf(format, ...) fprintf (stderr, format, __VA_ARGS__)
 @end example
 
-This formulation looks more descriptive, but unfortunately causes
-problems if fprintf wants no arguments the format.  There is no way to
-produce expanded output of
+This formulation looks more descriptive, but cannot be used as flexibly.
+There is no way to produce expanded output of
 
 @example
 fprintf (stderr, "success!\n")
 @end example
 
 @noindent
-since passing an empty argument for the variable arguments part like this
+because, in standard C, you are not allowed to leave the variable
+argument out entirely, and passing an empty argument for the variable
+arguments will not do what you want.  Writing
 
 @example
 eprintf ("success!\n", )
@@ -947,28 +973,29 @@ fprintf (stderr, "success!\n",)
 where the extra comma originates from the replacement list and not from
 the arguments to eprintf.
 
-Within a @samp{#define} directive, ISO C mandates that the only place
-the identifier @code{__VA_ARGS__} can appear is in the replacement list
-of a variable-argument macro.  Using it as a macro name, macro argument
-or within a different type of macro is illegal.
-
-Before standardization, previous GNU preprocessors implemented a
-slightly different syntax for defining variable-argument macros.  The
-macros were called ``rest args macros''.  You could assign a name to the
-variable arguments, by contrast the standardized method leaves them
-anonymous.  For example, the eprintf macro could have been defined like
-this
+There is another extension in the GNU C preprocessor which deals with
+this difficulty.  First, you are allowed to leave the variable argument
+out entirely:
 
 @example
-#define eprintf(format...) fprintf (stderr, format)
+eprintf ("success!\n")
 @end example
 
-Now that there is a standardized construct, you are encouraged to use
-that instead.  It is unlikely that support for named variable arguments
-will be removed in future revisions of CPP, since being able to assign a
-name is descriptive, and there is a wide base of legacy code.  However,
-two obscure features of the GNU style are deprecated and likely to be
-dropped in future.  @xref{Unreliable Features}.
+Second, the @samp{##} token paste operator has a special meaning when
+placed between a comma and a variable argument.  If you write
+
+@example
+#define eprintf(format, ...) fprintf (stderr, format, ##__VA_ARGS__)
+@end example
+
+and the variable argument is left out when the @samp{eprintf} macro is
+used, then the comma before the @samp{##} will be deleted.  This does
+@emph{not} happen if you pass an empty argument, nor does it happen if
+the token preceding @samp{##} is anything other than a comma.
+
+Previous versions of the preprocessor implemented this extension much
+more generally.  We have restricted it in order to minimize the
+difference from the C standard.  @xref{Unreliable Features}.
 
 @node Predefined, Stringification, Macro Varargs, Macros
 @subsection Predefined Macros
@@ -2790,42 +2817,52 @@ It is undefined which of these two operators is evaluated first.
 
 @end itemize
 
+The following features are in flux and should not be used in portable
+code:
+
+@itemize @bullet
+
+@item Optional argument when invoking rest argument macros
+
+As an extension, GCC permits you to omit the variable arguments entirely
+when you use a variable argument macro.  This works whether or not you
+give the variable argument a name.  For example, the two macro
+invocations in the example below expand to the same thing:
+
+@smallexample
+#define debug(format, ...) printf (format, __VA_ARGS__)
+debug("string");       /* Not permitted by C standard.  */
+debug("string",);      /* OK.  */
+@end smallexample
+
+This extension will be preserved, but the special behavior of @samp{##}
+in this context has changed in the past and may change again in the
+future.
+
+@item ## swallowing preceding text in rest argument macros
+
+Formerly, in a macro expansion, if @samp{##} appeared before a variable
+arguments parameter, and the set of tokens specified for that argument in
+the macro invocation was empty, previous versions of the GNU C
+preprocessor would back up and remove the preceding sequence of
+nonwhitespace characters (@strong{not} the preceding token).  This
+extension is in direct conflict with the 1999 C standard and has been
+drastically pared back.
+
+In the current version of the preprocessor, if @samp{##} appears between
+a comma and a variable arguments parameter, and the variable argument is
+omitted entirely, the comma will be removed from the expansion.  If the
+variable argument is empty, or the token before @samp{##} is not a
+comma, then @samp{##} behaves as a normal token paste.  
+
+Portable code should avoid this extension at all costs.
+
+@end itemize
+
 The following features are deprecated and will likely be removed at some
 point in the future:-
 
 @itemize @bullet
-
-@item ## swallowing the previous token in GNU rest argument macros
-
-In a macro expansion, if ## appeared before a GNU named variable arguments
-parameter, and the set of tokens specified for that argument in the
-macro invocation was empty, previous versions of the GNU C preprocessor
-would back up and remove the token appearing before the ##.  This
-behavior was not well-defined, and alternative ways of achieving its
-intended use are available.  Since the ISO C standard now provides for
-variable-argument macros, and since this old behavior potentially
-conflicts with behavior mandated by the standard, this feature is now
-deprecated and will be removed in future.
-
-The current preprocessor still supports it for reasons of code
-migration, and warns at each use of the feature.
-
-@item Optional argument when invoking GNU rest argument macros
-
-In the invocation of a GNU named variable arguments macro, the variable
-arguments were optional.  For example, the following two invocations are
-both legal for GNU rest args.  The first is illegal in the equivalent
-formulation using ISO C anonymous variable arguments and
-@code{__VA_ARGS__}:-
-
-@smallexample
-#define debug(format, args...) printf (format, args)
-debug("string");       /* Illegal in ISO C equivalent.  */
-debug("string",);      /* OK for both.  */
-@end smallexample
-
-The current preprocessor still supports it for reasons of code
-migration, and warns at each use of the feature.
 
 @item Attempting to paste two tokens which together do not form a valid
 preprocessing token
@@ -2833,6 +2870,10 @@ preprocessing token
 The preprocessor currently warns about this and outputs the two tokens
 adjacently, which is probably the behavior the programmer intends.  It
 may not work in future, though.
+
+Most of the time, when you get this warning, you will find that @samp{##}
+is being used superstitiously, to guard against whitespace appearing
+between two tokens.  It is almost always safe to delete the @samp{##}.
 
 @findex #pragma once
 @item #pragma once
@@ -2849,7 +2890,33 @@ This pragma has been superceded by @samp{#pragma GCC poison}.
 @item Multi-line string literals in directives
 
 The GNU C preprocessor currently allows newlines in string literals
-within a directive.
+within a directive.  This is forbidden by the C standard and will
+eventually be removed.  (Multi-line string literals in open text are
+still supported.)
+
+@item Preprocessing things which are not C
+
+The C preprocessor is intended to be used only with C, C++, and
+Objective C source code.  In the past, it has been abused as a general
+text processor.  It will choke on input which is not lexically valid C;
+for example, apostrophes will be interpreted as the beginning of
+character constants, and cause errors.  Also, you cannot rely on it
+preserving characteristics of the input which are not significant to
+C-family languages.  For instance, if a Makefile is preprocessed, all
+the hard tabs will be lost, and the Makefile will not work.
+
+Having said that, you can often get away with using cpp on things which
+are not C.  Other Algol-ish programming languages are often safe
+(Pascal, Ada, ...)  and so is assembly, with caution. @samp{-traditional}
+mode is much more permissive, and can safely be used with e.g. Fortran.
+Many of the problems go away if you write C or C++ style comments
+instead of native language comments, and if you avoid elaborate macros.
+
+Wherever possible, you should use a preprocessor geared to the language
+you are writing in.  Modern versions of the GNU assembler have macro
+facilities.  Most high level programming languages have their own
+conditional compilation and inclusion mechanism.  If all else fails,
+try a true general text processor, such as @xref{Top, M4, , m4, GNU `m4'}.
 
 @end itemize
 
@@ -2900,11 +2967,10 @@ compiler.
 @table @samp
 @item -P
 @findex -P
-Inhibit generation of @samp{#}-lines with line-number information in
-the output from the preprocessor (@pxref{Output}).  This might be
-useful when running the preprocessor on something that is not C code
-and will be sent to a program which might be confused by the
-@samp{#}-lines.
+Inhibit generation of @samp{#}-lines with line-number information in the
+output from the preprocessor.  This might be useful when running the
+preprocessor on something that is not C code and will be sent to a
+program which might be confused by the @samp{#}-lines.  @xref{Output}.
 
 @item -C
 @findex -C
@@ -2914,8 +2980,8 @@ along with the directive.  Comments appearing in the expansion list of a
 macro will be preserved, and appear in place wherever the macro is
 invoked.
 
-You should be prepared for side effects when using -C; it causes the
-preprocessor to treat comments as tokens in their own right.  For
+You should be prepared for side effects when using @samp{-C}; it causes
+the preprocessor to treat comments as tokens in their own right.  For
 example, macro redefinitions that were trivial when comments were
 replaced by a single space might become significant when comments are
 retained.  Also, comments appearing at the start of what would be a
@@ -2925,7 +2991,6 @@ source line, since the first token on the line is no longer a @samp{#}.
 @item -traditional
 @findex -traditional
 Try to imitate the behavior of old-fashioned C, as opposed to ISO C@.
-Note: support for this option is currently fairly broken.
 
 @itemize @bullet
 @item
@@ -2966,8 +3031,9 @@ together with the text after the macro call, to produce a single token.
 (This is impossible in ISO C@.)
 
 @item
-Traditionally, @samp{\} inside a macro argument suppresses the syntactic
-significance of the following character.
+None of the GNU extensions to the preprocessor are available in
+@samp{-traditional} mode.
+
 @end itemize
 
 @cindex Fortran
@@ -3010,21 +3076,44 @@ place of @code{cpp}.
 Process ISO standard trigraph sequences.  These are three-character
 sequences, all starting with @samp{??}, that are defined by ISO C to
 stand for single characters.  For example, @samp{??/} stands for
-@samp{\}, so @samp{'??/n'} is a character constant for a newline.
-Strictly speaking, the GNU C preprocessor does not conform to ISO
-Standard C unless @samp{-trigraphs} is used, but if you ever notice the
-difference it will be with relief.
+@samp{\}, so @samp{'??/n'} is a character constant for a newline.  By
+default, GCC ignores trigraphs, but in standard-conforming modes it
+converts them.  See the @samp{-std} option.
 
 The nine trigraph sequences are
-@samp{??(} -> @samp{[},
-@samp{??)} -> @samp{]},
-@samp{??<} -> @samp{@{},
-@samp{??>} -> @samp{@}},
-@samp{??=} -> @samp{#},
-@samp{??/} -> @samp{\},
-@samp{??'} -> @samp{^},
-@samp{??!} -> @samp{|},
-@samp{??-} -> @samp{~}
+@table @samp
+@item ??(
+-> @samp{[}
+
+@item ??)
+-> @samp{]}
+
+@item ??<
+-> @samp{@{}
+
+@item ??>
+-> @samp{@}}
+
+@item ??=
+-> @samp{#}
+
+@item ??/
+-> @samp{\}
+
+@item ??'
+-> @samp{^}
+
+@item ??!
+-> @samp{|}
+
+@item ??-
+-> @samp{~}
+
+@end table
+
+Trigraph support is not popular, so many compilers do not implement it
+properly.  Portable code should not rely on trigraphs being either
+converted or ignored.
 
 @item -pedantic
 @findex -pedantic
@@ -3038,19 +3127,15 @@ warnings.
 
 @item -Wcomment
 @findex -Wcomment
-@ignore
-@c "Not worth documenting" both singular and plural forms of this
-@c option, per RMS.  Also unclear which is better; hence may need to
-@c switch this at some future date.  pesch@cygnus.com, 2jan92.
 @itemx -Wcomments
 (Both forms have the same effect).
-@end ignore
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a backslash-newline appears in a @samp{//} comment.
 
 @item -Wtrigraphs
 @findex -Wtrigraphs
-Warn if any trigraphs are encountered.
+Warn if any trigraphs are encountered.  This option used to take effect
+only if @samp{-trigraphs} was also specified, but now works independently.
 
 @item -Wwhite-space
 @findex -Wwhite-space
@@ -3180,6 +3265,10 @@ Like @samp{-dM} except in two respects: it does @emph{not} include the
 predefined macros, and it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
+
+@item -dN
+@findex -dN
+Like @samp{-dD}, but emit only the macro names, not their expansions.
 
 @item -dI
 @findex -dI
@@ -3327,20 +3416,9 @@ The 1990 C standard plus GNU extensions.  This is the default.
 The 1999 C standard plus GNU extensions.
 @end table
 
-@item -Wp,-lint
-@findex -lint
-Look for commands to the program checker @code{lint} embedded in
-comments, and emit them preceded by @samp{#pragma lint}.  For example,
-the comment @samp{/* NOTREACHED */} becomes @samp{#pragma lint
-NOTREACHED}.
-
-Because of the clash with @samp{-l}, you must use the awkward syntax
-above.  In a future release, this option will be replaced by
-@samp{-flint} or @samp{-Wlint}; we are not sure which yet.
-
 @item -ftabstop=NUMBER
 @findex -ftabstop
-Indicates the distance between tabstops.  This helps the preprocessor
+Set the distance between tabstops.  This helps the preprocessor
 report correct column numbers in warnings or errors, even if tabs appear
 on the line.  Values less than 1 or greater than 100 are ignored.  The
 default is 8.
