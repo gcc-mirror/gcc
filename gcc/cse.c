@@ -2921,7 +2921,7 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  break;
 
 	case FLOAT_TRUNCATE:
-	  d = (double) REAL_VALUE_TRUNCATE (mode, d);
+	  d = (double) real_value_truncate (mode, d);
 	  break;
 
 	case FLOAT_EXTEND:
@@ -3061,8 +3061,8 @@ simplify_binary_operation (code, mode, op0, op1)
 
       REAL_VALUE_FROM_CONST_DOUBLE (f0, op0);
       REAL_VALUE_FROM_CONST_DOUBLE (f1, op1);
-      f0 = REAL_VALUE_TRUNCATE (mode, f0);
-      f1 = REAL_VALUE_TRUNCATE (mode, f1);
+      f0 = real_value_truncate (mode, f0);
+      f1 = real_value_truncate (mode, f1);
 
 #ifdef REAL_ARITHMETIC
       REAL_ARITHMETIC (value, code, f0, f1);
@@ -3097,7 +3097,7 @@ simplify_binary_operation (code, mode, op0, op1)
 #endif
 
       set_float_handler (0);
-      value = REAL_VALUE_TRUNCATE (mode, value);
+      value = real_value_truncate (mode, value);
       return immed_real_const_1 (value, mode);
     }
 

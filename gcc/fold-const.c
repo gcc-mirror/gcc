@@ -699,6 +699,35 @@ div_and_round_double (code, uns,
   add_double (lnum_orig, hnum_orig, *lrem, *hrem, lrem, hrem);
 }
 
+/* Effectively truncate a real value to represent
+   the nearest possible value in a narrower mode.
+   The result is actually represented in the same data type as the argument,
+   but its value is usually different.  */
+
+REAL_VALUE_TYPE
+real_value_truncate (mode, arg)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE arg;
+{
+#ifdef __STDC__
+  /* Make sure the value is actually stored in memory before we turn off
+     the handler.  */
+  volatile
+#endif
+    REAL_VALUE_TYPE value;
+  jmp_buf handler;
+
+  if (setjmp (handler))
+    {
+      error ("floating overflow");
+      return dconst0;
+    }
+  set_float_handler (handler);
+  value = REAL_VALUE_TRUNCATE (mode, arg);
+  set_float_handler (0);
+  return value;
+}
+
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
 
 /* Check for infinity in an IEEE double precision number.  */
@@ -1215,7 +1244,7 @@ const_binop (code, arg1, arg2)
 	}
 #endif /* no REAL_ARITHMETIC */
       t = build_real (TREE_TYPE (arg1),
-		      REAL_VALUE_TRUNCATE (TYPE_MODE (TREE_TYPE (arg1)), value));
+		      real_value_truncate (TYPE_MODE (TREE_TYPE (arg1)), value));
       set_float_handler (0);
       return t;
     }
@@ -1423,7 +1452,7 @@ fold_convert (t, arg1)
 	    }
 	  set_float_handler (float_error);
 
-	  t = build_real (type, REAL_VALUE_TRUNCATE (TYPE_MODE (type),
+	  t = build_real (type, real_value_truncate (TYPE_MODE (type),
 						     TREE_REAL_CST (arg1)));
 	  set_float_handler (0);
 	  return t;

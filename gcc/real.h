@@ -154,6 +154,9 @@ extern double (atof) ();
    for the most common case where the host and target have objects of the same
    size and where `float' is SFmode.  */
 
+/* Don't use REAL_VALUE_TRUNCATE directly--always call real_value_truncate.  */
+extern REAL_VALUE_TYPE real_value_truncate ();
+
 #ifndef REAL_VALUE_TRUNCATE
 #define REAL_VALUE_TRUNCATE(mode, x) \
  (GET_MODE_BITSIZE (mode) == sizeof (float) * HOST_BITS_PER_CHAR	\
