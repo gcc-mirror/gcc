@@ -5087,7 +5087,7 @@ move\\t%0,%z4\\n\\
 ;; use a TImode scratch reg.
 
 (define_expand "reload_outdi"
-  [(set (match_operand:DI 0 "" "=b")
+  [(set (match_operand:DI 0 "general_operand" "=b")
 	(match_operand:DI 1 "se_register_operand" "b"))
    (clobber (match_operand:TI 2 "register_operand" "=&d"))]
   "TARGET_64BIT"
