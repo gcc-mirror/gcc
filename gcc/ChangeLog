@@ -1,3 +1,15 @@
+2002-04-17  Alan Matsuoka  <alanm@redhat.com>
+            Aldy Hernandez <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h: Define __ALTIVEC__.
+        (bool): New.
+        (__pixel): New.
+        (pixel): New.
+        (vec_cfux): New.
+        (vec_vmaddfp): New.
+        (vec_vsldoi): New.
+        Add parentheses to all macro arguments.
+
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
 	PR c++/6320
