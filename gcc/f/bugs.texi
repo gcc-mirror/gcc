@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. BUGS).
 @set copyrights-bugs 1995-1999
 
-@set last-update-bugs 1999-03-13
+@set last-update-bugs 1999-03-15
 
 @include root.texi
 
@@ -47,15 +47,15 @@ so it isn't worth separating them out.
 
 @ifset DOC-G77
 For information on bugs in @emph{other} versions of @code{g77},
-@ref{News,,News About GNU Fortran}.
-There, lists of bugs fixed in various versions of @code{g77},
+see @ref{News,,News About GNU Fortran}.
+There, lists of bugs fixed in various versions of @code{g77}
 can help determine what bugs existed in prior versions.
 @end ifset
 
 @ifset DOC-BUGS
 For information on bugs in @emph{other} versions of @code{g77},
 see @file{@value{path-g77}/NEWS}.
-There, lists of bugs fixed in various versions of @code{g77},
+There, lists of bugs fixed in various versions of @code{g77}
 can help determine what bugs existed in prior versions.
 @end ifset
 
@@ -85,7 +85,7 @@ Follow the ``Known Bugs'' link.
 @ifset DOC-G77
 For information on bugs that might afflict people who
 configure, port, build, and install @code{g77},
-@ref{Problems Installing}.
+see @ref{Problems Installing}.
 @end ifset
 
 @ifset DOC-BUGS
