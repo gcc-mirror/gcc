@@ -326,25 +326,25 @@ local_alloc ()
      See the declarations of these variables, above,
      for what they mean.  */
 
-  qty_phys_reg = (short *) alloca (max_qty * sizeof (short));
+  qty_phys_reg = (short *) xmalloc (max_qty * sizeof (short));
   qty_phys_copy_sugg
-    = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_num_copy_sugg = (short *) alloca (max_qty * sizeof (short));
-  qty_phys_sugg = (HARD_REG_SET *) alloca (max_qty * sizeof (HARD_REG_SET));
-  qty_phys_num_sugg = (short *) alloca (max_qty * sizeof (short));
-  qty_birth = (int *) alloca (max_qty * sizeof (int));
-  qty_death = (int *) alloca (max_qty * sizeof (int));
-  qty_first_reg = (int *) alloca (max_qty * sizeof (int));
-  qty_size = (int *) alloca (max_qty * sizeof (int));
+    = (HARD_REG_SET *) xmalloc (max_qty * sizeof (HARD_REG_SET));
+  qty_phys_num_copy_sugg = (short *) xmalloc (max_qty * sizeof (short));
+  qty_phys_sugg = (HARD_REG_SET *) xmalloc (max_qty * sizeof (HARD_REG_SET));
+  qty_phys_num_sugg = (short *) xmalloc (max_qty * sizeof (short));
+  qty_birth = (int *) xmalloc (max_qty * sizeof (int));
+  qty_death = (int *) xmalloc (max_qty * sizeof (int));
+  qty_first_reg = (int *) xmalloc (max_qty * sizeof (int));
+  qty_size = (int *) xmalloc (max_qty * sizeof (int));
   qty_mode
-    = (enum machine_mode *) alloca (max_qty * sizeof (enum machine_mode));
-  qty_n_calls_crossed = (int *) alloca (max_qty * sizeof (int));
+    = (enum machine_mode *) xmalloc (max_qty * sizeof (enum machine_mode));
+  qty_n_calls_crossed = (int *) xmalloc (max_qty * sizeof (int));
   qty_min_class
-    = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
+    = (enum reg_class *) xmalloc (max_qty * sizeof (enum reg_class));
   qty_alternate_class
-    = (enum reg_class *) alloca (max_qty * sizeof (enum reg_class));
-  qty_n_refs = (int *) alloca (max_qty * sizeof (int));
-  qty_changes_size = (char *) alloca (max_qty * sizeof (char));
+    = (enum reg_class *) xmalloc (max_qty * sizeof (enum reg_class));
+  qty_n_refs = (int *) xmalloc (max_qty * sizeof (int));
+  qty_changes_size = (char *) xmalloc (max_qty * sizeof (char));
 
   reg_qty = (int *) xmalloc (max_regno * sizeof (int));
   reg_offset = (char *) xmalloc (max_regno * sizeof (char));
@@ -416,9 +416,25 @@ local_alloc ()
 #endif
     }
 
+  free (qty_phys_reg);
+  free (qty_phys_copy_sugg);
+  free (qty_phys_num_copy_sugg);
+  free (qty_phys_sugg);
+  free (qty_birth);
+  free (qty_death);
+  free (qty_first_reg);
+  free (qty_size);
+  free (qty_mode);
+  free (qty_n_calls_crossed);
+  free (qty_min_class);
+  free (qty_alternate_class);
+  free (qty_n_refs);
+  free (qty_changes_size);
+
   free (reg_qty);
   free (reg_offset);
   free (reg_next_in_qty);
+
   return recorded_label_ref;
 }
 

@@ -6877,8 +6877,8 @@ cse_main (f, nregs, after_loop, file)
 
   max_insn_uid = get_max_uid ();
 
-  reg_next_eqv = (int *) alloca (nregs * sizeof (int));
-  reg_prev_eqv = (int *) alloca (nregs * sizeof (int));
+  reg_next_eqv = (int *) xmalloc (nregs * sizeof (int));
+  reg_prev_eqv = (int *) xmalloc (nregs * sizeof (int));
 
 #ifdef LOAD_EXTEND_OP
 
@@ -6896,8 +6896,7 @@ cse_main (f, nregs, after_loop, file)
   /* Find the largest uid.  */
 
   max_uid = get_max_uid ();
-  uid_cuid = (int *) alloca ((max_uid + 1) * sizeof (int));
-  bzero ((char *) uid_cuid, (max_uid + 1) * sizeof (int));
+  uid_cuid = (int *) xcalloc (max_uid + 1, sizeof (int));
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
@@ -7024,6 +7023,9 @@ cse_main (f, nregs, after_loop, file)
 
   /* Clean up.  */
   end_alias_analysis ();
+  free (uid_cuid);
+  free (reg_next_eqv);
+  free (reg_prev_eqv);
 
   return cse_jumps_altered || recorded_label_ref;
 }
@@ -7050,16 +7052,16 @@ cse_basic_block (from, to, next_branch, around_loop)
   /* Each of these arrays is undefined before max_reg, so only allocate
      the space actually needed and adjust the start below.  */
 
-  qty_first_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
-  qty_last_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
-  qty_mode = (enum machine_mode *) alloca ((max_qty - max_reg)
+  qty_first_reg = (int *) xmalloc ((max_qty - max_reg) * sizeof (int));
+  qty_last_reg = (int *) xmalloc ((max_qty - max_reg) * sizeof (int));
+  qty_mode = (enum machine_mode *) xmalloc ((max_qty - max_reg)
 					   * sizeof (enum machine_mode));
-  qty_const = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
-  qty_const_insn = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
+  qty_const = (rtx *) xmalloc ((max_qty - max_reg) * sizeof (rtx));
+  qty_const_insn = (rtx *) xmalloc ((max_qty - max_reg) * sizeof (rtx));
   qty_comparison_code
-    = (enum rtx_code *) alloca ((max_qty - max_reg) * sizeof (enum rtx_code));
-  qty_comparison_qty = (int *) alloca ((max_qty - max_reg) * sizeof (int));
-  qty_comparison_const = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
+    = (enum rtx_code *) xmalloc ((max_qty - max_reg) * sizeof (enum rtx_code));
+  qty_comparison_qty = (int *) xmalloc ((max_qty - max_reg) * sizeof (int));
+  qty_comparison_const = (rtx *) xmalloc ((max_qty - max_reg) * sizeof (rtx));
 
   qty_first_reg -= max_reg;
   qty_last_reg -= max_reg;
@@ -7235,6 +7237,15 @@ cse_basic_block (from, to, next_branch, around_loop)
       && JUMP_LABEL (PREV_INSN (to)) != 0
       && LABEL_NUSES (JUMP_LABEL (PREV_INSN (to))) == 1)
     cse_around_loop (JUMP_LABEL (PREV_INSN (to)));
+
+  free (qty_first_reg + max_reg);
+  free (qty_last_reg + max_reg);
+  free (qty_mode + max_reg);
+  free (qty_const + max_reg);
+  free (qty_const_insn + max_reg);
+  free (qty_comparison_code + max_reg);
+  free (qty_comparison_qty + max_reg);
+  free (qty_comparison_const + max_reg);
 
   return to ? NEXT_INSN (to) : 0;
 }
