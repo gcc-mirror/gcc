@@ -1,3 +1,8 @@
+2003-03-06  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* dwarf2out.c (size_of_die): Compute size of external reference to
+	die correctly.
+
 2003-03-06  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md ("*movcc_expanded"): New pattern.
