@@ -1,3 +1,8 @@
+2004-12-01  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/12817
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use r0 for vrsave.
+
 2004-11-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/9771
