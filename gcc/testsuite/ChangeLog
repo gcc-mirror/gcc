@@ -1,5 +1,11 @@
 2003-03-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/i386-signbit-1.c: New test.
+	* gcc.dg/i386-signbit-2.c: New test.
+	* gcc.dg/i386-signbit-3.c: New test.
+
+2003-03-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/ultrasp5.c: Fix options.
 
 2003-03-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
