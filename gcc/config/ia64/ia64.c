@@ -7088,7 +7088,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	  ia64_emit_insn_before (b, insn);
 	  b = PREV_INSN (insn);
 	  insn = b;
-	  /* See comment above in analogous place for emiting nops
+	  /* See comment above in analogous place for emitting nops
 	     after the insn.  */
 	  template0 = template1;
 	  template1 = -1;
@@ -7105,7 +7105,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    abort ();
 	  if (pos % 3 == 0)
 	    {
-	      /* See comment above in analogous place for emiting nops
+	      /* See comment above in analogous place for emitting nops
 		 after the insn.  */
 	      if (template0 < 0)
 		abort ();

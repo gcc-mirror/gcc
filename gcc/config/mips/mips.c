@@ -4426,7 +4426,7 @@ mips_get_unaligned_mem (rtx *op, unsigned int width, int bitpos,
   first = adjust_address (*op, QImode, 0);
   last = adjust_address (*op, QImode, width / BITS_PER_UNIT - 1);
 
-  /* Allocate to LEFT and RIGHT according to endiannes.  LEFT should
+  /* Allocate to LEFT and RIGHT according to endianness.  LEFT should
      be the upper word and RIGHT the lower word.  */
   if (TARGET_BIG_ENDIAN)
     *left = first, *right = last;
@@ -6008,7 +6008,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
    macros, mark the symbol as written so that mips_file_end won't emit an
    .extern for it.  STREAM is the output file, NAME is the name of the
    symbol, INIT_STRING is the string that should be written before the
-   symbol and FINAL_STRING is the string that shoulbe written after it.
+   symbol and FINAL_STRING is the string that should be written after it.
    FINAL_STRING is a printf() format that consumes the remaining arguments.  */
 
 void

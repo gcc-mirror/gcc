@@ -36,7 +36,7 @@ CC_MODE (CC_UNS);
 
 /* The CC_FP mode is for a non-equality floating-point comparison, using
    the FCMP or FCMPE insn.  The result is (integer) -1 or 1 for
-   espectively a < b and a > b, otherwise 0.  */
+   respectively a < b and a > b, otherwise 0.  */
 CC_MODE (CC_FP);
 
 /* The CC_FPEQ mode is for an equality floating-point comparison, using
