@@ -1862,7 +1862,12 @@ constrain_operands (insn_code_num, strict)
 
 	      case 'V':
 		if (GET_CODE (op) == MEM
-		    && ! offsettable_memref_p (op))
+		    && ((strict > 0 && ! offsettable_memref_p (op))
+			|| (strict < 0
+			    && !(CONSTANT_P (op) || GET_CODE (op) == MEM))
+			|| (reload_in_progress
+			    && !(GET_CODE (op) == REG
+				 && REGNO (op) >= FIRST_PSEUDO_REGISTER))))
 		  win = 1;
 		break;
 
