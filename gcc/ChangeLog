@@ -1,3 +1,9 @@
+1999-12-09  Andreas Jaeger  <aj@suse.de>
+
+	* loop.c (record_biv): Declare parameter as int.
+
+	* config/i386/i386-protos.h: Declare long_memory_operand.
+
 1999-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (copy_node): Do zero the TREE_CHAIN, even for an

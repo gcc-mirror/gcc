@@ -5489,6 +5489,7 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
      rtx *location;
      int not_every_iteration;
      int maybe_multiple;
+     int multi_insn_incr;
 {
   struct iv_class *bl;
 

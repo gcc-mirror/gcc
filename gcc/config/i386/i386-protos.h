@@ -62,6 +62,8 @@ extern int div_operator PROTO((rtx, enum machine_mode));
 extern int arith_or_logical_operator PROTO((rtx, enum machine_mode));
 extern int memory_displacement_operand PROTO((rtx, enum machine_mode));
 extern int cmpsi_operand PROTO((rtx, enum machine_mode));
+extern int long_memory_operand PROTO((rtx, enum machine_mode));
+
 
 extern int legitimate_pic_address_disp_p PROTO((rtx));
 extern int legitimate_address_p PROTO((enum machine_mode, rtx, int));
