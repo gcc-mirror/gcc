@@ -59,6 +59,7 @@ static void genrtl_named_return_value PARAMS ((void));
 static void cp_expand_stmt PARAMS ((tree));
 static void genrtl_start_function PARAMS ((tree));
 static void genrtl_finish_function PARAMS ((tree));
+static tree clear_decl_rtl PARAMS ((tree *, int *, void *));
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
@@ -2241,7 +2242,6 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   tree args;
   tree slot;
   tree type;
-  tree call_type;
   int copy_from_buffer_p;
 
   aggr_init_expr = *tp;
@@ -2264,17 +2264,20 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   args = TREE_OPERAND (aggr_init_expr, 1);
   slot = TREE_OPERAND (aggr_init_expr, 2);
   type = TREE_TYPE (aggr_init_expr);
-  call_type = type;
   if (AGGR_INIT_VIA_CTOR_P (aggr_init_expr))
     {
       /* Replace the first argument with the address of the third
 	 argument to the AGGR_INIT_EXPR.  */
-      call_type = build_pointer_type (type);
       mark_addressable (slot);
-      args = tree_cons (NULL_TREE, build1 (ADDR_EXPR, call_type, slot),
+      args = tree_cons (NULL_TREE, 
+			build1 (ADDR_EXPR, 
+				build_pointer_type (TREE_TYPE (slot)),
+				slot),
 			TREE_CHAIN (args));
     }
-  call_expr = build (CALL_EXPR, call_type, fn, args, NULL_TREE);
+  call_expr = build (CALL_EXPR, 
+		     TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))),
+		     fn, args, NULL_TREE);
   TREE_SIDE_EFFECTS (call_expr) = 1;
 
   /* If we're using the non-reentrant PCC calling convention, then we
@@ -2681,6 +2684,10 @@ genrtl_finish_function (fn)
   if (function_depth > 1)
     ggc_push_context ();
 
+  /* There's no need to defer outputting this function any more; we
+     know we want to output it.  */
+  DECL_DEFER_OUTPUT (fn) = 0;
+
   /* Run the optimizers and output the assembler code for this
      function.  */
   rest_of_compilation (fn);
@@ -2721,26 +2728,52 @@ genrtl_finish_function (fn)
 
   --function_depth;
 
-  if (!DECL_SAVED_INSNS (fn)
-      && !(flag_inline_trees && DECL_INLINE (fn)))
+  /* If we don't need the RTL for this function anymore, stop pointing
+     to it.  That's especially important for LABEL_DECLs, since you
+     can reach all the instructions in the function from the
+     CODE_LABEL stored in the DECL_RTL for the LABEL_DECL.  */
+  if (!DECL_SAVED_INSNS (fn))
     {
       tree t;
 
-      /* Stop pointing to the local nodes about to be freed.  */
-      /* But DECL_INITIAL must remain nonzero so we know this
-	 was an actual function definition.  */
-      DECL_INITIAL (fn) = error_mark_node;
+      /* Walk the BLOCK-tree, clearing DECL_RTL for LABEL_DECLs and
+	 non-static local variables.  */
+      walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				    clear_decl_rtl,
+				    NULL);
+
+      /* Clear out the RTL for the arguments.  */
       for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
 	{
 	  SET_DECL_RTL (t, NULL_RTX);
 	  DECL_INCOMING_RTL (t) = NULL_RTX;
 	}
-    }
 
+      if (!(flag_inline_trees && DECL_INLINE (fn)))
+	/* DECL_INITIAL must remain nonzero so we know this was an
+	   actual function definition.  */
+	DECL_INITIAL (fn) = error_mark_node;
+    }
+  
   /* Let the error reporting routines know that we're outside a
      function.  For a nested function, this value is used in
      pop_cp_function_context and then reset via pop_function_context.  */
   current_function_decl = NULL_TREE;
+}
+
+/* Clear out the DECL_RTL for the non-static variables in BLOCK and
+   its sub-blocks.  */
+
+static tree
+clear_decl_rtl (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
+{
+  if (nonstatic_local_decl_p (*tp)) 
+    SET_DECL_RTL (*tp, NULL_RTX);
+    
+  return NULL_TREE;
 }
 
 /* Perform initialization related to this module.  */

@@ -1,3 +1,7 @@
+Mon Mar 26 18:13:30 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (duplicate_decls): Don't copy DECL_FRAME_SIZE.
+
 Mon Mar 19 15:05:39 2001  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (builtin_function): Use SET_DECL_ASSEMBLER_NAME.

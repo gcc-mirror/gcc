@@ -1,3 +1,7 @@
+2001-03-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* parse.h (DECL_END_SOURCE_LINE): Don't rely on DECL_FRAME_SIZE.
+
 2001-03-26  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (find_as_inner_class): Follow current package

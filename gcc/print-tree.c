@@ -402,11 +402,6 @@ print_node (file, prefix, node, indent)
 		       DECL_OFFSET_ALIGN (node));
 	    }
 	}
-      else if (DECL_INLINE (node))
-	{
-	  fprintf (file, " frame_size ");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, DECL_FRAME_SIZE (node));
-	}
       else if (DECL_BUILT_IN (node))
 	{
 	  if (DECL_BUILT_IN_CLASS (node) == BUILT_IN_MD)
