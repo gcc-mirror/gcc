@@ -42,13 +42,6 @@ AC_SUBST(COMPPATH)
 dnl The -no-testsuite modules omit the test subdir.
 AM_CONDITIONAL(TESTSUBDIR, test -d $srcdir/testsuite)
 
-dnl See whether the user prefers size or speed for Character.
-dnl The default is size.
-AC_ARG_ENABLE(fast-character,
-[  --enable-fast-character prefer speed over size for Character],
-# Nothing
-, AC_DEFINE(COMPACT_CHARACTER))
-
 dnl Should the runtime set system properties by examining the 
 dnl environment variable GCJ_PROPERTIES?
 AC_ARG_ENABLE(getenv-properties,

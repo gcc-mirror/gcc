@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+
+       "http://www.w3.org/TR/REC-html40/loose.dtd"> 
+
+<html>
+
+
+
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<meta http-equiv="Content-Language" content="en-us">
+
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+
+<meta name="ProgId" content="FrontPage.Editor.Document">
+
+<link rel="stylesheet" href="http://www.unicode.org/unicode.css" type="text/css">
+
+<title>Unicode Character Database</title>
+
+</head>
+
+
+
+<body>
+
+
+
+<h1>UNICODE CHARACTER DATABASE<br>  
+Version 3.0.0</h1>
+
+<table border="1" cellspacing="2" cellpadding="0" height="87" width="100%">
+
+  <tr>
+
+    <td valign="TOP" width="144">Revision</td>
+
+    <td valign="TOP">3.0.0</td>
+
+  </tr>
+
+  <tr>
+
+    <td valign="TOP" width="144">Authors</td>
+
+    <td valign="TOP">Mark Davis and Ken Whistler</td>
+
+  </tr>
+
+  <tr>
+
+    <td valign="TOP" width="144">Date</td>
+
+    <td valign="TOP">1999-09-11</td>
+
+  </tr>
+
+  <tr>
+
+    <td valign="TOP" width="144">This Version</td>
+
+    <td valign="TOP"><a href="ftp://ftp.unicode.org/Public/3.0-Update/UnicodeCharacterDatabase-3.0.0.html">ftp://ftp.unicode.org/Public/3.0-Update/UnicodeCharacterDatabase-3.0.0.html</a></td>
+
+  </tr>
+
+  <tr>
+
+    <td valign="TOP" width="144">Previous Version</td>
+
+    <td valign="TOP">n/a</td>
+
+  </tr>
+
+  <tr>
+
+    <td valign="TOP" width="144">Latest Version</td>
+
+    <td valign="TOP"><a href="ftp://ftp.unicode.org/Public/3.0-Update/UnicodeCharacterDatabase-3.0.0.html">ftp://ftp.unicode.org/Public/3.0-Update/UnicodeCharacterDatabase-3.0.0.html</a></td>
+
+  </tr>
+
+</table>
+
+<p align="center">Copyright © 1995-1999 Unicode, Inc. All Rights reserved.</p>  
+  
+<h2>Disclaimer</h2>  
+  
+<p>The Unicode Character Database is provided as is by Unicode, Inc. No claims   
+  
+are made as to fitness for any particular purpose. No warranties of any kind are   
+  
+expressed or implied. The recipient agrees to determine applicability of   
+  
+information provided. If this file has been purchased on magnetic or optical   
+  
+media from Unicode, Inc., the sole remedy for any claim will be exchange of   
+  
+defective media within 90 days of receipt.</p>  
+  
+<p>This disclaimer is applicable for all other data files accompanying the   
+  
+Unicode Character Database, some of which have been compiled by the Unicode   
+  
+Consortium, and some of which have been supplied by other sources.</p>  
+  
+<h2>Limitations on Rights to Redistribute This Data</h2>  
+  
+<p>Recipient is granted the right to make copies in any form for internal   
+  
+distribution and to freely use the information supplied in the creation of   
+  
+products supporting the Unicode<sup>TM</sup> Standard. The files in the Unicode   
+  
+Character Database can be redistributed to third parties or other organizations   
+  
+(whether for profit or not) as long as this notice and the disclaimer notice are   
+  
+retained. Information can be extracted from these files and used in   
+  
+documentation or programs, as long as there is an accompanying notice indicating   
+  
+the source.</p>  
+  
+<h2>Introduction</h2>  
+  
+<p>The Unicode Character Database is a set of files that define the Unicode   
+  
+character properties and internal mappings. For more information about character   
+  
+properties and mappings, see <i><a href="http://www.unicode.org/unicode/uni2book/u2.html">The   
+  
+Unicode Standard</a></i>.</p>  
+  
+<p>The Unicode Character Database has been updated to reflect Version 3.0 of the   
+  
+Unicode Standard, with many characters added to those published in Version 2.0.   
+  
+A number of corrections have also been made to case mappings or other errors in   
+  
+the database noted since the publication of Version 2.0. Normative bidirectional   
+  
+properties have also been modified to reflect decisions of the Unicode Technical   
+  
+Committee.</p>  
+  
+<p>For more information on versions of the Unicode Standard and how to reference   
+  
+them, see <a href="http://www.unicode.org/unicode/standard/versions/">http://www.unicode.org/unicode/standard/versions/</a>.</p>  
+  
+<h2>Conformance</h2>  
+  
+<p>Character properties may be either normative or informative. <i>Normative</i>   
+  
+means that implementations that claim conformance to the Unicode Standard (at a   
+  
+particular version) and which make use of a particular property or field must   
+  
+follow the specifications of the standard for that property or field in order to   
+  
+be conformant. The term <i>normative</i> when applied to a property or field of   
+  
+the Unicode Character Database, does <i>not</i> mean that the value of that   
+  
+field will never change. Corrections and extensions to the standard in the   
+  
+future may require minor changes to normative values, even though the Unicode   
+  
+Technical Committee strives to minimize such changes. An<i> informative </i>property   
+  
+or field is strongly recommended, but a conformant implementation is free to use   
+  
+or change such values as it may require while still being conformant to the   
+  
+standard. Particular implementations may choose to override the properties and   
+  
+mappings that are not normative. In that case, it is up to the implementer to   
+  
+establish a protocol to convey that information.</p>  
+  
+<h2>Files</h2>  
+  
+<p>The following summarizes the files in the Unicode Character Database. &nbsp;For   
+  
+more information about these files, see the referenced technical report or   
+  
+section of Unicode Standard, Version 3.0.</p>  
+  
+<p><b>UnicodeData.txt (Chapter 4)</b>  
+  
+<ul>  
+  
+  <li>The main file in the Unicode Character Database.</li>  
+  
+  <li>For detailed information on the format, see <a href="UnicodeData.html">UnicodeData.html</a>.   
+  
+    This file also characterizes which properties are normative and which are   
+  
+    informative.</li>  
+  
+</ul>  
+  
+<p><b>PropList.txt (Chapter 4)</b>  
+  
+<ul>  
+  
+  <li>Additional informative properties list: <i>Alphabetic, Ideographic,</i>   
+  
+    and <i>Mathematical</i>, among others.</li>  
+  
+</ul>  
+  
+<p><b>SpecialCasing.txt (Chapter 4)</b>  
+  
+<ul>  
+  
+  <li>List of informative special casing properties, including one-to-many   
+  
+    mappings such as SHARP S =&gt; &quot;SS&quot;, and locale-specific mappings,   
+  
+    such as for Turkish <i>dotless i</i>.</li>  
+  
+</ul>  
+  
+<p><b>Blocks.txt (Chapter 14)</b>  
+  
+<ul>  
+  
+  <li>List of normative block names.</li>  
+  
+</ul>  
+  
+<p><b>Jamo.txt (Chapter 4)</b>  
+  
+<ul>  
+  
+  <li>List of normative Jamo short names, used in deriving HANGUL SYLLABLE names   
+  
+    algorithmically.</li>  
+  
+</ul>  
+  
+<p><b>ArabicShaping.txt (Section 8.2)</b>  
+  
+<ul>  
+  
+  <li>Basic Arabic and Syriac character shaping properties, such as initial,   
+  
+    medial and final shapes. These properties are normative for minimal shaping   
+  
+    of Arabic and Syriac. </li>  
+  
+</ul>  
+  
+<p><b>NamesList.txt (Chapter 14)</b>  
+  
+<ul>  
+  
+  <li>This file duplicates some of the material in the UnicodeData file, and   
+  
+    adds informative annotations uses in the character charts, as printed in the   
+  
+    Unicode Standard. </li>  
+  
+  <li><b>Note: </b>The information in NamesList.txt and Index.txt files matches   
+  
+    the appropriate version of the book. Changes in the Unicode Character   
+  
+    Database since then may not be reflected in these files, since they are   
+  
+    primarily of archival interest.</li>  
+  
+</ul>  
+  
+<p><b>Index.txt (Chapter 14)</b>  
+  
+<ul>  
+  
+  <li>Informative index to Unicode characters, as printed in the Unicode   
+  
+    Standard</li>  
+  
+  <li><b>Note: </b>The information in NamesList.txt and Index.txt files matches   
+  
+    the appropriate version of the book. Changes in the Unicode Character   
+  
+    Database since then may not be reflected in these files, since they are   
+  
+    primarily of archival interest.</li>  
+  
+</ul>  
+  
+<p><b>CompositionExclusions.txt (<a href="http://www.unicode.org/unicode/reports/tr15/">UTR#15   
+  
+Unicode Normalization Forms</a>)</b>  
+  
+<ul>  
+  
+  <li>Normative properties for normalization.</li>  
+  
+</ul>  
+  
+<p><b>LineBreak.txt (<a href="http://www.unicode.org/unicode/reports/tr14/">UTR   
+  
+#14: Line Breaking Properties</a>)</b>  
+  
+<ul>  
+  
+  <li>Normative and informative properties for line breaking. To see which   
+  
+    properties are informative and which are normative, consult UTR#14.</li>  
+  
+</ul>  
+  
+<p><b>EastAsianWidth.txt (<a href="http://www.unicode.org/unicode/reports/tr11/">UTR   
+  
+#11: East Asian Character Width</a>)</b>  
+  
+<ul>  
+  
+  <li>Informative properties for determining the choice of wide vs. narrow   
+  
+    glyphs in East Asian contexts.</li>  
+  
+</ul>  
+  
+<p><b>diffXvY.txt</b>  
+  
+<ul>  
+  
+  <li>Mechanically-generated informative files containing accumulated   
+  
+    differences between successive versions of UnicodeData.txt</li>  
+  
+</ul>  
+  
+  
+  
+</body>  
+  
+  
+  
+</html>  
+  
