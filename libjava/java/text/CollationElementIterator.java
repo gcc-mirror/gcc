@@ -134,6 +134,8 @@ public final class CollationElementIterator
   public void reset()
   {
     textIndex = 0;
+    lookahead_set = false;
+    lookahead = 0;
   }
 
   /**
