@@ -1,3 +1,15 @@
+Mon Apr 29 12:18:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (real_zero, real_one, real_almost_one, real_br_prob_base,
+	real_one_half, real_bb_freq_max): New static variables.
+	(debug_profile_bbauxs): Kill.
+	(process_note_predictions): Kill unused variable.
+	(block_info_def, edge_info_def): Use REAL_VALUE_TYPE instead of
+	volatile double.
+	(propagate_freq): Use REAL_ARITHMETICS.
+	(estimate_bb_frequencies): Likevise; init new static variables.
+	* Makefile.in (predict.o): Add dependency on real.h
+
 2002-04-28  David S. Miller  <davem@redhat.com>
 
 	PR target/6500
