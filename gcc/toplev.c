@@ -2370,7 +2370,7 @@ compile_file (name)
 	    && ! DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl)
 	    && ! TREE_USED (decl)
-	    && ! DECL_REGISTER (decl)
+	    && (TREE_CODE (decl) == FUNCTION_DECL || ! DECL_REGISTER (decl))
 	    /* The TREE_USED bit for file-scope decls
 	       is kept in the identifier, to handle multiple
 	       external decls in different scopes.  */
