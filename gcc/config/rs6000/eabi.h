@@ -50,7 +50,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   ((TARGET_RELOCATABLE) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
 
 /* Invoke an initializer function to set up the GOT */
-#define INVOKE__main 1
 #define NAME__MAIN "__eabi"
 
 #undef TARGET_VERSION

@@ -1612,6 +1612,19 @@ output_prolog (file, size)
   int total_size = (basic_size + size + current_function_outgoing_args_size);
   char buf[256];
 
+  /* If this is eabi, call __eabi with main, but do so before the minimal TOC
+     is setup, so we can't use the normal mechanism.  */
+#if defined(USING_SVR4_H) && defined(NAME__MAIN) && !defined(INVOKE__main)
+  int main_p = 0;
+
+  if (IDENTIFIER_LENGTH (DECL_NAME (current_function_decl)) == 4
+      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main"))
+    {
+      main_p = 1;
+      regs_ever_live[65] = 1;
+    }
+#endif
+
   /* Round size to multiple of 8 bytes.  */
   total_size = (total_size + 7) & ~7;
 
@@ -1714,6 +1727,12 @@ output_prolog (file, size)
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     asm_fprintf (file, "\tmr 31,1\n");
+
+  /* If this is eabi, call __eabi before loading up the minimal TOC */
+#if defined(USING_SVR4_H) && defined(NAME__MAIN) && !defined(INVOKE__main)
+  if (main_p)
+    fprintf (file, "\tbl %s\n", NAME__MAIN);
+#endif
 
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
