@@ -1141,6 +1141,11 @@ extern int can_reverse_comparison_p	PROTO ((rtx, rtx));
 extern void delete_for_peephole		PROTO ((rtx, rtx));
 extern int condjump_in_parallel_p	PROTO ((rtx));
 
+/* Flags for jump_optimize() */
+#define JUMP_CROSS_JUMP		1
+#define JUMP_NOOP_MOVES		1
+#define JUMP_AFTER_REGSCAN	1
+
 /* In emit-rtl.c. */
 extern int max_reg_num				PROTO ((void));
 extern int max_label_num			PROTO ((void));
