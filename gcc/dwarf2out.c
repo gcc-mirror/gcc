@@ -2360,7 +2360,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 
   current_function_func_begin_label = 0;
 
-#ifdef IA64_UNWIND_INFO
+#ifdef TARGET_UNWIND_INFO
   /* ??? current_function_func_begin_label is also used by except.c
      for call-site information.  We must emit this label if it might
      be used.  */
@@ -2379,7 +2379,7 @@ dwarf2out_begin_prologue (unsigned int line ATTRIBUTE_UNUSED,
 			  current_function_funcdef_no);
   current_function_func_begin_label = get_identifier (label);
 
-#ifdef IA64_UNWIND_INFO
+#ifdef TARGET_UNWIND_INFO
   /* We can elide the fde allocation if we're not emitting debug info.  */
   if (! dwarf2out_do_frame ())
     return;

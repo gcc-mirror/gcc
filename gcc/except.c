@@ -3598,7 +3598,8 @@ output_function_exception_table (void)
   if (! cfun->uses_eh_lsda)
     return;
 
-#ifdef IA64_UNWIND_INFO
+#ifdef TARGET_UNWIND_INFO
+  /* TODO: Move this into target file.  */
   fputs ("\t.personality\t", asm_out_file);
   output_addr_const (asm_out_file, eh_personality_libfunc);
   fputs ("\n\t.handlerdata\n", asm_out_file);

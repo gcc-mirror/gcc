@@ -578,10 +578,10 @@ decode_options (unsigned int argc, const char **argv)
   target_flags = 0;
   set_target_switch ("");
 
-  /* Unwind tables are always present in an ABI-conformant IA-64
-     object file, so the default should be ON.  */
-#ifdef IA64_UNWIND_INFO
-  flag_unwind_tables = IA64_UNWIND_INFO;
+  /* Unwind tables are always present when a target has ABI-specified unwind
+     tables, so the default should be ON.  */
+#ifdef TARGET_UNWIND_INFO
+  flag_unwind_tables = TARGET_UNWIND_INFO;
 #endif
 
 #ifdef OPTIMIZATION_OPTIONS
