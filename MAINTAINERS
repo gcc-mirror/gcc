@@ -29,7 +29,7 @@ mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
 hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
-rs6000 port		Michael Meissner	meissner@cygnus.com
+rs6000 port		Geoff Keating		geoffk@cygnus.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 mips port		Gavin Romig-Koch	gavin@cygnus.com
 ia64 port		Jim Wilson		wilson@cygnus.com
@@ -96,7 +96,6 @@ Manfred Hollstein				mhollstein@cygnus.com
 Jan Hubicka					hubicka@freesoft.cz
 Jakub Jelinek					jakub@redhat.com
 Klaus Kaempf					kkaempf@progis.de
-Geoff Keating					geoffk@cygnus.com
 Brendan Kehoe					brendan@cygnus.com
 Mumit Khan					khan@xraylith.wisc.edu
 Benjamin Kosnik					bkoz@cygnus.com
