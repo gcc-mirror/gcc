@@ -14,6 +14,11 @@ Sat Dec 16 10:41:11 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
         (do_line): Skip the new line after output_line_command.  Don't  
         pre-decrement the line number.   
 
+2000-12-15  Diego Novillo  <dnovillo@redhat.com>
+
+	* i386/unix.h (ASM_OUTPUT_MI_THUNK): Fix references to
+	_GLOBAL_OFFSET_TABLE_ when using Intel syntax.
+
 2000-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (cpp_options): Pass -fno-operator-names.
