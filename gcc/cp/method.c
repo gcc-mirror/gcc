@@ -353,7 +353,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
      this translation unit.  */
   TREE_ADDRESSABLE (function) = 1;
   mark_used (function);
-  mark_decl_referenced (function);
   if (!emit_p)
     return;
 
