@@ -1,3 +1,7 @@
+2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("*movcc_expanded"): Add missing alternatives.
+
 2003-03-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (fpa_rhs_operand, fpa_add_operand, const_double_rtx_ok_for_fpa)
