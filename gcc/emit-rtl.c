@@ -2141,7 +2141,7 @@ add_insn_after (insn, after)
 {
   rtx next = NEXT_INSN (after);
 
-  if (INSN_DELETED_P (after))
+  if (optimize && INSN_DELETED_P (after))
     abort ();
 
   NEXT_INSN (insn) = next;
@@ -2189,7 +2189,7 @@ add_insn_before (insn, before)
 {
   rtx prev = PREV_INSN (before);
 
-  if (INSN_DELETED_P (before))
+  if (optimize && INSN_DELETED_P (before))
     abort ();
 
   PREV_INSN (insn) = prev;
