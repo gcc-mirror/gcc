@@ -1,3 +1,11 @@
+2004-09-30  Ben Elliston  <bje@au.ibm.com>
+
+	* tree-flow.h (struct bb_ann_d): Remove num_preds member.
+	* tree-into-ssa.c (rewrite_into_ssa): Don't set it.
+	(rewrite_ssa_into_ssa): Likewise.
+	* tree-phinodes.c (create_phi_node): Access the number of
+	predecessor edges using EDGE_COUNT() and not num_preds.
+
 2004-09-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/7425
@@ -257,7 +265,7 @@
 	Properly mask the immediate field of the 'unimp' instruction.
 	(call_symbolic_struct_value_sp32): Likewise.
 
-2004-09-24  Ben Elliston  <bje@au.ibm.com>
+2004-09-28  Ben Elliston  <bje@au.ibm.com>
 	    Steven Bosscher  <stevenb@suse.de>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 

@@ -1450,10 +1450,7 @@ rewrite_into_ssa (bool all)
      can save significant time during PHI insertion for large graphs.  */
   dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
   FOR_EACH_BB (bb)
-    {
-      bb_ann (bb)->num_preds = EDGE_COUNT (bb->preds);
-      dfs[bb->index] = BITMAP_XMALLOC ();
-    }
+    dfs[bb->index] = BITMAP_XMALLOC ();
 
   for (i = 0; i < num_referenced_vars; i++)
     set_current_def (referenced_var (i), NULL_TREE);
@@ -1579,10 +1576,7 @@ rewrite_ssa_into_ssa (void)
      can save significant time during PHI insertion for large graphs.  */
   dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
   FOR_EACH_BB (bb)
-    {
-      bb_ann (bb)->num_preds = EDGE_COUNT (bb->preds);
-      dfs[bb->index] = BITMAP_XMALLOC ();
-    }
+    dfs[bb->index] = BITMAP_XMALLOC ();
 
   /* Ensure that the dominance information is OK.  */
   calculate_dominance_info (CDI_DOMINATORS);
