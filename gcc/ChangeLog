@@ -1,3 +1,11 @@
+Fri Nov 14 07:24:20 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (call_operand): Any reg is valid for WinNT.
+	* alpha.md (call_nt, call_value_nt): Don't force address into $27.
+	(anon nt calls): Add 'R' alternative.
+	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE, TRAMPOLINE_SIZE,
+	INITIALIZE_TRAMPOLINE): Handle lack of original $27 and 32-bit ptrs.
+
 Fri Nov 14 06:59:33 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* calls.c (expand_call): Handle pcc_struct_value correctly for C++.

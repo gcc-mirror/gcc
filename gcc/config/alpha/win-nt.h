@@ -70,3 +70,59 @@ Boston, MA 02111-1307, USA.  */
  %{!mwindows:-subsystem console -e _mainCRTStartup} \
  %{mcrtmt:LIBCMT.LIB%s KERNEL32.LIB%s} %{!mcrtmt:LIBC.LIB%s KERNEL32.LIB%s} \
  %{v}"
+
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.
+
+   The trampoline should set the static chain pointer to value placed
+   into the trampoline and should branch to the specified routine.  */
+
+#undef TRAMPOLINE_TEMPLATE
+#define TRAMPOLINE_TEMPLATE(FILE)			\
+{							\
+  fprintf (FILE, "\tbr $27,$LTRAMPP\n");		\
+  fprintf (FILE, "$LTRAMPP:\n\tldl $1,12($27)\n");	\
+  fprintf (FILE, "\tldl $27,16($27)\n");		\
+  fprintf (FILE, "\tjmp $31,($27),0\n");		\
+  fprintf (FILE, "\t.long 0,0\n");			\
+}
+
+/* Length in units of the trampoline for entering a nested function.  */
+
+#undef TRAMPOLINE_SIZE
+#define TRAMPOLINE_SIZE    24
+
+/* Emit RTL insns to initialize the variable parts of a trampoline.
+   FNADDR is an RTX for the address of the function's pure code.
+   CXT is an RTX for the static chain value for the function. 
+
+   This differs from the standard version in that:
+
+   We are not passed the current address in any register, and so have to 
+   load it ourselves.
+
+   We do not initialize the "hint" field because it only has an 8k
+   range and so the target is in range of something on the stack. 
+   Omitting the hint saves a bogus branch-prediction cache line load.
+
+   Always have an executable stack -- no need for a system call.
+ */
+
+#undef INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  rtx _addr, _val;							\
+									\
+  _addr = memory_address (Pmode, plus_constant ((TRAMP), 16));		\
+  _val = force_reg(Pmode, (FNADDR));					\
+  emit_move_insn (gen_rtx (MEM, SImode, _addr),				\
+		  gen_rtx (SUBREG, SImode, _val, 0));			\
+  _addr = memory_address (Pmode, plus_constant ((TRAMP), 20));		\
+  _val = force_reg(Pmode, (CXT));					\
+  emit_move_insn (gen_rtx (MEM, SImode, _addr),				\
+		  gen_rtx (SUBREG, SImode, _val, 0));			\
+									\
+  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
+                      gen_rtvec (1, const0_rtx), 0));			\
+}
