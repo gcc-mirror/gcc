@@ -1,5 +1,5 @@
 # Makefile for GNU C++ compiler.
-#   Copyright (C) 1987, 88, 90-4, 1995 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90-4, 1995, 1998 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -95,6 +95,12 @@ VPATH = @srcdir@
 
 # Additional system libraries to link with.
 CLIB=
+ 
+# Top build directory, relative to here.
+top_builddir = ..
+
+# Internationalization library.
+INTLLIBS = @INTLLIBS@
 
 # Change this to a null string if obstacks are installed in the
 # system library.
@@ -144,7 +150,8 @@ SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) \
+  $(INTLLIBS) $(CLIB)
 
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
