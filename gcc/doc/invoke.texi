@@ -341,7 +341,8 @@ in the following sections.
 @gccoptlist{-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
 -m68060  -mcpu32  -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
 -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
--malign-int  -mstrict-align}
+-malign-int  -mstrict-align  -msep-data  -mno-sep-data @gol
+-mshared-library-id=n  -mid-shared-library  -mno-id-shared-library}
 
 @emph{M68hc1x Options}
 @gccoptlist{-m6811  -m6812  -m68hc11  -m68hc12   -m68hcs12 @gol
@@ -6088,6 +6089,30 @@ not presently supported with @option{-mpcrel}, though this could be supported fo
 @opindex mstrict-align
 Do not (do) assume that unaligned memory references will be handled by
 the system.
+
+@item -msep-data
+Generate code that allows the data segment to be located in a different
+area of memory from the text segment.  This allows for execute in place in
+an environment without virtual memory management.  This option implies -fPIC.
+
+@item -mno-sep-data
+Generate code that assumes that the data segment follows the text segment.
+This is the default.
+
+@item -mid-shared-library
+Generate code that supports shared libraries via the library ID method.
+This allows for execute in place and shared libraries in an environment
+without virtual memory management.  This option implies -fPIC.
+
+@item -mno-id-shared-library
+Generate code that doesn't assume ID based shared libraries are being used.
+This is the default.
+
+@item -mshared-library-id=n
+Specified the identification number of the ID based shared library being
+compiled.  Specifying a value of 0 will generate more compact code, specifying
+other values will force the allocation of that number to the current
+library but is no more space or time efficient than omitting this option.
 
 @end table
 
