@@ -1,3 +1,7 @@
+2000-12-19  Mark Kettenis  <kettenis@gnu.org>
+
+        * configure.target: Support the Hurd.
+
 2000-12-19  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* config/os/solaris/solaris2.5/bits/ctype_inline.h (is): Same.
