@@ -1,3 +1,39 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_f32_QNaN_bytes,
+	__glibcpp_f32_has_QNaN, __glibcpp_f32_SNaN_bytes,
+	__glibcpp_f32_has_SNaN, __glibcpp_f64_QNaN_bytes,
+	__glibcpp_f64_has_QNaN, __glibcpp_f64_SNaN_bytes,
+	__glibcpp_f64_has_SNaN, __glibcpp_f80_QNaN_bytes,
+	__glibcpp_f80_has_QNaN, __glibcpp_f80_SNaN_bytes,
+	__glibcpp_f80_has_SNaN, __glibcpp_f96_QNaN_bytes,
+	__glibcpp_f96_has_QNaN, __glibcpp_f96_SNaN_bytes,
+	__glibcpp_f96_has_SNaN, __glibcpp_f128_QNaN_bytes,
+	__glibcpp_f128_has_QNaN, __glibcpp_f128_SNaN_bytes,
+	__glibcpp_f128_has_SNaN, __glibcpp_float_QNaN_bytes,
+	__glibcpp_float_has_QNaN, __glibcpp_float_SNaN_bytes,
+	__glibcpp_float_has_SNaN, __glibcpp_double_QNaN_bytes,
+	__glibcpp_double_has_QNaN, __glibcpp_double_SNaN_bytes,
+	__glibcpp_double_has_SNaN, __glibcpp_long_double_QNaN_bytes,
+	__glibcpp_long_double_has_QNaN, __glibcpp_long_double_SNaN_bytes,
+	__glibcpp_long_double_has_SNaN): Remove.
+	(__glibcpp_f128_is_iec559): True if IEEE.
+	(__glibcpp_float_QNaN, __glibcpp_float_SNaN): Remove.
+	(__glibcpp_double_QNaN, __glibcpp_double_SNaN): Remove.
+	(__glibcpp_long_double_QNaN, __glibcpp_long_double_SNaN): Remove.
+	(std::numeric_limits<float>::has_quiet_NaN): Use __builtin_nanf.
+	(std::numeric_limits<float>::has_signaling_NaN): Mirror has_quiet_NaN.
+	(std::numeric_limits<float>::quiet_NaN): Use __builtin_nanf.
+	(std::numeric_limits<float>::signaling_NaN): Use __builtin_nansf.
+	(std::numeric_limits<double>): Similarly.
+	(std::numeric_limits<long double>): Similarly.
+	* src/limits.cc (__glibcpp_float_QNaN, __glibcpp_float_SNaN): Remove.
+	(__glibcpp_double_QNaN, __glibcpp_double_SNaN): Remove.
+	(__glibcpp_long_double_QNaN, __glibcpp_long_double_SNaN): Remove.
+
+	* testsuite/18_support/numeric_limits.cc (test_infinity): New.
+	(test_denorm_min, test_qnan, test_is_iec559): New.
+
 2002-09-16  Phil Edwards  <pme@gcc.gnu.org>
 
 	* testsuite/abi_check.cc:  Pull shell fragments out into...

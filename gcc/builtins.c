@@ -149,6 +149,7 @@ static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 static tree fold_builtin_constant_p	PARAMS ((tree));
 static tree fold_builtin_classify_type	PARAMS ((tree));
 static tree fold_builtin_inf		PARAMS ((tree, int));
+static tree fold_builtin_nan		PARAMS ((tree, tree, int));
 static tree build_function_call_expr	PARAMS ((tree, tree));
 static int validate_arglist		PARAMS ((tree, ...));
 
@@ -4149,6 +4150,28 @@ fold_builtin_inf (type, warn)
   return build_real (type, real);
 }
 
+/* Fold a call to __builtin_nan or __builtin_nans.  */
+
+static tree
+fold_builtin_nan (arglist, type, quiet)
+     tree arglist, type;
+     int quiet;
+{
+  REAL_VALUE_TYPE real;
+  const char *str;
+
+  if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
+    return 0;
+  str = c_getstr (TREE_VALUE (arglist));
+  if (!str)
+    return 0;
+
+  if (!real_nan (&real, str, quiet, TYPE_MODE (type)))
+    return 0;
+
+  return build_real (type, real);
+}
+
 /* Used by constant folding to eliminate some builtin calls early.  EXP is
    the CALL_EXPR of a call to a builtin function.  */
 
@@ -4189,6 +4212,16 @@ fold_builtin (exp)
     case BUILT_IN_HUGE_VALF:
     case BUILT_IN_HUGE_VALL:
       return fold_builtin_inf (TREE_TYPE (TREE_TYPE (fndecl)), false);
+
+    case BUILT_IN_NAN:
+    case BUILT_IN_NANF:
+    case BUILT_IN_NANL:
+      return fold_builtin_nan (arglist, TREE_TYPE (TREE_TYPE (fndecl)), true);
+
+    case BUILT_IN_NANS:
+    case BUILT_IN_NANSF:
+    case BUILT_IN_NANSL:
+      return fold_builtin_nan (arglist, TREE_TYPE (TREE_TYPE (fndecl)), false);
 
     default:
       break;

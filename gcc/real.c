@@ -1946,16 +1946,22 @@ real_inf (tr)
 
 /* Fills R with a NaN whose significand is described by STR.  If QUIET,
    we force a QNaN, else we force an SNaN.  The string, if not empty,
-   is parsed as a number and placed in the significand.  */
+   is parsed as a number and placed in the significand.  Return true
+   if the string was successfully parsed.  */
 
-void
+bool
 real_nan (tr, str, quiet, mode)
      REAL_VALUE_TYPE *tr;
      const char *str;
      int quiet;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   struct real_value *r = (struct real_value *) tr;
+  const struct real_format *fmt;
+
+  fmt = fmt_for_mode[mode - QFmode];
+  if (fmt == NULL)
+    abort ();
 
   if (*str == 0)
     {
@@ -1965,8 +1971,89 @@ real_nan (tr, str, quiet, mode)
 	get_canonical_snan (r, 0);
     }
   else
-    /* FIXME */
-    abort ();
+    {
+      int base = 10, d;
+      bool neg = false;
+
+      memset (r, 0, sizeof (*r));
+      r->class = rvc_nan;
+
+      /* Parse akin to strtol into the significand of R.  */
+
+      while (ISSPACE (*str))
+	str++;
+      if (*str == '-')
+	str++, neg = true;
+      else if (*str == '+')
+	str++;
+      if (*str == '0')
+	{
+	  if (*++str == 'x')
+	    str++, base = 16;
+	  else
+	    base = 8;
+	}
+
+      while ((d = hex_value (*str)) < base)
+	{
+	  struct real_value u;
+
+	  switch (base)
+	    {
+	    case 8:
+	      lshift_significand (r, r, 3);
+	      break;
+	    case 16:
+	      lshift_significand (r, r, 4);
+	      break;
+	    case 10:
+	      lshift_significand_1 (&u, r);
+	      lshift_significand (r, r, 3);
+	      add_significands (r, r, &u);
+	      break;
+	    default:
+	      abort ();
+	    }
+
+	  get_zero (&u, 0);
+	  u.sig[0] = d;
+	  add_significands (r, r, &u);
+
+	  str++;
+	}
+
+      /* Must have consumed the entire string for success.  */
+      if (*str != 0)
+	return false;
+
+      /* Shift the significand into place such that the bits
+	 are in the most significant bits for the format.  */
+      lshift_significand (r, r, SIGNIFICAND_BITS - fmt->p);
+
+      /* Our MSB is always unset for NaNs.  */
+      r->sig[SIGSZ-1] &= ~SIG_MSB;
+
+      /* Force quiet or signalling NaN.  */
+      if (quiet)
+	r->sig[SIGSZ-1] |= SIG_MSB >> 1;
+      else
+	r->sig[SIGSZ-1] &= ~(SIG_MSB >> 1);
+
+      /* Force at least one bit of the significand set.  */
+      for (d = 0; d < SIGSZ; ++d)
+	if (r->sig[d])
+	  break;
+      if (d == SIGSZ)
+	r->sig[SIGSZ-1] |= SIG_MSB >> 2;
+
+      /* Our intermediate format forces QNaNs to have MSB-1 set.
+	 If the target format has QNaNs with the top bit unset,
+	 mirror the output routines and invert the top two bits.  */
+      if (!fmt->qnan_msb_set)
+	r->sig[SIGSZ-1] ^= (SIG_MSB >> 1) | (SIG_MSB >> 2);
+    }
+
+  return true;
 }
 
 /* Fills R with 2**N.  */
@@ -2023,7 +2110,7 @@ round_for_format (fmt, r)
       return;
 
     case rvc_nan:
-      clear_significand_below (r, np2 + 1);
+      clear_significand_below (r, np2);
 
       /* If we've cleared the entire significand, we need one bit
 	 set for this to continue to be a NaN.  */
@@ -2031,7 +2118,7 @@ round_for_format (fmt, r)
 	if (r->sig[i])
 	  break;
       if (i == SIGSZ)
-	r->sig[SIGSZ-1] = SIG_MSB >> 1;
+	r->sig[SIGSZ-1] = SIG_MSB >> 2;
       return;
 
     case rvc_normal:

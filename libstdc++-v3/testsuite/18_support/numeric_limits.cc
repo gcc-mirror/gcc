@@ -117,6 +117,83 @@ void test_sign()
 
 
 template<typename T>
+void
+test_infinity()
+{
+  bool test;
+
+  if (std::numeric_limits<T>::has_infinity)
+    {
+      T inf = std::numeric_limits<T>::infinity();
+      test = (inf + inf == inf);
+    }
+  else
+    test = true;
+
+  VERIFY (test);
+}
+
+template<typename T>
+void
+test_denorm_min()
+{
+  bool test;
+
+  if (std::numeric_limits<T>::has_denorm == std::denorm_present)
+    {
+      T denorm = std::numeric_limits<T>::denorm_min();
+      test = (denorm > 0);
+    }
+  else
+    test = true;
+
+  VERIFY (test);
+}
+
+template<typename T>
+void
+test_qnan()
+{
+  bool test;
+
+  if (std::numeric_limits<T>::has_quiet_NaN)
+    {
+      T nan = std::numeric_limits<T>::quiet_NaN();
+      test = (nan != nan);
+    }
+  else
+    test = true;
+
+  VERIFY (test);
+}
+
+
+template<typename T>
+void
+test_is_iec559()
+{
+  bool test;
+
+  if (std::numeric_limits<T>::is_iec559)
+    {
+      // IEC 559 requires all of the following.
+      test = (std::numeric_limits<T>::has_infinity
+	      && std::numeric_limits<T>::has_quiet_NaN
+	      && std::numeric_limits<T>::has_signaling_NaN);
+    }
+  else
+    {
+      // If we had all of the following, why didn't we set IEC 559?
+      test = (!std::numeric_limits<T>::has_infinity
+	      || !std::numeric_limits<T>::has_quiet_NaN
+	      || !std::numeric_limits<T>::has_signaling_NaN);
+    }
+
+  VERIFY (test);
+}
+
+
+template<typename T>
   struct A 
   {
     int key;
@@ -237,5 +314,25 @@ int main()
 
   test_sign();
 
-    return 0;
+  test_infinity<float>();
+  test_infinity<double>();
+  test_infinity<long double>();
+
+  test_denorm_min<float>();
+  test_denorm_min<double>();
+  test_denorm_min<long double>();
+
+  test_qnan<float>();
+  test_qnan<double>();
+  test_qnan<long double>();
+
+  // ??? How to test SNaN?  We'd perhaps have to be prepared
+  // to catch SIGFPE.  Can't rely on a signal getting through
+  // since the exception can be disabled in the FPU.
+
+  test_is_iec559<float>();
+  test_is_iec559<double>();
+  test_is_iec559<long double>();
+
+  return 0;
 }
