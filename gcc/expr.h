@@ -372,6 +372,13 @@ extern rtx bcmp_libfunc;
 extern rtx memset_libfunc;
 extern rtx bzero_libfunc;
 
+extern rtx eqhf2_libfunc;
+extern rtx nehf2_libfunc;
+extern rtx gthf2_libfunc;
+extern rtx gehf2_libfunc;
+extern rtx lthf2_libfunc;
+extern rtx lehf2_libfunc;
+
 extern rtx eqsf2_libfunc;
 extern rtx nesf2_libfunc;
 extern rtx gtsf2_libfunc;
