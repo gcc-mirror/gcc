@@ -1,3 +1,10 @@
+Thu Aug 26 19:33:23 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (DWARF2_ASM_LINE_DEBUG_INFO): Add default definition.
+	(debug_dwarf): Add DWARF2_ASM_LINE_DEBUG_INFO support.
+	(dwarf2out_line, dwarf2out_finish): Likewise.
+	* tm.texi (DWARF2_ASM_LINE_DEBUG_INFO): Add documetation.
+
 Thu Aug 26 16:10:56 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* tree.c (lang_unsave_expr_now) : Correct return type.
