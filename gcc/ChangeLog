@@ -1,3 +1,8 @@
+Thu May 21 19:32:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* combine.c (nonzero_bits): For paradoxical subregs, take
+	LOAD_EXTENDED_OP into account.
+
 Thu May 21 11:51:15 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* configure.in (extra_c_objs): add prefix.o.

@@ -7693,15 +7693,23 @@ nonzero_bits (x, mode)
 	{
 	  nonzero &= nonzero_bits (SUBREG_REG (x), mode);
 
-#ifndef WORD_REGISTER_OPERATIONS
-	  /* On many CISC machines, accessing an object in a wider mode
-	     causes the high-order bits to become undefined.  So they are
-	     not known to be zero.  */
-	  if (GET_MODE_SIZE (GET_MODE (x))
-	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-	    nonzero |= (GET_MODE_MASK (GET_MODE (x))
-			& ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x))));
+#if defined (WORD_REGISTER_OPERATIONS) && defined (LOAD_EXTEND_OP)
+	  /* If this is a typical RISC machine, we only have to worry
+	     about the way loads are extended.  */
+	  if (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND
+	      ? (nonzero
+		 & (1L << (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) - 1)))
+	      : LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) != ZERO_EXTEND)
 #endif
+	    {
+	      /* On many CISC machines, accessing an object in a wider mode
+		 causes the high-order bits to become undefined.  So they are
+		 not known to be zero.  */
+	      if (GET_MODE_SIZE (GET_MODE (x))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+		nonzero |= (GET_MODE_MASK (GET_MODE (x))
+			    & ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x))));
+	    }
 	}
       break;
 
