@@ -43,6 +43,7 @@
 #include "loop.h"
 #include "recog.h"
 #include "c-tree.h"
+#include "ggc.h"
 
 static int c4x_leaf_function;
 
@@ -135,17 +136,27 @@ struct rtx_def *c4x_compare_op0 = NULL_RTX;
 struct rtx_def *c4x_compare_op1 = NULL_RTX;
 
 char *c4x_rpts_cycles_string;
-int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS */
+int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS.  */
 char *c4x_cpu_version_string;
-int c4x_cpu_version = 40;	/* CPU version C30/31/32/40/44 */
+int c4x_cpu_version = 40;	/* CPU version C30/31/32/40/44.  */
 
 /* Pragma definitions.  */
 
-tree code_tree = NULL_TREE;
-tree data_tree = NULL_TREE;
-tree pure_tree = NULL_TREE;
-tree noreturn_tree = NULL_TREE;
-tree interrupt_tree = NULL_TREE;
+static tree code_tree = NULL_TREE;
+static tree data_tree = NULL_TREE;
+static tree pure_tree = NULL_TREE;
+static tree noreturn_tree = NULL_TREE;
+static tree interrupt_tree = NULL_TREE;
+
+/* Called to register all of our global variables with the garbage
+   collector.  */
+
+static void
+c4x_add_gc_roots ()
+{
+  ggc_add_rtx_root (&c4x_compare_op0, 1);
+  ggc_add_rtx_root (&c4x_compare_op1, 1);
+}
 
 
 /* Override command line options.
@@ -205,7 +216,11 @@ c4x_override_options ()
      This provides compatibility with the old -mno-aliases option.  */
   if (! TARGET_ALIASES && ! flag_argument_noalias)
     flag_argument_noalias = 1;
+
+  /* Register global variables with the garbage collector.  */
+  c4x_add_gc_roots ();
 }
+
 
 /* This is called before c4x_override_options.  */
 void
