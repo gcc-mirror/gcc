@@ -3073,17 +3073,18 @@ try_simplify_condjump (cbranch_block)
     fprintf (rtl_dump_file, "Simplifying condjump %i around jump %i\n",
 	     INSN_UID (cbranch_insn), INSN_UID (jump_block->end));
 
-  /* Success.  Update the CFG to match.  */
+  /* Success.  Update the CFG to match.  Note that after this point
+     the edge variable names appear backwards; the redirection is done
+     this way to preserve edge profile data.  */
   redirect_edge_succ (cbranch_jump_edge, cbranch_dest_block);
   redirect_edge_succ (cbranch_fallthru_edge, jump_dest_block);
   cbranch_jump_edge->flags |= EDGE_FALLTHRU;
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
   
+  /* Delete the block with the unconditional jump, and clean up the mess.  */
   flow_delete_block (jump_block);
-  /* Selectively unlink the sequence.  */
-  if (cbranch_jump_edge->src->end != PREV_INSN (cbranch_jump_edge->dest->head))
-    flow_delete_insn_chain (NEXT_INSN (cbranch_jump_edge->src->end),
-			    PREV_INSN (cbranch_jump_edge->dest->head));
+  tidy_fallthru_edge (cbranch_jump_edge, cbranch_block, cbranch_dest_block);
+
   return true;
 }
 

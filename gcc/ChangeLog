@@ -1,3 +1,7 @@
+2001-07-23  Richard Henderson  <rth@redhat.com>
+
+	* flow.c (try_simplify_condjump): Use tidy_fallthru_edge.
+
 2001-07-23  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
