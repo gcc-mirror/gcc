@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the DSP1610.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -260,7 +260,7 @@ int c;
       return SLOW_MEM_LOAD_REGS;
 
     default:
-      fatal ("Illegal register class letter %c", c);
+      fatal ("Invalid register class letter %c", c);
       return NO_REGS;
     }
 }
@@ -396,7 +396,7 @@ enum reg_class class;
       return class;
 
     case YL_REG:
-      /* Register 'yl' is illegal for QImode, so we should never
+      /* Register 'yl' is invalid for QImode, so we should never
 	 see it. */
 
       fatal ("YL found in limit_reload_class");
@@ -1472,7 +1472,7 @@ rtx operands[];
       else if (GET_CODE (XEXP(addr,1)) == CONST_INT)
 	offset = INTVAL(XEXP(addr,1)) + 1;
       else
-	fatal ("Illegal addressing mode");
+	fatal ("Invalid addressing mode");
 
       fprintf (asm_out_file, "\t*(%d)=%s\n", offset + 31, reg_names[REGNO(operands[1]) + 1]);
     }
@@ -1674,10 +1674,10 @@ rtx addr;
 	  if (offset >= -31 && offset <= 0)
 	    offset = 31 + offset;
 	  else
-	    fatal ("Illegal offset in ybase addressing");
+	    fatal ("Invalid offset in ybase addressing");
 	}
       else
-	fatal ("Illegal register in ybase addresing");
+	fatal ("Invalid register in ybase addresing");
       
       fprintf (file, "*(%d)", offset);
       break;
@@ -1849,7 +1849,7 @@ int shift_amount;
       shift_asm_ptr_first = lshift_right_asm_first;
     }
   else
-    fatal ("Illegal shift operator in emit_1600_core_shift");
+    fatal ("Invalid shift operator in emit_1600_core_shift");
 
   while (shift_amount != 0)
     {
@@ -2128,7 +2128,7 @@ gen_tst_reg (x)
   else if (mode == HImode)
     emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, x));
   else
-    fatal ("Illegal mode for gen_tst_reg");
+    fatal ("Invalid mode for gen_tst_reg");
 
   return cc0_rtx;
 }
@@ -2199,7 +2199,7 @@ gen_compare_reg (code, x, y)
 				     force_reg(HImode,y))));
     }
   else
-    fatal ("Illegal mode for integer comparison in gen_compare_reg");
+    fatal ("Invalid mode for integer comparison in gen_compare_reg");
 
   return cc0_rtx;
 }
