@@ -436,7 +436,7 @@ while (0)
    64 predicate registers, 8 branch registers, one frame pointer,
    and several "application" registers.  */
 
-#define FIRST_PSEUDO_REGISTER 335
+#define FIRST_PSEUDO_REGISTER 334
 
 /* Ranges for the various kinds of registers.  */
 #define ADDL_REGNO_P(REGNO) ((unsigned HOST_WIDE_INT) (REGNO) <= 3)
@@ -445,9 +445,7 @@ while (0)
 #define PR_REGNO_P(REGNO) ((REGNO) >= 256 && (REGNO) <= 319)
 #define BR_REGNO_P(REGNO) ((REGNO) >= 320 && (REGNO) <= 327)
 #define GENERAL_REGNO_P(REGNO) \
-  (GR_REGNO_P (REGNO)							\
-   || (REGNO) == FRAME_POINTER_REGNUM					\
-   || (REGNO) == RETURN_ADDRESS_POINTER_REGNUM)
+  (GR_REGNO_P (REGNO) || (REGNO) == FRAME_POINTER_REGNUM)
 
 #define GR_REG(REGNO) ((REGNO) + 0)
 #define FR_REG(REGNO) ((REGNO) + 128)
@@ -457,11 +455,11 @@ while (0)
 #define IN_REG(REGNO) ((REGNO) + 112)
 #define LOC_REG(REGNO) ((REGNO) + 32)
 
-#define AR_CCV_REGNUM	330
-#define AR_UNAT_REGNUM  331
-#define AR_PFS_REGNUM	332
-#define AR_LC_REGNUM	333
-#define AR_EC_REGNUM	334
+#define AR_CCV_REGNUM	329
+#define AR_UNAT_REGNUM  330
+#define AR_PFS_REGNUM	331
+#define AR_LC_REGNUM	332
+#define AR_EC_REGNUM	333
 
 #define IN_REGNO_P(REGNO) ((REGNO) >= IN_REG (0) && (REGNO) <= IN_REG (7))
 #define LOC_REGNO_P(REGNO) ((REGNO) >= LOC_REG (0) && (REGNO) <= LOC_REG (79))
@@ -524,8 +522,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   0, 0, 0, 0, 0, 0, 0, 0,				\
-  /*FP RA CCV UNAT PFS LC EC */				\
-     1, 1,  1,   1,  1, 0, 1				\
+  /*FP CCV UNAT PFS LC EC */				\
+     1,  1,   1,  1, 0, 1				\
  }
 
 /* Like `FIXED_REGISTERS' but has 1 for each register that is clobbered
@@ -559,8 +557,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
-  /*FP RA CCV UNAT PFS LC EC */				\
-     1, 1,  1,   1,  1, 0, 1				\
+  /*FP CCV UNAT PFS LC EC */				\
+     1,  1,   1,  1, 0, 1				\
 }
 
 /* Like `CALL_USED_REGISTERS' but used to overcome a historical
@@ -597,8 +595,8 @@ while (0)
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	\
   /* Branch registers.  */				\
   1, 0, 0, 0, 0, 0, 1, 1,				\
-  /*FP RA CCV UNAT PFS LC EC */				\
-     0, 0,  1,   0,  1, 0, 0				\
+  /*FP CCV UNAT PFS LC EC */				\
+     0,  1,   0,  1, 0, 0				\
 }
 
 
@@ -744,7 +742,7 @@ while (0)
   /* Special branch registers.  */					   \
   R_BR (0),								   \
   /* Other fixed registers.  */						   \
-  FRAME_POINTER_REGNUM, RETURN_ADDRESS_POINTER_REGNUM,			   \
+  FRAME_POINTER_REGNUM, 						   \
   AR_CCV_REGNUM, AR_UNAT_REGNUM, AR_PFS_REGNUM, AR_LC_REGNUM,		   \
   AR_EC_REGNUM		  						   \
 }
@@ -873,11 +871,11 @@ enum reg_class
   /* AR_M_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x0C00 },			\
+    0x00000000, 0x00000000, 0x0600 },			\
   /* AR_I_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x7000 },			\
+    0x00000000, 0x00000000, 0x3800 },			\
   /* ADDL_REGS.  */					\
   { 0x0000000F, 0x00000000, 0x00000000, 0x00000000,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
@@ -885,7 +883,7 @@ enum reg_class
   /* GR_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x0300 },			\
+    0x00000000, 0x00000000, 0x0100 },			\
   /* FR_REGS.  */					\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
@@ -893,15 +891,15 @@ enum reg_class
   /* GR_AND_BR_REGS.  */				\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0x00000000, 0x00000000, 0x00000000, 0x00000000,	\
-    0x00000000, 0x00000000, 0x03FF },			\
+    0x00000000, 0x00000000, 0x01FF },			\
   /* GR_AND_FR_REGS.  */				\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0x00000000, 0x00000000, 0x0300 },			\
+    0x00000000, 0x00000000, 0x0100 },			\
   /* ALL_REGS.  */					\
   { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
     0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,	\
-    0xFFFFFFFF, 0xFFFFFFFF, 0x7FFF },			\
+    0xFFFFFFFF, 0xFFFFFFFF, 0x3FFF },			\
 }
 
 /* A C expression whose value is a register class containing hard register
@@ -1119,7 +1117,7 @@ enum reg_class
    DYNAMIC_CHAIN_ADDRESS and SETUP_FRAME_ADDRESS (for the reg stack flush).  */
 
 #define RETURN_ADDR_RTX(COUNT, FRAME) \
-  ((COUNT) == 0 ? return_address_pointer_rtx : const0_rtx)
+  ia64_return_addr_rtx (COUNT, FRAME)
 
 /* A C expression whose value is RTL representing the location of the incoming
    return address at the beginning of any function, before the prologue.  This
@@ -1180,13 +1178,6 @@ enum reg_class
       REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = 64;	\
   } while (0)
 
-/* The register number for the return address register.  For IA-64, this
-   is not actually a pointer as the name suggests, but that's a name that
-   gen_rtx_REG already takes care to keep unique.  We modify
-   return_address_pointer_rtx in ia64_expand_prologue to reference the
-   final output regnum.  */
-#define RETURN_ADDRESS_POINTER_REGNUM 329
-
 /* Register numbers used for passing a function's static chain pointer.  */
 /* ??? The ABI sez the static chain should be passed as a normal parameter.  */
 #define STATIC_CHAIN_REGNUM 15
@@ -1210,7 +1201,6 @@ enum reg_class
   {ARG_POINTER_REGNUM,	 HARD_FRAME_POINTER_REGNUM},			\
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
   {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},			\
-  {RETURN_ADDRESS_POINTER_REGNUM, BR_REG (0)},				\
 }
 
 /* A C expression that returns nonzero if the compiler is allowed to try to
@@ -1934,8 +1924,8 @@ do {									\
   "p60", "p61", "p62", "p63",						\
   /* Branch registers.  */						\
   "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7",			\
-  /* Frame pointer.  Return address.  */				\
-  "sfp", "retaddr", "ar.ccv", "ar.unat", "ar.pfs", "ar.lc", "ar.ec",	\
+  /* Frame pointer.  Application registers.  */				\
+  "sfp", "ar.ccv", "ar.unat", "ar.pfs", "ar.lc", "ar.ec",	\
 }
 
 /* If defined, a C initializer for an array of structures containing a name and
