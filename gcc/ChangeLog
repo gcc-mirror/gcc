@@ -1,3 +1,8 @@
+2004-10-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c (catenate_strings): New.
+	(c_parse_error): Use it.  Don't over-escape.
+
 2004-10-30  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (calc_live_regs): Declare reg as unsigned and

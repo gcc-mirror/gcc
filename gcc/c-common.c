@@ -5479,36 +5479,75 @@ resort_sorted_fields (void *obj,
 	 resort_field_decl_cmp);
 }
 
+/* Subroutine of c_parse_error.
+   Return the result of concatenating LHS and RHS. RHS is really
+   a string literal, its first character is indicated by RHS_START and
+   RHS_SIZE is its lenght (including the terminating NUL character).
+
+   The caller is responsible for deleting the returned pointer.  */
+
+static char *
+catenate_strings (const char *lhs, const char *rhs_start, int rhs_size)
+{
+  const int lhs_size = strlen (lhs);
+  char *result = XNEWVEC (char, lhs_size + rhs_size);
+  strncpy (result, lhs, lhs_size);
+  strncpy (result + lhs_size, rhs_start, rhs_size);
+  return result;
+}
+
 /* Issue the error given by MSGID, indicating that it occurred before
    TOKEN, which had the associated VALUE.  */
 
 void
 c_parse_error (const char *msgid, enum cpp_ttype token, tree value)
 {
-  const char *string = _(msgid);
+#define catenate_messages(M1, M2) catenate_strings ((M1), (M2), sizeof (M2))
+
+  char *message = NULL;
 
   if (token == CPP_EOF)
-    error ("%s at end of input", string);
+    message = catenate_messages (msgid, " at end of input");
   else if (token == CPP_CHAR || token == CPP_WCHAR)
     {
       unsigned int val = TREE_INT_CST_LOW (value);
       const char *const ell = (token == CPP_CHAR) ? "" : "L";
       if (val <= UCHAR_MAX && ISGRAPH (val))
-	error ("%s before %s'%c'", string, ell, val);
+        message = catenate_messages (msgid, " before %s'%c'");
       else
-	error ("%s before %s'\\x%x'", string, ell, val);
+        message = catenate_messages (msgid, " before %s'\\x%x'");
+
+      error (message, ell, val);
+      free (message);
+      message = NULL;
     }
-  else if (token == CPP_STRING
-	   || token == CPP_WSTRING)
-    error ("%s before string constant", string);
+  else if (token == CPP_STRING || token == CPP_WSTRING)
+    message = catenate_messages (msgid, " before string constant");
   else if (token == CPP_NUMBER)
-    error ("%s before numeric constant", string);
+    message = catenate_messages (msgid, " before numeric constant");
   else if (token == CPP_NAME)
-    error ("%s before \"%s\"", string, IDENTIFIER_POINTER (value));
+    {
+      message = catenate_messages (msgid, " before %qs");
+      error (message, IDENTIFIER_POINTER (value));
+      free (message);
+      message = NULL;
+    }
   else if (token < N_TTYPES)
-    error ("%s before %qs token", string, cpp_type2name (token));
+    {
+      message = catenate_messages (msgid, " before %qs token");
+      error (message, cpp_type2name (token));
+      free (message);
+      message = NULL;
+    }
   else
-    error ("%s", string);
+    error (msgid);
+
+  if (message)
+    {
+      error (message);
+      free (message);
+    }
+#undef catenate_messages  
 }
 
 /* Walk a gimplified function and warn for functions whose return value is
