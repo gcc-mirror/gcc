@@ -31,9 +31,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef CPP_SPEC
 #if TARGET_CPU_DEFAULT == 2
-#define CPP_SPEC "%{!m386:-D__i486__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{!m386:-D__i486__} %{posix:-D_POSIX_SOURCE}"
 #else
-#define CPP_SPEC "%{m486:-D__i486__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m486:-D__i486__} %{posix:-D_POSIX_SOURCE}"
 #endif
 
 #undef SIZE_TYPE
