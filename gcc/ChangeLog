@@ -1,3 +1,10 @@
+2005-01-04  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_single_bit_test): Delete unreachable handling
+	of TRUTH_NOT_EXPR.
+	(fold): Don't call fold_single_bit_test with a TRUTH_NOT_EXPR, as
+	all the cases handled by it are inverted by invert_truthvalue.
+
 2005-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (save_register_windowdi): Add missing mode.

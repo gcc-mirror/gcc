@@ -5829,22 +5829,6 @@ tree
 fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
 		      tree result_type)
 {
-  /* If this is a TRUTH_NOT_EXPR, it may have a single bit test inside
-     operand 0.  */
-  if (code == TRUTH_NOT_EXPR)
-    {
-      code = TREE_CODE (arg0);
-      if (code != NE_EXPR && code != EQ_EXPR)
-	return NULL_TREE;
-
-      /* Extract the arguments of the EQ/NE.  */
-      arg1 = TREE_OPERAND (arg0, 1);
-      arg0 = TREE_OPERAND (arg0, 0);
-
-      /* This requires us to invert the code.  */
-      code = (code == EQ_EXPR ? NE_EXPR : EQ_EXPR);
-    }
-
   /* If this is testing a single bit, we can optimize the test.  */
   if ((code == NE_EXPR || code == EQ_EXPR)
       && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
@@ -8043,12 +8027,7 @@ fold (tree expr)
       tem = invert_truthvalue (arg0);
       /* Avoid infinite recursion.  */
       if (TREE_CODE (tem) == TRUTH_NOT_EXPR)
-	{
-	  tem = fold_single_bit_test (code, arg0, arg1, type);
-	  if (tem)
-	    return tem;
-	  return t;
-	}
+	return t;
       return fold_convert (type, tem);
 
     case TRUTH_ANDIF_EXPR:
