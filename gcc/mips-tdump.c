@@ -937,7 +937,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	else
 	  {
 	    used_ptr[index] = 1;
-	    printf ("      First symbol: %ld\n", aux_base[index].isym);
+	    printf ("      First symbol: %ld\n", (long) aux_base[index].isym);
 	  }
 
 	if (want_scope)
@@ -962,7 +962,7 @@ print_symbol (sym_ptr, number, strbase, aux_base, ifd, fdp)
 	  {
 	    used_ptr[index] = used_ptr[index+1] = 1;
 	    printf ("      End+1 symbol: %-7ld   Type:  %s\n",
-		    aux_base[index].isym,
+		    (long) aux_base[index].isym,
 		    type_to_string (aux_base, index+1, fdp));
 	  }
 	else			/* global symbol */

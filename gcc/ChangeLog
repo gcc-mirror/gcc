@@ -55,6 +55,23 @@ Mon Jun 22 08:18:46 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	
 	* regmove.c (copy_src_to_dest): Likewise for `i'.
 
+	* mips-tfile.c (add_local_symbol): Cast width format specifier to int.
+	(add_ext_symbol): Likewise.
+	(add_file): Likewise.
+	(parse_def): Likewise.
+	(write_varray): Use HOST_PTR_PRINTF to print a pointer.  Fix
+	remaining format specifiers and arguments.
+	(write_object): Likewise, several times.
+	(read_seek): Likewise.
+	(out_of_bounds): Likewise.
+	(allocate_cluster): Likewise.
+	(xmalloc): Likewise.
+	(xcalloc): Likewise.
+	(xrealloc): Likewise.
+	(xfree): Likewise.
+
+	* mips-tdump.c (print_symbol): Likewise.
+	
 Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in (install-info): Use install-info program if
