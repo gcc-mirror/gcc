@@ -6605,6 +6605,8 @@ fold (tree expr)
 	return omit_one_operand (type, arg1, arg0);
       if (integer_zerop (arg1))
 	return non_lvalue (fold_convert (type, arg0));
+      if (operand_equal_p (arg0, arg1, 0))
+	return non_lvalue (fold_convert (type, arg0));
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
@@ -6633,6 +6635,8 @@ fold (tree expr)
 	return non_lvalue (fold_convert (type, arg0));
       if (integer_all_onesp (arg1))
 	return fold (build1 (BIT_NOT_EXPR, type, arg0));
+      if (operand_equal_p (arg0, arg1, 0))
+	return omit_one_operand (type, integer_zero_node, arg0);
 
       /* If we are XORing two BIT_AND_EXPR's, both of which are and'ing
          with a constant, and the two constants have no bits in common,
@@ -6659,6 +6663,8 @@ fold (tree expr)
 	return non_lvalue (fold_convert (type, arg0));
       if (integer_zerop (arg1))
 	return omit_one_operand (type, arg1, arg0);
+      if (operand_equal_p (arg0, arg1, 0))
+	return non_lvalue (fold_convert (type, arg0));
       t1 = distribute_bit_expr (code, type, arg0, arg1);
       if (t1 != NULL_TREE)
 	return t1;
