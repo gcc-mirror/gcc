@@ -1,3 +1,11 @@
+2001-08-18  Richard Henderson  <rth@redhat.com>
+
+	* timevar.h (struct timevar_time_def): Change element type to float.
+	(ticks_to_msec, clocks_to_msec): Likewise.
+	(TICKS_TO_MSEC, CLOCKS_TO_MSEC): Rescale to seconds; use type float.
+	(get_time): Likewise.
+	(timevar_print): Adjust zero check and printing to match.
+
 2001-08-18  Zack Weinberg  <zackw@panix.com>
 
 	* doc/extend.texi, doc/gcc.texi, doc/install-old.texi,
