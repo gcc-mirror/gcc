@@ -8407,8 +8407,12 @@ discard_comments (start, length, newlines)
       }
       if (ibp[0] != '*' || ibp + 1 >= limit)
 	break;
-      /* Comments are equivalent to spaces.  */
-      obp[-1] = ' ';
+      /* Comments are equivalent to spaces.
+	 For -traditional, a comment is equivalent to nothing.  */
+      if (traditional)
+	obp--;
+      else
+	obp[-1] = ' ';
       ibp++;
       while (ibp + 1 < limit) {
 	if (ibp[0] == '*'
