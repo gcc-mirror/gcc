@@ -284,6 +284,9 @@ GCC_PARTS=$(GCC_PASSES) $(LIBGCC) $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PART
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
+# Guaranteed to not exist when not passing md through cpp.
+MD_FILE = md-cpp-not-used
+
 # Flags to use when cross-building GCC.
 # Prefix to apply to names of object files when using them
 # to run on the machine we are compiling on.
@@ -1152,6 +1155,13 @@ stamp-output : md genoutput $(srcdir)/move-if-change
 # about the target machine.  They do depend on config.h itself,
 # since that describes the host machine.
 
+# Pass the md file through cpp if the target requests it.
+$(MD_FILE): $(CPP_MD)
+	-if [ -f md.pre-cpp ]; then \
+	  rm -f md ; ./cpp $(CPP_MD_FLAGS) md.pre-cpp | sed 's/^# /; /g' > md ; \
+	else true ; \
+	fi
+
 genconfig : genconfig.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genconfig \
 	  genconfig.o $(HOST_RTL) $(HOST_LIBS)
@@ -1653,13 +1663,17 @@ clean: mostlyclean bytecode.clean
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready libgcc1.null
 	-rm -f *.dvi
+	-if [ -f md.pre-cpp ]; then \
+	  rm -f md ; \
+	fi
 # Delete the include directory.
 	-rm -rf stmp-* fixinc.ready include objc-headers
 
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean
-	-rm -f tm.h aux-output.c config.h md config.status tconfig.h hconfig.h
+	-rm -f tm.h aux-output.c config.h config.status tconfig.h hconfig.h
+	-rm -f md md.pre-cpp
 	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 	-rm -f cp-parse.output
