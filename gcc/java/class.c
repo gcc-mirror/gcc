@@ -1110,11 +1110,6 @@ make_class_data (type)
 		    flag_assume_compiled ? integer_four_node
 		    : integer_two_node);
 
-  method = lookup_java_method (type,
-			       finalize_identifier_node, void_signature_node);
-  PUSH_FIELD_VALUE (cons, "final",
-		    method == NULL ? integer_zero_node : integer_one_node);
-
   PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
 
   FINISH_RECORD_CONSTRUCTOR (cons);

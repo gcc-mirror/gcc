@@ -196,7 +196,6 @@ extern tree TYPE_identifier_node;      /* "TYPE" */
 extern tree init_identifier_node;      /* "<init>" */
 extern tree clinit_identifier_node;      /* "<clinit>" */
 extern tree void_signature_node;       /* "()V" */
-extern tree finalize_identifier_node;  /* "finalize" */
 extern tree length_identifier_node;  /* "length" */
 extern tree this_identifier_node;  /* "this" */
 extern tree super_identifier_node;  /* "super" */
