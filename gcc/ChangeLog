@@ -1,3 +1,16 @@
+2000-08-19  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.c (reg_or_5bit_operand): New.
+	(ia64_depz_field_mask): New.
+	* config/ia64/ia64.h (CONSTRAINT_OK_FOR_R): New.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md: Update commentary.
+	(depz_internal): New.
+	(ashlsi3): Implement directly.
+	(ashrsi3, lshrsi3): Simplify; rely on extv and extzv for constants.
+	(ashldi3): Use shladd.
+	* config/ia64/ia64-protos.h: Update.
+
 2000-08-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* toplev.c (independent_decode_option): Always process -g.

@@ -35,6 +35,7 @@ extern int function_operand PARAMS((rtx, enum machine_mode));
 extern int setjmp_operand PARAMS((rtx, enum machine_mode));
 extern int move_operand PARAMS((rtx, enum machine_mode));
 extern int reg_or_0_operand PARAMS((rtx, enum machine_mode));
+extern int reg_or_5bit_operand PARAMS((rtx, enum machine_mode));
 extern int reg_or_6bit_operand PARAMS((rtx, enum machine_mode));
 extern int reg_or_8bit_operand PARAMS((rtx, enum machine_mode));
 extern int reg_or_8bit_adjusted_operand PARAMS((rtx, enum machine_mode));
@@ -50,12 +51,6 @@ extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
 extern int destination_operand PARAMS((rtx, enum machine_mode));
-extern HOST_WIDE_INT ia64_initial_elimination_offset PARAMS((int, int));
-extern void ia64_expand_prologue PARAMS((void));
-extern void ia64_expand_epilogue PARAMS((void));
-extern void ia64_function_prologue PARAMS((FILE *, int));
-extern void ia64_function_epilogue PARAMS((FILE *, int));
-extern int ia64_direct_return PARAMS((void));
 extern int predicate_operator PARAMS((rtx, enum machine_mode));
 extern int ar_lc_reg_operand PARAMS((rtx, enum machine_mode));
 extern int ar_ccv_reg_operand PARAMS((rtx, enum machine_mode));
@@ -64,10 +59,18 @@ extern int destination_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int tfreg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 
 extern int ia64_move_ok PARAMS((rtx, rtx));
+extern int ia64_depz_field_mask PARAMS((rtx, rtx));
 extern rtx ia64_gp_save_reg PARAMS((int));
 extern rtx ia64_split_timode PARAMS((rtx[], rtx, rtx));
 extern rtx spill_tfmode_operand PARAMS((rtx, int));
 
+extern HOST_WIDE_INT ia64_initial_elimination_offset PARAMS((int, int));
+extern void ia64_expand_prologue PARAMS((void));
+extern void ia64_expand_epilogue PARAMS((void));
+extern void ia64_function_prologue PARAMS((FILE *, int));
+extern void ia64_function_epilogue PARAMS((FILE *, int));
+
+extern int ia64_direct_return PARAMS((void));
 extern void ia64_expand_load_address PARAMS((rtx, rtx));
 extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
 					      enum machine_mode, rtx []));
