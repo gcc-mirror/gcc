@@ -5048,6 +5048,13 @@ builtin_define_float_constants (name_prefix, fp_suffix, type)
   sprintf (name, "__%s_EPSILON__", name_prefix);
   sprintf (buf, "0x1p%d", (1 - mant_dig) * log2_b);
   builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
+
+  /* For C++ std::numeric_limits<T>::denorm_min.  The minimum denormalized
+     positive floating-point number, b**(min_exp-p).  Winds up being zero
+     for targets that don't support denormals.  */
+  sprintf (name, "__%s_DENORM_MIN__", name_prefix);
+  sprintf (buf, "0x1p%d", (min_exp - mant_dig) * log2_b);
+  builtin_define_with_hex_fp_value (name, type, decimal_dig, buf, fp_suffix);
 }
 
 /* Hook that registers front end and target-specific built-ins.  */

@@ -1,3 +1,23 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* include/std/std_limits.h (__glibcpp_f32_denorm_min_bytes,
+	__glibcpp_f32_has_denorm, __glibcpp_f64_denorm_min_bytes,
+	__glibcpp_f64_has_denorm, __glibcpp_f80_denorm_min_bytes,
+	__glibcpp_f80_has_denorm, __glibcpp_f96_denorm_min_bytes,
+	__glibcpp_f96_has_denorm, __glibcpp_f128_denorm_min_bytes,
+	__glibcpp_f128_has_denorm, __glibcpp_float_denorm_min_bytes,
+	__glibcpp_float_has_denorm, __glibcpp_double_denorm_min_bytes,
+	__glibcpp_double_has_denorm, __glibcpp_long_double_denorm_min_bytes,
+	__glibcpp_long_double_has_denorm): Remove.
+	(__glibcpp_float_denorm_min, __glibcpp_double_denorm_min,
+	__glibcpp_long_double_denorm_min): Remove.
+	(std::numeric_limits<float>::has_denorm): Use __FLT_DENORM_MIN__.
+	(std::numeric_limits<float>::denorm_min): Likewise.
+	(std::numeric_limits<double>): Similarly.
+	(std::numeric_limits<long double>): Similarly.
+	* src/limits.cc (__glibcpp_float_denorm_min,
+	__glibcpp_double_denorm_min, __glibcpp_long_double_denorm_min): Remove.
+
 2002-09-13  Andy Felt  <afelt@uwsp.edu>
 
 	* docs/html/17_intro/howto.html:  Update link.
