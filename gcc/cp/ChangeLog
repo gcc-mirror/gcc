@@ -1,3 +1,8 @@
+2000-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (check_explicit_specialization): Propagate default
+	function arguments to explicit specializations.
+
 2000-12-13  DJ Delorie  <dj@redhat.com>
 
 	* typeck.c (build_binary_op): Do signed/unsigned warnings for >?

@@ -1543,6 +1543,31 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
 
+	  /* Inherit default function arguments from the template
+	     DECL is specializing.  */
+	  {
+	    tree t1 = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	    tree t2 = TYPE_ARG_TYPES (TREE_TYPE (DECL_TEMPLATE_RESULT (tmpl)));
+
+	    /* DECL may contain more parameters than TMPL due to the extra
+	       in-charge parameter in constructors and destructors.  */
+	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	      t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2);
+	    if (DECL_HAS_IN_CHARGE_PARM_P (decl))
+	      t1 = TREE_CHAIN (t1);
+
+	     /* Note that we do not need to reparse default arguments, 
+		since explicit specialization cannot be declared in 
+		class scope as in [temp.expl.spec].  */
+	    for (; t1 && t2; t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+	      {
+		if (TREE_PURPOSE (t2))
+		  TREE_PURPOSE (t1) = TREE_PURPOSE (t2);
+	      }
+
+	    my_friendly_assert (t1 == NULL_TREE && t2 == NULL_TREE, 20001211);
+	  }
+
 	  /* Set up the DECL_TEMPLATE_INFO for DECL.  */
 	  DECL_TEMPLATE_INFO (decl) = tree_cons (tmpl, targs, NULL_TREE);
 
