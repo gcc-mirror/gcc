@@ -992,13 +992,13 @@ do {						\
       if (GET_CODE (XEXP (X, 0)) == REG)                                \
 	{ register rtx temp = gen_reg_rtx (Pmode);			\
 	  register rtx val = force_operand (XEXP (X, 1), temp);		\
-	  if (val != temp) emit_move_insn (temp, val, 0);		\
+	  if (val != temp) emit_move_insn (temp, val);			\
 	  XEXP (X, 1) = temp;						\
 	  goto WIN; }							\
       else if (GET_CODE (XEXP (X, 1)) == REG)				\
 	{ register rtx temp = gen_reg_rtx (Pmode);			\
 	  register rtx val = force_operand (XEXP (X, 0), temp);		\
-	  if (val != temp) emit_move_insn (temp, val, 0);		\
+	  if (val != temp) emit_move_insn (temp, val);			\
 	  XEXP (X, 0) = temp;						\
 	  goto WIN; }}}
 
