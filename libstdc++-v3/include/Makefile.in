@@ -506,7 +506,7 @@ stamp-std: ${std_headers}
 	fi ;\
 	(cd ${std_builddir} && for h in $?; do \
 	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
-	  @LN_S@ $$h ./$${official_name || true} ;\
+	  @LN_S@ $$h ./$${official_name} || true ;\
 	done) ;\
 	echo `date` > stamp-std 
 
