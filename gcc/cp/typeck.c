@@ -59,22 +59,6 @@ static void maybe_warn_about_returning_address_of_local (tree);
 static tree lookup_destructor (tree, tree, tree);
 static tree convert_arguments (tree, tree, tree, int);
 
-/* Return the target type of TYPE, which means return T for:
-   T*, T&, T[], T (...), and otherwise, just T.  */
-
-tree
-target_type (tree type)
-{
-  type = non_reference (type);
-  while (TREE_CODE (type) == POINTER_TYPE
-	 || TREE_CODE (type) == ARRAY_TYPE
-	 || TREE_CODE (type) == FUNCTION_TYPE
-	 || TREE_CODE (type) == METHOD_TYPE
-	 || TYPE_PTRMEM_P (type))
-    type = TREE_TYPE (type);
-  return type;
-}
-
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)
    Returns the error_mark_node if the VALUE does not have
