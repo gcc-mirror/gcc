@@ -1,3 +1,23 @@
+2000-06-06  James E. Wilson  <wilson@cygnus.com>
+
+	* frame.h (struct unwind_info_ptr): Collapse version, flags, and length
+	fields into header field.
+	(IA64_UNW_HDR_LENGTH, IA64_UNW_HDR_FLAGS, IA64_UNW_HDR_VERSION): New
+	macros to access length, flags, and version info from header field.
+	* config/ia64/crtbegin.asm (__do_frame_setup_aux): Delete here.
+	* config/ia64/crtend.asm (__do_frame_setup_aux): Add here.
+	(__do_global_ctors_aux): Fix caller.
+	* config/ia64/frame-ia64.c (get_unwind_record): Change parameter
+	prologue_flag to header.  Pass to read_P_record.
+	(read_P_record): New argument header.  Implement P4 format.
+	Multiply P7_T_SIZE by 16.
+	(execute_one_ia64_descriptor): New static local region_header.  Pass to
+	get_unwind_record.  Copy r to region_header if r is a header record.
+	(print_all_records): Likewise.
+	(__build_ia64_frame_state): Use IA64_UNW_HDR_LENGTH.
+	(__get_personality, __get_except_table): Likewise.
+	* config/ia64/ia64.c (process_set): Do not divide offsets by 4.
+
 2000-06-06  Philipp Thomas  <pthomas@suse.de>
 
         * configure.in (AC_C_INLINE): Added.
