@@ -1,5 +1,9 @@
 2002-03-18  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mips/mips.md (andsi3) [TARGET_MIPS16]: Force operand 1 to
+	a register too.
+	(anddi3, iorsi3): Likewise.
+
 	* config/mips/mips.h (ENCODE_SECTION_INFO) [TARGET_MIPS16]: Don't
 	use %gprel for symbols that are going to be placed in linkonce
 	sections.
