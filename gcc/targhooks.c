@@ -61,6 +61,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "tm_p.h"
 #include "target-def.h"
+#include "insn-config.h"
+#include "recog.h"
+#include "ggc.h"
 
 void
 default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
@@ -196,9 +199,45 @@ default_pretend_outgoing_varargs_named(CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 #endif
 }
 
+/* A SYMBOL_REF for a local symbol.  Used by default_direct_pool_load_p.  */
+
+static GTY(()) rtx pool_symbol;
+
+/* See whether a local symbol is a valid address for MODE.  If so, assume
+   that constant pool symbols are also valid addresses, otherwise assume
+   that they aren't.
+
+   ??? This is only an approximation.  We can't test constant pool
+   symbols directly without forcing something into the constant pool.  */
+
+bool
+default_direct_pool_load_p (enum machine_mode mode)
+{
+  if (pool_symbol == 0)
+    {
+      char label[256];
+
+      ASM_GENERATE_INTERNAL_LABEL (label, "LC", 0);
+      pool_symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+      SYMBOL_REF_FLAGS (pool_symbol) = SYMBOL_FLAG_LOCAL;
+    }
+  return memory_address_p (mode, pool_symbol);
+}
+
 /* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
+
 bool
 hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS * a ATTRIBUTE_UNUSED)
 {
   return true;
 }
+
+/* Generic hook that takes a machine mode and returns true.  */
+
+bool
+hook_bool_machine_mode_true (enum machine_mode a ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+#include "gt-targhooks.h"

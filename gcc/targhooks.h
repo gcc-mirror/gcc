@@ -32,4 +32,7 @@ extern void default_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode
 extern bool default_strict_argument_naming (CUMULATIVE_ARGS *);
 extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 
+extern bool default_direct_pool_load_p (enum machine_mode);
+
 extern bool hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS *);
+extern bool hook_bool_machine_mode_true (enum machine_mode);

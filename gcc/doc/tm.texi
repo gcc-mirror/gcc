@@ -5402,6 +5402,19 @@ should probably only be given to addresses with different numbers of
 registers on machines with lots of registers.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_DIRECT_POOL_LOAD_P (enum machine_mode @var{m})
+This hook should return true if values of mode @var{m} can usually be loaded
+directly from the constant pool, without using an intermediate register
+to hold the address.
+
+The hook is only a heuristic, it has no bearing on correctness.
+If it returns false, reload will be less likely to force constants
+into memory.
+
+The default definition returns true if an ordinary local symbol is
+a valid address.
+@end deftypefn
+
 @node Scheduling
 @section Adjusting the Instruction Scheduler
 
