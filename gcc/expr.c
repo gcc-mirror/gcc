@@ -6852,7 +6852,8 @@ expand_expr (exp, target, tmode, modifier)
 		 && integer_zerop (TREE_OPERAND (TREE_OPERAND (exp, 0), 1))
 		 && operand_equal_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
 				     TREE_OPERAND (exp, 1), 0)
-		 && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
+		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
+		     || TREE_CODE (TREE_OPERAND (exp, 1)) == SAVE_EXPR)
 		 && safe_from_p (temp, TREE_OPERAND (exp, 2)))
 	  {
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
@@ -6869,7 +6870,8 @@ expand_expr (exp, target, tmode, modifier)
 		 && integer_zerop (TREE_OPERAND (TREE_OPERAND (exp, 0), 1))
 		 && operand_equal_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
 				     TREE_OPERAND (exp, 2), 0)
-		 && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
+		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
+		     || TREE_CODE (TREE_OPERAND (exp, 2)) == SAVE_EXPR)
 		 && safe_from_p (temp, TREE_OPERAND (exp, 1)))
 	  {
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
