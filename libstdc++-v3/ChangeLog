@@ -1,3 +1,8 @@
+2001-12-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/std_limits.h (__glibcpp_long_double_is_bounded):
+	Set to true, like float and double.
+
 2001-12-17  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	libstdc++/5136
