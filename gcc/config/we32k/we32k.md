@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, AT&T we32000 Version
-;; Copyright (C) 1991, 1992, 1994 Free Software Foundation, Inc.
+;; Copyright (C) 1991, 1992, 1994, 1998 Free Software Foundation, Inc.
 ;; Contributed by John Wehle (john@feith1.uucp)
 
 ;; This file is part of GNU CC.
@@ -125,7 +125,7 @@
   rtx lsw_operands[3];
 
   if (GET_CODE (operands[0]) == REG)
-    lsw_operands[0] = gen_rtx(REG, SImode, REGNO (operands[0]) + 1);
+    lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
       lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
@@ -133,17 +133,15 @@
       abort();
 
   if (GET_CODE (operands[2]) == REG)
-    lsw_operands[2] = gen_rtx(REG, SImode, REGNO (operands[2]) + 1);
+    lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
       lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
-        lsw_operands[2] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[2]));
-        operands[2] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[2]));
+        lsw_operands[2] = GEN_INT (CONST_DOUBLE_HIGH(operands[2]));
+        operands[2] = GEN_INT (CONST_DOUBLE_LOW(operands[2]));
         }
       else
         if (GET_CODE (operands[2]) == CONST_INT)
@@ -177,7 +175,7 @@
   rtx lsw_operands[3];
 
   if (GET_CODE (operands[0]) == REG)
-    lsw_operands[0] = gen_rtx(REG, SImode, REGNO (operands[0]) + 1);
+    lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
       lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
@@ -185,17 +183,15 @@
       abort();
 
   if (GET_CODE (operands[1]) == REG)
-    lsw_operands[1] = gen_rtx(REG, SImode, REGNO (operands[1]) + 1);
+    lsw_operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else
     if (GET_CODE (operands[1]) == MEM && offsettable_memref_p (operands[1]))
       lsw_operands[1] = adj_offsettable_operand(operands[1], 4);
     else
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
         {
-        lsw_operands[1] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[1]));
-        operands[1] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[1]));
+        lsw_operands[1] = GEN_INT (CONST_DOUBLE_HIGH(operands[1]));
+        operands[1] = GEN_INT (CONST_DOUBLE_LOW(operands[1]));
         }
       else
         if (GET_CODE (operands[1]) == CONST_INT)
@@ -207,17 +203,15 @@
           abort();
 
   if (GET_CODE (operands[2]) == REG)
-    lsw_operands[2] = gen_rtx(REG, SImode, REGNO (operands[2]) + 1);
+    lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
       lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
-        lsw_operands[2] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[2]));
-        operands[2] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[2]));
+        lsw_operands[2] = GEN_INT (CONST_DOUBLE_HIGH(operands[2]));
+        operands[2] = GEN_INT (CONST_DOUBLE_LOW(operands[2]));
         }
       else
         if (GET_CODE (operands[2]) == CONST_INT)
@@ -295,7 +289,7 @@
   rtx lsw_operands[3];
 
   if (GET_CODE (operands[0]) == REG)
-    lsw_operands[0] = gen_rtx(REG, SImode, REGNO (operands[0]) + 1);
+    lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
       lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
@@ -303,17 +297,15 @@
       abort();
 
   if (GET_CODE (operands[2]) == REG)
-    lsw_operands[2] = gen_rtx(REG, SImode, REGNO (operands[2]) + 1);
+    lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
       lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
-        lsw_operands[2] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[2]));
-        operands[2] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[2]));
+        lsw_operands[2] = GEN_INT (CONST_DOUBLE_HIGH(operands[2]));
+        operands[2] = GEN_INT (CONST_DOUBLE_LOW(operands[2]));
         }
       else
         if (GET_CODE (operands[2]) == CONST_INT)
@@ -347,7 +339,7 @@
   rtx lsw_operands[3];
 
   if (GET_CODE (operands[0]) == REG)
-    lsw_operands[0] = gen_rtx(REG, SImode, REGNO (operands[0]) + 1);
+    lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else
     if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
       lsw_operands[0] = adj_offsettable_operand(operands[0], 4);
@@ -355,17 +347,15 @@
       abort();
 
   if (GET_CODE (operands[1]) == REG)
-    lsw_operands[1] = gen_rtx(REG, SImode, REGNO (operands[1]) + 1);
+    lsw_operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else
     if (GET_CODE (operands[1]) == MEM && offsettable_memref_p (operands[1]))
       lsw_operands[1] = adj_offsettable_operand(operands[1], 4);
     else
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
         {
-        lsw_operands[1] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[1]));
-        operands[1] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[1]));
+        lsw_operands[1] = GEN_INT (CONST_DOUBLE_HIGH(operands[1]));
+        operands[1] = GEN_INT (CONST_DOUBLE_LOW(operands[1]));
         }
       else
         if (GET_CODE (operands[1]) == CONST_INT)
@@ -377,17 +367,15 @@
           abort();
 
   if (GET_CODE (operands[2]) == REG)
-    lsw_operands[2] = gen_rtx(REG, SImode, REGNO (operands[2]) + 1);
+    lsw_operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     if (GET_CODE (operands[2]) == MEM && offsettable_memref_p (operands[2]))
       lsw_operands[2] = adj_offsettable_operand(operands[2], 4);
     else
       if (GET_CODE (operands[2]) == CONST_DOUBLE)
         {
-        lsw_operands[2] = gen_rtx(CONST_INT, SImode,
-                                  CONST_DOUBLE_HIGH(operands[2]));
-        operands[2] = gen_rtx(CONST_INT, SImode,
-                              CONST_DOUBLE_LOW(operands[2]));
+        lsw_operands[2] = GEN_INT (CONST_DOUBLE_HIGH(operands[2]));
+        operands[2] = GEN_INT (CONST_DOUBLE_LOW(operands[2]));
         }
       else
         if (GET_CODE (operands[2]) == CONST_INT)
@@ -770,7 +758,7 @@
 
   if (GET_CODE (operands[1]) == CONST_INT &&
     ((unsigned long)INTVAL (operands[1]) & 0x8000L))
-    operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) | 0xffff0000L);
+    operands[1] = GEN_INT (INTVAL (operands[1]) | 0xffff0000L);
 
   output_asm_insn(\"CMPH %1, %0\",operands);
 
@@ -786,7 +774,7 @@
 
   if (GET_CODE (operands[1]) == CONST_INT &&
     ((unsigned long)INTVAL (operands[1]) & 0x80L))
-    operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) | 0xffffff00L);
+    operands[1] = GEN_INT (INTVAL(operands[1]) | 0xffffff00L);
 
   output_asm_insn(\"CMPB {sbyte}%1, {sbyte}%0\",operands);
 
@@ -910,7 +898,7 @@
   "*
   {
 
-  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  operands[2] = GEN_INT (INTVAL(operands[2]) - 1);
   output_asm_insn(\"EXTFW %2, %3, %1, %0\",operands);
 
   return \"\";
@@ -925,7 +913,7 @@
   "*
   {
 
-  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  operands[2] = GEN_INT (INTVAL (operands[2]) - 1);
   output_asm_insn(\"EXTFH %2, %3, {uhalf}%1, {uword}%0\",operands);
 
   return \"\";
@@ -940,7 +928,7 @@
   "*
   {
 
-  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  operands[2] = GEN_INT (INTVAL (operands[2]) - 1);
   output_asm_insn(\"EXTFB %2, %3, {ubyte}%1, {uword}%0\",operands);
 
   return \"\";
@@ -955,7 +943,7 @@
   "*
   {
 
-  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  operands[1] = GEN_INT (INTVAL (operands[1]) - 1);
   output_asm_insn(\"INSFW %1, %2, %3, %0\",operands);
 
   return \"\";
@@ -970,7 +958,7 @@
   "*
   {
 
-  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  operands[1] = GEN_INT (INTVAL(operands[1]) - 1);
   output_asm_insn(\"INSFH %1, %2, {uword}%3, {uhalf}%0\",operands);
 
   return \"\";
@@ -985,7 +973,7 @@
   "*
   {
 
-  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  operands[1] = GEN_INT (INTVAL(operands[1]) - 1);
   output_asm_insn(\"INSFB %1, %2, {uword}%3, {ubyte}%0\",operands);
 
   return \"\";
