@@ -1,6 +1,8 @@
 #include <sys/types.h>
 #include <algorithm>
 typedef short int16_t;
+typedef char int8_t;
+typedef unsigned char u_int8_t;
 typedef unsigned short u_int16_t;
 
 template <class INT>
