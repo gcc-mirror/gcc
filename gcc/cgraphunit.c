@@ -146,7 +146,7 @@ cgraph_assemble_pending_functions (void)
    available - create cgraph edges for function calls via BODY.  */
 
 void
-cgraph_finalize_function (tree decl, tree body ATTRIBUTE_UNUSED)
+cgraph_finalize_function (tree decl)
 {
   struct cgraph_node *node = cgraph_node (decl);
 
