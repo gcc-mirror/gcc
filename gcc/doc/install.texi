@@ -2125,7 +2125,8 @@ longer a multiple of 2 bytes.
 
 We @emph{highly} recommend using gas/binutils 2.8 or newer on all hppa
 platforms; you may encounter a variety of problems when using the HP
-assembler.
+assembler.  The HP assembler does not work with the @samp{hppa64-hp-hpux11*}
+port.
 
 Specifically, @option{-g} does not work on HP-UX (since that system
 uses a peculiar debugging format which GCC does not know about), unless you
@@ -2133,8 +2134,9 @@ use GAS and GDB and configure GCC with the
 @uref{./configure.html#with-gnu-as,,@option{--with-gnu-as}} and
 @option{--with-as=@dots{}} options.
 
-If you wish to use pa-risc 2.0 architecture support, you must use either
-the HP assembler, gas/binutils 2.11 or a recent
+If you wish to use the pa-risc 2.0 architecture support with a 32-bit
+runtime, you must use either the HP assembler, gas/binutils 2.11 or newer,
+or a recent
 @uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
 
 More specific information to @samp{hppa*-hp-hpux*} targets follows.
@@ -2194,14 +2196,34 @@ bootstrap}.
 @end html
 @heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
-GCC 3.0 and up support HP-UX 11.  You must use GNU binutils 2.11 or above on
-this platform.  Thread support is not currently implemented for this
-platform, so @option{--enable-threads} does not work.
-See @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
+GCC 3.0 and up support HP-UX 11.  On 64-bit capable systems, there
+are two distinct ports.  The @samp{hppa2.0w-hp-hpux11*} port generates
+code for the 32-bit pa-risc runtime architecture.  It uses the HP
+linker and is currently the default selected by config.guess.  The
+optional @samp{hppa64-hp-hpux11*} port generates 64-bit code for the
+pa-risc 2.0 architecture.  It must be explicitly selected using the
+@samp{--host=hppa64-hp-hpux11*} configure option.  Different prefixes
+must be used if both ports are to be installed on the same system.
+
+You must use GNU binutils 2.11 or above with the 32-bit port.  Thread
+support is not currently implemented, so @option{--enable-threads} does
+not work.  See @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
 and @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}.
 GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
 compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
 information about obtaining precompiled GCC binaries for HP-UX.
+
+GNU binutils 2.13 or later is recommended with the 64-bit port.
+The HP assembler is not supported.  It is @emph{highly} recommended
+that the GNU linker be used as well.  Either binutils must be built
+prior to gcc, or a binary distribution of gcc or binutils must be
+obtained for the initial builds.  When starting with a HP compiler,
+it is preferable to use the ANSI compiler as the bundled compiler
+only supports traditional C.  Bootstrapping with the bundled compiler
+is tested infrequently and problems often arise because of the subtle
+differences in semantics between traditional and ISO C.  There also
+have been problems reported with various binary distributions.  This
+port still is undergoing significant development.
 
 @html
 </p>
