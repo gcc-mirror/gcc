@@ -628,18 +628,6 @@ fsingle-precision-constant
 Common
 Convert floating point constants to single precision constants
 
-fssa
-Common
-Enable static single assignment optimizations
-
-fssa-ccp
-Common
-Enable SSA conditional constant propagation
-
-fssa-dce
-Common
-Enable aggressive SSA dead code elimination
-
 fstack-check
 Common
 Insert stack checking code into the program

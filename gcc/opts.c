@@ -1299,18 +1299,6 @@ common_handle_option (size_t scode, const char *arg,
       flag_single_precision_constant = value;
       break;
 
-    case OPT_fssa:
-      flag_ssa = value;
-      break;
-
-    case OPT_fssa_ccp:
-      flag_ssa_ccp = value;
-      break;
-
-    case OPT_fssa_dce:
-      flag_ssa_dce = value;
-      break;
-
     case OPT_fstack_check:
       flag_stack_check = value;
       break;

@@ -1087,7 +1087,7 @@ open_base_files (void)
       "config.h", "system.h", "coretypes.h", "tm.h", "varray.h",
       "hashtab.h", "splay-tree.h", "bitmap.h", "tree.h", "rtl.h",
       "function.h", "insn-config.h", "expr.h", "hard-reg-set.h",
-      "basic-block.h", "cselib.h", "insn-addr.h", "ssa.h", "optabs.h",
+      "basic-block.h", "cselib.h", "insn-addr.h", "optabs.h",
       "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       NULL
     };

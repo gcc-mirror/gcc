@@ -1,3 +1,28 @@
+2003-11-20  Richard Henderson  <rth@redhat.com>
+
+	* ssa.c, ssa-dce.c, ssa-ccp.c: Remove files.
+	* Makefile.in (OBJS-common, GTFILES): Don't reference them.
+	(gtype-desc.o, toplev.o, flow.o): Remove ssa.h.
+	(ssa.o, ssa-dce.o, ssa-ccp.o): Remove.
+	* flow.c: Don't include ssa.h.
+	(set_phi_alternative_reg): Remove.
+	(calculate_global_regs_live): Don't call it.
+	(mark_used_regs): Don't handle PHI.
+	* gengtype.c (open_base_files): Don't reference ssa.h.
+	* rtl.def (PHI): Remove.
+	* timevar.def (TV_TO_SSA, TV_SSA_CCP, TV_SSA_DCE, TV_FROM_SSA): Kill.
+	* common.opt: Remove -fssa, -fssa-ccp, -fssa-dce.
+	* opts.c (common_handle_option): Likewise.
+	* toplev.c (f_options): Likewise.
+	(DFI_ssa, DFI_ssa_ccp, DFI_ssa_dce, DFI_ussa): Remove.
+	(dump_file): Update to match.
+	(flag_ssa, flag_ssa_ccp, flag_ssa_dce): Remove.
+	(rest_of_handle_ssa): Remove.
+	(rest_of_compilation): Don't call it.
+	* toplev.h (flag_ssa, flag_ssa_dce, flag_ssa_ccp): Remove.
+	* doc/invoke.texi: Remove -fssa, -fssa-ccp, -fssa-dce.
+	* doc/passes.texi (SSA optimizations): Remove.
+
 2003-11-20  Bob Wilson  <bob.wilson@acm.org>
 
 	* configure.in: Add xtensa-*-* targets to test for dwarf2 debug_line.
