@@ -2795,7 +2795,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
 
 	sp -= rmeth->stack_item_count;
 
-	NULLCHECK (sp[0].o);
+	// We don't use NULLCHECK here because we can't rely on that
+	// working for <init>.  So instead we do an explicit test.
+	if (! sp[0].o)
+	  throw new java::lang::NullPointerException;
 
 	fun = (void (*)()) rmeth->method->ncode;
 
@@ -2813,7 +2816,10 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       {
 	rmeth = (_Jv_ResolvedMethod *) AVAL ();
 	sp -= rmeth->stack_item_count;
-	NULLCHECK (sp[0].o);
+	// We don't use NULLCHECK here because we can't rely on that
+	// working for <init>.  So instead we do an explicit test.
+	if (! sp[0].o)
+	  throw new java::lang::NullPointerException;
 	fun = (void (*)()) rmeth->method->ncode;
       }
       goto perform_invoke;
