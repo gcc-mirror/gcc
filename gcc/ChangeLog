@@ -1,3 +1,9 @@
+2004-12-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/17643
+	* pa.c (pa_function_ok_for_sibcall): Sibcalls are not ok when
+	generating code for the portable runtime.
+
 2004-12-25  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/19147
