@@ -1,3 +1,7 @@
+Mon Oct 19 13:26:24 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
+
+	* jump.c (sets_cc0_p): Compile only if HAVE_cc0.
+
 Mon Oct 19 11:40:56 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (scan_loop): Be more selective about what invariants are

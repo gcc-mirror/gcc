@@ -3317,6 +3317,8 @@ condjump_in_parallel_p (insn)
   return 0;
 }
 
+#ifdef HAVE_cc0
+
 /* Return 1 if X is an RTX that does nothing but set the condition codes
    and CLOBBER or USE registers.
    Return -1 if X does explicitly set the condition codes,
@@ -3326,7 +3328,6 @@ int
 sets_cc0_p (x)
      rtx x ATTRIBUTE_UNUSED;
 {
-#ifdef HAVE_cc0
   if (GET_CODE (x) == SET && SET_DEST (x) == cc0_rtx)
     return 1;
   if (GET_CODE (x) == PARALLEL)
@@ -3345,10 +3346,8 @@ sets_cc0_p (x)
       return ! sets_cc0 ? 0 : other_things ? -1 : 1;
     }
   return 0;
-#else
-  abort ();
-#endif
 }
+#endif
 
 /* Follow any unconditional jump at LABEL;
    return the ultimate label reached by any such chain of jumps.
