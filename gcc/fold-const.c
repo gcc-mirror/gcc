@@ -6412,7 +6412,7 @@ fold (tree expr)
 	  /* Transform x * -1.0 into -x.  */
 	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
 	      && real_minus_onep (arg1))
-	    return fold (build1 (NEGATE_EXPR, type, arg0));
+	    return fold_convert (type, negate_expr (arg0));
 
 	  /* Convert (C1/X)*C2 into (C1*C2)/X.  */
 	  if (flag_unsafe_math_optimizations
@@ -6768,9 +6768,9 @@ fold (tree expr)
 	  if (BUILTIN_EXPONENT_P (fcode))
 	    {
 	      tree expfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
-	      tree arg = build1 (NEGATE_EXPR, type,
-				 TREE_VALUE (TREE_OPERAND (arg1, 1)));
-	      tree arglist = build_tree_list (NULL_TREE, fold (arg));
+	      tree arg = negate_expr (TREE_VALUE (TREE_OPERAND (arg1, 1)));
+	      tree arglist = build_tree_list (NULL_TREE,
+					      fold_convert (type, arg));
 	      arg1 = build_function_call_expr (expfn, arglist);
 	      return fold (build (MULT_EXPR, type, arg0, arg1));
 	    }
@@ -6783,7 +6783,7 @@ fold (tree expr)
 	      tree powfn = TREE_OPERAND (TREE_OPERAND (arg1, 0), 0);
 	      tree arg10 = TREE_VALUE (TREE_OPERAND (arg1, 1));
 	      tree arg11 = TREE_VALUE (TREE_CHAIN (TREE_OPERAND (arg1, 1)));
-	      tree neg11 = fold (build1 (NEGATE_EXPR, type, arg11));
+	      tree neg11 = fold_convert (type, negate_expr (arg11));
 	      tree arglist = tree_cons(NULL_TREE, arg10,
 				       build_tree_list (NULL_TREE, neg11));
 	      arg1 = build_function_call_expr (powfn, arglist);
@@ -6864,6 +6864,12 @@ fold (tree expr)
 	return non_lvalue (fold_convert (type, arg0));
       if (integer_zerop (arg1))
 	return t;
+      /* X / -1 is -X.  */
+      if (!TYPE_UNSIGNED (type)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_INT_CST_LOW (arg1) == (unsigned HOST_WIDE_INT) -1
+	  && TREE_INT_CST_HIGH (arg1) == -1)
+	return fold_convert (type, negate_expr (arg0));
 
       /* If arg0 is a multiple of arg1, then rewrite to the fastest div
 	 operation, EXACT_DIV_EXPR.
@@ -6890,6 +6896,12 @@ fold (tree expr)
 	return omit_one_operand (type, integer_zero_node, arg0);
       if (integer_zerop (arg1))
 	return t;
+      /* X % -1 is zero.  */
+      if (!TYPE_UNSIGNED (type)
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_INT_CST_LOW (arg1) == (unsigned HOST_WIDE_INT) -1
+	  && TREE_INT_CST_HIGH (arg1) == -1)
+	return omit_one_operand (type, integer_zero_node, arg0);
 
       if (TREE_CODE (arg1) == INTEGER_CST
 	  && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0), arg1,
