@@ -154,9 +154,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef HAVE_epilogue
 #define HAVE_epilogue 0
 #endif
-
 #ifndef HAVE_prologue
 #define HAVE_prologue 0
+#endif
+#ifndef HAVE_sibcall_epilogue
+#define HAVE_sibcall_epilogue 0
 #endif
 
 /* The contents of the current function definition are allocated
@@ -592,7 +594,8 @@ find_basic_blocks_1 (f)
 		 does not imply an abnormal edge, it will be a bit before
 		 everything can be updated.  So continue to emit a noop at
 		 the end of such a block.  */
-	      if (GET_CODE (end) == CALL_INSN)
+	      if (GET_CODE (end) == CALL_INSN
+		  && ! SIBLING_CALL_P (end))
 		{
 		  rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
 		  end = emit_insn_after (nop, end);
@@ -644,7 +647,8 @@ find_basic_blocks_1 (f)
 	     imply an abnormal edge, it will be a bit before everything can
 	     be updated.  So continue to emit a noop at the end of such a
 	     block.  */
-	  if (GET_CODE (end) == CALL_INSN)
+	  if (GET_CODE (end) == CALL_INSN
+	      && ! SIBLING_CALL_P (end))
 	    {
 	      rtx nop = gen_rtx_USE (VOIDmode, const0_rtx);
 	      end = emit_insn_after (nop, end);
@@ -972,6 +976,15 @@ make_edges (label_value_list)
 	      make_label_edge (edge_cache, bb, JUMP_LABEL (insn), 0);
 	    }
 	}
+
+      /* If this is a sibling call insn, then this is in effect a 
+	 combined call and return, and so we need an edge to the
+	 exit block.  No need to worry about EH edges, since we
+	 wouldn't have created the sibling call in the first place.  */
+
+      if (code == CALL_INSN && SIBLING_CALL_P (insn))
+	make_edge (edge_cache, bb, EXIT_BLOCK_PTR, 0);
+      else
 
       /* If this is a CALL_INSN, then mark it as reaching the active EH
 	 handler for this CALL_INSN.  If we're handling asynchronous
@@ -3249,8 +3262,10 @@ propagate_block (bb, old, significant, flags)
 	     instructions.  Warn about probable compiler losage.  */
 	  if (insn_is_dead
 	      && reload_completed
-	      && (HAVE_epilogue || HAVE_prologue)
-	      && prologue_epilogue_contains (insn))
+	      && (((HAVE_epilogue || HAVE_prologue)
+		   && prologue_epilogue_contains (insn))
+		  || (HAVE_sibcall_epilogue
+		      && sibcall_epilogue_contains (insn))))
 	    {
 	      if (flags & PROP_KILL_DEAD_CODE)
 	        { 

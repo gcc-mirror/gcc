@@ -675,7 +675,8 @@ OBJS = diagnostic.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
- predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o
+ predict.o lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o \
+ sibcall.o
 
 # GEN files are listed separately, so they can be built before doing parallel
 #  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
@@ -1562,6 +1563,8 @@ cse.o : cse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
 gcse.o : gcse.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
    flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H) \
    function.h output.h toplev.h
+sibcall.o : sibcall.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) function.h \
+   hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h \
    insn-attr.h

@@ -2986,6 +2986,15 @@ rest_of_compilation (decl)
 	goto exit_rest_of_compilation;
     }
 
+  /* We may have potential sibling or tail recursion sites.  Select one
+     (of possibly multiple) methods of performing the call.  */
+  init_EXPR_INSN_LIST_cache ();
+  if (optimize)
+    optimize_sibling_and_tail_recursive_calls ();
+  
+  if (ggc_p)
+    ggc_collect ();
+
   /* Initialize some variables used by the optimizers.  */
   init_function_for_compilation ();
 
@@ -3029,8 +3038,6 @@ rest_of_compilation (decl)
   /* Copy any shared structure that should not be shared.  */
 
   unshare_all_rtl (current_function_decl, insns);
-
-  init_EXPR_INSN_LIST_cache ();
 
 #ifdef SETJMP_VIA_SAVE_AREA
   /* This must be performed before virutal register instantiation.  */

@@ -4019,7 +4019,8 @@ leaf_function_p ()
 	return 0;
       if (GET_CODE (insn) == INSN
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE
-	  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN)
+	  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == CALL_INSN
+	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (insn), 0, 0)))
 	return 0;
     }
   for (insn = current_function_epilogue_delay_list; insn; insn = XEXP (insn, 1))
@@ -4028,7 +4029,8 @@ leaf_function_p ()
 	return 0;
       if (GET_CODE (XEXP (insn, 0)) == INSN
 	  && GET_CODE (PATTERN (XEXP (insn, 0))) == SEQUENCE
-	  && GET_CODE (XVECEXP (PATTERN (XEXP (insn, 0)), 0, 0)) == CALL_INSN)
+	  && GET_CODE (XVECEXP (PATTERN (XEXP (insn, 0)), 0, 0)) == CALL_INSN
+	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (XEXP (insn, 0)), 0, 0)))
 	return 0;
     }
 

@@ -174,11 +174,15 @@ gen_insn (insn)
      call_value_pop) ignoring the extra arguments that are passed for
      some machines, so by default, turn off the prototype.  */
 
-  obstack_ptr = (name[0] == 'c'
+  obstack_ptr = ((name[0] == 'c' || name[0] == 's')
 		 && (!strcmp (name, "call")
 		     || !strcmp (name, "call_value")
 		     || !strcmp (name, "call_pop")
-		     || !strcmp (name, "call_value_pop")))
+		     || !strcmp (name, "call_value_pop")
+		     || !strcmp (name, "sibcall")
+		     || !strcmp (name, "sibcall_value")
+		     || !strcmp (name, "sibcall_pop")
+		     || !strcmp (name, "sibcall_value_pop")))
     ? &call_obstack : &normal_obstack;
 
   obstack_grow (obstack_ptr, &insn, sizeof (rtx));

@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 88, 92, 94, 95, 97, 98, 1999
+   Copyright (C) 1987, 88, 92, 94, 95, 97, 98, 1999, 2000
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -880,7 +880,10 @@ DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
    potential tail recursive calls were found.
 
    The tail recursion label is needed so that we can clear LABEL_PRESERVE_P
-   after we select a call method.  */
+   after we select a call method.
+
+   This method of tail-call elimination is intended to be replaced by
+   tree-based optimizations once front-end conversions are complete.  */
 DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
 
 /* The SSA phi operator. 

@@ -119,9 +119,12 @@ typedef struct rtx_def
 #else
   enum machine_mode mode : 8;
 #endif
-  /* LINK_COST_ZERO in an INSN_LIST.  */
+  /* 1 in an INSN if it can alter flow of control
+     within this function.
+     LINK_COST_ZERO in an INSN_LIST.  */
   unsigned int jump : 1;
-  /* LINK_COST_FREE in an INSN_LIST.  */
+  /* 1 in an INSN if it can call another function.
+     LINK_COST_FREE in an INSN_LIST.  */
   unsigned int call : 1;
   /* 1 in a MEM or REG if value of this expression will never change
      during the current function, even though it is not
@@ -379,6 +382,9 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 
 /* 1 if insn is a call to a const function.  */
 #define CONST_CALL_P(INSN) ((INSN)->unchanging)
+
+/* 1 if insn (assumed to be a CALL_INSN) is a sibling call.  */
+#define SIBLING_CALL_P(INSN) ((INSN)->jump)
 
 /* 1 if insn is a branch that should not unconditionally execute its
    delay slots, i.e., it is an annulled branch.   */
@@ -1416,6 +1422,7 @@ extern int rtx_renumbered_equal_p	PARAMS ((rtx, rtx));
 extern int true_regnum			PARAMS ((rtx));
 extern int redirect_jump		PARAMS ((rtx, rtx));
 extern void jump_optimize		PARAMS ((rtx, int, int, int));
+extern void jump_optimize_minimal	PARAMS ((rtx));
 extern void rebuild_jump_labels		PARAMS ((rtx));
 extern void thread_jumps		PARAMS ((rtx, int, int));
 extern int redirect_exp			PARAMS ((rtx *, rtx, rtx, rtx));
@@ -1513,6 +1520,7 @@ extern void record_excess_regs		PARAMS ((rtx, rtx, rtx *));
 extern void reposition_prologue_and_epilogue_notes	PARAMS ((rtx));
 extern void thread_prologue_and_epilogue_insns		PARAMS ((rtx));
 extern int prologue_epilogue_contains			PARAMS ((rtx));
+extern int sibcall_epilogue_contains			PARAMS ((rtx));
 extern HOST_WIDE_INT get_frame_size			PARAMS ((void));
 extern void preserve_rtl_expr_result			PARAMS ((rtx));
 extern void mark_temp_addr_taken			PARAMS ((rtx));
@@ -1712,6 +1720,16 @@ extern void end_alias_analysis		PARAMS ((void));
 extern void record_base_value		PARAMS ((int, rtx, int));
 extern void record_alias_subset         PARAMS ((int, int));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
+
+/* In sibcall.c */
+typedef enum {
+  sibcall_use_normal = 1,
+  sibcall_use_tail_recursion,
+  sibcall_use_sibcall
+} sibcall_use_t;
+
+extern void optimize_sibling_and_tail_recursive_calls PARAMS ((void));
+extern void replace_call_placeholder	PARAMS ((rtx, sibcall_use_t));
 
 #ifdef STACK_REGS
 extern int stack_regs_mentioned		PARAMS ((rtx insn));

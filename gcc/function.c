@@ -152,8 +152,12 @@ struct function *cfun = 0;
 struct function *all_functions = 0;
 
 /* These arrays record the INSN_UIDs of the prologue and epilogue insns.  */
-static int *prologue;
-static int *epilogue;
+static varray_type prologue;
+static varray_type epilogue;
+
+/* Array of INSN_UIDs to hold the INSN_UIDs for each sibcall epilogue
+   in this function.  */
+static varray_type sibcall_epilogue;
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -271,13 +275,15 @@ static void pad_below		PARAMS ((struct args_size *, enum machine_mode,
 static tree round_down		PARAMS ((tree, int));
 #endif
 static rtx round_trampoline_addr PARAMS ((rtx));
+static tree *identify_blocks_1	PARAMS ((rtx, tree *, tree *, tree *));
+static void reorder_blocks_1	PARAMS ((rtx, tree, varray_type *));
 static tree blocks_nreverse	PARAMS ((tree));
 static int all_blocks		PARAMS ((tree, tree *));
 static tree *get_block_vector   PARAMS ((tree, int *));
 /* We always define `record_insns' even if its not used so that we
    can always export `prologue_epilogue_contains'.  */
-static int *record_insns	PARAMS ((rtx)) ATTRIBUTE_UNUSED;
-static int contains		PARAMS ((rtx, int *));
+static void record_insns	PARAMS ((rtx, varray_type *)) ATTRIBUTE_UNUSED;
+static int contains		PARAMS ((rtx, varray_type));
 #ifdef HAVE_return
 static void emit_return_into_block PARAMS ((basic_block));
 #endif
@@ -1507,6 +1513,7 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
   rtx first_insn = get_insns ();
   struct sequence_stack *stack = seq_stack;
   tree rtl_exps = rtl_expr_chain;
+  rtx insn;
 
   /* Must scan all insns for stack-refs that exceed the limit.  */
   fixup_var_refs_insns (var, promoted_mode, unsignedp, first_insn, 
@@ -1545,6 +1552,31 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
   fixup_var_refs_insns (var, promoted_mode, unsignedp, catch_clauses,
 			0, 0);
   end_sequence ();
+
+  /* Scan sequences saved in CALL_PLACEHOLDERS too.  */
+  for (insn = first_insn; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == CALL_INSN
+	  && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  int i;
+
+	  /* Look at the Normal call, sibling call and tail recursion
+	     sequences attached to the CALL_PLACEHOLDER.  */
+	  for (i = 0; i < 3; i++)
+	    {
+	      rtx seq = XEXP (PATTERN (insn), i);
+	      if (seq)
+		{
+		  push_to_sequence (seq);
+		  fixup_var_refs_insns (var, promoted_mode, unsignedp,
+					seq, 0, 0);
+		  XEXP (PATTERN (insn), i) = get_insns ();
+		  end_sequence ();
+		}
+	    }
+	}
+    }
 }
 
 /* REPLACEMENTS is a pointer to a list of the struct fixup_replacement and X is
@@ -5494,11 +5526,8 @@ identify_blocks (block, insns)
      rtx insns;
 {
   int n_blocks;
-  tree *block_vector;
+  tree *block_vector, *last_block_vector;
   tree *block_stack;
-  int depth = 0;
-  int current_block_number = 1;
-  rtx insn;
 
   if (block == 0)
     return;
@@ -5508,35 +5537,83 @@ identify_blocks (block, insns)
   block_vector = get_block_vector (block, &n_blocks);
   block_stack = (tree *) xmalloc (n_blocks * sizeof (tree));
 
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE)
-      {
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-	  {
-	    tree b;
+  last_block_vector = identify_blocks_1 (insns, block_vector + 1,
+					 block_vector + n_blocks, block_stack);
 
-	    /* If there are more block notes than BLOCKs, something
-	       is badly wrong.  */
-	    if (current_block_number == n_blocks)
-	      abort ();
-
-	    b = block_vector[current_block_number++];
-	    NOTE_BLOCK (insn) = b;
-	    block_stack[depth++] = b;
-	  }
-	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	  {
-	    if (depth == 0)
-	      /* There are more NOTE_INSN_BLOCK_ENDs that
-		 NOTE_INSN_BLOCK_BEGs.  Something is badly wrong.  */
-	      abort ();
-
-	    NOTE_BLOCK (insn) = block_stack[--depth];
-	  }
-      }
+  /* If we didn't use all of the subblocks, we've misplaced block notes.  */
+  /* ??? This appears to happen all the time.  Latent bugs elsewhere?  */
+  if (0 && last_block_vector != block_vector + n_blocks)
+    abort ();
 
   free (block_vector);
   free (block_stack);
+}
+
+/* Subroutine of identify_blocks.  Do the block substitution on the
+   insn chain beginning with INSNS.  Recurse for CALL_PLACEHOLDER chains.
+
+   BLOCK_STACK is pushed and popped for each BLOCK_BEGIN/BLOCK_END pair.
+   BLOCK_VECTOR is incremented for each block seen.  */
+
+static tree *
+identify_blocks_1 (insns, block_vector, end_block_vector, orig_block_stack)
+     rtx insns;
+     tree *block_vector;
+     tree *end_block_vector;
+     tree *orig_block_stack;
+{
+  rtx insn;
+  tree *block_stack = orig_block_stack;
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	    {
+	      tree b;
+
+	      /* If there are more block notes than BLOCKs, something
+		 is badly wrong.  */
+	      if (block_vector == end_block_vector)
+		abort ();
+
+	      b = *block_vector++;
+	      NOTE_BLOCK (insn) = b;
+	      *block_stack++ = b;
+	    }
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	    {
+	      /* If there are more NOTE_INSN_BLOCK_ENDs than
+		 NOTE_INSN_BLOCK_BEGs, something is badly wrong.  */
+	      if (block_stack == orig_block_stack)
+		abort ();
+
+	      NOTE_BLOCK (insn) = *--block_stack;
+	    }
+        }
+      else if (GET_CODE (insn) == CALL_INSN
+	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  rtx cp = PATTERN (insn);
+
+	  block_vector = identify_blocks_1 (XEXP (cp, 0), block_vector, 
+				            end_block_vector, block_stack);
+	  if (XEXP (cp, 1))
+	    block_vector = identify_blocks_1 (XEXP (cp, 1), block_vector,
+					      end_block_vector, block_stack);
+	  if (XEXP (cp, 2))
+	    block_vector = identify_blocks_1 (XEXP (cp, 2), block_vector,
+					      end_block_vector, block_stack);
+	}
+    }
+
+  /* If there are more NOTE_INSN_BLOCK_BEGINs than NOTE_INSN_BLOCK_ENDs,
+     something is badly wrong.  */
+  if (block_stack != orig_block_stack)
+    abort ();
+
+  return block_vector;
 }
 
 /* Given a revised instruction chain, rebuild the tree structure of
@@ -5550,7 +5627,6 @@ reorder_blocks (block, insns)
      rtx insns;
 {
   tree current_block = block;
-  rtx insn;
   varray_type block_stack;
 
   if (block == NULL_TREE)
@@ -5562,35 +5638,7 @@ reorder_blocks (block, insns)
   BLOCK_SUBBLOCKS (current_block) = 0;
   BLOCK_CHAIN (current_block) = 0;
 
-  for (insn = insns; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE)
-      {
-	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-	  {
-	    tree block = NOTE_BLOCK (insn);
-	    /* If we have seen this block before, copy it.  */
-	    if (TREE_ASM_WRITTEN (block))
-	      {
-		block = copy_node (block);
-		NOTE_BLOCK (insn) = block;
-	      }
-	    BLOCK_SUBBLOCKS (block) = 0;
-	    TREE_ASM_WRITTEN (block) = 1;
-	    BLOCK_SUPERCONTEXT (block) = current_block; 
-	    BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
-	    BLOCK_SUBBLOCKS (current_block) = block;
-	    current_block = block;
-	    VARRAY_PUSH_TREE (block_stack, block);
-	  }
-	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	  {
-	    NOTE_BLOCK (insn) = VARRAY_TOP_TREE (block_stack);
-	    VARRAY_POP (block_stack);
-	    BLOCK_SUBBLOCKS (current_block)
-	      = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
-	    current_block = BLOCK_SUPERCONTEXT (current_block);
-	  }
-      }
+  reorder_blocks_1 (insns, current_block, &block_stack);
 
   BLOCK_SUBBLOCKS (current_block)
     = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
@@ -5598,6 +5646,60 @@ reorder_blocks (block, insns)
   VARRAY_FREE (block_stack);
 
   return current_block;
+}
+
+/* Helper function for reorder_blocks.  Process the insn chain beginning
+   at INSNS.  Recurse for CALL_PLACEHOLDER insns.  */
+
+static void
+reorder_blocks_1 (insns, current_block, p_block_stack)
+     rtx insns;
+     tree current_block;
+     varray_type *p_block_stack;
+{
+  rtx insn;
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+	    {
+	      tree block = NOTE_BLOCK (insn);
+	      /* If we have seen this block before, copy it.  */
+	      if (TREE_ASM_WRITTEN (block))
+		{
+		  block = copy_node (block);
+		  NOTE_BLOCK (insn) = block;
+		}
+	      BLOCK_SUBBLOCKS (block) = 0;
+	      TREE_ASM_WRITTEN (block) = 1;
+	      BLOCK_SUPERCONTEXT (block) = current_block; 
+	      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (current_block);
+	      BLOCK_SUBBLOCKS (current_block) = block;
+	      current_block = block;
+	      VARRAY_PUSH_TREE (*p_block_stack, block);
+	    }
+	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
+	    {
+	      NOTE_BLOCK (insn) = VARRAY_TOP_TREE (*p_block_stack);
+	      VARRAY_POP (*p_block_stack);
+	      BLOCK_SUBBLOCKS (current_block)
+		= blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
+	      current_block = BLOCK_SUPERCONTEXT (current_block);
+	    }
+	}
+      else if (GET_CODE (insn) == CALL_INSN
+	       && GET_CODE (PATTERN (insn)) == CALL_PLACEHOLDER)
+	{
+	  rtx cp = PATTERN (insn);
+	  reorder_blocks_1 (XEXP (cp, 0), current_block, p_block_stack);
+	  if (XEXP (cp, 1))
+	    reorder_blocks_1 (XEXP (cp, 1), current_block, p_block_stack);
+	  if (XEXP (cp, 2))
+	    reorder_blocks_1 (XEXP (cp, 2), current_block, p_block_stack);
+	}
+    }
 }
 
 /* Reverse the order of elements in the chain T of blocks,
@@ -5757,6 +5859,7 @@ prepare_function_start ()
   cfun->preferred_stack_boundary = STACK_BOUNDARY;
 #else
   cfun->stack_alignment_needed = 0;
+  cfun->preferred_stack_boundary = 0;
 #endif
 
   /* Set if a call to setjmp is seen.  */
@@ -5900,8 +6003,11 @@ void
 init_function_for_compilation ()
 {
   reg_renumber = 0;
+
   /* No prologue/epilogue insns yet.  */
-  prologue = epilogue = 0;
+  VARRAY_GROW (prologue, 0);
+  VARRAY_GROW (epilogue, 0);
+  VARRAY_GROW (sibcall_epilogue, 0);
 }
 
 /* Indicate that the current function uses extra args
@@ -6586,30 +6692,32 @@ expand_function_end (filename, line, end_bindings)
   expand_fixups (get_insns ());
 }
 
-/* Create an array that records the INSN_UIDs of INSNS (either a sequence
-   or a single insn).  */
+/* Extend a vector that records the INSN_UIDs of INSNS (either a
+   sequence or a single insn).  */
 
-static int *
-record_insns (insns)
+static void
+record_insns (insns, vecp)
      rtx insns;
+     varray_type *vecp;
 {
-  int *vec;
-
   if (GET_CODE (insns) == SEQUENCE)
     {
       int len = XVECLEN (insns, 0);
-      vec = (int *) oballoc ((len + 1) * sizeof (int));
-      vec[len] = 0;
+      int i = VARRAY_SIZE (*vecp);
+
+      VARRAY_GROW (*vecp, i + len);
       while (--len >= 0)
-	vec[len] = INSN_UID (XVECEXP (insns, 0, len));
+	{
+	  VARRAY_INT (*vecp, i) = INSN_UID (XVECEXP (insns, 0, len));
+	  ++i;
+	}
     }
   else
     {
-      vec = (int *) oballoc (2 * sizeof (int));
-      vec[0] = INSN_UID (insns);
-      vec[1] = 0;
+      int i = VARRAY_SIZE (*vecp);
+      VARRAY_GROW (*vecp, i + 1);
+      VARRAY_INT (*vecp, i) = INSN_UID (insns);
     }
-  return vec;
 }
 
 /* Determine how many INSN_UIDs in VEC are part of INSN.  */
@@ -6617,7 +6725,7 @@ record_insns (insns)
 static int
 contains (insn, vec)
      rtx insn;
-     int *vec;
+     varray_type vec;
 {
   register int i, j;
 
@@ -6626,15 +6734,15 @@ contains (insn, vec)
     {
       int count = 0;
       for (i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)
-	for (j = 0; vec[j]; j++)
-	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i)) == vec[j])
+	for (j = VARRAY_SIZE (vec) - 1; j >= 0; --j)
+	  if (INSN_UID (XVECEXP (PATTERN (insn), 0, i)) == VARRAY_INT (vec, j))
 	    count++;
       return count;
     }
   else
     {
-      for (j = 0; vec[j]; j++)
-	if (INSN_UID (insn) == vec[j])
+      for (j = VARRAY_SIZE (vec) - 1; j >= 0; --j)
+	if (INSN_UID (insn) == VARRAY_INT (vec, j))
 	  return 1;
     }
   return 0;
@@ -6644,10 +6752,19 @@ int
 prologue_epilogue_contains (insn)
      rtx insn;
 {
-  if (prologue && contains (insn, prologue))
+  if (contains (insn, prologue))
     return 1;
-  if (epilogue && contains (insn, epilogue))
+  if (contains (insn, epilogue))
     return 1;
+  return 0;
+}
+
+int
+sibcall_epilogue_contains (insn)
+      rtx insn;
+{
+  if (sibcall_epilogue)
+    return contains (insn, sibcall_epilogue);
   return 0;
 }
 
@@ -6698,7 +6815,7 @@ thread_prologue_and_epilogue_insns (f)
       /* Retain a map of the prologue insns.  */
       if (GET_CODE (seq) != SEQUENCE)
 	seq = get_insns ();
-      prologue = record_insns (seq);
+      record_insns (seq, &prologue);
       emit_note (NULL, NOTE_INSN_PROLOGUE_END);
 
       /* GDB handles `break f' by setting a breakpoint on the first
@@ -6875,7 +6992,7 @@ thread_prologue_and_epilogue_insns (f)
       /* Retain a map of the epilogue insns.  */
       if (GET_CODE (seq) != SEQUENCE)
 	seq = get_insns ();
-      epilogue = record_insns (seq);
+      record_insns (seq, &epilogue);
 
       seq = gen_sequence ();
       end_sequence();
@@ -6888,6 +7005,35 @@ epilogue_done:
 
   if (insertted)
     commit_edge_insertions ();
+
+#ifdef HAVE_sibcall_epilogue
+  /* Emit sibling epilogues before any sibling call sites.  */
+  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+    {
+      basic_block bb = e->src;
+      rtx insn = bb->end;
+      rtx i;
+
+      if (GET_CODE (insn) != CALL_INSN
+	  || ! SIBLING_CALL_P (insn))
+	continue;
+
+      start_sequence ();
+      seq = gen_sibcall_epilogue ();
+      end_sequence ();
+
+      i = PREV_INSN (insn);
+      emit_insn_before (seq, insn);
+
+      /* Update the UID to basic block map.  */
+      for (i = NEXT_INSN (i); i != insn; i = NEXT_INSN (i))
+	set_block_for_insn (i, bb);
+
+      /* Retain a map of the epilogue insns.  Used in life analysis to
+	 avoid getting rid of sibcall epilogue insns.  */
+      record_insns (seq, &sibcall_epilogue);
+    }
+#endif
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after instruction
@@ -6898,90 +7044,82 @@ reposition_prologue_and_epilogue_notes (f)
      rtx f ATTRIBUTE_UNUSED;
 {
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
-  /* Reposition the prologue and epilogue notes.  */
-  if (n_basic_blocks)
+  int len;
+
+  if ((len = VARRAY_SIZE (prologue)) > 0)
     {
-      int len;
+      register rtx insn, note = 0;
 
-      if (prologue)
+      /* Scan from the beginning until we reach the last prologue insn.
+	 We apparently can't depend on basic_block_{head,end} after
+	 reorg has run.  */
+      for (insn = f; len && insn; insn = NEXT_INSN (insn))
 	{
-	  register rtx insn, note = 0;
-
-	  /* Scan from the beginning until we reach the last prologue insn.
-	     We apparently can't depend on basic_block_{head,end} after
-	     reorg has run.  */
-	  for (len = 0; prologue[len]; len++)
-	    ;
-	  for (insn = f; len && insn; insn = NEXT_INSN (insn))
+	  if (GET_CODE (insn) == NOTE)
 	    {
-	      if (GET_CODE (insn) == NOTE)
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
+		note = insn;
+	    }
+	  else if ((len -= contains (insn, prologue)) == 0)
+	    {
+	      rtx next;
+	      /* Find the prologue-end note if we haven't already, and
+		 move it to just after the last prologue insn.  */
+	      if (note == 0)
 		{
-		  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
-		    note = insn;
+		  for (note = insn; (note = NEXT_INSN (note));)
+		    if (GET_CODE (note) == NOTE
+			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
+		      break;
 		}
-	      else if ((len -= contains (insn, prologue)) == 0)
-		{
-		  rtx next;
-		  /* Find the prologue-end note if we haven't already, and
-		     move it to just after the last prologue insn.  */
-		  if (note == 0)
-		    {
-		      for (note = insn; (note = NEXT_INSN (note));)
-			if (GET_CODE (note) == NOTE
-			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
-			  break;
-		    }
 
-		  next = NEXT_INSN (note);
+	      next = NEXT_INSN (note);
 
-		  /* Whether or not we can depend on BLOCK_HEAD, 
-		     attempt to keep it up-to-date.  */
-		  if (BLOCK_HEAD (0) == note)
-		    BLOCK_HEAD (0) = next;
+	      /* Whether or not we can depend on BLOCK_HEAD, 
+		 attempt to keep it up-to-date.  */
+	      if (BLOCK_HEAD (0) == note)
+		BLOCK_HEAD (0) = next;
 
-		  remove_insn (note);
-		  add_insn_after (note, insn);
-		}
+	      remove_insn (note);
+	      add_insn_after (note, insn);
 	    }
 	}
+    }
 
-      if (epilogue)
+  if ((len = VARRAY_SIZE (epilogue)) > 0)
+    {
+      register rtx insn, note = 0;
+
+      /* Scan from the end until we reach the first epilogue insn.
+	 We apparently can't depend on basic_block_{head,end} after
+	 reorg has run.  */
+      for (insn = get_last_insn (); len && insn; insn = PREV_INSN (insn))
 	{
-	  register rtx insn, note = 0;
-
-	  /* Scan from the end until we reach the first epilogue insn.
-	     We apparently can't depend on basic_block_{head,end} after
-	     reorg has run.  */
-	  for (len = 0; epilogue[len]; len++)
-	    ;
-	  for (insn = get_last_insn (); len && insn; insn = PREV_INSN (insn))
+	  if (GET_CODE (insn) == NOTE)
 	    {
-	      if (GET_CODE (insn) == NOTE)
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+		note = insn;
+	    }
+	  else if ((len -= contains (insn, epilogue)) == 0)
+	    {
+	      /* Find the epilogue-begin note if we haven't already, and
+		 move it to just before the first epilogue insn.  */
+	      if (note == 0)
 		{
-		  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
-		    note = insn;
+		  for (note = insn; (note = PREV_INSN (note));)
+		    if (GET_CODE (note) == NOTE
+			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
+		      break;
 		}
-	      else if ((len -= contains (insn, epilogue)) == 0)
-		{
-		  /* Find the epilogue-begin note if we haven't already, and
-		     move it to just before the first epilogue insn.  */
-		  if (note == 0)
-		    {
-		      for (note = insn; (note = PREV_INSN (note));)
-			if (GET_CODE (note) == NOTE
-			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
-			  break;
-		    }
 
-		  /* Whether or not we can depend on BLOCK_HEAD, 
-		     attempt to keep it up-to-date.  */
-		  if (n_basic_blocks
-		      && BLOCK_HEAD (n_basic_blocks-1) == insn)
-		    BLOCK_HEAD (n_basic_blocks-1) = note;
+	      /* Whether or not we can depend on BLOCK_HEAD, 
+		 attempt to keep it up-to-date.  */
+	      if (n_basic_blocks
+		  && BLOCK_HEAD (n_basic_blocks-1) == insn)
+		BLOCK_HEAD (n_basic_blocks-1) = note;
 
-		  remove_insn (note);
-		  add_insn_before (note, insn);
-		}
+	      remove_insn (note);
+	      add_insn_before (note, insn);
 	    }
 	}
     }
@@ -7095,4 +7233,8 @@ init_function_once ()
 {
   ggc_add_root (&all_functions, 1, sizeof all_functions,
 		mark_function_chain);
+
+  VARRAY_INT_INIT (prologue, 0, "prologue");
+  VARRAY_INT_INIT (epilogue, 0, "epilogue");
+  VARRAY_INT_INIT (sibcall_epilogue, 0, "sibcall_epilogue");
 }

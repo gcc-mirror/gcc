@@ -125,13 +125,13 @@ static void delete_from_jump_chain	PARAMS ((rtx));
 static int delete_labelref_insn		PARAMS ((rtx, rtx, int));
 static void mark_modified_reg		PARAMS ((rtx, rtx, void *));
 static void redirect_tablejump		PARAMS ((rtx, rtx));
-static void jump_optimize_1		PARAMS ((rtx, int, int, int, int));
+static void jump_optimize_1		PARAMS ((rtx, int, int, int, int, int));
 #if ! defined(HAVE_cc0) && ! defined(HAVE_conditional_arithmetic)
 static rtx find_insert_position         PARAMS ((rtx, rtx));
 #endif
 static int returnjump_p_1	        PARAMS ((rtx *, void *));
 static void delete_prior_computation    PARAMS ((rtx, rtx));
-
+
 /* Main external entry point into the jump optimizer.  See comments before
    jump_optimize_1 for descriptions of the arguments.  */
 void
@@ -141,7 +141,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      int noop_moves;
      int after_regscan;
 {
-  jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, 0);
+  jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, 0, 0);
 }
 
 /* Alternate entry into the jump optimizer.  This entry point only rebuilds
@@ -151,9 +151,16 @@ void
 rebuild_jump_labels (f)
      rtx f;
 {
-  jump_optimize_1 (f, 0, 0, 0, 1);
+  jump_optimize_1 (f, 0, 0, 0, 1, 0);
 }
 
+/* Alternate entry into the jump optimizer.  Do only trivial optimizations.  */
+void
+jump_optimize_minimal (f)
+     rtx f;
+{
+  jump_optimize_1 (f, 0, 0, 0, 0, 1);
+}
 
 /* Delete no-op jumps and optimize jumps to jumps
    and jumps around jumps.
@@ -175,15 +182,29 @@ rebuild_jump_labels (f)
    just determine whether control drops off the end of the function.
    This case occurs when we have -W and not -O.
    It works because `delete_insn' checks the value of `optimize'
-   and refrains from actually deleting when that is 0.  */
+   and refrains from actually deleting when that is 0.
+
+   If MINIMAL is nonzero, then we only perform trivial optimizations:
+
+     * Removal of unreachable code after BARRIERs.
+     * Removal of unreferenced CODE_LABELs.
+     * Removal of a jump to the next instruction.
+     * Removal of a conditional jump followed by an unconditional jump
+       to the same target as the conditional jump.
+     * Simplify a conditional jump around an unconditional jump.
+     * Simplify a jump to a jump.
+     * Delete extraneous line number notes.
+  */
 
 static void
-jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
+jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
+		 mark_labels_only, minimal)
      rtx f;
      int cross_jump;
      int noop_moves;
      int after_regscan;
      int mark_labels_only;
+     int minimal;
 {
   register rtx insn, next;
   int changed;
@@ -230,7 +251,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   if (mark_labels_only)
     goto end;
 
-  exception_optimize ();
+  if (! minimal)
+    exception_optimize ();
 
   last_insn = delete_unreferenced_labels (f);
 
@@ -320,7 +342,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	  if (nlabel != JUMP_LABEL (insn))
 	    changed |= redirect_jump (insn, nlabel);
 
-	  if (! optimize)
+	  if (! optimize || ! minimal)
 	    continue;
 
 	  /* If a dispatch table always goes to the same place,
@@ -2135,7 +2157,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
      not be cleared.  This is especially true for the case where we
      delete the NOTE_FUNCTION_END note.  CAN_REACH_END is cleared by
      the front-end before compiling each function.  */
-  if (calculate_can_reach_end (last_insn, optimize != 0))
+  if (! minimal && calculate_can_reach_end (last_insn, optimize != 0))
     can_reach_end = 1;
 
 end:
