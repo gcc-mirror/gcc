@@ -124,8 +124,6 @@ lower_function_body (void)
 
   clear_block_marks (data.block);
 
-  /* Avoid producing notes for blocks.  */
-  cfun->dont_emit_block_notes = 1;
   reset_block_changes ();
 }
 

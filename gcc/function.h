@@ -361,10 +361,6 @@ struct function GTY(())
      delay list for them is recorded here.  */
   rtx epilogue_delay_list;
 
-  /* Nonzero if NOTE_INSN_BLOCK_BEG / NOTE_INSN_BLOCK_END notes should not
-     be emitted.  */
-  unsigned int dont_emit_block_notes : 1;
-
   /* How commonly executed the function is.  Initialized during branch
      probabilities pass.  */
   enum function_frequency {

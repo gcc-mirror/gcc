@@ -1,5 +1,16 @@
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
+	* function.h (struct function): Remove dont_emit_block_notes.
+	* gimple-low.c (lower_function_body): Don't set it.
+	* cfgexpand.c (expand_block): Don't check it.
+	* cfglayout.c (insn_locators_initialize): Likewise.
+	* expr.c (expand_expr_real, expand_expr_real_1): Likewise.
+	* passes.c (rest_of_compilation): Likewise.
+	* stmt.c (expand_start_bindings_and_block): Likewise.
+	(expand_end_bindings): Likewise.
+
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
 	* cgraph.h (cgraph_build_static_cdtor): Declare.
 	* cgraphunit.c (cgraph_build_static_cdtor): New.
 	* c-objc-common.c (build_cdtor): Use it.

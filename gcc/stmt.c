@@ -2840,13 +2840,7 @@ expand_start_bindings_and_block (int flags, tree block)
     abort ();
 
   /* Create a note to mark the beginning of the block.  */
-  if (block_flag && !cfun->dont_emit_block_notes)
-    {
-      note = emit_note (NOTE_INSN_BLOCK_BEG);
-      NOTE_BLOCK (note) = block;
-    }
-  else
-    note = emit_note (NOTE_INSN_DELETED);
+  note = emit_note (NOTE_INSN_DELETED);
 
   /* Make an entry on block_stack for the block we are entering.  */
 
@@ -3073,7 +3067,8 @@ warn_about_unused_variables (tree vars)
    labels (because the front end does that).  */
 
 void
-expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
+expand_end_bindings (tree vars, int mark_ends ATTRIBUTE_UNUSED,
+		     int dont_jump_in)
 {
   struct nesting *thisblock = block_stack;
 
@@ -3165,14 +3160,8 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
      We do this now, after running cleanups on the variables
      just going out of scope, so they are in scope for their cleanups.  */
 
-  if (mark_ends && !cfun->dont_emit_block_notes)
-    {
-      rtx note = emit_note (NOTE_INSN_BLOCK_END);
-      NOTE_BLOCK (note) = NOTE_BLOCK (thisblock->data.block.first_insn);
-    }
-  else
-    /* Get rid of the beginning-mark if we don't make an end-mark.  */
-    NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
+  /* Get rid of the beginning-mark if we don't make an end-mark.  */
+  NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
 
   /* Restore the temporary level of TARGET_EXPRs.  */
   target_temp_slot_level = thisblock->data.block.block_target_temp_slot_level;
