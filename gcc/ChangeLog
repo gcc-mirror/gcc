@@ -1,3 +1,9 @@
+2005-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/20196
+	* config/rs6000/rs6000.md (LTU, GTU sCC splitters): Add earlyclobber,
+	allow splitting only if operands 0 and 3 don't overlap.
+
 2005-02-24  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/19953
