@@ -1,3 +1,8 @@
+2003-12-02  Fernando Nasser  <fnasser@redhat.com>
+ 
+	* gnu/java/awt/peer/gtk/GtkListPeer.java (handleEvent): Fix generation
+	of ActionEvents.
+
 2003-12-03  Michael Koch  <konqueror@gmx.de>
 
 	* java/lang/Class.h (hack_signers): Renamed signers to hack_signers.
