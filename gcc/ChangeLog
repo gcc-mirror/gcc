@@ -1,3 +1,9 @@
+2003-08-08  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in: (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Fix quoting
+	and insert missing empty argument.
+	* configure: Regenerate.
+
 2003-08-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (update_total_code_bytes): Use new macro IN_NAMED_SECTION_P.
