@@ -1,6 +1,6 @@
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/9336
+	PR c++/9474
 	* g++.dg/parse/namespace8.C: New test.
 
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
