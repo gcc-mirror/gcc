@@ -1483,8 +1483,9 @@ fix = {
 
 
 /*
- *  On *some* SunOS-es, rpc/auth.h, rpc/clnt.h, rpc/svc.h, and
- *  rpc/xdr.h need prototypes for its ops function pointers.
+ *  Apply fix this to all OSs since this problem seems to effect
+ *  more than just SunOS.  In general, fixes which are triggered
+ *  by a specific target are bad.
  */
 fix = {
     hackname = sun_auth_proto;
@@ -1492,7 +1493,6 @@ fix = {
     files    = rpc/clnt.h;
     files    = rpc/svc.h;
     files    = rpc/xdr.h;
-    mach     = "*-sun-*";
     /*
      *  Select those files containing '(*name)()' but *not*
      *  containing '(*name)(junk)'.  The change would be innocuous
@@ -1974,13 +1974,11 @@ fix = {
 
 
 /*
- *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
- *  Also wrap protection around size_t for m88k-sysv3 systems.
+ *  Fix return type of exit and abort in <stdlib.h>
+ *  Also wrap protection around size_t.
  */
 fix = {
     hackname = sysz_stdlib_for_sun;
-    mach     = "*-sun*";
-    mach     = "m88k-*sysv3*";
     files    = stdlib.h;
 
     sed   = "s/int\tabort/void\tabort/g";

@@ -214,9 +214,17 @@ tSCC zArm_Norcroft_HintList[] =
  *  Machine/OS name selection pattern
  */
 #define apzArm_Norcroft_HintMachs (const char**)NULL
-#define ARM_NORCROFT_HINT_TEST_CT  0
-#define ARM_NORCROFT_HINT_RE_CT    0
-#define aArm_Norcroft_HintTests   (tTestDesc*)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zArm_Norcroft_HintSelect0[] =
+       "___type p_type";
+
+#define    ARM_NORCROFT_HINT_TEST_CT  1
+#define    ARM_NORCROFT_HINT_RE_CT    1
+tTestDesc aArm_Norcroft_HintTests[] = {
+  { TT_EGREP,  zArm_Norcroft_HintSelect0,   (regex_t*)NULL }, };
 
 /*
  *  Fix Command Arguments for Arm_Norcroft_Hint
@@ -615,7 +623,7 @@ tSCC zNo_Double_SlashSelect0[] =
  *  perform the 'test' shell command - do fix on success
  */
 tSCC zNo_Double_SlashTest0[] =
-       "-z `echo ${file} | egrep '(cxx|\\+\\+)/' `";
+       "-z `echo ${file} | egrep '(CC|cxx|\\+\\+)/' `";
 
 #define    NO_DOUBLE_SLASH_TEST_CT  2
 #define    NO_DOUBLE_SLASH_RE_CT    1
@@ -627,7 +635,8 @@ tTestDesc aNo_Double_SlashTests[] = {
  *  Fix Command Arguments for No_Double_Slash
  */
 const char* apzNo_Double_SlashPatch[] = { "sed",
-    "-e", "/\\(^|[^:]\\)\\/\\/[^\"*]/s|//.*$||g",
+    "-e", "s,^//.*$,,",
+    "-e", "s,[^:]//[^\"].*$,,",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2650,9 +2659,7 @@ tSCC zSun_Auth_ProtoList[] =
 /*
  *  Machine/OS name selection pattern
  */
-tSCC* apzSun_Auth_ProtoMachs[] = {
-        "*-sun-*",
-        (const char*)NULL };
+#define apzSun_Auth_ProtoMachs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
@@ -2896,10 +2903,7 @@ tSCC zSysz_Stdlib_For_SunList[] =
 /*
  *  Machine/OS name selection pattern
  */
-tSCC* apzSysz_Stdlib_For_SunMachs[] = {
-        "*-sun*",
-        "m88k-*sysv3*",
-        (const char*)NULL };
+#define apzSysz_Stdlib_For_SunMachs (const char**)NULL
 #define SYSZ_STDLIB_FOR_SUN_TEST_CT  0
 #define SYSZ_STDLIB_FOR_SUN_RE_CT    0
 #define aSysz_Stdlib_For_SunTests   (tTestDesc*)NULL
@@ -3874,7 +3878,7 @@ const char* apzZzz_TimePatch[] = { "sh", "-c",
  *
  *  List of all fixes
  */
-#define  REGEX_COUNT  75
+#define  REGEX_COUNT  76
 #define  FIX_COUNT    104
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAix_SyswaitName,    zAix_SyswaitList,

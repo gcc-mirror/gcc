@@ -472,6 +472,8 @@ struct rusage;
     # Fix   6:  Arm_Norcroft_Hint
     #
     case "${file}" in ./X11/Intrinsic.h )
+    if ( test -n "`egrep '___type p_type' ${file}`"
+       ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       arm_norcroft_hint"
     if [ ! -r ${DESTFILE} ]
@@ -482,6 +484,7 @@ struct rusage;
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of selection 'if'
     ;; # case end for file name test
     esac
 
@@ -736,7 +739,7 @@ struct rusage;
     # Fix  17:  No_Double_Slash
     #
     if ( test -n "`egrep '(^|[^:])//[^\"*]' ${file}`" -a \
-              '(' -z `echo ${file} | egrep '(cxx|\+\+)/' ` ')'
+              '(' -z `echo ${file} | egrep '(CC|cxx|\+\+)/' ` ')'
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       no_double_slash"
@@ -744,7 +747,8 @@ struct rusage;
     then infile=${file}
     else infile=${DESTFILE} ; fi 
 
-    sed -e '/\(^|[^:]\)\/\/[^"*]/s|//.*$||g' \
+    sed -e 's,^//.*$,,' \
+        -e 's,[^:]//[^"].*$,,' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
@@ -2151,7 +2155,6 @@ void	(*signal(...))(...);\
 	./rpc/clnt.h | \
 	./rpc/svc.h | \
 	./rpc/xdr.h )
-    case "$target_canonical" in *-sun-* )
     if ( test -n "`egrep '\\(\\*[a-z][a-z_]*\\)\\(\\)' ${file}`" -a \
               -z "`egrep '\\(\\*[a-z][a-z_]*\\)\\([ 	]*[a-zA-Z.].*\\)' ${file}`"
        ) > /dev/null 2>&1 ; then
@@ -2171,8 +2174,6 @@ void	(*signal(...))(...);\
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of selection 'if'
-    ;; # case end for machine type test
-    esac
     ;; # case end for file name test
     esac
 
@@ -2330,8 +2331,6 @@ extern unsigned int\
     # Fix  78:  Sysz_Stdlib_For_Sun
     #
     case "${file}" in ./stdlib.h )
-    case "$target_canonical" in *-sun* | \
-	m88k-*sysv3* )
     fixlist="${fixlist}
       sysz_stdlib_for_sun"
     if [ ! -r ${DESTFILE} ]
@@ -2354,8 +2353,6 @@ extern unsigned int\
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
-    ;; # case end for machine type test
-    esac
     ;; # case end for file name test
     esac
 
@@ -3039,7 +3036,7 @@ cat > /dev/null ) < $infile > ${DESTDIR}/fixinc.tmp
       # Find any include directives that use "file".
       #
       dir=`echo ${file} | sed -e s';/[^/]*$;;'`
-      ddir=`echo ${DESTDIR} | sed 's;/[^/]*$;;'`/$dir
+      ddir=`ec${DESTDIR}/$dir
 
       for include in `
          egrep '^[      ]*#[    ]*include[      ]*"[^/]' ${DESTFILE} |
