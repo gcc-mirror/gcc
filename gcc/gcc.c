@@ -577,40 +577,42 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*}\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.ii}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
    "%{!M:%{!MM:%{!E:cc1plus %{!pipe:%g.ii} %1 %2\
-		   %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
-		   %{v:-version} %{pg:-p} %{p} %{f*} %{+e*}\
-		   %{aux-info*}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+			    %{!Q:-quiet} -dumpbase %b.cc %{d*} %{m*} %{a}\
+			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
+			    %{traditional} %{v:-version} %{pg:-p} %{p}\
+			    %{f*} %{+e*} %{aux-info*}\
+			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}}|\n\
               %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {".i", "@cpp-output"},
   {"@cpp-output",
-   "cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
-	%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
-	%{v:-version} %{pg:-p} %{p} %{f*}\
-	%{aux-info*}\
-	%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-	%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-    %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o} %{!pipe:%g.s} %A\n }"},
+   "%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a}\
+			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
+			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
+			%{aux-info*}\
+			%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+		     %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+			     %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+			     %{!pipe:%g.s} %A\n }}}}"},
   {".ii", "@c++-cpp-output"},
   {"@c++-cpp-output",
-   "cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
-	    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} %{traditional}\
-	    %{v:-version} %{pg:-p} %{p} %{f*} %{+e*}\
-	    %{aux-info*}\
-	    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-	    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-       %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-	       %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
-	       %{!pipe:%g.s} %A\n }"},
+   "%{!M:%{!MM:%{!E:cc1plus %i %1 %2 %{!Q:-quiet} %{d*} %{m*} %{a}\
+			    %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
+			    %{traditional} %{v:-version} %{pg:-p} %{p}\
+			    %{f*} %{+e*} %{aux-info*}\
+			    %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+			    %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+	            %{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+			    %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+			    %{!pipe:%g.s} %A\n }}}}"},
   {".s", "@assembler"},
   {"@assembler",
-   "%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o} %i %A\n }"},
+   "%{!M:%{!MM:%{!E:%{!S:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+		            %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
+			    %i %A\n }}}}"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
    "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
@@ -628,13 +630,14 @@ static struct compiler default_compilers[] =
   {".adb", "@ada"},
   {".ada", "@ada"},
   {"@ada",
-   "gnat1 %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet} -dumpbase %b.ada\
-       %{g*} %{O*} %{p} %{pg:-p} %{f*} %{d*}\
-       %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-       %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} | \n",
-   "%{!S:%{!gnatc:%{!gnats:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
-        %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%u.o}\
-        %{!pipe:%g.s} %A\n}}} "},
+   "%{!M:%{!MM:%{!E:gnat1 %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet}\
+			   -dumpbase %b.ada %{g*} %{O*} %{p} %{pg:-p} %{f*}\
+			  %{d*}\
+			  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+			  %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+		    %{!S:%{!gnatc:%{!gnats:as %{R} %{j} %{J} %{h} %{d2} %a %Y\
+					      %{c:%W{o*}%{!o*:-o %w%b.o}}\
+					      %{!c:-o %d%w%u.o} %{!pipe:%g.s} %A\n}}}}}} "},
   /* Mark end of table */
   {0, 0}
 };
