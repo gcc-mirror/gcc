@@ -1,3 +1,11 @@
+2001-05-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (lookup_field_wrapper): Test `name' code.
+	(resolve_qualified_expression_name): Test `qual_wfl' code.
+	(qualify_ambiguous_name): Handle `CONVERT_EXPR', fixe indentation,
+	handle `qual_wfl' by code.
+	(maybe_build_primttype_type_ref): Test `wfl' code.
+
 2001-05-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* jv-scan.c (version): Update copyright year.
