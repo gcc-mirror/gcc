@@ -1483,12 +1483,8 @@
 ;; Define the real conditional branch instructions.
 ;; ------------------------------------------------------------------------
 
-;; ??? Branches should compare T-bit against zero not one, so that they will
-;; be in canonical form.  get_condition in loop.c for instance will fail
-;; with these patterns.
-
 (define_insn "branch_true"
-  [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 1))
+  [(set (pc) (if_then_else (ne (reg:SI 18) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   ""
@@ -1496,7 +1492,7 @@
   [(set_attr "type" "cbranch")])
 
 (define_insn "branch_false"
-  [(set (pc) (if_then_else (ne (reg:SI 18) (const_int 1))
+  [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   ""
@@ -1504,7 +1500,7 @@
   [(set_attr "type" "cbranch")])
 
 (define_insn "inverse_branch_true"
-  [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 1))
+  [(set (pc) (if_then_else (ne (reg:SI 18) (const_int 0))
 			   (pc)
 			   (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1512,7 +1508,7 @@
   [(set_attr "type" "cbranch")])
 
 (define_insn "inverse_branch_false"
-  [(set (pc) (if_then_else (ne (reg:SI 18) (const_int 1))
+  [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 0))
    			   (pc)
 			   (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1524,7 +1520,7 @@
 (define_expand "beq"
   [(set (reg:SI 18) (eq:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -1535,7 +1531,7 @@
 (define_expand "bne"
   [(set (reg:SI 18) (eq:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1544,7 +1540,7 @@
 (define_expand "bgt"
   [(set (reg:SI 18) (gt:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -1553,7 +1549,7 @@
 (define_expand "blt"
   [(set (reg:SI 18) (ge:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1573,7 +1569,7 @@
 (define_expand "ble"
   [(set (reg:SI 18) (gt:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1582,7 +1578,7 @@
 (define_expand "bge"
   [(set (reg:SI 18) (ge:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -1602,7 +1598,7 @@
 (define_expand "bgtu"
   [(set (reg:SI 18) (gtu:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -1611,7 +1607,7 @@
 (define_expand "bltu"
   [(set (reg:SI 18) (geu:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-		  (if_then_else (eq (reg:SI 18) (const_int 1))
+		  (if_then_else (ne (reg:SI 18) (const_int 0))
 				(pc)
 				(label_ref (match_operand 0 "" ""))))]
   ""
@@ -1620,7 +1616,7 @@
 (define_expand "bgeu"
   [(set (reg:SI 18) (geu:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
@@ -1629,7 +1625,7 @@
 (define_expand "bleu"
   [(set (reg:SI 18) (gtu:SI (match_dup 1) (match_dup 2)))
    (set (pc)
-	(if_then_else (eq (reg:SI 18) (const_int 1))
+	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (pc)
 		      (label_ref (match_operand 0 "" ""))))]
   ""
@@ -1776,8 +1772,8 @@
 	(gtu:SI (match_dup 5)
 		(match_operand:SI 2 "arith_reg_operand" "")))
    (set (pc)
-	(if_then_else (eq (reg:SI 18)
-			  (const_int 1))
+	(if_then_else (ne (reg:SI 18)
+			  (const_int 0))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
    (set (match_dup 6) (match_dup 5))
