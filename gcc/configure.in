@@ -1368,7 +1368,7 @@ changequote(,)dnl
 changequote([,])dnl
                xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
                xm_defines="USG POSIX"
-               tm_file=i386/sysv4.h
+               tm_file=i386/sysv5.h
                if test x$stabs = xyes
                then
                        tm_file="${tm_file} dbx.h"
