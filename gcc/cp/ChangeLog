@@ -1,3 +1,8 @@
+2002-01-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/3331
+	* init.c (resolve_offset_ref): Use build_indirect_ref.
+
 2002-01-10  Ira Ruben	<ira@apple.com>
 
 	PR c++/907
