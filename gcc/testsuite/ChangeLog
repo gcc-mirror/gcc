@@ -1,3 +1,7 @@
+2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/compat/fnptr-by-value-1_x.c: Add a prototype for testva.
+
 2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR c++/5287, PR c++/7910,  PR c++/11021
