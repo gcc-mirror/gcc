@@ -1396,7 +1396,7 @@ _Jv_JNI_GetArrayLength (JNIEnv *, jarray array)
   return unwrap (array)->length;
 }
 
-static jarray JNICALL
+static jobjectArray JNICALL
 _Jv_JNI_NewObjectArray (JNIEnv *env, jsize length, 
 			jclass elementClass, jobject init)
 {
@@ -1407,7 +1407,7 @@ _Jv_JNI_NewObjectArray (JNIEnv *env, jsize length,
 
       _Jv_CheckCast (elementClass, init);
       jarray result = JvNewObjectArray (length, elementClass, init);
-      return (jarray) wrap_value (env, result);
+      return (jobjectArray) wrap_value (env, result);
     }
   catch (jthrowable t)
     {
