@@ -1,9 +1,9 @@
-#include <stdio.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
+#include <stdio.h>
 #include <ansidecl.h>
 #undef vprintf
 int

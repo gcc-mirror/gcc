@@ -1,3 +1,13 @@
+Mon Sep  7 23:29:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mkstemp.c: Include config.h even when not IN_GCC.  Wrap header
+ 	inclusions inside HAVE_*_H macros.  Include ansidecl.h when not
+ 	IN_GCC.
+
+	* vasprintf.c: Include stdarg.h/varargs.h first.
+
+	* vprintf.c: Likewise.
+
 Sat Sep  5 03:24:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* pexecute.c: Updates from gcc.  Copy in gcc has been removed.  This
