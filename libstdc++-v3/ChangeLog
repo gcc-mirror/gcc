@@ -1,3 +1,10 @@
+2001-07-09  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/explanations.html:  New file.
+	* docs/html/configopts.html:  Link to it to provide more notes
+	on cstdio.  Minor markup and spacing fixes.
+	* docs/html/27_io/howto.html:  Talk about sync_with_stdio.
+
 2001-07-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* include/bits/valarray_meta.h (_Expr::operator+): Use qualified id
