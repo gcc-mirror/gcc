@@ -1458,7 +1458,7 @@ are needed, and how to emit them if they are.
 @node Mangling, Concept Index, Free Store, Top
 @section Function name mangling for C++ and Java
 
-Both C++ and Jave provide overloaded function and methods,
+Both C++ and Java provide overloaded functions and methods,
 which are methods with the same types but different parameter lists.
 Selecting the correct version is done at compile time.
 Though the overloaded functions have the same name in the source code,
