@@ -2436,7 +2436,13 @@ biv_total_increment (const struct iv_class *bl)
       if (v->always_computable && v->mult_val == const1_rtx
 	  && ! v->maybe_multiple
 	  && SCALAR_INT_MODE_P (v->mode))
-	result = fold_rtx_mult_add (result, const1_rtx, v->add_val, v->mode);
+	{
+	  /* If we have already counted it, skip it.  */
+	  if (v->same)
+	    continue;
+
+	  result = fold_rtx_mult_add (result, const1_rtx, v->add_val, v->mode);
+	}
       else
 	return 0;
     }
@@ -3480,6 +3486,10 @@ loop_iterations (struct loop *loop)
 				 REGNO (biv_inc->add_val));
 			return 0;
 		    }
+
+		  /* If we have already counted it, skip it.  */
+		  if (biv_inc->same)
+		    continue;
 
 		  offset -= INTVAL (biv_inc->add_val);
 		}
