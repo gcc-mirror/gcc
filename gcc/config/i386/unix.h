@@ -101,7 +101,6 @@ Boston, MA 02111-1307, USA.  */
 /* String containing the assembler's comment-starter.  */
 
 #define ASM_COMMENT_START "/"
-#define COMMENT_BEGIN "/"
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
