@@ -1,3 +1,7 @@
+Wed Jul  8 00:28:22 1998  Carlo Wood <carlo@runaway.xs4all.nl>
+
+	* dsp16xx.h : Clean up of macro OPTIMIZATION_OPTIONS
+
 Tue Jul  7 21:18:14 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* i386/cygwin32.h (ASM_DECLARE_FUNCTION_NAME): Merge duplicate
