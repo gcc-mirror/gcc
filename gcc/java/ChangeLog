@@ -1,3 +1,11 @@
+1999-10-07  Anthony Green  <green@cygnus.com>
+
+	* jcf-write.c (generate_classfile): Use UNSAFE_PUTx in cases
+	where CHECK_PUT may fail for valid reasons.
+
+	* jcf-write.c (UNSAFE_PUT1, UNSAFE_PUT2, UNSAFE_PUT3,
+ 	UNSAFE_PUTN): New macros.
+
 1999-10-04  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.h (BUILD_OPERATOR2): Return ASSIGN_ANY_TK in `lite' case as
