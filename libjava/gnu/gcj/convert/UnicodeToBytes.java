@@ -80,11 +80,30 @@ public abstract class UnicodeToBytes
 
   /** Convert chars to bytes.
     * Converted bytes are written to buf, starting at count.
-    * @param inbuffer sources of characters to convert
-    * @param inpos index of initial character ininbuffer to convert
+    * @param inbuffer source of characters to convert
+    * @param inpos index of initial character in inbuffer to convert
     * @param inlength number of characters to convert
     * @return number of chars converted
     * Also, this.count is increment by the number of bytes converted.
     */
   public abstract int write (char[] inbuffer, int inpos, int inlength);
+
+  /** Convert chars to bytes.
+    * Converted bytes are written to buf, starting at count.
+    * @param str source of characters to convert
+    * @param inpos index of initial character in str to convert
+    * @param inlength number of characters to convert
+    * @param work if non-null, a buffer than can be used
+    * @return number of chars converted
+    * Also, this.count is increment by the number of bytes converted.
+    */
+  public int write (String str, int inpos, int inlength, char[] work)
+  {
+    if (work == null)
+      work = new char[inlength];
+    int srcEnd = inpos + (inlength > work.length ? work.length : inlength);
+    str.getChars(inpos, srcEnd, work, 0);
+    return write(work, inpos, inlength);
+  }
+
 }
