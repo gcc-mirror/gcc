@@ -1,3 +1,4 @@
+#include "config.h"
 #include "f2c.h"
 
 #ifdef __cplusplus

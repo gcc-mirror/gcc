@@ -1,3 +1,4 @@
+#include "config.h"
 #ifndef NON_UNIX_STDIO
 #define _INCLUDE_POSIX_SOURCE	/* for HP-UX */
 #define _INCLUDE_XOPEN_SOURCE	/* for HP-UX */
