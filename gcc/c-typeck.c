@@ -2949,7 +2949,7 @@ internal_build_compound_expr (tree list, int first_p)
      `foo() + bar(), baz()' the result of the `+' operator is not used,
      so we should issue a warning.  */
   else if (warn_unused_value)
-    warn_if_unused_value (TREE_VALUE (list));
+    warn_if_unused_value (TREE_VALUE (list), input_location);
 
   return build (COMPOUND_EXPR, TREE_TYPE (rest), TREE_VALUE (list), rest);
 }
