@@ -111,7 +111,7 @@ static struct elt_loc_list *new_elt_loc_list PARAMS ((struct elt_loc_list *,
 static void unchain_one_value		PARAMS ((cselib_val *));
 static void unchain_one_elt_list	PARAMS ((struct elt_list **));
 static void unchain_one_elt_loc_list	PARAMS ((struct elt_loc_list **));
-static void clear_table			PARAMS ((void));
+static void clear_table			PARAMS ((int));
 static int discard_useless_locs		PARAMS ((void **, void *));
 static int discard_useless_values	PARAMS ((void **, void *));
 static void remove_useless_values	PARAMS ((void));
@@ -167,6 +167,10 @@ static int n_useless_values;
    to be able to refer to the same register in different modes.  */
 static varray_type reg_values;
 #define REG_VALUES(I) VARRAY_ELT_LIST (reg_values, (I))
+
+/* Here the set of indices I with REG_VALUES(I) != 0 is saved.  This is used
+   in clear_table() for fast emptying.  */
+static varray_type used_regs;
 
 /* We pass this to cselib_invalidate_mem to invalidate all of
    memory for a non-const call instruction.  */
@@ -2200,15 +2204,23 @@ unchain_one_value (v)
 }
 
 /* Remove all entries from the hash table.  Also used during
-   initialization.  */
+   initialization.  If CLEAR_ALL isn't set, then only clear the entries
+   which are known to have been used.  */
 
 static void
-clear_table ()
+clear_table (clear_all)
+     int clear_all;
 {
   unsigned int i;
 
-  for (i = 0; i < cselib_nregs; i++)
-    REG_VALUES (i) = 0;
+  if (clear_all)
+    for (i = 0; i < cselib_nregs; i++)
+      REG_VALUES (i) = 0;
+  else
+    for (i = 0; i < VARRAY_ACTIVE_SIZE (used_regs); i++)
+      REG_VALUES (VARRAY_UINT (used_regs, i)) = 0;
+
+  VARRAY_POP_ALL (used_regs);
 
   htab_empty (hash_table);
   obstack_free (&cselib_obstack, cselib_startobj);
@@ -2867,6 +2879,8 @@ cselib_lookup (x, mode, create)
 
       e = new_cselib_val (++next_unknown_value, GET_MODE (x));
       e->locs = new_elt_loc_list (e->locs, x);
+      if (REG_VALUES (i) == 0)
+        VARRAY_PUSH_UINT (used_regs, i);
       REG_VALUES (i) = new_elt_list (REG_VALUES (i), e);
       slot = htab_find_slot_with_hash (hash_table, x, e->value, INSERT);
       *slot = e;
@@ -3133,6 +3147,9 @@ cselib_record_set (dest, src_elt, dest_addr_elt)
 
   if (dreg >= 0)
     {
+      if (REG_VALUES (dreg) == 0)
+        VARRAY_PUSH_UINT (used_regs, dreg);
+
       REG_VALUES (dreg) = new_elt_list (REG_VALUES (dreg), src_elt);
       if (src_elt->locs == 0)
 	n_useless_values--;
@@ -3249,7 +3266,7 @@ cselib_process_insn (insn)
 	  && GET_CODE (PATTERN (insn)) == ASM_OPERANDS
 	  && MEM_VOLATILE_P (PATTERN (insn))))
     {
-      clear_table ();
+      clear_table (0);
       return;
     }
 
@@ -3309,6 +3326,7 @@ cselib_update_varray_sizes ()
 
   cselib_nregs = nregs;
   VARRAY_GROW (reg_values, nregs);
+  VARRAY_GROW (used_regs, nregs);
 }
 
 /* Initialize cselib for one pass.  The caller must also call
@@ -3329,8 +3347,9 @@ cselib_init ()
 
   cselib_nregs = max_reg_num ();
   VARRAY_ELT_LIST_INIT (reg_values, cselib_nregs, "reg_values");
+  VARRAY_UINT_INIT (used_regs, cselib_nregs, "used_regs");
   hash_table = htab_create (31, get_value_hash, entry_and_rtx_equal_p, NULL);
-  clear_table ();
+  clear_table (1);
 }
 
 /* Called when the current user is done with cselib.  */
@@ -3338,6 +3357,6 @@ cselib_init ()
 void
 cselib_finish ()
 {
-  clear_table ();
+  clear_table (0);
   htab_delete (hash_table);
 }
