@@ -115,6 +115,9 @@ public final class String
 
   public String toString ()
   {
+    // because String is final, we actually get this far on a null reference
+    if (this == null)
+      throw new NullPointerException();
     return this;
   }
 
