@@ -12,7 +12,7 @@
 	* config/sparc/netbsd-elf.h (PREFERRED_DEBUGGING_TYPE): Likewise.
 	* config/sparc/sp64-elf.h (DBX_DEBUGGING_INFO): Likewise.
 	(PREFERRED_DEBUGGING_TYPE): Likewise.
-	* config/sparc/sp86x-elf.h (DWARF2_DEBUGGING_INFO 1): Likewise.
+	* config/sparc/sp86x-elf.h (DWARF2_DEBUGGING_INFO): Likewise.
 	(PREFERRED_DEBUGGING_TYPE): Likewise.
 	* config/sparc/sparc.h (DBX_DEBUGGING_INFO): Likewise.
 
