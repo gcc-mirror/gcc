@@ -1,3 +1,9 @@
+2000-07-03  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PrintWriter.java (print): Call write(String), not
+	print(String).  See PR libgcj/277.
+	(print(String)): Use write, not out.write.
+
 2000-06-30  Tom Tromey  <tromey@cygnus.com>
 
 	* include/jni.h: Include <gcj/array.h>.  Fixes PR libgcj/270.
