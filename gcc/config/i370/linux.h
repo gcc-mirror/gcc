@@ -27,7 +27,6 @@ Boston, MA 02111-1307, USA.  */
 /* Specify that we're generating code for a Linux port to 370 */
 
 #define TARGET_ELF_ABI
-#define LINUX_DEFAULT_ELF
 
 /* Target OS preprocessor built-ins.  */
 #define TARGET_OS_CPP_BUILTINS()		\

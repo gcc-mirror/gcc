@@ -30,8 +30,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-#define LINUX_DEFAULT_ELF
-
 /* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
@@ -154,15 +152,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  LINK_SPEC
 #ifdef USE_GNULIBC_1
-#ifndef LINUX_DEFAULT_ELF
-#define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-        %{rdynamic:-export-dynamic} \
-        %{!dynamic-linker:-dynamic-linker /lib/elf/ld-linux.so.1} \
-        %{!rpath:-rpath /lib/elf/}} %{static:-static}}}"
-#else
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
@@ -170,7 +159,6 @@ Boston, MA 02111-1307, USA.  */
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
         %{static:-static}}}"
-#endif
 #else
 #define LINK_SPEC "-m elf32_sparc -Y P,/usr/lib %{shared:-shared} \
   %{!mno-relax:%{!r:-relax}} \

@@ -1,3 +1,13 @@
+2003-09-03  Bernardo Innocenti  <bernie@develer.com>
+
+	* config.gcc (m68k-*-linux*): Remove definition of LINUX_DEFAULT_ELF.
+	* config/i370/linux.h (LINUX_DEFAULT_ELF): Remove unconditional
+	definition and code blocks compiled when not defined.
+	* config/i386/linux.h (LINUX_DEFAULT_ELF): Likewise.
+	* config/i386/linux64.h (LINUX_DEFAULT_ELF): Likewise.
+	* config/sparc/linux.h: (LINUX_DEFAULT_ELF): Likewise.
+	* config/sparc/linux64.h: (LINUX_DEFAULT_ELF): Likewise.
+
 2003-09-03  Jeff Sturm  <jsturm@one-point.com>
 
 	* cgraphunit.c (visited_nodes): New static variable.

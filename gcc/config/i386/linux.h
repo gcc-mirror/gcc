@@ -21,8 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define LINUX_DEFAULT_ELF
-
 /* Output at beginning of assembler file.  */
 /* The .file command should always begin the output.  */
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
@@ -115,15 +113,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LINK_SPEC
 #ifdef USE_GNULIBC_1
-#ifndef LINUX_DEFAULT_ELF
-#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
-  %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/elf/ld-linux.so.1} \
-	%{!rpath:-rpath /lib/elf/}} %{static:-static}}}"
-#else
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
   %{!shared: \
     %{!ibcs: \
@@ -131,7 +120,6 @@ Boston, MA 02111-1307, USA.  */
 	%{rdynamic:-export-dynamic} \
 	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
 	%{static:-static}}}"
-#endif
 #else
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
   %{!shared: \
