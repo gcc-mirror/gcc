@@ -1677,7 +1677,7 @@ rtx addr;
 	    fatal ("Invalid offset in ybase addressing");
 	}
       else
-	fatal ("Invalid register in ybase addresing");
+	fatal ("Invalid register in ybase addressing");
       
       fprintf (file, "*(%d)", offset);
       break;
