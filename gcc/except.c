@@ -409,11 +409,7 @@ Boston, MA 02111-1307, USA.  */
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */
 
-#if DWARF2_UNWIND_INFO
-int exceptions_via_longjmp = 0;
-#else
-int exceptions_via_longjmp = 1;
-#endif
+int exceptions_via_longjmp = 2;
 
 /* One to enable asynchronous exception support.  */
 
