@@ -11508,13 +11508,36 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 	case REG_INC:
 	case REG_NO_CONFLICT:
-	case REG_LABEL:
 	  /* These notes say something about how a register is used.  They must
 	     be present on any use of the register in I2 or I3.  */
 	  if (reg_mentioned_p (XEXP (note, 0), PATTERN (i3)))
 	    place = i3;
 
 	  if (i2 && reg_mentioned_p (XEXP (note, 0), PATTERN (i2)))
+	    {
+	      if (place)
+		place2 = i2;
+	      else
+		place = i2;
+	    }
+	  break;
+
+	case REG_LABEL:
+	  /* This can show up in several ways -- either directly in the
+	     pattern, or hidden off in the constant pool with (or without?)
+	     a REG_EQUAL note.  */
+	  /* ??? Ignore the without-reg_equal-note problem for now.  */
+	  if (reg_mentioned_p (XEXP (note, 0), PATTERN (i3))
+	      || ((tem = find_reg_note (i3, REG_EQUAL, NULL_RTX))
+		  && GET_CODE (XEXP (tem, 0)) == LABEL_REF
+		  && XEXP (XEXP (tem, 0), 0) == XEXP (note, 0)))
+	    place = i3;
+
+	  if (i2
+	      && (reg_mentioned_p (XEXP (note, 0), PATTERN (i2))
+	          || ((tem = find_reg_note (i2, REG_EQUAL, NULL_RTX))
+		      && GET_CODE (XEXP (tem, 0)) == LABEL_REF
+		      && XEXP (XEXP (tem, 0), 0) == XEXP (note, 0))))
 	    {
 	      if (place)
 		place2 = i2;

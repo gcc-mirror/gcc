@@ -1,3 +1,8 @@
+Thu Mar 25 16:53:53 1999  Richard Henderson  <rth@cygnus.com>
+
+	* combine.c (distribute_notes): Place REG_LABEL also where
+	REG_EQUAL indicates.
+
 Thu Mar 25 12:46:37 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* a29k/a29k.h (TARGET_SWITCHES): Add doc strings.
