@@ -1,3 +1,9 @@
+2005-02-18  Robert Schuster <thebohemian@gmx.net>
+
+	* java/nio/charset/Charset.java (forName): Throws
+	IllegalArgumentException when argument is null
+	and added documentation.
+
 2005-02-17  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	* gnu/java/nio/channels/FileChannelImpl.java (write(ByteBuffer)):
