@@ -78,6 +78,16 @@ extern enum demangling_styles
 #define HP_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_HP)
 #define EDG_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_EDG)
 
+/* Provide information about the available demangle styles. This code is
+   pulled from gdb into libiberty because it is useful to binutils also.  */
+
+extern struct demangler_engine
+{
+  char *demangling_style_name;
+  enum demangling_styles demangling_style;
+  char *demangling_style_doc;
+} libiberty_demanglers[];
+
 extern char *
 cplus_demangle PARAMS ((const char *mangled, int options));
 
@@ -92,4 +102,9 @@ cplus_mangle_opname PARAMS ((const char *opname, int options));
 extern void
 set_cplus_marker_for_demangling PARAMS ((int ch));
 
+extern enum demangling_styles 
+cplus_demangle_set_style PARAMS ((enum demangling_styles style));
+
+extern enum demangling_styles 
+cplus_demangle_name_to_style PARAMS ((const char *name));
 #endif	/* DEMANGLE_H */
