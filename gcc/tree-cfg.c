@@ -5339,6 +5339,16 @@ tree_purge_all_dead_eh_edges (bitmap blocks)
   return changed;
 }
 
+/* This function is called immediately before edge E is removed from
+   the edge vector E->dest->preds.  */
+
+static void
+tree_execute_on_shrinking_pred (edge e)
+{
+  if (phi_nodes (e->dest))
+    remove_phi_args (e);
+}
+
 struct cfg_hooks tree_cfg_hooks = {
   "tree",
   tree_verify_flow_info,
@@ -5362,7 +5372,7 @@ struct cfg_hooks tree_cfg_hooks = {
   tree_block_ends_with_condjump_p, /* block_ends_with_condjump_p */
   tree_flow_call_edges_add,     /* flow_call_edges_add */
   NULL,	/* execute_on_growing_pred */
-  NULL, /* execute_on_shrinking_pred */
+  tree_execute_on_shrinking_pred, /* execute_on_shrinking_pred */
 };
 
 

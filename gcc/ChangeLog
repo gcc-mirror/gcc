@@ -24,6 +24,11 @@
 	(cfg_layout_rtl_cfg_hook): Likewise.
 	* tree-cfg.c (tree_cfg_hooks): Likewise.
 
+	* tree-cfg.c (tree_execute_on_shrinking_pred): New.
+	(tree_cfg_hooks): Use it.
+	* tree-ssa.c (ssa_remove_edge): Don't call remove_phi_args.
+	(ssa_redirect_edge): Don't call remove_phi_arg_num.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Maintaining the CFG): Use @ftable instead of
