@@ -999,6 +999,11 @@ enum reg_class
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
 
+/* Indicate whether hard register numbered REG_NO should be converted
+   to SSA form.  */
+#define CONVERT_HARD_REGISTER_TO_SSA_P(REG_NO) \
+  (REG_NO == FLAGS_REG || REG_NO == ARG_POINTER_REGNUM)
+
 /* The class value for index registers, and the one for base regs.  */
 
 #define INDEX_REG_CLASS INDEX_REGS

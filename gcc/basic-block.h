@@ -420,6 +420,7 @@ int find_edge_index			PARAMS ((struct edge_list *,
 
 extern void compute_flow_dominators	PARAMS ((sbitmap *, sbitmap *));
 extern void compute_immediate_dominators	PARAMS ((int *, sbitmap *));
+extern void compute_immediate_postdominators	PARAMS ((int *, sbitmap *));
 
 
 enum update_life_extent
