@@ -3607,7 +3607,7 @@ init_propagate_block_info (bb, live, local_set, flags)
 	{
 	  if (GET_CODE (XEXP (cond_true, 0)) != REG)
 	    abort ();
-	  SET_REGNO_REG_SET (pbi.reg_cond_reg, REGNO (XEXP (cond_true, 0)));
+	  SET_REGNO_REG_SET (pbi->reg_cond_reg, REGNO (XEXP (cond_true, 0)));
 
 	  /* For each such register, mark it conditionally dead.  */
 	  EXECUTE_IF_SET_IN_REG_SET
@@ -3624,7 +3624,7 @@ init_propagate_block_info (bb, live, local_set, flags)
 		 cond = cond_true;
 	       rcli->condition = alloc_EXPR_LIST (0, cond, NULL_RTX);
 
-	       splay_tree_insert (pbi.reg_cond_dead, i,
+	       splay_tree_insert (pbi->reg_cond_dead, i,
 				  (splay_tree_value) rcli);
 	     });
 	}

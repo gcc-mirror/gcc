@@ -1,4 +1,9 @@
- Fri May  5 07:43:50 2000  Denis Chertykov  <denisc@overta.ru>
+2000-05-05  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (init_propagate_block_info): Fix merge error
+	in HAVE_conditional_execution code.
+
+Fri May  5 07:43:50 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (out_shift_with_cnt): Genetare a more optimal
 	shift cycle for unknown shift count. Also generates dec + brpl.
