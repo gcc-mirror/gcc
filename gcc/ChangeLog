@@ -1,3 +1,49 @@
+2004-05-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR c++/15463
+	* loop-iv.c (iv_number_of_iterations):  Use trunc_int_for_mode on
+	result of inverse.
+
+	PR rtl-optimization/15274
+	* loop-iv.c (determine_max_iter, shorten_into_mode,
+	iv_number_of_iterations): Handle constants correctly.
+	* rtl.h (get_mode_bounds): Declaration changed.
+	* stor-layout.c (get_mode_bounds): Return a constant suitable for
+	the target mode.
+
+	PR rtl-optimization/14692
+	* loop-unswitch.c (may_unswitch_on): Try folding the result.
+	(unswitch_single_loop): Work correctly when may_unswitch_on
+	returns a folded constant.
+
+	* loop-iv.c (implies_p): Handle A < B ==> A + 1 <= B.
+	* simplify-rtx.c (simplify_const_relational_operation): Optimize
+	comparisons with mode bounds.
+
+	* function.c (struct temp_slot): Add new field prev.
+	(free_after_compilation, init_temp_slots): Free new fields.
+	(cut_slot_from_list, insert_slot_to_list,
+	temp_slots_at_level, max_slot_level, move_slot_to_level,
+	make_slot_available): New functions.
+	(assign_stack_temp_for_type, combine_temp_slots,
+	find_temp_slot_from_address, preserve_temp_slots,
+	preserve_rtl_expr_result, free_temp_slots,
+	free_temps_for_rtl_expr, pop_temp_slots): Work with
+	the new structure of lists.
+	(mark_all_temps_used): Removed.
+	* function.h (struct function): Field x_temp_slots
+	replaced by x_used_temp_slots and x_avail_temp_slots.
+	(temp_slots): Replaced by ...
+	(used_temp_slots, avail_temp_slots): New.
+	* tree.h (mark_all_temps_used): Declaration removed.
+
+	* loop-iv.c (mark_single_set, get_biv_step_1, iv_analyze,
+	simplify_using_assignment): Take the expression out of
+	the expr_list wrapper.
+
+	* loop-iv.c (iv_number_of_iterations): Improve clasification of
+	infinite loops.
+
 2004-05-19  Roger Sayle  <roger@eyesopen.com>
 
 	* doc/tm.texi (TARGET_RTX_COSTS): Document that instruction

@@ -174,7 +174,7 @@ unswitch_loops (struct loops *loops)
 static rtx
 may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
 {
-  rtx test, at, insn, op[2];
+  rtx test, at, insn, op[2], stest;
   struct rtx_iv iv;
   unsigned i;
   enum machine_mode mode;
@@ -233,6 +233,12 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
       return test;
     }
 
+  stest = simplify_gen_relational (GET_CODE (test), SImode,
+				   mode, op[0], op[1]);
+  if (stest == const0_rtx
+      || stest == const_true_rtx)
+    return stest;
+
   return canon_condition (gen_rtx_fmt_ee (GET_CODE (test), SImode,
 					  op[0], op[1]));
 }
@@ -262,7 +268,7 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
   basic_block *bbs;
   struct loop *nloop;
   unsigned i;
-  rtx cond, rcond, conds, rconds, acond, cinsn = NULL_RTX;
+  rtx cond, rcond = NULL_RTX, conds, rconds, acond, cinsn = NULL_RTX;
   int repeat;
   edge e;
 
@@ -331,13 +337,17 @@ unswitch_single_loop (struct loops *loops, struct loop *loop,
 	  return;
 	}
 
-      rcond = reversed_condition (cond);
-      if (rcond)
-	rcond = canon_condition (rcond);
+      if (cond != const0_rtx
+	  && cond != const_true_rtx)
+	{
+	  rcond = reversed_condition (cond);
+	  if (rcond)
+	    rcond = canon_condition (rcond);
 
-      /* Check whether the result can be predicted.  */
-      for (acond = cond_checked; acond; acond = XEXP (acond, 1))
-	simplify_using_condition (XEXP (acond, 0), &cond, NULL);
+	  /* Check whether the result can be predicted.  */
+	  for (acond = cond_checked; acond; acond = XEXP (acond, 1))
+	    simplify_using_condition (XEXP (acond, 0), &cond, NULL);
+	}
 
       if (cond == const_true_rtx)
 	{
