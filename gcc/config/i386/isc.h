@@ -55,3 +55,10 @@
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT 0201
+
+/* Define for XFmode extended real floating point support.
+   This will automatically cause REAL_ARITHMETIC to be defined.  */
+/* The ISC 2.0.2 software FPU emulator apparently can't handle
+   80-bit XFmode insns, so don't generate them.  */
+#undef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE 6
