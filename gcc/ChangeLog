@@ -1,3 +1,7 @@
+Fri Jan 15 23:44:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (sparc_issue): Add hypersparc/sparclite86x entries.
+
 Fri Jan 15 22:30:04 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (CONST_OK_FOR_LETTER_P): Do not assume 32-bit CONST_INT.
