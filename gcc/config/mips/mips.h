@@ -3407,7 +3407,11 @@ do									\
        specific sections, except for .sdata and .sbss which are		\
        handled above.  */						\
     else if (TARGET_GP_OPT && TREE_CODE (DECL) == VAR_DECL		\
-	     && DECL_SECTION_NAME (DECL) == NULL_TREE)			\
+	     && DECL_SECTION_NAME (DECL) == NULL_TREE			\
+	     && ! (TARGET_MIPS16 && TREE_PUBLIC (DECL)			\
+		   && (DECL_COMMON (DECL)				\
+		       || DECL_ONE_ONLY (DECL)				\
+		       || DECL_WEAK (DECL))))				\
       {									\
 	int size = int_size_in_bytes (TREE_TYPE (DECL));		\
 									\
