@@ -4986,6 +4986,15 @@ name_as_c_string (tree name, tree type, bool *free_p)
 	  *free_p = true;
 	}
     }
+  else if (IDENTIFIER_TYPENAME_P (name))
+    {
+      pretty_name = concat ("operator ",
+			    type_as_string (TREE_TYPE (name),
+					    TFF_PLAIN_IDENTIFIER),
+			    NULL);
+      /* Remember that we need to free the memory allocated.  */
+      *free_p = true;
+    }
   else
     pretty_name = (char *) IDENTIFIER_POINTER (name);
 
