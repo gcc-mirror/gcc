@@ -1,3 +1,9 @@
+2003-07-19  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	PR optimization/4490
+	* doc/invoke.texi (m96bit-long-double, m128bit-long-double):  Reword
+	documentation to accurately reflect what these options do.
+
 2003-07-18  Richard Henderson  <rth@redhat.com>
 	    David S. Miller  <davem@redhat.com>
 
