@@ -296,6 +296,14 @@ extern GTY(()) rtx aof_pic_label;
 #define TARGET_AAPCS_BASED \
     (arm_abi != ARM_ABI_APCS && arm_abi != ARM_ABI_ATPCS)
 
+/* True iff the full BPABI is being used.  If TARGET_BPABI is true,
+   then TARGET_AAPCS_BASED must be true -- but the converse does not
+   hold.  TARGET_BPABI implies the use of the BPABI runtime library,
+   etc., in addition to just the AAPCS calling conventions.  */
+#ifndef TARGET_BPABI
+#define TARGET_BPABI false
+#endif 
+
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
 #ifndef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES

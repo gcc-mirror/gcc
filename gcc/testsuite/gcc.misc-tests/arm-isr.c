@@ -1,3 +1,6 @@
+extern void abort ();
+extern void exit (int);
+
 #ifndef __thumb__
 /* There used to be a couple of bugs in the ARM's prologue and epilogue
    generation for ISR routines.  The wrong epilogue instruction would be

@@ -627,6 +627,19 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) false
 #endif
 
+/* True if the target should use the standard libgcc arithmetic
+   library functions, like __addsi3 and _fixdfdi.  */
+#ifndef TARGET_LIBGCC_LIBFUNCS
+#define TARGET_LIBGCC_LIBFUNCS (true)
+#endif
+
+/* True if the targets integer-comparision fucntions return { 0, 1, 2
+   } to indicate { <, ==, > }.  False if { -1, 0, 1 } is used
+   instead.  The libgcc routines are biased.  */
+#ifndef TARGET_LIB_INT_CMP_BIASED
+#define TARGET_LIB_INT_CMP_BIASED (true)
+#endif
+
 /* If FLOAT_WORDS_BIG_ENDIAN is not defined in the header files,
    then the word-endianness is the same as for integers.  */
 #ifndef FLOAT_WORDS_BIG_ENDIAN

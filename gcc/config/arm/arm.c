@@ -169,6 +169,7 @@ static bool arm_cxx_guard_mask_bit (void);
 static tree arm_get_cookie_size (tree);
 static bool arm_cookie_has_size (void);
 static bool arm_cxx_cdtor_returns_this (void);
+static void arm_init_libfuncs (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -249,6 +250,9 @@ static bool arm_cxx_cdtor_returns_this (void);
 #define TARGET_INIT_BUILTINS  arm_init_builtins
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN arm_expand_builtin
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS arm_init_libfuncs
 
 #undef TARGET_PROMOTE_FUNCTION_ARGS
 #define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
@@ -612,6 +616,104 @@ bit_count (unsigned long value)
     }
 
   return count;
+}
+
+/* Set up library functions uqniue to ARM.  */
+
+static void
+arm_init_libfuncs (void)
+{
+  /* There are no special library functions unless we are using the
+     ARM BPABI.  */
+  if (!TARGET_BPABI)
+    return;
+
+  /* The functions below are described in Section 4 of the "Run-Time
+     ABI for the ARM architecture", Version 1.0.  */
+
+  /* Double-precision floating-point arithmetic.  Table 2.  */
+  set_optab_libfunc (add_optab, DFmode, "__aeabi_dadd");
+  set_optab_libfunc (sdiv_optab, DFmode, "__aeabi_ddiv");
+  set_optab_libfunc (smul_optab, DFmode, "__aeabi_dmul");
+  set_optab_libfunc (neg_optab, DFmode, "__aeabi_dneg");
+  set_optab_libfunc (sub_optab, DFmode, "__aeabi_dsub");
+
+  /* Double-precision comparisions.  Table 3.  */
+  set_optab_libfunc (eq_optab, DFmode, "__aeabi_dcmpeq");
+  set_optab_libfunc (ne_optab, DFmode, NULL);
+  set_optab_libfunc (lt_optab, DFmode, "__aeabi_dcmplt");
+  set_optab_libfunc (le_optab, DFmode, "__aeabi_dcmple");
+  set_optab_libfunc (ge_optab, DFmode, "__aeabi_dcmpge");
+  set_optab_libfunc (gt_optab, DFmode, "__aeabi_dcmpgt");
+  set_optab_libfunc (unord_optab, DFmode, "__aeabi_dcmpun");
+
+  /* Single-precision floating-point arithmetic.  Table 4.  */
+  set_optab_libfunc (add_optab, SFmode, "__aeabi_fadd");
+  set_optab_libfunc (sdiv_optab, SFmode, "__aeabi_fdiv");
+  set_optab_libfunc (smul_optab, SFmode, "__aeabi_fmul");
+  set_optab_libfunc (neg_optab, SFmode, "__aeabi_fneg");
+  set_optab_libfunc (sub_optab, SFmode, "__aeabi_fsub");
+  
+  /* Single-precision comparisions.  Table 5.  */
+  set_optab_libfunc (eq_optab, SFmode, "__aeabi_fcmpeq");
+  set_optab_libfunc (ne_optab, SFmode, NULL);
+  set_optab_libfunc (lt_optab, SFmode, "__aeabi_fcmplt");
+  set_optab_libfunc (le_optab, SFmode, "__aeabi_fcmple");
+  set_optab_libfunc (ge_optab, SFmode, "__aeabi_fcmpge");
+  set_optab_libfunc (gt_optab, SFmode, "__aeabi_fcmpgt");
+  set_optab_libfunc (unord_optab, SFmode, "__aeabi_fcmpun");
+
+  /* Floating-point to integer conversions.  Table 6.  */
+  set_conv_libfunc (sfix_optab, SImode, DFmode, "__aeabi_d2iz");
+  set_conv_libfunc (ufix_optab, SImode, DFmode, "__aeabi_d2uiz");
+  set_conv_libfunc (sfix_optab, DImode, DFmode, "__aeabi_d2lz");
+  set_conv_libfunc (ufix_optab, DImode, DFmode, "__aeabi_d2ulz");
+  set_conv_libfunc (sfix_optab, SImode, SFmode, "__aeabi_f2iz");
+  set_conv_libfunc (ufix_optab, SImode, SFmode, "__aeabi_f2uiz");
+  set_conv_libfunc (sfix_optab, DImode, SFmode, "__aeabi_f2lz");
+  set_conv_libfunc (ufix_optab, DImode, SFmode, "__aeabi_f2ulz");
+
+  /* Conversions between floating types.  Table 7.  */
+  set_conv_libfunc (trunc_optab, SFmode, DFmode, "__aeabi_d2f");
+  set_conv_libfunc (sext_optab, DFmode, SFmode, "__aeabi_f2d");
+
+  /* Integer to floating-point converisons.  Table 8.  */
+  set_conv_libfunc (sfloat_optab, DFmode, SImode, "__aeabi_i2d");
+  set_conv_libfunc (ufloat_optab, DFmode, SImode, "__aeabi_ui2d");
+  set_conv_libfunc (sfloat_optab, DFmode, DImode, "__aeabi_l2d");
+  set_conv_libfunc (ufloat_optab, DFmode, DImode, "__aeabi_ul2d");
+  set_conv_libfunc (sfloat_optab, SFmode, SImode, "__aeabi_i2f");
+  set_conv_libfunc (ufloat_optab, SFmode, SImode, "__aeabi_ui2f");
+  set_conv_libfunc (sfloat_optab, SFmode, DImode, "__aeabi_l2f");
+  set_conv_libfunc (ufloat_optab, SFmode, DImode, "__aeabi_ul2f");
+
+  /* Long long.  Table 9.  */
+  set_optab_libfunc (smul_optab, DImode, "__aeabi_lmul");
+  set_optab_libfunc (sdivmod_optab, DImode, "__aeabi_ldivmod");
+  set_optab_libfunc (udivmod_optab, DImode, "__aeabi_uldivmod");
+  set_optab_libfunc (ashl_optab, DImode, "__aeabi_llsl");
+  set_optab_libfunc (lshr_optab, DImode, "__aeabi_llsr");
+  set_optab_libfunc (ashr_optab, DImode, "__aeabi_lasr");
+  set_optab_libfunc (cmp_optab, DImode, "__aeabi_lcmp");
+  set_optab_libfunc (ucmp_optab, DImode, "__aeabi_ulcmp");
+
+  /* Integer (32/32->32) division.  \S 4.3.1.  */
+  set_optab_libfunc (sdivmod_optab, SImode, "__aeabi_idivmod");
+  set_optab_libfunc (udivmod_optab, SImode, "__aeabi_uidivmod");
+
+  /* The divmod functions are designed so that they can be used for
+     plain division, even though they return both the quotient and the
+     remainder.  The quotient is returned in the usual location (i.e.,
+     r0 for SImode, {r0, r1} for DImode), just as would be expected
+     for an ordinary division routine.  Because the AAPCS calling
+     conventions specify that all of { r0, r1, r2, r3 } are
+     callee-saved registers, there is no need to tell the compiler
+     explicitly that those registers are clobbered by these
+     routines.  */
+  set_optab_libfunc (sdiv_optab, DImode, "__aeabi_ldivmod");
+  set_optab_libfunc (udiv_optab, DImode, "__aeabi_uldivmod");
+  set_optab_libfunc (sdiv_optab, SImode, "__aeabi_idivmod");
+  set_optab_libfunc (udiv_optab, SImode, "__aeabi_uidivmod");
 }
 
 /* Fix up any incompatible options that the user has specified.
@@ -10165,7 +10267,7 @@ arm_get_frame_offsets (void)
 /* Calculate the relative offsets for the different stack pointers.  Positive
    offsets are in the direction of stack growth.  */
 
-unsigned int
+HOST_WIDE_INT
 arm_compute_initial_elimination_offset (unsigned int from, unsigned int to)
 {
   arm_stack_offsets *offsets;

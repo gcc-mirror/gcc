@@ -1,3 +1,83 @@
+2004-08-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.gcc (arm*-*-eabi*): New target.
+	* defaults.h (TARGET_LIBGCC_FUNCS): New macro.
+	(TARGET_LIB_INT_CMP_BIASED): Likewise.
+	* expmed.c (expand_divmod): Try a two-valued divmod function as a
+	last resort.
+	* gthr.h: Remove bogus tokens at end of #pragma.
+	* optabs.c (expand_twoval_binop_libfunc): New function.
+	(prepare_cmp_insn): Handle the !TARGET_LIB_INT_CMP_BIASED case.
+	(prepare_float_lib_cmp): Try reversing the condition.
+	(debug_optab_libfuncs): New function.
+	* optabs.h (expand_twoval_binop_libfunc): Declare.
+	* config/arm/arm.c (arm_init_libfuncs): New function.
+	(arm_compute_initial_eliminatino_offset): Return HOST_WIDE_INT.
+	(TARGET_INIT_LIBFUNCS): Define it.
+	* config/arm/arm.h (TARGET_BPABI): New macro.
+	* config/arm/arm-protos.h
+	(arm_compute_initial_elimination_offset): Return HOST_WIDE_INT.
+	* config/arm/bpabi.S: New file.
+	* config/arm/bpabi.c: Likewise.
+	* config/arm/bpabi.h: Likewise.
+	* config/arm/ieee754-df.S (__aeabi_dneg): New function or alias.
+	(__aeabi_drsub): Likewise.
+	(__aeabi_dsub): Likewise.
+	(__aeabi_dadd): Likewise.
+	(__aeabi_ui2d): Likewise.
+	(__aeabi_i2d): Likewise.
+	(__aeabi_f2d): Likewise.
+	(__aeabi_dmul): Likewise.
+	(__aeabi_ddiv): Likewise.
+	(__aeabi_cdrcmple): Likewise.
+	(__aeabi_cdcmpeq): Likewise.
+	(__aeabi_cdcmple): Likewise.
+	(__aeabi_dcmpeq): Likewise.
+	(__aeabi_dcmplt): Likewise.
+	(__aeabi_dcmple): Likewise.
+	(__aeabi_dcmpge): Likewise.
+	(__aeabi_dcmpgt): Likewise.
+	(__aeabi_dcmpun): Likewise.
+	(__aeabi_d2iz): Likewise.
+	(__aeabi_d2uiz): Likewise.
+	(__aeabi_d2f): Likewise.
+	* config/arm/ieee754-sf.S (__aeabi_fneg): New function or alias.
+	(__aeabi_frsub): Likewise.
+	(__aeabi_fsub): Likewise.
+	(__aeabi_fadd): Likewise.
+	(__aeabi_ui2f): Likewise.
+	(__aeabi_i2f): Likewise.
+	(__aeabi_fmul): Likewise.
+	(__aeabi_fdiv): Likewise.
+	(__aeabi_cfrcmple): Likewise.
+	(__aeabi_cfcmpeq): Likewise.
+	(__aeabi_cfcmple): Likewise.
+	(__aeabi_fcmpeq): Likewise.
+	(__aeabi_fcmplt): Likewise.
+	(__aeabi_fcmple): Likewise.
+	(__aeabi_fcmpge): Likewise.
+	(__aeabi_fcmpgt): Likewise.
+	(__aeabi_fcmpun): Likewise.
+	(__aeabi_f2iz): Likewise.
+	(__aeabi_f2uiz): Likewise.
+	* config/arm/lib1funcs.asm (ARM_CALL): New macro.
+	(__aeabi_uidivmod): New function or alias.
+	(__aeabi_idivmod): Likewise.
+	(__aeabi_idiv0): Likewise.
+	(__aeabi_ldiv0): Likewise.
+	(__aeabi_llsr): Likewise.
+	(__aeabi_lasr): Likewise.
+	(__aeabi_llsl): Likewise.
+	(bpabi.S): Include it.
+	* config/arm/libgcc-bpabi.ver: New file.
+	* config/arm/symbian.h (ARM_DEFAULT_ABI): Remove.
+	(LINK_SPEC): Remove.
+	* config/arm/t-arm-elf (LIB1ASMFUNCS): Add __aeabi_lcmp and
+	__aeabi_ulcmp.
+	* config/arm/t-bpabi: New file.
+	* doc/tm.texi (TARGET_LIBGCC_FUNCS): New entry.
+	(TARGET_LIB_INT_CMP_BIASED): Likewise.
+	
 2004-08-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000-protos.h (expand_block_clear): Declare.

@@ -417,6 +417,11 @@ extern int expand_twoval_unop (optab, rtx, rtx, rtx, int);
 /* Generate code to perform an operation on two operands with two results.  */
 extern int expand_twoval_binop (optab, rtx, rtx, rtx, rtx, int);
 
+/* Generate code to perform an operation on two operands with two
+   results, using a library function.  */
+extern bool expand_twoval_binop_libfunc (optab, rtx, rtx, rtx, rtx, 
+					 enum rtx_code);
+
 /* Expand a unary arithmetic operation given optab rtx operand.  */
 extern rtx expand_unop (enum machine_mode, optab, rtx, rtx, int);
 

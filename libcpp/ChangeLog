@@ -1,3 +1,9 @@
+2004-08-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.ac (arm*-*-eabi*): New target.
+	(arm*-*-symbianelf*): Likewise.
+	* configure: Regenerated.
+
 2004-07-24  Bernardo Innocenti  <bernie@develer.com>
 
 	* internal.h (xnew, xcnew, xnewvec, xcnewvec, xobnew): Remove.

@@ -102,6 +102,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "gthr-single.h"
 #endif
 
-#pragma GCC visibility pop(default)
+#pragma GCC visibility pop
 
 #endif /* ! GCC_GTHR_H */
