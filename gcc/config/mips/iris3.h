@@ -93,4 +93,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS
 
+/* Plain char is unsigned in the SGI compiler.  */
+#define DEFAULT_SIGNED_CHAR 0
+
 #include "mips.h"
