@@ -1,5 +1,5 @@
 /* Low-level functions for atomic operations.  Sparc64 version.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -61,7 +61,7 @@ static inline int
 __attribute__ ((__unused__))
 __compare_and_swap (volatile long *__p, long __oldval, long __newval)
 {
-  register int __tmp, 
+  register int __tmp;
   register long __tmp2;
 
   __asm__ __volatile__("1:	ldx	[%4], %0\n\t"
