@@ -1,3 +1,39 @@
+2004-08-18  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (OBJS-common): Add postreload-gcse.c.
+	Add new postreload-gcse.o.
+	* cse.c (SAFE_HASH): Define as wrapper around safe_hash.
+	(lookup_as_function, insert, rehash_using_reg, use_related_value,
+	equiv_constant): Use SAFE_HASH instead of safe_hash.
+	(exp_equiv_p): Export.  Add for_gcse argument when comparing
+	for GCSE.
+	(lookup, lookup_for_remove, merge_equiv_classes, find_best_addr,
+	find_comparison_args, fold_rtx, cse_insn): Update callers.
+	(hash_rtx): New function derived from old canon_hash and bits
+	from gcse.c hash_expr_1.
+	(canon_hash_string): Rename to hash_rtx_string.
+	(canon_hash, safe_hash): Make static inline.  Call hash_rtx.
+	* cselib.c (hash_rtx): Rename to cselib_hash_rtx.
+	(cselib_lookup): Update this caller.
+	* gcse.c (modify_mem_list_set, canon_modify_mem_list_set):
+	Make static.
+	(hash_expr): Call hash_rtx.
+	(ldst_entry): Likewise.
+	(expr_equiv_p): Call exp_equiv_p.
+	(struct unoccr, hash_expr_1, hash_string_1, lookup_expr,
+	reg_used_on_edge, reg_set_between_after_reload_p,
+	reg_used_between_after_reload_p, get_avail_load_store_reg,
+	is_jump_table_basic_block, bb_has_well_behaved_predecessors,
+	get_bb_avail_insn, hash_scan_set_after_reload,
+	compute_hash_table_after_reload,
+	eliminate_partially_redundant_loads, gcse_after_reload,
+	get_bb_avail_insn, gcse_after_reload_main): Remove.
+	* postreload-gcse.c: New file, reincarnating most of the above.
+	* rtl.h (exp_equiv_p, hash_rtx): New prototypes.
+	(gcse_after_reload_main): Update prototype.
+	* timevar.def (TV_GCSE_AFTER_RELOAD): New timevar.
+	* passes.c (rest_of_handle_gcse2): Use it.
+
 2004-08-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-loop.c (pass_loop_init): Add TODO_dump_func.

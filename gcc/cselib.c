@@ -55,7 +55,7 @@ static int discard_useless_locs (void **, void *);
 static int discard_useless_values (void **, void *);
 static void remove_useless_values (void);
 static rtx wrap_constant (enum machine_mode, rtx);
-static unsigned int hash_rtx (rtx, enum machine_mode, int);
+static unsigned int cselib_hash_rtx (rtx, enum machine_mode, int);
 static cselib_val *new_cselib_val (unsigned int, enum machine_mode);
 static void add_mem_for_addr (cselib_val *, cselib_val *, rtx);
 static cselib_val *cselib_lookup_mem (rtx, int);
@@ -257,8 +257,8 @@ entry_and_rtx_equal_p (const void *entry, const void *x_arg)
 }
 
 /* The hash function for our hash table.  The value is always computed with
-   hash_rtx when adding an element; this function just extracts the hash
-   value from a cselib_val structure.  */
+   cselib_hash_rtx when adding an element; this function just extracts the
+   hash value from a cselib_val structure.  */
 
 static hashval_t
 get_value_hash (const void *entry)
@@ -554,7 +554,7 @@ wrap_constant (enum machine_mode mode, rtx x)
    otherwise the mode of X is used.  */
 
 static unsigned int
-hash_rtx (rtx x, enum machine_mode mode, int create)
+cselib_hash_rtx (rtx x, enum machine_mode mode, int create)
 {
   cselib_val *e;
   int i, j;
@@ -600,7 +600,7 @@ hash_rtx (rtx x, enum machine_mode mode, int create)
 	for (i = 0; i < units; ++i)
 	  {
 	    elt = CONST_VECTOR_ELT (x, i);
-	    hash += hash_rtx (elt, GET_MODE (elt), 0);
+	    hash += cselib_hash_rtx (elt, GET_MODE (elt), 0);
 	  }
 
 	return hash;
@@ -646,7 +646,7 @@ hash_rtx (rtx x, enum machine_mode mode, int create)
       if (fmt[i] == 'e')
 	{
 	  rtx tem = XEXP (x, i);
-	  unsigned int tem_hash = hash_rtx (tem, 0, create);
+	  unsigned int tem_hash = cselib_hash_rtx (tem, 0, create);
 
 	  if (tem_hash == 0)
 	    return 0;
@@ -656,7 +656,7 @@ hash_rtx (rtx x, enum machine_mode mode, int create)
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
 	  {
-	    unsigned int tem_hash = hash_rtx (XVECEXP (x, i, j), 0, create);
+	    unsigned int tem_hash = cselib_hash_rtx (XVECEXP (x, i, j), 0, create);
 
 	    if (tem_hash == 0)
 	      return 0;
@@ -926,7 +926,7 @@ cselib_lookup (rtx x, enum machine_mode mode, int create)
   if (MEM_P (x))
     return cselib_lookup_mem (x, create);
 
-  hashval = hash_rtx (x, mode, create);
+  hashval = cselib_hash_rtx (x, mode, create);
   /* Can't even create if hashing is not possible.  */
   if (! hashval)
     return 0;
