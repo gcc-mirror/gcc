@@ -74,12 +74,12 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_destroy
 #pragma weak pthread_self
-/* These really should be protected by _POSIX_PRIORITY_SCHEDULING, but
-   we use them inside a _POSIX_THREAD_PRIORITY_SCHEDULING block.  */
+#ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
 #pragma weak sched_get_priority_max
 #pragma weak sched_get_priority_min
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
+#endif /* _POSIX_PRIORITY_SCHEDULING */
 #pragma weak sched_yield
 #pragma weak pthread_attr_destroy
 #pragma weak pthread_attr_init
@@ -187,6 +187,7 @@ __gthread_objc_thread_set_priority (int priority)
     return -1;
   else
     {
+#ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
       pthread_t thread_id = pthread_self ();
       int policy;
@@ -216,6 +217,7 @@ __gthread_objc_thread_set_priority (int priority)
 	    return 0;
 	}
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
+#endif /* _POSIX_PRIORITY_SCHEDULING */
       return -1;
     }
 }
@@ -224,6 +226,7 @@ __gthread_objc_thread_set_priority (int priority)
 static inline int
 __gthread_objc_thread_get_priority (void)
 {
+#ifdef _POSIX_PRIORITY_SCHEDULING
 #ifdef _POSIX_THREAD_PRIORITY_SCHEDULING
   if (__gthread_active_p ())
     {
@@ -237,6 +240,7 @@ __gthread_objc_thread_get_priority (void)
     }
   else
 #endif /* _POSIX_THREAD_PRIORITY_SCHEDULING */
+#endif /* _POSIX_PRIORITY_SCHEDULING */
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
 
