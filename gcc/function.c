@@ -4460,18 +4460,6 @@ expand_function_end (void)
   if (flag_exceptions && USING_SJLJ_EXCEPTIONS)
     sjlj_emit_function_exit_after (get_last_insn ());
 
-  /* If we had calls to alloca, and this machine needs
-     an accurate stack pointer to exit the function,
-     insert some code to save and restore the stack pointer.  */
-  if (! EXIT_IGNORE_STACK
-      && current_function_calls_alloca)
-    {
-      rtx tem = 0;
-
-      emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
-      emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
-    }
-
   /* If scalar return value was computed in a pseudo-reg, or was a named
      return value that got dumped to the stack, copy that to the hard
      return register.  */
@@ -4598,6 +4586,18 @@ expand_function_end (void)
 
   /* Output the label for the naked return from the function.  */
   emit_label (naked_return_label);
+
+  /* If we had calls to alloca, and this machine needs
+     an accurate stack pointer to exit the function,
+     insert some code to save and restore the stack pointer.  */
+  if (! EXIT_IGNORE_STACK
+      && current_function_calls_alloca)
+    {
+      rtx tem = 0;
+
+      emit_stack_save (SAVE_FUNCTION, &tem, parm_birth_insn);
+      emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
+    }
 
   /* ??? This should no longer be necessary since stupid is no longer with
      us, but there are some parts of the compiler (eg reload_combine, and

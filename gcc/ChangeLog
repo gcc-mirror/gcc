@@ -1,3 +1,9 @@
+2005-01-26  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* function.c (expand_function_end): If current_function_calls_alloca,
+	emit stack restore in a place that is reached when the function falls
+	through at the end.
+
 2005-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (../$(build_subdir)/fixincludes/fixincl): Add dummy
