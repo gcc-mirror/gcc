@@ -1,3 +1,11 @@
+2001-09-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/DataInputStream.java (readChar): Use readFully.
+	(readInt): Likewise.
+	(readLong): Likewise.
+	(readShort): Likewise.
+	(readUnsignedShort): Likewise.
+
 2001-09-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/PosixProcess.java (exitValue): Implement here. Throw 
