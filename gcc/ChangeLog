@@ -1,3 +1,8 @@
+2001-06-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+  
+	* pself.c, pself1.c, pself2.c, pself3.c, pself4.c, pself5.c:
+	Remove.
+
 2001-06-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* install.texi: Remove more obsolete documentation.
