@@ -1,3 +1,11 @@
+Thu Dec  6 06:55:13 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (assing_parms): Fix typo in last change.
+	* config/clipper.c (clipper_builtin_saveregs): Remove Checker code.
+	* config/m88k/m88k.c (m88k_builtin_saveregs): Likewise.
+	* config/pa/pa.c (hppa_builtin_saveregs): Likewise.
+	* config/sparc/sparc.c (sparc_builtin_saveregs): Likewise.
+
 2001-12-06  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_unique_section): Simplify and

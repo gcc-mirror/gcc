@@ -4913,13 +4913,6 @@ hppa_builtin_saveregs ()
      last argument register store.  So we emit a blockage insn here.  */
   emit_insn (gen_blockage ());
 
-  if (current_function_check_memory_usage)
-    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-		       dest, ptr_mode,
-		       GEN_INT (4 * UNITS_PER_WORD), TYPE_MODE (sizetype),
-		       GEN_INT (MEMORY_USE_RW),
-		       TYPE_MODE (integer_type_node));
-
   return copy_to_reg (expand_binop (Pmode, add_optab,
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));

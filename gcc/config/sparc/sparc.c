@@ -4828,15 +4828,6 @@ sparc_builtin_saveregs ()
 			  GEN_INT (STACK_POINTER_OFFSET
 				   + UNITS_PER_WORD * first_reg));
 
-  if (current_function_check_memory_usage
-      && first_reg < NPARM_REGS (word_mode))
-    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-		       address, ptr_mode,
-		       GEN_INT (UNITS_PER_WORD 
-			 	* (NPARM_REGS (word_mode) - first_reg)),
-		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW),
-		       TYPE_MODE (integer_type_node));
-
   return address;
 }
 
