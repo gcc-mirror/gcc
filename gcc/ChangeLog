@@ -1,3 +1,35 @@
+2005-03-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* rtl.h (copy_rtx_ptr_loc, print_rtx_ptr_loc, join_c_conditions)
+	(print_c_condition): Declare.
+	* read-rtl.c (ptr_loc): New structure.
+	(ptr_locs, ptr_loc_obstack, joined_conditions)
+	(joined_conditions_obstack): New variables.
+	(leading_ptr_hash, leading_ptr_eq_p, set_rtx_ptr_loc)
+	(get_rtx_ptr_loc, copy_rtx_ptr_loc, print_rtx_ptr_loc)
+	(join_c_conditions, print_c_condition): New functions.
+	(apply_macro_to_string): Associate the new string with the same
+	source location as the old one.
+	(add_condition_to_string): Use join_c_conditions.
+	(read_string): Use set_rtx_ptr_loc to record a filename and line
+	number for the string.
+	(read_rtx): Initialize the new variables above.
+	* genattrtab.c (write_test_expr, write_attr_value): Use
+	print_c_condition.
+	* genconditions.c (write_header): Don't define MAYBE_EVAL.  Move its
+	comment above the GCC_VERSION check.
+	(write_one_condition): Use print_rtx_ptr_loc and print_c_condition.
+	Inline the definition of MAYBE_EVAL.
+	* genemit.c (gen_expand, gen_split): Use print_rtx_ptr_loc.
+	* genoutput.c (process_template): Likewise.
+	* genpreds.c (write_predicate_subfunction): Likewise.
+	(write_predicate_expr): Use print_c_condition.
+	* genrecog.c (write_cond): Likewise.
+	* gensupport.c (process_rtx): Use join_c_conditions to join the
+	conditions of a define_insn_and_split.  Record a source location
+	for the string after the "&&".
+	(alter_test_for_insn): Use join_c_conditions.
+
 2005-03-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	Revert for now:

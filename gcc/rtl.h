@@ -2119,6 +2119,10 @@ struct md_constant { char *name, *value; };
 /* In read-rtl.c */
 extern int read_skip_spaces (FILE *);
 extern bool read_rtx (FILE *, rtx *, int *);
+extern void copy_rtx_ptr_loc (const void *, const void *);
+extern void print_rtx_ptr_loc (const void *);
+extern const char *join_c_conditions (const char *, const char *);
+extern void print_c_condition (const char *);
 extern const char *read_rtx_filename;
 extern int read_rtx_lineno;
 
