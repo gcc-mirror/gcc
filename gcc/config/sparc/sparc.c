@@ -137,6 +137,7 @@ static void sparc_init_modes (void);
 static int save_regs (FILE *, int, int, const char *, int, int, HOST_WIDE_INT);
 static int restore_regs (FILE *, int, int, const char *, int, int);
 static void build_big_number (FILE *, HOST_WIDE_INT, const char *);
+static void scan_record_type (tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 				tree, int, int, int *, int *);
 
@@ -4816,8 +4817,39 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
   cum->libcall_p = fntype == 0;
 }
 
+/* Scan the record type TYPE and return the following predicates:
+    - INTREGS_P: the record contains at least one field or sub-field
+      that is eligible for promotion in integer registers.
+    - FP_REGS_P: the record contains at least one field or sub-field
+      that is eligible for promotion in floating-point registers.
+    - PACKED_P: the record contains at least one field that is packed.
+
+   Sub-fields are not taken into account for the PACKED_P predicate.  */
+
+static void
+scan_record_type(tree type, int *intregs_p, int *fpregs_p, int *packed_p)
+{
+  tree field;
+
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL)
+	{
+	  if (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE)
+	    scan_record_type (TREE_TYPE (field), intregs_p, fpregs_p, 0);
+	  else if (FLOAT_TYPE_P (TREE_TYPE (field)) && TARGET_FPU)
+	    *fpregs_p = 1;
+	  else
+	    *intregs_p = 1;
+
+	  if (packed_p && DECL_PACKED (field))
+	    *packed_p = 1;
+	}
+    }
+}
+
 /* Compute the slot number to pass an argument in.
-   Returns the slot number or -1 if passing on the stack.
+   Return the slot number or -1 if passing on the stack.
 
    CUM is a variable of type CUMULATIVE_ARGS which gives info about
     the preceding args and about the function being called.
@@ -4916,26 +4948,14 @@ function_arg_slotno (const struct sparc_args *cum, enum machine_mode mode,
 	}
       else
 	{
-	  tree field;
-	  int intregs_p = 0, fpregs_p = 0;
-	  /* The ABI obviously doesn't specify how packed
-	     structures are passed.  These are defined to be passed
-	     in int regs if possible, otherwise memory.  */
-	  int packed_p = 0;
+	  int intregs_p = 0, fpregs_p = 0, packed_p = 0;
 
-	  /* First see what kinds of registers we need.  */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-	    {
-	      if (TREE_CODE (field) == FIELD_DECL)
-		{
-		  if (FLOAT_TYPE_P (TREE_TYPE (field)) && TARGET_FPU)
-		    fpregs_p = 1;
-		  else
-		    intregs_p = 1;
-		  if (DECL_PACKED (field))
-		    packed_p = 1;
-		}
-	    }
+	  /* First see what kinds of registers we would need.  */
+	  scan_record_type (type, &intregs_p, &fpregs_p, &packed_p);
+
+	  /* The ABI obviously doesn't specify how packed structures
+	     are passed.  These are defined to be passed in int regs
+	     if possible, otherwise memory.  */
 	  if (packed_p || !named)
 	    fpregs_p = 0, intregs_p = 1;
 

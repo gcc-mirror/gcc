@@ -1,3 +1,9 @@
+2004-01-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (scan_record_type): New function.
+	(function_arg_slotno): Use it to determine which kinds of
+	registers the record can be passed in.
+
 2004-01-22  James A. Mmorrison  <ja2morri@uwaterloo.ca>
 
 	* config/pa/fptr.c: Fix old-style definition.
@@ -2224,3 +2230,4 @@
 	* invoke.texi (-O1): Document change.
 
 See ChangeLog.10 for earlier changes.
+
