@@ -1911,13 +1911,8 @@ expand_loop_continue_here ()
 void
 expand_end_loop ()
 {
-  register rtx insn;
-  register rtx start_label;
-  rtx last_test_insn = 0;
-  int num_insns = 0;
-    
-  insn = get_last_insn ();
-  start_label = loop_stack->data.loop.start_label;
+  rtx start_label = loop_stack->data.loop.start_label;
+  rtx insn = get_last_insn ();
 
   /* Mark the continue-point at the top of the loop if none elsewhere.  */
   if (start_label == loop_stack->data.loop.continue_label)
@@ -1938,7 +1933,7 @@ expand_end_loop ()
          if (test) goto end_label;
 	 body;
 	 goto start_label;
-	 end_label;
+	 end_label:
 	 
      transform it to look like:
 
@@ -1948,10 +1943,11 @@ expand_end_loop ()
 	 start_label:
 	 if (test) goto end_label;
 	 goto newstart_label;
-	 end_label;
+	 end_label:
 
      Here, the `test' may actually consist of some reasonably complex
      code, terminating in a test.  */
+
   if (optimize
       &&
       ! (GET_CODE (insn) == JUMP_INSN
@@ -1960,6 +1956,8 @@ expand_end_loop ()
 	 && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE))
     {
       int eh_regions = 0;
+      int num_insns = 0;
+      rtx last_test_insn = NULL_RTX;
 
       /* Scan insns from the top of the loop looking for a qualified
 	 conditional exit.  */
@@ -2036,31 +2034,46 @@ expand_end_loop ()
 	        So we don't look for tests within an EH region.  */
 	    continue;
 
-	  if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) == SET
-	      && SET_DEST (PATTERN (insn)) == pc_rtx
-	      && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE
-	      && ((GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 1)) == LABEL_REF
-		   && ((XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0)
-			== loop_stack->data.loop.end_label)
-		       || (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0)
-			   == loop_stack->data.loop.alt_end_label)))
-		  || (GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 2)) == LABEL_REF
-		      && ((XEXP (XEXP (SET_SRC (PATTERN (insn)), 2), 0)
-			   == loop_stack->data.loop.end_label)
-			  || (XEXP (XEXP (SET_SRC (PATTERN (insn)), 2), 0)
-			      == loop_stack->data.loop.alt_end_label)))))
-	    last_test_insn = insn;
-
-	  if (last_test_insn == 0 && GET_CODE (insn) == JUMP_INSN
+	  if (GET_CODE (insn) == JUMP_INSN 
 	      && GET_CODE (PATTERN (insn)) == SET
-	      && SET_DEST (PATTERN (insn)) == pc_rtx
-	      && GET_CODE (SET_SRC (PATTERN (insn))) == LABEL_REF
-	      && ((XEXP (SET_SRC (PATTERN (insn)), 0)
-		   == loop_stack->data.loop.end_label)
-		  || (XEXP (SET_SRC (PATTERN (insn)), 0)
-		      == loop_stack->data.loop.alt_end_label)))
-	    /* Include BARRIER.  */
-	    last_test_insn = NEXT_INSN (insn);
+	      && SET_DEST (PATTERN (insn)) == pc_rtx)
+	    {
+	      /* This is indeed a jump.  */
+	      rtx dest1 = NULL_RTX;
+	      rtx dest2 = NULL_RTX;
+	      rtx potential_last_test;
+	      if (GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
+		{
+		  /* A conditional jump.  */
+		  dest1 = XEXP (SET_SRC (PATTERN (insn)), 1);
+		  dest2 = XEXP (SET_SRC (PATTERN (insn)), 2);
+		  potential_last_test = insn;
+		}
+	      else
+		{
+		  /* An unconditional jump.  */
+		  dest1 = SET_SRC (PATTERN (insn));
+		  /* Include the BARRIER after the JUMP.  */
+		  potential_last_test = NEXT_INSN (insn);
+		}
+
+	      do {
+		if (dest1 && GET_CODE (dest1) == LABEL_REF
+		    && ((XEXP (dest1, 0) 
+			 == loop_stack->data.loop.alt_end_label)
+			|| (XEXP (dest1, 0) 
+			    == loop_stack->data.loop.end_label)))
+		  {
+		    last_test_insn = potential_last_test;
+		    break;
+		  }
+
+		/* If this was a conditional jump, there may be
+		   another label at which we should look.  */
+		dest1 = dest2;
+		dest2 = NULL_RTX;
+	      } while (dest1);
+	    }
 	}
 
       if (last_test_insn != 0 && last_test_insn != get_last_insn ())
