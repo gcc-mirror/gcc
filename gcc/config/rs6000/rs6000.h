@@ -2429,7 +2429,7 @@ extern int toc_initialized;
       if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL			\
 	  && DEFAULT_ABI == ABI_AIX)					\
 	{								\
-	  fputs (",.", (FILE));						\
+	  fputs ("\n\t.weak\t.", (FILE));				\
 	  assemble_name ((FILE), (NAME)); 				\
 	}								\
       fputc ('\n', (FILE));						\
