@@ -1,3 +1,8 @@
+Tue Feb 15 23:22:26 2000  Andrew Haley  <aph@cygnus.com>
+
+	* config/sh/sh.md: Guard insn splits against illegal registers.
+	* config/sh/sh.h: Correct comment about macros.
+
 Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
                           Andrew MacLeod  <amacleod@cygnus.com>
 

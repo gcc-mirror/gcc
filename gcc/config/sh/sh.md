@@ -2768,7 +2768,8 @@
     FAIL;
   reg = XEXP (addr, 0);
   const_int = XEXP (addr, 1);
-  if (GET_CODE (reg) != REG || GET_CODE (const_int) != CONST_INT)
+  if (! (BASE_REGISTER_RTX_P (reg) && INDEX_REGISTER_RTX_P (operands[2])
+	 && GET_CODE (const_int) == CONST_INT))
     FAIL;
   emit_move_insn (operands[2], const_int);
   emit_move_insn (operands[0],
@@ -2794,7 +2795,8 @@
     FAIL;
   reg = XEXP (addr, 0);
   const_int = XEXP (addr, 1);
-  if (GET_CODE (reg) != REG || GET_CODE (const_int) != CONST_INT)
+  if (! (BASE_REGISTER_RTX_P (reg) && INDEX_REGISTER_RTX_P (operands[2])
+	 && GET_CODE (const_int) == CONST_INT))
     FAIL;
   emit_move_insn (operands[2], const_int);
   emit_move_insn (change_address (operands[1], VOIDmode,
