@@ -2469,6 +2469,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   char pref_or_nothing[MAX_RECOG_OPERANDS];
   /* Nonzero for a MEM operand whose entire address needs a reload.  */
   int address_reloaded[MAX_RECOG_OPERANDS];
+  /* Nonzero for an address operand that needs to be completely reloaded.  */
+  int address_operand_reloaded[MAX_RECOG_OPERANDS];
   /* Value of enum reload_type to use for operand.  */
   enum reload_type operand_type[MAX_RECOG_OPERANDS];
   /* Value of enum reload_type to use within address of operand.  */
@@ -2647,6 +2649,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       RTX_CODE code = GET_CODE (recog_data.operand[i]);
 
       address_reloaded[i] = 0;
+      address_operand_reloaded[i] = 0;
       operand_type[i] = (modified[i] == RELOAD_READ ? RELOAD_FOR_INPUT
 			 : modified[i] == RELOAD_WRITE ? RELOAD_FOR_OUTPUT
 			 : RELOAD_OTHER);
@@ -2661,10 +2664,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       else if (constraints[i][0] == 'p'
 	       || EXTRA_ADDRESS_CONSTRAINT (constraints[i][0]))
 	{
-	  find_reloads_address (recog_data.operand_mode[i], (rtx*) 0,
-				recog_data.operand[i],
-				recog_data.operand_loc[i],
-				i, operand_type[i], ind_levels, insn);
+	  address_operand_reloaded[i]
+	    = find_reloads_address (recog_data.operand_mode[i], (rtx*) 0,
+				    recog_data.operand[i],
+				    recog_data.operand_loc[i],
+				    i, operand_type[i], ind_levels, insn);
 
 	  /* If we now have a simple operand where we used to have a
 	     PLUS or MULT, re-recognize and try again.  */
@@ -2681,6 +2685,10 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	  recog_data.operand[i] = *recog_data.operand_loc[i];
 	  substed_operand[i] = recog_data.operand[i];
+
+	  /* Address operands are reloaded in their existing mode,
+	     no matter what is specified in the machine description.  */
+	  operand_mode[i] = GET_MODE (recog_data.operand[i]);
 	}
       else if (code == MEM)
 	{
@@ -3280,10 +3288,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   the address into a base register.  */
 			this_alternative[i] = (int) MODE_BASE_REG_CLASS (VOIDmode);
 			badop = 0;
-
-			/* Address constraints are reloaded in Pmode, no matter
-			   what mode is given in the machine description.  */
-			operand_mode[i] = Pmode;
 			break;
 		      }
 
@@ -3853,6 +3857,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       }
     else if (goal_alternative_matched[i] < 0
 	     && goal_alternative_matches[i] < 0
+	     && !address_operand_reloaded[i]
 	     && optimize)
       {
 	/* For each non-matching operand that's a MEM or a pseudo-register
