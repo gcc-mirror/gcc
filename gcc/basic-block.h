@@ -264,3 +264,6 @@ extern void sbitmap_union_of_successors PROTO ((sbitmap, sbitmap *, int,
 						int_list_ptr *));
 extern void compute_dominators PROTO ((sbitmap *, sbitmap *,
 				       int_list_ptr *, int_list_ptr *));
+
+/* In flow.c */
+extern void init_regset_vector PROTO ((regset *, int, struct obstack *));

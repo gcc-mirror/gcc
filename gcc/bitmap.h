@@ -97,6 +97,8 @@ extern bitmap bitmap_initialize PROTO((bitmap));
 /* Release all memory held by bitmaps.  */
 extern void bitmap_release_memory PROTO((void));
 
+extern void debug_bitmap PROTO((bitmap));
+
 /* Allocate a bitmap with oballoc.  */
 #define BITMAP_OBSTACK_ALLOC(OBSTACK)				\
   bitmap_initialize ((bitmap) obstack_alloc (OBSTACK, sizeof (bitmap_head)))
