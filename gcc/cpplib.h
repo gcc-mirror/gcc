@@ -20,10 +20,11 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  In other words, you are welcome to use, share and improve this program.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
-#ifndef __GCC_CPPLIB__
-#define __GCC_CPPLIB__
+#ifndef GCC_CPPLIB_H
+#define GCC_CPPLIB_H
 
 #include <sys/types.h>
+#include "hashtable.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,7 @@ typedef struct cpp_callbacks cpp_callbacks;
 
 struct answer;
 struct file_name_map_list;
+struct ht;
 
 /* The first two groups, apart from '=', can appear in preprocessor
    expressions.  This allows a lookup table to be implemented in
@@ -177,7 +179,7 @@ struct cpp_token
 
   union
   {
-    struct cpp_hashnode *node;	/* An identifier.  */
+    cpp_hashnode *node;		/* An identifier.  */
     struct cpp_string str;	/* A string, or number.  */
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
     unsigned char c;		/* Character represented by CPP_OTHER.  */
@@ -466,18 +468,22 @@ enum builtin_type
   BT_STDC			/* `__STDC__' */
 };
 
-#define NODE_LEN(NODE)		(NODE->len)
-#define NODE_NAME(NODE)		(NODE->name)
+#define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
+#define HT_NODE(NODE)		((ht_identifier *) (NODE))
+#define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
+#define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
 
+/* The common part of an identifier node shared amongst all 3 C front
+   ends.  Also used to store CPP identifiers, which are a superset of
+   identifiers in the grammatical sense.  */
 struct cpp_hashnode
 {
-  const unsigned char *name;		/* Null-terminated name.  */
-  unsigned int hash;			/* Cached hash value.  */
-  unsigned short len;			/* Length of name excluding null.  */
+  struct ht_identifier ident;
   unsigned short arg_index;		/* Macro argument index.  */
   unsigned char directive_index;	/* Index into directive table.  */
-  ENUM_BITFIELD(node_type) type : 8;	/* Node type.  */
-  unsigned char flags;			/* Node flags.  */
+  unsigned char rid_code;		/* Rid code - for front ends.  */
+  ENUM_BITFIELD(node_type) type : 8;	/* CPP node type.  */
+  unsigned char flags;			/* CPP flags.  */
 
   union
   {
@@ -488,8 +494,12 @@ struct cpp_hashnode
   } value;
 };
 
-/* Call this first to get a handle to pass to other functions.  */
-extern cpp_reader *cpp_create_reader PARAMS ((enum c_lang));
+/* Call this first to get a handle to pass to other functions.  If you
+   want cpplib to manage its own hashtable, pass in a NULL pointer.
+   Or you can pass in an initialised hash table that cpplib will use;
+   this technique is used by the C front ends.  */
+extern cpp_reader *cpp_create_reader PARAMS ((struct ht *,
+					      enum c_lang));
 
 /* Call this to release the handle.  Any use of the handle after this
    function returns is invalid.  Returns cpp_errors (pfile).  */
@@ -593,13 +603,16 @@ extern void cpp_output_token		PARAMS ((const cpp_token *, FILE *));
 extern const char *cpp_type2name	PARAMS ((enum cpp_ttype));
 
 /* In cpphash.c */
+
+/* Lookup an identifier in the hashtable.  Puts the identifier in the
+   table if it is not already there.  */
 extern cpp_hashnode *cpp_lookup		PARAMS ((cpp_reader *,
-						 const unsigned char *, size_t));
+						 const unsigned char *,
+						 unsigned int));
+
+typedef int (*cpp_cb) PARAMS ((cpp_reader *, cpp_hashnode *, void *));
 extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
-						 int (*) PARAMS ((cpp_reader *,
-								  cpp_hashnode *,
-								  void *)),
-						 void *));
+						 cpp_cb, void *));
 
 /* In cppmacro.c */
 extern void cpp_scan_buffer_nooutput	PARAMS ((cpp_reader *, int));
@@ -614,4 +627,4 @@ extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 #ifdef __cplusplus
 }
 #endif
-#endif /* __GCC_CPPLIB__ */
+#endif /* GCC_CPPLIB_H */

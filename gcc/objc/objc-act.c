@@ -727,7 +727,10 @@ generate_struct_by_value_array ()
 static void
 objc_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_OBJC);
+  /* Make identifier nodes long enough for the language-specific slots.  */
+  set_identifier_size (sizeof (struct lang_identifier));
+
+  parse_in = cpp_create_reader (ident_hash, CLK_OBJC);
   c_language = clk_objective_c;
 }
 

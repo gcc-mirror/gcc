@@ -19,11 +19,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    that need to be visible across files.  It's called cpphash.h for
    historical reasons.  */
 
-#ifndef __GCC_CPPHASH__
-#define __GCC_CPPHASH__
+#ifndef GCC_CPPHASH_H
+#define GCC_CPPHASH_H
 
-struct directive;		/* These are deliberately incomplete.  */
-struct htab;
+#include "hashtable.h"
+
+struct directive;		/* Deliberately incomplete.  */
 
 /* Test if a sign is valid within a preprocessing number.  */
 #define VALID_SIGN(c, prevc) \
@@ -299,9 +300,6 @@ struct cpp_reader
   /* Current depth in #include directives.  */
   unsigned int include_depth;
 
-  /* Hash table of macros and assertions.  See cpphash.c.  */
-  struct htab *hashtab;
-
   /* Tree of other included files.  See cppfiles.c.  */
   struct splay_tree_s *all_include_files;
 
@@ -318,11 +316,11 @@ struct cpp_reader
 
   /* Obstack holding all macro hash nodes.  This never shrinks.
      See cpphash.c */
-  struct obstack *hash_ob;
+  struct obstack hash_ob;
 
   /* Obstack holding buffer and conditional structures.  This is a
-     real stack.  See cpplib.c */
-  struct obstack *buffer_ob;
+     real stack.  See cpplib.c.  */
+  struct obstack buffer_ob;
 
   /* Pragma table - dynamic, because a library user can add to the
      list of recognized pragmas.  */
@@ -330,6 +328,9 @@ struct cpp_reader
 
   /* Call backs.  */
   struct cpp_callbacks cb;
+
+  /* Identifier hash table.  */ 
+  struct ht *hash_table;
 
   /* User visible options.  */
   struct cpp_options opts;
@@ -347,6 +348,9 @@ struct cpp_reader
   /* Whether to print our version number.  Done this way so
      we don't get it twice for -v -version.  */
   unsigned char print_version;
+
+  /* Whether cpplib owns the hashtable.  */
+  unsigned char our_hashtable;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -384,10 +388,6 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 
-/* Hash step.  The hash calculation is duplicated in cpp_lookup and
-   parse_name.  */
-#define HASHSTEP(r, c) ((r) * 67 + (c - 113));
-
 /* In cpperror.c  */
 enum error_type { WARNING = 0, WARNING_SYSHDR, PEDWARN, ERROR, FATAL, ICE };
 extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
@@ -403,10 +403,8 @@ extern void _cpp_push_token		PARAMS ((cpp_reader *, const cpp_token *,
 						 const cpp_lexer_pos *));
 
 /* In cpphash.c */
-extern void _cpp_init_hashtable		PARAMS ((cpp_reader *));
-extern void _cpp_cleanup_hashtable	PARAMS ((cpp_reader *));
-extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, size_t,
-						    unsigned int));
+extern void _cpp_init_hashtable		PARAMS ((cpp_reader *, hash_table *));
+extern void _cpp_destroy_hashtable	PARAMS ((cpp_reader *));
 
 /* In cppfiles.c */
 extern void _cpp_fake_include		PARAMS ((cpp_reader *, const char *));
@@ -445,8 +443,7 @@ extern int _cpp_test_assertion PARAMS ((cpp_reader *, int *));
 extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));
 extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
 extern void _cpp_do__Pragma	PARAMS ((cpp_reader *));
-extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
-extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
+extern void _cpp_init_directives PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum cpp_fc_reason,
 					 const char *, unsigned int));
@@ -517,4 +514,4 @@ ufputs (s, f)
   return fputs ((const char *)s, f);
 }
 
-#endif
+#endif /* GCC_CPPHASH_H */

@@ -1,3 +1,61 @@
+2001-05-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in (OBJS, LIBCPP_OBJS, LIBCPP_DEPS,
+	cpplib.o, cpphash.o, fix-header): Update.
+	(hashtable.o): New target.
+	* c-common.h: Include cpplib.h.  Define C_RID_CODE and
+	struct c_common_identifier here.
+	* c-lang.c (c_init_options): Update.  Call set_identifier_size.
+	* c-lex.c (c_lex): Update.
+	* c-pragma.h: Update.
+	* c-tree.h (struct lang_identifier): Contain c_common_identifier.
+	Delete rid_code.
+	(C_RID_CODE): Delete.
+	* cpphash.c: Rewrite to use hashtable.c.
+	* cpphash.h: Update include guards.
+	(struct cpp_reader): Remove hashtab.
+	hash_ob and buffer_ob are no longer pointers.  Add hash_table
+	and our_hashtable.
+	(HASHSTEP, _cpp_init_hashtable,	_cpp_lookup_with_hash): Delete.
+	(_cpp_cleanup_hashtable): Rename _cpp_destroy_hashtable.
+	(_cpp_cleanup_stacks): Rename _cpp_init_directives.
+	* cppinit.c (cpp_create_reader): Update.
+	* cpplex.c (cpp_ideq, parse_identifier, cpp_output_token): Update.
+	(cpp_interpret_charconst): Eliminate warning.
+	* cpplib.c (do_pragma, do_endif, push_conditional,
+	cpp_push_buffer, cpp_pop_buffer): Update.
+	(_cpp_init_stacks): Rename cpp_init_directives.
+	(_cpp_cleanup_stacks): Remove.
+	* cpplib.h: Update include guards.  Include tree-core.h and c-rid.h.
+	(cpp_hashnode, cpp_token, NODE_LEN, NODE_NAME,
+	 cpp_forall_identifiers, cpp_create_reader): Update.
+	(C_RID_CODE, cpp_make_node): New.
+	(c_common_identifier): New identifier node for C front ends.
+	* cppmain.c (main): Update.
+	* fix-header.c (read_scan_file): Update.
+	* flags.h (id_clash_len): Make unsigned.
+	* ggc.h (ggc_mark_nonnull_tree): New.
+	* hashtable.c: New.
+	* hashtable.h: New.
+	* stringpool.c: Update comments and copyright.  Update to use
+	hashtable.c.
+	* toplev.c (approx_sqrt): Move to hashtable.c.
+	(id_clash_len): Make unsigned.
+	* toplev.h (ident_hash): New.
+	* tree.c (gcc_obstack_init): Move to hashtable.c.
+	* tree.h: Include hashtable.h.
+	(IDENTIFIER_POINTER, IDENTIFIER_LENGTH): Update.
+	(GCC_IDENT_TO_HT_IDENT, HT_IDENT_TO_GCC_IDENT): New.
+	(struct tree_identifier): Update.
+	(make_identifier): New.
+cp:
+	* cp-tree.h (struct lang_identifier, C_RID_YYCODE): Update.
+	(C_RID_CODE): Remove.
+	* lex.c (cxx_init_options): Call set_identifier_size.  Update.
+	(init_parse): Don't do it here.
+objc:
+	* objc-act.c (objc_init_options): Call set_identifier_size. Update.
+
 Sat May 19 18:23:04 2001  Richard Henderson <rth@redhat.com>
 
 	* except.c (dw2_build_landing_pads): Use word_mode, not Pmode,

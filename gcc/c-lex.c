@@ -997,7 +997,12 @@ c_lex (value)
       goto retry;
       
     case CPP_NAME:
-      *value = get_identifier ((const char *) NODE_NAME (tok.val.node));
+      {
+	tree node = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok.val.node));
+	if (TREE_CODE (node) != IDENTIFIER_NODE)
+	  make_identifier (node);
+	*value = node;
+      }
       break;
 
     case CPP_INT:

@@ -1,4 +1,4 @@
-/* Part of CPP library.  (Identifier and string tables.)
+/* Hash tables for the CPP library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
@@ -27,266 +27,95 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "obstack.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
+static cpp_hashnode *alloc_node PARAMS ((hash_table *));
 
-/* Initial hash table size.  (It can grow if necessary.)  This is the
-   largest prime number smaller than 2**12. */
-#define HASHSIZE 4093
+/* Return an identifier node for hashtable.c.  Used by cpplib except
+   when integrated with the C front ends.  */
 
-/* This is the structure used for the hash table.  */
-struct htab
+static cpp_hashnode *
+alloc_node (table)
+     hash_table *table;
 {
-  struct cpp_hashnode **entries;
-  size_t size;
-  size_t nelts;
-};
-
-static void expand_hash PARAMS ((struct htab *));
-static unsigned long higher_prime_number PARAMS ((unsigned long));
-
-/* Set up and tear down internal structures for macro expansion.  */
-void
-_cpp_init_hashtable (pfile)
-     cpp_reader *pfile;
-{
-  pfile->hash_ob = xnew (struct obstack);
-  obstack_init (pfile->hash_ob);
-
-  pfile->hashtab = xobnew (pfile->hash_ob, struct htab);
-
-  pfile->hashtab->nelts = 0;
-  pfile->hashtab->size = HASHSIZE;
-  pfile->hashtab->entries = xcnewvec (cpp_hashnode *, HASHSIZE);
+  cpp_hashnode *node;
+  
+  node = obstack_alloc (&table->pfile->hash_ob, sizeof (cpp_hashnode));
+  memset ((PTR) node, 0, sizeof (cpp_hashnode));
+  return node;
 }
+
+/* Set up the identifier hash table.  Use TABLE if non-null, otherwise
+   create our own.  */
 
 void
-_cpp_cleanup_hashtable (pfile)
+_cpp_init_hashtable (pfile, table)
      cpp_reader *pfile;
+     hash_table *table;
 {
-  cpp_hashnode **p, **limit;
-
-  p = pfile->hashtab->entries;
-  limit = p + pfile->hashtab->size;
-  do
+  if (table == NULL)
     {
-      if (*p)
-	_cpp_free_definition (*p);
+      pfile->our_hashtable = 1;
+      table = ht_create (13);	/* 8K (=2^13) entries.  */
+      table->alloc_node = (hashnode (*) PARAMS ((hash_table *))) alloc_node;
+      gcc_obstack_init (&pfile->hash_ob);
     }
-  while (++p < limit);
 
-  free (pfile->hashtab->entries);
-  obstack_free (pfile->hash_ob, 0);
-  free (pfile->hash_ob);
+  table->pfile = pfile;
+  pfile->hash_table = table;
 }
 
-/* The code below is a specialization of Vladimir Makarov's expandable
-   hash tables (see libiberty/hashtab.c).  The abstraction penalty was
-   too high to continue using the generic form.  This code knows
-   intrinsically how to calculate a hash value, and how to compare an
-   existing entry with a potential new one.  Also, the ability to
-   delete members from the table has been removed.  */
+/* Tear down the identifier hash table.  */
+
+void
+_cpp_destroy_hashtable (pfile)
+     cpp_reader *pfile;
+{
+  if (pfile->our_hashtable)
+    {
+      free (pfile->hash_table);
+      obstack_free (&pfile->hash_ob, 0);
+    }
+}
+
+/* Returns the hash entry for the STR of length LEN, creating one
+   if necessary.  */
 
 cpp_hashnode *
-cpp_lookup (pfile, name, len)
+cpp_lookup (pfile, str, len)
      cpp_reader *pfile;
-     const U_CHAR *name;
-     size_t len;
+     const unsigned char *str;
+     unsigned int len;
 {
-  size_t n = len;
-  unsigned int r = 0;
-  const U_CHAR *str = name;
-  U_CHAR *dest = _cpp_pool_reserve (&pfile->ident_pool, len + 1);
-
-  do
-    {
-      r = HASHSTEP (r, *str);
-      *dest++ = *str++;
-    }
-  while (--n);
-  *dest = '\0';
-
-  return _cpp_lookup_with_hash (pfile, len, r);
+  /* ht_lookup cannot return NULL.  */
+  return CPP_HASHNODE (ht_lookup (pfile->hash_table, str, len, HT_ALLOC));
 }
 
-/* NAME is a null-terminated identifier of length len.  It is assumed
-   to have been placed at the front of the identifier pool.  */
-cpp_hashnode *
-_cpp_lookup_with_hash (pfile, len, hash)
+/* Determine whether the str STR, of length LEN, is a defined macro.  */
+
+int
+cpp_defined (pfile, str, len)
      cpp_reader *pfile;
-     size_t len;
-     unsigned int hash;
+     const unsigned char *str;
+     int len;
 {
-  unsigned int index;
-  size_t size;
-  cpp_hashnode *entry;
-  cpp_hashnode **entries;
-  unsigned char *name = POOL_FRONT (&pfile->ident_pool);
+  cpp_hashnode *node;
 
-  entries = pfile->hashtab->entries;
-  size = pfile->hashtab->size;
+  node = CPP_HASHNODE (ht_lookup (pfile->hash_table, str, len, HT_NO_INSERT));
 
-  hash += len;
-  index = hash % size;
-
-  entry = entries[index];
-  if (entry)
-    {
-      unsigned int hash2;
-
-      if (entry->hash == hash && NODE_LEN (entry) == len
-	  && !memcmp (NODE_NAME (entry), name, len))
-	return entry;
-
-      hash2 = 1 + hash % (size - 2);
-
-      for (;;)
-	{
-	  index += hash2;
-	  if (index >= size)
-	    index -= size;
-	  entry = entries[index];
-
-	  if (entry == NULL)
-	    break;
-	  if (entry->hash == hash && NODE_LEN (entry) == len
-	      && !memcmp (NODE_NAME (entry), name, len))
-	    return entry;
-	}
-    }
-
-  /* Commit the memory for the identifier.  */
-  POOL_COMMIT (&pfile->ident_pool, len + 1);
-
-  /* Create a new hash node and insert it in the table.  */
-  entries[index] = obstack_alloc (pfile->hash_ob, sizeof (cpp_hashnode));
-
-  entry = entries[index];
-  entry->type = NT_VOID;
-  entry->flags = 0;
-  entry->directive_index = 0;
-  entry->arg_index = 0;
-  NODE_LEN (entry) = len;
-  entry->hash = hash;
-  NODE_NAME (entry) = name;
-  entry->value.macro = 0;
-
-  pfile->hashtab->nelts++;
-  if (size * 3 <= pfile->hashtab->nelts * 4)
-    expand_hash (pfile->hashtab);
-
-  return entry;
+  /* If it's of type NT_MACRO, it cannot be poisoned.  */
+  return node && node->type == NT_MACRO;
 }
 
-static void
-expand_hash (htab)
-     struct htab *htab;
-{
-  cpp_hashnode **oentries;
-  cpp_hashnode **olimit;
-  cpp_hashnode **p;
-  size_t size;
-
-  oentries = htab->entries;
-  olimit = oentries + htab->size;
-
-  htab->size = size = higher_prime_number (htab->size * 2);
-  htab->entries = xcnewvec (cpp_hashnode *, size);
-
-  for (p = oentries; p < olimit; p++)
-    {
-      if (*p != NULL)
-	{
-	  unsigned int index;
-	  unsigned int hash, hash2;
-	  cpp_hashnode *entry = *p;
-
-	  hash = entry->hash;
-	  index = hash % size;
-
-	  if (htab->entries[index] == NULL)
-	    {
-	    insert:
-	      htab->entries[index] = entry;
-	      continue;
-	    }
-
-	  hash2 = 1 + hash % (size - 2);
-	  for (;;)
-	    {
-	      index += hash2;
-	      if (index >= size)
-		index -= size;
-
-	      if (htab->entries[index] == NULL)
-		goto insert;
-	    }
-	}
-    }
-
-  free (oentries);
-}
-
-/* The following function returns the nearest prime number which is
-   greater than a given source number, N. */
-
-static unsigned long
-higher_prime_number (n)
-     unsigned long n;
-{
-  unsigned long i;
-
-  /* Ensure we have a larger number and then force to odd.  */
-  n++;  
-  n |= 0x01; 
-
-  /* All odd numbers < 9 are prime.  */
-  if (n < 9)
-    return n;
-
-  /* Otherwise find the next prime using a sieve.  */
-
- next:
-  for (i = 3; i * i <= n; i += 2)
-    if (n % i == 0)
-      {
-	 n += 2;
-	 goto next;
-       }
-
-  return n;
-}
+/* For all nodes in the hashtable, callback CB with parameters PFILE,
+   the node, and V.  */
 
 void
 cpp_forall_identifiers (pfile, cb, v)
      cpp_reader *pfile;
-     int (*cb) PARAMS ((cpp_reader *, cpp_hashnode *, void *));
-     void *v;
+     cpp_cb cb;
+     PTR v;
 {
-    cpp_hashnode **p, **limit;
-
-  p = pfile->hashtab->entries;
-  limit = p + pfile->hashtab->size;
-  do
-    {
-      if (*p)
-	if ((*cb) (pfile, *p, v) == 0)
-	  break;
-    }
-  while (++p < limit);
-}
-
-/* Determine whether the identifier ID, of length LEN, is a defined macro.  */
-int
-cpp_defined (pfile, id, len)
-     cpp_reader *pfile;
-     const U_CHAR *id;
-     int len;
-{
-  cpp_hashnode *hp = cpp_lookup (pfile, id, len);
-
-  /* If it's of type NT_MACRO, it cannot be poisoned.  */
-  return hp->type == NT_MACRO;
+  /* We don't need a proxy since the hash table's identifier comes
+     first in cpp_hashnode.  */
+  ht_forall (pfile->hash_table, (ht_cb) cb, v);
 }

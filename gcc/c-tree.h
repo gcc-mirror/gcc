@@ -36,10 +36,9 @@ Boston, MA 02111-1307, USA.  */
 
 struct lang_identifier
 {
-  struct tree_identifier ignore;
+  struct c_common_identifier ignore;
   tree global_value, local_value, label_value, implicit_decl;
   tree error_locus, limbo_value;
-  enum rid rid_code;
 };
 
 /* Wrapping c_lang_decl in another struct is an unfortunate
@@ -98,8 +97,6 @@ struct lang_decl
    and C_RID_YYCODE is the token number wanted by Yacc.  */
 
 #define C_IS_RESERVED_WORD(id) TREE_LANG_FLAG_0 (id)
-#define C_RID_CODE(id) \
-  (((struct lang_identifier *) (id))->rid_code)
 
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type

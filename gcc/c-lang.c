@@ -59,7 +59,10 @@ c_post_options ()
 static void
 c_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_GNUC89);
+  /* Make identifier nodes long enough for the language-specific slots.  */
+  set_identifier_size (sizeof (struct lang_identifier));
+
+  parse_in = cpp_create_reader (ident_hash, CLK_GNUC89);
 
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;

@@ -1536,7 +1536,8 @@ check_trad_stringification (pfile, macro, string)
 	{
 	  const cpp_hashnode *node = macro->params[i];
 
-	  if (NODE_LEN (node) == len && !memcmp (p, NODE_NAME (node), len))
+	  if (NODE_LEN (node) == len
+	      && !memcmp (p, NODE_NAME (node), len))
 	    {
 	      cpp_warning (pfile,
 	   "macro argument \"%s\" would be stringified with -traditional.",

@@ -61,7 +61,7 @@ extern void init_pragma PARAMS ((void));
 
 /* Duplicate prototypes for the register_pragma stuff and the typedef for
    cpp_reader, to avoid dragging cpplib.h in almost everywhere... */
-#ifndef __GCC_CPPLIB__
+#ifndef GCC_CPPLIB_H
 typedef struct cpp_reader cpp_reader;
 
 extern void cpp_register_pragma PARAMS ((cpp_reader *,

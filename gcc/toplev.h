@@ -169,6 +169,9 @@ struct lang_hooks
 /* Each front end provides its own.  */
 extern struct lang_hooks lang_hooks;
 
+/* The hashtable, so that the C front ends can pass it to cpplib.  */
+extern struct ht *ident_hash;
+
 /* These functions can be used by targets to set the flags originally
    implied by -ffast-math and -fno-fast-math.  */
 

@@ -258,7 +258,10 @@ cxx_post_options ()
 static void
 cxx_init_options ()
 {
-  parse_in = cpp_create_reader (CLK_GNUCXX);
+  /* Make identifier nodes long enough for the language-specific slots.  */
+  set_identifier_size (sizeof (struct lang_identifier));
+
+  parse_in = cpp_create_reader (ident_hash, CLK_GNUCXX);
 
   /* Default exceptions on.  */
   flag_exceptions = 1;
@@ -696,8 +699,6 @@ const char *
 init_parse (filename)
      const char *filename;
 {
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
 
   input_filename = "<internal>";

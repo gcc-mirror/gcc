@@ -706,7 +706,7 @@ OBJS =									\
  dependence.o diagnostic.o doloop.o dominance.o dwarf2asm.o dwarf2out.o	\
  dwarfout.o emit-rtl.o except.o explow.o expmed.o expr.o final.o flow.o	\
  fold-const.o function.o gcse.o genrtl.o ggc-common.o global.o graph.o	\
- haifa-sched.o hash.o ifcvt.o insn-attrtab.o insn-emit.o		\
+ haifa-sched.o hash.o hashtable.o ifcvt.o insn-attrtab.o insn-emit.o	\
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	\
  integrate.o intl.o jump.o lcm.o lists.o local-alloc.o loop.o mbchar.o	\
  optabs.o params.o predict.o print-rtl.o print-tree.o profile.o real.o	\
@@ -1293,6 +1293,8 @@ ggc-page.o: ggc-page.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
 
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	flags.h toplev.h
+
+hashtable.o: hashtable.c hashtable.h $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H)
 
 ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -1890,9 +1892,9 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o \
-		mkdeps.o prefix.o version.o mbchar.o
+		hashtable.o mkdeps.o prefix.o version.o mbchar.o
 
-LIBCPP_DEPS =	cpplib.h cpphash.h intl.h $(SYSTEM_H)
+LIBCPP_DEPS =	cpplib.h cpphash.h hashtable.h intl.h $(OBSTACK_H) $(SYSTEM_H)
 
 # Most of the other archives built/used by this makefile are for
 # targets.  This one is strictly for the host.
@@ -1911,8 +1913,8 @@ cpperror.o: cpperror.c $(CONFIG_H) $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(CONFIG_H) $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(CONFIG_H) $(LIBCPP_DEPS) mbchar.h
 cppmacro.o: cppmacro.c $(CONFIG_H) $(LIBCPP_DEPS)
-cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS) $(OBSTACK_H)
-cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS) $(OBSTACK_H)
+cpplib.o:   cpplib.c   $(CONFIG_H) $(LIBCPP_DEPS)
+cpphash.o:  cpphash.c  $(CONFIG_H) $(LIBCPP_DEPS)
 cppfiles.o: cppfiles.c $(CONFIG_H) $(LIBCPP_DEPS) $(SPLAY_TREE_H) mkdeps.h
 cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) cppdefault.h \
 		mkdeps.h prefix.h output.h version.h

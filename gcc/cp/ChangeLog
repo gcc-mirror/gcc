@@ -1,3 +1,10 @@
+2001-05-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-tree.h (struct lang_identifier, C_RID_YYCODE): Update.
+	(C_RID_CODE): Remove.
+	* lex.c (cxx_init_options): Call set_identifier_size.  Update.
+	(init_parse): Don't do it here.
+
 2001-05-18  Diego Novillo  <dnovillo@redhat.com>
 
 	* decl2.c (finish_objects): Use the original SYMBOL_REF from the

@@ -74,7 +74,7 @@ main (argc, argv)
   general_init (argv[0]);
 
   /* Contruct a reader with default language GNU C89.  */
-  pfile = cpp_create_reader (CLK_GNUC89);
+  pfile = cpp_create_reader (NULL, CLK_GNUC89);
   options = cpp_get_options (pfile);
   
   do_preprocessing (argc, argv);
