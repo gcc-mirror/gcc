@@ -757,7 +757,8 @@ get_stmt_operands (tree stmt)
     case MODIFY_EXPR:
       get_expr_operands (stmt, &TREE_OPERAND (stmt, 1), opf_none, &prev_vops);
       if (TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_REF 
-          || TREE_CODE (TREE_OPERAND (stmt, 0)) == COMPONENT_REF
+	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == ARRAY_RANGE_REF
+	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == COMPONENT_REF
 	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == REALPART_EXPR
 	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR
 	  /* Use a V_MAY_DEF if the RHS might throw, as the LHS won't be
@@ -952,7 +953,8 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	op = TREE_OPERAND (expr, 0);
 	if (TREE_CODE (op) == WITH_SIZE_EXPR)
 	  op = TREE_OPERAND (expr, 0);
-	if (TREE_CODE (op) == ARRAY_REF 
+	if (TREE_CODE (op) == ARRAY_REF
+	    || TREE_CODE (op) == ARRAY_RANGE_REF
 	    || TREE_CODE (op) == COMPONENT_REF
 	    || TREE_CODE (op) == REALPART_EXPR
 	    || TREE_CODE (op) == IMAGPART_EXPR)

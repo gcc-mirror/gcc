@@ -1,3 +1,8 @@
+2004-07-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-ssa-operands.c (get_stmt_operands, get_expr_operands):
+	Handle ARRAY_RANGE_REF like ARRAY_REF.
+
 2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (digest_init): Don't allow arrays of signed or
