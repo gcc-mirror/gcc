@@ -1,5 +1,9 @@
 2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* trans-const.c, trans-decl.c, trans-expr.c: Spelling fixes.
+
+2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* check.c (gfc_check_reduction): Rename to ...
 	(check_reduction): ... this. Make static. Don't check type of 
 	first argument.
