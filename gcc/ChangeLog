@@ -1,3 +1,12 @@
+Wed Apr  7 22:40:19 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* i960/i960.c (i960_function_prologue): Don't save static chain
+	pointer.
+	* i960/i960.h (STACK_CHAIN_REGNUM): Change from r3 to g12.
+	(TRAMPOLINE_TEMPLATE): Likewise.
+	(FRAME_POINTER_REQUIRED): Check current_function_has_nonlocal_goto.
+	* i960/i960.md (nonlocal_goto): Rewrite.
+	
 Tue Apr  6 17:49:49 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/lib1funcs.asm: Test for __ELF__ not __elf__.
