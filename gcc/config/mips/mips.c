@@ -4476,28 +4476,6 @@ override_options (void)
       && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
     target_flags &= ~MASK_EXPLICIT_RELOCS;
 
-  /* Make -mabicalls -fno-unit-at-a-time imply -mno-explicit-relocs
-     unless the user says otherwise.
-
-     There are two problems here:
-
-       (1) The value of an R_MIPS_GOT16 relocation depends on whether
-	   the symbol is local or global.  We therefore need to know
-	   a symbol's binding before referring to it using %got().
-
-       (2) R_MIPS_CALL16 can only be applied to global symbols.
-
-     When not using -funit-at-a-time, a symbol's binding may change
-     after it has been used.  For example, the C++ front-end will
-     initially assume that the typeinfo for an incomplete type will be
-     comdat, on the basis that the type could be completed later in the
-     file.  But if the type never is completed, the typeinfo will become
-     local instead.  */
-  if (!flag_unit_at_a_time
-      && TARGET_ABICALLS
-      && (target_flags_explicit & MASK_EXPLICIT_RELOCS) == 0)
-    target_flags &= ~MASK_EXPLICIT_RELOCS;
-
   /* -mvr4130-align is a "speed over size" optimization: it usually produces
      faster code, but at the expense of more nops.  Enable it at -O3 and
      above.  */
