@@ -1112,7 +1112,9 @@ package body Sem_Ch5 is
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
       --  required finalization actions in case a bound includes a function
-      --  call that uses the temporary stack.
+      --  call that uses the temporary stack. We first pre-analyze a copy of
+      --  the range in order to determine the expected type, and analyze
+      --  and resolve the original bounds.
 
       procedure Check_Controlled_Array_Attribute (DS : Node_Id);
       --  If the bounds are given by a 'Range reference on a function call
@@ -1126,13 +1128,16 @@ package body Sem_Ch5 is
 
       procedure Process_Bounds (R : Node_Id) is
          Loc          : constant Source_Ptr := Sloc (N);
+         R_Copy       : constant Node_Id := New_Copy_Tree (R);
          Lo           : constant Node_Id := Low_Bound  (R);
          Hi           : constant Node_Id := High_Bound (R);
          New_Lo_Bound : Node_Id := Empty;
          New_Hi_Bound : Node_Id := Empty;
-         Typ          : constant Entity_Id := Etype (R);
+         Typ          : Entity_Id;
 
-         function One_Bound (Bound : Node_Id) return Node_Id;
+         function One_Bound
+           (Original_Bound : Node_Id;
+            Analyzed_Bound : Node_Id) return Node_Id;
          --  Create one declaration followed by one assignment statement
          --  to capture the value of bound. We create a separate assignment
          --  in order to force the creation of a block in case the bound
@@ -1142,7 +1147,10 @@ package body Sem_Ch5 is
          -- One_Bound --
          ---------------
 
-         function One_Bound (Bound : Node_Id) return Node_Id is
+         function One_Bound
+           (Original_Bound : Node_Id;
+            Analyzed_Bound : Node_Id) return Node_Id
+         is
             Assign   : Node_Id;
             Id       : Entity_Id;
             Decl     : Node_Id;
@@ -1156,11 +1164,17 @@ package body Sem_Ch5 is
             --  part of the call to Make_Index (literal bounds may need to
             --  be resolved to type Integer).
 
-            if Nkind (Bound) = N_Integer_Literal
-              or else Is_Entity_Name (Bound)
-              or else Analyzed (Bound)
+            if Analyzed (Original_Bound) then
+               return Original_Bound;
+
+            elsif Nkind (Analyzed_Bound) = N_Integer_Literal
+              or else Is_Entity_Name (Analyzed_Bound)
             then
-               return Bound;
+               Analyze_And_Resolve (Original_Bound, Typ);
+               return Original_Bound;
+
+            else
+               Analyze_And_Resolve (Original_Bound, Typ);
             end if;
 
             Id :=
@@ -1188,26 +1202,32 @@ package body Sem_Ch5 is
             Assign :=
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
-                Expression  => Relocate_Node (Bound));
+                Expression  => Relocate_Node (Original_Bound));
 
-            Save_Interps (Bound, Expression (Assign));
             Insert_Before (Parent (N), Assign);
             Analyze (Assign);
 
-            Rewrite (Bound, New_Occurrence_Of (Id, Loc));
+            Rewrite (Original_Bound, New_Occurrence_Of (Id, Loc));
 
             if Nkind (Assign) = N_Assignment_Statement then
                return Expression (Assign);
             else
-               return Bound;
+               return Original_Bound;
             end if;
          end One_Bound;
 
       --  Start of processing for Process_Bounds
 
       begin
-         New_Lo_Bound := One_Bound (Lo);
-         New_Hi_Bound := One_Bound (Hi);
+         --  Determine expected type of range by analyzing separate copy.
+
+         Set_Parent (R_Copy, Parent (R));
+         Pre_Analyze_And_Resolve (R_Copy);
+         Typ := Etype (R_Copy);
+         Set_Etype (R, Typ);
+
+         New_Lo_Bound := One_Bound (Lo, Low_Bound  (R_Copy));
+         New_Hi_Bound := One_Bound (Hi, High_Bound (R_Copy));
 
          --  Propagate staticness to loop range itself, in case the
          --  corresponding subtype is static.
@@ -1332,7 +1352,6 @@ package body Sem_Ch5 is
                   if Nkind (DS) = N_Range
                     and then Expander_Active
                   then
-                     Pre_Analyze_And_Resolve (DS);
                      Process_Bounds (DS);
                   else
                      Analyze (DS);

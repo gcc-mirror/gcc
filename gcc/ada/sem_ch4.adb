@@ -1197,7 +1197,7 @@ package body Sem_Ch4 is
          end if;
       end Is_Function_Type;
 
-   --  Start of processing for Analyze_Explicit_Deference
+   --  Start of processing for Analyze_Explicit_Dereference
 
    begin
       Analyze (P);
@@ -1251,8 +1251,6 @@ package body Sem_Ch4 is
             Get_Next_Interp (I, It);
          end loop;
 
-         End_Interp_List;
-
          --  Error if no interpretation of the prefix has an access type
 
          if Etype (N) = Any_Type then
@@ -1281,10 +1279,11 @@ package body Sem_Ch4 is
       then
          --  Name is a function call with no actuals, in a context that
          --  requires deproceduring (including as an actual in an enclosing
-         --  function or procedure call). We can conceive of pathological cases
+         --  function or procedure call). There are some pathological cases
          --  where the prefix might include functions that return access to
          --  subprograms and others that return a regular type. Disambiguation
-         --  of those will have to take place in Resolve. See e.g. 7117-014.
+         --  of those has to take place in Resolve.
+         --  See e.g. 7117-014 and E317-001.
 
          New_N :=
            Make_Function_Call (Loc,
@@ -1311,6 +1310,25 @@ package body Sem_Ch4 is
 
          Rewrite (N, New_N);
          Analyze (N);
+
+      elsif not Is_Function_Type
+        and then Is_Overloaded (N)
+      then
+         --  The prefix may include access to subprograms and other access
+         --  types. If the context selects the interpretation that is a call,
+         --  we cannot rewrite the node yet, but we include the result of
+         --  the call interpretation.
+
+         Get_First_Interp (N, I, It);
+         while Present (It.Nam) loop
+            if Ekind (Base_Type (It.Typ)) = E_Subprogram_Type
+               and then Etype (Base_Type (It.Typ)) /= Standard_Void_Type
+            then
+               Add_One_Interp (N, Etype (It.Typ), Etype (It.Typ));
+            end if;
+
+            Get_Next_Interp (I, It);
+         end loop;
       end if;
 
       --  A value of remote access-to-class-wide must not be dereferenced
@@ -2652,14 +2670,20 @@ package body Sem_Ch4 is
                then
                   Set_Etype (N, Etype (Comp));
 
-               --  In all other cases, we currently build an actual subtype. It
-               --  seems likely that many of these cases can be avoided, but
-               --  right now, the front end makes direct references to the
+               --  If full analysis is not enabled, we do not generate an
+               --  actual subtype, because in the absence of expansion
+               --  reference to a formal of a protected type, for example,
+               --  will not be properly transformed, and will lead to
+               --  out-of-scope references in gigi.
+
+               --  In all other cases, we currently build an actual subtype.
+               --  It seems likely that many of these cases can be avoided,
+               --  but right now, the front end makes direct references to the
                --  bounds (e.g. in generating a length check), and if we do
                --  not make an actual subtype, we end up getting a direct
-               --  reference to a discriminant which will not do.
+               --  reference to a discriminant, which will not do.
 
-               else
+               elsif Full_Analysis then
                   Act_Decl :=
                     Build_Actual_Subtype_Of_Component (Etype (Comp), N);
                   Insert_Action (N, Act_Decl);
@@ -2681,6 +2705,11 @@ package body Sem_Ch4 is
                         Set_Etype (N, Subt);
                      end;
                   end if;
+
+               --  If Full_Analysis not enabled, just set the Etype
+
+               else
+                  Set_Etype (N, Etype (Comp));
                end if;
 
                return;
@@ -2697,17 +2726,17 @@ package body Sem_Ch4 is
          then
             return;
 
-            --  If the transformation fails, it will be necessary
-            --  to redo the analysis with all errors enabled, to indicate
-            --  candidate interpretations and reasons for each failure ???
+            --  If the transformation fails, it will be necessary to redo the
+            --  analysis with all errors enabled, to indicate candidate
+            --  interpretations and reasons for each failure ???
 
          end if;
 
       elsif Is_Private_Type (Prefix_Type) then
 
-         --  Allow access only to discriminants of the type. If the
-         --  type has no full view, gigi uses the parent type for
-         --  the components, so we do the same here.
+         --  Allow access only to discriminants of the type. If the type has
+         --  no full view, gigi uses the parent type for the components, so we
+         --  do the same here.
 
          if No (Full_View (Prefix_Type)) then
             Entity_List := Root_Type (Base_Type (Prefix_Type));
@@ -2747,11 +2776,11 @@ package body Sem_Ch4 is
       elsif Is_Concurrent_Type (Prefix_Type) then
 
          --  Prefix is concurrent type. Find visible operation with given name
-         --  For a task, this can only include entries or discriminants if
-         --  the task type is not an enclosing scope. If it is an enclosing
-         --  scope (e.g. in an inner task) then all entities are visible, but
-         --  the prefix must denote the enclosing scope, i.e. can only be
-         --  a direct name or an expanded name.
+         --  For a task, this can only include entries or discriminants if the
+         --  task type is not an enclosing scope. If it is an enclosing scope
+         --  (e.g. in an inner task) then all entities are visible, but the
+         --  prefix must denote the enclosing scope, i.e. can only be a direct
+         --  name or an expanded name.
 
          Set_Etype (Sel,  Any_Type);
          In_Scope := In_Open_Scopes (Prefix_Type);
@@ -2780,8 +2809,8 @@ package body Sem_Ch4 is
                   Set_Original_Discriminant (Sel, Comp);
                end if;
 
-               --  For access type case, introduce explicit deference for
-               --  more uniform treatment of entry calls.
+               --  For access type case, introduce explicit deference for more
+               --  uniform treatment of entry calls.
 
                if Is_Access_Type (Etype (Name)) then
                   Insert_Explicit_Dereference (Name);
@@ -2809,8 +2838,8 @@ package body Sem_Ch4 is
 
       if Etype (N) = Any_Type then
 
-         --  If the prefix is a single concurrent object, use its name in
-         --  the error message, rather than that of its anonymous type.
+         --  If the prefix is a single concurrent object, use its name in the
+         --  error message, rather than that of its anonymous type.
 
          if Is_Concurrent_Type (Prefix_Type)
            and then Is_Internal_Name (Chars (Prefix_Type))
@@ -2828,7 +2857,7 @@ package body Sem_Ch4 is
            and then Prefix_Type /= Etype (Prefix_Type)
            and then Is_Record_Type (Etype (Prefix_Type))
          then
-            --  If this is a derived formal type, the parent may have a
+            --  If this is a derived formal type, the parent may have
             --  different visibility at this point. Try for an inherited
             --  component before reporting an error.
 
