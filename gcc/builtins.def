@@ -495,6 +495,16 @@ DEF_LIB_BUILTIN(BUILT_IN_LOG,
 				: (flag_unsafe_math_optimizations
 				   ? ATTR_CONST_NOTHROW_LIST
 				   : ATTR_PURE_NOTHROW_LIST))
+DEF_LIB_BUILTIN(BUILT_IN_TAN,
+		"__builtin_tan",
+		BT_FN_DOUBLE_DOUBLE,
+		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+					       : ATTR_PURE_NOTHROW_LIST)
+DEF_LIB_BUILTIN(BUILT_IN_ATAN,
+		"__builtin_atan",
+		BT_FN_DOUBLE_DOUBLE,
+		flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+					       : ATTR_PURE_NOTHROW_LIST)
 DEF_LIB_BUILTIN(BUILT_IN_POW,
 		"__builtin_pow",
 		BT_FN_DOUBLE_DOUBLE_DOUBLE,
@@ -547,6 +557,16 @@ DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGF,
 				       : (flag_unsafe_math_optimizations
 					  ? ATTR_CONST_NOTHROW_LIST
 					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_TANF,
+		       "__builtin_tanf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_ATANF,
+		       "__builtin_atanf",
+		       BT_FN_FLOAT_FLOAT,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
 DEF_C99_C90RES_BUILTIN(BUILT_IN_POWF,
 		       "__builtin_powf",
 		       BT_FN_FLOAT_FLOAT_FLOAT,
@@ -599,6 +619,16 @@ DEF_C99_C90RES_BUILTIN(BUILT_IN_LOGL,
 				       : (flag_unsafe_math_optimizations
 					  ? ATTR_CONST_NOTHROW_LIST
 					  : ATTR_PURE_NOTHROW_LIST))
+DEF_C99_C90RES_BUILTIN(BUILT_IN_TANL,
+		       "__builtin_tanl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
+DEF_C99_C90RES_BUILTIN(BUILT_IN_ATANL,
+		       "__builtin_atanl",
+		       BT_FN_LONG_DOUBLE_LONG_DOUBLE,
+		       flag_unsafe_math_optimizations ? ATTR_CONST_NOTHROW_LIST
+						      : ATTR_PURE_NOTHROW_LIST)
 DEF_C99_C90RES_BUILTIN(BUILT_IN_POWL,
 		       "__builtin_powl",
 		       BT_FN_LONG_DOUBLE_LONG_DOUBLE_LONG_DOUBLE,

@@ -10,12 +10,16 @@
 
 double test1(double x, double y) { return __builtin_pow(x,y); }
 double test2(double x, double y) { return __builtin_atan2(x,y); }
+double test3(double x, double y) { return __builtin_fmod(x,y); }
 
 float test1f(float x, float y) { return __builtin_powf(x,y); }
 float test2f(float x, float y) { return __builtin_atan2f(x,y); }
+float test3f(float x, float y) { return __builtin_fmodf(x,y); }
 
 long double test1l(long double x, long double y)
 { return __builtin_powl(x,y); }
 long double test2l(long double x, long double y)
 { return __builtin_atan2l(x,y); }
+long double test3l(long double x, long double y)
+{ return __builtin_fmodl(x,y); }
 

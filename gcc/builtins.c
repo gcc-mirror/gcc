@@ -1503,6 +1503,16 @@ mathfn_built_in (type, fn)
       case BUILT_IN_LOGL:
 	fcode = BUILT_IN_LOG;
 	break;
+      case BUILT_IN_TAN:
+      case BUILT_IN_TANF:
+      case BUILT_IN_TANL:
+	fcode = BUILT_IN_TAN;
+	break;
+      case BUILT_IN_ATAN:
+      case BUILT_IN_ATANF:
+      case BUILT_IN_ATANL:
+	fcode = BUILT_IN_ATAN;
+	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
       case BUILT_IN_FLOORL:
@@ -1559,6 +1569,16 @@ mathfn_built_in (type, fn)
       case BUILT_IN_LOGL:
 	fcode = BUILT_IN_LOGF;
 	break;
+      case BUILT_IN_TAN:
+      case BUILT_IN_TANF:
+      case BUILT_IN_TANL:
+	fcode = BUILT_IN_TANF;
+	break;
+      case BUILT_IN_ATAN:
+      case BUILT_IN_ATANF:
+      case BUILT_IN_ATANL:
+	fcode = BUILT_IN_ATANF;
+	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
       case BUILT_IN_FLOORL:
@@ -1614,6 +1634,16 @@ mathfn_built_in (type, fn)
       case BUILT_IN_LOGF:
       case BUILT_IN_LOGL:
 	fcode = BUILT_IN_LOGL;
+	break;
+      case BUILT_IN_TAN:
+      case BUILT_IN_TANF:
+      case BUILT_IN_TANL:
+	fcode = BUILT_IN_TANL;
+	break;
+      case BUILT_IN_ATAN:
+      case BUILT_IN_ATANF:
+      case BUILT_IN_ATANL:
+	fcode = BUILT_IN_ATANL;
 	break;
       case BUILT_IN_FLOOR:
       case BUILT_IN_FLOORF:
@@ -4295,6 +4325,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_LOG:
       case BUILT_IN_LOGF:
       case BUILT_IN_LOGL:
+      case BUILT_IN_TAN:
+      case BUILT_IN_TANF:
+      case BUILT_IN_TANL:
+      case BUILT_IN_ATAN:
+      case BUILT_IN_ATANF:
+      case BUILT_IN_ATANL:
       case BUILT_IN_POW:
       case BUILT_IN_POWF:
       case BUILT_IN_POWL:

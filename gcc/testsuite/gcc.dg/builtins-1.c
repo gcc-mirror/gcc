@@ -13,16 +13,22 @@ double test2(double x) { return __builtin_cos(x); }
 double test3(double x) { return __builtin_sin(x); }
 double test4(double x) { return __builtin_exp(x); }
 double test5(double x) { return __builtin_log(x); }
+double test6(double x) { return __builtin_tan(x); }
+double test7(double x) { return __builtin_atan(x); }
 
 float test1f(float x) { return __builtin_sqrtf(x); }
 float test2f(float x) { return __builtin_cosf(x); }
 float test3f(float x) { return __builtin_sinf(x); }
 float test4f(float x) { return __builtin_expf(x); }
 float test5f(float x) { return __builtin_logf(x); }
+float test6f(float x) { return __builtin_tanf(x); }
+float test7f(float x) { return __builtin_atanf(x); }
 
 long double test1l(long double x) { return __builtin_sqrtl(x); }
 long double test2l(long double x) { return __builtin_cosl(x); }
 long double test3l(long double x) { return __builtin_sinl(x); }
 long double test4l(long double x) { return __builtin_expl(x); }
 long double test5l(long double x) { return __builtin_logl(x); }
+long double test6l(long double x) { return __builtin_tanl(x); }
+long double test7l(long double x) { return __builtin_atanl(x); }
 
