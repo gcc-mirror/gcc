@@ -185,6 +185,10 @@ static int const_int_htab_eq            PARAMS ((const void *,
 static int rtx_htab_mark_1              PARAMS ((void **, void *));
 static void rtx_htab_mark               PARAMS ((void *));
 
+/* Probability of the conditional branch currently proceeded by try_split.
+   Set to -1 otherwise.  */
+int split_branch_probability = -1;
+
 
 /* Returns a hash code for X (which is a really a CONST_INT).  */
 
@@ -2486,9 +2490,19 @@ try_split (pat, trial, last)
 {
   rtx before = PREV_INSN (trial);
   rtx after = NEXT_INSN (trial);
-  rtx seq = split_insns (pat, trial);
   int has_barrier = 0;
   rtx tem;
+  rtx note, seq;
+  int probability;
+
+  if (any_condjump_p (trial)
+      && (note = find_reg_note (trial, REG_BR_PROB, 0)))
+    split_branch_probability = INTVAL (XEXP (note, 0));
+  probability = split_branch_probability;
+
+  seq = split_insns (pat, trial);
+
+  split_branch_probability = -1;
 
   /* If we are splitting a JUMP_INSN, it might be followed by a BARRIER.
      We may need to handle this specially.  */
@@ -2505,7 +2519,7 @@ try_split (pat, trial, last)
 	 it, in turn, will be split (SFmode on the 29k is an example).  */
       if (GET_CODE (seq) == SEQUENCE)
 	{
-	  int i;
+	  int i, njumps = 0;
 	  rtx eh_note;
 
 	  /* Avoid infinite loop if any insn of the result matches
@@ -2518,9 +2532,27 @@ try_split (pat, trial, last)
 	  /* Mark labels.  */
 	  for (i = XVECLEN (seq, 0) - 1; i >= 0; i--)
 	    if (GET_CODE (XVECEXP (seq, 0, i)) == JUMP_INSN)
-	      mark_jump_label (PATTERN (XVECEXP (seq, 0, i)),
-			       XVECEXP (seq, 0, i), 0);
-
+	      {
+		rtx insn = XVECEXP (seq, 0, i);
+		mark_jump_label (PATTERN (insn),
+				 XVECEXP (seq, 0, i), 0);
+		njumps++;
+		if (probability != -1
+		    && any_condjump_p (insn)
+		    && !find_reg_note (insn, REG_BR_PROB, 0))
+		  {
+		    /* We can preserve the REG_BR_PROB notes only if exactly
+		       one jump is created, otherwise the machinde description
+		       is responsible for this step using
+		       split_branch_probability variable.  */
+		    if (njumps != 1)
+		      abort ();
+		    REG_NOTES (insn)
+		      = gen_rtx_EXPR_LIST (REG_BR_PROB,
+					   GEN_INT (probability),
+					   REG_NOTES (insn));
+		  }
+	      }
 	  /* If we are splitting a CALL_INSN, look for the CALL_INSN
 	     in SEQ and copy our CALL_INSN_FUNCTION_USAGE to it.  */
 	  if (GET_CODE (trial) == CALL_INSN)
@@ -2577,8 +2609,8 @@ try_split (pat, trial, last)
       /* Return either the first or the last insn, depending on which was
 	 requested.  */
       return last
-		? (after ? prev_active_insn (after) : last_insn)
-		: next_active_insn (before);
+		? (after ? PREV_INSN (after) : last_insn)
+		: NEXT_INSN (before);
     }
 
   return trial;

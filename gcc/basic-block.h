@@ -597,6 +597,11 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
+extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
+extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
+extern rtx block_label			PARAMS ((basic_block));
+extern bool forwarder_block_p		PARAMS ((basic_block));
+
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about

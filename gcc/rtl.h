@@ -1301,6 +1301,7 @@ extern rtx *find_constant_term_loc	PARAMS ((rtx *));
 
 /* In emit-rtl.c  */
 extern rtx try_split			PARAMS ((rtx, rtx, int));
+extern int split_branch_probability;
 
 /* In unknown file  */
 extern rtx split_insns			PARAMS ((rtx, rtx));

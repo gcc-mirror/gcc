@@ -1,3 +1,26 @@
+Sun Jul 22 23:28:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (redirect_edge_and_branch_force,
+	redirect_edge_and_branch, block_label, forwarder_block_p): Declare.
+	* flow.c (redirect_edge_and_branch_force,
+	redirect_edge_and_branch, block_label, forwarder_block_p): Make global.
+	(redirect_edge_and_branch_force): Fix copying of lifeness information.
+	(block_label): Handle EXIT_BLOCK_PTR by returning NULL.
+	* ifcvt.c (dead_or_predictable): Take BB as an new destionation
+	instead of label; update CFG after transformation.
+	(find_if_case_1): Update call, use redirect_edge_and_branch_force
+	for finishing the transformation; handle even case where ELSE
+	does not follow THEN.
+	(find_if_case_2): Update call of dead_or_predictable; simplify
+	CFG update.
+
+	* emit-rtl.c (split_branch_probability): New global variable.
+	(try_split): Take care to set split_branch_probability and
+	create REG_BR_PROB note for new jump insns.
+	* md.texi (define_split): Document new feature.
+
+	* i386.c (ix86_split_fp_branch): Redistribute branch probability notes.
+
 2001-07-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* varasm.c: Don't inlcude dbxout.h, sdbout.h or xcoffout.h.
