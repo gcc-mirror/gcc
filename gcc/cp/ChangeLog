@@ -1,3 +1,11 @@
+2001-01-08  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (struct binding_level): Adjust class_shadowed comments
+	to reflect reality.
+	(push_class_level_binding): Ajust comments to reflect reality.
+	Set IDENTIFIER_CLASS_VALUE when replacing an existing binding.
+	Don't set TREE_VALUE on the class_shadowed list.
+
 2001-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (grokfield): Don't accept `asm' specifiers for

@@ -1,3 +1,7 @@
+2001-01-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/lookup16.C: Remove XFAIL.
+
 2001-01-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/stdio-opt-3.c: New test.

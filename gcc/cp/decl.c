@@ -391,15 +391,13 @@ struct binding_level
 
     /* If this binding level is the binding level for a class, then
        class_shadowed is a TREE_LIST.  The TREE_PURPOSE of each node
-       is the name of an entity bound in the class; the TREE_VALUE is
-       the IDENTIFIER_CLASS_VALUE before we entered the class.  Thus,
-       when leaving class scope, we can restore the
-       IDENTIFIER_CLASS_VALUE by walking this list.  The TREE_TYPE is
+       is the name of an entity bound in the class.  The TREE_TYPE is
        the DECL bound by this name in the class.  */
     tree class_shadowed;
 
     /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
-       is used for all binding levels.  */
+       is used for all binding levels. In addition the TREE_VALUE is the
+       IDENTIFIER_TYPE_VALUE before we entered the class.  */
     tree type_shadowed;
 
     /* A TREE_LIST.  Each TREE_VALUE is the LABEL_DECL for a local
@@ -4408,9 +4406,8 @@ push_class_level_binding (name, x)
       else
 	old_decl = BINDING_VALUE (binding);
 
-      /* There was already a binding for X containing fewer
-	 functions than are named in X.  Find the previous
-	 declaration of X on the class-shadowed list, and update it.  */
+      /* Find the previous binding of name on the class-shadowed
+         list, and update it.  */
       for (shadow = class_binding_level->class_shadowed;
 	   shadow;
 	   shadow = TREE_CHAIN (shadow))
@@ -4420,17 +4417,17 @@ push_class_level_binding (name, x)
 	    BINDING_VALUE (binding) = x;
 	    INHERITED_VALUE_BINDING_P (binding) = 0;
 	    TREE_TYPE (shadow) = x;
+	    IDENTIFIER_CLASS_VALUE (name) = x;
 	    return;
 	  }
     }
 
   /* If we didn't replace an existing binding, put the binding on the
-     stack of bindings for the identifier, and update
-     IDENTIFIER_CLASS_VALUE.  */
+     stack of bindings for the identifier, and update the shadowed list.  */
   if (push_class_binding (name, x))
     {
       class_binding_level->class_shadowed
-	= tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
+	= tree_cons (name, NULL,
 		     class_binding_level->class_shadowed);
       /* Record the value we are binding NAME to so that we can know
 	 what to pop later.  */
