@@ -14396,6 +14396,44 @@ rs6000_memory_move_cost (mode, class, in)
     return 4 + rs6000_register_move_cost (mode, class, GENERAL_REGS);
 }
 
+/* Define how to find the value returned by a function.
+   VALTYPE is the data type of the value (as a tree).
+   If the precise function being called is known, FUNC is its FUNCTION_DECL;
+   otherwise, FUNC is 0.
+
+   On the SPE, both FPs and vectors are returned in r3.
+
+   On RS/6000 an integer value is in r3 and a floating-point value is in
+   fp1, unless -msoft-float.  */
+
+rtx
+rs6000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
+{
+  enum machine_mode mode;
+  unsigned int regno = GP_ARG_RETURN;
+
+  if ((INTEGRAL_TYPE_P (valtype)
+       && TYPE_PRECISION (valtype) < BITS_PER_WORD)
+      || POINTER_TYPE_P (valtype))
+    mode = word_mode;
+  else
+    mode = TYPE_MODE (valtype);
+
+  if (TREE_CODE (valtype) == REAL_TYPE)
+    {
+      if (TARGET_HARD_FLOAT && TARGET_FPRS)
+	regno = FP_ARG_RETURN;
+      else if (TARGET_SPE_ABI && !TARGET_FPRS)
+	regno = GP_ARG_RETURN;
+    }
+  else if (TARGET_ALTIVEC && TREE_CODE (valtype) == VECTOR_TYPE)
+    regno = ALTIVEC_ARG_RETURN;
+  else
+    regno = GP_ARG_RETURN;
+
+  return gen_rtx_REG (mode, regno);
+}
+
 /* Return true if TYPE is of type __ev64_opaque__.  */
 
 static bool

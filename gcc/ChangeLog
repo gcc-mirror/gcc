@@ -1,3 +1,11 @@
+2003-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000-protos.h (function_value): Protoize.
+
+        * config/rs6000/rs6000.h (FUNCTION_VALUE): Call function.
+
+        * config/rs6000/rs6000.c (rs6000_function_value): New.
+
 2003-05-15  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (arm_is_xscale): Rename to arm_arch_xscale.
