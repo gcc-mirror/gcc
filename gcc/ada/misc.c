@@ -186,7 +186,7 @@ const char **save_argv;
 /* gnat standard argc argv */
 
 extern int gnat_argc;
-extern const char **gnat_argv;
+extern char **gnat_argv;
 
 static void internal_error_function	PARAMS ((const char *, va_list *));
 static void gnat_adjust_rli		PARAMS ((record_layout_info));
@@ -269,7 +269,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 	    if (save_argv[++i][0] != '-')
 	      {
 		/* Preserve output filename as GCC doesn't save it for GNAT. */
-		gnat_argv[gnat_argc] = save_argv[i];
+		gnat_argv[gnat_argc] = xstrdup (save_argv[i]);
 		gnat_argc++;
 		break;
 	      }
@@ -286,7 +286,7 @@ gnat_init_options (unsigned int argc, const char **argv)
 {
   /* Initialize gnat_argv with save_argv size.  */
   gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0])); 
-  gnat_argv[0] = argv[0];     /* name of the command */ 
+  gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */ 
   gnat_argc = 1;
 
   save_argc = argc;

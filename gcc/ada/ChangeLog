@@ -1,6 +1,11 @@
+2003-07-04  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* misc.c (gnat_argv): Revert last change.
+	(gnat_handle_option, gnat_init_options): Copy arguments.
+
 2003-07-03  Neil Booth  <neil@daikokuya.co.uk>
 
-	* misc.c (save_argv): Make const.
+	* misc.c (gnat_argv): Make const.
 
 2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
