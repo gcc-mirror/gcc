@@ -1,3 +1,8 @@
+Sun Feb 22 20:07:32 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* iris5.h (DWARF2_UNWIND_INFO): Define to 0.
+	* iris5gas.h (DWARF2_UNWIND_INFO): Define to 1.
+
 Sun Feb 22 15:29:48 1998  Richard Henderson  <rth@cygnus.com>
 
 	* objc/Object.m (-error): Call objc_verror with our va_list.
