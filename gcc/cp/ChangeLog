@@ -1,3 +1,12 @@
+Tue Oct  7 21:11:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_static_name): Fix typo.
+
+1997-10-07  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* decl.c (duplicate_decls): Make sure DECL_LANG_SPECIFIC is set on
+	OLDDECL before we try to do DECL_USE_TEMPLATE.
+
 Tue Oct  7 00:48:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Don't warn about template instances.

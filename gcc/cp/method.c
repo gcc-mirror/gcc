@@ -1095,7 +1095,7 @@ build_static_name (context, name)
 #else
   OB_PUTS ("__static_");
   build_qualified_name (context);
-  OB_PUTC (' ');
+  OB_PUTC ('_');
 #endif
   OB_PUTID (name);
   OB_FINISH ();

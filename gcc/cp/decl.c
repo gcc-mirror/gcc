@@ -2623,7 +2623,7 @@ duplicate_decls (newdecl, olddecl)
 	    }
 	}
 
-      if (DECL_USE_TEMPLATE (olddecl))
+      if (DECL_LANG_SPECIFIC (olddecl) && DECL_USE_TEMPLATE (olddecl))
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
 	{
