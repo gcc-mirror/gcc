@@ -11,6 +11,9 @@ Thu Jun 28 20:13:11 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Thu Jun 28 11:19:42 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* ssa-dce.c (eliminate_dead_code): Properly handle control
+	dependencies implied by PHI nodes.
+
 	* ssa-dce.c (eliminate_dead_code): Remove fake edges from the
 	CFG after dead code elimination is complete.
 

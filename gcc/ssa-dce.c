@@ -558,6 +558,41 @@ eliminate_dead_code ()
 			&propagate_necessity_through_operand,
 			(PTR) &unprocessed_instructions);
 
+	  /* PHI nodes are somewhat special in that each PHI alternative
+	     has data and control dependencies.  The data dependencies
+	     are handled via propagate_necessity_through_operand.  We
+	     handle the control dependency here.
+
+	     We consider the control dependent edges leading to the
+	     predecessor block associated with each PHI alternative
+	     as necessary.  */
+	  if (PHI_NODE_P (current_instruction))
+	    {
+	      rtvec phi_vec = XVEC (SET_SRC (PATTERN (current_instruction)), 0);
+	      int num_elem = GET_NUM_ELEM (phi_vec);
+	      int v;
+
+	      for (v = num_elem - 2; v >= 0; v -= 2)
+		{
+		  basic_block bb;
+
+		  bb = BASIC_BLOCK (INTVAL (RTVEC_ELT (phi_vec, v + 1)));
+		  EXECUTE_IF_CONTROL_DEPENDENT
+		    (cdbte, bb->end, edge_number,
+		    {
+		      rtx jump_insn;
+
+		      jump_insn = (INDEX_EDGE_PRED_BB (el, edge_number))->end;
+		      if (((GET_CODE (jump_insn) == JUMP_INSN))
+			  && UNNECESSARY_P (jump_insn))
+			{
+			  RESURRECT_INSN (jump_insn);
+			  VARRAY_PUSH_RTX (unprocessed_instructions, jump_insn);
+			}
+		    });
+
+		}
+	    }
 	}
     }
 
