@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* emit-rtl.c (copy_most_rtx): Remove.
+	* rtl.h: Remove the corresponding prototype.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cfgloop.c (flow_loops_update): Remove.
 	* cfgloop.h: Remove the corresponding prototype.
 

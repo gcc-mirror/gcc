@@ -1387,7 +1387,6 @@ extern void dump_rtx_statistics (void);
 extern rtx copy_rtx_if_shared (rtx);
 
 /* In rtl.c */
-extern rtx copy_most_rtx (rtx, rtx);
 extern rtx shallow_copy_rtx_stat (rtx MEM_STAT_DECL);
 #define shallow_copy_rtx(a) shallow_copy_rtx_stat (a MEM_STAT_INFO)
 extern int rtx_equal_p (rtx, rtx);
