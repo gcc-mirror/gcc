@@ -1,3 +1,8 @@
+2001-01-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* typeck.c (build_function_call_real): Call fold on the CALL_EXPR.
+	* call.c (build_over_call): Add comment.
+
 2001-01-16 Daniel Berlin <dberlin@redhat.com>
 
         * cvt.c (ocp_convert): Handle vector type conversion
