@@ -998,8 +998,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		     instruction.  */
 
 		  this_op_costs[i] = this_op_costs[j];
-		  if (! find_reg_note (insn, REG_DEAD, op))
-		    alt_cost += 2;
+		  if (! (GET_CODE (op) == REG && rtx_equal_p (op, ops[j])))
+		    /* No cost if both are the same pseudo reg.  */
+		    if (! find_reg_note (insn, REG_DEAD, op))
+		      alt_cost += 2;
 
 		  /* This is in place of ordinary cost computation
 		     for this operand, so skip to the end of the
