@@ -27,12 +27,12 @@ Boston, MA 02111-1307, USA.  */
    line numbers.  For example, the CONST_DECLs for enum values.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "flags.h"
 #include "output.h"
 #include "c-tree.h"
 #include "c-lex.h"
-#include <stdio.h>
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -471,9 +471,14 @@ int explicit_flag_signed_bitfields = 0;
 
 int flag_no_ident = 0;
 
-/* Nonzero means warn about implicit declarations.  */
+/* Nonzero means warn about use of implicit int. */
 
-int warn_implicit;
+int warn_implicit_int;
+
+/* Nonzero means message about use of implicit function declarations;
+ 1 means warning; 2 means error. */
+
+int mesg_implicit_function_declaration;
 
 /* Nonzero means give string constants the type `const char *'
    to get extra warnings from them.  These warnings will be too numerous
@@ -648,10 +653,24 @@ c_decode_option (p)
     flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
     flag_no_asm = 1, flag_no_nonansi_builtin = 1;
+  else if (!strcmp (p, "-Werror-implicit-function-declaration"))
+    mesg_implicit_function_declaration = 2;
+  else if (!strcmp (p, "-Wimplicit-function-declaration"))
+    mesg_implicit_function_declaration = 1;
+  else if (!strcmp (p, "-Wno-implicit-function-declaration"))
+    mesg_implicit_function_declaration = 0;
+  else if (!strcmp (p, "-Wimplicit-int"))
+    warn_implicit_int = 1;
+  else if (!strcmp (p, "-Wno-implicit-int"))
+    warn_implicit_int = 0;
   else if (!strcmp (p, "-Wimplicit"))
-    warn_implicit = 1;
+    {
+      warn_implicit_int = 1;
+      if (mesg_implicit_function_declaration != 2)
+        mesg_implicit_function_declaration = 1;
+    }
   else if (!strcmp (p, "-Wno-implicit"))
-    warn_implicit = 0;
+    warn_implicit_int = 0, mesg_implicit_function_declaration = 0;
   else if (!strcmp (p, "-Wwrite-strings"))
     warn_write_strings = 1;
   else if (!strcmp (p, "-Wno-write-strings"))
@@ -751,7 +770,8 @@ c_decode_option (p)
 	 warning about not using it without also specifying -O.  */
       if (warn_uninitialized != 1)
 	warn_uninitialized = 2;
-      warn_implicit = 1;
+      warn_implicit_int = 1;
+      mesg_implicit_function_declaration = 1;
       warn_return_type = 1;
       warn_unused = 1;
       warn_switch = 1;
@@ -2467,9 +2487,15 @@ implicitly_declare (functionid)
 
   rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
 
-  if (warn_implicit && implicit_warning)
-    warning ("implicit declaration of function `%s'",
-	     IDENTIFIER_POINTER (functionid));
+  if (mesg_implicit_function_declaration && implicit_warning)
+    {
+      if (mesg_implicit_function_declaration == 2)
+        error ("implicit declaration of function `%s'",
+                 IDENTIFIER_POINTER (functionid));
+      else
+        warning ("implicit declaration of function `%s'",
+                 IDENTIFIER_POINTER (functionid));
+    }
   else if (warn_traditional && traditional_warning)
     warning ("function `%s' was previously declared within a block",
 	     IDENTIFIER_POINTER (functionid));
@@ -3880,6 +3906,9 @@ finish_decl (decl, init, asmspec_tree)
 	  else
 	    error_with_decl (decl, "storage size of `%s' isn't constant");
 	}
+
+      if (TREE_USED  (type))
+	TREE_USED (decl) = 1;
     }
 
   /* If this is a function and an assembler name is specified, it isn't
@@ -4361,9 +4390,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	     For now, issue a warning if -Wreturn-type and this is a function,
 	     or if -Wimplicit; prefer the former warning since it is more
 	     explicit.  */
-	  if ((warn_implicit || warn_return_type) && funcdef_flag)
+	  if ((warn_implicit_int || warn_return_type) && funcdef_flag)
 	    warn_about_return_type = 1;
-	  else if (warn_implicit)
+	  else if (warn_implicit_int)
 	    warning ("type defaults to `int' in declaration of `%s'", name);
 	}
 
@@ -4709,6 +4738,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 				   convert (index_type, size),
 				   convert (index_type, size_one_node)));
 
+	      /* If that overflowed, the array is too big.
+		 ??? While a size of INT_MAX+1 technically shouldn't cause
+		 an overflow (because we subtract 1), the overflow is recorded
+		 during the conversion to index_type, before the subtraction.
+		 Handling this case seems like an unnecessary complication.  */
+	      if (TREE_OVERFLOW (itype))
+		{
+		  error ("size of array `%s' is too large", name);
+		  type = error_mark_node;
+		  continue;
+		}
+
 	      if (size_varies)
 		itype = variable_size (itype);
 	      itype = build_index_type (itype);
@@ -4883,6 +4924,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     }
 
   /* Now TYPE has the actual type.  */
+
+  /* Did array size calculations overflow?  */
+
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_SIZE (type)
+      && TREE_OVERFLOW (TYPE_SIZE (type)))
+    error ("size of array `%s' is too large", name);
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
@@ -6211,7 +6259,10 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
   if (decl1 == 0)
-    return 0;
+    {
+      immediate_size_expand = old_immediate_size_expand;
+      return 0;
+    }
 
   decl_attributes (decl1, prefix_attributes, attributes);
 

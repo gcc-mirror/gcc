@@ -1,4 +1,4 @@
->\input texinfo  @c -*-texinfo-*-
+\input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gcc.info
 @c @setfilename usegcc.info
@@ -1975,6 +1975,14 @@ compilers such as plain @samp{gcc}.  Whatever the ANSI C standard says
 is relevant to the design of plain @samp{gcc} without @samp{-ansi} only
 for pragmatic reasons, not as a requirement.
 
+GNU CC normally defines @code{__STDC__} to be 1, and in addition
+defines @code{__STRICT_ANSI__} if you specify the @samp{-ansi} option.
+On some hosts, system include files use a different convention, where
+@code{__STDC__} is normally 0, but is 1 if the user specifies strict
+conformance to the C Standard.  GNU CC follows the host convention when
+processing system include files, but when processing user files it follows
+the usual GNU C convention.
+
 @item
 Undefining @code{__STDC__} in C++.
 
@@ -3718,6 +3726,19 @@ system.
 Define this if your system @emph{does not} provide the variable
 @code{sys_siglist}.
 
+@vindex sys_siglist
+Some systems do provide this variable, but with a different name such
+as @code{_sys_siglist}.  On these systems, you can define
+@code{sys_siglist} as a macro which expands into the name actually
+provided.
+
+Autoconf normally defines @code{SYS_SIGLIST_DECLARED} when it finds a
+declaration of @code{sys_siglist} in the system header files.
+However, when you define @code{sys_siglist} to a different name
+autoconf will not automatically define @code{SYS_SIGLIST_DECLARED}.
+Therefore, if you define @code{sys_siglist}, you should also define
+@code{SYS_SIGLIST_DECLARED}.
+
 @findex USE_PROTOTYPES
 @item USE_PROTOTYPES
 Define this to be 1 if you know that the host compiler supports
@@ -3746,15 +3767,6 @@ no effect.  As soon as all of the machine descriptions are
 modified to have the appropriate number of arguments, this macro
 will be removed.
 
-@vindex sys_siglist
-Some systems do provide this variable, but with a different name such
-as @code{_sys_siglist}.  On these systems, you can define
-@code{sys_siglist} as a macro which expands into the name actually
-provided.
-
-If you define @code{sys_siglist}, you should also define
-@code{SYS_SIGLIST_DECLARED}.
-
 @findex NO_STAB_H
 @item NO_STAB_H
 Define this if your system does not have the include file
@@ -3764,7 +3776,7 @@ assumed.
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR
 Define this macro to be a C character constant representing the
-character used to separate components in paths.  The default value is.
+character used to separate components in paths.  The default value is
 the colon character
 
 @findex DIR_SEPARATOR

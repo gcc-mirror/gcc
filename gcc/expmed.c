@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -2831,13 +2832,13 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
       op0 = convert_modes (compute_mode, mode, op0, unsignedp);
       op1 = convert_modes (compute_mode, mode, op1, unsignedp);
 
-      /* convert_modes may have tossed op1 into a register, so we
-	 absolutely must recompute the following.  */
+      /* convert_modes may have placed op1 into a register, so we
+	 must recompute the following.  */
       op1_is_constant = GET_CODE (op1) == CONST_INT;
       op1_is_pow2 = (op1_is_constant
 		     && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
 			  || (! unsignedp
-			      && EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1))))));
+			      && EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)))))) ;
     }
 
   /* If one of the operands is a volatile MEM, copy it into a register.  */
@@ -3640,6 +3641,9 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	    emit_label (label);
 	  }
 	return gen_lowpart (mode, rem_flag ? remainder : quotient);
+	
+      default:
+	abort ();
       }
 
   if (quotient == 0)
@@ -3955,6 +3959,8 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
     case LTU:
       if (op1 == const1_rtx)
 	op1 = const0_rtx, code = EQ;
+      break;
+    default:
       break;
     }
 

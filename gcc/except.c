@@ -1,5 +1,5 @@
 /* Implements exception handling.
-   Copyright (C) 1989, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 92-96, 1997 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
 
    There are two major codegen options for exception handling.  The
    flag -fsjlj-exceptions can be used to select the setjmp/longjmp
-   approach, which is the default.  -fnosjlj-exceptions can be used to
+   approach, which is the default.  -fno-sjlj-exceptions can be used to
    get the PC range table approach.  While this is a compile time
    flag, an entire application must be compiled with the same codegen
    option.  The first is a PC range table approach, the second is a

@@ -1,9 +1,4 @@
 /* config.in.  Generated automatically from configure.in by autoheader.  */
-
-/* Include the old config.h as config2.h to simplify the transition
-   to autoconf.  */
-#include "config2.h"
-
 /* Whether malloc must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_MALLOC
 
@@ -27,6 +22,12 @@
 
 /* Define if you have the strtoul function.  */
 #undef HAVE_STRTOUL
+
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
 
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H

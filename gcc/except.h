@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -139,8 +139,6 @@ extern rtx catch_clauses;
 
 #endif
 
-struct function;
-
 /* Toplevel initialization for EH.  */
 
 extern void init_eh				PROTO((void));
@@ -148,14 +146,6 @@ extern void init_eh				PROTO((void));
 /* Initialization for the per-function EH data.  */
 
 extern void init_eh_for_function		PROTO((void));
-
-/* Saves the current per-function EH data into P.  */
-
-extern void save_eh_status			PROTO((struct function *p));
-
-/* Restores the per-function EH data from P.  */
-
-extern void restore_eh_status			PROTO((struct function *p));
 
 /* Adds an EH table entry for EH entry number N. Called from
    final_scan_insn for NOTE_INSN_EH_REGION_BEG.  */

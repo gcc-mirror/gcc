@@ -51,6 +51,13 @@ typedef unsigned char U_CHAR;
 #define PATH_SEPARATOR ':'
 #endif
 
+/* By default, the suffix for object files is ".o".  */
+#ifdef OBJECT_SUFFIX
+#define HAVE_OBJECT_SUFFIX
+#else
+#define OBJECT_SUFFIX ".o"
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
@@ -59,21 +66,13 @@ typedef unsigned char U_CHAR;
 
 /* The following symbols should be autoconfigured:
 	HAVE_FCNTL_H
-	HAVE_STDLIB_H
 	HAVE_SYS_TIME_H
-	HAVE_UNISTD_H
 	STDC_HEADERS
 	TIME_WITH_SYS_TIME
    In the mean time, we'll get by with approximations based
    on existing GCC configuration symbols.  */
 
 #ifdef POSIX
-# ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 1
-# endif
-# ifndef HAVE_UNISTD_H
-# define HAVE_UNISTD_H 1
-# endif
 # ifndef STDC_HEADERS
 # define STDC_HEADERS 1
 # endif
@@ -103,6 +102,10 @@ typedef unsigned char U_CHAR;
 
 #if HAVE_FCNTL_H
 # include <fcntl.h>
+#endif
+
+#if HAVE_LIMITS_H
+# include <limits.h>
 #endif
 
 #include <errno.h>
@@ -225,8 +228,8 @@ my_bzero (b, length)
 #define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
 static int VMS_fstat (), VMS_stat ();
 static int VMS_open ();
-static FILE * VMS_fopen ();
-static FILE * VMS_freopen ();
+static FILE *VMS_fopen ();
+static FILE *VMS_freopen ();
 static void hack_vms_include_specification ();
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
 #define INO_T_HASH(a) 0
@@ -248,18 +251,25 @@ static void hack_vms_include_specification ();
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 /* Find the largest host integer type and set its size and type.
-   Don't blindly use `long'; on some crazy hosts it is shorter than `int'.  */
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
 #ifndef S_ISREG
@@ -303,6 +313,7 @@ static void hack_vms_include_specification ();
 /* External declarations.  */
 
 extern char *version_string;
+extern char *update_path PROTO((char *, char *));
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
@@ -399,6 +410,10 @@ static enum {dump_none, dump_only, dump_names, dump_definitions}
    also be useful with -E to figure out how symbols are defined, and
    where they are defined.  */
 static int debug_output = 0;
+
+/* Nonzero means pass #include lines through to the output,
+   even if they are ifdeffed out.  */
+static int dump_includes;
 
 /* Nonzero indicates special processing used by the pcp program.  The
    special effects of this mode are: 
@@ -518,7 +533,7 @@ static struct file_buf {
   struct if_stack *if_stack;
   /* Object to be freed at end of input at this level.  */
   U_CHAR *free_ptr;
-  /* True if this is a header file included using <FILENAME>.  */
+  /* True if this is a system header file; see is_system_include.  */
   char system_header_p;
 } instack[INPUT_STACK_MAX];
 
@@ -579,6 +594,7 @@ struct file_name_list
 /* The */
 static struct default_include {
   char *fname;			/* The name of the directory.  */
+  char *component;		/* The component containing the directory */
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
@@ -589,40 +605,43 @@ static struct default_include {
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
-    { OLD_GPLUSPLUS_INCLUDE_DIR, 1, 1 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
+    { OLD_GPLUSPLUS_INCLUDE_DIR, 0, 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0, 0 },
+    { CROSS_INCLUDE_DIR, "GCC", 0, 0 },
 #ifdef TOOL_INCLUDE_DIR
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
 #endif
 #else /* not CROSS_COMPILE */
 #ifdef LOCAL_INCLUDE_DIR
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 1 },
+    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
 #endif
 #ifdef TOOL_INCLUDE_DIR
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
 #endif
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0 },
+    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
 #endif
-    { STANDARD_INCLUDE_DIR, 0, 0 },
+#ifndef STANDARD_INCLUDE_COMPONENT
+#define STANDARD_INCLUDE_COMPONENT 0
+#endif
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
 #endif /* not CROSS_COMPILE */
-    { 0, 0, 0 }
+    { 0, 0, 0, 0 }
     };
 #endif /* no INCLUDE_DEFAULTS */
 
@@ -954,12 +973,9 @@ struct directive {
   int (*func) DO_PROTO;	/* Function to handle directive */
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
-  char angle_brackets;		/* Nonzero => <...> is special.  */
-  char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
-  char pass_thru;		/* Copy directive to output:
-				   if 1, copy if dumping definitions;
-				   if 2, always copy, after preprocessing.  */
 };
+
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
 
 /* These functions are declared to return int instead of void since they
    are going to be placed in the table and some old compilers have trouble with
@@ -987,7 +1003,7 @@ static int do_xifdef DO_PROTO;
 /* Here is the actual list of #-directives, most-often-used first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1, 1},
+  {  6, do_define, "define", T_DEFINE},
   {  2, do_if, "if", T_IF},
   {  5, do_xifdef, "ifdef", T_IFDEF},
   {  6, do_xifdef, "ifndef", T_IFNDEF},
@@ -995,16 +1011,16 @@ static struct directive directive_table[] = {
   {  4, do_else, "else", T_ELSE},
   {  4, do_elif, "elif", T_ELIF},
   {  4, do_line, "line", T_LINE},
-  {  7, do_include, "include", T_INCLUDE, 1},
-  { 12, do_include, "include_next", T_INCLUDE_NEXT, 1},
-  {  6, do_include, "import", T_IMPORT, 1},
+  {  7, do_include, "include", T_INCLUDE},
+  { 12, do_include, "include_next", T_INCLUDE_NEXT},
+  {  6, do_include, "import", T_IMPORT},
   {  5, do_undef, "undef", T_UNDEF},
   {  5, do_error, "error", T_ERROR},
   {  7, do_warning, "warning", T_WARNING},
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 2},
+  {  6, do_pragma, "pragma", T_PRAGMA},
   {  5, do_ident, "ident", T_IDENT},
   {  6, do_assert, "assert", T_ASSERT},
   {  8, do_unassert, "unassert", T_UNASSERT},
@@ -1195,7 +1211,7 @@ static void make_undef PROTO((char *, FILE_BUF *));
 
 static void make_assertion PROTO((char *, char *));
 
-static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *));
+static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *, char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
 static void deps_output PROTO((char *, int));
@@ -1414,7 +1430,8 @@ main (argc, argv)
 	if (!strcmp (argv[i], "-isystem")) {
 	  struct file_name_list *dirtmp;
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, "", argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      "", argv[++i])))
 	    break;
 	  dirtmp->c_system_include_path = 1;
 
@@ -1439,7 +1456,8 @@ main (argc, argv)
 	      prefix[strlen (prefix) - 7] = 0;
 	  }
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, prefix, argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      prefix, argv[++i])))
 	    break;
 
 	  if (after_include == 0)
@@ -1463,14 +1481,15 @@ main (argc, argv)
 	      prefix[strlen (prefix) - 7] = 0;
 	  }
 
-	  dirtmp = new_include_prefix (NULL_PTR, prefix, argv[++i]);
+	  dirtmp = new_include_prefix (NULL_PTR, NULL_PTR, prefix, argv[++i]);
 	  append_include_chain (dirtmp, dirtmp);
 	}
 	/* Add directory to end of path for includes.  */
 	if (!strcmp (argv[i], "-idirafter")) {
 	  struct file_name_list *dirtmp;
 
-	  if (! (dirtmp = new_include_prefix (NULL_PTR, "", argv[++i])))
+	  if (! (dirtmp = new_include_prefix (NULL_PTR, NULL_PTR,
+					      "", argv[++i])))
 	    break;
 
 	  if (after_include == 0)
@@ -1641,6 +1660,9 @@ main (argc, argv)
 	    case 'D':
 	      dump_macros = dump_definitions;
 	      break;
+	    case 'I':
+	      dump_includes = 1;
+	      break;
 	    }
 	  }
 	}
@@ -1734,7 +1756,7 @@ main (argc, argv)
 	    first_bracket_include = 0;
 	  }
 	  else {
-	    dirtmp = new_include_prefix (last_include, "",
+	    dirtmp = new_include_prefix (last_include, NULL_PTR, "",
 					 argv[i][2] ? argv[i] + 2 : argv[++i]);
 	    append_include_chain (dirtmp, dirtmp);
 	  }
@@ -1940,6 +1962,7 @@ main (argc, argv)
 	  include_defaults[num_dirs].fname
 	    = startp == endp ? "." : savestring (startp);
 	  endp[-1] = c;
+	  include_defaults[num_dirs].component = 0;
 	  include_defaults[num_dirs].cplusplus = cplusplus;
 	  include_defaults[num_dirs].cxx_aware = 1;
 	  num_dirs++;
@@ -1980,7 +2003,7 @@ main (argc, argv)
 	  if (!strncmp (p->fname, default_prefix, default_len)) {
 	    /* Yes; change prefix and add to search list.  */
 	    struct file_name_list *new
-	      = new_include_prefix (NULL_PTR, specd_prefix,
+	      = new_include_prefix (NULL_PTR, NULL_PTR, specd_prefix,
 				    p->fname + default_len);
 	    if (new) {
 	      new->c_system_include_path = !p->cxx_aware;
@@ -1996,7 +2019,7 @@ main (argc, argv)
       /* Some standard dirs are only for C++.  */
       if (!p->cplusplus || (cplusplus && !no_standard_cplusplus_includes)) {
 	struct file_name_list *new
-	  = new_include_prefix (NULL_PTR, "", p->fname);
+	  = new_include_prefix (NULL_PTR, p->component, "", p->fname);
 	if (new) {
 	  new->c_system_include_path = !p->cxx_aware;
 	  append_include_chain (new, new);
@@ -2123,11 +2146,7 @@ main (argc, argv)
 	q = p + (len - 4);
 
       /* Supply our own suffix.  */
-#ifndef VMS
-      strcpy (q, ".o");
-#else
-      strcpy (q, ".obj");
-#endif
+      strcpy (q, OBJECT_SUFFIX);
 
       deps_output (p, ':');
       deps_output (in_fname, ' ');
@@ -2310,7 +2329,8 @@ path_include (path)
 	continue;
 
       q[-1] = 0;
-      dirtmp = new_include_prefix (last_include, "", p == q ? "." : p);
+      dirtmp = new_include_prefix (last_include, NULL_PTR,
+				   "", p == q ? "." : p);
       q[-1] = c;
       append_include_chain (dirtmp, dirtmp);
 
@@ -3724,7 +3744,7 @@ handle_directive (ip, op)
       limit = ip->buf + ip->length;
       unterminated = 0;
       already_output = 0;
-      keep_comments = traditional && kt->traditional_comments;
+      keep_comments = traditional && kt->type == T_DEFINE;
       /* #import is defined only in Objective C, or when on the NeXT.  */
       if (kt->type == T_IMPORT
 	  && !(objc || lookup ((U_CHAR *) "__NeXT__", -1, -1)))
@@ -3769,7 +3789,7 @@ handle_directive (ip, op)
 
 	  /* <...> is special for #include.  */
 	case '<':
-	  if (!kt->angle_brackets)
+	  if (! IS_INCLUDE_DIRECTIVE_TYPE (kt->type))
 	    break;
 	  while (bp < limit && *bp != '>' && *bp != '\n') {
 	    if (*bp == '\\' && bp[1] == '\n') {
@@ -3828,10 +3848,12 @@ handle_directive (ip, op)
 	 RESUME_P is the next interesting data after the directive.
 	 A comment may come between.  */
 
-      /* If a directive should be copied through, and -E was given,
+      /* If a directive should be copied through, and -C was given,
 	 pass it through before removing comments.  */
       if (!no_output && put_out_comments
-	  && (dump_macros != dump_definitions) < kt->pass_thru) {
+	  && (kt->type == T_DEFINE ? dump_macros == dump_definitions
+	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
+	      : kt->type == T_PRAGMA)) {
         int len;
 
 	/* Output directive name.  */
@@ -3880,7 +3902,7 @@ handle_directive (ip, op)
 
 	    /* <...> is special for #include.  */
 	  case '<':
-	    if (!kt->angle_brackets)
+	    if (! IS_INCLUDE_DIRECTIVE_TYPE (kt->type))
 	      break;
 	    while (xp < bp && c != '>') {
 	      c = *xp++;
@@ -3955,10 +3977,12 @@ handle_directive (ip, op)
 
       /* Some directives should be written out for cc1 to process,
 	 just as if they were not defined.  And sometimes we're copying
-	 definitions through.  */
+	 directives through.  */
 
       if (!no_output && already_output == 0
-	  && (dump_macros < dump_names) < kt->pass_thru) {
+	  && (kt->type == T_DEFINE ? dump_names <= dump_macros
+	      : IS_INCLUDE_DIRECTIVE_TYPE (kt->type) ? dump_includes
+	      : kt->type == T_PRAGMA)) {
         int len;
 
 	/* Output directive name.  */
@@ -3967,13 +3991,8 @@ handle_directive (ip, op)
         bcopy (kt->name, (char *) op->bufp, kt->length);
         op->bufp += kt->length;
 
-	if ((dump_macros != dump_definitions) < kt->pass_thru) {
-	  /* Output arguments.  */
-	  len = (cp - buf);
-	  check_expand (op, len);
-	  bcopy (buf, (char *) op->bufp, len);
-	  op->bufp += len;
-	} else if (kt->type == T_DEFINE && dump_macros == dump_names) {
+	if (kt->type == T_DEFINE && dump_macros == dump_names) {
+	  /* Output `#define name' only.  */
 	  U_CHAR *xp = buf;
 	  U_CHAR *yp;
 	  SKIP_WHITE_SPACE (xp);
@@ -3982,9 +4001,14 @@ handle_directive (ip, op)
 	  len = (xp - yp);
 	  check_expand (op, len + 1);
 	  *op->bufp++ = ' ';
-	  bcopy (yp, op->bufp, len);
-	  op->bufp += len;
+	  bcopy (yp, (char *) op->bufp, len);
+	} else {
+	  /* Output entire directive.  */
+	  len = (cp - buf);
+	  check_expand (op, len);
+	  bcopy (buf, (char *) op->bufp, len);
 	}
+	op->bufp += len;
       }				/* Don't we need a newline or #line? */
 
       /* Call the appropriate directive handler.  buf now points to
@@ -4118,6 +4142,12 @@ special_symbol (hp, op)
 
   case T_CONST:
     buf = hp->value.cpval;
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+    if (ip->system_header_p
+	&& hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
+	&& !lookup ((U_CHAR *) "__STRICT_ANSI__", -1, -1))
+      buf = "0";
+#endif
     if (pcp_inside_if && pcp_outfile)
       /* Output a precondition for this macro use */
       fprintf (pcp_outfile, "#define %s %s\n", hp->name, buf);
@@ -5305,12 +5335,12 @@ pcfinclude (buf, limit, name, op)
 
     /* First skip to a longword boundary */
     /* ??? Why a 4-byte boundary?  On all machines? */
-    /* NOTE: This works correctly even if HOST_WIDE_INT
+    /* NOTE: This works correctly even if size_t
        is narrower than a pointer.
        Do not try risky measures here to get another type to use!
        Do not include stddef.h--it will fail!  */
-    if ((HOST_WIDE_INT) cp & 3)
-      cp += 4 - ((HOST_WIDE_INT) cp & 3);
+    if ((size_t) cp & 3)
+      cp += 4 - ((size_t) cp & 3);
     
     /* Now get the string.  */
     str = (STRINGDEF *) (GENERIC_PTR) cp;
@@ -6798,7 +6828,7 @@ do_once ()
     }
 }
 
-/* #ident has already been copied to the output file, so just ignore it.  */
+/* Report program identification.  */
 
 static int
 do_ident (buf, limit, op, keyword)
@@ -6814,22 +6844,17 @@ do_ident (buf, limit, op, keyword)
     pedwarn ("ANSI C does not allow `#ident'");
 
   trybuf = expand_to_temp_buffer (buf, limit, 0, 0);
-  buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
-  bcopy ((char *) trybuf.buf, (char *) buf, trybuf.bufp - trybuf.buf);
-  limit = buf + (trybuf.bufp - trybuf.buf);
-  len = (limit - buf);
-  free (trybuf.buf);
+  buf = trybuf.buf;
+  len = trybuf.bufp - buf;
 
-  /* Output directive name.  */
-  check_expand (op, 7);
+  /* Output expanded directive.  */
+  check_expand (op, 7 + len);
   bcopy ("#ident ", (char *) op->bufp, 7);
   op->bufp += 7;
-
-  /* Output the expanded argument line.  */
-  check_expand (op, len);
   bcopy ((char *) buf, (char *) op->bufp, len);
   op->bufp += len;
 
+  free (buf);
   return 0;
 }
 
@@ -6858,7 +6883,7 @@ do_pragma (buf, limit, op, keyword)
     int h;
     U_CHAR *p = buf + 14, *fname;
     SKIP_WHITE_SPACE (p);
-    if (*p == '\n' || *p != '\"')
+    if (*p != '\"')
       return 0;
 
     fname = p + 1;
@@ -9782,7 +9807,12 @@ make_assertion (option, str)
   --indepth;
 }
 
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '/'
+#endif
+
 /* The previous include prefix, if any, is PREV_FILE_NAME.
+   Translate any pathnames with COMPONENT.
    Allocate a new include prefix whose name is the
    simplified concatenation of PREFIX and NAME,
    with a trailing / added if needed.
@@ -9790,33 +9820,38 @@ make_assertion (option, str)
    e.g. because it is a duplicate of PREV_FILE_NAME.  */
 
 static struct file_name_list *
-new_include_prefix (prev_file_name, prefix, name)
+new_include_prefix (prev_file_name, component, prefix, name)
      struct file_name_list *prev_file_name;
+     char *component;
      char *prefix;
      char *name;
 {
-  if (!name)
+  if (name == 0)
     fatal ("Directory name missing after command line option");
 
-  if (!*name)
+  if (*name == 0)
     /* Ignore the empty string.  */
     return 0;
-  else {
+
+  prefix = update_path (prefix, component);
+  name = update_path (name, component);
+
+  {
     struct file_name_list *dir
       = ((struct file_name_list *)
 	 xmalloc (sizeof (struct file_name_list)
-		  + strlen (prefix) + strlen (name) + 1 /* for trailing / */));
+		  + strlen (prefix) + strlen (name) + 2));
     size_t len;
     strcpy (dir->fname, prefix);
     strcat (dir->fname, name);
     len = simplify_filename (dir->fname);
 
     /* Convert directory name to a prefix.  */
-    if (dir->fname[len - 1] != '/') {
+    if (dir->fname[len - 1] != DIR_SEPARATOR) {
       if (len == 1 && dir->fname[len - 1] == '.')
 	len = 0;
       else
-	dir->fname[len++] = '/';
+	dir->fname[len++] = DIR_SEPARATOR;
       dir->fname[len] = 0;
     }
 
@@ -9832,6 +9867,14 @@ new_include_prefix (prev_file_name, prefix, name)
 #ifndef VMS
     /* VMS can't stat dir prefixes, so skip these optimizations in VMS.  */
 
+    /* Add a trailing "." if there is a filename.  This increases the number
+       of systems that can stat directories.  We remove it below.  */
+    if (len != 0)
+      {
+	dir->fname[len] = '.';
+	dir->fname[len + 1] = 0;
+      }
+
     /* Ignore a nonexistent directory.  */
     if (stat (len ? dir->fname : ".", &dir->st) != 0) {
       if (errno != ENOENT && errno != ENOTDIR)
@@ -9839,6 +9882,9 @@ new_include_prefix (prev_file_name, prefix, name)
       free (dir);
       return 0;
     }
+
+    if (len != 0)
+      dir->fname[len] = 0;
 
     /* Ignore a directory whose identity matches the previous one.  */
     if (prev_file_name
@@ -10200,27 +10246,26 @@ hack_vms_include_specification (fname, vaxc_include)
      "shr=nil"- Disallow file sharing while file is open.  */
 
 static FILE *
-freopen (fname, type, oldfile)
+VMS_freopen (fname, type, oldfile)
      char *fname;
      char *type;
      FILE *oldfile;
 {
-#undef	freopen	/* Get back the REAL fopen routine */
   if (strcmp (type, "w") == 0)
-    return freopen (fname, type, oldfile, "mbc=16", "deq=64", "fop=tef", "shr=nil");
-  return freopen (fname, type, oldfile, "mbc=16");
+    return decc$freopen (fname, type, oldfile,
+			 "mbc=16", "deq=64", "fop=tef", "shr=nil");
+  return decc$freopen (fname, type, oldfile, "mbc=16");
 }
 
 static FILE *
-fopen (fname, type)
+VMS_fopen (fname, type)
      char *fname;
      char *type;
 {
-#undef fopen	/* Get back the REAL fopen routine */
   /* The gcc-vms-1.42 distribution's header files prototype fopen with two
      fixed arguments, which matches ANSI's specification but not VAXCRTL's
      pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
-  FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
+  FILE *(*vmslib_fopen)() = (FILE *(*)()) decc$fopen;
 
   if (*type == 'w')
     return (*vmslib_fopen) (fname, type, "mbc=32",
@@ -10230,13 +10275,12 @@ fopen (fname, type)
 }
 
 static int 
-open (fname, flags, prot)
+VMS_open (fname, flags, prot)
      char *fname;
      int flags;
      int prot;
 {
-#undef open	/* Get back the REAL open routine */
-  return open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
+  return decc$open (fname, flags, prot, "mbc=16", "deq=64", "fop=tef");
 }
 
 /* more VMS hackery */
@@ -10257,14 +10301,13 @@ extern unsigned long sys$parse(), sys$search();
    bad enough, but then compounding the problem by reporting the reason for
    failure as "normal successful completion."  */
 
-#undef fstat	/* get back to library version */
 
 static int
 VMS_fstat (fd, statbuf)
      int fd;
      struct stat *statbuf;
 {
-  int result = fstat (fd, statbuf);
+  int result = decc$fstat (fd, statbuf);
 
   if (result < 0)
     {

@@ -117,8 +117,8 @@ Boston, MA 02111-1307, USA.  */
    other NOTE insns are grouped in their same relative order at the
    beginning of basic blocks that have been scheduled.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"
@@ -322,7 +322,7 @@ static void sched_note_set		PROTO((int, rtx, int));
 static int rank_for_schedule		PROTO((rtx *, rtx *));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
-static int birthing_insn		PROTO((rtx));
+static int birthing_insn_p		PROTO((rtx));
 static void adjust_priority		PROTO((rtx));
 static int schedule_insn		PROTO((rtx, rtx *, int, int));
 static int schedule_select		PROTO((rtx *, int, int, FILE *));
@@ -1462,6 +1462,9 @@ sched_analyze_2 (x, insn)
       sched_analyze_2 (XEXP (x, 0), insn);
       sched_analyze_1 (x, insn);
       return;
+      
+    default:
+      break;
     }
 
   /* Other cases: walk the insn.  */
@@ -4109,15 +4112,8 @@ update_flow_info (notes, first, last, orig_insn)
 
       for (insn = first; ; insn = NEXT_INSN (insn))
 	{
-	  rtx pat;
-	  int i;
-
-	  /* I'm not sure if this can happen, but let's be safe.  */
-	  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	    continue;
-
-	  pat = PATTERN (insn);
-	  i = GET_CODE (pat) == PARALLEL ? XVECLEN (pat, 0) : 0;
+	  rtx pat = PATTERN (insn);
+	  int i = GET_CODE (pat) == PARALLEL ? XVECLEN (pat, 0) : 0;
 	  set = pat;
 	  for (;;)
 	    {

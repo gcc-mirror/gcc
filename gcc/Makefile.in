@@ -73,6 +73,7 @@ LEX = flex
 LEXFLAGS =
 AR = ar
 AR_FLAGS = rc
+LN = @symbolic_link@
 DLLTOOL = dlltool
 SHELL = /bin/sh
 # on sysV, define this as cp.
@@ -173,6 +174,14 @@ SYSTEM_HEADER_DIR = /usr/include
 
 # Control whether to run fixproto.
 STMP_FIXPROTO = stmp-fixproto
+
+# Test to see whether <float.h> exists in the system header files,
+# and is not derived from GCC.
+FLOAT_H_TEST = \
+  [ -f $(SYSTEM_HEADER_DIR)/float.h ] && \
+  if grep 'ifndef _FLOAT_H___' $(SYSTEM_HEADER_DIR)/float.h >/dev/null; \
+  then false; \
+  else :; fi
 
 # Test to see whether <limits.h> exists in the system header files.
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
@@ -427,6 +436,9 @@ CRTSTUFF_T_CFLAGS =
 # Extra flags to use when compiling [m]crt0.o.
 CRT0STUFF_T_CFLAGS = 
 
+# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
+T =
+
 # End of variables for you to override.
 
 # Definition of `all' is here so that new rules inserted by sed
@@ -647,9 +659,6 @@ RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 BASIC_BLOCK_H = basic-block.h bitmap.h
-
-# "t" or nothing, for building multilibbed versions of, say, crtbegin.o.
-T =
 #
 # Language makefile fragments.
 
@@ -702,9 +711,9 @@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
 	echo timestamp > $(srcdir)/cstamp-h.in
-config.h: cstamp-h ; @true
+auto-config.h: cstamp-h ; @true
 cstamp-h: config.in config.status
-	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
+	CONFIG_HEADERS=auto-config.h:config.in $(SHELL) config.status
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
@@ -731,7 +740,7 @@ start.encap: native xgcc specs $(LIBGCC1) xlimits.h lang.start.encap
 rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status config.h cpp $(LANGUAGES) \
+native: config.status auto-config.h cpp $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -766,8 +775,9 @@ stamp-objlist: $(OBJS) $(BC_OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o \
+xgcc: gcc.o version.o choose-temp.o pexecute.o prefix.o version.o \
+   $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o prefix.o version.o \
 	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
@@ -790,8 +800,10 @@ gfloat.h: $(FLOAT_H)
 	cp $(FLOAT_H) gfloat.h
 
 # Create float.h source for the native machine.
+# Make it empty if we can use the system float.h without changes.
 float.h-nat: enquire
 	-./enquire -f > tmp-float.h
+	grep '#define [^_]' tmp-float.h >/dev/null || echo > tmp-float.h
 	mv tmp-float.h float.h-nat
 
 # Create a dummy float.h source for a cross-compiler.
@@ -808,8 +820,15 @@ float.h-cross:
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
-# Breaking this line caused a problem with one version of GNU make.
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c $(srcdir)/enquire.c
+	rm -f include/float.h
+	if $(FLOAT_H_TEST); then \
+	  SYS_FLOAT_H_WRAP=1; \
+	else :; \
+	  SYS_FLOAT_H_WRAP=0; \
+	fi; \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
+	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
+	  -I. -c $(srcdir)/enquire.c
 
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
@@ -1248,6 +1267,10 @@ version.o: version.c
 obstack.o: obstack.c
 choose-temp.o: choose-temp.c
 pexecute.o: pexecute.c
+prefix.o: prefix.c $(CONFIG_H) Makefile
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	-DPREFIX=\"$(prefix)\" \
+	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
 
 convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
 
@@ -1285,7 +1308,7 @@ expr.o : expr.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h function.h regs.h \
    typeclass.h bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h \
    bc-emit.h modemap.def hard-reg-set.h
 calls.o : calls.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h expr.h insn-codes.h \
-   insn-flags.h
+   insn-flags.h regs.h
 expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-flags.h insn-config.h insn-codes.h expr.h recog.h real.h
 explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
@@ -1302,28 +1325,29 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf2.h flags.h \
    insn-config.h reload.h output.h defaults.h hard-reg-set.h regs.h expr.h
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
-emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-   function.h regs.h insn-config.h insn-codes.h real.h expr.h bytecode.h \
-   bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h bc-opname.h
+emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h except.h \
+   function.h regs.h insn-config.h recog.h real.h expr.h obstack.h \
+   bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h \
+   bc-opname.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
    insn-flags.h insn-config.h insn-codes.h expr.h real.h regs.h function.h \
-   bytecode.h
+   bytecode.h output.h recog.h except.h
 
 jump.o : jump.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
-   insn-config.h insn-flags.h insn-codes.h expr.h real.h
+   insn-config.h insn-flags.h recog.h expr.h real.h except.h
 stupid.o : stupid.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h
 
 cse.o : cse.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h real.h \
    insn-config.h recog.h
 profile.o : profile.c $(CONFIG_H) $(RTL_H) flags.h insn-flags.h gcov-io.h \
-   tree.h output.h
+   tree.h output.h regs.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h insn-codes.h regs.h hard-reg-set.h recog.h expr.h real.h
-unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h insn-codes.h \
-   integrate.h regs.h flags.h expr.h loop.h
+unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h integrate.h regs.h \
+   recog.h flags.h expr.h loop.h
 flow.o : flow.c $(CONFIG_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h output.h
 combine.o : combine.c $(CONFIG_H) $(RTL_H) flags.h  \
@@ -1722,8 +1746,8 @@ bytecode.maintainer-clean: bytecode.clean
 cpp: $(CCCP)
 	-rm -f cpp$(exeext)
 	$(LN) $(CCCP)$(exeext) cpp$(exeext)
-cccp: cccp.o cexp.o version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o \
+cccp: cccp.o cexp.o version.o prefix.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o prefix.o \
 	  version.o $(LIBS)
 cexp.o: $(srcdir)/cexp.c $(CONFIG_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
@@ -1743,9 +1767,9 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 cppmain: cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
-  version.o $(LIBDEPS)
+  prefix.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
-	  cppalloc.o cpperror.o cppexp.o version.o $(LIBS)
+	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
 
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h
 
@@ -1879,11 +1903,13 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 	chmod a+r include/README
 	touch stmp-int-hdrs
 
-# Build the complete include directory.
+# Build the complete include directory, including float.h.
 stmp-headers: stmp-int-hdrs gfloat.h
 	rm -f include/float.h
-	cp gfloat.h include/float.h
-	chmod a+r include/float.h
+	if [ -s gfloat.h ]; then \
+	  cp gfloat.h include/float.h && \
+	  chmod a+r include/float.h; \
+	else :; fi
 	touch stmp-headers
 
 # Build fixed copies of system files.
@@ -1937,10 +1963,10 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	rm -rf fixtmp.c
 
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
-   cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o version.o
+   cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o prefix.o version.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
-	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o version.o \
-	   cppexp.o $(HOST_LIBS)
+	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
+	   version.o cppexp.o $(HOST_LIBS)
 
 fix-header.o: fix-header.c obstack.h scan.h xsys-protos.h $(build_xm_file)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
@@ -2041,7 +2067,7 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 	-rm -f */stamp-* */tmp-*
 # Delete debugging dump files.
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
-	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.regmove
+	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack *.addressof *.regmove
 	-rm -f */*.greg */*.lreg */*.combine */*.flow */*.cse */*.jump */*.rtl
 	-rm -f */*.tree */*.loop */*.dbr */*.jump2 */*.sched */*.cse2
 	-rm -f */*.sched2 */*.stack */*.regmove
@@ -2088,7 +2114,7 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
-	-rm -f tm.h config.h config2.h tconfig.h hconfig.h md cstamp-h
+	-rm -f tm.h config.h auto-config.h tconfig.h hconfig.h md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks Make-host Make-target
 	-rm -f Makefile specs.h options.h *.oaux
@@ -2206,12 +2232,14 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	  if [ x"$$file" != x.. ]; then \
 	    rm -f $(libsubdir)/$$file; \
 	    $(INSTALL_DATA) $$file $(libsubdir)/$$file; \
+	    chmod a-x $(libsubdir)/$$file; \
 	  else true; fi; \
 	done
 # Don't mess with specs if it doesn't exist yet.
 	-if [ -f specs ] ; then \
 	  rm -f $(libsubdir)/specs; \
 	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
+	  chmod a-x $(libsubdir)/specs; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize$(exeext) ]; \
@@ -2265,7 +2293,7 @@ install-info: doc installdirs lang.install-info
 
 # Install the man pages.
 install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
-	-if [ -f gcc-cross ] ; then \
+	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  chmod a-x $(mandir)/$(GCC_CROSS_NAME)$(manext); \
@@ -2483,7 +2511,7 @@ check-g77: testsuite/site.exp
 TAGS: force
 	cd $(srcdir);							\
 	mkdir temp;							\
-	mv -f c-parse.[ch] objc-parse.c cexp.c =*.[chy] temp;		\
+	mv -f c-parse.[ch] cexp.c =*.[chy] temp;		\
 	etags *.y *.h *.c;						\
 	mv temp/* .;							\
 	rmdir temp
@@ -2507,8 +2535,7 @@ gcc.xtar: distdir
 # This target exists to do the initial work before the language specific
 # stuff gets done.
 distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
-  $(srcdir)/objc-parse.y $(srcdir)/c-parse.c $(srcdir)/objc-parse.c \
-  $(srcdir)/cexp.c
+  $(srcdir)/c-parse.c $(srcdir)/cexp.c
 	@if grep -s "for version ${mainversion}" gcc.texi > /dev/null; \
 	then true; \
 	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
@@ -2525,7 +2552,6 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	mkdir tmp
 	mkdir tmp/config
 	mkdir tmp/ginclude
-	mkdir tmp/objc
 	for file in *[0-9a-zA-Z+]; do \
 	  $(LN) $$file tmp; \
 	done

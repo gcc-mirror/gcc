@@ -96,7 +96,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
 
-#if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__)
+#if (defined (__arm__) && ! defined (__ARMEB__)) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__)
 /* This is for little-endian machines; small args are padded upward.  */
 #define va_arg(AP, TYPE)						\
  (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\

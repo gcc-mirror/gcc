@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Some output-actions in m68k.md need these.  */
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -3049,7 +3049,11 @@ print_operand_address (file, addr)
 	      {
 		output_addr_const (file, addr);
 	        if (flag_pic && (breg == pic_offset_table_rtx))
-	          fprintf (file, "@GOT");
+		  {
+		    fprintf (file, "@GOT");
+		    if (flag_pic == 1)
+		      fprintf (file, ".w");
+		  }
 	      }
 	    fprintf (file, "(%s", reg_names[REGNO (breg)]);
 	    if (ireg != 0)

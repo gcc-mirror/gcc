@@ -284,10 +284,14 @@ static void add_bb		PROTO((FILE *));
 static int add_bb_string	PROTO((char *, int));
 static void output_source_line	PROTO((FILE *, rtx));
 static rtx walk_alter_subreg	PROTO((rtx));
-static int alter_cond		PROTO((rtx));
 static void output_asm_name	PROTO((void));
 static void output_operand	PROTO((rtx, int));
+#ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PROTO((rtx));
+#endif
+#ifdef HAVE_cc0
+static int alter_cond		PROTO((rtx));
+#endif
 
 extern char *getpwd ();
 
@@ -455,11 +459,16 @@ end_final (filename)
 	    ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
 	  else
 #endif
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+	    ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
+					      BIGGEST_ALIGNMENT);
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
 	    ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
 				      BIGGEST_ALIGNMENT);
 #else
 	    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
 	}
 
@@ -672,6 +681,10 @@ get_attr_length (insn)
 	    length += get_attr_length (XVECEXP (body, 0, i));
 	else
 	  length = insn_default_length (insn);
+	break;
+
+      default:
+	break;
       }
 
 #ifdef ADJUST_INSN_LENGTH
@@ -753,6 +766,7 @@ shorten_branches (first)
 	     to determine how much padding we need at this point.  Therefore,
 	     assume worst possible alignment.  */
 	  insn_lengths[uid] += unitsize - 1;
+
 #else
 	  ;
 #endif
@@ -2041,9 +2055,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		      PUT_CODE (insn, NOTE);
 		      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		      NOTE_SOURCE_FILE (insn) = 0;
-		      break;
 		    }
 		}
+		break;
+
+	      default:
+		break;
 	      }
 	  }
 
@@ -2327,6 +2344,9 @@ walk_alter_subreg (x)
 
     case SUBREG:
       return alter_subreg (x);
+      
+    default:
+      break;
     }
 
   return x;
@@ -2385,6 +2405,9 @@ alter_cond (cond)
 	PUT_CODE (cond, NE);
 	value = 2;
 	break;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & CC_NOT_NEGATIVE)
@@ -2411,6 +2434,9 @@ alter_cond (cond)
 	PUT_CODE (cond, NE);
 	value = 2;
 	break;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & CC_NO_OVERFLOW)
@@ -2433,19 +2459,15 @@ alter_cond (cond)
       case LTU:
 	/* Jump becomes no-op.  */
 	return -1;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & (CC_Z_IN_NOT_N | CC_Z_IN_N))
     switch (GET_CODE (cond))
       {
-      case LE:
-      case LEU:
-      case GE:
-      case GEU:
-      case LT:
-      case LTU:
-      case GT:
-      case GTU:
+      default:
 	abort ();
 
       case NE:
@@ -2482,6 +2504,9 @@ alter_cond (cond)
       case GE:
 	PUT_CODE (cond, GEU);
 	value = 2;
+	break;
+
+      default:
 	break;
       }
 

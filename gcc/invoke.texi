@@ -117,7 +117,8 @@ in the following sections.
 -w  -W  -Wall  -Waggregate-return  -Wbad-function-cast
 -Wcast-align  -Wcast-qual  -Wchar-subscript  -Wcomment
 -Wconversion  -Werror  -Wformat
--Wid-clash-@var{len}  -Wimplicit  -Wimport  -Winline
+-Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
+-Wimplicit-function-declarations -Wimport  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs
 -Wno-import  -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
@@ -283,7 +284,8 @@ in the following sections.
 -mtoc  -mno-toc  -mtraceback  -mno-traceback
 -mlittle  -mlittle-endian  -mbig  -mbig-endian
 -mcall-aix  -mcall-sysv  -mprototype  -mno-prototype
--msim  -mmvme  -memb  -msdata  -msdata=@var{opt}  -G @var{num}
+-msim  -mmvme  -mads  -myellowknife  -memb
+-msdata  -msdata=@var{opt}  -G @var{num}
 
 @emph{RT Options}
 -mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs
@@ -317,7 +319,8 @@ in the following sections.
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
 -mno-jump-in-delay
 -mno-long-load-store
--mno-portable-runtime -mno-soft-float -mno-space -mno-space-regs -msoft-float
+-mno-portable-runtime  -mno-soft-float  -mno-space  -mno-space-regs
+-msoft-float
 -mpa-risc-1-0  -mpa-risc-1-1  -mportable-runtime
 -mschedule=@var{list}  -mspace  -mspace-regs
 
@@ -354,7 +357,7 @@ in the following sections.
 -mlong-calls -mno-long-calls -mep -mno-ep
 -mprolog-function -mno-prolog-function -mspace
 -mtda=@var{n} -msda=@var{n} -mzda=@var{n}
--mv850
+-mv850 -mbig-switch
 @end smallexample
 
 @item Code Generation Options
@@ -1226,9 +1229,14 @@ Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
 specified.
 
+@item -Wimplicit-int
+Warn when a declaration does not specify a type.
+
+@item -Wimplicit-function-declarations
+Warn whenever a function is used before being declared.
+
 @item -Wimplicit
-Warn whenever a function or parameter is implicitly declared,
-or when a type implicitly defaults to @code{int}.
+Same as @samp{-Wimplicit-int} @samp{-Wimplicit-function-declaration}.
 
 @item -Wmain
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
@@ -1240,6 +1248,41 @@ Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
 often get confused about.
+
+Also warn about constructions where there may be confusion to which
+@code{if} statement an @code{else} branch belongs.  Here is an example of
+such a case:
+
+@smallexample
+@{
+  if (a)
+    if (b)
+      foo ();
+  else
+    bar ();
+@}
+@end smallexample
+
+In C, every @code{else} branch belongs to the innermost possible @code{if}
+statement, which in this example is @code{if (b)}.  This is often not
+what the programmer expected, as illustrated in the above example by
+indentation the programmer chose.  When there is the potential for this
+confusion, GNU C will issue a warning when this flag is specified.
+To eliminate the warning, add explicit braces around the innermost
+@code{if} statement so there is no way the @code{else} could belong to
+the enclosing @code{if}.  The resulting code would look like this:
+
+@smallexample
+@{
+  if (a)
+    @{
+      if (b)
+        foo ();
+      else
+        bar ();
+    @}
+@}
+@end smallexample
 
 @item -Wreturn-type
 Warn whenever a function is defined with a return-type that defaults
@@ -1344,13 +1387,6 @@ Here the compiler will warn that the member initializers for @samp{i}
 and @samp{j} will be rearranged to match the declaration order of the
 members.
 
-@item -Wsign-compare
-@cindex warning for comparison of signed and unsigned values
-@cindex comparison of signed and unsigned values, warning
-@cindex signed and unsigned values, comparison warning
-Warn when a comparison between signed and unsigned values could produce
-an incorrect result when the signed value is converted to unsigned.
-
 @item -Wtemplate-debugging
 @cindex template debugging
 When using templates in a C++ program, warn if debugging is not yet
@@ -1425,6 +1461,11 @@ a declaration.  According to the C Standard, this usage is obsolescent.
 @item
 If @samp{-Wall} or @samp{-Wunused} is also specified, warn about unused
 arguments.
+
+@item
+A comparison between signed and unsigned values could produce an
+incorrect result when the signed value is converted to unsigned.
+(But do not warn if @samp{-Wno-sign-compare} is also specified.)
 
 @item
 An aggregate has a partly bracketed initializer.
@@ -1511,6 +1552,15 @@ Also, warn if a negative integer constant expression is implicitly
 converted to an unsigned type.  For example, warn about the assignment
 @code{x = -1} if @code{x} is unsigned.  But do not warn about explicit
 casts like @code{(unsigned) -1}.
+
+@item -Wsign-compare
+@cindex warning for comparison of signed and unsigned values
+@cindex comparison of signed and unsigned values, warning
+@cindex signed and unsigned values, comparison warning
+Warn when a comparison between signed and unsigned values could produce
+an incorrect result when the signed value is converted to unsigned.
+This warning is also enabled by @samp{-W}; to get the other warnings
+of @samp{-W} without this warning, use @samp{-W -Wno-sign-compare}.
 
 @item -Waggregate-return
 Warn if any functions that return structures or unions are defined or
@@ -4100,7 +4150,7 @@ On System V.4 and embedded PowerPC systems compile code for the
 Linux-based GNU system.
 
 @item -mprototype
-@item -mno-prototype
+@itemx -mno-prototype
 On System V.4 and embedded PowerPC systems assume that all calls to
 variable argument functions are properly prototyped.  Otherwise, the
 compiler must insert an instruction before every non prototyped call to
@@ -4118,7 +4168,17 @@ configurations.
 
 @item -mmvme
 On embedded PowerPC systems, assume that the startup module is called
-@file{mvme-crt0.o} and the standard C libraries are @file{libmvme.a} and
+@file{crt0.o} and the standard C libraries are @file{libmvme.a} and
+@file{libc.a}.
+
+@item -mads
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libads.a} and
+@file{libc.a}.
+
+@item -myellowknife
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libyk.a} and
 @file{libc.a}.
 
 @item -memb
@@ -5067,10 +5127,14 @@ area can hold up to 64 kilobytes.
 @item -mzda=@var{n}
 Put static or global variables whose size is @var{n} bytes or less into
 the first 32 kilobytes of memory.
-
+ 
 @item -mv850
 Specify that the target processor is the V850.
 
+@item -mbig-switch
+Generate code suitable for big switch tables.  Use this option only if
+the assembler/linker complain about out of range branches within a switch
+table.
 @end table
 
 @node Code Gen Options

@@ -126,8 +126,8 @@ g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
 	-DLANG_SPECIFIC_DRIVER -c g77.c
 
 # Create the compiler driver for g77.
-g77$(exeext): g77.o g77spec.o version.o choose-temp.o pexecute.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o version.o \
+g77$(exeext): g77.o g77spec.o version.o choose-temp.o pexecute.o prefix.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ g77.o g77spec.o prefix.o version.o \
 	  choose-temp.o pexecute.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Create a version of the g77 driver which calls the cross-compiler.

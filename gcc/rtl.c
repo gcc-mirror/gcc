@@ -284,6 +284,7 @@ copy_rtx (orig)
     case CC0:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
+    case ADDRESSOF:
       return orig;
 
     case CONST:
@@ -299,6 +300,9 @@ copy_rtx (orig)
 	 the constant address may need to be reloaded.  If the mem is shared,
 	 then reloading one copy of this mem will cause all copies to appear
 	 to have been reloaded.  */
+
+    default:
+      break;
     }
 
   copy = rtx_alloc (code);
@@ -385,6 +389,8 @@ copy_most_rtx (orig, may_share)
     case PC:
     case CC0:
       return orig;
+    default:
+      break;
     }
 
   copy = rtx_alloc (code);

@@ -19,10 +19,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
 #include "expr.h"
+#include "regs.h"
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -232,6 +234,9 @@ calls_function_1 (exp, which)
 
     case RTL_EXPR:
       return 0;
+      
+    default:
+      break;
     }
 
   for (i = 0; i < length; i++)
@@ -267,15 +272,11 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
   /* Make a valid memory address and copy constants thru pseudo-regs,
      but not for a constant address if -fno-function-cse.  */
   if (GET_CODE (funexp) != SYMBOL_REF)
-    funexp =
-#ifdef SMALL_REGISTER_CLASSES
     /* If we are using registers for parameters, force the
-	 function address into a register now.  */
-      (SMALL_REGISTER_CLASSES && reg_parm_seen)
-       ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
-       :
-#endif
-         memory_address (FUNCTION_MODE, funexp);
+       function address into a register now.  */
+    funexp = ((SMALL_REGISTER_CLASSES && reg_parm_seen)
+	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
+	      : memory_address (FUNCTION_MODE, funexp));
   else
     {
 #ifndef NO_FUNCTION_CSE
@@ -695,7 +696,8 @@ expand_call (exp, target, ignore)
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
-	    /* Assign a temporary on the stack to hold the value.  */
+	    /* Assign a temporary to hold the value.  */
+	    tree d;
 
 	    /* For variable-sized objects, we must be called with a target
 	       specified.  If we were to allocate space on the stack here,
@@ -704,8 +706,12 @@ expand_call (exp, target, ignore)
 	    if (struct_value_size < 0)
 	      abort ();
 
-	    structure_value_addr
-	      = XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
+	    /* This DECL is just something to feed to mark_addressable;
+	       it doesn't get pushed.  */
+	    d = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+	    DECL_RTL (d) = assign_temp (TREE_TYPE (exp), 1, 0, 1);
+	    mark_addressable (d);
+	    structure_value_addr = XEXP (DECL_RTL (d), 0);
 	    MEM_IN_STRUCT_P (structure_value_addr)
 	      = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	    target = 0;
@@ -1675,13 +1681,8 @@ expand_call (exp, target, ignore)
 		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > 2
-#ifdef SMALL_REGISTER_CLASSES
 	    && ((SMALL_REGISTER_CLASSES && reg_parm_seen)
-		|| preserve_subexpressions_p ())
-#else
-	    && preserve_subexpressions_p ()
-#endif
-	    )
+		|| preserve_subexpressions_p ()))
 	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 
@@ -2038,7 +2039,7 @@ expand_call (exp, target, ignore)
 
   /* If there are cleanups to be called, don't use a hard reg as target.
      We need to double check this and see if it matters anymore.  */
-  if (any_pending_cleanups ()
+  if (any_pending_cleanups (1)
       && target && REG_P (target)
       && REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = 0;
@@ -2751,26 +2752,26 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 #ifdef REG_PARM_STACK_SPACE
-      if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-	  rtx stack_area
-	    = gen_rtx (MEM, save_mode,
-		       memory_address (save_mode,
+  if (save_area)
+    {
+      enum machine_mode save_mode = GET_MODE (save_area);
+      rtx stack_area
+	= gen_rtx (MEM, save_mode,
+		   memory_address (save_mode,
 #ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				   plus_constant (argblock, - high_to_save)
 #else
-				       plus_constant (argblock, low_to_save)
+				   plus_constant (argblock, low_to_save)
 #endif
-				       ));
+				   ));
 
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
-			     PARM_BOUNDARY / BITS_PER_UNIT);
-	}
+      if (save_mode != BLKmode)
+	emit_move_insn (stack_area, save_area);
+      else
+	emit_block_move (stack_area, validize_mem (save_area),
+			 GEN_INT (high_to_save - low_to_save + 1),
+			 PARM_BOUNDARY / BITS_PER_UNIT);
+    }
 #endif
 	  
   /* If we saved any argument areas, restore them.  */
@@ -2789,7 +2790,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   highest_outgoing_arg_in_use = initial_highest_arg_in_use;
   stack_usage_map = initial_stack_usage_map;
 #endif
-
 }
 
 /* Like emit_library_call except that an extra argument, VALUE,
@@ -3345,26 +3345,26 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 #ifdef REG_PARM_STACK_SPACE
-      if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-	  rtx stack_area
-	    = gen_rtx (MEM, save_mode,
-		       memory_address (save_mode,
+  if (save_area)
+    {
+      enum machine_mode save_mode = GET_MODE (save_area);
+      rtx stack_area
+	= gen_rtx (MEM, save_mode,
+		   memory_address (save_mode,
 #ifdef ARGS_GROW_DOWNWARD
-				       plus_constant (argblock, - high_to_save)
+				   plus_constant (argblock, - high_to_save)
 #else
-				       plus_constant (argblock, low_to_save)
+				   plus_constant (argblock, low_to_save)
 #endif
-				       ));
+				   ));
 
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
+      if (save_mode != BLKmode)
+	emit_move_insn (stack_area, save_area);
+      else
+	emit_block_move (stack_area, validize_mem (save_area),
+			 GEN_INT (high_to_save - low_to_save + 1),
 			     PARM_BOUNDARY / BITS_PER_UNIT);
-	}
+    }
 #endif
 	  
   /* If we saved any argument areas, restore them.  */

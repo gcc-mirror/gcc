@@ -22,7 +22,7 @@
 
 # Initialization and defaults
 AC_INIT(tree.c)
-AC_CONFIG_HEADER(config.h:config.in)
+AC_CONFIG_HEADER(auto-config.h:config.in)
 
 remove=rm
 hard_link=ln
@@ -120,6 +120,10 @@ esac
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
+# Find the native compiler
+AC_PROG_CC
+AC_PROG_MAKE_SET
+
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX
@@ -133,7 +137,7 @@ EGCS_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h varargs.h sys/varargs.h)
+AC_CHECK_HEADERS(inttypes.h limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h varargs.h sys/varargs.h)
 
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
@@ -301,7 +305,7 @@ for machine in $build $host $target; do
  			thread_file='posix'
  		fi
 		;;
-	alpha*-dec-osf[[456789]]*)
+	alpha*-dec-osf*)
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -311,48 +315,24 @@ for machine in $build $host $target; do
 			extra_passes="mips-tfile mips-tdump"
 		fi
 		use_collect2=yes
-		# Some versions of OSF4 (specifically X4.0-9 296.7) have
-		# a broken tar, so we use cpio instead.
 		case $machine in
-		  alpha*-dec-osf4*)
+		  *-*-osf1.2)
+		    tm_file="${tm_file} alpha/osf12.h alpha/osf2or3.h"
+		    ;;
+		  *-*-osf[[23]]*)
+		    tm_file="${tm_file} alpha/osf2or3.h"
+		    ;;
+		  *-*-osf4*)
+		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
+		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		esac
-		;;
-	alpha*-dec-osf[[23]]*)
-		tm_file="${tm_file} alpha/osf2or3.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		use_collect2=yes
-		;;
-	alpha*-dec-osf1.2)
-		tm_file="${tm_file} alpha/osf12.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		use_collect2=yes
-		;;
-	alpha*-*-osf*)
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		use_collect2=yes
+		case $machine in
+		  *-*-osf4.0[[b-z]] | *-*-osf4.[[1-9]]*)
+		    target_cpu_default=MASK_SUPPORT_ARCH
+		    ;;
+		esac
 		;;
 	alpha*-*-winnt3*)
 		tm_file="${tm_file} alpha/win-nt.h"
@@ -412,7 +392,7 @@ for machine in $build $host $target; do
 	arm-*-netbsd*)
 		tm_file=arm/netbsd.h
 		xm_file=arm/xm-netbsd.h
-		tmake_file=arm/t-netbsd
+		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		use_collect2=yes
@@ -428,6 +408,7 @@ for machine in $build $host $target; do
 		;;
 	arm-*-aout)
 		tm_file=arm/aout.h
+		tmake_file=arm/t-bare
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
@@ -984,6 +965,7 @@ for machine in $build $host $target; do
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
 		fixincludes=fixinc.svr4
+		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
@@ -2011,6 +1993,14 @@ for machine in $build $host $target; do
 		tm_file=mips/rtems64.h
 		tmake_file="mips/t-ecoff t-rtems"
 		;;
+	mipstx39el-*-elf*)
+		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h libgloss.h"
+		tmake_file=mips/t-ecoff
+		;;
+	mipstx39-*-elf*)
+		tm_file="mips/r3900.h mips/elf.h mips/abi64.h libgloss.h"
+		tmake_file=mips/t-ecoff
+		;;
 	mips-*-*)				# Default MIPS RISC-OS 4.0.
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
@@ -2237,7 +2227,7 @@ for machine in $build $host $target; do
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
 		xmake_file=rs6000/x-sysv4
-		fixincludes=fixinc.svr4
+		fixincludes=fixinc.math
 		extra_headers=ppc-asm.h
 		;;
 	rs6000-ibm-aix3.[[01]]*)
@@ -2377,6 +2367,8 @@ for machine in $build $host $target; do
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		fixincludes=fixinc.svr4
+		float_format=i128
+		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
 		fi
@@ -2547,8 +2539,14 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-*)
 		case $machine in
+			alphaev6*)
+				target_cpu_default2="MASK_CPU_EV6|MASK_BXW|MASK_CIX|MASK_MAX"
+				;;
+			alphapca56*)
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX|TASK_MAX"
+				;;
 			alphaev56*)
-				target_cpu_default2="MASK_CPU_EV5|MASK_BYTE_OPS"
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX"
 				;;
 			alphaev5*)
 				target_cpu_default2="MASK_CPU_EV5"
@@ -2745,10 +2743,11 @@ fi
 # Set up the header files.
 # $links is the list of header files to create.
 # $vars is the list of shell variables with file names to include.
-# config2.h is the old config.h.  It is included by the new config.h which
-# created from config.in.  The goal is to simplify the transition to autoconf.
+# auto-conf.h is the file containing items generated by autoconf and is
+# the first file included by config.h.
+host_xm_file="auto-config.h ${host_xm_file}"
 vars="host_xm_file tm_file xm_file build_xm_file"
-links="config2.h tm.h tconfig.h hconfig.h"
+links="config.h tm.h tconfig.h hconfig.h"
 
 rm -f config.bak
 if [[ -f config.status ]]; then mv -f config.status config.bak; fi
@@ -2823,6 +2822,7 @@ then
 	cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
+	symbolic_link="cp -p"
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 fi
@@ -3126,6 +3126,7 @@ AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
 AC_SUBST(install)
+AC_SUBST(symbolic_link)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
@@ -3170,7 +3171,7 @@ AC_OUTPUT($all_outputs,
 [
 . $srcdir/configure.lang
 case x$CONFIG_HEADERS in
-xconfig.h:config.in)
+xauto-config.h:config.in)
 echo > cstamp-h ;;
 esac
 # If the host supports symlinks, point stage[1234] at ../stage[1234] so

@@ -252,7 +252,7 @@ fix_argv (argvec)
         {
           if (temp[j] == '"')
             {
-              newtemp = xmalloc (len + 2);
+              newtemp = (char *) xmalloc (len + 2);
               strncpy (newtemp, temp, j);
               newtemp [j] = '\\';
               strncpy (&newtemp [j+1], &temp [j], len-j);
@@ -407,7 +407,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 	  /* See if we have an argument that needs fixing.  */
 	  if (strchr(argv[i], '/'))
 	    {
-	      tmpname = xmalloc (256);
+	      tmpname = (char *) xmalloc (256);
 	      mpwify_filename (argv[i], tmpname);
 	      argv[i] = tmpname;
 	    }
@@ -432,7 +432,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       /* See if we have an argument that needs fixing.  */
       if (strchr(argv[i], '/'))
 	{
-	  tmpname = xmalloc (256);
+	  tmpname = (char *) xmalloc (256);
 	  mpwify_filename (argv[i], tmpname);
 	  argv[i] = tmpname;
 	}

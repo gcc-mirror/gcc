@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
    and a function init_reg_sets to initialize the tables.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "flags.h"
@@ -1539,63 +1540,32 @@ record_address_regs (x, class, scale)
 	else if (code1 == SYMBOL_REF || code1 == CONST || code1 == LABEL_REF)
 	  record_address_regs (arg0, INDEX_REG_CLASS, scale);
 
-	/* Look for the sum of two registers where the first is definitely
-	   a base register or the second is definitely an index register. */
+	/* If one operand is known to be a pointer, it must be the base
+	   with the other operand the index.  Likewise if the other operand
+	   is a MULT.  */
 
-	else if (code0 == REG && code1 == REG
-		 && ((REGNO (arg0) < FIRST_PSEUDO_REGISTER 
-		      && REG_OK_FOR_BASE_P (arg0))
-		     || ((REGNO (arg1) < FIRST_PSEUDO_REGISTER 
-			  && REG_OK_FOR_INDEX_P (arg1)))))
+	else if ((code0 == REG && REGNO_POINTER_FLAG (REGNO (arg0)))
+		 || code1 == MULT)
 	  {
 	    record_address_regs (arg0, BASE_REG_CLASS, scale);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
 	  }
-
-	/* Look for the sum of two registers where the first is definitely
-	   an index register or the second is definitely a base register. */
-
-	else if (code0 == REG && code1 == REG
-		 && ((REGNO (arg1) < FIRST_PSEUDO_REGISTER 
-		      && REG_OK_FOR_BASE_P (arg1))
-		     || ((REGNO (arg0) < FIRST_PSEUDO_REGISTER 
-			  && REG_OK_FOR_INDEX_P (arg0)))))
+	else if ((code1 == REG && REGNO_POINTER_FLAG (REGNO (arg1)))
+		 || code0 == MULT)
 	  {
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
 	    record_address_regs (arg1, BASE_REG_CLASS, scale);
 	  }
 
-	/* If this the sum of two registers where the first is known to be a 
-	   pointer, it must be a base register with the second an index.  */
-
-	else if (code0 == REG && code1 == REG
-		 && REGNO_POINTER_FLAG (REGNO (arg0)))
-	  {
-	    record_address_regs (arg0, BASE_REG_CLASS, scale);
-	    record_address_regs (arg1, INDEX_REG_CLASS, scale);
-	  }
-
-	/* If this is the sum of two registers and neither is known to
-	   be a pointer, count equal chances that each might be a base
+	/* Otherwise, count equal chances that each might be a base
 	   or index register.  This case should be rare.  */
 
-	else if (code0 == REG && code1 == REG
-		 && ! REGNO_POINTER_FLAG (REGNO (arg0))
-		 && ! REGNO_POINTER_FLAG (REGNO (arg1)))
+	else
 	  {
 	    record_address_regs (arg0, BASE_REG_CLASS, scale / 2);
 	    record_address_regs (arg0, INDEX_REG_CLASS, scale / 2);
 	    record_address_regs (arg1, BASE_REG_CLASS, scale / 2);
 	    record_address_regs (arg1, INDEX_REG_CLASS, scale / 2);
-	  }
-
-	/* In all other cases, the first operand is an index and the
-	   second is the base.  */
-
-	else
-	  {
-	    record_address_regs (arg0, INDEX_REG_CLASS, scale);
-	    record_address_regs (arg1, BASE_REG_CLASS, scale);
 	  }
       }
       break;
