@@ -1,3 +1,8 @@
+2003-03-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/cpu/mips/atomicity.h (__exchange_and_add, __atomic_add):
+	Only .set mips2 for the o32 ABI.
+
 2003-03-19  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/21_strings/char_traits/requirements/char/1.cc:
