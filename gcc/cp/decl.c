@@ -434,17 +434,9 @@ struct cp_binding_level GTY(())
 /* The binding level currently in effect.  */
 
 #define current_binding_level			\
-  (cfun && cp_function_chain->bindings		\
-   ? cp_function_chain->bindings		\
-   : scope_chain->bindings)
-
-#define set_current_binding_level(bl) do {	\
-   struct cp_binding_level * const bl_ = bl;	\
-   if (cfun && cp_function_chain->bindings)	\
-     cp_function_chain->bindings = bl_;		\
-   else						\
-     scope_chain->bindings = bl_;		\
- } while (0)
+  (*(cfun && cp_function_chain->bindings	\
+   ? &cp_function_chain->bindings		\
+   : &scope_chain->bindings))
 
 /* The binding level of the current class, if any.  */
 
@@ -495,7 +487,7 @@ push_binding_level (struct cp_binding_level *newlevel,
      are active.  */
   memset ((char*) newlevel, 0, sizeof (struct cp_binding_level));
   newlevel->level_chain = current_binding_level;
-  set_current_binding_level (newlevel);
+  current_binding_level = newlevel;
   newlevel->tag_transparent = tag_transparent;
   newlevel->more_cleanups_ok = 1;
 
@@ -551,7 +543,7 @@ pop_binding_level (void)
 #endif /* defined(DEBUG_BINDING_LEVELS) */
   {
     register struct cp_binding_level *level = current_binding_level;
-    set_current_binding_level (current_binding_level->level_chain);
+    current_binding_level = current_binding_level->level_chain;
     level->level_chain = free_binding_level;
 #if 0 /* defined(DEBUG_BINDING_LEVELS) */
     if (level->binding_depth != binding_depth)
@@ -566,7 +558,7 @@ static void
 suspend_binding_level (void)
 {
   if (class_binding_level)
-    set_current_binding_level (class_binding_level);
+    current_binding_level = class_binding_level;
 
   if (global_binding_level)
     {
@@ -588,7 +580,7 @@ suspend_binding_level (void)
     }
   is_class_level = 0;
 #endif /* defined(DEBUG_BINDING_LEVELS) */
-  set_current_binding_level (current_binding_level->level_chain);
+  current_binding_level = current_binding_level->level_chain;
   find_class_binding_level ();
 }
 
@@ -600,7 +592,7 @@ resume_binding_level (struct cp_binding_level* b)
   my_friendly_assert(!class_binding_level, 386);
   /* Also, resuming a non-directly nested namespace is a no-no.  */
   my_friendly_assert(b->level_chain == current_binding_level, 386);
-  set_current_binding_level (b);
+  current_binding_level = b;
 #if defined(DEBUG_BINDING_LEVELS)
   b->binding_depth = binding_depth;
   indent ();
@@ -4074,9 +4066,9 @@ pushdecl_with_scope (tree x, struct cp_binding_level* level)
   else
     {
       b = current_binding_level;
-      set_current_binding_level (level);
+      current_binding_level = level;
       x = pushdecl (x);
-      set_current_binding_level (b);
+      current_binding_level = b;
     }
   current_function_decl = function_decl;
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, x);
@@ -6203,7 +6195,7 @@ cxx_init_decl_processing (void)
   current_lang_name = lang_name_c;
 
   current_function_decl = NULL_TREE;
-  set_current_binding_level (NULL_BINDING_LEVEL);
+  current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
 
   build_common_tree_nodes (flag_signed_char);
@@ -9979,10 +9971,10 @@ grokdeclarator (tree declarator,
   if (decl_context == NORMAL && !toplevel_bindings_p ())
     {
       struct cp_binding_level *b = current_binding_level;
-      set_current_binding_level (b->level_chain);
+      current_binding_level = b->level_chain;
       if (current_binding_level != 0 && toplevel_bindings_p ())
 	decl_context = PARM;
-      set_current_binding_level (b);
+      current_binding_level = b;
     }
 
   if (name == NULL)
@@ -13452,7 +13444,7 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
      FIXME factor out the non-RTL stuff.  */
   bl = current_binding_level;
   init_function_start (decl1, input_filename, lineno);
-  set_current_binding_level (bl);
+  current_binding_level = bl;
 
   /* Even though we're inside a function body, we still don't want to
      call expand_expr to calculate the size of a variable-sized array.

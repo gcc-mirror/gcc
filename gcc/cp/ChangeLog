@@ -1,3 +1,8 @@
+2003-04-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (set_current_binding_level): Delete, revert last change.
+	(current_binding_level): Modify to allow it as as lvalue.
+
 2003-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* name-lookup.c (find_binding): Pass appropriate pointer type to
