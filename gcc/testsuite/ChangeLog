@@ -1,3 +1,8 @@
+2003-04-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.pt/instantiate12.C: Explicit instantiate
+	initialized static data members.
+
 2003-04-25  H.J. Lu <hjl@gnu.org>
 
 	* gcc.dg/ia64-sync-4.c: New test.
