@@ -3097,9 +3097,6 @@ ix86_build_builtin_va_list (void)
   f_sav = build_decl (FIELD_DECL, get_identifier ("reg_save_area"),
 		      ptr_type_node);
 
-  va_list_gpr_counter_field = f_gpr;
-  va_list_fpr_counter_field = f_fpr;
-
   DECL_FIELD_CONTEXT (f_gpr) = record;
   DECL_FIELD_CONTEXT (f_fpr) = record;
   DECL_FIELD_CONTEXT (f_ovf) = record;
@@ -3139,9 +3136,6 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (!TARGET_64BIT)
     return;
 
-  if (! cfun->va_list_gpr_size && ! cfun->va_list_fpr_size)
-    return;
-
   /* Indicate to allocate space on the stack for varargs save area.  */
   ix86_save_varrargs_registers = 1;
 
@@ -3163,10 +3157,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
   set = get_varargs_alias_set ();
 
-  for (i = next_cum.regno;
-       i < ix86_regparm
-       && i < next_cum.regno + cfun->va_list_gpr_size / UNITS_PER_WORD;
-       i++)
+  for (i = next_cum.regno; i < ix86_regparm; i++)
     {
       mem = gen_rtx_MEM (Pmode,
 			 plus_constant (save_area, i * UNITS_PER_WORD));
@@ -3175,7 +3166,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 					x86_64_int_parameter_registers[i]));
     }
 
-  if (next_cum.sse_nregs && cfun->va_list_fpr_size)
+  if (next_cum.sse_nregs)
     {
       /* Now emit code to save SSE registers.  The AX parameter contains number
 	 of SSE parameter registers used to call this function.  We use
@@ -3258,21 +3249,15 @@ ix86_va_start (tree valist, rtx nextarg)
     fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
 	     (int) words, (int) n_gpr, (int) n_fpr);
 
-  if (cfun->va_list_gpr_size)
-    {
-      t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
-		 build_int_cst (NULL_TREE, n_gpr * 8));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
+  t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr,
+	     build_int_cst (NULL_TREE, n_gpr * 8));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  if (cfun->va_list_fpr_size)
-    {
-      t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
-		 build_int_cst (NULL_TREE, n_fpr * 16 + 8*REGPARM_MAX));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
+  t = build (MODIFY_EXPR, TREE_TYPE (fpr), fpr,
+	     build_int_cst (NULL_TREE, n_fpr * 16 + 8*REGPARM_MAX));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
   /* Find the overflow area.  */
   t = make_tree (TREE_TYPE (ovf), virtual_incoming_args_rtx);
@@ -3283,15 +3268,12 @@ ix86_va_start (tree valist, rtx nextarg)
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  if (cfun->va_list_gpr_size || cfun->va_list_fpr_size)
-    {
-      /* Find the register save area.
-	 Prologue of the function save it right above stack frame.  */
-      t = make_tree (TREE_TYPE (sav), frame_pointer_rtx);
-      t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
+  /* Find the register save area.
+     Prologue of the function save it right above stack frame.  */
+  t = make_tree (TREE_TYPE (sav), frame_pointer_rtx);
+  t = build (MODIFY_EXPR, TREE_TYPE (sav), sav, t);
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 }
 
 /* Implement va_arg.  */
