@@ -5229,7 +5229,7 @@ tsubst_copy (t, args, in_decl)
   switch (code)
     {
     case PARM_DECL:
-      return do_identifier (DECL_NAME (t), 0);
+      return do_identifier (DECL_NAME (t), 0, NULL_TREE);
 
     case CONST_DECL:
     case FIELD_DECL:

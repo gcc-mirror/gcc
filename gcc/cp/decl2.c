@@ -3480,13 +3480,13 @@ build_expr_from_tree (t)
   switch (TREE_CODE (t))
     {
     case IDENTIFIER_NODE:
-      return do_identifier (t, 0);
+      return do_identifier (t, 0, NULL_TREE);
 
     case LOOKUP_EXPR:
       if (LOOKUP_EXPR_GLOBAL (t))
 	return do_scoped_id (TREE_OPERAND (t, 0), 0);
       else
-	return do_identifier (TREE_OPERAND (t, 0), 0);
+	return do_identifier (TREE_OPERAND (t, 0), 0, NULL_TREE);
 
     case TEMPLATE_ID_EXPR:
       return (lookup_template_function
@@ -3651,12 +3651,21 @@ build_expr_from_tree (t)
       else
 	{
 	  tree name = TREE_OPERAND (t, 0);
-	  if (TREE_CODE (name) == TEMPLATE_ID_EXPR
+          tree id;
+          tree args = build_expr_from_tree (TREE_OPERAND (t, 1));
+          if (args != NULL_TREE && TREE_CODE (name) == LOOKUP_EXPR
+              && !LOOKUP_EXPR_GLOBAL (name)
+              && TREE_CODE ((id = TREE_OPERAND (name, 0))) == IDENTIFIER_NODE
+              && (!current_class_type
+                  || !lookup_member (current_class_type, id, 0, 0)))
+            {
+              /* Do Koenig lookup if there are no class members. */
+              name = do_identifier (id, 0, args);
+            }
+          else if (TREE_CODE (name) == TEMPLATE_ID_EXPR
 	      || ! really_overloaded_fn (name))
 	    name = build_expr_from_tree (name);
-	  return build_x_function_call
-	    (name, build_expr_from_tree (TREE_OPERAND (t, 1)),
-	     current_class_ref);
+	  return build_x_function_call (name, args, current_class_ref);
 	}
 
     case COND_EXPR:
@@ -4329,6 +4338,13 @@ arg_assoc (k, n)
 	  if (arg_assoc_type (k, DECL_CLASS_CONTEXT (n)))
 	    return 1;
 	return 0;
+      case TEMPLATE_DECL:
+        /* XXX Type of a function template in the context of Koenig lookup?
+           Assume that template parameters are non-deduced for the moment. */
+        n = DECL_RESULT (n);
+        continue;
+      case ERROR_MARK:
+        return 0;
       default:
 	cp_error ("sorry, Koenig lookup for `%s' of type `%T' failed",
 		  tree_code_name [(int)TREE_CODE (n)], TREE_TYPE (n));

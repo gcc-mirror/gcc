@@ -2792,10 +2792,29 @@ see_typename ()
     }
 }
 
+/* Return true if d is in a global scope. */
+
+static int
+is_global (d)
+  tree d;
+{
+  while (1)
+    switch (TREE_CODE (d))
+      {
+      case OVERLOAD: d = OVL_FUNCTION (d); continue;
+      case TREE_LIST: d = TREE_VALUE (d); continue;
+      default:
+        my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (d)) == 'd', 980629);
+        d = CP_DECL_CONTEXT (d);
+        return TREE_CODE (d) == NAMESPACE_DECL;
+      }
+}
+
 tree
-do_identifier (token, parsing)
+do_identifier (token, parsing, args)
      register tree token;
      int parsing;
+     tree args;
 {
   register tree id;
 
@@ -2808,7 +2827,7 @@ do_identifier (token, parsing)
     yychar = yylex ();
   /* Scope class declarations before global
      declarations.  */
-  if (id == IDENTIFIER_NAMESPACE_VALUE (token)
+  if (id && is_global (id)
       && current_class_type != 0
       && TYPE_SIZE (current_class_type) == 0)
     {
@@ -2833,6 +2852,15 @@ do_identifier (token, parsing)
 	  id = error_mark_node;
 	  return id;
 	}
+    }
+
+  /* Do Koenig lookup if appropriate (inside templates we build lookup
+     expressions instead).  */
+  if (args && !current_template_parms && (!id || is_global (id)))
+    {
+      /* If we have arguments and we only found global names,
+         do Koenig lookup. */
+      id = lookup_arg_dependent (token, id, args);
     }
 
   /* Remember that this name has been used in the class definition, as per

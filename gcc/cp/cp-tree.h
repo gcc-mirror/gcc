@@ -2606,7 +2606,7 @@ extern void note_list_got_semicolon		PROTO((tree));
 extern void do_pending_lang_change		PROTO((void));
 extern int identifier_type			PROTO((tree));
 extern void see_typename			PROTO((void));
-extern tree do_identifier			PROTO((tree, int));
+extern tree do_identifier			PROTO((tree, int, tree));
 extern tree do_scoped_id			PROTO((tree, int));
 extern tree identifier_typedecl_value		PROTO((tree));
 extern int real_yylex				PROTO((void));
@@ -2798,7 +2798,7 @@ extern void finish_asm_stmt                     PROTO((tree, tree, tree, tree, t
 extern tree finish_parenthesized_expr           PROTO((tree));
 extern tree begin_stmt_expr                     PROTO((void));
 extern tree finish_stmt_expr                    PROTO((tree, tree));
-extern tree finish_call_expr                    PROTO((tree, tree));
+extern tree finish_call_expr                    PROTO((tree, tree, int));
 extern tree finish_increment_expr               PROTO((tree, enum tree_code));
 extern tree finish_this_expr                    PROTO((void));
 extern tree finish_object_call_expr             PROTO((tree, tree, tree));
