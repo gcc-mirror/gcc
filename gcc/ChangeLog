@@ -1,3 +1,7 @@
+Wed Sep 26 13:20:51 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* final.c (final_scan_insn): Use delete_insn instead of delete_note.
+
 2001-09-25  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* except.c (sjlj_mark_call_sites): Change address inside sequence.
