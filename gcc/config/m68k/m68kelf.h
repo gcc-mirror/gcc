@@ -28,8 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef MOTOROLA
 #define MOTOROLA                /* Use MOTOROLA syntax.  */
 #endif
-#ifdef  USE_GAS  /* when present, forces jsbr instead of jsr.  */
-#undef  USE_GAS
+#ifndef  USE_GAS  /* forces jsbr instead of jsr.  */
+#define  USE_GAS
 #endif
 
 #ifndef SWBEG_ASM_OP
