@@ -535,7 +535,9 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
      structure fields.  */
   if (GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
       && GET_MODE_CLASS (GET_MODE (value)) != MODE_PARTIAL_INT)
-    value = gen_lowpart (word_mode, value);
+    value = gen_lowpart ((GET_MODE (value) == VOIDmode
+			  ? word_mode : int_mode_for_mode (GET_MODE (value))),
+			 value);
 
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */
