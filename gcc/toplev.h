@@ -56,7 +56,7 @@ extern void error_for_asm		PVPROTO((struct rtx_def *, char *, ...))
 						ATTRIBUTE_PRINTF_2;
 extern void warning_for_asm		PVPROTO((struct rtx_def *, char *, ...))
 						ATTRIBUTE_PRINTF_2;
-#ifdef _JBLEN
+#if defined (_JBLEN) || defined (setjmp)
 extern void set_float_handler PROTO((jmp_buf));
 extern int push_float_handler PROTO((jmp_buf, jmp_buf));
 extern void pop_float_handler PROTO((int, jmp_buf));
