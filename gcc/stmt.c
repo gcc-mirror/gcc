@@ -5317,7 +5317,7 @@ void
 expand_end_case (orig_index)
      tree orig_index;
 {
-  tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE, orig_minval;
+  tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = 0;
   struct case_node *n;
   unsigned int count;
@@ -5416,8 +5416,6 @@ expand_end_case (orig_index)
 	  if (! tree_int_cst_equal (n->low, n->high))
 	    count++;
 	}
-
-      orig_minval = minval;
 
       /* Compute span of values.  */
       if (count != 0)
@@ -5559,14 +5557,14 @@ expand_end_case (orig_index)
 	  for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	    {
 	      HOST_WIDE_INT i
-		= TREE_INT_CST_LOW (n->low) - TREE_INT_CST_LOW (orig_minval);
+		= tree_low_cst (n->low, 0) - tree_low_cst (minval, 0);
 
 	      while (1)
 		{
 		  labelvec[i]
 		    = gen_rtx_LABEL_REF (Pmode, label_rtx (n->code_label));
-		  if (i + TREE_INT_CST_LOW (orig_minval)
-		      == TREE_INT_CST_LOW (n->high))
+		  if (i + tree_low_cst (minval, 0)
+		      == tree_low_cst (n->high, 0))
 		    break;
 		  i++;
 		}
