@@ -8565,8 +8565,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
       {
 	rtx buf_addr
-	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist), subtarget,
-					   VOIDmode, 0));
+	  = force_reg (Pmode,
+		       convert_modes (Pmode, ptr_mode,
+				      expand_expr (TREE_VALUE (arglist),
+						   subtarget,
+						   VOIDmode, 0),
+				      1));
 	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
 	enum machine_mode sa_mode = Pmode;
 	rtx stack_save;
@@ -8712,8 +8716,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	tree dummy_type = build_function_type (void_type_node, NULL_TREE);
 	tree dummy_decl = build_decl (FUNCTION_DECL, dummy_id, dummy_type); 
 	rtx buf_addr
-	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist), NULL_RTX,
-					   VOIDmode, 0));
+	  = force_reg (Pmode,
+		       convert_modes (Pmode, ptr_mode,
+				      expand_expr (TREE_VALUE (arglist),
+						   NULL_RTX,
+						   VOIDmode, 0),
+				      1));
 	rtx fp = gen_rtx (MEM, Pmode, buf_addr);
 	rtx lab = gen_rtx (MEM, Pmode,
 			   plus_constant (buf_addr, GET_MODE_SIZE (Pmode)));
