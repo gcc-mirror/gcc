@@ -1,3 +1,7 @@
+2002-03-10  Adam Megacz <adam@xwt.org>
+
+        * java/net/natPlainSocketImpl.cc: Added #include <platform.h>.
+	
 2002-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/GridLayout.java (layoutContainer): Handle case where
@@ -55,6 +59,7 @@
 	* java/lang/natObject.cc: Move thread synchronization primitives to
 	system-dependent headers.
 
+>>>>>>> 1.1231
 2002-03-09  Adam Megacz  <adam@xwt.org>
 
         * java/io/natFileDescriptorWin32.cc (read): Return -1 if zero
