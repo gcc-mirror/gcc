@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-03-17
+@c 1998-05-17
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -33,12 +33,6 @@ Until this is solved, try inserting or removing @code{CONTINUE}
 statements as the terminal statement, using the @code{END DO}
 form instead, and so on.
 (Probably improved, but not wholly fixed, in 0.5.21.)
-
-@item
-The @code{g77} command itself should more faithfully process
-options the way the @code{gcc} command does.
-For example, @code{gcc} accepts abbreviated forms of long options,
-@code{g77} generally doesn't.
 
 @item
 Some confusion in diagnostics concerning failing @code{INCLUDE}
@@ -170,30 +164,6 @@ aggregate areas such as common blocks---and, certainly, there
 is the potential, with the current setup, for interface differences
 in the way such areas are laid out between @code{g77} and other
 compilers.
-
-@cindex Alpha, support
-@cindex support, Alpha
-@item
-@code{g77} doesn't work perfectly on 64-bit configurations such as the Alpha.
-This problem is expected to be largely resolved as of version 0.5.20,
-and further addressed by 0.5.21.
-Version 0.6 should solve most or all related problems (such as
-64-bit machines other than Digital Semiconductor (``DEC'') Alphas).
-
-One known bug that causes a compile-time crash occurs when compiling
-code such as the following with optimization:
-
-@example
-SUBROUTINE CRASH (TEMP)
-INTEGER*2 HALF(2)
-REAL TEMP
-HALF(1) = NINT (TEMP)
-END
-@end example
-
-It is expected that a future version of @code{g77} will have a fix for this
-problem, almost certainly by the time @code{g77} supports
-version 2.8 of @code{gcc}.
 
 @cindex COMPLEX support
 @cindex support, COMPLEX
