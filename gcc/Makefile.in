@@ -803,7 +803,7 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 # This must come before the language makefile fragments to allow them to
 # add suffixes and rules of their own.
 .SUFFIXES:
-.SUFFIXES: .c .o .po .pox .gmo 
+.SUFFIXES: .c .o .po .pox .gmo
 
 #
 # Language makefile fragments.
@@ -1378,7 +1378,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
-   ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) halfpic.h \
+   ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
    langhooks.h insn-flags.h options.h cfglayout.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
@@ -1531,7 +1531,7 @@ cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(BASIC_BLOCK_H) \
    hard-reg-set.h insn-config.h $(RECOG_H) $(GGC_H) $(TM_P_H)
 cfgbuild.o : cfgbuild.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
-   function.h except.h $(GGC_H) 
+   function.h except.h $(GGC_H)
 cfgcleanup.o : cfgcleanup.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TIMEVAR_H)\
    $(BASIC_BLOCK_H) hard-reg-set.h output.h flags.h $(RECOG_H) toplev.h \
    $(GGC_H) insn-config.h cselib.h $(TARGET_H) $(TM_P_H)
@@ -1643,9 +1643,6 @@ mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H)
-
-# Build file to support OSF/rose half-pic format.
-halfpic.o: halfpic.c $(CONFIG_H) $(RTL_H) $(TREE_H) $(SYSTEM_H) halfpic.h
 
 #
 # Generate header and source files from the machine description,
@@ -3590,7 +3587,7 @@ MSGMERGE = msgmerge
 PACKAGE = @PACKAGE@
 CATALOGS = @CATALOGS@
 
-.PHONY: build- install- build-po install-po update-po 
+.PHONY: build- install- build-po install-po update-po
 
 # Dummy rules to deal with dependencies produced by use of
 # "build-@POSUB@" and "install-@POSUB@" above, when NLS is disabled.
