@@ -797,7 +797,7 @@ find_method_in_interfaces (tree searched_class, int flags, tree method_name,
       tree child = 
 	TREE_VEC_ELT (TYPE_BINFO_BASETYPES (searched_class), i);
       tree iclass = BINFO_TYPE (child);
-      tre method;
+      tree method;
 	  
       /* If the superinterface hasn't been loaded yet, do so now.  */
       if (CLASS_FROM_SOURCE_P (iclass))
