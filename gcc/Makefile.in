@@ -99,6 +99,18 @@ VPATH = @srcdir@
 
 vpath %.texi $(docdir):$(docdir)/include
 
+# ----
+# Default values for variables overridden in Makefile fragments.
+# These need to be quite early in the Makefile so as to avoid
+# trouble induced by changes in fragment ordering.
+# ----
+
+# For ada/Make-lang.in; overridden in, for example, config/pa/x-ada.
+X_ADA_CFLAGS =
+T_ADA_CFLAGS =
+X_ADAFLAGS =
+T_ADAFLAGS =
+
 # --------
 # UNSORTED
 # --------

@@ -46,11 +46,6 @@ RMDIR = rm -rf
 # default extensions
 shext  =
 
-X_ADA_CFLAGS =
-T_ADA_CFLAGS =
-
-X_ADAFLAGS =
-T_ADAFLAGS =
 
 # Extra flags to pass to recursive makes.
 BOOT_ADAFLAGS= $(ADAFLAGS)
