@@ -1,3 +1,8 @@
+2003-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.def (BUILT_IN_ERFC, BUILT_IN_ERFCF, BUILT_IN_ERFCL):
+	Use ATTR_MATHFN_FPROUNDING_ERRNO.
+
 2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (i386-*-vsta): Fix obvious bogosity.
