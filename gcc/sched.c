@@ -1220,7 +1220,7 @@ sched_analyze_2 (x, insn)
 	   be removed before we actually try to schedule the insns, so
 	   it won't cause a problem later.  We must avoid it here though.  */
 
-	/* User of CC0 depends on immediately preceding insn.
+	/* User of CC0 depends on immediately preceding insn.  */
 	SCHED_GROUP_P (insn) = 1;
 
 	/* Make a copy of all dependencies on the immediately previous insn,
