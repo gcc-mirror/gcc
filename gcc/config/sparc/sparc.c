@@ -4246,7 +4246,8 @@ sparc_builtin_saveregs (arglist)
 		       address, ptr_mode,
 		       GEN_INT (UNITS_PER_WORD 
 			 	* (NPARM_REGS (word_mode) - first_reg)),
-		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW),
+		       TYPE_MODE (integer_type_node));
 
   return address;
 }
