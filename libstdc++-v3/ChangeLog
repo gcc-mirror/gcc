@@ -1,3 +1,7 @@
+2003-04-14  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/26_numerics/c99_classification_macros_c.cc: Add XFAIL.
+
 2003-04-14  Nathan Myers  <ncm@cantrip.org>
             Paolo Carlini  <pcarlini@unitus.it>
 
