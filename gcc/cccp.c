@@ -87,10 +87,12 @@ typedef unsigned char U_CHAR;
 #define fopen(fname,mode)	VMS_fopen (fname,mode)
 #define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
 #define fstat(fd,stbuf)		VMS_fstat (fd,stbuf)
+#define fwrite(ptr,size,nitems,stream) VMS_fwrite (ptr,size,nitems,stream)
 static int VMS_fstat (), VMS_stat ();
 static int VMS_open ();
 static FILE *VMS_fopen ();
 static FILE *VMS_freopen ();
+static size_t VMS_fwrite ();
 static void hack_vms_include_specification ();
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
 #define INO_T_HASH(a) 0
@@ -160,7 +162,9 @@ extern char *update_path PROTO((char *, char *));
 extern int sys_nerr;
 extern char *sys_errlist[];
 #else	/* HAVE_STRERROR */
+#ifdef NEED_DECLARATION_STRERROR
 char *strerror ();
+#endif
 #endif
 #else	/* VMS */
 char *strerror (int,...);
@@ -308,6 +312,10 @@ static int warn_trigraphs;
 /* Nonzero means warn if undefined identifiers are evaluated in an #if.  */
 
 static int warn_undef;
+
+/* Nonzero means warn if we find white space where it doesn't belong.  */
+
+static int warn_white_space;
 
 /* Nonzero means warn if #import is used.  */
 
@@ -845,7 +853,6 @@ static int do_sccs DO_PROTO;
 #endif
 static int do_unassert DO_PROTO;
 static int do_undef DO_PROTO;
-static int do_warning DO_PROTO;
 static int do_xifdef DO_PROTO;
 
 /* Here is the actual list of #-directives, most-often-used first.  */
@@ -864,7 +871,7 @@ static struct directive directive_table[] = {
   {  6, do_include, "import", T_IMPORT},
   {  5, do_undef, "undef", T_UNDEF},
   {  5, do_error, "error", T_ERROR},
-  {  7, do_warning, "warning", T_WARNING},
+  {  7, do_error, "warning", T_WARNING},
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
@@ -932,7 +939,6 @@ static int ignore_srcdir;
 
 static int safe_read PROTO((int, char *, int));
 static void safe_write PROTO((int, char *, int));
-static void eprint_string PROTO((char *, size_t));
 
 int main PROTO((int, char **));
 
@@ -941,6 +947,7 @@ static void path_include PROTO((char *));
 static U_CHAR *index0 PROTO((U_CHAR *, int, size_t));
 
 static void trigraph_pcp PROTO((FILE_BUF *));
+static void check_white_space PROTO((FILE_BUF *));
 
 static void newline_fix PROTO((U_CHAR *));
 static void name_newline_fix PROTO((U_CHAR *));
@@ -1020,7 +1027,7 @@ static U_CHAR *macarg1 PROTO((U_CHAR *, U_CHAR *, struct hashnode *, int *, int 
 
 static int discard_comments PROTO((U_CHAR *, int, int));
 
-static int change_newlines PROTO((U_CHAR *, int));
+static void change_newlines PROTO((struct argdata *));
 
 char *my_strerror PROTO((int));
 static void notice PRINTF_PROTO_1((char *, ...));
@@ -1068,7 +1075,7 @@ static void append_include_chain PROTO((struct file_name_list *, struct file_nam
 static int quote_string_for_make PROTO((char *, char *));
 static void deps_output PROTO((char *, int));
 
-static void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
+void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
 void fancy_abort PROTO((void)) __attribute__ ((noreturn));
 static void perror_with_name PROTO((char *));
 static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
@@ -1149,34 +1156,6 @@ safe_write (desc, ptr, len)
     len -= written;
   }
 }
-
-/* Print a string to stderr, with extra handling in case it contains
-   embedded NUL characters.  Any present are written as is.
-
-   Using fwrite for this purpose produces undesireable results on VMS
-   when stderr happens to be a record oriented file, such as a batch log
-   file, rather than a stream oriented one.  */
-
-static void
-eprint_string (string, length)
-     char *string;
-     size_t length;
-{
-  size_t segment_length;
-
-  do {
-    fprintf(stderr, "%s", string);
-    length -= (segment_length = strlen(string));
-    if (length > 0)
-      {
-	fputc('\0', stderr);
-	length -= 1;
-	/* Advance past the portion which has already been printed.  */
-	string += segment_length + 1;
-      }
-  } while (length > 0);
-}
-
 
 int
 main (argc, argv)
@@ -1487,6 +1466,10 @@ main (argc, argv)
 	  warn_stringify = 1;
 	else if (!strcmp (argv[i], "-Wno-traditional"))
 	  warn_stringify = 0;
+	else if (!strcmp (argv[i], "-Wwhite-space"))
+	  warn_white_space = 1;
+	else if (!strcmp (argv[i], "-Wno-white-space"))
+	  warn_white_space = 0;
 	else if (!strcmp (argv[i], "-Wundef"))
 	  warn_undef = 1;
 	else if (!strcmp (argv[i], "-Wno-undef"))
@@ -1503,6 +1486,7 @@ main (argc, argv)
 	  {
 	    warn_trigraphs = 1;
 	    warn_comments = 1;
+	    warn_white_space = 1;
 	  }
 	break;
 
@@ -1989,17 +1973,14 @@ main (argc, argv)
     else
       print_deps = 1;
 
-    s = spec;
     /* Find the space before the DEPS_TARGET, if there is one.  */
-    /* This should use index.  (mrs) */
-    while (*s != 0 && *s != ' ') s++;
-    if (*s != 0) {
+    s = index (spec, ' ');
+    if (s) {
       deps_target = s + 1;
       output_file = xmalloc (s - spec + 1);
       bcopy (spec, output_file, s - spec);
       output_file[s - spec] = 0;
-    }
-    else {
+    } else {
       deps_target = 0;
       output_file = spec;
     }
@@ -2060,8 +2041,9 @@ main (argc, argv)
       strcpy (q, OBJECT_SUFFIX);
 
       deps_output (p, ':');
-      deps_output (in_fname, ' ');
     }
+
+    deps_output (in_fname, ' ');
   }
 
   /* Scan the -imacros files before the main input.
@@ -2148,6 +2130,9 @@ main (argc, argv)
 
   if (!no_trigraphs)
     trigraph_pcp (fp);
+
+  if (warn_white_space)
+    check_white_space (fp);
 
   /* Now that we know the input file is valid, open the output.  */
 
@@ -2359,13 +2344,43 @@ trigraph_pcp (buf)
     warning_with_line (0, "%lu trigraph(s) encountered",
 		       (unsigned long) (fptr - bptr) / 2);
 }
+
+/* Warn about white space between backslash and end of line.  */
+
+static void
+check_white_space (buf)
+     FILE_BUF *buf;
+{
+  register U_CHAR *sptr = buf->buf;
+  register U_CHAR *lptr = sptr + buf->length;
+  register U_CHAR *nptr;
+  int line = 0;
+
+  nptr = sptr = buf->buf;
+  lptr = sptr + buf->length;
+  for (nptr = sptr;
+       (nptr = index0 (nptr, '\n', (size_t) (lptr - nptr))) != NULL;
+       nptr ++) {
+    register U_CHAR *p = nptr;
+    line++;
+    for (p = nptr; sptr < p; p--) {
+      if (! is_hor_space[p[-1]]) {
+	if (p[-1] == '\\' && p != nptr)
+	  warning_with_line (line, 
+			     "`\\' followed by white space at end of line");
+	break;
+      }
+    }
+  }
+}
 
 /* Move all backslash-newline pairs out of embarrassing places.
    Exchange all such pairs following BP
    with any potentially-embarrassing characters that follow them.
    Potentially-embarrassing characters are / and *
    (because a backslash-newline inside a comment delimiter
-   would cause it not to be recognized).  */
+   would cause it not to be recognized).
+   We assume that *BP == '\\'.  */
 
 static void
 newline_fix (bp)
@@ -2374,21 +2389,22 @@ newline_fix (bp)
   register U_CHAR *p = bp;
 
   /* First count the backslash-newline pairs here.  */
-
-  while (p[0] == '\\' && p[1] == '\n')
+  do {
+    if (p[1] != '\n')
+      break;
     p += 2;
-
-  /* What follows the backslash-newlines is not embarrassing.  */
+  } while (*p == '\\');
 
   if (*p != '/' && *p != '*')
+    /* What follows the backslash-newlines is not embarrassing.  */
     return;
 
   /* Copy all potentially embarrassing characters
      that follow the backslash-newline pairs
      down to where the pairs originally started.  */
-
-  while (*p == '*' || *p == '/')
+  do
     *bp++ = *p++;
+  while (*p == '*' || *p == '/');
 
   /* Now write the same number of pairs after the embarrassing chars.  */
   while (bp < p) {
@@ -2407,20 +2423,22 @@ name_newline_fix (bp)
   register U_CHAR *p = bp;
 
   /* First count the backslash-newline pairs here.  */
-  while (p[0] == '\\' && p[1] == '\n')
+  do {
+    if (p[1] != '\n')
+      break;
     p += 2;
-
-  /* What follows the backslash-newlines is not embarrassing.  */
+  } while (*p == '\\');
 
   if (!is_idchar[*p])
+    /* What follows the backslash-newlines is not embarrassing.  */
     return;
 
   /* Copy all potentially embarrassing characters
      that follow the backslash-newline pairs
      down to where the pairs originally started.  */
-
-  while (is_idchar[*p])
+  do
     *bp++ = *p++;
+  while (is_idchar[*p]);
 
   /* Now write the same number of pairs after the embarrassing chars.  */
   while (bp < p) {
@@ -2498,7 +2516,7 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
  * If OUTPUT_MARKS is nonzero, keep Newline markers found in the input
  * and insert them when appropriate.  This is set while scanning macro
  * arguments before substitution.  It is zero when scanning for final output.
- *   There are three types of Newline markers:
+ *   There are two types of Newline markers:
  *   * Newline -  follows a macro name that was not expanded
  *     because it appeared inside an expansion of the same macro.
  *     This marker prevents future expansion of that identifier.
@@ -2822,6 +2840,8 @@ do { ip = &instack[indepth];		\
 	*obp++ = *ibp;
 	switch (*ibp++) {
 	case '\n':
+	  if (warn_white_space && ip->fname && is_hor_space[ibp[-2]])
+	    warning ("white space at end of line in string");
 	  ++ip->lineno;
 	  ++op->lineno;
 	  /* Traditionally, end of line ends a string constant with no error.
@@ -2849,9 +2869,10 @@ do { ip = &instack[indepth];		\
 	       keep the line counts correct.  But if we are reading
 	       from a macro, keep the backslash newline, since backslash
 	       newlines have already been processed.  */
-	    if (ip->macro)
+	    if (ip->macro) {
 	      *obp++ = '\n';
-	    else
+	      ++op->lineno;
+	    } else
 	      --obp;
 	    ++ibp;
 	    ++ip->lineno;
@@ -2860,8 +2881,10 @@ do { ip = &instack[indepth];		\
 	       is *not* prevented from combining with a newline.  */
 	    if (!ip->macro) {
 	      while (*ibp == '\\' && ibp[1] == '\n') {
-		ibp += 2;
+		*obp++ = *ibp++;
+		*obp++ = *ibp++;
 		++ip->lineno;
+		++op->lineno;
 	      }
 	    }
 	    *obp++ = *ibp++;
@@ -2899,7 +2922,7 @@ do { ip = &instack[indepth];		\
     case '/':
       if (ip->macro != 0)
 	goto randomchar;
-      if (*ibp == '\\' && ibp[1] == '\n')
+      if (*ibp == '\\')
 	newline_fix (ibp);
       if (*ibp != '*'
 	  && !(cplusplus_comments && *ibp == '/'))
@@ -3011,7 +3034,7 @@ do { ip = &instack[indepth];		\
 	  case '*':
 	    if (ibp[-2] == '/' && warn_comments)
 	      warning ("`/*' within comment");
-	    if (*ibp == '\\' && ibp[1] == '\n')
+	    if (*ibp == '\\')
 	      newline_fix (ibp);
 	    if (*ibp == '/')
 	      goto comment_end;
@@ -3382,7 +3405,7 @@ randomchar:
 		      break;
 		    else if (*ibp == '/') {
 		      /* If a comment, copy it unchanged or discard it.  */
-		      if (ibp[1] == '\\' && ibp[2] == '\n')
+		      if (ibp[1] == '\\')
 			newline_fix (ibp + 1);
 		      if (ibp[1] == '*') {
 			if (put_out_comments) {
@@ -3395,7 +3418,7 @@ randomchar:
 			  /* We need not worry about newline-marks,
 			     since they are never found in comments.  */
 			  if (ibp[0] == '*') {
-			    if (ibp[1] == '\\' && ibp[2] == '\n')
+			    if (ibp[1] == '\\')
 			      newline_fix (ibp + 1);
 			    if (ibp[1] == '/') {
 			      ibp += 2;
@@ -3645,9 +3668,6 @@ expand_to_temp_buffer (buf, limit, output_marks, assertions)
   if (indepth != odepth)
     abort ();
 
-  /* Record the output.  */
-  obuf.length = obuf.bufp - obuf.buf;
-
   assertions_flag = save_assertions_flag;
   return obuf;
 }
@@ -3693,7 +3713,7 @@ handle_directive (ip, op)
 	pedwarn_strange_white_space (*bp);
       bp++;
     } else if (*bp == '/') {
-      if (bp[1] == '\\' && bp[2] == '\n')
+      if (bp[1] == '\\')
 	newline_fix (bp + 1);
       if (! (bp[1] == '*' || (cplusplus_comments && bp[1] == '/')))
 	break;
@@ -3714,7 +3734,7 @@ handle_directive (ip, op)
     if (is_idchar[*cp])
       cp++;
     else {
-      if (*cp == '\\' && cp[1] == '\n')
+      if (*cp == '\\')
 	name_newline_fix (cp);
       if (is_idchar[*cp])
 	cp++;
@@ -3804,14 +3824,12 @@ handle_directive (ip, op)
 	register U_CHAR c = *bp++;
 	switch (c) {
 	case '\\':
-	  if (bp < limit) {
-	    if (*bp == '\n') {
-	      ip->lineno++;
-	      copy_directive = 1;
-	      bp++;
-	    } else if (traditional)
-	      bp++;
-	  }
+	  if (*bp == '\n') {
+	    ip->lineno++;
+	    copy_directive = 1;
+	    bp++;
+	  } else if (traditional && bp < limit)
+	    bp++;
 	  break;
 
 	case '"':
@@ -3863,7 +3881,7 @@ handle_directive (ip, op)
 	  break;
 
 	case '/':
-	  if (*bp == '\\' && bp[1] == '\n')
+	  if (*bp == '\\')
 	    newline_fix (bp);
 	  if (*bp == '*'
 	      || (cplusplus_comments && *bp == '/')) {
@@ -3946,12 +3964,13 @@ handle_directive (ip, op)
 	register U_CHAR *xp = buf;
 	/* Need to copy entire directive into temp buffer before dispatching */
 
-	cp = (U_CHAR *) alloca (bp - buf + 5); /* room for directive plus
-						  some slop */
+	/* room for directive plus some slop */
+	cp = (U_CHAR *) alloca (2 * (bp - buf) + 5);
 	buf = cp;
 
 	/* Copy to the new buffer, deleting comments
-	   and backslash-newlines (and whitespace surrounding the latter).  */
+	   and backslash-newlines (and whitespace surrounding the latter
+	   if outside of char and string constants).  */
 
 	while (xp < bp) {
 	  register U_CHAR c = *xp++;
@@ -3998,8 +4017,16 @@ handle_directive (ip, op)
 	      register U_CHAR *bp1
 		= skip_quoted_string (xp - 1, bp, ip->lineno,
 				      NULL_PTR, NULL_PTR, NULL_PTR);
-	      while (xp != bp1)
-		*cp++ = *xp++;
+	      while (xp != bp1) {
+		if ((*cp++ = *xp++) == '\n') {
+		  if (xp[-2] == '\\')
+		    cp -= 2;
+		  else {
+		    cp[-1] = '\\';
+		    *cp++ = 'n';
+		  }
+		}
+	      }
 	    }
 	    break;
 
@@ -4066,7 +4093,7 @@ handle_directive (ip, op)
 	  bcopy (buf, (char *) op->bufp, len);
 	}
 	op->bufp += len;
-      }				/* Don't we need a newline or #line? */
+      }
 
       /* Call the appropriate directive handler.  buf now points to
 	 either the appropriate place in the input buffer, or to
@@ -4088,12 +4115,19 @@ handle_directive (ip, op)
 static struct tm *
 timestamp ()
 {
-  static struct tm *timebuf;
-  if (!timebuf) {
+  static struct tm tmbuf;
+  if (! tmbuf.tm_mday) {
     time_t t = time ((time_t *) 0);
-    timebuf = localtime (&t);
+    struct tm *tm = localtime (&t);
+    if (tm)
+      tmbuf = *tm;
+    else {
+      /* Use 0000-01-01 00:00:00 if local time is not available.  */
+      tmbuf.tm_year = -1900;
+      tmbuf.tm_mday = 1;
+    }
   }
-  return timebuf;
+  return &tmbuf;
 }
 
 static char *monthnames[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -5219,6 +5253,9 @@ finclude (f, inc, op, system_header_p, dirptr)
   if (!no_trigraphs)
     trigraph_pcp (fp);
 
+  if (warn_white_space)
+    check_white_space (fp);
+
   output_line_directive (fp, op, 0, enter_file);
   rescan (op, 0);
 
@@ -5432,7 +5469,7 @@ pcfinclude (buf, limit, name, op)
     tmpbuf = expand_to_temp_buffer (string_start, cp++, 0, 0);
     /* Lineno is already set in the precompiled file */
     str->contents = tmpbuf.buf;
-    str->len = tmpbuf.length;
+    str->len = tmpbuf.bufp - tmpbuf.buf;
     str->writeflag = 0;
     str->filename = name;
     str->output_mark = outbuf.bufp - outbuf.buf;
@@ -5456,6 +5493,7 @@ pcfinclude (buf, limit, name, op)
       for (; nkeys--; free (tmpbuf.buf), cp = endofthiskey + 1) {
 	KEYDEF *kp = (KEYDEF *) (GENERIC_PTR) cp;
 	HASHNODE *hp;
+	U_CHAR *bp;
 	
 	/* It starts with a KEYDEF structure */
 	cp += sizeof (KEYDEF);
@@ -5467,20 +5505,19 @@ pcfinclude (buf, limit, name, op)
 	
 	/* Expand the key, and enter it into the hash table.  */
 	tmpbuf = expand_to_temp_buffer (cp, endofthiskey, 0, 0);
-	tmpbuf.bufp = tmpbuf.buf;
+	bp = tmpbuf.buf;
 	
-	while (is_hor_space[*tmpbuf.bufp])
-	  tmpbuf.bufp++;
-	if (!is_idstart[*tmpbuf.bufp]
-	    || tmpbuf.bufp == tmpbuf.buf + tmpbuf.length) {
+	while (is_hor_space[*bp])
+	  bp++;
+	if (!is_idstart[*bp] || bp == tmpbuf.bufp) {
 	  str->writeflag = 1;
 	  continue;
 	}
 	    
-	hp = lookup (tmpbuf.bufp, -1, -1);
+	hp = lookup (bp, -1, -1);
 	if (hp == NULL) {
 	  kp->chain = 0;
-	  install (tmpbuf.bufp, -1, T_PCSTRING, (char *) kp, -1);
+	  install (bp, -1, T_PCSTRING, (char *) kp, -1);
 	}
 	else if (hp->type == T_PCSTRING) {
 	  kp->chain = hp->value.keydef;
@@ -6041,7 +6078,7 @@ collect_expansion (buf, end, nargs, arglist)
 	break;
 
       case '\\':
-	if (p < limit && expected_delimiter) {
+	if (expected_delimiter) {
 	  /* In a string, backslash goes through
 	     and makes next char ordinary.  */
 	  *exp_p++ = *p++;
@@ -6709,6 +6746,7 @@ do_line (buf, limit, op, keyword)
 
   /* Point to macroexpanded line, which is null-terminated now.  */
   bp = tem.buf;
+  limit = tem.bufp;
   SKIP_WHITE_SPACE (bp);
 
   if (!isdigit (*bp)) {
@@ -6751,10 +6789,6 @@ do_line (buf, limit, op, keyword)
     p = bp;
     for (;;)
       switch ((*p++ = *bp++)) {
-      case '\0':
-	error ("invalid format `#line' directive");
-	return 0;
-
       case '\\':
 	{
 	  char *bpc = (char *) bp;
@@ -6879,8 +6913,7 @@ do_undef (buf, limit, op, keyword)
 }
 
 /* Report an error detected by the program we are processing.
-   Use the text of the line in the error message.
-   (We use error because it prints the filename & line#.)  */
+   Use the text of the line in the error message.  */
 
 static int
 do_error (buf, limit, op, keyword)
@@ -6893,32 +6926,22 @@ do_error (buf, limit, op, keyword)
   bcopy ((char *) buf, (char *) copy, length);
   copy[length] = 0;
   SKIP_WHITE_SPACE (copy);
-  error ("#error %s", copy);
-  return 0;
-}
 
-/* Report a warning detected by the program we are processing.
-   Use the text of the line in the warning message, then continue.
-   (We use error because it prints the filename & line#.)  */
+  switch (keyword->type) {
+  case T_ERROR:
+    error ("#error %s", copy);
+    break;
 
-static int
-do_warning (buf, limit, op, keyword)
-     U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
-{
-  int length = limit - buf;
-  U_CHAR *copy = (U_CHAR *) alloca (length + 1);
-  bcopy ((char *) buf, (char *) copy, length);
-  copy[length] = 0;
-  SKIP_WHITE_SPACE (copy);
+  case T_WARNING:
+    if (pedantic && !instack[indepth].system_header_p)
+      pedwarn ("ANSI C does not allow `#warning'");
+    warning ("#warning %s", copy);
+    break;
 
-  if (pedantic && !instack[indepth].system_header_p)
-    pedwarn ("ANSI C does not allow `#warning'");
+  default:
+    abort ();
+  }
 
-  /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
-     if -pedantic-errors is given, #warning should cause an error.  */
-  pedwarn ("#warning %s", copy);
   return 0;
 }
 
@@ -6990,14 +7013,15 @@ do_pragma (buf, limit, op, keyword)
        been included yet.  */
 
     int h;
-    U_CHAR *p = buf + 14, *fname;
+    U_CHAR *p = buf + 14, *f, *fname;
     SKIP_WHITE_SPACE (p);
     if (*p != '\"')
       return 0;
 
     fname = p + 1;
-    if ((p = (U_CHAR *) index ((char *) fname, '\"')))
-      *p = '\0';
+    p = skip_quoted_string (p, limit, 0, NULL_PTR, NULL_PTR, NULL_PTR);
+    if (p[-1] == '"')
+      *--p = '\0';
     
     for (h = 0; h < INCLUDE_HASHSIZE; h++) {
       struct include_file *inc;
@@ -7102,7 +7126,8 @@ do_elif (buf, limit, op, keyword)
 	     && !bcmp (if_stack->fname, ip->nominal_fname,
 		       if_stack->fname_len))) {
 	fprintf (stderr, ", file ");
-	eprint_string (if_stack->fname, if_stack->fname_len);
+	fwrite (if_stack->fname, sizeof if_stack->fname[0],
+		if_stack->fname_len, stderr);
       }
       fprintf (stderr, ")\n");
     }
@@ -7142,7 +7167,7 @@ eval_if_expression (buf, length)
   pcp_inside_if = 0;
   delete_macro (save_defined);	/* clean up special symbol */
 
-  temp_obuf.buf[temp_obuf.length] = '\n';
+  *temp_obuf.bufp = '\n';
   value = parse_c_expression ((char *) temp_obuf.buf,
 			      warn_undef && !instack[indepth].system_header_p);
 
@@ -7321,7 +7346,7 @@ skip_if_group (ip, any, op)
   while (bp < endb) {
     switch (*bp++) {
     case '/':			/* possible comment */
-      if (*bp == '\\' && bp[1] == '\n')
+      if (*bp == '\\')
 	newline_fix (bp);
       if (*bp == '*'
 	  || (cplusplus_comments && *bp == '/')) {
@@ -7451,7 +7476,7 @@ skip_if_group (ip, any, op)
 	else if (*bp == '\\' && bp[1] == '\n')
 	  bp += 2;
 	else if (*bp == '/') {
-	  if (bp[1] == '\\' && bp[2] == '\n')
+	  if (bp[1] == '\\')
 	    newline_fix (bp + 1);
 	  if (bp[1] == '*') {
 	    for (bp += 2; ; bp++) {
@@ -7460,7 +7485,7 @@ skip_if_group (ip, any, op)
 	      else if (*bp == '*') {
 		if (bp[-1] == '/' && warn_comments)
 		  warning ("`/*' within comment");
-		if (bp[1] == '\\' && bp[2] == '\n')
+		if (bp[1] == '\\')
 		  newline_fix (bp + 1);
 		if (bp[1] == '/')
 		  break;
@@ -7511,7 +7536,7 @@ skip_if_group (ip, any, op)
 	if (is_idchar[*bp])
 	  bp++;
 	else {
-	  if (*bp == '\\' && bp[1] == '\n')
+	  if (*bp == '\\')
 	    name_newline_fix (bp);
 	  if (is_idchar[*bp])
 	    bp++;
@@ -7680,7 +7705,8 @@ do_else (buf, limit, op, keyword)
 	     && !bcmp (if_stack->fname, ip->nominal_fname,
 		       if_stack->fname_len))) {
 	fprintf (stderr, ", file ");
-	eprint_string (if_stack->fname, if_stack->fname_len);
+	fwrite (if_stack->fname, sizeof if_stack->fname[0],
+		if_stack->fname_len, stderr);
       }
       fprintf (stderr, ")\n");
     }
@@ -7895,7 +7921,7 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
     case '*':
       if (bp[-2] == '/' && !nowarn && warn_comments)
 	warning ("`/*' within comment");
-      if (*bp == '\\' && bp[1] == '\n')
+      if (*bp == '\\')
 	newline_fix (bp);
       if (*bp == '/') {
         if (op)
@@ -7938,7 +7964,8 @@ skip_to_end_of_comment (ip, line_counter, nowarn)
    The input stack state is not changed.
 
    If COUNT_NEWLINES is nonzero, it points to an int to increment
-   for each newline passed.
+   for each newline passed; also, warn about any white space
+   just before line end.
 
    If BACKSLASH_NEWLINES_P is nonzero, store 1 thru it
    if we pass a backslash-newline.
@@ -7994,15 +8021,18 @@ skip_quoted_string (bp, limit, start_line, count_newlines, backslash_newlines_p,
       }
       if (match == '\'') {
 	error_with_line (line_for_error (start_line),
-			 "unterminated string or character constant");
+			 "unterminated character constant");
 	bp--;
 	if (eofp)
 	  *eofp = 1;
 	break;
       }
       /* If not traditional, then allow newlines inside strings.  */
-      if (count_newlines)
+      if (count_newlines) {
+	if (warn_white_space && is_hor_space[bp[-2]])
+	  warning ("white space at end of line in string");
 	++*count_newlines;
+      }
       if (multiline_string_line == 0) {
 	if (pedantic)
 	  pedwarn_with_line (line_for_error (start_line),
@@ -8192,9 +8222,9 @@ output_line_directive (ip, op, conditional, file_change)
 /* This structure represents one parsed argument in a macro call.
    `raw' points to the argument text as written (`raw_length' is its length).
    `expanded' points to the argument's macro-expansion
-   (its length is `expand_length').
-   `stringified_length' is the length the argument would have
-   if stringified.
+   (its length is `expand_length', and its allocated size is `expand_size').
+   `stringified_length_bound' is an upper bound on the length
+   the argument would have if stringified.
    `use_count' is the number of times this macro arg is substituted
    into the macro.  If the actual use count exceeds 10, 
    the value stored is 10.
@@ -8203,8 +8233,8 @@ output_line_directive (ip, op, conditional, file_change)
 
 struct argdata {
   U_CHAR *raw, *expanded;
-  int raw_length, expand_length;
-  int stringified_length;
+  int raw_length, expand_length, expand_size;
+  int stringified_length_bound;
   U_CHAR *free1, *free2;
   char newlines;
   char use_count;
@@ -8255,8 +8285,8 @@ macroexpand (hp, op)
     for (i = 0; i < nargs; i++) {
       args[i].raw = (U_CHAR *) "";
       args[i].expanded = 0;
-      args[i].raw_length = args[i].expand_length
-	= args[i].stringified_length = 0;
+      args[i].raw_length = args[i].expand_length = args[i].expand_size
+	= args[i].stringified_length_bound = 0;
       args[i].free1 = args[i].free2 = 0;
       args[i].use_count = 0;
     }
@@ -8350,7 +8380,7 @@ macroexpand (hp, op)
       xbuf_len = defn->length;
       for (ap = defn->pattern; ap != NULL; ap = ap->next) {
 	if (ap->stringify)
-	  xbuf_len += args[ap->argno].stringified_length;
+	  xbuf_len += args[ap->argno].stringified_length_bound;
 	else if (ap->raw_before != 0 || ap->raw_after != 0 || traditional)
 	  /* Add 4 for two newline-space markers to prevent
 	     token concatenation.  */
@@ -8365,13 +8395,20 @@ macroexpand (hp, op)
 					  1, 0);
 
 	    args[ap->argno].expanded = obuf.buf;
-	    args[ap->argno].expand_length = obuf.length;
+	    args[ap->argno].expand_length = obuf.bufp - obuf.buf;
+	    args[ap->argno].expand_size = obuf.length;
 	    args[ap->argno].free2 = obuf.buf;
-	  }
 
+	    xbuf_len += args[ap->argno].expand_length;
+	  } else {
+	    /* If the arg appears more than once, its later occurrences
+	       may have newline turned into backslash-'n', which is a
+	       factor of 2 expansion.  */
+	    xbuf_len += 2 * args[ap->argno].expand_length;
+	  }
 	  /* Add 4 for two newline-space markers to prevent
 	     token concatenation.  */
-	  xbuf_len += args[ap->argno].expand_length + 4;
+	  xbuf_len += 4;
 	}
 	if (args[ap->argno].use_count < 10)
 	  args[ap->argno].use_count++;
@@ -8428,27 +8465,28 @@ macroexpand (hp, op)
 	  for (; i < arglen; i++) {
 	    c = arg->raw[i];
 
-	    if (! in_string) {
-	      /* Special markers Newline Space
+	    if (in_string) {
+	      /* Generate nothing for backslash-newline in a string.  */
+	      if (c == '\\' && arg->raw[i + 1] == '\n') {
+		i++;
+		continue;
+	      }
+	    } else {
+	      /* Special markers
 		 generate nothing for a stringified argument.  */
-	      if (c == '\n' && arg->raw[i+1] != '\n') {
+	      if (c == '\n') {
 		i++;
 		continue;
 	      }
 
 	      /* Internal sequences of whitespace are replaced by one space
-		 except within an string or char token.  */
-	      if (c == '\n' ? arg->raw[i+1] == '\n' : is_space[c]) {
-		while (1) {
-		  /* Note that Newline Space does occur within whitespace
-		     sequences; consider it part of the sequence.  */
-		  if (c == '\n' && is_space[arg->raw[i+1]])
-		    i += 2;
-		  else if (c != '\n' && is_space[c])
-		    i++;
-		  else break;
-		  c = arg->raw[i];
-		}
+		 except within a string or char token.  */
+	      if (is_space[c]) {
+		i++;
+		while (is_space[(c = arg->raw[i])])
+		  /* Newline markers can occur within a whitespace sequence;
+		     consider them part of the sequence.  */
+		  i += (c == '\n') + 1;
 		i--;
 		c = ' ';
 	      }
@@ -8480,8 +8518,15 @@ macroexpand (hp, op)
 		in_string = c;
 	    }
 
-	    /* Escape these chars */
-	    if (c == '\"' || (in_string && c == '\\'))
+	    /* Escape double-quote, and backslashes in strings.
+	       Newlines in strings are best escaped as \n, since
+	       otherwise backslash-backslash-newline-newline is
+	       mishandled.  The C Standard doesn't allow newlines in
+	       strings, so we can escape newlines as we please.  */
+	    if (c == '\"'
+		|| (in_string
+		    && (c == '\\'
+			|| (c == '\n' ? (c = 'n', 1) : 0))))
 	      xbuf[totlen++] = '\\';
 	    /* We used to output e.g. \008 for control characters here,
 	       but this doesn't conform to the C Standard.
@@ -8557,8 +8602,7 @@ macroexpand (hp, op)
 	    /* Don't bother doing change_newlines for subsequent
 	       uses of arg.  */
 	    arg->use_count = 1;
-	    arg->expand_length
-	      = change_newlines (arg->expanded, arg->expand_length);
+	    change_newlines (arg);
 	  }
 	}
 
@@ -8635,23 +8679,23 @@ macarg (argptr, rest_args)
 {
   FILE_BUF *ip = &instack[indepth];
   int paren = 0;
-  int newlines = 0;
+  int lineno0 = ip->lineno;
   int comments = 0;
   int result = 0;
 
   /* Try to parse as much of the argument as exists at this
      input stack level.  */
   U_CHAR *bp = macarg1 (ip->bufp, ip->buf + ip->length, ip->macro,
-			&paren, &newlines, &comments, rest_args);
+			&paren, &ip->lineno, &comments, rest_args);
 
   /* If we find the end of the argument at this level,
      set up *ARGPTR to point at it in the input stack.  */
-  if (!(ip->fname != 0 && (newlines != 0 || comments != 0))
+  if (!(ip->fname != 0 && (ip->lineno != lineno0 || comments != 0))
       && bp != ip->buf + ip->length) {
     if (argptr != 0) {
       argptr->raw = ip->bufp;
       argptr->raw_length = bp - ip->bufp;
-      argptr->newlines = newlines;
+      argptr->newlines = ip->lineno - lineno0;
     }
     ip->bufp = bp;
   } else {
@@ -8660,13 +8704,12 @@ macarg (argptr, rest_args)
        Therefore, we must allocate a temporary buffer and copy
        the macro argument into it.  */
     int bufsize = bp - ip->bufp;
-    int extra = newlines;
+    int extra = ip->lineno - lineno0;
     U_CHAR *buffer = (U_CHAR *) xmalloc (bufsize + extra + 1);
     int final_start = 0;
 
     bcopy ((char *) ip->bufp, (char *) buffer, bufsize);
     ip->bufp = bp;
-    ip->lineno += newlines;
 
     while (bp == ip->buf + ip->length) {
       if (instack[indepth].macro == 0) {
@@ -8677,18 +8720,17 @@ macarg (argptr, rest_args)
       if (ip->free_ptr)
 	free (ip->free_ptr);
       ip = &instack[--indepth];
-      newlines = 0;
+      lineno0 = ip->lineno;
       comments = 0;
       bp = macarg1 (ip->bufp, ip->buf + ip->length, ip->macro, &paren,
-		    &newlines, &comments, rest_args);
+		    &ip->lineno, &comments, rest_args);
       final_start = bufsize;
       bufsize += bp - ip->bufp;
-      extra += newlines;
+      extra += ip->lineno - lineno0;
       buffer = (U_CHAR *) xrealloc (buffer, bufsize + extra + 1);
       bcopy ((char *) ip->bufp, (char *) (buffer + bufsize - (bp - ip->bufp)),
 	     bp - ip->bufp);
       ip->bufp = bp;
-      ip->lineno += newlines;
     }
 
     /* Now, if arg is actually wanted, record its raw form,
@@ -8700,13 +8742,13 @@ macarg (argptr, rest_args)
       argptr->raw = buffer;
       argptr->raw_length = bufsize;
       argptr->free1 = buffer;
-      argptr->newlines = newlines;
-      if ((newlines || comments) && ip->fname != 0)
+      argptr->newlines = ip->lineno - lineno0;
+      if ((argptr->newlines || comments) && ip->fname != 0)
 	argptr->raw_length
 	  = final_start +
 	    discard_comments (argptr->raw + final_start,
 			      argptr->raw_length - final_start,
-			      newlines);
+			      argptr->newlines);
       argptr->raw[argptr->raw_length] = 0;
       if (argptr->raw_length > bufsize + extra)
 	abort ();
@@ -8740,10 +8782,10 @@ macarg (argptr, rest_args)
 	SKIP_ALL_WHITE_SPACE (buf);
       else
 #endif
-      if (c == '\"' || c == '\\') /* escape these chars */
+      if (c == '\"' || c == '\\' || c == '\n') /* escape these chars */
 	totlen++;
     }
-    argptr->stringified_length = totlen;
+    argptr->stringified_length_bound = totlen;
   }
   return result;
 }
@@ -8792,7 +8834,7 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
     case '/':
       if (macro)
 	break;
-      if (bp[1] == '\\' && bp[2] == '\n')
+      if (bp[1] == '\\')
 	newline_fix (bp + 1);
       if (bp[1] == '*') {
 	*comments = 1;
@@ -8802,7 +8844,7 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
 	  else if (*bp == '*') {
 	    if (bp[-1] == '/' && warn_comments)
 	      warning ("`/*' within comment");
-	    if (bp[1] == '\\' && bp[2] == '\n')
+	    if (bp[1] == '\\')
 	      newline_fix (bp + 1);
 	    if (bp[1] == '/') {
 	      bp++;
@@ -8845,18 +8887,18 @@ macarg1 (start, limit, macro, depthptr, newlines, comments, rest_args)
     case '\"':
       {
 	int quotec;
-	for (quotec = *bp++; bp + 1 < limit && *bp != quotec; bp++) {
+	for (quotec = *bp++; bp < limit && *bp != quotec; bp++) {
 	  if (*bp == '\\') {
 	    bp++;
 	    if (*bp == '\n')
 	      ++*newlines;
-	    if (!macro) {
-	      while (*bp == '\\' && bp[1] == '\n') {
-		bp += 2;
-		++*newlines;
-	      }
+	    while (*bp == '\\' && bp[1] == '\n') {
+	      bp += 2;
+	      ++*newlines;
 	    }
 	  } else if (*bp == '\n') {
+	    if (warn_white_space && is_hor_space[bp[-1]] && ! macro)
+	      warning ("white space at end of line in string");
 	    ++*newlines;
 	    if (quotec == '\'')
 	      break;
@@ -8940,7 +8982,7 @@ discard_comments (start, length, newlines)
       break;
 
     case '/':
-      if (*ibp == '\\' && ibp[1] == '\n')
+      if (*ibp == '\\')
 	newline_fix (ibp);
       /* Delete any comment.  */
       if (cplusplus_comments && ibp[0] == '/') {
@@ -8976,7 +9018,7 @@ discard_comments (start, length, newlines)
 	obp[-1] = ' ';
       while (++ibp < limit) {
 	if (ibp[0] == '*') {
-	  if (ibp[1] == '\\' && ibp[2] == '\n')
+	  if (ibp[1] == '\\')
 	    newline_fix (ibp + 1);
 	  if (ibp[1] == '/') {
 	    ibp += 2;
@@ -9047,27 +9089,26 @@ discard_comments (start, length, newlines)
   return obp - start;
 }
 
-/* Turn newlines to spaces in the string of length LENGTH at START,
-   except inside of string constants.
-   The string is copied into itself with its beginning staying fixed.  */
+/* Turn newlines to spaces in the macro argument ARG.
+   Remove backslash-newline from string constants,
+   and turn other newlines in string constants to backslash-'n'.  */
 
-static int
-change_newlines (start, length)
-     U_CHAR *start;
-     int length;
+static void
+change_newlines (arg)
+     struct argdata *arg;
 {
+  U_CHAR *start = arg->expanded;
+  int length = arg->expand_length;
   register U_CHAR *ibp;
   register U_CHAR *obp;
   register U_CHAR *limit;
-  register int c;
 
   ibp = start;
   limit = start + length;
   obp = start;
 
   while (ibp < limit) {
-    *obp++ = c = *ibp++;
-    switch (c) {
+    switch ((*obp++ = *ibp++)) {
     case '\n':
       /* If this is a NEWLINE NEWLINE, then this is a real newline in the
 	 string.  Skip past the newline and its duplicate.
@@ -9082,27 +9123,45 @@ change_newlines (start, length)
 
     case '\'':
     case '\"':
-      /* Notice and skip strings, so that we don't delete newlines in them.  */
+      /* Notice and skip strings, to handle their newlines properly.  */
       {
-	int quotec = c;
-	while (ibp < limit) {
-	  *obp++ = c = *ibp++;
-	  if (c == quotec)
-	    {
-	      if (ibp[-2] != '\\')
-		break;
+	U_CHAR *ibp1 = skip_quoted_string (ibp - 1, limit, 0,
+					   NULL_PTR, NULL_PTR, NULL_PTR);
+	while (ibp != ibp1) {
+	  switch ((*obp++ = *ibp++)) {
+	  case '\\':
+	    /* Replace backslash-newline with nothing.  */
+	    if (*ibp == '\n') {
+	      ++ibp;
+	      --obp;
 	    }
-	  else if (c == '\n')
-	    {
-	      if (quotec == '\'')
-		break;
+	    break;
+
+	  case '\n':
+	    /* Replace non-backslashed newline with backslash-'n',
+	       replacing the arg buffer with a new one if this hasn't
+	       been done already.  */
+
+	    if (start == arg->expanded) {
+	      int olength = obp - arg->expanded;
+	      U_CHAR *newbuf;
+	      arg->expand_size = 2 * arg->expand_length;
+	      newbuf = (U_CHAR *) xmalloc (arg->expand_size);
+	      arg->free2 = arg->expanded = newbuf;
+	      obp = newbuf + olength;
+	      bcopy ((char *) start, (char *) newbuf, olength);
 	    }
-	  else
-	    {
+
+	    obp[-1] = '\\';
+	    *obp++ = 'n';
+	    break;
+
 #ifdef MULTIBYTE_CHARS
+	  default:
+	    {
 	      int length;
 	      ibp--;
-	      length = local_mblen (ibp, limit - ibp);
+	      length = local_mblen (ibp, ibp1 - ibp);
 	      if (length > 1)
 		{
 		  obp--;
@@ -9112,15 +9171,19 @@ change_newlines (start, length)
 		}
 	      else
 		ibp++;
-#endif
 	    }
+#endif
+	  }
 	}
       }
       break;
     }
   }
 
-  return obp - start;
+  arg->expand_length = obp - arg->expanded;
+
+  if (start != arg->expanded)
+    free (start);
 }
 
 /* my_strerror - return the descriptive text associated with an
@@ -9206,7 +9269,8 @@ verror (msgid, args)
     }
 
   if (ip != NULL) {
-    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
   vnotice (msgid, args);
@@ -9233,7 +9297,8 @@ error_from_errno (name)
     }
 
   if (ip != NULL) {
-    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
 
@@ -9278,7 +9343,8 @@ vwarning (msgid, args)
     }
 
   if (ip != NULL) {
-    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
     fprintf (stderr, ":%d: ", ip->lineno);
   }
   notice ("warning: ");
@@ -9320,7 +9386,8 @@ verror_with_line (line, msgid, args)
     }
 
   if (ip != NULL) {
-    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
     fprintf (stderr, ":%d: ", line);
   }
   vnotice (msgid, args);
@@ -9368,7 +9435,8 @@ vwarning_with_line (line, msgid, args)
     }
 
   if (ip != NULL) {
-    eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+    fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	    ip->nominal_fname_len, stderr);
     fprintf (stderr, line ? ":%d: " : ": ", line);
   }
   notice ("warning: ");
@@ -9431,7 +9499,7 @@ pedwarn_with_file_and_line (file, file_len, line, PRINTF_ALIST (msgid))
   if (!pedantic_errors && inhibit_warnings)
     return;
   if (file) {
-    eprint_string (file, file_len);
+    fwrite (file, sizeof file[0], file_len, stderr);
     fprintf (stderr, ":%d: ", line);
   }
   if (pedantic_errors)
@@ -9493,7 +9561,8 @@ print_containing_files ()
 	notice (",\n                 from ");
       }
 
-      eprint_string (ip->nominal_fname, ip->nominal_fname_len);
+      fwrite (ip->nominal_fname, sizeof ip->nominal_fname[0],
+	      ip->nominal_fname_len, stderr);
       fprintf (stderr, ":%d", ip->lineno);
     }
   if (! first)
@@ -10090,8 +10159,18 @@ make_definition (str, op)
 					 NULL_PTR, NULL_PTR, &unterminated);
 	if (unterminated)
 	  return;
-	while (p != p1)
-	  *q++ = *p++;
+	while (p != p1) {
+	  if (*p == '\\' && p[1] == '\n')
+	    p += 2;
+	  else if (*p == '\n')
+	    {
+	      *q++ = '\\';
+	      *q++ = 'n';
+	      p++;
+	    }
+	  else
+	    *q++ = *p++;
+	}
       } else if (*p == '\\' && p[1] == '\n')
 	p += 2;
       /* Change newline chars into newline-markers.  */
@@ -10452,7 +10531,7 @@ deps_output (string, spacer)
   deps_buffer[deps_size] = 0;
 }
 
-static void
+void
 fatal (PRINTF_ALIST (msgid))
      PRINTF_DCL (msgid)
 {
@@ -10831,5 +10910,26 @@ VMS_stat (name, statbuf)
     }
 
   return result;
+}
+
+static size_t
+VMS_fwrite (ptr, size, nitems, stream)
+     void const *ptr;
+     size_t size;
+     size_t nitems;
+     FILE *stream;
+{
+  /* VMS fwrite has undesirable results
+     if STREAM happens to be a record oriented file.
+     Work around this problem by writing each character individually.  */
+  char const *p = ptr;
+  size_t bytes = size * nitems;
+  char *lim = p + bytes;
+
+  while (p < lim)
+    if (putc (*p++, stream) == EOF)
+      return 0;
+
+  return bytes;
 }
 #endif /* VMS */
