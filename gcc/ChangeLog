@@ -1,3 +1,9 @@
+2002-10-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog.1: Fix typos.
+	* cse.c: Fix a comment typo.
+	* reload1.c: Likewise.
+
 2002-10-27  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* fixinc/inclhack.def (libc1_G_va_list): Correct test_text.

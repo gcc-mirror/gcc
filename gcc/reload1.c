@@ -3229,7 +3229,7 @@ eliminate_regs_in_insn (insn, replace)
      insn.  The changes we make were determined by the earlier call to
      elimination_effects.
 
-     We also detect a cases where register elimination cannot be done,
+     We also detect cases where register elimination cannot be done,
      namely, if a register would be both changed and referenced outside a MEM
      in the resulting insn since such an insn is often undefined and, even if
      not, we cannot know what meaning will be given to it.  Note that it is
