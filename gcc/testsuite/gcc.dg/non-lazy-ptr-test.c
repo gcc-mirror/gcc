@@ -14,7 +14,7 @@ extern void f2(void) {
 
 static void f3(void);
 
-__private_extern__ void pe(void)
+void pe(void)
 {
 }
 
