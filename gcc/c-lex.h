@@ -22,7 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_C_LEX_H
 
 extern tree make_pointer_declarator PARAMS ((tree, tree));
-extern void position_after_white_space PARAMS ((void));
 
 extern int c_lex PARAMS ((tree *));
 extern const char *init_c_lex PARAMS ((const char *));
