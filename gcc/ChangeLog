@@ -2,7 +2,7 @@ Tue Apr 27 20:19:47 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.md (insv): Use copy_addr_to_reg.
 
-	* final.c (insn_lengths_max_uid) New variable.
+	* final.c (insn_lengths_max_uid): New variable.
 	(init_insn_lengths, shorten_branches): Set it.
 	(get_attr_lengths): Test insn uid against insn_lengths_max_uid.
 
