@@ -1,3 +1,9 @@
+2001-01-14  David Billinghurst <David.Billinghurst@riotinto.com>
+
+        PR fortran/3807
+        * f/intrin.c (ffeintrin_check_):  Allow for case of intrinsic
+        control string have COL-spec an integer > 0.
+
 2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77spec.c (lookup_option): Handle -fversion.
