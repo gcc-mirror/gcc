@@ -87,9 +87,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "proj.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "config.j"
 #include "flags.j"
 #include "rtl.j"
+#include "toplev.j"
 #include "tree.j"
 #include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
 #include "convert.j"
@@ -11484,7 +11484,9 @@ ffecom_end_transition ()
   if (ffe_is_ffedebug ())
     {
       ffestorag_report ();
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
       ffesymbol_report_all ();
+#endif
     }
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
@@ -11569,7 +11571,9 @@ ffecom_exec_transition ()
   if (ffe_is_ffedebug ())
     {
       ffestorag_report ();
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
       ffesymbol_report_all ();
+#endif
     }
 
   if (inhibited)

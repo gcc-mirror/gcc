@@ -477,7 +477,9 @@ extern struct _ffebld_pool_stack_ ffebld_pool_stack_;
 /* Declare functions with prototypes. */
 
 int ffebld_constant_cmp (ffebldConstant c1, ffebldConstant c2);
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffebld_constant_dump (ffebldConstant c);
+#endif
 bool ffebld_constant_is_magical (ffebldConstant c);
 bool ffebld_constant_is_zero (ffebldConstant c);
 #if FFETARGET_okCHARACTER1
@@ -680,8 +682,10 @@ ffebldConstant ffebld_constant_new_typeless_ov (ffelexToken t);
 ffebldConstant ffebld_constant_new_typeless_val (ffebldConst type,
 						 ffetargetTypeless val);
 ffebldConstant ffebld_constant_negated (ffebldConstant c);
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffebld_constantarray_dump (ffebldConstantArray array, ffeinfoBasictype bt,
 		     ffeinfoKindtype kt, ffetargetOffset size, ffebit bits);
+#endif
 ffebldConstantUnion ffebld_constantarray_get (ffebldConstantArray array,
 	   ffeinfoBasictype bt, ffeinfoKindtype kt, ffetargetOffset offset);
 void ffebld_constantarray_kill (ffebldConstantArray array, ffeinfoBasictype bt,
@@ -698,10 +702,12 @@ void ffebld_constantarray_preparray (void **aptr, void **cptr, size_t *size,
 				 ffeinfoBasictype cbt, ffeinfoKindtype ckt);
 void ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
   ffeinfoKindtype kt, ffetargetOffset offset, ffebldConstantUnion constant);
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void ffebld_constantunion_dump (ffebldConstantUnion u, ffeinfoBasictype bt,
 				ffeinfoKindtype kt);
 void ffebld_dump (ffebld b);
 void ffebld_dump_prefix (FILE *out, ffeinfoBasictype bt, ffeinfoKindtype kt);
+#endif
 void ffebld_init_0 (void);
 void ffebld_init_1 (void);
 void ffebld_init_2 (void);

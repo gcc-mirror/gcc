@@ -245,8 +245,10 @@ INPUT_H = $(srcdir)/input.j $(srcdir)/../input.h
 OUTPUT_H = $(srcdir)/output.j $(srcdir)/../output.h
 RTL_H = $(srcdir)/rtl.j $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
+SYSTEM_H = $(srcdir)/system.j $(srcdir)/../system.h
 TCONFIG_H = $(srcdir)/tconfig.j ../tconfig.h
 TM_H = $(srcdir)/tm.j ../tm.h
+TOPLEV_H = $(srcdir)/toplev.j $(srcdir)/../toplev.h
 TREE_H = $(srcdir)/tree.j $(srcdir)/../tree.h $(srcdir)/../real.h \
 	$(srcdir)/../tree.def $(srcdir)/../machmode.h $(srcdir)/../machmode.def
 
@@ -255,176 +257,177 @@ TREE_H = $(srcdir)/tree.j $(srcdir)/../tree.h $(srcdir)/../real.h \
 #Note that this command uses the host C compiler;
 # use HOST_CC="./xgcc -B./" to use GCC in the build directory, for example.
 #Also note that this particular build file seems to want to use
-# substitions: $(CONFIG_H) for config.h; $(TREE_H) for tree.h; and
-# $(RTL_H) for rtl.h.  deps-kinda uses a sed script to do those
+# substitions: $(CONFIG_H) for config.h; $(TREE_H) for tree.h;
+# $(RTL_H) for rtl.h; etc..  deps-kinda uses a sed script to do those
 # substitutions, plus others for elegance.
 
-ansify.o: ansify.c $(ASSERT_H)
-bad.o: bad.c proj.h $(CONFIG_H) $(ASSERT_H) bad.h bad.def where.h $(GLIMITS_H) \
- top.h malloc.h $(FLAGS_H) com.h com-rt.def $(TREE_H) bld.h bld-op.def bit.h \
- info.h info-b.def info-k.def info-w.def target.h lex.h type.h \
- intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
- global.h name.h $(RTL_H)
-bit.o: bit.c proj.h $(CONFIG_H) $(ASSERT_H) $(GLIMITS_H) bit.h malloc.h
-bld.o: bld.c proj.h $(CONFIG_H) $(ASSERT_H) bld.h bld-op.def bit.h malloc.h \
- com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def \
- target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h type.h lab.h \
- storag.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
- intrin.def $(RTL_H)
-com.o: com.c proj.h $(CONFIG_H) $(ASSERT_H) $(FLAGS_H) $(RTL_H) $(TREE_H) $(OUTPUT_H) \
- $(CONVERT_H) com.h com-rt.def bld.h bld-op.def bit.h malloc.h info.h \
- info-b.def info-k.def info-w.def target.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h lex.h type.h intrin.h intrin.def lab.h symbol.h \
- symbol.def equiv.h storag.h global.h name.h expr.h implic.h src.h \
- st.h
-data.o: data.c proj.h $(CONFIG_H) $(ASSERT_H) data.h bld.h bld-op.def bit.h \
+ansify.o: ansify.c $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H)
+bad.o: bad.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bad.h bad.def where.h \
+ $(GLIMITS_H) top.h malloc.h $(FLAGS_H) com.h com-rt.def $(TREE_H) bld.h \
+ bld-op.def bit.h info.h info-b.def info-k.def info-w.def target.h \
+ lex.h type.h intrin.h intrin.def lab.h symbol.h symbol.def equiv.h \
+ storag.h global.h name.h $(TOPLEV_H)
+bit.o: bit.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H) bit.h \
+ malloc.h
+bld.o: bld.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bld.h bld-op.def bit.h \
  malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
  info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
  type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
- intrin.h intrin.def $(RTL_H) expr.h st.h
-equiv.o: equiv.c proj.h $(CONFIG_H) $(ASSERT_H) equiv.h bld.h bld-op.def \
- bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h lab.h storag.h symbol.h symbol.def global.h name.h intrin.h \
- intrin.def $(RTL_H) data.h
-expr.o: expr.c proj.h $(CONFIG_H) $(ASSERT_H) expr.h bld.h bld-op.def bit.h \
- malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
- intrin.h intrin.def $(RTL_H) implic.h src.h st.h stamp-str
-fini.o: fini.c proj.h $(CONFIG_H) $(ASSERT_H) malloc.h
-global.o: global.c proj.h $(CONFIG_H) $(ASSERT_H) global.h info.h info-b.def \
- info-k.def info-w.def target.h $(TREE_H) bad.h bad.def where.h $(GLIMITS_H) \
- top.h malloc.h lex.h type.h name.h symbol.h symbol.def bld.h \
- bld-op.def bit.h com.h com-rt.def lab.h storag.h $(RTL_H) intrin.h \
- intrin.def equiv.h
-implic.o: implic.c proj.h $(CONFIG_H) $(ASSERT_H) implic.h info.h info-b.def \
- info-k.def info-w.def target.h $(TREE_H) bad.h bad.def where.h $(GLIMITS_H) \
- top.h malloc.h lex.h type.h symbol.h symbol.def bld.h bld-op.def \
- bit.h com.h com-rt.def lab.h storag.h $(RTL_H) intrin.h intrin.def \
- equiv.h global.h name.h src.h
-info.o: info.c proj.h $(CONFIG_H) $(ASSERT_H) info.h info-b.def info-k.def \
- info-w.def target.h $(TREE_H) bad.h bad.def where.h $(GLIMITS_H) top.h \
- malloc.h lex.h type.h
-intdoc.o: intdoc.c $(ASSERT_H) intrin.h intrin.def intdoc.h0 intdoc.h0
-intrin.o: intrin.c proj.h $(CONFIG_H) $(ASSERT_H) intrin.h intrin.def bld.h \
+ intrin.h intrin.def
+com.o: com.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(FLAGS_H) $(RTL_H) $(TOPLEV_H) \
+ $(TREE_H) $(OUTPUT_H) $(CONVERT_H) com.h com-rt.def bld.h bld-op.def bit.h \
+ malloc.h info.h info-b.def info-k.def info-w.def target.h bad.h \
+ bad.def where.h $(GLIMITS_H) top.h lex.h type.h intrin.h intrin.def \
+ lab.h symbol.h symbol.def equiv.h storag.h global.h name.h expr.h \
+ implic.h src.h st.h
+data.o: data.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) data.h bld.h \
  bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
  lex.h type.h lab.h storag.h symbol.h symbol.def equiv.h global.h \
- name.h $(RTL_H) expr.h src.h
-lab.o: lab.c proj.h $(CONFIG_H) $(ASSERT_H) lab.h com.h com-rt.def $(TREE_H) \
- bld.h bld-op.def bit.h malloc.h info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h intrin.h intrin.def symbol.h symbol.def equiv.h storag.h \
- global.h name.h $(RTL_H)
-lex.o: lex.c proj.h $(CONFIG_H) $(ASSERT_H) top.h malloc.h where.h $(GLIMITS_H) \
- bad.h bad.def com.h com-rt.def $(TREE_H) bld.h bld-op.def bit.h info.h \
- info-b.def info-k.def info-w.def target.h lex.h type.h intrin.h \
- intrin.def lab.h symbol.h symbol.def equiv.h storag.h global.h name.h \
- $(RTL_H) src.h $(FLAGS_H) $(INPUT_H) $(OUTPUT_H)
-malloc.o: malloc.c proj.h $(CONFIG_H) $(ASSERT_H) malloc.h
-name.o: name.c proj.h $(CONFIG_H) $(ASSERT_H) bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h name.h global.h info.h info-b.def info-k.def \
- info-w.def target.h $(TREE_H) lex.h type.h symbol.h symbol.def bld.h \
- bld-op.def bit.h com.h com-rt.def lab.h storag.h $(RTL_H) intrin.h \
- intrin.def equiv.h src.h
-parse.o: parse.c proj.h $(CONFIG_H) $(ASSERT_H) top.h malloc.h where.h \
- $(GLIMITS_H) com.h com-rt.def $(TREE_H) bld.h bld-op.def bit.h info.h \
- info-b.def info-k.def info-w.def target.h bad.h bad.def lex.h type.h \
- intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
- global.h name.h $(RTL_H) version.h $(FLAGS_H)
-proj.o: proj.c proj.h $(CONFIG_H) $(ASSERT_H) $(GLIMITS_H)
-src.o: src.c proj.h $(CONFIG_H) $(ASSERT_H) src.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h
-st.o: st.c proj.h $(CONFIG_H) $(ASSERT_H) st.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h lex.h symbol.h symbol.def bld.h bld-op.def \
- bit.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def \
- target.h type.h lab.h storag.h $(RTL_H) intrin.h intrin.def equiv.h \
- global.h name.h sta.h stamp-str stb.h expr.h stp.h stt.h stc.h std.h \
- stv.h stw.h ste.h sts.h stu.h
-sta.o: sta.c proj.h $(CONFIG_H) $(ASSERT_H) sta.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h lex.h stamp-str symbol.h symbol.def bld.h \
- bld-op.def bit.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h type.h lab.h storag.h $(RTL_H) intrin.h intrin.def \
- equiv.h global.h name.h implic.h stb.h expr.h stp.h stt.h stc.h std.h \
- stv.h stw.h
-stb.o: stb.c proj.h $(CONFIG_H) $(ASSERT_H) stb.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h expr.h bld.h bld-op.def bit.h com.h \
- com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def target.h \
- lex.h type.h lab.h storag.h symbol.h symbol.def equiv.h global.h \
- name.h intrin.h intrin.def $(RTL_H) stp.h stt.h stamp-str src.h sta.h stc.h
-stc.o: stc.c proj.h $(CONFIG_H) $(ASSERT_H) stc.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h bld.h bld-op.def bit.h com.h com-rt.def \
- $(TREE_H) info.h info-b.def info-k.def info-w.def target.h lex.h type.h \
- lab.h storag.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
- intrin.def $(RTL_H) expr.h stp.h stt.h stamp-str data.h implic.h src.h sta.h \
- std.h stv.h stw.h
-std.o: std.c proj.h $(CONFIG_H) $(ASSERT_H) std.h bld.h bld-op.def bit.h \
- malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
- intrin.h intrin.def $(RTL_H) stp.h stt.h stamp-str stv.h stw.h sta.h ste.h \
- sts.h
-ste.o: ste.c proj.h $(CONFIG_H) $(ASSERT_H) $(RTL_H) $(TREE_H) $(OUTPUT_H) ste.h \
- bld.h bld-op.def bit.h malloc.h com.h com-rt.def info.h info-b.def \
+ name.h intrin.h intrin.def expr.h st.h
+equiv.o: equiv.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) equiv.h bld.h \
+ bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
+ info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
+ lex.h type.h lab.h storag.h symbol.h symbol.def global.h name.h \
+ intrin.h intrin.def data.h
+expr.o: expr.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) expr.h bld.h \
+ bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
  lex.h type.h lab.h storag.h symbol.h symbol.def equiv.h global.h \
- name.h intrin.h intrin.def stp.h stt.h stamp-str sts.h stv.h stw.h expr.h \
- sta.h
-storag.o: storag.c proj.h $(CONFIG_H) $(ASSERT_H) storag.h bld.h bld-op.def \
- bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h lab.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
- intrin.def $(RTL_H) data.h
-stp.o: stp.c proj.h $(CONFIG_H) $(ASSERT_H) stp.h bld.h bld-op.def bit.h \
- malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
- info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
- type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
- intrin.h intrin.def $(RTL_H) stt.h
-str.o: str.c proj.h $(CONFIG_H) $(ASSERT_H) src.h bad.h bad.def where.h \
- $(GLIMITS_H) top.h malloc.h stamp-str lex.h
-sts.o: sts.c proj.h $(CONFIG_H) $(ASSERT_H) sts.h malloc.h com.h com-rt.def \
- $(TREE_H) bld.h bld-op.def bit.h info.h info-b.def info-k.def info-w.def \
- target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h type.h intrin.h \
- intrin.def lab.h symbol.h symbol.def equiv.h storag.h global.h name.h \
- $(RTL_H)
-stt.o: stt.c proj.h $(CONFIG_H) $(ASSERT_H) stt.h top.h malloc.h where.h \
- $(GLIMITS_H) bld.h bld-op.def bit.h com.h com-rt.def $(TREE_H) info.h \
- info-b.def info-k.def info-w.def target.h bad.h bad.def lex.h type.h \
- lab.h storag.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
- intrin.def $(RTL_H) stp.h expr.h sta.h stamp-str
-stu.o: stu.c proj.h $(CONFIG_H) $(ASSERT_H) bld.h bld-op.def bit.h malloc.h \
- com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def \
- target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h type.h lab.h \
- storag.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
- intrin.def $(RTL_H) implic.h stu.h sta.h stamp-str
-stv.o: stv.c proj.h $(CONFIG_H) $(ASSERT_H) stv.h lab.h com.h com-rt.def \
+ name.h intrin.h intrin.def implic.h src.h st.h stamp-str
+fini.o: fini.c proj.h $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) malloc.h
+global.o: global.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) global.h info.h \
+ info-b.def info-k.def info-w.def target.h $(TREE_H) bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h lex.h type.h name.h symbol.h \
+ symbol.def bld.h bld-op.def bit.h com.h com-rt.def lab.h storag.h \
+ intrin.h intrin.def equiv.h
+implic.o: implic.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) implic.h info.h \
+ info-b.def info-k.def info-w.def target.h $(TREE_H) bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h lex.h type.h symbol.h symbol.def \
+ bld.h bld-op.def bit.h com.h com-rt.def lab.h storag.h intrin.h \
+ intrin.def equiv.h global.h name.h src.h
+info.o: info.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) info.h info-b.def \
+ info-k.def info-w.def target.h $(TREE_H) bad.h bad.def where.h $(GLIMITS_H) \
+ top.h malloc.h lex.h type.h
+intdoc.o: intdoc.c $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) intrin.h intrin.def \
+ intdoc.h0 intdoc.h0
+intrin.o: intrin.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) intrin.h \
+ intrin.def bld.h bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) \
+ info.h info-b.def info-k.def info-w.def target.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h lex.h type.h lab.h storag.h symbol.h \
+ symbol.def equiv.h global.h name.h expr.h src.h
+lab.o: lab.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) lab.h com.h com-rt.def \
  $(TREE_H) bld.h bld-op.def bit.h malloc.h info.h info-b.def info-k.def \
  info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
  type.h intrin.h intrin.def symbol.h symbol.def equiv.h storag.h \
- global.h name.h $(RTL_H)
-stw.o: stw.c proj.h $(CONFIG_H) $(ASSERT_H) stw.h bld.h bld-op.def bit.h \
+ global.h name.h
+lex.o: lex.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) top.h malloc.h where.h \
+ $(GLIMITS_H) bad.h bad.def com.h com-rt.def $(TREE_H) bld.h bld-op.def \
+ bit.h info.h info-b.def info-k.def info-w.def target.h lex.h type.h \
+ intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
+ global.h name.h src.h $(FLAGS_H) $(INPUT_H) $(TOPLEV_H) $(OUTPUT_H)
+malloc.o: malloc.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) malloc.h
+name.o: name.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bad.h bad.def where.h \
+ $(GLIMITS_H) top.h malloc.h name.h global.h info.h info-b.def info-k.def \
+ info-w.def target.h $(TREE_H) lex.h type.h symbol.h symbol.def bld.h \
+ bld-op.def bit.h com.h com-rt.def lab.h storag.h intrin.h intrin.def \
+ equiv.h src.h
+parse.o: parse.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) top.h malloc.h \
+ where.h $(GLIMITS_H) com.h com-rt.def $(TREE_H) bld.h bld-op.def bit.h \
+ info.h info-b.def info-k.def info-w.def target.h bad.h bad.def lex.h \
+ type.h intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
+ global.h name.h version.h $(FLAGS_H)
+proj.o: proj.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H)
+src.o: src.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) src.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h
+st.o: st.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) st.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h lex.h symbol.h symbol.def bld.h \
+ bld-op.def bit.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
+ info-w.def target.h type.h lab.h storag.h intrin.h intrin.def equiv.h \
+ global.h name.h sta.h stamp-str stb.h expr.h stp.h stt.h stc.h std.h \
+ stv.h stw.h ste.h sts.h stu.h
+sta.o: sta.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) sta.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h lex.h stamp-str symbol.h symbol.def \
+ bld.h bld-op.def bit.h com.h com-rt.def $(TREE_H) info.h info-b.def \
+ info-k.def info-w.def target.h type.h lab.h storag.h intrin.h \
+ intrin.def equiv.h global.h name.h implic.h stb.h expr.h stp.h stt.h \
+ stc.h std.h stv.h stw.h
+stb.o: stb.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stb.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h expr.h bld.h bld-op.def bit.h com.h \
+ com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def target.h \
+ lex.h type.h lab.h storag.h symbol.h symbol.def equiv.h global.h \
+ name.h intrin.h intrin.def stp.h stt.h stamp-str src.h sta.h stc.h
+stc.o: stc.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stc.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h bld.h bld-op.def bit.h com.h \
+ com-rt.def $(TREE_H) info.h info-b.def info-k.def info-w.def target.h \
+ lex.h type.h lab.h storag.h symbol.h symbol.def equiv.h global.h \
+ name.h intrin.h intrin.def expr.h stp.h stt.h stamp-str data.h implic.h \
+ src.h sta.h std.h stv.h stw.h
+std.o: std.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) std.h bld.h bld-op.def \
+ bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
+ info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
+ type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
+ intrin.h intrin.def stp.h stt.h stamp-str stv.h stw.h sta.h ste.h sts.h
+ste.o: ste.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(RTL_H) $(TOPLEV_H) ste.h \
+ bld.h bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h \
+ info-b.def info-k.def info-w.def target.h bad.h bad.def where.h \
+ $(GLIMITS_H) top.h lex.h type.h lab.h storag.h symbol.h symbol.def \
+ equiv.h global.h name.h intrin.h intrin.def stp.h stt.h stamp-str sts.h \
+ stv.h stw.h expr.h sta.h
+storag.o: storag.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) storag.h bld.h \
+ bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
+ info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
+ lex.h type.h lab.h symbol.h symbol.def equiv.h global.h name.h \
+ intrin.h intrin.def data.h
+stp.o: stp.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stp.h bld.h bld-op.def \
+ bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
+ info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
+ type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
+ intrin.h intrin.def stt.h
+str.o: str.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) src.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h malloc.h stamp-str lex.h
+sts.o: sts.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) sts.h malloc.h com.h \
+ com-rt.def $(TREE_H) bld.h bld-op.def bit.h info.h info-b.def info-k.def \
+ info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
+ type.h intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
+ global.h name.h
+stt.o: stt.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stt.h top.h malloc.h \
+ where.h $(GLIMITS_H) bld.h bld-op.def bit.h com.h com-rt.def $(TREE_H) \
+ info.h info-b.def info-k.def info-w.def target.h bad.h bad.def lex.h \
+ type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
+ intrin.h intrin.def stp.h expr.h sta.h stamp-str
+stu.o: stu.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bld.h bld-op.def bit.h \
  malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
  info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
  type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
- intrin.h intrin.def $(RTL_H) stv.h sta.h stamp-str
-symbol.o: symbol.c proj.h $(CONFIG_H) $(ASSERT_H) symbol.h symbol.def bld.h \
- bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
+ intrin.h intrin.def implic.h stu.h sta.h stamp-str
+stv.o: stv.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stv.h lab.h com.h \
+ com-rt.def $(TREE_H) bld.h bld-op.def bit.h malloc.h info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
- lex.h type.h lab.h storag.h $(RTL_H) intrin.h intrin.def equiv.h \
- global.h name.h src.h st.h
-target.o: target.c proj.h $(CONFIG_H) $(ASSERT_H) $(GLIMITS_H) target.h $(TREE_H) \
- bad.h bad.def where.h top.h malloc.h info.h info-b.def info-k.def \
- info-w.def type.h lex.h
-top.o: top.c proj.h $(CONFIG_H) $(ASSERT_H) top.h malloc.h where.h $(GLIMITS_H) \
- bad.h bad.def bit.h bld.h bld-op.def com.h com-rt.def $(TREE_H) info.h \
- info-b.def info-k.def info-w.def target.h lex.h type.h lab.h storag.h \
- symbol.h symbol.def equiv.h global.h name.h intrin.h intrin.def $(RTL_H) \
- data.h expr.h implic.h src.h st.h $(FLAGS_H)
-type.o: type.c proj.h $(CONFIG_H) $(ASSERT_H) type.h malloc.h
+ lex.h type.h intrin.h intrin.def symbol.h symbol.def equiv.h storag.h \
+ global.h name.h
+stw.o: stw.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) stw.h bld.h bld-op.def \
+ bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def info-k.def \
+ info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h lex.h \
+ type.h lab.h storag.h symbol.h symbol.def equiv.h global.h name.h \
+ intrin.h intrin.def stv.h sta.h stamp-str
+symbol.o: symbol.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) symbol.h \
+ symbol.def bld.h bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) \
+ info.h info-b.def info-k.def info-w.def target.h bad.h bad.def \
+ where.h $(GLIMITS_H) top.h lex.h type.h lab.h storag.h intrin.h \
+ intrin.def equiv.h global.h name.h src.h st.h
+target.o: target.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H) \
+ target.h $(TREE_H) bad.h bad.def where.h top.h malloc.h info.h \
+ info-b.def info-k.def info-w.def type.h lex.h
+top.o: top.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) top.h malloc.h where.h \
+ $(GLIMITS_H) bad.h bad.def bit.h bld.h bld-op.def com.h com-rt.def \
+ $(TREE_H) info.h info-b.def info-k.def info-w.def target.h lex.h type.h \
+ lab.h storag.h symbol.h symbol.def equiv.h global.h name.h intrin.h \
+ intrin.def data.h expr.h implic.h src.h st.h $(FLAGS_H) $(TOPLEV_H)
+type.o: type.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) type.h malloc.h
 version.o: version.c
-where.o: where.c proj.h $(CONFIG_H) $(ASSERT_H) where.h $(GLIMITS_H) top.h \
- malloc.h lex.h
+where.o: where.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) where.h $(GLIMITS_H) \
+ top.h malloc.h lex.h
 
 # The rest of this list (Fortran 77 language-specific files) is hand-generated.
 
@@ -462,7 +465,7 @@ fini.o:
 	      `echo $(srcdir)/fini.c | sed 's,^\./,,'` -o $@
 
 proj-h.o: proj.o
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	$(HOST_CC) -c -DUSE_HCONFIG $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      `echo $(srcdir)/proj.c | sed 's,^\./,,'` -o $@
 
 # Other than str-*.j, the *.j files are dummy #include files
@@ -484,7 +487,7 @@ proj-h.o: proj.o
 # as will be the case with proj.h in a clean directory.
 MG=-MG
 deps-kinda:
-	$(HOST_CC) -DMAKING_DEPENDENCIES -MM $(MG) *.c | \
+	$(HOST_CC) -DMAKING_DEPENDENCIES -MM $(MG) *.c 2>&1 | \
 	  sed -e 's: \([.]/\)*assert[.]j: $$(ASSERT_H):g' \
 	      -e 's: \([.]/\)*config[.]j: $$(CONFIG_H):g' \
 	      -e 's: \([.]/\)*convert[.]j: $$(CONVERT_H):g' \
@@ -494,8 +497,10 @@ deps-kinda:
 	      -e 's: \([.]/\)*input[.]j: $$(INPUT_H):g' \
 	      -e 's: \([.]/\)*output[.]j: $$(OUTPUT_H):g' \
 	      -e 's: \([.]/\)*rtl[.]j: $$(RTL_H):g' \
+	      -e 's: \([.]/\)*system[.]j: $$(SYSTEM_H):g' \
 	      -e 's: \([.]/\)*tconfig[.]j: $$(TCONFIG_H):g' \
 	      -e 's: \([.]/\)*tm[.]j: $$(TM_H):g' \
+	      -e 's: \([.]/\)*toplev[.]j: $$(TOPLEV_H):g' \
 	      -e 's: \([.]/\)*tree[.]j: $$(TREE_H):g' \
 	      -e 's: \([.]/\)*str[.]h: stamp-str:g' \
 	      -e 's:.*g77spec.*::g' \

@@ -87,9 +87,9 @@ extern bool ffesrc_ok_match_noninit_lower_;
    characters for which ffelex_is_firstnamechar returns TRUE.  */
 
 #define ffesrc_is_name_init(c) \
-  ((isalpha ((c))) || (!(1 || ffe_is_90 ()) && ((c) == '_')))
+  ((ISALPHA ((c))) || (! (1 || ffe_is_90 ()) && ((c) == '_')))
 #define ffesrc_is_name_noninit(c) \
-  ((isalnum ((c))) || (!(1 || ffe_is_90 ()) && ((c) == '_')))
+  ((ISALNUM ((c))) || (! (1 || ffe_is_90 ()) && ((c) == '_')))
 
 /* Test if source-translated character matches given alphabetic character
    (passed in both uppercase and lowercase, to allow for custom speedup

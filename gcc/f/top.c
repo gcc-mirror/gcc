@@ -30,7 +30,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Include files. */
 
-#include <ctype.h>
 #include "proj.h"
 #include "top.h"
 #include "bad.h"
@@ -56,6 +55,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "flags.j"
+#include "toplev.j"
 #endif
 
 /* Externals defined here. */
@@ -151,7 +151,7 @@ ffe_is_digit_string_ (char *s)
 {
   char *p;
 
-  for (p = s; isdigit (*p); ++p)
+  for (p = s; ISDIGIT (*p); ++p)
     ;
 
   return (p != s) && (*p == '\0');

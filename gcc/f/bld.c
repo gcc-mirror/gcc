@@ -36,7 +36,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-#include <ctype.h>
 #include "bld.h"
 #include "bit.h"
 #include "info.h"
@@ -446,6 +445,7 @@ ffebld_constant_cmp (ffebldConstant c1, ffebldConstant c2)
 
    Displays the constant in summary form.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffebld_constant_dump (ffebldConstant c)
 {
@@ -863,6 +863,7 @@ ffebld_constant_dump (ffebldConstant c)
       break;
     }
 }
+#endif
 
 /* ffebld_constant_is_magical -- Determine if integer is "magical"
 
@@ -2002,6 +2003,7 @@ ffebld_constant_new_typeless_val (ffebldConst type, ffetargetTypeless val)
    supplied, is an ffebit object that is consulted as to whether the
    constant at a particular offset is valid.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffebld_constantarray_dump (ffebldConstantArray array, ffeinfoBasictype bt,
 		      ffeinfoKindtype kt, ffetargetOffset size, ffebit bits)
@@ -2057,6 +2059,7 @@ ffebld_constantarray_dump (ffebldConstantArray array, ffeinfoBasictype bt,
   fprintf (dmpout, "\\)");
 
 }
+#endif
 
 /* ffebld_constantarray_get -- Get a value from an array of constants
 
@@ -4409,6 +4412,7 @@ ffebld_constantarray_put (ffebldConstantArray array, ffeinfoBasictype bt,
 
    See prototype.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffebld_constantunion_dump (ffebldConstantUnion u, ffeinfoBasictype bt,
 			   ffeinfoKindtype kt)
@@ -4737,12 +4741,14 @@ ffebld_constantunion_dump (ffebldConstantUnion u, ffeinfoBasictype bt,
       break;
     }
 }
+#endif
 
 /* ffebld_dump -- Dump expression tree in concise form
 
    ffebld b;
    ffebld_dump(b);  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffebld_dump (ffebld b)
 {
@@ -4870,12 +4876,14 @@ ffebld_dump (ffebld b)
 	}
     }
 }
+#endif
 
 /* ffebld_dump_prefix -- Dump the prefix for a constant of a given type
 
    ffebld_dump_prefix(dmpout,FFEINFO_basictypeINTEGER,
 	 FFEINFO_kindtypeINTEGER1);  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffebld_dump_prefix (FILE *out, ffeinfoBasictype bt, ffeinfoKindtype kt)
 {
@@ -5172,6 +5180,7 @@ ffebld_dump_prefix (FILE *out, ffeinfoBasictype bt, ffeinfoKindtype kt)
       break;
     }
 }
+#endif
 
 /* ffebld_init_0 -- Initialize the module
 

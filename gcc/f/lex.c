@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "proj.h"
-#include <ctype.h>
 #include "top.h"
 #include "bad.h"
 #include "com.h"
@@ -28,9 +27,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "malloc.h"
 #include "src.h"
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "config.j"
 #include "flags.j"
 #include "input.j"
+#include "toplev.j"
 #include "tree.j"
 #include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
 #endif
@@ -770,7 +769,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 	      r = &q[buffer_length];
 	    }
 	  c = ffelex_getc_ (finput);
-	  if (!isdigit (c))
+	  if (! ISDIGIT (c))
 	    break;
 	}
       *p = '\0';
@@ -1812,10 +1811,10 @@ ffelex_expecting_character ()
 ffelexHandler
 ffelex_file_fixed (ffewhereFile wf, FILE *f)
 {
-  register int c;		/* Character currently under consideration. */
-  register ffewhereColumnNumber column;	/* Not really; 0 means column 1... */
+  register int c = 0;		/* Character currently under consideration. */
+  register ffewhereColumnNumber column = 0;	/* Not really; 0 means column 1... */
   bool disallow_continuation_line;
-  bool ignore_disallowed_continuation;
+  bool ignore_disallowed_continuation = FALSE;
   int latest_char_in_file = 0;	/* For getting back into comment-skipping
 				   code. */
   ffelexType lextype;
@@ -3033,11 +3032,11 @@ ffelex_file_fixed (ffewhereFile wf, FILE *f)
 ffelexHandler
 ffelex_file_free (ffewhereFile wf, FILE *f)
 {
-  register int c;		/* Character currently under consideration. */
-  register ffewhereColumnNumber column;	/* Not really; 0 means column 1... */
-  bool continuation_line;
+  register int c = 0;		/* Character currently under consideration. */
+  register ffewhereColumnNumber column = 0;	/* Not really; 0 means column 1... */
+  bool continuation_line = FALSE;
   ffewhereColumnNumber continuation_column;
-  int latest_char_in_file;	/* For getting back into comment-skipping
+  int latest_char_in_file = 0;	/* For getting back into comment-skipping
 				   code. */
 
   /* Lex is called for a particular file, not for a particular program unit.
@@ -4314,7 +4313,7 @@ ffelex_splice_tokens (ffelexHandler first, ffelexToken master,
 
   while (*p != '\0')
     {
-      if (isdigit (*p))
+      if (ISDIGIT (*p))
 	{
 	  t = ffelex_token_number_from_names (master, i);
 	  p += ffelex_token_length (t);

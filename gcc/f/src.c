@@ -29,7 +29,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 #include "proj.h"
-#include <ctype.h>
 #include "src.h"
 #include "top.h"
 

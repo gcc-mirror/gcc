@@ -31,7 +31,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-#include <ctype.h>
 #include "expr.h"
 #include "bad.h"
 #include "bld.h"
@@ -9477,7 +9476,7 @@ static bool
 ffeexpr_isdigits_ (char *p)
 {
   for (; *p != '\0'; ++p)
-    if (!isdigit (*p))
+    if (! ISDIGIT (*p))
       return FALSE;
   return TRUE;
 }
