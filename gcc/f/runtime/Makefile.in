@@ -254,7 +254,7 @@ clean:
 	done
 
 distclean: clean
-	-rm -f Makefile config.cache lib?77/Makefile config.status libU77/config.status ../../include/f2c.h
+	-rm -f Makefile config.cache lib?77/Makefile config.status lib?77/config.status lib?77/config.cache lib?77/config.h ../../include/f2c.h
 
 maintainer-clean: distclean
 	-rm -f $(srcdir)/configure $(srcdir)/libU77/configure
