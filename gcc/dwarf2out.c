@@ -6165,7 +6165,7 @@ base_type_die (type)
      register tree type;
 {
   register dw_die_ref base_type_result;
-  register char *type_name;
+  register const char *type_name;
   register enum dwarf_type encoding;
   register tree name = TYPE_NAME (type);
 

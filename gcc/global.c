@@ -594,7 +594,7 @@ allocno_compare (v1p, v2p)
      const PTR v1p;
      const PTR v2p;
 {
-  int v1 = *(int *)v1p, v2 = *(int *)v2p;
+  int v1 = *(const int *)v1p, v2 = *(const int *)v2p;
   /* Note that the quotient will never be bigger than
      the value of floor_log2 times the maximum number of
      times a register can occur in one insn (surely less than 100).

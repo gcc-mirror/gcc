@@ -899,7 +899,7 @@ static unsigned int
 hash_cse_reg_info (el_ptr)
      hash_table_entry_t el_ptr;
 {
-  return ((struct cse_reg_info *) el_ptr)->regno;
+  return ((const struct cse_reg_info *) el_ptr)->regno;
 }
 
 static int
@@ -907,8 +907,8 @@ cse_reg_info_equal_p (el_ptr1, el_ptr2)
      hash_table_entry_t el_ptr1;
      hash_table_entry_t el_ptr2;
 {
-  return (((struct cse_reg_info *) el_ptr1)->regno
-	  == ((struct cse_reg_info *) el_ptr2)->regno);
+  return (((const struct cse_reg_info *) el_ptr1)->regno
+	  == ((const struct cse_reg_info *) el_ptr2)->regno);
 }
 
 /* Clear the hash table and initialize each register with its own quantity,

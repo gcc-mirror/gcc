@@ -1565,7 +1565,7 @@ extern void regclass_init		PROTO ((void));
 extern void regclass			PROTO ((rtx, int));
 extern void reg_scan			PROTO ((rtx, int, int));
 extern void reg_scan_update		PROTO ((rtx, rtx, int));
-extern void fix_register		PROTO ((char *, int, int));
+extern void fix_register		PROTO ((const char *, int, int));
 
 /* In regmove.c */
 #ifdef BUFSIZ

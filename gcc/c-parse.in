@@ -523,7 +523,7 @@ cast_expr:
 		  $2 = groktypename ($2);
 		  really_start_incremental_init ($2); }
 	  initlist_maybe_comma '}'  %prec UNARY
-		{ char *name;
+		{ const char *name;
 		  tree result = pop_init_level (0);
 		  tree type = $2;
 		  finish_init ();

@@ -1,3 +1,27 @@
+Tue Oct 26 14:10:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-parse.in (cast_expr): Constify.
+
+	* cccp.c (special_symbol): Likewise.
+
+	* cse.c (hash_cse_reg_info, cse_reg_info_equal_p): Likewise.
+
+	* dwarf2out.c (base_type_die): Likewise.
+
+	* global.c (allocno_compare): Likewise.
+
+	* local-alloc.c (qty_compare_1, qty_sugg_compare_1): Likewise.
+
+	* regclass.c (fix_register): Likewise.
+
+	* rtl.h (fix_register): Likewise.
+
+	* stupid.c (stupid_reg_compare): Likewise.
+
+	* toplev.c (decode_f_option): Likewise.
+
+	* tree.c (build_complex_type): Likewise.
+
 Tue Oct 26 18:35:25 1999  Richard Earnshaw  <rearnsha@arm.com>
 
 	* output.h: Don't unnecessarily conditionalize prototypes on TREE_CODE.

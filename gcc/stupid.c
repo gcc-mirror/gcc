@@ -446,7 +446,7 @@ stupid_reg_compare (r1p, r2p)
      const PTR r1p;
      const PTR r2p;
 {
-  register int r1 = *(int *)r1p, r2 = *(int *)r2p;
+  register int r1 = *(const int *)r1p, r2 = *(const int *)r2p;
   register int len1 = reg_where_dead[r1] - REG_WHERE_BORN (r1);
   register int len2 = reg_where_dead[r2] - REG_WHERE_BORN (r2);
   int tem;

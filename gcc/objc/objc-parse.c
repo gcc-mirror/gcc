@@ -2529,7 +2529,7 @@ case 64:
     break;}
 case 65:
 #line 507 "objc-parse.y"
-{ char *name;
+{ const char *name;
 		  tree result = pop_init_level (0);
 		  tree type = yyvsp[-5].ttype;
 		  finish_init ();

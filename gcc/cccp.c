@@ -4261,7 +4261,7 @@ special_symbol (hp, op)
 #ifdef STDC_0_IN_SYSTEM_HEADERS
     if (ip->system_header_p
 	&& hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
-	&& !lookup ((U_CHAR *) "__STRICT_ANSI__", -1, -1))
+	&& !lookup ((const U_CHAR *) "__STRICT_ANSI__", -1, -1))
       buf = "0";
 #endif
     if (pcp_inside_if && pcp_outfile)

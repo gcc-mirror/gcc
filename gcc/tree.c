@@ -4528,7 +4528,7 @@ build_complex_type (component_type)
      since complex is a fundamental type.  */
   if (write_symbols == DWARF2_DEBUG && ! TYPE_NAME (t))
     {
-      char *name;
+      const char *name;
       if (component_type == char_type_node)
 	name = "complex char";
       else if (component_type == signed_char_type_node)
