@@ -30,6 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "varray.h"
 #include "ggc.h"
 #include "langhooks.h"
+#include "params.h"
 #ifdef ENABLE_VALGRIND_CHECKING
 #include <valgrind.h>
 #else
@@ -278,4 +279,44 @@ ggc_print_common_statistics (stream, stats)
 
   /* Don't gather statistics any more.  */
   ggc_stats = NULL;
+}
+
+/* Heuristic to set a default for GGC_MIN_EXPAND.  */
+int
+ggc_min_expand_heuristic()
+{
+  double min_expand = physmem_total();
+  
+  /* The heuristic is a percentage equal to 30% + 70%*(RAM/1GB), yielding
+     a lower bound of 30% and an upper bound of 100% (when RAM >= 1GB).  */
+  min_expand /= 1024*1024*1024;
+  min_expand *= 70;
+  min_expand = MIN (min_expand, 70);
+  min_expand += 30;
+
+  return min_expand;
+}
+
+/* Heuristic to set a default for GGC_MIN_HEAPSIZE.  */
+int
+ggc_min_heapsize_heuristic()
+{
+  double min_heap_kbytes = physmem_total() / 1024;
+  
+  /* The heuristic is RAM/8, with a lower bound of 4M and an upper
+     bound of 128M (when RAM >= 1GB).  */
+  min_heap_kbytes /= 8;
+  min_heap_kbytes = MAX (min_heap_kbytes, 4 * 1024);
+  min_heap_kbytes = MIN (min_heap_kbytes, 128 * 1024);
+
+  return min_heap_kbytes;
+}
+
+void
+init_ggc_heuristics ()
+{
+#ifndef ENABLE_GC_ALWAYS_COLLECT
+  set_param_value ("ggc-min-expand", ggc_min_expand_heuristic());
+  set_param_value ("ggc-min-heapsize", ggc_min_heapsize_heuristic());
+#endif
 }

@@ -176,3 +176,8 @@ extern void ggc_print_common_statistics PARAMS ((FILE *, ggc_statistics *));
 /* Print allocation statistics.  */
 extern void ggc_print_statistics	PARAMS ((void));
 extern void stringpool_statistics	PARAMS ((void));
+
+/* Heuristics.  */
+extern int ggc_min_expand_heuristic PARAMS ((void));
+extern int ggc_min_heapsize_heuristic PARAMS ((void));
+extern void init_ggc_heuristics PARAMS ((void));
