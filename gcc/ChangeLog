@@ -1,3 +1,8 @@
+2001-06-08  Benjamin Kosnik  <bkoz@fillmore.constant.com>
+
+	* unwind-pe.h: Conditionally qualify references to abort with
+	std::.
+
 2001-06-09  Julian Foad <julian_foad@hotmail.com>
 
 	* doc/invoke.texi: Remove superfluous text.
