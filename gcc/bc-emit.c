@@ -101,7 +101,7 @@ hash (name)
 
 
 /* Look up the named symbol, creating it if it doesn't exist. */
-static struct bc_sym *
+struct bc_sym *
 sym_lookup (name)
      char *name;
 {
