@@ -1,3 +1,8 @@
+2002-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (tls_local_dynamic_base): Put pic reg
+	into proper operand.
+
 2002-10-10  Denis Chertykov  <denisc@overta.ru>
 
 	* config/ip2k/ip2k.c (function_epilogue): Optimize stack
