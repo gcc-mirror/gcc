@@ -292,10 +292,10 @@ get_constant (jcf, index)
       }
     case CONSTANT_Long:
       {
-	jint num = JPOOL_INT (jcf, index);
+	unsigned HOST_WIDE_INT num = JPOOL_UINT (jcf, index);
 	HOST_WIDE_INT lo, hi;
 	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
-	num = JPOOL_INT (jcf, index+1) & 0xffffffff;
+	num = JPOOL_UINT (jcf, index+1);
 	add_double (lo, hi, num, 0, &lo, &hi);
 	value = build_int_2 (lo, hi);
 	TREE_TYPE (value) = long_type_node;
@@ -322,9 +322,9 @@ get_constant (jcf, index)
 	HOST_WIDE_INT num[2];
 	REAL_VALUE_TYPE d;
 	HOST_WIDE_INT lo, hi;
-	num[0] = JPOOL_INT (jcf, index);
+	num[0] = JPOOL_UINT (jcf, index);
 	lshift_double (num[0], 0, 32, 64, &lo, &hi, 0);
-	num[0] = JPOOL_INT (jcf, index+1);
+	num[0] = JPOOL_UINT (jcf, index+1);
 	add_double (lo, hi, num[0], 0, &lo, &hi);
 
 	/* Since ereal_from_double expects an array of HOST_WIDE_INT

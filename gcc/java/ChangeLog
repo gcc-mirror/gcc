@@ -1,3 +1,13 @@
+2002-04-19  Andrew Haley  <aph@redhat.com>
+
+	* jcf-write.c (push_long_const): lo, hi: New variables.
+	Use rshift_double to extract the high part of a 64-bit long.
+	Use WORD_TO_INT to extract the low part.
+
+	* jcf-parse.c (get_constant): CONSTANT_Integer: Use an unsigned
+	HOST_WIDE_INT for num.  Use JPOOL_UINT to get it.
+	CONSTANT_Double: Use JPOOL_UINT to get both halves of a double.
+	
 2002-04-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* class.c (make_class_data): Set DECL_ALIGN on static class data,
