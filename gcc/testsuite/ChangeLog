@@ -1,5 +1,9 @@
 2004-08-14  Richard Henderson  <rth@redhat.com>
 
+	* gcc.dg/torture/builtin-attr-1.c: Fix scalbln prototype.
+
+2004-08-14  Richard Henderson  <rth@redhat.com>
+
 	* gcc.dg/980217-1.c: Add prototype for printf.
 
 2004-08-13  Bud Davis  <bdavis9659@comcast.net>
