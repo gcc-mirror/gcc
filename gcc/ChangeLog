@@ -1,3 +1,7 @@
+2003-07-31  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* config.gcc (sh-*-linux*): Do not override sh/t-linux with sh/t-le.
+
 2003-07-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def: Use `LONGDOUBLE' instead of `LONG_DOUBLE'

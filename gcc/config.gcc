@@ -1832,7 +1832,7 @@ sh-*-rtems*)
 	fi
 	;;
 sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux sh/t-linux"
+	tmake_file="sh/t-sh sh/t-elf t-slibgcc-elf-ver t-linux"
 	case $machine in
 	sh*be-*-* | sh*eb-*-*) ;;
 	*)
@@ -1840,6 +1840,7 @@ sh-*-linux* | sh[2346lbe]*-*-linux*)
 		tmake_file="${tmake_file} sh/t-le"
 		;;
 	esac
+	tmake_file="${tmake_file} sh/t-linux"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
 	case $machine in
 	sh64*)
