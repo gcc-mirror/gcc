@@ -164,6 +164,16 @@ function_cannot_inline_p (fndecl)
 	return "function too large to be inline";
     }
 
+  /* We cannot inline this function if forced_labels is non-zero.  This
+     implies that a label in this function was used as an initializer.
+     Because labels can not be duplicated, all labels in the function
+     will be renamed when it is inlined.  However, there is no way to find
+     and fix all variables initialized with addresses of labels in this
+     function, hence inlining is impossible.  */
+
+  if (forced_labels)
+    return "function with label addresses used in initializers cannot inline";
+
   return 0;
 }
 
