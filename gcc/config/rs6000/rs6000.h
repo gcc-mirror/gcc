@@ -1974,17 +1974,30 @@ toc_section ()						\
 /* This outputs NAME to FILE up to the first null or '['.  */
 
 #define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-  if ((NAME)[0] == '*' || (NAME)[strlen (NAME) - 1] != ']') \
-    assemble_name (FILE, NAME);  		\
-  else						\
-    {						\
-      int _len = strlen (NAME);			\
-      char *_p = alloca (_len + 1);		\
+  {						\
+    char *_p;					\
 						\
-      strcpy (_p, NAME);			\
-      _p[_len - 4] = '\0';			\
-      assemble_name (FILE, _p);			\
-    }
+    STRIP_NAME_ENCODING (_p, (NAME));		\
+    assemble_name ((FILE), _p);			\
+  }
+
+/* Remove any trailing [DS] or the like from the symbol name.  */
+
+#define STRIP_NAME_ENCODING(VAR,NAME)				\
+  do								\
+    {								\
+      if ((NAME)[0] == '*' || (NAME)[strlen (NAME) - 1] != ']')	\
+	(VAR) = (NAME);						\
+      else							\
+	{							\
+          int _len = strlen (NAME);				\
+	  (VAR) = alloca (_len + 1);				\
+								\
+          strcpy ((VAR), NAME);					\
+          (VAR)[_len - 4] = '\0';				\
+        }							\
+    }								\
+  while (0)
 
 /* Output something to declare an external symbol to the assembler.  Most
    assemblers don't need this.  
