@@ -3323,6 +3323,17 @@ output_constant (exp, size)
   if (size == 0)
     return;
 
+  /* Eliminate the NON_LVALUE_EXPR_EXPR that makes a cast not be an lvalue.
+     That way we get the constant (we hope) inside it.  Also, strip
+     off any NOP_EXPR that converts between two record or union types.  */
+  while ((TREE_CODE (exp) == NOP_EXPR 
+	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
+	      || TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
+	      || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	      || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE))
+	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
+    exp = TREE_OPERAND (exp, 0);
+
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
   if (TREE_CODE (exp) == CONSTRUCTOR && CONSTRUCTOR_ELTS (exp) == 0)
@@ -3333,12 +3344,6 @@ output_constant (exp, size)
 	assemble_zeros (size);
       return;
     }
-
-  /* Eliminate the NOP_EXPR that makes a cast not be an lvalue.
-     That way we get the constant (we hope) inside it.  */
-  if (TREE_CODE (exp) == NOP_EXPR
-      && TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0)))
-    exp = TREE_OPERAND (exp, 0);
 
   switch (code)
     {
