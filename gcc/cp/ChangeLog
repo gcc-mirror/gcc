@@ -1,3 +1,10 @@
+1999-11-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Propagate DECL_DEFER_OUTPUT.
+	* decl2.c (comdat_linkage): Set DECL_DEFER_OUTPUT.
+	* rtti.c (get_tinfo_fn_unused): Split out from get_tinfo_fn.
+	* class.c (set_rtti_entry): Use it.
+
 1999-11-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (cplus_expand_expr_stmt): Don't call break_out_cleanups
