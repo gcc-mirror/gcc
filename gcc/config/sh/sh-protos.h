@@ -81,6 +81,7 @@ extern int system_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movsrc_operand PARAMS ((rtx, enum machine_mode));
 extern int general_movdst_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_reg_operand PARAMS ((rtx, enum machine_mode));
+extern int reg_no_subreg_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_arith_reg_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_extended_operand PARAMS ((rtx, enum machine_mode));
 extern int arith_operand PARAMS ((rtx, enum machine_mode));

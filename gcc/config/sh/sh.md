@@ -4235,7 +4235,7 @@ else
 
 (define_insn "floatsisf2_i4"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (match_operand:SI 1 "register_operand" "y")))
+	(float:SF (match_operand:SI 1 "reg_no_subreg_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "float	%1,%0"
@@ -4251,7 +4251,7 @@ else
 ;;  [(set_attr "type" "fp")])
 
 (define_expand "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=y")
+  [(set (match_operand:SI 0 "register_operand" "=y")
 	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "
@@ -4264,7 +4264,7 @@ else
 }")
 
 (define_insn "fix_truncsfsi2_i4"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=y")
+  [(set (match_operand:SI 0 "register_operand" "=y")
 	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
@@ -4490,7 +4490,7 @@ else
 
 (define_insn "floatsidf2_i"
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float:DF (match_operand:SI 1 "register_operand" "y")))
+	(float:DF (match_operand:SI 1 "reg_no_subreg_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "float	%1,%0"
@@ -4634,7 +4634,7 @@ else
 
 (define_insn "extendsfdf2_i4"
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float_extend:DF (match_operand:SF 1 "register_operand" "y")))
+	(float_extend:DF (match_operand:SF 1 "reg_no_subreg_operand" "y")))
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcnvsd  %1,%0"
