@@ -1067,7 +1067,7 @@ AC_DEFUN(GLIBCPP_ENABLE_DEBUG, [dnl
 define([GLIBCPP_ENABLE_DEBUG_DEFAULT], ifelse($1, yes, yes, no))dnl
 AC_ARG_ENABLE(debug,
 changequote(<<, >>)dnl
-<<  --enable-debug          extra debugging, turn off optimization [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
+<<  --enable-debug          build extra debug library [default=>>GLIBCPP_ENABLE_DEBUG_DEFAULT],
 changequote([, ])dnl
 [case "${enableval}" in
  yes) enable_debug=yes ;;

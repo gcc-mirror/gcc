@@ -61,7 +61,7 @@ ac_help="$ac_help
   --enable-cxx-flags=FLAGS      pass compiler FLAGS when building library;
                                   [default=]"
 ac_help="$ac_help
-  --enable-debug          extra debugging, turn off optimization [default=no]"
+  --enable-debug          build extra debug library [default=no]"
 ac_help="$ac_help
   --enable-debug-flags=FLAGS    pass compiler FLAGS when building debug
 	                library;[default=none]"
@@ -24313,15 +24313,17 @@ CXX="${CXX}"
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
-test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
-if test -n "$CONFIG_FILES"; then
- if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
-    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-    ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
-    grep '^MULTISUBDIR =' Makefile >> src/Makefile
-    grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
-  fi
-fi
+ if ! test -f stamp-h; then
+   test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+    if test -n "$CONFIG_FILES"; then
+     if test -n "${with_build_subdir}" || test -n "${with_target_subdir}"; then
+      LD="${ORIGINAL_LD_FOR_MULTILIBS}"
+      ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+      grep '^MULTISUBDIR =' Makefile >> src/Makefile
+      grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile
+     fi
+    fi
+   fi
 chmod +x mkcheck
 chmod +x testsuite_flags
 

@@ -1,6 +1,6 @@
 ## Makefile for the src subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -239,13 +239,12 @@ stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
 	  (cd ${debugdir}; \
-	  cp ../Makefile .; \
-	  sed 's/top_builddir = ../top_builddir = ..\/../g' \
-	  < Makefile > temp.1; \
-	  sed 's/all-local: build_debug/all-local:/g' < temp.1 > temp.2; \
-	  sed 's/install-data-local: install_debug/install-data-local:/g' \
-	  < temp.2 > temp.3; \
-          mv temp.3 Makefile) ; \
+	  sed -e 's/top_builddir = \.\./top_builddir = ..\/../' \
+	      -e 's/srcdir = \.\./srcdir = ..\/../' \
+	      -e 's/glibcpp_basedir = \.\./glibcpp_basedir = ..\/../' \
+	      -e 's/all-local: build_debug/all-local:/' \
+	      -e 's/install-data-local: install_debug/install-data-local:/' \
+	  < ../Makefile > Makefile) ; \
 	fi; \
 	echo `date` > stamp-debug; 
 
