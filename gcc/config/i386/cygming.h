@@ -25,6 +25,27 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
+#ifdef HAVE_GAS_PE_SECREL32_RELOC
+#define DWARF2_DEBUGGING_INFO 1
+
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n) (write_symbols == DWARF2_DEBUG   \
+                                ? svr4_dbx_register_map[n]      \
+                                : dbx_register_map[n])
+
+/* Use section relative relocations for debugging offsets.  Unlike
+   other targets that fake this by putting the section VMA at 0, PE
+   won't allow it.  */
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL)    \
+  do {                                                \
+    if (SIZE != 4)                                    \
+      abort ();                                       \
+                                                      \
+    fputs ("\t.secrel32\t", FILE);                    \
+    assemble_name (FILE, LABEL);                      \
+  } while (0)
+#endif
+
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
 #include <stdio.h>

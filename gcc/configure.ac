@@ -2539,6 +2539,26 @@ foo:
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
+    case $target_os in
+      cygwin* | pe | mingw32*)
+	# Used for DWARF 2 in PE
+	gcc_GAS_CHECK_FEATURE([.secrel32 relocs],
+	  gcc_cv_as_ix86_pe_secrel32,
+	  [2,15,91],,
+[.text
+foo:	nop
+.data
+	.secrel32 foo],
+	  [if test x$gcc_cv_ld != x \
+	   && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1; then
+	     gcc_cv_as_ix86_pe_secrel32=yes
+	   fi
+	   rm -f conftest],
+	  [AC_DEFINE(HAVE_GAS_PE_SECREL32_RELOC, 1,
+	    [Define if your assembler and linker support 32-bit section relative relocs via '.secrel32 label'.])])
+	;;
+    esac
+
     gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
        gcc_cv_as_ix86_filds_fists,
       [2,9,0],, [filds mem; fists mem],,
