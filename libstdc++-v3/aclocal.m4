@@ -1613,8 +1613,7 @@ dnl
 dnl GLIBCPP_EXPORT_INCLUDES
 AC_DEFUN(GLIBCPP_EXPORT_INCLUDES, [
   # Root level of the build directory include sources.
-  GLIBCPP_INCLUDES="-I${glibcpp_builddir}/include/${target_alias} -I${glibcpp_builddir}/include \
-		    -I${glibcpp_builddir}/include/backward"
+  GLIBCPP_INCLUDES="-I${glibcpp_builddir}/include/${target_alias} -I${glibcpp_builddir}/include"
 
   # Passed down for canadian crosses.
   if test x"$CANADIAN" = xyes; then
