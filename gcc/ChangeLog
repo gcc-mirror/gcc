@@ -1,3 +1,7 @@
+2001-01-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* extend.texi: Udate for CPP.
+
 2001-01-13  Andreas Jaeger  <aj@suse.de>
 
 	* reload1.c: Add prototype for replace_pseudos_in_call_usage.
