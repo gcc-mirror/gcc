@@ -1,3 +1,10 @@
+2004-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* name-lookup.c (set_inherited_value_binding_p): Add class_type 
+	parameter.
+	(get_class_binding): Adjust.
+	(push_class_level_binding): Don't use set_inherited_value_binding_p.
+
 2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c(finish_struct_bits): Don't set TYPE_HAS_CONVERSION here.
@@ -11,9 +18,6 @@
 2004-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* lex.c (cxx_make_type): Remove call to get_pointer_type.
-	(set_inherited_value_binding_p): Add class_type parameter.
-	(get_class_binding): Adjust.
-	(push_class_level_binding): Don't use set_inherited_value_binding_p.
 
 	* cp-tree.h (IDENTIFIER_VALUE): Remove.
 	(BINFO_PUSHDECLS_MARKED): Likewise.

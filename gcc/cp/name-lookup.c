@@ -2640,10 +2640,11 @@ poplevel_class (void)
 
 /* Set INHERITED_VALUE_BINDING_P on BINDING to true or false, as
    appropriate.  DECL is the value to which a name has just been
-   bound.  */
+   bound.  CLASS_TYPE is the class in which the lookup occurred.  */
 
 static void
-set_inherited_value_binding_p (cxx_binding *binding, tree decl)
+set_inherited_value_binding_p (cxx_binding *binding, tree decl,
+			       tree class_type)
 {
   if (binding->value == decl && TREE_CODE (decl) != TREE_LIST)
     {
@@ -2657,7 +2658,7 @@ set_inherited_value_binding_p (cxx_binding *binding, tree decl)
 	  context = context_for_name_lookup (decl);
 	}
 
-      if (is_properly_derived_from (current_class_type, context))
+      if (is_properly_derived_from (class_type, context))
 	INHERITED_VALUE_BINDING_P (binding) = 1;
       else
 	INHERITED_VALUE_BINDING_P (binding) = 0;
@@ -2766,7 +2767,7 @@ get_class_binding (tree name, cxx_scope *scope)
 				   scope);
       /* This is a class-scope binding, not a block-scope binding.  */
       LOCAL_BINDING_P (binding) = 0;
-      set_inherited_value_binding_p (binding, value_binding);
+      set_inherited_value_binding_p (binding, value_binding, class_type);
     }
   else
     binding = NULL;
@@ -2888,13 +2889,8 @@ push_class_level_binding (tree name, tree x)
 	{
 	  binding->value = x;
 	  /* It is always safe to clear INHERITED_VALUE_BINDING_P
-	     here.  That flag is only set when setup_class_bindings
-	     inserts a binding from a base class, and
-	     setup_class_bindings only inserts a binding once for
-	     every name declared in the class and its base classes.
-	     So, if we see a second binding for this name, it must be
-	     coming from a definition in the body of the class
-	     itself.  */
+	     here.  This function is only used to register bindings
+	     from with the class definition itself.  */
 	  INHERITED_VALUE_BINDING_P (binding) = 0;
 	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
 	}
@@ -2917,10 +2913,6 @@ push_class_level_binding (tree name, tree x)
       push_binding (name, decl, class_binding_level);
       ok = true;
     }
-
-  /* Determine whether or not this binding is from a base class.  */
-  binding = IDENTIFIER_BINDING (name);
-  set_inherited_value_binding_p (binding, decl);
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, ok);
 }
