@@ -246,18 +246,20 @@ namespace tr1
    
   template<typename, unsigned = 0>
     struct extent
-    : integral_constant<std::size_t, 0> { };
+    : public integral_constant<std::size_t, 0> { };
   
   template<typename _Tp, unsigned _Uint, std::size_t _Size>
     struct extent<_Tp[_Size], _Uint>
-    : integral_constant<std::size_t,
-			_Uint == 0 ? _Size : extent<_Tp, _Uint - 1>::value>
+    : public integral_constant<std::size_t,
+			       _Uint == 0 ? _Size : extent<_Tp,
+							   _Uint - 1>::value>
     { };
 
   template<typename _Tp, unsigned _Uint>
     struct extent<_Tp[], _Uint>
-    : integral_constant<std::size_t,
-			_Uint == 0 ? 0 : extent<_Tp, _Uint - 1>::value>
+    : public integral_constant<std::size_t,
+			       _Uint == 0 ? 0 : extent<_Tp,
+						       _Uint - 1>::value>
     { };
   
   /// @brief  relationships between types [4.6].
