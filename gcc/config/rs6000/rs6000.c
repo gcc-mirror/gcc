@@ -574,12 +574,12 @@ rs6000_override_options (default_cpu)
 
   /* If -mmultiple or -mno-multiple was explicitly used, don't
      override with the processor default */
-  if (TARGET_MULTIPLE_SET)
+  if ((target_flags_explicit & MASK_MULTIPLE) != 0)
     target_flags = (target_flags & ~MASK_MULTIPLE) | multiple;
 
   /* If -mstring or -mno-string was explicitly used, don't override
      with the processor default.  */
-  if (TARGET_STRING_SET)
+  if ((target_flags_explicit & MASK_STRING) != 0)
     target_flags = (target_flags & ~MASK_STRING) | string;
 
   /* Don't allow -mmultiple or -mstring on little endian systems
@@ -588,19 +588,19 @@ rs6000_override_options (default_cpu)
      trap.  The 750 does not cause an alignment trap (except when the
      target is unaligned).  */
 
-  if (! BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
+  if (!BYTES_BIG_ENDIAN && rs6000_cpu != PROCESSOR_PPC750)
     {
       if (TARGET_MULTIPLE)
 	{
 	  target_flags &= ~MASK_MULTIPLE;
-	  if (TARGET_MULTIPLE_SET)
+	  if ((target_flags_explicit & MASK_MULTIPLE) != 0)
 	    warning ("-mmultiple is not supported on little endian systems");
 	}
 
       if (TARGET_STRING)
 	{
 	  target_flags &= ~MASK_STRING;
-	  if (TARGET_STRING_SET)
+	  if ((target_flags_explicit & MASK_STRING) != 0)
 	    warning ("-mstring is not supported on little endian systems");
 	}
     }
@@ -696,7 +696,7 @@ rs6000_override_options (default_cpu)
   /* Set TARGET_AIX_STRUCT_RET last, after the ABI is determined.
      If -maix-struct-return or -msvr4-struct-return was explicitly
      used, don't override with the ABI default.  */
-  if (!(target_flags & MASK_AIX_STRUCT_RET_SET))
+  if ((target_flags_explicit & MASK_AIX_STRUCT_RET) == 0)
     {
       if (DEFAULT_ABI == ABI_V4 && !DRAFT_V4_STRUCT_RET)
 	target_flags = (target_flags & ~MASK_AIX_STRUCT_RET);

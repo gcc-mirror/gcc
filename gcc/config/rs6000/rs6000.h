@@ -162,30 +162,27 @@ extern int target_flags;
 #define MASK_SOFT_FLOAT		0x00000800
 
 /* Enable load/store multiple, even on PowerPC */
-#define	MASK_MULTIPLE		0x00001000
-#define	MASK_MULTIPLE_SET	0x00002000
+#define MASK_MULTIPLE		0x00001000
 
 /* Use string instructions for block moves */
-#define MASK_STRING		0x00004000
-#define MASK_STRING_SET		0x00008000
+#define MASK_STRING		0x00002000
 
 /* Disable update form of load/store */
-#define MASK_NO_UPDATE		0x00010000
+#define MASK_NO_UPDATE		0x00004000
 
 /* Disable fused multiply/add operations */
-#define MASK_NO_FUSED_MADD	0x00020000
+#define MASK_NO_FUSED_MADD	0x00008000
 
 /* Nonzero if we need to schedule the prolog and epilog.  */
-#define MASK_SCHED_PROLOG	0x00040000
+#define MASK_SCHED_PROLOG	0x00010000
 
 /* Use AltiVec instructions.  */
-#define MASK_ALTIVEC		0x00080000
+#define MASK_ALTIVEC		0x00020000
 
 /* Return small structures in memory (as the AIX ABI requires).  */
-#define MASK_AIX_STRUCT_RET	0x00100000
-#define MASK_AIX_STRUCT_RET_SET	0x00200000
+#define MASK_AIX_STRUCT_RET	0x00040000
 
-/* The only remaining free bit is 0x00400000. sysv4.h uses
+/* The only remaining free bits are 0x00780000. sysv4.h uses
    0x00800000 -> 0x40000000, and 0x80000000 is not available
    because target_flags is signed.  */
 
@@ -200,10 +197,8 @@ extern int target_flags;
 #define TARGET_MINIMAL_TOC	(target_flags & MASK_MINIMAL_TOC)
 #define TARGET_64BIT		(target_flags & MASK_64BIT)
 #define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
-#define	TARGET_MULTIPLE		(target_flags & MASK_MULTIPLE)
-#define	TARGET_MULTIPLE_SET	(target_flags & MASK_MULTIPLE_SET)
+#define TARGET_MULTIPLE		(target_flags & MASK_MULTIPLE)
 #define TARGET_STRING		(target_flags & MASK_STRING)
-#define TARGET_STRING_SET	(target_flags & MASK_STRING_SET)
 #define TARGET_NO_UPDATE	(target_flags & MASK_NO_UPDATE)
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
 #define TARGET_SCHED_PROLOG	(target_flags & MASK_SCHED_PROLOG)
@@ -293,18 +288,14 @@ extern int target_flags;
 			N_("Use hardware fp")},				\
   {"soft-float",	MASK_SOFT_FLOAT,				\
 			N_("Do not use hardware fp")},			\
-  {"multiple",		MASK_MULTIPLE | MASK_MULTIPLE_SET,		\
+  {"multiple",		MASK_MULTIPLE,					\
 			N_("Generate load/store multiple instructions")},	\
   {"no-multiple",	- MASK_MULTIPLE,				\
 			N_("Do not generate load/store multiple instructions")},\
-  {"no-multiple",	MASK_MULTIPLE_SET,				\
-			""},						\
-  {"string",		MASK_STRING | MASK_STRING_SET,			\
+  {"string",		MASK_STRING,					\
 			N_("Generate string instructions for block moves")},\
   {"no-string",		- MASK_STRING,					\
 			N_("Do not generate string instructions for block moves")},\
-  {"no-string",		MASK_STRING_SET,				\
-			""},						\
   {"update",		- MASK_NO_UPDATE,				\
 			N_("Generate load/store with update instructions")},\
   {"no-update",		MASK_NO_UPDATE,					\
@@ -321,17 +312,13 @@ extern int target_flags;
 			""},						\
   {"no-sched-epilog",   -MASK_SCHED_PROLOG,                             \
 			""},						\
-  {"aix-struct-return",	MASK_AIX_STRUCT_RET | MASK_AIX_STRUCT_RET_SET,	\
+  {"aix-struct-return",	MASK_AIX_STRUCT_RET,				\
 			N_("Return all structures in memory (AIX default)")},\
-  {"svr4-struct-return", - MASK_AIX_STRUCT_RET,\
+  {"svr4-struct-return", - MASK_AIX_STRUCT_RET,				\
 			N_("Return small structures in registers (SVR4 default)")},\
-  {"svr4-struct-return",MASK_AIX_STRUCT_RET_SET,\
+  {"no-aix-struct-return", - MASK_AIX_STRUCT_RET,			\
 			""},\
-  {"no-aix-struct-return", - MASK_AIX_STRUCT_RET,\
-			""},\
-  {"no-aix-struct-return", MASK_AIX_STRUCT_RET_SET,\
-			""},\
-  {"no-svr4-struct-return", MASK_AIX_STRUCT_RET | MASK_AIX_STRUCT_RET_SET,\
+  {"no-svr4-struct-return", MASK_AIX_STRUCT_RET,			\
 			""},\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT | MASK_SCHED_PROLOG,		\
