@@ -247,6 +247,11 @@ namespace __gnu_cxx
 
   // random_sample and random_sample_n (extensions, not part of the standard).
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _OutputIter, typename _Distance>
     _OutputIter
     random_sample_n(_ForwardIter __first, _ForwardIter __last,
@@ -273,6 +278,11 @@ namespace __gnu_cxx
       return __out;
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _OutputIter, typename _Distance,
 	   typename _RandomNumberGenerator>
     _OutputIter
@@ -353,6 +363,11 @@ namespace __gnu_cxx
       return __out + __m;
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _InputIter, typename _RandomAccessIter>
     inline _RandomAccessIter
     random_sample(_InputIter __first, _InputIter __last,
@@ -367,6 +382,11 @@ namespace __gnu_cxx
 			     __out_first, __out_last - __out_first);
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _InputIter, typename _RandomAccessIter, 
 	   typename _RandomNumberGenerator>
     inline _RandomAccessIter
@@ -418,6 +438,11 @@ namespace __gnu_cxx
       return true;
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _RandomAccessIter>
     inline bool
     is_heap(_RandomAccessIter __first, _RandomAccessIter __last)
@@ -430,6 +455,11 @@ namespace __gnu_cxx
       return __is_heap(__first, __last - __first);
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _RandomAccessIter, typename _StrictWeakOrdering>
     inline bool
     is_heap(_RandomAccessIter __first, _RandomAccessIter __last,
@@ -448,6 +478,11 @@ namespace __gnu_cxx
   // nondescending order.  This is an extension, not part of the C++
   // standard.
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _ForwardIter>
     bool
     is_sorted(_ForwardIter __first, _ForwardIter __last)
@@ -469,6 +504,11 @@ namespace __gnu_cxx
       return true;
     }
 
+  /**
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+   *  @doctodo
+  */
   template<typename _ForwardIter, typename _StrictWeakOrdering>
     bool
     is_sorted(_ForwardIter __first, _ForwardIter __last, _StrictWeakOrdering __comp)

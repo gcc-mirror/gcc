@@ -26,7 +26,7 @@ options</a></h1>
 <p>Here are some of the non-obvious options to libstdc++'s configure.
    Keep in mind that
    <!-- This SECnn should be the "Choosing Package Options" section. -->
-   <a href="http://sources.redhat.com/autoconf/autoconf.html#SEC74">they
+   <a href="http://www.gnu.org/manual/autoconf/html_node/Package-Options.html#Package%20Options">they
    all have opposite forms as well</a>
    (enable/disable and with/without).  The defaults are for current
    development sources.
@@ -46,14 +46,13 @@ options</a></h1>
 
  <dt><code>--enable-debug  </code>
  <dd><p>The configure script will automatically detect the highest
-        level of optimization that the compiler in use can use
-        (certain versions of g++ will ICE if given the <code>-O2</code>
-        option, but this is fixed in later versions of the compiler).
+        level of optimization that the compiler in use can use.
         This --enable flag will disable all optimizations and instruct
         the compiler to emit as much extra debugging information as it
-        can, for use inside GDB. Note this make command, executed in
+        can, for use inside GDB.  Note this make command, executed in
         the build directory, will do much the same thing, without the
-        configuration difference:<code>make CXXFLAGS='-g -O0' all</code>
+        configuration difference:
+        <code>make CXXFLAGS='-g -O0' all</code>
      </p>
 
  <dt><code>--enable-cstdio  </code>

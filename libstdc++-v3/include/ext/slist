@@ -295,6 +295,11 @@ _Slist_base<_Tp,_Alloc>::_M_erase_after(_Slist_node_base* __before_first,
   return __last_node;
 }
 
+/**
+ *  This is an SGI extension.
+ *  @ingroup SGIextensions
+ *  @doctodo
+*/
 template <class _Tp, class _Alloc = allocator<_Tp> >
 class slist : private _Slist_base<_Tp,_Alloc>
 {
