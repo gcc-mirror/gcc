@@ -1,3 +1,26 @@
+2000-06-29    <bkoz@purist.soma.redhat.com>
+
+	* bits/char_traits.h (char_traits::eos): Non standard member
+	function, uglify to __eos. Return char_type().
+	* bits/std_ostream.h: Change.
+	
+2000-06-29  Branko Cibej  <branko.cibej@hermes.si>
+
+        * bits/std_memory.h (auto_ptr_ref): Reworked and defined only if
+        _GLIBCPP_RESOLVE_LIB_DEFECTS.
+        (auto_ptr): _M_ptr changed to void*.
+        (suto_ptr::get): Cast _M_ptr to element type.
+        (auto_ptr::auto_ptr(auto_ptr<Tp1>)): Test implicit convetsion.
+        (auto_ptr::~auto_ptr): Use this->get() instead of _M_ptr.
+        (auto_ptr::operator*): Likewise.
+        (auto_ptr::operator->): Likewise.
+        (auto_ptr::release): Likewise.
+        (auto_ptr::reset): Likewise.
+        (auto_ptr::auto_ptr(auto_ptr_ref)): Initialize from __ref._M_release.
+        (auto_ptr::operator auto_ptr_rev<_Tp1>): Updated.
+        Define nested auto_ptr_ref unless _GLIBCPP_RESOLVE_LIB_DEFECTS.
+        Define operator=(auto_ptr_ref) if _GLIBCPP_RESOLVE_LIB_DEFECTS.
+
 2000-06-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/27_io/filebuf.cc: Tweak.
