@@ -5,6 +5,10 @@
 
 2004-01-06  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/t-darwin (LIB2FUNCS_EXTRA): Compile darwin-ldouble.c.
+	(TARGET_LIBGCC2_CFLAGS): Use -mlong-double-128.
+	* config/rs6000/darwin-ldouble.c: New.
+	
 	* emit-rtl.c (gen_lowpart_common): Use simplify_gen_subreg
 	for constants.
 	(constant_subword): Delete.
