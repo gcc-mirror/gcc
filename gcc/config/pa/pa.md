@@ -4397,15 +4397,29 @@
 ;; begin and end.
 (define_insn "begin_brtab"
   [(const_int 1)]
-  "TARGET_GAS"
-  ".begin_brtab"
+  ""
+  "*
+{
+  /* Only GAS actually supports this pseudo-op.  */
+  if (TARGET_GAS)
+    return \".begin_brtab\";
+  else
+    return \"\";
+}"
   [(set_attr "type" "move")
    (set_attr "length" "0")])
 
 (define_insn "end_brtab"
   [(const_int 2)]
-  "TARGET_GAS"
-  ".end_brtab"
+  ""
+  "*
+{
+  /* Only GAS actually supports this pseudo-op.  */
+  if (TARGET_GAS)
+    return \".end_brtab\";
+  else
+    return \"\";
+}"
   [(set_attr "type" "move")
    (set_attr "length" "0")])
 
