@@ -382,10 +382,10 @@ extern int ix86_arch;
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i486__"
 #endif
 #if TARGET_CPU_DEFAULT == 2
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium__"
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i586__ -D__tune_pentium__"
 #endif
 #if TARGET_CPU_DEFAULT == 3
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentiumpro__"
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__"
 #endif
 #if TARGET_CPU_DEFAULT == 4
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__"
@@ -404,16 +404,17 @@ extern int ix86_arch;
 %{!ansi:-Di386} -D__i386 -D__i386__ \
 %{march=i386:%{!mcpu*:-D__tune_i386__ }}\
 %{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
-%{march=pentium|march=i586:-D__pentium -D__pentium__ \
-  %{!mcpu*:-D__tune_pentium__ }}\
-%{march=pentiumpro|march=i686:-D__pentiumpro -D__pentiumpro__ \
-  %{!mcpu*:-D__tune_pentiumpro__ }}\
+%{march=pentium|march=i586:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
+  %{!mcpu*:-D__tune_i586__ -D__tune_pentium__ }}\
+%{march=pentiumpro|march=i686:-D__i686 -D__i686__ \
+  -D__pentiumpro -D__pentiumpro__ \
+  %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
 %{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
 %{march=athlon:-D__athlon -D__athlon__ %{!mcpu*:-D__tune_athlon__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
-%{mpentium|mcpu=pentium|mcpu=i586:-D__tune_pentium__ }\
-%{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_pentiumpro__ }\
+%{mpentium|mcpu=pentium|mcpu=i586:-D__tune_i586__ -D__tune_pentium__ }\
+%{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_i686__ -D__tune_pentiumpro__ }\
 %{mcpu=k6:-D__tune_k6__ }\
 %{mcpu=athlon:-D__tune_athlon__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"

@@ -1,5 +1,9 @@
 2000-09-19  Richard Henderson  <rth@cygnus.com>
 
+	* config/i386/i386.h (CPP_CPU_SPEC): Define i586 and i686 symbols
+	in addition to pentium and pentiumpro symbols.
+	(CPP_CPU_DEFAULT_SPEC): Likewise.
+
 	* c-typeck.c (c_expand_asm_operands): Restore the output tree
 	after expanding.
 
