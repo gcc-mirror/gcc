@@ -138,7 +138,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	READONLY_DATA_SECTION
 #undef	EXTRA_SECTIONS
-#define EXTRA_SECTIONS toc, bss
+#define EXTRA_SECTIONS toc
 
 /* Define the routines to implement these extra sections.  */
 
@@ -180,14 +180,28 @@ toc_section ()						\
        fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
 
 /* This says how to output an assembler line
-   to define a local common symbol.  */
+   to define an aligned local common symbol.  */
 
-#undef ASM_OUTPUT_LOCAL
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
-  do { fputs ("\t.lcomm \t", (FILE));			\
-       assemble_name ((FILE), (NAME));			\
-       fprintf ((FILE), ",%d\n", (SIZE));               \
-     } while (0)
+#undef ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  bss_section ();							\
+  ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));		\
+  ASM_OUTPUT_LABEL (FILE, NAME);					\
+  ASM_OUTPUT_SKIP (FILE, SIZE);						\
+} while (0)
+
+/* Describe how to emit unitialized external linkage items  */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN)			\
+do {									\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
+} while (0)
+
+/* This says out to put a global symbol in the BSS section */
+#undef ASM_OUTPUT_ALIGNED_BSS
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (NAME), (SIZE), (ALIGN))
 
 
 /* Stuff to force fit us into the Motorola PPC assembler */
@@ -320,6 +334,10 @@ toc_section ()						\
 /* Output before writable data.  */
 #undef DATA_SECTION_ASM_OP
 #define DATA_SECTION_ASM_OP "\t.data"
+
+/* Output to the bss section.  */
+#undef BSS_SECTION_ASM_OP
+#define BSS_SECTION_ASM_OP "\t.section .bss"
 
 /* Text to write out after a CALL that may be replaced by glue code by
    the loader.  The motorola asm demands that, for dll support, a .znop

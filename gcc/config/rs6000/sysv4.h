@@ -282,10 +282,13 @@ do {									\
 /* Use ELF style section commands.  */
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
+#define TEXT_SECTION_ASM_OP	"\t.section \".text\""
 
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
+#define DATA_SECTION_ASM_OP	"\t.section \".data\""
+
+#undef BSS_SECTION_ASM_OP
+#define BSS_SECTION_ASM_OP	"\t.section \".bss\""
 
 /* Besides the usual ELF sections, we need a toc section.  */
 #undef EXTRA_SECTIONS
@@ -350,12 +353,12 @@ toc_section ()								\
     }									\
 }
 
-#define TOC_SECTION_ASM_OP "\t.section\t\".got\",\"aw\""
-#define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t\".got1\",\"aw\""
+#define TOC_SECTION_ASM_OP "\t.section \".got\",\"aw\""
+#define MINIMAL_TOC_SECTION_ASM_OP "\t.section \".got1\",\"aw\""
 
-#define SDATA_SECTION_ASM_OP "\t.section\t\".sdata\",\"aw\""
-#define SDATA2_SECTION_ASM_OP "\t.section\t\".sdata2\",\"a\""
-#define SBSS_SECTION_ASM_OP "\t.section\t\".sbss\",\"aw\",@nobits"
+#define SDATA_SECTION_ASM_OP "\t.section \".sdata\",\"aw\""
+#define SDATA2_SECTION_ASM_OP "\t.section \".sdata2\",\"a\""
+#define SBSS_SECTION_ASM_OP "\t.section \".sbss\",\"aw\",@nobits"
 
 #define SDATA_SECTION_FUNCTION						\
 void									\
@@ -517,19 +520,20 @@ extern int rs6000_pic_labelno;
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   if (TARGET_SDATA && (SIZE) > 0 && (SIZE) <= g_switch_value)		\
-    {									\
-      sbss_section ();							\
-      ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
-      ASM_OUTPUT_LABEL (FILE, NAME);					\
-      ASM_OUTPUT_SKIP (FILE, SIZE);					\
-    }									\
+    sbss_section ();							\
   else									\
-    {									\
-      fprintf ((FILE), "\t%s\t", LOCAL_ASM_OP);				\
-      assemble_name ((FILE), (NAME));					\
-      fprintf ((FILE), "\n");						\
-      ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);		\
-    }									\
+    bss_section ();							\
+									\
+  ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));		\
+  ASM_OUTPUT_LABEL (FILE, NAME);					\
+  ASM_OUTPUT_SKIP (FILE, SIZE);						\
+} while (0)
+
+/* Describe how to emit unitialized external linkage items  */
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN)			\
+do {									\
+  ASM_GLOBALIZE_LABEL (FILE, NAME);					\
+  ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
 } while (0)
 
 /* Pass various options to the assembler */
@@ -589,7 +593,7 @@ do {									\
       fprintf (FILE, "\t.long (");					\
       output_addr_const (FILE, (VALUE));				\
       fprintf (FILE, ")@fixup\n");					\
-      fprintf (FILE, "\t.section\t\".fixup\",\"aw\"\n");		\
+      fprintf (FILE, "\t.section \".fixup\",\"aw\"\n");			\
       ASM_OUTPUT_ALIGN (FILE, 2);					\
       fprintf (FILE, "\t.long\t%s\n", p);				\
       fprintf (FILE, "\t.previous\n");					\
