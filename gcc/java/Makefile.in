@@ -186,6 +186,7 @@ JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
 LIBS = ../../libiberty/libiberty.a
+LIBDEPS = $(LIBS)
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist`
@@ -207,11 +208,11 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 	  jcf-depend.o jcf-path.o zextract.o $(LIBS)
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
-../jvgenmain$(exeext):  jvgenmain.o mangle.o
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o
+../jvgenmain$(exeext):  jvgenmain.o mangle.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o ../obstack.o $(LIBS)
 
 ../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o jcf-path.o \
-		zextract.o
+		zextract.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o \
 	  jcf-depend.o jcf-path.o zextract.o $(LIBS)
 
