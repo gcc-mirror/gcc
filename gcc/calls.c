@@ -1754,11 +1754,6 @@ expand_call (exp, target, ignore)
       mark_addressable (fndecl);
     }
 
-  /* When calling a const function, we must pop the stack args right away,
-     so that the pop is deleted or moved with the call.  */
-  if (is_const)
-    NO_DEFER_POP;
-
   function_call_count++;
 
   if (fndecl && DECL_NAME (fndecl))
@@ -1772,6 +1767,17 @@ expand_call (exp, target, ignore)
   if (may_be_alloca)
     current_function_calls_alloca = 1;
 
+  /* Operand 0 is a pointer-to-function; get the type of the function.  */
+  funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
+  if (! POINTER_TYPE_P (funtype))
+    abort ();
+  funtype = TREE_TYPE (funtype);
+
+  /* When calling a const function, we must pop the stack args right away,
+     so that the pop is deleted or moved with the call.  */
+  if (is_const)
+    NO_DEFER_POP;
+
   /* Don't let pending stack adjusts add up to too much.
      Also, do all pending adjustments now
      if there is any chance this might be a call to alloca.  */
@@ -1779,13 +1785,6 @@ expand_call (exp, target, ignore)
   if (pending_stack_adjust >= 32
       || (pending_stack_adjust > 0 && may_be_alloca))
     do_pending_stack_adjust ();
-
-  /* Operand 0 is a pointer-to-function; get the type of the function.  */
-  funtype = TREE_TYPE (TREE_OPERAND (exp, 0));
-  if (! POINTER_TYPE_P (funtype))
-    abort ();
-
-  funtype = TREE_TYPE (funtype);
 
   /* Push the temporary stack slot level so that we can free any temporaries
      we make.  */
