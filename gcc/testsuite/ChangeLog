@@ -1,3 +1,8 @@
+2005-03-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20186
+	* g++.dg/template/non-dependent12.C: New.
+
 2005-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20142
