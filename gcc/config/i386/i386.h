@@ -430,6 +430,12 @@ extern int ix86_arch;
 /* Required on the 386 since it doesn't have bitfield insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
+/* An integer expression for the size in bits of the largest integer
+   machine mode that should actually be used.  All integer machine modes of
+   this size or smaller can be used for structures and unions with the
+   appropriate sizes.  */
+#define MAX_FIXED_MODE_SIZE 32
+
 /* Maximum power of 2 that code can be aligned to.  */
 #define MAX_CODE_ALIGN	6			/* 64 byte alignment */
 
