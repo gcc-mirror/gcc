@@ -1,3 +1,11 @@
+2003-01-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* timevar.def (TV_NAME_LOOKUP, TV_OVERLOAD,
+	TV_TEMPLATE_INSTANTIATION):  New timevar_id eumerations.
+	* timevar.h (POP_TIMEVAR_AND_RETURN): New macro.
+	* timevar.c (timevar_pop): Be verbose when aborting.  Include
+	"toplev.h". 
+
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/bugreport.texi: Use @command instead of @code for commands.

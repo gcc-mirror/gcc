@@ -76,6 +76,9 @@ typedef enum
 timevar_id_t;
 #undef DEFTIMEVAR
 
+/* Execute the sequence: timevar_pop (TV), return (E);  */
+#define POP_TIMEVAR_AND_RETURN(TV, E)  return (timevar_pop (TV), (E))
+
 extern void init_timevar PARAMS ((void));
 extern void timevar_push PARAMS ((timevar_id_t));
 extern void timevar_pop PARAMS ((timevar_id_t));
