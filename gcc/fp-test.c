@@ -1,5 +1,5 @@
 /* fp-test.c - Check that all floating-point operations are available.
-   Copyright (C) 1995, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Ronald F. Guilmette <rfg@monkeys.com>.
 
    This file is part of GCC.
@@ -83,7 +83,7 @@ volatile double d1 = 1.0, d2 = 1.0, d3 = 1.0;
 volatile long double D1 = 1.0, D2 = 1.0, D3 = 1.0;
 
 int
-main ()
+main (void)
 {
   /* TYPE: float */
 

@@ -1,4 +1,3 @@
-#include "ansidecl.h"
 #include "version.h"
 
 /* This is the string reported as the version number by all components
