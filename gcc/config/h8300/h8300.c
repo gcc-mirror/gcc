@@ -2802,7 +2802,8 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      goto end;
 	    }
 	}
-      else if (8 <= count && count <= 13)
+      else if ((8 <= count && count <= 13)
+	       || (TARGET_H8300S & count == 14))
 	{
 	  info->remainder = count - 8;
 
@@ -2827,7 +2828,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		{
 		  info->special = "mov.b\t%t0,%s0\n\tbld\t#7,%s0\n\tsubx\t%t0,%t0";
 		  info->shift1  = "shar.b\t%s0";
-		  info->shift2  = "shar.b\t#2,%s0";
 		}
 	      else
 		{
@@ -2854,7 +2854,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	      else if (TARGET_H8300H)
 		info->special = "shll.b\t%t0\n\tsubx.b\t%s0,%s0\n\tshll.b\t%t0\n\trotxl.b\t%s0\n\texts.w\t%T0";
 	      else /* TARGET_H8300S */
-		info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0\n\tshar.w\t#2,%T0\n\tshar.w\t#2,%T0\n\tshar.w\t#2,%T0";
+		abort ();
 	      goto end;
 	    }
 	}
@@ -2948,14 +2948,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
 	      if (TARGET_H8300)
-		{
-		  info->shift1 = "add.w\t%e0,%e0";
-		}
-	      else
-		{
-		  info->shift1 = "shll.l\t%S0";
-		  info->shift2 = "shll.l\t#2,%S0";
-		}
+		info->shift1 = "add.w\t%e0,%e0";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300)
@@ -3010,18 +3003,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "mov.b\t%s0,%t0\n\tsub.b\t%s0,%s0\n\tmov.w\t%f0,%e0\n\tsub.w\t%f0,%f0";
-	      info->shift1  = "shll.l\t%S0";
-	      info->shift2  = "shll.l\t#2,%S0";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
-	      info->shift1  = "shlr.l\t%S0";
-	      info->shift2  = "shlr.l\t#2,%S0";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
-	      info->shift1  = "shar.l\t%S0";
-	      info->shift2  = "shar.l\t#2,%S0";
 	      goto end;
 	    }
 	}
@@ -3034,16 +3021,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
 	      else
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t#2,%S0\n\tsub.w\t%f0,%f0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      abort ();
@@ -3058,16 +3041,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
 	      else
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      abort ();
@@ -3082,16 +3061,12 @@ get_shift_alg (shift_type, shift_mode, count, info)
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t%S0\n\trotr.l\t%S0\n\tsub.w\t%f0,%f0";
 	      else
 		info->special = "sub.w\t%e0,%e0\n\trotr.l\t#2,%S0\n\tsub.w\t%f0,%f0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      if (TARGET_H8300H)
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
 	      else
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
-	      info->shift1  = "";
-	      info->shift2  = "";
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      abort ();
