@@ -6471,6 +6471,11 @@ expand_function_start (subr, parms_have_cleanups)
 			 Pmode);
     }
 
+#ifdef PROFILE_HOOK
+  if (profile_flag)
+    PROFILE_HOOK (profile_label_no);
+#endif
+
   /* After the display initializations is where the tail-recursion label
      should go, if we end up needing one.   Ensure we have a NOTE here
      since some things (like trampolines) get placed before this.  */

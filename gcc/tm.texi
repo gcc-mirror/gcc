@@ -3677,6 +3677,12 @@ variable to be loaded into some register.  The name of this variable is
 @samp{LP} followed by the number @var{labelno}, so you would generate
 the name using @samp{LP%d} in a @code{fprintf}.
 
+@findex PROFILE_HOOK
+@item PROFILE_HOOK
+A C statement or compound statement to output to @var{file} some assembly
+code to call the profiling subroutine @code{mcount} even the target does
+not support profiling.
+
 @findex NO_PROFILE_COUNTERS
 @item NO_PROFILE_COUNTERS
 Define this macro if the @code{mcount} subroutine on your system does
