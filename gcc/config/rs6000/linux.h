@@ -174,3 +174,4 @@ enum { SIGNAL_FRAMESIZE = 64 };
     goto SUCCESS;							\
   } while (0)
 
+#define OS_MISSING_POWERPC64 1

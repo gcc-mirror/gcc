@@ -1,3 +1,8 @@
+2004-02-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/linux.h (OS_MISSING_POWERPC64): Define.
+	* config/rs6000/linux64.h (OS_MISSING_POWERPC64): Define.
+
 2004-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Falk Hueffner  <falk@debian.org>
 
