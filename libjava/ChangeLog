@@ -1,3 +1,8 @@
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
+	* java/beans/beancontext/BeanContextEvent.java:
+	Reformated.
+
 2003-03-23  Eric Blake  <ebb9@email.byu.edu>
 
 	* java/lang/natStringBuffer.cc (regionMatches): New function.
