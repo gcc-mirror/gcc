@@ -1,3 +1,13 @@
+Sun Jan 25 14:01:50 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h (unique): We only need length bytes.
+	(c_str): Avoid writing over random memory.
+	#include <std/bastring.cc>.
+	Lose _G_ALLOC_CONTROL.
+	* std/bastring.cc: Likewise.
+ 	(nilRep): Add initializer for selfish.
+	* sinst.cc: Just #include <string>.
+
 Tue Jan 13 21:23:05 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (configdirs): Include testsuite only if
