@@ -1,3 +1,8 @@
+2003-09-23  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.md (andsi3): Fix cut&pasto in 0xfffffffe
+	constant.
+
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Move vax-*-vms* unsupported notice up with the rest.
