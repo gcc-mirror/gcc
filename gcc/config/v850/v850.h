@@ -231,10 +231,6 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		4
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 		32
-
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases,
    the value is constrained to be within the bounds of the declared

@@ -329,6 +329,11 @@ do {								\
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
+/* Width in bits of a pointer.  Mind the value of the macro `Pmode'.  */
+#ifndef POINTER_SIZE
+#define POINTER_SIZE BITS_PER_WORD
+#endif
+
 #ifndef BUILD_VA_LIST_TYPE
 #define BUILD_VA_LIST_TYPE(X) ((X) = ptr_type_node)
 #endif

@@ -244,9 +244,6 @@ extern const struct processor_costs *m68hc11_cost;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		2
 
-/* Width in bits of a pointer.  See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE		16
-
 /* Definition of size_t.  This is really an unsigned short as the
    68hc11 only handles a 64K address space.  */
 #define SIZE_TYPE               "short unsigned int"

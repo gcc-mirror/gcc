@@ -209,10 +209,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
 /* Likewise, if the function return value is promoted.  */
 #define PROMOTE_FUNCTION_RETURN
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
-
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 32
 

@@ -338,10 +338,6 @@ extern int flag_pic;				/* -fpic */
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE 32
-
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY 32
 

@@ -96,10 +96,6 @@ extern const char *const sectname[4];
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD       1
 
-/* Width in bits of a pointer.
-   See also the macro `Pmode' defined below.  */
-#define POINTER_SIZE         16
-
 #define PTRDIFF_TYPE        "int"
 
 /* Type to use for `size_t'. If undefined, uses `long unsigned int'.  */

@@ -113,10 +113,6 @@ extern int current_function_outgoing_args_size;
 #define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
 #define MIN_UNITS_PER_WORD 4
 
-/* Width in bits of a pointer.  See also the macro `Pmode' defined below.  */
-
-#define POINTER_SIZE (TARGET_64BIT ? 64 : 32)
-
 /* A C expression for the size in bits of the type `short' on the
    target machine.  If you don't define this, the default is half a
    word.  (If this would be less than one storage unit, it is

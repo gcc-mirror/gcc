@@ -1,5 +1,15 @@
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* 1750a.h, a29k.h, arc.h, arm.h, c4x.h, clipper.h, cris.h, d30v.h,
+	dsp16xx.h, fr30.h, h8300.h, i370.h, i386.h, i860.h, i960.h,
+	m32r.h, m68hc11.h, m68k.h, m88k.h, mcore.h, mmix.h, mn10300.h,
+	ns32k.h, pa.h, pdp11.h, pj.h, romp.h, s390.h, stormy16.h,
+	v850.h, vax.h, we32k.h, xtensa.h (POINTER_SIZE): Delete.
+	* defaults.h (POINTER_SIZE): Define.
+	* doc/tm.texi (POINTER_SIZE): Document default.
+
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* mn10200.h (PTRDIFF_TYPE): Change it to a signed type.
 
 2002-03-11  Richard Henderson  <rth@redhat.com>

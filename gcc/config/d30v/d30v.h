@@ -163,8 +163,6 @@ extern int target_flags;
 
 #define UNITS_PER_WORD 4
 
-#define POINTER_SIZE 32
-
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)				\
 do {									\
   if (GET_MODE_CLASS (MODE) == MODE_INT					\
