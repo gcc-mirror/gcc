@@ -41,6 +41,7 @@
 #include "output.h"
 #include "timevar.h"
 #include "debug.h"
+#include "cgraph.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2279,69 +2280,9 @@ expand_body (tree fn)
 {
   location_t saved_loc;
   tree saved_function;
-
-  /* When the parser calls us after finishing the body of a template
-     function, we don't really want to expand the body.  When we're
-     processing an in-class definition of an inline function,
-     PROCESSING_TEMPLATE_DECL will no longer be set here, so we have
-     to look at the function itself.  */
-  if (processing_template_decl
-      || (DECL_LANG_SPECIFIC (fn) 
-	  && DECL_TEMPLATE_INFO (fn)
-	  && uses_template_parms (DECL_TI_ARGS (fn))))
-    {
-      /* Normally, collection only occurs in rest_of_compilation.  So,
-	 if we don't collect here, we never collect junk generated
-	 during the processing of templates until we hit a
-	 non-template function.  */
-      ggc_collect ();
-      return;
-    }
-
-  /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
-				simplify_aggr_init_exprs_r,
-				NULL);
-
-  /* If this is a constructor or destructor body, we have to clone
-     it.  */
-  if (maybe_clone_body (fn))
-    {
-      /* We don't want to process FN again, so pretend we've written
-	 it out, even though we haven't.  */
-      TREE_ASM_WRITTEN (fn) = 1;
-      return;
-    }
-
-  /* There's no reason to do any of the work here if we're only doing
-     semantic analysis; this code just generates RTL.  */
-  if (flag_syntax_only)
-    return;
-
-  /* If possible, avoid generating RTL for this function.  Instead,
-     just record it as an inline function, and wait until end-of-file
-     to decide whether to write it out or not.  */
-  if (/* We have to generate RTL if it's not an inline function.  */
-      (DECL_INLINE (fn) || DECL_COMDAT (fn))
-      /* Or if we have to emit code for inline functions anyhow.  */
-      && !flag_keep_inline_functions
-      /* Or if we actually have a reference to the function.  */
-      && !DECL_NEEDED_P (fn))
-    {
-      /* Set DECL_EXTERNAL so that assemble_external will be called as
-	 necessary.  We'll clear it again in finish_file.  */
-      if (!DECL_EXTERNAL (fn))
-	{
-	  DECL_NOT_REALLY_EXTERN (fn) = 1;
-	  DECL_EXTERNAL (fn) = 1;
-	}
-      /* Remember this function.  In finish_file we'll decide if
-	 we actually need to write this function out.  */
-      defer_fn (fn);
-      /* Let the back-end know that this function exists.  */
-      (*debug_hooks->deferred_inline_function) (fn);
-      return;
-    }
+  
+  if (flag_unit_at_a_time && !cgraph_global_info_ready)
+    abort ();
 
   /* Compute the appropriate object-file linkage for inline
      functions.  */
@@ -2411,6 +2352,108 @@ expand_body (tree fn)
 
   /* Emit any thunks that should be emitted at the same time as FN.  */
   emit_associated_thunks (fn);
+}
+
+/* Generate RTL for FN.  */
+
+void
+expand_or_defer_fn (fn)
+     tree fn;
+{
+  /* When the parser calls us after finishing the body of a template
+     function, we don't really want to expand the body.  When we're
+     processing an in-class definition of an inline function,
+     PROCESSING_TEMPLATE_DECL will no longer be set here, so we have
+     to look at the function itself.  */
+  if (processing_template_decl
+      || (DECL_LANG_SPECIFIC (fn) 
+	  && DECL_TEMPLATE_INFO (fn)
+	  && uses_template_parms (DECL_TI_ARGS (fn))))
+    {
+      /* Normally, collection only occurs in rest_of_compilation.  So,
+	 if we don't collect here, we never collect junk generated
+	 during the processing of templates until we hit a
+	 non-template function.  */
+      ggc_collect ();
+      return;
+    }
+
+  /* Replace AGGR_INIT_EXPRs with appropriate CALL_EXPRs.  */
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (fn),
+				simplify_aggr_init_exprs_r,
+				NULL);
+
+  /* If this is a constructor or destructor body, we have to clone
+     it.  */
+  if (maybe_clone_body (fn))
+    {
+      /* We don't want to process FN again, so pretend we've written
+	 it out, even though we haven't.  */
+      TREE_ASM_WRITTEN (fn) = 1;
+      return;
+    }
+
+  /* There's no reason to do any of the work here if we're only doing
+     semantic analysis; this code just generates RTL.  */
+  if (flag_syntax_only)
+    return;
+
+  if (flag_unit_at_a_time && cgraph_global_info_ready)
+    abort ();
+
+  if (flag_unit_at_a_time && !cgraph_global_info_ready)
+    {
+      if (at_eof)
+	{
+	  /* Compute the appropriate object-file linkage for inline
+	     functions.  */
+	  if (DECL_DECLARED_INLINE_P (fn))
+	    import_export_decl (fn);
+	  cgraph_finalize_function (fn, DECL_SAVED_TREE (fn));
+	}
+      else
+	{
+	  if (!DECL_EXTERNAL (fn))
+	    {
+	      DECL_NOT_REALLY_EXTERN (fn) = 1;
+	      DECL_EXTERNAL (fn) = 1;
+	    }
+	  /* Remember this function.  In finish_file we'll decide if
+	     we actually need to write this function out.  */
+	  defer_fn (fn);
+	  /* Let the back-end know that this function exists.  */
+	  (*debug_hooks->deferred_inline_function) (fn);
+	}
+      return;
+    }
+
+
+  /* If possible, avoid generating RTL for this function.  Instead,
+     just record it as an inline function, and wait until end-of-file
+     to decide whether to write it out or not.  */
+  if (/* We have to generate RTL if it's not an inline function.  */
+      (DECL_INLINE (fn) || DECL_COMDAT (fn))
+      /* Or if we have to emit code for inline functions anyhow.  */
+      && !flag_keep_inline_functions
+      /* Or if we actually have a reference to the function.  */
+      && !DECL_NEEDED_P (fn))
+    {
+      /* Set DECL_EXTERNAL so that assemble_external will be called as
+	 necessary.  We'll clear it again in finish_file.  */
+      if (!DECL_EXTERNAL (fn))
+	{
+	  DECL_NOT_REALLY_EXTERN (fn) = 1;
+	  DECL_EXTERNAL (fn) = 1;
+	}
+      /* Remember this function.  In finish_file we'll decide if
+	 we actually need to write this function out.  */
+      defer_fn (fn);
+      /* Let the back-end know that this function exists.  */
+      (*debug_hooks->deferred_inline_function) (fn);
+      return;
+    }
+
+  expand_body (fn);
 }
 
 /* Helper function for walk_tree, used by finish_function to override all

@@ -2749,7 +2749,7 @@ build_user_type_conversion (tree totype, tree expr, int flags)
 tree
 resolve_scoped_fn_name (tree scope, tree name)
 {
-  tree fn;
+  tree fn = NULL_TREE;
   tree template_args = NULL_TREE;
   bool is_template_id = TREE_CODE (name) == TEMPLATE_ID_EXPR;
   

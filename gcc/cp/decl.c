@@ -8446,7 +8446,7 @@ start_cleanup_fn (void)
 static void
 end_cleanup_fn (void)
 {
-  expand_body (finish_function (0));
+  expand_or_defer_fn (finish_function (0));
 
   pop_from_top_level ();
 }

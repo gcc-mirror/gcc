@@ -265,7 +265,7 @@ maybe_clone_body (tree fn)
       /* Now, expand this function into RTL, if appropriate.  */
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
-      expand_body (clone);
+      expand_or_defer_fn (clone);
       pop_from_top_level ();
     }
 
