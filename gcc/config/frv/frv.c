@@ -1061,7 +1061,7 @@ frv_stack_info ()
 	case STACK_REGS_STDARG:
 	  if (varargs_p)
 	    {
-	      /* If this is a stdarg function with an non varardic argument split
+	      /* If this is a stdarg function with a non varardic argument split
 		 between registers and the stack, adjust the saved registers
 		 downward */
 	      last -= (ADDR_ALIGN (cfun->pretend_args_size, UNITS_PER_WORD)
@@ -4791,7 +4791,7 @@ call_operand (op, mode)
   return gpr_or_int12_operand (op, mode);
 }
 
-/* Return true if operator is an kind of relational operator */
+/* Return true if operator is a kind of relational operator.  */
 
 int
 relational_operator (op, mode)

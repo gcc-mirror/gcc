@@ -1,5 +1,33 @@
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-pretty-print.h: Fix comment typos.
+	* integrate.c: Likewise.
+	* varasm.c: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/c4x/c4x.md: Likewise.
+	* config/fr30/fr30.md: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ip2k/ip2k.md: Likewise.
+	* config/m68hc11/m68hc11-crt0.S: Likewise.
+	* config/m68hc11/m68hc11.h: Likewise.
+	* config/m68hc11/m68hc11.md: Likewise.
+	* config/m68hc11/m68hc12.h: Likewise.
+	* config/mcore/mcore.md: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/mmix/mmix-modes.def: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/rs6000/rs6000.md: Likewise.
+
+2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (output_a_shift): Clean up the code to
 	output shifts using rotation.
 

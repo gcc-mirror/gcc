@@ -795,7 +795,7 @@ not_postinc_memory_operand (op, mode)
 	  && GET_RTX_CLASS (GET_CODE (XEXP (op, 0))) != 'a');
 }
 
-/* Return 1 if this is a comparison operator, which accepts an normal 8-bit
+/* Return 1 if this is a comparison operator, which accepts a normal 8-bit
    signed immediate operand.  */
 
 int
@@ -5126,7 +5126,7 @@ safe_group_barrier_needed_p (insn)
   return t;
 }
 
-/* INSNS is an chain of instructions.  Scan the chain, and insert stop bits
+/* INSNS is a chain of instructions.  Scan the chain, and insert stop bits
    as necessary to eliminate dependendencies.  This function assumes that
    a final instruction scheduling pass has been run which has already
    inserted most of the necessary stop bits.  This function only inserts

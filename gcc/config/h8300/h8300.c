@@ -667,7 +667,7 @@ h8300_output_function_epilogue (file, size)
     }
 
   /* Monitor epilogues are the same as interrupt function epilogues.
-     Just make a note that we're in an monitor epilogue.  */
+     Just make a note that we're in a monitor epilogue.  */
   if (monitor)
     fprintf (file, ";monitor epilogue\n");
 

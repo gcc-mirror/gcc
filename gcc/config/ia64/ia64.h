@@ -277,7 +277,7 @@ extern const char *ia64_tls_size_string;
 
 /* A C expression whose value is zero if pointers that need to be extended
    from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and one if
-   they are zero-extended and negative one if there is an ptr_extend operation.
+   they are zero-extended and negative one if there is a ptr_extend operation.
 
    You need not define this macro if the `POINTER_SIZE' is equal to the width
    of `Pmode'.  */

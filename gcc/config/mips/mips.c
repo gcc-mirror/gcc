@@ -5688,7 +5688,7 @@ mips_debugger_offset (addr, offset)
    '^'	Print the name of the pic call-through register (t9 or $25).
    '$'	Print the name of the stack pointer register (sp or $29).
    '+'	Print the name of the gp register (gp or $28).
-   '~'	Output an branch alignment to LABEL_ALIGN(NULL).  */
+   '~'	Output a branch alignment to LABEL_ALIGN(NULL).  */
 
 void
 print_operand (file, op, letter)

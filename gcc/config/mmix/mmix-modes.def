@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
    the CMPU insn.  Result values correspond to those in CCmode.  */
 CC (CC_UNS)
 
-/* The CC_FP mode is for an non-equality floating-point comparison, using
+/* The CC_FP mode is for a non-equality floating-point comparison, using
    the FCMP or FCMPE insn.  The result is (integer) -1 or 1 for
    espectively a < b and a > b, otherwise 0.  */
 CC (CC_FP)

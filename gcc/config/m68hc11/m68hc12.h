@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define CC1_SPEC       ""
 
 /* We need to tell the linker the target elf format.  Just pass an
-   emulation option.  This can be overriden by -Wl option of gcc.  */
+   emulation option.  This can be overridden by -Wl option of gcc.  */
 #define LINK_SPEC      "%{m68hc11:-m m68hc11elf}%{!m68hc11:-m m68hc12elf}"
 
 #define CPP_SPEC  \

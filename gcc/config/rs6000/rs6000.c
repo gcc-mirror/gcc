@@ -2349,7 +2349,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
    refers to a constant pool entry of an address (or the sum of it
    plus a constant), a short (16-bit signed) constant plus a register,
    the sum of two registers, or a register indirect, possibly with an
-   auto-increment.  For DFmode and DImode with an constant plus register,
+   auto-increment.  For DFmode and DImode with a constant plus register,
    we must ensure that both words are addressable or PowerPC64 with offset
    word aligned.
 
