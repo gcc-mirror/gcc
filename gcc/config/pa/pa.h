@@ -727,10 +727,9 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
 { (CUM).nargs_prototype--;						\
-  ((((CUM).words & 01) && (TYPE) != 0					\
-    && FUNCTION_ARG_SIZE(MODE, TYPE) > 1)				\
-   && (CUM).words++),							\
-     (CUM).words += FUNCTION_ARG_SIZE(MODE, TYPE);			\
+  (CUM).words += FUNCTION_ARG_SIZE(MODE, TYPE)	 			\
+    + (((CUM).words & 01) && (TYPE) != 0				\
+	&& FUNCTION_ARG_SIZE(MODE, TYPE) > 1);				\
 }
 
 /* Determine where to put an argument to a function.
