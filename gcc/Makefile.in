@@ -780,16 +780,14 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  $(LANG_STAGESTUFF)
 
 # Library members defined in libgcc2.c.
-LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
-     _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 _clz \
-    _udiv_w_sdiv _udivmoddi4 _cmpdi2 _ucmpdi2 _floatdidf _floatdisf \
-    _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
-    _fixxfdi _fixunsxfdi _floatdixf _fixunsxfsi \
-    _fixtfdi _fixunstfdi _floatditf \
+LIB2FUNCS = _muldi3 _negdi2 _lshrdi3 _ashldi3 _ashrdi3 _ffsdi2 _clz \
+    _cmpdi2 _ucmpdi2 _floatdidf _floatdisf _fixunsdfsi _fixunssfsi \
+    _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
+    _fixxfdi _fixunsxfdi _floatdixf _fixunsxfsi _fixtfdi _fixunstfdi \
+    _floatditf \
     _clear_cache _trampoline __main _exit \
     _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3 _subvdi3 \
-    _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 \
-    _ctors
+    _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 _ctors
 
 # Defined in libgcc2.c, included only in the static library.
 LIB2FUNCS_ST = _eprintf _bb __gcc_bcmp 
@@ -803,6 +801,10 @@ DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
     _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
     _lt_df _le_df _unord_df _si_to_df _df_to_si _negate_df _make_df \
     _df_to_sf _thenan_df _df_to_usi _usi_to_df
+
+# These might cause a divide overflow trap and so are compiled with
+# unwinder info.
+LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 
 #
 # Language makefile fragments.
@@ -1008,6 +1010,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	LIB2ADDEHDEP='$(LIB2ADDEHDEP)' \
 	FPBIT='$(FPBIT)' \
 	FPBIT_FUNCS='$(FPBIT_FUNCS)' \
+	LIB2_DIVMOD_FUNCS='$(LIB2_DIVMOD_FUNCS)' \
 	DPBIT='$(DPBIT)' \
 	DPBIT_FUNCS='$(DPBIT_FUNCS)' \
 	MULTILIBS=`$(GCC_FOR_TARGET) --print-multi-lib` \
