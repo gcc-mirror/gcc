@@ -1,3 +1,9 @@
+2000-01-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* diagnostic.c (build_message_string, output_printf,
+	line_wrapper_printf): Add ATTRIBUTE_PRINTF_*.
+	(build_location_prefix): Fix non-literal format string.
+
 2000-01-27  Richard Henderson  <rth@cygnus.com>
 
         * alpha.md (trunctfsf2): New.
