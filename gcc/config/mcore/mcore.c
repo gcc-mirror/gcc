@@ -125,7 +125,6 @@ static cond_type  is_cond_candidate            PARAMS ((rtx));
 static rtx        emit_new_cond_insn           PARAMS ((rtx, int));
 static rtx        conditionalize_block         PARAMS ((rtx));
 static void       conditionalize_optimization  PARAMS ((rtx));
-static void       mcore_add_gc_roots           PARAMS ((void));
 static rtx        handle_structs_in_regs       PARAMS ((enum machine_mode, tree, int));
 static void       mcore_mark_dllexport         PARAMS ((tree));
 static void       mcore_mark_dllimport         PARAMS ((tree));
@@ -3069,15 +3068,6 @@ mcore_is_same_reg (x, y)
   return 0;
 }
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-static void
-mcore_add_gc_roots ()
-{
-  ggc_add_rtx_root (&arch_compare_op0, 1);
-  ggc_add_rtx_root (&arch_compare_op1, 1);
-}
-
 void
 mcore_override_options ()
 {
@@ -3096,8 +3086,6 @@ mcore_override_options ()
   /* Only the m340 supports little endian code.  */
   if (TARGET_LITTLE_END && ! TARGET_M340)
     target_flags |= M340_BIT;
-
-  mcore_add_gc_roots ();
 }
 
 int

@@ -159,7 +159,7 @@ extern const char *ref_filename;
 /* List of TREE_LIST nodes representing a block stack.  TREE_VALUE
    of each gives the variable used for the setjmp buffer in the current
    block, if any.  */
-extern tree gnu_block_stack;
+extern GTY(()) tree gnu_block_stack;
 
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
@@ -348,8 +348,8 @@ enum standard_datatypes
   ADT_raise_nodefer_decl,
   ADT_LAST};
 
-extern tree gnat_std_decls[(int) ADT_LAST];
-extern tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
+extern GTY(()) tree gnat_std_decls[(int) ADT_LAST];
+extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 
 #define longest_float_type_node gnat_std_decls[(int) ADT_longest_float_type]
 #define void_type_decl_node gnat_std_decls[(int) ADT_void_type_decl]

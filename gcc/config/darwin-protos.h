@@ -26,8 +26,6 @@ extern char *machopic_function_base_name PARAMS ((void));
 extern char *machopic_non_lazy_ptr_name PARAMS ((const char*));
 extern char *machopic_stub_name PARAMS ((const char*));
 
-extern void machopic_add_gc_roots PARAMS ((void));
-
 extern void machopic_picsymbol_stub_section PARAMS ((void));
 extern void machopic_symbol_stub_section PARAMS ((void));
 extern void machopic_lazy_symbol_ptr_section PARAMS ((void));

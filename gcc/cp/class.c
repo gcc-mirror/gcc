@@ -2157,6 +2157,7 @@ duplicate_tag_error (t)
       memset ((char *) TYPE_LANG_SPECIFIC (t), 0, sizeof (struct lang_type));
       BINFO_BASETYPES(binfo) = NULL_TREE;
 
+      TYPE_LANG_SPECIFIC (t)->u.h.is_lang_type_class = 1;
       TYPE_BINFO (t) = binfo;
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
@@ -4379,7 +4380,7 @@ check_bases_and_members (t, empty_p)
 
   /* Figure out whether or not we will need a cookie when dynamically
      allocating an array of this type.  */
-  TYPE_LANG_SPECIFIC (t)->vec_new_uses_cookie
+  TYPE_LANG_SPECIFIC (t)->u.c.vec_new_uses_cookie
     = type_requires_array_cookie (t);
 }
 
@@ -5470,7 +5471,6 @@ init_class_processing ()
     = (class_stack_node_t) xmalloc (current_class_stack_size 
 				    * sizeof (struct class_stack_node));
   VARRAY_TREE_INIT (local_classes, 8, "local_classes");
-  ggc_add_tree_varray_root (&local_classes, 1);
 
   access_default_node = build_int_2 (0, 0);
   access_public_node = build_int_2 (ak_public, 0);
@@ -7511,8 +7511,6 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
   VARRAY_TREE_INIT (vid.fns, 32, "fns");
   /* Add the vcall and vbase offset entries.  */
   build_vcall_and_vbase_vtbl_entries (binfo, &vid);
-  /* Clean up.  */
-  VARRAY_FREE (vid.fns);
   /* Clear BINFO_VTABLE_PATH_MARKED; it's set by
      build_vbase_offset_vtbl_entries.  */
   for (vbase = CLASSTYPE_VBASECLASSES (t); 

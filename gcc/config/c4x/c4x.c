@@ -148,8 +148,8 @@ enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER] =
 /* Test and compare insns in c4x.md store the information needed to
    generate branch and scc insns here.  */
 
-struct rtx_def *c4x_compare_op0 = NULL_RTX;
-struct rtx_def *c4x_compare_op1 = NULL_RTX;
+rtx c4x_compare_op0;
+rtx c4x_compare_op1;
 
 const char *c4x_rpts_cycles_string;
 int c4x_rpts_cycles = 0;	/* Max. cycles for RPTS.  */
@@ -165,7 +165,6 @@ tree noreturn_tree = NULL_TREE;
 tree interrupt_tree = NULL_TREE;
 
 /* Forward declarations */
-static void c4x_add_gc_roots PARAMS ((void));
 static int c4x_isr_reg_used_p PARAMS ((unsigned int));
 static int c4x_leaf_function_p PARAMS ((void));
 static int c4x_assembler_function_p PARAMS ((void));
@@ -223,32 +222,6 @@ static void c4x_encode_section_info PARAMS ((tree, int));
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-c4x_add_gc_roots ()
-{
-  ggc_add_rtx_root (&c4x_compare_op0, 1);
-  ggc_add_rtx_root (&c4x_compare_op1, 1);
-  ggc_add_tree_root (&code_tree, 1);
-  ggc_add_tree_root (&data_tree, 1);
-  ggc_add_tree_root (&pure_tree, 1);
-  ggc_add_tree_root (&noreturn_tree, 1);
-  ggc_add_tree_root (&interrupt_tree, 1);
-  ggc_add_rtx_root (&smulhi3_libfunc, 1);
-  ggc_add_rtx_root (&umulhi3_libfunc, 1);
-  ggc_add_rtx_root (&fix_truncqfhi2_libfunc, 1);
-  ggc_add_rtx_root (&fixuns_truncqfhi2_libfunc, 1);
-  ggc_add_rtx_root (&fix_trunchfhi2_libfunc, 1);
-  ggc_add_rtx_root (&fixuns_trunchfhi2_libfunc, 1);
-  ggc_add_rtx_root (&floathiqf2_libfunc, 1);
-  ggc_add_rtx_root (&floatunshiqf2_libfunc, 1);
-  ggc_add_rtx_root (&floathihf2_libfunc, 1);
-  ggc_add_rtx_root (&floatunshihf2_libfunc, 1);
-}
-
-
 /* Override command line options.
    Called once after all options have been parsed.
    Mostly we process the processor
@@ -317,9 +290,6 @@ c4x_override_options ()
      This provides compatibility with the old -mno-aliases option.  */
   if (! TARGET_ALIASES && ! flag_argument_noalias)
     flag_argument_noalias = 1;
-
-  /* Register global variables with the garbage collector.  */
-  c4x_add_gc_roots ();
 }
 
 
@@ -5087,3 +5057,4 @@ c4x_asm_named_section (name, flags)
 {
   fprintf (asm_out_file, "\t.sect\t\"%s\"\n", name);
 }
+

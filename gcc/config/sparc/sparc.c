@@ -140,7 +140,6 @@ static int hypersparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static void sparc_output_addr_vec PARAMS ((rtx));
 static void sparc_output_addr_diff_vec PARAMS ((rtx));
 static void sparc_output_deferred_case_vectors PARAMS ((void));
-static void sparc_add_gc_roots    PARAMS ((void));
 static int check_return_regs PARAMS ((rtx));
 static int epilogue_renumber PARAMS ((rtx *, int));
 static bool sparc_assemble_integer PARAMS ((rtx, unsigned int, int));
@@ -438,9 +437,6 @@ sparc_override_options ()
 
   /* Do various machine dependent initializations.  */
   sparc_init_modes ();
-
-  /* Register global variables with the garbage collector.  */
-  sparc_add_gc_roots ();
 }
 
 /* Miscellaneous utilities.  */
@@ -3114,10 +3110,10 @@ reg_unused_after (reg, insn)
 }
 
 /* The table we use to reference PIC data.  */
-static rtx global_offset_table;
+static GTY(()) rtx global_offset_table;
 
 /* The function we use to get at it.  */
-static rtx get_pc_symbol;
+static GTY(()) rtx get_pc_symbol;
 static char get_pc_symbol_name[256];
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
@@ -7786,8 +7782,8 @@ set_extends (insn)
 }
 
 /* We _ought_ to have only one kind per function, but...  */
-static rtx sparc_addr_diff_list;
-static rtx sparc_addr_list;
+static GTY(()) rtx sparc_addr_diff_list;
+static GTY(()) rtx sparc_addr_list;
 
 void
 sparc_defer_case_vector (lab, vec, diff)
@@ -7997,20 +7993,6 @@ sparc_profile_hook (labelno)
   emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
 }
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-sparc_add_gc_roots ()
-{
-  ggc_add_rtx_root (&sparc_compare_op0, 1);
-  ggc_add_rtx_root (&sparc_compare_op1, 1);
-  ggc_add_rtx_root (&global_offset_table, 1);
-  ggc_add_rtx_root (&get_pc_symbol, 1);
-  ggc_add_rtx_root (&sparc_addr_diff_list, 1);
-  ggc_add_rtx_root (&sparc_addr_list, 1);
-}
-
 #ifdef OBJECT_FORMAT_ELF
 static void
 sparc_elf_asm_named_section (name, flags)
@@ -8530,3 +8512,5 @@ sparc_output_mi_thunk (file, thunk_fndecl, delta, function)
   reload_completed = 0;
   no_new_pseudos = 0;
 }
+
+#include "gt-sparc.h"

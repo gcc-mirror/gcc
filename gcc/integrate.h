@@ -143,8 +143,6 @@ extern rtx has_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
 /* If a pseudo represents an initial hard reg (or expression), return
    it, else return NULL_RTX.  */
 extern rtx get_hard_reg_initial_reg		PARAMS ((struct function *, rtx));
-/* This is for GC.  */
-extern void mark_hard_reg_initial_vals		PARAMS ((struct function *));
 /* Called from rest_of_compilation.  */
 extern void emit_initial_value_sets		PARAMS ((void));
 extern void allocate_initial_values		PARAMS ((rtx *));

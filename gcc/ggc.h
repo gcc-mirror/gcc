@@ -19,72 +19,54 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
 #include "varray.h"
+#include "gtype-desc.h"
 
 /* Symbols are marked with `ggc' for `gcc gc' so as not to interfere with
    an external gc library that might be linked in.  */
-
-/* These structures are defined in various headers throughout the
-   compiler.  However, rather than force everyone who includes this
-   header to include all the headers in which they are declared, we
-   just forward-declare them here.  */
-struct eh_status;
-struct emit_status;
-struct expr_status;
-struct hash_table;
-struct label_node;
-struct rtx_def;
-struct rtvec_def;
-struct stmt_status;
-union  tree_node;
-struct varasm_status;
 
 /* Constants for general use.  */
 extern const char empty_string[];	/* empty string */
 extern const char digit_vector[];	/* "0" .. "9" */
 #define digit_string(d) (digit_vector + ((d) * 2))
 
-/* Trees that have been marked, but whose children still need marking.  */
-extern varray_type ggc_pending_trees;
-
 /* Manipulate global roots that are needed between calls to gc.  */
 extern void ggc_add_root		PARAMS ((void *base, int nelt,
 						 int size, void (*)(void *)));
-extern void ggc_add_rtx_root		PARAMS ((struct rtx_def **, int nelt));
-extern void ggc_add_tree_root		PARAMS ((union tree_node **,
-						 int nelt));
-extern void ggc_add_rtx_varray_root	PARAMS ((struct varray_head_tag **,
-						 int nelt));
-extern void ggc_add_tree_varray_root	PARAMS ((struct varray_head_tag **,
-						 int nelt));
-extern void ggc_add_tree_hash_table_root PARAMS ((struct hash_table **,
-						  int nelt));
-extern void ggc_del_root		PARAMS ((void *base));
 
-/* Types used for mark test and marking functions, if specified, in call
-   below.  */
-typedef int (*ggc_htab_marked_p) PARAMS ((const void *));
-typedef void (*ggc_htab_mark) PARAMS ((const void *));
+/* Structures for the easy way to mark roots.  
+   In an array, terminated by having base == NULL.*/
+struct ggc_root_tab {
+  void *base;
+  size_t nelt;
+  size_t stride;
+  void (*cb) PARAMS ((void *));
+};
+#define LAST_GGC_ROOT_TAB { NULL, 0, 0, NULL }
+/* Pointers to arrays of ggc_root_tab, terminated by NULL.  */
+extern const struct ggc_root_tab * const gt_ggc_rtab[];
+extern const struct ggc_root_tab * const gt_ggc_deletable_rtab[];
 
-/* Add a hash table to be scanned when all roots have been processed.  We
-   delete any entry in the table that has not been marked.  The argument is
-   really htab_t.  */
-extern void ggc_add_deletable_htab	PARAMS ((PTR, ggc_htab_marked_p,
-						 ggc_htab_mark));
+/* Structure for hash table cache marking.  */
+struct htab;
+struct ggc_cache_tab {
+  struct htab * *base;
+  size_t nelt;
+  size_t stride;
+  void (*cb) PARAMS ((void *));
+  int (*marked_p) PARAMS ((const void *));
+};
+#define LAST_GGC_CACHE_TAB { NULL, 0, 0, NULL, NULL }
+/* Pointers to arrays of ggc_cache_tab, terminated by NULL.  */
+extern const struct ggc_cache_tab * const gt_ggc_cache_rtab[];
 
-/* Mark nodes from the gc_add_root callback.  These functions follow
-   pointers to mark other objects too.  */
-extern void ggc_mark_rtx_varray		PARAMS ((struct varray_head_tag *));
-extern void ggc_mark_tree_varray	PARAMS ((struct varray_head_tag *));
-extern void ggc_mark_tree_hash_table	PARAMS ((struct hash_table *));
 extern void ggc_mark_roots		PARAMS ((void));
 
 extern void ggc_mark_rtx_children	PARAMS ((struct rtx_def *));
-extern void ggc_mark_rtvec_children	PARAMS ((struct rtvec_def *));
 
 /* If EXPR is not NULL and previously unmarked, mark it and evaluate
    to true.  Otherwise evaluate to false.  */
 #define ggc_test_and_set_mark(EXPR) \
-  ((EXPR) != NULL && ! ggc_set_mark (EXPR))
+  ((EXPR) != NULL && ((void *) (EXPR)) != (void *) 1 && ! ggc_set_mark (EXPR))
 
 #define ggc_mark_rtx(EXPR)                      \
   do {                                          \
@@ -93,31 +75,12 @@ extern void ggc_mark_rtvec_children	PARAMS ((struct rtvec_def *));
       ggc_mark_rtx_children (r__);              \
   } while (0)
 
-#define ggc_mark_tree(EXPR)				\
-  do {							\
-    tree const t__ = (EXPR);				\
-    if (ggc_test_and_set_mark (t__))			\
-      VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
-  } while (0)
-
-#define ggc_mark_nonnull_tree(EXPR)			\
-  do {							\
-    tree const t__ = (EXPR);				\
-    if (! ggc_set_mark (t__))				\
-      VARRAY_PUSH_TREE (ggc_pending_trees, t__);	\
-  } while (0)
-
-#define ggc_mark_rtvec(EXPR)                    \
-  do {                                          \
-    rtvec const v__ = (EXPR);                   \
-    if (ggc_test_and_set_mark (v__))            \
-      ggc_mark_rtvec_children (v__);            \
-  } while (0)
+#define ggc_mark_tree gt_ggc_m_tree_node
 
 #define ggc_mark(EXPR)				\
   do {						\
     const void *const a__ = (EXPR);		\
-    if (a__ != NULL)				\
+    if (a__ != NULL && a__ != (void *) 1)	\
       ggc_set_mark (a__);			\
   } while (0)
 
@@ -141,6 +104,10 @@ extern void ggc_pop_context 	PARAMS ((void));
 extern void *ggc_alloc		PARAMS ((size_t));
 /* Like ggc_alloc, but allocates cleared memory.  */
 extern void *ggc_alloc_cleared	PARAMS ((size_t));
+/* Resize a block.  */
+extern void *ggc_realloc	PARAMS ((void *, size_t));
+/* Like ggc_alloc_cleared, but performs a multiplication.  */
+extern void *ggc_calloc		PARAMS ((size_t, size_t));
 
 #define ggc_alloc_rtx(NSLOTS)						  \
   ((struct rtx_def *) ggc_alloc (sizeof (struct rtx_def)		  \
@@ -151,6 +118,9 @@ extern void *ggc_alloc_cleared	PARAMS ((size_t));
 				   + ((NELT) - 1) * sizeof (rtx)))
 
 #define ggc_alloc_tree(LENGTH) ((union tree_node *) ggc_alloc (LENGTH))
+
+#define htab_create_ggc(SIZE, HASH, EQ, DEL) \
+  htab_create_alloc (SIZE, HASH, EQ, DEL, ggc_calloc, NULL)
 
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
@@ -176,15 +146,6 @@ extern int ggc_set_mark			PARAMS ((const void *));
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
 extern int ggc_marked_p			PARAMS ((const void *));
-
-/* Mark functions for various structs scattered about.  */
-
-void mark_eh_status			PARAMS ((struct eh_status *));
-void mark_emit_status			PARAMS ((struct emit_status *));
-void mark_expr_status			PARAMS ((struct expr_status *));
-void mark_stmt_status			PARAMS ((struct stmt_status *));
-void mark_varasm_status			PARAMS ((struct varasm_status *));
-void mark_optab				PARAMS ((void *));
 
 /* Statistics.  */
 

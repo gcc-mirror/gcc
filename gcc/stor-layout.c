@@ -64,7 +64,7 @@ extern void debug_rli			PARAMS ((record_layout_info));
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
-static tree pending_sizes;
+static GTY(()) tree pending_sizes;
 
 /* Nonzero means cannot safely call expand_expr now,
    so put variable sizes onto `pending_sizes' instead.  */
@@ -1823,8 +1823,6 @@ set_sizetype (type)
       TYPE_REFERENCE_TO (sizetype_tab[i]) = 0;
     }
 
-  ggc_add_tree_root ((tree *) &sizetype_tab, ARRAY_SIZE (sizetype_tab));
-
   /* Go down each of the types we already made and set the proper type
      for the sizes in them.  */
   for (t = early_type_list; t != 0; t = TREE_CHAIN (t))
@@ -1980,10 +1978,4 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
   return mode;
 }
 
-/* This function is run once to initialize stor-layout.c.  */
-
-void
-init_stor_layout_once ()
-{
-  ggc_add_tree_root (&pending_sizes, 1);
-}
+#include "gt-stor-layout.h"

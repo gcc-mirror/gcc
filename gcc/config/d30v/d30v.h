@@ -1929,10 +1929,10 @@ typedef int CUMULATIVE_ARGS;
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
-typedef struct machine_function
+typedef struct machine_function GTY(())
 {
   /* Additionsl stack adjustment in __builtin_eh_throw.  */
-  struct rtx_def * eh_epilogue_sp_ofs;
+  rtx eh_epilogue_sp_ofs;
 } machine_function;
 
 

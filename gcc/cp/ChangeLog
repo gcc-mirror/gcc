@@ -1,3 +1,213 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* pt.c (inline_parm_levels): Mark for GC.
+
+	* mangle.c (start_mangling): Allocate G.substitutions here...
+	(init_mangle): ... rather than here.
+	(finish_mangling): Clear the varray pointer when done with it.
+	* spew.c (yylexstring): Don't use VARRAY_FREE. 
+	* search.c (bfs_walk): Don't use VARRAY_FREE. 
+	* decl2.c (pending_statics): Use gengtype to mark.
+	(deferred_fns): Likewise.
+	(ssdf_decls): Likewise.
+	(init_decl2): Delete.
+	* decl.c (pop_from_top_level): Don't use VARRAY_FREE.
+	(cxx_init_decl_processing): Don't call init_decl2.
+	(cxx_pop_function_context): Don't use VARRAY_FREE.
+	* cp-tree.h (struct saved_scope): No need for special marking
+	of varrays.
+	(struct language_function): Likewise.
+	(local_classes): Use gengtype to mark.
+	(init_decl2): Delete prototype.
+	* class.c (init_class_processing): Don't use
+	ggc_add_tree_varray_root.
+	(build_vtbl_initializer): Don't use VARRAY_FREE.
+
+	* decl.c (typename_compare): Don't use same_type_p.
+
+	* decl.c: Include hashtab.h instead of hash.h.
+	(typename_hash): Update to use htab_h.
+	(typename_compare): Likewise.
+	(typename_htab): Use gengtype to mark.
+	(build_typename_type): Update to use htab_h.
+	* Make-lang.in (cp/decl.o): Use HASHTAB_H instead of hash.h.
+
+	* Make-lang.in (gt-cp-tree.h): New rule.
+	(cp/tree.o): Depend on gt-cp-tree.h.
+	* config-lang.in (gtfiles): Add cp/tree.c.
+	* tree.c: Include gt-cp-tree.h.
+	(list_hash_table): Use gengtype to mark.
+	(init_tree): Use gengtype to mark trees.
+
+	* Make-lang.in (cp/decl.o): Add debug.h dependency.
+	* call.c (struct z_candidate): Use gengtype.
+	(USER_CONV_CAND): Use WRAPPER_ZC.
+	(convert_class_to_reference): Use build_zc_wrapper.
+	(build_type_conversion_1): Likewise.
+	(build_over_call): Use WRAPPER_ZC.
+	(add_warning): Use build_zc_wrapper.
+	* cp-lang.c (LANG_HOOKS_MARK_TREE): Delete.
+	* cp-tree.h (struct lang_identifier): Use gengtype.
+	(struct template_parm_index_s): Likewise.
+	(struct ptrmem_cst): Likewise.
+	(struct tree_binding): Likewise.
+	(struct tree_overload): Likewise.
+	(struct tree_srcloc): Likewise.
+	(struct tree_wrapper): Likewise.  Also modify to have a pointer
+	to struct z_candidate rather than void.
+	(enum cp_tree_node_structure_enum): New.
+	(union lang_tree_node): New.
+	(cxx_mark_tree): Delete prototype.
+	(cp_tree_node_structure): New prototype.
+	(build_ptr_wrapper): Delete prototype.
+	(build_int_wrapper): Delete prototype.
+	(build_zc_wrapper): New prototype.
+	* decl.c: Include debug.h
+	(cxx_mark_tree): Delete.
+	(cp_tree_node_structure): New.
+	* tree.c (build_ptr_wrapper): Delete.
+	(build_int_wrapper): Delete.
+	(build_zc_wrapper): New.
+
+	* cp-tree.h [! ENABLE_TREE_CHECKING] (LANG_TYPE_PTRMEM_CHECK):
+	Correct typo.  Patch from k_fukui@highway.ne.jp.
+
+	* semantics.c (current_stmt_tree): Update for change to
+	struct language_function.
+	(finish_mem_initializers): Likewise.
+	* decl.c (cxx_init_decl_processing): Don't set mark_lang_status.
+	* cp-tree.h (struct language_function): Rename from
+	cp_language_function.  Change all uses.
+	(cp_function_chain): Don't need to cast.
+
+	* class.c (duplicate_tag_error): Reset discriminator.
+	(check_bases_and_members): Update for data structure changes.
+	* cp-tree.h (struct lang_id2): Use gengtype.
+	(flagged_type_tree): Likewise.
+	(SET_LANG_ID): Use GGC on struct lang_id2.
+	(struct cp_language_function): Use gengtype.  Remove field
+	'x_vcalls_possible_p'.
+	(current_vcalls_possible_p): Delete.
+	(struct lang_type_header): New.
+	(struct lang_type_class): Rename from struct lang_type.  Include
+	struct lang_type_header.
+	(struct lang_type_ptrmem): New.
+	(struct lang_type): New.
+	(LANG_TYPE_CLASS_CHECK): New.  Use it in all the appropriate macros.
+	(LANG_TYPE_PTRMEM_CHECK): New.  Use it in all the appropriate macros.
+	(TYPE_SET_PTRMEMFUNC_TYPE): Set discriminator, update for changes.
+	(struct lang_decl_flags): Use gengtype.  Add discriminators.
+	(struct lang_decl): Use gengtype.  Add and use discriminators.
+	Update the macros that reference moved fields.
+	(LANG_DECL_U2_CHECK): New function.  Use it when appropriate.
+	(SET_DECL_THUNK_P): Set discriminator too.
+	(clear_inline_text_obstack): Delete prototype.
+	(finish_inline_definitions): Delete prototype.
+	(mark_pending_inlines): Delete prototype.
+	(lang_check_failed): New prototype.
+	* decl.c (struct named_label_use_list): Use gengtype.
+	(struct named_label_list): Likewise.
+	(mark_binding_level): Delete.
+	(mark_named_label_lists): Delete.
+	(push_local_name): Set discriminator on DECL_LANG_SPECIFIC.
+	(cxx_init_decl_processing): Use generated marker routine.
+	(begin_destructor_body): Delete dead set to
+	current_vcalls_possible_p.
+	(mark_lang_function): Delete.
+	(mark_cp_function_context): Delete.
+	(lang_mark_tree): Use generated marker routines.
+	* decl2.c (start_objects): Set discriminator when setting
+	GLOBAL_INIT_PRIORITY.
+	* lex.c (retrofit_lang_decl): Set discriminators.
+	(copy_lang_type): Update for changes to lang_type structure.
+	(cp_make_lang_type): Set discriminator.
+	* parse.y: Use gengtype on YYLVAL.  Don't use dots in identifiers.
+	* search.c: Include ggc.h.
+	* semantics.c (anon_aggr_type_p): Use the macro, don't hand-code it.
+	(finish_inline_definitions): Delete.
+	* spew.c (struct token): Use gengtype.
+	(struct token_chunk): New.
+	(struct unparsed_text): Use gengtype.  Store tokens in chunks.
+	(struct feed): Use gengtype.
+	(feed_obstack): Delete.
+	(feed): Mark as GC root.
+	(pending_inlines): Mark as GC root.
+	(pending_inlines_tail): Likewise.
+	(processing_these_inlines): Likewise.
+	(token_obstack): Make static.
+	(first_token): Likewise.
+	(init_spew): Don't initialise deleted things; use gengtype for roots.
+	(clear_inline_text_obstack): Delete.
+	(feed_input): Use GC for struct feed.  Update for changes to
+	struct unparsed_text.
+	(mark_pending_inlines): Delete.
+	(next_token): Rename from add_token.  Change all callers.  Update
+	for changes to struct unparsed_text.
+	(space_for_token): New.
+	(remove_last_token): New.
+	(alloc_unparsed_text): New.
+	(snarf_block): Take an unparsed_text.  Update for changes to struct
+	unparsed_text.
+	(snarf_method): Update for changes to struct unparsed_text.
+	(snarf_defarg): Update for changes to struct unparsed_text.
+	* tree.c (lang_check_failed): New.
+
+	* Make-lang.in (gt-cp-call.h gt-cp-decl2.h gt-cp-parse.h
+	gt-cp-pt.h gt-cp-repo.h gt-cp-spew.h): New rules.
+	(cp/spew.o): Add dependency on gt-<filename>.h.
+	(cp/decl2.o): Add dependency on gt-<filename>.h.
+	(cp/call.o): Add dependency on gt-<filename>.h.
+	(cp/pt.o): Add dependency on gt-<filename>.h.
+	(cp/repo.o): Add dependency on gt-<filename>.h.
+	(cp/parse.o): Add dependency on gt-<filename>.h.
+	* call.c: Use gengtype for roots.
+	* config-lang.in (gtfiles): Add cp-tree.h decl.h lex.h call.c
+	decl2.c parse.y pt.c repo.c spew.c.
+	* cp-tree.h: Use gengtype for roots.
+	(struct saved_scope): Use GGC, gengtype.
+	(cp_parse_init): Delete prototype.
+	(init_pt): Delete prototype.
+	* decl.c: Use gengtype for roots.
+	(mark_saved_scope): Delete.
+	(cxx_init_decl_processing): Don't call deleted initilisation
+	routines.
+	(signed_size_zero_node): Delete, unused.
+	* decl.h: Use gengtype for roots.
+	* decl2.c: Use gengtype for roots.
+	* lex.h: Use gengtype for roots.
+	* parse.y: Use gengtype for roots.
+	(cp_parse_init): Delete.
+	* pt.c: Use gengtype for roots.
+	(init_pt): Delete.
+	* repo.c: Use gengtype for roots.
+	* spew.c: Use gengtype for roots.
+
+	* Make-lang.in: Allow for filename changes.  Add gtype-cp.h.
+	(cp/decl.o): Add dependency on gtype-cp.h.
+	* decl.c: Remove use of add_deletable_root, use GTY marker instead.
+	Include gtype-cp.h.  Allow for filename changes.
+
+	* Make-lang.in (cp/gt-decl.h): Generate using gengtype.
+	(cp/decl.o): Add cp/gt-decl.h dependency.
+	* config-lang.in (gtfiles): New.
+	* tree.h: Rename struct binding_level to struct cp_binding_level.
+	* decl.c: Rename struct binding_level to struct cp_binding_level.
+	Include cp/gt-decl.h.
+	(struct cp_binding_level): Use gengtype.
+	(make_binding_level): Use GGC on struct cp_binding_level.
+	(mark_binding_level): Use gt_ggc_m_cp_binding_level.
+	(cxx_init_decl_processing): Mark free_binding_level as
+	deletable.
+
+	* decl.c (mark_cp_function_context): Update calling sequence.
+
+	* decl.c (start_function): Don't free 'struct
+	cp_language_function'.
+	(pop_cp_function_context): Likewise.
+	(save_function_data): Allocate it using GC.
+	* semantics.c (genrtl_start_function): Don't free 'struct
+	cp_language_function'.
+
 2002-05-31  Matthew Woodcraft  <mattheww@chiark.greenend.org.uk>
 
 	* lang-specs.h: Use cpp_debug_options.

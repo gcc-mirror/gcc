@@ -97,7 +97,7 @@ stmt_tree
 current_stmt_tree ()
 {
   return (cfun 
-	  ? &cfun->language->x_stmt_tree 
+	  ? &cfun->language->base.x_stmt_tree 
 	  : &scope_chain->x_stmt_tree);
 }
 
@@ -109,7 +109,7 @@ int
 anon_aggr_type_p (node)
      tree node;
 {
-  return (CLASS_TYPE_P (node) && TYPE_LANG_SPECIFIC(node)->anon_aggr);
+  return ANON_AGGR_TYPE_P (node);
 }
 
 /* Finish a scope.  */
@@ -1131,7 +1131,7 @@ finish_mem_initializers (init_list)
 tree *
 current_scope_stmt_stack ()
 {
-  return &cfun->language->x_scope_stmt_stack;
+  return &cfun->language->base.x_scope_stmt_stack;
 }
 
 /* Finish a parenthesized expression EXPR.  */
@@ -1882,16 +1882,6 @@ begin_inline_definitions ()
     do_pending_inlines ();
 }
 
-/* Finish processing the inline function definitions cached during the
-   processing of a class definition.  */
-
-void
-finish_inline_definitions ()
-{
-  if (current_class_type == NULL_TREE)
-    clear_inline_text_obstack (); 
-}
-
 /* Finish processing the declaration of a member class template
    TYPES whose template parameters are given by PARMS.  */
 
@@ -2475,10 +2465,7 @@ genrtl_start_function (fn)
          function; we need the named return value info for
          cp_copy_res_decl_for_inlining.  */
       if (! DECL_INLINE (fn))
-	{
-	  free (DECL_SAVED_FUNCTION_DATA (fn));
-	  DECL_SAVED_FUNCTION_DATA (fn) = NULL;
-	}
+	DECL_SAVED_FUNCTION_DATA (fn) = NULL;
     }
 
   /* Keep track of how many functions we're presently expanding.  */

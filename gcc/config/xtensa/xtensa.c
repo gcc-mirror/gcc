@@ -85,7 +85,7 @@ const char *xtensa_st_opcodes[(int) MAX_MACHINE_MODE];
 #define LARGEST_MOVE_RATIO 15
 
 /* Define the structure for the machine field in struct function.  */
-struct machine_function
+struct machine_function GTY(())
 {
   int accesses_prev_frame;
 };
@@ -193,8 +193,7 @@ static rtx gen_float_relational PARAMS ((enum rtx_code, rtx, rtx));
 static rtx gen_conditional_move PARAMS ((rtx));
 static rtx fixup_subreg_mem PARAMS ((rtx x));
 static enum machine_mode xtensa_find_mode_for_size PARAMS ((unsigned));
-static void xtensa_init_machine_status PARAMS ((struct function *p));
-static void xtensa_free_machine_status PARAMS ((struct function *p));
+static struct machine_status * xtensa_init_machine_status PARAMS ((void));
 static void printx PARAMS ((FILE *, signed int));
 static void xtensa_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					       unsigned HOST_WIDE_INT));
@@ -1549,21 +1548,10 @@ xtensa_expand_nonlocal_goto (operands)
 }
 
 
-static void
-xtensa_init_machine_status (p)
-     struct function *p;
+static struct machine_function *
+xtensa_init_machine_status ()
 {
-  p->machine = (struct machine_function *)
-    xcalloc (1, sizeof (struct machine_function));
-}
-
-
-static void
-xtensa_free_machine_status (p)
-     struct function *p;
-{
-  free (p->machine);
-  p->machine = NULL;
+  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 
@@ -1846,7 +1834,6 @@ override_options ()
     }
 
   init_machine_status = xtensa_init_machine_status;
-  free_machine_status = xtensa_free_machine_status;
 
   /* Check PIC settings.  There's no need for -fPIC on Xtensa and
      some targets need to always use PIC.  */
@@ -2759,3 +2746,5 @@ xtensa_encode_section_info (decl, first)
   if (TREE_CODE (decl) == FUNCTION_DECL && ! TREE_PUBLIC (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
+
+#include "gt-xtensa.h"

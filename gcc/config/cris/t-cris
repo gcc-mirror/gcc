@@ -39,3 +39,6 @@ $(LIB2FUNCS_EXTRA): $(CRIS_LIB1CSRC)
 	echo "#define L$$name" > tmp-$@ \
 	&& echo '#include "$<"' >> tmp-$@ \
 	&& mv -f tmp-$@ $@
+
+$(out_object_file): gt-cris.h
+gt-cris.h : s-gtype ; @true

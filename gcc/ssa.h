@@ -44,7 +44,7 @@ extern void ssa_const_prop		PARAMS ((void));
 extern int in_ssa_form;
 
 /* Element I is the single instruction that sets register I.  */
-extern varray_type ssa_definition;
+extern GTY(()) varray_type ssa_definition;
 
 /* Element I is an INSN_LIST of instructions that use register I.  */
 extern varray_type ssa_uses;

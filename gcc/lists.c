@@ -26,15 +26,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 
 static void free_list PARAMS ((rtx *, rtx *));
-static void zap_lists PARAMS ((void *));
 
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
 /* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
-static rtx unused_insn_list;
+static GTY ((deletable (""))) rtx unused_insn_list;
 
 /* An EXPR_LIST containing all EXPR_LISTs allocated but currently unused.  */
-static rtx unused_expr_list;
+static GTY ((deletable (""))) rtx unused_expr_list;
 
 
 /* This function will free an entire list of either EXPR_LIST or INSN_LIST
@@ -108,22 +107,6 @@ alloc_EXPR_LIST (kind, val, next)
   return r;
 }
 
-/* This function will initialize the EXPR_LIST and INSN_LIST caches.  */
-
-static void
-zap_lists (dummy)
-     void *dummy ATTRIBUTE_UNUSED;
-{
-  unused_expr_list = NULL;
-  unused_insn_list = NULL;
-}
-
-void
-init_EXPR_INSN_LIST_cache ()
-{
-  ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
-}
-
 /* This function will free up an entire list of EXPR_LIST nodes.  */
 void
 free_EXPR_LIST_list (listp)
@@ -161,3 +144,5 @@ free_INSN_LIST_node (ptr)
   XEXP (ptr, 1) = unused_insn_list;
   unused_insn_list = ptr;
 }
+
+#include "gt-lists.h"

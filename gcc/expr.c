@@ -298,7 +298,7 @@ init_expr_once ()
 void
 init_expr ()
 {
-  cfun->expr = (struct expr_status *) xmalloc (sizeof (struct expr_status));
+  cfun->expr = (struct expr_status *) ggc_alloc (sizeof (struct expr_status));
 
   pending_chain = 0;
   pending_stack_adjust = 0;
@@ -307,26 +307,6 @@ init_expr ()
   saveregs_value = 0;
   apply_args_value = 0;
   forced_labels = 0;
-}
-
-void
-mark_expr_status (p)
-     struct expr_status *p;
-{
-  if (p == NULL)
-    return;
-
-  ggc_mark_rtx (p->x_saveregs_value);
-  ggc_mark_rtx (p->x_apply_args_value);
-  ggc_mark_rtx (p->x_forced_labels);
-}
-
-void
-free_expr_status (f)
-     struct function *f;
-{
-  free (f->expr);
-  f->expr = NULL;
 }
 
 /* Small sanity check that the queue is empty at the end of a function.  */
@@ -1650,6 +1630,7 @@ move_by_pieces_1 (genfun, mode, data)
    Return the address of the new block, if memcpy is called and returns it,
    0 otherwise.  */
 
+static GTY(()) tree block_move_fn;
 rtx
 emit_block_move (x, y, size)
      rtx x, y;
@@ -1657,7 +1638,6 @@ emit_block_move (x, y, size)
 {
   rtx retval = 0;
 #ifdef TARGET_MEM_FUNCTIONS
-  static tree fn;
   tree call_expr, arg_list;
 #endif
   unsigned int align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
@@ -1781,23 +1761,22 @@ emit_block_move (x, y, size)
 
 	 So instead of using a libcall sequence we build up a suitable
 	 CALL_EXPR and expand the call in the normal fashion.  */
-      if (fn == NULL_TREE)
+      if (block_move_fn == NULL_TREE)
 	{
 	  tree fntype;
 
 	  /* This was copied from except.c, I don't know if all this is
 	     necessary in this context or not.  */
-	  fn = get_identifier ("memcpy");
+	  block_move_fn = get_identifier ("memcpy");
 	  fntype = build_pointer_type (void_type_node);
 	  fntype = build_function_type (fntype, NULL_TREE);
-	  fn = build_decl (FUNCTION_DECL, fn, fntype);
-	  ggc_add_tree_root (&fn, 1);
-	  DECL_EXTERNAL (fn) = 1;
-	  TREE_PUBLIC (fn) = 1;
-	  DECL_ARTIFICIAL (fn) = 1;
-	  TREE_NOTHROW (fn) = 1;
-	  make_decl_rtl (fn, NULL);
-	  assemble_external (fn);
+	  block_move_fn = build_decl (FUNCTION_DECL, block_move_fn, fntype);
+	  DECL_EXTERNAL (block_move_fn) = 1;
+	  TREE_PUBLIC (block_move_fn) = 1;
+	  DECL_ARTIFICIAL (block_move_fn) = 1;
+	  TREE_NOTHROW (block_move_fn) = 1;
+	  make_decl_rtl (block_move_fn, NULL);
+	  assemble_external (block_move_fn);
 	}
 
       /* We need to make an argument list for the function call.
@@ -1815,8 +1794,10 @@ emit_block_move (x, y, size)
       TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arg_list))) = NULL_TREE;
 
       /* Now we have to build up the CALL_EXPR itself.  */
-      call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+      call_expr = build1 (ADDR_EXPR, 
+			  build_pointer_type (TREE_TYPE (block_move_fn)), 
+			  block_move_fn);
+      call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (block_move_fn)),
 			 call_expr, arg_list, NULL_TREE);
       TREE_SIDE_EFFECTS (call_expr) = 1;
 
@@ -2606,13 +2587,13 @@ store_by_pieces_2 (genfun, mode, data)
 /* Write zeros through the storage of OBJECT.  If OBJECT has BLKmode, SIZE is
    its length in bytes.  */
 
+static GTY(()) tree block_clear_fn;
 rtx
 clear_storage (object, size)
      rtx object;
      rtx size;
 {
 #ifdef TARGET_MEM_FUNCTIONS
-  static tree fn;
   tree call_expr, arg_list;
 #endif
   rtx retval = 0;
@@ -2725,23 +2706,23 @@ clear_storage (object, size)
 
 	     So instead of using a libcall sequence we build up a suitable
 	     CALL_EXPR and expand the call in the normal fashion.  */
-	  if (fn == NULL_TREE)
+	  if (block_clear_fn == NULL_TREE)
 	    {
 	      tree fntype;
 
 	      /* This was copied from except.c, I don't know if all this is
 		 necessary in this context or not.  */
-	      fn = get_identifier ("memset");
+	      block_clear_fn = get_identifier ("memset");
 	      fntype = build_pointer_type (void_type_node);
 	      fntype = build_function_type (fntype, NULL_TREE);
-	      fn = build_decl (FUNCTION_DECL, fn, fntype);
-	      ggc_add_tree_root (&fn, 1);
-	      DECL_EXTERNAL (fn) = 1;
-	      TREE_PUBLIC (fn) = 1;
-	      DECL_ARTIFICIAL (fn) = 1;
-	      TREE_NOTHROW (fn) = 1;
-	      make_decl_rtl (fn, NULL);
-	      assemble_external (fn);
+	      block_clear_fn = build_decl (FUNCTION_DECL, block_clear_fn,
+					   fntype);
+	      DECL_EXTERNAL (block_clear_fn) = 1;
+	      TREE_PUBLIC (block_clear_fn) = 1;
+	      DECL_ARTIFICIAL (block_clear_fn) = 1;
+	      TREE_NOTHROW (block_clear_fn) = 1;
+	      make_decl_rtl (block_clear_fn, NULL);
+	      assemble_external (block_clear_fn);
 	    }
 
 	  /* We need to make an argument list for the function call.
@@ -2762,8 +2743,9 @@ clear_storage (object, size)
 
 	  /* Now we have to build up the CALL_EXPR itself.  */
 	  call_expr = build1 (ADDR_EXPR,
-			      build_pointer_type (TREE_TYPE (fn)), fn);
-	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			      build_pointer_type (TREE_TYPE (block_clear_fn)),
+			      block_clear_fn);
+	  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (block_clear_fn)),
 			     call_expr, arg_list, NULL_TREE);
 	  TREE_SIDE_EFFECTS (call_expr) = 1;
 
@@ -10785,3 +10767,5 @@ try_tablejump (index_type, index_expr, minval, range,
 		table_label, default_label);
   return 1;
 }
+
+#include "gt-expr.h"

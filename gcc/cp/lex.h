@@ -68,15 +68,15 @@ typedef unsigned long RID_BIT_TYPE;	/* assumed at least 32 bits */
    yylex must look this up to detect typedefs, which get token type TYPENAME,
    so it is left around in case the identifier is not a typedef but is
    used in a context which makes it a reference to a variable.  */
-extern tree lastiddecl;
+extern GTY(()) tree lastiddecl;
 
 /* Back-door communication channel to the lexer.  */
 extern int looking_for_typename;
 extern int looking_for_template;
 
 /* Tell the lexer where to look for names.  */
-extern tree got_scope;
-extern tree got_object;
+extern GTY(()) tree got_scope;
+extern GTY(()) tree got_object;
 
 /* Pending language change.
    Positive is push count, negative is pop count.  */

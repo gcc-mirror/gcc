@@ -1376,21 +1376,21 @@ size_int_wide (number, kind)
 
 /* Likewise, but the desired type is specified explicitly.  */
 
+static GTY (()) tree new_const;
+static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+     htab_t size_htab;
+
 tree
 size_int_type_wide (number, type)
      HOST_WIDE_INT number;
      tree type;
 {
-  static htab_t size_htab = 0;
-  static tree new_const = 0;
   PTR *slot;
 
   if (size_htab == 0)
     {
       size_htab = htab_create (1024, size_htab_hash, size_htab_eq, NULL);
-      ggc_add_deletable_htab (size_htab, NULL, NULL);
       new_const = make_node (INTEGER_CST);
-      ggc_add_tree_root (&new_const, 1);
     }
 
   /* Adjust NEW_CONST to be the constant we want.  If it's already in the
@@ -7236,3 +7236,5 @@ rtl_expr_nonnegative_p (r)
       return 0;
     }
 }
+
+#include "gt-fold-const.h"

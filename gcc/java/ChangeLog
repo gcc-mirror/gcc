@@ -1,3 +1,95 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* check-init.c (attach_initialized_static_class): Delete, unused.
+	* parse.y: Use htab_t instead of struct hashtable, update
+	all uses.
+	* java-tree.h: Include hashtab.h instead of hash.h.
+	(struct lang_decl_func): Use htab_t, set up for gengtype.
+	(struct init_test_hash_entry): Delete.
+	(struct treetreehash_entry): New.
+	(java_treetreehash_find): New 
+	(java_treetreehash_new): New prototype.
+	(java_treetreehash_create): New prototype.
+	(java_mark_tree): Delete prototype.
+	(java_hash_hash_tree_node): Delete prototype.
+	(java_hash_compare_tree_node): Delete prototype.
+	(attach_initialized_static_class): Delete prototype.
+	* expr.c (build_class_init): Update to use java_treetreehash
+	functions.
+	(java_expand_expr): Update to use htab_t.
+	(emit_init_test_initialization): Likewise.
+	* decl.c (java_mark_tree): Delete.
+	* class.c (init_test_hash_newfunc): Delete.
+	(java_hash_hash_tree_node): Delete.
+	(java_hash_compare_tree_node): Delete.
+	(add_method_1): Update to use java_treetreehash functions.
+	(JAVA_TREEHASHHASH_H): New macro.
+	(java_treetreehash_hash): New function.
+	(java_treetreehash_compare): New function.
+	(java_treetreehash_find): New function.
+	(java_treetreehash_new): New function.
+	(java_treetreehash_create): New function.
+	* Make-lang.in (JAVA_TREE_H): Replace hash.h by HASHTAB_H.
+
+	* Make-lang.in (java/parse.o): Depend on debug.h.
+	* java-tree.h (struct lang_identifier): Use gengtype.
+	(union lang_tree_node): New.
+	(struct lang_decl_func): Use gengtype.
+	(struct lang_decl_var): Likewise.
+	(struct lang_decl): Likewise.
+	* parse.y: Include debug.h.
+	* lang.c (LANG_HOOKS_MARK_TREE): Delete.
+
+	* lang.c (struct language_function): New dummy structure.
+
+	* java-tree.h (MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC): Set
+	descriminator for DECL_LANG_SPECIFIC.
+	(struct lang_decl_func): Rename from struct lang_decl.
+	(enum lang_decl_desc): New.
+	(struct lang_decl): Make it a union.  Update all the accessor macros.
+	(struct lang_type): Use gengtype.
+	* class.c (add_method_1): Set descriminator for DECL_LANG_SPECIFIC.
+	* decl.c (java_dup_lang_specific_decl): All lang_decl structures
+	are now the same size.
+	(lang_mark_tree): Use gengtype to mark TYPE_LANG_SPECIFIC;
+	use discriminator to mark DECL_LANG_SPECIFIC.
+
+	* Make-lang.in (gt-java-builtins.h): New rule.
+	(java/builtins.o): Add dependency on gt-<filename>.h.
+	* builtins.c: Use gengtype for roots.
+	(union string_or_tree): Use gengtype.
+	(struct builtin_record): Use gengtype.
+	* config-lang.in (gtfiles): Add builtins.c.
+
+	* Make-lang.in (gt-java-class.h, gt-java-constants.h,
+	gt-java-decl.h, gt-java-expr.h, gt-java-jcf-parse.h,
+	gt-java-jcf-write.h, gt-java-lang.h, gt-java-mangle.h,
+	gt-java-parse.h, gtype-java.h): Add rules to generate.
+	(parse.o): Add dependency on gt-java-parse.h, gt-java.h.
+	(class.o): Add dependency on gt-*.h.
+	(constants.o): Likewise.
+	(decl.o): Likewise.
+	(expr.o): Likewise.
+	(jcf-parse.o): Likewise.
+	(jcf-write.o): Likewise.
+	(lang.o): Likewise.
+	* config-lang.in (gtfiles): New.
+	* class.c: Replace uses of ggc_add_* with GTY markers.  Include gt-*.h.
+	* constants.c: Replace uses of ggc_add_* with GTY markers.
+	Include gt-*.h.
+	* decl.c: Replace uses of ggc_add_* with GTY markers.  Include gt-*.h.
+	* expr.c: Replace uses of ggc_add_* with GTY markers.  Include gt-*.h.
+	* java-tree.h: Replace uses of ggc_add_* with GTY markers.
+	* jcf-parse.c: Replace uses of ggc_add_* with GTY markers.
+	Include gt-*.h.
+	* jcf-write.c: Replace uses of ggc_add_* with GTY markers.
+	Include gt-*.h.
+	* lang.c: Replace uses of ggc_add_* with GTY markers.  Include gt-*.h.
+	* mangle.c: Replace uses of ggc_add_* with GTY markers.  Include
+	gt-*.h.
+	* parse.y: Replace uses of ggc_add_* with GTY markers.  Include gt-*.h.
+	Include gtype-java.h.
+
 2002-06-02  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/5913:

@@ -140,8 +140,8 @@ extern void debug_stack_info		PARAMS ((d30v_stack_t *));
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
 
-extern struct rtx_def *d30v_compare_op0;
-extern struct rtx_def *d30v_compare_op1;
+extern GTY(()) rtx d30v_compare_op0;
+extern GTY(()) rtx d30v_compare_op1;
 
 /* Define the information needed to modify the epilogue for EH.  */
 

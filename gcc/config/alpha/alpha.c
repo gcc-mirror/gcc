@@ -188,12 +188,8 @@ static void alpha_elf_select_rtx_section
   PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
 #endif
 
-static void alpha_init_machine_status
-  PARAMS ((struct function *p));
-static void alpha_mark_machine_status
-  PARAMS ((struct function *p));
-static void alpha_free_machine_status
-  PARAMS ((struct function *p));
+static struct machine_function * alpha_init_machine_status
+  PARAMS ((void));
 
 static void unicosmk_output_deferred_case_vectors PARAMS ((FILE *));
 static void unicosmk_gen_dsib PARAMS ((unsigned long *imaskP));
@@ -562,8 +558,6 @@ override_options ()
 
   /* Set up function hooks.  */
   init_machine_status = alpha_init_machine_status;
-  mark_machine_status = alpha_mark_machine_status;
-  free_machine_status = alpha_free_machine_status;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -5311,9 +5305,9 @@ alpha_multipass_dfa_lookahead ()
 
 /* Machine-specific function data.  */
 
-struct machine_function
+struct machine_function GTY(())
 {
-#if TARGET_ABI_UNICOSMK
+  /* For unicosmk. */
   /* List of call information words for calls from this function.  */
   struct rtx_def *first_ciw;
   struct rtx_def *last_ciw;
@@ -5321,58 +5315,18 @@ struct machine_function
 
   /* List of deferred case vectors.  */
   struct rtx_def *addr_list;
-#else
-#if TARGET_ABI_OSF
+
+  /* For OSF. */
   const char *some_ld_name;
-#else
-  /* Non-empty struct.  */
-  char dummy;
-#endif
-#endif
 };
 
-/* Register global variables and machine-specific functions with the
-   garbage collector.  */
+/* How to allocate a 'struct machine_function'.  */
 
-static void
-alpha_init_machine_status (p)
-     struct function *p;
+static struct machine_function *
+alpha_init_machine_status ()
 {
-  p->machine =
-    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-
-#if TARGET_ABI_UNICOSMK
-  p->machine->first_ciw = NULL_RTX;
-  p->machine->last_ciw = NULL_RTX;
-  p->machine->ciw_count = 0;
-  p->machine->addr_list = NULL_RTX;
-#endif
-#if TARGET_ABI_OSF
-  p->machine->some_ld_name = NULL;
-#endif
-}
-
-static void
-alpha_mark_machine_status (p)
-     struct function *p;
-{
-  struct machine_function *machine = p->machine;
-
-  if (machine)
-    {
-#if TARGET_ABI_UNICOSMK
-      ggc_mark_rtx (machine->first_ciw);
-      ggc_mark_rtx (machine->addr_list);
-#endif
-    }
-}
-
-static void
-alpha_free_machine_status (p)
-     struct function *p;
-{
-  free (p->machine);
-  p->machine = NULL;
+  return ((struct machine_function *) 
+		ggc_alloc_cleared (sizeof (struct machine_function)));
 }
 
 /* Functions to save and restore alpha_return_addr_rtx.  */
@@ -9913,3 +9867,6 @@ unicosmk_need_dex (x)
 }
 
 #endif /* TARGET_ABI_UNICOSMK */
+
+#include "gt-alpha.h"
+

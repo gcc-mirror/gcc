@@ -233,9 +233,9 @@ extern int flag_huge_objects;
 
 /* Language-dependent contents of an identifier.  */
 
-struct lang_identifier
+struct lang_identifier GTY(())
 {
-  struct c_common_identifier ignore;
+  struct c_common_identifier c_common;
   tree namespace_bindings;
   tree bindings;
   tree class_value;
@@ -255,20 +255,21 @@ extern const short rid_to_yy[RID_MAX];
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
-struct lang_id2
+struct lang_id2 GTY(())
 {
-  tree label_value, implicit_decl;
+  tree label_value;
+  tree implicit_decl;
   tree error_locus;
 };
 
-typedef struct
+typedef struct flagged_type_tree_s GTY(())
 {
   tree t;
   int new_type_flag;
   tree lookups;
 } flagged_type_tree;
 
-typedef struct
+typedef struct template_parm_index_s GTY(())
 {
   struct tree_common common;
   HOST_WIDE_INT index;
@@ -277,14 +278,15 @@ typedef struct
   tree decl;
 } template_parm_index;
 
-typedef struct ptrmem_cst
+struct ptrmem_cst GTY(())
 {
   struct tree_common common;
   /* This isn't used, but the middle-end expects all constants to have
      this field.  */
   rtx rtl;
   tree member;
-}* ptrmem_cst_t;
+};
+typedef struct ptrmem_cst * ptrmem_cst_t;
 
 /* Nonzero if this binding is for a local scope, as opposed to a class
    or namespace scope.  */
@@ -346,13 +348,13 @@ typedef struct ptrmem_cst
     && MAIN_NAME_P (DECL_NAME (NODE)))
 
 
-struct tree_binding
+struct tree_binding GTY(())
 {
   struct tree_common common;
-  union {
-    tree scope;
-    struct binding_level *level;
-  } scope;
+  union tree_binding_u {
+    tree GTY ((tag ("0"))) scope;
+    struct cp_binding_level * GTY ((tag ("1"))) level;
+  } GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) scope;
   tree value;
 };
 
@@ -370,7 +372,7 @@ struct tree_binding
    is not important for this node. */
 #define OVL_USED(NODE)        TREE_USED (NODE)
 
-struct tree_overload
+struct tree_overload GTY(())
 {
   struct tree_common common;
   tree function;
@@ -384,21 +386,17 @@ struct tree_overload
 #define SET_BASELINK_P(NODE) \
   (TREE_LANG_FLAG_1 (NODE) = 1)
 
-#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->u.ptr)
-#define WRAPPER_INT(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->u.i)
+#define WRAPPER_ZC(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->z_c)
 
-struct tree_wrapper
+struct tree_wrapper GTY(())
 {
   struct tree_common common;
-  union {
-    void *ptr;
-    int i;
-  } u;
+  struct z_candidate *z_c;
 };
 
 #define SRCLOC_FILE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->filename)
 #define SRCLOC_LINE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->linenum)
-struct tree_srcloc
+struct tree_srcloc GTY(())
 {
   struct tree_common common;
   const char *filename;
@@ -450,10 +448,10 @@ struct tree_srcloc
   (LANG_IDENTIFIER_CAST (NODE)->x			\
    ? LANG_IDENTIFIER_CAST (NODE)->x->NAME : 0)
 
-#define SET_LANG_ID(NODE, VALUE, NAME)					  \
-  (LANG_IDENTIFIER_CAST (NODE)->x == 0				  	  \
-   ? LANG_IDENTIFIER_CAST (NODE)->x					  \
-      = (struct lang_id2 *)perm_calloc (1, sizeof (struct lang_id2)) : 0, \
+#define SET_LANG_ID(NODE, VALUE, NAME)					     \
+  (LANG_IDENTIFIER_CAST (NODE)->x == 0					     \
+   ? LANG_IDENTIFIER_CAST (NODE)->x					     \
+      = (struct lang_id2 *)ggc_alloc_cleared (sizeof (struct lang_id2)) : 0, \
    LANG_IDENTIFIER_CAST (NODE)->x->NAME = (VALUE))
 
 #define IDENTIFIER_LABEL_VALUE(NODE) \
@@ -495,11 +493,36 @@ struct tree_srcloc
 /* Store a value in that field.  */
 #define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
   (TREE_COMPLEXITY (EXP) = (int)(CODE))
-
-/* If non-zero, a VAR_DECL whose cleanup will cause a throw to the
-   next exception handler.  */
-extern tree exception_throw_decl;
 
+enum cp_tree_node_structure_enum {
+  TS_CP_COMMON,
+  TS_CP_GENERIC,
+  TS_CP_IDENTIFIER,
+  TS_CP_TPI,
+  TS_CP_PTRMEM,
+  TS_CP_BINDING,
+  TS_CP_OVERLOAD,
+  TS_CP_WRAPPER,
+  TS_CP_SRCLOC,
+  LAST_TS_CP_ENUM
+};
+
+/* The resulting tree type.  */
+union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)")))
+{
+  struct tree_common GTY ((tag ("TS_CP_COMMON"))) common;
+  union tree_node GTY ((tag ("TS_CP_GENERIC"),
+			desc ("tree_node_structure (&%h)"))) generic;
+  struct template_parm_index_s GTY ((tag ("TS_CP_TPI"))) tpi;
+  struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
+  struct tree_binding GTY ((tag ("TS_CP_BINDING"))) binding;
+  struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
+  struct tree_wrapper GTY ((tag ("TS_CP_WRAPPER"))) wrapper;
+  struct tree_srcloc GTY ((tag ("TS_CP_SRCLOC"))) srcloc;
+  struct lang_identifier GTY ((tag ("TS_CP_IDENTIFIER"))) identifier;
+};
+
+
 enum cp_tree_index
 {
     CPTI_JAVA_BYTE_TYPE,
@@ -586,7 +609,7 @@ enum cp_tree_index
     CPTI_MAX
 };
 
-extern tree cp_global_trees[CPTI_MAX];
+extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 #define java_byte_type_node		cp_global_trees[CPTI_JAVA_BYTE_TYPE]
 #define java_short_type_node		cp_global_trees[CPTI_JAVA_SHORT_TYPE]
@@ -715,7 +738,7 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* Global state.  */
 
-struct saved_scope
+struct saved_scope GTY(())
 {
   tree old_bindings;
   tree old_namespace;
@@ -740,8 +763,8 @@ struct saved_scope
 
   struct stmt_tree_s x_stmt_tree;
 
-  struct binding_level *class_bindings;
-  struct binding_level *bindings;
+  struct cp_binding_level *class_bindings;
+  struct cp_binding_level *bindings;
 
   struct saved_scope *prev;
 };
@@ -798,15 +821,15 @@ struct saved_scope
 
 #define type_lookups scope_chain->lookups
 
-extern struct saved_scope *scope_chain;
+extern GTY(()) struct saved_scope *scope_chain;
 
 struct unparsed_text;
 
 /* Global state pertinent to the current function.  */
 
-struct cp_language_function
+struct language_function GTY(())
 {
-  struct language_function base;
+  struct c_language_function base;
 
   tree x_dtor_label;
   tree x_current_class_ptr;
@@ -816,8 +839,6 @@ struct cp_language_function
   tree x_vtt_parm;
   tree x_return_value;
 
-  tree *x_vcalls_possible_p;
-
   int returns_value;
   int returns_null;
   int returns_abnormally;
@@ -826,7 +847,7 @@ struct cp_language_function
 
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
-  struct binding_level *bindings;
+  struct cp_binding_level *bindings;
   varray_type x_local_names;
 
   const char *cannot_inline;
@@ -835,8 +856,7 @@ struct cp_language_function
 
 /* The current C++-specific per-function global variables.  */
 
-#define cp_function_chain \
-  ((struct cp_language_function *) (cfun->language))
+#define cp_function_chain (cfun->language)
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -866,12 +886,6 @@ struct cp_language_function
    constructors and destructors.  */
 
 #define current_vtt_parm cp_function_chain->x_vtt_parm
-
-/* In destructors, this is a pointer to a condition in an
-   if-statement.  If the pointed-to value is boolean_true_node, then
-   there may be virtual function calls in this destructor.  */
-
-#define current_vcalls_possible_p cp_function_chain->x_vcalls_possible_p
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -908,7 +922,7 @@ struct cp_language_function
 #define current_function_return_value \
   (cp_function_chain->x_return_value)
 
-extern tree global_namespace;
+extern GTY(()) tree global_namespace;
 
 #define ansi_opname(CODE) \
   (operator_name_info[(int) (CODE)].identifier)
@@ -1176,6 +1190,22 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 #define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) \
   lookup_base ((TYPE), (PARENT),  ba_not_special | ba_quiet, NULL)
 
+/* This is a few header flags for 'struct lang_type'.  Actually,
+   all but the first are used only for lang_type_class; they
+   are put in this structure to save space.  */
+struct lang_type_header GTY(())
+{
+  unsigned is_lang_type_class : 1;
+
+  unsigned has_type_conversion : 1;
+  unsigned has_init_ref : 1;
+  unsigned has_default_ctor : 1;
+  unsigned uses_multiple_inheritance : 1;
+  unsigned const_needs_init : 1;
+  unsigned ref_needs_init : 1;
+  unsigned has_const_assign_ref : 1;
+};
+
 /* This structure provides additional information above and beyond
    what is provide in the ordinary tree_type.  In the past, we used it
    for the types of class types, template parameters types, typename
@@ -1189,18 +1219,11 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    many (i.e., thousands) of classes can easily be generated.
    Therefore, we should endeavor to keep the size of this structure to
    a minimum.  */
-struct lang_type
+struct lang_type_class GTY(())
 {
+  struct lang_type_header h;
+  
   unsigned char align;
-
-  unsigned has_type_conversion : 1;
-  unsigned has_init_ref : 1;
-  unsigned has_default_ctor : 1;
-  unsigned uses_multiple_inheritance : 1;
-  unsigned const_needs_init : 1;
-  unsigned ref_needs_init : 1;
-  unsigned has_const_assign_ref : 1;
-  unsigned anon_aggr : 1;
 
   unsigned has_mutable : 1;
   unsigned com_interface : 1;
@@ -1240,6 +1263,7 @@ struct lang_type
   unsigned is_partial_instantiation : 1;
   unsigned java_interface : 1;
 
+  unsigned anon_aggr : 1;
   unsigned non_zero_init : 1;
 
   /* When adding a flag here, consider whether or not it ought to
@@ -1249,7 +1273,7 @@ struct lang_type
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 7;
+  unsigned dummy : 6;
 
   int vsize;
 
@@ -1267,12 +1291,50 @@ struct lang_type
   tree befriending_classes;
 };
 
+struct lang_type_ptrmem GTY(())
+{
+  struct lang_type_header h;
+  tree record;
+};
+
+struct lang_type GTY(())
+{
+  union lang_type_u 
+  {
+    struct lang_type_header GTY((tag ("2"))) h;
+    struct lang_type_class  GTY((tag ("1"))) c;
+    struct lang_type_ptrmem GTY((tag ("0"))) ptrmem;
+  } GTY((desc ("%h.h.is_lang_type_class"))) u;
+};
+
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+
+#define LANG_TYPE_CLASS_CHECK(NODE)				\
+({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
+    if (! lt->u.h.is_lang_type_class)				\
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
+    &lt->u.c; })
+
+#define LANG_TYPE_PTRMEM_CHECK(NODE)				\
+({  struct lang_type *lt = TYPE_LANG_SPECIFIC (NODE);		\
+    if (lt->u.h.is_lang_type_class)				\
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
+    &lt->u.ptrmem; })
+
+#else
+
+#define LANG_TYPE_CLASS_CHECK(NODE) (&TYPE_LANG_SPECIFIC (NODE)->u.c)
+#define LANG_TYPE_PTRMEM_CHECK(NODE) (&TYPE_LANG_SPECIFIC (NODE)->u.ptrmem)
+
+#endif /* ENABLE_TREE_CHECKING */
+
 /* Indicates whether or not (and how) a template was expanded for this class.
      0=no information yet/non-template class
      1=implicit template instantiation
      2=explicit template specialization
      3=explicit template instantiation  */
-#define CLASSTYPE_USE_TEMPLATE(NODE) (TYPE_LANG_SPECIFIC (NODE)->use_template)
+#define CLASSTYPE_USE_TEMPLATE(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->use_template)
 
 /* Fields used for storing information before the class is defined.
    After the class is defined, these fields hold other information.  */
@@ -1281,66 +1343,66 @@ struct lang_type
 #define CLASSTYPE_INLINE_FRIENDS(NODE) CLASSTYPE_PURE_VIRTUALS (NODE)
 
 /* Nonzero for _CLASSTYPE means that operator delete is defined.  */
-#define TYPE_GETS_DELETE(NODE) (TYPE_LANG_SPECIFIC (NODE)->gets_delete)
+#define TYPE_GETS_DELETE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->gets_delete)
 #define TYPE_GETS_REG_DELETE(NODE) (TYPE_GETS_DELETE (NODE) & 1)
 
 /* Nonzero if `new NODE[x]' should cause the allocation of extra
    storage to indicate how many array elements are in use.  */
 #define TYPE_VEC_NEW_USES_COOKIE(NODE)			\
   (CLASS_TYPE_P (NODE)					\
-   && TYPE_LANG_SPECIFIC (NODE)->vec_new_uses_cookie)
+   && LANG_TYPE_CLASS_CHECK (NODE)->vec_new_uses_cookie)
 
 /* Nonzero means that this _CLASSTYPE node defines ways of converting
    itself to other types.  */
 #define TYPE_HAS_CONVERSION(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_type_conversion)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_type_conversion)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
-#define TYPE_HAS_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_assign_ref)
+#define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
 #define TYPE_HAS_CONST_ASSIGN_REF(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_const_assign_ref)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_assign_ref)
 
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
-#define TYPE_HAS_INIT_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_init_ref)
+#define TYPE_HAS_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_init_ref)
 #define TYPE_HAS_CONST_INIT_REF(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_const_init_ref)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_init_ref)
 
 /* Nonzero if this class defines an overloaded operator new.  (An
    operator new [] doesn't count.)  */
 #define TYPE_HAS_NEW_OPERATOR(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_new)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_new)
 
 /* Nonzero if this class defines an overloaded operator new[].  */
 #define TYPE_HAS_ARRAY_NEW_OPERATOR(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_array_new)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_array_new)
 
 /* Nonzero means that this type is being defined.  I.e., the left brace
    starting the definition of this type has been seen.  */
-#define TYPE_BEING_DEFINED(NODE) (TYPE_LANG_SPECIFIC (NODE)->being_defined)
+#define TYPE_BEING_DEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->being_defined)
 /* Nonzero means that this type has been redefined.  In this case, if
    convenient, don't reprocess any methods that appear in its redefinition.  */
-#define TYPE_REDEFINED(NODE) (TYPE_LANG_SPECIFIC (NODE)->redefined)
+#define TYPE_REDEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->redefined)
 
 /* The is the basetype that contains NODE's rtti.  */
-#define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC (NODE)->rtti)
+#define CLASSTYPE_RTTI(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->rtti)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator().  */
 #define TYPE_OVERLOADS_CALL_EXPR(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_call_overloaded)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_call_overloaded)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator[].  */
 #define TYPE_OVERLOADS_ARRAY_REF(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_array_ref_overloaded)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_array_ref_overloaded)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator->.  */
 #define TYPE_OVERLOADS_ARROW(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_arrow_overloaded)
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_arrow_overloaded)
 
 /* Nonzero means that this _CLASSTYPE (or one of its ancestors) uses
    multiple inheritance.  If this is 0 for the root of a type
    hierarchy, then we can use more efficient search techniques.  */
 #define TYPE_USES_MULTIPLE_INHERITANCE(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->uses_multiple_inheritance)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.uses_multiple_inheritance)
 
 /* Nonzero means that this _CLASSTYPE (or one of its ancestors) uses
    virtual base classes.  If this is 0 for the root of a type
@@ -1359,7 +1421,7 @@ struct lang_type
    functions.  There may be empty entries at the end of the vector.
    The conversion operators are unsorted. The ordinary member
    functions are sorted, once the class is complete.  */
-#define CLASSTYPE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC (NODE)->methods)
+#define CLASSTYPE_METHOD_VEC(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->methods)
 
 /* The slot in the CLASSTYPE_METHOD_VEC where constructors go.  */
 #define CLASSTYPE_CONSTRUCTOR_SLOT 0
@@ -1385,19 +1447,19 @@ struct lang_type
 
 /* Get the value of the Nth mark bit.  */
 #define CLASSTYPE_MARKED_N(NODE, N)				\
-  (((CLASS_TYPE_P (NODE) ? TYPE_LANG_SPECIFIC (NODE)->marks	\
+  (((CLASS_TYPE_P (NODE) ? LANG_TYPE_CLASS_CHECK (NODE)->marks	\
      : ((unsigned) TYPE_ALIAS_SET (NODE))) & (1 << (N))) != 0)
 
 /* Set the Nth mark bit.  */
 #define SET_CLASSTYPE_MARKED_N(NODE, N)				\
   (CLASS_TYPE_P (NODE)						\
-   ? (void) (TYPE_LANG_SPECIFIC (NODE)->marks |= (1 << (N)))	\
+   ? (void) (LANG_TYPE_CLASS_CHECK (NODE)->marks |= (1 << (N)))	\
    : (void) (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
 
 /* Clear the Nth mark bit.  */
 #define CLEAR_CLASSTYPE_MARKED_N(NODE, N)			\
   (CLASS_TYPE_P (NODE)						\
-   ? (void) (TYPE_LANG_SPECIFIC (NODE)->marks &= ~(1 << (N)))	\
+   ? (void) (LANG_TYPE_CLASS_CHECK (NODE)->marks &= ~(1 << (N)))	\
    : (void) (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
 
 /* Get the value of the mark bits.  */
@@ -1426,7 +1488,7 @@ struct lang_type
    found within this class.  The TREE_PURPOSE of each node is the name
    of the type; the TREE_VALUE is the type itself.  This list includes
    nested member class templates.  */
-#define CLASSTYPE_TAGS(NODE)		(TYPE_LANG_SPECIFIC (NODE)->tags)
+#define CLASSTYPE_TAGS(NODE)		(LANG_TYPE_CLASS_CHECK (NODE)->tags)
 
 /* Nonzero if NODE has a primary base class, i.e., a base class with
    which it shares the virtual function table pointer.  */
@@ -1437,11 +1499,11 @@ struct lang_type
    the base class which contains the virtual function table pointer
    for this class.  */
 #define CLASSTYPE_PRIMARY_BINFO(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->primary_base)
+  (LANG_TYPE_CLASS_CHECK (NODE)->primary_base)
 
 /* The number of virtual functions present in this class' virtual
    function table.  */
-#define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC (NODE)->vsize)
+#define CLASSTYPE_VSIZE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vsize)
 
 /* A chain of BINFOs for the direct and indirect virtual base classes
    that this type uses in a post-order depth-first left-to-right
@@ -1451,7 +1513,7 @@ struct lang_type
    list are all "real"; they are the same BINFOs that will be
    encountered when using dfs_unmarked_real_bases_queue_p and related
    functions.  */
-#define CLASSTYPE_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC (NODE)->vbases)
+#define CLASSTYPE_VBASECLASSES(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vbases)
 
 /* For a non-virtual BINFO, the BINFO itself; for a virtual BINFO, the
    binfo_for_vbase.  C is the most derived class for the hierarchy
@@ -1467,10 +1529,10 @@ struct lang_type
 
 /* These are the size and alignment of the type without its virtual
    base classes, for when we use this type as a base itself.  */
-#define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC (NODE)->size)
-#define CLASSTYPE_SIZE_UNIT(NODE) (TYPE_LANG_SPECIFIC (NODE)->size_unit)
-#define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC (NODE)->align)
-#define CLASSTYPE_USER_ALIGN(NODE) (TYPE_LANG_SPECIFIC (NODE)->user_align)
+#define CLASSTYPE_SIZE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->size)
+#define CLASSTYPE_SIZE_UNIT(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->size_unit)
+#define CLASSTYPE_ALIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->align)
+#define CLASSTYPE_USER_ALIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->user_align)
 
 /* The alignment of NODE, without its virtual bases, in bytes.  */
 #define CLASSTYPE_ALIGN_UNIT(NODE) \
@@ -1478,70 +1540,71 @@ struct lang_type
 
 /* True if this a Java interface type, declared with 
    '__attribute__ ((java_interface))'. */
-#define TYPE_JAVA_INTERFACE(NODE) (TYPE_LANG_SPECIFIC (NODE)->java_interface)
+#define TYPE_JAVA_INTERFACE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->java_interface)
 
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
    class must provide its own definition for each of these functions.  */
-#define CLASSTYPE_PURE_VIRTUALS(NODE) (TYPE_LANG_SPECIFIC (NODE)->pure_virtuals)
+#define CLASSTYPE_PURE_VIRTUALS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->pure_virtuals)
 
 /* Nonzero means that this aggr type has been `closed' by a semicolon.  */
-#define CLASSTYPE_GOT_SEMICOLON(NODE) (TYPE_LANG_SPECIFIC (NODE)->got_semicolon)
+#define CLASSTYPE_GOT_SEMICOLON(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->got_semicolon)
 
 /* Nonzero means that the main virtual function table pointer needs to be
    set because base constructors have placed the wrong value there.
    If this is zero, it means that they placed the right value there,
    and there is no need to change it.  */
 #define CLASSTYPE_NEEDS_VIRTUAL_REINIT(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->needs_virtual_reinit)
+  (LANG_TYPE_CLASS_CHECK (NODE)->needs_virtual_reinit)
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->has_default_ctor)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_default_ctor)
 
 /* Nonzero means that this type contains a mutable member */
-#define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_mutable)
+#define CLASSTYPE_HAS_MUTABLE(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
 
 /* Nonzero means that this class type is a non-POD class.  */
-#define CLASSTYPE_NON_POD_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->non_pod_class)
+#define CLASSTYPE_NON_POD_P(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->non_pod_class)
 
 /* Nonzero means that this class contains pod types whose default
    initialization is not a zero initialization (namely, pointers to
    data members).  */
-#define CLASSTYPE_NON_ZERO_INIT_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->non_zero_init)
+#define CLASSTYPE_NON_ZERO_INIT_P(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_zero_init)
 
 /* Nonzero if this class is "nearly empty", i.e., contains only a
    virtual function table pointer.  */
 #define CLASSTYPE_NEARLY_EMPTY_P(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->nearly_empty_p)
+  (LANG_TYPE_CLASS_CHECK (NODE)->nearly_empty_p)
 
 /* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
    case of a template friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->friend_classes)
+  (LANG_TYPE_CLASS_CHECK (NODE)->friend_classes)
 
 /* A list of the classes which grant friendship to this class.  */
 #define CLASSTYPE_BEFRIENDING_CLASSES(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->befriending_classes)
+  (LANG_TYPE_CLASS_CHECK (NODE)->befriending_classes)
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->declared_class)
+  (LANG_TYPE_CLASS_CHECK (NODE)->declared_class)
 
 /* Nonzero if this class has const members which have no specified initialization.  */
 #define CLASSTYPE_READONLY_FIELDS_NEED_INIT(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->const_needs_init)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.const_needs_init)
 
 /* Nonzero if this class has ref members which have no specified initialization.  */
 #define CLASSTYPE_REF_FIELDS_NEED_INIT(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->ref_needs_init)
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.ref_needs_init)
 
 /* Nonzero if this class is included from a header file which employs
    `#pragma interface', and it is not included in its implementation file.  */
 #define CLASSTYPE_INTERFACE_ONLY(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_only)
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_only)
 
 /* True if we have already determined whether or not vtables, VTTs,
    typeinfo, and other similar per-class data should be emitted in
@@ -1549,21 +1612,21 @@ struct lang_type
    these items should be emitted; it only indicates that we know one
    way or the other.  */
 #define CLASSTYPE_INTERFACE_KNOWN(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_unknown == 0)
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown == 0)
 /* The opposite of CLASSTYPE_INTERFANCE_KNOWN.  */
 #define CLASSTYPE_INTERFACE_UNKNOWN(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_unknown)
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown)
 
 #define SET_CLASSTYPE_INTERFACE_UNKNOWN_X(NODE,X) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_unknown = !!(X))
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown = !!(X))
 #define SET_CLASSTYPE_INTERFACE_UNKNOWN(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_unknown = 1)
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown = 1)
 #define SET_CLASSTYPE_INTERFACE_KNOWN(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->interface_unknown = 0)
+  (LANG_TYPE_CLASS_CHECK (NODE)->interface_unknown = 0)
 
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
 #define CLASSTYPE_DEBUG_REQUESTED(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->debug_requested)
+  (LANG_TYPE_CLASS_CHECK (NODE)->debug_requested)
 
 /* Additional macros for inheritance information.  */
 
@@ -1676,7 +1739,7 @@ struct lang_type
    TREE_PURPOSE is NULL.  Otherwise, the TREE_PURPOSE is the BINFO for
    the class containing the vfield.  The TREE_VALUE is the class where
    the vfield was first defined.  */
-#define CLASSTYPE_VFIELDS(NODE) (TYPE_LANG_SPECIFIC (NODE)->vfields)
+#define CLASSTYPE_VFIELDS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vfields)
 
 /* Get the assoc info that caused this vfield to exist.  */
 #define VF_BINFO_VALUE(NODE) TREE_PURPOSE (NODE)
@@ -1736,7 +1799,7 @@ struct lang_type
      || TREE_CODE (NODE) == FIELD_DECL		\
      || TREE_CODE (NODE) == USING_DECL))
 
-struct lang_decl_flags
+struct lang_decl_flags GTY(())
 {
   struct c_lang_decl base;
 
@@ -1757,28 +1820,29 @@ struct lang_decl_flags
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
   unsigned initialized_in_class : 1;
-  unsigned pending_inline_p : 1;
+  unsigned assignment_operator_p : 1;
 
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
   unsigned template_conv_p : 1;
-  
-  unsigned unused : 3; /* Three unused bits.  */
+  unsigned u1sel : 1;
+  unsigned u2sel : 1;
+  unsigned can_be_full : 1;
+  unsigned unused : 1; /* One unused bit.  */
 
-  union {
+  union lang_decl_u {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
        is DECL_TEMPLATE_INFO.  */
-    tree template_info;
+    tree GTY ((tag ("0"))) template_info;
 
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
-    struct binding_level *level;
-  } u;
+    struct cp_binding_level * GTY ((tag ("1"))) level;
+  } GTY ((desc ("%1.u1sel"))) u;
 
-  union {
+  union lang_decl_u2 {
     /* This is DECL_ACCESS.  */
-    tree access;
+    tree GTY ((tag ("0"))) access;
 
     /* For VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
     int discriminator;
@@ -1789,36 +1853,59 @@ struct lang_decl_flags
 
     /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
        THUNK_VCALL_OFFSET.  */
-    tree vcall_offset;
-  } u2;
+    tree GTY((tag ("2"))) vcall_offset;
+  } GTY ((desc ("%1.u2sel"))) u2;
 };
 
-struct lang_decl
+struct lang_decl GTY(())
 {
   struct lang_decl_flags decl_flags;
 
-  tree befriending_classes;
+  union lang_decl_u4
+    {
+      struct full_lang_decl 
+      {
+	tree befriending_classes;
+	
+	/* For a virtual FUNCTION_DECL, this is DECL_VIRTUAL_CONTEXT.  For a
+	   non-virtual FUNCTION_DECL, this is DECL_FRIEND_CONTEXT.  */
+	tree context;
+	
+	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
+	tree cloned_function;
+	
+	/* In an overloaded operator, this is the value of
+	   DECL_OVERLOADED_OPERATOR_P.  */
+	enum tree_code operator_code;
 
-  /* For a virtual FUNCTION_DECL, this is DECL_VIRTUAL_CONTEXT.  For a
-     non-virtual FUNCTION_DECL, this is DECL_FRIEND_CONTEXT.  */
-  tree context;
-
-  /* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
-  tree cloned_function;
-
-  union
-  {
-    tree sorted_fields;
-    struct unparsed_text *pending_inline_info;
-    struct cp_language_function *saved_language_function;
-  } u;
-
-  union {
-    /* In an overloaded operator, this is the value of
-       DECL_OVERLOADED_OPERATOR_P.  */
-    enum tree_code operator_code;
-  } u2;
+	unsigned u3sel : 1;
+	unsigned pending_inline_p : 1;
+	
+	union lang_decl_u3
+	{
+	  tree GTY ((tag ("0"))) sorted_fields;
+	  struct unparsed_text * GTY ((tag ("2"))) pending_inline_info;
+	  struct language_function * GTY ((tag ("1"))) 
+	       saved_language_function;
+	} GTY ((desc ("%1.u3sel + %1.pending_inline_p"))) u;
+      } GTY ((tag ("1"))) f;
+  } GTY ((desc ("%1.decl_flags.can_be_full"))) u;
 };
+
+#if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
+
+#define LANG_DECL_U2_CHECK(NODE, TF)				\
+({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
+    if (lt->decl_flags.u2sel != TF)				\
+      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
+    &lt->decl_flags.u2; })
+
+#else
+
+#define LANG_DECL_U2_CHECK(NODE, TF) \
+  (&DECL_LANG_SPECIFIC (NODE)->decl_flags.u2)
+
+#endif /* ENABLE_TREE_CHECKING */
 
 #define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK (NODE)->identifier.id.str)
 
@@ -1927,7 +2014,7 @@ struct lang_decl
 /* If DECL_CLONED_FUNCTION_P holds, this is the function that was
    cloned.  */
 #define DECL_CLONED_FUNCTION(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->cloned_function)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.cloned_function)
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\
@@ -1935,8 +2022,7 @@ struct lang_decl
    && DECL_FUNCTION_SCOPE_P (NODE))
 
 /* Discriminator for name mangling.  */
-#define DECL_DISCRIMINATOR(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.u2.discriminator)
+#define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)
 
 /* Non-zero if the VTT parm has been added to NODE.  */
 #define DECL_HAS_VTT_PARM_P(NODE) \
@@ -1961,7 +2047,7 @@ struct lang_decl
 
 /* Set the overloaded operator code for NODE to CODE.  */
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u2.operator_code = (CODE))
+  (DECL_LANG_SPECIFIC (NODE)->u.f.operator_code = (CODE))
 
 /* If NODE is an overloaded operator, then this returns the TREE_CODE
    associcated with the overloaded operator.
@@ -1972,7 +2058,7 @@ struct lang_decl
    to test whether or not NODE is an overloaded operator.  */
 #define DECL_OVERLOADED_OPERATOR_P(NODE)		\
   (IDENTIFIER_OPNAME_P (DECL_NAME (NODE))		\
-   ? DECL_LANG_SPECIFIC (NODE)->u2.operator_code : ERROR_MARK)
+   ? DECL_LANG_SPECIFIC (NODE)->u.f.operator_code : ERROR_MARK)
 
 /* Non-zero if NODE is an assignment operator.  */
 #define DECL_ASSIGNMENT_OPERATOR_P(NODE) \
@@ -2007,7 +2093,7 @@ struct lang_decl
 
 /* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
 #define DECL_BEFRIENDING_CLASSES(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->befriending_classes)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.befriending_classes)
 
 /* Nonzero for FUNCTION_DECL means that this decl is a static
    member function.  */
@@ -2081,8 +2167,9 @@ struct lang_decl
   (DECL_NON_THUNK_FUNCTION_P (NODE) && DECL_EXTERN_C_P (NODE))
 
 /* Set DECL_THUNK_P for node.  */
-#define SET_DECL_THUNK_P(NODE) \
-  (DECL_LANG_FLAG_7 (NODE) = 1)
+#define SET_DECL_THUNK_P(NODE)					\
+  (DECL_LANG_FLAG_7 (NODE) = 1, 				\
+   DECL_LANG_SPECIFIC (NODE)->u.f.u3sel = 1)
 
 /* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
    template function.  */
@@ -2102,12 +2189,12 @@ struct lang_decl
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
   ((DECL_FRIEND_P (NODE) && !DECL_FUNCTION_MEMBER_P (NODE))	\
-   ? DECL_LANG_SPECIFIC (NODE)->context                         \
+   ? DECL_LANG_SPECIFIC (NODE)->u.f.context			\
    : NULL_TREE)
 
 /* Set the DECL_FRIEND_CONTEXT for NODE to CONTEXT.  */
 #define SET_DECL_FRIEND_CONTEXT(NODE, CONTEXT) \
-  (DECL_LANG_SPECIFIC (NODE)->context = (CONTEXT))
+  (DECL_LANG_SPECIFIC (NODE)->u.f.context = (CONTEXT))
 
 /* NULL_TREE in DECL_CONTEXT represents the global namespace. */
 #define CP_DECL_CONTEXT(NODE) \
@@ -2117,7 +2204,7 @@ struct lang_decl
 /* For a virtual function, the base where we find its vtable entry.
    For a non-virtual function, the base where it is defined.  */
 #define DECL_VIRTUAL_CONTEXT(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->context)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.context)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE)				\
@@ -2176,17 +2263,17 @@ struct lang_decl
    the class definition.  We have saved away the text of the function,
    but have not yet processed it.  */
 #define DECL_PENDING_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.pending_inline_p)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.pending_inline_p)
 
 /* If DECL_PENDING_INLINE_P holds, this is the saved text of the
    function.  */
 #define DECL_PENDING_INLINE_INFO(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->u.pending_inline_info)
+  (DECL_LANG_SPECIFIC (NODE)->u.f.u.pending_inline_info)
 
 /* For a TYPE_DECL: if this function has many fields, we'll sort them
    and put them into a TREE_VEC. */
 #define DECL_SORTED_FIELDS(NODE) \
-  (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))->u.sorted_fields)
+  (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))->u.f.u.sorted_fields)
 
 /* True if on the deferred_fns (see decl2.c) list.  */
 #define DECL_DEFERRED_FN(DECL) \
@@ -2200,7 +2287,7 @@ struct lang_decl
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \
-  (TYPE_LANG_SPECIFIC (RECORD_OR_UNION_TYPE_CHECK (NODE))->template_info)
+  (LANG_TYPE_CLASS_CHECK (RECORD_OR_UNION_TYPE_CHECK (NODE))->template_info)
 
 /* Template information for an ENUMERAL_TYPE.  Although an enumeration may
    not be a primary template, it may be declared within the scope of a
@@ -2210,7 +2297,7 @@ struct lang_decl
 
 /* Template information for a template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) \
-  (TYPE_LANG_SPECIFIC (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)) \
+  (LANG_TYPE_CLASS_CHECK (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)) \
    ->template_info)
 
 /* Template information for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
@@ -2348,8 +2435,9 @@ struct lang_decl
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
-#define DECL_SAVED_FUNCTION_DATA(NODE) \
-  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.saved_language_function)
+#define DECL_SAVED_FUNCTION_DATA(NODE)			\
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))	\
+   ->u.f.u.saved_language_function)
 
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define DELETE_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -2488,15 +2576,15 @@ extern int flag_new_for_scope;
 /* Nonzero means that an object of this type can not be initialized using
    an initializer list.  */
 #define CLASSTYPE_NON_AGGREGATE(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->non_aggregate)
+  (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
   (IS_AGGR_TYPE (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
-#define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_real_assign_ref)
-#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_complex_assign_ref)
-#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_abstract_assign_ref)
-#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (TYPE_LANG_SPECIFIC (NODE)->has_complex_init_ref)
+#define TYPE_HAS_REAL_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_real_assign_ref)
+#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_assign_ref)
+#define TYPE_HAS_ABSTRACT_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_abstract_assign_ref)
+#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_init_ref)
 
 /* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
 
@@ -2555,7 +2643,7 @@ extern int flag_new_for_scope;
    && TYPE_PTRMEMFUNC_FLAG (NODE))
 
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
-  (TYPE_LANG_SPECIFIC (NODE)->ptrmemfunc_flag)
+  (LANG_TYPE_CLASS_CHECK (NODE)->ptrmemfunc_flag)
 
 /* Indicates when overload resolution may resolve to a pointer to
    member function. [expr.unary.op]/3 */
@@ -2600,9 +2688,17 @@ enum ptrmemfunc_vbit_where_t
 /* These are use to manipulate the canonical RECORD_TYPE from the
    hashed POINTER_TYPE, and can only be used on the POINTER_TYPE.  */
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) \
-  ((tree)TYPE_LANG_SPECIFIC (NODE))
-#define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) \
-  (TYPE_LANG_SPECIFIC (NODE) = ((struct lang_type *)(void*)(VALUE)))
+  (TYPE_LANG_SPECIFIC (NODE) ? LANG_TYPE_PTRMEM_CHECK (NODE)->record : NULL)
+#define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE)				\
+  do {									\
+    if (TYPE_LANG_SPECIFIC (NODE) == NULL)				\
+      {									\
+	TYPE_LANG_SPECIFIC (NODE) = 					\
+	  ggc_alloc_cleared (sizeof (struct lang_type_ptrmem));		\
+	TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.h.is_lang_type_class = 0;	\
+      }									\
+    TYPE_LANG_SPECIFIC (NODE)->u.ptrmem.record = (VALUE);		\
+  } while (0)
 /* Returns the pfn field from a TYPE_PTRMEMFUNC_P.  */
 #define PFN_FROM_PTRMEMFUNC(NODE) pfn_from_ptrmemfunc ((NODE))
 
@@ -2647,9 +2743,9 @@ enum ptrmemfunc_vbit_where_t
    flag for this because "A union for which objects or pointers are
    declared is not an anonymous union" [class.union].  */
 #define ANON_AGGR_TYPE_P(NODE)				\
-  (CLASS_TYPE_P (NODE) && TYPE_LANG_SPECIFIC (NODE)->anon_aggr)
+  (CLASS_TYPE_P (NODE) && LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr)
 #define SET_ANON_AGGR_TYPE_P(NODE)			\
-  (TYPE_LANG_SPECIFIC (NODE)->anon_aggr = 1)
+  (LANG_TYPE_CLASS_CHECK (NODE)->anon_aggr = 1)
 
 /* Nonzero if TYPE is an anonymous union type.  */
 #define ANON_UNION_TYPE_P(NODE) \
@@ -2659,7 +2755,7 @@ enum ptrmemfunc_vbit_where_t
 
 /* Define fields and accessors for nodes representing declared names.  */
 
-#define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->was_anonymous)
+#define TYPE_WAS_ANONYMOUS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->was_anonymous)
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 
@@ -2684,7 +2780,7 @@ enum ptrmemfunc_vbit_where_t
    For example, if a member that would normally be public in a
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
-#define DECL_ACCESS(NODE) (DECL_LANG_SPECIFIC (NODE)->decl_flags.u2.access)
+#define DECL_ACCESS(NODE) (LANG_DECL_U2_CHECK (NODE, 0)->access)
 
 /* Nonzero if the FUNCTION_DECL is a global constructor.  */
 #define DECL_GLOBAL_CTOR_P(NODE) \
@@ -2699,7 +2795,7 @@ enum ptrmemfunc_vbit_where_t
    with lower numbers should be run first.  Destructors should be run
    in the reverse order of constructors.  */
 #define GLOBAL_INIT_PRIORITY(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.u2.init_priority)
+  (LANG_DECL_U2_CHECK (NODE, 1)->init_priority)
 
 /* Accessor macros for C++ template decl nodes.  */
 
@@ -2882,7 +2978,7 @@ enum ptrmemfunc_vbit_where_t
    i.e., an instantiation whose instantiation arguments involve
    template types.  */
 #define PARTIAL_INSTANTIATION_P(TYPE) \
-  (TYPE_LANG_SPECIFIC (TYPE)->is_partial_instantiation)
+  (LANG_TYPE_CLASS_CHECK (TYPE)->is_partial_instantiation)
 
 /* Non-zero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
@@ -2947,7 +3043,7 @@ enum ptrmemfunc_vbit_where_t
    is always located at offset zero from the f `this' pointer.)  If
    NULL, then there is no vcall offset.  */
 #define THUNK_VCALL_OFFSET(DECL) \
-  (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
+  (LANG_DECL_U2_CHECK (DECL, 0)->vcall_offset)
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
@@ -3124,7 +3220,7 @@ extern int warn_nontemplate_friend;
 
 /* in decl{2}.c */
 /* A node that is a list (length 1) of error_mark_nodes.  */
-extern tree error_mark_list;
+extern GTY(()) tree error_mark_list;
 
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
@@ -3132,9 +3228,10 @@ extern tree error_mark_list;
 
 
 /* For building calls to `delete'.  */
-extern tree integer_two_node, integer_three_node;
+extern GTY(()) tree integer_two_node;
+extern GTY(()) tree integer_three_node;
 
-extern tree anonymous_namespace_name;
+extern GTY(()) tree anonymous_namespace_name;
 
 /* The number of function bodies which we are currently processing.
    (Zero if we are at namespace scope, one inside the body of a
@@ -3165,13 +3262,9 @@ typedef enum unification_kind_t {
 
 extern int current_class_depth;
 
-/* Points to the name of that function. May not be the DECL_NAME
-   of CURRENT_FUNCTION_DECL due to overloading */
-extern tree original_function_name;
-
 /* An array of all local classes present in this translation unit, in
    declaration order.  */
-extern varray_type local_classes;
+extern GTY(()) varray_type local_classes;
 
 /* Here's where we control how name mangling takes place.  */
 
@@ -3331,8 +3424,8 @@ extern int at_eof;
 
 /* Functions called along with real static constructors and destructors.  */
 
-extern tree static_ctors;
-extern tree static_dtors;
+extern GTY(()) tree static_ctors;
+extern GTY(()) tree static_dtors;
 
 enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 
@@ -3652,7 +3745,8 @@ extern void insert_block			PARAMS ((tree));
 extern void set_block				PARAMS ((tree));
 extern tree pushdecl				PARAMS ((tree));
 extern void cxx_init_decl_processing		PARAMS ((void));
-extern void cxx_mark_tree			PARAMS ((tree));
+enum cp_tree_node_structure_enum cp_tree_node_structure 
+  PARAMS ((union lang_tree_node *));
 extern void cxx_insert_default_attributes	PARAMS ((tree));
 extern bool cxx_mark_addressable		PARAMS ((tree));
 extern void cxx_push_function_context		PARAMS ((struct function *));
@@ -3669,13 +3763,13 @@ extern void finish_scope                        PARAMS ((void));
 extern void note_level_for_for			PARAMS ((void));
 extern void note_level_for_try			PARAMS ((void));
 extern void note_level_for_catch		PARAMS ((void));
-extern void resume_level			PARAMS ((struct binding_level *));
+extern void resume_level			PARAMS ((struct cp_binding_level *));
 extern void delete_block			PARAMS ((tree));
 extern void add_block_current_level		PARAMS ((tree));
 extern void pushlevel_class			PARAMS ((void));
 extern void poplevel_class                      PARAMS ((void));
 extern void print_binding_stack			PARAMS ((void));
-extern void print_binding_level			PARAMS ((struct binding_level *));
+extern void print_binding_level			PARAMS ((struct cp_binding_level *));
 extern void push_namespace			PARAMS ((tree));
 extern void pop_namespace			PARAMS ((void));
 extern void push_nested_namespace		PARAMS ((tree));
@@ -3764,7 +3858,7 @@ extern tree finish_method			PARAMS ((tree));
 extern void maybe_register_incomplete_var       PARAMS ((tree));
 extern void complete_vars			PARAMS ((tree));
 extern void finish_stmt				PARAMS ((void));
-extern void print_other_binding_stack		PARAMS ((struct binding_level *));
+extern void print_other_binding_stack		PARAMS ((struct cp_binding_level *));
 extern void revert_static_member_fn             PARAMS ((tree));
 extern void fixup_anonymous_aggr                PARAMS ((tree));
 extern int check_static_variable_definition     PARAMS ((tree, tree));
@@ -3799,7 +3893,6 @@ extern tmpl_spec_kind current_tmpl_spec_kind    PARAMS ((int));
 extern tree cp_fname_init			PARAMS ((const char *));
 
 /* in decl2.c */
-extern void init_decl2				PARAMS ((void));
 extern int check_java_method			PARAMS ((tree));
 extern int cxx_decode_option			PARAMS ((int, char **));
 extern int grok_method_quals			PARAMS ((tree, tree, tree));
@@ -3856,9 +3949,6 @@ extern tree build_artificial_parm               PARAMS ((tree, tree));
 extern tree get_guard                           PARAMS ((tree));
 extern tree get_guard_cond                      PARAMS ((tree));
 extern tree set_guard                           PARAMS ((tree));
-
-/* in parse.y */
-extern void cp_parse_init			PARAMS ((void));
 
 extern void cp_error_at		PARAMS ((const char *msgid, ...));
 extern void cp_warning_at	PARAMS ((const char *msgid, ...));
@@ -3968,7 +4058,6 @@ extern tree make_aggr_type			PARAMS ((enum tree_code));
 extern void compiler_error			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 extern void yyerror				PARAMS ((const char *));
-extern void clear_inline_text_obstack		PARAMS ((void));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
 extern const char *cxx_init			PARAMS ((const char *));
@@ -3992,7 +4081,6 @@ extern int calls_setjmp_p                       PARAMS ((tree));
 extern int maybe_clone_body                     PARAMS ((tree));
 
 /* in pt.c */
-extern void init_pt                             PARAMS ((void));
 extern void check_template_shadow		PARAMS ((tree));
 extern tree get_innermost_template_args         PARAMS ((tree, int));
 extern tree tsubst				PARAMS ((tree, tree, tsubst_flags_t, tree));
@@ -4192,7 +4280,6 @@ extern tree begin_class_definition              PARAMS ((tree));
 extern tree finish_class_definition             PARAMS ((tree, tree, int, int));
 extern void finish_default_args                 PARAMS ((void));
 extern void begin_inline_definitions            PARAMS ((void));
-extern void finish_inline_definitions           PARAMS ((void));
 extern tree finish_member_class_template        PARAMS ((tree));
 extern void finish_template_decl                PARAMS ((tree));
 extern tree finish_template_type                PARAMS ((tree, tree, int));
@@ -4219,7 +4306,6 @@ extern tree finish_global_stmt_expr             PARAMS ((tree));
 
 /* in spew.c */
 extern void init_spew				PARAMS ((void));
-extern void mark_pending_inlines		PARAMS ((PTR));
 extern int peekyylex				PARAMS ((void));
 extern tree arbitrate_lookup			PARAMS ((tree, tree, tree));
 extern tree frob_opname                         PARAMS ((tree));
@@ -4232,8 +4318,10 @@ extern void replace_defarg			PARAMS ((tree, tree));
 extern void end_input				PARAMS ((void));
 
 /* in tree.c */
-extern tree stabilize_expr		PARAMS ((tree, tree *));
-extern tree cxx_unsave_expr_now		PARAMS ((tree));
+extern void lang_check_failed			PARAMS ((const char *, int,
+							 const char *));
+extern tree stabilize_expr			PARAMS ((tree, tree *));
+extern tree cxx_unsave_expr_now			PARAMS ((tree));
 extern tree cxx_maybe_build_cleanup		PARAMS ((tree));
 extern void init_tree			        PARAMS ((void));
 extern int pod_type_p				PARAMS ((tree));
@@ -4242,7 +4330,8 @@ extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));
 extern int member_p				PARAMS ((tree));
 extern cp_lvalue_kind real_lvalue_p		PARAMS ((tree));
-extern tree build_min				PARAMS ((enum tree_code, tree, ...));
+extern tree build_min				PARAMS ((enum tree_code, tree,
+							 ...));
 extern tree build_min_nt			PARAMS ((enum tree_code, ...));
 extern tree build_cplus_new			PARAMS ((tree, tree));
 extern tree get_target_expr			PARAMS ((tree));
@@ -4275,8 +4364,7 @@ extern tree vec_binfo_member			PARAMS ((tree, tree));
 extern tree decl_namespace_context		PARAMS ((tree));
 extern tree lvalue_type				PARAMS ((tree));
 extern tree error_type				PARAMS ((tree));
-extern tree build_ptr_wrapper			PARAMS ((void *));
-extern tree build_int_wrapper			PARAMS ((int));
+extern tree build_zc_wrapper			PARAMS ((struct z_candidate *));
 extern tree build_srcloc_here			PARAMS ((void));
 extern int varargs_function_p			PARAMS ((tree));
 extern int really_overloaded_fn			PARAMS ((tree));

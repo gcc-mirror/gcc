@@ -32,3 +32,18 @@ ggc_alloc (size)
 {
   return xmalloc (size);
 }
+
+void *
+ggc_alloc_cleared (size)
+     size_t size;
+{
+  return xcalloc (size, 1);
+}
+
+void *
+ggc_realloc (x, size)
+     void *x;
+     size_t size;
+{
+  return xrealloc (x, size);
+}

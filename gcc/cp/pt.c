@@ -56,17 +56,17 @@ extern struct obstack permanent_obstack;
    the instantiate request occurred; the TREE_VALUE is a either a DECL
    (for a function or static data member), or a TYPE (for a class)
    indicating what we are hoping to instantiate.  */
-static tree pending_templates;
+static GTY(()) tree pending_templates;
 static tree last_pending_template;
 
 int processing_template_parmlist;
 static int template_header_count;
 
-static tree saved_trees;
-static varray_type inline_parm_levels;
+static GTY(()) tree saved_trees;
+static GTY(()) varray_type inline_parm_levels;
 static size_t inline_parm_levels_used;
 
-static tree current_tinst_level;
+static GTY(()) tree current_tinst_level;
 
 /* A map from local variable declarations in the body of the template
    presently being instantiated to the corresponding instantiated
@@ -169,16 +169,6 @@ static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
 static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
 static void copy_default_args_to_explicit_spec PARAMS ((tree));
 static int invalid_nontype_parm_type_p PARAMS ((tree, tsubst_flags_t));
-
-/* Called once to initialize pt.c.  */
-
-void
-init_pt ()
-{
-  ggc_add_tree_root (&pending_templates, 1);
-  ggc_add_tree_root (&saved_trees, 1);
-  ggc_add_tree_root (&current_tinst_level, 1);
-}
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -10426,3 +10416,5 @@ invalid_nontype_parm_type_p (type, complain)
               type);
   return 1;
 }
+
+#include "gt-cp-pt.h"

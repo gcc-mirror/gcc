@@ -42,8 +42,8 @@ static void open_repo_file PARAMS ((const char *));
 static char *afgets PARAMS ((FILE *));
 static void reopen_repo_file_for_write PARAMS ((void));
 
-static tree pending_repo;
-static tree original_repo;
+static GTY(()) tree pending_repo;
+static GTY(()) tree original_repo;
 static char *repo_name;
 static FILE *repo_file;
 
@@ -320,8 +320,6 @@ init_repo (filename)
   if (! flag_use_repository)
     return;
 
-  ggc_add_tree_root (&pending_repo, 1);
-  ggc_add_tree_root (&original_repo, 1);
   gcc_obstack_init (&temporary_obstack);
 
   open_repo_file (filename);
@@ -458,3 +456,5 @@ finish_repo ()
   if (repo_file)
     fclose (repo_file);
 }
+
+#include "gt-cp-repo.h"

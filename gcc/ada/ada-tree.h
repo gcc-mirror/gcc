@@ -34,6 +34,35 @@ enum gnat_tree_code {
 };
 #undef DEFTREECODE
 
+/* A tree to hold a loop ID.  */
+struct tree_loop_id GTY(()) 
+{
+  struct tree_common common;
+  struct nesting *loop_id;
+};
+
+/* The language-specific tree.  */
+union lang_tree_node 
+  GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID")))
+{
+  union tree_node GTY ((tag ("0"), 
+			desc ("tree_node_structure (&%h)"))) 
+    generic;
+  struct tree_loop_id GTY ((tag ("1"))) loop_id;
+};
+
+/* Ada uses the lang_decl and lang_type fields to hold more trees.  */
+struct lang_decl GTY(()) 
+{
+  union lang_tree_node 
+    GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID"))) t;
+};
+struct lang_type GTY(())
+{
+  union lang_tree_node 
+    GTY((desc ("TREE_CODE (&%h.generic) == GNAT_LOOP_ID"))) t;
+};
+
 /* Flags added to GCC type nodes.  */
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is a
@@ -129,29 +158,39 @@ enum gnat_tree_code {
    by copy in copy out.  It is a CONSTRUCTOR.  For a full description of the
    cico parameter passing mechanism refer to the routine gnat_to_gnu_entity. */
 #define TYPE_CI_CO_LIST(NODE)   \
-  (tree) TYPE_LANG_SPECIFIC (FUNCTION_TYPE_CHECK (NODE))
+  (&TYPE_LANG_SPECIFIC (FUNCTION_TYPE_CHECK (NODE))->t.generic)
+#define SET_TYPE_CI_CO_LIST(NODE, X)   \
+  (TYPE_LANG_SPECIFIC (FUNCTION_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
 #define TYPE_MODULUS(NODE)  \
-  (tree) TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+  (&TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))->t.generic)
+#define SET_TYPE_MODULUS(NODE, X)  \
+  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 /* For an INTEGER_TYPE that is the TYPE_DOMAIN of some ARRAY_TYPE, points to
    the type corresponding to the Ada index type.  */
 #define TYPE_INDEX_TYPE(NODE)	\
-  (tree) TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+  (&TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))->t.generic)
+#define SET_TYPE_INDEX_TYPE(NODE, X)	\
+  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 /* For an INTEGER_TYPE with TYPE_VAX_FLOATING_POINT_P, stores the
    Digits_Value.  */
 #define TYPE_DIGITS_VALUE(NODE)  \
-  (long) TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+  ((long) TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)))
+#define SET_TYPE_DIGITS_VALUE(NODE, X)  \
+  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 /* For INTEGER_TYPE, stores the RM_Size of the type.  */
 #define TYPE_RM_SIZE_INT(NODE)	TYPE_VALUES (INTEGER_TYPE_CHECK (NODE))
 
 /* Likewise for ENUMERAL_TYPE.  */
 #define TYPE_RM_SIZE_ENUM(NODE)	\
-  (tree) TYPE_LANG_SPECIFIC (ENUMERAL_TYPE_CHECK (NODE))
+  (&TYPE_LANG_SPECIFIC (ENUMERAL_TYPE_CHECK (NODE))->t.generic)
+#define SET_TYPE_RM_SIZE_ENUM(NODE, X)	\
+  (TYPE_LANG_SPECIFIC (ENUMERAL_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 #define TYPE_RM_SIZE(NODE)					\
   (TREE_CODE (NODE) == ENUMERAL_TYPE ? TYPE_RM_SIZE_ENUM (NODE)	\
@@ -162,17 +201,23 @@ enum gnat_tree_code {
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
    to by a thin pointer.  */
 #define TYPE_UNCONSTRAINED_ARRAY(NODE)  \
-  (tree) TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE))
+  (&TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE))->t.generic)
+#define SET_TYPE_UNCONSTRAINED_ARRAY(NODE, X)  \
+  (TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
 
 /* For other RECORD_TYPEs and all UNION_TYPEs and QUAL_UNION_TYPEs, the Ada
    size of the object.  This differs from the GCC size in that it does not
    include any rounding up to the alignment of the type.  */
-#define TYPE_ADA_SIZE(NODE)	(tree) TYPE_LANG_SPECIFIC (NODE)
+#define TYPE_ADA_SIZE(NODE)	(&TYPE_LANG_SPECIFIC (NODE)->t.generic)
+#define SET_TYPE_ADA_SIZE(NODE, X) \
+  (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)(X))
 
 /* For an INTEGER_TYPE with TYPE_HAS_ACTUAL_BOUNDS_P or an ARRAY_TYPE, this is
    the index type that should be used when the actual bounds are required for
    a template.  This is used in the case of packed arrays.  */
-#define TYPE_ACTUAL_BOUNDS(NODE)   (tree) TYPE_LANG_SPECIFIC (NODE)
+#define TYPE_ACTUAL_BOUNDS(NODE)   (&TYPE_LANG_SPECIFIC (NODE)->t.generic)
+#define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
+  (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)(X))
 
 /* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
    the template and object.  */
@@ -211,12 +256,16 @@ enum gnat_tree_code {
    memory.  Used when a scalar constant is aliased or has its
    address taken.  */
 #define DECL_CONST_CORRESPONDING_VAR(NODE) \
-  (tree) DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE))
+  (&DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE))->t.generic)
+#define SET_DECL_CONST_CORRESPONDING_VAR(NODE, X) \
+  (DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE)) = (struct lang_decl *)(X))
 
 /* In a FIELD_DECL, points to the FIELD_DECL that was the ultimate
    source of the decl.  */
 #define DECL_ORIGINAL_FIELD(NODE) \
-  (tree) DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))
+  (&DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->t.generic)
+#define SET_DECL_ORIGINAL_FIELD(NODE, X) \
+  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE)) = (struct lang_decl *)(X))
 
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
@@ -224,4 +273,5 @@ enum gnat_tree_code {
 
 /* This is a horrible kludge to store the loop_id of a loop into a tree
    node.  We need to find some other place to store it!  */
-#define TREE_LOOP_ID(NODE) (TREE_CHECK (NODE, GNAT_LOOP_ID)->real_cst.rtl)
+#define TREE_LOOP_ID(NODE) \
+  (((union lang_tree_node *)TREE_CHECK (NODE, GNAT_LOOP_ID))->loop_id.loop_id)

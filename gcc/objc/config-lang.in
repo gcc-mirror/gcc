@@ -32,3 +32,5 @@ compilers="cc1obj\$(exeext)"
 stagestuff=""
 
 target_libs=target-libobjc
+
+gtfiles="\$(srcdir)/objc/objc-act.h"

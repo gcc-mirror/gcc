@@ -50,12 +50,12 @@ Boston, MA 02111-1307, USA.  */
    backtracking.  */
 
 /* fifo of tokens recognized and available to parser.  */
-struct token
+struct token GTY(())
 {
   /* The values for YYCHAR will fit in a short.  */
   short		yychar;
   unsigned int	lineno;
-  YYSTYPE	yylval;
+  YYSTYPE GTY ((desc ("%1.yychar"))) yylval;
 };
 
 /* Since inline methods can refer to text which has not yet been seen,
@@ -68,7 +68,14 @@ struct token
    This function's FUNCTION_DECL will have a bit set in its common so
    that we know to watch out for it.  */
 
-struct unparsed_text
+#define TOKEN_CHUNK_SIZE 20
+struct token_chunk GTY(())
+{
+  struct token_chunk *next;
+  struct token toks[TOKEN_CHUNK_SIZE];
+};
+
+struct unparsed_text GTY(())
 {
   struct unparsed_text *next;	/* process this one next */
   tree decl;		/* associated declaration */
@@ -76,26 +83,31 @@ struct unparsed_text
   int lineno;		/* line number we got the text from */
   int interface;	/* remembering interface_unknown and interface_only */
 
-  struct token *pos;	/* current position, when rescanning */
-  struct token *limit;	/* end of saved text */
+  struct token_chunk * tokens; /* Start of the token list.  */
+
+  struct token_chunk *last_chunk; /* End of the token list.  */
+  short last_pos;	/* Number of tokens used in the last chunk of 
+			   TOKENS. */
+
+  short cur_pos;	/* Current token in 'cur_chunk', when rescanning.  */
+  struct token_chunk *cur_chunk;  /* Current chunk, when rescanning.  */
 };
 
 /* Stack of state saved off when we return to an inline method or
    default argument that has been stored for later parsing.  */
-struct feed
+struct feed GTY(())
 {
   struct unparsed_text *input;
   const char *filename;
   int lineno;
   int yychar;
-  YYSTYPE yylval;
+  YYSTYPE GTY ((desc ("%1.yychar"))) yylval;
   int first_token;
-  struct obstack token_obstack;
+  struct obstack GTY ((skip (""))) token_obstack;
   struct feed *next;
-};  
+};
 
-static struct obstack feed_obstack;
-static struct feed *feed;
+static GTY(()) struct feed *feed;
 
 static SPEW_INLINE void do_aggr PARAMS ((void));
 static SPEW_INLINE int identifier_type PARAMS ((tree));
@@ -107,25 +119,32 @@ static int read_token PARAMS ((struct token *));
 
 static SPEW_INLINE int num_tokens PARAMS ((void));
 static SPEW_INLINE struct token *nth_token PARAMS ((int));
-static SPEW_INLINE int add_token PARAMS ((struct token *));
+static SPEW_INLINE int next_token PARAMS ((struct token *));
 static SPEW_INLINE int shift_token PARAMS ((void));
 static SPEW_INLINE void push_token PARAMS ((struct token *));
 static SPEW_INLINE void consume_token PARAMS ((void));
 static SPEW_INLINE int read_process_identifier PARAMS ((YYSTYPE *));
 
 static SPEW_INLINE void feed_input PARAMS ((struct unparsed_text *));
-static SPEW_INLINE void snarf_block PARAMS ((const char *, int));
+static SPEW_INLINE struct token * space_for_token 
+  PARAMS ((struct unparsed_text *t));
+static SPEW_INLINE struct token * remove_last_token
+  PARAMS ((struct unparsed_text *t));
+static struct unparsed_text * alloc_unparsed_text
+  PARAMS ((const char *fn, int li, tree decl, int interface));
+
+static void snarf_block PARAMS ((struct unparsed_text *t));
 static tree snarf_defarg PARAMS ((void));
 static int frob_id PARAMS ((int, int, tree *));
 
 /* The list of inline functions being held off until we reach the end of
    the current class declaration.  */
-static struct unparsed_text *pending_inlines;
-static struct unparsed_text *pending_inlines_tail;
+static GTY(()) struct unparsed_text *pending_inlines;
+static GTY(()) struct unparsed_text *pending_inlines_tail;
 
 /* The list of previously-deferred inline functions currently being parsed.
    This exists solely to be a GC root.  */
-static struct unparsed_text *processing_these_inlines;
+static GTY(()) struct unparsed_text *processing_these_inlines;
 
 static void begin_parsing_inclass_inline PARAMS ((struct unparsed_text *));
 
@@ -151,13 +170,8 @@ extern int	yychar;		/*  the lookahead symbol		*/
 extern YYSTYPE	yylval;		/*  the semantic value of the		*/
 				/*  lookahead symbol			*/
 /* The token fifo lives in this obstack.  */
-struct obstack token_obstack;
-int first_token;
-
-/* Sometimes we need to save tokens for later parsing.  If so, they are
-   stored on this obstack.  */
-struct obstack inline_text_obstack;
-char *inline_text_firstobj;
+static struct obstack token_obstack;
+static int first_token;
 
 /* When we see a default argument in a method declaration, we snarf it as
    text using snarf_defarg.  When we get up to namespace scope, we then go
@@ -168,35 +182,21 @@ char *inline_text_firstobj;
    the TREE_TYPE is the current_class_type, TREE_VALUE is the FUNCTION_DECL,
    and TREE_PURPOSE is the list unprocessed dependent functions.  */
 
-static tree defarg_fns;     /* list of functions with unprocessed defargs */
-static tree defarg_parm;    /* current default parameter */
-static tree defarg_depfns;  /* list of unprocessed fns met during current fn. */
-static tree defarg_fnsdone; /* list of fns with circular defargs */
+/* list of functions with unprocessed defargs */
+static GTY(()) tree defarg_fns;
+/* current default parameter */
+static GTY(()) tree defarg_parm;
+/* list of unprocessed fns met during current fn. */
+static GTY(()) tree defarg_depfns;
+/* list of fns with circular defargs */
+static GTY(()) tree defarg_fnsdone;
 
 /* Initialize obstacks. Called once, from cxx_init.  */
 
 void
 init_spew ()
 {
-  gcc_obstack_init (&inline_text_obstack);
-  inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
   gcc_obstack_init (&token_obstack);
-  gcc_obstack_init (&feed_obstack);
-  ggc_add_tree_root (&defarg_fns, 1);
-  ggc_add_tree_root (&defarg_parm, 1);
-  ggc_add_tree_root (&defarg_depfns, 1);
-  ggc_add_tree_root (&defarg_fnsdone, 1);
-
-  ggc_add_root (&pending_inlines, 1, sizeof (struct unparsed_text *),
-		mark_pending_inlines);
-  ggc_add_root (&processing_these_inlines, 1, sizeof (struct unparsed_text *),
-		mark_pending_inlines);
-}
-
-void
-clear_inline_text_obstack ()
-{
-  obstack_free (&inline_text_obstack, inline_text_firstobj);
 }
 
 /* Subroutine of read_token.  */
@@ -270,8 +270,6 @@ yylexstring (t)
 
       t->yylval.ttype = combine_strings (strings);
       last_token_id = t->yylval.ttype;
-
-      VARRAY_FREE (strings);
     }
 
   /* We will have always read one token too many.  */
@@ -396,10 +394,10 @@ feed_input (input)
     abort ();
 #endif
 
-  f = obstack_alloc (&feed_obstack, sizeof (struct feed));
+  f = ggc_alloc (sizeof (struct feed));
 
-  /* The token list starts just after the struct unparsed_text in memory.  */
-  input->pos = (struct token *) (input + 1);
+  input->cur_chunk = input->tokens;
+  input->cur_pos = 0;
 
 #ifdef SPEW_DEBUG
   if (spew_debug)
@@ -439,48 +437,12 @@ end_input ()
   token_obstack = f->token_obstack;
   feed = f->next;
 
-  obstack_free (&feed_obstack, f);
-
 #ifdef SPEW_DEBUG
   if (spew_debug)
     fprintf (stderr, "\treturning to %s:%d\n", input_filename, lineno);
 #endif
 }
 
-/* GC callback to mark memory pointed to by the pending inline queue.  */
-void
-mark_pending_inlines (pi)
-     PTR pi;
-{
-  struct unparsed_text *up = * (struct unparsed_text **)pi;
-
-  while (up)
-    {
-      struct token *t = (struct token *) (up + 1);
-      struct token *l = up->limit;
-
-      while (t < l)
-	{
-	  /* Some of the possible values for yychar use yylval.code
-	     instead of yylval.ttype.  We only have to worry about
-	     yychars that could have been returned by read_token.  */
-	  switch (t->yychar)
-	    {
-	    case '+':	    case '-':	    case '*':	    case '/':
-	    case '%':	    case '&':	    case '|':	    case '^':
-	    case '>':	    case '<':	    case LSHIFT:    case RSHIFT:
-	    case ASSIGN:    case MIN_MAX:   case EQCOMPARE: case ARITHCOMPARE:
-	      t++;
-	      continue;
-	    }
-	  if (t->yylval.ttype)
-	    ggc_mark_tree (t->yylval.ttype);
-	  t++;
-	}
-      up = up->next;
-    }
-}
-  
 /* Token queue management.  */
 
 /* Return the number of tokens available on the fifo.  */
@@ -510,16 +472,24 @@ static const struct token Tpad = { EMPTY, 0 UNION_INIT_ZERO };
 
 /* Copy the next token into T and return its value.  */
 static SPEW_INLINE int
-add_token (t)
+next_token (t)
      struct token *t;
 {
   if (!feed)
     return read_token (t);
 
-  if (feed->input->pos < feed->input->limit)
+  if (feed->input->cur_chunk != feed->input->last_chunk
+      || feed->input->cur_pos != feed->input->last_pos)
     {
-      memcpy (t, feed->input->pos, sizeof (struct token));
-      return (feed->input->pos++)->yychar;
+      if (feed->input->cur_pos == TOKEN_CHUNK_SIZE)
+	{
+	  feed->input->cur_chunk = feed->input->cur_chunk->next;
+	  feed->input->cur_pos = 0;
+	}
+      memcpy (t, feed->input->cur_chunk->toks + feed->input->cur_pos, 
+	      sizeof (struct token));
+      feed->input->cur_pos++;
+      return t->yychar;
     }
   
   memcpy (t, &Teosi, sizeof (struct token));
@@ -532,7 +502,7 @@ shift_token ()
 {
   size_t point = obstack_object_size (&token_obstack);
   obstack_blank (&token_obstack, sizeof (struct token));
-  return add_token ((struct token *) (obstack_base (&token_obstack) + point));
+  return next_token ((struct token *) (obstack_base (&token_obstack) + point));
 }
 
 /* Consume the next token out of the fifo.  */
@@ -1060,22 +1030,73 @@ process_next_inline (i)
       extract_interface_info ();
     }
 }
+
+/* Create a new token at the end of the token list in T.  */
+static SPEW_INLINE struct token *
+space_for_token (t)
+     struct unparsed_text *t;
+{
+  if (t->last_pos != TOKEN_CHUNK_SIZE)
+    return t->last_chunk->toks + (t->last_pos++);
 
+  t->last_chunk->next = ggc_alloc (sizeof (*t->last_chunk->next));
+  t->last_chunk = t->last_chunk->next;
+  t->last_chunk->next = NULL;
+  
+  t->last_pos = 1;
+  return t->last_chunk->toks;
+}
+
+/* Shrink the token list in T by one token.  */
+static SPEW_INLINE struct token *
+remove_last_token (t)
+     struct unparsed_text *t;
+{
+  struct token *result = t->last_chunk->toks + t->last_pos - 1;
+  if (t->last_pos == 0)
+    abort ();
+  t->last_pos--;
+  if (t->last_pos == 0 && t->last_chunk != t->tokens)
+    {
+      struct token_chunk **tc;
+      for (tc = &t->tokens; (*tc)->next != NULL; tc = &(*tc)->next)
+	;
+      *tc = NULL;
+      t->last_pos = sizeof ((*tc)->toks) / sizeof ((*tc)->toks[0]);
+    }
+  return result;
+}
+
+/* Allocate an 'unparsed_text' structure, ready to use space_for_token.  */
+static struct unparsed_text *
+alloc_unparsed_text (fn, li, decl, interface)
+     const char *fn;
+     int li;
+     tree decl;
+     int interface;
+{
+  struct unparsed_text *r;
+  r = ggc_alloc_cleared (sizeof (*r));
+  r->decl = decl;
+  r->filename = fn;
+  r->lineno = li;
+  r->interface = interface;
+  r->tokens = r->last_chunk = ggc_alloc_cleared (sizeof (*r->tokens));
+  return r;
+}
 
 /* Subroutine of snarf_method, deals with actual absorption of the block.  */
 
-static SPEW_INLINE void
-snarf_block (starting_file, starting_line)
-     const char *starting_file;
-     int starting_line;
+static void
+snarf_block (t)
+     struct unparsed_text *t;
 {
   int blev = 1;
   int look_for_semicolon = 0;
   int look_for_lbrac = 0;
   int look_for_catch = 0;
   int yyc;
-  struct token tmp;
-  size_t point;
+  struct token *current;
 
   if (yychar == '{')
     ;
@@ -1092,17 +1113,14 @@ snarf_block (starting_file, starting_line)
     yyerror ("parse error in method specification");
 
   /* The current token is the first one to be recorded.  */
-  tmp.yychar = yychar;
-  tmp.yylval = yylval;
-  tmp.lineno = lineno;
-  obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+  current = space_for_token (t);
+  current->yychar = yychar;
+  current->yylval = yylval;
+  current->lineno = lineno;
 
   for (;;)
     {
-      point = obstack_object_size (&inline_text_obstack);
-      obstack_blank (&inline_text_obstack, sizeof (struct token));
-      yyc = add_token ((struct token *)
-		       (obstack_base (&inline_text_obstack) + point));
+      yyc = next_token (space_for_token (t));
 
       if (yyc == '{')
 	{
@@ -1117,27 +1135,29 @@ snarf_block (starting_file, starting_line)
 	      if (!look_for_catch)
 		break;
 	      
-	      if (add_token (&tmp) != CATCH)
+	      if (next_token (space_for_token (t)) != CATCH)
 		{
-		  push_token (&tmp);
+		  push_token (remove_last_token (t));
 		  break;
 		}
 
 	      look_for_lbrac = 1;
-	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
 	    }
 	}
       else if (yyc == ';')
 	{
 	  if (look_for_lbrac)
 	    {
+	      struct token *fake;
+	      
 	      error ("function body for constructor missing");
 	      /* fake a { } to avoid further errors */
-	      tmp.yylval.ttype = 0;
-	      tmp.yychar = '{';
-	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
-	      tmp.yychar = '}';
-	      obstack_grow (&inline_text_obstack, &tmp, sizeof (struct token));
+	      fake = space_for_token (t);
+	      fake->yylval.ttype = 0;
+	      fake->yychar = '{';
+	      fake = space_for_token (t);
+	      fake->yylval.ttype = 0;
+	      fake->yychar = '}';
 	      break;
 	    }
 	  else if (look_for_semicolon && blev == 0)
@@ -1145,7 +1165,7 @@ snarf_block (starting_file, starting_line)
 	}
       else if (yyc == 0)
 	{
-	  error_with_file_and_line (starting_file, starting_line,
+	  error_with_file_and_line (t->filename, t->lineno,
 				    "end of file read inside definition");
 	  break;
 	}
@@ -1160,37 +1180,24 @@ snarf_method (decl)
 {
   int starting_lineno = lineno;
   const char *starting_filename = input_filename;
-  size_t len;
-
   struct unparsed_text *meth;
 
-  /* Leave room for the header, then absorb the block.  */
-  obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
-  snarf_block (starting_filename, starting_lineno);
+  meth = alloc_unparsed_text (starting_filename, starting_lineno, decl,
+			      (interface_unknown ? 1 
+			       : (interface_only ? 0 : 2)));
 
-  len = obstack_object_size (&inline_text_obstack);
-  meth = (struct unparsed_text *) obstack_finish (&inline_text_obstack);
+  snarf_block (meth);
 
   /* Happens when we get two declarations of the same function in the
      same scope.  */
   if (decl == void_type_node
       || (current_class_type && TYPE_REDEFINED (current_class_type)))
-    {
-      obstack_free (&inline_text_obstack, (char *)meth);
-      return;
-    }
-
-  meth->decl = decl;
-  meth->filename = starting_filename;
-  meth->lineno = starting_lineno;
-  meth->limit = (struct token *) ((char *)meth + len);
-  meth->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
-  meth->next = 0;
+    return;
 
 #ifdef SPEW_DEBUG
   if (spew_debug)
     fprintf (stderr, "\tsaved method of %d tokens from %s:%d\n",
-	     meth->limit - (struct token *) (meth + 1),
+	     meth->limit,
 	     starting_filename, starting_lineno);
 #endif
 
@@ -1204,8 +1211,8 @@ snarf_method (decl)
   pending_inlines_tail = meth;
 }
 
-/* Consume a no-commas expression - a default argument - and save it
-   on the inline_text_obstack.  */
+/* Consume a no-commas expression - a default argument - and return
+   a DEFAULT_ARG tree node.  */
 
 static tree
 snarf_defarg ()
@@ -1214,19 +1221,14 @@ snarf_defarg ()
   const char *starting_filename = input_filename;
   int yyc;
   int plev = 0;
-  size_t point;
-  size_t len;
   struct unparsed_text *buf;
   tree arg;
 
-  obstack_blank (&inline_text_obstack, sizeof (struct unparsed_text));
+  buf = alloc_unparsed_text (starting_filename, starting_lineno, 0, 0);
 
   for (;;)
     {
-      point = obstack_object_size (&inline_text_obstack);
-      obstack_blank (&inline_text_obstack, sizeof (struct token));
-      yyc = add_token ((struct token *)
-		       (obstack_base (&inline_text_obstack) + point));
+      yyc = next_token (space_for_token (buf));
 
       if (plev <= 0 && (yyc == ')' || yyc == ','))
 	break;
@@ -1243,24 +1245,13 @@ snarf_defarg ()
     }
 
   /* Unget the last token.  */
-  push_token ((struct token *) (obstack_base (&inline_text_obstack) + point));
-  /* This is the documented way to shrink a growing obstack block.  */
-  obstack_blank (&inline_text_obstack, - (int) sizeof (struct token));
+  push_token (remove_last_token (buf));
 
  done:
-  len = obstack_object_size (&inline_text_obstack);
-  buf = (struct unparsed_text *) obstack_finish (&inline_text_obstack);
-
-  buf->decl = 0;
-  buf->filename = starting_filename;
-  buf->lineno = starting_lineno;
-  buf->limit = (struct token *) ((char *)buf + len);
-  buf->next = 0;
-  
 #ifdef SPEW_DEBUG
   if (spew_debug)
     fprintf (stderr, "\tsaved defarg of %d tokens from %s:%d\n",
-	     buf->limit - (struct token *) (buf + 1),
+	     buf->limit,
 	     starting_filename, starting_lineno);
 #endif
 
@@ -1531,3 +1522,5 @@ yyerror (msgid)
   else
     error ("%s before `%s' token", string, NAME (last_token));
 }
+
+#include "gt-cp-spew.h"

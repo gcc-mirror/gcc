@@ -26,7 +26,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
-#include "hash.h"
 #include "hashtab.h"
 #include "varray.h"
 #include "ggc.h"
@@ -35,19 +34,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Statistics about the allocation.  */
 static ggc_statistics *ggc_stats;
 
-/* Trees that have been marked, but whose children still need marking.  */
-varray_type ggc_pending_trees;
-
 static void ggc_mark_rtx_children_1 PARAMS ((rtx));
-static void ggc_mark_rtx_ptr PARAMS ((void *));
-static void ggc_mark_tree_ptr PARAMS ((void *));
-static void ggc_mark_rtx_varray_ptr PARAMS ((void *));
-static void ggc_mark_tree_varray_ptr PARAMS ((void *));
-static void ggc_mark_tree_hash_table_ptr PARAMS ((void *));
 static int ggc_htab_delete PARAMS ((void **, void *));
-static void ggc_mark_trees PARAMS ((void));
-static bool ggc_mark_tree_hash_table_entry PARAMS ((struct hash_entry *,
-						    hash_table_key));
 
 /* Maintain global roots that are preserved during GC.  */
 
@@ -87,132 +75,6 @@ ggc_add_root (base, nelt, size, cb)
   roots = x;
 }
 
-/* Register an array of rtx as a GC root.  */
-
-void
-ggc_add_rtx_root (base, nelt)
-     rtx *base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (rtx), ggc_mark_rtx_ptr);
-}
-
-/* Register an array of trees as a GC root.  */
-
-void
-ggc_add_tree_root (base, nelt)
-     tree *base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (tree), ggc_mark_tree_ptr);
-}
-
-/* Register a varray of rtxs as a GC root.  */
-
-void
-ggc_add_rtx_varray_root (base, nelt)
-     varray_type *base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (varray_type), 
-		ggc_mark_rtx_varray_ptr);
-}
-
-/* Register a varray of trees as a GC root.  */
-
-void
-ggc_add_tree_varray_root (base, nelt)
-     varray_type *base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (varray_type), 
-		ggc_mark_tree_varray_ptr);
-}
-
-/* Register a hash table of trees as a GC root.  */
-
-void
-ggc_add_tree_hash_table_root (base, nelt)
-     struct hash_table **base;
-     int nelt;
-{
-  ggc_add_root (base, nelt, sizeof (struct hash_table *), 
-		ggc_mark_tree_hash_table_ptr);
-}
-
-/* Remove the previously registered GC root at BASE.  */
-
-void
-ggc_del_root (base)
-     void *base;
-{
-  struct ggc_root *x, **p;
-
-  p = &roots, x = roots;
-  while (x)
-    {
-      if (x->base == base)
-	{
-	  *p = x->next;
-	  free (x);
-	  return;
-	}
-      p = &x->next;
-      x = x->next;
-    }
-
-  abort ();
-}
-
-/* Add a hash table to be scanned when all roots have been processed.  We
-   delete any entry in the table that has not been marked.  */
-
-struct d_htab_root
-{
-  struct d_htab_root *next;
-  htab_t htab;
-  ggc_htab_marked_p marked_p;
-  ggc_htab_mark mark;
-};
-
-static struct d_htab_root *d_htab_roots;
-
-/* Add X, an htab, to a list of htabs that contain objects which are allocated
-   from GC memory.  Once all other roots are marked, we check each object in
-   the htab to see if it has already been marked.  If not, it is deleted.
-
-   MARKED_P, if specified, is a function that returns 1 if the entry is to
-   be considered as "marked".  If not present, the data structure pointed to
-   by the htab slot is tested.  This function should be supplied if some
-   other object (such as something pointed to by that object) should be tested
-   in which case the function tests whether that object (or objects) are
-   marked (using ggc_marked_p) and returns nonzero if it is.
-
-   MARK, if specified, is a function that is passed the contents of a slot
-   that has been determined to have been "marked" (via the above function)
-   and marks any other objects pointed to by that object.  For example,
-   we might have a hash table of memory attribute blocks, which are pointed
-   to by a MEM RTL but have a pointer to a DECL.  MARKED_P in that case will
-   not be specified because we want to know if the attribute block is pointed
-   to by the MEM, but MARK must be specified because if the block has been
-   marked, we need to mark the DECL.  */
-
-void
-ggc_add_deletable_htab (x, marked_p, mark)
-     PTR x;
-     ggc_htab_marked_p marked_p;
-     ggc_htab_mark mark;
-{
-  struct d_htab_root *r
-    = (struct d_htab_root *) xmalloc (sizeof (struct d_htab_root));
-
-  r->next = d_htab_roots;
-  r->htab = (htab_t) x;
-  r->marked_p = marked_p ? marked_p : ggc_marked_p;
-  r->mark = mark;
-  d_htab_roots = r;
-}
-
 /* Process a slot of an htab by deleting it if it has not been marked.  */
 
 static int
@@ -220,12 +82,12 @@ ggc_htab_delete (slot, info)
      void **slot;
      void *info;
 {
-  struct d_htab_root *r = (struct d_htab_root *) info;
+  const struct ggc_cache_tab *r = (const struct ggc_cache_tab *) info;
 
   if (! (*r->marked_p) (*slot))
-    htab_clear_slot (r->htab, slot);
-  else if (r->mark)
-    (*r->mark) (*slot);
+    htab_clear_slot (*r->base, slot);
+  else
+    (*r->cb) (*slot);
 
   return 1;
 }
@@ -236,9 +98,20 @@ void
 ggc_mark_roots ()
 {
   struct ggc_root *x;
-  struct d_htab_root *y;
+  const struct ggc_root_tab *const *rt;
+  const struct ggc_root_tab *rti;
+  const struct ggc_cache_tab *const *ct;
+  const struct ggc_cache_tab *cti;
+  size_t i;
   
-  VARRAY_TREE_INIT (ggc_pending_trees, 4096, "ggc_pending_trees");
+  for (rt = gt_ggc_deletable_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      memset (rti->base, 0, rti->stride);
+
+  for (rt = gt_ggc_rtab; *rt; rt++)
+    for (rti = *rt; rti->base != NULL; rti++)
+      for (i = 0; i < rti->nelt; i++)
+	(*rti->cb)(*(void **)((char *)rti->base + rti->stride * i));
 
   for (x = roots; x != NULL; x = x->next)
     {
@@ -251,19 +124,11 @@ ggc_mark_roots ()
 	(*cb)(elt);
     }
 
-  /* Mark all the queued up trees, and their children.  */
-  ggc_mark_trees ();
-  VARRAY_FREE (ggc_pending_trees);
-
   /* Now scan all hash tables that have objects which are to be deleted if
-     they are not already marked.  Since these may mark more trees, we need
-     to reinitialize that varray.  */
-  VARRAY_TREE_INIT (ggc_pending_trees, 1024, "ggc_pending_trees");
-
-  for (y = d_htab_roots; y != NULL; y = y->next)
-    htab_traverse (y->htab, ggc_htab_delete, (PTR) y);
-  ggc_mark_trees ();
-  VARRAY_FREE (ggc_pending_trees);
+     they are not already marked.  */
+  for (ct = gt_ggc_cache_rtab; *ct; ct++)
+    for (cti = *ct; cti->base != NULL; cti++)
+      htab_traverse (*cti->base, ggc_htab_delete, (PTR) cti);
 }
 
 /* R had not been previously marked, but has now been marked via
@@ -332,7 +197,7 @@ ggc_mark_rtx_children_1 (r)
       switch (code)
 	{
 	case MEM:
-	  ggc_mark (MEM_ATTRS (r));
+	  gt_ggc_m_mem_attrs (MEM_ATTRS (r));
 	  break;
 	case JUMP_INSN:
 	  ggc_mark_rtx (JUMP_LABEL (r));
@@ -387,7 +252,7 @@ ggc_mark_rtx_children_1 (r)
 		} 
 	      break;
 	    case 'V': case 'E':
-	      ggc_mark_rtvec (XVEC (r, i));
+	      gt_ggc_m_rtvec_def (XVEC (r, i));
 	      break;
 	    }
 	}
@@ -395,264 +260,12 @@ ggc_mark_rtx_children_1 (r)
   while ((r = next_rtx) != NULL);
 }
 
-/* V had not been previously marked, but has now been marked via
-   ggc_set_mark.  Now recurse and process the children.  */
-
+/* Various adaptor functions.  */
 void
-ggc_mark_rtvec_children (v)
-     rtvec v;
+gt_ggc_mx_rtx_def (x)
+     void *x;
 {
-  int i;
-
-  i = GET_NUM_ELEM (v);
-  while (--i >= 0)
-    ggc_mark_rtx (RTVEC_ELT (v, i));
-}
-
-/* Recursively set marks on all of the children of the
-   GCC_PENDING_TREES.  */
-
-static void
-ggc_mark_trees ()
-{
-  while (ggc_pending_trees->elements_used)
-    {
-      tree t;
-      enum tree_code code;
-
-      t = VARRAY_TOP_TREE (ggc_pending_trees);
-      VARRAY_POP (ggc_pending_trees);
-      code = TREE_CODE (t);
-
-      /* Collect statistics, if appropriate.  */
-      if (ggc_stats)
-	{
-	  ++ggc_stats->num_trees[(int) code];
-	  ggc_stats->size_trees[(int) code] += ggc_get_size (t);
-	}
-
-      /* Bits from common.  */
-      ggc_mark_tree (TREE_TYPE (t));
-      ggc_mark_tree (TREE_CHAIN (t));
-
-      /* Some nodes require special handling.  */
-      switch (code)
-	{
-	case TREE_LIST:
-	  ggc_mark_tree (TREE_PURPOSE (t));
-	  ggc_mark_tree (TREE_VALUE (t));
-	  continue;
-
-	case TREE_VEC:
-	  {
-	    int i = TREE_VEC_LENGTH (t);
-
-	    while (--i >= 0)
-	      ggc_mark_tree (TREE_VEC_ELT (t, i));
-	    continue;
-	  }
-
-	case COMPLEX_CST:
-	  ggc_mark_tree (TREE_REALPART (t));
-	  ggc_mark_tree (TREE_IMAGPART (t));
-	  break;
-
-	case REAL_CST:
-	  ggc_mark (TREE_REAL_CST_PTR (t));
-	  break;
-
-	case PARM_DECL:
-	  ggc_mark_rtx (DECL_INCOMING_RTL (t));
-	  break;
-
-	case FIELD_DECL:
-	  ggc_mark_tree (DECL_FIELD_BIT_OFFSET (t));
-	  break;
-
-	case IDENTIFIER_NODE:
-	  (*lang_hooks.mark_tree) (t);
-	  continue;
-
-	default:
-	  break;
-	}
-  
-      /* But in general we can handle them by class.  */
-      switch (TREE_CODE_CLASS (code))
-	{
-	case 'd': /* A decl node.  */
-	  ggc_mark_tree (DECL_SIZE (t));
-	  ggc_mark_tree (DECL_SIZE_UNIT (t));
-	  ggc_mark_tree (DECL_NAME (t));
-	  ggc_mark_tree (DECL_CONTEXT (t));
-	  ggc_mark_tree (DECL_ARGUMENTS (t));
-	  ggc_mark_tree (DECL_RESULT_FLD (t));
-	  ggc_mark_tree (DECL_INITIAL (t));
-	  ggc_mark_tree (DECL_ABSTRACT_ORIGIN (t));
-	  ggc_mark_tree (DECL_SECTION_NAME (t));
-	  ggc_mark_tree (DECL_ATTRIBUTES (t));
-	  if (DECL_RTL_SET_P (t))
-	    ggc_mark_rtx (DECL_RTL (t));
-	  ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
-	  ggc_mark_tree (DECL_VINDEX (t));
-	  if (DECL_ASSEMBLER_NAME_SET_P (t))
-	    ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
-	  if (TREE_CODE (t) == FUNCTION_DECL)
-	    {
-	      ggc_mark_tree (DECL_SAVED_TREE (t));
-	      ggc_mark_tree (DECL_INLINED_FNS (t));
-	      if (DECL_SAVED_INSNS (t))
-		ggc_mark_struct_function (DECL_SAVED_INSNS (t));
-	    }
-	  (*lang_hooks.mark_tree) (t);
-	  break;
-
-	case 't': /* A type node.  */
-	  ggc_mark_tree (TYPE_SIZE (t));
-	  ggc_mark_tree (TYPE_SIZE_UNIT (t));
-	  ggc_mark_tree (TYPE_ATTRIBUTES (t));
-	  ggc_mark_tree (TYPE_VALUES (t));
-	  ggc_mark_tree (TYPE_POINTER_TO (t));
-	  ggc_mark_tree (TYPE_REFERENCE_TO (t));
-	  ggc_mark_tree (TYPE_NAME (t));
-	  ggc_mark_tree (TYPE_MIN_VALUE (t));
-	  ggc_mark_tree (TYPE_MAX_VALUE (t));
-	  ggc_mark_tree (TYPE_NEXT_VARIANT (t));
-	  ggc_mark_tree (TYPE_MAIN_VARIANT (t));
-	  ggc_mark_tree (TYPE_BINFO (t));
-	  ggc_mark_tree (TYPE_CONTEXT (t));
-	  (*lang_hooks.mark_tree) (t);
-	  break;
-
-	case 'b': /* A lexical block.  */
-	  ggc_mark_tree (BLOCK_VARS (t));
-	  ggc_mark_tree (BLOCK_SUBBLOCKS (t));
-	  ggc_mark_tree (BLOCK_SUPERCONTEXT (t));
-	  ggc_mark_tree (BLOCK_ABSTRACT_ORIGIN (t));
-	  break;
-
-	case 'c': /* A constant.  */
-	  ggc_mark_rtx (TREE_CST_RTL (t));
-	  break;
-
-	case 'r': case '<': case '1':
-	case '2': case 'e': case 's': /* Expressions.  */
-	  {
-	    int i = TREE_CODE_LENGTH (TREE_CODE (t));
-	    int first_rtl = first_rtl_op (TREE_CODE (t));
-
-	    while (--i >= 0)
-	      {
-		if (i >= first_rtl)
-		  ggc_mark_rtx ((rtx) TREE_OPERAND (t, i));
-		else
-		  ggc_mark_tree (TREE_OPERAND (t, i));
-	      }
-	    break;	
-	  }
-
-	case 'x':
-	  (*lang_hooks.mark_tree) (t);
-	  break;
-	}
-    }
-}
-
-/* Mark all the elements of the varray V, which contains rtxs.  */
-
-void
-ggc_mark_rtx_varray (v)
-     varray_type v;
-{
-  int i;
-
-  if (v)
-    for (i = v->num_elements - 1; i >= 0; --i) 
-      ggc_mark_rtx (VARRAY_RTX (v, i));
-}
-
-/* Mark all the elements of the varray V, which contains trees.  */
-
-void
-ggc_mark_tree_varray (v)
-     varray_type v;
-{
-  int i;
-
-  if (v)
-    for (i = v->num_elements - 1; i >= 0; --i) 
-      ggc_mark_tree (VARRAY_TREE (v, i));
-}
-
-/* Mark the hash table-entry HE.  Its key field is really a tree.  */
-
-static bool
-ggc_mark_tree_hash_table_entry (he, k)
-     struct hash_entry *he;
-     hash_table_key k ATTRIBUTE_UNUSED;
-{
-  ggc_mark_tree ((tree) he->key);
-  return true;
-}
-
-/* Mark all the elements of the hash-table H, which contains trees.  */
-
-void
-ggc_mark_tree_hash_table (ht)
-     struct hash_table *ht;
-{
-  hash_traverse (ht, ggc_mark_tree_hash_table_entry, /*info=*/0);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   *ELT (which is an rtx) to ggc_mark_rtx.  */
-
-static void
-ggc_mark_rtx_ptr (elt)
-     void *elt;
-{
-  ggc_mark_rtx (*(rtx *) elt);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   *ELT (which is a tree) to ggc_mark_tree.  */
-
-static void
-ggc_mark_tree_ptr (elt)
-     void *elt;
-{
-  ggc_mark_tree (*(tree *) elt);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   ELT (which is really a varray_type *) to ggc_mark_rtx_varray.  */
-
-static void
-ggc_mark_rtx_varray_ptr (elt)
-     void *elt;
-{
-  ggc_mark_rtx_varray (*(varray_type *) elt);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   ELT (which is really a varray_type *) to ggc_mark_tree_varray.  */
-
-static void
-ggc_mark_tree_varray_ptr (elt)
-     void *elt;
-{
-  ggc_mark_tree_varray (*(varray_type *) elt);
-}
-
-/* Type-correct function to pass to ggc_add_root.  It just forwards
-   ELT (which is really a struct hash_table **) to
-   ggc_mark_tree_hash_table.  */
-
-static void
-ggc_mark_tree_hash_table_ptr (elt)
-     void *elt;
-{
-  ggc_mark_tree_hash_table (*(struct hash_table **) elt);
+  ggc_mark_rtx((rtx)x);
 }
 
 /* Allocate a block of memory, then clear it.  */
@@ -663,6 +276,35 @@ ggc_alloc_cleared (size)
   void *buf = ggc_alloc (size);
   memset (buf, 0, size);
   return buf;
+}
+
+/* Resize a block of memory, possibly re-allocating it.  */
+void *
+ggc_realloc (x, size)
+     void *x;
+     size_t size;
+{
+  void *r;
+  size_t old_size;
+
+  if (x == NULL)
+    return ggc_alloc (size);
+
+  old_size = ggc_get_size (x);
+  if (size <= old_size)
+    return x;
+
+  r = ggc_alloc (size);
+  memcpy (r, x, old_size);
+  return r;
+}
+
+/* Like ggc_alloc_cleared, but performs a multiplication.  */
+void *
+ggc_calloc (s1, s2)
+     size_t s1, s2;
+{
+  return ggc_alloc_cleared (s1 * s2);
 }
 
 /* Print statistics that are independent of the collector in use.  */

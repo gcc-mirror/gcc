@@ -1062,7 +1062,7 @@ for f in $tm_file; do
     ansidecl.h )
        tm_file_list="${tm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
     defaults.h )
-       tm_file_list="${tm_file_list} $f" ;;
+       tm_file_list="${tm_file_list} \$(srcdir)/$f" ;;
     *) tm_file_list="${tm_file_list} \$(srcdir)/config/$f" ;;
   esac
 done
@@ -1077,8 +1077,10 @@ for f in $host_xm_file; do
   case $f in
     ansidecl.h )
        host_xm_file_list="${host_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
-    auto-host.h | defaults.h )
+    auto-host.h )
        host_xm_file_list="${host_xm_file_list} $f" ;;
+    defaults.h )
+       host_xm_file_list="${host_xm_file_list} \$(srcdir)/$f" ;;
     *) host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f" ;;
   esac
 done
@@ -1088,8 +1090,10 @@ for f in $build_xm_file; do
   case $f in
     ansidecl.h )
        build_xm_file_list="${build_xm_file_list} \$(srcdir)/../include/ansidecl.h" ;;
-    auto-build.h | auto-host.h | defaults.h )
+    auto-build.h | auto-host.h )
        build_xm_file_list="${build_xm_file_list} $f" ;;
+    defaults.h )
+       host_xm_file_list="${host_xm_file_list} \$(srcdir)/$f" ;;
     *) build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f" ;;
   esac
 done
@@ -2326,6 +2330,8 @@ all_stagestuff=
 all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 # List of language makefile fragments.
 all_lang_makefiles=
+# Files for gengtype
+all_gtfiles=
 
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be
@@ -2346,6 +2352,7 @@ do
 		compilers=
 		stagestuff=
 		outputs=
+		gtfiles=
 		. ${srcdir}/$s/config-lang.in
 		if test "x$language" = x
 		then
@@ -2364,6 +2371,7 @@ do
 		all_compilers="$all_compilers $compilers"
 		all_stagestuff="$all_stagestuff $stagestuff"
 		all_outputs="$all_outputs $outputs"
+		all_gtfiles="$all_gtfiles $gtfiles"
 	fi
 done
 
@@ -2496,6 +2504,7 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 AC_SUBST(subdirs)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
+AC_SUBST(all_gtfiles)
 AC_SUBST(all_lang_makefiles)
 AC_SUBST(all_languages)
 AC_SUBST(all_stagestuff)

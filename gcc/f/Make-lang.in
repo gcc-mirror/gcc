@@ -137,6 +137,8 @@ f/fini.o:
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
 
+gt-f-com.h gt-f-ste.h gtype-f.h : s-gtype; @true
+
 #
 # Build hooks:
 
@@ -364,7 +366,7 @@ f/com.o: f/com.c f/proj.h $(CONFIG_H) $(SYSTEM_H) flags.h $(RTL_H) $(TREE_H) \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h \
  f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
  f/name.h f/expr.h f/implic.h f/src.h f/st.h $(GGC_H) toplev.h diagnostic.h \
- langhooks.h langhooks-def.h intl.h real.h
+ $(LANGHOOKS_DEF) langhooks.h intl.h real.h debug.h gt-f-com.h gtype-f.h
 f/data.o: f/data.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/data.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \
@@ -460,7 +462,8 @@ f/ste.o: f/ste.c f/proj.h $(CONFIG_H) $(SYSTEM_H) $(RTL_H) toplev.h f/ste.h \
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def \
  f/where.h glimits.h f/top.h f/lex.h f/type.h f/lab.h f/storag.h f/symbol.h \
  f/symbol.def f/equiv.h f/global.h f/name.h f/intrin.h f/intrin.def f/stp.h \
- f/stt.h f/stamp-str f/sts.h f/stv.h f/stw.h f/expr.h f/sta.h $(GGC_H)
+ f/stt.h f/stamp-str f/sts.h f/stv.h f/stw.h f/expr.h f/sta.h $(GGC_H) \
+ gt-f-ste.h
 f/storag.o: f/storag.c f/proj.h $(CONFIG_H) $(SYSTEM_H) f/storag.h f/bld.h  \
  f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) \
  f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \

@@ -65,16 +65,13 @@ struct lang_hooks_for_functions
   void (*init) PARAMS ((struct function *));
 
   /* Called when leaving a function.  */
-  void (*free) PARAMS ((struct function *));
+  void (*final) PARAMS ((struct function *));
 
   /* Called when entering a nested function.  */
   void (*enter_nested) PARAMS ((struct function *));
 
   /* Called when leaving a nested function.  */
   void (*leave_nested) PARAMS ((struct function *));
-
-  /* Lang-specific function data marking for GC.  */
-  void (*mark) PARAMS ((struct function *));
 };
 
 /* The following hooks are used by tree-dump.c.  */
@@ -291,9 +288,6 @@ struct lang_hooks
   /* Called by expand_expr to build and return the cleanup-expression
      for the passed TARGET_EXPR.  Return NULL if there is none.  */
   tree (*maybe_build_cleanup) PARAMS ((tree));
-
-  /* Mark nodes held through the lang_specific hooks in the tree.  */
-  void (*mark_tree) PARAMS ((tree));
 
   /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of
      thing that the assembler should talk about, set

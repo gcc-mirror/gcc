@@ -5046,9 +5046,6 @@ lang_independent_init ()
 {
   /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
-  ggc_add_rtx_root (&stack_limit_rtx, 1);
-  ggc_add_tree_root (&current_function_decl, 1);
-  ggc_add_tree_root (&current_function_func_begin_label, 1);
 
   init_stringpool ();
   init_obstacks ();
@@ -5063,13 +5060,10 @@ lang_independent_init ()
 		    || warn_notreached);
   init_regs ();
   init_alias_once ();
-  init_stmt ();
   init_loop ();
   init_reload ();
   init_function_once ();
-  init_stor_layout_once ();
   init_varasm_once ();
-  init_EXPR_INSN_LIST_cache ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */

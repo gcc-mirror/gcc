@@ -66,12 +66,12 @@ extern int always_initialize_class_p;
    DECL_LOCAL_SLOT_CHAIN; the index finds the TREE_VEC element, and then
    we search the chain for a decl with a matching TREE_TYPE. */
 
-tree decl_map;
+static GTY(()) tree decl_map;
 
 /* A list of local variables VAR_DECLs for this method that we have seen
    debug information, but we have not reached their starting (byte) PC yet. */
 
-static tree pending_local_decls = NULL_TREE;
+static GTY(()) tree pending_local_decls;
 
 /* Push a local variable or stack slot into the decl_map,
    and assign it an rtl. */
@@ -908,11 +908,6 @@ java_init_decl_processing ()
 
   init_jcf_parse ();
 
-  /* Register nodes with the garbage collector.  */
-  ggc_add_tree_root (java_global_trees, ARRAY_SIZE (java_global_trees));
-  ggc_add_tree_root (&decl_map, 1);
-  ggc_add_tree_root (&pending_local_decls, 1);
-
   initialize_builtins ();
 }
 
@@ -1553,10 +1548,7 @@ java_dup_lang_specific_decl (node)
   if (!DECL_LANG_SPECIFIC (node))
     return;
 
-  if (TREE_CODE (node) == VAR_DECL)
-    lang_decl_size = sizeof (struct lang_decl_var);
-  else
-    lang_decl_size = sizeof (struct lang_decl);
+  lang_decl_size = sizeof (struct lang_decl);
   x = (struct lang_decl *) ggc_alloc (lang_decl_size);
   memcpy (x, DECL_LANG_SPECIFIC (node), lang_decl_size);
   DECL_LANG_SPECIFIC (node) = x;
@@ -1829,64 +1821,4 @@ end_java_method ()
   current_function_decl = NULL_TREE;
 }
 
-/* Mark language-specific parts of T for garbage-collection.  */
-
-void
-java_mark_tree (t)
-     tree t;
-{
-  if (TREE_CODE (t) == IDENTIFIER_NODE)
-    {
-      struct lang_identifier *li = (struct lang_identifier *) t;
-      ggc_mark_tree (li->global_value);
-      ggc_mark_tree (li->local_value);
-      ggc_mark_tree (li->utf8_ref);
-    }
-  else if (TREE_CODE (t) == VAR_DECL
-	   || TREE_CODE (t) == PARM_DECL
-	   || TREE_CODE (t) == FIELD_DECL)
-    {
-      struct lang_decl_var *ldv = 
-	((struct lang_decl_var *) DECL_LANG_SPECIFIC (t));
-      if (ldv)
-	{
-	  ggc_mark (ldv);
-	  ggc_mark_tree (ldv->slot_chain);
-	  ggc_mark_tree (ldv->am);
-	  ggc_mark_tree (ldv->wfl);
-	}
-    }
-  else if (TREE_CODE (t) == FUNCTION_DECL)
-    {
-      struct lang_decl *ld = DECL_LANG_SPECIFIC (t);
-      
-      if (ld)
-	{
-	  ggc_mark (ld);
-	  ggc_mark_tree (ld->wfl);
-	  ggc_mark_tree (ld->throws_list);
-	  ggc_mark_tree (ld->function_decl_body);
-	  ggc_mark_tree (ld->called_constructor);
-	  ggc_mark_tree (ld->inner_access);
-	  ggc_mark_tree_hash_table (&ld->init_test_table);
-	  ggc_mark_tree_hash_table (&ld->ict);
-	  ggc_mark_tree (ld->smic);
-	}
-    }
-  else if (TYPE_P (t))
-    {
-      struct lang_type *lt = TYPE_LANG_SPECIFIC (t);
-      
-      if (lt)
-	{
-	  ggc_mark (lt);
-	  ggc_mark_tree (lt->signature);
-	  ggc_mark_tree (lt->cpool_data_ref);
-	  ggc_mark_tree (lt->finit_stmt_list);
-	  ggc_mark_tree (lt->clinit_stmt_list);
-	  ggc_mark_tree (lt->ii_block);
-	  ggc_mark_tree (lt->dot_class);
-	  ggc_mark_tree (lt->package_list);
-	}
-    }
-}
+#include "gt-java-decl.h"

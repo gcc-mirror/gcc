@@ -152,7 +152,7 @@ static int nonlocal_set_p               PARAMS ((rtx));
    current function performs nonlocal memory memory references for the
    purposes of marking the function as a constant function.  */
 
-static rtx *reg_base_value;
+static GTY((length ("reg_base_value_size"))) rtx *reg_base_value;
 static rtx *new_reg_base_value;
 static unsigned int reg_base_value_size; /* size of reg_base_value array */
 
@@ -2663,8 +2663,8 @@ init_alias_analysis ()
      optimization.  Loop unrolling can create a large number of
      registers.  */
   reg_base_value_size = maxreg * 2;
-  reg_base_value = (rtx *) xcalloc (reg_base_value_size, sizeof (rtx));
-  ggc_add_rtx_root (reg_base_value, reg_base_value_size);
+  reg_base_value = (rtx *) ggc_alloc_cleared (reg_base_value_size
+					      * sizeof (rtx));
 
   new_reg_base_value = (rtx *) xmalloc (reg_base_value_size * sizeof (rtx));
   reg_seen = (char *) xmalloc (reg_base_value_size);
@@ -2878,12 +2878,7 @@ end_alias_analysis ()
   reg_known_value_size = 0;
   free (reg_known_equiv_p + FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = 0;
-  if (reg_base_value)
-    {
-      ggc_del_root (reg_base_value);
-      free (reg_base_value);
-      reg_base_value = 0;
-    }
+  reg_base_value = 0;
   reg_base_value_size = 0;
   if (alias_invariant)
     {
@@ -2891,3 +2886,5 @@ end_alias_analysis ()
       alias_invariant = 0;
     }
 }
+
+#include "gt-alias.h"

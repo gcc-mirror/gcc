@@ -1044,10 +1044,10 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
 		|| Is_Aliased (Etype (gnat_entity))))
-	  DECL_CONST_CORRESPONDING_VAR (gnu_decl)
-	    = create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
+	  SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl, 
+	      create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
 			       gnu_expr, 0, Is_Public (gnat_entity), 0,
-			       static_p, 0);
+			       static_p, 0));
 
 	/* If this is declared in a block that contains an block with an
 	   exception handler, we must force this variable in memory to
@@ -1184,7 +1184,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	if (! integer_zerop (gnu_modulus))
 	  {
 	    TYPE_MODULAR_P (gnu_type) = 1;
-	    TYPE_MODULUS (gnu_type) = gnu_modulus;
+	    SET_TYPE_MODULUS (gnu_type, gnu_modulus);
 	    gnu_high = fold (build (MINUS_EXPR, gnu_type, gnu_modulus,
 				    convert (gnu_type, integer_one_node)));
 	  }
@@ -1308,7 +1308,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 					 gnu_field_type, gnu_type, 1, 0, 0, 1),
 	  finish_record_type (gnu_type, gnu_field, 0, 0);
 	  TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type) = 1;
-	  TYPE_ADA_SIZE (gnu_type) = bitsize_int (esize);
+	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
 	}
 
       break;
@@ -1320,8 +1320,8 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	{
 	  gnu_type = make_signed_type (esize);
 	  TYPE_VAX_FLOATING_POINT_P (gnu_type) = 1;
-	  TYPE_DIGITS_VALUE (gnu_type)
-	    = UI_To_Int (Digits_Value (gnat_entity));
+	  SET_TYPE_DIGITS_VALUE (gnu_type, 
+				 UI_To_Int (Digits_Value (gnat_entity)));
 	  break;
 	}
 
@@ -1619,7 +1619,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	  = TYPE_REFERENCE_TO (gnu_type) = gnu_fat_type;
 	TYPE_MODE (gnu_type) = BLKmode;
 	TYPE_ALIGN (gnu_type) = TYPE_ALIGN (tem);
-	TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type) = gnu_type;
+	SET_TYPE_UNCONSTRAINED_ARRAY (gnu_fat_type, gnu_type);
 
 	/* If the maximum size doesn't overflow, use it.  */
 	if (TREE_CODE (gnu_max_size) == INTEGER_CST
@@ -1647,7 +1647,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	DECL_FIELD_OFFSET (TREE_CHAIN (TYPE_FIELDS (tem))) = size_zero_node;
 	DECL_FIELD_BIT_OFFSET (TREE_CHAIN (TYPE_FIELDS (tem)))
 	  = bitsize_zero_node;
-	TYPE_UNCONSTRAINED_ARRAY (tem) = gnu_type;
+	SET_TYPE_UNCONSTRAINED_ARRAY (tem, gnu_type);
 	TYPE_OBJECT_RECORD_TYPE (gnu_type) = tem;
 
 	/* Give the thin pointer type a name.  */
@@ -2066,18 +2066,18 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		  TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner_type) = 1;
 		}
 
-	      TYPE_ACTUAL_BOUNDS (gnu_inner_type) = NULL_TREE;
+	      SET_TYPE_ACTUAL_BOUNDS (gnu_inner_type, NULL_TREE);
 
 	      for (gnat_index = First_Index (gnat_entity);
 		   Present (gnat_index); gnat_index = Next_Index (gnat_index))
-		TYPE_ACTUAL_BOUNDS (gnu_inner_type)
-		  = tree_cons (NULL_TREE,
+		SET_TYPE_ACTUAL_BOUNDS (gnu_inner_type,
+		    tree_cons (NULL_TREE,
 			       get_unpadded_type (Etype (gnat_index)),
-			       TYPE_ACTUAL_BOUNDS (gnu_inner_type));
+			       TYPE_ACTUAL_BOUNDS (gnu_inner_type)));
 
 	      if (Convention (gnat_entity) != Convention_Fortran)
-		TYPE_ACTUAL_BOUNDS (gnu_inner_type)
-		  = nreverse (TYPE_ACTUAL_BOUNDS (gnu_inner_type));
+		SET_TYPE_ACTUAL_BOUNDS (gnu_inner_type,
+		    nreverse (TYPE_ACTUAL_BOUNDS (gnu_inner_type)));
 
 	      if (TREE_CODE (gnu_type) == RECORD_TYPE
 		  && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type))
@@ -2577,9 +2577,10 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 
 		    DECL_INTERNAL_P (gnu_field)
 		      = DECL_INTERNAL_P (gnu_old_field);
-		    DECL_ORIGINAL_FIELD (gnu_field)
-		      = DECL_ORIGINAL_FIELD (gnu_old_field) != 0
-			? DECL_ORIGINAL_FIELD (gnu_old_field) : gnu_old_field;
+		    SET_DECL_ORIGINAL_FIELD (gnu_field,
+		        (DECL_ORIGINAL_FIELD (gnu_old_field) != 0
+			 ? DECL_ORIGINAL_FIELD (gnu_old_field) 
+			 : gnu_old_field));
 		    DECL_DISCRIMINANT_NUMBER (gnu_field)
 		      = DECL_DISCRIMINANT_NUMBER (gnu_old_field);
 		    TREE_THIS_VOLATILE (gnu_field)
@@ -2598,7 +2599,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	      TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_base_type);
 	      TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_base_type);
 	      TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_base_type);
-	      TYPE_ADA_SIZE (gnu_type) = TYPE_ADA_SIZE (gnu_base_type);
+	      SET_TYPE_ADA_SIZE (gnu_type, TYPE_ADA_SIZE (gnu_base_type));
 
 	      if (TREE_CODE (TYPE_SIZE (gnu_type)) != INTEGER_CST
 		  && contains_placeholder_p (TYPE_SIZE (gnu_type)))
@@ -2623,10 +2624,10 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		  && contains_placeholder_p (TYPE_ADA_SIZE (gnu_type)))
 		for (gnu_temp = gnu_subst_list;
 		     gnu_temp; gnu_temp = TREE_CHAIN (gnu_temp))
-		  TYPE_ADA_SIZE (gnu_type)
-		    = substitute_in_expr (TYPE_ADA_SIZE (gnu_type),
+		  SET_TYPE_ADA_SIZE (gnu_type,
+		      substitute_in_expr (TYPE_ADA_SIZE (gnu_type),
 					  TREE_PURPOSE (gnu_temp),
-					  TREE_VALUE (gnu_temp));
+					  TREE_VALUE (gnu_temp)));
 
 	      /* Recompute the mode of this record type now that we know its
 		 actual size.  */
@@ -2816,7 +2817,7 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	    if (gnu_type == 0)
 	      {
 		gnu_type = make_node (RECORD_TYPE);
-		TYPE_UNCONSTRAINED_ARRAY (gnu_type) = gnu_old;
+		SET_TYPE_UNCONSTRAINED_ARRAY (gnu_type, gnu_old);
 		TYPE_POINTER_TO (gnu_old) = gnu_type;
 
 		set_lineno (gnat_entity, 0);
@@ -3670,11 +3671,14 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 	  if (TREE_CODE (gnu_type) == RECORD_TYPE
 	      && operand_equal_p (TYPE_ADA_SIZE (gnu_type),
 				  TYPE_SIZE (gnu_type), 0))
-	    TYPE_ADA_SIZE (gnu_type) = TYPE_SIZE (gnu_type)
-	      = elaborate_expression_1 (gnat_entity, gnat_entity,
-					TYPE_SIZE (gnu_type),
-					get_identifier ("SIZE"),
-					definition, 0);
+	    {
+	      TYPE_SIZE (gnu_type)
+		= elaborate_expression_1 (gnat_entity, gnat_entity,
+					  TYPE_SIZE (gnu_type),
+					  get_identifier ("SIZE"),
+					  definition, 0);
+	      SET_TYPE_ADA_SIZE (gnu_type, TYPE_SIZE (gnu_type));
+	    }
 	  else
 	    {
 	      TYPE_SIZE (gnu_type)
@@ -3699,11 +3703,11 @@ gnat_to_gnu_entity (gnat_entity, gnu_expr, definition)
 		   size_int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
 
 	      if (TREE_CODE (gnu_type) == RECORD_TYPE)
-		TYPE_ADA_SIZE (gnu_type)
-		  = elaborate_expression_1 (gnat_entity, gnat_entity,
+		SET_TYPE_ADA_SIZE (gnu_type,
+		    elaborate_expression_1 (gnat_entity, gnat_entity,
 					    TYPE_ADA_SIZE (gnu_type),
 					    get_identifier ("RM_SIZE"),
-					    definition, 0);
+					    definition, 0));
 	    }
 	}
 
@@ -4040,7 +4044,7 @@ substitution_list (gnat_subtype, gnat_type, gnu_list, definition)
 /* For the following two functions: for each GNAT entity, the GCC
    tree node used as a dummy for that entity, if any.  */
 
-static tree *dummy_node_table;
+static GTY((length ("max_gnat_nodes"))) tree * dummy_node_table;
 
 /* Initialize the above table.  */
 
@@ -4049,8 +4053,7 @@ init_dummy_type ()
 {
   Node_Id gnat_node;
 
-  dummy_node_table = (tree *) xmalloc (max_gnat_nodes * sizeof (tree));
-  ggc_add_tree_root (dummy_node_table, max_gnat_nodes);
+  dummy_node_table = (tree *) ggc_alloc (max_gnat_nodes * sizeof (tree));
 
   for (gnat_node = 0; gnat_node < max_gnat_nodes; gnat_node++)
     dummy_node_table[gnat_node] = NULL_TREE;
@@ -4447,9 +4450,9 @@ make_packable_type (type)
 			     ! DECL_NONADDRESSABLE_P (old_field));
 
       DECL_INTERNAL_P (new_field) = DECL_INTERNAL_P (old_field);
-      DECL_ORIGINAL_FIELD (new_field)
-	= (DECL_ORIGINAL_FIELD (old_field) != 0
-	   ? DECL_ORIGINAL_FIELD (old_field) : old_field);
+      SET_DECL_ORIGINAL_FIELD (new_field,
+	  (DECL_ORIGINAL_FIELD (old_field) != 0
+	   ? DECL_ORIGINAL_FIELD (old_field) : old_field));
       TREE_CHAIN (new_field) = field_list;
       field_list = new_field;
     }
@@ -4583,7 +4586,7 @@ maybe_pad_type (type, size, align, gnat_entity, name_trailer,
 
   /* Keep the RM_Size of the padded record as that of the old record
      if requested.  */
-  TYPE_ADA_SIZE (record) = same_rm_size ? size : rm_size (type);
+  SET_TYPE_ADA_SIZE (record, same_rm_size ? size : rm_size (type));
 
   /* Unless debugging information isn't being written for the input type,
      write a record that shows what we are a subtype of and also make a
@@ -5696,12 +5699,12 @@ set_rm_size (uint_size, gnu_type, gnat_entity)
       && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
     TYPE_RM_SIZE_INT (gnu_type) = size;
   else if (TREE_CODE (gnu_type) == ENUMERAL_TYPE)
-    TYPE_RM_SIZE_ENUM (gnu_type) = size;
+    SET_TYPE_RM_SIZE_ENUM (gnu_type, size);
   else if ((TREE_CODE (gnu_type) == RECORD_TYPE
 	    || TREE_CODE (gnu_type) == UNION_TYPE
 	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
 	   && ! TYPE_IS_FAT_POINTER_P (gnu_type))
-    TYPE_ADA_SIZE (gnu_type) = size;
+    SET_TYPE_ADA_SIZE (gnu_type, size);
 }
 
 /* Given a type TYPE, return a new type whose size is appropriate for SIZE.
@@ -5935,8 +5938,8 @@ gnat_substitute_in_type (t, f, r)
 
 	  new = build_range_type (TREE_TYPE (t), low, high);
 	  if (TYPE_INDEX_TYPE (t))
-	    TYPE_INDEX_TYPE (new)
-	      = gnat_substitute_in_type (TYPE_INDEX_TYPE (t), f, r);
+	    SET_TYPE_INDEX_TYPE (new, 
+	        gnat_substitute_in_type (TYPE_INDEX_TYPE (t), f, r));
 	  return new;
 	}
 
@@ -6056,9 +6059,9 @@ gnat_substitute_in_type (t, f, r)
 	      }
 
 	    DECL_CONTEXT (new_field) = new;
-	    DECL_ORIGINAL_FIELD (new_field)
-	      = DECL_ORIGINAL_FIELD (field) != 0
-		? DECL_ORIGINAL_FIELD (field) : field;
+	    SET_DECL_ORIGINAL_FIELD (new_field,
+	       (DECL_ORIGINAL_FIELD (field) != 0
+		? DECL_ORIGINAL_FIELD (field) : field));
 
 	    /* If the size of the old field was set at a constant,
 	       propagate the size in case the type's size was variable.
@@ -6121,7 +6124,7 @@ gnat_substitute_in_type (t, f, r)
 	  {
 	    TYPE_SIZE (new) = TYPE_SIZE (t);
 	    TYPE_SIZE_UNIT (new) = TYPE_SIZE_UNIT (t);
-	    TYPE_ADA_SIZE (new) = TYPE_ADA_SIZE (t);
+	    SET_TYPE_ADA_SIZE (new, TYPE_ADA_SIZE (t));
 	  }
 
 	return new;
@@ -6209,3 +6212,5 @@ concat_id_with_name (gnu_id, suffix)
   strcpy (Name_Buffer + len, suffix);
   return get_identifier (Name_Buffer);
 }
+
+#include "gt-ada-decl.h"

@@ -1,3 +1,1096 @@
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	Merge from pch-branch:
+	
+	* gengtype.h (UNION_OR_STRUCT_P): New macro.
+	* gengtype.c (write_gc_structure_fields): Use it.
+	(write_gc_root): Use it here too.
+
+	* gengtype.c (write_gc_structure_fields): Assume that lengths
+	of typenames fit into an 'int'; don't pass a size_t to "%d" in
+	printf.
+	(write_gc_marker_routine_for_structure): Likewise.
+	(write_gc_types): Likewise.
+	(write_gc_root): Likewise.
+
+	* varray.h (VARRAY_CLEAR): New.
+	(varray_clear): Prototype.
+	* varray.c (varray_clear): New.
+	* cselib.c (reg_values_old): New.
+	(used_regs_old): New.
+	(cselib_init): Use cached varrays if available to avoid
+	generating large amounts of garbage.
+	(cselib_finish): Don't throw away old varrays.
+
+	* final.c (insn_addresses_): Move out of ifdef.
+
+	* varray.c (uses_ggc): Make more varray kinds GCable.
+	* varray.h (union varray_data_tag): Let gengtype see
+	fields 'generic' and 'te'.
+	* reg-stack.c: Include gt-reg-stack.h, ggc.h.
+	(stack_regs_mentioned_data): Move out of ifdef; mark with gengtype.
+	(reg_to_stack): Don't call VARRAY_FREE.
+	* insn-addr.h (INSN_ADDRESSES_FREE): Don't use VARRAY_FREE.
+	(insn_addresses_): Use gengtype to mark.
+	* gengtype.c (write_gc_structure_fields): Handle arrays of generic
+	pointers; handle generic pointers in unused union fields.
+	(get_output_file_with_visibility): Include cselib.h,
+	insn-addr.h in gtype-desc.c.
+	* function.c (prologue): Use gengtype to mark.
+	(epilogue): Likewise.
+	(sibcall_epilogue): Likewise.
+	* dependence.c: Include gt-dependence.h, ggc.h.
+	(struct def_use): Use gengtype to mark.
+	(struct loop): Likewise.
+	(struct induction): Likewise.
+	(struct dependence): Likewise.
+	(def_use_chain): Likewise.
+	(dep_chain): Likewise.
+	(loop_chain): Likewise.
+	(induction_chain): Likewise.
+	(init_dependence_analysis): Don't free anything, just clear pointers.
+	(build_def_use): Use GGC to allocate def_use.
+	(add_loop): Use GGC to allocate loop.
+	(find_induction_variable): Use GGC to allocate induction.
+	(check_node_dependence): Use GGC to allocate induction, dependence.
+	(dump_node_dependence): Don't free varrays.
+	(end_dependence_analysis): Likewise.
+	* cselib.h (struct cselib_val_struct): Use gengtype to mark.
+	(struct elt_loc_list): Likewise.
+	(struct elt_list): Likewise.
+	* cselib.c: Don't include obstack.h.
+	(hash_table): Use gengtype to mark.
+	(reg_values): Use gengtype to mark.
+	(used_regs): Use gengtype to mark.
+	(cselib_obstack): Delete.
+	(cselib_startobj): Delete.
+	(empty_vals): Mark as deletable.
+	(empty_elt_lists): Mark as deletable.
+	(empty_elt_loc_lists): Mark as deletable.
+	(new_elt_list): Use GGC to allocate struct elt_list.
+	(new_elt_loc_list): Use GGC to allocate struct elt_loc_list.
+	(clear_table): Don't delete obstack; don't unnecessarily clear
+	deletable variables.
+	(new_cselib_val): Use GGC to allocate struct cselib_val.
+	(cselib_init): Don't set up obstacks.  Use GGC to allocate
+	hash table.
+	(cselib_finish): Just clear variables, don't free anything.
+	* Makefile.in (cselib.o): Remove dependency on $(OBSTACK_H).
+	(reg-stack.o): Add dependency on gt-reg-stack.h, $(GGC_H).
+	(dependence.o): Add dependency on gt-dependence.h, $(GGC_H).
+	(GTFILES): Add insn-addr.h, cselib.h, dependence.c, reg-stack.c.
+	(gt-reg-stack.h): New rule.
+	(gt-dependence.h): New rule.
+	(gtype-desc.o): Add cselib.h, insn-addr.h.
+
+	* varray.c: Use only necessary headers.
+	(element_size): New.
+	(uses_ggc): New.
+	(varray_init): Take type, not size.  Use GGC if appropriate.
+	(varray_grow): Update for change to struct varray_head_tag.
+	Use GGC if appropriate.
+	* varray.h (struct const_equiv_data): Use gengtype.
+	(enum varray_data_enum): New.
+	(union varray_data_tag): Use gengtype.
+	(struct varray_head_tag): Use gengtype.  Replace size field with
+	enum varray_data_enum.
+	(varray_init): Update prototype.
+	(VARRAY_SCHED_INIT): Delete.
+	(VARRAY_*_INIT): Update for change to varray_init.
+	(VARRAY_SCHED): Delete.
+	(VARRAY_PUSH_SCHED): Delete.
+	(VARRAY_TOP_SCHED): Delete.
+	* tree.h: Update for change to length specifier.
+	* tree-inline.c (optimize_inline_calls): Don't use VARRAY_FREE.
+	(clone_body): Likewise.
+	* ssa.h (ssa_definition): Use gengtype to mark.
+	* ssa.c (convert_from_ssa): Don't use VARRAY_FREE.
+	* ssa-dce.c (ssa_eliminate_dead_code): Don't use VARRAY_FREE.
+	* rtl.h (struct rtvec_def): Update for change to length specifier.
+	* integrate.c (expand_inline_function): Don't use VARRAY_FREE.
+	(struct initial_value_struct): Update for change to length specifier.
+	* ggc.h (ggc_add_rtx_varray_root): Delete prototype.
+	(ggc_add_tree_varray_root): Delete prototype.
+	(ggc_mark_rtx_varray): Delete prototype.
+	(ggc_mark_tree_varray): Delete prototype.
+	* ggc-common.c (ggc_add_rtx_varray_root): Delete.
+	(ggc_add_tree_varray_root): Delete.
+	(ggc_mark_rtx_varray): Delete.
+	(ggc_mark_tree_varray): Delete.
+	(ggc_mark_rtx_varray_ptr): Delete.
+	(ggc_mark_tree_varray_ptr): Delete.
+	* gengtype.h (enum typekind): Remove TYPE_VARRAY.
+	(create_varray): Delete prototype.
+	* gengtype.c (varrays): Delete.
+	(create_varray): Delete.
+	(adjust_field_type): Detect array of string pointers.
+	(process_gc_options): Remove code to handle varray_type option.
+	(set_gc_used_type): Remove TYPE_VARRAY case.
+	(output_escaped_param): New.
+	(write_gc_structure_fields): Use output_escaped_param on all
+	parameters.  Handle 'skip' with 'use_param' option.  Handle
+	arrays of strings.  Remove TYPE_VARRAY handling.
+	(write_gc_roots): Use boolean to detect 'length' option.
+	* gengtype-yacc.y (VARRAY_TYPE): Delete token.
+	(struct_fields): Call adjust_field_type on array fields.
+	(type): Remove VARRAY_TYPE case.
+	(type_option): Likewise.
+	* gengtype-lex.l: Don't consider varray_type a keyword.
+	* function.h: Update for change to length specifier.
+	(free_eh_status): Delete prototype.
+	* function.c (free_after_compilation): Don't call free_eh_status.
+	(reorder_blocks): Don't use VARRAY_FREE.
+	* except.c (struct eh_status): Update for change to length specifier.
+	remove varray_type specifier.
+	(free_eh_status): Delete.
+	* dwarf2out.c: Include gt-dwarf2out.h.
+	(used_rtx_varray): Use gengtype to mark, move
+	outside ifdefs.
+	(incomplete_types): Likewise.
+	(decl_scope_table): Likewise.
+	(dwarf2out_init): Don't call ggc_add_tree_varray_root.	
+	* cfglayout.c (scope_to_insns_finalize): Don't use VARRAY_FREE.
+	* c-tree.h (struct lang_type): Update for change to length specifier.
+	* c-parse.in (yylexstring): Don't use VARRAY_FREE.
+	* c-objc-common.c: Include gt-c-objc-common.h.
+	(deferred_fns): Mark for gengtype.
+	(c_objc_common_init): Don't call ggc_add_tree_varray_root.
+	(expand_deferred_fns): Just set deferred_fns to 0 to free it.
+	* Makefile.in (c-objc-common.o): Add gt-c-objc-common.h.
+	(gtype-desc.o): Update dependencies.
+	(dwarf2out.o): Add gt-dwarf2out.h.
+	(varray.o): Update dependencies.
+	(GTFILES): Add varray.h, ssa.h, dwarf2out.c, c-objc-common.c.
+	(gt-c-objc-common.h): New rule.
+	(gt-dwarf2out.h): New rule.
+	* objc/objc-act.c (build_objc_string_object): Don't use VARRAY_FREE.
+
+	* doc/gty.texi (GTY Options): Correct spelling.
+	(GGC Roots): Likewise.
+	* Makefile.in (TEXI_CPP_FILES): New.
+	(TEXI_GCC_FILES): New.
+	(TEXI_GCCINT_FILES): New.
+	(TEXI_CPPINT_FILES): New.
+	($(docdir)/cpp.info): Use new macros.
+	($(docdir)/gcc.info): Likewise.
+	($(docdir)/gccint.info): Likewise.
+	($(docdir)/cppinternals.info): Likewise.
+	(cpp.dvi): Likewise.
+	(gcc.dvi): Likewise.
+	(gccint.dvi): Likewise.
+	(cppinternals.dvi): Likewise.
+
+	* Makefile.in ($(docdir)/gccint.info): Depend on gty.texi.
+	* doc/gccint.texi (Top): Include gty.texi.
+	* doc/gty.texi: New file.
+
+	* bitmap.c: Include ggc.h, gt-bitmap.h.
+	(bitmap_ggc_free): New.
+	(bitmap_elem_to_freelist): New.
+	(bitmap_element_free): Use bitmap_elem_to_freelist.
+	(bitmap_element_allocate): Allow use of GGC.
+	(bitmap_clear): Use bitmap_elem_to_freelist.
+	(bitmap_copy): Update for change to bitmap_element_allocate.
+	(bitmap_set_bit): Likewise.
+	(bitmap_operation): Update for changes elsewhere.
+	(bitmap_initialize): Allow to create bitmaps that will use GGC.
+	* bitmap.h (struct bitmap_element_def): Use gengtype.
+	(struct bitmap_head_def): Likewise.  Also add 'using_obstack' field.
+	(bitmap_initialize): Add extra parameter.
+	(BITMAP_OBSTACK_ALLOC): Update for change to bitmap_initialize.
+	(BITMAP_ALLOCA): Delete.
+	(BITMAP_XMALLOC): Update for change to bitmap_initialize.
+	(BITMAP_GGC_ALLOC): New.
+	* Makefile.in (gtype-desc.o): Add bitmap.h.
+	(bitmap.o): Add gt-bitmap.h, $(GGC_H).
+	(GTFILES): Add bitmap.c.
+	(gt-bitmap.h): New rule.
+	($(HOST_PREFIX_1)bitmap.o): Add gt-bitmap.h.
+	* basic-block.h: Update for changes to bitmap_initialize.
+	* except.c (exception_handler_label_map): Move into...
+	(struct eh_status): Here.
+	(struct eh_region): Make 'aka' GCable.
+	(free_eh_status): Don't need to specially handle
+	exception_handler_label_map.
+	(add_ehl_entry): Update for changes to exception_handler_label_map.
+	(find_exception_handler_labels): Likewise.
+	(remove_exception_handler_label): Likewise.
+	(maybe_remove_eh_handler): Likewise.
+	(for_each_eh_label): Likewise.
+	(remove_eh_handler): Allocate 'aka' using GGC.
+	* gengtype.c (get_output_file_with_visibility): Add bitmap.h
+	to list of includes.
+
+	* gengtype.c (write_gc_marker_routine_for_structure): Name
+	the routines 'gt_ggc_mx_*' instead of 'gt_ggc_m_*'.  
+	(write_gc_types): Arrange for the tests with NULL to be inlined.
+	(write_gc_roots): Update uses of procedure pointers.
+	* ggc-common.c (gt_ggc_mx_rtx_def): Rename from gt_ggc_m_rtx_def.
+
+	* Makefile.in (explow.o): Add dependency on gt-explow.h.
+	(sdbout.o): Add dependency on gt-sdbout.h.
+
+	* emit-rtl.c (const_int_htab): Use gengtype to clear unused entries.
+	(mem_attrs_htab): Likewise.
+	(init_emit_once): Don't call ggc_add_deletable_htab.
+	* fold-const.c (size_htab): Use gengtype to clear unused entries.
+	(size_int_type_wide): Don't call ggc_add_deletable_htab.
+	* gengtype.c (finish_root_table): Add LASTNAME and TNAME
+	parameters, use them, change callers.
+	(write_gc_root): Add IF_MARKED parameter, use it, change callers.
+	(write_gc_roots): Handle 'if_marked' option.
+	(main): Don't need to call set_gc_used_type any more.
+	* ggc.h (ggc_htab_marked_p): Delete.
+	(ggc_htab_mark): Delete.
+	(struct ggc_cache_tab): New.
+	(gt_ggc_cache_rtab): New declaration.
+	* ggc-common.c (struct d_htab_root): Delete.
+	(d_htab_roots): Delete.
+	(ggc_add_deletable_htab): Delete.
+	(ggc_htab_delete): Handle new htab-deleting mechanism.
+	(ggc_mark_roots): Use new htab-deleting mechanism.
+	* tree.c (type_hash_table): Use gengtype to clear unused entries.
+	Make static.
+	(init_obstacks): Don't call ggc_add_deletable_htab.
+
+	* objc/objc-act.h (struct hashed_attribute): Use gengtype.
+	(struct hashed_entry): Likewise.
+	(nst_method_hash_list): Likewise.
+	(cls_method_hash_list): Likewise.
+	(HASH_ALLOC_LIST_SIZE): Delete.
+	(ATTR_ALLOC_LIST_SIZE): Delete.
+	* objc/objc-act.c (hash_init): Use ggc to allocate
+	nst_method_hash_list, cls_method_hash_list.
+	(hash_enter): Use ggc to allocate; allocate one entry at a time.
+	(hash_add_attr): Likewise.
+	(ggc_mark_hash_table): Delete.
+	(objc_act_parse_init): Delete.
+	(objc_init): Delete reference to objc_act_parse_init.
+	* tlink.c: Replace hash.h with hashtab.h.  Explicitly include
+	obstack.h.  Replace references to 'struct hash_table' with htab_t.
+	(struct symbol_hash_entry): Replace hash header with key field.
+	(struct file_hash_entry): Replace hash header with key field.
+	(struct demangled_hash_entry): Replace hash header with key field.
+	(hash_string_eq): New.
+	(hash_string_hash): New.
+	(symbol_hash_newfunc): Delete.
+	(symbol_hash_lookup): Modify to use htab_t.
+	(file_hash_newfunc): Delete.
+	(file_hash_lookup): Modify to use htab_t.
+	(demangled_hash_newfunc): Delete.
+	(demangled_hash_lookup): Modify to use htab_t.
+	(tlink_init): Modify to use htab_t.
+	* hash.h: Delete.
+	* hash.c: Delete.
+	* ggc.h: Delete forward structure declarations.
+	Delete prototypes for deleted functions.
+	* ggc-common.c: Don't include hash.h.
+	(ggc_add_tree_hash_table_root): Delete.
+	(ggc_mark_tree_hash_table_entry): Delete.
+	(ggc_mark_tree_hash_table): Delete.
+	(ggc_mark_tree_hash_table_ptr): Delete.
+	* gengtype.c (write_gc_structure_fields): Allow param_is option.
+	(write_gc_marker_routine_for_structure): Use visibility of
+	the parameter if there is one.
+	* function.c: Replace hash.h with hashtab.h.  Replace references
+	to 'struct hash_table *' with htab_t.
+	(struct insns_for_mem_entry): Include a plain key.
+	(fixup_var_refs_insns_with_hash): Update to use htab_t.
+	(insns_for_mem_newfunc): Delete.
+	(insns_for_mem_hash): Update to use htab_t.
+	(insns_for_mem_comp): Likewise.
+	(insns_for_mem_walk): Likewise.
+	* c-lang.c: Include ggc.h.
+	* Makefile.in (OBJS): Remove hash.o.
+	(c-lang.o): Add GGC_H.
+	(COLLECT2_OBJS): Remove hash.o.
+	(tlink.o): Remove hash.h, add HASHTAB_H and OBSTACK_H.
+	(ggc-common.o): Remove hash.h.
+	(function.o): Remove hash.h, add HASHTAB_H.
+	(genautomata.o): Remove hash.h, add HASHTAB_H.
+
+	* varasm.c (mark_const_str_htab_1): Delete.
+	(mark_const_str_htab): Delete.
+	(const_str_htab_del): Delete.
+	(const_str_htab): Use gengtype to mark.
+	(init_varasm_once): Use gengtype to mark hashtables.  Use GC to
+	allocate them.
+	* tree.c (mark_tree_hashtable_entry): Delete.
+	(mark_tree_hashtable): Delete.
+	* tree.h (mark_tree_hashtable): Delete prototype.
+	* ggc.h (ggc_test_and_set_mark): Treat (void *)1 like NULL.
+	(ggc_mark): Likewise.
+	(ggc_calloc): New.
+	(htab_create_ggc): New.
+	* ggc-common.c (ggc_calloc): New.
+	* gengtype.h (enum typekind): Add TYPE_PARAM_STRUCT.
+	(struct type): Add param_struct structure.
+	* gengtype.c (param_structs): New.
+	(adjust_field_type): Handle param_is option.
+	(set_gc_used_type): Handle TYPE_PARAM_STRUCT.
+	(get_output_file_with_visibility): Include hashtab.h in gtype-desc.c.
+	(write_gc_structure_fields): Add new PARAM parameter.  Update
+	callers.  Handle use_param option.  Handle TYPE_PARAM_STRUCT.
+	(write_gc_marker_routine_for_structure): Add new PARAM parameter.
+	Use it to generate function name.  Update callers.
+	(write_gc_types): Add new PARAM_STRUCTS parameter.  Update callers.
+	Process them.
+	(write_gc_roots): Handle TYPE_PARAM_STRUCT.  Allow param_is
+	option.
+	(main): Define PTR as pointer-to-scalar.  Don't specially
+	mark deferred_string or ehl_map_entry.
+	* gengtype-yacc.y (PARAM_IS): Add new token.
+	(externstatic): Use adjust_field_type.
+	(type_option): Add PARAM_IS.
+	* gengtype-lex.l: Add rule for typedef of function pointers.
+	Add rule for PARAM_IS.
+	(IWORD): Add size_t.
+	* except.c (exception_handler_label_map): Use gengtype to mark.
+	(type_to_runtime_map): Likewise.
+	(mark_ehl_map_entry): Delete.
+	(mark_ehl_map): Delete.
+	(init_eh): Use gengtype for roots; use GC to allocate hash tables.
+	(t2r_mark_1): Delete.
+	(t2r_mark): Delete.
+	* Makefile.in (gtype-desc.o): Correct dependencies.
+	(GTFILES): Add hashtab.h.
+	(genautomata.o): Actually uses hashtab.h.
+
+	* Makefile.in (stringpool.o): Add $(GGC_H).
+	(dwarf2asm.o): Likewise.
+	(GTFILES): Add hashtable.h.
+	* c-common.h (struct c_common_identifier): Use gengtype.
+	* c-decl.h (c_mark_tree): Delete.
+	* c-lang.c (LANG_HOOKS_MARK_TREE): Delete.
+	* c-tree.h (struct lang_identifier): Use gengtype.
+	(union lang_tree_node): New.
+	(c_mark_tree): Delete prototype.
+	* dwarf2out.c [!DWARF2_DEBUGGING_INFO]: Define dummy 
+	dwarf2_debug_hooks.
+	* gengtype-lex.l (IWORD): Allow 'bool'.
+	(ptr_alias): Match.
+	* gengtype-yacc.y (ALIAS): New token.
+	(type_option): New rule.
+	(option): Use type_option.
+	* gengtype.c (process_gc_options): New.
+	(set_gc_used_type): Use it.
+	(write_gc_structure_fields): Add 'bitmap' parameter, change callers.
+	Add new variable 't' to hold the type of the field being processed.
+	Add more error checking.  Use UNION_P when looking at 'desc' option.
+	Handle language-specific structures containing other
+	language-specific structures.
+	(write_gc_types): Handle 'ptr_alias' option.
+	(main): Don't need to specially output lang_type, lang_decl, lang_id2.
+	* ggc-common.c (ggc_pending_trees): Delete.
+	(ggc_mark_roots): Don't manipulate ggc_pending_trees.
+	(ggc_mark_trees): Delete.
+	(gt_ggc_m_tree_node): Delete.
+	* ggc.h (ggc_pending_trees): Delete.
+	(ggc_mark_tree): Make alias of gt_ggc_m_tree_node.
+	* hashtable.h (ht_identifier): Use gengtype.
+	* langhooks-def.h (LANG_HOOKS_MARK_TREE): Delete.
+	* langhooks.h (struct lang_hooks): Delete mark_tree.
+	* sdbout.c [! SDB_DEBUGGING_INFO]: Define dummy sdb_debug_hooks
+	anyway.
+	* system.h: Poison LANG_HOOKS_MARK_TREE.
+	* tree.c (tree_node_structure): New.
+	* tree.h (struct tree_common): Use gengtype.
+	(struct tree_int_cst): Likewise.
+	(struct tree_real_cst): Likewise.
+	(struct tree_string): Likewise.
+	(struct tree_complex): Likewise.
+	(struct tree_vector): Likewise.
+	(struct tree_identifier): Likewise.
+	(struct tree_list): Likewise.
+	(struct tree_vec): Likewise.
+	(struct tree_exp): Likewise.
+	(struct tree_block): Likewise.
+	(struct tree_type): Likewise.
+	(struct tree_decl): Likewise.
+	(enum tree_structure_enum): New.
+	(union tree_node): Use gengtype, with an alias.
+	(tree_node_structure): Prototype.
+	* objc/objc-lang.c (LANG_HOOKS_MARK_TREE): Delete.
+
+	Merge to tag pch-merge-20020430.  The LANG_HOOKS_FUNCTION_MARK
+	macro was deleted.  The LANG_HOOKS_FUNCTION_FREE macro was renamed
+	to LANG_HOOKS_FUNCTION_FINAL.
+	* Makefile.in (GTFILES): Add bitmap.h.
+	* except.c (struct eh_region): Mark field 'aka' to be skipped.
+
+	* config/alpha/alpha.c [TARGET_ABI_UNICOSMK]
+	(alpha_init_machine_status): Give proper type.
+	* Makefile.in (c-lang.o): Depend on gtype-c.h.
+	(optabs.o): Depend on gt-optabs.h.
+	(GTFILES): Add optabs.o.
+	(gt-optabs.h): Add rule.
+	* optabs.c: Include gt-optabs.h.
+
+	* gengtype.c (set_gc_used_type): Correct some errors in last change.
+	(write_gc_structure_fields): If a field which should be NULL is
+	not, abort.
+	* c-pragma.c: Move struct align_stack and variable alignment_stack
+	out from the ifdef.
+
+	* config/xtensa/t-xtensa: Add dependencies for gt-xtensa.h.
+	* config/xtensa/xtensa.c: Include gt-cris.h.
+	(struct machine_function): Use gengtype	to mark.
+	* config/mmix/mmix.h (struct machine_function): Use gengtype
+	to mark.
+	* config/cris/t-cris: Add dependencies for gt-cris.h.
+	* config/cris/cris.c: Include gt-cris.h.
+	(struct machine_function): Use gengtype	to mark.
+	* config/rs6000/rs6000.h (struct machine_function): Use gengtype
+	to mark.
+	* doc/tm.texi (Per-Function Data): Delete references to
+	mark_machine_status.
+	* config/ia64/ia64.c (ia64_override_options): Don't set
+	mark_machine_status.
+	* config/i386/i386.c (override_options): Likewise.
+	* config/d30v/d30v.c (d30v_init_expanders): Likewise.
+	* config/arm/arm.c (arm_init_expanders): Likewise.
+	* config/alpha/alpha.c (override_options): Likewise.
+	* gengtype.h (enum gc_used_enum): Add GC_MAYBE_POINTED_TO. 
+	* gengtype.c (set_gc_used_type): Handle 'maybe_null' option.
+	(write_gc_structure_fields): Don't handle 'really' option.
+	Handle 'maybe_null' option.
+	(write_gc_types): Handle 'maybe_null' option.
+	* function.h (struct function): Don't use "really".
+	(mark_machine_status): Delete declaration.
+	(mark_lang_status): Delete declaration.
+	(gt_ggc_mr_machine_function): Delete prototype.
+	(gt_ggc_mr_language_function): Delete prototype.
+	* function.c (mark_machine_status): Delete.
+	(mark_lang_status): Delete.
+	(gt_ggc_mr_machine_function): Delete.
+	(gt_ggc_mr_language_function): Delete.
+	* c-tree.h (mark_c_function_context): Delete prototype.
+	* c-objc-common.c (c_objc_common_init): Don't set mark_lang_status.
+	* c-decl.c (struct language_function): Rename from struct
+	c_language_function.  Update uses.  Use gengtype to mark.
+	(mark_c_function_context): Delete.
+	* c-common.h (struct c_language_function): Rename from struct
+	language_function.
+	(mark_stmt_tree): Delete prototype.
+	(c_mark_lang_decl): Delete prototype.
+	(mark_c_language_function): Delete prototype.
+	* c-common.c (mark_stmt_tree): Delete.
+	(c_mark_lang_decl): Delete.
+	(mark_c_language_function): Delete.
+
+	* gengtype.h (enum typekind): Add TYPE_LANG_STRUCT.
+	(lang_bitmap): New typedef.  Use where appropriate.
+	(struct type): Add gc_used field, lang_struct field.
+	(UNION_P): New macro.
+	(new_structure): New prototype.
+	(find_structure): Remove 'pos' parameter.  Change all callers.
+	* gengtype-lex.l: Update for changes to find_structure.
+	* gengtype-yacc.y (typedef_struct): Use new_structure.
+	(yacc_ids): Suppress warning.
+	(type): Use new_structure.
+	* gengtype.c (string_type): Update for changes to struct type.
+	(find_structure): Just find a structure, don't worry about
+	creating one.
+	(new_structure): New.
+	(note_yacc_type): Use new_structure.
+	(set_gc_used_type): New.
+	(set_gc_used): New.
+	(write_gc_structure_fields): Allow for pointers to TYPE_LANG_STRUCT.
+	(write_gc_types): Handle TYPE_LANG_STRUCT.
+	(write_gc_marker_routine_for_structure): New.
+	(main): Call set_gc_used.  Add some calls to set_gc_used_type
+	for places where GCC doesn't use gengtype properly yet.
+	* ggc.h (gt_ggc_m_rtx_def): Don't prototype.
+	(gt_ggc_m_tree_node): Likewise.
+
+	* varasm.c (copy_constant): Call expand_constant if we hit
+	something we can't recognise.
+
+	* ggc-common.c (ggc_mark_rtvec_children): Delete.
+	(ggc_mark_rtx_children): Use generic name for ggc_mark_rtvec.
+	(lang_mark_false_label_stack): Delete.
+	* rtl.h (struct rtvec_def): Use gengtype to mark.
+	* ggc.h (ggc_mark_rtvec): Delete.
+	(gt_ggc_m_rtvec_def): Delete.
+	(ggc_mark_nonnull_tree): Delete.
+	(ggc_mark_rtvec_children): Delete prototype.
+	(lang_mark_false_label_stack): Delete declaration.
+
+	* gengtype.h (note_yacc_type): Add prototype.
+	* gengtype.c (note_yacc_type): New function.
+	* gengtype-lex.l: Add lexer support for yacc files.
+	* gengtype-yacc.y (start): Extract union from yacc files.
+	(yacc_union): New rule.
+	(yacc_typematch): New rule.
+	(yacc_ids): New rule.
+	(enum_items): Tweak for efficiency.
+	(optionseq): Likewise.
+
+	* c-common.h (struct language_function): Use gengtype.
+	(struct c_lang_decl): Likewise.
+	* c-tree.h (struct lang_decl): Likewise.
+	(struct lang_type): Likewise.
+	* c-decl.c (lang_mark_tree): Use generated marker routines to mark
+	tree language substructures.
+
+	* stringpool.c (mark_ident): Replace ggc_mark_nonnull_tree with
+	ggc_mark_tree.
+	* dwarf2asm.c (mark_indirect_pool_entry): Likewise.
+
+	* varasm.c (struct rtx_const): Remove 'skip' tags for scalar arrays.
+
+	* stmt.c (struct nesting): Add discriminator.  Use gengtype to
+	mark. Remove 'data.block.cleanup_ptr' field.
+	(struct stmt_status): Use usual technique to mark struct nesting.
+	(gt_ggc_mr_nesting_cond): Delete.
+	(gt_ggc_mr_nesting_loop): Delete.
+	(gt_ggc_mr_nesting_block): Delete.
+	(gt_ggc_mr_nesting_case_stmt): Delete.
+	(expand_start_cond): Set discriminator.
+	(expand_start_loop): Likewise.
+	(expand_start_null_loop): Likewise.
+	(expand_start_bindings_and_block): Set discriminator.  Don't set
+	deleted fields.
+	(expand_decl_cleanup): Replace 'cleanup_ptr' with
+	&thisblock->data.block.cleanups.
+	(expand_start_case): Set discriminator.
+	(expand_start_case_dummy): Set discriminator.
+
+	* ggc-callbacks.c: Remove.
+
+	* gengtype.h (struct type): Add 'u.s.bitmap' field.
+	(find_structure): Add 'pos' parameter.
+	* gengtype-lex.l: Update callers to find_structure.
+	* gengtype-yacc.y: Likewise.
+	* gengtype.c (find_structure): Allow for structures to be defined
+	in multiple language backends.
+	(get_output_file_with_visibility): Include debug.h in gtype-desc.c.
+	(counter): Rename to gc_counter.
+	(write_gc_structure_fields): Fail when writing out fields for
+	an incomplete structure.  Ignore arrays of scalars.  Handle
+	'tree_vec' special.
+	(write_gc_types): Reset counter for each procedure written.
+
+	* stmt.c (add_case_node): Use GGC to allocate struct case_node.
+	(free_case_nodes): Delete.
+	(expand_end_case_type): Delete call to free_case_nodes.
+
+	* Makefile.in (cselib.o): Include gt-<filename>.h.
+	(gcse.o): Likewise.
+	(profile.o): Likewise.
+	(alias.o): Likewise.
+	(GTFILES): Add alias.c, cselib.c, gcse.c, profile.c, and
+	alphabetize backend files.
+	(gt-alias.h, gt-cselib.h, gt-gcse.h, gt-profile.h): New rules.
+	* alias.c: Use gengtype for roots.
+	* c-common.h (struct stmt_tree_s): Use gengtype.
+	* c-decl.c: Use gengtype for roots.
+	* cselib.c: Use gengtype for roots.
+	* expr.c: Use gengtype for roots.
+	* fold-const.c: Use gengtype for roots.
+	* gcse.c: Use gengtype for roots.
+	* gengtype-lex.l: Handle typedefs of function types.
+	Allow for empty array bounds.
+	Allow processing to stop on initialisers.
+	* gengtype-yacc.y (externstatic): Stop processing on initialisers.
+	(semiequal): New rule.
+	* gengtype.c (create_file): Tidy output files.
+	(get_output_file_with_visibility): Fix paren warning.  Fix bug
+	involving multiple input files mapping to one output file.
+	(write_gc_structure_fields): Skip arrays of scalars.
+	(write_gc_types): Tidy output files.
+	(write_gc_root): New function.
+	(write_gc_roots): Fix bugs, add support for roots that are
+	structures.
+	* ggc-common.c (ggc_mark_rtx_ptr): Delete.
+	(ggc_mark_tree_ptr): Delete.
+	(ggc_add_rtx_root): Delete.
+	(ggc_add_tree_root): Delete.
+	(ggc_del_root): Delete.
+	* integrate.c (get_func_hard_reg_initial_val): Use ggc_alloc to
+	allocate struct initial_value_struct.
+	* profile.c: Use gengtype for roots.
+	* sdbout.c: Use gengtype for roots.
+	* varasm.c (mark_weak_decls): Delete unused prototype.
+	(mark_const_hash_entry): Delete unused function.
+	* config/darwin-protos.h: Use gengtype for roots.
+	(machopic_add_gc_roots): Delete.
+	* config/arm/arm.c: Use gengtype for roots.
+	* config/arm/arm.h: Use gengtype for roots.
+	* config/c4x/c4x-protos.h: Use gengtype for roots.
+	* config/c4x/c4x.c (c4x_add_gc_roots): Delete.
+	* config/d30v/d30v-protos.h: Use gengtype for roots.
+	* config/d30v/d30v.c (d30v_add_gc_roots): Delete.
+	* config/dsp16xx/dsp16xx.c (override_options): Use gengtype for roots.
+	* config/dsp16xx/dsp16xx.h: Use gengtype for roots.
+	* config/ia64/ia64-protos.h: Use gengtype for roots.
+	* config/ia64/ia64.c (ia64_add_gc_roots): Delete.
+	* config/m68hc11/m68hc11-protos.h: Use gengtype for roots.
+	* config/m68hc11/m68hc11.c (z_reg): Make global.
+	(z_reg_qi): Make global.
+	(m68hc11_add_gc_roots): Delete.
+	* config/mcore/mcore-protos.h: Use gengtype for roots.
+	* config/mcore/mcore.c (mcore_add_gc_roots): Delete.
+	* config/mips/mips.c (mips_add_gc_roots): Delete.
+	* config/mips/mips.h: Use gengtype for roots.
+	* config/mmix/mmix.c (override_options): Use gengtype for roots.
+	* config/mmix/mmix.h: Use gengtype for roots.
+	* config/mn10200/mn10200.c (asm_file_start): Use gengtype for roots.
+	* config/mn10200/mn10200.h: Use gengtype for roots.
+	* config/pa/pa.c: Use gengtype for roots, marking.
+	(struct deferred_plabel): Use GGC, gengtype.
+	(pa_add_gc_roots): Delete.
+	(mark_deferred_plabels): Delete.
+	* config/pj/pj-protos.h: Use gengtype for roots.
+	* config/pj/pj.h (OVERRIDE_OPTIONS): Don't define.
+	* config/rs6000/rs6000.c: Use gengtype for roots.  Don't call
+	machopic_add_gc_roots.
+	* config/rs6000/rs6000.h: Use gengtype for roots.
+	* config/rs6000/t-darwin (darwin.o): Add dependency on gt-darwin.h.
+	(gt-darwin.h): Add rule.
+	* config/sh/sh.c: Use gengtype for roots.
+	* config/sh/t-sh ($(out_object_file)): Add dependency on gt-sh.h.
+	(gt-sh.h): Add rule.
+	* config/sparc/sparc.c: Use gengtype for roots.
+	(sparc_add_gc_roots): Delete.
+	(struct ultrasparc_pipeline_state): Use GGC, gengtype.
+	(mark_ultrasparc_pipeline_state): Delete.
+	* config/sparc/sparc.h: Use gengtype for roots.
+
+	* Makefile.in (c-parse.o): Update dependencies.
+	(c-common.o): Likewise.
+	(GTFILES): Add c-common.h, c-tree.h, c-common.c, c-parse.in.
+	Add dependencies for the files they generate.
+	* c-common.c: Replace ggc_add_* uses with GTY annotations.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	(gt_ggc_mp_binding_level): Delete.
+	* c-lang.c: Include gtype-c.h.
+	* c-parse.in: Replace ggc_add_* uses with GTY annotations.  Include
+	gt-c-parse.h.
+	* c-pragma.h: Replace ggc_add_* uses with GTY annotations.
+	(gt_ggc_mp_align_stack): Delete.
+	* c-tree.h: Replace ggc_add_* uses with GTY annotations.
+	* function.c: Replace ggc_add_* uses with GTY annotations.
+	(gt_ggc_mp_function): Delete.
+	* function.h: Replace ggc_add_* uses with GTY annotations.
+	* gengtype.c (lang_names): New.
+	(NUM_BASE_FILES): New.
+	(open_base_files): Create language base files.
+	(startswith): New.
+	(get_file_basename): New.
+	(get_base_file_bitmap): New.
+	(get_output_file_with_visibility): Rename from get_output_file.
+	Add more mappings for various C/Objc filenames.
+	(finish_root_table): New.
+	(write_gc_roots): Handle dependencies and scoping properly.
+	* gengtype.h: Add prototypes for new functions.
+	* ggc-common.c (struct deletable_root): Delete.
+	(deletables): Delete.
+	(ggc_add_deletable_root): Delete.
+	(ggc_mark_roots): No need to deal with deleted functionality.
+	* ggc.h (ggc_add_deletable_root): Delete prototype.
+	* objc/Make-lang.in (objc-act.o): Add gtype-objc.h dependency.
+	(gtype-objc.h): Add rule to create.
+	* objc/config-lang.in (gtfiles): New.
+	* objc/objc-act.c: Allocate imp_list using GGC.  Replace uses of
+	ggc_add_* with GTY markers.  Include gtype-objc.h.
+	(ggc_mark_imp_list): Delete.
+	* objc/objc-act.h: Replace uses of ggc_add_* with GTY markers.
+	* objc/objc-lang.c: Random Whitespace Change.
+
+	* except.h (exception_handler_labels): Delete.
+	(get_exception_handler_labels): New.
+	* except.c (exception_handler_labels): Delete.
+	(struct eh_status): Add exception_handler_labels field.
+	(doing_eh): Don't add exception_handler_labels as root.
+	(free_eh_status): Don't need to free exception_handler_labels.
+	(get_exception_handler_labels): New.
+	(find_exception_handler_labels): Update for move of
+	exception_handler_labels.
+	(remove_exception_handler_label): Likewise.
+	* cfgrtl.c (can_delete_label_p): Use get_exception_handler_labels.
+	* jump.c (rebuild_jump_labels): Likewise.
+	* loop.c (find_and_verify_loops): Likewise.
+	* sched-rgn.c (is_cfg_nonregular): Likewise.
+
+	* gengtype.c (write_gc_structure_fields): Handle variable-length
+	TYPE_ARRAYs.
+
+	* varasm.c (struct weak_syms): Use GGC, gengtype.
+	(mark_weak_decls): Delete.
+	(weak_decls): Likewise.
+	(add_weak): Likewise.
+	(remove_from_pending_weak_list): Likewise.
+	(init_varasm_once): Likewise.
+
+	* Makefile.in (gtype-desc.o): Add libfuncs.h dependency.
+	(GTFILES): Add tree.h, libfuncs.h, emit-rtl.c, explow.c,
+	stor-layout.c, regclass.c, and lists.c.
+	Add dependencies of gt-emit-rtl.h gt-explow.h gt-stor-layout.h
+	gt-regclass.h and gt-lists.h on s-gtype.
+	* emit-rtl.c: Use gengtype for roots.  Include gt-emit-rtl.h.
+	* except.c: Use gengtype for roots.
+	* explow.c: Use gengtype for roots.  Include gt-explow.h.
+	* expr.h (init_stor_layout_once): Delete prototype.
+	* function.c: Use gengtype for roots.
+	* gengtype-lex.l: Add ENT_EXTERNSTATIC lexing.
+	* gengtype-yacc.y (start): Can also be an externstatic.
+	(externstatic): New production.
+	(struct_fields): Correct array bounds inversion for 2-d arrays.
+	* gengtype.c (variables): New variable.
+	(note_variable): New function.
+	(get_output_file): Include libfuncs.h into gtype-desc.c.
+	(get_output_file_name): New function.
+	(write_gc_structure_fields): Suppress warnings.
+	(write_gc_types): Make static.
+	(put_mangled_filename): New function.
+	(write_gc_roots): New function.
+	(main): Call write_gc_roots.
+	* gengtype.h (note_variable): Prototype.
+	(get_output_file_name): Prototype.
+	(write_gc_types): Delete prototype.
+	* ggc.h: Clean up unnecessary structure predefinitions.
+	(struct ggc_root_tab): Define.
+	(gt_ggc_m_rtx_def): Make function, not macro.
+	(gt_ggc_m_tree_node): Likewise.
+	* libfuncs.h: Use gengtype for roots.
+	* lists.c: Use gengtype for roots.  Include gt-lists.h.
+	(init_EXPR_INSN_LIST_cache): Delete.
+	* optabs.c: Use gengtype for roots.
+	(gt_ggc_mp_optab): Delete.
+	* optabs.h: Use gengtype for roots.
+	* regclass.c: Use gengtype for roots.  Include gt-regclass.h.
+	* rtl.h: Use gengtype for roots.
+	(init_EXPR_INSN_LIST_cache): Delete prototype.
+	* stor-layout.c: Use gengtype for roots.
+	Include gt-stor-layout.h.
+	(init_stor_layout_once): Delete.
+	* toplev.c: Use gengtype for roots.  Delete calls to deleted
+	routines.
+	* tree.c: Use gengtype for roots.
+	* tree.h: Use gengtype for roots.
+	* varasm.c: Use gengtype for roots.
+	
+	* Makefile.in (GTFILES): Add @all_gtfiles@.
+	* configure: Regenerate.
+	* configure.in: Construct all_gtfiles from the gtfiles definitions
+	in config-lang.in.
+	* gengtype-yacc.y (type): Warn about duplicate structure names.
+	* gengtype.c (get_output_file): Handle .c files in language
+	subdirectories.
+
+	* Makefile.in (GTFILES): Run gengtype on all the config files
+	and on the target .c file.
+	* except.c (mark_eh_region): Delete.
+	(init_eh_for_function): Use GGC on struct eh_status.
+	(mark_eh_status): Delete.
+	(free_eh_status): Use GGC.
+	(expand_eh_region_start): Use GGC to
+	(collect_eh_region_array): Allocate last_region_number using GGC.
+	(duplicate_eh_region_1): Use GGC to allocate struct eh_region.
+	(remove_eh_handler): Let GGC free struct eh_region.
+	(add_call_site): Use GGC to reallocate call_site_record array.
+	* function.c (init_machine_status): Update calling sequence.
+	(mark_machine_status): Likewise.
+	(mark_lang_status): Likewise.
+	(prepare_function_start): Update init_machine_status call.
+	(mark_function_status): Delete.
+	(maybe_mark_struct_function): Delete.
+	(ggc_mark_struct_function): Delete.
+	(gt_ggc_mp_function): New.
+	(gt_ggc_mr_machine_function): New.
+	(gt_ggc_mr_language_function): New.
+	(init_function_once): Use canonical names.
+	* function.h (struct function): Use gengtype.
+	(init_machine_status): Return the structure.
+	(mark_machine_status): Take a 'void *'.
+	(mark_lang_status): Likewise.
+	* ggc-common.c (ggc_mark_trees): Use canonical name for
+	ggc_mark_struct_function.
+	* tree.h (ggc_mark_struct_function): Delete prototype.
+	* config/alpha/alpha.c (alpha_mark_machine_status): Delete.
+	(alpha_init_machine_status): Likewise.
+	(override_options): Use canonical name for alpha_mark_machine_status.
+	* config/alpha/unicosmk.h (struct machine_function): Use gengtype.
+	* config/arm/arm.h (struct machine_function): Use gengtype.
+	* config/arm/arm.c (arm_mark_machine_status): Delete.
+	(arm_init_machine_status): Update calling sequence.
+	(arm_init_expanders): Use canonical name for arm_mark_machine_status.
+	* config/cris/cris.c (cris_init_machine_status): Update 
+	calling sequence.
+	* config/d30v/d30v.h (struct machine_function): Use gengtype.
+	* config/d30v/d30v.c (d30v_init_machine_status): Update 
+	calling sequence.
+	(d30v_mark_machine_status): Delete.
+	* config/i386/i386.c: Include gt-i386.h.
+	(struct machine_function): Use gengtype.
+	(ix86_init_machine_status): Update calling sequence.
+	(ix86_mark_machine_status): Delete.
+	(override_options): Use canonical namke for ix86_mark_machine_status.
+	* config/ia64/ia64.h (struct machine_function): Use gengtype.
+	* config/ia64/ia64.c (ia64_init_machine_status): Update calling 
+	sequence.
+	(ia64_mark_machine_status): Delete.
+	(ia64_override_options): Use canonical name for 
+	ia64_mark_machine_status.
+	* config/mmix/mmix.c (mmix_init_machine_status): Update calling 
+	sequence.
+	* config/rs6000/rs6000.c (rs6000_init_machine_status): Likewise.
+	* config/xtensa/xtensa.c (xtensa_init_machine_status): Likewise.
+	* gengtype.c (get_output_file): Fix warning.
+	(main): Add prototype to suppress warning.
+	* tree.c: Remove tree_hash_mark prototype.
+
+	* tree.h (init_stmt): Delete prototype.
+	* toplev.c (lang_independent_init): Don't call init_stmt.
+	* stmt.c (ALLOC_NESTING): Use GGC for 'struct nesting'.
+	(stmt_obstack): Delete.
+	(POPSTACK): No need to free 'struct nesting'.
+	(gt_ggc_mr_nesting_cond): Use canonical names.
+	(gt_ggc_mr_nesting_loop): Use canonical names.
+	(gt_ggc_mr_nesting_block): Use canonical names.
+	(gt_ggc_mr_nesting_case_stmt): Use canonical names.
+	(mark_stmt_status): Delete.
+	(init_stmt): Delete.
+	(clear_last_expr): Clear both last_expr_type and last_expr_value.
+	Use it everywhere that last_expr_type was cleared.
+	* lists.c (init_EXPR_INSN_LIST_cache): Use ggc_add_deletable_root.
+	(zap_lists): Delete.
+	* ggc.h (ggc_add_deletable_root): Prototype.
+	(mark_stmt_status): Remove prototype.
+	* ggc-common.c (ggc_add_deletable_root): New.
+	(ggc_mark_roots): Handle deletable roots.
+	* function.c (ggc_mark_struct_function): Use canonical name
+	for mark_stmt_status.
+	* emit-rtl.c (free_sequence_stack): New.
+	(start_sequence): Use a freelist for sequences.
+	(end_sequence): Likewise.
+	(init_emit_once): Add free_sequence_stack as a deleteable root.
+	* c-pragma.c Include gt-c-pragma.h.
+	(struct align_stack): Use gengtype.
+	(push_alignment): Use GGC for struct align_stack.
+	(mark_align_stack): Delete.
+	(gt_ggc_mp_align_stack): New.
+	(init_pragma): Use canonical name for mark_align_stack.
+	* c-decl.c: Include gt-c-decl.h.
+	(struct binding_level): Use gengtype.
+	(make_binding_level): Use GGC; handle the freelist here.
+	(pop_binding_level): New.
+	(pushlevel): Move code into make_binding_level.
+	(push_label_level): Likewise.
+	(poplevel): Move code into pop_binding_level.
+	(pop_label_level): Likewise.
+	(mark_binding_level): Delete.
+	(gt_ggc_mp_binding_level): New.
+	(c_init_decl_processing): Use canonical name for mark_binding_level.
+	Add free_binding_level as deletable root.
+	(mark_c_function_context): Use canonical name for mark_binding_level.
+	* Makefile.in (c-decl.o): Add gt-c-decl.h.
+	(c-pragma.o): Add gt-c-pragma.h.
+	(GTFILES): Add c-decl.c and c-pragma.c.
+	(gt-c-decl.h, gt-c-pragma.h): Create using gengtype.
+
+	* tree.c (struct type_hash): Use gengtype.
+	(init_obstacks): Use canonical name for type_hash_mark.
+	(type_hash_mark): Delete.
+	Include gt-tree.h.
+	* rtl.h (struct mem_attrs): Use gengtype.
+	* optabs.h (struct optab): Use gengtype.
+	* optabs.c (expand_binop): Squish signed/unsigned warning.
+	(mark_optab): Make local, use canonical name, use autogenerated
+	marker procedure.
+	(init_optabs): Use canonical name for mark_optab.
+	(new_optab): Use GGC to allocate optabs.
+	* ggc.h: Delete mark_optab prototype.
+	* ggc-common.c (ggc_mark_rtx_children): Use canonical name for
+	mem_attrs marker procedure.
+	* gengtype.c (get_output_file): Include headers in gtype-desc.c
+	explicitly rather than deducing them from file names.
+	(write_gc_structure_fields): Handle arrays of structures.
+	(main): Return non-zero exit code if errors occur during output.
+	* emit-rtl.c (mem_attrs_mark): Delete.
+	(init_emit_once): Use canonical name for mem_attrs marker procedure.
+	* Makefile.in (gtype-desc.o): Explicitly name dependencies.
+	(tree.o): Depend on gt-tree.h.
+	(GTFILES): Add rtl.h, optabs.h, tree.c.
+	(gt-tree.h): Add it to s-gtype rule.
+
+	* .cvsignore: Ignore gengtype flex/bison generated files.
+	* Makefile.in (GGC_H): Add gtype-desc.h.
+	(OBJS): Add gtype-desc.o.
+	(GEN): Add gengtype.
+	(STAGESTUFF): Add gengtype.
+	(varasm.o): Add gt-varasm.h.
+	(stmt.o): Add gt-stmt.h.
+	(except.o): Add gt-except.h.
+	(integrate.o): Add gt-integrate.h.
+	(GTFILES): New.
+	Add new rules for new files.
+	* configure: Regenerate.
+	* configure.in: Correct defaults.h paths.
+	* emit-rtl.c (mark_sequence_stack): Delete.
+	(mark_emit_status): Delete.
+	(start_sequence): Allocate sequence structures using GGC.
+	(end_sequence): Allocate sequence structures using GGC.
+	* except.c: Use gengtype for various structures.  Include
+	gt-except.h.
+	* expr.c (mark_expr_status): Delete.
+	* function.c: Use gengtype for various structures.  Include
+	gt-function.h.
+	(mark_function_status): Use standard gt_ggc names for marker functions.
+	(ggc_mark_struct_function): Likewise.
+	* function.h: Use gengtype for various structures.
+	* gengtype-lex.l: New file.
+	* gengtype-yacc.y: New file.
+	* gengtype.c: New file.
+	* gengtype.h: New file.
+	* ggc.h: Include gtype-desc.h.  Alias some marker procedures to
+	the standard names.  Remove some now-unnecessary prototypes.
+	* integrate.c: Use gengtype for various structures.  Include
+	gt-integrate.h.
+	(mark_hard_reg_initial_vals): Delete.
+	* integrate.h (mark_hard_reg_initial_vals): Delete.
+	* stmt.c: Use gengtype for various structures.  Include
+	gt-stmt.h.
+	(mark_case_node): Delete.
+	(mark_goto_fixup): Delete.
+	(mark_stmt_status): Use standard gt_ggc names for marker functions.
+	* system.h: Define GTY to empty.   In flex/bison files,
+	don't poison malloc or realloc, instead just define them to
+	xmalloc and xrealloc.
+	* varasm.c: Use gengtype for various structures.  Include
+	gt-varasm.h.  Use standard gt_ggc names for marker functions.
+	(mark_pool_constant): Delete.
+	(mark_varasm_status): Delete.
+	(decode_rtx_const): #if 0 out non-typesafe hack.
+
+	* function.h (free_lang_status): Mark as obsolete.
+	* function.c (free_lang_status): Mark as obsolete.
+	* c-decl.c (push_c_function_context): Use GC to allocate and free
+	struct language_function.
+	(pop_c_function_context): Likewise.
+	* c-common.c (mark_c_language_function): Mark struct
+	language_function.
+
+	* doc/tm.texi (Per-Function Data): Don't document free_machine_status.
+	Document that the machine_function structures must be allocated
+	using GC.  Update mark_machine_status documentation.
+	* function.h: Don't declare free_machine_status.
+	* function.c (free_machine_status): Don't define. 
+	(free_after_compilation): Don't call free_machine_status.
+	(ggc_mark_struct_function): Mark f->machine.  Call
+	mark_machine_status only on non-NULL pointers.
+	* system.h: Poison free_machine_status.
+	* config/xtensa/xtensa.c (xtensa_init_machine_status): Use GC on
+	struct machine_function.
+	(xtensa_free_machine_status): Delete.
+	(override_options): Don't set free_machine_status.
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't set
+	free_machine_status.
+	(rs6000_init_machine_status): Use GC on struct machine_function.
+	(rs6000_free_machine_status): Delete.
+	* config/ia64/ia64.c (ia64_init_machine_status): Use GC on struct
+	machine_function.
+	(ia64_mark_machine_status): Likewise.
+	(ia64_free_machine_status): Delete.
+	(ia64_override_options): Don't set free_machine_status.
+	* config/i386/i386.c (override_options): Don't set
+	free_machine_status.
+	(ix86_init_machine_status): Use GC on struct machine_function.
+	(ix86_mark_machine_status): Likewise.
+	(ix86_free_machine_status): Delete.
+	* config/d30v/d30v.c: (d30v_init_machine_status): Use GC on struct
+	machine_function.
+	(d30v_mark_machine_status): Likewise.
+	(d30v_free_machine_status): Delete.
+	(d30v_init_expanders): Don't set free_machine_status.
+	* config/arm/arm.c (arm_mark_machine_status): Use GC on struct
+	machine_function.
+	(arm_init_machine_status): Likewise.
+	(arm_free_machine_status): Delete.
+	(arm_init_expanders): Don't set free_machine_status.
+	* config/alpha/alpha.c (override_options): Don't set
+	free_machine_status.
+	(alpha_init_machine_status): Use GC on struct machine_function.
+	(alpha_mark_machine_status): Likewise.
+	(alpha_free_machine_status): Delete.
+
+	* varasm.c (compare_constant): Fix typo.
+
+	* varasm.c: Don't include obstack.h.
+	(struct varasm_status): x_const_rtx_hash_table is a hash of rtxes.
+	(struct rtx_const): Give substructures names, improve formatting.
+	(struct constant_descriptor): Delete.
+	(struct constant_descriptor_tree): New, based on constant_descriptor.
+	(const_hash_table): Is a hash table of trees.
+	(mark_const_hash_entry): Is used for hashes of trees.  Mark
+	constant_descriptor_tree structure.
+	(mark_const_str_htab_1): Mark deferred_string structure.
+	(compare_constant): Rewrite to compare trees.
+	(compare_constant_1): Delete.
+	(record_constant): Delete.
+	(record_constant_1): Delete.
+	(output_constant_def): Use struct constant_descriptor_tree.
+	Don't duplicate trees twice.
+	(struct constant_descriptor_rtx): New.
+	(struct pool_constant): Used for rtx constants.
+	(init_varasm_status): Update for change to struct varasm_status.
+	(mark_varasm_status): Likewise.
+	(free_varasm_status): Delete.
+	(compare_constant_rtx): Rewrite to handle constant_descriptor_rtx.
+	(record_constant_rtx): Likewise.
+	(mem_for_const_double): Update to use struct constant_descriptor_rtx.
+	(force_const_mem): Likewise.
+	* Makefile.in (varasm.o): Doesn't depend on obstack.h.
+	* function.c (free_after_compilation): Don't use free_varasm_status.
+	* function.h: Don't prototype free_varasm_status.
+
+	* ggc-common.c (ggc_realloc): Handle X being NULL.
+
+	* ggc-common.c (ggc_realloc): New function.
+	* ggc.h: Prototype it.
+	* emit-rtl.c (free_emit_status): Delete.
+	(init_emit): Allocate emit subarrays using GC.
+	(gen_reg_rtx): Reallocate subarrays using GC.
+	(init_emit): Use GC to allocate 'struct emit_status' and its
+	subarrays.
+	(mark_emit_status): Mark structure and its subarrays.
+	* stmt.c (free_stmt_status): Delete.
+	* expr.c (free_expr_status): Delete.
+	* function.h: Remove prototypes for deleted functions.
+	* function.c (free_after_compilation): Don't use deleted functions.
+	Don't call free() on x_parm_reg_stack_loc.
+	(free_after_parsing): Don't use free_stmt_status.
+	(assign_parms): Use GC to allocate and resize x_parm_reg_stack_loc.
+	(mark_function_status): Mark x_parm_reg_stack_loc.
+
+	* varasm.c (init_varasm_status): Use GC to allocate
+	'struct varasm_status' and its fields x_const_rtx_hash_table
+	and x_const_rtx_sym_hash_table.
+	(mark_varasm_status): Mark them.
+	(free_varasm_status): Use GC to free them.
+	* expr.c (init_expr): Use GC to allocate 'struct expr_status'.
+	(mark_expr_status): Mark the structure itself.
+	(free_expr_status): Use GC to free the structure.
+	* stmt.c (free_stmt_status): Use GC to free 'struct stmt_status'.
+	(mark_stmt_status): Mark the 'struct stmt_status' itself.
+	(init_stmt_for_function): Allocate the structure for GC.
+
+	* dwarf2out.c (lookup_type_die): Use TYPE_SYMTAB_DIE.
+	(equate_type_number_to_die): Likewise.
+	* tree.h (TYPE_SYMTAB_DIE): New macro.
+	(struct die_struct): Predeclare.
+	(struct tree_type): Add field symtab.die.   Add a tag
+	to the union type of field symtab.
+
+	* varray.h (VARRAY_RTVEC_INIT): A varray of rtvec contains
+	'struct rtvec_def *', not 'struct rtvec_def'.
+
+	* function.h (original_arg_vector): Make a real rtvec.
+	* function.c (ggc_mark_struct_function): Adjust.
+	* integrate.c (expand_inline_function): Adjust.
+
 2002-06-04  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (sh5-*-netbsd*, sh5l*-*-netbsd*)

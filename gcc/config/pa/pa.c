@@ -100,8 +100,6 @@ static void pa_combine_instructions PARAMS ((rtx));
 static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
 static int forward_branch_p PARAMS ((rtx));
 static int shadd_constant_p PARAMS ((int));
-static void pa_add_gc_roots PARAMS ((void));
-static void mark_deferred_plabels PARAMS ((void *));
 static void compute_zdepwi_operands PARAMS ((unsigned HOST_WIDE_INT, unsigned *));
 static int compute_movstrsi_length PARAMS ((rtx));
 static bool pa_assemble_integer PARAMS ((rtx, unsigned int, int));
@@ -151,12 +149,14 @@ unsigned int total_code_bytes;
 /* Variables to handle plabels that we discover are necessary at assembly
    output time.  They are output after the current function.  */
 
-struct deferred_plabel
+struct deferred_plabel GTY(())
 {
   rtx internal_label;
   char *name;
-} *deferred_plabels = 0;
-int n_deferred_plabels = 0;
+};
+static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
+  deferred_plabels;
+static int n_deferred_plabels = 0;
 
 /* Initialize the GCC target structure.  */
 
@@ -301,9 +301,6 @@ override_options ()
       targetm.asm_out.unaligned_op.si = NULL;
       targetm.asm_out.unaligned_op.di = NULL;
     }
-
-  /* Register global variables with the garbage collector.  */
-  pa_add_gc_roots ();
 }
 
 /* Return non-zero only if OP is a register of mode MODE,
@@ -6277,10 +6274,10 @@ output_call (insn, call_dest, sibcall)
 
 	      if (deferred_plabels == 0)
 		deferred_plabels = (struct deferred_plabel *)
-		  xmalloc (1 * sizeof (struct deferred_plabel));
+		  ggc_alloc (sizeof (struct deferred_plabel));
 	      else
 		deferred_plabels = (struct deferred_plabel *)
-		  xrealloc (deferred_plabels,
+		  ggc_realloc (deferred_plabels,
 			    ((n_deferred_plabels + 1)
 			     * sizeof (struct deferred_plabel)));
 
@@ -7666,31 +7663,6 @@ cmpib_comparison_operator (op, mode)
 	      || GET_CODE (op) == LEU));
 }
 
-/* Mark ARG (which is really a struct deferred_plabel **) for GC.  */
-
-static void
-mark_deferred_plabels (arg)
-     void *arg;
-{
-  struct deferred_plabel *dp = *(struct deferred_plabel **) arg;
-  int i;
-
-  for (i = 0; i < n_deferred_plabels; ++i)
-    ggc_mark_rtx (dp[i].internal_label);
-}
-
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-pa_add_gc_roots ()
-{
-  ggc_add_rtx_root (&hppa_compare_op0, 1);
-  ggc_add_rtx_root (&hppa_compare_op1, 1);
-  ggc_add_root (&deferred_plabels, 1, sizeof (&deferred_plabels),
-		&mark_deferred_plabels);
-}
-
 /* On hpux10, the linker will give an error if we have a reference
    in the read-only data section to a symbol defined in a shared
    library.  Therefore, expressions that might require a reloc can
@@ -7717,3 +7689,5 @@ pa_select_section (exp, reloc, align)
   else
     data_section ();
 }
+
+#include "gt-pa.h"

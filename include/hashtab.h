@@ -38,6 +38,10 @@ extern "C" {
 
 #include <ansidecl.h>
 
+#ifndef GTY
+#define GTY(X)
+#endif
+
 /* The type for a hash code.  */
 typedef unsigned int hashval_t;
 
@@ -63,12 +67,21 @@ typedef void (*htab_del) PARAMS ((void *));
    htab_traverse.  Return 1 to continue scan, 0 to stop.  */
 typedef int (*htab_trav) PARAMS ((void **, void *));
 
+/* Memory-allocation function, with the same functionality as calloc().
+   Iff it returns NULL, the hash table implementation will pass an error
+   code back to the user, so if your code doesn't handle errors,
+   best if you use xcalloc instead.  */
+typedef PTR (*htab_alloc) PARAMS ((size_t, size_t));
+
+/* We also need a free() routine.  */
+typedef void (*htab_free) PARAMS ((PTR));
+
 /* Hash tables are of the following type.  The structure
    (implementation) of this type is not needed for using the hash
    tables.  All work with hash table should be executed only through
    functions mentioned below. */
 
-struct htab
+struct htab GTY(())
 {
   /* Pointer to hash function.  */
   htab_hash hash_f;
@@ -79,8 +92,12 @@ struct htab
   /* Pointer to cleanup function.  */
   htab_del del_f;
 
+  /* Pointers to allocate/free functions.  */
+  htab_alloc alloc_f;
+  htab_free free_f;
+  
   /* Table itself.  */
-  PTR *entries;
+  PTR * GTY ((use_param (""), length ("%h.size"))) entries;
 
   /* Current size (in entries) of the hash table */
   size_t size;
@@ -98,10 +115,6 @@ struct htab
   /* The following member is used for debugging.  Its value is number
      of collisions fixed for time of work with the hash table. */
   unsigned int collisions;
-
-  /* This is non-zero if we are allowed to return NULL for function calls
-     that allocate memory.  */
-  int return_allocation_failure;
 };
 
 typedef struct htab *htab_t;
@@ -111,14 +124,14 @@ enum insert_option {NO_INSERT, INSERT};
 
 /* The prototypes of the package functions. */
 
-extern htab_t	htab_create	PARAMS ((size_t, htab_hash,
-					 htab_eq, htab_del));
+extern htab_t	htab_create_alloc	PARAMS ((size_t, htab_hash,
+						 htab_eq, htab_del,
+						 htab_alloc, htab_free));
 
-/* This function is like htab_create, but may return NULL if memory
-   allocation fails, and also signals that htab_find_slot_with_hash and
-   htab_find_slot are allowed to return NULL when inserting.  */
-extern htab_t	htab_try_create	PARAMS ((size_t, htab_hash,
-					 htab_eq, htab_del));
+/* Provided for convenience... */
+#define htab_create(SIZE, HASH, EQ, DEL) \
+  htab_create_alloc (SIZE, HASH, EQ, DEL, xcalloc, free)
+
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
 

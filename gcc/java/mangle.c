@@ -245,7 +245,7 @@ mangle_type (type)
    COMPRESSION_NEXT is the index to the location of the next insertion
    of an element.  */
 
-static tree compression_table;
+static GTY(()) tree compression_table;
 static int  compression_next;
 
 /* Find a POINTER_TYPE in the compression table. Use a special
@@ -431,12 +431,12 @@ mangle_pointer_type (type)
    the template indicator where already used an compress appropriately.
    It handles pointers. */
 
+/* atms: array template mangled string. */
+static GTY(()) tree atms;
 static void
 mangle_array_type (p_type)
      tree p_type;
 {
-  /* atms: array template mangled string. */
-  static tree atms = NULL_TREE;
   tree type, elt_type;
   int match;
 
@@ -450,7 +450,6 @@ mangle_array_type (p_type)
   if (!atms)
     {
       atms = get_identifier ("6JArray");
-      ggc_add_tree_root (&atms, 1);
     }
 
   /* Maybe we have what we're looking in the compression table. */
@@ -602,9 +601,7 @@ compression_table_add (type)
       for (i = 0; i < compression_next; i++)
 	TREE_VEC_ELT (new, i) = TREE_VEC_ELT (compression_table, i);
 
-      ggc_del_root (&compression_table);
       compression_table = new;
-      ggc_add_tree_root (&compression_table, 1);
     }
   TREE_VEC_ELT (compression_table, compression_next++) = type;
 }
@@ -624,9 +621,6 @@ init_mangling (obstack)
 
   /* Mangled name are to be suffixed */
   obstack_grow (mangle_obstack, "_Z", 2);
-
-  /* Register the compression table with the GC */
-  ggc_add_tree_root (&compression_table, 1);
 }
 
 /* Mangling finalization routine. The mangled name is returned as a
@@ -641,7 +635,6 @@ finish_mangling ()
     /* Mangling already finished.  */
     abort ();
 
-  ggc_del_root (&compression_table);
   compression_table = NULL_TREE;
   compression_next = 0;
   obstack_1grow (mangle_obstack, '\0');
@@ -652,3 +645,5 @@ finish_mangling ()
 #endif
   return result;
 }
+
+#include "gt-java-mangle.h"

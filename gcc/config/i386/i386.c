@@ -553,7 +553,7 @@ static char const tls_model_chars[] = " GLil";
 #define X86_64_VARARGS_SIZE (REGPARM_MAX * UNITS_PER_WORD + SSE_REGPARM_MAX * 16)
 
 /* Define the structure for the machine field in struct function.  */
-struct machine_function
+struct machine_function GTY(())
 {
   rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
   const char *some_ld_name;
@@ -680,9 +680,7 @@ static int ix86_agi_dependant PARAMS ((rtx, rtx, enum attr_type));
 static enum attr_ppro_uops ix86_safe_ppro_uops PARAMS ((rtx));
 static void ix86_dump_ppro_packet PARAMS ((FILE *));
 static void ix86_reorder_insn PARAMS ((rtx *, rtx *));
-static void ix86_init_machine_status PARAMS ((struct function *));
-static void ix86_mark_machine_status PARAMS ((struct function *));
-static void ix86_free_machine_status PARAMS ((struct function *));
+static struct machine_function * ix86_init_machine_status PARAMS ((void));
 static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_nsaved_regs PARAMS ((void));
 static void ix86_emit_save_regs PARAMS ((void));
@@ -1042,9 +1040,7 @@ override_options ()
 
   /* Arrange to set up i386_stack_locals for all functions.  */
   init_machine_status = ix86_init_machine_status;
-  mark_machine_status = ix86_mark_machine_status;
-  free_machine_status = ix86_free_machine_status;
-
+  
   /* Validate -mregparm= value.  */
   if (ix86_regparm_string)
     {
@@ -10636,38 +10632,10 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
    This is called from INIT_EXPANDERS once before RTL is emitted for each
    function.  */
 
-static void
-ix86_init_machine_status (p)
-     struct function *p;
+static struct machine_function *
+ix86_init_machine_status ()
 {
-  p->machine = (struct machine_function *)
-    xcalloc (1, sizeof (struct machine_function));
-}
-
-/* Mark machine specific bits of P for GC.  */
-static void
-ix86_mark_machine_status (p)
-     struct function *p;
-{
-  struct machine_function *machine = p->machine;
-  enum machine_mode mode;
-  int n;
-
-  if (! machine)
-    return;
-
-  for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
-       mode = (enum machine_mode) ((int) mode + 1))
-    for (n = 0; n < MAX_386_STACK_LOCALS; n++)
-      ggc_mark_rtx (machine->stack_locals[(int) mode][n]);
-}
-
-static void
-ix86_free_machine_status (p)
-     struct function *p;
-{
-  free (p->machine);
-  p->machine = NULL;
+  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.
@@ -10693,20 +10661,19 @@ assign_386_stack_local (mode, n)
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
 
+static GTY(()) rtx ix86_tls_symbol;
 rtx
 ix86_tls_get_addr ()
 {
-  static rtx symbol;
 
-  if (!symbol)
+  if (!ix86_tls_symbol)
     {
-      symbol = gen_rtx_SYMBOL_REF (Pmode, (TARGET_GNU_TLS
+      ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, (TARGET_GNU_TLS
 					   ? "___tls_get_addr"
 					   : "__tls_get_addr"));
-      ggc_add_rtx_root (&symbol, 1);
     }
 
-  return symbol;
+  return ix86_tls_symbol;
 }
 
 /* Calculate the length of the memory address in the instruction
@@ -13948,3 +13915,5 @@ x86_output_mi_thunk (file, delta, function)
 	}
     }
 }
+
+#include "gt-i386.h"

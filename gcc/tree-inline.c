@@ -1071,8 +1071,6 @@ optimize_inline_calls (fn)
 
   /* Clean up.  */
   htab_delete (id.tree_pruner);
-  VARRAY_FREE (id.fns);
-  VARRAY_FREE (id.target_exprs);
   if (DECL_LANG_SPECIFIC (fn))
     {
       tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
@@ -1081,7 +1079,6 @@ optimize_inline_calls (fn)
 	      VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
       DECL_INLINED_FNS (fn) = ifn;
     }
-  VARRAY_FREE (id.inlined_fns);
 }
 
 /* FN is a function that has a complete body, and CLONE is a function
@@ -1111,9 +1108,6 @@ clone_body (clone, fn, arg_map)
 
   /* Actually copy the body.  */
   TREE_CHAIN (DECL_SAVED_TREE (clone)) = copy_body (&id);
-
-  /* Clean up.  */
-  VARRAY_FREE (id.fns);
 }
 
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.

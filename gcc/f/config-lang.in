@@ -32,3 +32,5 @@ compilers="f771\$(exeext)"
 stagestuff="g77\$(exeext) g77-cross\$(exeext) f771\$(exeext)"
 
 target_libs=target-libf2c
+
+gtfiles="\$(srcdir)/f/com.c \$(srcdir)/f/com.h \$(srcdir)/f/ste.c"

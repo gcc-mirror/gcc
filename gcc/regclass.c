@@ -242,13 +242,9 @@ static regset reg_changes_mode;
 
 #endif /* CLASS_CANNOT_CHANGE_MODE */
 
-#ifdef HAVE_SECONDARY_RELOADS
-
 /* Sample MEM values for use by memory_move_secondary_cost.  */
 
-static rtx top_of_stack[MAX_MACHINE_MODE];
-
-#endif /* HAVE_SECONDARY_RELOADS */
+static GTY(()) rtx top_of_stack[MAX_MACHINE_MODE];
 
 /* Linked list of reg_info structures allocated for reg_n_info array.
    Grouping all of the allocated structures together in one lump
@@ -614,7 +610,6 @@ init_regs ()
 
     for (i = 0; i < MAX_MACHINE_MODE; i++)
       top_of_stack[i] = gen_rtx_MEM (i, stack_pointer_rtx);
-    ggc_add_rtx_root (top_of_stack, MAX_MACHINE_MODE);
   }
 #endif
 }
@@ -2598,3 +2593,5 @@ regset_release_memory ()
 {
   bitmap_release_memory ();
 }
+
+#include "gt-regclass.h"

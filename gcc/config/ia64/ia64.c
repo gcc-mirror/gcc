@@ -127,10 +127,7 @@ static rtx gen_fr_restore_x PARAMS ((rtx, rtx, rtx));
 
 static enum machine_mode hfa_element_mode PARAMS ((tree, int));
 static void fix_range PARAMS ((const char *));
-static void ia64_add_gc_roots PARAMS ((void));
-static void ia64_init_machine_status PARAMS ((struct function *));
-static void ia64_mark_machine_status PARAMS ((struct function *));
-static void ia64_free_machine_status PARAMS ((struct function *));
+static struct machine_function * ia64_init_machine_status PARAMS ((void));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
@@ -1044,27 +1041,25 @@ ia64_expand_load_address (dest, src, scratch)
     emit_move_insn (dest, temp);
 }
 
+static GTY(()) rtx gen_tls_tga;
 static rtx
 gen_tls_get_addr ()
 {
-  static rtx tga;
-  if (!tga)
+  if (!gen_tls_tga)
     {
-      tga = init_one_libfunc ("__tls_get_addr");
-      ggc_add_rtx_root (&tga, 1);
-    }
-  return tga;
+      gen_tls_tga = init_one_libfunc ("__tls_get_addr");
+     }
+  return gen_tls_tga;
 }
 
+static GTY(()) rtx thread_pointer_rtx;
 static rtx
 gen_thread_pointer ()
 {
-  static rtx tp;
-  if (!tp)
+  if (!thread_pointer_rtx)
     {
-      tp = gen_rtx_REG (Pmode, 13);
-      RTX_UNCHANGING_P (tp);
-      ggc_add_rtx_root (&tp, 1);
+      thread_pointer_rtx = gen_rtx_REG (Pmode, 13);
+      RTX_UNCHANGING_P (thread_pointer_rtx);
     }
   return tp;
 }
@@ -4146,44 +4141,10 @@ fix_range (const_str)
     }
 }
 
-/* Called to register all of our global variables with the garbage
-   collector.  */
-
-static void
-ia64_add_gc_roots ()
+static struct machine_function *
+ia64_init_machine_status ()
 {
-  ggc_add_rtx_root (&ia64_compare_op0, 1);
-  ggc_add_rtx_root (&ia64_compare_op1, 1);
-}
-
-static void
-ia64_init_machine_status (p)
-     struct function *p;
-{
-  p->machine =
-    (struct machine_function *) xcalloc (1, sizeof (struct machine_function));
-}
-
-static void
-ia64_mark_machine_status (p)
-     struct function *p;
-{
-  struct machine_function *machine = p->machine;
-
-  if (machine)
-    {
-      ggc_mark_rtx (machine->ia64_eh_epilogue_sp);
-      ggc_mark_rtx (machine->ia64_eh_epilogue_bsp);
-      ggc_mark_rtx (machine->ia64_gp_save);
-    }
-}
-
-static void
-ia64_free_machine_status (p)
-     struct function *p;
-{
-  free (p->machine);
-  p->machine = NULL;
+  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 /* Handle TARGET_OPTIONS switches.  */
@@ -4219,10 +4180,6 @@ ia64_override_options ()
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
-  mark_machine_status = ia64_mark_machine_status;
-  free_machine_status = ia64_free_machine_status;
-
-  ia64_add_gc_roots ();
 }
 
 static enum attr_itanium_requires_unit0 ia64_safe_itanium_requires_unit0 PARAMS((rtx));
@@ -8161,3 +8118,5 @@ ia64_aix_select_rtx_section (mode, x, align)
   ia64_select_rtx_section (mode, x, align);
   flag_pic = save_pic;
 }
+
+#include "gt-ia64.h"

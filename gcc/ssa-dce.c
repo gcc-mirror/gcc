@@ -734,7 +734,6 @@ ssa_eliminate_dead_code ()
     RESURRECT_INSN (insn);
   if (VARRAY_ACTIVE_SIZE (unprocessed_instructions) != 0)
     abort ();
-  VARRAY_FREE (unprocessed_instructions);
   control_dependent_block_to_edge_map_free (cdbte);
   free ((PTR) pdom);
   free_edge_list (el);

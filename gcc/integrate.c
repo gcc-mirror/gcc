@@ -68,14 +68,14 @@ extern struct obstack *function_maybepermanent_obstack;
 
 
 /* Private type used by {get/has}_func_hard_reg_initial_val.  */
-typedef struct initial_value_pair {
+typedef struct initial_value_pair GTY(()) {
   rtx hard_reg;
   rtx pseudo;
 } initial_value_pair;
-typedef struct initial_value_struct {
+typedef struct initial_value_struct GTY(()) {
   int num_entries;
   int max_entries;
-  initial_value_pair *entries;
+  initial_value_pair * GTY ((length ("%h.num_entries"))) entries;
 } initial_value_struct;
 
 static void setup_initial_hard_reg_value_integration PARAMS ((struct function *, struct inline_remap *));
@@ -663,7 +663,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtx stack_save = 0;
   rtx temp;
   struct inline_remap *map = 0;
-  rtvec arg_vector = (rtvec) inl_f->original_arg_vector;
+  rtvec arg_vector = inl_f->original_arg_vector;
   rtx static_chain_value = 0;
   int inl_max_uid;
   int eh_region_offset;
@@ -1286,7 +1286,6 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     free (real_label_map);
   VARRAY_FREE (map->const_equiv_varray);
   free (map->reg_map);
-  VARRAY_FREE (map->block_map);
   free (map->insn_map);
   free (map);
   free (arg_vals);
@@ -3057,20 +3056,20 @@ get_func_hard_reg_initial_val (fun, reg)
 
   if (ivs == 0)
     {
-      fun->hard_reg_initial_vals = (void *) xmalloc (sizeof (initial_value_struct));
+      fun->hard_reg_initial_vals = (void *) ggc_alloc (sizeof (initial_value_struct));
       ivs = fun->hard_reg_initial_vals;
       ivs->num_entries = 0;
       ivs->max_entries = 5;
-      ivs->entries = (initial_value_pair *) xmalloc (5 * sizeof (initial_value_pair));
+      ivs->entries = (initial_value_pair *) ggc_alloc (5 * sizeof (initial_value_pair));
     }
 
   if (ivs->num_entries >= ivs->max_entries)
     {
       ivs->max_entries += 5;
       ivs->entries = 
-	(initial_value_pair *) xrealloc (ivs->entries,
-					 ivs->max_entries
-					 * sizeof (initial_value_pair));
+	(initial_value_pair *) ggc_realloc (ivs->entries,
+					    ivs->max_entries
+					    * sizeof (initial_value_pair));
     }
 
   ivs->entries[ivs->num_entries].hard_reg = reg;
@@ -3093,23 +3092,6 @@ has_hard_reg_initial_val (mode, regno)
      int regno;
 {
   return has_func_hard_reg_initial_val (cfun, gen_rtx_REG (mode, regno));
-}
-
-void
-mark_hard_reg_initial_vals (fun)
-     struct function *fun;
-{
-  struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
-  int i;
-
-  if (ivs == 0)
-    return;
-
-  for (i = 0; i < ivs->num_entries; i ++)
-    {
-      ggc_mark_rtx (ivs->entries[i].hard_reg);
-      ggc_mark_rtx (ivs->entries[i].pseudo);
-    }
 }
 
 static void
@@ -3181,3 +3163,5 @@ allocate_initial_values (reg_equiv_memory_loc)
     }
 #endif
 }
+
+#include "gt-integrate.h"

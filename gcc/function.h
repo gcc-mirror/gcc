@@ -19,7 +19,7 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-struct var_refs_queue
+struct var_refs_queue GTY(())
 {
   rtx modified;
   enum machine_mode promoted_mode;
@@ -32,10 +32,11 @@ struct var_refs_queue
    The main insn-chain is saved in the last element of the chain,
    unless the chain is empty.  */
 
-struct sequence_stack
+struct sequence_stack GTY(())
 {
   /* First and last insns in the chain of the saved sequence.  */
-  rtx first, last;
+  rtx first;
+  rtx last;
   tree sequence_rtl_expr;
   struct sequence_stack *next;
 };
@@ -50,7 +51,7 @@ struct simple_obstack_stack
   struct simple_obstack_stack *next;
 };
 
-struct emit_status
+struct emit_status GTY(())
 {
   /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
      After rtl generation, it is 1 plus the largest register number used.  */
@@ -96,15 +97,16 @@ struct emit_status
   /* Indexed by pseudo register number, if nonzero gives the known alignment
      for that pseudo (if REG_POINTER is set in x_regno_reg_rtx).
      Allocated in parallel with x_regno_reg_rtx.  */
-  unsigned char *regno_pointer_align;
+  unsigned char * GTY ((length ("%h.regno_pointer_align_length"))) 
+    regno_pointer_align;
 
   /* Indexed by pseudo register number, if nonzero gives the decl
      corresponding to that register.  */
-  tree *regno_decl;
+  tree * GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
 
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
      Allocated in parallel with regno_pointer_align.  */
-  rtx *x_regno_reg_rtx;
+  rtx * GTY ((length ("%h.regno_pointer_align_length"))) x_regno_reg_rtx;
 };
 
 /* For backward compatibility... eventually these should all go away.  */
@@ -116,7 +118,7 @@ struct emit_status
 #define REGNO_POINTER_ALIGN(REGNO) (cfun->emit->regno_pointer_align[REGNO])
 #define REGNO_DECL(REGNO) (cfun->emit->regno_decl[REGNO])
 
-struct expr_status
+struct expr_status GTY(())
 {
   /* Number of units that we should eventually pop off the stack.
      These are the arguments to function calls that have already returned.  */
@@ -171,7 +173,7 @@ struct expr_status
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
 
-struct function
+struct function GTY(())
 {
   struct eh_status *eh;
   struct stmt_status *stmt;
@@ -331,7 +333,7 @@ struct function
      to put the parm which is nominally in pseudo register REGNO,
      if we discover that that parm must go in the stack.  The highest
      element in this vector is one less than MAX_PARM_REG, above.  */
-  rtx *x_parm_reg_stack_loc;
+  rtx * GTY ((length ("%h.x_max_parm_reg"))) x_parm_reg_stack_loc;
 
   /* List of all temporaries allocated, both available and in use.  */
   struct temp_slot *x_temp_slots;
@@ -355,8 +357,7 @@ struct function
   /* For integrate.c.  */
   int inlinable;
   int no_debugging_symbols;
-  /* This is in fact an rtvec.  */
-  void *original_arg_vector;
+  rtvec original_arg_vector;
   tree original_decl_initial;
   /* Last insn of those whose job was to put parms into their nominal
      homes.  */
@@ -370,14 +371,14 @@ struct function
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
-  struct machine_function *machine;
+  struct machine_function * GTY ((maybe_undef (""))) machine;
   /* The largest alignment of slot allocated on the stack.  */
   int stack_alignment_needed;
   /* Preferred alignment of the end of stack frame.  */
   int preferred_stack_boundary;
 
   /* Language-specific code can use this to store whatever it likes.  */
-  struct language_function *language;
+  struct language_function * language;
 
   /* For reorg.  */
 
@@ -497,7 +498,7 @@ struct function
 };
 
 /* The function currently being compiled.  */
-extern struct function *cfun;
+extern GTY(()) struct function *cfun;
 
 /* Nonzero if we've already converted virtual regs to hard regs.  */
 extern int virtuals_instantiated;
@@ -585,14 +586,9 @@ extern HOST_WIDE_INT get_frame_size	PARAMS ((void));
 /* Likewise, but for a different than the current function.  */
 extern HOST_WIDE_INT get_func_frame_size	PARAMS ((struct function *));
 
-/* These variables hold pointers to functions to create and destroy
-   target specific, per-function data structures.  */
-extern void (*init_machine_status)	PARAMS ((struct function *));
-extern void (*free_machine_status)	PARAMS ((struct function *));
-/* This variable holds a pointer to a function to register any
-   data items in the target specific, per-function data structure
-   that will need garbage collection.  */
-extern void (*mark_machine_status)	PARAMS ((struct function *));
+/* A pointer to a function to create target specific, per-function
+   data structures.  */
+extern struct machine_function * (*init_machine_status)	PARAMS ((void));
 
 /* Save and restore status information for a nested function.  */
 extern void restore_emit_status		PARAMS ((struct function *));
@@ -600,11 +596,6 @@ extern void free_after_parsing		PARAMS ((struct function *));
 extern void free_after_compilation	PARAMS ((struct function *));
 
 extern void init_varasm_status		PARAMS ((struct function *));
-extern void free_varasm_status		PARAMS ((struct function *));
-extern void free_emit_status		PARAMS ((struct function *));
-extern void free_stmt_status            PARAMS ((struct function *));
-extern void free_eh_status		PARAMS ((struct function *));
-extern void free_expr_status		PARAMS ((struct function *));
 
 extern rtx get_first_block_beg		PARAMS ((void));
 

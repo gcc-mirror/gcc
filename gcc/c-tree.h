@@ -34,16 +34,31 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    lang_identifier nodes, because some keywords are only special in a
    particular context.  */
 
-struct lang_identifier
+struct lang_identifier GTY(())
 {
-  struct c_common_identifier ignore;
-  tree global_value, local_value, label_value, implicit_decl;
-  tree error_locus, limbo_value;
+  struct c_common_identifier common_id;
+  tree global_value;
+  tree local_value;
+  tree label_value;
+  tree implicit_decl;
+  tree error_locus;
+  tree limbo_value;
+};
+
+/* The resulting tree type.  */
+
+union lang_tree_node 
+  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE")))
+{
+  union tree_node GTY ((tag ("0"), 
+			desc ("tree_node_structure (&%h)"))) 
+    generic;
+  struct lang_identifier GTY ((tag ("1"))) identifier;
 };
 
 /* Language-specific declaration information.  */
 
-struct lang_decl
+struct lang_decl GTY(())
 {
   struct c_lang_decl base;
   /* The return types and parameter types may have variable size.
@@ -107,10 +122,10 @@ struct lang_decl
   (DECL_LANG_SPECIFIC (NODE)->base.declared_inline)
 
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
-struct lang_type
+struct lang_type GTY(())
 {
   int len;
-  tree elts[1];
+  tree GTY((length ("%h.len"))) elts[1];
 };
 
 /* Record whether a type or decl was written with nonconstant size.
@@ -178,7 +193,6 @@ extern void c_insert_default_attributes		PARAMS ((tree));
 extern void c_init_decl_processing		PARAMS ((void));
 extern void c_dup_lang_specific_decl		PARAMS ((tree));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
-extern void c_mark_tree				PARAMS ((tree));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
 extern int  c_decode_option                     PARAMS ((int, char **));
@@ -205,7 +219,6 @@ extern tree lookup_name                         PARAMS ((tree));
 extern tree lookup_name_current_level		PARAMS ((tree));
 extern void parmlist_tags_warning               PARAMS ((void));
 extern void pending_xref_error                  PARAMS ((void));
-extern void c_mark_function_context             PARAMS ((struct function *));
 extern void c_push_function_context             PARAMS ((struct function *));
 extern void c_pop_function_context              PARAMS ((struct function *));
 extern void pop_label_level                     PARAMS ((void));
@@ -384,7 +397,7 @@ extern int mesg_implicit_function_declaration;
 /* In c-decl.c */
 extern void c_finish_incomplete_decl PARAMS ((tree));
 
-extern tree static_ctors;
-extern tree static_dtors;
+extern GTY(()) tree static_ctors;
+extern GTY(()) tree static_dtors;
 
 #endif /* ! GCC_C_TREE_H */

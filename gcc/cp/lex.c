@@ -1434,6 +1434,12 @@ retrofit_lang_decl (t)
 
   ld = (struct lang_decl *) ggc_alloc_cleared (size);
 
+  ld->decl_flags.can_be_full = CAN_HAVE_FULL_LANG_DECL_P (t) ? 1 : 0;
+  ld->decl_flags.u1sel = TREE_CODE (t) == NAMESPACE_DECL ? 1 : 0;
+  ld->decl_flags.u2sel = 0;
+  if (ld->decl_flags.can_be_full)
+    ld->u.f.u3sel = TREE_CODE (t) == FUNCTION_DECL ? 1 : 0;
+
   DECL_LANG_SPECIFIC (t) = ld;
   if (current_lang_name == lang_name_cplusplus)
     SET_DECL_LANGUAGE (t, lang_cplusplus);
@@ -1498,7 +1504,10 @@ copy_lang_type (node)
   if (! TYPE_LANG_SPECIFIC (node))
     return;
 
-  size = sizeof (struct lang_type);
+  if (TYPE_LANG_SPECIFIC (node)->u.h.is_lang_type_class)
+    size = sizeof (struct lang_type);
+  else
+    size = sizeof (struct lang_type_ptrmem);
   lt = (struct lang_type *) ggc_alloc (size);
   memcpy (lt, TYPE_LANG_SPECIFIC (node), size);
   TYPE_LANG_SPECIFIC (node) = lt;
@@ -1538,6 +1547,7 @@ cxx_make_type (code)
 	    ggc_alloc_cleared (sizeof (struct lang_type)));
 
       TYPE_LANG_SPECIFIC (t) = pi;
+      pi->u.c.h.is_lang_type_class = 1;
 
 #ifdef GATHER_STATISTICS
       tree_node_counts[(int)lang_type] += 1;

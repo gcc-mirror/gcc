@@ -1809,7 +1809,8 @@ function_arg_padding ((MODE), (TYPE))
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def *sparc_compare_op0, *sparc_compare_op1;
+extern GTY(()) rtx sparc_compare_op0;
+extern GTY(()) rtx sparc_compare_op1;
 
 
 /* Generate the special assembly code needed to tell the assembler whatever

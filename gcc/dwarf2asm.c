@@ -704,7 +704,7 @@ mark_indirect_pool_entry (node, data)
      splay_tree_node node;
      void* data ATTRIBUTE_UNUSED;
 {
-  ggc_mark_nonnull_tree ((tree) node->value);
+  ggc_mark_tree ((tree) node->value);
   return 0;
 }
 

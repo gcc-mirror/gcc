@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "c-common.h"
 #include "flags.h"
+#include "ggc.h"
 #include "varray.h"
 
 #define MAX_SUBSCRIPTS 13
@@ -81,7 +82,7 @@ enum complexity_type {ziv, strong_siv, weak_siv, weak_zero_siv,
    for that variable.  Alternately one can sequentially follow each
    element of def_use_chain.  */
 
-typedef struct def_use
+typedef struct def_use GTY(())
 {
   /* outermost loop */
   tree outer_loop;
@@ -106,7 +107,7 @@ typedef struct def_use
    element of loop_chain and check outer_loop to get all loops
    contained within a certain loop.  */
 
-typedef struct loop
+typedef struct loop GTY(())
 {
   /* outermost loop containing this loop */
   tree outer_loop;
@@ -124,7 +125,7 @@ typedef struct loop
 
 /* Pointed to by loop. One per induction variable.  */
 
-typedef struct induction
+typedef struct induction GTY(())
 {
   /* our name */
   const char *variable;
@@ -140,7 +141,7 @@ typedef struct induction
 
 /* Pointed to by def/use.  One per dependence.  */
 
-typedef struct dependence
+typedef struct dependence GTY(())
 {
   tree source;
   tree destination;
@@ -172,16 +173,16 @@ typedef struct subscript
 static tree dest_to_remember;
 
 /* Chain for def_use */
-static varray_type def_use_chain;
+static GTY ((param_is (def_use))) varray_type def_use_chain;
 
 /* Chain for dependence */
-static varray_type dep_chain;
+static GTY ((param_is (dependence))) varray_type dep_chain;
 
 /* Chain for loop */
-static varray_type loop_chain;
+static GTY ((param_is (loop))) varray_type loop_chain;
 
 /* Chain for induction */
-static varray_type induction_chain;
+static GTY ((param_is (induction))) varray_type induction_chain;
 
 void init_dependence_analysis PARAMS ((tree));
 static void build_def_use PARAMS ((tree, enum def_use_type));
@@ -227,8 +228,6 @@ void
 init_dependence_analysis (exp)
      tree exp;
 {
-  def_use *du_ptr;
-
   VARRAY_GENERIC_PTR_INIT (def_use_chain, 50, "def_use_chain");
   VARRAY_GENERIC_PTR_INIT (dep_chain, 50, "dep_chain");
   VARRAY_GENERIC_PTR_INIT (loop_chain, 50, "loop_chain");
@@ -242,16 +241,9 @@ init_dependence_analysis (exp)
 
   /* dump_node_dependence (&def_use_chain);*/
 
-  for (du_ptr = VARRAY_TOP (def_use_chain, generic);
-       VARRAY_POP (def_use_chain);
-       du_ptr = VARRAY_TOP (def_use_chain, generic))
-    {
-      free (du_ptr);
-    }
-
-  VARRAY_FREE (def_use_chain);
-  VARRAY_FREE (loop_chain);
-  VARRAY_FREE (induction_chain);
+  def_use_chain = 0;
+  loop_chain = 0;
+  induction_chain = 0;
 }
 
 /* Build ARRAY_REF def/use info 'def_use_chain' starting at EXP which is a def
@@ -337,7 +329,8 @@ build_def_use (exp, du_type)
 	    int i;
 	    char null_string = '\0';
 
-	    VARRAY_PUSH_GENERIC_PTR (def_use_chain, xmalloc (sizeof (def_use)));
+	    VARRAY_PUSH_GENERIC_PTR (def_use_chain, 
+				     ggc_alloc (sizeof (def_use)));
 	    du_ptr = VARRAY_GENERIC_PTR (def_use_chain, du_idx++);
 	    du_ptr->type = du_type;
 	    du_ptr->status = unseen;
@@ -418,7 +411,7 @@ add_loop (loop_node, outer_loop, nloop)
 {
   loop *loop_ptr;
 
-  VARRAY_PUSH_GENERIC_PTR (loop_chain, xmalloc (sizeof (loop)));
+  VARRAY_PUSH_GENERIC_PTR (loop_chain, ggc_alloc (sizeof (loop)));
   loop_ptr = VARRAY_TOP (loop_chain, generic);
   loop_ptr->outer_loop = outer_loop;
   loop_ptr->containing_loop = loop_node;
@@ -502,7 +495,8 @@ find_induction_variable (init_node, cond_node, incr_node, loop_def)
       if (!INDEX_LIMIT_CHECK (cond_node))
 	return 0;
 
-      VARRAY_PUSH_GENERIC_PTR (induction_chain, xmalloc (sizeof (induction)));
+      VARRAY_PUSH_GENERIC_PTR (induction_chain, 
+			       ggc_alloc (sizeof (induction)));
       ind_ptr = VARRAY_TOP (induction_chain, generic);
       loop_def->ind = ind_ptr;
       ind_ptr->variable = IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND
@@ -747,7 +741,7 @@ check_node_dependence (du)
 	  if (! have_dependence)
 	    continue;
 
-	  VARRAY_PUSH_GENERIC_PTR (dep_chain, xmalloc (sizeof (dependence)));
+	  VARRAY_PUSH_GENERIC_PTR (dep_chain, ggc_alloc (sizeof (dependence)));
 	  dep_ptr = VARRAY_TOP (dep_chain, generic);
 	  dep_ptr->source = use_ptr->expression;
 	  dep_ptr->destination = def_ptr->expression;
@@ -790,7 +784,8 @@ check_node_dependence (du)
 	      /* Dummy for rtl interface */
 	      dependence *dep_root_ptr;
 
-	      VARRAY_PUSH_GENERIC_PTR (dep_chain, xmalloc (sizeof (dependence)));
+	      VARRAY_PUSH_GENERIC_PTR (dep_chain, 
+				       ggc_alloc (sizeof (dependence)));
 	      dep_root_ptr = VARRAY_TOP (dep_chain, generic);
 	      dep_root_ptr->source = 0;
 	      dep_root_ptr->destination = def_ptr->expression;
@@ -1364,7 +1359,6 @@ dump_node_dependence (void)
       if (i >= VARRAY_SIZE (seen))
 	dump_one_node (du_ptr, &seen);
     }
-  VARRAY_FREE (seen);
 }
 #endif
 
@@ -1463,5 +1457,7 @@ have_dependence_p (dest_rtx, src_rtx, direction, distance)
 void
 end_dependence_analysis ()
 {
-  VARRAY_FREE (dep_chain);
+  dep_chain = 0;
 }
+
+#include "gt-dependence.h"

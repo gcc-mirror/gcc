@@ -1422,14 +1422,13 @@ allocate_dynamic_stack_space (size, target, known_align)
    run-time routine to call to check the stack, so provide a mechanism for
    calling that routine.  */
 
-static rtx stack_check_libfunc;
+static GTY(()) rtx stack_check_libfunc;
 
 void
 set_stack_check_libfunc (libfunc)
      rtx libfunc;
 {
   stack_check_libfunc = libfunc;
-  ggc_add_rtx_root (&stack_check_libfunc, 1);
 }
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
@@ -1684,3 +1683,6 @@ rtx_to_tree_code (code)
     }
   return ((int) tcode);
 }
+
+#include "gt-explow.h"
+

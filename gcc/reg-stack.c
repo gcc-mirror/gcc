@@ -167,6 +167,15 @@
 #include "basic-block.h"
 #include "varray.h"
 #include "reload.h"
+#include "ggc.h"
+
+/* We use this array to cache info about insns, because otherwise we
+   spend too much time in stack_regs_mentioned_p.
+
+   Indexed by insn UIDs.  A value of zero is uninitialized, one indicates
+   the insn uses stack registers, two indicates the insn does not use
+   stack registers.  */
+static GTY(()) varray_type stack_regs_mentioned_data;
 
 #ifdef STACK_REGS
 
@@ -209,14 +218,6 @@ enum emit_where
   EMIT_AFTER,
   EMIT_BEFORE
 };
-
-/* We use this array to cache info about insns, because otherwise we
-   spend too much time in stack_regs_mentioned_p.
-
-   Indexed by insn UIDs.  A value of zero is uninitialized, one indicates
-   the insn uses stack registers, two indicates the insn does not use
-   stack registers.  */
-static varray_type stack_regs_mentioned_data;
 
 /* The block we're currently working on.  */
 static basic_block current_block;
@@ -423,11 +424,7 @@ reg_to_stack (first, file)
   int max_uid;
 
   /* Clean up previous run.  */
-  if (stack_regs_mentioned_data)
-    {
-      VARRAY_FREE (stack_regs_mentioned_data);
-      stack_regs_mentioned_data = 0;
-    }
+  stack_regs_mentioned_data = 0;
 
   if (!optimize)
     split_all_insns (0);
@@ -2862,3 +2859,5 @@ convert_regs (file)
   return inserted;
 }
 #endif /* STACK_REGS */
+
+#include "gt-reg-stack.h"

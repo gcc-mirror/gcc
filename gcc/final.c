@@ -586,9 +586,7 @@ dbr_sequence_length ()
 
 static int *insn_lengths;
 
-#ifdef HAVE_ATTR_length
 varray_type insn_addresses_;
-#endif
 
 /* Max uid for which the above arrays are valid.  */
 static int insn_lengths_max_uid;

@@ -147,8 +147,7 @@ static int toc_hash_eq PARAMS ((const void *, const void *));
 static int toc_hash_mark_entry PARAMS ((void **, void *));
 static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
-static void rs6000_free_machine_status PARAMS ((struct function *));
-static void rs6000_init_machine_status PARAMS ((struct function *));
+static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
@@ -631,7 +630,6 @@ rs6000_override_options (default_cpu)
 
   /* Arrange to save and restore machine status around nested functions.  */
   init_machine_status = rs6000_init_machine_status;
-  free_machine_status = rs6000_free_machine_status;
 }
 
 /* Handle -mvrsave= options.  */
@@ -6268,28 +6266,15 @@ rs6000_got_register (value)
   return pic_offset_table_rtx;
 }
 
-/* Functions to init, mark and free struct machine_function.
-   These will be called, via pointer variables,
-   from push_function_context and pop_function_context.  */
+/* Function to init struct machine_function.
+   This will be called, via a pointer variable,
+   from push_function_context.  */
 
-static void
-rs6000_init_machine_status (p)
-     struct function *p;
+static struct machine_function *
+rs6000_init_machine_status ()
 {
-  p->machine = (machine_function *) xcalloc (1, sizeof (machine_function));
+  return ggc_alloc_cleared (sizeof (machine_function));
 }
-
-static void
-rs6000_free_machine_status (p)
-     struct function *p;
-{
-  if (p->machine == NULL)
-    return;
-
-  free (p->machine);
-  p->machine = NULL;
-}
-
 
 /* Print an operand.  Recognize special options, documented below.  */
 
@@ -11254,16 +11239,9 @@ rs6000_fatal_bad_address (op)
 static void
 rs6000_add_gc_roots ()
 {
-  ggc_add_rtx_root (&rs6000_compare_op0, 1);
-  ggc_add_rtx_root (&rs6000_compare_op1, 1);
-
   toc_hash_table = htab_create (1021, toc_hash_function, toc_hash_eq, NULL);
   ggc_add_root (&toc_hash_table, 1, sizeof (toc_hash_table), 
 		toc_hash_mark_table);
-
-#if TARGET_MACHO
-  machopic_add_gc_roots ();
-#endif
 }
 
 #if TARGET_MACHO

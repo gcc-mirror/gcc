@@ -167,32 +167,32 @@ extern tree pushdecl				PARAMS ((tree));
 
 /* Global objects accessed by users of this module. */
 
-extern tree string_type_node;
-extern tree ffecom_integer_type_node;
-extern tree ffecom_integer_zero_node;
-extern tree ffecom_integer_one_node;
-extern tree ffecom_tree_type[FFEINFO_basictype][FFEINFO_kindtype];
+extern GTY(()) tree string_type_node;
+extern GTY(()) tree ffecom_integer_type_node;
+extern GTY(()) tree ffecom_integer_zero_node;
+extern GTY(()) tree ffecom_integer_one_node;
+extern GTY(()) tree ffecom_tree_type[FFEINFO_basictype][FFEINFO_kindtype];
 extern ffecomSymbol ffecom_symbol_null_;
 extern ffeinfoKindtype ffecom_pointer_kind_;
 extern ffeinfoKindtype ffecom_label_kind_;
 
 extern int ffecom_f2c_typecode_[FFEINFO_basictype][FFEINFO_kindtype];
-extern tree ffecom_f2c_integer_type_node;
-extern tree ffecom_f2c_address_type_node;
-extern tree ffecom_f2c_real_type_node;
-extern tree ffecom_f2c_doublereal_type_node;
-extern tree ffecom_f2c_complex_type_node;
-extern tree ffecom_f2c_doublecomplex_type_node;
-extern tree ffecom_f2c_longint_type_node;
-extern tree ffecom_f2c_logical_type_node;
-extern tree ffecom_f2c_flag_type_node;
-extern tree ffecom_f2c_ftnlen_type_node;
-extern tree ffecom_f2c_ftnlen_zero_node;
-extern tree ffecom_f2c_ftnlen_one_node;
-extern tree ffecom_f2c_ftnlen_two_node;
-extern tree ffecom_f2c_ptr_to_ftnlen_type_node;
-extern tree ffecom_f2c_ftnint_type_node;
-extern tree ffecom_f2c_ptr_to_ftnint_type_node;
+extern GTY(()) tree ffecom_f2c_integer_type_node;
+extern GTY(()) tree ffecom_f2c_address_type_node;
+extern GTY(()) tree ffecom_f2c_real_type_node;
+extern GTY(()) tree ffecom_f2c_doublereal_type_node;
+extern GTY(()) tree ffecom_f2c_complex_type_node;
+extern GTY(()) tree ffecom_f2c_doublecomplex_type_node;
+extern GTY(()) tree ffecom_f2c_longint_type_node;
+extern GTY(()) tree ffecom_f2c_logical_type_node;
+extern GTY(()) tree ffecom_f2c_flag_type_node;
+extern GTY(()) tree ffecom_f2c_ftnlen_type_node;
+extern GTY(()) tree ffecom_f2c_ftnlen_zero_node;
+extern GTY(()) tree ffecom_f2c_ftnlen_one_node;
+extern GTY(()) tree ffecom_f2c_ftnlen_two_node;
+extern GTY(()) tree ffecom_f2c_ptr_to_ftnlen_type_node;
+extern GTY(()) tree ffecom_f2c_ftnint_type_node;
+extern GTY(()) tree ffecom_f2c_ptr_to_ftnint_type_node;
 
 /* Declare functions with prototypes. */
 

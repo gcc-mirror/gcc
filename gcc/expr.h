@@ -369,10 +369,6 @@ extern void init_expr_once PARAMS ((void));
 /* This is run at the start of compiling a function.  */
 extern void init_expr PARAMS ((void));
 
-/* This function is run once to initialize stor-layout.c.  */
-
-extern void init_stor_layout_once PARAMS ((void));
-
 /* This is run at the end of compiling a function.  */
 extern void finish_expr_for_function PARAMS ((void));
 
