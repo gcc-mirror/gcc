@@ -200,6 +200,7 @@ static rtx gen_conditional_move (rtx);
 static rtx fixup_subreg_mem (rtx);
 static enum machine_mode xtensa_find_mode_for_size (unsigned);
 static struct machine_function * xtensa_init_machine_status (void);
+static bool xtensa_return_in_msb (tree);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
 static rtx xtensa_builtin_saveregs (void);
@@ -253,6 +254,9 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
+
+#undef TARGET_RETURN_IN_MSB
+#define TARGET_RETURN_IN_MSB xtensa_return_in_msb
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1812,6 +1816,15 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
     cfun->machine->need_a7_copy = true;
 
   return gen_rtx_REG (mode, regno);
+}
+
+
+static bool
+xtensa_return_in_msb (tree valtype)
+{
+  return (TARGET_BIG_ENDIAN
+	  && AGGREGATE_TYPE_P (valtype)
+	  && int_size_in_bytes (valtype) >= UNITS_PER_WORD);
 }
 
 
