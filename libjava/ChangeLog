@@ -1,3 +1,7 @@
+2003-08-12  Tom Tromey  <tromey@redhat.com>
+
+	* gij.cc (main): Handle -? and -X.
+
 2003-08-10  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/awt/Container.java
