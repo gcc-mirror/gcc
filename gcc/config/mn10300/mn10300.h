@@ -257,13 +257,13 @@ enum reg_class {
    {0x00200},		/* SP_REGS */		\
    {0x001ff},		/* DATA_OR_ADDRESS_REGS */\
    {0x003f0},		/* SP_OR_ADDRESS_REGS */\
-   {0x2fc00},		/* EXTENDED_REGS */	\
-   {0x2fc0f},		/* DATA_OR_EXTENDED_REGS */	\
-   {0x2fdf0},		/* ADDRESS_OR_EXTENDED_REGS */	\
-   {0x2fe00},		/* SP_OR_EXTENDED_REGS */	\
-   {0x2fff0},		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
-   {0x2fdff},		/* GENERAL_REGS */    	\
-   {0x2ffff},		/* ALL_REGS 	*/	\
+   {0x3fc00},		/* EXTENDED_REGS */	\
+   {0x3fc0f},		/* DATA_OR_EXTENDED_REGS */	\
+   {0x3fdf0},		/* ADDRESS_OR_EXTENDED_REGS */	\
+   {0x3fe00},		/* SP_OR_EXTENDED_REGS */	\
+   {0x3fff0},		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
+   {0x3fdff},		/* GENERAL_REGS */    	\
+   {0x3ffff},		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
