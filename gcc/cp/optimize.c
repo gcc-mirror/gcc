@@ -259,6 +259,9 @@ maybe_clone_body (tree fn)
       /* Clean up.  */
       splay_tree_delete (decl_map);
 
+      /* The clone can throw iff the original function can throw.  */
+      cp_function_chain->can_throw = !TREE_NOTHROW (fn);
+
       /* Now, expand this function into RTL, if appropriate.  */
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);

@@ -1,3 +1,21 @@
+2003-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_over_call): Use build_cxx_call.
+	(build_cxx_call): New method, split out of build_over_call.
+	* cp-tree.h (language_function): Add can_throw.
+	(build_cxx_call): Declare it.
+	* decl.c (finish_function): If a function does not contain any
+	calls to functions that can throw an exception, indicate that
+	fact.
+	* decl2.c (mark_used): Do not defer the instantiation of
+	functions, if the current function does not throw.
+	* optimize.c (maybe_clone_body): Copy TREE_NOTHROW to the clones.
+	* pt.c (instantiate_decl): Make sure import_export_decl is called
+	before emitting things.
+	* rtti.c (throw_bad_cast): Use build_cxx_call.
+	(build_dynamic_cast_1): Likewise.
+	* typeck.c (build_function_call): Likewise.
+
 2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9881
