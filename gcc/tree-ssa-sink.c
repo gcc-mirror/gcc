@@ -79,7 +79,7 @@ static struct
 } sink_stats;
 
 
-/* Given a PHI, and one of it's arguments (DEF), find the edge for
+/* Given a PHI, and one of its arguments (DEF), find the edge for
    that argument and return it.  If the argument occurs twice in the PHI node,
    we return NULL.  */
 

@@ -1,4 +1,4 @@
-/* The Blackfin code generation auxilary output file.
+/* The Blackfin code generation auxiliary output file.
    Copyright (C) 2005  Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
@@ -320,7 +320,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum,
 
   /* The move for named arguments will be generated automatically by the
      compiler.  We need to generate the move rtx for the unnamed arguments
-     if they are in the first 3 words.  We assume atleast 1 named argument
+     if they are in the first 3 words.  We assume at least 1 named argument
      exists, so we never generate [ARGP] = R0 here.  */
 
   for (i = cum->words + 1; i < max_arg_registers; i++)

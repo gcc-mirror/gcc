@@ -993,7 +993,7 @@ append_v_must_def (tree var)
 
 
 /* Parse STMT looking for operands.  OLD_OPS is the original stmt operand
-   cache for STMT, if it exested before.  When fniished, the various build_*
+   cache for STMT, if it existed before.  When finished, the various build_*
    operand vectors will have potential operands. in them.  */
                                                                                 
 static void

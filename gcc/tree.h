@@ -1350,7 +1350,7 @@ struct ptr_info_def;
 
 
 
-/* Immediate use linking structure. THis structure is used for maintaining
+/* Immediate use linking structure.  This structure is used for maintaining
    a doubly linked list of uses of an SSA_NAME.  */
 typedef struct ssa_imm_use_d GTY(())
 {
@@ -1396,7 +1396,7 @@ struct tree_ssa_name GTY(())
    you wish to access the use or def fields of a PHI_NODE in the SSA 
    optimizers, use the accessor macros found in tree-ssa-operands.h.  
    These two macros are to be used only by those accessor macros, and other 
-   select places where we *absolutly* must take the address of the tree.  */
+   select places where we *absolutely* must take the address of the tree.  */
 
 #define PHI_RESULT_TREE(NODE)		PHI_NODE_CHECK (NODE)->phi.result
 #define PHI_ARG_DEF_TREE(NODE, I)	PHI_NODE_ELT_CHECK (NODE, I).def

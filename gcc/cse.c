@@ -3808,7 +3808,7 @@ fold_rtx (rtx x, rtx insn)
 
 	    /* It's not safe to substitute the operand of a conversion
 	       operator with a constant, as the conversion's identity
-	       depends upon the mode of it's operand.  This optimization
+	       depends upon the mode of its operand.  This optimization
 	       is handled by the call to simplify_unary_operation.  */
 	    if (GET_RTX_CLASS (code) == RTX_UNARY
 		&& GET_MODE (replacements[j]) != mode_arg0

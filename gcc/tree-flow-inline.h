@@ -347,12 +347,12 @@ next_safe_imm_use (imm_use_iterator *imm)
   use_operand_p old;
 
   old = imm->imm_use;
-  /* If the next node following the iter_node is still the one refered to by
-     imm_use, then the list hasnt changed, go to the next node.  */
+  /* If the next node following the iter_node is still the one referred to by
+     imm_use, then the list hasn't changed, go to the next node.  */
   if (imm->iter_node.next == imm->imm_use)
     {
       ptr = &(imm->iter_node);
-      /* Remove iternode fromn the list.  */
+      /* Remove iternode from the list.  */
       delink_imm_use (ptr);
       imm->imm_use = imm->imm_use->next;
       if (! end_safe_imm_use_p (imm))
@@ -369,7 +369,7 @@ next_safe_imm_use (imm_use_iterator *imm)
   else
     {
       /* If the 'next' value after the iterator isn't the same as it was, then
-	 a node has been deleted, so we sinply proceed to the node following 
+	 a node has been deleted, so we simply proceed to the node following 
 	 where the iterator is in the list.  */
       imm->imm_use = imm->iter_node.next;
       if (end_safe_imm_use_p (imm))
@@ -382,7 +382,7 @@ next_safe_imm_use (imm_use_iterator *imm)
   return imm->imm_use;
 }
 
-/* Return true is IMM has reached the end of the immeidate use list.  */
+/* Return true is IMM has reached the end of the immediate use list.  */
 static inline bool
 end_readonly_imm_use_p (imm_use_iterator *imm)
 {
@@ -447,7 +447,7 @@ has_single_use (tree var)
 }
 
 /* If VAR has only a single immediate use, return true, and set USE_P and STMT
-   to the use pointer and stmt of occurence.  */
+   to the use pointer and stmt of occurrence.  */
 static inline bool
 single_imm_use (tree var, use_operand_p *use_p, tree *stmt)
 {
@@ -684,7 +684,7 @@ phi_arg_index_from_use (use_operand_p use)
   int index;
   tree phi;
 
-  /* Since the use is the first thing in a PHI arguemnt element, we can
+  /* Since the use is the first thing in a PHI argument element, we can
      calculate its index based on casting it to an argument, and performing
      pointer arithmetic.  */
 
@@ -697,7 +697,7 @@ phi_arg_index_from_use (use_operand_p use)
 
 #ifdef ENABLE_CHECKING
   /* Make sure the calculation doesn't have any leftover bytes.  If it does, 
-     then imm_use is liekly not the first element in phi_arg_d.  */
+     then imm_use is likely not the first element in phi_arg_d.  */
   gcc_assert (
 	  (((char *)element - (char *)root) % sizeof (struct phi_arg_d)) == 0);
   gcc_assert (index >= 0 && index < PHI_ARG_CAPACITY (phi));
