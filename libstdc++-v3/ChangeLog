@@ -1,3 +1,8 @@
+2004-07-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR bootstrap/16469
+	* scripts/create_testsuite_files: Pass -print to find.
+
 2004-07-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 30.
