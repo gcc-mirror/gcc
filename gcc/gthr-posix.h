@@ -92,6 +92,7 @@ __gthread_active_p (void)
 
 /* Key structure for maintaining thread specific storage */
 static pthread_key_t _objc_thread_storage;
+static pthread_attr_t _objc_thread_attribs;
 
 /* Thread local storage for a single thread */
 static void *thread_local_storage = NULL;
@@ -103,8 +104,19 @@ static inline int
 __gthread_objc_init_thread_system(void)
 {
   if (__gthread_active_p ())
-    /* Initialize the thread storage key */
-    return pthread_key_create(&_objc_thread_storage, NULL);
+    {
+      /* Initialize the thread storage key */
+      if (pthread_key_create(&_objc_thread_storage, NULL) == 0)
+        {
+          /* The normal default detach state for threads is
+           * PTHREAD_CREATE_JOINABLE which causes threads to not die
+           * when you think they should.  */
+          if (pthread_attr_init(&_objc_thread_attribs) == 0
+              && pthread_attr_setdetachstate(&_objc_thread_attribs, 
+                                             PTHREAD_CREATE_DETACHED) == 0)
+            return 0;
+        }
+    }
   else
     return -1;
 }
@@ -113,10 +125,12 @@ __gthread_objc_init_thread_system(void)
 static inline int
 __gthread_objc_close_thread_system(void)
 {
-  if (__gthread_active_p ())
+  if (__gthread_active_p ()
+      && pthread_key_delete(_objc_thread_storage) == 0
+      && pthread_attr_destroy(&_objc_thread_attribs) == 0)
     return 0;
-  else
-    return -1;
+
+  return -1;
 }
 
 /* Backend thread functions */
@@ -143,8 +157,38 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 static inline int
 __gthread_objc_thread_set_priority(int priority)
 {
-  /* Not implemented yet */
-  return -1;
+  if (!__gthread_active_p())
+    return -1;
+  else {
+    pthread_t thread_id = pthread_self();
+    int policy;
+    struct sched_param params;
+    int priority_min, priority_max;
+
+    if (pthread_getschedparam(thread_id, &policy, &params) == 0)
+      {
+        if ((priority_max = sched_get_priority_max(policy)) != 0)
+          return -1;
+
+        if ((priority_min = sched_get_priority_min(policy)) != 0)
+          return -1;
+
+        if (priority > priority_max)
+          priority = priority_max;
+        else if (priority < priority_min)
+          priority = priority_min;
+        params.sched_priority = priority;
+
+        /*
+         * The solaris 7 and several other man pages incorrectly state that
+         * this should be a pointer to policy but pthread.h is universally
+         * at odds with this.
+         */
+        if (pthread_setschedparam(thread_id, policy, &params) == 0)
+          return 0;
+      }
+    return -1;
+  }
 }
 
 /* Return the current thread's priority. */
@@ -152,8 +196,15 @@ static inline int
 __gthread_objc_thread_get_priority(void)
 {
   if (__gthread_active_p ())
-    /* Not implemented yet */
-    return -1;
+    {
+      int policy;
+      struct sched_param params;
+
+      if (pthread_getschedparam(pthread_self(), &policy, &params) == 0)
+        return params.sched_priority;
+      else
+        return -1;
+    }
   else
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
 }
