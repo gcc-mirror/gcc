@@ -1,3 +1,8 @@
+2003-07-22  Per Bothner  <pbothner@apple.com>
+
+	* diagnostic.c.(diagnostic_report_current_module):  Update to match
+	2003-06-05 changes to push_srcloc and pop_srcloc.
+
 2003-07-22  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* doc/trouble.texi: Better document two-stage name lookup.

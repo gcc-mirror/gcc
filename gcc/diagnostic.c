@@ -978,18 +978,16 @@ diagnostic_report_current_module (diagnostic_context *context)
       output_needs_newline (&context->buffer) = false;
     }
 
-  if (input_file_stack && input_file_stack->next != 0
-      && diagnostic_last_module_changed (context))
+  if (input_file_stack && diagnostic_last_module_changed (context))
     {
-      for (p = input_file_stack->next; p; p = p->next)
-	if (p == input_file_stack->next)
-	  output_verbatim (&context->buffer,
-                           "In file included from %s:%d",
-			   p->location.file, p->location.line);
-	else
-	  output_verbatim (&context->buffer,
-                           ",\n                 from %s:%d",
-			   p->location.file, p->location.line);
+      p = input_file_stack;
+      output_verbatim (&context->buffer,
+		       "In file included from %s:%d",
+		       p->location.file, p->location.line);
+      while ((p = p->next) != NULL)
+	output_verbatim (&context->buffer,
+			 ",\n                 from %s:%d",
+			 p->location.file, p->location.line);
       output_verbatim (&context->buffer, ":\n");
       diagnostic_set_last_module (context);
     }
