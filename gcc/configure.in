@@ -2835,6 +2835,7 @@ changequote([,])dnl
 		fi
 		;;
 	mn10200-*-*)
+		float_format=i32
 		cpu_type=mn10200
 		tm_file="mn10200/mn10200.h"
 		if test x$stabs = xyes
