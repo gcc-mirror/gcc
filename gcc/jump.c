@@ -210,11 +210,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   mark_all_labels (f, cross_jump);
 
-  /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
-     notes.  */
-  if (mark_labels_only)
-    return;
-
   /* Keep track of labels used from static data;
      they cannot ever be deleted.  */
 
@@ -228,6 +223,11 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
   for (insn = exception_handler_labels; insn; insn = XEXP (insn, 1))
     LABEL_NUSES (XEXP (insn, 0))++;
+
+  /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
+     notes and recompute LABEL_NUSES.  */
+  if (mark_labels_only)
+    return;
 
   exception_optimize ();
 
@@ -3921,6 +3921,9 @@ delete_insn (insn)
   /* This insn is already deleted => return first following nondeleted.  */
   if (INSN_DELETED_P (insn))
     return next;
+
+  if (was_code_label)
+    remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
 
   /* Don't delete user-declared labels.  Convert them to special NOTEs
      instead.  */

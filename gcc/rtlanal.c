@@ -1529,6 +1529,36 @@ remove_note (insn, note)
 
   abort ();
 }
+
+/* Search LISTP (an EXPR_LIST) for NODE and remove NODE from the list
+   if it is found.
+
+   A simple equality test is used to determine if NODE is on the
+   EXPR_LIST.  */
+
+void
+remove_node_from_expr_list (node, listp)
+     rtx node;
+     rtx *listp;
+{
+  rtx temp = *listp;
+  rtx prev = NULL_RTX;
+
+  while (temp)
+    {
+      if (node == XEXP (temp, 0))
+	{
+	  /* Splice the node out of the list.  */
+	  if (prev)
+	    XEXP (prev, 1) = XEXP (temp, 1);
+	  else
+	    *listp = XEXP (temp, 1);
+
+	  return;
+	}
+      temp = XEXP (temp, 1);
+    }
+}
 
 /* Nonzero if X contains any volatile instructions.  These are instructions
    which may cause unpredictable machine state instructions, and thus no
