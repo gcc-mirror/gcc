@@ -2676,7 +2676,8 @@ assign_parms (fndecl, second_time)
 	  || TREE_CODE (parm) != PARM_DECL
 	  || passed_type == NULL)
 	{
-	  DECL_RTL (parm) = gen_rtx (MEM, BLKmode, const0_rtx);
+	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm) = gen_rtx (MEM, BLKmode,
+								const0_rtx);
 	  TREE_USED (parm) = 1;
 	  continue;
 	}
