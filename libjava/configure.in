@@ -325,6 +325,11 @@ else
    save_LIBS="$LIBS"
    LIBS="$LIBS $THREADLIBS"
    AC_CHECK_FUNCS(pthread_mutexattr_settype pthread_mutexattr_setkind_np sched_yield)
+   # Look for sched_yield.  Sometimes it is in the posix4 library.
+   AC_CHECK_FUNCS(sched_yield, , [
+     AC_CHECK_LIB(posix4, sched_yield, [
+       AC_DEFINE(HAVE_SCHED_YIELD)
+       THREADLIBS="$THREADLIBS -lposix4"])])
    LIBS="$save_LIBS"
 
    # We require a way to get the time.
@@ -402,6 +407,12 @@ else
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=-lzgcj)
    else
       ZLIBSPEC=-lzgcj
+   fi
+
+   # On Solaris, and maybe other architectures, the Boehm collector
+   # requires -ldl.
+   if test "$GC" = boehm; then
+      AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
    fi
 
    if test -d "$libgcj_basedir/../gcc/java"; then
