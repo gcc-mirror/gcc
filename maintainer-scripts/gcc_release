@@ -248,6 +248,7 @@ EOF
 
   # Move message catalogs to source directory.
   mv ../objdir/gcc/po/*.gmo gcc/po/
+  [ -f libcpp/po/cpplib.pot ] && mv ../objdir/libcpp/po/*.gmo libcpp/po/
 
   # Create a "MD5SUMS" file to use for checking the validity of the release.
   find . -type f |sed -e 's:^\./::' -e '/MD5SUMS/d' |sort |xargs md5sum >MD5SUMS
