@@ -247,15 +247,14 @@ calls_function_1 (exp, which)
    and return that as an rtx.  Also load the static chain register
    if FNDECL is a nested function.
 
-   USE_INSNS points to a variable holding a chain of USE insns
-   to which a USE of the static chain
-   register should be added, if required.  */
+   CALL_FUSAGE points to a variable holding the prospective
+   CALL_INSN_FUNCTION_USAGE information.  */
 
 rtx
-prepare_call_address (funexp, fndecl, use_insns, reg_parm_seen)
+prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
      rtx funexp;
      tree fndecl;
-     rtx *use_insns;
+     rtx *call_fusage;
      int reg_parm_seen;
 {
   rtx static_chain_value = 0;
@@ -292,12 +291,7 @@ prepare_call_address (funexp, fndecl, use_insns, reg_parm_seen)
     {
       emit_move_insn (static_chain_rtx, static_chain_value);
 
-      /* Put the USE insn in the chain we were passed.  It will later be
-	 output immediately in front of the CALL insn.  */
-      push_to_sequence (*use_insns);
-      emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
-      *use_insns = get_insns ();
-      end_sequence ();
+      use_reg (call_fusage, static_chain_rtx);
     }
 
   return funexp;
@@ -341,7 +335,7 @@ prepare_call_address (funexp, fndecl, use_insns, reg_parm_seen)
 
 static void
 emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
-	     valreg, old_inhibit_defer_pop, use_insns, is_const)
+	     valreg, old_inhibit_defer_pop, call_fusage, is_const)
      rtx funexp;
      tree funtype;
      int stack_size;
@@ -349,7 +343,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
      rtx next_arg_reg;
      rtx valreg;
      int old_inhibit_defer_pop;
-     rtx use_insns;
+     rtx call_fusage;
      int is_const;
 {
   rtx stack_size_rtx = GEN_INT (stack_size);
@@ -405,7 +399,7 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
 #endif
     abort ();
 
-  /* Find the CALL insn we just emitted and write the USE insns before it.  */
+  /* Find the CALL insn we just emitted.  */
   for (call_insn = get_last_insn ();
        call_insn && GET_CODE (call_insn) != CALL_INSN;
        call_insn = PREV_INSN (call_insn))
@@ -414,8 +408,8 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
   if (! call_insn)
     abort ();
 
-  /* Put the USE insns before the CALL.  */
-  emit_insns_before (use_insns, call_insn);
+  /* Put the register usage information on the CALL.  */
+  CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* If this is a const call, then set the insn's unchanging bit.  */
   if (is_const)
@@ -436,7 +430,9 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
   if (stack_size != 0 && RETURN_POPS_ARGS (funtype, stack_size) > 0)
     {
       if (!already_popped)
-	emit_insn (gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx));
+	CALL_INSN_FUNCTION_USAGE (call_insn) =
+	   gen_rtx (EXPR_LIST, CLOBBER, stack_pointer_rtx,
+		    CALL_INSN_FUNCTION_USAGE (call_insn));
       stack_size -= RETURN_POPS_ARGS (funtype, stack_size);
       stack_size_rtx = GEN_INT (stack_size);
     }
@@ -573,7 +569,7 @@ expand_call (exp, target, ignore)
   int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   tree old_cleanups = cleanups_this_call;
-  rtx use_insns = 0;
+  rtx call_fusage = 0;
   register tree p;
   register int i, j;
 
@@ -1773,22 +1769,17 @@ expand_call (exp, target, ignore)
 				 force_operand (structure_value_addr,
 						NULL_RTX)));
       if (GET_CODE (struct_value_rtx) == REG)
-	{
-	  push_to_sequence (use_insns);
-	  emit_insn (gen_rtx (USE, VOIDmode, struct_value_rtx));
-	  use_insns = get_insns ();
-	  end_sequence ();
-	}
+	  use_reg (&call_fusage, struct_value_rtx);
     }
 
-  funexp = prepare_call_address (funexp, fndecl, &use_insns, reg_parm_seen);
+  funexp = prepare_call_address (funexp, fndecl, &call_fusage, reg_parm_seen);
 
   /* Now do the register loads required for any wholly-register parms or any
      parms which are passed both on the stack and in a register.  Their
      expressions were already evaluated. 
 
      Mark all register-parms as living through the call, putting these USE
-     insns in a list headed by USE_INSNS.  */
+     insns in the CALL_INSN_FUNCTION_USAGE field.  */
 
   for (i = 0; i < num_actuals; i++)
     {
@@ -1838,13 +1829,7 @@ expand_call (exp, target, ignore)
 			       validize_mem (args[i].value), nregs,
 			       args[i].mode);
 	
-	  push_to_sequence (use_insns);
-	  if (nregs == -1)
-	    emit_insn (gen_rtx (USE, VOIDmode, reg));
-	  else
-	    use_regs (REGNO (reg), nregs);
-	  use_insns = get_insns ();
-	  end_sequence ();
+	  use_regs (&call_fusage, reg, REGNO (reg), nregs);
 
 	  /* PARTIAL referred only to the first register, so clear it for the
 	     next time.  */
@@ -1860,7 +1845,7 @@ expand_call (exp, target, ignore)
   /* Generate the actual call instruction.  */
   emit_call_1 (funexp, funtype, args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
-	       valreg, old_inhibit_defer_pop, use_insns, is_const);
+	       valreg, old_inhibit_defer_pop, call_fusage, is_const);
 
   /* If call is cse'able, make appropriate pair of reg-notes around it.
      Test valreg so we don't crash; may safely ignore `const'
@@ -2121,7 +2106,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	       struct args_size offset; struct args_size size; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  rtx use_insns;
+  rtx call_fusage = 0;
   /* library calls are never indirect calls.  */
   int current_call_is_indirect = 0;
 
@@ -2317,7 +2302,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   argnum = 0;
 #endif
 
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns, 0);
+  fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0);
 
   /* Now load any reg parms into their regs.  */
 
@@ -2338,13 +2323,9 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
     emit_queue ();
 
   /* Any regs containing parms remain in use through the call.  */
-  start_sequence ();
   for (count = 0; count < nargs; count++)
     if (argvec[count].reg != 0)
-      emit_insn (gen_rtx (USE, VOIDmode, argvec[count].reg));
-
-  use_insns = get_insns ();
-  end_sequence ();
+       use_reg (&call_fusage, argvec[count].reg);
 
   /* Don't allow popping to be deferred, since then
      cse'ing of library calls could delete a call and leave the pop.  */
@@ -2356,7 +2337,7 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
-	       old_inhibit_defer_pop + 1, use_insns, no_queue);
+	       old_inhibit_defer_pop + 1, call_fusage, no_queue);
 
   pop_temp_slots ();
 
@@ -2398,7 +2379,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	       struct args_size offset; struct args_size size; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
-  rtx use_insns;
+  rtx call_fusage = 0;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
   int struct_value_size = 0;
@@ -2668,7 +2649,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   argnum = 0;
 #endif
 
-  fun = prepare_call_address (fun, NULL_TREE, &use_insns, 0);
+  fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0);
 
   /* Now load any reg parms into their regs.  */
 
@@ -2691,13 +2672,9 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 #endif
 
   /* Any regs containing parms remain in use through the call.  */
-  start_sequence ();
   for (count = 0; count < nargs; count++)
     if (argvec[count].reg != 0)
-      emit_insn (gen_rtx (USE, VOIDmode, argvec[count].reg));
-
-  use_insns = get_insns ();
-  end_sequence ();
+       use_reg (&call_fusage, argvec[count].reg);
 
   /* Pass the function the address in which to return a structure value.  */
   if (mem_value != 0 && struct_value_rtx != 0 && ! pcc_struct_value)
@@ -2707,12 +2684,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 				 force_operand (XEXP (mem_value, 0),
 						NULL_RTX)));
       if (GET_CODE (struct_value_rtx) == REG)
-	{
-	  push_to_sequence (use_insns);
-	  emit_insn (gen_rtx (USE, VOIDmode, struct_value_rtx));
-	  use_insns = get_insns ();
-	  end_sequence ();
-	}
+	  use_reg (&call_fusage, struct_value_rtx);
     }
 
   /* Don't allow popping to be deferred, since then
@@ -2727,7 +2699,7 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       (outmode != VOIDmode && mem_value == 0
 		? hard_libcall_value (outmode) : NULL_RTX),
-	       old_inhibit_defer_pop + 1, use_insns, is_const);
+	       old_inhibit_defer_pop + 1, call_fusage, is_const);
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
