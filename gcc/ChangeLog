@@ -1,3 +1,15 @@
+Wed Oct  7 02:05:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Rework
+	for efficiency by checking whether we need to modify the current
+	stack permission at all.
+	(ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Define.
+	* config/sparc/sparc.c (sparc_initialize_trampoline): Emit
+	__enable_execute_stack libcall here too if
+	TRANSFER_FROM_TRAMPOLINE is defined.
+	* config/sparc/sparc.h: Set TARGET_ARCH32 to a constant if
+	IN_LIBGCC2.
+
 Wed Oct  7 02:27:52 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (DRIVER_DEFINES): Remove last change.

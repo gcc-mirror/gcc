@@ -5438,6 +5438,10 @@ sparc_initialize_trampoline (tramp, fnaddr, cxt)
     SETHI i,r  = 00rr rrr1 00ii iiii iiii iiii iiii iiii
     JMPL r+i,d = 10dd ddd1 1100 0rrr rr1i iiii iiii iiii
    */
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+                     0, VOIDmode, 1, tramp, Pmode);
+#endif
 
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 0)),
 		  expand_binop (SImode, ior_optab,

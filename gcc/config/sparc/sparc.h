@@ -34,10 +34,18 @@ Boston, MA 02111-1307, USA.  */
    architectures to compile for.  We allow targets to choose compile time or
    runtime selection.  */
 #ifdef SPARC_BI_ARCH
+#ifdef IN_LIBGCC2
+#if defined(__sparcv9) || defined(__sparcv_v9) || defined(__arch64__)
+#define TARGET_ARCH32 0
+#else
+#define TARGET_ARCH32 1
+#endif /* V9 sparc */
+#else
 #define TARGET_ARCH32 (! TARGET_64BIT)
+#endif /* IN_LIBGCC2 */
 #else
 #define TARGET_ARCH32 (DEFAULT_ARCH32_P)
-#endif
+#endif /* SPARC_BI_ARCH */
 #define TARGET_ARCH64 (! TARGET_ARCH32)
 
 /* Code model selection.
