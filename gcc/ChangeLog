@@ -1,3 +1,7 @@
+2003-11-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (dosize): Convert to ISO-C.
+
 2003-11-22  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* flow.c (update_life_info): Amend comment about when a register

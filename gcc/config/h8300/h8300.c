@@ -365,9 +365,7 @@ byte_reg (rtx x, int b)
    SIZE to adjust the stack pointer.  */
 
 static void
-dosize (sign, size)
-     int sign;
-     unsigned int size;
+dosize (int sign, unsigned int size)
 {
   /* H8/300 cannot add/subtract a large constant with a single
      instruction.  If a temporary register is available, load the
