@@ -299,6 +299,7 @@ void asctoe (), asctoe24 (), asctoe53 (), asctoe64 ();
 void etoasc (), e24toasc (), e53toasc (), e64toasc ();
 void etoe64 (), etoe53 (), etoe24 (), e64toe (), e53toe (), e24toe ();
 void mtherr (), make_nan ();
+void enan ();
 extern unsigned EMUSHORT ezero[], ehalf[], eone[], etwo[];
 extern unsigned EMUSHORT elog2[], esqrt2[];
 
