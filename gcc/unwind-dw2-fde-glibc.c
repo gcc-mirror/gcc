@@ -74,6 +74,7 @@ struct unw_eh_callback_data
   void *dbase;
   void *func;
   const fde *ret;
+  int check_cache;
 };
 
 struct unw_eh_frame_hdr
@@ -83,6 +84,20 @@ struct unw_eh_frame_hdr
   unsigned char fde_count_enc;
   unsigned char table_enc;
 };
+
+#define FRAME_HDR_CACHE_SIZE 8
+
+static struct frame_hdr_cache_element
+{
+  _Unwind_Ptr pc_low;
+  _Unwind_Ptr pc_high;
+  _Unwind_Ptr load_base;
+  const ElfW(Phdr) *p_eh_frame_hdr;
+  const ElfW(Phdr) *p_dynamic;
+  struct frame_hdr_cache_element *link;
+} frame_hdr_cache[FRAME_HDR_CACHE_SIZE];
+
+static struct frame_hdr_cache_element *frame_hdr_cache_head;
 
 /* Like base_of_encoded_value, but take the base from a struct
    unw_eh_callback_data instead of an _Unwind_Context.  */
@@ -123,17 +138,98 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
   const struct unw_eh_frame_hdr *hdr;
   _Unwind_Ptr eh_frame;
   struct object ob;
-
-  /* Make sure struct dl_phdr_info is at least as big as we need.  */
-  if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
-	     + sizeof (info->dlpi_phnum))
-    return -1;
+  
+  struct ext_dl_phdr_info
+    {
+      ElfW(Addr) dlpi_addr;
+      const char *dlpi_name;
+      const ElfW(Phdr) *dlpi_phdr;
+      ElfW(Half) dlpi_phnum;
+      unsigned long long int dlpi_adds;
+      unsigned long long int dlpi_subs;
+    };
 
   match = 0;
   phdr = info->dlpi_phdr;
   load_base = info->dlpi_addr;
   p_eh_frame_hdr = NULL;
   p_dynamic = NULL;
+
+  struct frame_hdr_cache_element *prev_cache_entry = NULL,
+    *last_cache_entry = NULL;
+
+  if (data->check_cache && size >= sizeof (struct ext_dl_phdr_info))
+    {
+      static unsigned long long adds = -1ULL, subs;
+      struct ext_dl_phdr_info *einfo = (struct ext_dl_phdr_info *) info;
+
+      /* We use a least recently used cache replacement policy.  Also,
+	 the most recently used cache entries are placed at the head
+	 of the search chain.  */
+
+      if (einfo->dlpi_adds == adds && einfo->dlpi_subs == subs)
+	{
+	  /* Find data->pc in shared library cache.
+	     Set load_base, p_eh_frame_hdr and p_dynamic
+	     plus match from the cache and goto
+	     "Read .eh_frame_hdr header." below.  */
+
+	  struct frame_hdr_cache_element *cache_entry;
+
+	  for (cache_entry = frame_hdr_cache_head;
+	       cache_entry;
+	       cache_entry = cache_entry->link)
+	    {
+	      if (data->pc >= cache_entry->pc_low
+		  && data->pc < cache_entry->pc_high)
+		{
+		  load_base = cache_entry->load_base;
+		  p_eh_frame_hdr = cache_entry->p_eh_frame_hdr;
+		  p_dynamic = cache_entry->p_dynamic;
+
+		  /* And move the entry we're using to the head.  */
+		  if (cache_entry != frame_hdr_cache_head)
+		    {
+		      prev_cache_entry->link = cache_entry->link;
+		      cache_entry->link = frame_hdr_cache_head;
+		      frame_hdr_cache_head = cache_entry;
+		    }
+		  goto found;
+		}
+		  
+	      last_cache_entry = cache_entry;
+	      /* Exit early if we found an unused entry.  */
+	      if ((cache_entry->pc_low | cache_entry->pc_high) == 0)
+		break;
+	      if (cache_entry->link != NULL)
+		prev_cache_entry = cache_entry;		  
+	    }
+	}
+      else
+	{
+	  adds = einfo->dlpi_adds;
+	  subs = einfo->dlpi_subs;
+	  /* Initialize the cache.  Create a chain of cache entries,
+	     with the final one terminated by a NULL link.  */
+	  int i;
+	  for (i = 0; i < FRAME_HDR_CACHE_SIZE; i++)
+	    {
+	      frame_hdr_cache[i].pc_low = 0;
+	      frame_hdr_cache[i].pc_high = 0;
+	      frame_hdr_cache[i].link = &frame_hdr_cache[i+1];
+	    }
+	  frame_hdr_cache[i-1].link = NULL;
+	  frame_hdr_cache_head = &frame_hdr_cache[0];
+	  data->check_cache = 0;
+	}
+    }
+
+  /* Make sure struct dl_phdr_info is at least as big as we need.  */
+  if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
+	     + sizeof (info->dlpi_phnum))
+    return -1;
+ 
+  _Unwind_Ptr pc_low = 0, pc_high = 0;
 
   /* See if PC falls into one of the loaded segments.  Find the eh_frame
      segment at the same time.  */
@@ -144,14 +240,40 @@ _Unwind_IteratePhdrCallback (struct dl_phdr_info *info, size_t size, void *ptr)
 	  _Unwind_Ptr vaddr = (_Unwind_Ptr)
 	    __RELOC_POINTER (phdr->p_vaddr, load_base);
 	  if (data->pc >= vaddr && data->pc < vaddr + phdr->p_memsz)
-	    match = 1;
+	    {
+	      match = 1;
+	      pc_low = vaddr;
+	      pc_high =  vaddr + phdr->p_memsz;
+	    }
 	}
       else if (phdr->p_type == PT_GNU_EH_FRAME)
 	p_eh_frame_hdr = phdr;
       else if (phdr->p_type == PT_DYNAMIC)
 	p_dynamic = phdr;
     }
-  if (!match || !p_eh_frame_hdr)
+  
+  if (!match)
+    return 0;
+
+  if (size >= sizeof (struct ext_dl_phdr_info))
+    {
+      if (last_cache_entry != NULL)
+	{
+	  prev_cache_entry->link = last_cache_entry->link;
+	  last_cache_entry->link = frame_hdr_cache_head;
+	  frame_hdr_cache_head = last_cache_entry;
+	}
+
+      frame_hdr_cache_head->load_base = load_base;
+      frame_hdr_cache_head->p_eh_frame_hdr = p_eh_frame_hdr;
+      frame_hdr_cache_head->p_dynamic = p_dynamic;
+      frame_hdr_cache_head->pc_low = pc_low;
+      frame_hdr_cache_head->pc_high = pc_high;
+    }
+
+ found:
+
+  if (!p_eh_frame_hdr)
     return 0;
 
   /* Read .eh_frame_hdr header.  */
@@ -289,6 +411,7 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
   data.dbase = NULL;
   data.func = NULL;
   data.ret = NULL;
+  data.check_cache = 1;
 
   if (dl_iterate_phdr (_Unwind_IteratePhdrCallback, &data) < 0)
     return NULL;
