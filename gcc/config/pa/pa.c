@@ -3090,7 +3090,7 @@ output_arg_descriptor (insn)
 	    arg_regs[regno - 32] = "FR";
 	  else
 	    {
-#ifdef HP_FP_ARG_DESCRIPTOR_REVERSED
+#ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
 	      arg_regs[regno - 33] = "FR";
 	      arg_regs[regno - 32] = "FU";
 #else
@@ -3105,7 +3105,7 @@ output_arg_descriptor (insn)
 	    arg_regs[(regno - 44) / 2] = "FR";
 	  else
 	    {
-#ifdef HP_FP_ARG_DESCRIPTOR_REVERSED
+#ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
 	      arg_regs[(regno - 46) / 2] = "FR";
 	      arg_regs[(regno - 46) / 2 + 1] = "FU";
 #else

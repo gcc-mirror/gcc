@@ -823,7 +823,7 @@ extern struct rtx_def *hppa_compare_op0, *hppa_compare_op1;
 extern enum cmp_type hppa_branch_type;
 
 /* Output the label for a function definition.  */
-#ifdef HP_FP_ARG_DESCRIPTOR_REVERSED
+#ifndef HP_FP_ARG_DESCRIPTOR_REVERSED
 #define ASM_DOUBLE_ARG_DESCRIPTORS(FILE, ARG0, ARG1)	\
   do { fprintf (FILE, ",ARGW%d=FR", (ARG0));		\
        fprintf (FILE, ",ARGW%d=FU", (ARG1));} while (0)
