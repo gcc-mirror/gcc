@@ -2975,7 +2975,7 @@ find_best_addr (insn, loc, mode)
 		     || exp_equiv_p (p->exp, p->exp, 1, 0))
 		    && ((exp_cost = address_cost (p->exp, mode)) < best_addr_cost
 			|| (exp_cost == best_addr_cost
-			    && (p->cost + 1) >> 1 < best_rtx_cost)))
+			    && ((p->cost + 1) >> 1) > best_rtx_cost)))
 		  {
 		    found_better = 1;
 		    best_addr_cost = exp_cost;
