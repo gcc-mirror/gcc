@@ -5,6 +5,9 @@
 
 Fri Jun 29 12:27:24 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* doc/gcc.texi (Passes): Update due to recent -fdce -> -fssa-dce
+	changes.  Fix documentation for SSA DCE pass.
+
 	* ssa-dce.c (ssa_eliminate_dead_code): Renamed from
 	eliminate_date_code.
 	* ssa.h (ssa_eliminate_dead_code): Corresponding changes.

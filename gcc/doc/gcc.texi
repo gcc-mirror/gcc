@@ -3425,13 +3425,14 @@ the input file name.
 @cindex dead code elimination
 @opindex fdce
 @item
-Dead Code Elimination.  Turned on by the @option{-fdce} option.
-This pass performs elimination of code considered unnecessary because it
-is never executed.  It operates in linear time.
+SSA Aggressive Dead Code Elimination.  Turned on by the @option{-fssa-dce}
+option.  This pass performs elimination of code considered unnecessary because
+it has no externally visible effects on the program.  It operates in
+linear time.
 
 @opindex dX
 The option @option{-dX} causes a debugging dump of the RTL code after
-this pass.  This dump file's name is made by appending @samp{.dce} to
+this pass.  This dump file's name is made by appending @samp{.ssadce} to
 the input file name.
 @end itemize
 @cindex global common subexpression elimination
