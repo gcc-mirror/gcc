@@ -1173,7 +1173,6 @@ c_common_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
   warning ("YYDEBUG not defined");
 #endif
 
-  (*debug_hooks->start_source_file) (input_line, input_filename);
   finish_options();
   pch_init();
   yyparse ();

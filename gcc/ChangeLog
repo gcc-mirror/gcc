@@ -1,3 +1,8 @@
+2003-07-03  Devang Patel <dpatel@apple.com>
+
+	* c-opts.c (c_common_parse_file): Remove extra
+	debug_hooks->start_source_file call.
+	
 2003-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	* real.c (real_trunc, real_floor, real_ceil): New functions
