@@ -182,13 +182,8 @@ parse_number (pfile, start, olen)
   else if (*p == '0')
     base = 8;
 
-  ULONG_MAX_over_base = (unsigned long) -1 / base;
-/* start-sanitize-mpw */
-  /* Work around yet another MPW C bug. */
-#ifdef MPW_C
+  /* Some buggy compilers (e.g. MPW C) seem to need both casts. */
   ULONG_MAX_over_base = ((unsigned long) -1) / ((unsigned long) base);
-#endif /* MPW_C */
-/* end-sanitize-mpw */
 
   for (; len > 0; len--) {
     c = *p++;
