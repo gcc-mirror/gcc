@@ -1,3 +1,8 @@
+2000-12-14  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* cppfiles.c (hack_vms_include_specification): Delete function
+	(not used since 1998).
+
 Fri Dec 15 03:37:51 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* haifa-sched.c (sched_init): Don't put a note in front of any BARRIER.
