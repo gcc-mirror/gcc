@@ -55,13 +55,14 @@ static tree unary_complex_lvalue ();
 static tree process_init_constructor ();
 static tree convert_arguments ();
 static char *get_spelling ();
-tree digest_init ();
+static tree digest_init ();
 static void pedantic_lvalue_warning ();
 tree truthvalue_conversion ();
 void incomplete_type_error ();
 void readonly_warning ();
 static tree internal_build_compound_expr ();
 
+void process_init_element ();
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -4831,24 +4832,14 @@ static tree free_tree_list = NULL_TREE;
    (That is true for all nested calls to digest_init.)  */
 
 tree
-digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
+digest_init (type, init, tail, require_constant, constructor_constant)
      tree type, init, *tail;
      int require_constant, constructor_constant;
-     char *ofwhat;
 {
   enum tree_code code = TREE_CODE (type);
   tree element = 0;
   tree old_tail_contents;
-  /* Nonzero if INIT is a braced grouping, which comes in as a CONSTRUCTOR
-     tree node which has no TREE_TYPE.  */
-  int raw_constructor
-    = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
   tree inside_init = init;
-
-  /* Make sure there is just one "partially bracketed" message
-     per top-level initializer or constructor.  */
-  if (ofwhat != 0)
-    partial_bracket_mentioned = 0;
 
   /* By default, assume we use one element from a list.
      We correct this later in the cases where it is not true.
@@ -4876,16 +4867,6 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     inside_init = TREE_OPERAND (init, 0);
 
-  if (inside_init && raw_constructor
-      && CONSTRUCTOR_ELTS (inside_init) != 0
-      && TREE_CHAIN (CONSTRUCTOR_ELTS (inside_init)) == 0)
-    {
-      element = TREE_VALUE (CONSTRUCTOR_ELTS (inside_init));
-      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-      if (element && TREE_CODE (element) == NON_LVALUE_EXPR)
-	element = TREE_OPERAND (element, 0);
-    }
-
   /* Initialization of an array of chars from a string constant
      optionally enclosed in braces.  */
 
@@ -4907,7 +4888,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	      && TYPE_PRECISION (typ1) == TYPE_PRECISION (char_type_node))
 	    {
 	      error_init ("char-array%s initialized from wide string",
-			  " `%s'", ofwhat);
+			  " `%s'", NULL);
 	      return error_mark_node;
 	    }
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (string)))
@@ -4915,7 +4896,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	      && TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node))
 	    {
 	      error_init ("int-array%s initialized from non-wide string",
-			  " `%s'", ofwhat);
+			  " `%s'", NULL);
 	      return error_mark_node;
 	    }
 
@@ -4934,15 +4915,14 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		     : 1))
 		pedwarn_init (
 		  "initializer-string for array of chars%s is too long",
-		  " `%s'", ofwhat);
+		  " `%s'", NULL);
 	    }
 	  return string;
 	}
     }
 
-  /* Any type except an array can be initialized
-     from an expression of the same type, optionally with braces.
-     For an array, this is allowed only for a string constant.  */
+  /* Any type can be initialized
+     from an expression of the same type, optionally with braces.  */
 
   if (inside_init && TREE_TYPE (inside_init) != 0
       && ((TYPE_MAIN_VARIANT (TREE_TYPE (inside_init))
@@ -4959,10 +4939,11 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	  && (TREE_CODE (TREE_TYPE (inside_init)) == ARRAY_TYPE
 	      || TREE_CODE (TREE_TYPE (inside_init)) == FUNCTION_TYPE))
 	inside_init = default_conversion (inside_init);
-      else if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST)
+      else if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST
+	       && TREE_CODE (inside_init) != CONSTRUCTOR)
 	{
 	  error_init ("array%s initialized from non-constant array expression",
-		      " `%s'", ofwhat);
+		      " `%s'", NULL);
 	  return error_mark_node;
 	}
 
@@ -4973,14 +4954,14 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element%s is not constant",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  inside_init = error_mark_node;
 	}
       else if (require_constant
 	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  inside_init = error_mark_node;
 	}
 
@@ -4994,7 +4975,7 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       if (code == ARRAY_TYPE)
 	{
 	  error_init ("array%s initialized from non-constant array expression",
-		      " `%s'", ofwhat);
+		      " `%s'", NULL);
 	  return error_mark_node;
 	}
       if (pedantic && (code == RECORD_TYPE || code == UNION_TYPE))
@@ -5005,57 +4986,18 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       if (require_constant && ! TREE_CONSTANT (element))
 	{
 	  error_init ("initializer element%s is not constant",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  element = error_mark_node;
 	}
       else if (require_constant
 	       && initializer_constant_valid_p (element, TREE_TYPE (element)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  element = error_mark_node;
 	}
 
       return element;
-    }
-
-  /* Check for initializing a union by its first field.
-     Such an initializer must use braces.  */
-
-  if (code == UNION_TYPE)
-    {
-      tree result;
-      tree field = TYPE_FIELDS (type);
-
-      /* Find the first named field.  ANSI decided in September 1990
-	 that only named fields count here.  */
-      while (field && DECL_NAME (field) == 0)
-	field = TREE_CHAIN (field);
-
-      if (field == 0)
-	{
-	  error_init ("union%s with no named members cannot be initialized",
-		      " `%s'", ofwhat);
-	  return error_mark_node;
-	}
-
-      if (raw_constructor)
-	result = process_init_constructor (type, inside_init, NULL_PTR,
-					   require_constant,
-					   constructor_constant, ofwhat);
-      else if (tail != 0)
-	{
-	  *tail = old_tail_contents;
-	  free_tree_list = NULL_TREE;
-	  result = process_init_constructor (type, NULL_TREE, tail,
-					     require_constant,
-					     constructor_constant, ofwhat);
-	}
-      else
-	result = 0;
-
-      if (result)
-	return result;
     }
 
   /* Handle scalar types, including conversions.  */
@@ -5063,50 +5005,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == COMPLEX_TYPE)
     {
-      if (raw_constructor)
-	{
-	  if (element == 0)
-	    {
-	      error_init (
-	 	  "initializer for scalar%s requires one element",
-		  " `%s'", ofwhat);
-	      return error_mark_node;
-	    }
-	  else
-	    {
-	      /* Deal with extra levels of {...}.  */
-	      if (TREE_CODE (element) == CONSTRUCTOR
-		  && TREE_TYPE (element) == 0)
-		{
-		  error_init (
-			      "initializer for scalar%s requires one element",
-			      " `%s'", ofwhat);
-		  return error_mark_node;
-		}
-	      inside_init = element;
-	    }
-	}
-
-#if 0  /* A non-raw constructor is an actual expression.  */
-      if (TREE_CODE (inside_init) == CONSTRUCTOR)
-	{
-	  error_init ("initializer for scalar%s has extra braces",
-		      " `%s'", ofwhat);
-	  return error_mark_node;
-	}
-#endif
-
       SAVE_SPELLING_DEPTH
 	({
-	  if (ofwhat)
-	    push_string (ofwhat);
-	  if (!raw_constructor)
-	    inside_init = init;
 	  /* Note that convert_for_assignment calls default_conversion
 	     for arrays and functions.  We must not call it in the
 	     case where inside_init is a null pointer constant.  */
 	  inside_init
-	    = convert_for_assignment (type, inside_init, 
+	    = convert_for_assignment (type, init, 
 				      &initialization_message,
 				      NULL_TREE, NULL_TREE, 0);
 	});
@@ -5114,14 +5019,14 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
       if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element%s is not constant",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  inside_init = error_mark_node;
 	}
       else if (require_constant
 	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
 	{
 	  error_init ("initializer element%s is not computable at load time",
-		      " for `%s'", ofwhat);
+		      " for `%s'", NULL);
 	  inside_init = error_mark_node;
 	}
 
@@ -5133,582 +5038,1071 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
   if (TYPE_SIZE (type) && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
       error_init ("variable-sized object%s may not be initialized",
-		  " `%s'", ofwhat);
+		  " `%s'", NULL);
       return error_mark_node;
     }
 
-  if (code == ARRAY_TYPE || code == RECORD_TYPE)
-    {
-      if (raw_constructor)
-	return process_init_constructor (type, inside_init,
-					 NULL_PTR, constructor_constant,
-					 constructor_constant, ofwhat);
-      else if (tail != 0)
-	{
-	  *tail = old_tail_contents;
-	  free_tree_list = NULL_TREE;
-	  return process_init_constructor (type, NULL_TREE, tail,
-					   constructor_constant,
-					   constructor_constant, ofwhat);
-	}
-      else if (flag_traditional)
-	/* Traditionally one can say `char x[100] = 0;'.  */
-	return process_init_constructor (type,
-					 build_nt (CONSTRUCTOR, NULL_TREE,
-						   tree_cons (NULL_TREE,
-							      inside_init,
-							      NULL_TREE)),
-					 NULL_PTR, constructor_constant,
-					 constructor_constant, ofwhat);
-    }
-
-  error_init ("invalid initializer%s", " for `%s'", ofwhat);
+  error_init ("invalid initializer%s", " for `%s'", NULL);
   return error_mark_node;
 }
 
-/* Process a constructor for a variable of type TYPE.
-   The constructor elements may be specified either with INIT or with ELTS,
-   only one of which should be non-null.
+/* Handle initializers that use braces.  */
 
-   If INIT is specified, it is a CONSTRUCTOR node which is specifically
-   and solely for initializing this datum.
+static void output_pending_init_elements ();
+static void check_init_type_bitfields ();
 
-   If ELTS is specified, it is the address of a variable containing
-   a list of expressions.  We take as many elements as we need
-   from the head of the list and update the list.
+/* Type of object we are accumulating a constructor for.
+   This type is always a RECORD_TYPE, UNION_TYPE or ARRAY_TYPE.  */
+static tree constructor_type;
 
-   In the resulting constructor, TREE_CONSTANT is set if all elts are
-   constant, and TREE_STATIC is set if, in addition, all elts are simple enough
-   constants that the assembler and linker can compute them.
+/* For a RECORD_TYPE or UNION_TYPE, this is the chain of fields
+   left to fill.  */
+static tree constructor_fields;
 
-   The argument CONSTANT_VALUE says to print an error if either the
-   value or any element is not a constant.
+/* For an ARRAY_TYPE, this is the specified index
+   at which to store the next element we get.
+   This is a special INTEGER_CST node that we modify in place.  */
+static tree constructor_index;
 
-   The argument CONSTANT_ELEMENT says to print an error if an element
-   of an aggregate is not constant.  It does not apply to a value
-   which is not a constructor.  
+/* For an ARRAY_TYPE, this is the end index of the range
+   to intitialize with the next element, or NULL in the ordinary case
+   where the element is used just once.  */
+static tree constructor_range_end;
 
-   OFWHAT is a character string describing the object being initialized,
-   for error messages.  It might be "variable" or "variable.member"
-   or "variable[17].member[5]".
+/* For an ARRAY_TYPE, this is the maximum index.  */
+static tree constructor_max_index;
 
-   If OFWHAT is null, the description string is stored on the spelling
-   stack.  That is always true for recursive calls.  */
+/* For a RECORD_TYPE, this is the first field not yet written out.  */
+static tree constructor_unfilled_fields;
 
-static tree
-process_init_constructor (type, init, elts, constant_value, constant_element,
-			  ofwhat)
-     tree type, init, *elts;
-     int constant_value, constant_element;
-     char *ofwhat;
+/* For an ARRAY_TYPE, this is the index of the first element
+   not yet written out.
+   This is a special INTEGER_CST node that we modify in place.  */
+static tree constructor_unfilled_index;
+
+/* If we are saving up the elements rather than allocating them,
+   this is the list of elements so far (in reverse order,
+   most recent first).  */
+static tree constructor_elements;
+
+/* 1 if so far this constructor's elements are all compile-time constants.  */
+static int constructor_constant;
+
+/* 1 if so far this constructor's elements are all valid address constants.  */
+static int constructor_simple;
+
+/* 1 if this constructor is erroneous so far.  */
+static int constructor_erroneous;
+
+/* 1 if have called defer_addressed_constants.  */
+static int constructor_subconstants_deferred;
+
+/* List of pending elements at this constructor level.
+   These are elements encountered out of order
+   which belong at places we haven't reached yet in actually
+   writing the output.  */
+static tree constructor_pending_elts;
+
+/* The SPELLING_DEPTH of this constructor.  */
+static int constructor_depth;
+
+/* 1 if this constructor level was entered implicitly.  */
+static int constructor_implicit;
+
+static int require_constant_value;
+static int require_constant_elements;
+
+/* 1 if it is ok to output this constructor as we read it.
+   0 means must accumulate a CONSTRUCTOR expression.  */
+static int constructor_incremental;
+
+/* DECL node for which an initializer is being read.
+   0 means we are reading a constructor expression
+   such as (struct foo) {...}.  */
+static tree constructor_decl;
+
+/* start_init saves the ASMSPEC arg here for really_start_incremental_init.  */
+static char *constructor_asmspec;
+
+/* Nonzero if this is an initializer for a top-level decl.  */
+static int constructor_top_level;
+
+/* When we finish reading a constructor expression
+   (constructor_decl is 0), the CONSTRUCTOR goes here.  */
+static tree constructor_result;
+
+struct constructor_stack
 {
-  register tree tail;
-  /* List of the elements of the result constructor,
-     in reverse order.  */
-  register tree members = NULL;
-  tree result;
-  int allconstant = 1;
-  int allsimple = 1;
-  int erroneous = 0;
-  int depth = SPELLING_DEPTH ();
+  struct constructor_stack *next;
+  tree type;
+  tree fields;
+  tree index;
+  tree range_end;
+  tree max_index;
+  tree unfilled_index;
+  tree unfilled_fields;
+  tree elements;
+  int offset;
+  tree pending_elts;
+  int depth;
+  char constant;
+  char simple;
+  char implicit;
+  char incremental;
+  char erroneous;
+  char outer;
+};
 
-  if (ofwhat)
-    push_string (ofwhat);
+struct constructor_stack *constructor_stack;
 
-  /* Make TAIL be the list of elements to use for the initialization,
-     no matter how the data was given to us.  */
+/* This stack records separate initializers that are nested.
+   Nested initializers can't happen in ANSI C, but GNU C allows them
+   in cases like { ... (struct foo) { ... } ... }.  */
 
-  if (elts)
+struct initializer_stack
+{
+  struct initializer_stack *next;
+  tree decl;
+  char *asmspec;
+  struct constructor_stack *constructor_stack;
+  struct spelling *spelling;
+  struct spelling *spelling_base;
+  int spelling_size;
+  char top_level;
+  char incremental;
+  char require_constant_value;
+  char require_constant_elements;
+  char deferred;
+};
+
+struct initializer_stack *initializer_stack;
+
+/* Prepare to parse and output the initializer for variable DECL.  */
+
+void
+start_init (decl, asmspec, top_level)
+     tree decl;
+     char *asmspec;
+     int top_level;
+{
+  char *locus;
+  struct initializer_stack *p
+    = (struct initializer_stack *) xmalloc (sizeof (struct initializer_stack));
+
+  p->decl = constructor_decl;
+  p->asmspec = constructor_asmspec;
+  p->incremental = constructor_incremental;
+  p->require_constant_value = require_constant_value;
+  p->require_constant_elements = require_constant_elements;
+  p->constructor_stack = constructor_stack;
+  p->spelling = spelling;
+  p->spelling_base = spelling_base;
+  p->spelling_size = spelling_size;
+  p->deferred = constructor_subconstants_deferred;
+  p->top_level = constructor_top_level;
+  p->next = 0;
+  initializer_stack = p;
+
+  constructor_decl = decl;
+  constructor_incremental = top_level;
+  constructor_asmspec = asmspec;
+  constructor_subconstants_deferred = 0;
+  constructor_top_level = top_level;
+
+  if (decl != 0)
     {
-      if (warn_missing_braces)
-	{
-	  if (! partial_bracket_mentioned)
-	    warning ("aggregate has a partly bracketed initializer");
-	  partial_bracket_mentioned = 1;
-	}
-      tail = *elts;
+      require_constant_value = TREE_STATIC (decl);
+      require_constant_elements = TREE_STATIC (decl) || pedantic;
+      locus = IDENTIFIER_POINTER (DECL_NAME (decl));
+      constructor_incremental |= TREE_STATIC (decl);
     }
   else
-    tail = CONSTRUCTOR_ELTS (init);
-
-  /* Gobble as many elements as needed, and make a constructor or initial value
-     for each element of this aggregate.  Chain them together in result.
-     If there are too few, use 0 for each scalar ultimate component.  */
-
-  if (TREE_CODE (type) == ARRAY_TYPE)
     {
-      tree min_index, max_index;
-      /* These are non-zero only within a range initializer.  */
-      tree start_index = 0, end_index = 0;
-      /* Within a range, this is the value for the elts in the range.  */
-      tree range_val = 0;
-      /* Do arithmetic using double integers, but don't use fold/build,
-	 because these allocate a new tree object everytime they are called,
-	 thus resulting in gcc using too much memory for large
-	 initializers.  */
-      union tree_node current_index_node, members_index_node;
-      tree current_index = &current_index_node;
-      tree members_index = &members_index_node;
-      TREE_TYPE (current_index) = integer_type_node;
-      TREE_TYPE (members_index) = integer_type_node;
-
-      /* If we have array bounds, set our bounds from that.  Otherwise,
-	 we have a lower bound of zero and an unknown upper bound.  */
-      if (TYPE_DOMAIN (type))
-	{
-	  min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
-	  max_index = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-	}
-      else
-	{
-	  min_index = integer_zero_node;
-	  max_index = 0;
-	}
-
-      TREE_INT_CST_LOW (members_index) = TREE_INT_CST_LOW (min_index);
-      TREE_INT_CST_HIGH (members_index) = TREE_INT_CST_HIGH (min_index);
-
-      /* Don't leave the loop based on index if the next item has an explicit
-	 index value that will override it. */
-
-      for (TREE_INT_CST_LOW (current_index) = TREE_INT_CST_LOW (min_index),
-	   TREE_INT_CST_HIGH (current_index) = TREE_INT_CST_HIGH (min_index);
-	   tail != 0 || end_index;
-	   add_double (TREE_INT_CST_LOW (current_index),
-		       TREE_INT_CST_HIGH (current_index), 1, 0,
-		       &TREE_INT_CST_LOW (current_index),
-		       &TREE_INT_CST_HIGH (current_index)))
-	{
-	  register tree next1 = 0;
-
-	  /* Handle the case where we are inside of a range.
-	     current_index increments through the range,
-	     so just keep reusing the same element of TAIL
-	     until the end of the range.  */
-	  if (end_index != 0)
-	    {
-	      next1 = range_val;
-	      if (!tree_int_cst_lt (current_index, end_index))
-		end_index = 0;
-	    }
-
-	  /* If this element specifies an index,
-	     move to that index before storing it in the new list.  */
-	  else if (TREE_PURPOSE (tail) != 0)
-	    {
-	      int win = 0;
-	      tree index = TREE_PURPOSE (tail);
-
-	      if (index && (TREE_CODE (index) == NON_LVALUE_EXPR
-			    || TREE_CODE (index) == NOP_EXPR))
-		index = TREE_OPERAND (index, 0);
-
-	      /* Begin a range.  */
-	      if (TREE_CODE (index) == TREE_LIST)
-		{
-		  start_index = TREE_PURPOSE (index);
-		  end_index = TREE_PURPOSE (TREE_CHAIN (index));
-
-		  /* Expose constants.  It Doesn't matter if we change
-		     the mode.*/
-		  if (end_index
-		      && (TREE_CODE (end_index) == NON_LVALUE_EXPR
-			  || TREE_CODE (end_index) == NOP_EXPR))
-		    end_index = TREE_OPERAND (end_index, 0);
-		  if (start_index
-		      && (TREE_CODE (start_index) == NON_LVALUE_EXPR
-			  || TREE_CODE (start_index) == NOP_EXPR))
-		    start_index = TREE_OPERAND (start_index, 0);
-
-		  constant_expression_warning (start_index);
-		  constant_expression_warning (end_index);
-
-		  if ((TREE_CODE (start_index) == IDENTIFIER_NODE) 
-		      || (TREE_CODE (end_index) == IDENTIFIER_NODE))
-		    error ("field name used as index in array initializer");
-		  else if ((TREE_CODE (start_index) != INTEGER_CST)
-			   || (TREE_CODE (end_index) != INTEGER_CST))
-		    error ("non-constant or non-integer array index in initializer");
-		  else if (tree_int_cst_lt (start_index, min_index)
-			   || (max_index && tree_int_cst_lt (max_index, start_index))
-			   || tree_int_cst_lt (end_index, min_index)
-			   || (max_index && tree_int_cst_lt (max_index, end_index)))
-		    error ("array index out of range in initializer");
-		  else if (tree_int_cst_lt (end_index, start_index))
-		    {
-		      /* If the range is empty, don't initialize any elements,
-			 but do reset current_index for the next initializer
-			 element.  */
-		      warning ("empty array initializer range");
-		      tail = TREE_CHAIN (tail);
-		      TREE_INT_CST_LOW (current_index)
-			= TREE_INT_CST_LOW (end_index);
-		      TREE_INT_CST_HIGH (current_index)
-			= TREE_INT_CST_HIGH (end_index);
-		      continue;
-		    }
-		  else
-		    {
-		      TREE_INT_CST_LOW (current_index)
-			= TREE_INT_CST_LOW (start_index);
-		      TREE_INT_CST_HIGH (current_index)
-			= TREE_INT_CST_HIGH (start_index);
-		      win = 1;
-		      /* See if the first element is also the last.  */
-		      if (!tree_int_cst_lt (current_index, end_index))
-			end_index = 0;
-		    }
-		}
-	      else if (TREE_CODE (index) == IDENTIFIER_NODE)
-		error ("field name used as index in array initializer");
-	      else if (TREE_CODE (index) != INTEGER_CST)
-		error ("non-constant array index in initializer");
-	      else if (tree_int_cst_lt (index, min_index)
-		       || (max_index && tree_int_cst_lt (max_index, index)))
-		error ("array index out of range in initializer");
-	      else
-		{
-		  constant_expression_warning (index);
-		  TREE_INT_CST_LOW (current_index) = TREE_INT_CST_LOW (index);
-		  TREE_INT_CST_HIGH (current_index)
-		    = TREE_INT_CST_HIGH (index);
-		  win = 1;
-		}
-
-	      if (!win)
-		{
-		  /* If there was an error, end the current range.  */
-		  end_index = 0;
-		  TREE_VALUE (tail) = error_mark_node;
-		}
-	    }
-
-	  if (max_index && tree_int_cst_lt (max_index, current_index))
-	    break;  /* Stop if we've indeed run out of elements. */
-
-	  /* Now digest the value specified.  */
-	  if (next1 != 0)
-	    ;
-	  else if (TREE_VALUE (tail) != 0)
-	    {
-	      tree tail1 = tail;
-
-	      /* Build the element of this array, with "[]" notation.  For
-		 error messages, we assume that the index fits within a
-		 host int.  */
-	      SAVE_SPELLING_DEPTH
-		({
-		  push_array_bounds (TREE_INT_CST_LOW (current_index));
-		  next1 = digest_init (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
-				       TREE_VALUE (tail), &tail1,
-				       /* Both of these are the same because
-					  a value here is an elt overall.  */
-				       constant_element, constant_element,
-				       NULL_PTR);
-		});
-
-	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-		abort ();
-	      if (tail == tail1 && TYPE_DOMAIN (type) == 0)
-		{
-		  error_init (
-		    "non-empty initializer for array%s of empty elements",
-		    " `%s'", NULL_PTR);
-		  /* Just ignore what we were supposed to use.  */
-		  tail1 = 0;
-		}
-	      tail = tail1;
-	    }
-	  else
-	    {
-	      next1 = error_mark_node;
-	      tail = TREE_CHAIN (tail);
-	    }
-
-	  if (end_index != 0)
-	    range_val = next1;
-
-	  if (next1 == error_mark_node)
-	    erroneous = 1;
-	  else if (!TREE_CONSTANT (next1))
-	    allconstant = 0;
-	  else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
-	    allsimple = 0;
-
-	  /* Now store NEXT1 in the list, I elements from the *end*.
-	     Make the list longer if necessary.  */
-	  while (! tree_int_cst_lt (current_index, members_index))
-	    {
-	      if (free_tree_list)
-		{
-		  TREE_CHAIN (free_tree_list) = members;
-		  TREE_PURPOSE (free_tree_list) = NULL_TREE;
-		  TREE_VALUE (free_tree_list) = NULL_TREE;
-		  members = free_tree_list;
-		  free_tree_list = NULL_TREE;
-		}
-	      else
-		members = tree_cons (NULL_TREE, NULL_TREE, members);
-	      add_double (TREE_INT_CST_LOW (members_index),
-			  TREE_INT_CST_HIGH (members_index), 1, 0,
-			  &TREE_INT_CST_LOW (members_index),
-			  &TREE_INT_CST_HIGH (members_index));
-	    }
-
-	  {
-	    tree temp;
-	    union tree_node idx_node;
-	    tree idx = &idx_node;
-	    TREE_TYPE (idx) = integer_type_node;
-
-	    temp = members;
-	    for (add_double (TREE_INT_CST_LOW (members_index),
-			     TREE_INT_CST_HIGH (members_index), -1, -1,
-			     &TREE_INT_CST_LOW (idx),
-			     &TREE_INT_CST_HIGH (idx));
-		 tree_int_cst_lt (current_index, idx);
-		 add_double (TREE_INT_CST_LOW (idx),
-			     TREE_INT_CST_HIGH (idx), -1, -1,
-			     &TREE_INT_CST_LOW (idx),
-			     &TREE_INT_CST_HIGH (idx)))
-	      temp = TREE_CHAIN (temp);
-	    TREE_VALUE (temp) = next1;
-	  }
-	}
+      require_constant_value = 0;
+      require_constant_elements = 0;
+      locus = "(anonymous)";
     }
+
+  constructor_stack = 0;
+
+  spelling_base = 0;
+  spelling_size = 0;
+  RESTORE_SPELLING_DEPTH (0);
+
+  if (locus)
+    push_string (locus);
+}
+
+void
+finish_init ()
+{
+  struct initializer_stack *p = initializer_stack;
+
+  /* Output subconstants (string constants, usually)
+     that were referenced within this initializer and saved up.
+     Must do this if and only if we called defer_addressed_constants.  */
+  if (constructor_subconstants_deferred)
+    output_deferred_addressed_constants ();
+
+  /* Free the whole constructor stack of this initializer.  */
+  while (constructor_stack)
+    {
+      struct constructor_stack *q = constructor_stack;
+      constructor_stack = q->next;
+      free (q);
+    }
+
+  /* Pop back to the data of the outer initializer (if any).  */
+  constructor_decl = p->decl;
+  constructor_asmspec = p->asmspec;
+  constructor_incremental = p->incremental;
+  require_constant_value = p->require_constant_value;
+  require_constant_elements = p->require_constant_elements;
+  constructor_stack = p->constructor_stack;
+  spelling = p->spelling;
+  spelling_base = p->spelling_base;
+  spelling_size = p->spelling_size;
+  constructor_subconstants_deferred = p->deferred;
+  constructor_top_level = p->top_level;
+  initializer_stack = p->next;
+  free (p);
+}
+
+/* Call here when we see the initializer is surrounded by braces.
+   This is instead of a call to push_init_level;
+   it is matched by a call to pop_init_level.
+
+   TYPE is the type to initialize, for a constructor expression.
+   For an initializer for a decl, TYPE is zero.  */
+
+void
+really_start_incremental_init (type)
+     tree type;
+{
+  struct constructor_stack *p
+    = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
+
+  if (type == 0)
+    type = TREE_TYPE (constructor_decl);
+
+  /* Turn off constructor_incremental if type is a struct with bitfields.
+     Do this before the first push, so that the corrected value
+     is available in finish_init.  */
+  check_init_type_bitfields (type);
+
+  p->type = constructor_type;
+  p->fields = constructor_fields;
+  p->index = constructor_index;
+  p->range_end = constructor_range_end;
+  p->max_index = constructor_max_index;
+  p->unfilled_index = constructor_unfilled_index;
+  p->unfilled_fields = constructor_unfilled_fields;
+  p->elements = 0;
+  p->constant = constructor_constant;
+  p->simple = constructor_simple;
+  p->erroneous = constructor_erroneous;
+  p->pending_elts = constructor_pending_elts;
+  p->depth = constructor_depth;
+  p->implicit = 0;
+  p->incremental = constructor_incremental;
+  p->outer = 0;
+  p->next = 0;
+  constructor_stack = p;
+
+  constructor_constant = 1;
+  constructor_simple = 1;
+  constructor_depth = SPELLING_DEPTH ();
+  constructor_elements = 0;
+  constructor_pending_elts = 0;
+  constructor_type = type;
+
+  if (TREE_CODE (constructor_type) == RECORD_TYPE
+      || TREE_CODE (constructor_type) == UNION_TYPE)
+    {
+      constructor_fields = TYPE_FIELDS (constructor_type);
+      constructor_unfilled_fields = constructor_fields;
+    }
+  else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      constructor_index = copy_node (integer_zero_node);
+      constructor_range_end = 0;
+      constructor_unfilled_index = copy_node (integer_zero_node);
+      if (TYPE_DOMAIN (constructor_type))
+	constructor_max_index
+	  = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+    }
+  else
+    {
+      /* Handle the case of int x = {5}; */
+      constructor_fields = constructor_type;
+      constructor_unfilled_fields = constructor_type;
+    }
+
+  if (constructor_incremental)
+    {
+      int momentary = suspend_momentary ();
+      push_obstacks_nochange ();
+      if (TREE_PERMANENT (constructor_decl))
+	end_temporary_allocation ();
+      make_decl_rtl (constructor_decl, constructor_asmspec,
+		     constructor_top_level);
+      assemble_variable (constructor_decl, constructor_top_level, 0, 1);
+      pop_obstacks ();
+      resume_momentary (momentary);
+    }
+
+  if (constructor_incremental)
+    {
+      defer_addressed_constants ();
+      constructor_subconstants_deferred = 1;
+    }
+}
+
+/* Push down into a subobject, for initialization.
+   If this is for an explicit set of braces, IMPLICIT is 0.
+   If it is because the next element belongs at a lower level,
+   IMPLICIT is 1.  */
+
+void
+push_init_level (implicit)
+     int implicit;
+{
+  struct constructor_stack *p
+    = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
+  p->type = constructor_type;
+  p->fields = constructor_fields;
+  p->index = constructor_index;
+  p->range_end = constructor_range_end;
+  p->max_index = constructor_max_index;
+  p->unfilled_index = constructor_unfilled_index;
+  p->unfilled_fields = constructor_unfilled_fields;
+  p->elements = constructor_elements;
+  p->constant = constructor_constant;
+  p->simple = constructor_simple;
+  p->erroneous = constructor_erroneous;
+  p->pending_elts = constructor_pending_elts;
+  p->depth = constructor_depth;
+  p->implicit = implicit;
+  p->incremental = constructor_incremental;
+  p->outer = 0;
+  p->next = constructor_stack;
+  constructor_stack = p;
+
+  constructor_constant = 1;
+  constructor_simple = 1;
+  constructor_depth = SPELLING_DEPTH ();
+  constructor_elements = 0;
+  constructor_pending_elts = 0;
+
+  if (TREE_CODE (constructor_type) == RECORD_TYPE
+      || TREE_CODE (constructor_type) == UNION_TYPE)
+    {
+      constructor_type = TREE_TYPE (constructor_fields);
+      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+    }
+  else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      constructor_type = TREE_TYPE (constructor_type);
+      push_array_bounds (TREE_INT_CST_LOW (constructor_index));
+    }
+
+  /* Turn off constructor_incremental if type is a struct with bitfields.  */
+  check_init_type_bitfields (constructor_type);
+
+  if (TREE_CODE (constructor_type) == RECORD_TYPE
+      || TREE_CODE (constructor_type) == UNION_TYPE)
+    {
+      constructor_fields = TYPE_FIELDS (constructor_type);
+      constructor_unfilled_fields = constructor_fields;
+    }
+  else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      constructor_index = copy_node (integer_zero_node);
+      constructor_range_end = 0;
+      constructor_unfilled_index = copy_node (integer_zero_node);
+      if (TYPE_DOMAIN (constructor_type))
+	constructor_max_index
+	  = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+    }
+  else
+    {
+      error_init ("braces where a scalar is expected%s", " for `%s'", NULL);
+      constructor_fields = constructor_type;
+      constructor_unfilled_fields = constructor_type;
+    }
+}
+
+/* Don't read a struct incrementally if it has any bitfields,
+   because the incremental reading code doesn't know how to
+   handle bitfields yet.  */
+
+static void
+check_init_type_bitfields (type)
+     tree type;
+{
   if (TREE_CODE (type) == RECORD_TYPE)
     {
-      register tree field;
-      int members_length = 0;
-      int i;
-
-      /* Don't leave the loop based on field just yet; see if next item
-	 overrides the expected field first. */
-
-      for (field = TYPE_FIELDS (type), i = 0; tail;
-	   field = TREE_CHAIN (field), i++)
-	{
-	  register tree next1;
-
-	  /* If this element specifies a field, 
-	     move to that field before storing it in the new list.  */
-	  if (TREE_PURPOSE (tail) != 0)
-	    {
-	      int win = 0;
-
-	      if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
-		error ("index value instead of field name in structure initializer");
-	      else
-		{
-		  tree temp;
-		  int j;
-		  for (temp = TYPE_FIELDS (type), j = 0;
-		       temp;
-		       temp = TREE_CHAIN (temp), j++)
-		    if (DECL_NAME (temp) == TREE_PURPOSE (tail))
-		      break;
-		  if (temp)
-		    field = temp, i = j, win = 1;
-		  else
-		    error ("no field `%s' in structure being initialized",
-			   IDENTIFIER_POINTER (TREE_PURPOSE (tail))); 
-		}
-	      if (!win)
-		TREE_VALUE (tail) = error_mark_node;
-	    }
-
-	  if (field == 0)
-	    break;  /* No more fields to init. */
-
-	  if (! DECL_NAME (field))
-	    {
-	      next1 = integer_zero_node;
-	    }
-	  else if (TREE_VALUE (tail) != 0)
-	    {
-	      tree tail1 = tail;
-
-	      /* Build the name of this member, with a "." for membership.  */
-	      SAVE_SPELLING_DEPTH
-		({
-		  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
-		  next1 = digest_init (TREE_TYPE (field),
-				       TREE_VALUE (tail), &tail1,
-				       constant_element, constant_element,
-				       NULL_PTR);
-		});
-	      if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-		abort ();
-	      tail = tail1;
-	    }
-	  else
-	    {
-	      next1 = error_mark_node;
-	      tail = TREE_CHAIN (tail);
-	    }
-
-	  if (next1 == error_mark_node)
-	    erroneous = 1;
-	  else if (!TREE_CONSTANT (next1))
-	    allconstant = 0;
-	  else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
-	    allsimple = 0;
-
-	  /* Now store NEXT1 in the list, I elements from the *end*.
-	     Make the list longer if necessary.  */
-	  while (i >= members_length)
-	    {
-	      if (free_tree_list)
-		{
-		  TREE_CHAIN (free_tree_list) = members;
-		  TREE_PURPOSE (free_tree_list) = NULL_TREE;
-		  TREE_VALUE (free_tree_list) = NULL_TREE;
-		  members = free_tree_list;
-		  free_tree_list = NULL_TREE;
-		}
-	      else
-		members = tree_cons (NULL_TREE, NULL_TREE, members);
-	      members_length++;
-	    }
+      tree tail;
+      for (tail = TYPE_FIELDS (type); tail;
+	   tail = TREE_CHAIN (tail))
+	if (DECL_BIT_FIELD (tail))
 	  {
-	    tree temp;
-	    int j;
-
-	    temp = members;
-	    for (j = members_length - 1; j > i; j--)
-	      temp = TREE_CHAIN (temp);
-	    TREE_VALUE (temp) = next1;
-	    TREE_PURPOSE (temp) = field;
+	    constructor_incremental = 0;
+	    break;
 	  }
-	}
     }
-  if (TREE_CODE (type) == UNION_TYPE)
+}
+
+/* At the end of an implicit or explicit brace level, 
+   finish up that level of constructor.
+   If we were outputting the elements as they are read, return 0
+   from inner levels (process_init_element ignores that),
+   but return error_mark_node from the outermost level
+   (that's what we want to put in DECL_INITIAL).
+   Otherwise, return a CONSTRUCTOR expression.  */
+
+tree
+pop_init_level (implicit)
+     int implicit;
+{
+  struct constructor_stack *p;
+  int size;
+  tree constructor = 0;
+
+  if (implicit == 0)
     {
-      register tree field = TYPE_FIELDS (type);
-      register tree next1;
-
-      /* Find the first named field.  ANSI decided in September 1990
-	 that only named fields count here.  */
-      while (field && DECL_NAME (field) == 0)
-	field = TREE_CHAIN (field);
-
-      /* For a union, get the initializer for 1 fld.  */
-
-      if (tail == 0)
-	{
-	  error ("empty initializer for union");
-	  tail = build_tree_list (0, 0);
-	}
-
-      /* If this element specifies a field, initialize via that field.  */
-      if (TREE_PURPOSE (tail) != 0)
-	{
-	  int win = 0;
-
-	  if (TREE_CODE (TREE_PURPOSE (tail)) == FIELD_DECL)
-	    /* Handle the case of a call by build_c_cast.  */
-	    field = TREE_PURPOSE (tail), win = 1;
-	  else if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
-	    error ("index value instead of field name in union initializer");
-	  else
-	    {
-	      tree temp;
-	      for (temp = TYPE_FIELDS (type);
-		   temp;
-		   temp = TREE_CHAIN (temp))
-		if (DECL_NAME (temp) == TREE_PURPOSE (tail))
-		  break;
-	      if (temp)
-		field = temp, win = 1;
-	      else
-		error ("no field `%s' in union being initialized",
-		       IDENTIFIER_POINTER (TREE_PURPOSE (tail)));
-	    }
-	  if (!win)
-	    TREE_VALUE (tail) = error_mark_node;
-	}
-
-      if (TREE_VALUE (tail) != 0)
-	{
-	  tree tail1 = tail;
-
-	  /* Build the name of this member, with a "." for membership.  */
-	  SAVE_SPELLING_DEPTH
-	    ({
-	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
-	      next1 = digest_init (TREE_TYPE (field),
-				   TREE_VALUE (tail), &tail1,
-				   constant_value, constant_element, NULL_PTR);
-	    });
-	  if (tail1 != 0 && TREE_CODE (tail1) != TREE_LIST)
-	    abort ();
-	  tail = tail1;
-	}
-      else
-	{
-	  next1 = error_mark_node;
-	  tail = TREE_CHAIN (tail);
-	}
-
-      if (next1 == error_mark_node)
-	erroneous = 1;
-      else if (!TREE_CONSTANT (next1))
-	allconstant = 0;
-      else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
-	allsimple = 0; 
-     if (free_tree_list)
-	{
-	  TREE_CHAIN (free_tree_list) = members;
-	  TREE_PURPOSE (free_tree_list) = field;
-	  TREE_VALUE (free_tree_list) = next1;
-	  members = free_tree_list;
-	  free_tree_list = NULL_TREE;
-	}
-      else
-	members = tree_cons (field, next1, members);
+      /* When we come to an explicit close brace,
+	 pop any inner levels that didn't have explicit braces.  */
+      while (constructor_stack->implicit)
+	process_init_element (pop_init_level (1));
     }
 
-  /* If arguments were specified as a list, just remove the ones we used.  */
-  if (elts)
-    *elts = tail;
-  /* If arguments were specified as a constructor,
-     complain unless we used all the elements of the constructor.  */
-  else if (tail)
+  p = constructor_stack;
+  size = int_size_in_bytes (constructor_type);
+
+  /* Now output all pending elements.  */
+  output_pending_init_elements (1);
+
+  /* Pad out the end of the structure.  */
+  
+  if (! constructor_incremental)
     {
-      if (TREE_CODE (type) == UNION_TYPE)
-	{
-	  pedwarn_init ("excess elements in union initializer%s",
-			" after `%s'", NULL_PTR);
-	}
+      if (constructor_erroneous)
+	constructor = error_mark_node;
       else
 	{
-	  pedwarn_init ("excess elements in aggregate initializer%s",
-			" after `%s'", NULL_PTR);
+	  int momentary = suspend_momentary ();
+
+	  constructor = build (CONSTRUCTOR, constructor_type, NULL_TREE,
+			       nreverse (constructor_elements));
+	  if (constructor_constant)
+	    TREE_CONSTANT (constructor) = 1;
+	  if (constructor_constant && constructor_simple)
+	    TREE_STATIC (constructor) = 1;
+	  resume_momentary (momentary);
 	}
     }
-
-  /* It might be possible to use SAVE_SPELLING_DEPTH, but I suspect that
-     some preprocessor somewhere won't accept that much text as an argument.
-     It's also likely to make debugging difficult.  */
-
-  RESTORE_SPELLING_DEPTH (depth);
-
-  if (erroneous)
-    return error_mark_node;
-
-  if (elts)
-    result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (members));
   else
     {
-      result = init;
-      CONSTRUCTOR_ELTS (result) = nreverse (members);
-      TREE_TYPE (result) = type;
-      TREE_CONSTANT (result) = 0;
-      TREE_STATIC (result) = 0;
+      tree filled;
+      int momentary = suspend_momentary ();
+
+      if (TREE_CODE (constructor_type) == RECORD_TYPE
+	  || TREE_CODE (constructor_type) == UNION_TYPE)
+	{
+	  tree tail;
+	  /* Find the last field written out.  */
+	  for (tail = TYPE_FIELDS (constructor_type); tail;
+	       tail = TREE_CHAIN (tail))
+	    if (TREE_CHAIN (tail) == constructor_unfilled_fields)
+	      break;
+	  /* Find the offset of the end of that field.  */
+	  filled = size_binop (CEIL_DIV_EXPR,
+			       size_binop (PLUS_EXPR,
+					   DECL_FIELD_BITPOS (tail),
+					   DECL_SIZE (tail)),
+			       size_int (BITS_PER_UNIT));
+	}
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  /* If initializing an array of unknown size,
+	     determine the size now.  */
+	  if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	      && TYPE_DOMAIN (constructor_type) == 0)
+	    {
+	      tree maxindex
+		= size_binop (MINUS_EXPR,
+			      constructor_unfilled_index,
+			      integer_one_node);
+
+	      push_obstacks_nochange ();
+	      if (TREE_PERMANENT (constructor_type))
+		end_temporary_allocation ();
+	      maxindex = copy_node (maxindex);
+	      TYPE_DOMAIN (constructor_type) = build_index_type (maxindex);
+	      TREE_TYPE (maxindex) = TYPE_DOMAIN (constructor_type);
+
+	      /* We shouldn't have an incomplete array type within
+		 some other type.  */
+	      if (constructor_stack->next)
+		abort ();
+
+	      if (pedantic
+		  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)),
+				      integer_zero_node))
+		error_with_decl (constructor_decl, "zero-size array `%s'");
+	      layout_type (constructor_type);
+	      size = int_size_in_bytes (constructor_type);
+	      pop_obstacks ();
+	    }
+
+	  filled = size_binop (MULT_EXPR, constructor_unfilled_index,
+			       size_in_bytes (TREE_TYPE (constructor_type)));
+	}
+      else
+	filled = 0;
+
+      if (filled != 0)
+	assemble_zeros (size - TREE_INT_CST_LOW (filled));
+
+      resume_momentary (momentary);
     }
-  if (allconstant) TREE_CONSTANT (result) = 1;
-  if (allconstant && allsimple) TREE_STATIC (result) = 1;
-  return result;
+
+	  
+  constructor_type = p->type;
+  constructor_fields = p->fields;
+  constructor_index = p->index;
+  constructor_range_end = p->range_end;
+  constructor_max_index = p->max_index;
+  constructor_unfilled_index = p->unfilled_index;
+  constructor_unfilled_fields = p->unfilled_fields;
+  constructor_elements = p->elements;
+  constructor_constant = p->constant;
+  constructor_simple = p->simple;
+  constructor_erroneous = p->erroneous;
+  constructor_pending_elts = p->pending_elts;
+  constructor_depth = p->depth;
+  constructor_incremental = p->incremental;
+  RESTORE_SPELLING_DEPTH (constructor_depth);
+
+  constructor_stack = p->next;
+  free (p);
+
+  if (constructor == 0)
+    {
+      if (constructor_stack == 0)
+	return error_mark_node;
+      return NULL_TREE;
+    }
+  return constructor;
+}
+
+/* Within an array initializer, specify the next index to be initialized.
+   FIRST is that index.  If LAST is nonzero, then initialize a range
+   of indices, running from FIRST through LAST.  */
+
+void
+set_init_index (first, last)
+     tree first, last;
+{
+  if (tree_int_cst_lt (first, constructor_unfilled_index))
+    error_init ("duplicate array index in initializer%s", " for `%s'", NULL);
+  else
+    {
+      TREE_INT_CST_LOW (constructor_index)
+	= TREE_INT_CST_LOW (first);
+      TREE_INT_CST_HIGH (constructor_index)
+	= TREE_INT_CST_HIGH (first);
+
+      if (last != 0 && tree_int_cst_lt (last, first))
+	error_init ("empty index range in initializer%s", " for `%s'", NULL);
+      else
+	constructor_range_end = last;
+    }
+}
+
+/* Within a struct initializer, specify the next field to be initialized.  */
+
+void 
+set_init_label (fieldname)
+     tree fieldname;
+{
+  tree tail;
+  int passed = 0;
+
+  for (tail = TYPE_FIELDS (constructor_type); tail;
+       tail = TREE_CHAIN (tail))
+    {
+      if (tail == constructor_unfilled_fields)
+	passed = 1;
+      if (DECL_NAME (tail) == fieldname)
+	break;
+    }
+
+  if (tail == 0)
+    error ("unknown field `%s' specified in initializer",
+	   IDENTIFIER_POINTER (fieldname));
+  else if (!passed)
+    error ("field `%s' already initialized",
+	   IDENTIFIER_POINTER (fieldname));
+  else
+    constructor_fields = tail;
+}
+
+/* "Output" the next constructor element.
+   At top level, really output it to assembler code now.
+   Otherwise, collect it in a list from which we will make a CONSTRUCTOR.
+   TYPE is the data type that the containing data type wants here.
+   FIELD is the field (a FIELD_DECL) or the index that this element fills.
+
+   PENDING if non-nil means output pending elements that belong
+   right after this element.  (PENDING is normally 1;
+   it is 0 while outputting pending elements, to avoid recursion.)  */
+
+void
+output_init_element (value, type, field, pending)
+     tree value, type, field;
+     int pending;
+{
+  int duplicate = 0;
+
+  if (require_constant_value && ! TREE_CONSTANT (value))
+    {
+      error_init ("initializer element%s is not constant",
+		  " for `%s'", NULL);
+      value = error_mark_node;
+    }
+  else if (require_constant_elements
+	   && initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
+    {
+      error_init ("initializer element%s is not computable at load time",
+		  " for `%s'", NULL);
+      value = error_mark_node;
+    }
+
+  /* If this element duplicates one on constructor_pending_elts,
+     print a message and ignore it.  Don't do this when we're
+     processing elements taken off constructor_pending_elts,
+     because we'd always get spurious errors.  */
+  if (pending)
+    {
+      if (TREE_CODE (constructor_type) == RECORD_TYPE
+	  || TREE_CODE (constructor_type) == UNION_TYPE)
+	{
+	  if (purpose_member (field, constructor_pending_elts))
+	    {
+	      error_init ("duplicate initializer%s", " for `%s'", NULL);
+	      duplicate = 1;
+	    }
+	}
+      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  tree tail;
+	  for (tail = constructor_pending_elts; tail;
+	       tail = TREE_CHAIN (tail))
+	    if (TREE_PURPOSE (tail) != 0
+		&& TREE_CODE (TREE_PURPOSE (tail)) == INTEGER_CST
+		&& tree_int_cst_equal (TREE_PURPOSE (tail), constructor_index))
+	      break;
+
+	  if (tail != 0)
+	    {
+	      error_init ("duplicate initializer%s", " for `%s'", NULL);
+	      duplicate = 1;
+	    }
+	}
+    }
+
+  /* If this element doesn't come next in sequence,
+     put it on constructor_pending_elts.  */
+  if (TREE_CODE (constructor_type) == ARRAY_TYPE
+      && !tree_int_cst_equal (field, constructor_unfilled_index))
+    {
+      if (! duplicate)
+	constructor_pending_elts
+	  = tree_cons (field,
+		       digest_init (type, value, (tree *)NULL,
+				    require_constant_value,
+				    require_constant_elements),
+		       constructor_pending_elts);
+    }
+  else if ((TREE_CODE (constructor_type) == RECORD_TYPE
+	    || TREE_CODE (constructor_type) == UNION_TYPE)
+	   && field != constructor_unfilled_fields)
+    {
+      if (!duplicate)
+	constructor_pending_elts
+	  = tree_cons (field,
+		       digest_init (type, value, (tree *)NULL,
+				    require_constant_value,
+				    require_constant_elements),
+		       constructor_pending_elts);
+    }
+  else
+    {
+      /* Otherwise, output this element either to
+	 constructor_elements or to the assembler file.  */
+
+      if (!duplicate)
+	{
+	  if (! constructor_incremental)
+	    constructor_elements
+	      = tree_cons ((TREE_CODE (constructor_type) != ARRAY_TYPE
+			    ? field : NULL),
+			   digest_init (type, value, (tree *)NULL,
+					require_constant_value,
+					require_constant_elements),
+			   constructor_elements);
+	  else
+	    output_constant (value, int_size_in_bytes (type));
+	}
+
+      /* Advance the variable that indicates sequential elements output.  */
+      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  tree tem = size_binop (PLUS_EXPR, constructor_unfilled_index,
+				 integer_one_node);
+	  TREE_INT_CST_LOW (constructor_unfilled_index)
+	    = TREE_INT_CST_LOW (tem);
+	  TREE_INT_CST_HIGH (constructor_unfilled_index)
+	    = TREE_INT_CST_HIGH (tem);
+	}
+      else if (TREE_CODE (constructor_type) == RECORD_TYPE)
+	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+      else if (TREE_CODE (constructor_type) == UNION_TYPE)
+	constructor_unfilled_fields = 0;
+
+      /* Now output any pending elements which have become next.  */
+      if (pending)
+	output_pending_init_elements (0);
+    }
+}
+
+/* Output any pending elements which have become next.
+   As we output elements, constructor_unfilled_{fields,index}
+   advances, which may cause other elements to become next;
+   if so, they too are output.
+
+   If ALL is 0, we return when there are
+   no more pending elements to output now.
+
+   If ALL is 1, we output space as necessary so that
+   we can output all the pending elements.  */
+
+static void
+output_pending_init_elements (all)
+     int all;
+{
+  tree tail;
+  tree next;
+
+ retry:
+
+  /* Look thru the whole pending list.
+     If we find an element that should be output now,
+     output it.  Otherwise, set NEXT to the element
+     that comes first among those still pending.  */
+     
+  next = 0;
+  for (tail = constructor_pending_elts; tail;
+       tail = TREE_CHAIN (tail))
+    {
+      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  if (tree_int_cst_equal (TREE_PURPOSE (tail),
+				  constructor_unfilled_index))
+	    {
+	      output_init_element (TREE_VALUE (tail), TREE_TYPE (constructor_type),
+				   constructor_unfilled_index, 0);
+	      goto retry;
+	    }
+	  else if (tree_int_cst_lt (TREE_PURPOSE (tail),
+				    constructor_unfilled_index))
+	    ;
+	  else if (next == 0
+		   || tree_int_cst_lt (TREE_PURPOSE (tail),
+					  next))
+	    next = TREE_PURPOSE (tail);
+	}
+      else if (TREE_CODE (constructor_type) == RECORD_TYPE
+	       || TREE_CODE (constructor_type) == UNION_TYPE)
+	{
+	  if (TREE_PURPOSE (tail) == constructor_unfilled_fields)
+	    {
+	      output_init_element (TREE_VALUE (tail),
+				   TREE_TYPE (constructor_unfilled_fields),
+				   constructor_unfilled_fields,
+				   0);
+	      goto retry;
+	    }
+	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
+				    DECL_FIELD_BITPOS (constructor_unfilled_fields)))
+	    ;
+	  else if (next == 0
+		   || tree_int_cst_lt (DECL_FIELD_BITPOS (TREE_PURPOSE (tail)),
+				       DECL_FIELD_BITPOS (next)))
+	    next = TREE_PURPOSE (tail);
+	}
+    }
+
+  /* Ordinarily return, but not if we want to output all
+     and there are elements left.  */
+  if (! (all && next != 0))
+    return;
+
+  /* Generate space up to the position of NEXT.  */
+  if (constructor_incremental)
+    {
+      tree filled;
+      tree nextpos_tree;
+
+      if (TREE_CODE (constructor_type) == RECORD_TYPE
+	  || TREE_CODE (constructor_type) == UNION_TYPE)
+	{
+	  /* Find the last field written out.  */
+	  for (tail = TYPE_FIELDS (constructor_type); tail;
+	       tail = TREE_CHAIN (tail))
+	    if (TREE_CHAIN (tail) == constructor_unfilled_fields)
+	      break;
+	  /* Find the offset of the end of that field.  */
+	  filled = size_binop (CEIL_DIV_EXPR,
+			       size_binop (PLUS_EXPR,
+					   DECL_FIELD_BITPOS (tail),
+					   DECL_SIZE (tail)),
+			       size_int (BITS_PER_UNIT));
+	  nextpos_tree = size_binop (CEIL_DIV_EXPR,
+				     DECL_FIELD_BITPOS (next),
+				     size_int (BITS_PER_UNIT));
+	  constructor_unfilled_fields = next;
+	}
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  filled = size_binop (MULT_EXPR, constructor_unfilled_index,
+			       size_in_bytes (TREE_TYPE (constructor_type)));
+	  nextpos_tree
+	    = size_binop (MULT_EXPR, next,
+			  size_in_bytes (TREE_TYPE (constructor_type)));
+	  TREE_INT_CST_LOW (constructor_unfilled_index)
+	    = TREE_INT_CST_LOW (next);
+	  TREE_INT_CST_HIGH (constructor_unfilled_index)
+	    = TREE_INT_CST_HIGH (next);
+	}
+      else
+	filled = 0;
+
+      if (filled)
+	{
+	  int nextpos = TREE_INT_CST_LOW (nextpos_tree);
+
+	  assemble_zeros (nextpos - TREE_INT_CST_LOW (filled));
+	}
+    }
+
+  goto retry;
+}
+
+/* Add one non-braced element to the current constructor level.
+   This adjusts the current position within the constructor's type.
+   This may also start or terminate implicit levels
+   to handle a partly-braced initializer.
+
+   Once this has found the correct level for the new element,
+   it calls output_init_element.
+
+   Note: if we are incrementally outputting this constructor,
+   this function may be called with a null argument
+   representing a sub-constructor that was already incrementally output.
+   When that happens, we output nothing, but we do the bookkeeping
+   to skip past that element of the current constructor.  */
+
+void
+process_init_element (value)
+     tree value;
+{
+  if (value != 0)
+    value = default_conversion (value);
+
+  if (value == 0)
+    ;
+  else if (value == error_mark_node)
+    constructor_erroneous = 1;
+  else if (!TREE_CONSTANT (value))
+    constructor_constant = 0;
+  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
+    constructor_simple = 0;
+
+  /* If we've exhausted any levels that didn't have braces,
+     pop them now.  */
+  while (constructor_stack->implicit)
+    {
+      if ((TREE_CODE (constructor_type) == RECORD_TYPE
+	   || TREE_CODE (constructor_type) == UNION_TYPE)
+	  && constructor_fields == 0)
+	process_init_element (pop_init_level (1));
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE
+	       && tree_int_cst_lt (constructor_max_index, constructor_index))
+	process_init_element (pop_init_level (1));
+      else
+	break;
+    }
+
+  while (1)
+    {
+      if (TREE_CODE (constructor_type) == RECORD_TYPE)
+	{
+	  tree fieldtype;
+	  enum tree_code fieldcode;
+
+	  if (constructor_fields == 0)
+	    {
+	      pedwarn_init ("excess elements in struct initializer%s",
+			    " after `%s'", NULL_PTR);
+	      break;
+	    }
+
+	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
+	  fieldcode = TREE_CODE (fieldtype);
+
+	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
+	      && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
+		  || fieldcode == UNION_TYPE))
+	    {
+	      push_init_level (1);
+	      continue;
+	    }
+
+	  if (value)
+	    {
+	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	      output_init_element (value, fieldtype, constructor_fields, 1);
+	      RESTORE_SPELLING_DEPTH (constructor_depth);
+	    }
+	  else
+	    /* If we are doing the bookkeeping for an element that was
+	       directly output as a constructor,
+	       we must update constructor_unfilled_fields.  */
+	    constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+
+	  constructor_fields = TREE_CHAIN (constructor_fields);
+	  break;
+	}
+      if (TREE_CODE (constructor_type) == UNION_TYPE)
+	{
+	  tree fieldtype;
+	  enum tree_code fieldcode;
+
+	  if (constructor_fields == 0)
+	    {
+	      pedwarn_init ("excess elements in union initializer%s",
+			    " after `%s'", NULL_PTR);
+	      break;
+	    }
+
+	  fieldtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_fields));
+	  fieldcode = TREE_CODE (fieldtype);
+
+	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != fieldtype
+	      && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
+		  || fieldcode == UNION_TYPE))
+	    {
+	      push_init_level (1);
+	      continue;
+	    }
+
+	  if (value)
+	    {
+	      push_member_name (IDENTIFIER_POINTER (DECL_NAME (constructor_fields)));
+	      output_init_element (value, fieldtype, constructor_fields, 1);
+	      RESTORE_SPELLING_DEPTH (constructor_depth);
+	    }
+	  else
+	    /* If we are doing the bookkeeping for an element that was
+	       directly output as a constructor,
+	       we must update constructor_unfilled_fields.  */
+	    constructor_unfilled_fields = 0;
+
+	  constructor_fields = 0;
+	  break;
+	}
+      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	{
+	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
+	  enum tree_code eltcode = TREE_CODE (elttype);
+
+	  if (value != 0 && TYPE_MAIN_VARIANT (TREE_TYPE (value)) != elttype
+	      && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
+		  || eltcode == UNION_TYPE))
+	    {
+	      push_init_level (1);
+	      continue;
+	    }
+
+	  if (constructor_max_index != 0
+	      && tree_int_cst_lt (constructor_max_index, constructor_index))
+	    {
+	      pedwarn_init ("excess elements in array initializer%s",
+			    " after `%s'", NULL_PTR);
+	      break;
+	    }
+
+	  /* Now output the actual element.
+	     Ordinarily, output once.
+	     If there is a range, repeat it till we advance past the range.  */
+	  do
+	    {
+	      tree tem;
+
+	      if (value)
+		{
+		  push_array_bounds (TREE_INT_CST_LOW (constructor_index));
+		  output_init_element (value, elttype, constructor_index, 1);
+		  RESTORE_SPELLING_DEPTH (constructor_depth);
+		}
+
+	      tem = size_binop (PLUS_EXPR, constructor_index,
+				integer_one_node);
+	      TREE_INT_CST_LOW (constructor_index)
+		= TREE_INT_CST_LOW (tem);
+	      TREE_INT_CST_HIGH (constructor_index)
+		= TREE_INT_CST_HIGH (tem);
+
+	      if (!value)
+		/* If we are doing the bookkeeping for an element that was
+		   directly output as a constructor,
+		   we must update constructor_unfilled_index.  */
+		{
+		  TREE_INT_CST_LOW (constructor_unfilled_index)
+		    = TREE_INT_CST_LOW (constructor_index);
+		  TREE_INT_CST_HIGH (constructor_unfilled_index)
+		    = TREE_INT_CST_HIGH (constructor_index);
+		}
+	    }
+	  while (! (constructor_range_end == 0
+		    || tree_int_cst_lt (constructor_range_end,
+					constructor_index)));
+
+	  break;
+	}
+
+      /* Handle the sole element allowed in a braced initializer
+	 for a scalar variable.  */
+      if (constructor_fields == 0)
+	{
+	  pedwarn_init ("excess elements in scalar initializer%s",
+			" after `%s'", NULL_PTR);
+	  break;
+	}
+
+      if (value)
+	output_init_element (value, constructor_type, NULL_TREE, 1);
+      constructor_fields = 0;
+      break;
+    }
+
+  /* If the (lexically) previous elments are not now saved,
+     we can discard the storage for them.  */
+  if (constructor_incremental && constructor_pending_elts == 0)
+    clear_momentary ();
 }
 
 /* Expand an ASM statement with operands, handling output operands
