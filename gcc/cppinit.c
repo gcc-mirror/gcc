@@ -467,6 +467,8 @@ void
 cpp_cleanup (pfile)
      cpp_reader *pfile;
 {
+  struct file_name_list *dir, *next;
+
   while (CPP_BUFFER (pfile) != NULL)
     cpp_pop_buffer (pfile);
 
@@ -480,6 +482,13 @@ cpp_cleanup (pfile)
   _cpp_cleanup_includes (pfile);
   _cpp_cleanup_stacks (pfile);
   _cpp_cleanup_macros (pfile);
+
+  for (dir = CPP_OPTION (pfile, quote_include); dir; dir = next)
+    {
+      next = dir->next;
+      free (dir->name);
+      free (dir);
+    }
 }
 
 
