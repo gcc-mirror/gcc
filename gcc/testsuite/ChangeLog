@@ -1,3 +1,12 @@
+2004-06-28  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR c/15549
+	Backport from mainline
+	2003-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+		PR c++/11946.C
+		* gcc.dg/c99-bool-1.c: Remove bogus warning.
+
 2004-05-31  Release Manager
 
 	* GCC 3.3.4 Released.

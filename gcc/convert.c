@@ -182,7 +182,27 @@ convert_to_integer (type, expr)
 	 we are truncating EXPR.  */
 
       else if (outprec >= inprec)
-	return build1 (NOP_EXPR, type, expr);
+	{
+	  enum tree_code code;
+
+	  /* If the precision of the EXPR's type is K bits and the
+	     destination mode has more bits, and the sign is changing,
+	     it is not safe to use a NOP_EXPR.  For example, suppose
+	     that EXPR's type is a 3-bit unsigned integer type, the
+	     TYPE is a 3-bit signed integer type, and the machine mode
+	     for the types is 8-bit QImode.  In that case, the
+	     conversion necessitates an explicit sign-extension.  In
+	     the signed-to-unsigned case the high-order bits have to
+	     be cleared.  */
+	  if (TREE_UNSIGNED (type) != TREE_UNSIGNED (TREE_TYPE (expr))
+	      && (TYPE_PRECISION (TREE_TYPE (expr))
+		  != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)))))
+	    code = CONVERT_EXPR;
+	  else
+	    code = NOP_EXPR;
+
+	  return build1 (code, type, expr);
+	}
 
       /* If TYPE is an enumeral type or a type with a precision less
 	 than the number of bits in its mode, do the conversion to the

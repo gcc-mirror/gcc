@@ -1,3 +1,13 @@
+2004-06-28  Josef Zlomek  <zlomekj@suse.cz>
+
+	PR c/15549
+	Backport from mainline
+	2003-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+		PR c++/11946
+		* convert.c (convert_to_integer): Use CONVERT_EXPR (instead of
+		NOP_EXPR) when necessary.
+
 2004-06-17  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	PR middle-end/16038
