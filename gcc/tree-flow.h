@@ -40,7 +40,7 @@ typedef struct basic_block_def *basic_block;
 /*---------------------------------------------------------------------------
 		   Tree annotations stored in tree_common.ann
 ---------------------------------------------------------------------------*/
-enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN, SSA_NAME_ANN };
+enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, STMT_ANN };
 
 struct tree_ann_common_d GTY(())
 {
@@ -255,50 +255,21 @@ struct stmt_ann_d GTY(())
 };
 
 
-struct ssa_name_ann_d GTY(())
-{
-  struct tree_ann_common_d common;
-
-  /* Nonzero if points-to analysis couldn't determine where this pointer
-     is pointing to.  */
-  unsigned int pt_anything : 1;
-
-  /* Nonzero if this pointer is the result of a call to malloc.  */
-  unsigned int pt_malloc : 1;
-
-  /* Nonzero if the value of this pointer escapes the current function.  */
-  unsigned int value_escapes_p : 1;
-
-  /* Set of variables that this pointer may point to.  */
-  bitmap pt_vars;
-
-  /* If this pointer has been dereferenced, and points-to information is
-     more precise than type-based aliasing, indirect references to this
-     pointer will be represented by this memory tag, instead of the type
-     tag computed by TBAA.  */
-  tree name_mem_tag;
-};
-
-
 union tree_ann_d GTY((desc ("ann_type ((tree_ann)&%h)")))
 {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) decl;
   struct stmt_ann_d GTY((tag ("STMT_ANN"))) stmt;
-  struct ssa_name_ann_d GTY((tag ("SSA_NAME_ANN"))) ssa_name;
 };
 
 typedef union tree_ann_d *tree_ann;
 typedef struct var_ann_d *var_ann_t;
 typedef struct stmt_ann_d *stmt_ann_t;
-typedef struct ssa_name_ann_d *ssa_name_ann_t;
 
 static inline var_ann_t var_ann (tree);
 static inline var_ann_t get_var_ann (tree);
 static inline stmt_ann_t stmt_ann (tree);
 static inline stmt_ann_t get_stmt_ann (tree);
-static inline ssa_name_ann_t ssa_name_ann (tree);
-static inline ssa_name_ann_t get_ssa_name_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann);
 static inline basic_block bb_for_stmt (tree);
 extern void set_bb_for_stmt (tree, basic_block);
@@ -487,7 +458,6 @@ extern void dump_generic_bb (FILE *, basic_block, int, int);
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
 extern stmt_ann_t create_stmt_ann (tree);
-extern ssa_name_ann_t create_ssa_name_ann (tree);
 extern tree create_phi_node (tree, basic_block);
 extern void add_phi_arg (tree *, tree, edge);
 extern void remove_phi_arg (tree, basic_block);

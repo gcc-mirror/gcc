@@ -886,16 +886,16 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	    }
 	  else
 	    {
-	      ssa_name_ann_t ptr_ann = NULL;
+	      struct ptr_info_def *pi = NULL;
 
 	      /* If we have computed aliasing already, check if PTR has
 		 flow-sensitive points-to information.  */
 	      if (TREE_CODE (ptr) == SSA_NAME
-		  && (ptr_ann = ssa_name_ann (ptr)) != NULL
-		  && ptr_ann->name_mem_tag)
+		  && (pi = SSA_NAME_PTR_INFO (ptr)) != NULL
+		  && pi->name_mem_tag)
 		{
 		  /* PTR has its own memory tag.  Use it.  */
-		  add_stmt_operand (&ptr_ann->name_mem_tag, stmt, flags,
+		  add_stmt_operand (&pi->name_mem_tag, stmt, flags,
 		                    prev_vops);
 		}
 	      else
@@ -910,7 +910,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 		     aliasing again.  */
 		  if (dump_file
 		      && TREE_CODE (ptr) == SSA_NAME
-		      && ptr_ann == NULL)
+		      && pi == NULL)
 		    {
 		      fprintf (dump_file,
 			  "NOTE: no flow-sensitive alias info for ");

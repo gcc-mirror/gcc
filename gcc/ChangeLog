@@ -1,3 +1,20 @@
+2004-06-09  Diego Novillo  <dnovillo@redhat.com>
+
+	Move SSA_NAME annotations into tree_ssa_name.
+
+	* tree-dfa.c (create_ssa_name_ann): Remove.
+	* tree-flow-inline.h (ssa_name_ann, get_ssa_name_ann): Remove.
+	* tree-flow.h (enum tree_ann_type): Remove SSA_NAME_ANN.
+	(struct ssa_name_ann_d): Remove.
+	(union tree_ann_d): Update.
+	(ssa_name_ann_t): Remove.
+	* tree-ssa-alias.c: (get_ptr_info): New local function.
+	Replace references to ssa_name_ann_t with struct ptr_info_def.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree.h (SSA_NAME_PTR_INFO): Define.
+	(struct ptr_info_def): Declare.
+	(struct tree_ssa_name): Add field 'ptr_info'.
+
 2004-06-09  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/winnt.c (i386_pe_output_labelref): Correct

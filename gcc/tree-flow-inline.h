@@ -64,27 +64,6 @@ get_stmt_ann (tree stmt)
   return (ann) ? ann : create_stmt_ann (stmt);
 }
 
-static inline ssa_name_ann_t
-ssa_name_ann (tree t)
-{
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || TREE_CODE (t) != SSA_NAME
-      || (t->common.ann
-	  && t->common.ann->common.type != SSA_NAME_ANN))
-    abort ();
-#endif
-
-  return (ssa_name_ann_t) t->common.ann;
-}
-
-static inline ssa_name_ann_t
-get_ssa_name_ann (tree var)
-{
-  ssa_name_ann_t ann = ssa_name_ann (var);
-  return (ann) ? ann : create_ssa_name_ann (var);
-}
-
 
 static inline enum tree_ann_type
 ann_type (tree_ann ann)

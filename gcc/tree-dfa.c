@@ -462,30 +462,6 @@ create_stmt_ann (tree t)
 }
 
 
-/* Create a new annotation for an SSA name T.  */
-
-ssa_name_ann_t
-create_ssa_name_ann (tree t)
-{
-  ssa_name_ann_t ann;
-
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || (t->common.ann
-	  && t->common.ann->common.type != SSA_NAME_ANN))
-    abort ();
-#endif
-
-  ann = ggc_alloc (sizeof (*ann));
-  memset ((void *) ann, 0, sizeof (*ann));
-
-  ann->common.type = SSA_NAME_ANN;
-  t->common.ann = (tree_ann) ann;
-
-  return ann;
-}
-
-
 /* Build a temporary.  Make sure and register it to be renamed.  */
 
 tree
