@@ -1508,7 +1508,7 @@ collect_wait (prog)
 	  int sig = WTERMSIG (status);
 	  error ("%s terminated with signal %d [%s]%s",
 		 prog, sig, strsignal(sig),
-		 status & 0200 ? "" : ", core dumped");
+		 WCOREDUMP(status) ? ", core dumped" : "");
 	  collect_exit (FATAL_EXIT_CODE);
 	}
 
