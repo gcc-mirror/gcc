@@ -2307,7 +2307,8 @@ fi
 		case "$with_arch" in
 		"" \
 		| armv[23456] | armv2a | armv3m | armv4t | armv5t \
-		| armv5te | armv6j | iwmmxt | ep9312)
+		| armv5te | armv6j |armv6k | armv6z | armv6zk \
+		| iwmmxt | ep9312)
 			# OK
 			;;
 		*)

@@ -387,6 +387,9 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_FOR_ARCH5TEJ	FL_FOR_ARCH5TE
 #define FL_FOR_ARCH6	(FL_FOR_ARCH5TE | FL_ARCH6)
 #define FL_FOR_ARCH6J	FL_FOR_ARCH6
+#define FL_FOR_ARCH6K	FL_FOR_ARCH6
+#define FL_FOR_ARCH6Z	FL_FOR_ARCH6
+#define FL_FOR_ARCH6ZK	FL_FOR_ARCH6
 
 /* The bits in this mask specify which
    instructions we are allowed to generate.  */
@@ -526,6 +529,9 @@ static const struct processors all_architectures[] =
   {"armv5te", arm1026ejs, "5TE", FL_CO_PROC |             FL_FOR_ARCH5TE, NULL},
   {"armv6",   arm1136js,  "6",   FL_CO_PROC |             FL_FOR_ARCH6, NULL},
   {"armv6j",  arm1136js,  "6J",  FL_CO_PROC |             FL_FOR_ARCH6J, NULL},
+  {"armv6k",  mpcore,	  "6K",  FL_CO_PROC |             FL_FOR_ARCH6K, NULL},
+  {"armv6z",  arm1176jzs, "6Z",  FL_CO_PROC |             FL_FOR_ARCH6Z, NULL},
+  {"armv6zk", arm1176jzs, "6ZK", FL_CO_PROC |             FL_FOR_ARCH6ZK, NULL},
   {"ep9312",  ep9312,     "4T",  FL_LDSCHED | FL_CIRRUS | FL_FOR_ARCH4, NULL},
   {"iwmmxt",  iwmmxt,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
   {NULL, arm_none, NULL, 0 , NULL}

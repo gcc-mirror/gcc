@@ -1,3 +1,14 @@
+2004-10-12  Paul Brook  <paul@coudesourcery.com>
+
+	* config.gcc: Add armv6{k,z,zk}
+	* config/arm/arm-cores.def: Add arm1176 and mpcore.
+	* config/arm/tune.md: Regenerate.
+	* config/arm/arm.c (FL_FOR_ARCH6K, FL_FOR_ARCH6Z, FL_FOR_ARCH6ZK):
+	Define.
+	(all_architectures): Add armv6k, armv6z, armv6zk.
+	* config/arm/lib1funcs.asm: Recognise new arm arcitectures.
+	* doc/invoke.texi: Document new arch and cpu values.
+
 2004-10-12  Paul Brook  <paul@coodesourcery.com>
 
 	* config/arm/bpabi.h (SUBTARGET_EXTRA_ASM_SPEC): Change meabi=3 to
