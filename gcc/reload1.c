@@ -6096,11 +6096,19 @@ merge_assigned_reloads (insn)
 	     if they were for inputs, RELOAD_OTHER for outputs.  Note that
 	     this test is equivalent to looking for reloads for this operand
 	     number.  */
+	  /* We must take special care when there are two or more reloads to
+	     be merged and a RELOAD_FOR_OUTPUT_ADDRESS reload that loads the
+	     same value or a part of it; we must not change its type if there
+	     is a conflicting input.  */
 
 	  if (rld[i].when_needed == RELOAD_OTHER)
 	    for (j = 0; j < n_reloads; j++)
 	      if (rld[j].in != 0
 		  && rld[j].when_needed != RELOAD_OTHER
+		  && rld[j].when_needed != RELOAD_FOR_OTHER_ADDRESS
+		  && (! conflicting_input
+		      || rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
+		      || rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
 		  && reg_overlap_mentioned_for_reload_p (rld[j].in,
 							 rld[i].in))
 		rld[j].when_needed

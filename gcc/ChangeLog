@@ -1,3 +1,9 @@
+Mon Jun 17 12:32:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* reload1.c (merge_assigned_reloads): Don't change reloads
+	other than RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS
+	to RELOAD_OTHER when there are conflicting input reloads.
+
 2002-06-17  Richard Earnshaw  (rearnsha@arm.com)
 
 	* function.c (epilogue_done): Correctly build a sequence of insns for
