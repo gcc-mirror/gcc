@@ -925,13 +925,13 @@ propagate_into_addr (tree stmt, tree var, tree *x, tree repl)
       || TREE_OPERAND (*x, 0) != var)
     return;
 
-  modify_stmt (stmt);
   if (TREE_TYPE (*x) == TREE_TYPE (addr_var))
     {
       *x = addr_var;
       mark_new_vars_to_rename (stmt, vars_to_rename);
       return;
     }
+
 
   /* Frontends sometimes produce expressions like *&a instead of a[0].
      Create a temporary variable to handle this case.  */

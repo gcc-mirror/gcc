@@ -223,14 +223,12 @@ static void record_cond (tree, tree, varray_type *);
 static void record_dominating_conditions (tree, varray_type *);
 static void record_const_or_copy (tree, tree, varray_type *);
 static void record_equality (tree, tree, varray_type *);
-static tree update_rhs_and_lookup_avail_expr (tree, tree, varray_type *,
-					      stmt_ann_t, bool);
+static tree update_rhs_and_lookup_avail_expr (tree, tree, varray_type *, bool);
 static tree simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *,
-						tree, stmt_ann_t, int);
+						tree, int);
 static tree simplify_cond_and_lookup_avail_expr (tree, varray_type *,
 						 stmt_ann_t, int);
-static tree simplify_switch_and_lookup_avail_expr (tree, varray_type *,
-						   stmt_ann_t, int);
+static tree simplify_switch_and_lookup_avail_expr (tree, varray_type *, int);
 static tree find_equivalent_equality_comparison (tree);
 static void record_range (tree, basic_block, varray_type *);
 static bool extract_range_from_cond (tree, tree *, tree *, int *);
@@ -652,10 +650,9 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	    cached_lhs = lookup_avail_expr (dummy_cond, NULL, false);
  	  if (!cached_lhs || ! is_gimple_min_invariant (cached_lhs))
 	    {
-	      stmt_ann_t ann = get_stmt_ann (dummy_cond);
 	      cached_lhs = simplify_cond_and_lookup_avail_expr (dummy_cond,
 								NULL,
-								ann,
+								NULL,
 								false);
 	    }
 	}
@@ -1628,9 +1625,7 @@ record_equality (tree x, tree y, varray_type *block_const_and_copies_p)
 
 static tree
 simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
-				    tree stmt,
-				    stmt_ann_t ann,
-				    int insert)
+				    tree stmt, int insert)
 {
   tree rhs = TREE_OPERAND (stmt, 1);
   enum tree_code rhs_code = TREE_CODE (rhs);
@@ -1663,7 +1658,6 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	    result = update_rhs_and_lookup_avail_expr (stmt,
 						       rhs_def_operand,
 						       &bd->avail_exprs,
-						       ann,
 						       insert);
 	}
     }
@@ -1748,7 +1742,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 			  && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
 			  && is_gimple_val (TREE_OPERAND (t, 1))))
 		    result = update_rhs_and_lookup_avail_expr
-		      (stmt, t, &bd->avail_exprs, ann, insert);
+		      (stmt, t, &bd->avail_exprs, insert);
 		}
 	    }
 	}
@@ -1808,8 +1802,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 					  op1, integer_one_node)));
 
 	  result = update_rhs_and_lookup_avail_expr (stmt, t,
-						     &bd->avail_exprs,
-						     ann, insert);
+						     &bd->avail_exprs, insert);
 	}
     }
 
@@ -1880,8 +1873,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 	    t = op;
 
 	  result = update_rhs_and_lookup_avail_expr (stmt, t,
-						     &bd->avail_exprs,
-						     ann, insert);
+						     &bd->avail_exprs, insert);
 	}
     }
 
@@ -1893,8 +1885,7 @@ simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *walk_data,
 
       if (t)
         result = update_rhs_and_lookup_avail_expr (stmt, t,
-						   &bd->avail_exprs,
-						   ann, insert);
+						   &bd->avail_exprs, insert);
     }
 
   return result;
@@ -2001,7 +1992,11 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 		  /* Update the statement to use the new equivalent
 		     condition.  */
 		  COND_EXPR_COND (stmt) = new_cond;
-		  ann->modified = 1;
+
+		  /* If this is not a real stmt, ann will be NULL and we
+		     avoid processing the operands.  */
+		  if (ann)
+		    modify_stmt (stmt);
 
 		  /* Lookup the condition and return its known value if it
 		     exists.  */
@@ -2197,7 +2192,6 @@ simplify_cond_and_lookup_avail_expr (tree stmt,
 static tree
 simplify_switch_and_lookup_avail_expr (tree stmt,
 				       varray_type *block_avail_exprs_p,
-				       stmt_ann_t ann,
 				       int insert)
 {
   tree cond = SWITCH_COND (stmt);
@@ -2243,7 +2237,7 @@ simplify_switch_and_lookup_avail_expr (tree stmt,
 	      if (!fail)
 		{
 		  SWITCH_COND (stmt) = def;
-		  ann->modified = 1;
+		  modify_stmt (stmt);
 
 		  return lookup_avail_expr (stmt, block_avail_exprs_p, insert);
 		}
@@ -2404,7 +2398,6 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
   if (! cached_lhs && TREE_CODE (stmt) == MODIFY_EXPR)
     cached_lhs = simplify_rhs_and_lookup_avail_expr (walk_data,
 						     stmt,
-						     ann,
 						     insert);
   /* Similarly if this is a COND_EXPR and we did not find its
      expression in the hash table, simplify the condition and
@@ -2418,7 +2411,6 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
   else if (!cached_lhs && TREE_CODE (stmt) == SWITCH_EXPR)
     cached_lhs = simplify_switch_and_lookup_avail_expr (stmt,
 						        &bd->avail_exprs,
-						        ann,
 						        insert);
 
   opt_stats.num_exprs_considered++;
@@ -2465,7 +2457,7 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
 	retval = true;
 
       propagate_tree_value (expr_p, cached_lhs);
-      ann->modified = 1;
+      modify_stmt (stmt);
     }
   return retval;
 }
@@ -2642,7 +2634,7 @@ record_equivalences_from_stmt (tree stmt,
    CONST_AND_COPIES.  */
 
 static bool
-cprop_operand (stmt_ann_t ann, use_operand_p op_p, varray_type const_and_copies)
+cprop_operand (tree stmt, use_operand_p op_p, varray_type const_and_copies)
 {
   bool may_have_exposed_new_symbols = false;
   tree val;
@@ -2721,7 +2713,7 @@ cprop_operand (stmt_ann_t ann, use_operand_p op_p, varray_type const_and_copies)
       /* And note that we modified this statement.  This is now
 	 safe, even if we changed virtual operands since we will
 	 rescan the statement and rewrite its operands again.  */
-      ann->modified = 1;
+      modify_stmt (stmt);
     }
   return may_have_exposed_new_symbols;
 }
@@ -2749,7 +2741,7 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
       use_operand_p op_p = USE_OP_PTR (uses, i);
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
-	  |= cprop_operand (ann, op_p, const_and_copies);
+	  |= cprop_operand (stmt, op_p, const_and_copies);
     }
 
   vuses = VUSE_OPS (ann);
@@ -2759,7 +2751,7 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
       use_operand_p op_p = VUSE_OP_PTR (vuses, i);
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
-	  |= cprop_operand (ann, op_p, const_and_copies);
+	  |= cprop_operand (stmt, op_p, const_and_copies);
     }
 
   v_may_defs = V_MAY_DEF_OPS (ann);
@@ -2769,7 +2761,7 @@ cprop_into_stmt (tree stmt, varray_type const_and_copies)
       use_operand_p op_p = V_MAY_DEF_OP_PTR (v_may_defs, i);
       if (TREE_CODE (USE_FROM_PTR (op_p)) == SSA_NAME)
 	may_have_exposed_new_symbols
-	  |= cprop_operand (ann, op_p, const_and_copies);
+	  |= cprop_operand (stmt, op_p, const_and_copies);
     }
   return may_have_exposed_new_symbols;
 }
@@ -2936,7 +2928,6 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
 static tree
 update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs, 
 				  varray_type *block_avail_exprs_p,
-				  stmt_ann_t ann,
 				  bool insert)
 {
   tree cached_lhs = NULL;
@@ -2982,7 +2973,7 @@ update_rhs_and_lookup_avail_expr (tree stmt, tree new_rhs,
 
   /* And make sure we record the fact that we modified this
      statement.  */
-  ann->modified = 1;
+  modify_stmt (stmt);
 
   return cached_lhs;
 }

@@ -1935,7 +1935,7 @@ rewrite_trees (var_map map, tree *values)
 		      && (DEF_FROM_PTR (def_p) == USE_OP (uses, 0)))
 		    remove = 1;
 		}
-	      if (changed)
+	      if (changed & !remove)
 		modify_stmt (stmt);
 	    }
 
