@@ -1,3 +1,11 @@
+Wed Mar 15 15:43:38 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* acconfig.h (HAVE_GAS_WEAK): New define.
+	* configure.in (assembler weak support): Check for .weak support.
+	* config.in, configure: Rebuilt.
+	* pa/som.h (MAKE_DECL_ONE_ONLY, ASM_WEAKEN_LABEL): Only define if
+	HAVE_GAS_WEAK is defined.
+
 2000-03-15  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.c (arm_output_epilogue): Do not pass %c to

@@ -4427,6 +4427,19 @@ EOF
 fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
+AC_MSG_CHECKING(assembler weak support)
+gcc_cv_as_weak=
+if test x$gcc_cv_as != x; then
+	# Check if we have .weak
+	echo "	.weak foobar" > conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+		AC_DEFINE(HAVE_GAS_WEAK)
+		gcc_cv_as_weak="yes"
+	fi
+	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
+fi
+AC_MSG_RESULT($gcc_cv_as_weak)
+
 case "$target" in 
   sparc*-*-*)
     AC_CACHE_CHECK([assembler .register pseudo-op support],
