@@ -1,3 +1,9 @@
+Sat Feb 24 06:45:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* errors.c (internal_error, trim_filename): New functions.
+	(fancy_abort): Call internal_error.
+	* errors.h (internal_error, trim_filename): New declarations.
+
 2001-02-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.h (DBX_REGISTER_NUMBER): Reverted
