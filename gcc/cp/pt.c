@@ -11190,6 +11190,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
       while (decl_parm)
 	{
 	  tree parm_type;
+	  tree attributes;
 
 	  if (DECL_NAME (decl_parm) != DECL_NAME (pattern_parm))
 	    DECL_NAME (decl_parm) = DECL_NAME (pattern_parm);
@@ -11198,6 +11199,12 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	  parm_type = type_decays_to (parm_type);
 	  if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
 	    TREE_TYPE (decl_parm) = parm_type;
+	  attributes = DECL_ATTRIBUTES (pattern_parm);
+	  if (DECL_ATTRIBUTES (decl_parm) != attributes)
+	    {
+	      DECL_ATTRIBUTES (decl_parm) = attributes;
+	      cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
+	    }
 	  decl_parm = TREE_CHAIN (decl_parm);
 	  pattern_parm = TREE_CHAIN (pattern_parm);
 	}
