@@ -1,3 +1,27 @@
+2001-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_adjust_cost): Fixed incorrect scheduling.
+	* config/s390/s390.md (function units): Likewise.
+
+	* config/s390/s390.md (addsi3_cc, addsi3_cconly, addsi3_cconly2,
+	subsi3_cc, subsi3_cconly): Removed.
+
+	* config/s390/s390.c (legitimate_la_operand_p): New.
+	* config/s390/s390-protos.h (legitimate_la_operand_p): Add.
+	* config/s390/s390.md (movsi): Convert load address patterns to
+	arithmetic operations when necessary.
+	(addaddr_picR, addaddr_picL, addaddr_picN): Removed.
+	(do_la): Renamed to *do_la and use legitimate_la_operand_p.
+	(*do_la_reg_0): Don't use before reload.
+
+	* config/s390/s390.c (legitimize_address): Make more efficient
+	use of two-register addressing mode.
+
+	* config/s390/s390.c (s390_function_prologue): Fix incorrect prolog
+	with -mno-backchain in some corner cases.
+
+	* config/s390/s390.md (cmpsi_cct): Operands 0 and 1 do not commute.
+
 2001-09-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload.c (find_reloads): Mark new USE insns with QImode.

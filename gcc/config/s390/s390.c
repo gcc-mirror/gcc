@@ -813,6 +813,40 @@ legitimate_address_p (mode, addr, strict)
   return s390_decompose_address (addr, NULL, strict);
 }
 
+/* Return 1 if OP is a valid operand for the LA instruction.
+   In 31-bit, we need to prove that the result is used as an
+   address, as LA performs only a 31-bit addition.  */
+
+int
+legitimate_la_operand_p (op)
+     register rtx op;
+{
+  struct s390_address addr;
+  if (!s390_decompose_address (op, &addr, FALSE))
+    return FALSE;
+
+  if (TARGET_64BIT)
+    return TRUE;
+
+  /* Use of the base or stack pointer implies address.  */
+
+  if (addr.base && GET_CODE (addr.base) == REG)
+    {
+      if (REGNO (addr.base) == BASE_REGISTER
+          || REGNO (addr.base) == STACK_POINTER_REGNUM)
+        return TRUE;
+    }
+
+  if (addr.indx && GET_CODE (addr.indx) == REG)
+    {
+      if (REGNO (addr.indx) == BASE_REGISTER
+          || REGNO (addr.indx) == STACK_POINTER_REGNUM)
+        return TRUE;
+    }
+
+  return FALSE;
+}
+
 /* Return a legitimate reference for ORIG (an address) using the
    register REG.  If REG is 0, a new pseudo is generated.
 
@@ -1130,8 +1164,47 @@ legitimize_address (x, oldx, mode)
      register rtx oldx ATTRIBUTE_UNUSED;
      enum machine_mode mode;
 {
-  if (flag_pic && SYMBOLIC_CONST (x))
-    return legitimize_pic_address (x, 0);
+  rtx constant_term = const0_rtx;
+
+  if (flag_pic)
+    {
+      if (SYMBOLIC_CONST (x)
+          || (GET_CODE (x) == PLUS 
+              && (SYMBOLIC_CONST (XEXP (x, 0)) 
+                  || SYMBOLIC_CONST (XEXP (x, 1)))))
+	  x = legitimize_pic_address (x, 0);
+
+      if (legitimate_address_p (mode, x, FALSE))
+	return x;
+    }
+
+  x = eliminate_constant_term (x, &constant_term);
+
+  if (GET_CODE (x) == PLUS)
+    {
+      if (GET_CODE (XEXP (x, 0)) == REG)
+	{
+	  register rtx temp = gen_reg_rtx (Pmode);
+	  register rtx val  = force_operand (XEXP (x, 1), temp);
+	  if (val != temp)
+	    emit_move_insn (temp, val);
+
+	  x = gen_rtx_PLUS (Pmode, XEXP (x, 0), temp);
+	}
+
+      else if (GET_CODE (XEXP (x, 1)) == REG)
+	{
+	  register rtx temp = gen_reg_rtx (Pmode);
+	  register rtx val  = force_operand (XEXP (x, 0), temp);
+	  if (val != temp)
+	    emit_move_insn (temp, val);
+
+	  x = gen_rtx_PLUS (Pmode, temp, XEXP (x, 1));
+	}
+    }
+
+  if (constant_term != const0_rtx)
+    x = gen_rtx_PLUS (Pmode, x, constant_term);
 
   return x;
 }
@@ -1522,13 +1595,6 @@ s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
   if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
     return cost;
 
-  /* If cost equal 1 nothing needs to be checked. */
-
-  if (cost == 1)
-    {
-      return cost;
-    }
-
   dep_rtx = PATTERN (dep_insn);
 
   if (GET_CODE (dep_rtx) == SET)
@@ -1542,7 +1608,7 @@ s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	      debug_rtx (dep_insn);
 	      debug_rtx (insn);
 	    }
-	  return cost;
+	  return cost + 4;
 	}
     }
 
@@ -1560,13 +1626,13 @@ s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 		  debug_rtx (dep_insn);
 		  debug_rtx (insn);
 		}
-	      return cost;
+	      return cost + 4;
 	    }
 	}
     }
 
   /* default cost.  */
-  return 1;
+  return cost;
 }
 
 /* Pool concept for Linux 390:
@@ -2381,8 +2447,7 @@ s390_function_prologue (FILE * file, int lsize)
 
       /* Decrement stack.  */
 
-      if (TARGET_BACKCHAIN || (STARTING_FRAME_OFFSET +
-			       lsize + STACK_POINTER_OFFSET > 4095
+      if (TARGET_BACKCHAIN || (frame_size + STACK_POINTER_OFFSET > 4095
 			       || frame_pointer_needed
 			       || current_function_calls_alloca))
 	{
@@ -2422,8 +2487,7 @@ s390_function_prologue (FILE * file, int lsize)
 
       /* Generate backchain.  */
 
-      if (TARGET_BACKCHAIN || (STARTING_FRAME_OFFSET + 
-			       lsize + STACK_POINTER_OFFSET > 4095
+      if (TARGET_BACKCHAIN || (frame_size + STACK_POINTER_OFFSET > 4095
 			       || frame_pointer_needed
 			       || current_function_calls_alloca))
 	{

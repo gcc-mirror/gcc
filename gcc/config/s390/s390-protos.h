@@ -39,6 +39,7 @@ extern int bras_sym_operand PARAMS ((rtx, enum machine_mode));
 extern int dead_p PARAMS ((rtx, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, char));
 extern void print_operand_address PARAMS ((FILE *, rtx));
+extern int legitimate_la_operand_p PARAMS ((rtx));
 extern int legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_constant_p PARAMS ((rtx));
 
