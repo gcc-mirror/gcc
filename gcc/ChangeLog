@@ -2,7 +2,10 @@
 
 	* rtl.c (class_narrowest_mode): Add entries for MODE_VECTOR_INT and
 	MODE_VECTOR_FLOAT.
-
+	* reload.c (regno_clobbered_p): Accept new arg, MODE, and use it
+	to handle multiword modes correctly.  All callers and the declaration
+	changed.
+  
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (prep_stmt): Declare.

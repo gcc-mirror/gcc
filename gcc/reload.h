@@ -335,7 +335,7 @@ extern rtx find_equiv_reg PARAMS ((rtx, rtx, enum reg_class, int, short *,
 				 int, enum machine_mode));
 
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
-extern int regno_clobbered_p PARAMS ((unsigned int, rtx));
+extern int regno_clobbered_p PARAMS ((unsigned int, rtx, enum machine_mode));
 
 /* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
 int earlyclobber_operand_p PARAMS ((rtx));
