@@ -1,3 +1,15 @@
+2000-11-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* cplus-dem.c (cplus_demangle): Fix formatting.
+	(grow_vect): Ditto.
+	(ada_demangle): Ditto.
+	(internal_cplus_demangle): Ditto.
+	(mop_up): Ditto.
+
+2000-11-21  H.J. Lu  <hjl@gnu.org>
+
+	* cplus-dem.c (main): Handle java_demangling.
+
 2000-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cplus-dem.c (grow_vect): Prototype.
