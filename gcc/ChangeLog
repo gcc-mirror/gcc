@@ -1,5 +1,15 @@
 2003-06-10  Roger Sayle  <roger@eyesopen.com>
 
+	* builtins.c (fold_builtin): Optimize cos(-x) as cos(x).
+	* fold-const.c (fold <NEGATE_EXPR>): Convert -f(x) into f(-x)
+	when x is easily negated and f is sin, tan or atan.
+	(fold <MULT_EXPR>): Optimize tan(x)*cos(x) and cos(x)*tan(x) as
+	sin(x) with flag_unsafe_math_optimizations.
+	(fold <RDIV_EXPR>): With flag_unsafe_math_optimizations fold
+	sin(x)/cos(x) as tan(x) and cos(x)/sin(x) as 1.0/tan(x).
+
+2003-06-10  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (fold <EQ_EXPR>):  Don't fold x == x only if x
 	is a floating point type *and* we currently honor NaNs.
 	(fold <NE_EXPR>): Likewise.
