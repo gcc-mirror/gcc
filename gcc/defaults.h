@@ -57,7 +57,7 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 /* Provide default for ASM_OUTPUT_ALTERNATE_LABEL_NAME.  */
 #ifndef ASM_OUTPUT_ALTERNATE_LABEL_NAME
 #define ASM_OUTPUT_ALTERNATE_LABEL_NAME(FILE,INSN) \
-  fprintf (FILE, "%s:\n", LABEL_ALTERNATE_NAME (INSN))
+  ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN))
 #endif
 
 /* choose a reasonable default for ASM_OUTPUT_ASCII.  */
