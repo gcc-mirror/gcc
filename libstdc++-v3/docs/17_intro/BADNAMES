@@ -158,5 +158,5 @@ __i486__
 __cplusplus
 __embedded_cplusplus
 // long double conversion members mangled as __opr
-// http://sources.redhat.com/ml/libstdc++/1999-q4/msg00060.html
+// http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00060.html
 _opr
