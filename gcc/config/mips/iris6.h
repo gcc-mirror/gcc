@@ -28,6 +28,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "mips/iris5gas.h"
 #include "mips/abi64.h"
 
+/* The Irix 6.0.1 assembler doesn't like labels in the text section, so
+   just avoid emitting them.  */
+#define ASM_IDENTIFY_GCC
+#define ASM_IDENTIFY_LANGUAGE
+
 /* Irix 5 stuff that we don't need for Irix 6.  */
 #undef ASM_OUTPUT_UNDEF_FUNCTION
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
