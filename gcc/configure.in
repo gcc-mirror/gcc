@@ -2052,6 +2052,7 @@ gcc_cv_as_tls=no
 conftest_s=
 tls_first_major=
 tls_first_minor=
+tls_as_opt=
 case "$target" in
 changequote(,)dnl
   alpha*-*-*)
@@ -2151,6 +2152,7 @@ x3:	.space 4
 	addi 9,9,x2@tprel@l'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_as_opt=-a32
 	;;
   powerpc64-*-*)
     conftest_s='
@@ -2184,6 +2186,7 @@ x3:	.space 8
 	nop'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_as_opt=-a64
 	;;
   s390-*-*)
     conftest_s='
@@ -2202,6 +2205,7 @@ foo:	.long	25
 	bas	%r14,0(%r1,%r13):tls_ldcall:foo'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_as_opt=-m31
 	;;
   s390x-*-*)
     conftest_s='
@@ -2219,6 +2223,7 @@ foo:	.long	25
 	brasl	%r14,__tls_get_offset@PLT:tls_ldcall:foo'
 	tls_first_major=2
 	tls_first_minor=14
+	tls_as_opt="-m64 -Aesame"
 	;;
 esac
 if test -z "$tls_first_major"; then
@@ -2229,7 +2234,7 @@ elif test $in_tree_gas = yes ; then
   ])
 elif test x$gcc_cv_as != x; then
   echo "$conftest_s" > conftest.s
-  if $gcc_cv_as --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
+  if $gcc_cv_as $tls_as_opt --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
   then
     gcc_cv_as_tls=yes
   fi

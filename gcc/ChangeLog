@@ -1,3 +1,109 @@
+2003-06-04  Jakub Jelinek  <jakub@redhat.com>
+	    Alan Modra  <amodra@bigpond.net.au>
+
+	* config/i386/linux.h (NO_PROFILE_COUNTERS): Define to 1.
+	* config/i386/freebsd.h (NO_PROFILE_COUNTERS): Likewise.
+	* config/i386/netbsd-elf.h (NO_PROFILE_COUNTERS): Likewise.
+	* config/xtensa/xtensa.h (NO_PROFILE_COUTNERS): Likewise.
+	* config/darwin.h (NO_PROFILE_COUNTERS): Likewise.
+	* final.c (NO_PROFILE_COUNTERS): Define to 0 if not defined.
+	(profile_function): Allow NO_PROFILE_COUNTERS to be non-constant.
+	* config/rs6000/rs6000.c (output_profile_hook): Likewise.
+
+	* configure.in (powerpc*-*, s390*-*): Set tls_as_opt.
+	Pass it to $gcc_cv_as.
+	* configure: Rebuilt.
+
+	* config/rs6000/rs6000.c (rs6000_abi_name): Remove initializer.
+	(print_operand): Allow TARGET_AIX to be non-constant.
+	(rs6000_aix_emit_builtin_unwind_init, rs6000_emit_eh_toc_restore):
+	Define unconditionally.
+	(rs6000_elf_declare_function_name): New function.
+	* config/rs6000/rs6000.md (eh_return): Allow TARGET_AIX to be
+	non-constant.
+	* config/rs6000/linux64.h [!RS6000_BI_ARCH] (TARGET_64BIT): Define
+	to 1.
+	(DEFAULT_ARCH64_P, RS6000_BI_ARCH_P): Define.
+	[IN_LIBGCC2] (TARGET_64BIT): Define based on whether __powerpc64__
+	is defined.
+	(TARGET_AIX): Define to 1 if TARGET_64BIT.
+	(PROCESSOR_DEFAULT): Remove.
+	(TARGET_RELOCATABLE, RS6000_ABI_NAME, INVALID_64BIT,
+	INVALID_32BIT, SUBSUBTARGET_OVERRIDE_OPTIONS): Define.
+	[RS6000_BI_ARCH] (OVERRIDE_OPTIONS, ASM_FILE_START): Define.
+	(ASM_DEFAULT_SPEC, ASM_SPEC, LINK_OS_LINUX_SPEC): Define for both
+	-m32 and -m64.
+	(MULTILIB_DEFAULTS): Define.
+	(SUBSUBTARGET_EXTRA_SPECS): Define.
+	(ASM_SPEC32, ASM_SPEC64, ASM_SPEC_COMMON): Define.
+	(TARGET_TOC): Define only if !RS6000_BI_ARCH.
+	(TARGET_NO_TOC): Remove.
+	[!RS6000_BI_ARCH] (TARGET_RELOCATABLE, TARGET_EABI,
+	TARGET_PROTOTYPE): Define to 0.
+	(NO_PROFILE_COUNTERS): Define to TARGET_64BIT.
+	(PROFILE_HOOK): Only call output_profile_hook if TARGET_64BIT.
+	(ADJUST_FIELD_ALIGN, ROUND_TYPE_ALIGN): Adjust to work properly
+	if !TARGET_64BIT.
+	(USER_LABEL_PREFIX): Remove.
+	(JUMP_TABLES_IN_TEXT_SECTION): Define to TARGET_64BIT.
+	(SETUP_FRAME_ADDRESSES): Only call rs6000_aix_emit_builtin_unwind_init
+	if TARGET_64BIT.
+	(TARGET_OS_CPP_BUILTINS): Handle both -m32 and -m64.
+	(LINK_OS_LINUX_SPEC32, LINK_OS_LINUX_SPEC64): Define.
+	(STARTFILE_LINUX_SPEC, ENDFILE_LINUX_SPEC): Remove.
+	(TOC_SECTION_ASM_OP): Define depending on TARGET_64BIT.
+	(MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	(SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE): Define depending on
+	TARGET_64BIT.
+	(RS6000_CALL_GLUE): Likewise.
+	(SAVE_FP_PREFIX, SAVE_FP_SUFFIX, RESTORE_FP_PREFIX,
+	RESTORE_FP_SUFFIX): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Remove.
+	(ASM_DECLARE_FUNCTION_SIZE, ASM_OUTPUT_SOURCE_LINE,
+	DBX_OUTPUT_BRAC, DBX_OUTPUT_NFUN): Only output dot before function
+	name if TARGET_64BIT.
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Handle both TARGET_64BIT and
+	!TARGET_64BIT.
+	(ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Remove undefs.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Take TARGET_64BIT into account.
+	(DRAFT_V4_STRUCT_RET): Define.
+	(SIGNAL_FRAMESIZE): New enum value.
+	(MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/rs6000/default64.h: New file.
+	* config/rs6000/sysv4.h (SUBTARGET_SWITCHES): Add -m32 and -m64
+	options.
+	(SUBTARGET_OVERRIDE_OPTIONS): If rs6000_abi_name is NULL, set it
+	to RS6000_ABI_NAME.  Only disallow mixing of -fPIC with -mcall-aixdesc
+	if !TARGET_64BIT.
+	[!RS6000_BI_ARCH] (SUBSUBTARGET_OVERRIDE_OPTIONS): Define.
+	(ASM_DECLARE_FUNCTION_NAME): Use rs6000_elf_declare_function_name
+	function.
+	(TARGET_OS_SYSV_CPP_BUILTINS): Define.
+	(TARGET_OS_CPP_BUILTINS): Use it.
+	(CPP_SYSV_SPEC): Remove.
+	(CPP_SPEC): Remove cpp_sysv.
+	(SUBTARGET_EXTRA_SPECS): Remove cpp_sysv.
+	Add SUBSUBTARGET_EXTRA_SPECS.
+	(SUBSUBTARGET_EXTRA_SPECS): Define.
+	* config/rs6000/biarch64.h: New file.
+	* config/rs6000/rs6000-protos.h (rs6000_elf_declare_function_name):
+	New prototype.
+	* config/rs6000/x-linux64: New file.
+	* config/rs6000/t-linux64: Build -m64, -m32 and -m32 -msoft-float
+	multilibs.
+	* config/rs6000/eabi-ci.asm: Protect with #ifndef __powerpc64__.
+	* config/rs6000/eabi-cn.asm: Likewise.
+	* config/rs6000/tramp.asm: Likewise.
+	* config/rs6000/sol-ci.asm: Likewise.
+	* config/rs6000/sol-cn.asm: Likewise.
+	* config/rs6000/linux.h (TARGET_64BIT): Define to 0.
+	(TARGET_OS_CPP_BUILTINS): Use TARGET_OS_SYSV_CPP_BUILTINS.
+	* config/rs6000/ppc-asm.h: Move __powerpc64__ section before
+	_CALL_AIXDESC section.
+	* config.gcc (powerpc64-*-linux*): Configure a bi-arch compiler,
+	defaulting to -m64 unless --with-cpu= is one of the 32-bit CPUs
+	or default32.
+
 2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config.gcc: Revert accidentally committed ARM changes.

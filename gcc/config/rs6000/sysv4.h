@@ -149,6 +149,10 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
     N_("Set the PPC_EMB bit in the ELF flags header") },		\
   { "windiss",           0, N_("Use the WindISS simulator") },          \
   { "shlib",		 0, N_("no description yet") },			\
+  { "64",		 MASK_64BIT | MASK_POWERPC64 | MASK_POWERPC,	\
+			 N_("Generate 64-bit code") },			\
+  { "32",		 - (MASK_64BIT | MASK_POWERPC64),		\
+			 N_("Generate 32-bit code") },			\
   EXTRA_SUBTARGET_SWITCHES						\
   { "newlib",		 0, N_("no description yet") },
 
@@ -171,6 +175,9 @@ do {									\
 									\
   if (!g_switch_set)							\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
+									\
+  if (rs6000_abi_name == NULL)						\
+    rs6000_abi_name = RS6000_ABI_NAME;					\
 									\
   if (!strcmp (rs6000_abi_name, "sysv"))				\
     rs6000_current_abi = ABI_V4;					\
@@ -274,7 +281,7 @@ do {									\
 	     rs6000_abi_name);						\
     }									\
 									\
-  if (flag_pic > 1 && rs6000_current_abi == ABI_AIX)			\
+  if (!TARGET_64BIT && flag_pic > 1 && rs6000_current_abi == ABI_AIX)	\
     {									\
       flag_pic = 0;							\
       error ("-fPIC and -mcall-%s are incompatible",			\
@@ -293,9 +300,16 @@ do {									\
 									\
   else if (TARGET_RELOCATABLE)						\
     flag_pic = 2;							\
-									\
 } while (0)
 
+#ifndef RS6000_BI_ARCH
+# define SUBSUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if ((TARGET_DEFAULT ^ target_flags) & MASK_64BIT)			\
+    error ("-m%s not supported in this configuration",			\
+	   (target_flags & MASK_64BIT) ? "64" : "32");			\
+} while (0)
+#endif
 
 /* Override rs6000.h definition.  */
 #undef	TARGET_DEFAULT
@@ -590,51 +604,7 @@ extern int rs6000_pic_labelno;
 /* Override elfos.h definition.  */
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do {									\
-    const char *const init_ptr = (TARGET_64BIT) ? ".quad" : ".long";	\
-									\
-    if (TARGET_RELOCATABLE 						\
-	&& (get_pool_size () != 0 || current_function_profile)		\
-	&& uses_TOC())							\
-      {									\
-	char buf[256];							\
-									\
-	(*targetm.asm_out.internal_label) (FILE, "LCL", rs6000_pic_labelno); \
-									\
-	ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 1);			\
-	fprintf (FILE, "\t%s ", init_ptr);				\
-	assemble_name (FILE, buf);					\
-	putc ('-', FILE);						\
-	ASM_GENERATE_INTERNAL_LABEL (buf, "LCF", rs6000_pic_labelno);	\
-	assemble_name (FILE, buf);					\
-	putc ('\n', FILE);						\
-      }									\
-									\
-    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");			\
-    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-									\
-    if (DEFAULT_ABI == ABI_AIX)						\
-      {									\
-	const char *desc_name, *orig_name;				\
-									\
-        orig_name = (*targetm.strip_name_encoding) (NAME);		\
-        desc_name = orig_name;						\
-	while (*desc_name == '.')					\
-	  desc_name++;							\
-									\
-	if (TREE_PUBLIC (DECL))						\
-	  fprintf (FILE, "\t.globl %s\n", desc_name);			\
-									\
-	fprintf (FILE, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);		\
-	fprintf (FILE, "%s:\n", desc_name);				\
-	fprintf (FILE, "\t%s %s\n", init_ptr, orig_name);		\
-	fprintf (FILE, "\t%s _GLOBAL_OFFSET_TABLE_\n", init_ptr);	\
-	if (DEFAULT_ABI == ABI_AIX)					\
-	  fprintf (FILE, "\t%s 0\n", init_ptr);				\
-	fprintf (FILE, "\t.previous\n");				\
-      }									\
-    ASM_OUTPUT_LABEL (FILE, NAME);					\
-  } while (0)
+  rs6000_elf_declare_function_name ((FILE), (NAME), (DECL))
 
 /* The USER_LABEL_PREFIX stuff is affected by the -fleading-underscore
    flag.  The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
@@ -789,6 +759,25 @@ extern int fixuplabelno;
 #define	TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
 #endif
 
+#define TARGET_OS_SYSV_CPP_BUILTINS()	  \
+  do                                      \
+    {                                     \
+      if (flag_pic == 1)		  \
+        {				  \
+	  builtin_define ("__pic__=1");	  \
+	  builtin_define ("__PIC__=1");	  \
+        }				  \
+      else if (flag_pic == 2)		  \
+        {				  \
+	  builtin_define ("__pic__=2");	  \
+	  builtin_define ("__PIC__=2");	  \
+        }				  \
+      if (target_flags_explicit		  \
+	  & MASK_RELOCATABLE)		  \
+	builtin_define ("_RELOCATABLE");  \
+    }                                     \
+  while (0)
+
 #ifndef	TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()          \
   do                                      \
@@ -800,6 +789,7 @@ extern int fixuplabelno;
       builtin_assert ("system=svr4");     \
       builtin_assert ("cpu=powerpc");     \
       builtin_assert ("machine=powerpc"); \
+      TARGET_OS_SYSV_CPP_BUILTINS ();	  \
     }                                     \
   while (0)
 #endif
@@ -945,14 +935,9 @@ extern int fixuplabelno;
 
 #define LINK_OS_DEFAULT_SPEC ""
 
-#define CPP_SYSV_SPEC \
-"%{mrelocatable*: -D_RELOCATABLE} \
-%{fpic|fpie: -D__PIC__=1 -D__pic__=1} \
-%{!fpic: %{fPIC|fPIE: -D__PIC__=2 -D__pic__=2}}"
-
 /* Override rs6000.h definition.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_sysv) \
+#define	CPP_SPEC "%{posix: -D_POSIX_SOURCE} \
 %{mads         : %(cpp_os_ads)         ; \
   myellowknife : %(cpp_os_yellowknife) ; \
   mmvme        : %(cpp_os_mvme)        ; \
@@ -1219,7 +1204,6 @@ ncrtn.o%s"
 /* Override rs6000.h definition.  */
 #undef	SUBTARGET_EXTRA_SPECS
 #define	SUBTARGET_EXTRA_SPECS						\
-  { "cpp_sysv",			CPP_SYSV_SPEC },			\
   { "crtsavres_default",        CRTSAVRES_DEFAULT_SPEC },              \
   { "lib_ads",			LIB_ADS_SPEC },				\
   { "lib_yellowknife",		LIB_YELLOWKNIFE_SPEC },			\
@@ -1288,7 +1272,10 @@ ncrtn.o%s"
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
   { "cpp_os_windiss",           CPP_OS_WINDISS_SPEC },                  \
-  { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },
+  { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },			\
+  SUBSUBTARGET_EXTRA_SPECS
+
+#define	SUBSUBTARGET_EXTRA_SPECS
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

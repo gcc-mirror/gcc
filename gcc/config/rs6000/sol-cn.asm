@@ -39,6 +39,7 @@
 	.file	"scrtn.s"
 	.ident	"GNU C scrtn.s"
 
+#ifndef __powerpc64__
 # Default versions of exception handling register/deregister
 	.weak	_ex_register
 	.weak	_ex_deregister
@@ -80,3 +81,4 @@ _ex_range1:
 	mtlr	%r0
 	addi	%r1,%r1,16
 	blr
+#endif

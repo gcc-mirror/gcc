@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
 #undef  NO_PROFILE_COUNTERS
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS	1
 
 /* Tell final.c that we don't need a label passed to mcount.  */
 

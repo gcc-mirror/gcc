@@ -1581,8 +1581,12 @@ powerpc-*-openbsd*)
 	extra_headers=
 	;;
 powerpc64-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux64.h"
-	tmake_file="rs6000/t-fprules t-slibgcc-elf-ver t-linux rs6000/t-linux64"
+	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
+	case x$with_cpu in
+	x|xpowerpc64|xdefault64) tm_file="${tm_file} rs6000/default64.h";;
+	esac
+	tm_file="${tm_file} rs6000/linux64.h"
+	tmake_file="rs6000/t-fprules t-slibgcc-elf-ver t-linux rs6000/t-ppccomm rs6000/t-linux64"
 	;;
 powerpc64-*-gnu*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux64.h rs6000/gnu.h"
@@ -1713,14 +1717,14 @@ rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	extra_headers=
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h"
+	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix43
 	use_collect2=yes
 	thread_file='aix'
 	extra_headers=
 	;;
 rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h"
+	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix43
 	use_collect2=yes
 	thread_file='aix'
@@ -2306,7 +2310,7 @@ powerpc*-*-* | rs6000-*-*)
                 tm_file="$tm_file rs6000/altivec-defs.h"
         fi
 	case "x$with_cpu" in
-		x)
+		x | xdefault32 | xdefault64)
 			;;
 
 		xcommon | xpowerpc | xpowerpc64 \

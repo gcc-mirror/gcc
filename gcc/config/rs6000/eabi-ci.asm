@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.
 
 #include <ppc-asm.h>
 
+#ifndef __powerpc64__
 	.section ".got","aw"
 	.globl	__GOT_START__
 	.type	__GOT_START__,@object
@@ -122,3 +123,4 @@ FUNC_START(__fini)
 	stwu 1,-16(1)
 	mflr 0
 	stw 0,20(1)
+#endif
