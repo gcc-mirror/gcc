@@ -1,3 +1,11 @@
+2000-08-30  Greg McGary  <greg@mcgary.org>
+
+	* tree.h (struct tree_int_cst): Wrap low and high in a sub-struct.
+	(TREE_INT_CST_LOW, TREE_INT_CST_HIGH): Access through sub-struct.
+	(TREE_INT_CST): New macro.
+	* varasm.c (const_hash, compare_constant_1, record_constant_1):
+	Use new macro TREE_INT_CST.
+
 Wed 30-Aug-2000 23:18:59 BST  Neil Booth  <NeilB@earthling.net>
 
 	* contrib.texi: Add self.

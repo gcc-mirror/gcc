@@ -2361,8 +2361,8 @@ const_hash (exp)
   switch (code)
     {
     case INTEGER_CST:
-      p = (char *) &TREE_INT_CST_LOW (exp);
-      len = 2 * sizeof TREE_INT_CST_LOW (exp);
+      p = (char *) &TREE_INT_CST (exp);
+      len = sizeof TREE_INT_CST (exp);
       break;
 
     case REAL_CST:
@@ -2506,8 +2506,8 @@ compare_constant_1 (exp, p)
       if (*p++ != TYPE_PRECISION (TREE_TYPE (exp)))
 	return 0;
 
-      strp = (unsigned char *) &TREE_INT_CST_LOW (exp);
-      len = 2 * sizeof TREE_INT_CST_LOW (exp);
+      strp = (unsigned char *) &TREE_INT_CST (exp);
+      len = sizeof TREE_INT_CST (exp);
       break;
 
     case REAL_CST:
@@ -2745,8 +2745,8 @@ record_constant_1 (exp)
     {
     case INTEGER_CST:
       obstack_1grow (&permanent_obstack, TYPE_PRECISION (TREE_TYPE (exp)));
-      strp = (unsigned char *) &TREE_INT_CST_LOW (exp);
-      len = 2 * sizeof TREE_INT_CST_LOW (exp);
+      strp = (unsigned char *) &TREE_INT_CST (exp);
+      len = sizeof TREE_INT_CST (exp);
       break;
 
     case REAL_CST:
