@@ -52,19 +52,6 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
 			: : "ir" (__val), "m" (*__mem) : "memory");
 }
 
-static inline char
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long* __p, long __oldval, long __newval)
-{
-  char __ret;
-  long __readval;
-
-  __asm__ __volatile__ ("lock; cmpxchgl %3, %1; sete %0"
-                        : "=q" (__ret), "=m" (*__p), "=a" (__readval)
-                        : "r" (__newval), "m" (*__p), "a" (__oldval));
-  return __ret;
-}
-
 #endif /* atomicity.h */
 
 

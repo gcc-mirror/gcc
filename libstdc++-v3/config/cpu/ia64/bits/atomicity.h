@@ -48,11 +48,4 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
   __sync_fetch_and_add (__mem, __val);
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long __oldval, long __newval)
-{
-  return __sync_bool_compare_and_swap (__p, __oldval, __newval);
-}
-
 #endif /* atomicity.h */

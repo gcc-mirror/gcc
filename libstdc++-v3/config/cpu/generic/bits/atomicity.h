@@ -48,15 +48,4 @@ __atomic_add (_Atomic_word* __mem, int __val)
   *__mem += __val;
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (long *__p, long __oldval, long __newval)
-{
-  if (*__p != __oldval)
-    return 0;
-
-  *__p = __newval;
-  return 1;
-}
-
 #endif /* atomicity.h */

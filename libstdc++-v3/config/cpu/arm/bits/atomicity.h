@@ -127,63 +127,6 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 #endif
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long __oldval, long __newval)
-{
-  int __result;
-  long __tmp;
-#ifdef __thumb__
-  /* Since this function is inlined, we can't be sure of the alignment.  */
-  __asm__ __volatile__ (
-	"ldr     %0, 4f \n\t"
-	"bx      %0 \n\t"
-	".align 0 \n"
-	"4:\t"
-	".word   0f \n\t"
-	".code 32 \n"
-	"0:\t"
-	"ldr     %1, [%2] \n\t"
-        "mov     %0, #0 \n\t"
-        "cmp     %1, %4 \n\t"
-        "bne     1f \n\t"
-        "swp     %0, %3, [%2] \n\t"
-        "cmp     %1, %0 \n\t"
-        "swpne   %1, %0, [%2] \n\t"
-        "bne     0b \n\t"
-        "mov     %0, #1 \n"
-	"1:\t"
-	"ldr     %1, 2f \n\t"
-	"bx      %1 \n"
-	"2:\t"
-	".word   3f \n\t"
-	".code 16\n"
-	"3:\n"
-	: "=&l"(__result), "=&r"(__tmp) 
-	: "r" (__p), "r" (__newval), "r" (__oldval) 
-	: "cc", "memory");
-#else
-  __asm__ __volatile__ (
-	"\n"
-	"0:\t"
-	"ldr     %1, [%2] \n\t"
-	"mov     %0, #0 \n\t"
-	"cmp     %1, %4 \n\t"
-	"bne     1f \n\t"
-	"swp     %0, %3, [%2] \n\t"
-	"cmp     %1, %0 \n\t"
-	"swpne   %1, %0, [%2] \n\t"
-	"bne     0b \n\t"
-	"mov     %0, #1 \n"
-	"1:\n\t"
-	""
-	: "=&r"(__result), "=&r"(__tmp) 
-	: "r" (__p), "r" (__newval), "r" (__oldval) 
-	: "cc", "memory");
-#endif
-  return __result;
-}
-
 static inline long
 __attribute__ ((__unused__))
 __always_swap (volatile long *__p, long __newval)

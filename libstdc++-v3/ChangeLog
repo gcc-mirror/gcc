@@ -1,3 +1,16 @@
+2001-10-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/cpu/alpha/bits/atomicity.h (__compare_and_swap):  Remove
+	unused function.
+	* config/cpu/arm/bits/atomicity.h:  Likewise.
+	* config/cpu/generic/bits/atomicity.h:  Likewise.
+	* config/cpu/i486/bits/atomicity.h:  Likewise.
+	* config/cpu/ia64/bits/atomicity.h:  Likewise.
+	* config/cpu/mips/bits/atomicity.h:  Likewise.
+	* config/cpu/powerpc/bits/atomicity.h:  Likewise.
+	* config/cpu/sparc/sparc32/bits/atomicity.h:  Likewise.
+	* config/cpu/sparc/sparc64/bits/atomicity.h:  Likewise.
+
 2001-10-04  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/faq/index.html:  Describe DR #22, and a workaround.

@@ -73,25 +73,4 @@ __atomic_add (volatile _Atomic_word* __mem, int __val)
       : "m" (*__mem), "r"(__val));
 }
 
-static inline int
-__attribute__ ((__unused__))
-__compare_and_swap (volatile long *__p, long __oldval, long __newval)
-{
-  int __ret;
-
-  __asm__ __volatile__ (
-      "\n$Lcas_%=:\n\t"
-      "ldq_l  %0,%4\n\t"
-      "cmpeq  %0,%2,%0\n\t"
-      "beq    %0,3f\n\t"
-      "mov    %3,%0\n\t"
-      "stq_c  %0,%1\n\t"
-      "beq    %0,$Lcas_%=\n\t"
-      "mb"
-      : "=&r"(__ret), "=m"(*__p)
-      : "r"(__oldval), "r"(__newval), "m"(*__p));
-
-  return __ret;
-}
-
 #endif /* atomicity.h */
