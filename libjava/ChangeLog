@@ -1,3 +1,27 @@
+2001-10-14  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/Double.java: Partial merge with Classpath
+	(TYPE): initialized through VMClassLoader.getPrimitiveClass()
+	(value): made final
+	(static): new static block to load native libary (not used in libgcj)
+	(Double (String)): call parseDouble()
+	(byteValue): removed, already defined in superclass Number
+	(shortValue): likewise
+	(valueOf (String)): call new Double(String) directly
+	(compare (double,double)): new 1.4 method
+	(compareTo (Double)): call new compare(double,double) method
+	(initIDs): new private method (not used in libgcj)
+	* java/lang/Float.java: Partial merge with Classpath
+	(TYPE): initialized through VMClassLoader.getPrimitiveClass()
+	(value): made final
+	(static): new static block to load native libary (not used in libgcj)
+	(Float (String)): call parseFloat()
+	(byteValue): removed, already defined in superclass Number
+	(shortValue): likewise
+	(valueOf (String)): call new Float(String) directly
+	(compare (float,float)): new 1.4 method
+	(compareTo (Float)): call new compare(double,double) method
+
 2001-10-13  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/SecurityManager.java (SecurityManager): Now public.
