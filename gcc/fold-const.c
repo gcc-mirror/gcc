@@ -5521,10 +5521,14 @@ fold (expr)
 	      || TREE_CODE (arg1) == COMPLEX_CST))
 	{
 	  tree subtype = TREE_TYPE (TREE_TYPE (arg0));
-	  tree real0 = fold (build1 (REALPART_EXPR, subtype, arg0));
-	  tree imag0 = fold (build1 (IMAGPART_EXPR, subtype, arg0));
-	  tree real1 = fold (build1 (REALPART_EXPR, subtype, arg1));
-	  tree imag1 = fold (build1 (IMAGPART_EXPR, subtype, arg1));
+	  tree real0, imag0, real1, imag1;
+
+	  arg0 = save_expr (arg0);
+	  arg1 = save_expr (arg1);
+	  real0 = fold (build1 (REALPART_EXPR, subtype, arg0));
+	  imag0 = fold (build1 (IMAGPART_EXPR, subtype, arg0));
+	  real1 = fold (build1 (REALPART_EXPR, subtype, arg1));
+	  imag1 = fold (build1 (IMAGPART_EXPR, subtype, arg1));
 
 	  return fold (build ((code == EQ_EXPR ? TRUTH_ANDIF_EXPR
 			       : TRUTH_ORIF_EXPR),
