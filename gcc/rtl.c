@@ -117,11 +117,8 @@ const char * const rtx_name[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  NAME,
 
-const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
+const char * const mode_name[] = {
 #include "machmode.def"
-  /* Add an extra field to avoid a core dump if someone tries to convert
-     MAX_MACHINE_MODE to a string.   */
-  ""
 };
 
 #undef DEF_MACHMODE
@@ -130,7 +127,7 @@ const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  CLASS,
 
-const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
+const enum mode_class mode_class[] = {
 #include "machmode.def"
 };
 
@@ -141,7 +138,7 @@ const enum mode_class mode_class[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  BITSIZE,
 
-const unsigned int mode_bitsize[(int) MAX_MACHINE_MODE] = {
+const unsigned int mode_bitsize[] = {
 #include "machmode.def"
 };
 
@@ -152,7 +149,7 @@ const unsigned int mode_bitsize[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  SIZE,
 
-const unsigned int mode_size[(int) MAX_MACHINE_MODE] = {
+const unsigned int mode_size[] = {
 #include "machmode.def"
 };
 
@@ -163,7 +160,7 @@ const unsigned int mode_size[(int) MAX_MACHINE_MODE] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  UNIT,
 
-const unsigned int mode_unit_size[(int) MAX_MACHINE_MODE] = {
+const unsigned int mode_unit_size[] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -176,7 +173,7 @@ const unsigned int mode_unit_size[(int) MAX_MACHINE_MODE] = {
 #define DEF_MACHMODE(SYM, NAME, CLASS, BITSIZE, SIZE, UNIT, WIDER)  \
   (unsigned char) WIDER,
 
-const unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
+const unsigned char mode_wider_mode[] = {
 #include "machmode.def"		/* machine modes are documented here */
 };
 
@@ -187,7 +184,7 @@ const unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
-const unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
+const unsigned HOST_WIDE_INT mode_mask_array[] = {
 #include "machmode.def"
 };
 
