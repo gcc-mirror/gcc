@@ -225,25 +225,27 @@ namespace std
   extern template ostream& operator<<(ostream&, _Setbase);
   extern template ostream& operator<<(ostream&, _Setprecision);
   extern template ostream& operator<<(ostream&, _Setw);
-  extern template wostream& operator<<(wostream&, _Setfill<wchar_t>);
-  extern template wostream& operator<<(wostream&, _Setiosflags);
-  extern template wostream& operator<<(wostream&, _Resetiosflags);
-  extern template wostream& operator<<(wostream&, _Setbase);
-  extern template wostream& operator<<(wostream&, _Setprecision);
-  extern template wostream& operator<<(wostream&, _Setw);
-
   extern template istream& operator>>(istream&, _Setfill<char>);
   extern template istream& operator>>(istream&, _Setiosflags);
   extern template istream& operator>>(istream&, _Resetiosflags);
   extern template istream& operator>>(istream&, _Setbase);
   extern template istream& operator>>(istream&, _Setprecision);
   extern template istream& operator>>(istream&, _Setw);
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  extern template wostream& operator<<(wostream&, _Setfill<wchar_t>);
+  extern template wostream& operator<<(wostream&, _Setiosflags);
+  extern template wostream& operator<<(wostream&, _Resetiosflags);
+  extern template wostream& operator<<(wostream&, _Setbase);
+  extern template wostream& operator<<(wostream&, _Setprecision);
+  extern template wostream& operator<<(wostream&, _Setw);
   extern template wistream& operator>>(wistream&, _Setfill<wchar_t>);
   extern template wistream& operator>>(wistream&, _Setiosflags);
   extern template wistream& operator>>(wistream&, _Resetiosflags);
   extern template wistream& operator>>(wistream&, _Setbase);
   extern template wistream& operator>>(wistream&, _Setprecision);
   extern template wistream& operator>>(wistream&, _Setw);
+#endif
 } // namespace std
 
 #endif	

@@ -51,6 +51,7 @@ namespace std
   extern ostream cout;
   extern ostream cerr;
   extern ostream clog;
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   extern wistream wcin;
   extern wostream wcout;
