@@ -3868,7 +3868,7 @@ display_help ()
 
   printf (_("  -O[number]              Set optimisation level to [number]\n"));
   printf (_("  -Os                     Optimise for space rather than speed\n"));
-  for (i = sizeof (compiler_params); i--;)
+  for (i = LAST_PARAM; i--;)
     {
       const char *description = compiler_params[i].help;
       const int length = 21-strlen(compiler_params[i].option);
