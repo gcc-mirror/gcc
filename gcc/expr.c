@@ -8903,15 +8903,20 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	     certain to be valid on this machine, then convert it to
 	     whatever we need.  */
 	  else
-	    return
-	      convert_to_mode
-		(mode,
-		 gen_rtx_CONST
-		 (ptr_mode,
-		  gen_rtx_CONSTANT_P_RTX (ptr_mode,
-					  expand_expr (arg, NULL_RTX,
-						       VOIDmode, 0))),
-		 0);
+	    {
+	      if (mode == VOIDmode)
+		mode = TYPE_MODE (TREE_TYPE (exp));
+
+	      return
+		convert_to_mode
+		  (mode,
+		   gen_rtx_CONST
+		   (ptr_mode,
+		    gen_rtx_CONSTANT_P_RTX (ptr_mode,
+					    expand_expr (arg, NULL_RTX,
+							 VOIDmode, 0))),
+		   0);
+	    }
 	  
 	}
 
