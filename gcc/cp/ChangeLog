@@ -1,5 +1,10 @@
 1998-08-23  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (grokdeclarator): Complain about in-class initialization
+	of aggregates and/or references.
+	* pt.c (process_template_parm): Clear IS_AGGR_TYPE for
+	TEMPLATE_TYPE_PARMs. 
+
 	* decl2.c (grok_array_decl): Add comment.
 	(mark_used): Don't instantiate an explicit instantiation.
 	* friend.c (make_friend_class): Remove bogus comment.  Fix check
