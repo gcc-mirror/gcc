@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,11 @@ package Stylesw is
    --
    --  Note: the reason for the last two conditions is to allow "boxed"
    --  comments where only a single space separates the comment characters.
+
+   Style_Check_DOS_Line_Terminator : Boolean := False;
+   --  This can be set true by using the -gnatg or -gnatyd switches. If
+   --  it is True, then the line terminator must be a single LF, without an
+   --  associated CR (e.g. DOS line terminator sequence CR/LF not allowed).
 
    Style_Check_End_Labels : Boolean := False;
    --  This can be set True by using the -gnatg or -gnatye switches. If
@@ -242,7 +247,7 @@ package Stylesw is
 
    procedure Set_Default_Style_Check_Options;
    --  This procedure is called to set the default style checking options
-   --  in response to a -gnatg switch or -gnaty with no suboptions.
+   --  in response to a -gnaty switch with no suboptions.
 
    procedure Set_Style_Check_Options
      (Options  : String;

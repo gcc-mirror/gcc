@@ -1800,6 +1800,8 @@ package VMS_Data is
                                                "-gnatyb "                  &
                                             "COMMENTS "                    &
                                                "-gnatyc "                  &
+                                            "NOCRLF"                       &
+                                               "-gnatyd "                  &
                                             "END "                         &
                                                "-gnatye "                  &
                                             "VTABS "                       &
@@ -2357,6 +2359,10 @@ package VMS_Data is
                                                "-gnatwA "                  &
                                             "ALL_GCC "                     &
                                                "-Wall "                    &
+                                            "BAD_FIXED_VALUES "            &
+                                               "-gnatwb "                  &
+                                            "NO_BAD_FIXED_VALUES "         &
+                                               "-gnatwB "                  &
                                             "CONDITIONALS "                &
                                                "-gnatwc "                  &
                                             "NOCONDITIONALS "              &

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1991-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,6 +100,10 @@ package body Errutil is
       --  since there may be white space inside the literal and we don't want
       --  to stop on that white space.
 
+      --  Note that it is not worth worrying about special UTF_32 line
+      --  terminator characters in this context, since this is only about
+      --  error recovery anyway.
+
       if Prev_Token = Tok_String_Literal then
          loop
             S1 := S1 + 1;
@@ -120,6 +124,10 @@ package body Errutil is
       --  Otherwise we search forward for the end of the current token, marked
       --  by a line terminator, white space, a comment symbol or if we bump
       --  into the following token (i.e. the current token)
+
+      --  Note that it is not worth worrying about special UTF_32 line
+      --  terminator characters in this context, since this is only about
+      --  error recovery anyway.
 
       else
          while Source (S1) not in Line_Terminator

@@ -342,8 +342,14 @@ package body Scng is
          Len : constant Int := Int (Scan_Ptr) - Int (Current_Line_Start);
 
       begin
-         if Style_Check and Style_Check_Max_Line_Length then
+         if Style_Check then
             Style.Check_Line_Terminator (Len);
+         end if;
+
+         --  Deal with checking maximum line length
+
+         if Style_Check and Style_Check_Max_Line_Length then
+            Style.Check_Line_Max_Length (Len);
 
          --  If style checking is inactive, check maximum line length against
          --  standard value. Note that we take this from Opt.Max_Line_Length
