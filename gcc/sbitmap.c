@@ -1,5 +1,5 @@
 /* Simple bitmaps.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -30,9 +30,9 @@ Boston, MA 02111-1307, USA.  */
 
 sbitmap
 sbitmap_alloc (n_elms)
-     int n_elms;
+     unsigned int n_elms;
 {
-  int bytes, size, amt;
+  unsigned int bytes, size, amt;
   sbitmap bmap;
 
   size = SBITMAP_SET_SIZE (n_elms);
@@ -50,9 +50,9 @@ sbitmap_alloc (n_elms)
 
 sbitmap *
 sbitmap_vector_alloc (n_vecs, n_elms)
-     int n_vecs, n_elms;
+     unsigned int n_vecs, n_elms;
 {
-  int i, bytes, offset, elm_bytes, size, amt, vector_bytes;
+  unsigned int i, bytes, offset, elm_bytes, size, amt, vector_bytes;
   sbitmap *bitmap_vector;
 
   size = SBITMAP_SET_SIZE (n_elms);
@@ -76,11 +76,10 @@ sbitmap_vector_alloc (n_vecs, n_elms)
   amt = vector_bytes + (n_vecs * elm_bytes);
   bitmap_vector = (sbitmap *) xmalloc (amt);
 
-  for (i = 0, offset = vector_bytes;
-       i < n_vecs;
-       i++, offset += elm_bytes)
+  for (i = 0, offset = vector_bytes; i < n_vecs; i++, offset += elm_bytes)
     {
       sbitmap b = (sbitmap) ((char *) bitmap_vector + offset);
+
       bitmap_vector[i] = b;
       b->n_bits = n_elms;
       b->size = size;
@@ -106,10 +105,10 @@ void
 sbitmap_zero (bmap)
      sbitmap bmap;
 {
-  bzero ((char *) bmap->elms, bmap->bytes);
+  bzero ((PTR) bmap->elms, bmap->bytes);
 }
 
-/* Set to ones all elements in a bitmap.  */
+/* Set all elements in a bitmap to ones.  */
 
 void
 sbitmap_ones (bmap)
@@ -117,14 +116,12 @@ sbitmap_ones (bmap)
 {
   unsigned int last_bit;
 
-  memset (bmap->elms, -1, bmap->bytes);
+  memset ((PTR) bmap->elms, -1, bmap->bytes);
 
-  last_bit = bmap->n_bits % (unsigned) SBITMAP_ELT_BITS;
+  last_bit = bmap->n_bits % SBITMAP_ELT_BITS;
   if (last_bit)
-    {
-      bmap->elms[bmap->size - 1]
-        = (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
-    }
+    bmap->elms[bmap->size - 1]
+      = (SBITMAP_ELT_TYPE)-1 >> (SBITMAP_ELT_BITS - last_bit);
 }
 
 /* Zero a vector of N_VECS bitmaps.  */
@@ -132,22 +129,22 @@ sbitmap_ones (bmap)
 void
 sbitmap_vector_zero (bmap, n_vecs)
      sbitmap *bmap;
-     int n_vecs;
+     unsigned int n_vecs;
 {
-  int i;
+  unsigned int i;
 
   for (i = 0; i < n_vecs; i++)
     sbitmap_zero (bmap[i]);
 }
 
-/* Set to ones a vector of N_VECS bitmaps.  */
+/* Set a vector of N_VECS bitmaps to ones.  */
 
 void
 sbitmap_vector_ones (bmap, n_vecs)
      sbitmap *bmap;
-     int n_vecs;
+     unsigned int n_vecs;
 {
-  int i;
+  unsigned int i;
 
   for (i = 0; i < n_vecs; i++)
     sbitmap_ones (bmap[i]);
@@ -161,22 +158,22 @@ int
 sbitmap_union_of_diff (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  int i,changed;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp, cp;
+  int changed = 0;
 
-  changed = 0;
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  cp = c->elms;
-  for (i = 0; i < dst->size; i++)
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
+       i < dst->size; i++, dstp++)
     {
-      SBITMAP_ELT_TYPE tmp = *ap | (*bp & ~*cp);
+      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & ~*cp++);
+
       if (*dstp != tmp)
-	changed = 1;
-      *dstp = tmp;
-      dstp++; ap++; bp++; cp++;
+	{
+	  changed = 1;
+	  *dstp = tmp;
+	}
     }
+
   return changed;
 }
 
@@ -186,34 +183,24 @@ void
 sbitmap_not (dst, src)
      sbitmap dst, src;
 {
-  int i;
-  sbitmap_ptr dstp, ap;
+  unsigned int i;
+  sbitmap_ptr dstp, srcp;
 
-  dstp = dst->elms;
-  ap = src->elms;
-  for (i = 0; i < dst->size; i++)
-    {
-      SBITMAP_ELT_TYPE tmp = ~(*ap);
-      *dstp = tmp;
-      dstp++; ap++;
-    }
+  for (dstp = dst->elms, srcp = src->elms, i = 0; i < dst->size; i++)
+    *dstp++ = ~(*srcp++);
 }
 
 /* Set the bits in DST to be the difference between the bits
-   in A and the bits in B. i.e. dst = a - b.
-   The - operator is implemented as a & (~b).  */
+   in A and the bits in B. i.e. dst = a & (~b).  */
 
 void
 sbitmap_difference (dst, a, b)
      sbitmap dst, a, b;
 {
-  int i;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp;
-
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  for (i = 0; i < dst->size; i++)
+  
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size; i++)
     *dstp++ = *ap++ & (~*bp++);
 }
 
@@ -224,23 +211,25 @@ int
 sbitmap_a_and_b (dst, a, b)
      sbitmap dst, a, b;
 {
-  int i,changed;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp;
+  int changed = 0;
 
-  changed = 0;
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  for (i = 0; i < dst->size; i++)
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size;
+       i++, dstp++)
     {
-      SBITMAP_ELT_TYPE tmp = *ap & *bp;
+      SBITMAP_ELT_TYPE tmp = *ap++ & *bp++;
+
       if (*dstp != tmp)
-	changed = 1;
-      *dstp = tmp;
-      dstp++; ap++; bp++;
+	{
+	  changed = 1;
+	  *dstp = tmp;
+	}
     }
+
   return changed;
 }
+
 /* Set DST to be (A or B)).
    Return non-zero if any change is made.  */
 
@@ -248,40 +237,39 @@ int
 sbitmap_a_or_b (dst, a, b)
      sbitmap dst, a, b;
 {
-  int i,changed;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp;
+  int changed = 0;
 
-  changed = 0;
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  for (i = 0; i < dst->size; i++)
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, i = 0; i < dst->size;
+       i++, dstp++)
     {
-      SBITMAP_ELT_TYPE tmp = *ap | *bp;
+      SBITMAP_ELT_TYPE tmp = *ap++ | *bp++;
+
       if (*dstp != tmp)
-	changed = 1;
-      *dstp = tmp;
-      dstp++; ap++; bp++;
+	{
+	  changed = 1;
+	  *dstp = tmp;
+	}
     }
+
   return changed;
 }
+
 /* Return non-zero if A is a subset of B.  */
 
 int
 sbitmap_a_subset_b_p (a, b)
      sbitmap a, b;
 {
-  int i;
+  unsigned int i;
   sbitmap_ptr ap, bp;
 
-  ap = a->elms;
-  bp = b->elms;
-  for (i = 0; i < a->size; i++)
-    {
-      if ((*ap | *bp) != *bp)
-	return 0;
-      ap++; bp++;
-    }
+  
+  for (ap = a->elms, bp = b->elms, i = 0; i < a->size; i++)
+    if ((*ap++ | *bp++) != *bp)
+      return 0;
+
   return 1;
 }
 
@@ -292,48 +280,48 @@ int
 sbitmap_a_or_b_and_c (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  int i,changed;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp, cp;
+  int changed = 0;
 
-  changed = 0;
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  cp = c->elms;
-  for (i = 0; i < dst->size; i++)
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
+       i < dst->size; i++, dstp++)
     {
-      SBITMAP_ELT_TYPE tmp = *ap | (*bp & *cp);
+      SBITMAP_ELT_TYPE tmp = *ap++ | (*bp++ & *cp++);
+
       if (*dstp != tmp)
-	changed = 1;
-      *dstp = tmp;
-      dstp++; ap++; bp++; cp++;
+	{
+	  changed = 1;
+	  *dstp = tmp;
+	}
     }
+
   return changed;
 }
 
-/* Set DST to be (A ann (B or C)).
+/* Set DST to be (A and (B or C)).
    Return non-zero if any change is made.  */
 
 int
 sbitmap_a_and_b_or_c (dst, a, b, c)
      sbitmap dst, a, b, c;
 {
-  int i,changed;
+  unsigned int i;
   sbitmap_ptr dstp, ap, bp, cp;
+  int changed = 0;
 
-  changed = 0;
-  dstp = dst->elms;
-  ap = a->elms;
-  bp = b->elms;
-  cp = c->elms;
-  for (i = 0; i < dst->size; i++)
+  for (dstp = dst->elms, ap = a->elms, bp = b->elms, cp = c->elms, i = 0;
+       i < dst->size; i++, dstp++)
     {
-      SBITMAP_ELT_TYPE tmp = *ap & (*bp | *cp);
+      SBITMAP_ELT_TYPE tmp = *ap++ & (*bp++ | *cp++);
+
       if (*dstp != tmp)
-	changed = 1;
-      *dstp = tmp;
-      dstp++; ap++; bp++; cp++;
+	{
+	  changed = 1;
+	  *dstp = tmp;
+	}
     }
+
   return changed;
 }
 
@@ -347,34 +335,34 @@ sbitmap_intersection_of_succs (dst, src, bb)
      int bb;
 {
   basic_block b = BASIC_BLOCK (bb);
-  edge e = b->succ;
-  int set_size = dst->size;
+  unsigned int set_size = dst->size;
+  edge e;
 
-  for ( ; e != NULL; e = e->succ_next)
+  for (e = b->succ; e != 0; e = e->succ_next)
     {
       if (e->dest == EXIT_BLOCK_PTR)
         continue;
+
       sbitmap_copy (dst, src[e->dest->index]);
       break;
     }
-  if (e == NULL)
+
+  if (e == 0)
     sbitmap_ones (dst);
   else
-    {
-      for ( e = e->succ_next; e != NULL; e = e->succ_next)
-        {
-	  int i;
-	  sbitmap_ptr p,r;
+    for (e = e->succ_next; e != 0; e = e->succ_next)
+      {
+	unsigned int i;
+	sbitmap_ptr p, r;
 
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    continue;
+	if (e->dest == EXIT_BLOCK_PTR)
+	  continue;
 
-	  p = src[e->dest->index]->elms;
-	  r = dst->elms;
-	  for (i = 0; i < set_size; i++)
-	    *r++ &= *p++;
-	}
-    }
+	p = src[e->dest->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ &= *p++;
+      }
 }
 
 /* Set the bitmap DST to the intersection of SRC of predecessors of
@@ -387,34 +375,34 @@ sbitmap_intersection_of_preds (dst, src, bb)
      int bb;
 {
   basic_block b = BASIC_BLOCK (bb);
-  edge e = b->pred;
-  int set_size = dst->size;
+  unsigned int set_size = dst->size;
+  edge e;
 
-  for ( ; e != NULL; e = e->pred_next)
+  for (e = b->pred; e != 0; e = e->pred_next)
     {
-      if (e->src== ENTRY_BLOCK_PTR)
+      if (e->src == ENTRY_BLOCK_PTR)
         continue;
+
       sbitmap_copy (dst, src[e->src->index]);
       break;
     }
-  if (e == NULL)
+
+  if (e == 0)
     sbitmap_ones (dst);
   else
-    {
-      for ( e = e->pred_next; e != NULL; e = e->pred_next)
-        {
-	  int i;
-	  sbitmap_ptr p,r;
+    for (e = e->pred_next; e != 0; e = e->pred_next)
+      {
+	unsigned int i;
+	sbitmap_ptr p, r;
 
-	  if (e->src == ENTRY_BLOCK_PTR)
-	    continue;
+	if (e->src == ENTRY_BLOCK_PTR)
+	  continue;
 
-	  p = src[e->src->index]->elms;
-	  r = dst->elms;
-	  for (i = 0; i < set_size; i++)
-	    *r++ &= *p++;
-	}
-    }
+	p = src[e->src->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ &= *p++;
+      }
 }
 
 /* Set the bitmap DST to the union of SRC of successors of
@@ -427,34 +415,34 @@ sbitmap_union_of_succs (dst, src, bb)
      int bb;
 {
   basic_block b = BASIC_BLOCK (bb);
-  edge e = b->succ;
-  int set_size = dst->size;
+  unsigned int set_size = dst->size;
+  edge e;
 
-  for ( ; e != NULL; e = e->succ_next)
+  for (e = b->succ; e != 0; e = e->succ_next)
     {
       if (e->dest == EXIT_BLOCK_PTR)
         continue;
+
       sbitmap_copy (dst, src[e->dest->index]);
       break;
     }
-  if (e == NULL)
+
+  if (e == 0)
     sbitmap_zero (dst);
   else
-    {
-      for ( e = e->succ_next; e != NULL; e = e->succ_next)
-        {
-	  int i;
-	  sbitmap_ptr p,r;
+    for (e = e->succ_next; e != 0; e = e->succ_next)
+      {
+	unsigned int i;
+	sbitmap_ptr p, r;
 
-	  if (e->dest == EXIT_BLOCK_PTR)
-	    continue;
+	if (e->dest == EXIT_BLOCK_PTR)
+	  continue;
 
-	  p = src[e->dest->index]->elms;
-	  r = dst->elms;
-	  for (i = 0; i < set_size; i++)
-	    *r++ |= *p++;
-	}
-    }
+	p = src[e->dest->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ |= *p++;
+      }
 }
 
 /* Set the bitmap DST to the union of SRC of predecessors of
@@ -467,34 +455,34 @@ sbitmap_union_of_preds (dst, src, bb)
      int bb;
 {
   basic_block b = BASIC_BLOCK (bb);
-  edge e = b->pred;
-  int set_size = dst->size;
+  unsigned int set_size = dst->size;
+  edge e;
 
-  for ( ; e != NULL; e = e->pred_next)
+  for (e = b->pred; e != 0; e = e->pred_next)
     {
       if (e->src== ENTRY_BLOCK_PTR)
         continue;
+
       sbitmap_copy (dst, src[e->src->index]);
       break;
     }
-  if (e == NULL)
+
+  if (e == 0)
     sbitmap_zero (dst);
   else
-    {
-      for ( e = e->pred_next; e != NULL; e = e->pred_next)
-        {
-	  int i;
-	  sbitmap_ptr p,r;
+    for (e = e->pred_next; e != 0; e = e->pred_next)
+      {
+	unsigned int i;
+	sbitmap_ptr p, r;
 
-	  if (e->src == ENTRY_BLOCK_PTR)
-	    continue;
-
-	  p = src[e->src->index]->elms;
-	  r = dst->elms;
-	  for (i = 0; i < set_size; i++)
-	    *r++ |= *p++;
-	}
-    }
+	if (e->src == ENTRY_BLOCK_PTR)
+	  continue;
+	
+	p = src[e->src->index]->elms;
+	r = dst->elms;
+	for (i = 0; i < set_size; i++)
+	  *r++ |= *p++;
+      }
 }
 
 /* Return number of first bit set in the bitmap, -1 if none.  */
@@ -503,7 +491,8 @@ int
 sbitmap_first_set_bit (bmap)
      sbitmap bmap;
 {
-  int n;
+  unsigned int n;
+
   EXECUTE_IF_SET_IN_SBITMAP (bmap, 0, n, { return n; });
   return -1;
 }
@@ -516,22 +505,28 @@ sbitmap_last_set_bit (bmap)
 {
   int i;
   SBITMAP_ELT_TYPE *ptr = bmap->elms;
+
   for (i = bmap->size - 1; i >= 0; i--)
     {
       SBITMAP_ELT_TYPE word = ptr[i];
-      if (word)
-      {
-        int index = (i + 1) * SBITMAP_ELT_BITS - 1;
-        SBITMAP_ELT_TYPE mask = (SBITMAP_ELT_TYPE) 1 << (SBITMAP_ELT_BITS - 1);
-        while (1)
-          {
-            if (word & mask)
-              return index;
-            mask >>= 1;
-            index--;
-          }
-      }
+
+      if (word != 0)
+	{
+	  unsigned int index = (i + 1) * SBITMAP_ELT_BITS - 1;
+	  SBITMAP_ELT_TYPE mask
+	    = (SBITMAP_ELT_TYPE) 1 << (SBITMAP_ELT_BITS - 1);
+
+	  while (1)
+	    {
+	      if ((word & mask) != 0)
+		return index;
+
+	      mask >>= 1;
+	      index--;
+	    }
+	}
     }
+
   return -1;
 }
 
@@ -540,23 +535,46 @@ dump_sbitmap (file, bmap)
      FILE *file;
      sbitmap bmap;
 {
-  int i, n;
-  unsigned int j;
-  int set_size = bmap->size;
-  int total_bits = bmap->n_bits;
+  unsigned int i, n, j;
+  unsigned int set_size = bmap->size;
+  unsigned int total_bits = bmap->n_bits;
 
   fprintf (file, "  ");
   for (i = n = 0; i < set_size && n < total_bits; i++)
-    {
-      for (j = 0; j < SBITMAP_ELT_BITS && n < total_bits; j++, n++)
-	{
-	  if (n != 0 && n % 10 == 0)
-	    fprintf (file, " ");
-	  fprintf (file, "%d",
-		   (bmap->elms[i] & ((SBITMAP_ELT_TYPE) 1 << j)) != 0);
-	}
-    }
+    for (j = 0; j < SBITMAP_ELT_BITS && n < total_bits; j++, n++)
+      {
+	if (n != 0 && n % 10 == 0)
+	  fprintf (file, " ");
+
+	fprintf (file, "%d",
+		 (bmap->elms[i] & ((SBITMAP_ELT_TYPE) 1 << j)) != 0);
+      }
+
   fprintf (file, "\n");
+}
+
+void
+debug_sbitmap (bmap)
+     sbitmap bmap;
+{
+  unsigned int i, pos;
+
+  fprintf (stderr, "n_bits = %d, set = {", bmap->n_bits);
+
+  for (pos = 30, i = 0; i < bmap->n_bits; i++)
+    if (TEST_BIT (bmap, i))
+      {
+	if (pos > 70)
+	  {
+	    fprintf (stderr, "\n");
+	    pos = 0;
+	  }
+
+	fprintf (stderr, "%d ", i);
+	pos += 1 + (i >= 10) + (i >= 100);
+      }
+
+  fprintf (stderr, "}\n");
 }
 
 void
@@ -574,5 +592,6 @@ dump_sbitmap_vector (file, title, subtitle, bmaps, n_maps)
       fprintf (file, "%s %d\n", subtitle, bb);
       dump_sbitmap (file, bmaps[bb]);
     }
+
   fprintf (file, "\n");
 }

@@ -28,112 +28,111 @@ Boston, MA 02111-1307, USA.  */
 #define SBITMAP_ELT_BITS ((unsigned) HOST_BITS_PER_WIDE_INT)
 #define SBITMAP_ELT_TYPE unsigned HOST_WIDE_INT
 
-typedef struct simple_bitmap_def {
-  /* Number of bits.  */
-  int n_bits;
-  /* Size in elements.  */
-  int size;
-  /* Size in bytes.  */
-  int bytes;
-  /* The elements.  */
-  SBITMAP_ELT_TYPE elms[1];
+typedef struct simple_bitmap_def
+{
+  unsigned int n_bits;		/* Number of bits.  */
+  unsigned int size;		/* Size in elements.  */
+  unsigned int bytes;		/* Size in bytes.  */
+  SBITMAP_ELT_TYPE elms[1];	/* The elements.  */
 } *sbitmap;
 
 typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
 
 /* Return the set size needed for N elements.  */
-#define SBITMAP_SET_SIZE(n) (((n) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
+#define SBITMAP_SET_SIZE(N) (((N) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
 
-/* set bit number bitno in the bitmap */
-#define SET_BIT(bitmap, bitno)					\
-  ((bitmap)->elms [(bitno) / SBITMAP_ELT_BITS]			\
-   |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS)
+/* Set bit number bitno in the bitmap.  */
+#define SET_BIT(BITMAP, BITNO)					\
+  ((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS]			\
+   |= (SBITMAP_ELT_TYPE) 1 << (BITNO) % SBITMAP_ELT_BITS)
 
-/* test if bit number bitno in the bitmap is set */
-#define TEST_BIT(bitmap, bitno) \
-((bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] >> (bitno) % SBITMAP_ELT_BITS & 1)
+/* Test if bit number bitno in the bitmap is set.  */
+#define TEST_BIT(BITMAP, BITNO) \
+((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS] >> (BITNO) % SBITMAP_ELT_BITS & 1)
 
-/* reset bit number bitno in the bitmap  */
-#define RESET_BIT(bitmap, bitno)				\
-  ((bitmap)->elms [(bitno) / SBITMAP_ELT_BITS]			\
-   &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS))
+/* Reset bit number bitno in the bitmap.  */
+#define RESET_BIT(BITMAP, BITNO)				\
+  ((BITMAP)->elms [(BITNO) / SBITMAP_ELT_BITS]			\
+   &= ~((SBITMAP_ELT_TYPE) 1 << (BITNO) % SBITMAP_ELT_BITS))
 
 /* Loop over all elements of SBITSET, starting with MIN.  */
 #define EXECUTE_IF_SET_IN_SBITMAP(SBITMAP, MIN, N, CODE)		\
 do {									\
-  unsigned int bit_num_ = (MIN) % (unsigned) SBITMAP_ELT_BITS;		\
-  unsigned int word_num_ = (MIN) / (unsigned) SBITMAP_ELT_BITS;		\
-  unsigned int size_ = (SBITMAP)->size;					\
-  SBITMAP_ELT_TYPE *ptr_ = (SBITMAP)->elms;				\
+  unsigned int _word_num;						\
+  unsigned int _bit_num = (MIN) % (unsigned int) SBITMAP_ELT_BITS;	\
+  unsigned int _size = (SBITMAP)->size;					\
+  SBITMAP_ELT_TYPE *_ptr = (SBITMAP)->elms;				\
 									\
-  while (word_num_ < size_)						\
+  for (_word_num = (MIN) / (unsigned int) SBITMAP_ELT_BITS;		\
+       _word_num < _size; _word_num++, _bit_num = 0)			\
     {									\
-      SBITMAP_ELT_TYPE word_ = ptr_[word_num_];				\
-      if (word_ != 0)							\
-	{								\
-	  for (; bit_num_ < SBITMAP_ELT_BITS; ++bit_num_)		\
-	    {								\
-	      SBITMAP_ELT_TYPE mask_ = (SBITMAP_ELT_TYPE)1 << bit_num_;	\
-	      if ((word_ & mask_) != 0)					\
-		{							\
-		  word_ &= ~mask_;					\
-		  (N) = word_num_ * SBITMAP_ELT_BITS + bit_num_;	\
-		  CODE;							\
-		  if (word_ == 0)					\
-		    break;						\
-		}							\
-	    }								\
-	}								\
-      bit_num_ = 0;							\
-      word_num_++;							\
-   }									\
+      SBITMAP_ELT_TYPE _word = _ptr[_word_num];				\
+									\
+      if (_word != 0)							\
+	for (; _bit_num < SBITMAP_ELT_BITS; _bit_num++)			\
+	  {								\
+	    SBITMAP_ELT_TYPE _mask = (SBITMAP_ELT_TYPE)1 << _bit_num;	\
+									\
+	    if ((_word & _mask) != 0)					\
+	      {								\
+		_word &= ~ _mask;					\
+		(N) = _word_num * SBITMAP_ELT_BITS + _bit_num;		\
+		CODE;							\
+		if (_word == 0)						\
+		  break;						\
+	      }								\
+	  }								\
+    }									\
 } while (0)
 
-#define sbitmap_free(map)		free(map)
-#define sbitmap_vector_free(vec)	free(vec)
-
-extern void dump_sbitmap PARAMS ((FILE *, sbitmap));
-extern void dump_sbitmap_vector PARAMS ((FILE *, const char *, const char *,
-					sbitmap *, int));
-
-extern sbitmap sbitmap_alloc PARAMS ((int));
-extern sbitmap *sbitmap_vector_alloc PARAMS ((int, int));
-
-extern void sbitmap_copy PARAMS ((sbitmap, sbitmap));
-extern void sbitmap_zero PARAMS ((sbitmap));
-extern void sbitmap_ones PARAMS ((sbitmap));
-extern void sbitmap_vector_zero PARAMS ((sbitmap *, int));
-extern void sbitmap_vector_ones PARAMS ((sbitmap *, int));
-
-extern int sbitmap_union_of_diff PARAMS ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern void sbitmap_difference PARAMS ((sbitmap, sbitmap, sbitmap));
-extern void sbitmap_not PARAMS ((sbitmap, sbitmap));
-extern int sbitmap_a_or_b_and_c PARAMS ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_and_b_or_c PARAMS ((sbitmap, sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_and_b PARAMS ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_or_b PARAMS ((sbitmap, sbitmap, sbitmap));
-extern int sbitmap_a_subset_b_p PARAMS ((sbitmap, sbitmap));
-
-extern int sbitmap_first_set_bit PARAMS ((sbitmap));
-extern int sbitmap_last_set_bit PARAMS ((sbitmap));
+#define sbitmap_free(MAP)		free(MAP)
+#define sbitmap_vector_free(VEC)	free(VEC)
 
 struct int_list;
+
+extern void dump_sbitmap		PARAMS ((FILE *, sbitmap));
+extern void dump_sbitmap_vector 	PARAMS ((FILE *, const char *,
+						 const char *, sbitmap *,
+						 int));
+extern sbitmap sbitmap_alloc		PARAMS ((unsigned int));
+extern sbitmap *sbitmap_vector_alloc	PARAMS ((unsigned int, unsigned int));
+extern void sbitmap_copy 		PARAMS ((sbitmap, sbitmap));
+extern void sbitmap_zero		PARAMS ((sbitmap));
+extern void sbitmap_ones		PARAMS ((sbitmap));
+extern void sbitmap_vector_zero		PARAMS ((sbitmap *, unsigned int));
+extern void sbitmap_vector_ones		PARAMS ((sbitmap *, unsigned int));
+
+extern int sbitmap_union_of_diff	PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern void sbitmap_difference		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern void sbitmap_not			PARAMS ((sbitmap, sbitmap));
+extern int sbitmap_a_or_b_and_c		PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern int sbitmap_a_and_b_or_c		PARAMS ((sbitmap, sbitmap, sbitmap,
+						 sbitmap));
+extern int sbitmap_a_and_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_or_b		PARAMS ((sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_subset_b_p		PARAMS ((sbitmap, sbitmap));
+
+extern int sbitmap_first_set_bit	PARAMS ((sbitmap));
+extern int sbitmap_last_set_bit		PARAMS ((sbitmap));
+
 extern void sbitmap_intersect_of_predsucc PARAMS ((sbitmap, sbitmap *,
 						  int, struct int_list **));
 #define sbitmap_intersect_of_predecessors  sbitmap_intersect_of_predsucc
 #define sbitmap_intersect_of_successors    sbitmap_intersect_of_predsucc
 
-extern void sbitmap_union_of_predsucc PARAMS ((sbitmap, sbitmap *, int,
-					      struct int_list **));
+extern void sbitmap_union_of_predsucc	PARAMS ((sbitmap, sbitmap *, int,
+						 struct int_list **));
 #define sbitmap_union_of_predecessors  sbitmap_union_of_predsucc
 #define sbitmap_union_of_successors    sbitmap_union_of_predsucc
 
 /* Intersection and Union of preds/succs using the new flow graph 
    structure instead of the pred/succ arrays.  */
 
-extern void sbitmap_intersection_of_succs    PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_intersection_of_preds    PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_union_of_succs	     PARAMS ((sbitmap, sbitmap *, int));
-extern void sbitmap_union_of_preds	     PARAMS ((sbitmap, sbitmap *, int));
+extern void sbitmap_intersection_of_succs  PARAMS ((sbitmap, sbitmap *, int));
+extern void sbitmap_intersection_of_preds  PARAMS ((sbitmap, sbitmap *, int));
+extern void sbitmap_union_of_succs	   PARAMS ((sbitmap, sbitmap *, int));
+extern void sbitmap_union_of_preds	   PARAMS ((sbitmap, sbitmap *, int));
 
 #endif /* _SBITMAP_H */
