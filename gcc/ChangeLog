@@ -1,3 +1,7 @@
+Mon Sep 21 09:24:49 1998   Stan Cox  <scox@cygnus.com>
+
+	* i386-coff.h (DBX_DEBUGGING_INFO): Added.
+
 Mon Sep 21 09:14:49 1998   Robert Lipe  <robertl@dgii.com>
 
 	* i386.h: (TARGET_SWITCHES) Add description fields for flags 
