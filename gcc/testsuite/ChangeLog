@@ -1,3 +1,16 @@
+2001-07-24  Jason Merrill  <jason_merrill@redhat.com>
+
+	* lib/scanasm.exp (scan-assembler*): Don't take "testcase" argument.
+	* gcc.dg/asm-2.c, gcc.dg/asm-3.c, gcc.dg/asm-fs-1.c, gcc.dg/dll-1.c,
+	gcc.dg/dll-3.c, gcc.dg/dll-4.c, gcc.dg/iftrap-1.c: Don't pass it.
+	* g++.dg/mangle1.C, g++.dg/vtgc1.C: Likewise.
+
+	* lib/prune.exp (prune_gcc_output): Prune "Please submit a full
+	bug report" message.
+
+	* g++.dg/dg.exp: Run tests from subdirectories other than "special".
+	* g++.dg/ext/instantiate1.C: Move from old-deja.
+
 2001-07-24  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* g77.f-torture/execute/intrinsic-unix-bessel.f: New test
@@ -108,6 +121,13 @@ Mon Jul 16 12:21:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 2001-07-11  Ben Elliston  <bje@redhat.com>
 
 	* g++.old-deja/g++.other/enum5.C: New test.
+
+2001-07-10  Jason Merrill  <jason_merrill@redhat.com>
+
+	* lib/g++-dg.exp: Load file-format and target-supports like gcc.
+	(g++-dg-prune): Call prune_gcc_output.
+	* prune.exp: New file for prune_gcc_output.
+	* lib/g++.exp, lib/gcc.exp: Load it.
 
 2001-07-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 

@@ -6,4 +6,4 @@ int f()
   asm ("foo%%bar");
 }
 
-/* { dg-final { scan-assembler asm-3.c "foo%%bar" } } */
+/* { dg-final { scan-assembler "foo%%bar" } } */
