@@ -1,3 +1,12 @@
+2000-01-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* fixinc/Makefile.in (machname.h): SunOS 4 sed can't handle a
+	file with one line and no trailing newline.
+	Patch by Kaveh Ghazi <ghazi@caip.rutgers.edu>.
+	* fixinc/fixtests.c (machine_name_test): Fix fencepost error
+	checking if the match is on the line.
+	* fixinc/gnu-regex.c: Provide regerror not __regerror.
+
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (output_cbranch): Fix accidental squashing of the
