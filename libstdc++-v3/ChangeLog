@@ -1,3 +1,12 @@
+2001-05-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2841
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set
+	ld_library_path.  
+	(libstdc++-v3_set_ld_library_path): New, copied from g++.exp.
+	(libstdc++-v3-finish): Remove.
+	(libstdc++-v3_exit): Remove.
+
 2001-05-22  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/documentation.html:  Point to doxygen output.
@@ -35,7 +44,7 @@
 	(wcsstr): Same.
 	(wmemchr): Same.
 
-2001-05-21  Benjamin Kosnik  <bkoz@kredhat.com>
+2001-05-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/21_strings/c_strings.cc (main): Fix.
 
