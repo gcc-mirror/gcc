@@ -1368,7 +1368,7 @@ noce_get_alt_condition (if_info, target, earliest)
 
   /* X may not be mentioned in the range (cond_earliest, jump].  */
   for (insn = if_info->jump; insn != *earliest; insn = PREV_INSN (insn))
-    if (INSN_P (insn) && reg_mentioned_p (if_info->x, insn))
+    if (INSN_P (insn) && reg_overlap_mentioned_p (if_info->x, PATTERN (insn)))
       return NULL;
 
   /* A and B may not be modified in the range [cond_earliest, jump).  */
@@ -1774,16 +1774,18 @@ noce_process_if_block (ce_info)
 	  || GET_CODE (insn_b) != INSN
 	  || (set_b = single_set (insn_b)) == NULL_RTX
 	  || ! rtx_equal_p (x, SET_DEST (set_b))
-	  || reg_mentioned_p (x, cond)
-	  || reg_mentioned_p (x, a)
-	  || reg_mentioned_p (x, SET_SRC (set_b)))
+	  || reg_overlap_mentioned_p (x, cond)
+	  || reg_overlap_mentioned_p (x, a)
+	  || reg_overlap_mentioned_p (x, SET_SRC (set_b)))
 	insn_b = set_b = NULL_RTX;
     }
   b = (set_b ? SET_SRC (set_b) : x);
 
-  /* X may not be mentioned in the range (cond_earliest, jump].  */
+  /* X may not be mentioned in the range (cond_earliest, jump]. 
+     Note the use of reg_overlap_mentioned_p, which handles memories
+     properly, as opposed to reg_mentioned_p, which doesn't.  */
   for (insn = jump; insn != if_info.cond_earliest; insn = PREV_INSN (insn))
-    if (INSN_P (insn) && reg_mentioned_p (x, insn))
+    if (INSN_P (insn) && reg_overlap_mentioned_p (x, PATTERN (insn)))
       return FALSE;
 
   /* A and B may not be modified in the range [cond_earliest, jump).  */
