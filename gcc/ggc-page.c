@@ -18,18 +18,15 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-
 #include "config.h"
-#include "ggc.h"
-#include "rtl.h"
 #include "system.h"
 #include "tree.h"
+#include "rtl.h"
 #include "varray.h"
 #include "flags.h"
+#include "ggc.h"
+
+#include <sys/mman.h>
 
 
 /* Stategy: 
