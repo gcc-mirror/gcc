@@ -1,3 +1,8 @@
+1998-09-16  Richard Henderson  <rth@cygnus.com>
+
+	* g++.old-deja/g++.brendan/array1.C: Size array via arithmetic based
+	on the native word size instead of an integer literal.
+
 1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/static2.C: invocation of static data

@@ -1,7 +1,7 @@
 // Build don't link: 
 // Special g++ Options: -fconserve-space -fcommon
 // GROUPS passed array-bindings
-// excess errors test - XFAIL sparc64-*-* 
+
 extern "C" void printf (char *, ...);
-char array[(unsigned) 0x90000000];// ERROR -  overflow in array dimension.* , XFAIL sparc64-*-* alpha*-*-*
+char array[~(~0ul>>1)|~(0ul>>3)];  // ERROR - overflow in array dimension.*
 int main () { printf ("PASS\n"); return 0; }
