@@ -1,3 +1,9 @@
+2003-02-21  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/natSocketChannelImpl.cc:
+	Reverse logic for DISABLE_JAVA_NET. Thanks to Krister Walfridsson
+	<cato@df.lth.se> for pointing to it.
+
 2003-02-20  Raif S. Naffah <raif@fl.net.au>
 
 	* java/math/BigInteger.java (euclidInv): Take result array as an
