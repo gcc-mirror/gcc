@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dsparc -D__elf__ -Acpu=sparc -Amachine=sparc"
+#define CPP_PREDEFINES "-Dsparc -D__elf__"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crt0.o%s crti.o%s crtbegin.o%s"
