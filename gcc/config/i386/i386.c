@@ -442,15 +442,19 @@ struct rtx_def *ix86_compare_op0 = NULL_RTX;
 struct rtx_def *ix86_compare_op1 = NULL_RTX;
 
 #define MAX_386_STACK_LOCALS 2
+/* Size of the register save area.  */
+#define X86_64_VARARGS_SIZE (REGPARM_MAX * UNITS_PER_WORD + SSE_REGPARM_MAX * 16)
 
 /* Define the structure for the machine field in struct function.  */
 struct machine_function
 {
   rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+  int save_varrargs_registers;
   int accesses_prev_frame;
 };
 
 #define ix86_stack_locals (cfun->machine->stack_locals)
+#define ix86_save_varrargs_registers (cfun->machine->save_varrargs_registers)
 
 /* Structure describing stack frame layout.
    Stack grows downward:
@@ -475,9 +479,11 @@ struct ix86_frame
 {
   int nregs;
   int padding1;
+  int va_arg_size;
   HOST_WIDE_INT frame;
   int padding2;
   int outgoing_arguments_size;
+  int red_zone_size;
 
   HOST_WIDE_INT to_allocate;
   /* The offsets relative to ARG_POINTER.  */
@@ -2338,6 +2344,15 @@ ix86_compute_frame_layout (frame)
   /* Register save area */
   offset += frame->nregs * UNITS_PER_WORD;
 
+  /* Va-arg area */
+  if (ix86_save_varrargs_registers)
+    {
+      offset += X86_64_VARARGS_SIZE;
+      frame->va_arg_size = X86_64_VARARGS_SIZE;
+    }
+  else
+    frame->va_arg_size = 0;
+
   /* Align start of frame for local function.  */
   frame->padding1 = ((offset + stack_alignment_needed - 1)
 		     & -stack_alignment_needed) - offset;
@@ -2370,15 +2385,28 @@ ix86_compute_frame_layout (frame)
   /* Size prologue needs to allocate.  */
   frame->to_allocate =
     (size + frame->padding1 + frame->padding2
-     + frame->outgoing_arguments_size);
+     + frame->outgoing_arguments_size + frame->va_arg_size);
 
+  if (TARGET_64BIT && TARGET_RED_ZONE && current_function_sp_is_unchanging
+      && current_function_is_leaf)
+    {
+      frame->red_zone_size = frame->to_allocate;
+      if (frame->red_zone_size > RED_ZONE_SIZE - RED_ZONE_RESERVE)
+	frame->red_zone_size = RED_ZONE_SIZE - RED_ZONE_RESERVE;
+    }
+  else
+    frame->red_zone_size = 0;
+  frame->to_allocate -= frame->red_zone_size;
+  frame->stack_pointer_offset -= frame->red_zone_size;
 #if 0
   fprintf (stderr, "nregs: %i\n", frame->nregs);
   fprintf (stderr, "size: %i\n", size);
   fprintf (stderr, "alignment1: %i\n", stack_alignment_needed);
   fprintf (stderr, "padding1: %i\n", frame->padding1);
+  fprintf (stderr, "va_arg: %i\n", frame->va_arg_size);
   fprintf (stderr, "padding2: %i\n", frame->padding2);
   fprintf (stderr, "to_allocate: %i\n", frame->to_allocate);
+  fprintf (stderr, "red_zone_size: %i\n", frame->red_zone_size);
   fprintf (stderr, "frame_pointer_offset: %i\n", frame->frame_pointer_offset);
   fprintf (stderr, "hard_frame_pointer_offset: %i\n",
 	   frame->hard_frame_pointer_offset);
@@ -2438,8 +2466,12 @@ ix86_expand_prologue ()
 			  (stack_pointer_rtx, stack_pointer_rtx,
 		           GEN_INT (-frame.to_allocate), hard_frame_pointer_rtx));
       else
-        insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				      GEN_INT (-frame.to_allocate)));
+	if (TARGET_64BIT)
+	  insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (-frame.to_allocate)));
+        else
+	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+					GEN_INT (-frame.to_allocate)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
@@ -2447,6 +2479,9 @@ ix86_expand_prologue ()
       /* ??? Is this only valid for Win32?  */
 
       rtx arg0, sym;
+
+      if (TARGET_64BIT)
+	abort();
 
       arg0 = gen_rtx_REG (SImode, 0);
       emit_move_insn (arg0, GEN_INT (frame.to_allocate));
@@ -2489,8 +2524,12 @@ ix86_emit_epilogue_esp_adjustment (tsize)
 					      GEN_INT (tsize),
 					      hard_frame_pointer_rtx));
   else
-    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			   GEN_INT (tsize)));
+    if (TARGET_64BIT)
+      emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     GEN_INT (tsize)));
+    else
+      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
+			     GEN_INT (tsize)));
 }
 
 /* Emit code to restore saved registers using MOV insns.  First register
@@ -2563,18 +2602,20 @@ ix86_expand_epilogue (emit_return)
 	ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx, offset);
 
       if (!frame_pointer_needed)
-	ix86_emit_epilogue_esp_adjustment (frame.to_allocate
-					   + frame.nregs * UNITS_PER_WORD);
+	ix86_emit_epilogue_esp_adjustment (frame.to_allocate + frame.nregs * UNITS_PER_WORD);
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_size)
-	emit_insn (gen_leave ());
+	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
       else
 	{
 	  emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
 						    hard_frame_pointer_rtx,
 						    const0_rtx,
 						    hard_frame_pointer_rtx));
-	  emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+	  if (TARGET_64BIT)
+	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
+	  else
+	    emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
 	}
     }
   else
@@ -2595,9 +2636,19 @@ ix86_expand_epilogue (emit_return)
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (ix86_save_reg (regno))
-	  emit_insn (gen_popsi1 (gen_rtx_REG (SImode, regno)));
+	  {
+	    if (TARGET_64BIT)
+	      emit_insn (gen_popdi1 (gen_rtx_REG (Pmode, regno)));
+	    else
+	      emit_insn (gen_popsi1 (gen_rtx_REG (Pmode, regno)));
+	  }
       if (frame_pointer_needed)
-	emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+	{
+	  if (TARGET_64BIT)
+	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
+	  else
+	    emit_insn (gen_popsi1 (hard_frame_pointer_rtx));
+	}
     }
 
   /* Sibcall epilogues don't want a return instruction.  */
@@ -2615,6 +2666,10 @@ ix86_expand_epilogue (emit_return)
       if (current_function_pops_args >= 65536)
 	{
 	  rtx ecx = gen_rtx_REG (SImode, 2);
+
+	  /* There are is no "pascal" calling convention in 64bit ABI.  */
+	  if (TARGET_64BIT)
+	    abort();
 
 	  emit_insn (gen_popsi1 (ecx));
 	  emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, popc));

@@ -120,6 +120,7 @@ extern int target_flags;
 #define MASK_128BIT_LONG_DOUBLE 0x00080000	/* long double size is 128bit */
 #define MASK_MIX_SSE_I387	0x00100000	/* Mix SSE and i387 instructions */
 #define MASK_64BIT		0x00200000	/* Produce 64bit code */
+#define MASK_NO_RED_ZONE	0x00400000	/* Do not use red zone */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -250,6 +251,8 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_MIX_SSE_I387 ((target_flags & MASK_MIX_SSE_I387) != 0)
 #define TARGET_MMX ((target_flags & MASK_MMX) != 0)
 
+#define TARGET_RED_ZONE (!(target_flags & MASK_NO_RED_ZONE))
+
 #define TARGET_SWITCHES							      \
 { { "80387",			 MASK_80387, N_("Use hardware fp") },	      \
   { "no-80387",			-MASK_80387, N_("Do not use hardware fp") },  \
@@ -338,6 +341,10 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
     N_("Generate 64bit x86-64 code") },					      \
   { "32",			-MASK_64BIT,				      \
     N_("Generate 32bit i386 code") },					      \
+  { "red-zone",			-MASK_NO_RED_ZONE,			      \
+    N_("Use red-zone in the x86-64 code") },				      \
+  { "no-red-zone",		MASK_NO_RED_ZONE,			      \
+    N_("do not use red-zone in the x86-64 code") },			      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 
@@ -3106,6 +3113,10 @@ enum cmodel {
   CM_SMALL_PIC
 };
 
+/* Size of the RED_ZONE area.  */
+#define RED_ZONE_SIZE 128
+/* Reserved area of the red zone for temporaries.  */
+#define RED_ZONE_RESERVE 8
 /* Valud of -mcmodel specified by user.  */
 extern const char *ix86_cmodel_string;
 extern enum cmodel ix86_cmodel;
