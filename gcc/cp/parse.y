@@ -2072,8 +2072,10 @@ notype_initdcl0:
 nomods_initdcl0:
           notype_declarator maybeasm
             { /* Set things up as initdcl0_innards expects.  */
-	      $<ttype>2 = $1; 
-              $1 = NULL_TREE; }
+	      $<ttype>3 = $2;
+	      $2 = $1; 
+              $<ftype>1.t = NULL_TREE;
+	      $<ftype>1.lookups = NULL_TREE; }
           initdcl0_innards 
             {}
 	| constructor_declarator maybeasm maybe_attribute
