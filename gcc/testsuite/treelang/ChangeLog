@@ -1,3 +1,7 @@
+2005-03-22  James A. Morrison  <phython@gcc.gnu.org>
+
+	* compile/memory.tree: New test.
+
 2005-02-26  James A. Morrison  <phython@gcc.gnu.org>
 
 	* compile/var_defs: Add uninitialized variables.

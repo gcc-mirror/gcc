@@ -125,7 +125,7 @@ struct parameter_part GTY(())
 {
   struct prod_token_parm_item *next; /* Next entry.  */
   unsigned char* variable_name; /* Name. */
-  tree * GTY ((length ("1"))) where_to_put_var_tree; /* Where to save decl.  */
+  tree * GTY ((skip)) where_to_put_var_tree; /* Where to save decl.  */
 };
 
 /* A production or a token.  */
