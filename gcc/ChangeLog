@@ -1,3 +1,8 @@
+2004-09-16  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-operands.c (add_call_clobber_ops): Make read-only
+	test apply only to TREE_STATIC and DECL_EXTERNAL.
+
 2004-09-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (tree-cfg.o): Add CFGLAYOUT_H dependency.
