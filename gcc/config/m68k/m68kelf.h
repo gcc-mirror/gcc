@@ -246,9 +246,11 @@ extern int switch_table_difference_label_flag;
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
    operand of a function call. */
 #undef LEGITIMATE_PIC_OPERAND_P
-#define LEGITIMATE_PIC_OPERAND_P(X) \
-  (! symbolic_operand (X, VOIDmode) \
-   || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
+
+#define LEGITIMATE_PIC_OPERAND_P(X)	\
+  (! symbolic_operand (X, VOIDmode)				\
+   || (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X))	\
+   || PCREL_GENERAL_OPERAND_OK)
 
 /* Turn off function cse if we are doing PIC. We always want function call
    to be done as `bsr foo@PLTPC', so it will force the assembler to create 
@@ -261,6 +263,8 @@ extern int switch_table_difference_label_flag;
   if (flag_pic) flag_no_function_cse = 1; \
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+  if (TARGET_PCREL && flag_pic == 0)	\
+    flag_pic = 1;			\
 }
 /* end of stuff from m68kv4.h */
 

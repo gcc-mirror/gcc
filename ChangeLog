@@ -1,3 +1,46 @@
+Thu Jun 17 15:06:10 PDT 1999 Don Lindsay  <dlindsay@cygnus.com>
+
+        * added support for -mpcrel (PC relative addressing for m68k) 
+	based on code done by Michael Tiemann  <tiemann@axon.cygnus.com>.
+	* invoke.texi (m68000 options): Add documentation for -mpcrel flag.
+	* m68k.c (print_operand_address): Handle 32-bit PIC case.
+	(comments for general_src_operand): Add some explanation
+	about EXTRA_CONSTRAINTS.
+	(OVERRIDE_OPTIONS): Enable -fPIC in combination with -mpcrel.
+	* m68kelf.h (OVERRIDE_OPTIONS): Ditto.
+	(LEGITIMATE_PIC_OPERAND_P): Fix typo.
+	(LEGITIMATE_PIC_OPERAND_P): Re-derive from m68k.h case.
+	* m68k.h (LEGITIMATE_PIC_OPERAND_P): Fix delete-o.
+	(INDIRECTABLE_1_ADDRESS): Delete spurious '/' at end of macro.
+	(OVERRIDE_OPTIONS): Change behavior so that -mpcrel implies -fpic
+	if not already set.
+	(OVERRIDE_OPTIONS): Merge in changes from m68k.h.
+	* m68k.h (TARGET_PCREL): New target flag.
+	(TARGET_SWITCHES): Add "pcrel" as a recognized switch.
+	(OVERRIDE_OPTIONS): Add checks for -mpcrel.
+	(LEGITIMATE_PIC_OPERAND_P): Don't normally accept anything that
+	contains a SYMBOL_REF.  Relax this constraint during reload, since
+	we want to use the predicates, not reload's built-in concept of a
+	valid memory address, to control what insns need reloading.
+	(EXTRA_CONSTRAINT): Define constraints to accept pc-relative
+	operands (essentially 'g', 'm', and 's' under normal circumstances).
+	* m68k.c (print_operand): Cause printing of pc-relative addresses
+ 	to include pc register.
+	(print_operand_address): Ditto.
+	(general_src_operand): Accept operands that are not only
+	general_operands, but are also valid when used as a pc-relative
+	source.
+	(nonimmediate_src_operand): Similar, for nonimmediate_operands.
+	(memory_src_operand): Similar, for memory_operands.
+	(pcrel_address): New predicate to accept the special case of a
+	pc-relative address.
+	* m68k.md (many patterns): Rewrite common SImode, HImode, and
+	QImode insns to accept *_src_operand instead of *_operand where
+	pc-relative operands can fit.  For example, a pc-relative operand
+	can be used as a memory source operand for addsi3, but not as a
+	memory destination.
+	* hp320.h linux.h m68kv4.h (LEGITIMATE_PIC_OPERAND_P) as in m68k.h.
+
 Sun May 30 16:03:16 1999  Cort Dougan  <cort@cs.nmt.edu>
 
 	* config.guess (ppc-*-linux-gnu): Also use ld emul elf32ppclinux.
