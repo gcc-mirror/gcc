@@ -99,7 +99,7 @@ end ifobjc
    yylval is the node for the constant.  */
 %token CONSTANT
 
-/* String constants as arrays of the appropriate character type.  */
+/* A STRING_CST with type an array of the appropriate character type.  */
 %token STRING OBJC_STRING
 
 /* "...", used for functions with variable arglists.  */
@@ -348,14 +348,8 @@ extdef:
 ifobjc
 	| objcdef
 end ifobjc
-	| ASM_KEYWORD '(' expr ')' ';'
-		{ STRIP_NOPS ($3);
-		  if ((TREE_CODE ($3) == ADDR_EXPR
-		       && TREE_CODE (TREE_OPERAND ($3, 0)) == STRING_CST)
-		      || TREE_CODE ($3) == STRING_CST)
-		    assemble_asm ($3);
-		  else
-		    error ("argument of `asm' is not a constant string"); }
+	| ASM_KEYWORD '(' STRING ')' ';'
+		{ assemble_asm ($3); }
 	| extension extdef
 		{ RESTORE_WARN_FLAGS ($1); }
 	;
@@ -2306,20 +2300,20 @@ stmt:
 	| RETURN expr ';'
                 { stmt_count++;
 		  $$ = c_expand_return ($2); }
-	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
+	| ASM_KEYWORD maybe_type_qual '(' STRING ')' ';'
 		{ stmt_count++;
 		  $$ = simple_asm_stmt ($4); }
 	/* This is the case with just output operands.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ')' ';'
+	| ASM_KEYWORD maybe_type_qual '(' STRING ':' asm_operands ')' ';'
 		{ stmt_count++;
 		  $$ = build_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
 	/* This is the case with input operands as well.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
+	| ASM_KEYWORD maybe_type_qual '(' STRING ':' asm_operands ':'
 	  asm_operands ')' ';'
 		{ stmt_count++;
 		  $$ = build_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
-	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
+	| ASM_KEYWORD maybe_type_qual '(' STRING ':' asm_operands ':'
   	  asm_operands ':' asm_clobbers ')' ';'
 		{ stmt_count++;
 		  $$ = build_asm_stmt ($2, $4, $6, $8, $10); }

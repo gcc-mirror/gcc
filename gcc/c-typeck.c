@@ -6820,27 +6820,16 @@ process_init_element (value)
 
 /* Build a simple asm-statement, from one string literal.  */
 tree
-simple_asm_stmt (expr)
-     tree expr;
+simple_asm_stmt (string)
+     tree string;
 {
-  STRIP_NOPS (expr);
+  tree stmt;
 
-  if (TREE_CODE (expr) == ADDR_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-
-  if (TREE_CODE (expr) == STRING_CST)
-    {
-      tree stmt;
-
-      stmt = add_stmt (build_stmt (ASM_STMT, NULL_TREE, expr,
-				   NULL_TREE, NULL_TREE,
-				   NULL_TREE));
-      ASM_INPUT_P (stmt) = 1;
-      return stmt;
-    }
-
-  error ("argument of `asm' is not a constant string");
-  return NULL_TREE;
+  stmt = add_stmt (build_stmt (ASM_STMT, NULL_TREE, string,
+			       NULL_TREE, NULL_TREE,
+			       NULL_TREE));
+  ASM_INPUT_P (stmt) = 1;
+  return stmt;
 }
 
 /* Build an asm-statement, whose components are a CV_QUALIFIER, a
@@ -6855,12 +6844,6 @@ build_asm_stmt (cv_qualifier, string, outputs, inputs, clobbers)
      tree clobbers;
 {
   tree tail;
-
-  if (TREE_CODE (string) != STRING_CST)
-    {
-      error ("asm template is not a string constant");
-      return NULL_TREE;
-    }
 
   if (cv_qualifier != NULL_TREE
       && cv_qualifier != ridpointers[(int) RID_VOLATILE])
