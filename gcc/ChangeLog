@@ -1,5 +1,17 @@
 2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (tablejump_h8300): Change to
+	*tablejump_h8300.
+	(tablejump_h8300h): Change to *tablejump_h8300hs_advanced.
+	(tablejump_normal_mode): Change to *tablejump_h8300hs_normal.
+	(indirect_jump_h8300): Change to *indirect_jump_h8300.
+	(indirect_jump_h8300h): Change to
+	*indirect_jump_h8300hs_advanced.
+	(indirect_jump_normal_mode): Change to
+	*indirect_jump_h8300hs_normal.
+
+2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Remove constraints from expanders.
 
 2003-11-24  Kazu Hirata  <kazu@cs.umass.edu>
