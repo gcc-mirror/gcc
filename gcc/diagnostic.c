@@ -1194,7 +1194,7 @@ internal_error VPARAMS ((const char *msgid, ...))
   fnotice (stderr,
 "Please submit a full bug report,\n\
 with preprocessed source if appropriate.\n\
-See %s for instructions.\n", GCCBUGURL);
+See %s for instructions.\n", bug_report_url);
   exit (FATAL_EXIT_CODE);
 }
 
@@ -1302,7 +1302,7 @@ error_recursion (context)
   fnotice (stderr,
 "Please submit a full bug report,\n\
 with preprocessed source if appropriate.\n\
-See %s for instructions.\n", GCCBUGURL);
+See %s for instructions.\n", bug_report_url);
   exit (FATAL_EXIT_CODE);
 }
 

@@ -1,11 +1,16 @@
+2002-10-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* gjavah.c, jcf-dump.c, jv-scan.c: Globally replace GCCBUGURL with
+	bug_report_url.
+
 2002-10-08  Andrew Haley  <aph@redhat.com>
 
 	* parse.y (attach_init_test_initialization_flags): Check for
 	error_mark_node.
 
-2002-10-07  Anthony Green  <green@redhat.com> 
+2002-10-07  Anthony Green  <green@redhat.com>
 
-        * parse.y (merge_string_cste): Fix bug in string concatenation. 
+	* parse.y (merge_string_cste): Fix bug in string concatenation.
 
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
@@ -50,7 +55,7 @@
 
 2002-09-21  Richard Henderson  <rth@redhat.com>
 
-	* jcf-parse.c (get_constant): Decode from IEEE no matter 
+	* jcf-parse.c (get_constant): Decode from IEEE no matter
 	what the target format.
 
 2002-09-20  Kazu Hirata  <kazu@cs.umass.edu>
@@ -173,7 +178,7 @@
 
 2002-08-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* jcf-write.c (get_access_flags): Return correct access flags for 
+	* jcf-write.c (get_access_flags): Return correct access flags for
 	private and protected inner classes.
 
 2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
@@ -316,10 +321,10 @@
 
 2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* gjavah.c (throwable_p): Accept argument as either a classname or 
+	* gjavah.c (throwable_p): Accept argument as either a classname or
 	signature fragment. Create null-terminated classname string for super
 	when calling itself recursively.
-	(decode_signature_piece): Skip first character from class name 
+	(decode_signature_piece): Skip first character from class name
 	signature when calling throwable_p.
 
 2002-06-08  H.J. Lu  (hjl@gnu.org)

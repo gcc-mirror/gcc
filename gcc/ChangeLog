@@ -1,3 +1,13 @@
+2002-10-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* system.h (GCCBUGURL): Delete.
+	* version.c (bug_report_url): New.  Add commentary about
+	modifying both these strings in modified distributions.
+	* version.h: Declare bug_report_url.
+
+	* diagnostic.c, gcc.c, gcov.c: Globally replace GCCBUGURL with
+	bug_report_url.
+
 2002-10-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs6000/spe.h (__ev_set_acc_u64): Use __ev_create_u64 to
@@ -17,9 +27,9 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/mips/mips.md (define_attr cpu): Add r4111.
 
-2002-10-08  Anthony Green  <green@redhat.com> 
+2002-10-08  Anthony Green  <green@redhat.com>
 
-	* bitmap.c (bitmap_equal_p): Clear all bitmap_head fields. 
+	* bitmap.c (bitmap_equal_p): Clear all bitmap_head fields.
 
 2002-10-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -75,7 +85,7 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* pdp11.h (LEGITIMATE_CONSTANT_P): Fix soft-float case.
 
 	* t-pdp11: Add LIB2FUNCS_EXTRA.
-	* pdp11.c (pdp11_output_function_prologue): Restrict offset to 16bit, 
+	* pdp11.c (pdp11_output_function_prologue): Restrict offset to 16bit,
 	add preceding 0 to the octal constant, rename 'fp' to 'r5', rename
 	'fldd' to 'ldd', rename 'fstd' to 'std'.
 	(pdp11_output_function_epilogue): Likewise.
@@ -84,7 +94,7 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(print_operand_address): Add pre_modify, post_modify.
 	(output_addr_const_pdp11): Add preceding 0 to the octal constant.
 	* pdp11.h (GO_IF_LEGITIMATE_ADDRESS) : Add 'movb' pre_modify case
-	with the indication of Paul Koning. 
+	with the indication of Paul Koning.
 	(PRINT_OPERAND): Fix floating constant.
 	* pdp11.md (movdi): Restrict matching pattern.
 	(movqi): Generalize the matching pattern.
@@ -102,7 +112,7 @@ Tue Oct  8 16:50:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(mod): Fix wrong subreg.
 
 2002-09-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Volker Reichelt <reichelt@igpm.rwth-aachen.de>
+	    Volker Reichelt <reichelt@igpm.rwth-aachen.de>
 
 	PR c/7411
 	* expr.c (expand_expr) [PLUS]: Simplify after the operands

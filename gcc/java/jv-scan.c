@@ -115,7 +115,7 @@ help ()
   printf ("  --version               Print version number, then exit\n");
   printf ("\n");
   printf ("For bug reporting instructions, please see:\n");
-  printf ("%s.\n", GCCBUGURL);
+  printf ("%s.\n", bug_report_url);
   exit (0);
 }
 
