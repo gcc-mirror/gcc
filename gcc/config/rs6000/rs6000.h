@@ -2215,12 +2215,16 @@ do {                                                                    \
 #define OBJECT_FORMAT_COFF
 
 /* Define the magic numbers that we recognize as COFF.
+
    AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit objects, but collect2.c
    does not include files in the correct order to conditionally define
-   the symbolic name in this macro.  */
+   the symbolic name in this macro. 
+
+   The AIX linker accepts import/export files as object files,
+   so accept "#!" (0x2321) magic number.  */
 #define MY_ISCOFF(magic) \
   ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
-   || (magic) == U802TOCMAGIC || (magic) == 0757)
+   || (magic) == U802TOCMAGIC || (magic) == 0757 || (magic) == 0x2321)
 
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"
@@ -2542,7 +2546,8 @@ extern int rs6000_trunc_used;
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* Define the routines to implement these extra sections.  */
+/* Define the routines to implement these extra sections.
+   BIGGEST_ALIGNMENT is 64, so align the sections that much.  */
 
 #define EXTRA_SECTION_FUNCTIONS				\
 							\
@@ -2551,9 +2556,8 @@ read_only_data_section ()				\
 {							\
   if (in_section != read_only_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RO]%s\n",	\
-	       xcoff_read_only_section_name,		\
-	       (TARGET_32BIT ? "" : ",3"));		\
+      fprintf (asm_out_file, ".csect %s[RO],3\n",	\
+	       xcoff_read_only_section_name);		\
       in_section = read_only_data;			\
     }							\
 }							\
@@ -2563,9 +2567,8 @@ private_data_section ()					\
 {							\
   if (in_section != private_data)			\
     {							\
-      fprintf (asm_out_file, ".csect %s[RW]%s\n",	\
-	       xcoff_private_data_section_name,		\
-	       (TARGET_32BIT ? "" : ",3"));		\
+      fprintf (asm_out_file, ".csect %s[RW],3\n",	\
+	       xcoff_private_data_section_name);	\
       in_section = private_data;			\
     }							\
 }							\
@@ -2575,9 +2578,8 @@ read_only_private_data_section ()			\
 {							\
   if (in_section != read_only_private_data)		\
     {							\
-      fprintf (asm_out_file, ".csect %s[RO]%s\n",	\
-	       xcoff_private_data_section_name,		\
-	       (TARGET_32BIT ? "" : ",3"));		\
+      fprintf (asm_out_file, ".csect %s[RO],3\n",	\
+	       xcoff_private_data_section_name);	\
       in_section = read_only_private_data;		\
     }							\
 }							\
@@ -2806,14 +2808,16 @@ extern int toc_initialized;
 
 #define ASM_APP_OFF ""
 
-/* Output before instructions.  */
+/* Output before instructions.
+   Text section for 64-bit target may contain 64-bit address jump table.  */
 
-#define TEXT_SECTION_ASM_OP ".csect .text[PR]"
+#define TEXT_SECTION_ASM_OP (TARGET_32BIT \
+			     ? ".csect .text[PR]" : ".csect .text[PR],3")
 
-/* Output before writable data.  */
+/* Output before writable data.
+   Align entire section to BIGGEST_ALIGNMENT.  */
 
-#define DATA_SECTION_ASM_OP (TARGET_32BIT \
-			     ? ".csect .data[RW]" : ".csect .data[RW],3")
+#define DATA_SECTION_ASM_OP ".csect .data[RW],3"
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
@@ -3116,12 +3120,16 @@ do {									\
   } while (0)
 
 /* This says how to output an assembler line
-   to define a local common symbol.  */
+   to define a local common symbol.
+   Alignment cannot be specified, but we can try to maintain
+   alignment after preceding TOC section if it was aligned
+   for 64-bit mode.  */
 
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
   do { fputs (".lcomm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ",%d,%s\n", (SIZE), xcoff_bss_section_name); \
+       fprintf ((FILE), ",%d,%s\n", (TARGET_32BIT ? (SIZE) : (ROUNDED)), \
+		xcoff_bss_section_name);		\
      } while (0)
 
 /* Store in OUTPUT a string (made with alloca) containing

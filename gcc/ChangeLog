@@ -1,3 +1,21 @@
+Mon May  3 22:38:41 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Change non-PowerPC
+	and AIX64 combination to warning.  Add warning for disabling
+	PowerPC64 support when using 64-bit mode.
+	(LIB_SPEC): Do not link with libg.a in 64-bit mode.
+	(LINK_SPEC): Do not export libg.exp symbols in 64-bit mode.
+	* rs6000/rs6000.h (MY_ISCOFF): Treat import/export files as valid
+	XCOFF files.
+	(read_only_data_section, private_data_section,
+	read_only_private_data_section): Always align CSECTs to doubleword
+	boundary regardless of mode.
+	(TEXT_SECTION_ASM_OP): Align text CSECT on doubleword boundary in
+	64-bit mode.
+	(DATA_SECTION_ASM_OP): Always align CSECT to doubleword boundary.
+	(ASM_OUTPUT_LOCAL): Use rounded size in 64-bit mode to
+	maintain doublword alignment.
+
 Mon May  3 14:45:23 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (btst insns): btst does not leave cc0 in a useable
