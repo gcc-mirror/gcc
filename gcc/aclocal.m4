@@ -10,59 +10,44 @@ fi
 ])
 
 dnl See whether we need a declaration for a function.
-dnl gcc_AC_NEED_DECLARATION(FUNCTION [, EXTRA-HEADER-FILES])
+dnl The result is highly dependent on the INCLUDES passed in, so make sure
+dnl to use a different cache variable name in this macro if it is invoked
+dnl in a different context somewhere else.
+dnl gcc_AC_NEED_DECLARATION(FUNCTION, INCLUDES,
+dnl	[ACTION-IF-NEEDED [, ACTION-IF-NOT-NEEDED]])
 AC_DEFUN(gcc_AC_NEED_DECLARATION,
 [AC_MSG_CHECKING([whether $1 must be declared])
 AC_CACHE_VAL(gcc_cv_decl_needed_$1,
-[AC_TRY_COMPILE([
-#include <stdio.h>
-#ifdef STRING_WITH_STRINGS
-# include <string.h>
-# include <strings.h>
-#else
-# ifdef HAVE_STRING_H
-#  include <string.h>
-# else
-#  ifdef HAVE_STRINGS_H
-#   include <strings.h>
-#  endif
-# endif
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifndef HAVE_RINDEX
-#ifndef rindex
-#define rindex strrchr
-#endif
-#endif
-#ifndef HAVE_INDEX
-#ifndef index
-#define index strchr
-#endif
-#endif
-$2],
-[char *(*pfn) = (char *(*)) $1],
-eval "gcc_cv_decl_needed_$1=no", eval "gcc_cv_decl_needed_$1=yes")])
+[AC_TRY_COMPILE([$2],
+[#ifndef $1
+char *(*pfn) = (char *(*)) $1 ;
+#endif], eval "gcc_cv_decl_needed_$1=no", eval "gcc_cv_decl_needed_$1=yes")])
 if eval "test \"`echo '$gcc_cv_decl_needed_'$1`\" = yes"; then
-  AC_MSG_RESULT(yes)
-  gcc_tr_decl=NEED_DECLARATION_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  AC_DEFINE_UNQUOTED($gcc_tr_decl)
+  AC_MSG_RESULT(yes) ; ifelse([$3], , :, [$3])
 else
-  AC_MSG_RESULT(no)
+  AC_MSG_RESULT(no) ; ifelse([$4], , :, [$4])
 fi
 ])dnl
 
 dnl Check multiple functions to see whether each needs a declaration.
-dnl gcc_AC_NEED_DECLARATIONS(FUNCTION... [, EXTRA-HEADER-FILES])
+dnl Arrange to define NEED_DECLARATION_<FUNCTION> if appropriate.
+dnl gcc_AC_NEED_DECLARATIONS(FUNCTION... , INCLUDES,
+dnl	[ACTION-IF-NEEDED [, ACTION-IF-NOT-NEEDED]])
 AC_DEFUN(gcc_AC_NEED_DECLARATIONS,
 [for ac_func in $1
 do
-gcc_AC_NEED_DECLARATION($ac_func, $2)
+gcc_AC_NEED_DECLARATION($ac_func, [$2],
+[changequote(, )dnl
+  ac_tr_decl=NEED_DECLARATION_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+changequote([, ])dnl
+  AC_DEFINE_UNQUOTED($ac_tr_decl) $3], $4)
 done
+dnl Automatically generate config.h entries via autoheader.
+if test x = y ; then
+  patsubst(translit([$1], [a-z], [A-Z]), [\w+],
+    AC_DEFINE([NEED_DECLARATION_\&], 1,
+      [Define if you need to provide a declaration for this function.]))dnl
+fi
 ])
 
 dnl Check if we have vprintf and possibly _doprnt.
@@ -87,13 +72,13 @@ AC_DEFUN(gcc_AC_FUNC_PRINTF_PTR,
   gcc_cv_func_printf_ptr,
 [AC_TRY_RUN([#include <stdio.h>
 
-main()
+int main()
 {
   char buf[64];
   char *p = buf, *q = NULL;
   sprintf(buf, "%p", p);
   sscanf(buf, "%p", &q);
-  exit (p != q);
+  return (p != q);
 }], gcc_cv_func_printf_ptr=yes, gcc_cv_func_printf_ptr=no,
 	gcc_cv_func_printf_ptr=no)
 rm -f core core.* *.core])
