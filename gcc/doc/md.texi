@@ -5600,8 +5600,8 @@ in such processors and suggestions for their representation.
 @cindex automaton based pipeline description
 
 This section describes constructions of the automaton based processor
-pipeline description.  The order of all mentioned below constructions
-in the machine description file is not important.
+pipeline description.  The order of constructions within the machine
+description file is not important.
 
 @findex define_automaton
 @cindex pipeline hazard recognizer
@@ -5609,7 +5609,7 @@ The following optional construction describes names of automata
 generated and used for the pipeline hazards recognition.  Sometimes
 the generated finite state automaton used by the pipeline hazard
 recognizer is large.  If we use more than one automaton and bind functional
-units to the automata, the summary size of the automata usually is
+units to the automata, the total size of the automata is usually 
 less than the size of the single automaton.  If there is no one such
 construction, only one finite state automaton is generated.
 
@@ -5619,12 +5619,12 @@ construction, only one finite state automaton is generated.
 
 @var{automata-names} is a string giving names of the automata.  The
 names are separated by commas.  All the automata should have unique names.
-The automaton name is used in construction @code{define_cpu_unit} and
+The automaton name is used in the constructions @code{define_cpu_unit} and
 @code{define_query_cpu_unit}.
 
 @findex define_cpu_unit
 @cindex processor functional units
-Each processor functional unit used in description of instruction
+Each processor functional unit used in the description of instruction
 reservations should be described by the following construction.
 
 @smallexample

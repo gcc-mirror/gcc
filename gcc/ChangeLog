@@ -1,3 +1,7 @@
+2003-05-14  Ben Elliston  <bje@wasabisystems.com>
+
+	* doc/md.texi (Automaton pipeline description): Grammar fixes.
+
 2003-05-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* target-def.h (TARGET_MACHINE_DEPENDENT_REORG): Define.
