@@ -160,6 +160,7 @@ Introduction, gccint, GNU Compiler Collection (GCC) Internals}.
 @include frontends.texi
 @include standards.texi
 @include invoke.texi
+@include implement-c.texi
 @include extend.texi
 @include objc.texi
 @include compat.texi
