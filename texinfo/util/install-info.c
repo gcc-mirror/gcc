@@ -1,7 +1,7 @@
 /* install-info -- create Info directory entry(ies) for an Info file.
    Copyright (C) 1996 Free Software Foundation, Inc.
 
-$Id: install-info.c,v 1.1.1.1 1997/08/21 22:58:12 jason Exp $
+$Id: install-info.c,v 1.3 1997/09/18 05:54:18 law Exp $
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,6 +29,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #else
 #include <strings.h>
 #endif /* !HAVE_STRING_H */
+
+#if !defined (HAVE_STRCHR)
+char *strrchr ();
+#endif /* !HAVE_STRCHR */
+
 
 /* Get O_RDONLY.  */
 #ifdef HAVE_SYS_FCNTL_H
@@ -622,7 +627,6 @@ For more information about these matters, see the files named COPYING.");
      .info suffix.  */
   {
     unsigned basename_len;
-    extern char *strrchr ();
     char *infile_basename = strrchr (infile, '/');
     if (infile_basename)
       infile_basename++;
