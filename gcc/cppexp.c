@@ -849,6 +849,10 @@ _cpp_parse_expr (pfile)
 		  top->value = v2;
 		  top->unsignedp = unsigned2;
 		  top->flags |= HAVE_VALUE;
+
+		  if (CPP_WTRADITIONAL (pfile))
+		    cpp_warning (pfile,
+			"traditional C rejects the unary plus operator");
 		}
 	      else
 		{

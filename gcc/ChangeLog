@@ -1,3 +1,8 @@
+2000-07-24  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppexp.c: Warn about unary + if -Wtraditional.
+	* cpplex.c (lex_line): Always set BOL on the first token of a line.
+
 2000-07-24  Michael Meissner  <meissner@redhat.com>
 
 	* d30v.h (FUNCTION_ARG_KEEP_AS_REFERENCE): Delete references to
