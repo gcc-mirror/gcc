@@ -35,7 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <ctype.h>
 #include <sys/stat.h>
 
-#ifndef WINNT
+#ifndef _WIN32
 #ifdef USG
 #undef FLOAT
 #include <sys/param.h>
@@ -783,7 +783,7 @@ int dump_time;
 int
 get_run_time ()
 {
-#ifndef WINNT
+#ifndef _WIN32
 #ifdef USG
   struct tms tms;
 #else
@@ -803,12 +803,12 @@ get_run_time ()
 
   if (quiet_flag)
     return 0;
-#ifdef WINNT
+#ifdef _WIN32
   if (clock() < 0)
     return 0;
   else
     return (clock() * 1000);
-#else /* not WINNT */
+#else /* not _WIN32 */
 #ifdef USG
   times (&tms);
   return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
@@ -3914,7 +3914,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 
   compile_file (filename);
 
-#if !defined(OS2) && !defined(VMS) && !defined(WINNT)
+#if !defined(OS2) && !defined(VMS) && !defined(_WIN32)
   if (flag_print_mem)
     {
 #ifdef __alpha
@@ -3932,7 +3932,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
       system ("ps v");
 #endif /* not USG */
     }
-#endif /* not OS2 and not VMS and not WINNT */
+#endif /* not OS2 and not VMS and not _WIN32 */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);

@@ -64,7 +64,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef WINNT
+#ifndef _WIN32
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
@@ -169,7 +169,7 @@ typedef char * const_pointer_type;
 typedef void voidfn ();
 extern VOLATILE voidfn abort;
 #endif
-#ifndef WINNT
+#ifndef _WIN32
 extern int kill ();
 #endif
 extern int creat ();
