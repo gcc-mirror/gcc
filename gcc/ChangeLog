@@ -1,3 +1,10 @@
+Sat Sep  4 13:44:01 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (C_AND_C_OBJS): Add gcc-callbacks.o.
+	(OBJS): Add $(GGC).
+	(ggc-callbacks.o): New target.
+	* ggc-callbacks.c: New file.
+
 Sat Sep  4 22:53:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* expr.h: Collapse individual optab and libfunc vars to arrays.

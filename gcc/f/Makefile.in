@@ -194,8 +194,8 @@ F77_OBJS = \
  where.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist`
-OBJDEPS = ../stamp-objlist
+OBJS = `cat ../stamp-objlist` ../ggc-callbacks.o
+OBJDEPS = ../stamp-objlist ../ggc-callbacks.o
 
 compiler: ../f771$(exeext)
 ../f771$(exeext): $(P) $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)

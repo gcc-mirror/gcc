@@ -183,7 +183,8 @@ FLAGS_TO_PASS = \
 
 CHILL_OBJS = parse.o actions.o except.o grant.o lang.o \
    tree.o lex.o decl.o typeck.o convert.o expr.o loop.o \
-   tasking.o timing.o inout.o satisfy.o ch-version.o
+   tasking.o timing.o inout.o satisfy.o ch-version.o \
+   ../ggc-callbacks.o
 
 # Language-independent object files.
 OBJS = `cat ../stamp-objlist`
