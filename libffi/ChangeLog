@@ -1,3 +1,10 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/ia64/unix.S (ffi_call_unix): Insert group barrier break
+	fp_done.
+	(ffi_closure_UNIX): Fix f14/f15 adjustment if FLOAT_SZ is ever
+	changed from 8.
+
 2004-06-06  Sean McNeil  <sean@mcneil.com>
 
 	* configure.ac: Add x86_64-*-freebsd* support.
