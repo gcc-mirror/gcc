@@ -1,3 +1,10 @@
+2004-02-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* combine.c (can_combine_p): Don't ignore SETs marked with
+	REG_EH_REGION notes.
+	(try_combine): When attemting to fix unrecognized insns, don't
+	split a PARALLEL that contains the original i2.
+
 2004-02-21  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/darwin.h (TARGET_OPTION_TRANSLATE_TABLE): Refer to
