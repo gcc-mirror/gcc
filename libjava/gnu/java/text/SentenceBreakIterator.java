@@ -1,5 +1,5 @@
 /* SentenceBreakIterator.java - Default sentence BreakIterator.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -91,13 +91,8 @@ public class SentenceBreakIterator extends BaseBreakIterator
 	    while (n != CharacterIterator.DONE
 		   && Character.getType(n) == Character.END_PUNCTUATION)
 	      n = iter.next();
-	    // Skip spaces.
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.SPACE_SEPARATOR)
-	      n = iter.next();
-	    // Skip optional paragraph separator.
-	    if (n != CharacterIterator.DONE
-		&& Character.getType(n) == Character.PARAGRAPH_SEPARATOR)
+	    // Skip (java) space, line and paragraph separators.
+	    while (n != CharacterIterator.DONE && Character.isWhitespace(n))
 	      n = iter.next();
 
 	    // There's always a break somewhere after `!' or `?'.
@@ -111,11 +106,11 @@ public class SentenceBreakIterator extends BaseBreakIterator
 	    while (n != CharacterIterator.DONE
 		   && Character.getType(n) == Character.END_PUNCTUATION)
 	      n = iter.next();
-	    // Skip spaces.  We keep count because we need at least
-	    // one for this period to represent a terminator.
+	    // Skip (java) space, line and paragraph separators.
+	    // We keep count because we need at least one for this period to
+	    // represent a terminator.
 	    int spcount = 0;
-	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.SPACE_SEPARATOR)
+	    while (n != CharacterIterator.DONE && Character.isWhitespace(n))
 	      {
 		n = iter.next();
 		++spcount;
@@ -162,7 +157,7 @@ public class SentenceBreakIterator extends BaseBreakIterator
 
 	if (! Character.isLowerCase(c)
 	    && (nt == Character.START_PUNCTUATION
-		|| nt == Character.SPACE_SEPARATOR))
+		|| Character.isWhitespace(n)))
 	  {
 	    int save = iter.getIndex();
 	    int save_nt = nt;
@@ -173,12 +168,12 @@ public class SentenceBreakIterator extends BaseBreakIterator
 	      n = iter.previous();
 	    if (n == CharacterIterator.DONE)
 	      break;
-	    if (Character.getType(n) == Character.SPACE_SEPARATOR)
+	    if (Character.isWhitespace(n))
 	      {
-		// Must have at least once space after the `.'.
+		// Must have at least one (java) space after the `.'.
 		int save2 = iter.getIndex();
 		while (n != CharacterIterator.DONE
-		       && Character.getType(n) == Character.SPACE_SEPARATOR)
+		       && Character.isWhitespace(n))
 		  n = iter.previous();
 		// Skip close punctuation.
 		while (n != CharacterIterator.DONE
@@ -203,13 +198,13 @@ public class SentenceBreakIterator extends BaseBreakIterator
 	    period = iter.getIndex();
 	    break;
 	  }
-	else if (nt == Character.SPACE_SEPARATOR
+	else if (Character.isWhitespace(n)
 		 || nt == Character.END_PUNCTUATION)
 	  {
 	    int save = iter.getIndex();
-	    // Skip spaces.
+	    // Skip (java) space, line and paragraph separators.
 	    while (n != CharacterIterator.DONE
-		   && Character.getType(n) == Character.SPACE_SEPARATOR)
+		   && Character.isWhitespace(n))
 	      n = iter.previous();
 	    // Skip close punctuation.
 	    while (n != CharacterIterator.DONE

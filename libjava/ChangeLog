@@ -1,3 +1,9 @@
+2002-05-11  Mark Wielaard  <mark@klomp.org>
+
+	* gnu/java/text/SentenceBreakIterator.java (next): Skip all java white
+	space characters.
+	(previous_internal): Likewise.
+
 2002-05-09  Tom Tromey  <tromey@redhat.com>
 
 	* jni.cc (_Jv_JNIFunctions): Fixed typo.
