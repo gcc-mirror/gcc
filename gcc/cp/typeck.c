@@ -5822,7 +5822,7 @@ build_modify_expr (lhs, modifycode, rhs)
   if (modifycode == INIT_EXPR)
     {
       newrhs = convert_for_initialization (lhs, lhstype, newrhs, LOOKUP_NORMAL,
-					   "assignment", NULL_TREE, 0);
+					   "initialization", NULL_TREE, 0);
       if (current_function_decl && 
 	  lhs == DECL_RESULT (current_function_decl))
 	{

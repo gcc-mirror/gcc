@@ -232,7 +232,13 @@ build_default_init (type)
     /*   --if T is a reference type, no initialization is performed.  */
     return NULL_TREE;
   else
-    init = integer_zero_node;
+    {
+      init = integer_zero_node;
+      
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+        /* We must make enumeral types the right type. */
+        init = fold (build1 (NOP_EXPR, type, init));
+    }
 
   init = digest_init (type, init, 0);
   return init;
