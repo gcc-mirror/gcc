@@ -1,3 +1,10 @@
+1998-11-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* README: New file, general information about the testsuite and 
+	new description of the various C++ test subdirectories.
+	* README.g++: Eliminate obsolete information, update and move most
+	relevant stuff to README.
+
 Sat Nov  7 02:55:55 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/compile/981107-1.c: New test.
