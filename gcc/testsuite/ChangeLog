@@ -1,3 +1,8 @@
+2001-10-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/cmdlne-C.c: Update.
+	* gcc.dg/cpp/cmdlne-C2.c: New.
+
 2001-10-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20011008-3.c: New.
