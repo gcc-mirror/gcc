@@ -1479,6 +1479,22 @@
 
 ;; Esoteric move insns (lo_sum, high, pic).
 
+(define_insn "*sethi_hi"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(high:HI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_insn "*sethi_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
 (define_insn "*lo_sum_si"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
@@ -1513,22 +1529,6 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
   "flag_pic && check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn "*sethi_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn "*sethi_hi"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "" "")))]
-  "check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
