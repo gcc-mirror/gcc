@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_INPUT_H
 
 /* The data structure used to record a location in a translation unit.  */
-/* Long-term, we want to get rid of this and typedef fileline location_t. */
+/* Long-term, we want to get rid of this and typedef fileline location_t.  */
 struct location_s GTY (())
 {
   /* The name of the source file involved.  */

@@ -574,7 +574,7 @@ extern int warn_main;
 extern int warn_sequence_point;
 
 /* Nonzero means warn about uninitialized variable when it is initialized with itself. 
-   For example: int i = i;, GCC will not warn about this when warn_init_self is nonzero. */
+   For example: int i = i;, GCC will not warn about this when warn_init_self is nonzero.  */
 
 extern int warn_init_self;
 

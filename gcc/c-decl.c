@@ -461,7 +461,7 @@ pushlevel (int dummy ATTRIBUTE_UNUSED)
 
 	 The outermost block of a function always gets a BLOCK node,
 	 because the debugging output routines expect that each
-	 function has at least one BLOCK. */
+	 function has at least one BLOCK.  */
       current_scope->parm_flag         = false;
       current_scope->function_body     = true;
       current_scope->keep              = true;

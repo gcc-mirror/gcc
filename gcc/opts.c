@@ -148,7 +148,7 @@ static unsigned int columns = 80;
 /* What to print when a switch has no documentation.  */
 static const char undocumented_msg[] = N_("This switch lacks documentation");
 
-/* Input file names. */
+/* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
 

@@ -30,9 +30,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    (e.g. a #line directive in C).  */
 enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 
-/* A logical line number, i,e, an "index" into a line_map. */
+/* A logical line number, i,e, an "index" into a line_map.  */
 /* Long-term, we want to use this to replace struct location_s (in input.h),
-   and effectively typedef fileline location_t. */
+   and effectively typedef fileline location_t.  */
 typedef unsigned int fileline;
 
 /* The logical line FROM_LINE maps to physical source file TO_FILE at

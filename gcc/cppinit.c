@@ -435,7 +435,7 @@ cpp_add_dependency_target (cpp_reader *pfile, const char *target, int quote)
 }
 
 /* This is called after options have been parsed, and partially
-   processed. */
+   processed.  */
 void
 cpp_post_options (cpp_reader *pfile)
 {
