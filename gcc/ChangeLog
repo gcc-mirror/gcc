@@ -1,3 +1,9 @@
+2000-10-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_fputs): When deleting NOP calls to
+	builtin fputs, ensure we still evaluate the stream in case it
+	has side-effects.
+
 2000-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (do_store_flag): Pass operand_mode instead of GET_MODE (op0)
