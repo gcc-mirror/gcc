@@ -1,3 +1,10 @@
+2005-01-25  Alexander Malmberg  <alexander@malmberg.org>
+
+	PR objc/18408
+	* objc-act.c (objc_types_compatible_p): New function.
+	* objc-act.h (objc_types_compatible_p): Declare.
+	* objc-lang.c (LANG_HOOKS_TYPES_COMPATIBLE_P): Define.
+
 2005-01-16  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_push_parm): Call c_type_promotes_to()
