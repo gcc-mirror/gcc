@@ -3496,40 +3496,6 @@ rs6000_stack_info ()
 				  + info_ptr->toc_size
 				  + info_ptr->main_size, 8);
 
-  total_raw_size	 = (info_ptr->vars_size
-			    + info_ptr->parm_size
-			    + info_ptr->fpmem_size
-			    + info_ptr->save_size
-			    + info_ptr->varargs_size
-			    + info_ptr->fixed_size);
-
-  info_ptr->total_size   = RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
-
-  /* Determine if we need to allocate any stack frame:
-
-     For AIX we need to push the stack if a frame pointer is needed (because
-     the stack might be dynamically adjusted), if we are debugging, if we
-     make calls, or if the sum of fp_save, gp_save, fpmem, and local variables
-     are more than the space needed to save all non-volatile registers:
-     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 19*8 = 296
-
-     For V.4 we don't have the stack cushion that AIX uses, but assume that
-     the debugger can handle stackless frames.  */
-
-  if (info_ptr->calls_p)
-    info_ptr->push_p = 1;
-
-  else if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
-    info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
-			|| (abi == ABI_NT ? info_ptr->lr_save_p
-			    : info_ptr->calls_p));
-
-  else
-    info_ptr->push_p = (frame_pointer_needed
-			|| write_symbols != NO_DEBUG
-			|| ((total_raw_size - info_ptr->fixed_size)
-			    > (TARGET_32BIT ? 220 : 296)));
-
   /* Calculate the offsets */
   switch (abi)
     {
@@ -3569,6 +3535,44 @@ rs6000_stack_info ()
       break;
     }
 
+  if (info_ptr->fpmem_p
+      && (info_ptr->main_save_offset - info_ptr->fpmem_size) % 8)
+    info_ptr->fpmem_size += reg_size;
+
+  total_raw_size	 = (info_ptr->vars_size
+			    + info_ptr->parm_size
+			    + info_ptr->fpmem_size
+			    + info_ptr->save_size
+			    + info_ptr->varargs_size
+			    + info_ptr->fixed_size);
+
+  info_ptr->total_size   = RS6000_ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
+
+  /* Determine if we need to allocate any stack frame:
+
+     For AIX we need to push the stack if a frame pointer is needed (because
+     the stack might be dynamically adjusted), if we are debugging, if we
+     make calls, or if the sum of fp_save, gp_save, fpmem, and local variables
+     are more than the space needed to save all non-volatile registers:
+     32-bit: 18*8 + 19*4 = 220 or 64-bit: 18*8 + 19*8 = 296
+
+     For V.4 we don't have the stack cushion that AIX uses, but assume that
+     the debugger can handle stackless frames.  */
+
+  if (info_ptr->calls_p)
+    info_ptr->push_p = 1;
+
+  else if (abi == ABI_V4 || abi == ABI_NT || abi == ABI_SOLARIS)
+    info_ptr->push_p = (total_raw_size > info_ptr->fixed_size
+			|| (abi == ABI_NT ? info_ptr->lr_save_p
+			    : info_ptr->calls_p));
+
+  else
+    info_ptr->push_p = (frame_pointer_needed
+			|| write_symbols != NO_DEBUG
+			|| ((total_raw_size - info_ptr->fixed_size)
+			    > (TARGET_32BIT ? 220 : 296)));
+
   if (info_ptr->fpmem_p)
     {
       info_ptr->fpmem_offset = info_ptr->main_save_offset - info_ptr->fpmem_size;
@@ -3581,10 +3585,10 @@ rs6000_stack_info ()
     info_ptr->fpmem_offset = 0;  
 
   /* Zero offsets if we're not saving those registers */
-  if (info_ptr->fp_size == 0)
+  if (!info_ptr->fp_size)
     info_ptr->fp_save_offset = 0;
 
-  if (info_ptr->gp_size == 0)
+  if (!info_ptr->gp_size)
     info_ptr->gp_save_offset = 0;
 
   if (!info_ptr->lr_save_p)
