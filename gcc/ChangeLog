@@ -1,5 +1,10 @@
 Fri Oct 31 07:10:09 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* dwarf2out.c (output_call_frame_info): Use ASM_OUTPUT_ASCII to
+	output ASCII by default.  Only use ASM_OUTPUT_DWARF_STRING if
+	flag_debug_asm is on.
+	(output_die, output_pubnames, output_line_info): Likewise.
+
 	* alias.c (init_alias_analysis): Add struct_value_incoming_rtx
 	and static_chain_rtx into the potential base values array if
 	they are registers.
