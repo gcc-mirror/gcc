@@ -1,3 +1,7 @@
+2003-12-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/md.texi: Document PowerPC vector register constraint letter.
+
 2003-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* calls.c (expand_call): Recognize calls to "sqrt" and create
