@@ -2634,6 +2634,10 @@ rest_of_compilation (decl)
 
   delete_unreachable_blocks ();
 
+  /* We have to issue these warnings now already, because CFG cleanups
+     further down may destroy the required information.  */
+  check_function_return_warnings ();
+
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
   if (flag_guess_branch_prob)
     {
@@ -3190,8 +3194,6 @@ rest_of_compilation (decl)
 
   open_dump_file (DFI_life, decl);
   regclass_init ();
-
-  check_function_return_warnings ();
 
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
