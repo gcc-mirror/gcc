@@ -5523,13 +5523,15 @@ to return the value of the macro @code{MAX_DFA_ISSUE_RATE}.
 @deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
 This hook is executed by the scheduler after it has scheduled an insn
 from the ready list.  It should return the number of insns which can
-still be issued in the current cycle.  Normally this is
-@samp{@w{@var{more} - 1}}.  You should define this hook if some insns
-take more machine resources than others, so that fewer insns can follow
-them in the same cycle.  @var{file} is either a null pointer, or a stdio
-stream to write any debug output to.  @var{verbose} is the verbose level
-provided by @option{-fsched-verbose-@var{n}}.  @var{insn} is the
-instruction that was scheduled.
+still be issued in the current cycle.  The default is
+@samp{@w{@var{more} - 1}} for insns other than @code{CLOBBER} and
+@code{USE}, which normally are not counted against the issue rate.
+You should define this hook if some insns take more machine resources
+than others, so that fewer insns can follow them in the same cycle.
+@var{file} is either a null pointer, or a stdio stream to write any
+debug output to.  @var{verbose} is the verbose level provided by
+@option{-fsched-verbose-@var{n}}.  @var{insn} is the instruction that
+was scheduled.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_ADJUST_COST (rtx @var{insn}, rtx @var{link}, rtx @var{dep_insn}, int @var{cost})

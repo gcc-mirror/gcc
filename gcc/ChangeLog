@@ -1,3 +1,8 @@
+2003-01-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/tm.texi (TARGET_SCHED_VARIABLE_ISSUE): CLOBBER and USE do
+	not normally affect to issue rate.
+
 Tue Jan  7 21:46:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* genopinit.c (optabs): Add addc_optab.
