@@ -2224,10 +2224,6 @@ is_macro_disabled (pfile, expansion, token)
 {
   cpp_context *context = CURRENT_CONTEXT (pfile);
 
-  /* Don't expand anything if this file has already been preprocessed.  */
-  if (CPP_OPTION (pfile, preprocessed))
-    return 1;
-
   /* Arguments on either side of ## are inserted in place without
      macro expansion (6.10.3.3.2).  Conceptually, any macro expansion
      occurs during a later rescan pass.  The effect is that we expand
