@@ -1,3 +1,8 @@
+1999-03-02  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Bug Reporting): Clarify whether to use -E.
+	Clarify other instructions.
+
 1999-02-25  Richard Henderson  <rth@cygnus.com>
 
 	* lang-specs.h: Define __FAST_MATH__ when appropriate.
