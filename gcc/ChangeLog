@@ -1,3 +1,7 @@
+2002-10-22  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/sourcebuild.texi (Test Suites): Improve.
+
 2002-10-22  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_mi_thunk): Add missing

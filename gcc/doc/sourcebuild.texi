@@ -824,6 +824,10 @@ the function should remain, that function may be defined as
 @code{static} to call @code{abort ()} (although redeclaring a function
 as static may not work on all targets).
 
+All testcases must be portable.  Target-specific testcases must have
+appropriate code to avoid causing failures on unsupported systems;
+unfortunately, the mechanisms for this differ by directory.
+
 FIXME: discuss non-C test suites here.
 
 @node C Tests
@@ -833,33 +837,15 @@ GCC contains the following C language test suites, in the
 @file{gcc/testsuite} directory:
 
 @table @file
-@item gcc.c-torture/compat
-FIXME: describe this.
-
-This directory should probably not be used for new tests.
-@item gcc.c-torture/compile
-This test suite contains test cases that should compile, but do not
-need to link or run.  These test cases are compiled with several
-different combinations of optimization options.  All warnings are
-disabled for these test cases, so this directory is not suitable if
-you wish to test for the presence or absence of compiler warnings.
-While special options can be set, and tests disabled on specific
-platforms, by the use of @file{.x} files, mostly these test cases
-should not contain platform dependencies.  FIXME: discuss how defines
-such as @code{NO_LABEL_VALUES} and @code{STACK_SIZE} are used.
-@item gcc.c-torture/execute
-This test suite contains test cases that should compile, link and run;
-otherwise the same comments as for @file{gcc.c-torture/compile} apply.
-@item gcc.c-torture/unsorted
-FIXME: describe this.
-
-This directory should probably not be used for new tests.
 @item gcc.dg
-This test suite contains tests using the more modern @samp{dg} harness.
-Magic comments determine whether the file is preprocessed, compiled,
-linked or run.  In these tests, error and warning message texts are
-compared against expected texts or regular expressions given in
-comments.  These tests are run with the options @samp{-ansi -pedantic}
+This contains tests of particular features of the C compiler, using the 
+more modern @samp{dg} harness.  Correctness tests for various compiler
+features should go here if possible.
+
+Magic comments determine whether the file 
+is preprocessed, compiled, linked or run.  In these tests, error and warning 
+message texts are compared against expected texts or regular expressions 
+given in comments.  These tests are run with the options @samp{-ansi -pedantic}
 unless other options are given in the test.  Except as noted below they
 are not run with multiple optimization options.
 @item gcc.dg/cpp
@@ -878,6 +864,38 @@ multiple optimization options, since sometimes invalid code crashes
 the compiler with optimization.
 @item gcc.dg/special
 FIXME: describe this.
+
+@item gcc.c-torture
+This contains particlar code fragments which have historically broken easily.
+These tests are run with multiple optimization options, so tests for features
+which only break at some optimization levels belong here.  This also contains
+tests to check that certain optimizations occur.  It might be worthwhile to 
+separate the correctness tests cleanly from the code quality tests, but
+it hasn't been done yet.
+
+@item gcc.c-torture/compat
+FIXME: describe this.
+
+This directory should probably not be used for new tests.
+@item gcc.c-torture/compile
+This test suite contains test cases that should compile, but do not
+need to link or run.  These test cases are compiled with several
+different combinations of optimization options.  All warnings are
+disabled for these test cases, so this directory is not suitable if
+you wish to test for the presence or absence of compiler warnings.
+While special options can be set, and tests disabled on specific
+platforms, by the use of @file{.x} files, mostly these test cases
+should not contain platform dependencies.  FIXME: discuss how defines
+such as @code{NO_LABEL_VALUES} and @code{STACK_SIZE} are used.
+@item gcc.c-torture/execute
+This test suite contains test cases that should compile, link and run;
+otherwise the same comments as for @file{gcc.c-torture/compile} apply.
+@item gcc.c-torture/execute/ieee
+This contains tests which are specific to IEEE floating point.
+@item gcc.c-torture/unsorted
+FIXME: describe this.
+
+This directory should probably not be used for new tests.
 @item gcc.c-torture/misc-tests
 FIXME: describe this, when it should be used for new tests and when it
 shouldn't.
