@@ -378,6 +378,8 @@ struct function GTY(())
   int stack_alignment_needed;
   /* Preferred alignment of the end of stack frame.  */
   int preferred_stack_boundary;
+  /* Set when the call to function itself has been emit.  */
+  bool recursive_call_emit;
 
   /* Language-specific code can use this to store whatever it likes.  */
   struct language_function * language;

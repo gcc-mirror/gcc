@@ -204,6 +204,22 @@ cgraph_global_info (decl)
   return &node->global;
 }
 
+/* Return local info for the compiled function.  */
+
+struct cgraph_rtl_info *
+cgraph_rtl_info (decl)
+     tree decl;
+{
+  struct cgraph_node *node;
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    abort ();
+  node = cgraph_node (decl);
+  if (decl != current_function_decl
+      && !TREE_ASM_WRITTEN (node->decl))
+    return NULL;
+  return &node->rtl;
+}
+
 
 /* Dump the callgraph.  */
 

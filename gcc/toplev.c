@@ -75,6 +75,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfglayout.h"
 #include "cfgloop.h"
 #include "hosthooks.h"
+#include "cgraph.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -3771,6 +3772,16 @@ rest_of_compilation (decl)
   free_bb_for_insn ();
 
   timevar_pop (TV_FINAL);
+
+  if ((*targetm.binds_local_p) (current_function_decl))
+    {
+      int pref = cfun->preferred_stack_boundary;
+      if (cfun->recursive_call_emit
+          && cfun->stack_alignment_needed > cfun->preferred_stack_boundary)
+	pref = cfun->stack_alignment_needed;
+      cgraph_rtl_info (current_function_decl)->preferred_incoming_stack_boundary
+        = pref;
+    }
 
   /* Make sure volatile mem refs aren't considered valid operands for
      arithmetic insns.  We must call this here if this is a nested inline
