@@ -1,3 +1,7 @@
+2002-01-28  Roman Zippel  <zippel@linux-m68k.org>
+
+	* toplev.c (lang_independent_init): Round up identifier size.
+
 2002-01-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc: Revert previous change.
