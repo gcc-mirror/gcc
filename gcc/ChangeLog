@@ -1,3 +1,12 @@
+2001-12-13  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (kill_value_regno): Simplify chain removal.
+	(kill_value): Kill all of HARD_REGNO_NREGS.
+	(kill_set_value): Use kill_value not kill_value_regno.
+	(kill_autoinc_value): Likewise.
+	(copyprop_hardreg_forward): Don't collect refresh_blocks.
+	Call delete_noop_moves.
+
 2001-12-13  Aldy Hernandez  <aldyh@redhat.com>
 
         * attribs.c (c_common_attribute_table): Swap decl_req and type_req
