@@ -3659,8 +3659,11 @@ mips_asm_file_start (stream)
     fprintf (stream, "\t.set\tnobopt\n");
 
   /* Generate the pseudo ops that the Pyramid based System V.4 wants.  */
+#ifndef ABICALLS_ASM_OP
+#define ABICALLS_ASM_OP ".abicalls"
+#endif
   if (TARGET_ABICALLS)
-    fprintf (stream, "\t.abicalls\n");
+    fprintf (stream, "\t%s\n", ABICALLS_ASM_OP);
 
   if (TARGET_GP_OPT)
     {
