@@ -68,6 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "reload.h"
 #include "intl.h"
+#include "basic-block.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
@@ -1782,11 +1783,7 @@ final_end_function (first, file, optimize)
      FILE *file;
      int optimize ATTRIBUTE_UNUSED;
 {
-  if (app_on)
-    {
-      fputs (ASM_APP_OFF, file);
-      app_on = 0;
-    }
+  app_disable ();
 
 #ifdef SDB_DEBUGGING_INFO
   if (write_symbols == SDB_DEBUG)
@@ -2082,218 +2079,243 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
       if (prescan > 0)
 	break;
 
-      /* Align the beginning of a loop, for higher speed
-	 on certain machines.  */
-
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	break; /* This used to depend on optimize, but that was bogus.  */
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	break;
-
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-	  && ! exceptions_via_longjmp)
+      switch (NOTE_LINE_NUMBER (insn))
 	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
-          if (! flag_new_exceptions)
-            add_eh_table_entry (NOTE_EH_HANDLER (insn));
+	case NOTE_INSN_DELETED:
+	case NOTE_INSN_LOOP_BEG:
+	case NOTE_INSN_LOOP_END:
+	case NOTE_INSN_LOOP_CONT:
+	case NOTE_INSN_LOOP_VTOP:
+	case NOTE_INSN_FUNCTION_END:
+	case NOTE_INSN_SETJMP:
+	case NOTE_INSN_REPEATED_LINE_NUMBER:
+	case NOTE_INSN_RANGE_BEG:
+	case NOTE_INSN_RANGE_END:
+	case NOTE_INSN_LIVE:
+	case NOTE_INSN_EXPECTED_VALUE:
+	  break;
+
+	case NOTE_INSN_BASIC_BLOCK:
+	  if (flag_debug_asm)
+	    fprintf (asm_out_file, "\t%s basic block %d\n",
+		     ASM_COMMENT_START, NOTE_BASIC_BLOCK (insn)->index);
+	  break;
+
+	case NOTE_INSN_EH_REGION_BEG:
+	  if (! exceptions_via_longjmp)
+	    {
+	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
+	      if (! flag_new_exceptions)
+		add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_BEG
-	  ASM_OUTPUT_EH_REGION_BEG (file, NOTE_EH_HANDLER (insn));
+	      ASM_OUTPUT_EH_REGION_BEG (file, NOTE_EH_HANDLER (insn));
 #endif
+	    }
 	  break;
-	}
 
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END
-	  && ! exceptions_via_longjmp)
-	{
-	  ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
-          if (flag_new_exceptions)
-            add_eh_table_entry (NOTE_EH_HANDLER (insn));
+	case NOTE_INSN_EH_REGION_END:
+	  if (! exceptions_via_longjmp)
+	    {
+	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
+	      if (flag_new_exceptions)
+		add_eh_table_entry (NOTE_EH_HANDLER (insn));
 #ifdef ASM_OUTPUT_EH_REGION_END
-	  ASM_OUTPUT_EH_REGION_END (file, NOTE_EH_HANDLER (insn));
+	      ASM_OUTPUT_EH_REGION_END (file, NOTE_EH_HANDLER (insn));
 #endif
+	    }
 	  break;
-	}
 
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
-	{
+	case NOTE_INSN_PROLOGUE_END:
 #ifdef FUNCTION_END_PROLOGUE
 	  FUNCTION_END_PROLOGUE (file);
 #endif
 	  profile_after_prologue (file);
 	  break;
-	}
 
+	case NOTE_INSN_EPILOGUE_BEG:
 #ifdef FUNCTION_BEGIN_EPILOGUE
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
-	{
 	  FUNCTION_BEGIN_EPILOGUE (file);
-	  break;
-	}
 #endif
+	  break;
 
-      if (write_symbols == NO_DEBUG)
-	break;
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
-	{
+	case NOTE_INSN_FUNCTION_BEG:
+	  if (write_symbols == NO_DEBUG)
+	    break;
 #if defined(SDB_DEBUGGING_INFO) && defined(MIPS_DEBUGGING_INFO)
 	  /* MIPS stabs require the parameter descriptions to be after the
 	     function entry point rather than before.  */
 	  if (write_symbols == SDB_DEBUG)
-	    sdbout_begin_function (last_linenum);
+	    {
+	      app_disable ();
+	      sdbout_begin_function (last_linenum);
+	    }
 	  else
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  /* This outputs a marker where the function body starts, so it
 	     must be after the prologue.  */
 	  if (write_symbols == DWARF_DEBUG)
-	    dwarfout_begin_function ();
+	    {
+	      app_disable ();
+	      dwarfout_begin_function ();
+	    }
 #endif
 	  break;
-	}
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-	break;			/* An insn that was "deleted" */
-      if (app_on)
-	{
-	  fputs (ASM_APP_OFF, file);
-	  app_on = 0;
-	}
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-	  && (debug_info_level == DINFO_LEVEL_NORMAL
+
+	case NOTE_INSN_BLOCK_BEG:
+	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
 	      || write_symbols == DWARF_DEBUG
-	      || write_symbols == DWARF2_DEBUG))
-	{
-	  int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
+	      || write_symbols == DWARF2_DEBUG)
+	    {
+	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
 
-	  ++block_depth;
-	  high_block_linenum = last_linenum;
+	      app_disable ();
+	      ++block_depth;
+	      high_block_linenum = last_linenum;
 
-	  /* Output debugging info about the symbol-block beginning.  */
+	    /* Output debugging info about the symbol-block beginning.  */
 #ifdef SDB_DEBUGGING_INFO
-	  if (write_symbols == SDB_DEBUG)
-	    sdbout_begin_block (file, last_linenum, n);
+	      if (write_symbols == SDB_DEBUG)
+		sdbout_begin_block (file, last_linenum, n);
 #endif
 #ifdef XCOFF_DEBUGGING_INFO
-	  if (write_symbols == XCOFF_DEBUG)
-	    xcoffout_begin_block (file, last_linenum, n);
+	      if (write_symbols == XCOFF_DEBUG)
+		xcoffout_begin_block (file, last_linenum, n);
 #endif
 #ifdef DBX_DEBUGGING_INFO
-	  if (write_symbols == DBX_DEBUG)
-	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
+	      if (write_symbols == DBX_DEBUG)
+		ASM_OUTPUT_INTERNAL_LABEL (file, "LBB", n);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG)
-	    dwarfout_begin_block (n);
+	      if (write_symbols == DWARF_DEBUG)
+		dwarfout_begin_block (n);
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG)
-	    dwarf2out_begin_block (n);
+	      if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_begin_block (n);
 #endif
 
-	  /* Mark this block as output.  */
-	  TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
-	}
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
-	       && (debug_info_level == DINFO_LEVEL_NORMAL
-		   || debug_info_level == DINFO_LEVEL_VERBOSE
-	           || write_symbols == DWARF_DEBUG
-	           || write_symbols == DWARF2_DEBUG))
-	{
-	  int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
+	      /* Mark this block as output.  */
+	      TREE_ASM_WRITTEN (NOTE_BLOCK (insn)) = 1;
+	    }
+	  break;
 
-	  /* End of a symbol-block.  */
+	case NOTE_INSN_BLOCK_END:
+	  if (debug_info_level == DINFO_LEVEL_NORMAL
+	      || debug_info_level == DINFO_LEVEL_VERBOSE
+	      || write_symbols == DWARF_DEBUG
+	      || write_symbols == DWARF2_DEBUG)
+	    {
+	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
 
-	  --block_depth;
-	  if (block_depth < 0)
+	      app_disable ();
+
+	      /* End of a symbol-block.  */
+	      --block_depth;
+	      if (block_depth < 0)
+		abort ();
+
+#ifdef XCOFF_DEBUGGING_INFO
+	      if (write_symbols == XCOFF_DEBUG)
+		xcoffout_end_block (file, high_block_linenum, n);
+#endif
+#ifdef DBX_DEBUGGING_INFO
+	      if (write_symbols == DBX_DEBUG)
+		ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
+#endif
+#ifdef SDB_DEBUGGING_INFO
+	      if (write_symbols == SDB_DEBUG)
+		sdbout_end_block (file, high_block_linenum, n);
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+	      if (write_symbols == DWARF_DEBUG)
+		dwarfout_end_block (n);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+	      if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_end_block (n);
+#endif
+	    }
+	  break;
+
+	case NOTE_INSN_DELETED_LABEL:
+	  /* Emit the label.  We may have deleted the CODE_LABEL because
+	     the label could be proved to be unreachable, though still
+	     referenced (in the form of having its address taken.  */
+	  /* ??? Figure out how not to do this unconditionally.  This
+	     interferes with bundling on LIW targets.  */
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (insn));
+
+	  if (debug_info_level == DINFO_LEVEL_NORMAL
+	      || debug_info_level == DINFO_LEVEL_VERBOSE)
+	    {
+#ifdef DWARF_DEBUGGING_INFO
+              if (write_symbols == DWARF_DEBUG)
+		dwarfout_label (insn);
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+              if (write_symbols == DWARF2_DEBUG)
+		dwarf2out_label (insn);
+#endif
+	    }
+	  break;
+
+	default:
+	  if (NOTE_LINE_NUMBER (insn) <= 0)
 	    abort ();
 
-#ifdef XCOFF_DEBUGGING_INFO
-	  if (write_symbols == XCOFF_DEBUG)
-	    xcoffout_end_block (file, high_block_linenum, n);
-#endif
-#ifdef DBX_DEBUGGING_INFO
-	  if (write_symbols == DBX_DEBUG)
-	    ASM_OUTPUT_INTERNAL_LABEL (file, "LBE", n);
-#endif
-#ifdef SDB_DEBUGGING_INFO
-	  if (write_symbols == SDB_DEBUG)
-	    sdbout_end_block (file, high_block_linenum, n);
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-	  if (write_symbols == DWARF_DEBUG)
-	    dwarfout_end_block (n);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	  if (write_symbols == DWARF2_DEBUG)
-	    dwarf2out_end_block (n);
-#endif
-	}
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL
-	       && (debug_info_level == DINFO_LEVEL_NORMAL
-		   || debug_info_level == DINFO_LEVEL_VERBOSE))
-	{
-#ifdef DWARF_DEBUGGING_INFO
-          if (write_symbols == DWARF_DEBUG)
-            dwarfout_label (insn);
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-          if (write_symbols == DWARF2_DEBUG)
-            dwarf2out_label (insn);
-#endif
-	}
-      else if (NOTE_LINE_NUMBER (insn) > 0)
-	/* This note is a line-number.  */
-	{
-	  register rtx note;
+	  /* This note is a line-number.  */
+	  {
+	    register rtx note;
+	    int note_after = 0;
 
-#if 0 /* This is what we used to do.  */
-	  output_source_line (file, insn);
-#endif
-	  int note_after = 0;
-
-	  /* If there is anything real after this note,
-	     output it.  If another line note follows, omit this one.  */
-	  for (note = NEXT_INSN (insn); note; note = NEXT_INSN (note))
-	    {
-	      if (GET_CODE (note) != NOTE && GET_CODE (note) != CODE_LABEL)
-		break;
-	      /* These types of notes can be significant
-		 so make sure the preceding line number stays.  */
-	      else if (GET_CODE (note) == NOTE
-		       && (NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_BEG
-			   || NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_END
-			   || NOTE_LINE_NUMBER (note) == NOTE_INSN_FUNCTION_BEG))
-  		break;
-	      else if (GET_CODE (note) == NOTE && NOTE_LINE_NUMBER (note) > 0)
-		{
-		  /* Another line note follows; we can delete this note
-		     if no intervening line numbers have notes elsewhere.  */
-		  int num;
-		  for (num = NOTE_LINE_NUMBER (insn) + 1;
-		       num < NOTE_LINE_NUMBER (note);
-		       num++)
-		    if (line_note_exists[num])
-		      break;
-
-		  if (num >= NOTE_LINE_NUMBER (note))
-		    note_after = 1;
+	    /* If there is anything real after this note, output it. 
+	       If another line note follows, omit this one.  */
+	    for (note = NEXT_INSN (insn); note; note = NEXT_INSN (note))
+	      {
+		if (GET_CODE (note) != NOTE && GET_CODE (note) != CODE_LABEL)
 		  break;
-		}
-	    }
 
-	  /* Output this line note
-	     if it is the first or the last line note in a row.  */
-	  if (!note_after)
-	    output_source_line (file, insn);
+		/* These types of notes can be significant
+		   so make sure the preceding line number stays.  */
+		else if (GET_CODE (note) == NOTE
+			 && (NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_BEG
+			     || NOTE_LINE_NUMBER (note) == NOTE_INSN_BLOCK_END
+			     || NOTE_LINE_NUMBER (note) == NOTE_INSN_FUNCTION_BEG))
+		  break;
+		else if (GET_CODE (note) == NOTE && NOTE_LINE_NUMBER (note) > 0)
+		  {
+		    /* Another line note follows; we can delete this note
+		       if no intervening line numbers have notes elsewhere.  */
+		    int num;
+		    for (num = NOTE_LINE_NUMBER (insn) + 1;
+		         num < NOTE_LINE_NUMBER (note);
+		         num++)
+		      if (line_note_exists[num])
+			break;
+
+		    if (num >= NOTE_LINE_NUMBER (note))
+		      note_after = 1;
+		    break;
+		  }
+	      }
+
+	    /* Output this line note if it is the first or the last line
+	       note in a row.  */
+	    if (!note_after)
+	      output_source_line (file, insn);
+	  }
+          break;
 	}
       break;
 
     case BARRIER:
 #if defined (DWARF2_UNWIND_INFO)
-	/* If we push arguments, we need to check all insns for stack
-	   adjustments.  */
-	if (!ACCUMULATE_OUTGOING_ARGS && dwarf2out_do_frame ())
-	  dwarf2out_frame_debug (insn);
+      /* If we push arguments, we need to check all insns for stack
+	 adjustments.  */
+      if (!ACCUMULATE_OUTGOING_ARGS && dwarf2out_do_frame ())
+	dwarf2out_frame_debug (insn);
 #endif
       break;
 
@@ -3544,8 +3566,10 @@ output_asm_label (x)
   char buf[256];
 
   if (GET_CODE (x) == LABEL_REF)
-    ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-  else if (GET_CODE (x) == CODE_LABEL)
+    x = XEXP (x, 0);
+  if (GET_CODE (x) == CODE_LABEL
+      || (GET_CODE (x) == NOTE
+	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_DELETED_LABEL))
     ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
   else
     output_operand_lossage ("`%l' operand isn't a label");

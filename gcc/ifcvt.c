@@ -1275,37 +1275,8 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
      get their addresses taken.  */
   if (else_bb)
     {
-      if (LABEL_NUSES (else_bb->head) == 0
-	  && ! LABEL_PRESERVE_P (else_bb->head)
-	  && ! LABEL_NAME (else_bb->head))
-	{
-	  /* We can merge the ELSE.  */
-	  merge_blocks_nomove (combo_bb, else_bb);
-	  num_removed_blocks++;
-	}
-      else
-	{
-	  /* We cannot merge the ELSE.  */
-
-	  /* Properly rewire the edge out of the now combined
-	     TEST-THEN block to point here.  */
-	  remove_edge (combo_bb->succ);
-	  if (combo_bb->succ || else_bb->pred)
-	    abort ();
-	  make_edge (NULL, combo_bb, else_bb, EDGE_FALLTHRU);
-
-	  /* Remove the jump and cruft from the end of the TEST-THEN block.  */
-	  tidy_fallthru_edge (combo_bb->succ, combo_bb, else_bb);
-
-	  /* Make sure we update life info properly.  */
-	  SET_UPDATE_LIFE(combo_bb);
-	  if (else_bb->global_live_at_end)
-	    COPY_REG_SET (else_bb->global_live_at_start,
-			  else_bb->global_live_at_end);
-
-	  /* The ELSE is the new combo block.  */
-	  combo_bb = else_bb;
-	}
+      merge_blocks_nomove (combo_bb, else_bb);
+      num_removed_blocks++;
     }
 
   /* If there was no join block reported, that means it was not adjacent
@@ -1325,12 +1296,11 @@ merge_if_block (test_bb, then_bb, else_bb, join_bb)
 	abort ();
     }
 
-  /* The JOIN block had a label.  It may have had quite a number
-     of other predecessors too, but probably not.  See if we can
-     merge this with the others.  */
-  else if (LABEL_NUSES (join_bb->head) == 0
-      && ! LABEL_PRESERVE_P (join_bb->head)
-      && ! LABEL_NAME (join_bb->head))
+  /* The JOIN block may have had quite a number of other predecessors too.
+     Since we've already merged the TEST, THEN and ELSE blocks, we should
+     have only one remaining edge from our if-then-else diamond.  If there
+     is more than one remaining edge, it must come from elsewhere.  */
+  else if (join_bb->pred->pred_next == NULL)
     {
       /* We can merge the JOIN.  */
       if (combo_bb->global_live_at_end)
@@ -1436,11 +1406,6 @@ find_if_block (test_bb, then_edge, else_edge)
   if (then_succ == NULL_EDGE
       || then_succ->succ_next != NULL_EDGE
       || (then_succ->flags & EDGE_COMPLEX))
-    return FALSE;
-
-  /* The THEN block may not start with a label, as might happen with an
-     unused user label that has had its address taken.  */
-  if (GET_CODE (then_bb->head) == CODE_LABEL)
     return FALSE;
 
   /* If the THEN block's successor is the other edge out of the TEST block,
@@ -1600,10 +1565,6 @@ find_if_case_1 (test_bb, then_edge, else_edge)
   if (then_bb->pred->pred_next != NULL)
     return FALSE;
 
-  /* THEN has no label.  */
-  if (GET_CODE (then_bb->head) == CODE_LABEL)
-    return FALSE;
-
   /* ELSE follows THEN.  (??? could be moved)  */
   if (else_bb->index != then_bb->index + 1)
     return FALSE;
@@ -1672,12 +1633,6 @@ find_if_case_2 (test_bb, then_edge, else_edge)
 
   /* ELSE has one predecessor.  */
   if (else_bb->pred->pred_next != NULL)
-    return FALSE;
-
-  /* ELSE has a label we can delete.  */
-  if (LABEL_NUSES (else_bb->head) > 1
-      || LABEL_PRESERVE_P (else_bb->head)
-      || LABEL_NAME (else_bb->head))
     return FALSE;
 
   /* ELSE is predicted or SUCC(ELSE) postdominates THEN.  */

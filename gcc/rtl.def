@@ -413,21 +413,16 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
 
 /* Holds a label that is followed by instructions.
    Operand:
-   3: is a number that is unique in the entire compilation.
-   4: is the user-given name of the label, if any.
-   5: is used in jump.c for the use-count of the label.
-   6: is used in flow.c to point to the chain of label_ref's to this label.
+   3: is used in jump.c for the use-count of the label.
+   4: is used in flow.c to point to the chain of label_ref's to this label.
+   5: is a number that is unique in the entire compilation.
+   6: is the user-given name of the label, if any.
    7: is the alternate label name.  */
-DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuis00s", 'x')
+DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuu00iss", 'x')
      
 /* Say where in the code a source line starts, for symbol table's sake.
-   Contains a filename and a line number.  Line numbers <= 0 are special:
-   0 is used in a dummy placed at the front of every function
-      just so there will never be a need to delete the first insn;
-   -1 indicates a dummy; insns to be deleted by flow analysis and combining
-      are really changed to NOTEs with a number of -1.
-   -2 means beginning of a name binding contour; output N_LBRAC.
-   -3 means end of a contour; output N_RBRAC.  */
+   Contains a filename and a line number.  Line numbers <= 0 are special;
+   See enum note_insn in rtl.h.  */
 DEF_RTL_EXPR(NOTE, "note", "iuu0n", 'x')
 
 /* ----------------------------------------------------------------------

@@ -1262,10 +1262,19 @@ duplicate_loop_exit_test (loop_start)
 	     make them.  */
 	  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 	    if (REG_NOTE_KIND (link) != REG_LABEL)
-	      REG_NOTES (copy)
-		= copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
-					       XEXP (link, 0),
-					       REG_NOTES (copy)));
+	      {
+		if (GET_CODE (link) == EXPR_LIST)
+		  REG_NOTES (copy)
+		    = copy_insn_1 (gen_rtx_EXPR_LIST (REG_NOTE_KIND (link),
+						      XEXP (link, 0),
+						      REG_NOTES (copy)));
+		else
+		  REG_NOTES (copy)
+		    = copy_insn_1 (gen_rtx_INSN_LIST (REG_NOTE_KIND (link),
+						      XEXP (link, 0),
+						      REG_NOTES (copy)));
+	      }
+
 	  if (reg_map && REG_NOTES (copy))
 	    replace_regs (REG_NOTES (copy), reg_map, max_reg, 1);
 	  break;
@@ -1345,8 +1354,8 @@ duplicate_loop_exit_test (loop_start)
   return 1;
 }
 
-/* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, and
-   loop-end notes between START and END out before START.  Assume that
+/* Move all block-beg, block-end, loop-beg, loop-cont, loop-vtop, loop-end,
+   eh-beg, eh-end notes between START and END out before START.  Assume that
    END is not such a note.  START may be such a note.  Returns the value
    of the new starting insn, which may be different if the original start
    was such a note.  */
@@ -1367,7 +1376,9 @@ squeeze_notes (start, end)
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_CONT
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP))
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_VTOP
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
 	{
 	  if (insn == start)
 	    start = next;
@@ -2389,6 +2400,12 @@ mark_jump_label (x, insn, cross_jump, in_mem)
 	rtx note;
 	rtx next;
 
+	/* Ignore remaining references to unreachable labels that
+	   have been deleted.  */
+        if (GET_CODE (label) == NOTE
+	    && NOTE_LINE_NUMBER (label) == NOTE_INSN_DELETED_LABEL)
+	  break;
+
 	if (GET_CODE (label) != CODE_LABEL)
 	  abort ();
 
@@ -2449,7 +2466,7 @@ mark_jump_label (x, insn, cross_jump, in_mem)
 		   is no longer valid because of the more accurate cfg
 		   we build in find_basic_blocks -- it no longer pessimizes
 		   code when it finds a REG_LABEL note.  */
-		REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+		REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, label,
 						      REG_NOTES (insn));
 	      }
 	  }
@@ -2755,9 +2772,10 @@ delete_insn (insn)
 	dont_really_delete = 1;
       else if (! dont_really_delete)
 	{
+	  const char *name = LABEL_NAME (insn);
 	  PUT_CODE (insn, NOTE);
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
-	  NOTE_SOURCE_FILE (insn) = 0;
+	  NOTE_SOURCE_FILE (insn) = name;
 	  dont_really_delete = 1;
 	}
     }
