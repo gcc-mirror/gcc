@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in m68hc11.c
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr)
 
 This file is part of GNU CC.
@@ -96,7 +96,8 @@ extern rtx m68hc11_gen_highpart PARAMS((enum machine_mode, rtx));
 #ifdef HAVE_MACHINE_MODES
 extern int m68hc11_memory_move_cost PARAMS((enum machine_mode, enum reg_class,
                                            int));
-extern int m68hc11_register_move_cost PARAMS((enum reg_class, enum reg_class));
+extern int m68hc11_register_move_cost PARAMS((enum machine_mode,
+					      enum reg_class, enum reg_class));
 extern int m68hc11_rtx_costs PARAMS((rtx, enum rtx_code, enum rtx_code));
 extern int m68hc11_address_cost PARAMS((rtx));
 

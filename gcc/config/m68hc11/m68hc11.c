@@ -1,5 +1,5 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@worldnet.fr)
 
 This file is part of GNU CC.
@@ -169,9 +169,9 @@ static const struct processor_costs m6811_cost = {
 /* Costs for a 68HC12.  */
 static const struct processor_costs m6812_cost = {
   /* add */
-  COSTS_N_INSNS (1),
+  COSTS_N_INSNS (2),
   /* logical */
-  COSTS_N_INSNS (1),
+  COSTS_N_INSNS (2),
   /* non-constant shift */
   COSTS_N_INSNS (20),
   /* shiftQI const */
@@ -1173,9 +1173,8 @@ m68hc11_handle_fntype_attribute (node, name, args, flags, no_add_attrs)
    handle calls to traps in a special manner (by issuing the trap).
    This information is stored in SYMBOL_REF_FLAG.  */
 void
-m68hc11_encode_section_info (decl, first)
+m68hc11_encode_section_info (decl)
      tree decl;
-     int first ATTRIBUTE_UNUSED;
 {
   tree func_attr;
   int trap_handler;
@@ -4919,7 +4918,7 @@ m68hc11_memory_move_cost (mode, class, in)
      enum reg_class class;
      int in ATTRIBUTE_UNUSED;
 {
-  if (class <= H_REGS)
+  if (class <= H_REGS && class > NO_REGS)
     {
       if (GET_MODE_SIZE (mode) <= 2)
 	return COSTS_N_INSNS (1) + (reload_completed | reload_in_progress);
@@ -4941,19 +4940,24 @@ m68hc11_memory_move_cost (mode, class, in)
    have a move cost of 2.  Setting a higher cost will force reload to check
    the constraints.  */
 int
-m68hc11_register_move_cost (from, to)
+m68hc11_register_move_cost (mode, from, to)
+     enum machine_mode mode;
      enum reg_class from;
      enum reg_class to;
 {
-  if (from >= S_REGS && to >= S_REGS)
+  /* All costs are symmetric, so reduce cases by putting the
+     lower number class as the destination.  */
+  if (from < to)
     {
-      return COSTS_N_INSNS (3);
+      enum reg_class tmp = to;
+      to = from, from = tmp;
     }
-  if (from <= S_REGS && to <= S_REGS)
-    {
-      return COSTS_N_INSNS (1) + (reload_completed | reload_in_progress);
-    }
-  return COSTS_N_INSNS (2);
+  if (to >= S_REGS)
+    return m68hc11_memory_move_cost (mode, S_REGS, 0);
+  else if (from <= S_REGS)
+    return COSTS_N_INSNS (1) + (reload_completed | reload_in_progress);
+  else
+    return COSTS_N_INSNS (2);
 }
 
 
@@ -5002,7 +5006,7 @@ m68hc11_address_cost (addr)
 	    else if (INTVAL (plus1) >= m68hc11_max_offset)
 	      cost = 2;
 	    else
-	      cost = 0;
+	      cost = 1;
 	    if (REGNO (plus0) < FIRST_PSEUDO_REGISTER)
 	      cost += 0;
 	    else
