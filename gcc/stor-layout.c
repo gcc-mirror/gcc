@@ -1286,6 +1286,17 @@ layout_type (type)
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
+    case VECTOR_TYPE:
+      {
+	tree subtype;
+
+	subtype = TREE_TYPE (type);
+	TREE_UNSIGNED (type) = TREE_UNSIGNED (subtype);
+	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
+	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
+      }
+      break;
+
     case VOID_TYPE:
       /* This is an incomplete type and so doesn't have a size.  */
       TYPE_ALIGN (type) = 1;

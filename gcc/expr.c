@@ -545,6 +545,23 @@ convert_move (to, from, unsignedp)
       return;
     }
 
+  if (VECTOR_MODE_P (to_mode) || VECTOR_MODE_P (from_mode))
+    {
+      if (GET_MODE_BITSIZE (from_mode) != GET_MODE_BITSIZE (to_mode))
+	abort ();
+      
+      if (VECTOR_MODE_P (to_mode))
+	from = gen_rtx_SUBREG (to_mode, from, 0);
+      else
+	to = gen_rtx_SUBREG (from_mode, to, 0);
+
+      emit_move_insn (to, from);
+      return;
+    }
+
+  if (to_real != from_real)
+    abort ();
+
   if (to_real)
     {
       rtx value;

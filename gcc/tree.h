@@ -332,7 +332,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 
 /* In all nodes that are expressions, this is the data type of the expression.
    In POINTER_TYPE nodes, this is the type that the pointer points to.
-   In ARRAY_TYPE nodes, this is the type of the elements.  */
+   In ARRAY_TYPE nodes, this is the type of the elements.
+   In VECTOR_TYPE nodes, this is the type of the elements.  */
 #define TREE_TYPE(NODE) ((NODE)->common.type)
 
 /* Nodes are chained together for many purposes.
@@ -1012,7 +1013,10 @@ struct tree_block
    object of the given ARRAY_TYPE.  This allows temporaries to be allocated. */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) TYPE_MAX_VALUE (ARRAY_TYPE)
 
-/* Indicates that objects of this type must be initialized by calling a
+/* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
+#define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) (GET_MODE_NUNITS (TYPE_CHECK (VECTOR_TYPE)->type.mode))
+
+  /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
 #define TYPE_NEEDS_CONSTRUCTING(NODE) \
   (TYPE_CHECK (NODE)->type.needs_constructing_flag)

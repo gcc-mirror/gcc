@@ -22,3 +22,4 @@ extern tree convert_to_integer PARAMS ((tree, tree));
 extern tree convert_to_pointer PARAMS ((tree, tree));
 extern tree convert_to_real PARAMS ((tree, tree));
 extern tree convert_to_complex PARAMS ((tree, tree));
+extern tree convert_to_vector PARAMS ((tree, tree));
