@@ -56,6 +56,43 @@ public class GZIPInputStream
    */
   public static final int GZIP_MAGIC = 0x8b1f;
 
+  static final int Z_DEFLATED = 8;
+
+  /**
+   * The mask for bit 1 of the flag byte.
+   */
+  static final int HEAD_CRC = 0x02;
+
+  /**
+   * The mask for bit 2 of the flag byte.
+   */
+  static final int EXTRA_FIELD = 0x04;
+
+  /**
+   * The mask for bit 3 of the flag byte.
+   */
+  static final int ORIG_NAME = 0x08;
+
+  /**
+   * The mask for bit 4 of the flag byte.
+   */
+  static final int COMMENT = 0x10;
+
+  /**
+   * The mask for all reserved bits of the flag byte.
+   */
+  static final int RESERVED = 0xe0;
+  
+  /**
+   * The CRC-32 checksum value for uncompressed data.
+   */
+  protected CRC32 crc; 
+
+  /**
+   * Indicates whether or not the end of the stream has been reached.
+   */  
+  protected boolean eos;
+
   /**
    * Creates a GZIPInputStream with the default buffer size.
    *
@@ -210,18 +247,4 @@ public class GZIPInputStream
     return (((buf[offset + 3] & 0xFF) << 24) + ((buf[offset + 2] & 0xFF) << 16)
 	    + ((buf[offset + 1] & 0xFF) << 8) + (buf[offset] & 0xFF));
   }
-
-  // Checksum used by this input stream.
-  protected CRC32 crc;
-
-  // Indicates whether end-of-stream has been reached.
-  protected boolean eos;
-
-  // Some constants from zlib.
-  static final int Z_DEFLATED = 8;
-  static final int HEAD_CRC    = 0x02;
-  static final int EXTRA_FIELD = 0x04;
-  static final int ORIG_NAME   = 0x08;
-  static final int COMMENT     = 0x10;
-  static final int RESERVED    = 0xe0;
 }

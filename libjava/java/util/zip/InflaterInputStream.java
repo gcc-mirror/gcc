@@ -70,12 +70,6 @@ public class InflaterInputStream extends FilterInputStream
    */
   protected int len;
 
-  protected void fill () throws IOException
-  {
-    len = in.read(buf, 0, buf.length);
-    if (len != -1)
-      inf.setInput(buf, 0, len);
-  }
 
   /**
    * Create an InflaterInputStream with the default decompresseor
@@ -85,7 +79,7 @@ public class InflaterInputStream extends FilterInputStream
    */
   public InflaterInputStream(InputStream in) 
   {
-    this (in, new Inflater (), 512);
+    this(in, new Inflater(), 512);
   }
 
   /**
@@ -97,7 +91,7 @@ public class InflaterInputStream extends FilterInputStream
    */
   public InflaterInputStream(InputStream in, Inflater inf) 
   {
-    this (in, inf, 512);
+    this(in, inf, 512);
   }
 
   /**
@@ -113,25 +107,51 @@ public class InflaterInputStream extends FilterInputStream
     super(in);
 
     if (in == null)
-      throw new NullPointerException ("in may not be null");
+      throw new NullPointerException("in may not be null");
     if (inf == null)
-      throw new NullPointerException ("inf may not be null");
+      throw new NullPointerException("inf may not be null");
     if (size < 0)
-      throw new IllegalArgumentException ("size may not be negative");
+      throw new IllegalArgumentException("size may not be negative");
     
     this.inf = inf;
     this.buf = new byte [size];
   }
 
-  public int read () throws IOException
+  /**
+   * Returns 0 once the end of the stream (EOF) has been reached.
+   * Otherwise returns 1.
+   */
+  public int available() throws IOException
   {
-    byte[] buf = new byte[1];
-    int r = read (buf, 0, 1);
-    if (r != -1)
-      r = buf[0] & 0xff;
-    return r;
+    // According to the JDK 1.2 docs, this should only ever return 0
+    // or 1 and should not be relied upon by Java programs.
+    if (inf == null)
+      throw new IOException("stream closed");
+    return inf.finished() ? 0 : 1;
   }
 
+  /**
+   * Closes the input stream
+   */
+  public synchronized void close() throws IOException
+  {
+    inf = null;
+    super.close();
+  }
+
+  /**
+   * Fills the buffer with more data to decompress.
+   */
+  protected void fill() throws IOException
+  {
+    if (in == null)
+      throw new ZipException ("InflaterInputStream is closed");
+    
+    len = in.read(buf, 0, buf.length);
+
+    if (len != -1)
+      inf.setInput(buf, 0, len);
+  }
 
   /**
    * Decompresses data into the byte array
@@ -143,7 +163,7 @@ public class InflaterInputStream extends FilterInputStream
   public int read(byte[] b, int off, int len) throws IOException
   {
     if (inf == null)
-      throw new IOException ("stream closed");
+      throw new IOException("stream closed");
     if (len == 0)
       return 0;
     if (inf.finished())
@@ -153,7 +173,7 @@ public class InflaterInputStream extends FilterInputStream
     while (count == 0)
       {
 	if (inf.needsInput())
-	  fill ();
+	  fill();
 	
 	try
 	  {
@@ -166,7 +186,7 @@ public class InflaterInputStream extends FilterInputStream
 		    return -1;
 		  }
 		if (inf.needsDictionary())
-		  throw new ZipException ("Inflater needs Dictionary");
+		  throw new ZipException("Inflater needs Dictionary");
 	      }
 	  } 
 	catch (DataFormatException dfe) 
@@ -177,21 +197,6 @@ public class InflaterInputStream extends FilterInputStream
     return count;
   }
 
-  public void close () throws IOException
-  {
-    inf = null;
-    super.close ();
-  }
-
-  public int available () throws IOException
-  {
-    // According to the JDK 1.2 docs, this should only ever return 0
-    // or 1 and should not be relied upon by Java programs.
-    if (inf == null)
-      throw new IOException ("stream closed");
-    return inf.finished () ? 0 : 1;
-  }
-
   /**
    * Skip specified number of bytes of uncompressed data
    *
@@ -200,25 +205,27 @@ public class InflaterInputStream extends FilterInputStream
   public long skip(long n) throws IOException
   {
     if (inf == null)
-      throw new IOException ("stream closed");
+      throw new IOException("stream closed");
+    if (n < 0)
+      throw new IllegalArgumentException();
 
     if (n == 0)
       return 0;
 
-    int min = (int) Math.min(n, 1024);
-    byte[] buf = new byte[min];
+    int buflen = (int) Math.min(n, 1024);
+    byte[] tmpbuf = new byte[buflen];
 
-    long s = 0;
-    while (n > 0)
+    long skipped = 0L;
+    while (n > 0L)
       {
-	int r = read (buf, 0, min);
-	if (r == -1)
+	int numread = read(tmpbuf, 0, buflen);
+	if (numread == -1)
 	  break;
-	n -= r;
-	s += r;
-	min = (int) Math.min(n, 1024);
+	n -= numread;
+	skipped += numread;
+	buflen = (int) Math.min(n, 1024);
       }
 
-    return s;
+    return skipped;
  }
 }

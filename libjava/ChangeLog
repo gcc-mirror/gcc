@@ -1,5 +1,14 @@
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/DeflaterOutputStream.java,
+	java/util/zip/GZIPInputStream.java,
+	java/util/zip/GZIPOutputStream.java,
+	java/util/zip/InflaterInputStream.java:
+	Reformatted. Added javadocs. Reordered all stuff.
+	Renamed variables to be more clear.
+
+2004-07-09  Michael Koch  <konqueror@gmx.de>
+
 	* javax/imageio/IIOException.java,
 	javax/imageio/event/IIOReadProgressListener.java,
 	javax/imageio/event/IIOReadUpdateListener.java,
