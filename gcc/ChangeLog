@@ -1,5 +1,22 @@
 2002-05-19  Richard Henderson  <rth@redhat.com>
 
+	* target-def.h (TARGET_BINDS_LOCAL_P): New.
+	* target.h (struct gcc_target): Move boolean fields to the end.
+	Add binds_local_p.
+	* varasm.c (default_binds_local_p): New.
+	* output.h: Declare it.
+
+	* config/alpha/alpha.c (alpha_encode_section_info): Use the new hook.
+	* config/cris/cris.c (cris_encode_section_info): Likewise.
+	* config/i386/i386.c (i386_encode_section_info): Likewise.
+	* config/ia64/ia64.c (ia64_encode_section_info): Likewise.
+	* config/sh/sh.c (sh_encode_section_info): Likewise.
+
+	* doc/tm.texi (TARGET_IN_SMALL_DATA_P): New.
+	(TARGET_BINDS_LOCAL_P): New.
+
+2002-05-19  Richard Henderson  <rth@redhat.com>
+
 	* system.h (BLOCK_PROFILER, BLOCK_PROFILER_CODE,
 	FUNCTION_BLOCK_PROFILER, FUNCTION_BLOCK_PROFILER_EXIT,
 	MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): Poison.

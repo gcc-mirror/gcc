@@ -230,13 +230,6 @@ struct gcc_target
   /* ??? Should be merged with SELECT_SECTION and UNIQUE_SECTION.  */
   unsigned int (* section_type_flags) PARAMS ((tree, const char *, int));
 
-  /* True if arbitrary sections are supported.  */
-  bool have_named_sections;
-
-  /* True if "native" constructors and destructors are supported,
-     false if we're using collect2 for the job.  */
-  bool have_ctors_dtors;
-
   /* True if new jumps cannot be created, to replace existing ones or
      not, at the current point in the compilation.  */
   bool (* cannot_modify_jumps_p) PARAMS ((void));
@@ -244,12 +237,25 @@ struct gcc_target
   /* True if EXP should be placed in a "small data" section.  */
   bool (* in_small_data_p) PARAMS ((tree));
 
+  /* True if EXP names an object for which name resolution must resolve
+     to the current module.  */
+  bool (* binds_local_p) PARAMS ((tree));
+
   /* Do something target-specific to record properties of the DECL into
      the associated SYMBOL_REF.  */
   void (* encode_section_info) PARAMS ((tree, int));
 
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) PARAMS ((const char *));
+
+  /* Leave the boolean fields at the end.  */
+
+  /* True if arbitrary sections are supported.  */
+  bool have_named_sections;
+
+  /* True if "native" constructors and destructors are supported,
+     false if we're using collect2 for the job.  */
+  bool have_ctors_dtors;
 };
 
 extern struct gcc_target targetm;

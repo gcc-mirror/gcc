@@ -6816,12 +6816,7 @@ sh_encode_section_info (decl, first)
     return;
 
   if (flag_pic)
-    {
-      SYMBOL_REF_FLAG (symbol) =
-	(TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-	 || MODULE_LOCAL_P (decl)
-	 || ! TREE_PUBLIC (decl));
-    }
+    SYMBOL_REF_FLAG (symbol) = (*targetm.binds_local_p) (decl);
 
   if (TARGET_SH5 && first && TREE_CODE (decl) != FUNCTION_DECL)
     XEXP (rtl, 0) = gen_datalabel_ref (symbol);

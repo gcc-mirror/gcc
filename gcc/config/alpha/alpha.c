@@ -1619,7 +1619,17 @@ alpha_encode_section_info (decl, first)
 {
   const char *symbol_str;
   bool is_local, is_small;
+  rtx rtl, symbol;
 
+  rtl = DECL_P (decl) ? DECL_RTL (decl) : TREE_CST_RTL (decl);
+
+  /* Careful not to prod global register variables.  */
+  if (GET_CODE (rtl) != MEM)
+    return;
+  symbol = XEXP (rtl, 0);
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    return;
+    
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       /* We mark public functions once they are emitted; otherwise we
@@ -1632,7 +1642,7 @@ alpha_encode_section_info (decl, first)
       if (! decl_in_text_section (decl))
 	return;
 
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
+      SYMBOL_REF_FLAG (symbol) = 1;
       return;
     }
 
@@ -1640,42 +1650,10 @@ alpha_encode_section_info (decl, first)
   if (! TARGET_EXPLICIT_RELOCS)
     return;
 
-  /* Careful not to prod global register variables.  */
-  if (TREE_CODE (decl) != VAR_DECL
-      || GET_CODE (DECL_RTL (decl)) != MEM
-      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != SYMBOL_REF)
-    return;
-    
-  symbol_str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  symbol_str = XSTR (symbol, 0);
 
   /* A variable is considered "local" if it is defined in this module.  */
-
-  /* Local binding occurs for any non-default visibility.  */
-  if (MODULE_LOCAL_P (decl))
-    is_local = true;
-  /* Otherwise, variables defined outside this object may not be local.  */
-  else if (DECL_EXTERNAL (decl))
-    is_local = false;
-  /* Linkonce and weak data is never local.  */
-  else if (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
-    is_local = false;
-  /* Static variables are always local.  */
-  else if (! TREE_PUBLIC (decl))
-    is_local = true;
-  /* If PIC, then assume that any global name can be overridden by
-     symbols resolved from other modules.  */
-  else if (flag_pic)
-    is_local = false;
-  /* Uninitialized COMMON variable may be unified with symbols
-     resolved from other modules.  */
-  else if (DECL_COMMON (decl)
-	   && (DECL_INITIAL (decl) == NULL
-	       || DECL_INITIAL (decl) == error_mark_node))
-    is_local = false;
-  /* Otherwise we're left with initialized (or non-common) global data
-     which is of necessity defined locally.  */
-  else
-    is_local = true;
+  is_local = (*targetm.binds_local_p) (decl);
 
   /* Determine if DECL will wind up in .sdata/.sbss.  */
   is_small = alpha_in_small_data_p (decl);
@@ -1683,7 +1661,6 @@ alpha_encode_section_info (decl, first)
   /* Finally, encode this into the symbol string.  */
   if (is_local)
     {
-      const char *string;
       char *newstr;
       size_t len;
 
@@ -1701,8 +1678,7 @@ alpha_encode_section_info (decl, first)
       newstr[1] = (is_small ? 's' : 'v');
       memcpy (newstr + 2, symbol_str, len);
 	  
-      string = ggc_alloc_string (newstr, len + 2 - 1);
-      XSTR (XEXP (DECL_RTL (decl), 0), 0) = string;
+      XSTR (symbol, 0) = ggc_alloc_string (newstr, len + 2 - 1);
     }
   else if (symbol_str[0] == '@')
     {
