@@ -1,5 +1,37 @@
 2003-05-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URI.java
+	(create): Doesnt throws any exceptions.
+	* java/net/URLConnection.java
+	(URLConnection): Commend added.
+	(getExpiration): The header field is called "expires" not
+	"expiration".
+	(getHeaderField): Merged documentation with classpath.
+	(getHeaderFieldInt): Likewise.
+	(getHeaderFieldDate): Likewise.
+	(getHeaderFieldKey): Likewise.
+	(getPermission): Likewise.
+	(setDefaultUseCaches): Likewise.
+	(setRequestProperty): Likewise.
+	(addRequestProperty): Likewise.
+	(getRequestProperty): Likewise.
+	(getRequestProperties): Likewise.
+	(setDefaultRequestProperty): Likewise.
+	(getDefaultRequestProperty): Likewise.
+	(guessContentTypeFromStream): Likewise.
+	(getFileNameMap): Likewise.
+	(setFileNameMap): Likewise.
+	(setDoInput): Merged implementation and documentation with classpath.
+	(setDoOutput): Likewise.
+	(setAllowUserInteraction): Likewise.
+	(setDefaultAllowUserInteraction): Likewise.
+	(setContentHandlerFactory): Made it synchronized, merged documentation
+	with classpath.
+	(guessContentTypeFromName): Renamed argument fname to filename to
+	match classpath, merged documentation with classpath.
+
+2003-05-02  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/JarURLConnection.java
 	(JarURLConnection): Class documentation merged with classpath.
 	(getJarFileURL): Moved and documentation merged with classpath.
