@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -58,6 +58,43 @@
 # endif
 #endif
 
+namespace __gnu_internal
+{
+  // Map ios_base::openmode flags to a string for use in fopen().
+  // Table of valid combinations as given in [lib.filebuf.members]/2.
+  static const char*
+  fopen_mode(std::ios_base::openmode mode)
+  {
+    enum 
+      {
+	in     = std::ios_base::in,
+	out    = std::ios_base::out,
+	trunc  = std::ios_base::trunc,
+	app    = std::ios_base::app,
+	binary = std::ios_base::binary
+      };
+    
+    switch (mode & (in|out|trunc|app|binary))
+      {
+      case (   out                 ): return "w";  
+      case (   out      |app       ): return "a";  
+      case (   out|trunc           ): return "w";  
+      case (in                     ): return "r";  
+      case (in|out                 ): return "r+"; 
+      case (in|out|trunc           ): return "w+"; 
+	
+      case (   out          |binary): return "wb"; 
+      case (   out      |app|binary): return "ab"; 
+      case (   out|trunc    |binary): return "wb"; 
+      case (in              |binary): return "rb"; 
+      case (in|out          |binary): return "r+b";
+      case (in|out|trunc    |binary): return "w+b";
+	
+      default: return 0; // invalid
+      }
+  }
+} // namespace __gnu_internal
+
 namespace std 
 {
   // Definitions for __basic_file<char>.
@@ -66,52 +103,16 @@ namespace std
 
   __basic_file<char>::~__basic_file()
   { this->close(); }
-      
-  void 
-  __basic_file<char>::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
-				   int&, char* __c_mode)
-  {  
-    bool __testb = __mode & ios_base::binary;
-    bool __testi = __mode & ios_base::in;
-    bool __testo = __mode & ios_base::out;
-    bool __testt = __mode & ios_base::trunc;
-    bool __testa = __mode & ios_base::app;
-      
-    // Set __c_mode for use in fopen.
-    // Set __p_mode for use in open.
-    if (!__testi && __testo && !__testt && !__testa)
-      {
-	strcpy(__c_mode, "w");
-	__p_mode = (O_WRONLY | O_CREAT);
-      }
-    if (!__testi && __testo && !__testt && __testa)
-      {
-	strcpy(__c_mode, "a");
-	__p_mode |=  O_WRONLY | O_CREAT | O_APPEND;
-      }
-    if (!__testi && __testo && __testt && !__testa)
-      {
-	strcpy(__c_mode, "w");
-	__p_mode |=  O_WRONLY | O_CREAT | O_TRUNC;
-      }
 
-    if (__testi && !__testo && !__testt && !__testa)
-      {
-	strcpy(__c_mode, "r");
-	__p_mode |=  O_RDONLY;
-      }
-    if (__testi && __testo && !__testt && !__testa)
-      {
-	strcpy(__c_mode, "r+");
-	__p_mode |=  O_RDWR | O_CREAT;
-      }
-    if (__testi && __testo && __testt && !__testa)
-      {
-	strcpy(__c_mode, "w+");
-	__p_mode |=  O_RDWR | O_CREAT | O_TRUNC;
-      }
-    if (__testb)
-      strcat(__c_mode, "b");
+  // Preserved for binary compatibility only.
+  // Do not use.  Gone in 3.4.
+  void 
+  __basic_file<char>::_M_open_mode(ios_base::openmode __mode, int&, int&,
+				   char* __c_mode)
+  {
+    const char* r = __gnu_internal::fopen_mode(__mode);
+    if (r)
+      strcpy(__c_mode, r);
   }
   
   __basic_file<char>*
@@ -132,12 +133,9 @@ namespace std
 			       bool __del) 
   {
     __basic_file* __ret = NULL;
-    int __p_mode = 0;
-    int __rw_mode = 0;
-    char __c_mode[4];
-    
-    _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
-    if (!this->is_open() && (_M_cfile = fdopen(__fd, __c_mode)))
+    const char* __c_mode = __gnu_internal::fopen_mode(__mode);
+    if (__c_mode && !this->is_open() 
+	&& (_M_cfile = fdopen(__fd, __c_mode)))
       {
 	// Iff __del is true, then close will fclose the fd.
 	_M_cfile_created = __del;
@@ -163,13 +161,8 @@ namespace std
 			   int /*__prot*/)
   {
     __basic_file* __ret = NULL;
-    int __p_mode = 0;
-    int __rw_mode = 0;
-    char __c_mode[4];
-      
-    _M_open_mode(__mode, __p_mode, __rw_mode, __c_mode);
-
-    if (!this->is_open())
+    const char* __c_mode = __gnu_internal::fopen_mode(__mode);
+    if (__c_mode && !this->is_open())
       {
 	if ((_M_cfile = fopen(__name, __c_mode)))
 	  {

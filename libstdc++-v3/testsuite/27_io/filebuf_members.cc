@@ -217,7 +217,10 @@ void test_06()
     }
 
   std::filebuf fbuf;
-  std::filebuf* r = fbuf.open(name, std::ios_base::out | std::ios_base::ate);
+  std::filebuf* r = fbuf.open(name,
+			      std::ios_base::in
+			      | std::ios_base::out
+			      | std::ios_base::ate);
   VERIFY( !fbuf.is_open() );
   VERIFY( r == NULL );
 }
@@ -249,7 +252,7 @@ void test_07()
   
   filebuf fb;
   sleep(1);
-  filebuf* ret = fb.open(name, ios_base::out | ios_base::trunc);
+  filebuf* ret = fb.open(name, ios_base::in | ios_base::out);
   VERIFY( ret != NULL );
   VERIFY( fb.is_open() );
 
@@ -257,7 +260,7 @@ void test_07()
   fb.sputc('a');
 
   ret = fb.close();
-  VERIFY( ret == NULL );
+  VERIFY( ret != NULL );
   VERIFY( !fb.is_open() );
 }
 

@@ -1,5 +1,16 @@
+2004-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* config/io/basic_file_stdio.cc (__gnu_internal::fopen_mode):
+	New function.
+	(__basic_file<char>::sys_open, __basic_file<char>::open): Use it.
+	(__basic_file<char>::_M_open_mode): Use it.  Mark deprecated.
+
+	* testsuite/27_io/filebuf_members.cc (test_06, test_07):
+	Correct flags to filebuf::open calls.
+
 2004-01-29  Paolo Carlini  <pcarlini@suse.de>
-	
+
 	PR libstdc++/12657
 	* include/bits/basic_ios.tcc (copyfmt(const basic_ios&)):
 	Implement resolution of DR 292 (WP).
@@ -69,7 +80,7 @@
 	PR libstdc++/12540
 	* config/locale/gnu/monetary_members.cc: Don't leak memory
 	on exception.
-	
+
 2004-01-26  Andreas Schwab  <schwab@suse.de>
 
 	* config/locale/gnu/monetary_members.cc: Restore locale before
@@ -117,7 +128,7 @@
 
 2004-01-07  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
-	
+
 	PR libstdc++/13007
 	* include/bits/fstream.tcc (imbue): Don't touch the stored
 	locale.
@@ -133,8 +144,8 @@
 	LD_LIBRARY_PATH to both. Based on libjava.exp.
 
 2003-12-10  Benjamin Kosnik  <bkoz@redhat.com>
-            Alexandre Oliva  <aoliva@redhat.com>
-	
+	    Alexandre Oliva  <aoliva@redhat.com>
+
 	PR libstdc++/11612
 	* testsuite/Makefile.am (GLIBCXX_DIR): New.
 	(GLIBGCC_DIR): New.
@@ -169,14 +180,14 @@
 	* include/bits/basic_ios.tcc: Tweak.
 	* include/bits/fstream.tcc: Tweak.
 	* include/bits/istream.tcc: Use _M_setstate for common exception
-	handling. Move setstate calls after catch. 
+	handling. Move setstate calls after catch.
 	(basic_istream::tellg): Check for exceptions thrown by streambuf
 	virtual functions.
 	(basic_istream::seekg): Same.
 	* include/bits/ostream.tcc: Same, but for ostream.
 	(basic_ostream::flush): Check for exceptions thrown by streambuf
 	virtual functions.
-	(basic_istream::tellp): Same.	
+	(basic_istream::tellp): Same.
 	(basic_istream::seekp): Same.
 	* include/bits/locale_facets.tcc: Tweak.
 	* include/bits/streambuf.tcc: Tweak.
@@ -231,7 +242,7 @@
 
 	PR libstdc++/12451
 	* libsupc++/cxxabi.h: Move forward declaration of __class_type_info.
-	
+
 2003-10-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.target: Handle Solaris 2.5 micro releases explicitly.
@@ -246,7 +257,7 @@
 	returns eof.
 
 2003-09-30  Nathan Myers  <ncm@cantrip.org>
-            Paolo Carlini  <pcarlini@unitus.it>
+	    Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11400
 	* include/bits/stl_algo.h (search_n):
