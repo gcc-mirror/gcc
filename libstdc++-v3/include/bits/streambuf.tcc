@@ -126,8 +126,7 @@ namespace std
 	      const size_t __n = __sbin->egptr() - __sbin->gptr();
 	      if (__n > 1)
 		{
-		  const size_t __wrote = __sbout->sputn(__sbin->gptr(),
-							__n);
+		  const size_t __wrote = __sbout->sputn(__sbin->gptr(), __n);
 		  __sbin->gbump(__wrote);
 		  __ret += __wrote;
 		  if (__wrote < __n)
@@ -144,12 +143,8 @@ namespace std
 		}
 	    }
 	}
-      catch(exception& __fail) 
-	{
-	  __ios.setstate(ios_base::failbit);
-	  if ((__ios.exceptions() & ios_base::failbit) != 0)
-	    __throw_exception_again;
-	}
+      catch(...)
+	{ __throw_exception_again; }
       return __ret;
     }
 

@@ -141,7 +141,23 @@ namespace std
       */
       void 
       setstate(iostate __state) 
-      { this->clear(this->rdstate() | __state); }
+      {
+	if (__state != ios_base::goodbit)
+	  this->clear(this->rdstate() | __state); 
+      }
+
+      // Flip the internal state on for the proper state bits, then re
+      // throws the propagated exception if bit also set in
+      // exceptions().
+      void
+      _M_setstate(iostate __state) 
+      { 
+	// 27.6.1.2.1 Common requirements.
+	// Turn this on without causing an ios::failure to be thrown.
+	_M_streambuf_state |= __state; 
+	if (this->exceptions() & __state)
+	  __throw_exception_again;
+      }
 
       /**
        *  @brief  Fast error checking.
@@ -441,11 +457,6 @@ namespace std
 
       void
       _M_cache_locale(const locale& __loc);
-
-      // Internal state setter that won't throw, only set the state bits.
-      // Used to guarantee we don't throw when setting badbit.
-      void
-      _M_setstate(iostate __state) { _M_streambuf_state |= __state; }
     };
 } // namespace std
 

@@ -42,7 +42,7 @@ namespace std
 	_M_streambuf_state = __state;
       else
 	  _M_streambuf_state = __state | badbit;
-      if ((this->rdstate() & this->exceptions()))
+      if (this->exceptions() & this->rdstate())
 	__throw_ios_failure("basic_ios::clear");
     }
   

@@ -627,7 +627,7 @@ namespace std
       __io.flags(__fmt);
 
       unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
+      std::__convert_to_v(__xtrc.c_str(), __ul, __err, 
 			  _S_get_c_locale(), __base);
       if (!(__err & ios_base::failbit))
 	__v = reinterpret_cast<void*>(__ul);

@@ -1,5 +1,58 @@
 2003-11-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/9371
+	PR libstdc++/9546
+	PR libstdc++/10093
+	PR libstdc++/10095
+	* include/bits/basic_ios.h (basic_ios::setstate): Elide if goodbit.
+	(basic_ios::_M_setstate): Consolidate common error handling code.
+	* include/bits/basic_ios.tcc: Tweak.
+	* include/bits/fstream.tcc: Tweak.
+	* include/bits/istream.tcc: Use _M_setstate for common exception
+	handling. Move setstate calls after catch. 
+	(basic_istream::tellg): Check for exceptions thrown by streambuf
+	virtual functions.
+	(basic_istream::seekg): Same.
+	* include/bits/ostream.tcc: Same, but for ostream.
+	(basic_ostream::flush): Check for exceptions thrown by streambuf
+	virtual functions.
+	(basic_istream::tellp): Same.	
+	(basic_istream::seekp): Same.
+	* include/bits/locale_facets.tcc: Tweak.
+	* include/bits/streambuf.tcc: Tweak.
+	(__copy_streambufs): Propagate exceptions.
+	* testsuite/testsuite_io.h (fail_streambuf): New.
+	(fail_num_get): New.
+	(fail_num_put): New.
+	(facet_error): New.
+	(underflow_error): New.
+	(overflow_error): New.	
+	(positioning_error): New.	
+	* testsuite/27_io/basic_istream/exceptions/char/9561.cc: Tweak.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+        exceptions_badbit_throw.cc, exceptions_failbit.cc,
+        exceptions_failbit_throw.cc: New.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	error_failbit.cc, exceptions_badbit_throw.cc,
+        exceptions_failbit_throw.cc, exceptions_null.cc: New.
+	* testsuite/27_io/basic_istream/seekg/char/exceptions_badbit_throw.cc: 
+	New.
+	* testsuite/27_io/basic_istream/tellg/char/exceptions_badbit_throw.cc:
+	New.
+	* testsuite/27_io/basic_ostream/flush/char/exceptions_badbit_throw.cc:
+	New.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/
+	exceptions_badbit_throw.cc, exceptions_failbit_throw.cc: New.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	error_failbit.cc, exceptions_badbit_throw.cc,
+        exceptions_failbit_throw.cc, exceptions_null.cc: New.
+	* testsuite/27_io/basic_ostream/seekp/char/exceptions_badbit_throw.cc: 
+	New.
+	* testsuite/27_io/basic_ostream/tellp/char/exceptions_badbit_throw.cc: 
+	New.
+
+2003-11-26  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/12297
 	* include/bits/istream.tcc
 	(basic_istream::sentry::sentry): Set failbit and eofbit when eof.
