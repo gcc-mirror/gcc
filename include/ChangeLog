@@ -1,3 +1,7 @@
+2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libiberty.h (physmem_total, physmem_available): Prototype.
+
 2003-02-20  Daniel Jacobowitz  <drow@mvista.com>
 
 	* libiberty.h (lrealpath): Add declaration.

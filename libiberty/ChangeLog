@@ -1,3 +1,13 @@
+2003-02-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (CFILES): Add physmem.c.
+	(REQUIRED_OFILES): Add physmem.o.
+	* configure.in: Check for sys/pstat.h.
+	(checkfuncs): Add pstat_getstatic and pstat_getdynamic.
+	* physmem.c: New file, copied from textutils.
+
+	* config.in, configure: Regenerated.
+
 2003-02-20  Daniel Jacobowitz  <drow@mvista.com>
 
 	* Makefile.in (CFILES): Add lrealpath.c.
