@@ -1183,10 +1183,12 @@ struct lang_decl
 /* Nonzero for _TYPE means that the _TYPE defines a destructor.  */
 #define TYPE_HAS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_2(NODE))
 
+#if 0
 /* Nonzero for _TYPE node means that creating an object of this type
    will involve a call to a constructor.  This can apply to objects
    of ARRAY_TYPE if the type of the elements needs a constructor.  */
 #define TYPE_NEEDS_CONSTRUCTING(NODE) (TYPE_LANG_FLAG_3(NODE))
+#endif
 
 /* Nonzero if there is a user-defined X::op=(x&) for this class.  */
 #define TYPE_HAS_REAL_ASSIGN_REF(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assign_ref)
