@@ -931,7 +931,8 @@ add_dependence (insn, elem, dep_type)
     next = NEXT_INSN (next);
 #endif
 
-  if (next && SCHED_GROUP_P (next))
+  if (next && SCHED_GROUP_P (next)
+      && GET_CODE (next) != CODE_LABEL)
     {
       /* Notes will never intervene here though, so don't bother checking
 	 for them.  */
