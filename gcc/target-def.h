@@ -126,6 +126,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_HAVE_SRODATA_SECTION false
 #endif
 
+#ifndef TARGET_TERMINATE_DW2_EH_FRAME_INFO
+#ifdef EH_FRAME_SECTION_NAME
+#define TARGET_TERMINATE_DW2_EH_FRAME_INFO false
+#else
+#define TARGET_TERMINATE_DW2_EH_FRAME_INFO true
+#endif
+#endif
+
 #ifndef TARGET_ASM_EXCEPTION_SECTION
 #define TARGET_ASM_EXCEPTION_SECTION default_exception_section
 #endif
@@ -266,7 +274,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
   TARGET_HAVE_TLS,				\
-  TARGET_HAVE_SRODATA_SECTION			\
+  TARGET_HAVE_SRODATA_SECTION,			\
+  TARGET_TERMINATE_DW2_EH_FRAME_INFO		\
 }
 
 #include "hooks.h"

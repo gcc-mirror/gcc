@@ -269,6 +269,9 @@ struct gcc_target
 
   /* True if a small readonly data section is supported.  */
   bool have_srodata_section;
+
+  /* True if EH frame info sections should be zero-terminated.  */
+  bool terminate_dw2_eh_frame_info;
 };
 
 extern struct gcc_target targetm;

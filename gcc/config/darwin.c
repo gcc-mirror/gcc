@@ -1275,5 +1275,34 @@ darwin_globalize_label (stream, name)
     default_globalize_label (stream, name);
 }
 
+/* Output a difference of two labels that will be an assembly time
+   constant if the two labels are local.  (.long lab1-lab2 will be
+   very different if lab1 is at the boundary between two sections; it
+   will be relocated according to the second section, not the first,
+   so one ends up with a difference between labels in different
+   sections, which is bad in the dwarf2 eh context for instance.)  */
+
+static int darwin_dwarf_label_counter;
+
+void
+darwin_asm_output_dwarf_delta (file, size, lab1, lab2)
+     FILE *file;
+     int size ATTRIBUTE_UNUSED;
+     const char *lab1, *lab2;
+{
+  const char *p = lab1 + (lab1[0] == '*');
+  int islocaldiff = (p[0] == 'L');
+
+  if (islocaldiff)
+    fprintf (file, "\t.set L$set$%d,", darwin_dwarf_label_counter);
+  else
+    fprintf (file, "\t%s\t", ".long");
+  assemble_name (file, lab1);
+  fprintf (file, "-");
+  assemble_name (file, lab2);
+  if (islocaldiff)
+    fprintf (file, "\n\t.long L$set$%d", darwin_dwarf_label_counter++);
+}
+
 #include "gt-darwin.h"
 

@@ -1,3 +1,29 @@
+2002-09-12  Stan Shebs  <shebs@apple.com>
+
+	* target.h (struct gcc_target): New field
+	terminate_dw2_eh_frame_info.
+	* target-def.h (TARGET_TERMINATE_DW2_EH_FRAME_INFO): Define.
+	(TARGET_INITIALIZER): Add it.
+	* dwarf2out.c (output_call_frame_info): Use target hook.
+	* dwarf2asm.c (dw2_asm_output_delta): Use macro
+	ASM_OUTPUT_DWARF_DELTA if defined.
+	* doc/tm.texi (TARGET_TERMINATE_DW2_EH_FRAME_INFO): Document.
+	(ASM_OUTPUT_DWARF_DELTA): Ditto.
+	(ASM_OUTPUT_DWARF_OFFSET): Ditto.
+	(ASM_OUTPUT_DWARF_PCREL): Ditto.
+	* config.gcc (i[34567]86-*-darwin*): Define extra_parts.
+	(powerpc-*-darwin*): Ditto.
+	* crtstuff.c [OBJECT_FORMAT_MACHO]: Update the Mach-O bits
+	to work correctly for Darwin.
+	* config/darwin.h (OBJECT_FORMAT_MACHO): Define.
+	(STARTFILE_SPEC): Add crtbegin.o.
+	(ENDFILE_SPEC): Define.
+	(EXTRA_SECTION_FUNCTIONS): Put gcc_except_tab in data segment.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Handle more cases.
+	(ASM_OUTPUT_DWARF_DELTA): Define.
+	(TARGET_TERMINATE_DW2_EH_FRAME_INFO): Define.
+	* config/darwin.c (darwin_asm_output_dwarf_delta): New function.
+
 2002-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_load_toc_table): Remove "if"
