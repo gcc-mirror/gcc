@@ -237,7 +237,7 @@ enum processor_type
   PROCESSOR_max
 };
 
-enum processor_type ix86_cpu;
+extern enum processor_type ix86_cpu;
 
 extern int ix86_arch;
 
