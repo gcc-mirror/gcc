@@ -325,7 +325,12 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
   value = protect_from_queue (value, 0);
 
   if (flag_force_mem)
-    value = force_not_mem (value);
+    {
+      int old_generating_concat_p = generating_concat_p;
+      generating_concat_p = 0;
+      value = force_not_mem (value);
+      generating_concat_p = old_generating_concat_p;
+    }
 
   /* If the target is a register, overwriting the entire object, or storing
      a full-word or multi-word field can be done with just a SUBREG.
@@ -519,12 +524,9 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, total_size)
      corresponding size.  This can occur on a machine with 64 bit registers
      that uses SFmode for float.  This can also occur for unaligned float
      structure fields.  */
-  if (GET_MODE_CLASS (GET_MODE (value)) == MODE_FLOAT)
-    {
-      if (GET_CODE (value) != REG)
-	value = copy_to_reg (value);
-      value = gen_rtx_SUBREG (word_mode, value, 0);
-    }
+  if (GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
+      && GET_MODE_CLASS (GET_MODE (value)) != MODE_PARTIAL_INT)
+    value = gen_lowpart (word_mode, value);
 
   /* Now OFFSET is nonzero only if OP0 is memory
      and is therefore always measured in bytes.  */
@@ -1516,14 +1518,13 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
       /* If the target mode is floating-point, first convert to the
 	 integer mode of that size and then access it as a floating-point
 	 value via a SUBREG.  */
-      if (GET_MODE_CLASS (tmode) == MODE_FLOAT)
+      if (GET_MODE_CLASS (tmode) != MODE_INT
+	  && GET_MODE_CLASS (tmode) != MODE_PARTIAL_INT)
 	{
 	  target = convert_to_mode (mode_for_size (GET_MODE_BITSIZE (tmode),
 						   MODE_INT, 0),
 				    target, unsignedp);
-	  if (GET_CODE (target) != REG)
-	    target = copy_to_reg (target);
-	  return gen_rtx_SUBREG (tmode, target, 0);
+	  return gen_lowpart (tmode, target);
 	}
       else
 	return convert_to_mode (tmode, target, unsignedp);
