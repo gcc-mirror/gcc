@@ -69,7 +69,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 "%{p:%{m68881:-L/usr/lib/fp/libp} -L/usr/lib/libp}             \
  %{m68881:-L/usr/lib/fp}"
 
-#define LIB_SPEC "-lc %{m68881:/usr/lib/fp/crtn.o}%{!m68881:/lib/crtn.o}"
+#define LIB_SPEC \
+"%{shlib:-lc_s} -lc crtend.o%s \
+ %{m68881:/usr/lib/fp/crtn.o}%{!m68881:/lib/crtn.o}"
 
 /* Use mem* functions, recognize #ident lines.  */
 
