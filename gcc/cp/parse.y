@@ -71,12 +71,6 @@ extern tree strip_attrs		PROTO((tree));
    error message if the user supplies an empty conditional expression.  */
 static char *cond_stmt_keyword;
 
-/* If nonzero, we try to treat TEMPLATE_DECL as argument in template
-   template parameter. */
-static int processing_template_arg;
-
-extern int arg_looking_for_template;
-
 static tree empty_parms PROTO((void));
 
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
@@ -267,7 +261,7 @@ empty_parms ()
 %type <ttype> template_type_parm template_template_parm
 %type <code>  template_close_bracket
 %type <ttype> template_type template_arg_list template_arg_list_opt
-%type <ttype> template_arg template_arg1
+%type <ttype> template_arg
 %type <ttype> condition xcond paren_cond_or_null
 %type <ttype> type_name nested_name_specifier nested_type ptr_to_mem
 %type <ttype> complete_type_name notype_identifier nonnested_type
@@ -958,12 +952,6 @@ template_arg_list:
 	;
 
 template_arg:
-		{ processing_template_arg = 1; }
-	  template_arg1
-		{ $$ = $2;
-		  processing_template_arg = 0; }
-
-template_arg1:
 	  type_id
 		{ $$ = groktypename ($1.t); }
 	| expr_no_commas  %prec ARITHCOMPARE
@@ -1379,23 +1367,7 @@ primary:
 		  if (TREE_CODE ($$) == BIT_NOT_EXPR)
 		    $$ = build_x_unary_op (BIT_NOT_EXPR, TREE_OPERAND ($$, 0));
 		  else if (TREE_CODE ($$) != TEMPLATE_ID_EXPR)
-		    {
-		      if (processing_template_arg)
-			{
-			  tree id;
-			  arg_looking_for_template = processing_template_arg;
-			  id = lookup_name ($$, 0);
-			  arg_looking_for_template = 0;
-			
-			  if (!id || id == error_mark_node
-			      || (TREE_CODE (id) != TEMPLATE_DECL
-				  && TREE_CODE (id) != TEMPLATE_TEMPLATE_PARM))
-			    id = do_identifier ($$, 1);
-			  $$ = id;
-			} 
-		      else
-			$$ = do_identifier ($$, 1);
-		    }
+		    $$ = do_identifier ($$, 1);
 		}		
 	| CONSTANT
 	| boolean.literal
