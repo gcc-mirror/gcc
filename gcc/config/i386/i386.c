@@ -5572,7 +5572,7 @@ memory_address_length (addr)
 	  || addr == arg_pointer_rtx
 	  || addr == frame_pointer_rtx
 	  || (REGNO_REG_CLASS (REGNO (addr)) == SIREG
-	      && ix86_cpu == PROCESSOR_K6 && !optimize_size)
+	      && ix86_cpu == PROCESSOR_K6 && !optimize_size))
 	return 1;
       else
 	return 0;

@@ -1,3 +1,7 @@
+Wed Apr 14 11:28:34 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* config/i386/i386.c (memory_address_length): Add missing parenthesis.
+
 Wed Apr 14 13:59:27 1999  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* extend.texi (Deprecated Features): New node.
