@@ -43,4 +43,27 @@
 #define __glibcpp_long_bits 64
 #endif
 
+/* HP-UX, for reasons unknown choose to use a different name for
+   the string to [unsigned] long long conversion routines.
+
+   Furthermore, instead of having the prototypes in stdlib.h like
+   everyone else, they put them into a non-standard header
+   <inttypes.h>.  Ugh.
+
+   <inttypes.h> defines a variety of things, some of which we 
+   probably do not want.  So we just provide prototypes for
+   the functions we care about here.
+
+   However, to do that, we must include <sys/_inttypes.h> to get
+   intmax_t and uintmax_t.  Luckily <sys/_inttypes.h> looks a
+   lot cleaner as far as namespace pollution is concerned. 
+
+   We also force _GLIBCPP_USE_LONG_LONG here so that we don't have
+   to bastardize configure to deal with this sillyness.  */
+#include <sys/_inttypes.h>
+#define strtoll __strtoll
+#define strtoull __strtoull
+extern intmax_t __strtoll (const char *, char**, int);
+extern uintmax_t __strtoull (const char *, char**, int);
+#define _GLIBCPP_USE_LONG_LONG 1
 #endif
