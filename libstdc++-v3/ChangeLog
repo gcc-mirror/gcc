@@ -1,3 +1,37 @@
+2004-01-21  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (_M_check): Change to return
+	a checked __pos and take an additional const char* argument.
+	(_M_fold): Rename to _M_limit, change to return a size_type,
+	corresponding to the __off limited to the actual length.
+	(insert(size_type, size_type, _CharT)): Update call, call
+	replace.
+	(insert(iterator, _CharT)): Call replace(iterator, iterator,
+	size_type, _CharT) instead.
+	(erase(size_type, size_type)): Update calls.
+	(replace(size_type, size_type, size_type, _CharT)): Ditto.
+	(substr(size_type, size_type)): Use _M_check.
+	* include/bits/basic_string.tcc (basic_string(const basic_string&,
+	size_type, size_type)): Update calls.
+	(basic_string(const basic_string&, size_type, size_type,
+	const _Alloc&)): Ditto.
+	(assign(const basic_string&, size_type, size_type)): Use the
+	new _M_check and _M_limit.
+	(insert(size_type, const basic_string&, size_type, size_type):
+	Ditto.
+	(insert(size_type, const _CharT*, size_type)): Ditto.
+	(replace(size_type, size_type, const _CharT*, size_type): Ditto.
+	(replace(size_type, size_type, const basic_string&,
+	size_type, size_type)): Ditto.
+	(append(const basic_string&)): Ditto.
+	(append(const basic_string&, size_type, size_type)): Ditto.
+	(copy(_CharT*, size_type, size_type)): Ditto.
+	(compare(size_type, size_type, const basic_string&)): Ditto.
+	(compare(size_type, size_type, const basic_string&,size_type,
+	size_type)): Ditto.
+	(compare(size_type, size_type, const _CharT*)): Ditto.
+	(compare(size_type, size_type, const _CharT*, size_type)): Ditto.
+
 2004-01-19  Stefan Olsson  <stefan@snon.net>
 
 	* include/ext/mt_allocator.h: If a thread, when it dies, still has
