@@ -4452,7 +4452,8 @@ alpha_expand_block_move (rtx operands[])
 	 is held in the register.  Nor if there is not a mode that
 	 handles the exact size.  */
       mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (mode != BLKmode
+      if (GET_CODE (tmp) == REG
+	  && mode != BLKmode
 	  && GET_MODE_SIZE (GET_MODE (tmp)) >= bytes)
 	{
 	  if (mode == TImode)
@@ -4572,7 +4573,7 @@ alpha_expand_block_move (rtx operands[])
       tmp = XEXP (XEXP (orig_dst, 0), 0);
 
       mode = mode_for_size (orig_bytes * BITS_PER_UNIT, MODE_INT, 1);
-      if (GET_MODE (tmp) == mode)
+      if (GET_CODE (tmp) == REG && GET_MODE (tmp) == mode)
 	{
 	  if (nregs == 1)
 	    {
