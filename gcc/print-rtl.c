@@ -1,5 +1,5 @@
 /* Print RTL for GNU C Compiler.
-   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000
+   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -491,6 +491,7 @@ print_rtx (in_rtx)
 
   switch (GET_CODE (in_rtx))
     {
+#ifndef GENERATOR_FILE
     case MEM:
       fputs (" [", outfile);
       fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
@@ -518,7 +519,6 @@ print_rtx (in_rtx)
       fputc (']', outfile);
       break;
 
-#ifndef GENERATOR_FILE
     case CONST_DOUBLE:
       if (FLOAT_MODE_P (GET_MODE (in_rtx)))
 	{
