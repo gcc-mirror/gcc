@@ -2001,22 +2001,9 @@ find_taken_edge (basic_block bb, tree val)
   gcc_assert (is_ctrl_stmt (stmt));
 
   /* If VAL is a predicate of the form N RELOP N, where N is an
-     SSA_NAME, we can always determine its truth value (except when
-     doing floating point comparisons that may involve NaNs).  */
-  if (val
-      && COMPARISON_CLASS_P (val)
-      && TREE_OPERAND (val, 0) == TREE_OPERAND (val, 1)
-      && TREE_CODE (TREE_OPERAND (val, 0)) == SSA_NAME
-      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (val, 0))) != REAL_TYPE
-	  || !HONOR_NANS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (val, 0))))))
-    {
-      enum tree_code code = TREE_CODE (val);
-
-      if (code == EQ_EXPR || code == LE_EXPR || code == GE_EXPR)
-	val = boolean_true_node;
-      else if (code == LT_EXPR || code == GT_EXPR || code == NE_EXPR)
-	val = boolean_false_node;
-    }
+     SSA_NAME, we can usually determine its truth value.  */
+  if (val && COMPARISON_CLASS_P (val))
+    val = fold (val);
 
   /* If VAL is not a constant, we can't determine which edge might
      be taken.  */

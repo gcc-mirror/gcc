@@ -8290,6 +8290,7 @@ fold (tree expr)
 	       && (t1 = get_unwidened (arg1, TREE_TYPE (tem))) != 0
 	       && (TREE_TYPE (t1) == TREE_TYPE (tem)
 		   || (TREE_CODE (t1) == INTEGER_CST
+		       && TREE_CODE (TREE_TYPE (tem)) == INTEGER_TYPE
 		       && int_fits_type_p (t1, TREE_TYPE (tem)))))
 	return fold (build2 (code, type, tem,
 			     fold_convert (TREE_TYPE (tem), t1)));
