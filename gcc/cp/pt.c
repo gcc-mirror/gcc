@@ -4966,8 +4966,6 @@ pop_tinst_level (void)
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
   input_location = TINST_LOCATION (old);
-  extract_interface_info ();
-  
   current_tinst_level = TREE_CHAIN (old);
   --tinst_depth;
   ++tinst_level_tick;

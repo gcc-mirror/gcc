@@ -1,3 +1,13 @@
+2004-09-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.h (struct c_fileinfo): Comment moved here from cp-tree.h.
+	(extract_interface_info): Delete prototype.
+	* c-decl.c (extract_interface_info): Delete stub.
+	* c-lex.c (get_fileinfo): Initialize file_info_tree here, if
+	it's not already been done ...
+	(init_c_lex): ... not here.
+	(fe_file_change): Don't call extract_interface_info
+.
 2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (struct c_declspecs): Remove typedef_decl.  Add
@@ -38,10 +48,10 @@
 	string.  Don't expect stub names to be in the identifier hash table.
 	Do call strip_name_encoding before looking up entry in ID hash table.
 	* config/t-darwin (darwin.o): Add target.h to dependencies.
-	
+
 	* gcc/config/rs6000/rs6000.c (print_operand): Use fputs instead
 	of fprintf for register names.
-	
+
 	* output.h (unlikely_section_label): Delete declaration.
 	(unlikely_text_section_name): Likewise.
 	* varasm.c (unlikely_section_label_printed): Make static.

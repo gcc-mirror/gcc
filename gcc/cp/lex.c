@@ -82,12 +82,6 @@ struct impl_files
 static struct impl_files *impl_file_chain;
 
 
-int interface_only;		/* whether or not current file is only for
-				   interface definitions.  */
-int interface_unknown;		/* whether or not we know this class
-				   to behave according to #pragma interface.  */
-
-
 void
 cxx_finish (void)
 {
@@ -360,8 +354,6 @@ cxx_init (void)
   TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
 
-  interface_unknown = 1;
-
   /* The fact that G++ uses COMDAT for many entities (inline
      functions, template instantiations, virtual tables, etc.) mean
      that it is fundamentally unreliable to try to make decisions
@@ -387,19 +379,6 @@ cxx_init (void)
   return true;
 }
 
-/* Helper function to load global variables with interface
-   information.  */
-
-void
-extract_interface_info (void)
-{
-  struct c_fileinfo *finfo;
-
-  finfo = get_fileinfo (input_filename);
-  interface_only = finfo->interface_only;
-  interface_unknown = finfo->interface_unknown;
-}
-
 /* Return nonzero if S is not considered part of an
    INTERFACE/IMPLEMENTATION pair.  Otherwise, return 0.  */
 
@@ -504,14 +483,11 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
 	main_input_filename = input_filename;
     }
 
-  interface_only = interface_strcmp (main_filename);
+  finfo->interface_only = interface_strcmp (main_filename);
   /* If MULTIPLE_SYMBOL_SPACES is set, we cannot assume that we can see
      a definition in another file.  */
-  if (!MULTIPLE_SYMBOL_SPACES || !interface_only)
-    interface_unknown = 0;
-
-  finfo->interface_only = interface_only;
-  finfo->interface_unknown = interface_unknown;
+  if (!MULTIPLE_SYMBOL_SPACES || !finfo->interface_only)
+    finfo->interface_unknown = 0;
 }
 
 /* Note that we have seen a #pragma implementation for the key MAIN_FILENAME.
@@ -519,8 +495,9 @@ handle_pragma_interface (cpp_reader* dfile ATTRIBUTE_UNUSED )
    in older compilers and it seems reasonable to allow it in the headers
    themselves, too.  It only needs to precede the matching #p interface.
 
-   We don't touch interface_only or interface_unknown; the user must specify
-   a matching #p interface for this to have any effect.  */
+   We don't touch finfo->interface_only or finfo->interface_unknown;
+   the user must specify a matching #p interface for this to have
+   any effect.  */
 
 static void
 handle_pragma_implementation (cpp_reader* dfile ATTRIBUTE_UNUSED )
@@ -791,8 +768,9 @@ cxx_make_type (enum tree_code code)
   /* Set up some flags that give proper default behavior.  */
   if (IS_AGGR_TYPE_CODE (code))
     {
-      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
-      CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
+      struct c_fileinfo *finfo = get_fileinfo (input_filename);
+      SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
+      CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;
     }
   else
     /* We use TYPE_ALIAS_SET for the CLASSTYPE_MARKED bits.  But,

@@ -6591,13 +6591,6 @@ anon_aggr_type_p (tree ARG_UNUSED (node))
   return 0;
 }
 
-/* Dummy function in place of callback used by C++.  */
-
-void
-extract_interface_info (void)
-{
-}
-
 /* Return the global value of T as a symbol.  */
 
 tree
