@@ -109,6 +109,7 @@ extern void rs6000_emit_move PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern void rs6000_select_rtx_section PARAMS ((enum machine_mode, rtx));
 extern rtx rs6000_return_addr PARAMS ((int, rtx));
+extern void rs6000_output_symbol_ref PARAMS ((FILE*, rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

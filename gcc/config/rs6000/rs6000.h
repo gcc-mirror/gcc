@@ -2628,6 +2628,11 @@ do {									\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
+/* Output a reference to SYM on FILE.  */
+
+#define ASM_OUTPUT_SYMBOL_REF(FILE, SYM) \
+  rs6000_output_symbol_ref (FILE, SYM)
+
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
 
