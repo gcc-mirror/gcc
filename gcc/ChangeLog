@@ -1,5 +1,7 @@
 Sat Mar  7 00:54:15 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* basic-block.h (free_basic_block_vargs): Provide prototype.
+
 	* cccp.c (main): Fix dumb mistakes in last change.
 
 Fri Mar  6 21:28:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>

@@ -186,6 +186,8 @@ extern int compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
 				       int *, int *));
 extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *));
 extern void free_bb_mem        PROTO ((void));
+extern void free_basic_block_vars	PROTO ((int));
+
 
 /* Simple bitmaps.
    It's not clear yet whether using bitmap.[ch] will be a win.
