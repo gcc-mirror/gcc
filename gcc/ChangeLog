@@ -1,3 +1,7 @@
+Tue Jan 12 10:23:24 1999  Stan Cox  <scox@cygnus.com>
+
+	* mips.md (call_value_internal3c): New pattern for -mips16 -mlong-calls.
+
 1999-01-12  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* m68k/mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to
