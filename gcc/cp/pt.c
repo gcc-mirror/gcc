@@ -4534,6 +4534,7 @@ for_each_template_parm (t, fn, data, visited)
      htab_t visited;
 {
   struct pair_fn_data pfd;
+  int result;
 
   /* Set up.  */
   pfd.fn = fn;
@@ -4549,10 +4550,16 @@ for_each_template_parm (t, fn, data, visited)
   else
     pfd.visited = htab_create (37, htab_hash_pointer, htab_eq_pointer, 
 			       NULL);
-  return walk_tree (&t, 
-		    for_each_template_parm_r, 
-		    &pfd,
-		    NULL) != NULL_TREE;
+  result = walk_tree (&t, 
+		      for_each_template_parm_r, 
+		      &pfd,
+		      NULL) != NULL_TREE;
+
+  /* Clean up.  */
+  if (!visited)
+    htab_delete (pfd.visited);
+
+  return result;
 }
 
 int
