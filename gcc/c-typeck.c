@@ -167,7 +167,8 @@ static tree
 qualify_type (type, like)
      tree type, like;
 {
-  return c_build_qualified_type (type, TYPE_QUALS (like));
+  return c_build_qualified_type (type, 
+				 TYPE_QUALS (type) | TYPE_QUALS (like));
 }
 
 /* Return the common type of two types.
