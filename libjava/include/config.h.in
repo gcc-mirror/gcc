@@ -429,18 +429,6 @@
 	STACK_DIRECTION < 0 => grows toward lower addresses
 	STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
-/* whether byteorder is bigendian */
-#undef WORDS_BIGENDIAN
-
-/* Define if the host machine stores words of multi-word integers in
-   big-endian order. */
-#undef HOST_WORDS_BIG_ENDIAN
-
-/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
-#undef BYTEORDER
-
-/* Short GCJ version ID */
-#undef GCJVERSION
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
