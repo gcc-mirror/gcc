@@ -734,16 +734,13 @@ reload (rtx first, int global)
 	{
 	  rtx note = find_reg_note (insn, REG_EQUIV, NULL_RTX);
 	  if (note
-#ifdef LEGITIMATE_PIC_OPERAND_P
 	      && (! function_invariant_p (XEXP (note, 0))
 		  || ! flag_pic
 		  /* A function invariant is often CONSTANT_P but may
 		     include a register.  We promise to only pass
 		     CONSTANT_P objects to LEGITIMATE_PIC_OPERAND_P.  */
 		  || (CONSTANT_P (XEXP (note, 0))
-		      && LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0))))
-#endif
-	      )
+		      && LEGITIMATE_PIC_OPERAND_P (XEXP (note, 0)))))
 	    {
 	      rtx x = XEXP (note, 0);
 	      i = REGNO (SET_DEST (set));

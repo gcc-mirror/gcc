@@ -1,5 +1,14 @@
 2004-08-03  Zack Weinberg  <zack@codesourcery.com>
 
+	* defaults.h (LEGITIMATE_PIC_OPERAND_P): Provide default definition.
+	* recog.c (general_operand, immediate_operand, nonmemory_operand)
+	(asm_operand_ok): Remove #ifdefs on LEGITIMATE_PICOPERAND_P.
+	* regclass.c (record_reg_classes): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* reload1.c (reload): Likewise.
+
+2004-08-03  Zack Weinberg  <zack@codesourcery.com>
+
 	* gensupport.c (init_md_reader_args_cb): Renamed from
 	init_md_reader_args.  Add third option, callback function for
 	parsing program-specific options.  Add diagnosis of incorrect
