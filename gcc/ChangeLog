@@ -1,5 +1,8 @@
 2003-05-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/stormy16/stormy16.h: Remove about 3000 lines of 
+	target-independent comments.  Update copyright notice.
+
 	* doc/collect2.texi: GNU CC -> GCC.
 	* doc/headerdirs.texi: GNU CC -> GCC.
 
