@@ -88,7 +88,10 @@ find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc
 
 
 # Checkout all the texi files.
-cvs -Q co -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/include/texinfo.tex
+cvs -Q export -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/include/texinfo.tex
+
+# Build a tarball of the sources.
+tar cf docs-sources.tar gcc
 
 # The directory to pass to -I; this is the one with texinfo.tex
 # and fdl.texi.
@@ -101,13 +104,14 @@ for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
     makeinfo --html -I ${includedir} -I `dirname ${filename}` ${filename}
+    tar cf ${file}-html.tar ${file}/*.html
     texi2dvi -I ${includedir} ${filename} </dev/null && dvips -o ${file}.ps ${file}.dvi
     mkdir -p $DOCSDIR/$file
   fi
 done
 
-# Then build a gzipped copy of each of the resulting .html and .ps files
-for file in */*.html *.ps; do
+# Then build a gzipped copy of each of the resulting .html, .ps and .tar files
+for file in */*.html *.ps *.tar; do
   cat $file | gzip --best > $file.gz
 done
 
@@ -121,8 +125,8 @@ if test $today = 15; then
   done
 fi
 
-# And copy the resulting html files to the web server
-for file in */*.html *.ps; do
+# And copy the resulting files to the web server
+for file in */*.html *.ps *.tar; do
   cat $DOCSDIR/$file | 
     sed -e '/^<meta name=generator/d' \
         -e '/^%DVIPSSource:/d' > file1
