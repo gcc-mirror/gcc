@@ -26,6 +26,10 @@
    */
 #undef HAVE_DECL_ABORT
 
+/* Define to 1 if you have the declaration of `basename', and to 0 if you
+   don't. */
+#undef HAVE_DECL_BASENAME
+
 /* Define to 1 if you have the declaration of `errno', and to 0 if you don't.
    */
 #undef HAVE_DECL_ERRNO
@@ -45,6 +49,10 @@
 /* Define to 1 if you have the declaration of `fwrite_unlocked', and to 0 if
    you don't. */
 #undef HAVE_DECL_FWRITE_UNLOCKED
+
+/* Define to 1 if you have the declaration of `getopt', and to 0 if you don't.
+   */
+#undef HAVE_DECL_GETOPT
 
 /* Define to 1 if you have the declaration of `putc_unlocked', and to 0 if you
    don't. */

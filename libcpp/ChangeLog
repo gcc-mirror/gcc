@@ -1,3 +1,14 @@
+2005-02-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/19818
+	* configure.ac: Check for declaration of basename and getopt.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* internal.h (ustrcspn): New.
+	* macro.c (create_iso_definition): Fix allocation of memory.
+	(padding_token): Add cast to remove const-ness.
+	* pch.c (cpp_read_state): Use ustrcspn.
+
 2005-02-08  Mike Stump  <mrs@apple.com>
 
 	* files.c (pchf_adder): Remove.

@@ -1,3 +1,8 @@
+2005-02-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/19818
+	* ansidecl.h (PARAMS): Guard from redefinition.
+
 2004-12-11  Ben Elliston  <bje@au.ibm.com>
 
 	* fibheap.h (struct fibnode): Only use unsigned long bitfields

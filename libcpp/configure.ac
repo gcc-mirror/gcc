@@ -46,7 +46,7 @@ AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_FUNCS(putc_unlocked fputc_unlocked fputs_unlocked \
         fwrite_unlocked fprintf_unlocked)
-AC_CHECK_DECLS([abort, errno, putc_unlocked, fputc_unlocked,
+AC_CHECK_DECLS([abort, basename, errno, getopt, putc_unlocked, fputc_unlocked,
         fputs_unlocked, fwrite_unlocked, fprintf_unlocked])
 
 # Checks for library functions.

@@ -910,7 +910,10 @@ padding_token (cpp_reader *pfile, const cpp_token *source)
   cpp_token *result = _cpp_temp_token (pfile);
 
   result->type = CPP_PADDING;
-  result->val.source = source;
+
+  /* Data in GCed data structures cannot be made const so far, so we
+     need a cast here.  */
+  result->val.source = (cpp_token *) source;
   result->flags = 0;
   return result;
 }
@@ -1416,10 +1419,11 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       /* Success.  Commit or allocate the parameter array.  */
       if (pfile->hash_table->alloc_subobject)
 	{
-	  cpp_token *tokns = pfile->hash_table->alloc_subobject
-	    (sizeof (cpp_token) * macro->paramc);
-	  memcpy (tokns, macro->params, sizeof (cpp_token) * macro->paramc);
-	  macro->params = tokns;
+	  cpp_hashnode **params = pfile->hash_table->alloc_subobject
+	    (sizeof (cpp_hashnode *) * macro->paramc);
+	  memcpy (params, macro->params,
+		  sizeof (cpp_hashnode *) * macro->paramc);
+	  macro->params = params;
 	}
       else
 	BUFF_FRONT (pfile->a_buff) = (uchar *) &macro->params[macro->paramc];
