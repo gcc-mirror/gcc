@@ -1,3 +1,9 @@
+2004-10-27  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	PR bootstrap/17832
+
+	* fixfixes.c (main): Check for _PC_NAME_MAX.
+
 2004-10-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR other/17991

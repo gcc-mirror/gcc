@@ -778,10 +778,12 @@ main( int argc, char** argv )
      doesn't allow more than one dot in the trunk of a file name.  */
   pz_tmp_base = basename( pz_tmptmp );
   pz_tmp_dot = strchr( pz_tmp_base, '.' );
+#ifdef _PC_NAME_MAX
   if (pathconf( pz_tmptmp, _PC_NAME_MAX ) <= 12	/* is this DOS or Windows9X? */
       && pz_tmp_dot != (char*)NULL)
     strcpy (pz_tmp_dot+1, "X"); /* nuke the original extension */
   else
+#endif /* _PC_NAME_MAX */
     strcat (pz_tmptmp, ".X");
   if (freopen (pz_tmptmp, "w", stdout) != stdout)
     {
