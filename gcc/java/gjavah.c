@@ -1567,7 +1567,7 @@ print_stub_or_jni (FILE* stream, JCF* jcf, int name_index,
 	return;
 
       if (flag_jni && ! stubs)
-	fputs ("extern JNIEXPORT ", stream);
+	fputs ("JNIEXPORT ", stream);
 
       /* If printing a method, skip to the return signature and print
 	 that first.  However, there is no return value if this is a
