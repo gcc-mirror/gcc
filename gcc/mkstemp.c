@@ -28,12 +28,13 @@
 #else
 #include "config.h"
 #include "system.h"
+#include "gansidecl.h"
 
-/* We need to provide a type for uint64_t.  */
+/* We need to provide a type for gcc_uint64_t.  */
 #ifdef __GNUC__
-typedef unsigned long long uint64_t;
+typedef unsigned long long gcc_uint64_t;
 #else
-typedef unsigned long uint64_t;
+typedef unsigned long gcc_uint64_t;
 #endif
 
 #ifndef TMP_MAX
@@ -49,9 +50,9 @@ int
 mkstemp (template)
      char *template;
 {
-  static const char letters[62]
+  static const char letters[]
     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  static uint64_t value;
+  static gcc_uint64_t value;
 #ifdef HAVE_GETTIMEOFDAY
   struct timeval tv;
 #endif
@@ -70,15 +71,15 @@ mkstemp (template)
 
 #ifdef HAVE_GETTIMEOFDAY
   /* Get some more or less random data.  */
-  __gettimeofday (&tv, NULL);
-  value += ((uint64_t) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid ();
+  gettimeofday (&tv, NULL);
+  value += ((gcc_uint64_t) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid ();
 #else
   value += getpid ();
 #endif
 
   for (count = 0; count < TMP_MAX; ++count)
     {
-      uint64_t v = value;
+      gcc_uint64_t v = value;
       int fd;
 
       /* Fill in the random bits.  */
