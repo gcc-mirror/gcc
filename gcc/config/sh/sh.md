@@ -21,6 +21,9 @@
 ;; Boston, MA 02111-1307, USA.
 
 
+;; ??? Should prepend a * to all pattern names which are not used.
+;; This will make the compiler smaller, and rebuilds after changes faster.
+
 ;; ??? Should be enhanced to include support for many more GNU superoptimizer
 ;; sequences.  Especially the sequences for arithmetic right shifts.
 
@@ -1162,33 +1165,34 @@
   [(set_attr "length" "4")
    (set_attr "type" "pcload,move,load,store,move")])
 
-;; If the output is a register and the input is memory, we have to be careful
-;; and see which word needs to be loaded first.
-
-;; ??? Why are Q constraint addresses rejected here but not in the DFmode
-;; split pattern?
+;; If the output is a register and the input is memory or a register, we have
+;; to be careful and see which word needs to be loaded first.  
 
 (define_split
   [(set (match_operand:DI 0 "general_movdst_operand" "")
 	(match_operand:DI 1 "general_movsrc_operand" ""))]
- "! (GET_CODE (operands[0]) == REG
-     && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-   && ! (GET_CODE (operands[1]) == REG
-         && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-   && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
-	 && ! reload_completed
-	 && reg_overlap_mentioned_p (operands[0], operands[1]))
-   && ! (GET_CODE (operands[0]) == MEM
-	 && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
-   && ! (GET_CODE (operands[1]) == MEM
-	 && GET_CODE (XEXP (operands[1], 0)) == POST_INC)
-   && ! EXTRA_CONSTRAINT_Q (operands[1])"
+  "reload_completed"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
-{ if (GET_CODE (operands[0]) != REG
-      || ! refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			      operands[1], 0))
+{
+  int regno;
+
+  if ((GET_CODE (operands[0]) == MEM
+       && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+      || (GET_CODE (operands[1]) == MEM
+	  && GET_CODE (XEXP (operands[1], 0)) == POST_INC))
+    FAIL;
+
+  if (GET_CODE (operands[0]) == REG)
+    regno = REGNO (operands[0]);
+  else if (GET_CODE (operands[0]) == SUBREG)
+    regno = REGNO (SUBREG_REG (operands[0])) + SUBREG_WORD (operands[0]);
+  else if (GET_CODE (operands[0]) == MEM)
+    regno = -1;
+
+  if (regno == -1
+      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DImode);
       operands[3] = operand_subword (operands[1], 0, 0, DImode);
@@ -1225,29 +1229,34 @@
   [(set_attr "length" "4")
    (set_attr "type" "move,load,store")])
 
-;; If the output is a register and the input is memory, we have to be careful
-;; and see which word needs to be loaded first.
+;; If the output is a register and the input is memory or a register, we have
+;; to be careful and see which word needs to be loaded first.  
 
 (define_split
   [(set (match_operand:DF 0 "general_movdst_operand" "")
 	(match_operand:DF 1 "general_movsrc_operand" ""))]
-  "! (GET_CODE (operands[0]) == REG
-     && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
-   && ! (GET_CODE (operands[1]) == REG
-         && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
-   && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
-	 && ! reload_completed
-	 && reg_overlap_mentioned_p (operands[0], operands[1]))
-   && ! (GET_CODE (operands[0]) == MEM
-	 && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
-   && ! (GET_CODE (operands[1]) == MEM
-	 && GET_CODE (XEXP (operands[1], 0)) == POST_INC)"
+  "reload_completed"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
-{ if (GET_CODE (operands[0]) != REG
-      || ! refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			      operands[1], 0))
+{
+  int regno;
+
+  if ((GET_CODE (operands[0]) == MEM
+       && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+      || (GET_CODE (operands[1]) == MEM
+	  && GET_CODE (XEXP (operands[1], 0)) == POST_INC))
+    FAIL;
+
+  if (GET_CODE (operands[0]) == REG)
+    regno = REGNO (operands[0]);
+  else if (GET_CODE (operands[0]) == SUBREG)
+    regno = REGNO (SUBREG_REG (operands[0])) + SUBREG_WORD (operands[0]);
+  else if (GET_CODE (operands[0]) == MEM)
+    regno = -1;
+
+  if (regno == -1
+      || ! refers_to_regno_p (regno, regno + 1, operands[1], 0))
     {
       operands[2] = operand_subword (operands[0], 0, 0, DFmode);
       operands[3] = operand_subword (operands[1], 0, 0, DFmode);
