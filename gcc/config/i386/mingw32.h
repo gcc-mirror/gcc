@@ -2,7 +2,7 @@
    hosting on Windows32, using GNU tools and the Windows32 API Library,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA. */
 
 /* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
-#define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
+#define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lmsvcrt"
 
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
@@ -55,9 +55,9 @@ Boston, MA 02111-1307, USA. */
 "%{mwindows:--subsystem windows} %{mdll:--dll -e _DllMainCRTStartup@12}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s}"
+#define STARTFILE_SPEC "%{mdll:dllcrt2%O%s} %{!mdll:crt2%O%s}"
 
-#define MATH_LIBRARY "-lcrtdll"
+#define MATH_LIBRARY "-lmsvcrt"
 
 /* Output STRING, a string representing a filename, to FILE.  We canonicalize
    it to be in MS-DOS format.  */
