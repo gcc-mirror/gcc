@@ -2535,6 +2535,39 @@ expand_body (fn)
   if (flag_syntax_only)
     return;
 
+  /* If possible, avoid generating RTL for this function.  Instead,
+     just record it as an inline function, and wait until end-of-file
+     to decide whether to write it out or not.  */
+  if (/* We have to generate RTL if we can't inline trees.  */
+      flag_inline_trees
+      /* Or if it's not an inline function.  */
+      && DECL_INLINE (fn)
+      /* Or if we have to keep all inline functions anyhow.  */
+      && !flag_keep_inline_functions
+      /* Or if we actually have a reference to the function.  */
+      && !DECL_NEEDED_P (fn)
+      /* Or if we're at the end-of-file, and this function is not
+	 DECL_COMDAT.  */
+      && (!at_eof || DECL_COMDAT (fn))
+      /* Or if this is a nested function.  */
+      && !hack_decl_function_context (fn))
+    {
+      /* Give the function RTL now so that we can assign it to a
+	 function pointer, etc.  */
+      make_function_rtl (fn);
+      /* Set DECL_EXTERNAL so that assemble_external will be called as
+	 necessary.  We'll clear it again in finish_file.  */
+      if (!DECL_EXTERNAL (fn))
+	{
+	  DECL_NOT_REALLY_EXTERN (fn) = 1;
+	  DECL_EXTERNAL (fn) = 1;
+	}
+      /* Remember this function.  In finish_file we'll decide if
+	 we actually need to write this function out.  */
+      mark_inline_for_output (fn);
+      return;
+    }
+
   /* Optimize the body of the function before expanding it.  */
   optimize_function (fn);
 
