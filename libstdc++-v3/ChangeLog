@@ -1,3 +1,9 @@
+2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/abi.html: Remove non-public qualification.
+
+	* include/bits/concurrence.h: Tweak comments.
+
 2004-07-11  Paolo Carlini  <pcarlini@suse.de>
 
 	Add wchar_t counterparts of the basic_streambbuf<char> tests.
