@@ -1,3 +1,20 @@
+2000-11-27  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/Vector.java (ensureCapacity): Don't increment modCount.
+	(addElement): Don't increment elementCount twice. Doh.
+	* java/util/ArrayList.java (add): Only call ensureCapacity if the
+	array needs to be expanded.
+	(addAll): Ditto.
+	* java/util/Collections.java (UnmodifiableCollection): Implement
+	toString().
+	(UnmodifiableList): Throw UnsupportedOperationException from 
+	modification methods. Set `l' from the one-parameter constructor.
+	(UnmodifiableMap): Implement toString().
+	(SynchronizedCollection): Ditto.
+	(SynchronizedList): Set `l' from the one-parameter constructor.
+	(SynchronizedSortedSet): Set `ss' from the one-parameter constructor.
+	(SynchronizedMap): Implement toString().
+
 Sun Nov 26 22:35:53 2000  Anthony Green  <green@redhat.com>
 
 	* javax/naming/InitialContext.java (rebind): Implement.

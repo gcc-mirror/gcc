@@ -43,7 +43,7 @@ import java.io.ObjectStreamField;
  * to or removing from the end of a list, checking the size, &c.
  *
  * @author        Jon A. Zeppieri
- * @version       $Id: ArrayList.java,v 1.3 2000/11/02 10:08:03 bryce Exp $
+ * @version       $Id: ArrayList.java,v 1.4 2000/11/22 11:59:59 bryce Exp $
  * @see           java.util.AbstractList
  * @see           java.util.List
  */
@@ -127,7 +127,8 @@ public class ArrayList extends AbstractList
   public boolean add(Object e)
   {
     modCount++;
-    ensureCapacity(size + 1);
+    if (size == data.length)
+      ensureCapacity(size + 1);
     data[size++] = e;
     return true;
   }
@@ -204,7 +205,8 @@ public class ArrayList extends AbstractList
     if (index < 0 || index > size)
       throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
                                           size);
-    ensureCapacity(size + 1);
+    if (size == data.length)
+      ensureCapacity(size + 1);
     if (index != size)
       System.arraycopy(data, index, data, index + 1, size - index);    
     data[index] = e;
@@ -239,7 +241,8 @@ public class ArrayList extends AbstractList
     Iterator itr = c.iterator();
     int csize = c.size();
 
-    ensureCapacity(size + csize);
+    if (csize + size > data.length)
+      ensureCapacity(size + csize);
     int end = index + csize;
     if (size > 0 && index != size)
       System.arraycopy(data, index, data, end, csize);
