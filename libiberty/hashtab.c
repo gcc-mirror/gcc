@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This file is part of the libiberty library.
@@ -71,6 +71,14 @@ static PTR *find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 htab_hash htab_hash_pointer = hash_pointer;
 htab_eq htab_eq_pointer = eq_pointer;
 
+/* This avoids a warning that 4294967291 is signed for pre-ISO C systems and
+   unsigned for ISO C systems on 32-bit hosts.  */
+#ifdef __STDC__
+#define UL(num) num ## UL
+#else
+#define UL(num) ((unsigned long)(num/**/L))
+#endif
+
 /* The following function returns a nearest prime number which is
    greater than N, and near a power of two. */
 
@@ -81,37 +89,37 @@ higher_prime_number (n)
   /* These are primes that are near, but slightly smaller than, a
      power of two.  */
   static unsigned long primes[] = {
-    2,
-    7,
-    13,
-    31,
-    61,
-    127,
-    251,
-    509,
-    1021,
-    2039,
-    4093,
-    8191,
-    16381,
-    32749,
-    65521,
-    131071,
-    262139,
-    524287,
-    1048573,
-    2097143,
-    4194301,
-    8388593,
-    16777213,
-    33554393,
-    67108859,
-    134217689,
-    268435399,
-    536870909,
-    1073741789,
-    2147483647,
-    4294967291
+    UL(2),
+    UL(7),
+    UL(13),
+    UL(31),
+    UL(61),
+    UL(127),
+    UL(251),
+    UL(509),
+    UL(1021),
+    UL(2039),
+    UL(4093),
+    UL(8191),
+    UL(16381),
+    UL(32749),
+    UL(65521),
+    UL(131071),
+    UL(262139),
+    UL(524287),
+    UL(1048573),
+    UL(2097143),
+    UL(4194301),
+    UL(8388593),
+    UL(16777213),
+    UL(33554393),
+    UL(67108859),
+    UL(134217689),
+    UL(268435399),
+    UL(536870909),
+    UL(1073741789),
+    UL(2147483647),
+    UL(4294967291),
   };
 
   unsigned long* low = &primes[0];
