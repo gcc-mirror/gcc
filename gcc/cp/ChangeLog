@@ -1,5 +1,9 @@
 2005-02-17  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR c++/20028
+	* class.c (finish_struct): Initialize TYPE_SIZE_UNIT of a
+	template along with TYPE_SIZE.
+
 	PR c++/20022
 	* semantics.c (perform_deferred_access_checks): Use
 	get_deferred_access_checks to get the top of the stack.
