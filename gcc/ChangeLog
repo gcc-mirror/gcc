@@ -36,8 +36,6 @@
 	round, roundf and roundl.
 	(fold_builtin): Call fold_builtin_round for BUILT_IN_ROUND{,F,L}.
 
-	* gcc.dg/builtins-29.c: New test case.
-
 2004-01-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR optimization/13819
