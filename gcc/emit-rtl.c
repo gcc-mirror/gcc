@@ -271,15 +271,21 @@ gen_rtx (va_alist)
 	 If we have eliminated the frame pointer or arg pointer, we will
 	 be using it as a normal register, for example as a spill register.
 	 In such cases, we might be accessing it in a mode that is not
-	 Pmode and therefore cannot use the pre-allocated rtx.  */
+	 Pmode and therefore cannot use the pre-allocated rtx.
 
-      if (frame_pointer_rtx && regno == FRAME_POINTER_REGNUM && mode == Pmode)
+	 Also don't do this when we are making new REGs in reload,
+	 since we don't want to get confused with the real pointers.  */
+
+      if (frame_pointer_rtx && regno == FRAME_POINTER_REGNUM && mode == Pmode
+	  && ! reload_in_progress)
 	return frame_pointer_rtx;
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (arg_pointer_rtx && regno == ARG_POINTER_REGNUM && mode == Pmode)
+      if (arg_pointer_rtx && regno == ARG_POINTER_REGNUM && mode == Pmode
+	  && ! reload_in_progress)
 	return arg_pointer_rtx;
 #endif
-      if (stack_pointer_rtx && regno == STACK_POINTER_REGNUM && mode == Pmode)
+      if (stack_pointer_rtx && regno == STACK_POINTER_REGNUM && mode == Pmode
+	  && ! reload_in_progress)
 	return stack_pointer_rtx;
       else
 	{
