@@ -1,5 +1,14 @@
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* fixinc/inclhack.def (strict_ansi_not, strict_ansi_not_ctd,
+	strict_ansi_only): Don't run if stdc_0_in_system_headers.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/fixtests.c (stdc_0_in_system_headers_test): New function.
+	(FIX_TEST_TABLE): Declare it.
+	* fixinc/fixlib.h: Include config.h.
+
+2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* fixinc/inclhack.def (alpha___assert): Change char * args to
 	const char * on Tru64 UNIX to avoid excessive warnings from
 	assert.h.
@@ -14,7 +23,7 @@
 
 2001-05-25  Jeff Knaggs  <jknaggs@redhat.com>
 
-        * config/alpha/alpha.md (movtf_internal): Use reg_overlap_mentioned_p
+	* config/alpha/alpha.md (movtf_internal): Use reg_overlap_mentioned_p
 	instead of rtx_equal_p for early clobber test.
 
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
