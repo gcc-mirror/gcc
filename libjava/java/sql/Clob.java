@@ -57,7 +57,7 @@ public interface Clob
   * @exception SQLException If an error occurs.
   * @since 1.2
   */
-  public long length() throws SQLException;
+  long length() throws SQLException;
 
   /**
    * This method returns the specified portion of the CLOB as a 
@@ -70,7 +70,7 @@ public interface Clob
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public String getSubString(long pos, int length) throws SQLException;
+  String getSubString(long pos, int length) throws SQLException;
 
   /**
    * This method returns a character stream that reads the contents of the
@@ -80,7 +80,7 @@ public interface Clob
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Reader getCharacterStream() throws SQLException;
+  Reader getCharacterStream() throws SQLException;
 
   /**
    * This method returns a byte stream that reads the contents of the
@@ -90,7 +90,7 @@ public interface Clob
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public InputStream getAsciiStream() throws SQLException;
+  InputStream getAsciiStream() throws SQLException;
 
   /**
    * This method returns the index into the CLOB of the first occurrence of
@@ -106,7 +106,7 @@ public interface Clob
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public long position(String searchstr, long start) throws SQLException;
+  long position(String searchstr, long start) throws SQLException;
 
   /**
    * This method returns the index into the CLOB of the first occurrence of
@@ -122,31 +122,31 @@ public interface Clob
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public long position(Clob searchstr, long start) throws SQLException;
+  long position(Clob searchstr, long start) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int setString(long pos, String str) throws SQLException;
+  int setString(long pos, String str) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int setString(long pos, String str, int offset, int len)
+  int setString(long pos, String str, int offset, int len)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public OutputStream setAsciiStream(long pos) throws SQLException;
+  OutputStream setAsciiStream(long pos) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Writer setCharacterStream(long pos) throws SQLException;
+  Writer setCharacterStream(long pos) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void truncate(long len) throws SQLException;
+  void truncate(long len) throws SQLException;
 }

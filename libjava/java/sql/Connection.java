@@ -51,14 +51,14 @@ public interface Connection
    * This transaction isolation level indicates that transactions are not
    * supported.
    */
-  public static final int TRANSACTION_NONE = 0;
+  int TRANSACTION_NONE = 0;
 
   /**
    * This transaction isolation level indicates that one transaction can
    * read modifications by other transactions before the other transactions
    * have committed their changes.  This could result in invalid reads.
    */
-  public static final int TRANSACTION_READ_UNCOMMITTED = 1;
+  int TRANSACTION_READ_UNCOMMITTED = 1;
 
   /**
    * This transaction isolation leve indicates that only committed data from
@@ -66,7 +66,7 @@ public interface Connection
    * another transaction commits a change to that row, the first transaction
    * would retrieve the changed row on subsequent reads of the same row.
    */
-  public static final int TRANSACTION_READ_COMMITTED = 2;
+  int TRANSACTION_READ_COMMITTED = 2;
 
   /**
    * This transaction isolation level indicates that only committed data from
@@ -74,7 +74,7 @@ public interface Connection
    * a row will not be different on a subsequent read even if another
    * transaction commits a change.
    */
-  public static final int TRANSACTION_REPEATABLE_READ = 4;
+  int TRANSACTION_REPEATABLE_READ = 4;
 
   /**
    * This transaction isolation level indicates that only committed data from
@@ -84,7 +84,7 @@ public interface Connection
    * transactions will not affect the result set returned during subsequent
    * executions of the same WHERE clause in this transaction.
    */
-  public static final int TRANSACTION_SERIALIZABLE = 8;
+  int TRANSACTION_SERIALIZABLE = 8;
 
   /**
    * This method creates a new SQL statement.  The default result set type
@@ -94,7 +94,7 @@ public interface Connection
    * @exception SQLException If an error occurs.
    * @see Statement
    */
-  public Statement createStatement() throws SQLException;
+  Statement createStatement() throws SQLException;
 
   /**
    * This method creates a new <code>PreparedStatement</code> for the specified
@@ -107,7 +107,7 @@ public interface Connection
    * @exception SQLException If an error occurs.
    * @see PreparedStatement
    */
-  public PreparedStatement prepareStatement(String sql) throws SQLException;
+  PreparedStatement prepareStatement(String sql) throws SQLException;
 
   /**
    * This method creates a new <code>CallableStatement</code> for the 
@@ -121,7 +121,7 @@ public interface Connection
    * @exception SQLException If an error occurs.
    * @see CallableStatement
    */
-  public CallableStatement prepareCall(String sql) throws SQLException;
+  CallableStatement prepareCall(String sql) throws SQLException;
 
   /**
    * This method converts the specified generic SQL statement into the
@@ -131,7 +131,7 @@ public interface Connection
    * @return The native SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public String nativeSQL(String sql) throws SQLException;
+  String nativeSQL(String sql) throws SQLException;
 
   /**
    * This method turns auto commit mode on or off.  In auto commit mode,
@@ -144,7 +144,7 @@ public interface Connection
    * @see commit
    * @see rollback
    */
-  public void setAutoCommit(boolean autoCommit) throws SQLException;
+  void setAutoCommit(boolean autoCommit) throws SQLException;
 
   /**
    * This method tests whether or not auto commit mode is currently enabled.
@@ -159,7 +159,7 @@ public interface Connection
    * @see commit
    * @see rollback
    */
-  public boolean getAutoCommit() throws SQLException;
+  boolean getAutoCommit() throws SQLException;
 
  /**
   * This method commits any SQL statements executed on this connection since 
@@ -167,7 +167,7 @@ public interface Connection
   *
   * @exception SQLException If an error occurs.
   */
-  public void commit() throws SQLException;
+  void commit() throws SQLException;
 
   /**
    * This method rolls back any SQL statements executed on this connection
@@ -175,14 +175,14 @@ public interface Connection
    *
    * @exception SQLException If an error occurs.
    */
-  public void rollback() throws SQLException;
+  void rollback() throws SQLException;
 
   /**
    * This method immediately closes this database connection.
    *
    * @exception SQLException If an error occurs.
    */
-  public void close() throws SQLException;
+  void close() throws SQLException;
 
   /**
    * This method tests whether or not this connection has been closed. 
@@ -191,7 +191,7 @@ public interface Connection
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isClosed() throws SQLException;
+  boolean isClosed() throws SQLException;
 
   /**
    * This method returns the meta data for this database connection.
@@ -200,7 +200,7 @@ public interface Connection
    * @exception SQLException If an error occurs.
    * @see DatabaseMetaData
    */
-  public DatabaseMetaData getMetaData() throws SQLException;
+  DatabaseMetaData getMetaData() throws SQLException;
 
   /**
    * This method turns read only mode on or off.  It may not be called while
@@ -210,7 +210,7 @@ public interface Connection
    *        <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public void setReadOnly(boolean readOnly) throws SQLException;
+  void setReadOnly(boolean readOnly) throws SQLException;
 
   /**
    * This method tests whether or not this connection is in read only mode.
@@ -219,7 +219,7 @@ public interface Connection
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isReadOnly() throws SQLException;
+  boolean isReadOnly() throws SQLException;
 
   /**
    * This method sets the name of the catalog in use by this connection.
@@ -229,7 +229,7 @@ public interface Connection
    * @param catalog The name of the catalog to use for this connection.
    * @exception SQLException If an error occurs.
    */
-  public void setCatalog(String catalog) throws SQLException;
+  void setCatalog(String catalog) throws SQLException;
 
   /**
    * This method returns the name of the catalog in use by this connection,
@@ -239,7 +239,7 @@ public interface Connection
    *         exist or catalogs are not supported by this database.
    * @exception SQLException If an error occurs.
    */
-  public String getCatalog() throws SQLException;
+  String getCatalog() throws SQLException;
 
   /**
    * This method sets the current transaction isolation mode.  This must
@@ -248,7 +248,7 @@ public interface Connection
    * @param level The transaction isolation level.
    * @exception SQLException If an error occurs.
    */
-  public void setTransactionIsolation(int level) throws SQLException;
+  void setTransactionIsolation(int level) throws SQLException;
 
   /**
    * This method returns the current transaction isolation mode.  This will
@@ -257,7 +257,7 @@ public interface Connection
    * @return The transaction isolation level.
    * @exception SQLException If an error occurs.
    */
-  public int getTransactionIsolation() throws SQLException;
+  int getTransactionIsolation() throws SQLException;
 
   /**
    * This method returns the first warning that occurred on this connection,
@@ -268,14 +268,14 @@ public interface Connection
    *         <code>null</code> if there have been no warnings.
    * @exception SQLException If an error occurs.
    */
-  public SQLWarning getWarnings() throws SQLException;
+  SQLWarning getWarnings() throws SQLException;
 
   /**
    * This method clears all warnings that have occurred on this connection.
    *
    * @exception SQLException If an error occurs.
    */
-  public void clearWarnings() throws SQLException;
+  void clearWarnings() throws SQLException;
 
   /**
    * This method creates a new SQL statement with the specified type and
@@ -290,7 +290,7 @@ public interface Connection
    * @see Statement
    * @see ResultSet
    */
-  public Statement createStatement(int resultSetType, int resultSetConcurrency)
+  Statement createStatement(int resultSetType, int resultSetConcurrency)
     throws SQLException;
 
   /**
@@ -310,7 +310,7 @@ public interface Connection
    * @see PreparedStatement
    * @see ResultSet
    */
-  public PreparedStatement prepareStatement(String sql, int resultSetType, 
+  PreparedStatement prepareStatement(String sql, int resultSetType, 
     int resultSetConcurrency) throws SQLException;
 
   /**
@@ -330,7 +330,7 @@ public interface Connection
    * @see CallableStatement
    * @see ResultSet
    */
-  public CallableStatement prepareCall(String sql, int resultSetType, int
+  CallableStatement prepareCall(String sql, int resultSetType, int
     resultSetConcurrency) throws SQLException;
 
   /**
@@ -341,7 +341,7 @@ public interface Connection
    * @return The SQL type to Java class mapping.
    * @exception SQLException If an error occurs.
    */
-  public Map getTypeMap() throws SQLException;
+  Map getTypeMap() throws SQLException;
 
   /**
    * This method sets the mapping table for SQL types to Java classes.
@@ -350,71 +350,71 @@ public interface Connection
    * @param map The new SQL mapping table.
    * @exception SQLException If an error occurs.
    */
-  public void setTypeMap(Map map) throws SQLException;
+  void setTypeMap(Map map) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setHoldability(int holdability) throws SQLException;
+  void setHoldability(int holdability) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getHoldability() throws SQLException;
+  int getHoldability() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Savepoint setSavepoint() throws SQLException;
+  Savepoint setSavepoint() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Savepoint setSavepoint(String name) throws SQLException;
+  Savepoint setSavepoint(String name) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void rollback(Savepoint savepoint) throws SQLException;
+  void rollback(Savepoint savepoint) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void releaseSavepoint(Savepoint savepoint) throws SQLException;
+  void releaseSavepoint(Savepoint savepoint) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Statement createStatement(int resultSetType, int
+  Statement createStatement(int resultSetType, int
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PreparedStatement prepareStatement(String sql, int resultSetType, int
+  PreparedStatement prepareStatement(String sql, int resultSetType, int
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public CallableStatement prepareCall(String sql, int resultSetType, int
+  CallableStatement prepareCall(String sql, int resultSetType, int
       resultSetConcurrency, int resultSetHoldability) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
+  PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
       throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
+  PreparedStatement prepareStatement(String sql, int[] columnIndexes)
       throws SQLException;
 
   /**
    * @since 1.4
    */
-  public PreparedStatement prepareStatement(String sql, String[] columnNames)
+  PreparedStatement prepareStatement(String sql, String[] columnNames)
       throws SQLException;
 }

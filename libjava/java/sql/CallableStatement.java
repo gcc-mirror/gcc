@@ -59,7 +59,7 @@ public interface CallableStatement extends PreparedStatement
    * @param type The SQL type value from <code>Types</code>.
    * @exception SQLException If an error occurs.
    */   
-  public void registerOutParameter(int parameterIndex, int sqlType)
+  void registerOutParameter(int parameterIndex, int sqlType)
     throws SQLException;
 
   /**
@@ -71,7 +71,7 @@ public interface CallableStatement extends PreparedStatement
    * @param scale The scale of the value that will be returned.
    * @exception SQLException If an error occurs.
    */   
-  public void registerOutParameter(int parameterIndex, int sqlType, int scale)
+  void registerOutParameter(int parameterIndex, int sqlType, int scale)
     throws SQLException;
 
   /**
@@ -82,7 +82,7 @@ public interface CallableStatement extends PreparedStatement
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean wasNull() throws SQLException;
+  boolean wasNull() throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -92,7 +92,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>String</code>.
    * @exception SQLException If an error occurs.
    */
-  public String getString(int parameterIndex) throws SQLException;
+  String getString(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -102,7 +102,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>boolean</code>.
    * @exception SQLException If an error occurs.
    */
-  public boolean getBoolean(int parameterIndex) throws SQLException;
+  boolean getBoolean(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -112,7 +112,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>byte</code>.
    * @exception SQLException If an error occurs.
    */
-  public byte getByte(int parameterIndex) throws SQLException;
+  byte getByte(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -122,7 +122,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>short</code>.
    * @exception SQLException If an error occurs.
    */
-  public short getShort(int parameterIndex) throws SQLException;
+  short getShort(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -132,7 +132,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>int</code>.
    * @exception SQLException If an error occurs.
    */
-  public int getInt(int parameterIndex) throws SQLException;
+  int getInt(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -142,7 +142,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>long</code>.
    * @exception SQLException If an error occurs.
    */
-  public long getLong(int parameterIndex) throws SQLException;
+  long getLong(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -152,7 +152,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>float</code>.
    * @exception SQLException If an error occurs.
    */
-  public float getFloat(int parameterIndex) throws SQLException;
+  float getFloat(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -162,7 +162,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>double</code>.
    * @exception SQLException If an error occurs.
    */
-  public double getDouble(int parameterIndex) throws SQLException;
+  double getDouble(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -175,7 +175,7 @@ public interface CallableStatement extends PreparedStatement
    * @deprecated Use getBigDecimal(int parameterIndex)
    *             or getBigDecimal(String parameterName) instead.
    */
-  public BigDecimal getBigDecimal(int parameterIndex, int scale)
+  BigDecimal getBigDecimal(int parameterIndex, int scale)
     throws SQLException;
 
   /**
@@ -186,7 +186,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a byte array
    * @exception SQLException If an error occurs.
    */
-  public byte[] getBytes(int parameterIndex) throws SQLException;
+  byte[] getBytes(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -196,7 +196,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date getDate(int parameterIndex) throws SQLException;
+  Date getDate(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -206,7 +206,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time getTime(int parameterIndex) throws SQLException;
+  Time getTime(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -216,7 +216,7 @@ public interface CallableStatement extends PreparedStatement
    * @return The parameter value as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  public Timestamp getTimestamp(int parameterIndex) throws SQLException;
+  Timestamp getTimestamp(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -227,7 +227,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Object getObject(int parameterIndex) throws SQLException;
+  Object getObject(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -238,7 +238,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public BigDecimal getBigDecimal(int parameterIndex) throws SQLException;
+  BigDecimal getBigDecimal(int parameterIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -250,7 +250,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Object getObject(int index, Map map) throws SQLException;
+  Object getObject(int index, Map map) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -261,7 +261,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Ref getRef(int index) throws SQLException;
+  Ref getRef(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -272,7 +272,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */   
-  public Blob getBlob(int index) throws SQLException;
+  Blob getBlob(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -283,7 +283,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Clob getClob(int index) throws SQLException;
+  Clob getClob(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -294,7 +294,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Array getArray(int index) throws SQLException;
+  Array getArray(int index) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -306,7 +306,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Date getDate(int parameterIndex, Calendar cal) throws SQLException;
+  Date getDate(int parameterIndex, Calendar cal) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -318,7 +318,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Time getTime(int parameterIndex, Calendar cal) throws SQLException;
+  Time getTime(int parameterIndex, Calendar cal) throws SQLException;
 
   /**
    * This method returns the value of the specified parameter as a Java
@@ -329,7 +329,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public Timestamp getTimestamp(int parameterIndex, Calendar cal)
+  Timestamp getTimestamp(int parameterIndex, Calendar cal)
     throws SQLException;
 
   /**
@@ -342,7 +342,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.2
    */
-  public void registerOutParameter(int paramIndex, int sqlType,
+  void registerOutParameter(int paramIndex, int sqlType,
 				   String typeName)
     throws SQLException;
 
@@ -355,7 +355,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public void registerOutParameter(String parameterName, int sqlType)
+  void registerOutParameter(String parameterName, int sqlType)
     throws SQLException;
 
   /**
@@ -369,7 +369,7 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public void registerOutParameter(String parameterName, int sqlType,
+  void registerOutParameter(String parameterName, int sqlType,
 				   int scale)
     throws SQLException;
 
@@ -386,266 +386,266 @@ public interface CallableStatement extends PreparedStatement
    * @exception SQLException If an error occurs.
    * @since 1.4
    */
-  public void registerOutParameter(String parameterName, int sqlType,
+  void registerOutParameter(String parameterName, int sqlType,
 				   String typeName) 
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public URL getURL(int parameterIndex) throws SQLException;
+  URL getURL(int parameterIndex) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setURL(String parameterName, URL val) throws SQLException;
+  void setURL(String parameterName, URL val) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setNull(String parameterName, int sqlType) throws SQLException;
+  void setNull(String parameterName, int sqlType) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setBoolean(String parameterName, boolean x) throws SQLException;
+  void setBoolean(String parameterName, boolean x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setByte(String parameterName, byte x) throws SQLException;
+  void setByte(String parameterName, byte x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setShort(String parameterName, short x) throws SQLException;
+  void setShort(String parameterName, short x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setInt(String parameterName, int x) throws SQLException;
+  void setInt(String parameterName, int x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setLong(String parameterName, long x) throws SQLException;
+  void setLong(String parameterName, long x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setFloat(String parameterName, float x) throws SQLException;
+  void setFloat(String parameterName, float x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setDouble(String parameterName, double x) throws SQLException;
+  void setDouble(String parameterName, double x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setBigDecimal(String parameterName, BigDecimal x)
+  void setBigDecimal(String parameterName, BigDecimal x)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setString(String parameterName, String x) throws SQLException;
+  void setString(String parameterName, String x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setBytes(String parameterName, byte[] x) throws SQLException;
+  void setBytes(String parameterName, byte[] x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setDate(String parameterName, Date x) throws SQLException;
+  void setDate(String parameterName, Date x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setTime(String parameterName, Time x) throws SQLException;
+  void setTime(String parameterName, Time x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setTimestamp(String parameterName, Timestamp x)
+  void setTimestamp(String parameterName, Timestamp x)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setAsciiStream(String parameterName, InputStream x, int length)
+  void setAsciiStream(String parameterName, InputStream x, int length)
       throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setBinaryStream(String parameterName, InputStream x, int length)
+  void setBinaryStream(String parameterName, InputStream x, int length)
       throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setObject(String parameterName, Object x, int targetSqlType,
+  void setObject(String parameterName, Object x, int targetSqlType,
 			int scale)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setObject(String parameterName, Object x, int targetSqlType)
+  void setObject(String parameterName, Object x, int targetSqlType)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setObject(String parameterName, Object x) throws SQLException;
+  void setObject(String parameterName, Object x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setCharacterStream(String parameterName, Reader reader,
+  void setCharacterStream(String parameterName, Reader reader,
 				 int length)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setDate(String parameterName, Date x, Calendar cal)
+  void setDate(String parameterName, Date x, Calendar cal)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setTime(String parameterName, Time x, Calendar cal)
+  void setTime(String parameterName, Time x, Calendar cal)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setTimestamp(String parameterName, Timestamp x, Calendar cal)
+  void setTimestamp(String parameterName, Timestamp x, Calendar cal)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setNull(String parameterName, int sqlType, String typeName)
+  void setNull(String parameterName, int sqlType, String typeName)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public String getString(String parameterName) throws SQLException;
+  String getString(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean getBoolean(String parameterName) throws SQLException;
+  boolean getBoolean(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public byte getByte(String parameterName) throws SQLException;
+  byte getByte(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public short getShort(String parameterName) throws SQLException;
+  short getShort(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getInt(String parameterName) throws SQLException;
+  int getInt(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public long getLong(String parameterName) throws SQLException;
+  long getLong(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public float getFloat(String parameterName) throws SQLException;
+  float getFloat(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public double getDouble(String parameterName) throws SQLException;
+  double getDouble(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public byte[] getBytes(String parameterName) throws SQLException;
+  byte[] getBytes(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Date getDate(String parameterName) throws SQLException;
+  Date getDate(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Time getTime(String parameterName) throws SQLException;
+  Time getTime(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Timestamp getTimestamp(String parameterName) throws SQLException;
+  Timestamp getTimestamp(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Object getObject(String parameterName) throws SQLException;
+  Object getObject(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public BigDecimal getBigDecimal(String parameterName) throws SQLException;
+  BigDecimal getBigDecimal(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Object getObject(String parameterName, Map map) throws SQLException;
+  Object getObject(String parameterName, Map map) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Ref getRef(String parameterName) throws SQLException;
+  Ref getRef(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Blob getBlob(String parameterName) throws SQLException;
+  Blob getBlob(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Clob getClob(String parameterName) throws SQLException;
+  Clob getClob(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Array getArray(String parameterName) throws SQLException;
+  Array getArray(String parameterName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Date getDate(String parameterName, Calendar cal) throws SQLException;
+  Date getDate(String parameterName, Calendar cal) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Time getTime(String parameterName, Calendar cal) throws SQLException;
+  Time getTime(String parameterName, Calendar cal) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public Timestamp getTimestamp(String parameterName, Calendar cal)
+  Timestamp getTimestamp(String parameterName, Calendar cal)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public URL getURL(String parameterName) throws SQLException;
+  URL getURL(String parameterName) throws SQLException;
 }

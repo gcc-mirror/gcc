@@ -51,17 +51,17 @@ public interface ResultSetMetaData
   /**
    * The column does not allow NULL's.
    */
-  public static final int columnNoNulls = 0;
+  int columnNoNulls = 0;
 
   /**
    * The column allows NULL's.
    */
-  public static final int columnNullable = 1;
+  int columnNullable = 1;
 
   /**
    * It is unknown whether or not the column allows NULL's.
    */
-  public static final int columnNullableUnknown = 2;
+  int columnNullableUnknown = 2;
 
   /**
    * This method returns the number of columns in the result set.
@@ -69,7 +69,7 @@ public interface ResultSetMetaData
    * @return The number of columns in the result set.
    * @exception SQLException If an error occurs.
    */
-  public int getColumnCount() throws SQLException;
+  int getColumnCount() throws SQLException;
 
   /**
    * This method test whether or not the column is an auto-increment column.
@@ -80,7 +80,7 @@ public interface ResultSetMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isAutoIncrement(int column) throws SQLException;
+  boolean isAutoIncrement(int column) throws SQLException;
 
   /**
    * This method tests whether or not a column is case sensitive in its values.
@@ -90,7 +90,7 @@ public interface ResultSetMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isCaseSensitive(int column) throws SQLException;
+  boolean isCaseSensitive(int column) throws SQLException;
 
   /**
    * This method tests whether not the specified column can be used in 
@@ -101,7 +101,7 @@ public interface ResultSetMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isSearchable(int column) throws SQLException;
+  boolean isSearchable(int column) throws SQLException;
 
   /**
    * This method tests whether or not the column stores a monetary value.
@@ -111,7 +111,7 @@ public interface ResultSetMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isCurrency(int column) throws SQLException;
+  boolean isCurrency(int column) throws SQLException;
 
   /**
    * This method returns a value indicating whether or not the specified
@@ -123,7 +123,7 @@ public interface ResultSetMetaData
    *         <code>columnNullable</code>, or <code>columnNullableUnknown</code>.
    * @exception SQLException If an error occurs.
    */
-  public int isNullable(int column) throws SQLException;
+  int isNullable(int column) throws SQLException;
 
   /**
    * This method tests whether or not the value of the specified column
@@ -134,7 +134,7 @@ public interface ResultSetMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isSigned(int column) throws SQLException;
+  boolean isSigned(int column) throws SQLException;
 
   /**
    * This method returns the maximum number of characters that can be used
@@ -145,7 +145,7 @@ public interface ResultSetMetaData
    *         value for this column.
    * @exception SQLException If an error occurs.
    */
-  public int getColumnDisplaySize(int column) throws SQLException;
+  int getColumnDisplaySize(int column) throws SQLException;
 
   /**
    * This method returns a string that should be used as a caption for this
@@ -155,7 +155,7 @@ public interface ResultSetMetaData
    * @return A display string for the column.
    * @exception SQLException If an error occurs.
    */
-  public String getColumnLabel(int column) throws SQLException;
+  String getColumnLabel(int column) throws SQLException;
 
   /**
    * This method returns the name of the specified column.
@@ -164,7 +164,7 @@ public interface ResultSetMetaData
    * @return The name of the column.
    * @exception SQLException If an error occurs.
    */
-  public String getColumnName(int column) throws SQLException;
+  String getColumnName(int column) throws SQLException;
 
   /**
    * This method returns the name of the schema that contains the specified
@@ -174,7 +174,7 @@ public interface ResultSetMetaData
    * @return The name of the schema that contains the column.
    * @exception SQLException If an error occurs.
    */
-  public String getSchemaName(int column) throws SQLException;
+  String getSchemaName(int column) throws SQLException;
 
   /**
    * This method returns the precision of the specified column, which is the
@@ -184,7 +184,7 @@ public interface ResultSetMetaData
    * @return The precision of the specified column.
    * @exception SQLException If an error occurs.
    */
-  public int getPrecision(int column) throws SQLException;
+  int getPrecision(int column) throws SQLException;
 
   /**
    * This method returns the scale of the specified column, which is the
@@ -194,7 +194,7 @@ public interface ResultSetMetaData
    * @return The scale of the column.
    * @exception SQLException If an error occurs.
    */
-  public int getScale(int column) throws SQLException;
+  int getScale(int column) throws SQLException;
 
   /**
    * This method returns the name of the table containing the specified
@@ -204,7 +204,7 @@ public interface ResultSetMetaData
    * @return The name of the table containing the column.
    * @exception SQLException If an error occurs.
    */
-  public String getTableName(int column) throws SQLException;
+  String getTableName(int column) throws SQLException;
 
   /**
    * This method returns the name of the catalog containing the specified
@@ -214,7 +214,7 @@ public interface ResultSetMetaData
    * @return The name of the catalog containing the column.
    * @exception SQLException If an error occurs.
    */
-  public String getCatalogName(int column) throws SQLException;
+  String getCatalogName(int column) throws SQLException;
 
   /**
    * This method returns the SQL type of the specified column.  This will
@@ -225,7 +225,7 @@ public interface ResultSetMetaData
    * @exception SQLException If an error occurs.
    * @see Types
    */
-  public int getColumnType(int column) throws SQLException;
+  int getColumnType(int column) throws SQLException;
 
   /**
    * This method returns the name of the SQL type for this column.
@@ -234,7 +234,7 @@ public interface ResultSetMetaData
    * @return The name of the SQL type for this column.
    * @exception SQLException If an error occurs.
    */
-  public String getColumnTypeName(int column) throws SQLException;
+  String getColumnTypeName(int column) throws SQLException;
 
   /**
    * This method tests whether or not the specified column is read only.
@@ -244,7 +244,7 @@ public interface ResultSetMetaData
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isReadOnly(int column) throws SQLException;
+  boolean isReadOnly(int column) throws SQLException;
 
   /**
    * This method tests whether or not the column may be writable.  This
@@ -255,7 +255,7 @@ public interface ResultSetMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isWritable(int column) throws SQLException;
+  boolean isWritable(int column) throws SQLException;
 
   /**
    * This method tests whether or not the column is writable.  This
@@ -266,7 +266,7 @@ public interface ResultSetMetaData
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isDefinitelyWritable(int column) throws SQLException;
+  boolean isDefinitelyWritable(int column) throws SQLException;
 
   /**
    * This method returns the name of the Java class which will be used to
@@ -277,5 +277,5 @@ public interface ResultSetMetaData
    *         this column.
    * @exception SQLException If an error occurs.
    */
-  public String getColumnClassName(int column) throws SQLException;
+  String getColumnClassName(int column) throws SQLException;
 }

@@ -51,7 +51,7 @@ import java.util.Calendar;
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
-public interface PreparedStatement extends Statement 
+interface PreparedStatement extends Statement 
 {
   /**
    * This method executes a prepared SQL query and returns its ResultSet.
@@ -59,7 +59,7 @@ public interface PreparedStatement extends Statement
    * @return The ResultSet of the SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public ResultSet executeQuery() throws SQLException;
+  ResultSet executeQuery() throws SQLException;
 
   /**
    * This method executes an SQL INSERT, UPDATE or DELETE statement.  SQL
@@ -69,7 +69,7 @@ public interface PreparedStatement extends Statement
    *         statements; or 0 for SQL statements that return nothing.
    * @exception SQLException If an error occurs.
    */
-  public int executeUpdate() throws SQLException;
+  int executeUpdate() throws SQLException;
 
   /**
    * This method populates the specified parameter with a SQL NULL value
@@ -80,7 +80,7 @@ public interface PreparedStatement extends Statement
    *
    * @exception SQLException If an error occurs.
    */
-  public void setNull(int parameterIndex, int sqlType) throws SQLException;
+  void setNull(int parameterIndex, int sqlType) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -90,7 +90,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setBoolean(int parameterIndex, boolean x) throws SQLException;
+  void setBoolean(int parameterIndex, boolean x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -100,7 +100,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setByte(int parameterIndex, byte x) throws SQLException;
+  void setByte(int parameterIndex, byte x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -110,7 +110,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setShort(int parameterIndex, short x) throws SQLException;
+  void setShort(int parameterIndex, short x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -120,7 +120,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setInt(int parameterIndex, int x) throws SQLException;
+  void setInt(int parameterIndex, int x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -130,7 +130,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setLong(int parameterIndex, long x) throws SQLException;
+  void setLong(int parameterIndex, long x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -140,7 +140,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setFloat(int parameterIndex, float x) throws SQLException;
+  void setFloat(int parameterIndex, float x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -150,7 +150,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setDouble(int parameterIndex, double x) throws SQLException;
+  void setDouble(int parameterIndex, double x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -160,7 +160,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setBigDecimal(int parameterIndex, BigDecimal x) throws
+  void setBigDecimal(int parameterIndex, BigDecimal x) throws
       SQLException;
 
   /**
@@ -171,7 +171,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setString(int parameterIndex, String x) throws SQLException;
+  void setString(int parameterIndex, String x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -181,7 +181,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setBytes(int parameterIndex, byte[] x) throws SQLException;
+  void setBytes(int parameterIndex, byte[] x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -191,7 +191,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setDate(int parameterIndex, Date x) throws SQLException;
+  void setDate(int parameterIndex, Date x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -201,7 +201,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setTime(int parameterIndex, Time x) throws SQLException;
+  void setTime(int parameterIndex, Time x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -211,7 +211,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setTimestamp(int parameterIndex, Timestamp x)
+  void setTimestamp(int parameterIndex, Timestamp x)
     throws SQLException;
 
   /**
@@ -223,7 +223,7 @@ public interface PreparedStatement extends Statement
    * @param length The number of bytes in the stream.
    * @exception SQLException If an error occurs.
    */
-  public void setAsciiStream(int parameterIndex, InputStream x, int length)
+  void setAsciiStream(int parameterIndex, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -236,7 +236,7 @@ public interface PreparedStatement extends Statement
    * @exception SQLException If an error occurs.
    * @deprecated
    */
-  public void setUnicodeStream(int parameterIndex, InputStream x, int length)
+  void setUnicodeStream(int parameterIndex, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -248,7 +248,7 @@ public interface PreparedStatement extends Statement
    * @param length The number of bytes in the stream.
    * @exception SQLException If an error occurs.
    */
-  public void setBinaryStream(int parameterIndex, InputStream x, int length)
+  void setBinaryStream(int parameterIndex, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -257,7 +257,7 @@ public interface PreparedStatement extends Statement
    *
    * @exception SQLException If an error occurs.
    */
-  public void clearParameters() throws SQLException;
+  void clearParameters() throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -270,7 +270,7 @@ public interface PreparedStatement extends Statement
    * @exception SQLException If an error occurs.
    * @see Types
    */
-  public void setObject(int parameterIndex, Object x, int targetSqlType,
+  void setObject(int parameterIndex, Object x, int targetSqlType,
     int scale) throws SQLException;
 
   /**
@@ -283,7 +283,7 @@ public interface PreparedStatement extends Statement
    * @exception SQLException If an error occurs.
    * @see Types
    */
-  public void setObject(int parameterIndex, Object x, int targetSqlType)
+  void setObject(int parameterIndex, Object x, int targetSqlType)
     throws SQLException;
 
   /**
@@ -295,7 +295,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setObject(int parameterIndex, Object x) throws SQLException;
+  void setObject(int parameterIndex, Object x) throws SQLException;
 
   /**
    * This method executes a prepared SQL query.
@@ -306,13 +306,13 @@ public interface PreparedStatement extends Statement
    * @return The result of the SQL statement.
    * @exception SQLException If an error occurs.
    */
-  public boolean execute() throws SQLException;
+  boolean execute() throws SQLException;
 
   /**
    * This method adds a set of parameters to the batch for JDBC 2.0.
    * @exception SQLException If an error occurs.
    */
-  public void addBatch() throws SQLException;
+  void addBatch() throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -323,7 +323,7 @@ public interface PreparedStatement extends Statement
    * @param length The number of bytes in the stream.
    * @exception SQLException If an error occurs.
    */
-  public void setCharacterStream(int parameterIndex, Reader reader,
+  void setCharacterStream(int parameterIndex, Reader reader,
     int length) throws SQLException;
 
   /**
@@ -335,7 +335,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setRef(int i, Ref x) throws SQLException;
+  void setRef(int i, Ref x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -346,7 +346,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setBlob(int i, Blob x) throws SQLException;
+  void setBlob(int i, Blob x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -357,7 +357,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setClob(int i, Clob x) throws SQLException;
+  void setClob(int i, Clob x) throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -368,7 +368,7 @@ public interface PreparedStatement extends Statement
    * @param value The value of the parameter.
    * @exception SQLException If an error occurs.
    */
-  public void setArray(int i, Array x) throws SQLException;
+  void setArray(int i, Array x) throws SQLException;
 
   /**
    * This method returns meta data for the result set from this statement.
@@ -376,7 +376,7 @@ public interface PreparedStatement extends Statement
    * @return Meta data for the result set from this statement.
    * @exception SQLException If an error occurs.
    */
-  public ResultSetMetaData getMetaData() throws SQLException;
+  ResultSetMetaData getMetaData() throws SQLException;
 
   /**
    * This method sets the specified parameter from the given Java
@@ -387,7 +387,7 @@ public interface PreparedStatement extends Statement
    * @param calendar The <code>Calendar</code> to use for timezone and locale.
    * @exception SQLException If an error occurs.
    */
-  public void setDate(int parameterIndex, Date x, Calendar cal)
+  void setDate(int parameterIndex, Date x, Calendar cal)
     throws SQLException;
 
   /**
@@ -399,7 +399,7 @@ public interface PreparedStatement extends Statement
    * @param calendar The <code>Calendar</code> to use for timezone and locale.
    * @exception SQLException If an error occurs.
    */
-  public void setTime(int parameterIndex, Time x, Calendar cal)
+  void setTime(int parameterIndex, Time x, Calendar cal)
     throws SQLException;
 
   /**
@@ -411,7 +411,7 @@ public interface PreparedStatement extends Statement
    * @param calendar The <code>Calendar</code> to use for timezone and locale.
    * @exception SQLException If an error occurs.
    */
-  public void setTimestamp(int parameterIndex, Timestamp x, Calendar cal)
+  void setTimestamp(int parameterIndex, Timestamp x, Calendar cal)
     throws SQLException;
 
   /**
@@ -423,16 +423,16 @@ public interface PreparedStatement extends Statement
    * @param name The name of the data type, for user defined types.
    * @exception SQLException If an error occurs.
    */
-  public void setNull(int paramIndex, int sqlType, String typeName)
+  void setNull(int paramIndex, int sqlType, String typeName)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void setURL(int parameterIndex, URL x) throws SQLException;
+  void setURL(int parameterIndex, URL x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public ParameterMetaData getParameterMetaData() throws SQLException;
+  ParameterMetaData getParameterMetaData() throws SQLException;
 }

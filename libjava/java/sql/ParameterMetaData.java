@@ -40,64 +40,64 @@ package java.sql;
 /**
  * @since 1.4
  */
-public interface ParameterMetaData 
+interface ParameterMetaData 
 {
-  public static final int parameterNoNulls = 0;
+  int parameterNoNulls = 0;
 
-  public static final int parameterNullable = 1;
+  int parameterNullable = 1;
 
-  public static final int parameterNullableUnknown = 2;
+  int parameterNullableUnknown = 2;
 
-  public static final int parameterModeUnknown = 0;
+  int parameterModeUnknown = 0;
 
-  public static final int parameterModeIn = 1;
+  int parameterModeIn = 1;
 
-  public static final int parameterModeInOut = 2;
+  int parameterModeInOut = 2;
 
-  public static final int parameterModeOut = 4;
-
-  /**
-   * @since 1.4
-   */
-  public int getParameterCount() throws SQLException;
+  int parameterModeOut = 4;
 
   /**
    * @since 1.4
    */
-  public int isNullable(int param) throws SQLException;
+  int getParameterCount() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public boolean isSigned(int param) throws SQLException;
+  int isNullable(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getPrecision(int param) throws SQLException;
+  boolean isSigned(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getScale(int param) throws SQLException;
+  int getPrecision(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getParameterType(int param) throws SQLException;
+  int getScale(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public String getParameterTypeName(int param) throws SQLException;
+  int getParameterType(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public String getParameterClassName(int param) throws SQLException;
+  String getParameterTypeName(int param) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public int getParameterMode(int param) throws SQLException;
+  String getParameterClassName(int param) throws SQLException;
+
+  /**
+   * @since 1.4
+   */
+  int getParameterMode(int param) throws SQLException;
 }

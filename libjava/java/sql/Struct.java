@@ -55,7 +55,7 @@ public interface Struct
    * @return The SQL structured type name.
    * @exception SQLException If an error occurs.
    */
-  public String getSQLTypeName() throws SQLException;
+  String getSQLTypeName() throws SQLException;
 
   /**
    * This method returns the attributes of this SQL structured type.
@@ -63,7 +63,7 @@ public interface Struct
    * @return The attributes of this structure type.
    * @exception SQLException If an error occurs.
    */
-  public Object[] getAttributes() throws SQLException;
+  Object[] getAttributes() throws SQLException;
 
   /**
    * This method returns the attributes of this SQL structured type.
@@ -73,5 +73,5 @@ public interface Struct
    * @return The attributes of this structure type.
    * @exception SQLException If a error occurs.
    */
-  public Object[] getAttributes(Map map) throws SQLException;
+  Object[] getAttributes(Map map) throws SQLException;
 }

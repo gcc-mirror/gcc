@@ -64,48 +64,48 @@ public interface ResultSet
   /**
    * The rows will be processed in order from first to last.
    */
-  public static final int FETCH_FORWARD = 1000;
+  int FETCH_FORWARD = 1000;
 
   /**
    * The rows will be processed in order from last to first.
    */
-  public static final int FETCH_REVERSE = 1001;
+  int FETCH_REVERSE = 1001;
 
   /**
    * The rows will be processed in an unknown order
    */
-  public static final int FETCH_UNKNOWN = 1002;
+  int FETCH_UNKNOWN = 1002;
 
   /**
    * This type of result set may only step forward through the rows returned.
    */
-  public static final int TYPE_FORWARD_ONLY = 1003;
+  int TYPE_FORWARD_ONLY = 1003;
 
   /**
    * This type of result set is scrollable and is not sensitive to changes
    * made by other statements.
    */
-  public static final int TYPE_SCROLL_INSENSITIVE = 1004;
+  int TYPE_SCROLL_INSENSITIVE = 1004;
 
   /**
    * This type of result set is scrollable and is also sensitive to changes
    * made by other statements.
    */
-  public static final int TYPE_SCROLL_SENSITIVE = 1005;
+  int TYPE_SCROLL_SENSITIVE = 1005;
 
   /**
    * The concurrency mode of for the result set may not be modified.
    */
-  public static final int CONCUR_READ_ONLY = 1007;
+  int CONCUR_READ_ONLY = 1007;
 
   /**
    * The concurrency mode of for the result set may be modified.
    */
-  public static final int CONCUR_UPDATABLE = 1008;
+  int CONCUR_UPDATABLE = 1008;
 
-  public static final int HOLD_CURSORS_OVER_COMMIT = 1;
+  int HOLD_CURSORS_OVER_COMMIT = 1;
 
-  public static final int CLOSE_CURSORS_AT_COMMIT = 2;
+  int CLOSE_CURSORS_AT_COMMIT = 2;
 
   /**
    * This method advances to the next row in the result set.  Any streams
@@ -115,14 +115,14 @@ public interface ResultSet
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean next() throws SQLException;
+  boolean next() throws SQLException;
 
   /**
    * This method closes the result set and frees any associated resources.
    * 
    * @exception SQLException If an error occurs.
    */
-  public void close() throws SQLException;
+  void close() throws SQLException;
 
   /**
    * This method tests whether the value of the last column that was fetched
@@ -132,7 +132,7 @@ public interface ResultSet
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean wasNull() throws SQLException;
+  boolean wasNull() throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -142,7 +142,7 @@ public interface ResultSet
    * @return The column value as a <code>String</code>.
    * @exception SQLException If an error occurs.
    */
-  public String getString(int columnIndex) throws SQLException;
+  String getString(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -152,7 +152,7 @@ public interface ResultSet
    * @return The column value as a <code>boolean</code>.
    * @exception SQLException If an error occurs.
    */
-  public boolean getBoolean(int columnIndex) throws SQLException;
+  boolean getBoolean(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -162,7 +162,7 @@ public interface ResultSet
    * @return The column value as a <code>byte</code>.
    * @exception SQLException If an error occurs.
    */
-  public byte getByte(int columnIndex) throws SQLException;
+  byte getByte(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -172,7 +172,7 @@ public interface ResultSet
    * @return The column value as a <code>short</code>.
    * @exception SQLException If an error occurs.
    */
-  public short getShort(int columnIndex) throws SQLException;
+  short getShort(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -182,7 +182,7 @@ public interface ResultSet
    * @return The column value as a <code>int</code>.
    * @exception SQLException If an error occurs.
    */
-  public int getInt(int columnIndex) throws SQLException;
+  int getInt(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -192,7 +192,7 @@ public interface ResultSet
    * @return The column value as a <code>long</code>.
    * @exception SQLException If an error occurs.
    */
-  public long getLong(int columnIndex) throws SQLException;
+  long getLong(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -202,7 +202,7 @@ public interface ResultSet
    * @return The column value as a <code>float</code>.
    * @exception SQLException If an error occurs.
    */
-  public float getFloat(int columnIndex) throws SQLException;
+  float getFloat(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -212,7 +212,7 @@ public interface ResultSet
    * @return The column value as a <code>double</code>.
    * @exception SQLException If an error occurs.
    */
-  public double getDouble(int columnIndex) throws SQLException;
+  double getDouble(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -224,7 +224,7 @@ public interface ResultSet
    * @exception SQLException If an error occurs.
    * @deprecated
    */
-  public BigDecimal getBigDecimal(int columnIndex, int scale)
+  BigDecimal getBigDecimal(int columnIndex, int scale)
     throws SQLException;
 
   /**
@@ -235,7 +235,7 @@ public interface ResultSet
    * @return The column value as a byte array
    * @exception SQLException If an error occurs.
    */
-  public byte[] getBytes(int columnIndex) throws SQLException;
+  byte[] getBytes(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -245,7 +245,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date getDate(int columnIndex) throws SQLException;
+  Date getDate(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -255,7 +255,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time getTime(int columnIndex) throws SQLException;
+  Time getTime(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -265,7 +265,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  public Timestamp getTimestamp(int columnIndex) throws SQLException;
+  Timestamp getTimestamp(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as an ASCII 
@@ -278,7 +278,7 @@ public interface ResultSet
    * @return The column value as an ASCII <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream getAsciiStream(int columnIndex) throws SQLException;
+  InputStream getAsciiStream(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Unicode UTF-8
@@ -292,7 +292,7 @@ public interface ResultSet
    * @exception SQLException If an error occurs.
    * @deprecated Use getCharacterStream instead.
    */
-  public InputStream getUnicodeStream(int columnIndex) throws SQLException;
+  InputStream getUnicodeStream(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a raw byte
@@ -305,7 +305,7 @@ public interface ResultSet
    * @return The column value as a raw byte <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream getBinaryStream(int columnIndex) throws SQLException;
+  InputStream getBinaryStream(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -315,7 +315,7 @@ public interface ResultSet
    * @return The column value as a <code>String</code>.
    * @exception SQLException If an error occurs.
    */
-  public String getString(String columnName) throws SQLException;
+  String getString(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -325,7 +325,7 @@ public interface ResultSet
    * @return The column value as a <code>boolean</code>.
    * @exception SQLException If an error occurs.
    */
-  public boolean getBoolean(String columnName) throws SQLException;
+  boolean getBoolean(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -335,7 +335,7 @@ public interface ResultSet
    * @return The column value as a <code>byte</code>.
    * @exception SQLException If an error occurs.
    */
-  public byte getByte(String columnName) throws SQLException;
+  byte getByte(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -345,7 +345,7 @@ public interface ResultSet
    * @return The column value as a <code>short</code>.
    * @exception SQLException If an error occurs.
    */
-  public short getShort(String columnName) throws SQLException;
+  short getShort(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -355,7 +355,7 @@ public interface ResultSet
    * @return The column value as a <code>int</code>.
    * @exception SQLException If an error occurs.
    */
-  public int getInt(String columnName) throws SQLException;
+  int getInt(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -365,7 +365,7 @@ public interface ResultSet
    * @return The column value as a <code>long</code>.
    * @exception SQLException If an error occurs.
    */
-  public long getLong(String columnName) throws SQLException;
+  long getLong(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -375,7 +375,7 @@ public interface ResultSet
    * @return The column value as a <code>float</code>.
    * @exception SQLException If an error occurs.
    */
-  public float getFloat(String columnName) throws SQLException;
+  float getFloat(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -385,7 +385,7 @@ public interface ResultSet
    * @return The column value as a <code>double</code>.
    * @exception SQLException If an error occurs.
    */
-  public double getDouble(String columnName) throws SQLException;
+  double getDouble(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -396,7 +396,7 @@ public interface ResultSet
    * @exception SQLException If an error occurs.
    * @deprecated
    */
-  public BigDecimal getBigDecimal(String columnName, int scale)
+  BigDecimal getBigDecimal(String columnName, int scale)
     throws SQLException;
 
   /**
@@ -407,7 +407,7 @@ public interface ResultSet
    * @return The column value as a byte array
    * @exception SQLException If an error occurs.
    */
-  public byte[] getBytes(String columnName) throws SQLException;
+  byte[] getBytes(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -417,7 +417,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date getDate(String columnName) throws SQLException;
+  Date getDate(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -427,7 +427,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time getTime(String columnName) throws SQLException;
+  Time getTime(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -437,7 +437,7 @@ public interface ResultSet
    * @return The column value as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  public Timestamp getTimestamp(String columnName) throws SQLException;
+  Timestamp getTimestamp(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as an ASCII 
@@ -450,7 +450,7 @@ public interface ResultSet
    * @return The column value as an ASCII <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream getAsciiStream(String columnName) throws SQLException;
+  InputStream getAsciiStream(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Unicode UTF-8
@@ -464,7 +464,7 @@ public interface ResultSet
    * @exception SQLException If an error occurs.
    * @deprecated Use getCharacterStream instead.
    */
-  public InputStream getUnicodeStream(String columnName) throws SQLException;
+  InputStream getUnicodeStream(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a raw byte
@@ -477,7 +477,7 @@ public interface ResultSet
    * @return The column value as a raw byte <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream getBinaryStream(String columnName) throws SQLException;
+  InputStream getBinaryStream(String columnName) throws SQLException;
 
   /**
    * This method returns the first SQL warning associated with this result
@@ -487,14 +487,14 @@ public interface ResultSet
    *         there are no warnings.
    * @exception SQLException If an error occurs.
    */
-  public SQLWarning getWarnings() throws SQLException;
+  SQLWarning getWarnings() throws SQLException;
 
   /**
    * This method clears all warnings associated with this result set.
    *
    * @exception SQLException If an error occurs.
    */
-  public void clearWarnings() throws SQLException;
+  void clearWarnings() throws SQLException;
 
   /**
    * This method returns the name of the database cursor used by this
@@ -503,7 +503,7 @@ public interface ResultSet
    * @return The name of the database cursor used by this result set.
    * @exception SQLException If an error occurs.
    */
-  public String getCursorName() throws SQLException;
+  String getCursorName() throws SQLException;
 
   /**
    * This method returns data about the columns returned as part of the
@@ -512,7 +512,7 @@ public interface ResultSet
    * @return The <code>ResultSetMetaData</code> instance for this result set.
    * @exception SQLException If an error occurs.
    */
-  public ResultSetMetaData getMetaData() throws SQLException;
+  ResultSetMetaData getMetaData() throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -522,7 +522,7 @@ public interface ResultSet
    * @return The column value as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  public Object getObject(int columnIndex) throws SQLException;
+  Object getObject(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -532,7 +532,7 @@ public interface ResultSet
    * @return The column value as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  public Object getObject(String columnName) throws SQLException;
+  Object getObject(String columnName) throws SQLException;
 
   /**
    * This method returns the column index of the specified named column.
@@ -541,7 +541,7 @@ public interface ResultSet
    * @return The index of the column.
    * @exception SQLException If an error occurs.
    */
-  public int findColumn(String columnName) throws SQLException;
+  int findColumn(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a character
@@ -554,7 +554,7 @@ public interface ResultSet
    * @return The column value as an character <code>Reader</code>.
    * @exception SQLException If an error occurs.
    */
-  public Reader getCharacterStream(int columnIndex) throws SQLException;
+  Reader getCharacterStream(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a character
@@ -567,7 +567,7 @@ public interface ResultSet
    * @return The column value as an character <code>Reader</code>.
    * @exception SQLException If an error occurs.
    */
-  public Reader getCharacterStream(String columnName) throws SQLException;
+  Reader getCharacterStream(String columnName) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -577,7 +577,7 @@ public interface ResultSet
    * @return The column value as a <code>BigDecimal</code>.
    * @exception SQLException If an error occurs.
    */
-  public BigDecimal getBigDecimal(int columnIndex) throws SQLException;
+  BigDecimal getBigDecimal(int columnIndex) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -587,7 +587,7 @@ public interface ResultSet
    * @return The column value as a <code>BigDecimal</code>.
    * @exception SQLException If an error occurs.
    */
-  public BigDecimal getBigDecimal(String columnName) throws SQLException;
+  BigDecimal getBigDecimal(String columnName) throws SQLException;
 
   /**
    * This method tests whether or not the cursor is before the first row
@@ -597,7 +597,7 @@ public interface ResultSet
    *         row, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isBeforeFirst() throws SQLException;
+  boolean isBeforeFirst() throws SQLException;
 
   /**
    * This method tests whether or not the cursor is after the last row
@@ -607,7 +607,7 @@ public interface ResultSet
    *         row, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isAfterLast() throws SQLException;
+  boolean isAfterLast() throws SQLException;
 
   /**
    * This method tests whether or not the cursor is positioned on the first
@@ -617,7 +617,7 @@ public interface ResultSet
    *         row, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isFirst() throws SQLException;
+  boolean isFirst() throws SQLException;
 
   /**
    * This method tests whether or not the cursor is on the last row
@@ -627,7 +627,7 @@ public interface ResultSet
    *         row, <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean isLast() throws SQLException;
+  boolean isLast() throws SQLException;
 
   /**
    * This method repositions the cursor to before the first row in the
@@ -635,7 +635,7 @@ public interface ResultSet
    * 
    * @exception SQLException If an error occurs.
    */
-  public void beforeFirst() throws SQLException;
+  void beforeFirst() throws SQLException;
 
   /**
    * This method repositions the cursor to after the last row in the result
@@ -643,7 +643,7 @@ public interface ResultSet
    * 
    * @exception SQLException If an error occurs.
    */
-  public void afterLast() throws SQLException;
+  void afterLast() throws SQLException;
 
   /**
    * This method repositions the cursor on the first row in the
@@ -653,7 +653,7 @@ public interface ResultSet
    *         <code>false</code> if there are no rows in the result set.
    * @exception SQLException If an error occurs.
    */
-  public boolean first() throws SQLException;
+  boolean first() throws SQLException;
 
   /**
    * This method repositions the cursor on the last row in the result
@@ -663,7 +663,7 @@ public interface ResultSet
    *         <code>false</code> if there are no rows in the result set.
    * @exception SQLException If an error occurs.
    */
-  public boolean last() throws SQLException;
+  boolean last() throws SQLException;
 
   /**
    * This method returns the current row number in the cursor.  Numbering
@@ -672,7 +672,7 @@ public interface ResultSet
    * @return The current row number, or 0 if there is not current row.
    * @exception SQLException If an error occurs.
    */
-  public int getRow() throws SQLException;
+  int getRow() throws SQLException;
 
   /**
    * This method positions the result set to the specified absolute row.
@@ -686,7 +686,7 @@ public interface ResultSet
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean absolute(int row) throws SQLException;
+  boolean absolute(int row) throws SQLException;
 
   /**
    * This method moves the result set position relative to the current row.
@@ -697,7 +697,7 @@ public interface ResultSet
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean relative(int rows) throws SQLException;
+  boolean relative(int rows) throws SQLException;
 
   /**
    * This method moves the current position to the previous row in the
@@ -707,7 +707,7 @@ public interface ResultSet
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean previous() throws SQLException;
+  boolean previous() throws SQLException;
 
   /**
    * This method provides a hint to the driver about which direction the
@@ -716,7 +716,7 @@ public interface ResultSet
    * @param direction The direction in which rows will be processed. (Values?)
    * @exception SQLException If an error occurs.
    */
-  public void setFetchDirection(int direction) throws SQLException;
+  void setFetchDirection(int direction) throws SQLException;
 
   /**
    * This method returns the current fetch direction for this result set.
@@ -724,7 +724,7 @@ public interface ResultSet
    * @return The fetch direction for this result set.
    * @exception SQLException If an error occurs.
    */
-  public int getFetchDirection() throws SQLException;
+  int getFetchDirection() throws SQLException;
 
   /**
    * This method provides a hint to the driver about how many rows at a
@@ -733,7 +733,7 @@ public interface ResultSet
    * @param rows The number of rows the driver should fetch per call.
    * @exception SQLException If an error occurs.
    */
-  public void setFetchSize(int rows) throws SQLException;
+  void setFetchSize(int rows) throws SQLException;
 
   /**
    * This method returns the current number of rows that will be fetched 
@@ -742,7 +742,7 @@ public interface ResultSet
    * @return The current fetch size for this result set.
    * @exception SQLException If an error occurs.
    */
-  public int getFetchSize() throws SQLException;
+  int getFetchSize() throws SQLException;
 
   /**
    * This method returns the result set type of this result set.  This will
@@ -751,7 +751,7 @@ public interface ResultSet
    * @return The result set type.
    * @exception SQLException If an error occurs.
    */
-  public int getType() throws SQLException;
+  int getType() throws SQLException;
 
   /**
    * This method returns the concurrency type of this result set.  This will
@@ -760,7 +760,7 @@ public interface ResultSet
    * @return The result set concurrency type.
    * @exception SQLException If an error occurs.
    */
-  public int getConcurrency() throws SQLException;
+  int getConcurrency() throws SQLException;
 
   /**
    * This method tests whether or not the current row in the result set
@@ -771,7 +771,7 @@ public interface ResultSet
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean rowUpdated() throws SQLException;
+  boolean rowUpdated() throws SQLException;
 
   /**
    * This method tests whether or not the current row in the result set
@@ -782,7 +782,7 @@ public interface ResultSet
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean rowInserted() throws SQLException;
+  boolean rowInserted() throws SQLException;
 
   /**
    * This method tests whether or not the current row in the result set
@@ -793,7 +793,7 @@ public interface ResultSet
    *         otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean rowDeleted() throws SQLException;
+  boolean rowDeleted() throws SQLException;
 
   /**
    * This method updates the specified column to have a NULL value.  This
@@ -803,7 +803,7 @@ public interface ResultSet
    * @return index The index of the column to update.
    * @exception SQLException If an error occurs.
    */
-  public void updateNull(int columnIndex) throws SQLException;
+  void updateNull(int columnIndex) throws SQLException;
 
   /**
    * This method updates the specified column to have a boolean value.  This
@@ -814,7 +814,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBoolean(int columnIndex, boolean x) throws SQLException;
+  void updateBoolean(int columnIndex, boolean x) throws SQLException;
 
   /**
    * This method updates the specified column to have a byte value.  This
@@ -825,7 +825,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateByte(int columnIndex, byte x) throws SQLException;
+  void updateByte(int columnIndex, byte x) throws SQLException;
 
   /**
    * This method updates the specified column to have a short value.  This
@@ -836,7 +836,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateShort(int columnIndex, short x) throws SQLException;
+  void updateShort(int columnIndex, short x) throws SQLException;
 
   /**
    * This method updates the specified column to have an int value.  This
@@ -847,7 +847,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateInt(int columnIndex, int x) throws SQLException;
+  void updateInt(int columnIndex, int x) throws SQLException;
 
   /**
    * This method updates the specified column to have a long value.  This
@@ -858,7 +858,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateLong(int columnIndex, long x) throws SQLException;
+  void updateLong(int columnIndex, long x) throws SQLException;
 
   /**
    * This method updates the specified column to have a float value.  This
@@ -869,7 +869,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateFloat(int columnIndex, float x) throws SQLException;
+  void updateFloat(int columnIndex, float x) throws SQLException;
 
   /**
    * This method updates the specified column to have a double value.  This
@@ -880,7 +880,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateDouble(int columnIndex, double x) throws SQLException;
+  void updateDouble(int columnIndex, double x) throws SQLException;
 
   /**
    * This method updates the specified column to have a BigDecimal value.  This
@@ -891,7 +891,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBigDecimal(int columnIndex, BigDecimal x)
+  void updateBigDecimal(int columnIndex, BigDecimal x)
     throws SQLException;
 
   /**
@@ -903,7 +903,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateString(int columnIndex, String x) throws SQLException;
+  void updateString(int columnIndex, String x) throws SQLException;
 
   /**
    * This method updates the specified column to have a byte array value.  This
@@ -914,7 +914,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBytes(int columnIndex, byte[] x) throws SQLException;
+  void updateBytes(int columnIndex, byte[] x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Date value.  This
@@ -925,7 +925,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateDate(int columnIndex, Date x) throws SQLException;
+  void updateDate(int columnIndex, Date x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Time value.  This
@@ -936,7 +936,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateTime(int columnIndex, Time x) throws SQLException;
+  void updateTime(int columnIndex, Time x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Timestamp value.  
@@ -947,7 +947,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateTimestamp(int columnIndex, Timestamp x)
+  void updateTimestamp(int columnIndex, Timestamp x)
     throws SQLException;
 
   /**
@@ -960,7 +960,7 @@ public interface ResultSet
    * @param length The length of the stream.
    * @exception SQLException If an error occurs.
    */
-  public void updateAsciiStream(int columnIndex, InputStream x, int length)
+  void updateAsciiStream(int columnIndex, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -973,7 +973,7 @@ public interface ResultSet
    * @param length The length of the stream.
    * @exception SQLException If an error occurs.
    */
-  public void updateBinaryStream(int columnIndex, InputStream x, int length)
+  void updateBinaryStream(int columnIndex, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -986,7 +986,7 @@ public interface ResultSet
    * @param length The length of the stream.
    * @exception SQLException If an error occurs.
    */
-  public void updateCharacterStream(int columnIndex, Reader x, int length)
+  void updateCharacterStream(int columnIndex, Reader x, int length)
     throws SQLException;
 
   /**
@@ -999,7 +999,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void updateObject(int columnIndex, Object x, int scale)
+  void updateObject(int columnIndex, Object x, int scale)
     throws SQLException;
 
   /**
@@ -1013,7 +1013,7 @@ public interface ResultSet
    *        for numeric type objects.
    * @exception SQLException If an error occurs.
    */
-  public void updateObject(int columnIndex, Object x) throws SQLException;
+  void updateObject(int columnIndex, Object x) throws SQLException;
 
   /**
    * This method updates the specified column to have a NULL value.  This
@@ -1023,7 +1023,7 @@ public interface ResultSet
    * @return name The name of the column to update.
    * @exception SQLException If an error occurs.
    */
-  public void updateNull(String columnName) throws SQLException;
+  void updateNull(String columnName) throws SQLException;
 
   /**
    * This method updates the specified column to have a boolean value.  This
@@ -1034,7 +1034,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBoolean(String columnName, boolean x) throws SQLException;
+  void updateBoolean(String columnName, boolean x) throws SQLException;
 
   /**
    * This method updates the specified column to have a byte value.  This
@@ -1045,7 +1045,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateByte(String columnName, byte x) throws SQLException;
+  void updateByte(String columnName, byte x) throws SQLException;
 
   /**
    * This method updates the specified column to have a short value.  This
@@ -1056,7 +1056,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateShort(String columnName, short x) throws SQLException;
+  void updateShort(String columnName, short x) throws SQLException;
 
   /**
    * This method updates the specified column to have an int value.  This
@@ -1067,7 +1067,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateInt(String columnName, int x) throws SQLException;
+  void updateInt(String columnName, int x) throws SQLException;
 
   /**
    * This method updates the specified column to have a long value.  This
@@ -1078,7 +1078,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateLong(String columnName, long x) throws SQLException;
+  void updateLong(String columnName, long x) throws SQLException;
 
   /**
    * This method updates the specified column to have a float value.  This
@@ -1089,7 +1089,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateFloat(String columnName, float x) throws SQLException;
+  void updateFloat(String columnName, float x) throws SQLException;
 
   /**
    * This method updates the specified column to have a double value.  This
@@ -1100,7 +1100,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateDouble(String columnName, double x) throws SQLException;
+  void updateDouble(String columnName, double x) throws SQLException;
 
   /**
    * This method updates the specified column to have a BigDecimal value.  This
@@ -1111,7 +1111,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBigDecimal(String columnName, BigDecimal x)
+  void updateBigDecimal(String columnName, BigDecimal x)
     throws SQLException;
 
   /**
@@ -1123,7 +1123,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateString(String columnName, String x) throws SQLException;
+  void updateString(String columnName, String x) throws SQLException;
 
   /**
    * This method updates the specified column to have a byte array value.  This
@@ -1134,7 +1134,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateBytes(String columnName, byte[] x) throws SQLException;
+  void updateBytes(String columnName, byte[] x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Date value.  This
@@ -1145,7 +1145,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateDate(String columnName, Date x) throws SQLException;
+  void updateDate(String columnName, Date x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Time value.  This
@@ -1156,7 +1156,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateTime(String columnName, Time x) throws SQLException;
+  void updateTime(String columnName, Time x) throws SQLException;
 
   /**
    * This method updates the specified column to have a java.sql.Timestamp value.  
@@ -1167,7 +1167,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateTimestamp(String columnName, Timestamp x)
+  void updateTimestamp(String columnName, Timestamp x)
     throws SQLException;
 
   /**
@@ -1180,7 +1180,7 @@ public interface ResultSet
    * @param length The length of the stream.
    * @exception SQLException If an error occurs.
    */
-  public void updateAsciiStream(String columnName, InputStream x, int length)
+  void updateAsciiStream(String columnName, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -1193,7 +1193,7 @@ public interface ResultSet
    * @param length The length of the stream.
    * @exception SQLException If an error occurs.
    */
-  public void updateBinaryStream(String columnName, InputStream x, int length)
+  void updateBinaryStream(String columnName, InputStream x, int length)
     throws SQLException;
 
   /**
@@ -1207,7 +1207,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void updateCharacterStream(String columnName, Reader reader,
+  void updateCharacterStream(String columnName, Reader reader,
     int length) throws SQLException;
 
   /**
@@ -1219,7 +1219,7 @@ public interface ResultSet
    * @param value The new value of the column.
    * @exception SQLException If an error occurs.
    */
-  public void updateObject(String columnName, Object x, int scale)
+  void updateObject(String columnName, Object x, int scale)
     throws SQLException;
 
   /**
@@ -1233,7 +1233,7 @@ public interface ResultSet
    *        for numeric type objects.
    * @exception SQLException If an error occurs.
    */
-  public void updateObject(String columnName, Object x) throws SQLException;
+  void updateObject(String columnName, Object x) throws SQLException;
 
   /**
    * This method inserts the current row into the database.  The result set
@@ -1242,28 +1242,28 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void insertRow() throws SQLException;
+  void insertRow() throws SQLException;
 
   /**
    * This method updates the current row in the database.
    *
    * @exception SQLException If an error occurs.
    */
-  public void updateRow() throws SQLException;
+  void updateRow() throws SQLException;
 
   /**
    * This method deletes the current row in the database.
    *
    * @exception SQLException If an error occurs.
    */
-  public void deleteRow() throws SQLException;
+  void deleteRow() throws SQLException;
 
   /**
    * This method refreshes the contents of the current row from the database.
    *
    * @exception SQLException If an error occurs.
    */
-  public void refreshRow() throws SQLException;
+  void refreshRow() throws SQLException;
 
   /**
    * This method cancels any changes that have been made to a row.  If 
@@ -1272,7 +1272,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void cancelRowUpdates() throws SQLException;
+  void cancelRowUpdates() throws SQLException;
 
   /**
    * This method positions the result set to the "insert row", which allows
@@ -1280,7 +1280,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void moveToInsertRow() throws SQLException;
+  void moveToInsertRow() throws SQLException;
 
   /**
    * This method moves the result set position from the insert row back to
@@ -1288,7 +1288,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public void moveToCurrentRow() throws SQLException;
+  void moveToCurrentRow() throws SQLException;
 
   /**
    * This method returns a the <code>Statement</code> that was used to
@@ -1298,7 +1298,7 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public Statement getStatement() throws SQLException;
+  Statement getStatement() throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -1309,7 +1309,7 @@ public interface ResultSet
    * @return The value of the column as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  public Object getObject(int i, Map map) throws SQLException;
+  Object getObject(int i, Map map) throws SQLException;
 
   /**
    * This method returns a <code>Ref</code> for the specified column which
@@ -1319,7 +1319,7 @@ public interface ResultSet
    * @return A <code>Ref</code> object for the column
    * @exception SQLException If an error occurs.
    */
-  public Ref getRef(int i) throws SQLException;
+  Ref getRef(int i) throws SQLException;
 
   /**
    * This method returns the specified column value as a BLOB.
@@ -1328,7 +1328,7 @@ public interface ResultSet
    * @return The value of the column as a BLOB.
    * @exception SQLException If an error occurs.
    */
-  public Blob getBlob(int i) throws SQLException;
+  Blob getBlob(int i) throws SQLException;
 
   /**
    * This method returns the specified column value as a CLOB.
@@ -1337,7 +1337,7 @@ public interface ResultSet
    * @return The value of the column as a CLOB.
    * @exception SQLException If an error occurs.
    */
-  public Clob getClob(int i) throws SQLException;
+  Clob getClob(int i) throws SQLException;
 
   /**
    * This method returns the specified column value as an <code>Array</code>.
@@ -1346,7 +1346,7 @@ public interface ResultSet
    * @return The value of the column as an <code>Array</code>.
    * @exception SQLException If an error occurs.
    */
-  public Array getArray(int i) throws SQLException;
+  Array getArray(int i) throws SQLException;
 
   /**
    * This method returns the value of the specified column as a Java
@@ -1357,7 +1357,7 @@ public interface ResultSet
    * @return The value of the column as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  public Object getObject(String colName, Map map) throws SQLException;
+  Object getObject(String colName, Map map) throws SQLException;
 
   /**
    * This method returns a <code>Ref</code> for the specified column which
@@ -1367,7 +1367,7 @@ public interface ResultSet
    * @return A <code>Ref</code> object for the column
    * @exception SQLException If an error occurs.
    */
-  public Ref getRef(String colName) throws SQLException;
+  Ref getRef(String colName) throws SQLException;
 
   /**
    * This method returns the specified column value as a BLOB.
@@ -1376,7 +1376,7 @@ public interface ResultSet
    * @return The value of the column as a BLOB.
    * @exception SQLException If an error occurs.
    */
-  public Blob getBlob(String colName) throws SQLException;
+  Blob getBlob(String colName) throws SQLException;
 
   /**
    * This method returns the specified column value as a CLOB.
@@ -1385,7 +1385,7 @@ public interface ResultSet
    * @return The value of the column as a CLOB.
    * @exception SQLException If an error occurs.
    */
-  public Clob getClob(String colName) throws SQLException;
+  Clob getClob(String colName) throws SQLException;
 
   /**
    * This method returns the specified column value as an <code>Array</code>.
@@ -1394,7 +1394,7 @@ public interface ResultSet
    * @return The value of the column as an <code>Array</code>.
    * @exception SQLException If an error occurs.
    */
-  public Array getArray(String colName) throws SQLException;
+  Array getArray(String colName) throws SQLException;
 
   /**
    * This method returns the specified column value as a 
@@ -1407,7 +1407,7 @@ public interface ResultSet
    * @return The value of the column as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date getDate(int columnIndex, Calendar cal) throws SQLException;
+  Date getDate(int columnIndex, Calendar cal) throws SQLException;
 
   /**
    * This method returns the specified column value as a 
@@ -1420,7 +1420,7 @@ public interface ResultSet
    * @return The value of the column as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date getDate(String columnName, Calendar cal) throws SQLException;
+  Date getDate(String columnName, Calendar cal) throws SQLException;
 
   /**
    * This method returns the specified column value as a 
@@ -1433,7 +1433,7 @@ public interface ResultSet
    * @return The value of the column as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time getTime(int columnIndex, Calendar cal) throws SQLException;
+  Time getTime(int columnIndex, Calendar cal) throws SQLException;
 
   /**
    * This method returns the specified column value as a 
@@ -1446,7 +1446,7 @@ public interface ResultSet
    * @return The value of the column as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time getTime(String columnName, Calendar cal) throws SQLException;
+  Time getTime(String columnName, Calendar cal) throws SQLException;
 
   /**
    * This method returns the specified column value as a 
@@ -1459,7 +1459,7 @@ public interface ResultSet
    * @return The value of the column as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  public Timestamp getTimestamp(int columnIndex, Calendar cal)
+  Timestamp getTimestamp(int columnIndex, Calendar cal)
     throws SQLException;
 
   /**
@@ -1475,56 +1475,56 @@ public interface ResultSet
    *
    * @exception SQLException If an error occurs.
    */
-  public Timestamp getTimestamp(String columnName, Calendar cal)
+  Timestamp getTimestamp(String columnName, Calendar cal)
     throws SQLException;
 
   /**
    * @since 1.4
    */
-  public URL getURL(int columnIndex) throws SQLException;
+  URL getURL(int columnIndex) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public URL getURL(String columnName) throws SQLException;
+  URL getURL(String columnName) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateRef(int columnIndex, Ref x) throws SQLException;
+  void updateRef(int columnIndex, Ref x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateRef(String columnName, Ref x) throws SQLException;
+  void updateRef(String columnName, Ref x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateBlob(int columnIndex, Blob x) throws SQLException;
+  void updateBlob(int columnIndex, Blob x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateBlob(String columnName, Blob x) throws SQLException;
+  void updateBlob(String columnName, Blob x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateClob(int columnIndex, Clob x) throws SQLException;
+  void updateClob(int columnIndex, Clob x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateClob(String columnName, Clob x) throws SQLException;
+  void updateClob(String columnName, Clob x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateArray(int columnIndex, Array x) throws SQLException;
+  void updateArray(int columnIndex, Array x) throws SQLException;
 
   /**
    * @since 1.4
    */
-  public void updateArray(String columnName, Array x) throws SQLException;
+  void updateArray(String columnName, Array x) throws SQLException;
 }

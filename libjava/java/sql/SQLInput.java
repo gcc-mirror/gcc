@@ -59,7 +59,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>String</code>.
    * @exception SQLException If an error occurs.
    */
-  public String readString() throws SQLException;
+  String readString() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -68,7 +68,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>boolean</code>.
    * @exception SQLException If an error occurs.
    */
-  public boolean readBoolean() throws SQLException;
+  boolean readBoolean() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -77,7 +77,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>byte</code>.
    * @exception SQLException If an error occurs.
    */
-  public byte readByte() throws SQLException;
+  byte readByte() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -86,7 +86,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>short</code>.
    * @exception SQLException If an error occurs.
    */
-  public short readShort() throws SQLException;
+  short readShort() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -95,7 +95,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>int</code>.
    * @exception SQLException If an error occurs.
    */
-  public int readInt() throws SQLException;
+  int readInt() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -104,7 +104,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>long</code>.
    * @exception SQLException If an error occurs.
    */
-  public long readLong() throws SQLException;
+  long readLong() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -113,7 +113,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>float</code>.
    * @exception SQLException If an error occurs.
    */
-  public float readFloat() throws SQLException;
+  float readFloat() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -122,7 +122,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>double</code>.
    * @exception SQLException If an error occurs.
    */
-  public double readDouble() throws SQLException;
+  double readDouble() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -131,7 +131,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>BigDecimal</code>.
    * @exception SQLException If an error occurs.
    */
-  public BigDecimal readBigDecimal() throws SQLException;
+  BigDecimal readBigDecimal() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -140,7 +140,7 @@ public interface SQLInput
    * @return The value read from the stream as a byte array. 
    * @exception SQLException If an error occurs.
    */
-  public byte[] readBytes() throws SQLException;
+  byte[] readBytes() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -149,7 +149,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>java.sql.Date</code>.
    * @exception SQLException If an error occurs.
    */
-  public Date readDate() throws SQLException;
+  Date readDate() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -158,7 +158,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>java.sql.Time</code>.
    * @exception SQLException If an error occurs.
    */
-  public Time readTime() throws SQLException;
+  Time readTime() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -167,7 +167,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>java.sql.Timestamp</code>.
    * @exception SQLException If an error occurs.
    */
-  public Timestamp readTimestamp() throws SQLException;
+  Timestamp readTimestamp() throws SQLException;
 
   /**
    * This method reads the next item from the stream a character
@@ -176,7 +176,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>Reader</code>.
    * @exception SQLException If an error occurs.
    */
-  public Reader readCharacterStream() throws SQLException;
+  Reader readCharacterStream() throws SQLException;
 
   /**
    * This method reads the next item from the stream a ASCII text
@@ -185,7 +185,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream readAsciiStream() throws SQLException;
+  InputStream readAsciiStream() throws SQLException;
 
   /**
    * This method reads the next item from the stream a binary
@@ -194,7 +194,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>InputStream</code>.
    * @exception SQLException If an error occurs.
    */
-  public InputStream readBinaryStream() throws SQLException;
+  InputStream readBinaryStream() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java
@@ -203,7 +203,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>Object</code>.
    * @exception SQLException If an error occurs.
    */
-  public Object readObject() throws SQLException;
+  Object readObject() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java SQL
@@ -212,7 +212,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>Ref</code>.
    * @exception SQLException If an error occurs.
    */
-  public Ref readRef() throws SQLException;
+  Ref readRef() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java SQL
@@ -221,7 +221,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>Blob</code>.
    * @exception SQLException If an error occurs.
    */
-  public Blob readBlob() throws SQLException;
+  Blob readBlob() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java SQL
@@ -230,7 +230,7 @@ public interface SQLInput
    * @return The value read from the stream as a <code>Clob</code>.
    * @exception SQLException If an error occurs.
    */
-  public Clob readClob() throws SQLException;
+  Clob readClob() throws SQLException;
 
   /**
    * This method reads the next item from the stream a Java SQL
@@ -239,7 +239,7 @@ public interface SQLInput
    * @return The value read from the stream as an <code>Array</code>.
    * @exception SQLException If an error occurs.
    */
-  public Array readArray() throws SQLException;
+  Array readArray() throws SQLException;
 
   /**
    * This method tests whether or not the last value read was a SQL
@@ -249,11 +249,11 @@ public interface SQLInput
    *         <code>false</code> otherwise.
    * @exception SQLException If an error occurs.
    */
-  public boolean wasNull() throws SQLException;
+  boolean wasNull() throws SQLException;
 
   /**
    * @since 1.4
    */
-  public URL readURL() throws SQLException;
+  URL readURL() throws SQLException;
 }
 
