@@ -1,3 +1,10 @@
+Mon May 31 22:42:02 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Remove this patch (from the branch only)
+	Wed May 26 09:53:05 1999  Mark Mitchell  <mark@codesourcery.com>
+        * fold-const.c (fold): STRIP_NOPS when deciding whether or not
+	something is a candidate for optimize_bit_field_compare.
+
 Mon May 31 15:23:23 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (reload_*_help): New patterns and splitters.
