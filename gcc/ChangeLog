@@ -1,3 +1,7 @@
+2001-06-27  Jim Wilson  <wilson@redhat.com>
+
+	* emit-rtl.c (gen_highpart): Call validize_mem.
+
 2001-06-27  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/inclhack.def(hpux11_cpp_pow_inline): new, but real similar to
