@@ -1,5 +1,11 @@
 2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
 
+	* Makefile.in: Rebuilt.
+	* Makefile.am (xlib_includes): New macro.
+	(INCLUDES): Use it.
+
+2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
+
 	* gnu/awt/xlib/XToolkit.java (getColorModel): Implemented.
 	* gnu/awt/xlib/XGraphicsConfiguration.java (getPixel): Work with
 	16-bit display mode.
