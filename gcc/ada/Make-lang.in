@@ -808,6 +808,12 @@ ada.stage3: stage3-start
 ada.stage4: stage4-start
 	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stage4/ada
 	-$(MV) ada/stamp-* stage4/ada
+ada.stageprofile: stageprofile-start
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stageprofile/ada
+	-$(MV) ada/stamp-* stageprofile/ada
+ada.stagefeedback: stagefeedback-start
+	-$(MV) ada/*$(objext) ada/*.ali ada/b_*.c stagefeedback/ada
+	-$(MV) ada/stamp-* stagefeedback/ada
 
 check-ada:
 

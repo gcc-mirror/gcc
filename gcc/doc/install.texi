@@ -1202,6 +1202,24 @@ following commands (assuming @command{make} is GNU make):
 Currently, when compiling the Ada front end, you cannot use the parallel
 build feature described in the previous section.
 
+@section Building with profile feedback
+
+It is possible to use profile feedback to optimize the compiler itself.  This
+should result in a faster compiler binary.  Experiments done on x86 using gcc
+3.3 showed approximately 7 percent speedup on compiling C programs.  To
+bootstrap compiler with profile feedback, use @code{make profiledbootstrap}.
+
+When @samp{make profiledbootstrap} is run, it will first build a @code{stage1}
+compiler.  This compiler is used to build a @code{stageprofile} compiler
+instrumented to collect execution counts of instruction and branch
+probabilities.  Then runtime libraries are compiled with profile collected.
+Finally a @code{stagefeedback} compiler is built using the information collected.
+
+Unlike @samp{make bootstrap} several additional restrictions apply.  The
+compiler used to build @code{stage1} needs to support a 64-bit integral type.
+It is recommended to only use GCC for this.  Also parallel make is currently
+not supported since collisions in profile collecting may occur.
+
 @html
 <hr />
 <p>

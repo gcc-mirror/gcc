@@ -1,3 +1,17 @@
+Thu Jun  5 18:32:46 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* install.tex: Document profiledbootstrap.
+
+	* Makefile.in (clean, distclean): Kill new stages
+	(POSTSTAGE1_FLAGS_TO_PASS): Break from ...
+	(STAGE2_FLAGS_TO_PASS): ... this one.
+	(STAGEPROFILE_FLAGS_TO_PASS, STAGEFEEDBACK_FLAGS_TO_PASS): New.
+	(stage[2-4]_build): Add POSTSTAGE1_FLAGS_TO_PASS.
+	(stageprofile_build, stageprofile_copy, stagefeedback_build,
+	stagefeedback_copy): New.
+	(restageprofile, restagefeedback, stageprofile-start, 
+	stageprofile, stagefeedback-start): Likewise.
+
 2003-06-05  David Miller  <davem@redhat.com>
 	    Richard Henderson  <rth@redhat.com>
 

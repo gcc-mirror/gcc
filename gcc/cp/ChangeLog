@@ -1,3 +1,7 @@
+Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Make-lang.in:  Add support for stageprofile and stagefeedback
+
 2003-06-04  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* decl.c (grokdeclarator): Error_mark_node in, error_mark_node out.

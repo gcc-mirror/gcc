@@ -266,6 +266,10 @@ treelang.stage3: stage3-start
 	-mv treelang/*$(objext) stage3/treelang
 treelang.stage4: stage4-start
 	-mv treelang/*$(objext) stage4/treelang
+treelang.stageprofile: stageprofile-start
+	-mv treelang/*$(objext) stageprofile/treelang
+treelang.stagefeedback: stagefeedback-start
+	-mv treelang/*$(objext) stagefeedback/treelang
 #
 # Maintenance hooks:
 

@@ -63,7 +63,8 @@ F77 f77: f771$(exeext)
   f77.install-common f77.install-info f77.install-man \
   f77.uninstall f77.mostlyclean f77.clean f77.distclean \
   f77.extraclean f77.maintainer-clean f77.rebuilt \
-  f77.stage1 f77.stage2 f77.stage3 f77.stage4
+  f77.stage1 f77.stage2 f77.stage3 f77.stage4 \
+  f77.stageprofile f77.stagefeedback
 
 g77spec.o: $(srcdir)/f/g77spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 	$(CONFIG_H)
@@ -349,6 +350,11 @@ f77.stage3: stage3-start
 f77.stage4: stage4-start
 	-mv -f $(G77STAGESTUFF) stage4/f
 
+f77.stageprofile: stageprofile-start
+	-mv -f $(G77STAGESTUFF) stageprofile/f
+
+f77.stagefeedback: stageprofile-start
+	-mv -f $(G77STAGESTUFF) stagefeedback/f
 #
 # .o: .h dependencies.
 
