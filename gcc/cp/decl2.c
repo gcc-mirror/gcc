@@ -2589,8 +2589,9 @@ finish_prevtable_vardecl (prev, vars)
 	      && !DECL_ABSTRACT_VIRTUAL_P (method))
 	    {
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
-	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
-	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
+	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype)
+		= ! DECL_REALLY_EXTERN (method);
+	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_REALLY_EXTERN (method);
 	      break;
 	    }
 	}
