@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "ggc.h"
 #include "basic-block.h"
+#include "toplev.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -199,7 +200,7 @@ setjmp_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  char *name;
+  const char *name;
   int retval = 0;
 
   if (GET_CODE (op) != SYMBOL_REF)
@@ -415,7 +416,7 @@ normal_comparison_operator (op, mode)
 {
   enum rtx_code code = GET_CODE (op);
   return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && (code == EQ || code == NE 
+	  && (code == EQ || code == NE
 	      || code == GT || code == LE || code == GTU || code == LEU));
 }
 
@@ -467,7 +468,7 @@ call_multiple_values_operation (op, mode)
   return 1;
 }
 
-  
+
 /* Structure to be filled in by ia64_compute_frame_size with register
    save masks and offsets for the current function.  */
 
@@ -640,7 +641,7 @@ save_restore_insns (save_p)
 		       + current_frame_info.pretend_pad_size));
       rtx offset_rtx;
       int regno;
-	
+
       /* If there is a frame pointer, then we use it instead of the stack
 	 pointer, so that the stack pointer does not need to be valid when
 	 the epilogue starts.  See EXIT_IGNORE_STACK.  */
@@ -682,7 +683,7 @@ save_restore_insns (save_p)
 	      }
 	    break;
 	  }
-		
+
       /* Must save/restore ar.unat if any GR is spilled/restored.  */
       if (current_frame_info.gr_size != 0
 	  || current_function_varargs || current_function_stdarg)
@@ -705,7 +706,7 @@ save_restore_insns (save_p)
 	      /* The restore happens after the last ld8.fill instruction.  */
 	    }
 	}
-	
+
       for (regno = GR_REG (0); regno <= GR_REG (127); regno++)
 	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
 	  {
@@ -739,7 +740,7 @@ save_restore_insns (save_p)
 	    if (save_p)
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	  }
-		     
+
       for (regno = BR_REG (0); regno <= BR_REG (7); regno++)
 	if (TEST_HARD_REG_BIT (current_frame_info.mask, regno))
 	  {
@@ -912,7 +913,7 @@ ia64_expand_prologue ()
      local register names are known.  */
   if (frame_pointer_needed)
     {
-      reg_names[FRAME_POINTER_REGNUM] 
+      reg_names[FRAME_POINTER_REGNUM]
 	= reg_names[LOC_REG (locals - 3)];
       ia64_fp_regno = LOC_REG (inputs + locals - 3);
     }
@@ -1092,7 +1093,7 @@ ia64_function_prologue (file, size)
 
   /* Emit the .prologue directive. in order to do this, we need to find
      where the stack pointer is moved toa GR, if it is, and mark it.  */
-  
+
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     {
       if (RTX_FRAME_RELATED_P (insn) && GET_CODE (insn) == INSN)
@@ -1403,7 +1404,7 @@ ia64_function_arg (cum, mode, type, named, incoming)
 						   (basereg + cum->words
 						    + offset)),
 				      const0_rtx);
-						   
+
       return gen_rtx_PARALLEL (mode, gen_rtvec (2, fp_reg, gr_reg));
     }
 }
@@ -1572,7 +1573,7 @@ ia64_va_arg (valist, type)
     {
       t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
 		 build_int_2 (2 * UNITS_PER_WORD - 1, 0));
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, 
+      t = build (BIT_AND_EXPR, TREE_TYPE (t), t,
 		 build_int_2 (-2 * UNITS_PER_WORD, -1));
       t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
       TREE_SIDE_EFFECTS (t) = 1;
@@ -1701,11 +1702,11 @@ ia64_print_operand (file, x, code)
   switch (code)
     {
       /* XXX Add other codes here.  */
-      
+
     case 0:
       /* Handled below.  */
       break;
-      
+
     case 'B':
       if (TARGET_A_STEP)
 	fputs (" ;; nop 0 ;; nop 0 ;;", file);
@@ -1768,7 +1769,7 @@ ia64_print_operand (file, x, code)
 
 	if (GET_CODE (XEXP (x, 0)) == POST_DEC)
 	  value = -value;
-    
+
 	fprintf (file, "%d", value);
 	return;
       }
@@ -1779,13 +1780,13 @@ ia64_print_operand (file, x, code)
       return;
 
     case 'S':
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, exact_log2 (INTVAL (x)));
+      fprintf (file, "%d", exact_log2 (INTVAL (x)));
       return;
 
     case 'T':
       if (! TARGET_GNU_AS && GET_CODE (x) == CONST_INT)
 	{
-	  fprintf (file, "0x%x", INTVAL (x) & 0xffffffff);
+	  fprintf (file, "0x%x", (int) INTVAL (x) & 0xffffffff);
 	  return;
 	}
       break;
@@ -1799,11 +1800,11 @@ ia64_print_operand (file, x, code)
 	      fprintf (file, "0xffffffff");
 	      prefix = "";
 	    }
-	  fprintf (file, "%s%x", prefix, INTVAL (x) & 0xffffffff);
+	  fprintf (file, "%s%x", prefix, (int) INTVAL (x) & 0xffffffff);
 	  return;
 	}
       break;
-      
+
     case 'r':
       /* If this operand is the constant zero, write it as zero.  */
       if (GET_CODE (x) == REG)
@@ -1838,7 +1839,7 @@ ia64_print_operand (file, x, code)
 	fprintf (file, "[%s]", reg_names [REGNO (addr)]);
 	break;
       }
-      
+
     default:
       output_addr_const (file, x);
       break;
@@ -1928,7 +1929,7 @@ void
 ia64_asm_output_external (file, decl, name)
      FILE *file;
      tree decl;
-     char *name;
+     const char *name;
 {
   int save_referenced;
 
@@ -2812,8 +2813,7 @@ ia64_encode_section_info (decl)
 			    ".sbss")))
     {
       int size = int_size_in_bytes (TREE_TYPE (decl));
-      char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-      int reloc;
+      const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
       /* ??? We should redeclare CTOR_LIST, DTOR_END so that we don't have to
 	 special case them here.  Currently we put them in ctor/dtors sections
@@ -2827,7 +2827,7 @@ ia64_encode_section_info (decl)
 	 is too late to put it in sdata if it wasn't put there in the first
 	 place.  The test is here rather than above, because if it is already
 	 in sdata, then it can stay there.  */
-	 
+
       else if (TREE_ASM_WRITTEN (decl))
 	;
 
@@ -2843,16 +2843,16 @@ ia64_encode_section_info (decl)
 	  *newstr = SDATA_NAME_FLAG_CHAR;
 	  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
 	}
-    }	    
+    }
   /* This decl is marked as being in small data/bss but it shouldn't
      be; one likely explanation for this is that the decl has been
      moved into a different section from the one it was in when
      ENCODE_SECTION_INFO was first called.  Remove the '@'.*/
   else if (TREE_CODE (decl) == VAR_DECL
-	   && (XSTR (XEXP (DECL_RTL (decl), 0), 0)[0] 
+	   && (XSTR (XEXP (DECL_RTL (decl), 0), 0)[0]
 	       == SDATA_NAME_FLAG_CHAR))
     {
-      char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
       int len = strlen (str);
       char *newstr = obstack_alloc (saveable_obstack, len);
 
@@ -2887,7 +2887,7 @@ process_set (asm_out_file, pat)
       && GET_CODE (dest) == REG && GR_REGNO_P (REGNO (dest)))
     {
       /* Assume this is a stack allocate insn.  */
-      fprintf (asm_out_file, "\t.save ar.pfs, r%d\n", 
+      fprintf (asm_out_file, "\t.save ar.pfs, r%d\n",
 	       REGNO (dest) + ia64_input_regs);
       return 1;
     }
@@ -2901,17 +2901,18 @@ process_set (asm_out_file, pat)
 	  rtx op1 = XEXP (src, 1);
 	  if (op0 == dest && GET_CODE (op1) == CONST_INT)
 	    {
-	      fprintf (asm_out_file, "\t.fframe %d\n", -INTVAL (op1));
+	      fputs ("\t.fframe ", asm_out_file);
+	      fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, -INTVAL (op1));
+	      fputc ('\n', asm_out_file);
 	      frame_size = INTVAL (op1);
 	      return 1;
 	    }
-	  else
-	    if (op0 == dest && GET_CODE (op1) == REG)
-	     {
-		fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
-	        frame_size = 0;
-		return 1;
-	     }
+	  else if (op0 == dest && GET_CODE (op1) == REG)
+	    {
+	      fprintf (asm_out_file, "\t.vframe r%d\n", REGNO (op1));
+	      frame_size = 0;
+	      return 1;
+	    }
 	}
     }
   /* Look for a frame offset.  */
@@ -2945,7 +2946,7 @@ process_set (asm_out_file, pat)
 	  /* Saving return address pointer.  */
 	  if (regno == BR_REG (0))
 	    {
-	      fprintf (asm_out_file, "\t.save rp, r%d\n", 
+	      fprintf (asm_out_file, "\t.save rp, r%d\n",
 		       REGNO (dest) + ia64_input_regs);
 	      return 1;
 	    }
@@ -2972,13 +2973,13 @@ process_set (asm_out_file, pat)
 	  return 1;
 	}
     }
-  if (GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == POST_INC 
+  if (GET_CODE (dest) == MEM && GET_CODE (XEXP (dest, 0)) == POST_INC
       && GET_CODE (XEXP (XEXP (dest, 0), 0)) == REG)
     {
       int spill_unspec = 0;
       /* We adjust the spill_offset early, so we dont miss it later.  */
-      spill_offset += 8;  
-      sp_offset += 8;  
+      spill_offset += 8;
+      sp_offset += 8;
       if (GET_CODE (src) == UNSPEC)
 	{
 	  spill_unspec = XINT (src, 1);
@@ -2995,7 +2996,7 @@ process_set (asm_out_file, pat)
 	      regno = REGNO (XVECEXP (src, 0, 0));
 	      if (!spill_offset_emitted)
 	        {
-		  fprintf (asm_out_file, "\t.spill %d\n", 
+		  fprintf (asm_out_file, "\t.spill %d\n",
 /*			   (frame_size + 16 - spill_offset ) / 4); */
 			   (-(spill_offset - 8) + 16) / 4);
 		  spill_offset_emitted = 1;
@@ -3007,16 +3008,16 @@ process_set (asm_out_file, pat)
           if (GR_REGNO_P (regno))
 	    {
 	      if (regno >= GR_REG (4) && regno <= GR_REG (7))
-		fprintf (asm_out_file, "\t.save.g 0x%x\n", 
+		fprintf (asm_out_file, "\t.save.g 0x%x\n",
 			 1 << (regno - GR_REG (4)));
 	      else if (tmp_reg != NULL_RTX && regno == REGNO (tmp_reg))
 	        {
-		  /* We saved a special reg to a temp reg, and now we're 
+		  /* We saved a special reg to a temp reg, and now we're
 		     dumping it to memory.  */
 		  tmp_reg = NULL_RTX;
 		  /* register 9 is ar.unat.  */
 		  if (tmp_saved == 9)
-		    fprintf (asm_out_file, "\t.savesp ar.unat, %d\n", 
+		    fprintf (asm_out_file, "\t.savesp ar.unat, %d\n",
 			     (sp_offset - 8) / 4);
 		  else if (tmp_saved == 5)
 		    fprintf (asm_out_file, "\t.savesp pr, %d\n",
@@ -3024,23 +3025,23 @@ process_set (asm_out_file, pat)
 		  else if (tmp_saved >= BR_REG (1) && tmp_saved <= BR_REG (5))
 		    {
 		      /* BR regs are saved this way too.  */
-		      fprintf (asm_out_file, "\t.save.b 0x%x\n", 
+		      fprintf (asm_out_file, "\t.save.b 0x%x\n",
 			       1 << (tmp_saved - BR_REG (1)));
 		    }
 		}
-	      else 
+	      else
 	        return 0;
 	    }
 	  if (FR_REGNO_P (regno))
 	    {
 	      if (regno >= FR_REG (2) && regno <= FR_REG (5))
-		fprintf (asm_out_file, "\t.save.f 0x%x\n", 
+		fprintf (asm_out_file, "\t.save.f 0x%x\n",
 			 1 << (regno - FR_REG (2)));
 	      else
 		if (regno >= FR_REG (16) && regno <= FR_REG (31))
-		  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n", 
+		  fprintf (asm_out_file, "\t.save.gf 0x0, 0x%x\n",
 			   1 << (regno - FR_REG (12)));
-		else 
+		else
 		  return 0;
 	    }
 	  return 1;
@@ -3057,32 +3058,33 @@ process_for_unwind_directive (asm_out_file, insn)
      FILE *asm_out_file;
      rtx insn;
 {
-  if ((flag_unwind_tables 
+  if ((flag_unwind_tables
        || (flag_exceptions && !exceptions_via_longjmp))
       && RTX_FRAME_RELATED_P (insn))
     {
-      rtx code, pat;
-      pat = PATTERN (insn);
+      rtx pat = PATTERN (insn);
 
       switch (GET_CODE (pat))
         {
-	  case SET:
-	    {
-	      process_set (asm_out_file, pat);
-	      break;
-	    }
-	  case PARALLEL:
-	    {
-	      int par_index;
-	      int limit = XVECLEN (pat, 0);
-	      for (par_index = 0; par_index < limit; par_index++)
-	        {
-		  rtx x = XVECEXP (pat, 0, par_index);
-		  if (GET_CODE (x) == SET)
-		    process_set (asm_out_file, x);
-		}
-	      break;
-	    }
+	case SET:
+	  process_set (asm_out_file, pat);
+	  break;
+
+	case PARALLEL:
+	  {
+	    int par_index;
+	    int limit = XVECLEN (pat, 0);
+	    for (par_index = 0; par_index < limit; par_index++)
+	      {
+		rtx x = XVECEXP (pat, 0, par_index);
+		if (GET_CODE (x) == SET)
+		  process_set (asm_out_file, x);
+	      }
+	    break;
+	  }
+
+	default:
+	  abort ();
 	}
     }
 }
@@ -3171,7 +3173,7 @@ ia64_init_builtins ()
 
   /* __sync_lock_test_and_set_di */
   tree di_ftype_pdi_di
-    = build_function_type (long_integer_type_node,  
+    = build_function_type (long_integer_type_node,
                            tree_cons (NULL_TREE, pdi_type_node,
                            tree_cons (NULL_TREE, long_integer_type_node, endlink)));
 
@@ -3267,7 +3269,7 @@ ia64_expand_fetch_and_op (code, mode, operands)
       rtx reg;
       if (GET_CODE (operands[2]) == CONST_INT)
 	reg = gen_reg_rtx (mode);
-      else 
+      else
         reg = operands[2];
       if (mode == SImode)
 	{
@@ -3314,8 +3316,8 @@ ia64_expand_fetch_and_op (code, mode, operands)
   default:
     break;
   }
-    
-  if (mode == SImode) 
+
+  if (mode == SImode)
     emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], tmp_reg));
   else
     emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], tmp_reg));
@@ -3406,8 +3408,8 @@ ia64_expand_op_and_fetch (code, mode, operands)
   default:
     break;
   }
-    
-  if (mode == SImode) 
+
+  if (mode == SImode)
     emit_insn (gen_cmpxchg_acq_si (tmp_reg, operands[1], operands[0]));
   else
     emit_insn (gen_cmpxchg_acq_di (tmp_reg, operands[1], operands[0]));
@@ -3432,9 +3434,9 @@ ia64_expand_compare_and_swap (icode, arglist, target, boolcode)
      int boolcode;
 {
   tree arg0, arg1, arg2;
-  rtx newlabel, newlabel2, op0, op1, op2, pat;
+  rtx op0, op1, op2, pat;
   enum machine_mode tmode, mode0, mode1, mode2;
- 
+
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
   arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
@@ -3517,29 +3519,35 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
      enum machine_mode mode;
      int ignore;
 {
-  rtx op0, op1, op2, op3, pat;
+  rtx op0, op1, pat;
   rtx tmp_reg;
-  rtx newlabel, newlabel2;
-  tree arg0, arg1, arg2, arg3;
+  tree arg0, arg1;
   tree arglist = TREE_OPERAND (exp, 1);
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   int fcode = DECL_FUNCTION_CODE (fndecl);
-  enum machine_mode tmode, mode0, mode1, mode2, mode3;
+  enum machine_mode tmode, mode0, mode1;
   enum insn_code icode;
-  int boolcode = 0;
   int i;
   struct builtin_description *d;
 
   switch (fcode)
     {
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_SI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si, arglist, target, 1);
+      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si,
+					   arglist, target, 1);
+
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_SI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si, arglist, target, 0);
+      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_si,
+					   arglist, target, 0);
+
     case IA64_BUILTIN_BOOL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di, arglist, target, 1);
+      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di,
+					   arglist, target, 1);
+
     case IA64_BUILTIN_VAL_COMPARE_AND_SWAP_DI:
-      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di, arglist, target, 0);
+      return ia64_expand_compare_and_swap (CODE_FOR_val_compare_and_swap_di,
+					   arglist, target, 0);
+
     case IA64_BUILTIN_SYNCHRONIZE:
       /* Pass a volatile memory operand. */
       tmp_reg = gen_rtx_REG (DImode, GR_REG(0));
@@ -3580,7 +3588,7 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       mode0 = insn_data[icode].operand[1].mode;
       mode1 = insn_data[icode].operand[2].mode;
       op0 = gen_rtx_MEM (mode0, copy_to_mode_reg (Pmode, op0));
-      RTX_UNCHANGING_P (op0) = 1; 
+      RTX_UNCHANGING_P (op0) = 1;
       if (! (*insn_data[icode].operand[2].predicate) (op1, mode1))
         op1 = copy_to_mode_reg (mode1, op1);
       if (target == 0
@@ -3623,6 +3631,5 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
     if (d->code == fcode)
       return ia64_expand_binop_builtin (d->icode, arglist, target);
 
-  fail:
-    return 0;
+  return 0;
 }

@@ -1,4 +1,25 @@
 2000-05-06  Richard Henderson  <rth@cygnus.com>
+2000-05-06  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c: Include "tm_p.h".
+
+	* config/ia64/ia64-protos.h: Rearrange decls to reduce ifdef madness.
+	(fetchadd_operand, ia64_expand_fetch_and_op): Declare.
+	(ia64_expand_op_and_fetch): Declare.
+	* config/ia64/ia64.c: Include "toplev.h".  Kill trailing whitespace.
+	(setjmp_operand): Constify variables for XSTR.
+	(ia64_encode_section_info): Likewise.
+	(ia64_print_operand): Use %d for exact_log2; cast 32-bit printed
+	values to int.
+	(ia64_asm_output_external): Constify name.
+	(process_set): Use HOST_WIDE_INT_PRINT_DEC for frame size.
+	(process_for_unwind_directive): Provide switch default.
+	(ia64_expand_compare_and_swap): Remove unused variables.
+	(ia64_expand_builtin): Likewise.
+	* config/ia64/ia64.h (ASM_OUTPUT_BYTE): Mask and cast value to int
+	for printing.
+
+2000-05-06  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.def (DEFINE_COND_EXEC): New.
 	* md.texi: Document it.

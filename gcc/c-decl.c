@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "defaults.h"
 #include "ggc.h"
+#include "tm_p.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
