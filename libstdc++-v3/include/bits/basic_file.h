@@ -114,7 +114,7 @@ namespace std
   // Also note that the order and number of virtual functions has to precisely
   // match the order and number in the _IO_jump_t struct defined in libioP.h.
   template<typename _CharT>
-#if _GLIBCPP_BASIC_FILE_INHERITANCE
+#ifdef _GLIBCPP_BASIC_FILE_INHERITANCE
     class __basic_file: public __basic_file_base<_CharT>
 #else
     class __basic_file
@@ -123,10 +123,11 @@ namespace std
 #if _GLIBCPP_BASIC_FILE_ENCAPSULATION
       int 		_M_fileno;
       __c_file_type* 	_M_cfile;
-#endif
-#ifdef _GLIBCPP_USE_WCHAR_T
+#else
+# ifdef _GLIBCPP_USE_WCHAR_T
       __c_wfile_type	_M_wfile;
-#endif /* !defined(_GLIBCPP_USE_WCHAR_T) */
+# endif
+#endif 
 
     public:
       __basic_file(__c_lock* __lock = 0);

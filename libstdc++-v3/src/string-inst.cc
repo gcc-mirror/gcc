@@ -100,7 +100,3 @@ namespace std
     void
     __destroy_aux<S*>(S*, S*, _Bool<false>);
 } // namespace std
-
-
-
-

@@ -1175,8 +1175,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       # We're not using stdio.
       need_libio=no
       need_wlibio=no
-      # Wide characters are not supported with this package.
-      enable_c_mbchar=no
       ;;
     *)
       echo "$enable_cstdio is an unknown io package" 1>&2

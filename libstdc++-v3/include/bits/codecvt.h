@@ -524,7 +524,7 @@
 	  if (__ext_bom)
 	    {	  
 	      size_t __size = __from_end - __from;
-	      extern_type* __cfixed = (sizeof(extern_type) * (__size + 1));
+	      extern_type* __cfixed =  static_cast<extern_type*>(__builtin_alloca(sizeof(extern_type) * (__size + 1)));
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
