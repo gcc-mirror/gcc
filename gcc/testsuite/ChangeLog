@@ -1,5 +1,9 @@
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/decl-3.c: New test.
+
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/i386-loop-2.c: New test.
 
 2003-03-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -11980,3 +11984,4 @@ Mon Mar 22 14:28:46 1993  Ian Lance Taylor  (ian@cygnus.com)
 	correspond to c-torture	1.11.
 
 	* New file.
+
