@@ -1128,7 +1128,7 @@ struct cum_arg
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
-   This is suitable for output with `assemble_name'.  
+   This is suitable for output with `assemble_name'.
 
    N.B.: The h8300.md branch_true and branch_false patterns also know
    how to generate internal labels.  */

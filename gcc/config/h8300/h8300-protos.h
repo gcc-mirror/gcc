@@ -26,79 +26,79 @@ Boston, MA 02111-1307, USA.  */
 
 /* Declarations for functions used in insn-output.c.  */
 #ifdef RTX_CODE
-extern const char *output_plussi PARAMS ((rtx *));
-extern unsigned int compute_plussi_length PARAMS ((rtx *));
-extern int compute_plussi_cc PARAMS ((rtx *));
-extern const char *output_a_shift PARAMS ((rtx *));
-extern unsigned int compute_a_shift_length PARAMS ((rtx, rtx *));
-extern int compute_a_shift_cc PARAMS ((rtx, rtx *));
-extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
-extern const char *output_simode_bld PARAMS ((int, rtx[]));
-extern void print_operand_address PARAMS ((FILE *, rtx));
-extern void print_operand PARAMS ((FILE *, rtx, int));
-extern void final_prescan_insn PARAMS ((rtx, rtx *, int));
-extern int do_movsi PARAMS ((rtx[]));
-extern void notice_update_cc PARAMS ((rtx, rtx));
-extern const char *output_logical_op PARAMS ((enum machine_mode, rtx *));
-extern unsigned int compute_logical_op_length PARAMS ((enum machine_mode,
-						       rtx *));
-extern int compute_logical_op_cc PARAMS ((enum machine_mode, rtx *));
-extern void expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
-extern int h8300_shift_needs_scratch_p PARAMS ((int, enum machine_mode));
-extern int expand_a_rotate PARAMS ((enum rtx_code, rtx[]));
-extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));
-extern int h8300_adjust_insn_length PARAMS ((rtx, int));
-extern void split_adds_subs PARAMS ((enum machine_mode, rtx[]));
+extern const char *output_plussi (rtx *);
+extern unsigned int compute_plussi_length (rtx *);
+extern int compute_plussi_cc (rtx *);
+extern const char *output_a_shift (rtx *);
+extern unsigned int compute_a_shift_length (rtx, rtx *);
+extern int compute_a_shift_cc (rtx, rtx *);
+extern const char *emit_a_rotate (enum rtx_code, rtx *);
+extern const char *output_simode_bld (int, rtx[]);
+extern void print_operand_address (FILE *, rtx);
+extern void print_operand (FILE *, rtx, int);
+extern void final_prescan_insn (rtx, rtx *, int);
+extern int do_movsi (rtx[]);
+extern void notice_update_cc (rtx, rtx);
+extern const char *output_logical_op (enum machine_mode, rtx *);
+extern unsigned int compute_logical_op_length (enum machine_mode,
+					       rtx *);
+extern int compute_logical_op_cc (enum machine_mode, rtx *);
+extern void expand_a_shift (enum machine_mode, int, rtx[]);
+extern int h8300_shift_needs_scratch_p (int, enum machine_mode);
+extern int expand_a_rotate (enum rtx_code, rtx[]);
+extern int fix_bit_operand (rtx *, int, enum rtx_code);
+extern int h8300_adjust_insn_length (rtx, int);
+extern void split_adds_subs (enum machine_mode, rtx[]);
 
-extern int general_operand_src PARAMS ((rtx, enum machine_mode));
-extern int general_operand_dst PARAMS ((rtx, enum machine_mode));
-extern int single_one_operand PARAMS ((rtx, enum machine_mode));
-extern int single_zero_operand PARAMS ((rtx, enum machine_mode));
-extern int call_insn_operand PARAMS ((rtx, enum machine_mode));
-extern int two_insn_adds_subs_operand PARAMS ((rtx, enum machine_mode));
-extern int small_call_insn_operand PARAMS ((rtx, enum machine_mode));
-extern int jump_address_operand PARAMS ((rtx, enum machine_mode));
-extern int bit_operand PARAMS ((rtx, enum machine_mode));
-extern int bit_memory_operand PARAMS ((rtx, enum machine_mode));
-extern int stack_pointer_operand PARAMS ((rtx, enum machine_mode));
-extern int const_int_gt_2_operand PARAMS ((rtx, enum machine_mode));
-extern int const_int_ge_8_operand PARAMS ((rtx, enum machine_mode));
-extern int const_int_qi_operand PARAMS ((rtx, enum machine_mode));
-extern int const_int_hi_operand PARAMS ((rtx, enum machine_mode));
-extern int incdec_operand PARAMS ((rtx, enum machine_mode));
-extern int bit_operator PARAMS ((rtx, enum machine_mode));
-extern int nshift_operator PARAMS ((rtx, enum machine_mode));
-extern int eqne_operator PARAMS ((rtx, enum machine_mode));
-extern int gtle_operator PARAMS ((rtx, enum machine_mode));
-extern int gtuleu_operator PARAMS ((rtx, enum machine_mode));
-extern int iorxor_operator PARAMS ((rtx, enum machine_mode));
+extern int general_operand_src (rtx, enum machine_mode);
+extern int general_operand_dst (rtx, enum machine_mode);
+extern int single_one_operand (rtx, enum machine_mode);
+extern int single_zero_operand (rtx, enum machine_mode);
+extern int call_insn_operand (rtx, enum machine_mode);
+extern int two_insn_adds_subs_operand (rtx, enum machine_mode);
+extern int small_call_insn_operand (rtx, enum machine_mode);
+extern int jump_address_operand (rtx, enum machine_mode);
+extern int bit_operand (rtx, enum machine_mode);
+extern int bit_memory_operand (rtx, enum machine_mode);
+extern int stack_pointer_operand (rtx, enum machine_mode);
+extern int const_int_gt_2_operand (rtx, enum machine_mode);
+extern int const_int_ge_8_operand (rtx, enum machine_mode);
+extern int const_int_qi_operand (rtx, enum machine_mode);
+extern int const_int_hi_operand (rtx, enum machine_mode);
+extern int incdec_operand (rtx, enum machine_mode);
+extern int bit_operator (rtx, enum machine_mode);
+extern int nshift_operator (rtx, enum machine_mode);
+extern int eqne_operator (rtx, enum machine_mode);
+extern int gtle_operator (rtx, enum machine_mode);
+extern int gtuleu_operator (rtx, enum machine_mode);
+extern int iorxor_operator (rtx, enum machine_mode);
 
-extern int h8300_eightbit_constant_address_p PARAMS ((rtx));
-extern int h8300_tiny_constant_address_p PARAMS ((rtx));
-extern int byte_accesses_mergeable_p PARAMS ((rtx, rtx));
+extern int h8300_eightbit_constant_address_p (rtx);
+extern int h8300_tiny_constant_address_p (rtx);
+extern int byte_accesses_mergeable_p (rtx, rtx);
 
 /* Used in builtins.c */
-extern rtx h8300_return_addr_rtx PARAMS ((int, rtx));
+extern rtx h8300_return_addr_rtx (int, rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_arg PARAMS ((CUMULATIVE_ARGS *,
-					     enum machine_mode, tree, int));
-extern int h8300_funcvec_function_p PARAMS ((tree));
-extern int h8300_eightbit_data_p PARAMS ((tree));
-extern int h8300_tiny_data_p PARAMS ((tree));
+extern struct rtx_def *function_arg (CUMULATIVE_ARGS *,
+				     enum machine_mode, tree, int);
+extern int h8300_funcvec_function_p (tree);
+extern int h8300_eightbit_data_p (tree);
+extern int h8300_tiny_data_p (tree);
 #endif /* TREE_CODE */
 
-extern void h8300_init_once PARAMS ((void));
-extern int h8300_can_use_return_insn_p PARAMS ((void));
-extern void h8300_expand_prologue PARAMS ((void));
-extern void h8300_expand_epilogue PARAMS ((void));
-extern int h8300_current_function_interrupt_function_p PARAMS ((void));
-extern void asm_file_start PARAMS ((FILE *));
-extern int h8300_initial_elimination_offset PARAMS ((int, int));
+extern void h8300_init_once (void);
+extern int h8300_can_use_return_insn_p (void);
+extern void h8300_expand_prologue (void);
+extern void h8300_expand_epilogue (void);
+extern int h8300_current_function_interrupt_function_p (void);
+extern void asm_file_start (FILE *);
+extern int h8300_initial_elimination_offset (int, int);
 
 struct cpp_reader;
-extern void h8300_pr_interrupt PARAMS ((struct cpp_reader *));
-extern void h8300_pr_saveall PARAMS ((struct cpp_reader *));
+extern void h8300_pr_interrupt (struct cpp_reader *);
+extern void h8300_pr_saveall (struct cpp_reader *);
 
 #endif /* ! GCC_H8300_PROTOS_H */

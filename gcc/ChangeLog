@@ -1,3 +1,10 @@
+2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Update to ISO C.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Replace BUILD_CC references with CC_FOR_BUILD.
