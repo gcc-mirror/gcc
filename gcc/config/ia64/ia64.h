@@ -686,6 +686,12 @@ while (0)
 #define OUTGOING_REGNO(IN) \
   ((unsigned) ((IN) - IN_REG (0)) < 8 ? OUT_REG ((IN) - IN_REG (0)) : (IN))
 
+/* Define this macro if the target machine has register windows.  This
+   C expression returns true if the register is call-saved but is in the
+   register window.  */
+
+#define LOCAL_REGNO(REGNO) \
+  (IN_REGNO_P (REGNO) || LOC_REGNO_P (REGNO))
 
 /* Order of allocation of registers */
 
