@@ -3215,6 +3215,10 @@ As a special exception the first @code{expr_list} in the @code{parallel}
 RTX may have a first operand of zero.  This indicates that the entire
 argument is also stored on the stack.
 
+The last time this macro is called, it is called with @code{MODE ==
+VOIDmode}, and its result is passed to the @code{call} or @code{call_value}
+pattern as operands 2 and 3 respectively.
+
 @cindex @file{stdarg.h} and register arguments
 The usual way to make the ISO library @file{stdarg.h} work on a machine
 where some arguments are usually passed in registers, is to cause

@@ -1,3 +1,8 @@
+2001-07-01  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/tm.texi (FUNCTION_ARG): Document that the last call
+	is special.
+
 2001-07-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tlink.c (recompile_files): Remove COMPILER_PATH and
