@@ -1,3 +1,10 @@
+2005-04-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (get_compiler_messages): Support
+	optional arguments, the fourth being compiler options.
+	(check_effective_target_fpic): New proc.
+	* gcc.dg/20050321-2.c: Restrict to target fpic.
+
 2005-04-06  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/15443-1.c: New test.
