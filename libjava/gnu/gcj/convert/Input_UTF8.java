@@ -8,6 +8,12 @@ details.  */
 
 package gnu.gcj.convert;
 
+/**
+ * Convert UTF8 to Unicode.
+ * @author Per Bothner <bothner@cygnus.com>
+ * @date Match 1999.
+ */
+
 public class Input_UTF8 extends BytesToUnicode
 {
   public String getName() { return "UTF8"; }
@@ -84,12 +90,12 @@ public class Input_UTF8 extends BytesToUnicode
 	      }
 	    else // prefix byte
 	      {
-		if ((b & 0xE) == 0xC0)
+		if ((b & 0xE0) == 0xC0)
 		  {
 		    partial = b & 0x1F;
 		    partial_bytes_expected = 1;
 		  }
-		else if ((b & 0xF) == 0xF0)
+		else if ((b & 0xF0) == 0xE0)
 		  {
 		    partial = b & 0xF;
 		    partial_bytes_expected = 2;
