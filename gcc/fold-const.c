@@ -988,7 +988,7 @@ real_hex_to_f (s, mode)
    char *p = s;
    unsigned HOST_WIDE_INT low, high;
    int expon, shcount, nrmcount, k;
-   int sign, expsign, isfloat, isldouble;
+   int sign, expsign, isfloat;
    int lost = 0;/* Nonzero low order bits shifted out and discarded.  */
    int frexpon = 0;  /* Bits after the decimal point.  */
    int expon = 0;  /* Value of exponent.  */
@@ -996,10 +996,7 @@ real_hex_to_f (s, mode)
    int gotp = 0;  /* How many P's.  */
    char c;
 
-   isldouble = 0;
    isfloat = 0;
-   frexpon = 0;
-   expon = 0;
    expsign = 1;
    ip = 0.0;
 
@@ -1100,7 +1097,6 @@ real_hex_to_f (s, mode)
 
        else if (c == 'l' || c == 'L')
 	 {
-	   isldouble = 1;
 	   ++p;
 	   break;
 	 }
