@@ -31,14 +31,16 @@ Boston, MA 02111-1307, USA.  */
      N_("Assume code will be linked by HP ld") },
 
 /* We can debug dynamically linked executables on hpux11; we also
-   want dereferencing of a NULL pointer to cause a SEGV.  */
+   want dereferencing of a NULL pointer to cause a SEGV.  Do not move
+   the "+Accept TypeMismatch" switch.  We check for it in collect2
+   to determine which init/fini is needed.  */
 #undef LINK_SPEC
 #if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_GNU_LD)
 #define LINK_SPEC \
-  "-E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}} %{mhp-ld:+Accept TypeMismatch}"
+  "%{mhp-ld:+Accept TypeMismatch} -E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}}"
 #else
 #define LINK_SPEC \
-  "-E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}} %{!mgnu-ld:+Accept TypeMismatch}"
+  "%{!mgnu-ld:+Accept TypeMismatch} -E %{mlinker-opt:-O} %{!shared:-u main} %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}}"
 #endif
 
 /* Like the default, except no -lg.  */
@@ -252,19 +254,26 @@ do {								\
 
 /* Since we are not yet using .init and .fini sections, we need to
    explicitly arrange to run the global constructors and destructors.
-   HPUX 11 has ldd and we use it to determine the dependencies of
-   dynamic objects.  It might be possible to use the ld options for
-   running initializers and terminators and thereby avoid the necessity
-   of running ldd, but unfortunately the options are different for
-   the two linkers.  */
-#define LDD_SUFFIX "/usr/ccs/bin/ldd"
+   We could use ldd for this but it depends on LD_LIBRARY_PATH being
+   correctly set.  So, we use the ld init and fini switches. However,
+   we need to support different switches for the GNU and HP linkers.
+   We can't check TARGET_GNU_LD in collect2, so we need a different
+   test.  The +Accept switch is always the first switch when we are
+   using the HP linker (see define for LINK_SPEC).  Checking for it
+   is a somewhat fragile as it depends on internal details of the
+   collect2 program but it is better than testing ld_file_name.
 
-/* Skip to first '>' then advance to '/' at the beginning of the filename.  */
-#define PARSE_LDD_OUTPUT(PTR)					\
-do {								\
-  while (*PTR != '>') PTR++;					\
-  while (*PTR != '/') PTR++;					\
-} while (0)
+   FIXME: The GNU linker is broken.  The -init/-fini switches don't
+   work and ldd can't determine the dynamic dependences of executables
+   linked with GNU ld.  The init and fini routines are not executed
+   although DT_INIT and DT_FINI appear ok.  As a result, defining
+   LD_INIT_SWITCH and LD_FINI_SWITCH causes more harm than good when
+   using GNU ld.  However, the definitions appear to work fine with
+   the HP linker.  */
+#if 0
+#define LD_INIT_SWITCH (strcmp ("+Accept", ld2_argv[1]) ? "-init" : "+init")
+#define LD_FINI_SWITCH (strcmp ("+Accept", ld2_argv[1]) ? "-fini" : "+fini")
+#endif
 
 /* If using HP ld do not call pxdb.  Use size as a program that does nothing
    and returns 0.  /bin/true cannot be used because it is a script without
