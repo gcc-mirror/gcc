@@ -4142,6 +4142,7 @@ extern void do_pending_defargs			PARAMS ((void));
 extern void done_pending_defargs		PARAMS ((void));
 extern void unprocessed_defarg_fn               PARAMS ((tree));
 extern void replace_defarg			PARAMS ((tree, tree));
+extern void end_input				PARAMS ((void));
 
 /* in tree.c */
 extern void init_tree			        PARAMS ((void));
