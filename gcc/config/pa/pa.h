@@ -1050,11 +1050,34 @@ extern union tree_node *current_function_decl;
    these things in insns and then not re-recognize the insns, causing
    constrain_operands to fail.
 
-   `R' handles the LO_SUM which can be an address for `Q'.
+   `R' is unused.
 
    `S' handles constraints for calls.
 
    `T' is for fp load and store addresses.*/
+
+#define EXTRA_CONSTRAINT(OP, C)				\
+  ((C) == 'Q' ?						\
+   ((GET_CODE (OP) == MEM				\
+     && memory_address_p (GET_MODE (OP), XEXP (OP, 0))	\
+     && ! symbolic_memory_operand (OP, VOIDmode))	\
+    || (GET_CODE (OP) == REG				\
+	&& REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
+	&& reg_renumber[REGNO (OP)] < 0))		\
+   : ((C) == 'S' ? 					\
+      ((CONSTANT_P (OP) && ! TARGET_LONG_CALLS)		\
+        || (reload_in_progress 				\
+	    ? strict_memory_address_p (Pmode, OP)	\
+	    : memory_address_p (Pmode, OP))		\
+       || (reload_in_progress				\
+	   && GET_CODE (OP) == REG			\
+	   && reg_renumber[REGNO (OP)] > 0))		\
+   : ((C) == 'T' ? 					\
+      ((GET_CODE (OP) == MEM				\
+	&& short_memory_operand (OP, VOIDmode))		\
+       || (GET_CODE (OP) == REG				\
+	   && REGNO (OP) >= FIRST_PSEUDO_REGISTER	\
+	   && reg_renumber[REGNO (OP)] < 0)) : 0)))
 
 #ifndef REG_OK_STRICT
 
@@ -1067,40 +1090,12 @@ extern union tree_node *current_function_decl;
 #define REG_OK_FOR_BASE_P(X) \
 (REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
 
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ?						\
-   ((GET_CODE (OP) == MEM				\
-     && memory_address_p (GET_MODE (OP), XEXP (OP, 0))	\
-     && ! symbolic_memory_operand (OP, VOIDmode)))	\
-   : ((C) == 'R' ?					\
-      (GET_CODE (OP) == LO_SUM				\
-       && GET_CODE (XEXP (OP, 0)) == REG		\
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
-      : ((C) == 'S'					\
-	 ? CONSTANT_P (OP) || memory_address_p (Pmode, OP)\
-	 : ((C) == 'T' ? short_memory_operand (OP, VOIDmode) : 0))))\
-
-
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-#define EXTRA_CONSTRAINT(OP, C)				\
-  (((C) == 'Q' || (C) == 'T') ?				\
-   (GET_CODE (OP) == REG ?				\
-    (REGNO (OP) >= FIRST_PSEUDO_REGISTER		\
-     && reg_renumber[REGNO (OP)] < 0)			\
-    : GET_CODE (OP) == MEM)				\
-   : ((C) == 'R' ?					\
-      (GET_CODE (OP) == LO_SUM				\
-       && GET_CODE (XEXP (OP, 0)) == REG		\
-       && REG_OK_FOR_BASE_P (XEXP (OP, 0)))		\
-      : (CONSTANT_P (OP)				\
-	    || (GET_CODE (OP) == REG && reg_renumber[REGNO (OP)] > 0)\
-	    || strict_memory_address_p (Pmode, OP))))
 
 #endif
 
