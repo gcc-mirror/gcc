@@ -549,10 +549,25 @@ get_base_offset (binfo, parent)
   else if (! vbase_offsets_in_vtable_p ())
     {
       const char *name;
+      tree result;
+      tree field;
     
       FORMAT_VBASE_NAME (name, BINFO_TYPE (binfo));
-      return byte_position (lookup_field (parent, get_identifier (name),
-					  0, 0));
+      field = lookup_field (parent, get_identifier (name), 0, 0);
+      result = byte_position (field);
+      
+      if (DECL_CONTEXT (field) != parent)
+        {
+          /* The vbase pointer might be in a non-virtual base of PARENT.
+           * Adjust for the offset of that base in PARENT.  */
+          tree path;
+          
+          get_base_distance (DECL_CONTEXT (field), parent, -1, &path);
+          result = build (PLUS_EXPR, TREE_TYPE (result),
+                          result, BINFO_OFFSET (path));
+          result = fold (result);
+        }
+      return result;
     }
   else
     /* Under the new ABI, we store the vtable offset at which
