@@ -3097,6 +3097,7 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
     if (expr)
       {
 	struct nesting *loop;
+	tree mod;
 
 	result = ffecom_make_tempvar ("dowhile", integer_type_node,
 				      FFETARGET_charactersizeNONE, -1);
@@ -3108,10 +3109,10 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 
 	ffecom_prepare_end ();
 
-	result = ffecom_modify (void_type_node,
-				result,
-				ffecom_truth_value (ffecom_expr (expr)));
-	expand_expr_stmt (result);
+	mod = ffecom_modify (void_type_node,
+			     result,
+			     ffecom_truth_value (ffecom_expr (expr)));
+	expand_expr_stmt (mod);
 
 	ffeste_end_stmt_ ();
 

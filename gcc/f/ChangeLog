@@ -1,3 +1,9 @@
+Sun May  2 16:53:01 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix compile/19990502-1.f:
+	* ste.c (ffeste_R819B): Don't overwrite tree for temp
+	variable when expanding the assignment into it.
+
 Sun Apr 25 20:55:10 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Fix 19990325-0.f and 19990325-1.f:
