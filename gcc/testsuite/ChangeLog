@@ -1,3 +1,7 @@
+2000-11-20  Neil Booth  <neilb@earthling.net>
+
+	* gcc.dg/cpp/macsyntx.c: Use correct command line option.
+
 2000-11-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/export1.C: New test.
