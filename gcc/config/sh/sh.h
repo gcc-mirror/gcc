@@ -1730,7 +1730,36 @@ extern int pragma_interrupt;
    clear if this would give better code.  If implemented, should check for
    compatibility problems.  */
 
-/* ??? Define ADJUST_COSTS?  */
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  This can be used for example to specify to
+   the scheduler that an output- or anti-dependence does not incur
+   the same cost as a data-dependence.  */
+
+/* ??? Should anticipate the effect of delayed branch scheduling
+   and arrange for a second instruction to be put between the
+   load of the function's address and the call.  */
+
+#define ADJUST_COST(insn,link,dep_insn,cost)				\
+  if (GET_CODE(insn) == CALL_INSN)					\
+    {									\
+      /* The only input for a call that is timing-critical is the	\
+	 function's address.  */					\
+      rtx call = PATTERN (insn);					\
+									\
+      if (GET_CODE (call) == PARALLEL)					\
+	call = XVECEXP (call, 0 ,0);					\
+      if (GET_CODE (call) == SET)					\
+	call = SET_SRC (call);						\
+      if (GET_CODE (call) == CALL && GET_CODE (XEXP (call, 0)) == MEM)	\
+	{								\
+	  rtx set = single_set (dep_insn);				\
+									\
+	  if (set && ! rtx_equal_p (SET_DEST (set), XEXP (XEXP (call, 0), 0)))\
+	    (cost) = 0;							\
+	}								\
+      }
 
 /* Since the SH architecture lacks negative address offsets,
    the givs should be sorted smallest to largest so combine_givs
