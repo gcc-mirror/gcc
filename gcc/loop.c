@@ -308,8 +308,8 @@ static int replace_loop_reg PARAMS ((rtx *, void *));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
 static void try_copy_prop PARAMS ((const struct loop *, rtx, unsigned int));
 static int replace_label PARAMS ((rtx *, void *));
-static void check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
-static void check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
+static rtx check_insn_for_givs PARAMS((struct loop *, rtx, int, int));
+static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 
 typedef struct rtx_and_int {
   rtx r;
@@ -3730,7 +3730,7 @@ for_each_insn_in_loop (loop, fncall)
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
-      fncall (loop, p, maybe_multiple, not_every_iteration);
+      p = fncall (loop, p, not_every_iteration, not_every_iteration);
 
       /* Past CODE_LABEL, we get to insns that may be executed multiple
          times.  The only way we can be sure that they can't is if every
@@ -5068,7 +5068,7 @@ egress:
 }
 
 /*Record all basic induction variables calculated in the insn.  */
-static void
+static rtx
 check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
      struct loop *loop;
      rtx p;
@@ -5112,12 +5112,13 @@ check_insn_for_bivs (loop, p, not_every_iteration, maybe_multiple)
 	    REG_IV_TYPE (REGNO (dest_reg)) = NOT_BASIC_INDUCT;
 	}
     }
+  return p;
 }
 
 /* Record all givs calculated in the insn.  
    A register is a giv if: it is only set once, it is a function of a
    biv and a constant (or invariant), and it is not a biv.  */
-static void
+static rtx
 check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
      struct loop *loop;
      rtx p;
@@ -5141,7 +5142,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
 
       dest_reg = SET_DEST (set);
       if (REGNO (dest_reg) < FIRST_PSEUDO_REGISTER)
-	return;
+	return p;
 
       if (/* SET_SRC is a giv.  */
 	  (general_induction_var (loop, SET_SRC (set), &src_reg, &add_val,
@@ -5196,7 +5197,7 @@ check_insn_for_givs (loop, p, not_every_iteration, maybe_multiple)
   if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
     || GET_CODE (p) == CODE_LABEL)
     update_giv_derive (loop, p);
-
+  return p;
 }
 
 /* Return 1 if X is a valid source for an initial value (or as value being
