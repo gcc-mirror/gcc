@@ -187,9 +187,21 @@ convert_to_integer (type, expr)
 	  /* We can pass truncation down through left shifting
 	     when the shift count is a nonnegative constant.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
-	      && ! tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_zero_node))
-	    /* In this case, shifting is like multiplication.  */
-	    goto trunc1;
+	      && ! tree_int_cst_lt (TREE_OPERAND (expr, 1), integer_zero_node)
+	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+	    {
+	      /* If shift count is less than the width of the truncated type,
+		 really shift.  */
+	      if (tree_int_cst_lt (TREE_OPERAND (expr, 1), TYPE_SIZE (type)))
+		/* In this case, shifting is like multiplication.  */
+		goto trunc1;
+	      else
+		/* If it is >= that width, result is zero.
+		   Handling this with trunc1 would give the wrong result:
+		   (int) ((long long) a << 32) is well defined (as 0)
+		   but (int) a << 32 is undefined and would get a warning.  */
+		return convert_to_integer (type, integer_zero_node);
+	    }
 	  break;
 
 	case MAX_EXPR:
