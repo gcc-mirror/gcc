@@ -416,7 +416,9 @@ build_cplus_array_type_1 (elt_type, index_type)
       saveable_obstack = &permanent_obstack;
     }
 
-  if (processing_template_decl)
+  if (processing_template_decl 
+      || uses_template_parms (elt_type) 
+      || uses_template_parms (index_type))
     {
       t = make_node (ARRAY_TYPE);
       TREE_TYPE (t) = elt_type;

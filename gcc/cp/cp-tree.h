@@ -2582,6 +2582,14 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 				   another declaration of an existing
 				   entity is seen.  */
 
+/* Used with push_overloaded_decl.  */
+#define PUSH_GLOBAL          0  /* Push the DECL into namespace scope,
+				   regardless of the current scope.  */
+#define PUSH_LOCAL           1  /* Push the DECL into the current
+				   scope.  */
+#define PUSH_USING           2  /* We are pushing this DECL as the
+				   result of a using declaration.  */
+
 /* Returns nonzero iff TYPE1 and TYPE2 are the same type, in the usual
    sense of `same'.  */
 #define same_type_p(type1, type2) \
@@ -2692,6 +2700,7 @@ extern tree perform_qualification_conversions   PROTO((tree, tree));
 extern void set_identifier_local_value		PROTO((tree, tree));
 extern int global_bindings_p			PROTO((void));
 extern int toplevel_bindings_p			PROTO((void));
+extern int namespace_bindings_p			PROTO((void));
 extern void keep_next_level			PROTO((void));
 extern int kept_level_p				PROTO((void));
 extern void declare_parm_level			PROTO((void));
@@ -2816,6 +2825,7 @@ extern int check_static_variable_definition     PROTO((tree, tree));
 extern void push_local_binding                  PROTO((tree, tree));
 extern void push_class_binding                  PROTO((tree, tree));
 extern tree check_default_argument              PROTO((tree, tree));
+extern tree push_overloaded_decl		PROTO((tree, int));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));

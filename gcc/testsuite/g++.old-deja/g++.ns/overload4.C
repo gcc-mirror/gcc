@@ -1,6 +1,6 @@
 // Build don't link:
 namespace A{
-  void f();   // ERROR - .*
+  void f();  
 }
 
 using A::f;
