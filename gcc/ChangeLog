@@ -1,3 +1,9 @@
+2002-05-02  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/fr30/fr30.h (GO_IF_LEGITIMATE_ADDRESS): Accept any form
+	of the frame pointer or arg pointer register which strict register
+	checking is not enabled.
+
 2002-05-02  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-8.c: New.
