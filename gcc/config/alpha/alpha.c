@@ -4434,7 +4434,8 @@ alpha_start_function (file, fnname, decl)
 
       /* If the function needs GP, we'll write the "..ng" label there.
 	 Otherwise, do it here.  */
-      if (! alpha_function_needs_gp)
+      if (! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT
+	  && ! alpha_function_needs_gp)
 	{
 	  putc ('$', file);
 	  assemble_name (file, fnname);
@@ -5179,7 +5180,6 @@ alpha_handle_trap_shadows (insns)
     }
 }
 
-#ifdef HAIFA
 /* Alpha can only issue instruction groups simultaneously if they are
    suitibly aligned.  This is very processor-specific.  */
 
@@ -5203,13 +5203,13 @@ enum alphaev5_pipe {
 
 static enum alphaev4_pipe alphaev4_insn_pipe PARAMS ((rtx));
 static enum alphaev5_pipe alphaev5_insn_pipe PARAMS ((rtx));
-static rtx alphaev4_next_group PARAMS ((rtx, int*, int*));
-static rtx alphaev5_next_group PARAMS ((rtx, int*, int*));
-static rtx alphaev4_next_nop PARAMS ((int*));
-static rtx alphaev5_next_nop PARAMS ((int*));
+static rtx alphaev4_next_group PARAMS ((rtx, int *, int *));
+static rtx alphaev5_next_group PARAMS ((rtx, int *, int *));
+static rtx alphaev4_next_nop PARAMS ((int *));
+static rtx alphaev5_next_nop PARAMS ((int *));
 
 static void alpha_align_insns
-  PARAMS ((rtx, int, rtx (*)(rtx, int*, int*), rtx (*)(int*), int));
+  PARAMS ((rtx, unsigned int, rtx (*)(rtx, int *, int *), rtx (*)(int *)));
 
 static enum alphaev4_pipe
 alphaev4_insn_pipe (insn)
@@ -5249,7 +5249,7 @@ alphaev4_insn_pipe (insn)
       return EV4_IB1;
 
     default:
-      abort();
+      abort ();
     }
 }
 
@@ -5596,15 +5596,14 @@ alphaev5_next_nop (pin_use)
 /* The instruction group alignment main loop.  */
 
 static void
-alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
+alpha_align_insns (insns, max_align, next_group, next_nop)
      rtx insns;
-     int max_align;
-     rtx (*next_group) PARAMS ((rtx, int*, int*));
-     rtx (*next_nop) PARAMS ((int*));
-     int gp_in_use;
+     unsigned int max_align;
+     rtx (*next_group) PARAMS ((rtx, int *, int *));
+     rtx (*next_nop) PARAMS ((int *));
 {
   /* ALIGN is the known alignment for the insn group.  */
-  int align;
+  unsigned int align;
   /* OFS is the offset of the current insn in the insn group.  */
   int ofs;
   int prev_in_use, in_use, len;
@@ -5613,35 +5612,29 @@ alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
   /* Let shorten branches care for assigning alignments to code labels.  */
   shorten_branches (insns);
 
-  align = (FUNCTION_BOUNDARY/BITS_PER_UNIT < max_align
-	   ? FUNCTION_BOUNDARY/BITS_PER_UNIT : max_align);
+  align = (FUNCTION_BOUNDARY / BITS_PER_UNIT < max_align
+	   ? FUNCTION_BOUNDARY / BITS_PER_UNIT : max_align);
 
-  /* Account for the initial GP load, which happens before the scheduled
-     prologue we emitted as RTL.  */
   ofs = prev_in_use = 0;
-  if (alpha_does_function_need_gp())
-    {
-      ofs = 8 & (align - 1);
-      prev_in_use = gp_in_use;
-    }
-
   i = insns;
   if (GET_CODE (i) == NOTE)
     i = next_nonnote_insn (i);
 
   while (i)
     {
-      next = (*next_group)(i, &in_use, &len);
+      next = (*next_group) (i, &in_use, &len);
 
       /* When we see a label, resync alignment etc.  */
       if (GET_CODE (i) == CODE_LABEL)
 	{
-	  int new_align = 1 << label_to_alignment (i);
+	  unsigned int new_align = 1 << label_to_alignment (i);
+
 	  if (new_align >= align)
 	    {
 	      align = new_align < max_align ? new_align : max_align;
 	      ofs = 0;
 	    }
+
 	  else if (ofs & (new_align-1))
 	    ofs = (ofs | (new_align-1)) + 1;
 	  if (len != 0)
@@ -5666,7 +5659,7 @@ alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
 	 realign the output.  */
       else if (align < len)
 	{
-	  int new_log_align = len > 8 ? 4 : 3;
+	  unsigned int new_log_align = len > 8 ? 4 : 3;
 	  rtx where;
 
 	  where = prev_nonnote_insn (i);
@@ -5717,7 +5710,6 @@ alpha_align_insns (insns, max_align, next_group, next_nop, gp_in_use)
       i = next;
     }
 }
-#endif /* HAIFA */
 
 /* Machine dependant reorg pass.  */
 
@@ -5728,24 +5720,19 @@ alpha_reorg (insns)
   if (alpha_tp != ALPHA_TP_PROG || flag_exceptions)
     alpha_handle_trap_shadows (insns);
 
-#ifdef HAIFA
   /* Due to the number of extra trapb insns, don't bother fixing up
      alignment when trap precision is instruction.  Moreover, we can
-     only do our job when sched2 is run and Haifa is our scheduler.  */
+     only do our job when sched2 is run.  */
   if (optimize && !optimize_size
       && alpha_tp != ALPHA_TP_INSN
       && flag_schedule_insns_after_reload)
     {
       if (alpha_cpu == PROCESSOR_EV4)
-	alpha_align_insns (insns, 8, alphaev4_next_group,
-			   alphaev4_next_nop, EV4_IB0);
+	alpha_align_insns (insns, 8, alphaev4_next_group, alphaev4_next_nop);
       else if (alpha_cpu == PROCESSOR_EV5)
-	alpha_align_insns (insns, 16, alphaev5_next_group,
-			   alphaev5_next_nop, EV5_E01 | EV5_E0);
+	alpha_align_insns (insns, 16, alphaev5_next_group, alphaev5_next_nop);
     }
-#endif
 }
-
 
 /* Check a floating-point value for validity for a particular machine mode.  */
 
