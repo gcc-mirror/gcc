@@ -1218,6 +1218,6 @@ fi
 
 echo 'Cleaning up DONE files.'
 cd $LIB
-find . -name DONE -exec rm -f {} ';'
+find . -name DONE -exec rm -f '{}' ';'
 
 exit 0
