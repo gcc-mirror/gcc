@@ -63,7 +63,7 @@ free_line_maps (struct line_maps *set)
 }
 
 /* Add a mapping of logical source line to physical source file and
-   line number.  Ther text pointed to by TO_FILE must have a lifetime
+   line number.  The text pointed to by TO_FILE must have a lifetime
    at least as long as the final call to lookup_line ().
 
    FROM_LINE should be monotonic increasing across calls to this

@@ -6728,7 +6728,7 @@ first_ls_expr ()
   return pre_ldst_mems;
 }
 
-/* Return the next item in ther list after the specified one.  */
+/* Return the next item in the list after the specified one.  */
 
 static inline struct ls_expr *
 next_ls_expr (ptr)
