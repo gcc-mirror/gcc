@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC  "-Darm_elf -D__ELF__"
+#define SUBTARGET_CPP_SPEC  "-D__ELF__"
 #endif
 
 #ifndef SUBTARGET_EXTRA_ASM_SPEC
