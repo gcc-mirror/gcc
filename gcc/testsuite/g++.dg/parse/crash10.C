@@ -5,8 +5,6 @@
 
 // PR c++ 10953. ICE
 
-// { dg-error "" "" { target *-*-* } 14 }
-
 class 
 {
   typename::  // { dg-error "" "" }
