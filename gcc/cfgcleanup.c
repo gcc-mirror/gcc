@@ -349,7 +349,7 @@ thread_jump (mode, e, b)
   BITMAP_XFREE (nonequal);
   cselib_finish ();
   if ((comparison_dominates_p (code1, code2) != 0)
-      != (XEXP (SET_SRC (set2), 0) == pc_rtx))
+      != (XEXP (SET_SRC (set2), 1) == pc_rtx))
     return BRANCH_EDGE (b);
   else
     return FALLTHRU_EDGE (b);

@@ -1,3 +1,7 @@
+Sat Jan  5 02:20:22 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (thread_jump): Fix handling of reversed branches.
+
 Sat Jan  5 01:35:29 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c: Include tm_p.h
