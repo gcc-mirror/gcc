@@ -1,5 +1,9 @@
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
+        * vax.md (casesi): Use emit_jump_insn.  Tidy expander pattern.
+
+2002-06-16  Richard Henderson  <rth@redhat.com>
+
 	* c-common.c (flag_ms_extensions): Move from c++ front end.
 	* c-common.h (flag_ms_extensions): Declare.
 	* c-decl.c (c_decode_option): Add -fms-extensions.

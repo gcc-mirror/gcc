@@ -1931,24 +1931,17 @@
 ;; This is here to accept 5 arguments (as passed by expand_end_case)
 ;; and pass the first 4 along to the casesi1 pattern that really does the work.
 (define_expand "casesi"
-  [(set (pc)
-	(if_then_else
-	 (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
-			(match_operand:SI 1 "general_operand" "g"))
-	      (match_operand:SI 2 "general_operand" "g"))
-	 (plus:SI (sign_extend:SI
-		   (mem:HI (plus:SI (mult:SI (minus:SI (match_dup 0)
-						       (match_dup 1))
-					     (const_int 2))
-				    (pc))))
-		  (label_ref:SI (match_operand 3 "" "")))
-	 (pc)))
-   (match_operand 4 "" "")]
+  [(match_operand:SI 0 "general_operand" "")	; index
+   (match_operand:SI 1 "general_operand" "")	; lower
+   (match_operand:SI 2 "general_operand" "")	; upper-lower
+   (match_operand 3 "" "")			; table label
+   (match_operand 4 "" "")]			; default label
   ""
-  "
-  emit_insn (gen_casesi1 (operands[0], operands[1], operands[2], operands[3]));
+{
+  emit_jump_insn (gen_casesi1 (operands[0], operands[1],
+			       operands[2], operands[3]));
   DONE;
-")
+})
 
 (define_insn "casesi1"
   [(set (pc)
