@@ -1,6 +1,6 @@
 // Test for implicit & on methods.
 // Contributed by Jason Merrill <jason@cygnus.com>.
-// Special g++ Options: -fpermissive -w
+// Special g++ Options: -fms-extensions
 
 struct A {
   void f (int = 0) { }

@@ -1,7 +1,7 @@
 // Test that an object-dependent reference to a member function can be
 // used to produce a pointer to member function, as in VC++.
 // Contributed by Jason Merrill <jason@cygnus.com>
-// Special g++ Options: -fpermissive -w
+// Special g++ Options: -fms-extensions
 
 struct A
 {
