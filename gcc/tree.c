@@ -266,8 +266,6 @@ static void set_type_quals PROTO((tree, int));
 static void append_random_chars PROTO((char *));
 static void build_real_from_int_cst_1 PROTO((PTR));
 
-extern char *mode_name[];
-
 void gcc_obstack_init ();
 
 /* If non-null, a language specific helper for unsave_expr_now. */

@@ -1,3 +1,22 @@
+Fri Aug 20 18:38:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* machmode.h (mode_name): Constify a char*.
+	
+	* rtl.c (mode_name): Likewise.
+
+	* genopinit.c (gen_insn): Use accessor macro, not `mode_name'.
+
+	* optabs.c (init_libfuncs): Constify a char*.
+
+	* print-tree.c (mode_name): Remove redundant declaration.
+	(print_node): Use accessor macro, not `mode_name'.
+
+	* reload1.c (dump_needs): Constify a char*.  Use accessor macro,
+	not `mode_name'.
+	(new_spill_reg): Constify a char*.
+
+	* tree.c (mode_name): Remove redundant declaration.
+	
 Fri Aug 20 18:31:26 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.c (rtx_name): Constify a char*.

@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 
-extern char *mode_name[];
-
 void print_node ();
 void indent_to ();
 
@@ -389,7 +387,7 @@ print_node (file, prefix, node, indent)
       if (DECL_LANG_FLAG_7 (node))
 	fputs (" decl_7", file);
 
-      fprintf (file, " %s", mode_name[(int) mode]);
+      fprintf (file, " %s", GET_MODE_NAME(mode));
 
       fprintf (file, " file %s line %d",
 	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
@@ -474,7 +472,7 @@ print_node (file, prefix, node, indent)
 	fputs (" type_6", file);
 
       mode = TYPE_MODE (node);
-      fprintf (file, " %s", mode_name[(int) mode]);
+      fprintf (file, " %s", GET_MODE_NAME(mode));
 
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
       indent_to (file, indent + 3);

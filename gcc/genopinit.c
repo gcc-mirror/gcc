@@ -200,7 +200,7 @@ gen_insn (insn)
                    CC modes (as it should be).  */
 		for (i = ((int) MAX_MACHINE_MODE) - 1; i >= 0; i--)
 		  {
-		    for (p = mode_name[i], q = np; *p; p++, q++)
+		    for (p = GET_MODE_NAME(i), q = np; *p; p++, q++)
 		      if (tolower ((unsigned char)*p) != *q)
 			break;
 
@@ -213,9 +213,9 @@ gen_insn (insn)
 		if (i < 0)
 		  matches = 0;
 		else if (*pp == 'a')
-		  m1 = i, np += strlen (mode_name[i]);
+		  m1 = i, np += strlen (GET_MODE_NAME(i));
 		else
-		  m2 = i, np += strlen (mode_name[i]);
+		  m2 = i, np += strlen (GET_MODE_NAME(i));
 
 		force_int = force_float = 0;
 		break;
@@ -254,18 +254,18 @@ gen_insn (insn)
 	  case 'I':  case 'F':  case 'N':
 	    break;
 	  case 'a':
-	    for (np = mode_name[m1]; *np; np++)
+	    for (np = GET_MODE_NAME(m1); *np; np++)
 	      printf ("%c", tolower ((unsigned char)*np));
 	    break;
 	  case 'b':
-	    for (np = mode_name[m2]; *np; np++)
+	    for (np = GET_MODE_NAME(m2); *np; np++)
 	      printf ("%c", tolower ((unsigned char)*np));
 	    break;
 	  case 'A':
-	    printf ("%smode", mode_name[m1]);
+	    printf ("%smode", GET_MODE_NAME(m1));
 	    break;
 	  case 'B':
-	    printf ("%smode", mode_name[m2]);
+	    printf ("%smode", GET_MODE_NAME(m2));
 	    break;
 	  case 'c':
 	    printf ("%s", GET_RTX_NAME(op));

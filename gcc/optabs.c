@@ -4450,7 +4450,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
   for (mode = first_mode; (int) mode <= (int) last_mode;
        mode = (enum machine_mode) ((int) mode + 1))
     {
-      register char *mname = mode_name[(int) mode];
+      register const char *mname = GET_MODE_NAME(mode);
       register unsigned mname_len = strlen (mname);
       register char *libfunc_name
 	= (char *) xmalloc (2 + opname_len + mname_len + 1 + 1);

@@ -56,7 +56,7 @@ MAX_MACHINE_MODE };
 
 /* Get the name of mode MODE as a string.  */
 
-extern char *mode_name[];
+extern const char * const mode_name[];
 #define GET_MODE_NAME(MODE)		(mode_name[(int) (MODE)])
 
 enum mode_class { MODE_RANDOM, MODE_INT, MODE_FLOAT, MODE_PARTIAL_INT, MODE_CC,
