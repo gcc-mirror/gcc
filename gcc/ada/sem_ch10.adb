@@ -980,7 +980,14 @@ package body Sem_Ch10 is
          then
             Comp_Unit := Cunit (Unum);
 
-            if Nkind (Unit (Comp_Unit)) /= N_Subunit then
+            --  If the file was empty or seriously mangled, the unit
+            --  itself may be missing.
+
+            if No (Unit (Comp_Unit)) then
+               Error_Msg_N
+                 ("subunit does not contain expected proper body", N);
+
+            elsif Nkind (Unit (Comp_Unit)) /= N_Subunit then
                Error_Msg_N
                  ("expected SEPARATE subunit, found child unit",
                   Cunit_Entity (Unum));
