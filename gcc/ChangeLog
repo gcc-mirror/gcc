@@ -1,3 +1,8 @@
+2002-05-28  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (ix86_compute_frame_layout): Do not add
+	bottom alignment for leaf functions.
+
 Mon May 27 10:37:28 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reload.c (find_valid_class): Accept new argument DEST,
