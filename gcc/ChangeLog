@@ -1,5 +1,7 @@
 2001-06-21  DJ Delorie  <dj@redhat.com>
 
+	* integrate.c (mark_hard_reg_initial_vals): Check for NULL.
+	
 	* integrate.c (ggc.h): Include.
 	(initial_value_pair, initial_value_struct,
 	setup_initial_hard_reg_value_integration): Add prototypes.

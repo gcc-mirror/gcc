@@ -2977,6 +2977,9 @@ mark_hard_reg_initial_vals (fun)
   struct initial_value_struct *ivs = fun->hard_reg_initial_vals;
   int i;
 
+  if (ivs == 0)
+    return;
+
   for (i = 0; i < ivs->num_entries; i ++)
     {
       ggc_mark_rtx (ivs->entries[i].hard_reg);
