@@ -5096,7 +5096,7 @@ expand_expr (exp, target, tmode, modifier)
 				      NULL_RTX, op1);
       else
 	{
-	  temp = compare_from_rtx (target, const0_rtx, GE, 0, mode,
+	  temp = compare_from_rtx (target, CONST0_RTX (mode), GE, 0, mode,
 				   NULL_RTX, 0);
 	  if (temp == const1_rtx)
 	    return target;
