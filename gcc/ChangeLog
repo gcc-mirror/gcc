@@ -1,3 +1,9 @@
+Tue Dec 16 23:44:54 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* m68k/xm-mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to
+	prevent unresolved externals in libio.
+	* m88k/xm-sysv3.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Likewise.
+
 Tue Dec 16 23:25:45 1997  H.J. Lu  (hjl@gnu.org)
 
 	* config/sparc/linux64.h (LIBGCC_SPEC): Removed.
