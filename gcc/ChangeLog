@@ -1,3 +1,22 @@
+2004-02-13  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (find_base_term, get_addr):  Do not dereference NULL
+	pointer when all VALUE's locations has been invalidated.
+	(rtx_equal_for_memref_p): Simplify checking of VALUEs.
+
+	* cselib.c (discard_useless_values):  Clear out value pointer pointing
+	to datastructure to be recycled.
+
+	* gcse.c (bypass_block): Prevent edges to be unified when we are
+	about to emit compenstation code.
+
+	* gcse.c (bypass_block): Fix a typo in the previous check-in
+	to the file.
+
+	* alloc-pool.c (align_four): Kill.
+	(create_alloc_pool): Align size to eight.
+	(free_alloc_pool, free_pool): Invalidate deallocated data.
+
 2004-02-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR bootstrap/13617

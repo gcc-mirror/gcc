@@ -35,7 +35,6 @@ extern void fancy_abort (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
 #define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
 
-#define align_four(x) (((x+3) >> 2) << 2)
 #define align_eight(x) (((x+7) >> 3) << 3)
 
 /* The internal allocation object.  */
@@ -144,7 +143,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
     size = sizeof (alloc_pool_list);
 
   /* Now align the size to a multiple of 4.  */
-  size = align_four (size);
+  size = align_eight (size);
 
 #ifdef ENABLE_CHECKING
   /* Add the aligned size of ID.  */
@@ -217,6 +216,9 @@ free_alloc_pool (alloc_pool pool)
 #endif
     }
   /* Lastly, free the pool.  */
+#ifdef ENABLE_CHECKING
+  memset (pool, 0xaf, sizeof (*pool));
+#endif
   free (pool);
 }
 
@@ -297,6 +299,8 @@ pool_free (alloc_pool pool, void *ptr)
 #ifdef ENABLE_CHECKING
   if (!ptr)
     abort ();
+
+  memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
 
   /* Check whether the PTR was allocated from POOL.  */
   if (pool->id != ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id)

@@ -4874,6 +4874,20 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  else
 	    dest = NULL;
 
+	  /* Avoid unification of the edge with other edges from original
+	     branch.  We would end up emitting the instruction on "both"
+	     edges.  */
+	    
+	  if (dest && setcc && !CC0_P (SET_DEST (PATTERN (setcc))))
+	    {
+	      edge e2;
+	      for (e2 = e->src->succ; e2; e2 = e2->succ_next)
+		if (e2->dest == dest)
+		  break;
+	      if (e2)
+		dest = NULL;
+	    }
+
 	  old_dest = e->dest;
 	  if (dest != NULL
 	      && dest != old_dest
