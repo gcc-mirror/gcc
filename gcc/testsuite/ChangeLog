@@ -1,3 +1,8 @@
+2003-10-06  Bob Wilson  <bob.wilson@acm.org>
+
+	* g++.dg/template/spec10.C: Set exit value to zero on success.  Fix
+	indentation.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10147
