@@ -1356,7 +1356,7 @@ main (argc, argv)
   dump_macros = dump_none;
   no_output = 0;
   cplusplus = 0;
-  cplusplus_comments = 0;
+  cplusplus_comments = 1;
 
   bzero ((char *) pend_files, argc * sizeof (char *));
   bzero ((char *) pend_defs, argc * sizeof (char *));
@@ -1541,6 +1541,7 @@ main (argc, argv)
       case 't':
 	if (!strcmp (argv[i], "-traditional")) {
 	  traditional = 1;
+	  cplusplus_comments = 0;
 	  if (dollars_in_ident > 0)
 	    dollars_in_ident = 1;
 	} else if (!strcmp (argv[i], "-trigraphs")) {
@@ -1550,11 +1551,11 @@ main (argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
+	  cplusplus = 0, cplusplus_comments = 1, objc = 0;
+	if (! strcmp (argv[i], "-lang-c89"))
 	  cplusplus = 0, cplusplus_comments = 0, objc = 0;
 	if (! strcmp (argv[i], "-lang-c++"))
 	  cplusplus = 1, cplusplus_comments = 1, objc = 0;
-	if (! strcmp (argv[i], "-lang-c-c++-comments"))
-	  cplusplus = 0, cplusplus_comments = 1, objc = 0;
 	if (! strcmp (argv[i], "-lang-objc"))
 	  objc = 1, cplusplus = 0, cplusplus_comments = 1;
 	if (! strcmp (argv[i], "-lang-objc++"))
