@@ -25,6 +25,27 @@
 	* unwind-sjlj.c: Likewise.
 	* unwind.inc: Likewise.
 
+2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/5582 PR c++/10538
+	* langhooks-def.h (lhd_decl_uninit): Declare.
+	(LANG_HOOKS_DECL_UNINIT): New macro.
+	(LANG_HOOKS_INITIALIZER): Adjust.
+	* langhooks.h (struct lang_hooks): Add new field
+	decl_uninit.
+	* langhooks.c (lhd_decl_uninit): Define.
+	* c-common.c (c_decl_uninit_1): New function.
+	(c_decl_uninit): New function.
+	(warn_init_self): Define.
+	* c-common.h (c_decl_uninit): Declare.
+	(warn_init_self): Declare.
+	* c.opt: Introduce -Winit-self.
+	* c-opts.c (c_common_handle_options): Set warn_init_self.
+	* c-lang.c (LANG_HOOKS_DECL_UNINIT): Define.
+	* objc/objc-lang.c  (LANG_HOOKS_DECL_UNINIT): Define.
+	* function.c (uninitialized_vars_warning): Call the language hook.
+	* doc/invoke.texi: Document -Winit-self.
+
 2003-08-19  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md: Adjust SI-mode "trap_if" instruction
