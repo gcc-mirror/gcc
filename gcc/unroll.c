@@ -1651,6 +1651,9 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  break;
 	  
 	case JUMP_INSN:
+	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
+	  copy = emit_jump_insn (pattern);
+
 	  if (JUMP_LABEL (insn) == start_label && insn == copy_end
 	      && ! last_iteration)
 	    {
@@ -1659,20 +1662,13 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		 In this case, we want to change the original fall through
 		 case to be a branch past the end of the loop, and the
 		 original jump label case to fall_through.  */
-	      /* Never map the label in this case.  */
-
-	      pattern = copy_rtx (PATTERN (insn));
-	      copy = emit_jump_insn (pattern);
 
 	      if (! invert_exp (pattern, copy)
-		  || ! redirect_exp (&pattern, JUMP_LABEL (insn),
+		  || ! redirect_exp (&pattern,
+				     map->label_map[CODE_LABEL_NUMBER
+						    (JUMP_LABEL (insn))],
 				     exit_label, copy))
 		abort ();
-	    }
-	  else
-	    {
-	      pattern = copy_rtx_and_substitute (PATTERN (insn), map);
-	      copy = emit_jump_insn (pattern);
 	    }
 	  
 #ifdef HAVE_cc0
