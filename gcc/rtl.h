@@ -320,6 +320,7 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define XBITMAP(RTX, N) (RTL_CHECK1(RTX, N, 'b').rtbit)
 #define XTREE(RTX, N)   (RTL_CHECK1(RTX, N, 't').rttree)
 #define XBBDEF(RTX, N)	(RTL_CHECK1(RTX, N, 'B').bb)
+#define XTMPL(RTX, N)	(RTL_CHECK1(RTX, N, 'T').rtstr)
 
 #define XVECEXP(RTX, N, M)	RTVEC_ELT (XVEC (RTX, N), M)
 #define XVECLEN(RTX, N)		GET_NUM_ELEM (XVEC (RTX, N))

@@ -121,7 +121,7 @@ internal_error VPARAMS ((const char *format, ...))
   format = va_arg (ap, const char *);
 #endif
 
-  fprintf (stderr, "%s: Internal error", progname);
+  fprintf (stderr, "%s: Internal error: ", progname);
   vfprintf (stderr, format, ap);
   va_end (ap);
   fputc ('\n', stderr);

@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "real.h"
 #include "ggc.h"
+#include "errors.h"
 
 
 /* Calculate the format for CONST_DOUBLE.  This depends on the relative
@@ -230,6 +231,8 @@ const char * const rtx_format[] = {
          prints the string
      "S" like "s", but optional:
 	 the containing rtx may end before this operand
+     "T" like "s", but treated specially by the RTL reader;
+         only found in machine description patterns.
      "e" a pointer to an rtl expression
          prints the expression
      "E" a pointer to a vector that points to a number of rtl expressions

@@ -37,6 +37,7 @@ static void read_name		PARAMS ((char *, FILE *));
 static char *read_string	PARAMS ((struct obstack *, FILE *, int));
 static char *read_quoted_string	PARAMS ((struct obstack *, FILE *));
 static char *read_braced_string	PARAMS ((struct obstack *, FILE *));
+static void read_escape		PARAMS ((struct obstack *, FILE *));
 static unsigned def_hash PARAMS ((const void *));
 static int def_name_eq_p PARAMS ((const void *, const void *));
 static void read_constants PARAMS ((FILE *infile, char *tmp_char));
@@ -211,6 +212,60 @@ read_name (str, infile)
     }
 }
 
+/* Subroutine of the string readers.  Handles backslash escapes.
+   Caller has read the backslash, but not placed it into the obstack.  */
+static void
+read_escape (ob, infile)
+     struct obstack *ob;
+     FILE *infile;
+{
+  int c = getc (infile);
+  switch (c)
+    {
+      /* Backslash-newline is replaced by nothing, as in C.  */
+    case '\n':
+      read_rtx_lineno++;
+      return;
+
+      /* \" \' \\ are replaced by the second character.  */
+    case '\\':
+    case '"':
+    case '\'':
+      break;
+
+      /* Standard C string escapes:
+	 \a \b \f \n \r \t \v
+	 \[0-7] \x
+	 all are passed through to the output string unmolested.
+	 In normal use these wind up in a string constant processed
+	 by the C compiler, which will translate them appropriately.
+	 We do not bother checking that \[0-7] are followed by up to
+	 two octal digits, or that \x is followed by N hex digits.
+	 \? \u \U are left out because they are not in traditional C.  */
+    case 'a': case 'b': case 'f': case 'n': case 'r': case 't': case 'v':
+    case '0': case '1': case '2': case '3': case '4': case '5': case '6':
+    case '7': case 'x':
+      obstack_1grow (ob, '\\');
+      break;
+
+      /* \; makes stuff for a C string constant containing
+	 newline and tab.  */
+    case ';':
+      obstack_grow (ob, "\\n\\t", 4);
+      return;
+
+      /* pass anything else through, but issue a warning.  */
+    default:
+      fprintf (stderr, "%s:%d: warning: unrecognized escape \\%c\n",
+	       read_rtx_filename, read_rtx_lineno, c);
+      obstack_1grow (ob, '\\');
+      break;
+    }
+
+  obstack_1grow (ob, c);
+}
+      
+
 /* Read a double-quoted string onto the obstack.  Caller has scanned
    the leading quote.  */
 static char *
@@ -226,27 +281,8 @@ read_quoted_string (ob, infile)
 	read_rtx_lineno++;
       else if (c == '\\')
 	{
-	  c = getc (infile);	/* Read the string  */
-	  /* \; makes stuff for a C string constant containing
-	     newline and tab.  */
-	  if (c == ';')
-	    {
-	      obstack_grow (ob, "\\n\\t", 4);
-	      continue;
-	    }
-	  else if (c == '\n')
-	    /* \-newline: delete the backslash and update our idea of
-	       the line number.  */
-	    read_rtx_lineno++;
-	  else if (c == '\\' || c == '"')
-	    ; /* \", \\ are a literal quote and backslash.  */
-	  else
-	    /* Backslash escapes we do not recognize are left unmolested.
-	       They may be handled by the C compiler (e.g. \n, \t) */
-	    {
-	      ungetc (c, infile);  /* put it back */
-	      c = '\\';
-	    }
+	  read_escape (ob, infile);
+	  continue;
 	}
       else if (c == '"')
 	break;
@@ -281,27 +317,8 @@ read_braced_string (ob, infile)
 	brace_depth--;
       else if (c == '\\')
 	{
-	  c = getc (infile);	/* Read the string  */
-	  /* \; makes stuff for a C string constant containing
-	     newline and tab.  */
-	  if (c == ';')
-	    {
-	      obstack_grow (ob, "\\n\\t", 4);
-	      continue;
-	    }
-	  else if (c == '\n')
-	    /* \-newline: delete the backslash and update our idea of
-	       the line number.  */
-	    read_rtx_lineno++;
-	  else if (c == '\\')
-	    ; /* \\ is a literal backslash */
-	  else
-	    /* Backslash escapes we do not recognize are left unmolested.
-	       They may be handled by the C compiler (e.g. \n, \t) */
-	    {
-	      ungetc (c, infile);  /* put it back */
-	      c = '\\';
-	    }
+	  read_escape (ob, infile);
+	  continue;
 	}
 
       obstack_1grow (ob, c);
@@ -643,6 +660,7 @@ again:
 	    break;
 	  }
 
+      case 'T':
       case 's':
 	{
 	  char *stringbuf;
@@ -651,10 +669,7 @@ again:
 	     DEFINE_INSN_AND_SPLIT, or DEFINE_PEEPHOLE automatically
 	     gets a star inserted as its first character, if it is
 	     written with a brace block instead of a string constant.  */
-	  int star_if_braced =
-	    ((i == 3 && (GET_CODE (return_rtx) == DEFINE_INSN
-			 || GET_CODE (return_rtx) == DEFINE_INSN_AND_SPLIT))
-	     || (i == 2 && GET_CODE (return_rtx) == DEFINE_PEEPHOLE));
+	  int star_if_braced = (format_ptr[-1] == 'T');
 	    
 	  stringbuf = read_string (&rtl_obstack, infile, star_if_braced);
 
@@ -680,7 +695,10 @@ again:
 	      stringbuf = (char *) obstack_finish (&rtl_obstack);
 	    }
 
-	  XSTR (return_rtx, i) = stringbuf;
+	  if (star_if_braced)
+	    XTMPL (return_rtx, i) = stringbuf;
+	  else
+	    XSTR (return_rtx, i) = stringbuf;
 	}
 	break;
 

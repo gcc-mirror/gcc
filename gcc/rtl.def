@@ -184,7 +184,7 @@ DEF_RTL_EXPR(MATCH_INSN, "match_insn", "is", 'm')
       template to use.
    4: optionally, a vector of attributes for this insn.
      */
-DEF_RTL_EXPR(DEFINE_INSN, "define_insn", "sEssV", 'x')
+DEF_RTL_EXPR(DEFINE_INSN, "define_insn", "sEsTV", 'x')
 
 /* Definition of a peephole optimization.
    1st operand: vector of insn patterns to match
@@ -192,7 +192,7 @@ DEF_RTL_EXPR(DEFINE_INSN, "define_insn", "sEssV", 'x')
    3rd operand: template or C code to produce assembler output.
    4: optionally, a vector of attributes for this insn.
      */
-DEF_RTL_EXPR(DEFINE_PEEPHOLE, "define_peephole", "EssV", 'x')
+DEF_RTL_EXPR(DEFINE_PEEPHOLE, "define_peephole", "EsTV", 'x')
 
 /* Definition of a split operation.
    1st operand: insn pattern to match
@@ -229,7 +229,7 @@ DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", 'x')
 	elements of `recog_operand' for use by the vector of insn-patterns.
 	(`operands' is an alias here for `recog_operand').  
    7: optionally, a vector of attributes for this insn.  */
-DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsssESV", 'x')
+DEF_RTL_EXPR(DEFINE_INSN_AND_SPLIT, "define_insn_and_split", "sEsTsESV", 'x')
 
 /* Definition of an RTL peephole operation.
    Follows the same arguments as define_split.  */
