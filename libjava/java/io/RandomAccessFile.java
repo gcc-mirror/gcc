@@ -1,6 +1,6 @@
 // RandomAccessFile.java
 
-/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -38,6 +38,11 @@ public class RandomAccessFile implements DataOutput, DataInput
   public long getFilePointer () throws IOException
   {
     return fd.getFilePointer();
+  }
+
+  public void setLength (long pos) throws IOException
+  {
+    fd.setLength(pos);
   }
 
   public long length () throws IOException
