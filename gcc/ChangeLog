@@ -1,3 +1,9 @@
+2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Quote m4_includes. Include ../config/gcc-lib-path.m4.
+	* configure.ac: Don't sinclude it here.
+	* configure: Regenerate.
+
 2004-09-27  Dorit Naishlos  <dorit@il.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_address, print_operand):
