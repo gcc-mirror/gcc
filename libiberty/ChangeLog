@@ -35,7 +35,7 @@
 	documentation.
 	* fnmatch.txh: New.
 	* functions.texi: Regenerate.
-	
+
 2001-10-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* bcmp.c, setenv.c: Use "nonzero" instead of "non-zero".
@@ -96,10 +96,10 @@
 	* configure.in: Don't use in-tree texinfo, because libiberty must
 	be built before it.  Check for makeinfo version 4 or higher.
 	* functions.texi: Regenerate.
-	
+
 2001-09-20  DJ Delorie  <dj@redhat.com>
 	    Phil Edwards  <pedwards@disaster.jaj.com>
-	
+
 	* configure.in (MAKEINFO, PERL): Detect these.
 	(--enable-maintainer-mode): Add.
 	* configure: Regenerate.
@@ -121,7 +121,7 @@
 	tmpnam.c, vfork.c, vprintf.c, waitpid.c, xatexit.c, xexit.c,
 	xmalloc.c, xmemdup.c, xstrdup.c, xstrerror.c: Add or update
 	documentation.
-	
+
 2001-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* concat.c (reconcat): Fix for traditional C.
@@ -143,7 +143,7 @@
 
 	* asprintf.c: Don't define USE_STDARG.  Use VPARAMS, VA_OPEN,
 	VA_FIXEDARG & VA_CLOSE.
-	
+
 	* vasprintf.c: Check HAVE_STRING_H when including string.h.
 	(checkit): Delete redundant prototype.  Add ATTRIBUTE_PRINTF_1.
 	Use VA_OPEN, VA_FIXEDARG & VA_CLOSE.  Free allocated string.
