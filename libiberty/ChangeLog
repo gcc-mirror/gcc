@@ -1,3 +1,9 @@
+2000-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* hashtab.c: Change void * to PTR where necessary.
+	(htab_create, htab_expand): Correct formatting of comment before
+	function.
+
 2000-10-22  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (string_list_def): Add caret_position and comments.
