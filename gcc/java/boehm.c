@@ -130,7 +130,7 @@ mark_reference_fields (field, low, high, ubit,
 	  for (i = 0; i < size_words; ++i)
 	    set_bit (low, high, ubit - count - i - 1);
 
-	  if (count > ubit - 2)
+	  if (count >= ubit - 2)
 	    *pointer_after_end = 1;
 
 	  /* If we saw a non-reference field earlier, then we can't

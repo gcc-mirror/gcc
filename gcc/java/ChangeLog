@@ -1,3 +1,8 @@
+2000-12-14  Andrew Haley  <aph@redhat.com>
+
+	* boehm.c (mark_reference_fields): Change test to correctly detect
+	bitmap overflow.
+
 2000-12-15  Andreas Jaeger  <aj@suse.de>
 
 	* config-lang.in (lang_dirs): Added.
