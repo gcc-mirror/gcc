@@ -1,3 +1,7 @@
+2005-02-22  Bud Davis  <bdavis@gfortran.org>
+
+	* gfortran.dg/list_read_4.f90: new test.
+
 2005-02-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR rtl-optimization/20017.
