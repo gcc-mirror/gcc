@@ -748,7 +748,7 @@ OBJS =									\
  sdbout.o sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o         \
  ssa-dce.o stmt.o stor-layout.o stringpool.o timevar.o toplev.o tree.o  \
  unroll.o varasm.o varray.o version.o xcoffout.o cfg.o cfganal.o	\
- cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o tree-inline.o 		\
+ cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o tree-inline.o langhooks.o	\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
@@ -1173,7 +1173,7 @@ c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(TARGET_H) flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h $(TM_P_H)
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(GGC_H)  c-lex.h toplev.h diagnostic.h output.h function.h \
-    $(RTL_H) $(EXPR_H) tree-inline.h insn-config.h integrate.h
+    $(RTL_H) $(EXPR_H) tree-inline.h insn-config.h integrate.h langhooks.h
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) c-lex.h \
     debug.h $(C_TREE_H) \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
@@ -1249,8 +1249,7 @@ s-under: $(GCC_PASSES)
 
 c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
-	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H) \
-	tree-inline.h
+	$(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def $(TARGET_H)
 
 # A file used by all variants of C and some other languages.
 
@@ -1349,11 +1348,13 @@ prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h convert.h toplev.h
 
+langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) toplev.h \
+   tree-inline.h
 tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h function.h toplev.h \
    $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H)
 tree-inline.o : tree-inline.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) \
    expr.h flags.h params.h input.h insn-config.h $(INTEGRATE_H) \
-   $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) \
+   $(VARRAY_H) $(HASHTAB_H) $(SPLAY_TREE_H) toplev.h \
    $(C_COMMON_H) tree-inline.h
 print-tree.o : print-tree.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(GGC_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) flags.h \
