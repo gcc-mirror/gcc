@@ -624,7 +624,30 @@ fi
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
 
+# We must search the source tree for java.lang, since we still don't
+# have libgcj.jar nor java/lang/*.class
+GCJ_SAVE_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -I`pwd` -I`cd $srcdir && pwd`"
+
+# Since some classes depend on this one, we need its source available
+# before we can do any GCJ compilation test :-(
+if test ! -f gnu/classpath/Configuration.java; then
+  test -d gnu || mkdir gnu
+  test -d gnu/classpath || mkdir gnu/classpath
+  sed 's,@LIBGCJDEBUG@,$LIBGCJDEBUG,' \
+	< $srcdir/gnu/classpath/Configuration.java.in \
+	> gnu/classpath/Configuration.java
+  # We do not want to redirect the output of the grep below to /dev/null,
+  # but we add /dev/null to the input list so that grep will print the
+  # filename of Configuration.java in case it finds any matches.
+  if grep @ gnu/classpath/Configuration.java /dev/null; then
+    AC_MSG_ERROR([configure.in is missing the substitutions above])
+  fi
+fi
+
 LT_AC_PROG_GCJ
+
+CPPFLAGS=$GCJ_SAVE_CPPFLAGS
 
 dnl FIXME: cross compilation
 AC_CHECK_SIZEOF(void *)
