@@ -5761,19 +5761,22 @@ debug_reload()
 
       if (reload_in[r])
 	{
-	  fprintf (stderr, "\nreload_in (%s) = ", GET_MODE_NAME(reload_inmode[r]));
+	  fprintf (stderr, "\nreload_in (%s) = ",
+		   GET_MODE_NAME (reload_inmode[r]));
 	  debug_rtx (reload_in[r]);
 	}
 
       if (reload_out[r])
 	{
-	  fprintf (stderr, "\nreload_out (%s) = ", GET_MODE_NAME (reload_outmode[r]));
+	  fprintf (stderr, "\nreload_out (%s) = ",
+		   GET_MODE_NAME (reload_outmode[r]));
 	  debug_rtx (reload_out[r]);
 	}
 
       fprintf (stderr, "%s, ", reg_class_names[(int) reload_reg_class[r]]);
 
-      fprintf (stderr, "%s (opnum = %d)", reload_when_needed_name[(int)reload_when_needed[r]],
+      fprintf (stderr, "%s (opnum = %d)",
+	       reload_when_needed_name[(int)reload_when_needed[r]],
 	       reload_opnum[r]);
 
       if (reload_optional[r])
