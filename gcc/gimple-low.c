@@ -291,15 +291,16 @@ try_catch_may_fallthru (tree stmt)
       return false;
 
     case EH_FILTER_EXPR:
-      /* If the exception does not match EH_FILTER_TYPES, we will
-	 execute EH_FILTER_FAILURE, and we will fall through if that
-	 falls through.  If the exception does match EH_FILTER_TYPES,
-	 we will fall through.  We don't know which exceptions may be
-	 generated, so we just check for EH_FILTER_TYPES being NULL,
-	 in which case we know that that the exception does not
-	 match.  */
-      return (EH_FILTER_TYPES (tsi_stmt (i)) != NULL
-	      || block_may_fallthru (EH_FILTER_FAILURE (tsi_stmt (i))));
+      /* The exception filter expression only matters if there is an
+	 exception.  If the exception does not match EH_FILTER_TYPES,
+	 we will execute EH_FILTER_FAILURE, and we will fall through
+	 if that falls through.  If the exception does match
+	 EH_FILTER_TYPES, the stack unwinder will continue up the
+	 stack, so we will not fall through.  We don't know whether we
+	 will throw an exception which matches EH_FILTER_TYPES or not,
+	 so we just ignore EH_FILTER_TYPES and assume that we might
+	 throw an exception which doesn't match.  */
+      return block_may_fallthru (EH_FILTER_FAILURE (tsi_stmt (i)));
 
     default:
       /* This case represents statements to be executed when an
