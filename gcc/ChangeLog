@@ -12,6 +12,47 @@ Mon Sep 15 15:39:26 1997  Jeffrey A Law  (law@cygnus.com)
 	mode wider than HOST_WIDE_INT, then the high word of a CONST_INT
 	is derived from the sign bit of the low word.
 
+Mon Sep 15 11:43:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Support dwarf2 unwinding on PUSH_ROUNDING targets like the x86.
+
+	* dwarf2.h: Add DW_CFA_GNU_args_size.
+	* frame.c (execute_cfa_insn): Likewise.
+	* dwarf2out.c (dwarf_cfi_name, output_cfi): Likewise.
+	(dwarf2out_args_size, dwarf2out_stack_adjust): New fns.
+	(dwarf2out_frame_debug): If this isn't a prologue or epilogue
+	insn, hand it off to dwarf2out_stack_adjust.
+	(dwarf2out_begin_prologue): Initialize args_size.
+	* frame.h (struct frame_state): Add args_size.
+	* libgcc2.c (__throw): Use args_size.
+	* final.c (final_scan_insn): If we push args, hand off all insns
+	to dwarf2out_frame_debug.
+	* defaults.h (DWARF2_UNWIND_INFO): OK for !ACCUMULATE_OUTGOING_ARGS.
+
+	* dwarf2out.c dwarf2out_frame_debug): Fix typo.
+	Handle epilogue restore of SP from FP.
+	* emit-rtl.c (gen_sequence): Still generate a sequence if the 
+	lone insn has RTX_FRAME_RELATED_P set.
+
+	* frame.c (extract_cie_info): Handle "e" augmentation.
+	* dwarf2out.c (ASM_OUTPUT_DWARF_*): Provide definitions in the
+ 	absence of UNALIGNED_*_ASM_OP.
+	(UNALIGNED_*_ASM_OP): Only provide defaults if OBJECT_FORMAT_ELF.
+	(output_call_frame_info): Use "e" instead of "z" for augmentation.
+	Don't emit augmentation fields length.
+	(dwarf2out_do_frame): Move outside of #ifdefs.
+	* defaults.h (DWARF2_UNWIND_INFO): Don't require unaligned data
+	opcodes.
+
+	* sparc.h (UNALIGNED_INT_ASM_OP et al): Don't define here after all.
+	* sparc/sysv4.h (UNALIGNED_INT_ASM_OP): Define here.
+	* sparc/sunos4.h (DWARF2_UNWIND_INFO): Define to 0.
+	* sparc/sun4gas.h: New file.
+	* configure.in: Use sun4gas.h if SunOS 4 --with-gnu-as.
+
+	* collect2.c (write_c_file_stat, write_c_file_glob): Declare 
+	__register_frame_table and __deregister_frame.
+
 1997-09-15  Brendan Kehoe  <brendan@cygnus.com>
 
 	* except.c (find_exception_handler_labels): Use xmalloc instead of
@@ -44,6 +85,11 @@ Sat Sep 13 12:57:26 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (add_branch_dependences): Make each insn in
 	a SCHED_GROUP_P block explicitly depend on the previous insn.
+
+Fri Sep 12 13:49:58 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* except.h: Prototype dwarf2 hooks.
+	* expr.c: Adjust.
 
 Thu Sep 11 17:43:55 1997  Jim Wilson  <wilson@cygnus.com>
 
@@ -112,6 +158,95 @@ Wed Sep 10 14:05:08 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 	(check-gcc, check-g++): Depend on testsuite/site.exp.
 	Don't stop for failure.
 
+Wed Sep 10 12:59:57 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (expand_builtin): Only support __builtin_dwarf_fp_regnum()
+	if DWARF2_UNWIND_INFO.
+
+Wed Sep 10 11:49:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Add support for exception handling using DWARF 2 frame unwind info.
+	Currently works on SPARC and MIPS, and almost on x86.
+	
+	* libgcc2.c (get_reg, put_reg, get_return_addr, put_return_addr,
+	next_stack_level, in_reg_window): Helper fns.
+	(__throw): Implement for DWARF2_UNWIND_INFO.
+
+	* expr.c (expand_builtin): Handle builtins used by __throw.
+	* tree.h (enum built_in_function): Add builtins used by __throw.
+	* c-decl.c (init_decl_processing): Declare builtins used by __throw.
+	* dwarf2out.c (expand_builtin_dwarf_fp_regnum): Used by __throw.
+	* except.c (expand_builtin_unwind_init): Hook for dwarf2 __throw.
+	(expand_builtin_extract_return_addr): Likewise.
+	(expand_builtin_frob_return_addr): Likewise.
+	(expand_builtin_set_return_addr_reg): Likewise.
+	(expand_builtin_eh_stub): Likewise.
+	(expand_builtin_set_eh_regs): Likewise.
+	(eh_regs): Choose two call-clobbered registers for passing back values.
+
+	* frame.c, frame.h: New files for parsing dwarf 2 frame info.
+	* Makefile.in (LIB2ADD): New variable.  Add $(srcdir)/frame.c.
+	(libgcc2.a): Use it instead of $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
+	(stmp-multilib): Likewise.
+	($(T)crtbegin.o, $(T)crtend.o): Add -fno-exceptions.
+
+	* except.c: #include "defaults.h".
+	(exceptions_via_longjmp): Default depends on DWARF2_UNWIND_INFO.
+	(emit_throw): Don't defeat assemble_external if DWARF2_UNWIND_INFO.
+	(register_exception_table_p): New fn.
+	(start_eh_unwinder): Don't do anything if DWARF2_UNWIND_INFO.
+	(end_eh_unwinder): Likewise.
+
+	* crtstuff.c: Wrap .eh_frame section, use EH_FRAME_SECTION_ASM_OP, 
+	call __register_frame and __deregister_frame as needed.
+	* varasm.c (eh_frame_section): New fn if EH_FRAME_SECTION_ASM_OP.
+	* dwarf2out.c (EH_FRAME_SECTION): Now a function-like macro.  Check
+	EH_FRAME_SECTION_ASM_OP.
+	* sparc/sysv4.h (EH_FRAME_SECTION_ASM_OP): Define.
+	* mips/iris6.h: (EH_FRAME_SECTION_ASM_OP): Define.
+	(LINK_SPEC): Add __EH_FRAME_BEGIN__ to hidden symbols.
+
+	* dwarf2out.c (output_call_frame_info): If no support for
+ 	EXCEPTION_SECTION, mark the start of the frame info with a
+ 	collectable tag.
+	* collect2.c (frame_tables): New list.
+	(is_ctor_dtor): Recognise frame entries.
+	(scan_prog_file): Likewise.
+	(main): Pass -fno-exceptions to sub-compile.  Also do collection
+	if there are any frame entries.
+	(write_c_file_stat): Call __register_frame_table and
+ 	__deregister_frame as needed.
+	(write_c_file_glob): Likewise.
+
+	* defaults.h (DWARF2_UNWIND_INFO): Default to 1 if supported.  
+	Also require unaligned reloc support.
+	* sparc.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
+ 	UNALIGNED_DOUBLE_INT_ASM_OP): Define here.
+	* sparc/sysv4.h: Not here.
+
+	* toplev.c (compile_file): Call dwarf2out_frame_{init,finish}.
+	* dwarf2out.c (dwarf2out_init): Don't call dwarf2out_frame_init.
+	(dwarf2out_finish): Don't call dwarf2out_frame_finish.
+
+	* libgcc2.c (L_eh): Reorganize, moving code shared by different
+	EH implementations to the top.
+	(find_exception_handler): Split out.  Start from 0.  Compare against
+	end with >=.
+	(__find_first_exception_table_match): Use it.
+	* except.c (output_exception_table): Don't do anything if there's
+	no table.  Don't output a first entry of zeroes.
+	(eh_outer_context): Adjust properly.
+	(add_eh_table_entry): Use xrealloc.
+	* toplev.c (compile_file): Just call output_exception_table.
+
+Wed Sep 10  11:30:36 1997  Jason Merrill  <jason@cygnus.com>
+
+	* i386.c (ix86_prologue): Add dwarf2 support for !do_rtl case.
+
+Wed Sep 10 08:17:10 1997  Torbjorn Granlund  <tege@pdc.kth..se>
+
+	* except.c (eh_outer_context): Do masking using expand_and.
+
 Wed Sep 10 01:38:30 1997  Doug Evans  <dje@cygnus.com>
 
 	Add port done awhile ago for the ARC cpu.
@@ -152,9 +287,37 @@ Tue Sep  9 17:07:36 1997  Stan Cox  <coxs@dg-rtp.dg.com>
 	* m88k.c (m88k_expand_prologue): Set MEM_IN_STRUCT_P of va_list
 	template.
 
+Tue Sep  9 09:50:02 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* dwarf2out.c (output_call_frame_info): Call named_section.
+
 Tue Sep  9 09:12:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (print_value): Fix last change.
+
+Tue Sep  9 01:30:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* mips.h (DWARF_FRAME_REGNUM): Use the same numbering regardless of
+	write_symbols.
+
+Mon Sep  8 16:32:43 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* mips.c (function_prologue): Set up the CFA when ABI_32.
+
+	* sparc.c (save_regs): Check dwarf2out_do_frame instead of DWARF2_DEBUG
+	for dwarf2 unwind info.
+	(output_function_prologue, sparc_flat_output_function_prologue): Same.
+
+	* final.c (final_end_function): Check dwarf2out_do_frame instead
+ 	of DWARF2_DEBUG for dwarf2 unwind info.
+	(final_scan_insn): Likewise.
+	(final_start_function): Likewise.  Initialize dwarf2 frame debug here.
+	(final): Not here.
+
+	* expr.c (expand_builtin_return_addr): Only SETUP_FRAME_ADDRESSES if
+	count > 0.
+
+	* varasm.c (exception_section): Check EXCEPTION_SECTION first.
 
 Mon Sep  8 15:15:11 1997  Nick Clifton  <nickc@cygnus.com>
 

@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "output.h"
 #include "typeclass.h"
+#include "defaults.h"
 
 #include "bytecode.h"
 #include "bc-opcode.h"
@@ -7997,7 +7998,8 @@ expand_builtin_return_addr (fndecl_code, count, tem)
      arbitrary frames.  For example, on the sparc, we must first flush
      all register windows to the stack.  */
 #ifdef SETUP_FRAME_ADDRESSES
-  SETUP_FRAME_ADDRESSES ();
+  if (count > 0)
+    SETUP_FRAME_ADDRESSES ();
 #endif
 
   /* On the sparc, the return address is not in the frame, it is in a
@@ -9136,6 +9138,32 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	return const0_rtx;
       }
+
+      /* Various hooks for the DWARF 2 __throw routine.  */
+    case BUILT_IN_UNWIND_INIT:
+      expand_builtin_unwind_init ();
+      return const0_rtx;
+    case BUILT_IN_FP:
+      return frame_pointer_rtx;
+    case BUILT_IN_SP:
+      return stack_pointer_rtx;
+#ifdef DWARF2_UNWIND_INFO
+    case BUILT_IN_DWARF_FP_REGNUM:
+      return expand_builtin_dwarf_fp_regnum ();
+#endif
+    case BUILT_IN_FROB_RETURN_ADDR:
+      return expand_builtin_frob_return_addr (TREE_VALUE (arglist));
+    case BUILT_IN_EXTRACT_RETURN_ADDR:
+      return expand_builtin_extract_return_addr (TREE_VALUE (arglist));
+    case BUILT_IN_SET_RETURN_ADDR_REG:
+      expand_builtin_set_return_addr_reg (TREE_VALUE (arglist));
+      return const0_rtx;
+    case BUILT_IN_EH_STUB:
+      return expand_builtin_eh_stub ();
+    case BUILT_IN_SET_EH_REGS:
+      expand_builtin_set_eh_regs (TREE_VALUE (arglist),
+				  TREE_VALUE (TREE_CHAIN (arglist)));
+      return const0_rtx;
 
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",
