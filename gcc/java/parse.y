@@ -5232,23 +5232,14 @@ check_inner_circular_reference (source, target)
 
   if (!basetype_vec)
     return NULL_TREE;
-
+  
   for (i = 0; i < TREE_VEC_LENGTH (basetype_vec); i++)
     {
-      tree su;
-
-      /* We can end up with a NULL_TREE or an incomplete type here if
-	 we are compiling multiple files at once.  It's safe to simply
-	 ignore these cases.  */
-      if (TREE_VEC_ELT (basetype_vec, i) == NULL_TREE)
-	continue;
-      su = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
-      if (INCOMPLETE_TYPE_P (su))
-	continue;
+      tree su = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
 
       if (inherits_from_p (su, target))
 	return lookup_cl (TYPE_NAME (su));
-
+      
       for (ctx = DECL_CONTEXT (TYPE_NAME (su)); ctx; ctx = DECL_CONTEXT (ctx))
 	{
 	  /* An enclosing context shouldn't be TARGET */
