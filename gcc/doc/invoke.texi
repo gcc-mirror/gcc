@@ -281,6 +281,7 @@ in the following sections.
 -fno-trapping-math  -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
+-fprofile-generate -fprofile-use @gol
 -freduce-all-givs  -fregmove  -frename-registers @gol
 -freorder-blocks  -freorder-functions @gol
 -frerun-cse-after-loop  -frerun-loop-opt @gol
@@ -4376,6 +4377,21 @@ we perform a copy-propagation pass to try to reduce scheduling dependencies
 and occasionally eliminate the copy.
 
 Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fprofile-generate
+@opindex fprofile-generate
+Enable options usually used for instrumenting application to produce profile usefull
+for later recompilation profile feedback based optimization.
+
+The following options are enabled: @code{-fprofile-arcs}, @code{-fprofile-values}, @code{-fvpt}
+
+@item -fprofile-use
+@opindex fprofile-use
+Enable profile feedback directed optimizations, and optimizations
+generally profitable only with profile feedback available.
+
+The following options are enabled: @code{-fbranch-probabilities},
+@code{-fvpt}, @code{-funroll-loops}, @code{-fpeel-loops}, @code{-ftracer}.
 
 @end table
 
