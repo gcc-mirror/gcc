@@ -1476,6 +1476,8 @@ emit_move_insn (x, y)
 		  gen_lowpart (submode, y)));
 
       group_insns (prev);
+
+      return get_last_insn ();
     }
 
   /* This will handle any multi-word mode that lacks a move_insn pattern.
