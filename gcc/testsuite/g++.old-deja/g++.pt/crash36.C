@@ -28,8 +28,8 @@ struct list {
   };
   
   reverse_iterator<list_iterator<T> > rbegin()
-    { return reverse_iterator<list_iterator<T> > // ERROR - no type
-	(list_iterator<T>(Head->next())); } // ERROR - instantiated here
+    { return reverse_iterator<list_iterator<T> > // ERROR - no type|instantiated here
+	(list_iterator<T>(Head->next())); }
 };
 
 template class list<int>; // ERROR - instantiated from here
