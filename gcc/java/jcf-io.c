@@ -259,7 +259,7 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 #else
   int fd;
 #endif
-  int i, k, java, class;
+  int i, k, java, class = -1;
   struct stat java_buf, class_buf;
   char *dep_file;
   void *entry, *java_entry;
@@ -341,95 +341,86 @@ DEFUN(find_class, (classname, classname_length, jcf, do_class_file),
 	}
 
       class = stat (buffer, &class_buf);
-      /* This is a little odd: if we didn't find the class file, we
-	 can just skip to the next iteration.  However, if this is the
-	 last iteration, then we want to search for the .java file as
-	 well.  It was a little easier to implement this with two
-	 loops, as opposed to checking for each type of file each time
-	 through the loop.  */
-      if (class && jcf_path_next (entry))
+      if (class == 0)
+	break;
+    }
+
+  /* Check for out of synch .class/.java files.  */
+  java = 1;
+  for (java_entry = jcf_path_start ();
+       java && java_entry != NULL;
+       java_entry = jcf_path_next (java_entry))
+    {
+      int m, l;
+
+      if (jcf_path_is_zipfile (java_entry))
 	continue;
 
-      /* Check for out of synch .class/.java files.  */
-      java = 1;
-      for (java_entry = jcf_path_start ();
-	   java && java_entry != NULL;
-	   java_entry = jcf_path_next (java_entry))
-	{
-	  int m, l;
+      /* Compute name of .java file.  */
+      strcpy (java_buffer, jcf_path_name (java_entry));
+      l = strlen (java_buffer);
+      for (m = 0; m < classname_length; ++m)
+	java_buffer[m + l] = (classname[m] == '.' ? '/' : classname[m]);
+      strcpy (java_buffer + m + l, ".java");
 
-	  if (jcf_path_is_zipfile (java_entry))
-	    continue;
-
-	  /* Compute name of .java file.  */
-	  strcpy (java_buffer, jcf_path_name (java_entry));
-	  l = strlen (java_buffer);
-	  for (m = 0; m < classname_length; ++m)
-	    {
-	      java_buffer[m + l] = (classname[m] == '.'
-				    ? '/'
-				    : classname[m]);
-	    }
-	  strcpy (java_buffer + m + l, ".java");
-
-	  /* FIXME: until the `.java' parser is fully working, we only
-	     look for a .java file when one was mentioned on the
-	     command line.  This lets us test the .java parser fairly
-	     easily, without compromising our ability to use the
-	     .class parser without fear.  */
-	  if (saw_java_source)
-	    java = stat (java_buffer, &java_buf);
-	}
-
-      if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
-	jcf->outofsynch = 1;
-
-      if (! java)
-	dep_file = java_buffer;
-      else
-	dep_file = buffer;
-#if JCF_USE_STDIO
-      if (!class)
-	{
-	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	  stream = fopen (buffer, "rb");
-	  if (stream)
-	    goto found;
-	}
-      /* Give .java a try, if necessary */
-      if (!java)
-	{
-	  strcpy (buffer, java_buffer);
-	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	  stream = fopen (buffer, "r");
-	  if (stream)
-	    {
-	      jcf->java_source = 1;
-	      goto found;
-	    }
-	}
-#else
-      if (!class)
-	{
-	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	  fd = open (buffer, O_RDONLY | O_BINARY);
-	  if (fd >= 0)
-	    goto found;
-	}
-      /* Give .java a try, if necessary */
-      if (!java)
-	{
-	  strcpy (buffer, java_buffer);
-	  SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
-	  fd = open (buffer, O_RDONLY);
-	  if (fd >= 0)
-	    {
-	      jcf->java_source = 1;
-	      goto found;
-	    }
-	}
-#endif
+      /* FIXME: until the `.java' parser is fully working, we only
+	 look for a .java file when one was mentioned on the
+	 command line.  This lets us test the .java parser fairly
+	 easily, without compromising our ability to use the
+	 .class parser without fear.  */
+      if (saw_java_source)
+	java = stat (java_buffer, &java_buf);
     }
+
+  if (! java && ! class && java_buf.st_mtime >= class_buf.st_mtime)
+    jcf->outofsynch = 1;
+
+  if (! java)
+    dep_file = java_buffer;
+  else
+    dep_file = buffer;
+#if JCF_USE_STDIO
+  if (!class)
+    {
+      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      stream = fopen (buffer, "rb");
+      if (stream)
+	goto found;
+    }
+  /* Give .java a try, if necessary */
+  if (!java)
+    {
+      strcpy (buffer, java_buffer);
+      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      stream = fopen (buffer, "r");
+      if (stream)
+	{
+	  jcf->java_source = 1;
+	  goto found;
+	}
+    }
+#else
+  if (!class)
+    {
+      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      fd = open (buffer, O_RDONLY | O_BINARY);
+      if (fd >= 0)
+	goto found;
+    }
+  /* Give .java a try, if necessary */
+  if (!java)
+    {
+      strcpy (buffer, java_buffer);
+      SOURCE_FRONTEND_DEBUG (("Trying %s", buffer));
+      fd = open (buffer, O_RDONLY);
+      if (fd >= 0)
+	{
+	  jcf->java_source = 1;
+	  goto found;
+	}
+    }
+#endif
+
   free (buffer);
   return NULL;
  found:

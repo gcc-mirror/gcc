@@ -155,6 +155,18 @@ set_source_filename (jcf, index)
   DECL_LINENUMBERS_OFFSET (current_method) = JCF_TELL (jcf) - 2; \
   JCF_SKIP (jcf, n * 4); }
 
+#define HANDLE_EXCEPTIONS_ATTRIBUTE(COUNT) \
+{ \
+  int n = COUNT; \
+  tree list = DECL_FUNCTION_THROWS (current_method); \
+  while (--n >= 0) \
+    { \
+      tree thrown_class = get_class_constant (jcf, JCF_readu2 (jcf)); \
+      list = tree_cons (NULL_TREE, thrown_class, list); \
+    } \
+  DECL_FUNCTION_THROWS (current_method) = nreverse (list); \
+}
+
 #include "jcf-reader.c"
 
 static int yydebug;
