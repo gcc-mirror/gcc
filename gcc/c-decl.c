@@ -6517,6 +6517,13 @@ finish_function (nested, can_defer_p)
       && DECL_INLINE (fndecl))
     warning ("no return statement in function returning non-void");
 
+  /* With just -W, complain only if function returns both with
+     and without a value.  */
+  if (extra_warnings
+      && current_function_returns_value
+      && current_function_returns_null)
+    warning ("this function may return with or without a value");
+
   /* Clear out memory we no longer need.  */
   free_after_parsing (cfun);
   /* Since we never call rest_of_compilation, we never clear
@@ -6700,13 +6707,6 @@ c_expand_body (fndecl, nested_p, can_defer_p)
   /* Undo the GC context switch.  */
   if (nested_p)
     ggc_pop_context ();
-
-  /* With just -W, complain only if function returns both with
-     and without a value.  */
-  if (extra_warnings
-      && current_function_returns_value
-      && current_function_returns_null)
-    warning ("this function may return with or without a value");
 
   /* If requested, warn about function definitions where the function will
      return a value (usually of some struct or union type) which itself will
