@@ -1,3 +1,16 @@
+2004-03-03  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+	    Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (MASK_FIX_SB1): Bump.
+	(MASK_FIX_R4400, TARGET_FIX_R4400): New macros.
+	(TARGET_SWITCHES): Add -mfix-r4400 and -mno-fix-r4400.
+	* config/mips/mips.c (mips_output_division): Fill the branch delay
+	slot with a nop if TARGET_FIX_R4000.  Extend R4000 workarounds to
+	TARGET_FIX_R4400.
+	(mips_output_division): Adjust accordingly.
+	(override_options): Make -march=r4400 imply -mfix-r4400 by default.
+	* doc/invoke.texi: Document -mfix-r4400 and new errata workarounds.
+
 2004-03-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* alias.c (rtx_equal_for_memref_p): Use predicates

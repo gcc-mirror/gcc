@@ -1321,7 +1321,7 @@ mips_idiv_insns (void)
   count = 1;
   if (TARGET_CHECK_ZERO_DIV)
     count += 2;
-  if (TARGET_FIX_R4000)
+  if (TARGET_FIX_R4000 || TARGET_FIX_R4400)
     count++;
   return count;
 }
@@ -5101,6 +5101,12 @@ override_options (void)
   if ((target_flags_explicit & MASK_FIX_R4000) == 0
       && mips_matching_cpu_name_p (mips_arch_info->name, "r4000"))
     target_flags |= MASK_FIX_R4000;
+
+  /* Default to working around R4400 errata only if the processor
+     was selected explicitly.  */
+  if ((target_flags_explicit & MASK_FIX_R4400) == 0
+      && mips_matching_cpu_name_p (mips_arch_info->name, "r4400"))
+    target_flags |= MASK_FIX_R4400;
 }
 
 /* Implement CONDITIONAL_REGISTER_USAGE.  */
@@ -9171,19 +9177,94 @@ mips_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
   return 0;
 }
 
-/* Used to output div or ddiv instruction DIVISION, which has the
-   operands given by OPERANDS.  If we need a divide-by-zero check,
-   output the instruction and return an asm string that traps if
-   operand 2 is zero.
+/* Used to output div or ddiv instruction DIVISION, which has the operands
+   given by OPERANDS.  Add in a divide-by-zero check if needed.
 
-   The original R4000 has a cpu bug.  If a double-word or a variable
-   shift executes immediately after starting an integer division, the
-   shift may give an incorrect result.  Avoid this by adding a nop on
-   the R4000.  See quotations of errata #16 and #28 from "MIPS
-   R4000PC/SC Errata, Processor Revision 2.2 and 3.0" in mips.md for
-   details.
+   When working around R4000 and R4400 errata, we need to make sure that
+   the division is not immediately followed by a shift[1][2].  We also
+   need to stop the division from being put into a branch delay slot[3].
+   The easiest way to avoid both problems is to add a nop after the
+   division.  When a divide-by-zero check is neeeded, this nop can be
+   used to fill the branch delay slot.
 
-   Otherwise just return DIVISION itself.  */
+   [1] If a double-word or a variable shift executes immediately
+       after starting an integer division, the shift may give an
+       incorrect result.  See quotations of errata #16 and #28 from
+       "MIPS R4000PC/SC Errata, Processor Revision 2.2 and 3.0"
+       in mips.md for details.
+
+   [2] A similar bug to [1] exists for all revisions of the
+       R4000 and the R4400 when run in an MC configuration.
+       From "MIPS R4000MC Errata, Processor Revision 2.2 and 3.0":
+
+       "19. In this following sequence:
+
+		    ddiv		(or ddivu or div or divu)
+		    dsll32		(or dsrl32, dsra32)
+
+	    if an MPT stall occurs, while the divide is slipping the cpu
+	    pipeline, then the following double shift would end up with an
+	    incorrect result.
+
+	    Workaround: The compiler needs to avoid generating any
+	    sequence with divide followed by extended double shift."
+
+       This erratum is also present in "MIPS R4400MC Errata, Processor
+       Revision 1.0" and "MIPS R4400MC Errata, Processor Revision 2.0
+       & 3.0" as errata #10 and #4, respectively.
+
+   [3] From "MIPS R4000PC/SC Errata, Processor Revision 2.2 and 3.0"
+       (also valid for MIPS R4000MC processors):
+
+       "52. R4000SC: This bug does not apply for the R4000PC.
+
+	    There are two flavors of this bug:
+
+	    1) If the instruction just after divide takes an RF exception
+	       (tlb-refill, tlb-invalid) and gets an instruction cache
+	       miss (both primary and secondary) and the line which is
+	       currently in secondary cache at this index had the first
+	       data word, where the bits 5..2 are set, then R4000 would
+	       get a wrong result for the div.
+
+	    ##1
+		    nop
+		    div	r8, r9
+		    -------------------		# end-of page. -tlb-refill
+		    nop
+	    ##2
+		    nop
+		    div	r8, r9
+		    -------------------		# end-of page. -tlb-invalid
+		    nop
+
+	    2) If the divide is in the taken branch delay slot, where the
+	       target takes RF exception and gets an I-cache miss for the
+	       exception vector or where I-cache miss occurs for the
+	       target address, under the above mentioned scenarios, the
+	       div would get wrong results.
+
+	    ##1
+		    j	r2		# to next page mapped or unmapped
+		    div	r8,r9		# this bug would be there as long
+					# as there is an ICache miss and
+		    nop			# the "data pattern" is present
+
+	    ##2
+		    beq	r0, r0, NextPage	# to Next page
+		    div	r8,r9
+		    nop
+
+	    This bug is present for div, divu, ddiv, and ddivu
+	    instructions.
+
+	    Workaround: For item 1), OS could make sure that the next page
+	    after the divide instruction is also mapped.  For item 2), the
+	    compiler could make sure that the divide instruction is not in
+	    the branch delay slot."
+
+       These processors have PRId values of 0x00004220 and 0x00004300 for
+       the R4000 and 0x00004400, 0x00004500 and 0x00004600 for the R4400.  */
 
 const char *
 mips_output_division (const char *division, rtx *operands)
@@ -9191,6 +9272,11 @@ mips_output_division (const char *division, rtx *operands)
   const char *s;
 
   s = division;
+  if (TARGET_FIX_R4000 || TARGET_FIX_R4400)
+    {
+      output_asm_insn (s, operands);
+      s = "nop";
+    }
   if (TARGET_CHECK_ZERO_DIV)
     {
       if (TARGET_MIPS16)
@@ -9204,11 +9290,6 @@ mips_output_division (const char *division, rtx *operands)
 	  output_asm_insn (s, operands);
 	  s = "break\t7%)\n1:";
 	}
-    }
-  if (TARGET_FIX_R4000)
-    {
-      output_asm_insn (s, operands);
-      s = "nop";
     }
   return s;
 }
