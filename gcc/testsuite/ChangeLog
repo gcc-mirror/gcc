@@ -1,5 +1,10 @@
 2004-06-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/13249
+	* gfortran.fortran-torture/compile/name_clash.f90: New test.
+
+2004-06-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/13372
 	* gfortran.fortran-torture/compile/named_args_2.f90: New test.
 
