@@ -1,3 +1,11 @@
+2004-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_clrmem): Move gen_cld down to
+	the places where it is actually needed.  Don't use repz; stosb
+	for -Os with sufficiently small constant sizes.
+	For sufficiently small repz; stos{l,q} repeat counts use a sequence
+	of stos{l,q} instructions instead.
+
 2004-08-06  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/16807
