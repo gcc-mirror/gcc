@@ -2846,7 +2846,7 @@ compare compare3 compare4 compare-lean compare3-lean compare4-lean: force
 	      tail +16c stage$$stage/$$file > tmp-foo2 \
 	        && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
 	    done; \
-	  fi; \
+	  else true; fi; \
 	done
 	-rm -f tmp-foo*
 	case "$@" in compare | compare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^compare\([0-9][0-9]*\).*,\1,'` ;; esac; \
@@ -2877,7 +2877,7 @@ gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-
 	    for file in $$dir/*$(objext); do \
 	      (cmp --ignore-initial=16 $$file stage$$stage/$$file > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
 	    done; \
-	  fi; \
+	  else true; fi; \
 	done
 	case "$@" in gnucompare | gnucompare-lean ) stage=2 ;; * ) stage=`echo $@ | sed -e 's,^gnucompare\([0-9][0-9]*\).*,\1,'` ;; esac; \
 	if [ -f .bad_compare ]; then \
