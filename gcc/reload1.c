@@ -9259,15 +9259,9 @@ reload_cse_move2add (first)
 		      int success = 0;
 
 		      if (new_src == const0_rtx)
-			{
-			  if (INTVAL (src) == reg_offset [regno])
-			    /* See above why we create (set (reg)
-			       (reg)) here.  */
-			    success
-			      = validate_change (next, &SET_SRC (set), reg, 0);
-			  else
-			    success = 0;
-			}
+			/* See above why we create (set (reg) (reg)) here.  */
+			success
+			  = validate_change (next, &SET_SRC (set), reg, 0);
 		      else if ((rtx_cost (new_src, PLUS)
 				< COSTS_N_INSNS (1) + rtx_cost (src3, SET))
 			       && have_add2_insn (reg, new_src))
