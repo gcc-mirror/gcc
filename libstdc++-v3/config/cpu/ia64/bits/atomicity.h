@@ -25,7 +25,7 @@
 typedef int _Atomic_word;
 
 static inline _Atomic_word 
-__attribute__ ((unused))
+__attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
   return __sync_fetch_and_add (__mem, __val);
