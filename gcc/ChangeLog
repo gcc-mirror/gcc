@@ -1,3 +1,9 @@
+2004-11-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR tree-optimization/18307
+	* tree-ssa-alias.c (merge_pointed_to_info): Protected against DEST
+	and ORIG being the same node.
+
 2004-11-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (distclean): Don't delete nonexistent fixinc/ directory.
