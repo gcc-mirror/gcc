@@ -7742,7 +7742,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
   	  return loc_typedecl;
 	}
       else if (decl_context == FIELD
-	       && (! IS_SIGNATURE (current_class_type))
+	       && (! IS_SIGNATURE (current_class_type)
+		   || SIGNATURE_GROKKING_TYPEDEF (current_class_type))
  	       /* C++ allows static class elements  */
  	       && RIDBIT_SETP (RID_STATIC, specbits))
  	/* C++ also allows inlines and signed and unsigned elements,
@@ -8238,9 +8239,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    {
 	      if (TREE_CODE (declarator) == ADDR_EXPR)
 		{
-		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE)
-		    warning ("empty signature `%s' used in signature reference declaration",
-			     TYPE_NAME_STRING(type));
+		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
+		      && TYPE_SIZE (type))
+		    cp_warning ("empty signature `%T' used in signature reference declaration",
+				type);
 #if 0
 		  type = build_signature_reference_type (type,
 							 constp, volatilep);
@@ -8251,9 +8253,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		}
 	      else
 		{
-		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE)
-		    warning ("empty signature `%s' used in signature pointer declaration",
-			     TYPE_NAME_STRING(type));
+		  if (CLASSTYPE_METHOD_VEC (type) == NULL_TREE
+		      && TYPE_SIZE (type))
+		    cp_warning ("empty signature `%T' used in signature pointer declaration",
+				type);
 		  type = build_signature_pointer_type (type,
 						       constp, volatilep);
 		}

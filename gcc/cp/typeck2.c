@@ -601,7 +601,13 @@ store_init_value (decl, init)
     return value;
   else
     {
-      if (pedantic && TREE_CODE (value) == CONSTRUCTOR)
+      if (pedantic && TREE_CODE (value) == CONSTRUCTOR
+	  /* Don't complain about non-constant initializers of
+	     signature tables and signature pointers/references.  */
+	  && ! (TYPE_LANG_SPECIFIC (type)
+		&& (IS_SIGNATURE (type)
+		    || IS_SIGNATURE_POINTER (type)
+		    || IS_SIGNATURE_REFERENCE (type))))
 	{
 	  if (! TREE_CONSTANT (value) || ! TREE_STATIC (value))
 	    pedwarn ("ANSI C++ forbids non-constant aggregate initializer expressions");

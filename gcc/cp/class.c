@@ -3270,7 +3270,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
      only if no constructor has been declared for class X.  So we
      check TYPE_HAS_CONSTRUCTOR also, to make sure we don't generate
      one if they declared a constructor in this class.  */
-  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
+  if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor
+      && ! IS_SIGNATURE (t))
     {
       tree default_fn = cons_up_default_function (t, name, fields, 2);
       TREE_CHAIN (default_fn) = fn_fields;
@@ -3278,7 +3279,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   /* Create default copy constructor, if needed.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! cant_synth_copy_ctor)
+  if (! TYPE_HAS_INIT_REF (t) && ! cant_synth_copy_ctor
+      && ! IS_SIGNATURE (t))
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
@@ -3295,7 +3297,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     |= (TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
 	|| has_virtual || first_vfn_base_index >= 0);
 
-  if (! TYPE_HAS_ASSIGN_REF (t) && ! cant_synth_asn_ref)
+  if (! TYPE_HAS_ASSIGN_REF (t) && ! cant_synth_asn_ref
+      && ! IS_SIGNATURE (t))
     {
       tree default_fn =
 	cons_up_default_function (t, name, fields,
@@ -3341,7 +3344,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   {
-    int n_methods = TREE_VEC_LENGTH (method_vec);
+    int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
     
     for (access_decls = nreverse (access_decls); access_decls;
 	 access_decls = TREE_CHAIN (access_decls))
