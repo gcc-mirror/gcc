@@ -1,3 +1,13 @@
+Sun Jan  7 14:35:13 MET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (combine_simplify_rtx): Recognize the unordered compares.
+	(nonzero_bits): Likewise.
+	(simplify_comparison): Likewise.
+	(num_sign_bit_copies): Likewise; return more sane value depending
+	on STORE_FLAG_VALUE.
+	(known_cond): Do not assume EQ to be always true for equivalent
+	operands.
+
 Sun Jan  7 14:31:57 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (fold_rtx): Handle unordered comparisons.
