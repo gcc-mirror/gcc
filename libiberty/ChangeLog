@@ -2,6 +2,9 @@
 
 	* Makefile.in (FLAGS_TO_PASS): Also pass DESTDIR.
 
+	* Makefile.in (install_to_libdir, install_to_tooldir): Add a
+	mkinstalldirs command.
+
 2002-12-04  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* make-relative-prefix.c (HAVE_HOST_EXECUTABLE_SUFFIX):
