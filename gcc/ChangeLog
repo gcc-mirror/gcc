@@ -1,3 +1,7 @@
+2000-11-27  Matthias Klose  <doko@cs.tu-berlin.de>
+
+	* extend.texi (Nested Functions): Update URL of Usenix paper.
+
 2000-11-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (free_after_compilation): Clear x_clobber_return_insn.
