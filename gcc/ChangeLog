@@ -1,3 +1,9 @@
+2002-08-16  Stan Shebs  <shebs@apple.com>
+
+	* c-common.c (cb_register_builds): Define __NEXT_RUNTIME__
+	for ObjC with -fnext-runtime.
+	* doc/cpp.texi: Document it.
+
 2002-08-16  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Final installation): Replace links to individual

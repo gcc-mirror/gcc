@@ -6,12 +6,16 @@
 int main (void)
 {
   SEL selector;
+  char *selname;
 
   selector = @selector (alloc);
-  if (strcmp (sel_get_name (selector), "alloc"))
-    {
-      abort ();
-    }
+#ifdef __NEXT_RUNTIME__
+  selname = sel_getName (selector);
+#else
+  selname = sel_get_name (selector);
+#endif
+  if (strcmp (selname, "alloc"))
+    abort ();
 
   return 0;
 }

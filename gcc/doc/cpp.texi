@@ -2003,6 +2003,10 @@ the typedefs.
 This macro is defined, with value 1, if the compiler uses the old
 mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
+
+@item __NEXT_RUNTIME__
+This macro is defined, with value 1, when the NeXT runtime
+(as in @option{-fnext-runtime}) is in use for Objective-C.
 @end table
 
 @node System-specific Predefined Macros
