@@ -1269,7 +1269,9 @@ optimize_mode_switching (file)
 		  mode_set = gen_sequence ();
 		  end_sequence ();
 
-		  if (NOTE_LINE_NUMBER (ptr->insn_ptr) == NOTE_INSN_BASIC_BLOCK)
+		  if (GET_CODE (ptr->insn_ptr) == NOTE
+		      && (NOTE_LINE_NUMBER (ptr->insn_ptr)
+			  == NOTE_INSN_BASIC_BLOCK))
 		    emit_block_insn_after (mode_set, ptr->insn_ptr,
     		                           BASIC_BLOCK (ptr->bbnum));
 		  else
