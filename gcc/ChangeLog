@@ -1,3 +1,14 @@
+Wed Feb  3 06:24:49 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* config/arm/t-arm-elf (LIBGCC2_CFLAGS): Delete.
+	* config/arm/t-linux (LIBGCC2_CFLAGS): Delete.
+	(TARGET_LIBGCC2_CFLAGS): Define.
+	(LIBGCC2_DEBUG_CFLAGS): Define.
+	* config/arm/t-netbsd: Likewise.
+	* config/arm/t-semi: Likewise.
+	* config/arm/t-semiaof: Likewise.
+	* config/arm/t-riscix: Likewise.
+
 Wed Feb  3 10:59:07 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.c (print_operand_address): When printing a
