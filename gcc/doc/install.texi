@@ -1846,7 +1846,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#arm-*-elf,,arm-*-elf}
 @uref{#arm-*-coff,,arm-*-coff}
-@uref{#arm-*-aof,,arm-*-aof}
 @uref{#arm-*-aout,,arm-*-aout}
 @item
 @uref{#xscale-*-*,,xscale-*-*}
@@ -1876,10 +1875,6 @@ GNU Compiler Collection on your machine.
 @uref{#ix86-*-linux*aout,,i?86-*-linux*aout}
 @item
 @uref{#ix86-*-linux*,,i?86-*-linux*}
-@item
-@uref{#ix86-*-sco,,i?86-*-sco}
-@item
-@uref{#ix86-*-sco3.2v4,,i?86-*-sco3.2v4}
 @item
 @uref{#ix86-*-sco3.2v5*,,i?86-*-sco3.2v5*}
 @item
@@ -1928,8 +1923,6 @@ GNU Compiler Collection on your machine.
 @uref{#powerpcle-*-eabisim,,powerpcle-*-eabisim}
 @item
 @uref{#powerpcle-*-eabi,,powerpcle-*-eabi}
-@item
-@uref{#powerpcle-*-winnt,,powerpcle-*-winnt, powerpcle-*-pe}
 @item
 @uref{#s390-*-linux*,,s390-*-linux*}
 @item
@@ -2122,13 +2115,6 @@ require GNU binutils 2.13 or newer.  Such subtargets include:
 ARM-family processors.  Note that there are two diffierent varieties
 of PE format subtarget supported: @code{arm-wince-pe} and
 @code{arm-pe} as well as a standard COFF target @code{arm-*-coff}.
-
-@html
-<hr />
-@end html
-@heading @anchor{arm-*-aof}arm-*-aof
-ARM-family processors.  These targets support the AOF file format:
-@code{arm-*-aof}, @code{arm-*-risix*}.
 
 @html
 <hr />
@@ -2512,8 +2498,7 @@ glibc 2.2.4 whether patches for GCC 3.0 are needed.  You can use glibc
 @end html
 @heading @anchor{ix86-*-linux*aout}i?86-*-linux*aout
 Use this configuration to generate @file{a.out} binaries on Linux-based
-GNU systems.  This configuration is being superseded.  You must use
-gas/binutils version 2.5.2 or later.
+GNU systems.  This configuration is being superseded.
 
 @html
 <hr />
@@ -2525,19 +2510,6 @@ You will need binutils 2.9.1.0.15 or newer for exception handling to work.
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
 found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
-
-@html
-<hr />
-@end html
-@heading @anchor{ix86-*-sco}i?86-*-sco
-Compilation with RCC is recommended.  Also, it may be a good idea to
-link with GNU malloc instead of the malloc that comes with the system.
-
-@html
-<hr />
-@end html
-@heading @anchor{ix86-*-sco3.2v4}i?86-*-sco3.2v4
-Use this configuration for SCO release 3.2 version 4.
 
 @html
 <hr />
@@ -2626,22 +2598,14 @@ have installed.
 IA-64 processor (also known as IPF, or Itanium Processor Family)
 running GNU/Linux.
 
-The toolchain is not completely finished, so requirements will continue
-to change.
-GCC 3.0.1 and later require glibc 2.2.4.
-GCC 3.0.2 requires binutils from 2001-09-05 or later.
-GCC 3.0.1 requires binutils 2.11.1 or later.
-
 None of the following versions of GCC has an ABI that is compatible
 with any of the other versions in this list, with the exception that
 Red Hat 2.96 and Trillian 000171 are compatible with each other:
-3.0.2, 3.0.1, 3.0, Red Hat 2.96, and Trillian 000717.
+3.1, 3.0.2, 3.0.1, 3.0, Red Hat 2.96, and Trillian 000717.
 This primarily affects C++ programs and programs that create shared libraries.
-Because of these ABI incompatibilities, GCC 3.0.2 is not recommended for
-user programs on GNU/Linux systems built using earlier compiler releases.
-GCC 3.0.2 is recommended for compiling linux, the kernel.
-GCC 3.0.2 is believed to be fully ABI compliant, and hence no more major
-ABI changes are expected.
+GCC 3.1 or later is recommended for compiling linux, the kernel.
+As of version 3.1 GCC is believed to be fully ABI compliant, and hence no
+more major ABI changes are expected.
 
 @html
 <hr />
@@ -2650,7 +2614,7 @@ ABI changes are expected.
 @heading @anchor{*-ibm-aix*}*-ibm-aix*
 AIX version 3 or older is no longer supported.
 
-AIX Make frequently has problems with GCC makefiles.  GNU Make 3.76 or
+AIX Make frequently has problems with GCC makefiles.  GNU Make 3.79.1 or
 newer is recommended to build on this platform.
 
 Errors involving @code{alloca} when building GCC generally are due
@@ -2818,11 +2782,7 @@ library version of ``cvtnum(3c)'' and thus does not exhibit the bug.
 
 This patch is also known as PHCO_4484.
 
-In addition, if you wish to use gas, you must use
-gas version 2.1 or later, and you must use the GNU linker version 2.1 or
-later.  Earlier versions of gas relied upon a program which converted the
-gas output into the native HP-UX format, but that program has not been
-kept up to date.  gdb does not understand that native HP-UX format, so
+In addition gdb does not understand that native HP-UX format, so
 you must use gas if you wish to use gdb.
 
 On HP-UX version 8.05, but not on 8.07 or more recent versions, the
@@ -3092,12 +3052,6 @@ the PSIM simulator.
 @end html
 @heading @anchor{powerpcle-*-eabi}powerpcle-*-eabi
 Embedded PowerPC system in little endian mode.
-
-@html
-<hr />
-@end html
-@heading @anchor{powerpcle-*-winnt}powerpcle-*-winnt, powerpcle-*-pe
-PowerPC system in little endian mode running Windows NT@.
 
 @html
 <hr />
