@@ -4,6 +4,45 @@
 
 2003-10-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* name-lookup.h (cxx_scope_find_binding_for_name): Don't export.
+	(binding_for_name): Likewise.
+	(cxx_binding_clear): Move to name-lookup.c.
+	* name-lookup.c (cxx_scope_find_binding_for_name): Now static.
+	(binding_for_name): Likewise.
+	* decl2.c (is_ancestor): Move to name-lookup.c
+	(namespace_ancestor): Likewise.
+	(add_using_namespace): Likewise.
+	(ambiguous_decl): Likewise.
+	(lookup_using_namespace): Likewise.
+	(qualified_lookup_using_namespace): Likewise.
+	(set_decl_namespace): Likewise.
+	(decl_namespace): Likewise.
+	(current_decl_namespace): Likewise.
+	(push_decl_namespace): Likewise.
+	(pop_decl_namespace): Likewise.
+	(push_scope): Likewise.
+	(pop_scope): Likewise.
+	(struct arg_lookup): Likewise.
+	(arg_assoc): Likewise.
+	(arg_assoc_args): Likewise.
+	(arg_assoc_type): Likewise.
+	(add_function): Likewise.
+	(arg_assoc_namespace): Likewise.
+	(arg_assoc_class): Likewise.
+	(arg_assoc_template_arg): Likewise.
+	(do_namespace_alias): Likewise.
+	(validate_nonmember_using_decl): Likewise.
+	(do_nonmember_using_decl): Likewise.
+	(do_toplevel_using_decl): Likewise.
+	(do_local_using_decl): Likewise.
+	(do_class_using_decl): Likewise.
+	(do_using_directive): Likewise.
+	(constructor_name_full): Likewise.
+	(constructor_name): Likewise.
+	(constructor_name_p): Likewise.
+
+2003-10-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Break out decl.c (2/n) 
 	* name-lookup.c: Include diagnostic.h
 	(cxx_binding_free): Make static.

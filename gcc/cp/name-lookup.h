@@ -70,9 +70,6 @@ typedef struct cp_binding_level cxx_scope;
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
 
-/* Zero out a cxx_binding pointed to by B.  */
-#define cxx_binding_clear(B) memset ((B), 0, sizeof (cxx_binding))
-
 struct cxx_binding GTY(())
 {
   /* Link to chain together various bindings for this name.  */
@@ -91,6 +88,9 @@ extern tree identifier_type_value (tree);
 extern void set_identifier_type_value (tree, tree);
 extern void pop_binding (tree, tree);
 extern void clear_identifier_class_values (void);
+extern tree constructor_name_full (tree);
+extern tree constructor_name (tree);
+extern bool constructor_name_p (tree, tree);
 
 /* The kinds of scopes we recognize.  */
 typedef enum scope_kind {
@@ -267,16 +267,18 @@ extern void pop_from_top_level (void);
 extern void maybe_push_to_top_level (int);
 extern void pop_everything (void);
 extern void keep_next_level (bool);
+extern bool is_ancestor (tree, tree);
+extern void push_scope (tree);
+extern void pop_scope (tree);
 
 extern void push_namespace (tree);
 extern void pop_namespace (void);
 extern void push_nested_namespace (tree);
 extern void pop_nested_namespace (tree);
+extern tree namespace_ancestor (tree, tree);
 extern tree push_using_directive (tree);
 extern void pushlevel_class (void);
 extern void poplevel_class (void);
-extern cxx_binding *cxx_scope_find_binding_for_name (cxx_scope *, tree);
-extern cxx_binding *binding_for_name (cxx_scope *, tree);
 extern tree pushdecl_with_scope (tree, cxx_scope *);
 extern tree lookup_tag (enum tree_code, tree, cxx_scope *, int);
 extern tree lookup_tag_reverse (tree, tree);
@@ -284,6 +286,8 @@ extern tree lookup_name	(tree, int);
 extern tree lookup_name_real (tree, int, int, int, int);
 extern tree lookup_name_current_level (tree);
 extern tree lookup_type_current_level (tree);
+extern bool lookup_using_namespace (tree, cxx_binding *, tree, tree, int, tree *);
+extern bool qualified_lookup_using_namespace (tree, tree, cxx_binding *, int);
 extern tree namespace_binding (tree, tree);
 extern void add_decl_to_level (tree, cxx_scope *);
 extern void set_namespace_binding (tree, tree, tree);
@@ -301,6 +305,16 @@ extern void storetags (tree);
 extern tree getdecls (void);
 extern tree cp_namespace_decls (tree);
 extern void set_class_shadows (tree);
+extern void set_decl_namespace (tree, tree, bool);
+extern tree current_decl_namespace (void);
+extern void push_decl_namespace (tree);
+extern void pop_decl_namespace (void);
+extern void do_namespace_alias (tree, tree);
+extern void do_toplevel_using_decl (tree);
+extern void do_local_using_decl (tree);
+extern tree do_class_using_decl (tree);
+extern void do_using_directive (tree);
+extern tree lookup_arg_dependent (tree, tree, tree);
 
 
 /* Set *DECL to the (non-hidden) declaration for ID at global scope,
