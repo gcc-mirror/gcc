@@ -1,3 +1,9 @@
+2001-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (copy_node): Remove documentation about obstacks.
+	(buidl1): Check that nobody tries to build 2-argument nodes this
+	way.
+
 2001-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* sparc.h (PREDICATE_CODES): Delete fp_sethi_p, fp_mov_p and
