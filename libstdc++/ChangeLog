@@ -1,3 +1,7 @@
+Sun Nov 16 22:41:55 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (SHLIB): Build with CC instead of CXX.
+
 Sun Nov  2 23:34:09 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in: Use delta.mt for m68k-motorola-sysv.
