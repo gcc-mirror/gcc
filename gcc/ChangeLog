@@ -1,3 +1,7 @@
+2004-10-08  Michael Matz  <matz@suse.de>
+
+	* loop-doloop.c (doloop_optimize): Extend count.
+
 2004-10-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (prefetch_media, prefetch_i4): New insns.
