@@ -2208,12 +2208,5 @@ reg_classes_intersect_p (c1, c2)
 void
 regset_release_memory ()
 {
-  if (basic_block_live_at_start)
-    {
-      free_regset_vector (basic_block_live_at_start, n_basic_blocks);
-      basic_block_live_at_start = 0;
-    }
-
-  FREE_REG_SET (regs_live_at_setjmp);
   bitmap_release_memory ();
 }

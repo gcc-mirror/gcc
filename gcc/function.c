@@ -262,6 +262,11 @@ tree nonlocal_labels;
 
 rtx nonlocal_goto_handler_slots;
 
+/* List (chain of EXPR_LIST) of labels heading the current handlers for
+   nonlocal gotos.  */
+
+rtx nonlocal_goto_handler_labels;
+
 /* RTX for stack slot that holds the stack pointer value to restore
    for a nonlocal goto.
    Zero when function does not have nonlocal labels.  */
@@ -559,6 +564,7 @@ push_function_context_to (context)
   p->outgoing_args_size = current_function_outgoing_args_size;
   p->return_rtx = current_function_return_rtx;
   p->nonlocal_goto_handler_slots = nonlocal_goto_handler_slots;
+  p->nonlocal_goto_handler_labels = nonlocal_goto_handler_labels;
   p->nonlocal_goto_stack_level = nonlocal_goto_stack_level;
   p->nonlocal_labels = nonlocal_labels;
   p->cleanup_label = cleanup_label;
@@ -644,6 +650,7 @@ pop_function_context_from (context)
   current_function_outgoing_args_size = p->outgoing_args_size;
   current_function_return_rtx = p->return_rtx;
   nonlocal_goto_handler_slots = p->nonlocal_goto_handler_slots;
+  nonlocal_goto_handler_labels = p->nonlocal_goto_handler_labels;
   nonlocal_goto_stack_level = p->nonlocal_goto_stack_level;
   nonlocal_labels = p->nonlocal_labels;
   cleanup_label = p->cleanup_label;
@@ -3852,21 +3859,6 @@ delete_handlers ()
 	}
     }
 }
-
-/* Return a list (chain of EXPR_LIST nodes) for the nonlocal labels
-   of the current function.  */
-
-rtx
-nonlocal_label_rtx_list ()
-{
-  tree t;
-  rtx x = 0;
-
-  for (t = nonlocal_labels; t; t = TREE_CHAIN (t))
-    x = gen_rtx_EXPR_LIST (VOIDmode, label_rtx (TREE_VALUE (t)), x);
-
-  return x;
-}
 
 /* Output a USE for any register use in RTL.
    This is used with -noreg to mark the extent of lifespan
@@ -5644,6 +5636,7 @@ init_function_start (subr, filename, line)
 
   /* No labels have been declared for nonlocal use.  */
   nonlocal_labels = 0;
+  nonlocal_goto_handler_labels = 0;
 
   /* No function calls so far in this function.  */
   function_call_count = 0;
@@ -6438,100 +6431,172 @@ contains (insn, vec)
 
 void
 thread_prologue_and_epilogue_insns (f)
-     rtx f ATTRIBUTE_UNUSED;
+     rtx f;
 {
+  int insertted = 0;
+
+  prologue = 0;
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
-      rtx head, seq;
+      rtx seq;
 
-      /* The first insn (a NOTE_INSN_DELETED) is followed by zero or more
-	 prologue insns and a NOTE_INSN_PROLOGUE_END.  */
-      emit_note_after (NOTE_INSN_PROLOGUE_END, f);
-      seq = gen_prologue ();
-      head = emit_insn_after (seq, f);
-
-      /* Include the new prologue insns in the first block.  Ignore them
-	 if they form a basic block unto themselves.  */
-      if (x_basic_block_head && n_basic_blocks
-	  && GET_CODE (BLOCK_HEAD (0)) != CODE_LABEL)
-	BLOCK_HEAD (0) = NEXT_INSN (f);
+      start_sequence ();
+      seq = gen_prologue();
+      emit_insn (seq);
 
       /* Retain a map of the prologue insns.  */
-      prologue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : head);
-    }
-  else
-#endif
-    prologue = 0;
+      if (GET_CODE (seq) != SEQUENCE)
+	seq = get_insns ();
+      prologue = record_insns (seq);
 
+      emit_note (NULL, NOTE_INSN_PROLOGUE_END);
+      seq = gen_sequence ();
+      end_sequence ();
+
+      /* If optimization is off, and perhaps in an empty function,
+	 the entry block will have no successors.  */
+      if (ENTRY_BLOCK_PTR->succ)
+	{
+	  /* Can't deal with multiple successsors of the entry block.  */
+	  if (ENTRY_BLOCK_PTR->succ->succ_next)
+	    abort ();
+
+	  insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
+	  insertted = 1;
+	}
+      else
+	emit_insn_after (seq, f);
+    }
+#endif
+
+  epilogue = 0;
 #ifdef HAVE_epilogue
   if (HAVE_epilogue)
     {
-      rtx insn = get_last_insn ();
-      rtx prev = prev_nonnote_insn (insn);
+      edge e;
+      basic_block bb = 0;
+      rtx tail = get_last_insn ();
 
-      /* If we end with a BARRIER, we don't need an epilogue.  */
-      if (! (prev && GET_CODE (prev) == BARRIER))
+      /* ??? This is gastly.  If function returns were not done via uses,
+	 but via mark_regs_live_at_end, we could use insert_insn_on_edge
+	 and all of this uglyness would go away.  */
+
+      switch (optimize)
 	{
-	  rtx tail, seq, tem;
-	  rtx first_use = 0;
-	  rtx last_use = 0;
+	default:
+	  /* If the exit block has no non-fake predecessors, we don't
+	     need an epilogue.  Furthermore, only pay attention to the
+	     fallthru predecessors; if (conditional) return insns were
+	     generated, by definition we do not need to emit epilogue
+	     insns.  */
 
-	  /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG, the
-	     epilogue insns, the USE insns at the end of a function,
-	     the jump insn that returns, and then a BARRIER.  */
+	  for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+	    if ((e->flags & EDGE_FAKE) == 0
+		&& (e->flags & EDGE_FALLTHRU) != 0)
+	      break;
+	  if (e == NULL)
+	    break;
 
-	  /* Move the USE insns at the end of a function onto a list.  */
-	  while (prev
-		 && GET_CODE (prev) == INSN
-		 && GET_CODE (PATTERN (prev)) == USE)
-	    {
-	      tem = prev;
+	  /* We can't handle multiple epilogues -- if one is needed,
+	     we won't be able to place it multiple times.
+
+	     ??? Fix epilogue expanders to not assume they are the
+	     last thing done compiling the function.  Either that
+	     or copy_rtx each insn.
+
+	     ??? Blah, it's not a simple expression to assert that
+	     we've exactly one fallthru exit edge.  */
+
+	  bb = e->src;
+	  tail = bb->end;
+
+	  /* ??? If the last insn of the basic block is a jump, then we
+	     are creating a new basic block.  Wimp out and leave these
+	     insns outside any block.  */
+	  if (GET_CODE (tail) == JUMP_INSN)
+	    bb = 0;
+
+	  /* FALLTHRU */
+	case 0:
+	  {
+	    rtx prev, seq, first_use;
+
+	    /* Move the USE insns at the end of a function onto a list.  */
+	    prev = tail;
+	    if (GET_CODE (prev) == BARRIER
+		|| GET_CODE (prev) == NOTE)
 	      prev = prev_nonnote_insn (prev);
 
-	      NEXT_INSN (PREV_INSN (tem)) = NEXT_INSN (tem);
-	      PREV_INSN (NEXT_INSN (tem)) = PREV_INSN (tem);
-	      if (first_use)
-		{
-		  NEXT_INSN (tem) = first_use;
-		  PREV_INSN (first_use) = tem;
-		}
-	      first_use = tem;
-	      if (!last_use)
-		last_use = tem;
-	    }
+	    first_use = 0;
+	    if (prev
+		&& GET_CODE (prev) == INSN
+		&& GET_CODE (PATTERN (prev)) == USE)
+	      {
+		/* If the end of the block is the use, grab hold of something
+		   else so that we emit barriers etc in the right place.  */
+		if (prev == tail)
+		  {
+		    do 
+		      tail = PREV_INSN (tail);
+		    while (GET_CODE (tail) == INSN
+			   && GET_CODE (PATTERN (tail)) == USE);
+		  }
 
-	  emit_barrier_after (insn);
+		do
+		  {
+		    rtx use = prev;
+		    prev = prev_nonnote_insn (prev);
 
-	  seq = gen_epilogue ();
-	  tail = emit_jump_insn_after (seq, insn);
+		    remove_insn (use);
+		    if (first_use)
+		      {
+			NEXT_INSN (use) = first_use;
+			PREV_INSN (first_use) = use;
+		      }
+		    else
+		      NEXT_INSN (use) = NULL_RTX;
+		    first_use = use;
+		  }
+		while (prev
+		       && GET_CODE (prev) == INSN
+		       && GET_CODE (PATTERN (prev)) == USE);
+	      }
 
-	  /* Insert the USE insns immediately before the return insn, which
-	     must be the first instruction before the final barrier.  */
-	  if (first_use)
-	    {
-	      tem = prev_nonnote_insn (get_last_insn ());
-	      NEXT_INSN (PREV_INSN (tem)) = first_use;
-	      PREV_INSN (first_use) = PREV_INSN (tem);
-	      PREV_INSN (tem) = last_use;
-	      NEXT_INSN (last_use) = tem;
-	    }
+	    /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG, the
+	       epilogue insns, the USE insns at the end of a function,
+	       the jump insn that returns, and then a BARRIER.  */
 
-	  emit_note_after (NOTE_INSN_EPILOGUE_BEG, insn);
+	    if (GET_CODE (tail) != BARRIER)
+	      {
+		prev = next_nonnote_insn (tail);
+		if (!prev || GET_CODE (prev) != BARRIER)
+		  emit_barrier_after (tail);
+	      }
 
-	  /* Include the new epilogue insns in the last block.  Ignore
-	     them if they form a basic block unto themselves.  */
-	  if (x_basic_block_end && n_basic_blocks
-	      && GET_CODE (BLOCK_END (n_basic_blocks - 1)) != JUMP_INSN)
-	    BLOCK_END (n_basic_blocks - 1) = tail;
+	    seq = gen_epilogue ();
+	    prev = tail;
+	    tail = emit_jump_insn_after (seq, tail);
 
-	  /* Retain a map of the epilogue insns.  */
-	  epilogue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : tail);
-	  return;
+	    /* Insert the USE insns immediately before the return insn, which
+	       must be the last instruction emitted in the sequence.  */
+	    if (first_use)
+	      emit_insns_before (first_use, tail);
+	    emit_note_after (NOTE_INSN_EPILOGUE_BEG, prev);
+
+	    /* Update the tail of the basic block.  */
+	    if (bb)
+	      bb->end = tail;
+
+	    /* Retain a map of the epilogue insns.  */
+	    epilogue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : tail);
+	  }
 	}
     }
 #endif
-  epilogue = 0;
+
+  if (insertted)
+    commit_edge_insertions ();
 }
 
 /* Reposition the prologue-end and epilogue-begin notes after instruction

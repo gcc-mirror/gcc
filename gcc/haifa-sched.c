@@ -472,8 +472,8 @@ typedef struct
     int next_in;
     int next_out;
   }
-edge;
-static edge *edge_table;
+haifa_edge;
+static haifa_edge *edge_table;
 
 #define NEXT_IN(edge) (edge_table[edge].next_in)
 #define NEXT_OUT(edge) (edge_table[edge].next_out)
@@ -1082,7 +1082,7 @@ is_cfg_nonregular ()
 
   /* If we have a label that could be the target of a nonlocal goto, then
      the cfg is not well structured.  */
-  if (nonlocal_label_rtx_list () != NULL)
+  if (nonlocal_goto_handler_labels)
     return 1;
 
   /* If we have any forced labels, then the cfg is not well structured.  */
@@ -1169,8 +1169,8 @@ build_control_flow (s_preds, s_succs, num_preds, num_succs)
   bzero ((char *) in_edges, n_basic_blocks * sizeof (int));
   bzero ((char *) out_edges, n_basic_blocks * sizeof (int));
 
-  edge_table = (edge *) xmalloc ((nr_edges) * sizeof (edge));
-  bzero ((char *) edge_table, ((nr_edges) * sizeof (edge)));
+  edge_table = (haifa_edge *) xmalloc ((nr_edges) * sizeof (haifa_edge));
+  bzero ((char *) edge_table, ((nr_edges) * sizeof (haifa_edge)));
 
   nr_edges = 0;
   for (i = 0; i < n_basic_blocks; i++)
@@ -2153,7 +2153,8 @@ check_live_1 (src, x)
 		{
 		  int b = candidate_table[src].split_bbs.first_member[i];
 
-		  if (REGNO_REG_SET_P (basic_block_live_at_start[b], regno + j))
+		  if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start,
+				       regno + j))
 		    {
 		      return 0;
 		    }
@@ -2167,7 +2168,7 @@ check_live_1 (src, x)
 	    {
 	      int b = candidate_table[src].split_bbs.first_member[i];
 
-	      if (REGNO_REG_SET_P (basic_block_live_at_start[b], regno))
+	      if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, regno))
 		{
 		  return 0;
 		}
@@ -2227,7 +2228,8 @@ update_live_1 (src, x)
 		{
 		  int b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (basic_block_live_at_start[b], regno + j);
+		  SET_REGNO_REG_SET (BASIC_BLOCK (b)->global_live_at_start,
+				     regno + j);
 		}
 	    }
 	}
@@ -2237,7 +2239,7 @@ update_live_1 (src, x)
 	    {
 	      int b = candidate_table[src].update_bbs.first_member[i];
 
-	      SET_REGNO_REG_SET (basic_block_live_at_start[b], regno);
+	      SET_REGNO_REG_SET (BASIC_BLOCK (b)->global_live_at_start, regno);
 	    }
 	}
     }
@@ -5135,7 +5137,7 @@ finish_sometimes_live (regs_sometimes_live, sometimes_max)
 
 /* functions for computation of registers live/usage info */
 
-/* It is assumed that prior to scheduling basic_block_live_at_start (b)
+/* It is assumed that prior to scheduling BASIC_BLOCK (b)->global_live_at_start
    contains the registers that are alive at the entry to b.
 
    Two passes follow: The first pass is performed before the scheduling
@@ -5165,7 +5167,7 @@ find_pre_sched_live (bb)
   int b = BB_TO_BLOCK (bb);
 
   get_block_head_tail (bb, &head, &tail);
-  COPY_REG_SET (bb_live_regs, basic_block_live_at_start[b]);
+  COPY_REG_SET (bb_live_regs, BASIC_BLOCK (b)->global_live_at_start);
   next_tail = NEXT_INSN (tail);
 
   for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
@@ -5303,7 +5305,8 @@ find_post_sched_live (bb)
 	    int b_succ;
 
 	    b_succ = TO_BLOCK (e);
-	    IOR_REG_SET (bb_live_regs, basic_block_live_at_start[b_succ]);
+	    IOR_REG_SET (bb_live_regs,
+			 BASIC_BLOCK (b_succ)->global_live_at_start);
 	    e = NEXT_OUT (e);
 	  }
 	while (e != first_edge);
@@ -5325,7 +5328,7 @@ find_post_sched_live (bb)
       && (GET_RTX_CLASS (GET_CODE (tail)) != 'i'))
     {
       if (current_nr_blocks > 1)
-	COPY_REG_SET (basic_block_live_at_start[b], bb_live_regs);
+	COPY_REG_SET (BASIC_BLOCK (b)->global_live_at_start, bb_live_regs);
 
       return;
     }
@@ -5448,9 +5451,9 @@ find_post_sched_live (bb)
 
   finish_sometimes_live (regs_sometimes_live, sometimes_max);
 
-  /* In interblock scheduling, basic_block_live_at_start may have changed.  */
+  /* In interblock scheduling, global_live_at_start may have changed.  */
   if (current_nr_blocks > 1)
-    COPY_REG_SET (basic_block_live_at_start[b], bb_live_regs);
+    COPY_REG_SET (BASIC_BLOCK (b)->global_live_at_start, bb_live_regs);
 
 
   FREE_REG_SET (old_live_regs);
@@ -5522,7 +5525,7 @@ update_reg_usage ()
 	   pseudos which are live in more than one block.
 
 	   This is because combine might have made an optimization which
-	   invalidated basic_block_live_at_start and reg_n_calls_crossed,
+	   invalidated global_live_at_start and reg_n_calls_crossed,
 	   but it does not update them.  If we update reg_n_calls_crossed
 	   here, the two variables are now inconsistent, and this might
 	   confuse the caller-save code into saving a register that doesn't
@@ -8530,7 +8533,7 @@ schedule_insns (dump_file)
 
 	  /* The scheduler runs after flow; therefore, we can't blindly call
 	     back into find_basic_blocks since doing so could invalidate the
-	     info in basic_block_live_at_start.
+	     info in global_live_at_start.
 
 	     Consider a block consisting entirely of dead stores; after life
 	     analysis it would be a block of NOTE_INSN_DELETED notes.  If

@@ -2710,7 +2710,7 @@ emit_call_insn_before (pattern, before)
 }
 
 /* Make an insn of code BARRIER
-   and output it before the insn AFTER.  */
+   and output it before the insn BEFORE.  */
 
 rtx
 emit_barrier_before (before)
@@ -2722,6 +2722,23 @@ emit_barrier_before (before)
 
   add_insn_before (insn, before);
   return insn;
+}
+
+/* Emit the label LABEL before the insn BEFORE.  */
+
+rtx
+emit_label_before (label, before)
+     rtx label, before;
+{
+  /* This can be called twice for the same label as a result of the
+     confusion that follows a syntax error!  So make it harmless.  */
+  if (INSN_UID (label) == 0)
+    {
+      INSN_UID (label) = cur_insn_uid++;
+      add_insn_before (label, before);
+    }
+
+  return label;
 }
 
 /* Emit a note of subtype SUBTYPE before the insn BEFORE.  */

@@ -83,6 +83,7 @@ struct function
   int has_computed_jump;
   int is_thunk;
   rtx nonlocal_goto_handler_slots;
+  rtx nonlocal_goto_handler_labels;
   rtx nonlocal_goto_stack_level;
   tree nonlocal_labels;
   int args_size;

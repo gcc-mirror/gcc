@@ -875,7 +875,7 @@ mark_target_live_regs (insns, target, res)
      TARGET.  Otherwise, we must assume everything is live.  */
   if (b != -1)
     {
-      regset regs_live = basic_block_live_at_start[b];
+      regset regs_live = BASIC_BLOCK (b)->global_live_at_start;
       int j;
       int regno;
       rtx start_insn, stop_insn;

@@ -1967,11 +1967,17 @@ expand_rethrow (label)
           label = last_rethrow_symbol;
         emit_library_call (rethrow_libfunc, 0, VOIDmode, 1, label, Pmode);
         SYMBOL_REF_USED (label) = 1;
+
+	/* Search backwards for the actual call insn.  */
         insn = get_last_insn ();
-        val = GEN_INT (eh_region_from_symbol (label));
+	while (GET_CODE (insn) != CALL_INSN)
+	  insn = PREV_INSN (insn);
+	delete_insns_since (insn);
+	
         /* Mark the label/symbol on the call. */
+        val = GEN_INT (eh_region_from_symbol (label));
         REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EH_RETHROW, val,
-                                     REG_NOTES (insn));
+					      REG_NOTES (insn));
         emit_barrier ();
       }
     else

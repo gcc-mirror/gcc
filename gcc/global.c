@@ -648,7 +648,7 @@ global_conflicts ()
 	 are explicitly marked in basic_block_live_at_start.  */
 
       {
-	register regset old = basic_block_live_at_start[b];
+	register regset old = BASIC_BLOCK (b)->global_live_at_start;
 	int ax = 0;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
@@ -671,12 +671,22 @@ global_conflicts ()
 	record_conflicts (block_start_allocnos, ax);
 
 #ifdef STACK_REGS
-	/* Pseudos can't go in stack regs at the start of a basic block
-	   that can be reached through a computed goto, since reg-stack
-	   can't handle computed gotos.  */
-	if (basic_block_computed_jump_target[b])
-	  for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
-	    record_one_conflict (ax);
+	{
+	  /* Pseudos can't go in stack regs at the start of a basic block
+	     that can be reached through a computed goto, since reg-stack
+	     can't handle computed gotos.  */
+	  /* ??? Seems more likely that reg-stack can't handle any abnormal
+	     edges, critical or not, computed goto or otherwise.  */
+
+	  edge e;
+	  for (e = BASIC_BLOCK (b)->pred; e ; e = e->pred_next)
+	    if (e->flags & EDGE_ABNORMAL)
+	      break;
+
+	  if (e != NULL)
+	    for (ax = FIRST_STACK_REG; ax <= LAST_STACK_REG; ax++)
+	      record_one_conflict (ax);
+	}
 #endif
       }
 
@@ -1598,11 +1608,14 @@ mark_elimination (from, to)
   int i;
 
   for (i = 0; i < n_basic_blocks; i++)
-    if (REGNO_REG_SET_P (basic_block_live_at_start[i], from))
-      {
-	CLEAR_REGNO_REG_SET (basic_block_live_at_start[i], from);
-	SET_REGNO_REG_SET (basic_block_live_at_start[i], to);
-      }
+    {
+      register regset r = BASIC_BLOCK (i)->global_live_at_start; 
+      if (REGNO_REG_SET_P (r, from))
+	{
+	  CLEAR_REGNO_REG_SET (r, from);
+	  SET_REGNO_REG_SET (r, to);
+	}
+    }
 }
 
 /* Used for communication between the following functions.  Holds the
@@ -1672,13 +1685,13 @@ build_insn_chain (first)
 	  int i;
 	  CLEAR_REG_SET (live_relevant_regs);
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (REGNO_REG_SET_P (basic_block_live_at_start[b], i)
+	    if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i)
 		&& ! TEST_HARD_REG_BIT (eliminable_regset, i))
 	      SET_REGNO_REG_SET (live_relevant_regs, i);
 
 	  for (; i < max_regno; i++)
 	    if (reg_renumber[i] >= 0
-		&& REGNO_REG_SET_P (basic_block_live_at_start[b], i))
+		&& REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, i))
 	      SET_REGNO_REG_SET (live_relevant_regs, i);
 	}
 

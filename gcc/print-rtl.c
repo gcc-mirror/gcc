@@ -22,9 +22,9 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
-#include "bitmap.h"
 #include "real.h"
 #include "flags.h"
+#include "basic-block.h"
 
 
 /* How to print out a register name.
@@ -167,6 +167,14 @@ print_rtx (in_rtx)
 	      fprintf (outfile, " ");
 	    print_rtx (NOTE_RANGE_INFO (in_rtx));
 	    indent -= 2;
+	    break;
+	  }
+
+	if (i == 3 && GET_CODE (in_rtx) == NOTE
+	    && NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BASIC_BLOCK)
+	  {
+	    basic_block bb = NOTE_BASIC_BLOCK (in_rtx);
+	    fprintf (outfile, " [bb %d]", bb->index);
 	    break;
 	  }
 

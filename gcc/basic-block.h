@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "bitmap.h"
 #include "sbitmap.h"
+#include "varray.h"
 
 typedef bitmap regset;		/* Head of register set linked list.  */
 
@@ -95,29 +96,65 @@ do {									\
 /* Grow any tables needed when the number of registers is calculated
    or extended.  For the linked list allocation, nothing needs to
    be done, other than zero the statistics on the first allocation.  */
-#define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P)
+#define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P) 
+
+/* Control flow edge information.  */
+typedef struct edge_def {
+  /* Links through the predecessor and successor lists.  */
+  struct edge_def *pred_next, *succ_next;
+
+  /* The two blocks at the ends of the edge.  */
+  struct basic_block_def *src, *dest;
+
+  /* Instructions queued on the edge.  */
+  rtx insns;
+
+  /* Auxiliary info specific to a pass.  */
+  void *aux;
+
+  int flags;			/* see EDGE_* below  */
+  int probability;		/* biased by REG_BR_PROB_BASE */
+} *edge;
+
+#define EDGE_FALLTHRU		1
+#define EDGE_CRITICAL		2
+#define EDGE_ABNORMAL		4
+#define EDGE_ABNORMAL_CALL	8
+#define EDGE_EH			16
+#define EDGE_FAKE		32
+
+
+/* Basic block information indexed by block number.  */
+typedef struct basic_block_def {
+  /* The first and last insns of the block.  */
+  rtx head, end;
+
+  /* The edges into and out of the block.  */
+  edge pred, succ;
+
+  /* Liveness info.  */
+  regset local_set;
+  regset global_live_at_start;
+  regset global_live_at_end;
+
+  /* Auxiliary info specific to a pass.  */
+  void *aux;
+
+  /* The index of this block.  */
+  int index;
+  /* The loop depth of this block plus one.  */
+  int loop_depth;
+} *basic_block;
 
 /* Number of basic blocks in the current function.  */
 
 extern int n_basic_blocks;
 
-/* Index by basic block number, get first insn in the block.  */
+/* Index by basic block number, get basic block struct info.  */
 
-extern rtx *x_basic_block_head;
+extern varray_type basic_block_info;
 
-/* Index by basic block number, get last insn in the block.  */
-
-extern rtx *x_basic_block_end;
-
-/* Index by basic block number, determine whether the block can be reached
-   through a computed jump.  */
-
-extern char *basic_block_computed_jump_target;
-
-/* Index by basic block number, get address of regset
-   describing the registers live at the start of that block.  */
-
-extern regset *basic_block_live_at_start;
+#define BASIC_BLOCK(N)  (VARRAY_BB (basic_block_info, (N)))
 
 /* What registers are live at the setjmp call.  */
 
@@ -177,24 +214,38 @@ extern void free_int_list               PROTO ((int_list_block **));
 
 /* Stuff for recording basic block info.  */
 
-#define BLOCK_HEAD(B)      x_basic_block_head[(B)]
-#define BLOCK_END(B)       x_basic_block_end[(B)]
+#define BLOCK_HEAD(B)      (BASIC_BLOCK (B)->head)
+#define BLOCK_END(B)       (BASIC_BLOCK (B)->end)
 
 /* Special block numbers [markers] for entry and exit.  */
 #define ENTRY_BLOCK (-1)
 #define EXIT_BLOCK (-2)
 
-/* from flow.c */
-extern void free_regset_vector PROTO ((regset *, int nelts));
-extern int *uid_block_number;
-#define BLOCK_NUM(INSN)    uid_block_number[INSN_UID (INSN)]
+/* Similarly, block pointers for the edge list.  */
+extern struct basic_block_def entry_exit_blocks[2];
+#define ENTRY_BLOCK_PTR	(&entry_exit_blocks[0])
+#define EXIT_BLOCK_PTR	(&entry_exit_blocks[1])
 
-extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *,
-				       int));
-extern void free_bb_mem        PROTO ((void));
+/* from flow.c */
+extern void free_regset_vector		PROTO ((regset *, int nelts));
+
+extern varray_type basic_block_for_insn;
+#define BLOCK_FOR_INSN(INSN)  VARRAY_BB (basic_block_for_insn, INSN_UID (INSN))
+#define BLOCK_NUM(INSN)	      (BLOCK_FOR_INSN (INSN)->index + 0)
+
+extern void set_block_for_insn		PROTO ((rtx, basic_block));
+
+extern void dump_bb_data		PROTO ((FILE *, int_list_ptr *,
+						int_list_ptr *, int));
+extern void free_bb_mem			PROTO ((void));
 extern void free_basic_block_vars	PROTO ((int));
 
-extern void compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
-                                        int *, int *));
-extern void compute_dominators PROTO ((sbitmap *, sbitmap *,
-				       int_list_ptr *, int_list_ptr *));
+extern basic_block split_edge		PROTO ((edge));
+extern void insert_insn_on_edge		PROTO ((rtx, edge));
+extern void commit_edge_insertions	PROTO ((void));
+
+extern void compute_preds_succs		PROTO ((int_list_ptr *, int_list_ptr *,
+						int *, int *));
+extern void compute_dominators		PROTO ((sbitmap *, sbitmap *,
+						int_list_ptr *,
+						int_list_ptr *));
