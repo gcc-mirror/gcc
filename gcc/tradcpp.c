@@ -739,6 +739,8 @@ main (argc, argv)
 	last_include->next = dirtmp;
       last_include = dirtmp;	/* Tail follows the last one */
       dirtmp->fname = di->fname;
+      if (strlen (dirtmp->fname) > max_include_len)
+	max_include_len = strlen (dirtmp->fname);
     }
 
     if (ignore_srcdir && first_bracket_include == 0)
