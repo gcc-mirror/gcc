@@ -1,3 +1,8 @@
+2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/expr8.C: New test.
+	* g++.old-deja/g++.pt/expr6.C: Remove XFAIL.
+
 2000-06-29  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/compile/20000629-1.c: New test.
