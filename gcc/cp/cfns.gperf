@@ -8,6 +8,7 @@ __inline
 #endif
 const char * libc_name_p (const char *, unsigned int);
 %}
+%%
 # The standard C library functions, for feeding to gperf; the result is used
 # by nothrow_libfn_p.
 #
