@@ -10,6 +10,12 @@
 	assembler error when redefining file numbers.
 	* config.in, configure: Rebuild.
 
+	* dwarf2asm.c (dw2_asm_output_data): Mask data to the output size.
+	(dw2_asm_output_data_uleb128): Use space not tab after .uleb128.
+	(dw2_asm_output_delta_uleb128): Likewise.
+	(dw2_asm_output_delta_sleb128): Similarly.
+	(dw2_asm_output_data_sleb128): Similarly.  Print number in decimal.
+
 2001-03-16  Michael Meissner  <meissner@redhat.com>
 
 	* mips.h (BITMASK_HIGH): Replacement for 0x80000000 that avoids
