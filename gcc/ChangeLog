@@ -1,3 +1,8 @@
+2004-08-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* stmt.c (expand_return): If asked to return the RESULT_DECL,
+	just call expand_value_return on result_rtl.
+
 2004-08-10  Richard Henderson  <rth@redhat.com>
 
 	* builtins.def (BUILT_IN_STACK_ALLOC): Remove.
@@ -107,7 +112,7 @@
 	* config/arm/t-bpabi: New file.
 	* doc/tm.texi (TARGET_LIBGCC_FUNCS): New entry.
 	(TARGET_LIB_INT_CMP_BIASED): Likewise.
-	
+
 2004-08-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000-protos.h (expand_block_clear): Declare.
@@ -121,7 +126,7 @@
 	* varasm.c (unlikely_section_label): New global variable.
 	(unlikely_text_section_name): New global variable.
 	(text_section):  Remove alignment statement.
-	(unlikely_text_section): Remove alignment statement; use 
+	(unlikely_text_section): Remove alignment statement; use
 	unlikely_section_label rather than hard-coded string.
 	(assemble_start_function): Initialize unlikely_section_label and
 	unlikely_text_section_name;  make sure cold section is properly
@@ -138,7 +143,7 @@
 	("*tmqi_mem"): Remove SUBREG from pattern.
 	("*anddi3_cconly"): Prevent accidentally matching TM pattern.
 	("*andsi3_cconly"): Likewise.
-	
+
 2004-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/16909
@@ -171,9 +176,9 @@
 	* tree-cfg.c (bsi_insert_before, bsi_insert_after): Call modify_stmt
 	after linking stmt into the program.
 	(bsi_remove): Don't call modify_stmt.
-	* tree-complex.c (update_complex_assignment, 
+	* tree-complex.c (update_complex_assignment,
 	expand_complex_comparison): Call modify_stmt after changing the stmt.
-	* tree-outof-ssa.c (rewrite_trees): Call modify_stmt only if not 
+	* tree-outof-ssa.c (rewrite_trees): Call modify_stmt only if not
 	removing the stmt.
 	* tree-ssa-ccp.c (substitute_and_fold): Call modify_stmt after changing
 	the stmt, and only if needed.
@@ -182,14 +187,14 @@
 	(simplify_rhs_and_lookup_avail_expr): Don't take an annotation param.
 	(simplify_cond_and_lookup_avail_expr): Use modify_stmt.
 	(simplify_switch_and_lookup_avail_expr): Don't take an annotation param.
-	(eliminate_redundant_computations): Don't pass an annotation. Call 
+	(eliminate_redundant_computations): Don't pass an annotation. Call
 	modify_stmt rather than setting the annotation directly.
 	(record_equivalences_from_stmt): Remove unused local 'j'.
 	(cprop_operand): Take a stmt rather than an annotation as a parameter.
 	Call modify_stmt.
 	(cprop_into_stmt): Pass stmt rather than annotation.
 	(update_rhs_and_lookup_avail_expr): Call modify_stmt.
-	* tree-ssa-loop-im.c (schedule_sm): Call get_stmt_ann rather than 
+	* tree-ssa-loop-im.c (schedule_sm): Call get_stmt_ann rather than
 	modify_stmt.
 	* tree-ssa.c (propagate_into_addr): Dont call modify_stmt.
 
