@@ -58,6 +58,7 @@ echo "$target"
 
 DIVIDESPEC=-fuse-divide-subroutine
 EXCEPTIONSPEC=-fnon-call-exceptions
+CHECKREFSPEC=
 
 case "${host}" in
   mips-tx39-*|mipstx39-unknown-*)
@@ -108,6 +109,8 @@ case "${host}" in
 	with_libffi_default=no
 	PROCESS=Ecos
 	FILE=Posix
+	CHECKREFSPEC=-fcheck-references
+	EXCEPTIONSPEC=
 	enable_java_net_default=no
 	enable_getenv_properties_default=no
 	enable_main_args_default=no
