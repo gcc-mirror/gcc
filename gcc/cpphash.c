@@ -401,7 +401,7 @@ collect_expansion (pfile, arglist)
 	case CPP_NAME:
 	  for (i = 0; i < argc; i++)
 	    if (!strncmp (tok, argv[i].name, argv[i].len)
-		&& ! is_idchar (tok[argv[i].len]))
+		&& tok + argv[i].len == CPP_PWRITTEN (pfile))
 	      goto addref;
 
 	  /* fall through */
@@ -517,7 +517,6 @@ collect_expansion (pfile, arglist)
       while (here > last && is_hspace (pfile->token_buffer [here-1]))
 	here--;
       CPP_SET_WRITTEN (pfile, here);
-      CPP_NUL_TERMINATE (pfile);
       len = CPP_WRITTEN (pfile) - start + 1;
       /* space for no-concat markers at either end */
       exp = (U_CHAR *) xmalloc (len + 4);
@@ -834,7 +833,6 @@ _cpp_quote_string (pfile, src)
       
       case '\0':
 	CPP_PUTC_Q (pfile, '\"');
-	CPP_NUL_TERMINATE_Q (pfile);
 	return;
       }
 }
@@ -851,7 +849,6 @@ special_symbol (hp, pfile)
      cpp_reader *pfile;
 {
   const char *buf;
-  int len;
   cpp_buffer *ip;
 
   switch (hp->type)
@@ -859,6 +856,11 @@ special_symbol (hp, pfile)
     case T_FILE:
     case T_BASE_FILE:
       ip = cpp_file_buffer (pfile);
+      if (ip == NULL)
+	{
+	  CPP_PUTS (pfile, "\"\"", 2);
+	  return;
+	}
       if (hp->type == T_BASE_FILE)
 	while (CPP_PREV_BUFFER (ip) != NULL)
 	  ip = CPP_PREV_BUFFER (ip);
@@ -870,10 +872,13 @@ special_symbol (hp, pfile)
 
     case T_INCLUDE_LEVEL:
       {
-	int true_indepth = 1;
+	int true_indepth = 0;
 	ip = cpp_file_buffer (pfile);
-	while ((ip = CPP_PREV_BUFFER (ip)) != NULL)
-	  true_indepth++;
+	while (ip)
+	  {
+	    true_indepth++;
+	    ip = CPP_PREV_BUFFER (ip);
+	  }
 
 	CPP_RESERVE (pfile, 10);
 	sprintf (CPP_PWRITTEN (pfile), "%d", true_indepth);
@@ -884,11 +889,10 @@ special_symbol (hp, pfile)
     case T_STDC:
 #ifdef STDC_0_IN_SYSTEM_HEADERS
       ip = cpp_file_buffer (pfile);
-      if (ip->system_header_p && !cpp_defined (pfile, DSC("__STRICT_ANSI__")))
+      if (ip && ip->system_header_p
+	  && !cpp_defined (pfile, DSC("__STRICT_ANSI__")))
 	{
-	  CPP_RESERVE (pfile, 2);
-	  CPP_PUTC_Q (pfile, '0');
-	  CPP_NUL_TERMINATE_Q (pfile);
+	  CPP_PUTC (pfile, '0');
 	  return;
 	}
 #endif
@@ -902,14 +906,16 @@ special_symbol (hp, pfile)
       if (*buf == '\0')
 	buf = "\r ";
 
-      len = strlen (buf);
-      CPP_RESERVE (pfile, len + 1);
-      CPP_PUTS_Q (pfile, buf, len);
-      CPP_NUL_TERMINATE_Q (pfile);
+      CPP_PUTS (pfile, buf, strlen (buf));
       return;
 
     case T_SPECLINE:
       ip = cpp_file_buffer (pfile);
+      if (ip == NULL)
+	{
+	  CPP_PUTC (pfile, '0');
+	  return;
+	}
       CPP_RESERVE (pfile, 10);
       sprintf (CPP_PWRITTEN (pfile), "%u", CPP_BUF_LINE (ip));
       CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
@@ -946,9 +952,7 @@ special_symbol (hp, pfile)
 
     case T_POISON:
       cpp_error (pfile, "attempt to use poisoned `%s'.", hp->name);
-      CPP_RESERVE (pfile, 1);
-      CPP_PUTC_Q (pfile, '0');
-      CPP_NUL_TERMINATE_Q (pfile);
+      CPP_PUTC (pfile, '0');
       break;
 
     default:
@@ -983,8 +987,13 @@ _cpp_macroexpand (pfile, hp)
   register int i;
 
   ip = cpp_file_buffer (pfile);
-  start_line = CPP_BUF_LINE (ip);
-  start_column = CPP_BUF_COL (ip);
+  if (ip)
+    {
+      start_line = CPP_BUF_LINE (ip);
+      start_column = CPP_BUF_COL (ip);
+    }
+  else
+    start_line = start_column = 0;
 
   /* Check for and handle special symbols. */
   if (hp->type != T_MACRO)
@@ -1688,7 +1697,6 @@ _cpp_dump_definition (pfile, sym, len, defn)
     }
   if (CPP_BUFFER (pfile) == 0 || ! pfile->done_initializing)
     CPP_PUTC (pfile, '\n');
-  CPP_NUL_TERMINATE (pfile);
 }
 
 /* Dump out the hash table.  */

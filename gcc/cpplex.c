@@ -277,7 +277,6 @@ _cpp_expand_to_buffer (pfile, buf, length)
 	  break;
 	}
     }
-  CPP_NUL_TERMINATE (pfile);
 }
 
 /* Scan until CPP_BUFFER (PFILE) is exhausted, discarding output.
@@ -630,7 +629,6 @@ _cpp_parse_name (pfile, c)
       if (c == EOF)
 	break;
   }
-  CPP_NUL_TERMINATE_Q (pfile);
   return;
 }
 
@@ -1124,7 +1122,6 @@ _cpp_lex_token (pfile)
 	FORWARD(1);
 	c2= c;
       }
-    CPP_NUL_TERMINATE_Q (pfile);
     return CPP_NUMBER;
     case 'b': case 'c': case 'd': case 'h': case 'o':
     case 'B': case 'C': case 'D': case 'H': case 'O':
@@ -1147,14 +1144,12 @@ _cpp_lex_token (pfile)
 	    {
 	      CPP_RESERVE (pfile, 2);
 	      CPP_PUTC_Q (pfile, c);
-	      CPP_NUL_TERMINATE_Q (pfile);
 	      return CPP_STRING;
 	    }
 	  else
 	    {
 	      FORWARD(-1);
 	    chill_number_eof:
-	      CPP_NUL_TERMINATE (pfile);
 	      return CPP_NUMBER;
 	    }
 	}
