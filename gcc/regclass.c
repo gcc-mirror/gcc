@@ -817,7 +817,7 @@ struct costs
   int mem_cost;
 };
 
-/* Structure used to record preferrences of given pseudo.  */
+/* Structure used to record preferences of given pseudo.  */
 struct reg_pref
 {
   /* (enum reg_class) prefclass is the preferred class.  */
@@ -841,7 +841,7 @@ static struct costs *costs;
 
 static struct costs init_cost;
 
-/* Record preferrences of each pseudo.
+/* Record preferences of each pseudo.
    This is available after `regclass' is run.  */
 
 static struct reg_pref *reg_pref;
@@ -2481,7 +2481,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 	  && REGNO (SET_DEST (x)) >= min_regno
 	  /* If the destination pseudo is set more than once, then other
 	     sets might not be to a pointer value (consider access to a
-	     union in two threads of control in the presense of global
+	     union in two threads of control in the presence of global
 	     optimizations).  So only set REG_POINTER on the destination
 	     pseudo if this is the only set of that pseudo.  */
 	  && REG_N_SETS (REGNO (SET_DEST (x))) == 1

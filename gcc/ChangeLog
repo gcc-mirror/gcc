@@ -1,5 +1,22 @@
 2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* output.h: Fix comment typos.
+	* predict.c: Likewise.
+	* print-tree.c: Likewise.
+	* profile.c: Likewise.
+	* ra-build.c: Likewise.
+	* ra-colorize.c: Likewise.
+	* ra-debug.c: Likewise.
+	* ra-rewrite.c: Likewise.
+	* ra.c: Likewise.
+	* ra.h: Likewise.
+	* real.c: Likewise.
+	* recog.c: Likewise.
+	* reg-stack.c: Likewise.
+	* regclass.c: Likewise.
+
+2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (print_operand_address): Do not negate
 	a negative number when printing one.
 

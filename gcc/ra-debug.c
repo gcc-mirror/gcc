@@ -817,7 +817,7 @@ dump_constraints ()
 	int uid = INSN_UID (insn);
 	int o;
 	/* Don't simply force rerecognition, as combine might left us
-	   with some unrecongnizable ones, which later leads to aborts
+	   with some unrecognizable ones, which later leads to aborts
 	   in regclass, if we now destroy the remembered INSN_CODE().  */
 	/*INSN_CODE (insn) = -1;*/
 	code = recog_memoized (insn);

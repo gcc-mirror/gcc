@@ -3016,7 +3016,7 @@ encode_ieee_extended (fmt, buf, r)
 
 	   Except for Motorola, which consider exp=0 and explicit
 	   integer bit set to continue to be normalized.  In theory
-	   this descrepency has been taken care of by the difference
+	   this discrepancy has been taken care of by the difference
 	   in fmt->emin in round_for_format.  */
 
 	if (denormal)

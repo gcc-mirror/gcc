@@ -36,7 +36,7 @@
 #include "ggc.h"
 #include "ra.h"
 
-/* This file is part of the graph coloring register alloctor.
+/* This file is part of the graph coloring register allocator.
    It deals with building the interference graph.  When rebuilding
    the graph for a function after spilling, we rebuild only those
    parts needed, i.e. it works incrementally.
@@ -48,7 +48,7 @@
    conflicts.  By connecting the uses and defs, which reach each other, webs
    (or live ranges) are built conceptually.
 
-   The second part (make_webs() and childs) deals with converting that
+   The second part (make_webs() and children) deals with converting that
    structure to the nodes and edges, on which our interference graph is
    built.  For each root web part constructed above, an instance of struct
    web is created.  For all subregs of pseudos, which matter for allocation,
@@ -369,7 +369,7 @@ static struct undef_table_s {
 /* Interpret *UNDEFINED as bitmask where each bit corresponds to a byte.
    A set bit means an undefined byte.  Factor all undefined bytes into
    groups, and return a size/ofs pair of consecutive undefined bytes,
-   but according to certain borders.  Clear out those bits corrsponding
+   but according to certain borders.  Clear out those bits corresponding
    to bytes overlaid by that size/ofs pair.  REG is only used for
    the mode, to detect if it's a floating mode or not.
 
@@ -491,7 +491,7 @@ union_web_part_roots (r1, r2)
     {
       /* The new root is the smaller (pointerwise) of both.  This is crucial
          to make the construction of webs from web parts work (so, when
-	 scanning all parts, we see the roots before all it's childs).
+	 scanning all parts, we see the roots before all its children).
          Additionally this ensures, that if the web has a def at all, than
          the root is a def (because all def parts are before use parts in the
 	 web_parts[] array), or put another way, as soon, as the root of a
@@ -548,7 +548,7 @@ union_web_part_roots (r1, r2)
   return r1;
 }
 
-/* Convenience macro, that is cabable of unioning also non-roots.  */
+/* Convenience macro, that is capable of unioning also non-roots.  */
 #define union_web_parts(p1, p2) \
   ((p1 == p2) ? find_web_part (p1) \
       : union_web_part_roots (find_web_part (p1), find_web_part (p2)))
@@ -583,7 +583,7 @@ remember_move (insn)
       /* XXX for now we don't remember move insns involving any subregs.
 	 Those would be difficult to coalesce (we would need to implement
 	 handling of all the subwebs in the allocator, including that such
-	 subwebs could be source and target of coalesing).  */
+	 subwebs could be source and target of coalescing).  */
       if (GET_CODE (s) == REG && GET_CODE (d) == REG)
 	{
 	  struct move *m = (struct move *) ra_calloc (sizeof (struct move));
@@ -673,7 +673,7 @@ defuse_overlap_p_1 (def, use)
 	/* Now the more difficult part: the same regno is refered, but the
 	   sizes of the references or the words differ.  E.g.
            (subreg:SI (reg:CDI a) 0) and (subreg:DI (reg:CDI a) 2) do not
-	   overlap, wereas the latter overlaps with (subreg:SI (reg:CDI a) 3).
+	   overlap, whereas the latter overlaps with (subreg:SI (reg:CDI a) 3).
 	   */
 	{
 	  unsigned HOST_WIDE_INT old_u;
@@ -964,7 +964,7 @@ live_in (df, use, insn)
       basic_block bb = BLOCK_FOR_INSN (insn);
       number_seen[uid]++;
 
-      /* We want to be as fast as possible, so explicitely write
+      /* We want to be as fast as possible, so explicitly write
 	 this loop.  */
       for (insn = PREV_INSN (insn); insn && !INSN_P (insn);
 	   insn = PREV_INSN (insn))
@@ -1046,7 +1046,7 @@ update_regnos_mentioned ()
       }
 }
 
-/* Handle the uses which reach a block end, but were defered due
+/* Handle the uses which reach a block end, but were deferred due
    to it's regno not being mentioned in that block.  This adds the
    remaining conflicts and updates also the crosses_call and
    spanned_deaths members.  */
@@ -1062,7 +1062,7 @@ livethrough_conflicts_bb (bb)
   unsigned int deaths = 0;
   unsigned int contains_call = 0;
 
-  /* If there are no defered uses, just return.  */
+  /* If there are no deferred uses, just return.  */
   if ((first = bitmap_first_set_bit (info->live_throughout)) < 0)
     return;
 
@@ -1141,7 +1141,7 @@ free_bb_info ()
 }
 
 /* Toplevel function for the first part of this file.
-   Connect web parts, thereby implicitely building webs, and remember
+   Connect web parts, thereby implicitly building webs, and remember
    their conflicts.  */
 
 static void
@@ -1545,7 +1545,7 @@ copy_conflict_list (web)
 /* Possibly add an edge from web FROM to TO marking a conflict between
    those two.  This is one half of marking a complete conflict, which notes
    in FROM, that TO is a conflict.  Adding TO to FROM's conflicts might
-   make other conflicts superflous, because the current TO overlaps some web
+   make other conflicts superfluous, because the current TO overlaps some web
    already being in conflict with FROM.  In this case the smaller webs are
    deleted from the conflict list.  Likewise if TO is overlapped by a web
    already in the list, it isn't added at all.  Note, that this can only
@@ -2100,7 +2100,7 @@ parts_to_webs (df)
   sbitmap_zero (igraph);
   sbitmap_zero (sup_igraph);
 
-  /* Distibute the references to their webs.  */
+  /* Distribute the references to their webs.  */
   init_webs_defs_uses ();
   /* And do some sanity checks if old webs, and those recreated from the
      really are the same.  */
@@ -2149,7 +2149,7 @@ reset_conflicts ()
 	{
 	  *pcl = NULL;
 	  /* Useless conflicts will be rebuilt completely.  But check
-	     for cleanlyness, as the web might have come from the
+	     for cleanliness, as the web might have come from the
 	     free list.  */
 	  if (bitmap_first_set_bit (web->useless_conflicts) >= 0)
 	    abort ();
@@ -2985,7 +2985,7 @@ handle_asm_insn (df, insn)
 	 are not allowed by the constraints.  */
       if (nothing_allowed)
 	{
-	  /* If we had no real constraints nothing was explicitely
+	  /* If we had no real constraints nothing was explicitly
 	     allowed, so we allow the whole class (i.e. we make no
 	     additional conflicts).  */
 	  CLEAR_HARD_REG_SET (conflict);
@@ -3055,7 +3055,7 @@ build_i_graph (df)
 }
 
 /* Allocates or reallocates most memory for the interference graph and
-   assiciated structures.  If it reallocates memory (meaning, this is not
+   associated structures.  If it reallocates memory (meaning, this is not
    the first pass), this also changes some structures to reflect the
    additional entries in various array, and the higher number of
    defs and uses.  */

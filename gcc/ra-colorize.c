@@ -338,7 +338,7 @@ build_worklists (df)
      backed by a new pseudo, but conceptually can stand for a stackslot,
      i.e. it doesn't really matter if they get a color or not), on
      the SELECT stack first, those with lowest cost first.  This way
-     they will be colored last, so do not contrain the coloring of the
+     they will be colored last, so do not constrain the coloring of the
      normal webs.  But still those with the highest count are colored
      before, i.e. get a color more probable.  The use of stackregs is
      a pure optimization, and all would work, if we used real stackslots
@@ -1347,7 +1347,7 @@ colorize_one_web (web, hard)
       HARD_REG_SET call_clobbered;
 
       /* Here we choose a hard-reg for the current web.  For non spill
-         temporaries we first search in the hardregs for it's prefered
+         temporaries we first search in the hardregs for it's preferred
 	 class, then, if we found nothing appropriate, in those of the
 	 alternate class.  For spill temporaries we only search in
 	 usable_regs of this web (which is probably larger than that of
@@ -1558,7 +1558,7 @@ colorize_one_web (web, hard)
 		    set_cand (6, aw);
 		  /* For boehm-gc/misc.c.  If we are a difficult spilltemp,
 		     also coalesced neighbors are a chance, _even_ if they
-		     too are spilltemps.  At least their coalscing can be
+		     too are spilltemps.  At least their coalescing can be
 		     broken up, which may be reset usable_regs, and makes
 		     it easier colorable.  */
 		  if (web->spill_temp != 2 && aw->is_coalesced
@@ -2025,7 +2025,7 @@ check_colors ()
 	if (!TEST_HARD_REG_BIT (web->usable_regs, aweb->color + c))
 	  abort ();
       /* Search the original (pre-coalesce) conflict list.  In the current
-	 one some inprecise conflicts may be noted (due to combine() or
+	 one some imprecise conflicts may be noted (due to combine() or
 	 insert_coalesced_conflicts() relocating partial conflicts) making
 	 it look like some wide webs are in conflict and having the same
 	 color.  */
