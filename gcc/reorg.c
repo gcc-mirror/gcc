@@ -3103,8 +3103,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      set.cc = 1;
 
 	      /* If this is a call or jump, we might not get here.  */
-	      if (GET_CODE (trial) == CALL_INSN
-		  || GET_CODE (trial) == JUMP_INSN)
+	      if (GET_CODE (trial_delay) == CALL_INSN
+		  || GET_CODE (trial_delay) == JUMP_INSN)
 		maybe_never = 1;
 	    }
 
