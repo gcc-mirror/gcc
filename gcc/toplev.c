@@ -2861,7 +2861,7 @@ rest_of_compilation (decl)
 	      int saved_optimize = optimize;
 	      optimize = 0;
 	      find_exception_handler_labels ();
-	      jump_optimize (get_insns(), !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+	      jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
 			     !JUMP_AFTER_REGSCAN);
 	      optimize = saved_optimize;
 	    }
@@ -2907,9 +2907,7 @@ rest_of_compilation (decl)
 
   /* Don't return yet if -Wreturn-type; we need to do jump_optimize.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
-    {
-      goto exit_rest_of_compilation;
-    }
+    goto exit_rest_of_compilation;
 
   /* Emit code to get eh context, if needed. */
   emit_eh_context ();
@@ -2935,7 +2933,6 @@ rest_of_compilation (decl)
   insns = get_insns ();
 
   /* Copy any shared structure that should not be shared.  */
-
   unshare_all_rtl (current_function_decl, insns);
 
 #ifdef SETJMP_VIA_SAVE_AREA
@@ -2945,13 +2942,7 @@ rest_of_compilation (decl)
 #endif
 
   /* Instantiate all virtual registers.  */
-
-  instantiate_virtual_regs (current_function_decl, get_insns ());
-
-  /* See if we have allocated stack slots that are not directly addressable.
-     If so, scan all the insns and create explicit address computation
-     for all references to such slots.  */
-  /* fixup_stack_slots (); */
+  instantiate_virtual_regs (current_function_decl, insns);
 
   /* Find all the EH handlers.  */
   find_exception_handler_labels ();
@@ -2961,26 +2952,39 @@ rest_of_compilation (decl)
   /* Always do one jump optimization pass to ensure that JUMP_LABEL fields
      are initialized and to compute whether control can drop off the end
      of the function.  */
-  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-  TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
-				     JUMP_AFTER_REGSCAN));
-
-  /* Jump optimization, and the removal of NULL pointer checks, may
-     have reduced the number of instructions substantially.  CSE, and
-     future passes, allocate arrays whose dimensions involve the maximum
-     instruction UID, so if we can reduce the maximum UID we'll save big on
-     memory.  */
-  renumber_insns (rtl_dump_file);
-
-  close_dump_file (DFI_jump, print_rtl, insns);
+  TIMEVAR (jump_time,
+	   {
+	     reg_scan (insns, max_reg_num (), 0);
+	     jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+			    JUMP_AFTER_REGSCAN);
+	   });
 
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
-    goto exit_rest_of_compilation;
+    {
+      close_dump_file (DFI_jump, print_rtl, insns);
+      goto exit_rest_of_compilation;
+    }
 
-  /* Try to identify useless null pointer tests and delete them.  */
-  if (flag_delete_null_pointer_checks)
-    TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
+  TIMEVAR (jump_time,
+	   {
+	     /* Try to identify useless null pointer tests and delete them.  */
+	     if (flag_delete_null_pointer_checks)
+	       {
+		 find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+		 cleanup_cfg (insns);
+		 delete_null_pointer_checks (insns);
+	       }
+
+	     /* Jump optimization, and the removal of NULL pointer checks,
+		may have reduced the number of instructions substantially. 
+		CSE, and future passes, allocate arrays whose dimensions
+		involve the maximum instruction UID, so if we can reduce
+		the maximum UID we'll save big on memory.  */
+	     renumber_insns (rtl_dump_file);
+	   });
+
+  close_dump_file (DFI_jump, print_rtl, insns);
 
   if (ggc_p)
     ggc_collect ();
@@ -3001,6 +3005,7 @@ rest_of_compilation (decl)
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, rtl_dump_file));
+
       /* If we are not running the second CSE pass, then we are no longer
 	 expecting CSE to be run.  */
       cse_not_expected = !flag_rerun_cse_after_loop;
@@ -3016,7 +3021,12 @@ rest_of_compilation (decl)
 
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
-	TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
+	TIMEVAR (jump_time,
+		 {
+		   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
+		   cleanup_cfg (insns);
+		   delete_null_pointer_checks (insns);
+		 });
 
       /* The second pass of jump optimization is likely to have
          removed a bunch more instructions.  */
@@ -3035,21 +3045,35 @@ rest_of_compilation (decl)
   if (ggc_p)
     ggc_collect ();
 
-  if (flag_ssa)
+  if (optimize > 0 && flag_ssa)
     {
       open_dump_file (DFI_ssa, decl);
-      TIMEVAR (to_ssa_time, convert_to_ssa ());
+
+      TIMEVAR (to_ssa_time,
+	       {
+		 find_basic_blocks (insns, max_reg_num(), rtl_dump_file);
+		 cleanup_cfg (insns);
+		 convert_to_ssa ();
+	       });
+
       close_dump_file (DFI_ssa, print_rtl_with_bb, insns);
 
       open_dump_file (DFI_ussa, decl);
-      TIMEVAR (from_ssa_time, convert_from_ssa ());
-      /* New registers have been created.  Rescan their usage.  */
-      reg_scan (insns, max_reg_num (), 1);
-      close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
 
-      /* Life analysis used in SSA adds log_links but these shouldn't
-	 be there until the flow stage, so clear them away.  */
-      clear_log_links (insns);
+      TIMEVAR (from_ssa_time,
+	       {
+		 convert_from_ssa ();
+
+		 /* New registers have been created.  Rescan their usage.  */
+		 reg_scan (insns, max_reg_num (), 1);
+
+		 /* Life analysis used in SSA adds log_links but these
+		    shouldn't be there until the flow stage, so clear
+		    them away.  */
+		 clear_log_links (insns);
+	       });
+
+      close_dump_file (DFI_ussa, print_rtl_with_bb, insns);
 
       if (ggc_p)
 	ggc_collect ();
@@ -3061,7 +3085,12 @@ rest_of_compilation (decl)
     {
       open_dump_file (DFI_gcse, decl);
 
-      TIMEVAR (gcse_time, tem = gcse_main (insns, rtl_dump_file));
+      TIMEVAR (gcse_time,
+	       {
+		 find_basic_blocks (insns, max_reg_num(), rtl_dump_file);
+		 cleanup_cfg (insns);
+		 tem = gcse_main (insns, rtl_dump_file);
+	       });
 
       /* If gcse altered any jumps, rerun jump optimizations to clean
 	 things up.  */
@@ -3077,6 +3106,7 @@ rest_of_compilation (decl)
       if (ggc_p)
 	ggc_collect ();
     }
+
   /* Move constant computations out of loops.  */
 
   if (optimize > 0)
@@ -3091,8 +3121,7 @@ rest_of_compilation (decl)
 	       /* We only want to perform unrolling once.  */
 	       
 	       loop_optimize (insns, rtl_dump_file, 0, 0);
-	       
-	
+
 	       /* The first call to loop_optimize makes some instructions
 		  trivially dead.  We delete those instructions now in the
 		  hope that doing so will make the heuristics in loop work
@@ -3128,14 +3157,20 @@ rest_of_compilation (decl)
 	     the second CSE pass to do a better job.  Jump_optimize can change
 	     max_reg_num so we must rerun reg_scan afterwards.
 	     ??? Rework to not call reg_scan so often.  */
-	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-	  TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
-					     !JUMP_NOOP_MOVES,
-					     JUMP_AFTER_REGSCAN));
+	  TIMEVAR (jump_time,
+		   {
+		     reg_scan (insns, max_reg_num (), 0);
+		     jump_optimize (insns, !JUMP_CROSS_JUMP,
+				    !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
+		   });
 	  
-	  TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
-	  TIMEVAR (cse2_time, tem = cse_main (insns, max_reg_num (),
-					      1, rtl_dump_file));
+	  TIMEVAR (cse2_time,
+		   {
+		     reg_scan (insns, max_reg_num (), 0);
+		     tem = cse_main (insns, max_reg_num (),
+				     1, rtl_dump_file);
+		   });
+
 	  if (tem)
 	    TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
 					       !JUMP_NOOP_MOVES,
@@ -3146,8 +3181,11 @@ rest_of_compilation (decl)
 	{
 	  /* This pass of jump threading straightens out code
 	     that was kinked by loop optimization.  */
-	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-	  TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
+	  TIMEVAR (jump_time,
+		   {
+		     reg_scan (insns, max_reg_num (), 0);
+		     thread_jumps (insns, max_reg_num (), 0);
+		   });
 	}
 
       close_dump_file (DFI_cse2, print_rtl, insns);
@@ -3160,11 +3198,10 @@ rest_of_compilation (decl)
     {
       open_dump_file (DFI_bp, decl);
 
-      TIMEVAR
-	(branch_prob_time,
-	 {
-	   branch_prob (insns, rtl_dump_file);
-	 });
+      TIMEVAR (branch_prob_time,
+	       {
+		 branch_prob (insns, rtl_dump_file);
+	       });
 
       close_dump_file (DFI_bp, print_rtl, insns);
 
@@ -3301,8 +3338,11 @@ rest_of_compilation (decl)
 
   if (dump_file[DFI_lreg].enabled)
     {
-      TIMEVAR (dump_time, dump_flow_info (rtl_dump_file));
-      TIMEVAR (dump_time, dump_local_alloc (rtl_dump_file));
+      TIMEVAR (dump_time,
+	       {
+		 dump_flow_info (rtl_dump_file);
+		 dump_local_alloc (rtl_dump_file);
+	       });
 
       close_dump_file (DFI_lreg, print_rtl_with_bb, insns);
     }
@@ -3336,13 +3376,9 @@ rest_of_compilation (decl)
   if (optimize > 0)
     reload_cse_regs (insns);
 
-  /* If optimizing and we are performing instruction scheduling after
-     reload, then go ahead and split insns now since we are about to
-     recompute flow information anyway.
-
-     reload_cse_regs may expose more splitting opportunities, expecially
-     for double-word operations.  */
-  if (optimize > 0 && flag_schedule_insns_after_reload)
+  /* If optimizing, then go ahead and split insns now since we are about
+     to recompute flow information anyway.  */
+  if (optimize > 0)
     split_all_insns (0);
 
   /* Register allocation and reloading may have turned an indirect jump into
@@ -3362,6 +3398,7 @@ rest_of_compilation (decl)
   
   TIMEVAR (flow2_time,
 	   {
+	     jump_optimize_minimal (insns);
 	     find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 	   });
 
@@ -3498,10 +3535,7 @@ rest_of_compilation (decl)
 
      Note this must run before reg-stack because of death note (ab)use
      in the ia32 backend.  */
-  TIMEVAR (shorten_branch_time,
-	   {
-	     shorten_branches (get_insns ());
-	   });
+  TIMEVAR (shorten_branch_time, shorten_branches (get_insns ()));
 
 #ifdef STACK_REGS
   open_dump_file (DFI_stack, decl);
