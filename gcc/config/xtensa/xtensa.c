@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -200,12 +200,14 @@ static enum machine_mode xtensa_find_mode_for_size (unsigned);
 static struct machine_function * xtensa_init_machine_status (void);
 static void printx (FILE *, signed int);
 static void xtensa_function_epilogue (FILE *, HOST_WIDE_INT);
+static rtx xtensa_builtin_saveregs (void);
 static unsigned int xtensa_multibss_section_type_flags (tree, const char *,
 							int) ATTRIBUTE_UNUSED;
 static void xtensa_select_rtx_section (enum machine_mode, rtx,
 				       unsigned HOST_WIDE_INT);
 static bool xtensa_rtx_costs (rtx, int, int, int *);
 static tree xtensa_build_builtin_va_list (void);
+static bool xtensa_return_in_memory (tree, tree);
 
 static int current_function_arg_words;
 static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
@@ -236,6 +238,21 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST xtensa_build_builtin_va_list
+
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_true
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY xtensa_return_in_memory
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2355,7 +2372,7 @@ xtensa_build_builtin_va_list (void)
 /* Save the incoming argument registers on the stack.  Returns the
    address of the saved registers.  */
 
-rtx
+static rtx
 xtensa_builtin_saveregs (void)
 {
   rtx gp_regs, dest;
@@ -3009,6 +3026,13 @@ xtensa_rtx_costs (rtx x, int code, int outer_code, int *total)
     default:
       return false;
     }
+}
+
+static bool
+xtensa_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type)
+	  > 4 * UNITS_PER_WORD);
 }
 
 #include "gt-xtensa.h"
