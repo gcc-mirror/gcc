@@ -443,7 +443,7 @@
   [(set_attr "type" "vecsimple")
    (set_attr  "length" "4")])
 
-(define_insn "spe_evneg"
+(define_insn "negv2si2"
   [(set (match_operand:V2SI 0 "gpc_reg_operand" "=r")
         (neg:V2SI (match_operand:V2SI 1 "gpc_reg_operand" "r")))]
   "TARGET_SPE"
