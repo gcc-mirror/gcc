@@ -1,3 +1,8 @@
+2001-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/anon6.C: New test.
+	* g++.old-deja/g++.other/anon7.C: New test.
+
 2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * gcc.dg/cpp/avoidpaste2.c: New tests.

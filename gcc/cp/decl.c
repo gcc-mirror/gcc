@@ -1124,7 +1124,7 @@ push_class_binding (id, decl)
 	  else
 	    {
 	      my_friendly_assert (DECL_P (decl), 0);
-	      context = CP_DECL_CONTEXT (decl);
+	      context = context_for_name_lookup (decl);
 	    }
 
 	  if (is_properly_derived_from (current_class_type, context))
