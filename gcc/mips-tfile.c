@@ -1717,59 +1717,13 @@ STATIC void	  free_scope		__proto((scope_t *));
 STATIC void	  free_tag		__proto((tag_t *));
 STATIC void	  free_thead		__proto((thead_t *));
 
-/* rms: The following is a very bad idea.
-   It's easy for these to conflict with definitions on certain systems.
-   All system calls and library functions
-   for which an implicit definition will work
-   should be left implicit.
-   I deleted the declarations for open and fstat.  */
-/* Prototypes for library functions used.  */
-#if !defined(NO_LIB_PROTOTYPE) && !defined(_OSF_SOURCE) && !defined(_STDIO_H_)
-extern char  *strchr		__proto((const char *, int));
-extern char  *strrchr		__proto((const char *, int));
-extern int    strcmp		__proto((const char *, const char *));
-extern long   strtol		__proto((const char *, char **, int));
-extern int    memcmp		__proto((CPTR_T, CPTR_T, Size_t));
-extern time_t time		__proto((time_t *));
-extern int    fputc		__proto((int, FILE *));
-extern int    vprintf		__proto((const char *, va_list));
-extern int    vfprintf		__proto((FILE *, const char *, va_list));
-extern int    vsprintf		__proto((char *, const char *, va_list));
-extern int    fclose		__proto((FILE *));
-extern int    fseek		__proto((FILE *, long, int));
-extern long   ftell		__proto((FILE *));
-extern FILE  *fopen		__proto((const char *, const char *));
-extern FILE  *freopen		__proto((const char *, const char *, FILE *));
-extern int    fflush		__proto((FILE *));
-extern void   perror		__proto((const char *));
-extern void   exit		__proto((int));
-extern int    rename		__proto((const char *, const char *));
-
-#ifndef sgi
-extern int    setvbuf		__proto((FILE *, char *, int, int));
-extern int    fputs		__proto((char *, FILE *));
-#endif
-#endif
-
-extern char  *sbrk		__proto((int));
-
-#ifndef HAS_STDLIB_H
-extern PTR_T  malloc		__proto((Size_t));
-extern PTR_T  calloc		__proto((Size_t, Size_t));
-extern PTR_T  realloc		__proto((PTR_T, Size_t));
-extern void   free		__proto((PTR_T));
-extern int    getopt		__proto((int, char **, const char *));
-#endif
-
-#ifndef HAS_UNISTD_H
-extern int    close		__proto((int));
-extern int    write		__proto((int, CPTR_T, Size_t));
-extern int    read		__proto((int, PTR_T, Size_t));
-extern long   lseek		__proto((int, long, int));
-extern int    ftruncate		__proto((int, long));
-#endif
-
-extern char  *mktemp		__proto((char *));
+extern char  *sbrk			__proto((int));
+extern PTR_T  malloc			__proto((Size_t));
+extern PTR_T  calloc			__proto((Size_t, Size_t));
+extern PTR_T  realloc			__proto((PTR_T, Size_t));
+extern void   free			__proto((PTR_T));
+extern char  *mktemp			__proto((char *));
+extern long   strtol			__proto((const char *, char **, int));
 
 extern char *optarg;
 extern int   optind;
@@ -2512,7 +2466,6 @@ add_procedure (func_start, func_end_p1)
     {
       register PDR *old_proc_ptr = shash_ptr->proc_ptr;
       register SYMR *sym_ptr = shash_ptr->sym_ptr;
-      register FDR *orig_fdr = file_ptr->orig_fdr;
 
       if (old_proc_ptr != (PDR *)0
 	  && sym_ptr != (SYMR *)0
