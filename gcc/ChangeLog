@@ -1,3 +1,7 @@
+2002-03-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* t-pa64 (LIB1ASMFUNCS, LIB1ASMSRC): Delete.
+
 2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.c (mips_expand_prologue): Set regno of vararg
