@@ -1,5 +1,9 @@
 2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	* gccbug.in: Update optimization -> tree-optimization/rtl-optimization.
+
+2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/17115
 	* tree-inline.c (expand_call_inline): Do not warn for functions
 	marked with attribute noinline.

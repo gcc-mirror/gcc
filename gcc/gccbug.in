@@ -198,7 +198,7 @@ EOF
 done
 
 # spam does not need to be listed here
-CATEGORIES="ada bootstrap c++ c debug driver fortran inline-asm java libf2c libgcj libobjc libstdc++ middle-end objc optimization other preprocessor target web"
+CATEGORIES="ada bootstrap c++ c debug driver fortran inline-asm java libf2c libgcj libobjc libstdc++ middle-end objc other preprocessor rtl-optimization target tree-optimization web"
 
 case "$FORMAT" in
   lisp) echo "$CATEGORIES" | \
