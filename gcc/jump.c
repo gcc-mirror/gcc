@@ -357,10 +357,6 @@ duplicate_loop_exit_test (loop_start)
 	  break;
 	case JUMP_INSN:
 	case INSN:
-	  /* The code below would grossly mishandle REG_WAS_0 notes,
-	     so get rid of them here.  */
-	  while ((p = find_reg_note (insn, REG_WAS_0, NULL_RTX)) != 0)
-	    remove_note (insn, p);
 	  if (++num_insns > 20
 	      || find_reg_note (insn, REG_RETVAL, NULL_RTX)
 	      || find_reg_note (insn, REG_LIBCALL, NULL_RTX))

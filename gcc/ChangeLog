@@ -1,3 +1,28 @@
+2003-06-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* combine.c (distribute_notes): Don't bother REG_WAS_0.
+	* cse.c (cse_insn): Likewise.
+	* final.c (final_scan_insn): Likewise.
+	* jump.c (duplicate_loop_exit_test): Likewise.
+	* rtl.c (reg_note_name): Remove REG_WAS_0.
+	* rtl.h (REG_WAS_0): Remove.
+	* unroll.c (final_reg_note_copy): Don't bother REG_WAS_0.
+	* config/avr/avr.c (output_movqi): Don't use reg_was_0.
+	(output_movhi): Likewise.
+	(output_movsisf): Likewise.
+	(reg_was_0): Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_gen_movhi): Don't use
+	REG_WAS_0.
+	(m68hc11_gen_movqi): Likewise.
+	* config/vax/vax-protos.h: Remove the prototype for
+	reg_was_0_p.
+	* config/vax/vax.c (follows_p): Remove.
+	(reg_was_0_p): Likewise.
+	* config/vax/vax.md (movsi): Don't use reg_was_0_p.
+	(movhi): Likewise.
+	(movqi): Likewise.
+	* doc/rtl.texi (REG_WAS_0): Remove.
+
 2003-06-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/rs6000/spe.h (__ev_set_spefscr_frmc): Set the flag.

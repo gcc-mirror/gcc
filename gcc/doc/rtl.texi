@@ -3354,13 +3354,6 @@ destination register.
 Thus, compiler passes prior to register allocation need only check for
 @code{REG_EQUAL} notes and passes subsequent to register allocation
 need only check for @code{REG_EQUIV} notes.
-
-@findex REG_WAS_0
-@item REG_WAS_0
-The single output of this insn contained zero before this insn.
-@var{op} is the insn that set it to zero.  You can rely on this note if
-it is present and @var{op} has not been deleted or turned into a @code{note};
-its absence implies nothing.
 @end table
 
 These notes describe linkages between insns.  They occur in pairs: one

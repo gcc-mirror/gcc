@@ -1735,29 +1735,18 @@ final_reg_note_copy (notesp, map)
 
       if (GET_CODE (note) == INSN_LIST)
 	{
-	  /* Sometimes, we have a REG_WAS_0 note that points to a
-	     deleted instruction.  In that case, we can just delete the
-	     note.  */
-	  if (REG_NOTE_KIND (note) == REG_WAS_0)
+	  rtx insn = map->insn_map[INSN_UID (XEXP (note, 0))];
+
+	  /* If we failed to remap the note, something is awry.
+	     Allow REG_LABEL as it may reference label outside
+	     the unrolled loop.  */
+	  if (!insn)
 	    {
-	      *notesp = XEXP (note, 1);
-	      continue;
+	      if (REG_NOTE_KIND (note) != REG_LABEL)
+		abort ();
 	    }
 	  else
-	    {
-	      rtx insn = map->insn_map[INSN_UID (XEXP (note, 0))];
-
-	      /* If we failed to remap the note, something is awry.
-		 Allow REG_LABEL as it may reference label outside
-		 the unrolled loop.  */
-	      if (!insn)
-		{
-		  if (REG_NOTE_KIND (note) != REG_LABEL)
-		    abort ();
-		}
-	      else
-	        XEXP (note, 0) = insn;
-	    }
+	    XEXP (note, 0) = insn;
 	}
 
       notesp = &XEXP (note, 1);
