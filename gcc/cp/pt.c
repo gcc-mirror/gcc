@@ -5697,7 +5697,7 @@ instantiate_decl (d)
       pushclass (DECL_CONTEXT (d), 2);
       DECL_INITIAL (d) = tsubst_expr (DECL_INITIAL (code_pattern), args,
 				      TREE_VEC_LENGTH (args), tmpl);
-      popclass (1);
+      cp_finish_decl (d, DECL_INITIAL (d), NULL_TREE, 0, LOOKUP_NORMAL);
     }
 
   if (pattern_defined)
