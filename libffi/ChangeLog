@@ -1,3 +1,8 @@
+2003-10-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* src/types.c (double, longdouble): Default POWERPC64 to 8 byte size
+	and align.
+
 2003-10-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* include/ffi_mips.h: Define FFI_MIPS_N32 for N32/N64 ABIs,
