@@ -146,8 +146,8 @@ static void rest_of_handle_regmove (tree, rtx);
 static void rest_of_handle_sched (tree, rtx);
 static void rest_of_handle_sched2 (tree, rtx);
 #endif
-static bool rest_of_handle_new_regalloc (tree, rtx, int *);
-static bool rest_of_handle_old_regalloc (tree, rtx, int *);
+static bool rest_of_handle_new_regalloc (tree, rtx);
+static bool rest_of_handle_old_regalloc (tree, rtx);
 static void rest_of_handle_regrename (tree, rtx);
 static void rest_of_handle_reorder_blocks (tree, rtx);
 #ifdef STACK_REGS
@@ -2166,7 +2166,7 @@ rest_of_handle_machine_reorg (tree decl, rtx insns)
 /* Run new register allocator.  Return TRUE if we must exit
    rest_of_compilation upon return.  */
 static bool
-rest_of_handle_new_regalloc (tree decl, rtx insns, int *rebuild_notes)
+rest_of_handle_new_regalloc (tree decl, rtx insns)
 {
   int failure;
 
@@ -2205,7 +2205,6 @@ rest_of_handle_new_regalloc (tree decl, rtx insns, int *rebuild_notes)
     return true;
 
   reload_completed = 1;
-  *rebuild_notes = 0;
 
   return false;
 }
@@ -2213,9 +2212,10 @@ rest_of_handle_new_regalloc (tree decl, rtx insns, int *rebuild_notes)
 /* Run old register allocator.  Return TRUE if we must exit
    rest_of_compilation upon return.  */
 static bool
-rest_of_handle_old_regalloc (tree decl, rtx insns, int *rebuild_notes)
+rest_of_handle_old_regalloc (tree decl, rtx insns)
 {
   int failure;
+  int rebuild_notes;
 
   /* Allocate the reg_renumber array.  */
   allocate_reg_info (max_regno, FALSE, TRUE);
@@ -2226,9 +2226,22 @@ rest_of_handle_old_regalloc (tree decl, rtx insns, int *rebuild_notes)
   allocate_initial_values (reg_equiv_memory_loc);
 
   regclass (insns, max_reg_num (), rtl_dump_file);
-  *rebuild_notes = local_alloc ();
+  rebuild_notes = local_alloc ();
 
   timevar_pop (TV_LOCAL_ALLOC);
+
+  /* Local allocation may have turned an indirect jump into a direct
+     jump.  If so, we must rebuild the JUMP_LABEL fields of jumping
+     instructions.  */
+  if (rebuild_notes)
+    {
+      timevar_push (TV_JUMP);
+
+      rebuild_jump_labels (insns);
+      purge_all_dead_edges (0);
+
+      timevar_pop (TV_JUMP);
+    }
 
   if (dump_file[DFI_lreg].enabled)
     {
@@ -3056,7 +3069,6 @@ void
 rest_of_compilation (tree decl)
 {
   rtx insns;
-  int rebuild_label_notes_after_reload;
 
   timevar_push (TV_REST_OF_COMPILATION);
 
@@ -3360,14 +3372,12 @@ rest_of_compilation (tree decl)
 
   if (flag_new_regalloc)
     {
-      if (rest_of_handle_new_regalloc (decl, insns,
-				       &rebuild_label_notes_after_reload))
+      if (rest_of_handle_new_regalloc (decl, insns))
 	goto exit_rest_of_compilation;
     }
   else
     {
-      if (rest_of_handle_old_regalloc (decl, insns,
-				       &rebuild_label_notes_after_reload))
+      if (rest_of_handle_old_regalloc (decl, insns))
 	goto exit_rest_of_compilation;
     }
 
@@ -3381,19 +3391,6 @@ rest_of_compilation (tree decl)
       timevar_push (TV_RELOAD_CSE_REGS);
       reload_cse_regs (insns);
       timevar_pop (TV_RELOAD_CSE_REGS);
-    }
-
-  /* Register allocation and reloading may have turned an indirect jump into
-     a direct jump.  If so, we must rebuild the JUMP_LABEL fields of
-     jumping instructions.  */
-  if (rebuild_label_notes_after_reload)
-    {
-      timevar_push (TV_JUMP);
-
-      rebuild_jump_labels (insns);
-      purge_all_dead_edges (0);
-
-      timevar_pop (TV_JUMP);
     }
 
   close_dump_file (DFI_postreload, print_rtl_with_bb, insns);
