@@ -1015,18 +1015,6 @@
     FAIL;
 }")
 
-(define_expand "lshlsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ashift:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
-  "
-{
-  if (GET_CODE (operands[2]) != CONST_INT
-      || (! TARGET_EXPAND_SHIFTS && (unsigned) INTVAL (operands[2]) > 3))
-    FAIL;
-}")
-
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:SI (match_operand:SI 1 "register_operand" "")
