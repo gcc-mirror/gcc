@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* This program handles insn attribues and the DEFINE_DELAY and
+/* This program handles insn attributes and the DEFINE_DELAY and
    DEFINE_FUNCTION_UNIT definitions.
 
    It produces a series of functions named `get_attr_...', one for each insn
@@ -1344,7 +1344,7 @@ get_attr_value (value, attr, insn_code)
    Finally, for each [DEFINE_DELAY, slot #] pair, we compute an attribute that
    tells whether a given insn can be in that delay slot.
 
-   Normal attrbute filling and optimization expands these to contain the
+   Normal attribute filling and optimization expands these to contain the
    information needed to handle delay slots.  */
 
 static void
@@ -1387,8 +1387,8 @@ expand_delays ()
       make_internal_attr ("*delay_type", condexp, 1);
     }
 
-  /* For each delay possibility and delay slot, compute an eligability
-     attribute for non-anulled insns and for each type of annulled (annul
+  /* For each delay possibility and delay slot, compute an eligibility
+     attribute for non-annulled insns and for each type of annulled (annul
      if true and annul if false).  */
  for (delay = delays; delay; delay = delay->next)
    {
@@ -2386,7 +2386,7 @@ simplify_and_tree (exp, pterm, insn_code, insn_index)
   return exp;
 }
 
-/* Similiar to `simplify_and_tree', but for IOR trees.  */
+/* Similar to `simplify_and_tree', but for IOR trees.  */
 
 static rtx
 simplify_or_tree (exp, pterm, insn_code, insn_index)
@@ -3238,7 +3238,7 @@ gen_unit (def)
   struct function_unit_op *op;
 
   /* See if we have already seen this function unit.  If so, check that
-     the multipicity and simultaneity values are the same.  If not, make
+     the multiplicity and simultaneity values are the same.  If not, make
      a structure for this function unit.  */
   for (unit = units; unit; unit = unit->next)
     if (! strcmp (unit->name, XSTR (def, 0)))
@@ -3913,7 +3913,7 @@ write_indent (indent)
    the specified insn can be annulled if the branch is true, and likewise
    for `eligible_for_annul_false'.
 
-   KIND is a string distingushing these three cases ("delay", "annul_true",
+   KIND is a string distinguishing these three cases ("delay", "annul_true",
    or "annul_false").  */
 
 static void
@@ -4149,7 +4149,7 @@ write_function_unit_info ()
     }
 
   /* Now that all functions have been written, write the table describing
-     the function units.   The name is included for documenation purposes
+     the function units.   The name is included for documentation purposes
      only.  */
 
   printf ("struct function_unit_desc function_units[] = {\n");

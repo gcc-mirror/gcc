@@ -34,7 +34,7 @@ AT&T C compiler.  From the example below I would conclude the following:
 4. All structure .defs are emitted before the typedefs that refer to them.
 
 5. All top level static and external variable definitions are moved to the
-   end of file with all top level statics occuring first before externs.
+   end of file with all top level statics occurring first before externs.
 
 6. All undefined references are at the end of the file.
 */

@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 enum tree_code {
 #include "tree.def"
 
-  LAST_AND_UNUSED_TREE_CODE	/* A convienent way to get a value for
+  LAST_AND_UNUSED_TREE_CODE	/* A convenient way to get a value for
 				   NUM_TREE_CODE.  */
 };
 
@@ -225,7 +225,7 @@ struct tree_common
 /* In a VAR_DECL or FUNCTION_DECL,
    nonzero means name is to be accessible from outside this module.
    In an identifier node, nonzero means a external declaration
-   accesible from outside this module was previously seen
+   accessible from outside this module was previously seen
    for this name in an inner scope.  */
 #define TREE_PUBLIC(NODE) ((NODE)->common.public_flag)
 

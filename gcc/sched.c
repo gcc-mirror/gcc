@@ -173,7 +173,7 @@ static regset bb_live_regs;
 
 /* Regset telling whether a given register is live after the insn currently
    being scheduled.  Before processing an insn, this is equal to bb_live_regs
-   above.  This is used so that we can find regsiters that are newly born/dead
+   above.  This is used so that we can find registers that are newly born/dead
    after processing an insn.  */
 static regset old_live_regs;
 
@@ -442,7 +442,7 @@ find_symbolic_term (x)
 	    with addresses involving static variables.
 	(2) static variables with different addresses cannot conflict.
 
-   Nice to notice that varying addresses cannot confict with fp if no
+   Nice to notice that varying addresses cannot conflict with fp if no
    local variables had their addresses taken, but that's too hard now.  */
 
 static int
@@ -503,15 +503,15 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 
   if (GET_CODE (x) == PLUS)
     {
-      /* The fact that X is canonnicallized means that this
-	 PLUS rtx is canonnicallized.  */
+      /* The fact that X is canonicalized means that this
+	 PLUS rtx is canonicalized.  */
       rtx x0 = XEXP (x, 0);
       rtx x1 = XEXP (x, 1);
 
       if (GET_CODE (y) == PLUS)
 	{
-	  /* The fact that Y is canonnicallized means that this
-	     PLUS rtx is canonnicallized.  */
+	  /* The fact that Y is canonicalized means that this
+	     PLUS rtx is canonicalized.  */
 	  rtx y0 = XEXP (y, 0);
 	  rtx y1 = XEXP (y, 1);
 
@@ -543,8 +543,8 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
     }
   else if (GET_CODE (y) == PLUS)
     {
-      /* The fact that Y is canonnicallized means that this
-	 PLUS rtx is canonnicallized.  */
+      /* The fact that Y is canonicalized means that this
+	 PLUS rtx is canonicalized.  */
       rtx y0 = XEXP (y, 0);
       rtx y1 = XEXP (y, 1);
 
@@ -1238,7 +1238,7 @@ sched_analyze_1 (x, insn)
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
 	     these lists get long.  The number 32 was chosen because it
-	     seems like a resonable number.  When compiling GCC with itself,
+	     seems like a reasonable number.  When compiling GCC with itself,
 	     this flush occurs 8 times for sparc, and 10 times for m88k using
 	     the number 32.  */
 	  flush_pending_lists (insn);
@@ -3125,7 +3125,7 @@ schedule_block (b, file)
 	    prev = PREV_INSN (insn);
 	    if (LINE_NOTE (note))
 	      {
-		/* Re-use the orignal line-number note. */
+		/* Re-use the original line-number note. */
 		LINE_NOTE (note) = 0;
 		PREV_INSN (note) = prev;
 		NEXT_INSN (prev) = note;
@@ -3414,7 +3414,7 @@ update_flow_info (notes, first, last, orig_insn)
 
 		  /* Sometimes need to convert REG_UNUSED notes to REG_DEAD
 		     notes.  */
-		  /* ??? This won't handle mutiple word registers correctly,
+		  /* ??? This won't handle multiple word registers correctly,
 		     but should be good enough for now.  */
 		  if (REG_NOTE_KIND (note) == REG_UNUSED
 		      && ! dead_or_set_p (insn, XEXP (note, 0)))

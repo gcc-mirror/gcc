@@ -369,7 +369,7 @@ local_alloc ()
 
   /* This sets the maximum number of quantities we can have.  Quantity
      numbers start at zero and we can have one for each pseudo plus the
-     number of SCRATCHs in the largest block, in the worst case.  */
+     number of SCRATCHes in the largest block, in the worst case.  */
   max_qty = (max_regno - FIRST_PSEUDO_REGISTER) + max_scratch;
 
   /* Allocate vectors of temporary data.
@@ -1114,7 +1114,7 @@ block_alloc (b)
 
 	      if (GET_CODE (r0) == REG || GET_CODE (r0) == SUBREG)
 		{
-		  /* We have two priorities for hard register preferrences.
+		  /* We have two priorities for hard register preferences.
 		     If we have a move insn or an insn whose first input can
 		     only be in the same register as the output, give
 		     priority to an equivalence found from that insn.  */
@@ -1372,8 +1372,8 @@ block_alloc (b)
 
 /* Compare two quantities' priority for getting real registers.
    We give shorter-lived quantities higher priority.
-   Quantities with more references are also preferred, as are quanties that
-   require multiple registers.  This is the identical prioritorization as
+   Quantities with more references are also preferred, as are quantities that
+   require multiple registers.  This is the identical prioritization as
    done by global-alloc.
 
    We used to give preference to registers with *longer* lives, but using
@@ -1462,7 +1462,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
   register int sqty;
 
   /* Determine the numbers and sizes of registers being used.  If a subreg
-     is present that does not change the entire register, don't conside
+     is present that does not change the entire register, don't consider
      this a copy insn.  */
 
   while (GET_CODE (usedreg) == SUBREG)

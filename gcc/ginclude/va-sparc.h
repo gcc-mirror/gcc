@@ -1,5 +1,5 @@
 /* This is just like the default gvarargs.h
-   except for differences decribed below.  */
+   except for differences described below.  */
 
 /* Make this a macro rather than a typedef, so we can undef any other defn.  */
 #define va_list __va___list

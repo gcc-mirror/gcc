@@ -1741,7 +1741,7 @@ compile_file (name)
 	  TIMEVAR (symout_time, sdbout_toplevel_data (decl));
 #endif /* SDB_DEBUGGING_INFO */
 #ifdef DWARF_DEBUGGING_INFO
-	/* Output DWARF information for file-scope tenative data object
+	/* Output DWARF information for file-scope tentative data object
 	   declarations, file-scope (extern) function declarations (which
 	   had no corresponding body) and file-scope tagged type declarations
 	   and definitions which have not yet been forced out.  */

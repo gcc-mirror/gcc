@@ -927,7 +927,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     INSN is the conditional branch around the arithmetic.  We set:
 
 	     TEMP is the arithmetic insn.
-	     TEMP1 is the SET doing the arthmetic.
+	     TEMP1 is the SET doing the arithmetic.
 	     TEMP2 is the operand being incremented or decremented.
 	     TEMP3 to the condition being tested.
 	     TEMP4 to the earliest insn used to find the condition.  */
@@ -1109,7 +1109,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 
 	     It is questionable whether we want this optimization anyways,
 	     since if the user wrote code like this because he/she knew that
-	     the jump to label1 is taken most of the time, then rewritting
+	     the jump to label1 is taken most of the time, then rewriting
 	     this gives slower code.  */
 	  /* @@ This should call get_condition to find the values being
 	     compared, instead of looking for a COMPARE insn when HAVE_cc0
@@ -2123,7 +2123,7 @@ get_label_before (insn)
     {
       rtx prev = PREV_INSN (insn);
 
-      /* Don't put a label between a CALL_INSN and USE insns that preceed
+      /* Don't put a label between a CALL_INSN and USE insns that precede
 	 it.  */
 
       if (GET_CODE (insn) == CALL_INSN
@@ -3266,7 +3266,7 @@ redirect_exp (loc, olabel, nlabel, insn)
 
    If the old jump target label (before the dispatch table) becomes unused,
    it and the dispatch table may be deleted.  In that case, find the insn
-   before the jump references that label and delete it and logical sucessors
+   before the jump references that label and delete it and logical successors
    too.  */
 
 void
@@ -3792,7 +3792,7 @@ rtx_equal_for_thread_p (x, y, yinsn)
       break;
 
     case MEM:
-      /* If memory modified or either volatile, not eqivalent.
+      /* If memory modified or either volatile, not equivalent.
 	 Else, check address. */
       if (modified_mem || MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
 	return 0;

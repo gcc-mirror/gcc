@@ -1745,7 +1745,7 @@
 {
   rtx op2 = operands[2];
 
-  /* If constant is postive, upper bits zeroed, otherwise unchanged.
+  /* If constant is positive, upper bits zeroed, otherwise unchanged.
      Give the assembler a chance to pick the move instruction. */
   if (GET_CODE (op2) == CONST_INT)
     {

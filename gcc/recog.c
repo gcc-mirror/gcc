@@ -389,7 +389,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	 of the operand.  If we are replacing the operand with a VOIDmode
 	 constant, we lose the information.  So try to simplify the operation
 	 in that case.  If it fails, substitute in something that we know
-	 won't be recogized.  */
+	 won't be recognized.  */
       if (GET_MODE (to) == VOIDmode
 	  && (XEXP (x, 0) == from
 	      || (GET_CODE (XEXP (x, 0)) == REG && GET_CODE (from) == REG
@@ -465,7 +465,7 @@ validate_replace_rtx_1 (loc, from, to, object)
 	    wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
 #endif
 
-	  /* If we have a narrower mode, we can do someting.  */
+	  /* If we have a narrower mode, we can do something.  */
 	  if (wanted_mode != VOIDmode
 	      && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 	    {
@@ -745,7 +745,7 @@ find_single_use (dest, insn, ploc)
    The main use of this function is as a predicate in match_operand
    expressions in the machine description.
 
-   For an explaination of this function's behavior for registers of
+   For an explanation of this function's behavior for registers of
    class NO_REGS, see the comment for `register_operand'.  */
 
 int

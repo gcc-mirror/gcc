@@ -388,7 +388,7 @@
 #include <setjmp.h>
 #endif
 
-/* Kludge around the possiblity that <stdio.h> includes <limits.h> */
+/* Kludge around the possibility that <stdio.h> includes <limits.h> */
 #ifdef CHAR_BIT
 #undef CHAR_BIT
 #undef CHAR_MAX

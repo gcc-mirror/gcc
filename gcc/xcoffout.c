@@ -433,7 +433,7 @@ xcoffout_end_epilogue (file)
   /* We need to pass the correct function size to .function, otherwise,
      the xas assembler can't figure out the correct size for the function
      aux entry.  So, we emit a label after the last instruction which can
-     be used by the .function psuedo op to calculate the function size.  */
+     be used by the .function pseudo op to calculate the function size.  */
 
   char *fname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   if (*fname == '*')

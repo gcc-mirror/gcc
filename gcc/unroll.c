@@ -59,7 +59,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
    - On traditional architectures, unrolling a non-constant bound loop
      is a win if there is a giv whose only use is in memory addresses, the
-     memory addresses can be split, and hence giv incremenets can be
+     memory addresses can be split, and hence giv increments can be
      eliminated.
    - It is also a win if the loop is executed many times, and preconditioning
      can be performed for the loop.
@@ -205,7 +205,7 @@ static rtx fold_rtx_mult_add ();
 /* Try to unroll one loop and split induction variables in the loop.
 
    The loop is described by the arguments LOOP_END, INSN_COUNT, and
-   LOOP_START.  END_INSERT_BEDFORE indicates where insns should be added
+   LOOP_START.  END_INSERT_BEFORE indicates where insns should be added
    which need to be executed when the loop falls through.  STRENGTH_REDUCTION_P
    indicates whether information generated in the strength reduction pass
    is available.
@@ -688,7 +688,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
      It is safe to do this here, since the extra registers created by the
      preconditioning code and find_splittable_regs will never be used
-     to accees the splittable_regs[] and addr_combined_regs[] arrays.  */
+     to access the splittable_regs[] and addr_combined_regs[] arrays.  */
 
   splittable_regs = (rtx *) alloca (maxregnum * sizeof (rtx));
   bzero (splittable_regs, maxregnum * sizeof (rtx));
@@ -1138,7 +1138,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   if (exit_label)
     emit_label_after (exit_label, loop_end);
 
-  /* If debugging, we must replicate the tree nodes corresponsing to the blocks
+  /* If debugging, we must replicate the tree nodes corresponding to the blocks
      inside the loop, so that the original one to one mapping will remain.  */
 
   if (write_symbols != NO_DEBUG)
@@ -1230,7 +1230,7 @@ precondition_loop_p (initial_value, final_value, increment, loop_start,
 
   /* Must ensure that final_value is invariant, so call invariant_p to
      check.  Before doing so, must check regno against max_reg_before_loop
-     to make sure that the register is in the range convered by invariant_p.
+     to make sure that the register is in the range covered by invariant_p.
      If it isn't, then it is most likely a biv/giv which by definition are
      not invariant.  */
   if ((GET_CODE (loop_final_value) == REG
@@ -1883,7 +1883,7 @@ emit_unrolled_add (dest_reg, src_reg, increment)
    is a backward branch in that range that branches to somewhere between
    LOOP_START and INSN.  Returns 0 otherwise.  */
 
-/* ??? This is quadratic algorithm.  Could be rewriten to be linear.
+/* ??? This is quadratic algorithm.  Could be rewritten to be linear.
    In practice, this is not a problem, because this function is seldom called,
    and uses a negligible amount of CPU time on average.  */
 
@@ -2926,7 +2926,7 @@ final_giv_value (v, loop_start, loop_end)
 
 
 /* Calculate the number of loop iterations.  Returns the exact number of loop
-   iterations if it can be calculated, otherwise retusns zero.  */
+   iterations if it can be calculated, otherwise returns zero.  */
 
 unsigned long
 loop_iterations (loop_start, loop_end)
@@ -3069,7 +3069,7 @@ loop_iterations (loop_start, loop_end)
      be addresses with the same base but different constant offsets.
      Final value must be invariant for this to work.
 
-     To do this, need someway to find the values of registers which are
+     To do this, need some way to find the values of registers which are
      invariant.  */
 
   /* Final_larger is 1 if final larger, 0 if they are equal, otherwise -1.  */

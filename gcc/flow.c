@@ -466,7 +466,7 @@ find_basic_blocks (f, nonlocal_label_list)
 
 	BLOCK_NUM (insn) = i;
 
-	/* Don't separare a CALL_INSN from following CLOBBER insns.  This is
+	/* Don't separate a CALL_INSN from following CLOBBER insns.  This is
 	   a kludge that will go away when each CALL_INSN records its
 	   USE and CLOBBERs.  */
 

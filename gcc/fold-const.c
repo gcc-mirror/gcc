@@ -19,7 +19,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*@@ Fix lossage on folding division of big integers.  */
 
-/*@@ This file should be rewritten to use an arbitary precision
+/*@@ This file should be rewritten to use an arbitrary precision
   @@ representation for "struct tree_int_cst" and "struct tree_real_cst".
   @@ Perhaps the routines could also be used for bc/dc, and made a lib.
   @@ The routines that translate from the ap rep should
@@ -509,7 +509,7 @@ div_and_round_double (code, uns,
     }
   else {			/* full double precision,
 				   with thanks to Don Knuth's
-				   "Semi-Numericial Algorithms".  */
+				   "Seminumerical Algorithms".  */
 #define BASE 256
     int quo_est, scale, num_hi_sig, den_hi_sig, quo_hi_sig;
 
@@ -549,7 +549,7 @@ div_and_round_double (code, uns,
 
     /* Main loop */
     for (i = quo_hi_sig; i > 0; i--) {
-      /* quess the next quotient digit, quo_est, by dividing the first
+      /* guess the next quotient digit, quo_est, by dividing the first
 	 two remaining dividend digits by the high order quotient digit.
 	 quo_est is never low and is at most 2 high.  */
 
@@ -2008,7 +2008,7 @@ make_bit_field_ref (inner, type, bitsize, bitpos, unsignedp)
    COMPARE_TYPE is the type of the comparison, and LHS and RHS
    are the left and right operands of the comparison, respectively.
 
-   If the optimization described above can be done, we return the resuling
+   If the optimization described above can be done, we return the resulting
    tree.  Otherwise we return zero.  */
 
 static tree
@@ -2239,7 +2239,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   return inner;
 }
 
-/* Return non-zero if MASK respresents a mask of SIZE ones in the low-order
+/* Return non-zero if MASK represents a mask of SIZE ones in the low-order
    bit positions.  */
 
 static int

@@ -1330,7 +1330,7 @@ gen_push_operand ()
    REG must be a hard register in this case.
 
    EXTRA is the amount in bytes of extra space to leave next to this arg.
-   This is ignored if an argument block has already been allocted.
+   This is ignored if an argument block has already been allocated.
 
    On a machine that lacks real push insns, ARGS_ADDR is the address of
    the bottom of the argument block for this call.  We use indexing off there
@@ -2880,7 +2880,7 @@ fixed_type_p (exp)
 
    EXPAND_INITIALIZER is much like EXPAND_SUM except that
    it also marks a label as absolutely required (it can't be dead).
-   This is used for outputting expressions used in intializers.  */
+   This is used for outputting expressions used in initializers.  */
 
 rtx
 expand_expr (exp, target, tmode, modifier)
@@ -5101,8 +5101,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       target = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
 
       /* Record the new stack level for nonlocal gotos.  */
-      if (nonlocal_goto_stack_level != 0)
-	emit_move_insn (nonlocal_goto_stack_level, stack_pointer_rtx);
+      if (nonlocal_goto_handler_slot != 0)
+	emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level, 0);
       return target;
 
     case BUILT_IN_FFS:

@@ -91,7 +91,7 @@ static int *allocno_order;
 static int *allocno_size;
 
 /* Indexed by (pseudo) reg number, gives the number of another
-   lower-numbered pseudo reg which can share a hard reg with this peudo
+   lower-numbered pseudo reg which can share a hard reg with this pseudo
    *even if the two pseudos would otherwise appear to conflict*.  */
 
 static int *reg_may_share;
@@ -1458,7 +1458,7 @@ mark_reg_live_nc (regno, mode)
    try to set a preference.  If one of the two is a hard register and the other
    is a pseudo-register, mark the preference.
    
-   Note that we are not as agressive as local-alloc in trying to tie a
+   Note that we are not as aggressive as local-alloc in trying to tie a
    pseudo-register to a hard register.  */
 
 static void

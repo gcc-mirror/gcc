@@ -359,7 +359,7 @@ static struct savings *savings;
 static char *prefclass;
 
 /* preferred_or_nothing[R] is nonzero if we should put pseudo number R
-   in memory if we can't get its perferred class.
+   in memory if we can't get its preferred class.
    This is available after `regclass' is run.  */
 
 static char *preferred_or_nothing;

@@ -442,7 +442,7 @@ extern void emit_0_to_1_insn ();
 /* Emit one rtl insn to compare two rtx's.  */
 extern void emit_cmp_insn ();
 
-/* Generate rtl to compate two rtx's, will call emit_cmp_insn.  */
+/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
 extern rtx compare_from_rtx ();
 
 /* Emit some rtl insns to move data between rtx's, converting machine modes.

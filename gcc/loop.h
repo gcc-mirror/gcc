@@ -121,7 +121,7 @@ struct iv_class {
   rtx initial_value;		/* Value of reg at loop start */
   rtx initial_test;		/* Test performed on BIV before loop */
   struct iv_class *next;	/* Links all class structures together */
-  rtx init_insn;		/* insn which intializes biv, 0 if none. */
+  rtx init_insn;		/* insn which initializes biv, 0 if none. */
   rtx init_set;			/* SET of INIT_INSN, if any. */
   unsigned incremented : 1;	/* 1 if somewhere incremented/decremented */
   unsigned eliminable : 1;	/* 1 if plausible candidate for elimination. */

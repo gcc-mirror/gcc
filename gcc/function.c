@@ -372,7 +372,7 @@ find_function_data (decl)
 /* Save the current context for compilation of a nested function.
    This is called from language-specific code.
    The caller is responsible for saving any language-specific status,
-   since this function knows only about language-indepedent variables.  */
+   since this function knows only about language-independent variables.  */
 
 void
 push_function_context ()
@@ -1178,7 +1178,7 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 	      if (GET_CODE (x) == SIGN_EXTRACT)
 		wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
 #endif
-	      /* If we have a narrower mode, we can do someting.  */
+	      /* If we have a narrower mode, we can do something.  */
 	      if (wanted_mode != VOIDmode
 		  && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		{
@@ -1338,7 +1338,7 @@ fixup_var_refs_1 (var, loc, insn, replacements)
 		int width = INTVAL (XEXP (outerdest, 1));
 		int pos = INTVAL (XEXP (outerdest, 2));
 
-		/* If we have a narrower mode, we can do someting.  */
+		/* If we have a narrower mode, we can do something.  */
 		if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 		  {
 		    int offset = pos / BITS_PER_UNIT;

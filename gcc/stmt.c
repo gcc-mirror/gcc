@@ -3966,7 +3966,7 @@ group_case_nodes (head)
 
 /* Take an ordered list of case nodes
    and transform them into a near optimal binary tree,
-   on the assumtion that any target code selection value is as
+   on the assumption that any target code selection value is as
    likely as any other.
 
    The transformation is performed by splitting the ordered

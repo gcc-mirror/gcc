@@ -182,7 +182,7 @@ EOF
   fi
 fi
 
-# Fix this Sun file to avoid intefering with stddef.h.
+# Fix this Sun file to avoid interfering with stddef.h.
 file=sys/stdtypes.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -227,7 +227,7 @@ EOF
   fi
 fi
 
-# Fix this file to avoid intefering with stddef.h.
+# Fix this file to avoid interfering with stddef.h.
 file=sys/types.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
