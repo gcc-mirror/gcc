@@ -1,3 +1,8 @@
+2003-01-08  Chris Demetriou  <cgd@broadcom.com>
+
+	* config.guess: Update to 2003-01-03 version.
+	* config.sub: Update to 2003-01-03 version.
+
 2003-01-07  Christopher Faylor  <cgf@redhat.com>
 
 	* configure: Regenerate with proper autoconf 2.13.
