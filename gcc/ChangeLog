@@ -1,6 +1,7 @@
-Wed Mar 18 17:21:41 1998  Jim Wilson  <wilson@cygnus.com>
+Wed Mar 18 17:40:09 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
-	* i960.md (tablejump): Handle flag_pic.
+	* expr.c (convert_move): Add [QH]Imode/P[QH]Imode conversions.
+	* machmode.def (PQImode, PHImode): New modes.
 
 Wed Mar 18 17:11:18 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
@@ -12,6 +13,10 @@ Wed Mar 18 17:07:54 1998  Ken Raeburn  <raeburn@cygnus.com>
 	(init_reg_sets_1): Put it here.
 
 Wed Mar 18 16:43:11 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i960.md (tablejump): Handle flag_pic.
+
+	* profile.c (branch_prob): If see computed goto, call fatal.
 
 	* calls.c (expand_call): Fix typos in n_named_args computation.
 
