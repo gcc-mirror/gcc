@@ -622,12 +622,20 @@ check_java_method (tree method)
   bool jerr = false;
   tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (method));
   tree ret_type = TREE_TYPE (TREE_TYPE (method));
+
   if (!acceptable_java_type (ret_type))
     {
       error ("Java method '%D' has non-Java return type `%T'",
 		method, ret_type);
       jerr = true;
     }
+
+  arg_types = TREE_CHAIN (arg_types);
+  if (DECL_HAS_IN_CHARGE_PARM_P (method))
+    arg_types = TREE_CHAIN (arg_types);
+  if (DECL_HAS_VTT_PARM_P (method))
+    arg_types = TREE_CHAIN (arg_types);
+  
   for (; arg_types != NULL_TREE; arg_types = TREE_CHAIN (arg_types))
     {
       tree type = TREE_VALUE (arg_types);

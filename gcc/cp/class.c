@@ -755,6 +755,12 @@ add_method (tree type, tree method, int error_p)
     {
       slot = CLASSTYPE_DESTRUCTOR_SLOT;
       TYPE_HAS_DESTRUCTOR (type) = 1;
+      
+      if (TYPE_FOR_JAVA (type))
+	error (DECL_ARTIFICIAL (method)
+	       ? "Java class '%T' cannot have an implicit non-trivial destructor"
+	       : "Java class '%T' cannot have a destructor",
+	       DECL_CONTEXT (method));
     }
   else
     {

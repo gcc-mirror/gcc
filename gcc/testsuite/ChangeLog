@@ -1,5 +1,7 @@
 2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/other/java1.C: New test.
+
 	PR c++/13241
 	* g++.dg/abi/mangle18-1.C: New test.
 	* g++.dg/abi/mangle18-2.C: New test.

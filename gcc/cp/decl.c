@@ -9625,7 +9625,15 @@ xref_basetypes (tree ref, tree base_list)
      inheritance order chain.  */
   copy_base_binfos (TYPE_BINFO (ref), ref, NULL_TREE);
   CLASSTYPE_VBASECLASSES (ref) = nreverse (CLASSTYPE_VBASECLASSES (ref));
-  
+
+  if (TYPE_FOR_JAVA (ref))
+    {
+      if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
+	error ("Java class '%T' cannot have multiple bases", ref);
+      if (CLASSTYPE_VBASECLASSES (ref))
+	error ("Java class '%T' cannot have virtual bases", ref);
+    }
+
   /* Unmark all the types.  */
   while (i--)
     {
