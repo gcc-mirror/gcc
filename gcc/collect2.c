@@ -379,8 +379,14 @@ is_ctor_dtor (s)
     { "GLOBAL_$I$", sizeof ("GLOBAL_$I$")-1, 1, 0 },
     { "GLOBAL_$D$", sizeof ("GLOBAL_$I$")-1, 2, 0 },
 #endif
+#ifdef CFRONT_LOSSAGE /* Don't collect cfront initialization functions.
+			 cfront has its own linker procedure to collect them;
+			 if collect2 gets them too, they get collected twice
+			 when the cfront procedure is run and the compiler used
+			 for linking happens to be GCC.  */
     { "sti__", sizeof ("sti__")-1, 1, 1 },
     { "std__", sizeof ("std__")-1, 2, 1 },
+#endif /* 0 */
     { NULL, 0, 0, 0 }
   };
 
