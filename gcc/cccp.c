@@ -2086,8 +2086,8 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
     *cmdlen = 8;
     return "ARGSUSED";
   }
-  if ((linsize >= 11) && !strncmp (ibp, "LINTLIBRARY", 8)) {
-    *cmdlen = 8;
+  if ((linsize >= 11) && !strncmp (ibp, "LINTLIBRARY", 11)) {
+    *cmdlen = 11;
     return "LINTLIBRARY";
   }
   if ((linsize >= 7) && !strncmp (ibp, "VARARGS", 7)) {
