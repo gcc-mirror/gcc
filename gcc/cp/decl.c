@@ -7866,7 +7866,10 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
    or `volatile'.
    RAISES is a list of exceptions that this function can raise.
    CHECK is 1 if we must find this method in CTYPE, 0 if we should
-   not look, and -1 if we should not call `grokclassfn' at all.  */
+   not look, and -1 if we should not call `grokclassfn' at all.  
+
+   Returns `error_mark_node' if something goes wrong, after issuing
+   applicable error messages.  */
 
 static tree
 grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
@@ -8046,7 +8049,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    return tmp;
 	}
       if (! grok_ctor_properties (ctype, decl))
-	return NULL_TREE;
+	return error_mark_node;
 
       if (check == 0 && ! current_function_decl)
 	{
@@ -10342,8 +10345,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			       virtualp, flags, quals, raises, attrlist,
 			       friendp ? -1 : 0, friendp, publicp, inlinep,
 			       funcdef_flag, template_count, in_namespace);
-	    if (decl == NULL_TREE)
-	      return NULL_TREE;
+	    if (decl == NULL_TREE || decl == error_mark_node)
+	      return decl;
 #if 0
 	    /* This clobbers the attrs stored in `decl' from `attrlist'.  */
 	    /* The decl and setting of decl_machine_attr is also turned off.  */
