@@ -152,35 +152,6 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc"
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc"
 
-/* Code to handle #pragma directives.  The interface is a bit messy,
-   but there's no simpler way to do this while still using yylex.  */
-#define HANDLE_PRAGMA(FILE)					\
-  do {								\
-    while (c == ' ' || c == '\t')				\
-      c = getc (FILE);						\
-    if (c == '\n' || c == EOF)					\
-      {								\
-	handle_pragma_token (0, 0);				\
-	return c;						\
-      }								\
-    ungetc (c, FILE);						\
-    switch (yylex ())						\
-      {								\
-      case IDENTIFIER:						\
-      case TYPENAME:						\
-      case STRING:						\
-      case CONSTANT:						\
-	handle_pragma_token (token_buffer, yylval.ttype);	\
-	break;							\
-      default:							\
-	handle_pragma_token (token_buffer, 0);			\
-      }								\
-    if (nextchar >= 0)						\
-      c = nextchar, nextchar = -1;				\
-    else							\
-      c = getc (FILE);						\
-  } while (1)
-
 /* If the host and target formats match, output the floats as hex.  */
 #if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
 #if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
