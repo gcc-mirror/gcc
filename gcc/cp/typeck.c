@@ -1610,6 +1610,10 @@ expr_sizeof (e)
       incomplete_type_error (e, TREE_TYPE (e));
       return size_int (1);
     }
+  /* It's illegal to say `sizeof (X::i)' for `i' a non-static data
+     member unless you're in a non-static member of X.  But, we used
+     to support this usage, so we still permit it unless we're being
+     pedantic.  [expr.prim]  */
   else if (TREE_CODE (e) == OFFSET_REF)
     e = resolve_offset_ref (e);
 
