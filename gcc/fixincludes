@@ -360,7 +360,8 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
     sed -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
 #ifndef __SIZE_TYPE__\
 #define __SIZE_TYPE__ long unsigned int\
-#endif' \
+#endif
+' \
       -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef __SIZE_TYPE__ size_t/' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -429,19 +430,25 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file
 sed -e '/[	 ]size_t.*;/i\
 #ifndef _GCC_SIZE_T\
-#define _GCC_SIZE_T' \
+#define _GCC_SIZE_T
+' \
     -e '/[	 ]size_t.*;/a\
-#endif' \
+#endif
+' \
     -e '/[	 ]ptrdiff_t.*;/i\
 #ifndef _GCC_PTRDIFF_T\
-#define _GCC_PTRDIFF_T' \
+#define _GCC_PTRDIFF_T
+' \
     -e '/[	 ]ptrdiff_t.*;/a\
-#endif' \
+#endif
+' \
     -e '/[	 ]wchar_t.*;/i\
 #ifndef _GCC_WCHAR_T\
-#define _GCC_WCHAR_T' \
+#define _GCC_WCHAR_T
+' \
     -e '/[	 ]wchar_t.*;/a\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
@@ -482,9 +489,11 @@ if [ -r ${LIB}/$file ]; then
   echo Fixing $file
 sed -e '/typedef[ 	][ 	]*[A-Za-z_][ 	A-Za-z_]*[ 	]size_t/i\
 #ifndef _GCC_SIZE_T\
-#define _GCC_SIZE_T' \
+#define _GCC_SIZE_T
+' \
     -e '/typedef[ 	][ 	]*[A-Za-z_][ 	A-Za-z_]*[ 	]size_t/a\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm ${LIB}/$file
@@ -731,9 +740,11 @@ if [ -r ${LIB}/$file ]; then
   -e 's/int	exit/void	exit/g' \
   -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
 #ifndef _GCC_SIZE_T\
-#define _GCC_SIZE_T' \
+#define _GCC_SIZE_T
+' \
   -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/a\
-#endif' \
+#endif
+' \
       ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -896,7 +907,8 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, undefined type
   sed -e '/authdes_create.*struct sockaddr/i\
-struct sockaddr;' \
+struct sockaddr;
+' \
     ${LIB}/$file > ${LIB}/$file.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -917,7 +929,8 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file, undefined type
   sed -e '/xdrstdio_create.*struct __file_s/i\
-struct __file_s;' \
+struct __file_s;
+' \
     ${LIB}/$file > ${LIB}/$file.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -1027,9 +1040,11 @@ if [ -r ${LIB}/$file ]; then
   if grep 'class[(]' ${LIB}/$file >/dev/null; then
     echo Fixing $file
     sed -e '/class[(]/i\
-#ifndef __cplusplus' \
+#ifndef __cplusplus
+' \
         -e '/class[(]/a\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     if cmp $file ${LIB}/$file >/dev/null 2>&1; then
       rm ${LIB}/$file
@@ -1078,9 +1093,11 @@ if [ -r ${LIB}/$file ]; then
     sed -e '/char [*]class;/i\
 #ifdef __cplusplus\
 	char *c_class;\
-#else' \
+#else
+' \
         -e '/char [*]class;/a\
-#endif' ${LIB}/$file > ${LIB}/${file}.sed
+#endif
+' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   fi
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
@@ -1104,9 +1121,11 @@ if [ -r ${LIB}/$file ]; then
     sed -e '/Widget	old, new;/i\
 #ifdef __cplusplus\
 	Widget	old, c_new;\
-#else' \
+#else
+' \
         -e '/Widget	old, new;/a\
-#endif' \
+#endif
+' \
 	-e 's/Widget new,/Widget c_new,/g' ${LIB}/$file > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   fi
@@ -1297,29 +1316,41 @@ for file in limits.h sys/limits.h; do
     else
       echo Fixing $file
       sed -e '/[ 	]FLT_MIN[ 	]/i\
-#ifndef FLT_MIN'\
+#ifndef FLT_MIN
+'\
 	  -e '/[ 	]FLT_MIN[ 	]/a\
-#endif'\
+#endif
+'\
 	  -e '/[ 	]FLT_MAX[ 	]/i\
-#ifndef FLT_MAX'\
+#ifndef FLT_MAX
+'\
 	  -e '/[ 	]FLT_MAX[ 	]/a\
-#endif'\
+#endif
+'\
 	  -e '/[ 	]FLT_DIG[ 	]/i\
-#ifndef FLT_DIG'\
+#ifndef FLT_DIG
+'\
 	  -e '/[ 	]FLT_DIG[ 	]/a\
-#endif'\
+#endif
+'\
 	  -e '/[ 	]DBL_MIN[ 	]/i\
-#ifndef DBL_MIN'\
+#ifndef DBL_MIN
+'\
 	  -e '/[ 	]DBL_MIN[ 	]/a\
-#endif'\
+#endif
+'\
 	  -e '/[ 	]DBL_MAX[ 	]/i\
-#ifndef DBL_MAX'\
+#ifndef DBL_MAX
+'\
 	  -e '/[ 	]DBL_MAX[ 	]/a\
-#endif'\
+#endif
+'\
 	  -e '/[ 	]DBL_DIG[ 	]/i\
-#ifndef DBL_DIG'\
+#ifndef DBL_DIG
+'\
 	  -e '/[ 	]DBL_DIG[ 	]/a\
-#endif'\
+#endif
+'\
 	${LIB}/$file > ${LIB}/${file}.sed
       rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     fi
@@ -1342,9 +1373,11 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e '/define[ 	]HUGE_VAL[ 	]/i\
-#ifndef HUGE_VAL'\
+#ifndef HUGE_VAL
+'\
       -e '/define[ 	]HUGE_VAL[ 	]/a\
-#endif'\
+#endif
+'\
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
