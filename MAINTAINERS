@@ -62,6 +62,7 @@ vax port		Dave Anglin		dave.anglin@nrc.ca
 			OS Port Maintainers	(OS alphabetical order)
 
 darwin port		Stan Shebs		shebs@apple.com
+netbsd			Jason Thorpe		thorpej@wasabisystems.com
 sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 
 			Various Maintainers
@@ -200,7 +201,6 @@ Mike Stump					mrs@windriver.com
 Ian Taylor					ian@zembu.com
 Michael Tiemann					tiemann@redhat.com
 Philipp Thomas					pthomas@suse.de
-Jason Thorpe					thorpej@wasabisystems.com
 Kresten Krab Thorup				krab@gcc.gnu.org
 Tom Tromey					tromey@redhat.com
 John Wehle					john@feith.com
