@@ -1204,7 +1204,7 @@ print_file_desc (fdp, number)
 	      (ulong) fdp->crfd,
 	      (ulong) fdp->rfdBase);
 
-      rfd_ptr = rfile_desc + fdp->rfdBase * sizeof (ulong);
+      rfd_ptr = rfile_desc + fdp->rfdBase;
       for (i = 0; i < fdp->crfd; i++)
 	{
 	  printf ("\t#%-5ld %11ld, 0x%08lx\n", i, *rfd_ptr, *rfd_ptr);
