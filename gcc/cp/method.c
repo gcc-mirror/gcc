@@ -945,7 +945,7 @@ build_template_parm_names (parmlist, arglist)
      tree arglist;
 {
   int i, nparms;
-  tree inner_args = innermost_args (arglist);
+  tree inner_args = INNERMOST_TEMPLATE_ARGS (arglist);
 
   nparms = TREE_VEC_LENGTH (parmlist);
   icat (nparms);

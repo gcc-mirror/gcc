@@ -1,3 +1,40 @@
+2000-06-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TMPL_ARGS_LEVEL): Clarify comment.
+	(INNERMOST_TEMPLATE_ARGS): New macro.
+	(innermost_args): Remove.
+	(get_innermost_template_args): New function.
+	* decl2.c (arg_assoc_class): Use INNERMOST_TEMPLATE_ARGS.
+	* error.c (dump_function_decl): Be caution when using
+	most_general_template.
+	* method.c (build_template_parm_names):  Use
+	INNERMOST_TEMPLATE_ARGS.
+	* pt.c (add_to_template_args): Tidy comment
+	(get_innermost_template_args): New function.
+	(check_explicit_specialization): Clear DECL_INITIAL for a new
+	specialization.
+	(process_partial_specialization): Use INNERMOST_TEMPLATE_ARGS.
+	Tidy.
+	(push_template_decl): Always register specializations of the most
+	general template.
+	(convert_template_argument): Use INNERMOST_TEMPLATE_ARGS.
+	(coerce_template_parms): Likewise.
+	(lookup_template_class): Likewise.
+	(innermost_args): Remove.
+	(tsubst_decl): Use INNERMOST_TEMPLATE_ARGS.
+	(tsubst_decl): Handle tricky specializations.  Use
+	get_innermost_template_args.
+	(instantiate_template): Simplify handling of partial
+	instantiations.
+	(get_class_bindings): Use INNERMOST_TEMPLATE_ARGS.
+	(most_general_template): Reimplement, in a more straightforward
+	manner.
+	(regenerate_decl_from_template): Tweak formatting.  Use
+	TMPL_ARGS_DEPTH for clarity.
+	(set_mangled_name_for_template_decl): Use INNERMOST_ARGS.
+	
+	* dump.c (dequeue_and_dump): Dump information about thunks.
+
 2000-06-02  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* exception.cc (__cp_pop_exception): If we aren't popping or
