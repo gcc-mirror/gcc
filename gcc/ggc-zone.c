@@ -244,7 +244,6 @@ struct max_alignment {
 #define LOOKUP_L2(p) \
   (((size_t) (p) >> G.lg_pagesize) & ((1 << PAGE_L2_BITS) - 1))
 
-struct alloc_zone;
 /* A page_entry records the status of an allocation page.  */
 typedef struct page_entry
 {
@@ -382,8 +381,11 @@ struct alloc_zone
   /* Next zone in the linked list of zones.  */
   struct alloc_zone *next_zone;
 
-  /* Return true if this zone was collected during this collection.  */
+  /* True if this zone was collected during this collection.  */
   bool was_collected;
+
+  /* True if this zone should be destroyed after the next collection.  */
+  bool dead;
 } main_zone;
 
 struct alloc_zone *rtl_zone;
@@ -1215,17 +1217,14 @@ destroy_ggc_zone (struct alloc_zone * dead_zone)
   for (z = G.zones; z && z->next_zone != dead_zone; z = z->next_zone)
     /* Just find that zone.  */ ;
 
-  /* We should have found the zone in the list.  Anything else is
-     fatal.
-     If we did find the zone, we expect this zone to be empty.
-     A ggc_collect should have emptied it before we can destroy it.  */
-  if (!z || dead_zone->allocated != 0)
+#ifdef ENABLE_CHECKING
+  /* We should have found the zone in the list.  Anything else is fatal.  */
+  if (!z)
     abort ();
+#endif
 
-  /* Unchain the dead zone, release all its pages and free it.  */
-  z->next_zone = z->next_zone->next_zone;
-  release_pages (dead_zone);
-  free (dead_zone);
+  /* z is dead, baby. z is dead.  */
+  z->dead= true;
 }
 
 /* Increment the `GC context'.  Objects allocated in an outer context
@@ -1408,19 +1407,24 @@ sweep_pages (struct alloc_zone *zone)
 static bool
 ggc_collect_1 (struct alloc_zone *zone, bool need_marking)
 {
-  /* Avoid frequent unnecessary work by skipping collection if the
-     total allocations haven't expanded much since the last
-     collection.  */
-  float allocated_last_gc =
-    MAX (zone->allocated_last_gc, (size_t)PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
+  if (!zone->dead)
+    {
+      /* Avoid frequent unnecessary work by skipping collection if the
+	 total allocations haven't expanded much since the last
+	 collection.  */
+      float allocated_last_gc =
+	MAX (zone->allocated_last_gc,
+	     (size_t) PARAM_VALUE (GGC_MIN_HEAPSIZE) * 1024);
 
-  float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
+      float min_expand = allocated_last_gc * PARAM_VALUE (GGC_MIN_EXPAND) / 100;
 
-  if (zone->allocated < allocated_last_gc + min_expand)
-    return false;
+      if (zone->allocated < allocated_last_gc + min_expand)
+	return false;
+    }
 
   if (!quiet_flag)
-    fprintf (stderr, " {%s GC %luk -> ", zone->name, (unsigned long) zone->allocated / 1024);
+    fprintf (stderr, " {%s GC %luk -> ",
+	     zone->name, (unsigned long) zone->allocated / 1024);
 
   /* Zero the total allocated bytes.  This will be recalculated in the
      sweep phase.  */
@@ -1438,7 +1442,6 @@ ggc_collect_1 (struct alloc_zone *zone, bool need_marking)
   sweep_pages (zone);
   zone->was_collected = true;
   zone->allocated_last_gc = zone->allocated;
-
 
   if (!quiet_flag)
     fprintf (stderr, "%luk}", (unsigned long) zone->allocated / 1024);
@@ -1586,6 +1589,27 @@ ggc_collect (void)
 	  }
       }
     }
+
+  /* Free dead zones.  */
+  for (zone = G.zones; zone && zone->next_zone; zone = zone->next_zone)
+    {
+      if (zone->next_zone->dead)
+	{
+	  struct alloc_zone *dead_zone = zone->next_zone;
+
+	  printf ("Zone `%s' is dead and will be freed.\n", dead_zone->name);
+
+	  /* The zone must be empty.  */
+	  if (dead_zone->allocated != 0)
+	    abort ();
+
+	  /* Unchain the dead zone, release all its pages and free it.  */
+	  zone->next_zone = zone->next_zone->next_zone;
+	  release_pages (dead_zone);
+	  free (dead_zone);
+	}
+    }
+
   timevar_pop (TV_GC);
 }
 
