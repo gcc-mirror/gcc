@@ -1,3 +1,7 @@
+2001-06-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Fail for unknown modes instead of ignoring them.
+
 2001-05-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* contrib/test_summary (files): Sort before evaluating.

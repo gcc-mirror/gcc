@@ -426,10 +426,11 @@ export CVSROOT
 # Handle the major modes.
 while [ $# -ne 0 ]; do
     case $1 in
-    sources) MODE_SOURCES=1;;
+    sources)  MODE_SOURCES=1;;
     tarfiles) MODE_TARFILES=1;;
-    upload) MODE_UPLOAD=1;;
-    all) MODE_SOURCES=1; MODE_TARFILES=1; MODE_UPLOAD=1; 
+    upload)   MODE_UPLOAD=1;;
+    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_UPLOAD=1;;
+    *)        error "Unknown mode $1";;
     esac
     shift
 done
