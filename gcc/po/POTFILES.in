@@ -474,6 +474,7 @@ config/rs6000/xm-lynx.h
 config/rs6000/xm-mach.h
 config/rs6000/xm-rs6000.h
 config/rs6000/xm-sysv4.h
+config/rtems.h
 config/sh/elf.h
 config/sh/rtems.h
 config/sh/sh.c
