@@ -40,6 +40,7 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.*;
 import java.awt.image.*;
+import java.text.AttributedCharacterIterator;
 
 public class GdkGraphics extends Graphics
 {
@@ -209,6 +210,11 @@ public class GdkGraphics extends Graphics
   {
     drawString (str, x, y,
 		((GtkFontPeer)font.getPeer ()).getXLFD (), font.getSize ());
+  }
+
+  public void drawString (AttributedCharacterIterator ci, int x, int y)
+  {
+    throw new Error ("not implemented");
   }
 
   public void drawRoundRect(int x, int y, int width, int height, 

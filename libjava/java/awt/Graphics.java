@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.image.ImageObserver;
+import java.text.AttributedCharacterIterator;
 
 /**
   * This is the abstract superclass of classes for drawing to graphics
@@ -594,6 +595,8 @@ fillPolygon(Polygon polygon)
   */
 public abstract void
 drawString(String string, int x, int y);
+
+public abstract void drawString (AttributedCharacterIterator ci, int x, int y);
 
 /*************************************************************************/
 
