@@ -1,3 +1,10 @@
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	Paul Brook  <paul@codesourcery.com>
+
+	* runtime/normalize.c (normalize_r4_i4, normalize_r8_i8): Fix
+	comments.
+	* intrinsics/rand.c (rand): Call irand() in call to normalize_r4_i4.
+
 2004-06-27  Bud Davis  <bdavis9659@comcast.net>
 
 	PR gfortran/12839
