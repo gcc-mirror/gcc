@@ -1674,15 +1674,19 @@ package body Make is
 
                      declare
                         Defaults : constant Array_Element_Id :=
-                          Prj.Util.Value_Of
-                           (Name => Name_Default_Switches,
-                            In_Arrays => Packages.Table
-                                          (Compiler_Package).Decl.Arrays);
+                                     Prj.Util.Value_Of
+                                      (Name => Name_Default_Switches,
+                                       In_Arrays =>
+                                         Packages.Table
+                                           (Compiler_Package) .Decl.Arrays);
+
                         Switches_Array : constant Array_Element_Id :=
-                          Prj.Util.Value_Of
-                           (Name => Name_Switches,
-                            In_Arrays => Packages.Table
-                                          (Compiler_Package).Decl.Arrays);
+                                           Prj.Util.Value_Of
+                                             (Name => Name_Switches,
+                                              In_Arrays =>
+                                                Packages.Table
+                                                  (Compiler_Package).
+                                                              Decl.Arrays);
 
                      begin
                         Switches :=
@@ -1695,9 +1699,7 @@ package body Make is
                              Prj.Util.Value_Of
                                (Index => Name_Ada, In_Array => Defaults);
                         end if;
-
                      end;
-
                   end if;
 
                   case Switches.Kind is
