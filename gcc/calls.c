@@ -125,7 +125,8 @@ int stack_arg_under_construction;
 
 static int calls_function	PROTO((tree, int));
 static int calls_function_1	PROTO((tree, int));
-static void emit_call_1		PROTO((rtx, tree, tree, int, int, rtx, rtx,
+static void emit_call_1		PROTO((rtx, tree, tree, HOST_WIDE_INT,
+				       HOST_WIDE_INT, rtx, rtx,
 				       int, rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
 					tree, int));
@@ -347,8 +348,8 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
      rtx funexp;
      tree fndecl;
      tree funtype;
-     int stack_size;
-     int struct_value_size;
+     HOST_WIDE_INT stack_size;
+     HOST_WIDE_INT struct_value_size;
      rtx next_arg_reg;
      rtx valreg;
      int old_inhibit_defer_pop;
@@ -509,7 +510,7 @@ expand_call (exp, target, ignore)
   /* Size of aggregate value wanted, or zero if none wanted
      or if we are using the non-reentrant PCC calling convention
      or expecting the value in registers.  */
-  int struct_value_size = 0;
+  HOST_WIDE_INT struct_value_size = 0;
   /* Nonzero if called function returns an aggregate in memory PCC style,
      by returning the address of where to find it.  */
   int pcc_struct_value = 0;
