@@ -8315,12 +8315,12 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case PLUS:
-	  /* (eq (plus X C1) C2) -> (eq X (minus C2 C1)).  We can only do
+	  /* (eq (plus X A) B) -> (eq X (minus B A)).  We can only do
 	     this for equality comparisons due to pathological cases involving
 	     overflows.  */
-	  if (equality_comparison_p && GET_CODE (XEXP (op0, 1)) == CONST_INT
-	      && (tem = simplify_binary_operation (MINUS, mode, op1,
-						   XEXP (op0, 1))) != 0)
+	  if (equality_comparison_p
+	      && 0 != (tem = simplify_binary_operation (MINUS, mode,
+							op1, XEXP (op0, 1))))
 	    {
 	      op0 = XEXP (op0, 0);
 	      op1 = tem;
@@ -8338,6 +8338,28 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case MINUS:
+	  /* (eq (minus A B) C) -> (eq A (plus B C)) or
+	     (eq B (minus A C)), whichever simplifies.  We can only do
+	     this for equality comparisons due to pathological cases involving
+	     overflows.  */
+	  if (equality_comparison_p
+	      && 0 != (tem = simplify_binary_operation (PLUS, mode,
+							XEXP (op0, 1), op1)))
+	    {
+	      op0 = XEXP (op0, 0);
+	      op1 = tem;
+	      continue;
+	    }
+
+	  if (equality_comparison_p
+	      && 0 != (tem = simplify_binary_operation (MINUS, mode,
+							XEXP (op0, 0), op1)))
+	    {
+	      op0 = XEXP (op0, 1);
+	      op1 = tem;
+	      continue;
+	    }
+
 	  /* The sign bit of (minus (ashiftrt X C) X), where C is the number
 	     of bits in X minus 1, is one iff X > 0.  */
 	  if (sign_bit_comparison_p && GET_CODE (XEXP (op0, 0)) == ASHIFTRT
