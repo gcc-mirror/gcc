@@ -1,3 +1,9 @@
+1999-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* system.h (bcopy, bcmp, bzero, index, rindex, atof, atol, free,
+	getcwd, getenv, getwd, sbrk, strstr, malloc, calloc, realloc,
+	strerror, getrlimit, setrlimit, abort): Add prototype arguments.
+
 1999-12-30  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* i386.c (ix86_expand_fp_compare): In non-sahf non-TARGET_IEEE
