@@ -1906,13 +1906,19 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
     TIMEVAR (varconst_time,
 	     {
 	       make_decl_rtl (decl, asmspec, top_level);
-	       /* Don't output anything
-		  when a tentative file-scope definition is seen.
-		  But at end of compilation, do output code for them.  */
-	       if (! (! at_end && top_level
-		      && (DECL_INITIAL (decl) == 0
-			  || DECL_INITIAL (decl) == error_mark_node)))
-		 assemble_variable (decl, top_level, at_end);
+	       /* For a user-invisible decl that should be replaced
+		  by its value when used, don't output anything.  */
+	       if (! (TREE_CODE (decl) == VAR_DECL
+		      && DECL_IGNORED_P (decl) && TREE_READONLY (decl)
+		      && DECL_INITIAL (decl) != 0))
+		 /* Don't output anything
+		    when a tentative file-scope definition is seen.
+		    But at end of compilation, do output code for them.  */
+		 if (! (! at_end && top_level
+			&& (DECL_INITIAL (decl) == 0
+			    || DECL_INITIAL (decl) == error_mark_node
+			    || DECL_IGNORED_P (decl))))
+		   assemble_variable (decl, top_level, at_end);
 	     });
   else if (TREE_REGDECL (decl) && asmspec != 0)
     {
