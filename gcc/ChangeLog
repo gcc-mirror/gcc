@@ -1,3 +1,7 @@
+2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-alias.c (pass_may_alias): Add TODO_verify_stmts.
+
 2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (CLASS_MAX_NREGS): DF goes in 1 register

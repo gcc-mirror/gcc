@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -354,7 +354,8 @@ struct tree_opt_pass pass_may_alias =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_rename_vars
-    | TODO_ggc_collect | TODO_verify_ssa,  /* todo_flags_finish */
+    | TODO_ggc_collect | TODO_verify_ssa
+    | TODO_verify_stmts, 		/* todo_flags_finish */
   0					/* letter */
 };
 
