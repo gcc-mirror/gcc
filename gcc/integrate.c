@@ -380,6 +380,11 @@ adjust_copied_decl_tree (block)
    compiled.  Our caller (rest_of_compilation) saves the original
    DECL_INITIAL and DECL_ARGUMENTS; here we copy them.  */
 
+/* ??? The nonlocal_label list should be adjusted also.  However, since
+   a function that contains a nested function never gets inlined currently,
+   the nonlocal_label list will always be empty, so we don't worry about
+   it for now.  */
+
 void
 save_for_inline_copying (fndecl)
      tree fndecl;
