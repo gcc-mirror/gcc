@@ -1,3 +1,8 @@
+Tue Aug 24 16:58:15 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Do cmov opt on any single-set; force
+	B into a register before emit_conditional_move.
+
 Tue Aug 24 15:37:03 1999  Richard Henderson  <rth@cygnus.com>
 
 	* fold-const.c (fold): Reassociate (+ (+ (* a b) c) (* d e))

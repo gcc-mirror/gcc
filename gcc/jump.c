@@ -874,12 +874,13 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 
 	     INSN here is the jump around the store.  We set:
 
-	     TEMP to the "x = b;" insn.
+	     TEMP to the "x op= b;" insn.
 	     TEMP1 to X.
 	     TEMP2 to B.
 	     TEMP3 to A (X in the second case).
 	     TEMP4 to the condition being tested.
-	     TEMP5 to the earliest insn used to find the condition.  */
+	     TEMP5 to the earliest insn used to find the condition.
+	     TEMP6 to the SET of TEMP.  */
 
 	  if (/* We can't do this after reload has completed.  */
 	      ! reload_completed
@@ -887,11 +888,11 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	      /* Set TEMP to the "x = b;" insn.  */
 	      && (temp = next_nonnote_insn (insn)) != 0
 	      && GET_CODE (temp) == INSN
-	      && GET_CODE (PATTERN (temp)) == SET
-	      && GET_CODE (temp1 = SET_DEST (PATTERN (temp))) == REG
+	      && (temp6 = single_set (temp)) != NULL_RTX
+	      && GET_CODE (temp1 = SET_DEST (temp6)) == REG
 	      && (! SMALL_REGISTER_CLASSES
 		  || REGNO (temp1) >= FIRST_PSEUDO_REGISTER)
-	      && ! side_effects_p (temp2 = SET_SRC (PATTERN (temp)))
+	      && ! side_effects_p (temp2 = SET_SRC (temp6))
 	      && ! may_trap_p (temp2)
 	      /* Allow either form, but prefer the former if both apply. 
 		 There is no point in using the old value of TEMP1 if
@@ -936,7 +937,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		enum rtx_code code = GET_CODE (temp4);
 		rtx var = temp1;
 		rtx cond0, cond1, aval, bval;
-		rtx target;
+		rtx target, new_insn;
 
 		/* Copy the compared variables into cond0 and cond1, so that
 		   any side effects performed in or after the old comparison,
@@ -955,10 +956,28 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		else
 		  cond1 = gen_reg_rtx (GET_MODE (XEXP (temp4, 1)));
 
+		/* Careful about copying these values -- an IOR or what may
+		   need to do other things, like clobber flags.  */
+		/* ??? Assume for the moment that AVAL is ok.  */
 		aval = temp3;
-		bval = temp2;
 
 		start_sequence ();
+
+		/* If we're not dealing with a register or the insn is more
+		   complex than a simple SET, duplicate the computation and
+		   replace the destination with a new temporary.  */
+		if (register_operand (temp2, GET_MODE (var))
+		    && GET_CODE (PATTERN (temp)) == SET)
+		  bval = temp2;
+		else
+		  {
+		    bval = gen_reg_rtx (GET_MODE (var));
+		    new_insn = copy_rtx (temp);
+		    temp6 = single_set (new_insn);
+		    SET_DEST (temp6) = bval;
+		    emit_insn (PATTERN (new_insn));
+		  }
+		  
 		target = emit_conditional_move (var, code,
 						cond0, cond1, VOIDmode,
 						aval, bval, GET_MODE (var),
