@@ -13574,6 +13574,8 @@ dwarf2out_finish (const char *filename)
 	      origin = lookup_decl_die (context);
 	      if (origin)
 	        add_child_die (origin, die);
+	      else
+	        add_child_die (comp_unit_die, die);
 	    }
 	}
     }
