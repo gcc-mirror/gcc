@@ -1,3 +1,8 @@
+2003-11-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Darwin
+	needs VRSAVE.
+
 2003-11-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (pedantic_lvalue_warning): Deprecate use of
