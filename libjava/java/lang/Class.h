@@ -331,8 +331,6 @@ private:
 #ifdef INTERPRETER
   friend jboolean _Jv_IsInterpretedClass (jclass);
   friend void _Jv_InitField (jobject, jclass, _Jv_Field*);
-  friend int _Jv_DetermineVTableIndex (jclass, _Jv_Utf8Const *, 
-				       _Jv_Utf8Const*);
   friend void _Jv_InitField (jobject, jclass, int);
   friend _Jv_word _Jv_ResolvePoolEntry (jclass, int);
   friend _Jv_Method *_Jv_SearchMethodInClass (jclass cls, jclass klass, 

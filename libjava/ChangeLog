@@ -1,3 +1,13 @@
+2002-11-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* resolve.cc (METHOD_NOT_THERE, METHOD_INACCESSIBLE): Remove.
+	(_Jv_ResolvePoolEntry): Use _Jv_Method.index, not
+	_Jv_DetermineVTableIndex, to determine vtable offset.
+	(_Jv_DetermineVTableIndex): Remove.
+	(_Jv_PrepareClass): Don't layout vtable.  Use _Jv_MakeVTable instead.
+
+	* java/lang/Class.h (friend int _Jv_DetermineVTableIndex): Remove.
+
 2002-11-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/nio/channels/AlreadyConnectedException.java: Extend
