@@ -29,14 +29,6 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* TARGET_OS_CPP_BUILTINS() common to all LP64 NetBSD targets.  */
-#define NETBSD_OS_CPP_BUILTINS_LP64()		\
-  do						\
-    {						\
-      builtin_define ("_LP64");			\
-    }						\
-  while (0)
-
 /* CPP_SPEC parts common to all NetBSD targets.  */
 #define NETBSD_CPP_SPEC				\
   "%{posix:-D_POSIX_SOURCE} \

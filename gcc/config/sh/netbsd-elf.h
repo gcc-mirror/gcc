@@ -1,5 +1,5 @@
 /* Definitions for SH running NetBSD using ELF
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
 This file is part of GNU CC.
@@ -52,8 +52,6 @@ Boston, MA 02111-1307, USA.  */
   do									\
     {									\
       NETBSD_OS_CPP_BUILTINS_ELF();					\
-      if (TARGET_SHMEDIA64)						\
-	NETBSD_OS_CPP_BUILTINS_LP64();					\
       builtin_define ("__NO_LEADING_UNDERSCORES__");			\
     }									\
   while (0)

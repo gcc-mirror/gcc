@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -40,11 +40,6 @@ do {						\
 	builtin_define("__ia64__");		\
 	builtin_define("__itanium__");		\
 	builtin_define("__ELF__");		\
-	if (!TARGET_ILP32)			\
-	  {					\
-	    builtin_define("_LP64");		\
-	    builtin_define("__LP64__");		\
-	  }					\
 	if (TARGET_BIG_ENDIAN)			\
 	  builtin_define("__BIG_ENDIAN__");	\
 } while (0)
