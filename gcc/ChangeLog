@@ -1,3 +1,10 @@
+Thu Jul 20 18:02:35 2000  Michael Matz <matzmich@cs.tu-berlin.de>
+
+	* gcse.c (record_one_set): Prepend instead of append onto
+	reg_set_table, making it O(n) instead O(n^2).
+	* lcm.c (compute_antinout_edge,compute_laterin,compute_available):
+	Use a queue instead of a stack as worklist.
+
 2000-07-20  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c (two_insn_adds_subs_operand): Fix a typo.

@@ -108,12 +108,13 @@ compute_antinout_edge (antloc, transp, antin, antout)
 {
   int bb;
   edge e;
-  basic_block *worklist, *tos;
+  basic_block *worklist, *qin, *qout, *qend;
+  unsigned int qlen;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist
+  qin = qout = worklist
     = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
 
   /* We want a maximal solution, so make an optimistic initialization of
@@ -122,11 +123,15 @@ compute_antinout_edge (antloc, transp, antin, antout)
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
     {
-      *tos++ = BASIC_BLOCK (bb);
+      *qin++ = BASIC_BLOCK (bb);
       BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
     }
+  
+  qin = worklist;
+  qend = &worklist[n_basic_blocks];
+  qlen = n_basic_blocks;
 
   /* Mark blocks which are predecessors of the exit block so that we
      can easily identify them below.  */
@@ -134,11 +139,15 @@ compute_antinout_edge (antloc, transp, antin, antout)
     e->src->aux = EXIT_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
-  while (tos != worklist)
+  while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *--tos;
+      basic_block b = *qout++;
       bb = b->index;
+      qlen--;
+
+      if (qout >= qend)
+        qout = worklist;
 
       if (b->aux == EXIT_BLOCK_PTR)
 	/* Do not clear the aux field for blocks which are predecessors of
@@ -160,12 +169,15 @@ compute_antinout_edge (antloc, transp, antin, antout)
 	for (e = b->pred; e; e = e->pred_next)
 	  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
 	    {
-	      *tos++ = e->src;
+	      *qin++ = e->src;
 	      e->src->aux = e;
+	      qlen++;
+	      if (qin >= qend)
+	        qin = worklist;
 	    }
     }
 
-  free (tos);
+  free (worklist);
 }
 
 /* Compute the earliest vector for edge based lcm.  */
@@ -246,14 +258,15 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 {
   int bb, num_edges, i;
   edge e;
-  basic_block *worklist, *tos;
+  basic_block *worklist, *qin, *qout, *qend;
+  unsigned int qlen;
 
   num_edges = NUM_EDGES (edge_list);
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist
+  qin = qout = worklist
     = (basic_block *) xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   /* Initialize a mapping from each edge to its index.  */
@@ -281,19 +294,28 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
      the loop given our optimistic initialization of LATER above.  */
-  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+  for (bb = 0; bb < n_basic_blocks; bb++)
     {
       basic_block b = BASIC_BLOCK (bb);
-      *tos++ = b;
+      *qin++ = b;
       b->aux = b;
     }
+  qin = worklist;
+  /* Note that we do not use the last allocated element for our queue,
+     as EXIT_BLOCK is never inserted into it. In fact the above allocation
+     of n_basic_blocks + 1 elements is not encessary. */
+  qend = &worklist[n_basic_blocks];
+  qlen = n_basic_blocks;
 
   /* Iterate until the worklist is empty.  */
-  while (tos != worklist)
+  while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *--tos;
+      basic_block b = *qout++;
       b->aux = NULL;
+      qlen--;
+      if (qout >= qend)
+        qout = worklist;
 
       /* Compute the intersection of LATERIN for each incoming edge to B.  */
       bb = b->index;
@@ -311,8 +333,11 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 	       to add the target of the outgoing edge to the worklist.  */
 	    && e->dest != EXIT_BLOCK_PTR && e->dest->aux == 0)
 	  {
-	    *tos++ = e->dest;
+	    *qin++ = e->dest;
 	    e->dest->aux = e;
+	    qlen++;
+	    if (qin >= qend)
+	      qin = worklist;
 	  }
     }
 
@@ -325,7 +350,7 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 		     laterin[n_basic_blocks],
 		     later[(size_t) e->aux]);
 
-  free (tos);
+  free (worklist);
 }
 
 /* Compute the insertion and deletion points for edge based LCM.  */
@@ -465,12 +490,13 @@ compute_available (avloc, kill, avout, avin)
 {
   int bb;
   edge e;
-  basic_block *worklist, *tos;
+  basic_block *worklist, *qin, *qout, *qend;
+  unsigned int qlen;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
      bounded by the number of basic blocks.  */
-  tos = worklist
+  qin = qout = worklist
     = (basic_block *) xmalloc (sizeof (basic_block) * n_basic_blocks);
 
   /* We want a maximal solution.  */
@@ -478,11 +504,15 @@ compute_available (avloc, kill, avout, avin)
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of AVOUT above.  */
-  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+  for (bb = 0; bb < n_basic_blocks; bb++)
     {
-      *tos++ = BASIC_BLOCK (bb);
+      *qin++ = BASIC_BLOCK (bb);
       BASIC_BLOCK (bb)->aux = BASIC_BLOCK (bb);
     }
+  
+  qin = worklist;
+  qend = &worklist[n_basic_blocks];
+  qlen = n_basic_blocks;
 
   /* Mark blocks which are successors of the entry block so that we
      can easily identify them below.  */
@@ -490,11 +520,15 @@ compute_available (avloc, kill, avout, avin)
     e->dest->aux = ENTRY_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
-  while (tos != worklist)
+  while (qlen)
     {
       /* Take the first entry off the worklist.  */
-      basic_block b = *--tos;
+      basic_block b = *qout++;
       bb = b->index;
+      qlen--;
+
+      if (qout >= qend)
+        qout = worklist;
 
       /* If one of the predecessor blocks is the ENTRY block, then the
 	 intersection of avouts is the null set.  We can identify such blocks
@@ -518,12 +552,16 @@ compute_available (avloc, kill, avout, avin)
 	for (e = b->succ; e; e = e->succ_next)
 	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
 	    {
-	      *tos++ = e->dest;
+	      *qin++ = e->dest;
 	      e->dest->aux = e;
+	      qlen++;
+
+	      if (qin >= qend)
+	        qin = worklist;
 	    }
     }
 
-  free (tos);
+  free (worklist);
 }
 
 /* Compute the farthest vector for edge based lcm.  */

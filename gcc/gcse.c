@@ -1140,21 +1140,8 @@ record_one_set (regno, insn)
 						   sizeof (struct reg_set));
   bytes_used += sizeof (struct reg_set);
   new_reg_info->insn = insn;
-  new_reg_info->next = NULL;
-  if (reg_set_table[regno] == NULL)
-    reg_set_table[regno] = new_reg_info;
-  else
-    {
-      reg_info_ptr1 = reg_info_ptr2 = reg_set_table[regno];
-      /* ??? One could keep a "last" pointer to speed this up.  */
-      while (reg_info_ptr1 != NULL)
-	{
-	  reg_info_ptr2 = reg_info_ptr1;
-	  reg_info_ptr1 = reg_info_ptr1->next;
-	}
-
-      reg_info_ptr2->next = new_reg_info;
-    }
+  new_reg_info->next = reg_set_table[regno];
+  reg_set_table[regno] = new_reg_info;
 }
 
 /* Called from compute_sets via note_stores to handle one SET or CLOBBER in
