@@ -1,5 +1,16 @@
 2002-06-19  Eric Christopher  <echristo@redhat.com>
 
+	* config/mips/mips.c (symbol_operand): New function.
+	(mips_emit_prefetch): Ditto.
+	* config/mips/mips-protos.h: Define.
+	* config/mips/mips.h (ISA_HAS_PREFETCH): Define.
+	(CONSTANT_ADDRESS_P): Adjust, use TARGET_GAS.
+	(LEGITIMIZE_ADDRESS): Ditto.
+	* config/mips/mips.md (prefetch, prefetch_si_address,
+	prefetch_si, prefetch_di_address, prefetch_di): New patterns.
+
+2002-06-19  Eric Christopher  <echristo@redhat.com>
+
 	* config/fp-bit.h: Add unordered defines for gofast.
 
 2002-06-19  Vladimir Makarov  <vmakarov@redhat.com>

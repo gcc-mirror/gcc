@@ -10540,6 +10540,51 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
 ;;  ....................
 ;;
 
+
+(define_expand "prefetch"
+  [(prefetch (match_operand 0 "address_operand" "")
+	     (match_operand 1 "const_int_operand" "")
+	     (match_operand 2 "const_int_operand" ""))]
+  "ISA_HAS_PREFETCH"
+"{
+     if (symbolic_operand (operands[0], GET_MODE (operands[0])))
+	operands[0] = force_reg (GET_MODE (operands[0]), operands[0]);
+}")
+
+(define_insn "prefetch_si_address"
+  [(prefetch (plus:SI (match_operand:SI 0 "register_operand" "r")
+		      (match_operand:SI 3 "const_int_operand" "i"))
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCH && Pmode == SImode"
+  "* return mips_emit_prefetch (operands);"
+  [(set_attr "type" "load")])
+
+(define_insn "prefetch_si"
+  [(prefetch (match_operand:SI 0 "register_operand" "r")
+	     (match_operand:SI 1 "const_int_operand" "n")
+	     (match_operand:SI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCH && Pmode == SImode"
+  "* return mips_emit_prefetch (operands);"
+  [(set_attr "type" "load")])
+
+(define_insn "prefetch_di_address"
+  [(prefetch (plus:DI (match_operand:DI 0 "se_register_operand" "r")
+		      (match_operand:DI 3 "const_int_operand" "i"))
+	     (match_operand:DI 1 "const_int_operand" "n")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCH && Pmode == DImode"
+  "* return mips_emit_prefetch (operands);"
+  [(set_attr "type" "load")])
+
+(define_insn "prefetch_di"
+  [(prefetch (match_operand:DI 0 "se_register_operand" "r")
+	     (match_operand:DI 1 "const_int_operand" "n")
+	     (match_operand:DI 2 "const_int_operand" "n"))]
+  "ISA_HAS_PREFETCH && Pmode == DImode"
+  "* return mips_emit_prefetch (operands);"
+  [(set_attr "type" "load")])
+
 (define_insn "nop"
   [(const_int 0)]
   ""

@@ -685,7 +685,7 @@ extern void		sbss_section PARAMS ((void));
   SUBTARGET_TARGET_OPTIONS						\
   { "cpu=",	&mips_cpu_string,					\
       N_("Specify CPU for scheduling purposes")},			\
-  { "tune=",    &mips_tune_string,                                   \
+  { "tune=",    &mips_tune_string,			                \
       N_("Specify CPU for scheduling purposes")},                       \
   { "arch=",    &mips_arch_string,                                      \
       N_("Specify CPU for code generation purposes")},                  \
@@ -725,14 +725,14 @@ extern void		sbss_section PARAMS ((void));
 #define HAVE_SQRT_P()		(!ISA_MIPS1)
 
 /* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3).  */
-#define ISA_HAS_64BIT_REGS	(ISA_MIPS3	        \
-				 || ISA_MIPS4		\
+#define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
+				 || ISA_MIPS4				\
                                  || ISA_MIPS64)
 
 /* ISA has branch likely instructions (eg. mips2).  */
 /* Disable branchlikely for tx39 until compare rewrite.  They haven't
    been generated up to this point.  */
-#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1                          \
+#define ISA_HAS_BRANCHLIKELY	(!ISA_MIPS1				\
 				 && !TARGET_MIPS16)
 
 /* ISA has the conditional move instructions introduced in mips4.  */
@@ -779,6 +779,12 @@ extern void		sbss_section PARAMS ((void));
 /* ISA has double-word count leading zeroes/ones instruction (not
    implemented).  */
 #define ISA_HAS_DCLZ_DCLO       (ISA_MIPS64				\
+				 && !TARGET_MIPS16)
+
+/* ISA has data prefetch instruction.  */
+#define ISA_HAS_PREFETCH	((ISA_MIPS4				\
+				  || ISA_MIPS32				\
+				  || ISA_MIPS64)	       		\
 				 && !TARGET_MIPS16)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
@@ -1060,7 +1066,7 @@ extern int mips_abi;
 %{mips3:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mips4:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
 %{mips32:-mfp32 -mgp32} \
-%{mips64:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
+%{mips64:%{!msingle-float:-mfp64} -mgp64} \
 %{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
 %{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
 %{mint64|mlong64|mlong32:-mexplicit-type-size }\
@@ -1343,21 +1349,21 @@ do {							\
 
 #define PUT_SDB_FUNCTION_START(LINE)
 
-#define PUT_SDB_FUNCTION_END(LINE)            \
-do {                                                  \
-  extern FILE *asm_out_text_file;             \
+#define PUT_SDB_FUNCTION_END(LINE)			\
+do {							\
+  extern FILE *asm_out_text_file;			\
   ASM_OUTPUT_SOURCE_LINE (asm_out_text_file, LINE + sdb_begin_function_line); \
 } while (0)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
 
-#define PUT_SDB_SRC_FILE(FILENAME) \
+#define PUT_SDB_SRC_FILE(FILENAME)			\
 do {							\
   extern FILE *asm_out_text_file;			\
-  output_file_directive (asm_out_text_file, (FILENAME)); \
+  output_file_directive (asm_out_text_file, (FILENAME));\
 } while (0)
 
-#define SDB_GENERATE_FAKE(BUFFER, NUMBER) \
+#define SDB_GENERATE_FAKE(BUFFER, NUMBER)		\
   sprintf ((BUFFER), ".%dfake", (NUMBER));
 
 /* Correct the offset of automatic variables and arguments.  Note that
@@ -1367,9 +1373,9 @@ do {							\
    the frame pointer to be the stack pointer after the initial
    adjustment.  */
 
-#define DEBUGGER_AUTO_OFFSET(X)  \
+#define DEBUGGER_AUTO_OFFSET(X)				\
   mips_debugger_offset (X, (HOST_WIDE_INT) 0)
-#define DEBUGGER_ARG_OFFSET(OFFSET, X)  \
+#define DEBUGGER_ARG_OFFSET(OFFSET, X)			\
   mips_debugger_offset (X, (HOST_WIDE_INT) OFFSET)
 
 /* Tell collect that the object format is ECOFF */
@@ -2976,15 +2982,17 @@ typedef struct mips_args {
    assembler would use $at as a temp to load in the large offset.  In this
    case $at is already in use.  We convert such problem addresses to
    `la $5,s;sw $4,70000($5)' via LEGITIMIZE_ADDRESS.  */
-/* ??? SGI Irix 6 assembler fails for CONST address, so reject them.  */
+/* ??? SGI Irix 6 assembler fails for CONST address, so reject them
+   when !TARGET_GAS.  */
+/* We should be rejecting everything but const addresses.  */
 #define CONSTANT_ADDRESS_P(X)						\
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
     || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
     || (GET_CODE (X) == CONST						\
 	&& ! (flag_pic && pic_address_needs_scratch (X))		\
-	&& (mips_abi == ABI_32						\
-	    || mips_abi == ABI_O64					\
-	    || mips_abi == ABI_EABI)))
+	&& (!TARGET_GAS)						\
+	&& (mips_abi == ABI_N32						\
+	    || mips_abi == ABI_64)))
 
 /* Define this, so that when PIC, reload won't try to reload invalid
    addresses which require two reload registers.  */
@@ -3075,9 +3083,9 @@ typedef struct mips_args {
   if (GET_CODE (xinsn) == CONST						\
       && ((flag_pic && pic_address_needs_scratch (xinsn))		\
 	  /* ??? SGI's Irix 6 assembler can't handle CONST.  */		\
-	  || (mips_abi != ABI_32 					\
-	      && mips_abi != ABI_O64					\
-	      && mips_abi != ABI_EABI)))				\
+	  || (!TARGET_GAS						\
+	      && (mips_abi == ABI_N32 					\
+	          || mips_abi == ABI_64))))    				\
     {									\
       rtx ptr_reg = gen_reg_rtx (Pmode);				\
       rtx constant = XEXP (XEXP (xinsn, 0), 1);				\
@@ -3447,11 +3455,11 @@ typedef struct mips_args {
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
 	{								\
-	  if (TUNE_MIPS3000				\
-	      || TUNE_MIPS3900				\
-	      || TUNE_MIPS5000)				\
+	  if (TUNE_MIPS3000						\
+	      || TUNE_MIPS3900						\
+	      || TUNE_MIPS5000)						\
 	    return COSTS_N_INSNS (4);					\
-	  else if (TUNE_MIPS6000)				\
+	  else if (TUNE_MIPS6000)					\
 	    return COSTS_N_INSNS (5);					\
 	  else								\
 	    return COSTS_N_INSNS (7);					\
@@ -3459,23 +3467,23 @@ typedef struct mips_args {
 									\
       if (xmode == DFmode)						\
 	{								\
-	  if (TUNE_MIPS3000				\
-	      || TUNE_MIPS3900				\
-	      || TUNE_MIPS5000)				\
+	  if (TUNE_MIPS3000						\
+	      || TUNE_MIPS3900						\
+	      || TUNE_MIPS5000)						\
 	    return COSTS_N_INSNS (5);					\
-	  else if (TUNE_MIPS6000)				\
+	  else if (TUNE_MIPS6000)					\
 	    return COSTS_N_INSNS (6);					\
 	  else								\
 	    return COSTS_N_INSNS (8);					\
 	}								\
 									\
-      if (TUNE_MIPS3000)					\
+      if (TUNE_MIPS3000)						\
 	return COSTS_N_INSNS (12);					\
-      else if (TUNE_MIPS3900)				\
+      else if (TUNE_MIPS3900)						\
 	return COSTS_N_INSNS (2);					\
-      else if (TUNE_MIPS6000)				\
+      else if (TUNE_MIPS6000)						\
 	return COSTS_N_INSNS (17);					\
-      else if (TUNE_MIPS5000)				\
+      else if (TUNE_MIPS5000)						\
 	return COSTS_N_INSNS (5);					\
       else								\
 	return COSTS_N_INSNS (10);					\
@@ -3487,10 +3495,10 @@ typedef struct mips_args {
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
 	{								\
-	  if (TUNE_MIPS3000				\
-              || TUNE_MIPS3900)				\
+	  if (TUNE_MIPS3000						\
+              || TUNE_MIPS3900)						\
 	    return COSTS_N_INSNS (12);					\
-	  else if (TUNE_MIPS6000)				\
+	  else if (TUNE_MIPS6000)					\
 	    return COSTS_N_INSNS (15);					\
 	  else								\
 	    return COSTS_N_INSNS (23);					\
@@ -3498,10 +3506,10 @@ typedef struct mips_args {
 									\
       if (xmode == DFmode)						\
 	{								\
-	  if (TUNE_MIPS3000				\
-              || TUNE_MIPS3900)				\
+	  if (TUNE_MIPS3000						\
+              || TUNE_MIPS3900)						\
 	    return COSTS_N_INSNS (19);					\
-	  else if (TUNE_MIPS6000)				\
+	  else if (TUNE_MIPS6000)					\
 	    return COSTS_N_INSNS (16);					\
 	  else								\
 	    return COSTS_N_INSNS (36);					\
@@ -3511,12 +3519,12 @@ typedef struct mips_args {
 									\
   case UDIV:								\
   case UMOD:								\
-    if (TUNE_MIPS3000					\
-        || TUNE_MIPS3900)					\
+    if (TUNE_MIPS3000							\
+        || TUNE_MIPS3900)						\
       return COSTS_N_INSNS (35);					\
-    else if (TUNE_MIPS6000)				\
+    else if (TUNE_MIPS6000)						\
       return COSTS_N_INSNS (38);					\
-    else if (TUNE_MIPS5000)				\
+    else if (TUNE_MIPS5000)						\
       return COSTS_N_INSNS (36);					\
     else								\
       return COSTS_N_INSNS (69);					\
