@@ -1,5 +1,7 @@
 2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
 
+	* ifcvt.c (if_convert): Scan and kill dead code.
+
 	* emit-rtl.c (unshare_all_rtl): Store the copied rtx.
 
 2000-05-20  Zack Weinberg  <zack@wolery.cumb.org>

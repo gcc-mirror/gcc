@@ -2038,7 +2038,8 @@ if_convert (life_data_ok)
 
       count_or_remove_death_notes (update_life_blocks, 1);
       update_life_info (update_life_blocks, UPDATE_LIFE_LOCAL,
-			PROP_DEATH_NOTES);
+			PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+			| PROP_KILL_DEAD_CODE);
 
       sbitmap_free (update_life_blocks);
     }
@@ -2058,6 +2059,7 @@ if_convert (life_data_ok)
     }
 
 #ifdef ENABLE_CHECKING
-  verify_flow_info ();
+  if (life_data_ok)
+    verify_flow_info ();
 #endif
 }
