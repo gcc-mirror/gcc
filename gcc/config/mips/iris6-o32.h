@@ -2,8 +2,8 @@
    (O32 ABI).  */
 
 /* The O32 ABI on IRIX 6 defaults to the mips2 ISA.  */
-#undef MIPS_ISA_DEFAULT
-#define MIPS_ISA_DEFAULT 2
+#undef MIPS_CPU_STRING_DEFAULT
+#define MIPS_CPU_STRING_DEFAULT "mips2"
 
 /* Specify wchar_t and wint_t types.  */
 #undef WCHAR_TYPE
