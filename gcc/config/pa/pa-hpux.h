@@ -100,3 +100,8 @@ Boston, MA 02111-1307, USA.  */
 /* hpux11 and earlier don't have fputc_unlocked, so we must inhibit the
    transformation of fputs_unlocked and fprintf_unlocked to fputc_unlocked.  */
 #define DONT_HAVE_FPUTC_UNLOCKED
+
+/* We want the entry value of SP saved in the frame marker for
+   compatibility with the HP-UX unwind library.  */
+#undef TARGET_HPUX_UNWIND_LIBRARY
+#define TARGET_HPUX_UNWIND_LIBRARY 1
