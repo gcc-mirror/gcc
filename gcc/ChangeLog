@@ -1,3 +1,9 @@
+2004-08-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/16864
+	* tree-tailcall.c (eliminate_tail_call): Do not create phi nodes
+	for ssa names without default_def.
+
 2004-08-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_prologue): If the function uses a
