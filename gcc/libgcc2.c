@@ -69,7 +69,7 @@ __negdi2 (DWtype u)
 SItype
 __addvsi3 (SItype a, SItype b)
 {
-  SItype w, w1;
+  SItype w;
 
   w = a + b;
 

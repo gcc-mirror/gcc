@@ -2836,7 +2836,6 @@ load_pic_register ()
 {
   /* Labels to get the PC in the prologue of this function.  */
   int orig_flag_pic = flag_pic;
-  rtx insn;
 
   if (! flag_pic)
     abort ();
