@@ -2003,10 +2003,17 @@ typedef struct
 		  && INTVAL (op) <= 31)					\
 		goto LABEL;						\
 	    }								\
-	  /* NASTY: Since this limits the addressing of unsigned	\
-	     byte loads.  */						\
-	  range = ((MODE) == HImode || (MODE) == QImode)		\
-	    ? (arm_arch4 ? 256 : 4095) : 4096;				\
+  	  /* XXX For ARM v4 we may be doing a sign-extend operation	\
+	     during the load, but that has a restricted addressing	\
+	     range and we are unable to tell here whether that is the	\
+	     case.  To be safe we restrict all loads to that		\
+	     range.  */							\
+          if (arm_arch4)						\
+	    range = (mode == HImode || mode == QImode) ? 256 : 4096;	\
+	  else if (mode == HImode)					\
+	    range = 4095;						\
+	  else								\
+	    range = 4096;						\
 	  if (code == CONST_INT && INTVAL (INDEX) < range		\
 	      && INTVAL (INDEX) > -range)				\
 	    goto LABEL;							\

@@ -1,3 +1,11 @@
+2004-03-12  Philip Blundell  <philb@gnu.org>
+
+	PR target/14558
+	Backport from trunk:
+	2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
+	* arm.h (ARM_GO_IF_LEGITIMATE_INDEX): For QImode the range of
+	an offset is -4095...+4095 inclusive.
+
 2004-03-11  Richard Henderson  <rth@redhat.com>
 
 	PR target/14539
