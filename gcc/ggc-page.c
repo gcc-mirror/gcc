@@ -355,7 +355,6 @@ static struct globals
    free list.  This cannot be larger than HOST_BITS_PER_INT for the
    in_use bitmask for page_group.  */
 #define GGC_QUIRE_SIZE 16
-
 
 static int ggc_allocated_p PARAMS ((const void *));
 static page_entry *lookup_page_table_entry PARAMS ((const void *));
@@ -519,8 +518,8 @@ alloc_anon (pref, size)
 
   if (page == (char *) MAP_FAILED)
     {
-      fputs ("Virtual memory exhausted!\n", stderr);
-      exit(1);
+      perror ("Virtual memory exhausted");
+      exit (FATAL_EXIT_CODE);
     }
 
   /* Remember that we allocated this memory.  */
@@ -587,7 +586,7 @@ alloc_page (order)
   page = NULL;
 
   /* Check the list of free pages for one we can use.  */
-  for (pp = &G.free_pages, p = *pp; p ; pp = &p->next, p = *pp)
+  for (pp = &G.free_pages, p = *pp; p; pp = &p->next, p = *pp)
     if (p->bytes == entry_size)
       break;
 
@@ -596,9 +595,11 @@ alloc_page (order)
       /* Recycle the allocated memory from this page ... */
       *pp = p->next;
       page = p->page;
+
 #ifdef USING_MALLOC_PAGE_GROUPS
       group = p->group;
 #endif
+
       /* ... and, if possible, the page entry itself.  */
       if (p->order == order)
 	{
@@ -618,6 +619,7 @@ alloc_page (order)
       int i;
 
       page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE);
+
       /* This loop counts down so that the chain will be in ascending
 	 memory order.  */
       for (i = GGC_QUIRE_SIZE - 1; i >= 1; i--)
@@ -629,6 +631,7 @@ alloc_page (order)
 	  e->next = f;
 	  f = e;
 	}
+
       G.free_pages = f;
     }
   else
@@ -730,8 +733,9 @@ alloc_page (order)
 
   if (GGC_DEBUG_LEVEL >= 2)
     fprintf (G.debug_file, 
-	     "Allocating page at %p, object size=%d, data %p-%p\n",
-	     (PTR) entry, OBJECT_SIZE (order), page, page + entry_size - 1);
+	     "Allocating page at %p, object size=%ld, data %p-%p\n",
+	     (PTR) entry, (long) OBJECT_SIZE (order), page,
+	     page + entry_size - 1);
 
   return entry;
 }
@@ -951,8 +955,8 @@ ggc_alloc (size)
 
   if (GGC_DEBUG_LEVEL >= 3)
     fprintf (G.debug_file, 
-	     "Allocating object, requested size=%d, actual=%d at %p on %p\n",
-	     (int) size, OBJECT_SIZE (order), result, (PTR) entry);
+	     "Allocating object, requested size=%ld, actual=%ld at %p on %p\n",
+	     (long) size, (long) OBJECT_SIZE (order), result, (PTR) entry);
 
   return result;
 }
