@@ -1,3 +1,10 @@
+2003-08-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* acinclude.m4 (LIBGCJ_CONFIGURE): Remove AC_CANONICAL_BUILD.
+	* configure.in: Compare with_cross_host to build_alias, not build.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2003-08-05  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/11779:
