@@ -1,6 +1,6 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
-   -fgen-aux-info option.
+   -aux-info option.
 
    This code was written by Ron Guilmette (rfg@mcc.com).
 
@@ -601,7 +601,7 @@ gen_aux_info_record (fndecl, is_definition, is_implicit, is_prototyped)
       if (! compiled_from_record++)
 	{
 	  /* The first line tells which directory file names are relative to.
-	     Currently, -fgen-aux-info works only for files in the working
+	     Currently, -aux-info works only for files in the working
 	     directory, so just use a `.' as a placeholder for now.  */
 	  fprintf (aux_info_file, "/* compiled from: . */\n");
 	}
