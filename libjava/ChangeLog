@@ -1,3 +1,8 @@
+2002-08-25  Adam Megacz <adam@xwt.org>
+
+	* include/win32.h (getcwd): copied function declaration as
+	temporary fix for header confusion.
+	
 2002-08-24  Mark Wielaard <mark@klomp.org>
 
 	* Makefile.am (libgcj_la_SOURCES): Remove name-finder.cc.
