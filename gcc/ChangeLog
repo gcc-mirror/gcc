@@ -1,3 +1,7 @@
+2003-02-19  Krister Walfridsson  <cato@df.lth.se>
+
+	* tm.texi (INIT_CUMULATIVE_ARGS): Fix typo.
+
 2003-02-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_logical_op): Optimize or.l when
