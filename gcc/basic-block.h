@@ -249,39 +249,36 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
 
-  /* The index of this block.  */
-  int index;
-
-  /* Previous and next blocks in the chain.  */
-  struct basic_block_def *prev_bb;
-  struct basic_block_def *next_bb;
-
-  /* The loop depth of this block.  */
-  int loop_depth;
-
   /* Innermost loop containing the block.  */
   struct loop * GTY ((skip (""))) loop_father;
 
   /* The dominance and postdominance information node.  */
   struct et_node * GTY ((skip (""))) dom[2];
 
-  /* Expected number of executions: calculated in profile.c.  */
-  gcov_type count;
-
-  /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
-  int frequency;
-
-  /* Various flags.  See BB_* below.  */
-  int flags;
-
-  /* Which section block belongs in, when partitioning basic blocks.  */
-  int partition;
+  /* Previous and next blocks in the chain.  */
+  struct basic_block_def *prev_bb;
+  struct basic_block_def *next_bb;
 
   /* The data used by basic block copying and reordering functions.  */
   struct reorder_block_def * GTY ((skip (""))) rbi;
 
   /* Annotations used at the tree level.  */
   struct bb_ann_d *tree_annotations;
+
+  /* Expected number of executions: calculated in profile.c.  */
+  gcov_type count;
+
+  /* The index of this block.  */
+  int index;
+
+  /* The loop depth of this block.  */
+  int loop_depth;
+
+  /* Expected frequency.  Normalized to be in range 0 to BB_FREQ_MAX.  */
+  int frequency;
+
+  /* Various flags.  See BB_* below.  */
+  int flags;
 };
 
 typedef struct basic_block_def *basic_block;
@@ -312,12 +309,18 @@ typedef struct reorder_block_def
 #define BB_VISITED		8
 #define BB_IRREDUCIBLE_LOOP	16
 #define BB_SUPERBLOCK		32
+#define BB_DISABLE_SCHEDULE     64
+
+#define BB_HOT_PARTITION	128
+#define BB_COLD_PARTITION	256
+#define BB_UNPARTITIONED	0
 
 /* Partitions, to be used when partitioning hot and cold basic blocks into
    separate sections.  */
-#define UNPARTITIONED   0
-#define HOT_PARTITION   1
-#define COLD_PARTITION  2
+#define BB_PARTITION(bb) ((bb)->flags & (BB_HOT_PARTITION|BB_COLD_PARTITION))
+#define BB_SET_PARTITION(bb, part) ((bb)->flags |= (part))
+#define BB_COPY_PARTITION(dstbb, srcbb) \
+  BB_SET_PARTITION (dstbb, BB_PARTITION (srcbb))
 
 /* Number of basic blocks in the current function.  */
 

@@ -203,7 +203,7 @@ push_to_next_round_p (basic_block bb, int round, int number_of_rounds,
   next_round_is_last = round + 1 == number_of_rounds - 1;
 
   cold_block = (flag_reorder_blocks_and_partition 
-		&& bb->partition == COLD_PARTITION);
+		&& BB_PARTITION (bb) == BB_COLD_PARTITION);
 
   block_not_hot_enough = (bb->frequency < exec_th 
 			  || bb->count < count_th
@@ -211,7 +211,7 @@ push_to_next_round_p (basic_block bb, int round, int number_of_rounds,
 
   if (flag_reorder_blocks_and_partition
       && next_round_is_last
-      && bb->partition != COLD_PARTITION)
+      && BB_PARTITION (bb) != BB_COLD_PARTITION)
     return false;
   else if (there_exists_another_round
       && (cold_block || block_not_hot_enough))
@@ -513,7 +513,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		  && e->dest->rbi->visited != *n_traces)
 		continue;
 
-	      if (e->dest->partition == COLD_PARTITION
+	      if (BB_PARTITION (e->dest) == BB_COLD_PARTITION
 		  && round < last_round)
 		continue;
 
@@ -758,7 +758,7 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
   basic_block new_bb;
 
   new_bb = duplicate_block (old_bb, e);
-  new_bb->partition = old_bb->partition;
+  BB_COPY_PARTITION (new_bb, old_bb);
 
   if (e->dest != new_bb)
     abort ();
@@ -811,7 +811,8 @@ bb_to_key (basic_block bb)
 
   /* Do not start in probably never executed blocks.  */
 
-  if (bb->partition == COLD_PARTITION || probably_never_executed_bb_p (bb))
+  if (BB_PARTITION (bb) == BB_COLD_PARTITION
+      || probably_never_executed_bb_p (bb))
     return BB_FREQ_MAX;
 
   /* Prefer blocks whose predecessor is an end of some trace
@@ -921,7 +922,7 @@ connect_traces (int n_traces, struct trace *traces)
   if (flag_reorder_blocks_and_partition)
     for (i = 0; i < n_traces; i++)
       {
-	if (traces[i].first->partition == COLD_PARTITION)
+	if (BB_PARTITION (traces[i].first) == BB_COLD_PARTITION)
 	  {
 	    connected[i] = true;
 	    cold_traces[i] = true;
@@ -1249,7 +1250,7 @@ add_unlikely_executed_notes (void)
   /* Add the UNLIKELY_EXECUTED_NOTES to each cold basic block.  */
 
   FOR_EACH_BB (bb)
-    if (bb->partition == COLD_PARTITION)
+    if (BB_PARTITION (bb) == BB_COLD_PARTITION)
       mark_bb_for_unlikely_executed_section (bb);
 }
 
@@ -1272,10 +1273,10 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
   FOR_EACH_BB (bb)
     {
       if (probably_never_executed_bb_p (bb))
-	bb->partition = COLD_PARTITION;
+	BB_SET_PARTITION (bb, BB_COLD_PARTITION);
       else
 	{
-	  bb->partition = HOT_PARTITION;
+	  BB_SET_PARTITION (bb, BB_HOT_PARTITION);
 	  has_hot_blocks = true;
 	}
     }
@@ -1288,7 +1289,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
     for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
       if (e->dest->index >= 0)
 	{
-	  e->dest->partition = HOT_PARTITION;
+	  BB_SET_PARTITION (e->dest, BB_HOT_PARTITION);
 	  break;
 	}
 
@@ -1302,7 +1303,7 @@ find_rarely_executed_basic_blocks_and_crossing_edges (edge *crossing_edges,
 	  {
 	    if (e->src != ENTRY_BLOCK_PTR
 		&& e->dest != EXIT_BLOCK_PTR
-		&& e->src->partition != e->dest->partition)
+		&& BB_PARTITION (e->src) != BB_PARTITION (e->dest))
 	      {
 		e->flags |= EDGE_CROSSING;
 		if (i == *max_idx)
@@ -1535,8 +1536,8 @@ fix_up_fall_thru_edges (void)
 		      
  		      /* Make sure new fall-through bb is in same 
 			 partition as bb it's falling through from.  */
- 		      
-		      new_bb->partition = cur_bb->partition;
+
+		      BB_COPY_PARTITION (new_bb, cur_bb);
 		      new_bb->succ->flags |= EDGE_CROSSING;
  		    }
 		  
@@ -1735,8 +1736,7 @@ fix_crossing_conditional_branches (void)
 		  
 		  /* Make sure new bb is in same partition as source
 		     of conditional branch.  */
-		  
-		  new_bb->partition = cur_bb->partition;
+		  BB_COPY_PARTITION (new_bb, cur_bb);
 		}
 	      
 	      /* Make old jump branch to new bb.  */

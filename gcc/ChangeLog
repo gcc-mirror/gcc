@@ -1,3 +1,21 @@
+2004-08-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* basic-block.h (struct basic_block_def): Reorder fields to
+	eliminate interior padding.  Remove 'partition' field.
+	(BB_DISABLE_SCHEDULE, BB_HOT_PARTITION, BB_COLD_PARTITION)
+	(BB_UNPARTITIONED, BB_PARTITION, BB_SET_PARTITION)
+	(BB_COPY_PARTITION): New macros.
+	* bb-reorder.c, cfgcleanup.c, cfglayout.c, cfgrtl.c, ifcvt.c
+	Replace all references to the 'partition' field of a basic
+	block with new macros.
+
+	* insn-notes.def: Delete NOTE_INSN_DISABLE_SCHED_OF_BLOCK.
+	* final.c (final_scan_insn): Don't handle it.
+	* modulo-sched.c: Set BB_DISABLE_SCHEDULE flag on g->bb
+	instead of emitting a NOTE_INSN_DISABLE_SCHED_OF_BLOCK note.
+	* sched-rgn.c (sched_is_disabled_for_current_region_p):
+	Look for a BB_DISABLE_SCHEDULE flag on the block instead of a note.
+
 2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-decl.c (c_init_decl_processing): Adjust
@@ -20,7 +38,7 @@
 	* objc/objc-act.h (TREE_STATIC_TEMPLATE): Use TREE_PRIVATE.
 
 2004-08-24  Richard Henderson  <rth@redhat.com>
-            Andrew Pinski  <apinski@apple.com>
+	    Andrew Pinski  <apinski@apple.com>
 
 	* gimplify.c (gimplify_array_ref_to_plus): Delete.
 	(gimplify_addr_expr): Do not call gimplify_array_ref_to_plus
