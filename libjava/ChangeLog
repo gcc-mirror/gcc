@@ -1,3 +1,40 @@
+2003-07-25  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (awt_java_source_files): java/awt/GridBagLayoutInfo.java
+	added.
+	* Makefile.in: Likewise.
+
+2003-07-25  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/awt/Component.java
+	(getPreferredSize): Call preferredSize.
+	(preferredSize): Moved body of getPreferredSize here.
+	(getMinimumSize): Call minimumSize.
+	(minimumSize): Moved body of getMinimumSize here.
+	(prepareImage): Fall back on Toolkit.prepareImage if there is no peer
+	(checkImage(Image,ImageObserver)): Don't call getWidth/getHeight, but
+	pass -1
+	* java/awt/Container.java
+	(validate): Don't validate if there is no peer.
+	(update): Clear background before calling paint.
+	* java/awt/GridBagLayout.java
+	Completed the implementation and fixed several bugs.
+	* java/awt/MediaTracker.java
+	(MediaEntry.imageUpdate): Fixed typo. & instead of | was used to
+	combine flags.
+	* java/awt/Window.java
+	(Window): Don't call setVisible(false). Windows are invisible by
+	default and calling virtual methods from constructor causes
+	compatibility problems (e.g. subclasses may assume that the peer
+	already exists).
+
+2003-07-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/GridBagLayout.java:
+	Totally reworked and partly implemented.
+	* java/awt/GridBagLayoutInfo.java:
+	New file.
+
 2003-07-24  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c (create):

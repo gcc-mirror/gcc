@@ -473,7 +473,7 @@ public class Container extends Component
   {
     synchronized (getTreeLock ())
       {
-        if (! isValid())
+        if (! isValid() && peer != null)
           {
             validateTree();
           }
@@ -658,6 +658,7 @@ public class Container extends Component
    */
   public void update(Graphics g)
   {
+    g.clearRect(0, 0, width, height);
     super.update(g);
   }
 
