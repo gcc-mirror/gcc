@@ -203,10 +203,10 @@ variable_size (tree size)
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (DImode)
 #endif
 
-/* Return the machine mode to use for a nonscalar of SIZE bits.
-   The mode must be in class CLASS, and have exactly that many bits.
-   If LIMIT is nonzero, modes of wider than MAX_FIXED_MODE_SIZE will not
-   be used.  */
+/* Return the machine mode to use for a nonscalar of SIZE bits.  The
+   mode must be in class CLASS, and have exactly that many value bits;
+   it may have padding as well.  If LIMIT is nonzero, modes of wider
+   than MAX_FIXED_MODE_SIZE will not be used.  */
 
 enum machine_mode
 mode_for_size (unsigned int size, enum mode_class class, int limit)
@@ -219,7 +219,7 @@ mode_for_size (unsigned int size, enum mode_class class, int limit)
   /* Get the first mode which has this size, in the specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) == size)
+    if (GET_MODE_PRECISION (mode) == size)
       return mode;
 
   return BLKmode;
@@ -242,7 +242,7 @@ mode_for_size_tree (tree size, enum mode_class class, int limit)
 }
 
 /* Similar, but never return BLKmode; return the narrowest mode that
-   contains at least the requested number of bits.  */
+   contains at least the requested number of value bits.  */
 
 enum machine_mode
 smallest_mode_for_size (unsigned int size, enum mode_class class)
@@ -253,7 +253,7 @@ smallest_mode_for_size (unsigned int size, enum mode_class class)
      specified class.  */
   for (mode = GET_CLASS_NARROWEST_MODE (class); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) >= size)
+    if (GET_MODE_PRECISION (mode) >= size)
       return mode;
 
   abort ();

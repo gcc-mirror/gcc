@@ -1,3 +1,14 @@
+2003-11-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c: Change the word "bitsize" to "precision" throughout.
+	* machmode.def: Likewise.
+	* machmode.h (GET_MODE_SIZE): Cast value to unsigned short.
+	(GET_MODE_BITSIZE): Define as GET_MODE_SIZE * BITS_PER_UNIT.
+	(GET_MODE_PRECISION): New macro.
+	(mode_bitsize): Renamed mode_precision.
+	* stor-layout.c (mode_for_size, smallest_mode_for_size):
+	Use GET_MODE_PRECISION; clarify comments.
+
 2003-11-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/install-old.texi: Remove old documentation of building

@@ -1,9 +1,14 @@
+2003-11-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* misc.c (fp_prec_to_size, fp_size_to_prec): Use GET_MODE_PRECISION
+	and update for changed meaning of GET_MODE_BITSIZE.
+
 2003-11-04  Doug Rupp  <rupp@gnat.com>
 
 	* sysdep.c: Problem discovered during IA64 VMS port.
 	[VMS] #include <unixio.h> to get proper prototypes.
 
-	* adaint.c: 
+	* adaint.c:
 	Issues discovered/problems fixed during IA64 VMS port.
 	[VMS] #define _POSIX_EXIT for proper semantics.
 	[VMS] #include <unixio.h> for proper prototypes.
@@ -17,7 +22,7 @@
 	* ada-tree.h (TYPE_DIGITS_VALUE, SET_TYPE_DIGITS_VALUE): Save count as
 	tree, not integer.
 
-	* decl.c: 
+	* decl.c:
 	(gnat_to_gnu_entity, case E_Floating_Point_Type): Save count as tree,
 	not integer.
 
@@ -25,7 +30,7 @@
 	gigi.h (fp_prec_to_size, fp_size_to_prec): Temporary
 	routines to work around change in FP sizing semantics in GCC.
 
-	* utils.c: 
+	* utils.c:
 	(build_vms_descriptor): TYPE_DIGITS_VALUE is tree, not integer.
 
 	* gigi.h: (enumerate_modes): New function.
@@ -44,22 +49,22 @@
 
 	* einfo.ads, einfo.adb: Add new flag Is_Thread_Body
 
-	* exp_ch6.adb: 
+	* exp_ch6.adb:
 	(Expand_N_Subprogram_Body): Handle expansion of thread body procedure
 
 	* par-prag.adb: Add dummy entry for Thread_Body pragma
 
-	* rtsfind.ads: 
+	* rtsfind.ads:
 	Add entries for System.Threads entities for thread body processing
 
-	* sem_attr.adb: 
+	* sem_attr.adb:
 	(Analyze_Pragma, Access attributes): Check these are not applied to a
 	thread body, since this is not permitted
 
 	* sem_prag.adb: Add processing for Thread_Body pragma.
 	Minor comment fix.
 
-	* sem_res.adb: 
+	* sem_res.adb:
 	(Resolve_Call): Check for incorrect attempt to call a thread body
 	 procedure with a direct call.
 
@@ -76,7 +81,7 @@
 
 2003-11-04  Javier Miranda  <miranda@gnat.com>
 
-	* sem_ch10.adb: 
+	* sem_ch10.adb:
 	(Build_Limited_Views): Return after posting an error in case of limited
 	with_clause on subprograms, generics, instances or generic renamings
 	(Install_Limited_Withed_Unit): Do nothing in case of limited with_clause
@@ -165,7 +170,7 @@
 
 2003-10-30  Vasiliy Fofanov  <fofanov@act-europe.fr>
 
-	* 3vtrasym.adb: 
+	* 3vtrasym.adb:
 	Demangle Ada symbols returned by TBK$SYMBOLIZE. Correctly align line
 	numbers when symbol name is too long.
 
@@ -183,8 +188,8 @@
 
 	* lib-writ.adb (Write_ALI): Never write ali file if -gnats is specified
 
-	* par.adb, par-ch12.adb, par-ch13.adb, par-ch2.adb, par-ch3.adb, 
-	par-ch5.adb, par-ch6.adb, par-ch9.adb, par-util.adb: 
+	* par.adb, par-ch12.adb, par-ch13.adb, par-ch2.adb, par-ch3.adb,
+	par-ch5.adb, par-ch6.adb, par-ch9.adb, par-util.adb:
 	New handling of Id_Check parameter to improve recognition of keywords
 	used as identifiers.
 	Update copyright notice to include 2003
@@ -199,18 +204,18 @@
 
 2003-10-29  Vasiliy Fofanov  <fofanov@act-europe.fr>
 
-	* 3vtrasym.adb, 5vtraent.adb, 5vtraent.ads, tb-alvms.c: 
+	* 3vtrasym.adb, 5vtraent.adb, 5vtraent.ads, tb-alvms.c:
 	Support for TBK$SYMBOLIZE-based symbolic traceback.
 
 2003-10-29  Jose Ruiz  <ruiz@act-europe.fr>
 
-	* exp_disp.adb: 
+	* exp_disp.adb:
 	Revert previous change, that did not work well when pragma No_Run_Time
 	was used in conjunction with a run-time other than ZFP.
 
 2003-10-29  Vincent Celier  <celier@gnat.com>
 
-	* make.adb: 
+	* make.adb:
 	(Gnatmake): When there are no Ada mains in attribute Main, disable the
 	 bind and link steps only is switch -z is not used.
 
@@ -238,11 +243,11 @@
 
 2003-10-29  Javier Miranda  <miranda@gnat.com>
 
-	* sem_ch12.adb: 
+	* sem_ch12.adb:
 	(Analyze_Package_Instantiation): Check that instances can not be used in
 	limited with_clauses.
 
-	* sem_ch8.adb: 
+	* sem_ch8.adb:
 	(Analyze_Package_Renaming): Check that limited withed packages cannot
 	be renamed. Improve text on error messages related to limited
 	with_clauses.
@@ -332,18 +337,18 @@
 
 2003-10-27  Robert Dewar  <dewar@gnat.com>
 
-	* exp_ch3.adb: 
+	* exp_ch3.adb:
 	(Freeze_Array_Type): We do not need an initialization routine for types
 	derived from String or Wide_String. They should be treated the same
 	as String and Wide_String themselves. This caused problems with the
 	use of Initialize_Scalars.
 
-	* exp_ch5.adb: 
+	* exp_ch5.adb:
 	(Expand_Assign_Record): Do component-wise assignment of non-byte aligned
 	composites. This allows use of component clauses that are not byte
 	aligned.
 
-	* sem_prag.adb: 
+	* sem_prag.adb:
 	(Analyze_Pragma, case Pack): Generate warning and ignore pack if there
 	is an attempt to pack an array of atomic objects.
 
@@ -351,12 +356,12 @@
 
 2003-10-27  Pascal Obry  <obry@gnat.com>
 
-	* g-dirope.adb: 
+	* g-dirope.adb:
 	(Basename): Check for drive letters in a pathname only on DOS based OS.
 
 2003-10-27  Vincent Celier  <celier@gnat.com>
 
-	* make.adb: 
+	* make.adb:
 	(Gnatmake): When unable to change dir to the object dir, display the
 	content of the parent dir of the obj dir, to try to understand why this
 	happens.
@@ -367,16 +372,16 @@
 
 2003-10-27  Ed Schonberg  <schonberg@gnat.com>
 
-	* sem_ch12.adb: 
+	* sem_ch12.adb:
 	(Inline_Instance_Body): Indicate that the save/restore of use_clauses
 	should not be done in Save/Restore_Scope_Stack, because it is performed
 	locally.
 
-	* sem_ch8.adb: 
+	* sem_ch8.adb:
 	(Save_Scope_Stack, Restore_Scope_Stack): Add parameter to indicate
 	whether use clauses should be removed/restored.
 
-	* sem_ch8.ads: 
+	* sem_ch8.ads:
 	(Save_Scope_Stack, Restore_Scope_Stack): Add parameter to indicate
 	whether use clauses should be removed/restored.
 

@@ -47,7 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    A MODE argument must be the printable name of a machine mode,
    without quotation marks or trailing "mode".  For instance, SI.
 
-   A BITSIZE, BYTESIZE, or COUNT argument must be a positive integer
+   A PRECISION, BYTESIZE, or COUNT argument must be a positive integer
    constant.
 
    A FORMAT argument must be one of the real_mode_format structures
@@ -78,18 +78,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         declares MODE to be of class INT and BYTESIZE bytes wide.
 	All of the bits of its representation are significant.
 
-     FRACTIONAL_INT_MODE (MODE, BITSIZE, BYTESIZE);
+     FRACTIONAL_INT_MODE (MODE, PRECISION, BYTESIZE);
         declares MODE to be of class INT, BYTESIZE bytes wide in
-	storage, but with only BITSIZE significant bits.
+	storage, but with only PRECISION significant bits.
 
      FLOAT_MODE (MODE, BYTESIZE, FORMAT);
         declares MODE to be of class FLOAT and BYTESIZE bytes wide,
 	using floating point format FORMAT.
 	All of the bits of its representation are significant.
 
-     FRACTIONAL_FLOAT_MODE (MODE, BITSIZE, BYTESIZE, FORMAT);
+     FRACTIONAL_FLOAT_MODE (MODE, PRECISION, BYTESIZE, FORMAT);
         declares MODE to be of class FLOAT, BYTESIZE bytes wide in
-	storage, but with only BITSIZE significant bits, using
+	storage, but with only PRECISION significant bits, using
 	floating point format FORMAT.
 
      RESET_FLOAT_FORMAT (MODE, FORMAT);
@@ -101,7 +101,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         declares a mode of class PARTIAL_INT with the same size as
 	MODE (which must be an INT mode).  The name of the new mode
 	is made by prefixing a P to the name MODE.  This statement
-	may grow a BITSIZE argument in the future.
+	may grow a PRECISION argument in the future.
 
      VECTOR_MODE (CLASS, MODE, COUNT);
         Declare a vector mode whose component mode is MODE (of class
