@@ -1965,16 +1965,16 @@ prev_cc0_setter (insn)
 /* Try splitting insns that can be split for better scheduling.
    PAT is the pattern which might split.
    TRIAL is the insn providing PAT.
-   BACKWARDS is non-zero if we are scanning insns from last to first.
+   LAST is non-zero if we should return the last insn of the sequence produced.
 
    If this routine succeeds in splitting, it returns the first or last
-   replacement insn depending on the value of BACKWARDS.  Otherwise, it
+   replacement insn depending on the value of LAST.  Otherwise, it
    returns TRIAL.  If the insn to be returned can be split, it will be.  */
 
 rtx
-try_split (pat, trial, backwards)
+try_split (pat, trial, last)
      rtx pat, trial;
-     int backwards;
+     int last;
 {
   rtx before = PREV_INSN (trial);
   rtx after = NEXT_INSN (trial);
@@ -2017,6 +2017,14 @@ try_split (pat, trial, backwards)
 	  delete_insn (trial);
 	  if (has_barrier)
 	    emit_barrier_after (tem);
+
+	  /* Recursively call try_split for each new insn created; by the
+	     time control returns here that insn will be fully split, so
+	     set LAST and continue from the insn after the one returned.
+	     We can't use next_active_insn here since AFTER may be a note. */
+	  for (tem = NEXT_INSN (before); tem != after;
+	       tem = NEXT_INSN (tem))
+	    tem = try_split (PATTERN (tem), tem, 1);
 	}
       /* Avoid infinite loop if the result matches the original pattern.  */
       else if (rtx_equal_p (seq, pat))
@@ -2025,11 +2033,12 @@ try_split (pat, trial, backwards)
 	{
 	  PATTERN (trial) = seq;
 	  INSN_CODE (trial) = -1;
+	  try_split (seq, trial, last);
 	}
 
-      /* Set TEM to the insn we should return.  */
-      tem = backwards ? prev_active_insn (after) : next_active_insn (before);
-      return try_split (PATTERN (tem), tem, backwards);
+      /* Return either the first or the last insn, depending on which was
+	 requested.  */
+      return last ? prev_active_insn (after) : next_active_insn (before);
     }
 
   return trial;
