@@ -170,14 +170,21 @@ public:
 
 // type_info for a general class.
 
-typedef int USItype __attribute__ ((mode (SI)));
+// Kludge, kludge, kludge.
+#if BITS_PER_UNIT == 8
+typedef int myint32 __attribute__ ((mode (SI)));
+#elif BITS_PER_UNIT == 16
+typedef int myint32 __attribute__ ((mode (HI)));
+#elif BITS_PER_UNIT == 32
+typedef int myint32 __attribute__ ((mode (QI)));
+#endif
 
 struct __class_type_info : public __user_type_info {
   enum access { PUBLIC = 1, PROTECTED = 2, PRIVATE = 3 };
 
   struct base_info {
     const __user_type_info *base;
-    USItype offset: 29;
+    myint32 offset: 29;
     bool is_virtual: 1;
     enum access access: 2;
   };
@@ -202,8 +209,6 @@ struct __class_type_info : public __user_type_info {
 #else
 // new abi
 #include "stddef.h"
-
-typedef int USItype __attribute__ ((mode (SI)));
 
 namespace std {
 

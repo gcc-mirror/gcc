@@ -331,7 +331,7 @@ __throw_bad_cast ()
   return 0;
 }
 
-extern "C" type_info const &
+extern "C" std::type_info const &
 __throw_bad_typeid ()
 {
   throw std::bad_typeid ();
