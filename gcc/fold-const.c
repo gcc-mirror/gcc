@@ -1584,10 +1584,15 @@ fold_convert (t, arg1)
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  REAL_VALUE_TYPE x = TREE_REAL_CST (arg1);
-	  REAL_VALUE_TYPE l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
-	  REAL_VALUE_TYPE u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
+	  /* Don't initialize these, use assignments.
+	     Initialized local aggregates don't work on old compilers.  */
+	  REAL_VALUE_TYPE x;
+	  REAL_VALUE_TYPE l;
+	  REAL_VALUE_TYPE u;
 
+	  x = TREE_REAL_CST (arg1);
+	  l = real_value_from_int_cst (TYPE_MIN_VALUE (type));
+	  u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
 	     but reject if X exactly equals the adjusted bounds.  */
