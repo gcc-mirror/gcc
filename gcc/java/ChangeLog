@@ -1,3 +1,13 @@
+2004-10-21  Andrew Haley  <aph@redhat.com>
+
+	PR java/18091:
+	* jcf-parse.c (set_source_filename): Add code to build new sfname.
+
+2004-10-20  Andrew Haley  <aph@redhat.com>
+
+	* decl.c (end_java_method): Don't expand if flag_syntax_only.
+	Remove duplicated code block.
+
 2004-10-18  Steven Bosscher  <stevenb@suse.de>
 
 	* Make-lang.in (java/parse.o-warn, java/parse-scan.o-warn):
