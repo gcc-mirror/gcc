@@ -401,7 +401,7 @@ else
   # Check for available headers.
   AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
   machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
-  sys/types.h libintl.h])
+  sys/types.h])
 
   GLIBCPP_CHECK_COMPILER_FEATURES
   GLIBCPP_CHECK_LINKER_FEATURES

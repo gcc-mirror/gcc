@@ -153,6 +153,9 @@
 // Define if modf is present in <math.h>
 #undef HAVE_MODF
 
+// Define if NLS translations are to be used.
+#undef _GLIBCPP_USE_NLS
+
 // @BOTTOM@
 //
 // Systems that have certain non-standard functions prefixed with an
