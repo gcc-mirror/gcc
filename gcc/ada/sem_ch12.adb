@@ -2849,6 +2849,17 @@ package body Sem_Ch12 is
          Inline_Instance_Body (N, Gen_Unit, Act_Decl);
       end if;
 
+      --  The following is a tree patch for ASIS: ASIS needs separate nodes
+      --  to be used as defining identifiers for a formal package and for the
+      --  corresponding expanded package
+
+      if Nkind (N) = N_Formal_Package_Declaration then
+         Act_Decl_Id := New_Copy (Defining_Entity (N));
+         Set_Comes_From_Source (Act_Decl_Id, True);
+         Set_Is_Generic_Instance (Act_Decl_Id, False);
+         Set_Defining_Identifier (N, Act_Decl_Id);
+      end if;
+
    exception
       when Instantiation_Error =>
          if Parent_Installed then
@@ -8904,9 +8915,11 @@ package body Sem_Ch12 is
                  and then P /= Current_Scope
                then
                   --  We are within an instance of some sibling. Retain
-                  --  visibility of parent, for proper subsequent cleanup.
+                  --  visibility of parent, for proper subsequent cleanup,
+                  --  and reinstall private declarations as well.
 
                   Set_In_Private_Part (P);
+                  Install_Private_Declarations (P);
                end if;
 
             --  This looks incomplete: what about compilation units that
