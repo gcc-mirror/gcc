@@ -1,3 +1,7 @@
+Sat Jun 17 10:33:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.texi: Remove reference to stupid.c.
+
 2000-06-16  Benjamin Chelf  <chelf@codesourcery.com>
 
 	* c-common.c (c_tree_code_type): New array.
