@@ -1687,6 +1687,7 @@ do {                                                                       \
 #define EXTRA_CC_MODES \
 	CC (CCZmode, "CCZ") \
 	CC (CCAmode, "CCA") \
+	CC (CCLmode, "CCL") \
 	CC (CCUmode, "CCU") \
 	CC (CCSmode, "CCS") \
 	CC (CCTmode, "CCT")
@@ -1694,13 +1695,7 @@ do {                                                                       \
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison. */
  
-#define SELECT_CC_MODE(OP, X, Y)            \
- (   (OP) == EQ  || (OP) == NE  ? CCZmode   \
-   : (OP) == LE  || (OP) == LT  ||          \
-     (OP) == GE  || (OP) == GT  ? CCSmode   \
-   : (OP) == LEU || (OP) == LTU ||          \
-     (OP) == GEU || (OP) == GTU ? CCUmode   \
-   : CCmode )
+#define SELECT_CC_MODE(OP, X, Y) s390_select_ccmode ((OP), (X), (Y))
  
  
 /* Define the information needed to generate branch and scc insns.  This is
