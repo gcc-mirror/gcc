@@ -1,3 +1,16 @@
+2003-02-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9548
+	Implement resolution of DR 231 (Ready)
+	* include/bits/locale_facets.h (__num_base::_S_format_float):
+	Change declaration: return void, remove __prec parameter.
+	* src/locale.cc (__num_base::_S_format_float): Implement
+	resolution of DR 231.
+	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
+	Tweak uses. Check for negative precision.
+	* testsuite/22_locale/num_put/put/char/6.cc: Add
+	* testsuite/22_locale/num_put/put/wchar_t/6.cc: Likewise.
+
 2003-02-06  Peter Soetens  <peter.soetens@mech.kuleuven.ac.be>
 
 	* config/io/basic_file_libio.h: Fixups.
