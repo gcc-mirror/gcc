@@ -2503,6 +2503,7 @@ xtensa_va_arg (valist, type)
 
   array = gen_reg_rtx (Pmode);
 
+  lab_over = NULL_RTX;
   if (!MUST_PASS_IN_STACK (VOIDmode, type))
     {
       lab_false = gen_label_rtx ();
@@ -2551,7 +2552,7 @@ xtensa_va_arg (valist, type)
   if (r != array)
     emit_move_insn (array, r);
 
-  if (!MUST_PASS_IN_STACK (VOIDmode, type))
+  if (lab_over != NULL_RTX)
     emit_label (lab_over);
 
 

@@ -1,5 +1,10 @@
 2002-04-01  Bob Wilson  <bob.wilson@acm.org>
 
+	* config/xtensa/xtensa.c (xtensa_va_arg): Fix compiler warning
+	in previous change.
+
+2002-04-01  Bob Wilson  <bob.wilson@acm.org>
+
 	* config/xtensa/xtensa.c (xtensa_va_arg): Fix to handle arguments
 	for which MUST_PASS_IN_STACK is true (e.g., variable-sized types).
 
