@@ -1,3 +1,8 @@
+2003-05-23  Nathanael Nerode <neroden@gcc.gnu.org>
+
+	* analyze_brprob, gcc_build, gennews, texi2pod.pl: Change GNU CC
+	to GCC.
+
 2003-04-04  Mike Stump  <mrs@apple.com>
 
 	* compare_tests: Fix exit status and be more flexible with spacing.
