@@ -1,3 +1,8 @@
+Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/rs6000/rs6000.c (print_operand, case 'L', 'Y', 'Z'): Use
+	adjust_address_nv instead of plus_constant.
+
 2001-07-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (toplev.o, sdbout.o, dbxout.o, dwarfout.o,
