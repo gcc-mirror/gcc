@@ -2753,8 +2753,10 @@ extern int making_const_table;
      in 26 bit mode, the condition codes must be masked out of the	\
      return address.  This does not apply to ARM6 and later processors	\
      when running in 32 bit mode.  */					\
-  ((!TARGET_APCS_32) ? (GEN_INT (RETURN_ADDR_MASK26))			\
-   : (GEN_INT ((unsigned long)0xffffffff)))
+  ((!TARGET_APCS_32) ? (gen_int_mode (RETURN_ADDR_MASK26, Pmode))	\
+   : (arm_arch4 || TARGET_THUMB) ?					\
+     (gen_int_mode ((unsigned long)0xffffffff, Pmode))			\
+   : arm_gen_return_addr_mask ())
 
 
 /* Define the codes that are matched by predicates in arm.c */

@@ -4914,6 +4914,19 @@ arm_gen_compare_reg (code, x, y)
   return cc_reg;
 }
 
+/* Generate a sequence of insns that will generate the correct return
+   address mask depending on the physical architecture that the program
+   is running on.  */
+
+rtx
+arm_gen_return_addr_mask ()
+{
+  rtx reg = gen_reg_rtx (Pmode);
+
+  emit_insn (gen_return_addr_mask (reg));
+  return reg;
+}
+
 void
 arm_reload_in_hi (operands)
      rtx * operands;

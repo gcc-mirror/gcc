@@ -1,3 +1,14 @@
+2002-09-06  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/arm/arm-protos.h (arm_gen_return_addr_mask): New 
+	prototype. 
+	* config/arm/arm.c (arm_gen_return_addr_mask): New function.
+	* config/arm/arm.h (MASK_RETURN_ADDR): Use arm_gen_return_addr_mask
+	if not APCS26 and not Thumb or ARMv4-or-higher.  Use gen_int_mode
+	rather than GEN_INT.
+	* config/arm/arm.md (UNSPEC_CHECK_ARCH): Define.
+	(return_addr_mask, *check_arch2): New.
+
 2002-09-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*adddi3_cc", "*adddi3_cconly", 
