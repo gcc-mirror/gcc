@@ -95,6 +95,9 @@ AC_STRUCT_ST_BLOCKS
 AC_STRUCT_ST_RDEV
 AC_STRUCT_TM
 
+dnl Some systems (SVR4, SCO OpenServer) need -lsocket for gethostname()
+AC_CHECK_LIB(socket, gethostname, [LIBS="$LIBS -lsocket"])
+
 dnl Checks for library functions.
 
 AC_CHECK_FUNCS(symlink getcwd getwd lstat gethostname strerror clock \

@@ -30,6 +30,7 @@ VPATH = @srcdir@
 # gcc/f/runtime/configure sets this to all the -D options appropriate
 # for the configuration.
 DEFS = @DEFS@
+LIBS = @LIBS@
 
 #### End of system configuration section. ####
 
@@ -142,7 +143,7 @@ lint:
 	lint $(ALL_CFLAGS) $(SRCS)
 
 check:
-	-$(G77DIR)g77 -B$(G77DIR) -ff90-intrinsics-enable -L.. -g $(srcdir)/u77-test.f $(lib) && ./a.out
+	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f $(LIBS) && ./a.out
 	rm -f a.out
 
 .PHONY: lint check all
