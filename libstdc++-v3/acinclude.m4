@@ -1163,13 +1163,17 @@ AC_DEFUN([GLIBCXX_ENABLE_ALLOCATOR], [
      enable_libstdcxx_allocator=auto
   fi
 
-  # Either a known package, or "auto"
+  # Either a known package, or "auto". Auto implies the default choice
+  # for a particular platform.
   enable_libstdcxx_allocator_flag=$enable_libstdcxx_allocator
 
   # Probe for host-specific support if no specific model is specified.
   # Default to "new".
   if test $enable_libstdcxx_allocator_flag = auto; then
     case ${target_os} in
+      linux* | gnu* | kfreebsd*-gnu | knetbsd*-gnu)
+        enable_libstdcxx_allocator_flag=mt
+        ;;
       *)
         enable_libstdcxx_allocator_flag=new
         ;;
