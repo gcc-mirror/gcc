@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -942,7 +942,7 @@ AMD Am29050 used in a system running a variant of BSD Unix.
 @item avr
 ATMEL AVR-family micro controllers.  These are used in embedded
 applications.  There are no standard Unix configurations.
-See @xref{AVR Options} for the list of supported MCU types.
+@xref{AVR Options}, for the list of supported MCU types.
 
 @item decstation-*
 MIPS-based DECstations can support three different personalities:

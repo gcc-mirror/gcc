@@ -1,3 +1,11 @@
+2000-12-27  Phil Edwards  <pme@sources.redhat.com>
+
+	* extend.texi (C++ Extensions):  New node for C++ attributes;
+	  describe init_priority and com_interface.
+	* invoke.texi:  Remove -finit-priority as it now has zero effect.
+	* install.texi:  Fix xref syntax.
+	* md.texi:  Likewise.
+
 Mon Jan  1 21:28:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config.gcc (sparc64-wrs-vxworks*): New case.

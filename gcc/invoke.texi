@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -161,7 +161,7 @@ in the following sections.
 -falt-external-templates
 -ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fhonor-std
 -fhuge-objects  -fno-implicit-templates
--fno-implicit-inline-templates  -finit-priority
+-fno-implicit-inline-templates
 -fno-implement-inlines  -fms-extensions
 -fname-mangling-version-@var{n}  -fno-operator-names
 -fno-optional-diags  -fpermissive
@@ -1263,11 +1263,6 @@ implicitly (i.e. by use); only emit code for explicit instantiations.
 Don't emit code for implicit instantiations of inline templates, either.
 The default is to handle inlines differently so that compiles with and
 without optimization will need the same set of explicit instantiations.
-
-@item -finit-priority
-Support @samp{__attribute__ ((init_priority (n)))} for controlling the
-order of initialization of file-scope objects.  On ELF targets, this
-requires GNU ld 2.10 or later.
 
 @item -fno-implement-inlines
 To save space, do not emit out-of-line copies of inline functions

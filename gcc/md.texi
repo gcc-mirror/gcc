@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 89, 92, 93, 94, 96, 1998, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92, 93, 94, 96, 1998, 2000, 2001 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2604,7 +2604,7 @@ that the jump optimizer will not delete the table as unreachable code.
 Conditional branch instruction that decrements a register and
 jumps if the register is non-zero.  Operand 0 is the register to
 decrement and test; operand 1 is the label to jump to if the
-register is non-zero.  @xref{Looping Patterns}
+register is non-zero.  @xref{Looping Patterns}.
 
 This optional instruction pattern is only used by the combiner,
 typically for loops reversed by the loop optimizer when strength
@@ -2620,7 +2620,7 @@ determined until run-time; operand 2 is the actual or estimated maximum
 number of iterations as a @code{const_int}; operand 3 is the number of
 enclosed loops as a @code{const_int} (an innermost loop has a value of
 1); operand 4 is the label to jump to if the register is non-zero.
-@xref{Looping Patterns}
+@xref{Looping Patterns}.
 
 This optional instruction pattern should be defined for machines with
 low-overhead looping instructions as the loop optimizer will try to

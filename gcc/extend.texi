@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,98,99,2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,98,99,2000,01 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2022,7 +2022,8 @@ attributes are currently defined for variables: @code{aligned},
 @code{transparent_union}, @code{unused}, and @code{weak}.  Some other
 attributes are defined for variables on particular target systems.  Other
 attributes are available for functions (@pxref{Function Attributes}) and
-for types (@pxref{Type Attributes}).
+for types (@pxref{Type Attributes}).  Other front-ends might define more
+attributes (@pxref{C++ Extensions,,Extensions to the C++ Language}).
 
 You may also specify attributes with @samp{__} preceding and following
 each keyword.  This allows you to use them in header files without
@@ -3550,6 +3551,7 @@ Predefined Macros,cpp.info,The C Preprocessor}).
                          each needed template instantiation is emitted.
 * Bound member functions:: You can extract a function pointer to the
                         method denoted by a @samp{->*} or @samp{.*} expression.
+* C++ Attributes::  Variable, function, and type attributes for C++ only.
 @end menu
 
 @node Min and Max
@@ -4058,4 +4060,54 @@ fptr p1 = (fptr)(&A::foo);
 @end example
 
 You must specify @samp{-Wno-pmf-conversions} to use this extension.
+
+@node C++ Attributes
+@section C++-Specific Variable, Function, and Type Attributes
+
+Some attributes only make sense for C++ programs.
+
+@table @code
+@item init_priority (@var{priority})
+@cindex init_priority attribute
+
+
+In Standard C++, objects defined at namespace scope are guaranteed to be
+initialized in an order in strict accordance with that of their definitions
+@emph{in a given translation unit}.  No guarantee is made for initializations
+across translation units.  However, GNU C++ allows users to control the
+order of initialization of objects defined at namespace socpe with the
+@code{init_priority} attribute by specifying a relative @var{priority},
+a constant integral expression currently bounded between 101 and 65535
+inclusive.  Lower numbers indicate a higher priority.
+
+In the following example, @code{A} would normally be created before
+@code{B}, but the @code{init_priority} attribute has reversed that order:
+
+@example
+Some_Class  A  __attribute__ ((init_priority (2000)));
+Some_Class  B  __attribute__ ((init_priority (543)));
+@end example
+
+@noindent
+Note that the particular values of @var{priority} do not matter; only their
+relative ordering.
+
+
+@item com_interface
+@cindex com_interface attribute
+
+@c This is based on:  1) grepping the code, 
+@c 2) http://gcc.gnu.org/ml/gcc-bugs/1999-08n/msg01212.html
+@c 3) http://gcc.gnu.org/ml/gcc-bugs/1999-08n/msg01215.html
+@c and 4) a lot of guesswork.  You can tell I don't use COM.  -pme 21Dec00
+
+This type attribute takes no parameters, and marks a class or struct as an
+interface for communication via COM; the class will support the COM ABI
+rather than the full C++ ABI.  Currently this means that RTTI is not possible
+with the resulting class heirarchy.  The virtual pointer table will be
+changed to be COM-compliant.  Also, all classes and structs derived from one
+marked with this attribute are implicitly marked with the same attribute;
+thus, only the base class in a COM hierarchy needs @code{com_interface}.
+
+@end table
 
