@@ -2188,13 +2188,13 @@ for improvement of GNU CC or GNU C++ are welcome in any case.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex egcs-bugs@@cygnus.com
-Send bug reports for GNU C to @samp{egcs-bugs@@cygnus.com}.
+@kindex egcs-bugs@@egcs.cygnus.com
+Send bug reports for GNU C to @samp{egcs-bugs@@egcs.cygnus.com}.
 
-@kindex egcs-bugs@@cygnus.com
-@kindex egcs-bugs@@cygnus.com
+@kindex egcs-bugs@@egcs.cygnus.com
+@kindex egcs-bugs@@egcs.cygnus.com
 Send bug reports for GNU C++ and the C++ runtime libraries to
-@samp{egcs-bugs@@cygnus.com}.
+@samp{egcs-bugs@@egcs.cygnus.com}.
 
 Often people think of posting bug reports to the newsgroup instead of
 mailing them.  This appears to work, but it has one problem which can be
@@ -2480,7 +2480,7 @@ we should be able to reproduce the crash ourselves.
 
 If you would like to write bug fixes or improvements for the GNU C
 compiler, that is very helpful.  Send suggested fixes to the bug report
-mailing list, @code{egcs-bugs@@cygnus.com}.
+mailing list, @code{egcs-bugs@@egcs.cygnus.com}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -2600,8 +2600,8 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{egcs-bugs@@cygnus.com}, and if that brings no response, try
-@code{egcs@@cygnus.com}.
+@code{egcs-bugs@@egcs.cygnus.com}, and if that brings no response, try
+@code{egcs@@egcs.cygnus.com}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
@@ -2614,13 +2614,13 @@ GNU CC distribution.
 
 If you would like to help pretest GNU CC releases to assure they work
 well, or if you would like to work on improving GNU CC, please contact
-the maintainers at @code{egcs@@cygnus.com}.  A pretester should
+the maintainers at @code{egcs@@egcs.cygnus.com}.  A pretester should
 be willing to try to investigate bugs as well as report them.
 
 If you'd like to work on improvements, please ask for suggested projects
 or suggest your own ideas.  If you have already written an improvement,
 please tell us about it.  If you have not yet started work, it is useful
-to contact @code{egcs@@cygnus.com} before you start; the
+to contact @code{egcs@@egcs.cygnus.com} before you start; the
 maintainers may be able to suggest ways to make your extension fit in
 better with the rest of GNU CC and with other development plans.
 

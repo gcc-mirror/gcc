@@ -4947,7 +4947,7 @@ main (argc, argv)
 
       if (! verbose_flag)
 	{
-	  printf ("\nReport bugs to egcs-bugs@cygnus.com.\n");
+	  printf ("\nReport bugs to egcs-bugs@egcs.cygnus.com.\n");
 	  printf ("Please see the file BUGS (included with the sources) first.\n");
 	  
 	  exit (0);
@@ -5137,7 +5137,7 @@ main (argc, argv)
 
   if (print_help_list)
     {
-      printf ("\nReport bugs to egcs-bugs@cygnus.com.\n");
+      printf ("\nReport bugs to egcs-bugs@egcs.cygnus.com.\n");
       printf ("Please see the file BUGS (included with the sources) first.\n");
     }
   
