@@ -202,6 +202,8 @@ public class DecimalFormat extends NumberFormat
 	      }
 	    else if (c != syms.getExponential()
 		     && c != syms.getPatternSeparator()
+		     && c != syms.getPercent()
+		     && c != syms.getPerMill()
 		     && patChars.indexOf(c) != -1)
 	      throw new IllegalArgumentException ("unexpected special " +
 						  "character - index: " + index);
