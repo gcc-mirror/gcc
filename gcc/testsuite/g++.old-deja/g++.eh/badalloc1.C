@@ -1,5 +1,5 @@
 // { dg-do run { xfail xstormy16-*-* *-*-darwin* } }
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 
 // Check we can throw a bad_alloc exception when malloc dies.
@@ -14,7 +14,14 @@ extern "C" void *memcpy(void *, const void *, size_t);
 #ifdef STACK_SIZE
 const int arena_size = 256;
 #else
+#ifdef __FreeBSD__
+// FreeBSD with threads requires even more space at initialization time.
+#include "bits/c++config.h"
+#include "bits/gthr.h"
+const int arena_size = 131072;
+#else
 const int arena_size = 32768;
+#endif
 #endif
 
 struct object
@@ -98,6 +105,17 @@ void fn_catchthrow() throw(int)
 
 int main()
 {
+#ifdef __FreeBSD__
+// FreeBSD with threads fails the test unless each thread primes itself.
+  if (__gthread_active_p())
+    {
+      try{fn_throw();}
+      catch(int a){}
+    }
+// This was added to test with well-known idiom to detect regressions here
+// rather than always failing with -pthread.
+#endif
+
   fail = 1;
 
   try{fn_throw();}

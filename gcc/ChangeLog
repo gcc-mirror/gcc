@@ -1,3 +1,8 @@
+2003-12-16  Loren James Rittle  <ljrittle@acm.org>
+
+	* testsuite/g++.old-deja/g++.eh/badalloc1.C: Tweak to
+	pass with -pthread on FreeBSD systems.
+
 2003-12-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_file_end): Only write symbols that have
