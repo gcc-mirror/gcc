@@ -2035,7 +2035,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
      int prescan;
      int nopeepholes;
 {
-  register int i;
 #ifdef HAVE_cc0
   rtx set;
 #endif
@@ -3486,7 +3485,7 @@ output_asm_insn (template, operands)
 	   punctuation character alone, with no operand.
 	   The PRINT_OPERAND macro decides what is actually done.  */
 #ifdef PRINT_OPERAND_PUNCT_VALID_P
-	else if (PRINT_OPERAND_PUNCT_VALID_P (*p))
+	else if (PRINT_OPERAND_PUNCT_VALID_P ((unsigned char)*p))
 	  output_operand (NULL_RTX, *p++);
 #endif
 	else

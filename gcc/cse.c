@@ -1772,7 +1772,7 @@ static void
 rehash_using_reg (x)
      rtx x;
 {
-  int i;
+  unsigned int i;
   struct table_elt *p, *next;
   unsigned hash;
 

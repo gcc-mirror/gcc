@@ -1,3 +1,60 @@
+Wed Dec 23 09:51:32 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alias.c (record_alias_subset): Remove ignored `&'.
+	(init_alias_once): Likewise.
+
+	* c-lex.c (UNGETC): Cast first argument of comma expression to void.
+
+	* config/mips/mips.c (mips_asm_file_end): Cast the result of
+	fwrite to `int' when comparing against one.
+
+	* config/mips/mips.h (CAN_ELIMINATE): Add parens around && within ||.
+	(INITIAL_ELIMINATION_OFFSET): Add braces to avoid ambiguous `else'.
+
+	* cse.c (rehash_using_reg): Change type of variable `i' to
+	unsigned int.
+
+	* dwarf2out.c (initial_return_save): Cast -1 to unsigned before
+	assigning it to one.
+
+	* except.c (duplicate_eh_handlers): Remove unused variable `tmp'.
+
+	* final.c (final_scan_insn): Likewise for variable `i'.
+	(output_asm_insn): Cast a char to unsigned char when used as an
+	array index.
+
+	* gcse.c (compute_pre_ppinout): Cast -1 to SBITMAP_ELT_TYPE when
+	assigning it to one.
+
+	* loop.c (strength_reduce): Remove unused variables `count' and `temp'.
+
+	* recog.c (preprocess_constraints): Cast a char to unsigned char
+	when used as an array index.
+
+	* regmove.c (find_matches): Likewise.
+
+	* reload1.c (calculate_needs): Add default case in switch.
+	(eliminate_regs_in_insn): Initialize variable `offset'.
+	(set_offsets_for_label): Change type of variable `i' to unsigned.
+	(reload_as_needed): Wrap variable `i' in macro check on
+	AUTO_INC_DEC || INSN_CLOBBERS_REGNO_P.
+
+	* scan-decls.c (scan_decls): Mark parameters `argc' and `argv'
+	with ATTRIBUTE_UNUSED.  Cast variable `start_written' to size_t
+	when comparing against one.
+
+	* stor-layout.c (layout_decl): Cast maximum_field_alignment to
+	unsigned when comparing against one.  Likewise for
+	GET_MODE_ALIGNMENT().
+	(layout_record): Cast record_align to int when comparing against a
+	signed value. 
+	(layout_type): Cast TYPE_ALIGN() to int when comparing against a
+	signed value.
+
+	* tree.c (get_identifier): Cast variable `len' to unsigned when
+	comparing against one.
+	(maybe_get_identifier): Likewise
+
 Wed Dec 23 00:10:01 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* toplev.c (rest_of_compilation): Do not set reload_completed.

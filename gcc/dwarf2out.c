@@ -1040,7 +1040,7 @@ static void
 initial_return_save (rtl)
      register rtx rtl;
 {
-  unsigned reg = -1;
+  unsigned int reg = (unsigned int) -1;
   long offset = 0;
 
   switch (GET_CODE (rtl))

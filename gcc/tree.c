@@ -1266,7 +1266,7 @@ get_identifier (text)
 
   /* Decide how much of that length to hash on */
   hash_len = len;
-  if (warn_id_clash && len > id_clash_len)
+  if (warn_id_clash && (unsigned)len > id_clash_len)
     hash_len = id_clash_len;
 
   /* Compute hash code */
@@ -1285,7 +1285,7 @@ get_identifier (text)
       return idp;		/* <-- return if found */
 
   /* Not found; optionally warn about a similar identifier */
-  if (warn_id_clash && do_identifier_warnings && len >= id_clash_len)
+  if (warn_id_clash && do_identifier_warnings && (unsigned)len >= id_clash_len)
     for (idp = hash_table[hi]; idp; idp = TREE_CHAIN (idp))
       if (!strncmp (IDENTIFIER_POINTER (idp), text, id_clash_len))
 	{
@@ -1329,7 +1329,7 @@ maybe_get_identifier (text)
 
   /* Decide how much of that length to hash on */
   hash_len = len;
-  if (warn_id_clash && len > id_clash_len)
+  if (warn_id_clash && (unsigned)len > id_clash_len)
     hash_len = id_clash_len;
 
   /* Compute hash code */

@@ -2180,7 +2180,7 @@ extern struct mips_frame_info current_frame_info;
 
 #define CAN_ELIMINATE(FROM, TO)						\
   (((FROM) == RETURN_ADDRESS_POINTER_REGNUM && (! leaf_function_p ()	\
-   || TO == GP_REG_FIRST + 31 && leaf_function_p))   			\
+   || (TO == GP_REG_FIRST + 31 && leaf_function_p)))   			\
   || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
    && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
    || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed		\
@@ -2219,11 +2219,13 @@ extern struct mips_frame_info current_frame_info;
   /* Some ABIs store 64 bits to the stack, but Pmode is 32 bits,	 \
      so we must add 4 bytes to the offset to get the right value.  */	 \
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM)			 \
+  {									 \
    if (leaf_function_p ()) 						 \
       (OFFSET) = 0;				 			 \
    else (OFFSET) = current_frame_info.gp_sp_offset			 \
 	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))	 \
 		  * (BYTES_BIG_ENDIAN != 0));				 \
+  }									 \
 }
 
 /* If we generate an insn to push BYTES bytes,

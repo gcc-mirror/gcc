@@ -302,7 +302,7 @@ record_alias_subset (superset, subset)
 	(alias_set_entry) xmalloc (sizeof (struct alias_set_entry));
       superset_entry->alias_set = superset;
       superset_entry->children 
-	= splay_tree_new (&alias_set_compare, 0, 0);
+	= splay_tree_new (alias_set_compare, 0, 0);
       splay_tree_insert (alias_sets, 
 			 (splay_tree_key) superset,
 			 (splay_tree_value) superset_entry);
@@ -314,7 +314,7 @@ record_alias_subset (superset, subset)
     /* There is an entry for the subset.  Enter all of its children
        (if they are not already present) as children of the SUPERSET.  */
     splay_tree_foreach (subset_entry->children,
-			&insert_subset_children,
+			insert_subset_children,
 			superset_entry->children);
 
   /* Enter the SUBSET itself as a child of the SUPERSET.  */
@@ -1295,7 +1295,7 @@ init_alias_once ()
 	&& HARD_REGNO_MODE_OK (i, Pmode))
       SET_HARD_REG_BIT (argument_registers, i);
 
-  alias_sets = splay_tree_new (&alias_set_compare, 0, 0);
+  alias_sets = splay_tree_new (alias_set_compare, 0, 0);
 }
 
 void

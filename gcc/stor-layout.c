@@ -283,7 +283,8 @@ layout_decl (decl, known_align)
     {
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
-	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
+	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl),
+				 (unsigned)maximum_field_alignment);
       else if (DECL_PACKED (decl))
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
     }
@@ -299,7 +300,7 @@ layout_decl (decl, known_align)
       if (xmode != BLKmode
 	  && known_align % GET_MODE_ALIGNMENT (xmode) == 0)
 	{
-	  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
+	  DECL_ALIGN (decl) = MAX ((unsigned) GET_MODE_ALIGNMENT (xmode),
 				   DECL_ALIGN (decl));
 	  DECL_MODE (decl) = xmode;
 	  DECL_SIZE (decl) = size_int (GET_MODE_BITSIZE (xmode));
@@ -413,7 +414,7 @@ layout_record (rec)
 	     It does, however, affect the alignment of the next field
 	     within the structure.  */
 	  if (! integer_zerop (DECL_SIZE (field)))
-	    record_align = MAX (record_align, desired_align);
+	    record_align = MAX ((int)record_align, desired_align);
 	  else if (! DECL_PACKED (field))
 	    desired_align = TYPE_ALIGN (TREE_TYPE (field));
 	  /* A named bit field of declared type `int'
@@ -426,11 +427,11 @@ layout_record (rec)
 	      else if (DECL_PACKED (field))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
-	      record_align = MAX (record_align, type_align);
+	      record_align = MAX ((int)record_align, type_align);
 	    }
 	}
       else
-	record_align = MAX (record_align, desired_align);
+	record_align = MAX ((int)record_align, desired_align);
 #endif
 
       /* Does this field automatically have alignment it needs
@@ -913,7 +914,7 @@ layout_type (type)
 			       MODE_INT, 1);
 
 	    if (STRICT_ALIGNMENT && TYPE_ALIGN (type) < BIGGEST_ALIGNMENT
-		&& TYPE_ALIGN (type) < TREE_INT_CST_LOW (TYPE_SIZE (type))
+		&& (int)TYPE_ALIGN (type) < TREE_INT_CST_LOW (TYPE_SIZE (type))
 		&& TYPE_MODE (type) != BLKmode)
 	      {
 		TYPE_NO_FORCE_BLK (type) = 1;
@@ -979,7 +980,7 @@ layout_type (type)
 	     then stick with BLKmode.  */
 	  if (STRICT_ALIGNMENT
 	      && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-		    || (TYPE_ALIGN (type)
+		    || ((int)TYPE_ALIGN (type)
 			>= TREE_INT_CST_LOW (TYPE_SIZE (type)))))
 	    {
 	      if (TYPE_MODE (type) != BLKmode)
@@ -1011,7 +1012,7 @@ layout_type (type)
 	     then stick with BLKmode.  */
 	  && (! STRICT_ALIGNMENT
 	      || TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	      || TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type))))
+	      || (int)TYPE_ALIGN (type) >= TREE_INT_CST_LOW (TYPE_SIZE (type))))
 	{
 	  tree field;
 	  /* A union which has any BLKmode members must itself be BLKmode;

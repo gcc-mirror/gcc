@@ -1908,7 +1908,7 @@ preprocess_constraints ()
 		  break;
 
 		default:
-		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) REG_CLASS_FROM_LETTER (c)];
+		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) REG_CLASS_FROM_LETTER ((unsigned char)c)];
 		  break;
 		}
 	    }
