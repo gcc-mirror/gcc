@@ -60,7 +60,7 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.plaf.TableHeaderUI;
 
-public class JTableHeader
+public class JTableHeader extends JComponent
 {
   protected class AccessibleJTableHeader
   {
