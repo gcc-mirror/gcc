@@ -1,3 +1,7 @@
+Sun Aug 30 22:17:00 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config.shared: Set libsubdir.
+
 1998-08-25 14:34  Ulrich Drepper  <drepper@cygnus.com>
 
 	* libio/iogetline.c (_IO_getline_info): Don't read anything for
