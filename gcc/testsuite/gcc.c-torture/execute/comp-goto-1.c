@@ -1,8 +1,13 @@
 #include <stdlib.h>
 
 #ifndef NO_LABEL_VALUES
+#if __INT_MAX__ == 32767
+typedef unsigned long uint32;
+typedef signed long sint32;
+#else
 typedef unsigned int uint32;
 typedef signed int sint32;
+#endif
 
 typedef uint32 reg_t;
 
@@ -139,7 +144,7 @@ main ()
   insn.f1.offset = LOAD32_RR;
   env.registers[0] = 0;
   env.registers[2] = a_vaddr;
-  *(int *) (a_page + a_vaddr % 4096) = 88;
+  *(sint32 *) (a_page + a_vaddr % 4096) = 88;
   insn.f1.s1 = 0;
   insn.f1.s2 = 2;
 
