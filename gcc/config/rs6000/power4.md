@@ -104,7 +104,7 @@
   "(du1_power4+du2_power4+du3_power4+du4_power4),\
    iu1_power4,lsu2_power4+iu1_power4,nothing,nothing,iu2_power4")
 
-(define_insn_reservation "power4-load-update-indexed" 4 ; 3
+(define_insn_reservation "power4-load-update-indexed" 3
   (and (eq_attr "type" "load_ux")
        (eq_attr "cpu" "power4"))
    "du1_power4+du2_power4+du3_power4+du4_power4,\
@@ -197,7 +197,7 @@
 
 (define_bypass 4 "power4-compare" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 
-(define_insn_reservation "power4-lmul-cmp" 8 ; 7
+(define_insn_reservation "power4-lmul-cmp" 7
   (and (eq_attr "type" "lmul_compare")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4,iu1_power4*6,iu2_power4)\
@@ -207,7 +207,7 @@
 
 (define_bypass 10 "power4-lmul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 
-(define_insn_reservation "power4-imul-cmp" 6 ; 5
+(define_insn_reservation "power4-imul-cmp" 5
   (and (eq_attr "type" "imul_compare")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4,iu1_power4*4,iu2_power4)\
@@ -217,7 +217,7 @@
 
 (define_bypass 8 "power4-imul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 
-(define_insn_reservation "power4-lmul" 8 ; 7
+(define_insn_reservation "power4-lmul" 7
   (and (eq_attr "type" "lmul")
        (eq_attr "cpu" "power4"))
   "(du1_power4,iu1_power4*6)\
@@ -227,7 +227,7 @@
 ;  |(du3_power4,nothing,iu2_power4*6)\
 ;  |(du4_power4,nothing,iu2_power4*6)")
 
-(define_insn_reservation "power4-imul" 6 ; 5
+(define_insn_reservation "power4-imul" 5
   (and (eq_attr "type" "imul")
        (eq_attr "cpu" "power4"))
   "(du1_power4,iu1_power4*4)\
@@ -237,7 +237,7 @@
 ;  |(du3_power4,nothing,iu2_power4*4)\
 ;  |(du4_power4,nothing,iu1_power4*4)")
 
-(define_insn_reservation "power4-imul3" 5 ; 4
+(define_insn_reservation "power4-imul3" 4
   (and (eq_attr "type" "imul2,imul3")
        (eq_attr "cpu" "power4"))
   "(du1_power4,iu1_power4*3)\
@@ -305,7 +305,7 @@
   "du1_power4,iu1_power4")
 
 ; Basic FP latency is 6 cycles
-(define_insn_reservation "power4-fp" 7 ; 6
+(define_insn_reservation "power4-fp" 6
   (and (eq_attr "type" "fp,dmul")
        (eq_attr "cpu" "power4"))
   "fpq_power4")
