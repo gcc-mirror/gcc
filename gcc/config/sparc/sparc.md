@@ -2570,7 +2570,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(lshift:DI (match_operand:DI 1 "register_operand" "r")
+	(ashift:DI (match_operand:DI 1 "register_operand" "r")
 		     (match_operand:DI 2 "const_int_operand" "I")))
    (clobber (match_scratch:SI 3 "=X"))]
   "INTVAL (operands[2]) >= 32"
