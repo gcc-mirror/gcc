@@ -1,3 +1,18 @@
+1998-08-28  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (dfs_search, binfo_for_vtable, dfs_bfv_helper): New fns.
+	* decl2.c (output_vtable_inherit): Call binfo_for_vtable.
+
+1998-08-28  Richard Henderson  <rth@cygnus.com>
+
+	Add support for discarding unused virtual functions.
+	* lang-options.h: Add -fvtable-gc.
+	* cp-tree.h: Add flag_vtable_gc.
+	* decl2.c (output_vtable_inherit): New fn.
+	(finish_vtable_vardecl): Call it.
+	* class.c (build_vtable_entry_ref): New fn.
+	(build_vtbl_ref): Call it.
+
 1998-08-28  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (build_enumerator): Take the enumeration type as a

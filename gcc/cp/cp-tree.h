@@ -476,6 +476,9 @@ extern int flag_do_squangling;
 /* Nonzero if we want to issue diagnostics that the standard says are not
    required.  */
 extern int flag_optional_diags;
+
+/* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
+extern int flag_vtable_gc;
 
 /* C++ language-specific tree codes.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) SYM,

@@ -2147,6 +2147,41 @@ dfs_walk (binfo, fn, qfn)
   fn (binfo);
 }
 
+/* Like dfs_walk, but only walk until fn returns something, and return
+   that.  We also use the real vbase binfos instead of the placeholders
+   in the normal binfo hierarchy.  START is the most-derived type for this
+   hierarchy, so that we can find the vbase binfos.  */
+
+static tree
+dfs_search (binfo, fn, start)
+     tree binfo, start;
+     tree (*fn) PROTO((tree));
+{
+  tree binfos = BINFO_BASETYPES (binfo);
+  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+  tree retval;
+
+  for (i = 0; i < n_baselinks; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+
+      if (TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TYPE_PARM
+	  || TREE_CODE (BINFO_TYPE (base_binfo)) == TEMPLATE_TEMPLATE_PARM)
+	/* Pass */;
+      else
+	{
+	  if (TREE_VIA_VIRTUAL (base_binfo) && start)
+	    base_binfo = binfo_member (BINFO_TYPE (base_binfo),
+				       CLASSTYPE_VBASECLASSES (start));
+	  retval = dfs_search (base_binfo, fn, start);
+	  if (retval)
+	    return retval;
+	}
+    }
+
+  return fn (binfo);
+}
+
 static int markedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo); }
 static int unmarkedp (binfo) tree binfo;
@@ -3370,3 +3405,26 @@ types_overlap_p (empty_type, next_type)
   return found_overlap;
 }
 
+/* Passed to dfs_search by binfo_for_vtable; determine if bvtable comes
+   from BINFO.  */
+
+static tree bvtable;
+static tree
+dfs_bfv_helper (binfo)
+     tree binfo;
+{
+  if (BINFO_VTABLE (binfo) == bvtable)
+    return binfo;
+  return NULL_TREE;
+}
+
+/* Given a vtable VARS, determine which binfo it comes from.  */
+
+tree
+binfo_for_vtable (vars)
+     tree vars;
+{
+  bvtable = vars;
+  return dfs_search (TYPE_BINFO (DECL_CONTEXT (vars)), dfs_bfv_helper,
+		     DECL_CONTEXT (vars));
+}
