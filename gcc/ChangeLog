@@ -1,3 +1,9 @@
+2004-09-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11459
+	* gcc.c (cpp_options, cc1_options): Preserve relative order of
+	-std and -ansi options.
+
 2004-09-26  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dwarf2out_finish): Set parent to comp_unit_die
