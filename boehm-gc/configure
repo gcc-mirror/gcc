@@ -1759,7 +1759,6 @@ EOF
 
     ;;
  sparc-sun-solaris2.3*)
-    machdep="sparc_mach_dep.o"
     cat >> confdefs.h <<\EOF
 #define SUNOS53_SHARED_LIB 1
 EOF

@@ -136,7 +136,6 @@ case "$host" in
     AC_DEFINE(DATASTART_IS_ETEXT)
     ;;
  sparc-sun-solaris2.3*)
-    machdep="sparc_mach_dep.o"
     AC_DEFINE(SUNOS53_SHARED_LIB)
     ;;
 esac
