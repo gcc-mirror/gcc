@@ -9,7 +9,6 @@ struct B : public A {
   int x;
 };
 
-void B::f(int& t)
-{
+void B::f(int& t) { // ERROR - undeclared method
   x = t;
 }
