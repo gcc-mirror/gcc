@@ -1,3 +1,9 @@
+2000-11-14  Phil Edwards  <pme@sources.redhat.com>
+
+	* mkcheck.in:  On a platform where we don't know how to extract
+	  section sizes, just set them to zero.  Use old method of reading
+	  file contents.
+
 2000-11-13  Loren J. Rittle  <ljrittle@acm.org>
         * config/c_io_stdio.h: Don't define __c_wfile_type
         when _GLIBCPP_USE_WCHAR_T is not defined.
