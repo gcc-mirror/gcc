@@ -15,7 +15,7 @@ typedef unsigned long uint_32;
 class sanjose {
 public:
    sanjose();
-   sanjose(const sanjose&);  
+   sanjose(const sanjose&);  // ERROR - candidate
    sanjose(int_8 value);  // ERROR -  // ERROR -
    sanjose(uint_32 value);  // ERROR -  // ERROR -
 };

@@ -1,3 +1,8 @@
+2002-12-03  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_user_type_conversion_1): Don't set ICS_BAD_FLAG on
+	an ambiguous conversion.
+
 2002-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8688
