@@ -1,5 +1,9 @@
 2004-01-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* pa-protos.h: Update copyright.
+	* pa.h: Likewise.
+	* pa.md: Likewise.
+
 	* fixinc/inclhack.def (hpux10_stdio_declarations, ultrix_const3,
 	ultrix_locale, ultrix_stdlib, ultrix_strings, ultrix_sys_time,
 	ultrix_unistd): New hacks.
