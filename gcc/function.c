@@ -2873,8 +2873,11 @@ gen_mem_addressof (reg, decl)
   if (decl)
     {
       tree type = TREE_TYPE (decl);
+      enum machine_mode decl_mode
+	= (TREE_CODE (decl) == SAVE_EXPR ? TYPE_MODE (TREE_TYPE (decl))
+	   : DECL_MODE (decl));
 
-      PUT_MODE (reg, DECL_MODE (decl));
+      PUT_MODE (reg, decl_mode);
       MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
       MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
       MEM_ALIAS_SET (reg) = get_alias_set (decl);
