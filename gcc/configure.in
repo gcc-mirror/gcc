@@ -2778,256 +2778,140 @@ build_overrides="/dev/null"
 language_fragments="Make-lang"
 language_hooks="Make-hooks"
 
-savesrcdir=$srcdir
-for subdir in . $subdirs
+rm -f Make-host Make-target Make-hooks
+touch Make-host
+touch Make-target
+touch Make-hooks
+
+# Conditionalize the makefile for this host machine.
+dep_host_xmake_file=
+for f in .. ${host_xmake_file}
 do
-	oldsrcdir=$savesrcdir
+	if [[ -f ${srcdir}/config/$f ]]
+	then
+		cat ${srcdir}/config/$f >> Make-host
+		dep_host_xmake_file="${dep_host_xmake_file} \$(srcdir)/config/$f"
+	fi
+done
 
-	# Re-adjust the path
-	case $oldsrcdir in
-	/*)
-		case $subdir in
-		.)
-			srcdir=$oldsrcdir
-			;;
-		*)
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
-		;;
-	*)
-		case $subdir in
-		.)
-			;;
-		*)
-			oldsrcdir=../${oldsrcdir}
-			srcdir=$oldsrcdir/$subdir
-			;;
-		esac
-		;;
-	esac
-	mainsrcdir=$oldsrcdir
-	STARTDIR=`pwd`
-	test -d $subdir || mkdir $subdir
-	cd $subdir
+# Conditionalize the makefile for this target machine.
+dep_tmake_file=
+for f in .. ${tmake_file}
+do
+	if [[ -f ${srcdir}/config/$f ]]
+	then
+		cat ${srcdir}/config/$f >> Make-target
+		dep_tmake_file="${dep_tmake_file} \$(srcdir)/config/$f"
+	fi
+done
 
-	rm -f Make-host Make-target Make-hooks
-	touch Make-host
-	touch Make-target
-	touch Make-hooks
-	# Conditionalize the makefile for this host machine.
-	dep_host_xmake_file=
-	for f in .. ${host_xmake_file}
+# Add the language fragments.
+# Languages are added via two mechanisms.  Some information must be
+# recorded in makefile variables, these are defined in config-lang.in.
+# We accumulate them and plug them into the main Makefile.
+# The other mechanism is a set of hooks for each of the main targets
+# like `clean', `install', etc.
+
+for s in .. $subdirs
+do
+	if [[ $s != ".." ]]
+	then
+		language=
+		boot_language=
+		compilers=
+		stagestuff=
+		diff_excludes=
+		headers=
+		lib2funcs=
+		. ${srcdir}/$s/config-lang.in
+		if [[ "x$language" = x ]]
+		then
+			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
+			exit 1
+		fi
+		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in ${srcdir}/$s/Makefile.in"
+		all_languages="$all_languages $language"
+		if [[ "x$boot_language" = xyes ]]
+		then
+			all_boot_languages="$all_boot_languages $language"
+		fi
+		all_compilers="$all_compilers $compilers"
+		all_stagestuff="$all_stagestuff $stagestuff"
+		all_diff_excludes="$all_diff_excludes $diff_excludes"
+		all_headers="$all_headers $headers"
+		all_lib2funcs="$all_lib2funcs $lib2funcs"
+	fi
+done
+
+# Since we can't use `::' targets, we link each language in
+# with a set of hooks, reached indirectly via lang.${target}.
+
+target_list="all.build all.cross start.encap rest.encap \
+	info dvi \
+	install-normal install-common install-info install-man \
+	uninstall distdir \
+	mostlyclean clean distclean extraclean maintainer-clean \
+	stage1 stage2 stage3 stage4"
+for t in $target_list
+do
+	x=
+	for l in .. $all_languages
 	do
-		if [[ -f ${mainsrcdir}/config/$f ]]
-		then
-			cat ${mainsrcdir}/config/$f >> Make-host
-			dep_host_xmake_file="${dep_host_xmake_file} \$(srcdir)/config/$f"
+		if [[ $l != ".." ]]; then
+			x="$x $l.$t"
 		fi
 	done
+	echo "lang.$t: $x" >> Make-hooks
+done
 
-	# Add a definition of USE_COLLECT2 if system wants one.
-	# Also tell toplev.c what to do.
-	# This substitutes for lots of t-* files.
-	if [[ x$use_collect2 = x ]]
-	then
-		will_use_collect2=
-		maybe_use_collect2=
-	else
-		will_use_collect2="ld"
-		maybe_use_collect2="-DUSE_COLLECT2"
-	fi
+# If the host doesn't support symlinks, modify CC in
+# FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
+# Otherwise, we can use "CC=$(CC)".
+rm -f symtest.tem
+if $symbolic_link symtest1.tem symtest.tem 2>/dev/null
+then
+	cc_set_by_configure="\$(CC)"
+	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
+else
+	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
+	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
+fi
+rm -f symtest.tem
 
-	# NEED TO CONVERT
-	# Set MD_DEPS if the real md file is in md.pre-cpp.
-	# Set MD_CPP to the cpp to pass the md file through.  Md files use ';'
-	# for line oriented comments, so we must always use a GNU cpp.  If
-	# building gcc with a cross compiler, use the cross compiler just
-	# built.  Otherwise, we can use the cpp just built.
-	md_file_sub=
-	if [[ "x$md_cppflags" = x ]]
-	then
-		md_file_sub=$srcdir/config/$md_file
-	else
-		md_file=md
-	fi
+out_object_file=`basename $out_file .c`.o
 
-	# If we have gas in the build tree, make a link to it.
-	if [[ -f ../gas/Makefile ]]; then
-		rm -f as; $symbolic_link ../gas/as.new as 2>/dev/null
-	fi
+tm_file_list=
+for f in $tm_file; do
+	tm_file_list="${tm_file_list} \$(srcdir)/config/$f"
+done
 
-	# If we have ld in the build tree, make a link to it.
-	if [[ -f ../ld/Makefile ]]; then
-		if [[ x$use_collect2 = x ]]; then
-			rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
-		else
-			rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
-		fi
-	fi
+host_xm_file_list=
+for f in $host_xm_file; do
+	host_xm_file_list="${host_xm_file_list} \$(srcdir)/config/$f"
+done
 
-	# Conditionalize the makefile for this target machine.
-	dep_tmake_file=
-	for f in .. ${tmake_file}
-	do
-		if [[ -f ${mainsrcdir}/config/$f ]]
-		then
-			cat ${mainsrcdir}/config/$f >> Make-target
-			dep_tmake_file="${dep_tmake_file} \$(srcdir)/config/$f"
-		fi
-	done
+build_xm_file_list=
+for f in $build_xm_file; do
+	build_xm_file_list="${build_xm_file_list} \$(srcdir)/config/$f"
+done
 
-	# If this is the top level Makefile, add the language fragments.
-	# Languages are added via two mechanisms.  Some information must be
-	# recorded in makefile variables, these are defined in config-lang.in.
-	# We accumulate them and plug them into the main Makefile.
-	# The other mechanism is a set of hooks for each of the main targets
-	# like `clean', `install', etc.
-	if [[ $subdir = . ]]
-	then
-		for s in .. $subdirs
-		do
-			if [[ $s != ".." ]]
-			then
-				language=
-				boot_language=
-				compilers=
-				stagestuff=
-				diff_excludes=
-				headers=
-				lib2funcs=
-				. ${mainsrcdir}/$s/config-lang.in
-				if [[ "x$language" = x ]]
-				then
-					echo "${mainsrcdir}/$s/config-lang.in doesn't set \$language." 1>&2
-					exit 1
-				fi
-				all_lang_makefiles="$all_lang_makefiles ${mainsrcdir}/$s/Make-lang.in ${mainsrcdir}/$s/Makefile.in"
-				all_languages="$all_languages $language"
-				if [[ "x$boot_language" = xyes ]]
-				then
-					all_boot_languages="$all_boot_languages $language"
-				fi
-				all_compilers="$all_compilers $compilers"
-				all_stagestuff="$all_stagestuff $stagestuff"
-				all_diff_excludes="$all_diff_excludes $diff_excludes"
-				all_headers="$all_headers $headers"
-				all_lib2funcs="$all_lib2funcs $lib2funcs"
-			fi
-		done
+# Define macro CROSS_COMPILE in compilation
+# if this is a cross-compiler.
+# Also use all.cross instead of all.internal
+# and add cross-make to Makefile.
+if [[ x$host != x$target ]]
+then
+	cross_defines="CROSS=-DCROSS_COMPILE"
+	cross_overrides="${topdir}/cross-make"
+fi
 
-		# Since we can't use `::' targets, we link each language in
-		# with a set of hooks, reached indirectly via lang.${target}.
-
-		target_list="all.build all.cross start.encap rest.encap \
-			info dvi \
-			install-normal install-common install-info install-man \
-			uninstall distdir \
-			mostlyclean clean distclean extraclean maintainer-clean \
-			stage1 stage2 stage3 stage4"
-		for t in $target_list
-		do
-			x=
-			for l in .. $all_languages
-			do
-				if [[ $l != ".." ]]; then
-					x="$x $l.$t"
-				fi
-			done
-			echo "lang.$t: $x" >> Make-hooks
-		done
-
-		# If the host doesn't support symlinks, modify CC in
-		# FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
-		# Otherwise, we can use "CC=$(CC)".
-		rm -f symtest.tem
-		if $symbolic_link symtest1.tem symtest.tem 2>/dev/null
-		then
-			cc_set_by_configure="\$(CC)"
-			stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
-		else
-			cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
-
-			stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
-		fi
-
-	# Otherwise, this is a language subdirectory.  If the host supports
-	# symlinks, point stage[123] at ../stage[123] so bootstrapping and the
-	# installation procedure can still use CC="stage1/xgcc -Bstage1/".
-	# If the host doesn't support symlinks, FLAGS_TO_PASS has been
-	# modified to solve the problem there.
-	else
-		for t in stage1 stage2 stage3 stage4 include
-		do
-			rm -f $t
-			$symbolic_link ../$t $t 2>/dev/null
-		done
-	fi
-
-	out_object_file=`basename $out_file .c`.o
-
-	if [[ $subdir = . ]]
-	then
-		tm_file_list=
-		for f in $tm_file; do
-			tm_file_list="${tm_file_sub} \$(srcdir)/config/$f"
-		done
-
-		host_xm_file_list=
-		for f in $host_xm_file; do
-			host_xm_file_list="${host_xm_file_sub} \$(srcdir)/config/$f"
-		done
-
-		build_xm_file_list=
-		for f in $build_xm_file; do
-			build_xm_file_list="${build_xm_file_sub} \$(srcdir)/config/$f"
-		done
-	fi
-
-	# Remove all formfeeds, since some Makes get confused by them.
-	# Also arrange to give the variables `target', `host_xmake_file',
-	# `tmake_file', `prefix', `local_prefix', `exec_prefix', `FIXINCLUDES'
-	# `out_file', `out_object', `md_file', `lang_specs_files',
-	# `lang_options_files', `INSTALL_HEADERS_DIR', and `CROSS_FLOAT_H'
-	# values in the Makefile from the values they have in this script.
-
-	tm_file_sub=
-	for f in $tm_file; do
-		tm_file_sub="${tm_file_sub} ${srcdir}/config/$f"
-	done
-
-	host_xm_file_sub=
-	for f in $host_xm_file; do
-		host_xm_file_sub="${host_xm_file_sub} ${srcdir}/config/$f"
-	done
-
-	build_xm_file_sub=
-	for f in $build_xm_file; do
-		build_xm_file_sub="${build_xm_file_sub} ${srcdir}/config/$f"
-	done
-
-	# Define macro CROSS_COMPILE in compilation
-	# if this is a cross-compiler.
-	# Also use all.cross instead of all.internal
-	# and add cross-make to Makefile.
-	if [[ x$host != x$target ]]
-	then
-		cross_defines="CROSS=-DCROSS_COMPILE"
-		cross_overrides="${topdir}/cross-make"
-	fi
-
-	# When building gcc with a cross-compiler, we need to fix a few things.
-	# This must come after cross-make as we want all.build to override
-	# all.cross.
-  	if [[ x$build != x$host ]]
-	then
-		build_overrides="${topdir}/build-make"
-	fi
-
-	cd $STARTDIR
-done   # end of current-dir SUBDIRS loop
-
-srcdir=$savesrcdir
+# When building gcc with a cross-compiler, we need to fix a few things.
+# This must come after cross-make as we want all.build to override
+# all.cross.
+if [[ x$build != x$host ]]
+then
+	build_overrides="${topdir}/build-make"
+fi
 
 # Expand extra_headers to include complete path.
 # This substitutes for lots of t-* files.
@@ -3040,6 +2924,46 @@ else
 	do
 		extra_headers_list="${extra_headers_list} \$(srcdir)/ginclude/${file}"
 	done
+fi
+
+# Add a definition of USE_COLLECT2 if system wants one.
+# Also tell toplev.c what to do.
+# This substitutes for lots of t-* files.
+if [[ x$use_collect2 = x ]]
+then
+	will_use_collect2=
+	maybe_use_collect2=
+else
+	will_use_collect2="ld"
+	maybe_use_collect2="-DUSE_COLLECT2"
+fi
+
+# NEED TO CONVERT
+# Set MD_DEPS if the real md file is in md.pre-cpp.
+# Set MD_CPP to the cpp to pass the md file through.  Md files use ';'
+# for line oriented comments, so we must always use a GNU cpp.  If
+# building gcc with a cross compiler, use the cross compiler just
+# built.  Otherwise, we can use the cpp just built.
+md_file_sub=
+if [[ "x$md_cppflags" = x ]]
+then
+	md_file_sub=$srcdir/config/$md_file
+else
+	md_file=md
+fi
+
+# If we have gas in the build tree, make a link to it.
+if [[ -f ../gas/Makefile ]]; then
+	rm -f as; $symbolic_link ../gas/as.new as 2>/dev/null
+fi
+
+# If we have ld in the build tree, make a link to it.
+if [[ -f ../ld/Makefile ]]; then
+	if [[ x$use_collect2 = x ]]; then
+		rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
+	else
+		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
+	fi
 fi
 
 # Process the language fragments
@@ -3134,50 +3058,22 @@ subdirs='${subdirs}'
 symbolic_link='${symbolic_link}'
 program_transform_set='${program_transform_set}'
 program_transform_name='${program_transform_name}'
-all_languages='${all_languages}'
-all_boot_languages='${all_boot_languages}'
-all_compilers='${all_compilers}'
-all_lang_makefiles='${all_lang_makefiles}'
-all_stagestuff='${all_stagestuff}'
-all_diff_excludes='${all_diff_excludes}'
-all_lib2funcs='${all_lib2funcs}'
-all_headers='${all_headers}'
 dep_host_xmake_file='${dep_host_xmake_file}'
 host_xmake_file='${host_xmake_file}'
 dep_tmake_file='${dep_tmake_file}'
 tmake_file='${tmake_file}'
-out_file='${out_file}'
-out_object_file='${out_object_file}'
-md_file='${md_file}'
-md_file_sub='${md_file_sub}'
-tm_file_list='${tm_file_list}'
-tm_file_sub='${tm_file_sub}'
-build_xm_file_list='${build_xm_file_list}'
-build_xm_file_sub='${build_xm_file_sub}'
-host_xm_file_list='${host_xm_file_list}'
-host_xm_file_sub='${host_xm_file_sub}'
-lang_specs_files='${lang_specs_files}'
-lang_options_files='${lang_options_files}'
 thread_file='${thread_file}'
 version='${version}'
 local_prefix='${local_prefix}'
-fixincludes='${fixincludes}'
 build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'
-float_format='${float_format}'
-use_collect2='${use_collect2}'
-will_use_collect2='${will_use_collect2}'
-maybe_use_collect2='${maybe_use_collect2}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'
 build_broken_install='${build_broken_install}'
 target_list='${target_list}'
-
 target_overrides='${target_overrides}'
 host_overrides='${host_overrides}'
 cross_defines='${cross_defines}'
 cross_overrides='${cross_overrides}'
 build_overrides='${build_overrides}'
-language_fragments='${language_fragments}'
-language_hooks='${language_hooks}'
 )
