@@ -4708,7 +4708,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 /* Return an indication of which type of insn should have X as a body.
    The value is CODE_LABEL, INSN, CALL_INSN or JUMP_INSN.  */
 
-enum rtx_code
+static enum rtx_code
 classify_insn (rtx x)
 {
   if (LABEL_P (x))
