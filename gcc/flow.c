@@ -3039,6 +3039,11 @@ dump_flow_info (file)
 		 i, REG_N_REFS (i), REG_LIVE_LENGTH (i));
 	if (REG_BASIC_BLOCK (i) >= 0)
 	  fprintf (file, " in block %d", REG_BASIC_BLOCK (i));
+	if (REG_N_SETS (i))
+  	  fprintf (file, "; set %d time%s", REG_N_SETS (i),
+   		   (REG_N_SETS (i) == 1) ? "" : "s");
+	if (REG_USERVAR_P (regno_reg_rtx[i]))
+  	  fprintf (file, "; user var");
 	if (REG_N_DEATHS (i) != 1)
 	  fprintf (file, "; dies in %d places", REG_N_DEATHS (i));
 	if (REG_N_CALLS_CROSSED (i) == 1)
