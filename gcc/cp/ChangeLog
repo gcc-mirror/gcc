@@ -1,3 +1,8 @@
+Sun Aug 17 10:05:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR C++/11702
+	* semantics.c (finish_id_expression): Mark all functions as used.
+
 2003-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11512
