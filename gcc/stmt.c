@@ -2004,9 +2004,6 @@ warn_if_unused_value (exp)
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
-      /* We don't warn about COND_EXPR because it may be a useful
-	 construct if either arm contains a side effect.  */
-    case COND_EXPR:
       return 0;
 
     case BIND_EXPR:
@@ -2065,6 +2062,10 @@ warn_if_unused_value (exp)
       if ((DECL_P (exp)
 	   || TREE_CODE_CLASS (TREE_CODE (exp)) == 'r')
 	  && TREE_THIS_VOLATILE (exp))
+	return 0;
+
+      /* If this is an expression with side effects, don't warn.  */
+      if (TREE_SIDE_EFFECTS (exp))
 	return 0;
 
       /* If this is an expression which has no operands, there is no value

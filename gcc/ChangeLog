@@ -1,5 +1,8 @@
 2000-11-14  Richard Henderson  <rth@redhat.com>
 
+	* stmt.c (warn_if_unused_value): Don't warn if the expression
+	has side effects.
+
 	* c-typeck.c (c_sizeof): Fold result to c_size_type_node.
 	(c_sizeof_nowarn, c_alignof, c_alignof_expr): Likewise.
 
