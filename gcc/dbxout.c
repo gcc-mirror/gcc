@@ -1330,7 +1330,17 @@ dbxout_type (type, full)
 	    {
 	      fprintf (asmfile, "r");
 	      CHARS (1);
-	      dbxout_type_index (type);
+
+              /* If this type derives from another type, output type index of
+		 parent type. This is particularly important when parent type
+		 is an enumerated type, because not generating the parent type
+		 index would transform the definition of this enumerated type
+		 into a plain unsigned type.  */
+              if (TREE_TYPE (type) != 0)
+                dbxout_type_index (TREE_TYPE (type));
+              else
+                dbxout_type_index (type);
+
 	      fprintf (asmfile, ";");
 	      CHARS (1);
 	      print_int_cst_octal (TYPE_MIN_VALUE (type));
