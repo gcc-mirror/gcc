@@ -931,15 +931,13 @@ int dump_time;
 int
 get_run_time ()
 {
-#ifdef WINNT
-  return 0;
-#else
+#ifndef WINNT
 #ifdef USG
   struct tms tms;
 #else
 #ifndef VMS
   struct rusage rusage;
-#else /* VMS */
+#else
   struct
     {
       int proc_user_time;
@@ -949,10 +947,16 @@ get_run_time ()
     } vms_times;
 #endif
 #endif
+#endif
 
   if (quiet_flag)
     return 0;
-
+#ifdef WINNT
+  if (clock() < 0)
+    return 0;
+  else
+    return (clock() * 1000);
+#else /* not WINNT */
 #ifdef USG
   times (&tms);
   return (tms.tms_utime + tms.tms_stime) * (1000000 / HZ);
