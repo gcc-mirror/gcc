@@ -1,5 +1,14 @@
 2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/install.texi: Use the GFDL.  Include years from old install
+	manual in copyright notice.  Include copyright and GFDL notice on
+	HTML index page.  Include usual footer on testing.html.
+	* doc/install.texi2html: Build gfdl.html.  Use -I
+	$SOURCEDIR/include.
+	* doc/include/fdl.texi: Adapt for use in the install manual.
+
+2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/install.texi: Document that installed native compiler for
 	building cross compilers should be GCC 2.95 or later.
 

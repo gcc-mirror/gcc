@@ -32,8 +32,12 @@
 @ifset binarieshtml
 @settitle Installing GCC: Binaries
 @end ifset
+@ifset gfdlhtml
+@settitle Installing GCC: GNU Free Documentation License
+@end ifset
 
-@c Copyright (C) 2001 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+@c 1999, 2000, 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c Include everything if we're not making html
@@ -46,12 +50,34 @@
 @set testhtml
 @set finalinstallhtml
 @set binarieshtml
+@set gfdlhtml
 @end ifnothtml
 
 @c Part 2 Summary Description and Copyright
-@ifinfo
+@macro copyrightnotice
+Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+1999, 2000, 2001 Free Software Foundation, Inc.
+@sp 1
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, the Front-Cover texts being (a) (see below), and
+with the Back-Cover Texts being (b) (see below).  A copy of the
+license is included in the section entitled ``@uref{./gfdl.html,,GNU
+Free Documentation License}''.
 
-Copyright @copyright{} 2001 Free Software Foundation, Inc.
+(a) The FSF's Front-Cover Text is:
+
+     A GNU Manual
+
+(b) The FSF's Back-Cover Text is:
+
+     You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development.
+@end macro
+@ifinfo
+@copyrightnotice{}
 @end ifinfo
 
 @c Part 3 Titlepage and Copyright
@@ -63,7 +89,7 @@ Copyright @copyright{} 2001 Free Software Foundation, Inc.
 @c The following two commands start the copyright page.
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2001 Free Software Foundation, Inc.
+@copyrightnotice{}
 @end titlepage
 
 @c Part 4 Top node and Master Menu
@@ -79,6 +105,7 @@ Copyright @copyright{} 2001 Free Software Foundation, Inc.
 * Specific::        Host/target specific installation notes for GCC.
 * Binaries::        Where to get pre-compiled binaries.
 
+* GNU Free Documentation License:: How you can copy and share this manual.
 * Concept Index::   This index has two entries.
 @end menu
 @end ifinfo
@@ -161,6 +188,8 @@ more binaries exist that use them.
 @end html
 @ifhtml
 @uref{./index.html,,Return to the GCC Installation page}
+
+@copyrightnotice{}
 @end ifhtml
 @end ifset
 
@@ -1074,6 +1103,13 @@ behave on different platforms and compare them with your results.  A
 few failing testcases are possible even on released versions and you
 should look here first if you think your results are unreasonable.
 
+@html
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
 @end ifset
 
 @c ***Final install***********************************************************
@@ -1252,7 +1288,7 @@ works.
 @c ***Specific****************************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Specific, Concept Index, Binaries, Top
+@node    Specific, GNU Free Documentation License, Binaries, Top
 @end ifnothtml
 @ifset specifichtml
 @html
@@ -3446,11 +3482,24 @@ automatically.
 @end ifhtml
 @end ifset
 
+@c ***GFDL********************************************************************
+@ifset gfdlhtml
+@include fdl.texi
+@html
+</p>
+<hr>
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
 @c ***************************************************************************
 @c Part 6 The End of the Document
 @ifinfo
 @comment node-name,     next,          previous, up
-@node    Concept Index, , Specific, Top
+@node    Concept Index, , GNU Free Documentation License, Top
 @end ifinfo
 
 @ifinfo
