@@ -1820,7 +1820,9 @@ pushdecl (x)
 	  else
 	    decl = 0;
 
-	  if (decl && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl)))
+	  if (decl && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl))
+	      /* If old decl is built-in, we already warned if we should.  */
+	      && !DECL_BUILT_IN (decl))
 	    {
 	      pedwarn_with_decl (x,
 				 "type mismatch with previous external decl");
@@ -2649,13 +2651,13 @@ init_decl_processing ()
      With luck nothing will ever really depend on the length of this
      array type.  */
   char_array_type_node
-    = build_array_type (char_type_node, unsigned_char_type_node);
+    = build_array_type (char_type_node, unsigned_intQI_type_node);
   /* Likewise for arrays of ints.  */
   int_array_type_node
-    = build_array_type (integer_type_node, unsigned_char_type_node);
+    = build_array_type (integer_type_node, unsigned_intQI_type_node);
   /* This is for wide string constants.  */
   wchar_array_type_node
-    = build_array_type (wchar_type_node, unsigned_char_type_node);
+    = build_array_type (wchar_type_node, unsigned_intQI_type_node);
 
   default_function_type
     = build_function_type (integer_type_node, NULL_TREE);
