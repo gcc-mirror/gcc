@@ -1136,7 +1136,7 @@ finish_asm_stmt (tree cv_qualifier,
 tree
 finish_label_stmt (tree name)
 {
-  tree decl = define_label (input_filename, input_line, name);
+  tree decl = define_label (input_location, name);
   return add_stmt (build_stmt (LABEL_STMT, decl));
 }
 

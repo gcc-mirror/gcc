@@ -1175,9 +1175,13 @@ pop_label (tree label, tree old_value)
     {
       if (DECL_INITIAL (label) == NULL_TREE)
 	{
+	  location_t location;
+
 	  cp_error_at ("label `%D' used but not defined", label);
+ 	  location.file = input_filename;
+	  location.line = 0;
 	  /* Avoid crashing later.  */
-	  define_label (input_filename, 1, DECL_NAME (label));
+	  define_label (location, DECL_NAME (label));
 	}
       else if (warn_unused_label && !TREE_USED (label))
 	cp_warning_at ("label `%D' defined but not used", label);
@@ -4939,7 +4943,7 @@ check_goto (tree decl)
    Otherwise return 0.  */
 
 tree
-define_label (const char* filename, int line, tree name)
+define_label (location_t location, tree name)
 {
   tree decl = lookup_label (name);
   struct named_label_list *ent;
@@ -4968,8 +4972,7 @@ define_label (const char* filename, int line, tree name)
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
-      DECL_SOURCE_FILE (decl) = filename;
-      DECL_SOURCE_LINE (decl) = line;
+      DECL_SOURCE_LOCATION (decl) = location;
       if (ent)
 	{
 	  ent->names_in_scope = current_binding_level->names;

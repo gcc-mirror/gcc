@@ -1,3 +1,7 @@
+2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (poplevel): Adjust define_label call.
+
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* gjavah.c (flag_jni): Make non-static.

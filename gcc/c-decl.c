@@ -607,8 +607,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    {
 	      error_with_decl (label, "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
-	      define_label (input_filename, input_line,
-			    DECL_NAME (label));
+	      define_label (input_location, DECL_NAME (label));
 	    }
 	  else if (warn_unused_label && !TREE_USED (label))
 	    warning_with_decl (label, "label `%s' defined but not used");
@@ -699,8 +698,7 @@ pop_label_level (void)
 	      error_with_decl (TREE_VALUE (link),
 			       "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
-	      define_label (input_filename, input_line,
-			    DECL_NAME (TREE_VALUE (link)));
+	      define_label (input_location, DECL_NAME (TREE_VALUE (link)));
 	    }
 	  else if (warn_unused_label && !TREE_USED (TREE_VALUE (link)))
 	    warning_with_decl (TREE_VALUE (link),
@@ -2055,12 +2053,9 @@ shadow_label (tree name)
    Otherwise return 0.  */
 
 tree
-define_label (const char* filename, int line, tree name)
+define_label (location_t location, tree name)
 {
-  location_t locus;
   tree decl = lookup_label (name);
-  locus.file = filename;
-  locus.line = line;
 
   /* If label with this name is known from an outer context, shadow it.  */
   if (decl != 0 && DECL_CONTEXT (decl) != current_function_decl)
@@ -2072,11 +2067,11 @@ define_label (const char* filename, int line, tree name)
 
   if (warn_traditional && !in_system_header && lookup_name (name))
     warning ("%Htraditional C lacks a separate namespace for labels, "
-             "identifier `%s' conflicts", &locus, IDENTIFIER_POINTER (name));
+             "identifier `%s' conflicts", &location, IDENTIFIER_POINTER (name));
 
   if (DECL_INITIAL (decl) != 0)
     {
-      error ("%Hduplicate label `%s'", &locus, IDENTIFIER_POINTER (name));
+      error ("%Hduplicate label `%s'", &location, IDENTIFIER_POINTER (name));
       return 0;
     }
   else
@@ -2084,7 +2079,7 @@ define_label (const char* filename, int line, tree name)
       /* Mark label as having been defined.  */
       DECL_INITIAL (decl) = error_mark_node;
       /* Say where in the source.  */
-      DECL_SOURCE_LOCATION (decl) = locus;
+      DECL_SOURCE_LOCATION (decl) = location;
       return decl;
     }
 }
@@ -5879,8 +5874,7 @@ store_parm_decls (void)
 	      found = build_decl (PARM_DECL, TREE_VALUE (parm),
 				  integer_type_node);
 	      DECL_ARG_TYPE (found) = TREE_TYPE (found);
-	      DECL_SOURCE_LINE (found) = DECL_SOURCE_LINE (fndecl);
-	      DECL_SOURCE_FILE (found) = DECL_SOURCE_FILE (fndecl);
+	      DECL_SOURCE_LOCATION (found) = DECL_SOURCE_LOCATION (fndecl);
 	      if (flag_isoc99)
 		pedwarn_with_decl (found, "type of `%s' defaults to `int'");
 	      else if (extra_warnings)

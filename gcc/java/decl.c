@@ -1366,8 +1366,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    {
 	      error_with_decl (label, "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
-	      define_label (input_filename, lineno,
-			    DECL_NAME (label));
+	      define_label (input_location, DECL_NAME (label));
 	    }
 	  else if (warn_unused[UNUSED_LABEL] && !TREE_USED (label))
 	    warning_with_decl (label, "label `%s' defined but not used");
