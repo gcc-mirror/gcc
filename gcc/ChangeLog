@@ -1,3 +1,181 @@
+Sun Feb 14 10:14:48 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	Propagate changes for ARM from egcs tree.
+
+	Sat Feb  6 11:17:03 1999  Richard Earnshaw <rearnsha@arm.com>
+	Support for ARM9
+	* config/arm/arm.c (all_procs): Add arm9 and arm9tdmi.
+	* config/arm/arm.h ((TARGET_CPU_arm9, TARGET_CPUD_arm9tdmi): Define.
+	(TARGET_CPU_DEFAULT): Rework to support ARM9.
+	(CPP_CPU_ARCH_SPEC): Likewise.
+	(enum processor_type): Likewise.
+	* config/arm/arm.md (attr cpu): Add arm9.
+
+	General scheduling changes 
+	* config/arm/arm.c (MAX_INSNS_SKIPPED): Delete.
+	(max_insns_skipped): New variable.
+	(arm_override_options): If generating hard floating point code for
+	the FPA, emit code for version 3.
+	When optimizing for space, don't synthesize constants.
+	Reword several flags based on the requested processor and optimization
+	level.
+	(use_return_insn): New argument iscond, all callers changed.  Don't
+	use a return insn if it will be conditional and that would be 
+	expensive; eg on StrongARM.
+	(arm_adjust_cost): Anti- and output- dependencies normally have no
+	cost.
+	(load_multiple_sequence): Newer ARMs don't benefit from ldm if
+	the sequence is short.
+	(final_prescan_insn): Use max_insns_skipped instead of 
+	MAX_INSNS_SKIPPED.  Note whether we will make a return instruction
+	conditional, and aviod this if it would be expensive.
+	* config/arm/arm.md (scheduling attributes and function units):
+ 	Rewrite to better describe ARM8, 9 and StrongARM.
+
+	* config/arm/arm.md (*movhi_insn_littleend): Make op0 predicate 
+	s_register_operand.
+	(*ifcompare_plus_move): Use arm_rhs_operand in place of 
+	arm_rhsm_operand.  Rework constraints.
+	(*if_plus_move): Likewise.
+	(*ifcompare_move_plus): Likewise.
+	(*if_move_plus): Likewise.
+	(*ifcompre_arith_move): Likewise.
+	(*if_arith_move): Likewise.
+	(*ifcompare_move_arith): Likewise.
+	(*if_move_arith): Likewise.
+
+	Wed Jan 13 16:47:00 1999  Catherine Moore  <clm@cygnus.com>
+        * config/arm.c (output_func_epilogue):  Check TARGET_ABORT_NORETURN
+        before generating a call to abort for volatile functions.
+        * config/arm.h (ARM_FLAG_ABORT_NORETURN):  Define.
+        (TARGET_ABORT_NORETURN):  Define.
+        (abort-on-noreturn):  New option.
+
+	Wed Jan 13 16:16:44 1999  Catherine Moore  <clm@cygnus.com>
+        * config/arm.c (output_func_epilogue):  Check TARGET_ABORT_NORETURN
+        before generating a call to abort for volatile functions.
+        * config/arm.h (ARM_FLAG_ABORT_NORETURN):  Define.
+        (TARGET_ABORT_NORETURN):  Define.
+        (abort-on-noreturn):  New option.
+
+	Tue Nov  3 07:51:43 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (add_constant): When taking the address of an item in the
+	pool, get the mode of the item addressed.
+	* arm.c (final_prescan_insn case INSN): If an insn doesn't 
+	contain a SET or a PARALLEL, don't consider it for conditional
+	execution.
+
+	Tue Oct 27 13:15:02 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.c: Updated with changes in devo sources.
+	* config/arm/arm.h: Updated with changes in devo sources.
+
+	Tue Oct 27 10:15:02 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.h: Add support for -mstructure_size_boundary=<n>
+	command line option.  Make macro definitions conditional on their
+	not having been already defined. 
+	* config/arm/arm.c: Add support for -mstructure_size_boundary=<n>
+	command line option.
+
+	Wed Oct 21 09:15:06 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.h (TARGET_SWITCHES): Document arm specific
+	command line switches.
+
+	Fri Oct 16 10:47:53 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.h (TARGET_SWITCHES): Add --help documentation.
+	(TARGET_OPTIONS): Add --help documentation.
+
+	Mon Oct 12 10:50:44 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.md: Replace (reg 24) with (reg:CC 24).
+
+	Thu Oct  1 17:57:14 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.c: Improve interworking support.
+
+	Thu Sep 24 17:05:30 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.md (insv): Add comment.  In CONST_INT case, and
+	operand3 with mask before using it.  Patch provided by Jim Wilson.
+
+	Wed Sep 23 10:45:44 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (find_barrier): Revert change of Apr 23.  Handle table
+	jumps as a single entity, taking into account the size of the
+	table.
+
+	Sat Sep 19 07:33:36 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (add_constant): New parameter address_only, change caller.
+	Set it non-zero if taking the address of an item in the pool.
+	(arm_reorg): Handle cases where we need the address of an item in
+	the pool.
+
+	* arm.c (bad_signed_byte_operand): Check both arms of a sum in
+	a memory address.
+	* arm.md (splits for *extendqihi_insn and *extendqisi_insn): Handle
+	memory addresses that are not in standard canonical form.
+
+	Wed Aug 19 08:29:44 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (arm_override_options): Remove lie about ignoring PIC flag.
+
+	Tue Aug 18 03:20:53 1998  Richard Earnshaw  (rearnsha@arm.com)
+	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Return NO_REGS if compiling
+	for architecture v4.
+
+	Sat Jul 11 02:59:08 1998  Richard Earnshaw  <rearnsha@arm.com>
+	* arm.md (extendhisi2_mem, movhi, movhi_bytes): Propagate the volatile
+	and structure attribute flags to MEMs generated.
+	(splits for sign-extended HI & QI mode from memory):  Also propagate 
+	the volatile flag.
+
+	Fri Jun 26 06:58:54 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.h (SECONDARY_INPUT_RELOAD_CLASS): Only need a secondary reload
+	if reloading a MEM.
+	* arm.h (arm_adjust_cost): Renamed bogus prototype from 
+	arm_adjust_code.
+	(bad_signed_byte_operand): Add prototype.
+	* arm.c (arm_override_options): Make I unsigned.
+	(const_ok_for_arm): Add casts to the constants.	
+	(load_multiple_operation): Don't redeclare elt in sub-block.
+	(arm_gen_movstrqi): Delete external declaration of optimize.
+	(gen_compare_reg): Declare parameter fp.
+	* arm.c (final_prescan_insn): Only initialize scanbody if the insn
+	has a pattern.
+
+	Thu Jun 25 09:54:55 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.h (REG_ALLOC_ORDER): Add ARG_POINTER_REGNUM,
+	noticed by grahams@rcp.co.uk.
+
+	Wed May 27 02:48:31 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (arm_gen_constant): Rework to eliminate uninitialized
+	variable warnings.  Don't generate scratch registers if only
+	counting insns.
+	(find_barrier): Eliminate unused variable SRC.
+
+	Tue May 26 07:31:04 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.c (bad_signed_byte_operand): New predicate function.
+	* arm.h (PREDICATE_CODES): Add it to the list.
+	* arm.md (*extendqi[sh]i_insn): Split any addresses that ldrsb
+	can't handle.
+	(define_split): Two new splits for above insns.
+	* arm.c: (arm_override_options): Add parentheses around use of
+	 tune_flags.
+	(arm_split_constant): Remove unused variable.
+	(arm_gen_constant, arm_gen_movstrqi, add_constant): Likewise.
+	(output_func_prologue, arm_expand_prologue): Likewise.
+	(arm_canonicalize_comparison): Make I unsigned; rework constants
+	accordignly.  Add missing paratheses around << operation.
+	(arm_rtx_costs): Correctly parenthesise MULT costs.  Add a DEFAULT
+	clause.
+	({load,store}_multiple_sequence): Initialize BASE_REG.
+	(select_dominance_cc_mode): Add DEFAULT clauses.
+	(broken_move): Return zero if the destination is not a register.
+	(arm_reorg): Move unused REGNO declaration into the dead code.
+	* arm.h (CANONICALIZE_COMPARISON): Ensure OP1 is updated.
+
+	Thu Apr 23 15:01:13 1998  Nick Clifton  <nickc@cygnus.com>
+	* config/arm/arm.c (find_barrier): Return as soon as a barrier is
+	found, rather than at end of the loop, after the insn has been
+	changed.
+
+	Wed Apr  8 06:16:45 1998  Richard Earnshaw (rearnsha@arm.com)
+	* arm.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
+
 Thu Feb 11 14:30:36 1999  Sam Tardieu  <tardieu@act-europe.fr>
 
 	* gcc.c (pass_exit_codes, greatest_status): New variables.
