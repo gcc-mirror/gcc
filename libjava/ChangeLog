@@ -1,3 +1,7 @@
+2000-02-03  Jeff Sturm  <jeff.sturm@commerceone.com>
+
+	* configure.host: Use sjlj-exceptions for Alpha.
+
 2001-02-03  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libgcj.spec.in: Don't force static libgcc into the executable.
