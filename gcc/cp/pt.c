@@ -7382,7 +7382,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case RETURN_STMT:
       prep_stmt (t);
-      finish_return_stmt (tsubst_expr (RETURN_EXPR (t),
+      finish_return_stmt (tsubst_expr (RETURN_STMT_EXPR (t),
 				       args, complain, in_decl));
       break;
 

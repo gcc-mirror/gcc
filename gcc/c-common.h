@@ -945,7 +945,7 @@ extern tree strip_array_types                   PARAMS ((tree));
 /* RETURN_STMT accessors. These give the expression associated with a
    return statement, and whether it should be ignored when expanding
    (as opposed to inlining).  */
-#define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
+#define RETURN_STMT_EXPR(NODE)  TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
 
 /* EXPR_STMT accessor. This gives the expression associated with an
    expression statement.  */

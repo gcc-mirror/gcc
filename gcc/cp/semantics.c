@@ -2506,7 +2506,7 @@ nullify_returns_r (tp, walk_subtrees, data)
   if (TYPE_P (*tp))
     *walk_subtrees = 0;
   else if (TREE_CODE (*tp) == RETURN_STMT)
-    RETURN_EXPR (*tp) = NULL_TREE;
+    RETURN_STMT_EXPR (*tp) = NULL_TREE;
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == nrv)
     CLEANUP_EH_ONLY (*tp) = 1;

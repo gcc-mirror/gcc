@@ -1,3 +1,8 @@
+2002-08-22  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_expr): RETURN_EXPR is now RETURN_STMT_EXPR.
+	* semantics.c (nullify_returns_r): Likewise.
+
 2002-08-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Fix PR/7621
