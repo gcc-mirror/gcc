@@ -2023,8 +2023,7 @@ identical_stmt_lists_p (edge e1, edge e2)
 
 /* Look at all the incoming edges to block BB, and decide where the best place
    to insert the stmts on each edge are, and perform those insertions.   Output
-   any debug information to DEBUG_FILE.  Return true if anything other than a 
-   standard edge insertion is done.  */
+   any debug information to DEBUG_FILE.  */
 
 static void
 analyze_edges_for_bb (basic_block bb, FILE *debug_file)
