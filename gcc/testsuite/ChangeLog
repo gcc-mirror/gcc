@@ -1,3 +1,7 @@
+2004-08-25  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/proto-lossage-4.m: New test.
+
 2004-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17155
