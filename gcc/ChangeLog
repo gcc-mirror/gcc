@@ -21,6 +21,9 @@ Mon Jul  6 22:09:32 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 Mon Jul  6 21:28:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (expand_compound_operation): Fix thinko in code to optimize
+	(zero_extend:DI (subreg:SI (foo:DI) 0)) to foo:DI.
+
 	* Disable the following change from gcc2.  Not appropriate for egcs:
 
 	Sun Jun  7 09:30:31 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
