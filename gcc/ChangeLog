@@ -1,3 +1,11 @@
+1999-09-08  Bruce Korb  autogen@linuxbox.com
+
+	* gcc/ch/Makefile.in: Give the hapless gperf user a hint about
+	why "gperf -F" fails.
+	* gcc/cp/Makefile.in: ditto
+	* gcc/Makefile.in: ditto
+	* gcc/java/Makefile.in: ditto
+
 Wed Sep  8 04:43:22 1999  Richard Henderson  <rth@cygnus.com>
 
 	* lists.c: Include ggc.h.

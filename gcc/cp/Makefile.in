@@ -234,7 +234,10 @@ $(PARSE_C) : $(srcdir)/parse.y
 # so we should be consistent.
 $(srcdir)/hash.h: $(srcdir)/gxx.gperf
 	gperf -L C -F ', 0, 0' -p -j1 -g -o -t -N is_reserved_word \
-		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h
+		'-k1,4,7,$$' $(srcdir)/gxx.gperf >$(srcdir)/hash.h || ( \
+	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
+	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
+	exit 1 )
 
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) $(PARSE_H) $(srcdir)/../flags.h \
   lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
