@@ -1,3 +1,8 @@
+2001-11-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp/search.c (lookup_base_r): Declare bk in variable declaration
+	space.
+	
 2001-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR g++/3145

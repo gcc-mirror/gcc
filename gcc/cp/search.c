@@ -477,6 +477,7 @@ lookup_base_r (binfo, base, access, within_current_scope,
       tree base_binfo = TREE_VEC_ELT (bases, i);
       int this_non_public = is_non_public;
       int this_virtual = is_virtual;
+      base_kind bk;
 
       if (access <= ba_ignore)
 	; /* no change */
@@ -494,10 +495,10 @@ lookup_base_r (binfo, base, access, within_current_scope,
       if (TREE_VIA_VIRTUAL (base_binfo))
 	this_virtual = 1;
       
-      base_kind bk = lookup_base_r (base_binfo, base,
-				    access, within_current_scope,
-				    this_non_public, this_virtual,
-				    binfo_ptr);
+      bk = lookup_base_r (base_binfo, base,
+		    	  access, within_current_scope,
+			  this_non_public, this_virtual,
+			  binfo_ptr);
 
       switch (bk)
 	{
