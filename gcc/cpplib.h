@@ -37,7 +37,7 @@ typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
 typedef struct cpp_token cpp_token;
 typedef struct cpp_string cpp_string;
-typedef struct c_common_identifier cpp_hashnode;
+typedef struct cpp_hashnode cpp_hashnode;
 typedef struct cpp_macro cpp_macro;
 typedef struct cpp_lexer_pos cpp_lexer_pos;
 typedef struct cpp_lookahead cpp_lookahead;
@@ -177,7 +177,7 @@ struct cpp_token
 
   union
   {
-    cpp_hashnode *node;		/* An identifier.  */
+    struct cpp_hashnode *node;	/* An identifier.  */
     struct cpp_string str;	/* A string, or number.  */
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
     unsigned char c;		/* Character represented by CPP_OTHER.  */
@@ -466,21 +466,21 @@ enum builtin_type
   BT_STDC			/* `__STDC__' */
 };
 
-#include "c-rid.h"
+/* There is a slot in the hashnode for use by front ends when integrated
+   with cpplib.  It holds a tree (see tree.h) but we mustn't drag that
+   header into every user of cpplib.h.  cpplib does not do anything with
+   this slot except clear it when a new node is created.  */
+union tree_node;
 
-#define C_RID_CODE(id) (((struct c_common_identifier *) (id))->rid_code)
-
-/* The common part of an identifier node shared amongst all 3 C front
-   ends.  Also used to store CPP identifiers, which are a superset of
-   identifiers in the grammatical sense.  */
-struct c_common_identifier
+struct cpp_hashnode
 {
-  struct tree_identifier ident;		/* See tree-core.h.  */
+  const unsigned char *name;		/* Null-terminated name.  */
+  unsigned int hash;			/* Cached hash value.  */
+  unsigned short length;		/* Length of name excluding null.  */
   unsigned short arg_index;		/* Macro argument index.  */
   unsigned char directive_index;	/* Index into directive table.  */
-  ENUM_BITFIELD(rid) rid_code : 8;	/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 8;	/* CPP node type.  */
-  unsigned char flags;			/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 8;	/* Node type.  */
+  unsigned char flags;			/* Node flags.  */
 
   union
   {
