@@ -1,3 +1,8 @@
+2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* decl.c, interface.c, symbol.c, trans-common.c: Add 2004 to 
+	copyright years.
+
 2004-06-29  Steven Bosscher  <stevenb@suse.de>
 
 	Make sure types in assignments are compatible.  Mostly mechanical.
@@ -46,7 +51,7 @@
 
 	PR fortran/13249
 	PR fortran/15481
-	* declc (gfc_match_save): Adapt to new common structures,
+	* decl.c (gfc_match_save): Adapt to new common structures,
 	don't allow saving USE-associated common.
 	* dump-parse-tree (gfc_show_attr): (saved_)common are not
 	symbol attributes any longer.
