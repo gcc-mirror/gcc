@@ -1,3 +1,8 @@
+2003-04-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree-inline.c (inlinable_function_p): Back out last change, it's
+	unnecessary.
+
 2003-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* ggc-page.c (TREE_EXP_SIZE): Define.
