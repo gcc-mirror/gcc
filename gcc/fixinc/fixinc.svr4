@@ -1570,6 +1570,37 @@ if [ \! -z "$file_to_fix" ]; then
   rm -f /tmp/$base
 fi
 
+# If arpa/inet.h prototypes are incompatible with the ones we just
+# installed in <sys/byteorder.h>, just remove the protos.
+set -x
+file=arpa/inet.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e '/^extern.*htons.*(in_port_t)/d' \
+      -e '/^extern.*ntohs.*(in_port_t)/d' \
+  $file_to_fix > /tmp/$base
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    mkdir -p $LIB/`dirname $file`
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 echo 'Removing unneeded directories:'
 cd $LIB
 files=`find . -type d \! -name '.' -print | sort -r`
