@@ -1,5 +1,10 @@
 2001-12-14  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.c (h8300_adjust_insn_length): Fix a
+	comment typo.
+
+2001-12-14  Kazu Hirata  <kazu@hxi.com>
+
 	* config/h8300/h8300.c (h8300_handle_eightbit_data_attribute):
 	Remove the initialization requierment.
 	(h8300_handle_tiny_data_attribute): Likewise.
