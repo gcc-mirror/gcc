@@ -1,3 +1,8 @@
+Thu May  4 10:03:50 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (schedule_insns): Free the flow edge list when it
+	is no longer needed
+
 2000-05-04  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl/inclhack.def: added broken_cabs -
