@@ -11,11 +11,11 @@ integer f_back(alist *a)
 	uiolen n;
 	FILE *f;
 
+	f__curunit = b = &f__units[a->aunit];	/* curunit for error messages */
 	if (f__init & 2)
 		f__fatal (131, "I/O recursion");
 	if(a->aunit >= MXUNIT || a->aunit < 0)
 		err(a->aerr,101,"backspace");
-	f__curunit = b = &f__units[a->aunit];	/* curunit for error messages */
 	if(b->useek==0) err(a->aerr,106,"backspace");
 	if((f = b->ufd) == NULL) {
 		fk_open(1, 1, a->aunit);
