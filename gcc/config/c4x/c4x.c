@@ -1526,14 +1526,8 @@ rtx addr;
 	    break;
 
 	  case REG:
-	    /* Paradoxically, if we want autoincrement addressing for
-	       complex arithmetic and structure arrays, we must give
-	       REG+REG addressing the same cost as REG addressing to
-	       prevent CSE from avoiding REG+REG addresses.  This is
-	       because GIV combination in loop.c is suboptimal and
-	       needs fixing.  */
-	    if (flag_strength_reduce)
-	      return 1;
+	    /* This cost for REG+REG must be greater than the cost
+	       for REG if we want autoincrement addressing modes.  */
 	    return 2;
 
 	  case CONST_INT:
