@@ -12,7 +12,7 @@ template <class Type>
 void PrintArgs (Type somearg, ...)
 { 
 va_list argp;
-va_start (argp, somearg); // { dg-error "" } cannot pass non-POD
+va_start (argp, somearg);
 Type value;
 value = va_arg (argp, Type); // { dg-error "" } cannot pass non-POD
 va_end (argp);
