@@ -35,6 +35,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define THREAD_NAME "-lqthreads"
 #endif
 
+#if defined (WITH_GC_boehm)
+#define GC_NAME "-lgc"
+#endif
+
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC	(1<<1)
 /* This bit is set if they did `-lm' or `-lmath'.  */
@@ -231,7 +235,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	    saw_libjava = 1;
 	  else if (strcmp (argv[i], "-lc") == 0)
 	    args[i] |= WITHLIBC;
-	  else if (strcmp (argv[i], "-lgc") == 0)
+	  else if (strcmp (argv[i], GC_NAME) == 0)
 	    args[i] |= GCLIB;
 #ifdef THREAD_NAME
 	  else if (strcmp (argv[i], THREAD_NAME) == 0)
@@ -372,7 +376,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     {
       lang_specific_extra_outfiles++;
     }
-  arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *));
+  arglist = (char **) xmalloc ((num_args + 4) * sizeof (char *));
 
   for (i = 0, j = 0; i < argc; i++, j++)
     {
@@ -474,10 +478,15 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
       added_libraries++;
     }
 
-  /* FIXME: we need a way to know when the GC library should be
-     added.  Then we can add it if the user hasn't already.  */
   if (saw_gc)
     arglist[j++] = saw_gc;
+#ifdef GC_NAME
+  else if (library)
+    {
+      arglist[j++] = GC_NAME;
+      added_libraries++;
+    }
+#endif
 
   /* Thread library must come after GC library as well as after
      -ljava.  */
