@@ -2159,7 +2159,7 @@
   "extrs %1,%3+%2-1,%2,%0")
 
 (define_insn "insv"
-  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "=r")
+  [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r")
 			 (match_operand:SI 1 "uint5_operand" "")
 			 (match_operand:SI 2 "uint5_operand" ""))
 	(match_operand:SI 3 "register_operand" "r"))]
