@@ -1,3 +1,8 @@
+2003-02-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* g++.dg/other/pragma-ep-1.C: Test for __PRAGMA_EXTERN_PREFIX.
+	* gcc.dg/pragma-ep-1.c: Likewise.
+
 2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9602
