@@ -90,7 +90,7 @@ struct lang_hooks_for_tree_dump
 {
   /* Dump language-specific parts of tree nodes.  Returns nonzero if it
      does not want the usual dumping of the second argument.  */
-  int (*dump_tree) PARAMS ((void *, tree));
+  bool (*dump_tree) PARAMS ((void *, tree));
 
   /* Determine type qualifiers in a language-specific way.  */
   int (*type_quals) PARAMS ((tree));

@@ -49,7 +49,7 @@ dump_next_stmt (di, t)
 
 /* Dump any C-specific tree codes and attributes of common codes.  */
 
-int
+bool
 c_dump_tree (dump_info, t)
      void *dump_info;
      tree t;
@@ -194,5 +194,5 @@ c_dump_tree (dump_info, t)
       break;
     }
 
-  return 0;
+  return false;
 }

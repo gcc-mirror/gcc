@@ -69,7 +69,7 @@ static int java_unsafe_for_reeval (tree);
 static int merge_init_test_initialization (void * *, void *);
 static int inline_init_test_initialization (void * *, void *);
 static bool java_can_use_bit_fields_p (void);
-static int java_dump_tree (void *, tree);
+static bool java_dump_tree (void *, tree);
 static void dump_compound_expr (dump_info_p, tree);
 
 #ifndef TARGET_OBJECT_SUFFIX
@@ -1050,7 +1050,7 @@ dump_compound_expr (dump_info_p di, tree t)
     }
 }
   
-static int
+static bool
 java_dump_tree (void *dump_info, tree t)
 {
   enum tree_code code;
@@ -1073,29 +1073,29 @@ java_dump_tree (void *dump_info, tree t)
 	dump_child ("body", DECL_FUNCTION_BODY (t));
       if (DECL_LANG_SPECIFIC (t) && !dump_flag (di, TDF_SLIM, t))
 	dump_child ("inline body", DECL_SAVED_TREE (t));
-      return 1;
+      return true;
 
     case RETURN_EXPR:
       dump_child ("expr", TREE_OPERAND (t, 0));
-      return 1;
+      return true;
 
     case GOTO_EXPR:
       dump_child ("goto", TREE_OPERAND (t, 0));
-      return 1;
+      return true;
 
     case LABEL_EXPR:
       dump_child ("label", TREE_OPERAND (t, 0));
-      return 1;
+      return true;
 
     case LABELED_BLOCK_EXPR:
       dump_child ("label", TREE_OPERAND (t, 0));
       dump_child ("block", TREE_OPERAND (t, 1));
-      return 1;
+      return true;
 
     case EXIT_BLOCK_EXPR:
       dump_child ("block", TREE_OPERAND (t, 0));
       dump_child ("val", TREE_OPERAND (t, 1));
-      return 1;
+      return true;
 
     case BLOCK:
       if (BLOCK_EXPR_BODY (t))
@@ -1114,17 +1114,17 @@ java_dump_tree (void *dump_info, tree t)
 	    block = TREE_CHAIN (block);
 	  }
 	}
-      return 1;
+      return true;
       
     case COMPOUND_EXPR:
       if (!dump_flag (di, TDF_SLIM, t))
-	return 0;
+	return false;
       dump_compound_expr (di, t);
-      return 1;
+      return true;
 
     default:
       break;
     }
-  return 0;
+  return false;
 }
 #include "gt-java-lang.h"

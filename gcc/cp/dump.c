@@ -202,7 +202,7 @@ dump_op (dump_info_p di, tree t)
   }
 }
 
-int
+bool
 cp_dump_tree (void* dump_info, tree t)
 {
   enum tree_code code;
@@ -223,17 +223,17 @@ cp_dump_tree (void* dump_info, tree t)
       if (IDENTIFIER_OPNAME_P (t))
 	{
 	  dump_string (di, "operator");
-	  return 1;
+	  return true;
 	}
       else if (IDENTIFIER_TYPENAME_P (t))
 	{
 	  dump_child ("tynm", TREE_TYPE (t));
-	  return 1;
+	  return true;
 	}
       else if (t == anonymous_namespace_name)
 	{
 	  dump_string (di, "unnamed");
-	  return 1;
+	  return true;
 	}
       break;
 
@@ -243,7 +243,7 @@ cp_dump_tree (void* dump_info, tree t)
 	  dump_string (di, "ptrmem");
 	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
 	  dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
-	  return 1;
+	  return true;
 	}
       break;
 
@@ -254,7 +254,7 @@ cp_dump_tree (void* dump_info, tree t)
 	  dump_string (di, "ptrmem");
 	  dump_child ("ptd", TYPE_PTRMEM_POINTED_TO_TYPE (t));
 	  dump_child ("cls", TYPE_PTRMEM_CLASS_TYPE (t));
-	  return 1;
+	  return true;
 	}
 
       /* Is it a type used as a base? */
@@ -262,7 +262,7 @@ cp_dump_tree (void* dump_info, tree t)
 	  && CLASSTYPE_AS_BASE (TYPE_CONTEXT (t)) == t)
 	{
 	  dump_child ("bfld", TYPE_CONTEXT (t));
-	  return 1;
+	  return true;
 	}
       
       if (! IS_AGGR_TYPE (t))

@@ -1,3 +1,8 @@
+2003-03-19  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* lang.c (java_dump_tree): Change return type from 'int' to 'bool'.
+	Replace 0 and 1 with true and false in return statements.
+
 2003-03-19  Tom Tromey  <tromey@redhat.com>
 
 	* lex.c (do_java_lex): Renamed from java_lex.
