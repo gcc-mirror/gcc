@@ -3725,7 +3725,12 @@ prepare_operand (int icode, rtx x, int opnum, enum machine_mode mode,
 
   if (! (*insn_data[icode].operand[opnum].predicate)
       (x, insn_data[icode].operand[opnum].mode))
-    x = copy_to_mode_reg (insn_data[icode].operand[opnum].mode, x);
+    {
+      if (no_new_pseudos)
+	return NULL_RTX;
+      x = copy_to_mode_reg (insn_data[icode].operand[opnum].mode, x);
+    }
+
   return x;
 }
 
@@ -5736,6 +5741,11 @@ gen_cond_trap (enum rtx_code code ATTRIBUTE_UNUSED, rtx op1,
   start_sequence ();
   op1 = prepare_operand (icode, op1, 0, mode, mode, 0);
   op2 = prepare_operand (icode, op2, 1, mode, mode, 0);
+  if (!op1 || !op2)
+    {
+      end_sequence ();
+      return 0;
+    }
   emit_insn (GEN_FCN (icode) (op1, op2));
 
   PUT_CODE (trap_rtx, code);
