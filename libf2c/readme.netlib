@@ -711,8 +711,13 @@ and one more tweak (libf2c/c_log.c) for pathological equivalences.
   Minor update to "fc" script: new -L flag and comment correction.
 
 Tue May  4 10:06:26 EDT 1999
-   libf77, libf2c.zip: forgot to copy yesterday's latest updates to
+  libf77, libf2c.zip: forgot to copy yesterday's latest updates to
 netlib.
+
+Fri Jun 18 02:33:08 EDT 1999
+  libf2c.zip: rename backspace.c backspac.c, and fix a glitch in it
+-- b->ufd may change in t_runc().  (For now, it's still backspace.c
+in the libi77 bundle.)
 
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,

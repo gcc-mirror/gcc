@@ -1,3 +1,9 @@
+Fri Jun 18 11:22:21 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Update to Netlib version of 1999-05-10:
+	* changes.netlib, libI77/Version.c, libI77/backspace.c
+	readme.netlib: See changes.netlib for info.
+
 Fri Jun 18 11:15:24 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libI77/backspace.c: Undo Wednesday's change, in
