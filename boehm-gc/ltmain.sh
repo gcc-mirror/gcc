@@ -1715,7 +1715,7 @@ compiler."
 	  ;;
 
 	osf)
-	  major=`expr $current - $age`
+	  major=.`expr $current - $age`
 	  versuffix=".$current.$age.$revision"
 	  verstring="$current.$age.$revision"
 

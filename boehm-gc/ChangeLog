@@ -1,3 +1,9 @@
+2002-11-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* ltconfig (osf[345]): Append $major to soname_spec.
+	Reflect this in library_names_spec.
+	* ltmain.sh (osf): Prefix $major with . for use as extension.
+
 2002-10-02  Andreas Jaeger  <aj@suse.de>
 
 	* include/private/gcconfig.h (HBLKSIZE): Define for x86-64.
