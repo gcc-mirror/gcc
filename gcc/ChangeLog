@@ -1,3 +1,7 @@
+2003-07-30  Andi Kleen  <ak@muc.de>
+
+	* loop.c (check_dbra_loop): Allow LTU in the loop condition.
+
 2003-07-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* combine.c (distribute_notes): Cancel REG_VALUE_PROFILE notes.
