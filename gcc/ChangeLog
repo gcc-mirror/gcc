@@ -1,3 +1,13 @@
+2004-09-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/9771
+	* regclass.c (CALL_REALLY_USED_REGNO_P): New macro to eliminate
+	conditional compilation in init_reg_sets_1.
+	(init_reg_sets_1): Let global_regs[i] take priority over the frame
+	(but not stack) pointer exceptions to regs_invalidated_by_call.
+	(globalize_reg): Globalizing a fixed register may need to update
+	regs_invalidated_by_call.
+
 2004-09-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/15262

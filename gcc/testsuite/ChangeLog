@@ -1,3 +1,8 @@
+2004-09-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/9771
+	* gcc.dg/pr9771-1.c: New test case.
+
 2004-09-14  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/15262
