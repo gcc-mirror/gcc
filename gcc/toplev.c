@@ -72,6 +72,9 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "insn-attr.h"
+#include "insn-codes.h"
+#include "insn-config.h"
+#include "recog.h"
 #include "defaults.h"
 #include "output.h"
 #include "bytecode.h"
@@ -2432,7 +2435,14 @@ compile_file (name)
       /* Don't let the first function fall at the same address
 	 as gcc_compiled., if profiling.  */
       if (profile_flag || profile_block_flag)
-	assemble_zeros (UNITS_PER_WORD);
+	{
+	  /* It's best if we can write a nop here since some
+	     assemblers don't tolerate zeros in the text section.  */
+	  if (insn_template[CODE_FOR_nop] != 0)
+	    output_asm_insn (insn_template[CODE_FOR_nop], NULL_PTR);
+	  else
+	    assemble_zeros (UNITS_PER_WORD);
+	}
     }
 
   /* If dbx symbol table desired, initialize writing it
