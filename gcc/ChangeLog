@@ -1,3 +1,9 @@
+2004-04-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (fold_builtin_round): Fix comment typo.
+	(fold_builtin_lround): New function.
+	(fold_builtin): Use it.
+
 2004-04-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/11608

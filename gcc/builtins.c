@@ -6254,7 +6254,7 @@ fold_builtin_round (tree exp)
   if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
 
-  /* Optimize ceil of constant value.  */
+  /* Optimize round of constant value.  */
   arg = TREE_VALUE (arglist);
   if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
     {
@@ -6272,6 +6272,42 @@ fold_builtin_round (tree exp)
     }
 
   return fold_trunc_transparent_mathfn (exp);
+}
+
+/* Fold function call to builtin lround, lroundf or lroundl (or the
+   corresponding long long versions).  Return NULL_TREE if no
+   simplification can be made.  */
+
+static tree
+fold_builtin_lround (tree exp)
+{
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree arg;
+
+  if (! validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  /* Optimize lround of constant value.  */
+  arg = TREE_VALUE (arglist);
+  if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
+    {
+      const REAL_VALUE_TYPE x = TREE_REAL_CST (arg);
+
+      if (! REAL_VALUE_ISNAN (x) && ! REAL_VALUE_ISINF (x))
+	{
+	  tree itype = TREE_TYPE (exp), ftype = TREE_TYPE (arg), result;
+	  HOST_WIDE_INT hi, lo;
+	  REAL_VALUE_TYPE r;
+
+	  real_round (&r, TYPE_MODE (ftype), &x);
+	  REAL_VALUE_TO_INT (&lo, &hi, r);
+	  result = build_int_2 (lo, hi);
+	  if (int_fits_type_p (result, itype))
+	    return fold_convert (itype, result);
+	}
+    }
+
+  return 0;
 }
 
 /* Fold function call to builtin ffs, clz, ctz, popcount and parity
@@ -7375,6 +7411,14 @@ fold_builtin (tree exp)
     case BUILT_IN_RINTF:
     case BUILT_IN_RINTL:
       return fold_trunc_transparent_mathfn (exp);
+
+    case BUILT_IN_LROUND:
+    case BUILT_IN_LROUNDF:
+    case BUILT_IN_LROUNDL:
+    case BUILT_IN_LLROUND:
+    case BUILT_IN_LLROUNDF:
+    case BUILT_IN_LLROUNDL:
+      return fold_builtin_lround (exp);
 
     case BUILT_IN_FFS:
     case BUILT_IN_FFSL:
