@@ -613,7 +613,7 @@ pop_function_context_from (context)
   reg_renumber = 0;
   current_function_args_info = p->args_info;
 
-  restore_tree_status (p);
+  restore_tree_status (p, context);
   restore_storage_status (p);
   restore_expr_status (p);
   restore_emit_status (p);
