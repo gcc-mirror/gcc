@@ -1,3 +1,7 @@
+2000-10-29  Neil Booth  <neilb@earthling.net>
+
+	* cpplib.c (skip_rest_of_line):  Use _cpp_get_token.
+
 2000-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* toplev.c, flags.h, fold-const.c, real.c, rtl.c,

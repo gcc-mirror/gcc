@@ -188,10 +188,10 @@ skip_rest_of_line (pfile)
   /* Sweep up all tokens remaining on the line.  We need to read
      tokens from lookahead, but cannot just drop the lookahead buffers
      because they may be saving tokens prior to this directive for an
-     external client.  So we use cpp_get_token, with macros disabled.  */
+     external client.  So we use _cpp_get_token, with macros disabled.  */
   pfile->state.prevent_expansion++;
   while (!pfile->state.skip_newlines)
-    _cpp_lex_token (pfile, &token);
+    _cpp_get_token (pfile, &token);
   pfile->state.prevent_expansion--;
 }
 
