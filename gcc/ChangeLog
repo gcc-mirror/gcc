@@ -25,6 +25,10 @@ Thu Mar 15 11:24:29 EST 2001  John Wehle  (john@feith.com)
 	* cselib.c (hash_rtx): For REG and MEM, just use value of expression
 	without adding in rtx code and mode.
 
+	* alias.c (init_alias_analysis): Don't use any rtx whose value
+	varies as a known value.
+	Delete a superfluous test.
+
 	* config/ia64/ia64.c (maybe_rotate): New function, broken out of
 	ia64_sched_reorder.
 	(ia64_sched_reorder): Call maybe_rotate; also rotate after
