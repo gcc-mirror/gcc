@@ -220,7 +220,7 @@
 	* g++.dg/lookup/new2.C: Use first operand of type __SIZE_TYPE__
 	for operator new.
 
-2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/README: New file
 	* gfortran.dg/g77/19981216-0.f:  Copy from 
@@ -234,7 +234,7 @@
 	* gfortran.dg/g77/check0.f: Likewise
 	* gfortran.dg/g77/select_no_compile.f: Likewise
 
-2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	Copy files from g77.f-torture/compile.
 	Add "{ dg-do compile}".  Other changes as noted
@@ -249,7 +249,7 @@
 	statement to conform to standard.  Append alpha1.x for reference. 
 	* gfortran.dg/g77/xformat.f: Add dg-warning
 
-2004-07-13  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-13  David Billinghurst <David.Billinghurst@riotinto.com>
  
 	* gfortran.dg/g77/cpp.F: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
@@ -271,7 +271,7 @@
 	* g++.dg/lookup/new2.C: New test.
 	* g++.old-deja/g++.ns/new1.C: Remove (ill-formed).
 
-2004-07-12  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-12  David Billinghurst <David.Billinghurst@riotinto.com>
  
 	* gfortran.dg/g77/12002.f: Copy from g77.f-torture/compile.
 	Add {dg-do compile} directive.
@@ -364,7 +364,7 @@
 	PR fortran/15969
 	* gfortran.fortran-torture/execute/der_init_5.f90: New test.
 
-2004-07-10  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-10  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/ffixed-form-1.f: Copy from g77.dg
 	* gfortran.dg/g77/ffixed-form-2.f: Likewise
@@ -432,21 +432,21 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15481
- 	PR fortran/13372
- 	PR fortran/13575
- 	PR fortran/15978
+	PR fortran/13372
+	PR fortran/13575
+	PR fortran/15978
 	* gfortran.fortran-torture/compile/implicit_2.f90: New test.
 
 	* gfortran.dg/implicit_1.f90: New test.
 
-2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* lib/gfortran-dg.exp (gfortran-dg-test):  Adapt regular
 	expression to match gfortran warning/error messages
 	* gfortran.dg/g77/12632.f: Copy from g77.dg and fix
 	dg-error text.
 
-2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* lib/fortran-torture.exp: Rename proc search_for to
 	search_for_re.
@@ -462,20 +462,20 @@
 	PR c++/16165
 	* g++.dg/warn/effc3.C: New test.
 
-2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/f77-edit-i-in.f: Copy from g77.dg and
 	change X to 1X in format.
 	* gfortran.dg/g77/20010216-1.f:  Copy from g77.dg and
 	add data statements to conform to standard.
 
-2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL
 	* gfortran.dg/g77/f77-edit-t-in.f: Likewise
 	* gfortran.dg/g77/f77-edit-x-out.f: Likewise
 
-2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* gfortran.dg/g77/7388.f: Copy from g77.dg
 	* gfortran.dg/g77/f77-edit-i-out.f: Likewise
@@ -486,7 +486,7 @@
 	* gfortran.dg/g77/f77-edit-h-out.f: Likewise
 	* gfortran.dg/g77/strlen0.f: Likewise
 
-2004-07-09   David Billinghurst (David.Billinghurst@riotinto.com)
+2004-07-09   David Billinghurst <David.Billinghurst@riotinto.com>
 
  	* lib/gfortran-dg.exp: New file (adapted from lib/g77-dg.exp)
  	* gfortran.dg/dg.exp: New file (adapted from g77.dg/dg.exp)
@@ -733,7 +733,7 @@
 	* g++.dg/abi/mangle22.C: New test.
 	* g++.dg/abi/mangle23.C: Likewise.
 
-2004-07-02  David Billinghurst  (David.Billinghurst@riotinto.com)
+2004-07-02  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	PR fortran/16290
 	* gfortran.fortran-torture/execute/intrinsic_set_exponent.f90
@@ -791,11 +791,11 @@
 	* gfortran.fortran-torture/compile/implicit.f90: Add test
 	for implicit character.
 
-2004-06-30  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-06-30  David Billinghurst <David.Billinghurst@riotinto.com>
 
- 	PR fortran/16289
- 	* gfortran.fortran-torture/execute/intrinsic_nearest.f90
- 	Use tiny() intrinsic to find smallest non-negative real
+	PR fortran/16289
+	* gfortran.fortran-torture/execute/intrinsic_nearest.f90
+	Use tiny() intrinsic to find smallest non-negative real
 
 2004-06-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1033,7 +1033,7 @@
 	* gcc.dg/unordered-2.c: New test case.
 	* gcc.dg/unordered-3.c: New test case.
 
-2004-06-19  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-06-19  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR other/16043
 	* lib/g++.exp (g++_version): Tweak regexp for version
@@ -6858,7 +6858,7 @@
 	* gcc.c-torture/execute/string-opt-3.c: New test.
 	* gcc.dg/string-opt-1.c: New test.
 
-2003-06-03  David Billinghurst (David.Billinghurst@riotinto.com)
+2003-06-03  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/10965
 	* g77.f-torture/compile/20000601-2.f: Fix non-standard code.
@@ -6933,7 +6933,7 @@
 
 	* gcc.dg/duff-4.c: New test case.
 
-2003-05-27  David Billinghurst (David.Billinghurst@riotinto.com)
+2003-05-27  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/10843
 	* g77.dg/ffixed-form-1.f: New test
