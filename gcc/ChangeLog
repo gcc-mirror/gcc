@@ -1,3 +1,9 @@
+Wed Apr 12 17:20:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	(expand_call): Do not reverse args in "equal from" field.
+	(emit_library_call_value_1): Emit_libcall_block for const and pure
+	function.
+
 Wed Apr 12 16:00:25 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine): Don't enable optimization for fixed
