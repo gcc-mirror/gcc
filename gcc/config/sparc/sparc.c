@@ -2749,7 +2749,7 @@ print_operand (file, x, code)
       return;
     case 'r':
       /* In this case we need a register.  Use %g0 if the
-	 operand in const0_rtx.  */
+	 operand is const0_rtx.  */
       if (x == const0_rtx)
 	{
 	  fputs ("%g0", file);
@@ -2872,8 +2872,37 @@ output_double_int (file, value)
     abort ();
 }
 
-/* Compute the code to put in the .proc statement
-   for a function that returns type TYPE.  */
+#ifndef CHAR_TYPE_SIZE
+#define CHAR_TYPE_SIZE BITS_PER_UNIT
+#endif
+
+#ifndef SHORT_TYPE_SIZE
+#define SHORT_TYPE_SIZE (BITS_PER_UNIT * 2)
+#endif
+
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_TYPE_SIZE
+#define LONG_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef LONG_LONG_TYPE_SIZE
+#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef FLOAT_TYPE_SIZE
+#define FLOAT_TYPE_SIZE BITS_PER_WORD
+#endif
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+#ifndef LONG_DOUBLE_TYPE_SIZE
+#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
 
 unsigned long
 sparc_type_code (type)
@@ -2923,16 +2952,79 @@ sparc_type_code (type)
 	  return (qualifiers | 16);
 
 	case INTEGER_TYPE:
-        /* This return value is not always completely the same as Sun's
-           but the Sun assembler's peephole optimizer probably doesn't
-           care.  */
-        return (qualifiers | 4);
+	  /* Carefully distinguish all the standard types of C,
+	     without messing up if the language is not C.
+	     Note that we check only for the names that contain spaces;
+	     other names might occur by coincidence in other languages.  */
+	  if (TYPE_NAME (type) != 0
+	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	      && DECL_NAME (TYPE_NAME (type)) != 0
+	      && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
+	    {
+	      char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+  
+	      if (!strcmp (name, "unsigned char"))
+		return (qualifiers | 12);
+	      if (!strcmp (name, "signed char"))
+		return (qualifiers | 2);
+	      if (!strcmp (name, "unsigned int"))
+		return (qualifiers | 14);
+	      if (!strcmp (name, "short int"))
+		return (qualifiers | 3);
+	      if (!strcmp (name, "short unsigned int"))
+		return (qualifiers | 13);
+	      if (!strcmp (name, "long int"))
+		return (qualifiers | 5);
+	      if (!strcmp (name, "long unsigned int"))
+		return (qualifiers | 15);
+	      if (!strcmp (name, "long long int"))
+		return (qualifiers | 5);	/* Who knows? */
+	      if (!strcmp (name, "long long unsigned int"))
+		return (qualifiers | 15);	/* Who knows? */
+	    }
+  
+	  /* Most integer types will be sorted out above, however, for the
+	     sake of special `array index' integer types, the following code
+	     is also provided.  */
+  
+	  if (TYPE_PRECISION (type) == INT_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 14 : 4));
+  
+	  if (TYPE_PRECISION (type) == LONG_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
+  
+	  if (TYPE_PRECISION (type) == LONG_LONG_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 15 : 5));
+  
+	  if (TYPE_PRECISION (type) == SHORT_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 13 : 3));
+  
+	  if (TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
+	    return (qualifiers | (TREE_UNSIGNED (type) ? 12 : 2));
+  
+	  abort ();
   
 	case REAL_TYPE:
-	  if (TYPE_PRECISION (type) == 32)
+	  /* Carefully distinguish all the standard types of C,
+	     without messing up if the language is not C.  */
+	  if (TYPE_NAME (type) != 0
+	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	      && DECL_NAME (TYPE_NAME (type)) != 0
+	      && TREE_CODE (DECL_NAME (TYPE_NAME (type))) == IDENTIFIER_NODE)
+	    {
+	      char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+  
+	      if (!strcmp (name, "long double"))
+		return (qualifiers | 7);	/* Who knows? */
+	    }
+  
+	  if (TYPE_PRECISION (type) == DOUBLE_TYPE_SIZE)
+	    return (qualifiers | 7);
+	  if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
 	    return (qualifiers | 6);
-	  else
+	  if (TYPE_PRECISION (type) == LONG_DOUBLE_TYPE_SIZE)
 	    return (qualifiers | 7);	/* Who knows? */
+	  abort ();
   
 	case COMPLEX_TYPE:	/* GNU Fortran COMPLEX type.  */
 	case CHAR_TYPE:		/* GNU Pascal CHAR type.  Not used in C.  */

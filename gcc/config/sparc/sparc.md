@@ -1845,6 +1845,88 @@
   ""
   "subcc %1,%2,%0")
 
+(define_insn "mulsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
+		 (match_operand:SI 2 "arith_operand" "rI")))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "smul %1,%2,%0")
+
+;; It is not known whether this will match.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
+		 (match_operand:SI 2 "arith_operand" "rI")))
+   (set (reg:CC_NOOV 0)
+	(compare:CC_NOOV (mult:SI (match_dup 1) (match_dup 2))
+			 (const_int 0)))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "smulcc %1,%2,%0")
+
+(define_insn "mulsidi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(mult:DI (sign_extend:DI (match_operand:SI 1 "arith_operand" "%r"))
+		 (sign_extend:DI (match_operand:SI 2 "arith_operand" "rI"))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "smul %1,%2,%R0\;rd %y,%0"
+  [(set_attr "length" "2")])
+
+(define_insn "umulsidi3"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(mult:DI (zero_extend:DI (match_operand:SI 1 "arith_operand" "%r"))
+		 (zero_extend:DI (match_operand:SI 2 "arith_operand" "rI"))))]
+  "TARGET_V8 || TARGET_SPARCLITE"
+  "umul %1,%2,%R0\;rd %y,%0"
+  [(set_attr "length" "2")])
+
+;; The architecture specifies that there must be 3 instructions between
+;; a y register write and a use of it for correct results.
+
+(define_insn "divsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(div:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "arith_operand" "rI")))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "TARGET_V8"
+  "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdiv %1,%2,%0"
+  [(set_attr "length" "3")])
+
+;; It is not known whether this will match.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(div:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "arith_operand" "rI")))
+   (set (reg:CC 0)
+	(compare:CC (div:SI (match_dup 1) (match_dup 2))
+		    (const_int 0)))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "TARGET_V8"
+  "sra %1,31,%3\;wr %%g0,%3,%%y\;nop\;nop\;nop\;sdivcc %1,%2,%0"
+  [(set_attr "length" "3")])
+
+(define_insn "udivsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(udiv:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "arith_operand" "rI")))]
+  "TARGET_V8"
+  "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udiv %1,%2,%0"
+  [(set_attr "length" "2")])
+
+;; It is not known whether this will match.
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(udiv:SI (match_operand:SI 1 "register_operand" "r")
+		(match_operand:SI 2 "arith_operand" "rI")))
+   (set (reg:CC 0)
+	(compare:CC (udiv:SI (match_dup 1) (match_dup 2))
+		    (const_int 0)))]
+  "TARGET_V8"
+  "wr %%g0,%%g0,%%y\;nop\;nop\;nop\;udivcc %1,%2,%0"
+  [(set_attr "length" "2")])
+
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
 ;; DImode `andn`.  Other combinations are possible.
