@@ -1,3 +1,9 @@
+1998-05-24  Mark Mitchell  <mark@markmitchell.com>
+
+	* parse.y (xcond): Move call to condition_conversion ...
+	* semantics.c (finish_for_cond): Here.
+	* parse.c: Regenerated.
+	
 1998-05-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (push_namespace): Namespaces have type void.

@@ -383,8 +383,8 @@ finish_for_cond (cond, for_stmt)
   else
     {
       emit_line_note (input_filename, lineno);
-      if (cond) 
-	expand_exit_loop_if_false (0, cond);
+      if (cond)
+	expand_exit_loop_if_false (0, condition_conversion (cond));
     }
   
   /* If the cond wasn't a declaration, clear out the
