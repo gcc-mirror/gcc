@@ -152,14 +152,6 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 	tree default_function_type;
 
-   Function types `int (int)', etc.
-
-	tree int_ftype_int;
-	tree void_ftype;
-	tree void_ftype_ptr;
-	tree int_ftype_int;
-	tree ptr_ftype_sizetype;
-
    A VOID_TYPE node, packaged in a TREE_LIST.
 
 	tree void_list_node;
@@ -2869,33 +2861,42 @@ lang_get_alias_set (t)
 void
 c_common_nodes_and_builtins ()
 {
+  enum builtin_type 
+  {
+#define DEF_PRIMITIVE_TYPE(NAME, VALUE) NAME,
+#define DEF_FUNCTION_TYPE_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_1(NAME, RETURN, ARG1) NAME,
+#define DEF_FUNCTION_TYPE_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_FUNCTION_TYPE_3(NAME, RETURN, ARG1, ARG2, ARG3) NAME,
+#define DEF_FUNCTION_TYPE_4(NAME, RETURN, ARG1, ARG2, ARG3, ARG4) NAME,
+#define DEF_FUNCTION_TYPE_VAR_0(NAME, RETURN) NAME,
+#define DEF_FUNCTION_TYPE_VAR_1(NAME, RETURN, ARG1) NAME,
+#define DEF_FUNCTION_TYPE_VAR_2(NAME, RETURN, ARG1, ARG2) NAME,
+#define DEF_POINTER_TYPE(NAME, TYPE) NAME,
+#include "builtin-types.def"
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_0
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_FUNCTION_TYPE_VAR_2
+#undef DEF_POINTER_TYPE
+    BT_LAST
+  };
+
+  typedef enum builtin_type builtin_type;
+
+  tree builtin_types[(int)BT_LAST];
   int wchar_type_size;
   tree array_domain_type;
-  tree temp;
-  tree memcpy_ftype, memset_ftype, strlen_ftype;
-  tree bzero_ftype, bcmp_ftype, puts_ftype, printf_ftype;
-  tree fputs_ftype, fputc_ftype, fwrite_ftype, fprintf_ftype;
-  tree endlink, int_endlink, double_endlink, unsigned_endlink;
-  tree cstring_endlink, sizetype_endlink;
-  tree ptr_ftype, ptr_ftype_unsigned;
-  tree void_ftype_any, void_ftype_int, int_ftype_any;
-  tree double_ftype_double, double_ftype_double_double;
-  tree float_ftype_float, ldouble_ftype_ldouble;
-  tree cfloat_ftype_cfloat, cdouble_ftype_cdouble, cldouble_ftype_cldouble;
-  tree float_ftype_cfloat, double_ftype_cdouble, ldouble_ftype_cldouble;
-  tree int_ftype_cptr_cptr_sizet, sizet_ftype_cstring_cstring;
-  tree int_ftype_cstring_cstring, string_ftype_string_cstring;
-  tree string_ftype_cstring_int, string_ftype_cstring_cstring;
-  tree string_ftype_string_cstring_sizet, int_ftype_cstring_cstring_sizet;
-  tree long_ftype_long;
-  tree longlong_ftype_longlong;
-  tree intmax_ftype_intmax;
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
   /* Either const char* or const void*.  */
   tree traditional_cptr_type_node;
   tree traditional_len_type_node;
-  tree traditional_len_endlink;
   tree va_list_ref_type_node;
   tree va_list_arg_type_node;
 
@@ -2986,6 +2987,9 @@ c_common_nodes_and_builtins ()
 
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
+  void_zero_node = build_int_2 (0, 0);
+  TREE_TYPE (void_zero_node) = void_type_node;
+
   void_list_node = build_void_list_node ();
 
   /* Make a type to be the domain of a few array types
@@ -3005,9 +3009,19 @@ c_common_nodes_and_builtins ()
   int_array_type_node
     = build_array_type (integer_type_node, array_domain_type);
 
-#ifdef MD_INIT_BUILTINS
+  string_type_node = build_pointer_type (char_type_node);
+  const_string_type_node
+    = build_pointer_type (build_qualified_type
+			  (char_type_node, TYPE_QUAL_CONST));
+
+  traditional_ptr_type_node = ((flag_traditional && 
+				c_language != clk_cplusplus)
+			       ? string_type_node : ptr_type_node);
+  traditional_cptr_type_node = ((flag_traditional && 
+				 c_language != clk_cplusplus)
+			       ? const_string_type_node : const_ptr_type_node);
+
   MD_INIT_BUILTINS;
-#endif
 
   /* This is special for C++ so functions can be overloaded.  */
   wchar_type_node = get_identifier (flag_short_wchar
@@ -3032,10 +3046,6 @@ c_common_nodes_and_builtins ()
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
-
-  string_type_node = build_pointer_type (char_type_node);
-  const_string_type_node
-    = build_pointer_type (build_type_variant (char_type_node, 1, 0));
 
   wint_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
@@ -3070,563 +3080,140 @@ c_common_nodes_and_builtins ()
       va_list_ref_type_node = build_reference_type (va_list_type_node);
     }
  
-  endlink = void_list_node;
-  int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
-  double_endlink = tree_cons (NULL_TREE, double_type_node, endlink);
-  unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
-  cstring_endlink = tree_cons (NULL_TREE, const_string_type_node, endlink);
-
-  ptr_ftype = build_function_type (ptr_type_node, NULL_TREE);
-  ptr_ftype_unsigned = build_function_type (ptr_type_node, unsigned_endlink);
-  sizetype_endlink = tree_cons (NULL_TREE, TYPE_DOMAIN (sizetype), endlink);
-  /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
-  ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
-
-  int_ftype_any = build_function_type (integer_type_node, NULL_TREE);
-  void_ftype_any = build_function_type (void_type_node, NULL_TREE);
-  void_ftype = build_function_type (void_type_node, endlink);
-  void_ftype_int = build_function_type (void_type_node, int_endlink);
-  void_ftype_ptr
-    = build_function_type (void_type_node,
- 			   tree_cons (NULL_TREE, ptr_type_node, endlink));
-
-  float_ftype_float
-    = build_function_type (float_type_node,
-			   tree_cons (NULL_TREE, float_type_node, endlink));
-
-  double_ftype_double
-    = build_function_type (double_type_node, double_endlink);
-
-  ldouble_ftype_ldouble
-    = build_function_type (long_double_type_node,
-			   tree_cons (NULL_TREE, long_double_type_node,
-				      endlink));
-
-  double_ftype_double_double
-    = build_function_type (double_type_node,
-			   tree_cons (NULL_TREE, double_type_node,
-				      double_endlink));
-
-  cfloat_ftype_cfloat
-    = build_function_type (complex_float_type_node,
-			   tree_cons (NULL_TREE, complex_float_type_node,
-				      endlink));
-  cdouble_ftype_cdouble
-    = build_function_type (complex_double_type_node,
-			   tree_cons (NULL_TREE, complex_double_type_node,
-				      endlink));
-  cldouble_ftype_cldouble
-    = build_function_type (complex_long_double_type_node,
-			   tree_cons (NULL_TREE, complex_long_double_type_node,
-				      endlink));
-
-  float_ftype_cfloat
-    = build_function_type (float_type_node,
-			   tree_cons (NULL_TREE, complex_float_type_node,
-				      endlink));
-  double_ftype_cdouble
-    = build_function_type (double_type_node,
-			   tree_cons (NULL_TREE, complex_double_type_node,
-				      endlink));
-  ldouble_ftype_cldouble
-    = build_function_type (long_double_type_node,
-			   tree_cons (NULL_TREE, complex_long_double_type_node,
-				      endlink));
-
-  int_ftype_int
-    = build_function_type (integer_type_node, int_endlink);
-
-  long_ftype_long
-    = build_function_type (long_integer_type_node,
-			   tree_cons (NULL_TREE, long_integer_type_node,
-				      endlink));
-
-  longlong_ftype_longlong
-    = build_function_type (long_long_integer_type_node,
-			   tree_cons (NULL_TREE, long_long_integer_type_node,
-				      endlink));
-
-  intmax_ftype_intmax
-    = build_function_type (intmax_type_node,
-			   tree_cons (NULL_TREE, intmax_type_node,
-				      endlink));
-
-  int_ftype_cptr_cptr_sizet
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_ptr_type_node,
-				      tree_cons (NULL_TREE,
-						 const_ptr_type_node,
-						 sizetype_endlink)));
-
-  void_zero_node = build_int_2 (0, 0);
-  TREE_TYPE (void_zero_node) = void_type_node;
-
-  /* Prototype for strcpy/strcat.  */
-  string_ftype_string_cstring
-    = build_function_type (string_type_node,
-			   tree_cons (NULL_TREE, string_type_node,
-				      cstring_endlink));
-
-  /* Prototype for strncpy/strncat.  */
-  string_ftype_string_cstring_sizet
-    = build_function_type (string_type_node,
-			   tree_cons (NULL_TREE, string_type_node,
-				      tree_cons (NULL_TREE,
-						 const_string_type_node,
-						 sizetype_endlink)));
-
   traditional_len_type_node = ((flag_traditional && 
 				c_language != clk_cplusplus)
 			       ? integer_type_node : sizetype);
-  traditional_len_endlink = tree_cons (NULL_TREE, traditional_len_type_node,
-				       endlink);
 
-  /* Prototype for strcmp.  */
-  int_ftype_cstring_cstring
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      cstring_endlink));
-
-  /* Prototype for strspn/strcspn.  */
-  sizet_ftype_cstring_cstring
-    = build_function_type (c_size_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      cstring_endlink));
-
-  /* Prototype for strncmp.  */
-  int_ftype_cstring_cstring_sizet
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      tree_cons (NULL_TREE,
-						 const_string_type_node,
-						 sizetype_endlink)));
-
-  /* Prototype for strstr, strpbrk, etc.  */
-  string_ftype_cstring_cstring
-    = build_function_type (string_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      cstring_endlink));
-
-  /* Prototype for strchr.  */
-  string_ftype_cstring_int
-    = build_function_type (string_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      int_endlink));
-
-  /* Prototype for strlen.  */
-  strlen_ftype
-    = build_function_type (traditional_len_type_node, cstring_endlink);
-
-  traditional_ptr_type_node = ((flag_traditional && 
-				c_language != clk_cplusplus)
-			       ? string_type_node : ptr_type_node);
-  traditional_cptr_type_node = ((flag_traditional && 
-				 c_language != clk_cplusplus)
-			       ? const_string_type_node : const_ptr_type_node);
-
-  /* Prototype for memcpy.  */
-  memcpy_ftype
-    = build_function_type (traditional_ptr_type_node,
-			   tree_cons (NULL_TREE, ptr_type_node,
-				      tree_cons (NULL_TREE, const_ptr_type_node,
-						 sizetype_endlink)));
-
-  /* Prototype for memset.  */
-  memset_ftype
-    = build_function_type (traditional_ptr_type_node,
-			   tree_cons (NULL_TREE, ptr_type_node,
-				      tree_cons (NULL_TREE, integer_type_node,
-						 sizetype_endlink)));
-
-  /* Prototype for bzero.  */
-  bzero_ftype
-    = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, traditional_ptr_type_node,
-				      traditional_len_endlink));
-
-  /* Prototype for bcmp.  */
-  bcmp_ftype
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, traditional_cptr_type_node,
-				      tree_cons (NULL_TREE,
-						 traditional_cptr_type_node,
-						 traditional_len_endlink)));
-
-  /* Prototype for puts.  */
-  puts_ftype
-    = build_function_type (integer_type_node, cstring_endlink);
-
-  /* Prototype for printf.  */
-  printf_ftype
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
+#define DEF_PRIMITIVE_TYPE(ENUM, VALUE) \
+  builtin_types[(int) ENUM] = VALUE;
+#define DEF_FUNCTION_TYPE_0(ENUM, RETURN)		\
+  builtin_types[(int) ENUM]				\
+    = build_function_type (builtin_types[(int) RETURN],	\
+			   void_list_node);
+#define DEF_FUNCTION_TYPE_1(ENUM, RETURN, ARG1)				\
+  builtin_types[(int) ENUM]						\
+    = build_function_type (builtin_types[(int) RETURN],			\
+			   tree_cons (NULL_TREE,			\
+				      builtin_types[(int) ARG1],	\
+				      void_list_node));
+#define DEF_FUNCTION_TYPE_2(ENUM, RETURN, ARG1, ARG2)	\
+  builtin_types[(int) ENUM]				\
+    = build_function_type 				\
+      (builtin_types[(int) RETURN],			\
+       tree_cons (NULL_TREE,				\
+		  builtin_types[(int) ARG1],		\
+		  tree_cons (NULL_TREE,			\
+			     builtin_types[(int) ARG2],	\
+			     void_list_node)));
+#define DEF_FUNCTION_TYPE_3(ENUM, RETURN, ARG1, ARG2, ARG3)		 \
+  builtin_types[(int) ENUM]						 \
+    = build_function_type						 \
+      (builtin_types[(int) RETURN],					 \
+       tree_cons (NULL_TREE,						 \
+		  builtin_types[(int) ARG1],				 \
+		  tree_cons (NULL_TREE,					 \
+			     builtin_types[(int) ARG2],			 \
+			     tree_cons (NULL_TREE,			 \
+					builtin_types[(int) ARG3],	 \
+					void_list_node))));
+#define DEF_FUNCTION_TYPE_4(ENUM, RETURN, ARG1, ARG2, ARG3, ARG4)	\
+  builtin_types[(int) ENUM]						\
+    = build_function_type						\
+      (builtin_types[(int) RETURN],					\
+       tree_cons (NULL_TREE,						\
+		  builtin_types[(int) ARG1],				\
+		  tree_cons (NULL_TREE,					\
+			     builtin_types[(int) ARG2],			\
+			     tree_cons 					\
+			     (NULL_TREE,				\
+			      builtin_types[(int) ARG3],	 	\
+			      tree_cons (NULL_TREE,			\
+					 builtin_types[(int) ARG4],	\
+					 void_list_node)))));
+#define DEF_FUNCTION_TYPE_VAR_0(ENUM, RETURN)				\
+  builtin_types[(int) ENUM]						\
+    = build_function_type (builtin_types[(int) RETURN], NULL_TREE);
+#define DEF_FUNCTION_TYPE_VAR_1(ENUM, RETURN, ARG1)			 \
+   builtin_types[(int) ENUM]						 \
+    = build_function_type (builtin_types[(int) RETURN], 		 \
+			   tree_cons (NULL_TREE,			 \
+				      builtin_types[(int) ARG1],	 \
 				      NULL_TREE));
 
-  /* These stdio prototypes are declared using void* in place of
-     FILE*.  They are only used for __builtin_ style calls, regular
-     style builtin prototypes omit the arguments and merge those
-     provided by stdio.h.  */
-  /* Prototype for fwrite.  */
-  fwrite_ftype
-    = build_function_type (c_size_type_node,
-			   tree_cons (NULL_TREE, const_ptr_type_node,
-				      tree_cons (NULL_TREE, c_size_type_node,
-						 tree_cons (NULL_TREE, c_size_type_node,
-							    tree_cons (NULL_TREE, ptr_type_node, endlink)))));
+#define DEF_FUNCTION_TYPE_VAR_2(ENUM, RETURN, ARG1, ARG2)	\
+   builtin_types[(int) ENUM]					\
+    = build_function_type 					\
+      (builtin_types[(int) RETURN],				\
+       tree_cons (NULL_TREE,					\
+		  builtin_types[(int) ARG1],			\
+		  tree_cons (NULL_TREE,				\
+			     builtin_types[(int) ARG2],		\
+			     NULL_TREE)));
+#define DEF_POINTER_TYPE(ENUM, TYPE)			\
+  builtin_types[(int) ENUM]				\
+    = build_pointer_type (builtin_types[(int) TYPE]);
+#include "builtin-types.def"
+#undef DEF_PRIMITIVE_TYPE
+#undef DEF_FUNCTION_TYPE_1
+#undef DEF_FUNCTION_TYPE_2
+#undef DEF_FUNCTION_TYPE_3
+#undef DEF_FUNCTION_TYPE_4
+#undef DEF_FUNCTION_TYPE_VAR_0
+#undef DEF_FUNCTION_TYPE_VAR_1
+#undef DEF_POINTER_TYPE
 
-  /* Prototype for fputc.  */
-  fputc_ftype
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, integer_type_node,
-				      tree_cons (NULL_TREE, ptr_type_node, endlink)));
+#define DEF_BUILTIN(ENUM, NAME, CLASS,					\
+                    TYPE, LIBTYPE, BOTH_P, FALLBACK_P, NONANSI_P)	\
+  if (NAME)								\
+    {									\
+      tree decl;							\
+									\
+      if (strncmp (NAME, "__builtin_", strlen ("__builtin_")) != 0)	\
+	abort ();							\
+									\
+      if (!BOTH_P)							\
+	decl = builtin_function (NAME, builtin_types[TYPE], ENUM,	\
+				 CLASS,					\
+				 (FALLBACK_P				\
+				  ? (NAME + strlen ("__builtin_"))	\
+				  : NULL));				\
+      else								\
+	decl = builtin_function_2 (NAME,				\
+				   NAME + strlen ("__builtin_"),	\
+				   builtin_types[TYPE],			\
+				   builtin_types[LIBTYPE],		\
+				   ENUM,				\
+				   CLASS,				\
+				   FALLBACK_P,				\
+				   NONANSI_P,				\
+				   /*noreturn_p=*/0);			\
+									\
+      built_in_decls[(int) ENUM] = decl;				\
+    }									
+#include "builtins.def"
+#undef DEF_BUILTIN
 
-  /* Prototype for fputs.  */
-  fputs_ftype
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      tree_cons (NULL_TREE, ptr_type_node, endlink)));
-
-  /* Prototype for fprintf.  */
-  fprintf_ftype
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, ptr_type_node,
-				      tree_cons (NULL_TREE,
-						 const_string_type_node,
-						 NULL_TREE)));
-
-  builtin_function ("__builtin_constant_p", default_function_type,
-		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL);
-
-  builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
-		    BUILT_IN_RETURN_ADDRESS, BUILT_IN_NORMAL, NULL);
-
-  builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
-		    BUILT_IN_FRAME_ADDRESS, BUILT_IN_NORMAL, NULL);
-
-#ifdef EH_RETURN_DATA_REGNO
-  builtin_function ("__builtin_eh_return_data_regno", int_ftype_int,
-		    BUILT_IN_EH_RETURN_DATA_REGNO, BUILT_IN_NORMAL, NULL);
-#endif
-
-  builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
-		    BUILT_IN_ALLOCA, BUILT_IN_NORMAL, "alloca");
-  builtin_function_2 ("__builtin_ffs", "ffs",
-		      int_ftype_int, int_ftype_int,
-		      BUILT_IN_FFS, BUILT_IN_NORMAL, 0, 1, 0);
-  /* Define alloca as builtin, unless SMALL_STACK.  */
-#ifndef SMALL_STACK
-  builtin_function_2 (NULL, "alloca", NULL_TREE, ptr_ftype_sizetype,
-		      BUILT_IN_ALLOCA, BUILT_IN_NORMAL, 0, 1, 0);
-#endif
   /* Declare _exit and _Exit just to mark them as non-returning.  */
-  builtin_function_2 (NULL, "_exit", NULL_TREE, void_ftype_int,
+  builtin_function_2 (NULL, "_exit", NULL_TREE, 
+		      builtin_types[BT_FN_VOID_INT],
 		      0, NOT_BUILT_IN, 0, 1, 1);
-  builtin_function_2 (NULL, "_Exit", NULL_TREE, void_ftype_int,
+  builtin_function_2 (NULL, "_Exit", NULL_TREE, 
+		      builtin_types[BT_FN_VOID_INT],
 		      0, NOT_BUILT_IN, 0, !flag_isoc99, 1);
-
-  builtin_function_2 ("__builtin_index", "index",
-		      string_ftype_cstring_int, string_ftype_cstring_int,
-		      BUILT_IN_INDEX, BUILT_IN_NORMAL, 1, 1, 0);
-  builtin_function_2 ("__builtin_rindex", "rindex",
-		      string_ftype_cstring_int, string_ftype_cstring_int,
-		      BUILT_IN_RINDEX, BUILT_IN_NORMAL, 1, 1, 0);
-
-  /* The system prototypes for these functions have many
-     variations, so don't specify parameters to avoid conflicts.
-     The expand_* functions check the argument types anyway.  */
-  builtin_function_2 ("__builtin_bzero", "bzero",
-		      bzero_ftype, void_ftype_any,
-		      BUILT_IN_BZERO, BUILT_IN_NORMAL, 1, 1, 0);
-  builtin_function_2 ("__builtin_bcmp", "bcmp",
-		      bcmp_ftype, int_ftype_any,
-		      BUILT_IN_BCMP, BUILT_IN_NORMAL, 1, 1, 0);
-
-  builtin_function_2 ("__builtin_abs", "abs",
-		      int_ftype_int, int_ftype_int,
-		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, 0, 0);
-  builtin_function_2 ("__builtin_fabsf", "fabsf",
-		      float_ftype_float, float_ftype_float,
-		      BUILT_IN_FABS, BUILT_IN_NORMAL, 0, 0, 0);
-  builtin_function_2 ("__builtin_fabs", "fabs",
-		      double_ftype_double, double_ftype_double,
-		      BUILT_IN_FABS, BUILT_IN_NORMAL, 0, 0, 0);
-  builtin_function_2 ("__builtin_fabsl", "fabsl",
-		      ldouble_ftype_ldouble, ldouble_ftype_ldouble,
-		      BUILT_IN_FABS, BUILT_IN_NORMAL, 0, 0, 0);
-  builtin_function_2 ("__builtin_labs", "labs",
-		      long_ftype_long, long_ftype_long,
-		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, 0, 0);
-  builtin_function_2 ("__builtin_llabs", "llabs",
-		      longlong_ftype_longlong, longlong_ftype_longlong,
-		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_imaxabs", "imaxabs",
-		      intmax_ftype_intmax, intmax_ftype_intmax,
-		      BUILT_IN_ABS, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-
-  builtin_function ("__builtin_saveregs", ptr_ftype, BUILT_IN_SAVEREGS,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_classify_type", default_function_type,
-		    BUILT_IN_CLASSIFY_TYPE, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_next_arg", ptr_ftype, BUILT_IN_NEXT_ARG,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_args_info", int_ftype_int, BUILT_IN_ARGS_INFO,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_setjmp",
-		    build_function_type (integer_type_node,
-					 tree_cons (NULL_TREE, ptr_type_node,
-						    endlink)),
-		    BUILT_IN_SETJMP, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_longjmp",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE, ptr_type_node,
-						    int_endlink)),
-		    BUILT_IN_LONGJMP, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_trap", void_ftype, BUILT_IN_TRAP,
-		    BUILT_IN_NORMAL, NULL);
-
-  /* ISO C99 IEEE Unordered compares.  */
-  builtin_function ("__builtin_isgreater", default_function_type,
-		    BUILT_IN_ISGREATER, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_isgreaterequal", default_function_type,
-		    BUILT_IN_ISGREATEREQUAL, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_isless", default_function_type,
-		    BUILT_IN_ISLESS, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_islessequal", default_function_type,
-		    BUILT_IN_ISLESSEQUAL, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_islessgreater", default_function_type,
-		    BUILT_IN_ISLESSGREATER, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_isunordered", default_function_type,
-		    BUILT_IN_ISUNORDERED, BUILT_IN_NORMAL, NULL);
-
-  /* Untyped call and return.  */
-  builtin_function ("__builtin_apply_args", ptr_ftype,
-		    BUILT_IN_APPLY_ARGS, BUILT_IN_NORMAL, NULL);
-
-  temp = tree_cons (NULL_TREE,
-		    build_pointer_type (build_function_type (void_type_node,
-							     NULL_TREE)),
-		    tree_cons (NULL_TREE, ptr_type_node, sizetype_endlink));
-  builtin_function ("__builtin_apply",
-		    build_function_type (ptr_type_node, temp),
-		    BUILT_IN_APPLY, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_return", void_ftype_ptr,
-		    BUILT_IN_RETURN, BUILT_IN_NORMAL, NULL);
-
-  /* Support for varargs.h and stdarg.h.  */
-  builtin_function ("__builtin_varargs_start",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE,
-						    va_list_ref_type_node,
-						    endlink)),
-		    BUILT_IN_VARARGS_START, BUILT_IN_NORMAL, NULL);
-
-  builtin_function ("__builtin_stdarg_start",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE,
-						    va_list_ref_type_node,
-						    NULL_TREE)),
-		    BUILT_IN_STDARG_START, BUILT_IN_NORMAL, NULL);
-
-  builtin_function ("__builtin_va_end",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE,
-						    va_list_ref_type_node,
-						    endlink)),
-		    BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL);
-
-  builtin_function ("__builtin_va_copy",
-		    build_function_type (void_type_node,
-					 tree_cons (NULL_TREE,
-						    va_list_ref_type_node,
-						    tree_cons (NULL_TREE,
-						      va_list_arg_type_node,
-						      endlink))),
-		    BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL);
-
-  /* ??? Ought to be `T __builtin_expect(T, T)' for any type T.  */
-  builtin_function ("__builtin_expect",
-		    build_function_type (long_integer_type_node,
-					 tree_cons (NULL_TREE,
-						    long_integer_type_node,
-						    tree_cons (NULL_TREE,
-							long_integer_type_node,
-							endlink))),
-		    BUILT_IN_EXPECT, BUILT_IN_NORMAL, NULL);
-
-  /* Currently under experimentation.  */
-  builtin_function_2 ("__builtin_memcpy", "memcpy",
-		      memcpy_ftype, memcpy_ftype,
-		      BUILT_IN_MEMCPY, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_memcmp", "memcmp",
-		      int_ftype_cptr_cptr_sizet, int_ftype_cptr_cptr_sizet,
-		      BUILT_IN_MEMCMP, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_memset", "memset",
-		      memset_ftype, memset_ftype,
-		      BUILT_IN_MEMSET, BUILT_IN_NORMAL, 1, 0, 0);
-  built_in_decls[BUILT_IN_STRCMP] =
-    builtin_function_2 ("__builtin_strcmp", "strcmp",
-			int_ftype_cstring_cstring, int_ftype_cstring_cstring,
-			BUILT_IN_STRCMP, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strncmp", "strncmp",
-		      int_ftype_cstring_cstring_sizet,
-		      int_ftype_cstring_cstring_sizet,
-		      BUILT_IN_STRNCMP, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strstr", "strstr",
-		      string_ftype_cstring_cstring, string_ftype_cstring_cstring,
-		      BUILT_IN_STRSTR, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strpbrk", "strpbrk",
-		      string_ftype_cstring_cstring, string_ftype_cstring_cstring,
-		      BUILT_IN_STRPBRK, BUILT_IN_NORMAL, 1, 0, 0);
-  built_in_decls[BUILT_IN_STRCHR] =
-    builtin_function_2 ("__builtin_strchr", "strchr",
-			string_ftype_cstring_int, string_ftype_cstring_int,
-			BUILT_IN_STRCHR, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strrchr", "strrchr",
-		      string_ftype_cstring_int, string_ftype_cstring_int,
-		      BUILT_IN_STRRCHR, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strcpy", "strcpy",
-		      string_ftype_string_cstring, string_ftype_string_cstring,
-		      BUILT_IN_STRCPY, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strncpy", "strncpy",
-		      string_ftype_string_cstring_sizet,
-		      string_ftype_string_cstring_sizet,
-		      BUILT_IN_STRNCPY, BUILT_IN_NORMAL, 1, 0, 0);
-  built_in_decls[BUILT_IN_STRCAT] =
-    builtin_function_2 ("__builtin_strcat", "strcat",
-			string_ftype_string_cstring,
-			string_ftype_string_cstring,
-			BUILT_IN_STRCAT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strncat", "strncat",
-		      string_ftype_string_cstring_sizet,
-		      string_ftype_string_cstring_sizet,
-		      BUILT_IN_STRNCAT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strspn", "strspn",
-		      sizet_ftype_cstring_cstring, sizet_ftype_cstring_cstring,
-		      BUILT_IN_STRSPN, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_strcspn", "strcspn",
-		      sizet_ftype_cstring_cstring, sizet_ftype_cstring_cstring,
-		      BUILT_IN_STRCSPN, BUILT_IN_NORMAL, 1, 0, 0);
-  built_in_decls[BUILT_IN_STRLEN] =
-    builtin_function_2 ("__builtin_strlen", "strlen",
-			strlen_ftype, strlen_ftype,
-			BUILT_IN_STRLEN, BUILT_IN_NORMAL, 1, 0, 0);
-
-  builtin_function_2 ("__builtin_sqrtf", "sqrtf",
-		      float_ftype_float, float_ftype_float,
-		      BUILT_IN_FSQRT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_fsqrt", "sqrt",
-		      double_ftype_double, double_ftype_double,
-		      BUILT_IN_FSQRT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_sqrtl", "sqrtl",
-		      ldouble_ftype_ldouble, ldouble_ftype_ldouble,
-		      BUILT_IN_FSQRT, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_sinf", "sinf",
-		      float_ftype_float, float_ftype_float,
-		      BUILT_IN_SIN, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_sin", "sin",
-		      double_ftype_double, double_ftype_double,
-		      BUILT_IN_SIN, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_sinl", "sinl",
-		      ldouble_ftype_ldouble, ldouble_ftype_ldouble,
-		      BUILT_IN_SIN, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_cosf", "cosf",
-		      float_ftype_float, float_ftype_float,
-		      BUILT_IN_COS, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_cos", "cos",
-		      double_ftype_double, double_ftype_double,
-		      BUILT_IN_COS, BUILT_IN_NORMAL, 1, 0, 0);
-  builtin_function_2 ("__builtin_cosl", "cosl",
-		      ldouble_ftype_ldouble, ldouble_ftype_ldouble,
-		      BUILT_IN_COS, BUILT_IN_NORMAL, 1, 0, 0);
-
-  /* ISO C99 complex arithmetic functions.  */
-  builtin_function_2 ("__builtin_conjf", "conjf",
-		      cfloat_ftype_cfloat, cfloat_ftype_cfloat,
-		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_conj", "conj",
-		      cdouble_ftype_cdouble, cdouble_ftype_cdouble,
-		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_conjl", "conjl",
-		      cldouble_ftype_cldouble, cldouble_ftype_cldouble,
-		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_crealf", "crealf",
-		      float_ftype_cfloat, float_ftype_cfloat,
-		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_creal", "creal",
-		      double_ftype_cdouble, double_ftype_cdouble,
-		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_creall", "creall",
-		      ldouble_ftype_cldouble, ldouble_ftype_cldouble,
-		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_cimagf", "cimagf",
-		      float_ftype_cfloat, float_ftype_cfloat,
-		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_cimag", "cimag",
-		      double_ftype_cdouble, double_ftype_cdouble,
-		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-  builtin_function_2 ("__builtin_cimagl", "cimagl",
-		      ldouble_ftype_cldouble, ldouble_ftype_cldouble,
-		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
-
-  built_in_decls[BUILT_IN_PUTCHAR] =
-    builtin_function ("__builtin_putchar", int_ftype_int,
-		      BUILT_IN_PUTCHAR, BUILT_IN_NORMAL, "putchar");
-  built_in_decls[BUILT_IN_PUTS] =
-    builtin_function ("__builtin_puts", puts_ftype,
-		      BUILT_IN_PUTS, BUILT_IN_NORMAL, "puts");
-  builtin_function_2 ("__builtin_printf", "printf",
-		      printf_ftype, printf_ftype,
-		      BUILT_IN_PRINTF, BUILT_IN_FRONTEND, 1, 0, 0);
-  builtin_function_2 ("__builtin_fprintf", "fprintf",
-		      fprintf_ftype, fprintf_ftype,
-		      BUILT_IN_FPRINTF, BUILT_IN_FRONTEND, 1, 0, 0);
-  built_in_decls[BUILT_IN_FWRITE] =
-    builtin_function ("__builtin_fwrite", fwrite_ftype,
-		      BUILT_IN_FWRITE, BUILT_IN_NORMAL, "fwrite");
-  built_in_decls[BUILT_IN_FPUTC] =
-    builtin_function ("__builtin_fputc", fputc_ftype,
-		      BUILT_IN_FPUTC, BUILT_IN_NORMAL, "fputc");
-  /* Declare the __builtin_ style with arguments and the regular style
-     without them.  We rely on stdio.h to supply the arguments for the
-     regular style declaration since we had to use void* instead of
-     FILE* in the __builtin_ prototype supplied here.  */
-  built_in_decls[BUILT_IN_FPUTS] =
-    builtin_function_2 ("__builtin_fputs", "fputs",
-			fputs_ftype, int_ftype_any,
-			BUILT_IN_FPUTS, BUILT_IN_NORMAL, 1, 0, 0);
 
   /* Declare these functions non-returning
      to avoid spurious "control drops through" warnings.  */
   builtin_function_2 (NULL, "abort",
 		      NULL_TREE, ((c_language == clk_cplusplus)
-				  ? void_ftype : void_ftype_any),
+				  ? builtin_types[BT_FN_VOID]
+				  : builtin_types[BT_FN_VOID_VAR]),
 		      0, NOT_BUILT_IN, 0, 0, 1);
 
   builtin_function_2 (NULL, "exit",
 		      NULL_TREE, ((c_language == clk_cplusplus)
-				  ? void_ftype_int : void_ftype_any),
+				  ? builtin_types[BT_FN_VOID_INT]
+				  : builtin_types[BT_FN_VOID_VAR]),
 		      0, NOT_BUILT_IN, 0, 0, 1);
-
-#if 0
-  /* Support for these has not been written in either expand_builtin
-     or build_function_call.  */
-  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_fmod", double_ftype_double_double,
-		    BUILT_IN_FMOD, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_frem", double_ftype_double_double,
-		    BUILT_IN_FREM, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
-		    BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
-		    BUILT_IN_NORMAL, NULL);
-#endif
 
   main_identifier_node = get_identifier ("main");
 
@@ -3815,22 +3402,33 @@ expand_tree_builtin (function, params, coerced_params)
   switch (DECL_FUNCTION_CODE (function))
     {
     case BUILT_IN_ABS:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
     case BUILT_IN_FABS:
+    case BUILT_IN_FABSL:
+    case BUILT_IN_FABSF:
       if (coerced_params == 0)
 	return integer_zero_node;
       return build_unary_op (ABS_EXPR, TREE_VALUE (coerced_params), 0);
 
     case BUILT_IN_CONJ:
+    case BUILT_IN_CONJF:
+    case BUILT_IN_CONJL:
       if (coerced_params == 0)
 	return integer_zero_node;
       return build_unary_op (CONJ_EXPR, TREE_VALUE (coerced_params), 0);
 
     case BUILT_IN_CREAL:
+    case BUILT_IN_CREALF:
+    case BUILT_IN_CREALL:
       if (coerced_params == 0)
 	return integer_zero_node;
       return build_unary_op (REALPART_EXPR, TREE_VALUE (coerced_params), 0);
 
     case BUILT_IN_CIMAG:
+    case BUILT_IN_CIMAGF:
+    case BUILT_IN_CIMAGL:
       if (coerced_params == 0)
 	return integer_zero_node;
       return build_unary_op (IMAGPART_EXPR, TREE_VALUE (coerced_params), 0);

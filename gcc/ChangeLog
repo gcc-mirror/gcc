@@ -1,3 +1,28 @@
+2001-05-26  Mark  <mark@codesourcery.com>
+
+	* builtins.def: Encode additional information, such as names and
+	types, here.
+	* builtin-types.def: New file.
+	* builtins.c (built_in_names): Adjust use of DEF_BUILTIN.
+	(built_in_decls): Likewise.  Don't explicitly initialize global
+	data to NULL.
+	(expand_builtin_mathfn): Handle float and long double variants of
+	math builtins.
+	(expand_builtin): Likewise.
+	* c-common.c (c_common_nodes_and_builtins): Make it table-driven.
+	(expand_tree_builtin): Handle long, long long, float, and long
+	double variants of math functions.
+	* c-common.h (c_tree_index): Remove some unused nodes.
+	(void_ftype): Remove.
+	(void_type_ptr): Likewise.
+	(int_ftype_int): Likewise.
+	(ptr_ftype_sizetype): Likewise.
+	* c-decl.c (init_decl_processing): Remove creation of DWARF
+	builtins.
+	* defaults.h (MD_INIT_BUILTINS): Provide default definition.
+	* tree.h (built_in_function): Adjust definition of DEF_BUILTIN.
+	* Makefile.in (c-common.o): Depend on builtin-types.def.
+	
 2001-05-25  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/t-darwin: Fix dependencies for darwin.o.

@@ -6325,6 +6325,8 @@ void
 init_decl_processing ()
 {
   tree fields[20];
+  tree void_ftype;
+  tree void_ftype_ptr;
 
   /* Check to see that the user did not specify an invalid combination
      of command-line options.  */
@@ -6452,6 +6454,11 @@ init_decl_processing ()
   vtt_parm_type = build_pointer_type (const_ptr_type_node);
   lang_type_promotes_to = convert_type_from_ellipsis;
 
+  void_ftype = build_function_type (void_type_node, void_list_node);
+  void_ftype_ptr = build_function_type (void_type_node,
+					tree_cons (NULL_TREE,
+						   ptr_type_node, 
+						   void_list_node));
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr, empty_except_spec);
 
@@ -6528,13 +6535,19 @@ init_decl_processing ()
 
   {
     tree bad_alloc_type_node, newtype, deltype;
-    
+    tree ptr_ftype_sizetype;
+
     if (flag_honor_std)
       push_namespace (std_identifier);
     bad_alloc_type_node = xref_tag
       (class_type_node, get_identifier ("bad_alloc"), 1);
     if (flag_honor_std)
       pop_namespace ();
+    ptr_ftype_sizetype 
+      = build_function_type (ptr_type_node,
+			     tree_cons (NULL_TREE,
+					c_size_type_node,
+					void_list_node));
     newtype = build_exception_variant
       (ptr_ftype_sizetype, add_exception_specifier
        (NULL_TREE, bad_alloc_type_node, -1));

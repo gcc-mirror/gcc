@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 const char *const built_in_class_names[4]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
-#define DEF_BUILTIN(x) STRINGX(x),
+#define DEF_BUILTIN(X, N, C, T, LT, B, F, NA) STRINGX(X),
 const char *const built_in_names[(int) END_BUILTINS] =
 {
 #include "builtins.def"
@@ -66,12 +66,7 @@ const char *const built_in_names[(int) END_BUILTINS] =
 
 /* Setup an array of _DECL trees, make sure each element is
    initialized to NULL_TREE.  */
-#define DEF_BUILTIN(x) NULL_TREE,
-tree built_in_decls[(int) END_BUILTINS] =
-{
-#include "builtins.def"
-};
-#undef DEF_BUILTIN
+tree built_in_decls[(int) END_BUILTINS];
 
 tree (*lang_type_promotes_to) PARAMS ((tree));
 
@@ -1409,11 +1404,17 @@ expand_builtin_mathfn (exp, target, subtarget)
 
   switch (DECL_FUNCTION_CODE (fndecl))
     {
-     case BUILT_IN_SIN:
+    case BUILT_IN_SIN:
+    case BUILT_IN_SINF:
+    case BUILT_IN_SINL:
       builtin_optab = sin_optab; break;
-     case BUILT_IN_COS:
+    case BUILT_IN_COS:
+    case BUILT_IN_COSF:
+    case BUILT_IN_COSL:
       builtin_optab = cos_optab; break;
-     case BUILT_IN_FSQRT:
+    case BUILT_IN_FSQRT:
+    case BUILT_IN_SQRTF:
+    case BUILT_IN_SQRTL:
       builtin_optab = sqrt_optab; break;
      default:
       abort ();
@@ -3300,7 +3301,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
      set of builtins.  */
   if (! optimize && ! CALLED_AS_BUILT_IN (fndecl)
       && (fcode == BUILT_IN_SIN || fcode == BUILT_IN_COS
-	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_MEMSET
+	  || fcode == BUILT_IN_FSQRT || fcode == BUILT_IN_SQRTF
+	  || fcode == BUILT_IN_SQRTL || fcode == BUILT_IN_MEMSET
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
 	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
 	  || fcode == BUILT_IN_INDEX || fcode == BUILT_IN_RINDEX
@@ -3319,24 +3321,41 @@ expand_builtin (exp, target, subtarget, mode, ignore)
   switch (fcode)
     {
     case BUILT_IN_ABS:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
     case BUILT_IN_FABS:
+    case BUILT_IN_FABSF:
+    case BUILT_IN_FABSL:
       /* build_function_call changes these into ABS_EXPR.  */
       abort ();
 
     case BUILT_IN_CONJ:
+    case BUILT_IN_CONJF:
+    case BUILT_IN_CONJL:
     case BUILT_IN_CREAL:
+    case BUILT_IN_CREALF:
+    case BUILT_IN_CREALL:
     case BUILT_IN_CIMAG:
+    case BUILT_IN_CIMAGF:
+    case BUILT_IN_CIMAGL:
       /* expand_tree_builtin changes these into CONJ_EXPR, REALPART_EXPR
 	 and IMAGPART_EXPR.  */
       abort ();
 
     case BUILT_IN_SIN:
+    case BUILT_IN_SINF:
+    case BUILT_IN_SINL:
     case BUILT_IN_COS:
+    case BUILT_IN_COSF:
+    case BUILT_IN_COSL:
       /* Treat these like sqrt only if unsafe math optimizations are allowed,
 	 because of possible accuracy problems.  */
       if (! flag_unsafe_math_optimizations)
 	break;
     case BUILT_IN_FSQRT:
+    case BUILT_IN_SQRTF:
+    case BUILT_IN_SQRTL:
       target = expand_builtin_mathfn (exp, target, subtarget);
       if (target)
 	return target;
