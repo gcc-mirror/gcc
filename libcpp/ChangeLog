@@ -1,3 +1,8 @@
+2005-02-28  Devang Patel  <dpatel@apple.com>
+
+	* directives.c (do_line): Save sysp early before line table is
+	realloc'ed.
+	
 2005-02-20  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18785

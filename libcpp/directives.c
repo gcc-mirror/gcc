@@ -775,6 +775,11 @@ do_line (cpp_reader *pfile)
 {
   const struct line_maps *line_table = pfile->line_table;
   const struct line_map *map = &line_table->maps[line_table->used - 1];
+
+  /* skip_rest_of_line() may cause line table to be realloc()ed so note down
+     sysp right now.  */
+
+  unsigned char map_sysp = map->sysp;
   const cpp_token *token;
   const char *new_file = map->to_file;
   unsigned long new_lineno;
@@ -815,7 +820,7 @@ do_line (cpp_reader *pfile)
 
   skip_rest_of_line (pfile);
   _cpp_do_file_change (pfile, LC_RENAME, new_file, new_lineno,
-		       map->sysp);
+		       map_sysp);
 }
 
 /* Interpret the # 44 "file" [flags] notation, which has slightly
