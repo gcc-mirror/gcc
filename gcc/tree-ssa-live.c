@@ -551,12 +551,10 @@ calculate_live_on_entry (var_map map)
   basic_block bb;
   bitmap saw_def;
   tree phi, var, stmt;
-  tree *vec;
+  tree op;
   edge e;
   varray_type stack;
   block_stmt_iterator bsi;
-  vuse_optype vuses;
-  vdef_optype vdefs;
   use_optype uses;
   def_optype defs;
   stmt_ann_t ann;
@@ -610,39 +608,16 @@ calculate_live_on_entry (var_map map)
 	  num = NUM_USES (uses);
 	  for (i = 0; i < num; i++)
 	    {
-	      vec = USE_OP_PTR (uses, i);
-	      add_livein_if_notdef (live, saw_def, *vec, bb);
-	    }
-
-	  vuses = VUSE_OPS (ann);
-	  num = NUM_VUSES (vuses);
-	  for (i = 0; i < num; i++)
-	    {
-	      var = VUSE_OP (vuses, i);
-	      add_livein_if_notdef (live, saw_def, var, bb);
-	    }
-
-	  vdefs = VDEF_OPS (ann);
-	  num = NUM_VDEFS (vdefs);
-	  for (i = 0; i < num; i++)
-	    {
-	      var = VDEF_OP (vdefs, i);
-	      add_livein_if_notdef (live, saw_def, var, bb);
+	      op = USE_OP (uses, i);
+	      add_livein_if_notdef (live, saw_def, op, bb);
 	    }
 
 	  defs = DEF_OPS (ann);
 	  num = NUM_DEFS (defs);
 	  for (i = 0; i < num; i++)
 	    {
-	      vec = DEF_OP_PTR (defs, i);
-	      set_if_valid (map, saw_def, *vec);
-	    }
-
-	  num = NUM_VDEFS (vdefs);
-	  for (i = 0; i < num; i++)
-	    {
-	      var = VDEF_RESULT (vdefs, i);
-	      set_if_valid (map, saw_def, var);
+	      op = DEF_OP (defs, i);
+	      set_if_valid (map, saw_def, op);
 	    }
 	}
     }
