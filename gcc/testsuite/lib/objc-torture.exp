@@ -169,7 +169,7 @@ proc objc-torture-execute { src } {
 	verbose "Testing $testcase, $option" 1
 
 	set options ""
-	lappend options "additional_flags=-w $option"
+	lappend options "additional_flags=-w $option -I${srcdir}/../../libobjc"
 	set comp_output [objc_target_compile "$src" "$executable" executable $options];
 
 	# Set a few common compiler messages.
