@@ -1,3 +1,8 @@
+2005-02-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.x: New file.
+	Disable this test on IRIX 6.
+
 2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/separate-1.c, gcc.dg/noncompile/971104-1.c,
