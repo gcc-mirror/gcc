@@ -3784,8 +3784,6 @@ static const struct attribute_spec c_format_attribute_table[] =
   { NULL,                     0, 0, false, false, false, NULL }
 };
 
-extern const struct attribute_spec *format_attribute_table;
-
 /* Do the parts of lang_init common to C and C++.  */
 void
 c_common_lang_init ()
