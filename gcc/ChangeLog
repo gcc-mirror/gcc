@@ -1,5 +1,40 @@
 2004-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* sched-rgn.c (haifa_edge, edge_table, NEXT_IN, NEXT_OUT, FROM_BLOCK,
+	TO_BLOCK, nr_edges, in_edges, out_edges, IN_EDGES, OUT_EDGES,
+	build_control_flow, new_edge): Remove.
+	(schedule_insns): Remove edge_table/in_edges/out_edges cleanup.
+	(bitlst, bitlst_table_last, bitlst_table): Remove.
+	(bblst): Store basic_block pointer instead of block index.
+	(bblst_table): Likewise.
+	(edgelst): Store edge pointer instead of edge index.
+	(edgelst_table, edgelst_last): New variables.
+	(extract_bitlst): Rename to ...
+	(extract_edgelst): ... this.  Return edge pointers, not indices.
+	(split_edges): Update call.
+	(rgn_edges): Store edge pointers instead of indices.
+	(edge_to_bit): Remove.
+	(EDGE_TO_BIT): Store per-region edge index in edge->aux.
+	(SET_EDGE_TO_BIT): New macro.
+	(is_cfg_nonregular): Check for simple cases of unreachable blocks.
+	(find_rgns): Remove edge_list parameter.  Traverse standard CFG
+	data structures instead of haifa_edge et al.  Use edge pointers
+	instead of edge indices everywhere.
+	(compute_dom_prob_ps): Use standard CFG data structures.  Account
+	for exit edges.
+	(compute_trg_info): Likewise.
+	(propagate_deps): Likewise.
+	(debug_candidate): Account for bblst data structure change.
+	(check_live_1, update_live_1, is_pfree): Likewise.
+	(IS_REACHABLE): Use standard CFG data structures.
+	(init_ready_list): Update bblst_table/edgelst_table allocation.
+	(schedule_region): Update alloc/cleanup code to data structure
+	changes.  Use edge->aux to store per-region edge index.
+	(init_regions): No longer call build_control_flow.  Do not
+	create edge list any more.
+
+2004-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* cse.c (cse_insn): Avoid creating direct non-local jumps.
 	* combine.c (can_combine_p): Likewise.
 	* local-alloc. (update_equiv_regs): Likewise.

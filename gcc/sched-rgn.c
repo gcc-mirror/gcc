@@ -87,36 +87,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* nr_inter/spec counts interblock/speculative motion for the function.  */
 static int nr_inter, nr_spec;
 
-/* Control flow graph edges are kept in circular lists.  */
-typedef struct
-{
-  int from_block;
-  int to_block;
-  int next_in;
-  int next_out;
-}
-haifa_edge;
-static haifa_edge *edge_table;
-
-#define NEXT_IN(edge) (edge_table[edge].next_in)
-#define NEXT_OUT(edge) (edge_table[edge].next_out)
-#define FROM_BLOCK(edge) (edge_table[edge].from_block)
-#define TO_BLOCK(edge) (edge_table[edge].to_block)
-
-/* Number of edges in the control flow graph.  (In fact, larger than
-   that by 1, since edge 0 is unused.)  */
-static int nr_edges;
-
-/* Circular list of incoming/outgoing edges of a block.  */
-static int *in_edges;
-static int *out_edges;
-
-#define IN_EDGES(block) (in_edges[block])
-#define OUT_EDGES(block) (out_edges[block])
-
 static int is_cfg_nonregular (void);
-static int build_control_flow (struct edge_list *);
-static void new_edge (int, int);
 static bool sched_is_disabled_for_current_region_p (void);
 
 /* A region is the main entity for interblock scheduling: insns
@@ -154,7 +125,7 @@ static int *containing_rgn;
 
 void debug_regions (void);
 static void find_single_block_region (void);
-static void find_rgns (struct edge_list *);
+static void find_rgns (void);
 static bool too_large (int, int *, int *);
 
 extern void debug_live (int, int);
@@ -166,25 +137,19 @@ static int current_blocks;
 /* The mapping from bb to block.  */
 #define BB_TO_BLOCK(bb) (rgn_bb_table[current_blocks + (bb)])
 
-typedef struct
-{
-  int *first_member;		/* Pointer to the list start in bitlst_table.  */
-  int nr_members;		/* The number of members of the bit list.  */
-}
-bitlst;
-
-static int bitlst_table_last;
-static int *bitlst_table;
-
-static void extract_bitlst (sbitmap, bitlst *);
-
 /* Target info declarations.
 
    The block currently being scheduled is referred to as the "target" block,
    while other blocks in the region from which insns can be moved to the
    target are called "source" blocks.  The candidate structure holds info
    about such sources: are they valid?  Speculative?  Etc.  */
-typedef bitlst bblst;
+typedef struct
+{
+  basic_block *first_member;
+  int nr_members;
+}
+bblst;
+
 typedef struct
 {
   char is_valid;
@@ -204,7 +169,8 @@ static candidate *candidate_table;
 
    Lists of split and update blocks for each candidate of the current
    target are in array bblst_table.  */
-static int *bblst_table, bblst_size, bblst_last;
+static basic_block *bblst_table;
+static int bblst_size, bblst_last;
 
 #define IS_VALID(src) ( candidate_table[src].is_valid )
 #define IS_SPECULATIVE(src) ( candidate_table[src].is_speculative )
@@ -214,7 +180,18 @@ static int *bblst_table, bblst_size, bblst_last;
 static int target_bb;
 
 /* List of edges.  */
-typedef bitlst edgelst;
+typedef struct
+{
+  edge *first_member;
+  int nr_members;
+}
+edgelst;
+
+static edge *edgelst_table;
+static int edgelst_last;
+
+static void extract_edgelst (sbitmap, edgelst *);
+
 
 /* Target info functions.  */
 static void split_edges (int, int, edgelst *);
@@ -250,12 +227,11 @@ typedef sbitmap edgeset;
 static int rgn_nr_edges;
 
 /* Array of size rgn_nr_edges.  */
-static int *rgn_edges;
-
+static edge *rgn_edges;
 
 /* Mapping from each edge in the graph to its number in the rgn.  */
-static int *edge_to_bit;
-#define EDGE_TO_BIT(edge) (edge_to_bit[edge])
+#define EDGE_TO_BIT(edge) ((int)(size_t)(edge)->aux)
+#define SET_EDGE_TO_BIT(edge,nr) ((edge)->aux = (void *)(size_t)(nr))
 
 /* The split edges of a source bb is different for each target
    bb.  In order to compute this efficiently, the 'potential-split edges'
@@ -308,8 +284,8 @@ static void free_pending_lists (void);
 /* Return 1 if control flow graph should not be constructed, 0 otherwise.
 
    We decide not to build the control flow graph if there is possibly more
-   than one entry to the function, if computed branches exist, of if we
-   have nonlocal gotos.  */
+   than one entry to the function, if computed branches exist, if we
+   have nonlocal gotos, or if we have an unreachable loop.  */
 
 static int
 is_cfg_nonregular (void)
@@ -360,141 +336,43 @@ is_cfg_nonregular (void)
 	  break;
       }
 
-  /* All the tests passed.  Consider the cfg well structured.  */
-  return 0;
-}
-
-/* Build the control flow graph and set nr_edges.
-
-   Instead of trying to build a cfg ourselves, we rely on flow to
-   do it for us.  Stamp out useless code (and bug) duplication.
-
-   Return nonzero if an irregularity in the cfg is found which would
-   prevent cross block scheduling.  */
-
-static int
-build_control_flow (struct edge_list *edge_list)
-{
-  int i, unreachable, num_edges;
-  basic_block b;
-
-  /* This already accounts for entry/exit edges.  */
-  num_edges = NUM_EDGES (edge_list);
-
   /* Unreachable loops with more than one basic block are detected
      during the DFS traversal in find_rgns.
 
      Unreachable loops with a single block are detected here.  This
      test is redundant with the one in find_rgns, but it's much
-    cheaper to go ahead and catch the trivial case here.  */
-  unreachable = 0;
+     cheaper to go ahead and catch the trivial case here.  */
   FOR_EACH_BB (b)
     {
       if (EDGE_COUNT (b->preds) == 0
 	  || (EDGE_PRED (b, 0)->src == b
 	      && EDGE_COUNT (b->preds) == 1))
-	unreachable = 1;
+	return 1;
     }
 
-  /* ??? We can kill these soon.  */
-  in_edges = xcalloc (last_basic_block, sizeof (int));
-  out_edges = xcalloc (last_basic_block, sizeof (int));
-  edge_table = xcalloc (num_edges, sizeof (haifa_edge));
-
-  nr_edges = 0;
-  for (i = 0; i < num_edges; i++)
-    {
-      edge e = INDEX_EDGE (edge_list, i);
-
-      if (e->dest != EXIT_BLOCK_PTR
-	  && e->src != ENTRY_BLOCK_PTR)
-	new_edge (e->src->index, e->dest->index);
-    }
-
-  /* Increment by 1, since edge 0 is unused.  */
-  nr_edges++;
-
-  return unreachable;
+  /* All the tests passed.  Consider the cfg well structured.  */
+  return 0;
 }
 
-/* Record an edge in the control flow graph from SOURCE to TARGET.
-
-   In theory, this is redundant with the s_succs computed above, but
-   we have not converted all of haifa to use information from the
-   integer lists.  */
+/* Extract list of edges from a bitmap containing EDGE_TO_BIT bits.  */
 
 static void
-new_edge (int source, int target)
-{
-  int e, next_edge;
-  int curr_edge, fst_edge;
-
-  /* Check for duplicates.  */
-  fst_edge = curr_edge = OUT_EDGES (source);
-  while (curr_edge)
-    {
-      if (FROM_BLOCK (curr_edge) == source
-	  && TO_BLOCK (curr_edge) == target)
-	{
-	  return;
-	}
-
-      curr_edge = NEXT_OUT (curr_edge);
-
-      if (fst_edge == curr_edge)
-	break;
-    }
-
-  e = ++nr_edges;
-
-  FROM_BLOCK (e) = source;
-  TO_BLOCK (e) = target;
-
-  if (OUT_EDGES (source))
-    {
-      next_edge = NEXT_OUT (OUT_EDGES (source));
-      NEXT_OUT (OUT_EDGES (source)) = e;
-      NEXT_OUT (e) = next_edge;
-    }
-  else
-    {
-      OUT_EDGES (source) = e;
-      NEXT_OUT (e) = e;
-    }
-
-  if (IN_EDGES (target))
-    {
-      next_edge = NEXT_IN (IN_EDGES (target));
-      NEXT_IN (IN_EDGES (target)) = e;
-      NEXT_IN (e) = next_edge;
-    }
-  else
-    {
-      IN_EDGES (target) = e;
-      NEXT_IN (e) = e;
-    }
-}
-
-/* Translate a bit-set SET to a list BL of the bit-set members.  */
-
-static void
-extract_bitlst (sbitmap set, bitlst *bl)
+extract_edgelst (sbitmap set, edgelst *el)
 {
   int i;
 
-  /* bblst table space is reused in each call to extract_bitlst.  */
-  bitlst_table_last = 0;
+  /* edgelst table space is reused in each call to extract_edgelst.  */
+  edgelst_last = 0;
 
-  bl->first_member = &bitlst_table[bitlst_table_last];
-  bl->nr_members = 0;
+  el->first_member = &edgelst_table[edgelst_last];
+  el->nr_members = 0;
 
   /* Iterate over each word in the bitset.  */
   EXECUTE_IF_SET_IN_SBITMAP (set, 0, i,
   {
-    bitlst_table[bitlst_table_last++] = i;
-    (bl->nr_members)++;
+    edgelst_table[edgelst_last++] = rgn_edges[i];
+    el->nr_members++;
   });
-
 }
 
 /* Functions for the construction of regions.  */
@@ -609,19 +487,17 @@ too_large (int block, int *num_bbs, int *num_insns)
    of edge tables.  That would simplify it somewhat.  */
 
 static void
-find_rgns (struct edge_list *edge_list)
+find_rgns (void)
 {
-  int *max_hdr, *dfs_nr, *stack, *degree;
+  int *max_hdr, *dfs_nr, *degree;
   char no_loops = 1;
   int node, child, loop_head, i, head, tail;
   int count = 0, sp, idx = 0;
-  int current_edge = out_edges[EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest->index];
+  edge_iterator current_edge;
+  edge_iterator *stack;
   int num_bbs, num_insns, unreachable;
   int too_large_failure;
   basic_block bb;
-
-  /* Note if an edge has been passed.  */
-  sbitmap passed;
 
   /* Note if a block is a natural loop header.  */
   sbitmap header;
@@ -635,8 +511,6 @@ find_rgns (struct edge_list *edge_list)
   /* Note if a block is in the block queue.  */
   sbitmap in_stack;
 
-  int num_edges = NUM_EDGES (edge_list);
-
   /* Perform a DFS traversal of the cfg.  Identify loop headers, inner loops
      and a mapping from block to its loop header (if the block is contained
      in a loop, else -1).
@@ -649,16 +523,13 @@ find_rgns (struct edge_list *edge_list)
   /* Allocate and initialize variables for the first traversal.  */
   max_hdr = xmalloc (last_basic_block * sizeof (int));
   dfs_nr = xcalloc (last_basic_block, sizeof (int));
-  stack = xmalloc (nr_edges * sizeof (int));
+  stack = xmalloc (n_edges * sizeof (edge_iterator));
 
   inner = sbitmap_alloc (last_basic_block);
   sbitmap_ones (inner);
 
   header = sbitmap_alloc (last_basic_block);
   sbitmap_zero (header);
-
-  passed = sbitmap_alloc (nr_edges);
-  sbitmap_zero (passed);
 
   in_queue = sbitmap_alloc (last_basic_block);
   sbitmap_zero (in_queue);
@@ -669,31 +540,37 @@ find_rgns (struct edge_list *edge_list)
   for (i = 0; i < last_basic_block; i++)
     max_hdr[i] = -1;
 
+  #define EDGE_PASSED(E) (ei_end_p ((E)) || ei_edge ((E))->aux)
+  #define SET_EDGE_PASSED(E) (ei_edge ((E))->aux = ei_edge ((E)))
+
   /* DFS traversal to find inner loops in the cfg.  */
 
+  current_edge = ei_start (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest->succs);
   sp = -1;
+
   while (1)
     {
-      if (current_edge == 0 || TEST_BIT (passed, current_edge))
+      if (EDGE_PASSED (current_edge))
 	{
 	  /* We have reached a leaf node or a node that was already
 	     processed.  Pop edges off the stack until we find
 	     an edge that has not yet been processed.  */
-	  while (sp >= 0
-		 && (current_edge == 0 || TEST_BIT (passed, current_edge)))
+	  while (sp >= 0 && EDGE_PASSED (current_edge))
 	    {
 	      /* Pop entry off the stack.  */
 	      current_edge = stack[sp--];
-	      node = FROM_BLOCK (current_edge);
-	      child = TO_BLOCK (current_edge);
+	      node = ei_edge (current_edge)->src->index;
+	      gcc_assert (node != ENTRY_BLOCK);
+	      child = ei_edge (current_edge)->dest->index;
+	      gcc_assert (child != EXIT_BLOCK);
 	      RESET_BIT (in_stack, child);
 	      if (max_hdr[child] >= 0 && TEST_BIT (in_stack, max_hdr[child]))
 		UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
-	      current_edge = NEXT_OUT (current_edge);
+	      ei_next (&current_edge);
 	    }
 
 	  /* See if have finished the DFS tree traversal.  */
-	  if (sp < 0 && TEST_BIT (passed, current_edge))
+	  if (sp < 0 && EDGE_PASSED (current_edge))
 	    break;
 
 	  /* Nope, continue the traversal with the popped node.  */
@@ -701,10 +578,19 @@ find_rgns (struct edge_list *edge_list)
 	}
 
       /* Process a node.  */
-      node = FROM_BLOCK (current_edge);
-      child = TO_BLOCK (current_edge);
+      node = ei_edge (current_edge)->src->index;
+      gcc_assert (node != ENTRY_BLOCK);
       SET_BIT (in_stack, node);
       dfs_nr[node] = ++count;
+
+      /* We don't traverse to the exit block.  */
+      child = ei_edge (current_edge)->dest->index;
+      if (child == EXIT_BLOCK)
+	{
+	  SET_EDGE_PASSED (current_edge);
+	  ei_next (&current_edge);
+	  continue;
+	}
 
       /* If the successor is in the stack, then we've found a loop.
 	 Mark the loop, if it is not a natural loop, then it will
@@ -714,8 +600,8 @@ find_rgns (struct edge_list *edge_list)
 	  no_loops = 0;
 	  SET_BIT (header, child);
 	  UPDATE_LOOP_RELATIONS (node, child);
-	  SET_BIT (passed, current_edge);
-	  current_edge = NEXT_OUT (current_edge);
+	  SET_EDGE_PASSED (current_edge);
+	  ei_next (&current_edge);
 	  continue;
 	}
 
@@ -726,31 +612,26 @@ find_rgns (struct edge_list *edge_list)
 	{
 	  if (max_hdr[child] >= 0 && TEST_BIT (in_stack, max_hdr[child]))
 	    UPDATE_LOOP_RELATIONS (node, max_hdr[child]);
-	  SET_BIT (passed, current_edge);
-	  current_edge = NEXT_OUT (current_edge);
+	  SET_EDGE_PASSED (current_edge);
+	  ei_next (&current_edge);
 	  continue;
 	}
 
       /* Push an entry on the stack and continue DFS traversal.  */
       stack[++sp] = current_edge;
-      SET_BIT (passed, current_edge);
-      current_edge = OUT_EDGES (child);
-
-      /* This is temporary until haifa is converted to use rth's new
-	 cfg routines which have true entry/exit blocks and the
-	 appropriate edges from/to those blocks.
-
-	 Generally we update dfs_nr for a node when we process its
-	 out edge.  However, if the node has no out edge then we will
-	 not set dfs_nr for that node.  This can confuse the scheduler
-	 into thinking that we have unreachable blocks, which in turn
-	 disables cross block scheduling.
-
-	 So, if we have a node with no out edges, go ahead and mark it
-	 as reachable now.  */
-      if (current_edge == 0)
-	dfs_nr[child] = ++count;
+      SET_EDGE_PASSED (current_edge);
+      current_edge = ei_start (ei_edge (current_edge)->dest->succs);
     }
+
+  /* Reset ->aux field used by EDGE_PASSED.  */
+  FOR_ALL_BB (bb)
+    {
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	e->aux = NULL;
+    }
+
 
   /* Another check for unreachable blocks.  The earlier test in
      is_cfg_nonregular only finds unreachable blocks that do not
@@ -772,14 +653,7 @@ find_rgns (struct edge_list *edge_list)
   degree = dfs_nr;
 
   FOR_EACH_BB (bb)
-    degree[bb->index] = 0;
-  for (i = 0; i < num_edges; i++)
-    {
-      edge e = INDEX_EDGE (edge_list, i);
-
-      if (e->dest != EXIT_BLOCK_PTR)
-	degree[e->dest->index]++;
-    }
+    degree[bb->index] = EDGE_COUNT (bb->preds);
 
   /* Do not perform region scheduling if there are any unreachable
      blocks.  */
@@ -1019,7 +893,6 @@ find_rgns (struct edge_list *edge_list)
   free (max_hdr);
   free (dfs_nr);
   free (stack);
-  sbitmap_free (passed);
   sbitmap_free (header);
   sbitmap_free (inner);
   sbitmap_free (in_queue);
@@ -1034,8 +907,10 @@ find_rgns (struct edge_list *edge_list)
 static void
 compute_dom_prob_ps (int bb)
 {
-  int nxt_in_edge, fst_in_edge, pred;
-  int fst_out_edge, nxt_out_edge, nr_out_edges, nr_rgn_out_edges;
+  int pred_bb;
+  int nr_out_edges, nr_rgn_out_edges;
+  edge_iterator in_ei, out_ei;
+  edge in_edge, out_edge;
 
   prob[bb] = 0.0;
   if (IS_RGN_ENTRY (bb))
@@ -1045,43 +920,37 @@ compute_dom_prob_ps (int bb)
       return;
     }
 
-  fst_in_edge = nxt_in_edge = IN_EDGES (BB_TO_BLOCK (bb));
-
   /* Initialize dom[bb] to '111..1'.  */
   sbitmap_ones (dom[bb]);
 
-  do
+  FOR_EACH_EDGE (in_edge, in_ei, BASIC_BLOCK (BB_TO_BLOCK (bb))->preds)
     {
-      pred = FROM_BLOCK (nxt_in_edge);
-      sbitmap_a_and_b (dom[bb], dom[bb], dom[BLOCK_TO_BB (pred)]);
-      sbitmap_a_or_b (ancestor_edges[bb], ancestor_edges[bb], ancestor_edges[BLOCK_TO_BB (pred)]);
+      if (in_edge->src == ENTRY_BLOCK_PTR)
+	continue;
 
-      SET_BIT (ancestor_edges[bb], EDGE_TO_BIT (nxt_in_edge));
+      pred_bb = BLOCK_TO_BB (in_edge->src->index);
+      sbitmap_a_and_b (dom[bb], dom[bb], dom[pred_bb]);
+      sbitmap_a_or_b (ancestor_edges[bb],
+		      ancestor_edges[bb], ancestor_edges[pred_bb]);
 
-      nr_out_edges = 1;
+      SET_BIT (ancestor_edges[bb], EDGE_TO_BIT (in_edge));
+
+      sbitmap_a_or_b (pot_split[bb], pot_split[bb], pot_split[pred_bb]);
+
+      nr_out_edges = 0;
       nr_rgn_out_edges = 0;
-      fst_out_edge = OUT_EDGES (pred);
-      nxt_out_edge = NEXT_OUT (fst_out_edge);
 
-      sbitmap_a_or_b (pot_split[bb], pot_split[bb], pot_split[BLOCK_TO_BB (pred)]);
-
-      SET_BIT (pot_split[bb], EDGE_TO_BIT (fst_out_edge));
-
-      /* The successor doesn't belong in the region?  */
-      if (CONTAINING_RGN (TO_BLOCK (fst_out_edge)) !=
-	  CONTAINING_RGN (BB_TO_BLOCK (bb)))
-	++nr_rgn_out_edges;
-
-      while (fst_out_edge != nxt_out_edge)
+      FOR_EACH_EDGE (out_edge, out_ei, in_edge->src->succs)
 	{
 	  ++nr_out_edges;
-	  /* The successor doesn't belong in the region?  */
-	  if (CONTAINING_RGN (TO_BLOCK (nxt_out_edge)) !=
-	      CONTAINING_RGN (BB_TO_BLOCK (bb)))
-	    ++nr_rgn_out_edges;
-	  SET_BIT (pot_split[bb], EDGE_TO_BIT (nxt_out_edge));
-	  nxt_out_edge = NEXT_OUT (nxt_out_edge);
 
+	  /* The successor doesn't belong in the region?  */
+	  if (out_edge->dest != EXIT_BLOCK_PTR
+	      && CONTAINING_RGN (out_edge->dest->index)
+		 != CONTAINING_RGN (BB_TO_BLOCK (bb)))
+	    ++nr_rgn_out_edges;
+
+	  SET_BIT (pot_split[bb], EDGE_TO_BIT (out_edge));
 	}
 
       /* Now nr_rgn_out_edges is the number of region-exit edges from
@@ -1089,12 +958,10 @@ compute_dom_prob_ps (int bb)
          not leaving the region.  */
       nr_out_edges -= nr_rgn_out_edges;
       if (nr_rgn_out_edges > 0)
-	prob[bb] += 0.9 * prob[BLOCK_TO_BB (pred)] / nr_out_edges;
+	prob[bb] += 0.9 * prob[pred_bb] / nr_out_edges;
       else
-	prob[bb] += prob[BLOCK_TO_BB (pred)] / nr_out_edges;
-      nxt_in_edge = NEXT_IN (nxt_in_edge);
+	prob[bb] += prob[pred_bb] / nr_out_edges;
     }
-  while (fst_in_edge != nxt_in_edge);
 
   SET_BIT (dom[bb], bb);
   sbitmap_difference (pot_split[bb], pot_split[bb], ancestor_edges[bb]);
@@ -1116,7 +983,7 @@ split_edges (int bb_src, int bb_trg, edgelst *bl)
   sbitmap_copy (src, pot_split[bb_src]);
 
   sbitmap_difference (src, src, pot_split[bb_trg]);
-  extract_bitlst (src, bl);
+  extract_edgelst (src, bl);
   sbitmap_free (src);
 }
 
@@ -1129,8 +996,10 @@ compute_trg_info (int trg)
 {
   candidate *sp;
   edgelst el;
-  int check_block, update_idx;
-  int i, j, k, fst_edge, nxt_edge;
+  int i, j, k, update_idx;
+  basic_block block;
+  edge_iterator ei;
+  edge e;
 
   /* Define some of the fields for the target bb as well.  */
   sp = candidate_table + trg;
@@ -1159,15 +1028,12 @@ compute_trg_info (int trg)
 
       if (sp->is_valid)
 	{
-	  char *update_blocks;
-
 	  /* Compute split blocks and store them in bblst_table.
 	     The TO block of every split edge is a split block.  */
 	  sp->split_bbs.first_member = &bblst_table[bblst_last];
 	  sp->split_bbs.nr_members = el.nr_members;
 	  for (j = 0; j < el.nr_members; bblst_last++, j++)
-	    bblst_table[bblst_last] =
-	      TO_BLOCK (rgn_edges[el.first_member[j]]);
+	    bblst_table[bblst_last] = el.first_member[j]->dest;
 	  sp->update_bbs.first_member = &bblst_table[bblst_last];
 
 	  /* Compute update blocks and store them in bblst_table.
@@ -1176,35 +1042,32 @@ compute_trg_info (int trg)
 	     add the TO block to the update block list.  This list can end
 	     up with a lot of duplicates.  We need to weed them out to avoid
 	     overrunning the end of the bblst_table.  */
-	  update_blocks = alloca (last_basic_block);
-	  memset (update_blocks, 0, last_basic_block);
 
 	  update_idx = 0;
 	  for (j = 0; j < el.nr_members; j++)
 	    {
-	      check_block = FROM_BLOCK (rgn_edges[el.first_member[j]]);
-	      fst_edge = nxt_edge = OUT_EDGES (check_block);
-	      do
+	      block = el.first_member[j]->src;
+	      FOR_EACH_EDGE (e, ei, block->succs)
 		{
-		  if (! update_blocks[TO_BLOCK (nxt_edge)])
+		  if (!(e->dest->flags & BB_VISITED))
 		    {
 		      for (k = 0; k < el.nr_members; k++)
-			if (EDGE_TO_BIT (nxt_edge) == el.first_member[k])
+			if (e == el.first_member[k])
 			  break;
 
 		      if (k >= el.nr_members)
 			{
-			  bblst_table[bblst_last++] = TO_BLOCK (nxt_edge);
-			  update_blocks[TO_BLOCK (nxt_edge)] = 1;
+			  bblst_table[bblst_last++] = e->dest;
+			  e->dest->flags |= BB_VISITED;
 			  update_idx++;
 			}
 		    }
-
-		  nxt_edge = NEXT_OUT (nxt_edge);
 		}
-	      while (fst_edge != nxt_edge);
 	    }
 	  sp->update_bbs.nr_members = update_idx;
+
+	  FOR_ALL_BB (block)
+	    block->flags &= ~BB_VISITED;
 
 	  /* Make sure we didn't overrun the end of bblst_table.  */
 	  gcc_assert (bblst_last <= bblst_size);
@@ -1235,7 +1098,7 @@ debug_candidate (int i)
       fprintf (sched_dump, "split path: ");
       for (j = 0; j < candidate_table[i].split_bbs.nr_members; j++)
 	{
-	  int b = candidate_table[i].split_bbs.first_member[j];
+	  int b = candidate_table[i].split_bbs.first_member[j]->index;
 
 	  fprintf (sched_dump, " %d ", b);
 	}
@@ -1244,7 +1107,7 @@ debug_candidate (int i)
       fprintf (sched_dump, "update path: ");
       for (j = 0; j < candidate_table[i].update_bbs.nr_members; j++)
 	{
-	  int b = candidate_table[i].update_bbs.first_member[j];
+	  int b = candidate_table[i].update_bbs.first_member[j]->index;
 
 	  fprintf (sched_dump, " %d ", b);
 	}
@@ -1321,10 +1184,9 @@ check_live_1 (int src, rtx x)
 	    {
 	      for (i = 0; i < candidate_table[src].split_bbs.nr_members; i++)
 		{
-		  int b = candidate_table[src].split_bbs.first_member[i];
+		  basic_block b = candidate_table[src].split_bbs.first_member[i];
 
-		  if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start,
-				       regno + j))
+		  if (REGNO_REG_SET_P (b->global_live_at_start, regno + j))
 		    {
 		      return 0;
 		    }
@@ -1336,9 +1198,9 @@ check_live_1 (int src, rtx x)
 	  /* Check for pseudo registers.  */
 	  for (i = 0; i < candidate_table[src].split_bbs.nr_members; i++)
 	    {
-	      int b = candidate_table[src].split_bbs.first_member[i];
+	      basic_block b = candidate_table[src].split_bbs.first_member[i];
 
-	      if (REGNO_REG_SET_P (BASIC_BLOCK (b)->global_live_at_start, regno))
+	      if (REGNO_REG_SET_P (b->global_live_at_start, regno))
 		{
 		  return 0;
 		}
@@ -1395,10 +1257,9 @@ update_live_1 (int src, rtx x)
 	    {
 	      for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
 		{
-		  int b = candidate_table[src].update_bbs.first_member[i];
+		  basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-		  SET_REGNO_REG_SET (BASIC_BLOCK (b)->global_live_at_start,
-				     regno + j);
+		  SET_REGNO_REG_SET (b->global_live_at_start, regno + j);
 		}
 	    }
 	}
@@ -1406,9 +1267,9 @@ update_live_1 (int src, rtx x)
 	{
 	  for (i = 0; i < candidate_table[src].update_bbs.nr_members; i++)
 	    {
-	      int b = candidate_table[src].update_bbs.first_member[i];
+	      basic_block b = candidate_table[src].update_bbs.first_member[i];
 
-	      SET_REGNO_REG_SET (BASIC_BLOCK (b)->global_live_at_start, regno);
+	      SET_REGNO_REG_SET (b->global_live_at_start, regno);
 	    }
 	}
     }
@@ -1465,7 +1326,7 @@ update_live (rtx insn, int src)
   (bb_from == bb_to							\
    || IS_RGN_ENTRY (bb_from)						\
    || (TEST_BIT (ancestor_edges[bb_to],					\
-		 EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))))))
+	 EDGE_TO_BIT (EDGE_PRED (BASIC_BLOCK (BB_TO_BLOCK (bb_from)), 0)))))
 
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
@@ -1602,7 +1463,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
 		    /* insn2 is the similar load, in the target block.  */
 		    return 1;
 
-		  if (*(candp->split_bbs.first_member) == BLOCK_NUM (insn2))
+		  if (*(candp->split_bbs.first_member) == BLOCK_FOR_INSN (insn2))
 		    /* insn2 is a similar load, in a split-block.  */
 		    return 1;
 		}
@@ -1736,10 +1597,10 @@ init_ready_list (struct ready_list *ready)
 	 the TO blocks of region edges, so there can be at most rgn_nr_edges
 	 of them.  */
       bblst_size = (current_nr_blocks - target_bb) * rgn_nr_edges;
-      bblst_table = xmalloc (bblst_size * sizeof (int));
+      bblst_table = xmalloc (bblst_size * sizeof (basic_block));
 
-      bitlst_table_last = 0;
-      bitlst_table = xmalloc (rgn_nr_edges * sizeof (int));
+      edgelst_last = 0;
+      edgelst_table = xmalloc (rgn_nr_edges * sizeof (edge));
 
       compute_trg_info (target_bb);
     }
@@ -2117,72 +1978,66 @@ concat_insn_mem_list (rtx copy_insns, rtx copy_mems, rtx *old_insns_p,
 static void
 propagate_deps (int bb, struct deps *pred_deps)
 {
-  int b = BB_TO_BLOCK (bb);
-  int e, first_edge;
+  basic_block block = BASIC_BLOCK (BB_TO_BLOCK (bb));
+  edge_iterator ei;
+  edge e;
 
   /* bb's structures are inherited by its successors.  */
-  first_edge = e = OUT_EDGES (b);
-  if (e > 0)
-    do
-      {
-	int b_succ = TO_BLOCK (e);
-	int bb_succ = BLOCK_TO_BB (b_succ);
-	struct deps *succ_deps = bb_deps + bb_succ;
-	int reg;
+  FOR_EACH_EDGE (e, ei, block->succs)
+    {
+      struct deps *succ_deps;
+      int reg;
 
-	/* Only bbs "below" bb, in the same region, are interesting.  */
-	if (CONTAINING_RGN (b) != CONTAINING_RGN (b_succ)
-	    || bb_succ <= bb)
-	  {
-	    e = NEXT_OUT (e);
-	    continue;
-	  }
+      /* Only bbs "below" bb, in the same region, are interesting.  */
+      if (e->dest == EXIT_BLOCK_PTR
+	  || CONTAINING_RGN (block->index) != CONTAINING_RGN (e->dest->index)
+	  || BLOCK_TO_BB (e->dest->index) <= bb)
+	continue;
 
-	/* The reg_last lists are inherited by bb_succ.  */
-	EXECUTE_IF_SET_IN_REG_SET (&pred_deps->reg_last_in_use, 0, reg,
-	  {
-	    struct deps_reg *pred_rl = &pred_deps->reg_last[reg];
-	    struct deps_reg *succ_rl = &succ_deps->reg_last[reg];
+      succ_deps = bb_deps + BLOCK_TO_BB (e->dest->index);
 
-	    succ_rl->uses = concat_INSN_LIST (pred_rl->uses, succ_rl->uses);
-	    succ_rl->sets = concat_INSN_LIST (pred_rl->sets, succ_rl->sets);
-	    succ_rl->clobbers = concat_INSN_LIST (pred_rl->clobbers,
-						  succ_rl->clobbers);
-	    succ_rl->uses_length += pred_rl->uses_length;
-	    succ_rl->clobbers_length += pred_rl->clobbers_length;
-	  });
-	IOR_REG_SET (&succ_deps->reg_last_in_use, &pred_deps->reg_last_in_use);
+      /* The reg_last lists are inherited by successor.  */
+      EXECUTE_IF_SET_IN_REG_SET (&pred_deps->reg_last_in_use, 0, reg,
+	{
+	  struct deps_reg *pred_rl = &pred_deps->reg_last[reg];
+	  struct deps_reg *succ_rl = &succ_deps->reg_last[reg];
 
-	/* Mem read/write lists are inherited by bb_succ.  */
-	concat_insn_mem_list (pred_deps->pending_read_insns,
-			      pred_deps->pending_read_mems,
-			      &succ_deps->pending_read_insns,
-			      &succ_deps->pending_read_mems);
-	concat_insn_mem_list (pred_deps->pending_write_insns,
-			      pred_deps->pending_write_mems,
-			      &succ_deps->pending_write_insns,
-			      &succ_deps->pending_write_mems);
+	  succ_rl->uses = concat_INSN_LIST (pred_rl->uses, succ_rl->uses);
+	  succ_rl->sets = concat_INSN_LIST (pred_rl->sets, succ_rl->sets);
+	  succ_rl->clobbers = concat_INSN_LIST (pred_rl->clobbers,
+						succ_rl->clobbers);
+	  succ_rl->uses_length += pred_rl->uses_length;
+	  succ_rl->clobbers_length += pred_rl->clobbers_length;
+	});
+      IOR_REG_SET (&succ_deps->reg_last_in_use, &pred_deps->reg_last_in_use);
 
-	succ_deps->last_pending_memory_flush
-	  = concat_INSN_LIST (pred_deps->last_pending_memory_flush,
-			      succ_deps->last_pending_memory_flush);
+      /* Mem read/write lists are inherited by successor.  */
+      concat_insn_mem_list (pred_deps->pending_read_insns,
+			    pred_deps->pending_read_mems,
+			    &succ_deps->pending_read_insns,
+			    &succ_deps->pending_read_mems);
+      concat_insn_mem_list (pred_deps->pending_write_insns,
+			    pred_deps->pending_write_mems,
+			    &succ_deps->pending_write_insns,
+			    &succ_deps->pending_write_mems);
 
-	succ_deps->pending_lists_length += pred_deps->pending_lists_length;
-	succ_deps->pending_flush_length += pred_deps->pending_flush_length;
+      succ_deps->last_pending_memory_flush
+	= concat_INSN_LIST (pred_deps->last_pending_memory_flush,
+			    succ_deps->last_pending_memory_flush);
 
-	/* last_function_call is inherited by bb_succ.  */
-	succ_deps->last_function_call
-	  = concat_INSN_LIST (pred_deps->last_function_call,
+      succ_deps->pending_lists_length += pred_deps->pending_lists_length;
+      succ_deps->pending_flush_length += pred_deps->pending_flush_length;
+
+      /* last_function_call is inherited by successor.  */
+      succ_deps->last_function_call
+	= concat_INSN_LIST (pred_deps->last_function_call,
 			      succ_deps->last_function_call);
 
-	/* sched_before_next_call is inherited by bb_succ.  */
-	succ_deps->sched_before_next_call
-	  = concat_INSN_LIST (pred_deps->sched_before_next_call,
-			      succ_deps->sched_before_next_call);
-
-	e = NEXT_OUT (e);
-      }
-    while (e != first_edge);
+      /* sched_before_next_call is inherited by successor.  */
+      succ_deps->sched_before_next_call
+	= concat_INSN_LIST (pred_deps->sched_before_next_call,
+			    succ_deps->sched_before_next_call);
+    }
 
   /* These lists should point to the right place, for correct
      freeing later.  */
@@ -2349,6 +2204,9 @@ sched_is_disabled_for_current_region_p (void)
 static void
 schedule_region (int rgn)
 {
+  basic_block block;
+  edge_iterator ei;
+  edge e;
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
@@ -2398,24 +2256,30 @@ schedule_region (int rgn)
   /* Compute interblock info: probabilities, split-edges, dominators, etc.  */
   if (current_nr_blocks > 1)
     {
-      int i;
-
       prob = xmalloc ((current_nr_blocks) * sizeof (float));
 
       dom = sbitmap_vector_alloc (current_nr_blocks, current_nr_blocks);
       sbitmap_vector_zero (dom, current_nr_blocks);
-      /* Edge to bit.  */
-      rgn_nr_edges = 0;
-      edge_to_bit = xmalloc (nr_edges * sizeof (int));
-      for (i = 1; i < nr_edges; i++)
-	if (CONTAINING_RGN (FROM_BLOCK (i)) == rgn)
-	  EDGE_TO_BIT (i) = rgn_nr_edges++;
-      rgn_edges = xmalloc (rgn_nr_edges * sizeof (int));
 
+      /* Use ->aux to implement EDGE_TO_BIT mapping.  */
       rgn_nr_edges = 0;
-      for (i = 1; i < nr_edges; i++)
-	if (CONTAINING_RGN (FROM_BLOCK (i)) == (rgn))
-	  rgn_edges[rgn_nr_edges++] = i;
+      FOR_EACH_BB (block)
+	{
+	  if (CONTAINING_RGN (block->index) != rgn)
+	    continue;
+	  FOR_EACH_EDGE (e, ei, block->succs)
+	    SET_EDGE_TO_BIT (e, rgn_nr_edges++);
+	}
+
+      rgn_edges = xmalloc (rgn_nr_edges * sizeof (edge));
+      rgn_nr_edges = 0;
+      FOR_EACH_BB (block)
+	{
+	  if (CONTAINING_RGN (block->index) != rgn)
+	    continue;
+	  FOR_EACH_EDGE (e, ei, block->succs)
+	    rgn_edges[rgn_nr_edges++] = e;
+	}
 
       /* Split edges.  */
       pot_split = sbitmap_vector_alloc (current_nr_blocks, rgn_nr_edges);
@@ -2491,7 +2355,7 @@ schedule_region (int rgn)
 	{
 	  free (candidate_table);
 	  free (bblst_table);
-	  free (bitlst_table);
+	  free (edgelst_table);
 	}
     }
 
@@ -2518,11 +2382,19 @@ schedule_region (int rgn)
 
   if (current_nr_blocks > 1)
     {
+      /* Cleanup ->aux used for EDGE_TO_BIT mapping.  */
+      FOR_EACH_BB (block)
+	{
+	  if (CONTAINING_RGN (block->index) != rgn)
+	    continue;
+	  FOR_EACH_EDGE (e, ei, block->succs)
+	    e->aux = NULL;
+	}
+
       free (prob);
       sbitmap_vector_free (dom);
       sbitmap_vector_free (pot_split);
       sbitmap_vector_free (ancestor_edges);
-      free (edge_to_bit);
       free (rgn_edges);
     }
 }
@@ -2548,48 +2420,25 @@ init_regions (void)
   /* Compute regions for scheduling.  */
   if (reload_completed
       || n_basic_blocks == 1
-      || !flag_schedule_interblock)
+      || !flag_schedule_interblock
+      || is_cfg_nonregular ())
     {
       find_single_block_region ();
     }
   else
     {
-      /* Verify that a 'good' control flow graph can be built.  */
-      if (is_cfg_nonregular ())
-	{
-	  find_single_block_region ();
-	}
-      else
-	{
-	  struct edge_list *edge_list;
+      /* Compute the dominators and post dominators.  */
+      calculate_dominance_info (CDI_DOMINATORS);
 
-	  /* The scheduler runs after estimate_probabilities; therefore, we
-	     can't blindly call back into find_basic_blocks since doing so
-	     could invalidate the branch probability info.  We could,
-	     however, call cleanup_cfg.  */
-	  edge_list = create_edge_list ();
+      /* Find regions.  */
+      find_rgns ();
 
-	  /* Compute the dominators and post dominators.  */
-	  calculate_dominance_info (CDI_DOMINATORS);
+      if (sched_verbose >= 3)
+	debug_regions ();
 
-	  /* build_control_flow will return nonzero if it detects unreachable
-	     blocks or any other irregularity with the cfg which prevents
-	     cross block scheduling.  */
-	  if (build_control_flow (edge_list) != 0)
-	    find_single_block_region ();
-	  else
-	    find_rgns (edge_list);
-
-	  if (sched_verbose >= 3)
-	    debug_regions ();
-
-	  /* We are done with flow's edge list.  */
-	  free_edge_list (edge_list);
-
-	  /* For now.  This will move as more and more of haifa is converted
-	     to using the cfg code in flow.c.  */
-	  free_dominance_info (CDI_DOMINATORS);
-	}
+      /* For now.  This will move as more and more of haifa is converted
+	 to using the cfg code in flow.c.  */
+      free_dominance_info (CDI_DOMINATORS);
     }
 
 
@@ -2737,23 +2586,6 @@ schedule_insns (FILE *dump_file)
   free (containing_rgn);
 
   sched_finish ();
-
-  if (edge_table)
-    {
-      free (edge_table);
-      edge_table = NULL;
-    }
-
-  if (in_edges)
-    {
-      free (in_edges);
-      in_edges = NULL;
-    }
-  if (out_edges)
-    {
-      free (out_edges);
-      out_edges = NULL;
-    }
 
   sbitmap_free (blocks);
   sbitmap_free (large_region_blocks);
