@@ -1,3 +1,12 @@
+2001-09-14  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (internal_label_prefix): New.
+	(internal_label_prefix_len): New.
+	(override_options): Set them.
+	(local_symbolic_operand): New.
+	(legitimate_pic_address_disp_p): Use it.
+	(legitimize_pic_address): Likewise.
+
 2001-09-14  Marc Espie <espie@openbsd.org>
 
 	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK):  Generate reference to GOT
