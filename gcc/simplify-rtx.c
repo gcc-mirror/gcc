@@ -758,6 +758,7 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	      tmp[i] = ~tmp[i];
 	    real_from_target (&d, tmp, mode);
 	  }
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
