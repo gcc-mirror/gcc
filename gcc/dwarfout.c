@@ -2370,6 +2370,15 @@ location_or_const_value_attribute (decl)
       location_attribute (rtl);
       break;
 
+    case CONCAT:
+      /* ??? CONCAT is used for complex variables, which may have the real
+	 part stored in one place and the imag part stored somewhere else.
+	 DWARF1 has no way to describe a variable that lives in two different
+	 places, so we just describe where the first part lives, and hope that
+	 the second part is stored after it.  */
+      location_attribute (XEXP (rtl, 0));
+      break;
+
     default:
       abort ();		/* Should never happen.  */
     }
