@@ -38,14 +38,19 @@ AM_MAKEFLAGS = \
 	"RANLIB=$(RANLIB)" \
 	"DESTDIR=$(DESTDIR)"
 
-INCLUDES = -I. -I$(top_srcdir) $(ZINCS)
+INCLUDES = -I. -I$(top_srcdir) $(ZINCS) -I$(top_srcdir)/../include
+
+LIBIBERTY = ../libiberty/libiberty.a
 
 bin_PROGRAMS = jar grepjar
-jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
-jar_LDADD = $(ZLIBS)
-jar_DEPENDENCIES = $(ZDEPS)
-grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
-grepjar_LDADD = $(ZLIBS)
-grepjar_DEPENDENCIES = $(ZDEPS)
+jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h \
+zipfile.h dostime.h compress.h pushback.h
+jar_LDADD = $(ZLIBS) $(LIBIBERTY)
+jar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
+
+grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h \
+zipfile.h dostime.h compress.h pushback.h
+grepjar_LDADD = $(ZLIBS) $(LIBIBERTY)
+grepjar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
 
 AM_CFLAGS = @fastjar_warn_cflags@

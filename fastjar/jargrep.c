@@ -1,5 +1,6 @@
 /*
   jargrep.c - main functions for jargrep utility
+  Copyright (C) 2002 Free Software Foundation
   Copyright (C) 1999, 2000 Bryan Burns
   Copyright (C) 2000 Cory Hollingsworth 
  
@@ -21,9 +22,24 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jargrep.c,v 1.4 2000/12/15 18:45:09 tromey Exp $
+/* Id: jargrep.c,v 1.5 2002/01/03 04:57:56 rodrigc Exp
 
-$Log: jargrep.c,v $
+Log: jargrep.c,v 
+Revision 1.5  2002/01/03 04:57:56  rodrigc
+2001-01-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+        PR bootstrap/5117
+        * configure.in (AC_CHECK_HEADERS): Check for stdlib.h.
+        * Makefile.am: Move grepjar to bin_PROGRAMS.
+        * config.h.in: Regenerated.
+        * Makefile.in: Regenerated.
+        * aclocal.m4: Regenerated.
+        * jargrep.c: Eliminate some signed/unsigned and default
+        uninitialized warnings. Use HAVE_STDLIB_H instead of
+        STDC_HEADERS macro.
+        * jartool.c: Likewise.
+        * compress.c: Likewise.
+
 Revision 1.4  2000/12/15 18:45:09  tromey
 	* jargrep.c: Include getopt.h if it exists.
 	(optind): Declare.
@@ -105,14 +121,12 @@ will test some other platforms later.
 #include "zipfile.h"
 #include "zlib.h"
 #include "compress.h"
-#ifdef HAVE_GETOPT_H
 #include <getopt.h>
-#endif
 
-#define Usage "Usage: %s [-bcinsw] <-e regexp | regexp> file(s)\n"
+void version(void);
+void help(const char *name);
 
-extern char *optarg;
-extern int optind;
+#define Usage "Usage: %s [-bcinsw] <-e PATTERN | PATTERN> FILE ...\n"
 
 /*
 Function name: opt_valid
@@ -632,6 +646,18 @@ static void jargrep(regex_t *exp, regex_t *nl_exp, const char *jarfile, int opti
 	}
 }
 
+/* This is used to mark options with no short value.  */
+#define LONG_OPT(Num)  ((Num) + 128)
+
+#define OPT_HELP     LONG_OPT (0)
+
+static const struct option option_vec[] =
+{
+  { "help", no_argument, NULL, OPT_HELP },
+  { "version", no_argument, NULL, 'V' },
+  { NULL, no_argument, NULL, 0 }
+};
+
 /*
 Funtion Name: main
 args:	argc	number of in coming args.
@@ -650,7 +676,8 @@ int main(int argc, char **argv) {
 	regex_t *nl_exp = NULL;
 	char *regexpstr = NULL;
 
-	while((c = getopt(argc, argv, "bce:insVw")) != -1) {
+	while((c = getopt_long(argc, argv, "bce:insVw",
+			       option_vec, NULL)) != -1) {
 		switch(c) {
 			case 'b':
 				options |= JG_PRINT_BYTEOFFSET;
@@ -679,13 +706,15 @@ int main(int argc, char **argv) {
 				options |= JG_INVERT;
 				break;
 			case 'V':
-				printf("%s\n", GVERSION);
-				exit(0);
+				version ();
+				break;
 			case 'w':
 				options |= JG_WORD_EXPRESSIONS;
 				break;
+			case OPT_HELP:
+				help(argv[0]);
+				break;
 			default:
-				fprintf(stderr, "Unknown option -%c\n", c);
 				fprintf(stderr, Usage, argv[0]);
 				exit(1);
 		}
@@ -725,4 +754,35 @@ int main(int argc, char **argv) {
 	}
 
 	return retval;
+}
+
+void help(const char *filename)
+{
+  printf (Usage, filename);
+  printf ("\
+\n\
+Search files in a jar file for a pattern.\n\
+\n\
+   -b                print byte offset of match\n\
+   -c                print number of matches\n\
+   -i                compare case-insensitively\n\
+   -n                print line number of each match\n\
+   -s                suppress error messages\n\
+   -w                force PATTERN to match only whole words\n\
+   -e PATTERN        use PATTERN as regular exprssion\n\
+");
+
+  exit (0);
+}
+
+void version ()
+{
+  printf("grepjar (%s) %s\n\n", PACKAGE, VERSION);
+  printf("Copyright 1999, 2000, 2001  Bryan Burns\n");
+  printf("Copyright 2000 Cory Hollingsworth\n");
+  printf("Copyright 2002 Free Software Foundation\n");
+  printf("\
+This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+  exit (0);
 }

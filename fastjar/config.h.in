@@ -34,9 +34,6 @@
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
-/* Define if you have the <getopt.h> header file.  */
-#undef HAVE_GETOPT_H
-
 /* Define if you have the <ndir.h> header file.  */
 #undef HAVE_NDIR_H
 

@@ -1,3 +1,40 @@
+2002-01-09  Tom Tromey  <tromey@redhat.com>
+
+	For PR libgcj/5303:
+	* jargrep.h: Removed RCS keywords.
+	(GVERSION): Removed.
+	* configure, Makefile.in, config.h.in: Rebuilt.
+	* configure.in: Added AM_MAINTAINER_MODE.
+	Don't look for getopt.h.  Use `fastjar' as package name.
+	* Makefile.am (INCLUDES): Look in ../include.
+	(LIBIBERTY): New macro.
+	(jar_LDADD): Use it.
+	(jar_DEPENDENCIES): Likewise.
+	(grepjar_LDADD): Likewise.
+	(grepjar_DEPENDENCIES): Likewise.
+	* jargrep.c: Removed RCS keywords.  Always include getopt.h.
+	(LONG_OPT): New macro.
+	(OPT_HELP): Likewise.
+	(main): Use getopt_long.  Let getopt print invalid argument
+	message.  Handle --help.  Use version().
+	(version): New function.
+	(optarg, optind): Don't declare.
+	(option_vec): New global.
+	(help): New function.
+	(Usage): Updated to GNU standards.
+	* jartool.c: Removed RCS keywords.  Include getopt.h.
+	(LONG_OPT): New macro.
+	(OPT_HELP): Likewise.
+	(options): New global.
+	(help): New function.
+	(usage): Print a single line.
+	(version): New function.
+	(expand_options): New function.
+	(main): Use getopt_long and expand_options.  Fail if `-u'
+	specified.  Changed handling of -f, -m, -V options.
+	(OPTION_STRING): New macro.
+	(version_string): Removed.
+
 2001-01-02  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR bootstrap/5117
