@@ -17,6 +17,9 @@ Mon Oct 25 23:10:45 1999  Andreas Schwab  <schwab@suse.de>
 
 Mon Oct 25 23:03:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* collect2.c (IS_DIR_SEPARATOR): Define.
+	(prefix_from_string): Use IS_DIR_SEPARATOR and DIR_SEPARATOR.
+
 	* som.h (ASM_DECLARE_FUNCTION_NAME): Set PRIV_LEV for static
 	functions too.
 
