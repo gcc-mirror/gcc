@@ -3920,6 +3920,7 @@ static const char* apzStdio_Va_ListPatch[] = { "sed",
     "-e", "s@ va_list @ __gnuc_va_list @\n\
 s@ va_list)@ __gnuc_va_list)@\n\
 s@ _VA_LIST_));@ __gnuc_va_list));@\n\
+s@ __VA_LIST__));@ __gnuc_va_list));@\n\
 s@ va_list@ __not_va_list__@\n\
 s@\\*va_list@*__not_va_list__@\n\
 s@ __va_list)@ __gnuc_va_list)@\n\

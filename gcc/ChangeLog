@@ -1,3 +1,10 @@
+2001-12-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (stdio_va_list): Handle __VA_LIST__ in Tru64
+	UNIX V5.1A stdio.h.
+	* fixinc/fixincl.x: Regenerate.
+	Fixes PR libf2c/4826.
+
 2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppspec.c (lang_specific_driver): Set is_cpp_driver.
