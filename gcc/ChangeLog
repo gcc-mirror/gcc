@@ -1,3 +1,7 @@
+Mon Jan 26 18:17:32 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* sparc.c (pic_setup_code): Don't set LABEL_PRESERVE_P.
+
 Mon Jan 26 18:11:30 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* c-decl.c (grokdeclarator): Get parameter tags from
