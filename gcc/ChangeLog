@@ -1,5 +1,7 @@
 Thu Jun 17 13:28:30 1999  David O'Brien <obrien@FreeBSD.org>
 
+	* i386/freebsd-elf.h (LINK_SPEC): Fix typo.
+
 	* i386/freebsd-elf.h (FUNCTION_PROFILER): labels are not needed and
 	the reference to `mcount' was not correct for the ELF on FreeBSD.
 
