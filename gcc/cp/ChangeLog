@@ -1,3 +1,7 @@
+2000-09-11  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * ir.texi: Add more documentation.
+
 2000-09-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (struct saved_scope): Remove x_function_parms.
