@@ -1266,7 +1266,7 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,&r,&r,?f,?f,?Q")
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,Q,r,&r,?f,?f,?Q")
 	(match_operand:DI 1 "general_operand" "r,r,Q,i,f,Q,f"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
