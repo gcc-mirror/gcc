@@ -1,3 +1,9 @@
+2003-10-18  Mark Wielaard  <mark@klomp.org>
+
+	Reported by M.Negovanovic
+	* java/beans/IndexedPropertyDescriptor.java
+	(IndexedPropertyDescriptor): this.setIndex = setIndex, not getIndex.
+
 2003-10-17  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* win32.cc (_Jv_pipe): Implemented.
