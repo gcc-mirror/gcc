@@ -517,10 +517,16 @@ package ALI is
       --  Name of source file
 
       Stamp : Time_Stamp_Type;
-      --  Time stamp value
+      --  Time stamp value. Note that this will be all zero characters
+      --  for the dummy entries for missing or non-dependent files.
 
       Checksum : Word;
-      --  Checksum value
+      --  Checksum value. Note that this will be all zero characters
+      --  for the dummy entries for missing or non-dependent files
+
+      Dummy_Entry : Boolean;
+      --  Set True for dummy entries that correspond to missing files
+      --  or files where no dependency relationship exists.
 
       Subunit_Name : Name_Id;
       --  Name_Id for subunit name if present, else No_Name

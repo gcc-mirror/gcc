@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2608,6 +2608,13 @@ package body Sem_Ch3 is
       end if;
 
       Discr_Type := Etype (Entity (Discr_Name));
+
+      if not Is_Discrete_Type (Discr_Type) then
+         Error_Msg_N
+           ("discriminant in a variant part must be of a discrete type",
+             Name (N));
+         return;
+      end if;
 
       --  Call the instantiated Analyze_Choices which does the rest of the work
 
