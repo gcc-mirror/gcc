@@ -1844,7 +1844,7 @@ rtx
 assemble_trampoline_template ()
 {
   char label[256];
-  char *name;
+  const char *name;
   int align;
 
   /* By default, put trampoline templates in read-only data section.  */
