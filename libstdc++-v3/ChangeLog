@@ -1,3 +1,8 @@
+2002-07-18  Brendan Kehoe  <brendan@zen.org>
+
+	* bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR): Fix typo of
+	_Nname to _Name.
+	
 2002-07-19  Gabriel Dos Reis  <gdr@nerim.net>
 
 	DR/123
