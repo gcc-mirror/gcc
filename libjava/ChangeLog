@@ -1,3 +1,7 @@
+2005-01-14  Robin Green  <greenrd@greenrd.org>
+
+	* java/io/File.java (toURI): Generate a URI which we understand.
+
 2005-01-13  Graydon Hoare  <graydon@redhat.com>
 
 	* include/jni.h (_Jv_JNIEnv::bottom_locals): New field.
