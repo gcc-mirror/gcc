@@ -945,14 +945,11 @@ return_init:
 	;
 
 base_init:
-	  ':' member_init_list
+	  ':' { begin_mem_initializers (); } member_init_list
 		{
-		  if (! DECL_CONSTRUCTOR_P (current_function_decl))
-		    error ("only constructors take base initializers");
-		  else if ($2.new_type_flag == 0)
+		  if ($3.new_type_flag == 0)
 		    error ("no base or member initializers given following ':'");
-
-		  finish_mem_initializers ($2.t);
+		  finish_mem_initializers ($3.t);
 		}
 	;
 
@@ -2334,7 +2331,7 @@ structsp:
                            a TYPENAME_TYPE with a type. */
 			type = TREE_TYPE (type);
 		      maybe_process_partial_specialization (type);
-		      xref_basetypes (current_aggr, $1.t, type, $2);
+		      xref_basetypes (type, $2);
 		    }
 		  $1.t = begin_class_definition (TREE_TYPE ($1.t));
 		  check_class_key (current_aggr, $1.t);

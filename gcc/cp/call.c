@@ -3698,7 +3698,7 @@ build_op_delete_call (code, addr, size, flags, placement)
 
       /* Go through the `operator delete' functions looking for one
 	 with a matching type.  */
-      for (fn = BASELINK_P (fns) ? TREE_VALUE (fns) : fns; 
+      for (fn = BASELINK_P (fns) ? BASELINK_FUNCTIONS (fns) : fns; 
 	   fn; 
 	   fn = OVL_NEXT (fn))
 	{

@@ -1671,7 +1671,7 @@ build_offset_ref (type, name)
     {
       /* Go from the TREE_BASELINK to the member function info.  */
       tree fnfields = member;
-      t = TREE_VALUE (fnfields);
+      t = BASELINK_FUNCTIONS (fnfields);
 
       if (TREE_CODE (orig_name) == TEMPLATE_ID_EXPR)
 	{
