@@ -1,3 +1,8 @@
+2003-07-01  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* tree1.c: Include c-common.h.  Define c_language.
+
 2003-06-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* treetree.c (tree_code_create_function_wrapup): Adjust
