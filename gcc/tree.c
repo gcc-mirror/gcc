@@ -2058,8 +2058,13 @@ staticp (arg)
     case BIT_FIELD_REF:
       return staticp (TREE_OPERAND (arg, 0));
 
+#if 0
+       /* This case is technically correct, but results in setting
+	  TREE_CONSTANT on ADDR_EXPRs that cannot be evaluated at
+	  compile time.  */
     case INDIRECT_REF:
       return TREE_CONSTANT (TREE_OPERAND (arg, 0));
+#endif
 
     case ARRAY_REF:
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
