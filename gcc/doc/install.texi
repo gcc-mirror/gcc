@@ -3322,7 +3322,7 @@ PowerPC running Darwin (Mac OS X kernel).
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://developer.apple.com/tools/compilers.html} (free
+@uref{http://developer.apple.com/darwin/projects/compiler/} (free
 registration required).
 
 The default stack limit of 512K is too small, which may cause compiles
