@@ -733,21 +733,6 @@ strtoul_for_line (const uchar *str, unsigned int len, long unsigned int *nump)
   return 0;
 }
 
-/* Subroutine of do_line and do_linemarker.  Convert escape sequences
-   in a string, but do not perform character set conversion.  */
-static bool
-interpret_string_notranslate (cpp_reader *pfile, const cpp_string *in,
-			      cpp_string *out)
-{
-  iconv_t save_narrow_cset_desc = pfile->narrow_cset_desc;
-  bool retval;
-
-  pfile->narrow_cset_desc = (iconv_t) -1;
-  retval = cpp_interpret_string (pfile, in, 1, out, false);
-  pfile->narrow_cset_desc = save_narrow_cset_desc;
-  return retval;
-}
-
 /* Interpret #line command.
    Note that the filename string (if any) is a true string constant
    (escapes are interpreted), unlike in #line.  */
@@ -780,7 +765,7 @@ do_line (cpp_reader *pfile)
   if (token->type == CPP_STRING)
     {
       cpp_string s = { 0, 0 };
-      if (interpret_string_notranslate (pfile, &token->val.str, &s))
+      if (_cpp_interpret_string_notranslate (pfile, &token->val.str, &s))
 	new_file = (const char *)s.text;
       check_eol (pfile);
     }
@@ -829,7 +814,7 @@ do_linemarker (cpp_reader *pfile)
   if (token->type == CPP_STRING)
     {
       cpp_string s = { 0, 0 };
-      if (interpret_string_notranslate (pfile, &token->val.str, &s))
+      if (_cpp_interpret_string_notranslate (pfile, &token->val.str, &s))
 	new_file = (const char *)s.text;
       
       new_sysp = 0;
