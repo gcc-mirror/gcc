@@ -790,24 +790,22 @@ char *
 diagnostic_build_prefix (diagnostic)
      diagnostic_info *diagnostic;
 {
-  if (diagnostic->location.file)
-    {
-      if (diagnostic->kind == DK_WARNING)
-	return build_message_string (_("%s:%d: warning: "),
-                                     diagnostic->location.file,
-                                     diagnostic->location.line);
-      else
-	return build_message_string ("%s:%d: ",
-                                     diagnostic->location.file,
-                                     diagnostic->location.line);
-    }
-  else
-    {
-      if (diagnostic->kind == DK_WARNING)
-	return build_message_string (_("%s: warning: "), progname);
-      else
-	return build_message_string ("%s: ", progname);
-    }
+  static const char *diagnostic_kind_text[] = {
+#define DEFINE_DIAGNOSTIC_KIND(K, T) _(T),
+#include "diagnostic.def"
+#undef DEFINE_DIAGNOSTIC_KIND
+    "must-not-happen"
+  };
+   if (diagnostic->kind >= DK_LAST_DIAGNOSTIC_KIND)
+     abort();
+
+  return diagnostic->location.file
+    ? build_message_string ("%s:%d: %s",
+                            diagnostic->location.file,
+                            diagnostic->location.line,
+                            diagnostic_kind_text[diagnostic->kind])
+    : build_message_string ("%s: %s", progname,
+                            diagnostic_kind_text[diagnostic->kind]);
 }
 
 /* Report a diagnostic MESSAGE at the declaration DECL.
