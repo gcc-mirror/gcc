@@ -1833,8 +1833,14 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
 
   if (put != NULL)
     {
+
+      if (size != NULL)
+        gfc_error ("Too many arguments to %s at %L", gfc_current_intrinsic,
+                    &put->where);
+
       if (array_check (put, 1) == FAILURE)
 	return FAILURE;
+
       if (rank_check (put, 1, 1) == FAILURE)
 	return FAILURE;
 
@@ -1847,8 +1853,14 @@ gfc_check_random_seed (gfc_expr * size, gfc_expr * put, gfc_expr * get)
 
   if (get != NULL)
     {
+
+      if (size != NULL || put != NULL)
+        gfc_error ("Too many arguments to %s at %L", gfc_current_intrinsic,
+                    &get->where);
+
       if (array_check (get, 2) == FAILURE)
 	return FAILURE;
+
       if (rank_check (get, 2, 1) == FAILURE)
 	return FAILURE;
 

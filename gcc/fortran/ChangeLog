@@ -1,3 +1,7 @@
+2004-05-23  Steven G. Kargl  <kargls@comcast.net>
+
+	* check.c (gfc_check_random_seed): Issue for too many arguments.
+
 2004-05-22  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.c (add_subroutines): Use add_sym_3s for random_seed.
