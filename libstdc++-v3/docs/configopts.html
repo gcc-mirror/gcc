@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.3 2000/05/16 17:06:39 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.4 2000/05/19 19:55:50 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -114,11 +114,12 @@ options</A></H1>
  <DD><P>This is a grueling temporary hack no matter which way you look
         at it.  It's described in <A HREF="gccrebuild.html">its own
         little page</A>.  Note that other --enable flags will
-        interact with this one.  As of libstdc++-v3 snapshot 2.90.8,
+        interact with this one.  In libstdc++-v3 snapshot 2.90.8,
         this is enabled by default, with DIR
         set to <TT> '../..' </TT>, so that building
         the complete GCC sources with libstdc++-v3 in place works
-        transparently.
+        transparently.  Since then, library sources have been merged
+        into the compiler sources, and this option has been removed.
      </P>
 
  <DT><TT>--enable-cxx-flags=FLAGS</TT>
@@ -157,7 +158,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.3 2000/05/16 17:06:39 pme Exp $
+$Id: configopts.html,v 1.4 2000/05/19 19:55:50 pme Exp $
 </EM></P>
 
 

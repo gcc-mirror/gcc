@@ -9,22 +9,24 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 26</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/26_numerics/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/04/21 20:33:32 bkoz Exp $ -->
+<!-- $Id: howto.html,v 1.2 2000/06/28 15:14:39 gdr Exp $ -->
 </HEAD>
 <BODY>
 
 <H1 CLASS="centered"><A NAME="top">Chapter 26:  Numerics</A></H1>
 
-<P>
-Chapter 26 deals with building block abstractions to aid in numerical
-computing:
-<UL>
-   <LI>template data structures such as <TT>valarray&lt;&gt;</TT>,
-       <TT>complex&lt;&gt;</TT> and 
-   <LI>numerical functions such as <TT>accumulate</TT>;
-       <TT>inner_product</TT>; <TT>partial_sum</TT> and
-       <TT>adjacent_difference</TT>.
-</UL>
+<P>Chapter 26 deals with building block abstractions to aid in
+   numerical computing:
+   <UL>
+     <LI>Template data structures such as <TT>valarray&lt;&gt;</TT>
+         and <TT>complex&lt;&gt;</TT>.
+     <LI>Template numerical functions such as <TT>accumulate</TT>;
+         <TT>inner_product</TT>; <TT>partial_sum</TT> and
+         <TT>adjacent_difference</TT>.
+   </UL>
+   All of the Standard C math functions are of course included in C++,
+   and overloaded versions for <TT>long</TT>, <TT>float</TT>, and
+   <TT>long double</TT> have been added for all of them.
 </P>
 
 <!-- ####################################################### -->
@@ -41,7 +43,21 @@ computing:
 <!-- ####################################################### -->
 
 <H2><A NAME="1">Complex Number Processing</A></H2>
-   <P>Blah.
+   <P>Using <TT>complex&lt;&gt;</TT> becomes even more comple- er, sorry,
+      <EM>complicated</EM>, with the not-quite-gratuitously-incompatible
+      addition of complex types to the C language.  David Tribble has
+      compiled a list of C++89 and C99 conflict points; his description of
+      C's new type versus those of C++ and how to get them playing together
+      nicely is
+<A HREF="http://home.flash.net/~dtribble/text/cdiffs.htm#C99.complex">here</A>.
+   </P>
+   <P><TT>complex&lt;&gt;</TT> is intended to be instantiated with a
+      floating-point type.  As long as you meet that and some other basic
+      requirements, then the resulting instantiation has all of the usual
+      math operators defined, as well as definitions of <TT>op&lt;&lt;</TT>
+      and <TT>op&gt;&gt;</TT> that work with iostreams: <TT>op&lt;&lt;</TT>
+      prints <TT>(u,v)</TT> and <TT>op&gt;&gt;</TT> can read <TT>u</TT>,
+      <TT>(u)</TT>, and <TT>(u,v)</TT>.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -49,7 +65,24 @@ computing:
 
 <HR>
 <H2><A NAME="2">Array Processing</A></H2>
-   <P>Blah.
+   <P>One of the major reasons why FORTRAN can chew through numbers so well
+      is that it is defined to be free of pointer aliasing, an assumption
+      that C89 is not allowed to make, and neither is C++.  C99 adds a new
+      keyword, <TT>restrict</TT>, to apply to individual pointers.  The C++
+      solution is contained in the library rather than the language
+      (although many vendors can be expected to add this to their compilers
+      as an extension).
+   </P>
+   <P>That library solution is a set of two classes, five template classes,
+      and &quot;a whole bunch&quot; of functions.  The classes are required
+      to be free of pointer aliasing, so compilers can optimize the
+      daylights out of them the same way that they have been for FORTRAN.
+      They are collectively called <TT>valarray</TT>, although strictly
+      speaking this is only one of the five template classes, and they are
+      designed to be familiar to people who have worked with the BLAS
+      libraries before.
+   </P>
+   <P>Some more stuff should go here once somebody has time to write it.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -57,7 +90,37 @@ computing:
 
 <HR>
 <H2><A NAME="3">Numerical Functions</A></H2>
-   <P>Blah.
+   <P>There are four generalized functions in the &lt;numeric&gt; header
+      that follow the same conventions as those in &lt;algorithm&gt;.  Each
+      of them is overloaded:  one signature for common default operations,
+      and a second for fully general operations.  Their names are
+      self-explanatory to anyone who works with numerics on a regular basis:
+      <UL>
+        <LI><TT>accumulate</TT>
+        <LI><TT>inner_product</TT>
+        <LI><TT>partial_sum</TT>
+        <LI><TT>adjacent_difference</TT>
+      </UL>
+   </P>
+   <P>Here is a simple example of the two forms of <TT>accumulate</TT>.
+      <PRE>
+   int   ar[50];
+   int   someval = somefunction();
+
+   // ...initialize members of ar to something...
+
+   int  sum       = std::accumulate(ar,ar+50,0);
+   int  sum_stuff = std::accumulate(ar,ar+50,someval);
+   int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
+      </PRE>
+      The first call adds all the members of the array, using zero as an
+      initial value for <TT>sum</TT>.  The second does the same, but uses
+      <TT>someval</TT> as the starting value (thus, <TT>sum_stuff == sum +
+      someval</TT>).  The final call uses the second of the two signatures,
+      and multiplies all the members of the array; here we must obviously
+      use 1 as a starting value instead of 0.
+   </P>
+   <P>The other three functions have similar dual-signature forms.
    </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
@@ -72,7 +135,7 @@ computing:
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.1 2000/04/21 20:33:32 bkoz Exp $
+<BR> $Id: howto.html,v 1.2 2000/06/28 15:14:39 gdr Exp $
 </EM></P>
 
 

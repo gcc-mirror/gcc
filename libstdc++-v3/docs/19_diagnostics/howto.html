@@ -9,14 +9,15 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/19_diagnostics/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
 <H1 CLASS="centered"><A NAME="top">Chapter 19:  Diagnostics</A></H1>
 
 <P>Chapter 19 deals with program diagnostics, such as exceptions
-   and assertions.
+   and assertions.  You know, all the things we wish weren't even
+   necessary at all.
 </P>
 
 
@@ -26,6 +27,7 @@
 <UL>
    <LI><A HREF="#1">Adding data to exceptions</A>
    <LI><A HREF="#2">Exception class hierarchy diagram</A>
+   <LI><A HREF="#3">Concept checkers</A>
 </UL>
 
 <HR>
@@ -65,6 +67,29 @@
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
 
+<HR>
+<H2><A NAME="3">Concept checkers</A></H2>
+   <P>As part of their 3.3 release, SGI added some nifty macros which
+      perform assertions on type properties.  For example, the Standard
+      requires that types passed as template parameters to <TT>vector</TT>
+      be &quot;Assignable&quot; (which means what you think it means).
+   </P>
+   <P>The concept checkers allow the source code for <TT>vector</TT> to
+      declare
+      <PRE>
+   __STL_CLASS_REQUIRES(_Tp, _Assignable);
+      </PRE>inside the template.  <TT>_Tp</TT> is the element type of the
+      vector, and <TT>_Assignable</TT> is the concept to be checked (it is
+      defined in some back-end header files).  When you instantiate
+      <TT>vector&lt;MyType&gt;</TT>, compile-time checking can be done on
+      whether MyType meets the requirements for vectors.
+   </P>
+<P>This is an extension to the library.  This documentation needs updating.</P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
 
 
 
@@ -75,7 +100,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $
+<BR> $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $
 </EM></P>
 
 

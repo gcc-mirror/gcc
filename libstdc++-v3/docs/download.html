@@ -4,39 +4,39 @@
 
 <H3>Getting the sources by FTP or CVS</H3>
 
+<!-- The <URL:foo> syntax is the standard way of writing such things.  No
+     link to the FTP site is given directly, encouraging mirror usage.
+-->
 <P>Get the snapshot archive via FTP from
-<BLOCKQUOTE>
-  <A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/">
-           ftp://sourceware.cygnus.com/pub/libstdc++/
-  </A>
-</BLOCKQUOTE>
-   You will probably need to use one of the 
+   <TT>&lt;URL:ftp://sourceware.cygnus.com/pub/libstdc++/&gt;</TT>.
+   You will almost certainly need to use one of the 
    <A HREF="http://sourceware.cygnus.com/mirrors.html">mirror sites</A>
-   due to the heavy load on the main server.
+   due to the extremely heavy load on the main server.
 </P>
 
-<P> The master CVS repository for libstdc++-v3 is now a part of the
-  gcc repository. As such, checking out the <TT>gcc</TT> module includes the
-  current libstdc++-v3 development sources. To check out libstdc++-v3
-  only, use <TT>libstdc++-v3</TT> instead of <TT>gcc</TT> as the module.
-
+<P>The master CVS repository for libstdc++-v3 is now a part of the gcc
+   repository.  As such, checking out the <TT>gcc</TT> module includes
+   the current libstdc++-v3 development sources.  To check out
+   libstdc++-v3 only, use <TT>libstdc++-v3</TT> instead of <TT>gcc</TT>
+   as the module.
    <UL>
-   <LI>Read only CVS repository available by anonymous CVS. Directions 
-   <A HREF="http://gcc.gnu.org/cvs.html"> here.
-   </A>
-
-   <P>
-
-   <LI>Read-Write CVS repository available by authorized CVS via SSH.
-       Directions <A HREF="http://gcc.gnu.org/cvswrite.html"> here.
-   </A>
-  </UL>
+     <LI>Read-only CVS repository is available by anonymous CVS.  Directions 
+         are <A HREF="http://gcc.gnu.org/cvs.html">here</A>.  You can also
+         use anonymous CVS from one of the mirrors of the CVS repository.
+     <LI>Read-write CVS repository is available by authorized CVS via SSH.
+         Directions are <A HREF="http://gcc.gnu.org/cvswrite.html">here</A>.
+   </UL>
+</P>
+<P>One you have the GCC sources checked out over CVS, you can use the
+   <TT>contrib/gcc_update</TT> script to retrieve the latest changes, and
+   automatically update the timestamps of certain files.  With the
+   timestamps updated, you won't need autoconf or the other tools (unless
+   you make changes, obviously).
 </P>
 
-<p>You can also
+<P>You can also
 <A HREF="http://gcc.gnu.org/cgi-bin/cvsweb.cgi/libstdc++-v3?cvsroot=gcc">browse 
-       the CVS repository over the web</A>.
-
+   the CVS repository over the web</A>.
 </P>
 
 

@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 HOWTO:  Chapter 21</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/21_strings/">
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.8 2000/03/20 22:16:21 pme Exp $ -->
+<!-- $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -165,6 +165,19 @@
       here</A>.
    </P>
    <P>See?  Told you it was easy!</P>
+   <P><B>Added June 2000:</B>  The May issue of <U>C++ Report</U> contains
+      a fascinating article by Matt Austern (yes, <EM>the</EM> Matt Austern)
+      on why case-insensitive comparisons are not as easy as they seem,
+      and why creating a class is the <EM>wrong</EM> way to go about it in
+      production code.  (The GotW answer mentions one of the principle
+      difficulties; this article mentions more.)
+   </P>
+   <P>Basically, this is &quot;easy&quot; only if you ignore some things,
+      things which may be too important to your program to ignore.  (I chose
+      to ignore them when originally writing this entry, and am surprised
+      that nobody ever called me on it...)  The GotW question and answer
+      remain useful instructional tools, however.
+   </P>
    <P>Return <A HREF="#top">to top of page</A> or
       <A HREF="../faq/index.html">to the FAQ</A>.
    </P>
@@ -284,7 +297,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: howto.html,v 1.8 2000/03/20 22:16:21 pme Exp $
+<BR> $Id: howto.html,v 1.1 2000/04/21 20:33:31 bkoz Exp $
 </EM></P>
 
 
