@@ -1,3 +1,10 @@
+2004-08-11 David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (MAX_FIXED_MODE_SIZE): Define.
+
+	* config/rs6000/rs6000.md (mfcr rlwinm patterns): Set length to 8.
+	(mfcr rlwinm rlwinm patterns): Set length to 12.
+
 2004-08-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow-inline.h (get_def_ops, get_use_ops, get_v_may_def_ops,

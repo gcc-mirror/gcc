@@ -2103,6 +2103,12 @@ do {								\
 
 /* #define FIXUNS_TRUNC_LIKE_FIX_TRUNC */
 
+/* An integer expression for the size in bits of the largest integer machine
+   mode that should actually be used.  */
+
+/* Allow pairs of registers to be used, which is the intent of the default.  */
+#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_POWERPC64 ? TImode : DImode)
+
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX (! TARGET_POWERPC64 ? 4 : 8)
