@@ -1,3 +1,21 @@
+2003-01-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (stamp-*): Add checks for existing stamps.
+	* include/Makefile.in: Regenerate.
+
+	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG): Correct comment.
+	* aclocal.m4: Regenerate.
+
+	* configure.in: Don't add new multi-do rules every time the
+	directory is reconfigured.
+	* configure: Regenerate.
+	
+2003-01-08  Brad Spencer  <spencer@infointeractive.com>
+            Nathan Myers  <ncm@cantrip.org>
+	
+	* src/Makefile.am (stamp-debug): Clean.
+	* src/Makefile.in: Regenerate.
+	
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8707

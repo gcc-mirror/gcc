@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -349,18 +349,22 @@ stamp-std: ${std_headers}
 	@if [ ! -d "${std_builddir}" ]; then \
 	  mkdir -p ${std_builddir} ;\
 	fi ;\
-	(cd ${std_builddir} && for h in $?; do \
-	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
-	  @LN_S@ $$h ./$${official_name} || true ;\
-	done) ;\
-	echo `date` > stamp-std 
+	if [ ! -f stamp-std ]; then \
+	  (cd ${std_builddir} && for h in $?; do \
+	    official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	    @LN_S@ $$h ./$${official_name} || true ;\
+	  done) ;\
+	  echo `date` > stamp-std ;\
+	fi
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
 	  mkdir -p ${bits_builddir} ;\
 	fi ;\
-	(cd ${bits_builddir} && @LN_S@ $? . || true) ;\
-	echo `date` > stamp-bits
+	if [ ! -f stamp-bits ]; then \
+	  (cd ${bits_builddir} && @LN_S@ $? . || true) ;\
+	  echo `date` > stamp-bits ;\
+	fi
 
 stamp-c_base: ${c_base_headers} ${c_base_headers_extra} 
 	@if [ ! -d "${c_base_builddir}" ]; then \
@@ -370,33 +374,41 @@ stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
 	  @LN_S@ $$h ./$${official_name} || true ;\
 	done) ;\
-	if [ ! -z "${c_base_headers_extra}" ]; then \
+	if [ ! -f stamp-c_base ]; then \
+	  if [ ! -z "${c_base_headers_extra}" ]; then \
 	  (cd ${bits_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
-	fi ;\
-	echo `date` > stamp-c_base
+	  fi ;\
+	  echo `date` > stamp-c_base ;\
+	fi
 
 stamp-c_compatibility: ${c_compatibility_headers_extra}
 	@if [ ! -d "${c_compatibility_builddir}" ]; then \
 	  mkdir -p ${c_compatibility_builddir} ;\
 	fi ;\
-	if [ ! -z "${c_compatibility_headers_extra}" ]; then \
-	  (cd ${c_compatibility_builddir} && @LN_S@ $? . || true) ;\
-	fi ;\
-	echo `date` > stamp-c_compatibility
+	if [ ! -f stamp-c_compatibility ]; then \
+	  if [ ! -z "${c_compatibility_headers_extra}" ]; then \
+	    (cd ${c_compatibility_builddir} && @LN_S@ $? . || true) ;\
+	  fi ;\
+	  echo `date` > stamp-c_compatibility ;\
+	fi 
 
 stamp-backward: ${backward_headers}
 	@if [ ! -d "${backward_builddir}" ]; then \
 	  mkdir -p ${backward_builddir} ;\
 	fi ;\
-	(cd ${backward_builddir} && @LN_S@ $? . || true) ;\
-	echo `date` > stamp-backward
+	if [ ! -f stamp-backward ]; then \
+	  (cd ${backward_builddir} && @LN_S@ $? . || true) ;\
+	  echo `date` > stamp-backward ;\
+	fi
 
 stamp-ext: ${ext_headers}
 	@if [ ! -d "${ext_builddir}" ]; then \
-	  mkdir -p ${ext_builddir} ;\
+	    mkdir -p ${ext_builddir} ;\
 	fi ;\
-	(cd ${ext_builddir} && @LN_S@ $? . || true) ;\
-	echo `date` > stamp-ext
+	if [ ! -f stamp-ext ]; then \
+	  (cd ${ext_builddir} && @LN_S@ $? . || true) ;\
+	  echo `date` > stamp-ext ;\
+	fi
 
 stamp-${target_alias}:
 	@if [ ! -d ${target_builddir} ]; then \
@@ -500,7 +512,7 @@ install-data-local:
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
-#CLEANFILES = ${allstamps}
+#CLEANFILES = ${allstamps} 
 
 # Stop implicit '.o' make rules from ever stomping on extensionless
 # headers, in the improbable case where some foolish, crack-addled
