@@ -1,6 +1,6 @@
 # Top level makefile fragment for the GNU compiler for the Java(TM)
 # language.
-#   Copyright (C) 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1996, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -111,7 +111,7 @@ JVSCAN_OBJS = java/parse-scan.o java/jv-scan.o version.o
 JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 		java/zextract.o errors.o version.o mkdeps.o
 
-JVGENMAIN_OBJS = java/jvgenmain.o java/mangle.o
+JVGENMAIN_OBJS = java/jvgenmain.o
 
 # Use loose warnings for this front end.
 java-warn =

@@ -1,6 +1,6 @@
 /* Source code parsing and tree node generation for the GNU compiler
    for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -2973,7 +2973,6 @@ yyerror (msg)
 
   int save_lineno;
   char *remainder, *code_from_source;
-  extern struct obstack temporary_obstack;
   
   if (!force_error && prev_lineno == lineno)
     return;

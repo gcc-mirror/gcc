@@ -70,6 +70,61 @@
 	(not_accessible_p): Grant `private' access from within
 	enclosing contexts.
 	
+2001-01-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	All files with updated copyright when applicable.
+	* Make-lang.in (JVGENMAIN_OBS): Removed java/mangle.o.
+	* class.c (mangle_class_field): Function removed.
+	(append_gpp_mangled_type, mangle_static_field, mangle_field): Likewise.
+	(utf8_cmp, cxx_keyword_p): Moved to lex.c.
+	(build_class_ref): Call `java_mangle_class_field' instead of
+	`mangle_class_field.'
+	(build_dtable_decl): Rewritten to call `java_mangle_vtable.'
+	(layout_class): Call `java_mangle_decl' instead of 
+	`mangle_static_field.'
+	(cxx_keywords): Initialized static array moved to `lex.c.'
+	(layout_class_method): Changed leading comment. Simplified to
+	call `java_mangle_decl.' Local `ptr' moved in for loop body.
+	* decl.c (lang_mark_tree): Mark field `package_list.'
+	* java-tree.h (TYPE_PACKAGE_LIST): New macro.
+	(struct lang_type): New field `package_list.'
+	(unicode_mangling_length): Prototype removed.
+	(append_gpp_mangled_name, append_gpp_mangled_classtype,
+	emit_unicode_mangled_name): Likewise.
+	(cxx_keyword_p): New prototype.
+	(java_mangle_decl, java_mangle_class_field,
+	java_mangle_class_field_from_string, java_mangle_vtable): Likewise.
+	* jcf-parse.c (jcf_parse_source): Constify `file' argument to
+	`build_expr_wfl.'
+	* jvgenmain.c (main_method_prefix): Global variable removed.
+	(main_method_suffix): Likewise.
+	(do_mangle_classname): New function.
+	(main): Call it. Format changed to accomodate new mangling scheme.
+	* lex.c: (utf8_cmp): Conditionally prototyped.
+	(cxx_keywords): Moved from class.c, conditionally defined.
+	(utf8_cmp, cxx_keyword_p): Likewise.
+	* mangle.c (obstack.h, ggc.h): Included.
+	(mangle_field_decl): New function.
+	(mangle_method_decl, mangle_type, mangle_pointer_type,
+	mangle_array_type, mangle_record_type,
+	find_compression_pointer_match, find_compression_array_match,
+	find_compression_record_match,
+	find_compression_array_template_match, set_type_package_list,
+	entry_match_pointer_p, emit_compression_string, init_mangling,
+	finish_mangling, compression_table_add, mangle_member_name): Likewise.
+	(mangle_obstack): New global.
+	(MANGLE_RAW_STRING): New macro.
+	(unicode_mangling_length): Turned static.
+	(append_unicode_mangled_name): Renamed from
+	`emit_unicode_mangled_name.'  Turned static. `mangle_obstack'
+	replaces `obstack', removed from the parameter list.
+	(append_gpp_mangled_name): Turned static. `mangle_obstack'
+	replaces parameter `obstack', removed from the parameter list. Call 
+	`append_unicode_mangled_name' instead of `emit_unicode_mangled_name.
+	(append_gpp_mangled_classtype): Removed.
+	(compression_table, compression_next): New static variables.
+	* parse.y (temporary_obstack): Extern declaration removed.
+
 2001-01-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (patch_binop): Compute missing type in error situations.

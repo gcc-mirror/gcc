@@ -1,5 +1,5 @@
 /* Program to generate "main" a Java(TM) class containing a main method.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,8 +32,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "java-tree.h"
 
-const char main_method_prefix[] = "main__";
-const char main_method_suffix[] = "Pt6JArray1ZPQ34java4lang6String";
+static char * do_mangle_classname PARAMS ((const char *string));
+
 const char class_mangling_suffix[] = "class$";
 
 struct obstack name_obstack;
@@ -116,9 +116,7 @@ main (int argc, const char **argv)
   classname = argv[i];
 
   gcc_obstack_init (&name_obstack);
-  append_gpp_mangled_classtype (&name_obstack, classname);
-  obstack_1grow (&name_obstack, '\0');
-  mangled_classname = obstack_finish (&name_obstack);
+  mangled_classname = do_mangle_classname (classname);
 
   if (i < argc - 1 && strcmp (argv[i + 1], "-") != 0)
     {
@@ -155,13 +153,8 @@ main (int argc, const char **argv)
     }
   fprintf (stream, "  0\n};\n\n");
 
-#ifndef NO_DOLLAR_IN_LABEL
-  fprintf (stream, "extern int class __attribute__ ((alias (\"_%s$%s\")));\n",
-	   mangled_classname, class_mangling_suffix);
-#else
-  fprintf (stream, "extern int class __attribute__ ((alias (\"_%s.%s\")));\n",
-	   mangled_classname, class_mangling_suffix);
-#endif
+  fprintf (stream, "extern int class __attribute__ ((alias (\"%s\")));\n",
+	   mangled_classname);
   fprintf (stream, "int main (int argc, const char **argv)\n");
   fprintf (stream, "{\n");
   fprintf (stream, "   _Jv_Compiler_Properties = props;\n");
@@ -174,4 +167,37 @@ main (int argc, const char **argv)
       exit (1);
     }
   return 0;
+}
+
+
+static char *
+do_mangle_classname (string)
+     const char *string;
+{
+  char *ptr;
+  int count = 0;
+
+#define MANGLE_NAME()						\
+  {								\
+    char buffer [128];						\
+    sprintf (buffer, "%d", count);				\
+    obstack_grow (&name_obstack, buffer, strlen (buffer));	\
+    obstack_grow (&name_obstack, & ptr [-count], count);	\
+    count = 0;							\
+  }
+
+  obstack_grow (&name_obstack, "_ZN", 3);
+
+  for (ptr = (char *)string; *ptr; ptr++ )
+    {
+      if (ptr[0] == '.')
+	{
+	  MANGLE_NAME ();
+	}
+      else
+	count++;
+    }
+  MANGLE_NAME ();
+  obstack_grow0 (&name_obstack, "6class$E", 8);
+  return obstack_finish (&name_obstack);
 }

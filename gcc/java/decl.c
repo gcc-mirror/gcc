@@ -1939,6 +1939,7 @@ lang_mark_tree (t)
 	  ggc_mark_tree (lt->clinit_stmt_list);
 	  ggc_mark_tree (lt->ii_block);
 	  ggc_mark_tree (lt->dot_class);
+	  ggc_mark_tree (lt->package_list);
 	}
     }
 }
