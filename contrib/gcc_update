@@ -1,7 +1,7 @@
 #! /bin/sh
 #
 # Update a local CVS tree from the GCC repository, with an emphasis
-# on treating generated files correctly, so that autoconf, bison et
+# on treating generated files correctly, so that autoconf, gperf et
 # al are not required for the ``end'' user.
 #
 # By default all command-line options are passed to `cvs update` in
