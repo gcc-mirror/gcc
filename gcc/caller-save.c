@@ -160,8 +160,7 @@ init_caller_save (void)
 	 [(int) MODE_BASE_REG_CLASS (regno_save_mode [i][1])], i))
       break;
 
-  if (i == FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (i < FIRST_PSEUDO_REGISTER);
 
   addr_reg = gen_rtx_REG (Pmode, i);
 
@@ -381,8 +380,7 @@ save_call_clobbered_regs (void)
 
       next = chain->next;
 
-      if (chain->is_caller_save_insn)
-	abort ();
+      gcc_assert (!chain->is_caller_save_insn);
 
       if (INSN_P (insn))
 	{
@@ -431,22 +429,17 @@ save_call_clobbered_regs (void)
 		 {
 		   int r = reg_renumber[regno];
 		   int nregs;
+		   enum machine_mode mode;
 
-		   if (r >= 0)
-		     {
-		       enum machine_mode mode;
-
-		       nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
-		       mode = HARD_REGNO_CALLER_SAVE_MODE
-			        (r, nregs, PSEUDO_REGNO_MODE (regno));
-		       if (GET_MODE_BITSIZE (mode)
-			   > GET_MODE_BITSIZE (save_mode[r]))
-			 save_mode[r] = mode;
-		       while (nregs-- > 0)
-			 SET_HARD_REG_BIT (hard_regs_to_save, r + nregs);
-		     }
-		   else
-		     abort ();
+		   gcc_assert (r >= 0);
+		   nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+		   mode = HARD_REGNO_CALLER_SAVE_MODE
+		     (r, nregs, PSEUDO_REGNO_MODE (regno));
+		   if (GET_MODE_BITSIZE (mode)
+		       > GET_MODE_BITSIZE (save_mode[r]))
+		     save_mode[r] = mode;
+		   while (nregs-- > 0)
+		     SET_HARD_REG_BIT (hard_regs_to_save, r + nregs);
 		 });
 
 	      /* Record all registers set in this call insn.  These don't need
@@ -650,9 +643,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
      or SET_SRC.  Instead of doing so and causing a crash later, check
      for this common case and abort here instead.  This will remove one
      step in debugging such problems.  */
-
-  if (regno_save_mem[regno][1] == 0)
-    abort ();
+  gcc_assert (regno_save_mem[regno][1]);
 
   /* Get the pattern to emit and update our status.
 
@@ -725,9 +716,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
      or SET_SRC.  Instead of doing so and causing a crash later, check
      for this common case and abort here instead.  This will remove one
      step in debugging such problems.  */
-
-  if (regno_save_mem[regno][1] == 0)
-    abort ();
+  gcc_assert (regno_save_mem[regno][1]);
 
   /* Get the pattern to emit and update our status.
 
@@ -824,9 +813,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 	      rtx reg = XEXP (link, 0);
 	      int regno, i;
 
-	      if (!REG_P (reg))
-		abort ();
-
+	      gcc_assert (REG_P (reg));
 	      regno = REGNO (reg);
 	      if (regno >= FIRST_PSEUDO_REGISTER)
 		regno = reg_renumber[regno];

@@ -349,7 +349,7 @@ emit_call_1 (rtx funexp, tree fntree, tree fndecl ATTRIBUTE_UNUSED,
     }
   else
 #endif
-    abort ();
+    gcc_unreachable ();
 
   /* Find the call we just emitted.  */
   call_insn = last_call_insn ();
@@ -1158,8 +1158,7 @@ compute_argument_block_size (int reg_parm_stack_space,
 	  /* We don't handle this case yet.  To handle it correctly we have
 	     to add the delta, round and subtract the delta.
 	     Currently no machine description requires this support.  */
-	  if (stack_pointer_delta & (preferred_stack_boundary - 1))
-	    abort ();
+	  gcc_assert (!(stack_pointer_delta & (preferred_stack_boundary - 1)));
 	  args_size->var = round_up (args_size->var, preferred_stack_boundary);
 	}
 
@@ -1225,8 +1224,7 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
       enum machine_mode mode;
 
       /* If this is an addressable type, we cannot pre-evaluate it.  */
-      if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
-	abort ();
+      gcc_assert (!TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)));
 
       args[i].initial_value = args[i].value
 	= expand_expr (args[i].tree_value, NULL_RTX, VOIDmode, 0);
@@ -1999,8 +1997,7 @@ expand_call (tree exp, rtx target, int ignore)
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
   funtype = TREE_TYPE (addr);
-  if (! POINTER_TYPE_P (funtype))
-    abort ();
+  gcc_assert (POINTER_TYPE_P (funtype));
   funtype = TREE_TYPE (funtype);
 
   /* Munge the tree to split complex arguments into their imaginary
@@ -2641,8 +2638,8 @@ expand_call (tree exp, rtx target, int ignore)
 	 now!  */
 
       /* Stack must be properly aligned now.  */
-      if (pass && stack_pointer_delta % preferred_unit_stack_boundary)
-	abort ();
+      gcc_assert (!pass
+		  || !(stack_pointer_delta % preferred_unit_stack_boundary));
 
       /* Generate the actual call instruction.  */
       emit_call_1 (funexp, exp, fndecl, funtype, unadjusted_args_size,
@@ -2754,8 +2751,7 @@ expand_call (tree exp, rtx target, int ignore)
 	    {
 	      last = PREV_INSN (last);
 	      /* There was no CALL_INSN?  */
-	      if (last == before_call)
-		abort ();
+	      gcc_assert (last != before_call);
 	    }
 
 	  emit_barrier_after (last);
@@ -2855,36 +2851,36 @@ expand_call (tree exp, rtx target, int ignore)
 
       if (targetm.calls.promote_function_return(funtype))
 	{
-      /* If we promoted this return value, make the proper SUBREG.  TARGET
-	 might be const0_rtx here, so be careful.  */
-      if (REG_P (target)
-	  && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
-	  && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
-	{
-	  tree type = TREE_TYPE (exp);
-	  int unsignedp = TYPE_UNSIGNED (type);
-	  int offset = 0;
-
-	  /* If we don't promote as expected, something is wrong.  */
-	  if (GET_MODE (target)
-	      != promote_mode (type, TYPE_MODE (type), &unsignedp, 1))
-	    abort ();
-
-	if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
-	    && GET_MODE_SIZE (GET_MODE (target))
-	       > GET_MODE_SIZE (TYPE_MODE (type)))
-	  {
-	    offset = GET_MODE_SIZE (GET_MODE (target))
-		     - GET_MODE_SIZE (TYPE_MODE (type));
-	    if (! BYTES_BIG_ENDIAN)
-	      offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
-	    else if (! WORDS_BIG_ENDIAN)
-	      offset %= UNITS_PER_WORD;
-	  }
-	  target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
-	  SUBREG_PROMOTED_VAR_P (target) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
-	}
+	  /* If we promoted this return value, make the proper SUBREG.
+	     TARGET might be const0_rtx here, so be careful.  */
+	  if (REG_P (target)
+	      && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
+	      && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
+	    {
+	      tree type = TREE_TYPE (exp);
+	      int unsignedp = TYPE_UNSIGNED (type);
+	      int offset = 0;
+	      enum machine_mode pmode;
+	      
+	      pmode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
+	      /* If we don't promote as expected, something is wrong.  */
+	      gcc_assert (GET_MODE (target) == pmode);
+	      
+	      if ((WORDS_BIG_ENDIAN || BYTES_BIG_ENDIAN)
+		  && (GET_MODE_SIZE (GET_MODE (target))
+		      > GET_MODE_SIZE (TYPE_MODE (type))))
+		{
+		  offset = GET_MODE_SIZE (GET_MODE (target))
+		    - GET_MODE_SIZE (TYPE_MODE (type));
+		  if (! BYTES_BIG_ENDIAN)
+		    offset = (offset / UNITS_PER_WORD) * UNITS_PER_WORD;
+		  else if (! WORDS_BIG_ENDIAN)
+		    offset %= UNITS_PER_WORD;
+		}
+	      target = gen_rtx_SUBREG (TYPE_MODE (type), target, offset);
+	      SUBREG_PROMOTED_VAR_P (target) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_SET (target, unsignedp);
+	    }
 	}
 
       /* If size of args is variable or this was a constructor call for a stack
@@ -2971,10 +2967,9 @@ expand_call (tree exp, rtx target, int ignore)
 	  normal_call_insns = insns;
 
 	  /* Verify that we've deallocated all the stack we used.  */
-	  if (! (flags & (ECF_NORETURN | ECF_LONGJMP))
-	      && old_stack_allocated != stack_pointer_delta
-					- pending_stack_adjust)
-	    abort ();
+	  gcc_assert ((flags & (ECF_NORETURN | ECF_LONGJMP))
+		      || (old_stack_allocated
+			  == stack_pointer_delta - pending_stack_adjust));
 	}
 
       /* If something prevents making this a sibling call,
@@ -3286,6 +3281,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   if (mem_value && struct_value == 0 && ! pcc_struct_value)
     {
       rtx addr = XEXP (mem_value, 0);
+      int partial;
+      
       nargs++;
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
@@ -3298,8 +3295,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       argvec[count].partial = 0;
 
       argvec[count].reg = FUNCTION_ARG (args_so_far, Pmode, NULL_TREE, 1);
-      if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, Pmode, NULL_TREE, 1))
-	abort ();
+      partial = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, Pmode, NULL_TREE, 1);
+      gcc_assert (!partial);
 
       locate_and_pad_parm (Pmode, NULL_TREE,
 #ifdef STACK_PARMS_IN_REG_PARM_AREA
@@ -3325,9 +3322,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       /* We cannot convert the arg value to the mode the library wants here;
 	 must do it earlier where we know the signedness of the arg.  */
-      if (mode == BLKmode
-	  || (GET_MODE (val) != mode && GET_MODE (val) != VOIDmode))
-	abort ();
+      gcc_assert (mode != BLKmode
+		  && (GET_MODE (val) == mode || GET_MODE (val) == VOIDmode));
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
       if (!REG_P (val) && !MEM_P (val)
@@ -3397,8 +3393,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			   argvec[count].partial,
 			   NULL_TREE, &args_size, &argvec[count].locate);
 
-      if (argvec[count].locate.size.var)
-	abort ();
+      gcc_assert (!argvec[count].locate.size.var);
 
       if (argvec[count].reg == 0 || argvec[count].partial != 0
 	  || reg_parm_stack_space > 0)
@@ -3662,8 +3657,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	    ? hard_libcall_value (outmode) : NULL_RTX);
 
   /* Stack must be properly aligned now.  */
-  if (stack_pointer_delta & (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1))
-    abort ();
+  gcc_assert (!(stack_pointer_delta
+		& (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1)));
 
   before_call = get_last_insn ();
 
@@ -3698,8 +3693,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	{
 	  last = PREV_INSN (last);
 	  /* There was no CALL_INSN?  */
-	  if (last == before_call)
-	    abort ();
+	  gcc_assert (last != before_call);
 	}
 
       emit_barrier_after (last);
@@ -3975,11 +3969,10 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
       partial = arg->partial;
     }
 
-  if (reg != 0 && partial == 0)
-    /* Being passed entirely in a register.  We shouldn't be called in
-       this case.  */
-    abort ();
-
+  /* Being passed entirely in a register.  We shouldn't be called in
+     this case.  */
+  gcc_assert (reg == 0 || partial != 0);
+  
   /* If this arg needs special alignment, don't load the registers
      here.  */
   if (arg->n_aligned_regs != 0)
@@ -4151,8 +4144,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 		i = INTVAL (XEXP (XEXP (x, 0), 1));
 
 	      /* expand_call should ensure this.  */
-	      if (arg->locate.offset.var || GET_CODE (size_rtx) != CONST_INT)
-		abort ();
+	      gcc_assert (!arg->locate.offset.var
+			  && GET_CODE (size_rtx) == CONST_INT);
 
 	      if (arg->locate.offset.constant > i)
 		{

@@ -1,5 +1,40 @@
 2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* c-aux-info.c (gen_type): Use gcc_assert or gcc_unreachable.
+	* c-common.c (c_type_hash, c_common_nodes_and_builtins,
+	c_expand_expr, boolean_increment, nonnull_check_p,
+	check_function_arguments_recurse, fold_offsetof_1): Likewise.
+	* c-cppbuiltin.c (define__GNUC__, builtin_define_stdint_macros,
+	builtin_define_type_max): Likewise.
+	* c-decl.c (bind, pop_scope, merge_decls, pushdecl_top_level,
+	implicit_decl_warning, builtin_function, build_compound_literal,
+	complete_array_type, grokdeclarator, get_parm_info,
+	start_function, store_parm_decls_oldstyle,
+	c_write_global_declarations): Likewise.
+	* c-format.c (get_constant, decode_format_attr,
+	maybe_read_dollar_number, get_flag_spec, check_format_arg,
+	check_format_types, format_type_warning,
+	find_char_info_specifier_index, init_dynamic_asm_fprintf_info,
+	init_dynamic_diag_info, handle_format_attribute): Likewise.
+	* c-gimplify.c (push_context, pop_context, finish_bc_block): 
+	* c-lex.c (c_lex_with_flags, lex_string): Likewise.
+	* c-objc-common.c (c_tree_printer): Likewise.
+	* c-pch.c (pch_init): Likewise.
+	* c-pragma.c (maybe_apply_pragma_weak): Likewise.
+	* c-pretty-print.c (pp_c_tree_decl_identifier): Likewise.
+	* c-typeck.c (c_incomplete_type_error, composite_type,
+	common_pointer_type, common_type, same_translation_unit_p,
+	tagged_types_tu_compatible_p, finish_init, pop_init_level,
+	set_designator, set_nonincremental_init_from_string,
+	process_init_element, c_finish_if_stmt): Likewise.
+	* caller-save.c (init_caller_save, save_call_clobbered_regs,
+	insert_restore, insert_save, insert_one_insn): Likewise.
+	* calls.c (emit_call_1, compute_argument_block_size,
+	precompute_arguments, expand_call, emit_library_call_value_1,
+	store_one_arg): Likewise.
+
+2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* configure.ac (enable-checking): Add release option. Reorganize
 	to avoid repetition.
 	* configure: Rebuilt.

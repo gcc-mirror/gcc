@@ -447,7 +447,7 @@ gen_type (const char *ret_val, tree t, formals_style style)
 	  break;
 
         default:
-          abort ();
+          gcc_unreachable ();
         }
     }
   if (TYPE_READONLY (t))

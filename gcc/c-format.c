@@ -151,7 +151,7 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
    and store its value. If validated_p is true, abort on errors.
    Returns true on success, false otherwise.  */
 static bool
-get_constant(tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
+get_constant (tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
 {
   while (TREE_CODE (expr) == NOP_EXPR
 	 || TREE_CODE (expr) == CONVERT_EXPR
@@ -160,8 +160,7 @@ get_constant(tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
 
   if (TREE_CODE (expr) != INTEGER_CST || TREE_INT_CST_HIGH (expr) != 0)
     {
-      if (validated_p)
-	abort ();
+      gcc_assert (!validated_p);
       return false;
     }
 
@@ -187,8 +186,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 
   if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
     {
-      if (validated_p)
-	abort ();
+      gcc_assert (!validated_p);
       error ("unrecognized format specifier");
       return false;
     }
@@ -200,8 +198,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 
       if (info->format_type == format_type_error)
 	{
-	  if (validated_p)
-	    abort ();
+	  gcc_assert (!validated_p);
 	  warning ("%qs is an unrecognized format function type", p);
 	  return false;
 	}
@@ -221,8 +218,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 
   if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
     {
-      if (validated_p)
-	abort ();
+      gcc_assert (!validated_p);
       error ("format string arg follows the args to be formatted");
       return false;
     }
@@ -1004,11 +1000,8 @@ maybe_read_dollar_number (const char **format,
       for (i = 1; i < argnum && *param_ptr != 0; i++)
 	*param_ptr = TREE_CHAIN (*param_ptr);
 
-      if (*param_ptr == 0)
-	{
-	  /* This case shouldn't be caught here.  */
-	  abort ();
-	}
+      /* This case shouldn't be caught here.  */
+      gcc_assert (*param_ptr);
     }
   else
     *param_ptr = 0;
@@ -1096,10 +1089,8 @@ get_flag_spec (const format_flag_spec *spec, int flag, const char *predicates)
       else if (spec[i].predicate == 0)
 	return &spec[i];
     }
-  if (predicates == NULL)
-    abort ();
-  else
-    return NULL;
+  gcc_assert (predicates);
+  return NULL;
 }
 
 
@@ -1299,8 +1290,8 @@ check_format_arg (void *ctx, tree format_tree,
   if (array_size != 0)
     {
       /* Variable length arrays can't be initialized.  */
-      if (TREE_CODE (array_size) != INTEGER_CST)
-	abort ();
+      gcc_assert (TREE_CODE (array_size) == INTEGER_CST);
+      
       if (host_integerp (array_size, 0))
 	{
 	  HOST_WIDE_INT array_size_value = TREE_INT_CST_LOW (array_size);
@@ -2053,10 +2044,8 @@ check_format_types (format_wanted_type *types, const char *format_start,
       arg_num = types->arg_num;
 
       /* The following should not occur here.  */
-      if (wanted_type == 0)
-	abort ();
-      if (wanted_type == void_type_node && types->pointer_count == 0)
-	abort ();
+      gcc_assert (wanted_type);
+      gcc_assert (wanted_type != void_type_node || types->pointer_count);
 
       if (types->pointer_count == 0)
 	wanted_type = lang_hooks.types.type_promotes_to (wanted_type);
@@ -2253,17 +2242,14 @@ format_type_warning (const char *descr, const char *format_start,
 static unsigned int
 find_char_info_specifier_index (const format_char_info *fci, int c)
 {
-  unsigned int i = 0;
-  
-  while (fci->format_chars)
-    {
-      if (strchr (fci->format_chars, c))
-	return i;
-      i++; fci++;
-    }
+  unsigned i;
+
+  for (i = 0; fci->format_chars; i++, fci++)
+    if (strchr (fci->format_chars, c))
+      return i;
   
   /* We shouldn't be looking for a non-existent specifier.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Given a format_length_info array FLI, and a character C, this
@@ -2273,17 +2259,14 @@ find_char_info_specifier_index (const format_char_info *fci, int c)
 static unsigned int
 find_length_info_modifier_index (const format_length_info *fli, int c)
 {
-  unsigned int i = 0;
-  
-  while (fli->name)
-    {
-      if (strchr (fli->name, c))
-	return i;
-      i++; fli++;
-    }
+  unsigned i;
+
+  for (i = 0; fli->name; i++, fli++)
+    if (strchr (fli->name, c))
+      return i;
   
   /* We shouldn't be looking for a non-existent modifier.  */
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Determine the type of HOST_WIDE_INT in the code being compiled for
@@ -2293,7 +2276,7 @@ static void
 init_dynamic_asm_fprintf_info (void)
 {
   static tree hwi;
-      
+
   if (!hwi)
     {
       format_length_info *new_asm_fprintf_length_specs;
@@ -2303,9 +2286,10 @@ init_dynamic_asm_fprintf_info (void)
 	 length modifier to work, one must have issued: "typedef
 	 HOST_WIDE_INT __gcc_host_wide_int__;" in one's source code
 	 prior to using that modifier.  */
-      if (!(hwi = maybe_get_identifier ("__gcc_host_wide_int__"))
-	  || !(hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi))))
-	abort ();
+      hwi = maybe_get_identifier ("__gcc_host_wide_int__");
+      gcc_assert (hwi);
+      hwi = DECL_ORIGINAL_TYPE (identifier_global_value (hwi));
+      gcc_assert (hwi);
 
       /* Create a new (writable) copy of asm_fprintf_length_specs.  */
       new_asm_fprintf_length_specs = (format_length_info *)
@@ -2320,7 +2304,7 @@ init_dynamic_asm_fprintf_info (void)
       else if (hwi == long_long_integer_type_node)
 	new_asm_fprintf_length_specs[i].index = FMT_LEN_ll;
       else
-	abort ();
+	gcc_unreachable ();
 
       /* Assign the new data for use.  */
       dynamic_format_types[asm_fprintf_format_type].length_char_specs =
@@ -2383,7 +2367,7 @@ init_dynamic_diag_info (void)
 	  else if (hwi == long_long_integer_type_node)
 	    diag_ls[i].index = FMT_LEN_ll;
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	}
 
       /* Handle the __gcc_diag__ format specifics.  */
@@ -2551,7 +2535,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 	       || info.format_type == gcc_cxxdiag_format_type)
 	init_dynamic_diag_info();
       else
-	abort();
+	gcc_unreachable();
     }
 
   return NULL_TREE;
