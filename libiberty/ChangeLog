@@ -1,3 +1,17 @@
+2001-07-18  Andreas Schwab  <schwab@suse.de>
+
+	* regex.c (WORDCHAR_P) [WCHAR]: Also return true for the
+	underscore character.
+
+2001-07-18  Ulrich Drepper  <drepper@redhat.com>
+
+	* regex.c: Limit string length printed in debug messages to 100
+	chars.
+
+2001-07-18  Andreas Jaeger  <aj@suse.de>
+
+	* regex.c: Place under LGPL version 2.1.
+
 2001-07-10  Jeff Johnston  <jjohnstn@redhat.com>
 
 	* Makefile.in: Add support for regex code.
