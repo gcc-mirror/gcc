@@ -4051,9 +4051,9 @@ output_toc (file, x, labelno)
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
       if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %d\n", l);
+	fprintf (file, "\t.long %ld\n", l);
       else
-	fprintf (file, "\t.tc FS_%x[TC],%d\n", l, l);
+	fprintf (file, "\t.tc FS_%lx[TC],%ld\n", l, l);
       return;
     }
   else if (GET_MODE (x) == DImode
@@ -4082,10 +4082,10 @@ output_toc (file, x, labelno)
 #endif
 
       if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %ld\n\t.long %ld\n", high, low);
+	fprintf (file, "\t.long %ld\n\t.long %ld\n", (long)high, (long)low);
       else
 	fprintf (file, "\t.tc ID_%lx_%lx[TC],%ld,%ld\n",
-		 high, low, high, low);
+		 (long)high, (long)low, (long)high, (long)low);
       return;
     }
 
