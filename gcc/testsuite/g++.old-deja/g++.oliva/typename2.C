@@ -23,6 +23,6 @@ template <class T> struct bar {
 };
 
 template <class T> struct baz {
-  typedef bar<T>::foo foo; // ERROR - implicit typename - XFAIL *-*-*
+  typedef bar<T>::foo foo; // ERROR - implicit typename
   void m(foo); 
 };
