@@ -1,3 +1,9 @@
+2001-02-06  Laurynas Biveinis  <lauras@softhome.net>
+
+	* config/i386/djgpp.h: Add comments about standard paths.
+	(MD_EXEC_PREFIX): Undefine before defining.
+	(MD_STARTFILE_PREFIX): New.
+
 2001-01-30  Bruce Korb  <bkorb@gnu.org>
 
         fixinc/fixincl.c(process):  Emit error message only if appropriate :)
