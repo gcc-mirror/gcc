@@ -1,3 +1,14 @@
+2001-11-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* misc.c (gnat_expand_constant): Move declaration above
+	definition of lang_hooks.
+	(LANG_HOOKS_EXPAND_CONSTANT): Set to gnat_expand_constant.
+	(gnat_init): lang_expand_constant no longer exists.
+
+	(internal_error_function): Remove #ifdef HAVE_VPRINTF.  We
+	always have vprintf.
+	(gnat_init): Always call set_internal_error_function.
+
 2001-11-27  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (stamp-tool_src_dir): Use symbolic link.

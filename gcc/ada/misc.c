@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *                             $Revision: 1.12 $
+ *                             $Revision: 1.13 $
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -116,6 +116,7 @@ static HOST_WIDE_INT gnat_get_alias_set	PARAMS ((tree));
 static void gnat_print_decl		PARAMS ((FILE *, tree, int));
 static void gnat_print_type		PARAMS ((FILE *, tree, int));
 extern void gnat_init_decl_processing	PARAMS ((void));
+static tree gnat_expand_constant	PARAMS ((tree));
 
 /* Structure giving our language-specific hooks.  */
 
@@ -137,6 +138,8 @@ extern void gnat_init_decl_processing	PARAMS ((void));
 #define LANG_HOOKS_PRINT_DECL		gnat_print_decl
 #undef LANG_HOOKS_PRINT_TYPE
 #define LANG_HOOKS_PRINT_TYPE		gnat_print_type
+#undef LANG_HOOKS_EXPAND_CONSTANT
+#define LANG_HOOKS_EXPAND_CONSTANT	gnat_expand_constant
 
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
@@ -153,7 +156,6 @@ int ggc_p = 1;
 static void internal_error_function	PARAMS ((const char *, va_list *));
 static rtx gnat_expand_expr		PARAMS ((tree, rtx, enum machine_mode,
 						 enum expand_modifier));
-static tree gnat_expand_constant	PARAMS ((tree));
 static void gnat_adjust_rli		PARAMS ((record_layout_info));
 
 #if defined(MIPS_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
@@ -307,11 +309,7 @@ lang_mark_tree (t)
     }
 }
 
-/* Here we have the function to handle the compiler error processing in GCC.
-   Do this only if VPRINTF is available.  */
-
-#if defined(HAVE_VPRINTF)
-#define DO_INTERNAL_ERROR_FUNCTION
+/* Here we have the function to handle the compiler error processing in GCC.  */
 
 static void
 internal_error_function (msgid, ap)
@@ -339,7 +337,6 @@ internal_error_function (msgid, ap)
   Current_Error_Node = error_gnat_node;
   Compiler_Abort (fp, -1);
 }
-#endif
 
 /* Perform all the initialization steps that are language-specific.  */
 
@@ -354,7 +351,6 @@ gnat_init (filename)
    it, but it's where g++ does it.  */
 
   lang_expand_expr = gnat_expand_expr;
-  lang_expand_constant = gnat_expand_constant;
 
   memcpy ((char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
 	  (char *) gnat_tree_code_type,
@@ -378,9 +374,7 @@ gnat_init (filename)
   gnat_argc++;
   gnat_argv [gnat_argc] = 0;
 
-#ifdef DO_INTERNAL_ERROR_FUNCTION
   set_internal_error_function (internal_error_function);
-#endif
 
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();
