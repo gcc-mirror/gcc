@@ -1,3 +1,17 @@
+2002-01-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* Makefile.am (EXTRA_DIST): Add Darwin and AIX files.
+	(TARGET_SRC_POWERPC_AIX): New.
+	(POWERPC_AIX): New stanza.
+	* Makefile.in: Regenerate.
+	* configure.in: Add AIX case.
+	* configure: Regenerate.
+	* include/ffi.h.in (ffi_abi): Add FFI_AIX.
+	* src/powerpc/ffi_darwin.c (ffi_status): Use "long" to scale frame
+	size.  Fix "long double" support.
+	(ffi_call): Add FFI_AIX case.
+	* src/powerpc/aix.S: New.
+
 2001-10-09  John Hornkvist  <john@toastedmarshmallow.com>
 
 	Implement Darwin PowerPC ABI.
