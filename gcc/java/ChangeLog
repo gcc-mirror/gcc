@@ -1,3 +1,11 @@
+Sun Dec 13 17:31:40 1998  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (patch_method_invocation):  If class_decl is null
+	(e.g. an array type), use original type.
+
+	* parse.y (check_thrown_exceptions):  Temporary hack to suppress
+	errors about uncaught exception from clone (of array, specifically).
+
 1998-12-13  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (decompile_method): Handle all types of `return'
