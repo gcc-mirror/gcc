@@ -627,6 +627,10 @@ c_decode_option (p)
     warn_parentheses = 1;
   else if (!strcmp (p, "-Wno-parentheses"))
     warn_parentheses = 0;
+  else if (!strcmp (p, "-Wreturn-type"))
+    warn_return_type = 1;
+  else if (!strcmp (p, "-Wno-return-type"))
+    warn_return_type = 0;
   else if (!strcmp (p, "-Wcomment"))
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-comment"))
