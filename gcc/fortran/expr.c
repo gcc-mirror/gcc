@@ -1478,26 +1478,12 @@ static try check_restricted (gfc_expr *);
    integer or character.  */
 
 static try
-restricted_args (gfc_actual_arglist * a, int check_type)
+restricted_args (gfc_actual_arglist * a)
 {
-  bt type;
-
   for (; a; a = a->next)
     {
       if (check_restricted (a->expr) == FAILURE)
 	return FAILURE;
-
-      if (!check_type)
-	continue;
-
-      type = a->expr->ts.type;
-      if (type != BT_CHARACTER && type != BT_INTEGER)
-	{
-	  gfc_error
-	    ("Function argument at %L must be of type INTEGER or CHARACTER",
-	     &a->expr->where);
-	  return FAILURE;
-	}
     }
 
   return SUCCESS;
@@ -1544,89 +1530,21 @@ external_spec_function (gfc_expr * e)
       return FAILURE;
     }
 
-  return restricted_args (e->value.function.actual, 0);
+  return restricted_args (e->value.function.actual);
 }
 
 
 /* Check to see that a function reference to an intrinsic is a
-   restricted expression.  Some functions required by the standard are
-   omitted because references to them have already been simplified.
-   Strictly speaking, a lot of these checks are redundant with other
-   checks.  If a function is indeed a particular intrinsic, then the
-   type of its argument have already been checked and passed.  */
+   restricted expression.  */
 
 static try
 restricted_intrinsic (gfc_expr * e)
 {
-  gfc_intrinsic_sym *sym;
+  /* TODO: Check constraints on inquiry functions.  7.1.6.2 (7).  */
+  if (check_inquiry (e) == SUCCESS)
+    return SUCCESS;
 
-  static struct
-  {
-    const char *name;
-    int case_number;
-  }
-   const *cp, cases[] =
-  {
-    {"repeat", 0},
-    {"reshape", 0},
-    {"selected_int_kind", 0},
-    {"selected_real_kind", 0},
-    {"transfer", 0},
-    {"trim", 0},
-    {"null", 1},
-    {"lbound", 2},
-    {"shape", 2},
-    {"size", 2},
-    {"ubound", 2},
-    /* bit_size() has already been reduced */
-    {"len", 0},
-    /* kind() has already been reduced */
-    /* Numeric inquiry functions have been reduced */
-    { NULL, 0}
-  };
-
-  try t;
-
-  sym = e->value.function.isym;
-  if (!sym)
-    return FAILURE;
-
-  if (sym->elemental)
-    return restricted_args (e->value.function.actual, 1);
-
-  for (cp = cases; cp->name; cp++)
-    if (strcmp (cp->name, sym->name) == 0)
-      break;
-
-  if (cp->name == NULL)
-    {
-      gfc_error ("Intrinsic function '%s' at %L is not a restricted function",
-		 sym->name, &e->where);
-      return FAILURE;
-    }
-
-  switch (cp->case_number)
-    {
-    case 0:
-      /* Functions that are restricted if they have character/integer args.  */
-      t = restricted_args (e->value.function.actual, 1);
-      break;
-
-    case 1:			/* NULL() */
-      t = SUCCESS;
-      break;
-
-    case 2:
-      /* Functions that could be checking the bounds of an assumed-size array.  */
-      t = SUCCESS;
-      /* TODO: implement checks from 7.1.6.2 (10) */
-      break;
-
-    default:
-      gfc_internal_error ("restricted_intrinsic(): Bad case");
-    }
-
-  return t;
+  return restricted_args (e->value.function.actual);
 }
 
 
