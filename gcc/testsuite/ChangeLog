@@ -1,5 +1,7 @@
 2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
 
+	* g++.dg/vtgc1.C: Update for new ABI.
+
 	* consistency.vlad: New directory, 1665 files.
 
 2001-02-12  Joseph S. Myers  <jsm28@cam.ac.uk>
