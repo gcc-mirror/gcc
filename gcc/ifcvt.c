@@ -1504,45 +1504,73 @@ noce_try_abs (if_info)
   return TRUE;
 }
 
-/* Look for the condition for the jump first.  We'd prefer to avoid
-   get_condition if we can -- it tries to look back for the contents
-   of an original compare.  On targets that use normal integers for
-   comparisons, e.g. alpha, this is wasteful.  */
+/* Similar to get_condition, only the resulting condition must be
+   valid at JUMP, instead of at EARLIEST.  */
 
 static rtx
 noce_get_condition (jump, earliest)
      rtx jump;
      rtx *earliest;
 {
-  rtx cond;
-  rtx set;
-
-  /* If the condition variable is a register and is MODE_INT, accept it.
-     Otherwise, fall back on get_condition.  */
+  rtx cond, set, tmp, insn;
+  bool reverse;
 
   if (! any_condjump_p (jump))
     return NULL_RTX;
 
   set = pc_set (jump);
 
+  /* If this branches to JUMP_LABEL when the condition is false,
+     reverse the condition.  */
+  reverse = (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
+	     && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump));
+
+  /* If the condition variable is a register and is MODE_INT, accept it.  */
+
   cond = XEXP (SET_SRC (set), 0);
-  if (GET_CODE (XEXP (cond, 0)) == REG
-      && GET_MODE_CLASS (GET_MODE (XEXP (cond, 0))) == MODE_INT)
+  tmp = XEXP (cond, 0);
+  if (REG_P (tmp) && GET_MODE_CLASS (GET_MODE (tmp)) == MODE_INT)
     {
       *earliest = jump;
 
-      /* If this branches to JUMP_LABEL when the condition is false,
-	 reverse the condition.  */
-      if (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-	  && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump))
+      if (reverse)
 	cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
-			       GET_MODE (cond), XEXP (cond, 0),
-			       XEXP (cond, 1));
+			       GET_MODE (cond), tmp, XEXP (cond, 1));
+      return cond;
     }
-  else
-    cond = get_condition (jump, earliest);
 
-  return cond;
+  /* Otherwise, fall back on canonicalize_condition to do the dirty
+     work of manipulating MODE_CC values and COMPARE rtx codes.  */
+
+  tmp = canonicalize_condition (jump, cond, reverse, earliest, NULL_RTX);
+  if (!tmp)
+    return NULL_RTX;
+
+  /* We are going to insert code before JUMP, not before EARLIEST.
+     We must therefore be certain that the given condition is valid
+     at JUMP by virtue of not having been modified since.  */
+  for (insn = *earliest; insn != jump; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && modified_in_p (tmp, insn))
+      break;
+  if (insn == jump)
+    return tmp;
+
+  /* The condition was modified.  See if we can get a partial result
+     that doesn't follow all the reversals.  Perhaps combine can fold
+     them together later.  */
+  tmp = XEXP (tmp, 0);
+  if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
+    return NULL_RTX;
+  tmp = canonicalize_condition (jump, cond, reverse, earliest, tmp);
+  if (!tmp)
+    return NULL_RTX;
+
+  /* For sanity's sake, re-validate the new result.  */
+  for (insn = *earliest; insn != jump; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) && modified_in_p (tmp, insn))
+      return NULL_RTX;
+
+  return tmp;
 }
 
 /* Return true if OP is ok for if-then-else processing.  */
