@@ -1,5 +1,7 @@
 2000-11-12  Mark Mitchell  <mark@codesourcery.com>
 
+	* configure: Turn on libstdc++ V3 by default.
+
 	* ltcf-c.sh: On Solaris, use `gcc -shared' to build a shared library
 	if we've got GCC.
 
