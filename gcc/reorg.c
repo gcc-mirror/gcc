@@ -2051,9 +2051,7 @@ mark_target_live_regs (target, res)
 	  /* If this insn is a USE made by update_block, we care about the
 	     underlying insn.  */
 	  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
-	      && (GET_CODE (XEXP (PATTERN (insn), 0)) == INSN
-		  || GET_CODE (XEXP (PATTERN (insn), 0)) == CALL_INSN
-		  || GET_CODE (XEXP (PATTERN (insn), 0)) == JUMP_INSN))
+	      && GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
 	      real_insn = XEXP (PATTERN (insn), 0);
 
 	  if (GET_CODE (real_insn) == CALL_INSN)
@@ -2170,10 +2168,30 @@ mark_target_live_regs (target, res)
 	  continue;
 
 	case INSN:
-	  if (GET_CODE (PATTERN (insn)) == USE
-	      || GET_CODE (PATTERN (insn)) == CLOBBER)
+	  if (GET_CODE (PATTERN (insn)) == USE)
+	    {
+	      /* If INSN is a USE made by update_block, we care about the
+		 underlying insn.  Any registers set or referenced by the
+		 underlying insn should be treated as if the insn were
+		 located here without the USE.  */
+	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
+		{
+		  rtx inner = XEXP (PATTERN (insn), 0);
+
+		  mark_referenced_resources (inner, &needed, 1);
+		  mark_set_resources (inner, &set, 0, 1);
+
+		  COPY_HARD_REG_SET (scratch, set.regs);
+		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+		  AND_COMPL_HARD_REG_SET (res->regs, scratch);
+		}
+
+	      /* All other USE insns are to be ignored.  */
+	      continue;
+	    }
+	  else if (GET_CODE (PATTERN (insn)) == CLOBBER)
 	    continue;
-	  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 	    {
 	      /* An unconditional jump can be used to fill the delay slot
 		 of a call, so search for a JUMP_INSN in any position.  */
@@ -3663,9 +3681,7 @@ dbr_schedule (first, file)
       next = NEXT_INSN (insn);
 
       if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
-	  && (GET_CODE (XEXP (PATTERN (insn), 0)) == INSN
-	      || GET_CODE (XEXP (PATTERN (insn), 0)) == JUMP_INSN
-	      || GET_CODE (XEXP (PATTERN (insn), 0)) == CALL_INSN))
+	  && GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
 	next = delete_insn (insn);
     }
 
