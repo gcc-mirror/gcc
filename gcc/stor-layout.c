@@ -650,6 +650,8 @@ place_union_field (rli, field)
       MIN (desired_align, (unsigned) BIGGEST_FIELD_ALIGNMENT);
 #endif
 
+  TYPE_USER_ALIGN (rli->t) |= DECL_USER_ALIGN (field);
+
   /* Union must be at least as aligned as any field requires.  */
   rli->record_align = MAX (rli->record_align, desired_align);
   rli->unpadded_align = MAX (rli->unpadded_align, desired_align);
@@ -924,6 +926,8 @@ place_field (rli, field)
   DECL_FIELD_BIT_OFFSET (field) = rli->bitpos;
   SET_DECL_OFFSET_ALIGN (field, rli->offset_align);
 
+  TYPE_USER_ALIGN (rli->t) |= user_align;
+
   /* If this field ended up more aligned than we thought it would be (we
      approximate this by seeing if its position changed), lay out the field
      again; perhaps we can use an integral mode for it now.  */
@@ -993,7 +997,6 @@ finalize_record_size (rli)
 #else
   TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
-  TYPE_USER_ALIGN (rli->t) = 0;
 
   /* Compute the size so far.  Be sure to allow for extra bits in the
      size in bytes.  We have guaranteed above that it will be no more
@@ -1454,6 +1457,7 @@ layout_type (type)
 #else
 	TYPE_ALIGN (type) = MAX (TYPE_ALIGN (element), BITS_PER_UNIT);
 #endif
+	TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (element);
 
 #ifdef ROUND_TYPE_SIZE
 	if (TYPE_SIZE (type) != 0)
