@@ -2238,6 +2238,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	     appeared to be a memory address.  This is a kludge.  */
 	  if (split_code == MULT
 	      && GET_CODE (XEXP (*split, 1)) == CONST_INT
+	      && INTVAL (XEXP (*split, 1)) > 0
 	      && (i = exact_log2 (INTVAL (XEXP (*split, 1)))) >= 0)
 	    {
 	      SUBST (*split, gen_rtx_combine (ASHIFT, split_mode,

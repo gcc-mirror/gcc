@@ -1,3 +1,7 @@
+2001-07-13  David Edelsohn  <edelsohn@gnu.org>
+
+	* combine.c (try_combine): Ensure const_int pow2 is positive.
+
 2001-07-11  Kazu Hirata  <kazu@hxi.com>
 
 	* recog.c (validate_change): Fix a comment typo.
