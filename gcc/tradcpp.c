@@ -793,7 +793,7 @@ main (argc, argv)
     in_fname = "";
     f = 0;
   } else if ((f = open (in_fname, O_RDONLY, 0666)) < 0)
-    goto perror;
+    goto sys_error;
 
   /* Either of two environment variables can specify output of deps.
      Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
@@ -882,7 +882,7 @@ main (argc, argv)
   }
 
   if (file_size_and_mode (f, &st_mode, &st_size))
-    goto perror;
+    goto sys_error;
   fp->fname = in_fname;
   fp->lineno = 1;
   /* JF all this is mine about reading pipes and ttys */
@@ -901,11 +901,11 @@ main (argc, argv)
     bufp = fp->buf;
     for (;;) {
       cnt = read (f, bufp, bsize - size);
-      if (cnt < 0) goto perror;	/* error! */
-      if (cnt == 0) break;	/* End of file */
+      if (cnt < 0) goto sys_error;	/* error! */
+      if (cnt == 0) break;		/* End of file */
       size += cnt;
       bufp += cnt;
-      if (bsize == size) {	/* Buffer is full! */
+      if (bsize == size) {		/* Buffer is full! */
         bsize *= 2;
         fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
 	bufp = fp->buf + size;	/* May have moved */
@@ -923,7 +923,7 @@ main (argc, argv)
       i = read (f, fp->buf + fp->length, st_size);
       if (i <= 0) {
         if (i == 0) break;
-	goto perror;
+	goto sys_error;
       }
       fp->length += i;
       st_size -= i;
@@ -979,7 +979,7 @@ main (argc, argv)
     exit (FATAL_EXIT_CODE);
   exit (SUCCESS_EXIT_CODE);
 
- perror:
+ sys_error:
   pfatal_with_name (in_fname);
 }
 
