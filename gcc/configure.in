@@ -167,7 +167,7 @@ esac])
 
 if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
-    gcc_gxx_include_dir='${libsubdir}/include/g++'
+    gcc_gxx_include_dir='${libsubdir}/include/c++'
   else
     topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
 changequote(<<, >>)dnl

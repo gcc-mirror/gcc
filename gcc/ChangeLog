@@ -1,3 +1,9 @@
+2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in (gcc_gxx_include_dir):  Change to match versioned
+	C++ headers if --enable-version-specific-runtime-libs is used.
+	* configure:  Regenerate.
+
 2002-06-28  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (gcse_emit_move_after): Use gen_move_insn to produce the move.
