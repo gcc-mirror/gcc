@@ -1,5 +1,5 @@
 $ !
-$ !	Set up to compile GCC on VMS
+$ !	Set up to compile GCC on VAX/VMS
 $ !
 $! Set the def dir to proper place for use in batch. Works for interactive too.
 $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
@@ -10,12 +10,20 @@ $ !
 $ echo = "write sys$output"
 $ !
 $ if f$search("config.h") .nes. "" then delete config.h.*
-$ copy [.config]xm-vms.h []config.h
-$ echo "Linked `config.h' to `[.config]xm-vms.h'.
+$ copy [.config]xm-vax-vms.h []config.h
+$ echo "Linked `config.h' to `[.config]xm-vax-vms.h'.
+$ !
+$ if f$search("tconfig.h") .nes. "" then delete tconfig.h.*
+$ create []tconfig.h
+$DECK
+/* tconfig.h == config.h :: target and host configurations are the same */
+#include "config.h"
+$EOD
+$ echo "Created `tconfig.h'.
 $ !
 $ if f$search("tm.h") .nes. "" then delete tm.h.*
-$ copy [.config]vms.h []tm.h
-$ echo "Linked `tm.h' to `[.config]vms.h'.
+$ copy [.config]vax-vms.h []tm.h
+$ echo "Linked `tm.h' to `[.config]vax-vms.h'.
 $ !
 $ if f$search("md.") .nes. "" then delete md..*
 $ copy [.config]vax.md []md.
@@ -33,7 +41,7 @@ $search version.c version_string,"="/match=and/output=t.tmp
 $open ifile$ t.tmp
 $read ifile$ line
 $close ifile$
-$delete/nolog t.tmp;
+$delete t.tmp;
 $ijk=f$locate("""",line)+1
 $line=f$extract(ijk,f$length(line)-ijk,line)
 $ijk=f$locate("""",line)
@@ -57,7 +65,7 @@ $write_ident:
 $open ifile$ version.opt/write
 $write ifile$ "ident="+""""+elm+""""
 $close ifile$
-$pur version.opt/nolog
+$purge version.opt
 $!
 $!
 $! create linker options files that lists all of the components for all
@@ -86,7 +94,8 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 !
 	position (beginning_of (newbuffer));
 	LOOP
-	  range1:=search_quietly("," & ((SPAN(" ") & LINE_END) | LINE_END), FORWARD, EXACT);
+	  range1 := search_quietly("," & ((SPAN(" ") & LINE_END) | LINE_END),
+				   FORWARD, EXACT);
 	  exitif range1 = 0;
 	  position (beginning_of (range1));
 	  erase(range1);
@@ -119,8 +128,9 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 !
         position (beginning_of (current_buffer)) ;
 	LOOP
-          range1 := search_quietly ("$(" &  
-	     SPAN("abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ#~0123456789") & ")", FORWARD, EXACT) ;
+	  range1 := search_quietly ("$(" &  
+      SPAN("abcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ#~0123456789")
+				    & ")", FORWARD, EXACT) ;
 	  EXITIF range1 = 0;
 	  position (beginning_of (range1));
 	  move_horizontal(2);
@@ -229,14 +239,17 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 !
 	SET(OUTPUT_FILE, compiler_list, "compilers.list");
       write_file (compiler_list);
-   generate_option_file(LINE_BEGIN & "OBJS" & ((SPAN(" ") & "=") | "="),"independent.opt");
-   generate_option_file(LINE_BEGIN & "LIB2FUNCS" & ((SPAN(" ") & "=") | "="),"libgcc2.list");
+   generate_option_file(LINE_BEGIN & "OBJS" & ((SPAN(" ") & "=") | "="),
+			"independent.opt");
+   generate_option_file(LINE_BEGIN & "LIB2FUNCS" & ((SPAN(" ") & "=") | "="),
+			"libgcc2.list");
 !
 ! Now change OBJS in the Makefile, so each language specific options file 
 ! does not pick up all of the language independent files.
 !
    position (beginning_of (mainbuffer));
-   range1 := search_quietly (LINE_BEGIN & "OBJS" & ((SPAN(" ") & "=") | "="), FORWARD, EXACT) ;
+   range1 := search_quietly (LINE_BEGIN & "OBJS" & ((SPAN(" ") & "=") | "="),
+			     FORWARD, EXACT) ;
    position (end_of (range1));
    split_line;
    position (beginning_of (compiler_list));
@@ -245,17 +258,17 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
      exitif cmark = end_of(compiler_list);
      message(current_line);
      generate_option_file(LINE_BEGIN & Current_line & ((SPAN(" ") & ":") | ":"),
-	current_line+"-objs.opt");
+			  current_line+"-objs.opt");
      position (cmark);
      move_vertical(1);
    ENDLOOP ;
    quit ;
 $ echo ""
 $!
-$! Remove excessive versions of the options file...
+$! Remove excessive versions of the option files...
 $!
-$purge/nolog *.opt
-$purge/nolog compilers.list
+$ purge *.opt
+$ purge compilers.list,libgcc2.list
 $!
 $!
 $!
