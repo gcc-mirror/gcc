@@ -1,3 +1,8 @@
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (tree_forwarder_block_p): Reorder checks so that
+	common cases will be caught earlier than others.
+
 2004-10-08  Michael Matz  <matz@suse.de>
 
 	* loop-doloop.c (doloop_optimize): Extend count.
