@@ -1756,9 +1756,20 @@ int
 arm_return_in_memory (type)
      tree type;
 {
+  HOST_WIDE_INT size;
+
   if (!AGGREGATE_TYPE_P (type))
     /* All simple types are returned in registers.  */
     return 0;
+
+  size = int_size_in_bytes (type);
+
+  if (TARGET_ATPCS)
+    {
+      /* ATPCS returns aggregate types in memory only if they are
+	 larger than a word (or are variable size).  */
+      return (size < 0 || size > UNITS_PER_WORD);
+    }
   
   /* For the arm-wince targets we choose to be compitable with Microsoft's
      ARM and Thumb compilers, which always return aggregates in memory.  */
@@ -1767,7 +1778,7 @@ arm_return_in_memory (type)
      Also catch the case where int_size_in_bytes returns -1.  In this case
      the aggregate is either huge or of varaible size, and in either case
      we will want to return it via memory and not in a register.  */
-  if (((unsigned int) int_size_in_bytes (type)) > UNITS_PER_WORD)
+  if (size < 0 || size > UNITS_PER_WORD)
     return 1;
   
   if (TREE_CODE (type) == RECORD_TYPE)

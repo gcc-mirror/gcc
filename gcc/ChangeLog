@@ -1,3 +1,9 @@
+2002-09-05  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/arm/arm.c (arm_return_in_memory): Implement ATPCS
+	return-in-memory rules. 
+	* config/arm/arm.h (ARM_FLAG_ATPCS, TARGET_ATPCS): Define.
+
 2002-09-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/xcoff.h (HOT_TEXT_SECTION_NAME): Delete.
