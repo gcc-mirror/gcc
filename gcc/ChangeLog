@@ -1,3 +1,9 @@
+2003-03-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/7796
+	* unroll.c (calculate_giv_inc): Handle constants being
+	loaded with LSHIFTRT.
+
 2003-03-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Do not disable
@@ -20,7 +26,7 @@
 
 2003-03-07  James E Wilson  <wilson@tuliptree.org>
 
-        * config/sh/sh.h (HARD_REGNO_NREGS): Round up the XD register count.
+	* config/sh/sh.h (HARD_REGNO_NREGS): Round up the XD register count.
 
 2003-03-07  Geoffrey Keating  <geoffk@apple.com>
 
