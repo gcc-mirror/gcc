@@ -2396,7 +2396,11 @@ arc_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 static bool
 arc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return (AGGREGATE_TYPE_P (type)
-	  || int_size_in_bytes (type) > 8
-	  || TREE_ADDRESSABLE (type));
+  if (AGGREGATE_TYPE_P (type))
+    return true;
+  else
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      return (size == -1 || size > 8);
+    }
 }

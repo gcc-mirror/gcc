@@ -3466,5 +3466,6 @@ mcore_external_libcall (rtx fun)
 static bool
 mcore_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return int_size_in_bytes (type) > 2 * UNITS_PER_WORD;
+  HOST_WIDE_INT size = int_size_in_bytes (type);
+  return (size == -1 || size > 2 * UNITS_PER_WORD);
 }

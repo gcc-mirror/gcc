@@ -5384,9 +5384,13 @@ avr_asm_out_dtor (rtx symbol, int priority)
 static bool
 avr_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
-  return ((TYPE_MODE (type) == BLKmode)
-	  ? int_size_in_bytes (type) > 8
-	  : 0);
+  if (TYPE_MODE (type) == BLKmode)
+    {
+      HOST_WIDE_INT size = int_size_in_bytes (type);
+      return (size == -1 || size > 8);
+    }
+  else
+    return false;
 }
 
 #include "gt-avr.h"
