@@ -134,6 +134,10 @@ namespace std
     __basic_file<_CharT>::is_open() { return _M_cfile != 0; }
   
   template<typename _CharT>
+    int 
+    __basic_file<_CharT>::fd() { return fileno(_M_cfile) ; }
+  
+  template<typename _CharT>
     __basic_file<_CharT>* 
     __basic_file<_CharT>::close()
     { 
