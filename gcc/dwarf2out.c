@@ -132,7 +132,7 @@ typedef struct dw_separate_line_info_struct
 dw_separate_line_info_entry;
 
 /* The dw_val_node describes an attibute's value, as it is
-   represnted internally.  */
+   represented internally.  */
 typedef struct dw_val_struct
   {
     dw_val_class val_class;
@@ -1814,7 +1814,7 @@ decl_ultimate_origin (decl)
 {
   register tree immediate_origin = DECL_ABSTRACT_ORIGIN (decl);
 
-  if (immediate_origin == NULL)
+  if (immediate_origin == NULL || immediate_origin == decl)
     return NULL;
   else
     {
@@ -2403,20 +2403,23 @@ equate_decl_number_to_die (decl, decl_die)
   register unsigned num_allocated;
   if (decl_id >= decl_die_table_allocated)
     {
-      num_allocated = (((decl_id + 1)
-			+ DECL_DIE_TABLE_INCREMENT - 1)
-		       / DECL_DIE_TABLE_INCREMENT)
-	* DECL_DIE_TABLE_INCREMENT;
-      decl_die_table = (dw_die_ref *) xrealloc (decl_die_table,
-				       sizeof (dw_die_ref) * num_allocated);
-      bzero (&decl_die_table[decl_die_table_allocated],
-	  (num_allocated - decl_die_table_allocated) * sizeof (dw_die_ref));
+      num_allocated
+	= ((decl_id + 1 + DECL_DIE_TABLE_INCREMENT - 1)
+	   / DECL_DIE_TABLE_INCREMENT)
+	  * DECL_DIE_TABLE_INCREMENT;
+
+      decl_die_table
+	= (dw_die_ref *) xrealloc (decl_die_table,
+				   sizeof (dw_die_ref) * num_allocated);
+
+      bzero ((char *) &decl_die_table[decl_die_table_allocated],
+	     (num_allocated - decl_die_table_allocated) * sizeof (dw_die_ref));
       decl_die_table_allocated = num_allocated;
     }
+
   if (decl_id >= decl_die_table_in_use)
-    {
-      decl_die_table_in_use = (decl_id + 1);
-    }
+    decl_die_table_in_use = (decl_id + 1);
+
   decl_die_table[decl_id] = decl_die;
 }
 
@@ -2706,25 +2709,25 @@ build_abbrev_table (die)
       if (abbrev_die_table_in_use >= abbrev_die_table_allocated)
 	{
 	  n_alloc = abbrev_die_table_allocated + ABBREV_DIE_TABLE_INCREMENT;
-	  abbrev_die_table = (dw_die_ref *)
-	    xmalloc (abbrev_die_table,
-		     sizeof (dw_die_ref) * n_alloc);
-	  bzero (&abbrev_die_table[abbrev_die_table_allocated],
-	      (n_alloc - abbrev_die_table_allocated) * sizeof (dw_die_ref));
+	  abbrev_die_table 
+	    = (dw_die_ref *) xmalloc (abbrev_die_table,
+				      sizeof (dw_die_ref) * n_alloc);
+
+	  bzero ((char *) &abbrev_die_table[abbrev_die_table_allocated],
+		 (n_alloc - abbrev_die_table_allocated) * sizeof (dw_die_ref));
 	  abbrev_die_table_allocated = n_alloc;
 	}
+
       ++abbrev_die_table_in_use;
       abbrev_die_table[abbrev_id] = die;
     }
+
   die->die_abbrev = abbrev_id;
   for (c = die->die_child; c != NULL; c = c->die_sib)
-    {
-      build_abbrev_table (c);
-    }
+    build_abbrev_table (c);
 }
-
 
-/**********************  DWARF Information Sizing *****************************/
+/**********************  DWARF Information Sizing ****************************/
 
 /* Return the size of an unsigned LEB128 quantity.  */
 inline unsigned long
@@ -2910,7 +2913,7 @@ constant_size (value)
   log = log / 8;
   log = 1 << (floor_log2 (log) + 1);
 
-  return log;
+  return MIN (log, 4);
 }
 
 /* Return the size of a DIE, as it is represented in the
@@ -3273,6 +3276,8 @@ value_format (v)
 	  return DW_FORM_data2;
 	case 4:
 	  return DW_FORM_data4;
+	case 8:
+	  return DW_FORM_data8;
 	default:
 	  abort ();
 	}
@@ -3982,7 +3987,8 @@ dwarf2out_frame_debug (insn)
 	case REG:
 	  assert (cfa_reg == REGNO (src));
 	  assert (REGNO (dest) == STACK_POINTER_REGNUM
-		  || frame_pointer_needed && REGNO (dest) == FRAME_POINTER_REGNUM);
+		  || (frame_pointer_needed
+		      && REGNO (dest) == HARD_FRAME_POINTER_REGNUM));
 	  cfa_reg = REGNO (dest);
 	  break;
 
@@ -5344,7 +5350,7 @@ based_loc_descr (reg, offset)
      registers, since the RTL for local variables is relative to one of
      them.  */
   register unsigned fp_reg = DBX_REGISTER_NUMBER (frame_pointer_needed
-						  ? FRAME_POINTER_REGNUM
+						  ? HARD_FRAME_POINTER_REGNUM
 						  : STACK_POINTER_REGNUM);
   if (reg == fp_reg)
     {
@@ -6066,12 +6072,12 @@ add_bound_info (subrange_die, bound_attr, bound)
 	add_AT_unsigned (subrange_die, bound_attr, bound_value);
       break;
 
-    /* Dynamic bounds may be represented by NOP_EXPR nodes containing
-       SAVE_EXPR nodes.  */
+    case CONVERT_EXPR:
     case NOP_EXPR:
-      bound = TREE_OPERAND (bound, 0);
-      /* ... fall thru...  */
-
+    case NON_LVALUE_EXPR:
+      add_bound_info (subrange_die, bound_attr, TREE_OPERAND (bound, 0));
+      break;
+      
     case SAVE_EXPR:
       /* If optimization is turned on, the SAVE_EXPRs that describe how to
          access the upper bound values may be bogus.  If they refer to a
@@ -6106,9 +6112,6 @@ add_bound_info (subrange_die, bound_attr, bound)
 	}
       /* else leave out the attribute.  */
       break;
-
-    default:
-      abort ();
     }
 }
 
@@ -6454,18 +6457,20 @@ add_type_attribute (object_die, type, decl_const, decl_volatile, context_die)
   register enum tree_code code  = TREE_CODE (type);
   register dw_die_ref type_die  = NULL;
 
+  /* If this type is an unnamed subtype of an integral or floating-point
+     type, use the inner type.  */
+  if ((code == INTEGER_TYPE || code == REAL_TYPE)
+      && TREE_TYPE (type) != 0 && TYPE_NAME (type) == 0)
+    type = TREE_TYPE (type), code = TREE_CODE (type);
+
   if (code == ERROR_MARK)
-    {
-      return;
-    }
+    return;
 
   /* Handle a special case.  For functions whose return type is void, we
      generate *no* type attribute.  (Note that no object may have type
      `void', so this only applies to function return types).  */
   if (code == VOID_TYPE)
-    {
-      return;
-    }
+    return;
 
   type_die = modified_type_die (type,
 				decl_const || TYPE_READONLY (type),
@@ -6907,7 +6912,7 @@ gen_subprogram_die (decl, context_die)
   register tree origin = decl_ultimate_origin (decl);
   register dw_die_ref subr_die;
   register dw_loc_descr_ref fp_loc = NULL;
-  register unsigned fp_reg;
+  register rtx fp_reg;
   register tree fn_arg_types;
   register tree outer_scope;
   register dw_die_ref old_die = lookup_decl_die (decl);
@@ -7041,12 +7046,9 @@ gen_subprogram_die (decl, context_die)
       /* Define the "frame base" location for this routine.  We use the
          frame pointer or stack pointer registers, since the RTL for local
          variables is relative to one of them.  */
-      fp_reg = DBX_REGISTER_NUMBER (frame_pointer_needed
-				    ? FRAME_POINTER_REGNUM
-				    : STACK_POINTER_REGNUM);
-      assert (fp_reg >= 0 && fp_reg <= 31);
-      fp_loc = new_loc_descr (DW_OP_reg0 + fp_reg);
-      add_AT_loc (subr_die, DW_AT_frame_base, fp_loc);
+      fp_reg
+	= frame_pointer_needed ? hard_frame_pointer_rtx : stack_pointer_rtx;
+      add_AT_loc (subr_die, DW_AT_frame_base, reg_loc_descriptor (fp_reg));
 
       if (current_function_needs_context)
 	add_AT_loc (subr_die, DW_AT_static_link,
@@ -8168,9 +8170,7 @@ dwarf2out_decl (decl)
          builtin function.  Explicit programmer-supplied declarations of
          these same functions should NOT be ignored however.  */
       if (DECL_EXTERNAL (decl) && DECL_FUNCTION_CODE (decl))
-	{
-	  return;
-	}
+	return;
 
       /* What we would really like to do here is to filter out all mere
          file-scope declarations of file-scope functions which are never
@@ -8198,15 +8198,13 @@ dwarf2out_decl (decl)
          within include files which also contain 
 	 `#pragma interface' pragmas.  */
       if (DECL_INITIAL (decl) == NULL_TREE)
-	{
-	  return;
-	}
+	return;
 
-      /* If we're a nested function, initially use a parent of NULL; if we're
-	 a plain function, this will be fixed up in decls_for_scope.  If
-	 we're a method, it will be ignored, since we already have a DIE.  */
+      /* Ignore nested functions, since they will be written in decl_for_scope.
+	 ??? There was an old comment here about methods, which now need to
+	 be handled.  */
       if (decl_function_context (decl))
-	context_die = NULL;
+	return;
 
       break;
 
@@ -8253,7 +8251,8 @@ dwarf2out_decl (decl)
       /* If we're a function-scope tag, initially use a parent of NULL;
 	 this will be fixed up in decls_for_scope.  */
       if (decl_function_context (decl))
-	context_die = NULL;
+	return;
+/*	context_die = NULL; */
 
       break;
 
@@ -8525,7 +8524,7 @@ dwarf2out_init (asm_out_file, main_input_filename)
 
   /* Allocate the initial hunk of the file_table.  */
   file_table = (char **) xmalloc (FILE_TABLE_INCREMENT * sizeof (char *));
-  bzero (file_table, FILE_TABLE_INCREMENT * sizeof (char *));
+  bzero ((char *) file_table, FILE_TABLE_INCREMENT * sizeof (char *));
   file_table_allocated = FILE_TABLE_INCREMENT;
   /* skip the first entry - file numbers begin at 1 */
   file_table_in_use = 1;
@@ -8533,14 +8532,16 @@ dwarf2out_init (asm_out_file, main_input_filename)
   /* Allocate the initial hunk of the decl_die_table.  */
   decl_die_table
     = (dw_die_ref *) xmalloc (DECL_DIE_TABLE_INCREMENT * sizeof (dw_die_ref));
-  bzero (decl_die_table, DECL_DIE_TABLE_INCREMENT * sizeof (dw_die_ref));
+  bzero ((char *) decl_die_table,
+	 DECL_DIE_TABLE_INCREMENT * sizeof (dw_die_ref));
   decl_die_table_allocated = DECL_DIE_TABLE_INCREMENT;
   decl_die_table_in_use = 0;
 
   /* Allocate the initial hunk of the decl_scope_table.  */
   decl_scope_table
     = (tree *) xmalloc (DECL_SCOPE_TABLE_INCREMENT * sizeof (tree));
-  bzero (decl_scope_table, DECL_SCOPE_TABLE_INCREMENT * sizeof (tree));
+  bzero ((char *) decl_scope_table,
+	 DECL_SCOPE_TABLE_INCREMENT * sizeof (tree));
   decl_scope_table_allocated = DECL_SCOPE_TABLE_INCREMENT;
   decl_scope_depth = 0;
 
@@ -8548,7 +8549,8 @@ dwarf2out_init (asm_out_file, main_input_filename)
   abbrev_die_table
     = (dw_die_ref *) xmalloc (ABBREV_DIE_TABLE_INCREMENT
 			      * sizeof (dw_die_ref));
-  bzero (abbrev_die_table, ABBREV_DIE_TABLE_INCREMENT * sizeof (dw_die_ref));
+  bzero ((char *) abbrev_die_table,
+	 ABBREV_DIE_TABLE_INCREMENT * sizeof (dw_die_ref));
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
   /* zero-th entry is allocated, but unused */
   abbrev_die_table_in_use = 1;
@@ -8557,15 +8559,16 @@ dwarf2out_init (asm_out_file, main_input_filename)
   line_info_table
     = (dw_line_info_ref) xmalloc (LINE_INFO_TABLE_INCREMENT
 				  * sizeof (dw_line_info_entry));
-  bzero (line_info_table, LINE_INFO_TABLE_INCREMENT
-	 * sizeof (dw_line_info_entry));
+  bzero ((char *) line_info_table,
+	 LINE_INFO_TABLE_INCREMENT * sizeof (dw_line_info_entry));
   line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
   /* zero-th entry is allocated, but unused */
   line_info_table_in_use = 1;
 
   /* Allocate the initial hunk of the fde_table.  */
-  fde_table = (dw_fde_ref) xmalloc (FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
-  bzero (fde_table, FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
+  fde_table
+    = (dw_fde_ref) xmalloc (FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
+  bzero ((char *) fde_table, FDE_TABLE_INCREMENT * sizeof (dw_fde_node));
   fde_table_allocated = FDE_TABLE_INCREMENT;
   fde_table_in_use = 0;
 
