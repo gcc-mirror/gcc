@@ -409,13 +409,10 @@ static tree current_this;
    the list of the catch clauses of the currently analysed try block. */
 static tree currently_caught_type_list;
 
-static tree src_parse_roots[2] = { NULL_TREE, NULL_TREE };
+static tree src_parse_roots[1] = { NULL_TREE };
 
 /* All classes seen from source code */
 #define gclass_list src_parse_roots[0]
-
-/* List of non-complete classes */
-#define incomplete_class_list src_parse_roots[1]
 
 /* Check modifiers. If one doesn't fit, retrieve it in its declaration
    line and point it out.  */
@@ -4979,7 +4976,7 @@ static tree
 obtain_incomplete_type (type_name)
      tree type_name;
 {
-  tree ptr, name;
+  tree ptr = NULL_TREE, name;
 
   if (TREE_CODE (type_name) == EXPR_WITH_FILE_LOCATION)
     name = EXPR_WFL_NODE (type_name);
@@ -4988,17 +4985,8 @@ obtain_incomplete_type (type_name)
   else
     abort ();
 
-  for (ptr = incomplete_class_list; ptr; ptr = TREE_CHAIN (ptr))
-    if (TYPE_NAME (ptr) == name)
-      break;
-
-  if (!ptr)
-    {
-      BUILD_PTR_FROM_NAME (ptr, name);
-      layout_type (ptr);
-      TREE_CHAIN (ptr) = incomplete_class_list;
-      incomplete_class_list = ptr;
-    }
+  BUILD_PTR_FROM_NAME (ptr, name);
+  layout_type (ptr);
 
   return ptr;
 }
@@ -5020,7 +5008,7 @@ register_incomplete_type (kind, wfl, decl, ptr)
 
   JDEP_KIND (new) = kind;
   JDEP_DECL (new) = decl;
-  JDEP_SOLV (new) = ptr;
+  JDEP_TO_RESOLVE (new) = ptr;
   JDEP_WFL (new) = wfl;
   JDEP_CHAIN (new) = NULL;
   JDEP_MISC (new) = NULL_TREE;
@@ -5476,8 +5464,6 @@ resolve_class (enclosing, class_type, decl, cl)
     {
       while (base != name)
 	{
-	  if (TREE_CODE (resolved_type) == RECORD_TYPE)
-	    resolved_type  = promote_type (resolved_type);
 	  resolved_type = build_java_array_type (resolved_type, -1);
 	  CLASS_LOADED_P (resolved_type) = 1;
 	  name--;
