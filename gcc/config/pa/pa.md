@@ -4731,6 +4731,8 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.
@@ -4739,17 +4741,6 @@
 	 stored the PIC register in.  */
       emit_move_insn (pic_offset_table_rtx,
 		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
-      emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
-
-      /* Gross.  We have to keep the scheduler from moving the restore
-	 of the PIC register away from the call.  SCHED_GROUP_P is
-	 supposed to do this, but for some reason the compiler will
-	 go into an infinite loop when we use that.
-
-	 This method (blockage insn) may make worse code (then again
-	 it may not since calls are nearly blockages anyway), but at
-	 least it should work.  */
-      emit_insn (gen_blockage ());
     }
   DONE;
 }")
@@ -4888,6 +4879,8 @@
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
+      use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+	       gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.
@@ -4896,17 +4889,6 @@
 	 stored the PIC register in.  */
       emit_move_insn (pic_offset_table_rtx,
 		      gen_rtx_REG (word_mode, PIC_OFFSET_TABLE_REGNUM_SAVED));
-      emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
-
-      /* Gross.  We have to keep the scheduler from moving the restore
-	 of the PIC register away from the call.  SCHED_GROUP_P is
-	 supposed to do this, but for some reason the compiler will
-	 go into an infinite loop when we use that.
-
-	 This method (blockage insn) may make worse code (then again
-	 it may not since calls are nearly blockages anyway), but at
-	 least it should work.  */
-      emit_insn (gen_blockage ());
     }
   DONE;
 }")
