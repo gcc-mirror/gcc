@@ -1,3 +1,9 @@
+2001-05-04  Loren J. Rittle  <ljrittle@acm.org>
+	    with final tuning by Bryce McKinlay
+
+	* configure.in: Add support for --enable-threads=posix on FreeBSD.
+	* configure: Rebuilt.
+
 2001-05-01  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gc_priv.h (UNLOCK): Change type of GC_noop1 argument.
