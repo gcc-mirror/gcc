@@ -43,6 +43,7 @@ struct token_spelling
 };
 
 extern const struct token_spelling token_spellings[];
+#define TOKEN_SPELL(token) (token_spellings[(token)->type].type)
 
 /* Chained list of answers to an assertion.  */
 struct answer

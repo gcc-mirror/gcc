@@ -139,7 +139,6 @@ static void process_directive PARAMS ((cpp_reader *, const cpp_token *));
 
 /* An upper bound on the number of bytes needed to spell a token,
    including preceding whitespace.  */
-#define TOKEN_SPELL(token) token_spellings[(token)->type].type
 #define TOKEN_LEN(token) (5 + (TOKEN_SPELL(token) == SPELL_STRING	\
 			       ? (token)->val.str.len			\
 			       : (TOKEN_SPELL(token) == SPELL_IDENT	\
