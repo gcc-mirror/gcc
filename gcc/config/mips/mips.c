@@ -86,6 +86,7 @@ extern rtx gen_cmpsi ();
 extern rtx gen_jump ();
 
 extern char   call_used_regs[];
+extern char  *asm_file_name;
 extern FILE  *asm_out_file;
 extern tree   current_function_decl;
 extern char **save_argv;
@@ -118,9 +119,6 @@ int sym_lineno = 0;
    handle .files inside of functions.  */
 int inside_function = 0;
 
-/* Global half-pic flag.  */
-int flag_half_pic;
-
 /* Files to separate the text and the data output, so that all of the data
    can be emitted before the text, which will mean that the assembler will
    generate smaller code, based on the global pointer.  */
@@ -147,7 +145,7 @@ char *current_function_file = "";
    within a function.  */
 int file_in_function_warning = FALSE;
 
-/* Whether to supress issuing .loc's because the user attempted
+/* Whether to suppress issuing .loc's because the user attempted
    to change the filename within a function.  */
 int ignore_line_number = FALSE;
 
@@ -207,6 +205,10 @@ struct mips_frame_info current_frame_info;
 
 /* Zero structure to initialize current_frame_info.  */
 struct mips_frame_info zero_frame_info;
+
+/* Temporary filename used to buffer .text until end of program
+   for -mgpopt.  */
+static char *temp_filename;
 
 /* List of all MIPS punctuation characters used by print_operand.  */
 char mips_print_operand_punct[256];
@@ -517,7 +519,6 @@ simple_memory_operand (op, mode)
      enum machine_mode mode;
 {
   rtx addr, plus0, plus1;
-  int offset = 0;
 
   /* Eliminate non-memory operations */
   if (GET_CODE (op) != MEM)
@@ -568,17 +569,19 @@ simple_memory_operand (op, mode)
       if (mips_section_threshold == 0 || !optimize || !TARGET_GP_OPT)
 	return FALSE;
 
-      addr = eliminate_constant_term (addr, &offset);
-      if (GET_CODE (op) != SYMBOL_REF)
-	return FALSE;
+      {
+	rtx offset = const0_rtx;
+	addr = eliminate_constant_term (addr, &offset);
+	if (GET_CODE (op) != SYMBOL_REF)
+	  return FALSE;
 
+	/* let's be paranoid.... */
+	if (INTVAL (offset) < 0 || INTVAL (offset) > 0xffff)
+	  return FALSE;
+      }
       /* fall through */
 
     case SYMBOL_REF:
-      /* let's be paranoid.... */
-      if (offset < 0 || offset > 0xffff)
-	return FALSE;
-
       return SYMBOL_REF_FLAG (addr);
 #endif
     }
@@ -772,7 +775,7 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
 
 
 /* Determine whether a memory reference takes one (based off of the GP pointer),
-   two (normal), or three (label + reg) instructins, and bump the appropriate
+   two (normal), or three (label + reg) instructions, and bump the appropriate
    counter for -mstats.  */
 
 void
@@ -1068,7 +1071,7 @@ mips_move_1word (operands, insn, unsignedp)
 	  if (TARGET_STATS)
 	    mips_count_memory_refs (op1, 1);
 
-	  if (flag_half_pic && !mips_constant_address_p (op1))
+	  if (HALF_PIC_P () && CONSTANT_P (op1) && HALF_PIC_ADDRESS_P (op1))
 	    {
 	      delay = DELAY_LOAD;
 	      ret = "la\t%0,%a1\t\t# pic reference";
@@ -1390,14 +1393,12 @@ mips_move_2words (operands, insn)
 
 
 /* Provide the costs of an addressing mode that contains ADDR.
-   If ADDR is not a valid address, its cost is irrelavent.  */
+   If ADDR is not a valid address, its cost is irrelevant.  */
 
 int
 mips_address_cost (addr)
      rtx addr;
 {
-  int offset;
-
   switch (GET_CODE (addr))
     {
     case LO_SUM:
@@ -1408,17 +1409,18 @@ mips_address_cost (addr)
       return 2;
 
     case CONST:
-      offset = 0;
-      addr = eliminate_constant_term (addr, &offset);
-      if (GET_CODE (addr) == LABEL_REF)
-	return 2;
+      {
+	rtx offset = const0_rtx;
+	addr = eliminate_constant_term (addr, &offset);
+	if (GET_CODE (addr) == LABEL_REF)
+	  return 2;
 
-      if (GET_CODE (addr) != SYMBOL_REF)
-	return 4;
+	if (GET_CODE (addr) != SYMBOL_REF)
+	  return 4;
 
-      if (offset < -32768 || offset > 32767)
-	return 2;
-
+	if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)
+	  return 2;
+      }
       /* fall through */
 
     case SYMBOL_REF:
@@ -1457,59 +1459,6 @@ mips_address_cost (addr)
     }
 
   return 4;
-}
-
-
-/* A C expression that is 1 if the RTX ADDR is a constant which is a
-   valid address.  On most machines, this can be defined as
-   `CONSTANT_P (ADDR)', but a few machines are more restrictive in
-   which constant addresses are supported.
-
-   `CONSTANT_P' accepts integer-values expressions whose values are
-   not explicitly known, such as `symbol_ref', `label_ref', and
-   `high' expressions and `const' arithmetic expressions, in
-   addition to `const_int' and `const_double' expressions.  */
-
-int
-mips_constant_address_p (addr)
-     rtx addr;
-{
-  int offset;
-  char *name;
-
-  if (!CONSTANT_P (addr))
-    return FALSE;
-
-  /* For -mpic-extern, don't allow any reference to an external in
-     normal code.  Force it to be PIC-ized.  */
-
-  if (flag_half_pic)
-    {
-      switch (GET_CODE (addr))
-	{
-	case CONST:
-	  addr = eliminate_constant_term (addr, &offset);
-	  if (GET_CODE (addr) != SYMBOL_REF)
-	    return FALSE;
-
-	  /* fall through */
-
-	case SYMBOL_REF:
-	  name = XSTR (addr, 0);
-
-	  /* Skip '*' that appears in front of labels and such.  */
-	  if (name[0] == '*')
-	    name++;
-
-	  /* Internally generated labels are not pic.  */
-	  if (name[0] == '$' && name[1] == 'L')
-	    return TRUE;
-
-	  return FALSE;
-	}
-    }
-
-  return TRUE;
 }
 
 
@@ -1683,7 +1632,7 @@ block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align)
   enum machine_mode mode;	/* mode to use for load/store */
   rtx reg;			/* temporary register */
   rtx src_addr;			/* source address */
-  rtx dest_addr;		/* destintation address */
+  rtx dest_addr;		/* destination address */
   rtx (*load_func)();		/* function to generate load insn */
   rtx (*store_func)();		/* function to generate destination insn */
 
@@ -1918,8 +1867,8 @@ expand_block_move (operands)
     return;
 
   /* Move the address into scratch registers.  */
-  dest_reg = copy_to_reg (XEXP (operands[0], 0));
-  src_reg  = copy_to_reg (XEXP (operands[1], 0));
+  dest_reg = copy_addr_to_reg (XEXP (operands[0], 0));
+  src_reg  = copy_addr_to_reg (XEXP (operands[1], 0));
 
   if (TARGET_MEMCPY)
     block_move_call (dest_reg, src_reg, bytes_rtx);
@@ -2437,7 +2386,7 @@ override_options ()
 
   /* Tell halfpic.c that we have half-pic code if we do.  */
   if (TARGET_HALF_PIC)
-    flag_half_pic = TRUE;
+    HALF_PIC_INIT ();
 
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, a0 instead of $4).
@@ -2468,7 +2417,7 @@ override_options ()
     }
 #endif
 
-  /* Set up the classificaiton arrays now.  */
+  /* Set up the classification arrays now.  */
   mips_rtx_classify[(int)PLUS]  = CLASS_ADD_OP;
   mips_rtx_classify[(int)MINUS] = CLASS_ADD_OP;
   mips_rtx_classify[(int)DIV]   = CLASS_DIVMOD_OP;
@@ -2528,7 +2477,7 @@ override_options ()
      At present, restrict ints from being in FP registers, because reload
      is a little enthusiastic about storing extra values in FP registers,
      and this is not good for things like OS kernels.  Also, due to the
-     manditory delay, it is as fast to load from cached memory as to move
+     mandatory delay, it is as fast to load from cached memory as to move
      from the FP register.  */
 
   for (mode = VOIDmode;
@@ -2576,16 +2525,20 @@ mips_debugger_offset (addr, offset)
      rtx addr;
      int offset;
 {
-  int offset2 = 0;
+  rtx offset2 = const0_rtx;
   rtx reg = eliminate_constant_term (addr, &offset2);
 
   if (!offset)
-    offset = offset2;
+    offset = INTVAL (offset2);
 
   if (reg == stack_pointer_rtx)
-    offset = offset - ((!current_frame_info.initialized)
-		       ? compute_frame_size (get_frame_size ())
-		       : current_frame_info.total_size);
+    {
+      int frame_size = (!current_frame_info.initialized)
+				? compute_frame_size (get_frame_size ())
+				: current_frame_info.total_size;
+
+      offset = offset - frame_size;
+    }
 
   /* Any other register is, we hope, either the frame pointer,
      or a pseudo equivalent to the frame pointer.  (Assign_parms
@@ -2976,7 +2929,6 @@ mips_output_external (file, decl, name)
 static FILE *
 make_temp_file ()
 {
-  char *temp_filename;
   FILE *stream;
   char *base = getenv ("TMPDIR");
   int len;
@@ -3159,9 +3111,11 @@ mips_asm_file_end (file)
       for (p = extern_head; p != 0; p = p->next)
 	{
 	  name_tree = get_identifier (p->name);
-	  if (!TREE_ADDRESSABLE (name_tree))
+
+	  /* Positively ensure only one .extern for any given symbol.  */
+	  if (! TREE_ASM_WRITTEN (name_tree))
 	    {
-	      TREE_ADDRESSABLE (name_tree) = 1;
+	      TREE_ASM_WRITTEN (name_tree) = 1;
 	      fputs ("\t.extern\t", file);
 	      assemble_name (file, p->name);
 	      fprintf (file, ", %d\n", p->size);
@@ -3171,17 +3125,17 @@ mips_asm_file_end (file)
       fprintf (file, "\n\t.text\n");
       rewind (asm_out_text_file);
       if (ferror (asm_out_text_file))
-	fatal_io_error ("write of text assembly file in mips_asm_file_end");
+	fatal_io_error (temp_filename);
 
       while ((len = fread (buffer, 1, sizeof (buffer), asm_out_text_file)) > 0)
 	if (fwrite (buffer, 1, len, file) != len)
-	  pfatal_with_name ("write of final assembly file in mips_asm_file_end");
+	  pfatal_with_name (asm_file_name);
 
       if (len < 0)
-	pfatal_with_name ("read of text assembly file in mips_asm_file_end");
+	pfatal_with_name (temp_filename);
 
       if (fclose (asm_out_text_file) != 0)
-	pfatal_with_name ("close of tempfile in mips_asm_file_end");
+	pfatal_with_name (temp_filename);
     }
 }
 
@@ -3840,13 +3794,4 @@ null_epilogue ()
     return current_frame_info.total_size == 0;
 
   return (compute_frame_size (get_frame_size ())) == 0;
-}
-
-
-/* Encode in a declaration whether or not it is half-pic.  */
-
-void
-half_pic_encode_section_info (decl)
-     tree decl;
-{
 }
