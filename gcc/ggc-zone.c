@@ -146,10 +146,13 @@ struct alloc_chunk {
   unsigned int magic;
 #endif
   unsigned int type:1;
-  unsigned int typecode:14;
-  unsigned int large:1;
-  unsigned int size:15;
   unsigned int mark:1;
+  unsigned char large;
+  unsigned short size;
+  /* Right now, on 32-bit hosts we don't have enough room to save the
+     typecode unless we make the one remaining flag into a bitfield.
+     There's a performance cost to that, so we don't do it until we're
+     ready to use the type information for something.  */
   union {
     struct alloc_chunk *next_free;
     char data[1];
@@ -594,7 +597,8 @@ free_chunk (struct alloc_chunk *chunk, size_t size, struct alloc_zone *zone)
 /* Allocate a chunk of memory of SIZE bytes.  */
 
 static void *
-ggc_alloc_zone_1 (size_t orig_size, struct alloc_zone *zone, short type
+ggc_alloc_zone_1 (size_t orig_size, struct alloc_zone *zone,
+		  short type ATTRIBUTE_UNUSED
 		  MEM_STAT_DECL)
 {
   size_t bin = 0;
@@ -696,7 +700,8 @@ ggc_alloc_zone_1 (size_t orig_size, struct alloc_zone *zone, short type
 #endif
   chunk->type = 1;
   chunk->mark = 0;
-  chunk->typecode = type;
+  /* We could save TYPE in the chunk, but we don't use that for
+     anything yet.  */
   result = chunk->u.data;
 
 #ifdef ENABLE_GC_CHECKING
