@@ -47,7 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "expr.h"
 #include "predict.h"
-#include "profile.h"
+#include "coverage.h"
 #include "sreal.h"
 #include "params.h"
 #include "target.h"
