@@ -1,3 +1,13 @@
+1999-03-30  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (IDENTIFIER_AS_DESC, IDENTIFIER_AS_LIST, 
+	CLASSTYPE_BASELINK_VEC, CLASSTYPE_N_SUPERCLASSES, 
+	CLASSTYPE_N_BASECLASSES, CLASSTYPE_MAX_DEPTH, 
+	CLASSTYPE_BASE_INIT_LIST, CLASSTYPE_AS_LIST, CLASSTYPE_ID_AS_LIST,
+	CLASSTYPE_BINFO_AS_LIST): Remove cruft.
+	* class.c, lex.c, parse.y, ptree.c, search.c, semantics.c, 
+	tree.c: Adjust.
+
 1999-03-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (lang_decode_option): Remove -Wsign-promo from -Wall.
