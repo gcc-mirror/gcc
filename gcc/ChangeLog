@@ -1,3 +1,27 @@
+1999-11-22  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (die_struct): Remove die_attr_last and die_child_last.
+	(add_dwarf_attr, add_child_die): Just push onto the front.
+	(reverse_die_lists): New fn.
+	(add_sibling_attributes): Use it.
+	(push_decl_scope): Reorganize.
+	(gen_struct_or_union_type_die): Don't add a DW_AT_containing_type 
+	that points to ourself.
+	(add_name_and_src_coords_attributes): Don't set file and line for
+	an artificial decl.
+	(gen_subprogram_die): An artificial function doesn't need to match
+	file and line.
+	(gen_compile_unit_die): Return the generated die.  Only add 
+	AT_comp_dir if the filename is relative.
+	(remove_AT): Simplify loop.  Also free string values.
+	(output_die): A DIE ref can't be null.
+	(output_value_format, value_format): Take a dw_attr_ref.
+	(dwarf_last_decl, is_extern_subr_die, sibling_offset): Remove.
+	(AT_class, AT_flag, AT_int, AT_unsigned, AT_string, AT_ref, AT_loc,
+	AT_addr, AT_lbl): New fns.
+	(various): Use them.
+	(various): Constify.
+
 Mon Nov 22 23:53:50 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* combine.c (combine_simplify_rtx): When handling a SUBREG,
