@@ -272,7 +272,7 @@ find_uses_to_rename (bitmap *use_blocks)
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
 	  find_uses_to_rename_use (PHI_ARG_EDGE (phi, i)->src,
 				   PHI_ARG_DEF (phi, i), use_blocks);
@@ -383,7 +383,7 @@ verify_loop_closed_ssa (void)
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
 	  check_loop_closed_ssa_use (PHI_ARG_EDGE (phi, i)->src,
 				     PHI_ARG_DEF (phi, i));
@@ -404,7 +404,7 @@ split_loop_exit_edge (edge exit)
   tree phi, new_phi, new_name, name;
   use_operand_p op_p;
 
-  for (phi = phi_nodes (dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
     {
       op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, EDGE_SUCC (bb, 0));
 
@@ -567,7 +567,7 @@ set_phi_def_stmts (basic_block bb)
 {
   tree phi;
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     SSA_NAME_DEF_STMT (PHI_RESULT (phi)) = phi;
 }
 

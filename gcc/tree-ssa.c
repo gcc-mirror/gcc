@@ -113,7 +113,7 @@ flush_pending_stmts (edge e)
 
   for (phi = phi_nodes (e->dest), arg = PENDING_STMT (e);
        phi;
-       phi = TREE_CHAIN (phi), arg = TREE_CHAIN (arg))
+       phi = PHI_CHAIN (phi), arg = TREE_CHAIN (arg))
     {
       tree def = TREE_VALUE (arg);
       add_phi_arg (&phi, def, e);
@@ -1281,7 +1281,7 @@ kill_redundant_phi_nodes (void)
 
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  var = PHI_RESULT (phi);
 	  check_phi_redundancy (phi, eq_to);

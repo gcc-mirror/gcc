@@ -4279,7 +4279,7 @@ tree_duplicate_bb (basic_block bb)
   /* First copy the phi nodes.  We do not copy phi node arguments here,
      since the edges are not ready yet.  Keep the chain of phi nodes in
      the same order, so that we can add them later.  */
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       mark_for_rewrite (PHI_RESULT (phi));
       create_phi_node (PHI_RESULT (phi), new_bb);
@@ -4501,7 +4501,7 @@ rewrite_to_new_ssa_names_bb (basic_block bb, htab_t map)
     if (e->flags & EDGE_ABNORMAL)
       break;
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       rewrite_to_new_ssa_names_def (PHI_RESULT_PTR (phi), phi, map);
       if (e)
@@ -4546,7 +4546,7 @@ rewrite_to_new_ssa_names_bb (basic_block bb, htab_t map)
     }
 
   FOR_EACH_EDGE (e, ei, bb->succs)
-    for (phi = phi_nodes (e->dest); phi; phi = TREE_CHAIN (phi))
+    for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
       {
 	rewrite_to_new_ssa_names_use
 		(PHI_ARG_DEF_PTR_FROM_EDGE (phi, e), map);

@@ -805,7 +805,7 @@ find_bivs (struct ivopts_data *data)
   bool found = false;
   struct loop *loop = data->current_loop;
 
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
     {
       if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)))
 	continue;
@@ -848,7 +848,7 @@ mark_bivs (struct ivopts_data *data)
   struct loop *loop = data->current_loop;
   basic_block incr_bb;
 
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
     {
       iv = get_iv (data, PHI_RESULT (phi));
       if (!iv)
@@ -1510,7 +1510,7 @@ find_interesting_uses_outside (struct ivopts_data *data, edge exit)
 {
   tree phi, def;
 
-  for (phi = phi_nodes (exit->dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
     {
       def = PHI_ARG_DEF_FROM_EDGE (phi, exit);
       find_interesting_uses_outer (data, def);
@@ -1543,7 +1543,7 @@ find_interesting_uses (struct ivopts_data *data)
 	    && !flow_bb_inside_loop_p (data->current_loop, e->dest))
 	  find_interesting_uses_outside (data, e);
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	find_interesting_uses_stmt (data, phi);
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	find_interesting_uses_stmt (data, bsi_stmt (bsi));
@@ -3415,7 +3415,7 @@ determine_set_costs (struct ivopts_data *data)
     }
 
   n = 0;
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
     {
       op = PHI_RESULT (phi);
 
@@ -4169,7 +4169,7 @@ protect_loop_closed_ssa_form_use (edge exit, use_operand_p op_p)
     return;
 
   /* Try finding a phi node that copies the value out of the loop.  */
-  for (phi = phi_nodes (exit->dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
     if (PHI_ARG_DEF_FROM_EDGE (phi, exit) == use)
       break;
 
@@ -4303,7 +4303,7 @@ rewrite_use_outer (struct ivopts_data *data,
       if (stmts && name_info (data, tgt)->preserve_biv)
 	return;
 
-      for (phi = phi_nodes (exit->dest); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (exit->dest); phi; phi = PHI_CHAIN (phi))
 	{
 	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit);
 

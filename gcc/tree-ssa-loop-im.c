@@ -1239,7 +1239,7 @@ determine_lsm_loop (struct loop *loop)
       return;
     }
 
-  for (phi = phi_nodes (loop->header); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (loop->header); phi; phi = PHI_CHAIN (phi))
     determine_lsm_reg (loop, exits, n_exits, PHI_RESULT (phi));
 
   free (exits);
