@@ -840,11 +840,7 @@ struct jpa_args
   int number_beginning;
 };
 
-#ifdef REAL_ARITHMETIC
 #define IS_ZERO(X) (ereal_cmp (X, dconst0) == 0)
-#else
-#define IS_ZERO(X) ((X) == 0)
-#endif
 
 static void java_perform_atof	PARAMS ((PTR));
 

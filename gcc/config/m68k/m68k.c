@@ -3112,13 +3112,6 @@ standard_68881_constant_p (x)
   if (TARGET_68040 || TARGET_68060)
     return 0;
 
-#ifndef REAL_ARITHMETIC
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-  if (! flag_pretend_float)
-    return 0;
-#endif
-#endif
-
   if (! inited_68881_table)
     init_68881_table ();
 
@@ -3152,13 +3145,6 @@ floating_exact_log2 (x)
 {
   REAL_VALUE_TYPE r, r1;
   int i;
-
-#ifndef REAL_ARITHMETIC
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-  if (! flag_pretend_float)
-    return 0;
-#endif
-#endif
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
@@ -3304,13 +3290,6 @@ standard_sun_fpa_constant_p (x)
 {
   REAL_VALUE_TYPE r;
   int i;
-
-#ifndef REAL_ARITHMETIC
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-  if (! flag_pretend_float)
-    return 0;
-#endif
-#endif
 
   if (! inited_FPA_table)
     init_FPA_table ();

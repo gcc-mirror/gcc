@@ -89,8 +89,6 @@ extern int target_flags;
 
 /* Target machine storage layout */
 
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
    This is not true on the VAX.  */

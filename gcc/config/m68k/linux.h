@@ -247,9 +247,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define DBX_CONTIN_LENGTH 0
 
-/* Allow folding division by zero.  */
-#define REAL_INFINITY
-
 /* 1 if N is a possible register number for a function value.  For
    m68k/SVR4 allow d0, a0, or fp0 as return registers, for integral,
    pointer, or floating types, respectively.  Reject fp0 if not using

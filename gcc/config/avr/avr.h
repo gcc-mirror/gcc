@@ -2915,10 +2915,6 @@ extern struct rtx_def *ldi_reg_rtx;
 
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
-/* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
-#define REAL_ARITHMETIC
-
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* Get the standard ELF stabs definitions.  */

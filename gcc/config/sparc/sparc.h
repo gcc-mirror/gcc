@@ -687,10 +687,6 @@ extern struct sparc_cpu_select sparc_select[];
 
 /* target machine storage layout */
 
-/* Define for cross-compilation to a sparc target with no TFmode from a host
-   with a different float format (e.g. VAX).  */
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 1
@@ -732,7 +728,7 @@ extern struct sparc_cpu_select sparc_select[];
 #if 0
 /* ??? This does not work in SunOS 4.x, so it is not enabled here.
    Instead, it is enabled in sol2.h, because it does work under Solaris.  */
-/* Define for support of TFmode long double and REAL_ARITHMETIC.
+/* Define for support of TFmode long double.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 #endif

@@ -1099,11 +1099,7 @@ expand_java_pushc (ival, type)
   else if (type == float_type_node || type == double_type_node)
     {
       REAL_VALUE_TYPE x;
-#ifdef REAL_ARITHMETIC
       REAL_VALUE_FROM_INT (x, ival, 0, TYPE_MODE (type));
-#else
-      x = ival;
-#endif
       value = build_real (type, x);
     }
   else

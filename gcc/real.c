@@ -30,18 +30,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* To enable support of XFmode extended real floating point, define
 LONG_DOUBLE_TYPE_SIZE 96 in the tm.h file (m68k.h or i386.h).
 
-To support cross compilation between IEEE, VAX and IBM floating
-point formats, define REAL_ARITHMETIC in the tm.h file.
-
-In either case the machine files (tm.h) must not contain any code
+Machine files (tm.h etc) must not contain any code
 that tries to use host floating point arithmetic to convert
 REAL_VALUE_TYPEs from `double' to `float', pass them to fprintf,
 etc.  In cross-compile situations a REAL_VALUE_TYPE may not
 be intelligible to the host computer's native arithmetic.
-
-The emulator defaults to the host's floating point format so that
-its decimal conversion functions can be used if desired (see
-real.h).
 
 The first part of this file interfaces gcc to a floating point
 arithmetic suite that was not written with gcc in mind.  Avoid
@@ -88,10 +81,7 @@ netlib.att.com: netlib/cephes.  */
 
    If LONG_DOUBLE_TYPE_SIZE = 64 (the default, unless tm.h defines it)
    then `long double' and `double' are both implemented, but they
-   both mean DFmode.  In this case, the software floating-point
-   support available here is activated by writing
-      #define REAL_ARITHMETIC
-   in tm.h.
+   both mean DFmode.
 
    The case LONG_DOUBLE_TYPE_SIZE = 128 activates TFmode support
    and may deactivate XFmode since `long double' is used to refer
@@ -112,10 +102,6 @@ netlib.att.com: netlib/cephes.  */
 
 
 /* The following converts gcc macros into the ones used by this file.  */
-
-/* REAL_ARITHMETIC defined means that macros in real.h are
-   defined to call emulator functions.  */
-#ifdef REAL_ARITHMETIC
 
 #if TARGET_FLOAT_FORMAT == VAX_FLOAT_FORMAT
 /* PDP-11, Pro350, VAX: */
@@ -141,33 +127,6 @@ unknown arithmetic type
 #endif /* not VAX */
 
 #define REAL_WORDS_BIG_ENDIAN FLOAT_WORDS_BIG_ENDIAN
-
-#else
-/* REAL_ARITHMETIC not defined means that the *host's* data
-   structure will be used.  It may differ by endian-ness from the
-   target machine's structure and will get its ends swapped
-   accordingly (but not here).  Probably only the decimal <-> binary
-   functions in this file will actually be used in this case.  */
-
-#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
-#define DEC 1
-#else /* it's not VAX */
-#if HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
-/* IBM System/370 style */
-#define IBM 1
-#else /* it's also not an IBM */
-#if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#define IEEE
-#else /* it's not IEEE either */
-unknown arithmetic type
-#define UNK 1
-#endif /* not IEEE */
-#endif /* not IBM */
-#endif /* not VAX */
-
-#define REAL_WORDS_BIG_ENDIAN HOST_FLOAT_WORDS_BIG_ENDIAN
-
-#endif /* REAL_ARITHMETIC not defined */
 
 /* Define INFINITY for support of infinity.
    Define NANS for support of Not-a-Number's (NaN's).  */
@@ -290,7 +249,6 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #define NE 6
 #define MAXDECEXP 4932
 #define MINDECEXP -4956
-#ifdef REAL_ARITHMETIC
 /* Emulator uses target format internally
    but host stores it in host endian-ness.  */
 
@@ -324,13 +282,6 @@ do {									\
        }								\
    } while (0)
 
-#else /* not REAL_ARITHMETIC */
-
-/* emulator uses host format */
-#define GET_REAL(r,e) e53toe ((const UEMUSHORT *) (r), (e))
-#define PUT_REAL(e,r) etoe53 ((e), (UEMUSHORT *) (r))
-
-#endif /* not REAL_ARITHMETIC */
 #endif /* not TFmode */
 #endif /* not XFmode */
 
@@ -1048,11 +999,6 @@ ereal_ldexp (x, n)
   return (r);
 }
 
-/* These routines are conditionally compiled because functions
-   of the same names may be defined in fold-const.c.  */
-
-#ifdef REAL_ARITHMETIC
-
 /* Check for infinity in a REAL_VALUE_TYPE.  */
 
 int
@@ -1226,7 +1172,6 @@ exact_real_inverse (mode, r)
   PUT_REAL (einv, r);
   return 1;
 }
-#endif /* REAL_ARITHMETIC defined */
 
 /* Used for debugging--print the value of R in human-readable format
    on stderr.  */
@@ -1361,7 +1306,6 @@ ereal_isneg (x)
   return (eisneg (ex));
 }
 
-/* End of REAL_ARITHMETIC interface */
 
 /*
   Extended precision IEEE binary floating point arithmetic routines

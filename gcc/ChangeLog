@@ -1,3 +1,44 @@
+2002-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* emit-rtl.c, final.c, fold-const.c, gengenrtl.c, optabs.c,
+	print-tree.c, real.c, real.h, recog.c, rtl.c, simplify-rtx.c,
+	tree.c, config/m68k/m68k.c:
+	Remove all #ifndef REAL_ARITHMETIC blocks, make all #ifdef
+	REAL_ARITHMETIC blocks unconditional.  Delete some further
+	#ifdef blocks predicated on REAL_ARITHMETIC.
+	* flags.h, toplev.c: Delete remaining references to
+	flag_pretend_float.
+
+	* doc/invoke.texi: Remove documentation of -fpretend-float.
+	* doc/tm.texi: Describe the various REAL_* macros as provided by
+	real.h, not by the target configuration files.
+
+	* config/alpha/alpha.h, config/alpha/unicosmk.h, config/arm/arm.h,
+	config/avr/avr.h, config/c4x/c4x.h, config/convex/convex.h,
+	config/cris/cris.h, config/d30v/d30v.h, config/dsp16xx/dsp16xx.h,
+	config/h8300/h8300.h, config/i370/i370.h, config/i386/i386.h,
+	config/i386/osf1elf.h, config/i960/i960.h, config/ia64/ia64.h,
+	config/m32r/m32r.h, config/m68hc11/m68hc11.h, config/m68k/dpx2.h,
+	config/m68k/linux-aout.h, config/m68k/linux.h, config/m68k/m68k.h,
+	config/m68k/sun3.h, config/m68k/vxm68k.h, config/mcore/mcore.h,
+	config/mips/mips.h, config/mmix/mmix.h, config/mn10200/mn10200.h,
+	config/mn10300/mn10300.h, config/pa/pa.h, config/pj/pj.h,
+	config/rs6000/rs6000.h, config/s390/s390.h, config/sh/sh.h,
+	config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/sol2.h, config/sparc/sparc.h, config/sparc/vxsim.h,
+	config/stormy16/stormy16.h, config/v850/v850.h, config/vax/vax.h,
+	config/xtensa/xtensa.h:
+	Do not define, undefine, or mention in comments any of
+	REAL_ARITHMETIC, REAL_VALUE_ATOF, REAL_VALUE_HTOF,
+	REAL_VALUE_ISNAN, REAL_VALUE_ISINF,
+	REAL_VALUE_TO_TARGET_SINGLE, REAL_VALUE_TO_TARGET_DOUBLE,
+	REAL_VALUE_TO_TARGET_LONG_DOUBLE, REAL_VALUE_TO_DECIMAL,
+	REAL_VALUE_TYPE, REAL_VALUES_EQUAL, REAL_VALUES_LESS,
+	REAL_VALUE_LDEXP, REAL_VALUE_FIX, REAL_VALUE_UNSIGNED_FIX,
+	REAL_VALUE_RNDZINT, REAL_VALUE_UNSIGNED_RNDZINT,
+	REAL_INFINITY, REAL_VALUE_NEGATE, REAL_VALUE_TRUNCATE,
+	REAL_VALUE_TO_INT, or REAL_VALUE_FROM_INT.
+
 2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a.h, a29k.h, alpha.h, arc.h, arm.h, avr.h, c4x.h, clipper.h,
@@ -8,7 +49,7 @@
 	stormy16.h, v850.h, vax.h, we32k.h, xtensa.h (BITS_PER_WORD):
 	Delete.
 	* defaults.h (BITS_PER_WORD): Define.
-	* doc/tm.texi (BITS_PER_WORD): Document default value.	
+	* doc/tm.texi (BITS_PER_WORD): Document default value.
 
 	* 1750a.h, avr.h, convex.h, d30v.h, dsp16xx.h, fr30.h, ia64.h,
 	m68hc11.h, m88k.h, mips.h, pdp11.h, rs6000.h, sparc.c,
@@ -32,7 +73,7 @@
 	* ggc-page.c (NUM_EXTRA_ORDERS): Likewise.
 	* lcm.c (N_ENTITIES): Likewise.
 	* stor-layout.c (set_sizetype): Likewise.
-	
+
 2002-03-03  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (rest_of_decl_compilation): Do not invoke make_decl_rtl
@@ -74,7 +115,7 @@
 
 	* config/darwin-protos.h, config/darwin.c, config/darwin.h,
 	config/a29k/a29k.h, config/alpha/alpha-protos.h, config/alpha/alpha.c,
-	config/alpha/alpha.h, config/arc/arc.h, config/arm/arm-protos.h, 
+	config/alpha/alpha.h, config/arc/arc.h, config/arm/arm-protos.h,
 	config/arm/arm.h, config/arm/pe.c, config/arm/pe.h,
 	config/avr/avr-protos.h, config/avr/avr.c, config/avr/avr.h,
 	config/c4x/c4x-protos.h, config/c4x/c4x.c, config/c4x/c4x.h,
@@ -84,12 +125,12 @@
 	config/i386/osfrose.h, config/i386/win32.h, config/i386/winnt.c,
 	config/ia64/ia64-protos.h, config/ia64/ia64.c, config/ia64/ia64.h,
 	config/m32r/m32r-protos.h, config/m32r/m32r.c, config/m32r/m32r.h,
-	config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c, 
-	config/m68hc11/m68hc11.h, config/m88k/m88k.h, 
+	config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c,
+	config/m68hc11/m68hc11.h, config/m88k/m88k.h,
 	config/mcore/mcore-protos.h, config/mcore/mcore.c,
 	config/mcore/mcore.h, config/mips/mips.h, config/ns32k/ns32k.h,
 	config/pa/pa.h, config/romp/romp.h, config/rs6000/linux64.h,
-	config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c, 
+	config/rs6000/rs6000-protos.h, config/rs6000/rs6000.c,
 	config/rs6000/sysv4.h, config/rs6000/xcoff.h, config/s390/s390.h,
 	config/sh/sh.h, config/sparc/sparc.h,
 	config/stormy16/stormy16-protos.h, config/stormy16/stormy16.c,
@@ -97,7 +138,7 @@
 	config/xtensa/xtensa.h, doc/tm.texi: ENCODE_SECTION_INFO now takes
 	FIRST argument.  As needed, examine it and do nothing.
 
-	* config/darwin.h, config/alpha/alpha.h, config/arm/pe.h, 
+	* config/darwin.h, config/alpha/alpha.h, config/arm/pe.h,
 	config/i386/cygwin.h, config/ia64/ia64.h, config/m68hc11/m68hc11.h,
 	config/mcore/mcore.h: Remove REDO_SECTION_INFO_P.
 
@@ -380,7 +421,7 @@ objc:
 
 2002-02-27  Andrew MacLeod  <amacleod@redhat.com>
 
-	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC, 
+	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC,
 	POST_DEC, and POST_MODIFY.
 
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>

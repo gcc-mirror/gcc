@@ -294,14 +294,8 @@ extern int target_flags;
 
 /* target machine storage layout */
 
-/* Define for XFmode extended real floating point support.
-   This will automatically cause REAL_ARITHMETIC to be defined.  */
+/* Define for XFmode extended real floating point support.  */
 #define LONG_DOUBLE_TYPE_SIZE 96
-
-/* Define if you don't want extended real, but do want to use the
-   software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-/* #define REAL_ARITHMETIC */
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.

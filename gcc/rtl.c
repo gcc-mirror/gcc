@@ -30,30 +30,28 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Calculate the format for CONST_DOUBLE.  This depends on the relative
    widths of HOST_WIDE_INT and REAL_VALUE_TYPE.
 
-   We need to go out to 0wwwww, since REAL_ARITHMETIC assumes 16-bits
-   per element in REAL_VALUE_TYPE.
+   We need to go out to 0wwwww, since real.c assumes 16 bits per element
+   in REAL_VALUE_TYPE.
 
    This is duplicated in gengenrtl.c.
 
    A number of places assume that there are always at least two 'w'
    slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
 
-#ifdef REAL_ARITHMETIC
-# if MAX_LONG_DOUBLE_TYPE_SIZE == 96
-#  define REAL_WIDTH	\
+#if MAX_LONG_DOUBLE_TYPE_SIZE == 96
+# define REAL_WIDTH	\
      (11*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-# else
-#  if MAX_LONG_DOUBLE_TYPE_SIZE == 128
-#   define REAL_WIDTH	\
+#else
+# if MAX_LONG_DOUBLE_TYPE_SIZE == 128
+#  define REAL_WIDTH	\
       (19*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#  else
-#   if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-#    define REAL_WIDTH	\
+# else
+#  if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+#   define REAL_WIDTH	\
        (7*8 + HOST_BITS_PER_WIDE_INT)/HOST_BITS_PER_WIDE_INT
-#   endif
 #  endif
 # endif
-#endif /* REAL_ARITHMETIC */
+#endif
 
 #ifndef REAL_WIDTH
 # if HOST_BITS_PER_WIDE_INT*2 >= MAX_LONG_DOUBLE_TYPE_SIZE

@@ -434,12 +434,6 @@ extern int flag_delayed_branch;
 
 extern int flag_dump_unnumbered;
 
-/* Nonzero means pretend it is OK to examine bits of target floats,
-   even if that isn't true.  The resulting code will have incorrect constants,
-   but the same series of instructions that the native compiler would make.  */
-
-extern int flag_pretend_float;
-
 /* Nonzero means change certain warnings into errors.
    Usually these are warnings about failure to conform to some standard.  */
 

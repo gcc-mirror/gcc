@@ -163,9 +163,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define DBX_DEBUGGING_INFO
 
-/* Allow folding division by zero.  */
-#define REAL_INFINITY
-
 /* Generate calls to memcpy, memcmp and memset.  */
 #define TARGET_MEM_FUNCTIONS
 

@@ -294,11 +294,6 @@ extern int target_flags;
 
 /* STORAGE LAYOUT */
 
-/* Define if you don't want extended real, but do want to use the
-   software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
  */

@@ -1,3 +1,9 @@
+2002-03-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* com.c, target.h: Remove all #ifndef REAL_ARITHMETIC
+	blocks, make all #ifdef REAL_ARITHMETIC blocks unconditional.
+	Delete some further #ifdef blocks predicated on REAL_ARITHMETIC.
+
 Thu Feb 28 07:53:46 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (copy_lang_decl): Delete.

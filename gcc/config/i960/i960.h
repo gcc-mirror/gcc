@@ -380,10 +380,6 @@ extern int target_flags;
 
 /* Target machine storage layout.  */
 
-/* Define for cross-compilation from a host with a different float format
-   or endianness, as well as to support 80 bit long doubles on the i960.  */
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 0

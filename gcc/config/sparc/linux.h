@@ -228,7 +228,7 @@ do {									\
   sprintf (LABEL, "*.L%s%ld", PREFIX, (long)(NUM))
 
 
-/* Define for support of TFmode long double and REAL_ARITHMETIC.
+/* Define for support of TFmode long double.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 

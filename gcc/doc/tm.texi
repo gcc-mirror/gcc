@@ -7678,14 +7678,10 @@ it must have its own special routine to use instead.  Also, constant
 folding must emulate the target machine's arithmetic (or must not be done
 at all).
 
-The macros in the following table should be defined only if you are cross
-compiling between different floating point formats.
-
-Otherwise, don't define them.  Then default definitions will be set up which
-use @code{double} as the data type, @code{==} to test for equality, etc.
-
-You don't need to worry about how many times you use an operand of any
-of these macros.  The compiler never uses operands which have side effects.
+The macros in the following table are provided by @file{real.h} for the
+compiler to use.  All parts of the compiler which generate or optimize
+floating-point calculations must use these macros.  They may evaluate
+their operands more than once, so operands must not have side effects.
 
 @table @code
 @findex REAL_VALUE_TYPE
@@ -7766,15 +7762,7 @@ By default, this is defined to call @code{isinf}.
 A macro for a C expression which determines whether @var{x}, a floating
 point value, is a ``nan'' (not-a-number).  The value has type
 @code{int}.  By default, this is defined to call @code{isnan}.
-@end table
 
-@cindex constant folding and floating point
-Define the following additional macros if you want to make floating
-point constant folding work while cross compiling.  If you don't
-define them, cross compilation is still possible, but constant folding
-will not happen for floating point values.
-
-@table @code
 @findex REAL_ARITHMETIC
 @item REAL_ARITHMETIC (@var{output}, @var{code}, @var{x}, @var{y})
 A macro for a C statement which calculates an arithmetic operation of
@@ -7789,8 +7777,7 @@ which will always be one of the following: @code{PLUS_EXPR},
 @code{MAX_EXPR}, @code{MIN_EXPR}.
 
 @cindex overflow while constant folding
-The expansion of this macro is responsible for checking for overflow.
-If overflow happens, the macro expansion should execute the statement
+If overflow happens, the macro expansion executes the statement
 @code{return 0;}, which indicates the inability to perform the
 arithmetic operation requested.
 

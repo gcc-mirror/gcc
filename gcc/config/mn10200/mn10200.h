@@ -915,10 +915,6 @@ struct cum_arg { int nbytes; };
   ((GET_CODE (X) == PLUS ? OFFSET : 0) \
     + (frame_pointer_needed ? 0 : -total_frame_size ()))
 
-/* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
-#define REAL_ARITHMETIC
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode

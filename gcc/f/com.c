@@ -11799,11 +11799,7 @@ ffecom_init_0 ()
   {
     REAL_VALUE_TYPE point_5;
 
-#ifdef REAL_ARITHMETIC
     REAL_ARITHMETIC (point_5, RDIV_EXPR, dconst1, dconst2);
-#else
-    point_5 = .5;
-#endif
     ffecom_float_half_ = build_real (float_type_node, point_5);
     ffecom_double_half_ = build_real (double_type_node, point_5);
   }

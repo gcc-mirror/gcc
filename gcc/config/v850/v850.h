@@ -1360,10 +1360,6 @@ do {									\
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
-#define REAL_ARITHMETIC
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : HImode)

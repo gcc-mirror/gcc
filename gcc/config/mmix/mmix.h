@@ -1154,17 +1154,6 @@ const_section ()						\
 #define DWARF2_DEBUGGING_INFO
 #define DWARF2_ASM_LINE_DEBUG_INFO 1
 
-/* Node: Cross-compilation */
-
-/* FIXME: I don't know whether it is best to tweak emit-rtl.c to handle
-   the case where sizeof (float) == word_size / 2 on the target, or to fix
-   real.h to define REAL_ARITHMETIC in that case.  Anyway, it should be
-   documented that a target can define this to force emulation.  Note that
-   we don't check #ifdef CROSS_COMPILE here; not even if mmix gets
-   self-hosted must we do that.  Case gcc.c-torture/compile/930611-1.c.  */
-#define REAL_ARITHMETIC
-
-
 /* Node: Misc */
 
 #define PREDICATE_CODES				\

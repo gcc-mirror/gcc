@@ -421,10 +421,6 @@ extern enum m32r_sdata m32r_sdata;
 
 /* Target machine storage layout.  */
 
-/* Define to use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN 1

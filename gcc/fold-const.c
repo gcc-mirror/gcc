@@ -59,9 +59,6 @@ static void encode		PARAMS ((HOST_WIDE_INT *,
 static void decode		PARAMS ((HOST_WIDE_INT *,
 					 unsigned HOST_WIDE_INT *,
 					 HOST_WIDE_INT *));
-#ifndef REAL_ARITHMETIC
-static void exact_real_inverse_1 PARAMS ((PTR));
-#endif
 static tree negate_expr		PARAMS ((tree));
 static tree split_tree		PARAMS ((tree, enum tree_code, tree *, tree *,
 					 int));
@@ -834,512 +831,6 @@ div_and_round_double (code, uns,
   return overflow;
 }
 
-#ifndef REAL_ARITHMETIC
-/* Effectively truncate a real value to represent the nearest possible value
-   in a narrower mode.  The result is actually represented in the same data
-   type as the argument, but its value is usually different.
-
-   A trap may occur during the FP operations and it is the responsibility
-   of the calling function to have a handler established.  */
-
-REAL_VALUE_TYPE
-real_value_truncate (mode, arg)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE arg;
-{
-  return REAL_VALUE_TRUNCATE (mode, arg);
-}
-
-#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-
-/* Check for infinity in an IEEE double precision number.  */
-
-int
-target_isinf (x)
-     REAL_VALUE_TYPE x;
-{
-  /* The IEEE 64-bit double format.  */
-  union {
-    REAL_VALUE_TYPE d;
-    struct {
-      unsigned sign      :  1;
-      unsigned exponent  : 11;
-      unsigned mantissa1 : 20;
-      unsigned mantissa2 : 32;
-    } little_endian;
-    struct {
-      unsigned mantissa2 : 32;
-      unsigned mantissa1 : 20;
-      unsigned exponent  : 11;
-      unsigned sign      :  1;
-    } big_endian;
-  } u;
-
-  u.d = dconstm1;
-  if (u.big_endian.sign == 1)
-    {
-      u.d = x;
-      return (u.big_endian.exponent == 2047
-	      && u.big_endian.mantissa1 == 0
-	      && u.big_endian.mantissa2 == 0);
-    }
-  else
-    {
-      u.d = x;
-      return (u.little_endian.exponent == 2047
-	      && u.little_endian.mantissa1 == 0
-	      && u.little_endian.mantissa2 == 0);
-    }
-}
-
-/* Check whether an IEEE double precision number is a NaN.  */
-
-int
-target_isnan (x)
-     REAL_VALUE_TYPE x;
-{
-  /* The IEEE 64-bit double format.  */
-  union {
-    REAL_VALUE_TYPE d;
-    struct {
-      unsigned sign      :  1;
-      unsigned exponent  : 11;
-      unsigned mantissa1 : 20;
-      unsigned mantissa2 : 32;
-    } little_endian;
-    struct {
-      unsigned mantissa2 : 32;
-      unsigned mantissa1 : 20;
-      unsigned exponent  : 11;
-      unsigned sign      :  1;
-    } big_endian;
-  } u;
-
-  u.d = dconstm1;
-  if (u.big_endian.sign == 1)
-    {
-      u.d = x;
-      return (u.big_endian.exponent == 2047
-	      && (u.big_endian.mantissa1 != 0
-		  || u.big_endian.mantissa2 != 0));
-    }
-  else
-    {
-      u.d = x;
-      return (u.little_endian.exponent == 2047
-	      && (u.little_endian.mantissa1 != 0
-		  || u.little_endian.mantissa2 != 0));
-    }
-}
-
-/* Check for a negative IEEE double precision number.  */
-
-int
-target_negative (x)
-     REAL_VALUE_TYPE x;
-{
-  /* The IEEE 64-bit double format.  */
-  union {
-    REAL_VALUE_TYPE d;
-    struct {
-      unsigned sign      :  1;
-      unsigned exponent  : 11;
-      unsigned mantissa1 : 20;
-      unsigned mantissa2 : 32;
-    } little_endian;
-    struct {
-      unsigned mantissa2 : 32;
-      unsigned mantissa1 : 20;
-      unsigned exponent  : 11;
-      unsigned sign      :  1;
-    } big_endian;
-  } u;
-
-  u.d = dconstm1;
-  if (u.big_endian.sign == 1)
-    {
-      u.d = x;
-      return u.big_endian.sign;
-    }
-  else
-    {
-      u.d = x;
-      return u.little_endian.sign;
-    }
-}
-#else /* Target not IEEE */
-
-/* Let's assume other float formats don't have infinity.
-   (This can be overridden by redefining REAL_VALUE_ISINF.)  */
-
-int
-target_isinf (x)
-     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* Let's assume other float formats don't have NaNs.
-   (This can be overridden by redefining REAL_VALUE_ISNAN.)  */
-
-int
-target_isnan (x)
-     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
-/* Let's assume other float formats don't have minus zero.
-   (This can be overridden by redefining REAL_VALUE_NEGATIVE.)  */
-
-int
-target_negative (x)
-     REAL_VALUE_TYPE x;
-{
-  return x < 0;
-}
-#endif /* Target not IEEE */
-
-/* Try to change R into its exact multiplicative inverse in machine mode
-   MODE.  Return nonzero function value if successful.  */
-struct exact_real_inverse_args
-{
-  REAL_VALUE_TYPE *r;
-  enum machine_mode mode;
-  int success;
-};
-
-static void
-exact_real_inverse_1 (p)
-     PTR p;
-{
-  struct exact_real_inverse_args *args =
-    (struct exact_real_inverse_args *) p;
-
-  enum machine_mode mode = args->mode;
-  REAL_VALUE_TYPE *r = args->r;
-
-  union
-  {
-    double d;
-    unsigned short i[4];
-  }
-  x, t, y;
-#ifdef CHECK_FLOAT_VALUE
-  int i;
-#endif
-
-  /* Set array index to the less significant bits in the unions, depending
-     on the endian-ness of the host doubles.  */
-#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT \
- || HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
-# define K 2
-#else
-# define K (2 * HOST_FLOAT_WORDS_BIG_ENDIAN)
-#endif
-
-  /* Domain check the argument.  */
-  x.d = *r;
-  if (x.d == 0.0)
-    goto fail;
-
-#ifdef REAL_INFINITY
-  if (REAL_VALUE_ISINF (x.d) || REAL_VALUE_ISNAN (x.d))
-    goto fail;
-#endif
-
-  /* Compute the reciprocal and check for numerical exactness.
-     It is unnecessary to check all the significand bits to determine
-     whether X is a power of 2.  If X is not, then it is impossible for
-     the bottom half significand of both X and 1/X to be all zero bits.
-     Hence we ignore the data structure of the top half and examine only
-     the low order bits of the two significands.  */
-  t.d = 1.0 / x.d;
-  if (x.i[K] != 0 || x.i[K + 1] != 0 || t.i[K] != 0 || t.i[K + 1] != 0)
-    goto fail;
-
-  /* Truncate to the required mode and range-check the result.  */
-  y.d = REAL_VALUE_TRUNCATE (mode, t.d);
-#ifdef CHECK_FLOAT_VALUE
-  i = 0;
-  if (CHECK_FLOAT_VALUE (mode, y.d, i))
-    goto fail;
-#endif
-
-  /* Fail if truncation changed the value.  */
-  if (y.d != t.d || y.d == 0.0)
-    goto fail;
-
-#ifdef REAL_INFINITY
-  if (REAL_VALUE_ISINF (y.d) || REAL_VALUE_ISNAN (y.d))
-    goto fail;
-#endif
-
-  /* Output the reciprocal and return success flag.  */
-  *r = y.d;
-  args->success = 1;
-  return;
-
- fail:
-  args->success = 0;
-  return;
-
-#undef K
-}
-
-
-int
-exact_real_inverse (mode, r)
-     enum machine_mode mode;
-     REAL_VALUE_TYPE *r;
-{
-  struct exact_real_inverse_args args;
-
-  /* Disable if insufficient information on the data structure.  */
-#if HOST_FLOAT_FORMAT == UNKNOWN_FLOAT_FORMAT
-  return 0;
-#endif
-
-  /* Usually disable if bounds checks are not reliable.  */
-  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT) && !flag_pretend_float)
-    return 0;
-
-  args.mode = mode;
-  args.r = r;
-
-  if (do_float_handler (exact_real_inverse_1, (PTR) &args))
-    return args.success;
-  return 0;
-}
-
-/* Convert C99 hexadecimal floating point string constant S.  Return
-   real value type in mode MODE.  This function uses the host computer's
-   floating point arithmetic when there is no REAL_ARITHMETIC.  */
-
-REAL_VALUE_TYPE
-real_hex_to_f (s, mode)
-   const char *s;
-   enum machine_mode mode;
-{
-  REAL_VALUE_TYPE ip;
-  const char *p = s;
-  unsigned HOST_WIDE_INT low, high;
-  int shcount, nrmcount, k;
-  int sign, expsign, isfloat;
-  int lost = 0;/* Nonzero low order bits shifted out and discarded.  */
-  int frexpon = 0;  /* Bits after the decimal point.  */
-  int expon = 0;  /* Value of exponent.  */
-  int decpt = 0;  /* How many decimal points.  */
-  int gotp = 0;  /* How many P's.  */
-  char c;
-
-  isfloat = 0;
-  expsign = 1;
-  ip = 0.0;
-
-  while (*p == ' ' || *p == '\t')
-    ++p;
-
-  /* Sign, if any, comes first.  */
-  sign = 1;
-  if (*p == '-')
-    {
-      sign = -1;
-      ++p;
-    }
-
-  /* The string is supposed to start with 0x or 0X .  */
-  if (*p == '0')
-    {
-      ++p;
-      if (*p == 'x' || *p == 'X')
-	++p;
-      else
-	abort ();
-    }
-  else
-    abort ();
-
-  while (*p == '0')
-    ++p;
-
-  high = 0;
-  low = 0;
-  shcount = 0;
-  while ((c = *p) != '\0')
-    {
-      if (ISXDIGIT (c))
-	{
-	  k = hex_value (c & CHARMASK);
-
-	  if ((high & 0xf0000000) == 0)
-	    {
-	      high = (high << 4) + ((low >> 28) & 15);
-	      low = (low << 4) + k;
-	      shcount += 4;
-	      if (decpt)
-		frexpon += 4;
-	    }
-	  else
-	    {
-	      /* Record nonzero lost bits.  */
-	      lost |= k;
-	      if (! decpt)
-		frexpon -= 4;
-	    }
-	  ++p;
-	}
-      else if (c == '.')
-	{
-	  ++decpt;
-	  ++p;
-	}
-
-      else if (c == 'p' || c == 'P')
-	{
-	  ++gotp;
-	  ++p;
-	  /* Sign of exponent.  */
-	  if (*p == '-')
-	    {
-	      expsign = -1;
-	      ++p;
-	    }
-
-	  /* Value of exponent.
-	     The exponent field is a decimal integer.  */
-	  while (ISDIGIT (*p))
-	    {
-	      k = (*p++ & CHARMASK) - '0';
-	      expon = 10 * expon + k;
-	    }
-
-	  expon *= expsign;
-	  /* F suffix is ambiguous in the significand part
-	     so it must appear after the decimal exponent field.  */
-	  if (*p == 'f' || *p == 'F')
-	    {
-	      isfloat = 1;
-	      ++p;
-	      break;
-	    }
-	}
-
-      else if (c == 'l' || c == 'L')
-	{
-	  ++p;
-	  break;
-	}
-      else
-	break;
-    }
-
-  /* Abort if last character read was not legitimate.  */
-  c = *p;
-  if ((c != '\0' && c != ' ' && c != '\n' && c != '\r') || (decpt > 1))
-    abort ();
-
-  /* There must be either one decimal point or one p.  */
-  if (decpt == 0 && gotp == 0)
-    abort ();
-
-  shcount -= 4;
-  if (high == 0 && low == 0)
-    return dconst0;
-
-  /* Normalize.  */
-  nrmcount = 0;
-  if (high == 0)
-    {
-      high = low;
-      low = 0;
-      nrmcount += 32;
-    }
-
-  /* Leave a high guard bit for carry-out.  */
-  if ((high & 0x80000000) != 0)
-    {
-      lost |= low & 1;
-      low = (low >> 1) | (high << 31);
-      high = high >> 1;
-      nrmcount -= 1;
-    }
-
-  if ((high & 0xffff8000) == 0)
-    {
-      high = (high << 16) + ((low >> 16) & 0xffff);
-      low = low << 16;
-      nrmcount += 16;
-    }
-
-  while ((high & 0xc0000000) == 0)
-    {
-      high = (high << 1) + ((low >> 31) & 1);
-      low = low << 1;
-      nrmcount += 1;
-    }
-
-  if (isfloat || GET_MODE_SIZE (mode) == UNITS_PER_WORD)
-    {
-      /* Keep 24 bits precision, bits 0x7fffff80.
-	 Rounding bit is 0x40.  */
-      lost = lost | low | (high & 0x3f);
-      low = 0;
-      if (high & 0x40)
-	{
-	  if ((high & 0x80) || lost)
-	    high += 0x40;
-	}
-      high &= 0xffffff80;
-    }
-  else
-    {
-      /* We need real.c to do long double formats, so here default
-	 to double precision.  */
-#if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      /* IEEE double.
-	 Keep 53 bits precision, bits 0x7fffffff fffffc00.
-	 Rounding bit is low word 0x200.  */
-      lost = lost | (low & 0x1ff);
-      if (low & 0x200)
-	{
-	  if ((low & 0x400) || lost)
-	    {
-	      low = (low + 0x200) & 0xfffffc00;
-	      if (low == 0)
-		high += 1;
-	    }
-	}
-      low &= 0xfffffc00;
-#else
-      /* Assume it's a VAX with 56-bit significand,
-	 bits 0x7fffffff ffffff80.  */
-      lost = lost | (low & 0x7f);
-      if (low & 0x40)
-	{
-	  if ((low & 0x80) || lost)
-	    {
-	      low = (low + 0x40) & 0xffffff80;
-	      if (low == 0)
-		high += 1;
-	    }
-	}
-      low &= 0xffffff80;
-#endif
-    }
-
-  ip = (double) high;
-  ip = REAL_VALUE_LDEXP (ip, 32) + (double) low;
-  /* Apply shifts and exponent value as power of 2.  */
-  ip = REAL_VALUE_LDEXP (ip, expon - (nrmcount + frexpon));
-
-  if (sign < 0)
-    ip = -ip;
-  return ip;
-}
-
-#endif /* no REAL_ARITHMETIC */
-
 /* Given T, an expression, return the negation of T.  Allow for T to be
    null, in which case return null.  */
 
@@ -1725,44 +1216,7 @@ const_binop_1 (data)
   struct cb_args *args = (struct cb_args *) data;
   REAL_VALUE_TYPE value;
 
-#ifdef REAL_ARITHMETIC
   REAL_ARITHMETIC (value, args->code, args->d1, args->d2);
-#else
-  switch (args->code)
-    {
-    case PLUS_EXPR:
-      value = args->d1 + args->d2;
-      break;
-
-    case MINUS_EXPR:
-      value = args->d1 - args->d2;
-      break;
-
-    case MULT_EXPR:
-      value = args->d1 * args->d2;
-      break;
-
-    case RDIV_EXPR:
-#ifndef REAL_INFINITY
-      if (args->d2 == 0)
-	abort ();
-#endif
-
-      value = args->d1 / args->d2;
-      break;
-
-    case MIN_EXPR:
-      value = MIN (args->d1, args->d2);
-      break;
-
-    case MAX_EXPR:
-      value = MAX (args->d1, args->d2);
-      break;
-
-    default:
-      abort ();
-    }
-#endif /* no REAL_ARITHMETIC */
 
   args->t
     = build_real (args->type,
@@ -1787,7 +1241,6 @@ const_binop (code, arg1, arg2, notrunc)
   if (TREE_CODE (arg1) == INTEGER_CST)
     return int_const_binop (code, arg1, arg2, notrunc);
 
-#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
   if (TREE_CODE (arg1) == REAL_CST)
     {
       REAL_VALUE_TYPE d1;
@@ -1831,7 +1284,6 @@ const_binop (code, arg1, arg2, notrunc)
 	  | TREE_CONSTANT_OVERFLOW (arg2);
       return t;
     }
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
   if (TREE_CODE (arg1) == COMPLEX_CST)
     {
       tree type = TREE_TYPE (arg1);
@@ -2145,7 +1597,6 @@ fold_convert (t, arg1)
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
 	{
 	  /* Don't initialize these, use assignments.
@@ -2166,15 +1617,9 @@ fold_convert (t, arg1)
 	  /* See if X will be in range after truncation towards 0.
 	     To compensate for truncation, move the bounds away from 0,
 	     but reject if X exactly equals the adjusted bounds.  */
-#ifdef REAL_ARITHMETIC
 	  REAL_ARITHMETIC (l, MINUS_EXPR, l, dconst1);
 	  if (!no_upper_bound)
 	    REAL_ARITHMETIC (u, PLUS_EXPR, u, dconst1);
-#else
-	  l--;
-	  if (!no_upper_bound)
-	    u++;
-#endif
 	  /* If X is a NaN, use zero instead and show we have an overflow.
 	     Otherwise, range check.  */
 	  if (REAL_VALUE_ISNAN (x))
@@ -2184,50 +1629,23 @@ fold_convert (t, arg1)
 		      && REAL_VALUES_LESS (x, u)))
 	    overflow = 1;
 
-#ifndef REAL_ARITHMETIC
-	  {
-	    HOST_WIDE_INT low, high;
-	    HOST_WIDE_INT half_word
-	      = (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2);
-
-	    if (x < 0)
-	      x = -x;
-
-	    high = (HOST_WIDE_INT) (x / half_word / half_word);
-	    x -= (REAL_VALUE_TYPE) high * half_word * half_word;
-	    if (x >= (REAL_VALUE_TYPE) half_word * half_word / 2)
-	      {
-		low = x - (REAL_VALUE_TYPE) half_word * half_word / 2;
-		low |= (HOST_WIDE_INT) -1 << (HOST_BITS_PER_WIDE_INT - 1);
-	      }
-	    else
-	      low = (HOST_WIDE_INT) x;
-	    if (TREE_REAL_CST (arg1) < 0)
-	      neg_double (low, high, &low, &high);
-	    t = build_int_2 (low, high);
-	  }
-#else
 	  {
 	    HOST_WIDE_INT low, high;
 	    REAL_VALUE_TO_INT (&low, &high, x);
 	    t = build_int_2 (low, high);
 	  }
-#endif
 	  TREE_TYPE (t) = type;
 	  TREE_OVERFLOW (t)
 	    = TREE_OVERFLOW (arg1) | force_fit_type (t, overflow);
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       TREE_TYPE (t) = type;
     }
   else if (TREE_CODE (type) == REAL_TYPE)
     {
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       if (TREE_CODE (arg1) == INTEGER_CST)
 	return build_real_from_int_cst (type, arg1);
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
       if (TREE_CODE (arg1) == REAL_CST)
 	{
 	  struct fc_args args;
@@ -5008,9 +4426,7 @@ fold (expr)
 	subop = arg0;
 
       if (subop != 0 && TREE_CODE (subop) != INTEGER_CST
-#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
 	  && TREE_CODE (subop) != REAL_CST
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 	  )
 	/* Note that TREE_CONSTANT isn't enough:
 	   static var addresses are constant but we can't
@@ -5045,10 +4461,7 @@ fold (expr)
 	    subop = op;
 
 	  if (TREE_CODE (subop) != INTEGER_CST
-#if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
-	      && TREE_CODE (subop) != REAL_CST
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
-	      )
+	      && TREE_CODE (subop) != REAL_CST)
 	    /* Note that TREE_CONSTANT isn't enough:
 	       static var addresses are constant but we can't
 	       do arithmetic on them.  */
@@ -5704,10 +5117,6 @@ fold (expr)
 	}
 
     binary:
-#if defined (REAL_IS_NOT_DOUBLE) && ! defined (REAL_ARITHMETIC)
-      if (TREE_CODE (arg1) == REAL_CST)
-	return t;
-#endif /* REAL_IS_NOT_DOUBLE, and no REAL_ARITHMETIC */
       if (wins)
 	t1 = const_binop (code, arg0, arg1, 0);
       if (t1 != NULL_TREE)
@@ -5948,12 +5357,10 @@ fold (expr)
 
     case RDIV_EXPR:
       /* In most cases, do nothing with a divide by zero.  */
-#if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
 #ifndef REAL_INFINITY
       if (TREE_CODE (arg1) == REAL_CST && real_zerop (arg1))
 	return t;
 #endif
-#endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
       /* (-A) / (-B) -> A / B  */
       if (TREE_CODE (arg0) == NEGATE_EXPR && TREE_CODE (arg1) == NEGATE_EXPR)

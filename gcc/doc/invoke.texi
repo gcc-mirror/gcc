@@ -247,7 +247,7 @@ in the following sections.
 -fdump-class-hierarchy@r{[}-@var{n}@r{]} @gol
 -fdump-tree-original@r{[}-@var{n}@r{]} -fdump-tree-optimized@r{[}-@var{n}@r{]} @gol
 -fdump-tree-inlined@r{[}-@var{n}@r{]} @gol
--fmem-report  -fpretend-float @gol
+-fmem-report @gol
 -fprofile-arcs  -ftest-coverage  -ftime-report @gol
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2 @gol
 -ggdb  -gstabs  -gstabs+  -gvms  -gxcoff  -gxcoff+ @gol
@@ -3041,14 +3041,6 @@ Dump after all tree based optimization, to @file{@var{file}.optimized}.
 @item inlined
 Dump after function inlining, to @file{@var{file}.inlined}.
 @end table
-
-@item -fpretend-float
-@opindex fpretend-float
-When running a cross-compiler, pretend that the target machine uses the
-same floating point format as the host machine.  This causes incorrect
-output of the actual floating constants, but the actual instruction
-sequence will probably be the same as GCC would make when running on
-the target machine.
 
 @item -save-temps
 @opindex save-temps

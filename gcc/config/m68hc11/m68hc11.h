@@ -244,11 +244,6 @@ extern const struct processor_costs *m68hc11_cost;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD		2
 
-/* Define if you don't want extended real, but do want to use the
-   software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-#define REAL_ARITHMETIC
-
 /* Width in bits of a pointer.  See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE		16
 
