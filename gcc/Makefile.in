@@ -1284,7 +1284,7 @@ mostlyclean:
 	-rm -f tmplibgcc* tmpcopy xlimits.h
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
-	-rm -f tmp-float.h tmp-gcc.xtar.Z tmp-limits.h
+	-rm -f tmp-float.h tmp-gcc.xtar.Z
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
@@ -1397,7 +1397,7 @@ install-cross-tools: install-dir
 	    if [ -d $(tooldir)/include/. ] ; then \
 	      $(SYMLINK) $(tooldir)/include $(libsubdir)/sys-include \
 	      || (if [ -d $(libsubdir)/sys-include ] ; then true ; else mkdir $(libsubdir)/sys-include ; fi; \
-		  (cd $(tooldir)/include; tar cf - .) | (cd $(libsubdir)/sys-include; tar xpf -); \
+		  (cd $(tooldir)/include; tar cf - .) | (cd $(libsubdir)/sys-include; tar xpf -)); \
 	    else true; fi; \
 	  else true; \
 	  fi; \
