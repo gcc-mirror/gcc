@@ -719,6 +719,7 @@ objext='.o'
 AC_SUBST(manext)
 AC_SUBST(objext)
 
+config_gtfiles=
 build_xm_file=
 build_xm_defines=
 build_install_headers_dir=install-headers-tar
@@ -2331,7 +2332,7 @@ all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 # List of language makefile fragments.
 all_lang_makefiles=
 # Files for gengtype
-all_gtfiles=
+all_gtfiles="$config_gtfiles"
 
 # Add the language fragments.
 # Languages are added via two mechanisms.  Some information must be

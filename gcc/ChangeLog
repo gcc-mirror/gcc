@@ -1,3 +1,10 @@
+2002-06-04  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.gcc (powerpc-*-darwin*): Set config_gtfiles.
+	* configure.in (config_gtfiles): New variable.
+	(all_gtfiles): Initialise from config_gtfiles.
+	* configure: Regenerate.
+
 2002-06-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 config/i386:
