@@ -1,3 +1,7 @@
+2001-11-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c-torture/execute/20010122-1.c: Prevent unwanted inlining.
+
 2001-11-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/forscope1.C: New test.

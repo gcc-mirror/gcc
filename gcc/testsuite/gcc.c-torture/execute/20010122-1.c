@@ -4,19 +4,21 @@ extern void abort (void);
 extern void *alloca (__SIZE_TYPE__);
 char *dummy (void);
 
+#define NOINLINE __attribute__((noinline))
+
 void *save_ret1[6];
 void *test4a (char *);
 void *test5a (char *);
 void *test6a (char *);
 
-void *test1 (void)
+void NOINLINE *test1 (void)
 {
   void * temp;
   temp = __builtin_return_address (0);
   return temp;
 }
 
-void *test2 (void)
+void NOINLINE *test2 (void)
 {
   void * temp;
   dummy ();
@@ -24,7 +26,7 @@ void *test2 (void)
   return temp;
 }
 
-void *test3 (void)
+void NOINLINE *test3 (void)
 {
   void * temp;
   temp = __builtin_return_address (0);
@@ -32,28 +34,28 @@ void *test3 (void)
   return temp;
 }
 
-void *test4 (void)
+void NOINLINE *test4 (void)
 {
   char * save = (char*) alloca (4);
   
   return test4a (save);
 }
 
-void *test4a (char * p)
+void *NOINLINE test4a (char * p)
 {
   void * temp;
   temp = __builtin_return_address (1);
   return temp;
 }
 
-void *test5 (void)
+void NOINLINE *test5 (void)
 {
   char * save = (char*) alloca (4);
   
   return test5a (save);
 }
 
-void *test5a (char * p)
+void NOINLINE *test5a (char * p)
 {
   void * temp;
   dummy ();
@@ -61,14 +63,14 @@ void *test5a (char * p)
   return temp;
 }
 
-void *test6 (void)
+void NOINLINE *test6 (void)
 {
   char * save = (char*) alloca (4);
   
   return test6a (save);
 }
 
-void *test6a (char * p)
+void NOINLINE *test6a (char * p)
 {
   void * temp;
   temp = __builtin_return_address (1);
@@ -78,14 +80,10 @@ void *test6a (char * p)
 
 void *(*func1[6])(void) = { test1, test2, test3, test4, test5, test6 };
 
-char * call_func1_ (int i)
+char * NOINLINE call_func1 (int i)
 {
   save_ret1[i] = func1[i] ();
 }
-
-/* We dont' want call_func1_ to be inlined, so call it through a
-   pointer.  */
-void (*call_func1)(int) = call_func1_;
 
 static void *ret_addr;
 void *save_ret2[6];
@@ -93,61 +91,61 @@ void test10a (char *);
 void test11a (char *);
 void test12a (char *);
 
-void test7 (void)
+void NOINLINE test7 (void)
 {
   ret_addr = __builtin_return_address (0);
   return;
 }
 
-void test8 (void)
+void NOINLINE test8 (void)
 {
   dummy ();
   ret_addr = __builtin_return_address (0);
   return;
 }
 
-void test9 (void)
+void NOINLINE test9 (void)
 {
   ret_addr = __builtin_return_address (0);
   dummy ();
   return;
 }
 
-void test10 (void)
+void NOINLINE test10 (void)
 {
   char * save = (char*) alloca (4);
   
   test10a (save);
 }
 
-void test10a (char * p)
+void NOINLINE test10a (char * p)
 {
   ret_addr = __builtin_return_address (1);
   return;
 }
 
-void test11 (void)
+void NOINLINE test11 (void)
 {
   char * save = (char*) alloca (4);
   
   test11a (save);
 }
 
-void test11a (char * p)
+void NOINLINE test11a (char * p)
 {
   dummy ();
   ret_addr = __builtin_return_address (1);
   return;
 }
 
-void test12 (void)
+void NOINLINE test12 (void)
 {
   char * save = (char*) alloca (4);
   
   test12a (save);
 }
 
-void test12a (char * p)
+void NOINLINE test12a (char * p)
 {
   ret_addr = __builtin_return_address (1);
   dummy ();
@@ -163,15 +161,11 @@ char * dummy (void)
 
 void (*func2[6])(void) = { test7, test8, test9, test10, test11, test12 };
 
-void call_func2_ (int i)
+void NOINLINE call_func2 (int i)
 {
   func2[i] ();
   save_ret2[i] = ret_addr;
 }
-
-/* We dont' want call_func2_ to be inlined, so call it through a
-   pointer.  */
-void (*call_func2)(int) = call_func2_;
 
 int main (void)
 {
