@@ -1,3 +1,7 @@
+2000-05-08  Richard Hendeson  <rth@cygnus.com>
+
+	* gcc_update: Remove references to inclhack.tpl.
+
 2000-04-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* index-prop: Use a single pattern.  Also support *** cdiffs.
