@@ -1,5 +1,8 @@
 1999-08-25  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.toshiba/G19990304_01.out: New file.
+	* libjava.toshiba/G19990304_01.java: New file.
+
 	* libjava.lang/G19990310_01.out: New file.
 	* libjava.lang/G19990310_01.java: New file.
 
