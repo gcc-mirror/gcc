@@ -1,3 +1,10 @@
+2001-03-11  Zack Weinberg  <zackw@stanford.edu>
+
+	* configure.in: AC_SUBST xm_defines.
+	* configure: Regenerate.
+	* Makefile.in: Set DEFINES=$(xm_defines) when building
+	tconfig.h.
+
 2001-03-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppfiles.c (INCLUDE_LEN_FUDGE, ENOMEM): Delete.
