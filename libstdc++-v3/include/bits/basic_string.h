@@ -642,10 +642,10 @@ namespace std
 	const size_type __size = this->size();
  	if (__pos > __size)
 	  __throw_out_of_range("basic_string::replace");
-	if (__size - __n1 > this->max_size() - __n2)
-	  __throw_length_error("basic_string::replace");
 	const bool __testn1 = __n1 < __size - __pos;
 	const size_type __foldn1 = __testn1 ? __n1 : __size - __pos;
+	if (__size - __foldn1 > this->max_size() - __n2)
+	  __throw_length_error("basic_string::replace");
 	if (_M_rep()->_M_is_shared() || less<const _CharT*>()(__s, _M_data())
 	    || less<const _CharT*>()(_M_data() + __size, __s))
 	  return _M_replace_safe(_M_ibegin() + __pos,

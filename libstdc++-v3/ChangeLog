@@ -1,3 +1,10 @@
+2002-04-26  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.h (replace(__pos, __n1, __s, __n2):
+	Fix and tighten __throw_length_error check.
+	* testsuite/21_strings/replace.cc (test05): New.
+	* testsuite/21_strings/replace.cc (test02, test03, test04): Tweak.
+
 2002-04-23  Loren J. Rittle <ljrittle@acm.org>
 
 	* include/std/std_fstream.h (basic_filebuf::sync): Hoist

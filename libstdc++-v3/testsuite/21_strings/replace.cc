@@ -84,6 +84,7 @@ bool test01(void)
 void
 test02()
 {
+  bool test = true;
   const char* strlit = "../the long pier/Hanalei Bay/Kauai/Hawaii";
   std::string aux = strlit;
   aux.replace(aux.begin()+5, aux.begin()+20,
@@ -100,6 +101,7 @@ test02()
 void
 test03()
 {
+  bool test = true;
   const char* title01 = "nine types of ambiguity";
   const char* title02 = "ultra";
   std::string str01 = title01;
@@ -145,6 +147,7 @@ test03()
 void
 test04()
 {
+  bool test = true;
   std::string str01 = "geogaddi";
   std::string str02;
 
@@ -175,11 +178,25 @@ test04()
   VERIFY(str02 == "geogaddi");
 }
 
+// We wrongly used __n1 instead of __foldn1 in the length_error
+// check at the beginning of replace(__pos, __n1, __s, __n2)
+void
+test05()
+{
+  bool test = true;
+  std::string str01 = "londinium";
+  std::string str02 = "cydonia";
+
+  str01.replace(0, 20, str02.c_str(), 3);
+  VERIFY(str01 == "cyd");
+}
+
 int main()
 { 
   test01();
   test02();
   test03();
   test04();
+  test05();
   return 0;
 }
