@@ -1,3 +1,7 @@
+Mon Mar 15 07:32:54 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* jump.c (jump_optimize): Setup to handle conditional call.
+
 Sun Mar 14 07:28:32 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.c (read_rtx): Call fatal if bad RTL code; check for bad mode.
