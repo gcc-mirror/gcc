@@ -888,7 +888,7 @@ extern void GC_thr_init();	/* Needed for Solaris/X86	*/
 #   define GC_INIT() { extern end, etext; \
 		       GC_noop(&end, &etext); }
 #else
-# if defined(__CYGWIN32__) && defined(GC_USE_DLL)
+# if (defined(__CYGWIN32__) && defined(GC_USE_DLL)) || defined (_AIX)
     /*
      * Similarly gnu-win32 DLLs need explicit initialization
      */

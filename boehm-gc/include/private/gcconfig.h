@@ -1174,10 +1174,19 @@
 
 # ifdef RS6000
 #   define MACH_TYPE "RS6000"
-#   define ALIGNMENT 4
-#   define DATASTART ((ptr_t)0x20000000)
+#   ifdef __64BIT__
+#     define ALIGNMENT 8
+#     define CPP_WORDSZ 64
+#   else
+#     define ALIGNMENT 4
+#     define CPP_WORDSZ 32
+#   endif
+    extern int _data, _end;
+#   define DATASTART ((ptr_t)((ulong)&_data))
+#   define DATAEND ((ptr_t)((ulong)&_end))
     extern int errno;
 #   define STACKBOTTOM ((ptr_t)((ulong)&errno))
+#   define USE_GENERIC_PUSH_REGS
 #   define DYNAMIC_LOADING
 	/* For really old versions of AIX, this may have to be removed. */
 # endif
@@ -1582,7 +1591,7 @@
 
 # if defined(SVR4) || defined(LINUX) || defined(IRIX) || defined(HPUX) \
     || defined(OPENBSD) || defined(NETBSD) || defined(FREEBSD) \
-    || defined(BSD) || defined(AIX) || defined(MACOSX) || defined(OSF1)
+    || defined(BSD) || defined(_AIX) || defined(MACOSX) || defined(OSF1)
 #   define UNIX_LIKE   /* Basic Unix-like system calls work.	*/
 # endif
 
