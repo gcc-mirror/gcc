@@ -1,3 +1,8 @@
+2004-01-26  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips16_optimize_gp): Delete.
+	(mips_reorg): Don't call it.
+
 2004-01-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_offset_within_object_p): New function.
