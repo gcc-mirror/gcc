@@ -6717,6 +6717,10 @@ c_expand_body (fndecl, nested_p)
   immediate_size_expand = 0;
   cfun->x_dont_save_pending_sizes_p = 1;
 
+  /* If this is a varargs function, inform function.c.  */
+  if (c_function_varargs)
+    mark_varargs ();
+
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (fndecl, 0);
 
@@ -6726,10 +6730,6 @@ c_expand_body (fndecl, nested_p)
       && MAIN_NAME_P (DECL_NAME (fndecl))
       && DECL_CONTEXT (fndecl) == NULL_TREE)
     expand_main_function ();
-
-  /* If this is a varargs function, inform function.c.  */
-  if (c_function_varargs)
-    mark_varargs ();
 
   /* Generate the RTL for this function.  */
   expand_stmt (DECL_SAVED_TREE (fndecl));

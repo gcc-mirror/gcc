@@ -1,3 +1,8 @@
+2000-09-18  Richard Henderson  <rth@cygnus.com>
+
+	* c-decl.c (c_expand_body): Call mark_varargs before
+	expand_function_start.
+
 2000-09-18  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/eabi-cn.asm: Use /**/ to delimit comments, not #.
