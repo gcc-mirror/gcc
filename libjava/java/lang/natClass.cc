@@ -1,6 +1,6 @@
 // natClass.cc - Implementation of java.lang.Class native methods.
 
-/* Copyright (C) 1998, 1999, 2000  Cygnus Solutions
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 

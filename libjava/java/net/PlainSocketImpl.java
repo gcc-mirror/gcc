@@ -1,6 +1,6 @@
 // PlainSocketImpl.java - Implementation of SocketImpl.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

@@ -1,6 +1,6 @@
 // sparc-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

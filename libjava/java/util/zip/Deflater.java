@@ -1,6 +1,6 @@
 // Deflater.java - Compress a data stream.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

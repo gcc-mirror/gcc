@@ -1,6 +1,6 @@
 // RuleBasedCollator.java - Concrete class for locale-based string compare.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

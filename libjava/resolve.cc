@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

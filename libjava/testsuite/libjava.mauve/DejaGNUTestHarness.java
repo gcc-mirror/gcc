@@ -1,4 +1,4 @@
-// Copyright (c) 1998, 1999  Cygnus Solutions
+// Copyright (c) 1998, 1999  Red Hat, Inc.
 
 // Written by Tom Tromey <tromey@cygnus.com>
 
