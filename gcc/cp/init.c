@@ -840,8 +840,12 @@ member_init_ok_or_else (field, type, member_name)
   if (DECL_CONTEXT (field) != type
       && TYPE_NEEDS_CONSTRUCTING (DECL_CONTEXT (field)))
     {
-      cp_error ("member `%D' comes from base class needing constructor",
-		field);
+      if (current_function_decl && DECL_CONSTRUCTOR_P (current_function_decl))
+	cp_error ("initialization of `%D' inside constructor for `%T'",
+		  field, type);
+      else
+	cp_error ("member `%D' comes from base class needing constructor",
+		  field);
       return 0;
     }
   if (TREE_STATIC (field))
@@ -3592,6 +3596,11 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
     handle_array:
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
+      if (TYPE_DOMAIN (type) == NULL_TREE)
+	{
+	  error ("unknown array size in delete");
+	  return error_mark_node;
+	}
       return build_vec_delete (addr, array_type_nelts (type),
 			       c_sizeof_nowarn (TREE_TYPE (type)),
 			       auto_delete, integer_two_node,
@@ -3932,9 +3941,8 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
      tree auto_delete_vec, auto_delete;
      int use_global_delete;
 {
-  tree ptype = TREE_TYPE (base);
-  tree type;
-  tree virtual_size;
+  tree ptype, type, virtual_size;
+
   /* Temporary variables used by the loop.  */
   tree tbase, size_exp, tbase_init;
 
@@ -3956,6 +3964,11 @@ build_vec_delete (base, maxindex, elt_size, auto_delete_vec, auto_delete,
 
   /* This is the BLOCK to record the symbol binding for debugging.  */
   tree block;
+
+  if (TREE_CODE (base) == OFFSET_REF)
+    base = resolve_offset_ref (base);
+
+  ptype = TREE_TYPE (base);
 
   base = stabilize_reference (base);
 
