@@ -91,7 +91,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   else if (current_sym_addr)					\
     output_addr_const (asmfile, current_sym_addr);		\
   else if (current_sym_code == N_GSYM)				\
-    assemble_name (asmfile, XSTR (XEXP (DECL_RTL (sym), 0), 0)); \
+    assemble_name (asmfile, XSTR (XEXP (DECL_RTL (SYM), 0), 0)); \
   else								\
     fprintf (asmfile, "%d", current_sym_value);			\
   fprintf (asmfile, ",%d,0\n", stab_to_sclass (current_sym_code)); \

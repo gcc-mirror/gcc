@@ -1,3 +1,7 @@
+2004-07-06  George Helffrich <george@gly.bris.ac.uk>
+
+	* xcoffout.h (DBX_FINISH_SYMBOL): Fix typo.
+
 2004-07-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (get_pc_symbol): Rename into
