@@ -1,3 +1,7 @@
+2003-06-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (store_killed_in_insn): Fix.
+
 2003-06-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* target.h (asm_out.file_start, file_start_app_off,
