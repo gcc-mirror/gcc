@@ -1,3 +1,9 @@
+2002-11-19  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/sh/sh.c (gen_shl_and): Revert previous patch.
+	* config/sh/sh.md (ashrdi3+1, ashrdi3+2): Predicate on
+	reload_completed.
+
 2002-11-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (print_operand): Update the use of
