@@ -1,3 +1,8 @@
+2003-05-11  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/i386-387-1.c: Update to also test log.
+	* gcc.dg/i386-387-2.c: Likewise.
+
 2003-05-11  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* g77.f-torture/execute/int8421.f: New test.

@@ -1,3 +1,14 @@
+2003-05-11  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (logsf2, logdf2, logxf2, logdf2): New patterns
+	to implement log, logf and logl built-ins as inline x87 intrinsics.
+	(UNSPEC_FYL2X): New unspec to represent x87's "fyl2x" instruction.
+	(*fyl2x_sfxf3, *fyl2x_dfxf3, *fyl2x_xf3, *fyl2x_tfxf3): New insn
+	patterns for x87's "fyl2x" instruction, used by log?f2 patterns.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_FYL2X like
+	UNSPEC_FPATAN, i.e. replaces two stack operands with single result.
+
 2003-05-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (out_object_file): Don't set -Wno-error for ${cpu}.o. 

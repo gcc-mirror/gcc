@@ -1729,6 +1729,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 		break;
 
 	      case UNSPEC_FPATAN:
+	      case UNSPEC_FYL2X:
 		/* These insns operate on the top two stack slots.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
