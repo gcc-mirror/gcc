@@ -1055,7 +1055,7 @@ pp_cxx_ptr_operator (cxx_pretty_printer *pp, tree t)
           pp_cxx_cv_qualifier_seq (pp, t);
           break;
         }
-      /* else fall trhough.  */
+      /* else fall through.  */
 
     default:
       pp_unsupported_tree (pp, t);

@@ -1851,7 +1851,7 @@ cp_parser_check_for_invalid_template_id (cp_parser* parser,
       cp_lexer_consume_token (parser->lexer);
       /* Parse the template arguments.  */
       cp_parser_enclosed_template_argument_list (parser);
-      /* Permanently remove the invalid template arugments so that
+      /* Permanently remove the invalid template arguments so that
 	 this error message is not issued again.  */
       if (start >= 0)
 	{

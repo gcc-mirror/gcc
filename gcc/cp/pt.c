@@ -972,7 +972,7 @@ is_specialization_of_friend (tree decl, tree friend)
 	    return 0;
 	  else if (is_template)
 	    {
-	      /* If both are templates, check template paramter list.  */
+	      /* If both are templates, check template parameter list.  */
 	      tree friend_parms
 		= tsubst_template_parms (DECL_TEMPLATE_PARMS (friend),
 					 args, tf_none);
