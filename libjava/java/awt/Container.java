@@ -12,6 +12,8 @@ import java.awt.event.*;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.EventListener;
+import java.awt.peer.ComponentPeer;
+import java.awt.peer.ContainerPeer;
 
 /* A very incomplete placeholder. */
 
@@ -70,10 +72,9 @@ public abstract class Container extends Component
     return getInsets();
   }
   
-  public Component add(Component comp)
+  public Component add (Component comp)
   {
-    // FIXME
-    return null;
+    return add (comp, -1);
   }
   
   public Component add(String name, Component comp)
@@ -84,8 +85,27 @@ public abstract class Container extends Component
 
   public Component add(Component comp, int index)
   {
-    // FIXME
-    return null;
+    // This isn't the most efficient implementation.  We could do less
+    // copying when growing the array.  It probably doesn't matter.
+    if (ncomponents >= component.length)
+      {
+	int nl = component.length * 2;
+	Component[] c = new Component[nl];
+	System.arraycopy (component, 0, c, 0, ncomponents);
+	component = c;
+      }
+
+    if (index == -1)
+      component[ncomponents++] = comp;
+    else
+      {
+	System.arraycopy (component, index, component, index + 1,
+			  ncomponents - index);
+	component[index] = comp;
+	++ncomponents;
+      }
+
+    return comp;
   }
 
   public void add(Component comp, Object constraints)
@@ -103,19 +123,27 @@ public abstract class Container extends Component
     // FIXME
   }
 
-  public void remove(int index)
+  public void remove (int index)
   {
-    // FIXME
+    System.arraycopy (component, index + 1, component, index,
+		      ncomponents - index - 1);
+    component[--ncomponents] = null;
   }
 
-  public void remove(Component comp)
+  public void remove (Component comp)
   {
-    // FIXME
+    for (int i = 0; i < ncomponents; ++i)
+      if (component[i] == comp)
+	{
+	  remove (i);
+	  break;
+	}
   }
 
   public void removeAll()
   {
-    // FIXME
+    while (ncomponents >= 0)
+      component[--ncomponents] = null;
   }
 
   public LayoutManager getLayout()
@@ -317,7 +345,8 @@ public abstract class Container extends Component
   {
     for (int i = ncomponents;  --i >= 0; )
       component[i].addNotify();
-  }  
+    peer = (ComponentPeer) getToolkit ().createContainer (this);
+  }
 
   public void removeNotify()
   {

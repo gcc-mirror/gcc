@@ -27,6 +27,11 @@ public abstract class Toolkit
   protected abstract FramePeer createFrame(Frame target);
   public abstract Image getImage(URL url);
 
+  protected abstract ButtonPeer createButton (Button target);
+  protected abstract ContainerPeer createContainer (Container target);
+  protected abstract LabelPeer createLabel (Label target);
+  protected abstract ScrollbarPeer createScrollbar (Scrollbar target);
+
   public final EventQueue getSystemEventQueue()
   {
     return systemEventQueue;
