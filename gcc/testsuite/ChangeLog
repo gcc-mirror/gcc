@@ -1,3 +1,8 @@
+2005-01-15  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/18983
+	* gfortran.dg/write_to_null.f90: New test.
+
 2005-01-14  Andrew Pinski  <pinskia@physics.uc.edu>
             John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
