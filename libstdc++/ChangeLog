@@ -1,3 +1,7 @@
+Tue Sep  9 19:47:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h: Adjust use of reverse_iterator template.
+
 Wed Aug 27 00:04:33 1997  Alexandre Oliva  (oliva@dcc.unicamp.br)
 
 	* Makefile.in: create correct multiple links to
