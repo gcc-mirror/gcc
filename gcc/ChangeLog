@@ -1,3 +1,12 @@
+2004-01-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+        Backport from mainline
+
+        2004-01-10  Jan Hubicka  <jh@suse.cz>
+        PR opt/12826
+        * loop.c (insert_loop_mem): Prefer VOLATILE memory references to be
+        stored. 
+        
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/13608
