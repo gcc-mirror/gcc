@@ -2908,6 +2908,7 @@ extern void variable_section		PARAMS ((tree, int));
 enum tls_model decl_tls_model		PARAMS ((tree));
 enum symbol_visibility decl_visibility	PARAMS ((tree));
 extern void resolve_unique_section	PARAMS ((tree, int, int));
+extern void mark_referenced	PARAMS ((tree));
 
 /* In stmt.c */
 extern void emit_nop			PARAMS ((void));

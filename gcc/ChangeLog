@@ -1,3 +1,10 @@
+Thu Jun 26 00:13:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (handle_used_attribute): Use mark_referenced.
+	* varasm.c (mark_referenced): Break out from ...
+	(assemble_name): ... here.
+	* tree.h (mark_referenced): Declare.
+
 2003-06-25  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* gccbug.in: Add PCH to list of categories.

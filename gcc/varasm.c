@@ -1728,6 +1728,30 @@ assemble_label (name)
   ASM_OUTPUT_LABEL (asm_out_file, name);
 }
 
+/* Set the symbol_referenced flag for ID and notify callgraph code.  */
+void
+mark_referenced (id)
+     tree id;
+{
+  if (!TREE_SYMBOL_REFERENCED (id))
+    {
+      struct cgraph_node *node;
+      struct cgraph_varpool_node *vnode;
+
+      if (!cgraph_global_info_ready)
+	{
+	  node = cgraph_node_for_identifier (id);
+	  if (node)
+	    cgraph_mark_needed_node (node, 1);
+	}
+
+      vnode = cgraph_varpool_node_for_identifier (id);
+      if (vnode)
+	cgraph_varpool_mark_needed_node (vnode);
+    }
+  TREE_SYMBOL_REFERENCED (id) = 1;
+}
+
 /* Output to FILE a reference to the assembler name of a C-level name NAME.
    If NAME starts with a *, the rest of NAME is output verbatim.
    Otherwise NAME is transformed in an implementation-defined way
@@ -1746,25 +1770,7 @@ assemble_name (file, name)
 
   id = maybe_get_identifier (real_name);
   if (id)
-    {
-      if (!TREE_SYMBOL_REFERENCED (id))
-	{
-	  struct cgraph_node *node;
-	  struct cgraph_varpool_node *vnode;
-	  
-	  if (!cgraph_global_info_ready)
-	    {
-	      node = cgraph_node_for_identifier (id);
-	      if (node)
-		cgraph_mark_needed_node (node, 1);
-	    }
-
-	  vnode = cgraph_varpool_node_for_identifier (id);
-	  if (vnode)
-	    cgraph_varpool_mark_needed_node (vnode);
-	}
-      TREE_SYMBOL_REFERENCED (id) = 1;
-    }
+    mark_referenced (id);
 
   if (name[0] == '*')
     fputs (&name[1], file);
