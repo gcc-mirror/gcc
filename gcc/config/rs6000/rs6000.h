@@ -853,6 +853,13 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 
 /* Stack layout; function entry, exit and calling.  */
 
+/* Enumeration to give which calling sequence to use.  */
+enum rs6000_abi {
+  ABI_NONE,
+  ABI_AIX,			/* IBM's AIX */
+  ABI_V4			/* System V.4/eabi */
+};
+
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
   int first_gp_reg_save;	/* first callee saved GP register used */
@@ -861,7 +868,7 @@ typedef struct rs6000_stack {
   int cr_save_p;		/* true if the CR reg needs to be saved */
   int push_p;			/* true if we need to allocate stack space */
   int calls_p;			/* true if the function makes any calls */
-  int v4_call_p;		/* true if V.4 calling sequence used */
+  enum rs6000_abi abi;		/* which ABI to use */
   int gp_save_offset;		/* offset to save GP regs from initial SP */
   int fp_save_offset;		/* offset to save FP regs from initial SP */
   int lr_save_offset;		/* offset to save LR from initial SP */
@@ -1799,6 +1806,12 @@ extern int rs6000_trunc_used;
 
 /* Control the assembler format that we output.  */
 
+/* Common macro to output the options used to the asm file.  */
+#define ASM_OUTPUT_OPTIONS(FILE)					 \
+  output_options (FILE,							 \
+		  f_options, sizeof (f_options) / sizeof (f_options[0]), \
+		  W_options, sizeof (W_options) / sizeof (W_options[0])) \
+
 /* Output at beginning of assembler file.
 
    Initialize the section names for the RS/6000 at this point.
@@ -1816,6 +1829,7 @@ extern int rs6000_trunc_used;
 
 #define ASM_FILE_START(FILE)					\
 {								\
+  ASM_OUTPUT_OPTIONS (FILE);					\
   rs6000_gen_section_name (&xcoff_bss_section_name,		\
 			   main_input_filename, ".bss_");	\
   rs6000_gen_section_name (&xcoff_private_data_section_name,	\
@@ -2464,7 +2478,9 @@ do {									\
 			       GT, LEU, LTU, GEU, GTU}},
 
 /* Declare functions in rs6000.c */
+extern void output_options ();
 extern void rs6000_override_options ();
+extern struct rtx_def *rs6000_float_const ();
 extern struct rtx_def *rs6000_immed_double_const ();
 extern int direct_return ();
 extern int any_operand ();
