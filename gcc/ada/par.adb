@@ -1208,7 +1208,6 @@ begin
 
    if Configuration_Pragmas then
       declare
-         Ecount  : constant Int     := Serious_Errors_Detected;
          Pragmas : constant List_Id := Empty_List;
          P_Node  : Node_Id;
 
@@ -1224,20 +1223,29 @@ begin
             else
                P_Node := P_Pragma;
 
-               if Serious_Errors_Detected > Ecount then
-                  return Error_List;
-               end if;
+               if Nkind (P_Node) = N_Pragma then
 
-               if Chars (P_Node) > Last_Configuration_Pragma_Name
-                 and then Chars (P_Node) /= Name_Source_Reference
-               then
-                  Error_Msg_SC
-                    ("only configuration pragmas allowed " &
-                     "in configuration file");
-                  return Error_List;
-               end if;
+                  --  Give error if bad pragma
 
-               Append (P_Node, Pragmas);
+                  if Chars (P_Node) > Last_Configuration_Pragma_Name
+                    and then Chars (P_Node) /= Name_Source_Reference
+                  then
+                     if Is_Pragma_Name (Chars (P_Node)) then
+                        Error_Msg_N
+                          ("only configuration pragmas allowed " &
+                           "in configuration file", P_Node);
+                     else
+                        Error_Msg_N
+                          ("unrecognized pragma in configuration file",
+                           P_Node);
+                     end if;
+
+                  --  Pragma is OK config pragma, so collect it
+
+                  else
+                     Append (P_Node, Pragmas);
+                  end if;
+               end if;
             end if;
          end loop;
       end;
