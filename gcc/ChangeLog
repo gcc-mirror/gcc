@@ -1,5 +1,20 @@
 2004-08-18  Zack Weinberg  <zack@codesourcery.com>
 
+	* rtl.def (NIL): Delete.
+	* read-rtl.c (read_rtx): Handle (nil) like (define_constants).
+	Tighten the syntax a little.
+
+	* cfgloop.h, combine.c, cse.c, loop-iv.c, postreload.c, reload.c
+	* config/alpha/alpha.c, config/alpha/alpha.h, config/arc/arc.h
+	* config/arm/arm.h, config/frv/frv.h, config/i386/i386.c
+	* config/i386/predicates.md, config/m32r/m32r.h
+	* config/m68hc11/m68hc11.c, config/mcore/mcore.h, config/mips/mips.c
+	* config/mmix/mmix.c, config/pa/pa.h, config/sh/sh.h
+	* config/sparc/sparc.h, doc/tm.texi:
+	Replace all occurrences of NIL with UNKNOWN.
+
+2004-08-18  Zack Weinberg  <zack@codesourcery.com>
+
 	* dojump.c (do_jump <unordered_bcc>): Do not recursively call
 	self with a TRUTH_ORIF_EXPR; generate the appropriate jump
 	sequence inline.  Move drop_through_label code into this

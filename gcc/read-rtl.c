@@ -545,12 +545,6 @@ again:
   read_name (tmp_char, infile);
 
   tmp_code = UNKNOWN;
-
-  if (! strcmp (tmp_char, "define_constants"))
-    {
-      read_constants (infile, tmp_char);
-      goto again;
-    }
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (! strcmp (tmp_char, GET_RTX_NAME (i)))
       {
@@ -559,16 +553,24 @@ again:
       }
 
   if (tmp_code == UNKNOWN)
-    fatal_with_file_and_line (infile, "unknown rtx code `%s'", tmp_char);
-
-  /* (NIL) stands for an expression that isn't there.  */
-  if (tmp_code == NIL)
     {
-      /* Discard the closeparen.  */
-      while ((c = getc (infile)) && c != ')')
-	;
-
-      return 0;
+      /* (nil) stands for an expression that isn't there.  */
+      if (! strcmp (tmp_char, "nil"))
+	{
+	  /* Discard the closeparen.  */
+	  c = read_skip_spaces (infile);
+	  if (c != ')')
+	    fatal_expected_char (infile, ')', c);
+	  return 0;
+	}
+      /* (define_constants ...) has special syntax.  */
+      else if (! strcmp (tmp_char, "define_constants"))
+	{
+	  read_constants (infile, tmp_char);
+	  goto again;
+	}
+      else 
+	fatal_with_file_and_line (infile, "unknown rtx code `%s'", tmp_char);
     }
 
   /* If we end up with an insn expression then we free this space below.  */

@@ -84,11 +84,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* an expression code name unknown to the reader */
 DEF_RTL_EXPR(UNKNOWN, "UnKnown", "*", RTX_EXTRA)
 
-/* (NIL) is used by rtl reader and printer to represent a null pointer.  */
-
-DEF_RTL_EXPR(NIL, "nil", "*", RTX_EXTRA)
-
-
 /* include a file */
 
 DEF_RTL_EXPR(INCLUDE, "include", "s", RTX_EXTRA)

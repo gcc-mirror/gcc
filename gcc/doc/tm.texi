@@ -8657,21 +8657,21 @@ bits outside of @var{mem_mode} to be either the sign-extension or the
 zero-extension of the data read.  Return @code{SIGN_EXTEND} for values
 of @var{mem_mode} for which the
 insn sign-extends, @code{ZERO_EXTEND} for which it zero-extends, and
-@code{NIL} for other modes.
+@code{UNKNOWN} for other modes.
 
 This macro is not called with @var{mem_mode} non-integral or with a width
 greater than or equal to @code{BITS_PER_WORD}, so you may return any
 value in this case.  Do not define this macro if it would always return
-@code{NIL}.  On machines where this macro is defined, you will normally
+@code{UNKNOWN}.  On machines where this macro is defined, you will normally
 define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
-You may return a non-@code{NIL} value even if for some hard registers
+You may return a non-@code{UNKNOWN} value even if for some hard registers
 the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
 of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
 when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
 integral mode larger than this but not larger than @code{word_mode}.
 
-You must return @code{NIL} if for some hard registers that allow this
+You must return @code{UNKNOWN} if for some hard registers that allow this
 mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
 @code{word_mode}, but that they can change to another integral mode that
 is larger then @var{mem_mode} but still smaller than @code{word_mode}.

@@ -671,7 +671,7 @@
     {
       enum rtx_code second_code, bypass_code;
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
-      if (bypass_code != NIL || second_code != NIL)
+      if (bypass_code != UNKNOWN || second_code != UNKNOWN)
 	return 0;
       code = ix86_fp_compare_code_to_integer (code);
     }
@@ -715,7 +715,7 @@
     {
       enum rtx_code second_code, bypass_code;
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
-      return (bypass_code == NIL && second_code == NIL);
+      return (bypass_code == UNKNOWN && second_code == UNKNOWN);
     }
   switch (code)
     {
@@ -755,7 +755,7 @@
     {
       enum rtx_code second_code, bypass_code;
       ix86_fp_comparison_codes (code, &bypass_code, &code, &second_code);
-      if (bypass_code != NIL || second_code != NIL)
+      if (bypass_code != UNKNOWN || second_code != UNKNOWN)
 	return 0;
       code = ix86_fp_compare_code_to_integer (code);
     }

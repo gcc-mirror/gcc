@@ -330,7 +330,7 @@ extern edge split_loop_bb (basic_block, rtx);
    If first_special is true, the value in the first iteration is
      delta + mult * base
      
-   If extend = NIL, first_special must be false, delta 0, mult 1 and value is
+   If extend = UNKNOWN, first_special must be false, delta 0, mult 1 and value is
      subreg_{mode} (base + i * step)
 
    The get_iv_value function can be used to obtain these expressions.
@@ -345,7 +345,7 @@ struct rtx_iv
      see the description above).  */
   rtx base, step;
 
-  /* The type of extend applied to it (SIGN_EXTEND, ZERO_EXTEND or NIL).  */
+  /* The type of extend applied to it (SIGN_EXTEND, ZERO_EXTEND or UNKNOWN).  */
   enum rtx_code extend;
 
   /* Operations applied in the extended mode.  */

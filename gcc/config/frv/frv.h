@@ -3089,12 +3089,12 @@ do {                                                                    \
    memory in MODE, an integral mode narrower than a word, set the bits outside
    of MODE to be either the sign-extension or the zero-extension of the data
    read.  Return `SIGN_EXTEND' for values of MODE for which the insn
-   sign-extends, `ZERO_EXTEND' for which it zero-extends, and `NIL' for other
+   sign-extends, `ZERO_EXTEND' for which it zero-extends, and `UNKNOWN' for other
    modes.
 
    This macro is not called with MODE non-integral or with a width greater than
    or equal to `BITS_PER_WORD', so you may return any value in this case.  Do
-   not define this macro if it would always return `NIL'.  On machines where
+   not define this macro if it would always return `UNKNOWN'.  On machines where
    this macro is defined, you will normally define it as the constant
    `SIGN_EXTEND' or `ZERO_EXTEND'.  */
 #define LOAD_EXTEND_OP(MODE) SIGN_EXTEND
