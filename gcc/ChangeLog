@@ -1,3 +1,7 @@
+2003-10-24  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/libgcc.texi: Document some more of the libgcc API.
+
 2003-10-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_rtx_costs_1, case TARGET_THUMB): Adjust costs for
