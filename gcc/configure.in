@@ -1770,7 +1770,6 @@ for machine in $build $host $target; do
 		if [[ x$prefix = xNONE ]]; then
 			prefix=$native_prefix
 		fi
-		prefix=$native_prefix
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file=mips/news4.h
