@@ -1,3 +1,41 @@
+Mon Oct 14 20:33:12 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movv2di_internal): New pattern.
+	(movv2df_internal, movv8hi_internal, movv16qi_internal): Fix predicate.
+	(movv2di): New expander.
+	* i386.c (ix86_preferred_reload_class): Return NO_REGS for vector operands.
+
+	* i386.c (ix86_expand_timode_binop_builtin): Delete.
+	(builtin_description): Add SSE1 logicals; rename SSE2 logicals.
+	(ix86_init_mmx_sse_builtins): Kill SSE1 logicals.
+	(ix86_expand_builtin): Likewise.
+	* i386.h (sse_andti4_df_1, sse_andti3_df_2, sse_andti3_sf_1, sse_andti3_sf_2,
+        sse_andti3,
+	sse_andnti4_df_1, sse_andti3_df_2, sse_andti3_sf_1, sse_andti3_sf_2,
+        sse_andnti3,
+	sse_orti4_df_1, sse_orti3_df_2, sse_orti3_sf_1, sse_orti3_sf_2,
+        sse_orti3,
+	sse_xorti4_df_1, sse_xorti3_df_2, sse_xorti3_sf_1, sse_xorti3_sf_2,
+        sse_xorti3): Kill.
+	(sse_andv4sf3, sse_andnv4sf3, sse_orv2df3, sse_xorv2df3, sse_andv2df3,
+	 sse_andnv2df3, sse_orv2df3, sse_xorv2df3): New expanders.
+	(*sse_andv4sf3, *sse_andnv2df3, *sse_orv4sf3, *sse_xorv4sf3, *sse_andv2df3,
+	 *sse_andnv2df3, *sse_orv2df3, *sse_xorv2df3): New patterns.
+	(*sse_andsf3, *sse_andndf3, *sse_ordf3, *sse_xordf3, *sse_anddf3,
+	 *sse_andndf3, *sse_orv2df3, *sse_xorv2df3): New patterns.
+
+	* xmmintrin.h (__m128i): Define as __v2di.
+
+	PR c/7344
+	* predict.c (can_predict_insn_p): New function.
+	(estimate_probability): Avoid unnecesary work.
+	(process_note_prediction): Likewise.
+	* toplev.c (rest_of_compilation): Account early branch prediction pass
+	as TV_BRANCH_PROB.
+
+	PR c++/6419
+	(expand_expr): Use DECL_RTL_SET_P.
+
 2002-10-14  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (simplify_set):  Treat MODE_CC registers like cc0.
@@ -136,7 +174,7 @@ Fri Oct 11 22:22:38 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	PR c/7344
 	* cfgbuild.c (make_edges): Create edge cache when we do have
 	large jumptable.
-	(do_tablejump): Note size of maximal jumptable.
+	* expr.c (do_tablejump): Note size of maximal jumptable.
 	* function.c (prepare_function_start): Zero out size.
 	* function.h (function): Add max_jumptable_ents.
 

@@ -1066,7 +1066,7 @@ typedef int __v4si __attribute__ ((mode (V4SI)));
 typedef int __v8hi __attribute__ ((mode (V8HI)));
 typedef int __v16qi __attribute__ ((mode (V16QI)));
 
-#define __m128i __m128
+#define __m128i __v2di
 #define __m128d __v2df
 
 static __inline __m128d

@@ -6532,7 +6532,7 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case PARM_DECL:
-      if (DECL_RTL (exp) == 0)
+      if (!DECL_RTL_SET_P (exp))
 	{
 	  error_with_decl (exp, "prior parameter's size depends on `%s'");
 	  return CONST0_RTX (mode);
@@ -10941,6 +10941,9 @@ do_tablejump (index, mode, range, table_label, default_label)
      enum machine_mode mode;
 {
   rtx temp, vector;
+
+  if (range > cfun->max_jumptable_ents)
+    cfun->max_jumptable_ents = range;
 
   /* Do an unsigned comparison (in the proper mode) between the index
      expression and the value which represents the length of the range.

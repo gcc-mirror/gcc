@@ -771,8 +771,6 @@ static rtx ix86_expand_sse_compare PARAMS ((const struct builtin_description *,
 static rtx ix86_expand_unop1_builtin PARAMS ((enum insn_code, tree, rtx));
 static rtx ix86_expand_unop_builtin PARAMS ((enum insn_code, tree, rtx, int));
 static rtx ix86_expand_binop_builtin PARAMS ((enum insn_code, tree, rtx));
-static rtx ix86_expand_timode_binop_builtin PARAMS ((enum insn_code,
-						     tree, rtx));
 static rtx ix86_expand_store_builtin PARAMS ((enum insn_code, tree));
 static rtx safe_vector_operand PARAMS ((rtx, enum machine_mode));
 static enum rtx_code ix86_fp_compare_code_to_integer PARAMS ((enum rtx_code));
@@ -11811,6 +11809,11 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE1, CODE_FOR_vmsminv4sf3, "__builtin_ia32_minss", IX86_BUILTIN_MINSS, 0, 0 },
   { MASK_SSE1, CODE_FOR_vmsmaxv4sf3, "__builtin_ia32_maxss", IX86_BUILTIN_MAXSS, 0, 0 },
 
+  { MASK_SSE1, CODE_FOR_sse_andv4sf3, "__builtin_ia32_andps", IX86_BUILTIN_ANDPS, 0, 0 },
+  { MASK_SSE1, CODE_FOR_sse_nandv4sf3,  "__builtin_ia32_andnps", IX86_BUILTIN_ANDNPS, 0, 0 },
+  { MASK_SSE1, CODE_FOR_sse_iorv4sf3, "__builtin_ia32_orps", IX86_BUILTIN_ORPS, 0, 0 },
+  { MASK_SSE1, CODE_FOR_sse_xorv4sf3,  "__builtin_ia32_xorps", IX86_BUILTIN_XORPS, 0, 0 },
+
   { MASK_SSE1, CODE_FOR_sse_movss,  "__builtin_ia32_movss", IX86_BUILTIN_MOVSS, 0, 0 },
   { MASK_SSE1, CODE_FOR_sse_movhlps,  "__builtin_ia32_movhlps", IX86_BUILTIN_MOVHLPS, 0, 0 },
   { MASK_SSE1, CODE_FOR_sse_movlhps,  "__builtin_ia32_movlhps", IX86_BUILTIN_MOVLHPS, 0, 0 },
@@ -11935,10 +11938,10 @@ static const struct builtin_description bdesc_2arg[] =
   { MASK_SSE2, CODE_FOR_vmsminv2df3, "__builtin_ia32_minsd", IX86_BUILTIN_MINSD, 0, 0 },
   { MASK_SSE2, CODE_FOR_vmsmaxv2df3, "__builtin_ia32_maxsd", IX86_BUILTIN_MAXSD, 0, 0 },
 
-  { MASK_SSE2, CODE_FOR_sse2_anddf3, "__builtin_ia32_andpd", IX86_BUILTIN_ANDPD, 0, 0 },
-  { MASK_SSE2, CODE_FOR_sse2_nanddf3,  "__builtin_ia32_andnpd", IX86_BUILTIN_ANDNPD, 0, 0 },
-  { MASK_SSE2, CODE_FOR_sse2_iordf3, "__builtin_ia32_orpd", IX86_BUILTIN_ORPD, 0, 0 },
-  { MASK_SSE2, CODE_FOR_sse2_xordf3,  "__builtin_ia32_xorpd", IX86_BUILTIN_XORPD, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_andv2df3, "__builtin_ia32_andpd", IX86_BUILTIN_ANDPD, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_nandv2df3,  "__builtin_ia32_andnpd", IX86_BUILTIN_ANDNPD, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_iorv2df3, "__builtin_ia32_orpd", IX86_BUILTIN_ORPD, 0, 0 },
+  { MASK_SSE2, CODE_FOR_sse2_xorv2df3,  "__builtin_ia32_xorpd", IX86_BUILTIN_XORPD, 0, 0 },
 
   { MASK_SSE2, CODE_FOR_sse2_movsd,  "__builtin_ia32_movsd", IX86_BUILTIN_MOVSD, 0, 0 },
   { MASK_SSE2, CODE_FOR_sse2_unpckhpd, "__builtin_ia32_unpckhpd", IX86_BUILTIN_UNPCKHPD, 0, 0 },
@@ -12443,11 +12446,6 @@ ix86_init_mmx_sse_builtins ()
   def_builtin (MASK_SSE1, "__builtin_ia32_cvttps2pi", v2si_ftype_v4sf, IX86_BUILTIN_CVTTPS2PI);
   def_builtin (MASK_SSE1, "__builtin_ia32_cvttss2si", int_ftype_v4sf, IX86_BUILTIN_CVTTSS2SI);
 
-  def_builtin (MASK_SSE1, "__builtin_ia32_andps", v4sf_ftype_v4sf_v4sf, IX86_BUILTIN_ANDPS);
-  def_builtin (MASK_SSE1, "__builtin_ia32_andnps", v4sf_ftype_v4sf_v4sf, IX86_BUILTIN_ANDNPS);
-  def_builtin (MASK_SSE1, "__builtin_ia32_orps", v4sf_ftype_v4sf_v4sf, IX86_BUILTIN_ORPS);
-  def_builtin (MASK_SSE1, "__builtin_ia32_xorps", v4sf_ftype_v4sf_v4sf, IX86_BUILTIN_XORPS);
-
   def_builtin (MASK_SSE1 | MASK_3DNOW_A, "__builtin_ia32_pextrw", int_ftype_v4hi_int, IX86_BUILTIN_PEXTRW);
   def_builtin (MASK_SSE1 | MASK_3DNOW_A, "__builtin_ia32_pinsrw", v4hi_ftype_v4hi_int_int, IX86_BUILTIN_PINSRW);
 
@@ -12678,45 +12676,6 @@ ix86_expand_binop_builtin (icode, arglist, target)
     return 0;
   emit_insn (pat);
   return target;
-}
-
-/* In type_for_mode we restrict the ability to create TImode types
-   to hosts with 64-bit H_W_I.  So we've defined the SSE logicals
-   to have a V4SFmode signature.  Convert them in-place to TImode.  */
-
-static rtx
-ix86_expand_timode_binop_builtin (icode, arglist, target)
-     enum insn_code icode;
-     tree arglist;
-     rtx target;
-{
-  rtx pat;
-  tree arg0 = TREE_VALUE (arglist);
-  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  rtx op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  rtx op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-
-  op0 = gen_lowpart (TImode, op0);
-  op1 = gen_lowpart (TImode, op1);
-  target = gen_reg_rtx (TImode);
-
-  if (! (*insn_data[icode].operand[1].predicate) (op0, TImode))
-    op0 = copy_to_mode_reg (TImode, op0);
-  if (! (*insn_data[icode].operand[2].predicate) (op1, TImode))
-    op1 = copy_to_mode_reg (TImode, op1);
-
-  /* In the commutative cases, both op0 and op1 are nonimmediate_operand,
-     yet one of the two must not be a memory.  This is normally enforced
-     by expanders, but we didn't bother to create one here.  */
-  if (GET_CODE (op0) == MEM && GET_CODE (op1) == MEM)
-    op0 = copy_to_mode_reg (TImode, op0);
-
-  pat = GEN_FCN (icode) (target, op0, op1);
-  if (! pat)
-    return 0;
-  emit_insn (pat);
-
-  return gen_lowpart (V4SFmode, target);
 }
 
 /* Subroutine of ix86_expand_builtin to take care of stores.  */
@@ -13063,19 +13022,6 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return ix86_expand_unop1_builtin (CODE_FOR_vmrsqrtv4sf2, arglist, target);
     case IX86_BUILTIN_RCPSS:
       return ix86_expand_unop1_builtin (CODE_FOR_vmrcpv4sf2, arglist, target);
-
-    case IX86_BUILTIN_ANDPS:
-      return ix86_expand_timode_binop_builtin (CODE_FOR_sse_andti3,
-					       arglist, target);
-    case IX86_BUILTIN_ANDNPS:
-      return ix86_expand_timode_binop_builtin (CODE_FOR_sse_nandti3,
-					       arglist, target);
-    case IX86_BUILTIN_ORPS:
-      return ix86_expand_timode_binop_builtin (CODE_FOR_sse_iorti3,
-					       arglist, target);
-    case IX86_BUILTIN_XORPS:
-      return ix86_expand_timode_binop_builtin (CODE_FOR_sse_xorti3,
-					       arglist, target);
 
     case IX86_BUILTIN_LOADAPS:
       return ix86_expand_unop_builtin (CODE_FOR_sse_movaps, arglist, target, 1);
@@ -13553,6 +13499,8 @@ ix86_preferred_reload_class (x, class)
      rtx x;
      enum reg_class class;
 {
+  if (GET_CODE (x) == CONST_VECTOR && x != CONST0_RTX (GET_MODE (x)))
+    return NO_REGS;
   if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
       /* SSE can't load any constant directly yet.  */
