@@ -3538,6 +3538,12 @@ build_conditional_expr (ifexp, op1, op2)
 	}
     }
 
+  /* Merge const and volatile flags of the incoming types.  */
+  result_type
+    = build_type_variant (result_type,
+			  TYPE_READONLY (op1) || TYPE_READONLY (op2),
+			  TYPE_VOLATILE (op1) || TYPE_VOLATILE (op2));
+    
   if (result_type != TREE_TYPE (op1))
     op1 = convert (result_type, op1);
   if (result_type != TREE_TYPE (op2))
