@@ -1,3 +1,9 @@
+2002-09-25  David S. Miller  <davem@redhat.com>
+
+	PR target/7842
+	* config/sparc/sparc.c (set_extends): SImode ASHIFT does not
+	extend.
+
 2002-09-25  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (const_double_htab_eq): Distinguish integer and
