@@ -3509,7 +3509,7 @@ simplify_binary_operation (code, mode, op0, op1)
 
 #ifdef REAL_ARITHMETIC
 #ifndef REAL_INFINITY
-      if (REAL_VALUES_EQUAL (f1, dconst0))
+      if (code == DIV && REAL_VALUES_EQUAL (f1, dconst0))
 	return 0;
 #endif
       REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
