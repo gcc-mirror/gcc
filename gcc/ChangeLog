@@ -1,3 +1,8 @@
+2002-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* README.Portability (Function prototypes): Document new
+	variable-argument function macros.
+
 Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (langhooks.h): Include.
