@@ -62,8 +62,7 @@ GLIBCPP_3.4 {
       std::__basic_file*;
       std::__num_base*;
       std::__timepunct*;
-      std::__numeric_limits_base*;
-      std::_S_bit_count
+      std::__numeric_limits_base*
     };
 
     # Names not in an 'extern' block are mangled names.

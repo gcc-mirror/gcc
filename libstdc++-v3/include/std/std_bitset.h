@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,6 +52,7 @@
 
 #include <cstddef>     // for size_t
 #include <cstring>     // for memset
+#include <limits>      // for numeric_limits
 #include <string>
 #include <bits/functexcept.h>   // for invalid_argument, out_of_range,
                                 // overflow_error
@@ -59,15 +60,12 @@
 #include <istream>     // for istream (operator>>)
 
 
-#define _GLIBCPP_BITSET_BITS_PER_WORD (CHAR_BIT*sizeof(unsigned long))
+#define _GLIBCPP_BITSET_BITS_PER_WORD  numeric_limits<unsigned long>::digits
 #define _GLIBCPP_BITSET_WORDS(__n) \
  ((__n) < 1 ? 0 : ((__n) + _GLIBCPP_BITSET_BITS_PER_WORD - 1)/_GLIBCPP_BITSET_BITS_PER_WORD)
 
 namespace std
 {
-  extern unsigned char 	_S_bit_count[256];
-  extern unsigned char 	_S_first_one[256];
-
   /**
    *  @if maint
    *  Base class, general case.  It is a class inveriant that _Nw will be
@@ -97,7 +95,7 @@ namespace std
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / CHAR_BIT; }
+      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
@@ -191,14 +189,8 @@ namespace std
       _M_do_count() const
       {
 	size_t __result = 0;
-	const unsigned char* __byte_ptr = (const unsigned char*)_M_w;
-	const unsigned char* __end_ptr = (const unsigned char*)(_M_w + _Nw);
-
-	while ( __byte_ptr < __end_ptr )
-	  {
-	    __result += _S_bit_count[*__byte_ptr];
-	    __byte_ptr++;
-	  }
+	for (size_t __i = 0; __i < _Nw; __i++)
+	  __result += __builtin_popcountl(_M_w[__i]);
 	return __result;
       }
 
@@ -280,23 +272,12 @@ namespace std
     size_t
     _Base_bitset<_Nw>::_M_do_find_first(size_t __not_found) const
     {
-      for (size_t __i = 0; __i < _Nw; __i++ )
+      for (size_t __i = 0; __i < _Nw; __i++)
 	{
 	  _WordT __thisword = _M_w[__i];
-	  if ( __thisword != static_cast<_WordT>(0) )
-	    {
-	      // find byte within word
-	      for (size_t __j = 0; __j < sizeof(_WordT); __j++ )
-		{
-		  unsigned char __this_byte
-		    = static_cast<unsigned char>(__thisword & (~(unsigned char)0));
-		  if (__this_byte)
-		    return __i*_GLIBCPP_BITSET_BITS_PER_WORD + __j*CHAR_BIT +
-		      _S_first_one[__this_byte];
-
-		  __thisword >>= CHAR_BIT;
-		}
-	    }
+	  if (__thisword != static_cast<_WordT>(0))
+	    return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	      + __builtin_ctzl(__thisword);
 	}
       // not found, so return an indication of failure.
       return __not_found;
@@ -318,44 +299,20 @@ namespace std
       _WordT __thisword = _M_w[__i];
 
       // mask off bits below bound
-      __thisword &= (~static_cast<_WordT>(0)) << _S_whichbit(__prev);
+      __thisword >>= __prev + 1;
 
-      if ( __thisword != static_cast<_WordT>(0) )
-	{
-	  // find byte within word
-	  // get first byte into place
-	  __thisword >>= _S_whichbyte(__prev) * CHAR_BIT;
-	  for (size_t __j = _S_whichbyte(__prev); __j < sizeof(_WordT); __j++)
-	    {
-	      unsigned char __this_byte
-		= static_cast<unsigned char>(__thisword & (~(unsigned char)0));
-	      if ( __this_byte )
-		return __i*_GLIBCPP_BITSET_BITS_PER_WORD + __j*CHAR_BIT +
-		  _S_first_one[__this_byte];
-
-	      __thisword >>= CHAR_BIT;
-	    }
-	}
+      if (__thisword != static_cast<_WordT>(0))
+	return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	  + __builtin_ctzl(__thisword);
 
       // check subsequent words
       __i++;
       for ( ; __i < _Nw; __i++ )
 	{
 	  __thisword = _M_w[__i];
-	  if ( __thisword != static_cast<_WordT>(0) )
-	    {
-	      // find byte within word
-	      for (size_t __j = 0; __j < sizeof(_WordT); __j++ )
-		{
-		  unsigned char __this_byte
-		    = static_cast<unsigned char>(__thisword & (~(unsigned char)0));
-		  if ( __this_byte )
-		    return __i*_GLIBCPP_BITSET_BITS_PER_WORD + __j*CHAR_BIT +
-		      _S_first_one[__this_byte];
-
-		  __thisword >>= CHAR_BIT;
-		}
-	    }
+	  if (__thisword != static_cast<_WordT>(0))
+	    return __i * _GLIBCPP_BITSET_BITS_PER_WORD
+	      + __builtin_ctzl(__thisword);
 	}
       // not found, so return an indication of failure.
       return __not_found;
@@ -384,7 +341,7 @@ namespace std
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / CHAR_BIT; }
+      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
@@ -438,29 +395,34 @@ namespace std
       _M_is_any() const { return _M_w != 0; }
 
       size_t
-      _M_do_count() const
-      {
-	size_t __result = 0;
-	const unsigned char* __byte_ptr = (const unsigned char*)&_M_w;
-	const unsigned char* __end_ptr
-	  = ((const unsigned char*)&_M_w)+sizeof(_M_w);
-	while ( __byte_ptr < __end_ptr )
-	  {
-	    __result += _S_bit_count[*__byte_ptr];
-	    __byte_ptr++;
-	  }
-	return __result;
-      }
+      _M_do_count() const { return __builtin_popcountl(_M_w); }
 
       unsigned long
       _M_do_to_ulong() const { return _M_w; }
 
       size_t
-      _M_do_find_first(size_t __not_found) const;
+      _M_do_find_first(size_t __not_found) const
+      {
+        if (_M_w != 0)
+          return __builtin_ctzl(_M_w);
+        else
+          return __not_found;
+      }
 
       // find the next "on" bit that follows "prev"
       size_t
-      _M_do_find_next(size_t __prev, size_t __not_found) const;
+      _M_do_find_next(size_t __prev, size_t __not_found) const
+      {
+	++__prev;
+	if (__prev >= _GLIBCPP_BITSET_BITS_PER_WORD)
+	  return __not_found;
+
+	_WordT __x = _M_w >> __prev;
+	if (__x != 0)
+	  return __builtin_ctzl(__x) + __prev;
+	else
+	  return __not_found;
+      }
     };
 
 
@@ -485,7 +447,7 @@ namespace std
 
       static size_t
       _S_whichbyte(size_t __pos )
-      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / CHAR_BIT; }
+      { return (__pos % _GLIBCPP_BITSET_BITS_PER_WORD) / __CHAR_BIT__; }
 
       static size_t
       _S_whichbit(size_t __pos )
@@ -1248,5 +1210,6 @@ namespace std
 } // namespace std
 
 #undef _GLIBCPP_BITSET_WORDS
+#undef _GLIBCPP_BITSET_BITS_PER_WORD
 
 #endif /* _GLIBCPP_BITSET_H */

@@ -1,3 +1,19 @@
+2003-02-03  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+            Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/std/std_bitset.h:  Replace CHAR_BIT with __CHAR_BIT__, use
+	numeric_limits for bits-per-word values.
+	(_Base_bitset::_M_do_count, _Base_bitset<1>::_M_do_count):
+	Use __builtin_popcountl instead.
+	(_Base_bitset::_M_do_find_first, _Base_bitset::_M_do_find_next,
+	_Base_bitset<1>::_M_do_find_first, _Base_bitset<1>::_M_do_find_next):
+	Use __builtin_ctzl instead.
+	(_S_bit_count, _S_first_one):  Remove.
+	* config/linker-map.gnu (GLIBCPP_3.4):  Remove std::_S_bit_count.
+	* src/Makefile.am (sources):  Remove bitset.cc.
+	* src/bitset.cc:  Delete file.
+	* src/Makefile.in:  Regenerate.
+
 2003-02-03  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/9527, PR libstdc++/8713
