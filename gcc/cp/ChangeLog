@@ -1,3 +1,8 @@
+1999-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (do_static_destruction): Remove obsolete FIXME comment.
+	(finish_file): Indent comments properly.
+
 1999-04-29  Richard Henderson  <rth@cygnus.com>
 
 	* decl2.c (do_static_initialization): Call do_pending_stack_adjust.
@@ -21,6 +26,10 @@
 	(build_x_function_call): Use cp_error.
 	(build_unary_op): Adjust call of build_component_addr.
 	
+1999-04-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_friend_class): Check for NULL.
+
 Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* search.c (binfo_for_vtable): Initialize bfvi.var.
