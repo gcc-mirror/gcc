@@ -6265,14 +6265,6 @@
   {
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
-
-    /* If we need to emit a long-call, we can't do it as a sibling call,
-       so fail over to a normal call.  */
-    if (arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
-      {
-	emit_call_insn (gen_call (operands[0], operands[1], operands[2]));
-	DONE;
-      }
   }"
 )
 
@@ -6286,15 +6278,6 @@
   {
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
-
-    /* If we need to emit a long-call, we can't do it as a sibling call,
-       so fail over to a normal call.  */
-    if (arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
-      {
-	emit_call_insn (gen_call_value (operands[0], operands[1], operands[2],
-					operands[3]));
-	DONE;
-      }
   }"
 )
 
