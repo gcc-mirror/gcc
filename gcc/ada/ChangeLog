@@ -1,3 +1,14 @@
+2001-12-01  Graham Stott  <grahams@redhat.com>
+
+	* Makefile.in (misc.o): Add missing $(srcdir) prefix
+	and add optabs.h dependency.
+
+	* misc.c: Include optabs.h
+	(gnat_tree_code_type): Make static and const.
+	(gnat_tree_code_length): Likewise.
+	(gnat_tree_code_name): Likewise.
+	(update_setjmp_buf): Obtain operands mode from insn_data.
+
 2001-11-29  Richard Henderson  <rth@redhat.com>
 
 	* init.c: Remove obsolete dwarf2 frame.h section.
