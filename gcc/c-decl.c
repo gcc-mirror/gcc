@@ -1158,8 +1158,8 @@ pop_label_level ()
 	{
 	  if (DECL_SOURCE_LINE (TREE_VALUE (link)) == 0)
 	    {
-	      error_with_decl ("label `%s' used but not defined",
-			       TREE_VALUE (link));
+	      error_with_decl (TREE_VALUE (link),
+			       "label `%s' used but not defined");
 	      /* Avoid crashing later.  */
 	      define_label (input_filename, lineno,
 			    DECL_NAME (TREE_VALUE (link)));
@@ -6210,7 +6210,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 	  DECL_ARG_TYPE (found) = TREE_TYPE (found);
 	  DECL_SOURCE_LINE (found) = DECL_SOURCE_LINE (fndecl);
 	  DECL_SOURCE_FILE (found) = DECL_SOURCE_FILE (fndecl);
-	  error (found, "type of parameter `%s' is not declared");
+	  error_with_decl (found, "type of parameter `%s' is not declared");
 	  pushdecl (found);
 	}
 
