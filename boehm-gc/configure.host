@@ -1,6 +1,7 @@
 # configure.host
 
-# This shell script handles all host based configuration for boehm_gc.
+# This shell script handles all host based configuration for the garbage
+# collector.
 # It sets various shell variables based on the the host and the
 # configuration options.  You can modify this shell script without
 # needing to rerun autoconf.
@@ -15,16 +16,25 @@
 #   target_optspace	--enable-target-optspace ("yes", "no", "")
 
 # It sets the following shell variables:
-#   boehm_gc_cflags	Special CFLAGS to use when building
+#   gc_cflags	Special CFLAGS to use when building
 
-boehm_gc_cflags=-fexceptions
+# We should set -fexceptions if we are using gcc and might be used
+# inside something like gcj.  This is the zeroth approximation:
+case "$host" in 
+    *-*-linux* )
+    gc_cflags=-fexceptions
+    ;;
+    *-*-hpux* )
+    gc_cflags=+ESdbgasm
+    ;;
+esac
 
 case "${target_optspace}:${host}" in
   yes:*)
-    boehm_gc_cflags="${boehm_gc_cflags} -Os"
+    gc_cflags="${gc_cflags} -Os"
     ;;
   :m32r-* | :d10v-* | :d30v-*)
-    boehm_gc_cflags="${boehm_gc_cflags} -Os"
+    gc_cflags="${gc_cflags} -Os"
     ;;
   no:* | :*)
     # Nothing.

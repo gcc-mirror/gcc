@@ -14,6 +14,9 @@
  */
 /* An incomplete test for the garbage collector.  		*/
 /* Some more obscure entry points are not tested at all.	*/
+/* This must be compiled with the same flags used to build the 	*/
+/* GC.  It uses GC internals to allow more precise results	*/
+/* checking for some of the tests.				*/
 
 # undef GC_BUILD
 
@@ -238,8 +241,8 @@ sexpr y;
 
 #ifdef GC_GCJ_SUPPORT
 
-#include "private/dbg_mlc.h"
-#include "private/gc_pmark.h"
+#include "gc_mark.h"
+#include "private/dbg_mlc.h"  /* For USR_PTR_FROM_BASE */
 #include "gc_gcj.h"
 
 /* The following struct emulates the vtable in gcj.	*/
@@ -267,16 +270,12 @@ struct GC_ms_entry * fake_gcj_mark_proc(word * addr,
 	addr = (word *)USR_PTR_FROM_BASE(addr);
     }
     x = (sexpr)(addr + 1); /* Skip the vtable pointer. */
-    /* We could just call PUSH_CONTENTS directly here.  But any real	*/
-    /* real client would try to filter out the obvious misses.		*/
-    if (0 != x -> sexpr_cdr) {
-	PUSH_CONTENTS((ptr_t)(x -> sexpr_cdr), mark_stack_ptr,
-			      mark_stack_limit, &(x -> sexpr_cdr), exit1);
-    }
-    if ((ptr_t)(x -> sexpr_car) > (ptr_t) GC_least_plausible_heap_addr) {
-	PUSH_CONTENTS((ptr_t)(x -> sexpr_car), mark_stack_ptr,
-			      mark_stack_limit, &(x -> sexpr_car), exit2);
-    }
+    mark_stack_ptr = GC_MARK_AND_PUSH(
+			      (GC_PTR)(x -> sexpr_cdr), mark_stack_ptr,
+			      mark_stack_limit, (GC_PTR *)&(x -> sexpr_cdr));
+    mark_stack_ptr = GC_MARK_AND_PUSH(
+			      (GC_PTR)(x -> sexpr_car), mark_stack_ptr,
+			      mark_stack_limit, (GC_PTR *)&(x -> sexpr_car));
     return(mark_stack_ptr);
 }
 
@@ -703,6 +702,13 @@ int n;
 #   endif
     
     collectable_count++;
+#   ifdef THREAD_LOCAL_ALLOC
+       /* Minimally exercise thread local allocation */
+       {
+         char * result = (char *)GC_LOCAL_MALLOC_ATOMIC(17);
+	 memset(result, 'a', 17);
+       }
+#   endif /* THREAD_LOCAL_ALLOC */
 #   if defined(MACOS)
 	/* get around static data limitations. */
 	if (!live_indicators)

@@ -65,7 +65,6 @@ target_alias = @target_alias@
 target_triplet = @target@
 AR = @AR@
 AS = @AS@
-BOEHM_GC_CFLAGS = @BOEHM_GC_CFLAGS@
 CC = @CC@
 CPP = @CPP@
 CXX = @CXX@
@@ -76,6 +75,7 @@ EXEEXT = @EXEEXT@
 EXTRA_TEST_LIBS = @EXTRA_TEST_LIBS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
+GC_CFLAGS = @GC_CFLAGS@
 INCLUDES = @INCLUDES@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -90,7 +90,7 @@ STRIP = @STRIP@
 THREADLIBS = @THREADLIBS@
 VERSION = @VERSION@
 addobjs = @addobjs@
-boehm_gc_basedir = @boehm_gc_basedir@
+gc_basedir = @gc_basedir@
 mkinstalldirs = @mkinstalldirs@
 target_all = @target_all@
 
@@ -125,15 +125,15 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s hpux_test_and_clear.s \
+EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s \
 mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
 rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s \
 sparc_sunos4_mach_dep.s
 
 
-AM_CXXFLAGS = @BOEHM_GC_CFLAGS@
+AM_CXXFLAGS = @GC_CFLAGS@
 
-AM_CFLAGS = @BOEHM_GC_CFLAGS@
+AM_CFLAGS = @GC_CFLAGS@
 
 check_PROGRAMS = gctest
 gctest_OBJECTS = test.o
@@ -146,7 +146,7 @@ all_objs = @addobjs@ $(libgcjgc_la_OBJECTS)
 
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(MY_CFLAGS) $(BOEHM_GC_CFLAGS) 
+	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
 
 LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
 
@@ -216,7 +216,8 @@ CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 DIST_COMMON =  ChangeLog Makefile.am Makefile.in acinclude.m4 aclocal.m4 \
-configure configure.in
+config.guess config.sub configure configure.in install-sh ltconfig \
+ltmain.sh mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

@@ -29,6 +29,9 @@ GC_NPROCS=<n> - Linux w/threads only.  Explicitly sets the number of processors
 		when multiple processors are available will preserve
 		correctness, but may lead to really horrible performance.
 
+GC_NO_BLACKLIST_WARNING - Prevents the collector from issuing
+		"Needed to allocate blacklisted block at ..." warnings.
+
 The following turn on runtime flags that are also program settable.  Checked
 only during initialization.  We expect that they will usually be set through
 other means, but this may help with debugging and testing:

@@ -627,7 +627,8 @@ int n;
 	      
 	      while ((ptr_t)lasthbp <= search_end
 	             && (thishbp = GC_is_black_listed(lasthbp,
-	             				      (word)eff_size_needed))) {
+	             				      (word)eff_size_needed))
+		        != 0) {
 	        lasthbp = thishbp;
 	      }
 	      size_avail -= (ptr_t)lasthbp - (ptr_t)hbp;
@@ -654,7 +655,7 @@ int n;
 	                 && orig_avail - size_needed
 			    > (signed_word)BL_LIMIT) {
 	        /* Punt, since anything else risks unreasonable heap growth. */
-		if (0 != GETENV("GC_NO_BLACKLIST_WARNING")) {
+		if (0 == GETENV("GC_NO_BLACKLIST_WARNING")) {
 	          WARN("Needed to allocate blacklisted block at 0x%lx\n",
 		       (word)hbp);
 		}

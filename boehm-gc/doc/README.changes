@@ -1291,7 +1291,103 @@ Since 6.0alpha6:
    There seemed to be some problems with the encoding of root and finalizer
    references.
   
+Since 6.0alpha7:
+ - Changed GC_debug_malloc_replacement and GC_debug_realloc_replacement
+   so that they compile under Irix.  (Thanks to Dave Love.)
+ - Updated powerpc_macosx_mach_dep.s so that it works if the collector
+   is in a dynamic library.  (Thanks to Andrew Begel.)
+ - Transformed README.debugging into debugging.html, updating and
+   expanding it in the process.  Added gcdescr.html and tree.html
+   from the web site to the GC distribution.
+ - Fixed several problems related to PRINT_BLACK_LIST. This involved
+   restructuring some of the marker macros.
+ - Fixed some problems with the sizing of objects with debug information.
+   Finalization was broken KEEP_BACK_PTRS or PRINT_BLACK_LIST.  Reduced the
+   object size with SHORT_DEBUG_HDRS by another word.
+ - The "Needed to allocate blacklisted ..." warning had inadvertently
+   been turned off by default, due to a buggy test in allchblk.c.  Turned
+   it back on.
+ - Removed the marker macros to deal with 2 pointers in interleaved fashion.
+   They were messy and the performance improvement seemed minimal.  We'll
+   leave such scheduling issues to the compiler.
+ - Changed Linux/PowerPC test to also check for __powerpc__ in response
+   to a discussion on the gcc mailing list.
+ - On Matthew Flatt's suggestion removed the "static" from the jmp_buf
+   declaration in GC_generic_push_regs.  This was causing problems in
+   systems that register all of their own roots.  It looks far more correct
+   to me without the "static" anyway. 
+ - Fixed several problems with thread local allocation of pointerfree or
+   typed objects.  The collector was reclaiming thread-local free lists, since
+   it wasn't following the link fields.
+ - There was apparently a long-standing race condition related to multithreaded
+   incremental collection.  A collection could be started and a thread stopped
+   between the memory unprotect system call and the setting of the
+   corresponding dirt bit.  I believe this did not affect Solaris or PCR, which
+   use a different dirty-bit implementation.  Fixed this by installing
+   signal handlers with sigaction instead of signal, and disabling the thread
+   suspend signal while in the write-protect handler.  (It is unclear
+   whether this scenario ever actually occurred.  I found it while tracking
+   down the following:)
+ - Incremental collection did not cooperate correctly with the PARALLEL_MARK
+   implementation of GC_malloc_many or the local_malloc primitves.  It still
+   doesn't work well, but it shouldn't lose memory anymore.
+ - Integrated some changes from the gcc source tree that I had previously
+   missed.  (Thanks to Bryce McKinley for the reminder/diff.)
+ - Added Makefile.direct as a copy of the default Makefile, which would
+   normally be overwritten if configure is run.
+ - Changed the gc.tar target in Makefile.direct to embed the version number
+   in the gc directory name.  This will affect future tar file distributions.
+ - Changed the Irix dynamic library finding code to no longer try to
+   eliminate writable text segments under Irix6.x, since that is probably no
+   longer necessary, and can apparently be unsafe on occasion.  (Thanks to
+   Shiro Kawai for pointing this out.)
+ - GC_cleanup with GC_DEBUG enabled passed a real object base address to
+   GC_debug_register_finalizer_ignore_self, which expected a pointer past the
+   debug header.  Call GC_register_finalizer_ignore_self instead, even with
+   debugging enabled.  (Thanks to Jean-Daniel Fekete for catching this.)
+ - The collector didn't build with call chain saving enabled but NARGS=0.
+   (Thanks to Maarten Thibaut.)
+ - Fixed up the GNU-style build files enough so that they work in some
+   obvious cases.
+ - Added initial port to Digital Mars compiler for win32. (Thanks to Walter
+   Bright.)
+
+Since 6.0alpha8:
+ - added README.macros.
+ - Made gc.mak a symbolic link to work around winzip's tendency to ignore
+   hard links.
+ - Simplified the setting of NEED_FIND_LIMIT in os_dep.c, possibly breaking
+   it on untested platforms.
+ - Integrated initial GNU HURD port. (Thanks to Chris Lingard and Igor
+   Khavkine.)
+ - A few more fixes for Digital Mars compiler.
+ - Fixed gcc version recognition.  Renamed OPERATOR_NEW_ARRAY to
+   GC_OPERATOR_NEW_ARRAY.  Changed GC_OPERATOR_NEW_ARRAY to be the default.
+   It can be overridden with -DGC_NO_OPERATOR_NEW_ARRAY.  (Thanks to
+   Cesar Eduardo Barros.) 
+ - Changed the byte size to free-list mapping in thread local allocation
+   so that size 0 allocations are handled correctly.
+ - Fixed Linux/MIPS stackbottom for new toolchain. (Thanks to Ryan Murray.)
+ - Changed finalization registration to invoke GC_oom_fn when it runs out
+   of memory.
+ - Removed lvalue cast in finalize.c.  This caused some debug configurations
+   not to build with some non-gcc compilers.
+
+Since 6.0alpha9:
+ - Two more bug fixes for KEEP_BACK_PTRS and DBG_HDRS_ALL.
+ - Fixed a stack clearing problem that resulted in SIGILL with a
+   misaligned stack pointer for multithreaded SPARC builds.
+ - Integrated another HURD patch (thanks to Igor Khavkine).
+ 
+
 To do:
+ - There seem to be outstanding issues on Solaris/X86, possibly with
+   finding the data segment starting address.  Information/patches would
+   ne appreciated.
+ - New_gc_alloc.h is apparently no longer compatible with the latest C++
+   standard library in gcc3.0.  (This isn't technically a bug, since it only
+   claimed compatibility with the SGI STL.  But we may need a new C++ STL
+   allocator interface.)
  - Very large root set sizes (> 16 MB or so) could cause the collector
    to abort with an unexpected mark stack overflow.  (Thanks again to
    Peter Chubb.)  NOT YET FIXED.  Workaround is to increase the initial

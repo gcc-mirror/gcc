@@ -1,3 +1,8 @@
+2001-08-17  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.am, acinclude.m4, configure.in: Imported GC 6.0 and
+	merged local changes.
+
 2001-08-02  David Billinghurst <David.Billinghurst>
 
 	* configure: Rebuilt.

@@ -634,7 +634,7 @@ extern GC_warn_proc GC_current_warn_proc;
 # else
 #       define ALIGNED_WORDS(n) ROUNDED_UP_WORDS(n)
 # endif
-# define SMALL_OBJ(bytes) ((bytes) < (MAXOBJBYTES -EXTRA_BYTES))
+# define SMALL_OBJ(bytes) ((bytes) < (MAXOBJBYTES - EXTRA_BYTES))
 # define ADD_SLOP(bytes) ((bytes) + EXTRA_BYTES)
 # ifndef MIN_WORDS
     /* MIN_WORDS is the size of the smallest allocated object.	*/
@@ -1456,6 +1456,9 @@ void GC_clear_hdr_marks GC_PROTO((hdr * hhdr));
 				    /* Clear the mark bits in a header */
 void GC_set_hdr_marks GC_PROTO((hdr * hhdr));
  				    /* Set the mark bits in a header */
+void GC_set_fl_marks GC_PROTO((ptr_t p));
+				    /* Set all mark bits associated with */
+				    /* a free list.			 */
 void GC_add_roots_inner GC_PROTO((char * b, char * e, GC_bool tmp));
 GC_bool GC_is_static_root GC_PROTO((ptr_t p));
   		/* Is the address p in one of the registered static	*/
@@ -1484,9 +1487,9 @@ void GC_bl_init GC_PROTO((void));
 			/* reference from the heap or static data	*/
 #     define GC_ADD_TO_BLACK_LIST_NORMAL(bits, source) \
       		if (GC_all_interior_pointers) { \
-		  GC_add_to_black_list_stack(bits, source); \
+		  GC_add_to_black_list_stack(bits, (ptr_t)(source)); \
 		} else { \
-  		  GC_add_to_black_list_normal(bits, source); \
+  		  GC_add_to_black_list_normal(bits, (ptr_t)(source)); \
 		}
 # else
       void GC_add_to_black_list_normal GC_PROTO((word p));
@@ -1796,12 +1799,16 @@ void GC_dump GC_PROTO((void));
 
 /* Make arguments appear live to compiler */
 # ifdef __WATCOMC__
-  void GC_noop(void*, ...);
+    void GC_noop(void*, ...);
 # else
-  GC_API void GC_noop();
+#   ifdef __DMC__
+      GC_API void GC_noop(...);
+#   else
+      GC_API void GC_noop();
+#   endif
 # endif
 
-void GC_noop1 GC_PROTO((word arg));
+void GC_noop1 GC_PROTO((word));
 
 /* Logging and diagnostic output: 	*/
 GC_API void GC_printf GC_PROTO((GC_CONST char * format, long, long, long, long, long, long));
@@ -1859,7 +1866,7 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
 #	define GC_ASSERT(expr)
 # endif
 
-# ifdef PARALLEL_MARK
+# if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)
     /* We need additional synchronization facilities from the thread	*/
     /* support.  We believe these are less performance critical		*/
     /* than the main garbage collector lock; standard pthreads-based	*/
@@ -1878,13 +1885,15 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
 
      extern void GC_acquire_mark_lock();
      extern void GC_release_mark_lock();
-     extern void GC_notify_all_marker();
      extern void GC_notify_all_builder();
-     extern void GC_wait_marker();
      /* extern void GC_wait_builder(); */
      extern void GC_wait_for_reclaim();
 
      extern word GC_fl_builder_count;	/* Protected by mark lock.	*/
+# endif /* PARALLEL_MARK || THREAD_LOCAL_ALLOC */
+# ifdef PARALLEL_MARK
+     extern void GC_notify_all_marker();
+     extern void GC_wait_marker();
      extern word GC_mark_no;		/* Protected by mark lock.	*/
 
      extern void GC_help_marker(word my_mark_no);
@@ -1893,5 +1902,30 @@ void GC_err_puts GC_PROTO((GC_CONST char *s));
 		/* was already done, or there was nothing to do for	*/
 		/* some other reason.					*/
 # endif /* PARALLEL_MARK */
+
+# if defined(LINUX_THREADS) || defined(IRIX_THREADS) \
+     || defined(HPUX_THREADS) || defined(OSF1_THREADS)
+  /* We define the thread suspension signal here, so that we can refer	*/
+  /* to it in the dirty bit implementation, if necessary.  Ideally we	*/
+  /* would allocate a (real-time ?) signal using the standard mechanism.*/
+  /* unfortunately, there is no standard mechanism.  (There is one 	*/
+  /* in Linux glibc, but it's not exported.)  Thus we continue to use	*/
+  /* the same hard-coded signals we've always used.			*/
+#  if !defined(SIG_SUSPEND)
+#   if defined(LINUX_THREADS)
+#    if defined(SPARC) && !defined(SIGPWR)
+       /* SPARC/Linux doesn't properly define SIGPWR in <signal.h>.
+        * It is aliased to SIGLOST in asm/signal.h, though.		*/
+#      define SIG_SUSPEND SIGLOST
+#    else
+       /* Linuxthreads uses SIGUSR1 and SIGUSR2.			*/
+#      define SIG_SUSPEND SIGPWR
+#    endif
+#   else  /* !LINUX_THREADS */
+#    define SIG_SUSPEND _SIGRTMIN + 6
+#   endif
+#  endif /* !SIG_SUSPEND */
+  
+# endif
 
 # endif /* GC_PRIVATE_H */

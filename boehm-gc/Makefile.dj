@@ -62,10 +62,11 @@ CFLAGS= -O -I$(srcdir)/include -DATOMIC_UNCOLLECTABLE -DNO_SIGNALS -DALL_INTERIO
 #   code from the heap.  Currently this only affects the incremental
 #   collector on UNIX machines.  It may greatly improve its performance,
 #   since this may avoid some expensive cache synchronization.
-# -DOPERATOR_NEW_ARRAY declares that the C++ compiler supports the
-#   new syntax "operator new[]" for allocating and deleting arrays.
+# -DGC_NO_OPERATOR_NEW_ARRAY declares that the C++ compiler does not support
+#   the  new syntax "operator new[]" for allocating and deleting arrays.
 #   See gc_cpp.h for details.  No effect on the C part of the collector.
-#   This is defined implicitly in a few environments.
+#   This is defined implicitly in a few environments.  Must also be defined
+#   by clients that use gc_cpp.h.
 # -DREDIRECT_MALLOC=X causes malloc, realloc, and free to be defined
 #   as aliases for X, GC_realloc, and GC_free, respectively.
 #   Calloc is redefined in terms of the new malloc.  X should

@@ -471,8 +471,9 @@ ptr_t cold_gc_frame;
 	          cold_gc_bs_pointer = bsp - 2048;
 		  if (cold_gc_bs_pointer < BACKING_STORE_BASE) {
 		    cold_gc_bs_pointer = BACKING_STORE_BASE;
+		  } else {
+		    GC_push_all_stack(BACKING_STORE_BASE, cold_gc_bs_pointer);
 		  }
-		  GC_push_all_stack(BACKING_STORE_BASE, cold_gc_bs_pointer);
 		} else {
 		  cold_gc_bs_pointer = BACKING_STORE_BASE;
 		}
@@ -500,6 +501,10 @@ void GC_push_gc_structures GC_PROTO((void))
       GC_push_thread_structures();
 #   endif
 }
+
+#ifdef THREAD_LOCAL_ALLOC
+  void GC_mark_thread_local_free_lists();
+#endif
 
 /*
  * Call the mark routines (GC_tl_push for a single pointer, GC_push_conditional
@@ -551,6 +556,12 @@ ptr_t cold_gc_frame;
        if (GC_no_dls || roots_were_cleared) {
 	   GC_push_gc_structures();
        }
+
+     /* Mark thread local free lists, even if their mark 	*/
+     /* descriptor excludes the link field.			*/
+#      ifdef THREAD_LOCAL_ALLOC
+         GC_mark_thread_local_free_lists();
+#      endif
 
     /*
      * Now traverse stacks.

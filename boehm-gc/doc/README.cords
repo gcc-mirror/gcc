@@ -18,6 +18,20 @@ See cord.h for a description of the functions provided.  Ec.h describes
 to a cord.  These allow for efficient construction of cords without
 requiring a bound on the size of a cord.
 
+More details on the data structure can be found in
+
+Boehm, Atkinson, and Plass, "Ropes: An Alternative to Strings",
+Software Practice and Experience 25, 12, December 1995, pp. 1315-1330.
+
+A fundamentally similar "rope" data structure is also part of SGI's standard
+template library implementation, and its descendents, which include the
+GNU C++ library.  That uses reference counting by default.
+There is a short description of that data structure at
+http://reality.sgi.com/boehm/ropeimpl.html .  (The more official location
+http://www.sgi.com/tech/stl/ropeimpl.html is missing a figure.)
+
+All of these are descendents of the "ropes" in Xerox Cedar.
+
 de.c is a very dumb text editor that illustrates the use of cords.
 It maintains a list of file versions.  Each version is simply a
 cord representing the file contents.  Nonetheless, standard

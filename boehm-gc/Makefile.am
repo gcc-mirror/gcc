@@ -37,13 +37,13 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s hpux_test_and_clear.s \
+EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s \
 mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
 rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s \
 sparc_sunos4_mach_dep.s
 
-AM_CXXFLAGS = @BOEHM_GC_CFLAGS@
-AM_CFLAGS = @BOEHM_GC_CFLAGS@
+AM_CXXFLAGS = @GC_CFLAGS@
+AM_CFLAGS = @GC_CFLAGS@
 
 check_PROGRAMS = gctest
 # The following hack produces a warning from automake, but we need it in order 
@@ -71,10 +71,10 @@ include/private/gc_hdrs.h include/gc.h include/gc_gcj.h include/gc_mark.h
 ## CFLAGS, not those passed in from the top level make.
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(MY_CFLAGS) $(BOEHM_GC_CFLAGS) 
+	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
 LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
 
-AM_CFLAGS = @BOEHM_GC_CFLAGS@
+AM_CFLAGS = @GC_CFLAGS@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

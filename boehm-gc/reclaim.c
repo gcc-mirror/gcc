@@ -20,7 +20,7 @@
 signed_word GC_mem_found = 0;
 			/* Number of words of memory reclaimed     */
 
-#ifdef PARALLEL_MARK
+#if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)
   word GC_fl_builder_count = 0;
 	/* Number of threads currently building free lists without 	*/
 	/* holding GC lock.  It is not safe to collect if this is 	*/
@@ -866,6 +866,9 @@ int report_if_found;		/* Abort if a GC_reclaimable object is found */
 {
     int kind;
     
+#   if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)
+      GC_ASSERT(0 == GC_fl_builder_count);
+#   endif
     /* Clear reclaim- and free-lists */
       for (kind = 0; kind < GC_n_kinds; kind++) {
         register ptr_t *fop;
@@ -901,6 +904,9 @@ int report_if_found;		/* Abort if a GC_reclaimable object is found */
     /* This is a very stupid thing to do.  We make it possible anyway,	*/
     /* so that you can convince yourself that it really is very stupid.	*/
     GC_reclaim_all((GC_stop_func)0, FALSE);
+# endif
+# if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)
+    GC_ASSERT(0 == GC_fl_builder_count);
 # endif
     
 }
