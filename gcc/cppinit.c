@@ -1256,9 +1256,6 @@ cpp_handle_option (pfile, argc, argv)
 		opts->include_prefix_len = strlen (argv[i]);
 	      }
 	  }
-	else if (!strcmp (argv[i], "-ifoutput"))
-	  opts->output_conditionals = 1;
-
 	break;
       
       case 'o':
@@ -1736,7 +1733,6 @@ Switches:\n\
   -dD                       Preserve macro definitions in output\n\
   -dN                       As -dD except that only the names are preserved\n\
   -dI                       Include #include directives in the output\n\
-  -ifoutput                 Describe skipped code blocks in output \n\
   -P                        Do not generate #line directives\n\
   -$                        Do not allow '$' in identifiers\n\
   -remap                    Remap file names when including files.\n\

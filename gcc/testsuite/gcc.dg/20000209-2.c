@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* Distilled from glibc sources.  Tests preprocessor corner cases.  */
+/* { dg-options "-Wall" } */
+/* Distilled from glibc sources.  Tests preprocessor corner cases.
+   Since it uses rest args, we must turn off -pedantic-errors.  */
 
 #define NO_PAREN(rest...) rest
 #define DEFINE_CATEGORY(category, items) \

@@ -46,7 +46,8 @@ extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
-struct directive {
+struct directive
+{
   int length;			/* Length of name */
   int (*func)			/* Function to handle directive */
     PARAMS ((cpp_reader *, const struct directive *));
@@ -93,7 +94,7 @@ static enum cpp_token null_underflow	PARAMS ((cpp_reader *));
 static int null_cleanup			PARAMS ((cpp_buffer *, cpp_reader *));
 static int skip_comment			PARAMS ((cpp_reader *, int));
 static int copy_comment			PARAMS ((cpp_reader *, int));
-static void copy_rest_of_line		PARAMS ((cpp_reader *));
+static void skip_string			PARAMS ((cpp_reader *, int));
 static void skip_rest_of_line		PARAMS ((cpp_reader *));
 static void cpp_skip_hspace		PARAMS ((cpp_reader *));
 static int handle_directive		PARAMS ((cpp_reader *));
@@ -108,6 +109,7 @@ static void skip_block_comment		PARAMS ((cpp_reader *));
 static void skip_line_comment		PARAMS ((cpp_reader *));
 static void parse_set_mark		PARAMS ((cpp_reader *));
 static void parse_goto_mark		PARAMS ((cpp_reader *));
+static int get_macro_name		PARAMS ((cpp_reader *));
 
 /* Here is the actual list of #-directives.
    This table is ordered by frequency of occurrence; the numbers
@@ -410,10 +412,13 @@ copy_comment (pfile, m)
   if (skip_comment (pfile, m) == m)
     return m;
 
-  CPP_PUTC (pfile, m);
-  for (limit = CPP_BUFFER (pfile)->cur; start <= limit; start++)
+  limit = CPP_BUFFER (pfile)->cur;
+  CPP_RESERVE (pfile, limit - start + 2);
+  CPP_PUTC_Q (pfile, m);
+  for (; start <= limit; start++)
     if (*start != '\r')
-      CPP_PUTC (pfile, *start);
+      CPP_PUTC_Q (pfile, *start);
+
   return ' ';
 }
 
@@ -447,7 +452,7 @@ cpp_skip_hspace (pfile)
 		break;
 	    }
 	  else
-	    CPP_BUFFER (pfile)->lineno++;
+	    CPP_BUMP_LINE (pfile);
 	}
       else if (c == '/' || c == '-')
 	{
@@ -461,11 +466,10 @@ cpp_skip_hspace (pfile)
   FORWARD(-1);
 }
 
-/* Read the rest of the current line.
-   The line is appended to PFILE's output buffer.  */
+/* Read and discard the rest of the current line.  */
 
 static void
-copy_rest_of_line (pfile)
+skip_rest_of_line (pfile)
      cpp_reader *pfile;
 {
   for (;;)
@@ -476,32 +480,21 @@ copy_rest_of_line (pfile)
 	case '\n':
 	  FORWARD(-1);
 	case EOF:
-	  CPP_NUL_TERMINATE (pfile);
 	  return;
 
 	case '\r':
-	  if (CPP_BUFFER (pfile)->has_escapes)
-	    break;
-	  else
-	    {
-	      CPP_BUFFER (pfile)->lineno++;
-	      continue;
-	    }
+	  if (! CPP_BUFFER (pfile)->has_escapes)
+	    CPP_BUMP_LINE (pfile);
+	  break;
+	  
 	case '\'':
 	case '\"':
-	  parse_string (pfile, c);
-	  continue;
+	  skip_string (pfile, c);
+	  break;
+
 	case '/':
-	  if (PEEKC() == '*')
-	    {
-	      if (CPP_TRADITIONAL (pfile))
-		CPP_PUTS (pfile, "/**/", 4);
-	      skip_block_comment (pfile);
-	      continue;
-	    }
-	  /* else fall through */
 	case '-':
-	  c = skip_comment (pfile, c);
+	  skip_comment (pfile, c);
 	  break;
 
 	case '\f':
@@ -512,21 +505,7 @@ copy_rest_of_line (pfile)
 	  break;
 
 	}
-      CPP_PUTC (pfile, c);
     }
-}
-
-/* FIXME: It is almost definitely a performance win to make this do
-   the scan itself.  >75% of calls to copy_r_o_l are from here or
-   skip_if_group, which means the common case is to copy stuff into the
-   token_buffer only to discard it.  */
-static void
-skip_rest_of_line (pfile)
-     cpp_reader *pfile;
-{
-  long old = CPP_WRITTEN (pfile);
-  copy_rest_of_line (pfile);
-  CPP_SET_WRITTEN (pfile, old);
 }
 
 /* Handle a possible # directive.
@@ -541,6 +520,12 @@ handle_directive (pfile)
   int ident_length;
   U_CHAR *ident;
   long old_written = CPP_WRITTEN (pfile);
+
+  if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
+    {
+      cpp_ice (pfile, "handle_directive called on macro buffer");
+      return 0;
+    }
 
   cpp_skip_hspace (pfile);
 
@@ -629,71 +614,88 @@ pass_thru_directive (buf, len, pfile, keyword)
   CPP_PUTS_Q (pfile, buf, len);
 }
 
-/* Check a purported macro name SYMNAME, and yield its length.  */
+/* Subroutine of do_define: determine the name of the macro to be
+   defined.  */
 
-int
-check_macro_name (pfile, symname)
+static int
+get_macro_name (pfile)
      cpp_reader *pfile;
-     const U_CHAR *symname;
 {
-  const U_CHAR *p;
-  int sym_length;
+  long here, len;
 
-  for (p = symname; is_idchar(*p); p++)
-    ;
-  sym_length = p - symname;
-  if (sym_length == 0
-      || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
-    cpp_error (pfile, "invalid macro name");
-  else if (!is_idstart(*symname)
-	   || (! strncmp (symname, "defined", 7) && sym_length == 7)) {
-    U_CHAR *msg;			/* what pain...  */
-    msg = (U_CHAR *) alloca (sym_length + 1);
-    bcopy (symname, msg, sym_length);
-    msg[sym_length] = 0;
-    cpp_error (pfile, "invalid macro name `%s'", msg);
-  }
-  return sym_length;
+  here = CPP_WRITTEN (pfile);
+  pfile->no_macro_expand++;
+  if (get_directive_token (pfile) != CPP_NAME)
+    {
+      cpp_error (pfile, "`#define' must be followed by an identifier");
+      goto invalid;
+    }
+
+  len = CPP_WRITTEN (pfile) - here;
+  if (len == 7 && !strncmp (pfile->token_buffer + here, "defined", 7))
+    {
+      cpp_error (pfile, "`defined' is not a legal macro name");
+      goto invalid;
+    }
+
+  pfile->no_macro_expand--;
+  return len;
+
+ invalid:
+  skip_rest_of_line (pfile);
+  pfile->no_macro_expand--;
+  return 0;
 }
 
 /* Process a #define command.
    KEYWORD is the keyword-table entry for #define,
-   or NULL for a "predefined" macro,
-   or the keyword-table entry for #pragma in the case of a #pragma poison.  */
+   or NULL for a "predefined" macro.  */
 
 static int
 do_define (pfile, keyword)
      cpp_reader *pfile;
      const struct directive *keyword;
 {
-  MACRODEF mdef;
   HASHNODE *hp;
+  DEFINITION *def;
   long here;
-  U_CHAR *macro, *buf, *end;
+  int len, c;
+  int funlike = 0;
+  U_CHAR *sym;
 
   here = CPP_WRITTEN (pfile);
-  copy_rest_of_line (pfile);
-
-  /* Copy out the line so we can pop the token buffer. */
-  buf = pfile->token_buffer + here;
-  end = CPP_PWRITTEN (pfile);
-  macro = (U_CHAR *) alloca (end - buf + 1);
-  memcpy (macro, buf, end - buf + 1);
-  end = macro + (end - buf);
-
-  CPP_SET_WRITTEN (pfile, here);
-
-  mdef = create_definition (macro, end, pfile);
-  if (mdef.defn == 0)
+  len = get_macro_name (pfile);
+  if (len == 0)
     return 0;
 
-  if ((hp = cpp_lookup (pfile, mdef.symnam, mdef.symlen)) != NULL)
+  /* Copy out the name so we can pop the token buffer.  */
+  len = CPP_WRITTEN (pfile) - here;
+  sym = (U_CHAR *) alloca (len + 1);
+  memcpy (sym, pfile->token_buffer + here, len);
+  sym[len] = '\0';
+  CPP_SET_WRITTEN (pfile, here);
+
+  /* If the next character, with no intervening whitespace, is '(',
+     then this is a function-like macro.  */
+  c = PEEKC ();
+  if (c == '(')
+    funlike = 1;
+  else if (c != '\n' && !is_hspace (c))
+    /* Otherwise, C99 requires white space after the name.  We treat it
+       as an object-like macro if this happens, with a warning.  */
+    cpp_pedwarn (pfile, "missing white space after `#define %.*s'", len, sym);
+
+  def = create_definition (pfile, funlike);
+  if (def == 0)
+    return 0;
+
+  if ((hp = cpp_lookup (pfile, sym, len)) != NULL)
     {
       int ok;
 
       /* Redefining a macro is ok if the definitions are the same.  */
       if (hp->type == T_MACRO)
-	ok = ! compare_defs (pfile, mdef.defn, hp->value.defn);
+	ok = ! compare_defs (pfile, def, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST || hp->type == T_STDC)
         ok = ! CPP_OPTIONS (pfile)->done_initializing;
@@ -704,14 +706,15 @@ do_define (pfile, keyword)
       if (! ok)
 	{
 	  if (hp->type == T_POISON)
-	    cpp_error (pfile, "redefining poisoned `%.*s'", 
-		       mdef.symlen, mdef.symnam);
+	    cpp_error (pfile, "redefining poisoned `%.*s'", len, sym);
 	  else
-	    cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
+	    cpp_pedwarn (pfile, "`%.*s' redefined", len, sym);
 	  if (hp->type == T_MACRO && CPP_OPTIONS (pfile)->done_initializing)
-	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file,
-					    hp->value.defn->line, -1,
+	    {
+	      DEFINITION *d = hp->value.defn;
+	      cpp_pedwarn_with_file_and_line (pfile, d->file, d->line, d->col,
 			"this is the location of the previous definition");
+	    }
 	}
       if (hp->type != T_POISON)
 	{
@@ -719,19 +722,19 @@ do_define (pfile, keyword)
 	  if (hp->type == T_MACRO)
 	    free_definition (hp->value.defn);
 	  hp->type = T_MACRO;
-	  hp->value.defn = mdef.defn;
+	  hp->value.defn = def;
 	}
     }
   else
-    cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO, (char *)mdef.defn);
+    cpp_install (pfile, sym, len, T_MACRO, (char *) def);
 
   if (keyword != NULL && keyword->type == T_DEFINE)
     {
       if (CPP_OPTIONS (pfile)->debug_output
 	  || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
-	dump_definition (pfile, mdef.symnam, mdef.symlen, mdef.defn);
+	dump_definition (pfile, sym, len, def);
       else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
-	pass_thru_directive (mdef.symnam, mdef.symlen, pfile, keyword);
+	pass_thru_directive (sym, len, pfile, keyword);
     }
 
   return 0;
@@ -766,6 +769,7 @@ cpp_push_buffer (pfile, buffer, length)
   new->alimit = new->rlimit = buffer + length;
   new->prev = buf;
   new->mark = -1;
+  new->line_base = NULL;
 
   CPP_BUFFER (pfile) = new;
   return new;
@@ -1309,7 +1313,7 @@ read_line_number (pfile, num)
     }
   else
     {
-      if (token != CPP_VSPACE && token != CPP_EOF && token != CPP_POP)
+      if (token != CPP_VSPACE && token != CPP_EOF)
 	cpp_error (pfile, "invalid format `#line' command");
       return 0;
     }
@@ -1467,15 +1471,14 @@ do_undef (pfile, keyword)
   len = limit - buf;
   name = (U_CHAR *) alloca (len + 1);
   memcpy (name, buf, len);
-  name[limit - buf] = '\0';
+  name[len] = '\0';
 
   token = get_directive_token (pfile);
-  if (token != CPP_VSPACE && token != CPP_POP)
+  if (token != CPP_VSPACE)
   {
       cpp_pedwarn (pfile, "junk on line after #undef");
       skip_rest_of_line (pfile);
   }
-
   CPP_SET_WRITTEN (pfile, here);
 
   while ((hp = cpp_lookup (pfile, name, len)) != NULL)
@@ -1950,11 +1953,9 @@ eval_if_expression (pfile)
   HOST_WIDEST_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
-  /* Work around bug in cpp_get_token where it may mistake an
-     assertion for a directive.  */
-  pfile->only_seen_white = 0;
-
+  pfile->parsing_if_directive++;
   value = cpp_parse_expr (pfile);
+  pfile->parsing_if_directive--;
 
   skip_rest_of_line (pfile);
   CPP_SET_WRITTEN (pfile, old_written); /* Pop */
@@ -2148,13 +2149,6 @@ skip_if_group (pfile)
   U_CHAR *beg_of_line;
   long old_written;
 
-  if (CPP_OPTIONS (pfile)->output_conditionals)
-    {
-      CPP_PUTS (pfile, "#failed\n", 8);
-      pfile->lineno++;
-      output_line_command (pfile, same_file);
-    }
-
   old_written = CPP_WRITTEN (pfile);
   
   for (;;)
@@ -2166,8 +2160,6 @@ skip_if_group (pfile)
       c = GETC();
       if (c == '\n')
 	{
-	  if (CPP_OPTIONS (pfile)->output_conditionals)
-	    CPP_PUTC (pfile, c);
 	  CPP_BUMP_LINE (pfile);
 	  continue;
 	}
@@ -2180,41 +2172,19 @@ skip_if_group (pfile)
 	return;	 /* Caller will issue error. */
 
       FORWARD(-1);
-      if (CPP_OPTIONS (pfile)->output_conditionals)
-	{
-	  CPP_PUTS (pfile, beg_of_line, CPP_BUFFER (pfile)->cur - beg_of_line);
-	  copy_rest_of_line (pfile);
-	}
-      else
-	{
-	  copy_rest_of_line (pfile);
-	  CPP_SET_WRITTEN (pfile, old_written);	 /* discard it */
-	}
+      skip_rest_of_line (pfile);
 
       c = GETC();
       if (c == EOF)
 	return;	 /* Caller will issue error. */
       else
-	{
-	  /* \n */
-	  if (CPP_OPTIONS (pfile)->output_conditionals)
-	    {
-	      CPP_PUTC (pfile, c);
-	      pfile->lineno++;
-	    }
-	  CPP_BUMP_LINE (pfile);
-	}
+	CPP_BUMP_LINE (pfile);
     }	  
 
   /* Back up to the beginning of this line.  Caller will process the
      directive. */
   CPP_BUFFER (pfile)->cur = beg_of_line;
   pfile->only_seen_white = 1;
-  if (CPP_OPTIONS (pfile)->output_conditionals)
-    {
-      CPP_PUTS (pfile, "#endfailed\n", 11);
-      pfile->lineno++;
-    }
 }
 
 /*
@@ -2443,6 +2413,27 @@ cpp_get_token (pfile)
 	    }
 
 	case '#':
+	  if (pfile->parsing_if_directive)
+	    {
+	      cpp_skip_hspace (pfile);
+	      parse_assertion (pfile);
+	      return CPP_ASSERTION;
+	    }
+
+	  if (pfile->parsing_define_directive && ! CPP_TRADITIONAL (pfile))
+	    {
+	      CPP_RESERVE (pfile, 3);
+	      CPP_PUTC_Q (pfile, '#');
+	      CPP_NUL_TERMINATE_Q (pfile);
+	      if (PEEKC () != '#')
+		return CPP_STRINGIZE;
+	      
+	      FORWARD (1);
+	      CPP_PUTC_Q (pfile, '#');
+	      CPP_NUL_TERMINATE_Q (pfile);
+	      return CPP_TOKPASTE;
+	    }
+
 	  if (!pfile->only_seen_white)
 	    goto randomchar;
 	  /* -traditional directives are recognized only with the # in
@@ -2886,35 +2877,24 @@ parse_name (pfile, c)
   return;
 }
 
-/* Parse a string starting with C.  A single quoted string is treated
-   like a double -- some programs (e.g., troff) are perverse this way.
-   (However, a single quoted string is not allowed to extend over
-   multiple lines.)  */
+/* Parse and skip over a string starting with C.  A single quoted
+   string is treated like a double -- some programs (e.g., troff) are
+   perverse this way.  (However, a single quoted string is not allowed
+   to extend over multiple lines.)  */
 static void
-parse_string (pfile, c)
+skip_string (pfile, c)
      cpp_reader *pfile;
      int c;
 {
   long start_line, start_column;
-  
   cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
 
-  CPP_PUTC (pfile, c);
   while (1)
     {
       int cc = GETC();
-      if (cc == EOF)
+      switch (cc)
 	{
-	  if (CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
-	    {
-	      /* try harder: this string crosses a macro expansion
-		 boundary.  This can happen naturally if -traditional.
-		 Otherwise, only -D can make a macro with an unmatched
-		 quote.  */
-	      cpp_pop_buffer (pfile);
-	      continue;
-	    }
-
+	case EOF:
 	  cpp_error_with_line (pfile, start_line, start_column,
 			       "unterminated string or character constant");
 	  if (pfile->multiline_string_line != start_line
@@ -2923,22 +2903,20 @@ parse_string (pfile, c)
 				 pfile->multiline_string_line, -1,
 			 "possible real start of unterminated constant");
 	  pfile->multiline_string_line = 0;
-	  break;
-	}
-      CPP_PUTC (pfile, cc);
-      switch (cc)
-	{
+	  return;
+
 	case '\n':
 	  CPP_BUMP_LINE (pfile);
-	  pfile->lineno++;
-
 	  /* In Fortran and assembly language, silently terminate
 	     strings of either variety at end of line.  This is a
 	     kludge around not knowing where comments are in these
 	     languages.  */
 	  if (CPP_OPTIONS (pfile)->lang_fortran
 	      || CPP_OPTIONS (pfile)->lang_asm)
-	    return;
+	    {
+	      FORWARD(-1);
+	      return;
+	    }
 	  /* Character constants may not extend over multiple lines.
 	     In Standard C, neither may strings.  We accept multiline
 	     strings as an extension.  */
@@ -2946,6 +2924,7 @@ parse_string (pfile, c)
 	    {
 	      cpp_error_with_line (pfile, start_line, start_column,
 				   "unterminated character constant");
+	      FORWARD(-1);
 	      return;
 	    }
 	  if (CPP_PEDANTIC (pfile) && pfile->multiline_string_line == 0)
@@ -2956,7 +2935,6 @@ parse_string (pfile, c)
 	  break;
 
 	case '\r':
-	  CPP_ADJUST_WRITTEN (pfile, -1);
 	  if (CPP_BUFFER (pfile)->has_escapes)
 	    {
 	      cpp_ice (pfile, "\\r escape inside string constant");
@@ -2968,9 +2946,7 @@ parse_string (pfile, c)
 	  break;
 
 	case '\\':
-	  cc = GETC();
-	  if (cc != EOF)
-	    CPP_PUTC (pfile, cc);
+	  FORWARD(1);
 	  break;
 
 	case '\"':
@@ -2980,6 +2956,26 @@ parse_string (pfile, c)
 	  break;
 	}
     }
+}
+
+/* Parse a string and copy it to the output.  */
+
+static void
+parse_string (pfile, c)
+     cpp_reader *pfile;
+     int c;
+{
+  U_CHAR *start = CPP_BUFFER (pfile)->cur;  /* XXX Layering violation */
+  U_CHAR *limit;
+
+  skip_string (pfile, c);
+
+  limit = CPP_BUFFER (pfile)->cur;
+  CPP_RESERVE (pfile, limit - start + 2);
+  CPP_PUTC_Q (pfile, c);
+  for (; start < limit; start++)
+    if (*start != '\r')
+      CPP_PUTC_Q (pfile, *start);
 }
 
 /* Read an assertion into the token buffer, converting to
@@ -3199,32 +3195,10 @@ cpp_unassert (pfile, str)
 {
   if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
     {
-      do_assert (pfile, NULL);
+      do_unassert (pfile, NULL);
       cpp_pop_buffer (pfile);
     }
 }  
-
-int
-cpp_read_check_assertion (pfile)
-     cpp_reader *pfile;
-{
-  U_CHAR *name;
-  int result;
-  long written = CPP_WRITTEN (pfile);
-  
-  FORWARD (1);  /* Skip '#' */
-  cpp_skip_hspace (pfile);
-  if (! parse_assertion (pfile))
-    result = 0;
-  else
-    {
-      name = pfile->token_buffer + written;
-      result = cpp_defined (pfile, name, CPP_PWRITTEN (pfile) - name);
-    }
-
-  CPP_SET_WRITTEN (pfile, written);
-  return result;
-}
 
 /* Remember the current position of PFILE so it may be returned to
    after looking ahead a bit.

@@ -81,6 +81,7 @@ static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, u
 static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
 static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
 static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
+static struct operation parse_defined PARAMS ((cpp_reader *));
 static struct operation cpp_lex PARAMS ((cpp_reader *, int));
 extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT cpp_parse_escape PARAMS ((cpp_reader *, U_CHAR **, HOST_WIDEST_INT));
@@ -349,6 +350,53 @@ parse_charconst (pfile, start, end)
   return op;
 }
 
+static struct operation
+parse_defined (pfile)
+     cpp_reader *pfile;
+{
+  int paren = 0, len;
+  U_CHAR *tok;
+  enum cpp_token token;
+  struct operation op;
+  long old_written = CPP_WRITTEN (pfile);
+
+  op.unsignedp = 0;
+  op.op = INT;
+
+  pfile->no_macro_expand++;
+  token = get_directive_token (pfile);
+  if (token == CPP_LPAREN)
+    {
+      paren++;
+      CPP_SET_WRITTEN (pfile, old_written);
+      token = get_directive_token (pfile);
+    }
+
+  if (token != CPP_NAME)
+    goto oops;
+
+  tok = pfile->token_buffer + old_written;
+  len = CPP_PWRITTEN (pfile) - tok;
+  op.value = cpp_defined (pfile, tok, len);
+
+  if (paren)
+    {
+      if (get_directive_token (pfile) != CPP_RPAREN)
+	goto oops;
+    }
+  CPP_SET_WRITTEN (pfile, old_written);
+  pfile->no_macro_expand--;
+  return op;
+
+ oops:
+  CPP_SET_WRITTEN (pfile, old_written);
+  pfile->no_macro_expand--;
+  cpp_error (pfile, "`defined' without an identifier");
+
+  op.op = ERROR;
+  return op;
+}
+
 
 struct token {
   const char *operator;
@@ -389,7 +437,7 @@ cpp_lex (pfile, skip_evaluation)
   tok_end = CPP_PWRITTEN (pfile);
   CPP_SET_WRITTEN (pfile, old_written);
   switch (token)
-  {
+    {
     case CPP_EOF: /* Should not happen ...  */
     case CPP_VSPACE:
       op.op = 0;
@@ -407,51 +455,22 @@ cpp_lex (pfile, skip_evaluation)
       return parse_charconst (pfile, tok_start, tok_end);
 
     case CPP_NAME:
+      if (!strcmp (tok_start, "defined"))
+	return parse_defined (pfile);
+
       op.op = INT;
       op.unsignedp = 0;
       op.value = 0;
-      if (strcmp (tok_start, "defined"))
-	{
-	  if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
-	    cpp_warning (pfile, "`%.*s' is not defined",
-			 (int) (tok_end - tok_start), tok_start);
-	}
-      else
-	{
-	  int paren = 0, len;
-	  U_CHAR *tok;
 
-	  pfile->no_macro_expand++;
-	  token = get_directive_token (pfile);
-	  if (token == CPP_LPAREN)
-	    {
-	      paren++;
-	      CPP_SET_WRITTEN (pfile, old_written);
-	      token = get_directive_token (pfile);
-	    }
-
-	  if (token != CPP_NAME)
-	    goto oops;
-
-	  tok = pfile->token_buffer + old_written;
-	  len = CPP_PWRITTEN (pfile) - tok;
-	  if (cpp_defined (pfile, tok, len))
-	    op.value = 1;
-
-	  if (paren)
-	    {
-	      if (get_directive_token (pfile) != CPP_RPAREN)
-		goto oops;
-	    }
-	  CPP_SET_WRITTEN (pfile, old_written);
-	  pfile->no_macro_expand--;
-	}
+      if (CPP_WARN_UNDEF (pfile) && !skip_evaluation)
+	cpp_warning (pfile, "`%.*s' is not defined",
+		     (int) (tok_end - tok_start), tok_start);
       return op;
 
-    oops:
-      CPP_SET_WRITTEN (pfile, old_written);
-      pfile->no_macro_expand--;
-      cpp_error (pfile, "`defined' without an identifier");
+    case CPP_ASSERTION:
+      op.op = INT;
+      op.unsignedp = 0;
+      op.value = cpp_defined (pfile, tok_start, tok_end - tok_start);
       return op;
 
     case CPP_OTHER:
@@ -466,13 +485,6 @@ cpp_lex (pfile, skip_evaluation)
 	    cpp_error (pfile, "`%s' not allowed in operand of `#if'",
 		       tok_start);
 	  op.op = toktab->token; 
-	  return op;
-	}
-      else if (tok_start + 1 == tok_end && *tok_start == '#')
-	{
-	  CPP_FORWARD (CPP_BUFFER (pfile), -1);
-	  op.op = INT;
-	  op.value = cpp_read_check_assertion (pfile);
 	  return op;
 	}
       /* fall through */
