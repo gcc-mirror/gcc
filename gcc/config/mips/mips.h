@@ -3930,11 +3930,6 @@ while (0)
 #define ASM_OUTPUT_EXTERNAL(STREAM,DECL,NAME) \
   mips_output_external(STREAM,DECL,NAME)
 
-/* This says what to print at the end of the assembly file */
-#undef ASM_FILE_END
-#define ASM_FILE_END(STREAM) mips_asm_file_end(STREAM)
-
-
 /* Play switch file games if we're optimizing the global pointer.  */
 
 #undef TEXT_SECTION

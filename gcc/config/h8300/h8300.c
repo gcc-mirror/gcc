@@ -63,6 +63,7 @@ static tree h8300_handle_eightbit_data_attribute PARAMS ((tree *, tree, tree, in
 static tree h8300_handle_tiny_data_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void h8300_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void h8300_insert_attributes PARAMS ((tree, tree *));
+static void h8300_file_end PARAMS ((void));
 #ifndef OBJECT_FORMAT_ELF
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
@@ -112,6 +113,10 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE h8300_output_function_epilogue
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END h8300_file_end
+
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO h8300_encode_section_info
 
@@ -715,11 +720,10 @@ asm_file_start (file)
 
 /* Output assembly language code for the end of file.  */
 
-void
-asm_file_end (file)
-     FILE *file;
+static void
+h8300_file_end ()
 {
-  fprintf (file, "\t.end\n");
+  fputs ("\t.end\n", asm_out_file);
 }
 
 /* Return true if OP is a valid source operand for an integer move

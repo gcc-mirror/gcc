@@ -136,7 +136,7 @@ do {								\
 
 /* Put out the needed function declarations at the end.  */
 
-#define ASM_FILE_END(STREAM) ia64_hpux_asm_file_end(STREAM)
+#define TARGET_ASM_FILE_END ia64_hpux_file_end
 
 #undef CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP  "\t.section\t.init_array,\t\"aw\",\"init_array\""

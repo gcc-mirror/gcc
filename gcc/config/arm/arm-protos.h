@@ -158,12 +158,10 @@ extern int    arm_function_arg_pass_by_reference PARAMS ((CUMULATIVE_ARGS *,
 
 #if defined AOF_ASSEMBLER 
 extern rtx    aof_pic_entry		PARAMS ((rtx));
-extern void   aof_dump_pic_table	PARAMS ((FILE *));
 extern char * aof_text_section		PARAMS ((void));
 extern char * aof_data_section		PARAMS ((void));
 extern void   aof_add_import		PARAMS ((const char *));
 extern void   aof_delete_import		PARAMS ((const char *));
-extern void   aof_dump_imports		PARAMS ((FILE *));
 extern void   zero_init_section		PARAMS ((void));
 extern void   common_section		PARAMS ((void));
 #endif /* AOF_ASSEMBLER */

@@ -2261,9 +2261,7 @@ compile_file (void)
       timevar_pop (TV_DUMP);
     }
 
-#ifdef ASM_FILE_END
-  ASM_FILE_END (asm_out_file);
-#endif
+  targetm.asm_out.file_end ();
 
   /* Attach a special .ident directive to the end of the file to identify
      the version of GCC which compiled this code.  The format of the .ident

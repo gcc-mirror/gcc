@@ -269,6 +269,7 @@ static void unicosmk_output_deferred_case_vectors PARAMS ((FILE *));
 static void unicosmk_gen_dsib PARAMS ((unsigned long *imaskP));
 static void unicosmk_output_ssib PARAMS ((FILE *, const char *));
 static int unicosmk_need_dex PARAMS ((rtx));
+static void unicosmk_file_end PARAMS ((void));
 
 /* Get the number of args of a function in one of two ways.  */
 #if TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK
@@ -309,7 +310,7 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 # undef TARGET_ASM_UNIQUE_SECTION
 # define TARGET_ASM_UNIQUE_SECTION unicosmk_unique_section
 # undef TARGET_ASM_GLOBALIZE_LABEL
-# define TARGET_ASM_GLOBALIZE_LABEL hook_FILEptr_constcharptr_void
+# define TARGET_ASM_GLOBALIZE_LABEL hook_void_FILEptr_constcharptr
 #endif
 
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -6398,7 +6399,7 @@ alpha_build_va_list ()
    not the most efficient way to implement varargs with just one register
    class, but it isn't worth doing anything more efficient in this rare
    case.  */
-
+#ifndef TARGET_ABI_UNICOSMK
 void   
 alpha_setup_incoming_varargs(cum, mode, type, pretend_size, no_rtl)
      CUMULATIVE_ARGS cum;
@@ -6430,6 +6431,7 @@ alpha_setup_incoming_varargs(cum, mode, type, pretend_size, no_rtl)
      }
   *pretend_size = 12 * UNITS_PER_WORD;
 }
+#endif
 
 void
 alpha_va_start (valist, nextarg)
@@ -9663,24 +9665,23 @@ unicosmk_asm_file_start (file)
 /* Output text to appear at the end of an assembler file. This includes all
    pending extern declarations and DEX expressions.  */
 
-void
-unicosmk_asm_file_end (file)
-      FILE *file;
+static void
+unicosmk_file_end ()
 {
-  fputs ("\t.endp\n\n", file);
+  fputs ("\t.endp\n\n", asm_out_file);
 
   /* Output all pending externs.  */
 
-  unicosmk_output_externs (file);
+  unicosmk_output_externs (asm_out_file);
 
   /* Output dex definitions used for functions whose names conflict with 
      register names.  */
 
-  unicosmk_output_dex (file);
+  unicosmk_output_dex (asm_out_file);
 
-  fputs ("\t.end\t", file);
-  unicosmk_output_module_name (file);
-  putc ('\n', file);
+  fputs ("\t.end\t", asm_out_file);
+  unicosmk_output_module_name (asm_out_file);
+  putc ('\n', asm_out_file);
 }
 
 /* Output the definition of a common variable.  */
@@ -9985,7 +9986,7 @@ unicosmk_ssib_name ()
   x = XEXP (x, 0);
   if (GET_CODE (x) != SYMBOL_REF)
     abort ();
-  fnname = default_name_encoding (XSTR (x, 0));
+  fnname = XSTR (x, 0);
 
   len = strlen (fnname);
   if (len + SSIB_PREFIX_LEN > 255)

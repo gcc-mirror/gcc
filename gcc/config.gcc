@@ -2226,6 +2226,9 @@ then
 			;;
 		sparc*-*-*)
 			with_cpu="`echo $machine | sed 's/-.*$//'`"
+			if [ x$with_cpu = xsparc64 ]; then
+				with_cpu=v9
+			fi
 			;;
 		esac
 	fi

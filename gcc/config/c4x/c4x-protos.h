@@ -43,8 +43,6 @@ extern void c4x_global_label (const char *);
 
 extern void c4x_external_ref (const char *);
 
-extern void c4x_file_end (FILE *);
-
 #ifdef TREE_CODE
 extern void c4x_function_arg_advance PARAMS ((CUMULATIVE_ARGS *, 
 					      enum machine_mode, tree, int));

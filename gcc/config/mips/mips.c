@@ -272,6 +272,7 @@ static void iris6_asm_named_section		PARAMS ((const char *,
 static int iris_section_align_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t iris_section_align_entry_hash	PARAMS ((const PTR));
 static int iris6_section_align_1		PARAMS ((void **, void *));
+static void iris6_file_end			PARAMS ((void));
 #endif
 static int mips_adjust_cost			PARAMS ((rtx, rtx, rtx, int));
 static int mips_issue_rate			PARAMS ((void));
@@ -287,7 +288,7 @@ static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
 static int mips_address_cost                    PARAMS ((rtx));
 static void mips_encode_section_info            PARAMS ((tree, rtx, int));
-
+static void mips_file_end			PARAMS ((void));
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -871,6 +872,13 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG mips_reorg
+
+#undef TARGET_ASM_FILE_END
+#ifdef TARGET_IRIX6
+#define TARGET_ASM_FILE_END iris6_file_end
+#else
+#define TARGET_ASM_FILE_END mips_file_end
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6550,16 +6558,15 @@ mips_asm_file_start (stream)
    warning if the data area is more than 32K and -pic because 3 instructions
    are needed to reference the data pointers.  */
 
-void
-mips_asm_file_end (file)
-     FILE *file;
+static void
+mips_file_end ()
 {
   tree name_tree;
   struct extern_list *p;
 
   if (extern_head)
     {
-      fputs ("\n", file);
+      fputs ("\n", asm_out_file);
 
       for (p = extern_head; p != 0; p = p->next)
 	{
@@ -6571,13 +6578,13 @@ mips_asm_file_end (file)
 	      TREE_ASM_WRITTEN (name_tree) = 1;
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
 	      if (p->size == -1)
-		ASM_OUTPUT_UNDEF_FUNCTION (file, p->name);
+		ASM_OUTPUT_UNDEF_FUNCTION (asm_out_file, p->name);
 	      else
 #endif
 		{
-		  fputs ("\t.extern\t", file);
-		  assemble_name (file, p->name);
-		  fprintf (file, ", %d\n", p->size);
+		  fputs ("\t.extern\t", asm_out_file);
+		  assemble_name (asm_out_file, p->name);
+		  fprintf (asm_out_file, ", %d\n", p->size);
 		}
 	    }
 	}
@@ -6585,8 +6592,8 @@ mips_asm_file_end (file)
 
   if (TARGET_FILE_SWITCHING)
     {
-      fprintf (file, "\n\t.text\n");
-      copy_file_data (file, asm_out_text_file);
+      fputs ("\n\t.text\n", asm_out_file);
+      copy_file_data (asm_out_file, asm_out_text_file);
     }
 }
 
@@ -6612,7 +6619,7 @@ copy_file_data (to, from)
 }
 
 /* Emit either a label, .comm, or .lcomm directive, and mark that the symbol
-   is used, so that we don't emit an .extern for it in mips_asm_file_end.  */
+   is used, so that we don't emit an .extern for it in mips_file_end.  */
 
 void
 mips_declare_object (stream, name, init_string, final_string, size)
@@ -10717,19 +10724,19 @@ iris6_section_align_1 (slot, data)
   return 1;
 }
 
-void
-iris6_asm_file_end (stream)
-     FILE *stream;
+static void
+iris6_file_end ()
 {
   /* Emit section directives with the proper alignment at the top of the
      real output file.  */
+  FILE *temp = asm_out_file;
   asm_out_file = iris_orig_asm_out_file;
   htab_traverse (iris_section_align_htab, iris6_section_align_1, NULL);
 
   /* Copy the data emitted to the temp file to the real output file.  */
-  copy_file_data (asm_out_file, stream);
+  copy_file_data (asm_out_file, temp);
 
-  mips_asm_file_end (stream);
+  mips_file_end ();
 }
 #endif /* TARGET_IRIX6 */
 

@@ -763,12 +763,11 @@ i386_pe_record_exported_symbol (name, is_data)
    output the .drectve section.  */
 
 void
-i386_pe_asm_file_end (file)
-     FILE *file;
+i386_pe_file_end ()
 {
   struct extern_list *p;
 
-  ix86_asm_file_end (file);
+  ix86_file_end ();
 
   for (p = extern_head; p != NULL; p = p->next)
     {
@@ -780,7 +779,8 @@ i386_pe_asm_file_end (file)
       if (! TREE_ASM_WRITTEN (decl) && TREE_SYMBOL_REFERENCED (decl))
 	{
 	  TREE_ASM_WRITTEN (decl) = 1;
-	  i386_pe_declare_function_type (file, p->name, TREE_PUBLIC (decl));
+	  i386_pe_declare_function_type (asm_out_file, p->name,
+			  		 TREE_PUBLIC (decl));
 	}
     }
 
@@ -790,7 +790,7 @@ i386_pe_asm_file_end (file)
       drectve_section ();
       for (q = export_head; q != NULL; q = q->next)
 	{
-	  fprintf (file, "\t.ascii \" -export:%s%s\"\n",
+	  fprintf (asm_out_file, "\t.ascii \" -export:%s%s\"\n",
 		   i386_pe_strip_name_encoding (q->name),
 		   (q->is_data) ? ",data" : "");
 	}

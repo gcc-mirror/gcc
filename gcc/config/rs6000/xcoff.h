@@ -233,18 +233,7 @@ toc_section ()						\
   rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
 }
 
-/* Output at end of assembler file.
-
-   On the RS/6000, referencing data should automatically pull in text.  */
-
-#define ASM_FILE_END(FILE)					\
-{								\
-  text_section ();						\
-  fputs ("_section_.text:\n", FILE);				\
-  data_section ();						\
-  fputs (TARGET_32BIT						\
-	 ? "\t.long _section_.text\n" : "\t.llong _section_.text\n", FILE); \
-}
+#define TARGET_ASM_FILE_END rs6000_xcoff_file_end
 
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and

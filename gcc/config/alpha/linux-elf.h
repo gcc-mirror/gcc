@@ -42,9 +42,4 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
 "%{pthread:-lpthread} %{shared:-lc}%{!shared:%{profile:-lc_p}%{!profile:-lc}} "
 
-#define ASM_FILE_END(FILE) \
-  do {									\
-    named_section_flags (".note.GNU-stack",				\
-			 SECTION_DEBUG					\
-			 | (trampolines_created ? SECTION_CODE : 0));	\
-  } while (0)
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack

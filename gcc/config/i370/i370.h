@@ -1036,7 +1036,6 @@ enum reg_class
 { fputs ("\tRMODE\tANY\n", FILE);					\
   fputs ("\tCSECT\n", FILE); }
 
-#define ASM_FILE_END(FILE) fputs ("\tEND\n", FILE);
 #define ASM_COMMENT_START "*"
 #define ASM_APP_OFF ""
 #define ASM_APP_ON ""

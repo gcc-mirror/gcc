@@ -4705,8 +4705,7 @@ get_pc_thunk_name (name, regno)
    the return address of the caller and then returns.  */
 
 void
-ix86_asm_file_end (file)
-     FILE *file;
+ix86_file_end ()
 {
   rtx xops[2];
   int regno;
@@ -4733,16 +4732,16 @@ ix86_asm_file_end (file)
 	  (*targetm.asm_out.unique_section) (decl, 0);
 	  named_section (decl, NULL, 0);
 
-	  (*targetm.asm_out.globalize_label) (file, name);
-	  fputs ("\t.hidden\t", file);
-	  assemble_name (file, name);
-	  fputc ('\n', file);
-	  ASM_DECLARE_FUNCTION_NAME (file, name, decl);
+	  (*targetm.asm_out.globalize_label) (asm_out_file, name);
+	  fputs ("\t.hidden\t", asm_out_file);
+	  assemble_name (asm_out_file, name);
+	  fputc ('\n', asm_out_file);
+	  ASM_DECLARE_FUNCTION_NAME (asm_out_file, name, decl);
 	}
       else
 	{
 	  text_section ();
-	  ASM_OUTPUT_LABEL (file, name);
+	  ASM_OUTPUT_LABEL (asm_out_file, name);
 	}
 
       xops[0] = gen_rtx_REG (SImode, regno);
@@ -4751,9 +4750,8 @@ ix86_asm_file_end (file)
       output_asm_insn ("ret", xops);
     }
 
-#ifdef SUBTARGET_FILE_END
-  SUBTARGET_FILE_END (file);
-#endif
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
 }
 
 /* Emit code for the SET_GOT patterns.  */

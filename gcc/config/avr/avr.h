@@ -1699,17 +1699,6 @@ progmem_section ()							      \
    On systems that use SDB, it is necessary to output certain
    commands; see `attasm.h'.  */
 
-#define ASM_FILE_END(STREAM) asm_file_end (STREAM)
-/* A C expression which outputs to the stdio stream STREAM some
-   appropriate text to go at the end of an assembler file.
-
-   If this macro is not defined, the default is to output nothing
-   special at the end of the file.  Most systems don't require any
-   definition.
-
-   On systems that use SDB, it is necessary to output certain
-   commands; see `attasm.h'.  */
-
 #define ASM_COMMENT_START " ; "
 /* A C string constant describing how to begin a comment in the target
    assembler language.  The compiler assumes that the comment will

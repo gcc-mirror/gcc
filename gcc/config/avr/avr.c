@@ -63,6 +63,7 @@ static tree   avr_handle_progmem_attribute PARAMS ((tree *, tree, tree, int, boo
 static tree   avr_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec avr_attribute_table[];
 static bool   avr_assemble_integer PARAMS ((rtx, unsigned int, int));
+static void   avr_file_end PARAMS ((void));
 static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
@@ -218,6 +219,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER avr_assemble_integer
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END avr_file_end
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE avr_output_function_prologue
@@ -4918,13 +4921,12 @@ asm_file_start (file)
 /* Outputs to the stdio stream FILE some
    appropriate text to go at the end of an assembler file.  */
 
-void
-asm_file_end (file)
-     FILE *file;
+static void
+avr_file_end ()
 {
-  fputs ("/* File ", file);
-  output_quoted_string (file, main_input_filename);
-  fprintf (file,
+  fputs ("/* File ", asm_out_file);
+  output_quoted_string (asm_out_file, main_input_filename);
+  fprintf (asm_out_file,
 	   ": code %4d = 0x%04x (%4d), prologues %3d, epilogues %3d */\n",
 	   commands_in_file,
 	   commands_in_file,

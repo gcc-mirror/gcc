@@ -107,6 +107,8 @@ static void i370_globalize_label PARAMS ((FILE *, const char *));
 #endif
 static void i370_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i370_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void i370_file_end PARAMS ((void));
+
 #ifdef LONGEXTERNAL
 static int mvs_hash_alias PARAMS ((const char *));
 #endif
@@ -318,6 +320,8 @@ static const unsigned char ebcasc[256] =
 #define TARGET_ASM_FUNCTION_PROLOGUE i370_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE i370_output_function_epilogue
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END i370_file_end
 #undef TARGET_ASM_INTERNAL_LABEL
 #define  TARGET_ASM_INTERNAL_LABEL i370_internal_label
 #undef TARGET_RTX_COSTS
@@ -1596,6 +1600,12 @@ i370_output_function_epilogue (file, l)
   mvs_free_label_list();
   for (i = function_base_page; i < mvs_page_num; i++)
     fprintf (file, "\tDC\tA(PG%d)\n", i);
+}
+
+static void
+i370_file_end ()
+{
+  fputs ("\tEND\n", asm_out_file);
 }
 
 static void

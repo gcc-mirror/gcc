@@ -18,9 +18,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-extern void asm_file_start PARAMS ((FILE *));
-extern void asm_file_end PARAMS ((FILE *));
-
 extern void function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 extern void function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 extern int find_one_set_bit_p PARAMS ((HOST_WIDE_INT));

@@ -1374,5 +1374,17 @@ darwin_asm_output_dwarf_delta (file, size, lab1, lab2)
     fprintf (file, "\n\t.long L$set$%d", darwin_dwarf_label_counter++);
 }
 
+void
+darwin_file_end ()
+{
+  machopic_finish (asm_out_file);
+  if (strcmp (lang_hooks.name, "GNU C++") == 0)
+    {
+      constructor_section ();
+      destructor_section ();
+      ASM_OUTPUT_ALIGN (asm_out_file, 1);
+    }
+}
+
 #include "gt-darwin.h"
 

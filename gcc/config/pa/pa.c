@@ -136,6 +136,7 @@ static void copy_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static int length_fp_args PARAMS ((rtx)) ATTRIBUTE_UNUSED;
 static struct deferred_plabel *get_plabel PARAMS ((const char *))
      ATTRIBUTE_UNUSED;
+static void output_deferred_plabels PARAMS ((void));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -174,6 +175,7 @@ struct deferred_plabel GTY(())
 static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
   deferred_plabels;
 static size_t n_deferred_plabels = 0;
+
 
 /* Initialize the GCC target structure.  */
 
@@ -216,6 +218,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_OUTPUT_MI_THUNK pa_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END output_deferred_plabels
 
 #if !defined(USE_COLLECT2)
 #undef TARGET_ASM_CONSTRUCTOR
@@ -4939,9 +4944,8 @@ get_plabel (fname)
   return &deferred_plabels[i];
 }
 
-void
-output_deferred_plabels (file)
-     FILE *file;
+static void
+output_deferred_plabels ()
 {
   size_t i;
   /* If we have deferred plabels, then we need to switch into the data
@@ -4950,13 +4954,14 @@ output_deferred_plabels (file)
   if (n_deferred_plabels)
     {
       data_section ();
-      ASM_OUTPUT_ALIGN (file, TARGET_64BIT ? 3 : 2);
+      ASM_OUTPUT_ALIGN (asm_out_file, TARGET_64BIT ? 3 : 2);
     }
 
   /* Now output the deferred plabels.  */
   for (i = 0; i < n_deferred_plabels; i++)
     {
-      (*targetm.asm_out.internal_label) (file, "L", CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
+      (*targetm.asm_out.internal_label) (asm_out_file, "L",
+		 CODE_LABEL_NUMBER (deferred_plabels[i].internal_label));
       assemble_integer (gen_rtx_SYMBOL_REF (Pmode, deferred_plabels[i].name),
 			TARGET_64BIT ? 8 : 4, TARGET_64BIT ? 64 : 32, 1);
     }

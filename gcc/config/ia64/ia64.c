@@ -257,6 +257,9 @@ static unsigned int ia64_rwreloc_section_type_flags
 
 static void ia64_hpux_add_extern_decl PARAMS ((const char *name))
      ATTRIBUTE_UNUSED;
+static void ia64_hpux_file_end PARAMS ((void))
+     ATTRIBUTE_UNUSED;
+
 
 /* Table of valid machine attributes.  */
 static const struct attribute_spec ia64_attribute_table[] =
@@ -8359,9 +8362,8 @@ ia64_hpux_add_extern_decl (name)
 
 /* Print out the list of used global functions.  */
 
-void
-ia64_hpux_asm_file_end (file)
-	FILE *file;
+static void
+ia64_hpux_file_end ()
 {
   while (extern_func_head)
     {
@@ -8376,12 +8378,13 @@ ia64_hpux_asm_file_end (file)
         {
 	  if (decl)
 	    TREE_ASM_WRITTEN (decl) = 1;
-	  (*targetm.asm_out.globalize_label) (file, extern_func_head->name);
-	  fprintf (file, "%s", TYPE_ASM_OP);
-	  assemble_name (file, extern_func_head->name);
-	  putc (',', file);
-	  fprintf (file, TYPE_OPERAND_FMT, "function");
-	  putc ('\n', file);
+	  (*targetm.asm_out.globalize_label) (asm_out_file,
+					      extern_func_head->name);
+	  fputs (TYPE_ASM_OP, asm_out_file);
+	  assemble_name (asm_out_file, extern_func_head->name);
+	  putc (',', asm_out_file);
+	  fprintf (asm_out_file, TYPE_OPERAND_FMT, "function");
+	  putc ('\n', asm_out_file);
         }
       extern_func_head = extern_func_head->next;
     }

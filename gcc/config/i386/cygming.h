@@ -294,9 +294,8 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
   asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 /* Output function declarations at the end of the file.  */
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE) \
-  i386_pe_asm_file_end (FILE)
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END i386_pe_file_end
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
@@ -332,7 +331,7 @@ extern void i386_pe_unique_section PARAMS ((TREE, int));
 extern void i386_pe_record_external_function PARAMS ((const char *));
 extern void i386_pe_declare_function_type PARAMS ((FILE *, const char *, int));
 extern void i386_pe_record_exported_symbol PARAMS ((const char *, int));
-extern void i386_pe_asm_file_end PARAMS ((FILE *));
+extern void i386_pe_file_end PARAMS ((void));
 extern int i386_pe_dllexport_name_p PARAMS ((const char *));
 extern int i386_pe_dllimport_name_p PARAMS ((const char *));
 

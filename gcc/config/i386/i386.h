@@ -1825,11 +1825,8 @@ typedef struct ix86_args {
 #define EXPAND_BUILTIN_VA_ARG(VALIST, TYPE) \
   ix86_va_arg ((VALIST), (TYPE))
 
-/* This macro is invoked at the end of compilation.  It is used here to
-   output code for -fpic that will load the return address into %ebx.  */
-
-#undef ASM_FILE_END
-#define ASM_FILE_END(FILE)  ix86_asm_file_end (FILE)
+#define TARGET_ASM_FILE_END ix86_file_end
+#define NEED_INDICATE_EXEC_STACK 0
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

@@ -133,7 +133,6 @@ extern int zdepi_cint_p PARAMS ((unsigned HOST_WIDE_INT));
 
 extern struct rtx_def *hppa_builtin_saveregs PARAMS ((void));
 
-extern void output_deferred_plabels PARAMS ((FILE *));
 extern void override_options PARAMS ((void));
 extern void output_ascii PARAMS ((FILE *, const char *, int));
 extern int compute_frame_size PARAMS ((int, int *));
