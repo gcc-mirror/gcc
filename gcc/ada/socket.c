@@ -2,11 +2,11 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                              S O C K E T                                 *
+ *                               S O C K E T                                *
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *            Copyright (C) 2003, Free Software Foundation, Inc.            *
+ *          Copyright (C) 2003-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,44 +30,9 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file provides a portable binding to the fd set functions           */
+/*  This file provides a portable binding to the sockets API                */
 
-#ifdef __vxworks
-#include "vxWorks.h"
-#endif
-
-#ifdef IN_RTS
-#include "tconfig.h"
-#include "tsystem.h"
-
-#if defined (WINNT)
-#define FD_SETSIZE 1024
-#include <windows.h>
-
-#ifdef __MINGW32__
-#include "mingw32.h"
-#if STD_MINGW
-#include <winsock.h>
-#else
-#include <windows32/sockets.h>
-#endif
-#endif
-#endif
-
-#if defined (VMS)
-#define FD_SETSIZE 4096
-#include <sys/time.h>
-#endif
-
-#else
-#include "config.h"
-#include "system.h"
-#endif
-
-#if !(defined (VMS) || defined (__MINGW32__))
-# include <sys/socket.h>
-#endif
-
+#include "gsocket.h"
 #include "raise.h"
 
 extern void __gnat_disable_sigpipe (int fd);
