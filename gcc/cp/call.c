@@ -3174,7 +3174,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 
          We must avoid calling force_rvalue for expressions of type
 	 "void" because it will complain that their value is being
-	 used.   */
+	 used.  */
       if (TREE_CODE (arg2) == THROW_EXPR 
 	  && TREE_CODE (arg3) != THROW_EXPR)
 	{
@@ -6470,7 +6470,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 	     TARGET_EXPR here.  It is important that EXPR be a
 	     TARGET_EXPR below since otherwise the INIT_EXPR will
 	     attempt to make a bitwise copy of EXPR to initialize
-	     VAR. */
+	     VAR.  */
 	  if (TREE_CODE (expr) != TARGET_EXPR)
 	    expr = get_target_expr (expr);
 	  /* Create the INIT_EXPR that will initialize the temporary

@@ -1422,7 +1422,7 @@ comdat_linkage (tree decl)
    linkonce sections, so that they will be merged with implicit
    instantiations; otherwise we get duplicate symbol errors.  
    For Darwin we do not want explicit instantiations to be 
-   linkonce. */
+   linkonce.  */
 
 void
 maybe_make_one_only (tree decl)

@@ -552,7 +552,7 @@ add_decl_to_level (tree decl, cxx_scope *b)
       /* If appropriate, add decl to separate list of statics.  We
 	 include extern variables because they might turn out to be 
 	 static later.  It's OK for this list to contain a few false
-	 positives. */
+	 positives.  */
       if (b->kind == sk_namespace)
 	if ((TREE_CODE (decl) == VAR_DECL
 	     && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))

@@ -103,7 +103,7 @@ DEFTREECODE (ALIAS_DECL, "alias_decl", 'd', 0)
    A BASELINK is an expression; the TREE_TYPE of the BASELINK gives
    the type of the expression.  This type is either a FUNCTION_TYPE,
    METHOD_TYPE, or `unknown_type_node' indicating that the function is
-   overloaded. */
+   overloaded.  */
 DEFTREECODE (BASELINK, "baselink", 'x', 0)
 
 /* Template definition.  The following fields have the specified uses,
@@ -197,10 +197,10 @@ DEFTREECODE (TYPEOF_TYPE, "typeof_type", 't', 0)
 /* A using declaration.  DECL_INITIAL contains the specified scope.  
    This is not an alias, but is later expanded into multiple aliases.
    The decl will have a NULL_TYPE iff the scope is a dependent scope,
-   otherwise it will have a void type. */
+   otherwise it will have a void type.  */
 DEFTREECODE (USING_DECL, "using_decl", 'd', 0)
 
-/* A using directive. The operand is USING_STMT_NAMESPACE. */     
+/* A using directive. The operand is USING_STMT_NAMESPACE.  */     
 DEFTREECODE (USING_STMT, "using_directive", 'e', 1)
 
 /* An un-parsed default argument.  Looks like an IDENTIFIER_NODE.  */
@@ -237,7 +237,7 @@ DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
    that expression if it appeared in a template argument list.  In
    that situation, we create a NON_DEPENDENT_EXPR to take the place of
    the original expression.  The expression is the only operand -- it
-   is only needed for diagnostics.   */
+   is only needed for diagnostics.  */
 DEFTREECODE (NON_DEPENDENT_EXPR, "non_dependent_expr", 'e', 1)
 
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
