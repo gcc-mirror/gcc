@@ -292,7 +292,7 @@ package body Fmap is
             then
                Write_Str ("warning: mapping file """);
                Write_Str (File_Name);
-               Write_Line (""" is incorrectly formated");
+               Write_Line (""" is incorrectly formatted");
                Empty_Tables;
                return;
             end if;

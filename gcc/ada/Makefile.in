@@ -577,33 +577,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-vxwork.ads<5pvxwork.ads \
   a-taside.adb<1ataside.adb \
 
-  CERT_LEVEL_B_TARGET_PAIRS=\
-  a-tags.ads<1atags.ads     \
-  a-tags.adb<1atags.adb     \
-  a-except.adb<2aexcept.adb \
-  a-except.ads<2aexcept.ads \
-  a-excach.adb<2aexcach.adb \
-  i-c.ads<1ic.ads           \
-  g-io.adb<2gio.adb         \
-  s-init.ads<2sinit.ads     \
-  s-init.adb<5zinit.adb     \
-  s-memory.adb<2smemory.adb \
-  s-memory.ads<2smemory.ads \
-  s-osinte.ads<2sosinte.ads \
-  s-secsta.ads<2ssecsta.ads \
-  s-secsta.adb<2ssecsta.adb \
-  s-soflin.adb<2ssoflin.adb \
-  s-soflin.ads<2ssoflin.ads \
-  s-stalib.adb<1sstalib.adb \
-  s-stalib.ads<1sstalib.ads \
-  s-thread.adb<5zthread.adb \
-  s-thrini.ads<2sthrini.ads \
-  s-thrini.adb<5zthrini.adb \
-  s-tiitho.adb<5ztiitho.adb \
-  s-traceb.adb<2straceb.adb \
-  s-traceb.ads<2straceb.ads \
-  system.ads<5isystem.ads
-
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
     LIBGNAT_TARGET_PAIRS += \
     s-traces.adb<7straces.adb \
@@ -632,9 +605,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-taprop.adb<5ztaprop.adb \
   s-taspri.ads<5ztaspri.ads \
   s-thread.adb<5zthread.adb \
-  s-thrini.ads<2sthrini.ads \
-  s-thrini.adb<5zthrini.adb \
-  s-tiitho.adb<5ytiitho.adb \
   s-tpopsp.adb<5ztpopsp.adb \
   s-vxwork.ads<5pvxwork.ads \
   g-soccon.ads<3zsoccon.ads \
@@ -649,7 +619,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
 
   EXTRA_RAVEN_SOURCES=i-vxwork.ads s-vxwork.ads
   EXTRA_RAVEN_OBJS=i-vxwork.o s-vxwork.o
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o s-thrini.o
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o
   EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
   HIE_RAVEN_TARGET_PAIRS=\
   $(HIE_NONE_TARGET_PAIRS) \
@@ -681,6 +651,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   CERT_LEVEL_B_TARGET_PAIRS=\
   a-tags.ads<1atags.ads     \
   a-tags.adb<1atags.adb     \
+  a-elchha.ads<2aelchha.ads \
+  a-elchha.adb<2aelchha.adb.empty \
+  a-elchha.adb.full<2aelchha.adb.full \
   a-except.adb<2aexcept.adb \
   a-except.ads<2aexcept.ads \
   a-excach.adb<2aexcach.adb \
@@ -698,12 +671,11 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   s-stalib.adb<1sstalib.adb \
   s-stalib.ads<1sstalib.ads \
   s-thread.adb<5zthread.adb \
-  s-thrini.ads<2sthrini.ads \
-  s-thrini.adb<5zthrini.adb \
-  s-tiitho.adb<5ytiitho.adb \
   s-traceb.adb<2straceb.adb \
   s-traceb.ads<2straceb.ads \
   system.ads<5isystem.ads
+
+  CERT_LEVEL_B_EXTRA_OBJECT_FILES=a-elchha.adb
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -1571,8 +1543,6 @@ $(COMPILABLE_HIE_SOURCES) \
  s-soflin.ads \
  s-stalib.adb \
  s-stalib.ads \
- s-thrini.adb \
- s-thrini.ads \
  s-assert.adb \
  s-assert.ads \
  s-exnint.adb \
@@ -1592,8 +1562,10 @@ $(COMPILABLE_HIE_SOURCES) \
  $(EXTRA_CERT_LEVEL_B_SOURCES)
 
 NON_COMPILABLE_CERT_LEVEL_B_SOURCES= \
+ a-elchha.ads \
+ a-elchha.adb \
+ a-elchha.adb.full \
  a-excach.adb \
- s-tiitho.adb \
  $(NON_COMPILABLE_HIE_SOURCES)
 
 CERT_LEVEL_B_SOURCES = \
@@ -1605,12 +1577,10 @@ $(COMPILABLE_CERT_LEVEL_B_SOURCES)
 CERT_LEVEL_B_OBJS = \
  $(HIE_OBJS) \
  a-except.o  \
- a-excach.o  \
  s-init.o    \
  s-memory.o  \
  s-soflin.o  \
  s-stalib.o  \
- s-tiitho.o  \
  s-thrini.o  \
  s-traceb.o  \
  s-assert.o  \
@@ -2052,9 +2022,8 @@ rts-cert: force
 	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \
 	   RTS_NAME=cert RTS_SRCS="$(CERT_LEVEL_B_SOURCES)" \
 	   RTS_TARGET_PAIRS="$(CERT_LEVEL_B_TARGET_PAIRS)" \
-	   COMPILABLE_SOURCES="$(COMPILABLE_CERT_LEVEL_B_SOURCES)" 
-	-$(GNATMAKE) -Prts-cert/cert.gpr --GCC="../../../xgcc -B../../../"
-	$(CHMOD) a-wx rts-cert/adalib/*.ali
+	   COMPILABLE_SOURCES="$(COMPILABLE_CERT_LEVEL_B_SOURCES)"
+	$(GNATMAKE) -Prts-cert/cert.gpr --GCC="../../../xgcc -B../../../"
 # ... then the C files. This section will eventually be removed.
 	$(foreach f,$(CERT_LEVEL_B_C_FILES), \
 	  $(CP) $(fsrcpfx)$(f).c rts-cert/adainclude/ ;)
@@ -2063,10 +2032,17 @@ rts-cert: force
 	../../../$(GCC_FOR_TARGET) -B../../../ $(TARGET_LIBGCC2_CFLAGS) \
 	$(ALL_CFLAGS) $(GNATLIBCFLAGS_FOR_C) -c ../adainclude/$(f).c \
 	-I../adainclude $(INCLUDES_FOR_SUBDIR) -I../../../ ;) \
+# ... Finally, generate the libs:
+	cd rts-cert/adalib ; \
 	../../../xgcc -B../../../ *.o -o libgnat ; \
-	$(CHMOD) a-wx *.ali ; \
 	$(RM) *.o ; \
-	$(MV) libgnat libgnat.o
+	$(MV) libgnat libgnat.o ; \
+	$(AR) $(ARFLAGS) libgnat.a libgnat.o ; \
+	$(foreach f,$(CERT_LEVEL_B_EXTRA_OBJECT_FILES), \
+	../../../xgcc -c -B../../../ $(GNATLIBFLAGS) ../adainclude/$(f) \
+	-I../adainclude; \
+	$(AR) $(ARFLAGS) libgnat.a $(subst .adb,.o,$(f))) ; \
+	$(CHMOD) a-wx *.ali *.o *.a ; \
 
 rts-none: force
 	$(MAKE) $(FLAGS_TO_PASS) prepare-rts \

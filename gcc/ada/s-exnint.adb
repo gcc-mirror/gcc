@@ -37,11 +37,7 @@ package body System.Exn_Int is
    -- Exn_Integer --
    -----------------
 
-   function Exn_Integer
-     (Left  : Integer;
-      Right : Natural)
-      return  Integer
-   is
+   function Exn_Integer (Left : Integer; Right : Natural) return Integer is
       pragma Suppress (Division_Check);
       pragma Suppress (Overflow_Check);
 

@@ -54,6 +54,7 @@
 
 with Ada.Exceptions;
 with Ada.Streams;
+with Ada.Unchecked_Deallocation;
 
 with System;
 
@@ -902,10 +903,11 @@ package GNAT.Sockets is
    --  Return the socket address from which the last message was
    --  received.
 
-   procedure Free (Stream : in out Stream_Access);
-   --  Destroy a stream created by one of the Stream functions above, and
-   --  release associated resources. The user is responsible for calling
-   --  this subprogram when the stream is not needed anymore.
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Ada.Streams.Root_Stream_Type'Class, Stream_Access);
+   --  Destroy a stream created by one of the Stream functions above,
+   --  releasing the corresponding resources. The user is responsible
+   --  for calling this subprogram when the stream is not needed anymore.
 
    type Socket_Set_Type is limited private;
    --  This type allows to manipulate sets of sockets. It allows to

@@ -859,6 +859,8 @@ package body Ada.Exceptions is
    -------------------------
 
    procedure Raise_Current_Excep (E : Exception_Id) is
+      pragma Inspection_Point (E);
+      --  This is so the debugger can reliably inspect the parameter
    begin
       Process_Raise_Exception (E => E, From_Signal_Handler => False);
    end Raise_Current_Excep;
