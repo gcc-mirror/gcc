@@ -152,10 +152,6 @@ Boston, MA 02111-1307, USA.  */
 	  && (mips_abi == ABI_32 || GET_MODE_CLASS (MODE) == MODE_INT)))\
       ? downward : upward))
 
-extern struct rtx_def *type_dependent_reg ();
-#define TYPE_DEPENDENT_REG(REGNO, INDEX, TYPE) \
-  type_dependent_reg (REGNO, INDEX, TYPE)
-
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE)	\
   (mips_abi == ABI_32							\
