@@ -1254,7 +1254,7 @@ __do_global_dtors ()
 #ifndef INIT_SECTION_ASM_OP
 /* Run all the global constructors on entry to the program.  */
 
-#ifndef ON_EXIT /* DO_GLOBAL_CTORS_BODY uses ON_EXIT */
+#ifndef ON_EXIT
 #define ON_EXIT(a, b)
 #else
 /* Make sure the exit routine is pulled in to define the globals as
@@ -1269,6 +1269,7 @@ void
 __do_global_ctors ()
 {
   DO_GLOBAL_CTORS_BODY;
+  ON_EXIT (__do_global_dtors, 0);
 }
 
 /* Subroutine called automatically by `main'.
