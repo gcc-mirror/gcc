@@ -42,7 +42,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define AT_BP(mode) (gen_rtx (MEM, (mode), frame_pointer_rtx))
 
-extern rtx gen_push_operand ();
 extern FILE *asm_out_file;
 extern char *strcat ();
 
@@ -244,7 +243,7 @@ output_move_double (operands)
   enum {REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
   rtx addreg0 = 0, addreg1 = 0;
-  rtx pop_after = 0;
+  int dest_overlapped_low = 0;
 
   /* First classify both operands.  */
 
@@ -355,13 +354,29 @@ output_move_double (operands)
     operands[1] = latehalf[1];
 
   /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),
-     push the first word on the stack, and pop it off afterward.  */
+     if the upper part of reg N does not appear in the MEM, arrange to
+     emit the move late-half first.  Otherwise, compute the MEM address
+     into the upper part of N and use that as a pointer to the memory
+     operand.  */
   if (optype0 == REGOP
-      && refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
-			    operands[1], 0))
+      && (optype1 == OFFSOP || optype1 == MEMOP))
     {
-      pop_after = operands[0];
-      operands[0] = gen_rtx (MEM, SImode, gen_push_operand ());
+      if (reg_mentioned_p (operands[0], XEXP (operands[1], 0))
+	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
+	{
+	  /* If both halves of dest are used in the src memory address,
+	     compute the address into latehalf of dest.  */
+	  rtx xops[2];
+	  xops[0] = latehalf[0];
+	  xops[1] = XEXP (operands[1], 0);
+	  output_asm_insn (AS2 (lea%L0,%a1,%0), xops);
+	  operands[1] = gen_rtx (MEM, DImode, latehalf[0]);
+	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
+	}
+      else if (reg_mentioned_p (operands[0], XEXP (operands[1], 0)))
+	/* If the low half of dest is mentioned in the source memory
+	   address, the arrange to emit the move late half first.  */
+	dest_overlapped_low = 1;
     }
 
   /* If one or both operands autodecrementing,
@@ -374,7 +389,8 @@ output_move_double (operands)
 
   if (optype0 == PUSHOP || optype1 == PUSHOP
       || (optype0 == REGOP && optype1 == REGOP
-	  && REGNO (operands[0]) == REGNO (latehalf[1])))
+	  && REGNO (operands[0]) == REGNO (latehalf[1]))
+      || dest_overlapped_low)
     {
       /* Make any unoffsettable addresses point at high-numbered word.  */
       if (addreg0)
@@ -413,11 +429,6 @@ output_move_double (operands)
     asm_add (-4, addreg0);
   if (addreg1)
     asm_add (-4, addreg1);
-
-  /* If we diverted a word to the stack, pop it now
-     to the proper register.  */
-  if (pop_after != 0)
-    output_asm_insn ("pop%L0 %0", &pop_after);
 
   return "";
 }
