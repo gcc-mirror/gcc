@@ -1,3 +1,49 @@
+2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libmath/signbitl.c: Copyright years as list, not range.	
+	* libmath/Makefile.am: Same.
+	* libmath/Makefie.in: Regenerate.
+	* libmath/signbit.c: Same.
+	* libmath/nan.c: Same.
+	* libmath/copysignf.c: Same.
+	* libmath/signbitf.c: Same.
+	* testsuite/22_locale/money_get_members_char.cc: Same.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Same.
+	* testsuite/22_locale/money_put_members_char.cc: Same.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Same.
+	* testsuite/22_locale/time_get_members_char.cc: Same.
+	* testsuite/22_locale/time_get_members_wchar_t.cc: Same.
+	* testsuite/22_locale/time_put_members_char.cc: Same.
+	* testsuite/22_locale/time_put_members_wchar_t.cc: Same.
+	* testsuite/21_strings/nonmember.cc: Same.
+	* testsuite/21_strings/compare.cc: Same.
+	* testsuite/27_io/stringstream.cc: Same.
+	* testsuite/27_io/stringbuf.cc: Same.
+	* testsuite/27_io/filebuf.cc: Same.
+	* testsuite/27_io/ios_manip_basefield.cc: Same.
+	* testsuite/27_io/ios_manip_fmtflags.cc: Same.
+	* include/bits/cpp_type_traits.h: Same.
+	* include/bits/generic_shadow.h: Same.
+	* include/bits/gslice_array.h: Same.
+	* include/bits/gslice.h: Same.
+	* include/bits/indirect_array.h: Same.
+	* include/bits/slice_array.h: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/streambuf_iterator.h: Same.
+	* include/bits/valarray_array.tcc: Same.
+	* include/bits/valarray_meta.h: Same.
+	* include/bits/valarray_array.h: Same.
+	* config/os/mingw32/bits/ctype_noninline.h: Same.
+	* config/os/mingw32/bits/ctype_base.h: Same.
+	* config/os/hpux/bits/ctype_noninline.h: Same.
+	* config/os/hpux/bits/ctype_base.h: Same.
+	* config/os/gnu-linux/bits/ctype_noninline.h: Same.
+	* config/os/gnu-linux/bits/ctype_base.h: Same.
+	* config/os/generic/bits/ctype_noninline.h: Same.
+	* config/os/generic/bits/ctype_base.h: Same.
+
+	* libsupc++/tinfo.h: Tweaks.
+
 2002-01-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/num_put_members_wchar_t.cc (test02): Same.
