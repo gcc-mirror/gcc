@@ -471,7 +471,7 @@ public class ServerSocket
     if (isClosed())
       throw new SocketException("ServerSocket is closed");
     
-    impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
+    impl.setOption (SocketOptions.SO_REUSEADDR, Boolean.valueOf(on));
   }
 
   /**

@@ -1,3 +1,26 @@
+2004-02-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(setReuseAddress): Use Boolean.valueOf() instead of creating a new
+	Boolean object.
+	(setBroadcast): Likewise.
+	* java/net/MulticastSocket.java
+	(setLoopbackMode): Likewise.
+	* java/net/ServerSocket.java
+	(setReuseAddress): Likewise.
+	* java/net/Socket.java
+	(setTcpNoDelay): Likewise.
+	(setSoLinger): Likewise.
+	(setOOBInline): Likewise.
+	(setKeepAlive): Likewise.
+	(setReuseAddress): Likewise.
+	* java/net/URLConnection.java
+	(setContentHandler): Replace == with equals().
+	* java/net/URLStreamHandler.java
+	(hostSEquals): Fix checking host addresses.
+	(toExternalForm): Dont check protocol for null. We know already its
+	not null.
+
 2004-02-10  David Jee  <djee@redhat.com>
 
 	* java/awt/BorderLayout.java
