@@ -1390,13 +1390,13 @@ c4x_emit_libcall (rtx libcall, enum rtx_code code,
     case 2:
       ret = emit_library_call_value (libcall, NULL_RTX, 1, dmode, 1,
 				     operands[1], smode);
-      equiv = gen_rtx (code, dmode, operands[1]);
+      equiv = gen_rtx_fmt_e (code, dmode, operands[1]);
       break;
 
     case 3:
       ret = emit_library_call_value (libcall, NULL_RTX, 1, dmode, 2,
 				     operands[1], smode, operands[2], smode);
-      equiv = gen_rtx (code, dmode, operands[1], operands[2]);
+      equiv = gen_rtx_fmt_ee (code, dmode, operands[1], operands[2]);
       break;
 
     default:
@@ -1431,8 +1431,8 @@ c4x_emit_libcall_mulhi (rtx libcall, enum rtx_code code,
   equiv = gen_rtx_TRUNCATE (mode,
                    gen_rtx_LSHIFTRT (HImode,
                             gen_rtx_MULT (HImode,
-                                     gen_rtx (code, HImode, operands[1]),
-                                     gen_rtx (code, HImode, operands[2])),
+                                     gen_rtx_fmt_e (code, HImode, operands[1]),
+                                     gen_rtx_fmt_e (code, HImode, operands[2])),
                                      GEN_INT (32)));
   insns = get_insns ();
   end_sequence ();

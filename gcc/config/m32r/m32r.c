@@ -1062,7 +1062,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	    {
 	      emit_insn (gen_cmp_eqsi_insn (x, y));
 		
-	      return gen_rtx (code, CCmode, cc_reg, const0_rtx);
+	      return gen_rtx_fmt_ee (code, CCmode, cc_reg, const0_rtx);
 	    }
 	  break;
       
@@ -1102,7 +1102,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  abort ();
 		}
 	      
-	      return gen_rtx (code, CCmode, cc_reg, const0_rtx);
+	      return gen_rtx_fmt_ee (code, CCmode, cc_reg, const0_rtx);
 	    }
 	  break;
 	  
@@ -1142,7 +1142,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 		  abort();
 		}
 	      
-	      return gen_rtx (code, CCmode, cc_reg, const0_rtx);
+	      return gen_rtx_fmt_ee (code, CCmode, cc_reg, const0_rtx);
 	    }
 	  break;
 
@@ -1155,12 +1155,12 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       /* Reg/reg equal comparison.  */
       if (compare_code == EQ
 	  && register_operand (y, SImode))
-	return gen_rtx (code, CCmode, x, y);
+	return gen_rtx_fmt_ee (code, CCmode, x, y);
       
       /* Reg/zero signed comparison.  */
       if ((compare_code == EQ || compare_code == LT)
 	  && y == const0_rtx)
-	return gen_rtx (code, CCmode, x, y);
+	return gen_rtx_fmt_ee (code, CCmode, x, y);
       
       /* Reg/smallconst equal comparison.  */
       if (compare_code == EQ
@@ -1170,7 +1170,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	  rtx tmp = gen_reg_rtx (SImode);
 
 	  emit_insn (gen_addsi3 (tmp, x, GEN_INT (-INTVAL (y))));
-	  return gen_rtx (code, CCmode, tmp, const0_rtx);
+	  return gen_rtx_fmt_ee (code, CCmode, tmp, const0_rtx);
 	}
       
       /* Reg/const equal comparison.  */
@@ -1179,7 +1179,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 	{
 	  rtx tmp = force_reg (GET_MODE (x), y);
 
-	  return gen_rtx (code, CCmode, x, tmp);
+	  return gen_rtx_fmt_ee (code, CCmode, x, tmp);
 	}
     }
 
@@ -1215,7 +1215,7 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
       abort ();
     }
 
-  return gen_rtx (branch_code, VOIDmode, cc_reg, CONST0_RTX (CCmode));
+  return gen_rtx_fmt_ee (branch_code, VOIDmode, cc_reg, CONST0_RTX (CCmode));
 }
 
 /* Split a 2 word move (DI or DF) into component parts.  */

@@ -233,7 +233,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
       op0 = tmp;
     }
 
-  condition_rtx = gen_rtx (code, mode, op0, op1);
+  condition_rtx = gen_rtx_fmt_ee (code, mode, op0, op1);
   loc_ref = gen_rtx_LABEL_REF (VOIDmode, loc);
   branch = gen_rtx_SET (VOIDmode, pc_rtx,
 			gen_rtx_IF_THEN_ELSE (VOIDmode, condition_rtx,
@@ -1855,7 +1855,7 @@ xstormy16_expand_arith (enum machine_mode mode, enum rtx_code code,
 	      && INTVAL (w_src1) == -(code == AND))
 	    continue;
 	  
-	  insn = gen_rtx_SET (VOIDmode, w_dest, gen_rtx (code, mode,
+	  insn = gen_rtx_SET (VOIDmode, w_dest, gen_rtx_fmt_ee (code, mode,
 							 w_src0, w_src1));
 	  break;
 

@@ -1,5 +1,6 @@
 ;; GCC machine description for MMIX
-;; Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+;; Copyright (C) 2000, 2001, 2002, 2003, 2004
+;; Free Software Foundation, Inc.
 ;; Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 ;; This file is part of GCC.
@@ -732,7 +733,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 				     mmix_compare_op1);
   if (cc_reg == NULL_RTX)
     FAIL;
-  operands[1] = gen_rtx (code, VOIDmode, cc_reg, const0_rtx);
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, cc_reg, const0_rtx);
 }")
 
 (define_expand "movdicc"
@@ -749,7 +750,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 				     mmix_compare_op1);
   if (cc_reg == NULL_RTX)
     FAIL;
-  operands[1] = gen_rtx (code, VOIDmode, cc_reg, const0_rtx);
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, cc_reg, const0_rtx);
 }")
 
 ;; FIXME: Is this the right way to do "folding" of CCmode -> DImode?

@@ -5742,7 +5742,7 @@ frv_emit_cond_branch (enum rtx_code test, rtx label)
 			    (label_ref <branch_label>)
 			    (pc))) */
   label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
-  test_rtx = gen_rtx (test, cc_mode, cc_reg, const0_rtx);
+  test_rtx = gen_rtx_fmt_ee (test, cc_mode, cc_reg, const0_rtx);
   if_else = gen_rtx_IF_THEN_ELSE (cc_mode, test_rtx, label_ref, pc_rtx);
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_else));
   return TRUE;

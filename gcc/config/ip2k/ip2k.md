@@ -1,6 +1,7 @@
 ;; -*- Mode: Scheme -*-
 ;; GCC machine description for Ubicom IP2022 Communications Controller.
-;; Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+;; Copyright (C) 2000, 2001, 2002, 2004
+;; Free Software Foundation, Inc.
 ;; Contributed by Red Hat, Inc and Ubicom, Inc.
 ;;
 ;; This file is part of GCC.
@@ -4846,7 +4847,7 @@
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   "{
-    operands[2] = gen_rtx (reverse_condition (GET_CODE (operands[1])),
+    operands[2] = gen_rtx_fmt_ee (reverse_condition (GET_CODE (operands[1])),
 	 		   GET_MODE (operands[1]),
 			   cc0_rtx, const0_rtx);
    }")

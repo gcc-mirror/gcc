@@ -2491,7 +2491,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM"
   "*
-  operands[3] = gen_rtx (minmax_code (operands[3]), SImode, operands[1],
+  operands[3] = gen_rtx_fmt_ee (minmax_code (operands[3]), SImode, operands[1],
 			 operands[2]);
   output_asm_insn (\"cmp\\t%1, %2\", operands);
   output_asm_insn (\"str%d3\\t%1, %0\", operands);
@@ -2521,7 +2521,7 @@
   {
     enum rtx_code code = GET_CODE (operands[4]);
 
-    operands[5] = gen_rtx (minmax_code (operands[5]), SImode, operands[2],
+    operands[5] = gen_rtx_fmt_ee (minmax_code (operands[5]), SImode, operands[2],
 			   operands[3]);
     output_asm_insn (\"cmp\\t%2, %3\", operands);
     output_asm_insn (\"%i4%d5\\t%0, %1, %2\", operands);
@@ -7003,7 +7003,7 @@
       FAIL;
 
     ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
-    operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
 
@@ -7028,7 +7028,7 @@
       operands[3] = force_reg (SFmode, operands[3]);
 
     ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
-    operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
 
@@ -7047,7 +7047,7 @@
       FAIL;
 
     ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
-    operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+    operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
 

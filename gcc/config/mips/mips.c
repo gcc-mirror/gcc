@@ -3001,7 +3001,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
   else
     {
       reg = (invert || eqne_p) ? gen_reg_rtx (mode) : result;
-      convert_move (reg, gen_rtx (p_info->test_code, mode, cmp0, cmp1), 0);
+      convert_move (reg, gen_rtx_fmt_ee (p_info->test_code, mode, cmp0, cmp1), 0);
     }
 
   if (test == ITEST_NE)
@@ -3124,7 +3124,7 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 
       get_float_compare_codes (test_code, &cmp_code, &test_code);
       emit_insn (gen_rtx_SET (VOIDmode, reg,
-			      gen_rtx (cmp_code, CCmode, cmp0, cmp1)));
+			      gen_rtx_fmt_ee (cmp_code, CCmode, cmp0, cmp1)));
 
       mode = CCmode;
       cmp0 = reg;
@@ -3133,7 +3133,7 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
       break;
 
     default:
-      fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
+      fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
     }
 
   /* Generate the branch.  */
@@ -3149,7 +3149,7 @@ gen_conditional_branch (rtx *operands, enum rtx_code test_code)
 
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
-						     gen_rtx (test_code, mode,
+						     gen_rtx_fmt_ee (test_code, mode,
 							      cmp0, cmp1),
 						     label1, label2)));
 }
@@ -3230,11 +3230,11 @@ gen_conditional_move (rtx *operands)
 
   cmp_reg = gen_reg_rtx (cmp_mode);
   emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
-			  gen_rtx (cmp_code, cmp_mode, op0, op1)));
+			  gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1)));
 
   emit_insn (gen_rtx_SET (op_mode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (op_mode,
-						gen_rtx (move_code, VOIDmode,
+						gen_rtx_fmt_ee (move_code, VOIDmode,
 							 cmp_reg,
 							 CONST0_RTX (SImode)),
 						operands[2], operands[3])));
@@ -3275,7 +3275,7 @@ mips_gen_conditional_trap (rtx *operands)
     op1 = force_reg (mode, op1);
 
   emit_insn (gen_rtx_TRAP_IF (VOIDmode,
-			      gen_rtx (cmp_code, GET_MODE (operands[0]), op0, op1),
+			      gen_rtx_fmt_ee (cmp_code, GET_MODE (operands[0]), op0, op1),
 			      operands[1]));
 }
 

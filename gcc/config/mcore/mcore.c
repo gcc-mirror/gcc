@@ -623,7 +623,7 @@ mcore_gen_compare_reg (enum rtx_code code)
       break;
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, gen_rtx (code, CCmode, op0, op1)));
+  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_fmt_ee (code, CCmode, op0, op1)));
   
   return cc_reg;
 }

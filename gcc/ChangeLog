@@ -1,3 +1,15 @@
+2004-02-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/arc/arc.md, config/arm/arm.c, config/arm/arm.md,
+	config/c4x/c4x.c, config/c4x/c4x.md, config/cris/cris.md,
+	config/frv/frv.c, config/h8300/h8300.c, config/ip2k/ip2k.md,
+	config/iq2000/iq2000.c, config/m32r/m32r.c,
+	config/mcore/mcore.c, config/mips/mips.c, config/mmix/mmix.md,
+	config/mn10300/mn10300.c, config/rs6000/rs6000.c,
+	config/rs6000/rs6000.md, config/sh/sh.c, config/sh/sh.md,
+	config/stormy16/stormy16.c, config/v850/v850.md,
+	config/xtensa/xtensa.c: Replace gen_rtx with gen_rtx_fmt_e*.
+
 2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/mcore/mcore.c (block_move_sequence): Replace
