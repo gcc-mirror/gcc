@@ -1,5 +1,6 @@
 Thu Jan 20 12:34:48 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/execute/20000120-2.c: New test.
 	* gcc.c-torture/execute/20000120-1.c: New test.
 
 Thu Jan 13 02:29:32 2000  Jeffrey A Law  (law@cygnus.com)
