@@ -679,10 +679,9 @@ initialize_builtins (pfile)
 	val = b->value;
 
       len = strlen (b->name);
-      hp = _cpp_make_hashnode (b->name, len, b->type,
-			       _cpp_calc_hash (b->name, len));
+      hp = _cpp_lookup (pfile, b->name, len);
       hp->value.cpval = val;
-      *(htab_find_slot (pfile->hashtab, (void *) hp, INSERT)) = hp;
+      hp->type = b->type;
 
       if ((b->flags & DUMP) && CPP_OPTION (pfile, debug_output))
 	dump_special_to_buffer (pfile, b->name);

@@ -103,6 +103,9 @@ struct funct_defn
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
+static HASHNODE *make_HASHNODE	  PARAMS ((const U_CHAR *, size_t,
+					   enum node_type, unsigned int));
+
 static void dump_funlike_macro	  PARAMS ((cpp_reader *,
 					   const struct funct_defn *));
 static int dump_hash_helper	  PARAMS ((void **, void *));
@@ -234,22 +237,21 @@ del_HASHNODE (x)
   HASHNODE *h = (HASHNODE *)x;
 
   _cpp_free_definition (h);
-  free ((void *) h->name);
   free (h);
 }
 
 /* Allocate and initialize a HASHNODE structure.
    Caller must fill in the value field.  */
 
-HASHNODE *
-_cpp_make_hashnode (name, len, type, hash)
+static HASHNODE *
+make_HASHNODE (name, len, type, hash)
      const U_CHAR *name;
      size_t len;
      enum node_type type;
      unsigned int hash;
 {
-  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE));
-  U_CHAR *p = xmalloc (len + 1);
+  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE) + len + 1);
+  U_CHAR *p = (U_CHAR *)hp + sizeof (HASHNODE);
 
   hp->type = type;
   hp->length = len;
@@ -271,37 +273,23 @@ _cpp_lookup (pfile, name, len)
      const U_CHAR *name;
      int len;
 {
-  const U_CHAR *bp;
   HASHNODE dummy;
+  HASHNODE *new, **slot;
 
   dummy.name = name;
   dummy.length = len;
   dummy.hash = _cpp_calc_hash (name, len);
 
-  return (HASHNODE *) htab_find_with_hash (pfile->hashtab,
-					   (void *)&dummy, dummy.hash);
-}
+  slot = (HASHNODE **)
+    htab_find_slot_with_hash (pfile->hashtab, (void *)&dummy,
+			      dummy.hash, INSERT);
+  if (*slot)
+    return *slot;
 
-/* Find the hashtable slot for name "name".  Used to insert or delete.  */
-
-HASHNODE **
-_cpp_lookup_slot (pfile, name, len, insert, hash)
-     cpp_reader *pfile;
-     const U_CHAR *name;
-     int len;
-     enum insert_option insert;
-     unsigned int hash;
-{
-  const U_CHAR *bp;
-  HASHNODE dummy;
-
-  dummy.name = name;
-  dummy.length = len;
-  dummy.hash = hash;
-
-  return (HASHNODE **) htab_find_slot_with_hash (pfile->hashtab,
-						 (void *) &dummy,
-						 dummy.hash, insert);
+  new = make_HASHNODE (name, len, T_VOID, dummy.hash);
+  new->value.cpval = NULL;
+  *slot = new;
+  return new;
 }
 
 /* Init the hash table.  In here so it can see the hash and eq functions.  */
