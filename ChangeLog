@@ -1,3 +1,8 @@
+2003-04-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libtool.m4 (lt_cv_deplibs_check_method): Use pass_all on mips*.
+	* */configure: Rebuilt.
+
 2003-04-08  Joel Sherrill  <joel@oarcorp.com>
 
 	* MAINTAINERS: Add my email address.
