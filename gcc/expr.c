@@ -4364,29 +4364,33 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  || TREE_CODE (TREE_TYPE (ctor)) == QUAL_UNION_TYPE))
     {
       tree init_sub_type;
+      bool clear_this = true;
 
-      /* We don't expect more than one element of the union to be
-	 initialized.  Not sure what we should do otherwise... */
       list = CONSTRUCTOR_ELTS (ctor);
-      gcc_assert (TREE_CHAIN (list) == NULL);
-
-      init_sub_type = TREE_TYPE (TREE_VALUE (list));
-
-      /* ??? We could look at each element of the union, and find the
-	 largest element.  Which would avoid comparing the size of the
-	 initialized element against any tail padding in the union.
-	 Doesn't seem worth the effort...  */
-      if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)), 
-			    TYPE_SIZE (init_sub_type)) == 1)
+      if (list)
 	{
-	  /* And now we have to find out if the element itself is fully
-	     constructed.  E.g. for union { struct { int a, b; } s; } u
-	     = { .s = { .a = 1 } }.  */
-	  if (elt_count != count_type_elements (init_sub_type))
-	    *p_must_clear = true;
+	  /* We don't expect more than one element of the union to be
+	     initialized.  Not sure what we should do otherwise... */
+          gcc_assert (TREE_CHAIN (list) == NULL);
+
+          init_sub_type = TREE_TYPE (TREE_VALUE (list));
+
+	  /* ??? We could look at each element of the union, and find the
+	     largest element.  Which would avoid comparing the size of the
+	     initialized element against any tail padding in the union.
+	     Doesn't seem worth the effort...  */
+	  if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)), 
+				TYPE_SIZE (init_sub_type)) == 1)
+	    {
+	      /* And now we have to find out if the element itself is fully
+		 constructed.  E.g. for union { struct { int a, b; } s; } u
+		 = { .s = { .a = 1 } }.  */
+	      if (elt_count == count_type_elements (init_sub_type))
+		clear_this = false;
+	    }
 	}
-      else
-	*p_must_clear = true;
+
+      *p_must_clear = clear_this;
     }
 
   *p_nz_elts += nz_elts;
