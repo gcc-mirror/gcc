@@ -1,3 +1,10 @@
+2001-05-17  Bernd Schmidt  <bernds@redhat.com>
+
+	* expr.c (protect_from_queue): Protect against subsequent calls to
+	emit_queue.
+	(expand_expr, case ADDR_EXPR): Prevent protect_from_queue from being
+	too clever.
+
 Thu May 17 18:17:34 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* simplify_rtx.c (simplify_subreg): Fix simplification of nested subregs.
