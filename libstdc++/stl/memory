@@ -22,64 +22,83 @@
 #include <stl_uninitialized.h>
 #include <stl_raw_storage_iter.h>
 
-// Note: auto_ptr is commented out in this release because the details
-//  of the interface are still being discussed by the C++ standardization
-//  committee.  It will be included once the iterface is finalized.
 
-#if 0
-#if defined(_MUTABLE_IS_KEYWORD) && defined(_EXPLICIT_IS_KEYWORD) && \
-    defined(__STL_MEMBER_TEMPLATES)
+#if defined(__STL_MEMBER_TEMPLATES)
 
 __STL_BEGIN_NAMESPACE
 
-template <class X> class auto_ptr {
+template <class _Tp> class auto_ptr {
 private:
-  X* ptr;
-  mutable bool owns;
+  _Tp* _M_ptr;
+
 public:
-  typedef X element_type;
-  explicit auto_ptr(X* p = 0) __STL_NOTHROW : ptr(p), owns(p) {}
-  auto_ptr(const auto_ptr& a) __STL_NOTHROW : ptr(a.ptr), owns(a.owns) {
-    a.owns = 0;
+  typedef _Tp element_type;
+  explicit auto_ptr(_Tp* __p = 0) __STL_NOTHROW : _M_ptr(__p) {}
+  auto_ptr(auto_ptr& __a) __STL_NOTHROW : _M_ptr(__a.release()) {}
+  template <class _Tp1> auto_ptr(auto_ptr<_Tp1>& __a) __STL_NOTHROW
+    : _M_ptr(__a.release()) {}
+  auto_ptr& operator=(auto_ptr& __a) __STL_NOTHROW {
+    if (&__a != this) {
+      delete _M_ptr;
+      _M_ptr = __a.release();
+    }
+    return *this;
   }
-  template <class T> auto_ptr(const auto_ptr<T>& a) __STL_NOTHROW
-    : ptr(a.ptr), owns(a.owns) {
-      a.owns = 0;
+  template <class _Tp1>
+  auto_ptr& operator=(auto_ptr<_Tp1>& __a) __STL_NOTHROW {
+    if (__a.get() != this->get()) {
+      delete _M_ptr;
+      _M_ptr = __a.release();
+    }
+    return *this;
+  }
+  ~auto_ptr() __STL_NOTHROW { delete _M_ptr; }
+
+  _Tp& operator*() const __STL_NOTHROW {
+    return *_M_ptr;
+  }
+  _Tp* operator->() const __STL_NOTHROW {
+    return _M_ptr;
+  }
+  _Tp* get() const __STL_NOTHROW {
+    return _M_ptr;
+  }
+  _Tp* release() __STL_NOTHROW {
+    _Tp* __tmp = _M_ptr;
+    _M_ptr = 0;
+    return __tmp;
+  }
+  void reset(_Tp* __p = 0) __STL_NOTHROW {
+    delete _M_ptr;
+    _M_ptr = __p;
   }
 
-  auto_ptr& operator=(const auto_ptr& a) __STL_NOTHROW {
-    if (&a != this) {
-      if (owns)
-        delete ptr;
-      owns = a.owns;
-      ptr = a.ptr;
-      a.owns = 0;
-    }
-  }
-  template <class T> auto_ptr& operator=(const auto_ptr<T>& a) __STL_NOTHROW {
-    if (&a != this) {
-      if (owns)
-        delete ptr;
-      owns = a.owns;
-      ptr = a.ptr;
-      a.owns = 0;
-    }
-  }
-  ~auto_ptr() {
-    if (owns)
-      delete ptr;
-  }
+  // According to the C++ standard, these conversions are required.  Most
+  // present-day compilers, however, do not enforce that requirement---and, 
+  // in fact, most present-day compilers do not support the language 
+  // features that these conversions rely on.
+  
+#ifdef __SGI_STL_USE_AUTO_PTR_CONVERSIONS
 
-  X& operator*() const __STL_NOTHROW { return *ptr; }
-  X* operator->() const __STL_NOTHROW { return ptr; }
-  X* get() const __STL_NOTHROW { return ptr; }
-  X* release const __STL_NOTHROW { owns = false; return ptr }
+private:
+  template<class _Tp1> struct auto_ptr_ref {
+    _Tp1* _M_ptr;
+    auto_ptr_ref(_Tp1* __p) : _M_ptr(__p) {}
+  };
+
+public:
+  auto_ptr(auto_ptr_ref<_Tp> __ref) __STL_NOTHROW
+    : _M_ptr(__ref._M_ptr) {}
+  template <class _Tp1> operator auto_ptr_ref<_Tp1>() __STL_NOTHROW 
+    { return auto_ptr_ref<_Tp>(this.release()); }
+  template <class _Tp1> operator auto_ptr<_Tp1>() __STL_NOTHROW
+    { return auto_ptr<_Tp1>(this->release()) }
+
+#endif /* __SGI_STL_USE_AUTO_PTR_CONVERSIONS */
 };
 
 __STL_END_NAMESPACE
-#endif /* mutable && explicit && member templates */
-#endif /* 0 */
-
+#endif /* member templates */
 
 #endif /* __SGI_STL_MEMORY */
 

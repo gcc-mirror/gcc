@@ -1,3 +1,16 @@
+1998-09-02  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* algorithm alloc.h defalloc.h hash_map.h hash_set.h iterator
+	memory pthread_alloc pthread_alloc.h rope ropeimpl.h stl_algo.h
+	stl_algobase.h stl_alloc.h stl_bvector.h stl_config.h
+	stl_construct.h stl_deque.h stl_function.h stl_hash_fun.h
+	stl_hash_map.h stl_hash_set.h stl_hashtable.h stl_heap.h
+	stl_iterator.h stl_list.h stl_map.h stl_multimap.h stl_multiset.h
+	stl_numeric.h stl_pair.h stl_queue.h stl_raw_storage_iter.h
+	stl_relops.h stl_rope.h stl_set.h stl_slist.h stl_stack.h
+	stl_tempbuf.h stl_tree.h stl_uninitialized.h stl_vector.h
+	tempbuf.h type_traits.h: Update to SGI STL 3.11.
+
 Fri Jul 10 15:20:09 1998  Klaus-Georg Adams <Klaus-Georg.Adams@chemie.uni-karlsruhe.de>
 
 	* stl_tempbuf.h (temporary_buffer): Add missing typename.

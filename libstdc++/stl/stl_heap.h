@@ -36,181 +36,236 @@ __STL_BEGIN_NAMESPACE
 #pragma set woff 1209
 #endif
 
-template <class RandomAccessIterator, class Distance, class T>
-void __push_heap(RandomAccessIterator first, Distance holeIndex,
-                 Distance topIndex, T value) {
-  Distance parent = (holeIndex - 1) / 2;
-  while (holeIndex > topIndex && *(first + parent) < value) {
-    *(first + holeIndex) = *(first + parent);
-    holeIndex = parent;
-    parent = (holeIndex - 1) / 2;
+// Heap-manipulation functions: push_heap, pop_heap, make_heap, sort_heap.
+
+template <class _RandomAccessIterator, class _Distance, class _Tp>
+void 
+__push_heap(_RandomAccessIterator __first,
+            _Distance __holeIndex, _Distance __topIndex, _Tp __value)
+{
+  _Distance __parent = (__holeIndex - 1) / 2;
+  while (__holeIndex > __topIndex && *(__first + __parent) < __value) {
+    *(__first + __holeIndex) = *(__first + __parent);
+    __holeIndex = __parent;
+    __parent = (__holeIndex - 1) / 2;
   }    
-  *(first + holeIndex) = value;
+  *(__first + __holeIndex) = __value;
 }
 
-template <class RandomAccessIterator, class Distance, class T>
-inline void __push_heap_aux(RandomAccessIterator first,
-                            RandomAccessIterator last, Distance*, T*) {
-  __push_heap(first, Distance((last - first) - 1), Distance(0), 
-              T(*(last - 1)));
+template <class _RandomAccessIterator, class _Distance, class _Tp>
+inline void 
+__push_heap_aux(_RandomAccessIterator __first,
+                _RandomAccessIterator __last, _Distance*, _Tp*)
+{
+  __push_heap(__first, _Distance((__last - __first) - 1), _Distance(0), 
+              _Tp(*(__last - 1)));
 }
 
-template <class RandomAccessIterator>
-inline void push_heap(RandomAccessIterator first, RandomAccessIterator last) {
-  __push_heap_aux(first, last, distance_type(first), value_type(first));
+template <class _RandomAccessIterator>
+inline void 
+push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+{
+  __push_heap_aux(__first, __last,
+                  __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
 }
 
-template <class RandomAccessIterator, class Distance, class T, class Compare>
-void __push_heap(RandomAccessIterator first, Distance holeIndex,
-                 Distance topIndex, T value, Compare comp) {
-  Distance parent = (holeIndex - 1) / 2;
-  while (holeIndex > topIndex && comp(*(first + parent), value)) {
-    *(first + holeIndex) = *(first + parent);
-    holeIndex = parent;
-    parent = (holeIndex - 1) / 2;
+template <class _RandomAccessIterator, class _Distance, class _Tp, 
+          class _Compare>
+void
+__push_heap(_RandomAccessIterator __first, _Distance __holeIndex,
+            _Distance __topIndex, _Tp __value, _Compare __comp)
+{
+  _Distance __parent = (__holeIndex - 1) / 2;
+  while (__holeIndex > __topIndex && __comp(*(__first + __parent), __value)) {
+    *(__first + __holeIndex) = *(__first + __parent);
+    __holeIndex = __parent;
+    __parent = (__holeIndex - 1) / 2;
   }
-  *(first + holeIndex) = value;
+  *(__first + __holeIndex) = __value;
 }
 
-template <class RandomAccessIterator, class Compare, class Distance, class T>
-inline void __push_heap_aux(RandomAccessIterator first,
-                            RandomAccessIterator last, Compare comp,
-                            Distance*, T*) {
-  __push_heap(first, Distance((last - first) - 1), Distance(0), 
-              T(*(last - 1)), comp);
+template <class _RandomAccessIterator, class _Compare,
+          class _Distance, class _Tp>
+inline void 
+__push_heap_aux(_RandomAccessIterator __first,
+                _RandomAccessIterator __last, _Compare __comp,
+                _Distance*, _Tp*) 
+{
+  __push_heap(__first, _Distance((__last - __first) - 1), _Distance(0), 
+              _Tp(*(__last - 1)), __comp);
 }
 
-template <class RandomAccessIterator, class Compare>
-inline void push_heap(RandomAccessIterator first, RandomAccessIterator last,
-                      Compare comp) {
-  __push_heap_aux(first, last, comp, distance_type(first), value_type(first));
+template <class _RandomAccessIterator, class _Compare>
+inline void 
+push_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+          _Compare __comp)
+{
+  __push_heap_aux(__first, __last, __comp,
+                  __DISTANCE_TYPE(__first), __VALUE_TYPE(__first));
 }
 
-template <class RandomAccessIterator, class Distance, class T>
-void __adjust_heap(RandomAccessIterator first, Distance holeIndex,
-                   Distance len, T value) {
-  Distance topIndex = holeIndex;
-  Distance secondChild = 2 * holeIndex + 2;
-  while (secondChild < len) {
-    if (*(first + secondChild) < *(first + (secondChild - 1)))
-      secondChild--;
-    *(first + holeIndex) = *(first + secondChild);
-    holeIndex = secondChild;
-    secondChild = 2 * (secondChild + 1);
+template <class _RandomAccessIterator, class _Distance, class _Tp>
+void 
+__adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
+              _Distance __len, _Tp __value)
+{
+  _Distance __topIndex = __holeIndex;
+  _Distance __secondChild = 2 * __holeIndex + 2;
+  while (__secondChild < __len) {
+    if (*(__first + __secondChild) < *(__first + (__secondChild - 1)))
+      __secondChild--;
+    *(__first + __holeIndex) = *(__first + __secondChild);
+    __holeIndex = __secondChild;
+    __secondChild = 2 * (__secondChild + 1);
   }
-  if (secondChild == len) {
-    *(first + holeIndex) = *(first + (secondChild - 1));
-    holeIndex = secondChild - 1;
+  if (__secondChild == __len) {
+    *(__first + __holeIndex) = *(__first + (__secondChild - 1));
+    __holeIndex = __secondChild - 1;
   }
-  __push_heap(first, holeIndex, topIndex, value);
+  __push_heap(__first, __holeIndex, __topIndex, __value);
 }
 
-template <class RandomAccessIterator, class T, class Distance>
-inline void __pop_heap(RandomAccessIterator first, RandomAccessIterator last,
-                       RandomAccessIterator result, T value, Distance*) {
-  *result = *first;
-  __adjust_heap(first, Distance(0), Distance(last - first), value);
+template <class _RandomAccessIterator, class _Tp, class _Distance>
+inline void 
+__pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+           _RandomAccessIterator __result, _Tp __value, _Distance*)
+{
+  *__result = *__first;
+  __adjust_heap(__first, _Distance(0), _Distance(__last - __first), __value);
 }
 
-template <class RandomAccessIterator, class T>
-inline void __pop_heap_aux(RandomAccessIterator first,
-                           RandomAccessIterator last, T*) {
-  __pop_heap(first, last - 1, last - 1, T(*(last - 1)), distance_type(first));
+template <class _RandomAccessIterator, class _Tp>
+inline void 
+__pop_heap_aux(_RandomAccessIterator __first, _RandomAccessIterator __last,
+               _Tp*)
+{
+  __pop_heap(__first, __last - 1, __last - 1, 
+             _Tp(*(__last - 1)), __DISTANCE_TYPE(__first));
 }
 
-template <class RandomAccessIterator>
-inline void pop_heap(RandomAccessIterator first, RandomAccessIterator last) {
-  __pop_heap_aux(first, last, value_type(first));
+template <class _RandomAccessIterator>
+inline void pop_heap(_RandomAccessIterator __first, 
+                     _RandomAccessIterator __last)
+{
+  __pop_heap_aux(__first, __last, __VALUE_TYPE(__first));
 }
 
-template <class RandomAccessIterator, class Distance, class T, class Compare>
-void __adjust_heap(RandomAccessIterator first, Distance holeIndex,
-                   Distance len, T value, Compare comp) {
-  Distance topIndex = holeIndex;
-  Distance secondChild = 2 * holeIndex + 2;
-  while (secondChild < len) {
-    if (comp(*(first + secondChild), *(first + (secondChild - 1))))
-      secondChild--;
-    *(first + holeIndex) = *(first + secondChild);
-    holeIndex = secondChild;
-    secondChild = 2 * (secondChild + 1);
+template <class _RandomAccessIterator, class _Distance,
+          class _Tp, class _Compare>
+void
+__adjust_heap(_RandomAccessIterator __first, _Distance __holeIndex,
+              _Distance __len, _Tp __value, _Compare __comp)
+{
+  _Distance __topIndex = __holeIndex;
+  _Distance __secondChild = 2 * __holeIndex + 2;
+  while (__secondChild < __len) {
+    if (__comp(*(__first + __secondChild), *(__first + (__secondChild - 1))))
+      __secondChild--;
+    *(__first + __holeIndex) = *(__first + __secondChild);
+    __holeIndex = __secondChild;
+    __secondChild = 2 * (__secondChild + 1);
   }
-  if (secondChild == len) {
-    *(first + holeIndex) = *(first + (secondChild - 1));
-    holeIndex = secondChild - 1;
+  if (__secondChild == __len) {
+    *(__first + __holeIndex) = *(__first + (__secondChild - 1));
+    __holeIndex = __secondChild - 1;
   }
-  __push_heap(first, holeIndex, topIndex, value, comp);
+  __push_heap(__first, __holeIndex, __topIndex, __value, __comp);
 }
 
-template <class RandomAccessIterator, class T, class Compare, class Distance>
-inline void __pop_heap(RandomAccessIterator first, RandomAccessIterator last,
-                       RandomAccessIterator result, T value, Compare comp,
-                       Distance*) {
-  *result = *first;
-  __adjust_heap(first, Distance(0), Distance(last - first), value, comp);
+template <class _RandomAccessIterator, class _Tp, class _Compare, 
+          class _Distance>
+inline void 
+__pop_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+           _RandomAccessIterator __result, _Tp __value, _Compare __comp,
+           _Distance*)
+{
+  *__result = *__first;
+  __adjust_heap(__first, _Distance(0), _Distance(__last - __first), 
+                __value, __comp);
 }
 
-template <class RandomAccessIterator, class T, class Compare>
-inline void __pop_heap_aux(RandomAccessIterator first,
-                           RandomAccessIterator last, T*, Compare comp) {
-  __pop_heap(first, last - 1, last - 1, T(*(last - 1)), comp,
-             distance_type(first));
+template <class _RandomAccessIterator, class _Tp, class _Compare>
+inline void 
+__pop_heap_aux(_RandomAccessIterator __first,
+               _RandomAccessIterator __last, _Tp*, _Compare __comp)
+{
+  __pop_heap(__first, __last - 1, __last - 1, _Tp(*(__last - 1)), __comp,
+             __DISTANCE_TYPE(__first));
 }
 
-template <class RandomAccessIterator, class Compare>
-inline void pop_heap(RandomAccessIterator first, RandomAccessIterator last,
-                     Compare comp) {
-    __pop_heap_aux(first, last, value_type(first), comp);
+template <class _RandomAccessIterator, class _Compare>
+inline void 
+pop_heap(_RandomAccessIterator __first,
+         _RandomAccessIterator __last, _Compare __comp)
+{
+    __pop_heap_aux(__first, __last, __VALUE_TYPE(__first), __comp);
 }
 
-template <class RandomAccessIterator, class T, class Distance>
-void __make_heap(RandomAccessIterator first, RandomAccessIterator last, T*,
-                 Distance*) {
-  if (last - first < 2) return;
-  Distance len = last - first;
-  Distance parent = (len - 2)/2;
+template <class _RandomAccessIterator, class _Tp, class _Distance>
+void 
+__make_heap(_RandomAccessIterator __first,
+            _RandomAccessIterator __last, _Tp*, _Distance*)
+{
+  if (__last - __first < 2) return;
+  _Distance __len = __last - __first;
+  _Distance __parent = (__len - 2)/2;
     
   while (true) {
-    __adjust_heap(first, parent, len, T(*(first + parent)));
-    if (parent == 0) return;
-    parent--;
+    __adjust_heap(__first, __parent, __len, _Tp(*(__first + __parent)));
+    if (__parent == 0) return;
+    __parent--;
   }
 }
 
-template <class RandomAccessIterator>
-inline void make_heap(RandomAccessIterator first, RandomAccessIterator last) {
-  __make_heap(first, last, value_type(first), distance_type(first));
+template <class _RandomAccessIterator>
+inline void 
+make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+{
+  __make_heap(__first, __last,
+              __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
 }
 
-template <class RandomAccessIterator, class Compare, class T, class Distance>
-void __make_heap(RandomAccessIterator first, RandomAccessIterator last,
-                 Compare comp, T*, Distance*) {
-  if (last - first < 2) return;
-  Distance len = last - first;
-  Distance parent = (len - 2)/2;
+template <class _RandomAccessIterator, class _Compare,
+          class _Tp, class _Distance>
+void
+__make_heap(_RandomAccessIterator __first, _RandomAccessIterator __last,
+            _Compare __comp, _Tp*, _Distance*)
+{
+  if (__last - __first < 2) return;
+  _Distance __len = __last - __first;
+  _Distance __parent = (__len - 2)/2;
     
   while (true) {
-    __adjust_heap(first, parent, len, T(*(first + parent)), comp);
-    if (parent == 0) return;
-    parent--;
+    __adjust_heap(__first, __parent, __len, _Tp(*(__first + __parent)),
+                  __comp);
+    if (__parent == 0) return;
+    __parent--;
   }
 }
 
-template <class RandomAccessIterator, class Compare>
-inline void make_heap(RandomAccessIterator first, RandomAccessIterator last,
-                      Compare comp) {
-  __make_heap(first, last, comp, value_type(first), distance_type(first));
+template <class _RandomAccessIterator, class _Compare>
+inline void 
+make_heap(_RandomAccessIterator __first, 
+          _RandomAccessIterator __last, _Compare __comp)
+{
+  __make_heap(__first, __last, __comp,
+              __VALUE_TYPE(__first), __DISTANCE_TYPE(__first));
 }
 
-template <class RandomAccessIterator>
-void sort_heap(RandomAccessIterator first, RandomAccessIterator last) {
-  while (last - first > 1) pop_heap(first, last--);
+template <class _RandomAccessIterator>
+void sort_heap(_RandomAccessIterator __first, _RandomAccessIterator __last)
+{
+  while (__last - __first > 1)
+    pop_heap(__first, __last--);
 }
 
-template <class RandomAccessIterator, class Compare>
-void sort_heap(RandomAccessIterator first, RandomAccessIterator last,
-               Compare comp) {
-  while (last - first > 1) pop_heap(first, last--, comp);
+template <class _RandomAccessIterator, class _Compare>
+void 
+sort_heap(_RandomAccessIterator __first,
+          _RandomAccessIterator __last, _Compare __comp)
+{
+  while (__last - __first > 1)
+    pop_heap(__first, __last--, __comp);
 }
 
 #if defined(__sgi) && !defined(__GNUC__) && (_MIPS_SIM != _MIPS_SIM_ABI32)

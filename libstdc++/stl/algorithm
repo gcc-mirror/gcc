@@ -29,6 +29,7 @@
 
 #include <stl_algobase.h>
 #include <stl_construct.h>
+#include <stl_uninitialized.h>
 #include <stl_tempbuf.h>
 #include <stl_algo.h>
 

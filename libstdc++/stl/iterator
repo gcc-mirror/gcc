@@ -29,8 +29,12 @@
 
 #include <stl_config.h>
 #include <stl_relops.h>
-#include <stddef.h>
+#include <stddef.h>       /* XXX should use <cstddef> */
+#if 0                     /* XXX define a flag for this */
+#include <iostream>
+#else
 #include <iostream.h>
+#endif
 #include <stl_iterator.h>
 
 #endif /* __SGI_STL_ITERATOR */

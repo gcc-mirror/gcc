@@ -18,8 +18,8 @@
 
 #ifdef __STL_USE_NAMESPACES
 
-using __STD::__pthread_alloc_template;
-using __STL::pthread_alloc;
+using __STD::_Pthread_alloc_template;
+using __STD::pthread_alloc;
 
 #endif /* __STL_USE_NAMESPACES */
 

@@ -30,14 +30,17 @@
 #ifndef __SGI_STL_PAIR_H
 #include <pair.h>
 #endif
-#include <limits.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <limits.h>      /* XXX should use <climits> */
+#include <stddef.h>      /* XXX should use <cstddef> */
+#include <stdlib.h>      /* XXX should use <cstdlib> */
 #ifndef __TYPE_TRAITS_H
 #include <type_traits.h>
 #endif
 #ifndef __SGI_STL_INTERNAL_CONSTRUCT_H
 #include <stl_construct.h>
+#endif
+#ifndef __SGI_STL_INTERNAL_UNINITIALIZED_H
+#include <stl_uninitialized.h>
 #endif
 #ifndef __SGI_STL_INTERNAL_TEMPBUF_H
 #include <stl_tempbuf.h>

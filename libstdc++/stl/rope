@@ -15,7 +15,7 @@
 #define __SGI_STL_ROPE
 
 #include <stl_algobase.h>
-#include <tempbuf.h>
+#include <stl_tempbuf.h>
 #include <stl_algo.h>
 #include <stl_function.h>
 #include <stl_numeric.h>
