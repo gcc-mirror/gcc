@@ -1,3 +1,8 @@
+2005-03-24  Anthony Green  <green@redhat.com>
+
+	* gcj.texi (Invoking gcj-dbtool): Document new LIBDIR option to
+	'gcj-dbtool -p'.
+
 2005-03-18  Andrew Haley  <aph@redhat.com>
 
 	PR java/20522

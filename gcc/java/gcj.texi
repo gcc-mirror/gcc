@@ -991,7 +991,7 @@ Each time a class is initialized, print a short message on standard error.
 gcj-dbtool @option{OPTION} @var{DBFILE} [@option{MORE}] @dots{}
 
 gcj-dbtool [@option{-n}] [@option{-a}] [@option{-f}]
-  [@option{-t}] [@option{-l}] [@option{-p}]
+  [@option{-t}] [@option{-l}] [@option{-p} [@var{LIBDIR}]]
   [@option{-v}] [@option{--version}] [@option{--help}]
 
 @c man end
@@ -1045,7 +1045,9 @@ List the contents of a database.
 
 @item -p
 Print the name of the default database.  If there is no default
-database, this prints a blank line.
+database, this prints a blank line.  If @var{LIBDIR} is specified, use
+it instead of the default library directory component of the database
+name.
 
 @item --help
 Print a help message, then exit.
