@@ -1,5 +1,16 @@
 Fri Apr  2 11:26:51 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* dwarf2out.c (ctype.h): Include.
+	(dwarf2out_set_demangle_name_func): New function.
+	(size_of_line_info): Deleted.
+	(output_line_info): Compute size of line info table from difference
+	of labels.
+	(base_type_die, add_name_attribute): Call demangle function, if any.
+	(field_byte_offset): Use bits per word for variable length fields.
+	(gen_array_type_die): Add array name.
+	(gen_subprogram_die): Ignore DECL_INLINE if -fno-inline.
+	(dwarf2out_add_library_unit_info): New function.
+
 	* explow.c (set_stack_check_libfunc): New function.
 	(stack_check_libfunc): New static variable.
 	(probe_stack_range): Allow front-end to set up a libfunc to call.
