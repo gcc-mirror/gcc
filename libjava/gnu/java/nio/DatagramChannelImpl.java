@@ -57,6 +57,33 @@ public final class DatagramChannelImpl extends DatagramChannel
 {
   private NIODatagramSocket socket;
   
+  /**
+   * Indicates whether this channel initiated whatever operation
+   * is being invoked on our datagram socket.
+   */
+  private boolean inChannelOperation;
+
+  /**
+   * Indicates whether our datagram socket should ignore whether
+   * we are set to non-blocking mode. Certain operations on our
+   * socket throw an <code>IllegalBlockingModeException</code> if
+   * we are in non-blocking mode, <i>except</i> if the operation
+   * is initiated by us.
+   */
+  public final boolean isInChannelOperation()
+  {
+    return inChannelOperation;
+  }
+  
+  /**
+   * Sets our indicator of whether we are initiating an I/O operation
+   * on our socket.
+   */
+  public final void setInChannelOperation(boolean b)
+  {
+    inChannelOperation = b;
+  }
+ 
   protected DatagramChannelImpl (SelectorProvider provider)
     throws IOException
   {
@@ -178,7 +205,7 @@ public final class DatagramChannelImpl extends DatagramChannel
     try
       {
         DatagramPacket packet;
-        int len = dst.remaining();
+        int len = dst.capacity() - dst.position();
         
         if (dst.hasArray())
           {
@@ -196,23 +223,23 @@ public final class DatagramChannelImpl extends DatagramChannel
         try
           {
             begin();
+            setInChannelOperation(true);
             socket.receive (packet);
             completed = true;
           }
         finally
           {
             end (completed);
+            setInChannelOperation(false);
           }
 
         if (!dst.hasArray())
           {
             dst.put (packet.getData(), packet.getOffset(), packet.getLength());
           }
-
-        // FIMXE: remove this testing code.
-        for (int i = 0; i < packet.getLength(); i++)
+        else
           {
-            System.out.println ("Byte " + i + " has value " + packet.getData() [packet.getOffset() + i]);
+            dst.position (dst.position() + packet.getLength());
           }
 
         return packet.getSocketAddress();
@@ -246,13 +273,25 @@ public final class DatagramChannelImpl extends DatagramChannel
 
     DatagramPacket packet = new DatagramPacket (buffer, offset, len, target);
 
-    // FIMXE: remove this testing code.
-    for (int i = 0; i < packet.getLength(); i++)
+    boolean completed = false;
+    try
       {
-        System.out.println ("Byte " + i + " has value " + packet.getData() [packet.getOffset() + i]);
+        begin();
+        setInChannelOperation(true);
+        socket.send(packet);
+        completed = true;
+      }
+    finally
+      {
+        end (completed);
+        setInChannelOperation(false);
+      }
+      
+    if (src.hasArray())
+      {
+       src.position (src.position() + len);
       }
 
-    socket.send (packet);
     return len;
   }
 }

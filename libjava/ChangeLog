@@ -1,5 +1,29 @@
 2004-02-03  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(inChannelOperation): New field.
+	(isInChannelOperation): New accessor.
+	(setInChannelOperation): New modifier.
+	(receive): Use capacity() - position() of destination
+        buffer instead of remaining(). Set and reset our "in
+        channel operation indicator" before and after delegating
+        the receive to our datagram socket. Removed testing code.
+        Update destination buffer's current position if it is
+        backed by a byte array (hasArray() is true).
+	(send): Set and reset our "in channel operation indicator"
+        before and after delegating the send to our datagram socket.
+        Removed testing code. Update source buffer's current position
+        if it is backed by a byte array (hasArray() is true).
+	* gnu/java/nio/SocketChannelImpl.java (read(ByteBuffer)):
+        Use capacity() - position() of destination buffer instead
+        of remaining().
+	* java/net/DatagramSocket.java (receive): Don't throw an
+        IllegalBlockingModeException if we have a non-blocking
+        channel which initiated this operation.
+	(send): Likewise.
+
+2004-02-03  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* gnu/java/net/PlainSocketImpl.java 
 	(inChannelOperation): New field.
 	(isInChannelOperation): New accessor.
