@@ -1,3 +1,9 @@
+Wed Sep 10 21:37:30 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (compare): Exit with nonzero status if there
+	are comparison failures.  Note which files failed the
+	comparison test in .bad_compare.
+
 Wed Sep 10 17:05:46 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* config/alpha/elf.h (CPP_PREDEFINES): Remove -D__PIC__ -D__pic__.
