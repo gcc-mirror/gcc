@@ -1,3 +1,8 @@
+2004-06-24  Eric Christopher  <echristo@redhat.com>
+
+	* config/rs6000/rs6000.md: Apply change mistakenly
+	deleted with 2004-06-22 patch.
+
 2004-06-24  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (c_in_iteration_stmt, c_in_case_stmt): Remove.
