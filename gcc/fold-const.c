@@ -2454,9 +2454,10 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 
     case '<':
     case '2':
-      if (operand_equal_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg1, 0), 0)
-	  && operand_equal_p (TREE_OPERAND (arg0, 1), TREE_OPERAND (arg1, 1),
-			      0))
+      if (operand_equal_p (TREE_OPERAND (arg0, 0),
+			   TREE_OPERAND (arg1, 0), flags)
+	  && operand_equal_p (TREE_OPERAND (arg0, 1),
+			      TREE_OPERAND (arg1, 1), flags))
 	return 1;
 
       /* For commutative ops, allow the other order.  */
@@ -2505,6 +2506,25 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
 	case TRUTH_NOT_EXPR:
 	  return operand_equal_p (TREE_OPERAND (arg0, 0),
 				  TREE_OPERAND (arg1, 0), flags);
+
+	case TRUTH_ANDIF_EXPR:
+	case TRUTH_ORIF_EXPR:
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), flags)
+		 && operand_equal_p (TREE_OPERAND (arg0, 1),
+				     TREE_OPERAND (arg1, 1), flags);
+
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case TRUTH_XOR_EXPR:
+	  return (operand_equal_p (TREE_OPERAND (arg0, 0),
+				   TREE_OPERAND (arg1, 0), flags)
+		  && operand_equal_p (TREE_OPERAND (arg0, 1),
+				      TREE_OPERAND (arg1, 1), flags))
+		 || (operand_equal_p (TREE_OPERAND (arg0, 0),
+				      TREE_OPERAND (arg1, 1), flags)
+		     && operand_equal_p (TREE_OPERAND (arg0, 1),
+					 TREE_OPERAND (arg1, 0), flags));
 
 	case RTL_EXPR:
 	  return rtx_equal_p (RTL_EXPR_RTL (arg0), RTL_EXPR_RTL (arg1));
