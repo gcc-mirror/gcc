@@ -1,3 +1,10 @@
+1999-03-08  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/970625-2.f: call ABORT if final
+	result is not correct, instead of just printing it.
+	Add this checking via newly introduced obfuscation, to
+	trip up buggy front ends.
+
 1999-03-07  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/960317-1.f: Moved from being
