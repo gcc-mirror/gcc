@@ -2425,7 +2425,7 @@ fi
 
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -8562,7 +8562,18 @@ EOF
 echo "configure:8563: checking whether the assembler has explicit relocation support" >&5
     if test x$gcc_cv_mips_explicit_relocs = x; then
       gcc_cv_mips_explicit_relocs=no
-      if test x$gcc_cv_as != x; then
+      if test $in_tree_gas = yes ; then
+         if test $gcc_cv_gas_major_version -eq 2 \
+&& test $gcc_cv_gas_minor_version -ge 14 \
+|| test $gcc_cv_gas_major_version -gt 2 ; then
+
+
+	  gcc_cv_mips_explicit_relocs=yes
+	
+
+fi
+
+      elif test x$gcc_cv_as != x; then
 	echo '  lw $4,%gp_rel(foo)($4)' > conftest.s
 	if $gcc_cv_as conftest.s -o conftest.o > /dev/null 2>&1; then
 	  gcc_cv_mips_explicit_relocs=yes
@@ -8754,7 +8765,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8758: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8769: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
