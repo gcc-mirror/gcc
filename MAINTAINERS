@@ -164,6 +164,7 @@ in changes outside of the parts of the compiler they maintain.
 
 Matt Austern                                    austern@apple.com
 Scott Bambrough					scottb@netwinder.org
+Wolfgang Bangerth				bangerth@dealii.org
 Daniel Berlin					dan@dberlin.org
 David Billinghurst				David.Billinghurst@riotinto.com
 Laurynas Biveinis			        laurynas.biveinis@mif.vu.lt
@@ -269,7 +270,6 @@ Josef Zlomek					zlomekj@suse.cz
 
 GNATS only accounts
 
-Wolfgang Bangerth	bangerth		bangerth@ticam.utexas.edu
 James Dennett		jdennett		jdennett@acm.org
 Christian Ehrhardt	cae			ehrhardt@mathematik.uni-ulm.de
 
