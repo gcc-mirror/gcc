@@ -1,3 +1,8 @@
+2004-06-24  Jeff Law  <law@redhat.com>
+
+	* gimplify.c (gimplify_compound_lval): Reset TREE_SIDE_EFFECTS
+	after gimplifying the innermost component.
+
 2004-06-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/16176
