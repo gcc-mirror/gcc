@@ -137,3 +137,21 @@ do {									\
       if (((int *)__DTOR_LIST__)[i] != -1)	\
 	__DTOR_LIST__[i] ();			\
   } while (0)					
+
+#ifdef sysV88
+/* manfred@s-direktnet.de: Re-define INITIALIZE_TRAMPOLINE to additionally call
+   __enable_execute_stack.
+   I don't actually have a clue why nobody else than sysV88 and __DOLPHIN__
+   needs to call this; perhaps they didn't ever run the c-torture tests
+   getting segmentations violations and/or bus errors with nested functions.  */
+#undef INITIALIZE_TRAMPOLINE 
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 40)), FNADDR); \
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 36)), CXT); \
+  emit_call_insn (gen_call (gen_rtx (MEM, SImode,			\
+			    gen_rtx (SYMBOL_REF, Pmode,			\
+				     "__enable_execute_stack")),	\
+		  const0_rtx));						\
+}
+#endif
