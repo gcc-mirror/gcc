@@ -1,3 +1,8 @@
+2004-02-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/14156
+	* gcc.dg/20040223-1.c: New test.
+
 2004-02-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14106
