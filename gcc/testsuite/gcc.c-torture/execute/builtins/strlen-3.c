@@ -18,8 +18,10 @@ int x = 6;
 void
 main_test(void)
 {
+#ifdef __OPTIMIZE__
   const char *foo;
   int i;
+#endif
 
   if (strlen (bar) != 13)
     abort ();

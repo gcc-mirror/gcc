@@ -1,5 +1,10 @@
 2005-04-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.c-torture/execute/builtins/lib/strncat.c: Fix uninitialized var.
+	* gcc.c-torture/execute/builtins/lib/strpbrk.c: Fix discarded const.
+	* gcc.c-torture/execute/builtins/strlen-3.c: Fix uninitialized var.
+	* gcc.c-torture/execute/builtins/strncmp.c: Delete unused var.
+
 	* gcc.c-torture/execute/builtins/abs-1-lib.c,
 	gcc.c-torture/execute/builtins/fputs-lib.c,
 	gcc.c-torture/execute/builtins/lib/fprintf.c,
