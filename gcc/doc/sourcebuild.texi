@@ -211,7 +211,7 @@ particular build machine.  The file @file{config.host} is used to handle
 configuration specific to the particular host machine.  (In general,
 these should only be used for features that cannot reasonably be tested in
 Autoconf feature tests.)
-@xref{System Config, , The @file{config.build}@comma{} @file{config.host}@comma{}
+@xref{System Config, , The @file{config.build}, @file{config.host},
 and @file{config.gcc} Files}, for details of the contents of these files.
 
 @item Each language subdirectory has a file

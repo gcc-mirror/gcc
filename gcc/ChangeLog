@@ -1,5 +1,9 @@
 2004-07-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* doc/sourcebuild.texi: Revert previous patch.
+
+2004-07-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* c-decl.c, config/m32r/m32r.c, expr.c, optabs.c: Don't check
 	TARGET_MEM_FUNCTIONS.
 	* system.h: Poison TARGET_MEM_FUNCTIONS.
