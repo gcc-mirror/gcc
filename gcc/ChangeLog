@@ -1,5 +1,8 @@
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* arm.c (ROUND_UP_WORD): Renamed from ROUND_UP.
+	* arm.h (ROUND_UP_WORD): Likewise.
+
 	* arm.h (CONDITIONAL_REGISTER_USAGE): Avoid signed/unsigned
 	warning.
 	* emit-rtl.c (gen_rtx_REG, set_mem_attributes_minus_bitpos,

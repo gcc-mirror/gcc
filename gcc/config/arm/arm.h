@@ -851,7 +851,7 @@ extern const char * structure_size_string;
     break;
 
 /* Round X up to the nearest word.  */
-#define ROUND_UP(X) (((X) + 3) & ~3)
+#define ROUND_UP_WORD(X) (((X) + 3) & ~3)
 
 /* Convert fron bytes to ints.  */
 #define ARM_NUM_INTS(X) (((X) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
@@ -1321,7 +1321,7 @@ enum reg_class
    this says how many the stack pointer really advances by.  */
 /* The push insns do not do this rounding implicitly.
    So don't define this. */
-/* #define PUSH_ROUNDING(NPUSHED)  ROUND_UP (NPUSHED) */
+/* #define PUSH_ROUNDING(NPUSHED)  ROUND_UP_WORD (NPUSHED) */
 
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
