@@ -15188,7 +15188,7 @@ x86_this_parameter (tree function)
 	  int regno = 0;
 	  if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type)))
 	    regno = 2;
-	  return gen_rtx_REG (SImode, 0);
+	  return gen_rtx_REG (SImode, regno);
 	}
     }
 
