@@ -43,7 +43,6 @@ with Prj.Ext;
 with Prj.Pars;
 with Prj.Util; use Prj.Util;
 with Snames;
-with System;
 with Table;
 with Types;    use Types;
 
@@ -66,7 +65,7 @@ package body Clean is
    Debug_Suffix    : String          := ".dg";
    --  Changed to "_dg" for VMS in the body of the package
 
-   Repinfo_Suffix  : String          := ".rep";
+   Repinfo_Suffix  : String := ".rep";
    --  Changed to "_rep" for VMS in the body of the package
 
    B_Start : String := "b~";
@@ -75,6 +74,10 @@ package body Clean is
 
    Object_Directory_Path : String_Access := null;
    --  The path name of the object directory, set with switch -D
+
+   Force_Deletions : Boolean := False;
+   --  Set to True by switch -f. When True, attempts to delete non writable
+   --  files will be done.
 
    Do_Nothing : Boolean := False;
    --  Set to True when switch -n is specified.
@@ -93,7 +96,7 @@ package body Clean is
 
    All_Projects : Boolean := False;
 
-   --  Packages of project files where unknown attributes are errors.
+   --  Packages of project files where unknown attributes are errors
 
    Naming_String   : aliased String := "naming";
    Builder_String  : aliased String := "builder";
@@ -142,10 +145,10 @@ package body Clean is
    --  If Lib_File is not marked, inserts it at the end of Q and mark it
 
    function Empty_Q return Boolean;
-   --  Returns True if Q is empty.
+   --  Returns True if Q is empty
 
    procedure Extract_From_Q (Lib_File : out File_Name_Type);
-   --  Extracts the first element from the Q.
+   --  Extracts the first element from the Q
 
    Q_Front : Natural;
    --  Points to the first valid element in the Q.
@@ -364,9 +367,6 @@ package body Clean is
       Name : String (1 .. 200);
       Last : Natural;
 
-      procedure Set_Writable (Name : System.Address);
-      pragma Import (C, Set_Writable, "__gnat_set_writable");
-
    begin
       Change_Dir (Directory);
       Open (Direc, ".");
@@ -380,8 +380,7 @@ package body Clean is
 
          if Is_Regular_File (Name (1 .. Last)) then
             if not Do_Nothing then
-               Name (Last + 1) := ASCII.NUL;
-               Set_Writable (Name (1)'Address);
+               Set_Writable (Name (1 .. Last));
             end if;
 
             Delete (Directory, Name (1 .. Last));
@@ -799,7 +798,7 @@ package body Clean is
       --  interface copy dir and, for a Stand-Alone Library, the binder
       --  generated files of the library.
 
-      --  The directories are cleaned only if switch -c is not specified.
+      --  The directories are cleaned only if switch -c is not specified
 
       if Data.Library then
          if not Compile_Only then
@@ -867,10 +866,10 @@ package body Clean is
          end;
       end if;
 
-         --  For the main project, delete the executables and the
-         --  binder generated files.
+         --  For the main project, delete the executables and the binder
+         --  generated files.
 
-         --  The executables are deleted only if switch -c is not specified.
+         --  The executables are deleted only if switch -c is not specified
 
       if Project = Main_Project and then Data.Exec_Directory /= No_Name then
          declare
@@ -950,20 +949,28 @@ package body Clean is
       if Do_Nothing then
          Put_Line (Full_Name (1 .. Last));
 
-      --  Otherwise, delete the file
+      --  Otherwise, delete the file if it is writable
 
       else
-         Delete_File (Full_Name (1 .. Last), Success);
+         if Force_Deletions
+           or else Is_Writable_File (Full_Name (1 .. Last))
+         then
+            Delete_File (Full_Name (1 .. Last), Success);
+         else
+            Success := False;
+         end if;
 
-         if not Success then
-            Put ("Warning: """);
-            Put (Full_Name (1 .. Last));
-            Put_Line (""" could not be deleted");
+         if Verbose_Mode or else not Quiet_Output then
+            if not Success then
+               Put ("Warning: """);
+               Put (Full_Name (1 .. Last));
+               Put_Line (""" could not be deleted");
 
-         elsif Verbose_Mode or else not Quiet_Output then
-            Put ("""");
-            Put (Full_Name (1 .. Last));
-            Put_Line (""" has been deleted");
+            else
+               Put ("""");
+               Put (Full_Name (1 .. Last));
+               Put_Line (""" has been deleted");
+            end if;
          end if;
       end if;
    end Delete;
@@ -1383,6 +1390,9 @@ package body Clean is
                            end;
                         end if;
 
+                     when 'f' =>
+                        Force_Deletions := True;
+
                      when 'F' =>
                         Full_Path_Name_For_Brief_Errors := True;
 
@@ -1591,6 +1601,7 @@ package body Clean is
 
          Put_Line ("  -c       Only delete compiler generated files");
          Put_Line ("  -D dir   Specify dir as the object library");
+         Put_Line ("  -f       Force deletions of unwritable files");
          Put_Line ("  -F       Full project path name " &
                    "in brief error messages");
          Put_Line ("  -h       Display this message");
