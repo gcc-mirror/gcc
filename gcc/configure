@@ -2179,8 +2179,8 @@ else
   echo "$ac_t""no" 1>&6
 fi
 
-  if test "x$valgrind_path" = "x" || test $have_valgrind_h = no; then
-	{ echo "configure: error: *** Can't find both valgrind and valgrind.h" 1>&2; exit 1; }
+  if test "x$valgrind_path" = "x" || (test $have_valgrind_h = no && test $gcc_cv_header_memcheck_h = no); then
+	{ echo "configure: error: *** Can't find both valgrind and valgrind.h/memcheck.h" 1>&2; exit 1; }
   fi
   valgrind_path_defines=-DVALGRIND_PATH='\"'$valgrind_path'\"'
   valgrind_command="$valgrind_path -q"

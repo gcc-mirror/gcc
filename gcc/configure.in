@@ -417,8 +417,8 @@ if test x$ac_checking_valgrind != x ; then
   AC_CHECK_HEADER(valgrind.h, have_valgrind_h=yes, have_valgrind_h=no)
   AM_PATH_PROG_WITH_TEST(valgrind_path, valgrind,
 	[$ac_dir/$ac_word --version | grep valgrind- >/dev/null 2>&1])
-  if test "x$valgrind_path" = "x" || test $have_valgrind_h = no; then
-	AC_MSG_ERROR([*** Can't find both valgrind and valgrind.h])
+  if test "x$valgrind_path" = "x" || (test $have_valgrind_h = no && test $gcc_cv_header_memcheck_h = no); then
+	AC_MSG_ERROR([*** Can't find both valgrind and valgrind.h/memcheck.h])
   fi
   valgrind_path_defines=-DVALGRIND_PATH='\"'$valgrind_path'\"'
   valgrind_command="$valgrind_path -q"
