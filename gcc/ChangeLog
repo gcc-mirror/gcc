@@ -1,5 +1,11 @@
 2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
 
+	PR/12292
+	* combine.c (make_field_assignment): Check whether rtx's code
+	is CONST_INT before using INTVAL.
+
+2003-10-02  Josef Zlomek  <zlomekj@suse.cz>
+
 	Waldek Hebisch <hebisch@math.uni.wroc.pl>
 	PR/12072
 	* varasm.c (compare_constant): Fix thinko.
