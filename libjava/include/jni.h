@@ -9,14 +9,8 @@ details.  */
 #ifndef __JAVA_JNI_H__
 #define __JAVA_JNI_H__
 
-#ifdef __GNUC__
-# define __need___va_list
-# include <stdarg.h>
-# define _Jv_va_list __gnuc_va_list
-#else
-# include <stdarg.h>
-# define _Jv_va_list va_list
-#endif
+#include <stdarg.h>
+#define _Jv_va_list va_list
 
 #ifdef __cplusplus
 
