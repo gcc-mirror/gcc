@@ -1982,8 +1982,7 @@ __result, __binary_pred, _IterType());
       
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
-      __glibcpp_function_requires(_SameTypeConcept<_Tp, _ValueType>)
-      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _Tp, _Tp>)
+      __glibcpp_function_requires(_BinaryPredicateConcept<_Compare, _ValueType, _Tp>)
     
       _DistanceType __len = distance(__first, __last);
       _DistanceType __half;

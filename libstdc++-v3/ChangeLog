@@ -1,3 +1,9 @@
+2001-12-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	PR libstdc++/2054
+	* include/bits/stl_algo.h (lower_bound):  Relax concept checks.
+	* testsuite/ext/concept_checks.cc:  New file.
+
 2001-12-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algo.h (count returning void,
