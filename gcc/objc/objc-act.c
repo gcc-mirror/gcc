@@ -5342,12 +5342,14 @@ check_methods_accessible (chain, context, mtype)
 	  if (lookup_method (list, chain))
 	      break; 
 
-	  else if (TREE_CODE (context) == CLASS_IMPLEMENTATION_TYPE) 
+	  else if (TREE_CODE (context) == CLASS_IMPLEMENTATION_TYPE
+		   || TREE_CODE (context) == CLASS_INTERFACE_TYPE)
 	    context = (CLASS_SUPER_NAME (context) 
 		       ? lookup_interface (CLASS_SUPER_NAME (context))
 		       : NULL_TREE);
 
-	  else if (TREE_CODE (context) == CATEGORY_IMPLEMENTATION_TYPE)
+	  else if (TREE_CODE (context) == CATEGORY_IMPLEMENTATION_TYPE
+		   || TREE_CODE (context) == CATEGORY_INTERFACE_TYPE)
 	    context = (CLASS_NAME (context) 
 		       ? lookup_interface (CLASS_NAME (context))
 		       : NULL_TREE);
