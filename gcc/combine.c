@@ -2610,11 +2610,14 @@ find_split_point (loc, insn)
 	      && XEXP (*split, 0) == SET_DEST (x)
 	      && XEXP (*split, 1) == const0_rtx)
 	    {
-	      SUBST (SET_SRC (x),
-		     make_extraction (GET_MODE (SET_DEST (x)),
-				      XEXP (SET_SRC (x), 0),
-				      pos, NULL_RTX, 1, 1, 0, 0));
-	      return find_split_point (loc, insn);
+	      rtx extraction = make_extraction (GET_MODE (SET_DEST (x)),
+						XEXP (SET_SRC (x), 0),
+						pos, NULL_RTX, 1, 1, 0, 0);
+	      if (extraction != 0)
+		{
+		  SUBST (SET_SRC (x), extraction);
+		  return find_split_point (loc, insn);
+		}
 	    }
 	  break;
 
@@ -5050,7 +5053,10 @@ expand_field_assignment (x)
    IN_COMPARE is non-zero if we are in a COMPARE.  This means that a
    ZERO_EXTRACT should be built even for bits starting at bit 0.
 
-   MODE is the desired mode of the result (if IN_DEST == 0).  */
+   MODE is the desired mode of the result (if IN_DEST == 0).
+
+   The result is an RTX for the extraction or NULL_RTX if the target
+   can't handle it.  */
 
 static rtx
 make_extraction (mode, inner, pos, pos_rtx, len,
@@ -6553,7 +6559,9 @@ make_field_assignment (x)
     {
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
-      return gen_rtx (SET, VOIDmode, assign, const0_rtx);
+      if (assign != 0)
+	return gen_rtx (SET, VOIDmode, assign, const0_rtx);
+      return x;
     }
 
   else if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == SUBREG
@@ -6567,7 +6575,9 @@ make_field_assignment (x)
       assign = make_extraction (VOIDmode, dest, 0,
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
 				1, 1, 1, 0);
-      return gen_rtx (SET, VOIDmode, assign, const0_rtx);
+      if (assign != 0)
+	return gen_rtx (SET, VOIDmode, assign, const0_rtx);
+      return x;
     }
 
   /* If SRC is (ior (ashift (const_int 1) POS DEST)), this is a set of a
@@ -6578,7 +6588,9 @@ make_field_assignment (x)
     {
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
-      return gen_rtx (SET, VOIDmode, assign, const1_rtx);
+      if (assign != 0)
+	return gen_rtx (SET, VOIDmode, assign, const1_rtx);
+      return x;
     }
 
   /* The other case we handle is assignments into a constant-position
@@ -6613,6 +6625,8 @@ make_field_assignment (x)
     return x;
 
   assign = make_extraction (VOIDmode, dest, pos, NULL_RTX, len, 1, 1, 0);
+  if (assign == 0)
+    return x;
 
   /* The mode to use for the source is the mode of the assignment, or of
      what is inside a possible STRICT_LOW_PART.  */
