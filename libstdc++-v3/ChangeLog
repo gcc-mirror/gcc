@@ -1,5 +1,10 @@
 2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/8172
+	* src/string-inst.cc: Add instantiation.
+
+2002-11-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/7926
 	* configure.target: Simplify.
 	* config/cpu/i386/atomicity.h: Remove.
