@@ -1,3 +1,9 @@
+2004-10-28  Frank Ch. Eigler  <fche@redhat.com>
+
+	* testsuite/libmudflap.c/fail35-,pass53-,pass54-frag.c: New tests.
+	* testsuite/libmudflap.c/pass35-frag.c: Correct embedded warning
+	message.
+
 2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18138

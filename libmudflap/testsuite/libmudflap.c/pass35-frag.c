@@ -3,7 +3,7 @@
 #include <string.h>
 
 extern char end [];   /* Any old symbol we're sure will be defined. */
-/* { dg-warning "cannot track unknown size extern 'end'" "cannot track unknown size extern" { target *-*-* } 0 } */
+/* { dg-warning "cannot track unknown size extern" "cannot track unknown size extern" { target *-*-* } 0 } */
 
 int main ()
 {
