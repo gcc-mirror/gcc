@@ -1,3 +1,15 @@
+2004-09-08  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.c (ix86_prepare_fp_compare_args): Do not
+	force operand 0.0 into register in XFmode. Also do not force
+	operand 0.0 into register if !TARGET_CMOVE.
+	* config/i386/i386.md (*cmpfp_0): Delete. Remove comment.
+	(*cmpfp_0_sf, cmpfp_0_df, cmpfp_0_xf): New patterns to 
+	implement ftst x87 instruction.
+	(*fp_jcc_7): New insn pattern. Change corresponding split
+	pattern to handle "general_operand" instead of
+	"nonimmediate_operand".
+
 2004-09-08  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/rtl.texi (Insns): Document NOTE_INSN_FUNCTION_BEG.

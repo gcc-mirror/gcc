@@ -7941,12 +7941,15 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   int is_sse = SSE_REG_P (op0) | SSE_REG_P (op1);
 
   /* All of the unordered compare instructions only work on registers.
-     The same is true of the XFmode compare instructions.  The same is
-     true of the fcomi compare instructions.  */
+     The same is true of the fcomi compare instructions.  The same is
+     true of the XFmode compare instructions if not comparing with
+     zero (ftst insn is used in this case).  */
 
   if (!is_sse
       && (fpcmp_mode == CCFPUmode
-	  || op_mode == XFmode
+	  || (op_mode == XFmode
+	      && ! (standard_80387_constant_p (op0) == 1
+		    || standard_80387_constant_p (op1) == 1))
 	  || ix86_use_fcomi_compare (code)))
     {
       op0 = force_reg (op_mode, op0);
@@ -7973,10 +7976,16 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
 
       if (CONSTANT_P (op1))
 	{
-	  if (standard_80387_constant_p (op1))
-	    op1 = force_reg (op_mode, op1);
-	  else
+	  int tmp = standard_80387_constant_p (op1);
+	  if (tmp == 0)
 	    op1 = validize_mem (force_const_mem (op_mode, op1));
+	  else if (tmp == 1)
+	    {
+	      if (TARGET_CMOVE)
+		op1 = force_reg (op_mode, op1);
+	    }
+	  else
+	    op1 = force_reg (op_mode, op1);
 	}
     }
 
