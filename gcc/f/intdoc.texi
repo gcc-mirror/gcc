@@ -9500,7 +9500,7 @@ See @code{signal(2)}.
 
 Note that @var{Handler} will be called using C conventions,
 so the value of its argument in Fortran terms
-Fortran terms is obtained by applying @code{%LOC()} (or @var{LOC()}) to it.
+Fortran terms is obtained by applying @code{%LOC()} (or @code{LOC()}) to it.
 
 The value returned by @code{signal(2)} is written to @var{Status}, if
 that argument is supplied.
@@ -9579,7 +9579,7 @@ See @code{signal(2)}.
 
 Note that @var{Handler} will be called using C conventions,
 so the value of its argument in Fortran terms
-is obtained by applying @code{%LOC()} (or @var{LOC()}) to it.
+is obtained by applying @code{%LOC()} (or @code{LOC()}) to it.
 
 The value returned by @code{signal(2)} is returned.
 
