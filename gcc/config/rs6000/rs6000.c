@@ -949,43 +949,22 @@ logical_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (gpc_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT != 32
-	      && INTVAL (op) > 0
-	      && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
-#endif
-	      && ((INTVAL (op) & GET_MODE_MASK (mode)
-		   & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & GET_MODE_MASK (mode)
-		      & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0)));
-}
-
-/* Return 1 if the operand is a non-special register or a 32-bit constant
-   that can be used as the operand of an OR or XOR insn on the RS/6000.  */
-
-int
-logical_u_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  return (gpc_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-	      && INTVAL (op) > 0
-#if HOST_BITS_PER_WIDE_INT != 32
-	      && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
-#endif
-	      && ((INTVAL (op) & GET_MODE_MASK (mode)
-		   & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & GET_MODE_MASK (mode)
-		      & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0))
-#if HOST_BITS_PER_WIDE_INT == 32
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
+  if (gpc_reg_operand (op, mode))
+    return 1;
+  if (GET_CODE (op) == CONST_INT)
+    {
+      unsigned HOST_WIDE_INT cval = INTVAL (op) & GET_MODE_MASK (mode);
+      return ((cval & (~ (HOST_WIDE_INT) 0xffff)) == 0
+	      || (cval & (~ (HOST_WIDE_INT) 0xffff0000u)) == 0);
+    }
+  else if (GET_CODE (op) == CONST_DOUBLE)
+    {
+      return (CONST_DOUBLE_HIGH (op) == 0
 	      && ((CONST_DOUBLE_LOW (op)
-		   & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0))
-#endif
-      );
+		   & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) == 0));
+    }
+  else
+    return 0;
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -996,40 +975,8 @@ non_logical_cint_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT != 32
-	  && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
-#endif
-	  && (INTVAL (op) & GET_MODE_MASK (mode) &
-	      (~ (HOST_WIDE_INT) 0xffff)) != 0
-	  && (INTVAL (op) & GET_MODE_MASK (mode) &
-	      (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0);
-}
-
-/* Return 1 if C is an unsigned 32-bit constant that is not a
-   logical operand (as above).  */
-
-int
-non_logical_u_cint_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return ((GET_CODE (op) == CONST_INT
-	   && INTVAL (op) > 0
-#if HOST_BITS_PER_WIDE_INT != 32
-	   && INTVAL (op) < ((HOST_WIDE_INT) 1 << 32)
-#endif
-	   && (INTVAL (op) & GET_MODE_MASK (mode)
-	       & (~ (HOST_WIDE_INT) 0xffff)) != 0
-	   && (INTVAL (op) & GET_MODE_MASK (mode)
-	       & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0)
-#if HOST_BITS_PER_WIDE_INT == 32
-	  || (GET_CODE (op) == CONST_DOUBLE
-	      && CONST_DOUBLE_HIGH (op) == 0
-	      && (CONST_DOUBLE_LOW (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
-	      && (CONST_DOUBLE_LOW (op)
-		  & (~ (unsigned HOST_WIDE_INT) 0xffff0000u)) != 0));
-#endif
+  return ((GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
+	  && ! logical_operand (op, mode));
 }
 
 /* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
@@ -2963,6 +2910,15 @@ trap_comparison_operator (op, mode)
   return (GET_RTX_CLASS (GET_CODE (op)) == '<'
           || GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
+
+int
+boolean_operator (op, mode)
+    rtx op;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (op);
+  return (code == AND || code == IOR || code == XOR);
+}
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the
    mask required to convert the result of a rotate insn into a shift
@@ -3628,6 +3584,43 @@ print_operand (file, x, code)
 	output_operand_lossage ("invalid %%P value");
 
       fprintf (file, "%d", REGNO (XEXP (x, 0)));
+      return;
+
+    case 'q':
+      /* This outputs the logical code corresponding to a boolean
+	 expression.  The expression may have one or both operands
+	 negated (if one, only the first one).  */
+      {
+	int neg, op;
+	const char *const *t;
+	const char *s;
+	enum rtx_code code = GET_CODE (x);
+	static const char * const tbl[3][3] = {
+	  { "and", "andc", "nor" },
+	  { "or", "orc", "nand" },
+	  { "xor", "eqv", "xor" } };
+
+	if (code == AND)
+	  t = tbl[0];
+	else if (code == IOR)
+	  t = tbl[1];
+	else if (code == XOR)
+	  t = tbl[2];
+	else
+	  output_operand_lossage ("invalid %%q value");
+
+	if (GET_CODE (XEXP (x, 0)) != NOT)
+	  s = t[0];
+	else
+	  {
+	    if (GET_CODE (XEXP (x, 1)) == NOT)
+	      s = t[2];
+	    else
+	      s = t[1];
+	  }
+	
+	fputs (s, file);
+      }
       return;
 
     case 'R':

@@ -2726,10 +2726,8 @@ do {									\
   {"non_add_cint_operand", {CONST_INT}},			\
   {"and_operand", {SUBREG, REG, CONST_INT}},			\
   {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
-  {"logical_operand", {SUBREG, REG, CONST_INT}}, 		\
-  {"logical_u_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
-  {"non_logical_cint_operand", {CONST_INT}},			\
-  {"non_logical_u_cint_operand", {CONST_INT, CONST_DOUBLE}},	\
+  {"logical_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+  {"non_logical_cint_operand", {CONST_INT, CONST_DOUBLE}},	\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
   {"count_register_operand", {REG}},				\
@@ -2748,7 +2746,8 @@ do {									\
   {"scc_comparison_operator", {EQ, NE, LE, LT, GE,		\
 			       GT, LEU, LTU, GEU, GTU}},	\
   {"trap_comparison_operator", {EQ, NE, LE, LT, GE,		\
-				GT, LEU, LTU, GEU, GTU}},
+				GT, LEU, LTU, GEU, GTU}},	\
+  {"boolean_operator", {AND, IOR, XOR}},
 
 /* uncomment for disabling the corresponding default options */
 /* #define  MACHINE_no_sched_interblock */

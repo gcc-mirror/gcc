@@ -75,6 +75,7 @@ extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int branch_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int scc_comparison_operator PARAMS ((rtx, enum machine_mode));
 extern int trap_comparison_operator PARAMS ((rtx, enum machine_mode));
+extern int boolean_operator PARAMS ((rtx, enum machine_mode));
 extern int includes_lshift_p PARAMS ((rtx, rtx));
 extern int includes_rshift_p PARAMS ((rtx, rtx));
 extern int registers_ok_for_quad_peep PARAMS ((rtx, rtx));
