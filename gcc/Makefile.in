@@ -1658,7 +1658,7 @@ lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
-timevar.o : timevar.c $(CONFIG_H) system.h timevar.h timevar.def
+timevar.o : timevar.c $(CONFIG_H) system.h timevar.h timevar.def flags.h
 timevar.h : timevar.def
 
 regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
