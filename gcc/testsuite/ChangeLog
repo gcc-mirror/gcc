@@ -1,3 +1,8 @@
+2004-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18683
+	* g++.dg/opt/pr18683-1.C: New test case.
+
 2004-12-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR other/19093

@@ -1,3 +1,8 @@
+2004-12-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/18683
+	* function.c (pop_function_context_from): Don't reset reg_renumber.
+
 2004-12-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/18776

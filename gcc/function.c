@@ -286,7 +286,6 @@ pop_function_context_from (tree context ATTRIBUTE_UNUSED)
   outer_function_chain = p->outer;
 
   current_function_decl = p->decl;
-  reg_renumber = 0;
 
   lang_hooks.function.leave_nested (p);
 
