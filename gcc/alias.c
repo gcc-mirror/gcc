@@ -1468,6 +1468,8 @@ init_alias_analysis ()
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
+	  if (prologue_epilogue_contains (insn))
+	    continue;
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
 	      rtx note, set;
