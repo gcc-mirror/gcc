@@ -1,3 +1,6 @@
+Mon Mar  8 08:23:00 1999  Bruce Korb <korb@datadesign.com>
+	* ChangeLog: merged entries from fixincl-branch
+
 Sun Mar  7 11:48:56 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (ENCODE_BLOCKAGE): Don't shift unit too far.
@@ -2232,6 +2235,17 @@ Wed Jan 27 19:31:36 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* function.c (purge_addressof_1): Handle case when a register
 	has been used in a wider mode.
 
+1999-01-27  Bruce Korb  <autogen@linuxbox.com>
+
+	* fixinc/fixincl.c, fixinc/server.[ch]:
+	Removed the last of the capitalized variable and proc names.
+
+	* fixinc/server.c:  Removed the process open code
+	* fixinc/procopen.c: New file containing the proc open code
+	* fixinc/inclhack.tpl: Added code to bypass a readability test
+	when a file is not present.  A problem on some systems.
+	* fixinc/inclhack.sh, fixinc/fixincl.sh:  regenerated
+
 Wed Jan 27 11:58:18 1999  Dave Brolley  <brolley@cygnus.com>
 
 	* cpplib.h (cpp_notice): Add prototype.
@@ -3053,6 +3067,15 @@ Fri Jan 15 11:02:31 1999   Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	* unroll.c (loop_iterations): Return 0 if the last loop insn
 	is not a jump insn or if the loop has multiple back edges.
 
+1999-01-15  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (fixinc_defs): Do not define for m[68]8k-motorola-sysv{,3};
+	it's working properly now.  Remove comment saying "see m68k-motorola-sysv
+	as an example".
+	* configure: Regenerate using autoconf.
+
+	* fixinc/fixincl.c (main): Do not ignore SIGCHLD.
+
 Thu Jan 14 22:38:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* unroll.c (find_splittable_givs): For a DEST_ADDR giv, do not share
@@ -3085,7 +3108,14 @@ Thu Jan 14 22:38:41 1999  Jeffrey A Law  (law@cygnus.com)
 	(form_reg_groups, reg_group_compare, split_reg_group): New
 	functions used by the code.
 	(reg_group): New structure definition for the new code.
-	
+
+1999-01-13  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fixinc/fixincl.c (create_file): Pass file creation mask as
+	third parameter to "open".  Use O_TRUNC flag to open instead of
+	explicitly unlink'ing the file.
+	(process): and forget about the "chmod" stuff.
+
 Wed Jan 13 20:12:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* integrate.c (expand_inline_function): Recognize (mem (addressof))
@@ -3149,6 +3179,19 @@ Tue Jan 12 14:05:37 1999   Richard Henderson  <rth@cygnus.com>
 	* rs6000.md (movsi): Adjust CONSTANT_P_RTX handling.
 	(movhi, movqi): Remove CONSANT_P_RTX handling.
 	(movdi): Adjust CONSTANT_P_RTX handling.
+
+1999-01-12  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure: Regenerate using autoconf.
+
+	* fixinc/Makefile.in (INCLUDES): Add -I$(srcdir)/../../include.
+	* fixinc/fixincl.c (SIGCHLD): Use SIGCLD on (very) old systems.
+	(process): "fchmod" isn't available on all systems, use "chmod"
+	instead.
+	* fixinc/server.c: Add #include <sys/types.h>.
+	(STDIN_FILENO): Add default definition if no include file defines
+	it already.
+	(STDOUT_FILENO): Likewise.
 
 Tue Jan 12 10:23:24 1999  Stan Cox  <scox@cygnus.com>
 
@@ -3285,6 +3328,16 @@ Thu Jan  7 19:52:53 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	* system.h (abort): Supply more detailed information on how to
  	report an Internal Compiler Error.
 
+Thu Jan 7  9:25:58 PST 1999 Bruce Korb (korb@datadesign.com)
+
+	* fixinc/fixincl.c (*): more decapitalization of variables
+	plus some explanitory comments
+
+	* fixinc/Makefile.in fixinc/mkfixinc.sh:
+	When the fixincl program does not work for a certain system,
+	we substitute a shell script.  Added user commentary when
+	this happens.
+
 Thu Jan  7 11:26:17 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* calls.c (store_unaligned_arguments_into_pseudos): Use xmalloc to
@@ -3386,7 +3439,22 @@ Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
 	(save_fixed_argument_area): Likewise.
 	(restore_fixed_argument_area): Likewise.
 	(expand_call): Corresponding changes.
-	
+
+Thu Jan  7 00:12:24 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (addqi3): If the destination operand is
+	a hard register other than an extended precision register,
+	emit addqi3_noclobber.
+	(*addqi3_noclobber_reload): New pattern added so that reload
+	will recognise a store of a pseudo, equivalent to the sum
+	of the frame pointer and a constant, as an add insn.
+
+1999-01-06  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* fixinc/fixincl.c: Re-indent according to the GNU standards.
+	fixinc/server.c: Likewise.
+	fixinc/server.h: Likewise.
+
 Wed Jan  6 10:43:29 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.c (const_uint32_operand): Remove CONSTANT_P_RTX
@@ -3397,15 +3465,6 @@ Wed Jan  6 09:44:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.h: In addition to checking _JBLEN, also check if `setjmp'
  	is a macro when deciding if we can use `jmp_buf' in prototypes.
-
-Thu Jan  7 00:12:24 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
-
-	* config/c4x/c4x.md (addqi3): If the destination operand is
-	a hard register other than an extended precision register,
-	emit addqi3_noclobber.
-	(*addqi3_noclobber_reload): New pattern added so that reload
-	will recognise a store of a pseudo, equivalent to the sum
-	of the frame pointer and a constant, as an add insn.
 
 Wed Jan  6 03:18:53 1999  Mark Elbrecht  <snowball3@usa.net.
 
@@ -3458,6 +3517,16 @@ Tue Jan  5 21:57:42 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	modify a string before setting it to a const char*.
 	
 	* prefix.h: New file to prototype functions exported from prefix.c.
+
+Tue Jan 5  8:52:18 PST 1999 Bruce Korb (korb@datadesign.com)
+
+	* fixinc/fixincl.c (various): added debug code so
+	Manfred can trace the processing.
+
+	* fixinc/inclhack.def (sys/utsname.h): Provide forward declaration of
+	struct utsname on Ultrix V4.[35].
+
+	* fixinc/{fixincl.x|fixincl.sh|inclhack.sh} : regenerated
 
 Mon Jan  4 15:37:30 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
