@@ -1,5 +1,6 @@
 2003-07-18  Richard Henderson  <rth@redhat.com>
 
+	PR target/11556
 	* optabs.c (prepare_operand): Fail gracefully instead of abort
 	if the predicate doesn't satisfy.
 	(gen_cond_trap): Allow prepare_operand to fail.
