@@ -1,3 +1,7 @@
+2000-10-29  Michael Hayes  <mhayes@redhat.com>
+
+	* integrate.c (copy_insn_list): Copy the unchanging flag for calls.
+
 2000-10-28  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* cpphash.c (cpp_forall_identifiers): Add context variable

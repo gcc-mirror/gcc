@@ -1468,6 +1468,7 @@ copy_insn_list (insns, map, static_chain_value)
 	  copy = emit_call_insn (pattern);
 
 	  SIBLING_CALL_P (copy) = SIBLING_CALL_P (insn);
+	  CONST_CALL_P (copy) = CONST_CALL_P (insn);
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
