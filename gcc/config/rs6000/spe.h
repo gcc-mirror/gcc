@@ -232,9 +232,6 @@ typedef int 			__vector __ev64_opaque__;
 #define __ev_mwlumia(a, b) __builtin_spe_evmwlumia ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumiaaw(a, b) __builtin_spe_evmwlumiaaw ((__v2si) (a), (__v2si) (b))
 
-#define __ev_mwlufi __ev_mwlumi
-#define __ev_mwlufia __ev_mwlumia
-
 #define __ev_mwlssfaaw(a, b) __builtin_spe_evmwlssfaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlssiaaw(a, b) __builtin_spe_evmwlssiaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlsmfaaw(a, b) __builtin_spe_evmwlsmfaaw ((__v2si) (a), (__v2si) (b))
@@ -242,18 +239,12 @@ typedef int 			__vector __ev64_opaque__;
 #define __ev_mwlusiaaw(a, b) __builtin_spe_evmwlusiaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlusiaaw(a, b) __builtin_spe_evmwlusiaaw ((__v2si) (a), (__v2si) (b))
 
-#define __ev_mwlumfaaw __ev_mwlumiaaw
-#define __ev_mwlusfaaw __ev_mwlusiaaw
-
 #define __ev_mwlssfanw(a, b) __builtin_spe_evmwlssfanw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlssianw(a, b) __builtin_spe_evmwlssianw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlsmfanw(a, b) __builtin_spe_evmwlsmfanw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlsmianw(a, b) __builtin_spe_evmwlsmianw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlusianw(a, b) __builtin_spe_evmwlusianw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwlumianw(a, b) __builtin_spe_evmwlumianw ((__v2si) (a), (__v2si) (b))
-
-#define __ev_mwlumfanw __ev_mwlumianw
-#define __ev_mwlusfanw __ev_mwlusianw
 
 #define __ev_mwssf(a, b) __builtin_spe_evmwssf ((__v2si) (a), (__v2si) (b))
 #define __ev_mwsmf(a, b) __builtin_spe_evmwsmf ((__v2si) (a), (__v2si) (b))
