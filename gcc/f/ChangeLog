@@ -1,3 +1,7 @@
+Wed Jun 16 11:43:02 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Mention BACKSPACE fix to libg2c.
+
 Mon Jun  7 08:42:40 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* Make-lang.in: Any target using libsubdir must depend
