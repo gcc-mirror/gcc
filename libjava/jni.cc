@@ -693,7 +693,13 @@ array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
     {
       // Here we assume that sizeof(int) >= sizeof(jint), because we
       // use `int' when decoding the varargs.  Likewise for
-      // long/jlong, float, and double.
+      // float, and double.  Also we assume that sizeof(jlong) >=
+      // sizeof(int), i.e. that jlong values are not further
+      // promoted.
+      JvAssert (sizeof (int) >= sizeof (jint));
+      JvAssert (sizeof (jlong) >= sizeof (int));
+      JvAssert (sizeof (double) >= sizeof (jfloat));
+      JvAssert (sizeof (double) >= sizeof (jdouble));
       if (arg_elts[i] == JvPrimClass (byte))
 	values[i].b = (jbyte) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (short))
@@ -701,7 +707,7 @@ array_from_valist (jvalue *values, JArray<jclass> *arg_types, va_list vargs)
       else if (arg_elts[i] == JvPrimClass (int))
 	values[i].i = (jint) va_arg (vargs, int);
       else if (arg_elts[i] == JvPrimClass (long))
-	values[i].j = (jlong) va_arg (vargs, long);
+	values[i].j = (jlong) va_arg (vargs, jlong);
       else if (arg_elts[i] == JvPrimClass (float))
 	values[i].f = (jfloat) va_arg (vargs, double);
       else if (arg_elts[i] == JvPrimClass (double))
