@@ -14879,7 +14879,10 @@ ffe_type_for_mode (mode, unsignedp)
   if (mode == TYPE_MODE (double_type_node))
     return double_type_node;
 
-  if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
+  if (mode == TYPE_MODE (long_double_type_node))
+    return long_double_type_node;
+
+ if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
     return build_pointer_type (char_type_node);
 
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
