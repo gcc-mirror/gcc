@@ -110,6 +110,23 @@ Warn whenever an identifier which is not a macro is encountered in an
 @samp{#if} directive, outside of @samp{defined}.  Such identifiers are
 replaced with zero.
 
+@item -Wendif-labels
+@opindex Wendif-labels
+Warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
+This usually happens in code of the form
+
+@smallexample
+#if FOO
+@dots{}
+#else FOO
+@dots{}
+#endif FOO
+@end smallexample
+
+@noindent
+The second and third @code{FOO} should be in comments, but often are not
+in older programs.  This warning is on by default.
+
 @item -Werror
 @opindex Werror
 Make all warnings into hard errors.  Source code which triggers warnings

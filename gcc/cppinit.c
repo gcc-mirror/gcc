@@ -491,6 +491,7 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
+  CPP_OPTION (pfile, warn_endif_labels) = 1;
 #if DEFAULT_SIGNED_CHAR
   CPP_OPTION (pfile, signed_char) = 1;
 #else
@@ -1735,6 +1736,8 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	    CPP_OPTION (pfile, warnings_are_errors) = 1;
 	  else if (!strcmp (argv[i], "-Wsystem-headers"))
 	    CPP_OPTION (pfile, warn_system_headers) = 1;
+	  else if (!strcmp (argv[i], "-Wendif-labels"))
+	    CPP_OPTION (pfile, warn_endif_labels) = 1;
 	  else if (!strcmp (argv[i], "-Wno-traditional"))
 	    CPP_OPTION (pfile, warn_traditional) = 0;
 	  else if (!strcmp (argv[i], "-Wno-trigraphs"))
@@ -1751,6 +1754,8 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	    CPP_OPTION (pfile, warnings_are_errors) = 0;
 	  else if (!strcmp (argv[i], "-Wno-system-headers"))
 	    CPP_OPTION (pfile, warn_system_headers) = 0;
+	  else if (!strcmp (argv[i], "-Wno-endif-labels"))
+	    CPP_OPTION (pfile, warn_endif_labels) = 0;
 	  else if (! ignore)
 	    return i;
 	  break;
@@ -1832,6 +1837,10 @@ cpp_post_options (pfile)
        || CPP_OPTION (pfile, deps_file)
        || CPP_OPTION (pfile, deps_phony_targets)))
     cpp_fatal (pfile, "you must additionally specify either -M or -MM");
+
+  /* Some things should always be on in pedantic mode.  */
+  if (CPP_OPTION (pfile, pedantic) == 1)
+    CPP_OPTION (pfile, warn_endif_labels) = 1;
 }
 
 /* Set up dependency-file output.  On exit, if print_deps is non-zero

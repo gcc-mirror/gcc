@@ -1,3 +1,14 @@
+2002-03-22  Phil Edwards  <pme@gcc.gnu.org>
+
+	* cpplib.h (struct cpp_options):  New member, warn_endif_labels.
+	* cppinit.c (cpp_create_reader):  On by default.
+	(cpp_handle_option):  Handle -W[no-]endif-labels.
+	(cpp_post_options):  Also enable if -pedantic.
+	* cpplib.c (do_else):  Use it.
+	(do_endif):  Likewise.
+	* doc/cppopts.texi:  Document new option.
+	* doc/invoke.texi:  Document new option.
+
 2002-03-22  Lars Brinkhoff  <lars@nocrew.org>
 
 	* config/i386/i386.c, config/i386/i386.md: Change all occurences
