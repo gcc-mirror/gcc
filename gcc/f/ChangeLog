@@ -1,3 +1,11 @@
+Mon Jul 13 18:02:29 1998  Craig Burley  <burley@gnu.org>
+
+	Cleanups vis-a-vis g77-0.5.24:
+	* g77spec.c (lang_specific_driver): Tabify source.
+	* top.c (ffe_decode_option): Use fixed macro to set
+	internal-checking flag.
+	* top.h (ffe_set_is_do_internal_checks): Fix macro.
+
 Mon Jul 13 17:33:44 1998  Craig Burley  <burley@gnu.org>
 
 	Cleanups vis-a-vis system.h cutover and g77-0.5.24:
