@@ -57,7 +57,13 @@ fix_argv (argvec)
      char **argvec;
 {
   int i;
+  char * command0 = argvec[0];
 
+  /* Ensure that the executable pathname uses Win32 backslashes.  */
+  for (; *command0 != '\0'; command0++)
+    if (*command0 == '/')
+      *command0 = '\\';
+ 
   for (i = 1; argvec[i] != 0; i++)
     {
       int len, j;
@@ -203,7 +209,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   if (pid == -1)
     {
       *errmsg_fmt = install_error_msg;
-      *errmsg_arg = program;
+      *errmsg_arg = (char*) program;
       return -1;
     }
 

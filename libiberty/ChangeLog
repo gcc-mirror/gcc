@@ -1,3 +1,9 @@
+2003-07-02  Danny Smith  <dannysmith@users.source.forge.net>
+
+	* pex-win32.c (fix_argv): Ensure that the executable pathname
+	uses Win32 backslashes.
+	(pexecute): Cast away constness when assigning *errmsg_arg.
+
 2003-06-26  H.J. Lu <hongjiu.lu@intel.com>
 
 	* testsuite/demangle-expected: Add more GNU V3 testcases.
