@@ -97,6 +97,11 @@ static char *loop_invalid;
 
 rtx *loop_number_exit_labels;
 
+/* Indexed by loop number, counts the number of LABEL_REFs on
+   loop_number_exit_labels for this loop and all loops nested inside it.  */
+
+int *loop_number_exit_count;
+
 /* Holds the number of loop iterations.  It is zero if the number could not be
    calculated.  Must be unsigned since the number of iterations can
    be as high as 2^wordsize-1.  For loops with a wider iterator, this number
@@ -372,6 +377,7 @@ loop_optimize (f, dumpfile)
   loop_outer_loop = (int *) alloca (max_loop_num * sizeof (int));
   loop_invalid = (char *) alloca (max_loop_num * sizeof (char));
   loop_number_exit_labels = (rtx *) alloca (max_loop_num * sizeof (rtx));
+  loop_number_exit_count = (int *) alloca (max_loop_num * sizeof (int));
 
   /* Find and process each loop.
      First, find them, and record them in order of their beginnings.  */
@@ -2240,6 +2246,7 @@ find_and_verify_loops (f)
 	    loop_outer_loop[next_loop] = current_loop;
 	    loop_invalid[next_loop] = 0;
 	    loop_number_exit_labels[next_loop] = 0;
+	    loop_number_exit_count[next_loop] = 0;
 	    current_loop = next_loop;
 	    break;
 
@@ -2407,6 +2414,8 @@ find_and_verify_loops (f)
 			  LABEL_OUTSIDE_LOOP_P bit.  */
 		       if (JUMP_LABEL (insn))
 			 {
+			   int loop_num;
+
 			   for (q = 0,
 				r = loop_number_exit_labels[this_loop_num];
 				r; q = r, r = LABEL_NEXTREF (r))
@@ -2420,6 +2429,11 @@ find_and_verify_loops (f)
 				     = LABEL_NEXTREF (r);
 				 break;
 			       }
+
+			   for (loop_num = this_loop_num;
+				loop_num != -1 && loop_num != target_loop_num;
+				loop_num = loop_outer_loop[loop_num])
+			     loop_number_exit_count[loop_num]--;
 
 			   /* If we didn't find it, then something is wrong. */
 			   if (! r)
@@ -2513,6 +2527,11 @@ mark_loop_jump (x, loop_num)
 	  LABEL_OUTSIDE_LOOP_P (x) = 1;
 	  LABEL_NEXTREF (x) = loop_number_exit_labels[loop_num];
 	  loop_number_exit_labels[loop_num] = x;
+
+	  for (outer_loop = loop_num;
+	       outer_loop != -1 && outer_loop != dest_loop;
+	       outer_loop = loop_outer_loop[outer_loop])
+	    loop_number_exit_count[outer_loop]++;
 	}
 
       /* If this is inside a loop, but not in the current loop or one enclosed
@@ -2569,8 +2588,13 @@ mark_loop_jump (x, loop_num)
 	 as a branch out of this loop, but not into any loop.  */
 
       if (loop_num != -1)
-	loop_number_exit_labels[loop_num] = x;
+	{
+	  loop_number_exit_labels[loop_num] = x;
 
+	  for (outer_loop = loop_num; outer_loop != -1;
+	       outer_loop = loop_outer_loop[outer_loop])
+	    loop_number_exit_count[outer_loop]++;
+	}
       return;
     }
 }
@@ -3905,7 +3929,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 loop to ensure that it will always be executed no matter
 		 how the loop exits.  Otherwise, emit the insn after the loop,
 		 since this is slightly more efficient.  */
-	      if (loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]])
+	      if (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
 		insert_before = loop_start;
 	      else
 		insert_before = end_insert_before;
@@ -3997,7 +4021,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		 loop to ensure that it will always be executed no matter
 		 how the loop exits.  Otherwise, emit the insn after the
 		 loop, since this is slightly more efficient.  */
-	      if (loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]])
+	      if (loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
 		insert_before = loop_start;
 	      else
 		insert_before = end_insert_before;
@@ -5712,7 +5736,7 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	  num_nonfixed_reads += count_nonfixed_reads (PATTERN (p));
 
       if (bl->giv_count == 0
-	  && ! loop_number_exit_labels[uid_loop_num[INSN_UID (loop_start)]])
+	  && ! loop_number_exit_count[uid_loop_num[INSN_UID (loop_start)]])
 	{
 	  rtx bivreg = regno_reg_rtx[bl->regno];
 
