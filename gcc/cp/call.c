@@ -4810,9 +4810,6 @@ build_new_op (code, flags, arg1, arg2, arg3)
   if (code == POSTINCREMENT_EXPR || code == POSTDECREMENT_EXPR)
     arg2 = integer_zero_node;
 
-  fns = lookup_name_nonclass (fnname);
-  /* + Koenig lookup */
-
   if (arg2 && arg3)
     arglist = scratch_tree_cons (NULL_TREE, arg1, scratch_tree_cons
 		      (NULL_TREE, arg2, build_scratch_list (NULL_TREE, arg3)));
@@ -4820,6 +4817,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
     arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
   else
     arglist = build_scratch_list (NULL_TREE, arg1);
+
+  fns = lookup_name_nonclass (fnname);
+  /* + Koenig lookup */
 
   if (fns && TREE_CODE (fns) == TREE_LIST)
     fns = TREE_VALUE (fns);
@@ -5575,8 +5575,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	      candidates = 
 		add_template_candidate (candidates, t, explicit_targs,
 					this_arglist,
-					TREE_TYPE (name), 
-					LOOKUP_NORMAL); 
+					TREE_TYPE (name), flags); 
 	    }
 	  else if (! template_only)
 	    candidates = add_function_candidate (candidates, t,

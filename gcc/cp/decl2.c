@@ -2528,6 +2528,7 @@ import_export_vtable (decl, type, final)
 
       int found = CLASSTYPE_TEMPLATE_INSTANTIATION (type);
 
+#ifndef MULTIPLE_SYMBOL_SPACES
       if (! found && ! final)
 	{
 	  tree method;
@@ -2541,6 +2542,7 @@ import_export_vtable (decl, type, final)
 		break;
 	      }
 	}
+#endif
 
       if (final || ! found)
 	{

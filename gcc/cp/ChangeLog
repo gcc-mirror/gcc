@@ -1,3 +1,17 @@
+Wed Nov 12 00:48:16 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Handle freeing allocated memory when the
+	constructor throws.
+
+	* call.c (build_new_method_call): Fix flags arg.
+
+	* pt.c (do_type_instantiation): Don't try to instantiate
+	member templates.
+	(mark_decl_instantiated): If we support one_only but not
+	weak symbols, mark this one_only.
+	* decl2.c (import_export_vtable): Don't defer handling of vtables
+	if MULTIPLE_SYMBOL_SPACES.
+
 Tue Nov 11 12:02:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_end_catch_block): Lose call to __sjpopnthrow.
