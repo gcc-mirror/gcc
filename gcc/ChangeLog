@@ -1,3 +1,8 @@
+Mon Mar 15 10:20:20 1999  Mark Mitchell  <mark@markmitchell.com>
+
+	* reload.c (find_reloads): Add a REG_LABEL note if we substitute a
+	LABEL_REF for something else.
+
 Mon Mar 15 08:24:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * fold-const.c (exact_real_inverse): Move variable `float_error'
