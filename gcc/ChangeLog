@@ -3,6 +3,8 @@
 	PR c/3581
 	* c-common.c (combine_strings): Use xmalloc, not alloca.
 
+	* c-common.c (combine_strings): Tweak __FUNCTION__ warning text.
+
 2002-04-26  Bo Thorsen  <bo@suse.co.uk>
 
 	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Define for
