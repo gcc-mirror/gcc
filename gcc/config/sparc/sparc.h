@@ -223,6 +223,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 /* Common CPP definitions used by CPP_SPEC amongst the various targets
    for handling -mcpu=xxx switches.  */
 #define CPP_CPU_SPEC "\
+%{msoft-float:-D_SOFT_FLOAT} \
 %{mcypress:} \
 %{msparclite:-D__sparclite__} \
 %{mf930:-D__sparclite__} %{mf934:-D__sparclite__} \
