@@ -1,3 +1,8 @@
+2003-01-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_asm_definition): Correct handling of omitted
+	operands.
+
 2003-01-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9030

@@ -1,3 +1,7 @@
+2003-01-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/asm4.C: New test.
+
 2003-01-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/9030

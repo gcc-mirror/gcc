@@ -9592,7 +9592,9 @@ cp_parser_asm_definition (parser)
 	  if (cp_lexer_next_token_is_not (parser->lexer, 
 					  CPP_COLON)
 	      && cp_lexer_next_token_is_not (parser->lexer,
-					     CPP_SCOPE))
+					     CPP_SCOPE)
+	      && cp_lexer_next_token_is_not (parser->lexer,
+					     CPP_CLOSE_PAREN))
 	    outputs = cp_parser_asm_operand_list (parser);
 	}
       /* If the next token is `::', there are no outputs, and the
@@ -9616,7 +9618,9 @@ cp_parser_asm_definition (parser)
 	  if (cp_lexer_next_token_is_not (parser->lexer, 
 					  CPP_COLON)
 	      && cp_lexer_next_token_is_not (parser->lexer,
-					     CPP_SCOPE))
+					     CPP_SCOPE)
+	      && cp_lexer_next_token_is_not (parser->lexer,
+					     CPP_CLOSE_PAREN))
 	    inputs = cp_parser_asm_operand_list (parser);
 	}
       else if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
@@ -9631,7 +9635,9 @@ cp_parser_asm_definition (parser)
 	    /* Consume the `:'.  */
 	    cp_lexer_consume_token (parser->lexer);
 	  /* Parse the clobbers.  */
-	  clobbers = cp_parser_asm_clobber_list (parser);
+	  if (cp_lexer_next_token_is_not (parser->lexer,
+					  CPP_CLOSE_PAREN))
+	    clobbers = cp_parser_asm_clobber_list (parser);
 	}
     }
   /* Look for the closing `)'.  */
