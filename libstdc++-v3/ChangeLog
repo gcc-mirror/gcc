@@ -1,5 +1,6 @@
 2003-04-04  Jerry Quinn  <jlquinn@optonline.net>
 
+	PR libstdc++/10276
 	* src/ios.cc (ios_base::_M_init): Remove _M_callbacks
 	initialization.
 
