@@ -1,5 +1,10 @@
 2004-01-27  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/net/protocol/http/Connection.java
+	(getOutputStream): Fixed typo.
+
+2004-01-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Class.java
 	(getConstructor): Removed SecurityException from throws clause.
 	(_getConstructors): Likewise.
