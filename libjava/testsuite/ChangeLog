@@ -1,3 +1,8 @@
+2002-11-02  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/initexc.java: New file.
+	* libjava.lang/initexc.out: New file.
+
 2002-11-01  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/8415:
