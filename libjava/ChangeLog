@@ -1,3 +1,9 @@
+2001-04-27  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
+	checking.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+
 2001-04-27  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* include/jni.h (struct JNINativeInterface): Fixed types in

@@ -1364,7 +1364,9 @@ _Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
 				 jsize start, jsize len,
 				 T *buf)
 {
-  if (start < 0 || len >= array->length || start + len >= array->length)
+  // The cast to unsigned lets us save a comparison.
+  if (start < 0 || len < 0
+      || (unsigned long) (start + len) >= (unsigned long) array->length)
     {
       try
 	{
@@ -1389,7 +1391,9 @@ static void
 _Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array, 
 				 jsize start, jsize len, T *buf)
 {
-  if (start < 0 || len >= array->length || start + len >= array->length)
+  // The cast to unsigned lets us save a comparison.
+  if (start < 0 || len < 0
+      || (unsigned long) (start + len) >= (unsigned long) array->length)
     {
       try
 	{
