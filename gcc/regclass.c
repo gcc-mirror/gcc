@@ -754,7 +754,7 @@ regclass (f, nregs)
 
       for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
 	{
-	  register int best_cost = (1 << (HOST_BITS_PER_INT - 1)) - 1;
+	  register int best_cost = (1 << (HOST_BITS_PER_INT - 2)) - 1;
 	  enum reg_class best = ALL_REGS, alt = NO_REGS;
 	  /* This is an enum reg_class, but we call it an int
 	     to save lots of casts.  */
