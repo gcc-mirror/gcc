@@ -2071,6 +2071,8 @@ mangle_decl_string (decl)
     write_type (TREE_TYPE (decl));
   else if (/* The names of `extern "C"' functions are not mangled.  */
 	   (TREE_CODE (decl) == FUNCTION_DECL 
+	    /* But overloaded operator names *are* mangled.  */
+	    && !DECL_OVERLOADED_OPERATOR_P (decl)
 	    /* If there's no DECL_LANG_SPECIFIC, it's a function built
 	       by language-independent code, which never builds
 	       functions with C++ linkage.  */
