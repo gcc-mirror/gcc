@@ -1712,13 +1712,16 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 
 	      if (CONSTANT_P (op))
 		{
-		  op = force_const_mem (TYPE_MODE (type), op);
-		  op = validize_mem (op);
+		  rtx mem = force_const_mem (TYPE_MODE (type), op);
+		  if (mem)
+		    op = validize_mem (mem);
+		  else
+		    op = force_reg (TYPE_MODE (type), op);
 		}
-	      else if (GET_CODE (op) == REG
-		       || GET_CODE (op) == SUBREG
-		       || GET_CODE (op) == ADDRESSOF
-		       || GET_CODE (op) == CONCAT)
+	      if (GET_CODE (op) == REG
+		  || GET_CODE (op) == SUBREG
+		  || GET_CODE (op) == ADDRESSOF
+		  || GET_CODE (op) == CONCAT)
 		{
 		  tree qual_type = build_qualified_type (type,
 							 (TYPE_QUALS (type)
