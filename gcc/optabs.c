@@ -91,6 +91,9 @@ enum insn_code fixtab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 enum insn_code fixtrunctab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 enum insn_code floattab[NUM_MACHINE_MODES][NUM_MACHINE_MODES][2];
 
+/* Contains the optab used for each rtx code.  */
+optab code_to_optab[NUM_RTX_CODE + 1];
+
 /* SYMBOL_REF rtx's for the library functions that are called
    implicitly and not via optabs.  */
 
@@ -3404,6 +3407,10 @@ init_optab (code)
       op->handlers[i].insn_code = CODE_FOR_nothing;
       op->handlers[i].libfunc = 0;
     }
+
+  if (code != UNKNOWN)
+    code_to_optab[(int) code] = op;
+
   return op;
 }
 
