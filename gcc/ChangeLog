@@ -1,3 +1,9 @@
+2000-03-10  Richard Henderson  <rth@cygnus.com>
+
+	* except.c (can_throw): Use INTVAL on a CONST_INT.
+	(reachable_handlers): Likewise.
+	* flow.c (count_basic_blocks, find_basic_blocks_1): Likewise.
+
 2000-03-10  Andreas Jaeger  <aj@suse.de>
 
 	* config/mips/linux.h: Undefine MD_EXEC_PREFIX and
