@@ -580,9 +580,6 @@ else
        ia64-*-linux*)
 	 # Has broken backtrace()
 	 ;;
-       s390*-*-linux*)
-	 # Has broken backtrace()
-	 ;;
        *)
          AC_DEFINE(HAVE_BACKTRACE)
 	 ;;
