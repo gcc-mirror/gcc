@@ -1403,7 +1403,7 @@ do { 									\
    library.  Since we can't know at compile time if a symbol will be
    satisfied by a shared library or main program we put any symbolic
    constant into the normal data section.  */
-#define SELECT_RTX_SECTION(MODE,RTX)	\
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
   if (symbolic_operand (RTX, MODE))	\
     data_section ();			\
   else					\
@@ -1413,7 +1413,7 @@ do { 									\
    in the read-only data section to a symbol defined in a shared
    library.  Therefore, expressions that might require a reloc can
    not be placed in the read-only data section.  */
-#define SELECT_SECTION(EXP,RELOC) \
+#define SELECT_SECTION(EXP,RELOC,ALIGN) \
   if (TREE_CODE (EXP) == VAR_DECL \
       && TREE_READONLY (EXP) \
       && !TREE_THIS_VOLATILE (EXP) \

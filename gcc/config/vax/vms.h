@@ -218,7 +218,7 @@ const_section ()					\
    Since this macro is used in a number of places, we must also be able
    to decide where to place string constants.  */
 
-#define SELECT_SECTION(T,RELOC)						\
+#define SELECT_SECTION(T,RELOC,ALIGN)					\
 {									\
   if (TREE_CODE (T) == VAR_DECL)					\
     {									\

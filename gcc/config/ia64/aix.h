@@ -150,7 +150,7 @@ do {							\
    the initial value of DECL requires link-time relocations.  */
 
 #undef SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
     {									\
@@ -184,7 +184,7 @@ do {							\
 
 extern unsigned int ia64_section_threshold;
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX)					\
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
 {									\
   if (GET_MODE_SIZE (MODE) > 0						\
       && GET_MODE_SIZE (MODE) <= ia64_section_threshold)		\

@@ -177,7 +177,7 @@ const_section ()							\
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
     {									\
@@ -207,4 +207,4 @@ const_section ()							\
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
 
-#define SELECT_RTX_SECTION(MODE,RTX) const_section()
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) const_section()

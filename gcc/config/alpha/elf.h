@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha w/ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Richard Henderson (rth@tamu.edu).
 
 This file is part of GNU CC.
@@ -222,6 +223,16 @@ do {									\
 #undef  FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
+#ifdef HAVE_GAS_SUBSECTION_ORDERING
+
+#define ASM_SECTION_START_OP	"\t.subsection\t-1"
+
+/* Output assembly directive to move to the beginning of current section.  */
+#define ASM_OUTPUT_SECTION_START(FILE)	\
+  fprintf ((FILE), "%s\n", ASM_SECTION_START_OP)
+
+#endif
+
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
@@ -240,8 +251,6 @@ do {									\
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)	\
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP)
 
-extern void ctors_section		PARAMS ((void));
-extern void dtors_section		PARAMS ((void));
 extern void sbss_section		PARAMS ((void));
 extern void sdata_section		PARAMS ((void));
 
@@ -300,6 +309,8 @@ void FN ()					\
 	 {							\
 	   if (flag_writable_strings)				\
 	     SECNUM = 2;					\
+	   else							\
+	     SECNUM = 0x101;					\
 	 }							\
        else if (TREE_CODE (DECL) == VAR_DECL)			\
 	 {							\
@@ -311,6 +322,17 @@ void FN ()					\
 		    || TREE_SIDE_EFFECTS (DECL)			\
 		    || ! TREE_CONSTANT (DECL_INITIAL (DECL)))	\
 	     SECNUM = 2;					\
+	  else if (flag_merge_constants >= 2)			\
+	    {							\
+	      /* C and C++ don't allow different variables to	\
+		 share the same location.  -fmerge-all-constants\
+		 allows even that (at the expense of not	\
+		 conforming).  */				\
+	      if (TREE_CODE (DECL_INITIAL (DECL)) == STRING_CST)\
+		SECNUM = 0x201;					\
+	      else						\
+		SECNUM = 0x301;					\
+	    }							\
 	 }							\
        else if (TREE_CODE (DECL) == CONSTRUCTOR)		\
 	 {							\
@@ -322,7 +344,7 @@ void FN ()					\
 	 }							\
 								\
        /* Select small data sections based on size.  */		\
-       if (SECNUM >= 2)						\
+       if ((SECNUM & 0xff) >= 2)				\
 	 {							\
 	   int size = int_size_in_bytes (TREE_TYPE (DECL));	\
 	   if (size >= 0 && size <= g_switch_value)		\
@@ -332,26 +354,42 @@ void FN ()					\
    while (0)
 
 #undef  SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC)		\
-  do						\
-    {						\
-      typedef void (*sec_fn) PARAMS ((void));	\
-      static sec_fn const sec_functions[6] =	\
-      {						\
-	text_section,				\
-	const_section,				\
-	data_section,				\
-	sdata_section,				\
-	bss_section,				\
-	sbss_section				\
-      };					\
-						\
-      int sec;					\
-						\
-      DO_SELECT_SECTION (sec, DECL, RELOC);	\
-						\
-      (*sec_functions[sec]) ();			\
-    }						\
+#define SELECT_SECTION(DECL, RELOC, ALIGN)		\
+  do							\
+    {							\
+      typedef void (*sec_fn) PARAMS ((void));		\
+      static sec_fn const sec_functions[6] =		\
+      {							\
+	text_section,					\
+	const_section,					\
+	data_section,					\
+	sdata_section,					\
+	bss_section,					\
+	sbss_section					\
+      };						\
+							\
+      int sec;						\
+							\
+      DO_SELECT_SECTION (sec, DECL, RELOC);		\
+							\
+      switch (sec)					\
+	{						\
+	case 0x101:					\
+	  mergeable_string_section (DECL, ALIGN, 0);	\
+	  break;					\
+	case 0x201:					\
+	  mergeable_string_section (DECL_INITIAL (DECL),\
+				    ALIGN, 0);		\
+	  break;					\
+	case 0x301:					\
+	  mergeable_constant_section (DECL_MODE (DECL),	\
+				      ALIGN, 0);	\
+	  break;					\
+	default:					\
+	  (*sec_functions[sec]) ();			\
+	  break;					\
+	}						\
+    }							\
   while (0)
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
@@ -380,7 +418,7 @@ void FN ()					\
       STRIP_NAME_ENCODING (name, name);					\
       nlen = strlen (name);						\
 									\
-      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];			\
+      prefix = prefixes[sec & 0xff][DECL_ONE_ONLY(DECL)];		\
       plen = strlen (prefix);						\
 									\
       string = alloca (nlen + plen + 1);				\
@@ -399,8 +437,8 @@ void FN ()					\
    go into the const section.  */
 
 #undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX) \
-   const_section()
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) \
+   mergeable_constant_section((MODE), (ALIGN), 0)
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

@@ -717,7 +717,7 @@ struct rt_cargs {int gregs, fregs; };
 
    On ROMP, all constants are in the data area.  */
 
-#define SELECT_RTX_SECTION(MODE, X)	data_section ()
+#define SELECT_RTX_SECTION(MODE, X, ALIGN)	data_section ()
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

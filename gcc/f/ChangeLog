@@ -1,3 +1,8 @@
+2001-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* com.c (ffe_init_options): Default to -fmerge-all-constants
+	if optimizing.
+
 2000-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* target.h (FFETARGET_32bit_longs): Don't define

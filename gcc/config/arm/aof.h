@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 char *aof_text_section ();
 #define TEXT_SECTION_ASM_OP aof_text_section ()
 
-#define SELECT_RTX_SECTION(MODE,RTX) text_section ();
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) text_section ();
 
 char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()

@@ -10860,6 +10860,10 @@ arm_elf_asm_named_section (name, flags)
     *f++ = 'x';
   if (flags & SECTION_SMALL)
     *f++ = 's';
+  if (flags & SECTION_MERGE)
+    *f++ = 'M';
+  if (flags & SECTION_STRINGS)
+    *f++ = 'S';
   *f = '\0';
 
   if (flags & SECTION_BSS)
@@ -10867,6 +10871,10 @@ arm_elf_asm_named_section (name, flags)
   else
     type = "progbits";
 
-  fprintf (asm_out_file, "\t.section\t%s,\"%s\",%%%s\n",
-	   name, flagchars, type);
+  if (flags & SECTION_ENTSIZE)
+    fprintf (asm_out_file, "\t.section\t%s,\"%s\",%%%s,%d\n",
+	     name, flagchars, type, flags & SECTION_ENTSIZE);
+  else
+    fprintf (asm_out_file, "\t.section\t%s,\"%s\",%%%s\n",
+	     name, flagchars, type);
 }

@@ -566,7 +566,7 @@ fini_section ()								\
 
 /* Override elfos.h definition.  */
 #undef	SELECT_RTX_SECTION
-#define	SELECT_RTX_SECTION(MODE, X) rs6000_select_rtx_section (MODE, X)
+#define	SELECT_RTX_SECTION(MODE, X, ALIGN) rs6000_select_rtx_section (MODE, X)
 
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
@@ -575,7 +575,7 @@ fini_section ()								\
 
 /* Override elfos.h definition.  */
 #undef	SELECT_SECTION
-#define	SELECT_SECTION(DECL, RELOC) rs6000_select_section (DECL, RELOC)
+#define	SELECT_SECTION(DECL, RELOC, ALIGN) rs6000_select_section (DECL, RELOC)
 
 /* A C statement to build up a unique section name, expressed as a
    STRING_CST node, and assign it to DECL_SECTION_NAME (decl).

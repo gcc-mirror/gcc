@@ -1534,7 +1534,8 @@ sbss_section ()								\
    or a constant of some sort.  RELOC indicates whether the initial value
    of EXP requires link-time relocations.  */
 #undef  SELECT_SECTION
-#define SELECT_SECTION(EXP, RELOC) m32r_select_section ((EXP), (RELOC))
+#define SELECT_SECTION(EXP, RELOC, ALIGN) \
+  m32r_select_section ((EXP), (RELOC))
 
 /* A C statement or statements to switch to the appropriate section for
    output of RTX in mode MODE.  You can assume that RTX

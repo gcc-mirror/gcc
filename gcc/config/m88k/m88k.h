@@ -2480,7 +2480,7 @@ sdata_section ()							\
 
    For strings, the section is selected before the segment info is encoded.  */
 #undef	SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL,RELOC,ALIGN)				\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
     {									\

@@ -5650,25 +5650,26 @@ If these items should be placed in the text section, this macro should
 not be defined.
 
 @findex SELECT_SECTION
-@item SELECT_SECTION (@var{exp}, @var{reloc})
+@item SELECT_SECTION (@var{exp}, @var{reloc}, @var{align})
 A C statement or statements to switch to the appropriate section for
 output of @var{exp}.  You can assume that @var{exp} is either a
 @code{VAR_DECL} node or a constant of some sort.  @var{reloc}
 indicates whether the initial value of @var{exp} requires link-time
 relocations.  Select the section by calling @code{text_section} or one
-of the alternatives for other sections.
+of the alternatives for other sections.  @var{align} is the constant
+alignment in bits.
 
 Do not define this macro if you put all read-only variables and
 constants in the read-only data section (usually the text section).
 
 @findex SELECT_RTX_SECTION
-@item SELECT_RTX_SECTION (@var{mode}, @var{rtx})
+@item SELECT_RTX_SECTION (@var{mode}, @var{rtx}, @var{align})
 A C statement or statements to switch to the appropriate section for
 output of @var{rtx} in mode @var{mode}.  You can assume that @var{rtx}
 is some kind of constant in RTL@.  The argument @var{mode} is redundant
 except in the case of a @code{const_int} rtx.  Select the section by
 calling @code{text_section} or one of the alternatives for other
-sections.
+sections.  @var{align} is the constant alignment in bits.
 
 Do not define this macro if you put all constants in the read-only
 data section.

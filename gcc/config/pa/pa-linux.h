@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Put plabels into the data section so we can relocate them.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX)	\
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)	\
   if (flag_pic && function_label_operand (RTX, MODE))	\
     data_section ();					\
   else							\

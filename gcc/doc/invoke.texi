@@ -262,8 +262,8 @@ in the following sections.
 -fforce-addr  -fforce-mem  -ffunction-sections @gol
 -fgcse  -fgcse-lm  -fgcse-sm @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
--fkeep-static-consts  -fmove-all-movables @gol
--fno-default-inline  -fno-defer-pop @gol
+-fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
+-fmove-all-movables  -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
@@ -3320,6 +3320,23 @@ on, even if the variables aren't referenced.
 GCC enables this option by default.  If you want to force the compiler to
 check if the variable was referenced, regardless of whether or not
 optimization is turned on, use the @option{-fno-keep-static-consts} option.
+
+@item -fmerge-constants
+Attempt to merge identical constants (string constants and floating point
+constants) accross compilation units.
+
+This option is default for optimized compilation if assembler and linker
+support it.  Use @option{-fno-merge-constants} to inhibit this behaviour.
+
+@item -fmerge-all-constants
+Attempt to merge identical constants and identical variables.
+
+This option implies @option{-fmerge-constants}.  In addition to
+@option{-fmerge-constants} this considers e.g. even constant initialized
+arrays or initialized constant variables with integral or floating point
+types.  Languages like C or C++ require each non-automatic variable to
+have distinct location, so using this option will result in non-conforming
+behaviour.
 
 @item -fno-function-cse
 @opindex fno-function-cse
