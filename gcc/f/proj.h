@@ -1,6 +1,6 @@
 /* proj.h file for Gnu Fortran
    Copyright (C) 1995, 1996 Free Software Foundation, Inc.
-   Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
+   Contributed by James Craig Burley (burley@gnu.org).
 
 This file is part of GNU Fortran.
 
@@ -35,16 +35,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define BUILT_WITH_270 0
 #endif
 #endif	/* !defined (BUILT_WITH_270) */
-
-/* This file used to attempt to allow for all sorts of broken systems.
-   Because the auto-configuration scripts in conf-proj(.in) didn't work
-   on all systems, and I received far too many bug reports about them,
-   I decided to stop trying to cater to broken systems at all, and
-   simply remove all but the simplest and most useful code (which is
-   still in proj.c).
-
-   XXX Not entirely true anymore.  We do want to cater to broken systems
-   again by using autoconf to handle the braindamage for us.  */
 
 /* Include files everyone gets. */
 
