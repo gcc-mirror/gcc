@@ -119,7 +119,7 @@ T_ADAFLAGS =
 # See below for how to change them for certain systems.
 
 # List of language subdirectories.
-SUBDIRS =@subdirs@
+SUBDIRS =@subdirs@ build
 
 # Selection of languages to be made.
 CONFIG_LANGUAGES = @all_languages@
@@ -3899,6 +3899,7 @@ stage1-start:
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage1/specs
 	-mv $(STAGEMOVESTUFF) stage1
+	-mv build/* stage1/build
 	-cp -p $(STAGECOPYSTUFF) stage1
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
@@ -3937,6 +3938,7 @@ stage2-start:
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage2/specs
 	-mv $(STAGEMOVESTUFF) stage2
+	-mv build/* stage2/build
 	-cp -p $(STAGECOPYSTUFF) stage2
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
@@ -3971,6 +3973,7 @@ stage3-start:
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage3/specs
 	-mv $(STAGEMOVESTUFF) stage3
+	-mv build/* stage3/build
 	-cp -p $(STAGECOPYSTUFF) stage3
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
@@ -4005,6 +4008,7 @@ stage4-start:
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage4/specs
 	-mv $(STAGEMOVESTUFF) stage4
+	-mv build/* stage4/build
 	-cp -p $(STAGECOPYSTUFF) stage4
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
@@ -4037,6 +4041,7 @@ stageprofile-start:
 	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
 	 done
 	-mv $(STAGEMOVESTUFF) stageprofile
+	-mv build/* stageprofile/build
 	-cp -p $(STAGECOPYSTUFF) stageprofile
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
@@ -4069,6 +4074,7 @@ stagefeedback-start:
 	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
 	 done
 	-mv $(STAGEMOVESTUFF) stagefeedback
+	-mv build/* stagefeedback/build
 	-cp -p $(STAGECOPYSTUFF) stagefeedback
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
