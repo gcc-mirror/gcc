@@ -1616,6 +1616,7 @@ java_lex (java_lval)
 	    case CATCH_TK:
 	    case THROW_TK:
 	    case INSTANCEOF_TK:
+	    case ASSERT_TK:
 	      BUILD_OPERATOR (kw->token);
 
 	    default:

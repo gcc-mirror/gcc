@@ -220,6 +220,7 @@ static tree build_string_concatenation PARAMS ((tree, tree));
 static tree patch_string_cst PARAMS ((tree));
 static tree patch_string PARAMS ((tree));
 static tree encapsulate_with_try_catch PARAMS ((int, tree, tree, tree));
+static tree build_assertion PARAMS ((int, tree, tree));
 static tree build_try_statement PARAMS ((int, tree, tree));
 static tree build_try_finally_statement PARAMS ((int, tree, tree));
 static tree patch_try_statement PARAMS ((tree));
@@ -505,6 +506,7 @@ static GTY(()) tree src_parse_roots[1];
 %token   SWITCH_TK       CONST_TK           TRY_TK
 %token   FOR_TK          NEW_TK             CONTINUE_TK
 %token   GOTO_TK         PACKAGE_TK         THIS_TK
+%token   ASSERT_TK
 
 %token   BYTE_TK         SHORT_TK           INT_TK            LONG_TK
 %token   CHAR_TK         INTEGRAL_TK
@@ -571,12 +573,13 @@ static GTY(()) tree src_parse_roots[1];
 			left_hand_side assignment for_header for_begin
 			constant_expression do_statement_begin empty_statement
 			switch_statement synchronized_statement throw_statement
-			try_statement switch_expression switch_block
+			try_statement assert_statement
+			switch_expression switch_block
 			catches catch_clause catch_clause_parameter finally
 			anonymous_class_creation trap_overflow_corner_case
 %type    <node>         return_statement break_statement continue_statement
 
-%type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK
+%type    <operator>     ASSIGN_TK      MULT_ASSIGN_TK  DIV_ASSIGN_TK  
 %type    <operator>     REM_ASSIGN_TK  PLUS_ASSIGN_TK  MINUS_ASSIGN_TK
 %type    <operator>     LS_ASSIGN_TK   SRS_ASSIGN_TK   ZRS_ASSIGN_TK
 %type    <operator>     AND_ASSIGN_TK  XOR_ASSIGN_TK   OR_ASSIGN_TK
@@ -588,7 +591,7 @@ static GTY(()) tree src_parse_roots[1];
 %token   <operator>     OP_TK OSB_TK DOT_TK THROW_TK INSTANCEOF_TK
 %type    <operator>	THIS_TK SUPER_TK RETURN_TK BREAK_TK CONTINUE_TK
 %type	 <operator>     CASE_TK DEFAULT_TK TRY_TK CATCH_TK SYNCHRONIZED_TK
-%type	 <operator>     NEW_TK
+%type	 <operator>     NEW_TK ASSERT_TK
 
 %type	 <node>		method_body
 
@@ -1460,6 +1463,7 @@ statement_without_trailing_substatement:
 |	synchronized_statement
 |	throw_statement
 |	try_statement
+|	assert_statement
 ;
 
 empty_statement:
@@ -1842,6 +1846,21 @@ throw_statement:
 |	THROW_TK error
 		{yyerror ("Missing term"); RECOVER;}
 |	THROW_TK expression error
+		{yyerror ("';' expected"); RECOVER;}
+;
+
+assert_statement:
+	ASSERT_TK expression REL_CL_TK expression SC_TK
+		{
+		  $$ = build_assertion ($1.location, $2, $4);
+		}
+|	ASSERT_TK expression SC_TK
+		{
+		  $$ = build_assertion ($1.location, $2, NULL_TREE);
+		}
+|	ASSERT_TK error
+		{yyerror ("Missing term"); RECOVER;}
+|	ASSERT_TK expression error
 		{yyerror ("';' expected"); RECOVER;}
 ;
 
@@ -15289,6 +15308,78 @@ patch_switch_statement (node)
   CAN_COMPLETE_NORMALLY (node)
     = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1))
       || ! SWITCH_HAS_DEFAULT (node);
+  return node;
+}
+
+/* Assertions.  */
+
+/* Build an assertion expression for `assert CONDITION : VALUE'; VALUE
+   might be NULL_TREE.  */
+static tree
+build_assertion (location, condition, value)
+     int location;
+     tree condition, value;
+{
+  tree node;
+  tree klass = GET_CPC ();
+
+  if (! CLASS_USES_ASSERTIONS (klass))
+    {
+      tree field, classdollar, id, call;
+      tree class_type = TREE_TYPE (klass);
+
+      field = add_field (class_type,
+			 get_identifier ("$assertionsDisabled"),
+			 boolean_type_node,
+			 ACC_PRIVATE | ACC_STATIC | ACC_FINAL);
+      MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (field);
+      FIELD_SYNTHETIC (field) = 1;
+
+      if (!TYPE_DOT_CLASS (class_type))
+	build_dot_class_method (class_type);
+      classdollar = build_dot_class_method_invocation (class_type);
+
+      /* Call CLASS.desiredAssertionStatus().  */
+      id = build_wfl_node (get_identifier ("desiredAssertionStatus"));
+      call = build (CALL_EXPR, NULL_TREE, id, NULL_TREE, NULL_TREE);
+      call = make_qualified_primary (classdollar, call, location);
+      TREE_SIDE_EFFECTS (call) = 1;
+      DECL_INITIAL (field) = call;
+
+      /* Record the initializer in the initializer statement list.  */
+      call = build (MODIFY_EXPR, NULL_TREE, field, call);
+      TREE_CHAIN (call) = CPC_STATIC_INITIALIZER_STMT (ctxp);
+      SET_CPC_STATIC_INITIALIZER_STMT (ctxp, call);
+      MODIFY_EXPR_FROM_INITIALIZATION_P (call) = 1;
+
+      CLASS_USES_ASSERTIONS (klass) = 1;
+    }
+
+  if (value != NULL_TREE)
+    value = tree_cons (NULL_TREE, value, NULL_TREE);
+
+  node = build_wfl_node (get_identifier ("java"));
+  node = make_qualified_name (node, build_wfl_node (get_identifier ("lang")),
+			      location);
+  node = make_qualified_name (node, build_wfl_node (get_identifier ("AssertionError")),
+			      location);
+
+  node = build (NEW_CLASS_EXPR, NULL_TREE, node, value, NULL_TREE);
+  TREE_SIDE_EFFECTS (node) = 1;
+  /* It is too early to use BUILD_THROW.  */
+  node = build1 (THROW_EXPR, NULL_TREE, node);
+  TREE_SIDE_EFFECTS (node) = 1;
+
+  /* We invert the condition; if we just put NODE as the `else' part
+     then we generate weird-looking bytecode.  */
+  condition = build1 (TRUTH_NOT_EXPR, NULL_TREE, condition);
+  /* Check $assertionsDisabled.  */
+  condition
+    = build (TRUTH_ANDIF_EXPR, NULL_TREE,
+	     build1 (TRUTH_NOT_EXPR, NULL_TREE,
+		     build_wfl_node (get_identifier ("$assertionsDisabled"))),
+	     condition);
+  node = build_if_else_statement (location, condition, node, NULL_TREE);
   return node;
 }
 
