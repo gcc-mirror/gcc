@@ -1,3 +1,7 @@
+1999-08-10  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
+
+	* lex.c (do_identifier): Remove unnecessary lookup of class field.
+
 1999-08-09  Martin v. Loewis  <martin@mira.isdn.cs.tu-berlin.de>
 
 	* decl2.c (set_decl_namespace): Do not complain about non-matching
