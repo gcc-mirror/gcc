@@ -32,6 +32,7 @@ typedef struct {
 #define va_end(pvar)
 
 #define va_arg(pvar,type)  \
+__extension__ \
     ({  type __va_result; \
         if ((pvar).__pnt >= 20) { \
            __va_result = *( (type *) ((pvar).__stack + (pvar).__pnt - 20)); \

@@ -94,6 +94,7 @@ typedef __va_buf va_list;
 	 
 
 #define va_arg(_AP, _MODE)	\
+__extension__								\
 ({__voidptr *__ap = (__voidptr*)&_AP;					\
   register int __size = sizeof (_MODE);					\
   register int __onstack =						\

@@ -34,6 +34,7 @@ typedef char * __va___list;
    in the stack are made to be word-aligned; for an aggregate that is
    not word-aligned, we advance the pointer to the first non-reg slot.  */
 #define va_arg(pvar,TYPE)					\
+__extension__							\
 ({ TYPE __va_temp;						\
    ((__builtin_classify_type (__va_temp) >= 12)			\
     ? ((pvar) += __va_rounded_size (TYPE *),			\
