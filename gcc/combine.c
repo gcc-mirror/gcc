@@ -768,8 +768,14 @@ setup_incoming_promotions ()
   int unsignedp;
   rtx first = get_insns ();
 
+#ifndef OUTGOING_REGNO
+#define OUTGOING_REGNO(N) N
+#endif
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (FUNCTION_ARG_REGNO_P (regno)
+    /* Check whether this register can hold an incoming pointer
+       argument.  FUNCTION_ARG_REGNO_P tests outgoing register
+       numbers, so translate if necessary due to register windows.  */
+    if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (regno))
 	&& (reg = promoted_input_arg (regno, &mode, &unsignedp)) != 0)
       {
 	record_value_for_reg

@@ -1,3 +1,8 @@
+1999-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.c (setup_incoming_promotions): Pass an outgoing
+	regno to FUNCTION_ARG_REGNO_P which it expects.
+
 1999-11-28  Andreas Jaeger  <aj@suse.de>
 
 	* mips/linux.h (CPP_PREDEFINES): Undefine before redefining.
