@@ -1,3 +1,8 @@
+2001-12-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* emit-rtl.c (gen_lowpart_common): Cast array element to HOST_WIDE_INT
+	before shifting.
+
 2001-12-02  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-decl.c (duplicate_decls, push_parm_decl): Remove leading
@@ -434,7 +439,7 @@ Wed Nov 28 10:42:19 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* toplev.c: Update comment.
 	* doc/passes.texi: Update.
 objc:
-	* ojbc-act.c (LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN,
+	* objc-act.c (LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN,
 	LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS,
 	LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P): Override.
 	(objc_init): Update to use c_objc_common_init.
