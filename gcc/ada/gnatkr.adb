@@ -26,10 +26,13 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
+with Gnatvsn;
 with Krunch;
 with System.IO; use System.IO;
 
 procedure Gnatkr is
+   pragma Ident (Gnatvsn.Gnat_Static_Version_String);
+
    Count        : Natural;
    Maxlen       : Integer;
    Exit_Program : exception;

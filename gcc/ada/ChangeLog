@@ -1,3 +1,89 @@
+2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnatvsn.ads (Gnat_Static_Version_String): New constant, used to
+	minimize the differences with ACT tree.
+
+	* gnatkr.adb, gnatlink.adb, gnatls.adb, gnatmake.adb,
+	gnatprep.adb, gnatpsta.adb, gnatvsn.ads: Take advantage of
+	Gnatvsn.Gnat_Static_Version_String to reduce differences between
+	ACT and FSF trees.
+
+2003-10-24  Pascal Obry  <obry@gnat.com>
+
+	* adadecode.c (ostrcpy): New function.
+	(__gnat_decode): Use ostrcpy of strcpy.
+	(has_prefix): Set first parameter a const.
+	(has_suffix): Set first parameter a const.
+	Update copyright notice. Fix source name in header.
+	Removes a trailing space.
+	PR ada/12014.
+
+2003-10-24  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* exp_disp.adb: 
+	Remove the test against being in No_Run_Time_Mode before generating a
+	call to Register_Tag. It is redundant with the test against the
+	availability of the function Register_Tag.
+
+2003-10-24  Vincent Celier  <celier@gnat.com>
+
+	* g-catiio.adb: (Month_Name): Correct spelling of February
+
+	* make.adb: (Mains): New package
+	(Initialize): Call Mains.Delete
+	(Gnatmake): Check that each main on the command line is a source of a
+	project file and, if there are several mains, each of them is a source
+	of the same project file.
+	(Gnatmake): When a foreign language is specified in attribute Languages,
+	no main is specified on the command line and attribute Mains is not
+	empty, only build the Ada main. If there is no Ada main, just compile
+	the Ada sources and their closure.
+	(Gnatmake): If a main is specified on the command line with directory
+	information, check that the source exists and, if it does, that the path
+	is the actual path of a source of a project.
+
+	* prj-env.adb: 
+	(File_Name_Of_Library_Unit_Body): New Boolean parameter Full_Path. When
+	Full_Path is True, return the full path instead of the simple file name.
+	(Project_Of): New function
+
+	* prj-env.ads: 
+	(File_Name_Of_Library_Unit_Body): New Boolean parameter Full_Path,
+	defaulted to False.
+	(Project_Of): New function
+
+2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.generic: 
+	Ensure objects of main project are always checked and rebuilt if needed.
+	Set CC to gcc by default.
+	Prepare new handling of link by creating a global archive (not activated
+	yet).
+
+	* adadecode.h, atree.h, elists.h, nlists.h, raise.h,
+	stringt.h: Update copyright notice. Remove trailing blanks.
+	Fix source name in header.
+
+2003-10-24  Robert Dewar  <dewar@gnat.com>
+
+	* sem_ch12.adb: Minor reformatting
+
+	* sem_ch3.adb: 
+	Minor reformatting (including new function return style throughout)
+
+	* sem_ch3.ads: 
+	Minor reformatting (including new function return style throughout)
+
+2003-10-24  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* adadecode.h, atree.h, elists.h, nlists.h, raise.h,
+	stringt.h: Update copyright notice. Remove trailing blanks.
+	Fix source name in header.
+
+2003-10-24  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-10-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* adadecode.h, atree.h, elists.h, namet.h, nlists.h, raise.h,

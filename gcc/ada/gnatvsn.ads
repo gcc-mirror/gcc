@@ -41,6 +41,10 @@ package Gnatvsn is
    --  GNATBIND, GNATCHOP, GNATFIND, GNATLINK, GNATMAKE, GNATXREF, are run
    --  (with appropriate verbose option switch set).
 
+   Gnat_Static_Version_String : constant String := "GNU Ada";
+   --  Static string identifying this version, that can be used as an argument
+   --  to e.g. pragma Ident.
+
    Gnat_Version_Type : constant String := "FSF    ";
    --  GNAT FSF version. This version of GNAT is part of a Free Software
    --  Foundation release of the GNU Compiler Collection (GCC). The binder

@@ -44,6 +44,7 @@ with GNAT.OS_Lib;          use GNAT.OS_Lib;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 
 procedure Gnatlink is
+   pragma Ident (Gnatvsn.Gnat_Static_Version_String);
 
    package Gcc_Linker_Options is new Table.Table (
      Table_Component_Type => String_Access,
