@@ -362,26 +362,39 @@ void test04()
   if (!setenv("LC_COLLATE", "de_DE", 1))
     {
       std::locale loc("");
+
+#if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
 	      "LC_TIME=C;LC_MONETARY=C;LC_MESSAGES=C;LC_PAPER=C;"
 	      "LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;LC_MEASUREMENT=C;"
 	      "LC_IDENTIFICATION=C" );
+#else
+      VERIFY( loc.name() == "LC_CTYPE=C;LC_NUMERIC=C;LC_COLLATE=de_DE;"
+	      "LC_TIME=C;LC_MONETARY=C;LC_MESSAGES=C" );
+#endif
     }
 
   // Changing the LANG default while LC_COLLATE is set.
   if (!setenv("LANG", "fr_FR", 1))
     {
       std::locale loc("");
+#if _GLIBCPP_NUM_CATEGORIES
       VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
 	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
 	      "LC_MESSAGES=fr_FR;LC_PAPER=fr_FR;LC_NAME=fr_FR;"
 	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
 	      "LC_IDENTIFICATION=fr_FR" );
+#else
+      VERIFY( loc.name() == "LC_CTYPE=fr_FR;LC_NUMERIC=fr_FR;"
+	      "LC_COLLATE=de_DE;LC_TIME=fr_FR;LC_MONETARY=fr_FR;"
+	      "LC_MESSAGES=fr_FR" );
+#endif
     }
   
   // Changing another (C only) category.
   const char* oldLC_IDENTIFICATION =
     getenv("LC_IDENTIFICATION") ? strdup(getenv("LC_IDENTIFICATION")) : "";
+#if _GLIBCPP_NUM_CATEGORIES
   if (!setenv("LC_IDENTIFICATION", "it_IT", 1))
     {
       std::locale loc("");
@@ -391,6 +404,7 @@ void test04()
 	      "LC_ADDRESS=fr_FR;LC_TELEPHONE=fr_FR;LC_MEASUREMENT=fr_FR;"
 	      "LC_IDENTIFICATION=it_IT" );
     }
+#endif
 
   // Restore the environment.
   setenv("LC_ALL", oldLC_ALL ? oldLC_ALL : "", 1);
