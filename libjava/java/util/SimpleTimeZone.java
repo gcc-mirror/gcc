@@ -1,5 +1,5 @@
 /* java.util.SimpleTimeZone
-   Copyright (C) 1998, 1999, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -146,7 +146,15 @@ public class SimpleTimeZone extends TimeZone
    * @serial
    */
   private int startTime;
-   
+
+  /**
+   * This variable specifies the mode that startTime is specified in.  By
+   * default it is WALL_TIME, but can also be STANDARD_TIME or UTC_TIME.  For
+   * startTime, STANDARD_TIME and WALL_TIME are equivalent.
+   * @serial
+   */
+  private int startTimeMode = WALL_TIME;
+
   /**
    * The month in which daylight savings ends.  This is one of the
    * constants Calendar.JANUARY, ..., Calendar.DECEMBER.  
@@ -186,6 +194,13 @@ public class SimpleTimeZone extends TimeZone
   private int endTime;
 
   /**
+   * This variable specifies the mode that endTime is specified in.  By
+   * default it is WALL_TIME, but can also be STANDARD_TIME or UTC_TIME.
+   * @serial
+   */
+  private int endTimeMode = WALL_TIME;
+
+  /**
    * This variable points to a deprecated array from JDK 1.1.  It is
    * ignored in JDK 1.2 but streamed out for compatibility with JDK 1.1.
    * The array contains the lengths of the months in the year and is
@@ -222,6 +237,23 @@ public class SimpleTimeZone extends TimeZone
   private int serialVersionOnStream = 1;
 
   private static final long serialVersionUID = -403250971215465050L;
+
+  /**
+   * Constant to indicate that start and end times are specified in standard
+   * time, without adjusting for daylight savings.
+   */
+  public static final int STANDARD_TIME = 1;
+
+  /**
+   * Constant to indicate that start and end times are specified in wall
+   * time, adjusting for daylight savings.  This is the default.
+   */
+  public static final int WALL_TIME = 0;
+
+  /**
+   * Constant to indicate that start and end times are specified in UTC.
+   */
+  public static final int UTC_TIME = 2;
 
   /**
    * Create a <code>SimpleTimeZone</code> with the given time offset
@@ -283,7 +315,10 @@ public class SimpleTimeZone extends TimeZone
    * @param endday A day in month or a day of week number, as 
    * described above.
    * @param endDayOfWeek The end rule day of week; see above.
-   * @param endTime A time in millis in standard time.  */
+   * @param endTime A time in millis in standard time.
+   * @throws IllegalArgumentException if parameters are invalid or out of
+   * range.
+   */
   public SimpleTimeZone(int rawOffset, String id,
 			int startMonth, int startDayOfWeekInMonth,
 			int startDayOfWeek, int startTime,
@@ -310,6 +345,7 @@ public class SimpleTimeZone extends TimeZone
    *
    * @param dstSavings the amount of savings for daylight savings
    * time in milliseconds.  This must be positive.
+   * @since 1.2
    */
   public SimpleTimeZone(int rawOffset, String id,
 			int startMonth, int startDayOfWeekInMonth,
@@ -320,6 +356,51 @@ public class SimpleTimeZone extends TimeZone
     this(rawOffset, id,
 	 startMonth, startDayOfWeekInMonth, startDayOfWeek, startTime,
 	 endMonth, endDayOfWeekInMonth, endDayOfWeek, endTime);
+
+    this.dstSavings = dstSavings;
+  }
+
+  /**
+   * This constructs a new SimpleTimeZone that supports a daylight savings
+   * rule.  The parameter are the same as for the constructor above, except
+   * there are the additional startTimeMode, endTimeMode, and dstSavings
+   * parameters.
+   *
+   * @param startTimeMode the mode that start times are specified in.  One of
+   * WALL_TIME, STANDARD_TIME, or UTC_TIME.
+   * @param endTimeMode the mode that end times are specified in.  One of
+   * WALL_TIME, STANDARD_TIME, or UTC_TIME.
+   * @param dstSavings the amount of savings for daylight savings
+   * time in milliseconds.  This must be positive.
+   * @throws IllegalArgumentException if parameters are invalid or out of
+   * range.
+   * @since 1.4
+   */
+  public SimpleTimeZone(int rawOffset, String id,
+			int startMonth, int startDayOfWeekInMonth,
+			int startDayOfWeek, int startTime, int startTimeMode,
+			int endMonth, int endDayOfWeekInMonth,
+			int endDayOfWeek, int endTime, int endTimeMode,
+			int dstSavings)
+  {
+    this.rawOffset = rawOffset;
+    setID(id);
+    useDaylight = true;
+
+    if (startTimeMode < WALL_TIME || startTimeMode > UTC_TIME)
+      throw new IllegalArgumentException("startTimeMode must be one of WALL_TIME, STANDARD_TIME, or UTC_TIME");
+    if (endTimeMode < WALL_TIME || endTimeMode > UTC_TIME)
+      throw new IllegalArgumentException("endTimeMode must be one of WALL_TIME, STANDARD_TIME, or UTC_TIME");
+    this.startTimeMode = startTimeMode;
+    this.endTimeMode = endTimeMode;
+
+    setStartRule(startMonth, startDayOfWeekInMonth,
+		 startDayOfWeek, startTime);
+    setEndRule(endMonth, endDayOfWeekInMonth, endDayOfWeek, endTime);
+    if (startMonth == endMonth)
+      throw new IllegalArgumentException
+	("startMonth and endMonth must be different");
+    this.startYear = 0;
 
     this.dstSavings = dstSavings;
   }
@@ -400,8 +481,77 @@ public class SimpleTimeZone extends TimeZone
     // of this method.
     this.startDay = Math.abs(day);
     this.startDayOfWeek = Math.abs(dayOfWeek);
-    this.startTime = time;
+    if (this.startTimeMode == WALL_TIME || this.startTimeMode == STANDARD_TIME)
+      this.startTime = time;
+    else
+      // Convert from UTC to STANDARD
+      this.startTime = time + this.rawOffset;
     useDaylight = true;
+  }
+
+  /**
+   * Sets the daylight savings start rule.  You must also set the
+   * end rule with <code>setEndRule</code> or the result of
+   * getOffset is undefined.  For the parameters see the ten-argument
+   * constructor above.
+   *
+   * Note that this API isn't incredibly well specified.  It appears that the
+   * after flag must override the parameters, since normally, the day and
+   * dayofweek can select this.  I.e., if day < 0 and dayOfWeek < 0, on or
+   * before mode is chosen.  But if after == true, this implementation
+   * overrides the signs of the other arguments.  And if dayOfWeek == 0, it
+   * falls back to the behavior in the other APIs.  I guess this should be
+   * checked against Sun's implementation.
+   *
+   * @param month The month where daylight savings start, zero
+   * based.  You should use the constants in Calendar.
+   * @param day A day of month or day of week in month.
+   * @param dayOfWeek The day of week where daylight savings start.
+   * @param time The time in milliseconds standard time where daylight
+   * savings start.
+   * @param after If true, day and dayOfWeek specify first day of week on or
+   * after day, else first day of week on or before.
+   * @since 1.2
+   * @see SimpleTimeZone
+   */
+  public void setStartRule(int month, int day, int dayOfWeek, int time, boolean after)
+  {
+    // FIXME: XXX: Validate that checkRule and offset processing work with on
+    // or before mode.
+    this.startDay = after ? Math.abs(day) : -Math.abs(day);
+    this.startDayOfWeek = after ? Math.abs(dayOfWeek) : -Math.abs(dayOfWeek);
+    this.startMode = (dayOfWeek != 0) ? (after ? DOW_GE_DOM_MODE : DOW_LE_DOM_MODE)
+      : checkRule(month, day, dayOfWeek);
+    this.startDay = Math.abs(this.startDay);
+    this.startDayOfWeek = Math.abs(this.startDayOfWeek);
+
+    this.startMonth = month;
+
+    if (this.startTimeMode == WALL_TIME || this.startTimeMode == STANDARD_TIME)
+      this.startTime = time;
+    else
+      // Convert from UTC to STANDARD
+      this.startTime = time + this.rawOffset;
+    useDaylight = true;
+  }
+
+  /**
+   * Sets the daylight savings start rule.  You must also set the
+   * end rule with <code>setEndRule</code> or the result of
+   * getOffset is undefined.  For the parameters see the ten-argument
+   * constructor above.
+   *
+   * @param month The month where daylight savings start, zero
+   * based.  You should use the constants in Calendar.
+   * @param day A day of month or day of week in month.
+   * @param time The time in milliseconds standard time where daylight
+   * savings start.
+   * @see SimpleTimeZone
+   * @since 1.2
+   */
+  public void setStartRule(int month, int day, int time)
+  {
+    setStartRule(month, day, 0, time);
   }
 
   /**
@@ -410,8 +560,6 @@ public class SimpleTimeZone extends TimeZone
    * getOffset is undefined. For the parameters see the ten-argument
    * constructor above.
    *
-   * @param rawOffset The time offset from GMT.
-   * @param id  The identifier of this time zone.
    * @param month The end month of daylight savings.
    * @param day A day in month, or a day of week in month.
    * @param dayOfWeek A day of week, when daylight savings ends.
@@ -426,8 +574,79 @@ public class SimpleTimeZone extends TimeZone
     // of this method.
     this.endDay = Math.abs(day);
     this.endDayOfWeek = Math.abs(dayOfWeek);
-    this.endTime = time;
+    if (this.endTimeMode == WALL_TIME)
+      this.endTime = time;
+    else if (this.endTimeMode == STANDARD_TIME)
+      // Convert from STANDARD to DST
+      this.endTime = time + this.dstSavings;
+    else
+      // Convert from UTC to DST
+      this.endTime = time + this.rawOffset + this.dstSavings;
     useDaylight = true;
+  }
+
+  /**
+   * Sets the daylight savings end rule.  You must also set the
+   * start rule with <code>setStartRule</code> or the result of
+   * getOffset is undefined. For the parameters see the ten-argument
+   * constructor above.
+   *
+   * Note that this API isn't incredibly well specified.  It appears that the
+   * after flag must override the parameters, since normally, the day and
+   * dayofweek can select this.  I.e., if day < 0 and dayOfWeek < 0, on or
+   * before mode is chosen.  But if after == true, this implementation
+   * overrides the signs of the other arguments.  And if dayOfWeek == 0, it
+   * falls back to the behavior in the other APIs.  I guess this should be
+   * checked against Sun's implementation.
+   *
+   * @param month The end month of daylight savings.
+   * @param day A day in month, or a day of week in month.
+   * @param dayOfWeek A day of week, when daylight savings ends.
+   * @param time A time in millis in standard time.
+   * @param after If true, day and dayOfWeek specify first day of week on or
+   * after day, else first day of week on or before.
+   * @since 1.2
+   * @see #setStartRule
+   */
+  public void setEndRule(int month, int day, int dayOfWeek, int time, boolean after)
+  {
+    // FIXME: XXX: Validate that checkRule and offset processing work with on
+    // or before mode.
+    this.endDay = after ? Math.abs(day) : -Math.abs(day);
+    this.endDayOfWeek = after ? Math.abs(dayOfWeek) : -Math.abs(dayOfWeek);
+    this.endMode = (dayOfWeek != 0) ? (after ? DOW_GE_DOM_MODE : DOW_LE_DOM_MODE)
+      : checkRule(month, day, dayOfWeek);
+    this.endDay = Math.abs(this.endDay);
+    this.endDayOfWeek = Math.abs(endDayOfWeek);
+
+    this.endMonth = month;
+
+    if (this.endTimeMode == WALL_TIME)
+      this.endTime = time;
+    else if (this.endTimeMode == STANDARD_TIME)
+      // Convert from STANDARD to DST
+      this.endTime = time + this.dstSavings;
+    else
+      // Convert from UTC to DST
+      this.endTime = time + this.rawOffset + this.dstSavings;
+    useDaylight = true;
+  }
+
+  /**
+   * Sets the daylight savings end rule.  You must also set the
+   * start rule with <code>setStartRule</code> or the result of
+   * getOffset is undefined. For the parameters see the ten-argument
+   * constructor above.
+   *
+   * @param month The end month of daylight savings.
+   * @param day A day in month, or a day of week in month.
+   * @param dayOfWeek A day of week, when daylight savings ends.
+   * @param time A time in millis in standard time.
+   * @see #setStartRule
+   */
+  public void setEndRule(int month, int day, int time)
+  {
+    setEndRule(month, day, 0, time);
   }
 
   /**
