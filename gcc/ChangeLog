@@ -1,3 +1,7 @@
+2001-09-24  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (lwa_operand): Address must be word aligned.
+
 Mon Sep 24 18:57:59 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.c (type_hash_marked_p): Consider as marked if debug symbol
