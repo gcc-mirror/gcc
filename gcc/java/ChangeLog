@@ -1,3 +1,8 @@
+2004-02-25  Per Bothner  <per@bothner.com>
+
+	* parse.y (build_assertion):  If we're in an inner class, create the
+	class$ helper routine in the outer class.
+
 2004-02-19  Richard Henderson  <rth@redhat.com>
 
 	* parse.y (switch_label): Use make_node for DEFAULT_EXPR.

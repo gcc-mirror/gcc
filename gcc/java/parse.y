@@ -15301,6 +15301,10 @@ build_assertion (int location, tree condition, tree value)
     {
       tree field, classdollar, id, call;
       tree class_type = TREE_TYPE (klass);
+      tree outer_class = klass;
+      while (INNER_CLASS_DECL_P (outer_class))
+	outer_class = DECL_CONTEXT (outer_class);
+      outer_class = TREE_TYPE (outer_class);
 
       field = add_field (class_type,
 			 get_identifier ("$assertionsDisabled"),
@@ -15309,9 +15313,10 @@ build_assertion (int location, tree condition, tree value)
       MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (field);
       FIELD_SYNTHETIC (field) = 1;
 
-      if (!TYPE_DOT_CLASS (class_type))
-	build_dot_class_method (class_type);
-      classdollar = build_dot_class_method_invocation (class_type, class_type);
+      if (!TYPE_DOT_CLASS (outer_class))
+	build_dot_class_method (outer_class);
+      classdollar
+	= build_dot_class_method_invocation (outer_class, class_type);
 
       /* Call CLASS.desiredAssertionStatus().  */
       id = build_wfl_node (get_identifier ("desiredAssertionStatus"));
