@@ -2199,7 +2199,7 @@ get_shared_vbase_if_not_primary (binfo, data)
       /* This is a non-primary virtual base.  If there is no primary
 	 version, get the shared version.  */
       binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
-      if (BINFO_VBASE_PRIMARY_P (binfo))
+      if (BINFO_PRIMARY_MARKED_P (binfo))
 	return NULL_TREE;
     }
 
@@ -2883,7 +2883,7 @@ find_vbase_instance (base, type)
   tree instance;
 
   instance = binfo_for_vbase (base, type);
-  if (!BINFO_VBASE_PRIMARY_P (instance))
+  if (!BINFO_PRIMARY_MARKED_P (instance))
     return instance;
 
   return dfs_walk (TYPE_BINFO (type), 
@@ -3357,21 +3357,9 @@ binfo_for_vtable (var)
      tree var;
 {
   tree binfo = TYPE_BINFO (DECL_CONTEXT (var));
-  tree binfos;
-  int i;
 
-  while (1)
-    {
-      binfos = BINFO_BASETYPES (binfo);
-      if (binfos == NULL_TREE)
-	break;
-
-      i = CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
-      if (i == -1)
-	break;
-
-      binfo = TREE_VEC_ELT (binfos, i);
-    }
+  while (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
+    binfo = get_primary_binfo (binfo);
 
   return binfo;
 }

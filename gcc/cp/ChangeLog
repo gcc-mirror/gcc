@@ -1,3 +1,57 @@
+2000-07-30  Mark Mitchell  <mark@codesourcery.com>
+
+	Allow indirect primary bases.
+	* cp-tree.h (struct lang_type): Remove vfield_parent.  Add
+	primary_base.
+	(CLASSTYPE_VFIELD_PARENT): Remove.
+	(CLASSTYPE_PRIMARY_BINFO): Reimplement.
+	(BINFO_PRIMARY_BINFO): Remove.
+	(CLASSTYPE_HAS_PRIMARY_BASE_P): Reimplement.
+	(BINFO_VBASE_PRIMARY_P): Likewise.
+	(BINFO_PRIMARY_BASE_OF): New macro.
+	(BINFO_INDIRECT_PRIMARY_P): Likewise.
+	(get_primary_binfo): New function.
+	* decl.c (lang_mark_tree): Make lang_type::primary_base.
+	* class.c (vcall_offset_data_s): Rename to ...
+	(vtbl_init_data_s): ... this.  Rename primary_p to primary_vtbl_p,
+	and add ctor_vtbl_p.
+	(get_derived_offset): Use get_primary_binfo.
+	(dfs_mark_primary_bases): Adjust handling of virtual primary
+	bases.
+	(mark_primary_bases): Likewise.
+	(set_primary_base): Take a binfo, not an integer, as a
+	representation of the primary base.
+	(indirect_primary_base_p): Remove.
+	(determine_primary_base): Adjust for indirect primary bases.
+	(dfs_find_final_overrider): Fix typo in coment.
+	(update_vtable_entry_for_fn): Use get_primary_binfo.
+	(layout_nonempty_base_or_field): Tweak.
+	(build_base_fields): Adjust for new primary base semantics.
+	(dfs_propagate_binfo_offsets): Remove.
+	(propagate_binfo_offsets): Rewrite.
+	(dfs_set_offset_for_shared_vbases): Remove.
+	(layout_virtual_bases): Don't use it.
+	(layout_class_type): Set CLASSTYPE_SIZE correctly under the new
+	ABI.
+	(finish_struct_1): Set CLASSTYPE_PRIMARY_BINFO, not
+	CLASSTYPE_VFIELD_PARENT.
+	(dfs_get_primary_binfo): New function.
+	(get_primary_binfo): Likewise.
+	(dump_class_hierarchy_r): Tweak printing of primary bases.
+	(build_vtbl_initializer): Fix typo in comments.  Use
+	vtbl_init_data.
+	(build_vcall_and_vbase_vtbl_entries): Likewise.
+	(build_vbaes_offset_vtbl_entries): Likewise.
+	(dfs_build_vcall_offset_vtbl_entries): Adjust setting of
+	BV_VCALL_INDEX to handle indirect primary bases.
+	(build_vcall_offset_vtbl_entries): Use vtbl_init_data.
+	(build_rtti_vtbl_entries): Likewise.
+	* search.c (get_shared_vbase_if_not_primary): Tweak.
+	(find_vbase_instance): Likewise.
+	(binfo_for_vtable): Simplify.
+	* tree.c (unshare_base_binfos): Clear BINFO_PRIMARY_BASE_OF.
+	(make_binfo): Make it have 11 entries.
+	
 2000-07-30  Alex Samuel  <samuel@codesourcery.com>
 
 	* mangle.c (DECL_TEMPLATE_ID_P): Remove.

@@ -15007,6 +15007,7 @@ lang_mark_tree (t)
 		  && TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE))
 	{
 	  ggc_mark (lt);
+	  ggc_mark_tree (lt->primary_base);
 	  ggc_mark_tree (lt->vfields);
 	  ggc_mark_tree (lt->vbases);
 	  ggc_mark_tree (lt->tags);
