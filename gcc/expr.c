@@ -2836,9 +2836,6 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode, punsignedp, pvolati
 
   while (1)
     {
-      if (TREE_CODE (exp) == INDIRECT_REF && flag_volatile)
- 	*pvolatilep = 1;
-
       if (TREE_CODE (exp) == COMPONENT_REF || TREE_CODE (exp) == BIT_FIELD_REF)
 	{
 	  tree pos = (TREE_CODE (exp) == COMPONENT_REF
@@ -3676,7 +3673,7 @@ expand_expr (exp, target, tmode, modifier)
 		    || TREE_CODE (TREE_TYPE (exp2)) == RECORD_TYPE
 		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE)))
 	  MEM_IN_STRUCT_P (temp) = 1;
-	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) || flag_volatile;
+	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
 #if 0 /* It is incorrectto set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
@@ -3939,7 +3936,7 @@ expand_expr (exp, target, tmode, modifier)
 	op0 = expand_expr (addr, NULL_RTX, VOIDmode, EXPAND_SUM);
 	temp = gen_rtx (MEM, mode, memory_address (mode, op0));
 	MEM_IN_STRUCT_P (temp) = 1;
-	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) || flag_volatile;
+	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
 #if 0 /* It is incorrectto set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
