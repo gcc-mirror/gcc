@@ -1,3 +1,13 @@
+2003-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_address_register_rtx_p): New function.
+	(arm_legitimate_address_p): New function.
+	(arm_legitimate_index_p): New function.
+	(legitimize_pic_address): Use arm_legitimate_index_p.
+	* arm-protos.h (arm_legtimate_address_p): Add prototype.
+	* arm.h (ARM_GO_IF_LEGITIMATE_INDEX): Delete.
+	(ARM_GO_IF_LEGITIMATE_ADDRESS): Call arm_legitimate_address_p.
+
 2003-01-22  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* config/s390/s390.md (floatdfdi2): Insn has type 'itof'.

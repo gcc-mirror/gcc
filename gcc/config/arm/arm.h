@@ -1943,134 +1943,19 @@ typedef struct
 #define ARM_INDEX_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_INDEX_P (X))
 
-/* A C statement (sans semicolon) to jump to LABEL for legitimate index RTXs
-   used by the macro GO_IF_LEGITIMATE_ADDRESS.  Floating point indices can
-   only be small constants. */
-#define ARM_GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)	\
-  do									\
-    {									\
-      HOST_WIDE_INT range;						\
-      enum rtx_code code = GET_CODE (INDEX);				\
-									\
-      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (MODE) == MODE_FLOAT)	\
-	{								\
-	  if (code == CONST_INT && INTVAL (INDEX) < 1024		\
-	      && INTVAL (INDEX) > -1024					\
-	      && (INTVAL (INDEX) & 3) == 0)				\
-	    goto LABEL;							\
-	}								\
-      else								\
-	{								\
-	  if (ARM_INDEX_REGISTER_RTX_P (INDEX)				\
-	      && GET_MODE_SIZE (MODE) <= 4)				\
-	    goto LABEL;							\
-	  if (GET_MODE_SIZE (MODE) <= 4  && code == MULT		\
-	      && (! arm_arch4 || (MODE) != HImode))			\
-	    {								\
-	      rtx xiop0 = XEXP (INDEX, 0);				\
-	      rtx xiop1 = XEXP (INDEX, 1);				\
-	      if (ARM_INDEX_REGISTER_RTX_P (xiop0)			\
-		  && power_of_two_operand (xiop1, SImode))		\
-		goto LABEL;						\
-	      if (ARM_INDEX_REGISTER_RTX_P (xiop1)			\
-		  && power_of_two_operand (xiop0, SImode))		\
-		goto LABEL;						\
-	    }								\
-	  if (GET_MODE_SIZE (MODE) <= 4					\
-	      && (code == LSHIFTRT || code == ASHIFTRT			\
-		  || code == ASHIFT || code == ROTATERT)		\
-	      && (! arm_arch4 || (MODE) != HImode))			\
-	    {								\
-	      rtx op = XEXP (INDEX, 1);					\
-	      if (ARM_INDEX_REGISTER_RTX_P (XEXP (INDEX, 0))		\
-		  && GET_CODE (op) == CONST_INT && INTVAL (op) > 0	\
-		  && INTVAL (op) <= 31)					\
-		goto LABEL;						\
-	    }								\
-	  /* NASTY: Since this limits the addressing of unsigned	\
-	     byte loads.  */						\
-	  range = ((MODE) == HImode || (MODE) == QImode)		\
-	    ? (arm_arch4 ? 256 : 4095) : 4096;				\
-	  if (code == CONST_INT && INTVAL (INDEX) < range		\
-	      && INTVAL (INDEX) > -range)				\
-	    goto LABEL;							\
-	}								\
-    }									\
-  while (0)
-
-/* Jump to LABEL if X is a valid address RTX.  This must take
-   REG_OK_STRICT into account when deciding about valid registers.
-
-   Allow REG, REG+REG, REG+INDEX, INDEX+REG, REG-INDEX, and non
-   floating SYMBOL_REF to the constant pool.  Allow REG-only and
-   AUTINC-REG if handling TImode or HImode.  Other symbol refs must be
-   forced though a static cell to ensure addressability.  */
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			 \
-{									 \
-  if (ARM_BASE_REGISTER_RTX_P (X))					 \
-    goto LABEL;								 \
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	 \
-	   && GET_CODE (XEXP (X, 0)) == REG				 \
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
-    goto LABEL;								 \
-  else if ((GET_CODE (X) == POST_MODIFY || GET_CODE (X) == PRE_MODIFY)	 \
-	   && GET_MODE_SIZE (MODE) <= 4					 \
-	   && GET_CODE (XEXP (X, 0)) == REG				 \
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0))			 \
-	   && GET_CODE (XEXP (X, 1)) == PLUS				 \
-	   && XEXP (XEXP (X, 1), 0) == XEXP (X, 0))			 \
-    ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (XEXP (X, 0)), 		 \
-				XEXP (XEXP (X, 1), 1), LABEL);		 \
-  else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		 \
-	   && (GET_CODE (X) == LABEL_REF				 \
-	       || (GET_CODE (X) == CONST				 \
-		   && GET_CODE (XEXP ((X), 0)) == PLUS			 \
-		   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == LABEL_REF	 \
-		   && GET_CODE (XEXP (XEXP ((X), 0), 1)) == CONST_INT))) \
-    goto LABEL;								 \
-  else if ((MODE) == TImode)						 \
-    ;									 \
-  else if ((MODE) == DImode || (TARGET_SOFT_FLOAT && (MODE) == DFmode))	 \
-    {									 \
-      if (GET_CODE (X) == PLUS && ARM_BASE_REGISTER_RTX_P (XEXP (X, 0))	 \
-	  && GET_CODE (XEXP (X, 1)) == CONST_INT)			 \
-	{								 \
-	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));			 \
-          if (val == 4 || val == -4 || val == -8)			 \
-	    goto LABEL;							 \
-	}								 \
-    }									 \
-  else if (GET_CODE (X) == PLUS)					 \
-    {									 \
-      rtx xop0 = XEXP (X, 0);						 \
-      rtx xop1 = XEXP (X, 1);						 \
-									 \
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL);	 \
-      else if (ARM_BASE_REGISTER_RTX_P (xop1))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop1), xop0, LABEL);	 \
-    }									 \
-  /* Reload currently can't handle MINUS, so disable this for now */	 \
-  /* else if (GET_CODE (X) == MINUS)					 \
-    {									 \
-      rtx xop0 = XEXP (X,0);						 \
-      rtx xop1 = XEXP (X,1);						 \
-									 \
-      if (ARM_BASE_REGISTER_RTX_P (xop0))				 \
-	ARM_GO_IF_LEGITIMATE_INDEX (MODE, -1, xop1, LABEL);		 \
-    } */								 \
-  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				 \
-	   && GET_CODE (X) == SYMBOL_REF				 \
-	   && CONSTANT_POOL_ADDRESS_P (X)				 \
-	   && ! (flag_pic						 \
-		 && symbol_mentioned_p (get_pool_constant (X))))	 \
-    goto LABEL;								 \
-  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)	 \
-	   && (GET_MODE_SIZE (MODE) <= 4)				 \
-	   && GET_CODE (XEXP (X, 0)) == REG				 \
-	   && ARM_REG_OK_FOR_BASE_P (XEXP (X, 0)))			 \
-    goto LABEL;								 \
-}
+#ifdef REG_OK_STRICT
+#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)	\
+  {							\
+    if (arm_legitimate_address_p (MODE, X, 1))		\
+      goto WIN;						\
+  }
+#else
+#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)	\
+  {							\
+    if (arm_legitimate_address_p (MODE, X, 0))		\
+      goto WIN;						\
+  }
+#endif
 
 /* ---------------------thumb version----------------------------------*/     
 #define THUMB_LEGITIMATE_OFFSET(MODE, VAL)				\

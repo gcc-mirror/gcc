@@ -68,6 +68,9 @@ const struct attribute_spec arm_attribute_table[];
 static void      arm_add_gc_roots 		PARAMS ((void));
 static int       arm_gen_constant		PARAMS ((enum rtx_code, Mmode, Hint, rtx, rtx, int, int));
 static unsigned  bit_count 			PARAMS ((Ulong));
+static int	 arm_address_register_rtx_p	PARAMS ((rtx, int));
+static int	 arm_legitimate_index_p		PARAMS ((enum machine_mode,
+							 rtx, int));
 static int       const_ok_for_op 		PARAMS ((Hint, enum rtx_code));
 static int       eliminate_lr2ip		PARAMS ((rtx *));
 static rtx	 emit_multi_reg_push		PARAMS ((int));
@@ -2357,6 +2360,10 @@ arm_function_ok_for_sibcall (decl, exp)
 }
 
 
+/* Addressing mode support functions.  */
+
+/* Return non-zero if X is a legitimate immediate operand when compiling
+   for PIC.  */
 int
 legitimate_pic_operand_p (x)
      rtx x;
@@ -2463,14 +2470,14 @@ legitimize_pic_address (orig, mode, reg)
 	{
 	  /* The base register doesn't really matter, we only want to
 	     test the index for the appropriate mode.  */
-	  ARM_GO_IF_LEGITIMATE_INDEX (mode, 0, offset, win);
+	  if (!arm_legitimate_index_p (mode, offset, 0))
+	    {
+	      if (!no_new_pseudos)
+		offset = force_reg (Pmode, offset);
+	      else
+		abort ();
+	    }
 
-	  if (!no_new_pseudos)
-	    offset = force_reg (Pmode, offset);
-	  else
-	    abort ();
-
-	win:
 	  if (GET_CODE (offset) == CONST_INT)
 	    return plus_constant (base, INTVAL (offset));
 	}
@@ -2547,6 +2554,171 @@ arm_finalize_pic (prologue)
   emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
 #endif /* AOF_ASSEMBLER */
 }
+
+/* Return nonzero if X is valid as an ARM state addressing register.  */
+static int
+arm_address_register_rtx_p (x, strict_p)
+     rtx x;
+     int strict_p;
+{
+  int regno;
+
+  if (GET_CODE (x) != REG)
+    return 0;
+
+  regno = REGNO (x);
+
+  if (strict_p)
+    return ARM_REGNO_OK_FOR_BASE_P (regno);
+
+  return (regno <= LAST_ARM_REGNUM
+	  || regno >= FIRST_PSEUDO_REGISTER
+	  || regno == FRAME_POINTER_REGNUM
+	  || regno == ARG_POINTER_REGNUM);
+}
+
+/* Return nonzero if X is a valid ARM state address operand.  */
+int
+arm_legitimate_address_p (mode, x, strict_p)
+     enum machine_mode mode;
+     rtx x;
+     int strict_p;
+{
+  if (arm_address_register_rtx_p (x, strict_p))
+    return 1;
+
+  else if (GET_CODE (x) == POST_INC || GET_CODE (x) == PRE_DEC)
+    return arm_address_register_rtx_p (XEXP (x, 0), strict_p);
+
+  else if ((GET_CODE (x) == POST_MODIFY || GET_CODE (x) == PRE_MODIFY)
+	   && GET_MODE_SIZE (mode) <= 4
+	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
+	   && GET_CODE (XEXP (x, 1)) == PLUS
+	   && XEXP (XEXP (x, 1), 0) == XEXP (x, 0))
+    return arm_legitimate_index_p (mode, XEXP (XEXP (x, 1), 1), strict_p);
+
+  /* After reload constants split into minipools will have addresses
+     from a LABEL_REF.  */
+  else if (GET_MODE_SIZE (mode) >= 4 && reload_completed
+	   && (GET_CODE (x) == LABEL_REF
+	       || (GET_CODE (x) == CONST
+		   && GET_CODE (XEXP (x, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (x, 0), 0)) == LABEL_REF
+		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)))
+    return 1;
+
+  else if (mode == TImode)
+    return 0;
+
+  else if (mode == DImode || (TARGET_SOFT_FLOAT && mode == DFmode))
+    {
+      if (GET_CODE (x) == PLUS
+	  && arm_address_register_rtx_p (XEXP (x, 0), strict_p)
+	  && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
+
+          if (val == 4 || val == -4 || val == -8)
+	    return 1;
+	}
+    }
+
+  else if (GET_CODE (x) == PLUS)
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+
+      return ((arm_address_register_rtx_p (xop0, strict_p)
+	       && arm_legitimate_index_p (mode, xop1, strict_p))
+	      || (arm_address_register_rtx_p (xop1, strict_p)
+		  && arm_legitimate_index_p (mode, xop0, strict_p)));
+    }
+
+#if 0
+  /* Reload currently can't handle MINUS, so disable this for now */
+  else if (GET_CODE (x) == MINUS)
+    {
+      rtx xop0 = XEXP (x, 0);
+      rtx xop1 = XEXP (x, 1);
+
+      return (arm_address_register_rtx_p (xop0, strict_p)
+	      && arm_legitimate_index_p (mode, xop1, strict_p));
+    }
+#endif
+
+  else if (GET_MODE_CLASS (mode) != MODE_FLOAT
+	   && GET_CODE (x) == SYMBOL_REF
+	   && CONSTANT_POOL_ADDRESS_P (x)
+	   && ! (flag_pic
+		 && symbol_mentioned_p (get_pool_constant (x))))
+    return 1;
+
+  else if ((GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_DEC)
+	   && (GET_MODE_SIZE (mode) <= 4)
+	   && arm_address_register_rtx_p (XEXP (x, 0), strict_p))
+    return 1;
+
+  return 0;
+}
+
+/* Return nonzero if INDEX is valid for an address index operand in
+   ARM state.  */
+static int
+arm_legitimate_index_p (mode, index, strict_p)
+     enum machine_mode mode;
+     rtx index;
+     int strict_p;
+{
+  HOST_WIDE_INT range;
+  enum rtx_code code = GET_CODE (index);
+
+  if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return (code == CONST_INT && INTVAL (index) < 1024
+	    && INTVAL (index) > -1024
+	    && (INTVAL (index) & 3) == 0);
+
+  if (arm_address_register_rtx_p (index, strict_p)
+      && GET_MODE_SIZE (mode) <= 4)
+    return 1;
+
+  /* XXX What about ldrsb?  */
+  if (GET_MODE_SIZE (mode) <= 4  && code == MULT
+      && (!arm_arch4 || (mode) != HImode))
+    {
+      rtx xiop0 = XEXP (index, 0);
+      rtx xiop1 = XEXP (index, 1);
+
+      return ((arm_address_register_rtx_p (xiop0, strict_p)
+	       && power_of_two_operand (xiop1, SImode))
+	      || (arm_address_register_rtx_p (xiop1, strict_p)
+		  && power_of_two_operand (xiop0, SImode)));
+    }
+
+  if (GET_MODE_SIZE (mode) <= 4
+      && (code == LSHIFTRT || code == ASHIFTRT
+	  || code == ASHIFT || code == ROTATERT)
+      && (!arm_arch4 || (mode) != HImode))
+    {
+      rtx op = XEXP (index, 1);
+
+      return (arm_address_register_rtx_p (XEXP (index, 0), strict_p)
+	      && GET_CODE (op) == CONST_INT
+	      && INTVAL (op) > 0
+	      && INTVAL (op) <= 31);
+    }
+
+  /* XXX For ARM v4 we may be doing a sign-extend operation during the
+     load, but that has a restricted addressing range and we are unable
+     to tell here whether that is the case.  To be safe we restrict all
+     loads to that range.  */
+  range = ((mode) == HImode || (mode) == QImode)
+    ? (arm_arch4 ? 256 : 4095) : 4096;
+
+  return (code == CONST_INT
+	  && INTVAL (index) < range
+	  && INTVAL (index) > -range);
+}  
+
 
 #define REG_OR_SUBREG_REG(X)						\
   (GET_CODE (X) == REG							\
