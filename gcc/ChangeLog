@@ -1,3 +1,18 @@
+2001-05-02  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Merge
+	special_constant conditional blocks together.
+
+2001-05-02  Dale Johannesen  <dalej@apple.com>
+
+	* config/rs6000/rs6000.h (RS6000_ARG_SIZE): Remove unused NAMED
+	parameter.
+	(STRICT_ARGUMENT_NAMING): Define.
+	* config/rs6000/rs6000.c (function_arg_advance, function_arg,
+	function_arg_partial_nregs, setup_incoming_varargs): Remove
+	args logic which depends on "named" now that STRICT_ARGUMENT_NAMING
+	is defined.
+
 Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.h (FUNCTION_BOUNDARY): Result is unsigned.
