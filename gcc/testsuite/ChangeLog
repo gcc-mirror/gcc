@@ -1,3 +1,8 @@
+2002-12-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/2739
+	* g++.dg/other/access2.C: New test.
+
 2002-12-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* g++.dg/other/anon-struct.C: No longer fails
