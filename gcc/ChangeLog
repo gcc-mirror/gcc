@@ -1,3 +1,8 @@
+1998-06-19  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (installdirs): Loop over directories in $(libsubdir)
+	creating probably missing ones, instead of single if statements.
+
 Fri Jun 19 10:43:52 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* c-common.c (truthvalue_conversion): Protect side effects in the

@@ -41,6 +41,8 @@ man8dir = $(mandir)/man8
 man9dir = $(mandir)/man9
 infodir = $(prefix)/info
 includedir = $(prefix)/include
+# Directory in which the compiler finds executables, libraries, etc.
+libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 GDB_NLM_DEPS = 
 
 SHELL = /bin/sh
@@ -355,7 +357,10 @@ BASE_FLAGS_TO_PASS = \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
-	"gxx_include_dir=$(gxx_include_dir)"
+	"gxx_include_dir=$(gxx_include_dir)" \
+	"gcc_version=$(gcc_version)" \
+	"target_alias=$(target_alias)" \
+	"libsubdir=$(libsubdir)"
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
