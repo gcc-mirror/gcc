@@ -3441,7 +3441,7 @@ const_int_1_31_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    reference and a constant.  */
 
 int
-symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))
     {
@@ -3485,7 +3485,7 @@ symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* Return true if the operand contains a @GOT or @GOTOFF reference.  */
 
 int
-pic_symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+pic_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) != CONST)
     return 0;
@@ -3548,7 +3548,7 @@ local_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* Test for various thread-local symbols.  */
 
 int
-tls_symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+tls_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
@@ -3564,29 +3564,27 @@ tls_symbolic_operand_1 (rtx op, enum tls_model kind)
 }
 
 int
-global_dynamic_symbolic_operand (register rtx op,
+global_dynamic_symbolic_operand (rtx op,
 				 enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return tls_symbolic_operand_1 (op, TLS_MODEL_GLOBAL_DYNAMIC);
 }
 
 int
-local_dynamic_symbolic_operand (register rtx op,
+local_dynamic_symbolic_operand (rtx op,
 				enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return tls_symbolic_operand_1 (op, TLS_MODEL_LOCAL_DYNAMIC);
 }
 
 int
-initial_exec_symbolic_operand (register rtx op,
-			       enum machine_mode mode ATTRIBUTE_UNUSED)
+initial_exec_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return tls_symbolic_operand_1 (op, TLS_MODEL_INITIAL_EXEC);
 }
 
 int
-local_exec_symbolic_operand (register rtx op,
-			     enum machine_mode mode ATTRIBUTE_UNUSED)
+local_exec_symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return tls_symbolic_operand_1 (op, TLS_MODEL_LOCAL_EXEC);
 }
@@ -3657,13 +3655,13 @@ constant_call_address_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* Match exactly zero and one.  */
 
 int
-const0_operand (register rtx op, enum machine_mode mode)
+const0_operand (rtx op, enum machine_mode mode)
 {
   return op == CONST0_RTX (mode);
 }
 
 int
-const1_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+const1_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return op == const1_rtx;
 }
@@ -3671,33 +3669,32 @@ const1_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 /* Match 2, 4, or 8.  Used for leal multiplicands.  */
 
 int
-const248_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+const248_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 2 || INTVAL (op) == 4 || INTVAL (op) == 8));
 }
 
 int
-const_0_to_3_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+const_0_to_3_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 4);
 }
 
 int
-const_0_to_7_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+const_0_to_7_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 8);
 }
 
 int
-const_0_to_15_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+const_0_to_15_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 16);
 }
 
 int
-const_0_to_255_operand (register rtx op,
-			enum machine_mode mode ATTRIBUTE_UNUSED)
+const_0_to_255_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 0 && INTVAL (op) < 256);
 }
@@ -3706,7 +3703,7 @@ const_0_to_255_operand (register rtx op,
 /* True if this is a constant appropriate for an increment or decrement.  */
 
 int
-incdec_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+incdec_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   /* On Pentium4, the inc and dec operations causes extra dependency on flag
      registers, since carry flag is not set.  */
@@ -3735,7 +3732,7 @@ shiftdi_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    Which would only happen in pathological cases.  */
 
 int
-reg_no_sp_operand (register rtx op, enum machine_mode mode)
+reg_no_sp_operand (rtx op, enum machine_mode mode)
 {
   rtx t = op;
   if (GET_CODE (t) == SUBREG)
@@ -3747,7 +3744,7 @@ reg_no_sp_operand (register rtx op, enum machine_mode mode)
 }
 
 int
-mmx_reg_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+mmx_reg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return MMX_REG_P (op);
 }
@@ -3756,7 +3753,7 @@ mmx_reg_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    general_operand.  */
 
 int
-general_no_elim_operand (register rtx op, enum machine_mode mode)
+general_no_elim_operand (rtx op, enum machine_mode mode)
 {
   rtx t = op;
   if (GET_CODE (t) == SUBREG)
@@ -3777,7 +3774,7 @@ general_no_elim_operand (register rtx op, enum machine_mode mode)
    register_operand or const_int.  */
 
 int
-nonmemory_no_elim_operand (register rtx op, enum machine_mode mode)
+nonmemory_no_elim_operand (rtx op, enum machine_mode mode)
 {
   rtx t = op;
   if (GET_CODE (t) == SUBREG)
@@ -3794,7 +3791,7 @@ nonmemory_no_elim_operand (register rtx op, enum machine_mode mode)
    otherwise work like register_operand.  */
 
 int
-index_register_operand (register rtx op, enum machine_mode mode)
+index_register_operand (rtx op, enum machine_mode mode)
 {
   rtx t = op;
   if (GET_CODE (t) == SUBREG)
@@ -3815,7 +3812,7 @@ index_register_operand (register rtx op, enum machine_mode mode)
 /* Return true if op is a Q_REGS class register.  */
 
 int
-q_regs_operand (register rtx op, enum machine_mode mode)
+q_regs_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
@@ -3827,7 +3824,7 @@ q_regs_operand (register rtx op, enum machine_mode mode)
 /* Return true if op is an flags register.  */
 
 int
-flags_reg_operand (register rtx op, enum machine_mode mode)
+flags_reg_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
@@ -3837,7 +3834,7 @@ flags_reg_operand (register rtx op, enum machine_mode mode)
 /* Return true if op is a NON_Q_REGS class register.  */
 
 int
-non_q_regs_operand (register rtx op, enum machine_mode mode)
+non_q_regs_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && GET_MODE (op) != mode)
     return 0;
@@ -3885,7 +3882,7 @@ vector_move_operand (rtx op, enum machine_mode mode)
    a segment override.  */
 
 int
-no_seg_address_operand (register rtx op, enum machine_mode mode)
+no_seg_address_operand (rtx op, enum machine_mode mode)
 {
   struct ix86_address parts;
 
@@ -3930,7 +3927,7 @@ sse_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 }
 /* Return 1 if OP is a valid comparison operator in valid mode.  */
 int
-ix86_comparison_operator (register rtx op, enum machine_mode mode)
+ix86_comparison_operator (rtx op, enum machine_mode mode)
 {
   enum machine_mode inmode;
   enum rtx_code code = GET_CODE (op);
@@ -3971,7 +3968,7 @@ ix86_comparison_operator (register rtx op, enum machine_mode mode)
 /* Return 1 if OP is a valid comparison operator testing carry flag
    to be set.  */
 int
-ix86_carry_flag_operator (register rtx op, enum machine_mode mode)
+ix86_carry_flag_operator (rtx op, enum machine_mode mode)
 {
   enum machine_mode inmode;
   enum rtx_code code = GET_CODE (op);
@@ -4003,7 +4000,7 @@ ix86_carry_flag_operator (register rtx op, enum machine_mode mode)
 /* Return 1 if OP is a comparison operator that can be issued by fcmov.  */
 
 int
-fcmov_comparison_operator (register rtx op, enum machine_mode mode)
+fcmov_comparison_operator (rtx op, enum machine_mode mode)
 {
   enum machine_mode inmode;
   enum rtx_code code = GET_CODE (op);
@@ -4040,8 +4037,7 @@ fcmov_comparison_operator (register rtx op, enum machine_mode mode)
 /* Return 1 if OP is a binary operator that can be promoted to wider mode.  */
 
 int
-promotable_binary_operator (register rtx op,
-			    enum machine_mode mode ATTRIBUTE_UNUSED)
+promotable_binary_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))
     {
@@ -4065,7 +4061,7 @@ promotable_binary_operator (register rtx op,
    into registers.  */
 
 int
-cmp_fp_expander_operand (register rtx op, enum machine_mode mode)
+cmp_fp_expander_operand (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4077,7 +4073,7 @@ cmp_fp_expander_operand (register rtx op, enum machine_mode mode)
 /* Match an SI or HImode register for a zero_extract.  */
 
 int
-ext_register_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+ext_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int regno;
   if ((!TARGET_64BIT || GET_MODE (op) != DImode)
@@ -4096,7 +4092,7 @@ ext_register_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    OP is the expression matched, and MODE is its mode.  */
 
 int
-binary_fp_operator (register rtx op, enum machine_mode mode)
+binary_fp_operator (rtx op, enum machine_mode mode)
 {
   if (mode != VOIDmode && mode != GET_MODE (op))
     return 0;
@@ -4115,13 +4111,13 @@ binary_fp_operator (register rtx op, enum machine_mode mode)
 }
 
 int
-mult_operator (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+mult_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return GET_CODE (op) == MULT;
 }
 
 int
-div_operator (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+div_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return GET_CODE (op) == DIV;
 }
@@ -4137,7 +4133,7 @@ arith_or_logical_operator (rtx op, enum machine_mode mode)
 /* Returns 1 if OP is memory operand with a displacement.  */
 
 int
-memory_displacement_operand (register rtx op, enum machine_mode mode)
+memory_displacement_operand (rtx op, enum machine_mode mode)
 {
   struct ix86_address parts;
 
@@ -4179,7 +4175,7 @@ cmpsi_operand (rtx op, enum machine_mode mode)
    modRM array.  */
 
 int
-long_memory_operand (register rtx op, enum machine_mode mode)
+long_memory_operand (rtx op, enum machine_mode mode)
 {
   if (! memory_operand (op, mode))
     return 0;
@@ -4375,8 +4371,8 @@ standard_sse_constant_p (rtx x)
 int
 symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
     return 1;
@@ -4386,7 +4382,7 @@ symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
@@ -5052,7 +5048,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
 static void
 ix86_emit_save_regs (void)
 {
-  register int regno;
+  int regno;
   rtx insn;
 
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
@@ -5429,7 +5425,7 @@ ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
    strictly valid, but still used for computing length of lea instruction.  */
 
 static int
-ix86_decompose_address (register rtx addr, struct ix86_address *out)
+ix86_decompose_address (rtx addr, struct ix86_address *out)
 {
   rtx base = NULL_RTX;
   rtx index = NULL_RTX;
@@ -5791,7 +5787,7 @@ legitimate_pic_operand_p (rtx x)
    in PIC mode.  */
 
 int
-legitimate_pic_address_disp_p (register rtx disp)
+legitimate_pic_address_disp_p (rtx disp)
 {
   bool saw_plus;
 
@@ -5905,7 +5901,7 @@ legitimate_pic_address_disp_p (register rtx disp)
    be recognized.  */
 
 int
-legitimate_address_p (enum machine_mode mode, register rtx addr, int strict)
+legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
 {
   struct ix86_address parts;
   rtx base, index, disp;
@@ -6473,8 +6469,7 @@ legitimize_tls_address (rtx x, enum tls_model model, int for_mov)
    See comments by legitimize_pic_address in i386.c for details.  */
 
 rtx
-legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
-		    enum machine_mode mode)
+legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
 {
   int changed = 0;
   unsigned log;
@@ -6614,8 +6609,8 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
 
       if (GET_CODE (XEXP (x, 0)) == REG)
 	{
-	  register rtx temp = gen_reg_rtx (Pmode);
-	  register rtx val  = force_operand (XEXP (x, 1), temp);
+	  rtx temp = gen_reg_rtx (Pmode);
+	  rtx val  = force_operand (XEXP (x, 1), temp);
 	  if (val != temp)
 	    emit_move_insn (temp, val);
 
@@ -6625,8 +6620,8 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
 
       else if (GET_CODE (XEXP (x, 1)) == REG)
 	{
-	  register rtx temp = gen_reg_rtx (Pmode);
-	  register rtx val  = force_operand (XEXP (x, 0), temp);
+	  rtx temp = gen_reg_rtx (Pmode);
+	  rtx val  = force_operand (XEXP (x, 0), temp);
 	  if (val != temp)
 	    emit_move_insn (temp, val);
 
@@ -7508,7 +7503,7 @@ print_operand (FILE *file, rtx x, int code)
 /* Print a memory operand whose address is ADDR.  */
 
 void
-print_operand_address (FILE *file, register rtx addr)
+print_operand_address (FILE *file, rtx addr)
 {
   struct ix86_address parts;
   rtx base, index, disp;
