@@ -1,3 +1,10 @@
+2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Revert 2000-12-01  Nathan Sidwell  <nathan@codesourcery.com>,
+	It is incorrect.
+	* typeck.c (build_static_cast): Compare non-qualified types
+	with pointer to member conversions.
+
 2002-03-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
 	* cp-tree.h (CLEAR_BINFO_MARKED): Make both parts of

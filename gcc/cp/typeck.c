@@ -5078,6 +5078,22 @@ build_static_cast (type, expr)
 	  && kind != bk_via_virtual)
 	ok = 1;
     }
+  else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
+    {
+      /* They're pointers to members. The pointed to objects must be
+	 the same (ignoring CV qualifiers), and the containing classes
+	 must be related non-virtually. */
+      base_kind kind;
+      
+      if (same_type_p
+	  (strip_all_pointer_quals (TREE_TYPE (TREE_TYPE (type))),
+	   strip_all_pointer_quals (TREE_TYPE (TREE_TYPE (intype))))
+ 	  && (lookup_base (TYPE_OFFSET_BASETYPE (TREE_TYPE (intype)),
+			   TYPE_OFFSET_BASETYPE (TREE_TYPE (type)),
+			   ba_ignore | ba_quiet, &kind))
+ 	  && kind != bk_via_virtual)
+  	ok = 1;
+    }
   else if (TREE_CODE (intype) != BOOLEAN_TYPE
 	   && TREE_CODE (type) != ARRAY_TYPE
 	   && TREE_CODE (type) != FUNCTION_TYPE
