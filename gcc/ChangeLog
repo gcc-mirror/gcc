@@ -1,3 +1,7 @@
+2001-05-29  Stan Shebs  <shebs@apple.com>
+
+	* gcc.texi: Add links for information about Objective-C.
+
 2001-05-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.in (gcc_version): Remove unrequired \ on ". (Solaris
