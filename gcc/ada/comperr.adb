@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,14 +78,7 @@ package body Comperr is
       --  The procedures below output a "bug box" with information about
       --  the cause of the compiler abort and about the preferred method
       --  of reporting bugs. The default is a bug box appropriate for
-      --  the FSF version of GNAT, but there are specializations for
-      --  the GNATPRO and Public releases by Ada Core Technologies.
-
-      Public_Version  : constant Boolean := Gnat_Version_Type = "PUBLIC ";
-      --  Set True for the public version of GNAT
-
-      GNATPRO_Version : constant Boolean := Gnat_Version_Type = "GNATPRO";
-      --  Set True for the GNATPRO version of GNAT
+      --  the FSF version of GNAT.
 
       procedure End_Line;
       --  Add blanks up to column 76, and then a final vertical bar
@@ -265,30 +258,10 @@ package body Comperr is
             --  Otherwise we use the standard fixed text
 
             else
-               if Public_Version or GNATPRO_Version then
-                  Write_Str
-                    ("| Please submit bug report by email " &
-                     "to report@gnat.com.");
-                  End_Line;
-
-               else
-                  Write_Str
-                    ("| Please submit bug report by email " &
-                    "to gcc-bugs@gcc.gnu.org.");
-                  End_Line;
-               end if;
-
                Write_Str
-                 ("| Use a subject line meaningful to you" &
-                  " and us to track the bug.");
+                 ("| Please submit a bug report; see" &
+                 " http://gcc.gnu.org/bugs.html.");
                End_Line;
-
-               if GNATPRO_Version then
-                  Write_Str
-                    ("| (include your customer number #nnn " &
-                     "in the subject line).");
-                  End_Line;
-               end if;
 
                Write_Str
                  ("| Include the entire contents of this bug " &
@@ -305,30 +278,9 @@ package body Comperr is
                End_Line;
 
                Write_Str
-                 ("| (concatenated together with no headers between files).");
+                 ("| concatenated together with no headers between files.");
                End_Line;
 
-               if not GNATPRO_Version then
-                  Write_Str
-                    ("| (use plain ASCII or MIME attachment).");
-                  End_Line;
-
-                  Write_Str
-                    ("| See gnatinfo.txt for full info on procedure " &
-                     "for submitting bugs.");
-                  End_Line;
-
-               else
-                  Write_Str
-                    ("| (use plain ASCII or MIME attachment, or FTP "
-                     & "to your customer directory).");
-                  End_Line;
-
-                  Write_Str
-                    ("| See README.GNATPRO for full info on procedure " &
-                     "for submitting bugs.");
-                  End_Line;
-               end if;
             end if;
          end;
 
