@@ -2485,11 +2485,15 @@ expand_call (tree exp, rtx target, int ignore)
      finished with regular parsing.  Which means that some of the
      machinery we use to generate tail-calls is no longer in place.
      This is most often true of sjlj-exceptions, which we couldn't
-     tail-call to anyway.  */
+     tail-call to anyway.
 
+     If current_nesting_level () == 0, we're being called after
+     the function body has been expanded.  This can happen when
+     setting up trampolines in expand_function_end.  */
   if (currently_expanding_call++ != 0
       || !flag_optimize_sibling_calls
       || !rtx_equal_function_value_matters
+      || current_nesting_level () == 0
       || any_pending_cleanups ()
       || args_size.var)
     try_tail_call = try_tail_recursion = 0;
