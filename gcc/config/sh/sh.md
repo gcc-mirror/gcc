@@ -2943,17 +2943,17 @@
    (set_attr "type" "pcload,move")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "y")
-	(match_operand:SI 1 "immediate_operand" "I"))
-   (clobber (match_operand:SI 2 "register_operand" "r"))]
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "immediate_operand" ""))
+   (clobber (match_operand:SI 2 "register_operand" ""))]
   ""
   [(set (match_dup 2) (match_dup 1))
    (set (match_dup 0) (match_dup 2))]
   "")
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "y")
-	(match_operand:SI 1 "memory_operand" ">"))
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 1 "memory_operand" ""))
    (clobber (reg:SI 0))]
   ""
   [(set (match_dup 0) (match_dup 1))]
@@ -2992,7 +2992,7 @@
 ;; This one has the additional purpose to record a possible scratch register
 ;; for the following branch.
 (define_insn "indirect_jump_scratch"
-  [(set (match_operand 0 "register_operand" "r")
+  [(set (match_operand 0 "register_operand" "=r")
 	(unspec [(match_operand 1 "const_int_operand" "")] 4))]
   ""
   ""
@@ -3791,7 +3791,7 @@
 ;; The gp_fpul type for r/!c might look a bit odd, but it actually schedules
 ;; like a gpr <-> fpul move.
 (define_insn "fpu_switch"
-  [(set (match_operand:PSI 0 "register_operand" "c,c,r,c,c,r,m,r")
+  [(set (match_operand:PSI 0 "register_operand" "=c,c,r,c,c,r,m,r")
 	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c"))]
   "! reload_completed
    || true_regnum (operands[0]) != FPSCR_REG || GET_CODE (operands[1]) != MEM

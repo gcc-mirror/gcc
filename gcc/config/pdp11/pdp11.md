@@ -223,7 +223,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (plus:HI (match_operand:HI 0 "register_operand" "r")
+	 (ne (plus:HI (match_operand:HI 0 "register_operand" "+r")
 		      (const_int -1))
 	     (const_int 0))
 	 (label_ref (match_operand 1 "" ""))

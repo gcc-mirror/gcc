@@ -1060,6 +1060,13 @@ do { char dstr[30];					\
 
 #define FILE_ASM_OP "\t.file\n"
 
+#define PREDICATE_CODES							\
+  {"call_address_operand",	{ SYMBOL_REF, REG }},			\
+  {"constant_memory_operand",	{ MEM }},				\
+  {"extendpsi_operand",		{ PLUS, CONST_INT, CONST_DOUBLE, CONST,	\
+				  SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM }}, \
+  {"nshift_operator",		{ ASHIFTRT, LSHIFTRT, ASHIFT }},
+
 extern void asm_file_start ();
 extern void print_operand ();
 extern void print_operand_address ();

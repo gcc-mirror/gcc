@@ -46,14 +46,14 @@
   "add.64\\t.sp,%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	 (plus:SI (reg:SI 15)
 		  (match_operand:SI 1 "general_operand" "g")))]
   ""
   "ld.32\\t%0,.sp\;add.64\\t%0,%1")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "r")
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	 (plus:SI (match_operand:SI 1 "general_operand" "g")
 		  (reg:SI 15)))]
   ""
@@ -73,14 +73,12 @@
   "ld.32\\t.sp,%0")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "m,r")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=m,r")
 	 (reg:SI 15))]
   ""
-  "*
-  if (which_alternative == 0)
-    return \"st.32\\t.sp,%0\";
-  return \"ld.32\\t%0,.sp\";
-")
+  "@
+   st.32\\t.sp,%0
+   ld.32\\t%0,.sp")
 
 ; tstdi is first test insn so that it is the one to match
 ; a constant argument.
@@ -1394,7 +1392,7 @@ if (0) {
   ")
 
 (define_insn "call_value"
-  [(set (match_operand 0 "" "g")
+  [(set (match_operand 0 "" "")
 	(call (match_operand:QI 1 "general_operand" "m")
 	      (match_operand:QI 2 "general_operand" "g")))]
   ""
