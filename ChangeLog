@@ -1,3 +1,9 @@
+Wed Dec  3 07:55:59 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* egcs-1.0 release.
+
+	* configure (gxx_include_dir): Fix thinko.
+
 Thu Nov 27 01:31:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INSTALL_TARGET): Do install-gcc first.
