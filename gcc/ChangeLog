@@ -1,3 +1,8 @@
+2004-12-30  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_function_value): Use PARALLEL for 
+	aggregates with XF/XCmode.
+
 2004-12-29  Richard Henderson  <rth@redhat.com>
 
 	* target.h (targetm.calls.arg_partial_bytes): New.
@@ -71,7 +76,7 @@
 	* config/mcore/mcore.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
 	* config/mcore/mcore.c (mcore_arg_partial_bytes): Rename from
 	mcore_function_arg_partial_nregs.  Adjust to return bytes.
-        (TARGET_ARG_PARTIAL_BYTES): New.
+	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/mcore/mcore-protos.h: Update.
 
 	* config/mips/mips.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
@@ -109,13 +114,13 @@
 	* config/sparc/sparc.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
 	* config/sparc/sparc.c (sparc_arg_partial_bytes): Rename from
 	function_arg_partial_nregs.  Adjust to return bytes.
-        (TARGET_ARG_PARTIAL_BYTES): New.
+	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/sparc/sparc-protos.h: Update.
 
 	* config/v850/v850.h (FUNCTION_ARG_PARTIAL_NREGS): Remove.
 	* config/v850/v850.c (v850_arg_partial_bytes): Rename from
-        function_arg_partial_nregs.  Adjust to return bytes.
-        (TARGET_ARG_PARTIAL_BYTES): New.
+	function_arg_partial_nregs.  Adjust to return bytes.
+	(TARGET_ARG_PARTIAL_BYTES): New.
 	* config/v850/v850-protos.h: Update.
 
 2004-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
