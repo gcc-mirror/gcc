@@ -1,3 +1,10 @@
+1998-12-16  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (do_include): Treat #include_next in the
+	primary source file as #include plus warning.  Treat
+	#include_next in a file included by absolute path as an
+	error.  fp == CPP_NULL_BUFFER is a fatal inconsistency.
+
 Wed Dec 16 12:28:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cccp.c: Don't define MIN/MAX anymore.
