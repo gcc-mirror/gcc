@@ -135,6 +135,7 @@ namespace tr1
       }
     };
 
+#ifdef _GLIBCXX_USE_WCHAR_T
   template <>
     struct hash<std::wstring>
     {
@@ -146,6 +147,7 @@ namespace tr1
 	return result;
       }
     };
+#endif
 
 }
 }
