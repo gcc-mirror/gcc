@@ -151,7 +151,7 @@ SUBDIRS = include libmath libsupc++ src po testsuite
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
-PWD = $${PWDCMD-pwd}
+PWD_COMMAND = $${PWDCMD-pwd}
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -278,7 +278,7 @@ maintainer-clean-hdr:
 all-recursive install-data-recursive install-exec-recursive \
 installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
 check-recursive installcheck-recursive info-recursive dvi-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
+	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
 	target=`echo $@ | sed s/-recursive//`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -298,7 +298,7 @@ check-recursive installcheck-recursive info-recursive dvi-recursive:
 
 mostlyclean-recursive clean-recursive distclean-recursive \
 maintainer-clean-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
+	@set fnord $$MAKEFLAGS; amf=$$2; \
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
@@ -478,20 +478,20 @@ mostlyclean distclean maintainer-clean
 
 # These rules are messy, but are hella worth it.
 doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=maint $${srcdir} $${builddir})
 
 doxygen-man:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=man $${srcdir} $${builddir})
 

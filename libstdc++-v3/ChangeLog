@@ -1,3 +1,9 @@
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
+	* Makefile.am: Replace PWD with PWD_COMMAND.
+	* Makefile.in: Regenerated.
+	* docs/html/Makefile: Likewise.
+
 2003-07-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/valarray_array.h: Fully qualify standard

@@ -427,32 +427,32 @@ ada.install-info:
 
 ada/gnat_ug_unx.dvi : $(srcdir)/ada/gnat_ug_unx.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_unx.dvi $$s/ada/gnat_ug_unx.texi
 
 ada/gnat_ug_vms.dvi : $(srcdir)/ada/gnat_ug_vms.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vms.dvi $$s/ada/gnat_ug_vms.texi
 
 ada/gnat_ug_vxw.dvi : $(srcdir)/ada/gnat_ug_vxw.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vxw.dvi $$s/ada/gnat_ug_vxw.texi
 
 ada/gnat_ug_wnt.dvi : $(srcdir)/ada/gnat_ug_wnt.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_wnt.dvi $$s/ada/gnat_ug_wnt.texi
 
 ada/gnat_rm.dvi : $(srcdir)/ada/gnat_rm.texi \
 	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_rm.dvi $$s/ada/gnat_rm.texi
 
 ada/gnat-style.dvi : $(srcdir)/ada/gnat-style.texi \
 	$(srcdir)/doc/include/fdl.texi
-	s=`cd $(srcdir); ${PWD}`; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; \
 	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat-style.dvi $$s/ada/gnat-style.texi
 
 ada.dvi: ada/gnat_ug_vms.dvi ada/gnat_ug_wnt.dvi \

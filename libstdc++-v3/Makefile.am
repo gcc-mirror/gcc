@@ -29,24 +29,24 @@ SUBDIRS = include libmath libsupc++ src po testsuite
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
-PWD = $${PWDCMD-pwd}
+PWD_COMMAND = $${PWDCMD-pwd}
 
 # These rules are messy, but are hella worth it.
 doxygen:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=maint $${srcdir} $${builddir})
 
 doxygen-man:
-	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
-	  builddir=`${PWD}`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`${PWD_COMMAND}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=man $${srcdir} $${builddir})
 
