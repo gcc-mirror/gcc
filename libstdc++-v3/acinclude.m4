@@ -1500,11 +1500,20 @@ AC_DEFUN(GLIBCPP_EXPORT_FLAGS, [
   AC_SUBST(WARN_FLAGS)
 ])
 
-
+dnl
 dnl  GLIBCPP_EXPORT_INSTALL_INFO
 dnl  calculates gxx_install_dir
+dnl  exports glibcpp_toolexecdir
+dnl  exports glibcpp_toolexeclibdir
 dnl
+dnl Assumes cross_compiling bits already done, and with_cross_host in
+dnl particular
+dnl
+dnl GLIBCPP_EXPORT_INSTALL_INFO
 AC_DEFUN(GLIBCPP_EXPORT_INSTALL_INFO, [
+
+glibcpp_toolexecdir=no
+glibcpp_toolexeclibdir=no
 
 AC_MSG_CHECKING([for interface version number])
 libstdcxx_interface=$INTERFACE
@@ -1537,23 +1546,40 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 # and header files if --enable-version-specific-runtime-libs option
 # is selected.
 changequote(,)dnl
-gcc_tmp=`grep version_string ${srcdir}/../gcc/version.c | awk '{print $6}'`
-gcc_num=`echo ${gcc_tmp} | sed 's/\"//g'`
-gcc_version=$gcc_num
-gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/$(gcc_version)/include/g++'
+gcc_version_trigger=${srcdir}/../gcc/version.c
+gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([^\"]*\)\".*/\1/'`
+gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+gxx_include_dir='$(libdir)/gcc-lib/$(target_alias)/'${gcc_version}/include/g++
+glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}
 changequote([,])dnl
-AC_SUBST(gcc_version)
-AM_CONDITIONAL(VERSION_SPECIFIC_LIBS, test x"$version_specific_libs" = x"yes")
 ],version_specific_libs=no)
 AC_MSG_RESULT($version_specific_libs)
 
-AC_MSG_CHECKING([for install location])
+# Default case for install directory for include files.
 if test x"$version_specific_libs" = x"no" \
    && test x"$gxx_include_dir"=x"no"; then
-  gxx_include_dir=${prefix}/include/g++-${libstdcxx_interface}
+  gxx_include_dir='$(prefix)'/include/g++-${libstdcxx_interface}
 fi
+
+# Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
+# Install a library built with a cross compiler in tooldir, not libdir.
+if test x"$glibcpp_toolexecdir" = x"no"; then 
+  if test x"$with_cross_host" = x"yes"; then
+    glibcpp_toolexecdir='$(exec_prefix)/$(target_alias)'
+    glibcpp_toolexeclibdir='$(toolexecdir)/lib$(MULTISUBDIR)'
+  else
+    glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+    glibcpp_toolexeclibdir='$(libdir)$(MULTISUBDIR)'
+  fi
+fi
+
+AC_MSG_CHECKING([for install location])
 AC_MSG_RESULT($gxx_include_dir)
+
 AC_SUBST(gxx_include_dir)
+AC_SUBST(glibcpp_toolexecdir)
+AC_SUBST(glibcpp_toolexeclibdir)
 ])
 
 

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.68 2001/02/06 06:32:01 bkoz Exp $
+## $Id: Makefile.am,v 1.69 2001/02/06 06:36:18 mmitchel Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -29,20 +29,8 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-# Install a library built with a cross compiler in tooldir, not libdir.
-if USE_LIBDIR
-if VERSION_SPECIFIC_LIBS
-gcc_version = @gcc_version@
-toolexecdir = $(libdir)/gcc-lib/$(target_alias)
-toolexeclibdir = $(toolexecdir)/$(gcc_version)
-else
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-endif
-else
-toolexecdir = $(exec_prefix)/$(target_alias)
-toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
-
+toolexecdir = @glibcpp_toolexecdir@
+toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
@@ -292,19 +280,6 @@ myinstallheaders:
 	done; \
 	fi;
 
-
-# We have to handle misc-inst.cc and locale-inst.cc in a special way
-# since we cannot instantiate all classes due to missing definitions
-# for things like vptrs, type_info bits, etc. when using
-# -fno-implicit-templates.
-misc-inst.o: misc-inst.cc
-	$(CXXCOMPILE) -c $<
-misc-inst.lo: misc-inst.cc
-	$(LTCXXCOMPILE) -c $<
-locale-inst.o: locale-inst.cc
-	$(CXXCOMPILE) -c $<
-locale-inst.lo: locale-inst.cc
-	$(LTCXXCOMPILE) -c $<
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.

@@ -27,19 +27,8 @@ MAINT_CHARSET = latin1
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler and multilib support.
-# Install a library built with a cross compiler in tooldir, not libdir.
-if USE_LIBDIR
-if VERSION_SPECIFIC_LIBS
-gcc_version = @gcc_version@
-toolexecdir = $(libdir)/gcc-lib/$(target_alias)
-toolexeclibdir = $(toolexecdir)/$(gcc_version)
-else
-toolexeclibdir = $(libdir)$(MULTISUBDIR)
-endif
-else
-toolexecdir = $(exec_prefix)/$(target_alias)
-toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-endif
+toolexecdir = @glibcpp_toolexecdir@
+toolexeclibdir = @glibcpp_toolexeclibdir@
 
 
 # Need this library to both be part of libstdc++.a, and installed

@@ -183,10 +183,10 @@ namespace std {
   // necessary.
   template<typename _CharT, typename _Traits>
     streamsize
-    _S_copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
-		       basic_streambuf<_CharT, _Traits>* __sbin,
-		       basic_streambuf<_CharT, _Traits>* __sbout) 
-    {
+    __copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
+		      basic_streambuf<_CharT, _Traits>* __sbin,
+		      basic_streambuf<_CharT, _Traits>* __sbout) 
+  {
       typedef typename _Traits::int_type	int_type;
 
       streamsize __ret = 0;

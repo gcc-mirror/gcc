@@ -1,4 +1,4 @@
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -309,7 +309,7 @@ namespace std {
       __streambuf_type* __sbout = this->rdbuf();
       sentry __cerb(*this);
       if (__sbin && __cerb)
-	__xtrct = _S_copy_streambufs(*this, __sbin, __sbout);
+	__xtrct = __copy_streambufs(*this, __sbin, __sbout);
       if (!__sbin || !__xtrct)
 	this->setstate(ios_base::failbit);
       return *this;
@@ -401,16 +401,16 @@ namespace std {
   // 27.6.2.5.4 Character inserters
 
   // Construct correctly padded string, as per 22.2.2.2.2
-  // Similar in theory to _S_pad_numeric, from num_put, but it doesn't
+  // Similar in theory to __pad_numeric, from num_put, but it doesn't
   // use _S_fill: perhaps it should.
   // Assumes 
   // __newlen > __oldlen
   // __news is allocated for __newlen size
   template<typename _CharT, typename _Traits>
     void
-    _S_pad_char(basic_ios<_CharT, _Traits>& __ios, 
-		_CharT* __news, const _CharT* __olds,
-		const streamsize __newlen, const streamsize __oldlen)
+    __pad_char(basic_ios<_CharT, _Traits>& __ios, 
+	       _CharT* __news, const _CharT* __olds,
+	       const streamsize __newlen, const streamsize __oldlen)
     {
       typedef _CharT	char_type;
       typedef _Traits	traits_type;
@@ -501,7 +501,7 @@ namespace std {
 	    streamsize __len = 1;
 	    if (__w > __len)
 	      {
-		_S_pad_char(__out, __pads, &__c, __w, __len);
+		__pad_char(__out, __pads, &__c, __w, __len);
 		__len = __w;
 	      }
 	    __out.write(__pads, __len);
@@ -534,7 +534,7 @@ namespace std {
 	    streamsize __len = 1;
 	    if (__w > __len)
 	      {
-		_S_pad_char(__out, __pads, &__c, __w, __len);
+		__pad_char(__out, __pads, &__c, __w, __len);
 		__len = __w;
 	      }
 	    __out.write(__pads, __len);
@@ -565,7 +565,7 @@ namespace std {
 	    streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	    if (__w > __len)
 	      {
-		_S_pad_char(__out, __pads, __s, __w, __len);
+		__pad_char(__out, __pads, __s, __w, __len);
 		__s = __pads;
 		__len = __w;
 	      }
@@ -608,7 +608,7 @@ namespace std {
 
 	    if (__w > __len)
 	      {
-		_S_pad_char(__out, __pads, __ws, __w, __len);
+		__pad_char(__out, __pads, __ws, __w, __len);
 		__str = __pads;
 		__len = __w;
 	      }
@@ -641,7 +641,7 @@ namespace std {
 	    streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	    if (__w > __len)
 	      {
-		_S_pad_char(__out, __pads, __s, __w, __len);
+		__pad_char(__out, __pads, __s, __w, __len);
 		__s = __pads;
 		__len = __w;
 	      }

@@ -465,7 +465,7 @@ namespace std {
       __streambuf_type* __sbin = this->rdbuf();
       sentry __cerb(*this, false);
       if (__sbout && __cerb)
-	__xtrct = _S_copy_streambufs(*this, __sbin, __sbout);
+	__xtrct = __copy_streambufs(*this, __sbin, __sbout);
       if (!__sbout || !__xtrct)
 	this->setstate(ios_base::failbit);
       return *this;
