@@ -1,3 +1,9 @@
+2005-04-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20746
+	* method.c (use_thunk): Protect covariant pointer return
+	adjustments from NULL pointers.
+
 2005-04-04  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (finish_objects): Revert my previous patch.
