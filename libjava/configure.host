@@ -18,6 +18,14 @@
 #   libgcj_cflags	Special CFLAGS to use when building
 #   libgcj_cxxflags	Special CXXFLAGS to use when building
 #   libgcj_javaflags	Special JAVAFLAGS to use when building
+#   libgcj_interpreter  If the bytecode interpreter supports this platform.
+#   enable_java_net_default  If java.net native code should be enabled by
+#                            default.
+#   enable_hash_synchronization_default  If hash synchronization should be
+#                                        enabled by default.
+#   sysdeps_dir		Directory containing system-dependent headers
+#   slow_pthread_self   The synchronization code should try to avoid 
+#			pthread_self calls by caching thread IDs in a hashtable
 
 libgcj_flags=
 libgcj_cflags=
@@ -26,6 +34,8 @@ libgcj_javaflags=
 libgcj_interpreter=
 enable_java_net_default=yes
 enable_hash_synchronization_default=no
+sysdeps_dir=generic
+slow_pthread_self=
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -60,27 +70,35 @@ case "${host}" in
  	enable_getenv_properties_default=no
 	;;
   i686-*|i586-*|i486-*|i386-*)
+	sysdeps_dir=i386
 	libgcj_flags="${libgcj_flags} -ffloat-store"
 	libgcj_interpreter=yes
 	libgcj_cxxflags="-D__NO_MATH_INLINES"
 	libgcj_cflags="-D__NO_MATH_INLINES"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	enable_hash_synchronization_default=yes
+	slow_pthread_self=yes
 	;;
   alpha*-*)
+	sysdeps_dir=alpha
 	libgcj_flags="${libgcj_flags} -mieee"
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
   powerpc*-linux*)
+	sysdeps_dir=powerpc
 	libgcj_interpreter=yes
+	enable_hash_synchronization_default=yes
+	slow_pthread_self=yes
 	;;
-  powerpc-apple-*)
+  powerpc*-darwin*)
+	sysdeps_dir=powerpc
         libgcj_interpreter=no
 	;;
   sparc-*)
         ;;
   ia64-*)
+	sysdeps_dir=ia64
         libgcj_flags="${libgcj_flags} -funwind-tables"
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
