@@ -425,8 +425,12 @@ if test x$ac_tree_checking != x ; then
   AC_DEFINE(ENABLE_TREE_CHECKING, 1,
 [Define if you want all operations on trees (the basic data
    structure of the front ends) to be checked for dynamic type safety
-   at runtime.  This is moderately expensive.])
+   at runtime.  This is moderately expensive.  The tree browser debugging
+   routines will also be enabled by this option.
+   ])
+  TREEBROWSER=tree-browser.o
 fi
+AC_SUBST(TREEBROWSER)
 if test x$ac_rtl_checking != x ; then
   AC_DEFINE(ENABLE_RTL_CHECKING, 1,
 [Define if you want all operations on RTL (the basic data structure
@@ -542,14 +546,6 @@ if test x$enable_gather_detailed_mem_stats = xyes ; then
   AC_DEFINE(GATHER_STATISTICS, 1,
         [Define to enable detailed memory allocation stats gathering.])
 fi
-
-AC_ARG_ENABLE(tree-browser,
-[  --enable-tree-browser   enable the tree browsing routines for debugging], [],
-[enable_tree_browser=no])
-if test x$enable_tree_browser = xyes ; then
-  TREEBROWSER=tree-browser.o
-fi
-AC_SUBST(TREEBROWSER)
 
 # -------------------------------
 # Miscenalleous configure options
