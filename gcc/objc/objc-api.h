@@ -334,6 +334,8 @@ SEL sel_get_uid(const char *name);
 
 SEL sel_get_any_uid(const char *name);
 
+SEL sel_get_any_typed_uid(const char *name);
+
 SEL sel_get_typed_uid(const char *name, const char*);
 
 SEL sel_register_name(const char *name);
