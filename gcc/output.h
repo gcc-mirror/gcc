@@ -1,7 +1,7 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
    Copyright (C) 1987, 1991, 1994, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,11 +67,6 @@ extern void final_end_function (void);
 
 /* Output assembler code for some insns: all or part of a function.  */
 extern void final (rtx, FILE *, int, int);
-
-/* The final scan for one insn, INSN.  Args are same as in `final', except
-   that INSN is the insn being scanned.  Value returned is the next insn to
-   be scanned.  */
-extern rtx final_scan_insn (rtx, FILE *, int, int, int);
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */

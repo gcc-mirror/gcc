@@ -1,3 +1,15 @@
+2004-01-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* final.c (SEEN_BB, SEEN_NOTE, SEEN_EMITTED): Define.
+	(final_scan_insn): Update to take an additional SEEN argument.  Emit
+	a line note after the prologue.  Make static.
+	(line_note_exists): Remove.
+	(final): Don't initialize line_note_exists.  Update call to
+	final_scan_insn.
+	* output.h (final_scan_insn): Remove prologue.
+	* function.c (set_insn_locators): Update comment.
+	(thread_prologue_and_epilogue_insns): Add a comment.
+
 2004-01-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/10781
