@@ -798,16 +798,49 @@ output_move_double (operands)
 
   if (optype0 == MEMOP)
     {
+      /* We have to output the address syntax ourselves, since print_operand
+	 doesn't deal with the addresses we want to use.  Fix this later.  */
+
       rtx addr = XEXP (operands[0], 0);
-      if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == PRE_INC)
+      if (GET_CODE (addr) == POST_INC || GET_CODE (addr) == POST_DEC)
 	{
-	  operands[0] = gen_rtx (MEM, SImode, addr);
-	  return "stw%M0 %1,%0\n\tstw%M0 %R1,%0";
+	  rtx high_reg = gen_rtx (SUBREG, SImode, operands[1], 0);
+
+	  operands[0] = XEXP (addr, 0);
+	  if (GET_CODE (operands[1]) != REG || GET_CODE (operands[0]) != REG)
+	    abort ();
+
+	  if (!reg_overlap_mentioned_p (high_reg, addr))
+	    {
+	      /* No overlap between high target register and address
+		 register.  (We do this in a non-obvious way to
+		 save a register file writeback)  */
+	      if (GET_CODE (addr) == POST_INC)
+		return "stws,ma %1,8(0,%0)\n\tstw %R1,-4(0,%0)";
+	      return "stws,ma %1,-8(0,%0)\n\tstw %R1,12(0,%0)";
+	    }
+	  else
+	    abort();
 	}
-      else if (GET_CODE (addr) == POST_DEC || GET_CODE (addr) == PRE_DEC)
+      else if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
 	{
-	  operands[0] = gen_rtx (MEM, SImode, addr);
-	  return "stw%M0 %R1,%0\n\tstw%M0 %1,%0";
+	  rtx high_reg = gen_rtx (SUBREG, SImode, operands[1], 0);
+
+	  operands[0] = XEXP (addr, 0);
+	  if (GET_CODE (operands[1]) != REG || GET_CODE (operands[0]) != REG)
+	    abort ();
+
+	  if (!reg_overlap_mentioned_p (high_reg, addr))
+	    {
+	      /* No overlap between high target register and address
+		 register.  (We do this in a non-obvious way to
+		 save a register file writeback)  */
+	      if (GET_CODE (addr) == PRE_INC)
+		return "stws,mb %1,8(0,%0)\n\tstw %R1,4(0,%0)";
+	      return "stws,mb %1,-8(0,%0)\n\tstw %R1,4(0,%0)";
+	    }
+	  else
+	    abort();
 	}
     }
   if (optype1 == MEMOP)
