@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 88, 89, 92, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -402,7 +402,7 @@ check_newline ()
 	      return handle_sysv_pragma (finput, c);
 #else /* !HANDLE_SYSV_PRAGMA */
 #ifdef HANDLE_PRAGMA
-	      HANDLE_PRAGMA (finput);
+	      HANDLE_PRAGMA (finput, c);
 #endif /* HANDLE_PRAGMA */
 	      goto skipline;
 #endif /* !HANDLE_SYSV_PRAGMA */
@@ -419,7 +419,8 @@ check_newline ()
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
 #ifdef DWARF_DEBUGGING_INFO
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
+	      if (c != '\n'
+		  && (debug_info_level == DINFO_LEVEL_VERBOSE)
 		  && (write_symbols == DWARF_DEBUG))
 	        dwarfout_define (lineno, get_directive_line (finput));
 #endif /* DWARF_DEBUGGING_INFO */
@@ -435,7 +436,8 @@ check_newline ()
 	      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
 	    {
 #ifdef DWARF_DEBUGGING_INFO
-	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
+	      if (c != '\n'
+		  && (debug_info_level == DINFO_LEVEL_VERBOSE)
 		  && (write_symbols == DWARF_DEBUG))
 	        dwarfout_undef (lineno, get_directive_line (finput));
 #endif /* DWARF_DEBUGGING_INFO */
@@ -674,9 +676,8 @@ linenum:
 
   /* skip the rest of this line.  */
  skipline:
-  if (c == '\n')
-    return c;
-  while ((c = getc (finput)) != EOF && c != '\n');
+  while (c != '\n' && c != EOF)
+    c = getc (finput);
   return c;
 }
 

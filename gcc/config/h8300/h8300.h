@@ -1272,7 +1272,13 @@ do { char dstr[30];					\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
-#define HANDLE_PRAGMA(FILE) handle_pragma (FILE)
+/* Define this macro if you want to implement any pragmas.  If defined, it
+   should be a C statement to be executed when #pragma is seen.  The
+   argument STREAM is the stdio input stream from which the source
+   text can be read.  CH is the first character after the #pragma.  The
+   statement should execute a `return' with the terminating character found
+   (newline or EOF).  */
+#define HANDLE_PRAGMA(FILE, CH) return handle_pragma (FILE, CH)
 
 #define FINAL_PRESCAN_INSN(insn, operand, nop) final_prescan_insn (insn, operand,nop)
 

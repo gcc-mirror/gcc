@@ -89,14 +89,13 @@ static int ret_label = 0;
 /* ??? This is incomplete, since it does not handle all pragmas that the
    intel compilers understand.  */
 
-void
-process_pragma (finput)
+int
+process_pragma (finput, c)
      FILE *finput;
+     int c;
 {
-  int c;
   int i;
 
-  c = getc (finput);
   while (c == ' ' || c == '\t')
     c = getc (finput);
 
@@ -162,7 +161,9 @@ process_pragma (finput)
 
   /* Should be pragma 'far' or equivalent for callx/balx here.  */
 
-  ungetc (c, finput);
+  while (c != '\n' && c != EOF)
+    c = getc (finput);
+  return c;
 }
 
 /* Initialize variables before compiling any files.  */

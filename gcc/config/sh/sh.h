@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -1388,7 +1388,13 @@ extern char *output_far_jump();
 
 #define TARGET_MEM_FUNCTIONS
 
-#define HANDLE_PRAGMA(finput) return handle_pragma (finput)
+/* Define this macro if you want to implement any pragmas.  If defined, it
+   should be a C statement to be executed when #pragma is seen.  The
+   argument STREAM is the stdio input stream from which the source
+   text can be read.  CH is the first character after the #pragma.  The
+   statement should execute a `return' with the terminating character found
+   (newline or EOF).  */
+#define HANDLE_PRAGMA(FILE, CH) return handle_pragma (FILE, CH)
 
 /* Set when processing a function with pragma interrupt turned on.  */
 

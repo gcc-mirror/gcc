@@ -2163,7 +2163,10 @@ truthvalue_conversion (expr)
    a part of the directive.
 
    The value is a string in a reusable buffer.  It remains valid
-   only until the next time this function is called.  */
+   only until the next time this function is called.
+
+   The terminating character ('\n' or EOF) is left in FINPUT for the
+   caller to re-read.  */
 
 char *
 get_directive_line (finput)
@@ -2207,7 +2210,8 @@ get_directive_line (finput)
 	continue;
 
       /* Detect the end of the directive.  */
-      if (c == '\n' && looking_for == 0)
+      if (looking_for == 0
+	  && (c == '\n' || c == EOF))
 	{
           ungetc (c, finput);
 	  c = '\0';
