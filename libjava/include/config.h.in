@@ -135,11 +135,24 @@
 /* Define if using setjmp/longjmp exceptions.  */
 #undef SJLJ_EXCEPTIONS
 
+/* Define if you have /proc/self/exe */
+#undef HAVE_PROC_SELF_EXE
+
+ 
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
 
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
+
+/* Define if you have the backtrace function.  */
+#undef HAVE_BACKTRACE
+
+/* Define if you have the execvp function.  */
+#undef HAVE_EXECVP
+
+/* Define if you have the fork function.  */
+#undef HAVE_FORK
 
 /* Define if you have the fstat function.  */
 #undef HAVE_FSTAT
@@ -201,6 +214,9 @@
 /* Define if you have the open function.  */
 #undef HAVE_OPEN
 
+/* Define if you have the pipe function.  */
+#undef HAVE_PIPE
+
 /* Define if you have the pthread_mutexattr_setkind_np function.  */
 #undef HAVE_PTHREAD_MUTEXATTR_SETKIND_NP
 
@@ -251,6 +267,12 @@
 
 /* Define if you have the <dirent.h> header file.  */
 #undef HAVE_DIRENT_H
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
+/* Define if you have the <execinfo.h> header file.  */
+#undef HAVE_EXECINFO_H
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
