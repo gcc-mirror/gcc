@@ -590,10 +590,7 @@ coalesce_abnormal_edges (var_map map, conflict_graph graph, root_var_p rv)
 	    if (x == NO_PARTITION)
 	      continue;
 
-	    y = phi_arg_from_edge (phi, e);
-	    gcc_assert (y != -1);
-
-	    tmp = PHI_ARG_DEF (phi, y);
+	    tmp = PHI_ARG_DEF (phi, e->dest_idx);
 #ifdef ENABLE_CHECKING
 	    if (!phi_ssa_name_p (tmp))
 	      {
