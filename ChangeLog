@@ -1,3 +1,7 @@
+Tue Dec 23 12:44:24 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config.guess: HP 9000/803 is a PA1.1 machine.
+
 Mon Dec 22 02:39:24 1997  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: It's alpha*-...
