@@ -1,3 +1,7 @@
+2000-05-22  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* gcc.dg/dwarf2-1.c: New test.
+
 2000-05-20  Richard Henderson  <rth@cygnus.com>
 
 	* lib/f-torture.exp (TORTURE_OPTIONS): Add "-O3 -g" and "-O3 -fssa".
