@@ -4863,6 +4863,44 @@ Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
 @end deftypefn
 
+@deftypefn {Built-in Function} double __builtin_nan (const char *str)
+This is an implementation of the ISO C99 function @code{nan}.
+
+Since ISO C99 defines this function in terms of @code{strtod}, which we
+do not implement, a desription of the parsing is in order.  The string
+is parsed as by @code{strtol}; that is, the base is recognized by
+leading @samp{0} or @samp{0x} prefixes.  The number parsed is placed
+in the significand such that the least significant bit of the number
+is at the least significant bit of the significand.  The number is 
+truncated to fit the significand field provided.  The significand is
+forced to be a quiet NaN.
+
+This function, if given a string literal, is evaluated early enough
+that it is considered a compile-time constant.
+@end deftypefn
+
+@deftypefn {Built-in Function} float __builtin_nanf (const char *str)
+Similar to @code{__builtin_nan}, except the return type is @code{float}.
+@end deftypefn
+
+@deftypefn {Built-in Function} long double __builtin_nanl (const char *str)
+Similar to @code{__builtin_nan}, except the return type is @code{long double}.
+@end deftypefn
+
+@deftypefn {Built-in Function} double __builtin_nans (const char *str)
+Similar to @code{__builtin_nan}, except the significand is forced 
+to be a signaling NaN.  The @code{nans} function is proposed by
+@uref{http://std.dkuug.dk/JTC1/SC22/WG14/www/docs/n965.htm,,WG14 N956}.
+@end deftypefn
+
+@deftypefn {Built-in Function} float __builtin_nansf (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{float}.
+@end deftypefn
+
+@deftypefn {Built-in Function} long double __builtin_nansl (const char *str)
+Similar to @code{__builtin_nans}, except the return type is @code{long double}.
+@end deftypefn
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 

@@ -1,3 +1,16 @@
+2002-09-16  Richard Henderson  <rth@redhat.com>
+
+	* builtin-types.def (BT_FN_FLOAT_CONST_STRING): New.
+	(BT_FN_DOUBLE_CONST_STRING, BT_FN_LONG_DOUBLE_CONST_STRING): New.
+	* builtins.def (__builtin_nan, __builtin_nanf, __builtin_nanl): New.
+	(__builtin_nans, __builtin_nansf, __builtin_nansl): New.
+	* builtins.c (fold_builtin_nan): New.
+	(fold_builtin): Call it.
+	* real.c (real_nan): Parse a non-empty string.
+	(round_for_format): Fix NaN significand truncation.
+	* real.h (real_nan): Return bool.
+	* doc/extend.texi: Document new builtins.
+
 2002-09-16  Jason Merrill  <jason@redhat.com>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 

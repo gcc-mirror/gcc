@@ -38,17 +38,6 @@
 
 namespace std 
 {
-  const __float_storage __glibcpp_float_QNaN = __glibcpp_float_QNaN_bytes;
-  const __float_storage __glibcpp_float_SNaN = __glibcpp_float_SNaN_bytes;
-
-  const __double_storage __glibcpp_double_QNaN = __glibcpp_double_QNaN_bytes;
-  const __double_storage __glibcpp_double_SNaN = __glibcpp_double_SNaN_bytes;
-
-  const __long_double_storage __glibcpp_long_double_QNaN =
-    __glibcpp_long_double_QNaN_bytes;
-  const __long_double_storage __glibcpp_long_double_SNaN =
-    __glibcpp_long_double_SNaN_bytes;
-
   const bool __numeric_limits_base::is_specialized;
   const int  __numeric_limits_base::digits;
   const int  __numeric_limits_base::digits10;

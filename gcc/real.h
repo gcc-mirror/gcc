@@ -143,7 +143,7 @@ extern void real_from_target	PARAMS ((REAL_VALUE_TYPE *, const long *,
 
 extern void real_inf		PARAMS ((REAL_VALUE_TYPE *));
 
-extern void real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
+extern bool real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
 					 int, enum machine_mode));
 
 extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
