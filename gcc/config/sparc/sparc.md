@@ -1993,6 +1993,20 @@
   ""
   "and %1,%2,%0")
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(and:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "" "")))]
+  "GET_CODE (operands[2]) == CONST_INT
+   && !SMALL_INT (operands[2])
+   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  [(set (match_dup 0) (match_dup 3))
+   (set (match_dup 0) (and:SI (not:SI (match_dup 0)) (match_dup 1)))]
+  "
+{
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+}")
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
@@ -2053,6 +2067,20 @@
   ""
   "or %1,%2,%0")
 
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(ior:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "" "")))]
+  "GET_CODE (operands[2]) == CONST_INT
+   && !SMALL_INT (operands[2])
+   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  [(set (match_dup 0) (match_dup 3))
+   (set (match_dup 0) (ior:SI (not:SI (match_dup 0)) (match_dup 1)))]
+  "
+{
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+}")
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ior:DI (not:DI (match_operand:DI 1 "register_operand" "r"))
@@ -2112,6 +2140,34 @@
 		(match_operand:SI 2 "arith_operand" "rI")))]
   ""
   "xor %r1,%2,%0")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(xor:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "" "")))]
+  "GET_CODE (operands[2]) == CONST_INT
+   && !SMALL_INT (operands[2])
+   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  [(set (match_dup 0) (match_dup 3))
+   (set (match_dup 0) (not:SI (xor:SI (match_dup 0) (match_dup 1))))]
+  "
+{
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+}")
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(not:SI (xor:SI (match_operand:SI 1 "register_operand" "")
+			(match_operand:SI 2 "" ""))))]
+  "GET_CODE (operands[2]) == CONST_INT
+   && !SMALL_INT (operands[2])
+   && (INTVAL (operands[2]) & 0x3ff) == 0x3ff"
+  [(set (match_dup 0) (match_dup 3))
+   (set (match_dup 0) (xor:SI (match_dup 0) (match_dup 1)))]
+  "
+{
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+}")
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).
 ;; Combine now canonicalizes to the rightmost expression.
