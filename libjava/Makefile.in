@@ -710,8 +710,11 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/locale/LocaleInformation_zh_SG.java \
 	gnu/java/locale/LocaleInformation_zh_TW.java \
 	gnu/java/math/MPN.java gnu/java/net/BASE64.java \
+	gnu/java/net/CRLFInputStream.java \
+	gnu/java/net/CRLFOutputStream.java \
 	gnu/java/net/DefaultContentHandlerFactory.java \
 	gnu/java/net/EmptyX509TrustManager.java \
+	gnu/java/net/GetLocalHostAction.java \
 	gnu/java/net/HeaderFieldHelper.java \
 	gnu/java/net/LineInputStream.java \
 	gnu/java/net/PlainDatagramSocketImpl.java \
@@ -722,6 +725,22 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/java/net/protocol/core/Handler.java \
 	gnu/java/net/protocol/file/Connection.java \
 	gnu/java/net/protocol/file/Handler.java \
+	gnu/java/net/protocol/ftp/ActiveModeDTP.java \
+	gnu/java/net/protocol/ftp/BlockInputStream.java \
+	gnu/java/net/protocol/ftp/BlockOutputStream.java \
+	gnu/java/net/protocol/ftp/CompressedInputStream.java \
+	gnu/java/net/protocol/ftp/CompressedOutputStream.java \
+	gnu/java/net/protocol/ftp/DTP.java \
+	gnu/java/net/protocol/ftp/DTPInputStream.java \
+	gnu/java/net/protocol/ftp/DTPOutputStream.java \
+	gnu/java/net/protocol/ftp/FTPConnection.java \
+	gnu/java/net/protocol/ftp/FTPException.java \
+	gnu/java/net/protocol/ftp/FTPResponse.java \
+	gnu/java/net/protocol/ftp/FTPURLConnection.java \
+	gnu/java/net/protocol/ftp/Handler.java \
+	gnu/java/net/protocol/ftp/PassiveModeDTP.java \
+	gnu/java/net/protocol/ftp/StreamInputStream.java \
+	gnu/java/net/protocol/ftp/StreamOutputStream.java \
 	gnu/java/net/protocol/gcjlib/Connection.java \
 	gnu/java/net/protocol/gcjlib/Handler.java \
 	gnu/java/net/protocol/http/Authenticator.java \
@@ -4051,8 +4070,11 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/locale/LocaleInformation_zh_SG.lo \
 	gnu/java/locale/LocaleInformation_zh_TW.lo \
 	gnu/java/math/MPN.lo gnu/java/net/BASE64.lo \
+	gnu/java/net/CRLFInputStream.lo \
+	gnu/java/net/CRLFOutputStream.lo \
 	gnu/java/net/DefaultContentHandlerFactory.lo \
 	gnu/java/net/EmptyX509TrustManager.lo \
+	gnu/java/net/GetLocalHostAction.lo \
 	gnu/java/net/HeaderFieldHelper.lo \
 	gnu/java/net/LineInputStream.lo \
 	gnu/java/net/PlainDatagramSocketImpl.lo \
@@ -4062,6 +4084,22 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/java/net/protocol/core/Handler.lo \
 	gnu/java/net/protocol/file/Connection.lo \
 	gnu/java/net/protocol/file/Handler.lo \
+	gnu/java/net/protocol/ftp/ActiveModeDTP.lo \
+	gnu/java/net/protocol/ftp/BlockInputStream.lo \
+	gnu/java/net/protocol/ftp/BlockOutputStream.lo \
+	gnu/java/net/protocol/ftp/CompressedInputStream.lo \
+	gnu/java/net/protocol/ftp/CompressedOutputStream.lo \
+	gnu/java/net/protocol/ftp/DTP.lo \
+	gnu/java/net/protocol/ftp/DTPInputStream.lo \
+	gnu/java/net/protocol/ftp/DTPOutputStream.lo \
+	gnu/java/net/protocol/ftp/FTPConnection.lo \
+	gnu/java/net/protocol/ftp/FTPException.lo \
+	gnu/java/net/protocol/ftp/FTPResponse.lo \
+	gnu/java/net/protocol/ftp/FTPURLConnection.lo \
+	gnu/java/net/protocol/ftp/Handler.lo \
+	gnu/java/net/protocol/ftp/PassiveModeDTP.lo \
+	gnu/java/net/protocol/ftp/StreamInputStream.lo \
+	gnu/java/net/protocol/ftp/StreamOutputStream.lo \
 	gnu/java/net/protocol/gcjlib/Connection.lo \
 	gnu/java/net/protocol/gcjlib/Handler.lo \
 	gnu/java/net/protocol/http/Authenticator.lo \
@@ -7306,8 +7344,11 @@ gnu/java/locale/LocaleInformation_zh_SG.java \
 gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/net/BASE64.java \
+gnu/java/net/CRLFInputStream.java \
+gnu/java/net/CRLFOutputStream.java \
 gnu/java/net/DefaultContentHandlerFactory.java \
 gnu/java/net/EmptyX509TrustManager.java \
+gnu/java/net/GetLocalHostAction.java \
 gnu/java/net/HeaderFieldHelper.java \
 gnu/java/net/LineInputStream.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
@@ -7318,6 +7359,22 @@ gnu/java/net/protocol/core/CoreInputStream.java \
 gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/file/Connection.java \
 gnu/java/net/protocol/file/Handler.java \
+gnu/java/net/protocol/ftp/ActiveModeDTP.java \
+gnu/java/net/protocol/ftp/BlockInputStream.java \
+gnu/java/net/protocol/ftp/BlockOutputStream.java \
+gnu/java/net/protocol/ftp/CompressedInputStream.java \
+gnu/java/net/protocol/ftp/CompressedOutputStream.java \
+gnu/java/net/protocol/ftp/DTP.java \
+gnu/java/net/protocol/ftp/DTPInputStream.java \
+gnu/java/net/protocol/ftp/DTPOutputStream.java \
+gnu/java/net/protocol/ftp/FTPConnection.java \
+gnu/java/net/protocol/ftp/FTPException.java \
+gnu/java/net/protocol/ftp/FTPResponse.java \
+gnu/java/net/protocol/ftp/FTPURLConnection.java \
+gnu/java/net/protocol/ftp/Handler.java \
+gnu/java/net/protocol/ftp/PassiveModeDTP.java \
+gnu/java/net/protocol/ftp/StreamInputStream.java \
+gnu/java/net/protocol/ftp/StreamOutputStream.java \
 gnu/java/net/protocol/gcjlib/Connection.java \
 gnu/java/net/protocol/gcjlib/Handler.java \
 gnu/java/net/protocol/http/Authenticator.java \
@@ -9909,10 +9966,16 @@ gnu/java/math/MPN.lo: gnu/java/math/$(am__dirstamp) \
 	gnu/java/math/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/BASE64.lo: gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/CRLFInputStream.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/CRLFOutputStream.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/DefaultContentHandlerFactory.lo:  \
 	gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/EmptyX509TrustManager.lo: gnu/java/net/$(am__dirstamp) \
+	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/GetLocalHostAction.lo: gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/HeaderFieldHelper.lo: gnu/java/net/$(am__dirstamp) \
 	gnu/java/net/$(DEPDIR)/$(am__dirstamp)
@@ -9945,6 +10008,60 @@ gnu/java/net/protocol/file/Connection.lo:  \
 gnu/java/net/protocol/file/Handler.lo:  \
 	gnu/java/net/protocol/file/$(am__dirstamp) \
 	gnu/java/net/protocol/file/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/ftp
+	@: > gnu/java/net/protocol/ftp/$(am__dirstamp)
+gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) gnu/java/net/protocol/ftp/$(DEPDIR)
+	@: > gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/ActiveModeDTP.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/BlockInputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/BlockOutputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/CompressedInputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/CompressedOutputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/DTP.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/DTPInputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/DTPOutputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/FTPConnection.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/FTPException.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/FTPResponse.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/FTPURLConnection.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/Handler.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/PassiveModeDTP.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/StreamInputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+gnu/java/net/protocol/ftp/StreamOutputStream.lo:  \
+	gnu/java/net/protocol/ftp/$(am__dirstamp) \
+	gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
 gnu/java/net/protocol/gcjlib/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/net/protocol/gcjlib
 	@: > gnu/java/net/protocol/gcjlib/$(am__dirstamp)
@@ -16601,10 +16718,16 @@ mostlyclean-compile:
 	-rm -f gnu/java/math/MPN.lo
 	-rm -f gnu/java/net/BASE64.$(OBJEXT)
 	-rm -f gnu/java/net/BASE64.lo
+	-rm -f gnu/java/net/CRLFInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/CRLFInputStream.lo
+	-rm -f gnu/java/net/CRLFOutputStream.$(OBJEXT)
+	-rm -f gnu/java/net/CRLFOutputStream.lo
 	-rm -f gnu/java/net/DefaultContentHandlerFactory.$(OBJEXT)
 	-rm -f gnu/java/net/DefaultContentHandlerFactory.lo
 	-rm -f gnu/java/net/EmptyX509TrustManager.$(OBJEXT)
 	-rm -f gnu/java/net/EmptyX509TrustManager.lo
+	-rm -f gnu/java/net/GetLocalHostAction.$(OBJEXT)
+	-rm -f gnu/java/net/GetLocalHostAction.lo
 	-rm -f gnu/java/net/HeaderFieldHelper.$(OBJEXT)
 	-rm -f gnu/java/net/HeaderFieldHelper.lo
 	-rm -f gnu/java/net/LineInputStream.$(OBJEXT)
@@ -16631,6 +16754,38 @@ mostlyclean-compile:
 	-rm -f gnu/java/net/protocol/file/Connection.lo
 	-rm -f gnu/java/net/protocol/file/Handler.$(OBJEXT)
 	-rm -f gnu/java/net/protocol/file/Handler.lo
+	-rm -f gnu/java/net/protocol/ftp/ActiveModeDTP.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/ActiveModeDTP.lo
+	-rm -f gnu/java/net/protocol/ftp/BlockInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/BlockInputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/BlockOutputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/BlockOutputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/CompressedInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/CompressedInputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/CompressedOutputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/CompressedOutputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/DTP.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/DTP.lo
+	-rm -f gnu/java/net/protocol/ftp/DTPInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/DTPInputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/DTPOutputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/DTPOutputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/FTPConnection.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/FTPConnection.lo
+	-rm -f gnu/java/net/protocol/ftp/FTPException.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/FTPException.lo
+	-rm -f gnu/java/net/protocol/ftp/FTPResponse.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/FTPResponse.lo
+	-rm -f gnu/java/net/protocol/ftp/FTPURLConnection.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/FTPURLConnection.lo
+	-rm -f gnu/java/net/protocol/ftp/Handler.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/Handler.lo
+	-rm -f gnu/java/net/protocol/ftp/PassiveModeDTP.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/PassiveModeDTP.lo
+	-rm -f gnu/java/net/protocol/ftp/StreamInputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/StreamInputStream.lo
+	-rm -f gnu/java/net/protocol/ftp/StreamOutputStream.$(OBJEXT)
+	-rm -f gnu/java/net/protocol/ftp/StreamOutputStream.lo
 	-rm -f gnu/java/net/protocol/gcjlib/Connection.$(OBJEXT)
 	-rm -f gnu/java/net/protocol/gcjlib/Connection.lo
 	-rm -f gnu/java/net/protocol/gcjlib/Handler.$(OBJEXT)
@@ -21812,8 +21967,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/locale/$(DEPDIR)/LocaleInformation_zh_TW.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/math/$(DEPDIR)/MPN.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/BASE64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/CRLFInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/CRLFOutputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/DefaultContentHandlerFactory.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/EmptyX509TrustManager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/GetLocalHostAction.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/HeaderFieldHelper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/LineInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/$(DEPDIR)/PlainDatagramSocketImpl.Plo@am__quote@
@@ -21827,6 +21985,22 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/core/$(DEPDIR)/natCoreInputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/file/$(DEPDIR)/Connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/file/$(DEPDIR)/Handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/ActiveModeDTP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/BlockInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/BlockOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/CompressedInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/CompressedOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/DTP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/DTPInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/DTPOutputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/FTPConnection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/FTPException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/FTPResponse.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/FTPURLConnection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/Handler.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/PassiveModeDTP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/StreamInputStream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/ftp/$(DEPDIR)/StreamOutputStream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/gcjlib/$(DEPDIR)/Connection.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/gcjlib/$(DEPDIR)/Handler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/net/protocol/http/$(DEPDIR)/Authenticator.Plo@am__quote@
@@ -25093,6 +25267,7 @@ clean-libtool:
 	-rm -rf gnu/java/net/.libs gnu/java/net/_libs
 	-rm -rf gnu/java/net/protocol/core/.libs gnu/java/net/protocol/core/_libs
 	-rm -rf gnu/java/net/protocol/file/.libs gnu/java/net/protocol/file/_libs
+	-rm -rf gnu/java/net/protocol/ftp/.libs gnu/java/net/protocol/ftp/_libs
 	-rm -rf gnu/java/net/protocol/gcjlib/.libs gnu/java/net/protocol/gcjlib/_libs
 	-rm -rf gnu/java/net/protocol/http/.libs gnu/java/net/protocol/http/_libs
 	-rm -rf gnu/java/net/protocol/http/event/.libs gnu/java/net/protocol/http/event/_libs
@@ -25630,6 +25805,8 @@ distclean-generic:
 	-rm -f gnu/java/net/protocol/core/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/file/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/file/$(am__dirstamp)
+	-rm -f gnu/java/net/protocol/ftp/$(DEPDIR)/$(am__dirstamp)
+	-rm -f gnu/java/net/protocol/ftp/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/gcjlib/$(DEPDIR)/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/gcjlib/$(am__dirstamp)
 	-rm -f gnu/java/net/protocol/http/$(DEPDIR)/$(am__dirstamp)
@@ -25914,7 +26091,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-local distclean-tags
@@ -25944,7 +26121,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) gnu/awt/$(DEPDIR) gnu/awt/j2d/$(DEPDIR) gnu/awt/xlib/$(DEPDIR) gnu/classpath/$(DEPDIR) gnu/gcj/$(DEPDIR) gnu/gcj/convert/$(DEPDIR) gnu/gcj/io/$(DEPDIR) gnu/gcj/runtime/$(DEPDIR) gnu/gcj/tools/gcj_dbtool/$(DEPDIR) gnu/gcj/util/$(DEPDIR) gnu/gcj/xlib/$(DEPDIR) gnu/java/awt/$(DEPDIR) gnu/java/awt/color/$(DEPDIR) gnu/java/awt/image/$(DEPDIR) gnu/java/awt/peer/$(DEPDIR) gnu/java/awt/peer/gtk/$(DEPDIR) gnu/java/beans/$(DEPDIR) gnu/java/beans/editors/$(DEPDIR) gnu/java/beans/info/$(DEPDIR) gnu/java/io/$(DEPDIR) gnu/java/lang/$(DEPDIR) gnu/java/lang/reflect/$(DEPDIR) gnu/java/locale/$(DEPDIR) gnu/java/math/$(DEPDIR) gnu/java/net/$(DEPDIR) gnu/java/net/protocol/core/$(DEPDIR) gnu/java/net/protocol/file/$(DEPDIR) gnu/java/net/protocol/ftp/$(DEPDIR) gnu/java/net/protocol/gcjlib/$(DEPDIR) gnu/java/net/protocol/http/$(DEPDIR) gnu/java/net/protocol/http/event/$(DEPDIR) gnu/java/net/protocol/jar/$(DEPDIR) gnu/java/nio/$(DEPDIR) gnu/java/nio/channels/$(DEPDIR) gnu/java/nio/charset/$(DEPDIR) gnu/java/rmi/$(DEPDIR) gnu/java/rmi/dgc/$(DEPDIR) gnu/java/rmi/registry/$(DEPDIR) gnu/java/rmi/rmic/$(DEPDIR) gnu/java/rmi/server/$(DEPDIR) gnu/java/security/$(DEPDIR) gnu/java/security/action/$(DEPDIR) gnu/java/security/ber/$(DEPDIR) gnu/java/security/der/$(DEPDIR) gnu/java/security/pkcs/$(DEPDIR) gnu/java/security/provider/$(DEPDIR) gnu/java/security/util/$(DEPDIR) gnu/java/security/x509/$(DEPDIR) gnu/java/security/x509/ext/$(DEPDIR) gnu/java/text/$(DEPDIR) gnu/java/util/$(DEPDIR) gnu/java/util/prefs/$(DEPDIR) gnu/regexp/$(DEPDIR) gnu/xml/aelfred2/$(DEPDIR) gnu/xml/dom/$(DEPDIR) gnu/xml/dom/ls/$(DEPDIR) gnu/xml/pipeline/$(DEPDIR) gnu/xml/transform/$(DEPDIR) gnu/xml/util/$(DEPDIR) gnu/xml/xpath/$(DEPDIR) java/applet/$(DEPDIR) java/awt/$(DEPDIR) java/awt/color/$(DEPDIR) java/awt/datatransfer/$(DEPDIR) java/awt/dnd/$(DEPDIR) java/awt/dnd/peer/$(DEPDIR) java/awt/event/$(DEPDIR) java/awt/font/$(DEPDIR) java/awt/geom/$(DEPDIR) java/awt/im/$(DEPDIR) java/awt/im/spi/$(DEPDIR) java/awt/image/$(DEPDIR) java/awt/image/renderable/$(DEPDIR) java/awt/peer/$(DEPDIR) java/awt/print/$(DEPDIR) java/beans/$(DEPDIR) java/beans/beancontext/$(DEPDIR) java/io/$(DEPDIR) java/lang/$(DEPDIR) java/lang/ref/$(DEPDIR) java/lang/reflect/$(DEPDIR) java/math/$(DEPDIR) java/net/$(DEPDIR) java/nio/$(DEPDIR) java/nio/channels/$(DEPDIR) java/nio/channels/spi/$(DEPDIR) java/nio/charset/$(DEPDIR) java/nio/charset/spi/$(DEPDIR) java/rmi/$(DEPDIR) java/rmi/activation/$(DEPDIR) java/rmi/dgc/$(DEPDIR) java/rmi/registry/$(DEPDIR) java/rmi/server/$(DEPDIR) java/security/$(DEPDIR) java/security/acl/$(DEPDIR) java/security/cert/$(DEPDIR) java/security/interfaces/$(DEPDIR) java/security/spec/$(DEPDIR) java/sql/$(DEPDIR) java/text/$(DEPDIR) java/util/$(DEPDIR) java/util/jar/$(DEPDIR) java/util/logging/$(DEPDIR) java/util/prefs/$(DEPDIR) java/util/regex/$(DEPDIR) java/util/zip/$(DEPDIR) javax/accessibility/$(DEPDIR) javax/crypto/$(DEPDIR) javax/crypto/interfaces/$(DEPDIR) javax/crypto/spec/$(DEPDIR) javax/imageio/$(DEPDIR) javax/imageio/event/$(DEPDIR) javax/imageio/metadata/$(DEPDIR) javax/imageio/spi/$(DEPDIR) javax/imageio/stream/$(DEPDIR) javax/naming/$(DEPDIR) javax/naming/directory/$(DEPDIR) javax/naming/event/$(DEPDIR) javax/naming/ldap/$(DEPDIR) javax/naming/spi/$(DEPDIR) javax/net/$(DEPDIR) javax/net/ssl/$(DEPDIR) javax/print/$(DEPDIR) javax/print/attribute/$(DEPDIR) javax/print/attribute/standard/$(DEPDIR) javax/print/event/$(DEPDIR) javax/security/auth/$(DEPDIR) javax/security/auth/callback/$(DEPDIR) javax/security/auth/login/$(DEPDIR) javax/security/auth/spi/$(DEPDIR) javax/security/auth/x500/$(DEPDIR) javax/security/cert/$(DEPDIR) javax/security/sasl/$(DEPDIR) javax/sql/$(DEPDIR) javax/swing/$(DEPDIR) javax/swing/border/$(DEPDIR) javax/swing/colorchooser/$(DEPDIR) javax/swing/event/$(DEPDIR) javax/swing/filechooser/$(DEPDIR) javax/swing/plaf/$(DEPDIR) javax/swing/plaf/basic/$(DEPDIR) javax/swing/plaf/metal/$(DEPDIR) javax/swing/table/$(DEPDIR) javax/swing/text/$(DEPDIR) javax/swing/text/html/$(DEPDIR) javax/swing/text/html/parser/$(DEPDIR) javax/swing/tree/$(DEPDIR) javax/swing/undo/$(DEPDIR) javax/transaction/$(DEPDIR) javax/transaction/xa/$(DEPDIR) javax/xml/$(DEPDIR) javax/xml/datatype/$(DEPDIR) javax/xml/namespace/$(DEPDIR) javax/xml/parsers/$(DEPDIR) javax/xml/transform/$(DEPDIR) javax/xml/transform/dom/$(DEPDIR) javax/xml/transform/sax/$(DEPDIR) javax/xml/transform/stream/$(DEPDIR) javax/xml/validation/$(DEPDIR) javax/xml/xpath/$(DEPDIR) jni/classpath/$(DEPDIR) jni/gtk-peer/$(DEPDIR) org/ietf/jgss/$(DEPDIR) sysdep/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
