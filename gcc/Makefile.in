@@ -494,10 +494,10 @@ float.h: enquire
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
-	-if [ "$(srcdir)" != "." ]; then rm -f ./enquire.c; else true; fi
-	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
+#	-if [ "$(srcdir)" != "." ]; then rm -f ./enquire.c; else true; fi
+#	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
 # Breaking this line caused a problem with one version of GNU make.
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c enquire.c
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c $(srcdir)/enquire.c
 
 # Build libgcc.a.
 # This is done in two parts because some functions, in libgcc1.c,
@@ -1159,7 +1159,7 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	  -DGPLUSPLUS_INCLUDE_DIR=0 \
 	  -DCROSS_INCLUDE_DIR=0 \
 	  -DSTD_PROTO_DIR=0" tmp-proto.c
-	@echo '**********' Expect 402 lines of differences.
+	@echo '**********' Expect 400 lines of differences.
 	-diff $(srcdir)/protoize.c tmp-proto.c > tmp-proto.diff
 	-wc -l tmp-proto.diff
 	./unprotoize -N -x getopt.h -c "-B./ -Wall -Wwrite-strings \
@@ -1466,7 +1466,7 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 # so that fixinc.svr4 can get at it if necessary.
 # If the dirs are the same, this won't do anything.
 # Delete file first in case it is read-only
-	-if [ "$(srcdir)" != "." ]; then rm -f byteorder.h; else true; fi
+	-if [ x`cd $(srcdir);pwd` != x`pwd` ]; then rm -f byteorder.h; else true; fi
 	-cp $(srcdir)/byteorder.h . > /dev/null 2>&1
 
 # $(libsubdir)/include:
