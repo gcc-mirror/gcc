@@ -1,3 +1,9 @@
+2004-03-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR ada/14131
+	Move language detection to the top level.
+	* config-lang.in: Build by default.
+
 2004-03-05  Robert Dewar  <dewar@gnat.com>
 
 	* 56taprop.adb, 5ataprop.adb: Remove unneeded unchecked conversions

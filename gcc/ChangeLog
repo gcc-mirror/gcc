@@ -1,3 +1,12 @@
+2004-03-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR ada/14131
+	Move language detection to the top level.
+	* configure.ac: Remove code to detect languages,
+	it now lives exclusively in the top level.
+	* aclocal.m4 (gcc_AC_PROG_GNAT): Moved to the
+	top level, renamed to ACX_PROG_GNAT.
+
 2004-03-10  Richard Henderson  <rth@redhat.com>
 
 	* c-pch.c (c_common_no_more_pch): Update for gt_pch_use_address

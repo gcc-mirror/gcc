@@ -300,13 +300,6 @@ if test $ac_cv_c___int64 = yes; then
   AC_COMPILE_CHECK_SIZEOF(__int64)
 fi
 
-# -----------------
-# Find Ada compiler
-# -----------------
-
-# See if GNAT has been installed
-gcc_AC_PROG_GNAT
-
 # ---------------------
 # Warnings and checking
 # ---------------------
@@ -612,6 +605,53 @@ AC_ARG_ENABLE(intermodule,
 esac],
 [onestep=""])
 AC_SUBST(onestep)
+
+# Sanity check enable_languages in case someone does not run the toplevel
+# configure # script.
+AC_ARG_ENABLE(languages,
+[  --enable-languages=LIST specify which front-ends to build],
+[case ,${enable_languages}, in
+       ,,|,yes,)
+		# go safe -- we cannot be much sure without the toplevel
+		# configure's
+		# analysis of which target libs are present and usable
+		enable_languages=c
+		;;
+	 *,all,*)
+		AC_MSG_ERROR([only the toplevel supports --enable-languages=all])
+		;;
+	*,c,*)
+		;;
+        *)
+		enable_languages=c,${enable_languages}
+		;;
+esac],
+[enable_languages=c])
+
+subdirs=
+for lang in ${srcdir}/*/config-lang.in
+do
+	case $lang in
+	# The odd quoting in the next line works around
+	# an apparent bug in bash 1.12 on linux.
+changequote(,)dnl
+	${srcdir}/[*]/config-lang.in) ;;
+	*)
+	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^   ]*\).*$,\1,p' $lang`
+	  if test "x$lang_alias" = x
+	  then
+	        echo "$lang doesn't set \$language." 1>&2
+	        exit 1
+	  fi
+	  case ",$enable_languages," in
+	  *,$lang_alias,*)
+	    subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`" ;;
+	  esac
+	  ;;
+changequote([,])dnl
+	esac
+done
+
 
 # -------------------------
 # Checks for other programs
@@ -2659,131 +2699,6 @@ if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",
 [Define to PREFIX/include if cpp should also search that directory.])
-fi
-
-# Figure out what language subdirectories are present.
-# Look if the user specified --enable-languages="..."; if not, use
-# the environment variable $LANGUAGES if defined. $LANGUAGES might
-# go away some day.
-# NB:  embedded tabs in this IF block -- do not untabify
-if test x"${enable_languages+set}" != xset; then
-	if test x"${LANGUAGES+set}" = xset; then
-		enable_languages="${LANGUAGES}"
-		AC_MSG_WARN([setting LANGUAGES is deprecated, use --enable-languages instead])
-
-	else
-		enable_languages=all
-	fi
-else
-	if test x"${enable_languages}" = x \
-        || test x"${enable_languages}" = xyes;
-	then
-		AC_MSG_ERROR([--enable-languages needs at least one language argument])
-	fi
-fi
-enable_languages=`echo "${enable_languages}" | sed -e 's/[[ 	,]][[ 	,]]*/,/g' -e 's/,$//'`
-
-# First scan to see if an enabled language requires some other language.
-# We assume that a given config-lang.in will list all the language
-# front ends it requires, even if some are required indirectly.
-for lang in ${srcdir}/*/config-lang.in
-do
-   case $lang in
-    # The odd quoting in the next line works around
-    # an apparent bug in bash 1.12 on linux.
-changequote(,)dnl
-    ${srcdir}/[*]/config-lang.in)
-       ;;
-    *)
-       lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
-       this_lang_requires=`sed -n -e 's,^lang_requires=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_requires=\([^ 	]*\).*$,\1,p' $lang`
-       for other in $this_lang_requires
-       do
-	  case ,${enable_languages}, in
-	   *,$other,*)
-	      ;;
-	   *,all,*)
-	      ;;
-	   *,$lang_alias,*)
-	      enable_languages="$enable_languages,$other"
-	      ;;
-	  esac
-       done
-       ;;
-changequote([,])dnl
-   esac
-done
-
-expected_languages=`echo ,${enable_languages}, | sed -e 's:,: :g' -e 's:  *: :g' -e 's:  *: :g' -e 's:^ ::' -e 's: $::'`
-found_languages=
-subdirs=
-for lang in ${srcdir}/*/config-lang.in
-do
-	case $lang in
-	# The odd quoting in the next line works around
-	# an apparent bug in bash 1.12 on linux.
-changequote(,)dnl
-	${srcdir}/[*]/config-lang.in) ;;
-	*)
-	  lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
-	  this_lang_libs=`sed -n -e 's,^target_libs=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^target_libs=\([^ 	]*\).*$,\1,p' $lang`
-	  build_by_default=`sed -n -e 's,^build_by_default=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^build_by_default=\([^ 	]*\).*$,\1,p' $lang`
-	  if test "x$lang_alias" = x
-	  then
-		echo "$lang doesn't set \$language." 1>&2
-		exit 1
-	  fi
-	  case ${build_by_default},${enable_languages}, in
-	  *,$lang_alias,*) add_this_lang=yes ;;
-	  no,*) add_this_lang=no ;;
-	  *,all,*) add_this_lang=yes ;;
-	  *) add_this_lang=no ;;
-	  esac
-          found_languages="${found_languages} ${lang_alias}"
-	  if test x"${add_this_lang}" = xyes; then
-		case $lang in
-		    ${srcdir}/ada/config-lang.in)
-			if test x$have_gnat = xyes ; then
-				subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
-			fi
-			;;
-		    *)
-			subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
-			;;
-		esac
-	  fi
-	  ;;
-changequote([,])dnl
-	esac
-done
-
-missing_languages=
-for expected_language in ${expected_languages} ..
-do 
-    if test "${expected_language}" != ..; then
-        missing_language="${expected_language}"
-        if test "${expected_language}" = "c" \
-           || test "${expected_language}" = "all"; then
-                missing_language=
-        fi
-        for found_language in ${found_languages} ..
-        do 
-            if test "${found_language}" != ..; then
-                if test "${expected_language}" = "${found_language}"; then
-                    missing_language=
-                fi
-            fi
-        done
-        if test "x${missing_language}" != x; then
-           missing_languages="${missing_languages} ${missing_language}"
-        fi
-    fi
-done
-
-if test "x$missing_languages" != x; then
-  AC_MSG_ERROR([
-The following requested languages were not found:${missing_languages}
-The following languages were available: c${found_languages}])
 fi
 
 # Find out what GC implementation we want, or may, use.

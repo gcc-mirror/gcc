@@ -155,3 +155,38 @@ AC_DEFUN([AC_PROG_CPP_WERROR],
 [AC_REQUIRE([AC_PROG_CPP])dnl
 m4_define([AC_CHECK_HEADER],m4_defn([_AC_CHECK_HEADER_OLD]))
 ac_c_preproc_warn_flag=yes])# AC_PROG_CPP_WERROR
+
+# Test for GNAT.
+# We require the gnatbind program, and a compiler driver that
+# understands Ada.  We use the user's CC setting, already found.
+#
+# Sets the shell variable have_gnat to yes or no as appropriate, and
+# substitutes GNATBIND.
+AC_DEFUN([ACX_PROG_GNAT],
+[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
+AC_REQUIRE([AC_PROG_CC])
+AC_CHECK_TOOL(GNATBIND, gnatbind, no)
+AC_CACHE_CHECK([whether compiler driver understands Ada],
+		 acx_cv_cc_gcc_supports_ada,
+[cat >conftest.adb <<EOF
+procedure conftest is begin null; end conftest;
+EOF
+acx_cv_cc_gcc_supports_ada=no
+# There is a bug in old released versions of GCC which causes the
+# driver to exit successfully when the appropriate language module
+# has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
+# Therefore we must check for the error message as well as an
+# unsuccessful exit.
+errors=`(${CC} -c conftest.adb) 2>&1 || echo failure`
+if test x"$errors" = x; then
+  acx_cv_cc_gcc_supports_ada=yes
+  break
+fi
+rm -f conftest.*])
+
+if test x$GNATBIND != xno && test x$acx_cv_gcc_supports_ada != xno; then
+  have_gnat=yes
+else
+  have_gnat=no
+fi
+])

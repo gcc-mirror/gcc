@@ -39,9 +39,3 @@ gtfiles="\$(srcdir)/ada/ada-tree.h \$(srcdir)/ada/gigi.h \$(srcdir)/ada/decl.c \
 outputs=ada/Makefile
 
 target_libs="target-libada"
-
-# The logic for determining whether there is a bootstrap Ada compiler
-# available needs to be moved from gcc/configure to the toplevel configure,
-# so that target-libada is not built when there is no bootstrap Ada compiler.
-# Until then disable building this language by default.
-build_by_default=no
