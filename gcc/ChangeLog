@@ -1,5 +1,21 @@
 2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/t-m68hc11-gas (LIB1ASMFUNCS): Build __far_trampoline.
+	(MULTILIB_OPTIONS): Must also generate for -mlong-calls.
+
+	* config/m68hc11/larith.asm: Put a mode for ELF ABI flags.
+	(ret, declare, farsym): New gas macros.
+	(__premain, exit, abort, _cleanup, memcpy, memset, ___adddi3,
+	___subdi3, ___notdi2, __mulhi32, __mulsi3): Use them to use 'rtc'
+	and declare the symbol far when compiled with -mlong-calls.
+	(__far_trampoline): New for 68HC12 trampoline code to invoke a 
+	far handler using jsr/bsr.
+
+	* config/m68hc11/m68hc11-crt0.S: Put a mode for ELF ABI flags.
+	(jsr): New macro to transform a 'jsr' into a 'call'.
+
+2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* doc/invoke.texi: Document -mlong-calls for 68HC12.
 
 	* config/m68hc11/m68hc11.h (CPP_SPEC): Pass -D__USE_RTC__ when
