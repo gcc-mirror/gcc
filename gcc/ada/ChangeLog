@@ -1,3 +1,7 @@
+2001-10-10  Richard Kenner  <kenner@gnat.com>
+
+	* misc.c (struct lang_hooks): Add new initializer to match GCC change.
+
 2001-10-10  Geert Bosch  <bosch@gnat.com>
 
 	* xnmake.adb (XNmake): Fix handling of -s/-b options.  No longer 
