@@ -2017,9 +2017,10 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   enum machine_mode mode, comp_mode;
   rtx mmin, mmax, mode_mmin, mode_mmax;
   unsigned HOST_WIDEST_INT s, size, d, inv;
-  HOST_WIDEST_INT up, down, inc;
+  HOST_WIDEST_INT up, down, inc, step_val;
   int was_sharp = false;
   rtx old_niter;
+  bool step_is_pow2;
 
   /* The meaning of these assumptions is this:
      if !assumptions
@@ -2126,10 +2127,26 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   if (iv0.step == const0_rtx && iv1.step == const0_rtx)
     goto fail;
 
-  /* Ignore loops of while (i-- < 10) type.  */
-  if (cond != NE
-      && (INTVAL (iv0.step) < 0 || INTVAL (iv1.step) > 0))
-    goto fail;
+  if (cond != NE)
+    {
+      if (iv0.step == const0_rtx)
+	step_val = -INTVAL (iv1.step);
+      else
+	step_val = INTVAL (iv1.step);
+
+      /* Ignore loops of while (i-- < 10) type.  */
+      if (step_val < 0)
+	goto fail;
+
+      step_is_pow2 = !(step_val & (step_val - 1));
+    }
+  else
+    {
+      /* We do not care about whether the step is power of two in this
+	 case.  */
+      step_is_pow2 = false;
+      step_val = 0;
+    }
 
   /* Some more condition normalization.  We must record some assumptions
      due to overflows.  */
@@ -2270,8 +2287,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	      /* If the step is a power of two and the final value we have
 		 computed overflows, the cycle is infinite.  Otherwise it
 		 is nontrivial to compute the number of iterations.  */
-	      s = INTVAL (step);
-	      if ((s & (s - 1)) == 0)
+	      if (step_is_pow2)
 		desc->infinite = alloc_EXPR_LIST (0, may_not_xform,
 						  desc->infinite);
 	      else
@@ -2372,11 +2388,32 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 	  tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
 
 	  bound = simplify_gen_binary (MINUS, mode, mode_mmax,
-				       lowpart_subreg (mode, step, comp_mode));
-	  assumption = simplify_gen_relational (cond, SImode, mode,
-						tmp1, bound);
-	  desc->assumptions =
-		  alloc_EXPR_LIST (0, assumption, desc->assumptions);
+				       lowpart_subreg (mode, step,
+						       comp_mode));
+	  if (step_is_pow2)
+	    {
+	      rtx t0, t1;
+
+	      /* If s is power of 2, we know that the loop is infinite if
+		 a % s <= b % s and b + s overflows.  */
+	      assumption = simplify_gen_relational (reverse_condition (cond),
+						    SImode, mode,
+						    tmp1, bound);
+
+	      t0 = simplify_gen_binary (UMOD, mode, copy_rtx (tmp0), step);
+	      t1 = simplify_gen_binary (UMOD, mode, copy_rtx (tmp1), step);
+	      tmp = simplify_gen_relational (cond, SImode, mode, t0, t1);
+	      assumption = simplify_gen_binary (AND, SImode, assumption, tmp);
+	      desc->infinite =
+		      alloc_EXPR_LIST (0, assumption, desc->infinite);
+	    }
+	  else
+	    {
+	      assumption = simplify_gen_relational (cond, SImode, mode,
+						    tmp1, bound);
+	      desc->assumptions =
+		      alloc_EXPR_LIST (0, assumption, desc->assumptions);
+	    }
 
 	  tmp = simplify_gen_binary (PLUS, comp_mode, iv1.base, iv0.step);
 	  tmp = lowpart_subreg (mode, tmp, comp_mode);
@@ -2397,10 +2434,30 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 
 	  bound = simplify_gen_binary (MINUS, mode, mode_mmin,
 				       lowpart_subreg (mode, step, comp_mode));
-	  assumption = simplify_gen_relational (cond, SImode, mode,
-						bound, tmp0);
-	  desc->assumptions =
-		  alloc_EXPR_LIST (0, assumption, desc->assumptions);
+	  if (step_is_pow2)
+	    {
+	      rtx t0, t1;
+
+	      /* If s is power of 2, we know that the loop is infinite if
+		 a % s <= b % s and a - s overflows.  */
+	      assumption = simplify_gen_relational (reverse_condition (cond),
+						    SImode, mode,
+						    bound, tmp0);
+
+	      t0 = simplify_gen_binary (UMOD, mode, copy_rtx (tmp0), step);
+	      t1 = simplify_gen_binary (UMOD, mode, copy_rtx (tmp1), step);
+	      tmp = simplify_gen_relational (cond, SImode, mode, t0, t1);
+	      assumption = simplify_gen_binary (AND, SImode, assumption, tmp);
+	      desc->infinite =
+		      alloc_EXPR_LIST (0, assumption, desc->infinite);
+	    }
+	  else
+	    {
+	      assumption = simplify_gen_relational (cond, SImode, mode,
+						    bound, tmp0);
+	      desc->assumptions =
+		      alloc_EXPR_LIST (0, assumption, desc->assumptions);
+	    }
 
 	  tmp = simplify_gen_binary (PLUS, comp_mode, iv0.base, iv1.step);
 	  tmp = lowpart_subreg (mode, tmp, comp_mode);

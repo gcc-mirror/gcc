@@ -1,3 +1,9 @@
+2004-12-18  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/19001
+	* loop-iv.c (iv_number_of_iterations): Record assumptions for loops
+	with power of two step to 'infinite' field.
+
 2004-12-18  Roger Sayle  <roger@eyesopen.com>
 
 	* Makefile.in (stor-layout.o): Depend upon gt-stor-layout.h.
