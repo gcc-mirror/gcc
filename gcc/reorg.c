@@ -211,6 +211,7 @@ static int max_uid;
 
 static int redundant_insn_p ();
 static void update_block ();
+static void update_reg_dead_notes ();
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
    which resources are references by the insn.  If INCLUDE_CALLED_ROUTINE
@@ -1830,6 +1831,43 @@ update_block (insn, where)
   if (b != -1)
     bb_ticks[b]++;
 }
+
+/* Called when INSN is being moved forward into a delay slot of DELAYED_INSN.
+   We check every instruction between INSN and DELAYED_INSN for REG_DEAD notes
+   that reference values used in INSN.  If we find one, then we move the
+   REG_DEAD note to INSN.
+
+   This is needed to handle the case where an later insn (after INSN) has a
+   REG_DEAD note for a register used by INSN, and this later insn subsequently
+   gets moved before a CODE_LABEL because it is a redundant insn.  In this
+   case, mark_target_live_regs may be confused into thinking the register
+   is dead because it sees a REG_DEAD note immediately before a CODE_LABEL.  */
+
+static void
+update_reg_dead_notes (insn, delayed_insn)
+     rtx insn, delayed_insn;
+{
+  rtx p, link, next;
+
+  for (p = next_nonnote_insn (insn); p != delayed_insn;
+       p = next_nonnote_insn (p))
+    for (link = REG_NOTES (p); link; link = next)
+      {
+	next = XEXP (link, 1);
+
+	if (REG_NOTE_KIND (link) != REG_DEAD
+	    || GET_CODE (XEXP (link, 0)) != REG)
+	  continue;
+
+	if (reg_referenced_p (XEXP (link, 0), PATTERN (insn)))
+	  {
+	    /* Move the REG_DEAD note from P to INSN.  */
+	    remove_note (p, link);
+	    XEXP (link, 1) = REG_NOTES (insn);
+	    REG_NOTES (insn) = link;
+	  }
+      }
+}
 
 /* Marks registers possibly live at the current place being scanned by
    mark_target_live_regs.  Used only by next two function.    */
@@ -2412,6 +2450,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 			 to put them at the head, rather than the
 			 tail, of the list.  */
 
+		      update_reg_dead_notes (trial, insn);
 		      delay_list = gen_rtx (INSN_LIST, VOIDmode,
 					    trial, delay_list);
 		      update_block (trial, trial);
