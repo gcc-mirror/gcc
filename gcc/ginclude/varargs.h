@@ -22,6 +22,9 @@
 #ifdef __pyr__
 #include <va-pyr.h>
 #else
+#ifdef __clipper__
+#include <va-clipper.h>
+#else
 #ifdef __m88k__
 #include <va-m88k.h>
 #else
@@ -105,6 +108,7 @@ typedef void *__gnuc_va_list;
 #endif /* not i960 */
 #endif /* not hppa */
 #endif /* not m88k */
+#endif /* not clipper */
 #endif /* not pyr */
 #endif /* not i860 */
 #endif /* not mips */
