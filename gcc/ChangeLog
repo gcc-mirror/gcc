@@ -1,3 +1,11 @@
+2005-01-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.def, c-dump.c, c-gimplify.c, c-objc-common.c,
+	cfgexpand.c, dbxout.c, function.h, opts.c, tree-flow-inline.h,
+	tree-ssa-operands.h, tree-ssa-threadupdate.c, tree-tailcall.c,
+	config/avr/avr.md, config/cris/aout.h, config/cris/cris.h,
+	config/mips/iris6.h, config/sh/sh.c: Update copyright.
+
 2005-01-27  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/17278
