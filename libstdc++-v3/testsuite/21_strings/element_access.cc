@@ -34,7 +34,7 @@ bool test01(void)
   csize_type csz01, csz02;
 
   const std::string str01("tamarindo, costa rica");
-  std::string str02("14th street beach, capitola, california");
+  std::string str02("41st street beach, capitola, california");
   std::string str03;
 
   // const_reference operator[] (size_type pos) const;
@@ -49,7 +49,7 @@ bool test01(void)
   ref ref1 = str02[csz02 - 1];
   VERIFY( ref1 == 'a' );
   ref ref2 = str02[1];
-  VERIFY( ref2 == '4' );
+  VERIFY( ref2 == '1' );
 
   // const_reference at(size_type pos) const;
   csz01 = str01.size();

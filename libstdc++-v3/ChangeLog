@@ -1,5 +1,17 @@
 2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/bits/stl_iterator.h (istream_iterator::operator->): Fix
+	return values.
+	(istream_iterator::operator*): Same.
+
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+            Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+        * testsuite/21_strings/element_access.cc (test01): Chill Out Cafe
+        is on 41st, not 14th.
+
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* include/bits/std_iterator.h: Include sbuf_iter.h via std_ios.h.
 
 	* include/bits/stl_iterator.h (istream_iterator): Inherit from
