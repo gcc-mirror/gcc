@@ -971,7 +971,7 @@ do {									\
 
 /* Motorola MVME support.  */
 #ifndef	LIB_MVME_SPEC
-#define LIB_MVME_SPEC "-( -lmvme -lc -) }"
+#define LIB_MVME_SPEC "-( -lmvme -lc -)"
 #endif
 
 #ifndef	STARTFILE_MVME_SPEC
@@ -992,7 +992,7 @@ do {									\
 
 /* PowerPC simulator based on netbsd system calls support.  */
 #ifndef	LIB_SIM_SPEC
-#define LIB_SIM_SPEC "-( -lsim -lc -) }"
+#define LIB_SIM_SPEC "-( -lsim -lc -)"
 #endif
 
 #ifndef	STARTFILE_SIM_SPEC
