@@ -1,3 +1,9 @@
+2004-01-22  Jeff Sturm  <jsturm@one-point.com>
+
+	PR java/13733
+	* parse.y (patch_assignment): Don't modify lhs_type for
+	reference assignments.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.
