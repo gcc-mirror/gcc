@@ -145,6 +145,7 @@ struct function
   rtx ehc;
 
   /* For expr.c.  */
+  rtx pending_chain;
   int pending_stack_adjust;
   int inhibit_defer_pop;
   rtx saveregs_value;

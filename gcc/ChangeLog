@@ -27,6 +27,13 @@ Fri Oct 23 22:38:57 1998  Jeffrey A Law  (law@cygnus.com)
 	* m68k.c (output_move_qimode): Do not use byte sized operations on
 	address registers.
 
+Fri Oct 23 00:56:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* expr.c (pending_chain): Move up.
+	(save_expr_status): Do save pending_chain.
+	(restore_expr_status): And restore it.
+	* function.h (struct function): Add pending_chain.
+
 Mon Oct 19 13:22:13 1998  Geoff Keating  <geoffk@ozemail.com.au>
 
         * loop.c (scan_loop): Be more selective about what invariants are 

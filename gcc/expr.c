@@ -114,6 +114,9 @@ static int can_handle_constant_p;
    recursion.  */
 static int in_check_memory_usage;
 
+/* Postincrements that still need to be expanded.  */
+static rtx pending_chain;
+
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
 struct move_by_pieces
@@ -342,15 +345,14 @@ void
 save_expr_status (p)
      struct function *p;
 {
-  /* Instead of saving the postincrement queue, empty it.  */
-  emit_queue ();
-
+  p->pending_chain = pending_chain;
   p->pending_stack_adjust = pending_stack_adjust;
   p->inhibit_defer_pop = inhibit_defer_pop;
   p->saveregs_value = saveregs_value;
   p->apply_args_value = apply_args_value;
   p->forced_labels = forced_labels;
 
+  pending_chain = NULL_RTX;
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
   saveregs_value = 0;
@@ -365,6 +367,7 @@ void
 restore_expr_status (p)
      struct function *p;
 {
+  pending_chain = p->pending_chain;
   pending_stack_adjust = p->pending_stack_adjust;
   inhibit_defer_pop = p->inhibit_defer_pop;
   saveregs_value = p->saveregs_value;
@@ -374,8 +377,6 @@ restore_expr_status (p)
 
 /* Manage the queue of increment instructions to be output
    for POSTINCREMENT_EXPR expressions, etc.  */
-
-static rtx pending_chain;
 
 /* Queue up to increment (or change) VAR later.  BODY says how:
    BODY should be the same thing you would pass to emit_insn
