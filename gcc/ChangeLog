@@ -1,3 +1,7 @@
+Wed Jun 17 22:28:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* configure.in: Don't turn on collect2 unconditionally.
+
 Wed Jun 17 20:20:48 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* cse.c (cse_basic_block): Don't include NOTE insns in the count
