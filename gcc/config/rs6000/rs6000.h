@@ -660,7 +660,8 @@ extern int rs6000_default_long_calls;
    emulated in a trap handler.  */
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
   (STRICT_ALIGNMENT							\
-   || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode)	\
+   || (((MODE) == SFmode || (MODE) == DFmode || (MODE) == TFmode	\
+	|| (MODE) == DImode)						\
        && (ALIGN) < 32))
 
 /* Standard register usage.  */
@@ -2073,7 +2074,7 @@ typedef struct rs6000_args
       || (TARGET_32BIT						\
 	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
 	  : ! (INTVAL (XEXP (X, 1)) & 3)))			\
-  && ((MODE) != TImode						\
+  && (((MODE) != TFmode && (MODE) != TImode)			\
       || (TARGET_32BIT						\
 	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 12) 	\
 	  : (LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 8) 	\

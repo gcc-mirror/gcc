@@ -1,4 +1,20 @@
+2002-10-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Set
+	real_format_for_mode for IBM extended format, if enabled.
+	(easy_fp_constant): Add TFmode.
+	(rs6000_legitimize_address): Add TFmode.
+	(rs6000_legitimate_address): Same.
+	(function_arg_advance): TFmode uses two FPRs.
+	(rs6000_emit_prologue): Fix warning.
+	(rs6000_output_function_epilogue): Add TFmode.
+	(output_toc): Add TFmode.
+	* rs6000.h (SLOW_UNALIGNED_ACCESS): Add TFmode.
+	(LEGITIMATE_OFFSET_ADDRESS_P): Add TFmode.
+	* rs6000.md (movtf splitter): Load TFmode constant.
+
 2002-10-07  Dale Johannesen  <dalej@apple.com>
+
 	* rtl.h:  Add NOTE_PRECONDITIONED.
 	* unroll.c:  Set it.
 	* loop.c:  Set loop_info->preconditioned from it.
