@@ -1,3 +1,11 @@
+2005-03-13  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_mult): Use synthetic multiplication sequences for
+	more classes of DImode multiplication by constant.  Allow both
+	multiplication by small negative constants (by performing a 
+	multiplication by a positive constant and negating the result) and
+	multiplications by large powers of two, by using a left shift.
+
 2005-03-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-into-ssa.c (find_idf): Speed up by putting the indexes
