@@ -1,3 +1,9 @@
+2001-02-22  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/crtbegin.asm (.fini): Use pc-relative relocs to
+	reach .text instead of gp-relative relocs.
+	* config/ia64/crtend.asm (.init): Likewise.
+
 2001-02-22  Andreas Jaeger  <aj@suse.de>
 
 	* extend.texi (C++ Attributes): Fix typo.
@@ -18,7 +24,7 @@
 	* fixinc/fixincl.x: regen
 
 2001-02-21  Bruce Korb  <bkorb@gnu.org>
-            Rodney Brown  <RodneyBrown@mynd.com>
+	    Rodney Brown  <RodneyBrown@mynd.com>
 
 	* fixinc/mkfixinc.sh: Use C fixincludes for UnixWare 7.
 	* fixinc/inclhack.def: Add fixinc.svr4 patterns with matching
@@ -27,17 +33,17 @@
 
 2001-02-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c: Update comments.
-        (_cpp_read_file): Don't check for NULL filenames any more.
-        * cppinit.c (cpp_start_read): Don't do canonicalization of
-        in_fname and out_fname.  Use the passed file name exclusively.
-        (_cpp_handle_options): Don't treat "-" as a command line option,
-        but as a normal filename.
-        (_cpp_post_options): Canonicalize in_fname and out_fname.
-        * cppmain.c (printer_init): Don't check out_fname for NULL.
-        * c-lex.c (orig_filename): Rename cpp_filename for clarity.
-        (init_c_lex): Update, and use "" to represent stdin to CPP.
-        (yyparse): Update.
+	* cppfiles.c: Update comments.
+	(_cpp_read_file): Don't check for NULL filenames any more.
+	* cppinit.c (cpp_start_read): Don't do canonicalization of
+	in_fname and out_fname.  Use the passed file name exclusively.
+	(_cpp_handle_options): Don't treat "-" as a command line option,
+	but as a normal filename.
+	(_cpp_post_options): Canonicalize in_fname and out_fname.
+	* cppmain.c (printer_init): Don't check out_fname for NULL.
+	* c-lex.c (orig_filename): Rename cpp_filename for clarity.
+	(init_c_lex): Update, and use "" to represent stdin to CPP.
+	(yyparse): Update.
 
 2001-02-21  Kazu Hirata  <kazu@hxi.com>
 
@@ -254,8 +260,8 @@ Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (_cpp_make_system_header): Generate a file
-        change callback.
+	* cppfiles.c (_cpp_make_system_header): Generate a file
+	change callback.
 
 Thu Feb 15 21:30:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -412,8 +418,8 @@ Fri Feb  9 15:05:27 2001  Christopher Faylor <cgf@cygnus.com>
 
 2001-02-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * gcc.c (cpp_options): Delete .d files on error.  Don't delete
-        .o files when using the -M options.
+	* gcc.c (cpp_options): Delete .d files on error.  Don't delete
+	.o files when using the -M options.
 
 2001-02-08  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	    David Edelsohn  <edelsohn@gnu.org>
