@@ -1,3 +1,7 @@
+2002-11-19  John Gustafsson  <forgoil@rsn.bth.se>
+
+	* docs/html/20_util/howto.html: Fix typo.
+
 2002-11-18  Jonathan Lennox  <lennox@cs.columbia.edu>
 
 	* include/bits/streambuf.tcc (__copy_streambufs): verify
