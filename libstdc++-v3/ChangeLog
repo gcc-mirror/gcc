@@ -1,4 +1,9 @@
-2005-02-23	Douglas Gregor <doug.gregor@gmail.com>
+2005-02-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/functional (mem_fn): Avoid _T, badname on
+	Darwin.
+
+2005-02-23  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/tr1/functional (function): New class template.
 	(mem_fn): New function template.

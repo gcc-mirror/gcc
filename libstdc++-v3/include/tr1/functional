@@ -191,11 +191,11 @@ namespace tr1
    *  @brief Returns a function object that forwards to the member
    *  pointer @a pm.
    */
-  template<typename _T, typename _Class>
-    inline _Mem_fn<_T _Class::*>
-    mem_fn(_T _Class::* __pm)
+  template<typename _Tp, typename _Class>
+    inline _Mem_fn<_Tp _Class::*>
+    mem_fn(_Tp _Class::* __pm)
     {
-      return _Mem_fn<_T _Class::*>(__pm);
+      return _Mem_fn<_Tp _Class::*>(__pm);
     }
 
   /**
