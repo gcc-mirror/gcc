@@ -927,7 +927,6 @@ static void
 compute_flow_insensitive_aliasing (struct alias_info *ai)
 {
   size_t i;
-  sbitmap res;
 
   /* Initialize counter for the total number of virtual operands that
      aliasing will introduce.  When AI->TOTAL_ALIAS_VOPS goes beyond the
@@ -1021,8 +1020,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
      To avoid this problem, we do a final traversal of AI->POINTERS
      looking for pairs of pointers that have no aliased symbols in
      common and yet have conflicting alias set numbers.  */
-  res = sbitmap_alloc (num_referenced_vars);
-
   for (i = 0; i < ai->num_pointers; i++)
     {
       size_t j;
@@ -1042,8 +1039,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 
 	  /* The two pointers may alias each other.  If they already have
 	     symbols in common, do nothing.  */
-	  sbitmap_a_and_b (res, may_aliases1, may_aliases2);
-	  if (sbitmap_first_set_bit (res) >= 0)
+	  if (sbitmap_any_common_bits (may_aliases1, may_aliases2))
 	    continue;
 
 	  if (sbitmap_first_set_bit (may_aliases2) >= 0)
@@ -1064,8 +1060,6 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	    }
 	}
     }
-
-  sbitmap_free (res);
 
   if (dump_file)
     fprintf (dump_file, "%s: Total number of aliased vops: %ld\n",
@@ -1209,14 +1203,11 @@ static void
 group_aliases (struct alias_info *ai)
 {
   size_t i;
-  sbitmap res;
 
   /* Sort the POINTERS array in descending order of contributed
      virtual operands.  */
   qsort (ai->pointers, ai->num_pointers, sizeof (struct alias_map_d *),
          total_alias_vops_cmp);
-
-  res = sbitmap_alloc (num_referenced_vars);
 
   /* For every pointer in AI->POINTERS, reverse the roles of its tag
      and the tag's may-aliases set.  */
@@ -1237,8 +1228,7 @@ group_aliases (struct alias_info *ai)
 	{
 	  sbitmap tag2_aliases = ai->pointers[j]->may_aliases;
 
-	  sbitmap_a_and_b (res, tag1_aliases, tag2_aliases);
-	  if (sbitmap_first_set_bit (res) >= 0)
+          if (sbitmap_any_common_bits (tag1_aliases, tag2_aliases))
 	    {
 	      tree tag2 = var_ann (ai->pointers[j]->var)->type_mem_tag;
 
@@ -1307,8 +1297,6 @@ group_aliases (struct alias_info *ai)
 	    }
 	}
     }
-
-  sbitmap_free (res);
 
   if (dump_file)
     fprintf (dump_file,

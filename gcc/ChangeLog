@@ -1,3 +1,13 @@
+2004-11-30  Jeff Law  <law@redhat.com>
+
+	* sbitmap.c (sbitmap_any_common_bits): New function.
+	* sbitmap.h (sbitmap_any_common_bits): Prototype.
+	* modulo-sched.c (sms_schedule_by_order): Use sbitmap_any_common_bits
+	No longer allocate/free "psp", "pss" sbitmaps.
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Similarly for
+	the "res" sbitmap.
+	(group_aliases): Similarly.
+
 2004-11-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree-vectorizer.c (vect_analyze_data_refs): Reformat and avoid
