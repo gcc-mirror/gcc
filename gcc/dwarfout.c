@@ -331,11 +331,11 @@ static void output_mem_loc_descriptor	PARAMS ((rtx));
 static void output_loc_descriptor	PARAMS ((rtx));
 static void output_bound_representation	PARAMS ((tree, unsigned, int));
 static void output_enumeral_list	PARAMS ((tree));
-static inline unsigned ceiling		PARAMS ((unsigned, unsigned));
+static inline HOST_WIDE_INT ceiling	PARAMS ((HOST_WIDE_INT, unsigned int));
 static inline tree field_type		PARAMS ((tree));
-static inline unsigned simple_type_align_in_bits PARAMS ((tree));
-static inline unsigned simple_type_size_in_bits  PARAMS ((tree));
-static unsigned field_byte_offset	PARAMS ((tree));
+static inline unsigned int simple_type_align_in_bits PARAMS ((tree));
+static inline unsigned HOST_WIDE_INT simple_type_size_in_bits  PARAMS ((tree));
+static HOST_WIDE_INT field_byte_offset	PARAMS ((tree));
 static inline void sibling_attribute	PARAMS ((void));
 static void location_attribute		PARAMS ((rtx));
 static void data_member_location_attribute PARAMS ((tree));
@@ -1806,8 +1806,8 @@ output_bound_representation (bound, dim_num, u_or_l)
       /* All fixed-bounds are represented by INTEGER_CST nodes.	 */
 
     case INTEGER_CST:
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-			      (unsigned) TREE_INT_CST_LOW (bound));
+      if (host_integerp (bound, 0))
+	ASM_OUTPUT_DWARF_DATA4 (asm_out_file, tree_low_cst (bound, 0));
       break;
 
     default:
@@ -1881,8 +1881,11 @@ output_enumeral_list (link)
   if (link)
     {
       output_enumeral_list (TREE_CHAIN (link));
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-			      (unsigned) TREE_INT_CST_LOW (TREE_VALUE (link)));
+
+      if (host_integerp (TREE_VALUE (link), 0))
+	ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+				tree_low_cst (TREE_VALUE (link), 0));
+
       ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
 			       IDENTIFIER_POINTER (TREE_PURPOSE (link)));
     }
@@ -1891,10 +1894,10 @@ output_enumeral_list (link)
 /* Given an unsigned value, round it up to the lowest multiple of `boundary'
    which is not less than the value itself.  */
 
-static inline unsigned
+static inline HOST_WIDE_INT
 ceiling (value, boundary)
-     register unsigned value;
-     register unsigned boundary;
+     register HOST_WIDE_INT value;
+     register unsigned int boundary;
 {
   return (((value + boundary - 1) / boundary) * boundary);
 }
@@ -1922,7 +1925,7 @@ field_type (decl)
    node, return the alignment in bits for the type, or else return
    BITS_PER_WORD if the node actually turns out to be an ERROR_MARK node.  */
 
-static inline unsigned
+static inline unsigned int
 simple_type_align_in_bits (type)
      register tree type;
 {
@@ -1935,7 +1938,7 @@ simple_type_align_in_bits (type)
    constant, or else return BITS_PER_WORD if the type actually turns out
    to be an ERROR_MARK node.  */
 
-static inline unsigned
+static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
      register tree type;
 {
@@ -1945,10 +1948,10 @@ simple_type_size_in_bits (type)
     {
       register tree type_size_tree = TYPE_SIZE (type);
 
-      if (TREE_CODE (type_size_tree) != INTEGER_CST)
+      if (! host_integerp (type_size_tree, 1))
 	return TYPE_ALIGN (type);
 
-      return (unsigned) TREE_INT_CST_LOW (type_size_tree);
+      return tree_low_cst (type_size_tree, 1);
     }
 }
 
@@ -1959,22 +1962,21 @@ simple_type_size_in_bits (type)
    pointer to an ERROR_MARK node, or because the offset is actually variable.
    (We can't handle the latter case just yet.)  */
 
-static unsigned
+static HOST_WIDE_INT
 field_byte_offset (decl)
      register tree decl;
 {
-  register unsigned type_align_in_bytes;
-  register unsigned type_align_in_bits;
-  register unsigned type_size_in_bits;
-  register unsigned object_offset_in_align_units;
-  register unsigned object_offset_in_bits;
-  register unsigned object_offset_in_bytes;
-  register tree type;
-  register tree bitpos_tree;
-  register tree field_size_tree;
-  register unsigned bitpos_int;
-  register unsigned deepest_bitpos;
-  register unsigned field_size_in_bits;
+  unsigned int type_align_in_bytes;
+  unsigned int type_align_in_bits;
+  unsigned HOST_WIDE_INT type_size_in_bits;
+  HOST_WIDE_INT object_offset_in_align_units;
+  HOST_WIDE_INT object_offset_in_bits;
+  HOST_WIDE_INT object_offset_in_bytes;
+  tree type;
+  tree field_size_tree;
+  HOST_WIDE_INT bitpos_int;
+  HOST_WIDE_INT deepest_bitpos;
+  unsigned HOST_WIDE_INT field_size_in_bits;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
@@ -1983,8 +1985,6 @@ field_byte_offset (decl)
     abort ();
 
   type = field_type (decl);
-
-  bitpos_tree = DECL_FIELD_BITPOS (decl);
   field_size_tree = DECL_SIZE (decl);
 
   /* If there was an error, the size could be zero.  */
@@ -1992,24 +1992,22 @@ field_byte_offset (decl)
     {
       if (errorcount)
 	return 0;
+
       abort ();
     }
     
-
   /* We cannot yet cope with fields whose positions or sizes are variable,
      so for now, when we see such things, we simply return 0.  Someday,
      we may be able to handle such cases, but it will be damn difficult.  */
 
-  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
+  if (! host_integerp (bit_position (decl), 0)
+      || ! host_integerp (field_size_tree, 1))
     return 0;
-  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
 
-  if (TREE_CODE (field_size_tree) != INTEGER_CST)
-    return 0;
-  field_size_in_bits = (unsigned) TREE_INT_CST_LOW (field_size_tree);
+  bitpos_int = int_bit_position (decl);
+  field_size_in_bits = tree_low_cst (field_size_tree, 1);
 
   type_size_in_bits = simple_type_size_in_bits (type);
-
   type_align_in_bits = simple_type_align_in_bits (type);
   type_align_in_bytes = type_align_in_bits / BITS_PER_UNIT;
 
@@ -2058,8 +2056,7 @@ field_byte_offset (decl)
 
      The value we deduce is then used (by the callers of this routine) to
      generate AT_location and AT_bit_offset attributes for fields (both
-     bit-fields and, in the case of AT_location, regular fields as well).
-  */
+     bit-fields and, in the case of AT_location, regular fields as well). */
 
   /* Figure out the bit-distance from the start of the structure to the
      "deepest" bit of the bit-field.  */
@@ -2201,7 +2198,7 @@ data_member_location_attribute (t)
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   if (TREE_CODE (t) == TREE_VEC)
-    object_offset_in_bytes = TREE_INT_CST_LOW (BINFO_OFFSET (t));
+    object_offset_in_bytes = tree_low_cst (BINFO_OFFSET (t), 0);
   else
     object_offset_in_bytes = field_byte_offset (t);
 
@@ -2258,8 +2255,8 @@ const_value_attribute (rtl)
 	   simplicity we always just output CONST_DOUBLEs using 8 bytes.  */
 
 	ASM_OUTPUT_DWARF_DATA8 (asm_out_file,
-				(unsigned HOST_WIDE_INT) CONST_DOUBLE_HIGH (rtl),
-				(unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (rtl));
+				(unsigned int) CONST_DOUBLE_HIGH (rtl),
+				(unsigned int) CONST_DOUBLE_LOW (rtl));
 	break;
 
       case CONST_STRING:
@@ -2715,26 +2712,27 @@ static inline void
 bit_offset_attribute (decl)
     register tree decl;
 {
-  register unsigned object_offset_in_bytes = field_byte_offset (decl);
-  register tree type = DECL_BIT_FIELD_TYPE (decl);
-  register tree bitpos_tree = DECL_FIELD_BITPOS (decl);
-  register unsigned bitpos_int;
-  register unsigned highest_order_object_bit_offset;
-  register unsigned highest_order_field_bit_offset;
-  register unsigned bit_offset;
+  HOST_WIDE_INT object_offset_in_bytes = field_byte_offset (decl);
+  tree type = DECL_BIT_FIELD_TYPE (decl);
+  HOST_WIDE_INT bitpos_int;
+  HOST_WIDE_INT highest_order_object_bit_offset;
+  HOST_WIDE_INT highest_order_field_bit_offset;
+  HOST_WIDE_INT bit_offset;
 
   /* Must be a bit field.  */
   if (!type
       || TREE_CODE (decl) != FIELD_DECL)
     abort ();
 
-  /* We can't yet handle bit-fields whose offsets are variable, so if we
-     encounter such things, just return without generating any attribute
-     whatsoever.  */
+  /* We can't yet handle bit-fields whose offsets or sizes are variable, so
+     if we encounter such things, just return without generating any
+     attribute whatsoever.  */
 
-  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
+  if (! host_integerp (bit_position (decl), 0)
+      || ! host_integerp (DECL_SIZE (decl), 1))
     return;
-  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
+
+  bitpos_int = int_bit_position (decl);
 
   /* Note that the bit offset is always the distance (in bits) from the
      highest-order bit of the "containing object" to the highest-order
@@ -2747,9 +2745,7 @@ bit_offset_attribute (decl)
 
   if (! BYTES_BIG_ENDIAN)
     {
-      highest_order_field_bit_offset
-	+= (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
-
+      highest_order_field_bit_offset += tree_low_cst (DECL_SIZE (decl), 1);
       highest_order_object_bit_offset += simple_type_size_in_bits (type);
     }
 
@@ -2774,9 +2770,12 @@ bit_size_attribute (decl)
       || ! DECL_BIT_FIELD_TYPE (decl))
     abort ();
 
-  ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_bit_size);
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-			  (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl)));
+  if (host_integerp (DECL_SIZE (decl), 1))
+    {
+      ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_bit_size);
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+			      tree_low_cst (DECL_SIZE (decl), 1));
+    }
 }
 
 /* The following routine outputs the `element_list' attribute for enumeration

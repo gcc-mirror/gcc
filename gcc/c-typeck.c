@@ -2373,8 +2373,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  enum tree_code xresultcode = resultcode;
 	  tree val 
 	    = shorten_compare (&xop0, &xop1, &xresult_type, &xresultcode);
+
 	  if (val != 0)
 	    return val;
+
 	  op0 = xop0, op1 = xop1;
 	  converted = 1;
 	  resultcode = xresultcode;
@@ -2384,7 +2386,6 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
-
 	      int unsignedp0, unsignedp1;
 	      tree primop0 = get_narrower (op0, &unsignedp0);
 	      tree primop1 = get_narrower (op1, &unsignedp1);
@@ -2395,11 +2396,12 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      STRIP_TYPE_NOPS (xop1);
 
 	      /* Give warnings for comparisons between signed and unsigned
-		 quantities that may fail.  */
-	      /* Do the checking based on the original operand trees, so that
-		 casts will be considered, but default promotions won't be.  */
+		 quantities that may fail. 
 
-	      /* Do not warn if the comparison is being done in a signed type,
+		 Do the checking based on the original operand trees, so that
+		 casts will be considered, but default promotions won't be.
+
+		 Do not warn if the comparison is being done in a signed type,
 		 since the signed type will only be chosen if it can represent
 		 all the values of the unsigned type.  */
 	      if (! TREE_UNSIGNED (result_type))
@@ -2410,6 +2412,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      else
 		{
 		  tree sop, uop;
+
 		  if (op0_signed)
 		    sop = xop0, uop = xop1;
 		  else
@@ -2458,24 +2461,23 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		    primop1 = get_narrower (TREE_OPERAND (primop1, 0),
 					    &unsignedp1);
 	      
-		  if (TREE_CODE (primop0) == INTEGER_CST
-		      || TREE_CODE (primop1) == INTEGER_CST)
+		  if (host_integerp (primop0, 0) || host_integerp (primop1, 0))
 		    {
 		      tree primop;
 		      HOST_WIDE_INT constant, mask;
 		      int unsignedp, bits;
 
-		      if (TREE_CODE (primop0) == INTEGER_CST)
+		      if (host_integerp (primop0, 0))
 			{
 			  primop = primop1;
 			  unsignedp = unsignedp1;
-			  constant = TREE_INT_CST_LOW (primop0);
+			  constant = tree_low_cst (primop0, 0);
 			}
 		      else
 			{
 			  primop = primop0;
 			  unsignedp = unsignedp0;
-			  constant = TREE_INT_CST_LOW (primop1);
+			  constant = tree_low_cst (primop1, 0);
 			}
 
 		      bits = TYPE_PRECISION (TREE_TYPE (primop));
@@ -3018,10 +3020,10 @@ build_unary_op (code, xarg, noconvert)
 
 	    addr = convert (argtype, addr);
 
-	    if (! integer_zerop (DECL_FIELD_BITPOS (field)))
+	    if (! integer_zerop (bit_position (field)))
 	      {
 		tree offset
-		  = size_binop (EASY_DIV_EXPR, DECL_FIELD_BITPOS (field),
+		  = size_binop (EASY_DIV_EXPR, bit_position (field),
 				bitsize_int (BITS_PER_UNIT));
 		int flag = TREE_CONSTANT (addr);
 
@@ -4723,8 +4725,7 @@ static tree constructor_type;
 static tree constructor_fields;
 
 /* For an ARRAY_TYPE, this is the specified index
-   at which to store the next element we get.
-   This is a special INTEGER_CST node that we modify in place.  */
+   at which to store the next element we get.  */
 static tree constructor_index;
 
 /* For an ARRAY_TYPE, this is the end index of the range
@@ -4739,13 +4740,11 @@ static tree constructor_max_index;
 static tree constructor_unfilled_fields;
 
 /* For an ARRAY_TYPE, this is the index of the first element
-   not yet written out.
-   This is a special INTEGER_CST node that we modify in place.  */
+   not yet written out.  */
 static tree constructor_unfilled_index;
 
 /* In a RECORD_TYPE, the byte index of the next consecutive field.
-   This is so we can generate gaps between fields, when appropriate.
-   This is a special INTEGER_CST node that we modify in place.  */
+   This is so we can generate gaps between fields, when appropriate.  */
 static tree constructor_bit_index;
 
 /* If we are saving up the elements rather than allocating them,
@@ -5028,8 +5027,9 @@ really_start_incremental_init (type)
       while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
+
       constructor_unfilled_fields = constructor_fields;
-      constructor_bit_index = copy_node (size_zero_node);
+      constructor_bit_index = bitsize_int (0);
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5039,14 +5039,13 @@ really_start_incremental_init (type)
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
 	  constructor_index
-	    = copy_node (convert (bitsizetype,
-				  TYPE_MIN_VALUE
-				  (TYPE_DOMAIN (constructor_type))));
+	    = convert (bitsizetype,
+		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
 	}
       else
-	constructor_index = copy_node (bitsize_int (0));
+	constructor_index = bitsize_int (0);
 
-      constructor_unfilled_index = copy_node (constructor_index);
+      constructor_unfilled_index = constructor_index;
     }
   else
     {
@@ -5101,20 +5100,16 @@ push_init_level (implicit)
     {
       /* Advance to offset of this element.  */
       if (! tree_int_cst_equal (constructor_bit_index,
-				DECL_FIELD_BITPOS (constructor_fields)))
-	{
-	  /* By using unsigned arithmetic, the result will be correct even
-	     in case of overflows, if BITS_PER_UNIT is a power of two.  */
-	  unsigned next = (TREE_INT_CST_LOW
-			   (DECL_FIELD_BITPOS (constructor_fields))
-			   / (unsigned)BITS_PER_UNIT);
-	  unsigned here = (TREE_INT_CST_LOW (constructor_bit_index)
-			   / (unsigned)BITS_PER_UNIT);
+				bit_position (constructor_fields)))
+	assemble_zeros
+	  (tree_low_cst
+	   (size_binop (TRUNC_DIV_EXPR,
+			size_binop (MINUS_EXPR,
+				    bit_position (constructor_fields),
+				    constructor_bit_index),
+			bitsize_int (BITS_PER_UNIT)),
+	    1));
 
-	  assemble_zeros ((next - here)
-			  * (unsigned)BITS_PER_UNIT
-			  / (unsigned)BITS_PER_UNIT);
-	}
       /* Indicate that we have now filled the structure up to the current
 	 field.  */
       constructor_unfilled_fields = constructor_fields;
@@ -5170,7 +5165,7 @@ push_init_level (implicit)
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
       constructor_type = TREE_TYPE (constructor_type);
-      push_array_bounds (TREE_INT_CST_LOW (constructor_index));
+      push_array_bounds (tree_low_cst (constructor_index, 0));
       constructor_depth++;
       if (! tree_int_cst_equal (constructor_index, constructor_unfilled_index)
 	  || constructor_range_end != 0)
@@ -5202,8 +5197,9 @@ push_init_level (implicit)
       while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
 	constructor_fields = TREE_CHAIN (constructor_fields);
+
       constructor_unfilled_fields = constructor_fields;
-      constructor_bit_index = copy_node (size_zero_node);
+      constructor_bit_index = bitsize_int (0);
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5213,14 +5209,14 @@ push_init_level (implicit)
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
 	  constructor_index
-	    = copy_node (convert (bitsizetype, 
+	    = convert (bitsizetype, 
 				  TYPE_MIN_VALUE
-				  (TYPE_DOMAIN (constructor_type))));
+				  (TYPE_DOMAIN (constructor_type)));
 	}
       else
 	constructor_index = bitsize_int (0);
 
-      constructor_unfilled_index = copy_node (constructor_index);
+      constructor_unfilled_index = constructor_index;
     }
   else
     {
@@ -5282,7 +5278,7 @@ pop_init_level (implicit)
      int implicit;
 {
   struct constructor_stack *p;
-  int size = 0;
+  HOST_WIDE_INT size = 0;
   tree constructor = 0;
 
   if (implicit == 0)
@@ -5402,7 +5398,7 @@ pop_init_level (implicit)
 	/* Find the offset of the end of that field.  */
 	filled = size_binop (CEIL_DIV_EXPR,
 			     constructor_bit_index,
-			     size_int (BITS_PER_UNIT));
+			     bitsize_int (BITS_PER_UNIT));
 
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
 	{
@@ -5422,10 +5418,12 @@ pop_init_level (implicit)
 		 in the array, because we start counting at zero.  Therefore,
 		 warn only if the value is less than zero.  */
 	      if (pedantic
-		  && (tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
+		  && (tree_int_cst_sgn
+		      (TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
 		      < 0))
 		error_with_decl (constructor_decl,
 				 "zero or negative array size `%s'");
+
 	      layout_type (constructor_type);
 	      size = int_size_in_bytes (constructor_type);
 	    }
@@ -5440,7 +5438,7 @@ pop_init_level (implicit)
 	filled = 0;
 
       if (filled != 0)
-	assemble_zeros (size - TREE_INT_CST_LOW (filled));
+	assemble_zeros (size - tree_low_cst (filled, 1));
     }
 
 	  
@@ -5486,14 +5484,15 @@ set_init_index (first, last)
 	  || TREE_CODE (first) == NON_LVALUE_EXPR)
 	 && (TYPE_MODE (TREE_TYPE (first))
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (first, 0)))))
-    (first) = TREE_OPERAND (first, 0);
+    first = TREE_OPERAND (first, 0);
+
   if (last)
     while ((TREE_CODE (last) == NOP_EXPR
 	    || TREE_CODE (last) == CONVERT_EXPR
 	    || TREE_CODE (last) == NON_LVALUE_EXPR)
 	   && (TYPE_MODE (TREE_TYPE (last))
 	       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (last, 0)))))
-      (last) = TREE_OPERAND (last, 0);
+      last = TREE_OPERAND (last, 0);
 
   if (TREE_CODE (first) != INTEGER_CST)
     error_init ("nonconstant array index in initializer");
@@ -5505,8 +5504,7 @@ set_init_index (first, last)
     error_init ("duplicate array index in initializer");
   else
     {
-      TREE_INT_CST_LOW (constructor_index) = TREE_INT_CST_LOW (first);
-      TREE_INT_CST_HIGH (constructor_index) = TREE_INT_CST_HIGH (first);
+      constructor_index = convert (bitsizetype, first);
 
       if (last != 0 && tree_int_cst_lt (last, first))
 	error_init ("empty index range in initializer");
@@ -5514,7 +5512,8 @@ set_init_index (first, last)
 	{
 	  if (pedantic)
 	    pedwarn ("ANSI C forbids specifying element to initialize");
-	  constructor_range_end = last;
+
+	  constructor_range_end = last ? convert (bitsizetype, last) : 0;
 	}
     }
 }
@@ -5587,8 +5586,8 @@ add_pending_init (purpose, value)
       while (*q != NULL)
 	{
 	  p = *q;
-	  if (tree_int_cst_lt (DECL_FIELD_BITPOS (purpose),
-			       DECL_FIELD_BITPOS (p->purpose)))
+	  if (tree_int_cst_lt (bit_position (purpose),
+			       bit_position (p->purpose)))
 	    q = &p->left;
 	  else if (p->purpose != purpose)
 	    q = &p->right;
@@ -5789,8 +5788,8 @@ pending_init_member (field)
 	{
 	  if (field == p->purpose)
 	    return 1;
-	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (field),
-				    DECL_FIELD_BITPOS (p->purpose)))
+	  else if (tree_int_cst_lt (bit_position (field),
+				    bit_position (p->purpose)))
 	    p = p->left;
 	  else
 	    p = p->right;
@@ -5870,12 +5869,10 @@ output_init_element (value, type, field, pending)
   /* If this element doesn't come next in sequence,
      put it on constructor_pending_elts.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE
-      && !tree_int_cst_equal (field, constructor_unfilled_index))
+      && ! tree_int_cst_equal (field, constructor_unfilled_index))
     {
       if (! duplicate)
-	/* The copy_node is needed in case field is actually
-	   constructor_index, which is modified in place.  */
-	add_pending_init (copy_node (field),
+	add_pending_init (field,
 			  digest_init (type, value, require_constant_value, 
 				       require_constant_elements));
     }
@@ -5911,27 +5908,18 @@ output_init_element (value, type, field, pending)
 	    {
 	      /* Structure elements may require alignment.
 		 Do this, if necessary.  */
-	      if (TREE_CODE (constructor_type) == RECORD_TYPE)
-		{
-		  /* Advance to offset of this element.  */
-		  if (! tree_int_cst_equal (constructor_bit_index,
-					    DECL_FIELD_BITPOS (field)))
-		    {
-		      /* By using unsigned arithmetic, the result will be
-			 correct even in case of overflows, if BITS_PER_UNIT
-			 is a power of two.  */
-		      unsigned next = (TREE_INT_CST_LOW
-				       (DECL_FIELD_BITPOS (field))
-				       / (unsigned)BITS_PER_UNIT);
-		      unsigned here = (TREE_INT_CST_LOW
-				       (constructor_bit_index)
-				       / (unsigned)BITS_PER_UNIT);
+	      if (TREE_CODE (constructor_type) == RECORD_TYPE
+		  && ! tree_int_cst_equal (constructor_bit_index,
+					   bit_position (field)))
+		/* Advance to offset of this element.  */
+		assemble_zeros
+		  (tree_low_cst
+		   (size_binop (TRUNC_DIV_EXPR,
+				size_binop (MINUS_EXPR, bit_position (field),
+					    constructor_bit_index),
+				bitsize_int (BITS_PER_UNIT)),
+		    0));
 
-		      assemble_zeros ((next - here)
-				      * (unsigned)BITS_PER_UNIT
-				      / (unsigned)BITS_PER_UNIT);
-		    }
-		}
 	      output_constant (digest_init (type, value,
 					    require_constant_value,
 					    require_constant_elements),
@@ -5941,33 +5929,22 @@ output_init_element (value, type, field, pending)
 		 keep track of end position of last field.  */
 	      if (TREE_CODE (constructor_type) == RECORD_TYPE
 		  || TREE_CODE (constructor_type) == UNION_TYPE)
-		{
-		  tree temp = size_binop (PLUS_EXPR, DECL_FIELD_BITPOS (field),
-					  DECL_SIZE (field));
-
-		  TREE_INT_CST_LOW (constructor_bit_index)
-		    = TREE_INT_CST_LOW (temp);
-		  TREE_INT_CST_HIGH (constructor_bit_index)
-		    = TREE_INT_CST_HIGH (temp);
-		}
+		constructor_bit_index
+		  = size_binop (PLUS_EXPR, bit_position (field),
+				DECL_SIZE (field));
 	    }
 	}
 
       /* Advance the variable that indicates sequential elements output.  */
       if (TREE_CODE (constructor_type) == ARRAY_TYPE)
-	{
-	  tree tem = size_binop (PLUS_EXPR, constructor_unfilled_index,
-				 bitsize_int (1));
-
-	  TREE_INT_CST_LOW (constructor_unfilled_index)
-	    = TREE_INT_CST_LOW (tem);
-	  TREE_INT_CST_HIGH (constructor_unfilled_index)
-	    = TREE_INT_CST_HIGH (tem);
-	}
+	constructor_unfilled_index
+	  = size_binop (PLUS_EXPR, constructor_unfilled_index,
+			bitsize_int (1));
       else if (TREE_CODE (constructor_type) == RECORD_TYPE)
 	{
-	  constructor_unfilled_fields =
-	    TREE_CHAIN (constructor_unfilled_fields);
+	  constructor_unfilled_fields
+	    = TREE_CHAIN (constructor_unfilled_fields);
+
 	  /* Skip any nameless bit fields.  */
 	  while (constructor_unfilled_fields != 0
 		 && DECL_C_BIT_FIELD (constructor_unfilled_fields)
@@ -6067,8 +6044,8 @@ output_pending_init_elements (all)
 				   constructor_unfilled_fields,
 				   0);
 	    }
-	  else if (tree_int_cst_lt (DECL_FIELD_BITPOS (constructor_unfilled_fields),
-				    DECL_FIELD_BITPOS (elt->purpose)))
+	  else if (tree_int_cst_lt (bit_position (constructor_unfilled_fields),
+				    bit_position (elt->purpose)))
 	    {
 	      /* Advance to the next smaller node.  */
 	      if (elt->left)
@@ -6094,8 +6071,9 @@ output_pending_init_elements (all)
 		    elt = elt->parent;
 		  elt = elt->parent;
 		  if (elt
-		      && tree_int_cst_lt (DECL_FIELD_BITPOS (constructor_unfilled_fields),
-					  DECL_FIELD_BITPOS (elt->purpose)))
+		      && (tree_int_cst_lt
+			  (bit_position (constructor_unfilled_fields),
+			   bit_position (elt->purpose))))
 		    {
 		      next = elt->purpose;
 		      break;
@@ -6131,20 +6109,17 @@ output_pending_init_elements (all)
 	    /* Find the offset of the end of that field.  */
 	    filled = size_binop (CEIL_DIV_EXPR,
 				 size_binop (PLUS_EXPR,
-					     DECL_FIELD_BITPOS (tail),
+					     bit_position (tail),
 					     DECL_SIZE (tail)),
 				 bitsize_int (BITS_PER_UNIT));
 	  else
 	    filled = bitsize_int (0);
 
 	  nextpos_tree = size_binop (CEIL_DIV_EXPR,
-				     DECL_FIELD_BITPOS (next),
+				     bit_position (next),
 				     bitsize_int (BITS_PER_UNIT));
 
-	  TREE_INT_CST_HIGH (constructor_bit_index)
-	    = TREE_INT_CST_HIGH (DECL_FIELD_BITPOS (next));
-	  TREE_INT_CST_LOW (constructor_bit_index)
-	    = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (next));
+	  constructor_bit_index = bit_position (next);
 	  constructor_unfilled_fields = next;
 	}
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
@@ -6158,20 +6133,13 @@ output_pending_init_elements (all)
 	    = size_binop (MULT_EXPR, next,
 			  convert (bitsizetype, TYPE_SIZE_UNIT
 				   (TREE_TYPE (constructor_type))));
-	  TREE_INT_CST_LOW (constructor_unfilled_index)
-	    = TREE_INT_CST_LOW (next);
-	  TREE_INT_CST_HIGH (constructor_unfilled_index)
-	    = TREE_INT_CST_HIGH (next);
+	  constructor_unfilled_index = next;
 	}
       else
 	filled = 0;
 
       if (filled)
-	{
-	  int nextpos = TREE_INT_CST_LOW (nextpos_tree);
-
-	  assemble_zeros (nextpos - TREE_INT_CST_LOW (filled));
-	}
+	assemble_zeros (tree_low_cst (size_diffop (nextpos_tree, filled), 1));
     }
   else
     {
@@ -6182,12 +6150,7 @@ output_pending_init_elements (all)
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
 	constructor_unfilled_fields = next;
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
-	{
-	  TREE_INT_CST_LOW (constructor_unfilled_index)
-	    = TREE_INT_CST_LOW (next);
-	  TREE_INT_CST_HIGH (constructor_unfilled_index)
-	    = TREE_INT_CST_HIGH (next);
-	}
+	constructor_unfilled_index = next;
     }
 
   /* ELT now points to the node in the pending tree with the next
@@ -6305,14 +6268,10 @@ process_init_element (value)
 	       directly output as a constructor.  */
 	    {
 	      /* For a record, keep track of end position of last field.  */
-	      tree temp = size_binop (PLUS_EXPR,
-				      DECL_FIELD_BITPOS (constructor_fields),
-				      DECL_SIZE (constructor_fields));
-
-	      TREE_INT_CST_LOW (constructor_bit_index)
-		= TREE_INT_CST_LOW (temp);
-	      TREE_INT_CST_HIGH (constructor_bit_index)
-		= TREE_INT_CST_HIGH (temp);
+	      constructor_bit_index
+		= size_binop (PLUS_EXPR,
+			      bit_position (constructor_fields),
+			      DECL_SIZE (constructor_fields));
 
 	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
 	      /* Skip any nameless bit fields.  */
@@ -6375,11 +6334,7 @@ process_init_element (value)
 	    /* Do the bookkeeping for an element that was
 	       directly output as a constructor.  */
 	    {
-	      TREE_INT_CST_LOW (constructor_bit_index)
-		= TREE_INT_CST_LOW (DECL_SIZE (constructor_fields));
-	      TREE_INT_CST_HIGH (constructor_bit_index)
-		= TREE_INT_CST_HIGH (DECL_SIZE (constructor_fields));
-
+	      constructor_bit_index = DECL_SIZE (constructor_fields);
 	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
 	    }
 
@@ -6424,10 +6379,7 @@ process_init_element (value)
 				      constructor_range_end))
 		{
 		  pedwarn_init ("excess elements in array initializer");
-		  TREE_INT_CST_HIGH (constructor_range_end)
-		    = TREE_INT_CST_HIGH (constructor_max_index);
-		  TREE_INT_CST_LOW (constructor_range_end)
-		    = TREE_INT_CST_LOW (constructor_max_index);
+		  constructor_range_end = constructor_max_index;
 		}
 
 	      value = save_expr (value);
@@ -6438,29 +6390,21 @@ process_init_element (value)
 	     If there is a range, repeat it till we advance past the range.  */
 	  do
 	    {
-	      tree tem;
-
 	      if (value)
 		{
-		  push_array_bounds (TREE_INT_CST_LOW (constructor_index));
+		  push_array_bounds (tree_low_cst (constructor_index, 0));
 		  output_init_element (value, elttype, constructor_index, 1);
 		  RESTORE_SPELLING_DEPTH (constructor_depth);
 		}
 
-	      tem = size_binop (PLUS_EXPR, constructor_index, bitsize_int (1));
-	      TREE_INT_CST_LOW (constructor_index) = TREE_INT_CST_LOW (tem);
-	      TREE_INT_CST_HIGH (constructor_index) = TREE_INT_CST_HIGH (tem);
+	      constructor_index
+		= size_binop (PLUS_EXPR, constructor_index, bitsize_int (1));
 
-	      if (!value)
+	      if (! value)
 		/* If we are doing the bookkeeping for an element that was
-		   directly output as a constructor,
-		   we must update constructor_unfilled_index.  */
-		{
-		  TREE_INT_CST_LOW (constructor_unfilled_index)
-		    = TREE_INT_CST_LOW (constructor_index);
-		  TREE_INT_CST_HIGH (constructor_unfilled_index)
-		    = TREE_INT_CST_HIGH (constructor_index);
-		}
+		   directly output as a constructor, we must update
+		   constructor_unfilled_index.  */
+		constructor_unfilled_index = constructor_index;
 	    }
 	  while (! (constructor_range_end == 0
 		    || tree_int_cst_lt (constructor_range_end,

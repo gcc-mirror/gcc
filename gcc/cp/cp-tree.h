@@ -3116,6 +3116,7 @@ extern tree convert_and_check			PARAMS ((tree, tree));
 extern void overflow_warning			PARAMS ((tree));
 extern void unsigned_conversion_warning		PARAMS ((tree, tree));
 extern void c_apply_type_quals_to_decl          PARAMS ((int, tree));
+extern unsigned int min_precision		PARAMS ((tree, int));
 
 /* Read the rest of the current #-directive line.  */
 #if USE_CPPLIB

@@ -170,6 +170,9 @@ extern void c_parse_init			PARAMS ((void));
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PARAMS ((tree, int, int, int));
 
+/* In c-common.c */
+extern unsigned int min_precision		PARAMS ((tree, int));
+
 /* in c-convert.c */
 extern tree convert                             PARAMS ((tree, tree));
 

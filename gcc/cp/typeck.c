@@ -3512,11 +3512,9 @@ build_binary_op (code, orig_op0, orig_op1)
 		warning ("right shift count is negative");
 	      else
 		{
-		  if (TREE_INT_CST_LOW (op1) | TREE_INT_CST_HIGH (op1))
+		  if (! integer_zerop (op1))
 		    short_shift = 1;
-		  if (TREE_INT_CST_HIGH (op1) != 0
-		      || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			  >= TYPE_PRECISION (type0)))
+		  if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		    warning ("right shift count >= width of type");
 		}
 	    }
@@ -3537,9 +3535,7 @@ build_binary_op (code, orig_op0, orig_op1)
 	    {
 	      if (tree_int_cst_lt (op1, integer_zero_node))
 		warning ("left shift count is negative");
-	      else if (TREE_INT_CST_HIGH (op1) != 0
-		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			   >= TYPE_PRECISION (type0)))
+	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		warning ("left shift count >= width of type");
 	    }
 	  /* Convert the shift-count to an integer, regardless of
@@ -3561,9 +3557,7 @@ build_binary_op (code, orig_op0, orig_op1)
 	      if (tree_int_cst_lt (op1, integer_zero_node))
 		warning ("%s rotate count is negative",
 			 (code == LROTATE_EXPR) ? "left" : "right");
-	      else if (TREE_INT_CST_HIGH (op1) != 0
-		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
-			   >= TYPE_PRECISION (type0)))
+	      else if (compare_tree_int (op1, TYPE_PRECISION (type0)) >= 0)
 		warning ("%s rotate count >= width of type",
 			 (code == LROTATE_EXPR) ? "left" : "right");
 	    }
@@ -3894,8 +3888,7 @@ build_binary_op (code, orig_op0, orig_op1)
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
 	      /* We can shorten only if the shift count is less than the
 		 number of bits in the smaller type size.  */
-	      && TREE_INT_CST_HIGH (op1) == 0
-	      && TYPE_PRECISION (TREE_TYPE (arg0)) > TREE_INT_CST_LOW (op1)
+	      && compare_tree_int (op1, TYPE_PRECISION (TREE_TYPE (arg0))) < 0
 	      /* If arg is sign-extended and then unsigned-shifted,
 		 we can simulate this with a signed shift in arg's type
 		 only if the extended result is at least twice as wide
@@ -4009,25 +4002,24 @@ build_binary_op (code, orig_op0, orig_op1)
 	      if (TREE_CODE (primop1) == BIT_NOT_EXPR)
 		primop1 = get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
 	      
-	      if (TREE_CODE (primop0) == INTEGER_CST
-		  || TREE_CODE (primop1) == INTEGER_CST)
+	      if (host_integerp (primop0, 0) || host_integerp (primop1, 0))
 		{
 		  tree primop;
 		  HOST_WIDE_INT constant, mask;
 		  int unsignedp;
-		  unsigned bits;
+		  unsigned int bits;
 
-		  if (TREE_CODE (primop0) == INTEGER_CST)
+		  if (host_integerp (primop0, 0))
 		    {
 		      primop = primop1;
 		      unsignedp = unsignedp1;
-		      constant = TREE_INT_CST_LOW (primop0);
+		      constant = tree_low_cst (primop0, 0);
 		    }
 		  else
 		    {
 		      primop = primop0;
 		      unsignedp = unsignedp0;
-		      constant = TREE_INT_CST_LOW (primop1);
+		      constant = tree_low_cst (primop1, 0);
 		    }
 
 		  bits = TYPE_PRECISION (TREE_TYPE (primop));
@@ -4157,9 +4149,7 @@ pointer_int_sum (resultcode, ptrop, intop)
 
   /* Needed to make OOPS V2R3 work.  */
   intop = folded;
-  if (TREE_CODE (intop) == INTEGER_CST
-      && TREE_INT_CST_LOW (intop) == 0
-      && TREE_INT_CST_HIGH (intop) == 0)
+  if (integer_zerop (intop))
     return ptrop;
 
   /* If what we are about to multiply by the size of the elements
@@ -4295,11 +4285,12 @@ build_component_addr (arg, argtype)
     /* This conversion is harmless.  */
     rval = convert_force (argtype, rval, 0);
 
-  if (! integer_zerop (DECL_FIELD_BITPOS (field)))
+  if (! integer_zerop (bit_position (field)))
     {
-      tree offset = size_binop (EASY_DIV_EXPR, DECL_FIELD_BITPOS (field),
+      tree offset = size_binop (EASY_DIV_EXPR, bit_position (field),
 				bitsize_int (BITS_PER_UNIT));
       int flag = TREE_CONSTANT (rval);
+
       offset = convert (sizetype, offset);
       rval = fold (build (PLUS_EXPR, argtype,
 			  rval, cp_convert (argtype, offset)));

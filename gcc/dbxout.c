@@ -623,29 +623,28 @@ dbxout_type_fields (type)
      tree type;
 {
   tree tem;
+
   /* Output the name, type, position (in bits), size (in bits) of each
-     field.  */
+     field that we can support.  */
   for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
     {
       /* Omit here local type decls until we know how to support them.  */
-      if (TREE_CODE (tem) == TYPE_DECL)
+      if (TREE_CODE (tem) == TYPE_DECL
+	  /* Omit fields whose position or size are variable or too large to
+	     represent.  */
+	  || (TREE_CODE (tem) == FIELD_DECL
+	      && (! host_integerp (bit_position (tem), 0)
+		  || ! host_integerp (DECL_SIZE (tem), 1)))
+	  /* Omit here the nameless fields that are used to skip bits.  */
+	   || DECL_IGNORED_P (tem))
 	continue;
-      /* Omit fields whose position or size are variable.  */
-      else if (TREE_CODE (tem) == FIELD_DECL
-	       && (TREE_CODE (DECL_FIELD_BITPOS (tem)) != INTEGER_CST
-		   || TREE_CODE (DECL_SIZE (tem)) != INTEGER_CST))
-	continue;
-      /* Omit here the nameless fields that are used to skip bits.  */
-      else if (DECL_IGNORED_P (tem))
-	continue;
+
       else if (TREE_CODE (tem) != CONST_DECL)
 	{
 	  /* Continue the line if necessary,
 	     but not before the first field.  */
 	  if (tem != TYPE_FIELDS (type))
-	    {
-	      CONTIN;
-	    }
+	    CONTIN;
 
 	  if (use_gnu_debug_info_extensions
 	      && flag_minimal_debug
@@ -661,7 +660,7 @@ dbxout_type_fields (type)
 	      dbxout_type (TREE_TYPE (tem), 0, 0);
 	      fputc (',', asmfile);
 	      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-		       TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem)));
+		       int_bit_position (tem));
 	      fputc (';', asmfile);
 	      continue;
 	    }
@@ -691,8 +690,7 @@ dbxout_type_fields (type)
 
 	  dbxout_type ((TREE_CODE (tem) == FIELD_DECL
 			&& DECL_BIT_FIELD_TYPE (tem))
-		       ? DECL_BIT_FIELD_TYPE (tem)
-		       : TREE_TYPE (tem), 0, 0);
+		       ? DECL_BIT_FIELD_TYPE (tem) : TREE_TYPE (tem), 0, 0);
 
 	  if (TREE_CODE (tem) == VAR_DECL)
 	    {
@@ -705,22 +703,20 @@ dbxout_type_fields (type)
 		  CHARS (strlen (name));
 		}
 	      else
-		{
-		  /* If TEM is non-static, GDB won't understand it.  */
-		  fprintf (asmfile, ",0,0;");
-		}
+		/* If TEM is non-static, GDB won't understand it.  */
+		fprintf (asmfile, ",0,0;");
 	    }
-	  else if (TREE_CODE (DECL_FIELD_BITPOS (tem)) == INTEGER_CST)
+	  else
 	    {
 	      fputc (',', asmfile);
 	      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-		       TREE_INT_CST_LOW (DECL_FIELD_BITPOS (tem)));
+		       int_bit_position (tem));
 	      fputc (',', asmfile);
 	      fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-		       TREE_INT_CST_LOW (DECL_SIZE (tem)));
+		       tree_low_cst (DECL_SIZE (tem), 1));
 	      fputc (';', asmfile);
+	      CHARS (23);
 	    }
-	  CHARS (23);
 	}
     }
 }
@@ -758,13 +754,15 @@ dbxout_type_method_1 (decl, debug_name)
     }
 
   fprintf (asmfile, ":%s;%c%c%c", debug_name,
-	   TREE_PRIVATE (decl) ? '0' : TREE_PROTECTED (decl) ? '1' : '2', c1, c2);
+	   TREE_PRIVATE (decl) ? '0'
+	   : TREE_PROTECTED (decl) ? '1' : '2', c1, c2);
   CHARS (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (decl)) + 6
 	 - (debug_name - IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
-  if (DECL_VINDEX (decl))
+
+  if (DECL_VINDEX (decl) && host_integerp (DECL_VINDEX (decl), 0))
     {
       fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-	       TREE_INT_CST_LOW (DECL_VINDEX (decl)));
+	       tree_low_cst (DECL_VINDEX (decl), 0));
       fputc (';', asmfile);
       dbxout_type (DECL_CONTEXT (decl), 0, 0);
       fprintf (asmfile, ";");
@@ -959,20 +957,23 @@ dbxout_range_type (type)
       else
 	dbxout_type_index (integer_type_node);
     }
-  if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
+
+  if (TYPE_MIN_VALUE (type) != 0
+      && host_integerp (TYPE_MIN_VALUE (type), 0))
     {
       fputc (';', asmfile);
       fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-	       TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)));
+	       tree_low_cst (TYPE_MIN_VALUE (type), 0));
     }
   else
     fprintf (asmfile, ";0");
-  if (TYPE_MAX_VALUE (type) 
-      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST)
+
+  if (TYPE_MAX_VALUE (type) != 0
+      && host_integerp (TYPE_MAX_VALUE (type), 0))
     {
       fputc (';', asmfile);
       fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-	       TREE_INT_CST_LOW (TYPE_MAX_VALUE (type)));
+	       tree_low_cst (TYPE_MAX_VALUE (type), 0));
       fputc (';', asmfile);
     }
   else
@@ -1407,17 +1408,15 @@ dbxout_type (type, full, show_arg_types)
 	for (i = 0; i < n_baseclasses; i++)
 	  {
 	    tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)), i);
+
 	    if (use_gnu_debug_info_extensions)
 	      {
 		have_used_extensions = 1;
-		putc (TREE_VIA_VIRTUAL (child) ? '1'
-		      : '0',
-		      asmfile);
-		putc (TREE_VIA_PUBLIC (child) ? '2'
-		      : '0',
-		      asmfile);
+		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
+		putc (TREE_VIA_PUBLIC (child) ? '2' : '0', asmfile);
 		fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-			 TREE_INT_CST_LOW (BINFO_OFFSET (child)) * BITS_PER_UNIT);
+			 (tree_low_cst (BINFO_OFFSET (child), 0)
+			  * BITS_PER_UNIT));
 		fputc (',', asmfile);
 		CHARS (15);
 		dbxout_type (BINFO_TYPE (child), 0, 0);
@@ -1432,10 +1431,13 @@ dbxout_type (type, full, show_arg_types)
 		dbxout_type (BINFO_TYPE (child), full, 0);
 		fputc (',', asmfile);
 		fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-			 TREE_INT_CST_LOW (BINFO_OFFSET (child)) * BITS_PER_UNIT);
+			 tree_low_cst (BINFO_OFFSET (child), 0)
+			 * BITS_PER_UNIT);
 		fputc (',', asmfile);
 		fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-			 TREE_INT_CST_LOW (DECL_SIZE (TYPE_NAME (BINFO_TYPE (child)))) * BITS_PER_UNIT);
+			 (tree_low_cst (DECL_SIZE (TYPE_NAME
+						  (BINFO_TYPE (child))), 0)
+			  * BITS_PER_UNIT));
 		fputc (';', asmfile);
 		CHARS (20);
 	      }
@@ -1451,6 +1453,7 @@ dbxout_type (type, full, show_arg_types)
 	  have_used_extensions = 1;
 	  dbxout_type_methods (type);
 	}
+
       putc (';', asmfile);
 
       if (use_gnu_debug_info_extensions && TREE_CODE (type) == RECORD_TYPE
@@ -1615,7 +1618,7 @@ print_int_cst_octal (c)
   unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (c);
   unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (c);
   int excess = (3 - (HOST_BITS_PER_WIDE_INT % 3));
-  int width = TYPE_PRECISION (TREE_TYPE (c));
+  unsigned int width = TYPE_PRECISION (TREE_TYPE (c));
 
   /* GDB wants constants with no extra leading "1" bits, so
      we need to remove any sign-extension that might be
@@ -1928,6 +1931,7 @@ dbxout_symbol (decl, local)
 	 and not written in memory, inform the debugger.  */
       if (TREE_STATIC (decl) && TREE_READONLY (decl)
 	  && DECL_INITIAL (decl) != 0
+	  && host_integerp (DECL_INITIAL (decl), 0)
 	  && ! TREE_ASM_WRITTEN (decl)
 	  && (DECL_FIELD_CONTEXT (decl) == NULL_TREE
 	      || TREE_CODE (DECL_FIELD_CONTEXT (decl)) == BLOCK))
@@ -1936,10 +1940,11 @@ dbxout_symbol (decl, local)
 	    {
 	      /* The sun4 assembler does not grok this.  */
 	      const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+
 	      if (TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE
 		  || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 		{
-		  HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
+		  HOST_WIDE_INT ival = tree_low_cst (DECL_INITIAL (decl), 0);
 #ifdef DBX_OUTPUT_CONSTANT_SYMBOL
 		  DBX_OUTPUT_CONSTANT_SYMBOL (asmfile, name, ival);
 #else

@@ -764,7 +764,7 @@ rename_registers (nregs, idom)
   VARRAY_RTX_INIT (ssa_rename_from, nregs * 3, "ssa_rename_from");
 
   ssa_rename_to = (rtx *) alloca (nregs * sizeof(rtx));
-  bzero (ssa_rename_to, nregs * sizeof(rtx));
+  bzero ((char *) ssa_rename_to, nregs * sizeof(rtx));
 
   rename_block (0, idom);
 

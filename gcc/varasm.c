@@ -2281,10 +2281,12 @@ decode_addr_const (exp, value)
   while (1)
     {
       if (TREE_CODE (target) == COMPONENT_REF
-	  && (TREE_CODE (DECL_FIELD_BITPOS (TREE_OPERAND (target, 1)))
-	      == INTEGER_CST))
+	  && host_integerp (bit_position (TREE_OPERAND (target, 1)), 0))
+
 	{
-	  offset += TREE_INT_CST_LOW (DECL_FIELD_BITPOS (TREE_OPERAND (target, 1))) / BITS_PER_UNIT;
+	  offset
+	    += int_bit_position (TREE_OPERAND (target, 1)) / BITS_PER_UNIT;
+
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == ARRAY_REF)

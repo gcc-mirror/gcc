@@ -721,8 +721,8 @@ dump_type_suffix (t, flags)
       OB_PUTC ('[');
       if (TYPE_DOMAIN (t))
 	{
-	  if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == INTEGER_CST)
-	    OB_PUTI (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) + 1);
+	  if (host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0))
+	    OB_PUTI (tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0) + 1);
 	  else if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (t))) == MINUS_EXPR)
 	    dump_expr (TREE_OPERAND (TYPE_MAX_VALUE (TYPE_DOMAIN (t)), 0),
 	               flags & ~TS_EXPR_PARENS);
@@ -1477,9 +1477,7 @@ dump_expr (t, flags)
 	  }
 	else if (type == boolean_type_node)
 	  {
-	    if (t == boolean_false_node
-		|| (TREE_INT_CST_LOW (t) == 0
-		    && TREE_INT_CST_HIGH (t) == 0))
+	    if (t == boolean_false_node || integer_zerop (t))
 	      OB_PUTS ("false");
 	    else if (t == boolean_true_node)
 	      OB_PUTS ("true");
@@ -1487,7 +1485,7 @@ dump_expr (t, flags)
 	else if (type == char_type_node)
 	  {
 	    OB_PUTC ('\'');
-	    dump_char (TREE_INT_CST_LOW (t));
+	    dump_char (tree_low_cst (t, 0));
 	    OB_PUTC ('\'');
 	  }
 	else if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (t)
@@ -1851,8 +1849,7 @@ dump_expr (t, flags)
 	      OB_PUTS (") 0)");
 	      break;
 	    }
-	  else if (TREE_CODE (idx) == INTEGER_CST
-		   && TREE_INT_CST_HIGH (idx) == 0)
+	  else if (host_integerp (idx, 0))
 	    {
 	      tree virtuals;
 	      unsigned HOST_WIDE_INT n;
@@ -1861,7 +1858,7 @@ dump_expr (t, flags)
 	      t = TYPE_METHOD_BASETYPE (t);
 	      virtuals = TYPE_BINFO_VIRTUALS (TYPE_MAIN_VARIANT (t));
 	      
-	      n = TREE_INT_CST_LOW (idx);
+	      n = tree_low_cst (idx, 0);
 
 	      /* Map vtable index back one, to allow for the null pointer to
 		 member.  */

@@ -129,7 +129,7 @@ static int undeclared_variable_notice;
 	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
 #define RESTORE_WARN_FLAGS(tval) \
   do {                                     \
-    int val = TREE_INT_CST_LOW (tval);     \
+    int val = tree_low_cst (tval, 0);     \
     pedantic = val & 1;                    \
     warn_pointer_arith = (val >> 1) & 1;   \
   } while (0)

@@ -1,3 +1,13 @@
+Fri Mar 17 08:09:14 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (make_field_value): Properly handle sizes.
+	(get_dispatch_vector): Use tree_low_cst and host_integerp.
+	(layout_class_method): Count using trees.
+	* decl.c (push_promoted_type): Set TYPE_{MIN,MAX}_VALUE with copy_node.
+	* expr.c (java_array_data_offset): Use int_bit_position.
+	(build_newarray, build_anewarray): Use host_integerp and tree_low_cst.
+	(build_invokevirtual): Use tree_low_cst and do computations with trees.
+	
 2000-03-16  Tom Tromey  <tromey@cygnus.com>
 
 	* lang.c (flag_hash_synchronization): New global.

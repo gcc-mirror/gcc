@@ -1073,9 +1073,10 @@ make_field_value (fdecl)
   tree fdecl;
 {
   tree finit, info;
-  int bsize, flags;
+  int flags;
   tree type = TREE_TYPE (fdecl);
   int resolved = is_compiled_class (type);
+
   START_RECORD_CONSTRUCTOR (finit, field_type_node);
   PUSH_FIELD_VALUE (finit, "name", build_utf8_ref (DECL_NAME (fdecl)));
   if (resolved)
@@ -1091,24 +1092,24 @@ make_field_value (fdecl)
   flags = get_access_flags_from_decl (fdecl);
   if (! resolved)
     flags |= 0x8000 /* FIELD_UNRESOLVED_FLAG */;
+
   PUSH_FIELD_VALUE (finit, "accflags", build_int_2 (flags, 0));
-  bsize = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (fdecl))) / BITS_PER_UNIT;
-  PUSH_FIELD_VALUE (finit, "bsize", build_int_2 (bsize, 0));
+  PUSH_FIELD_VALUE (finit, "bsize", TYPE_SIZE_UNIT (TREE_TYPE (fdecl)));
   if (FIELD_STATIC (fdecl))
     {
-      tree cfield = TREE_CHAIN (TYPE_FIELDS(field_info_union_node));
+      tree cfield = TREE_CHAIN (TYPE_FIELDS (field_info_union_node));
       tree faddr = build_address_of (build_static_field_ref (fdecl));
+
       info = build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
 		    build_tree_list (cfield, faddr));
     }
   else
-    {
-      int boffset
-	= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fdecl)) / BITS_PER_UNIT;
-      info = build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
-		    build_tree_list (TYPE_FIELDS(field_info_union_node),
-				     build_int_2 (boffset, 0)));
-    }
+    info = build (CONSTRUCTOR, field_info_union_node, NULL_TREE,
+		  build_tree_list (TYPE_FIELDS (field_info_union_node),
+				   build_int_2 ((int_bit_position (fdecl)
+						 / BITS_PER_UNIT),
+						0)));
+
   PUSH_FIELD_VALUE (finit, "info", info);
 
   FINISH_RECORD_CONSTRUCTOR (finit);
@@ -1152,29 +1153,28 @@ get_dispatch_vector (type)
   tree vtable = TYPE_VTABLE (type);
   if (vtable == NULL)
     {
-      int i;
+      HOST_WIDE_INT i;
       tree method;
       tree super = CLASSTYPE_SUPER (type);
-      int nvirtuals = TREE_INT_CST_LOW (TYPE_NVIRTUALS (type));
+      HOST_WIDE_INT nvirtuals = tree_low_cst (TYPE_NVIRTUALS (type), 0);
       vtable = make_tree_vec (nvirtuals);
       TYPE_VTABLE (type) = vtable;
       if (super != NULL_TREE)
 	{
 	  tree super_vtable = get_dispatch_vector (super);
-	  for ( i = TREE_INT_CST_LOW (TYPE_NVIRTUALS (super));  --i >= 0; )
+
+	  for (i = tree_low_cst (TYPE_NVIRTUALS (super), 0); --i >= 0; )
 	    TREE_VEC_ELT (vtable, i) = TREE_VEC_ELT (super_vtable, i);
 	}
+
       for (method = TYPE_METHODS (type);  method != NULL_TREE;
 	   method = TREE_CHAIN (method))
-	{
-	  if (DECL_VINDEX (method) != NULL_TREE
-	      && TREE_CODE (DECL_VINDEX (method)) == INTEGER_CST)
-	    {
-	      TREE_VEC_ELT (vtable, TREE_INT_CST_LOW (DECL_VINDEX (method)))
-		= method;
-	    }
-	}
+	if (DECL_VINDEX (method) != NULL_TREE
+	    && host_integerp (DECL_VINDEX (method), 0))
+	  TREE_VEC_ELT (vtable, tree_low_cst (DECL_VINDEX (method), 0))
+	    = method;
     }
+
   return vtable;
 }
 
@@ -1966,9 +1966,11 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
 	       && dtable_count)
 	{
 	  DECL_VINDEX (method_decl) = dtable_count;
-	  dtable_count = build_int_2 (1+TREE_INT_CST_LOW (dtable_count), 0);
+	  dtable_count = fold (build (PLUS_EXPR, integer_type_node,
+				      dtable_count, integer_one_node));
 	}
     }
+
   return dtable_count;
 }
 

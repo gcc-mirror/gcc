@@ -103,8 +103,8 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static int n_occurrences PARAMS ((int, const char *));
-static void strip_whitespace PARAMS ((char *));
+static int n_occurrences		PARAMS ((int, const char *));
+static const char *strip_whitespace	PARAMS ((const char *));
 
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate
@@ -438,13 +438,9 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].mode = GET_MODE (part);
       d->operand[opno].strict_low = this_strict_low;
       d->operand[opno].predicate = XSTR (part, 1);
-      d->operand[opno].constraint = XSTR (part, 2);
-      if (XSTR (part, 2) != NULL && *XSTR (part, 2) != 0)
-	{
-	  strip_whitespace (XSTR (part, 2));
-	  d->operand[opno].n_alternatives
-	    = n_occurrences (',', XSTR (part, 2)) + 1;
-	}
+      d->operand[opno].constraint = strip_whitespace (XSTR (part, 2));
+      d->operand[opno].n_alternatives
+	= n_occurrences (',', d->operand[opno].constraint) + 1;
       d->operand[opno].address_p = this_address_p;
       d->operand[opno].eliminable = 1;
       return;
@@ -466,13 +462,9 @@ scan_operands (d, part, this_address_p, this_strict_low)
       d->operand[opno].mode = GET_MODE (part);
       d->operand[opno].strict_low = 0;
       d->operand[opno].predicate = "scratch_operand";
-      d->operand[opno].constraint = XSTR (part, 1);
-      if (XSTR (part, 1) != NULL && *XSTR (part, 1) != 0)
-	{
-	  strip_whitespace (XSTR (part, 1));
-	  d->operand[opno].n_alternatives
-	    = n_occurrences (',', XSTR (part, 1)) + 1;
-	}
+      d->operand[opno].constraint = strip_whitespace (XSTR (part, 1));
+      d->operand[opno].n_alternatives
+	= n_occurrences (',', d->operand[opno].constraint) + 1;
       d->operand[opno].address_p = 0;
       d->operand[opno].eliminable = 0;
       return;
@@ -965,28 +957,43 @@ main (argc, argv)
 	? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
+/* Return the number of occurrences of character C in string S or
+   -1 if S is the null string.  */
+
 static int
 n_occurrences (c, s)
      int c;
      const char *s;
 {
   int n = 0;
+
+  if (s == 0 || *s == '\0')
+    return -1;
+
   while (*s)
     n += (*s++ == c);
+
   return n;
 }
 
-/* Remove whitespace in `s' by moving up characters until the end.  */
-static void
-strip_whitespace (s)
-     char *s;
-{
-  char *p = s;
-  int ch;
+/* Remove whitespace in `s' by moving up characters until the end.
+   Return a new string.  */
 
+static const char *
+strip_whitespace (s)
+     const char *s;
+{
+  char *p, *q;
+  char ch;
+
+  if (s == 0)
+    return 0;
+
+  p = q = xmalloc (strlen (s) + 1);
   while ((ch = *s++) != '\0')
     if (! ISSPACE (ch))
       *p++ = ch;
 
   *p = '\0';
+  return q;
 }

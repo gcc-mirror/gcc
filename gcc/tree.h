@@ -1703,6 +1703,8 @@ extern int attribute_list_equal		PARAMS ((tree, tree));
 extern int attribute_list_contained	PARAMS ((tree, tree));
 extern int tree_int_cst_equal		PARAMS ((tree, tree));
 extern int tree_int_cst_lt		PARAMS ((tree, tree));
+extern int host_integerp		PARAMS ((tree, int));
+extern HOST_WIDE_INT tree_low_cst	PARAMS ((tree, int));
 extern int tree_int_cst_msb		PARAMS ((tree));
 extern int tree_int_cst_sgn		PARAMS ((tree));
 extern int index_type_equal		PARAMS ((tree, tree));
@@ -1850,6 +1852,8 @@ extern tree convert			PARAMS ((tree, tree));
 extern unsigned int expr_align		PARAMS ((tree));
 extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
+extern tree bit_position		PARAMS ((tree));
+extern HOST_WIDE_INT int_bit_position	PARAMS ((tree));
 
 /* Define data structures, macros, and functions for handling sizes
    and the various types used to represent sizes.  */
@@ -2554,7 +2558,6 @@ extern void print_lang_statistics	PARAMS ((void));
 
 /* In c-common.c */
 extern tree truthvalue_conversion	PARAMS ((tree));
-extern unsigned int min_precision	PARAMS ((tree, int));
 extern void split_specs_attrs		PARAMS ((tree, tree *, tree *));
 
 /* In c-decl.c */

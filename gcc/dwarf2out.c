@@ -2470,11 +2470,11 @@ static int is_based_loc			PARAMS ((rtx));
 static dw_loc_descr_ref mem_loc_descriptor PARAMS ((rtx, enum machine_mode mode));
 static dw_loc_descr_ref concat_loc_descriptor PARAMS ((rtx, rtx));
 static dw_loc_descr_ref loc_descriptor	PARAMS ((rtx));
-static unsigned ceiling			PARAMS ((unsigned, unsigned));
+static HOST_WIDE_INT ceiling		PARAMS ((HOST_WIDE_INT, unsigned int));
 static tree field_type			PARAMS ((tree));
-static unsigned simple_type_align_in_bits PARAMS ((tree));
-static unsigned simple_type_size_in_bits PARAMS ((tree));
-static unsigned field_byte_offset	PARAMS ((tree));
+static unsigned int simple_type_align_in_bits PARAMS ((tree));
+static unsigned HOST_WIDE_INT simple_type_size_in_bits PARAMS ((tree));
+static HOST_WIDE_INT field_byte_offset	PARAMS ((tree));
 static void add_AT_location_description	PARAMS ((dw_die_ref,
 						 enum dwarf_attribute, rtx));
 static void add_data_member_location_attribute PARAMS ((dw_die_ref, tree));
@@ -6471,13 +6471,13 @@ loc_descriptor (rtl)
   return loc_result;
 }
 
-/* Given an unsigned value, round it up to the lowest multiple of `boundary'
+/* Given a value, round it up to the lowest multiple of `boundary'
    which is not less than the value itself.  */
 
-static inline unsigned
+static inline HOST_WIDE_INT
 ceiling (value, boundary)
-     register unsigned value;
-     register unsigned boundary;
+     HOST_WIDE_INT value;
+     unsigned int boundary;
 {
   return (((value + boundary - 1) / boundary) * boundary);
 }
@@ -6521,7 +6521,7 @@ simple_type_align_in_bits (type)
    else return BITS_PER_WORD if the type actually turns out to be an
    ERROR_MARK node.  */
 
-static inline unsigned
+static inline unsigned HOST_WIDE_INT
 simple_type_size_in_bits (type)
      register tree type;
 {
@@ -6531,10 +6531,10 @@ simple_type_size_in_bits (type)
     {
       register tree type_size_tree = TYPE_SIZE (type);
 
-      if (TREE_CODE (type_size_tree) != INTEGER_CST)
+      if (! host_integerp (type_size_tree, 1))
 	return TYPE_ALIGN (type);
 
-      return (unsigned) TREE_INT_CST_LOW (type_size_tree);
+      return tree_low_cst (type_size_tree, 1);
     }
 }
 
@@ -6545,22 +6545,21 @@ simple_type_size_in_bits (type)
    be a pointer to an ERROR_MARK node, or because the offset is actually
    variable.  (We can't handle the latter case just yet).  */
 
-static unsigned
+static HOST_WIDE_INT
 field_byte_offset (decl)
      register tree decl;
 {
-  register unsigned type_align_in_bytes;
-  register unsigned type_align_in_bits;
-  register unsigned type_size_in_bits;
-  register unsigned object_offset_in_align_units;
-  register unsigned object_offset_in_bits;
-  register unsigned object_offset_in_bytes;
-  register tree type;
-  register tree bitpos_tree;
-  register tree field_size_tree;
-  register unsigned bitpos_int;
-  register unsigned deepest_bitpos;
-  register unsigned field_size_in_bits;
+  unsigned int type_align_in_bytes;
+  unsigned int type_align_in_bits;
+  unsigned HOST_WIDE_INT type_size_in_bits;
+  HOST_WIDE_INT object_offset_in_align_units;
+  HOST_WIDE_INT object_offset_in_bits;
+  HOST_WIDE_INT object_offset_in_bytes;
+  tree type;
+  tree field_size_tree;
+  HOST_WIDE_INT bitpos_int;
+  HOST_WIDE_INT deepest_bitpos;
+  unsigned HOST_WIDE_INT field_size_in_bits;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return 0;
@@ -6569,8 +6568,6 @@ field_byte_offset (decl)
     abort ();
 
   type = field_type (decl);
-
-  bitpos_tree = DECL_FIELD_BITPOS (decl);
   field_size_tree = DECL_SIZE (decl);
 
   /* If there was an error, the size could be zero.  */
@@ -6578,20 +6575,21 @@ field_byte_offset (decl)
     {
       if (errorcount)
 	return 0;
+
       abort ();
     }
 
   /* We cannot yet cope with fields whose positions are variable, so 
      for now, when we see such things, we simply return 0.  Someday, we may
      be able to handle such cases, but it will be damn difficult.  */
-  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
+  if (! host_integerp (bit_position (decl), 0))
     return 0;
 
-  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
+  bitpos_int = int_bit_position (decl);
 
     /* If we don't know the size of the field, pretend it's a full word.  */
-  if (TREE_CODE (field_size_tree) == INTEGER_CST)
-    field_size_in_bits = (unsigned) TREE_INT_CST_LOW (field_size_tree);
+  if (host_integerp (field_size_tree, 1))
+    field_size_in_bits = tree_low_cst (field_size_tree, 1);
   else
     field_size_in_bits = BITS_PER_WORD;
 
@@ -6727,7 +6725,7 @@ add_data_member_location_attribute (die, decl)
   register enum dwarf_location_atom op;
 
   if (TREE_CODE (decl) == TREE_VEC)
-    offset = TREE_INT_CST_LOW (BINFO_OFFSET (decl));
+    offset = tree_low_cst (BINFO_OFFSET (decl), 0);
   else
     offset = field_byte_offset (decl);
 
@@ -7063,8 +7061,6 @@ add_bound_info (subrange_die, bound_attr, bound)
      register enum dwarf_attribute bound_attr;
      register tree bound;
 {
-  register unsigned bound_value = 0;
-
   /* If this is an Ada unconstrained array type, then don't emit any debug
      info because the array bounds are unknown.  They are parameterized when
      the type is instantiated.  */
@@ -7078,13 +7074,14 @@ add_bound_info (subrange_die, bound_attr, bound)
 
     /* All fixed-bounds are represented by INTEGER_CST nodes.        */
     case INTEGER_CST:
-      bound_value = TREE_INT_CST_LOW (bound);
-      if (bound_attr == DW_AT_lower_bound
-	  && ((is_c_family () && bound_value == 0)
-	      || (is_fortran () && bound_value == 1)))
-	/* use the default */;
+      if (! host_integerp (bound, 0)
+	  || (bound_attr == DW_AT_lower_bound
+	      && ((is_c_family () && integer_zerop (bound))
+		  || (is_fortran () && integer_onep (bound)))))
+	/* use the default */
+	;
       else
-	add_AT_unsigned (subrange_die, bound_attr, bound_value);
+	add_AT_unsigned (subrange_die, bound_attr, tree_low_cst (bound, 0));
       break;
 
     case CONVERT_EXPR:
@@ -7297,13 +7294,12 @@ add_bit_offset_attribute (die, decl)
      register dw_die_ref die;
      register tree decl;
 {
-  register unsigned object_offset_in_bytes = field_byte_offset (decl);
-  register tree type = DECL_BIT_FIELD_TYPE (decl);
-  register tree bitpos_tree = DECL_FIELD_BITPOS (decl);
-  register unsigned bitpos_int;
-  register unsigned highest_order_object_bit_offset;
-  register unsigned highest_order_field_bit_offset;
-  register unsigned bit_offset;
+  HOST_WIDE_INT object_offset_in_bytes = field_byte_offset (decl);
+  tree type = DECL_BIT_FIELD_TYPE (decl);
+  HOST_WIDE_INT bitpos_int;
+  HOST_WIDE_INT highest_order_object_bit_offset;
+  HOST_WIDE_INT highest_order_field_bit_offset;
+  HOST_WIDE_INT unsigned bit_offset;
 
   /* Must be a field and a bit field.  */
   if (!type
@@ -7312,11 +7308,12 @@ add_bit_offset_attribute (die, decl)
 
   /* We can't yet handle bit-fields whose offsets are variable, so if we
      encounter such things, just return without generating any attribute
-     whatsoever.  */
-  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
+     whatsoever.  Likewise for variable or too large size.  */
+  if (! host_integerp (bit_position (decl), 0)
+      || ! host_integerp (DECL_SIZE (decl), 1))
     return;
 
-  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
+  bitpos_int = int_bit_position (decl);
 
   /* Note that the bit offset is always the distance (in bits) from the
      highest-order bit of the "containing object" to the highest-order bit of 
@@ -7328,9 +7325,7 @@ add_bit_offset_attribute (die, decl)
 
   if (! BYTES_BIG_ENDIAN)
     {
-      highest_order_field_bit_offset
-	+= (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
-
+      highest_order_field_bit_offset += tree_low_cst (DECL_SIZE (decl), 0);
       highest_order_object_bit_offset += simple_type_size_in_bits (type);
     }
 
@@ -7354,8 +7349,9 @@ add_bit_size_attribute (die, decl)
   if (TREE_CODE (decl) != FIELD_DECL
       || ! DECL_BIT_FIELD_TYPE (decl))
     abort ();
-  add_AT_unsigned (die, DW_AT_bit_size,
-		   (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl)));
+
+  if (host_integerp (DECL_SIZE (decl), 1))
+    add_AT_unsigned (die, DW_AT_bit_size, tree_low_cst (DECL_SIZE (decl), 1));
 }
 
 /* If the compiled language is ANSI C, then add a 'prototyped'
@@ -7420,10 +7416,12 @@ add_pure_or_virtual_attribute (die, func_decl)
   if (DECL_VINDEX (func_decl))
     {
       add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
-      add_AT_loc (die, DW_AT_vtable_elem_location,
-		  new_loc_descr (DW_OP_constu,
-				 TREE_INT_CST_LOW (DECL_VINDEX (func_decl)),
-				 0));
+
+      if (host_integerp (DECL_VINDEX (func_decl), 0))
+	add_AT_loc (die, DW_AT_vtable_elem_location,
+		    new_loc_descr (DW_OP_constu,
+				   tree_low_cst (DECL_VINDEX (func_decl), 0),
+				   0));
 
       /* GNU extension: Record what type this method came from originally.  */
       if (debug_info_level > DINFO_LEVEL_TERSE)
@@ -7914,8 +7912,10 @@ gen_enumeration_type_die (type, context_die)
 
 	  add_name_attribute (enum_die,
 			      IDENTIFIER_POINTER (TREE_PURPOSE (link)));
-	  add_AT_unsigned (enum_die, DW_AT_const_value,
-			   (unsigned) TREE_INT_CST_LOW (TREE_VALUE (link)));
+
+	  if (host_integerp (TREE_VALUE (link), 0))
+	    add_AT_unsigned (enum_die, DW_AT_const_value,
+			     tree_low_cst (TREE_VALUE (link), 0));
 	}
     }
   else

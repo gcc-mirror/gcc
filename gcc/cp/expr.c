@@ -62,7 +62,7 @@ cplus_expand_constant (cst)
 	    /* Find the offset for the field.  */
 	    offset = convert (sizetype,
 			      size_binop (EASY_DIV_EXPR,
-					  DECL_FIELD_BITPOS (member),
+					  bit_position (member),
 					  bitsize_int (BITS_PER_UNIT)));
 
 	    /* We offset all pointer to data members by 1 so that we

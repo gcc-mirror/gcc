@@ -6530,7 +6530,7 @@ expand_expr (exp, target, tmode, modifier)
 
 		if (TREE_CODE (init) == CONSTRUCTOR)
 		  {
-		    tree elem = CONSTRUCTOR_ELTS (init);
+		    tree elem;
 
 		    for (elem = CONSTRUCTOR_ELTS (init);
 			 (elem

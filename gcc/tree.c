@@ -2301,13 +2301,36 @@ int_size_in_bytes (type)
   if (t == 0
       || TREE_CODE (t) != INTEGER_CST
       || TREE_OVERFLOW (t)
-      || TREE_INT_CST_HIGH (t) != 0)
+      || TREE_INT_CST_HIGH (t) != 0
+      /* If the result would appear negative, it's too big to represent.  */
+      || (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)
     return -1;
 
   return TREE_INT_CST_LOW (t);
 }
+
+/* Return the bit position of FIELD, in bits from the start of the record.
+   This is a tree of type bitsizetype.  */
 
-/* Return the strictest alignment, in bits, that  T is known to have.  */
+tree
+bit_position (field)
+     tree field;
+{
+  return DECL_FIELD_BITPOS (field);
+}
+
+/* Likewise, but return as an integer.  Abort if it cannot be represented
+   in that way (since it could be a signed value, we don't have the option
+   of returning -1 like int_size_in_byte can.  */
+
+HOST_WIDE_INT
+int_bit_position (field)
+     tree field;
+{
+  return tree_low_cst (bit_position (field), 0);
+}
+
+/* Return the strictest alignment, in bits, that T is known to have.  */
 
 unsigned int
 expr_align (t)
@@ -4106,6 +4129,37 @@ tree_int_cst_lt (t1, t2)
 
   return INT_CST_LT_UNSIGNED (t1, t2);
 }
+
+/* Return 1 if T is an INTEGER_CST that can be represented in a single
+   HOST_WIDE_INT value.  If POS is nonzero, the result must be positive.  */
+
+int
+host_integerp (t, pos)
+     tree t;
+     int pos;
+{
+  return (TREE_CODE (t) == INTEGER_CST
+	  && ! TREE_OVERFLOW (t)
+	  && ((TREE_INT_CST_HIGH (t) == 0
+	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
+	      || (! pos && TREE_INT_CST_HIGH (t) == -1
+		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)));
+}
+
+/* Return the HOST_WIDE_INT least significant bits of T if it is an
+   INTEGER_CST and there is no overflow.  POS is nonzero if the result must
+   be positive.  Abort if we cannot satisfy the above conditions.  */
+
+HOST_WIDE_INT
+tree_low_cst (t, pos)
+     tree t;
+     int pos;
+{
+  if (host_integerp (t, pos))
+    return TREE_INT_CST_LOW (t);
+  else
+    abort ();
+}  
 
 /* Return the most significant bit of the integer constant T.  */
 
