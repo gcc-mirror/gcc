@@ -1,5 +1,10 @@
 2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config.gcc (arm*-*-netbsdelf*): Enable configuration.
+	* config/arm/netbsd-elf.h: New file.
+
+2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/arm/elf.h (SUBTARGET_EXTRA_SPECS): Add
 	subtarget_asm_float_spec.
 	(SUBTARGET_ASM_FLOAT_SPEC): Define, moving the
