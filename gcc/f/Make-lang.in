@@ -92,7 +92,7 @@ g77version.o: $(srcdir)/f/version.c
 # It'd be nice if we could find an easier way to do this---rather than have
 # to track changes to the toplevel gcc Makefile as well.
 # We depend on g77.c last, to make it obvious where it came from.
-g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c
+g77.o: $(CONFIG_H) multilib.h config.status $(lang_specs_files) g77.c prefix.h
 	case "$(LANGUAGES)" in \
 	  *[fF]77*) touch lang-f77;; \
 	  *) rm -f lang-f77;; \
