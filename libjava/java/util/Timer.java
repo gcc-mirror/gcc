@@ -285,6 +285,14 @@ public class Timer
       this.notify();
     }
 
+    /**
+     * This method returns <code>true</code> if the queue has been
+     * stopped.
+     */
+    public synchronized boolean isStopped ()
+    {
+      return this.heap == null;
+    }
   }				// TaskQueue
 
   /**
@@ -337,8 +345,9 @@ public class Timer
 		}
 	    }
 
-	  // Calculate next time and possibly re-enqueue
-	  if (task.scheduled >= 0)
+	  // Calculate next time and possibly re-enqueue.
+	  // Don't bother re-scheduling if the queue has been stopped.
+	  if (! queue.isStopped () && task.scheduled >= 0)
 	    {
 	      if (task.fixed)
 		{
