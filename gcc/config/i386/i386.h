@@ -621,6 +621,12 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define LIBCALL_VALUE(MODE) \
   gen_rtx (REG, MODE, VALUE_REGNO (MODE))
 
+/* Define the size of the result block used for communication between
+   untyped_call and untyped_return.  The block contains a DImode value
+   followed by the block used by fnsave and frstor.  */
+
+#define APPLY_RESULT_SIZE (8+108)
+
 /* 1 if N is a possible register number for function argument passing.
    On the 80386, no registers are used in this way.
       *NOTE* -mregparm does not work.
