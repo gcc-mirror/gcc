@@ -264,7 +264,6 @@
 	* java/applet/Applet.java (getPreferredSize): New method.
 	(getMinimumSize): New method.
 
->>>>>>> 1.2732
 2004-04-15  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* prims.cc (_Jv_AllocObject): Remove `size' argument.
