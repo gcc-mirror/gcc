@@ -1337,7 +1337,7 @@ really_overloaded_fn (x)
 {     
   /* A baselink is also considered an overloaded function.
      This might also be an ambiguous class member. */
-  while (TREE_CODE (x) == TREE_LIST)
+  if (TREE_CODE (x) == TREE_LIST)
     x = TREE_VALUE (x);
   return (TREE_CODE (x) == OVERLOAD 
 	  && (TREE_CHAIN (x) != NULL_TREE
