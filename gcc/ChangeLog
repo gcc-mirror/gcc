@@ -1,3 +1,9 @@
+2001-09-15  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* reorg.c (fill_slots_from_thread): After call to
+	steal_delay_list_from_target, update own_thread as new_thread may
+	have branched.
+
 2001-09-14  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_location): Take line and column, for
