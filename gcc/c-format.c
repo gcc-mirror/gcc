@@ -1023,6 +1023,7 @@ static void status_warning (int *, const char *, ...)
 static void init_dollar_format_checking (int, tree);
 static int maybe_read_dollar_number (int *, const char **, int,
 				     tree, tree *, const format_kind_info *);
+static bool avoid_dollar_number (int *, const char *);
 static void finish_dollar_format_checking (int *, format_check_results *, int);
 
 static const format_flag_spec *get_flag_spec (const format_flag_spec *,
@@ -1302,6 +1303,26 @@ maybe_read_dollar_number (int *status, const char **format,
   else
     *param_ptr = 0;
   return argnum;
+}
+
+/* Ensure that FORMAT does not start with a decimal number followed by
+   a $; give a diagnostic and return true if it does, false otherwise.  */
+
+static bool
+avoid_dollar_number (int *status, const char *format)
+{
+  if (!ISDIGIT (*format))
+    return false;
+  while (ISDIGIT (*format))
+    format++;
+  if (*format == '$')
+    {
+      status_warning (status,
+		      "$ operand number used after format"
+		      " without operand number");
+      return true;
+    }
+  return false;
 }
 
 
@@ -1721,6 +1742,11 @@ check_format_info_main (int *status, format_check_results *res,
 	      main_arg_num = opnum + info->first_arg_num - 1;
 	    }
 	}
+      else if (fki->flags & FMT_FLAG_USE_DOLLAR)
+	{
+	  if (avoid_dollar_number (status, format_chars))
+	    return;
+	}
 
       /* Read any format flags, but do not yet validate them beyond removing
 	 duplicates, since in general validation depends on the rest of
@@ -1779,6 +1805,11 @@ check_format_info_main (int *status, format_check_results *res,
 		    }
 		  else
 		    has_operand_number = 0;
+		}
+	      else
+		{
+		  if (avoid_dollar_number (status, format_chars))
+		    return;
 		}
 	      if (info->first_arg_num != 0)
 		{
@@ -1878,6 +1909,11 @@ check_format_info_main (int *status, format_check_results *res,
 		    }
 		  else
 		    has_operand_number = 0;
+		}
+	      else
+		{
+		  if (avoid_dollar_number (status, format_chars))
+		    return;
 		}
 	      if (info->first_arg_num != 0)
 		{

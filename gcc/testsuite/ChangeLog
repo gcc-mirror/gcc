@@ -1,3 +1,9 @@
+2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/15444
+	* gcc.dg/format/xopen-1.c: Adjust expected message.
+	* gcc.dg/format/xopen-3.c: New test.
+
 2004-05-14  Victor Leikehman  <lei@haifasphere.co.il>
 
 	* gfortran.fortran-torture/execute/def_init_3.f90: New test.
