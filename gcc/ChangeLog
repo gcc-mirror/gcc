@@ -1,3 +1,8 @@
+2004-07-05  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* sourcebuild.texi (Config Fragments): Use @comma{} in
+	cross-reference to section title.
+
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-cfg.c (verify_expr): Use CHECK_OK in binary case.
