@@ -1,3 +1,9 @@
+2001-07-18  Andreas Schwab  <schwab@suse.de>
+
+	* configure.in (assembler eh_frame optimization): Handle big
+	endian.
+	* configure: Regenerated.
+
 2001-07-18  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/2812:
