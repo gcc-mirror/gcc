@@ -1,3 +1,12 @@
+2002-01-30  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (handle_ret_insn): Check for subroutine merge here...
+	(state::merge): ... not here.
+	(subr_entry_info): New structure.
+	(entry_points): New field.
+	(~_Jv_BytecodeVerifier): Correctly free jsr_ptrs.  Free
+	entry_points.
+
 2002-01-29  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/List.java (addNotify): Correctly check to see if peer
