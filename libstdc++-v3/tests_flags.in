@@ -88,12 +88,12 @@ check_directory 'Build' ${BUILD_DIR}
 check_directory 'Source' ${SRC_DIR}
 case ${query} in
     --installed-library)
-    PREFIX_DIR=$4
-    check_directory 'Install' ${PREFIX_DIR}
-    ;;
+      PREFIX_DIR=$4
+      check_directory 'Install' ${PREFIX_DIR}
+      ;;
     *)
-    PREFIX_DIR=
-    ;;
+      PREFIX_DIR=
+      ;;
 esac
 
 # Compute include paths
@@ -101,22 +101,22 @@ esac
 C_DIR="`basename  @C_INCLUDE_DIR@`"
 case ${query} in
     --installed-library)
-    INCLUDES="-I${SRC_DIR}/testsuite"
-    ;;
+      INCLUDES="-I${SRC_DIR}/testsuite"
+      ;;
     *)
-    INCLUDES="-nostdinc++ @CSHADOW_FLAGS@ -I${BUILD_DIR}/include
-	      -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
-	      -I${SRC_DIR}/include -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
-	      -I${SRC_DIR}/testsuite"
-    ;;
+      INCLUDES="-nostdinc++ -I${BUILD_DIR}/include -I${SRC_DIR}/include
+                -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
+	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
+		-I${SRC_DIR}/testsuite"
+      ;;
 esac
 
 # If called for compiler tests, just output appropriate include paths
 case ${query} in
     --compiler)
-    echo ${INCLUDES} -I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext
-    exit 0
-    ;;
+      echo ${INCLUDES} -I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext
+      exit 0
+      ;;
 esac
 
 # For built or installed libraries, we need to get right OS-specific bits.
@@ -127,35 +127,38 @@ esac
 # CXX == the full pathname of the compiler
 case ${query} in
     --built-library)
-    LIB_PATH=${BUILD_DIR}/src
-    GCC_LIB_PATH=${BUILD_DIR}/../../gcc
-    CXX="${BUILD_DIR}/../../gcc/g++"
-    ;;
+      LIB_PATH=${BUILD_DIR}/src
+      GCC_LIB_PATH=${BUILD_DIR}/../../gcc
+      CXX="${BUILD_DIR}/../../gcc/g++"
+      ;;
     --installed-library)
-    LIB_PATH=${PREFIX_DIR}/lib
-    CXX=${PREFIX_DIR}/bin/g++
-    ;;
+      LIB_PATH=${PREFIX_DIR}/lib
+      GCC_LIB_PATH=
+      CXX=${PREFIX_DIR}/bin/g++
+      ;;
 esac
 
 # gcc compiler flags (maybe use glibcpp_cxxflags from configure.target,
-# but thst's really meant for building the library itself, not using it)
+# but that's really meant for building the library itself, not using it)
 CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
 # LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
 case ${query} in
     --built-library)
-    LIBS="${LIB_PATH}/libstdc++.la ${LIB_PATH}/../libsupc++/libsupc++.la 
-	    -no-install -rpath ${GCC_LIB_PATH}"
+      LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"
     case @target_os@ in
-        *cygwin*)  LIBS="${LIBS} -nodefaultlibs -lgcc -lcygwin -luser32
-                         -lkernel32 -ladvapi32 -lshell32" ;;
-        *)         LIBS="${LIBS} -nodefaultlibs -lc -lgcc -lc" ;;
+        *cygwin*)  
+	  LIBS="${LIBS} -nodefaultlibs -lgcc -lcygwin -luser32
+                -lkernel32 -ladvapi32 -lshell32" 
+	  ;;
+        *)         
+	  LIBS="${LIBS} -nodefaultlibs -lgcc -lc -lgcc" 
+	  ;;
     esac
     ;;
     --installed-library)
-    LIBS="-L${LIB_PATH} ${LIB_PATH}/libstdc++.la 
-           -no-install -rpath ${LIB_PATH}"
-    ;;
+	LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"
+	;;
 esac
 
 echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${CXX}:${CXXFLAGS}:${INCLUDES}:${LIBS}
