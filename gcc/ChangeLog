@@ -1,3 +1,8 @@
+2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/15498
+	* doc/invoke.texi (Environment Variables): Correct example locale.
+
 2004-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* cfg.c (expunge_block): Revert previous change adding ggc_free call.
