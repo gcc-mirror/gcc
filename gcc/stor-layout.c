@@ -1228,16 +1228,7 @@ compute_record_mode (type)
       /* With some targets, eg. c4x, it is sub-optimal
 	 to access an aligned BLKmode structure as a scalar.  */
 
-      /* On ia64-*-hpux we need to ensure that we don't change the
-	 mode of a structure containing a single field or else we
-	 will pass it incorrectly.  Since a structure with a single
-	 field causes mode to get set above we can't allow the
-	 check for mode == VOIDmode in this case.  Perhaps
-	 MEMBER_TYPE_FORCES_BLK should be extended to include mode
-	 as an argument and the check could be put in there for c4x.  */
-
-      if ((mode == VOIDmode || FUNCTION_ARG_REG_LITTLE_ENDIAN)
-	  && MEMBER_TYPE_FORCES_BLK (field))
+      if (MEMBER_TYPE_FORCES_BLK (field, mode))
 	return;
 #endif /* MEMBER_TYPE_FORCES_BLK  */
     }
@@ -1577,7 +1568,7 @@ layout_type (type)
 	TYPE_MODE (type) = BLKmode;
 	if (TYPE_SIZE (type) != 0
 #ifdef MEMBER_TYPE_FORCES_BLK
-	    && ! MEMBER_TYPE_FORCES_BLK (type)
+	    && ! MEMBER_TYPE_FORCES_BLK (type, VOIDmode)
 #endif
 	    /* BLKmode elements force BLKmode aggregate;
 	       else extract/store fields may lose.  */

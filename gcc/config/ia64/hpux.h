@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
    structure handling, this macro simply ensures that single field
    structures are always treated like structures.  */
 
-#define MEMBER_TYPE_FORCES_BLK(FIELD) 1
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) 1
 
 /* Override the setting of FUNCTION_ARG_REG_LITTLE_ENDIAN in
    defaults.h.  Setting this to true means that we are not passing

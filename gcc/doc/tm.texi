@@ -1213,9 +1213,14 @@ Like @code{PCC_BITFIELD_TYPE_MATTERS} except that its effect is limited
 to aligning a bit-field within the structure.
 
 @findex MEMBER_TYPE_FORCES_BLK
-@item MEMBER_TYPE_FORCES_BLK (@var{field})
+@item MEMBER_TYPE_FORCES_BLK (@var{field}, @var{mode})
 Return 1 if a structure or array containing @var{field} should be accessed using
 @code{BLKMODE}.
+
+If @var{field} is the only field in the structure, @var{mode} is its
+mode, otherwise @var{mode} is VOIDmode.  @var{mode} is provided in the
+case where structures of one field would require the structure's mode to
+retain the field's mode.
 
 Normally, this is not needed.  See the file @file{c4x.h} for an example
 of how to use this macro to prevent a structure having a floating point

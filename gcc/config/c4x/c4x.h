@@ -378,9 +378,9 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 #define MAX_FIXED_MODE_SIZE	64 /* HImode.  */
 
 /* If a structure has a floating point field then force structure
-   to have BLKMODE.  */
-#define MEMBER_TYPE_FORCES_BLK(FIELD) \
-  (TREE_CODE (TREE_TYPE (FIELD)) == REAL_TYPE)
+   to have BLKMODE, unless it is the only field.  */
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
+  (TREE_CODE (TREE_TYPE (FIELD)) == REAL_TYPE && (MODE) == VOIDmode)
 
 /* Number of bits in the high and low parts of a two stage
    load of an immediate constant.  */
