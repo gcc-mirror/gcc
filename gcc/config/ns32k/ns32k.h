@@ -837,10 +837,13 @@ __transfer_from_trampoline ()		\
    Strictly speaking, we can't be sure that a symbol will fit this range.
    But, in practice, it always will.  */
 
+/* idall@eleceng.adelaide.edu.au says that the 32016 and 32032
+   can handle the full range of displacements--it is only the addresses
+   that have a limited range.  So the following was deleted:
+ (((i) <= 16777215 && (i) >= -16777216)
+  || ((TARGET_32532 || TARGET_32332) && ...))  */
 #define NS32K_DISPLACEMENT_P(i) 				\
- (((i) <= 16777215 && (i) >= -16777216)			\
-  || ((TARGET_32532 || TARGET_32332)			\
-      && (i) <= 536870913 && (i) >= -536870912))
+  ((i) <= 536870913 && (i) >= -536870912)
 
 /* Check for frame pointer or stack pointer.  */
 #define MEM_REG(X) \
