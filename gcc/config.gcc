@@ -2982,7 +2982,7 @@ sparc-*-aout*)
 	tm_file="sparc/sparc.h aoutos.h sparc/aout.h libgloss.h"
 	;;
 sparc-*-netbsdelf*)
-	echo "GCC does not yet support the ${machine} target"; exit 1
+	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	;;
 sparc-*-netbsd*)
 	tm_file="${tm_file} sparc/aout.h netbsd.h netbsd-aout.h sparc/netbsd.h"
@@ -3241,6 +3241,12 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	float_format=sparc
+	;;
+sparc64-*-netbsd*)
+	tmake_file="${tmake_file} sparc/t-netbsd64"
+	tm_file="sparc/biarch64.h ${tm_file}"
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
 	float_format=sparc
 	;;
 strongarm-*-elf*)

@@ -1,3 +1,10 @@
+2002-02-19  matthew green  <mrg@eterna.com.au>
+
+	* config.gcc (sparc-*-netbsdelf*): Enable target.
+	(sparc64-*-netbsd*): New target.
+	* config/sparc/netbsd-elf.h: New file.
+	* config/sparc/t-netbsd64: New file.
+
 2002-02-19  Gaute B Strokkenes <gs234@cam.ac.uk>
 
 	* doc/rtl.texi (Flags, MEM_SCALAR_P): Fix typo.
