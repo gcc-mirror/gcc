@@ -1,3 +1,8 @@
+2005-02-10  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* testsuite/libjava.mauve/xfails: Updated to reflect current state 
+	of mauve and libjava.
+
 2005-02-09  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/net/protocol/jar/Connection.java (getJarFile): Open
