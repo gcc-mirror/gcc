@@ -276,7 +276,8 @@ powerpc*-*-*)
 sparc*-*-*)
 	cpu_type=sparc
 	;;
-sh64-*-*)
+# Note the 'l'; we need to be able to match e.g. "shle" or "shl".
+sh[123456789l]*-*-*)
 	cpu_type=sh
 	;;
 esac
@@ -2245,6 +2246,21 @@ sh-*-linux*)
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
+	float_format=sh
+	;;
+sh-*-netbsdelf* | shl*-*-netbsdelf*)
+	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h netbsd.h netbsd-elf.h sh/netbsd-elf.h"
+	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
+	case $machine in
+	sh*l*-*)
+		tm_file="sh/little.h ${tm_file}"
+		tmake_file="${tmake_file} sh/t-le"
+		;;
+	*)
+		tmake_file="${tmake_file} sh/t-be"
+		;;
+	esac
+	tmake_file="${tmake_file} sh/t-netbsd"
 	float_format=sh
 	;;
 sh-*-*)

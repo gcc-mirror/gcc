@@ -1,3 +1,10 @@
+2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (sh[123456789l]*-*-*): Set cpu_type to sh.
+	(sh-*-netbsdelf*)
+	(shl*-*-netbsdelf*): New targets.
+	* config/sh/netbsd-elf.h: New file.
+
 2002-05-30  Richard Henderson  <rth@redhat.com>
 	    Eric Botcazou  <ebotcazou@multimania.com>
 
