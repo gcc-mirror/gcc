@@ -917,7 +917,10 @@ formal_parameter:
 		  $$ = build_tree_list ($2, $1);
 		}
 |	modifiers type variable_declarator_id /* Added, JDK1.1 final parms */
-		{ $$ = parse_jdk1_1_error ("final parameters"); }
+		{ 
+		  parse_jdk1_1_error ("final parameters");
+		  $$ = build_tree_list ($3, $2);
+		}
 |	type error
 		{yyerror ("Missing identifier"); RECOVER;}
 |	modifiers type error
@@ -3516,6 +3519,29 @@ static void
 finish_method_declaration (method_body)
      tree method_body;
 {
+  int flags = get_access_flags_from_decl (current_function_decl);
+
+  /* 8.4.5 Method Body */
+  if ((flags & ACC_ABSTRACT || flags & ACC_NATIVE) && method_body)
+    {
+      tree wfl = DECL_NAME (current_function_decl);
+      parse_error_context (wfl, 
+			   "%s method `%s' can't have a body defined",
+			   (METHOD_NATIVE (current_function_decl) ?
+			    "Native" : "Abstract"),
+			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+      method_body = NULL_TREE;
+    }
+  else if (!(flags & ACC_ABSTRACT) && !(flags & ACC_NATIVE) && !method_body)
+    {
+      tree wfl = DECL_NAME (current_function_decl);
+      parse_error_context (wfl, 
+			   "Non native and non abstract method `%s' must "
+			   "have a body defined",
+			   IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
+      method_body = NULL_TREE;
+    }
+
   BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)) = method_body;
   maybe_absorb_scoping_blocks ();
   /* Exit function's body */

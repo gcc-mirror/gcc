@@ -1,3 +1,14 @@
+Sat May 22 13:54:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (formal_parameter:): Construct argument tree list
+ 	element even if a yet unsupported final parameter was encountered.
+
+Tue May 18 00:28:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (finish_method_declaration): Issue errors for native or
+ 	abstract methods declared with a method body, as well as for non
+ 	native or non abstract methods with no method body.
+
 1999-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (build_utf8_ref): Initialize variable `field'.
