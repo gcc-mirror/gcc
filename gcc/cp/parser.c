@@ -203,7 +203,10 @@ static cp_token_cache *cp_token_cache_new
 /* A token type for tokens that are not tokens at all; these are used
    to represent slots in the array where there used to be a token
    that has now been deleted. */
-#define CPP_PURGED (CPP_NESTED_NAME_SPECIFIER + 1)
+#define CPP_PURGED ((enum cpp_ttype) (CPP_NESTED_NAME_SPECIFIER + 1))
+
+/* The number of token types, including C++-specific ones.  */
+#define N_CP_TTYPES ((int) (CPP_PURGED + 1))
 
 /* Variables.  */
 
@@ -1038,18 +1041,11 @@ make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
    Future Improvements
    -------------------
 
-   The performance of the parser could probably be improved
-   substantially.  Some possible improvements include:
-
-     - The expression parser recurses through the various levels of
-       precedence as specified in the grammar, rather than using an
-       operator-precedence technique.  Therefore, parsing a simple
-       identifier requires multiple recursive calls.
-
-     - We could often eliminate the need to parse tentatively by
-       looking ahead a little bit.  In some places, this approach
-       might not entirely eliminate the need to parse tentatively, but
-       it might still speed up the average case.  */
+   The performance of the parser could probably be improved substantially.
+   We could often eliminate the need to parse tentatively by looking ahead
+   a little bit.  In some places, this approach might not entirely eliminate
+   the need to parse tentatively, but it might still speed up the average
+   case.  */
 
 /* Flags that are passed to some parsing functions.  These values can
    be bitwise-ored together.  */
@@ -1077,20 +1073,39 @@ typedef enum cp_parser_declarator_kind
   CP_PARSER_DECLARATOR_EITHER
 } cp_parser_declarator_kind;
 
-/* A mapping from a token type to a corresponding tree node type.  */
+/* The precedence values used to parse binary expressions.  The minimum value
+   of PREC must be 1, because zero is reserved to quickly discriminate
+   binary operators from other tokens.  */
 
-typedef struct cp_parser_token_tree_map_node
+enum cp_parser_prec
+{
+  PREC_NOT_OPERATOR,
+  PREC_LOGICAL_OR_EXPRESSION,
+  PREC_LOGICAL_AND_EXPRESSION,
+  PREC_INCLUSIVE_OR_EXPRESSION,
+  PREC_EXCLUSIVE_OR_EXPRESSION,
+  PREC_AND_EXPRESSION,
+  PREC_RELATIONAL_EXPRESSION,
+  PREC_EQUALITY_EXPRESSION,
+  PREC_SHIFT_EXPRESSION,
+  PREC_ADDITIVE_EXPRESSION,
+  PREC_MULTIPLICATIVE_EXPRESSION,
+  PREC_PM_EXPRESSION,
+  NUM_PREC_VALUES = PREC_PM_EXPRESSION
+};
+
+/* A mapping from a token type to a corresponding tree node type, with a
+   precedence value.  */
+
+typedef struct cp_parser_binary_operations_map_node
 {
   /* The token type.  */
-  ENUM_BITFIELD (cpp_ttype) token_type : 8;
+  enum cpp_ttype token_type;
   /* The corresponding tree code.  */
-  ENUM_BITFIELD (tree_code) tree_type : 8;
-} cp_parser_token_tree_map_node;
-
-/* A complete map consists of several ordinary entries, followed by a
-   terminator.  The terminating entry has a token_type of CPP_EOF.  */
-
-typedef cp_parser_token_tree_map_node cp_parser_token_tree_map[];
+  enum tree_code tree_type;
+  /* The precedence of this operator.  */
+  enum cp_parser_prec prec;
+} cp_parser_binary_operations_map_node;
 
 /* The status of a tentative parse.  */
 
@@ -1105,8 +1120,17 @@ typedef enum cp_parser_status_kind
   CP_PARSER_STATUS_KIND_COMMITTED
 } cp_parser_status_kind;
 
-/* Context that is saved and restored when parsing tentatively.  */
+typedef struct cp_parser_expression_stack_entry
+{
+  tree lhs;
+  enum tree_code tree_type;
+  int prec;
+} cp_parser_expression_stack_entry;
 
+typedef struct cp_parser_expression_stack_entry
+  cp_parser_expression_stack[NUM_PREC_VALUES];
+
+/* Context that is saved and restored when parsing tentatively.  */
 typedef struct cp_parser_context GTY (())
 {
   /* If this is a tentative parsing context, the status of the
@@ -1117,6 +1141,7 @@ typedef struct cp_parser_context GTY (())
      scope given by OBJECT_TYPE (the type of `x' or `*x') and also in
      the context of the containing expression.  */
   tree object_type;
+
   /* The next parsing context in the stack.  */
   struct cp_parser_context *next;
 } cp_parser_context;
@@ -1131,6 +1156,50 @@ static cp_parser_context *cp_parser_context_new
 /* Class variables.  */
 
 static GTY((deletable)) cp_parser_context* cp_parser_context_free_list;
+
+/* The operator-precedence table used by cp_parser_binary_expression.
+   Transformed into an associative array (binops_by_token) by
+   cp_parser_new.  */
+
+static const cp_parser_binary_operations_map_node binops[] = {
+  { CPP_DEREF_STAR, MEMBER_REF, PREC_PM_EXPRESSION },
+  { CPP_DOT_STAR, DOTSTAR_EXPR, PREC_PM_EXPRESSION },
+
+  { CPP_MULT, MULT_EXPR, PREC_MULTIPLICATIVE_EXPRESSION },
+  { CPP_DIV, TRUNC_DIV_EXPR, PREC_MULTIPLICATIVE_EXPRESSION },
+  { CPP_MOD, TRUNC_MOD_EXPR, PREC_MULTIPLICATIVE_EXPRESSION },
+
+  { CPP_PLUS, PLUS_EXPR, PREC_ADDITIVE_EXPRESSION },
+  { CPP_MINUS, MINUS_EXPR, PREC_ADDITIVE_EXPRESSION },
+
+  { CPP_LSHIFT, LSHIFT_EXPR, PREC_SHIFT_EXPRESSION },
+  { CPP_RSHIFT, RSHIFT_EXPR, PREC_SHIFT_EXPRESSION },
+
+  { CPP_LESS, LT_EXPR, PREC_RELATIONAL_EXPRESSION },
+  { CPP_GREATER, GT_EXPR, PREC_RELATIONAL_EXPRESSION },
+  { CPP_LESS_EQ, LE_EXPR, PREC_RELATIONAL_EXPRESSION },
+  { CPP_GREATER_EQ, GE_EXPR, PREC_RELATIONAL_EXPRESSION },
+  { CPP_MIN, MIN_EXPR, PREC_RELATIONAL_EXPRESSION },
+  { CPP_MAX, MAX_EXPR, PREC_RELATIONAL_EXPRESSION },
+
+  { CPP_EQ_EQ, EQ_EXPR, PREC_EQUALITY_EXPRESSION },
+  { CPP_NOT_EQ, NE_EXPR, PREC_EQUALITY_EXPRESSION },
+
+  { CPP_AND, BIT_AND_EXPR, PREC_AND_EXPRESSION },
+
+  { CPP_XOR, BIT_XOR_EXPR, PREC_EXCLUSIVE_OR_EXPRESSION },
+
+  { CPP_OR, BIT_IOR_EXPR, PREC_INCLUSIVE_OR_EXPRESSION },
+
+  { CPP_AND_AND, TRUTH_ANDIF_EXPR, PREC_LOGICAL_AND_EXPRESSION },
+
+  { CPP_OR_OR, TRUTH_ORIF_EXPR, PREC_LOGICAL_OR_EXPRESSION }
+};
+
+/* The same as binops, but initialized by cp_parser_new so that
+   binops_by_token[N].token_type == N.  Used in cp_parser_binary_expression
+   for speed.  */
+static cp_parser_binary_operations_map_node binops_by_token[N_CP_TTYPES];
 
 /* Constructors and destructors.  */
 
@@ -1152,6 +1221,7 @@ cp_parser_context_new (cp_parser_context* next)
     }
   else
     context = GGC_CNEW (cp_parser_context);
+
   /* No errors have occurred yet in this context.  */
   context->status = CP_PARSER_STATUS_KIND_NO_ERROR;
   /* If this is not the bottomost context, copy information that we
@@ -1377,27 +1447,7 @@ static tree cp_parser_delete_expression
   (cp_parser *);
 static tree cp_parser_cast_expression
   (cp_parser *, bool);
-static tree cp_parser_pm_expression
-  (cp_parser *);
-static tree cp_parser_multiplicative_expression
-  (cp_parser *);
-static tree cp_parser_additive_expression
-  (cp_parser *);
-static tree cp_parser_shift_expression
-  (cp_parser *);
-static tree cp_parser_relational_expression
-  (cp_parser *);
-static tree cp_parser_equality_expression
-  (cp_parser *);
-static tree cp_parser_and_expression
-  (cp_parser *);
-static tree cp_parser_exclusive_or_expression
-  (cp_parser *);
-static tree cp_parser_inclusive_or_expression
-  (cp_parser *);
-static tree cp_parser_logical_and_expression
-  (cp_parser *);
-static tree cp_parser_logical_or_expression
+static tree cp_parser_binary_expression
   (cp_parser *);
 static tree cp_parser_question_colon_clause
   (cp_parser *, tree);
@@ -1651,8 +1701,6 @@ static bool cp_parser_check_template_parameters
   (cp_parser *, unsigned);
 static tree cp_parser_simple_cast_expression
   (cp_parser *);
-static tree cp_parser_binary_expression
-  (cp_parser *, const cp_parser_token_tree_map, cp_parser_expression_fn);
 static tree cp_parser_global_scope_opt
   (cp_parser *, bool);
 static bool cp_parser_constructor_declarator_p
@@ -2340,10 +2388,16 @@ cp_parser_new (void)
 {
   cp_parser *parser;
   cp_lexer *lexer;
+  unsigned i;
 
   /* cp_lexer_new_main is called before calling ggc_alloc because
      cp_lexer_new_main might load a PCH file.  */
   lexer = cp_lexer_new_main ();
+
+  /* Initialize the binops_by_token so that we can get the tree
+     directly from the token.  */
+  for (i = 0; i < sizeof (binops) / sizeof (binops[0]); i++)
+    binops_by_token[binops[i].token_type] = binops[i];
 
   parser = GGC_CNEW (cp_parser);
   parser->lexer = lexer;
@@ -5161,29 +5215,12 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p)
   return cp_parser_unary_expression (parser, address_p);
 }
 
-/* Parse a pm-expression.
+/* Parse a binary expression of the general form:
 
    pm-expression:
      cast-expression
      pm-expression .* cast-expression
      pm-expression ->* cast-expression
-
-     Returns a representation of the expression.  */
-
-static tree
-cp_parser_pm_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_DEREF_STAR, MEMBER_REF },
-    { CPP_DOT_STAR, DOTSTAR_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser, map,
-				      cp_parser_simple_cast_expression);
-}
-
-/* Parse a multiplicative-expression.
 
    multiplicative-expression:
      pm-expression
@@ -5191,70 +5228,15 @@ cp_parser_pm_expression (cp_parser* parser)
      multiplicative-expression / pm-expression
      multiplicative-expression % pm-expression
 
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_multiplicative_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_MULT, MULT_EXPR },
-    { CPP_DIV, TRUNC_DIV_EXPR },
-    { CPP_MOD, TRUNC_MOD_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_pm_expression);
-}
-
-/* Parse an additive-expression.
-
    additive-expression:
      multiplicative-expression
      additive-expression + multiplicative-expression
      additive-expression - multiplicative-expression
 
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_additive_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_PLUS, PLUS_EXPR },
-    { CPP_MINUS, MINUS_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_multiplicative_expression);
-}
-
-/* Parse a shift-expression.
-
    shift-expression:
      additive-expression
      shift-expression << additive-expression
      shift-expression >> additive-expression
-
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_shift_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_LSHIFT, LSHIFT_EXPR },
-    { CPP_RSHIFT, RSHIFT_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_additive_expression);
-}
-
-/* Parse a relational-expression.
 
    relational-expression:
      shift-expression
@@ -5263,160 +5245,147 @@ cp_parser_shift_expression (cp_parser* parser)
      relational-expression <= shift-expression
      relational-expression >= shift-expression
 
-   GNU Extension:
-
+  GNU Extension:
+  
    relational-expression:
      relational-expression <? shift-expression
      relational-expression >? shift-expression
-
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_relational_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_LESS, LT_EXPR },
-    { CPP_GREATER, GT_EXPR },
-    { CPP_LESS_EQ, LE_EXPR },
-    { CPP_GREATER_EQ, GE_EXPR },
-    { CPP_MIN, MIN_EXPR },
-    { CPP_MAX, MAX_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_shift_expression);
-}
-
-/* Parse an equality-expression.
 
    equality-expression:
      relational-expression
      equality-expression == relational-expression
      equality-expression != relational-expression
 
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_equality_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_EQ_EQ, EQ_EXPR },
-    { CPP_NOT_EQ, NE_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_relational_expression);
-}
-
-/* Parse an and-expression.
-
    and-expression:
      equality-expression
      and-expression & equality-expression
-
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_and_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_AND, BIT_AND_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_equality_expression);
-}
-
-/* Parse an exclusive-or-expression.
 
    exclusive-or-expression:
      and-expression
      exclusive-or-expression ^ and-expression
 
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_exclusive_or_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_XOR, BIT_XOR_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_and_expression);
-}
-
-
-/* Parse an inclusive-or-expression.
-
    inclusive-or-expression:
      exclusive-or-expression
      inclusive-or-expression | exclusive-or-expression
-
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_inclusive_or_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_OR, BIT_IOR_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_exclusive_or_expression);
-}
-
-/* Parse a logical-and-expression.
 
    logical-and-expression:
      inclusive-or-expression
      logical-and-expression && inclusive-or-expression
 
-   Returns a representation of the expression.  */
-
-static tree
-cp_parser_logical_and_expression (cp_parser* parser)
-{
-  static const cp_parser_token_tree_map map = {
-    { CPP_AND_AND, TRUTH_ANDIF_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
-
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_inclusive_or_expression);
-}
-
-/* Parse a logical-or-expression.
-
    logical-or-expression:
      logical-and-expression
      logical-or-expression || logical-and-expression
 
-   Returns a representation of the expression.  */
+   All these are implemented with a single function like:
+
+   binary-expression:
+     simple-cast-expression
+     binary-expression <token> binary-expression
+
+   The binops_by_token map is used to get the tree codes for each <token> type.
+   binary-expressions are associated according to a precedence table.  */
+
+#define TOKEN_PRECEDENCE(token) \
+  ((token->type == CPP_GREATER && !parser->greater_than_is_operator_p) \
+   ? PREC_NOT_OPERATOR \
+   : binops_by_token[token->type].prec)
 
 static tree
-cp_parser_logical_or_expression (cp_parser* parser)
+cp_parser_binary_expression (cp_parser* parser)
 {
-  static const cp_parser_token_tree_map map = {
-    { CPP_OR_OR, TRUTH_ORIF_EXPR },
-    { CPP_EOF, ERROR_MARK }
-  };
+  cp_parser_expression_stack stack;
+  cp_parser_expression_stack_entry *sp = &stack[0];
+  tree lhs, rhs;
+  cp_token *token;
+  enum tree_code tree_type;
+  enum cp_parser_prec prec = PREC_NOT_OPERATOR, new_prec, lookahead_prec;
+  bool overloaded_p;
 
-  return cp_parser_binary_expression (parser,
-				      map,
-				      cp_parser_logical_and_expression);
+  /* Parse the first expression.  */
+  lhs = cp_parser_simple_cast_expression (parser);
+
+  for (;;)
+    {
+      /* Get an operator token.  */
+      token = cp_lexer_peek_token (parser->lexer);
+      new_prec = TOKEN_PRECEDENCE (token);
+
+      /* Popping an entry off the stack means we completed a subexpression:
+         - either we found a token which is not an operator (`>' where it is not
+           an operator, or prec == PREC_NOT_OPERATOR), in which case popping
+           will happen repeatedly;
+         - or, we found an operator which has lower priority.  This is the case 
+           where the recursive descent *ascends*, as in `3 * 4 + 5' after
+           parsing `3 * 4'. */
+      if (new_prec <= prec)
+        {
+          if (sp == stack)
+	    break;
+          else
+	    goto pop;
+        }
+
+     get_rhs:
+      tree_type = binops_by_token[token->type].tree_type;
+
+      /* We used the operator token. */
+      cp_lexer_consume_token (parser->lexer);
+
+      /* Extract another operand.  It may be the RHS of this expression
+         or the LHS of a new, higher priority expression.  */
+      rhs = cp_parser_simple_cast_expression (parser);
+
+      /* Get another operator token.  Look up its precedence to avoid
+         building a useless (immediately popped) stack entry for common
+         cases such as 3 + 4 + 5 or 3 * 4 + 5.   */
+      token = cp_lexer_peek_token (parser->lexer);
+      lookahead_prec = TOKEN_PRECEDENCE (token);
+      if (lookahead_prec > new_prec)
+        {
+          /* ... and prepare to parse the RHS of the new, higher priority
+             expression.  */
+          sp->prec = prec;
+          sp->tree_type = tree_type;
+          sp->lhs = lhs;
+          sp++;
+          lhs = rhs;
+          prec = new_prec;
+          new_prec = lookahead_prec;
+          goto get_rhs;
+
+         pop:
+          /* If the stack is not empty, we have parsed into LHS the right side
+	     (`4' in the example above) of an expression we had suspended.
+	     We can use the information on the stack to recover the LHS (`3') 
+	     from the stack together with the tree code (`MULT_EXPR'), and
+	     the precedence of the higher level subexpression
+	     (`PREC_ADDITIVE_EXPRESSION').  TOKEN is the CPP_PLUS token,
+	     which will be used to actually build the additive expression.  */
+          --sp;
+	  prec = sp->prec;
+          tree_type = sp->tree_type;
+          rhs = lhs;
+          lhs = sp->lhs;
+        }
+
+      overloaded_p = false;
+      lhs = build_x_binary_op (tree_type, lhs, rhs, &overloaded_p);
+
+      /* If the binary operator required the use of an overloaded operator,
+         then this expression cannot be an integral constant-expression.
+         An overloaded operator can be used even if both operands are
+         otherwise permissible in an integral constant-expression if at
+         least one of the operands is of enumeration type.  */
+
+      if (overloaded_p
+          && (cp_parser_non_integral_constant_expression 
+              (parser, "calls to overloaded operators")))
+        return error_mark_node;
+    }
+
+  return lhs;
 }
+
 
 /* Parse the `? expression : assignment-expression' part of a
    conditional-expression.  The LOGICAL_OR_EXPR is the
@@ -5480,8 +5449,8 @@ cp_parser_assignment_expression (cp_parser* parser)
      logical-or-expression.  */
   else
     {
-      /* Parse the logical-or-expression.  */
-      expr = cp_parser_logical_or_expression (parser);
+      /* Parse the binary expressions (logical-or-expression).  */
+      expr = cp_parser_binary_expression (parser);
       /* If the next token is a `?' then we're actually looking at a
 	 conditional-expression.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
@@ -14409,79 +14378,6 @@ cp_parser_check_template_parameters (cp_parser* parser,
      template <class T> template <class U> void S::f();  */
   error ("too many template-parameter-lists");
   return false;
-}
-
-/* Parse a binary-expression of the general form:
-
-   binary-expression:
-     <expr>
-     binary-expression <token> <expr>
-
-   The TOKEN_TREE_MAP maps <token> types to <expr> codes.  FN is used
-   to parser the <expr>s.  If the first production is used, then the
-   value returned by FN is returned directly.  Otherwise, a node with
-   the indicated EXPR_TYPE is returned, with operands corresponding to
-   the two sub-expressions.  */
-
-static tree
-cp_parser_binary_expression (cp_parser* parser,
-                             const cp_parser_token_tree_map token_tree_map,
-                             cp_parser_expression_fn fn)
-{
-  tree lhs;
-
-  /* Parse the first expression.  */
-  lhs = (*fn) (parser);
-  /* Now, look for more expressions.  */
-  while (true)
-    {
-      cp_token *token;
-      const cp_parser_token_tree_map_node *map_node;
-      tree rhs;
-
-      /* Peek at the next token.  */
-      token = cp_lexer_peek_token (parser->lexer);
-      /* If the token is `>', and that's not an operator at the
-	 moment, then we're done.  */
-      if (token->type == CPP_GREATER
-	  && !parser->greater_than_is_operator_p)
-	break;
-      /* If we find one of the tokens we want, build the corresponding
-	 tree representation.  */
-      for (map_node = token_tree_map;
-	   map_node->token_type != CPP_EOF;
-	   ++map_node)
-	if (map_node->token_type == token->type)
-	  {
-	    /* Assume that an overloaded operator will not be used.  */
-	    bool overloaded_p = false;
-
-	    /* Consume the operator token.  */
-	    cp_lexer_consume_token (parser->lexer);
-	    /* Parse the right-hand side of the expression.  */
-	    rhs = (*fn) (parser);
-	    /* Build the binary tree node.  */
-	    lhs = build_x_binary_op (map_node->tree_type, lhs, rhs,
-				     &overloaded_p);
-	    /* If the binary operator required the use of an
-	       overloaded operator, then this expression cannot be an
-	       integral constant-expression.  An overloaded operator
-	       can be used even if both operands are otherwise
-	       permissible in an integral constant-expression if at
-	       least one of the operands is of enumeration type.  */
-	    if (overloaded_p
-		&& (cp_parser_non_integral_constant_expression
-		    (parser, "calls to overloaded operators")))
-	      lhs = error_mark_node;
-	    break;
-	  }
-
-      /* If the token wasn't one of the ones we want, we're done.  */
-      if (map_node->token_type == CPP_EOF)
-	break;
-    }
-
-  return lhs;
 }
 
 /* Parse an optional `::' token indicating that the following name is
