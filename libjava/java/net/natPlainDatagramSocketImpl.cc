@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999, 2000  Cygnus Solutions
 
    This file is part of libgcj.
 
@@ -242,7 +242,6 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
 #endif
   else
     goto error;
-  // FIXME: Multicast:  s->address = new InetAddress (raddr, NULL);
   i->address = raddr;
   return rport;
  error:
@@ -335,7 +334,7 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
 #endif
   else
     goto error;
-  // FIXME: Multicast:  s->address = new InetAddress (raddr, NULL);
+  p->setAddress (new InetAddress (raddr, NULL));
   p->setPort (rport);
   p->setLength ((jint) retlen);
   return;
