@@ -1,3 +1,9 @@
+2003-11-06  Matt Austern  <austern@apple.com>
+
+	* decl.c (duplicate_decls): copy DECL_VISIBILITY field.
+	* method.c (use_thunk): give thunk same visibility as function.
+	* optimize.c (maybe_clone_body): copy DECL_VISIBILITY field.
+	
 2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11616

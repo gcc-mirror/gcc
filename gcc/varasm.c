@@ -4430,7 +4430,7 @@ default_assemble_visibility (tree decl, int vis)
 static void
 maybe_assemble_visibility (tree decl)
 {
-  enum symbol_visibility vis = decl_visibility (decl);
+  enum symbol_visibility vis = DECL_VISIBILITY (decl);
 
   if (vis != VISIBILITY_DEFAULT)
     (* targetm.asm_out.visibility) (decl, vis);
@@ -4530,30 +4530,6 @@ decl_tls_model (tree decl)
     kind = flag_tls_default;
 
   return kind;
-}
-
-enum symbol_visibility
-decl_visibility (tree decl)
-{
-  tree attr = lookup_attribute ("visibility", DECL_ATTRIBUTES (decl));
-
-  if (attr)
-    {
-      const char *which = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
-
-      if (strcmp (which, "default") == 0)
-	return VISIBILITY_DEFAULT;
-      if (strcmp (which, "internal") == 0)
-	return VISIBILITY_INTERNAL;
-      if (strcmp (which, "hidden") == 0)
-	return VISIBILITY_HIDDEN;
-      if (strcmp (which, "protected") == 0)
-	return VISIBILITY_PROTECTED;
-
-      abort ();
-    }
-
-  return VISIBILITY_DEFAULT;
 }
 
 /* Select a set of attributes for section NAME based on the properties
@@ -5131,7 +5107,7 @@ default_binds_local_p_1 (tree exp, int shlib)
   else if (! TREE_PUBLIC (exp))
     local_p = true;
   /* A variable is local if the user tells us so.  */
-  else if (decl_visibility (exp) != VISIBILITY_DEFAULT)
+  else if (DECL_VISIBILITY (exp) != VISIBILITY_DEFAULT)
     local_p = true;
   /* Otherwise, variables defined outside this object may not be local.  */
   else if (DECL_EXTERNAL (exp))

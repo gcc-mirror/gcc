@@ -1,3 +1,18 @@
+2003-11-06  Matt Austern <austern@apple.com>
+
+	* c-common.c (handle_visibility_attribute): Set DECL_VISIBILITY
+	field instead of hanging an attribute object off the decl.
+	* tree.h (DECL_VISIBLITY): New accessor macro for
+	symbol_visibility field in struct tree_decl.
+	(enum symbol_visibility): Move definition to before tree_decl.
+	(struct tree_decl): Define new two-bit field, symbol_visibility.
+	(decl_visibility): Remove declaration.
+	* varasm.c (maybe_assemble_visibility): Use DECL_VISIBILITY
+	instead of decl_visibility.
+	(default_binds_local_p_1):  Use DECL_VISIBILITY	instead of 
+	decl_visibility.
+	(decl_visibility): Remove.
+	
 2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_epilogue): Recognize more cases

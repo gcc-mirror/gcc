@@ -1850,6 +1850,7 @@ duplicate_decls (tree newdecl, tree olddecl)
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
+  DECL_VISIBILITY (newdecl) = DECL_VISIBILITY (olddecl);
   COPY_DECL_ASSEMBLER_NAME (olddecl, newdecl);
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
