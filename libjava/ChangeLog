@@ -1,3 +1,37 @@
+2002-11-16  Mark Wielaard  <mark@klomp.org>
+
+	Integrate work by Raif S. Naffah (raif@fl.net.au)
+	* java/security/DummyKeyPairGenerator.java (clone): New method.
+	* java/security/DummyMessageDigest.java (clone): New method.
+	(engineUpdate): Now public.
+	(engineReset): Likewise.
+	(engineDigest): Likewise.
+	(engineGetDigestLength): New method.
+	* java/security/DummySignature.java (clone): New method.
+	* java/security/KeyPairGenerator.java (provider): Now package private.
+	(getInstance(String)): Use getInstance(String,Provider).
+	(getInstance(String,String): Use getInstance(String,Provider)
+	(getInstance(String,Provider): New method.
+	(getInstance(String,String,Provider): Don't cast DummyKeyPairGenerator.
+	* java/security/KeyPairGeneratorSpi.java (clone): New method.
+	* java/security/MessageDigest.java (provider): Now package private.
+	(getInstance(String): Use getInstance(String,Provider).
+	(getInstance(String,String): Use getInstance(String,Provider)
+	(getInstance(String,Provider): New method.
+	* java/security/Provider.java (toCanonicalKey): New method.
+	(get): New method that uses toCanonicalKey().
+	(put): Use toCanonicalKey().
+	(remove): Likewise.
+	* java/security/Security.java (insertProviderAt): Provider index is one
+	based, not zero based.
+	(addProvider): Likewise.
+	(removeProvider): Likewise.
+	* java/security/Signature.java (provider): Now package private.
+	(getInstance(String)): Use getInstance(String,Provider).
+	(getInstance(String,String): Use getInstance(String,Provider)
+	(getInstance(String,Provider): New method.
+	(getInstance(String,String,Provider): Don't cast DummySignature.
+
 2002-11-15  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/8593:

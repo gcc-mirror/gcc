@@ -1,5 +1,5 @@
 /* Security.java --- Java base security class implmentation
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -127,8 +127,8 @@ public final class Security extends Object
   }
 
   /**
-     Gets a specific property for an algorithm. This is used to produce specialized
-     algorithm parsers.
+     Gets a specific property for an algorithm. This is used to produce
+     specialized algorithm parsers.
 
      @deprecated it used to a return the value of a propietary property
      for the "SUN" Cryptographic Service Provider to obtain 
@@ -147,21 +147,37 @@ public final class Security extends Object
   }
 
   /**
-     Adds a new provider at the specified position. This allows dynamic loading
-     of providers. It will check for duplication of providers.
+     Adds a new provider, at a specified position. The position is the
+     preference order in which providers are searched for requested algorithms.
+     Note that it is not guaranteed that this preference will be respected. The
+     position is 1-based, that is, 1 is most preferred, followed by 2, and so
+     on.
+     <p>
+     If the given provider is installed at the requested position, the
+     provider that used to be at that position, and all providers with a
+     position greater than position, are shifted up one position (towards the
+     end of the list of installed providers).
+     <p>
+     A provider cannot be added if it is already installed.
+     <p>
+     <b>NOT IMPLEMENTED YET:</b>[
+     First, if there is a security manager, its <code>checkSecurityAccess</code>
+     method is called with the string
+     <code>"insertProvider."+provider.getName()</code>
+     to see if it's ok to add a new provider. If the default implementation of
+     <code>checkSecurityAccess</code> is used (i.e., that method is not
+     overriden), then this will result in a call to the security manager's
+     <code>checkPermission</code> method with a <code>SecurityPermission(
+     "insertProvider."+provider.getName())</code> permission.]
 
-     This class checks the security manager with the call checkSecurityAccess
-     with "insertProvider."+provider.getName() to see if the user can add this
-     provider.
-
-     @param provider the provider to add
-     @param position position to add the provider at
-
-     @return the position the provider was added at, or -1 if a duplicate provider
-     was found
-
-     @throws SecurityException - if the security manager denies access to add a 
-     new provider
+     @param provider the provider to be added.
+     @param position the preference position that the caller would like for
+     this provider.
+     @return the actual preference position (1-based) in which the provider was
+     added, or -1 if the provider was not added because it is already installed.
+     @throws SecurityException if a security manager exists and its <code>
+     SecurityManager.checkSecurityAccess(java.lang.String)</code> method denies
+     access to add a new provider.
    */
   public static int insertProviderAt(Provider provider, int position)
   {
@@ -169,6 +185,7 @@ public final class Security extends Object
     if (sm != null)
       sm.checkSecurityAccess("insertProvider." + provider.getName());
 
+    position--;
     int max = providers.size ();
     for (int i = 0; i < max; i++)
       {
@@ -184,29 +201,33 @@ public final class Security extends Object
 
     providers.insertElementAt(provider, position);
 
-    return position;
+    return position + 1;
   }
 
 
   /**
-     Adds a new provider. This allows dynamic loading
-     of providers. It will check for duplication of providers.
+     Adds a provider to the next position available.
+     <p>
+     <b>NOT IMPLEMENTED YET:</b> [
+     First, if there is a security manager, its <code>checkSecurityAccess</code>
+     method is called with the string
+     <code>"insertProvider."+provider.getName()</code>
+     to see if it's ok to add a new provider. If the default implementation of
+     <code>checkSecurityAccess</code> is used (i.e., that method is not
+     overriden), then this will result in a call to the security manager's
+     <code>checkPermission</code> method with a <code>SecurityPermission(
+     "insertProvider."+provider.getName())</code> permission.]
 
-     This method checks the security manager with the call checkSecurityAccess
-     with "insertProvider."+provider.getName() to see if the user can add this
-     provider.
-
-     @param provider the provider to add
-
-     @return the position the provider was added at, or -1 if a duplicate provider
-     was found
-
-     @throws SecurityException - if the security manager denies access to add a 
-     new provider
+     @param provider the provider to be added.
+     @return the preference position in which the provider was added, or <code>
+     -1</code> if the provider was not added because it is already installed.
+     @throws SecurityException if a security manager exists and its <code>
+     SecurityManager.checkSecurityAccess(java.lang.String)</code> method denies
+     access to add a new provider.
    */
   public static int addProvider(Provider provider)
   {
-    return insertProviderAt (provider, providers.size ());
+    return insertProviderAt (provider, providers.size () + 1);
   }
 
   /**
@@ -215,13 +236,13 @@ public final class Security extends Object
      ranking. If the provider is not installed, it fails silently.
 
      This method checks the security manager with the call checkSecurityAccess
-     with "removeProvider."+provider.getName() to see if the user can remove this
-     provider.
+     with "removeProvider."+provider.getName() to see if the user can remove
+     this provider.
 
      @param name name of the provider to add
 
-     @throws SecurityException - if the security manager denies access to remove a 
-     new provider
+     @throws SecurityException - if the security manager denies access to
+     remove a new provider
    */
   public static void removeProvider(String name)
   {

@@ -1,5 +1,5 @@
-/* DummyMessageDigest.java
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* DummyMessageDigest.java - Wrapper for MessageDigestSpi
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,6 @@ exception statement from your version. */
 
 package java.security;
 
-import java.security.MessageDigest;
-import java.security.MessageDigestSpi;
-import java.security.DigestException;
-
 final class DummyMessageDigest extends MessageDigest
 {
   private MessageDigestSpi mdSpi = null;
@@ -51,23 +47,47 @@ final class DummyMessageDigest extends MessageDigest
     this.mdSpi = mdSpi;
   }
 
-  protected void engineUpdate(byte input)
+  public Object clone() throws CloneNotSupportedException
   {
-    mdSpi.engineUpdate(input);
+    if (!(mdSpi instanceof Cloneable))
+      throw new CloneNotSupportedException();
+
+    MessageDigest result = new DummyMessageDigest
+	((MessageDigestSpi) mdSpi.clone(), this.getAlgorithm());
+    result.provider = this.getProvider();
+    return result;
   }
 
-  protected void engineUpdate(byte[]input, int offset, int len)
-  {
-    mdSpi.engineUpdate(input, offset, len);
-  }
+  // java.security.MessageDigestSpi abstract methods implementation ---------
 
-  protected byte[] engineDigest()
+  public byte[] engineDigest()
   {
     return mdSpi.engineDigest();
   }
 
-  protected void engineReset()
+  public int engineDigest(byte[] buf, int offset, int len)
+    throws DigestException
+  {
+    return mdSpi.engineDigest(buf, offset, len);
+  }
+
+  public int engineGetDigestLength()
+  {
+    return mdSpi.engineGetDigestLength();
+  }
+
+  public void engineReset()
   {
     mdSpi.engineReset();
+  }
+
+  public void engineUpdate(byte input)
+  {
+    mdSpi.engineUpdate(input);
+  }
+
+  public void engineUpdate(byte[] input, int offset, int len)
+  {
+    mdSpi.engineUpdate(input, offset, len);
   }
 }

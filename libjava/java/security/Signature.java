@@ -1,5 +1,5 @@
 /* Signature.java --- Signature Class
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -58,15 +58,12 @@ import java.security.spec.AlgorithmParameterSpec;
 
    1. Initialing
 
-   * It must be initialized with a private key for 
-   signing. 
-   * It must be initialized with a public key for 
-   verifying.
+   * It must be initialized with a private key for signing.
+   * It must be initialized with a public key for verifying.
 
    2. Updating
 
-   Update the bytes for signing or verifying with calls 
-   to update.
+   Update the bytes for signing or verifying with calls to update.
 
    3. Signing or Verify the signature on the currently stored
    bytes by calling sign or verify.
@@ -100,7 +97,7 @@ public abstract class Signature extends SignatureSpi
   protected int state = UNINITIALIZED;
 
   private String algorithm;
-  private Provider provider;
+  Provider provider;
 
   /**
      Creates a new signature for this algorithm.
@@ -113,7 +110,7 @@ public abstract class Signature extends SignatureSpi
     state = UNINITIALIZED;
   }
 
-  /** 
+  /**
      Gets an instance of the Signature class representing
      the specified signature. If the algorithm is not found then, 
      it throws NoSuchAlgorithmException.
@@ -121,19 +118,21 @@ public abstract class Signature extends SignatureSpi
      @param algorithm the name of signature algorithm to choose
      @return a Signature repesenting the desired algorithm
 
-     @throws NoSuchAlgorithmException if the algorithm is not implemented by providers
+     @throws NoSuchAlgorithmException if the algorithm is not implemented by
+     				      providers
    */
   public static Signature getInstance(String algorithm)
     throws NoSuchAlgorithmException
   {
-    String name = "Signature." + algorithm;
     Provider[] p = Security.getProviders();
 
     for (int i = 0; i < p.length; i++)
       {
-	String classname = p[i].getProperty(name);
-	if (classname != null)
-	  return getInstance(classname, algorithm, p[i]);
+        try
+          {
+            return getInstance(algorithm, p[i]);
+          }
+        catch (NoSuchAlgorithmException ignored) {}
       }
 
     throw new NoSuchAlgorithmException(algorithm);
@@ -150,7 +149,8 @@ public abstract class Signature extends SignatureSpi
      @param provider the name of the provider to find the algorithm in
      @return a Signature repesenting the desired algorithm
 
-     @throws NoSuchAlgorithmException if the algorithm is not implemented by the provider
+     @throws NoSuchAlgorithmException if the algorithm is not implemented by
+				      the provider
      @throws NoSuchProviderException if the provider is not found
    */
   public static Signature getInstance(String algorithm, String provider)
@@ -158,9 +158,34 @@ public abstract class Signature extends SignatureSpi
   {
     Provider p = Security.getProvider(provider);
     if (p == null)
-      throw new NoSuchProviderException();
+      throw new NoSuchProviderException(provider);
 
-    return getInstance(p.getProperty("Signature." + algorithm), algorithm, p);
+    return getInstance(algorithm, p);
+  }
+
+  private static Signature getInstance(String algorithm, Provider p)
+    throws NoSuchAlgorithmException
+  {
+    // try the name as is
+    String className = p.getProperty("Signature." + algorithm);
+    if (className == null) { // try all uppercase
+      String upper = algorithm.toUpperCase();
+      className = p.getProperty("Signature." + upper);
+      if (className == null) { // try if it's an alias
+        String alias = p.getProperty("Alg.Alias.Signature." + algorithm);
+        if (alias == null) {
+          alias = p.getProperty("Alg.Alias.Signature." + upper);
+          if (alias == null) { // spit the dummy
+            throw new NoSuchAlgorithmException(algorithm);
+          }
+        }
+        className = p.getProperty("Signature." + alias);
+        if (className == null) {
+          throw new NoSuchAlgorithmException(algorithm);
+        }
+      }
+    }
+    return getInstance(className, algorithm, p);
   }
 
   private static Signature getInstance(String classname,
@@ -173,7 +198,7 @@ public abstract class Signature extends SignatureSpi
 	Object o = Class.forName(classname).newInstance();
 	Signature sig;
 	if (o instanceof SignatureSpi)
-	  sig = (Signature) (new DummySignature((SignatureSpi) o, algorithm));
+	  sig = new DummySignature((SignatureSpi) o, algorithm);
 	else
 	  {
 	    sig = (Signature) o;
@@ -200,7 +225,7 @@ public abstract class Signature extends SignatureSpi
   /**
      Gets the provider that the Signature is from.
 
-     @return the provider the this Signature 
+     @return the provider of this Signature
    */
   public final Provider getProvider()
   {
@@ -310,7 +335,7 @@ public abstract class Signature extends SignatureSpi
      initial state and can be used to generate additional
      signatures.
 
-     @param outbuff array of bytes
+     @param outbuf array of bytes
      @param offset the offset to start at in the array
      @param len the length of the bytes to put into the array. 
      Neither this method or the GNU provider will 
@@ -325,7 +350,7 @@ public abstract class Signature extends SignatureSpi
 
      @since JDK 1.2
    */
-  public final int sign(byte[]outbuf, int offset, int len)
+  public final int sign(byte[] outbuf, int offset, int len)
     throws SignatureException
   {
     if (state == SIGN)
