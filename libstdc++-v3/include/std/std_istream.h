@@ -1,6 +1,7 @@
 // Input streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -101,11 +102,8 @@ namespace std
        *  their own stream buffer.
       */
       explicit 
-      basic_istream(__streambuf_type* __sb)
-      { 
-	this->init(__sb);
-	_M_gcount = streamsize(0);
-      }
+      basic_istream(__streambuf_type* __sb): _M_gcount(streamsize(0))
+      { this->init(__sb); }
 
       /**
        *  @brief  Base destructor.
@@ -573,6 +571,10 @@ namespace std
       __istream_type& 
       seekg(off_type, ios_base::seekdir);
       //@}
+
+    protected:
+      explicit 
+      basic_istream(): _M_gcount(streamsize(0)) { }
     };
   
   /**
@@ -738,14 +740,19 @@ namespace std
       */
       explicit 
       basic_iostream(basic_streambuf<_CharT, _Traits>* __sb)
-      : __istream_type(__sb), __ostream_type(__sb)
-      { }
+      : __istream_type(), __ostream_type()
+      { this->init(__sb); }
 
       /**
        *  @brief  Destructor does nothing.
       */
       virtual 
       ~basic_iostream() { }
+
+    protected:
+      explicit 
+      basic_iostream() : __istream_type(), __ostream_type()
+      { }
     };
 
   // [27.6.1.4] standard basic_istream manipulators

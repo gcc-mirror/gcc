@@ -355,6 +355,10 @@ namespace std
       */
        __ostream_type& 
       seekp(off_type, ios_base::seekdir);
+      
+    protected:
+      explicit 
+      basic_ostream() { }
     };
 
   /**
