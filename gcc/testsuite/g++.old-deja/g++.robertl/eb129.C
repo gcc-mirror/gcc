@@ -16,7 +16,7 @@ int main()
               find_if( l.begin(), l.end(),
                        // This is a typo, it should be bind2nd, but an
                        // ICE is not a very helpful diagnostic!
-                       binder2nd( equal_to<int>(), 2 ) ); // ERROR -
+                       binder2nd( equal_to<int>(), 2 ) ); // ERROR - 
       assert( *(it) == 2 );
 }
 
