@@ -1,3 +1,8 @@
+2001-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (use_thunk): Make sure that thunks really are emitted
+	when requested.
+
 2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
 
 	* mangle.c (write_chars): New macro.

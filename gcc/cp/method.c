@@ -377,7 +377,8 @@ make_thunk (function, delta, vcall_index, generate_with_vtable_p)
   return thunk;
 }
 
-/* Emit the definition of a C++ multiple inheritance vtable thunk.  */
+/* Emit the definition of a C++ multiple inheritance vtable thunk.  If
+   EMIT_P is non-zero, the thunk is emitted immediately.  */
 
 void
 use_thunk (thunk_fndecl, emit_p)
@@ -519,6 +520,11 @@ use_thunk (thunk_fndecl, emit_p)
     DECL_INITIAL (thunk_fndecl) = make_node (BLOCK);
     BLOCK_VARS (DECL_INITIAL (thunk_fndecl)) 
       = DECL_ARGUMENTS (thunk_fndecl);
+
+    /* Since we want to emit the thunk, we explicitly mark its name as
+       referenced.  */
+    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (thunk_fndecl)) = 1;
+
     expand_body (finish_function (0));
   }
 
