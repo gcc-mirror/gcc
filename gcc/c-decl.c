@@ -5678,6 +5678,16 @@ finish_struct (t, fieldlist, attributes)
 	  TREE_TYPE (x) = integer_type_node;
       }
 
+  /* If this was supposed to be a transparent union, but we can't
+     make it one, warn and turn off the flag.  */
+  if (TREE_CODE (t) == UNION_TYPE
+      && TYPE_TRANSPARENT_UNION (t)
+      && TYPE_MODE (t) != DECL_MODE (TYPE_FIELDS (t)))
+    {
+      TYPE_TRANSPARENT_UNION (t) = 0;
+      warning ("cannot make `%s' a transparent union");
+    }
+
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
 
