@@ -123,6 +123,8 @@ static int count_fields PROTO((tree));
 static int add_fields_to_vec PROTO((tree, tree, int));
 static void check_bitfield_decl PROTO((tree));
 static void check_field_decl PROTO((tree, tree, int *, int *, int *, int *));
+static tree* check_field_decls PROTO((tree, tree *, int *, int *, int *, 
+				      int *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -3339,6 +3341,259 @@ check_field_decl (field, t, cant_have_const_ctor,
 			     : TYPE_ALIGN (TREE_TYPE (field))));
 };
 
+/* Check the data members (both static and non-static), class-scoped
+   typedefs, etc., appearing in the declaration of T.  Issue
+   appropriate diagnostics.  Sets ACCESS_DECLS to a list (in
+   declaration order) of access declarations; each TREE_VALUE in this
+   list is a USING_DECL.
+
+   In addition, set the following flags:
+
+     EMPTY_P
+       The class is empty, i.e., contains no non-static data members.
+
+     CANT_HAVE_DEFAULT_CTOR_P
+       This class cannot have an implicitly generated default
+       constructor.
+
+     CANT_HAVE_CONST_CTOR_P
+       This class cannot have an implicitly generated copy constructor
+       taking a const reference.
+
+     CANT_HAVE_CONST_ASN_REF
+       This class cannot have an implicitly generated assignment
+       operator taking a const reference.
+
+   All of these flags should be initialized before calling this
+   function.
+
+   Returns a pointer to the end of the TYPE_FIELDs chain; additional
+   fields can be added by adding to this chain.  */
+
+static tree*
+check_field_decls (t, access_decls, empty_p, 
+		   cant_have_default_ctor_p, cant_have_const_ctor_p,
+		   no_const_asn_ref_p)
+     tree t;
+     tree *access_decls;
+     int *empty_p;
+     int *cant_have_default_ctor_p;
+     int *cant_have_const_ctor_p;
+     int *no_const_asn_ref_p;
+{
+  tree *field;
+  tree *next;
+  int has_pointers;
+  int any_default_members;
+
+  /* Assume there are no access declarations.  */
+  *access_decls = NULL_TREE;
+  /* Assume this class has no pointer members.  */
+  has_pointers = 0;
+  /* Assume none of the members of this class have default
+     initializations.  */
+  any_default_members = 0;
+
+  for (field = &TYPE_FIELDS (t); *field; field = next)
+    {
+      tree x = *field;
+      tree type = TREE_TYPE (x);
+
+      GNU_xref_member (current_class_name, x);
+
+      next = &TREE_CHAIN (x);
+
+      if (TREE_CODE (x) == FIELD_DECL)
+	{
+	  DECL_PACKED (x) |= TYPE_PACKED (t);
+
+	  if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
+	    /* We don't treat zero-width bitfields as making a class
+	       non-empty.  */
+	    ;
+	  else
+	    *empty_p = 0;
+	}
+
+      if (TREE_CODE (x) == USING_DECL)
+	{
+	  /* Prune the access declaration from the list of fields.  */
+	  *field = TREE_CHAIN (x);
+
+	  /* Save the access declarations for our caller.  */
+	  *access_decls = tree_cons (NULL_TREE, x, *access_decls);
+
+	  /* Since we've reset *FIELD there's no reason to skip to the
+	     next field.  */
+	  next = field;
+	  continue;
+	}
+
+      if (TREE_CODE (x) == TYPE_DECL
+	  || TREE_CODE (x) == TEMPLATE_DECL)
+	continue;
+
+      /* If we've gotten this far, it's a data member, possibly static,
+	 or an enumerator.  */
+
+      DECL_FIELD_CONTEXT (x) = t;
+
+      /* ``A local class cannot have static data members.'' ARM 9.4 */
+      if (current_function_decl && TREE_STATIC (x))
+	cp_error_at ("field `%D' in local class cannot be static", x);
+
+      /* Perform error checking that did not get done in
+	 grokdeclarator.  */
+      if (TREE_CODE (type) == FUNCTION_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared function type",
+		       x);
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
+	}
+      else if (TREE_CODE (type) == METHOD_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared method type", x);
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
+	}
+      else if (TREE_CODE (type) == OFFSET_TYPE)
+	{
+	  cp_error_at ("field `%D' invalidly declared offset type", x);
+	  type = build_pointer_type (type);
+	  TREE_TYPE (x) = type;
+	}
+
+      if (type == error_mark_node)
+	continue;
+	  
+      DECL_SAVED_INSNS (x) = 0;
+      DECL_FIELD_SIZE (x) = 0;
+
+      /* When this goes into scope, it will be a non-local reference.  */
+      DECL_NONLOCAL (x) = 1;
+
+      if (TREE_CODE (x) == CONST_DECL)
+	continue;
+
+      if (TREE_CODE (x) == VAR_DECL)
+	{
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    /* Unions cannot have static members.  */
+	    cp_error_at ("field `%D' declared static in union", x);
+	      
+	  continue;
+	}
+
+      /* Now it can only be a FIELD_DECL.  */
+
+      if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
+	CLASSTYPE_NON_AGGREGATE (t) = 1;
+
+      /* If this is of reference type, check if it needs an init.
+	 Also do a little ANSI jig if necessary.  */
+      if (TREE_CODE (type) == REFERENCE_TYPE)
+ 	{
+	  CLASSTYPE_NON_POD_P (t) = 1;
+	  if (DECL_INITIAL (x) == NULL_TREE)
+	    CLASSTYPE_REF_FIELDS_NEED_INIT (t) = 1;
+
+	  /* ARM $12.6.2: [A member initializer list] (or, for an
+	     aggregate, initialization by a brace-enclosed list) is the
+	     only way to initialize nonstatic const and reference
+	     members.  */
+	  *cant_have_default_ctor_p = 1;
+	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
+
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
+	    {
+	      if (DECL_NAME (x))
+		cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
+	      else
+		cp_warning_at ("non-static reference in class without a constructor", x);
+	    }
+	}
+
+      type = strip_array_types (type);
+      
+      if (TREE_CODE (type) == POINTER_TYPE)
+	has_pointers = 1;
+
+      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
+	CLASSTYPE_HAS_MUTABLE (t) = 1;
+
+      if (! pod_type_p (type)
+	  /* For some reason, pointers to members are POD types themselves,
+	     but are not allowed in POD structs.  Silly.  */
+	  || TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+	CLASSTYPE_NON_POD_P (t) = 1;
+
+      /* If any field is const, the structure type is pseudo-const.  */
+      if (CP_TYPE_CONST_P (type))
+	{
+	  C_TYPE_FIELDS_READONLY (t) = 1;
+	  if (DECL_INITIAL (x) == NULL_TREE)
+	    CLASSTYPE_READONLY_FIELDS_NEED_INIT (t) = 1;
+
+	  /* ARM $12.6.2: [A member initializer list] (or, for an
+	     aggregate, initialization by a brace-enclosed list) is the
+	     only way to initialize nonstatic const and reference
+	     members.  */
+	  *cant_have_default_ctor_p = 1;
+	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
+
+	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
+	    {
+	      if (DECL_NAME (x))
+		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
+	      else
+		cp_warning_at ("non-static const member in class without a constructor", x);
+	    }
+	}
+      /* A field that is pseudo-const makes the structure likewise.  */
+      else if (IS_AGGR_TYPE (type))
+	{
+	  C_TYPE_FIELDS_READONLY (t) |= C_TYPE_FIELDS_READONLY (type);
+	  CLASSTYPE_READONLY_FIELDS_NEED_INIT (t) 
+	    |= CLASSTYPE_READONLY_FIELDS_NEED_INIT (type);
+	}
+
+      /* We set DECL_C_BIT_FIELD in grokbitfield.
+	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
+      if (DECL_C_BIT_FIELD (x))
+	check_bitfield_decl (x);
+      else
+	check_field_decl (x, t,
+			  cant_have_const_ctor_p,
+			  cant_have_default_ctor_p, 
+			  no_const_asn_ref_p,
+			  &any_default_members);
+    }
+
+  /* Effective C++ rule 11.  */
+  if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
+      && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
+    {
+      cp_warning ("`%#T' has pointer data members", t);
+      
+      if (! TYPE_HAS_INIT_REF (t))
+	{
+	  cp_warning ("  but does not override `%T(const %T&)'", t, t);
+	  if (! TYPE_HAS_ASSIGN_REF (t))
+	    cp_warning ("  or `operator=(const %T&)'", t);
+	}
+      else if (! TYPE_HAS_ASSIGN_REF (t))
+	cp_warning ("  but does not override `operator=(const %T&)'", t);
+    }
+
+  /* We've built up the list of access declarations in reverse order.
+     Fix that now.  */
+  *access_decls = nreverse (*access_decls);
+
+  /* Return the last field.  */
+  return field;
+}
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3370,8 +3625,9 @@ void
 finish_struct_1 (t)
      tree t;
 {
-  tree fields = TYPE_FIELDS (t);
-  tree x, last_x, method_vec;
+  tree fields;
+  tree x, method_vec;
+  tree *next_field;
   int has_virtual;
   int max_has_virtual;
   tree pending_virtuals = NULL_TREE;
@@ -3383,22 +3639,17 @@ finish_struct_1 (t)
   int cant_have_default_ctor;
   int cant_have_const_ctor;
   int no_const_asn_ref;
-  int has_mutable = 0;
   int n_fields = 0;
-  int non_pod_class = 0;
 
   /* The index of the first base class which has virtual
      functions.  Only applied to non-virtual baseclasses.  */
   int first_vfn_base_index;
 
   int n_baseclasses;
-  int any_default_members = 0;
   int const_sans_init = 0;
-  int ref_sans_init = 0;
-  tree access_decls = NULL_TREE;
+  tree access_decls;
   int aggregate = 1;
   int empty = 1;
-  int has_pointers = 0;
   tree inline_friends;
 
   if (TYPE_SIZE (t))
@@ -3503,228 +3754,36 @@ finish_struct_1 (t)
     }
 
   if (n_baseclasses)
-    fields = chainon (build_vbase_pointer_fields (t), fields);
+    TYPE_FIELDS (t) = chainon (build_vbase_pointer_fields (t),
+			       TYPE_FIELDS (t));
 
-  last_x = NULL_TREE;
-  for (x = fields; x; x = TREE_CHAIN (x))
-    {
-      tree type = TREE_TYPE (x);
-      GNU_xref_member (current_class_name, x);
-
-      if (TREE_CODE (x) == FIELD_DECL)
-	{
-	  DECL_PACKED (x) |= TYPE_PACKED (t);
-
-	  if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
-	    /* A zero-width bitfield doesn't do the trick.  */;
-	  else
-	    empty = 0;
-	}
-
-      if (TREE_CODE (x) == USING_DECL)
-	{
-	  /* Save access declarations for later.  */
-	  if (last_x)
-	    TREE_CHAIN (last_x) = TREE_CHAIN (x);
-	  else
-	    fields = TREE_CHAIN (x);
-	  
-	  access_decls = tree_cons (NULL_TREE, x, access_decls);
-	  continue;
-	}
-
-      last_x = x;
-
-      if (TREE_CODE (x) == TYPE_DECL
-	  || TREE_CODE (x) == TEMPLATE_DECL)
-	continue;
-
-      /* If we've gotten this far, it's a data member, possibly static,
-	 or an enumerator.  */
-
-      DECL_FIELD_CONTEXT (x) = t;
-
-      /* ``A local class cannot have static data members.'' ARM 9.4 */
-      if (current_function_decl && TREE_STATIC (x))
-	cp_error_at ("field `%D' in local class cannot be static", x);
-
-      /* Perform error checking that did not get done in
-	 grokdeclarator.  */
-      if (TREE_CODE (type) == FUNCTION_TYPE)
-	{
-	  cp_error_at ("field `%D' invalidly declared function type",
-		       x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
-      else if (TREE_CODE (type) == METHOD_TYPE)
-	{
-	  cp_error_at ("field `%D' invalidly declared method type", x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
-      else if (TREE_CODE (type) == OFFSET_TYPE)
-	{
-	  cp_error_at ("field `%D' invalidly declared offset type", x);
-	  type = build_pointer_type (type);
-	  TREE_TYPE (x) = type;
-	}
-
-#if 0
-      if (DECL_NAME (x) == constructor_name (t))
-	cant_have_default_ctor = 1;
-#endif
-
-      if (type == error_mark_node)
-	continue;
-	  
-      DECL_SAVED_INSNS (x) = 0;
-      DECL_FIELD_SIZE (x) = 0;
-
-      /* When this goes into scope, it will be a non-local reference.  */
-      DECL_NONLOCAL (x) = 1;
-
-      if (TREE_CODE (x) == CONST_DECL)
-	continue;
-
-      if (TREE_CODE (x) == VAR_DECL)
-	{
-	  if (TREE_CODE (t) == UNION_TYPE)
-	    /* Unions cannot have static members.  */
-	    cp_error_at ("field `%D' declared static in union", x);
-	      
-	  continue;
-	}
-
-      /* Now it can only be a FIELD_DECL.  */
-
-      if (TREE_PRIVATE (x) || TREE_PROTECTED (x))
-	aggregate = 0;
-
-      /* If this is of reference type, check if it needs an init.
-	 Also do a little ANSI jig if necessary.  */
-      if (TREE_CODE (type) == REFERENCE_TYPE)
- 	{
-          non_pod_class = 1;
-          
-	  if (DECL_INITIAL (x) == NULL_TREE)
-	    ref_sans_init = 1;
-
-	  /* ARM $12.6.2: [A member initializer list] (or, for an
-	     aggregate, initialization by a brace-enclosed list) is the
-	     only way to initialize nonstatic const and reference
-	     members.  */
-	  cant_have_default_ctor = 1;
-	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
-
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
-	    {
-	      if (DECL_NAME (x))
-		cp_warning_at ("non-static reference `%#D' in class without a constructor", x);
-	      else
-		cp_warning_at ("non-static reference in class without a constructor", x);
-	    }
-	}
-
-      type = strip_array_types (type);
-      
-      if (TREE_CODE (type) == POINTER_TYPE)
-	has_pointers = 1;
-
-      if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
-        has_mutable = 1;
-
-      if (! pod_type_p (type)
-	  /* For some reason, pointers to members are POD types themselves,
-	     but are not allowed in POD structs.  Silly.  */
-	  || TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
-        non_pod_class = 1;
-
-      /* If any field is const, the structure type is pseudo-const.  */
-      if (CP_TYPE_CONST_P (type))
-	{
-	  C_TYPE_FIELDS_READONLY (t) = 1;
-	  if (DECL_INITIAL (x) == NULL_TREE)
-	    const_sans_init = 1;
-
-	  /* ARM $12.6.2: [A member initializer list] (or, for an
-	     aggregate, initialization by a brace-enclosed list) is the
-	     only way to initialize nonstatic const and reference
-	     members.  */
-	  cant_have_default_ctor = 1;
-	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
-
-	  if (! TYPE_HAS_CONSTRUCTOR (t) && extra_warnings)
-	    {
-	      if (DECL_NAME (x))
-		cp_warning_at ("non-static const member `%#D' in class without a constructor", x);
-	      else
-		cp_warning_at ("non-static const member in class without a constructor", x);
-	    }
-	}
-      else
-	{
-	  /* A field that is pseudo-const makes the structure
-	     likewise.  */
-	  if (IS_AGGR_TYPE (type))
-	    {
-	      if (C_TYPE_FIELDS_READONLY (type))
-		C_TYPE_FIELDS_READONLY (t) = 1;
-	      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (type))
-		const_sans_init = 1;
-	    }
-	}
-
-      /* We set DECL_C_BIT_FIELD in grokbitfield.
-	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if (DECL_C_BIT_FIELD (x))
-	check_bitfield_decl (x);
-      else
-	check_field_decl (x, t,
-			  &cant_have_const_ctor,
-			  &cant_have_default_ctor, 
-			  &no_const_asn_ref,
-			  &any_default_members);
-    }
+  /* Check all the data member declarations for legality.  */
+  next_field = check_field_decls (t, &access_decls, &empty,
+				  &cant_have_default_ctor,
+				  &cant_have_const_ctor,
+				  &no_const_asn_ref);
+  fields = TYPE_FIELDS (t);
 
   /* If this type has any constant members which did not come
      with their own initialization, mark that fact here.  It is
      not an error here, since such types can be saved either by their
      constructors, or by fortuitous initialization.  */
   CLASSTYPE_READONLY_FIELDS_NEED_INIT (t) = const_sans_init;
-  CLASSTYPE_REF_FIELDS_NEED_INIT (t) = ref_sans_init;
   CLASSTYPE_ABSTRACT_VIRTUALS (t) = abstract_virtuals;
-  CLASSTYPE_HAS_MUTABLE (t) = has_mutable;
-
-  /* Effective C++ rule 11.  */
-  if (has_pointers && warn_ecpp && TYPE_HAS_CONSTRUCTOR (t)
-      && ! (TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
-    {
-      cp_warning ("`%#T' has pointer data members", t);
-      
-      if (! TYPE_HAS_INIT_REF (t))
-	{
-	  cp_warning ("  but does not override `%T(const %T&)'", t, t);
-	  if (! TYPE_HAS_ASSIGN_REF (t))
-	    cp_warning ("  or `operator=(const %T&)'", t);
-	}
-      else if (! TYPE_HAS_ASSIGN_REF (t))
-	cp_warning ("  but does not override `operator=(const %T&)'", t);
-    }
   
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
     |= (TYPE_HAS_INIT_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual || any_default_members);
+	|| has_virtual);
   TYPE_NEEDS_CONSTRUCTING (t)
     |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| has_virtual || any_default_members);
+	|| has_virtual);
   CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
   CLASSTYPE_NON_POD_P (t)
-      = non_pod_class || CLASSTYPE_NON_AGGREGATE (t)
-        || TYPE_HAS_DESTRUCTOR (t) || TYPE_HAS_ASSIGN_REF (t);
+    |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
+	|| TYPE_HAS_ASSIGN_REF (t));
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);
@@ -3754,9 +3813,12 @@ finish_struct_1 (t)
       TYPE_HAS_DESTRUCTOR (t) = 0;
     }
 
-  for (access_decls = nreverse (access_decls); access_decls;
-       access_decls = TREE_CHAIN (access_decls))
-    handle_using_decl (TREE_VALUE (access_decls), t, method_vec, fields); 
+  /* Process the access-declarations.  */
+  while (access_decls)
+    {
+      handle_using_decl (TREE_VALUE (access_decls), t, method_vec, fields); 
+      access_decls = TREE_CHAIN (access_decls);
+    }
 
   if (vfield == NULL_TREE && has_virtual)
     {
@@ -3794,23 +3856,7 @@ finish_struct_1 (t)
       DECL_SAVED_INSNS (vfield) = 0;
       DECL_FIELD_SIZE (vfield) = 0;
       DECL_ALIGN (vfield) = TYPE_ALIGN (ptr_type_node);
-#if 0
-      /* This is more efficient, but breaks binary compatibility, turn
-	 it on sometime when we don't care.  If we turn it on, we also
-	 have to enable the code in dfs_init_vbase_pointers.  */
-      /* vfield is always first entry in structure.  */
-      TREE_CHAIN (vfield) = fields;
-      fields = vfield;
-#else
-      if (last_x)
-	{
-	  my_friendly_assert (TREE_CHAIN (last_x) == NULL_TREE, 175);
-	  TREE_CHAIN (last_x) = vfield;
-	  last_x = vfield;
-	}
-      else
-	fields = vfield;
-#endif
+      *next_field = vfield;
       empty = 0;
       vfields = chainon (vfields, build_tree_list (NULL_TREE, t));
     }
@@ -3829,10 +3875,10 @@ finish_struct_1 (t)
 
   if (n_baseclasses)
     {
-      last_x = build_base_fields (t);
+      TYPE_FIELDS (t) = chainon (build_base_fields (t), TYPE_FIELDS (t));
 
       /* If all our bases are empty, we can be empty too.  */
-      for (x = last_x; empty && x; x = TREE_CHAIN (x))
+      for (x = TYPE_FIELDS (t); empty && x != fields; x = TREE_CHAIN (x))
 	if (DECL_SIZE (x) != integer_zero_node)
 	  empty = 0;
     }
@@ -3854,9 +3900,6 @@ finish_struct_1 (t)
 	= tree_cons (NULL_TREE, decl, TYPE_NONCOPIED_PARTS (t));
       TREE_STATIC (TYPE_NONCOPIED_PARTS (t)) = 1;
     }
-
-  if (n_baseclasses)
-    TYPE_FIELDS (t) = chainon (last_x, TYPE_FIELDS (t));
 
   layout_type (t);
 
@@ -4180,8 +4223,6 @@ finish_struct_1 (t)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (t, toplevel_bindings_p ());
-
-  return;
 }
 
 /* When T was built up, the member declarations were added in reverse
