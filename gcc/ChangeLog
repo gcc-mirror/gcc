@@ -17,6 +17,13 @@
 
 2003-04-14  Olivier Hainque <hainque@act-europe.fr>
 
+	* tree.c (int_fits_type_p): Extract generic checks from the case
+	of constant type bounds. Refine the checks against constant type
+	bounds to allow for possible decisions against each of these bounds
+	without requiring both bounds to be constant.
+	(tree_int_cst_msb): Put back.
+	* tree.h (tree_int_cst_msb): Likewise.
+
 	* global.c (global_conflicts): Prevent allocation of call clobbered
 	hard regs to pseudos live across abnormal edges, as later passes are
 	not ready to handle them.
