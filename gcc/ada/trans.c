@@ -88,6 +88,10 @@ tree gnu_block_stack;
    handler.  Not used in the zero-cost case.  */
 static GTY(()) tree gnu_except_ptr_stack;
 
+/* List of TREE_LIST nodes containing pending elaborations lists.
+   used to prevent the elaborations being reclaimed by GC.  */
+static GTY(()) tree gnu_pending_elaboration_lists;
+
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
@@ -5298,6 +5302,10 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
   if (gnu_elab_list == 0)
     return 1;
 
+  /* Prevent the elaboration list from being reclaimed by the GC.  */
+  gnu_pending_elaboration_lists = chainon (gnu_pending_elaboration_lists,
+					   gnu_elab_list);
+
   /* Set our file and line number to that of the object and set up the
      elaboration routine.  */
   gnu_decl = create_subprog_decl (create_concat_name (gnat_unit,
@@ -5357,6 +5365,9 @@ build_unit_elab (gnat_unit, body_p, gnu_elab_list)
   poplevel (kept_level_p (), 1, 0);
   gnu_block_stack = TREE_CHAIN (gnu_block_stack);
   end_subprog_body ();
+
+  /* We are finished with the elaboration list it can now be discarded.  */
+  gnu_pending_elaboration_lists = TREE_CHAIN (gnu_pending_elaboration_lists);
 
   /* If there were no insns, we don't need an elab routine.  It would
      be nice to not output this one, but there's no good way to do that.  */
