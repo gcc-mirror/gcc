@@ -56,6 +56,8 @@ static void op_error (enum tree_code, enum tree_code, tree, tree,
 static tree build_object_call (tree, tree);
 static tree resolve_args (tree);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
+static void print_z_candidate (const char *msgid, struct z_candidate *,
+			       void (*)(const char *, ...));
 static void print_z_candidates (struct z_candidate *);
 static tree build_this (tree);
 static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
@@ -2440,28 +2442,28 @@ equal_functions (tree fn1, tree fn2)
    (i.e. error, warning or pedwarn) used to do the printing.  */
 
 static void
-print_z_candidate (const char *str, struct z_candidate *candidate,
+print_z_candidate (const char *msgid, struct z_candidate *candidate,
 		   void (*errfn)(const char *, ...))
 {
   if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
     {
       if (TREE_VEC_LENGTH (candidate->convs) == 3)
-	errfn ("%s %D(%T, %T, %T) <built-in>", str, candidate->fn,
+	errfn ("%s %D(%T, %T, %T) <built-in>", msgid, candidate->fn,
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)),
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 2)));
       else if (TREE_VEC_LENGTH (candidate->convs) == 2)
-	errfn ("%s %D(%T, %T) <built-in>", str, candidate->fn,
+	errfn ("%s %D(%T, %T) <built-in>", msgid, candidate->fn,
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)));
       else
-	errfn ("%s %D(%T) <built-in>", str, candidate->fn,
+	errfn ("%s %D(%T) <built-in>", msgid, candidate->fn,
 	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)));
     }
   else if (TYPE_P (candidate->fn))
-    errfn ("%s %T <conversion>", str, candidate->fn);
+    errfn ("%s %T <conversion>", msgid, candidate->fn);
   else
-    errfn ("%H%s %+#D%s", &DECL_SOURCE_LOCATION (candidate->fn), str,
+    errfn ("%H%s %+#D%s", &DECL_SOURCE_LOCATION (candidate->fn), msgid,
 	   candidate->fn, candidate->viable == -1 ? " <near match>" : "");
 }
 
@@ -5873,6 +5875,8 @@ tweak:
 	  if (warn)
 	    {
 	      print_z_candidate ("ISO C++ says that ", w, pedwarn);
+	      /* Translators note: This message is a continuation of the
+	         previous one, aligned on the right.  */
 	      print_z_candidate ("              and ", l, pedwarn);
 	      pedwarn ("are ambiguous even though the worst conversion \
 for the former is better than the worst conversion for the latter");

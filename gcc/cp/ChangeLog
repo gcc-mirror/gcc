@@ -1,3 +1,8 @@
+2003-03-25  Jason Merrill  <jason@redhat.com>
+
+	* call.c (print_z_candidate): Change name of first arg to msgid.
+	(joust): Add comment for translators.
+
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 	
 	PR c++/9898, PR c++/383, DR 322
