@@ -1,3 +1,10 @@
+2002-03-19  Richard Henderson  <rth@redhat.com>
+
+	* except.c (current_function_has_exception_handlers): New.
+	* except.h: Declare it.
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Use it.
+	Combine tests that disable all sibcalls for the function.
+
 2002-03-19  Olivier Hainque  <hainque@act-europe.fr>
 
 	* varasm.c (output_constant_def): Don't call ENCODE_SECTION_INFO
