@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003  Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -9477,7 +9477,15 @@ xref_tag (enum tag_types tag_code, tree name, tree attributes,
 	redeclare_class_template (t, current_template_parms);
     }
 
-  TYPE_ATTRIBUTES (t) = attributes;
+  /* Add attributes only when defining a class. */
+  if (attributes)
+    {
+      /* The only place that xref_tag is called with non-null
+	 attributes is in cp_parser_class_head(), when defining a
+	 class.  */ 
+      my_friendly_assert (TYPE_ATTRIBUTES (t) == NULL_TREE, 20040113);
+      TYPE_ATTRIBUTES (t) = attributes;
+    }
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 }
