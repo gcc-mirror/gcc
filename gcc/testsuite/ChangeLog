@@ -1,3 +1,8 @@
+2004-12-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16405
+	* g++.dg/opt/temp1.C: Add do-run marker.
+
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* g++.dg/template/spec19.C: New.
