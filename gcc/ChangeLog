@@ -1,3 +1,9 @@
+2002-06-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in (gcc_gxx_include_dir):  Change to match versioned
+	C++ headers if --enable-version-specific-runtime-libs is used.
+	* configure:  Regenerate.
+
 2002-06-28  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("*addsi3"): Use 'o' constraint to
