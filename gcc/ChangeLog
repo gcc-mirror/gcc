@@ -1,3 +1,11 @@
+2004-11-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add two and three.
+	Change multi-instruction sequences to new attribute.
+	* config/rs6000/{40x.md,440.md,603.md,6xx.md,
+	7450.md,7xx.md,8540.md,mpc.md,power4.md,power5.md,
+	rios1.md,rios2.md,rs64.md}: Add descriptions for two and three.
+
 2004-11-10  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-data-ref.c (build_classic_dist_vector): If either loop

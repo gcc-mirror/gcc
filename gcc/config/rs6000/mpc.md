@@ -46,6 +46,16 @@
        (eq_attr "cpu" "mpccore"))
   "iu_mpc")
 
+(define_insn_reservation "mpccore-two" 1
+  (and (eq_attr "type" "two")
+       (eq_attr "cpu" "mpccore"))
+  "iu_mpc,iu_mpc")
+
+(define_insn_reservation "mpccore-three" 1
+  (and (eq_attr "type" "three")
+       (eq_attr "cpu" "mpccore"))
+  "iu_mpc,iu_mpc,iu_mpc")
+
 (define_insn_reservation "mpccore-imul" 2
   (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
        (eq_attr "cpu" "mpccore"))

@@ -183,6 +183,26 @@
        (eq_attr "cpu" "power4"))
   "iq_power4")
 
+(define_insn_reservation "power4-two" 2
+  (and (eq_attr "type" "two")
+       (eq_attr "cpu" "power4"))
+  "(du1_power4+du2_power4,iu1_power4,nothing,iu2_power4)\
+  |(du2_power4+du3_power4,iu2_power4,nothing,iu2_power4)\
+  |(du3_power4+du4_power4,iu2_power4,nothing,iu1_power4)\
+  |(du4_power4+du1_power4,iu1_power4,nothing,iu1_power4)")
+
+(define_insn_reservation "power4-three" 2
+  (and (eq_attr "type" "three")
+       (eq_attr "cpu" "power4"))
+  "(du1_power4+du2_power4+du3_power4,\
+    iu1_power4,nothing,iu2_power4,nothing,iu2_power4)\
+  |(du2_power4+du3_power4+du4_power4,\
+    iu2_power4,nothing,iu2_power4,nothing,iu1_power4)\
+  |(du3_power4+du4_power4+du1_power4,\
+    iu2_power4,nothing,iu1_power4,nothing,iu1_power4)\
+  |(du4_power4+du1_power4+du2_power4,\
+    iu1_power4,nothing,iu2_power4,nothing,iu2_power4)")
+
 (define_insn_reservation "power4-insert" 4
   (and (eq_attr "type" "insert_word")
        (eq_attr "cpu" "power4"))

@@ -68,6 +68,16 @@
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
   "iu1_6xx|iu2_6xx")
 
+(define_insn_reservation "ppc604-two" 1
+  (and (eq_attr "type" "two")
+       (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
+  "iu1_6xx|iu2_6xx,iu1_6xx|iu2_6xx")
+
+(define_insn_reservation "ppc604-three" 1
+  (and (eq_attr "type" "three")
+       (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
+  "iu1_6xx|iu2_6xx,iu1_6xx|iu2_6xx,iu1_6xx|iu2_6xx")
+
 (define_insn_reservation "ppc604-imul" 4
   (and (eq_attr "type" "imul,imul2,imul3,imul_compare")
        (eq_attr "cpu" "ppc604"))
