@@ -1,3 +1,7 @@
+Sun Feb 28 16:40:00 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (create_basic_block): Disregard integrated bb notes.
+
 Sun Feb 28 15:57:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.md (blockage, nonlocal_goto_receiver): Set length to 0.
