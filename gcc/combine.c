@@ -1,5 +1,5 @@
 /* Optimize by combining instructions for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -410,6 +410,7 @@ static rtx force_to_mode	PROTO((rtx, enum machine_mode,
 				       unsigned HOST_WIDE_INT, rtx, int));
 static rtx if_then_else_cond	PROTO((rtx, rtx *, rtx *));
 static rtx known_cond		PROTO((rtx, enum rtx_code, rtx, rtx));
+static int rtx_equal_for_field_assignment_p PROTO((rtx, rtx));
 static rtx make_field_assignment  PROTO((rtx));
 static rtx apply_distributive_law  PROTO((rtx));
 static rtx simplify_and_const_int  PROTO((rtx, enum machine_mode, rtx,
@@ -6471,6 +6472,46 @@ known_cond (x, cond, reg, val)
   return x;
 }
 
+/* See if X and Y are equal for the purposes of seeing if we can rewrite an
+   assignment as a field assignment.  */
+
+static int
+rtx_equal_for_field_assignment_p (x, y)
+     rtx x;
+     rtx y;
+{
+  rtx last_x, last_y;
+
+  if (x == y || rtx_equal_p (x, y))
+    return 1;
+
+  if (x == 0 || y == 0 || GET_MODE (x) != GET_MODE (y))
+    return 0;
+
+  /* Check for a paradoxical SUBREG of a MEM compared with the MEM.
+     Note that all SUBREGs of MEM are paradoxical; otherwise they
+     would have been rewritten.  */
+  if (GET_CODE (x) == MEM && GET_CODE (y) == SUBREG
+      && GET_CODE (SUBREG_REG (y)) == MEM
+      && rtx_equal_p (SUBREG_REG (y),
+		      gen_lowpart_for_combine (GET_MODE (SUBREG_REG (y)), x)))
+    return 1;
+
+  if (GET_CODE (y) == MEM && GET_CODE (x) == SUBREG
+      && GET_CODE (SUBREG_REG (x)) == MEM
+      && rtx_equal_p (SUBREG_REG (x),
+		      gen_lowpart_for_combine (GET_MODE (SUBREG_REG (x)), y)))
+    return 1;
+
+  last_x = get_last_value (x);
+  last_y = get_last_value (y);
+
+  return ((last_x != 0 && rtx_equal_for_field_assignment_p (last_x, y))
+	  || (last_y != 0 && rtx_equal_for_field_assignment_p (x, last_y))
+	  || (last_x != 0 && last_y != 0
+	      && rtx_equal_for_field_assignment_p (last_x, last_y)));
+}
+
 /* See if X, a SET operation, can be rewritten as a bit-field assignment.
    Return that assignment if so.
 
@@ -6483,6 +6524,7 @@ make_field_assignment (x)
   rtx dest = SET_DEST (x);
   rtx src = SET_SRC (x);
   rtx assign;
+  rtx rhs, lhs;
   HOST_WIDE_INT c1;
   int pos, len;
   rtx other;
@@ -6496,9 +6538,7 @@ make_field_assignment (x)
   if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == ROTATE
       && GET_CODE (XEXP (XEXP (src, 0), 0)) == CONST_INT
       && INTVAL (XEXP (XEXP (src, 0), 0)) == -2
-      && (rtx_equal_p (dest, XEXP (src, 1))
-	  || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
-	  || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
+      && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
     {
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
@@ -6511,9 +6551,7 @@ make_field_assignment (x)
 	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (src, 0)))))
 	   && GET_CODE (SUBREG_REG (XEXP (src, 0))) == ROTATE
 	   && INTVAL (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == -2
-	   && (rtx_equal_p (dest, XEXP (src, 1))
-	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
-	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
+	   && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
     {
       assign = make_extraction (VOIDmode, dest, 0,
 				XEXP (SUBREG_REG (XEXP (src, 0)), 1),
@@ -6525,9 +6563,7 @@ make_field_assignment (x)
      one-bit field.  */
   else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == ASHIFT
 	   && XEXP (XEXP (src, 0), 0) == const1_rtx
-	   && (rtx_equal_p (dest, XEXP (src, 1))
-	       || rtx_equal_p (dest, get_last_value (XEXP (src, 1)))
-	       || rtx_equal_p (get_last_value (dest), XEXP (src, 1))))
+	   && rtx_equal_for_field_assignment_p (dest, XEXP (src, 1)))
     {
       assign = make_extraction (VOIDmode, dest, 0, XEXP (XEXP (src, 0), 1),
 				1, 1, 1, 0);
@@ -6542,23 +6578,24 @@ make_field_assignment (x)
      to the appropriate position, force it to the required mode, and
      make the extraction.  Check for the AND in both operands.  */
 
-  if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 0)) == AND
-      && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT
-      && (rtx_equal_p (XEXP (XEXP (src, 0), 0), dest)
-	  || rtx_equal_p (XEXP (XEXP (src, 0), 0), get_last_value (dest))
-	  || rtx_equal_p (get_last_value (XEXP (XEXP (src, 0), 1)), dest)))
-    c1 = INTVAL (XEXP (XEXP (src, 0), 1)), other = XEXP (src, 1);
-  else if (GET_CODE (src) == IOR && GET_CODE (XEXP (src, 1)) == AND
-	   && GET_CODE (XEXP (XEXP (src, 1), 1)) == CONST_INT
-	   && (rtx_equal_p (XEXP (XEXP (src, 1), 0), dest)
-	       || rtx_equal_p (XEXP (XEXP (src, 1), 0), get_last_value (dest))
-	       || rtx_equal_p (get_last_value (XEXP (XEXP (src, 1), 0)),
-			       dest)))
-    c1 = INTVAL (XEXP (XEXP (src, 1), 1)), other = XEXP (src, 0);
+  if (GET_CODE (src) != IOR)
+    return x;
+
+  rhs = expand_compound_operation (XEXP (src, 0));
+  lhs = expand_compound_operation (XEXP (src, 1));
+
+  if (GET_CODE (rhs) == AND
+      && GET_CODE (XEXP (rhs, 1)) == CONST_INT
+      && rtx_equal_for_field_assignment_p (XEXP (rhs, 0), dest))
+    c1 = INTVAL (XEXP (rhs, 1)), other = lhs;
+  else if (GET_CODE (lhs) == AND
+	   && GET_CODE (XEXP (lhs, 1)) == CONST_INT
+	   && rtx_equal_for_field_assignment_p (XEXP (lhs, 0), dest))
+    c1 = INTVAL (XEXP (lhs, 1)), other = rhs;
   else
     return x;
 
-  pos = get_pos_from_mask (c1 ^ GET_MODE_MASK (GET_MODE (dest)), &len);
+  pos = get_pos_from_mask ((~ c1) & GET_MODE_MASK (GET_MODE (dest)), &len);
   if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
       || (GET_MODE_BITSIZE (GET_MODE (other)) <= HOST_BITS_PER_WIDE_INT
 	  && (c1 & nonzero_bits (other, GET_MODE (other))) != 0))
