@@ -6407,7 +6407,6 @@ cxx_init_decl_processing ()
   init_lang_status = &push_cp_function_context;
   free_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
-  lang_safe_from_p = &c_safe_from_p;
   lang_missing_noreturn_ok_p = &cp_missing_noreturn_ok_p;
 
   cp_parse_init ();

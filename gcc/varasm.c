@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "c-pragma.h"
 #include "ggc.h"
+#include "langhooks.h"
 #include "tm_p.h"
 #include "debug.h"
 #include "target.h"
@@ -168,7 +169,8 @@ static int output_addressed_constants	PARAMS ((tree));
 static void output_after_function_constants PARAMS ((void));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
-static void output_constructor		PARAMS ((tree, int, unsigned));
+static void output_constructor		PARAMS ((tree, HOST_WIDE_INT,
+						 unsigned int));
 #ifdef ASM_WEAKEN_LABEL
 static void remove_from_pending_weak_list	PARAMS ((const char *));
 #endif
@@ -2477,6 +2479,11 @@ struct constant_descriptor
 #define MAX_HASH_TABLE 1009
 static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
 
+/* We maintain a hash table of STRING_CST values.  Unless we are asked to force
+   out a string constant, we defer output of the constants until we know
+   they are actually used.  This will be if something takes its address or if
+   there is a usage of the string in the RTL of a function.  */
+
 #define STRHASH(x) ((hashval_t)((long)(x) >> 3))
 
 struct deferred_string
@@ -2739,7 +2746,7 @@ compare_constant_1 (exp, p)
       strp = (const unsigned char *)TREE_STRING_POINTER (exp);
       len = TREE_STRING_LENGTH (exp);
       if (memcmp ((char *) &TREE_STRING_LENGTH (exp), p,
-		sizeof TREE_STRING_LENGTH (exp)))
+		  sizeof TREE_STRING_LENGTH (exp)))
 	return 0;
 
       p += sizeof TREE_STRING_LENGTH (exp);
@@ -2899,12 +2906,14 @@ compare_constant_1 (exp, p)
       return compare_constant_1 (TREE_OPERAND (exp, 0), p);
 
     default:
-      if (lang_expand_constant)
-        {
-          exp = (*lang_expand_constant) (exp);
-          return compare_constant_1 (exp, p);
-        }
-      return 0;
+      {
+	tree new = (*lang_hooks.expand_constant) (exp);
+
+	if (new != exp)
+          return compare_constant_1 (new, p);
+	else
+	  return 0;
+      }
     }
 
   /* Compare constant contents.  */
@@ -3111,12 +3120,13 @@ record_constant_1 (exp)
       return;
 
     default:
-      if (lang_expand_constant)
-        {
-          exp = (*lang_expand_constant) (exp);
+      {
+	tree new = (*lang_hooks.expand_constant) (exp);
+
+	if (new != exp)
           record_constant_1 (exp);
-        }
-      return;
+	return;
+      }
     }
 
   /* Record constant contents.  */
@@ -3283,7 +3293,10 @@ output_constant_def (exp, defer)
   int labelno = -1;
   rtx rtl;
 
-  if (TREE_CODE (exp) != INTEGER_CST && TREE_CST_RTL (exp))
+  /* We can't just use the saved RTL if this is a defererred string constant
+     and we are not to defer anymode.  */
+  if (TREE_CODE (exp) != INTEGER_CST && TREE_CST_RTL (exp)
+      && (defer || !STRING_POOL_ADDRESS_P (XEXP (TREE_CST_RTL (exp), 0))))
     return TREE_CST_RTL (exp);
 
   /* Make sure any other constants whose addresses appear in EXP
@@ -4192,29 +4205,26 @@ output_addressed_constants (exp)
      tree exp;
 {
   int reloc = 0;
+  tree tem;
 
   /* Give the front-end a chance to convert VALUE to something that
      looks more like a constant to the back-end.  */
-  if (lang_expand_constant)
-    exp = (*lang_expand_constant) (exp);
+  exp = (*lang_hooks.expand_constant) (exp);
 
   switch (TREE_CODE (exp))
     {
     case ADDR_EXPR:
-      {
-	tree constant = TREE_OPERAND (exp, 0);
+      /* Go inside any operations that get_inner_reference can handle and see
+	 if what's inside is a constant: no need to do anything here for
+	 addresses of variables or functions.  */
+      for (tem = TREE_OPERAND (exp, 0); handled_component_p (tem);
+	   tem = TREE_OPERAND (tem, 0))
+	;
 
-	while (TREE_CODE (constant) == COMPONENT_REF)
-	  {
-	    constant = TREE_OPERAND (constant, 0);
-	  }
+      if (TREE_CODE_CLASS (TREE_CODE (tem)) == 'c'
+	    || TREE_CODE (tem) == CONSTRUCTOR)
+	  output_constant_def (tem, 0);
 
-	if (TREE_CODE_CLASS (TREE_CODE (constant)) == 'c'
-	    || TREE_CODE (constant) == CONSTRUCTOR)
-	  /* No need to do anything here
-	     for addresses of variables or functions.  */
-	  output_constant_def (constant, 0);
-      }
       reloc = 1;
       break;
 
@@ -4231,12 +4241,10 @@ output_addressed_constants (exp)
       break;
 
     case CONSTRUCTOR:
-      {
-	tree link;
-	for (link = CONSTRUCTOR_ELTS (exp); link; link = TREE_CHAIN (link))
-	  if (TREE_VALUE (link) != 0)
-	    reloc |= output_addressed_constants (TREE_VALUE (link));
-      }
+      for (tem = CONSTRUCTOR_ELTS (exp); tem; tem = TREE_CHAIN (tem))
+	if (TREE_VALUE (tem) != 0)
+	    reloc |= output_addressed_constants (TREE_VALUE (tem));
+
       break;
 
     default:
@@ -4262,8 +4270,7 @@ initializer_constant_valid_p (value, endtype)
 {
   /* Give the front-end a chance to convert VALUE to something that
      looks more like a constant to the back-end.  */
-  if (lang_expand_constant)
-    value = (*lang_expand_constant) (value);
+  value = (*lang_hooks.expand_constant) (value);
 
   switch (TREE_CODE (value))
     {
@@ -4438,37 +4445,29 @@ initializer_constant_valid_p (value, endtype)
 void
 output_constant (exp, size, align)
      tree exp;
-     int size;
+     HOST_WIDE_INT size;
      unsigned int align;
 {
-  enum tree_code code = TREE_CODE (TREE_TYPE (exp));
+  enum tree_code code;
+  HOST_WIDE_INT thissize;
 
   /* Some front-ends use constants other than the standard language-indepdent
      varieties, but which may still be output directly.  Give the front-end a
      chance to convert EXP to a language-independent representation.  */
-  if (lang_expand_constant)
-    {
-      exp = (*lang_expand_constant) (exp);
-      code = TREE_CODE (TREE_TYPE (exp));
-    }
+  exp = (*lang_hooks.expand_constant) (exp);
 
   if (size == 0 || flag_syntax_only)
     return;
 
-  /* Eliminate the NON_LVALUE_EXPR_EXPR that makes a cast not be an lvalue.
-     That way we get the constant (we hope) inside it.  Also, strip off any
-     NOP_EXPR that converts between two record, union, array, or set types
-     or a CONVERT_EXPR that converts to a union TYPE.  */
-  while ((TREE_CODE (exp) == NOP_EXPR
-	  && (TREE_TYPE (exp) == TREE_TYPE (TREE_OPERAND (exp, 0))
-	      || AGGREGATE_TYPE_P (TREE_TYPE (exp))))
-	 || (TREE_CODE (exp) == CONVERT_EXPR && code == UNION_TYPE)
+  /* Eliminate any conversions since we'll be outputting the underlying
+     constant.  */
+  while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
 	 || TREE_CODE (exp) == NON_LVALUE_EXPR
 	 || TREE_CODE (exp) == VIEW_CONVERT_EXPR)
-    {
-      exp = TREE_OPERAND (exp, 0);
-      code = TREE_CODE (TREE_TYPE (exp));
-    }
+    exp = TREE_OPERAND (exp, 0);
+
+  code = TREE_CODE (TREE_TYPE (exp));
+  thissize = int_size_in_bytes (TREE_TYPE (exp));
 
   /* Allow a constructor with no elements for any data type.
      This means to fill the space with zeros.  */
@@ -4490,6 +4489,8 @@ output_constant (exp, size, align)
       return;
     }
 
+  /* Now output the underlying data.  If we've handling the padding, return.
+     Otherwise, break and ensure THISSIZE is the size written.  */
   switch (code)
     {
     case CHAR_TYPE:
@@ -4498,16 +4499,10 @@ output_constant (exp, size, align)
     case ENUMERAL_TYPE:
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      /* ??? What about       (int)((float)(int)&foo + 4)    */
-      while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
-	     || TREE_CODE (exp) == NON_LVALUE_EXPR)
-	exp = TREE_OPERAND (exp, 0);
-
       if (! assemble_integer (expand_expr (exp, NULL_RTX, VOIDmode,
 					   EXPAND_INITIALIZER),
 			      size, align, 0))
 	error ("initializer for integer value is too complicated");
-      size = 0;
       break;
 
     case REAL_TYPE:
@@ -4517,14 +4512,12 @@ output_constant (exp, size, align)
       assemble_real (TREE_REAL_CST (exp),
 		     mode_for_size (size * BITS_PER_UNIT, MODE_FLOAT, 0),
 		     align);
-      size = 0;
       break;
 
     case COMPLEX_TYPE:
-      output_constant (TREE_REALPART (exp), size / 2, align);
-      output_constant (TREE_IMAGPART (exp), size / 2,
-		       min_align (align, BITS_PER_UNIT * (size / 2)));
-      size -= (size / 2) * 2;
+      output_constant (TREE_REALPART (exp), thissize / 2, align);
+      output_constant (TREE_IMAGPART (exp), thissize / 2,
+		       min_align (align, BITS_PER_UNIT * (thissize / 2)));
       break;
 
     case ARRAY_TYPE:
@@ -4535,16 +4528,8 @@ output_constant (exp, size, align)
 	}
       else if (TREE_CODE (exp) == STRING_CST)
 	{
-	  int excess = 0;
-
-	  if (size > TREE_STRING_LENGTH (exp))
-	    {
-	      excess = size - TREE_STRING_LENGTH (exp);
-	      size = TREE_STRING_LENGTH (exp);
-	    }
-
-	  assemble_string (TREE_STRING_POINTER (exp), size);
-	  size = excess;
+	  thissize = MIN (TREE_STRING_LENGTH (exp), size);
+	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	}
       else
 	abort ();
@@ -4562,22 +4547,23 @@ output_constant (exp, size, align)
       if (TREE_CODE (exp) == INTEGER_CST)
 	assemble_integer (expand_expr (exp, NULL_RTX,
 				       VOIDmode, EXPAND_INITIALIZER),
-			  size, align, 1);
+			 thissize, align, 1);
       else if (TREE_CODE (exp) == CONSTRUCTOR)
 	{
-	  unsigned char *buffer = (unsigned char *) alloca (size);
-	  if (get_set_constructor_bytes (exp, buffer, size))
+	  unsigned char *buffer = (unsigned char *) alloca (thissize);
+	  if (get_set_constructor_bytes (exp, buffer, thissize))
 	    abort ();
-	  assemble_string ((char *) buffer, size);
+	  assemble_string ((char *) buffer, thissize);
 	}
       else
 	error ("unknown set constructor type");
       return;
 
     default:
-      break; /* ??? */
+      abort ();
     }
 
+  size -= thissize;
   if (size > 0)
     assemble_zeros (size);
 }
@@ -4593,13 +4579,12 @@ array_size_for_constructor (val)
 {
   tree max_index, i;
 
+  /* This code used to attempt to handle string constants that are not
+     arrays of single-bytes, but nothing else does, so there's no point in
+     doing it here.  */
   if (TREE_CODE (val) == STRING_CST)
-    {
-      HOST_WIDE_INT len = TREE_STRING_LENGTH(val);
-      HOST_WIDE_INT esz = int_size_in_bytes (TREE_TYPE (TREE_TYPE (val)));
-      HOST_WIDE_INT tsz = len * esz;
-      return tsz;
-    }
+    return TREE_STRING_LENGTH (val);
+
   max_index = NULL_TREE;
   for (i = CONSTRUCTOR_ELTS (val); i ; i = TREE_CHAIN (i))
     {
@@ -4632,7 +4617,7 @@ array_size_for_constructor (val)
 static void
 output_constructor (exp, size, align)
      tree exp;
-     int size;
+     HOST_WIDE_INT size;
      unsigned int align;
 {
   tree type = TREE_TYPE (exp);

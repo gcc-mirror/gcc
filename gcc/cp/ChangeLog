@@ -1,3 +1,11 @@
+Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (cp-lang.o): Depends on c-common.h.
+	* cp-lang.c (c-common.h): Include.
+	(LANG_HOOKS_EXPAND_CONSTANT, LANG_HOOKS_SAFE_FROM_P): New hooks.
+	* decl.c (cxx_init_decl_processing): Don't set lang_safe_from_p.
+	* expr.c (init_cplus_expand): Don't set lang_expand_constant.
+
 2001-11-26  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl2.c (c_language): Move to c-common.c.

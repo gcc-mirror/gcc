@@ -1549,20 +1549,33 @@ save_expr (expr)
      tree expr;
 {
   tree t = fold (expr);
+  tree inner;
 
   /* We don't care about whether this can be used as an lvalue in this
      context.  */
   while (TREE_CODE (t) == NON_LVALUE_EXPR)
     t = TREE_OPERAND (t, 0);
 
+
+  /* If we have simple operations applied to a SAVE_EXPR or to a SAVE_EXPR and
+     a constant, it will be more efficient to not make another SAVE_EXPR since
+     it will allow better simplification and GCSE will be able to merge the
+     computations if they actualy occur.  */
+  for (inner = t;
+       (TREE_CODE_CLASS (TREE_CODE (inner)) == '1'
+	|| (TREE_CODE_CLASS (TREE_CODE (inner)) == '2'
+	    && TREE_CONSTANT (TREE_OPERAND (inner, 1))));
+       inner = TREE_OPERAND (inner, 0))
+    ;
+
   /* If the tree evaluates to a constant, then we don't want to hide that
      fact (i.e. this allows further folding, and direct checks for constants).
      However, a read-only object that has side effects cannot be bypassed.
      Since it is no problem to reevaluate literals, we just return the
      literal node.  */
-
-  if (TREE_CONSTANT (t) || (TREE_READONLY (t) && ! TREE_SIDE_EFFECTS (t))
-      || TREE_CODE (t) == SAVE_EXPR || TREE_CODE (t) == ERROR_MARK)
+  if (TREE_CONSTANT (inner)
+      || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
+      || TREE_CODE (inner) == SAVE_EXPR || TREE_CODE (inner) == ERROR_MARK)
     return t;
 
   /* If T contains a PLACEHOLDER_EXPR, we must evaluate it each time, since

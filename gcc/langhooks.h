@@ -109,6 +109,20 @@ struct lang_hooks
      Returns -1 if the language does nothing special for it.  */
   HOST_WIDE_INT (*get_alias_set) PARAMS ((tree));
 
+  /* Called with an expression that is to be processed as a constant.
+     Returns either the same expression or a language-independent
+     constant equivalent to its input.  */
+  tree (*expand_constant) PARAMS ((tree));
+
+  /* Hook called by safe_from_p for language-specific tree codes.  It is
+     up to the language front-end to install a hook if it has any such
+     codes that safe_from_p needs to know about.  Since same_from_p will
+     recursively explore the TREE_OPERANDs of an expression, this hook
+     should not reexamine those pieces.  This routine may recursively
+     call safe_from_p; it should always pass `0' as the TOP_P
+     parameter.  */
+  int (*safe_from_p) PARAMS ((rtx, tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

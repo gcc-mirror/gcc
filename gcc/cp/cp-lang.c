@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
+#include "c-common.h"
 #include "toplev.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
@@ -45,6 +46,10 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 #define LANG_HOOKS_POST_OPTIONS cxx_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
+#undef LANG_HOOKS_EXPAND_CONSTANT
+#define LANG_HOOKS_EXPAND_CONSTANT cplus_expand_constant
+#undef LANG_HOOKS_SAFE_FROM_P
+#define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PRINT_STATISTICS
 #define LANG_HOOKS_PRINT_STATISTICS cxx_print_statistics
 #undef LANG_HOOKS_PRINT_XNODE

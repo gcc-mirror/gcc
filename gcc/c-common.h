@@ -802,14 +802,14 @@ extern tree lookup_label			PARAMS ((tree));
    in C.  */
 extern void (*back_end_hook) PARAMS ((tree));
 
-#ifdef RTX_CODE
+/* enum expand_modified is in expr.h, as is the macro below.  */
 
-extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
-							 enum machine_mode,
-							 enum expand_modifier));
+#ifdef QUEUED_VAR
+extern rtx c_expand_expr            PARAMS ((tree, rtx, enum machine_mode,
+					     enum expand_modifier));
+#endif
 
 extern int c_safe_from_p                        PARAMS ((rtx, tree));
-#endif
 
 extern int c_unsafe_for_reeval			PARAMS ((tree));
 

@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "expr.h"
 #include "c-tree.h"
+#include "c-common.h"
 #include "c-lex.h"
 #include "cpplib.h"
 #include "insn-config.h"
@@ -64,6 +65,8 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
 #define LANG_HOOKS_POST_OPTIONS c_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
+#undef LANG_HOOKS_SAFE_FROM_P
+#define LANG_HOOKS_SAFE_FROM_P c_safe_from_p
 #undef LANG_HOOKS_PRINT_IDENTIFIER
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_SET_YYDEBUG
@@ -121,7 +124,6 @@ c_init (filename)
   restore_lang_status = &pop_c_function_context;
   mark_lang_status = &mark_c_function_context;
   lang_expand_expr = &c_expand_expr;
-  lang_safe_from_p = &c_safe_from_p;
   diagnostic_format_decoder (global_dc) = &c_tree_printer;
   lang_expand_decl_stmt = &c_expand_decl_stmt;
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;

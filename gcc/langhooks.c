@@ -38,6 +38,15 @@ lhd_do_nothing ()
 {
 }
 
+/* Do nothing (return the tree node passed).  */
+
+tree
+lhd_return_tree (t)
+     tree t;
+{
+  return t;
+}
+
 /* Do nothing; the default hook to decode an option.  */
 
 int
@@ -56,6 +65,16 @@ lhd_print_tree_nothing (file, node, indent)
      tree node ATTRIBUTE_UNUSED;
      int indent ATTRIBUTE_UNUSED;
 {
+}
+
+/* Called from safe_from_p.  */
+
+int
+lhd_safe_from_p (x, exp)
+     rtx x;
+     tree exp;
+{
+  return 1;
 }
 
 /* Called when -dy is given on the command line.  */

@@ -114,8 +114,7 @@ void
 put_pending_size (expr)
      tree expr;
 {
-  if (TREE_CODE (expr) == SAVE_EXPR)
-    pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
+  pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
 }
 
 /* Put a chain of objects into the pending sizes list, which must be
@@ -140,7 +139,8 @@ variable_size (size)
 {
   /* If the language-processor is to take responsibility for variable-sized
      items (e.g., languages which have elaboration procedures like Ada),
-     just return SIZE unchanged.  Likewise for self-referential sizes.  */
+     just return SIZE unchanged.  Likewise for self-referential sizes and
+     constant sizes.  */
   if (TREE_CONSTANT (size)
       || global_bindings_p () < 0 || contains_placeholder_p (size))
     return size;

@@ -368,7 +368,8 @@ extern tree initializer_constant_valid_p	PARAMS ((tree, tree));
    with zeros if necessary.  SIZE must always be specified.
 
    ALIGN is the alignment in bits that may be assumed for the data.  */
-extern void output_constant		PARAMS ((tree, int, unsigned));
+extern void output_constant		PARAMS ((tree, HOST_WIDE_INT,
+						 unsigned int));
 #endif
 
 #ifdef RTX_CODE

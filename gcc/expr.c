@@ -42,6 +42,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "typeclass.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "langhooks.h"
 #include "intl.h"
 #include "tm_p.h"
 
@@ -71,15 +72,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef CASE_VECTOR_PC_RELATIVE
 #define CASE_VECTOR_PC_RELATIVE 0
 #endif
-
-/* Hook called by safe_from_p for language-specific tree codes.  It is
-   up to the language front-end to install a hook if it has any such
-   codes that safe_from_p needs to know about.  Since same_from_p will
-   recursively explore the TREE_OPERANDs of an expression, this hook
-   should not reexamine those pieces.  This routine may recursively
-   call safe_from_p; it should always pass `0' as the TOP_P
-   parameter.  */
-int (*lang_safe_from_p) PARAMS ((rtx, tree));
 
 /* If this is nonzero, we do not bother generating VOLATILE
    around volatile memory references, and we are willing to
@@ -5854,8 +5846,7 @@ safe_from_p (x, exp, top_p)
 	 special handling.  */
       if ((unsigned int) TREE_CODE (exp)
 	  >= (unsigned int) LAST_AND_UNUSED_TREE_CODE
-	  && lang_safe_from_p
-	  && !(*lang_safe_from_p) (x, exp))
+	  && !(*lang_hooks.safe_from_p) (x, exp))
 	return 0;
     }
 
@@ -6148,7 +6139,7 @@ expand_expr (exp, target, tmode, modifier)
   ignore = (target == const0_rtx
 	    || ((code == NON_LVALUE_EXPR || code == NOP_EXPR
 		 || code == CONVERT_EXPR || code == REFERENCE_EXPR
-		 || code == COND_EXPR)
+		 || code == COND_EXPR || code == VIEW_CONVERT_EXPR)
 		&& TREE_CODE (type) == VOID_TYPE));
 
   /* Make a read-only version of the modifier.  */
@@ -7536,7 +7527,7 @@ expand_expr (exp, target, tmode, modifier)
       return target;
 
     case VIEW_CONVERT_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, ro_modifier);
 
       /* If the input and output modes are both the same, we are done.
 	 Otherwise, if neither mode is BLKmode and both are within a word, we
