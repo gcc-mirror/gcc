@@ -1,3 +1,9 @@
+2004-12-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/9908
+	* config/i386/i386.md (*call_value_1): Correct Intel assembler
+	syntax by using %A1 instead of %*%1.
+
 2004-12-01  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/12817
