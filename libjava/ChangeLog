@@ -1,3 +1,20 @@
+1999-12-16  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Boolean.java (Boolean(String)): Set `value' to false on a 
+	null String constructor parameter.
+	* java/net/natPlainSocketImpl.cc: Remove unneccessary sprintf calls
+	for exception messages.
+	BooleanClass: declare.
+	(setOption): Use BooleanClass instead of Class.forName() for
+	instanceof test.
+	(bind): Cast 4th parameter of setsockopt to `char *' for
+	compatibility with older Solaris headers.
+	* java/net/natPlainDatagramSocketImpl.cc: Remove unneccessary
+	sprintf calls for exception messages.
+	BooleanClass, IntegerClass: declare.
+	(setOption): Use BooleanClass and IntegerClass, not Class.forName()
+	for instanceof test.
+
 1999-12-15  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natSystem.cc (init_properties): Don't set user.name or

@@ -18,7 +18,6 @@ details.  */
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 #endif /* DISABLE_JAVA_NET */
 
@@ -42,6 +41,9 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Class.h>
 #include <java/lang/Integer.h>
+
+#define BooleanClass _CL_Q34java4lang7Boolean
+extern java::lang::Class BooleanClass;
 
 #ifdef DISABLE_JAVA_NET
 
@@ -107,10 +109,8 @@ java::net::PlainSocketImpl::create (jboolean stream)
   int sock = ::socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
   if (sock < 0)
     {
-      char msg[100];
       char* strerr = strerror (errno);
-      sprintf (msg, "SocketImpl.create: %.*s", 80, strerr);
-      JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+      JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
     }
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
@@ -149,7 +149,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
     goto error;
 
   // Enable SO_REUSEADDR, so that servers can reuse ports left in TIME_WAIT.
-  ::setsockopt(fnum, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
+  ::setsockopt(fnum, SOL_SOCKET, SO_REUSEADDR, (char *) &i, sizeof(i));
   
   if (::bind (fnum, ptr, len) == 0)
     {
@@ -164,10 +164,8 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
       return;
     }
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::BindException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::BindException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -209,10 +207,8 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
       goto error;
   return;  
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::ConnectException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::ConnectException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -220,10 +216,8 @@ java::net::PlainSocketImpl::listen (jint backlog)
 {
   if (::listen (fnum, backlog) != 0)
     {
-      char msg[80];
       char* strerr = strerror (errno);
-      sprintf (msg, "%.*s", 80, strerr);
-      JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+      JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
     }
 }
 
@@ -279,10 +273,8 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   s->fd = new java::io::FileDescriptor (new_socket);
   return;
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -291,8 +283,7 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
   int val;
   socklen_t val_len = sizeof (val);
 
-  if ( _Jv_IsInstanceOf(value,
-    java::lang::Class::forName(JvNewStringUTF("java.lang.Boolean"))))
+  if (_Jv_IsInstanceOf (value, &BooleanClass))
     {
       java::lang::Boolean *boolobj = 
         static_cast<java::lang::Boolean *> (value);
@@ -370,10 +361,8 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
     }
 
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
 }
 
 java::lang::Object *
@@ -470,10 +459,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
     }
 
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
 }
 
 #endif /* DISABLE_JAVA_NET */

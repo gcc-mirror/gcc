@@ -39,7 +39,7 @@ public final class Boolean extends Object implements Serializable
 
   public Boolean(String strVal)
   {
-    value = strVal.equalsIgnoreCase("true");
+    value = (strVal == null ? false : strVal.equalsIgnoreCase("true"));
   }
 
   public boolean booleanValue()

@@ -25,7 +25,6 @@ details.  */
 #include <arpa/inet.h>
 #endif
 #include <errno.h>
-#include <stdio.h>
 #include <string.h>
 
 #if HAVE_BSTRING_H
@@ -46,6 +45,11 @@ details.  */
 #include <java/lang/Object.h>
 #include <java/lang/Boolean.h>
 #include <java/lang/Integer.h>
+
+#define BooleanClass _CL_Q34java4lang7Boolean
+extern java::lang::Class BooleanClass;
+#define IntegerClass _CL_Q34java4lang7Integer
+extern java::lang::Class IntegerClass;
 
 #ifdef DISABLE_JAVA_NET
 
@@ -152,10 +156,8 @@ java::net::PlainDatagramSocketImpl::create ()
   int sock = ::socket (AF_INET, SOCK_DGRAM, 0);
   if (sock < 0)
     {
-      char msg[80];
       char* strerr = strerror (errno);
-      sprintf (msg, "%.*s", 80, strerr);
-      JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+      JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
     }
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
@@ -206,10 +208,8 @@ java::net::PlainDatagramSocketImpl::bind (jint lport,
       return;
     }
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::BindException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::BindException (JvNewStringUTF (strerr)));
 }
 
 jint
@@ -246,10 +246,8 @@ java::net::PlainDatagramSocketImpl::peek (java::net::InetAddress *i)
   i->address = raddr;
   return rport;
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -284,10 +282,8 @@ java::net::PlainDatagramSocketImpl::send (java::net::DatagramPacket *p)
   if (::sendto (fnum, (char *) dbytes, p->getLength(), 0, ptr, len) >= 0)
     return;
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -344,10 +340,8 @@ java::net::PlainDatagramSocketImpl::receive (java::net::DatagramPacket *p)
   p->setLength ((jint) retlen);
   return;
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -359,10 +353,8 @@ java::net::PlainDatagramSocketImpl::setTimeToLive (jint ttl)
   if (::setsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, val_len) == 0)
     return;
 
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 jint
@@ -374,10 +366,8 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
   if (::getsockopt (fnum, IPPROTO_IP, IP_MULTICAST_TTL, &val, &val_len) == 0)
     return ((int) val) & 0xFF;
 
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -423,10 +413,8 @@ java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
   if (::setsockopt (fnum, level, opname, ptr, len) == 0)
     return;
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+  JvThrow (new java::io::IOException (JvNewStringUTF (strerr)));
 }
 
 void
@@ -436,15 +424,13 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
   int val;
   socklen_t val_len = sizeof (val);
 
-  if ( _Jv_IsInstanceOf(value,
-    java::lang::Class::forName(JvNewStringUTF("java.lang.Boolean"))))
+  if (_Jv_IsInstanceOf (value, &BooleanClass))
     {
       java::lang::Boolean *boolobj = 
         static_cast<java::lang::Boolean *> (value);
       val = boolobj->booleanValue() ? 1 : 0;
     }
-  else if ( _Jv_IsInstanceOf(value,
-      java::lang::Class::forName(JvNewStringUTF("java.lang.Integer"))))
+  else if (_Jv_IsInstanceOf (value, &IntegerClass))
     {
       java::lang::Integer *intobj = 
         static_cast<java::lang::Integer *> (value);          
@@ -530,10 +516,8 @@ java::net::PlainDatagramSocketImpl::setOption (jint optID,
     }
 
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
 }
 
 java::lang::Object *
@@ -632,10 +616,8 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
     }
 
  error:
-  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "%.*s", 80, strerr);
-  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+  JvThrow (new java::net::SocketException (JvNewStringUTF (strerr)));
 }
 
 #endif /* DISABLE_JAVA_NET */
