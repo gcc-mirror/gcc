@@ -591,7 +591,13 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 
       if (in_p && icode == CODE_FOR_nothing
 	  && SECONDARY_MEMORY_NEEDED (class, reload_class, mode))
-	get_secondary_mem (x, reload_mode, opnum, type);
+	{
+	  get_secondary_mem (x, reload_mode, opnum, type);
+
+	  /* We may have just added new reloads.  Make sure we add
+	     the new reload at the end.  */
+	  s_reload = n_reloads;
+	}
 #endif
 
       /* We need to make a new secondary reload for this register class.  */
