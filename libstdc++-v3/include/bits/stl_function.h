@@ -1,6 +1,6 @@
 // Functor implementations -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -521,8 +521,6 @@ struct _Select2nd : public unary_function<_Pair, typename _Pair::second_type>
  *  All of this complexity is in the function objects themselves.  You can
  *   ignore it by using the helper function mem_fun and mem_fun_ref,
  *   which create whichever type of adaptor is appropriate.
- *   (mem_fun1 and mem_fun1_ref are no longer part of the C++ standard,
- *   but they are provided for backward compatibility.)
  *
  *  @{
 */
