@@ -1,3 +1,36 @@
+2002-03-01  Alan Modra  <amodra@bigpond.net.au>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* doc/tm.texi (ASM_WEAKEN_DECL): Document.
+	(ASM_WEAKEN_LABEL): Mention ASM_WEAKEN_DECL.
+	(SUPPORTS_WEAK): Likewise.
+	* output.h (add_weak): Add tree param.
+	* varasm.c (add_weak): Likewise.  Save decl.
+	(struct weak_syms): Add decl field.
+	(mark_weak_decls): New function.
+	(init_varasm_once): ggc_add_root mark_weak_decls.
+	(assemble_start_function): Use ASM_WEAKEN_DECL.
+	(assemble_variable): Likewise.
+	(assemble_alias): Likewise.
+	(declare_weak): Pass decl to add_weak.
+	(weak_finish): Use ASM_WEAKEN_DECL. Try to find decl.
+	(remove_from_pending_weak_list): Declare and define for
+	ASM_WEAKEN_DECL.
+	* c-pragma.c (handle_pragma_weak): Adjust add_weak call.
+	* c-pragma.h (HANDLE_PRAGMA_WEAK): Define if ASM_WEAKEN_DECL too.
+	* defaults.h (SUPPORTS_WEAK): Likewise.
+	* config/rs6000/linux64.h (ASM_DECLARE_FUNCTION_NAME): Don't emit
+	.weak for code sym.  Do emit .size for descriptor sym.
+	(ASM_DECLARE_FUNCTION_SIZE): Define.
+	* config/rs6000/rs6000.h (ASM_WEAKEN_DECL): Define.
+	(ASM_OUTPUT_DEF_FROM_DECLS): Don't emit .weak here.  Don't output
+	.lglobl unless TARGET_XCOFF.  Formatting fixes.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Don't emit
+	.weak for code sym.
+	(HANDLE_PRAGMA_WEAK): Remove.
+	(ASM_WEAKEN_LABEL): Remove.
+	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Define.
+
 2002-03-01  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (TARGET_EXPR_SLOT, TARGET_EXPR_INITIAL): New macros.
