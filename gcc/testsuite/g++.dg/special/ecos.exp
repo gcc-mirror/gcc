@@ -29,7 +29,7 @@ load_lib g++-dg.exp
 ###########
 
 dg-init
-dg-runtest "$srcdir/$subdir/conpr-1.C" "-finit-priority" ""
+dg-runtest "$srcdir/$subdir/conpr-1.C" "" ""
 dg-finish
 
 
@@ -39,11 +39,11 @@ dg-finish
 
 dg-init
 
-set lines [g++_target_compile "$srcdir/$subdir/conpr-2a.C" "conpr-2a.o" object "additional_flags=-finit-priority"]
+set lines [g++_target_compile "$srcdir/$subdir/conpr-2a.C" "conpr-2a.o" object ""]
 if ![string match "" $lines] then {
     fail "conpr-2a.o"
 } else {
-    dg-runtest "$srcdir/$subdir/conpr-2.C" "conpr-2a.o" "-finit-priority" 
+    dg-runtest "$srcdir/$subdir/conpr-2.C" "conpr-2a.o" "" 
     file delete conpr-2a.o
 }
 dg-finish
@@ -55,17 +55,17 @@ dg-finish
 
 dg-init
 
-set lines [g++_target_compile "$srcdir/$subdir/conpr-3a.C" "conpr-3a.o" object "additional_flags=-finit-priority"]
+set lines [g++_target_compile "$srcdir/$subdir/conpr-3a.C" "conpr-3a.o" object ""]
 if ![string match "" $lines] then {
     fail "conpr-3a.o"
 } else {
-    set lines [g++_target_compile "$srcdir/$subdir/conpr-3b.C" "conpr-3b.o" object "additional_flags=-finit-priority"]
+    set lines [g++_target_compile "$srcdir/$subdir/conpr-3b.C" "conpr-3b.o" object ""]
     if ![string match "" $lines] then {
         fail "conpr-3b.o"
     } else {
         # run it with objects both ways around!
-        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3a.o conpr-3b.o" "-finit-priority"
-        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3b.o conpr-3a.o" "-finit-priority"
+        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3a.o conpr-3b.o" ""
+        dg-runtest "$srcdir/$subdir/conpr-3.C" "conpr-3b.o conpr-3a.o" ""
         file delete conpr-3a.o conpr-3b.o
     }
 }
