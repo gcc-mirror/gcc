@@ -791,7 +791,7 @@
   "@
   comclr,> %2,%0,%%r0\;copy %2,%0
   comiclr,> %2,%0,%%r0\;ldi %2,%0
-  comclr,> %1,%2,%0\;copy %1,%0"
+  comclr,> %1,%r2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
 
@@ -814,7 +814,7 @@
   "@
   comclr,< %2,%0,%%r0\;copy %2,%0
   comiclr,< %2,%0,%%r0\;ldi %2,%0
-  comclr,< %1,%2,%0\;copy %1,%0"
+  comclr,< %1,%r2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "8,8,8")])
 
