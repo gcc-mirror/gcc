@@ -1,3 +1,7 @@
+2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* doc/tm.texi (Misc): Fix thinko.
+
 2001-07-10  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* regmove.c (replace_in_call_usage): Fix warnings.
