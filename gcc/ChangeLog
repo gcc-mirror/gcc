@@ -1,3 +1,7 @@
+Mon Jul  6 09:27:08 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha/vms.h (TRAMPOLINE_TEMPLATE): Revert last change.
+
 Mon Jul  6 09:25:06 1998  Dave Love  <d.love@dl.ac.uk>
 
 	* libgcc2.c (__eprintf): Make args consistent with prototype in
