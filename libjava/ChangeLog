@@ -1,3 +1,11 @@
+2003-08-19  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* include/jvm.h: New class _Jv_TempUTFString (helper class for
+	getting a temporary C string from a jstring)
+	New macro JV_TEMP_UTF_STRING, which leverages _Jv_TempUTFString
+	but uses a stack buffer if the string length is less than 256
+	bytes.
+
 2003-08-18  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/11951:
