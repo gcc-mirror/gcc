@@ -4359,7 +4359,7 @@ case "$target" in
 		if test -n "$gcc_cv_as"; then
 		    echo ".xword foo" > conftest.s
 		    gcc_cv_as_flags64=no
-		    for flag in "-xarch=v9" "64 -Av9"; do
+		    for flag in "-xarch=v9" "-64 -Av9"; do
 			if $gcc_cv_as $flag -o conftest.o conftest.s \
 			    > /dev/null 2>&1; then
 			    gcc_cv_as_flags64=$flag

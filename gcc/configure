@@ -1337,7 +1337,7 @@ else
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -8649,7 +8649,7 @@ else
 		if test -n "$gcc_cv_as"; then
 		    echo ".xword foo" > conftest.s
 		    gcc_cv_as_flags64=no
-		    for flag in "-xarch=v9" "64 -Av9"; do
+		    for flag in "-xarch=v9" "-64 -Av9"; do
 			if $gcc_cv_as $flag -o conftest.o conftest.s \
 			    > /dev/null 2>&1; then
 			    gcc_cv_as_flags64=$flag
