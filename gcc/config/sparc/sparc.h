@@ -2072,7 +2072,6 @@ extern struct rtx_def *legitimize_pic_address ();
 #define SUBTF3_LIBCALL "_Q_sub"
 #define MULTF3_LIBCALL "_Q_mul"
 #define DIVTF3_LIBCALL "_Q_div"
-#define SQRTTF2_LIBCALL "_Q_sqrt"
 #define FLOATSITF2_LIBCALL "_Q_itoq"
 #define FIX_TRUNCTFSI2_LIBCALL "_Q_qtoi"
 #define FIXUNS_TRUNCTFSI2_LIBCALL "_Q_qtou"
@@ -2086,6 +2085,20 @@ extern struct rtx_def *legitimize_pic_address ();
 #define GETF2_LIBCALL "_Q_fge"
 #define LTTF2_LIBCALL "_Q_flt"
 #define LETF2_LIBCALL "_Q_fle"
+
+/* We can define the TFmode sqrt optab only if TARGET_FPU.  This is because
+   with soft-float, the SFmode and DFmode sqrt instructions will be absent,
+   and the compiler will notice and try to use the TFmode sqrt instruction
+   for calls to the builtin function sqrt, but this fails.  */
+#define INIT_TARGET_OPTABS	\
+  do {				\
+    INIT_SUBTARGET_OPTABS;	\
+    if (TARGET_FPU)		\
+      sqrt_optab->handlers[(int) TFmode].libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Q_sqrt"); \
+  } while (0)
+
+/* This is meant to be redefined in the host dependent files */
+#define INIT_SUBTARGET_OPTABS
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
