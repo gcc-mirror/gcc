@@ -122,8 +122,8 @@ struct operand_data
 {
   struct operand_data *next;
   int index;
-  char *predicate;
-  char *constraint;
+  const char *predicate;
+  const char *constraint;
   enum machine_mode mode;
   unsigned char n_alternatives;
   char address_p;
@@ -154,8 +154,8 @@ static struct operand_data **odata_end = &null_operand.next;
 struct data
 {
   struct data *next;
-  char *name;
-  char *template;
+  const char *name;
+  const char *template;
   int code_number;
   int index_number;
   int n_operands;		/* Number of operands this insn recognizes */
@@ -249,7 +249,7 @@ from the machine description file `md'.  */\n\n");
 static void
 output_predicate_decls ()
 {
-  struct predicate { char *name; struct predicate *next; } *predicates = 0;
+  struct predicate { const char *name; struct predicate *next; } *predicates = 0;
   register struct operand_data *d;
   struct predicate *p;
 
@@ -545,7 +545,7 @@ static int
 compare_operands (d0, d1)
      struct operand_data *d0, *d1;
 {
-  char *p0, *p1;
+  const char *p0, *p1;
 
   p0 = d0->predicate;
   if (!p0)
@@ -909,6 +909,8 @@ xrealloc (old, size)
   return ptr;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -928,7 +930,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   output_prologue ();
@@ -965,11 +967,8 @@ main (argc, argv)
   output_get_insn_name ();
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 || have_error
+  return (ferror (stdout) != 0 || have_error
 	? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-
-  /* NOTREACHED */
-  return 0;
 }
 
 static int

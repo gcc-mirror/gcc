@@ -95,7 +95,7 @@ static struct code_ptr *peepholes;
 
 static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, const char *));
-static void print_path PROTO ((char *));
+static void print_path PROTO ((const char *));
 
 static void
 gen_insn (insn)
@@ -300,7 +300,7 @@ walk_rtx (x, path)
 
 static void
 print_path (path)
-     char *path;
+     const char *path;
 {
   register int len = strlen (path);
   register int i;
@@ -375,6 +375,8 @@ xstrdup (input)
   return output;
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -396,7 +398,7 @@ main (argc, argv)
   if (infile == 0)
     {
       perror (argv[1]);
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   /* Assign sequential codes to all entries in the machine description
@@ -520,15 +522,13 @@ from the machine description file `md'.  */\n\n");
   printf ("    }\n}\n");
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-  /* NOTREACHED */
-  return 0;
+  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
 get_insn_name (code)
-     int code;
+     int code ATTRIBUTE_UNUSED;
 {
   return NULL;
 }

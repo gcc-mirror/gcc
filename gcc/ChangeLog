@@ -1,3 +1,36 @@
+Wed Sep 15 10:09:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (main): Add extern prototype.  Call return, not exit.
+	* genattrtab.c (main): Likewise.
+	* gencheck.c (main): Likewise.
+	* gencodes.c (main): Likewise.
+	* genconfig.c (main): Likewise.
+	* genemit.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genflags.c (main): Likewise.
+	* gengenrtl.c (main): Likewise.
+	* genopinit.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genpeep.c (main): Likewise.
+	* genrecog.c (main): Likewise.
+	
+	* genattr.c (get_insn_name): Mark parameter with ATTRIBUTE_UNUSED.
+	* genattrtab.c (get_insn_name): Likewise.
+	* gencodes.c (get_insn_name): Likewise.
+	* genconfig.c (get_insn_name): Likewise.
+	* genemit.c (get_insn_name): Likewise.
+	* genextract.c (get_insn_name): Likewise.
+	* genflags.c (get_insn_name): Likewise.
+	* genopinit.c (get_insn_name): Likewise.
+	* genpeep.c (get_insn_name): Likewise.
+	
+	* gencheck.c (usage): Add static prototype.
+	* genextract.c (print_path): Constify a char*.
+	* genopinit.c (optabs): Likewise.
+	* genoutput.c (operand_data, data, output_predicate_decls,
+	compare_operands): Likewise.
+	* genrecog.c (write_tree): Add default case in switch.
+
 Wed Sep 15 09:59:16 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.h (get_insn_name, print_rtl_with_bb): Add prototypes.
