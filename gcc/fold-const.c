@@ -8859,6 +8859,7 @@ fold (tree expr)
 	  tree tem = TREE_OPERAND (arg0, 0);
 	  STRIP_NOPS (tem);
 	  if (TREE_CODE (tem) == RSHIFT_EXPR
+              && TREE_CODE (TREE_OPERAND (tem, 1)) == INTEGER_CST
               && (unsigned HOST_WIDE_INT) tree_log2 (arg1) ==
 	         TREE_INT_CST_LOW (TREE_OPERAND (tem, 1)))
 	    return fold (build2 (BIT_AND_EXPR, type,
