@@ -3103,7 +3103,7 @@
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(sqrt:DF (match_operand:SF 1 "arith_reg_operand" "0")))]
+	(sqrt:SF (match_operand:SF 1 "arith_reg_operand" "0")))]
   "TARGET_SH3E"
   "fsqrt	%0"
   [(set_attr "type" "fdiv")])
