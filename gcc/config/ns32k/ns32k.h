@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
    Copyright (C) 1988, 1993, 1994 Free Software Foundation, Inc.
-   Contributed by Michael Tiemann (tiemann@mcc.com)
+   Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
 
@@ -82,6 +82,9 @@ extern int target_flags;
 /* Ok to use the static base register (and presume it's 0) */
 #define TARGET_SB    ((target_flags & 32) == 0)
 
+/* Compile using bitfield insns.  */
+#define TARGET_BITFIELD ((target_flags & 64) == 0)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -101,6 +104,8 @@ extern int target_flags;
     { "32032", -24},				\
     { "sb", -32},				\
     { "nosb", 32},				\
+    { "bitfield", -64},				\
+    { "nobitfield", 64},			\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
 
