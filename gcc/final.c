@@ -897,13 +897,13 @@ insn_current_reference_address (branch)
     {
       /* Forward branch. */
       return (insn_last_address + insn_lengths[seq_uid]
-	      - align_fuzz (branch, dest, length_unit_log, ~0));
+	      - align_fuzz (seq, dest, length_unit_log, ~0));
     }
   else
     {
       /* Backward branch. */
       return (insn_current_address
-	      + align_fuzz (dest, branch, length_unit_log, ~0));
+	      + align_fuzz (seq, branch, length_unit_log, ~0));
     }
 }
 #endif /* HAVE_ATTR_length */
