@@ -45,7 +45,7 @@ static char *reg_names[] = REGISTER_NAMES;
 
 static FILE *outfile;
 
-char spaces[] = "                                                                                                                                                                ";
+static char spaces[] = "                                                                                                                                                                ";
 
 static int sawclose = 0;
 
