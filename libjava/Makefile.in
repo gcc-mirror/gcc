@@ -1428,7 +1428,10 @@ java/util/TreeMap.java \
 java/util/TreeSet.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java \
-java/util/WeakHashMap.java
+java/util/WeakHashMap.java \
+java/util/regex/Matcher.java \
+java/util/regex/Pattern.java \
+java/util/regex/PatternSyntaxException.java
 
 
 ordinary_java_source_files = $(core_java_source_files) \
@@ -3113,8 +3116,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/jar/JarException.P .deps/java/util/jar/JarFile.P \
 .deps/java/util/jar/JarInputStream.P \
 .deps/java/util/jar/JarOutputStream.P .deps/java/util/jar/Manifest.P \
-.deps/java/util/natTimeZone.P .deps/java/util/zip/Adler32.P \
-.deps/java/util/zip/CRC32.P .deps/java/util/zip/CheckedInputStream.P \
+.deps/java/util/natTimeZone.P .deps/java/util/regex/Matcher.P \
+.deps/java/util/regex/Pattern.P \
+.deps/java/util/regex/PatternSyntaxException.P \
+.deps/java/util/zip/Adler32.P .deps/java/util/zip/CRC32.P \
+.deps/java/util/zip/CheckedInputStream.P \
 .deps/java/util/zip/CheckedOutputStream.P \
 .deps/java/util/zip/Checksum.P \
 .deps/java/util/zip/DataFormatException.P \

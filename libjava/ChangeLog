@@ -1,3 +1,17 @@
+2002-09-18  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/regex/Matcher.java, java/util/regex/Pattern.java,
+	java/util/regex/PatternSyntaxException.java:
+	Merge with classpath, new files.
+	* Makefile.am (core_java_source_files):
+	Added java/util/regex/Matcher.java,
+	java/util/regex/Pattern.java,
+	java/util/regex/PatternSyntaxException.java
+	* Makefile.in: Regenerated.
+	* include/config.h.in: Added HAVE_NET_IF_H.
+	* java/net/natNetworkInterface.cc (getRealNetworkInterfaces):
+	Removed #if 0 ... #endif.
+	
 2002-09-17  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/natNetworkInterface.cc:
