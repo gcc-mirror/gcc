@@ -1,5 +1,10 @@
 2000-12-02  Neil Booth  <neilb@earthling.net>
 
+        * g++.old-deja/g++.other/externC4.C,
+        g++.old-deja/g++.other/friend10.C: New tests.
+
+2000-12-02  Neil Booth  <neilb@earthling.net>
+
         * g++.old-deja/g++.other/instan2.C
         * g++.old-deja/g++.other/instan3.C: New test.
 
