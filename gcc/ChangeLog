@@ -1,3 +1,10 @@
+2002-03-11  Dan Nicolaescu  <dann@ics.uci.edu>
+	    Daniel Berlin  <dan@dberlin.org>
+
+	C++ alias analysis improvement.
+	* alias.c (record_component_aliases): Record aliases for base 
+	classes too.
+
 2002-03-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (REG_ALLOC_ORDER): Add missing register.

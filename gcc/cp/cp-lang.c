@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks-def.h"
 
 static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
+static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -99,15 +100,66 @@ static HOST_WIDE_INT cxx_get_alias_set PARAMS ((tree));
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
+/* Check if a C++ type is safe for aliasing.
+   Return TRUE if T safe for aliasing FALSE otherwise.  */
+
+static bool
+ok_to_generate_alias_set_for_type (t)
+     tree t;
+{
+  if (TYPE_PTRMEMFUNC_P (t))
+    return true;
+  if (AGGREGATE_TYPE_P (t))
+    {
+      if ((TREE_CODE (t) == RECORD_TYPE) || (TREE_CODE (t) == UNION_TYPE))
+	{
+	  tree fields;
+	  /* PODs are safe.  */
+	  if (! CLASSTYPE_NON_POD_P(t))
+	    return true;
+	  /* Classes with virtual baseclasses are not.  */
+	  if (TYPE_USES_VIRTUAL_BASECLASSES (t))
+	    return false;
+	  /* Recursively check the base classes.  */
+	  if (TYPE_BINFO (t) != NULL && TYPE_BINFO_BASETYPES (t) != NULL)
+	    {
+	      int i;
+	      for (i = 0; i < TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (t)); i++)
+		{
+		  tree binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (t), i);
+		  if (!ok_to_generate_alias_set_for_type (BINFO_TYPE (binfo)))
+		    return false;
+		}
+	    }
+	  /* Check all the fields.  */
+	  for (fields = TYPE_FIELDS (t); fields; fields = TREE_CHAIN (fields))
+	    {
+	      if (TREE_CODE (fields) != FIELD_DECL)
+		continue;
+	      if (! ok_to_generate_alias_set_for_type (TREE_TYPE (fields)))
+		return false;
+	    }
+	  return true;
+	}
+      else if (TREE_CODE (t) == ARRAY_TYPE)
+	return ok_to_generate_alias_set_for_type (TREE_TYPE (t));
+      else
+	/* This should never happen, we dealt with all the aggregate
+	   types that can appear in C++ above.  */
+	abort ();
+    }
+  else
+    return true;
+}
+
 /* Special routine to get the alias set for C++.  */
 
 static HOST_WIDE_INT
 cxx_get_alias_set (t)
      tree t;
 {
-  /* It's not yet safe to use alias sets for classes in C++ because
-     the TYPE_FIELDs list for a class doesn't mention base classes.  */
-  if (AGGREGATE_TYPE_P (t))
+  /* It's not yet safe to use alias sets for classes in C++.  */
+  if (!ok_to_generate_alias_set_for_type(t))
     return 0;
 
   return c_common_get_alias_set (t);

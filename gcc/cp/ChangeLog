@@ -1,3 +1,9 @@
+2002-03-11  Dan Nicolaescu  <dann@ics.uci.edu>
+	    Daniel Berlin  <dan@dberlin.org>
+
+	* cp-lang.c (ok_to_generate_alias_set_for_type): New function.
+	(cxx_get_alias_set): Use it.
+
 2002-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (stabilize_expr): Prototype.
