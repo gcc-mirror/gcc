@@ -406,6 +406,10 @@ extern int vms_valid_decl_attribute_p ();
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     fprintf (FILE, "\t.align %d\n", LOG);
 
+#define UNALIGNED_SHORT_ASM_OP	".word"
+#define UNALIGNED_INT_ASM_OP	".long"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
+
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
