@@ -1,3 +1,9 @@
+2002-05-06  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.md ("altivec_mtvscr"): Change to
+        unspec_volatile.
+        ("altivec_mfvscr"): Same.
+
 2002-05-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* rtl.h (struct rtx_def): Update comments.
