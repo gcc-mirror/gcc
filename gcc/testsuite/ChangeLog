@@ -1,3 +1,7 @@
+2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/parse/ambig2.C: New test.
+
 2003-01-15  Richard Henderson  <rth@redhat.com>
 
 	* g++.dg/tls/init-2.C: Update error message string.

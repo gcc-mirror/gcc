@@ -1150,7 +1150,7 @@ typedef enum cp_parser_declarator_kind
   CP_PARSER_DECLARATOR_ABSTRACT,
   /* We want a named declarator.  */
   CP_PARSER_DECLARATOR_NAMED,
-  /* We don't mind.  */
+  /* We don't mind, but the name must be an unqualified-id  */
   CP_PARSER_DECLARATOR_EITHER
 } cp_parser_declarator_kind;
 
@@ -10168,16 +10168,24 @@ cp_parser_direct_declarator (parser, dcl_kind, ctor_dtor_or_conv_p)
 	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
 	    cp_parser_parse_tentatively (parser);
 	  declarator = cp_parser_declarator_id (parser);
-	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER
-	      && !cp_parser_parse_definitely (parser))
-	    declarator = error_mark_node;
+	  if (dcl_kind == CP_PARSER_DECLARATOR_EITHER)
+	    {
+	      if (!cp_parser_parse_definitely (parser))
+		declarator = error_mark_node;
+	      else if (TREE_CODE (declarator) != IDENTIFIER_NODE)
+		{
+		  cp_parser_error (parser, "expected unqualified-id");
+		  declarator = error_mark_node;
+		}
+	    }
+	  
 	  if (declarator == error_mark_node)
 	    break;
 	  
 	  if (TREE_CODE (declarator) == SCOPE_REF)
 	    {
 	      tree scope = TREE_OPERAND (declarator, 0);
-	  
+
 	      /* In the declaration of a member of a template class
 	     	 outside of the class itself, the SCOPE will sometimes
 	     	 be a TYPENAME_TYPE.  For example, given:

@@ -1,3 +1,9 @@
+2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9212
+	* parser.c (cp_parser_direct_declarator): If accepting either
+	abstract or named, the name must be an unqualified-id.
+
 2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (layout_virtual_bases): Avoid signed/unsigned warning.
