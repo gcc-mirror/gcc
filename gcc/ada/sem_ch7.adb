@@ -1685,6 +1685,8 @@ package body Sem_Ch7 is
                                                                       (Full));
          Set_Is_Volatile       (Priv, Is_Volatile       (Full));
          Set_Treat_As_Volatile (Priv, Treat_As_Volatile (Full));
+         Set_Is_Ada_2005       (Priv, Is_Ada_2005       (Full));
+         --  Why is atomic not copied here ???
 
          if Referenced (Full) then
             Set_Referenced (Priv);
