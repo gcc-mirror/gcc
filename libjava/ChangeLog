@@ -1,3 +1,12 @@
+2003-06-11  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/Frame.java,
+	java/awt/Graphics.java,
+	java/awt/Menu.java,
+	java/awt/Robot.java,
+	java/awt/image/ColorModel.java:
+	New versions from classpath.
+
 2003-06-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/PrintStream.java:

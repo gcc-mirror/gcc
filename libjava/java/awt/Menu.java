@@ -188,21 +188,6 @@ public int countItems ()
 /*************************************************************************/
 
 /**
-  * Returns the number of items in this menu.
-  *
-  * @return The number of items in this menu.
-  *
-  * @deprecated This method is deprecated in favor of <code>getItemCount()</code>.
-  */
-public int
-count()
-{
-  return(items.size());
-}
- 
-/*************************************************************************/
-
-/**
   * Returns the item at the specified index.
   *
   * @return The item at the specified index.

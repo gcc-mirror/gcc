@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002, 2003  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -113,7 +113,7 @@ public abstract class ColorModel implements Transparency
   {
     this(bits * 4, // total bits, sRGB, four channels
 	 nArray(bits, 4), // bits for each channel
-	 null, // FIXME: should be sRGB
+	 ColorSpace.getInstance(ColorSpace.CS_sRGB), // sRGB
 	 true, // has alpha
 	 false, // not premultiplied
 	 TRANSLUCENT,

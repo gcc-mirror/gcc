@@ -515,7 +515,7 @@ getFrames()
    */
   public void setMaximizedBounds (Rectangle maximizedBounds)
   {
-    throw new Error ("not implemented");
+    this.maximizedBounds = maximizedBounds;
   }
 
   /**

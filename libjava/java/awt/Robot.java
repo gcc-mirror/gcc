@@ -40,9 +40,13 @@ package java.awt;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * @since 1.3
+ */
 /** STUB CLASS ONLY */
 public class Robot
 {
+  private GraphicsDevice screen;
   private boolean waitForIdle;
   private int autoDelay;
   
@@ -68,6 +72,7 @@ public class Robot
   public Robot(GraphicsDevice screen) throws AWTException
   {
     this();
+    this.screen = screen;
   }
 
   public void mouseMove(int x, int y)
