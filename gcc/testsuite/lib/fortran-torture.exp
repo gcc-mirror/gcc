@@ -346,20 +346,18 @@ proc fortran-torture { args } {
 }
 
 #
-# ieee-options -- return options necessary for 100% ieee conformance.
+# add-ieee-options -- add options necessary for 100% ieee conformance.
 #
-proc ieee-options { } {
+proc add-ieee-options { } {
     # Ensure that excess precision does not cause problems.
-    if [istarget "i?86-*-*"] then {
-      return "-ffloat-store"
+    if { [istarget "i?86-*-*"]
+	 || [istarget "m68k-*-*"] } then {
+      uplevel 1 lappend additional_flags "-ffloat-store"
     }
-    if [istarget "m68k-*-*"] then {
-      return "-ffloat-store"
-    }
-                                                                                
+
     # Enable full IEEE compliance mode.
     if { [istarget "alpha*-*-*"]
          || [istarget "sh*-*-*"] } then {
-      return "-mieee"
+      uplevel 1 lappend additional_flags "-mieee"
     }
 }
