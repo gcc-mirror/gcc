@@ -1,3 +1,10 @@
+2002-12-11  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8887
+	* config/locale/generic/time_members.cc
+	(__timepunct<char>::_M_initialize_timepunct): Fix typos
+	in _M_date_format and _M_date_era_format string literals.
+
 2002-12-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* include/bits/slice_array.h (slice_array<>::operator=): Fix typo.
