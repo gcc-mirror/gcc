@@ -2352,7 +2352,7 @@ define_label (filename, line, name)
 
   if (DECL_INITIAL (decl) != 0)
     {
-      error_with_decl (decl, "duplicate label `%s'");
+      error ("duplicate label `%s'", IDENTIFIER_POINTER (name));
       return 0;
     }
   else
