@@ -52,9 +52,9 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"xp", 1},			\
-    {"noxp", -1},		\
-    {"xr", -1},			\
+  { {"xp", 1, "Generate code which uses the FPU"},			\
+    {"noxp", -1, "Do not generate code which uses the FPU"},		\
+    {"xr", -1, "Do not generate code which uses the FPU"},		\
     { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 0
