@@ -1762,6 +1762,7 @@ try_merge_delay_insns (insn, thread)
   for (trial = thread; !stop_search_p (trial, 1); trial = next_trial)
     {
       rtx pat = PATTERN (trial);
+      rtx oldtrial = trial;
 
       next_trial = next_nonnote_insn (trial);
 
@@ -1781,6 +1782,8 @@ try_merge_delay_insns (insn, thread)
 	  && (trial = try_split (pat, trial, 0)) != 0
 	  /* Update next_trial, in case try_split succeeded.  */
 	  && (next_trial = next_nonnote_insn (trial))
+	  /* Likewise THREAD.  */
+	  && (thread = oldtrial == thread ? trial : thread)
 	  && rtx_equal_p (PATTERN (next_to_match), PATTERN (trial))
 	  /* Have to test this condition if annul condition is different
 	     from (and less restrictive than) non-annulling one.  */
