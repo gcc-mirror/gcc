@@ -1905,7 +1905,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	  && GET_CODE (op1) == CONST_INT
 	  && GET_CODE (op2) == CONST_INT
 	  && INTVAL (op1) + INTVAL (op2) <= GET_MODE_BITSIZE (op0_mode)
-	  && width <= HOST_BITS_PER_WIDE_INT)
+	  && width <= (unsigned) HOST_BITS_PER_WIDE_INT)
 	{
 	  /* Extracting a bit-field from a constant */
 	  HOST_WIDE_INT val = INTVAL (op0);

@@ -1386,7 +1386,8 @@ set_identifier_size (size)
 
 tree
 build_int_2_wide (low, hi)
-     HOST_WIDE_INT low, hi;
+     unsigned HOST_WIDE_INT low;
+     HOST_WIDE_INT hi;
 {
   register tree t = make_node (INTEGER_CST);
 
@@ -4334,7 +4335,7 @@ tree_int_cst_msb (t)
 {
   register int prec;
   HOST_WIDE_INT h;
-  HOST_WIDE_INT l;
+  unsigned HOST_WIDE_INT l;
 
   /* Note that using TYPE_PRECISION here is wrong.  We care about the
      actual bits, not the (arbitrary) range of the type.  */

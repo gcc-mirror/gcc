@@ -2567,11 +2567,12 @@ choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
      int *post_shift_ptr;
      int *lgup_ptr;
 {
-  unsigned HOST_WIDE_INT mhigh_hi, mhigh_lo;
-  unsigned HOST_WIDE_INT mlow_hi, mlow_lo;
+  HOST_WIDE_INT mhigh_hi, mlow_hi;
+  unsigned HOST_WIDE_INT mhigh_lo, mlow_lo;
   int lgup, post_shift;
   int pow, pow2;
-  unsigned HOST_WIDE_INT nh, nl, dummy1, dummy2;
+  unsigned HOST_WIDE_INT nl, dummy1;
+  HOST_WIDE_INT nh, dummy2;
 
   /* lgup = ceil(log2(divisor)); */
   lgup = ceil_log2 (d);
@@ -2592,7 +2593,7 @@ choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
   /* mlow = 2^(N + lgup)/d */
  if (pow >= HOST_BITS_PER_WIDE_INT)
     {
-      nh = (unsigned HOST_WIDE_INT) 1 << (pow - HOST_BITS_PER_WIDE_INT);
+      nh = (HOST_WIDE_INT) 1 << (pow - HOST_BITS_PER_WIDE_INT);
       nl = 0;
     }
   else
@@ -2605,7 +2606,7 @@ choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
 
   /* mhigh = (2^(N + lgup) + 2^N + lgup - precision)/d */
   if (pow2 >= HOST_BITS_PER_WIDE_INT)
-    nh |= (unsigned HOST_WIDE_INT) 1 << (pow2 - HOST_BITS_PER_WIDE_INT);
+    nh |= (HOST_WIDE_INT) 1 << (pow2 - HOST_BITS_PER_WIDE_INT);
   else
     nl |= (unsigned HOST_WIDE_INT) 1 << pow2;
   div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,

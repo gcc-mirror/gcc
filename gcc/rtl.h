@@ -772,9 +772,18 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
    RTX.  Otherwise, vice versa.  Use this macro only when you are
    *sure* that you know that the MEM is in a structure, or is a
    scalar.  VAL is evaluated only once.  */
-#define MEM_SET_IN_STRUCT_P(RTX, VAL) 				\
-  ((VAL) ? (MEM_IN_STRUCT_P (RTX) = 1, MEM_SCALAR_P (RTX) = 0)	\
-   : (MEM_IN_STRUCT_P (RTX) = 0, MEM_SCALAR_P (RTX) = 1))
+#define MEM_SET_IN_STRUCT_P(RTX, VAL) do {	\
+  if (VAL)					\
+    {						\
+      MEM_IN_STRUCT_P (RTX) = 1;		\
+      MEM_SCALAR_P (RTX) = 0;			\
+    }						\
+  else						\
+    {						\
+      MEM_IN_STRUCT_P (RTX) = 0;		\
+      MEM_SCALAR_P (RTX) = 1;			\
+    }						\
+} while (0)
 
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias

@@ -1,3 +1,22 @@
+2000-05-04  Jason Merrill  <jason@casey.cygnus.com>
+
+	* simplify-rtx.c (simplify_ternary_operation): Cast to unsigned.
+	* stor-layout.c (place_field): Likewise.
+	* integrate.h (struct inline_remap): Make regno_pointer_align unsigned.
+	* expr.c (store_expr): Make align unsigned.
+	* explow.c (plus_constant_wide): Make low words unsigned.
+	* expmed.c (choose_multiplier): Likewise.
+	* fold-const.c (fold):  Likewise.
+	* tree.h (build_int_2): Likewise.
+	* tree.c (build_int_2_wide, tree_int_cst_msb): Likewise.
+	* emit-rtl.c (gen_reg_rtx): Add cast to unsigned char*.
+	(init_emit): Change cast to unsigned char*.
+	* varasm.c (compare_constant_1): Add cast to char*.
+	* gcse.c (delete_null_pointer_checks): Change cast to unsigned int*.
+	* reload1.c (reload): Likewise.
+
+	* rtl.h (MEM_SET_IN_STRUCT_P): Use do { } while (0).
+
 Thu May  4 14:37:23 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* predict.c (estimate_probability): If no prediction was found, then

@@ -572,7 +572,7 @@ gen_reg_rtx (mode)
 
       new = xrealloc (f->emit->regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
-      f->emit->regno_pointer_align = new;
+      f->emit->regno_pointer_align = (unsigned char *) new;
 
       new1 = (rtx *) xrealloc (f->emit->x_regno_reg_rtx,
 			       old_size * 2 * sizeof (rtx));
@@ -3893,8 +3893,8 @@ init_emit ()
     = (char *) xcalloc (f->emit->regno_pointer_flag_length, sizeof (char));
 
   f->emit->regno_pointer_align
-    = (char *) xcalloc (f->emit->regno_pointer_flag_length,
-			sizeof (char));
+    = (unsigned char *) xcalloc (f->emit->regno_pointer_flag_length,
+				 sizeof (unsigned char));
 
   regno_reg_rtx 
     = (rtx *) xcalloc (f->emit->regno_pointer_flag_length * sizeof (rtx),

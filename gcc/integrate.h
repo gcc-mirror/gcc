@@ -95,7 +95,7 @@ struct inline_remap
 
   /* Indications for regs being pointers and their alignment.  */
   char *regno_pointer_flag;
-  char *regno_pointer_align;
+  unsigned char *regno_pointer_align;
 
   /* The next few fields are used for subst_constants to record the SETs
      that it saw.  */

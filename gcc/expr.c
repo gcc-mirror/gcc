@@ -3926,7 +3926,7 @@ store_expr (exp, target, want_value)
 		= size_binop (MIN_EXPR,
 			      make_tree (sizetype, size),
 			      size_int (TREE_STRING_LENGTH (exp)));
-	      int align = TYPE_ALIGN (TREE_TYPE (exp));
+	      unsigned int align = TYPE_ALIGN (TREE_TYPE (exp));
 	      rtx copy_size_rtx = expand_expr (copy_size, NULL_RTX,
 					       VOIDmode, 0);
 	      rtx label = 0;

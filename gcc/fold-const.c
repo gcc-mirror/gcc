@@ -5185,7 +5185,8 @@ fold (expr)
 	{
 	  if (TREE_CODE (arg0) == INTEGER_CST)
 	    {
-	      HOST_WIDE_INT low, high;
+	      unsigned HOST_WIDE_INT low;
+	      HOST_WIDE_INT high;
 	      int overflow = neg_double (TREE_INT_CST_LOW (arg0),
 					 TREE_INT_CST_HIGH (arg0),
 					 &low, &high);
@@ -5219,7 +5220,8 @@ fold (expr)
 	      if (! TREE_UNSIGNED (type)
 		  && TREE_INT_CST_HIGH (arg0) < 0)
 		{
-		  HOST_WIDE_INT low, high;
+		  unsigned HOST_WIDE_INT low;
+		  HOST_WIDE_INT high;
 		  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
 					     TREE_INT_CST_HIGH (arg0),
 					     &low, &high);

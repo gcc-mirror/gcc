@@ -5093,7 +5093,7 @@ delete_null_pointer_checks (f)
   /* Go through the basic blocks, seeing whether or not each block
      ends with a conditional branch whose condition is a comparison
      against zero.  Record the register compared in BLOCK_REG.  */
-  block_reg = (int *) xcalloc (n_basic_blocks, sizeof (int));
+  block_reg = (unsigned int *) xcalloc (n_basic_blocks, sizeof (int));
   for (bb = 0; bb < n_basic_blocks; bb++)
     {
       rtx last_insn = BLOCK_END (bb);
