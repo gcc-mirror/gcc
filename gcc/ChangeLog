@@ -1,7 +1,10 @@
 2004-07-06 Jan Beulich <jbeulich@novell.com>
                                                                                 
-        * config/i386/i386.c (ix86_gimplify_va_arg): Don't need temporary for
-        passing arguments the containers for which are registers.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Don't need temporary for
+	passing arguments the containers for which are registers.
+
+	* calls.c (emit_library_call_value_1): Use mode of function parameter
+	rather than that of argument since constants have none.
 
 2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
 
