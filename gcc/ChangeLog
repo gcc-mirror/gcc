@@ -1,3 +1,8 @@
+2000-10-29  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Document that -V will only work for very similar
+	versions of driver and compiler.
+
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
 	* cppmacro.c (_cpp_create_definition): Optimize the case of

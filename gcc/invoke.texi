@@ -3948,14 +3948,20 @@ that you originally invoked continues to run and invoke the other
 executables (preprocessor, compiler per se, assembler and linker)
 that do the real work.  However, since no real work is done in the
 driver program, it usually does not matter that the driver program
-in use is not the one for the specified target and version.
+in use is not the one for the specified target.  It is common for the
+interface to the other executables to change incompatibly between
+compiler versions, so unless the version specified is very close to that
+of the driver (for example, @samp{-V 3.0} with a driver program from GCC
+version 3.0.1), use of @samp{-V} may not work; for example, using
+@samp{-V 2.95.2} will not work with a driver program from GCC 3.0.
 
 The only way that the driver program depends on the target machine is
 in the parsing and handling of special machine-specific options.
 However, this is controlled by a file which is found, along with the
 other executables, in the directory for the specified version and
 target machine.  As a result, a single installed driver program adapts
-to any specified target machine and compiler version.
+to any specified target machine, and sufficiently similar compiler
+versions.
 
 The driver program executable does control one significant thing,
 however: the default version and target machine.  Therefore, you can
