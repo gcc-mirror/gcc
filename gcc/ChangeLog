@@ -1,3 +1,10 @@
+Fri Feb 12 13:20:52 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* h8300.md (zero_extendhisi2 H8/300 variant): Correctly handle
+	extending a CONST_INT.
+
+	* h8300.md (peephole for combining memrefs): Delete incorrect peephole.
+
 Fri Feb 12 18:29:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (loop_insn_first_p, biv_elimination_giv_has_0_offset):
