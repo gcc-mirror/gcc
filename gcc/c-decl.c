@@ -1073,12 +1073,12 @@ pushtag (name, type)
 
       if (TYPE_NAME (type) == 0)
 	TYPE_NAME (type) = name;
-
-      if (b == global_binding_level)
-	b->tags = perm_tree_cons (name, type, b->tags);
-      else
-	b->tags = saveable_tree_cons (name, type, b->tags);
     }
+
+  if (b == global_binding_level)
+    b->tags = perm_tree_cons (name, type, b->tags);
+  else
+    b->tags = saveable_tree_cons (name, type, b->tags);
 
   /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current binding level.  This fake
@@ -4229,11 +4229,18 @@ parmlist_tags_warning ()
   for (elt = current_binding_level->tags; elt; elt = TREE_CHAIN (elt))
     {
       enum tree_code code = TREE_CODE (TREE_VALUE (elt));
-      warning ("`%s %s' declared inside parameter list",
-	       (code == RECORD_TYPE ? "struct"
-		: code == UNION_TYPE ? "union"
-		: "enum"),
-	       IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+      if (TREE_PURPOSE (elt) != 0)
+	warning ("`%s %s' declared inside parameter list",
+		 (code == RECORD_TYPE ? "struct"
+		  : code == UNION_TYPE ? "union"
+		  : "enum"),
+		 IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
+      else
+	warning ("anonymous %s declared inside parameter list",
+		 (code == RECORD_TYPE ? "struct"
+		  : code == UNION_TYPE ? "union"
+		  : "enum"));
+
       if (! already)
 	{
 	  warning ("its scope is only this definition or declaration,");
@@ -5309,6 +5316,19 @@ store_parm_decls ()
 	    TREE_CHAIN (last) = type;
 	  else
 	    actual = type;
+
+	  /* We are going to assign a new value for the TYPE_ACTUAL_ARG_TYPES
+	     of the type of this function, but we need to avoid having this
+	     affect the types of other similarly-typed functions, so we must
+	     first force the generation of an identical (but separate) type
+	     node for the relevant function type.  The new node we create
+	     will be a variant of the main variant of the original function
+	     type.  */
+
+	  TREE_TYPE (fndecl)
+	    = build_type_copy (TYPE_MAIN_VARIANT (TREE_TYPE (fndecl)),
+			       TYPE_READONLY (TREE_TYPE (fndecl)),
+			       TYPE_VOLATILE (TREE_TYPE (fndecl)));
 
 	  TYPE_ACTUAL_ARG_TYPES (TREE_TYPE (fndecl)) = actual;
 	}
