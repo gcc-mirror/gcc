@@ -1,5 +1,7 @@
 Sat Nov 27 08:38:26 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (store_constructor): Don't clobber TARGET if CLEARED.
+
 	* combine.c (try_combine): Add code to try to merge a set of a
 	two-word pseudo to a constant with a setting of one of those words
 	to a constant.
