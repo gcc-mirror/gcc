@@ -191,7 +191,7 @@ char *mips_cpu_string;		/* for -mcpu=<xxx> */
 char *mips_isa_string;		/* for -mips{1,2,3} */
 
 /* Generating calls to position independent functions?  */
-enum attr_abicalls mips_abicalls;
+enum mips_abicalls_type mips_abicalls;
 
 /* Array to RTX class classification.  At present, we care about
    whether the operator is an add-type operator, or a divide/modulus,
@@ -2904,9 +2904,9 @@ override_options ()
     HALF_PIC_INIT ();
 
   if (TARGET_ABICALLS)
-    mips_abicalls = ABICALLS_YES;
+    mips_abicalls = MIPS_ABICALLS_YES;
   else
-    mips_abicalls = ABICALLS_NO;
+    mips_abicalls = MIPS_ABICALLS_NO;
 
   /* -mrnames says to use the MIPS software convention for register
      names instead of the hardware names (ie, a0 instead of $4).
