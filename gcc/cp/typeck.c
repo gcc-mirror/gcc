@@ -2974,7 +2974,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    result = expr_tree_cons (NULL_TREE,
 				     cp_convert (double_type_node, val),
 				     result);
-	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
+	  else if (IS_AGGR_TYPE (TREE_TYPE (val))
 		   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (val)))
 	    {
 	      cp_warning ("cannot pass objects of type `%T' through `...'",

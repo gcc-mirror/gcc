@@ -1,5 +1,9 @@
 Thu Mar 26 11:16:30 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (build_over_call): Check IS_AGGR_TYPE, not 
+	TYPE_LANG_SPECIFIC.
+	* typeck.c (convert_arguments): Likewise.
+
 	* decl.c (grokdeclarator): Remove const and volatile from type after
 	setting constp and volatilep.
 
