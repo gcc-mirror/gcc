@@ -1,5 +1,11 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* stmt.c (expand_asm, expand_asm_operands): Make them static.
+	* tree.h: Remove the prototypes for expand_asm and
+	expand_asm_operands.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* passes.c (rest_of_compilation): Make it static.
 	* toplev.h: Remove the prototype for rest_of_compilation.
 

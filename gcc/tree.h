@@ -3466,7 +3466,6 @@ extern void expand_expr_stmt_value (tree, int, int);
 extern int warn_if_unused_value (tree, location_t);
 extern void expand_label (tree);
 extern void expand_goto (tree);
-extern void expand_asm (tree, int);
 
 extern rtx expand_stack_save (void);
 extern void expand_stack_restore (tree);
@@ -3735,7 +3734,6 @@ extern bool parse_output_constraint (const char **, int, int, int,
 				     bool *, bool *, bool *);
 extern bool parse_input_constraint (const char **, int, int, int, int,
 				    const char * const *, bool *, bool *);
-extern void expand_asm_operands (tree, tree, tree, tree, int, location_t);
 extern void expand_asm_expr (tree);
 extern tree resolve_asm_operand_names (tree, tree, tree);
 extern void expand_case (tree);
