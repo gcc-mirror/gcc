@@ -1,3 +1,15 @@
+Sat Nov  6 09:57:59 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (dbxout.o): Depend on ggc.h.
+	(dwarf2out.o): Likewise.
+	(xcoffout.o): Likewise.
+	* dbxout.c: Include ggc.h.
+	(dbxout_init): Register lastfile as a root.
+	* dwarf2out.c: Include ggc.h.
+	(dwarf2out_line): Register lastfile as a root.
+	* xcoffout.c: Include ggc.h.
+	(xcoffout_source_line): Register xcoff_lastfile as a root.
+
 Sat Nov  6 09:52:09 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (movdf_1, movxf_1): Earlyclobber general regs destination.

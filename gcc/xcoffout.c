@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "toplev.h"
 #include "output.h"
+#include "ggc.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 
@@ -350,6 +351,9 @@ xcoffout_source_file (file, filename, inline_p)
 	  fprintf (file, "\n");
 	  xcoff_current_include_file = filename;
 	}
+      
+      if (!xcoff_lastfile)
+	ggc_add_root (&xcoff_lastfile, 1);
 
       xcoff_lastfile = filename;
     }

@@ -81,6 +81,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dbxout.h"
 #include "toplev.h"
 #include "tm_p.h"
+#include "ggc.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
@@ -463,6 +464,8 @@ dbxout_init (asm_file, input_file_name, syms)
      and output them all, except for those already output.  */
 
   dbxout_typedefs (syms);
+
+  ggc_add_string_root ((char **) &lastfile, 1);
 }
 
 /* Output any typedef names for types described by TYPE_DECLs in SYMS,

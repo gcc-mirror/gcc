@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #include "toplev.h"
 #include "dyn-string.h"
+#include "ggc.h"
 
 /* We cannot use <assert.h> in GCC source, since that would include
    GCC's assert.h, which may not be compatible with the host compiler.  */
@@ -9698,6 +9699,9 @@ dwarf2out_line (filename, line)
 	  /* Emit the .file and .loc directives understood by GNU as.  */
 	  if (lastfile == 0 || strcmp (filename, lastfile))
 	    {
+	      if (lastfile == 0)
+		ggc_add_string_root ((char **) &lastfile, 1);
+
 	      fprintf (asm_out_file, "\t.file 0 \"%s\"\n", filename);
 	      lastfile = filename;
 	    }
