@@ -1527,7 +1527,8 @@ void f () __attribute__ ((weak, alias ("__f")));
 @end smallexample
 
 declares @samp{f} to be a weak alias for @samp{__f}.  In C++, the
-mangled name for the target must be used.
+mangled name for the target must be used.  It is an error if @samp{__f}
+is not defined in the same translation unit.
 
 Not all target machines support this attribute.
 
@@ -8568,6 +8569,7 @@ for further explanation.
 * Solaris Pragmas::
 * Symbol-Renaming Pragmas::
 * Structure-Packing Pragmas::
+* Weak Pragmas::
 @end menu
 
 @node ARM Pragmas
@@ -8750,7 +8752,7 @@ way of knowing that that happened.)
 @node Structure-Packing Pragmas
 @subsection Structure-Packing Pragmas
 
-For compatibility with Win32, GCC supports as set of @code{#pragma}
+For compatibility with Win32, GCC supports a set of @code{#pragma}
 directives which change the maximum alignment of members of structures,
 unions, and classes subsequently defined.  The @var{n} value below always
 is required to be a small power of two and specifies the new alignment
@@ -8770,6 +8772,28 @@ stack; thus it is possible to have @code{#pragma pack(push)} followed by
 multiple @code{#pragma pack(@var{n})} instances and finalized by a single
 @code{#pragma pack(pop)}.
 @end enumerate
+
+@node Weak Pragmas
+@subsection Weak Pragmas
+
+For compatibility with SVR4, GCC supports a set of @code{#pragma}
+directives for declaring symbols to be weak, and defining weak
+aliases.
+
+@table @code
+@item #pragma weak @var{symbol}
+@cindex pragma, weak
+This pragma declares @var{symbol} to be weak, as if the declaration
+had the attribute of the same name.  The pragma may appear before
+or after the declaration of @var{symbol}, but must appear before 
+either its first use or its definition.  It is not an error for
+@var{symbol} to never be defined at all.
+
+@item #pragma weak @var{symbol1} = @var{symbol2}
+This pragma declares @var{symbol1} to be a weak alias of @var{symbol2}.
+It is an error if @var{symbol2} is not defined in the current
+translation unit.
+@end table
 
 @node Unnamed Fields
 @section Unnamed struct/union fields within structs/unions

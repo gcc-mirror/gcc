@@ -1,3 +1,9 @@
+2005-03-17  Richard Henderson  <rth@redhat.com>
+
+        * doc/extend.texi (Weak Pragmas): New section.
+        (attribute alias): Clarify that target must be in the same
+        translation unit.
+
 2005-03-16  James E. Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.c (issue_nops_and_insn): Check first_insn attribute,
