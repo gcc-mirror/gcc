@@ -2166,7 +2166,7 @@ rs6000_makes_calls ()
 	SP---->	+---------------------------------------+
 		| back chain to caller			| 0
 		+---------------------------------------+
-		| saved LR				| 4
+		| caller's saved LR			| 4
 		+---------------------------------------+
 		| Parameter save area (P)		| 8
 		+---------------------------------------+
@@ -2274,7 +2274,7 @@ rs6000_stack_info ()
   if (v4_call_p)
     {
       info_ptr->cr_save_offset = info_ptr->gp_save_offset - reg_size;
-      info_ptr->lr_save_offset = - info_ptr->total_size + reg_size;
+      info_ptr->lr_save_offset = reg_size;
     }
   else
     {
