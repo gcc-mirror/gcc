@@ -1,3 +1,9 @@
+Fri Jul 10 12:34:37 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.c (const_uint32_operand): Recognize
+	CONSTANT_P_RTX.
+	(const_sint32_operand): Likewise. 
+
 Thu Jul  9 22:58:59 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (alias.o): Depend on $(EXPR_H).
