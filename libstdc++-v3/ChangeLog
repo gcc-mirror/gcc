@@ -1,3 +1,9 @@
+2002-04-05  Jonathan Wakely <jw@kayari.org>
+
+	* include/bits/stl_algo.h (unique_copy, __gcd, rotate, rotate_copy,
+	random_shuffle, partition, stable_partition, sort, stable_sort,
+	partial_sort, partial_sort_copy, nth_element):  Doxygenate.
+
 2002-04-05  David S. Miller  <davem@redhat.com>
 
 	* config/os/gnu-linux/bits/os_defines.h
