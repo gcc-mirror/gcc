@@ -291,7 +291,7 @@ while [ $# != 0 ]; do
 	  /\/\/[^*]/			s|//\(.*\)$|/*\1*/|
 	  /[ 	]_IO[A-Z]*[ 	]*(/	s/\(_IO[A-Z]*[ 	]*(\)\(.\),/\1'\''\2'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
-	  /#define._IO/			s/'\''\([cgxt]\)'\''/\1/g
+	  /#define._IO/			s/'\''\([cgxtf]\)'\''/\1/g
 	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
 	  /[^A-Z0-9_]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
 	  /[^A-Z0-9]_CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
@@ -878,16 +878,17 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
-# Another IRIX 4.0.1 header file contains the string "//"
-file=elf_abi.h
-if [ -r ${LIB}/$file ]; then
-  echo Fixing $file, overeager sed script
-  sed -e 's|"/\*"\*/|"//"|' ${LIB}/$file > ${LIB}/${file}.sed
-  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
-  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
-    rm -f ${LIB}/$file
+# Some IRIX header files contains the string "//"
+for file in elf_abi.h elf.h; do
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, overeager sed script
+    sed -e 's|"/\*"\*/|"//"|' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
   fi
-fi
+done
 
 # Same problem with a file from SunOS 4.1.3 : a header file containing
 # the string "//" embedded in "/**/"
