@@ -1723,14 +1723,17 @@ tree_could_trap_p (tree expr)
 	honor_trapv = true;
     }
 
+ restart:
   switch (code)
     {
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case BIT_FIELD_REF:
-      t = TREE_OPERAND (expr, 0);
-      return tree_could_trap_p (t);
+    case WITH_SIZE_EXPR:
+      expr = TREE_OPERAND (expr, 0);
+      code = TREE_CODE (expr);
+      goto restart;
 
     case ARRAY_RANGE_REF:
       /* Let us be conservative here for now.  We might be checking bounds of
@@ -1843,6 +1846,8 @@ tree_could_throw_p (tree t)
       t = TREE_OPERAND (t, 1);
     }
 
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CALL_EXPR)
     return (call_expr_flags (t) & ECF_NOTHROW) == 0;
   if (flag_non_call_exceptions)

@@ -448,7 +448,10 @@ find_func_aliases (tree stp)
 	{
 	  op0 = TREE_OPERAND (stp, 0);
 	  op1 = TREE_OPERAND (stp, 1);
+	  if (TREE_CODE (op1) == WITH_SIZE_EXPR)
+	    op1 = TREE_OPERAND (op1, 0);
 	}
+
       /* lhsAV should always have an alias variable */
       lhsAV = get_alias_var (op0);
       if (!lhsAV)

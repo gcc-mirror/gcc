@@ -1413,6 +1413,14 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_decimal_int (buffer, SSA_NAME_VERSION (node));
       break;
 
+    case WITH_SIZE_EXPR:
+      pp_string (buffer, "WITH_SIZE_EXPR <");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, ">");
+      break;
+
     case VALUE_HANDLE:
       pp_printf (buffer, "VH.%d", VALUE_HANDLE_ID (node));
       break;

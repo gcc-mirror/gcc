@@ -885,6 +885,13 @@ DEFTREECODE (VALUE_HANDLE, "value_handle", 'x', 0)
    baseclass of itself or another class.  */
 DEFTREECODE (TREE_BINFO, "tree_binfo", 'x', 0)
 
+/* Records the size for an expression of variable size type.  This is
+   for use in contexts in which we are accessing the entire object,
+   such as for a function call, or block copy.
+   Operand 0 is the real expression.
+   Operand 1 is the size of the type in the expression.  */
+DEFTREECODE (WITH_SIZE_EXPR, "with_size_expr", 'e', 2)
+
 /*
 Local variables:
 mode:c

@@ -384,6 +384,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 	{
 	  ass_var = TREE_OPERAND (stmt, 0);
 	  call = TREE_OPERAND (stmt, 1);
+	  if (TREE_CODE (call) == WITH_SIZE_EXPR)
+	    call = TREE_OPERAND (call, 0);
 	}
       else
 	{

@@ -931,23 +931,38 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none, prev_vops);
       return;
 
+    case WITH_SIZE_EXPR:
+      /* WITH_SIZE_EXPR is a pass-through reference to it's first argument,
+	 and an rvalue reference to its second argument.  */
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none, prev_vops);
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
+      return;
+
     case CALL_EXPR:
       get_call_expr_operands (stmt, expr, prev_vops);
       return;
 
     case MODIFY_EXPR:
-      get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none, prev_vops);
+      {
+	int subflags;
+	tree op;
 
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ARRAY_REF 
-          || TREE_CODE (TREE_OPERAND (expr, 0)) == COMPONENT_REF
-	  || TREE_CODE (TREE_OPERAND (expr, 0)) == REALPART_EXPR
-	  || TREE_CODE (TREE_OPERAND (expr, 0)) == IMAGPART_EXPR)
-        get_expr_operands (stmt, &TREE_OPERAND (expr, 0), opf_is_def, 
-	                   prev_vops);
-      else
-        get_expr_operands (stmt, &TREE_OPERAND (expr, 0), 
-	                   opf_is_def | opf_kill_def, prev_vops);
-      return;
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none, prev_vops);
+
+	op = TREE_OPERAND (expr, 0);
+	if (TREE_CODE (op) == WITH_SIZE_EXPR)
+	  op = TREE_OPERAND (expr, 0);
+	if (TREE_CODE (op) == ARRAY_REF 
+	    || TREE_CODE (op) == COMPONENT_REF
+	    || TREE_CODE (op) == REALPART_EXPR
+	    || TREE_CODE (op) == IMAGPART_EXPR)
+	  subflags = opf_is_def;
+	else
+	  subflags = opf_is_def | opf_kill_def;
+
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), subflags, prev_vops);
+	return;
+      }
 
     case VA_ARG_EXPR:
       /* Mark VA_ARG_EXPR nodes as making volatile references.  FIXME,

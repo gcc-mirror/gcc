@@ -1,3 +1,7 @@
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
+	* gcc.c-torture/compile/20020210-1.c: Remove XFAIL.
+
 2004-07-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* lib/fortran-torture.exp (fortran-torture): Don't test compile

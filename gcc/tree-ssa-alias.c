@@ -1680,6 +1680,9 @@ add_pointed_to_expr (tree ptr, tree value)
 {
   struct ptr_info_def *pi;
 
+  if (TREE_CODE (value) == WITH_SIZE_EXPR)
+    value = TREE_OPERAND (value, 0);
+
 #if defined ENABLE_CHECKING
   /* Pointer variables should have been handled by merge_pointed_to_info.  */
   if (TREE_CODE (value) == SSA_NAME

@@ -1,5 +1,33 @@
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
+	* tree-def (WITH_SIZE_EXPR): New.
+	* explow.c (expr_size, int_expr_size): Handle WITH_SIZE_EXPR.
+	* expr.c (expand_expr_real_1): Likewise.
+	* gimplify.c (maybe_with_size_expr): New.
+	(gimplify_arg, gimplify_modify_expr): Use it.
+	(gimplify_modify_expr_to_memcpy): Take size parameter.
+	(gimplify_modify_expr_to_memset): Likewise.
+	(gimplify_expr): Handle WITH_SIZE_EXPR.
+	* tree-alias-common.c (find_func_aliases): Likewise.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	(tree_could_throw_p): Likewise.
+	* tree-gimple.c (is_gimple_lvalue): Likewise.
+	(get_call_expr_in): Likewise.
+	* tree-inline.c (estimate_num_insns_1): Likewise.
+	(expand_calls_inline): Likewise.
+	* tree-nested.c (convert_call_expr): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-sra.c (sra_walk_expr): Likewise.
+	* tree-ssa-alias.c (add_pointed_to_expr): Likewise.
+	* tree-ssa-ccp.c (get_rhs, set_rhs): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-tailcall.c (find_tail_calls): Likewise.
+	
+	* calls.c (expand_call): Reset old_stack_allocated after
+	calling emit_stack_restore.
+
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
 	* langhooks-def.h (LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING,
 	lhd_tree_inlining_copy_res_decl_for_inlining): Remove.
 	* langhooks.c (lhd_tree_inlining_copy_res_decl_for_inlining): Remove.

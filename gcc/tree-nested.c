@@ -1196,7 +1196,8 @@ convert_call_expr (tree *tp, int *walk_subtrees, void *data)
 
     case RETURN_EXPR:
     case MODIFY_EXPR:
-      /* Only return and modify may contain calls.  */
+    case WITH_SIZE_EXPR:
+      /* Only return modify and with_size_expr may contain calls.  */
       *walk_subtrees = 1;
       break;
 

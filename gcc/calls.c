@@ -3045,6 +3045,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 	  stack_pointer_delta = old_stack_pointer_delta;
 	  pending_stack_adjust = old_pending_adj;
+	  old_stack_allocated = stack_pointer_delta - pending_stack_adjust;
 	  stack_arg_under_construction = old_stack_arg_under_construction;
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
 	  stack_usage_map = initial_stack_usage_map;
