@@ -37,13 +37,13 @@ void
 set_Wformat (int setting)
 {
   warn_format = setting;
-  warn_format_y2k = setting;
   warn_format_extra_args = setting;
   warn_format_zero_length = setting;
   if (setting != 1)
     {
       warn_format_nonliteral = setting;
       warn_format_security = setting;
+      warn_format_y2k = setting;
     }
   /* Make sure not to disable -Wnonnull if -Wformat=0 is specified.  */
   if (setting)

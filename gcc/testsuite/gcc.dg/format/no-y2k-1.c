@@ -1,7 +1,7 @@
-/* Test for warnings for Y2K problems being disabled by -Wno-format-y2k.  */
+/* Test for warnings for Y2K problems not being on by default.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 -Wformat -Wno-format-y2k" } */
+/* { dg-options "-std=gnu99 -Wformat" } */
 
 #include "format.h"
 

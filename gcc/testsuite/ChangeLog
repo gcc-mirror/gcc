@@ -1,3 +1,11 @@
+2003-11-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/3190
+	PR c/8714
+	* gcc.dg/format/c90-strftime-1.c, gcc.dg/format/c90-strftime-2.c,
+	gcc.dg/format/c99-strftime-1.c, gcc.dg/format/ext3.c,
+	gcc.dg/format/no-y2k-1.c: Update.
+
 2003-11-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/10467

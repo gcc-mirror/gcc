@@ -2,7 +2,7 @@
    pedantic C90 mode.  */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
-/* { dg-options "-std=iso9899:1990 -pedantic -Wformat" } */
+/* { dg-options "-std=iso9899:1990 -pedantic -Wformat -Wformat-y2k" } */
 
 #include "format.h"
 

@@ -218,7 +218,7 @@ in the following sections.
 -Werror  -Werror-implicit-function-declaration @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
--Wformat-security  -Wno-format-y2k @gol
+-Wformat-security  -Wformat-y2k @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
 -Wimport  -Wno-import  -Winit-self  -Winline @gol
 -Wno-invalid-offsetof  -Winvalid-pch @gol
@@ -2125,14 +2125,14 @@ Since @option{-Wformat} also checks for null format arguments for
 several functions, @option{-Wformat} also implies @option{-Wnonnull}.
 
 @option{-Wformat} is included in @option{-Wall}.  For more control over some
-aspects of format checking, the options @option{-Wno-format-y2k},
+aspects of format checking, the options @option{-Wformat-y2k},
 @option{-Wno-format-extra-args}, @option{-Wno-format-zero-length},
 @option{-Wformat-nonliteral}, @option{-Wformat-security}, and
 @option{-Wformat=2} are available, but are not included in @option{-Wall}.
 
-@item -Wno-format-y2k
-@opindex Wno-format-y2k
-If @option{-Wformat} is specified, do not warn about @code{strftime}
+@item -Wformat-y2k
+@opindex Wformat-y2k
+If @option{-Wformat} is specified, also warn about @code{strftime}
 formats which may yield only a two-digit year.
 
 @item -Wno-format-extra-args
@@ -2176,7 +2176,7 @@ included in @option{-Wformat-nonliteral}.)
 @opindex Wformat=2
 Enable @option{-Wformat} plus format checks not included in
 @option{-Wformat}.  Currently equivalent to @samp{-Wformat
--Wformat-nonliteral -Wformat-security}.
+-Wformat-nonliteral -Wformat-security -Wformat-y2k}.
 
 @item -Wnonnull
 @opindex Wnonnull
