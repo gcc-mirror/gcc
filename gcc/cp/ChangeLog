@@ -1,3 +1,12 @@
+2002-12-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (modify_vtable_entry): Remove unused variable.
+	(get_vcall_index): Always expect a non-thunk.
+	(update_vtable_entry_for_fn): Combine covariant adjustments, when
+	overriding a thunk. Pass get_vcall_index a non-thunk.
+
+	* decl2.c (finish_file): Mark undefined inlines as extern.
+
 2002-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (RETURN_INIT): Remove.

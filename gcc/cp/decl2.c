@@ -2802,7 +2802,14 @@ finish_file ()
 
       if (TREE_USED (decl) && DECL_DECLARED_INLINE_P (decl)
 	  && !(TREE_ASM_WRITTEN (decl) || DECL_SAVED_TREE (decl)))
-	cp_warning_at ("inline function `%D' used but never defined", decl);
+	{
+	  cp_warning_at ("inline function `%D' used but never defined", decl);
+	  /* This symbol is effectively an "extern" declaration now.
+	     This is not strictly necessary, but removes a duplicate
+	     warning.  */
+	  TREE_PUBLIC (decl) = 1;
+	}
+      
     }
   
   /* We give C linkage to static constructors and destructors.  */

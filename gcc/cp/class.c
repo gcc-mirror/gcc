@@ -716,8 +716,6 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
   if (fndecl != BV_FN (v)
       || !tree_int_cst_equal (delta, BV_DELTA (v)))
     {
-      tree base_fndecl;
-
       /* We need a new vtable for BINFO.  */
       if (make_new_vtable (t, binfo))
 	{
@@ -730,7 +728,6 @@ modify_vtable_entry (t, binfo, fndecl, delta, virtuals)
 	  v = *virtuals;
 	}
 
-      base_fndecl = BV_FN (v);
       BV_DELTA (v) = delta;
       BV_VCALL_INDEX (v) = NULL_TREE;
       BV_FN (v) = fndecl;
@@ -2331,9 +2328,6 @@ get_vcall_index (tree fn, tree type)
 {
   tree v;
 
-  if (DECL_THUNK_P (fn))
-    fn = THUNK_TARGET (fn);
-
   for (v = CLASSTYPE_VCALL_INDICES (type); v; v = TREE_CHAIN (v))
     if ((DECL_DESTRUCTOR_P (fn) && DECL_DESTRUCTOR_P (TREE_PURPOSE (v)))
 	|| same_signature_p (fn, TREE_PURPOSE (v)))
@@ -2361,18 +2355,18 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   tree delta;
   tree virtual_base;
   tree first_defn;
+  tree overrider_fn, overrider_target;
+  tree target_fn = DECL_THUNK_P (fn) ? THUNK_TARGET (fn) : fn;
+  tree over_return, base_return;
   bool lost = false;
 
-  if (DECL_THUNK_P (fn))
-    fn = THUNK_TARGET (fn);
-  
   /* Find the nearest primary base (possibly binfo itself) which defines
      this function; this is the class the caller will convert to when
      calling FN through BINFO.  */
   for (b = binfo; ; b = get_primary_binfo (b))
     {
       my_friendly_assert (b, 20021227);
-      if (look_for_overrides_here (BINFO_TYPE (b), fn))
+      if (look_for_overrides_here (BINFO_TYPE (b), target_fn))
 	break;
 
       /* The nearest definition is from a lost primary.  */
@@ -2382,58 +2376,85 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   first_defn = b;
 
   /* Find the final overrider.  */
-  overrider = find_final_overrider (TYPE_BINFO (t), b, fn);
+  overrider = find_final_overrider (TYPE_BINFO (t), b, target_fn);
   if (overrider == error_mark_node)
     return;
-  {
-    /* Check for adjusting covariant return types. */
-    tree over_return = TREE_TYPE (TREE_TYPE (TREE_PURPOSE (overrider)));
-    tree base_return = TREE_TYPE (TREE_TYPE (fn));
+  overrider_target = overrider_fn = TREE_PURPOSE (overrider);
+  
+  /* Check for adjusting covariant return types. */
+  over_return = TREE_TYPE (TREE_TYPE (overrider_target));
+  base_return = TREE_TYPE (TREE_TYPE (target_fn));
+  
+  if (POINTER_TYPE_P (over_return)
+      && TREE_CODE (over_return) == TREE_CODE (base_return)
+      && CLASS_TYPE_P (TREE_TYPE (over_return))
+      && CLASS_TYPE_P (TREE_TYPE (base_return)))
+    {
+      /* If FN is a covariant thunk, we must figure out the adjustment
+         to the final base FN was converting to. As OVERRIDER_TARGET might
+         also be converting to the return type of FN, we have to
+         combine the two conversions here.  */
+      tree fixed_offset, virtual_offset;
+      
+      if (DECL_THUNK_P (fn))
+	{
+	  fixed_offset = ssize_int (THUNK_FIXED_OFFSET (fn));
+	  virtual_offset = THUNK_VIRTUAL_OFFSET (fn);
+	  if (virtual_offset)
+	    virtual_offset = binfo_for_vbase (BINFO_TYPE (virtual_offset),
+					      TREE_TYPE (over_return));
+	}
+      else
+	fixed_offset = virtual_offset = NULL_TREE;
 
-    if (POINTER_TYPE_P (over_return)
-	&& TREE_CODE (over_return) == TREE_CODE (base_return)
-	&& CLASS_TYPE_P (TREE_TYPE (over_return))
-	&& CLASS_TYPE_P (TREE_TYPE (base_return)))
-      {
-	tree binfo;
-	base_kind kind;
+      if (!virtual_offset)
+	{
+	  /* There was no existing virtual thunk (which takes
+	     precidence). */
+	  tree thunk_binfo;
+	  base_kind kind;
+	  
+	  thunk_binfo = lookup_base (TREE_TYPE (over_return),
+				     TREE_TYPE (base_return),
+				     ba_check | ba_quiet, &kind);
 
-	binfo = lookup_base (TREE_TYPE (over_return), TREE_TYPE (base_return),
-			     ba_check | ba_quiet, &kind);
+	  if (thunk_binfo && (kind == bk_via_virtual
+			      || !BINFO_OFFSET_ZEROP (thunk_binfo)))
+	    {
+	      tree offset = BINFO_OFFSET (thunk_binfo);
 
-	if (binfo && (kind == bk_via_virtual || !BINFO_OFFSET_ZEROP (binfo)))
-	  {
-	    tree fixed_offset = BINFO_OFFSET (binfo);
-	    tree virtual_offset = NULL_TREE;
-	    tree thunk;
-	    
-	    if (kind == bk_via_virtual)
-	      {
-		while (!TREE_VIA_VIRTUAL (binfo))
-		  binfo = BINFO_INHERITANCE_CHAIN (binfo);
-		
-		/* If the covariant type is within the class hierarchy
-		   we are currently laying out, the vbase index is not
-		   yet known, so we have to remember the virtual base
-		   binfo. */
-		virtual_offset = binfo_for_vbase (BINFO_TYPE (binfo),
-						  TREE_TYPE (over_return));
-		fixed_offset = size_diffop (fixed_offset,
-					    BINFO_OFFSET (virtual_offset));
-	      }
-	    
-	    /* Replace the overriding function with a covariant thunk.
-	       We will emit the overriding function in its own slot
-	       as well. */
-	    thunk = make_thunk (TREE_PURPOSE (overrider), /*this_adjusting=*/0,
-				fixed_offset, virtual_offset);
-	    TREE_PURPOSE (overrider) = thunk;
-	    if (!virtual_offset && !DECL_NAME (thunk))
-	      finish_thunk (thunk);
-	  }
-      }
-  }
-
+	      if (kind == bk_via_virtual)
+		{
+		  /* We convert via virtual base. Find the virtual
+		     base and adjust the fixed offset to be from there.  */
+		  while (!TREE_VIA_VIRTUAL (thunk_binfo))
+		    thunk_binfo = BINFO_INHERITANCE_CHAIN (thunk_binfo);
+	      
+		  virtual_offset = binfo_for_vbase (BINFO_TYPE (thunk_binfo),
+						    TREE_TYPE (over_return));
+		  offset = size_diffop (offset,
+					BINFO_OFFSET (virtual_offset));
+		}
+	      if (fixed_offset)
+		/* There was an existing fixed offset, this must be
+		   from the base just converted to, and the base the
+		   FN was thunking to.  */
+		fixed_offset = size_binop (PLUS_EXPR, fixed_offset, offset);
+	      else
+		fixed_offset = offset;
+	    }
+	}
+      
+      if (fixed_offset || virtual_offset)
+	/* Replace the overriding function with a covariant thunk.  We
+	   will emit the overriding function in its own slot as
+	   well. */
+	overrider_fn = make_thunk (overrider_target, /*this_adjusting=*/0,
+				   fixed_offset, virtual_offset);
+    }
+  else
+    my_friendly_assert (!DECL_THUNK_P (fn), 20021231);
+  
   /* Assume that we will produce a thunk that convert all the way to
      the final overrider, and not to an intermediate virtual base.  */
   virtual_base = NULL_TREE;
@@ -2476,16 +2497,11 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
     delta = size_diffop (BINFO_OFFSET (TREE_VALUE (overrider)),
 			 BINFO_OFFSET (binfo));
 
-  modify_vtable_entry (t, 
-		       binfo, 
-		       TREE_PURPOSE (overrider),
-		       delta,
-		       virtuals);
+  modify_vtable_entry (t, binfo, overrider_fn, delta, virtuals);
 
   if (virtual_base)
     BV_VCALL_INDEX (*virtuals) 
-      = get_vcall_index (TREE_PURPOSE (overrider),
-			 BINFO_TYPE (virtual_base));
+      = get_vcall_index (overrider_target, BINFO_TYPE (virtual_base));
 }
 
 /* Called from modify_all_vtables via dfs_walk.  */

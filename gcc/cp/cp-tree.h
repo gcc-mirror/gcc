@@ -2977,9 +2977,13 @@ struct lang_decl GTY(())
 /* A tree indicating how to perform the virtual adjustment. For a this
    adjusting thunk it is the number of bytes to be added to the vtable
    to find the vcall offset. For a result adjusting thunk, it is the
-   binfo of the relevant virtual base.  The vptr is always located at
-   offset zero from the this or result pointer.  If NULL, then there
-   is no virtual adjust.  */
+   binfo of the relevant virtual base.  If NULL, then there is no
+   virtual adjust.  (The vptr is always located at offset zero from
+   the this or result pointer.)  (If the covariant type is within the
+   class hierarchy being layed out, the vbase index is not yet known
+   at the point we need to create the thunks, hence the need to use
+   binfos.)  */
+
 #define THUNK_VIRTUAL_OFFSET(DECL) \
   (LANG_DECL_U2_CHECK (VAR_OR_FUNCTION_DECL_CHECK (DECL), 0)->virtual_offset)
 
