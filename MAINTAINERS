@@ -85,7 +85,7 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 
 darwin port		Stan Shebs		shebs@apple.com
 netbsd			Jason Thorpe		thorpej@wasabisystems.com
-sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
+sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 
 			Various Maintainers
