@@ -1,6 +1,8 @@
 2002-05-13  Nathanael Nerode  <neroden@twcny.rr.com>
 
-	* configure.in: remove code to build emacs.
+	* configure.in: Simplify makefile fragment collection.
+
+	* configure.in: Remove code to build emacs.
 
 	* configure.in : Remove --srcdir argument from targargs and buildargs
 	(it's always overridden in the Makefile anyway).  Rearrange a bit.
