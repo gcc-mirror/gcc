@@ -73,6 +73,9 @@ public final class Method extends AccessibleObject implements Member
 
   public String toString ()
     {
+      if (parameter_types == null)
+	getType ();
+
       StringBuffer b = new StringBuffer ();
       b.append(Modifier.toString(getModifiers()));
       b.append(" ");
