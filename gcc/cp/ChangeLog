@@ -5,6 +5,8 @@
 
 2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* decl.c: Remove some #if 0 code.
+
 	* decl.c: ANSIfy function declarations.
 
 2003-01-07  Mark Mitchell  <mark@codesourcery.com>
