@@ -1,3 +1,8 @@
+2001-08-14  Richard Henderson  <rth@redhat.com>
+
+	* class.c, cp-tree.h (build_vfn_ref): Remove.
+	* call.c, rtti.c: Replace all refernces with build_vtbl_ref.
+
 2001-08-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_over_call): Mark COMPOUND_EXPRs generated for
