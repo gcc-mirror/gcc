@@ -27,6 +27,7 @@ public abstract class IOConverter
     // Manually maintained aliases.  Note that the value must be our
     // canonical name.
     hash.put ("iso-latin-1", "8859_1");
+    hash.put ("iso8859_1", "8859_1");
     // On Solaris the default encoding, as returned by nl_langinfo(),
     // is `646' (aka ASCII), but the Solaris iconv_open() doesn't
     // understand that.  We work around the problem by adding an
