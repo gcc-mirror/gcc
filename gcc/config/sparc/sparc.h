@@ -1071,13 +1071,13 @@ extern int sparc_mode_class[];
   (TARGET_ARCH64					\
    ? 0							\
    : gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
-					STRUCT_VALUE_OFFSET))))
+					STRUCT_VALUE_OFFSET)))
 
 #define STRUCT_VALUE_INCOMING \
   (TARGET_ARCH64						\
    ? 0								\
    : gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,	\
-					STRUCT_VALUE_OFFSET))))
+					STRUCT_VALUE_OFFSET)))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1340,7 +1340,7 @@ extern char leaf_reg_remap[];
   (get_frame_size () == 0						\
    ? assign_stack_local (MODE, GET_MODE_SIZE (MODE), 0)			\
    : gen_rtx_MEM (MODE, plus_constant (frame_pointer_rtx,		\
-				       STARTING_FRAME_OFFSET))
+				       STARTING_FRAME_OFFSET)))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
