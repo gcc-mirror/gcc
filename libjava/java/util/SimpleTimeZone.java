@@ -38,8 +38,6 @@ exception statement from your version. */
 
 package java.util;
 
-import java.text.DateFormatSymbols;
-
 /**
  * This class represents a simple time zone offset and handles
  * daylight savings.  It can only handle one daylight savings rule, so
@@ -88,6 +86,7 @@ public class SimpleTimeZone extends TimeZone
   private static final int DOW_IN_MONTH_MODE = 2;
   private static final int DOW_GE_DOM_MODE = 3;
   private static final int DOW_LE_DOM_MODE = 4;
+  
   /**
    * The mode of the start rule. This takes one of the following values:
    * <dl>
@@ -488,7 +487,8 @@ public class SimpleTimeZone extends TimeZone
   /**
    * Returns the time zone offset to GMT in milliseconds, ignoring
    * day light savings.
-   * @return the time zone offset.  */
+   * @return the time zone offset.
+   */
   public int getRawOffset()
   {
     return rawOffset;
@@ -508,7 +508,8 @@ public class SimpleTimeZone extends TimeZone
    * milliseconds with respect to standard time.  Typically this
    * is one hour, but for some time zones this may be half an our.
    * @return the daylight savings offset in milliseconds.
-   * @since JDK1.1.4?
+   * 
+   * @since JDK1.2
    */
   public int getDSTSavings()
   {
