@@ -1,5 +1,22 @@
 1999-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (minimal_parse_mode): Remove.
+	(finish_label_stmt): New function.
+	* decl.c (saved_scope): Remove minimal parse mode.
+	(maybe_push_to_top_level): Don't save it.
+	(pop_from_top_level): Don't restore it.
+	(define_label): Split out template-handling code to semantics.c.
+	(start_decl): Don't use minimal_parse_mode.
+	(cp_finish_decl): Likewise.
+	(start_function): Don't increment it.
+	(store_return_init): Don't use it.
+	(finish_function): Don't decrement it.
+	* parse.y (label_colon): Use finish_label_stmt throughout.
+	* parse.c: Regenerated.
+	* pt.c (minimal_parse_mode): Don't define it.
+	(tsubst_expr): Use finish_label_stmt.
+	* semantics.c (finish_label_stmt): New function.
+
 	* dump.c (queue): Be careful when computing bitmasks.
 	(dequeue_and_dump): Describe binfos as binfos, not as
 	vectors.

@@ -2390,7 +2390,6 @@ struct saved_scope {
   struct binding_level *class_bindings;
   tree *lang_base, *lang_stack, lang_name;
   int lang_stacksize;
-  int minimal_parse_mode;
   tree last_function_parms;
   tree template_parms;
   HOST_WIDE_INT processing_template_decl;
@@ -2509,7 +2508,6 @@ maybe_push_to_top_level (pseudo)
   s->lang_base = current_lang_base;
   s->lang_stacksize = current_lang_stacksize;
   s->lang_name = current_lang_name;
-  s->minimal_parse_mode = minimal_parse_mode;
   s->last_function_parms = last_function_parms;
   s->template_parms = current_template_parms;
   s->processing_template_decl = processing_template_decl;
@@ -2529,7 +2527,6 @@ maybe_push_to_top_level (pseudo)
   strict_prototype = strict_prototypes_lang_cplusplus;
   named_labels = NULL_TREE;
   shadowed_labels = NULL_TREE;
-  minimal_parse_mode = 0;
   previous_class_type = previous_class_values = NULL_TREE;
   class_cache_firstobj = 0;
   processing_specialization = 0;
@@ -2595,7 +2592,6 @@ pop_from_top_level ()
     strict_prototype = strict_prototypes_lang_cplusplus;
   else if (current_lang_name == lang_name_c)
     strict_prototype = strict_prototypes_lang_c;
-  minimal_parse_mode = s->minimal_parse_mode;
   last_function_parms = s->last_function_parms;
   current_template_parms = s->template_parms;
   processing_template_decl = s->processing_template_decl;
@@ -4825,20 +4821,7 @@ define_label (filename, line, name)
      int line;
      tree name;
 {
-  tree decl;
-
-  if (minimal_parse_mode)
-    {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      decl = build_decl (LABEL_DECL, name, void_type_node);
-      pop_obstacks ();
-      DECL_SOURCE_LINE (decl) = line;
-      DECL_SOURCE_FILE (decl) = filename;
-      add_tree (decl);
-      return decl;
-    }
-
-  decl = lookup_label (name);
+  tree decl = lookup_label (name);
 
   /* After labels, make any new cleanups go into their
      own new (temporary) binding contour.  */
@@ -7027,7 +7010,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     {
       if (! current_function_decl)
 	tem = push_template_decl (tem);
-      else if (minimal_parse_mode)
+      else
 	DECL_VINDEX (tem)
 	    = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
 			    copy_to_permanent (declspecs),
@@ -7398,7 +7381,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
     {
       if (init && DECL_INITIAL (decl))
 	DECL_INITIAL (decl) = init;
-      if (minimal_parse_mode && ! DECL_ARTIFICIAL (decl))
+      if (current_function_decl && ! DECL_ARTIFICIAL (decl))
 	{
 	  tree stmt = DECL_VINDEX (decl);
 	  /* If the decl is declaring a member of a local class (in a
@@ -13172,11 +13155,8 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     temporary_allocation ();
 
   if (processing_template_decl)
-    {
-      ++minimal_parse_mode;
-      last_tree = DECL_SAVED_TREE (decl1)
-	= build_nt (EXPR_STMT, void_zero_node);
-    }
+    last_tree = DECL_SAVED_TREE (decl1)
+      = build_nt (EXPR_STMT, void_zero_node);
 
   ++function_depth;
 
@@ -13420,7 +13400,7 @@ store_return_init (return_id, init)
       DECL_INITIAL (decl) = init;
       pushdecl (decl);
 
-      if (minimal_parse_mode)
+      if (processing_template_decl && current_function_decl)
 	add_tree (build_min_nt (RETURN_INIT, return_id,
 				copy_to_permanent (init)));
       else
@@ -13872,7 +13852,6 @@ finish_function (lineno, flags, nested)
      until we do an instantiation.  */
   if (processing_template_decl)
     {
-      --minimal_parse_mode;
       DECL_SAVED_TREE (fndecl) = TREE_CHAIN (DECL_SAVED_TREE (fndecl));
       /* We have to save this value here in case
 	 maybe_end_member_template_processing decides to pop all the
