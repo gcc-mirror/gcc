@@ -48,6 +48,9 @@
 #ifdef __mn10300__
 #include "va-mn10300.h"
 #else
+#ifdef __mn10200__
+#include "va-mn10200.h"
+#else
 
 #ifdef __NeXT__
 
@@ -123,6 +126,7 @@ typedef void *__gnuc_va_list;
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
 
+#endif /* not mn10200 */
 #endif /* not mn10300 */
 #endif /* not sh */
 #endif /* not m32r */

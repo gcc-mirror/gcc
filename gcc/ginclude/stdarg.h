@@ -50,6 +50,9 @@
 #ifdef __mn10300__
 #include "va-mn10300.h"
 #else
+#ifdef __mn10200__
+#include "va-mn10200.h"
+#else
 
 /* Define __gnuc_va_list.  */
 
@@ -106,6 +109,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 #endif /* _STDARG_H */
 
+#endif /* not mn10200 */
 #endif /* not mn10300 */
 #endif /* not sh */
 #endif /* not m32r */
