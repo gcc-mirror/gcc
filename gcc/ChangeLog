@@ -1,3 +1,12 @@
+2001-10-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* s390/linux.h (ASM_OUTPUT_BYTE): Fix format specifier warnings.
+	(ASM_OUTPUT_ASCII): Const-ify.  Fix signed/unsigned warning.
+	(ASM_OUTPUT_MI_THUNK): Fix format specifier warnings.
+	* s390.c (s390_final_chunkify): Don't use string concatenation.
+	(s390_function_prologue, s390_function_epilogue): Const-ify.
+	* s390.h (FUNCTION_PROFILER): Remove unused variable.
+
 2001-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (finish_decl): Don't add DECL_STMTs for nested function

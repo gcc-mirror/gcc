@@ -814,7 +814,6 @@ CUMULATIVE_ARGS;
 do {                                     			\
   extern rtx s390_profile[];  					\
   extern int s390_pool_count;     				\
-  rtx tmp;                                    			\
   static char label[128];                     			\
   fprintf (FILE, "# function profiler \n");   			\
   if (TARGET_64BIT) 						\
