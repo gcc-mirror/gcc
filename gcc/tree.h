@@ -2895,14 +2895,6 @@ extern tree merge_decl_attributes (tree, tree);
 extern tree merge_type_attributes (tree, tree);
 extern void default_register_cpp_builtins (struct cpp_reader *);
 
-/* Split a list of declspecs and attributes into two.  */
-
-extern void split_specs_attrs (tree, tree *, tree *);
-
-/* Strip attributes from a list of combined specs and attrs.  */
-
-extern tree strip_attrs (tree);
-
 /* Return 1 if an attribute and its arguments are valid for a decl or type.  */
 
 extern int valid_machine_attribute (tree, tree, tree, tree);
