@@ -512,7 +512,7 @@ skip_quoted_string (pfile, first, start_line)
       c = GETC ();
       if (c == EOF)
 	{
-	  cpp_error_with_line (pfile, line_for_error (start_line),
+	  cpp_error_with_line (pfile, line_for_error (pfile, start_line),
 			       "unterminated string or character constant");
 #if 0
 	  cpp_error_with_line (pfile, multiline_string_line,
@@ -536,7 +536,7 @@ skip_quoted_string (pfile, first, start_line)
 	    }
 	  if (CPP_PEDANTIC (pfile) || first == '\'')
 	    {
-	      cpp_error_with_line (pfile, line_for_error (start_line),
+	      cpp_error_with_line (pfile, line_for_error (pfile, start_line),
 				   "unterminated string or character constant");
 	      FORWARD(-1);
 	      break;
@@ -2707,6 +2707,7 @@ macroexpand (pfile, hp)
   int nargs;
   DEFINITION *defn = hp->value.defn;
   register U_CHAR *xbuf;
+  long start_line, start_col;
   int xbuf_len;
   struct argdata *args;
   long old_written = CPP_WRITTEN (pfile);
@@ -2728,12 +2729,12 @@ macroexpand (pfile, hp)
 #endif
 
   pfile->output_escapes++;
-  
+  cpp_buf_line_and_col (CPP_BUFFER (pfile), &start_line, &start_col);
+
   nargs = defn->nargs;
 
   if (nargs >= 0)
     {
-      char *parse_error = 0;
       enum cpp_token token;
 
       args = (struct argdata *) alloca ((nargs + 1) * sizeof (struct argdata));
@@ -2772,13 +2773,9 @@ macroexpand (pfile, hp)
 	    token = macarg (pfile, 0);
 	  if (token == CPP_EOF || token == CPP_POP)
 	    {
-	      parse_error = "unterminated macro call";
-#if 1
-	      cpp_error_with_line (pfile, line_for_error (0), parse_error);
-#else
-	      cpp_error_with_line (pfile, line_for_error (start_line), parse_error);
-#endif
-	      break;
+	      cpp_error_with_line (pfile, line_for_error (pfile, start_line),
+				   "unterminated macro call");
+	      return;
 	    }
 	  i++;
 	} while (token == CPP_COMMA);
@@ -2801,8 +2798,7 @@ macroexpand (pfile, hp)
       rest_zero = 0;
       if (nargs == 0 && i > 0)
 	{
-	  if (! parse_error)
-	    cpp_error (pfile, "arguments given to macro `%s'", hp->name);
+	  cpp_error (pfile, "arguments given to macro `%s'", hp->name);
 	}
       else if (i < nargs)
 	{
@@ -2812,8 +2808,6 @@ macroexpand (pfile, hp)
 	  /* the rest args token is allowed to absorb 0 tokens */
 	  else if (i == nargs - 1 && defn->rest_args)
 	    rest_zero = 1;
-	  else if (parse_error)
-	    ;
 	  else if (i == 0)
 	    cpp_error (pfile, "macro `%s' used without args", hp->name);
 	  else if (i == 1)
@@ -2824,9 +2818,8 @@ macroexpand (pfile, hp)
       }
       else if (i > nargs)
 	{
-	  if (! parse_error)
-	    cpp_error (pfile,
-		       "macro `%s' used with too many (%d) args", hp->name, i);
+	  cpp_error (pfile,
+		     "macro `%s' used with too many (%d) args", hp->name, i);
 	}
     }
 
@@ -3461,8 +3454,8 @@ do_include (pfile, keyword, unused1, unused2)
 
 		      if (searchptr->fname[0] == 0)
 			continue;
-		      p = alloca (strlen (searchptr->fname)
-				   + strlen (fname) + 2);
+		      p = (char *) alloca (strlen (searchptr->fname)
+					   + strlen (fname) + 2);
 		      strcpy (p, searchptr->fname);
 		      strcat (p, "/");
 		      strcat (p, fname);
@@ -4716,7 +4709,8 @@ cpp_get_token (pfile)
 	    goto randomchar;
 	  if (c == EOF)
 	    {
-	      cpp_error_with_line (pfile, line_for_error (pfile->start_line),
+	      cpp_error_with_line (pfile,
+				   line_for_error (pfile, pfile->start_line),
 				   "unterminated comment");
 	      goto handle_eof;
 	    }
@@ -4847,7 +4841,8 @@ cpp_get_token (pfile)
 #if 0
 		  if (!CPP_TRADITIONAL (pfile))
 		    {
-		      cpp_error_with_line (pfile, line_for_error (start_line),
+		      cpp_error_with_line (pfile,
+					   line_for_error (pfile, start_line),
 			      "unterminated string or character constant");
 		      cpp_error_with_line (pfile, multiline_string_line,
 				 "possible real start of unterminated constant");
@@ -4867,14 +4862,15 @@ cpp_get_token (pfile)
 #if 0
 		  if (c == '\'')
 		    {
-		      cpp_error_with_line (pfile, line_for_error (start_line),
-				     "unterminated character constant");
+		      cpp_error_with_line (pfile,
+					   line_for_error (pfile, start_line),
+					   "unterminated character constant");
 		      goto while2end;
 		    }
 		  if (CPP_PEDANTIC (pfile) && multiline_string_line == 0)
 		    {
 		      cpp_pedwarn_with_line (pfile,
-					     line_for_error (start_line),
+					     line_for_error (pfile, start_line),
 			       "string constant runs past end of line");
 		    }
 		  if (multiline_string_line == 0)
@@ -7281,25 +7277,20 @@ savestring (input)
    In that case, we return the lineno of the innermost file.  */
 
 static int
-line_for_error (line)
+line_for_error (pfile, line)
+     cpp_reader *pfile;
      int line;
 {
-#if 0
-  int i;
-  int line1 = line;
+  long line1 = line, col;
+  cpp_buffer *ip = CPP_BUFFER (pfile);
 
-  for (i = indepth; i >= 0; ) {
-    if (instack[i].fname != 0)
-      return line1;
-    i--;
-    if (i < 0)
-      return 0;
-    line1 = instack[i].lineno;
-  }
-  abort ();
-  /*NOTREACHED*/
-#endif
-  return 0;
+  while (ip != CPP_NULL_BUFFER (pfile))
+    {
+      if (ip->fname != NULL)
+	return line1;
+      ip = CPP_PREV_BUFFER (ip);
+      cpp_buf_line_and_col (ip, &line1, &col);
+    }
 }
 
 /* Initialize PMARK to remember the current position of PFILE. */
