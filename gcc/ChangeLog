@@ -1,3 +1,10 @@
+Mon Apr 19 08:12:30 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_prologue): Use gen_adddi3 instead of 
+	emit_move_insn+plus_constant.  For NT, don't use the stack probe
+	loop pointer to allocate stack space.
+	* alpha.md (adddi3): Always use lda to set the stack pointer.
+
 1999-04-17 20:11 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* c-aux-info.c, emit-rtl.c, explow.c, expmed.c, gcse.c,

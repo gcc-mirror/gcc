@@ -534,11 +534,34 @@
 	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
 		 (match_operand:DI 2 "add_operand" "rI,O,K,L")))]
   ""
-  "@
-   addq %r1,%2,%0
-   subq %r1,%n2,%0
-   lda %0,%2(%r1)
-   ldah %0,%h2(%r1)")
+  "*
+{
+  const char * const pattern[4] = {
+    \"addq %r1,%2,%0\",
+    \"subq %r1,%n2,%0\",
+    \"lda %0,%2(%r1)\",
+    \"ldah %0,%h2(%r1)\"
+  };
+
+  /* The NT stack unwind code can't handle a subq to adjust the stack
+     (that's a bug, but not one we can do anything about).  As of NT4.0 SP3,
+     the exception handling code will loop if a subq is used and an
+     exception occurs.
+
+     The 19980616 change to emit prologues as RTL also confused some
+     versions of GDB, which also interprets prologues.  This has been
+     fixed as of GDB 4.18, but it does not harm to unconditionally
+     use lda here.  */
+
+  int which = which_alternative;
+
+  if (operands[0] == stack_pointer_rtx
+      && GET_CODE (operands[2]) == CONST_INT
+      && CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'K'))
+    which = 2;
+
+  return pattern[which];
+}")
 
 ;; Don't do this if we are adjusting SP since we don't want to do
 ;; it in two steps. 
