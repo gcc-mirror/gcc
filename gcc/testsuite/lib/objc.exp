@@ -115,21 +115,7 @@ proc objc_init { args } {
 
     objc_maybe_build_wrapper "${tmpdir}/objc-testglue.o"
 
-    set objc_libgcc_s_path "${rootme}"
-    set compiler [lindex $OBJC_UNDER_TEST 0]
-    if { [is_remote host] == 0 && [which $compiler] != 0 } {
-	foreach i "[exec $compiler --print-multi-lib]" {
-	    set mldir ""
-	    regexp -- "\[a-z0-9=/\.-\]*;" $i mldir
-	    set mldir [string trimright $mldir "\;@"]
-	    if { "$mldir" == "." } {
-		continue
-	    }
-	    if { [llength [glob -nocomplain ${rootme}/${mldir}/libgcc_s*.so.*]] >= 1 } {
-		append objc_libgcc_s_path ":${rootme}/${mldir}"
-	    }
-	}
-    }
+    append objc_libgcc_s_path [gcc-set-multilib-library-path $OBJC_UNDER_TEST]
 }
 
 proc objc_target_compile { source dest type options } {
