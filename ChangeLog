@@ -1,3 +1,7 @@
+Wed Sep 10 21:29:54 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (bootstrap): New target.
+
 Wed Sep 10 15:19:22 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.sub: Accept 'amigados' for backward compatability.
