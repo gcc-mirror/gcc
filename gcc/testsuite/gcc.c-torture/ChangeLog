@@ -1,3 +1,7 @@
+1998-12-14  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/920501-4.c (main): Fix typo: replace | with ||.
+
 1998-11-30  Nick Clifton  <nickc@cygnus.com>
 
 	* execute/981130-1.c: New test.
