@@ -1,4 +1,9 @@
+1999-09-22  Tom Tromey  <tromey@cygnus.com>
+
+	* libgcj.spec.in: Use `jc1' spec, not `cc1' spec.
+
 1999-09-16  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* java/text/MessageFormat.java (MessageFormat(String)): Set the
 	default locale.
 	* java/text/NumberFormat.java: Check that object is a Number. If
