@@ -1,5 +1,7 @@
 2002-12-28  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc_update (configure): Depend on config/acx.m4 as well.
+	
 	* gcc_update (configure): Depend on configure.in.
 
 2002-12-24  Joseph S. Myers  <jsm@polyomino.org.uk>
