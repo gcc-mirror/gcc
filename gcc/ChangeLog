@@ -1,3 +1,22 @@
+2000-07-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c: Include cppdefault.h.  Refer to
+	cpp_GCC_INCLUDE_DIR and cpp_GCC_INCLUDE_DIR_len, not directly
+	to GCC_INCLUDE_DIR and its length.
+	(SIZE_TYPE, PTRDIFF_TYPE, WCHAR_TYPE,
+	USER_LABEL_PREFIX, REGISTER_PREFIX, struct default_include,
+	STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT):  Move to
+	cppdefault.h.
+	(include_defaults_array): Move to cppdefault.c.
+
+	* cppdefault.h: New file.
+	* cppdefault.c: New file.
+
+	* Makefile.in (LIBCPP_OBJS): Add cppdefault.o.
+	(cppinit.o): Don't apply $(PREPROCESSOR_DEFINES) to this file.
+	(cppdefault.o): New rule; apply $(PREPROCESSOR_DEFINES) to
+	this file.
+
 Thu Jul  6 18:30:36 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (push_reload): When seeing if can reuse a register,
