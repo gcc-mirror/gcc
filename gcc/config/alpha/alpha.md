@@ -1526,6 +1526,62 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
+;; Define conversion operators between DFmode and SImode, using the cvtql
+;; instruction.  To allow combine et al to do useful things, we keep the
+;; operation as a unit until after reload, at which point we split the
+;; instructions.
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(fix:SI (match_operand:DF 1 "reg_or_fp0_operand" "")))
+   (clobber (match_scratch:DI 2 ""))]
+  "TARGET_FP && reload_completed"
+  [(set (match_dup 2) (fix:DI (match_dup 1)))
+   (set (match_dup 0) (unspec:SI [(match_dup 2)] 5))]
+  "")
+
+;; Due to issues with CLASS_CANNOT_CHANGE_SIZE, we cannot use a subreg here.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(fix:SI (match_operand:DF 1 "reg_or_fp0_operand" "")))]
+  "TARGET_FP && reload_completed"
+  [(set (match_dup 2) (fix:DI (match_dup 1)))
+   (set (match_dup 0) (unspec:SI [(match_dup 2)] 5))]
+  "operands[2] = gen_rtx (REG, DImode, REGNO (operands[0]));")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:DI 1 "reg_or_fp0_operand" "fG")] 5))]
+  "TARGET_FP"
+  "cvtql%` %R1,%0"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_insn "fix_truncdfsi2_tp"
+  [(set (match_operand:SI 0 "register_operand" "=&f")
+	(fix:SI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))
+   (clobber (match_scratch:DI 2 "=&f"))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "#"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
+  "#"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_expand "fix_truncdfsi2"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
+  "TARGET_FP"
+  "{ if (alpha_tp == ALPHA_TP_INSN)
+       { emit_insn(gen_fix_truncdfsi2_tp(operands[0], operands[1])); DONE; }
+   }")
+
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
@@ -1541,6 +1597,56 @@
   "cvt%-q%(c %R1,%0"
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
+
+;; Likewise between SFmode and SImode.
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(fix:SI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" ""))))
+   (clobber (match_scratch:DI 2 ""))]
+  "TARGET_FP && reload_completed"
+  [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
+   (set (match_dup 0) (unspec:SI [(match_dup 2)] 5))]
+  "")
+
+;; Due to issues with CLASS_CANNOT_CHANGE_SIZE, we cannot use a subreg here.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(fix:SI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" ""))))]
+  "TARGET_FP && reload_completed"
+  [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
+   (set (match_dup 0) (unspec:SI [(match_dup 2)] 5))]
+  "operands[2] = gen_rtx (REG, DImode, REGNO (operands[0]));")
+
+(define_insn "fix_truncsfsi2_tp"
+  [(set (match_operand:SI 0 "register_operand" "=&f")
+	(fix:SI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))
+   (clobber (match_scratch:DI 2 "=&f"))]
+  "TARGET_FP && alpha_tp == ALPHA_TP_INSN"
+  "#"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP && alpha_tp != ALPHA_TP_INSN"
+  "#"
+  [(set_attr "type" "fadd")
+   (set_attr "trap" "yes")])
+
+(define_expand "fix_truncsfsi2"
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(fix:SI (float_extend:DF
+		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
+  "TARGET_FP"
+  "{ if (alpha_tp == ALPHA_TP_INSN)
+       { emit_insn(gen_fix_truncsfsi2_tp(operands[0], operands[1])); DONE; }
+   }")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=&f")
