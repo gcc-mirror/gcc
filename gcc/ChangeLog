@@ -1,3 +1,8 @@
+2000-04-12  Jeffrey A Law  (law@cygnus.com)
+
+	* function.c (purge_addressof): Unshare any shared rtl created by
+	purge_addressof and its children.
+
 2000-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (aggregate_value_p): VOID_TYPE nodes are never
