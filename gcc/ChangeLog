@@ -1,3 +1,8 @@
+
+2003-08-11  Dale Johannesen  <dalej@apple.com>
+	* config/rs6000/rs6000.md (ctrsi, ctrdi):  Reenable handling of
+	decrement-and-branch farther away than 32 bits.
+
 2003-08-10  Zack Weinberg  <zack@codesourcery.com>
 
 	Backport the following changes from mainline:
