@@ -1,3 +1,8 @@
+2003-09-06  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcse.c (expr_equiv_p): Don't consider anything to be equal to
+	volatile mem.
+
 2003-09-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ggc-common.c (init_ggc_heuristics): Don't use the heuristics

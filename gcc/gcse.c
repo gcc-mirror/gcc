@@ -1787,6 +1787,10 @@ expr_equiv_p (rtx x, rtx y)
 	 due to it being set with the different alias set.  */
       if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
 	return 0;
+
+      /* A volatile mem should not be considered equivalent to any other.  */
+      if (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (y))
+	return 0;
       break;
 
     /*  For commutative operations, check both orders.  */
