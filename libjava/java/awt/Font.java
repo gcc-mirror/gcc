@@ -39,10 +39,20 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.font.LineMetrics;
+import java.awt.font.TextAttribute;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.peer.FontPeer;
+import java.io.InputStream;
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.text.CharacterIterator;
+import java.text.AttributedCharacterIterator;
 
 /**
   * This class represents a windowing system font.
@@ -72,9 +82,20 @@ public static final int BOLD = 1;
   */
 public static final int ITALIC = 2;
 
+/**
+ * Constant indicating the baseline mode characteristic of Roman.
+ */
 public static final int ROMAN_BASELINE = 0;
+
+/**
+ * Constant indicating the baseline mode characteristic of Chinese.
+ */
 public static final int CENTER_BASELINE = 1;
-public static final int HANGING_BASELINE = 2;
+
+/**
+ * Constant indicating the baseline mode characteristic of Devanigri.
+ */
+public static final int HANGING_BASELINE = 2;  
 
 
   /**
@@ -294,6 +315,12 @@ Font(String name, int style, int size)
   this.pointSize = size;
 }
 
+public  
+Font(Map attributes)
+{
+  throw new UnsupportedOperationException();
+}
+
 /*************************************************************************/
 
 /*
@@ -301,9 +328,15 @@ Font(String name, int style, int size)
  */
 
 /**
-  * Returns the name of the font.
+  * Returns the logical name of the font.  A logical name describes a very
+  * general typographic style (such as Sans Serif). It is less specific
+  * than both a font family name (such as Helvetica) and a font face name
+  * (such as Helvetica Bold).
   *
-  * @return The name of the font.
+  * @return The logical name of the font.
+  *
+  * @see getFamily()
+  * @see getFontName()
   */
 public String
 getName()
@@ -385,9 +418,18 @@ isItalic()
 /*************************************************************************/
 
 /**
-  * Returns the system specific font family name.
+  * Returns the family name of this font. A family name describes a
+  * typographic style (such as Helvetica or Palatino). It is more specific
+  * than a logical font name (such as Sans Serif) but less specific than a
+  * font face name (such as Helvetica Bold).
   *
-  * @return The system specific font family name.
+  * @return A string containing the font family name.
+  *
+  * @since 1.2
+  *
+  * @see getName()
+  * @see getFontName()
+  * @see GraphicsEnvironment.getAvailableFontFamilyNames()
   */
 public String
 getFamily()
@@ -396,11 +438,743 @@ getFamily()
   return(name);
 }
 
+/**
+  * Returns integer code representing the sum of style flags of this font, a
+  * combination of either {@link PLAIN}, {@link BOLD}, or {@link ITALIC}.
+  *
+  * @return code representing the style of this font.
+  *
+  * @see isPlain()
+  * @see isBold()
+  * @see isItalic()
+  */
 public int
 getStyle()
 {
   return style;
 }
+
+/**
+  * Checks if specified character maps to a glyph in this font.
+  *
+  * @param c The character to check.
+  *
+  * @return Whether the character has a corresponding glyph in this font.
+  *
+  * @since 1.2
+  */
+public boolean 
+canDisplay(char c)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Checks how much of a given string can be mapped to glyphs in 
+  * this font.
+  *
+  * @param s The string to check.
+  *
+  * @return The index of the first character in <code>s</code> which cannot
+  * be converted to a glyph by this font, or <code>-1</code> if all
+  * characters can be mapped to glyphs.
+  *
+  * @since 1.2
+  */
+public int 
+canDisplayUpTo(String s)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Checks how much of a given sequence of text can be mapped to glyphs in
+  * this font.
+  *
+  * @param text Array containing the text to check.
+  * @param start Position of first character to check in <code>text</code>.
+  * @param limit Position of last character to check in <code>text</code>.
+  *
+  * @return The index of the first character in the indicated range which
+  * cannot be converted to a glyph by this font, or <code>-1</code> if all
+  * characters can be mapped to glyphs.
+  *
+  * @since 1.2
+  *
+  * @throws IndexOutOfBoundsException if the range [start, limit] is
+  * invalid in <code>text</code>.
+  */
+public int
+canDisplayUpTo(char[] text, int start, int limit)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Checks how much of a given sequence of text can be mapped to glyphs in
+  * this font.
+  *
+  * @param i Iterator over the text to check.
+  * @param start Position of first character to check in <code>i</code>.
+  * @param limit Position of last character to check in <code>i</code>.
+  *
+  * @return The index of the first character in the indicated range which
+  * cannot be converted to a glyph by this font, or <code>-1</code> if all
+  * characters can be mapped to glyphs.
+  *
+  * @since 1.2
+  *
+  * @throws IndexOutOfBoundsException if the range [start, limit] is
+  * invalid in <code>i</code>.
+  */
+public int
+canDisplayUpTo(CharacterIterator i, int start, int limit)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Creates a new font with point size 1 and {@link PLAIN} style,
+  * reading font data from the provided input stream. The resulting font
+  * can have further fonts derived from it using its
+  * <code>deriveFont</code> method.
+  *
+  * @param fontFormat Integer code indicating the format the font data is
+  * in.Currently this can only be {@link TRUETYPE_FONT}.
+  * @param is {@link InputStream} from which font data will be read. This
+  * stream is not closed after font data is extracted.
+  *
+  * @return A new {@link Font} of the format indicated.
+  *
+  * @throws IllegalArgumentException if <code>fontType</code> is not
+  * recognized.
+  * @throws FontFormatException if data in InputStream is not of format
+  * indicated.
+  * @throws IOException if insufficient data is present on InputStream.
+  *
+  * @since 1.3
+  */
+public static Font 
+createFont(int fontFormat, InputStream is) 
+  throws FontFormatException, IOException
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Maps characters to glyphs in a one-to-one relationship, returning a new
+  * {@link GlyphVector} with a mapped glyph for each input character. This
+  * sort of mapping is often sufficient for some scripts such as Roman, but
+  * is inappropriate for scripts with special shaping or contextual layout
+  * requirements such as Arabic, Indic, Hebrew or Thai.
+  *
+  * @param ctx The rendering context used for precise glyph placement.
+  * @param str The string to convert to Glyphs.
+  *
+  * @return A new {@link GlyphVector} containing glyphs mapped from str,
+  * through the font's cmap table.
+  *
+  * @see layoutGlyphVector()
+  */
+public GlyphVector
+createGlyphVector(FontRenderContext ctx, String str)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Maps characters to glyphs in a one-to-one relationship, returning a new
+  * {@link GlyphVector} with a mapped glyph for each input character. This
+  * sort of mapping is often sufficient for some scripts such as Roman, but
+  * is inappropriate for scripts with special shaping or contextual layout
+  * requirements such as Arabic, Indic, Hebrew or Thai.
+  *
+  * @param ctx The rendering context used for precise glyph placement.
+  * @param i Iterator over the text to convert to glyphs.
+  *
+  * @return A new {@link GlyphVector} containing glyphs mapped from str,
+  * through the font's cmap table.
+  *
+  * @see layoutGlyphVector()
+  */
+public GlyphVector
+createGlyphVector(FontRenderContext ctx, CharacterIterator i)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Maps characters to glyphs in a one-to-one relationship, returning a new
+  * {@link GlyphVector} with a mapped glyph for each input character. This
+  * sort of mapping is often sufficient for some scripts such as Roman, but
+  * is inappropriate for scripts with special shaping or contextual layout
+  * requirements such as Arabic, Indic, Hebrew or Thai.
+  *
+  * @param ctx The rendering context used for precise glyph placement.
+  * @param chars Array of characters to convert to glyphs.
+  *
+  * @return A new {@link GlyphVector} containing glyphs mapped from str,
+  * through the font's cmap table.
+  *
+  * @see layoutGlyphVector()
+  */
+public GlyphVector
+createGlyphVector(FontRenderContext ctx, char[] chars)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Extracts a sequence of glyphs from a font, returning a new {@link
+  * GlyphVector} with a mapped glyph for each input glyph code. 
+  *
+  * @param ctx The rendering context used for precise glyph placement.
+  * @param chars Array of characters to convert to glyphs.
+  *
+  * @return A new {@link GlyphVector} containing glyphs mapped from str,
+  * through the font's cmap table.
+  *
+  * @see layoutGlyphVector()
+  *
+  * @specnote This method is documented to perform character-to-glyph
+  * conversions, in the Sun documentation, but its second parameter name is
+  * "glyphCodes" and it is not clear to me why it would exist if its
+  * purpose was to transport character codes inside integers. I assume it
+  * is mis-documented in the Sun documentation.
+  */
+public GlyphVector
+createGlyphVector(FontRenderContext ctx, int[] glyphCodes)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, adjusted to a
+  * new size.
+  *
+  * @param size The size of the newly created font.
+  *
+  * @return A clone of the current font, with the specified size.
+  *
+  * @since 1.2
+  */
+public Font
+deriveFont(float size)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, adjusted to a
+  * new style.
+  *
+  * @param style The style of the newly created font.
+  *
+  * @return A clone of the current font, with the specified style.
+  *
+  * @since 1.2
+  */
+public Font
+deriveFont(int style)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, adjusted to a
+  * new style and subjected to a new affine transformation.
+  *
+  * @param style The style of the newly created font.
+  * @param a The transformation to apply.
+  *
+  * @return A clone of the current font, with the specified style and
+  * transform.
+  *
+  * @throws IllegalArgumentException If transformation is
+  * <code>null</code>.
+  *
+  * @since 1.2
+  */
+public Font
+deriveFont(int style, AffineTransform a)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Produces a new {@link Font} based on the current font, adjusted to a
+  * new set of attributes.
+  *
+  * @param attributes Attributes of the newly created font.
+  *
+  * @return A clone of the current font, with the specified attributes.
+  *
+  * @since 1.2
+  */
+public Font
+deriveFont(Map attributes)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a map of chracter attributes which this font currently has set.
+  *
+  * @return A map of chracter attributes which this font currently has set.
+  *
+  * @see getAvailableAttributes()
+  * @see java.text.AttributedCharacterIterator.Attribute
+  * @see java.awt.font.TextAttribute
+  */
+public Map
+getAttributes()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns an array of chracter attribute keys which this font understands. 
+  *
+  * @return An array of chracter attribute keys which this font understands.
+  *
+  * @see getAttributes()
+  * @see java.text.AttributedCharacterIterator.Attribute
+  * @see java.awt.font.TextAttribute
+  */
+public AttributedCharacterIterator.Attribute[]
+getAvailableAttributes()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a baseline code (one of {@link ROMAN_BASELINE}, {@link
+  * CENTER_BASELINE} or {@link HANGING_BASELINE}) indicating which baseline
+  * this font will measure baseline offsets for, when presenting glyph
+  * metrics for a given character.
+  *
+  * Baseline offsets describe the position of a glyph relative to an
+  * invisible line drawn under, through the center of, or over a line of
+  * rendered text, respectively. Different scripts use different baseline
+  * modes, so clients should not assume all baseline offsets in a glyph
+  * vector are from a common baseline.
+  *
+  * @param c The character code to select a baseline mode for.
+  *
+  * @return The baseline mode which would be used in a glyph associated
+  * with the provided character.
+  *
+  * @since 1.2
+  *
+  * @see LineMetrics.getBaselineOffsets()
+  */
+public byte 
+getBaselineFor(char c)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the family name of this font. A family name describes a
+  * typographic style (such as Helvetica or Palatino). It is more specific
+  * than a logical font name (such as Sans Serif) but less specific than a
+  * font face name (such as Helvetica Bold).
+  *
+  * @param lc The locale in which to describe the name of the font family.
+  *
+  * @return A string containing the font family name, localized for the
+  * provided locale.
+  *
+  * @since 1.2
+  *
+  * @see getName()
+  * @see getFontName()
+  * @see GraphicsEnvironment.getAvailableFontFamilyNames()
+  * @see Locale
+  */
+public String
+getFamily(Locale lc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a font appropriate for the given attribute set.
+  *
+  * @param attributes The attributes required for the new font.
+  *
+  * @return A new Font with the given attributes.
+  *
+  * @since 1.2
+  *
+  * @see TextAttribure  
+  */
+public static Font
+getFont(Map attributes)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the font face name of the font.  A font face name describes a
+  * specific variant of a font family (such as Helvetica Bold). It is more
+  * specific than both a font family name (such as Helvetica) and a logical
+  * font name (such as Sans Serif).
+  *
+  * @return The font face name of the font.
+  *
+  * @since 1.2
+  *
+  * @see getName()
+  * @see getFamily()
+  */
+public String
+getFontName()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the font face name of the font.  A font face name describes a
+  * specific variant of a font family (such as Helvetica Bold). It is more
+  * specific than both a font family name (such as Helvetica) and a logical
+  * font name (such as Sans Serif).
+  *
+  * @param lc The locale in which to describe the name of the font face.
+  *
+  * @return A string containing the font face name, localized for the
+  * provided locale.
+  *
+  * @since 1.2
+  *
+  * @see getName()
+  * @see getFamily()
+  */
+public String
+getFontName(Locale lc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the italic angle of this font, a measurement of its slant when
+  * style is {@link ITALIC}. The precise meaning is the inverse slope of a
+  * caret line which "best measures" the font's italic posture.
+  *
+  * @return The italic angle.
+  *
+  * @see TextAttribute.POSTURE
+  */
+public float
+getItalicAngle()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a {@link LineMetrics} object constructed with the specified
+  * text and {@link FontRenderContext}. 
+  *
+  * @param text The string to calculate metrics from.
+  * @param begin Index of first character in <code>text</code> to measure.
+  * @param limit Index of last character in <code>text</code> to measure.
+  * @param rc Context for calculating precise glyph placement and hints.
+  *
+  * @return A new {@link LineMetrics} object.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>text</code>.
+  */
+public LineMetrics
+getLineMetrics(String text, int begin, int limit, FontRenderContext rc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a {@link LineMetrics} object constructed with the specified
+  * text and {@link FontRenderContext}. 
+  *
+  * @param chars The string to calculate metrics from.
+  * @param begin Index of first character in <code>text</code> to measure.
+  * @param limit Index of last character in <code>text</code> to measure.
+  * @param rc Context for calculating precise glyph placement and hints.
+  *
+  * @return A new {@link LineMetrics} object.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>chars</code>.
+  */
+public LineMetrics
+getLineMetrics(char[] chars, int begin, int limit, FontRenderContext rc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a {@link LineMetrics} object constructed with the specified
+  * text and {@link FontRenderContext}. 
+  *
+  * @param ci The string to calculate metrics from.
+  * @param begin Index of first character in <code>text</code> to measure.
+  * @param limit Index of last character in <code>text</code> to measure.
+  * @param rc Context for calculating precise glyph placement and hints.
+  *
+  * @return A new {@link LineMetrics} object.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>ci</code>.
+  */
+public LineMetrics
+getLineMetrics(CharacterIterator ci, int begin, int limit, FontRenderContext rc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the maximal bounding box of all the bounding boxes in this
+  * font, when the font's bounding boxes are evaluated in a given {@link
+  * FontRenderContext}
+  *
+  * @param rc Context in which to evaluate bounding boxes.
+  *
+  * @return The maximal bounding box.
+  */
+public Rectangle2D
+getMaxCharBounds(FontRenderContext rc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the glyph code this font uses to represent missing glyphs. This
+  * code will be present in glyph vectors when the font was unable to
+  * locate a glyph to represent a particular character code.
+  *
+  * @return The missing glyph code.
+  *
+  * @since 1.2
+  */
+public int
+getMissingGlyphCode()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the overall number of glyphs in this font. This number is one
+  * more than the greatest glyph code used in any glyph vectors this font
+  * produces. In other words, glyph codes are taken from the range
+  * <code>[ 0, getNumGlyphs() - 1 ]</code>.
+  *
+  * @return The number of glyphs in this font.
+  * 
+  * @since 1.2
+  */
+public int
+getNumGlyphs()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the PostScript Name of this font.   
+  *
+  * @return The PostScript Name of this font.
+  *
+  * @since 1.2
+  *
+  * @see getName()
+  * @see getFamily()
+  * @see getFontName()
+  */
+public String
+getPSName()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the logical bounds of the specified string when rendered with this
+  * font in the specified {@link FontRenderContext}. This box will include the
+  * glyph origin, ascent, advance, height, and leading, but may not include all
+  * diacritics or accents. To get the complete visual bounding box of all the
+  * glyphs in a run of text, use the {@link TextLayout#getBounds} method of
+  * {@link TextLayout}.
+  *
+  * @param str The string to measure.
+  * @param frc The context in which to make the precise glyph measurements.
+  * 
+  * @return A bounding box covering the logical bounds of the specified text.
+  *
+  * @see createGlyphVector()
+  */
+public Rectangle2D
+getStringBounds(String str, FontRenderContext frc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the logical bounds of the specified string when rendered with this
+  * font in the specified {@link FontRenderContext}. This box will include the
+  * glyph origin, ascent, advance, height, and leading, but may not include all
+  * diacritics or accents. To get the complete visual bounding box of all the
+  * glyphs in a run of text, use the {@link TextLayout#getBounds} method of
+  * {@link TextLayout}.
+  *
+  * @param str The string to measure.
+  * @param begin Index of the first character in <code>str</code> to measure.
+  * @param limit Index of the last character in <code>str</code> to measure.
+  * @param frc The context in which to make the precise glyph measurements.
+  * 
+  * @return A bounding box covering the logical bounds of the specified text.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>str</code>.
+  *
+  * @since 1.2
+  *
+  * @see createGlyphVector()
+  */
+public Rectangle2D
+getStringBounds(String str, int begin, int limit, FontRenderContext frc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the logical bounds of the specified string when rendered with this
+  * font in the specified {@link FontRenderContext}. This box will include the
+  * glyph origin, ascent, advance, height, and leading, but may not include all
+  * diacritics or accents. To get the complete visual bounding box of all the
+  * glyphs in a run of text, use the {@link TextLayout#getBounds} method of
+  * {@link TextLayout}.
+  *
+  * @param ci The text to measure.
+  * @param begin Index of the first character in <code>ci</code> to measure.
+  * @param limit Index of the last character in <code>ci</code> to measure.
+  * @param frc The context in which to make the precise glyph measurements.
+  * 
+  * @return A bounding box covering the logical bounds of the specified text.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>ci</code>.
+  *
+  * @since 1.2
+  *
+  * @see createGlyphVector()
+  */
+public Rectangle2D
+getStringBounds(CharacterIterator ci, int begin, int limit, FontRenderContext frc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns the logical bounds of the specified string when rendered with this
+  * font in the specified {@link FontRenderContext}. This box will include the
+  * glyph origin, ascent, advance, height, and leading, but may not include all
+  * diacritics or accents. To get the complete visual bounding box of all the
+  * glyphs in a run of text, use the {@link TextLayout#getBounds} method of
+  * {@link TextLayout}.
+  *
+  * @param chars The text to measure.
+  * @param begin Index of the first character in <code>ci</code> to measure.
+  * @param limit Index of the last character in <code>ci</code> to measure.
+  * @param frc The context in which to make the precise glyph measurements.
+  * 
+  * @return A bounding box covering the logical bounds of the specified text.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>chars</code>.
+  *
+  * @since 1.2
+  *
+  * @see createGlyphVector()
+  */
+public Rectangle2D
+getStringBounds(char[] chars, int begin, int limit, FontRenderContext frc)
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Returns a copy of the affine transformation this font is currently
+  * subject to, if any.
+  *
+  * @return The current transformation.
+ */
+public AffineTransform
+getTransform()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Indicates whether this font's line metrics are uniform. A font may be
+  * composed of several "subfonts", each covering a different code range,
+  * and each with their own line metrics. A font with no subfonts, or
+  * subfonts with identical line metrics, is said to have "uniform" line
+  * metrics.
+  *
+  * @return Whether this font has uniform line metrics.
+  *
+  * @see LineMetrics
+  * @see getLineMetrics()
+  */
+public boolean
+hasUniformLineMetrics()
+{
+  throw new UnsupportedOperationException ();
+}
+
+/**
+  * Indicates whether this font is subject to a non-identity affine
+  * transformation.
+  *
+  * @return <code>true</code> iff the font has a non-identity affine
+  * transformation applied to it.
+  */
+public boolean
+isTransformed()
+{
+  throw new UnsupportedOperationException ();  
+}
+
+/**
+  * Produces a glyph vector representing a full layout fo the specified
+  * text in this font. Full layouts may include complex shaping and
+  * reordering operations, for scripts such as Arabic or Hindi.
+  *
+  * Bidirectional (bidi) layout is not performed in this method; text
+  * should have its bidi direction specified with one of the flags {@link
+  * LAYOUT_LEFT_TO_RIGHT} or {@link LAYOUT_RIGHT_TO_LEFT}.
+  *
+  * Some types of layout (notably Arabic glyph shaping) may examine context
+  * characters beyond the bounds of the indicated range, in order to select
+  * an appropriate shape. The flags {@link LAYOUT_NO_START_CONTEXT} and
+  * {@link LAYOUT_NO_LIMIT_CONTEXT} can be provided to prevent these extra
+  * context areas from being examined, for instance if they contain invalid
+  * characters.
+  *
+  * @param frc Context in which to perform the layout.
+  * @param chars Text to perform layout on.
+  * @param start Index of first character to perform layout on.
+  * @param limit Index of last character to perform layout on.
+  * @param flags Combination of flags controlling layout.
+  *
+  * @return A new {@link GlyphVector} representing the specified text.
+  *
+  * @throws IndexOutOfBoundsException if the range [begin, limit] is
+  * invalid in <code>chars</code>. 
+  */
+public GlyphVector
+layoutGlyphVector(FontRenderContext frc, char[] chars, int start, int limit, int flags)
+{
+  throw new UnsupportedOperationException ();  
+}
+
 
 /*************************************************************************/
 
