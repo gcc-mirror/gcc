@@ -1,5 +1,24 @@
 2000-11-01  Tom Tromey  <tromey@cygnus.com>
 
+	* scripts/encodings.pl: Added `ASCII' alias.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (convert_source_files): Added new files.
+	* gnu/gcj/convert/Input_ASCII.java: New file.
+	* gnu/gcj/convert/Output_ASCII.java: New file.
+	* gnu/gcj/convert/Output_8859_1.java (write): Use `?' to represent
+	out-of-range characters.
+	* gnu/gcj/convert/natIconv.cc (iconv_init): New method.
+	(read): Swap bytes if required.  Treat `count' as character count,
+	not byte count.
+	(write): Likewise.  Also, handle case where iconv fails on a given
+	character.
+	(init): Put encoding into exception.
+	* gnu/gcj/convert/IOConverter.java (iconv_byte_swap): New global.
+	(static): Call iconv_init.  Rebuilt alias list.
+	(iconv_init): New private method.
+
+2000-11-01  Tom Tromey  <tromey@cygnus.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (install-exec-hook): Only make a single symlink, and
 	remove the destination before making the link.

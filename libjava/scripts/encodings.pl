@@ -4,6 +4,7 @@
 
 # Map IANA canonical names onto our canonical names.
 %map = (
+	'ANSI_X3.4-1968' => 'ASCII',
 	'ISO_8859-1:1987' => '8859_1',
 	'UTF-8' => 'UTF8',
 	'Shift_JIS' => 'SJIS',
