@@ -270,8 +270,14 @@ c++.stage4: stage4-start
 # distribution anyway.  It then copies the files to the distdir directory.
 c++.distdir:
 	mkdir tmp/cp
+	mkdir tmp/cp/inc
 	cd cp ; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) parse.c hash.h
 	cd cp; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/cp >/dev/null 2>&1 || cp $$file ../tmp/cp; \
+	done
+	cd inc; \
+	for file in *[0-9a-zA-Z+]; do \
+	  ln $$file ../tmp/ginclude >/dev/null 2>&1 \
+	   || cp $$file ../tmp/ginclude; \
 	done
