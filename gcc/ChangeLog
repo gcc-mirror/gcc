@@ -1,3 +1,8 @@
+2002-03-12  Michael Matz  <matz@suse.de>
+
+	* config/rs6000/rs6000.md (ne0+4): Add extra CLOBBER.
+	(ne0+5): Use new clobber to generate proper shift pattern.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa (CRTSTUFF_T_CFLAGS_S): Define.
