@@ -80,6 +80,16 @@ struct rtx_def *i386_compare_op0 = NULL_RTX;
 struct rtx_def *i386_compare_op1 = NULL_RTX;
 struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 
+/* which cpu are we scheduling for */
+enum processor_type ix86_cpu;
+
+/* which instruction set architecture to use.  */
+int ix86_isa;
+
+/* Strings to hold which cpu and instruction set architecture  to use.  */
+char *ix86_cpu_string;		/* for -mcpu=<xxx> */
+char *ix86_isa_string;		/* for -misa=<xxx> */
+
 /* Register allocation order */
 char *i386_reg_alloc_order;
 static char regs_allocated[FIRST_PSEUDO_REGISTER];
@@ -110,9 +120,26 @@ int i386_align_funcs;				/* power of two alignment for functions */
 void
 override_options ()
 {
-  int ch, i, regno;
+  int ch, i, j, regno;
   char *p;
   int def_align;
+
+  static struct ptt
+    {
+      char *name;		/* Canonical processor name.  */
+      enum processor_type processor; /* Processor type enum value.  */
+      int target_enable;	/* Target flags to enable.  */
+      int target_disable;	/* Target flags to disable.  */
+    } processor_target_table[]
+      = {{PROCESSOR_COMMON_STRING, PROCESSOR_COMMON, 0, 0},
+	   {PROCESSOR_I386_STRING, PROCESSOR_I386, 0, 0},
+	   {PROCESSOR_I486_STRING, PROCESSOR_I486, 0, 0},
+	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, 0, 0},
+	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, 0, 0},
+	   {PROCESSOR_I686_STRING, PROCESSOR_PENTIUMPRO, 0, 0},
+	   {PROCESSOR_PENTIUMPRO_STRING, PROCESSOR_PENTIUMPRO, 0, 0}};
+
+  int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
 
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
@@ -143,6 +170,46 @@ override_options ()
 	}
     }
 
+  /* Get the architectural level.  */
+  if (ix86_isa_string == (char *)0)
+      ix86_isa_string = PROCESSOR_DEFAULT_STRING;
+
+  for (i = 0; i < ptt_size; i++)
+    if (! strcmp (ix86_isa_string, processor_target_table[i].name))
+      {
+	ix86_isa = processor_target_table[i].processor;
+	break;
+      }
+
+  if (i == ptt_size)
+    {
+      error ("bad value (%s) for -misa= switch", ix86_isa_string);
+      ix86_isa_string = PROCESSOR_DEFAULT_STRING;
+      ix86_isa = PROCESSOR_DEFAULT;
+    }
+
+  if (ix86_cpu_string == (char *)0)
+    ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
+
+  for (j = 0; j < ptt_size; j++)
+    if (! strcmp (ix86_cpu_string, processor_target_table[j].name))
+      {
+	ix86_cpu = processor_target_table[j].processor;
+	if (i > j)
+	  error ("-mcpu=%s does not support -misa=%s", ix86_cpu_string, ix86_isa_string);
+
+	target_flags |= processor_target_table[j].target_enable;
+	target_flags &= ~processor_target_table[j].target_disable;
+	break;
+      }
+
+  if (j == ptt_size)
+    {
+      error ("bad value (%s) for -mcpu= switch", ix86_cpu_string);
+      ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
+      ix86_cpu = PROCESSOR_DEFAULT;
+    }
+
   /* Validate -mregparm= value */
   if (i386_regparm_string)
     {
@@ -151,7 +218,7 @@ override_options ()
 	fatal ("-mregparm=%d is not between 0 and %d", i386_regparm, REGPARM_MAX);
     }
 
-  def_align = (TARGET_386) ? 2 : 4;
+  def_align = (TARGET_386_ALIGNMENT) ? 2 : 4;
 
   /* Validate -malign-loops= value, or provide default */
   if (i386_align_loops_string)
@@ -1612,16 +1679,16 @@ function_epilogue (file, size)
 
   if (frame_pointer_needed)
     {
-      /* On i486, mov & pop is faster than "leave". */
+      /* If not an i386, mov & pop is faster than "leave". */
 
-      if (!TARGET_386)
+      if (TARGET_LEAVE)
+	output_asm_insn ("leave", xops);
+      else
 	{
 	  xops[0] = frame_pointer_rtx;
 	  output_asm_insn (AS2 (mov%L2,%0,%2), xops);
 	  output_asm_insn ("pop%L0 %0", xops);
 	}
-      else
-	output_asm_insn ("leave", xops);
     }
   else if (size)
     {
