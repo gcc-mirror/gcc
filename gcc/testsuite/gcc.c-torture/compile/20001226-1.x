@@ -8,6 +8,5 @@
 global target_triplet
 if { [istarget "m6811-*-*"] || [istarget "m6812-*-*"] || [istarget "xtensa-*-*"]} {
       set torture_compile_xfail "$target_triplet"
-      return 1
 }
 return 0

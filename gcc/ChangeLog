@@ -1,3 +1,14 @@
+2002-05-15  Matt Hiller  <hiller@redhat.com>
+
+	* testsuite/gcc.c-torture/compile/20000804-1.x: Don't return 1 if
+        XFAILing.
+	* testsuite/gcc.c-torture/compile/20001226-1.x: Ditto.
+	* testsuite/gcc.c-torture/compile/920520-1.x: Ditto.
+	* testsuite/gcc.c-torture/compile/mipscop-1.x: XFAIL for now.
+	* testsuite/gcc.c-torture/compile/mipscop-2.x: Ditto.
+	* testsuite/gcc.c-torture/compile/mipscop-3.x: Ditto.
+	* testsuite/gcc.c-torture/compile/mipscop-4.x: Ditto.
+
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * reload1.c (forget_old_reloads_1): Do not use subreg offset.
