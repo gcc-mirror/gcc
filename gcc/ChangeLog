@@ -1,3 +1,7 @@
+2005-02-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (WINT_TYPE): Define.
+
 2005-02-22  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Default to
