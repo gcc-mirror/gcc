@@ -2454,7 +2454,9 @@ nonnull_asm_operands:
 
 asm_operand:
 	  STRING '(' expr ')'
-		{ $$ = build_tree_list ($1, $3); }
+		{ $$ = build_tree_list (build_tree_list (NULL_TREE, $1), $3); }
+	| '[' identifier ']' STRING '(' expr ')'
+		{ $$ = build_tree_list (build_tree_list ($2, $4), $6); }
 	;
 
 asm_clobbers:

@@ -285,8 +285,10 @@ main (argc, argv)
   puts ("#ifndef GCC_INSN_CONFIG_H");
   puts ("#define GCC_INSN_CONFIG_H\n");
 
-  /* Allow at least 10 operands for the sake of asm constructs.  */
-  max_recog_operands = 9;  /* We will add 1 later.  */
+  /* Allow at least 30 operands for the sake of asm constructs.  */
+  /* ??? We *really* ought to reorganize things such that there
+     is no fixed upper bound.  */
+  max_recog_operands = 29;  /* We will add 1 later.  */
   max_dup_operands = 1;
 
   /* Read the machine description.  */

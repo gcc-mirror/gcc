@@ -894,6 +894,13 @@ An operand that matches the specified operand number is allowed.  If a
 digit is used together with letters within the same alternative, the
 digit should come last.
 
+This number is allowed to be more than a single digit.  If multiple
+digits are encountered consecutavely, they are interpreted as a single
+decimal integer.  There is scant chance for ambiguity, since to-date
+it has never been desirable that @samp{10} be interpreted as matching
+either operand 1 @emph{or} operand 0.  Should this be desired, one
+can use multiple alternatives instead.
+
 @cindex matching constraint
 @cindex constraint, matching
 This is called a @dfn{matching constraint} and what it really means is

@@ -929,7 +929,7 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 	  const char *constraint;
 	  tree operand;
 
-	  constraint = TREE_STRING_POINTER (TREE_PURPOSE (t));
+	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
 	  operand = TREE_VALUE (output_operands);
 
 	  if (!parse_output_constraint (&constraint,

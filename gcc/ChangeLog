@@ -1,5 +1,27 @@
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
+	* c-parse.in (asm_operand): Allow named operands.
+	* genconfig.c (max_recog_operands): Set to 29.
+	* local-alloc.c (requires_inout): Skip multiple digits.
+	* recog.c (asm_operand_ok): Likewise.
+	(preprocess_constraints): Use strtoul for matching constraints.
+	(constrain_operands): Likewise.
+	* regmove.c (find_matches): Likewise.
+	* reload.c (find_reloads): Likewise.
+	* stmt.c (parse_output_constraint): Don't reject in-out
+	constraint on operands > 9.  Reject '[' in constraint.
+	(expand_asm_operands): Handle named operands.  Use strtoul
+	for matching constraints.
+	(check_operand_nalternatives): Split out from expand_asm_operands.
+	(check_unique_operand_names): New.
+	(resolve_operand_names, resolve_operand_name_1): New.
+
+	* doc/extend.texi (Extended Asm): Document named operands.
+	* doc/md.texi (Simple Constraints): Document matching constraints
+	on operands > 9.
+
+2001-10-10  Richard Henderson  <rth@redhat.com>
+
 	* combine.c (try_combine): Handle a SEQUENCE of one insn.
 
 	* i386.c (test splitter): Narrow tests vs paradoxical subregs.
