@@ -9869,11 +9869,13 @@ get_last_value (x)
 
       /* Skip over USE insns.  They are not useful here, and they may have
 	 been made by combine, in which case they do not have a INSN_CUID
-	 value.  */
-      for (insn = prev_real_insn (subst_insn);
-	   insn && (GET_CODE (PATTERN (insn)) == USE
+	 value.  We can't use prev_real_insn, because that would incorrectly
+	 take us backwards across labels.  */
+      for (insn = prev_nonnote_insn (subst_insn);
+	   insn && ((GET_CODE (insn) == INSN
+		     && GET_CODE (PATTERN (insn)) == USE)
 		    || INSN_CUID (insn) >= subst_low_cuid);
-	   insn = prev_real_insn (insn))
+	   insn = prev_nonnote_insn (insn))
 	;
 
       if (insn
