@@ -198,33 +198,6 @@ Rates: ~60 US$ / hour (Flux 2000.-)
 
 Updated:  1997-05-07
 
-Paul Black                                      <paulb@triode.apana.org.au>
-Sydney, Australia
-
-     I am available for general consulting on GNU software.  My specific
-areas of interest are:
-	- general C, C++, ADA and APL programming
-	- Gnu/unix utilities
-	- Troff
-	- Real Time Software
-	- Linux
-	- IP Comms, SMTP, NNTP, HTTP and WWW
-	- Simulation
-
-I am happy to provide free consulting/services if the work is of the order of
-a couple of hours. If more time is required, I am happy to negotiate depending
-on the nature of the work, my indicative rate is $40 per hour.
-
-Entered: 1996-07-10
-
-Keith Bostic
-
-	I'm interested in supporting/extending the ex/vi editors,
-	which I wrote.  On-site or by email, rates are based on the
-	project.  <bostic@cs.berkeley.edu>
-
-Entered:  1996-07-15
-
 Philip Brown
 <phil@mitre.org>
 (703) 893-8967 (prefer email)
@@ -415,8 +388,6 @@ Cygnus Solutions
 Sunnyvale, CA 94089 USA
 +1 408 542 9600 voice
 +1 408 542 9699 fax
-Web Site: http://www.cygnus.com
-
 
 Cygnus Solutions provides supported and maintained versions of gcc, g++, gdb
 with GUI, GNU linker and GNU macro assembler.  In addition, Cygnus provides
@@ -440,7 +411,7 @@ Cygnus Solutions contacts:
    	ph: +1 408 542 9637
    	fx: +1 408 542 9699
    	email:  <westcott@cygnus.com>
-Updated: 1997-05-23
+Updated: 1997-09-02 by rms
 
 Marcus G. Daniels              <marcusd@gnu.ai.mit.edu>
 31060 S. Kaufman Rd.           <marcus@tdb.com>
@@ -671,24 +642,6 @@ Consulting rates: $70 to $175 per hour.
  
 Updated:  1997-05-07
 
-Ehud Karni      <kehud@simonwiesel.net.il>
-
-I am an UNIX system programmer. My skills include writing in C and scripts.
-
-In the GNU domain, I consider myself an expert on Emacs.  I have written several
-packages in emacs-lisp (.el) including: better Hebrew support, another marking
-system, emulation for CDC full screen editor (FSE), COBOL mode, mathematical
-expression computing, and enhancements to vc.el (customization) and to ange-ftp
-(added Novell and NT operating systems).
-     I have installed and tested Emacs and my el's on several machines: DG,
-HP, Alpha (OSF) and PC (DOS).
-     I installed and worked with several other GNU packages - RCS, Gmake, GCC
-and more, but I'm not an expert in these packages.
-
-I work in Israel and my normal rate is $40 per hour.
-
-Entered:  1996-07-15
-
 Joseph R. Kiniry		<kiniry@cs.caltech.edu>
 Caltech Mailstop 256-80		http://www.cs.caltech.edu/~kiniry/
 Pasadena, CA 91125              <jrk@metagenesis.com>
@@ -717,26 +670,26 @@ Updated: 1997-05-07
 
 Bradley M. Kuhn
 <bkuhn@acm.org>
-http://www.smart.net/~bkuhn
+http://www.ebb.org/bkuhn
 
 I am available for primarily Unix system administration consulting, including
 but not limited to installation, configuration and integration of GNU tools
 and other copy-lefted software such as GNU/Linux.
 
-I am particularly skilled at end-user hand-holding and assisting in the
-integration of GNU and other copy-lefted software into new environments that
-have not used such tools in the past.
+I am particularly skilled at integration of GNU and other copy-lefted software
+into new environments that have not used such tools in the past, and porting
+the GNU software to new Unix-based platforms.
 
 Please visit my homepage for more information on my background and skills.
 
 I am available for both 1099 (preferred) and W2 on-site contracting in the
-Baltimore, MD metropolitan area, as well as remote consulting via dialup or
+Cincinnati, OH metropolitan area, as well as remote consulting via dialup or
 Internet connection anywhere in the US.
-
+ 
 My rate is in the $40/hour range, depending on the circumstances.  Rates for
 non-profit organizations are substantially lower, and possibly free.
 
-Updated: 1996-12-31
+Updated: 1997-08-03
 
 Fen Labalme                       <fen@comedia.com>
 CoMedia Consulting           http//www.comedia.com/comedia/
@@ -1376,12 +1329,12 @@ Services:
   Internet access
 
 Rates:
-  DM 110 (~$70) per hour
-  Support contracts start at DM 170/month + DM 30/supported system.
+  DM 150 (~$85) per hour
+  Support contracts start at DM 220/month + DM 30/supported system.
   Willing to travel for sufficiently large jobs.
   Rates don't include taxes.
 
-Updated: 1996-07-05
+Updated: 1997-08-04
 
 Paul C.A. van Gool
       <P.vanGool@LR.TUDelft.NL>
