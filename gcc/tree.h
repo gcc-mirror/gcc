@@ -2266,6 +2266,7 @@ extern tree build_nt			PARAMS ((enum tree_code, ...));
 
 extern tree build_int_2_wide		PARAMS ((unsigned HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_vector                PARAMS ((tree, tree));
+extern tree build_constructor		PARAMS ((tree, tree));
 extern tree build_real_from_int_cst 	PARAMS ((tree, tree));
 extern tree build_complex		PARAMS ((tree, tree, tree));
 extern tree build_string		PARAMS ((int, const char *));

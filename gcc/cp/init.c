@@ -204,7 +204,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       tree inits;
 
       /* Build a constructor to contain the initializations.  */
-      init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      init = build_constructor (type, NULL_TREE);
       /* Iterate over the fields, building initializations.  */
       inits = NULL_TREE;
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
@@ -236,7 +236,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       tree inits;
 
       /* Build a constructor to contain the initializations.  */
-      init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      init = build_constructor (type, NULL_TREE);
       /* Iterate over the array elements, building initializations.  */
       inits = NULL_TREE;
       max_index = nelts ? nelts : array_type_nelts (type);

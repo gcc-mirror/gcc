@@ -1,3 +1,15 @@
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* gigi.h, utils2.c (build_constructor):
+	Rename gnat_build_constructor. Use build_constructor.
+	* decl.c (gnat_to_gnu_entity)
+	* trans.c (tree_transform, pos_to_constructor, extract_values)
+	* ada/utils.c (build_template, convert_to_fat_pointer, convert)
+	(unchecked_convert)
+	* ada/utils2.c (build_binary_op, build_call_raise, build_allocator)
+	(fill_vms_descriptor):
+	Update to match.
+
 2003-04-06  Zack Weinberg  <zack@codesourcery.com>
 
 	* ada-tree.def: Make fourth element for GNAT_LOOP_ID zero.

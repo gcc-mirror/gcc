@@ -7520,7 +7520,7 @@ reshape_init (tree type, tree *initp)
   else
     {
       /* Build a CONSTRUCTOR to hold the contents of the aggregate.  */  
-      new_init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      new_init = build_constructor (type, NULL_TREE);
       TREE_HAS_CONSTRUCTOR (new_init) = 1;
 
       if (CLASS_TYPE_P (type))

@@ -3660,8 +3660,10 @@ build_c_cast (type, expr)
 
 	  if (pedantic)
 	    pedwarn ("ISO C forbids casts to union type");
-	  t = digest_init (type, build (CONSTRUCTOR, type, NULL_TREE,
-					build_tree_list (field, value)), 0);
+	  t = digest_init (type,
+			   build_constructor (type,
+					      build_tree_list (field, value)),
+			   0);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  return t;
 	}
@@ -5569,8 +5571,8 @@ pop_init_level (implicit)
 	constructor = error_mark_node;
       else
 	{
-	  constructor = build (CONSTRUCTOR, constructor_type, NULL_TREE,
-			       nreverse (constructor_elements));
+	  constructor = build_constructor (constructor_type,
+					   nreverse (constructor_elements));
 	  if (constructor_constant)
 	    TREE_CONSTANT (constructor) = 1;
 	  if (constructor_constant && constructor_simple)

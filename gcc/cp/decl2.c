@@ -3272,7 +3272,7 @@ build_expr_from_tree (t)
 	    r = tree_cons (purpose, value, r);
 	  }
 	
-	r = build_nt (CONSTRUCTOR, NULL_TREE, nreverse (r));
+	r = build_constructor (NULL_TREE, nreverse (r));
 	TREE_HAS_CONSTRUCTOR (r) = TREE_HAS_CONSTRUCTOR (t);
 
 	if (type)

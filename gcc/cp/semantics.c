@@ -1600,8 +1600,7 @@ finish_compound_literal (type, initializer_list)
   tree compound_literal;
 
   /* Build a CONSTRUCTOR for the INITIALIZER_LIST.  */
-  compound_literal = build_nt (CONSTRUCTOR, NULL_TREE,
-			       initializer_list);
+  compound_literal = build_constructor (NULL_TREE, initializer_list);
   /* Mark it as a compound-literal.  */
   TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
   if (processing_template_decl)

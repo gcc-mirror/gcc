@@ -14499,7 +14499,7 @@ maybe_build_array_element_wfl (tree node)
 static tree
 build_new_array_init (int location, tree values)
 {
-  tree constructor = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, values);
+  tree constructor = build_constructor (NULL_TREE, values);
   tree to_return = build1 (NEW_ARRAY_INIT, NULL_TREE, constructor);
   EXPR_WFL_LINECOL (to_return) = location;
   return to_return;

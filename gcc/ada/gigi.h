@@ -691,8 +691,9 @@ extern tree build_call_0_expr	PARAMS((tree));
    name, if requested.  MSG says which exception function to call.  */
 extern tree build_call_raise	PARAMS((int));
 
-/* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
-extern tree build_constructor	PARAMS((tree, tree));
+/* Return a CONSTRUCTOR of TYPE whose list is LIST.  This is not the
+   same as build_constructor in the language-independent tree.c.  */
+extern tree gnat_build_constructor	PARAMS((tree, tree));
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,

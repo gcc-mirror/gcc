@@ -468,6 +468,29 @@ build_vector (type, vals)
   return v;
 }
 
+/* Return a new CONSTRUCTOR node whose type is TYPE and whose values
+   are in a list pointed to by VALS.  */
+tree
+build_constructor (type, vals)
+     tree type, vals;
+{
+  tree c = make_node (CONSTRUCTOR);
+  TREE_TYPE (c) = type;
+  CONSTRUCTOR_ELTS (c) = vals;
+
+  /* ??? May not be necessary.  Mirrors what build does.  */
+  if (vals)
+    {
+      TREE_SIDE_EFFECTS (c) = TREE_SIDE_EFFECTS (vals);
+      TREE_READONLY (c) = TREE_READONLY (vals);
+      TREE_CONSTANT (c) = TREE_CONSTANT (vals);
+    }
+  else
+    TREE_CONSTANT (c) = 0;  /* safe side */
+
+  return c;
+}
+
 /* Return a new REAL_CST node whose type is TYPE and value is D.  */
 
 tree

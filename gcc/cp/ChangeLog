@@ -1,5 +1,19 @@
 2003-04-12  Zack Weinberg  <zack@codesourcery.com>
 
+	* class.c (initialize_array)
+	* decl.c (reshape_init)
+	* decl2.c (build_expr_from_tree)
+	* init.c (build_zero_init)
+	* pt.c (tsubst_copy, tsubst_copy_and_build)
+	* rtti.c (tinfo_base_init, generic_initializer, ptr_initializer)
+	(ptm_initializer, class_initializer, get_pseudo_ti_init)
+	* semantics.c (finish_compound_literal)
+	* typeck.c (build_ptrmemfunc1)
+	* typeck2.c (store_init_value, process_init_constructor)
+	(build_functional_cast): Use build_constructor.
+
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
 	* call.c (print_z_candidates): Use gcc_gettext_width, not
 	strlen, to determine how much padding to use.
 

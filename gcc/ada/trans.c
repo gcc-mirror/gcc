@@ -647,7 +647,7 @@ tree_transform (gnat_node)
 			   gnu_list);
 
 	  gnu_result
-	    = build_constructor (gnu_result_type, nreverse (gnu_list));
+	    = gnat_build_constructor (gnu_result_type, nreverse (gnu_list));
 	}
       break;
 
@@ -1620,7 +1620,7 @@ tree_transform (gnat_node)
 	    = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_result_type)));
 
 	if (Null_Record_Present (gnat_node))
-	  gnu_result = build_constructor (gnu_aggr_type, NULL_TREE);
+	  gnu_result = gnat_build_constructor (gnu_aggr_type, NULL_TREE);
 
 	else if (TREE_CODE (gnu_aggr_type) == RECORD_TYPE)
 	  gnu_result
@@ -2454,7 +2454,7 @@ tree_transform (gnat_node)
 	      gnu_ret_val = TREE_VALUE (TYPE_CI_CO_LIST (gnu_subprog_type));
 	    else
 	      gnu_ret_val
-		= build_constructor (TREE_TYPE (gnu_subprog_type),
+		= gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
 				     TYPE_CI_CO_LIST (gnu_subprog_type));
 	  }
 
@@ -2696,7 +2696,7 @@ tree_transform (gnat_node)
 	    if (list_length (gnu_cico_list) == 1)
 	      gnu_retval = TREE_VALUE (gnu_cico_list);
 	    else
-	       gnu_retval = build_constructor (TREE_TYPE (gnu_subprog_type),
+	       gnu_retval = gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
 					       gnu_cico_list);
 
 	    if (DECL_P (gnu_retval) && DECL_BY_REF_P (gnu_retval))
@@ -5011,7 +5011,7 @@ pos_to_constructor (gnat_expr, gnu_array_type, gnat_component_type)
 		     gnu_expr_list);
     }
 
-  return build_constructor (gnu_array_type, nreverse (gnu_expr_list));
+  return gnat_build_constructor (gnu_array_type, nreverse (gnu_expr_list));
 }
 
 /* Subroutine of assoc_to_constructor: VALUES is a list of field associations,
@@ -5062,7 +5062,7 @@ extract_values (values, record_type)
       result = tree_cons (field, value, result);
     }
 
-  return build_constructor (record_type, nreverse (result));
+  return gnat_build_constructor (record_type, nreverse (result));
 }
 
 /* EXP is to be treated as an array or record.  Handle the cases when it is

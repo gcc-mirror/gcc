@@ -1,10 +1,34 @@
 2003-04-12  Zack Weinberg  <zack@codesourcery.com>
 
+	* tree.c (build_constructor): New function.
+	* tree.h: Prototype it.
+
+	* c-typeck.c (build_c_cast, pop_init_level)
+	* profile.c (build_function_info_value, build_gcov_info_value)
+	(create_profiler):
+	Use build_constructor.
+
+	* builtins.c (expand_builtin_args_info): Remove #if 0 blocks.
+
+	* objc/objc-act.c (build_constructor):
+	Rename objc_build_constructor. Use build_constructor.
+	(build_objc_string_object, objc_add_static_instance)
+	(init_def_list, init_objc_symtab, init_module_descriptor)
+	(generate_static_references, build_selector_translation_table)
+	(build_descriptor_table_initializer, generate_descriptor_table)
+	(build_protocol_initializer, build_ivar_list_initializer)
+	(generate_ivars_list, build_dispatch_table_initializer)
+	(generate_dispatch_table, generate_protocol_list)
+	(build_category_initializer, build_shared_structure_initializer):
+	Update to match.
+
+2003-04-12  Zack Weinberg  <zack@codesourcery.com>
+
 	* intl.h: #define gcc_gettext_width to strlen when !ENABLE_NLS.
 
 2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
 
-	* config/m68hc11/m68hc11-protos.h 
+	* config/m68hc11/m68hc11-protos.h
 	(m68hc11_eq_compare_operator): Declare
 	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Register new predicate.
 	* config/m68hc11/m68hc11.c (m68hc11_eq_compare_operator): New predicate

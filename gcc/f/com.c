@@ -1287,7 +1287,7 @@ ffecom_build_complex_constant_ (tree type, tree realpart, tree imagpart)
     {
       bothparts = build_tree_list (TYPE_FIELDS (type), realpart);
       TREE_CHAIN (bothparts) = build_tree_list (TREE_CHAIN (TYPE_FIELDS (type)), imagpart);
-      bothparts = build (CONSTRUCTOR, type, NULL_TREE, bothparts);
+      bothparts = build_constructor (type, bothparts);
     }
   else
     {
@@ -3027,7 +3027,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	   build_range_type (ffecom_integer_type_node,
 			     ffecom_integer_zero_node,
 			     item));
-      list = build (CONSTRUCTOR, item, NULL_TREE, list);
+      list = build_constructor (item, list);
       TREE_CONSTANT (list) = 1;
       TREE_STATIC (list) = 1;
       return list;
@@ -3075,7 +3075,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	   build_range_type (ffecom_integer_type_node,
 			     ffecom_integer_zero_node,
 			     item));
-      list = build (CONSTRUCTOR, item, NULL_TREE, list);
+      list = build_constructor (item, list);
       TREE_CONSTANT (list) = 1;
       TREE_STATIC (list) = 1;
       return list;
@@ -6302,7 +6302,7 @@ ffecom_init_zero_ (tree decl)
     init = convert (type, integer_zero_node);
   else if (!incremental)
     {
-      init = build (CONSTRUCTOR, type, NULL_TREE, NULL_TREE);
+      init = build_constructor (type, NULL_TREE);
       TREE_CONSTANT (init) = 1;
       TREE_STATIC (init) = 1;
     }
@@ -8761,7 +8761,7 @@ ffecom_transform_namelist_ (ffesymbol s)
   TREE_CHAIN (TREE_CHAIN (nmlinits))
     = build_tree_list ((field = TREE_CHAIN (field)), nvarsinit);
 
-  nmlinits = build (CONSTRUCTOR, nmltype, NULL_TREE, nmlinits);
+  nmlinits = build_constructor (nmltype, nmlinits);
   TREE_CONSTANT (nmlinits) = 1;
   TREE_STATIC (nmlinits) = 1;
 
@@ -9296,7 +9296,7 @@ ffecom_vardesc_ (ffebld expr)
       TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (varinits)))
 	= build_tree_list ((field = TREE_CHAIN (field)), typeinit);
 
-      varinits = build (CONSTRUCTOR, vardesctype, NULL_TREE, varinits);
+      varinits = build_constructor (vardesctype, varinits);
       TREE_CONSTANT (varinits) = 1;
       TREE_STATIC (varinits) = 1;
 
@@ -9341,7 +9341,7 @@ ffecom_vardesc_array_ (ffesymbol s)
 			   build_range_type (integer_type_node,
 					     integer_one_node,
 					     build_int_2 (i, 0)));
-  list = build (CONSTRUCTOR, item, NULL_TREE, list);
+  list = build_constructor (item, list);
   TREE_CONSTANT (list) = 1;
   TREE_STATIC (list) = 1;
 
@@ -9447,7 +9447,7 @@ ffecom_vardesc_dims_ (ffesymbol s)
 					       build_int_2
 					       ((int) ffesymbol_rank (s)
 						+ 2, 0)));
-    list = build (CONSTRUCTOR, item, NULL_TREE, numdim);
+    list = build_constructor (item, numdim);
     TREE_CONSTANT (list) = 1;
     TREE_STATIC (list) = 1;
 
@@ -9582,7 +9582,7 @@ ffecom_2 (enum tree_code code, tree type, tree node1,
     case COMPLEX_EXPR:
       item = build_tree_list (TYPE_FIELDS (type), node1);
       TREE_CHAIN (item) = build_tree_list (TREE_CHAIN (TYPE_FIELDS (type)), node2);
-      item = build (CONSTRUCTOR, type, NULL_TREE, item);
+      item = build_constructor (type, item);
       break;
 
     case PLUS_EXPR:
