@@ -1,3 +1,8 @@
+2003-07-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.c (machopic_select_section): Use decl_readonly_section
+	to do most of the work.
+
 2003-07-16  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix-protos.h: Convert prototypes to ISO C90.
