@@ -1,3 +1,7 @@
+2000-08-15  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (mark_used_reg): Set reg_cond_reg appropriately.
+
 2000-08-15  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.c (arm_function_ok_for_sibcall): New function.
