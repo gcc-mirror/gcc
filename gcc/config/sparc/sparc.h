@@ -135,6 +135,11 @@ extern int target_flags;
    application software.  This is the default.  */
 #define TARGET_APP_REGS (target_flags & 1024)
 
+/*  Option to select how quad word floating point is implemented.
+    When TARGET_HARD_QUAD is true, we use the hardware quad instructions.
+    Otherwise, we use the SPARC ABI quad library functions.  */
+#define TARGET_HARD_QUAD (target_flags & 2048)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -168,10 +173,12 @@ extern int target_flags;
     {"f934", 128},		\
     {"app-regs", 1024},		\
     {"no-app-regs", -1024},	\
+    {"hard-quad-float", 2048},        \
+    {"soft-quad-float", -2048},       \
     SUBTARGET_SWITCHES		\
     { "", TARGET_DEFAULT}}
 
-#define TARGET_DEFAULT 1024+3
+#define TARGET_DEFAULT (1024+3)
 
 /* This is meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
@@ -1485,6 +1492,26 @@ extern struct rtx_def *legitimize_pic_address ();
 #define UMODSI3_LIBCALL "*.urem"
 /* .umul is a little faster than .mul.  */
 #define MULSI3_LIBCALL "*.umul"
+
+/* Define library calls for quad FP operations.  These are all part of the
+   SPARC ABI.  */
+#define ADDTF3_LIBCALL "*_Q_add"
+#define SUBTF3_LIBCALL "*_Q_sub"
+#define MULTF3_LIBCALL "*_Q_mul"
+#define DIVTF3_LIBCALL "*_Q_div"
+#define SQRTTF2_LIBCALL "*_Q_sqrt"
+#define FLOATSITF2_LIBCALL "*_Q_itoq"
+#define FIX_TRUNCTFSI2_LIBCALL "*_Q_qtoi"
+#define EXTENDSFTF2_LIBCALL "*_Q_stoq"
+#define TRUNCTFSF2_LIBCALL "*_Q_qtos"
+#define EXTENDDFTF2_LIBCALL "*_Q_dtoq"
+#define TRUNCTFDF2_LIBCALL "*_Q_qtod"
+#define EQTF2_LIBCALL "*_Q_feq"
+#define NETF2_LIBCALL "*_Q_fne"
+#define GTTF2_LIBCALL "*_Q_fgt"
+#define GETF2_LIBCALL "*_Q_fge"
+#define LTTF2_LIBCALL "*_Q_flt"
+#define LETF2_LIBCALL "*_Q_fle"
 
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
