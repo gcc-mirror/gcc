@@ -1,3 +1,8 @@
+Tue Feb 18 23:50:59 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (NPREDECESORC, SET_NPREDECESORS): Kill.
+	(cgraph_expand_function): Rewrite.
+
 2003-02-18  Matt Austern <austern@apple.com>
 	* toplev.c, langhooks.c, langhooks-def.h: Move
 	write_global_declarations from toplev.c to langhooks.c. 
