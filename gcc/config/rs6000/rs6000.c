@@ -2994,6 +2994,10 @@ rs6000_makes_calls ()
    old SP.  To support calls through pointers, we also allocate a
    fixed slot to store the TOC, -8 off the old SP.  */
 
+#ifndef ABI_STACK_BOUNDARY
+#define ABI_STACK_BOUNDARY STACK_BOUNDARY
+#endif
+
 rs6000_stack_t *
 rs6000_stack_info ()
 {
@@ -3108,7 +3112,7 @@ rs6000_stack_info ()
 			    + info_ptr->varargs_size
 			    + info_ptr->fixed_size);
 
-  info_ptr->total_size   = ALIGN (total_raw_size, STACK_BOUNDARY / BITS_PER_UNIT);
+  info_ptr->total_size   = ALIGN (total_raw_size, ABI_STACK_BOUNDARY / BITS_PER_UNIT);
 
   /* Determine if we need to allocate any stack frame.
      For AIX We need to push the stack if a frame pointer is needed (because
