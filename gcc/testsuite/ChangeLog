@@ -1,5 +1,7 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/opt/tmp1.C: New test.
+
 	PR c++/11525
 	* g++.dg/parse/constant4.C: New test.
 
