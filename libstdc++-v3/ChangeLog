@@ -1,3 +1,12 @@
+2001-07-09  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* include/bits/valarray_meta.h (_Expr::operator+): Use qualified id
+	for _Expr template template argument.
+	(_Expr::operator-): Likewise.
+	(_Expr::operator~): Likewise.
+	(_Expr::operator!): Likewise.
+	(_DEFINE_EXPR_UNARY_OPERATOR): Likewise.
+
 2001-07-06  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
         * libmath/Makefile.am (EXTRA_DIST): Remove atan2f.c and expf.c
