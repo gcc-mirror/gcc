@@ -841,7 +841,7 @@ files and accepts Fortran-specific command-line options, plus some
 command-line options that are designed to cater to Fortran users
 but apply to other languages as well.
 
-@xref{G++ and GCC,,Compile C; C++; Objective-C; Ada; CHILL; Fortran;
+@xref{G++ and GCC,,Compile C; C++; Objective-C; Ada; Fortran;
 or Java,gcc,Using the GNU Compiler Collection (GCC)},
 for information on the way different languages are handled
 by the GNU CC compiler (@command{gcc}).

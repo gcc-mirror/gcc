@@ -1,3 +1,12 @@
+2002-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove Chill front end.
+	* gcc.c (default_compilers): Remove Chill entries.
+	* ch: Remove directory.
+	* doc/frontends.texi: Remove information about Chill.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	
 2002-04-15  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms.h (INCLUDE_DEFAULTS): Add /gnu/lib/gcc-lib/include.

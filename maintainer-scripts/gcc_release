@@ -268,7 +268,6 @@ build_tarfiles() {
 
   # Now, build one for each of the languages.
   build_tarfile gcc-ada-${RELEASE} ${ADA_DIRS}
-  build_tarfile gcc-chill-${RELEASE} ${CHILL_DIRS}
   build_tarfile gcc-g++-${RELEASE} ${CPLUSPLUS_DIRS}
   build_tarfile gcc-g77-${RELEASE} ${FORTRAN_DIRS}
   build_tarfile gcc-java-${RELEASE} ${JAVA_DIRS}
@@ -277,7 +276,7 @@ build_tarfiles() {
    
   # The core is everything else.
   EXCLUDES=""
-  for x in ${ADA_DIRS} ${CHILL_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} \
+  for x in ${ADA_DIRS} ${CPLUSPLUS_DIRS} ${FORTRAN_DIRS} \
 	   ${JAVA_DIRS} ${OBJECTIVEC_DIRS} ${TESTSUITE_DIRS}; do
     EXCLUDES="${EXCLUDES} --exclude $x"
   done
@@ -409,7 +408,6 @@ SOURCE_DIRECTORY=""
 # The directories that should be part of the various language-specific
 # tar files.  These are all relative to the top of the source tree.
 ADA_DIRS="gcc/ada"
-CHILL_DIRS="gcc/ch libchill"
 CPLUSPLUS_DIRS="gcc/cp libstdc++-v3"
 FORTRAN_DIRS="gcc/f libf2c"
 JAVA_DIRS="gcc/java libjava libffi fastjar zlib boehm-gc"
@@ -538,7 +536,6 @@ SOURCE_DIRECTORY="${WORKING_DIRECTORY}/gcc-${RELEASE}"
 # Recompute the names of all the language-specific directories,
 # relative to the WORKING_DIRECTORY.
 ADA_DIRS=`adjust_dirs ${ADA_DIRS}`
-CHILL_DIRS=`adjust_dirs ${CHILL_DIRS}`
 CPLUSPLUS_DIRS=`adjust_dirs ${CPLUSPLUS_DIRS}`
 FORTRAN_DIRS=`adjust_dirs ${FORTRAN_DIRS}`
 JAVA_DIRS=`adjust_dirs ${JAVA_DIRS}`
