@@ -1,3 +1,25 @@
+2000-03-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppfiles.c (hash_IHASH): Just return i->hash.
+	(cpp_included): Set dummy.hash using _cpp_calc_hash.  Use
+	htab_find_with_hash.
+	(cpp_read_file): Likewise.
+	(find_include_file): Likewise.  Properly initialize
+	ih->nshort.  Share ih->name and ih->nshort if possible.
+	* cpphash.c (_cpp_calc_hash): New function.
+	(hash_HASHNODE): Just return h->hash.
+	(_cpp_lookup): Set dummy.hash using _cpp_calc_hash.  Use
+	htab_find_with_hash.
+	* cpphash.h: Prototype _cpp_calc_hash.
+	* cppinit.c (initialize_builtins): Provide a valid hash
+	to _cpp_make_hashnode, using _cpp_calc_hash.
+
+	* cpphash.c (collect_expansion): # is not a special character
+	in object-like macros.  In -traditional mode, /**/ is not
+	token paste at the beginning or end of the line.
+	* cpplib.c (do_include, do_import, do_include_next): If
+	parse_include fails, return immediately.
+
 2000-03-28  Jason Merrill  <jason@casey.cygnus.com>
 
 	* config/arm/arm.md (return peepholes): Update to reflect the new
@@ -36,11 +58,11 @@ Tue Mar 28 08:29:46 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-03-28  Neil Booth  <NeilB@earthling.net>
 
-        * (cpplex.c) _cpp_read_and_prescan.  Mark end of input buffer with
+        * cpplex.c (_cpp_read_and_prescan): Mark end of input buffer with
 	'\\' rather than a null character, so nulls are not special.  Fix
 	"\\\n" handling in end-of-buffer conditions.  Use trigraph map to
 	speed trigraph conversion.
-        (_cpp_init_input_buffer) Initialize trigraph map.
+        (_cpp_init_input_buffer): Initialize trigraph map.
 
 2000-03-27  Alan Modra  <alan@linuxcare.com.au>
 

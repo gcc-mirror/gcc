@@ -255,6 +255,7 @@ enum file_change_code {same_file, rename_file, enter_file, leave_file};
 extern HASHNODE *_cpp_make_hashnode	PARAMS ((const U_CHAR *, size_t,
 						 enum node_type,
 						 unsigned long));
+extern unsigned int _cpp_calc_hash	PARAMS ((const U_CHAR *, size_t));
 extern HASHNODE *_cpp_lookup		PARAMS ((cpp_reader *,
 						 const U_CHAR *, int));
 extern HASHNODE **_cpp_lookup_slot	PARAMS ((cpp_reader *,

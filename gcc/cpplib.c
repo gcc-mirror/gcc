@@ -508,6 +508,8 @@ do_include (pfile)
   char *token;
 
   len = parse_include (pfile, dtable[T_INCLUDE].name);
+  if (len == 0)
+    return 0;
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
@@ -537,6 +539,8 @@ do_import (pfile)
     }
 
   len = parse_include (pfile, dtable[T_IMPORT].name);
+  if (len == 0)
+    return 0;
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
@@ -559,7 +563,8 @@ do_include_next (pfile)
     cpp_pedwarn (pfile, "ANSI C does not allow `#include_next'");
   
   len = parse_include (pfile, dtable[T_INCLUDE_NEXT].name);
-
+  if (len == 0)
+    return 0;
   token = alloca (len + 1);
   strcpy (token, CPP_PWRITTEN (pfile));
   
