@@ -165,10 +165,6 @@ extern char *output_call ();
 #define DOUBLE_TYPE_SIZE	64
 #define LONG_DOUBLE_TYPE_SIZE	64
 
-/* The real.h version of this macro inexplicably checks BITS_PER_WORD */
-
-#define REAL_VALUE_TRUNCATE(mode, x) ((mode) == SFmode ? (float) (x) : (x))
-
 /* Declare the standard types used by builtins to match convex stddef.h --
    with int rather than long.  */
 
@@ -200,9 +196,9 @@ extern char *output_call ();
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-   On Convex, all values fit in one register.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)   1
+   but can be less for certain modes in special long registers. */
+#define HARD_REGNO_NREGS(REGNO, MODE) \
+   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On Convex, S registers can hold any type, A registers any nonfloat. */
@@ -788,6 +784,11 @@ enum reg_class {
    for valid addresses.  */
 
 #define ADDRESS_COST(RTX) (GET_CODE (RTX) == MEM ? 3 : 1)
+
+/* Specify the cost of a branch insn; roughly the number of extra insns that
+   should be added to avoid a branch.  */
+
+#define BRANCH_COST 0
 
 /* Check a `double' value for validity for a particular machine mode.  */
 
