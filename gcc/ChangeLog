@@ -1,3 +1,10 @@
+Sat Mar 14 05:45:21 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* configure.in ({,host_,build_}xm_defines): New variables.
+	Set to USG instead of including xm-usg.h.
+	Write #define lines in config.h files from xm_defines vars.
+	* xm-usg.h: Deleted.
+
 Fri Mar 13 07:10:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (expand_call): Fix typo in previous change.
