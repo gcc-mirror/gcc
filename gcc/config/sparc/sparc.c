@@ -1156,7 +1156,7 @@ uns_small_int (op, mode)
   return (GET_CODE (op) == CONST_INT
 	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
 	      || (INTVAL (op) >= 0xFFFFF000
-                  && INTVAL (op) < 0x100000000)));
+                  && INTVAL (op) <= 0xFFFFFFFF)));
 #else
   return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
 	  || (GET_CODE (op) == CONST_DOUBLE
@@ -5676,7 +5676,8 @@ int
 addrs_ok_for_ldd_peep (addr1, addr2)
       rtx addr1, addr2;
 {
-  int reg1, offset1;
+  unsigned int reg1;
+  int offset1;
 
   /* Extract a register number and offset (if used) from the first addr.  */
   if (GET_CODE (addr1) == PLUS)
@@ -6720,20 +6721,22 @@ sparc_flat_function_prologue (file, size)
 	  if (size <= 4096)
 	    {
 	      fprintf (file, "\tadd\t%s, %d, %s\n",
-		       sp_str, -size, sp_str);
+		       sp_str, (int) -size, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
 		  fprintf (file, "\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
-			   sp_str, -size, fp_str, ASM_COMMENT_START);
+			   sp_str, (int) -size, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
-		       size, t1_str, sp_str, t1_str, sp_str);
+	      fprintf (file, "\tset\t");
+	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
+	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
+		       t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
@@ -6780,24 +6783,26 @@ sparc_flat_function_prologue (file, size)
 	  if (size1 <= 4096)
 	    {
 	      fprintf (file, "\tadd\t%s, %d, %s\n",
-		       sp_str, -size1, sp_str);
+		       sp_str, (int) -size1, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n\tsub\t%s, %d, %s\t%s# set up frame pointer\n",
-			   fp_str, sp_str, offset, sp_str, -size1, fp_str,
-			   ASM_COMMENT_START);
+			   fp_str, sp_str, (int) offset, sp_str, (int) -size1,
+			   fp_str, ASM_COMMENT_START);
 		  offset += 4;
 		}
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
-		       size1, t1_str, sp_str, t1_str, sp_str);
+	      fprintf (file, "\tset\t");
+	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size1);
+	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
+		       t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
-			   fp_str, sp_str, offset, sp_str, t1_str, fp_str,
-			   ASM_COMMENT_START);
+			   fp_str, sp_str, (int) offset, sp_str, t1_str,
+			   fp_str, ASM_COMMENT_START);
 		  offset += 4;
 		}
 	    }
@@ -6816,7 +6821,7 @@ sparc_flat_function_prologue (file, size)
 	  if (gmask & RETURN_ADDR_MASK)
 	    {
 	      fprintf (file, "\tst\t%s, [%s+%d]\n",
-		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
+		       reg_names[RETURN_ADDR_REGNUM], sp_str, (int) offset);
 	      if (dwarf2out_do_frame ())
 		/* offset - size1 == reg_offset - size
 		   if reg_offset were updated above like offset.  */
@@ -6827,8 +6832,10 @@ sparc_flat_function_prologue (file, size)
 				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size1);
-	  fprintf (file, "\tset\t%d, %s\n\tsub\t%s, %s, %s\n",
-		   size - size1, t1_str, sp_str, t1_str, sp_str);
+	  fprintf (file, "\tset\t");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size - size1);
+	  fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
+		   t1_str, sp_str, t1_str, sp_str);
 	  if (dwarf2out_do_frame ())
 	    if (! (gmask & FRAME_POINTER_MASK))
 	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
@@ -6887,7 +6894,11 @@ sparc_flat_function_epilogue (file, size)
 	 delay slot if not otherwise filled by the reload sequence.  */
 
       if (size > 4095)
-	fprintf (file, "\tset\t%d, %s\n", size, t1_str);
+        {
+	  fprintf (file, "\tset\t");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
+	  fprintf (file, ", %s\n", t1_str);
+	}
 
       if (frame_pointer_needed)
 	{
@@ -6896,7 +6907,7 @@ sparc_flat_function_epilogue (file, size)
 		     fp_str, t1_str, sp_str, ASM_COMMENT_START);
 	  else
 	    fprintf (file,"\tsub\t%s, %d, %s\t\t%s# sp not trusted here\n",
-		     fp_str, size, sp_str, ASM_COMMENT_START);
+		     fp_str, (int) size, sp_str, ASM_COMMENT_START);
 	}
 
       /* Is the entire register save area offsettable from %sp?  */
@@ -6913,8 +6924,10 @@ sparc_flat_function_epilogue (file, size)
 	  /* Offset to register save area from %sp.  */
 	  reg_offset = size1 - reg_offset;
 
-	  fprintf (file, "\tset\t%d, %s\n\tadd\t%s, %s, %s\n",
-		   size1, t1_str, sp_str, t1_str, sp_str);
+	  fprintf (file, "\tset\t");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size1);
+	  fprintf (file, ", %s\n\tadd\t%s, %s, %s\n",
+		   t1_str, sp_str, t1_str, sp_str);
 	}
 
       /* We must restore the frame pointer and return address reg first
@@ -6922,13 +6935,13 @@ sparc_flat_function_epilogue (file, size)
       if (current_frame_info.gmask & FRAME_POINTER_MASK)
 	{
 	  fprintf (file, "\tld\t[%s+%d], %s\n",
-		   sp_str, reg_offset, fp_str);
+		   sp_str, (int) reg_offset, fp_str);
 	  reg_offset += 4;
 	}
       if (current_frame_info.gmask & RETURN_ADDR_MASK)
 	{
 	  fprintf (file, "\tld\t[%s+%d], %s\n",
-		   sp_str, reg_offset, reg_names[RETURN_ADDR_REGNUM]);
+		   sp_str, (int) reg_offset, reg_names[RETURN_ADDR_REGNUM]);
 	  reg_offset += 4;
 	}
 
@@ -6944,8 +6957,11 @@ sparc_flat_function_epilogue (file, size)
 	{
 	  size -= size1;
 	  if (size > 4095)
-	    fprintf (file, "\tset\t%d, %s\n",
-		     size, t1_str);
+	    {
+	      fprintf (file, "\tset\t");
+	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
+	      fprintf (file, ", %s\n", t1_str);
+	    }
 	}
 
       if (current_function_returns_struct)
@@ -6969,7 +6985,7 @@ sparc_flat_function_epilogue (file, size)
 	fprintf (file, "\tadd\t%s, %s, %s\n", sp_str, t1_str, sp_str);
 
       else if (size > 0)
-	fprintf (file, "\tadd\t%s, %d, %s\n", sp_str, size, sp_str);
+	fprintf (file, "\tadd\t%s, %d, %s\n", sp_str, (int) size, sp_str);
 
       else
 	fprintf (file, "\tnop\n");
@@ -8101,7 +8117,7 @@ sparc_sched_reorder (dump, sched_verbose, ready, n_readyp, clock)
      int sched_verbose;
      rtx *ready;
      int *n_readyp;
-     int clock;
+     int clock ATTRIBUTE_UNUSED;
 {
   if (sparc_cpu == PROCESSOR_ULTRASPARC)
     ultrasparc_sched_reorder (dump, sched_verbose, ready, *n_readyp);
