@@ -1,3 +1,8 @@
+2000-04-16  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decompile_method): Use print_field_name.
+	Fixes PR gcj/205.
+
 2000-04-05  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR gcj/140:
