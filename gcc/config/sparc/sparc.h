@@ -612,6 +612,34 @@ extern int sparc_align_funcs;
    See also the macro `Pmode' defined below.  */
 #define POINTER_SIZE (TARGET_PTR64 ? 64 : 32)
 
+/* A macro to update MODE and UNSIGNEDP when an object whose type
+   is TYPE and which has the specified mode and signedness is to be
+   stored in a register.  This macro is only called when TYPE is a
+   scalar type.  */
+#define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) \
+if (TARGET_ARCH64				\
+    && GET_MODE_CLASS (MODE) == MODE_INT	\
+    && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
+{						\
+  (MODE) = DImode;				\
+}
+
+/* Define this macro if the promotion described by PROMOTE_MODE
+   should also be done for outgoing function arguments.  */
+/* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
+   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
+   for this value.  */
+#define PROMOTE_FUNCTION_ARGS
+
+/* Define this macro if the promotion described by PROMOTE_MODE
+   should also be done for the return value of functions.
+   If this macro is defined, FUNCTION_VALUE must perform the same
+   promotions done by PROMOTE_MODE.  */
+/* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
+   for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
+   for this value.  */
+#define PROMOTE_FUNCTION_RETURN
+
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY (TARGET_ARCH64 ? 64 : 32)
 
@@ -732,9 +760,10 @@ extern int sparc_align_funcs;
 
 #define FIRST_PSEUDO_REGISTER 101
 
+#define SPARC_FIRST_FP_REG     32
 /* Additional V9 fp regs.  */
-#define SPARC_FIRST_V9_FP_REG 64
-#define SPARC_LAST_V9_FP_REG  95
+#define SPARC_FIRST_V9_FP_REG  64
+#define SPARC_LAST_V9_FP_REG   95
 /* V9 %fcc[0123].  V8 uses (figuratively) %fcc0.  */
 #define SPARC_FIRST_V9_FCC_REG 96
 #define SPARC_LAST_V9_FCC_REG  99
@@ -743,16 +772,28 @@ extern int sparc_align_funcs;
 /* Integer CC reg.  We don't distinguish %icc from %xcc.  */
 #define SPARC_ICC_REG 100
 
+/* Nonzero if REGNO is an fp reg.  */
+#define SPARC_FP_REG_P(REGNO) \
+((REGNO) >= SPARC_FIRST_FP_REG && (REGNO) <= SPARC_LAST_V9_FP_REG)
+
+/* Argument passing regs.  */
+#define SPARC_OUTGOING_INT_ARG_FIRST 8
+#define SPARC_INCOMING_INT_ARG_FIRST 24
+#define SPARC_FP_ARG_FIRST           32
+
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
+
    On non-v9 systems:
    g1 is free to use as temporary.
    g2-g4 are reserved for applications.  Gcc normally uses them as
    temporaries, but this can be disabled via the -mno-app-regs option.
    g5 through g7 are reserved for the operating system.
+
    On v9 systems:
-   g1 and g5 are free to use as temporaries.
-   g2-g4 are reserved for applications.  Gcc normally uses them as
+   g1,g4,g5 are free to use as temporaries.
+   g1,g5 are free to use between calls if call is to external function via PLT.
+   g2-g3 are reserved for applications.  Gcc normally uses them as
    temporaries, but this can be disabled via the -mno-app-regs option.
    g6-g7 are reserved for the operating system.
    ??? Register 1 is used as a temporary by the 64 bit sethi pattern, so must
@@ -819,11 +860,7 @@ do								\
       }								\
     if (SPARC_ARCH64)						\
       {								\
-	int regno;						\
 	fixed_regs[1] = 1;					\
-	/* ??? We need to scan argv for -fcall-used-.  */	\
-	for (regno = 48; regno < 80; regno++)			\
-	  call_used_regs[regno] = 0;				\
       }								\
     if (! TARGET_V9)						\
       {								\
@@ -916,11 +953,12 @@ extern int sparc_mode_class[];
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM 14
 
-/* Actual top-of-stack address is 92/136 greater than the contents of the
+/* Actual top-of-stack address is 92/176 greater than the contents of the
    stack pointer register for !v9/v9.  That is:
    - !v9: 64 bytes for the in and local registers, 4 bytes for structure return
-     address, and 24 bytes for the 6 register parameters.
-   - v9: 128 bytes for the in and local registers + 8 bytes reserved.  */
+     address, and 6*4 bytes for the 6 register parameters.
+   - v9: 128 bytes for the in and local registers + 6*8 bytes for the integer
+     parameter regs.  */
 #define STACK_POINTER_OFFSET FIRST_PARM_OFFSET(0)
 
 /* The stack bias (amount by which the hardware register is offset by).  */
@@ -978,11 +1016,16 @@ extern int sparc_mode_class[];
 
 /* Sparc ABI says that quad-precision floats and all structures are returned
    in memory.
-   For v9, all aggregates are returned in memory.  */
+   For v9: unions <= 32 bytes in size are returned in int regs,
+   structures up to 32 bytes are returned in int and fp regs.
+   FIXME: wip */
+
 #define RETURN_IN_MEMORY(TYPE)				\
-  (TYPE_MODE (TYPE) == BLKmode				\
-   || (! TARGET_ARCH64 && (TYPE_MODE (TYPE) == TFmode	\
-			    || TYPE_MODE (TYPE) == TCmode)))
+(TARGET_ARCH32						\
+ ? (TYPE_MODE (TYPE) == BLKmode				\
+    || TYPE_MODE (TYPE) == TFmode			\
+    || TYPE_MODE (TYPE) == TCmode)			\
+ : TYPE_MODE (TYPE) == BLKmode)
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
@@ -1025,7 +1068,9 @@ extern int sparc_mode_class[];
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
 
-/* The SPARC has two kinds of registers, general and floating point.
+/* The SPARC has various kinds of registers: general, floating point,
+   and condition codes [well, it has others as well, but none that we
+   care directly about].
 
    For v9 we must distinguish between the upper and lower floating point
    registers because the upper ones can't hold SFmode values.
@@ -1092,10 +1137,7 @@ extern enum reg_class sparc_regno_reg_class[];
    We put %f0/%f1 last among the float registers, so as to make it more
    likely that a pseudo-register which dies in the float return register
    will get allocated to the float return register, thus saving a move
-   instruction at the end of the function.
-
-   The float registers are ordered a little "funny" because in the 64 bit
-   architecture, some of them (%f16-%f47) are call-preserved.  */
+   instruction at the end of the function.  */
 
 #define REG_ALLOC_ORDER \
 { 8, 9, 10, 11, 12, 13, 2, 3,		\
@@ -1103,21 +1145,19 @@ extern enum reg_class sparc_regno_reg_class[];
   23, 24, 25, 26, 27, 28, 29, 31,	\
   34, 35, 36, 37, 38, 39,		/* %f2-%f7 */   \
   40, 41, 42, 43, 44, 45, 46, 47,	/* %f8-%f15 */  \
-  80, 81, 82, 83, 84, 85, 86, 87,	/* %f48-%f55 */ \
-  88, 89, 90, 91, 92, 93, 94, 95,	/* %f56-%f63 */ \
   48, 49, 50, 51, 52, 53, 54, 55,	/* %f16-%f23 */ \
   56, 57, 58, 59, 60, 61, 62, 63,	/* %f24-%f31 */ \
   64, 65, 66, 67, 68, 69, 70, 71,	/* %f32-%f39 */ \
   72, 73, 74, 75, 76, 77, 78, 79,	/* %f40-%f47 */ \
+  80, 81, 82, 83, 84, 85, 86, 87,	/* %f48-%f55 */ \
+  88, 89, 90, 91, 92, 93, 94, 95,	/* %f56-%f63 */ \
   32, 33,				/* %f0,%f1 */   \
   96, 97, 98, 99, 100,			/* %fcc0-3, %icc */ \
   1, 4, 5, 6, 7, 0, 14, 30}
 
 /* This is the order in which to allocate registers for
    leaf functions.  If all registers can fit in the "i" registers,
-   then we have the possibility of having a leaf function.
-   The floating point registers are ordered a little "funny" because in the
-   64 bit architecture some of them (%f16-%f47) are call-preserved.   */
+   then we have the possibility of having a leaf function.  */
 
 #define REG_LEAF_ALLOC_ORDER \
 { 2, 3, 24, 25, 26, 27, 28, 29,		\
@@ -1125,12 +1165,12 @@ extern enum reg_class sparc_regno_reg_class[];
   16, 17, 18, 19, 20, 21, 22, 23,	\
   34, 35, 36, 37, 38, 39,		\
   40, 41, 42, 43, 44, 45, 46, 47,	\
-  80, 81, 82, 83, 84, 85, 86, 87,	\
-  88, 89, 90, 91, 92, 93, 94, 95,	\
   48, 49, 50, 51, 52, 53, 54, 55,	\
   56, 57, 58, 59, 60, 61, 62, 63,	\
   64, 65, 66, 67, 68, 69, 70, 71,	\
   72, 73, 74, 75, 76, 77, 78, 79,	\
+  80, 81, 82, 83, 84, 85, 86, 87,	\
+  88, 89, 90, 91, 92, 93, 94, 95,	\
   32, 33,				\
   96, 97, 98, 99, 100,			\
   1, 4, 5, 6, 7, 0, 14, 30, 31}
@@ -1293,13 +1333,15 @@ extern char leaf_reg_remap[];
 /* Stack layout; function entry, exit and calling.  */
 
 /* Define the number of register that can hold parameters.
-   These two macros are used only in other macro definitions below.
+   This macro is only used in other macro definitions below and in sparc.c.
    MODE is the mode of the argument.
    !v9: All args are passed in %o0-%o5.
-   v9: Non-float args are passed in %o0-5 and float args are passed in
-   %f0-%f15.  */
+   v9: %o0-%o5 and %f0-%f31 are cumulatively used to pass values.
+   See the description in sparc.c.  */
 #define NPARM_REGS(MODE) \
-  (TARGET_ARCH64 ? (GET_MODE_CLASS (MODE) == MODE_FLOAT ? 16 : 6) : 6)
+(TARGET_ARCH64 \
+ ? (GET_MODE_CLASS (MODE) == MODE_FLOAT ? 32 : 6) \
+ : 6)
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
@@ -1328,16 +1370,16 @@ extern char leaf_reg_remap[];
 /* Offset of first parameter from the argument pointer register value.
    !v9: This is 64 for the ins and locals, plus 4 for the struct-return reg
    even if this function isn't going to use it.
-   v9: This is 128 for the ins and locals, plus a reserved space of 8.  */
+   v9: This is 128 for the ins and locals.  */
 #define FIRST_PARM_OFFSET(FNDECL) \
-  (TARGET_ARCH64 ? (SPARC_STACK_BIAS + 136) \
+  (TARGET_ARCH64 ? (SPARC_STACK_BIAS + 16 * UNITS_PER_WORD) \
    : (STRUCT_VALUE_OFFSET + UNITS_PER_WORD))
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
-#if ! SPARC_ARCH64
-#define REG_PARM_STACK_SPACE(DECL) (NPARM_REGS (SImode) * UNITS_PER_WORD)
-#endif
+/* This only takes into account the int regs.
+   fp regs are handled elsewhere.  */
+#define REG_PARM_STACK_SPACE(DECL) (6 * UNITS_PER_WORD)
 
 /* Keep the stack pointer constant throughout the function.
    This is both an optimization and a necessity: longjmp
@@ -1427,11 +1469,12 @@ extern char leaf_reg_remap[];
 #define APPLY_RESULT_SIZE 16
 
 /* 1 if N is a possible register number for function argument passing.
-   On SPARC, these are the "output" registers.  v9 also uses %f0-%f15.  */
+   On SPARC, these are the "output" registers.  v9 also uses %f0-%f31.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-  (TARGET_ARCH64 ? (((N) < 14 && (N) > 7) || (N) > 31 && (N) < 48) \
-   : ((N) < 14 && (N) > 7))
+(TARGET_ARCH64 \
+ ? (((N) >= 8 && (N) <= 13) || ((N) >= 32 && (N) <= 63)) \
+ : ((N) >= 8 && (N) <= 13))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -1444,129 +1487,30 @@ extern char leaf_reg_remap[];
    if any, which holds the structure-value-address).
    Thus 7 or more means all following args should go on the stack.
 
-   For v9, we record how many of each type has been passed.  Different
-   types get passed differently.
+   For v9, we also need to know whether a prototype is present.  */
 
-	- Float args are passed in %f0-15, after which they go to the stack
-	  where floats and doubles are passed 8 byte aligned and long doubles
-	  are passed 16 byte aligned.
-	- All aggregates are passed by reference.  The callee copies
-	  the structure if necessary, except if stdarg/varargs and the struct
-	  matches the ellipse in which case the caller makes a copy.
-	- Any non-float argument might be split between memory and reg %o5.
-	  ??? I don't think this can ever happen now that structs are no
-	  longer passed in regs.
-
-   For v9 return values:
-
-	- For all aggregates, the caller allocates space for the return value,
-          and passes the pointer as an implicit first argument, which is
-          allocated like all other arguments.
-	- The unimp instruction stuff for structure returns is gone.  */
-
-#if SPARC_ARCH64
-enum sparc_arg_class { SPARC_ARG_INT = 0, SPARC_ARG_FLOAT = 1 };
 struct sparc_args {
-    int arg_count[2];	/* must be int! (for __builtin_args_info) */
+  int words;       /* number of words passed so far */
+  int prototype_p; /* non-zero if a prototype is present */
+  int libcall_p;   /* non-zero if a library call */
 };
 #define CUMULATIVE_ARGS struct sparc_args
 
-/* Return index into CUMULATIVE_ARGS.  */
-
-#define GET_SPARC_ARG_CLASS(MODE) \
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT ? SPARC_ARG_FLOAT : SPARC_ARG_INT)
-
-/* Round a register number up to a proper boundary for an arg of mode MODE.
-   This macro is only used in this file.
-
-   The "& (0x10000 - ...)" is used to round up to the next appropriate reg.  */
-
-#define ROUND_REG(CUM, MODE)				\
-  (GET_MODE_CLASS (MODE) != MODE_FLOAT			\
-   ? (CUM).arg_count[(int) GET_SPARC_ARG_CLASS (MODE)]	\
-   : ((CUM).arg_count[(int) GET_SPARC_ARG_CLASS (MODE)]	\
-      + GET_MODE_UNIT_SIZE (MODE) / 4 - 1)		\
-     & (0x10000 - GET_MODE_UNIT_SIZE (MODE) / 4))
-
-#define ROUND_ADVANCE(SIZE)	\
-  (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#else /* ! SPARC_ARCH64 */
-
-#define CUMULATIVE_ARGS int
-
-#define ROUND_REG(CUM, MODE) (CUM)
-
-#define ROUND_ADVANCE(SIZE)	\
-  ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-#endif /* ! SPARC_ARCH64 */
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
+   For a library call, FNTYPE is 0.  */
 
-   On SPARC, the offset always starts at 0: the first parm reg is always
-   the same reg.  */
-
-#if SPARC_ARCH64
-extern int sparc_arg_count,sparc_n_named_args;
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
-  do {								\
-    (CUM).arg_count[(int) SPARC_ARG_INT] = 0;			\
-    (CUM).arg_count[(int) SPARC_ARG_FLOAT] = 0;			\
-    sparc_arg_count = 0;					\
-    sparc_n_named_args =					\
-      ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)			\
-       ? (list_length (TYPE_ARG_TYPES (FNTYPE))			\
-	  + (TREE_CODE (TREE_TYPE (FNTYPE)) == RECORD_TYPE	\
-	     || TREE_CODE (TREE_TYPE (FNTYPE)) == QUAL_UNION_TYPE\
-	     || TREE_CODE (TREE_TYPE (FNTYPE)) == SET_TYPE	\
-	     || TREE_CODE (TREE_TYPE (FNTYPE)) == UNION_TYPE))	\
-       /* Can't tell, treat 'em all as named.  */		\
-       : 10000);						\
-  } while (0)
-#else
-#define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT) ((CUM) = 0)
-#endif
+extern void init_cumulative_args ();
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
+init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (INDIRECT));
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
+   TYPE is null for libcalls where that information may not be available.  */
 
-#if SPARC_ARCH64
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)		\
-  do {								\
-    (CUM).arg_count[(int) GET_SPARC_ARG_CLASS (MODE)] =		\
-      ROUND_REG ((CUM), (MODE))					\
-	+ (GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-	   ? GET_MODE_SIZE (MODE) / 4				\
-	   : ROUND_ADVANCE ((MODE) == BLKmode			\
-			    ? GET_MODE_SIZE (Pmode)		\
-			    : GET_MODE_SIZE (MODE)));		\
-    sparc_arg_count++;						\
-  } while (0)
-#else
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  ((CUM) += ((MODE) != BLKmode				\
-	     ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))	\
-	     : ROUND_ADVANCE (int_size_in_bytes (TYPE))))
-#endif
-
-/* Return boolean indicating arg of mode MODE will be passed in a reg.
-   This macro is only used in this file.  */
-
-#if SPARC_ARCH64
-#define PASS_IN_REG_P(CUM, MODE, TYPE)				\
-  (ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)		\
-   && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))		\
-   && ((TYPE)==0 || (MODE) != BLKmode))
-#else
-#define PASS_IN_REG_P(CUM, MODE, TYPE)				\
-  ((CUM) < NPARM_REGS (SImode)					\
-   && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))		\
-   && ((TYPE)==0 || (MODE) != BLKmode				\
-       || (TYPE_ALIGN (TYPE) % PARM_BOUNDARY == 0)))
-#endif
+extern void function_arg_advance ();
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED) \
+function_arg_advance (& (CUM), (MODE), (TYPE), (NAMED))
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -1581,64 +1525,52 @@ extern int sparc_arg_count,sparc_n_named_args;
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-/* On SPARC the first six args are normally in registers
-   and the rest are pushed.  Any arg that starts within the first 6 words
-   is at least partially passed in a register unless its data type forbids.
-   For v9, the first 6 int args are passed in regs and the first N
-   float args are passed in regs (where N is such that %f0-15 are filled).
-   The rest are pushed.  Any arg that starts within the first 6 words
-   is at least partially passed in a register unless its data type forbids.  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
-  (PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
-   ? gen_rtx (REG, (MODE),						\
-	      (BASE_PASSING_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))))\
-   : 0)
+extern struct rtx_def *function_arg ();
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+function_arg (& (CUM), (MODE), (TYPE), (NAMED), 0)
 
 /* Define where a function finds its arguments.
    This is different from FUNCTION_ARG because of register windows.  */
 
-#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
-  (PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
-   ? gen_rtx (REG, (MODE),						\
-	      (BASE_INCOMING_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))))\
-   : 0)
+#define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED) \
+function_arg (& (CUM), (MODE), (TYPE), (NAMED), 1)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.
-   Any arg that starts in the first 6 regs but won't entirely fit in them
-   needs partial registers on the Sparc (!v9).  On v9, there are no arguments
-   that are passed partially in registers (??? complex values?).  */
+   For args passed entirely in registers or entirely in memory, zero.  */
 
-#if ! SPARC_ARCH64
-#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 		\
-  (PASS_IN_REG_P ((CUM), (MODE), (TYPE))				\
-   && ((CUM) + ((MODE) == BLKmode					\
-		? ROUND_ADVANCE (int_size_in_bytes (TYPE))		\
-		: ROUND_ADVANCE (GET_MODE_SIZE (MODE))) - NPARM_REGS (SImode) > 0)\
-   ? (NPARM_REGS (SImode) - (CUM))					\
-   : 0)
-#endif
+extern int function_arg_partial_nregs ();
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
+function_arg_partial_nregs (& (CUM), (MODE), (TYPE), (NAMED))
 
-/* The SPARC ABI stipulates passing struct arguments (of any size) and
-   (!v9) quad-precision floats by invisible reference.
-   For Pascal, also pass arrays by reference.  */
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)	\
-  ((TYPE && AGGREGATE_TYPE_P (TYPE))				\
-   || (!TARGET_ARCH64 && MODE == TFmode))
+/* A C expression that indicates when an argument must be passed by reference.
+   If nonzero for an argument, a copy of that argument is made in memory and a
+   pointer to the argument is passed instead of the argument itself.
+   The pointer is passed in whatever way is appropriate for passing a pointer
+   to that type.  */
 
-/* A C expression that indicates when it is the called function's
-   responsibility to make copies of arguments passed by reference.
-   If the callee can determine that the argument won't be modified, it can
-   avoid the copy.  */
-/* ??? We'd love to be able to use NAMED here.  Unfortunately, it doesn't
-   include the last named argument so we keep track of the args ourselves.  */
+extern int function_arg_pass_by_reference ();
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+function_arg_pass_by_reference (& (CUM), (MODE), (TYPE), (NAMED))
 
-#if SPARC_ARCH64
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) \
-  (sparc_arg_count < sparc_n_named_args)
-#endif
+/* If defined, a C expression which determines whether, and in which direction,
+   to pad out an argument with extra space.  The value should be of type
+   `enum direction': either `upward' to pad above the argument,
+   `downward' to pad below, or `none' to inhibit padding.  */
+extern enum direction function_arg_padding ();
+#define FUNCTION_ARG_PADDING(MODE, TYPE) \
+function_arg_padding ((MODE), (TYPE))
+
+/* If defined, a C expression that gives the alignment boundary, in bits,
+   of an argument with the specified mode and type.  If it is not defined,
+   PARM_BOUNDARY is used for all arguments.
+   For sparc64, objects requiring 16 byte alignment are passed that way.  */
+
+#define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
+((TARGET_ARCH64					\
+  && (GET_MODE_ALIGNMENT (MODE) == 128		\
+      || ((TYPE) && TYPE_ALIGN (TYPE) == 128)))	\
+ ? 128 : PARM_BOUNDARY)
 
 /* Initialize data used by insn expanders.  This is called from
    init_emit, once for each function, before code is generated.
@@ -2133,6 +2065,7 @@ extern union tree_node *current_function_decl;
      nop
      .xword context
      .xword function  */
+/* ??? Stack is execute-protected in v9.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
 do {									\
@@ -2177,8 +2110,23 @@ void sparc64_initialize_trampoline ();
 
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
+
 extern struct rtx_def *sparc_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS(ARGLIST) sparc_builtin_saveregs (ARGLIST)
+
+/* Define this macro if the location where a function argument is passed
+   depends on whether or not it is a named argument.
+
+   This macro controls how the NAMED argument to FUNCTION_ARG
+   is set for varargs and stdarg functions.  With this macro defined,
+   the NAMED argument is always true for named arguments, and false for
+   unnamed arguments.  If this is not defined, but SETUP_INCOMING_VARARGS
+   is defined, then all arguments are treated as named.  Otherwise, all named
+   arguments except the last are treated as named.
+   For the v9 we want NAMED to mean what it says it means.  */
+/* ??? This needn't be set for v8, but I don't want to make this runtime
+   selectable if I don't have to.  */
+#define STRICT_ARGUMENT_NAMING
 
 /* Generate RTL to flush the register windows so as to make arbitrary frames
    available.  */
@@ -2717,8 +2665,7 @@ extern struct rtx_def *legitimize_pic_address ();
     return 8;
 
 /* Compute the cost of an address.  For the sparc, all valid addresses are
-   the same cost.
-   ??? Is this true for v9?  */
+   the same cost.  */
 
 #define ADDRESS_COST(RTX)  1
 
@@ -3186,6 +3133,7 @@ do {									\
 /* Declare functions defined in sparc.c and used in templates.  */
 
 extern char *singlemove_string ();
+extern char *doublemove_string ();
 extern char *output_move_double ();
 extern char *output_move_quad ();
 extern char *output_fp_move_double ();

@@ -64,17 +64,6 @@ static int actual_fsize;
 
 rtx sparc_compare_op0, sparc_compare_op1;
 
-/* Count of named arguments (v9 only).
-   ??? INIT_CUMULATIVE_ARGS initializes these, and FUNCTION_ARG_ADVANCE
-   increments SPARC_ARG_COUNT. They are then used by
-   FUNCTION_ARG_CALLEE_COPIES to determine if the argument is really a named
-   argument or not.  This hack is necessary because the NAMED argument to the
-   FUNCTION_ARG_XXX macros is not what it says it is: it does not include the
-   last named argument.  */
-
-int sparc_arg_count;
-int sparc_n_named_args;
-
 /* We may need an epilogue if we spill too many registers.
    If this is non-zero, then we branch here for the epilogue.  */
 static rtx leaf_label;
@@ -1647,7 +1636,12 @@ emit_move_sequence (operands, mode)
 }
 
 /* Return the best assembler insn template
-   for moving operands[1] into operands[0] as a fullword.  */
+   for moving operands[1] into operands[0] as a 4 byte quantity.
+
+   This isn't intended to be very smart.  It is up to the caller to
+   choose the best way to do things.
+
+   Note that OPERANDS may be modified to suit the returned string.  */
 
 char *
 singlemove_string (operands)
@@ -1673,7 +1667,7 @@ singlemove_string (operands)
 
       REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
       REAL_VALUE_TO_TARGET_SINGLE (r, i);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, i);
+      operands[1] = GEN_INT (i);
 
       if (CONST_OK_FOR_LETTER_P (i, 'I'))
 	return "mov %1,%0";
@@ -1685,10 +1679,11 @@ singlemove_string (operands)
   else if (GET_CODE (operands[1]) == CONST_INT
 	   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
     {
-      int i = INTVAL (operands[1]);
+      HOST_WIDE_INT i = INTVAL (operands[1]);
 
       /* If all low order 10 bits are clear, then we only need a single
 	 sethi insn to load the constant.  */
+      /* FIXME: Use SETHI_P.  */
       if ((i & 0x000003FF) != 0)
 	return "sethi %%hi(%a1),%0\n\tor %0,%%lo(%a1),%0";
       else
@@ -1697,7 +1692,59 @@ singlemove_string (operands)
   /* Operand 1 must be a register, or a 'I' type CONST_INT.  */
   return "mov %1,%0";
 }
-
+
+/* Return the best assembler insn template
+   for moving operands[1] into operands[0] as an 8 byte quantity.
+
+   This isn't intended to be very smart.  It is up to the caller to
+   choose the best way to do things.
+
+   Note that OPERANDS may be modified to suit the returned string.  */
+
+char *
+doublemove_string (operands)
+     rtx *operands;
+{
+  rtx op0 = operands[0], op1 = operands[1];
+
+  if (GET_CODE (op0) == MEM)
+    {
+      if (GET_CODE (op1) == REG)
+	{
+	  if (FP_REG_P (op1))
+	    return "std %1,%0";
+	  return TARGET_ARCH64 ? "stx %1,%0" : "std %1,%0";
+	}
+      if (TARGET_ARCH64
+	  && (op1 == const0_rtx
+	      || (GET_MODE (op1) != VOIDmode
+		  && op1 == CONST0_RTX (GET_MODE (op1)))))
+	return "stx %r1,%0";
+      abort ();
+    }
+  else if (GET_CODE (op1) == MEM)
+    {
+      if (GET_CODE (op0) != REG)
+	abort ();
+      if (FP_REG_P (op0))
+	return "ldd %1,%0";
+      return TARGET_ARCH64 ? "ldx %1,%0" : "ldd %1,%0";
+    }
+  else if (GET_CODE (operands[1]) == CONST_DOUBLE)
+    {
+      /* ??? Unfinished, and maybe not needed.  */
+      abort ();
+    }
+  else if (GET_CODE (operands[1]) == CONST_INT
+	   && ! CONST_OK_FOR_LETTER_P (INTVAL (operands[1]), 'I'))
+    {
+      /* ??? Unfinished, and maybe not needed.  */
+      abort ();
+    }
+  /* Operand 1 must be a register, or a 'I' type CONST_INT.  */
+  return "mov %1,%0";
+}
+
 /* Return non-zero if it is OK to assume that the given memory operand is
    aligned at least to a 8-byte boundary.  This should only be called
    for memory accesses whose size is 8 bytes or larger.  */
@@ -2038,17 +2085,25 @@ output_move_quad (operands)
 
   if (optype0 == REGOP)
     {
-      wordpart[0][0] = gen_rtx (REG, SImode, REGNO (op0) + 0);
-      wordpart[1][0] = gen_rtx (REG, SImode, REGNO (op0) + 1);
-      wordpart[2][0] = gen_rtx (REG, SImode, REGNO (op0) + 2);
-      wordpart[3][0] = gen_rtx (REG, SImode, REGNO (op0) + 3);
+      wordpart[0][0] = gen_rtx (REG, word_mode, REGNO (op0) + 0);
+      wordpart[1][0] = gen_rtx (REG, word_mode, REGNO (op0) + 1);
+      if (TARGET_ARCH32)
+	{
+	  wordpart[2][0] = gen_rtx (REG, word_mode, REGNO (op0) + 2);
+	  wordpart[3][0] = gen_rtx (REG, word_mode, REGNO (op0) + 3);
+	}
     }
   else if (optype0 == OFFSOP)
     {
       wordpart[0][0] = adj_offsettable_operand (op0, 0);
-      wordpart[1][0] = adj_offsettable_operand (op0, 4);
-      wordpart[2][0] = adj_offsettable_operand (op0, 8);
-      wordpart[3][0] = adj_offsettable_operand (op0, 12);
+      if (TARGET_ARCH32)
+	{
+	  wordpart[1][0] = adj_offsettable_operand (op0, 4);
+	  wordpart[2][0] = adj_offsettable_operand (op0, 8);
+	  wordpart[3][0] = adj_offsettable_operand (op0, 12);
+	}
+      else
+	wordpart[1][0] = adj_offsettable_operand (op0, 8);
     }
   else
     {
@@ -2060,17 +2115,25 @@ output_move_quad (operands)
 
   if (optype1 == REGOP)
     {
-      wordpart[0][1] = gen_rtx (REG, SImode, REGNO (op1) + 0);
-      wordpart[1][1] = gen_rtx (REG, SImode, REGNO (op1) + 1);
-      wordpart[2][1] = gen_rtx (REG, SImode, REGNO (op1) + 2);
-      wordpart[3][1] = gen_rtx (REG, SImode, REGNO (op1) + 3);
+      wordpart[0][1] = gen_rtx (REG, word_mode, REGNO (op1) + 0);
+      wordpart[1][1] = gen_rtx (REG, word_mode, REGNO (op1) + 1);
+      if (TARGET_ARCH32)
+	{
+	  wordpart[2][1] = gen_rtx (REG, word_mode, REGNO (op1) + 2);
+	  wordpart[3][1] = gen_rtx (REG, word_mode, REGNO (op1) + 3);
+	}
     }
   else if (optype1 == OFFSOP)
     {
       wordpart[0][1] = adj_offsettable_operand (op1, 0);
-      wordpart[1][1] = adj_offsettable_operand (op1, 4);
-      wordpart[2][1] = adj_offsettable_operand (op1, 8);
-      wordpart[3][1] = adj_offsettable_operand (op1, 12);
+      if (TARGET_ARCH32)
+	{
+	  wordpart[1][1] = adj_offsettable_operand (op1, 4);
+	  wordpart[2][1] = adj_offsettable_operand (op1, 8);
+	  wordpart[3][1] = adj_offsettable_operand (op1, 12);
+	}
+      else
+	wordpart[1][1] = adj_offsettable_operand (op1, 8);
     }
   else if (optype1 == CNSTOP)
     {
@@ -2117,12 +2180,13 @@ output_move_quad (operands)
 	  /* If this is a floating point register higher than %f31,
 	     then we *must* use an aligned load, since `ld' will not accept
 	     the register number.  */
-	  || (TARGET_V9 && REGNO (reg) >= 64))
+	  || (TARGET_V9 && REGNO (reg) >= SPARC_FIRST_V9_FP_REG))
 	{
 	  if (TARGET_V9 && FP_REG_P (reg) && TARGET_HARD_QUAD)
 	    {
 	      if ((REGNO (reg) & 3) != 0)
 		abort ();
+	      /* ??? Can `mem' have an inappropriate alignment here?  */
 	      return (mem == op1 ? "ldq %1,%0" : "stq %1,%0");
 	    }
 	  operands[2] = adj_offsettable_operand (mem, 8);
@@ -2137,21 +2201,36 @@ output_move_quad (operands)
   /* If the first move would clobber the source of the second one,
      do them in the other order.  */
 
-  /* Overlapping registers.  */
-  if (optype0 == REGOP && optype1 == REGOP
-      && (REGNO (op0) == REGNO (wordpart[1][3])
-	  || REGNO (op0) == REGNO (wordpart[1][2])
-	  || REGNO (op0) == REGNO (wordpart[1][1])))
+  /* Overlapping registers?  */
+  if (TARGET_ARCH32)
     {
-      /* Do fourth word.  */
-      output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
-      /* Do the third word.  */
-      output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
-      /* Do the second word.  */
-      output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
-      /* Do lowest-numbered word.  */
-      return singlemove_string (wordpart[0]);
+      if (optype0 == REGOP && optype1 == REGOP
+	  && (REGNO (op0) == REGNO (wordpart[1][3])
+	      || REGNO (op0) == REGNO (wordpart[1][2])
+	      || REGNO (op0) == REGNO (wordpart[1][1])))
+	{
+	  /* Do fourth word.  */
+	  output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
+	  /* Do the third word.  */
+	  output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
+	  /* Do the second word.  */
+	  output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
+	  /* Do lowest-numbered word.  */
+	  output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
+	  return "";
+	}
     }
+  else /* TARGET_ARCH64 */
+    {
+      if (optype0 == REGOP && optype1 == REGOP
+	  && REGNO (op0) == REGNO (wordpart[1][1]))
+	{
+	  output_asm_insn ("mov %1,%0", wordpart[1]);
+	  output_asm_insn ("mov %1,%0", wordpart[0]);
+	  return "";
+	}
+    }
+
   /* Loading into a register which overlaps a register used in the address.  */
   if (optype0 == REGOP && optype1 != REGOP
       && reg_overlap_mentioned_p (op0, op1))
@@ -2164,42 +2243,64 @@ output_move_quad (operands)
       abort ();
     }
 
-  /* Normal case: move the four words in lowest to highest address order.  */
+  /* Normal case: move the words in lowest to highest address order.  */
 
-  output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
+  if (TARGET_ARCH32)
+    {
+      output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
 
-  /* Make any unoffsettable addresses point at the second word.  */
-  if (addreg0)
-    output_asm_insn ("add %0,0x4,%0", &addreg0);
-  if (addreg1)
-    output_asm_insn ("add %0,0x4,%0", &addreg1);
+      /* Make any unoffsettable addresses point at the second word.  */
+      if (addreg0)
+	output_asm_insn ("add %0,0x4,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,0x4,%0", &addreg1);
 
-  /* Do the second word.  */
-  output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
+      /* Do the second word.  */
+      output_asm_insn (singlemove_string (wordpart[1]), wordpart[1]);
 
-  /* Make any unoffsettable addresses point at the third word.  */
-  if (addreg0)
-    output_asm_insn ("add %0,0x4,%0", &addreg0);
-  if (addreg1)
-    output_asm_insn ("add %0,0x4,%0", &addreg1);
+      /* Make any unoffsettable addresses point at the third word.  */
+      if (addreg0)
+	output_asm_insn ("add %0,0x4,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,0x4,%0", &addreg1);
 
-  /* Do the third word.  */
-  output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
+      /* Do the third word.  */
+      output_asm_insn (singlemove_string (wordpart[2]), wordpart[2]);
 
-  /* Make any unoffsettable addresses point at the fourth word.  */
-  if (addreg0)
-    output_asm_insn ("add %0,0x4,%0", &addreg0);
-  if (addreg1)
-    output_asm_insn ("add %0,0x4,%0", &addreg1);
+      /* Make any unoffsettable addresses point at the fourth word.  */
+      if (addreg0)
+	output_asm_insn ("add %0,0x4,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,0x4,%0", &addreg1);
 
-  /* Do the fourth word.  */
-  output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
+      /* Do the fourth word.  */
+      output_asm_insn (singlemove_string (wordpart[3]), wordpart[3]);
 
-  /* Undo the adds we just did.  */
-  if (addreg0)
-    output_asm_insn ("add %0,-0xc,%0", &addreg0);
-  if (addreg1)
-    output_asm_insn ("add %0,-0xc,%0", &addreg1);
+      /* Undo the adds we just did.  */
+      if (addreg0)
+	output_asm_insn ("add %0,-0xc,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,-0xc,%0", &addreg1);
+    }
+  else /* TARGET_ARCH64 */
+    {
+      output_asm_insn (doublemove_string (wordpart[0]), wordpart[0]);
+
+      /* Make any unoffsettable addresses point at the second word.  */
+      if (addreg0)
+	output_asm_insn ("add %0,0x8,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,0x8,%0", &addreg1);
+
+      /* Do the second word.  */
+      output_asm_insn (doublemove_string (wordpart[1]), wordpart[1]);
+
+      /* Undo the adds we just did.  */
+      if (addreg0)
+	output_asm_insn ("add %0,-0x8,%0", &addreg0);
+      if (addreg1)
+	output_asm_insn ("add %0,-0x8,%0", &addreg1);
+    }
 
   return "";
 }
@@ -2324,7 +2425,7 @@ output_sized_memop (opname, mode, signedp)
 
   fprintf (asm_out_file, "\t%s%s", opname, modename);
 }
-
+
 void
 output_move_with_extension (operands)
      rtx *operands;
@@ -3056,10 +3157,7 @@ compute_frame_size (size, leaf_function)
 {
   int n_regs = 0, i;
   int outgoing_args_size = (current_function_outgoing_args_size
-#if ! SPARC_ARCH64
-			    + REG_PARM_STACK_SPACE (current_function_decl)
-#endif
-			    );
+			    + REG_PARM_STACK_SPACE (current_function_decl));
 
   if (TARGET_EPILOGUE)
     {
@@ -3106,10 +3204,9 @@ compute_frame_size (size, leaf_function)
   /* Make sure nothing can clobber our register windows.
      If a SAVE must be done, or there is a stack-local variable,
      the register window area must be allocated.
-     ??? For v9 we need an additional 8 bytes of reserved space, apparently
-     it's needed by v8 as well.  */
+     ??? For v8 we apparently need an additional 8 bytes of reserved space.  */
   if (leaf_function == 0 || size > 0)
-    actual_fsize += (16 * UNITS_PER_WORD) + 8;
+    actual_fsize += (16 * UNITS_PER_WORD) + (TARGET_ARCH64 ? 0 : 8);
 
   return SPARC_STACK_ALIGN (actual_fsize);
 }
@@ -3405,105 +3502,671 @@ output_function_epilogue (file, size, leaf_function)
       target_flags |= old_target_epilogue;
     }
 }
+
+/* Functions for handling argument passing.
 
-/* Do what is necessary for `va_start'.  The argument is ignored.
-   !v9: We look at the current function to determine if stdarg or varargs
-   is used and return the address of the first unnamed parameter.
-   v9: We save the argument integer and floating point regs in a buffer, and
-   return the address of this buffer.  The rest is handled in va-sparc.h.  */
-/* ??? This is currently conditioned on SPARC_ARCH64 because
-   current_function_args_info is different in each compiler.  */
+   For v8 the first six args are normally in registers and the rest are
+   pushed.  Any arg that starts within the first 6 words is at least
+   partially passed in a register unless its data type forbids.
 
-#if SPARC_ARCH64
+   For v9, the argument registers are laid out as an array of 16 elements
+   and arguments are added sequentially.  The first 6 int args and up to the
+   first 16 fp args (depending on size) are passed in regs.
 
-rtx
-sparc_builtin_saveregs (arglist)
-     tree arglist;
+   Slot    Stack   Integral   Float   Float in structure   Double   Long Double
+   ----    -----   --------   -----   ------------------   ------   -----------
+    15   [SP+248]              %f31       %f30,%f31         %d30
+    14   [SP+240]              %f29       %f28,%f29         %d28       %q28
+    13   [SP+232]              %f27       %f26,%f27         %d26
+    12   [SP+224]              %f25       %f24,%f25         %d24       %q24
+    11   [SP+216]              %f23       %f22,%f23         %d22
+    10   [SP+208]              %f21       %f20,%f21         %d20       %q20
+     9   [SP+200]              %f19       %f18,%f19         %d18
+     8   [SP+192]              %f17       %f16,%f17         %d16       %q16
+     7   [SP+184]              %f15       %f14,%f15         %d14
+     6   [SP+176]              %f13       %f12,%f13         %d12       %q12
+     5   [SP+168]     %o5      %f11       %f10,%f11         %d10
+     4   [SP+160]     %o4       %f9        %f8,%f9           %d8        %q8
+     3   [SP+152]     %o3       %f7        %f6,%f7           %d6
+     2   [SP+144]     %o2       %f5        %f4,%f5           %d4        %q4
+     1   [SP+136]     %o1       %f3        %f2,%f3           %d2
+     0   [SP+128]     %o0       %f1        %f0,%f1           %d0        %q0
+
+   Here SP = %sp if -mno-stack-bias or %sp+stack_bias otherwise.
+
+   Integral arguments are always passed as 64 bit quantities appropriately
+   extended.
+
+   Passing of floating point values is handled as follows.
+   If a prototype is in scope:
+     If the value is in a named argument (i.e. not a stdarg function or a
+     value not part of the `...') then the value is passed in the appropriate
+     fp reg.
+     If the value is part of the `...' and is passed in one of the first 6
+     slots then the value is passed in the appropriate int reg.
+     If the value is part of the `...' and is not passed in one of the first 6
+     slots then the value is passed in memory.
+   If a prototype is not in scope:
+     If the value is one of the first 6 arguments the value is passed in the
+     appropriate integer reg and the appropriate fp reg.
+     If the value is not one of the first 6 arguments the value is passed in
+     the appropriate fp reg and in memory.
+   */
+
+/* Maximum number of int regs for args.  */
+#define SPARC_INT_ARG_MAX 6
+/* Maximum number of fp regs for args.  */
+#define SPARC_FP_ARG_MAX 16
+
+#define ROUND_ADVANCE(SIZE) (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Handle the INIT_CUMULATIVE_ARGS macro.
+   Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is 0.  */
+
+void
+init_cumulative_args (cum, fntype, libname, indirect)
+     CUMULATIVE_ARGS *cum;
+     tree fntype, libname;
+     int indirect;
 {
-  tree fntype = TREE_TYPE (current_function_decl);
-  /* First unnamed integer register.  */
-  int first_intreg = current_function_args_info.arg_count[(int) SPARC_ARG_INT];
-  /* Number of integer registers we need to save.  */
-  int n_intregs = MAX (0, NPARM_REGS (SImode) - first_intreg);
-  /* First unnamed SFmode float reg (no, you can't pass SFmode floats as
-     unnamed arguments, we just number them that way).  We must round up to
-     the next double word float reg - that is the first one to save.  */
-  int first_floatreg = current_function_args_info.arg_count[(int) SPARC_ARG_FLOAT] + 1 & ~1;
-  /* Number of SFmode float regs to save.  */
-  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
-  int ptrsize = GET_MODE_SIZE (Pmode);
-  rtx valist, regbuf, fpregs;
-  int bufsize, adjust, regno;
-
-  /* Allocate block of memory for the regs.
-     We only allocate as much as we need, but we must ensure quadword float
-     regs are stored with the appropriate alignment.  */
-  /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
-     Or can assign_stack_local accept a 0 SIZE argument?  */
-
-  bufsize = (n_intregs * UNITS_PER_WORD) + 
-  	    (TARGET_FPU ? (n_floatregs * (UNITS_PER_WORD / 2)) : 0);
-  /* Add space in front of the int regs to ensure proper alignment of quadword
-     fp regs.  We must add the space in front because va_start assumes this.  */
-  if (TARGET_FPU && n_floatregs >= 4)
-    adjust = ((n_intregs + first_floatreg / 2) % 2) * UNITS_PER_WORD;
-  else
-    adjust = 0;
-
-  regbuf = assign_stack_local (BLKmode, bufsize + adjust,
-			       GET_MODE_BITSIZE (TFmode));
-  regbuf = gen_rtx (MEM, BLKmode, plus_constant (XEXP (regbuf, 0), adjust));
-  MEM_IN_STRUCT_P (regbuf) = 1;
-
-  /* Save int args.
-     This is optimized to only save the regs that are necessary.  Explicitly
-     named args need not be saved.  */
-
-  if (n_intregs > 0)
-    move_block_from_reg (BASE_INCOMING_ARG_REG (SImode) + first_intreg,
-			 regbuf, n_intregs, n_intregs * UNITS_PER_WORD);
-
-  if (TARGET_FPU) 
-    {
-      /* Save float args.
-         This is optimized to only save the regs that are necessary.
-	 Explicitly named args need not be saved.
-         We explicitly build a pointer to the buffer because it halves the insn
-         count when not optimizing (otherwise the pointer is built for each reg
-         saved).  */
-
-      fpregs = gen_reg_rtx (Pmode);
-      emit_move_insn (fpregs, plus_constant (XEXP (regbuf, 0),
-  					     n_intregs * UNITS_PER_WORD));
-      for (regno = first_floatreg; regno < NPARM_REGS (SFmode); regno += 2)
-        emit_move_insn (gen_rtx (MEM, DFmode,
-			         plus_constant (fpregs,
-					        GET_MODE_SIZE (SFmode)
-					        * (regno - first_floatreg))),
-		        gen_rtx (REG, DFmode,
-			         BASE_INCOMING_ARG_REG (DFmode) + regno));
-    }
-
-  if (flag_check_memory_usage)
-    {
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, regbuf,
-		 ptr_mode, GEN_INT (n_intregs * UNITS_PER_WORD),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			 fpregs, ptr_mode,
-			 GEN_INT (UNITS_PER_WORD 
-			 	  * GET_MODE_SIZE (SFmode)
-				  * (NPARM_REGS (SFmode) - first_floatreg)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-    }
-
-  /* Return the address of the regbuf.  */
-
-  return XEXP (regbuf, 0);
+  cum->words = 0;
+  cum->prototype_p = fntype && TYPE_ARG_TYPES (fntype);
+  cum->libcall_p = fntype == 0;
 }
 
-#else /* ! SPARC_ARCH64 */
+/* Compute the slot number to pass an argument in.
+   Returns the slot number or -1 if passing on the stack.
+
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+   INCOMING_P is zero for FUNCTION_ARG, nonzero for FUNCTION_INCOMING_ARG.
+   *PREGNO records the register number to use if scalar type.
+   *PPADDING records the amount of padding needed in words.  */
+
+static int
+function_arg_slotno (cum, mode, type, named, incoming_p, pregno, ppadding)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+     int incoming_p;
+     int *pregno;
+     int *ppadding;
+{
+  int regbase = (incoming_p
+		 ? SPARC_INCOMING_INT_ARG_FIRST
+		 : SPARC_OUTGOING_INT_ARG_FIRST);
+  int slotno = cum->words;
+  int regno;
+
+  *ppadding = 0;
+
+  if (type != 0 && TREE_ADDRESSABLE (type))
+    return -1;
+  if (TARGET_ARCH32
+      && type != 0 && mode == BLKmode
+      && TYPE_ALIGN (type) % PARM_BOUNDARY != 0)
+    return -1;
+
+  switch (mode)
+    {
+    case VOIDmode :
+      /* MODE is VOIDmode when generating the actual call.
+	 See emit_call_1.  */
+      return -1;
+
+    case QImode : case CQImode :
+    case HImode : case CHImode :
+    case SImode : case CSImode :
+    case DImode : case CDImode :
+      if (slotno >= SPARC_INT_ARG_MAX)
+	return -1;
+      regno = regbase + slotno;
+      break;
+
+    case SFmode : case SCmode :
+    case DFmode : case DCmode :
+    case TFmode : case TCmode :
+      if (TARGET_ARCH32)
+	{
+	  if (slotno >= SPARC_INT_ARG_MAX)
+	    return -1;
+	  regno = regbase + slotno;
+	}
+      else
+	{
+	  if ((mode == TFmode || mode == TCmode)
+	      && (slotno & 1) != 0)
+	    slotno++, *ppadding = 1;
+	  if (TARGET_FPU && named)
+	    {
+	      if (slotno >= SPARC_FP_ARG_MAX)
+		return 0;
+	      regno = SPARC_FP_ARG_FIRST + slotno * 2;
+	      if (mode == SFmode)
+		regno++;
+	    }
+	  else
+	    {
+	      if (slotno >= SPARC_INT_ARG_MAX)
+		return -1;
+	      regno = regbase + slotno;
+	    }
+	}
+      break;
+
+    case BLKmode :
+      /* For sparc64, objects requiring 16 byte alignment get it.  */
+      if (TARGET_ARCH64)
+	{
+	  if (type && TYPE_ALIGN (type) == 128 && (slotno & 1) != 0)
+	    slotno++, *ppadding = 1;
+	}
+
+      if (TARGET_ARCH32
+	  || type && TREE_CODE (type) == UNION_TYPE)
+	{
+	  if (slotno >= SPARC_INT_ARG_MAX)
+	    return -1;
+	  regno = regbase + slotno;
+	}
+      else
+	{
+	  tree field;
+	  int intregs_p = 0, fpregs_p = 0;
+	  /* The ABI obviously doesn't specify how packed
+	     structures are passed.  These are defined to be passed
+	     in int regs if possible, otherwise memory.  */
+	  int packed_p = 0;
+
+	  /* First see what kinds of registers we need.  */
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    {
+	      if (TREE_CODE (field) == FIELD_DECL)
+		{
+		  if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		      && TARGET_FPU)
+		    fpregs_p = 1;
+		  else
+		    intregs_p = 1;
+		  if (DECL_PACKED (field))
+		    packed_p = 1;
+		}
+	    }
+	  if (packed_p || !named)
+	    fpregs_p = 0, intregs_p = 1;
+
+	  /* If all arg slots are filled, then must pass on stack.  */
+	  if (fpregs_p && slotno >= SPARC_FP_ARG_MAX)
+	    return -1;
+	  /* If there are only int args and all int arg slots are filled,
+	     then must pass on stack.  */
+	  if (!fpregs_p && intregs_p && slotno >= SPARC_INT_ARG_MAX)
+	    return -1;
+	  /* Note that even if all int arg slots are filled, fp members may
+	     still be passed in regs if such regs are available.
+	     *PREGNO isn't set because there may be more than one, it's up
+	     to the caller to compute them.  */
+	  return slotno;
+	}
+      break;
+
+    default :
+      abort ();
+    }
+
+  *pregno = regno;
+  return slotno;
+}
+
+/* Handle the FUNCTION_ARG macro.
+   Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+   INCOMING_P is zero for FUNCTION_ARG, nonzero for FUNCTION_INCOMING_ARG.  */
+
+rtx
+function_arg (cum, mode, type, named, incoming_p)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+     int incoming_p;
+{
+  int regbase = (incoming_p
+		 ? SPARC_INCOMING_INT_ARG_FIRST
+		 : SPARC_OUTGOING_INT_ARG_FIRST);
+  int slotno, regno, padding;
+  rtx reg;
+
+  slotno = function_arg_slotno (cum, mode, type, named, incoming_p,
+				&regno, &padding);
+
+  if (slotno == -1)
+    return 0;
+
+  if (TARGET_ARCH32)
+    {
+      reg = gen_rtx (REG, mode, regno);
+      return reg;
+    }
+
+  /* v9 fp args in reg slots beyond the int reg slots get passed in regs
+     but also have the slot allocated for them.
+     If no prototype is in scope fp values in register slots get passed
+     in two places, either fp regs and int regs or fp regs and memory.  */
+  if ((GET_MODE_CLASS (mode) == MODE_FLOAT
+       || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+      && SPARC_FP_REG_P (regno))
+    {
+      reg = gen_rtx (REG, mode, regno);
+      if (cum->prototype_p || cum->libcall_p)
+	{
+	  /* "* 2" because fp reg numbers are recorded in 4 byte
+	     quantities.  */
+	  /* ??? This will cause the value to be passed in the fp reg and
+	     in the stack.  When a prototype exists we want to pass the
+	     value in the reg but reserve space on the stack.  That's an
+	     optimization, and is defered [for a bit].  */
+	  if ((regno - SPARC_FP_ARG_FIRST) >= SPARC_INT_ARG_MAX * 2)
+	    return gen_rtx (PARALLEL, mode,
+			    gen_rtvec (2,
+				       gen_rtx (EXPR_LIST, VOIDmode,
+						NULL_RTX, const0_rtx),
+				       gen_rtx (EXPR_LIST, VOIDmode,
+						reg, const0_rtx)));
+	  else
+	    return reg;
+	}
+      else
+	{
+	  if ((regno - SPARC_FP_ARG_FIRST) < SPARC_INT_ARG_MAX * 2)
+	    {
+	      int regbase = (incoming_p
+			     ? SPARC_INCOMING_INT_ARG_FIRST
+			     : SPARC_OUTGOING_INT_ARG_FIRST);
+	      int intreg = regbase + (regno - SPARC_FP_ARG_FIRST) / 2;
+	      return gen_rtx (PARALLEL, mode,
+			      gen_rtvec (2,
+					 gen_rtx (EXPR_LIST, VOIDmode,
+						  gen_rtx (REG, mode, intreg),
+						  const0_rtx),
+					 gen_rtx (EXPR_LIST, VOIDmode,
+						  reg, const0_rtx)));
+	    }
+	  else
+	    return gen_rtx (PARALLEL, mode,
+			    gen_rtvec (2,
+				       gen_rtx (EXPR_LIST, VOIDmode,
+						NULL_RTX, const0_rtx),
+				       gen_rtx (EXPR_LIST, VOIDmode,
+						reg, const0_rtx)));
+	}
+    }
+  else if (type && TREE_CODE (type) == RECORD_TYPE)
+    {
+      /* Structures up to 16 bytes in size are passed in arg slots on the
+	 stack and are promoted to registers where possible.  */
+      tree field;
+      rtx ret;
+      int i;
+      int nregs;
+      /* Starting bit position of a sequence of integer fields, counted from
+	 msb of left most byte, -1 if last field wasn't an int.  */
+      /* ??? This isn't entirely necessary, some simplification
+	 may be possible.  */
+      int start_int_bitpos;
+      /* Current bitpos in struct, counted from msb of left most byte.  */
+      int bitpos, this_slotno;
+      /* The ABI obviously doesn't specify how packed
+	 structures are passed.  These are defined to be passed
+	 in int regs if possible, otherwise memory.  */
+      int packed_p = 0;
+
+      if (int_size_in_bytes (type) > 16)
+	abort (); /* shouldn't get here */
+
+      /* We need to compute how many registers are needed so we can allocate
+	 the PARALLEL but before we can do that we need to know whether there
+	 are any packed fields.  If there are, int regs are used regardless of
+	 whether there are fp values present.  */
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  if (TREE_CODE (field) == FIELD_DECL
+	      && DECL_PACKED (field))
+	    {
+	      packed_p = 1;
+	      break;
+	    }
+	}
+
+      /* Compute how many registers we need.  */
+      nregs = 0;
+      start_int_bitpos = -1;
+      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	{
+	  bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  this_slotno = slotno + bitpos / BITS_PER_WORD;
+	  if (TREE_CODE (field) == FIELD_DECL)
+	    {
+	      if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		  && TARGET_FPU
+		  && ! packed_p
+		  && named)
+		{
+		  /* There's no need to check this_slotno < SPARC_FP_ARG MAX.
+		     If it wasn't true we wouldn't be here.  */
+		  nregs++;
+		  start_int_bitpos = -1;
+		}
+	      else if (this_slotno < SPARC_INT_ARG_MAX)
+		{
+		  if (start_int_bitpos == -1)
+		    {
+		      nregs++;
+		      start_int_bitpos = bitpos;
+		    }
+		  else
+		    {
+		      if (bitpos % BITS_PER_WORD == 0)
+			nregs++;
+		    }
+		}
+	    }
+	}
+      if (nregs == 0)
+	abort ();
+
+      ret = gen_rtx (PARALLEL, BLKmode, rtvec_alloc (nregs + 1));
+
+      /* ??? This causes the entire struct to be passed in memory.
+	 This isn't necessary, but is left for later.  */
+      XVECEXP (ret, 0, 0) = gen_rtx (EXPR_LIST, VOIDmode, NULL_RTX,
+				     const0_rtx);
+
+      /* Fill in the entries.  */
+      start_int_bitpos = -1;
+      for (i = 1, field = TYPE_FIELDS (type);
+	   field;
+	   field = TREE_CHAIN (field))
+	{
+	  bitpos = TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
+	  this_slotno = slotno + bitpos / BITS_PER_WORD;
+	  if (TREE_CODE (field) == FIELD_DECL)
+	    {
+	      if (TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
+		  && TARGET_FPU
+		  && ! packed_p
+		  && named)
+		{
+		  reg = gen_rtx (REG, DECL_MODE (field),
+				 (SPARC_FP_ARG_FIRST + this_slotno * 2
+				  + (DECL_MODE (field) == SFmode
+				     && (bitpos & 32) != 0)));
+		  XVECEXP (ret, 0, i) = gen_rtx (EXPR_LIST, VOIDmode, reg,
+						 GEN_INT (bitpos / BITS_PER_UNIT));
+		  i++;
+		  start_int_bitpos = -1;
+		}
+	      else
+		{
+		  if (this_slotno < SPARC_INT_ARG_MAX
+		      && (start_int_bitpos == -1
+			  || bitpos % BITS_PER_WORD == 0))
+		    {
+		      enum machine_mode mode;
+
+		      /* If this is the trailing part of a word, only load
+			 that much into the register.  Otherwise load the
+			 whole register.  Note that in the latter case we may
+			 pick up unwanted bits.  It's not a problem at the
+			 moment but may wish to revisit.  */
+		      if (bitpos % BITS_PER_WORD != 0)
+			mode = mode_for_size (BITS_PER_WORD - bitpos % BITS_PER_WORD,
+					      MODE_INT, 0);
+		      else
+			mode = word_mode;
+
+		      regno = regbase + this_slotno;
+		      reg = gen_rtx (REG, mode, regno);
+		      XVECEXP (ret, 0, i) = gen_rtx (EXPR_LIST, VOIDmode, reg,
+						     GEN_INT (bitpos / BITS_PER_UNIT));
+		      i++;
+		      if (start_int_bitpos == -1)
+			start_int_bitpos = bitpos;
+		    }
+		}
+	    }
+	}
+      if (i != nregs + 1)
+	abort ();
+
+      return ret;
+    }
+  else if (type && TREE_CODE (type) == UNION_TYPE)
+    {
+      enum machine_mode mode;
+      int bytes = int_size_in_bytes (type);
+
+      if (bytes > 16)
+	abort ();
+
+      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
+      reg = gen_rtx (REG, mode, regno);
+    }
+  else
+    {
+      /* Scalar or complex int.  */
+      reg = gen_rtx (REG, mode, regno);
+    }
+
+  return reg;
+}
+
+/* Handle the FUNCTION_ARG_PARTIAL_NREGS macro.
+   For an arg passed partly in registers and partly in memory,
+   this is the number of registers used.
+   For args passed entirely in registers or entirely in memory, zero.
+
+   Any arg that starts in the first 6 regs but won't entirely fit in them
+   needs partial registers on v8.  On v9, structures with integer
+   values in arg slots 5,6 will be passed in %o5 and SP+176, and complex fp
+   values that begin in the last fp reg [where "last fp reg" varies with the
+   mode] will be split between that reg and memory.  */
+
+int
+function_arg_partial_nregs (cum, mode, type, named)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  int slotno, regno, padding;
+
+  /* We pass 0 for incoming_p here, it doesn't matter.  */
+  slotno = function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
+
+  if (slotno == -1)
+    return 0;
+
+  if (TARGET_ARCH32)
+    {
+      if ((slotno + (mode == BLKmode
+		     ? ROUND_ADVANCE (int_size_in_bytes (type))
+		     : ROUND_ADVANCE (GET_MODE_SIZE (mode))))
+	  > NPARM_REGS (SImode))
+	return NPARM_REGS (SImode) - slotno;
+      return 0;
+    }
+  else
+    {
+      if (type && AGGREGATE_TYPE_P (type))
+	{
+	  int size = int_size_in_bytes (type);
+	  int align = TYPE_ALIGN (type);
+
+	  if (align == 16)
+	    slotno += slotno & 1;
+	  if (size > 8 && size <= 16
+	      && slotno == SPARC_INT_ARG_MAX - 1)
+	    return 1;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT
+	       || (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+		   && ! TARGET_FPU))
+	{
+	  if (GET_MODE_ALIGNMENT (mode) == 128)
+	    {
+	      slotno += slotno & 1;
+	      if (slotno == SPARC_INT_ARG_MAX - 2)
+		return 1;
+	    }
+	  else
+	    {
+	      if (slotno == SPARC_INT_ARG_MAX - 1)
+		return 1;
+	    }
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+	{
+	  if (GET_MODE_ALIGNMENT (mode) == 128)
+	    slotno += slotno & 1;
+	  if ((slotno + GET_MODE_SIZE (mode) / UNITS_PER_WORD)
+	      > SPARC_FP_ARG_MAX)
+	    return 1;
+	}
+      return 0;
+    }
+}
+
+/* Handle the FUNCTION_ARG_PASS_BY_REFERENCE macro.
+   !v9: The SPARC ABI stipulates passing struct arguments (of any size) and
+   quad-precision floats by invisible reference.
+   v9: aggregates greater than 16 bytes are passed by reference.
+   For Pascal, also pass arrays by reference.  */
+
+int
+function_arg_pass_by_reference (cum, mode, type, named)
+     const CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  if (TARGET_ARCH32)
+    {
+      return (type && AGGREGATE_TYPE_P (type)
+	      || mode == TFmode || mode == TCmode);
+    }
+  else
+    {
+      return ((type && TREE_CODE (type) == ARRAY_TYPE)
+	      || (type && AGGREGATE_TYPE_P (type)
+		  && int_size_in_bytes (type) > 16));
+    }
+}
+
+/* Handle the FUNCTION_ARG_ADVANCE macro.
+   Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   TYPE is null for libcalls where that information may not be available.  */
+
+void
+function_arg_advance (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  int slotno, regno, padding;
+
+  /* We pass 0 for incoming_p here, it doesn't matter.  */
+  slotno = function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
+
+  /* If register required leading padding, add it.  */
+  if (slotno != -1)
+    cum->words += padding;
+
+  if (TARGET_ARCH32)
+    {
+      cum->words += (mode != BLKmode
+		     ? ROUND_ADVANCE (GET_MODE_SIZE (mode))
+		     : ROUND_ADVANCE (int_size_in_bytes (type)));
+    }
+  else
+    {
+      if (type && AGGREGATE_TYPE_P (type))
+	{
+	  int size = int_size_in_bytes (type);
+
+	  if (size <= 8)
+	    ++cum->words;
+	  else if (size <= 16)
+	    cum->words += 2;
+	  else /* passed by reference */
+	    ++cum->words;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+	{
+	  cum->words += 2;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+	{
+	  cum->words += GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+	}
+      else
+	{
+	  cum->words += (mode != BLKmode
+			 ? ROUND_ADVANCE (GET_MODE_SIZE (mode))
+			 : ROUND_ADVANCE (int_size_in_bytes (type)));
+	}
+    }
+}
+
+/* Handle the FUNCTION_ARG_PADDING macro.
+   For the 64 bit ABI structs are always stored left shifted in their
+   argument slot.  */
+
+enum direction
+function_arg_padding (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  if (TARGET_ARCH64 && type && TREE_CODE (type) == RECORD_TYPE)
+    {
+      return upward;
+    }
+
+  /* This is the default definition.  */
+  return (! BYTES_BIG_ENDIAN
+	  ? upward
+	  : ((mode == BLKmode
+	      ? (type && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+	      : GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
+	     ? downward : upward));
+}
+
+/* Do what is necessary for `va_start'.  The argument is ignored.
+
+   We look at the current function to determine if stdarg or varargs
+   is used and return the address of the first unnamed parameter.  */
 
 rtx
 sparc_builtin_saveregs (arglist)
@@ -3513,41 +4176,34 @@ sparc_builtin_saveregs (arglist)
   int stdarg = (TYPE_ARG_TYPES (fntype) != 0
 		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
 		    != void_type_node));
-  int first_reg = current_function_args_info;
+  int first_reg = current_function_args_info.words;
   rtx address;
   int regno;
 
-#if 0 /* This code seemed to have no effect except to make
-	 varargs not work right when va_list wasn't the first arg.  */
-  if (! stdarg)
-    first_reg = 0;
-#endif
-
-  for (regno = first_reg; regno < NPARM_REGS (SImode); regno++)
+  for (regno = first_reg; regno < NPARM_REGS (word_mode); regno++)
     emit_move_insn (gen_rtx (MEM, word_mode,
 			     gen_rtx (PLUS, Pmode,
 				      frame_pointer_rtx,
 				      GEN_INT (STACK_POINTER_OFFSET
 					       + UNITS_PER_WORD * regno))),
-		    gen_rtx (REG, word_mode, BASE_INCOMING_ARG_REG (word_mode)
-			     + regno));
+		    gen_rtx (REG, word_mode,
+			     BASE_INCOMING_ARG_REG (word_mode) + regno));
 
   address = gen_rtx (PLUS, Pmode,
 		     frame_pointer_rtx,
 		     GEN_INT (STACK_POINTER_OFFSET
 			      + UNITS_PER_WORD * first_reg));
 
-  if (flag_check_memory_usage)
+  if (flag_check_memory_usage
+      && first_reg < NPARM_REGS (word_mode))
     emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 		       address, ptr_mode,
 		       GEN_INT (UNITS_PER_WORD 
-			 	* (NPARM_REGS (SImode) - first_reg)),
+			 	* (NPARM_REGS (word_mode) - first_reg)),
 		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
 
   return address;
 }
-
-#endif /* ! SPARC_ARCH64 */
 
 /* Return the string to output a conditional branch to LABEL, which is
    the operand number of the label.  OP is the conditional expression.
