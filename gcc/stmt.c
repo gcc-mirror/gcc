@@ -1509,7 +1509,16 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Mark clobbered registers.  */
       if (i >= 0)
-	SET_HARD_REG_BIT (clobbered_regs, i);
+        {
+	  /* Clobbering the PIC register is an error */
+	  if ((unsigned) i == PIC_OFFSET_TABLE_REGNUM)
+	    {
+	      error ("PIC register `%s' clobbered in `asm'", regname);
+	      return;
+	    }
+
+	  SET_HARD_REG_BIT (clobbered_regs, i);
+	}
     }
 
   clear_last_expr ();
