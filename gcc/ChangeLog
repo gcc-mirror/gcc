@@ -1,3 +1,7 @@
+2004-09-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* optabs.c, optabs.h: Fix comment typos.
+
 2004-09-28  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* config/sparc/sparc.md (call_address_struct_value_sp32):
