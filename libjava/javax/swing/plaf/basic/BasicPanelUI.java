@@ -44,8 +44,6 @@ import javax.swing.plaf.PanelUI;
 
 public class BasicPanelUI extends PanelUI
 {
-    int gap = 3;
-
     public static ComponentUI createUI(JComponent x) 
     {
         return new BasicPanelUI();
@@ -53,6 +51,6 @@ public class BasicPanelUI extends PanelUI
 
     public void installUI(JComponent c)
     {
-	super.installUI(c);
+      super.installUI(c);
     }
 }

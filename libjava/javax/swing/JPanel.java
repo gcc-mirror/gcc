@@ -85,7 +85,7 @@ public class JPanel extends JComponent implements Accessible
     } 
 
     public String getUIClassID()
-    {	return "JPanel";    }
+    {	return "PanelUI";    }
 
 
     public void setUI(PanelUI ui) {

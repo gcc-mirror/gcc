@@ -83,7 +83,7 @@ public class JTree extends JComponent implements Scrollable, Accessible
     
     public String getUIClassID()
     {
-	return "JTree";
+	return "TreeUI";
     }
 
 

@@ -70,6 +70,8 @@ public class JCheckBox extends JToggleButton
     public JCheckBox(String text, Icon icon)
     {
 	super(text, icon);
+        paint_border = false;
+        content_area_filled = false;
     }
 
     
@@ -82,7 +84,7 @@ public class JCheckBox extends JToggleButton
     public String getUIClassID()
     {
 	//Returns a string that specifies the name of the L&F class that renders this component.  
-	return "JCheckBox";
+	return "CheckBoxUI";
     }
   
     protected  String paramString()

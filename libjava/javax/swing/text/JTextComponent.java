@@ -406,7 +406,7 @@ public abstract class JTextComponent extends JComponent
     public String getUIClassID()
     {
 	//          Returns a string that specifies the name of the l&f class that renders this component.  
-	return "JTextComponent";
+	return "TextComponentUI";
     }
     public int getVerticalAlignment()
     {

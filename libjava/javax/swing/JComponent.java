@@ -763,9 +763,17 @@ public abstract class JComponent extends Container implements Serializable
 		
 		if (use_double_buffer)
 		{
-			im = createImage (r.width, r.height);
-			g2 = im.getGraphics ();
-			g2.clearRect (0, 0, r.width, r.height);
+                  im = createImage (r.width, r.height);
+                  g2 = im.getGraphics ();
+                  if (this.getBackground() != null)
+                    {
+                      Color save = g2.getColor();
+                      g2.setColor(this.getBackground());
+                      g2.fillRect (0, 0, r.width, r.height);
+                      g2.setColor(save);
+                    }
+                  else
+                    g2.clearRect(0, 0, r.width, r.height);
 		}
 		
 		paintBorder(g2);
@@ -836,28 +844,6 @@ public abstract class JComponent extends Container implements Serializable
 	{
 		//      Returns a string representation of this JComponent.
 		return "JComponent";
-	}
-	protected  void processComponentKeyEvent(KeyEvent e)
-	{
-		//     Process any key events that the component itself recognizes.
-	    //System.out.println("COMP_KEY-EVENT: " + e);
-	}
-	protected  void processFocusEvent(FocusEvent e)
-	{
-		//      Processes focus events occurring on this component by dispatching them to any registered FocusListener objects.
-	    //System.out.println("FOCUS_EVENT: " + e);
-	}
-
-	protected  void processKeyEvent(KeyEvent e)
-	{
-		//      Override processKeyEvent to process events protected
-	    //System.out.println("KEY-EVENT: " + e);
-	}
-
-        public void processMouseMotionEvent(MouseEvent e)
-	{
-	    //      Processes mouse motion events occurring on this component by dispatching them to any registered MouseMotionListener objects.
-	    //System.out.println("COMP_MOUSE-EVENT: " + e + ", MEMORY = " + Runtime.getRuntime().freeMemory());
 	}
 
 	public void registerKeyboardAction(ActionListener anAction,
@@ -1044,7 +1030,7 @@ public abstract class JComponent extends Container implements Serializable
         public String getUIClassID()
 	{
 		///          Return the UIDefaults key used to look up the name of the swing.
-		return "JComponent";
+		return "ComponentUI";
 	}
 
 	protected void setUI(ComponentUI newUI)

@@ -61,7 +61,7 @@ import javax.swing.plaf.ComponentUI;
 /**
  * UIDefaults is a database where all settings and interface bindings are
  * stored into. An PLAF implementation fills one of these (see for example
- * plaf/basic/BasicDefaults.java) with "JButton" -> new BasicButtonUI().
+ * plaf/basic/BasicLookAndFeel.java) with "ButtonUI" -> new BasicButtonUI().
  *
  * @author Ronald Veldema (rveldema@cs.vu.nl)
  */

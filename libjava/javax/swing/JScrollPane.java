@@ -86,7 +86,7 @@ public class JScrollPane extends JComponent implements Accessible, ScrollPaneCon
     public String getUIClassID()
     {
 	//Returns a string that specifies the name of the L&F class that renders this component.  
-	return "JScrollPane";
+	return "ScrollPaneUI";
     }
 
     public JViewport getViewport()

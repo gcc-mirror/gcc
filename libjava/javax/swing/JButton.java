@@ -98,7 +98,7 @@ public class JButton extends AbstractButton implements Accessible
     public String getUIClassID()
     {
 	//Returns a string that specifies the name of the L&F class that renders this component.  
-	return "JButton";
+	return "ButtonUI";
     }
   
     public boolean isDefaultButton()

@@ -75,7 +75,6 @@ public class JRootPane extends JComponent
       public Dimension preferredLayoutSize ( Container c )
 	{	    
 	  Dimension p = super.preferredLayoutSize(c);
-	  System.out.println("              PREF-SIZE from RootLayout = " + p);
 	  return p;
 	}        
     }
@@ -97,7 +96,7 @@ public class JRootPane extends JComponent
     /********************************************************/
 
     public String getUIClassID()
-    {	return "JPanel";    }
+    {	return "RootPaneUI";    }
 
     
     void setJMenuBar(JMenuBar m)
@@ -169,7 +168,7 @@ public class JRootPane extends JComponent
     JRootPane()
     {
 	setLayout(createRootLayout());
-	
+	setBackground(UIManager.getColor("control"));
 	getGlassPane();
 	getLayeredPane();
 	getContentPane();

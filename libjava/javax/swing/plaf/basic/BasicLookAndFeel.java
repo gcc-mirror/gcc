@@ -227,29 +227,40 @@ public abstract class BasicLookAndFeel extends LookAndFeel
   {
     Object[] uiDefaults;
     uiDefaults = new Object[] {
+
+      "AbstractUndoableEdit.undoText", "Undo",
+      "AbstractUndoableEdit.redoText", "Redo",
+
       "Button.background", new ColorUIResource(Color.lightGray),
-      "Button.border", new BorderUIResource.CompoundBorderUIResource(null,
-                                                                     null),
+      "Button.border", BorderUIResource.getEtchedBorderUIResource(),
+      "Button.darkShadow", new ColorUIResource(Color.darkGray),
       "Button.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "SPACE",  "pressed",
         "released SPACE", "released"
       }),
       "Button.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "Button.foreground", new ColorUIResource(Color.black),
+      "Button.highlight", new ColorUIResource(Color.white),
+      "Button.light", new ColorUIResource(Color.lightGray.brighter()),
       "Button.margin", new InsetsUIResource(2, 14, 2, 14),
+      "Button.shadow", new ColorUIResource(Color.gray),
       "Button.textIconGap", new Integer(4),
       "Button.textShiftOffset", new Integer(0),
       "CheckBox.background", new ColorUIResource(Color.lightGray),
       "CheckBox.border", new BorderUIResource.CompoundBorderUIResource(null,
                                                                        null),
+      "CheckBox.darkShadow", new ColorUIResource(Color.darkGray),
       "CheckBox.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "SPACE",  "pressed",
         "released SPACE", "released"
       }),
       "CheckBox.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "CheckBox.foreground", new ColorUIResource(Color.black),
+      "CheckBox.highlight", new ColorUIResource(Color.white),
       "CheckBox.icon", BasicIconFactory.getCheckBoxIcon(),
+      "CheckBox.light", new ColorUIResource(Color.lightGray.brighter()),
       "CheckBox.margin",new InsetsUIResource(2, 2, 2, 2),
+      "CheckBox.shadow", new ColorUIResource(Color.gray),
       "CheckBox.textIconGap", new Integer(4),
       "CheckBox.textShiftOffset", new Integer(0),
       "CheckBoxMenuItem.acceleratorFont", new FontUIResource("Dialog",
@@ -540,7 +551,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "PopupMenu.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "PopupMenu.foreground", new ColorUIResource(Color.black),
       "ProgressBar.background", new ColorUIResource(Color.lightGray),
-      "ProgressBar.border", new BorderUIResource.LineBorderUIResource(null),
+      "ProgressBar.border", new BorderUIResource.LineBorderUIResource(Color.darkGray),
       "ProgressBar.cellLength", new Integer(1),
       "ProgressBar.cellSpacing", new Integer(0),
       "ProgressBar.font", new FontUIResource("Dialog", Font.PLAIN, 12),
@@ -550,14 +561,18 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "RadioButton.background", new ColorUIResource(Color.lightGray),
       "RadioButton.border", new BorderUIResource.CompoundBorderUIResource(null,
                                                                           null),
+      "RadioButton.darkShadow", new ColorUIResource(Color.darkGray),
       "RadioButton.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "SPACE",  "pressed",
         "released SPACE", "released"
       }),
       "RadioButton.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "RadioButton.foreground", new ColorUIResource(Color.black),
+      "RadioButton.highlight", new ColorUIResource(Color.white),
       "RadioButton.icon", BasicIconFactory.getRadioButtonIcon(),
+      "RadioButton.light", new ColorUIResource(Color.lightGray.brighter()),
       "RadioButton.margin", new InsetsUIResource(2, 2, 2, 2),
+      "RadioButton.shadow", new ColorUIResource(Color.gray),
       "RadioButton.textIconGap", new Integer(4),
       "RadioButton.textShiftOffset", new Integer(0),
       "RadioButtonMenuItem.acceleratorFont", new FontUIResource("Dialog",
@@ -742,7 +757,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Table.background", new ColorUIResource(Color.white),
       "Table.focusCellBackground", new ColorUIResource(Color.white),
       "Table.focusCellForeground", new ColorUIResource(Color.black),
-      "Table.focusCellHighlightBorder", new BorderUIResource.LineBorderUIResource(null),
+      "Table.focusCellHighlightBorder", new BorderUIResource.LineBorderUIResource(Color.white),
       "Table.font", new FontUIResource("Dialog", Font.PLAIN, 12),
       "Table.foreground", new ColorUIResource(Color.black),
       "Table.gridColor", new ColorUIResource(Color.gray),
@@ -849,7 +864,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "ToolBar.foreground", new ColorUIResource(Color.black),
       "ToolBar.separatorSize", new DimensionUIResource(10, 10),
       "ToolTip.background", new ColorUIResource(Color.white),
-      "ToolTip.border", new BorderUIResource.LineBorderUIResource(null),
+      "ToolTip.border", new BorderUIResource.LineBorderUIResource(Color.lightGray),
       "ToolTip.font", new FontUIResource("SansSerif", Font.PLAIN, 12),
       "ToolTip.foreground", new ColorUIResource(Color.black),
       "Tree.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {
@@ -860,7 +875,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       // XXX Don't use gif
       "Tree.closedIcon", new IconUIResource(new ImageIcon("icons/TreeClosed.gif")),
       "Tree.drawsFocusBorderAroundIcon", Boolean.FALSE,
-      "Tree.editorBorder", new BorderUIResource.LineBorderUIResource(null),
+      "Tree.editorBorder", new BorderUIResource.LineBorderUIResource(Color.lightGray),
       "Tree.focusInputMap", new UIDefaults.LazyInputMap(new Object[] {
         "shift PAGE_DOWN", "scrollDownExtendSelection",
         "PAGE_DOWN", "scrollDownChangeSelection",

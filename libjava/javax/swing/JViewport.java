@@ -69,7 +69,7 @@ public class JViewport extends JComponent
 
     public String getUIClassID()
     {
-	return "JViewport";
+	return "ViewportUI";
     }
 
     public void updateUI()

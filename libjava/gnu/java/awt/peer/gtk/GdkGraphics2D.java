@@ -158,7 +158,7 @@ public class GdkGraphics2D extends Graphics2D
     setFont (new Font("SansSerif", Font.PLAIN, 12));
     setTransform (new AffineTransform ());
     setStroke (new BasicStroke ());
-    setRenderingHints (new HashMap ());
+    setRenderingHints (getDefaultHints());
 
     stateStack = new Stack();
   }
@@ -174,7 +174,7 @@ public class GdkGraphics2D extends Graphics2D
     setFont (new Font("SansSerif", Font.PLAIN, 12));
     setTransform (new AffineTransform ());
     setStroke (new BasicStroke ());
-    setRenderingHints (new HashMap ());
+    setRenderingHints (getDefaultHints());
 
     stateStack = new Stack ();
   }

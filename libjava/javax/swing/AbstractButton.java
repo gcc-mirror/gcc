@@ -186,19 +186,19 @@ public abstract class AbstractButton extends JComponent
   String text;
 
   /** The vertical alignment of the button's text and icon. */
-  int vert_align = CENTER;
+  int vert_align;
 
   /** The horizontal alignment of the button's text and icon. */
-  int hori_align = CENTER;
+  int hori_align;
 
   /** The horizontal position of the button's text relative to its icon. */
-  int hori_text_pos = CENTER;
+  int hori_text_pos;
 
   /** The vertical position of the button's text relative to its icon. */
-  int vert_text_pos = CENTER;
+  int vert_text_pos;
 
   /** Whether or not the button paints its border. */
-  boolean paint_border = true;
+  boolean paint_border;
 
   /** Whether or not the button paints its focus state. */
   boolean paint_focus;
@@ -487,8 +487,16 @@ public abstract class AbstractButton extends JComponent
     model.addChangeListener(changeListener);
     model.addItemListener(itemListener);
 
+    hori_align = CENTER;
+    hori_text_pos = TRAILING;
+    vert_align = CENTER;
+    vert_text_pos = CENTER;
+    paint_border = true;
+    content_area_filled = true;
+
     setAlignmentX(LEFT_ALIGNMENT);
     setAlignmentY(CENTER_ALIGNMENT);
+
     addFocusListener(new ButtonFocusListener());
     updateUI();
   }
