@@ -47,7 +47,7 @@ Jon Beniston for his Win32 port of Java.
 Geoff Berry for his Java object serialization work and various patches.
 
 @item
-Eric Blake for helping to make gcj and libgcj conform to the
+Eric Blake for helping to make GCJ and libgcj conform to the
 specifications.
 
 @item
@@ -63,7 +63,7 @@ Per Bothner for his direction via the steering committee and various
 improvements to our infrastructure for supporting new languages.  Chill
 front end implementation.  Initial implementations of
 cpplib, fix-header, config.guess, libio, and past C++ library (libg++)
-maintainer.  Dreaming up, designing and implementing much of gcj.
+maintainer.  Dreaming up, designing and implementing much of GCJ.
 
 @item
 Devon Bowen helped port GCC to the Tahoe.
@@ -155,7 +155,7 @@ that print a copy of their source.
 Russell Davidson for fstream and stringstream fixes in libstdc++.
 
 @item
-Mo DeJong for gcj and libgcj bug fixes.
+Mo DeJong for GCJ and libgcj bug fixes.
 
 @item
 Gabriel Dos Reis for contributions to g++, contributions and
@@ -447,7 +447,7 @@ All of the Mauve project
 for Java test code.
 
 @item
-Bryce McKinlay for numerous gcj and libgcj fixes and improvements.
+Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
 
 @item
 Adam Megacz for his work on the Win32 port of GCJ.
