@@ -480,7 +480,7 @@ f77.install-common:
 
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
 # to do the install.  The sed rule was copied from stmp-int-hdrs.
-f77.install-info:
+f77.install-info: f77.info
 	-rm -f $(infodir)/g77.info*
 	for f in f/g77.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \

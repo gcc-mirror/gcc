@@ -1,3 +1,7 @@
+Thu Nov 20 00:58:14 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Make-lang.in (f77.install-info): Depend on f77.info.
+
 1997-11-14  Dave Love  <d.love@dl.ac.uk>
 
 	* intrin.def: Supply gfrt for CPU_TIME.  Generalize arg types of
