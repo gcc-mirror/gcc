@@ -44,8 +44,6 @@ import java.io.ObjectOutputStream;
  * TreeSet is a part of the JDK1.2 Collections API.
  *
  * @author      Jon Zeppieri
- * @version     $Revision: 1.2 $
- * @modified    $Id: TreeSet.java,v 1.2 2001/02/15 03:59:57 bryce Exp $
  */
 
 public class TreeSet extends AbstractSet
@@ -269,11 +267,12 @@ public class TreeSet extends AbstractSet
   private void writeObject(ObjectOutputStream out) throws IOException
   {
     Iterator itr = map.keySet().iterator();
+    int size = map.size();
 
     out.writeObject(map.comparator());
-    out.writeInt(map.size());
+    out.writeInt(size);
 
-    while (itr.hasNext())
+    for (int i = 0; i < size; i++)
       out.writeObject(itr.next());
   }
 
