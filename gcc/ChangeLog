@@ -1,3 +1,8 @@
+2003-11-07  Falk Hueffner  <falk@debian.org>
+
+	* config/alpha/elf.h, config/alpha/unicosmk.h,
+	config/alpha/vms.h: Convert to ISO C90.
+
 2003-11-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/arm/pe.h: Convert to ISO C90.
