@@ -516,7 +516,6 @@ push_function_context_to (context)
   save_tree_status (p, context);
   save_storage_status (p);
   save_emit_status (p);
-  init_emit ();
   save_expr_status (p);
   save_stmt_status (p);
   save_varasm_status (p, context);
