@@ -1,5 +1,9 @@
 2002-01-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Dimension.java: Updated copyright.  Added javadoc from
+	Classpath.
+	* java/awt/Point.java: Updated copyright.
+
 	* java/awt/Point.java (toString): Use getClass().getName().
 	Added javadoc.
 
