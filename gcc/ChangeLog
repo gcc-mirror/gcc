@@ -1,3 +1,9 @@
+2004-08-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: Do not run fixincludes after stage1 during
+	toplevel bootstrap.
+	* configure: Regenerate.
+
 2004-08-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* sched-deps.c (get_condition): Partially revert previous, by never
