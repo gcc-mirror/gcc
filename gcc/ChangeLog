@@ -1,3 +1,8 @@
+2003-01-24  Jerry Quinn  <jlquinn@optonline.net>
+
+	* gcc/doc/invoke.texi (Optimization Options): List -O levels
+	for each optimization flag.
+
 2003-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*andsi3_ashift_n_lower): New.

@@ -3557,13 +3557,17 @@ returns.  For machines which must pop arguments after a function call,
 the compiler normally lets arguments accumulate on the stack for several
 function calls and pops them all at once.
 
+Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fforce-mem
 @opindex fforce-mem
 Force memory operands to be copied into registers before doing
 arithmetic on them.  This produces better code by making all memory
 references potential common subexpressions.  When they are not common
 subexpressions, instruction combination should eliminate the separate
-register-load.  The @option{-O2} option turns on this option.
+register-load.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fforce-addr
 @opindex fforce-addr
@@ -3586,9 +3590,13 @@ machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers,,Register
 Usage, gccint, GNU Compiler Collection (GCC) Internals}.
 
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -foptimize-sibling-calls
 @opindex foptimize-sibling-calls
 Optimize sibling and tail recursive calls.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftrapv
 @opindex ftrapv
@@ -3610,6 +3618,8 @@ integrating in this way.
 If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
+
+Enabled at level @option{-O3}.
 
 @item -finline-limit=@var{n}
 @opindex finline-limit
@@ -3654,6 +3664,8 @@ This option is the default for optimized compilation if the assembler and
 linker support it.  Use @option{-fno-merge-constants} to inhibit this
 behavior.
 
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fmerge-all-constants
 Attempt to merge identical constants and identical variables.
 
@@ -3678,6 +3690,9 @@ register, compare it against zero, then branch based upon the result.
 This option is only meaningful on architectures that support such
 instructions, which include x86, PowerPC, IA-64 and S/390.
 
+The default is @option{-fbranch-count-reg}, enabled when
+@option{-fstrength-reduce} is enabled.
+
 @item -fno-function-cse
 @opindex fno-function-cse
 Do not put function addresses in registers; make each instruction that
@@ -3686,6 +3701,8 @@ calls a constant function contain the function's address explicitly.
 This option results in less efficient code, but some strange hacks
 that alter the assembler output may be confused by the optimizations
 performed when this option is not used.
+
+The default is @option{-ffunction-cse}
 
 @item -ffast-math
 @opindex ffast-math
@@ -3795,6 +3812,8 @@ this option defaults to true and false respectively.
 Perform the optimizations of loop strength reduction and
 elimination of iteration variables.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fthread-jumps
 @opindex fthread-jumps
 Perform optimizations where we check to see if a jump branches to a
@@ -3802,6 +3821,8 @@ location where another comparison subsumed by the first is found.  If
 so, the first branch is redirected to either the destination of the
 second branch or a point immediately following it, depending on whether
 the condition is known to be true or false.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fcse-follow-jumps
 @opindex fcse-follow-jumps
@@ -3811,6 +3832,8 @@ example, when CSE encounters an @code{if} statement with an
 @code{else} clause, CSE will follow the jump when the condition
 tested is false.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fcse-skip-blocks
 @opindex fcse-skip-blocks
 This is similar to @option{-fcse-follow-jumps}, but causes CSE to
@@ -3819,14 +3842,20 @@ encounters a simple @code{if} statement with no else clause,
 @option{-fcse-skip-blocks} causes CSE to follow the jump around the
 body of the @code{if}.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -frerun-cse-after-loop
 @opindex frerun-cse-after-loop
 Re-run common subexpression elimination after loop optimizations has been
 performed.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -frerun-loop-opt
 @opindex frerun-loop-opt
 Run the loop optimizer twice.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fgcse
 @opindex fgcse
@@ -3838,12 +3867,16 @@ extension, you may get better runtime performance if you disable
 the global common subexpression elimination pass by adding
 @option{-fno-gcse} to the command line.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fgcse-lm
 @opindex fgcse-lm
 When @option{-fgcse-lm} is enabled, global common subexpression elimination will
 attempt to move loads which are only killed by stores into themselves.  This
 allows a loop containing a load/store sequence to be changed to a load outside
 the loop, and a copy/store within the loop.
+
+Enabled by default when gcse is enabled.
 
 @item -fgcse-sm
 @opindex fgcse-sm
@@ -3852,16 +3885,22 @@ subexpression elimination.  This pass will attempt to move stores out of loops.
 When used in conjunction with @option{-fgcse-lm}, loops containing a load/store sequence
 can be changed to a load before the loop and a store after the loop.
 
+Enabled by default when gcse is enabled.
+
 @item -floop-optimize
 @opindex floop-optimize
 Perform loop optimizations: move constant expressions out of loops, simplify
 exit test conditions and optionally do strength-reduction and loop unrolling as
 well.
 
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fcrossjumping
 @opindex crossjumping
 Perform cross-jumping transformation. This transformation unifies equivalent code and save code size. The
 resulting code may or may not perform better than without cross-jumping.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fif-conversion
 @opindex if-conversion
@@ -3870,10 +3909,14 @@ include use of conditional moves, min, max, set flags and abs instructions, and
 some tricks doable by standard arithmetics.  The use of conditional execution
 on chips where it is available is controlled by @code{if-conversion2}.
 
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fif-conversion2
 @opindex if-conversion2
 Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fdelete-null-pointer-checks
 @opindex fdelete-null-pointer-checks
@@ -3887,9 +3930,13 @@ safely dereference null pointers.  Use
 @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs which depend on that behavior.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fexpensive-optimizations
 @opindex fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -foptimize-register-move
 @itemx -fregmove
@@ -3898,17 +3945,20 @@ Perform a number of minor optimizations that are relatively expensive.
 Attempt to reassign register numbers in move instructions and as
 operands of other simple instructions in order to maximize the amount of
 register tying.  This is especially helpful on machines with two-operand
-instructions.  GCC enables this optimization by default with @option{-O2}
-or higher.
+instructions.
 
 Note @option{-fregmove} and @option{-foptimize-register-move} are the same
 optimization.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fdelayed-branch
 @opindex fdelayed-branch
 If supported for the target machine, attempt to reorder instructions
 to exploit instruction slots available after delayed branch
 instructions.
+
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fschedule-insns
 @opindex fschedule-insns
@@ -3918,12 +3968,16 @@ helps machines that have slow floating point or memory load instructions
 by allowing other instructions to be issued until the result of the load
 or floating point instruction is required.
 
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -fschedule-insns2
 @opindex fschedule-insns2
 Similar to @option{-fschedule-insns}, but requests an additional pass of
 instruction scheduling after register allocation has been done.  This is
 especially useful on machines with a relatively small number of
 registers and where memory load instructions take more than one cycle.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fno-sched-interblock
 @opindex fno-sched-interblock
@@ -3981,8 +4035,7 @@ seems to result in better code than would otherwise be produced.
 This option is always enabled by default on certain machines, usually
 those which have no call-preserved registers to use instead.
 
-For all machines, optimization level 2 and higher enables this flag by
-default.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -ftracer
 @opindex ftracer
@@ -4008,6 +4061,8 @@ the loop is entered.  This usually makes programs run more slowly.
 @opindex fprefetch-loop-arrays
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
+
+Disabled at level @option{-Os}.
 
 @item -fmove-all-movables
 @opindex fmove-all-movables
@@ -4044,6 +4099,9 @@ Disable any machine-specific peephole optimizations.  The difference
 between @option{-fno-peephole} and @option{-fno-peephole2} is in how they
 are implemented in the compiler; some targets use one, some use the
 other, a few use both.
+
+@option{-fpeephole} is enabled by default.
+@option{-fpeephole2} enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fbranch-probabilities
 @opindex fbranch-probabilities
@@ -4082,10 +4140,15 @@ non-determinism is of paramount import.  This switch allows users to
 reduce non-determinism, possibly at the expense of inferior
 optimization.
 
+The default is @option{-fguess-branch-probability} at levels
+@option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+
 @item -freorder-blocks
 @opindex freorder-blocks
 Reorder basic blocks in the compiled function in order to reduce number of
 taken branches and improve code locality.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -freorder-functions
 @opindex freorder-functions
@@ -4098,6 +4161,8 @@ place them in a reasonable way.
 
 Also profile feedback must be available in to make this option effective.  See
 @option{-fprofile-arcs} for details.
+
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fstrict-aliasing
 @opindex fstrict-aliasing
@@ -4144,8 +4209,7 @@ node, an alias set for the node.  Nodes in different alias sets are not
 allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
 
-For all machines, optimization level 2 and higher enables this flag by
-default.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -falign-functions
 @itemx -falign-functions=@var{n}
@@ -4164,6 +4228,8 @@ in that case, it is rounded up.
 
 If @var{n} is not specified, use a machine-dependent default.
 
+Enabled at levels @option{-O2}, @option{-O3}.
+
 @item -falign-labels
 @itemx -falign-labels=@var{n}
 @opindex falign-labels
@@ -4178,6 +4244,8 @@ are greater than this value, then their values are used instead.
 If @var{n} is not specified, use a machine-dependent default which is
 very likely to be @samp{1}, meaning no alignment.
 
+Enabled at levels @option{-O2}, @option{-O3}.
+
 @item -falign-loops
 @itemx -falign-loops=@var{n}
 @opindex falign-loops
@@ -4188,6 +4256,8 @@ operations.
 
 If @var{n} is not specified, use a machine-dependent default.
 
+Enabled at levels @option{-O2}, @option{-O3}.
+
 @item -falign-jumps
 @itemx -falign-jumps=@var{n}
 @opindex falign-jumps
@@ -4197,6 +4267,8 @@ bytes like @option{-falign-functions}.  In this case, no dummy operations
 need be executed.
 
 If @var{n} is not specified, use a machine-dependent default.
+
+Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -fssa
 @opindex fssa
@@ -4228,11 +4300,15 @@ will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
 
+Enabled at levels @option{-O3}.
+
 @item -fno-cprop-registers
 @opindex fno-cprop-registers
 After register allocation and post-register allocation instruction splitting,
 we perform a copy-propagation pass to try to reduce scheduling dependencies
 and occasionally eliminate the copy.
+
+Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item --param @var{name}=@var{value}
 @opindex param
