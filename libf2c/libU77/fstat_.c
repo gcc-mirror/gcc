@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 #include "f2c.h"
+#include "fio.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -34,6 +35,7 @@ G77_fstat_0 (const integer * lunit, integer statb[13])
   int err;
   struct stat buf;
 
+  if (f__init != 1) f_init();
   err = fstat (G77_fnum_0 (lunit), &buf);
   statb[0] = buf.st_dev;
   statb[1] = buf.st_ino;
