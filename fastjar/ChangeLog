@@ -1,3 +1,8 @@
+2004-09-23  Tom Tromey  <tromey@redhat.com>
+
+	* jartool.c (extract_jar): Unconditionally read extra data in the
+	entry header; don't read it after the file contents.
+
 2004-08-11  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR bootstrap/16164

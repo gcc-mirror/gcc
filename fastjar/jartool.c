@@ -1805,8 +1805,10 @@ int extract_jar(int fd, char **files, int file_num){
       exit(1);
     }
 
+    if (eflen > 0)
+      consume(&pbf, eflen);
+
     if(method == 8 || flags & 0x0008){
-        consume(&pbf, eflen);
       
       inflate_file(&pbf, f_fd, &ze);
     } else {
@@ -1839,8 +1841,6 @@ int extract_jar(int fd, char **files, int file_num){
         printf("%d bytes written\n", out_a);
 #endif
       }
-
-        consume(&pbf, eflen);
     }
 
     /* if there is a data descriptor left, compare the CRC */
