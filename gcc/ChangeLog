@@ -1,3 +1,8 @@
+2002-06-13  Roger Sayle  <roger@eyesopen.com>
+
+	* toplev.c (rest_of_compilation): Simplify (and correct) the
+	logic of the first delete-null-pointer-checks pass.
+
 Thu Jun 13 18:24:17 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_movstr):  Fix pasto.
