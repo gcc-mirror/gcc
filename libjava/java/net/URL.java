@@ -183,7 +183,8 @@ public final class URL implements Serializable
 
   static
     {
-      String s = System.getProperty("gnu.java.net.nocache_protocol_handlers");
+      String s = System.getProperty ("gnu.java.net.nocache_protocol_handlers");
+      
       if (s == null)
         cache_handlers = true;
       else
@@ -761,7 +762,7 @@ public final class URL implements Serializable
     // First, see if a protocol handler is in our cache.
     if (cache_handlers)
       {
-        if ((ph = (URLStreamHandler) ph_cache.get(protocol)) != null)
+        if ((ph = (URLStreamHandler) ph_cache.get (protocol)) != null)
           return ph;
       }
 
@@ -831,7 +832,7 @@ public final class URL implements Serializable
     if (ph != null
         && cache_handlers)
       if (ph instanceof URLStreamHandler)
-	ph_cache.put(protocol, ph);
+	ph_cache.put (protocol, ph);
       else
 	ph = null;
 
