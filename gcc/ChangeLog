@@ -1,3 +1,10 @@
+
+2000-05-16  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/fixincl.c: improve the debug displays, ignore SIGPIPE
+	* fixinc/server.c: likewise
+	* fixinc/fixfixes.c( char_macro_def_fix ): fix regex
+
 2000-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/fixfixes.c (char_macro_use_fix, char_macro_def_fix):

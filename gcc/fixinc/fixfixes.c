@@ -339,11 +339,11 @@ FIX_PROC_HEAD( char_macro_use_fix )
 
 /* Scan the input file for all occurrences of text like this:
 
-   #define xxxIOxx(x, y) ('x'<<16+y)
+   #define xxxIOxx(x, y) (....'x'<<16....)
 
    and change them to read like this:
 
-   #define xxxIOxx(x, y) (x<<16+y)
+   #define xxxIOxx(x, y) (....x<<16....)
 
    which is the required syntax per the C standard.  (The uses of _IO
    also has to be tweaked - see above.)  'IO' is actually whatever
@@ -357,15 +357,14 @@ FIX_PROC_HEAD( char_macro_def_fix )
      */
     "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\("
     /*
-     *  The next character must be alphabetic without a name-type
-     *  character following it
+     *  The next character must match a later one
      */
-    "([a-zA-Z])[^a-zA-Z0-9_]"  /* rm[1] */
+    "([a-zA-Z])"  /* rm[1] */
     /*
-     *  now match over the argument list, intervening white space
-     *  and opening parentheses, and on through a single quote character
+     *  now match over a comma, the argument list, intervening white space
+     *  an opening parenthesis, and on through a single quote character
      */
-    "[^)]*\\)[ \t]+\\([ \t(]*'"
+    "[ \t]*,[^)]*\\)[ \t]+\\([^']*'"
     /*
      *  Match the character that must match the remembered char above
      */
@@ -375,8 +374,8 @@ FIX_PROC_HEAD( char_macro_def_fix )
      *  Indecipherable gobbeldygook:
      */
 
-    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\(([a-zA-Z])[^a-zA-Z0-9_]\
-[^)]*\\)[ \t]+\\([ \t(]*'([a-zA-Z])'"
+    "^#[ \t]*define[ \t]+[_A-Z][A-Z0-9_]*%s[A-Z]*\\(\
+([a-zA-Z])[ \t]*,[^)]*\\)[ \t]+\\([^']*'([a-zA-Z])'"
 #endif
     ;
 
