@@ -5306,7 +5306,7 @@ output_millicode_call (insn, call_dest)
   else
     {
       xoperands[2] = gen_label_rtx ();
-      output_asm_insn ("\n\t{bl|b,l} %0,%%r31\n\tldo %1-%3(%%r31),%%r31",
+      output_asm_insn ("\n\t{bl|b,l} %0,%%r31\n\tldo %1-%2(%%r31),%%r31",
 		       xoperands);
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L",
 				 CODE_LABEL_NUMBER (xoperands[2]));
