@@ -1861,7 +1861,7 @@ const64_is_2insns (high_bits, low_bits)
   int highest_bit_set, lowest_bit_set, all_bits_between_are_set;
 
   if (high_bits == 0
-      || high_bits == -1)
+      || high_bits == 0xffffffff)
     return 1;
 
   analyze_64bit_constant (high_bits, low_bits,
@@ -3647,7 +3647,7 @@ sparc_nonflat_function_prologue (file, size, leaf_function)
 static void
 output_restore_regs (file, leaf_function)
      FILE *file;
-     int leaf_function;
+     int leaf_function ATTRIBUTE_UNUSED;
 {
   int offset, n_regs;
   const char *base;
@@ -8609,3 +8609,65 @@ sparc_elf_asm_named_section (name, flags)
   fputc ('\n', asm_out_file);
 }
 #endif /* OBJECT_FORMAT_ELF */
+
+int
+sparc_extra_constraint_check (op, c, strict)
+     rtx op;
+     char c;
+     int strict;
+{
+  int reload_ok_mem;
+
+  if (TARGET_ARCH64
+      && (c == 'T' || c == 'U'))
+    return 0;
+
+  switch (c)
+    {
+    case 'Q':
+      return fp_sethi_p (op);
+
+    case 'R':
+      return fp_mov_p (op);
+
+    case 'S':
+      return fp_high_losum_p (op);
+
+    case 'U':
+      if (! strict
+	  || (GET_CODE (op) == REG
+	      && (REGNO (op) < FIRST_PSEUDO_REGISTER
+		  || reg_renumber[REGNO (op)] >= 0)))
+	return register_ok_for_ldd (op);
+
+      return 0;
+
+    case 'W':
+    case 'T':
+      break;
+
+    default:
+      return 0;
+    }
+
+  /* Our memory extra constraints have to emulate the
+     behavior of 'm' and 'o' in order for reload to work
+     correctly.  */
+  if (GET_CODE (op) == MEM)
+    {
+      reload_ok_mem = 0;
+      if ((TARGET_ARCH64 || mem_min_alignment (op, 8))
+	  && (! strict
+	      || strict_memory_address_p (Pmode, XEXP (op, 0))))
+	reload_ok_mem = 1;
+    }
+  else
+    {
+      reload_ok_mem = (reload_in_progress
+		       && GET_CODE (op) == REG
+		       && REGNO (op) >= FIRST_PSEUDO_REGISTER
+		       && reg_renumber [REGNO (op)] < 0);
+    }
+
+  return reload_ok_mem;
+}
