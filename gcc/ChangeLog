@@ -1,3 +1,12 @@
+2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install-old.texi: Move some sections out to ...
+	* doc/collect2.texi, doc/configfiles.texi, doc/headerdirs.texi:
+	... here.  New files.  Make into chapters rather than sections.
+	* doc/gcc.texi: Include the new files and add menu entries for
+	them.
+	* Makefile.in ($(docdir)/gcc.info, gcc.dvi): Update dependencies.
+
 Sun Nov 18 14:13:52 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree.h (TYPE_ALIGN_OK): New flag.

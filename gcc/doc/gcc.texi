@@ -262,6 +262,9 @@ bugs.  It corresponds to GCC version 3.1.
 * Target Macros::   How to write the machine description C macros and functions.
 * Config::          Writing the @file{xm-@var{machine}.h} file.
 * Fragments::       Writing the @file{t-@var{target}} and @file{x-@var{host}} files.
+* Configuration Files::  Files created by running @code{configure}.
+* Collect2::        How @code{collect2} works; how it finds @code{ld}.
+* Header Dirs::     Understanding the standard header file directories.
 @end ifset
 
 * Funding::         How to help assure funding for free software.
@@ -318,6 +321,9 @@ bugs.  It corresponds to GCC version 3.1.
 @include tm.texi
 @include hostconfig.texi
 @include fragments.texi
+@include configfiles.texi
+@include collect2.texi
+@include headerdirs.texi
 @end ifset
 
 @include funding.texi
