@@ -841,11 +841,12 @@ reload (first, global, dumpfile)
 
       HOST_WIDE_INT starting_frame_size;
 
-      /* Round size of stack frame to BIGGEST_ALIGNMENT.  This must be done
+      /* Round size of stack frame to stack_alignment_needed.  This must be done
 	 here because the stack size may be a part of the offset computation
 	 for register elimination, and there might have been new stack slots
 	 created in the last iteration of this loop.   */
-      assign_stack_local (BLKmode, 0, 0);
+      if (cfun->stack_alignment_needed)
+        assign_stack_local (BLKmode, 0, cfun->stack_alignment_needed);
 
       starting_frame_size = get_frame_size ();
 
