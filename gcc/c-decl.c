@@ -2115,17 +2115,20 @@ pushdecl (x)
       && DECL_INITIAL (x) == 0 && DECL_EXTERNAL (x))
     DECL_CONTEXT (x) = 0;
 
-  if (warn_nested_externs && DECL_EXTERNAL (x) && b != global_binding_level
-      && x != IDENTIFIER_IMPLICIT_DECL (name)
-      /* Don't print error messages for __FUNCTION__ and __PRETTY_FUNCTION__ */
-      && !DECL_IN_SYSTEM_HEADER (x))
-    warning ("nested extern declaration of `%s'", IDENTIFIER_POINTER (name));
-
   if (name)
     {
       const char *file;
       int line;
       int different_binding_level = 0;
+
+      if (warn_nested_externs
+	  && DECL_EXTERNAL (x)
+	  && b != global_binding_level
+	  && x != IDENTIFIER_IMPLICIT_DECL (name)
+	  /* No error messages for __FUNCTION__ and __PRETTY_FUNCTION__.  */
+	  && !DECL_IN_SYSTEM_HEADER (x))
+	warning ("nested extern declaration of `%s'",
+		 IDENTIFIER_POINTER (name));
 
       t = lookup_name_current_level (name);
       /* Don't type check externs here when -traditional.  This is so that
@@ -2133,7 +2136,7 @@ pushdecl (x)
 	 not errors.  X11 for instance depends on this.  */
       if (! t && DECL_EXTERNAL (x) && TREE_PUBLIC (x) && ! flag_traditional)
 	{
-	  t = IDENTIFIER_GLOBAL_VALUE (name);
+	  t = lookup_name (name);
 	  /* Type decls at global scope don't conflict with externs declared
 	     inside lexical blocks.  */
 	  if (t && TREE_CODE (t) == TYPE_DECL)
