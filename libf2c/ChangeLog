@@ -1,3 +1,10 @@
+1998-10-12  Dave Love  <fx@gnu.org>
+
+	* Makefile.in (.SUFFIXES): Don't use any.
+	(all-unilib): New target, like old all.
+	(all): Use it.
+	(.PHONY): Add all-unilib.
+
 1998-10-12  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Reorder Makefile, g2c.h in AC_OUTPUT.
