@@ -1,3 +1,8 @@
+Fri Apr 10 12:16:49 1998  Benjamin Kosnik  <bkoz@loony.cygnus.com>
+
+	* decl.c (duplicate_decls): Don't warn for redundant decls if
+ 	friend: let add_friend take care of it.
+
 Thu Apr  9 02:40:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* sig.c (build_signature_pointer_constructor): Don't set
