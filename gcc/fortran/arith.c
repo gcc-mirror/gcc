@@ -1198,12 +1198,12 @@ gfc_range_check (gfc_expr * e)
     case BT_COMPLEX:
       rc = gfc_check_real_range (e->value.complex.r, e->ts.kind);
       if (rc == ARITH_UNDERFLOW)
-        mpf_set_ui (e->value.real, 0);
+        mpf_set_ui (e->value.complex.r, 0);
       if (rc == ARITH_OK || rc == ARITH_UNDERFLOW)
         {
           rc = gfc_check_real_range (e->value.complex.i, e->ts.kind);
           if (rc == ARITH_UNDERFLOW)
-            mpf_set_ui (e->value.real, 0);
+            mpf_set_ui (e->value.complex.i, 0);
         }
 
       break;
