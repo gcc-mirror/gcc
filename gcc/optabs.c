@@ -2766,14 +2766,15 @@ emit_libcall_block (insns, target, result, equiv)
 
   /* look for any CALL_INSNs in this sequence, and attach a REG_EH_REGION
      reg note to indicate that this call cannot throw or execute a nonlocal
-     goto. (Unless there is already a REG_EH_REGION note, in which case
-     we update it.)  */
+     goto (unless there is already a REG_EH_REGION note, in which case
+     we update it).  Also set the CONST_CALL_P flag.  */
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == CALL_INSN)
       {
 	rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
 
+	CONST_CALL_P (insn) = 1;
 	if (note != 0)
 	  XEXP (note, 0) = GEN_INT (-1);
 	else
