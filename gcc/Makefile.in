@@ -271,7 +271,8 @@ all: all.indirect
 
 all.indirect: $(ALL)
 
-INTERNAL_CFLAGS = $(CROSS)
+# IN_GCC tells obstack.h to use gstddef.h.
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
 
 # This is the variable actually used when we compile.
 ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
