@@ -2663,7 +2663,7 @@ void
 gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 {
   gfc_intrinsic_sym *isym;
-  char *name;
+  const char *name;
   int lib;
 
   isym = expr->value.function.isym;

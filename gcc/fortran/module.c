@@ -1330,16 +1330,18 @@ mio_integer (int *ip)
 /* Read or write a character pointer that points to a string on the
    heap.  */
 
-static void
-mio_allocated_string (char **sp)
+static const char *
+mio_allocated_string (const char *s)
 {
-
   if (iomode == IO_OUTPUT)
-    write_atom (ATOM_STRING, *sp);
+    {
+      write_atom (ATOM_STRING, s);
+      return s;
+    }
   else
     {
       require_atom (ATOM_STRING);
-      *sp = atom_string;
+      return atom_string;
     }
 }
 
@@ -2449,7 +2451,8 @@ mio_expr (gfc_expr ** ep)
 
       if (iomode == IO_OUTPUT)
 	{
-	  mio_allocated_string (&e->value.function.name);
+	  e->value.function.name
+	    = mio_allocated_string (e->value.function.name);
 	  flag = e->value.function.esym != NULL;
 	  mio_integer (&flag);
 	  if (flag)
@@ -2483,7 +2486,8 @@ mio_expr (gfc_expr ** ep)
       break;
 
     case EXPR_SUBSTRING:
-      mio_allocated_string (&e->value.character.string);
+      e->value.character.string = (char *)
+	mio_allocated_string (e->value.character.string);
       mio_expr (&e->op1);
       mio_expr (&e->op2);
       break;
@@ -2518,7 +2522,8 @@ mio_expr (gfc_expr ** ep)
 
 	case BT_CHARACTER:
 	  mio_integer (&e->value.character.length);
-	  mio_allocated_string (&e->value.character.string);
+	  e->value.character.string = (char *)
+	    mio_allocated_string (e->value.character.string);
 	  break;
 
 	default:

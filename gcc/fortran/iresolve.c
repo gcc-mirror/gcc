@@ -29,96 +29,35 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    are generally set according to the function arguments.  */
 
 #include "config.h"
-#include <string.h>
-#include <stdarg.h>
-
+#include "system.h"
+#include "coretypes.h"
+#include "tree.h"
 #include "gfortran.h"
 #include "intrinsic.h"
 
 
-/* String pool subroutines.  This are used to provide static locations
-   for the string constants that represent library function names.  */
+/* Given printf-like arguments, return a stable version of the result string. 
 
-typedef struct string_node
-{
-  struct string_node *next;
-  char string[1];
-}
-string_node;
+   We already have a working, optimized string hashing table in the form of
+   the identifier table.  Reusing this table is likely not to be wasted, 
+   since if the function name makes it to the gimple output of the frontend,
+   we'll have to create the identifier anyway.  */
 
-#define HASH_SIZE 13
-
-static string_node *string_head[HASH_SIZE];
-
-
-/* Return a hash code based on the name.  */
-
-static int
-hash (const char *name)
-{
-  int h;
-
-  h = 1;
-  while (*name)
-    h = 5311966 * h + *name++;
-
-  if (h < 0)
-    h = -h;
-  return h % HASH_SIZE;
-}
-
-
-/* Given printf-like arguments, return a static address of the
-   resulting string.  If the name is not in the table, it is added.  */
-
-char *
+const char *
 gfc_get_string (const char *format, ...)
 {
-  char temp_name[50];
-  string_node *p;
+  char temp_name[128];
   va_list ap;
-  int h;
+  tree ident;
 
   va_start (ap, format);
-  vsprintf (temp_name, format, ap);
+  vsnprintf (temp_name, sizeof(temp_name), format, ap);
   va_end (ap);
+  temp_name[sizeof(temp_name)-1] = 0;
 
-  h = hash (temp_name);
-
-  /* Search */
-  for (p = string_head[h]; p; p = p->next)
-    if (strcmp (p->string, temp_name) == 0)
-      return p->string;
-
-  /* Add */
-  p = gfc_getmem (sizeof (string_node) + strlen (temp_name));
-
-  strcpy (p->string, temp_name);
-
-  p->next = string_head[h];
-  string_head[h] = p;
-
-  return p->string;
+  ident = get_identifier (temp_name);
+  return IDENTIFIER_POINTER (ident);
 }
-
-
-
-static void
-free_strings (void)
-{
-  string_node *p, *q;
-  int h;
-
-  for (h = 0; h < HASH_SIZE; h++)
-    {
-      for (p = string_head[h]; p; p = q)
-	{
-	  q = p->next;
-	  gfc_free (p);
-	}
-    }
-}
-
 
 /********************** Resolution functions **********************/
 
@@ -1784,21 +1723,4 @@ gfc_resolve_unlink_sub (gfc_code * c)
 
   name = gfc_get_string (PREFIX("unlink_i%d_sub"), kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
-}
-
-
-void
-gfc_iresolve_init_1 (void)
-{
-  int i;
-
-  for (i = 0; i < HASH_SIZE; i++)
-    string_head[i] = NULL;
-}
-
-
-void
-gfc_iresolve_done_1 (void)
-{
-  free_strings ();
 }

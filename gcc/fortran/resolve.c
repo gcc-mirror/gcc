@@ -901,7 +901,7 @@ set_type:
    function is PURE, zero if not.  */
 
 static int
-pure_function (gfc_expr * e, char **name)
+pure_function (gfc_expr * e, const char **name)
 {
   int pure;
 
@@ -936,7 +936,7 @@ static try
 resolve_function (gfc_expr * expr)
 {
   gfc_actual_arglist *arg;
-  char *name;
+  const char *name;
   try t;
 
   if (resolve_actual_arglist (expr->value.function.actual) == FAILURE)

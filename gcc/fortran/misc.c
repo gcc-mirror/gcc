@@ -278,12 +278,10 @@ gfc_intent_string (sym_intent i)
 void
 gfc_init_1 (void)
 {
-
   gfc_error_init_1 ();
   gfc_scanner_init_1 ();
   gfc_arith_init_1 ();
   gfc_intrinsic_init_1 ();
-  gfc_iresolve_init_1 ();
   gfc_simplify_init_1 ();
 }
 
@@ -306,10 +304,8 @@ gfc_init_2 (void)
 void
 gfc_done_1 (void)
 {
-
   gfc_scanner_done_1 ();
   gfc_intrinsic_done_1 ();
-  gfc_iresolve_done_1 ();
   gfc_arith_done_1 ();
 }
 
