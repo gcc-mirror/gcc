@@ -1,3 +1,11 @@
+2000-12-14  Benjamin Kosnik  <bkoz@haight.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Revert changes
+	touching copysignf, atan2f, expf.
+	(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT): Add it back here.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
 2000-12-14  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
 
 	* configure.in (CXX): Exit out if mknumeric_limits fails.
