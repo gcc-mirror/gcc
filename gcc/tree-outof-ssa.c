@@ -488,7 +488,6 @@ elim_create (elim_graph g, int T)
 static void
 eliminate_phi (edge e, elim_graph g)
 {
-  int num_nodes = 0;
   int x;
   basic_block B = e->dest;
 
@@ -499,7 +498,6 @@ eliminate_phi (edge e, elim_graph g)
   if (e->flags & EDGE_ABNORMAL)
     return;
 
-  num_nodes = num_var_partitions (g->map);
   g->e = e;
 
   eliminate_build (g, B);

@@ -26,6 +26,8 @@
 
 	* tree-into-ssa.c (ann): Remove ann.
 
+	* tree-outof-ssa.c (num_nodes): Remove num_nodes.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
