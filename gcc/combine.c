@@ -6904,11 +6904,6 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
       && (GET_MODE_MASK (GET_MODE (x)) & ~mask) == 0)
     return gen_lowpart (mode, x);
 
-  /* If we aren't changing the mode, X is not a SUBREG, and all zero bits in
-     MASK are already known to be zero in X, we need not do anything.  */
-  if (GET_MODE (x) == mode && code != SUBREG && (~mask & nonzero) == 0)
-    return x;
-
   switch (code)
     {
     case CLOBBER:
