@@ -1391,22 +1391,23 @@ install-common: native install-dir xgcc $(srcdir)/g++ $(srcdir)/c++ $(EXTRA_PART
 	  ln $(bindir)/gcc $(bindir)/gcc-$(target)-1; \
 	  mv $(bindir)/gcc-$(target)-1 $(bindir)/gcc-$(target); \
 	fi
+# Install protoize if it was compiled.
+	if [ -f protoize ]; \
+	then \
+	    rm -f $(bindir)/protoize; \
+	    $(INSTALL_PROGRAM) protoize $(bindir)/protoize; \
+	    rm -f $(bindir)/unprotoize; \
+	    $(INSTALL_PROGRAM) unprotoize $(bindir)/unprotoize; \
+	    rm -f $(libsubdir)/SYSCALLS.c.X; \
+	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
+	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
+	fi
 	-rm -f $(bindir)/c++
 	$(INSTALL_PROGRAM) $(srcdir)/c++ $(bindir)/c++
 	-rm -f $(bindir)/g++
 	$(INSTALL_PROGRAM) $(srcdir)/g++ $(bindir)/g++
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
-
-# Install protoize.
-install-proto: proto install-dir
-	-rm -f $(bindir)/protoize
-	$(INSTALL_PROGRAM) protoize $(bindir)/protoize
-	-rm -f $(bindir)/unprotoize
-	$(INSTALL_PROGRAM) unprotoize $(bindir)/unprotoize
-	-rm -f $(libsubdir)/SYSCALLS.c.X
-	$(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X
-	chmod a-x $(libsubdir)/SYSCALLS.c.X
 
 # Install the man pages.
 install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 $(srcdir)/g++.1
