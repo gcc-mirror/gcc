@@ -52,14 +52,10 @@ get_ident()
   static const char template[IDENT_LENGTH] = "gpch.010";
   
   memcpy (result, template, IDENT_LENGTH);
-  if (strcmp (lang_hooks.name, "GNU C") == 0)
-    result[4] = 'C';
-  else if (strcmp (lang_hooks.name, "GNU C++") == 0)
-    result[4] = '+';
-  else if (strcmp (lang_hooks.name, "GNU Objective-C") == 0)
-    result[4] = 'o';
-  else if (strcmp (lang_hooks.name, "GNU Objective-C++") == 0)
-    result[4] = 'O';
+  if (c_language == clk_c)
+    result[4] = flag_objc ? 'o' : 'C';
+  else if (c_language == clk_cplusplus)
+    result[4] = flag_objc ? 'O' : '+';
   else
     abort ();
   return result;
