@@ -1371,6 +1371,13 @@ build_x_arrow (datum)
 	    }
 	  last_rval = rval;
 	}     
+
+      if (last_rval == NULL_TREE)
+	{
+	  cp_error ("base operand of `->' has non-pointer type `%T'", type);
+	  return error_mark_node;
+	}
+
       if (TREE_CODE (TREE_TYPE (last_rval)) == REFERENCE_TYPE)
 	last_rval = convert_from_reference (last_rval);
     }

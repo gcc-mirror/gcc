@@ -1,3 +1,17 @@
+Tue Mar 17 14:44:54 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* typeck2.c (build_x_arrow): Don't crash when an aggregate type
+	has no overloaded operator ->.
+
+	* call.c (build_field_call): Don't crash when presented with a
+	field that is actually a nested type.
+
+	* decl.c (pushtag): Deal with friend class injection in local
+	classes.
+
+	* call.c (build_object_call): Don't crash if OBJ is a
+	pointer-to-member-function.
+
 Tue Mar 17 11:40:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (push_template_decl): Complain about template with C linkage,

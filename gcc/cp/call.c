@@ -169,7 +169,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
   if (field == error_mark_node)
     return error_mark_node;
 
-  if (field)
+  if (field && TREE_CODE (field) == FIELD_DECL)
     {
       tree basetype;
       tree ftype = TREE_TYPE (field);
@@ -2276,6 +2276,15 @@ build_object_call (obj, args)
   tree fns, convs, mem_args = NULL_TREE;
   tree type = TREE_TYPE (obj);
   tree templates = NULL_TREE;
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    {
+      /* It's no good looking for an overloaded operator() on a
+	 pointer-to-member-function.  */
+      cp_error ("pointer-to-member function %E cannot be called", obj);
+      cp_error ("without an object; consider using .* or ->*");
+      return error_mark_node;
+    }
 
   fns = lookup_fnfields (TYPE_BINFO (type), ansi_opname [CALL_EXPR], 0);
 
