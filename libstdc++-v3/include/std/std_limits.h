@@ -185,6 +185,36 @@
 #define __glibcpp_f32_min_exponent10 -37
 #define __glibcpp_f32_max_exponent 128
 #define __glibcpp_f32_max_exponent10 38
+#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
+#  define __glibcpp_f32_infinity_bytes { 0x7f800000 }
+#  define __glibcpp_f32_has_infinity true
+#  define __glibcpp_f32_QNaN_bytes { 0x7fc00000 }
+#  define __glibcpp_f32_has_QNaN true
+#  define __glibcpp_f32_SNaN_bytes { 0x7f800001 }
+#  define __glibcpp_f32_has_SNaN true
+#  define __glibcpp_f32_denorm_min_bytes { 0x00000001 }
+#  define __glibcpp_f32_has_denorm denorm_present
+#  define __glibcpp_f32_is_iec559  true
+#endif
+#ifndef __glibcpp_f32_infinity_bytes
+#  define __glibcpp_f32_infinity_bytes { }
+#  define __glibcpp_f32_has_infinity false
+#endif
+#ifndef __glibcpp_f32_QNaN_bytes
+#  define __glibcpp_f32_QNaN_bytes { }
+#  define __glibcpp_f32_has_QNaN false
+#endif
+#ifndef __glibcpp_f32_SNaN_bytes
+#  define __glibcpp_f32_SNaN_bytes { }
+#  define __glibcpp_f32_has_SNaN false
+#endif
+#ifndef __glibcpp_f32_denorm_min_bytes
+#  define __glibcpp_f32_denorm_min_bytes { }
+#  define __glibcpp_f32_has_denorm denorm_indeterminate
+#endif
+#ifndef __glibcpp_f32_is_iec559
+#  define __glibcpp_f32_is_iec559 false
+#endif 
 #define __glibcpp_f64_min 2.2250738585072014e-308
 #define __glibcpp_f64_max 1.7976931348623157e+308
 #define __glibcpp_f64_digits 53
@@ -196,6 +226,43 @@
 #define __glibcpp_f64_min_exponent10 -307
 #define __glibcpp_f64_max_exponent 1024
 #define __glibcpp_f64_max_exponent10 308
+#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
+#  if __TARGET_FLOAT_WORDS_ORDER__ == __GCC_BIG_ENDIAN__
+#    define __glibcpp_f64_infinity_bytes { 0x7ff00000, 0x0 }
+#    define __glibcpp_f64_QNaN_bytes { 0x7ff80000, 0x0 }
+#    define __glibcpp_f64_SNaN_bytes { 0x7ff00000, 0x1 }
+#    define __glibcpp_f64_denorm_min_bytes { 0x0, 0x1 }
+#  else
+#    define __glibcpp_f64_infinity_bytes { 0x0, 0x7ff00000 }
+#    define __glibcpp_f64_QNaN_bytes { 0x0, 0x7ff80000 }
+#    define __glibcpp_f64_SNaN_bytes { 0x1, 0x7ff00000 }
+#    define __glibcpp_f64_denorm_min_bytes { 0x1, 0x0 }
+#  endif
+#  define __glibcpp_f64_has_infinity true
+#  define __glibcpp_f64_has_QNaN true
+#  define __glibcpp_f64_has_SNaN true
+#  define __glibcpp_f64_has_denorm denorm_present
+#  define __glibcpp_f64_is_iec559 true
+#endif
+#ifndef __glibcpp_f64_infinity_bytes
+#  define __glibcpp_f64_infinity_bytes { }
+#  define __glibcpp_f64_has_infinity false
+#endif
+#ifndef __glibcpp_f64_QNaN_bytes
+#  define __glibcpp_f64_QNaN_bytes { }
+#  define __glibcpp_f64_has_QNaN false
+#endif
+#ifndef __glibcpp_f64_SNaN_bytes
+#  define __glibcpp_f64_SNaN_bytes { }
+#  define __glibcpp_f64_has_SNaN false
+#endif
+#ifndef __glibcpp_f64_denorm_min_bytes
+#  define __glibcpp_f64_denorm_min_bytes { }
+#  define __glibcpp_f64_has_denorm denorm_indeterminate
+#endif
+#ifndef __glibcpp_f64_is_iec559
+#  define __glibcpp_f64_is_iec559 false
+#endif 
 #define __glibcpp_f80_min 3.36210314311209350626e-4932L
 #define __glibcpp_f80_max 1.18973149535723176502e+4932L
 #define __glibcpp_f80_digits 64
@@ -207,6 +274,51 @@
 #define __glibcpp_f80_min_exponent10 -4931
 #define __glibcpp_f80_max_exponent 16384
 #define __glibcpp_f80_max_exponent10 4932
+#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
+#  if __TARGET_BYTES_ORDER__ == __GCC_BIG_ENDIAN__
+#    define __glibcpp_f80_infinity_bytes   \
+       { 0x7f, 0xff, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
+#    define __glibcpp_f80_QNaN_bytes       \
+       { 0x7f, 0xff, 0xC0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
+#    define __glibcpp_f80_SNaN_bytes       \
+       { 0x7f, 0xff, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 }
+#    define __glibcpp_f80_denorm_min_bytes \
+       { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1 }
+#  else
+#    define __glibcpp_f80_infinity_bytes   \
+       { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x80, 0xff, 0x7f }
+#    define __glibcpp_f80_QNaN_bytes       \
+       { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xC0, 0xff, 0x7f }
+#    define __glibcpp_f80_SNaN_bytes       \
+       { 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x80, 0xff, 0x7f }
+#    define __glibcpp_f80_denorm_min_bytes \
+       { 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 }
+#  endif
+#  define __glibcpp_f80_has_infinity true
+#  define __glibcpp_f80_has_QNaN true
+#  define __glibcpp_f80_has_SNaN true
+#  define __glibcpp_f80_has_denorm denorm_present
+#  define __glibcpp_f80_is_iec559 true
+#endif
+#ifndef __glibcpp_f80_infinity_bytes
+#  define __glibcpp_f80_infinity_bytes { }
+#  define __glibcpp_f80_has_infinity false
+#endif
+#ifndef __glibcpp_f80_QNaN_bytes
+#  define __glibcpp_f80_QNaN_bytes { }
+#  define __glibcpp_f80_has_QNaN false
+#endif
+#ifndef __glibcpp_f80_SNaN_bytes
+#  define __glibcpp_f80_SNaN_bytes { }
+#  define __glibcpp_f80_has_SNaN false
+#endif
+#ifndef __glibcpp_f80_denorm_min_bytes
+#  define __glibcpp_f80_denorm_min_bytes { }
+#  define __glibcpp_f80_has_denorm denorm_indeterminate
+#endif
+#ifndef __glibcpp_f80_is_iec559
+#  define __glibcpp_f80_is_iec559 false
+#endif 
 #define __glibcpp_f96_min 1.68105157155604675313e-4932L
 #define __glibcpp_f96_max 1.18973149535723176502e+4932L
 #define __glibcpp_f96_digits 64
@@ -218,6 +330,40 @@
 #define __glibcpp_f96_min_exponent10 -4931
 #define __glibcpp_f96_max_exponent 16384
 #define __glibcpp_f96_max_exponent10 4932
+#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
+#  if __TARGET_BYTES_ORDER__ == __GCC_BIG_ENDIAN__
+#    define __glibcpp_f96_infinity_bytes { 0x7ff0000, 0x0, 0x0 } 
+#    define __glibcpp_f96_QNaN_bytes { 0x7ff80000, 0x0, 0x0 }
+#    define __glibcpp_f96_SNaN_bytes { 0x7ff00000, 0x0, 0x1 }
+#    define __glibcpp_f96_denorm_min_bytes { 0x0, 0x0, 0x1 }
+#  else
+#    define __glibcpp_f96_infinity_bytes { 0x0, 0x0, 0x7ff0000 }
+#    define __glibcpp_f96_QNaN_bytes { 0x0, 0x0, 0x7ff80000 }
+#    define __glibcpp_f96_SNaN_bytes { 0x1, 0x0, 0x7ff00000 }
+#    define __glibcpp_f96_denorm_min_bytes { 0x1, 0x0, 0x0 }
+#  endif
+#  define __glibcpp_f96_has_infinity true
+#  define __glibcpp_f96_has_QNaN true
+#  define __glibcpp_f96_has_SNaN true
+#  define __glibcpp_f96_has_denorm denorm_present
+#  define __glibcpp_f96_is_iec559 true
+#endif
+#ifndef __glibcpp_f96_infinity_bytes
+#  define __glibcpp_f96_infinity_bytes { }
+#  define __glibcpp_f96_has_infinity false
+#endif
+#ifndef __glibcpp_f96_QNaN_bytes
+#  define __glibcpp_f96_QNaN_bytes { }
+#  define __glibcpp_f96_has_QNaN false
+#endif
+#ifndef __glibcpp_f96_SNaN_bytes
+#  define __glibcpp_f96_SNaN_bytes { }
+#  define __glibcpp_f96_has_SNaN false
+#endif
+#ifndef __glibcpp_f96_denorm_min_bytes
+#  define __glibcpp_f96_denorm_min_bytes { }
+#  define __glibcpp_f96_has denorm_indeterminate
+#endif
 #define __glibcpp_f128_min 3.362103143112093506262677817321752603E-4932L
 #define __glibcpp_f128_max 1.189731495357231765085759326628007016E+4932L
 #define __glibcpp_f128_digits 113
@@ -229,6 +375,42 @@
 #define __glibcpp_f128_min_exponent10 -4931
 #define __glibcpp_f128_max_exponent 16384
 #define __glibcpp_f128_max_exponent10 4932
+#if __GCC_FLOAT_FORMAT__ == __IEEE_FORMAT__
+#  if __TARGET_FLOAT_WORDS_ORDER__ == __GCC_BIG_ENDIAN__
+#    define __glibcpp_f128_infinity_bytes { 0x7fff0000, 0x0, 0x0, 0x0 }
+#    define __glibcpp_f128_QNaN_bytes { 0x7fff0800, 0x0, 0x0, 0x0 }
+#    define __glibcpp_f128_SNaN_bytes { 0x7fff0000, 0x0, 0x0, 0x1 }
+#    define __glibcpp_f128_denorm_min_bytes { 0x0, 0x0, 0x0, 0x1 }
+#  else
+#    define __glibcpp_f128_infinity_bytes { 0x0, 0x0, 0x0, 0x7fff0000 }
+#    define __glibcpp_f128_QNaN_bytes { 0x0, 0x0, 0x0, 0x7fff0800 }
+#    define __glibcpp_f128_SNaN_bytes { 0x1, 0x0, 0x0, 0x7fff0000 }
+#    define __glibcpp_f128_denorm_min_bytes { 0x1, 0x0, 0x0, 0x0 }
+#  endif
+#  define __glibcpp_f128_has_infinity true
+#  define __glibcpp_f128_has_QNaN true
+#  define __glibcpp_f128_has_SNaN true
+#  define __glibcpp_f128_has_denorm denorm_present
+#endif
+#ifndef __glibcpp_f128_infinity_bytes
+#  define __glibcpp_f128_infinity_bytes { }
+#  define __glibcpp_f128_has_infinity false
+#endif
+#ifndef __glibcpp_f128_QNaN_bytes
+#  define __glibcpp_f128_QNaN_bytes { }
+#  define __glibcpp_f128_has_QNaN false
+#endif
+#ifndef __glibcpp_f128_SNaN_bytes
+#  define __glibcpp_f128_SNaN_bytes { }
+#  define __glibcpp_f128_has_SNaN false
+#endif
+#ifndef __glibcpp_f128_denorm_min_bytes
+#  define __glibcpp_f128_denorm_min_bytes { }
+#  define __glibcpp_f128_has_denorm denorm_indeterminate
+#endif
+#ifndef __glibcpp_f128_is_iec559
+#  define __glibcpp_f128_is_iec559 false
+#endif
 
 // bool-specific hooks:
 //     __glibcpp_bool_digits  __glibcpp_int_traps __glibcpp_long_traps
@@ -561,6 +743,15 @@
 #  define __glibcpp_float_min_exponent10 __glibcpp_f32_min_exponent10
 #  define __glibcpp_float_max_exponent __glibcpp_f32_max_exponent
 #  define __glibcpp_float_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_float_infinity_bytes __glibcpp_f32_infinity_bytes
+#  define __glibcpp_float_QNaN_bytes  __glibcpp_f32_QNaN_bytes
+#  define __glibcpp_float_SNaN_bytes  __glibcpp_f32_SNaN_bytes
+#  define __glibcpp_float_denorm_min_bytes  __glibcpp_f32_denorm_min_bytes
+#  define __glibcpp_float_has_infinity __glibcpp_f32_has_infinity
+#  define __glibcpp_float_has_QNaN __glibcpp_f32_has_QNaN
+#  define __glibcpp_float_has_SNaN __glibcpp_f32_has_SNaN
+#  define __glibcpp_float_has_denorm __glibcpp_f32_has_denorm
+#  define __glibcpp_float_is_iec559 __glibcpp_f32_is_iec559
 #elif __glibcpp_float_bits == 64
 #  define __glibcpp_float_min __glibcpp_f64_min
 #  define __glibcpp_float_max __glibcpp_f64_max
@@ -573,6 +764,15 @@
 #  define __glibcpp_float_min_exponent10 __glibcpp_f64_min_exponent10
 #  define __glibcpp_float_max_exponent __glibcpp_f64_max_exponent
 #  define __glibcpp_float_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_float_infinity_bytes __glibcpp_f64_infinity_bytes
+#  define __glibcpp_float_QNaN_bytes  __glibcpp_f64_QNaN_bytes
+#  define __glibcpp_float_SNaN_bytes  __glibcpp_f64_SNaN_bytes
+#  define __glibcpp_float_denorm_min_bytes  __glibcpp_f64_denorm_min_bytes
+#  define __glibcpp_float_has_infinity __glibcpp_f64_has_infinity
+#  define __glibcpp_float_has_QNaN __glibcpp_f64_has_QNaN
+#  define __glibcpp_float_has_SNaN __glibcpp_f64_has_SNaN
+#  define __glibcpp_float_has_denorm __glibcpp_f64_has_denorm
+#  define __glibcpp_float_is_iec559 __glibcpp_f64_is_iec559
 #elif __glibcpp_float_bits == 80
 #  define __glibcpp_float_min __glibcpp_f80_min
 #  define __glibcpp_float_max __glibcpp_f80_max
@@ -585,54 +785,51 @@
 #  define __glibcpp_float_min_exponent10 __glibcpp_f80_min_exponent10
 #  define __glibcpp_float_max_exponent __glibcpp_f80_max_exponent
 #  define __glibcpp_float_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_float_infinity_bytes __glibcpp_f80_infinity_bytes
+#  define __glibcpp_float_QNaN_bytes  __glibcpp_f80_QNaN_bytes
+#  define __glibcpp_float_SNaN_bytes  __glibcpp_f80_SNaN_bytes
+#  define __glibcpp_float_denorm_min_bytes  __glibcpp_f80_denorm_min_bytes
+#  define __glibcpp_float_has_infinity __glibcpp_f80_has_infinity
+#  define __glibcpp_float_has_QNaN __glibcpp_f80_has_QNaN
+#  define __glibcpp_float_has_SNaN __glibcpp_f80_has_SNaN
+#  define __glibcpp_float_has_denorm __glibcpp_f80_has_denorm
+#  define __glibcpp_float_is_iec559 __glibcpp_f80_is_iec559
 #else
 // You must define these macros in the configuration file.
 #endif
 
-// FIXME: These are just stubs and inkorrect
+// Default values.  Should be overriden in configuration files if necessary.
 
-#ifndef __glibcpp_float_has_infinity
-#  define __glibcpp_float_has_infinity false
+#ifndef __glibcpp_float_infinity_bytes
+#  define __glibcpp_float_infinity_bytes { }
+#  define __glibcpp_float_has_infinty false
 #endif
 
-#ifndef __glibcpp_float_has_quiet_NaN
-#  define __glibcpp_float_has_quiet_NaN false
+#ifndef __glibcpp_float_QNaN_bytes
+#  define __glibcpp_float_QNaN_bytes { }
+#  define __glibcpp_float_has_QNaN false
 #endif
 
-#ifndef __glibcpp_float_has_signaling_NaN
-#  define __glibcpp_float_has_signaling_NaN false
+#ifndef __glibcpp_float_SNaN_bytes
+#  define __glibcpp_float_SNaN_bytes { }
+#  define __glibcpp_float_has_SNaN false
 #endif
 
-#ifndef __glibcpp_float_has_denorm
-#  define __glibcpp_float_has_denorm denorm_absent
+#ifndef __glibcpp_float_denorm_min_bytes
+#  define __glibcpp_float_denorm_min_bytes { }
+#  define __glibcpp_float_has_denorm denorm_indeterminate
 #endif
 
 #ifndef __glibcpp_float_has_denorm_loss
 #  define __glibcpp_float_has_denorm_loss false
 #endif
 
-#ifndef __glibcpp_float_infinity
-#  define __glibcpp_float_infinity 0.0F
-#endif
-
-#ifndef __glibcpp_float_quiet_NaN
-#  define __glibcpp_float_quiet_NaN 0.0F
-#endif
-
-#ifndef __glibcpp_float_signaling_NaN
-#  define __glibcpp_float_signaling_NaN 0.0F
-#endif
-
-#ifndef __glibcpp_float_denorm_min
-#  define __glibcpp_float_denorm_min 0.0F
+#ifndef __glibcpp_float_is_bounded
+#  define __glibcpp_float_is_bounded true
 #endif
 
 #ifndef __glibcpp_float_is_iec559
 #  define __glibcpp_float_is_iec559 false
-#endif
-
-#ifndef __glibcpp_float_is_bounded
-#  define __glibcpp_float_is_bounded true
 #endif
 
 #ifndef __glibcpp_float_is_modulo
@@ -665,6 +862,15 @@
 #  define __glibcpp_double_min_exponent10 __glibcpp_f32_min_exponent10
 #  define __glibcpp_double_max_exponent __glibcpp_f32_max_exponent
 #  define __glibcpp_double_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_double_infinity_bytes __glibcpp_f32_infinity_bytes
+#  define __glibcpp_double_QNaN_bytes __glibcpp_f32_QNaN_bytes
+#  define __glibcpp_double_SNaN_bytes __glibcpp_f32_SNaN_bytes
+#  define __glibcpp_double_denorm_min_bytes __glibcpp_f32_denorm_min_bytes
+#  define __glibcpp_double_has_infinity __glibcpp_f32_has_infinity
+#  define __glibcpp_double_has_QNaN __glibcpp_f32_has_QNaN
+#  define __glibcpp_double_has_SNaN __glibcpp_f32_has_SNaN
+#  define __glibcpp_double_has_denorm __glibcpp_f32_has_denorm
+#  define __glibcpp_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __glibcpp_double_bits == 64
 #  define __glibcpp_double_min __glibcpp_f64_min
 #  define __glibcpp_double_max __glibcpp_f64_max
@@ -677,6 +883,15 @@
 #  define __glibcpp_double_min_exponent10 __glibcpp_f64_min_exponent10
 #  define __glibcpp_double_max_exponent __glibcpp_f64_max_exponent
 #  define __glibcpp_double_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_double_infinity_bytes __glibcpp_f64_infinity_bytes
+#  define __glibcpp_double_QNaN_bytes __glibcpp_f64_QNaN_bytes
+#  define __glibcpp_double_SNaN_bytes __glibcpp_f64_SNaN_bytes
+#  define __glibcpp_double_denorm_min_bytes __glibcpp_f64_denorm_min_bytes
+#  define __glibcpp_double_has_infinity __glibcpp_f64_has_infinity
+#  define __glibcpp_double_has_QNaN __glibcpp_f64_has_QNaN
+#  define __glibcpp_double_has_SNaN __glibcpp_f64_has_SNaN
+#  define __glibcpp_double_has_denorm __glibcpp_f64_has_denorm
+#  define __glibcpp_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __glibcpp_double_bits == 80
 #  define __glibcpp_double_min __glibcpp_f80_min
 #  define __glibcpp_double_max __glibcpp_f80_max
@@ -689,46 +904,43 @@
 #  define __glibcpp_double_min_exponent10 __glibcpp_f80_min_exponent10
 #  define __glibcpp_double_max_exponent __glibcpp_f80_max_exponent
 #  define __glibcpp_double_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_double_infinity_bytes __glibcpp_f80_infinity_bytes
+#  define __glibcpp_double_QNaN_bytes __glibcpp_f80_QNaN_bytes
+#  define __glibcpp_double_SNaN_bytes __glibcpp_f80_SNaN_bytes
+#  define __glibcpp_double_denorm_min_bytes __glibcpp_f80_denorm_min_bytes
+#  define __glibcpp_double_has_infinity __glibcpp_f80_has_infinity
+#  define __glibcpp_double_has_QNaN __glibcpp_f80_has_QNaN
+#  define __glibcpp_double_has_SNaN __glibcpp_f80_has_SNaN
+#  define __glibcpp_double_has_denorm __glibcpp_f80_has_denorm
+#  define __glibcpp_double_is_iec559 __glibcpp_f80_is_iec559
 #else
 // You must define these macros in the configuration file.
 #endif
 
-// FIXME: These are just stubs and inkorrect
+// Default values.  Should be overriden in configuration files if necessary.
 
-#ifndef __glibcpp_double_has_infinity
-#  define __glibcpp_double_has_infinity false
+#ifndef __glibcpp_double_infinity_bytes
+#  define __glibcpp_double_infinity_bytes { }
+#  define __glibcpp_double_has_infinty false
 #endif
 
-#ifndef __glibcpp_double_has_quiet_NaN
-#  define __glibcpp_double_has_quiet_NaN false
+#ifndef __glibcpp_double_QNaN_bytes
+#  define __glibcpp_double_QNaN_bytes { }
+#  define __glibcpp_double_has_QNaN false
 #endif
 
-#ifndef __glibcpp_double_has_signaling_NaN
-#  define __glibcpp_double_has_signaling_NaN false
+#ifndef __glibcpp_double_SNaN_bytes
+#  define __glibcpp_double_SNaN_bytes { }
+#  define __glibcpp_double_has_SNaN false
 #endif
 
-#ifndef __glibcpp_double_has_denorm
-#  define __glibcpp_double_has_denorm denorm_absent
+#ifndef __glibcpp_double_denorm_min_bytes
+#  define __glibcpp_double_denorm_min_bytes { }
+#  define __glibcpp_double_has_denorm denorm_indeterminate
 #endif
 
 #ifndef __glibcpp_double_has_denorm_loss
 #  define __glibcpp_double_has_denorm_loss false
-#endif
-
-#ifndef __glibcpp_double_infinity
-#  define __glibcpp_double_infinity 0.0
-#endif
-
-#ifndef __glibcpp_double_quiet_NaN
-#  define __glibcpp_double_quiet_NaN 0.0
-#endif
-
-#ifndef __glibcpp_double_signaling_NaN
-#  define __glibcpp_double_signaling_NaN 0.0
-#endif
-
-#ifndef __glibcpp_double_denorm_min
-#  define __glibcpp_double_denorm_min 0.0
 #endif
 
 #ifndef __glibcpp_double_is_iec559
@@ -769,6 +981,15 @@
 #  define __glibcpp_long_double_min_exponent10 __glibcpp_f32_min_exponent10
 #  define __glibcpp_long_double_max_exponent __glibcpp_f32_max_exponent
 #  define __glibcpp_long_double_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_long_double_infinity_bytes __glibcpp_f32_infinity_bytes
+#  define __glibcpp_long_double_QNaN_bytes __glibcpp_f32_QNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes __glibcpp_f32_SNaN_bytes
+#  define __glibcpp_long_double_denorm_min_bytes __glibcpp_f32_denorm_min_bytes
+#  define __glibcpp_long_double_has_infinity __glibcpp_f32_has_infinity
+#  define __glibcpp_long_double_has_QNaN __glibcpp_f32_has_QNaN
+#  define __glibcpp_long_double_has_SNaN __glibcpp_f32_has_SNaN
+#  define __glibcpp_long_double_has_denorm __glibcpp_f32_has_denorm
+#  define __glibcpp_long_double_is_iec559 __glibcpp_f32_is_iec559
 #elif __glibcpp_long_double_bits == 64
 #  define __glibcpp_long_double_min __glibcpp_f64_min
 #  define __glibcpp_long_double_max __glibcpp_f64_max
@@ -781,6 +1002,15 @@
 #  define __glibcpp_long_double_min_exponent10 __glibcpp_f64_min_exponent10
 #  define __glibcpp_long_double_max_exponent __glibcpp_f64_max_exponent
 #  define __glibcpp_long_double_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_long_double_infinity_bytes __glibcpp_f64_infinity_bytes
+#  define __glibcpp_long_double_QNaN_bytes __glibcpp_f64_QNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes __glibcpp_f64_SNaN_bytes
+#  define __glibcpp_long_double_denorm_min_bytes __glibcpp_f64_denorm_min_bytes
+#  define __glibcpp_long_double_has_infinity __glibcpp_f64_has_infinity
+#  define __glibcpp_long_double_has_QNaN __glibcpp_f64_has_QNaN
+#  define __glibcpp_long_double_has_SNaN __glibcpp_f64_has_SNaN
+#  define __glibcpp_long_double_has_denorm __glibcpp_f64_has_denorm
+#  define __glibcpp_long_double_is_iec559 __glibcpp_f64_is_iec559
 #elif __glibcpp_long_double_bits == 80
 #  define __glibcpp_long_double_min __glibcpp_f80_min
 #  define __glibcpp_long_double_max __glibcpp_f80_max
@@ -793,6 +1023,15 @@
 #  define __glibcpp_long_double_min_exponent10 __glibcpp_f80_min_exponent10
 #  define __glibcpp_long_double_max_exponent __glibcpp_f80_max_exponent
 #  define __glibcpp_long_double_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_long_double_infinity_bytes __glibcpp_f80_infinity_bytes
+#  define __glibcpp_long_double_QNaN_bytes __glibcpp_f80_QNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes __glibcpp_f80_SNaN_bytes
+#  define __glibcpp_long_double_denorm_min_bytes __glibcpp_f80_denorm_min_bytes
+#  define __glibcpp_long_double_has_infinity __glibcpp_f80_has_infinity
+#  define __glibcpp_long_double_has_QNaN __glibcpp_f80_has_QNaN
+#  define __glibcpp_long_double_has_SNaN __glibcpp_f80_has_SNaN
+#  define __glibcpp_long_double_has_denorm __glibcpp_f80_has_denorm
+#  define __glibcpp_long_double_is_iec559 __glibcpp_f80_is_iec559
 #elif __glibcpp_long_double_bits == 96
 #  define __glibcpp_long_double_min __glibcpp_f96_min
 #  define __glibcpp_long_double_max __glibcpp_f96_max
@@ -805,6 +1044,15 @@
 #  define __glibcpp_long_double_min_exponent10 __glibcpp_f96_min_exponent10
 #  define __glibcpp_long_double_max_exponent __glibcpp_f96_max_exponent
 #  define __glibcpp_long_double_max_exponent10 __glibcpp_f96_max_exponent10
+#  define __glibcpp_long_double_infinity_bytes __glibcpp_f96_infinity_bytes
+#  define __glibcpp_long_double_QNaN_bytes __glibcpp_f96_QNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes __glibcpp_f96_SNaN_bytes
+#  define __glibcpp_long_double_denorm_min_bytes __glibcpp_f96_denorm_min_bytes
+#  define __glibcpp_long_double_has_infinity __glibcpp_f96_has_infinity
+#  define __glibcpp_long_double_has_QNaN __glibcpp_f96_has_QNaN
+#  define __glibcpp_long_double_has_SNaN __glibcpp_f96_has_SNaN
+#  define __glibcpp_long_double_has_denorm __glibcpp_f96_has_denorm
+#  define __glibcpp_long_double_is_iec559 __glibcpp_f96_is_iec559
 #elif __glibcpp_long_double_bits == 128
 #  define __glibcpp_long_double_min __glibcpp_f128_min
 #  define __glibcpp_long_double_max __glibcpp_f128_max
@@ -817,46 +1065,43 @@
 #  define __glibcpp_long_double_min_exponent10 __glibcpp_f128_min_exponent10
 #  define __glibcpp_long_double_max_exponent __glibcpp_f128_max_exponent
 #  define __glibcpp_long_double_max_exponent10 __glibcpp_f128_max_exponent10
+#  define __glibcpp_long_double_infinity_bytes __glibcpp_f128_infinity_bytes
+#  define __glibcpp_long_double_QNaN_bytes __glibcpp_f128_QNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes __glibcpp_f128_SNaN_bytes
+#  define __glibcpp_long_double_denorm_min_bytes __glibcpp_f128_denorm_min_bytes
+#  define __glibcpp_long_double_has_infinity __glibcpp_f128_has_infinity
+#  define __glibcpp_long_double_has_QNaN __glibcpp_f128_has_QNaN
+#  define __glibcpp_long_double_has_SNaN __glibcpp_f128_has_SNaN
+#  define __glibcpp_long_double_has_denorm __glibcpp_f128_has_denorm
+#  define __glibcpp_long_double_is_iec559 __glibcpp_f128_is_iec559
 #else
 // You must define these macros in the configuration file.
 #endif
 
-// FIXME: These are just stubs and inkorrect
+// Default values.  Should be overriden in configuration files if necessary.
 
-#ifndef __glibcpp_long_double_has_infinity
-#  define __glibcpp_long_double_has_infinity false
+#ifndef __glibcpp_long_double_infinity_bytes
+#  define __glibcpp_long_double_infinity_bytes { }
+#  define __glibcpp_long_double_has_infinty false
 #endif
 
-#ifndef __glibcpp_long_double_has_quiet_NaN
-#  define __glibcpp_long_double_has_quiet_NaN false
+#ifndef __glibcpp_long_double_QNaN_bytes
+#  define __glibcpp_long_double_QNaN_bytes { }
+#  define __glibcpp_long_double_has_QNaN false
 #endif
 
-#ifndef __glibcpp_long_double_has_signaling_NaN
-#  define __glibcpp_long_double_has_signaling_NaN false
+#ifndef __glibcpp_long_double_SNaN_bytes
+#  define __glibcpp_long_double_SNaN_bytes { }
+#  define __glibcpp_long_double_has_SNaN false
 #endif
 
-#ifndef __glibcpp_long_double_has_denorm
-#  define __glibcpp_long_double_has_denorm denorm_absent
+#ifndef __glibcpp_long_double_denorm_min_bytes
+#  define __glibcpp_long_double_denorm_min_bytes { }
+#  define __glibcpp_long_double_has_denorm denorm_indeterminate
 #endif
 
 #ifndef __glibcpp_long_double_has_denorm_loss
 #  define __glibcpp_long_double_has_denorm_loss false
-#endif
-
-#ifndef __glibcpp_long_double_infinity
-#  define __glibcpp_long_double_infinity 0.0L
-#endif
-
-#ifndef __glibcpp_long_double_quiet_NaN
-#  define __glibcpp_long_double_quiet_NaN 0.0L
-#endif
-
-#ifndef __glibcpp_long_double_signaling_NaN
-#  define __glibcpp_long_double_signaling_NaN 0.0L
-#endif
-
-#ifndef __glibcpp_long_double_denorm_min
-#  define __glibcpp_long_double_denorm_min 0.0L
 #endif
 
 #ifndef __glibcpp_long_double_is_iec559
@@ -886,6 +1131,63 @@
 
 namespace std
 {
+  // This is better handled by the compiler, but we do it here for the
+  // time being.  (We're just second-guessing something the compiler
+  // knows about better than we do.) -- Gaby
+  typedef unsigned char __glibcpp_byte;
+#define __glibcpp_word_bits 32
+#if __glibcpp_char_bits == __glibcpp_word_bits
+#  define __glibcpp_word unsigned char
+#elif __glibcpp_short_bits == __glibcpp_word_bits
+#  define __glibcpp_word unsigned short  
+#elif __glibcpp_int_bits == __glibcpp_word_bits
+#  define __glibcpp_word unsigned int
+#elif __glibcpp_long_bits == __glibcpp_word_bits
+#  define __glibcpp_word unsigned long
+#endif  
+
+  // Define storage types for the single, double and extended floating
+  // point data types.  Maybe we could avoid the conditional #defines by
+  // using the aligned_storage<> extension.  -- Gaby
+  typedef const
+#if __glibcpp_float_bits % __glibcpp_word_bits == 0
+    __glibcpp_word __float_storage[sizeof (float) / sizeof (__glibcpp_word)]
+#else
+    __glibcpp_byte __float_storage[sizeof (float)]
+#endif  
+    __attribute__((__aligned__(__alignof__(float))));
+
+  typedef const
+#if __glibcpp_double_bits % __glibcpp_word_bits == 0
+    __glibcpp_word __double_storage[sizeof (double) / sizeof (__glibcpp_word)]
+#else
+    __glibcpp_byte __double_storage[sizeof (double)]
+#endif  
+    __attribute__((__aligned__(__alignof__(double))));
+
+  typedef const
+#if __glibcpp_long_double_bits % __glibcpp_word_bits == 0
+    __glibcpp_word __long_double_storage[sizeof (long double) / sizeof (__glibcpp_word)]
+#else
+    __glibcpp_byte __long_double_storage[sizeof (long double)]
+#endif  
+    __attribute__((__aligned__(__alignof__(long double))));
+
+  extern const __float_storage __glibcpp_float_infinity;
+  extern const __float_storage __glibcpp_float_QNaN;
+  extern const __float_storage __glibcpp_float_SNaN;
+  extern const __float_storage __glibcpp_float_denorm_min;
+  
+  extern const __double_storage __glibcpp_double_infinity;
+  extern const __double_storage __glibcpp_double_QNaN;
+  extern const __double_storage __glibcpp_double_SNaN;
+  extern const __double_storage __glibcpp_double_denorm_min;
+
+  extern const __long_double_storage __glibcpp_long_double_infinity;
+  extern const __long_double_storage __glibcpp_long_double_QNaN;
+  extern const __long_double_storage __glibcpp_long_double_SNaN;
+  extern const __long_double_storage __glibcpp_long_double_denorm_min;
+  
   enum float_round_style 
   {
     round_indeterminate       = -1,
@@ -1713,19 +2015,19 @@ namespace std
       static const int max_exponent10 = __glibcpp_float_max_exponent10;
 
       static const bool has_infinity = __glibcpp_float_has_infinity;
-      static const bool has_quiet_NaN = __glibcpp_float_has_quiet_NaN;
-      static const bool has_signaling_NaN = __glibcpp_float_has_signaling_NaN;
+      static const bool has_quiet_NaN = __glibcpp_float_has_QNaN;
+      static const bool has_signaling_NaN = __glibcpp_float_has_SNaN;
       static const float_denorm_style has_denorm = __glibcpp_float_has_denorm;
       static const bool has_denorm_loss = __glibcpp_float_has_denorm_loss;
 
       static float infinity() throw()
-      { return __glibcpp_float_infinity; }
+      { return *reinterpret_cast<const float*>(__glibcpp_float_infinity); }
       static float quiet_NaN() throw()
-      { return __glibcpp_float_quiet_NaN; }
+      { return *reinterpret_cast<const float*>(__glibcpp_float_QNaN); }
       static float signaling_NaN() throw()
-      { return __glibcpp_float_signaling_NaN; }
+      { return *reinterpret_cast<const float*>(__glibcpp_float_SNaN); }
       static float denorm_min() throw()
-      { return __glibcpp_float_denorm_min; }
+      { return *reinterpret_cast<const float*>(__glibcpp_float_denorm_min); }
 
       static const bool is_iec559 = __glibcpp_float_is_iec559;
       static const bool is_bounded = __glibcpp_float_is_bounded;
@@ -1747,14 +2049,10 @@ namespace std
 #undef __glibcpp_float_max_exponent
 #undef __glibcpp_float_max_exponent10
 #undef __glibcpp_float_has_infinity
-#undef __glibcpp_float_has_quiet_NaN
-#undef __glibcpp_float_has_signaling_NaN
+#undef __glibcpp_float_has_QNaN
+#undef __glibcpp_float_has_SNaN
 #undef __glibcpp_float_has_denorm
 #undef __glibcpp_float_has_denorm_loss
-#undef __glibcpp_float_infinity
-#undef __glibcpp_float_quiet_NaN
-#undef __glibcpp_float_signaling_NaN
-#undef __glibcpp_float_denorm_min
 #undef __glibcpp_float_is_iec559
 #undef __glibcpp_float_is_bounded
 #undef __glibcpp_float_is_modulo
@@ -1789,20 +2087,20 @@ namespace std
       static const int max_exponent10 = __glibcpp_double_max_exponent10;
 
       static const bool has_infinity = __glibcpp_double_has_infinity;
-      static const bool has_quiet_NaN = __glibcpp_double_has_quiet_NaN;
-      static const bool has_signaling_NaN = __glibcpp_double_has_signaling_NaN;
+      static const bool has_quiet_NaN = __glibcpp_double_has_QNaN;
+      static const bool has_signaling_NaN = __glibcpp_double_has_SNaN;
       static const float_denorm_style has_denorm =
               __glibcpp_double_has_denorm;
       static const bool has_denorm_loss = __glibcpp_double_has_denorm_loss;
 
       static double infinity() throw()
-      { return __glibcpp_double_infinity; }
+      { return *reinterpret_cast<const double*>(__glibcpp_double_infinity); }
       static double quiet_NaN() throw()
-      { return __glibcpp_double_quiet_NaN; }
+      { return *reinterpret_cast<const double*>(__glibcpp_double_QNaN); }
       static double signaling_NaN() throw()
-      { return __glibcpp_double_signaling_NaN; }
+      { return *reinterpret_cast<const double*>(__glibcpp_double_SNaN); }
       static double denorm_min() throw()
-      { return __glibcpp_double_denorm_min; }
+      { return *reinterpret_cast<const double*>(__glibcpp_double_denorm_min); }
 
       static const bool is_iec559 = __glibcpp_double_is_iec559;
       static const bool is_bounded = __glibcpp_double_is_bounded;
@@ -1825,14 +2123,10 @@ namespace std
 #undef __glibcpp_double_max_exponent
 #undef __glibcpp_double_max_exponent10
 #undef __glibcpp_double_has_infinity
-#undef __glibcpp_double_has_quiet_NaN
-#undef __glibcpp_double_has_signaling_NaN
+#undef __glibcpp_double_has_QNaN
+#undef __glibcpp_double_has_SNaN
 #undef __glibcpp_double_has_denorm
 #undef __glibcpp_double_has_denorm_loss
-#undef __glibcpp_double_infinity
-#undef __glibcpp_double_quiet_NaN
-#undef __glibcpp_double_signaling_NaN
-#undef __glibcpp_double_denorm_min
 #undef __glibcpp_double_is_iec559
 #undef __glibcpp_double_is_bounded
 #undef __glibcpp_double_is_modulo
@@ -1868,22 +2162,36 @@ namespace std
       static const int max_exponent10 = __glibcpp_long_double_max_exponent10;
 
       static const bool has_infinity = __glibcpp_long_double_has_infinity;
-      static const bool has_quiet_NaN = __glibcpp_long_double_has_quiet_NaN;
-      static const bool has_signaling_NaN =
-                __glibcpp_long_double_has_signaling_NaN;
+      static const bool has_quiet_NaN = __glibcpp_long_double_has_SNaN;
+      static const bool has_signaling_NaN = __glibcpp_long_double_has_SNaN;
       static const float_denorm_style has_denorm =
                 __glibcpp_long_double_has_denorm;
       static const bool has_denorm_loss =
                 __glibcpp_long_double_has_denorm_loss;
 
       static long double infinity() throw()
-      { return __glibcpp_long_double_infinity; }
+      {
+        return *reinterpret_cast<const long double*>
+          (__glibcpp_long_double_infinity);
+      } 
+
       static long double quiet_NaN() throw()
-      { return __glibcpp_long_double_quiet_NaN; }
+      {
+        return *reinterpret_cast<const long double*>
+          (__glibcpp_long_double_QNaN);
+      }
+
       static long double signaling_NaN() throw()
-      { return __glibcpp_long_double_signaling_NaN; }
+      {
+        return *reinterpret_cast<const long double*>
+          (__glibcpp_long_double_SNaN);
+      }
+      
       static long double denorm_min() throw()
-      { return __glibcpp_long_double_denorm_min; }
+      {
+        return *reinterpret_cast<const long double*>
+          (__glibcpp_long_double_denorm_min);
+      }
 
       static const bool is_iec559 = __glibcpp_long_double_is_iec559;
       static const bool is_bounded = __glibcpp_long_double_is_bounded;
@@ -1906,14 +2214,10 @@ namespace std
 #undef __glibcpp_long_double_max_exponent
 #undef __glibcpp_long_double_max_exponent10
 #undef __glibcpp_long_double_has_infinity
-#undef __glibcpp_long_double_has_quiet_NaN
-#undef __glibcpp_long_double_has_signaling_NaN
+#undef __glibcpp_long_double_has_QNaN
+#undef __glibcpp_long_double_has_SNaN
 #undef __glibcpp_long_double_has_denorm
 #undef __glibcpp_long_double_has_denorm_loss
-#undef __glibcpp_long_double_infinity
-#undef __glibcpp_long_double_quiet_NaN
-#undef __glibcpp_long_double_signaling_NaN
-#undef __glibcpp_long_double_denorm_min
 #undef __glibcpp_long_double_is_iec559
 #undef __glibcpp_long_double_is_bounded
 #undef __glibcpp_long_double_is_modulo
