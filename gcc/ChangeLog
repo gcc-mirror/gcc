@@ -1,3 +1,48 @@
+2003-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_set_line_maximum_length): Make macro.
+	(pp_set_prefix): Likewise.
+	(pp_destroy_prefix): Likewise.
+	(pp_remaining_character_count_for_line): Likewise.
+	(pp_clear_output_area): Likewise.
+	(pp_formatted_text): Likewise.
+	(pp_last_position_in_text): Likewise.
+	(pp_emit_prefix): Likewise.
+	(pp_append_text): Likewise.
+	(pp_flush): Likewise.
+	(pp_format_text): Likewise.
+	(pp_format_verbatim): Likewise.
+	(pp_tree_identifier): Tidy.
+	* pretty-print.c (pp_base_format_text): Rename from pp_format_text.
+	(pp_base_format_verbatim): Rename from pp_format_verbatim.
+	(pp_base_flush): Rename from pp_flush.
+	(pp_base_set_line_maximum_length): Rename from
+	pp_set_line_maximum_length.
+	(pp_base_clear_output_area): Rename from pp_clear_output_area.
+	(pp_base_set_prefix): Rename from pp_set_prefix.
+	(pp_base_destroy_prefix): Rename from pp_destroy_prefix.
+	(pp_base_emit_prefix): Rename from pp_emit_prefix.
+	(pp_base_append_text): Rename from pp_append_text.
+	(pp_base_formatted_text): Rename from pp_formatted_text.
+	(pp_base_last_position_in_text): Rename from pp_last_position_in_text.
+	(pp_base_remaining_character_count_for_line): Rename from
+	pp_remaining_character_count_for_line.
+	* diagnostic.h (diagnostic_format_decoder): Tidy.
+	(diagnostic_flush_buffer): Likewise.
+	* c-pretty-print.h: (pp_c_string_literal): Declare.
+	(pp_c_real_literal): Likewise.
+	(pp_c_integer_literal): Likewise.
+	* c-pretty-print.c (pp_c_char): Use pp_string in lieu of
+	pp_identifier. 
+	(pp_c_character_literal): Tidy.
+	(pp_c_string_literal): Make public.
+	(pp_c_bool_literal): Likewise.
+	(pp_c_integer_literal): Likewise.
+	(pp_c_real_literal): Likewise.
+
+	* Makefile.in (C_PRETTY_PRINT_H): New variable.
+	(c-pretty-print.o): Update dependence.
+
 2003-08-05  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.md (fix_truncdfsi2_macro): Properly restore

@@ -160,5 +160,8 @@ void pp_c_cast_expression (c_pretty_printer, tree);
 void pp_c_postfix_expression (c_pretty_printer, tree);
 void pp_c_initializer (c_pretty_printer, tree);
 void pp_c_literal (c_pretty_printer, tree);
+void pp_c_string_literal (c_pretty_printer, tree);
+void pp_c_real_literal (c_pretty_printer, tree);
+void pp_c_integer_literal (c_pretty_printer, tree);
 
 #endif /* GCC_C_PRETTY_PRINTER */

@@ -1,3 +1,21 @@
+2003-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h: New file.
+	* cxx-pretty-print.c: Likewise.
+	* error.c (scratch_pretty_printer): Change type.
+	(init_error): Tidy.
+	(dump_aggr_type): Likewise.
+	(dump_global_iord): Likewise.
+	(dump_expr): Likewise.
+	(dump_char): Remove.
+	* cp-lang.c (LANG_HOOKS_INITIALIZE_DIAGNOSTITCS): Define.
+	(cxx_initialize_diagnostics): New function.
+	* Make-lang.in (CXX_OBJS): Add cp/cxx-pretty-print.o
+	(CXX_PRETTY_PRINT_H): New variable.
+	(cp/cxx-pretty-print.o): New rule.
+	(cp/cp-lang.o): Update dependence.
+	(cp/error.o): Likewise.
+
 2003-08-05  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cp-tree.h (struct lang_decl): Don't include c_lang_decl.

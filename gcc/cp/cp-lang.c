@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "diagnostic.h"
+#include "cxx-pretty-print.h"
 
 enum c_language_kind c_language = clk_cxx;
 
@@ -38,6 +40,7 @@ static bool cxx_warn_unused_global_decl (tree);
 static tree cp_expr_size (tree);
 static size_t cp_tree_size (enum tree_code);
 static bool cp_var_mod_type_p (tree);
+static void cxx_initialize_diagnostics (diagnostic_context *);
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU C++"
@@ -51,6 +54,8 @@ static bool cp_var_mod_type_p (tree);
 #define LANG_HOOKS_CLEAR_BINDING_STACK pop_everything
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
+#undef LANG_HOOKS_INITIALIZE_DIAGNOSTITCS
+#define LANG_HOOKS_INITIALIZE_DIAGNOSTITCS cxx_initialize_diagnostics
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_HANDLE_FILENAME
@@ -372,4 +377,19 @@ void
 c_reset_state (void)
 {
   sorry ("inter-module optimisations not implemented yet");
+}
+
+/* Construct a C++-aware pretty-printer for CONTEXT.  It is assumed
+   that CONTEXT->printer is an already constructed basic pretty_printer.  */
+static void
+cxx_initialize_diagnostics (diagnostic_context *context)
+{
+  pretty_printer *base = context->printer;
+  cxx_pretty_printer *pp = xmalloc (sizeof (cxx_pretty_printer));
+  memcpy (pp_base (pp), base, sizeof (pretty_printer));
+  pp_cxx_pretty_printer_init (pp);
+  context->printer = (pretty_printer *) pp;
+
+  /* It is safe to free this object because it was previously malloc()'d.  */
+  free (base);
 }

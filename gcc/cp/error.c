@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "diagnostic.h"
 #include "langhooks-def.h"
-#include "pretty-print.h"
+#include "cxx-pretty-print.h"
 
 enum pad { none, before, after };
 
@@ -43,7 +43,7 @@ enum pad { none, before, after };
 /* The global buffer where we dump everything.  It is there only for
    transitional purpose.  It is expected, in the near future, to be
    completely removed.  */
-static pretty_printer scratch_pretty_printer;
+static cxx_pretty_printer scratch_pretty_printer;
 #define cxx_pp (&scratch_pretty_printer)
 
 # define NEXT_CODE(T) (TREE_CODE (TREE_TYPE (T)))
@@ -78,7 +78,6 @@ static void dump_function_name (tree, int);
 static void dump_expr_list (tree, int);
 static void dump_global_iord (tree);
 static enum pad dump_qualifiers (tree, enum pad);
-static void dump_char (int);
 static void dump_parameters (tree, int);
 static void dump_exception_spec (tree, int);
 static const char *class_key_or_enum (tree);
@@ -99,7 +98,7 @@ static void cp_diagnostic_finalizer (diagnostic_context *, diagnostic_info *);
 static void cp_print_error_function (diagnostic_context *, diagnostic_info *);
 
 static bool cp_printer (pretty_printer *, text_info *);
-static void pp_non_consecutive_character (pretty_printer *, int);
+static void pp_non_consecutive_character (cxx_pretty_printer *, int);
 static tree locate_error (const char *, va_list);
 static location_t location_of (tree);
 
@@ -110,7 +109,8 @@ init_error (void)
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = cp_printer;
 
-  pp_construct (cxx_pp, NULL, 0);
+  pp_construct (pp_base (cxx_pp), NULL, 0);
+  pp_cxx_pretty_printer_init (cxx_pp);
 }
 
 /* Dump a scope, if deemed necessary.  */
@@ -531,7 +531,7 @@ dump_aggr_type (tree t, int flags)
       if (flags & TFF_CLASS_KEY_OR_ENUM)
         pp_identifier (cxx_pp, "<anonymous>");
       else
-        pp_printf (cxx_pp, "<anonymous %s>", variety);
+        pp_printf (pp_base (cxx_pp), "<anonymous %s>", variety);
     }
   else
     pp_tree_identifier (cxx_pp, name);
@@ -758,7 +758,7 @@ dump_global_iord (tree t)
   else
     abort ();
 
-  pp_printf (cxx_pp, "(static %s for %s)", p, input_filename);
+  pp_printf (pp_base (cxx_pp), "(static %s for %s)", p, input_filename);
 }
 
 static void
@@ -1315,50 +1315,6 @@ dump_template_parms (tree info, int primary, int flags)
   pp_template_argument_list_end (cxx_pp);
 }
 
-static void
-dump_char (int c)
-{
-  switch (c)
-    {
-    case TARGET_NEWLINE:
-      pp_string (cxx_pp, "\\n");
-      break;
-    case TARGET_TAB:
-      pp_string (cxx_pp, "\\t");
-      break;
-    case TARGET_VT:
-      pp_string (cxx_pp, "\\v");
-      break;
-    case TARGET_BS:
-      pp_string (cxx_pp, "\\b");
-      break;
-    case TARGET_CR:
-      pp_string (cxx_pp, "\\r");
-      break;
-    case TARGET_FF:
-      pp_string (cxx_pp, "\\f");
-      break;
-    case TARGET_BELL:
-      pp_string (cxx_pp, "\\a");
-      break;
-    case '\\':
-      pp_string (cxx_pp, "\\\\");
-      break;
-    case '\'':
-      pp_string (cxx_pp, "\\'");
-      break;
-    case '\"':
-      pp_string (cxx_pp, "\\\"");
-      break;
-    default:
-      if (ISPRINT (c))
-	pp_character (cxx_pp, c);
-      else
-        pp_scalar (cxx_pp, "\\%03o", (unsigned) c);
-      break;
-    }
-}
-
 /* Print out a list of initializers (subr of dump_expr) */
 
 static void
@@ -1418,55 +1374,16 @@ dump_expr (tree t, int flags)
                 pp_left_paren (cxx_pp);
                 dump_type (type, flags);
                 pp_right_paren (cxx_pp);
-                goto do_int;
+                pp_c_integer_literal (pp_c_base (cxx_pp), t);
 	      }
 	  }
-	else if (type == boolean_type_node)
-	  {
-	    if (t == boolean_false_node || integer_zerop (t))
-	      pp_identifier (cxx_pp, "false");
-	    else if (t == boolean_true_node)
-	      pp_identifier (cxx_pp, "true");
-	  }
-	else if (type == char_type_node)
-	  {
-            pp_quote (cxx_pp);
-	    if (host_integerp (t, TREE_UNSIGNED (type)))
-	      dump_char (tree_low_cst (t, TREE_UNSIGNED (type)));
-	    else
-	      pp_printf (cxx_pp, "\\x%x",
-                         (unsigned int) TREE_INT_CST_LOW (t));
-            pp_quote (cxx_pp);
-	  }
-	else
-	  {
-	    do_int:
-	    if (! host_integerp (t, 0))
-	      {
-	        tree val = t;
-
-	        if (tree_int_cst_sgn (val) < 0)
-	          {
-                    pp_minus (cxx_pp);
-		    val = build_int_2 (-TREE_INT_CST_LOW (val),
-				       ~TREE_INT_CST_HIGH (val)
-	                               + !TREE_INT_CST_LOW (val));
-	          }
-		sprintf (cxx_pp->buffer->digit_buffer,
-                         HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-			 TREE_INT_CST_HIGH (val), TREE_INT_CST_LOW (val));
-		pp_string (cxx_pp, cxx_pp->buffer->digit_buffer);
-	      }
-	    else
-	      pp_wide_integer (cxx_pp, TREE_INT_CST_LOW (t));
-	  }
+        else
+          pp_c_integer_literal (pp_c_base (cxx_pp), t);
       }
       break;
 
     case REAL_CST:
-      real_to_decimal (cxx_pp->buffer->digit_buffer, &TREE_REAL_CST (t),
-		       sizeof (cxx_pp->buffer->digit_buffer), 0, 1);
-      pp_string (cxx_pp, cxx_pp->buffer->digit_buffer);
+      pp_c_real_literal (pp_c_base (cxx_pp), t);
       break;
 
     case PTRMEM_CST:
@@ -1477,16 +1394,7 @@ dump_expr (tree t, int flags)
       break;
 
     case STRING_CST:
-      {
-	const char *p = TREE_STRING_POINTER (t);
-	int len = TREE_STRING_LENGTH (t) - 1;
-	int i;
-
-	pp_doublequote (cxx_pp);
-	for (i = 0; i < len; i++)
-	  dump_char (p[i]);
-	pp_doublequote (cxx_pp);
-      }
+      pp_c_string_literal (pp_c_base (cxx_pp), t);
       break;
 
     case COMPOUND_EXPR:
@@ -2268,7 +2176,7 @@ void
 cxx_print_error_function (diagnostic_context *context, const char *file)
 {
   lhd_print_error_function (context, file);
-  pp_set_prefix (context->printer, file);
+  pp_base_set_prefix (context->printer, file);
   maybe_print_instantiation_context (context);
 }
 
@@ -2279,14 +2187,14 @@ cp_diagnostic_starter (diagnostic_context *context,
   diagnostic_report_current_module (context);
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
-  pp_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
+  pp_base_set_prefix (context->printer, diagnostic_build_prefix (diagnostic));
 }
 
 static void
 cp_diagnostic_finalizer (diagnostic_context *context,
                          diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
 {
-  pp_destroy_prefix (context->printer);
+  pp_base_destroy_prefix (context->printer);
 }
 
 /* Print current function onto BUFFER, in the process of reporting
@@ -2302,18 +2210,18 @@ cp_print_error_function (diagnostic_context *context,
         ? file_name_as_prefix (diagnostic->location.file)
         : NULL;
 
-      pp_set_prefix (context->printer, new_prefix);
+      pp_base_set_prefix (context->printer, new_prefix);
 
       if (current_function_decl == NULL)
-        pp_string (context->printer, "At global scope:");
+        pp_base_string (context->printer, "At global scope:");
       else
         pp_printf (context->printer, "In %s `%s':",
                    function_category (current_function_decl),
                    cxx_printable_name (current_function_decl, 2));
-      pp_newline (context->printer);
+      pp_base_newline (context->printer);
 
       diagnostic_set_last_function (context);
-      pp_destroy_prefix (context->printer);
+      pp_base_destroy_prefix (context->printer);
       context->printer->prefix = old_prefix;
     }
 }
@@ -2461,7 +2369,7 @@ cp_printer (pretty_printer *pp, text_info *text)
       return false;
     }
 
-  pp_string (pp, result);
+  pp_base_string (pp, result);
   return true;
 #undef next_tree
 #undef next_tcode
@@ -2470,7 +2378,7 @@ cp_printer (pretty_printer *pp, text_info *text)
 }
 
 static void
-pp_non_consecutive_character (pretty_printer *pp, int c)
+pp_non_consecutive_character (cxx_pretty_printer *pp, int c)
 {
   const char *p = pp_last_position_in_text (pp);
 

@@ -39,9 +39,6 @@ static void pp_c_char (c_pretty_printer, int);
 static void pp_c_character_literal (c_pretty_printer, tree);
 static void pp_c_bool_literal (c_pretty_printer, tree);
 static bool pp_c_enumerator (c_pretty_printer, tree);
-static void pp_c_integer_literal (c_pretty_printer, tree);
-static void pp_c_real_literal (c_pretty_printer, tree);
-static void pp_c_string_literal (c_pretty_printer, tree);
 
 static void pp_c_primary_expression (c_pretty_printer, tree);
 
@@ -306,34 +303,34 @@ pp_c_char (c_pretty_printer ppi, int c)
   switch (c)
     {
     case TARGET_NEWLINE:
-      pp_identifier (ppi, "\\n");
+      pp_string (ppi, "\\n");
       break;
     case TARGET_TAB:
-      pp_identifier (ppi, "\\t");
+      pp_string (ppi, "\\t");
       break;
     case TARGET_VT:
-      pp_identifier (ppi, "\\v");
+      pp_string (ppi, "\\v");
       break;
     case TARGET_BS:
-      pp_identifier (ppi, "\\b");
+      pp_string (ppi, "\\b");
       break;
     case TARGET_CR:
-      pp_identifier (ppi, "\\r");
+      pp_string (ppi, "\\r");
       break;
     case TARGET_FF:
-      pp_identifier (ppi, "\\f");
+      pp_string (ppi, "\\f");
       break;
     case TARGET_BELL:
-      pp_identifier (ppi, "\\a");
+      pp_string (ppi, "\\a");
       break;
     case '\\':
-      pp_identifier (ppi, "\\\\");
+      pp_string (ppi, "\\\\");
       break;
     case '\'':
-      pp_identifier (ppi, "\\'");
+      pp_string (ppi, "\\'");
       break;
     case '\"':
-      pp_identifier (ppi, "\\\"");
+      pp_string (ppi, "\\\"");
       break;
     default:
       if (ISPRINT (c))
@@ -345,7 +342,7 @@ pp_c_char (c_pretty_printer ppi, int c)
 }
 
 /* Print out a STRING literal.  */
-static inline void
+void
 pp_c_string_literal (c_pretty_printer ppi, tree s)
 {
   const char *p = TREE_STRING_POINTER (s);
@@ -361,13 +358,17 @@ pp_c_string_literal (c_pretty_printer ppi, tree s)
 static inline void
 pp_c_character_literal (c_pretty_printer ppi, tree c)
 {
+  tree type = TREE_TYPE (c);
   pp_quote (ppi);
-  pp_c_char (ppi, tree_low_cst (c, 0));
+  if (host_integerp (c, TREE_UNSIGNED (type)))
+    pp_c_char (ppi, tree_low_cst (c, TREE_UNSIGNED (type)));
+  else
+    pp_scalar (ppi, "\\x%x", (unsigned) TREE_INT_CST_LOW (c));
   pp_quote (ppi);
 }
 
 /* Print out a BOOLEAN literal.  */
-static inline void
+void
 pp_c_bool_literal (c_pretty_printer ppi, tree b)
 {
   if (b == boolean_false_node || integer_zerop (b))
@@ -423,7 +424,7 @@ pp_c_enumerator (c_pretty_printer ppi, tree e)
 }
 
 /* Print out an INTEGER constant value.  */
-static void
+void
 pp_c_integer_literal (c_pretty_printer ppi, tree i)
 {
   tree type = TREE_TYPE (i);
@@ -449,20 +450,19 @@ pp_c_integer_literal (c_pretty_printer ppi, tree i)
 	      sprintf (pp_buffer (ppi)->digit_buffer,
 		       HOST_WIDE_INT_PRINT_DOUBLE_HEX,
 		       TREE_INT_CST_HIGH (i), TREE_INT_CST_LOW (i));
-	      pp_identifier (ppi, pp_buffer (ppi)->digit_buffer);
-
+	      pp_string (ppi, pp_buffer (ppi)->digit_buffer);
 	    }
 	}
     }
 }
 
 /* Print out a REAL value.  */
-static inline void
+void
 pp_c_real_literal (c_pretty_printer ppi, tree r)
 {
   real_to_decimal (pp_buffer (ppi)->digit_buffer, &TREE_REAL_CST (r),
 		   sizeof (pp_buffer (ppi)->digit_buffer), 0, 1);
-  pp_identifier (ppi, pp_buffer(ppi)->digit_buffer);
+  pp_string (ppi, pp_buffer(ppi)->digit_buffer);
 }
 
 
