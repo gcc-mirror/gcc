@@ -1,3 +1,7 @@
+2000-09-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.other/virtual8.C: Declare printf correctly.
+
 2000-09-19  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.dg/compare2.c (case 10): XFAIL.

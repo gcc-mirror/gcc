@@ -246,6 +246,10 @@ static int next_decl_uid;
 /* Unique id for next type created.  */
 static int next_type_uid = 1;
 
+/* Pointer to function to check the format of printf, etc.  This is
+   used by the backend, e.g. builtins.c.  */
+void (*check_function_format_ptr) PARAMS ((int *, tree, tree, tree)) = 0;
+
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  */
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)

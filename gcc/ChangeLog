@@ -1,3 +1,22 @@
+2000-09-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (is_valid_printf_arglist, expand_builtin_printf): New
+	functions.
+	(expand_builtin_fputs): Set `target' parameter for `expand_expr'.
+	(expand_builtin): Handle BUILT_IN_PUTCHAR, BUILT_IN_PUTS and
+	BUILT_IN_PRINTF.
+
+	* builtins.def (BUILT_IN_PUTCHAR, BUILT_IN_PUTS, BUILT_IN_PRINTF):
+	New entries.
+
+	* c-common.c (init_function_format_info): Handle __builtin_printf.
+	Set `check_function_format_ptr'.
+	(c_common_nodes_and_builtins): Set `puts_ftype' and
+	`printf_ftype'.  Declare __builtin_putchar, __builtin_puts,
+	__builtin_printf and printf.
+
+	* tree.c, tree.h (check_function_format_ptr): Declare.
+
 Tue 19-Sep-2000 18:26:57 BST  Neil Booth  <NeilB@earthling.net>
 
         * cppfiles.c (read_include_file): Take no special action for

@@ -1566,6 +1566,8 @@ init_function_format_info ()
       /* Functions from ISO/IEC 9899:1990.  */
       record_function_format (get_identifier ("printf"), NULL_TREE,
 			      printf_format_type, 1, 2);
+      record_function_format (get_identifier ("__builtin_printf"), NULL_TREE,
+			      printf_format_type, 1, 2);
       record_function_format (get_identifier ("fprintf"), NULL_TREE,
 			      printf_format_type, 2, 3);
       record_function_format (get_identifier ("sprintf"), NULL_TREE,
@@ -1608,6 +1610,8 @@ init_function_format_info ()
       record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
       record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
     }
+
+  check_function_format_ptr = check_function_format;
 }
 
 /* Record information for argument format checking.  FUNCTION_IDENT is
@@ -4006,7 +4010,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 {
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
-  tree bzero_ftype, bcmp_ftype;
+  tree bzero_ftype, bcmp_ftype, puts_ftype, printf_ftype;
   tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree sizetype_endlink;
   tree ptr_ftype, ptr_ftype_unsigned;
@@ -4161,6 +4165,18 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 				      tree_cons (NULL_TREE,
 						 traditional_cptr_type_node,
 						 traditional_len_endlink)));
+
+  /* Prototype for puts.  */
+  puts_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, const_string_type_node,
+				      endlink));
+
+  /* Prototype for printf.  */
+  printf_ftype
+    = build_function_type (integer_type_node,
+			   tree_cons (NULL_TREE, const_string_type_node,
+				      NULL_TREE));
 
   builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, BUILT_IN_NORMAL, NULL_PTR);
@@ -4348,6 +4364,14 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cos");
   builtin_function ("__builtin_cosl", ldouble_ftype_ldouble,
 		    BUILT_IN_COS, BUILT_IN_NORMAL, "cosl");
+  built_in_decls[BUILT_IN_PUTCHAR] =
+    builtin_function ("__builtin_putchar", int_ftype_int,
+		      BUILT_IN_PUTCHAR, BUILT_IN_NORMAL, "putchar");
+  built_in_decls[BUILT_IN_PUTS] =
+    builtin_function ("__builtin_puts", puts_ftype,
+		      BUILT_IN_PUTS, BUILT_IN_NORMAL, "puts");
+  builtin_function ("__builtin_printf", printf_ftype,
+		    BUILT_IN_PRINTF, BUILT_IN_NORMAL, "printf");
   /* We declare these without argument so that the initial declaration
      for these identifiers is a builtin.  That allows us to redeclare
      them later with argument without worrying about the explicit
@@ -4401,6 +4425,8 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
       builtin_function ("cos", double_ftype_double, BUILT_IN_COS,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("printf", printf_ftype, BUILT_IN_PRINTF,
 			BUILT_IN_NORMAL, NULL_PTR);
       /* We declare these without argument so that the initial
          declaration for these identifiers is a builtin.  That allows
