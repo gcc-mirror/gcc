@@ -1750,6 +1750,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			rtx range2beg = next_active_insn (label1);
 			rtx range1after, range2after;
 			rtx range1before, range2before;
+			rtx rangenext;
 
 			/* Include in each range any notes before it, to be
 			   sure that we get the line number note if any, even
@@ -1783,6 +1784,34 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			PREV_INSN (range1beg) = range2before;
 			NEXT_INSN (range1end) = range2after;
 			PREV_INSN (range2after) = range1end;
+
+			/* Check for a loop end note between the end of
+			   range2, and the next code label.  If there is one,
+			   then what we have really seen is
+			   if (foo) break; end_of_loop;
+			   and moved the break sequence outside the loop.
+			   We must move the LOOP_END note to where the
+			   loop really ends now, or we will confuse loop
+			   optimization.  */
+			for (;range2after != label2; range2after = rangenext)
+			  {
+			    rangenext = NEXT_INSN (range2after);
+			    if (GET_CODE (range2after) == NOTE
+				&& (NOTE_LINE_NUMBER (range2after)
+				    == NOTE_INSN_LOOP_END))
+			      {
+				NEXT_INSN (PREV_INSN (range2after))
+				  = rangenext;
+				PREV_INSN (rangenext)
+				  = PREV_INSN (range2after);
+				PREV_INSN (range2after) 
+				  = PREV_INSN (range1beg);
+				NEXT_INSN (range2after) = range1beg;
+				NEXT_INSN (PREV_INSN (range1beg))
+				  = range2after;
+				PREV_INSN (range1beg) = range2after;
+			      }
+			  }
 			changed = 1;
 			continue;
 		      }
