@@ -1802,8 +1802,9 @@ regmove_profitable_p ()
 	  break;
 	}
   while (tstoptab != ashl_optab && (tstoptab = ashl_optab, 1));
-#endif /* REGISTER_CONSTRAINTS */
 
   obfree (free_point);
+#endif /* REGISTER_CONSTRAINTS */
+
   return 0;
 }
