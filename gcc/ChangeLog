@@ -1,3 +1,17 @@
+2004-11-21  Jeff Law  <law@redhat.com>
+
+	* cfg.c (cached_make_edge): Use find_edge rather than an inlined
+	variant.
+	* cfgbuild.c (make_edges): Likewise.
+	* cfghooks.c (can_duplicate_block_p): Likewise.
+	* cfgloop.c (loop_latch_edge): Likewise.
+	* cfgloopmanip.c (force_single_succ_latches): Likewise.
+	* cfgrtl.c (rtl_flow_call_edges_add): Likewise.
+	* predict.c (predict_loops, propagate_freq): Likewise.
+	* tracer.c (tail_duplicate): Likewise.
+	* tree-cfg.c (disband_implicit_edges): Likewise.
+	(tree_forwarder_block_p, tree_flow_call_edges_add): Likewise.
+
 2004-11-22  Nick Clifton  <nickc@redhat.com>
 
 	* sbitmap.c (sbitmap_union_of_preds): Remove redundant

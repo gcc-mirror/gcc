@@ -271,7 +271,6 @@ make_edges (basic_block min, basic_block max, int update_p)
       enum rtx_code code;
       int force_fallthru = 0;
       edge e;
-      edge_iterator ei;
 
       if (LABEL_P (BB_HEAD (bb))
 	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
@@ -390,12 +389,10 @@ make_edges (basic_block min, basic_block max, int update_p)
 
       /* Find out if we can drop through to the next block.  */
       insn = NEXT_INSN (insn);
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	if (e->dest == EXIT_BLOCK_PTR && e->flags & EDGE_FALLTHRU)
-	  {
-	    insn = 0;
-	    break;
-	  }
+      e = find_edge (bb, EXIT_BLOCK_PTR);
+      if (e && e->flags & EDGE_FALLTHRU)
+	insn = NULL;
+
       while (insn
 	     && NOTE_P (insn)
 	     && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)

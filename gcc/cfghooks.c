@@ -675,7 +675,6 @@ bool
 can_duplicate_block_p (basic_block bb)
 {
   edge e;
-  edge_iterator ei;
 
   if (!cfg_hooks->can_duplicate_block_p)
     internal_error ("%s does not support can_duplicate_block_p.",
@@ -686,9 +685,9 @@ can_duplicate_block_p (basic_block bb)
 
   /* Duplicating fallthru block to exit would require adding a jump
      and splitting the real last BB.  */
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->dest == EXIT_BLOCK_PTR && e->flags & EDGE_FALLTHRU)
-       return false;
+  e = find_edge (bb, EXIT_BLOCK_PTR);
+  if (e && (e->flags & EDGE_FALLTHRU))
+    return false;
 
   return cfg_hooks->can_duplicate_block_p (bb);
 }

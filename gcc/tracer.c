@@ -275,12 +275,9 @@ tail_duplicate (void)
 	      && can_duplicate_block_p (bb2))
 	    {
 	      edge e;
-	      edge_iterator ei;
 	      basic_block old = bb2;
 
-	      FOR_EACH_EDGE (e, ei, bb2->preds)
-		if (e->src == bb)
-		  break;
+	      e = find_edge (bb, bb2);
 
 	      nduplicated += counts [bb2->index];
 	      bb2 = duplicate_block (bb2, e);

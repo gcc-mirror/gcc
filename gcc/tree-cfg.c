@@ -2649,11 +2649,9 @@ disband_implicit_edges (void)
 	     from cfg_remove_useless_stmts here since it violates the
 	     invariants for tree--cfg correspondence and thus fits better
 	     here where we do it anyway.  */
-	  FOR_EACH_EDGE (e, ei, bb->succs)
+	  e = find_edge (bb, bb->next_bb);
+	  if (e)
 	    {
-	      if (e->dest != bb->next_bb)
-		continue;
-
 	      if (e->flags & EDGE_TRUE_VALUE)
 		COND_EXPR_THEN (stmt) = build_empty_stmt ();
 	      else if (e->flags & EDGE_FALSE_VALUE)
@@ -3892,8 +3890,6 @@ static bool
 tree_forwarder_block_p (basic_block bb)
 {
   block_stmt_iterator bsi;
-  edge e;
-  edge_iterator ei;
 
   /* BB must have a single outgoing edge.  */
   if (EDGE_COUNT (bb->succs) != 1
@@ -3911,10 +3907,8 @@ tree_forwarder_block_p (basic_block bb)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
-  /* Successors of the entry block are not forwarders.  */
-  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-    if (e->dest == bb)
-      return false;
+  if (find_edge (ENTRY_BLOCK_PTR, bb))
+    return false;
 
   /* Now walk through the statements.  We can ignore labels, anything else
      means this is not a forwarder block.  */
@@ -5206,7 +5200,6 @@ tree_flow_call_edges_add (sbitmap blocks)
      Handle this by adding a dummy instruction in a new last basic block.  */
   if (check_last_block)
     {
-      edge_iterator ei;
       basic_block bb = EXIT_BLOCK_PTR->prev_bb;
       block_stmt_iterator bsi = bsi_last (bb);
       tree t = NULL_TREE;
@@ -5217,13 +5210,12 @@ tree_flow_call_edges_add (sbitmap blocks)
 	{
 	  edge e;
 
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->dest == EXIT_BLOCK_PTR)
-	      {
-		bsi_insert_on_edge (e, build_empty_stmt ());
-		bsi_commit_edge_inserts ();
-		break;
-	      }
+	  e = find_edge (bb, EXIT_BLOCK_PTR);
+	  if (e)
+	    {
+	      bsi_insert_on_edge (e, build_empty_stmt ());
+	      bsi_commit_edge_inserts ();
+	    }
 	}
     }
 
@@ -5260,9 +5252,8 @@ tree_flow_call_edges_add (sbitmap blocks)
 #ifdef ENABLE_CHECKING
 		  if (stmt == last_stmt)
 		    {
-		      edge_iterator ei;
-		      FOR_EACH_EDGE (e, ei, bb->succs)
-			gcc_assert (e->dest != EXIT_BLOCK_PTR);
+		      e = find_edge (bb, EXIT_BLOCK_PTR);
+		      gcc_assert (e == NULL);
 		    }
 #endif
 
