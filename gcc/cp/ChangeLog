@@ -1,3 +1,24 @@
+2004-03-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14586
+	* cp-tree.h (build_new_op): Change prototype.
+	(build_x_binary_op): Likewise.
+	* call.c (build_new_op): Add overloaded_p parameter.
+	* decl2.c (grok_array_decl): Adjust call to build_new_op.
+	* parser.c (cp_parser_binary_expression): Note that uses of
+	overloaded operators prevents an expression from being considered
+	an integral constant.
+	* pt.c (tsubst_copy_and_build): Adjust calls to build_new_op and/or
+	build_x_binary_op.
+	* semantics.c (finish_call_expr): Likewise.
+	* typeck.c (rationalize_conditional_expr): Likewise.
+	(build_x_indirect_ref): Likewise.
+	(build_x_binary_op): Likewise.
+	(build_x_unary_op): Likewise.
+	(build_x_compound_expr): Likewise.
+	(build_modify_expr): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+
 2004-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14550

@@ -1090,7 +1090,8 @@ build_x_arrow (tree expr)
   if (IS_AGGR_TYPE (type))
     {
       while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,
-				   NULL_TREE, NULL_TREE)))
+				   NULL_TREE, NULL_TREE,
+				   /*overloaded_p=*/NULL)))
 	{
 	  if (expr == error_mark_node)
 	    return error_mark_node;

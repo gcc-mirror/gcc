@@ -3371,7 +3371,8 @@ add_candidates (tree fns, tree args,
 }
 
 tree
-build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
+build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
+	      bool *overloaded_p)
 {
   struct z_candidate *candidates = 0, *cand;
   tree arglist, fnname;
@@ -3514,7 +3515,8 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 	    code = PREINCREMENT_EXPR;
 	  else
 	    code = PREDECREMENT_EXPR;	
-	  return build_new_op (code, flags, arg1, NULL_TREE, NULL_TREE);
+	  return build_new_op (code, flags, arg1, NULL_TREE, NULL_TREE,
+			       overloaded_p);
 	  
 	  /* The caller will deal with these.  */
 	case ADDR_EXPR:
@@ -3546,6 +3548,9 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3)
 
   if (TREE_CODE (cand->fn) == FUNCTION_DECL)
     {
+      if (overloaded_p)
+	*overloaded_p = true;
+
       if (warn_synth
 	  && fnname == ansi_assopname (NOP_EXPR)
 	  && DECL_ARTIFICIAL (cand->fn)

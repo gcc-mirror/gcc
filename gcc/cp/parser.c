@@ -13880,12 +13880,26 @@ cp_parser_binary_expression (cp_parser* parser,
 	   ++map_node)
 	if (map_node->token_type == token->type)
 	  {
+	    /* Assume that an overloaded operator will not be used.  */
+	    bool overloaded_p = false;
+
 	    /* Consume the operator token.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the right-hand side of the expression.  */
 	    rhs = (*fn) (parser);
 	    /* Build the binary tree node.  */
-	    lhs = build_x_binary_op (map_node->tree_type, lhs, rhs);
+	    lhs = build_x_binary_op (map_node->tree_type, lhs, rhs, 
+				     &overloaded_p);
+	    /* If the binary operator required the use of an
+	       overloaded operator, then this expression cannot be an
+	       integral constant-expression.  An overloaded operator
+	       can be used even if both operands are otherwise
+	       permissible in an integral constant-expression if at
+	       least one of the operands is of enumeration type.  */
+	    if (overloaded_p
+		&& (cp_parser_non_integral_constant_expression 
+		    (parser, "calls to overloaded operators")))
+	      lhs = error_mark_node;
 	    break;
 	  }
 

@@ -1493,7 +1493,8 @@ rationalize_conditional_expr (enum tree_code code, tree t)
 	build_conditional_expr (build_x_binary_op ((TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
 						   TREE_OPERAND (t, 0),
-						   TREE_OPERAND (t, 1)),
+						   TREE_OPERAND (t, 1),
+						   /*overloaded_p=*/NULL),
 			    build_unary_op (code, TREE_OPERAND (t, 0), 0),
 			    build_unary_op (code, TREE_OPERAND (t, 1), 0));
     }
@@ -2026,7 +2027,7 @@ build_x_indirect_ref (tree expr, const char *errorstring)
     }
 
   rval = build_new_op (INDIRECT_REF, LOOKUP_NORMAL, expr, NULL_TREE,
-		       NULL_TREE);
+		       NULL_TREE, /*overloaded_p=*/NULL);
   if (!rval)
     rval = build_indirect_ref (expr, errorstring);
 
@@ -2654,7 +2655,8 @@ convert_arguments (tree typelist, tree values, tree fndecl, int flags)
    conversions on the operands.  CODE is the kind of expression to build.  */
 
 tree
-build_x_binary_op (enum tree_code code, tree arg1, tree arg2)
+build_x_binary_op (enum tree_code code, tree arg1, tree arg2, 
+		   bool *overloaded_p)
 {
   tree orig_arg1;
   tree orig_arg2;
@@ -2675,7 +2677,8 @@ build_x_binary_op (enum tree_code code, tree arg1, tree arg2)
   if (code == DOTSTAR_EXPR)
     expr = build_m_component_ref (arg1, arg2);
   else
-    expr = build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE);
+    expr = build_new_op (code, LOOKUP_NORMAL, arg1, arg2, NULL_TREE, 
+			 overloaded_p);
 
   if (processing_template_decl && expr != error_mark_node)
     return build_min_non_dep (code, expr, orig_arg1, orig_arg2);
@@ -3532,7 +3535,8 @@ build_x_unary_op (enum tree_code code, tree xarg)
 	  || (TREE_CODE (xarg) == OFFSET_REF)))
     /* Don't look for a function.  */;
   else
-    exp = build_new_op (code, LOOKUP_NORMAL, xarg, NULL_TREE, NULL_TREE);
+    exp = build_new_op (code, LOOKUP_NORMAL, xarg, NULL_TREE, NULL_TREE,
+			/*overloaded_p=*/NULL);
   if (!exp && code == ADDR_EXPR)
     {
       /*  A pointer to member-function can be formed only by saying
@@ -4372,7 +4376,8 @@ build_x_compound_expr (tree op1, tree op2)
       op2 = build_non_dependent_expr (op2);
     }
 
-  result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2, NULL_TREE);
+  result = build_new_op (COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2, NULL_TREE,
+			 /*overloaded_p=*/NULL);
   if (!result)
     result = build_compound_expr (op1, op2);
 
@@ -5068,7 +5073,8 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  else
 	    {
 	      result = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL,
-				     lhs, rhs, make_node (NOP_EXPR));
+				     lhs, rhs, make_node (NOP_EXPR),
+				     /*overloaded_p=*/NULL);
 	      if (result == NULL_TREE)
 		return error_mark_node;
 	      return result;
@@ -5280,7 +5286,8 @@ build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (modifycode != NOP_EXPR)
     {
       tree rval = build_new_op (MODIFY_EXPR, LOOKUP_NORMAL, lhs, rhs,
-				make_node (modifycode));
+				make_node (modifycode),
+				/*overloaded_p=*/NULL);
       if (rval)
 	return rval;
     }
