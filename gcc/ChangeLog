@@ -1,3 +1,10 @@
+2000-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ONEWS: New file with the current contents of NEWS up to EGCS
+	1.1.
+	* NEWS: Generate automatically from online release notes from EGCS
+	1.0 to GCC 2.95.2, using ../contrib/gennews.
+
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
         * tradcif.y: Move lexptr to top of file.  Add rule to handle
