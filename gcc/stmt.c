@@ -3837,7 +3837,6 @@ expand_decl (decl)
 	   && !(flag_float_store
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
-	   && ! TREE_ADDRESSABLE (decl)
 	   && (DECL_REGISTER (decl) || optimize)
 	   /* if -fcheck-memory-usage, check all variables.  */
 	   && ! current_function_check_memory_usage)
@@ -3855,6 +3854,10 @@ expand_decl (decl)
 			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
 
       maybe_set_unchanging (DECL_RTL (decl), decl);
+
+      /* If something wants our address, try to use ADDRESSOF.  */
+      if (TREE_ADDRESSABLE (decl))
+	put_var_into_stack (decl);
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST

@@ -1,3 +1,9 @@
+2000-11-11  Jason Merrill  <jason@redhat.com>
+
+	* function.c (assign_parms): If TREE_ADDRESSABLE is set, try to 
+	give the parm a register and then call put_var_into_stack.
+	* stmt.c (expand_decl): Likewise.
+
 2000-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi: Adjust wording.
