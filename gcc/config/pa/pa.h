@@ -1015,11 +1015,15 @@ extern enum cmp_type hppa_branch_type;
 #endif
 
 #define ASM_OUTPUT_FUNCTION_PREFIX(FILE, NAME) \
-  if (!TARGET_PORTABLE_RUNTIME && TARGET_GAS && in_section == in_text) \
-    fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
-  else if (! TARGET_PORTABLE_RUNTIME && TARGET_GAS)			\
-    fprintf (FILE,							\
-	     "\t.SUBSPA %s\n", NAME);
+  {									\
+    char *name;								\
+    STRIP_NAME_ENCODING (name, NAME);					\
+    if (!TARGET_PORTABLE_RUNTIME && TARGET_GAS && in_section == in_text) \
+      fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
+    else if (! TARGET_PORTABLE_RUNTIME && TARGET_GAS)			\
+      fprintf (FILE,							\
+	       "\t.SUBSPA %s\n", name);				\
+  }
     
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
