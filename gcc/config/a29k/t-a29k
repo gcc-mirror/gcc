@@ -1,0 +1,5 @@
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
+
+# We need crt0.o.
+LIBGCC1_TEST =
