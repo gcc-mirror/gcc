@@ -1,3 +1,9 @@
+Sun Nov 15 15:09:56 1998  Anthony Green  <green@hoser.cygnus.com>
+
+	* Make-lang.in: Fix reference to srcdir.
+	* jv-scan.c: Add missing xmalloc prototype.
+	* jvgenmain.c: Ditto.
+
 Sun Nov 15 14:36:29 1998  Per Bothner  <bothner@cygnus.com>
 
 	* decl.c (error_mark_node), java-tree.h:  New global.
@@ -22,6 +28,7 @@ Sun Nov 15 14:36:29 1998  Per Bothner  <bothner@cygnus.com>
 	(- case PREDECREMENT_EXPR etc):  Remove redundant NOTE_PUSH.
 	(generate_classfile):  More robust for abstract methods.
 
+>>>>>>> 1.51
 Sun Nov 15 13:52:39 1998  Anthony Green  <green@cygnus.com>
 
 	* Makefile.in: jv-scan and jvgenmain all require libiberty.

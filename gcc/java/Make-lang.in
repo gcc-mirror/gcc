@@ -127,7 +127,7 @@ gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS)
 
 # This must be kept in sync with dependencies in Makefile.in.
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
-       $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c $(src)/../libiberty/xmalloc.c $(src)/../libiberty/xstrdup.c
+       $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c $(srcdir)/../libiberty/xmalloc.c $(srcdir)/../libiberty/xstrdup.c
 
 jv-scan$(exeext): $(JV_SCAN_SOURCES) stamp-objlist $(LIBDEPS)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)

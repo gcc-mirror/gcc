@@ -34,6 +34,7 @@ void fatal VPROTO((char *s, ...));
 void warning VPROTO((char *s, ...));
 void gcc_obstack_init PROTO ((struct obstack *obstack));
 extern void reset_report PROTO ((void));
+extern char *xmalloc PROTO((size_t));
 
 #define JC1_LITE
 #include "parse.h"
