@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+## Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -47,9 +47,8 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
-	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@ @DEBUG_FLAGS@ 
+	@SECTION_FLAGS@ @EXTRA_CXX_FLAGS@ 
 
 # Warning flags to use.
 WARN_CXXFLAGS = \

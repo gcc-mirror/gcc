@@ -1,3 +1,7 @@
+2002-12-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* Makefile.am (AM_CFLAGS): Remove DEBUG_FLAGS.
+
 2001-02-03  Alexandre Oliva  <aoliva@redhat.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
