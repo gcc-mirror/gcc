@@ -1166,52 +1166,52 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   dnl Check if a valid thread package
   case x${enable_cstdio_flag} in
 	xlibio | x | xno | xnone | xyes)
-		# default
-		CSTDIO_H=c_io_libio.h
-		CSTDIO_CC=c_io_libio.cc
- 		AC_MSG_RESULT(libio)
+	  # default
+	  CSTDIO_H=config/c_io_libio.h
+	  CSTDIO_CC=config/c_io_libio.cc
+ 	  AC_MSG_RESULT(libio)
 
-		# see if we are on a system with libio native (ie, linux)
-  		AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
+	  # see if we are on a system with libio native (ie, linux)
+  	  AC_CHECK_HEADER(libio.h,  has_libio=yes, has_libio=no)
 
-		# bkoz XXX hack hack need version checks, this is temporary
-		has_libio=no
+	  # bkoz XXX hack hack need version checks, this is temporary
+	  has_libio=no
 
-  		if test $has_libio = "yes"; then
-   		  BUILD_LIBIO_INCLUDE=
-		  need_libio=no
-  		else
-   		  BUILD_LIBIO_INCLUDE='-I../libio'
-		  need_libio=yes
-  		fi
-  		AC_SUBST(BUILD_LIBIO_INCLUDE)
+  	  if test $has_libio = "yes"; then
+   	    BUILD_LIBIO_INCLUDE=
+	    need_libio=no
+  	  else
+   	  BUILD_LIBIO_INCLUDE='-I../libio'
+     	    need_libio=yes
+  	  fi
+  	  AC_SUBST(BUILD_LIBIO_INCLUDE)
 
-		# see if the _G_config.h header needs to be built. 
-		# NB: This replaces the _G_CONFIG_H machinery in libio-v2
-		AC_CHECK_HEADER(_G_config.h,  has_gconf_h=yes, has_gconf_h=no)
-  		AM_CONDITIONAL(GLIBCPP_NEED_LIBIO_CONFIG_H, test "$has_gconf_h" = no)
-		# bkoz XXX hack need to add support for non-glibc systems here
-	 	has_gconf=no
+	  # see if the _G_config.h header needs to be built. 
+	  # NB: This replaces the _G_CONFIG_H machinery in libio-v2
+	  AC_CHECK_HEADER(_G_config.h,  has_gconf_h=yes, has_gconf_h=no)
+  	  AM_CONDITIONAL(GLIBCPP_NEED_LIBIO_CONFIG_H, test "$has_gconf_h" = no)
+	  # bkoz XXX hack need to add support for non-glibc systems here
+	   has_gconf=no
 
-		# bkoz XXX need to add checks for this
-		need_wlibio=yes
-		;;
+	  # bkoz XXX need to add checks for this
+	  need_wlibio=yes
+	  ;;
         xwince)
-                CSTDIO_H=c_io_wince.h
-                CSTDIO_CC=c_io_wince.cc
-                AC_MSG_RESULT(wince)
+    	  CSTDIO_H=config/c_io_wince.h
+          CSTDIO_CC=config/c_io_wince.cc
+          AC_MSG_RESULT(wince)
 
-                need_libio=no
-                BUILD_LIBIO_INCLUDE=
-                AC_SUBST(BUILD_LIBIO_INCLUDE)
-                ;;
+          need_libio=no
+          BUILD_LIBIO_INCLUDE=
+          AC_SUBST(BUILD_LIBIO_INCLUDE)
+          ;;
 	*)
-		echo "$enable_cstdio is an unknown io package" 1>&2
-		exit 1
-		;;
+	  echo "$enable_cstdio is an unknown io package" 1>&2
+	  exit 1
+	  ;;
   esac
-  AC_SUBST(CSTDIO_H)
-  AC_SUBST(CSTDIO_CC)
+  AC_LINK_FILES($CSTDIO_H, bits/c++io.h)
+  AC_LINK_FILES($CSTDIO_CC, src/c++io.cc)
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
 ])
@@ -1306,6 +1306,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   AC_SUBST(THREADDEPS)
   AC_SUBST(THREADOBJS)
   AC_SUBST(THREADSPEC)
+  AC_LINK_FILES(config/$THREADH, bits/c++threads.h)
 ])
 
 

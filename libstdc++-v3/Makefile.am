@@ -32,9 +32,11 @@ gxx_include_dir=$(includedir)/g++
 SUBDIRS = math libio src
 
 check:  $(top_builddir)/mkcheck
+	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 0 $(top_builddir) $(top_srcdir)
 
 check-install: $(top_builddir)/mkcheck
+	chmod +x  $(top_builddir)/mkcheck
 	$(top_builddir)/mkcheck 1 $(top_builddir) $(top_srcdir) $(prefix)
 
 #all-local:  stamp-rebuild
