@@ -1,3 +1,15 @@
+2003-06-10  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Add arm-wince-pe target.
+	* config/arm/pe.h (MULTILIB_DEFAULTS): Define.
+        Add comment about default apcs26 support.
+	* config/arm/t-pe (MULTILIB_OPTIONS): Add an -mapcs-32
+	multilib.
+        (MULTILIB_DIRNAMES): Add 'apcs32'.
+	* config/arm/t-wince-pe: New makefile fragment.
+	* config/arm/wince-pe.h: New file.  Overrides a few definitions
+	in arm/pe.h
+
 2003-06-10  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin): Optimize cos(-x) as cos(x).
