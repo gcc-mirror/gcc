@@ -184,8 +184,6 @@ ffebad_start_ (bool lex_override, ffebad errnum, ffebadSeverity sev,
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
   {
-    extern int inhibit_warnings;	/* From toplev.c. */
-
     switch (ffebad_severity_)
       {				/* Tell toplev.c about this message. */
       case FFEBAD_severityINFORMATIONAL:

@@ -15648,7 +15648,6 @@ static void append_include_chain (struct file_name_list *first,
 static FILE *open_include_file (char *filename,
 				struct file_name_list *searchptr);
 static void print_containing_files (ffebadSeverity sev);
-static const char *skip_redundant_dir_prefix (const char *);
 static char *read_filename_string (int ch, FILE *f);
 static struct file_name_map *read_name_map (const char *dirname);
 
