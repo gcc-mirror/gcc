@@ -21,7 +21,7 @@
 
 2004-12-23  Alexandre Oliva  <aoliva@redhat.com>
 
-	PR target/16891
+	PR target/16819
 	* gcc.dg/empty2.c: New.
 
 2004-12-23  Richard Henderson  <rth@redhat.com>
