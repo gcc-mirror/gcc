@@ -3149,6 +3149,21 @@ __throw_type_match (void *catch_type, void *throw_type, void *obj)
  return 0;
 }
 
+/* Throw stub routine.
+
+   This is work in progress, but not completed yet.  */
+
+void
+__throw ()
+{
+  abort ();
+}
+
+/* This value identifies the place from which an exception is being
+   thrown.  */
+
+void *__eh_pc;
+
 void
 __empty ()
 {

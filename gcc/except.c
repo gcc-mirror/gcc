@@ -165,9 +165,10 @@ struct label_node *caught_return_label_stack = NULL;
 
 struct label_node *false_label_stack = NULL;
 
-/* The rtx for the saved PC value.  */
+/* The rtx and the tree for the saved PC value.  */
 
 rtx eh_saved_pc_rtx;
+tree eh_saved_pc;
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
@@ -450,6 +451,7 @@ void
 expand_internal_throw_indirect (context)
      rtx context;
 {
+  assemble_external (eh_saved_pc);
   emit_move_insn (eh_saved_pc_rtx, context);
   emit_throw ();
 }
@@ -759,6 +761,8 @@ end_eh_unwinder ()
     return;
 #endif
 
+  assemble_external (eh_saved_pc);
+
   expr = make_node (RTL_EXPR);
   TREE_TYPE (expr) = void_type_node;
   RTL_EXPR_RTL (expr) = const0_rtx;
@@ -955,8 +959,13 @@ check_exception_handler_labels ()
 void
 init_eh ()
 {
-  eh_saved_pc_rtx = gen_rtx (MEM, ptr_mode,
-			     gen_rtx (SYMBOL_REF, Pmode, "__eh_pc"));
+  tree type = build_pointer_type (make_node (VOID_TYPE));
+
+  eh_saved_pc = build_decl (VAR_DECL, get_identifier ("__eh_pc"), type);
+  DECL_EXTERNAL (eh_saved_pc) = 1;
+  TREE_PUBLIC (eh_saved_pc) = 1;
+  make_decl_rtl (eh_saved_pc, NULL_PTR, 1);
+  eh_saved_pc_rtx = DECL_RTL (eh_saved_pc);
 }
 
 /* Initialize various EH things.  */
