@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "convert.h"
 #include "lex.h"
 #include "toplev.h"
+#include "output.h"
 
 extern tree bit_one_node, bit_zero_node;
 extern tree string_one_type_node;
