@@ -1015,7 +1015,7 @@ fix_with_system (p_fixd, pz_fix_file, pz_file_source, pz_temp_file)
       /*
        *  add the file machinations.
        */
-#ifdef SEPARATE_FIX_PROC
+#ifdef __MSDOS__
       sprintf (pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file );
 #else
       sprintf (pz_scan, z_cmd_fmt, pz_file_source, pz_temp_file,
