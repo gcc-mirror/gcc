@@ -1,3 +1,8 @@
+2004-07-20  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.c (sparc_rtx_costs case MULT): Emit
+	enormous cost if not TARGET_HARD_MUL.
+
 2004-07-20  Andrew Pinski  <apinski@apple.com>
 
 	PR target/16557
