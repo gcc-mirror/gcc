@@ -2268,6 +2268,24 @@ simplify_subreg (outermode, op, innermode, byte)
   if (outermode == innermode && !byte)
     return op;
 
+  /* Simplify subregs of vector constants.  */
+  if (GET_CODE (op) == CONST_VECTOR)
+    {
+      int offset = byte / UNITS_PER_WORD;
+      rtx elt;
+
+      /* This shouldn't happen, but let's not do anything stupid.  */
+      if (GET_MODE_INNER (innermode) != outermode)
+	return NULL_RTX;
+
+      elt = CONST_VECTOR_ELT (op, offset);
+
+      /* ?? We probably don't need this copy_rtx because constants
+	 can be shared.  ?? */
+
+      return copy_rtx (elt);
+    }
+
   /* Attempt to simplify constant to non-SUBREG expression.  */
   if (CONSTANT_P (op))
     {

@@ -120,6 +120,11 @@ static void emit_cmp_and_jump_insn_1 PARAMS ((rtx, rtx, enum machine_mode,
 					    enum rtx_code, int, rtx));
 static void prepare_float_lib_cmp PARAMS ((rtx *, rtx *, enum rtx_code *,
 					 enum machine_mode *, int *));
+static rtx expand_vector_binop PARAMS ((enum machine_mode, optab,
+					rtx, rtx, rtx, int,
+					enum optab_methods));
+static rtx expand_vector_unop PARAMS ((enum machine_mode, optab, rtx, rtx,
+				       int));
 
 /* Add a REG_EQUAL note to the last insn in INSNS.  TARGET is being set to
    the result of operation CODE applied to OP0 (and OP1 if it is a binary
@@ -1531,6 +1536,12 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       delete_insns_since (last);
     }
 
+  /* Open-code the vector operations if we have no hardware support
+     for them.  */
+  if (class == MODE_VECTOR_INT || class == MODE_VECTOR_FLOAT)
+    return expand_vector_binop (mode, binoptab, op0, op1, target,
+				unsignedp, methods);
+
   /* We need to open-code the complex type operations: '+, -, * and /' */
 
   /* At this point we allow operations between two similar complex
@@ -1899,6 +1910,125 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
   delete_insns_since (entry_last);
   return 0;
+}
+
+/* Like expand_binop, but for open-coding vectors binops.  */
+
+static rtx
+expand_vector_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
+     enum machine_mode mode;
+     optab binoptab;
+     rtx op0, op1;
+     rtx target;
+     int unsignedp;
+     enum optab_methods methods;
+{
+  enum machine_mode submode;
+  int elts, i;
+  rtx t, a, b, res, seq;
+  enum mode_class class;
+
+  class = GET_MODE_CLASS (mode);
+
+  submode = GET_MODE_INNER (mode);
+  elts = GET_MODE_NUNITS (mode);
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  start_sequence ();
+
+  /* FIXME: Optimally, we should try to do this in narrower vector
+     modes if available.  E.g. When trying V8SI, try V4SI, else
+     V2SI, else decay into SI.  */
+
+  switch (binoptab->code)
+    {
+    case PLUS:
+    case MINUS:
+    case MULT:
+    case DIV:
+      for (i = 0; i < elts; ++i)
+	{
+	  t = simplify_gen_subreg (submode, target, mode,
+				   i * UNITS_PER_WORD);
+	  a = simplify_gen_subreg (submode, op0, mode,
+				   i * UNITS_PER_WORD);
+	  b = simplify_gen_subreg (submode, op1, mode,
+				   i * UNITS_PER_WORD);
+
+	  if (binoptab->code == DIV)
+	    {
+	      if (class == MODE_VECTOR_FLOAT)
+		res = expand_binop (submode, binoptab, a, b, t,
+				    unsignedp, methods);
+	      else
+		res = expand_divmod (0, TRUNC_DIV_EXPR, submode,
+				     a, b, t, unsignedp);
+	    }
+	  else
+	    res = expand_binop (submode, binoptab, a, b, t,
+				unsignedp, methods);
+
+	  if (res == 0)
+	    break;
+
+	  emit_move_insn (t, res);
+	}
+      break;
+
+    default:
+      abort ();
+    }
+
+  seq = get_insns ();
+  end_sequence ();
+  emit_insn (seq);
+
+  return target;
+}
+
+/* Like expand_unop but for open-coding vector unops.  */
+
+static rtx
+expand_vector_unop (mode, unoptab, op0, target, unsignedp)
+     enum machine_mode mode;
+     optab unoptab;
+     rtx op0;
+     rtx target;
+     int unsignedp;
+{
+  enum machine_mode submode;
+  int elts, i;
+  rtx t, a, res, seq;
+
+  submode = GET_MODE_INNER (mode);
+  elts = GET_MODE_NUNITS (mode);
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  start_sequence ();
+
+  /* FIXME: Optimally, we should try to do this in narrower vector
+     modes if available.  E.g. When trying V8SI, try V4SI, else
+     V2SI, else decay into SI.  */
+
+  for (i = 0; i < elts; ++i)
+    {
+      t = simplify_gen_subreg (submode, target, mode, i * UNITS_PER_WORD);
+      a = simplify_gen_subreg (submode, op0, mode, i * UNITS_PER_WORD);
+
+      res = expand_unop (submode, unoptab, a, t, unsignedp);
+
+      emit_move_insn (t, res);
+    }
+
+  seq = get_insns ();
+  end_sequence ();
+  emit_insn (seq);
+
+  return target;
 }
 
 /* Expand a binary operator which has both signed and unsigned forms.
@@ -2323,6 +2453,9 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
 
       return target;
     }
+
+  if (class == MODE_VECTOR_FLOAT || class == MODE_VECTOR_INT)
+    return expand_vector_unop (mode, unoptab, op0, target, unsignedp);
 
   /* It can't be done in this mode.  Can we do it in a wider mode?  */
 

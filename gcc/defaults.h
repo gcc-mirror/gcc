@@ -513,6 +513,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
 #endif
 
+#ifndef VECTOR_MODE_SUPPORTED_P
+#define VECTOR_MODE_SUPPORTED_P(MODE) 0
+#endif
+
 /* Determine whether __cxa_atexit, rather than atexit, is used to
    register C++ destructors for local statics and global objects. */
 #ifndef DEFAULT_USE_CXA_ATEXIT
