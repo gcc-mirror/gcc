@@ -1,3 +1,9 @@
+2003-09-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11413
+	* parser.c (cp_parser_nested_name_specifier_opt): Issue correct
+	error message when parser->scope is global_namespace.
+
 2003-09-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cp-tree.h, name-lookup.h, decl.c, decl2.c: Remove reference to
