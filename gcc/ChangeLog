@@ -1,3 +1,8 @@
+Wed Sep 23 05:43:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads_address): Deal with address which is
+	an AND; clean up return values some more.
+
 Fri Sep 11 13:02:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (purge_addressof_1): Properly copy flags when making MEM.
