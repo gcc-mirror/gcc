@@ -572,15 +572,15 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".c++", "#C++"},
-  {".C", "#C++"}, {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
-  {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
-  {".fpp", "#Fortran"},
-  {".p", "#Pascal"}, {".pas", "#Pascal"},
+  {".cc", {"#C++"}}, {".cxx", {"#C++"}}, {".cpp", {"#C++"}}, {".c++", {"#C++"}},
+  {".C", {"#C++"}}, {".ads", {"#Ada"}}, {".adb", {"#Ada"}}, {".ada", {"#Ada"}},
+  {".f", {"#Fortran"}}, {".for", {"#Fortran"}}, {".F", {"#Fortran"}},
+  {".fpp", {"#Fortran"}},
+  {".p", {"#Pascal"}}, {".pas", {"#Pascal"}},
   /* Next come the entries for C.  */
-  {".c", "@c"},
+  {".c", {"@c"}},
   {"@c",
-   "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -591,7 +591,7 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
+    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -600,9 +600,9 @@ static struct compiler default_compilers[] =
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"},
+                      %{!pipe:%g.s} %A\n }}}}"}},
   {"-",
-   "%{E:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"%{E:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -613,10 +613,10 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}}\
-    %{!E:%e-E required when input is from standard input}"},
-  {".m", "@objective-c"},
+    %{!E:%e-E required when input is from standard input}"}},
+  {".m", {"@objective-c"}},
   {"@objective-c",
-   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -627,7 +627,7 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
+    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
@@ -637,10 +637,10 @@ static struct compiler default_compilers[] =
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"},
-  {".h", "@c-header"},
+                      %{!pipe:%g.s} %A\n }}}}"}},
+  {".h", {"@c-header"}},
   {"@c-header",
-   "%{!E:%eCompilation of header file requested} \
+   {"%{!E:%eCompilation of header file requested} \
     cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
@@ -651,10 +651,10 @@ static struct compiler default_compilers[] =
         %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %W{o*}"},
-  {".i", "@cpp-output"},
+        %i %W{o*}"}},
+  {".i", {"@cpp-output"}},
   {"@cpp-output",
-   "%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
+   {"%{!M:%{!MM:%{!E:cc1 %i %1 %{!Q:-quiet} %{d*} %{m*} %{a*}\
 			%{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi}\
 			%{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
 			%{aux-info*}\
@@ -662,15 +662,15 @@ static struct compiler default_compilers[] =
 			%{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 		     %{!S:as %a %Y\
 			     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			     %{!pipe:%g.s} %A\n }}}}"},
-  {".s", "@assembler"},
+			     %{!pipe:%g.s} %A\n }}}}"}},
+  {".s", {"@assembler"}},
   {"@assembler",
-   "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
+   {"%{!M:%{!MM:%{!E:%{!S:as %a %Y\
 		            %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-			    %i %A\n }}}}"},
-  {".S", "@assembler-with-cpp"},
+			    %i %A\n }}}}"}},
+  {".S", {"@assembler-with-cpp"}},
   {"@assembler-with-cpp",
-   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {"cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
@@ -679,12 +679,12 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-   "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
+    "%{!M:%{!MM:%{!E:%{!S:as %a %Y\
                     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-		    %{!pipe:%g.s} %A\n }}}}"},
+		    %{!pipe:%g.s} %A\n }}}}"}},
 #include "specs.h"
   /* Mark end of table */
-  {0, 0}
+  {0, {0}}
 };
 
 /* Number of elements in default_compilers, not counting the terminator.  */
