@@ -43,17 +43,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* Augment TARGET_SWITCHES with the MXDB options.  */
 #define MASK_STANDARD		0x40000000 /* Retain standard information */
-#define MASK_LEGEND		0x20000000 /* Retain legend information */
+#define MASK_NOLEGEND		0x20000000 /* Discard legend information */
 #define MASK_EXTERNAL_LEGEND	0x10000000 /* Make external legends */
 
 #define TARGET_STANDARD		  (target_flags & MASK_STANDARD)
-#define TARGET_LEGEND		  (target_flags & MASK_LEGEND)
+#define TARGET_NOLEGEND		  (target_flags & MASK_NOLEGEND)
 #define TARGET_EXTERNAL_LEGEND	  (target_flags & MASK_EXTERNAL_LEGEND)
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
     { "standard",			 MASK_STANDARD }, \
-    { "legend",				 MASK_LEGEND }, \
+    { "legend",				-MASK_NOLEGEND }, \
+    { "no-legend",			 MASK_NOLEGEND }, \
     { "external-legend",		 MASK_EXTERNAL_LEGEND }, \
     /* the following is used only in the *_SPEC's */ \
     { "keep-coff",			 0 },
@@ -92,13 +93,14 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC "\
 %{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
 %{!msvr3:%{!m88110:-KV3 }%{m88110:-KV04.00 }}}\
-%{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-s\"%i\"\
+%{g:\
+%{mno-legend:-Wc,off}\
+%{!mno-legend:-Wc,-fix-bb,-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
 %{mexternal-legend:,-external}\
-%{mocs-frame-position:,-ocs}}"
+%{mocs-frame-position:,-ocs}}}"
 
 /* Override svr4.h.  */
 #undef	ASM_FINAL_SPEC
@@ -120,8 +122,8 @@ Boston, MA 02111-1307, USA.  */
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
-		   %{shared:-G -dy -z text} \
-		   %{symbolic:-Bsymbolic -G -dy -z text} \
+		   %{shared:-G -dy} \
+		   %{symbolic:-Bsymbolic -G -dy} \
 		   %{pg:-L/usr/lib/libp}%{p:-L/usr/lib/libp}"
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
@@ -153,8 +155,7 @@ Boston, MA 02111-1307, USA.  */
 	else								\
 	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "03.00");   \
       }									\
-    if (write_symbols != NO_DEBUG					\
-	&& ! (TARGET_STANDARD && ! TARGET_LEGEND))			\
+    if (write_symbols != NO_DEBUG && !TARGET_NOLEGEND)			\
       {									\
 	fprintf (FILE, ";legend_info -fix-bb -h\"gcc-%s\" -s\"%s\"",	\
 		 VERSION_STRING, main_input_filename);			\
