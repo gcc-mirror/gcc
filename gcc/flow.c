@@ -177,6 +177,12 @@ int *reg_basic_block;
 
 int *reg_n_refs;
 
+/* Indexed by N; says whether a psuedo register N was ever used
+   within a SUBREG that changes the size of the reg.  Some machines prohibit
+   such objects to be in certain (usually floating-point) registers.  */
+
+char *reg_changes_size;
+
 /* Indexed by N, gives number of places register N dies.
    This information remains valid for the rest of the compilation
    of the current function; it is used to control register allocation.  */
@@ -1182,6 +1188,9 @@ allocate_for_life_analysis ()
 
   reg_n_deaths = (short *) oballoc (max_regno * sizeof (short));
   bzero ((char *) reg_n_deaths, max_regno * sizeof (short));
+
+  reg_changes_size = (char *) oballoc (max_regno * sizeof (char));
+  bzero (reg_changes_size, max_regno * sizeof (char));;
 
   reg_live_length = (int *) oballoc (max_regno * sizeof (int));
   bzero ((char *) reg_live_length, max_regno * sizeof (int));
@@ -2256,6 +2265,18 @@ mark_used_regs (needed, live, x, final, insn)
 	find_auto_inc (needed, x, insn);
 #endif
       break;
+
+    case SUBREG:
+      if (GET_CODE (SUBREG_REG (x)) == REG
+	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER
+	  && (GET_MODE_SIZE (GET_MODE (x))
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	reg_changes_size[REGNO (SUBREG_REG (x))] = 1;
+
+      /* While we're here, optimize this case.  */
+      x = SUBREG_REG (x);
+
+      /* ... fall through ... */
 
     case REG:
       /* See a register other than being set
