@@ -70,7 +70,10 @@ __extension__ ({							\
 
 #ifdef _STDARG_H /* stdarg.h support */
 
-#define va_start(AP,LASTARG) __va_start_common (AP, 0)
+/* Calling __builtin_next_arg gives the proper error message if LASTARG is
+   not indeed the last argument.  */
+#define va_start(AP,LASTARG) \
+  (__builtin_next_arg (LASTARG), __va_start_common (AP, 0))
 
 #else /* varargs.h support */
 
