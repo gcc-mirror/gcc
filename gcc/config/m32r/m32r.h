@@ -1524,7 +1524,7 @@ L2:     .word STATIC
 #define DBX_OUTPUT_SOURCE_LINE(file, line, counter)			\
   do									\
     {									\
-      rtx begin_label = XEXP (DECL_RTL (current_function_decl), 0);	\
+      rtx begin_label = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);\
       char label[64];							\
       ASM_GENERATE_INTERNAL_LABEL (label, "LM", counter);		\
 									\
