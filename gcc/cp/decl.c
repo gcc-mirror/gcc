@@ -7127,11 +7127,16 @@ tree
 groktypename (typename)
      tree typename;
 {
+  tree specs, attrs;
+  tree type;
   if (TREE_CODE (typename) != TREE_LIST)
     return typename;
-  return grokdeclarator (TREE_VALUE (typename),
-			 TREE_PURPOSE (typename),
-			 TYPENAME, 0, NULL);
+  split_specs_attrs (TREE_PURPOSE (typename), &specs, &attrs);
+  type = grokdeclarator (TREE_VALUE (typename), specs,
+			 TYPENAME, 0, &attrs);
+  if (attrs)
+    cplus_decl_attributes (&type, attrs, 0);
+  return type;
 }
 
 /* Decode a declarator in an ordinary declaration or data definition.
@@ -11997,8 +12002,9 @@ grokparms (first_parm)
   for (parm = first_parm; parm != NULL_TREE; parm = chain)
     {
       tree type = NULL_TREE;
-      register tree decl = TREE_VALUE (parm);
+      tree decl = TREE_VALUE (parm);
       tree init = TREE_PURPOSE (parm);
+      tree specs, attrs;
 
       chain = TREE_CHAIN (parm);
       /* @@ weak defense against parse errors.  */
@@ -12016,10 +12022,14 @@ grokparms (first_parm)
       if (parm == void_list_node)
         break;
 
-      decl = grokdeclarator (TREE_VALUE (decl), TREE_PURPOSE (decl),
-		     PARM, init != NULL_TREE, NULL);
+      split_specs_attrs (TREE_PURPOSE (decl), &specs, &attrs);
+      decl = grokdeclarator (TREE_VALUE (decl), specs,
+			     PARM, init != NULL_TREE, &attrs);
       if (! decl || TREE_TYPE (decl) == error_mark_node)
         continue;
+
+      if (attrs)
+	cplus_decl_attributes (&decl, attrs, 0);
 
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))

@@ -301,7 +301,7 @@ cp_parse_init ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER PFUNCNAME TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
+%left IDENTIFIER PFUNCNAME TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC CV_QUALIFIER ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD ATTRIBUTE
 
 %left '{' ',' ';'
 
@@ -1938,11 +1938,6 @@ declmods:
 		}
 	| declmods attributes
 		{ $$.t = hash_tree_cons ($2, NULL_TREE, $1.t); }
-	| attributes  %prec EMPTY
-		{
-		  $$.t = hash_tree_cons ($1, NULL_TREE, NULL_TREE);
-		  $$.new_type_flag = 0; $$.lookups = NULL_TREE;
-		}
 	;
 
 /* Used instead of declspecs where storage classes are not allowed
@@ -2818,6 +2813,12 @@ nonempty_cv_qualifiers:
 		  $$.new_type_flag = 0; }
 	| nonempty_cv_qualifiers CV_QUALIFIER
 		{ $$.t = hash_tree_cons (NULL_TREE, $2, $1.t); 
+		  $$.new_type_flag = $1.new_type_flag; }
+	| attributes %prec EMPTY
+		{ $$.t = hash_tree_cons ($1, NULL_TREE, NULL_TREE); 
+		  $$.new_type_flag = 0; }
+	| nonempty_cv_qualifiers attributes %prec EMPTY
+		{ $$.t = hash_tree_cons ($2, NULL_TREE, $1.t); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
@@ -3718,9 +3719,8 @@ named_parm:
 	/* Here we expand typed_declspecs inline to avoid mis-parsing of
 	   TYPESPEC IDENTIFIER.  */
 	  typed_declspecs1 declarator
-		{ tree specs = strip_attrs ($1.t);
-		  $$.new_type_flag = $1.new_type_flag;
-		  $$.t = build_tree_list (specs, $2); }
+		{ $$.new_type_flag = $1.new_type_flag;
+		  $$.t = build_tree_list ($1.t, $2); }
 	| typed_typespecs declarator
 		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
@@ -3729,16 +3729,13 @@ named_parm:
 					  $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1 absdcl
-		{ tree specs = strip_attrs ($1.t);
-		  $$.t = build_tree_list (specs, $2);
+		{ $$.t = build_tree_list ($1.t, $2);
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1  %prec EMPTY
-		{ tree specs = strip_attrs ($1.t);
-		  $$.t = build_tree_list (specs, NULL_TREE); 
+		{ $$.t = build_tree_list ($1.t, NULL_TREE); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods notype_declarator
-		{ tree specs = strip_attrs ($1.t);
-		  $$.t = build_tree_list (specs, $2); 
+		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = 0; }
 	;
 
