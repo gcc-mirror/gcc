@@ -1,3 +1,24 @@
+2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	Friend class name lookup 2/n, PR c++/14513, c++/15410
+	* name-lookup.c (lookup_name_real): Simplify.
+	(lookup_type_scope): Add SCOPE parameter.  Handle friend class
+	lookup.
+	* name-lookup.h (tag_scope): New enum type.
+	(lookup_type_scope): Adjust declaration.
+	* decl.c (lookup_and_check_tag, xref_tag, xref_tag_from_type):
+	Change bool parameter GLOBALIZED to TAG_SCOPE parameter SCOPE.
+	(start_enum): Likewise.  Add assertion test that NAME is 
+	IDENTIFIER_NODE.  Use anonymous name for dummy ENUMERAL_TYPE in
+	case of error.
+	* cp-tree.h (xref_tag, xref_tag_from_type): Adjust declarations.
+	* parser.c (cp_parser_elaborated_type_specifier,
+	cp_parser_class_head): Adjust call to xref_tag.
+	* pt.c (lookup_template_class, instantiate_class_template):
+	Likewise.
+	* rtti.c (init_rtti_processing, build_dynamic_cast_1,
+	tinfo_base_init, emit_support_tinfos): Likewise.
+
 2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* g++spec.c, lex.c: Avoid ` as left quote in diagnostics.

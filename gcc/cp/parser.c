@@ -9731,15 +9731,23 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     definition of a new type; a new type can only be declared in a
 	     declaration context.  */
 
+	  tag_scope ts;
+	  if (is_friend)
+	    /* Friends have special name lookup rules.  */
+	    ts = ts_within_enclosing_non_class;
+	  else if (is_declaration
+		   && cp_lexer_next_token_is (parser->lexer,
+					      CPP_SEMICOLON))
+	    /* This is a `class-key identifier ;' */
+	    ts = ts_current;
+	  else
+	    ts = ts_global;
+
  	  /* Warn about attributes. They are ignored.  */
  	  if (attributes)
 	    warning ("type attributes are honored only at type definition");
 
-	  type = xref_tag (tag_type, identifier,
-			   (is_friend
-			    || !is_declaration
-			    || cp_lexer_next_token_is_not (parser->lexer,
-							   CPP_SEMICOLON)),
+	  type = xref_tag (tag_type, identifier, ts,
 			   parser->num_template_parameter_lists);
 	}
     }
@@ -12642,7 +12650,7 @@ cp_parser_class_head (cp_parser* parser,
       /* If the class was unnamed, create a dummy name.  */
       if (!id)
 	id = make_anon_name ();
-      type = xref_tag (class_key, id, /*globalize=*/false,
+      type = xref_tag (class_key, id, /*tag_scope=*/ts_current,
 		       parser->num_template_parameter_lists);
     }
   else

@@ -82,7 +82,7 @@ static int typename_compare (const void *, const void *);
 static tree local_variable_p_walkfn (tree *, int *, void *);
 static tree record_builtin_java_type (const char *, int);
 static const char *tag_name (enum tag_types);
-static tree lookup_and_check_tag (enum tag_types, tree, bool globalize, bool);
+static tree lookup_and_check_tag (enum tag_types, tree, tag_scope, bool);
 static int walk_namespaces_r (tree, walk_namespaces_fn, void *);
 static int walk_globals_r (tree, void*);
 static int walk_vtables_r (tree, void*);
@@ -9122,20 +9122,20 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 }
 
 /* Lookup NAME in elaborate type specifier in scope according to
-   GLOBALIZE and issue diagnostics if necessary.
+   SCOPE and issue diagnostics if necessary.
    Return *_TYPE node upon success, NULL_TREE when the NAME is not
    found, and ERROR_MARK_NODE for type error.  */
 
 static tree
 lookup_and_check_tag (enum tag_types tag_code, tree name,
-		      bool globalize, bool template_header_p)
+		      tag_scope scope, bool template_header_p)
 {
   tree t;
   tree decl;
-  if (globalize)
+  if (scope == ts_global)
     decl = lookup_name (name, 2);
   else
-    decl = lookup_type_scope (name);
+    decl = lookup_type_scope (name, scope);
 
   if (decl && DECL_CLASS_TEMPLATE_P (decl))
     decl = DECL_TEMPLATE_RESULT (decl);
@@ -9174,16 +9174,18 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
    If a declaration is given, process it here, and report an error if
    multiple declarations are not identical.
 
-   GLOBALIZE is false when this is also a definition.  Only look in
+   SCOPE is TS_CURRENT when this is also a definition.  Only look in
    the current frame for the name (since C++ allows new names in any
-   scope.)
+   scope.)  It is TS_WITHIN_ENCLOSING_NON_CLASS if this is a friend
+   declaration.  Only look beginning from the current scope outward up
+   till the nearest non-class scope.  Otherwise it is TS_GLOBAL.
 
    TEMPLATE_HEADER_P is true when this declaration is preceded by
    a set of template parameters.  */
 
 tree
 xref_tag (enum tag_types tag_code, tree name,
-	  bool globalize, bool template_header_p)
+	  tag_scope scope, bool template_header_p)
 {
   enum tree_code code;
   tree t;
@@ -9215,16 +9217,16 @@ xref_tag (enum tag_types tag_code, tree name,
     t = NULL_TREE;
   else
     t = lookup_and_check_tag  (tag_code, name,
-			       globalize, template_header_p);
+			       scope, template_header_p);
 
   if (t == error_mark_node)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 
-  if (globalize && t && current_class_type
+  if (scope != ts_current && t && current_class_type
       && template_class_depth (current_class_type)
       && template_header_p)
     {
-      /* Since GLOBALIZE is nonzero, we are not looking at a
+      /* Since SCOPE is not TS_CURRENT, we are not looking at a
 	 definition of this tag.  Since, in addition, we are currently
 	 processing a (member) template declaration of a template
 	 class, we must be very careful; consider:
@@ -9279,12 +9281,13 @@ xref_tag (enum tag_types tag_code, tree name,
 	{
 	  t = make_aggr_type (code);
 	  TYPE_CONTEXT (t) = context;
-	  pushtag (name, t, globalize);
+	  /* pushtag only cares whether SCOPE is zero or not.  */
+	  pushtag (name, t, scope != ts_current);
 	}
     }
   else
     {
-      if (!globalize && processing_template_decl && IS_AGGR_TYPE (t))
+      if (template_header_p && IS_AGGR_TYPE (t))
 	redeclare_class_template (t, current_template_parms);
       else if (!processing_template_decl
 	       && CLASS_TYPE_P (t)
@@ -9299,7 +9302,7 @@ xref_tag (enum tag_types tag_code, tree name,
 }
 
 tree
-xref_tag_from_type (tree old, tree id, int globalize)
+xref_tag_from_type (tree old, tree id, tag_scope scope)
 {
   enum tag_types tag_kind;
 
@@ -9311,7 +9314,7 @@ xref_tag_from_type (tree old, tree id, int globalize)
   if (id == NULL_TREE)
     id = TYPE_IDENTIFIER (old);
 
-  return xref_tag (tag_kind, id, globalize, false);
+  return xref_tag (tag_kind, id, scope, false);
 }
 
 /* Create the binfo hierarchy for REF with (possibly NULL) base list
@@ -9499,7 +9502,7 @@ xref_basetypes (tree ref, tree base_list)
 
 
 /* Begin compiling the definition of an enumeration type.
-   NAME is its name (or null if anonymous).
+   NAME is its name.
    Returns the type object, as yet incomplete.
    Also records info about it so that build_enumerator
    may be used to declare the individual values as they are read.  */
@@ -9507,14 +9510,17 @@ xref_basetypes (tree ref, tree base_list)
 tree
 start_enum (tree name)
 {
-  tree enumtype = NULL_TREE;
+  tree enumtype;
+
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
      forward reference.  */
 
-  if (name != NULL_TREE)
-    enumtype = lookup_and_check_tag (enum_type, name, 0, 0);
+  enumtype = lookup_and_check_tag (enum_type, name,
+				   /*tag_scope=*/ts_current,
+				   /*template_header_p=*/false);
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
@@ -9525,6 +9531,11 @@ start_enum (tree name)
     }
   else
     {
+      /* In case of error, make a dummy enum to allow parsing to
+	 continue.  */
+      if (enumtype == error_mark_node)
+	name = make_anon_name ();
+
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (name, enumtype, 0);
     }
