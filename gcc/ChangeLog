@@ -1,5 +1,13 @@
 2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (fix_bit_operand): Don't generate insns
+	by hand.
+	* config/h8300/h8300.md (*andqi3_1): Change to andqi3_1.
+	(*iorqi3_1): Change to iorqi3_1.
+	(*xorqi3_1): Change to xorqi3_1.
+
+2004-02-17  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-common.c, cfghooks.c, rtlanal.c, varasm.c: Fix comment
 	typos.
 

@@ -4109,10 +4109,21 @@ fix_bit_operand (rtx *operands, int what, enum rtx_code type)
   operands[1] = force_reg (QImode, operands[1]);
   {
     rtx res = gen_reg_rtx (QImode);
-    emit_insn (gen_rtx_SET (VOIDmode, res,
-			    gen_rtx_fmt_ee (type, QImode,
-					    operands[1], operands[2])));
-    emit_insn (gen_rtx_SET (VOIDmode, operands[0], res));
+    switch (type)
+      {
+      case AND:
+	emit_insn (gen_andqi3_1 (res, operands[1], operands[2]));
+	break;
+      case IOR:
+	emit_insn (gen_iorqi3_1 (res, operands[1], operands[2]));
+	break;
+      case XOR:
+	emit_insn (gen_xorqi3_1 (res, operands[1], operands[2]));
+	break;
+      default:
+	abort ();
+      }
+    emit_insn (gen_movqi (operands[0], res));
   }
   return 1;
 }
