@@ -310,9 +310,8 @@ be used if your MPFR Library is not installed in your library search path.
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
-directories require autoconf 2.59 (exactly), but the toplevel and
-@file{libjava} (but not @file{libjava/libltdl}) still require autoconf
-2.13 (exactly).
+directories require autoconf 2.59 (exactly), but the toplevel
+still requires autoconf 2.13 (exactly).
 
 @item automake versions 1.4-gcj and 1.8.5
 
