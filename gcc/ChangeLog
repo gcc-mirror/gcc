@@ -1,3 +1,8 @@
+2003-06-12  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_emit_prologue): Use LA instead of AR
+	to initialize GOT register.
+
 2003-06-12  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (tree_expr_nonnegative_p): Add support for

@@ -5497,8 +5497,10 @@ s390_emit_prologue ()
           REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
                                                REG_NOTES (insn));
 
-	  insn = emit_insn (gen_add2_insn (pic_offset_table_rtx,
-					   gen_rtx_REG (Pmode, BASE_REGISTER)));
+          got_symbol = gen_rtx_REG (Pmode, BASE_REGISTER);
+          got_symbol = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got_symbol), 101);
+          got_symbol = gen_rtx_PLUS (Pmode, got_symbol, pic_offset_table_rtx);
+	  insn = emit_move_insn (pic_offset_table_rtx, got_symbol);
           REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
                                                REG_NOTES (insn));
 	}
