@@ -1209,9 +1209,10 @@
 	(match_operator:SI 2 "noov_compare_op"
 			   [(match_operand 1 "icc_or_fcc_reg_operand" "")
 			    (const_int 0)]))]
-  ;; 32 bit LTU/GEU are better implemented using addx/subx
-  "TARGET_V9 && REGNO (operands[1]) == SPARC_ICC_REG
+  "TARGET_V9
+   && REGNO (operands[1]) == SPARC_ICC_REG
    && (GET_MODE (operands[1]) == CCXmode
+       /* 32 bit LTU/GEU are better implemented using addx/subx.  */
        || (GET_CODE (operands[2]) != LTU && GET_CODE (operands[2]) != GEU))"
   [(set (match_dup 0) (const_int 0))
    (set (match_dup 0)
@@ -8222,19 +8223,25 @@
   [(set_attr "type" "trap")])
 
 (define_expand "conditional_trap"
-  [(trap_if (match_operator 0 "noov_compare_op"
-			    [(match_dup 2) (match_dup 3)])
+  [(trap_if (match_operator 0 "noov_compare_op" [(match_dup 2) (match_dup 3)])
 	    (match_operand:SI 1 "arith_operand" ""))]
   ""
   "operands[2] = gen_compare_reg (GET_CODE (operands[0]),
 				  sparc_compare_op0, sparc_compare_op1);
+   if (GET_MODE (operands[2]) != CCmode && GET_MODE (operands[2]) != CCXmode)
+     FAIL;
    operands[3] = const0_rtx;")
 
 (define_insn ""
   [(trap_if (match_operator 0 "noov_compare_op" [(reg:CC 100) (const_int 0)])
 	    (match_operand:SI 1 "arith_operand" "rM"))]
   ""
-  "t%C0\t%1"
+{
+  if (TARGET_V9)
+    return "t%C0\t%%icc, %1";
+  else
+    return "t%C0\t%1";
+}
   [(set_attr "type" "trap")])
 
 (define_insn ""
