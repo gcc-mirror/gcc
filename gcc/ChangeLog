@@ -1,3 +1,8 @@
+2004-01-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (function_arg): Generalize logic so that it
+	handles complex and vector modes.
+
 2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
 
 	* c-semantics.c (genrtl_while_stmt, genrtl_do_stmt_1)
