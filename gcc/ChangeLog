@@ -1,3 +1,7 @@
+2004-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-hpux.h (LIB_SPEC): Fix library specification used with GNU ld.
+
 2004-04-16  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (arm_override_options): Revert previous patch.
