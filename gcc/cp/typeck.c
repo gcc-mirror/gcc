@@ -2030,7 +2030,7 @@ build_component_ref (datum, component, basetype_path, protect)
 			      basetype_path, protect));
 
     case TEMPLATE_DECL:
-      error ("invalid use of %D", datum);
+      error ("invalid use of `%D'", datum);
       datum = error_mark_node;
       break;
 
@@ -2114,7 +2114,10 @@ build_component_ref (datum, component, basetype_path, protect)
   else
     {
       tree name = component;
-      if (TREE_CODE (component) == VAR_DECL)
+      
+      if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
+	name = TREE_OPERAND (component, 0);
+      else if (TREE_CODE (component) == VAR_DECL)
 	name = DECL_NAME (component);
       if (TREE_CODE (component) == NAMESPACE_DECL)
         /* Source is in error, but produce a sensible diagnostic.  */
@@ -2162,8 +2165,14 @@ build_component_ref (datum, component, basetype_path, protect)
 		    }
 		}
 
+	      fndecls = TREE_VALUE (fndecls);
+	      
+	      if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
+		fndecls = build_nt (TEMPLATE_ID_EXPR,
+				    fndecls, TREE_OPERAND (component, 1));
+	      
 	      ref = build (COMPONENT_REF, unknown_type_node,
-			   datum, TREE_VALUE (fndecls));
+			   datum, fndecls);
 	      return ref;
 	    }
 
@@ -2699,12 +2708,22 @@ build_x_function_call (function, params, decl)
       /* Undo what we did in build_component_ref.  */
       decl = TREE_OPERAND (function, 0);
       function = TREE_OPERAND (function, 1);
-      function = DECL_NAME (OVL_CURRENT (function));
 
-      if (template_id)
+      if (TREE_CODE (function) == TEMPLATE_ID_EXPR)
 	{
-	  TREE_OPERAND (template_id, 0) = function;
-	  function = template_id;
+	  my_friendly_assert (!template_id, 20011228);
+
+	  template_id = function;
+	}
+      else
+	{
+	  function = DECL_NAME (OVL_CURRENT (function));
+
+	  if (template_id)
+	    {
+	      TREE_OPERAND (template_id, 0) = function;
+	      function = template_id;
+	    }
 	}
 
       return build_method_call (decl, function, params,
