@@ -1,5 +1,9 @@
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
+	* pt.c (copy_default_args_to_explicit_spec_1): New function.
+	(copy_default_args_to_explicit_spec): Likewise.
+	(check_explicit_specialization): Use it.
+
 	* class.c (finish_struct_1):  Remove last argument in call to
 	make_decl_rtl; use make_function_rtl instead of make_decl_rtl.
 	* decl.c (builtin_function): Likewise.
