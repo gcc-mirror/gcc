@@ -28,6 +28,10 @@ Boston, MA 02111-1307, USA.  */
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
+/* This is intended to be used with Cygnus's newlib library, so we want to
+   use the standard definition of LIB_SPEC.  */
+#undef LIB_SPEC
+
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \
   output_file_directive ((FILE), main_input_filename)
