@@ -1,5 +1,22 @@
 2004-01-09  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/standard/DocumentName.java,
+	javax/print/attribute/standard/JobHoldUntil.java,
+	javax/print/attribute/standard/JobMessageFromOperator.java,
+	javax/print/attribute/standard/JobName.java,
+	javax/print/attribute/standard/JobOriginatingUserName.java,
+	javax/print/attribute/standard/OutputDeviceAssigned.java,
+	javax/print/attribute/standard/PrinterInfo.java,
+	javax/print/attribute/standard/PrinterLocation.java,
+	javax/print/attribute/standard/PrinterMakeAndModel.java,
+	javax/print/attribute/standard/PrinterMessageFromOperator.java,
+	javax/print/attribute/standard/PrinterName.java,
+	javax/print/attribute/standard/RequestingUserName.java: New files.
+	* Makefile.am (javax_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
+2004-01-09  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractAction.java,
 	javax/swing/AbstractSet.java,
 	javax/swing/Action.java,
