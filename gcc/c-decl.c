@@ -6761,8 +6761,9 @@ finish_function (nested)
    that keep track of the progress of compilation of the current function.
    Used for nested functions.  */
 
-struct language_function
+struct c_language_function
 {
+  struct language_function base;
   tree named_labels;
   tree shadowed_labels;
   int returns_value;
@@ -6779,9 +6780,10 @@ void
 push_c_function_context (f)
      struct function *f;
 {
-  struct language_function *p;
-  p = (struct language_function *) xmalloc (sizeof (struct language_function));
-  f->language = p;
+  struct c_language_function *p;
+  p = ((struct c_language_function *) 
+       xmalloc (sizeof (struct c_language_function)));
+  f->language = (struct language_function *) p;
 
   p->named_labels = named_labels;
   p->shadowed_labels = shadowed_labels;
@@ -6798,7 +6800,8 @@ void
 pop_c_function_context (f)
      struct function *f;
 {
-  struct language_function *p = f->language;
+  struct c_language_function *p 
+    = (struct c_language_function *) f->language;
   tree link;
 
   /* Bring back all the labels that were shadowed.  */
@@ -6834,7 +6837,8 @@ void
 mark_c_function_context (f)
      struct function *f;
 {
-  struct language_function *p = f->language;
+  struct c_language_function *p 
+    = (struct c_language_function *) f->language;
 
   if (p == 0)
     return;
@@ -6897,6 +6901,16 @@ int
 stmts_are_full_exprs_p ()
 {
   return 0;
+}
+
+/* Returns the stmt_tree (if any) to which statements are currently
+   being added.  If there is no active statement-tree, NULL is
+   returned.  */
+
+stmt_tree
+current_stmt_tree ()
+{
+  return cfun ? &cfun->language->x_stmt_tree : NULL;
 }
 
 /* Nonzero if TYPE is an anonymous union or struct type.  Always 0 in

@@ -144,6 +144,10 @@ tree *ridpointers;
 
 tree (*make_fname_decl)                PARAMS ((tree, const char *, int));
 
+/* If non-NULL, the address of a language-specific function that
+   returns 1 for language-specific statement codes.  */
+int (*lang_statement_code_p)           PARAMS ((enum tree_code));
+
 /* Nonzero means the expression being parsed will never be evaluated.
    This is a count, since unevaluated expressions can nest.  */
 int skip_evaluation;
@@ -3870,6 +3874,9 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 							    sizetype,
 							    endlink))));
 
+  void_zero_node = build_int_2 (0, 0);
+  TREE_TYPE (void_zero_node) = void_type_node;
+
   /* Prototype for strcpy.  */
   string_ftype_ptr_ptr
     = build_function_type (string_type_node,
@@ -4376,6 +4383,111 @@ expand_tree_builtin (function, params, coerced_params)
     }
 
   return NULL_TREE;
+}
+
+/* Returns non-zero if CODE is the code for a statement.  */
+
+int
+statement_code_p (code)
+     enum tree_code code;
+{
+  switch (code)
+    {
+    case EXPR_STMT:
+    case COMPOUND_STMT:
+    case DECL_STMT:
+    case IF_STMT:
+    case FOR_STMT:
+    case WHILE_STMT:
+    case DO_STMT:
+    case RETURN_STMT:
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+    case SWITCH_STMT:
+    case GOTO_STMT:
+    case LABEL_STMT:
+    case ASM_STMT:
+    case CASE_LABEL:
+      return 1;
+
+    default:
+      if (lang_statement_code_p)
+	return (*lang_statement_code_p) (code);
+      return 0;
+    }
+}
+
+/* Walk the statemen tree, rooted at *tp.  Apply FUNC to all the
+   sub-trees of *TP in a pre-order traversal.  FUNC is called with the
+   DATA and the address of each sub-tree.  If FUNC returns a non-NULL
+   value, the traversal is aborted, and the value returned by FUNC is
+   returned.  If FUNC sets WALK_SUBTREES to zero, then the subtrees of
+   the node being visited are not walked.
+
+   We don't need a without_duplicates variant of this one because the
+   statement tree is a tree, not a graph.  */
+
+tree 
+walk_stmt_tree (tp, func, data)
+     tree *tp;
+     walk_tree_fn func;
+     void *data;
+{
+  enum tree_code code;
+  int walk_subtrees;
+  tree result;
+  int i, len;
+
+#define WALK_SUBTREE(NODE)				\
+  do							\
+    {							\
+      result = walk_stmt_tree (&(NODE), func, data);	\
+      if (result)					\
+	return result;					\
+    }							\
+  while (0)
+
+  /* Skip empty subtrees.  */
+  if (!*tp)
+    return NULL_TREE;
+
+  /* Skip subtrees below non-statement nodes.  */
+  if (!statement_code_p (TREE_CODE (*tp)))
+    return NULL_TREE;
+
+  /* Call the function.  */
+  walk_subtrees = 1;
+  result = (*func) (tp, &walk_subtrees, data);
+
+  /* If we found something, return it.  */
+  if (result)
+    return result;
+
+  /* Even if we didn't, FUNC may have decided that there was nothing
+     interesting below this point in the tree.  */
+  if (!walk_subtrees)
+    return NULL_TREE;
+
+  /* FUNC may have modified the tree, recheck that we're looking at a
+     statement node.  */
+  code = TREE_CODE (*tp);
+  if (!statement_code_p (code))
+    return NULL_TREE;
+
+  /* Walk over all the sub-trees of this operand.  Statement nodes never
+     contain RTL, and we needn't worry about TARGET_EXPRs.  */
+  len = TREE_CODE_LENGTH (code);
+
+  /* Go through the subtrees.  We need to do this in forward order so
+     that the scope of a FOR_EXPR is handled properly.  */
+  for (i = 0; i < len; ++i)
+    WALK_SUBTREE (TREE_OPERAND (*tp, i));
+
+  /* Finally visit the chain.  This can be tail-recursion optimized if
+     we write it this way.  */
+  return walk_stmt_tree (&TREE_CHAIN (*tp), func, data);
+
+#undef WALK_SUBTREE
 }
 
 /* Tree code classes. */

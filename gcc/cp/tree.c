@@ -42,7 +42,6 @@ static cp_lvalue_kind lvalue_p_1 PARAMS ((tree, int));
 static tree no_linkage_helper PARAMS ((tree *, int *, void *));
 static tree build_srcloc PARAMS ((const char *, int));
 static void mark_list_hash PARAMS ((void *));
-static int statement_code_p PARAMS ((enum tree_code));
 static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
 static tree cp_unsave_r PARAMS ((tree *, int *, void *));
 static void cp_unsave PARAMS ((tree *));
@@ -50,6 +49,7 @@ static tree build_target_expr PARAMS ((tree, tree));
 static tree count_trees_r PARAMS ((tree *, int *, void *));
 static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
 static tree find_tree_r PARAMS ((tree *, int *, void *));
+extern int cp_statement_code_p PARAMS ((enum tree_code));
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
@@ -1071,33 +1071,18 @@ is_aggr_type_2 (t1, t2)
 
 /* Returns non-zero if CODE is the code for a statement.  */
 
-static int
-statement_code_p (code)
+int
+cp_statement_code_p (code)
      enum tree_code code;
 {
   switch (code)
     {
-    case EXPR_STMT:
-    case COMPOUND_STMT:
-    case DECL_STMT:
-    case IF_STMT:
-    case FOR_STMT:
-    case WHILE_STMT:
-    case DO_STMT:
-    case RETURN_STMT:
-    case BREAK_STMT:
-    case CONTINUE_STMT:
-    case SWITCH_STMT:
-    case GOTO_STMT:
-    case LABEL_STMT:
-    case ASM_STMT:
     case SUBOBJECT:
     case CLEANUP_STMT:
     case START_CATCH_STMT:
     case CTOR_STMT:
     case SCOPE_STMT:
     case CTOR_INITIALIZER:
-    case CASE_LABEL:
     case RETURN_INIT:
     case TRY_BLOCK:
     case HANDLER:
@@ -1223,9 +1208,9 @@ copy_template_template_parm (t, newargs)
 /* Apply FUNC to all the sub-trees of TP in a pre-order traversal.
    FUNC is called with the DATA and the address of each sub-tree.  If
    FUNC returns a non-NULL value, the traversal is aborted, and the
-   value returned by FUNC is returned.  The FLAGS govern the way in
-   which nodes are walked.  If HTAB is non-NULL it is used to record
-   the nodes visited, and to avoid visiting a node more than once.  */
+   value returned by FUNC is returned.  If HTAB is non-NULL it is used
+   to record the nodes visited, and to avoid visiting a node more than
+   once.  */
 
 tree 
 walk_tree (tp, func, data, htab)
@@ -1453,73 +1438,6 @@ walk_tree_without_duplicates (tp, func, data)
   result = walk_tree (tp, func, data, htab);
   htab_delete (htab);
   return result;
-}
-
-/* Like walk_tree, but only examines statement nodes.  We don't need a
-   without_duplicates variant of this one because the statement tree is
-   a tree, not a graph.  */
-
-tree 
-walk_stmt_tree (tp, func, data)
-     tree *tp;
-     walk_tree_fn func;
-     void *data;
-{
-  enum tree_code code;
-  int walk_subtrees;
-  tree result;
-  int i, len;
-
-#define WALK_SUBTREE(NODE)				\
-  do							\
-    {							\
-      result = walk_stmt_tree (&(NODE), func, data);	\
-      if (result)					\
-	return result;					\
-    }							\
-  while (0)
-
-  /* Skip empty subtrees.  */
-  if (!*tp)
-    return NULL_TREE;
-
-  /* Skip subtrees below non-statement nodes.  */
-  if (!statement_code_p (TREE_CODE (*tp)))
-    return NULL_TREE;
-
-  /* Call the function.  */
-  walk_subtrees = 1;
-  result = (*func) (tp, &walk_subtrees, data);
-
-  /* If we found something, return it.  */
-  if (result)
-    return result;
-
-  /* Even if we didn't, FUNC may have decided that there was nothing
-     interesting below this point in the tree.  */
-  if (!walk_subtrees)
-    return NULL_TREE;
-
-  /* FUNC may have modified the tree, recheck that we're looking at a
-     statement node.  */
-  code = TREE_CODE (*tp);
-  if (!statement_code_p (code))
-    return NULL_TREE;
-
-  /* Walk over all the sub-trees of this operand.  Statement nodes never
-     contain RTL, and we needn't worry about TARGET_EXPRs.  */
-  len = TREE_CODE_LENGTH (code);
-
-  /* Go through the subtrees.  We need to do this in forward order so
-     that the scope of a FOR_EXPR is handled properly.  */
-  for (i = 0; i < len; ++i)
-    WALK_SUBTREE (TREE_OPERAND (*tp, i));
-
-  /* Finally visit the chain.  This can be tail-recursion optimized if
-     we write it this way.  */
-  return walk_stmt_tree (&TREE_CHAIN (*tp), func, data);
-
-#undef WALK_SUBTREE
 }
 
 /* Called from count_trees via walk_tree.  */
@@ -2477,6 +2395,7 @@ init_tree ()
 {
   make_lang_type_fn = cp_make_lang_type;
   lang_unsave = cp_unsave;
+  lang_statement_code_p = cp_statement_code_p;
   ggc_add_root (list_hash_table, 
 		ARRAY_SIZE (list_hash_table),
 		sizeof (struct list_hash *),

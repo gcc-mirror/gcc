@@ -559,7 +559,6 @@ enum cp_tree_index
     CPTI_JAVA_CHAR_TYPE,
     CPTI_JAVA_BOOLEAN_TYPE,
 
-    CPTI_VOID_ZERO,
     CPTI_WCHAR_DECL,
     CPTI_VTABLE_ENTRY_TYPE,
     CPTI_DELTA_TYPE,
@@ -652,7 +651,6 @@ extern tree cp_global_trees[CPTI_MAX];
 #define java_char_type_node		cp_global_trees[CPTI_JAVA_CHAR_TYPE]
 #define java_boolean_type_node		cp_global_trees[CPTI_JAVA_BOOLEAN_TYPE]
 
-#define void_zero_node			cp_global_trees[CPTI_VOID_ZERO]
 #define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
 #define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
 /* The type used to represent an offset by which to adjust the `this'
@@ -784,23 +782,6 @@ extern tree cp_global_trees[CPTI_MAX];
 
 /* Global state.  */
 
-struct stmt_tree {
-  tree x_last_stmt;
-  tree x_last_expr_type;
-/* Non-zero if we should treat statements as full expressions.  In
-   particular, this variable is no-zero if at the end of a statement
-   we should destroy any temporaries created during that statement.
-   Similarly, if, at the end of a block, we should destroy any local
-   variables in this block.  Normally, this variable is non-zero,
-   since those are the normal semantics of C++.
-
-   However, in order to represent aggregate initialization code as
-   tree structure, we use statement-expressions.  The statements
-   within the statement expression should not result in cleanups being
-   run until the entire enclosing statement is complete.  */
-  int stmts_are_full_exprs_p; 
-};
-
 struct saved_scope {
   tree old_bindings;
   tree old_namespace;
@@ -824,7 +805,7 @@ struct saved_scope {
   int x_processing_explicit_instantiation;
   int need_pop_function_context;
 
-  struct stmt_tree x_stmt_tree;
+  struct stmt_tree_s x_stmt_tree;
 
   struct binding_level *class_bindings;
   struct binding_level *bindings;
@@ -890,8 +871,10 @@ extern struct saved_scope *scope_chain;
 
 /* Global state pertinent to the current function.  */
 
-struct language_function
+struct cp_language_function
 {
+  struct language_function base;
+
   tree x_ctor_label;
   tree x_dtor_label;
   tree x_current_class_ptr;
@@ -912,8 +895,6 @@ struct language_function
   int name_declared;
   int vtbls_set_up_p;
 
-  struct stmt_tree x_stmt_tree;
-
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
   struct binding_level *bindings;
@@ -923,7 +904,8 @@ struct language_function
 
 /* The current C++-specific per-function global variables.  */
 
-#define cp_function_chain (cfun->language)
+#define cp_function_chain \
+  ((struct cp_language_function *) (cfun->language))
 
 /* In a destructor, the point at which all derived class destroying
    has been done, just before any base class destroying will be done.  */
@@ -943,24 +925,6 @@ struct language_function
   (cfun ? cp_function_chain->x_current_class_ptr : NULL_TREE)
 #define current_class_ref \
   (cfun ? cp_function_chain->x_current_class_ref : NULL_TREE)
-
-/* Information about the current statement tree.  */
-
-#define current_stmt_tree			\
-  (cfun						\
-   ? &cp_function_chain->x_stmt_tree		\
-   : &scope_chain->x_stmt_tree)
-
-/* When building a statement-tree, this is the last statement added to
-   the tree.  */
-
-#define last_tree current_stmt_tree->x_last_stmt
-
-/* The type of the last expression-statement we have seen.  This is
-   required because the type of a statement-expression is the type of
-   the last expression statement.  */
-
-#define last_expr_type current_stmt_tree->x_last_expr_type
 
 /* The TRY_BLOCK for the exception-specifiers for the current
    function, if any.  */
@@ -1927,7 +1891,7 @@ struct lang_decl
   {
     tree sorted_fields;
     struct unparsed_text *pending_inline_info;
-    struct language_function *saved_language_function;
+    struct cp_language_function *saved_language_function;
   } u;
 
   union {
@@ -2473,9 +2437,6 @@ struct lang_decl
    constructor call, rather than an ordinary function call.  */
 #define AGGR_INIT_VIA_CTOR_P(NODE) \
   TREE_LANG_FLAG_0 (AGGR_INIT_EXPR_CHECK (NODE))
-
-/* Nonzero if this statement should be considered a full-expression.  */
-#define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
 
 /* The TYPE_MAIN_DECL for a class template type is a TYPE_DECL, not a
    TEMPLATE_DECL.  This macro determines whether or not a given class
@@ -4231,7 +4192,6 @@ extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree, int));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
-extern void add_tree				PARAMS ((tree));
 extern void add_maybe_template			PARAMS ((tree, tree));
 extern void pop_tinst_level			PARAMS ((void));
 extern int more_specialized_class		PARAMS ((tree, tree));
@@ -4409,8 +4369,6 @@ extern void add_decl_stmt                       PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
-extern void begin_stmt_tree                     PARAMS ((tree *));
-extern void finish_stmt_tree                    PARAMS ((tree *));
 extern void prep_stmt                           PARAMS ((tree));
 extern tree add_scope_stmt                      PARAMS ((int, int));
 extern void do_pushlevel                        PARAMS ((void));
@@ -4494,15 +4452,11 @@ extern void debug_binfo				PARAMS ((tree));
 extern tree build_dummy_object			PARAMS ((tree));
 extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
-typedef tree (*walk_tree_fn)                    PARAMS ((tree *, int *, void *));
 extern tree walk_tree                           PARAMS ((tree *,
 							 walk_tree_fn,
 							 void *, 
 							 htab_t));
 extern tree walk_tree_without_duplicates        PARAMS ((tree *,
-							 walk_tree_fn,
-							 void *));
-extern tree walk_stmt_tree			PARAMS ((tree *,
 							 walk_tree_fn,
 							 void *));
 extern tree copy_tree_r                         PARAMS ((tree *, int *, void *));
