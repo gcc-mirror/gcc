@@ -154,6 +154,11 @@ DEF_RTL_EXPR(MATCH_PARALLEL, "match_parallel", "isE", 'm')
 DEF_RTL_EXPR(MATCH_OP_DUP, "match_op_dup", "iE", 'm')
 
 /* Appears only in machine descriptions.
+   Means match only something equal to what is stored in the operand table
+   at the index specified by the argument.  For MATCH_PARALLEL.  */
+DEF_RTL_EXPR(MATCH_PAR_DUP, "match_par_dup", "iE", 'm')
+
+/* Appears only in machine descriptions.
    Defines the pattern for one kind of instruction.
    Operand:
    0: names this instruction.
