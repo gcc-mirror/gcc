@@ -114,7 +114,9 @@ char *inline_text_firstobj;
 
 #if USE_CPPLIB
 #include "cpplib.h"
-extern cpp_reader parse_in;
+extern cpp_reader  parse_in;
+extern cpp_options parse_options;
+extern unsigned char *yy_cur, *yy_lim;
 #else
 FILE *finput;
 #endif
@@ -471,7 +473,18 @@ init_parse (filename)
 
   int i;
 
-#if !USE_CPPLIB
+#if USE_CPPLIB
+  yy_cur = "";
+  yy_lim = yy_cur;
+
+  cpp_reader_init (&parse_in);
+  parse_in.data = &parse_options;
+  cpp_options_init (&parse_options);
+  cpp_handle_options (&parse_in, 0, NULL); /* FIXME */
+  parse_in.show_column = 1;
+  if (! cpp_start_read (&parse_in, filename))
+    abort ();
+#else
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
     {
