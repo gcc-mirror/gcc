@@ -1,3 +1,7 @@
+Thu Nov 26 23:40:03 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (TARGET_DEFAULT): Fix typo.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (CONFIG_LANGUAGES): New macro taking all languages
