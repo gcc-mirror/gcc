@@ -598,9 +598,13 @@ doloop_modify_runtime (loop, iterations_max,
 
      If the loop has been unrolled, the full calculation is
 
-       t1 = abs_inc * unroll_number;		increment per loop
-       n = abs (final - initial) / t1;		full loops
-       n += (abs (final - initial) % t1) != 0;	partial loop
+       t1 = abs_inc * unroll_number;		        increment per loop
+       n = (abs (final - initial) + abs_inc - 1) / t1;    full loops
+       n += ((abs (final - initial) + abs_inc - 1) % t1) >= abs_inc;
+                                                          partial loop
+     which works out to be equivalent to
+
+       n = (abs (final - initial) + t1 - 1) / t1;
 
      However, in certain cases the unrolled loop will be preconditioned
      by emitting copies of the loop body with conditional branches,
@@ -682,13 +686,15 @@ doloop_modify_runtime (loop, iterations_max,
       if (shift_count < 0)
 	abort ();
 
-      if (!loop_info->preconditioned)
+      if (loop_info->preconditioned)
+	diff = expand_simple_binop (GET_MODE (diff), PLUS,
+				    diff, GEN_INT (abs_inc - 1),
+				    diff, 1, OPTAB_LIB_WIDEN);
+      else
 	diff = expand_simple_binop (GET_MODE (diff), PLUS,
 				    diff, GEN_INT (abs_loop_inc - 1),
 				    diff, 1, OPTAB_LIB_WIDEN);
 
-      /* (abs (final - initial) + abs_inc * unroll_number - 1)
-	 / (abs_inc * unroll_number)  */
       diff = expand_simple_binop (GET_MODE (diff), LSHIFTRT,
 				  diff, GEN_INT (shift_count),
 				  diff, 1, OPTAB_LIB_WIDEN);

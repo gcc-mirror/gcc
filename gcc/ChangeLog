@@ -1,6 +1,12 @@
 2002-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8599
+	* doloop.c (doloop_modify_runtime): Fix loop count computation
+	for preconditioned unrolled loops.
+
+2002-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8599
 	* doloop.c (doloop_modify_runtime): Revert 2002-11-22 change.
 	* loop.c (loop_invariant_p): Likewise.
 
