@@ -105,9 +105,7 @@ struct bytecode
     not because I'm into ASCII art.) */
 
 
-#define BI_PARAMS(OFFSET, SIZE, BYTE_OFFSET,				\
-		  BIT_OFFSET, NBYTES, TRAILING_BITS )			\
-\
+#define BI_PARAMS(OFFSET, SIZE, BYTE_OFFSET, BIT_OFFSET, NBYTES, TRAILING_BITS)		\
   { BYTE_OFFSET = (OFFSET) / (INTERP_BPC);				\
     BIT_OFFSET = (OFFSET) % (INTERP_BPC);				\
     NBYTES = ((SIZE) - (INTERP_BPC - (BIT_OFFSET))) / INTERP_BPC;	\
