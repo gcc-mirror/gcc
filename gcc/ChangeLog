@@ -3,6 +3,30 @@
 	* config/fr30/fr30.h (PREDICATE_CODES): Remove
 	fp_displacement_operand, sp_displacement_operand.
 
+	* config/m68hc11/m68hc11-protos.h: Add a prototype for
+	m68hcc_auto_inc_p.
+	Remove the prototypes for tst_operand, cmp_operand,
+	stack_register_operand, d_register_operand,
+	hard_addr_reg_operand, splitable_operand,
+	m68hc11_logical_operator, m68hc11_arith_operator,
+	m68hc11_non_shift_operator, m68hc11_shift_operator,
+	m68hc11_unary_operator, m68hc11_eq_compare_operator,
+	non_push_operand, hard_reg_operand, and
+	reg_or_some_mem_operand.
+	* config/m68hc11/m68hc11.c (m68hcc_auto_inc_p): Make it
+	extern.
+	(tst_operand, cmp_operand, non_push_operand,
+	splitable_operand, reg_or_some_mem_operand,
+	stack_register_operand, d_register_operand,
+	hard_addr_reg_operand, hard_reg_operand,
+	m68hc11_eq_compare_operator, m68hc11_logical_operator,
+	m68hc11_arith_operator, m68hc11_non_shift_operator,
+	m68hc11_shift_operator, m68hc11_unary_operator): Move to
+	predicates.md.
+	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Remove.
+	* config/m68hc11/m68hc11.md: Include predicates.md.
+	* config/m68hc11/predicates.md: New.
+
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/19345

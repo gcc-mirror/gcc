@@ -72,7 +72,6 @@ static int m68hc11_address_cost (rtx);
 static int m68hc11_shift_cost (enum machine_mode, rtx, int);
 static int m68hc11_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool m68hc11_rtx_costs (rtx, int, int, int *);
-static int m68hc11_auto_inc_p (rtx);
 static tree m68hc11_handle_fntype_attribute (tree *, tree, tree, int, bool *);
 const struct attribute_spec m68hc11_attribute_table[];
 
@@ -957,7 +956,7 @@ m68hc11_emit_libcall (const char *name, enum rtx_code code,
 /* Returns true if X is a PRE/POST increment decrement
    (same as auto_inc_p() in rtlanal.c but do not take into
    account the stack).  */
-static int
+int
 m68hc11_auto_inc_p (rtx x)
 {
   return GET_CODE (x) == PRE_DEC
@@ -977,81 +976,6 @@ memory_reload_operand (rtx operand, enum machine_mode mode ATTRIBUTE_UNUSED)
 	 && GET_CODE (XEXP (XEXP (operand, 0), 1)) == CONST_INT)
 	|| (GET_CODE (XEXP (XEXP (operand, 0), 1)) == REG
 	    && GET_CODE (XEXP (XEXP (operand, 0), 0)) == CONST_INT));
-}
-
-int
-tst_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_CODE (operand) == MEM && reload_completed == 0)
-    {
-      rtx addr = XEXP (operand, 0);
-      if (m68hc11_auto_inc_p (addr))
-	return 0;
-    }
-  return nonimmediate_operand (operand, mode);
-}
-
-int
-cmp_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_CODE (operand) == MEM)
-    {
-      rtx addr = XEXP (operand, 0);
-      if (m68hc11_auto_inc_p (addr))
-	return 0;
-    }
-  return general_operand (operand, mode);
-}
-
-int
-non_push_operand (rtx operand, enum machine_mode mode)
-{
-  if (general_operand (operand, mode) == 0)
-    return 0;
-
-  if (push_operand (operand, mode) == 1)
-    return 0;
-  return 1;
-}
-
-int
-splitable_operand (rtx operand, enum machine_mode mode)
-{
-  if (general_operand (operand, mode) == 0)
-    return 0;
-
-  if (push_operand (operand, mode) == 1)
-    return 0;
-
-  /* Reject a (MEM (MEM X)) because the patterns that use non_push_operand
-     need to split such addresses to access the low and high part but it
-     is not possible to express a valid address for the low part.  */
-  if (mode != QImode && GET_CODE (operand) == MEM
-      && GET_CODE (XEXP (operand, 0)) == MEM)
-    return 0;
-  return 1;
-}
-
-int
-reg_or_some_mem_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_CODE (operand) == MEM)
-    {
-      rtx op = XEXP (operand, 0);
-
-      if (symbolic_memory_operand (op, mode))
-	return 1;
-
-      if (IS_STACK_PUSH (operand))
-	return 1;
-
-      if (m68hc11_register_indirect_p (operand, mode))
-	return 1;
-
-      return 0;
-    }
-
-  return register_operand (operand, mode);
 }
 
 int
@@ -1089,56 +1013,6 @@ m68hc11_indirect_p (rtx operand, enum machine_mode mode)
       return register_indirect_p (operand, mode, addr_mode);
     }
   return 0;
-}
-
-int
-stack_register_operand (rtx operand, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return SP_REG_P (operand);
-}
-
-int
-d_register_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_MODE (operand) != mode && mode != VOIDmode)
-    return 0;
-
-  if (GET_CODE (operand) == SUBREG)
-    operand = XEXP (operand, 0);
-
-  return GET_CODE (operand) == REG
-    && (REGNO (operand) >= FIRST_PSEUDO_REGISTER
-	|| REGNO (operand) == HARD_D_REGNUM
-        || (mode == QImode && REGNO (operand) == HARD_B_REGNUM));
-}
-
-int
-hard_addr_reg_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_MODE (operand) != mode && mode != VOIDmode)
-    return 0;
-
-  if (GET_CODE (operand) == SUBREG)
-    operand = XEXP (operand, 0);
-
-  return GET_CODE (operand) == REG
-    && (REGNO (operand) == HARD_X_REGNUM
-	|| REGNO (operand) == HARD_Y_REGNUM
-	|| REGNO (operand) == HARD_Z_REGNUM);
-}
-
-int
-hard_reg_operand (rtx operand, enum machine_mode mode)
-{
-  if (GET_MODE (operand) != mode && mode != VOIDmode)
-    return 0;
-
-  if (GET_CODE (operand) == SUBREG)
-    operand = XEXP (operand, 0);
-
-  return GET_CODE (operand) == REG
-    && (REGNO (operand) >= FIRST_PSEUDO_REGISTER
-	|| H_REGNO_P (REGNO (operand)));
 }
 
 int
@@ -1200,51 +1074,6 @@ symbolic_memory_operand (rtx op, enum machine_mode mode)
     default:
       return 0;
     }
-}
-
-int
-m68hc11_eq_compare_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == EQ || GET_CODE (op) == NE;
-}
-
-int
-m68hc11_logical_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR;
-}
-
-int
-m68hc11_arith_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR
-    || GET_CODE (op) == PLUS || GET_CODE (op) == MINUS
-    || GET_CODE (op) == ASHIFT || GET_CODE (op) == ASHIFTRT
-    || GET_CODE (op) == LSHIFTRT || GET_CODE (op) == ROTATE
-    || GET_CODE (op) == ROTATERT;
-}
-
-int
-m68hc11_non_shift_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == AND || GET_CODE (op) == IOR || GET_CODE (op) == XOR
-    || GET_CODE (op) == PLUS || GET_CODE (op) == MINUS;
-}
-
-/* Return true if op is a shift operator.  */
-int
-m68hc11_shift_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == ROTATE || GET_CODE (op) == ROTATERT
-    || GET_CODE (op) == LSHIFTRT || GET_CODE (op) == ASHIFT
-    || GET_CODE (op) == ASHIFTRT;
-}
-
-int
-m68hc11_unary_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return GET_CODE (op) == NEG || GET_CODE (op) == NOT
-    || GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND;
 }
 
 /* Emit the code to build the trampoline used to call a nested function.
