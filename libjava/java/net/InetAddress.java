@@ -23,9 +23,11 @@ import java.io.IOException;
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * (The latter turns out to have some errors ...)
  * Status:  Believed complete and correct.
+ *
+ * @specnote This class is not final since JK 1.4
  */
 
-public final class InetAddress implements java.io.Serializable
+public class InetAddress implements java.io.Serializable
 {
   // The Serialized Form specifies that an int 'address' is saved/restored.
   // This class uses a byte array internally so we'll just do the conversion
@@ -190,7 +192,7 @@ public final class InetAddress implements java.io.Serializable
     // multiple names instances of InetAddress for different name of
     // that same machine are not equal.  This is because they have
     // different host names."  This violates the description in the
-    // JDK 1.2 API documentation.  A little experiementation
+    // JDK 1.2 API documentation.  A little experimentation
     // shows that the latter is correct.
     byte[] addr1 = addr;
     byte[] addr2 = ((InetAddress) obj).addr;
@@ -206,7 +208,27 @@ public final class InetAddress implements java.io.Serializable
   {
     return getHostName()+'/'+getHostAddress();
   }
+  
+  /**
+   * Returns an InetAddress object given the raw IP address.
+   *
+   * The argument is in network byte order: the highest order byte of the
+   * address is in getAddress()[0].
+   *
+   * @exception UnknownHostException If no IP address for the host could
+   * be found
+   *
+   * @since 1.4
+   */
+  public static InetAddress getByAddress(byte[] addr)
+    throws UnknownHostException
+  {
+    if (addr.length != 4 && addr.length != 16)
+      throw new UnknownHostException ("IP address has illegal length");
 
+    return new InetAddress (addr, "");
+  }
+  
   /** If host is a valid numeric IP address, return the numeric address.
    * Otherwise, return null. */
   private static native byte[] aton (String host);
