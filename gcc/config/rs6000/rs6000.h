@@ -1617,8 +1617,10 @@ typedef struct rs6000_args
    frontend will generate a less efficient heavyweight thunk that calls
    FUNCTION instead of jumping to it.  The generic approach does not support
    varargs.  */
+#if TARGET_ELF
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
   output_mi_thunk (FILE, THUNK_FNDECL, DELTA, FUNCTION)
+#endif
 
 /* TRAMPOLINE_TEMPLATE deleted */
 
