@@ -9560,6 +9560,7 @@ ix86_expand_int_movcc (operands)
 		  HOST_WIDE_INT tmp = ct;
 		  ct = cf;
 		  cf = tmp;
+		  diff = ct - cf;
 		}
 	      tmp = emit_store_flag (tmp, code, ix86_compare_op0,
 				     ix86_compare_op1, VOIDmode, 0, -1);
