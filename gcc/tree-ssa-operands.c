@@ -1004,6 +1004,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
     case VAR_DECL:
     case PARM_DECL:
     case RESULT_DECL:
+    case CONST_DECL:
       /* If we found a variable, add it to DEFS or USES depending
 	 on the operand flags.  */
       add_stmt_operand (expr_p, stmt, flags);
