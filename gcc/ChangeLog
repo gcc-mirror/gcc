@@ -1,3 +1,8 @@
+Thu Jun 25 09:54:55 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* arm.h (REG_ALLOC_ORDER): Add ARG_POINTER_REGNUM, noticed by
+	grahams@rcp.co.uk.
+
 Mon Jun 15 17:41:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload1.c (reload): Issue guidance message on stack frame too large
