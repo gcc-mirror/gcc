@@ -152,6 +152,7 @@ yyy
 #include "recog.h"
 #include "basic-block.h"
 #include "output.h"
+#include "expr.h" 
 
 #include "obstack.h"
 #define obstack_chunk_alloc gmalloc

@@ -1,3 +1,8 @@
+Thu Dec 17 13:50:29 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcse.c: Include expr.h in order to get the prototype for
+	get_condition() which is used in delete_null_pointer_checks(). 
+
 Thu Dec 17 15:58:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* hwint.h: New file to consolidate HOST_WIDE_INT (etc) macros.
