@@ -1,3 +1,7 @@
+Thu Apr  2 18:00:52 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.md (movqi+1): Change alternative 1 from *r/r to *r/*rn.
+
 1998-04-02  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* ginclude/va-i960.h (va_end): Change void * to void.
