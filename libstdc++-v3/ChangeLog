@@ -1,3 +1,17 @@
+2000-11-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/std_complex.h: Tweaks, include cmath for abs overloads.
+	* src/complex.cc: Remove cmath include, formatting tweaks, remove
+	dead code.
+	* include/c/bits/std_cmath.h: Formatting tweaks.
+	* testsuite/26_numerics/complex_value.cc: New file, for catching
+	bits gleaned from libstdc++/106.
+
+	* testsuite/23_containers/vector_ctor.cc (test02): Add test from
+	libstdc++/102.
+
+	* src/string-inst.cc: Tweaks.
+	
 2000-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* include/bits/c++config, include/bits/ios_base.h,

@@ -296,7 +296,7 @@ namespace std
   abs(double __x) { return __builtin_fabs(__x); }
 #else
   inline double
-  abs(double __x) { return fabs (__x); }
+  abs(double __x) { return fabs(__x); }
 #endif
 
   extern "C" double floor(double __x);
