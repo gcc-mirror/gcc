@@ -1083,8 +1083,6 @@ eligible_for_epilogue_delay (trial, slot)
   if (get_attr_length (trial) != 1)
     return 0;
 
-  pat = PATTERN (trial);
-
   /* If %g0 is live, there are lots of things we can't handle.
      Rather than trying to find them all now, let's punt and only
      optimize things as necessary.  */
@@ -1100,6 +1098,8 @@ eligible_for_epilogue_delay (trial, slot)
 	return (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
       return 0;
     }
+
+  pat = PATTERN (trial);
 
   /* Otherwise, only operations which can be done in tandem with
      a `restore' insn can go into the delay slot.  */
