@@ -198,6 +198,7 @@ static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
 #ifdef COLLECT_EXPORT_LIST
 static int export_flag;                 /* true if -bE */
+static int aix64_flag;			/* true if -b64 */
 #endif
 
 int debug;				/* true if -debug */
@@ -1194,6 +1195,8 @@ main (argc, argv)
 	    case 'b':
 	      if (arg[2] == 'E' || strncmp (&arg[2], "export", 6) == 0)
                 export_flag = 1;
+	      if (arg[2] == '6' && arg[3] == '4')
+		aix64_flag = 1;
 	      break;
 #endif
 
@@ -2669,7 +2672,9 @@ scan_libraries (prog_name)
      (((X).n_sclass == C_EXT) && ((X).n_scnum == N_UNDEF))
 #   define GCC_SYMINC(X)	((X).n_numaux+1)
 #   define GCC_SYMZERO(X)	0
-#   define GCC_CHECK_HDR(X)	(1)
+#   define GCC_CHECK_HDR(X) \
+     ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
+      || (HEADER (X).f_magic == 0757 && aix64_flag))
 #endif
 
 extern char *ldgetname ();
@@ -2712,18 +2717,19 @@ scan_prog_file (prog_name, which_pass)
 #endif
       if ((ldptr = ldopen (prog_name, ldptr)) != NULL)
 	{
-
-	  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
+	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))
 	    fatal ("%s: not a COFF file", prog_name);
 
-#ifdef COLLECT_EXPORT_LIST
-	  /* Is current archive member a shared object?  */
-	  is_shared = HEADER (ldptr).f_flags & F_SHROBJ;
-#endif
 	  if (GCC_CHECK_HDR (ldptr))
 	    {
 	      sym_count = GCC_SYMBOLS (ldptr);
 	      sym_index = GCC_SYMZERO (ldptr);
+
+#ifdef COLLECT_EXPORT_LIST
+	      /* Is current archive member a shared object?  */
+	      is_shared = HEADER (ldptr).f_flags & F_SHROBJ;
+#endif
+
 	      while (sym_index < sym_count)
 		{
 		  GCC_SYMENT symbol;
@@ -2841,6 +2847,16 @@ scan_prog_file (prog_name, which_pass)
 #endif
 		}
 	    }
+#ifdef COLLECT_EXPORT_LIST
+	  else
+	    {
+	      /* If archive contains both 32-bit and 64-bit objects,
+		 we want to skip objects in other mode so mismatch normal.  */
+	      if (debug)
+		fprintf (stderr, "%s : magic=%o aix64=%d mismatch\n",
+			 prog_name, HEADER (ldptr).f_magic, aix64_flag);
+	    }
+#endif
 	}
       else
 	{

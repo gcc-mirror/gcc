@@ -1,3 +1,12 @@
+Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* collect2.c (aix64_flag): New variable.
+	(main, case 'b'): Parse it.
+	(GCC_CHECK_HDR): object magic number must match mode.
+	(scan_prog_file): Only check for shared object if valid header.
+	Print debugging if header/mode mismatch.
+	* README.RS6000: Update.
+
 Sun Oct 25 23:36:52 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stmt.c (expand_fixup): Set fixup->before_jump to a
