@@ -1739,6 +1739,15 @@ fi
 # Find C compiler
 # ---------------
 
+# If a non-executable a.out is present (e.g. created by GNU as above even if
+# invoked with -v only), the IRIX 6 native ld just overwrites the existing
+# file, even when creating an executable, so an execution test fails.
+# Remove possible default executable files to avoid this.
+#
+# FIXME: This really belongs into AC_PROG_CC and can be removed once
+# Autoconf includes it.
+rm -f a.out a.exe b.out
+
 # Find the native compiler
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4997,7 +5006,7 @@ if test "${gcc_cv_prog_makeinfo_modern+set}" = set; then
 else
     ac_prog_version=`$MAKEINFO --version 2>&1 |
                    sed -n 's/^.*GNU texinfo.* \([0-9][0-9.]*\).*$/\1/p'`
-  echo "configure:5000: version of makeinfo is $ac_prog_version" >&5
+  echo "configure:5009: version of makeinfo is $ac_prog_version" >&5
   case $ac_prog_version in
     '')     gcc_cv_prog_makeinfo_modern=no;;
     4.[2-9]*)
