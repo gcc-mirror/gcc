@@ -1,3 +1,7 @@
+1999-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.h (MUST_PASS_IN_STACK): New macro.
+
 1999-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (sparc64_initialize_trampoline): Use gen_flushdi.
