@@ -2008,9 +2008,7 @@ verify_flow_info ()
 	    if (x == bb->end)
 	      break;
 
-	    if (GET_CODE (x) == JUMP_INSN
-		|| GET_CODE (x) == CODE_LABEL
-		|| GET_CODE (x) == BARRIER)
+	    if (control_flow_insn_p (x))
 	      {
 		error ("in basic block %d:", bb->index);
 		fatal_insn ("flow control insn inside a basic block", x);
