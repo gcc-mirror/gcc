@@ -305,8 +305,13 @@ char *
 my_strerror (e)
      int e;
 {
-  static char buffer[30];
 
+#ifdef HAVE_STRERROR
+  return strerror (e);
+
+#else
+
+  static char buffer[30];
   if (!e)
     return "";
 
@@ -315,6 +320,7 @@ my_strerror (e)
 
   sprintf (buffer, "Unknown error %d", e);
   return buffer;
+#endif
 }
 
 /* Delete tempfiles and exit function.  */
