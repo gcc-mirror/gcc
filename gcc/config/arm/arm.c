@@ -363,7 +363,7 @@ static const struct processors all_cores[] =
   {"arm10tdmi",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
   {"arm1020t",	                         FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED             | FL_ARCH5 },
   {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_ARCH5 | FL_ARCH5E | FL_XSCALE },
-  
+
   {NULL, 0}
 };
 
@@ -578,7 +578,7 @@ arm_override_options ()
      architecture has been selected.  */
   if (tune_flags == 0)
     tune_flags = insn_flags;
-  
+
   /* Make sure that the processor choice does not conflict with any of the
      other command line choices.  */
   if (TARGET_APCS_32 && !(insn_flags & FL_MODE32))
@@ -722,7 +722,7 @@ arm_override_options ()
   if (arm_pic_register_string != NULL)
     {
       int pic_register = decode_reg_name (arm_pic_register_string);
-      
+
       if (!flag_pic)
 	warning ("-mpic-register= is useless without -fpic");
 
@@ -7187,7 +7187,7 @@ output_return_instruction (operand, really_return, reverse)
   int reg;
   unsigned long live_regs_mask;
   unsigned long func_type;
-  
+
   func_type = arm_current_func_type ();
 
   if (IS_NAKED (func_type))
@@ -7328,7 +7328,7 @@ output_return_instruction (operand, really_return, reverse)
 	  really_return = 0;
 	}
     }
-  
+
   if (really_return)
     {
       switch ((int) ARM_FUNC_TYPE (func_type))
@@ -8632,7 +8632,7 @@ arm_assemble_integer (x, size, aligned_p)
       if (NEED_GOT_RELOC && flag_pic && making_const_table &&
 	  (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF))
 	{
-	  if (GET_CODE (x) == SYMBOL_REF 
+	  if (GET_CODE (x) == SYMBOL_REF
 	      && (CONSTANT_POOL_ADDRESS_P (x)
 		  || ENCODED_SHORT_CALL_ATTR_P (XSTR (x, 0))))
 	    fputs ("(GOTOFF)", asm_out_file);
@@ -9362,7 +9362,7 @@ arm_expand_builtin (exp, target, subtarget, mode, ignore)
       emit_insn (pat);
       return target;
     }
-  
+
   /* @@@ Should really do something sensible here.  */
   return NULL_RTX;
 }
@@ -10414,10 +10414,8 @@ thumb_output_function_prologue (f, size)
     thumb_pushpop (f, live_regs_mask, 1);
 
   for (regno = 8; regno < 13; regno++)
-    {
-      if (THUMB_REG_PUSHED_P (regno))
-	high_regs_pushed++;
-    }
+    if (THUMB_REG_PUSHED_P (regno))
+      high_regs_pushed++;
 
   if (high_regs_pushed)
     {
@@ -10426,10 +10424,8 @@ thumb_output_function_prologue (f, size)
       int next_hi_reg;
 
       for (next_hi_reg = 12; next_hi_reg > LAST_LO_REGNUM; next_hi_reg--)
-	{
-	  if (THUMB_REG_PUSHED_P (next_hi_reg))
-	    break;
-	}
+	if (THUMB_REG_PUSHED_P (next_hi_reg))
+	  break;
 
       pushable_regs = mask;
 
