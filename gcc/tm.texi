@@ -4046,6 +4046,15 @@ Define this macro as a C statement that declares additional library
 routines renames existing ones. @code{init_optabs} calls this macro after
 initializing all the normal library routines.
 
+@findex FLOAT_LIB_COMPARE_RETURNS_BOOL (@var{mode}, @var{comparison})
+@item FLOAT_LIB_COMPARE_RETURNS_BOOL
+Define this macro as a C statement that returns nonzero if a call to
+the floating point comparison library function will return a boolean
+value that indicates the result of the comparison.  It should return
+zero if one of gcc's own libgcc functions is called.
+
+Most ports don't need to define this macro.
+
 @findex TARGET_EDOM
 @cindex @code{EDOM}, implicit usage
 @item TARGET_EDOM

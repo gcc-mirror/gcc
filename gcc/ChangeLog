@@ -1,3 +1,16 @@
+Mon Aug 23 16:04:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* optabs.c (prepare_cmp_insn): Turn COMPARISON arg into a pointer.
+	All callers changed.
+	(prepare_float_lib_cmp): Likewise.
+	Use FLOAT_LIB_COMPARE_RETURNS_BOOL.
+	* expr.h (emit_float_lib_cmp): Delete declaration.
+	* tm.texi (FLOAT_LIB_COMPARE_RETURNS_BOOL): Document.
+	* sparc.h (FLOAT_LIB_COMPARE_RETURNS_BOOL): Define.
+	* sparc.md (bcc and scc patterns): Don't handle TFmode comparisons
+	specially.
+	(cmptf): Now conditional on TARGET_HARD_QUAD.
+
 Fri Aug 20 17:52:27 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* resource.c (mark_target_live_regs): Use

@@ -2676,6 +2676,11 @@ do {                                                                    \
 /* This is meant to be redefined in the host dependent files */
 #define INIT_SUBTARGET_OPTABS
 
+/* Nonzero if a floating point comparison library call for
+   mode MODE that will return a boolean value.  Zero if one
+   of the libgcc2 functions is used.  */
+#define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
+
 /* Compute the cost of computing a constant rtl expression RTX
    whose rtx-code is CODE.  The body of this macro is a portion
    of a switch statement.  If the code is computed here,
